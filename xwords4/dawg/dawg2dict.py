@@ -66,7 +66,8 @@ def eatBitmap( fh ):
     if nCols > 0:
         nRows = int(oneByteFmt.unpack(fh.read(oneByteFmt.size))[0])
         nBytes = ((nRows*nCols)+7) // 8
-        print('eatBitmap(): skipping', nBytes, 'bytes; nCols:', nCols, 'nRows:', nRows)
+        print('eatBitmap(): skipping {} bytes; nCols: {}, nRows: {}:'.format(nBytes,nCols, nRows),\
+              file=sys.stderr)
         fh.read(nBytes)
 
 def loadSpecialData( fh, data ):
@@ -187,8 +188,7 @@ def process(args):
         numFaces = int(oneByteFmt.unpack(dawg.read(oneByteFmt.size))[0])
         if not isUTF8:
             numFaceBytes = numFaces * 2
-        if numFaces > 64:
-            error("too many faces: " + numFaces)
+        assert numFaces <= 64, 'too many faces: {}'.format(numFaces)
         print( 'numFaceBytes: {}, numFaces: {}'.format(numFaceBytes, numFaces), file=sys.stderr )
 
         print( 'TODO: confirm checksum', file=sys.stderr )
@@ -227,7 +227,9 @@ def process(args):
                 # assert len(words) == nWords
         if args.DUMP_WORDS:
             for word in words:
-                print(word)
+                # if we're piped to head we'll get an exception, so just exit
+                try: print(word)
+                except: break
 
 def mkParser():
     parser = argparse.ArgumentParser()
