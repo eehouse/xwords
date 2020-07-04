@@ -187,8 +187,7 @@ $(XWLANG)%.atts:			#recreate it each time based on params
 	echo '_PERM|global+read-only|"r"' >> $@
 
 # the files to export for byod
-byodbins: table.bin values.bin frankspecials.bin info.txt
-
+byodbins: table.bin charcount.bin values.bin frankspecials.bin info.txt
 
 else
 ifeq ($(TARGET_TYPE),WINCE)
