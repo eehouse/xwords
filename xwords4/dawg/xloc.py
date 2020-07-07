@@ -28,8 +28,8 @@ sPreComment = re.compile('^(.*)#.*$')
 sVarAssign = re.compile('^(\w+):(.*)$')
 sBeginTiles = re.compile('^<BEGIN_TILES>$')
 sEndTiles = re.compile('^<END_TILES>$')
-sSingleCharMatch = re.compile('\'(.(\|.)+)\'')
-sSpecialsMatch = re.compile('{"(.+)"}')
+sSingleCharMatch = re.compile("'(.(\|.)*)'")
+sSpecialsMatch = re.compile('{"(.+)"(,.+)?}')
 
 def parseTileInfo(infoFile, encoding):
     result = {'_TILES' : []}
@@ -53,7 +53,7 @@ def parseTileInfo(infoFile, encoding):
                 if sEndTiles.match(line):
                     break
                 else:
-                    (count, val, face) = line.split(None, 3)
+                    (count, val, face) = line.split(None, 2)
                     result['_TILES'].append((count, val, face))
             elif sBeginTiles.match(line):
                 inTiles = True
