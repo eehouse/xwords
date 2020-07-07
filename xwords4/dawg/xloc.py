@@ -79,7 +79,6 @@ def writeMapFile(xlocToken, outfile):
         face = tile[2]
         match = sSingleCharMatch.match(face)
         if match:
-            print('single char: {}'.format(match.group(1)))
             printLetters( match.group(1), outfile )
             continue
         match = sSpecialsMatch.match(face)
