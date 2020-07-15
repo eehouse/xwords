@@ -81,10 +81,10 @@
     <string name="robot_smart">賢いロボット</string>
     <string name="robot_smarter">より賢いロボット</string>
     <string name="robot_smartest">最も賢いロボット</string>
-    <string name="phonies_spinner_prompt">\"偽物\" をどう扱いますか (単語リストにない単語)</string>
-    <string name="phonies_ignore">偽物を無視する</string>
-    <string name="phonies_warn">偽物の場合警告する</string>
-    <string name="phonies_disallow">偽物を禁止する</string>
+    <string name="phonies_spinner_prompt">\"フォニー\" をどう扱いますか (単語リストにない単語)</string>
+    <string name="phonies_ignore">フォニーを無視する</string>
+    <string name="phonies_warn">フォニーの場合警告する</string>
+    <string name="phonies_disallow">フォニーを禁止する</string>
     <string name="str_reg_server_sans_remote">少なくとも 1 人のプレイヤーは、ホストとして開始するゲームの \"リモート\" にマークする必要があります。</string>
     <string name="guest_name">(他のデバイスのプレイヤー)</string>
     <string name="confirm_save">このゲームはプレイ中です。これらの変更を保存する場合、再起動する必要があります。変更を保存しますか?</string>
@@ -132,7 +132,7 @@
     <string name="board_menu_tray_hide">ラックを非表示にする</string>
     <string name="board_menu_tray_show">ラックを表示する</string>
     <string name="board_menu_undo_last">元に戻す</string>
-    <string name="board_submenu_game">ゲーム -&gt;</string>
+    <string name="board_submenu_game">ゲーム</string>
     <string name="board_menu_game_counts">カウントと値…</string>
     <string name="board_menu_game_left">残りのタイル…</string>
     <string name="board_menu_game_history">ゲームの履歴…</string>
@@ -191,7 +191,7 @@
     <string name="nethints_allowed_sum">2 デバイス用のゲームのヒントを有効にします</string>
     <string name="init_autojuggle">プレイヤーをシャッフル</string>
     <string name="init_autojuggle_sum">新しいゲームで、ランダムに</string>
-    <string name="default_phonies">偽物の扱い</string>
+    <string name="default_phonies">フォニーの扱い</string>
     <string name="initial_player_minutes">プレイヤーごとのタイマー分数</string>
     <string name="board_size">ボードのサイズ</string>
     <string name="prefs_appearance">外観</string>
@@ -304,7 +304,7 @@
     <string name="query_title">質問…</string>
     <string name="newbie_title">ヒントがあります</string>
     <string name="button_notagain">今後表示しない</string>
-    <string name="not_again_sync">この操作は、すべてのネットワーク ゲームの保留中の移動/メッセージのリレーと、これら保留中の移動のフラグをチェックします。フラグが設定されたゲームを開こうとしたとき、接続して、同期します。(以降のリリースではバック グラウンドでこれらの移動がダウンロードされます)</string>
+    <string name="not_again_sync">この操作は、すべてのネットワークゲームの保留中の移動/メッセージについてリレーをチェックします。</string>
     <string name="not_again_trading">タイル交換モードに入ります。
 \n
 \n交換されるセットから、追加/削除するタイルをタップしてください。
@@ -333,7 +333,7 @@
     <string name="about_copyright">Copyright (C) 1998-2020 by Eric House. このフリー/オープンソース ソフトウェアは the GNU Public License に基づいてリリースされています.</string>
     <string name="about_web">マニュアルまたはソースコードは: http://xwords.sf.net/android.php を参照してください。バグの報告、機能の提案、支援の提供などは、メールしてください: xwords@eehouse.org 。</string>
     <string name="xlator">[空]</string>
-    <string name="about_credits">Sarah Chu のツールバーアイコン。名詞プロジェクトからの Navbar アイコン: Trendy の \"archive\"。 Becris の \"rematch\"。 iconomania の \"swap\"。</string>
+    <string name="about_credits">Sarah Chu のツールバーアイコン。名詞プロジェクトからの Navbar アイコン: Trendy の \"archive\"。 Becris の \"rematch\"。 iconomania の \"swap\"。flaticon.com から ultimatearm の \"建設中\" アイコン</string>
     <string name="changes_title">最近の変更</string>
     <string name="changes_button">最近の変更</string>
     <string name="button_lookup">単語を検索</string>
@@ -369,7 +369,7 @@
     <string name="bt_pick_clear_button">削除</string>
     <string name="invite_progress_title">接続しています…</string>
     <string name="invite_progress_fmt">%1$s でクロスワードへの招待を送信しています</string>
-    <string name="summary_wait_host">接続を待っています</string>
+    <string name="summary_wait_host">ゲストを待っています</string>
     <string name="summary_wait_guest">未接続</string>
     <string name="summary_gameover">ゲームオーバー</string>
     <string name="summary_conn">ゲームのプレイ中</string>
@@ -758,9 +758,13 @@
     <string name="warn_relay_disabled">このデバイスでリレー プレイは現在無効です。移動はリレーを介して送信も受信されません。</string>
     <string name="warn_relay_later">今すぐ、または後でリレー プレイを有効にすることができます。</string>
     <string name="warn_relay_remove">今すぐ、リレー プレイを有効にしたり、このゲームから削除できます。</string>
-    <string name="warn_relay_havegames">リレーを使用したプレイを無効にしてもよろしいですか?</string>
+    <string name="warn_relay_havegames">リレー (インターネット) を使用したプレイを無効にしますか\?
+\n
+\nほとんどのネットワークゲームではリレーを介して移動を交換するので、すべてのゲームをこの同じデバイス上のロボットでプレイする場合にのみ行ってください。</string>
     <plurals name="warn_relay_games_fmt">
-        <item quantity="other">\n\n(それを使用したゲームが %1$d つあります。)</item>
+        <item quantity="other">"
+\n
+\n(リレーを使用しているアクティブなゲームが %1$d あります。)"</item>
     </plurals>
     <string name="button_enable_relay">リレー プレイを有効にする</string>
     <string name="button_disable_relay">リレー プレイを無効にする</string>
@@ -806,7 +810,7 @@ WiFi ダイレクト経由で接続可能なデバイスはありません。</s
     <string name="title_enable_p2p">WiFi ダイレクトを有効にする</string>
     <string name="summary_enable_p2p">実験的。バッテリーを多く使用します</string>
     <string name="summary_invites_out_fmt">ルーム \"%1$s\" に招待されたプレイヤー</string>
-    <string name="phonies_found_title">にせものが見つかりました</string>
+    <string name="phonies_found_title">フォニーが見つかりました</string>
     <string name="title_blank_picker">空白のタイルを選択</string>
     <string name="tile_tray_picker">トレイの新しいタイルを選択</string>
     <string name="tile_button_txt_fmt">%1$s (%2$d)</string>
@@ -968,8 +972,20 @@ WiFi ダイレクト経由で接続可能なデバイスはありません。</s
     <string name="gamel_menu_logstore_off">ログの保存を無効にする</string>
     <string name="gamel_menu_logstore_on">ログの保存を有効にする</string>
     <string name="gamel_menu_logs">デバッグログ</string>
-    <string name="word_blocked_by_phony">単語 %1$s が単語リスト %2$s 内に見つかりません。</string>
+    <string name="word_blocked_by_phony">単語リスト %2$s に単語が見つかりません: %1$s。</string>
     <string name="unsafe_open_disregard">とにかく開く</string>
     <string name="unsafe_open_warning">このゲームは最近 CrossWords がクラッシュする原因となっており、破損している可能性があります。開くとまたクラッシュするかもしれません。とりあえず開いてみますか？</string>
     <string name="list_item_markbad">破損としてマーク</string>
+    <string name="not_again_comms_mqtt">リレーの代わりとしてこれを試しています。</string>
+    <string name="mqtt_invite_title">MQTT 招待状</string>
+    <string name="invite_choice_mqtt">Internet/MQTT</string>
+    <string name="no_tiles_exist">\"%1$s\" は %2$s のタイルで正しくスペルできません。</string>
+    <string name="pick_tiles_title">「スペル」のタイルを選択してください</string>
+    <string name="expl_mqtt_url">新しい mqtt ベースのリレー API の URL</string>
+    <string name="mqtt_qos">MQTT QOS</string>
+    <string name="mqtt_port">MQTT ポート</string>
+    <string name="mqtt_host">MQTT ホスト</string>
+    <string name="lang_name_hungarian">ハンガリー語</string>
+    <string name="invite_subject">クロスワードをプレイしましょう</string>
+    <string name="phonies_block">フォニーをブロックする</string>
 </resources>
