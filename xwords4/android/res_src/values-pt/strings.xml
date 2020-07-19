@@ -1297,7 +1297,7 @@
     atual.</string>
     <!-- Shown when you tap the chat button on the toolbar of the
          main Board screen -->
-    <string name="not_again_chat">Esse botão abre o ecrã para troca de mensagens entre dispositivos desse jogo. As mensagens serão guardadas até que você apague o jogo que as contenha.</string>
+    <string name="not_again_chat">Esse botão abre o ecrã para troca de mensagens entre aparelhos desse jogo. As mensagens serão guardadas até que apague o jogo que as contenha.</string>
     <!-- Shown when you tap the values button on the toolbar of the
          main Board screen.  This is intended to allow players to
          remind themselves how much played tiles are worth while
