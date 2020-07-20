@@ -207,19 +207,21 @@ public class XWPrefs {
 
     public static int getPrefsInt( Context context, int keyID, int defaultValue )
     {
-        String key = context.getString( keyID );
-        SharedPreferences sp = PreferenceManager
-            .getDefaultSharedPreferences( context );
-        int result;
-        try {
-            result = sp.getInt( key, defaultValue );
-            // If it's in a pref, it'll be a string (editable) So will get CCE
-        } catch ( ClassCastException cce ) {
-            String asStr = sp.getString( key, String.format( "%d", defaultValue ) );
+        int result = defaultValue;
+        if ( null != context ) {
+            String key = context.getString( keyID );
+            SharedPreferences sp = PreferenceManager
+                .getDefaultSharedPreferences( context );
             try {
-                result = Integer.parseInt( asStr );
-            } catch ( Exception ex ) {
-                result = defaultValue;
+                result = sp.getInt( key, defaultValue );
+                // If it's in a pref, it'll be a string (editable) So will get CCE
+            } catch ( ClassCastException cce ) {
+                String asStr = sp.getString( key, String.format( "%d", defaultValue ) );
+                try {
+                    result = Integer.parseInt( asStr );
+                } catch ( Exception ex ) {
+                    result = defaultValue;
+                }
             }
         }
         return result;
