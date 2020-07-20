@@ -40,7 +40,8 @@ public class CommonPrefs extends XWPrefs {
     public static final int COLOR_FOCUS = 2;
     public static final int COLOR_BACKGRND = 3;
     public static final int COLOR_BONUSHINT = 4;
-    public static final int COLOR_LAST = 5;
+    public static final int COLOR_CELLLINE = 5;
+    public static final int COLOR_LAST = 6;
 
     private static CommonPrefs s_cp = null;
 
@@ -108,6 +109,7 @@ public class CommonPrefs extends XWPrefs {
                            R.string.key_clr_crosshairs,
                            R.string.key_background,
                            R.string.key_clr_bonushint,
+                           R.string.key_cellline,
         };
         for ( int ii = 0; ii < idsOther.length; ++ii ) {
             otherColors[ii] = prefToColor( context, sp, idsOther[ii] );
