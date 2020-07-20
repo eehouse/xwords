@@ -1992,7 +1992,7 @@ public class GamesListDelegate extends ListDelegateBase
 
             // DEBUG only
         case R.id.games_game_markbad:
-            Quarantine.recordOpened( selRowIDs[0] );
+            Quarantine.markBad( selRowIDs[0] );
             break;
 
         default:
