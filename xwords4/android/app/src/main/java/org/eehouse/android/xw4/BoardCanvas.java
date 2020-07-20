@@ -49,7 +49,7 @@ public class BoardCanvas extends Canvas implements DrawCtx {
     private static final String TAG = BoardCanvas.class.getSimpleName();
     private static final int BLACK = 0xFF000000;
     private static final int WHITE = 0xFFFFFFFF;
-    private static final int FRAME_GREY = 0xFF101010;
+    private static final int LINE_PCT = 3;
     private static final int SCORE_HT_DROP = 2;
     private static final boolean DEBUG_DRAWFRAMES = false;
     private static final int NOT_TURN_ALPHA = 0x3FFFFFFF;
@@ -442,7 +442,10 @@ public class BoardCanvas extends Canvas implements DrawCtx {
             }
 
             // frame the cell
-            m_strokePaint.setColor( adjustColor(FRAME_GREY) );
+            int frameColor = m_otherColors[CommonPrefs.COLOR_CELLLINE];
+            m_strokePaint.setColor( adjustColor(frameColor) );
+            int width = Math.max(1, (rect.width() * LINE_PCT) / 100);
+            m_strokePaint.setStrokeWidth( width );
             drawRect( rect, m_strokePaint );
 
             drawCrosshairs( rect, flags );
@@ -559,7 +562,8 @@ public class BoardCanvas extends Canvas implements DrawCtx {
             // the board (without scrolling), the right-most cells
             // don't draw their right borders due to clipping, so draw
             // for them.
-            m_strokePaint.setColor( adjustColor(FRAME_GREY) );
+            int frameColor = m_otherColors[CommonPrefs.COLOR_CELLLINE];
+            m_strokePaint.setColor( adjustColor(frameColor) );
             int xx = rect.left + rect.width() - 1;
             drawLine( xx, rect.top, xx, rect.top + rect.height(),
                       m_strokePaint );

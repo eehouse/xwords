@@ -102,6 +102,7 @@ public class PrefsDelegate extends DelegateBase
                             R.string.key_empty,
                             R.string.key_background,
                             R.string.key_clr_bonushint,
+                            R.string.key_cellline,
                         };
                         for ( int colorKey : colorKeys ) {
                             editor.remove( getString(colorKey) );

@@ -889,6 +889,8 @@
     <!-- the color of text, e.g. "2L", shown on a bonus square on the
          board -->
     <string name="key_bonushint">In-square bonus hint</string>
+    <!-- The color of the lines delimiting cells on the board -->
+    <string name="cellline">Board lines</string>
     <!--       
        ############################################################
        # :Dialogs:
