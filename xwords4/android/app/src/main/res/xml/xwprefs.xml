@@ -249,12 +249,12 @@
           />
     </PreferenceScreen>
 
-    <org.eehouse.android.xw4.XWEditTextPreference
-        android:key="@string/key_board_line_pct"
-        android:title="@string/board_line_pct"
-        android:defaultValue="1"
-        android:numeric="decimal"
-        />
+    <!-- <org.eehouse.android.xw4.XWEditTextPreference -->
+    <!--     android:key="@string/key_board_line_pct" -->
+    <!--     android:title="@string/board_line_pct" -->
+    <!--     android:defaultValue="1" -->
+    <!--     android:numeric="decimal" -->
+    <!--     /> -->
 
   </PreferenceScreen>
 
