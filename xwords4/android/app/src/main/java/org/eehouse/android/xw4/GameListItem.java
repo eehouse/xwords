@@ -462,6 +462,7 @@ public class GameListItem extends LinearLayout
         }
         long m_rowid;
         GameListItem m_item;
+        int m_nTries = 0;
     }
     private static LinkedBlockingQueue<ThumbQueueElem> s_queue
         = new LinkedBlockingQueue<>();
@@ -489,6 +490,11 @@ public class GameListItem extends LinearLayout
                         ThumbQueueElem elem;
                         try {
                             elem = s_queue.take();
+                            if ( 0 < elem.m_nTries ) {
+                                // This is a second pass. give whatever caused
+                                // failure time to go away
+                                Thread.sleep(200);
+                            }
                         } catch ( InterruptedException ie ) {
                             Log.w( TAG, "interrupted; killing s_thumbThread" );
                             break;
@@ -501,16 +507,22 @@ public class GameListItem extends LinearLayout
                             thumb = GameUtils.loadMakeBitmap( activity, rowid );
                         }
 
-                        final GameListItem item = elem.m_item;
-                        final Bitmap ft = thumb;
-                        activity.runOnUiThread( new Runnable() {
-                                public void run() {
-                                    ImageView iview = item.m_thumb;
-                                    if ( null != iview ) {
-                                        iview.setImageBitmap( ft );
+                        if ( null == thumb ) {
+                            if ( ++elem.m_nTries < 3 ) {
+                                s_queue.add( elem );
+                            }
+                        } else {
+                            final GameListItem item = elem.m_item;
+                            final Bitmap ft = thumb;
+                            activity.runOnUiThread( new Runnable() {
+                                    public void run() {
+                                        ImageView iview = item.m_thumb;
+                                        if ( null != iview ) {
+                                            iview.setImageBitmap( ft );
+                                        }
                                     }
-                                }
-                            });
+                                });
+                        }
                     }
                 }
             });
