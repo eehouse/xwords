@@ -34,6 +34,7 @@
   <string name="key_cellline">key_cellline</string>
   <string name="key_clr_crosshairs">key_clr_crosshairs</string>
   <string name="key_clr_bonushint">key_clr_bonushint</string>
+  <string name="key_board_line_pct">key_board_line_pct</string>
 
   <string name="key_relay_host">key_relay_host</string>
   <string name="key_relay_port">key_relay_port2</string>

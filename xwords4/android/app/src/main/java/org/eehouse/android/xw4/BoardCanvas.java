@@ -49,7 +49,6 @@ public class BoardCanvas extends Canvas implements DrawCtx {
     private static final String TAG = BoardCanvas.class.getSimpleName();
     private static final int BLACK = 0xFF000000;
     private static final int WHITE = 0xFFFFFFFF;
-    private static final int LINE_PCT = 3;
     private static final int SCORE_HT_DROP = 2;
     private static final boolean DEBUG_DRAWFRAMES = false;
     private static final int NOT_TURN_ALPHA = 0x3FFFFFFF;
@@ -444,7 +443,10 @@ public class BoardCanvas extends Canvas implements DrawCtx {
             // frame the cell
             int frameColor = m_otherColors[CommonPrefs.COLOR_CELLLINE];
             m_strokePaint.setColor( adjustColor(frameColor) );
-            int width = Math.max(1, (rect.width() * LINE_PCT) / 100);
+            // PENDING: fetch/calculate this a lot less frequently!!
+            int linePct = XWPrefs.getPrefsInt( m_activity, R.string.key_board_line_pct, 1 );
+            linePct = Math.min( 25, linePct );
+            int width = Math.max(1, (rect.width() * linePct) / 100);
             m_strokePaint.setStrokeWidth( width );
             drawRect( rect, m_strokePaint );
 
