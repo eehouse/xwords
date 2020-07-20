@@ -443,11 +443,13 @@ public class BoardCanvas extends Canvas implements DrawCtx {
             // frame the cell
             int frameColor = m_otherColors[CommonPrefs.COLOR_CELLLINE];
             m_strokePaint.setColor( adjustColor(frameColor) );
-            // PENDING: fetch/calculate this a lot less frequently!!
-            int linePct = XWPrefs.getPrefsInt( m_activity, R.string.key_board_line_pct, 1 );
-            linePct = Math.min( 25, linePct );
-            int width = Math.max(1, (rect.width() * linePct) / 100);
-            m_strokePaint.setStrokeWidth( width );
+            if ( false ) {
+                // PENDING: fetch/calculate this a lot less frequently!!
+                int linePct = XWPrefs.getPrefsInt( m_activity, R.string.key_board_line_pct, 1 );
+                linePct = Math.min( 25, linePct );
+                int width = Math.max(1, (rect.width() * linePct) / 100);
+                m_strokePaint.setStrokeWidth( width );
+            }
             drawRect( rect, m_strokePaint );
 
             drawCrosshairs( rect, flags );

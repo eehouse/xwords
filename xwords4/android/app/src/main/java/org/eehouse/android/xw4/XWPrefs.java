@@ -220,7 +220,6 @@ public class XWPrefs {
                 try {
                     result = Integer.parseInt( asStr );
                 } catch ( Exception ex ) {
-                    result = defaultValue;
                 }
             }
         }
