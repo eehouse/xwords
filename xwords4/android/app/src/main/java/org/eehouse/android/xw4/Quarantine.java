@@ -30,6 +30,7 @@ import java.io.Serializable;
 public class Quarantine {
     private static final String TAG = Quarantine.class.getSimpleName();
     private static final String DATA_KEY = TAG + "/key";
+    private static final int BAD_COUNT = 2;
 
     public static boolean safeToOpen( long rowid )
     {
@@ -37,7 +38,7 @@ public class Quarantine {
         synchronized ( sDataRef ) {
             count = get().getFor( rowid );
         }
-        boolean result = count == 0; // Not too strict?
+        boolean result = count < BAD_COUNT;
         if ( !result ) {
             Log.d( TAG, "safeToOpen(%d) => %b (count=%d)", rowid, result, count );
         }
@@ -67,6 +68,17 @@ public class Quarantine {
             get().decrement( rowid );
             store();
             Log.d( TAG, "recordClosed(%d): %s", rowid, sDataRef[0].toString() );
+        }
+    }
+
+    public static void markBad( long rowid )
+    {
+        synchronized ( sDataRef ) {
+            for ( int ii = 0; ii < BAD_COUNT; ++ii ) {
+                get().increment( rowid );
+            }
+            store();
+            Log.d( TAG, "markBad(%d): %s", rowid, sDataRef[0].toString() );
         }
     }
 
