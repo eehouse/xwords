@@ -1452,15 +1452,6 @@ public class GamesListDelegate extends ListDelegateBase
             }
             break;
 
-        case SET_NA_DEFAULTNAME:
-            XWPrefs.setPrefsBoolean( m_activity, R.string.key_notagain_dfltname,
-                                     true );
-            break;
-        case SET_GOT_LANGDICT:
-            XWPrefs.setPrefsBoolean( m_activity, R.string.key_got_langdict,
-                                     true );
-            break;
-
         default:
             handled = super.onPosButton( action, params );
         }
@@ -2001,7 +1992,7 @@ public class GamesListDelegate extends ListDelegateBase
 
             // DEBUG only
         case R.id.games_game_markbad:
-            Quarantine.recordOpened( selRowIDs[0] );
+            Quarantine.markBad( selRowIDs[0] );
             break;
 
         default:
@@ -2438,7 +2429,7 @@ public class GamesListDelegate extends ListDelegateBase
         boolean handled = false;
         String msg = intent.getStringExtra( ALERT_MSG );
         if ( null != msg ) {
-            DlgDelegate.DlgDelegateBuilder builder =
+            DlgDelegate.Builder builder =
                 makeOkOnlyBuilder( msg );
             if ( intent.getBooleanExtra( WITH_EMAIL, false ) ) {
                 builder.setActionPair( Action.SEND_EMAIL,
@@ -2497,7 +2488,8 @@ public class GamesListDelegate extends ListDelegateBase
                                                        xlateLang( lang ) );
                                         makeConfirmThenBuilder( msg, Action.DWNLD_LOC_DICT )
                                             .setPosButton( R.string.button_download )
-                                            .setOnNA( Action.SET_GOT_LANGDICT )
+                                            .setNegButton( R.string.button_no )
+                                            .setNAKey( R.string.key_got_langdict )
                                             .setParams( lang, name )
                                             .show();
                                     }
@@ -2754,7 +2746,7 @@ public class GamesListDelegate extends ListDelegateBase
         String msg = getQuantityString( R.plurals.confirm_reset_fmt,
                                         rowIDs.length, rowIDs.length );
         makeConfirmThenBuilder( msg, Action.RESET_GAMES )
-            .setPosButton(R.string.button_reset)
+            .setPosButton( R.string.button_reset )
             .setParams( rowIDs )
             .show();
     }
@@ -2798,7 +2790,7 @@ public class GamesListDelegate extends ListDelegateBase
                                 name2 );
 
                 makeConfirmThenBuilder( msg, Action.NEW_GAME_DFLT_NAME )
-                    .setOnNA( Action.SET_NA_DEFAULTNAME )
+                    .setNAKey( R.string.key_notagain_dfltname )
                     .setNegButton( R.string.button_later )
                     .setParams( name, doConfigure )
                     .show();

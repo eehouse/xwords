@@ -23,7 +23,7 @@ byodfiles.tgz: byodfiles.tar
 
 byodfiles.tar: dict2dawg
 	rm -f $@ langinfo
-	tar cvf $@ ./dict2dawg ./dict2dawg.cpp ./par.pl ./xloc.pl ./xloc.pm
+	tar cvf $@ ./dict2dawg ./dict2dawg.cpp ./par.pl ./xloc.py
 	for dir in $$(ls .); do \
 		if [ $$dir = "Hëx" ]; then \
 			:; \

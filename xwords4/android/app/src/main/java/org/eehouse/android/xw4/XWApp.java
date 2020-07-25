@@ -102,7 +102,9 @@ public class XWApp extends Application
 
         DupeModeTimer.init( this );
 
-        MQTTUtils.init( this );
+        if ( BuildConfig.OFFER_MQTT ) {
+            MQTTUtils.init( this );
+        }
     }
 
     @OnLifecycleEvent(ON_ANY)

@@ -81,7 +81,9 @@ dvc_store( XW_DUtilCtxt* dutil, XWEnv xwe )
 
 #endif
 
-#define MQTT_DEVID_KEY "mqtt_devid_key"
+#define SUPPORT_OLD             /* only needed for a short while */
+#define MQTT_DEVID_KEY_OLD "mqtt_devid_key"
+#define MQTT_DEVID_KEY PERSIST_KEY("mqtt_devid_key")
 
 void
 dvc_getMQTTDevID( XW_DUtilCtxt* dutil, XWEnv xwe, MQTTDevID* devID )
@@ -89,8 +91,20 @@ dvc_getMQTTDevID( XW_DUtilCtxt* dutil, XWEnv xwe, MQTTDevID* devID )
     MQTTDevID tmp = 0;
     XP_U16 len = sizeof(tmp);
     dutil_loadPtr( dutil, xwe, MQTT_DEVID_KEY, &tmp, &len );
+
+#ifdef SUPPORT_OLD
+    if ( len == 0 ) {
+        len = sizeof(tmp);
+        dutil_loadPtr( dutil, xwe, MQTT_DEVID_KEY_OLD, &tmp, &len );
+        if ( len == sizeof(tmp) ) { /* got the old key; now store it */
+            XP_LOGFF( "storing using new key" );
+            dutil_storePtr( dutil, xwe, MQTT_DEVID_KEY, &tmp, sizeof(tmp) );
+        }
+    }
+#endif
+
     // XP_LOGFF( "len: %d; sizeof(tmp): %d", len, sizeof(tmp) );
-    if ( len != sizeof(tmp) ) { /* we have it!!! */
+    if ( len != sizeof(tmp) ) { /* not found, or bogus somehow */
         tmp = XP_RANDOM();
         tmp <<= 32;
         tmp |= XP_RANDOM();

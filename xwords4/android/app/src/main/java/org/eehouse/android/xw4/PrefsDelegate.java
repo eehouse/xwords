@@ -102,6 +102,7 @@ public class PrefsDelegate extends DelegateBase
                             R.string.key_empty,
                             R.string.key_background,
                             R.string.key_clr_bonushint,
+                            R.string.key_cellline,
                         };
                         for ( int colorKey : colorKeys ) {
                             editor.remove( getString(colorKey) );
@@ -242,7 +243,9 @@ public class PrefsDelegate extends DelegateBase
             case R.string.key_mqtt_host:
             case R.string.key_mqtt_port:
             case R.string.key_mqtt_qos:
-                MQTTUtils.onConfigChanged( m_activity );
+                if ( BuildConfig.OFFER_MQTT ) {
+                    MQTTUtils.onConfigChanged( m_activity );
+                }
                 break;
             default:
                 Assert.failDbg();

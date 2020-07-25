@@ -27,6 +27,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+import android.text.TextUtils;
 import android.text.format.DateUtils;
 import android.view.View;
 import android.widget.Button;
@@ -74,7 +75,7 @@ public class BTInviteDelegate extends InviteDelegate {
                 pairs = new ArrayList<>();
             } else {
                 for ( TwoStringPair pair : pairs ) {
-                    alreadyHave = pair.str2.equals(devName);
+                    alreadyHave = TextUtils.equals(pair.str2, devName);
                     if ( alreadyHave ) {
                         break;
                     }
@@ -96,10 +97,22 @@ public class BTInviteDelegate extends InviteDelegate {
                 for ( Iterator<TwoStringPair> iter = pairs.iterator();
                       iter.hasNext(); ) {
                     TwoStringPair pair = iter.next();
-                    if ( pair.str2.equals( dev ) ) {
+                    if ( TextUtils.equals( pair.str2, dev ) ) {
                         iter.remove();
                         break;
                     }
+                }
+            }
+        }
+
+        private void removeNulls()
+        {
+            for ( Iterator<TwoStringPair> iter = pairs.iterator();
+                  iter.hasNext(); ) {
+                TwoStringPair pair = iter.next();
+                if ( TextUtils.isEmpty( pair.str2 ) ) {
+                    Log.d( TAG, "removeNulls(): removing!!" );
+                    iter.remove();
                 }
             }
         }
@@ -315,6 +328,7 @@ public class BTInviteDelegate extends InviteDelegate {
         if ( null == sPersisted ) {
             try {
                 sPersisted = (Persisted)DBUtils.getSerializableFor( context, KEY_PERSIST );
+                sPersisted.removeNulls(); // clean up earlier mistakes
             } catch ( Exception ex ) {} // NPE, de-serialization problems, etc.
 
             if ( null == sPersisted ) {

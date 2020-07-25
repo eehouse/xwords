@@ -46,7 +46,6 @@ public class DlgState implements Parcelable {
     public int m_prefsNAKey;
     // These can't be serialized!!!!
     public Object[] m_params;
-    public Action m_onNAChecked;
     public int m_titleId;
 
     public DlgState( DlgID dlgID )
@@ -56,7 +55,7 @@ public class DlgState implements Parcelable {
 
     public DlgState setMsg( String msg )
     { m_msg = msg; return this; }
-    public DlgState setPrefsKey( int key )
+    public DlgState setPrefsNAKey( int key )
     { m_prefsNAKey = key; return this; }
     public DlgState setAction( Action action )
     { m_action = action; return this; }
@@ -76,8 +75,6 @@ public class DlgState implements Parcelable {
     }
     public DlgState setActionPair( ActionPair pair )
     { m_pair = pair; return this; }
-    public DlgState setOnNA( Action na )
-    { m_onNAChecked = na; return this; }
     public DlgState setPosButton( int id )
     { m_posButton = id; return this; }
     public DlgState setNegButton( int id )
@@ -88,6 +85,7 @@ public class DlgState implements Parcelable {
     @Override
     public String toString()
     {
+        String result;
         if ( BuildConfig.DEBUG) {
             String params = "";
             if ( null != m_params ) {
@@ -97,14 +95,22 @@ public class DlgState implements Parcelable {
                 }
                 params = TextUtils.join( ",", strs );
             }
-            return String.format("[id: %s; msg: %s; key: %s; action: %s; pair %s; "
-                                 + "na: %s; pos: %d; neg: %d; title: %d; "
-                                 + "params: %s]",
-                                 m_id, m_msg, m_prefsNAKey, m_action, m_pair, m_onNAChecked,
-                                 m_posButton, m_negButton, m_titleId, params );
+            result = new StringBuffer()
+                .append("{id: ").append(m_id)
+                .append(", msg: \"").append(m_msg)
+                .append("\", naKey: ").append(m_prefsNAKey)
+                .append(", action: ").append(m_action)
+                .append(", pair ").append(m_pair)
+                .append(", pos: ").append(m_posButton)
+                .append(", neg: ").append(m_negButton)
+                .append(", title: ").append(m_titleId)
+                .append(", params: [").append(params)
+                .append("]}")
+                .toString();
         } else {
-            return super.toString();
+            result = super.toString();
         }
+        return result;
     }
 
     // I only need this if BuildConfig.DEBUG is true...
@@ -125,7 +131,6 @@ public class DlgState implements Parcelable {
                     && ((null == m_pair) ? (null == other.m_pair) : m_pair.equals(other.m_pair))
                     && m_prefsNAKey == other.m_prefsNAKey
                     && Arrays.deepEquals( m_params, other.m_params )
-                    && m_onNAChecked == other.m_onNAChecked
                     && m_titleId == other.m_titleId;
             }
         } else {
@@ -159,7 +164,6 @@ public class DlgState implements Parcelable {
         out.writeInt( m_negButton );
         out.writeInt( null == m_action ? -1 : m_action.ordinal() );
         out.writeInt( m_prefsNAKey );
-        out.writeInt( null == m_onNAChecked  ? -1 : m_onNAChecked.ordinal() );
         out.writeInt( m_titleId );
         out.writeString( m_msg );
         out.writeSerializable( m_params );
@@ -168,7 +172,7 @@ public class DlgState implements Parcelable {
 
     private void testCanParcelize()
     {
-        if (BuildConfig.DEBUG) {
+        if ( BuildConfig.DEBUG ) {
             Parcel parcel = Parcel.obtain();
             writeToParcel(parcel, 0);
 
@@ -192,8 +196,6 @@ public class DlgState implements Parcelable {
                     int tmp = in.readInt();
                     Action action = 0 > tmp ? null : Action.values()[tmp];
                     int prefsKey = in.readInt();
-                    tmp = in.readInt();
-                    Action onNA = 0 > tmp ? null : Action.values()[tmp];
                     int titleId = in.readInt();
                     String msg = in.readString();
                     Object[] params = (Object[])in.readSerializable();
@@ -203,8 +205,7 @@ public class DlgState implements Parcelable {
                     .setPosButton( posButton )
                     .setNegButton( negButton )
                     .setAction( action )
-                    .setPrefsKey( prefsKey )
-                    .setOnNA( onNA )
+                    .setPrefsNAKey( prefsKey )
                     .setTitle(titleId)
                     .setParams(params)
                     .setActionPair(pair)

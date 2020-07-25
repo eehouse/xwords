@@ -315,8 +315,9 @@ public class BoardDelegate extends DelegateBase
             int title = (Integer)params[0];
             String msg = (String)params[1];
             ab.setMessage( msg );
-            Assert.assertTrue( 0 != title );
-            ab.setTitle( title );
+            if ( 0 != title ) {
+                ab.setTitle( title );
+            }
             ab.setPositiveButton( android.R.string.ok, null );
             if ( DlgID.DLG_SCORES == dlgID ) {
                 if ( null != m_mySIS.words && m_mySIS.words.length > 0 ) {
@@ -2488,7 +2489,7 @@ public class BoardDelegate extends DelegateBase
                                 boolean banned = Perm.SEND_SMS.isBanned(m_activity);
                                 int explID = banned
                                     ? R.string.banned_nbs_perms : R.string.missing_sms_perms;
-                                DlgDelegate.ConfirmThenBuilder builder =
+                                DlgDelegate.Builder builder =
                                     makeConfirmThenBuilder( explID, Action.DROP_SMS_ACTION );
                                 if ( banned ) {
                                     builder.setActionPair( Action.PERMS_BANNED_INFO,
@@ -2635,7 +2636,6 @@ public class BoardDelegate extends DelegateBase
         switch ( dlgID ) {
         case DLG_OKONLY:
         case DLG_SCORES:
-            dlgTitle = R.string.info_title;
             break;
         case DLG_USEDICT:
         case DLG_GETDICT:

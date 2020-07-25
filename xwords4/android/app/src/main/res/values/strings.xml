@@ -850,6 +850,9 @@
     <string name="keep_screenon">Keep screen on</string>
     <!-- clarification of above -->
     <string name="keep_screenon_summary">Keep board screen on 10 mins</string>
+
+    <!-- Preference title: cell line thickness as pct of cell width -->
+    <string name="board_line_pct">Cell line thickness (percent, limit 1 to 25)</string>
     <!--
        ############################################################
        # :Screens:
@@ -889,6 +892,8 @@
     <!-- the color of text, e.g. "2L", shown on a bonus square on the
          board -->
     <string name="key_bonushint">In-square bonus hint</string>
+    <!-- The color of the lines delimiting cells on the board -->
+    <string name="cellline">Board lines</string>
     <!--       
        ############################################################
        # :Dialogs:
@@ -1496,8 +1501,7 @@
          Eric House and translators -->
     <string name="about_credits">Toolbar icons by Sarah Chu. Navbar
     icons from the Noun Project: \"archive\" by Trendy; \"rematch\" by
-    Becris; and \"swap\" by iconomania. \"Under Construction\" icon by
-    ultimatearm from flaticon.com</string>
+    Becris; and \"swap\" by iconomania.</string>
     <!-- text of dialog showing the set of changes made since the last
          release -->
     <string name="changes_title">Recent changes</string>
@@ -2058,7 +2062,7 @@
     wordlists and view the ones you already have.\n\nWhat wordlists
     you have installed determines:\n• What languages you can play
     in\n• How smart the robot player is\n• What words are
-    legal.\n\nCheck the \"Show downloadable\" box at the top to see
+    legal\n\nCheck the \"Show downloadable\" box at the top to see
     what\'s available.</string>
     <string name="force_tablet_title">Use tablet (side-by-side) layout?</string>
     <string name="force_tablet_default">Use default for my device</string>
