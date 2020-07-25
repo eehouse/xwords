@@ -243,7 +243,9 @@ public class PrefsDelegate extends DelegateBase
             case R.string.key_mqtt_host:
             case R.string.key_mqtt_port:
             case R.string.key_mqtt_qos:
-                MQTTUtils.onConfigChanged( m_activity );
+                if ( BuildConfig.OFFER_MQTT ) {
+                    MQTTUtils.onConfigChanged( m_activity );
+                }
                 break;
             default:
                 Assert.failDbg();

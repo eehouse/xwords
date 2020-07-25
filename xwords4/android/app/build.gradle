@@ -36,10 +36,8 @@ if ( FABRIC_API_KEY && hasProperty('useCrashlytics') ) { // rm-for-fdroid
 }                                                        // rm-for-fdroid
 repositories {
     google()
-    maven { url 'https://maven.fabric.io/public' }       // rm-for-fdroid
-    maven {
-    	url "https://repo.eclipse.org/content/repositories/paho-releases/"
-    }
+    maven { url 'https://maven.fabric.io/public' }      // rm-for-fdroid
+    maven { url "https://repo.eclipse.org/content/repositories/paho-releases/" } // rm-for-fdroid
 }
 
 android {
@@ -122,6 +120,7 @@ android {
             resValue "string", "nfc_aid", "$NFC_AID_XW4"
             externalNativeBuild.ndkBuild.cFlags += ['-DVARIANT_xw4fdroid']
             externalNativeBuild.ndkBuild.arguments += ['XW_BT_UUID=' + XW_UUID]
+            buildConfigField "boolean", "OFFER_MQTT", "false"
         }
 
         xw4d {
@@ -337,7 +336,7 @@ dependencies {
 
     implementation 'com.github.eehouse:nbsproxy:v0.2.2'
 
-    implementation "org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.1.+"
+    implementation "org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.1.+" // rm-for-fdroid
 }
 
 task mkImages(type: Exec) {
