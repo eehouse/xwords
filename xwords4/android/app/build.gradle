@@ -37,9 +37,7 @@ if ( FABRIC_API_KEY && hasProperty('useCrashlytics') ) { // rm-for-fdroid
 repositories {
     google()
     maven { url 'https://maven.fabric.io/public' }       // rm-for-fdroid
-    maven {
-    	url "https://repo.eclipse.org/content/repositories/paho-releases/"
-    }
+    mavenCentral()
 }
 
 android {
