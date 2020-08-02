@@ -161,7 +161,8 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
                     m_dims = null;
                     m_layoutWidth = m_layoutHeight = 0;
                 } else {
-                    Assert.failDbg();
+                    Log.d( TAG, "onMeasure(): unexpected width (%d) to height (%d) ratio"
+                           + "; proceeding", m_dims.width, m_dims.height );
                 }
             }
         }
