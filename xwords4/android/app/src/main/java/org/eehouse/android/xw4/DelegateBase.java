@@ -319,10 +319,10 @@ public class DelegateBase implements DlgClickNotify,
         }
     }
 
-    private void showFaq( String category, String entry )
+    void showFaq( String[] params )
     {
         Context context = getActivity();
-        String uri = getString( R.string.faq_uri_fmt, category, entry );
+        String uri = getString( R.string.faq_uri_fmt, params[0], params[1] );
         NetUtils.launchWebBrowserWith( context, uri );
     }
 
@@ -765,7 +765,7 @@ public class DelegateBase implements DlgClickNotify,
             NetUtils.launchWebBrowserWith( m_activity, R.string.nbs_ban_url );
             break;
         case SHOW_FAQ:
-            showFaq( (String)params[0], (String)params[1] );
+            showFaq( (String[])params[0] );
             break;
         default:
             Log.d( TAG, "onPosButton(): unhandled action %s", action.toString() );

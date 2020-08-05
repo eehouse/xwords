@@ -5,4 +5,7 @@
     <item android:id="@+id/dicts_showtiles"
           android:title="@string/show_tiles_menu"
           />
+    <item android:id="@+id/dicts_showfaq"
+          android:title="@string/button_faq"
+          />
 </menu>

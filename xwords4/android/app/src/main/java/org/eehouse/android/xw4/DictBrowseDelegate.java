@@ -60,6 +60,7 @@ public class DictBrowseDelegate extends DelegateBase
     private static final String TAG = DictBrowseDelegate.class.getSimpleName();
     private static final String DELIM = ".";
     private static final boolean SHOW_NUM = false;
+    private static final String[] FAQ_PARAMS = {"filters", "intro"};
 
     private static final String DICT_NAME = "DICT_NAME";
     private static final String DICT_LOC = "DICT_LOC";
@@ -361,6 +362,9 @@ public class DictBrowseDelegate extends DelegateBase
         switch ( item.getItemId() ) {
         case R.id.dicts_showtiles:
             showTiles();
+            break;
+        case R.id.dicts_showfaq:
+            showFaq( FAQ_PARAMS );
             break;
         default:
             handled = false;
@@ -703,7 +707,7 @@ public class DictBrowseDelegate extends DelegateBase
             m_newAlertShown = true;
             makeNotAgainBuilder( R.string.new_feature_filter, R.string.key_na_newFeatureFilter )
                 .setActionPair( Action.SHOW_FAQ, R.string.button_faq )
-                .setParams("filters", "intro")
+                .setParams( (Object)FAQ_PARAMS )
                 .setTitle(R.string.new_feature_title)
                 .show();
         }
