@@ -1539,10 +1539,52 @@
     <!--  -->
     <string name="button_move">Move</string>
     <string name="button_newgroup">New group</string>
-    <!--  -->
-    <string name="button_search">Find</string>
-    <!--  -->
-    <string name="word_search_hint">First letters</string>
+
+    <!-- For user to confirm/apply wordlist filter -->
+    <string name="button_useconfig">Apply Filter</string>
+    <!-- Button in wordlist filter: keep it short!!!! -->
+    <string name="button_addBlank">+Blank</string>
+    <!-- String showing user what filter is in use. Substitutions are
+         1) the filter pattern, 2) minimum and 3) maximum lengths, and
+         4) number of words in the filtered list. -->
+    <string name="filter_sum_pat_fmt">Showing: %1$s, lengths %2$d-%3$d
+    (%4$d words)</string>
+    <!-- Shown when user "misspells" a pattern using a combination not
+         legal in the language, e.g. Q alone in Spanish or Catalan -->
+    <string name="show_tiles_button">Show Tiles</string>
+    <!-- Menuitem in dict browser -->
+    <string name="show_tiles_menu">\u200CShow Tiles</string>
+    <!-- title of dialog showing the list of tiles. Passed language
+         name, e.g. Tiles for English -->
+    <string name="show_tiles_title_fmt">Tiles for %1$s</string>
+
+    <!-- Shown when user uses the +Blank button in wordlist browser
+         but nothing can be done because there's not focussed text
+         field -->
+    <string name="blank_button_expl">This button inserts a blank at
+    the active text field\'s cursor, but there is no cursor
+    now.</string>
+
+    <!-- Label for first field in wordlist browser filter -->
+    <string name="pat_starts_with">Starts with</string>
+    <!-- Label for middle field in wordlist browser filter -->
+    <string name="pat_contains">Contains</string>
+    <!-- Label for last field in wordlist browser filter -->
+    <string name="pat_ends_with">Ends with</string>
+    <!-- Column head for checkboxes that cause the tiles to be
+         accepted in any order. E.g. "ends with: ING" will also accept
+         words ending in GIN if the box under this head is
+         checked-->
+    <string name="pat_col_anyorder">Any Order</string>
+
+    <!-- Headers for columns in tiles table: 1: letter on tile -->
+    <string name="tiles_header_face">Letter</string>
+    <!-- Headers for columns in tiles table: 2: Number of tiles with
+         that letter -->
+    <string name="tiles_header_count">Number</string>
+    <!-- Headers for columns in tiles table: 3: Value of each tile -->
+    <string name="tiles_header_value">Value</string>
+
     <!--  -->
     <string name="tilepick_all_fmt">Pick %1$d for me</string>
     <!--  -->
@@ -1550,14 +1592,7 @@
     <!-- This is for debug builds only! A setting for testing networking -->
     <string name="disableds_title">Disabled address types</string>
     <!--  -->
-    <string name="dict_browse_title_fmt">%1$s (%2$d words using %3$d-%4$d
-    tiles)</string>
-    <!--  -->
-    <string name="dict_browse_title1_fmt">%1$s (%2$d words using %3$d
-    tiles)</string>
-    <!--  -->
-    <string name="dict_browse_nowords_fmt">No word in %1$s starts with
-      %2$s.</string>
+    <string name="dict_browse_title_fmt">%1$s (%2$d words total)</string>
     <!--  -->
     <string name="not_again_browse">This button opens the wordlist
       browser on the current player\'s wordlist.</string>
@@ -1576,6 +1611,17 @@
     <!--  -->
     <string name="prompt_max_len">Words no longer than</string>
     <!--  -->
+
+    <!-- Shown when user tries to make a wordlist filter where max < min -->
+    <string name="error_min_gt_max">The minimum length value cannot be
+    greater than the maximum value.</string>
+
+    <!-- Title of progress alert shown while wordlist is loading. For
+         huge lists like Polish this can take a few seconds. -->
+    <string name="filter_title_fmt">Loading %1$s…</string>
+    <!-- Message in progress alert shown while wordlist is loading -->
+    <string name="filter_progress_fmt">Processing %1$d words</string>
+
     <string name="board_menu_file_email">Email author</string>
     <!--  -->
     <string name="email_author_subject">Comment about CrossWords</string>
@@ -2553,8 +2599,17 @@
     <string name="logstore_clear_confirm">Are you sure you want to
     erase your debug logs? This action cannot be undone.</string>
 
+    <!-- Shown when there's more than one sequence of tiles with which
+         to "spell" the string a user has entered in the wordlist
+         browser. Displayed below are the possible
+         spellings. Currently this can only happen with Hungarian
+         wordlists.  -->
     <string name="pick_tiles_title">Pick a tile \"spelling\"</string>
-    <string name="no_tiles_exist">\"%1$s\" cannot be spelled with tiles in %2$s.</string>
+    <!-- Shown when user types a string that contains non-tiles,
+         e.g. a Q alone when the langauge has only QU. First
+         substituted is user's string; second substitution is name of
+         language -->
+    <string name="no_tiles_exist">\"%1$s\" cannot be spelled with %2$s tiles.</string>
 
     <!-- MQTT stuff. May not see the light of day -->
     <string name="invite_choice_mqtt">Internet/MQTT</string>

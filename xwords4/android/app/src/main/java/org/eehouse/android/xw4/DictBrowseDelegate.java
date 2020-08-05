@@ -25,9 +25,10 @@ import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.TextUtils;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
@@ -39,39 +40,99 @@ import android.widget.SectionIndexer;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import java.util.ArrayList;
+import java.util.List;
 
 import org.eehouse.android.xw4.DlgDelegate.Action;
+import org.eehouse.android.xw4.ExpandImageButton.ExpandChangeListener;
+import org.eehouse.android.xw4.jni.DictInfo;
 import org.eehouse.android.xw4.jni.JNIUtilsImpl;
+import org.eehouse.android.xw4.jni.XwJNI.DictWrapper;
+import org.eehouse.android.xw4.jni.XwJNI.IterWrapper;
+import org.eehouse.android.xw4.jni.XwJNI.PatDesc;
 import org.eehouse.android.xw4.jni.XwJNI;
 
 import java.util.Arrays;
+import java.io.Serializable;
 
 public class DictBrowseDelegate extends DelegateBase
-    implements View.OnClickListener, OnItemSelectedListener {
+    implements View.OnClickListener {
     private static final String TAG = DictBrowseDelegate.class.getSimpleName();
     private static final String DELIM = ".";
+    private static final boolean SHOW_NUM = false;
 
     private static final String DICT_NAME = "DICT_NAME";
     private static final String DICT_LOC = "DICT_LOC";
 
     private static final int MIN_LEN = 2;
+    private static final int MAX_LEN = 15;
+
+    // Struct to show both what user's configuring AND what's been
+    // successfully fed to create the current iterator. The config setting
+    // become the filter params when the user presses the Apply Filter button
+    // and corrects any tile problems.
+    private static class DictBrowseState implements Serializable {
+        public int m_chosenMin, m_chosenMax;
+        public int m_passedMin, m_passedMax;
+        public int m_pos;
+        public int m_top;
+        public PatDesc[] m_pats;
+        public int[] m_counts;
+        public boolean m_expanded;
+
+        public DictBrowseState()
+        {
+            m_chosenMin = MIN_LEN;
+            m_chosenMax = MAX_LEN;
+            m_pats = new PatDesc[3];
+            for ( int ii = 0; ii < m_pats.length; ++ii ) {
+                m_pats[ii] = new PatDesc();
+            }
+        }
+
+        private void onFilterAccepted( DictWrapper dict, String delim )
+        {
+            m_passedMin = m_chosenMin;
+            m_passedMax = m_chosenMax;
+
+            for ( PatDesc desc : m_pats ) {
+                String str = XwJNI.dict_tilesToStr( dict, desc.tilePat, delim );
+                desc.strPat = str;
+            }
+        }
+
+        @Override
+        public String toString()
+        {
+            StringBuilder sb = new StringBuilder("{pats:[");
+            for ( PatDesc pd : m_pats ) {
+                sb.append(pd).append(",");
+            }
+            sb.append("],");
+            sb.append( "passedMin:").append(m_passedMin).append(",")
+                .append( "passedMax:").append(m_passedMax).append(",")
+                .append( "chosenMin:").append(m_chosenMin).append(",")
+                .append( "chosenMax:").append(m_chosenMax).append(",")
+                ;
+            sb.append("}");
+            return sb.toString();
+        }
+    }
 
     private Activity m_activity;
-    private long m_dictClosure = 0L;
     private int m_lang;
     private String m_name;
     private DictUtils.DictLoc m_loc;
-    private DBUtils.DictBrowseState m_browseState;
+    private DictBrowseState m_browseState;
     private int m_minAvail;
     private int m_maxAvail;
     private ListView m_list;
-
-
-// - Steps to reproduce the problem:
-// Create ListView, set custom adapter which implements ListAdapter and
-// SectionIndexer but do not extends BaseAdapter. Enable fast scroll in
-// layout. This will effect in ClassCastException.
-
+    private IterWrapper m_diClosure;
+    private DictWrapper m_dict;
+    private DictInfo mDictInfo;
+    private PatTableRow m_rows[] = { null, null, null };
+    private Spinner m_spinnerMin;
+    private Spinner m_spinnerMax;
 
     private class DictListAdapter extends BaseAdapter
         implements SectionIndexer {
@@ -84,23 +145,19 @@ public class DictBrowseDelegate extends DelegateBase
         {
             super();
 
-            XwJNI.di_setMinMax( m_dictClosure, m_browseState.m_minShown,
-                                m_browseState.m_maxShown );
-            m_nWords = XwJNI.di_wordCount( m_dictClosure );
-
-            int format = m_browseState.m_minShown == m_browseState.m_maxShown ?
-                R.string.dict_browse_title1_fmt : R.string.dict_browse_title_fmt;
-            setTitle( getString( format, m_name, m_nWords,
-                                 m_browseState.m_minShown,
-                                 m_browseState.m_maxShown ));
+            m_nWords = XwJNI.di_wordCount( m_diClosure );
+            Log.d( TAG, "making DictListAdapter; have %d words", m_nWords );
         }
 
         public Object getItem( int position )
         {
             TextView text = (TextView)
                 inflate( android.R.layout.simple_list_item_1 );
-            String str = XwJNI.di_nthWord( m_dictClosure, position, null );
+            String str = XwJNI.di_nthWord( m_diClosure, position, null );
             if ( null != str ) {
+                if ( SHOW_NUM ) {
+                    str = String.format( "%1$5d %2$s", position, str );
+                }
                 text.setText( str );
                 text.setOnClickListener( DictBrowseDelegate.this );
             }
@@ -114,7 +171,7 @@ public class DictBrowseDelegate extends DelegateBase
         public long getItemId( int position ) { return position; }
 
         public int getCount() {
-            Assert.assertTrue( 0 != m_dictClosure );
+            Assert.assertTrueNR( m_nWords == XwJNI.di_wordCount( m_diClosure ) );
             return m_nWords;
         }
 
@@ -142,15 +199,16 @@ public class DictBrowseDelegate extends DelegateBase
         @Override
         public Object[] getSections()
         {
-            m_prefixes = XwJNI.di_getPrefixes( m_dictClosure );
-            m_indices = XwJNI.di_getIndices( m_dictClosure );
+            m_prefixes = XwJNI.di_getPrefixes( m_diClosure );
+            m_indices = XwJNI.di_getIndices( m_diClosure );
             return m_prefixes;
         }
     }
 
-    protected DictBrowseDelegate( Delegator delegator, Bundle savedInstanceState )
+    protected DictBrowseDelegate( Delegator delegator, Bundle sis )
     {
-        super( delegator, savedInstanceState, R.layout.dict_browser );
+        super( delegator, sis, R.layout.dict_browser,
+               R.menu.dict_browse_menu );
         m_activity = delegator.getActivity();
     }
 
@@ -168,71 +226,63 @@ public class DictBrowseDelegate extends DelegateBase
                 DictUtils.DictLoc.values()[args.getInt( DICT_LOC, 0 )];
             m_lang = DictLangCache.getDictLangCode( m_activity, name );
 
-            String[] names = { name };
-            DictUtils.DictPairs pairs = DictUtils.openDicts( m_activity, names );
-            m_dictClosure = XwJNI.di_init( pairs.m_bytes[0],
-                                           name, pairs.m_paths[0] );
+            findTableRows();
+            m_spinnerMin = ((LabeledSpinner)findViewById( R.id.spinner_min ))
+                .getSpinner();
+            m_spinnerMax = ((LabeledSpinner)findViewById( R.id.spinner_max ))
+                .getSpinner();
 
-            String desc = XwJNI.di_getDesc( m_dictClosure );
-            Log.d( TAG, "got desc: %s", desc );
+            loadBrowseState();
+
+            String[] names = { m_name };
+            DictUtils.DictPairs pairs = DictUtils.openDicts( m_activity, names );
+            Assert.assertNotNull( m_browseState );
+            m_dict = XwJNI.makeDict( pairs.m_bytes[0], m_name, pairs.m_paths[0] );
+
+            mDictInfo = new DictInfo();
+            XwJNI.dict_getInfo( m_dict, false, mDictInfo );
+            setTitle( getString( R.string.dict_browse_title_fmt, m_name, mDictInfo.wordCount ) );
+
+            ExpandImageButton eib = (ExpandImageButton)findViewById( R.id.expander );
+            eib.setOnExpandChangedListener( new ExpandChangeListener() {
+                    @Override
+                    public void expandedChanged( boolean nowExpanded )
+                    {
+                        m_browseState.m_expanded = nowExpanded;
+                        setShowConfig();
+                    }
+                } )
+                .setExpanded( m_browseState.m_expanded );
+
+            String desc = XwJNI.dict_getDesc( m_dict );
             if ( null != desc ) {
                 TextView view = (TextView)findViewById( R.id.desc );
-                Assert.assertNotNull( view );
                 view.setVisibility( View.VISIBLE );
                 view.setText( desc );
             }
 
-            m_browseState = DBUtils.dictsGetOffset( m_activity, name, m_loc );
-            boolean newState = null == m_browseState;
-            if ( newState ) {
-                m_browseState = new DBUtils.DictBrowseState();
-                m_browseState.m_pos = 0;
-                m_browseState.m_top = 0;
-            }
-            if ( null == m_browseState.m_counts ) {
-                m_browseState.m_counts = XwJNI.di_getCounts( m_dictClosure );
+            int[] ids = { R.id.button_useconfig, R.id.button_addBlank, };
+            for ( int id : ids ) {
+                findViewById( id ).setOnClickListener(this);
             }
 
-            if ( null == m_browseState.m_counts ) {
-                // empty dict?  Just close down for now.  Later if
-                // this is extended to include tile info -- it should
-                // be -- then use an empty list elem and disable
-                // search/minmax stuff.
-                String msg = getString( R.string.alert_empty_dict_fmt, name );
-                makeOkOnlyBuilder(msg).setAction(Action.FINISH_ACTION).show();
-            } else {
-                figureMinMax( m_browseState.m_counts );
-                if ( newState ) {
-                    m_browseState.m_minShown = m_minAvail;
-                    m_browseState.m_maxShown = m_maxAvail;
-                }
-
-                Button button = (Button)findViewById( R.id.search_button );
-                button.setOnClickListener( new View.OnClickListener() {
-                        public void onClick( View view )
-                        {
-                            findButtonClicked();
-                        }
-                    } );
-
-                setUpSpinners();
-
-                initList();
-            }
+            setShowConfig();
+            replaceIter( true );
         }
     } // init
 
     protected void onPause()
     {
-        if ( null != m_browseState // already saved?
-             && null != m_list ) { // there are words? (don't NPE on empty dict)
-            m_browseState.m_pos = m_list.getFirstVisiblePosition();
-            View view = m_list.getChildAt( 0 );
-            m_browseState.m_top = (view == null) ? 0 : view.getTop();
-            m_browseState.m_prefix = getFindText();
-            DBUtils.dictsSetOffset( m_activity, m_name, m_loc, m_browseState );
-            m_browseState = null;
-        }
+        scrapeBrowseState();
+        storeBrowseState();
+        // if ( null != m_browseState ) {
+        //     if ( null != m_list ) { // there are words? (don't NPE on empty dict)
+        //         m_browseState.m_pos = m_list.getFirstVisiblePosition();
+        //         View view = m_list.getChildAt( 0 );
+        //         m_browseState.m_top = (view == null) ? 0 : view.getTop();
+        //     }
+        //     storeBrowseState();
+        // }
         super.onPause();
     }
 
@@ -240,30 +290,12 @@ public class DictBrowseDelegate extends DelegateBase
     protected void onResume()
     {
         super.onResume();
-        if ( null == m_browseState ) {
-            m_browseState = DBUtils.dictsGetOffset( m_activity, m_name, m_loc );
-        }
-        setFindText( m_browseState.m_prefix );
-    }
-
-    @Override
-    protected void onDestroy()
-    {
-        XwJNI.di_destroy( m_dictClosure );
-        m_dictClosure = 0;
-    }
-
-    // Just in case onDestroy didn't get called....
-    @Override
-    public void finalize()
-    {
-        Assert.assertTrueNR( m_dictClosure == 0 );
-        XwJNI.di_destroy( m_dictClosure );
-        try {
-            super.finalize();
-        } catch ( java.lang.Throwable err ){
-            Log.i( TAG, "%s", err.toString() );
-        }
+        loadBrowseState();
+        // if ( null == m_browseState ) {
+        //     m_browseState = DBUtils.dictsGetOffset( m_activity, m_name, m_loc );
+        //     here
+        // }
+        setFindPats( m_browseState.m_pats );
     }
 
     @Override
@@ -276,7 +308,7 @@ public class DictBrowseDelegate extends DelegateBase
             final byte[][] choices = (byte[][])params[0];
             final String[] strs = new String[choices.length];
             for ( int ii = 0; ii < choices.length; ++ii ) {
-                strs[ii] = XwJNI.di_tilesToStr( m_dictClosure, choices[ii], DELIM );
+                strs[ii] = XwJNI.dict_tilesToStr( m_dict, choices[ii], DELIM );
             }
             final int[] chosen = {0};
             dialog = makeAlertBuilder()
@@ -293,12 +325,24 @@ public class DictBrowseDelegate extends DelegateBase
                                         public void onClick( DialogInterface dialog, int which )
                                         {
                                             if ( 0 <= chosen[0] ) {
-                                                byte[][] theOne = {choices[chosen[0]]};
-                                                showPrefix( theOne, DELIM );
+                                                Assert.failDbg();
                                             }
                                         }
                                     } )
                 .setTitle( R.string.pick_tiles_title )
+                .create();
+            break;
+        case SHOW_TILES:
+            String info = (String)params[0];
+            View tilesView = inflate( R.layout.tiles_table );
+            addTileRows( tilesView, info );
+
+            String langName = DictLangCache.getLangName( m_activity, m_lang );
+            String title = getString( R.string.show_tiles_title_fmt, langName );
+            dialog = makeAlertBuilder()
+                .setView( tilesView )
+                .setPositiveButton( android.R.string.ok, null )
+                .setTitle( title )
                 .create();
             break;
         default:
@@ -308,46 +352,40 @@ public class DictBrowseDelegate extends DelegateBase
         return dialog;
     }
 
+    @Override
+    public boolean onOptionsItemSelected( MenuItem item )
+    {
+        boolean handled = true;
+
+        switch ( item.getItemId() ) {
+        case R.id.dicts_showtiles:
+            showTiles();
+            break;
+        default:
+            handled = false;
+        }
+        return handled;
+    }
+
     //////////////////////////////////////////////////
     // View.OnClickListener interface
     //////////////////////////////////////////////////
     @Override
     public void onClick( View view )
     {
-        TextView text = (TextView)view;
-        String[] words = { text.getText().toString() };
-        launchLookup( words, m_lang, true );
-    }
-
-    //////////////////////////////////////////////////
-    // AdapterView.OnItemSelectedListener interface
-    //////////////////////////////////////////////////
-    @Override
-    public void onItemSelected( AdapterView<?> parent, View view,
-                                int position, long id )
-    {
-        TextView text = (TextView)view;
-        // null text seems to have generated at least one google play report
-        if ( null != text && null != m_browseState ) {
-            int newval = Integer.parseInt( text.getText().toString() );
-            switch ( parent.getId() ) {
-            case R.id.wordlen_min:
-                if ( newval != m_browseState.m_minShown ) {
-                    setMinMax( newval, m_browseState.m_maxShown );
-                }
-                break;
-            case R.id.wordlen_max:
-                if ( newval != m_browseState.m_maxShown ) {
-                    setMinMax( m_browseState.m_minShown, newval );
-                }
-                break;
-            }
+        switch ( view.getId() ) {
+        case R.id.button_useconfig:
+            useButtonClicked();
+            break;
+        case R.id.button_addBlank:
+            addBlankButtonClicked();
+            break;
+        default:
+            TextView text = (TextView)view;
+            String[] words = { text.getText().toString() };
+            launchLookup( words, m_lang, true );
+            break;
         }
-    }
-
-    @Override
-    public void onNothingSelected( AdapterView<?> parent )
-    {
     }
 
     //////////////////////////////////////////////////
@@ -362,6 +400,9 @@ public class DictBrowseDelegate extends DelegateBase
             handled = true;
             finish();
             break;
+        case SHOW_TILES:
+            showTiles();
+            break;
         default:
             handled = super.onPosButton( action, params );
             break;
@@ -369,70 +410,209 @@ public class DictBrowseDelegate extends DelegateBase
         return handled;
     }
 
-    private void findButtonClicked()
+    private void scrapeBrowseState()
     {
-        String text = getFindText();
-        if ( null != text && 0 < text.length() ) {
-            m_browseState.m_prefix = text;
+        Assert.assertTrueNR( null != m_browseState );
+        m_browseState.m_chosenMin = MIN_LEN + m_spinnerMin.getSelectedItemPosition();
+        m_browseState.m_chosenMax = MIN_LEN + m_spinnerMax.getSelectedItemPosition();
+        if ( null != m_list ) { // there are words? (don't NPE on empty dict)
+            m_browseState.m_pos = m_list.getFirstVisiblePosition();
+            View view = m_list.getChildAt( 0 );
+            m_browseState.m_top = (view == null) ? 0 : view.getTop();
+        }
 
-            byte[][] choices = XwJNI.di_strToTiles( m_dictClosure, text );
-            if ( null == choices || 0 == choices.length ) {
-                String msg = getString( R.string.no_tiles_exist, text, m_name );
-                makeOkOnlyBuilder( msg ).show();
-            } else if ( 1 == choices.length || !XwJNI.di_hasDuplicates(m_dictClosure) ) {
-                showPrefix( choices, null );
-            } else {
-                showDialogFragment( DlgID.CHOOSE_TILES, (Object)choices );
+        // Get the strings (not bytes) from the rows
+        for ( int ii = 0; ii < m_rows.length; ++ii ) {
+            m_rows[ii].getToDesc(m_browseState.m_pats[ii]);
+            // .updateFrom( desc );
+        }
+    }
+
+    private static final int[] sTileRowIDs = {R.id.face, R.id.count, R.id.value };
+    private void addTileRows( View view, String info )
+    {
+        ViewGroup table = view.findViewById( R.id.table );
+        if ( null != table ) {
+            String[] tiles = TextUtils.split( info, "\n" );
+            for ( String row : tiles ) {
+                String[] fields = TextUtils.split( row, "\t" );
+                if ( 3 == fields.length ) {
+                    ViewGroup rowView = (ViewGroup)inflate( R.layout.tiles_row );
+                    for ( int ii = 0; ii < sTileRowIDs.length; ++ii ) {
+                        TextView tv = (TextView)rowView.findViewById( sTileRowIDs[ii] );
+                        tv.setText( fields[ii] );
+                    }
+                    table.addView( rowView );
+                }
             }
         }
     }
 
-    private String getFindText()
+    private void showTiles()
     {
-        EditWClear edit = (EditWClear)findViewById( R.id.word_edit );
-        return edit.getText().toString();
+        String info = XwJNI.getTilesInfo( m_dict );
+        showDialogFragment( DlgID.SHOW_TILES, info );
     }
 
-    private void setFindText( String text )
+    private String m_stateKey = null;
+    private String getStateKey()
     {
-        EditWClear edit = (EditWClear)findViewById( R.id.word_edit );
-        edit.setText( text );
+        if ( null == m_stateKey ) {
+            m_stateKey = String.format( "KEY_%s_%d", m_name, m_loc.ordinal() );
+        }
+        return m_stateKey;
     }
 
-    private void showPrefix( byte[][] prefix, String delim )
+    private void findTableRows()
     {
-        if ( null != prefix && 0 < prefix.length && 0 < prefix[0].length ) {
-            int pos = XwJNI.di_getStartsWith( m_dictClosure, prefix );
-            if ( 0 <= pos ) {
-                m_list.setSelection( pos );
-            } else {
-                String text = XwJNI.di_tilesToStr( m_dictClosure, prefix[0], delim );
-                DbgUtils.showf( m_activity, R.string.dict_browse_nowords_fmt,
-                                m_name, text );
+        ViewGroup table = (ViewGroup)findViewById( R.id.config );
+        int count = table.getChildCount();
+        int nFound = 0;
+        for ( int ii = 0; ii < count && nFound < m_rows.length; ++ii ) {
+            View child = table.getChildAt( ii );
+            if ( child instanceof PatTableRow ) {
+                m_rows[nFound++] = (PatTableRow)child;
             }
+        }
+        Assert.assertTrueNR( nFound == m_rows.length );
+    }
+
+    private void loadBrowseState()
+    {
+        boolean newState = false;
+        if ( null == m_browseState ) {
+            Serializable obj = DBUtils.getSerializableFor( m_activity, getStateKey() );
+            if ( null != obj && obj instanceof DictBrowseState ) {
+                m_browseState = (DictBrowseState)obj;
+                if ( null == m_browseState.m_pats ) {
+                    m_browseState = null;
+                }
+            }
+            if ( null == m_browseState ) {
+                m_browseState = new DictBrowseState();
+            }
+        }
+        Log.d( TAG, "loadBrowseState() => %s", m_browseState );
+    }
+
+    private void storeBrowseState()
+    {
+        if ( null != m_browseState ) {
+            DBUtils.setSerializableFor( m_activity, getStateKey(), m_browseState );
         }
     }
 
+    private void useButtonClicked()
+    {
+        scrapeBrowseState();
+        Log.d( TAG, "useButtonClicked(): m_browseState: %s", m_browseState );
+
+        boolean pending = false;
+
+        if ( m_browseState.m_chosenMin > m_browseState.m_chosenMax ) {
+            pending = true;
+            makeOkOnlyBuilder( R.string.error_min_gt_max ).show();
+        }
+
+        PatDesc[] pats = m_browseState.m_pats;
+        for ( int ii = 0; ii < pats.length && !pending; ++ii ) {
+            String strPat = pats[ii].strPat;
+            if ( null != strPat && 0 < strPat.length() ) {
+                byte[][] choices = XwJNI.dict_strToTiles( m_dict, strPat );
+                if ( null == choices || 0 == choices.length ) {
+                    String langName = DictLangCache.getLangName( m_activity, m_lang );
+                    String msg = getString( R.string.no_tiles_exist, strPat, langName );
+                    makeOkOnlyBuilder( msg )
+                        .setActionPair( Action.SHOW_TILES, R.string.show_tiles_button )
+                        .show();
+                    pending = true;
+                } else if ( 1 == choices.length
+                            || !XwJNI.dict_hasDuplicates( m_dict ) ) {
+                    pats[ii].tilePat = choices[0];
+                } else {
+                    showDialogFragment( DlgID.CHOOSE_TILES, (Object)choices );
+                    pending = true;
+                }
+            } else {
+                pats[ii].tilePat = null;
+            }
+        }
+
+        if ( !pending ) {
+            storeBrowseState();
+            replaceIter( false );
+        }
+    }
+
+    private void addBlankButtonClicked()
+    {
+        boolean handled = false;
+        for ( PatTableRow row : m_rows ) {
+            handled = handled || row.addBlankToFocussed( "_" );
+        }
+        if ( !handled ) {
+            makeNotAgainBuilder( R.string.blank_button_expl,
+                                 R.string.key_na_addBlankButton )
+                .setTitle(null)
+                .show();
+        }
+    }
+
+    private void setShowConfig()
+    {
+        findViewById(R.id.config).setVisibility( m_browseState.m_expanded
+                                                 ? View.VISIBLE : View.GONE );
+    }
+
+    private void setFindPats( PatDesc[] descs )
+    {
+        if ( null != descs && descs.length == m_rows.length ) {
+            for ( int ii = 0; ii < m_rows.length; ++ii ) {
+                m_rows[ii].setFromDesc( descs[ii] );
+            }
+        }
+        setUpSpinners();
+    }
+
+    private String formatPats( PatDesc[] pats, String delim )
+    {
+        Assert.assertTrueNR( null != m_diClosure );
+        List<String> strs = new ArrayList<>();
+        for ( int ii = 0; ii < pats.length; ++ii ) {
+            PatDesc desc = pats[ii];
+            String str = desc.strPat;
+            if ( null == str && (ii == 0 || ii == pats.length - 1) ) {
+                str = "";
+            }
+            if ( null != str ) {
+                strs.add(str);
+            }
+        }
+        String result = TextUtils.join( "…", strs );
+        // Log.d( TAG, "formatPats() => %s", result );
+        return result;
+    }
+    
     private void setMinMax( int min, int max )
     {
         // I can't make a second call to setListAdapter() work, nor does
         // notifyDataSetChanged do anything toward refreshing the
         // adapter/making it recognize a changed dataset.  So, as a
         // workaround, relaunch the activity with different parameters.
-        if ( m_browseState.m_minShown != min ||
-             m_browseState.m_maxShown != max ) {
+        // if ( m_browseState.m_minShown != min ||
+        //      m_browseState.m_maxShown != max ) {
 
-            m_browseState.m_pos = 0;
-            m_browseState.m_top = 0;
-            m_browseState.m_minShown = min;
-            m_browseState.m_maxShown = max;
-            m_browseState.m_prefix = getFindText();
-            DBUtils.dictsSetOffset( m_activity, m_name, m_loc, m_browseState );
+        //     m_browseState.m_pos = 0;
+        //     m_browseState.m_top = 0;
+        //     m_browseState.m_minShown = min;
+        //     m_browseState.m_maxShown = max;
+        //     m_browseState.m_pats = getFindText();
+        //     DBUtils.dictsSetOffset( m_activity, m_name, m_loc, m_browseState );
 
-            setUpSpinners();
+        //     setUpSpinners();
 
-            initList();
-        }
+        //     initList();
+        // }
     }
 
     private void figureMinMax( int[] counts )
@@ -448,55 +628,106 @@ public class DictBrowseDelegate extends DelegateBase
         }
     }
 
-    private void makeSpinnerAdapter( int resID, int min, int max, int cur )
+    private String[] m_nums;
+    private void makeSpinnerAdapter( Spinner spinner, int curVal )
     {
-        Spinner spinner = (Spinner)findViewById( resID );
-        Assert.assertTrue( min <= max );
-
-        int sel = -1;
-        String[] nums = new String[max - min + 1];
-        for ( int ii = 0; ii < nums.length; ++ii ) {
-            int val = min + ii;
-            if ( val == cur ) {
-                sel = ii;
-            }
-            nums[ii] = String.format( "%d", min + ii );
-        }
         ArrayAdapter<String> adapter = new
             ArrayAdapter<String>( m_activity,
-                                  //android.R.layout.simple_spinner_dropdown_item,
                                   android.R.layout.simple_spinner_item,
-                                  nums );
+                                  m_nums );
         adapter.setDropDownViewResource( android.R.layout.
                                          simple_spinner_dropdown_item );
         spinner.setAdapter( adapter );
-        spinner.setSelection( sel );
-        spinner.setOnItemSelectedListener( this );
+        spinner.setSelection( curVal - MIN_LEN );
+        // spinner.setOnItemSelectedListener( this );
     }
 
     private void setUpSpinners()
     {
-        // Min and max-length spinners.  To avoid empty lists,
-        // don't allow min to exceed max.  Do that by making the
-        // current max the largest min allowed, and the current
-        // min the smallest max allowed.
-        makeSpinnerAdapter( R.id.wordlen_min, m_minAvail,
-                            m_browseState.m_maxShown, m_browseState.m_minShown );
-        makeSpinnerAdapter( R.id.wordlen_max, m_browseState.m_minShown,
-                            m_maxAvail, m_browseState.m_maxShown );
+        if ( null == m_nums ) {
+            m_nums = new String[MAX_LEN - MIN_LEN + 1];
+            for ( int ii = MIN_LEN; ii <= MAX_LEN; ++ii ) {
+                m_nums[ii - MIN_LEN] = String.format( "%d", ii );
+            }
+        }
+
+        makeSpinnerAdapter( m_spinnerMin, m_browseState.m_chosenMin );
+        makeSpinnerAdapter( m_spinnerMax, m_browseState.m_chosenMax );
     }
 
-    private void initList()
+    private FrameLayout removeList()
     {
+        m_list = null;
         FrameLayout parent = (FrameLayout)findViewById(R.id.list_container);
         parent.removeAllViews();
 
+        return parent;
+    }
+
+    private void replaceIter( boolean useOldVals )
+    {
+        Assert.assertNotNull( m_browseState );
+        Assert.assertNotNull( m_dict );
+        int min = useOldVals ? m_browseState.m_passedMin : m_browseState.m_chosenMin;
+        int max = useOldVals ? m_browseState.m_passedMax : m_browseState.m_chosenMax;
+
+        String title = getString( R.string.filter_title_fmt, m_name );
+        String msg = getString( R.string.filter_progress_fmt, mDictInfo.wordCount );
+        startProgress( title, msg );
+
+        XwJNI.di_init( m_dict, m_browseState.m_pats, min, max,
+                       new XwJNI.DictIterProcs() {
+                           @Override
+                           public void onIterReady( final IterWrapper wrapper )
+                           {
+                               runOnUiThread( new Runnable() {
+                                       @Override
+                                       public void run() {
+                                           stopProgress();
+
+                                           m_browseState.onFilterAccepted( m_dict, null );
+                                           initList( wrapper );
+                                           setFindPats( m_browseState.m_pats );
+                                       }
+                                   } );
+                           }
+                       } );
+    }
+    
+    private void initList( IterWrapper newIter )
+    {
+        FrameLayout parent = removeList();
+
         m_list = (ListView)inflate( R.layout.dict_browser_list );
-        m_list.setAdapter( new DictListAdapter() );
+
+        Assert.assertNotNull( m_browseState );
+        Assert.assertNotNull( m_dict );
+        m_diClosure = newIter;
+        
+        DictListAdapter dla = new DictListAdapter();
+
+        m_list.setAdapter( dla );
         m_list.setFastScrollEnabled( true );
         m_list.setSelectionFromTop( m_browseState.m_pos, m_browseState.m_top );
 
         parent.addView( m_list );
+
+        updateFilterString();
+    }
+
+    private void updateFilterString()
+    {
+        PatDesc[] pats = m_browseState.m_pats;
+        Assert.assertNotNull( pats );
+        String summary;
+        String pat = formatPats( pats, null );
+        int nWords = XwJNI.di_wordCount( m_diClosure );
+        int[] minMax = XwJNI.di_getMinMax( m_diClosure );
+        summary = getString( R.string.filter_sum_pat_fmt, pat,
+                             minMax[0], minMax[1],
+                             nWords );
+        TextView tv = (TextView)findViewById( R.id.filter_summary );
+        tv.setText( summary );
     }
 
     private static void launch( Delegator delegator, Bundle bundle )

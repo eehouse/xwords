@@ -1,7 +1,7 @@
 /* -*- compile-command: "find-and-gradle.sh inXw4dDeb"; -*- */
 /*
- * Copyright 2012 by Eric House (xwords@eehouse.org).  All rights
- * reserved.
+ * Copyright 2020 by Eric House (xwords@eehouse.org).  All
+ * rights reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -23,33 +23,41 @@ package org.eehouse.android.xw4;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.View;
-import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.LinearLayout;
+import android.widget.Spinner;
 import android.widget.TextView;
 
-public class TwoStrsItem extends LinearLayout  {
 
-    public TwoStrsItem( Context cx, AttributeSet as )
-    {
-        super( cx, as );
+/**
+ * This class's purpose is to link a spinner with a textview that's its label
+ * such that clicking on the label is the same as clicking on the spinner.
+ */
+
+public class LabeledSpinner extends LinearLayout {
+    private Spinner mSpinner;
+
+    public LabeledSpinner( Context context, AttributeSet as ) {
+        super( context, as );
     }
 
-    public void setStrings( String str1, String str2 )
+    @Override
+    protected void onFinishInflate()
     {
-        TextView tv = (TextView)findViewById( R.id.text1 );
-        tv.setText( str1 );
+        mSpinner = (Spinner)Utils.getChildInstanceOf( this, Spinner.class );
 
-        tv = (TextView)findViewById( R.id.text2 );
-        if ( null == str2 ) {
-            tv.setVisibility( View.GONE );
-        } else {
-            tv.setText( str2 );
-        }
+        TextView tv = (TextView)Utils.getChildInstanceOf( this, TextView.class );
+        tv.setOnClickListener( new OnClickListener() {
+                @Override
+                public void onClick( View target )
+                {
+                    mSpinner.performClick();
+                }
+            } );
     }
 
-    public String getStr1()
+    public Spinner getSpinner()
     {
-        TextView tv = (TextView)findViewById( R.id.text1 );
-        return tv.getText().toString();
+        Assert.assertNotNull( mSpinner );
+        return mSpinner;
     }
 }

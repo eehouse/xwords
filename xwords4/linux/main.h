@@ -140,6 +140,18 @@ typedef struct _LaunchParams {
 
     DeviceRole serverRole;
 
+    const XP_UCHAR* testMinMax;
+    const XP_UCHAR* dumpDelim;
+
+    GSList* iterTestPats;
+    /* These three aren't used yet */
+    const XP_UCHAR* patStartW;
+    const XP_UCHAR* patContains;
+    const XP_UCHAR* patEndsW;
+#ifdef XWFEATURE_TESTPATSTR
+    const XP_UCHAR* iterTestPatStr;
+#endif
+
     CommsAddrRec  addr;
     struct {
         XP_U16 inviteeCounts[MAX_NUM_PLAYERS];

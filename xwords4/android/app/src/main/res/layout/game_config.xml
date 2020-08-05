@@ -235,29 +235,30 @@
                 android:text="@string/hints_allowed"
                 />
 
-      <LinearLayout style="@style/config_spinner_container"
-                    >
+      <org.eehouse.android.xw4.LabeledSpinner
+          android:id="@+id/smart_robot"
+          style="@style/config_spinner_container"
+          >
         <TextView style="@style/config_spinner_label"
                   android:text="@string/robot_iq_label"
                   />
         <Spinner style="@style/config_spinner_spinner"
-                 android:id="@+id/smart_robot"
                  android:prompt="@string/robot_spinner_prompt"
                  android:entries="@array/robot_levels"
                  />
-      </LinearLayout>
-
-      <LinearLayout style="@style/config_spinner_container"
-                    >
+      </org.eehouse.android.xw4.LabeledSpinner>
+      <org.eehouse.android.xw4.LabeledSpinner
+          style="@style/config_spinner_container"
+          android:id="@+id/phonies_spinner"
+          >
         <TextView style="@style/config_spinner_label"
                   android:text="@string/phonies_label"
                   />
         <Spinner style="@style/config_spinner_spinner"
-                 android:id="@+id/phonies_spinner"
                  android:prompt="@string/phonies_spinner_prompt"
                  android:entries="@array/phony_names"
                  />
-      </LinearLayout>
+      </org.eehouse.android.xw4.LabeledSpinner>
 
       <CheckBox android:id="@+id/pick_faceup"
                 android:layout_width="fill_parent"
@@ -265,17 +266,18 @@
                 android:text="@string/pick_faceup"
                 />
 
-      <LinearLayout style="@style/config_spinner_container"
-                    >
+      <org.eehouse.android.xw4.LabeledSpinner
+          style="@style/config_spinner_container"
+          android:id="@+id/boardsize_spinner"
+          >
         <TextView style="@style/config_spinner_label"
                   android:text="@string/board_size"
                   />
         <Spinner style="@style/config_spinner_spinner"
-                 android:id="@+id/boardsize_spinner"
                  android:prompt="@string/board_size"
                  android:entries="@array/board_sizes"
                  />
-      </LinearLayout>
+      </org.eehouse.android.xw4.LabeledSpinner>
 
       <LinearLayout android:layout_width="fill_parent"
                     android:layout_height="fill_parent"

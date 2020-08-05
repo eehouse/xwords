@@ -112,6 +112,34 @@
       <item name="android:searchHintIcon">@null</item>
     </style>
 
+    <!-- Columns for the dict browser pattern editor -->
+    <style name="pat_table_label">
+      <item name="android:layout_width">wrap_content</item>
+      <item name="android:layout_height">wrap_content</item>
+      <item name="android:layout_gravity">center_vertical</item>
+    </style>
+
+    <style name="pat_table_edit" parent="edit_w_clear">
+      <item name="android:layout_width">200dp</item>
+      <item name="android:layout_height">wrap_content</item>
+      <item name="android:maxLines">1</item>
+      <item name="android:inputType">text</item>
+    </style>
+
+    <style name="pat_table_check">
+      <item name="android:layout_width">wrap_content</item>
+      <item name="android:layout_height">wrap_content</item>
+      <item name="android:layout_gravity">center</item>
+    </style>
+
+    <style name="tiles_table_row">
+      <item name="android:layout_width">match_parent</item>
+      <item name="android:layout_height">wrap_content</item>
+      <item name="android:layout_weight">1</item>
+      <item name="android:textSize">14dp</item>
+      <item name="android:gravity">center_horizontal</item>
+    </style>
+
     <style name="config_spinner_container">
       <item name="android:layout_width">fill_parent</item>
       <item name="android:layout_height">wrap_content</item>

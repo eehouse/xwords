@@ -1879,8 +1879,7 @@ ligne, les mots qui viennent d\'être joués.</string>
       tiles)</string>-->
     <!--<string name="dict_browse_title_fmt">%1$s (%2$d mots utilisant de %3$d à
 %4$d jetons)</string>-->
-    <string name="dict_browse_title_fmt">%1$s (%2$d mots utilisant de
-    %3$d à %4$d jetons)</string>
+    <string name="dict_browse_title_fmt">%1$s (%2$d mots)</string>
     <!--  -->
     <!--<string name="dict_browse_title1_fmt">%1$s (%2$d words using %3$d
       tiles)</string>-->

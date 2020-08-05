@@ -352,7 +352,7 @@
     <string name="button_search">検索</string>
     <string name="word_search_hint">最初の文字</string>
     <string name="pick_faceup">タイル面を選択</string>
-    <string name="dict_browse_title_fmt">%1$s (%2$d 単語 %3$d-%4$d タイル使用)</string>
+    <string name="dict_browse_title_fmt">%1$s (%2$d 単語)</string>
     <string name="dict_browse_title1_fmt">%1$s (%2$d 単語 %3$d タイル使用)</string>
     <string name="dict_browse_nowords_fmt">%1$s に %2$s で開始する単語はありません。</string>
     <string name="not_again_browse">このボタンは、現在のプレイヤーの単語リストで、単語リスト ブラウザーを開きます。</string>

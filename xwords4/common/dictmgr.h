@@ -33,7 +33,7 @@ DictMgrCtxt* dmgr_make( MPFORMAL_NOCOMMA );
 void dmgr_destroy( DictMgrCtxt* dmgr, XWEnv xwe );
 
 void dmgr_put( DictMgrCtxt* dmgr, XWEnv xwe, const XP_UCHAR* key, DictionaryCtxt* dict );
-DictionaryCtxt* dmgr_get( DictMgrCtxt* dmgr, XWEnv xwe, const XP_UCHAR* key );
+const DictionaryCtxt* dmgr_get( DictMgrCtxt* dmgr, XWEnv xwe, const XP_UCHAR* key );
 
 #ifdef CPLUS
 }

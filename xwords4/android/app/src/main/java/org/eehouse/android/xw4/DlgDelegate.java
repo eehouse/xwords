@@ -90,6 +90,7 @@ public class DlgDelegate {
         DELETE_DICT_ACTION,
         UPDATE_DICTS_ACTION,
         MOVE_CONFIRMED,
+        SHOW_TILES,
 
         // Game configs
         LOCKED_CHANGE_ACTION,
@@ -198,7 +199,13 @@ public class DlgDelegate {
 
         Builder setTitle( int strID )
         {
-            mState.setTitle( strID );
+            mState.setTitle( getString(strID) );
+            return this;
+        }
+
+        Builder setTitle( String str )
+        {
+            mState.setTitle( str );
             return this;
         }
 
@@ -407,6 +414,11 @@ public class DlgDelegate {
     public void startProgress( int titleID, String msg, OnCancelListener lstnr )
     {
         String title = getString( titleID );
+        startProgress( title, msg, lstnr );
+    }
+
+    public void startProgress( String title, String msg, OnCancelListener lstnr )
+    {
         m_progress = ProgressDialog.show( m_activity, title, msg, true, true );
 
         if ( null != lstnr ) {

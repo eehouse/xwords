@@ -27,6 +27,7 @@
 #include "comtypes.h"
 #include "xwstream.h"
 #include "strutils.h"
+#include "dbgutil.h"
 
 void
 and_assert( const char* test, int line, const char* file, const char* func )
@@ -268,10 +269,10 @@ getObject( JNIEnv* env, jobject obj, const char* name, const char* sig,
     jfieldID fid = (*env)->GetFieldID( env, cls, name, sig );
     XP_ASSERT( !!fid );
     *ret = (*env)->GetObjectField( env, obj, fid );
-    XP_ASSERT( !!*ret );
+    bool result = !!*ret;
 
     deleteLocalRef( env, cls );
-    return true;
+    return result;
 }
 
 void

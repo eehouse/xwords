@@ -42,44 +42,46 @@ extern "C" {
 
 static XP_Bool makeBitmap( XP_U8 const** ptrp, const XP_U8* end );
 
-DictionaryCtxt*
-p_dict_ref( DictionaryCtxt* dict, XWEnv XP_UNUSED(xwe)
+const DictionaryCtxt*
+p_dict_ref( const DictionaryCtxt* dict, XWEnv XP_UNUSED(xwe)
 #ifdef DEBUG_REF
             ,const char* func, const char* file, int line
 #endif
             )
 {
     if ( !!dict ) {
-        pthread_mutex_lock( &dict->mutex );
-        ++dict->refCount;
+        DictionaryCtxt* _dict = (DictionaryCtxt*)dict;
+        pthread_mutex_lock( &_dict->mutex );
+        ++_dict->refCount;
 #ifdef DEBUG_REF
         XP_LOGF( "%s(dict=%p): refCount now %d (from line %d of %s() in %s)",
                  __func__, dict, dict->refCount, line, func, file );
 #endif
-        pthread_mutex_unlock( &dict->mutex );
+        pthread_mutex_unlock( &_dict->mutex );
     }
     return dict;
 }
 
 void
-p_dict_unref( DictionaryCtxt* dict, XWEnv xwe
+p_dict_unref( const DictionaryCtxt* dict, XWEnv xwe
 #ifdef DEBUG_REF
             ,const char* func, const char* file, int line
 #endif
               )
 {
     if ( !!dict ) {
-        pthread_mutex_lock( &dict->mutex );
-        --dict->refCount;
-        XP_ASSERT( 0 <= dict->refCount );
+        DictionaryCtxt* _dict = (DictionaryCtxt*)dict;
+        pthread_mutex_lock( &_dict->mutex );
+        --_dict->refCount;
+        XP_ASSERT( 0 <= _dict->refCount );
 #ifdef DEBUG_REF
         XP_LOGF( "%s(dict=%p): refCount now %d  (from line %d of %s() in %s)",
                  __func__, dict, dict->refCount, line, func, file );
 #endif
-        pthread_mutex_unlock( &dict->mutex );
-        if ( 0 == dict->refCount ) {
-            pthread_mutex_destroy( &dict->mutex );
-            (*dict->destructor)( dict, xwe );
+        pthread_mutex_unlock( &_dict->mutex );
+        if ( 0 == _dict->refCount ) {
+            pthread_mutex_destroy( &_dict->mutex );
+            (*dict->destructor)( _dict, xwe );
         }
     }
 }
@@ -531,12 +533,13 @@ dict_tilesToString( const DictionaryCtxt* dict, const Tile* tiles,
  */
 
 static XP_Bool
-tilesForStringImpl( const DictionaryCtxt* dict, const XP_UCHAR* str,
+tilesForStringImpl( const DictionaryCtxt* dict,
+                    const XP_UCHAR* str, XP_U16 strLen,
                     Tile* tiles, XP_U16 nTiles, XP_U16 nFound,
                     OnFoundTiles proc, void* closure )
 {
     XP_Bool goOn;
-    if ( nFound == nTiles || '\0' == str[0] ) {
+    if ( nFound == nTiles || 0 == strLen ) {
         /* We've recursed to the end and have found a tile! */
         goOn = (*proc)( closure, tiles, nFound );
     } else {
@@ -544,20 +547,19 @@ tilesForStringImpl( const DictionaryCtxt* dict, const XP_UCHAR* str,
 
         XP_U16 nFaces = dict_numTileFaces( dict );
         for ( Tile tile = 0; goOn && tile < nFaces; ++tile ) {
-            if ( tile != dict->blankTile ) {
-                for ( const XP_UCHAR* facep = NULL; ; ) {
-                    facep = dict_getNextTileString( dict, tile, facep );
-                    if ( !facep ) {
-                        break;
-                    }
-                    XP_U16 faceLen = XP_STRLEN( facep );
-                    if ( 0 == XP_STRNCMP( facep, str, faceLen ) ) {
-                        tiles[nFound] = tile;
-                        goOn = tilesForStringImpl( dict, str + faceLen,
-                                                   tiles, nTiles, nFound + 1,
-                                                   proc, closure );
-                        break;  /* impossible to have than one match per tile */
-                    }
+            for ( const XP_UCHAR* facep = NULL; ; ) {
+                facep = dict_getNextTileString( dict, tile, facep );
+                if ( !facep ) {
+                    break;
+                }
+                XP_U16 faceLen = XP_STRLEN( facep );
+                if ( 0 == XP_STRNCMP( facep, str, faceLen ) ) {
+                    tiles[nFound] = tile;
+                    goOn = tilesForStringImpl( dict, str + faceLen,
+                                               strLen - faceLen,
+                                               tiles, nTiles, nFound + 1,
+                                               proc, closure );
+                    break;  /* impossible to have than one match per tile */
                 }
             }
         }
@@ -567,10 +569,13 @@ tilesForStringImpl( const DictionaryCtxt* dict, const XP_UCHAR* str,
 
 void
 dict_tilesForString( const DictionaryCtxt* dict, const XP_UCHAR* str,
-                     OnFoundTiles proc, void* closure )
+                     XP_U16 strLen, OnFoundTiles proc, void* closure )
 {
     Tile tiles[32];
-    tilesForStringImpl( dict, str, tiles, VSIZE(tiles), 0, proc, closure );
+    if ( 0 == strLen ) {
+        strLen = XP_STRLEN( str );
+    }
+    tilesForStringImpl( dict, str, strLen, tiles, VSIZE(tiles), 0, proc, closure );
 } /* dict_tilesForString */
 
 XP_Bool
@@ -636,6 +641,21 @@ ucharsToNarrow( const DictionaryCtxt* dict, XP_UCHAR* buf, XP_U16* bufsizep )
     }
     buf[nUsed] = 0;
     *bufsizep = nUsed;
+}
+
+/* Summarize tile info in a way it can be presented to users */
+void
+dict_writeTilesInfo( const DictionaryCtxt* dict, XWStreamCtxt* stream )
+{
+    XP_U16 nFaces = dict_numTileFaces( dict );
+    for ( Tile tile = 0; tile < nFaces; ++tile ) {
+        XP_U16 val = dict_getTileValue( dict, tile );
+        XP_U16 count = dict_numTiles( dict, tile );
+        const XP_UCHAR* face = dict_getTileString( dict, tile );
+        XP_UCHAR buf[32];
+        XP_SNPRINTF( buf, VSIZE(buf), "%s\t%d\t%d\n", face, count, val );
+        stream_catString( stream, buf );
+    }
 }
 
 void
@@ -862,14 +882,14 @@ dict_getLangCode( const DictionaryCtxt* dict )
 }
 
 XP_U32
-dict_getWordCount( const DictionaryCtxt* dict )
+dict_getWordCount( const DictionaryCtxt* dict, XWEnv xwe )
 {
     XP_U32 nWords = dict->nWords;
 #ifdef XWFEATURE_WALKDICT
     if ( 0 == nWords ) {
-        DictIter iter;
-        di_initIter( &iter, dict, 0, MAX_COLS_DICT );
-        nWords = di_countWords( &iter, NULL );
+        DictIter* iter = di_makeIter( dict, xwe, NULL, NULL, 0, NULL, 0 );
+        nWords = di_countWords( iter, NULL );
+        di_freeIter( iter, xwe );
     }
 #endif
     return nWords;

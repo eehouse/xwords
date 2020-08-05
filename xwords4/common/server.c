@@ -895,7 +895,7 @@ static XP_U16
 bitsPerTile( ServerCtxt* server )
 {
     if ( 0 == server->vol.bitsPerTile ) {
-        DictionaryCtxt* dict = model_getDictionary( server->vol.model );
+        const DictionaryCtxt* dict = model_getDictionary( server->vol.model );
         XP_U16 nFaces = dict_numTileFaces( dict );
         server->vol.bitsPerTile = nFaces <= 32? 5 : 6;
     }
@@ -1537,7 +1537,7 @@ informNeedPickTiles( ServerCtxt* server, XWEnv xwe, XP_Bool initial,
                      XP_U16 turn, XP_U16 nToPick )
 {
     ModelCtxt* model = server->vol.model;
-    DictionaryCtxt* dict = model_getDictionary(model);
+    const DictionaryCtxt* dict = model_getDictionary(model);
     XP_U16 nFaces = dict_numTileFaces( dict );
     XP_U16 counts[MAX_UNIQUE_TILES];
     const XP_UCHAR* faces[MAX_UNIQUE_TILES];
@@ -1864,7 +1864,7 @@ client_readInitialMessage( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* stream )
         gi->nPlayers = nPlayers;
         model_setNPlayers( model, nPlayers );
 
-        DictionaryCtxt* curDict = model_getDictionary( model );
+        const DictionaryCtxt* curDict = model_getDictionary( model );
 
         XP_ASSERT( !!newDict );
 
@@ -1997,7 +1997,7 @@ sendInitialMessage( ServerCtxt* server, XWEnv xwe )
         makeSendableGICopy( server, &localGI, deviceIndex );
         gi_writeToStream( stream, &localGI );
 
-        DictionaryCtxt* dict = model_getDictionary( model );
+        const DictionaryCtxt* dict = model_getDictionary( model );
         dict_writeToStream( dict, stream );
 #ifdef STREAM_VERS_BIGBOARD
         if ( STREAM_VERS_DICTNAME <= streamVersion ) {
@@ -2202,7 +2202,7 @@ makeNotAVowel( ServerCtxt* server, Tile* newTile )
     Tile tile = *newTile;
     PoolContext* pool = server->pool;
     TrayTileSet set;
-    DictionaryCtxt* dict = model_getDictionary( server->vol.model );
+    const DictionaryCtxt* dict = model_getDictionary( server->vol.model );
     XP_U8 numGot = 1;
 
     set.nTiles = 1;
@@ -2240,7 +2240,7 @@ curTrayAsTexts( ServerCtxt* server, XP_U16 turn, const TrayTileSet* notInTray,
                 XP_U16* nUsedP, const XP_UCHAR** curTrayText )
 {
     const TrayTileSet* tileSet = model_getPlayerTiles( server->vol.model, turn );
-    DictionaryCtxt* dict = model_getDictionary( server->vol.model );
+    const DictionaryCtxt* dict = model_getDictionary( server->vol.model );
     XP_U16 ii, jj;
     XP_U16 size = tileSet->nTiles;
     const Tile* tp = tileSet->tiles;
@@ -2354,7 +2354,7 @@ fetchTiles( ServerCtxt* server, XWEnv xwe, XP_U16 playerNum, XP_U16 nToFetch,
     PoolContext* pool = server->pool;
     const XP_UCHAR* curTray[MAX_TRAY_TILES];
 #ifdef FEATURE_TRAY_EDIT
-    DictionaryCtxt* dict = model_getDictionary( server->vol.model );
+    const DictionaryCtxt* dict = model_getDictionary( server->vol.model );
 #endif
 
     XP_ASSERT( !!pool );
@@ -4184,7 +4184,7 @@ void
 server_formatDictCounts( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* stream,
                          XP_U16 nCols, XP_Bool allFaces )
 {
-    DictionaryCtxt* dict;
+    const DictionaryCtxt* dict;
     Tile tile;
     XP_U16 nChars, nPrinted;
     XP_UCHAR buf[48];
@@ -4249,7 +4249,7 @@ server_formatRemainingTiles( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* stream
     PoolContext* pool = server->pool;
     if ( !!pool ) {
         XP_UCHAR buf[128];
-        DictionaryCtxt* dict = model_getDictionary( server->vol.model );
+        const DictionaryCtxt* dict = model_getDictionary( server->vol.model );
         Tile tile;
         XP_U16 nChars = dict_numTileFaces( dict );
         XP_U16 offset;

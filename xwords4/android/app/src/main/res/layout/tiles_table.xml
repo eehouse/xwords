@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
+             android:orientation="vertical"
+             android:layout_width="match_parent"
+             android:layout_height="wrap_content"
+             android:paddingLeft="8dp"
+             android:paddingRight="8dp"
+             >
+  <TableRow android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp"
+            >
+    <TextView android:text="@string/tiles_header_face"
+              style="@style/tiles_table_row"
+              />
+    <TextView android:text="@string/tiles_header_count"
+              style="@style/tiles_table_row"
+              />
+    <TextView android:text="@string/tiles_header_value"
+              style="@style/tiles_table_row"
+              />
+  </TableRow>
+  <ScrollView android:layout_width="fill_parent"
+              android:layout_height="fill_parent"
+              android:orientation="vertical"
+              >
+    <LinearLayout android:id="@+id/table"
+                  android:orientation="vertical"
+                  android:layout_width="fill_parent"
+                  android:layout_height="fill_parent"
+                  />
+  </ScrollView>
+</TableLayout>

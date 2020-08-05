@@ -757,7 +757,7 @@ figureCrosschecks( EngineCtxt* engine, XP_U16 x, XP_U16 y, XP_U16* scoreP,
 } /* figureCrosschecks */
 
 XP_Bool
-engine_check( DictionaryCtxt* dict, Tile* tiles, XP_U16 nTiles )
+engine_check( const DictionaryCtxt* dict, Tile* tiles, XP_U16 nTiles )
 {
     array_edge* in_edge = dict_getTopEdge( dict );
 

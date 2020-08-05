@@ -116,8 +116,8 @@ public class DlgDelegateAlert extends XWDialogFragment {
 
         AlertDialog.Builder builder = LocUtils.makeAlertBuilder( context );
 
-        if ( 0 != state.m_titleId ) {
-            builder.setTitle( state.m_titleId );
+        if ( null != state.m_title ) {
+            builder.setTitle( state.m_title );
         }
 
         populateBuilder( context, state, builder );

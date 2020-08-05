@@ -194,12 +194,13 @@ byodbins: table.bin charcount.bin values.bin frankspecials.bin info.txt
 else
 ifeq ($(TARGET_TYPE),WINCE)
 
-byodbins: table.bin charcount.bin values.bin frankspecials.bin info.txt
-
 ### WINCE section here ###
 all: $(XWLANG)2to8.xwd $(XWLANG)2to9.xwd $(XWLANG)2to15.xwd
 	../mkxwdcab.pl -f $<
 empty: $(XWLANG)0to0.xwd
+
+byodbins: table.bin charcount.bin values.bin frankspecials.bin info.txt
+
 else
 	(Need to define TARGET_TYPE if get error pointing to this line)
 endif				#ifeq ($(TARGET_TYPE),FRANK)

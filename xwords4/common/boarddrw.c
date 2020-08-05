@@ -377,7 +377,7 @@ drawCell( BoardCtxt* board, XWEnv xwe, const XP_U16 col,
     XP_Bool isBlank, isEmpty, pending = XP_FALSE;
     XWBonusType bonus;
     ModelCtxt* model = board->model;
-    DictionaryCtxt* dict = model_getDictionary( model );
+    const DictionaryCtxt* dict = model_getDictionary( model );
     XP_U16 modelCol, modelRow;
 
     if ( dict != NULL && getCellRect( board, col, row, &cellRect ) ) {

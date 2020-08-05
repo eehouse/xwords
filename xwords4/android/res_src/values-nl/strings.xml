@@ -354,8 +354,7 @@
     <string name="button_search">Vind</string>
     <string name="word_search_hint">Eerste letters</string>
     <string name="pick_faceup">Pak letters met de letter naar boven</string>
-    <string name="dict_browse_title_fmt">%1$s (%2$d woorden met %3$d-%4$d letters)</string>
-    <string name="dict_browse_title1_fmt">%1$s (%2$d woorden met %3$d letters)</string>
+    <string name="dict_browse_title_fmt">%1$s (%2$d woorden)</string>
     <string name="dict_browse_nowords_fmt">Geen woord in %1$s begint met %2$s.</string>
     <string name="not_again_browse">Deze knop opent de woordenlijst browser voor de woordenlijst van de speler die aan de beurt is.</string>
     <string name="not_again_browseall">Deze knop opent de woordenlijst browser voor de woordenlijst van jouw keuze.</string>

@@ -155,6 +155,7 @@
   <string name="key_na_sms_banned">key_na_sms_banned</string>
   <string name="key_na_longtap_lookup">key_na_longtap_lookup</string>
   <string name="key_na_perms_phonestate">key_na_perms_phonestate</string>
+  <string name="key_na_addBlankButton">key_na_addBlankButton</string>
 
   <string name="key_na_dupstatus_host">key_na_dupstatus_host</string>
   <string name="key_na_dupstatus_guest">key_na_dupstatus_guest</string>

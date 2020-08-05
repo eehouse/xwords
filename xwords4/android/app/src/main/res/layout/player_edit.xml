@@ -63,10 +63,13 @@
                   />
       </LinearLayout>
 
-      <LinearLayout android:orientation="horizontal"
-                    android:layout_height="wrap_content"
-                    android:layout_width="fill_parent"
-                    >
+      <!-- And here -->
+      <org.eehouse.android.xw4.LabeledSpinner
+          android:id="@+id/player_dict_spinner"
+          android:orientation="horizontal"
+          android:layout_height="wrap_content"
+          android:layout_width="fill_parent"
+          >
         <TextView android:id="@+id/dict_label"
                   android:layout_height="wrap_content"
                   android:layout_width="wrap_content"
@@ -75,12 +78,11 @@
                   android:textAppearance="?android:attr/textAppearanceMedium"
                   />
         
-        <Spinner android:id="@+id/dict_spinner"
-                 android:layout_width="fill_parent"
+        <Spinner android:layout_width="fill_parent"
                  android:layout_height="wrap_content"
                  android:drawSelectorOnTop="true"
                  />
-      </LinearLayout>
+      </org.eehouse.android.xw4.LabeledSpinner>
 
       <CheckBox android:id="@+id/robot_check"
                 android:layout_width="wrap_content"

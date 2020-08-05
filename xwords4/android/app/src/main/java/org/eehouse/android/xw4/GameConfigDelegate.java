@@ -377,8 +377,8 @@ public class GameConfigDelegate extends DelegateBase
         } else {
             dictLabel.setVisibility( View.GONE );
         }
-        m_playerDictSpinner = (Spinner)
-            playerView.findViewById( R.id.dict_spinner );
+        m_playerDictSpinner = ((LabeledSpinner)playerView.findViewById( R.id.player_dict_spinner ))
+            .getSpinner();
         if ( localOnlyGame() ) {
             configDictSpinner( m_playerDictSpinner, m_gi.dictLang, m_gi.dictName(lp) );
         } else {
@@ -429,11 +429,6 @@ public class GameConfigDelegate extends DelegateBase
         lp.password = Utils.getText( dialog, R.id.password_edit );
 
         if ( localOnlyGame() ) {
-            {
-                Spinner spinner =
-                    (Spinner)((Dialog)di).findViewById( R.id.dict_spinner );
-                Assert.assertTrue( m_playerDictSpinner == spinner );
-            }
             int position = m_playerDictSpinner.getSelectedItemPosition();
             SpinnerAdapter adapter = m_playerDictSpinner.getAdapter();
 
@@ -475,9 +470,13 @@ public class GameConfigDelegate extends DelegateBase
         findViewById( R.id.play_button ).setOnClickListener( this );
 
         m_playerLayout = (LinearLayout)findViewById( R.id.player_list );
-        m_phoniesSpinner = (Spinner)findViewById( R.id.phonies_spinner );
-        m_boardsizeSpinner = (Spinner)findViewById( R.id.boardsize_spinner );
-        m_smartnessSpinner = (Spinner)findViewById( R.id.smart_robot );
+
+        m_phoniesSpinner = ((LabeledSpinner)findViewById( R.id.phonies_spinner ))
+            .getSpinner();
+        m_boardsizeSpinner = ((LabeledSpinner)findViewById( R.id.boardsize_spinner ))
+            .getSpinner();
+        m_smartnessSpinner = ((LabeledSpinner)findViewById( R.id.smart_robot ))
+            .getSpinner();
 
         m_connLabel = (TextView)findViewById( R.id.conns_label );
     } // init

@@ -142,7 +142,7 @@ drawTray( BoardCtxt* board, XWEnv xwe )
 
         if ( draw_trayBegin( board->draw, xwe, &board->trayBounds, turn,
                              turnScore, dfsFor( board, OBJ_TRAY ) ) ) {
-            DictionaryCtxt* dictionary = model_getDictionary( board->model );
+            const DictionaryCtxt* dictionary = model_getDictionary( board->model );
             XP_U16 trayInvalBits = board->trayInvalBits;
             XP_S16 cursorBits = 0;
             XP_Bool cursorOnDivider = XP_FALSE;
@@ -278,7 +278,7 @@ getTileDrawInfo( const BoardCtxt* board, Tile tile, XP_Bool isBlank,
                  XP_Bitmaps* bitmaps, XP_S16* value )
 {
     const XP_UCHAR* face = NULL;
-    DictionaryCtxt* dict = model_getDictionary( board->model );
+    const DictionaryCtxt* dict = model_getDictionary( board->model );
     if ( isBlank ) {
         tile = dict_getBlankTile( dict );
     } else {

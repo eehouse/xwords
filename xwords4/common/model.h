@@ -74,11 +74,11 @@ typedef XP_U8 TileBit;    /* bits indicating selection of tiles in tray */
                                           only */
 
 
-ModelCtxt* model_make( MPFORMAL XWEnv xwe, DictionaryCtxt* dict,
+ModelCtxt* model_make( MPFORMAL XWEnv xwe, const DictionaryCtxt* dict,
                        const PlayerDicts* dicts, XW_UtilCtxt* util, XP_U16 nCols );
 
 ModelCtxt* model_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
-                                 DictionaryCtxt* dict, const PlayerDicts* dicts,
+                                 const DictionaryCtxt* dict, const PlayerDicts* dicts,
                                  XW_UtilCtxt* util );
 
 void model_writeToStream( const ModelCtxt* model, XWStreamCtxt* stream );
@@ -97,11 +97,11 @@ XP_Bool model_popToHash( ModelCtxt* model, XWEnv xwe, const XP_U32 hash,
 void model_setNPlayers( ModelCtxt* model, XP_U16 numPlayers );
 XP_U16 model_getNPlayers( const ModelCtxt* model );
 
-void model_setDictionary( ModelCtxt* model, XWEnv xwe, DictionaryCtxt* dict );
-DictionaryCtxt* model_getDictionary( const ModelCtxt* model );
+void model_setDictionary( ModelCtxt* model, XWEnv xwe, const DictionaryCtxt* dict );
+const DictionaryCtxt* model_getDictionary( const ModelCtxt* model );
 
 void model_setPlayerDicts( ModelCtxt* model, XWEnv xwe, const PlayerDicts* dicts );
-DictionaryCtxt* model_getPlayerDict( const ModelCtxt* model, XP_S16 playerNum );
+const DictionaryCtxt* model_getPlayerDict( const ModelCtxt* model, XP_S16 playerNum );
 
 XP_Bool model_getTile( const ModelCtxt* model, XP_U16 col, XP_U16 row,
                        XP_Bool getPending, XP_S16 turn,

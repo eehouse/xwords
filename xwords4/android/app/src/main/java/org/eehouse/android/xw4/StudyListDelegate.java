@@ -59,7 +59,7 @@ public class StudyListDelegate extends ListDelegateBase
 
     private Activity m_activity;
     private Spinner m_spinner;
-    private View m_pickView;    // LinearLayout, actually
+    private LabeledSpinner m_pickView;
     private int[] m_langCodes;
     private String[] m_words;
     private Set<String> m_checkeds;
@@ -79,8 +79,8 @@ public class StudyListDelegate extends ListDelegateBase
     {
         m_list = (ListView)findViewById( android.R.id.list );
 
-        m_spinner = (Spinner)findViewById( R.id.pick_lang_spinner );
-        m_pickView = findViewById( R.id.pick_lang );
+        m_pickView = (LabeledSpinner)findViewById( R.id.pick_lang );
+        m_spinner = m_pickView.getSpinner();
         m_checkeds = new HashSet<>();
         m_words = new String[0];
 

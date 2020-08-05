@@ -1175,12 +1175,6 @@
     <string name="dict_browse_nowords_fmt">XLATE ME: No word in %1$s starts with
       %2$s.</string>
     <!--  -->
-    <string name="dict_browse_title1_fmt">XLATE ME: %1$s (%2$d words using %3$d
-      tiles)</string>
-    <!--  -->
-    <string name="dict_browse_title_fmt">XLATE ME: %1$s (%2$d words using %3$d-%4$d
-      tiles)</string>
-    <!--  -->
     <string name="pick_faceup">XLATE ME: Pick tiles face-up</string>
     <!--  -->
     <!--  -->

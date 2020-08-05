@@ -1,6 +1,6 @@
-/* -*- compile-command: "find-and-gradle.sh insXw4Deb"; -*- */
+/* -*- compile-command: "find-and-gradle.sh inXw4dDeb"; -*- */
 /* 
- * Copyright 2001 - 2017 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2001 - 2020 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -398,7 +398,7 @@ and_util_makeEmptyDict( XW_UtilCtxt* uc, XWEnv xwe )
     DictionaryCtxt* result =  
         and_dictionary_make_empty( MPPARM( ((AndUtil*)uc)->util.mpool )
                                    globals->jniutil );
-    return dict_ref( result, xwe );
+    return (DictionaryCtxt*)dict_ref( result, xwe );
 #endif
 }
 

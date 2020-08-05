@@ -51,8 +51,8 @@ static void notifyBoardListeners( ModelCtxt* model, XWEnv xwe, XP_U16 turn,
 static void notifyTrayListeners( ModelCtxt* model, XP_U16 turn, 
                                  XP_S16 index1, XP_S16 index2 );
 static void notifyDictListeners( ModelCtxt* model, XWEnv xwe, XP_S16 playerNum,
-                                 DictionaryCtxt* oldDict,
-                                 DictionaryCtxt* newDict );
+                                 const DictionaryCtxt* oldDict,
+                                 const DictionaryCtxt* newDict );
 static void model_unrefDicts( ModelCtxt* model, XWEnv xwe );
 
 static CellTile getModelTileRaw( const ModelCtxt* model, XP_U16 col, 
@@ -91,8 +91,8 @@ static void assertDiffTurn( ModelCtxt* model, XWEnv xwe, XP_U16 turn,
  *
  ****************************************************************************/
 ModelCtxt*
-model_make( MPFORMAL XWEnv xwe, DictionaryCtxt* dict, const PlayerDicts* dicts,
-            XW_UtilCtxt* util, XP_U16 nCols )
+model_make( MPFORMAL XWEnv xwe, const DictionaryCtxt* dict,
+            const PlayerDicts* dicts, XW_UtilCtxt* util, XP_U16 nCols )
 {
     ModelCtxt* result = (ModelCtxt*)XP_MALLOC( mpool, sizeof( *result ) );
     if ( result != NULL ) {
@@ -118,7 +118,7 @@ model_make( MPFORMAL XWEnv xwe, DictionaryCtxt* dict, const PlayerDicts* dicts,
 
 ModelCtxt* 
 model_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
-                      DictionaryCtxt* dict, const PlayerDicts* dicts,
+                      const DictionaryCtxt* dict, const PlayerDicts* dicts,
                       XW_UtilCtxt* util )
 {
     ModelCtxt* model;
@@ -574,9 +574,9 @@ setStackBits( ModelCtxt* model, const DictionaryCtxt* dict )
 }
 
 void
-model_setDictionary( ModelCtxt* model, XWEnv xwe, DictionaryCtxt* dict )
+model_setDictionary( ModelCtxt* model, XWEnv xwe, const DictionaryCtxt* dict )
 {
-    DictionaryCtxt* oldDict = model->vol.dict;
+    const DictionaryCtxt* oldDict = model->vol.dict;
     model->vol.dict = dict_ref( dict, xwe );
     
     if ( !!dict ) {
@@ -593,11 +593,11 @@ model_setPlayerDicts( ModelCtxt* model, XWEnv xwe, const PlayerDicts* dicts )
     if ( !!dicts ) {
         XP_U16 ii;
 #ifdef DEBUG
-        DictionaryCtxt* gameDict = model_getDictionary( model );
+        const DictionaryCtxt* gameDict = model_getDictionary( model );
 #endif
         for ( ii = 0; ii < VSIZE(dicts->dicts); ++ii ) {
-            DictionaryCtxt* oldDict = model->vol.dicts.dicts[ii];
-            DictionaryCtxt* newDict = dicts->dicts[ii];
+            const DictionaryCtxt* oldDict = model->vol.dicts.dicts[ii];
+            const DictionaryCtxt* newDict = dicts->dicts[ii];
             if ( oldDict != newDict ) {
                 XP_ASSERT( NULL == newDict || NULL == gameDict 
                            || dict_tilesAreSame( gameDict, newDict ) );
@@ -612,21 +612,21 @@ model_setPlayerDicts( ModelCtxt* model, XWEnv xwe, const PlayerDicts* dicts )
     }
 }           
 
-DictionaryCtxt*
+const DictionaryCtxt*
 model_getDictionary( const ModelCtxt* model )
 {
     XP_U16 ii;
-    DictionaryCtxt* result = model->vol.dict;
+    const DictionaryCtxt* result = model->vol.dict;
     for ( ii = 0; !result && ii < VSIZE(model->vol.dicts.dicts); ++ii ) {
         result = model->vol.dicts.dicts[ii];
     }
     return result;
 } /* model_getDictionary */
 
-DictionaryCtxt*
+const DictionaryCtxt*
 model_getPlayerDict( const ModelCtxt* model, XP_S16 playerNum )
 {
-    DictionaryCtxt* dict = NULL;
+    const DictionaryCtxt* dict = NULL;
     if ( 0 <= playerNum && playerNum < VSIZE(model->vol.dicts.dicts) ) {
         dict = model->vol.dicts.dicts[playerNum];
     }
@@ -1474,7 +1474,7 @@ model_packTilesUtil( ModelCtxt* model, PoolContext* pool,
                      XP_U16* nUsed, const XP_UCHAR** texts,
                      Tile* tiles )
 {
-    DictionaryCtxt* dict = model_getDictionary(model);
+    const DictionaryCtxt* dict = model_getDictionary(model);
     XP_U16 nFaces = dict_numTileFaces( dict );
     Tile blankFace = dict_getBlankTile( dict );
     Tile tile;
@@ -2219,7 +2219,7 @@ notifyTrayListeners( ModelCtxt* model, XP_U16 turn, XP_S16 index1,
 
 static void
 notifyDictListeners( ModelCtxt* model, XWEnv xwe, XP_S16 playerNum,
-                     DictionaryCtxt* oldDict, DictionaryCtxt* newDict )
+                     const DictionaryCtxt* oldDict, const DictionaryCtxt* newDict )
 {
     if ( model->vol.dictListenerFunc != NULL ) {
         (*model->vol.dictListenerFunc)( model->vol.dictListenerData, xwe,
@@ -2234,8 +2234,8 @@ printString( XWStreamCtxt* stream, const XP_UCHAR* str )
 } /* printString */
 
 static XP_UCHAR*
-formatTray( const TrayTileSet* tiles, DictionaryCtxt* dict, XP_UCHAR* buf, 
-            XP_U16 bufSize, XP_Bool keepHidden )
+formatTray( const TrayTileSet* tiles, const DictionaryCtxt* dict,
+            XP_UCHAR* buf, XP_U16 bufSize, XP_Bool keepHidden )
 {
     if ( keepHidden ) {
         XP_U16 ii;
@@ -2253,7 +2253,7 @@ formatTray( const TrayTileSet* tiles, DictionaryCtxt* dict, XP_UCHAR* buf,
 
 typedef struct MovePrintClosure {
     XWStreamCtxt* stream;
-    DictionaryCtxt* dict;
+    const DictionaryCtxt* dict;
     XP_U16 nPrinted;
     XP_Bool keepHidden;
     XP_U32 lastPauseWhen;
@@ -2339,7 +2339,7 @@ printMovePost( ModelCtxt* model, XWEnv xwe, XP_U16 XP_UNUSED(moveN),
     if ( entry->moveType != ASSIGN_TYPE ) {
         MovePrintClosure* closure = (MovePrintClosure*)p_closure;
         XWStreamCtxt* stream = closure->stream;
-        DictionaryCtxt* dict = closure->dict;
+        const DictionaryCtxt* dict = closure->dict;
         const XP_UCHAR* format;
         XP_U16 nTiles;
 

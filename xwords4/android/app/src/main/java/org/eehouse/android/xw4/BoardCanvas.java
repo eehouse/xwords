@@ -146,7 +146,6 @@ public class BoardCanvas extends Canvas implements DrawCtx {
         m_context = context;
         m_activity = activity;
         m_jniThread = jniThread;
-        m_dict = new DictWrapper();
 
         m_hasSmallScreen = Utils.hasSmallScreen( m_context );
 
@@ -583,7 +582,7 @@ public class BoardCanvas extends Canvas implements DrawCtx {
     @Override
     public void dictChanged( final long newPtr )
     {
-        long curPtr = m_dict.getDictPtr();
+        long curPtr = null == m_dict ? 0 : m_dict.getDictPtr();
         boolean doPost = false;
         if ( curPtr != newPtr ) {
             if ( 0 == newPtr ) {
@@ -595,7 +594,9 @@ public class BoardCanvas extends Canvas implements DrawCtx {
                 m_dictChars = null;
                 doPost = true;
             }
-            m_dict.release();
+            if ( null != m_dict ) {
+                m_dict.release();
+            }
             m_dict = new DictWrapper( newPtr );
         }
 

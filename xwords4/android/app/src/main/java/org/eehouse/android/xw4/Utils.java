@@ -48,6 +48,7 @@ import android.util.Base64;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -688,6 +689,21 @@ public class Utils {
     public static boolean isOnUIThread()
     {
         return Looper.getMainLooper().equals(Looper.myLooper());
+    }
+
+    public static View getChildInstanceOf( ViewGroup parent, Class clazz )
+    {
+        View result = null;
+        for ( int ii = 0; null == result && ii < parent.getChildCount(); ++ii ) {
+            View child = parent.getChildAt( ii );
+            if ( clazz.isInstance(child) ) {
+                result = child;
+                break;
+            } else if ( child instanceof ViewGroup ) {
+                result = getChildInstanceOf( (ViewGroup)child, clazz );
+            }
+        }
+        return result;
     }
 
     // But see hexArray above

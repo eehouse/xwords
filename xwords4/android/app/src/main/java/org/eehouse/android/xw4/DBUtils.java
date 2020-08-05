@@ -122,15 +122,6 @@ public class DBUtils {
         int ts;
     }
 
-    public static class DictBrowseState {
-        public int m_minShown;
-        public int m_maxShown;
-        public int m_pos;
-        public int m_top;
-        public String m_prefix;
-        public int[] m_counts;
-    }
-
     public static GameSummary getSummary( Context context,
                                           GameLock lock )
     {
@@ -1949,86 +1940,6 @@ public class DBUtils {
             }
         }
         return success;
-    }
-
-    /////////////////////////////////////////////////////////////////
-    // DictsDB stuff
-    /////////////////////////////////////////////////////////////////
-    public static DictBrowseState dictsGetOffset( Context context, String name,
-                                                  DictLoc loc )
-    {
-        Assert.assertTrue( DictLoc.UNKNOWN != loc );
-        DictBrowseState result = null;
-        String[] columns = { DBHelper.ITERPOS, DBHelper.ITERTOP,
-                             DBHelper.ITERMIN, DBHelper.ITERMAX,
-                             DBHelper.WORDCOUNTS, DBHelper.ITERPREFIX };
-        String selection =
-            String.format( NAMELOC_FMT, DBHelper.DICTNAME,
-                           name, DBHelper.LOC, loc.ordinal() );
-        initDB( context );
-        synchronized( s_dbHelper ) {
-            Cursor cursor = query( TABLE_NAMES.DICTBROWSE, columns, selection );
-            if ( 1 >= cursor.getCount() && cursor.moveToFirst() ) {
-                result = new DictBrowseState();
-                result.m_pos = cursor.getInt( cursor
-                                              .getColumnIndex(DBHelper.ITERPOS));
-                result.m_top = cursor.getInt( cursor
-                                              .getColumnIndex(DBHelper.ITERTOP));
-                result.m_minShown =
-                    cursor.getInt( cursor
-                                   .getColumnIndex(DBHelper.ITERMIN));
-                result.m_maxShown =
-                    cursor.getInt( cursor
-                                   .getColumnIndex(DBHelper.ITERMAX));
-                result.m_prefix =
-                    cursor.getString( cursor
-                                      .getColumnIndex(DBHelper.ITERPREFIX));
-                String counts =
-                    cursor.getString( cursor.getColumnIndex(DBHelper.WORDCOUNTS));
-                if ( null != counts ) {
-                    String[] nums = TextUtils.split( counts, ":" );
-                    int[] ints = new int[nums.length];
-                    for ( int ii = 0; ii < nums.length; ++ii ) {
-                        ints[ii] = Integer.parseInt( nums[ii] );
-                    }
-                    result.m_counts = ints;
-                }
-            }
-            cursor.close();
-        }
-        return result;
-    }
-
-    public static void dictsSetOffset( Context context, String name,
-                                       DictLoc loc, DictBrowseState state )
-    {
-        Assert.assertTrue( DictLoc.UNKNOWN != loc );
-        String selection =
-            String.format( NAMELOC_FMT, DBHelper.DICTNAME,
-                           name, DBHelper.LOC, loc.ordinal() );
-        ContentValues values = new ContentValues();
-        values.put( DBHelper.ITERPOS, state.m_pos );
-        values.put( DBHelper.ITERTOP, state.m_top );
-        values.put( DBHelper.ITERMIN, state.m_minShown );
-        values.put( DBHelper.ITERMAX, state.m_maxShown );
-        values.put( DBHelper.ITERPREFIX, state.m_prefix );
-        if ( null != state.m_counts ) {
-            String[] nums = new String[state.m_counts.length];
-            for ( int ii = 0; ii < nums.length; ++ii ) {
-                nums[ii] = String.format( "%d", state.m_counts[ii] );
-            }
-            values.put( DBHelper.WORDCOUNTS, TextUtils.join( ":", nums ) );
-        }
-
-        initDB( context );
-        synchronized( s_dbHelper ) {
-            int result = update( TABLE_NAMES.DICTBROWSE, values, selection );
-            if ( 0 == result ) {
-                values.put( DBHelper.DICTNAME, name );
-                values.put( DBHelper.LOC, loc.ordinal() );
-                insert( TABLE_NAMES.DICTBROWSE, values );
-            }
-        }
     }
 
     // Called from jni

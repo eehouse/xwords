@@ -46,7 +46,7 @@ public class DlgState implements Parcelable {
     public int m_prefsNAKey;
     // These can't be serialized!!!!
     public Object[] m_params;
-    public int m_titleId;
+    public String m_title;
 
     public DlgState( DlgID dlgID )
     {
@@ -79,8 +79,8 @@ public class DlgState implements Parcelable {
     { m_posButton = id; return this; }
     public DlgState setNegButton( int id )
     { m_negButton = id; return this; }
-    public DlgState setTitle( int id )
-    { m_titleId = id; return this; }
+    public DlgState setTitle( String title )
+    { m_title = title; return this; }
 
     @Override
     public String toString()
@@ -103,7 +103,7 @@ public class DlgState implements Parcelable {
                 .append(", pair ").append(m_pair)
                 .append(", pos: ").append(m_posButton)
                 .append(", neg: ").append(m_negButton)
-                .append(", title: ").append(m_titleId)
+                .append(", title: ").append(m_title)
                 .append(", params: [").append(params)
                 .append("]}")
                 .toString();
@@ -124,14 +124,15 @@ public class DlgState implements Parcelable {
                 DlgState other = (DlgState)it;
                 result = other != null
                     && m_id.equals(other.m_id)
-                    && ((null == m_msg) ? (null == other.m_msg) : m_msg.equals(other.m_msg))
+                    && TextUtils.equals( m_msg, other.m_msg)
                     && m_posButton == other.m_posButton
                     && m_negButton == other.m_negButton
                     && m_action == other.m_action
                     && ((null == m_pair) ? (null == other.m_pair) : m_pair.equals(other.m_pair))
                     && m_prefsNAKey == other.m_prefsNAKey
                     && Arrays.deepEquals( m_params, other.m_params )
-                    && m_titleId == other.m_titleId;
+                    && TextUtils.equals( m_title,other.m_title)
+                    ;
             }
         } else {
             result = super.equals( it );
@@ -164,7 +165,7 @@ public class DlgState implements Parcelable {
         out.writeInt( m_negButton );
         out.writeInt( null == m_action ? -1 : m_action.ordinal() );
         out.writeInt( m_prefsNAKey );
-        out.writeInt( m_titleId );
+        out.writeString( m_title );
         out.writeString( m_msg );
         out.writeSerializable( m_params );
         out.writeSerializable( m_pair );
@@ -196,7 +197,7 @@ public class DlgState implements Parcelable {
                     int tmp = in.readInt();
                     Action action = 0 > tmp ? null : Action.values()[tmp];
                     int prefsKey = in.readInt();
-                    int titleId = in.readInt();
+                    String title = in.readString();
                     String msg = in.readString();
                     Object[] params = (Object[])in.readSerializable();
                     ActionPair pair = (ActionPair)in.readSerializable();
@@ -206,7 +207,7 @@ public class DlgState implements Parcelable {
                     .setNegButton( negButton )
                     .setAction( action )
                     .setPrefsNAKey( prefsKey )
-                    .setTitle(titleId)
+                    .setTitle(title)
                     .setParams(params)
                     .setActionPair(pair)
                     ;

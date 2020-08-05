@@ -39,7 +39,7 @@ extern "C" {
 
 typedef struct _DictPair {
     XP_UCHAR* key;
-    DictionaryCtxt* dict;
+    const DictionaryCtxt* dict;
 } DictPair;
 
 struct DictMgrCtxt {
@@ -81,10 +81,10 @@ dmgr_destroy( DictMgrCtxt* dmgr, XWEnv xwe )
     XP_FREE( dmgr->mpool, dmgr );
 }
 
-DictionaryCtxt* 
+const DictionaryCtxt*
 dmgr_get( DictMgrCtxt* dmgr, XWEnv xwe, const XP_UCHAR* key )
 {
-    DictionaryCtxt* result = NULL;
+    const DictionaryCtxt* result = NULL;
 
     pthread_mutex_lock( &dmgr->mutex );
 

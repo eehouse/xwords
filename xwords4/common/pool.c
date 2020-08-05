@@ -242,7 +242,7 @@ pool_getNTilesLeftFor( const PoolContext* pool, Tile tile )
 } /* pool_remainingTileCount */
 
 void 
-pool_initFromDict( PoolContext* pool, DictionaryCtxt* dict )
+pool_initFromDict( PoolContext* pool, const DictionaryCtxt* dict )
 {
     const XP_U16 numFaces = dict_numTileFaces( dict );
 

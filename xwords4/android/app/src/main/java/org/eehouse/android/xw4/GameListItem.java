@@ -43,7 +43,8 @@ import java.util.HashSet;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class GameListItem extends LinearLayout
-    implements View.OnClickListener, SelectableItem.LongClickHandler {
+    implements View.OnClickListener, SelectableItem.LongClickHandler,
+               ExpandImageButton.ExpandChangeListener {
     private static final String TAG = GameListItem.class.getSimpleName();
 
     private static final int SUMMARY_WAIT_MSECS = 1000;
@@ -67,7 +68,7 @@ public class GameListItem extends LinearLayout
 
     private boolean m_expanded, m_haveTurn, m_haveTurnLocal;
     private long m_lastMoveTime;
-    private ImageButton m_expandButton;
+    private ExpandImageButton m_expandButton;
     private Handler m_handler;
     private GameSummary m_summary;
     private SelectableItem m_cb;
@@ -165,15 +166,6 @@ public class GameListItem extends LinearLayout
     {
         int id = view.getId();
         switch ( id ) {
-        case R.id.expander:
-            m_expanded = !m_expanded;
-            DBUtils.setExpanded( m_rowid, m_expanded );
-
-            makeThumbnailIf( m_expanded );
-
-            showHide();
-            break;
-
         case R.id.view_loaded:
             toggleSelected();
             break;
@@ -189,12 +181,24 @@ public class GameListItem extends LinearLayout
         }
     }
 
+    // ExpandImageButton.ExpandChangeListener
+    @Override
+    public void expandedChanged( boolean nowExpanded )
+    {
+        m_expanded = nowExpanded;
+        DBUtils.setExpanded( m_rowid, m_expanded );
+
+        makeThumbnailIf( m_expanded );
+
+        showHide();
+    }
+
     private void findViews()
     {
         m_hideable = (LinearLayout)findViewById( R.id.hideable );
         m_name = (ExpiringTextView)findViewById( R.id.game_name );
-        m_expandButton = (ImageButton)findViewById( R.id.expander );
-        m_expandButton.setOnClickListener( this );
+        m_expandButton = (ExpandImageButton)findViewById( R.id.expander );
+        m_expandButton.setOnExpandChangedListener( this );
         m_viewUnloaded = (TextView)findViewById( R.id.view_unloaded );
         m_viewLoaded = findViewById( R.id.view_loaded );
         m_viewLoaded.setOnClickListener( this );
@@ -225,9 +229,7 @@ public class GameListItem extends LinearLayout
 
     private void showHide()
     {
-        m_expandButton.setImageResource( m_expanded ?
-                                         R.drawable.expander_ic_maximized :
-                                         R.drawable.expander_ic_minimized);
+        m_expandButton.setExpanded( m_expanded );
         m_hideable.setVisibility( m_expanded? View.VISIBLE : View.GONE );
 
         int vis = m_expanded && XWPrefs.getThumbEnabled( m_context )

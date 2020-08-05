@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
               android:layout_width="fill_parent" 
               android:layout_height="fill_parent"
+              android:orientation="vertical"
               android:paddingLeft="8dp"
               android:paddingRight="8dp"
               android:focusableInTouchMode="true"
@@ -13,73 +14,151 @@
             android:layout_height="wrap_content"
             android:layout_width="fill_parent"
             android:visibility="gone"
-            android:layout_alignParentTop="true"
             />
 
-  <LinearLayout android:id="@+id/search"
-                android:orientation="horizontal"
+  <!-- A summary followed by a hideable filter-config section -->
+  <LinearLayout android:orientation="vertical"
                 android:layout_width="fill_parent" 
                 android:layout_height="wrap_content"
-                android:layout_weight="0"
-                android:layout_below="@id/desc"
                 >
+    <!-- Here's the summary -->
+    <LinearLayout android:orientation="horizontal"
+                  android:layout_width="fill_parent"
+                  android:layout_height="wrap_content"
+                  >
+      <TextView android:id="@+id/filter_summary"
+                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"
+                android:layout_weight="1"
+                />
+      <org.eehouse.android.xw4.ExpandImageButton
+          android:id="@+id/expander"
+          style="@style/expander_button"
+          />
+    </LinearLayout>
 
-    <org.eehouse.android.xw4.EditWClear
-        android:id="@+id/word_edit"
-        style="@style/edit_w_clear"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:maxLines="1"
-        android:inputType="text"
-        android:layout_weight="1"
-        android:hint="@string/word_search_hint"
-        android:capitalize="characters"
-        />
-
-    <Button android:id="@+id/search_button"
-            android:layout_width="wrap_content" 
+    <!-- Config panel. A vertical array of fields with button at
+         bottom. Can be hidden -->
+    <TableLayout android:id="@+id/config"
+                 android:orientation="vertical"
+                 android:layout_width="wrap_content"
+                 android:layout_height="wrap_content"
+                 android:layout_gravity="center_horizontal"
+                 android:background="#FF1F1F1F"
+                 android:visibility="gone"
+                 android:paddingLeft="8dp"
+                 android:paddingRight="8dp"
+                 >
+      <TableRow
+          android:layout_width="fill_parent"
+          android:layout_height="wrap_content"
+          >
+        <View android:layout_width="5dp"
+              android:layout_height="5dp"
+              android:layout_span="2"
+              />
+        <TextView android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:text="@string/pat_col_anyorder"
+                  />
+      </TableRow>
+      <org.eehouse.android.xw4.PatTableRow
+          android:layout_width="fill_parent"
+          android:layout_height="wrap_content"
+          >
+        <TextView style="@style/pat_table_label"
+                  android:text="@string/pat_starts_with"
+                  />
+        <org.eehouse.android.xw4.EditWClear
+            style="@style/pat_table_edit"
+            />
+        <CheckBox style="@style/pat_table_check"
+                  />
+      </org.eehouse.android.xw4.PatTableRow>
+      <org.eehouse.android.xw4.PatTableRow
+          android:layout_width="fill_parent"
+          android:layout_height="wrap_content"
+          >
+        <TextView style="@style/pat_table_label"
+                  android:text="@string/pat_contains"
+                  />
+        <org.eehouse.android.xw4.EditWClear
+            style="@style/pat_table_edit"
+            />
+        <CheckBox style="@style/pat_table_check"
+                  />
+      </org.eehouse.android.xw4.PatTableRow>
+      <org.eehouse.android.xw4.PatTableRow
+          android:layout_width="fill_parent"
+          android:layout_height="wrap_content"
+          >
+        <TextView style="@style/pat_table_label"
+                  android:text="@string/pat_ends_with"
+                  />
+        <org.eehouse.android.xw4.EditWClear
+            style="@style/pat_table_edit"
+            />
+        <CheckBox style="@style/pat_table_check"
+                  />
+      </org.eehouse.android.xw4.PatTableRow>
+      <TableRow android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                >
+        <Button android:id="@+id/button_addBlank"
+                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"
+                android:text="@string/button_addBlank"
+                android:layout_span="1"
+                />
+      </TableRow>
+      <LinearLayout android:layout_height="wrap_content"
+                    android:layout_width="wrap_content"
+                    android:orientation="horizontal"
+                    >
+        <org.eehouse.android.xw4.LabeledSpinner
+            android:id="@+id/spinner_min"
+            android:orientation="horizontal"
             android:layout_height="wrap_content"
-            android:text="@string/button_search" 
-            android:layout_weight="0"
-            />
+            android:layout_width="wrap_content"
+            >
+          <TextView style="@style/config_spinner_label"
+                    android:text="@string/min_len"
+                    />
+          <Spinner android:layout_height="wrap_content"
+                   android:layout_width="wrap_content"
+                   android:drawSelectorOnTop="true"
+                   android:label="@string/title_langs_list"
+                   />
+        </org.eehouse.android.xw4.LabeledSpinner>
+        <org.eehouse.android.xw4.LabeledSpinner
+            android:id="@+id/spinner_max"
+            android:orientation="horizontal"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            >
+          <TextView style="@style/config_spinner_label"
+                    android:text="@string/max_len"
+                    />
+          <Spinner android:layout_height="wrap_content"
+                   android:layout_width="wrap_content"
+                   android:drawSelectorOnTop="true"
+                   android:label="@string/title_langs_list"
+                   />
+        </org.eehouse.android.xw4.LabeledSpinner>
+      </LinearLayout>
+      <Button android:id="@+id/button_useconfig"
+              android:layout_height="wrap_content"
+              android:layout_width="wrap_content"
+              android:text="@string/button_useconfig"
+              android:layout_gravity="center_horizontal"
+              android:layout_span="2"
+              />
+    </TableLayout>
   </LinearLayout>
 
-  <LinearLayout android:id="@+id/sizes"
-                android:orientation="horizontal"
-                android:layout_width="fill_parent" 
-                android:layout_height="wrap_content"
-                android:layout_weight="0"
-                android:layout_alignParentBottom="true"
-                >
-    <TextView android:layout_height="wrap_content"
-              android:layout_width="wrap_content"
-              android:text="@string/min_len" 
-              />
-    <Spinner android:id="@+id/wordlen_min"
-             android:layout_width="wrap_content"
-             android:layout_height="wrap_content"
-             android:drawSelectorOnTop="true"
-             android:prompt="@string/prompt_min_len"
-             />
-    <TextView android:layout_height="wrap_content"
-              android:layout_width="wrap_content"
-              android:text="@string/max_len"
-              />
-    <Spinner android:id="@+id/wordlen_max"
-             android:layout_width="wrap_content"
-             android:layout_height="wrap_content"
-             android:drawSelectorOnTop="true"
-             android:prompt="@string/prompt_max_len"
-             />
-  </LinearLayout>
-
-  <!-- This goes in the middle but gets listed here because stuff it's
-       relative to must be defined first. -->
   <FrameLayout android:id="@+id/list_container"
                android:layout_width="match_parent"
                android:layout_height="match_parent"
-               android:layout_below="@id/search"
-               android:layout_above="@id/sizes"
                android:layout_weight="1"
                />
-</RelativeLayout>
+</LinearLayout>

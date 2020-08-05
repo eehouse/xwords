@@ -243,7 +243,7 @@ typedef struct CommonPrefs {
 } CommonPrefs;
 
 typedef struct _PlayerDicts {
-    DictionaryCtxt* dicts[MAX_NUM_PLAYERS];
+    const DictionaryCtxt* dicts[MAX_NUM_PLAYERS];
 } PlayerDicts;
 
 typedef uint64_t MQTTDevID;

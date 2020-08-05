@@ -52,7 +52,7 @@ static XP_U16 scoreWord( const ModelCtxt* model, XWEnv xwe, XP_U16 turn,
    as little impact as possible on the speed when the robot's looking for FAST
    scoring */
 typedef struct WordScoreFormatter {
-    DictionaryCtxt* dict;
+    const DictionaryCtxt* dict;
 
     XP_UCHAR fullBuf[80];
     XP_UCHAR wordBuf[MAX_ROWS+1];
@@ -61,7 +61,7 @@ typedef struct WordScoreFormatter {
     XP_Bool firstPass;
 } WordScoreFormatter;
 static void wordScoreFormatterInit( WordScoreFormatter* fmtr, 
-                                    DictionaryCtxt* dict );
+                                    const DictionaryCtxt* dict );
 static void wordScoreFormatterAddTile( WordScoreFormatter* fmtr, Tile tile, 
                                        XP_U16 tileMultiplier, 
                                        XP_Bool isBlank );
@@ -166,7 +166,7 @@ model_figureFinalScores( ModelCtxt* model, ScoresArray* finalScoresP,
     XP_S16 firstDoneIndex = -1; /* not set unless FIRST_DONE_BONUS is set */
     const TrayTileSet* tray;
     PlayerCtxt* player;
-    DictionaryCtxt* dict = model_getDictionary( model );
+    const DictionaryCtxt* dict = model_getDictionary( model );
     CurGameInfo* gi = model->vol.gi;
 
     if ( !!finalScoresP ) {
@@ -298,7 +298,7 @@ checkScoreMove( ModelCtxt* model, XWEnv xwe, XP_S16 turn, EngineCtxt* engine,
             if ( checkDict && 0 < bcs.nBadWords ) {
                 if ( !silent ) {
                     XP_ASSERT( !!bcs.stream );
-                    DictionaryCtxt* dict = model_getPlayerDict( model, turn );
+                    const DictionaryCtxt* dict = model_getPlayerDict( model, turn );
                     util_informWordsBlocked( model->vol.util, xwe, bcs.nBadWords,
                                              bcs.stream, dict_getName( dict ) );
                     stream_destroy( bcs.stream, xwe );
@@ -647,7 +647,7 @@ scoreWord( const ModelCtxt* model, XWEnv xwe, XP_U16 turn,
     XP_U16 col, row;
     const MoveInfoTile* tiles = movei->tiles;
     XP_U16 firstCoord = tiles->varCoord;
-    DictionaryCtxt* dict = model_getPlayerDict( model, turn );
+    const DictionaryCtxt* dict = model_getPlayerDict( model, turn );
 
     assertSorted( movei );
 
@@ -831,7 +831,7 @@ find_end( const ModelCtxt* model, XP_U16 col, XP_U16 row,
 } /* find_end */
 
 static void
-wordScoreFormatterInit( WordScoreFormatter* fmtr, DictionaryCtxt* dict )
+wordScoreFormatterInit( WordScoreFormatter* fmtr, const DictionaryCtxt* dict )
 {
     XP_MEMSET( fmtr, 0, sizeof(*fmtr) );
 

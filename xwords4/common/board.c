@@ -300,7 +300,7 @@ board_setDraw( BoardCtxt* board, XWEnv xwe, DrawCtx* draw )
 {
     board->draw = draw;
     if ( !!draw ) {
-        DictionaryCtxt* langDict = model_getDictionary( board->model );
+        const DictionaryCtxt* langDict = model_getDictionary( board->model );
         draw_dictChanged( draw, xwe, -1, langDict );
     }
 }
@@ -1058,7 +1058,7 @@ boardNotifyTrade( BoardCtxt* board, XWEnv xwe, const TrayTileSet* tiles )
 {
     const XP_UCHAR* tfaces[MAX_TRAY_TILES];
     XP_U16 ii;
-    DictionaryCtxt* dict = model_getDictionary( board->model );
+    const DictionaryCtxt* dict = model_getDictionary( board->model );
 
     for ( ii = 0; ii < tiles->nTiles; ++ii ) {
         tfaces[ii] = dict_getTileString( dict, tiles->tiles[ii] );
@@ -3733,7 +3733,7 @@ typedef struct _FTData {
 } FTData;
 
 static XP_Bool
-foundTiles( void* closure, const Tile* tiles, int len )
+foundTiles( void* closure, const Tile* tiles, int XP_UNUSED_DBG(len) )
 {
     XP_ASSERT( 1 == len );
     FTData* ftp = (FTData*)closure;
@@ -3758,12 +3758,12 @@ keyToIndex( BoardCtxt* board, XP_Key key, Tile* blankFace )
 # endif
 
     if ( tileIndex < 0 ) {
-        DictionaryCtxt* dict = model_getDictionary( model );
+        const DictionaryCtxt* dict = model_getDictionary( model );
         XP_UCHAR buf[2] = { key, '\0' };
 
         /* Figure out if we have the tile in the tray  */
         FTData ftd = {0};
-        dict_tilesForString( dict, buf, foundTiles, &ftd );
+        dict_tilesForString( dict, buf, 0, foundTiles, &ftd );
         if ( ftd.found ) {
             XP_S16 turn = board->selPlayer;
             tileIndex = model_trayContains( model, turn, ftd.tile );

@@ -879,6 +879,23 @@ Java_org_eehouse_android_xw4_jni_XwJNI_comms_1getUUID
     return jstr;
 }
 
+JNIEXPORT jlong JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_dict_1make
+( JNIEnv* env, jclass C, jlong jniGlobalPtr, jbyteArray jDictBytes,
+  jstring jname, jstring jpath )
+{
+    JNIGlobalState* globalState = (JNIGlobalState*)jniGlobalPtr;
+#ifdef MEM_DEBUG
+    MemPoolCtx* mpool = GETMPOOL( globalState );
+#endif
+
+    /* makeDict calls dict_ref() */
+    DictionaryCtxt* dictPtr = makeDict( MPPARM(mpool) env, TI_IF(&globalState->ti)
+                                        globalState->dictMgr,globalState->jniutil,
+                                        jname, jDictBytes, jpath, NULL, false );
+    return (jlong)dictPtr;
+}
+
 JNIEXPORT void JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_dict_1ref
 ( JNIEnv* env, jclass C, jlong dictPtr )
@@ -899,36 +916,141 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1unref
     }
 }
 
-JNIEXPORT jboolean JNICALL
-Java_org_eehouse_android_xw4_jni_XwJNI_dict_1getInfo
-( JNIEnv* env, jclass C, jlong jniGlobalPtr, jbyteArray jDictBytes,
-  jstring jname, jstring jpath, jboolean check, jobject jinfo )
-{
-    jboolean result = false;
-    JNIGlobalState* globalState = (JNIGlobalState*)jniGlobalPtr;
-    MAP_THREAD( &globalState->ti, env );
+typedef struct _FTData {
+    JNIEnv* env;
+    jbyteArray arrays[16];
+    int nArrays;
+} FTData;
 
+static XP_Bool
+onFoundTiles( void* closure, const Tile* tiles, int nTiles )
+{
+    FTData* ftd = (FTData*)closure;
+    ftd->arrays[ftd->nArrays++] = makeByteArray( ftd->env, nTiles,
+                                                 (const jbyte*)tiles );
+    return ftd->nArrays < VSIZE(ftd->arrays); /* still have room? */
+}
+
+JNIEXPORT jobjectArray JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_dict_1strToTiles
+( JNIEnv* env, jclass C, jlong dictPtr, jstring jstr )
+{
+    jobjectArray result = NULL;
+    DictionaryCtxt* dict = (DictionaryCtxt*)dictPtr;
+    const char* str = (*env)->GetStringUTFChars( env, jstr, NULL );
+
+    FTData ftd = { .env = env, };
+    dict_tilesForString( dict, str, 0, onFoundTiles, &ftd );
+
+    if ( ftd.nArrays > 0 ) {
+        result = makeByteArrayArray( env, ftd.nArrays );
+        for ( int ii = 0; ii < ftd.nArrays; ++ii ) {
+            (*env)->SetObjectArrayElement( env, result, ii, ftd.arrays[ii] );
+            deleteLocalRef( env, ftd.arrays[ii] );
+        }
+    }
+
+    (*env)->ReleaseStringUTFChars( env, jstr, str );
+    return result;
+}
+
+JNIEXPORT jboolean JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_dict_1hasDuplicates
+( JNIEnv* env, jclass C, jlong dictPtr )
+{
+    jboolean result;
+    DictionaryCtxt* dict = (DictionaryCtxt*)dictPtr;
+    result = dict_hasDuplicates( dict );
+    return result;
+}
+
+JNIEXPORT jstring JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_dict_1getTilesInfo
+( JNIEnv* env, jclass C, jlong jniGlobalPtr, jlong dictPtr )
+{
+    jstring result = NULL;
+    JNIGlobalState* globalState = (JNIGlobalState*)jniGlobalPtr;
 #ifdef MEM_DEBUG
     MemPoolCtx* mpool = GETMPOOL( globalState );
 #endif
+    DictionaryCtxt* dict = (DictionaryCtxt*)dictPtr;
+    XWStreamCtxt* stream = mem_stream_make( MPPARM(mpool) globalState->vtMgr,
+                                            NULL, 0, NULL );
+    dict_writeTilesInfo( dict, stream );
+    result = streamToJString( env, stream );
+    stream_destroy( stream, env );
 
-    DictionaryCtxt* dict = makeDict( MPPARM(mpool) env, TI_IF(&globalState->ti)
-                                     globalState->dictMgr,
-                                     globalState->jniutil, jname, jDictBytes, jpath,
-                                     NULL, check );
+    return result;
+}
+
+JNIEXPORT jstring JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_dict_1tilesToStr
+( JNIEnv* env, jclass C, jlong dictPtr, jbyteArray jtiles, jstring jdelim )
+{
+    jstring result = NULL;
+    DictionaryCtxt* dict = (DictionaryCtxt*)dictPtr;
+    if ( !!jtiles && !!dict ) {
+        XP_UCHAR buf[64];
+        const XP_UCHAR* delim = NULL;
+        if ( !!jdelim ) {
+            delim = (*env)->GetStringUTFChars( env, jdelim, NULL );
+        }
+
+        XP_U16 nTiles = (*env)->GetArrayLength( env, jtiles );
+        jbyte* tiles = (*env)->GetByteArrayElements( env, jtiles, NULL );
+
+        XP_U16 strLen = dict_tilesToString( dict, (Tile*)tiles, nTiles,
+                                            buf, VSIZE(buf), delim );
+        if ( 0 < strLen ) {
+            buf[strLen] = '\0';
+            result = (*env)->NewStringUTF( env, buf );
+        }
+
+        if ( !!jdelim ) {
+            (*env)->ReleaseStringUTFChars( env, jdelim, delim );
+        }
+        (*env)->ReleaseByteArrayElements( env, jtiles, tiles, 0 );
+    } else {
+        XP_LOGFF( "null jtiles array" );
+    }
+    return result;
+}
+
+JNIEXPORT jboolean JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_dict_1getInfo
+( JNIEnv* env, jclass C, jlong jniGlobalPtr, jlong dictPtr,
+  jboolean check, jobject jinfo )
+{
+    jboolean result = false;
+#ifdef MAP_THREAD_TO_ENV
+    JNIGlobalState* globalState = (JNIGlobalState*)jniGlobalPtr;
+    MAP_THREAD( &globalState->ti, env );
+#endif
+    DictionaryCtxt* dict = (DictionaryCtxt*)dictPtr;
     if ( NULL != dict ) {
         if ( NULL != jinfo ) {
             XP_LangCode code = dict_getLangCode( dict );
             XP_ASSERT( 0 < code );
             setInt( env, jinfo, "langCode", code );
-            setInt( env, jinfo, "wordCount", dict_getWordCount( dict ) );
+            setInt( env, jinfo, "wordCount", dict_getWordCount( dict, env ) );
             setString( env, jinfo, "md5Sum", dict_getMd5Sum( dict ) );
         }
-        dict_unref( dict, env );
         result = true;
     }
 
-    releaseMPool( globalState );
+    return result;
+}
+
+JNIEXPORT jstring JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_dict_1getDesc
+( JNIEnv* env, jclass C, jlong dictPtr )
+{
+    jstring result = NULL;
+    DictionaryCtxt* dict = (DictionaryCtxt*)dictPtr;
+    const XP_UCHAR* disc = dict_getDesc( dict );
+    if ( NULL != disc && '\0' != disc[0] ) {
+        result = (*env)->NewStringUTF( env, disc );
+    }
     return result;
 }
 
@@ -2509,11 +2631,12 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1sendChat
 
 typedef struct _DictIterData {
     JNIGlobalState* globalState;
-    DictionaryCtxt* dict;
-    DictIter iter;
+    const DictionaryCtxt* dict;
+    DictIter* iter;
     IndexData idata;
     XP_U16 depth;
 #ifdef DEBUG
+    pthread_t lastUser;
     XP_U32 guard;
 #endif
 } DictIterData;
@@ -2524,65 +2647,103 @@ static void freeIndices( DictIterData* data );
 
 JNIEXPORT jlong JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_di_1init
-( JNIEnv* env, jclass C, jlong jniGlobalPtr, jbyteArray jDictBytes,
-  jstring jname, jstring jpath )
+( JNIEnv* env, jclass C, jlong jniGlobalPtr, jlong dictPtr,
+  jobjectArray jPatsArr, jint minLen, jint maxLen )
 {
     jlong closure = 0;
     JNIGlobalState* globalState = (JNIGlobalState*)jniGlobalPtr;
     MAP_THREAD( &globalState->ti, env );
 
-    DictionaryCtxt* dict = makeDict( MPPARM(globalState->mpool) env,
-                                     TI_IF(&globalState->ti)
-                                     globalState->dictMgr, globalState->jniutil,
-                                     jname, jDictBytes, jpath, NULL, false );
+    DictionaryCtxt* dict = (DictionaryCtxt*)dictPtr;
     if ( !!dict ) {
         DictIterData* data = XP_CALLOC( globalState->mpool, sizeof(*data) );
         data->globalState = globalState;
-        data->dict = dict;
+        data->dict = dict_ref( dict, env );
         data->depth = 2;
 #ifdef DEBUG
         data->guard = GI_GUARD;
 #endif
+
+        jobject jdescs[3];
+        PatDesc patDescs[3] = {{0}};
+        jbyteArray jtiles[3];
+
+        int len = 0;
+        if ( !!jPatsArr ) {
+            len = (*env)->GetArrayLength( env, jPatsArr );
+            XP_ASSERT( len == 3 );
+            for ( int ii = 0; ii < len ; ++ii ) {
+                jdescs[ii] = (*env)->GetObjectArrayElement( env, jPatsArr, ii );
+                if ( !!jdescs[ii] ) {
+                    if ( getObject( env, jdescs[ii], "tilePat", "[B", &jtiles[ii] ) ) {
+                        patDescs[ii].nTiles = (*env)->GetArrayLength( env, jtiles[ii] );
+                        patDescs[ii].tiles = (Tile*)
+                            (*env)->GetByteArrayElements( env, jtiles[ii], NULL );
+                        patDescs[ii].anyOrderOk = getBool( env, jdescs[ii], "anyOrderOk" );
+                    }
+                } else {
+                    jtiles[ii] = NULL;
+                }
+            }
+        }
+
+        DIMinMax mm = { .min = minLen, .max = maxLen };
+        data->iter = di_makeIter( data->dict, env, &mm, NULL, 0,
+                                  !!jPatsArr ? patDescs : NULL, VSIZE(patDescs) );
+
+        for ( int ii = 0; ii < len ; ++ii ) {
+            if ( !!jtiles[ii] ) {
+                (*env)->ReleaseByteArrayElements( env, jtiles[ii],
+                                                  (jbyte*)patDescs[ii].tiles, 0 );
+                deleteLocalRef( env, jtiles[ii] );
+            }
+        }
+
+        makeIndex( data );
+        (void)di_firstWord( data->iter );
+
         closure = (jlong)data;
     }
     return closure;
 }
 
-
-#define DI_HEADER() {                                                   \
+#ifdef DEBUG
+# define DI_HEADER(THREAD_CHECK) {                                      \
     DictIterData* data = (DictIterData*)closure;                        \
     XP_ASSERT( NULL == data || data->guard == GI_GUARD );               \
+    if ( THREAD_CHECK && !!data ) {                                     \
+        if ( 0 == data->lastUser ) {                                    \
+            data->lastUser = pthread_self();                            \
+        } else {                                                        \
+            XP_ASSERT( data->lastUser == pthread_self() );              \
+        }                                                               \
+    }                                                                   \
+
+#else
+# define DI_HEADER(THREAD_CHECK) {                                      \
+    DictIterData* data = (DictIterData*)closure;                        \
+
+#endif
 
 #define DI_HEADER_END()                         \
     }
 
 JNIEXPORT void JNICALL
-Java_org_eehouse_android_xw4_jni_XwJNI_di_1setMinMax
-( JNIEnv* env, jclass C, jlong closure, jint min, jint max )
-{
-    DI_HEADER();
-    if ( NULL != data ) {
-        di_initIter( &data->iter, data->dict, min, max );
-        makeIndex( data );
-        (void)di_firstWord( &data->iter );
-    }
-    DI_HEADER_END();
-}
-
-JNIEXPORT void JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_di_1destroy
 ( JNIEnv* env, jclass C, jlong closure )
 {
-    DI_HEADER();
+    DI_HEADER(XP_FALSE);
     if ( NULL != data ) {
 #ifdef MEM_DEBUG
         MemPoolCtx* mpool = data->globalState->mpool;
 #endif
-        dict_unref( data->dict, env );
+
         freeIndices( data );
 
         MAP_REMOVE( &data->globalState->ti, env );
 
+        di_freeIter( data->iter, env);
+        dict_unref( data->dict, env );
         XP_FREE( mpool, data );
     }
     DI_HEADER_END();
@@ -2593,31 +2754,25 @@ Java_org_eehouse_android_xw4_jni_XwJNI_di_1wordCount
 (JNIEnv* env, jclass C, jlong closure )
 {
     jint result = 0;
-    DI_HEADER();
+    DI_HEADER(XP_TRUE);
     if ( NULL != data ) {
-        result = data->iter.nWords;
+        result = di_getNWords( data->iter );
     }
     DI_HEADER_END();
     return result;
 }
 
 JNIEXPORT jintArray JNICALL
-Java_org_eehouse_android_xw4_jni_XwJNI_di_1getCounts
-(JNIEnv* env, jclass C, jlong closure )
+Java_org_eehouse_android_xw4_jni_XwJNI_di_1getMinMax
+( JNIEnv* env, jclass C, jlong closure )
 {
     jintArray result = NULL;
-    DI_HEADER();
-    if ( NULL != data ) {
-        DictIter iter;
-        di_initIter( &iter, data->dict, 0, MAX_COLS_DICT );
+    DI_HEADER(XP_TRUE);
+    XP_U16 vals[2];
+    di_getMinMax( data->iter, &vals[0], &vals[1] );
 
-        LengthsArray lens;
-        if ( 0 < di_countWords( &iter, &lens ) ) {
-            XP_ASSERT( sizeof(jint) == sizeof(lens.lens[0]) );
-            result = makeIntArray( env, VSIZE(lens.lens), (jint*)&lens.lens,
-                                   sizeof(lens.lens[0]) );
-        }
-    }
+    result = makeIntArray( env, VSIZE(vals), vals, sizeof(vals[0]) );
+
     DI_HEADER_END();
     return result;
 }
@@ -2627,7 +2782,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_di_1getPrefixes
 ( JNIEnv* env, jclass C, jlong closure )
 {
     jobjectArray result = NULL;
-    DI_HEADER();
+    DI_HEADER(XP_TRUE);
     if ( NULL != data && NULL != data->idata.prefixes ) {
         result = makeStringArray( env, data->idata.count, NULL );
 
@@ -2651,13 +2806,14 @@ Java_org_eehouse_android_xw4_jni_XwJNI_di_1getIndices
 ( JNIEnv* env, jclass C, jlong closure )
 {
     jintArray jindices = NULL;
-    DI_HEADER();
+    DI_HEADER(XP_TRUE);
     if ( NULL != data ) {
-        XP_ASSERT( !!data->idata.indices );
-        XP_ASSERT( sizeof(jint) == sizeof(data->idata.indices[0]) );
-        jindices = makeIntArray( env, data->idata.count, 
-                                 (jint*)data->idata.indices,
-                                 sizeof(data->idata.indices[0]) );
+        if ( !!data->idata.indices ) { /* filters-block-all case */
+            XP_ASSERT( sizeof(jint) == sizeof(data->idata.indices[0]) );
+            jindices = makeIntArray( env, data->idata.count,
+                                     (jint*)data->idata.indices,
+                                     sizeof(data->idata.indices[0]) );
+        }
     }
     DI_HEADER_END();
     return jindices;
@@ -2668,13 +2824,13 @@ Java_org_eehouse_android_xw4_jni_XwJNI_di_1nthWord
 ( JNIEnv* env, jclass C, jlong closure, jint nn, jstring jdelim )
 {
     jstring result = NULL;
-    DI_HEADER();
+    DI_HEADER(XP_TRUE);
     if ( NULL != data ) {
-        if ( di_getNthWord( &data->iter, nn, data->depth, &data->idata ) ) {
+        if ( di_getNthWord( data->iter, env, nn, data->depth, &data->idata ) ) {
             XP_UCHAR buf[64];
             const XP_UCHAR* delim = NULL == jdelim ? NULL
                 : (*env)->GetStringUTFChars( env, jdelim, NULL );
-            di_wordToString( &data->iter, buf, VSIZE(buf), delim );
+            di_wordToString( data->iter, buf, VSIZE(buf), delim );
             result = (*env)->NewStringUTF( env, buf );
             if ( !!delim ) {
                 (*env)->ReleaseStringUTFChars( env, jdelim, delim );
@@ -2685,137 +2841,19 @@ Java_org_eehouse_android_xw4_jni_XwJNI_di_1nthWord
     return result;
 }
 
-typedef struct _FTData {
-    JNIEnv* env;
-    jbyteArray arrays[16];
-    int nArrays;
-} FTData;
-
-static XP_Bool
-onFoundTiles( void* closure, const Tile* tiles, int nTiles )
-{
-    FTData* ftd = (FTData*)closure;
-    ftd->arrays[ftd->nArrays++] = makeByteArray( ftd->env, nTiles,
-                                                 (const jbyte*)tiles );
-    return ftd->nArrays < VSIZE(ftd->arrays); /* still have room? */
-}
-
-JNIEXPORT jobjectArray JNICALL
-Java_org_eehouse_android_xw4_jni_XwJNI_di_1strToTiles
-( JNIEnv* env, jclass C, jlong closure, jstring jstr )
-{
-    jobjectArray result = NULL;
-    DI_HEADER();
-    const char* str = (*env)->GetStringUTFChars( env, jstr, NULL );
-
-    FTData ftd = { .env = env, };
-    dict_tilesForString( data->dict, str, onFoundTiles, &ftd );
-
-    if ( ftd.nArrays > 0 ) {
-        result = makeByteArrayArray( env, ftd.nArrays );
-        for ( int ii = 0; ii < ftd.nArrays; ++ii ) {
-            (*env)->SetObjectArrayElement( env, result, ii, ftd.arrays[ii] );
-            deleteLocalRef( env, ftd.arrays[ii] );
-        }
-    }
-
-    (*env)->ReleaseStringUTFChars( env, jstr, str );
-    DI_HEADER_END();
-    return result;
-}
-
-JNIEXPORT jint JNICALL
-Java_org_eehouse_android_xw4_jni_XwJNI_di_1getStartsWith
-( JNIEnv* env, jclass C, jlong closure, jobjectArray jtilesArr )
-{
-    jint result = -1;
-    DI_HEADER();
-
-    int len = (*env)->GetArrayLength( env, jtilesArr );
-    for ( int ii = 0; ii < len && -1 == result ; ++ii ) {
-        jbyteArray jtiles = (*env)->GetObjectArrayElement( env, jtilesArr, ii );
-        XP_U16 nTiles = (*env)->GetArrayLength( env, jtiles );
-        jbyte* tiles = (*env)->GetByteArrayElements( env, jtiles, NULL );
-
-        if ( 0 <= di_findStartsWith( &data->iter, (Tile*)tiles, nTiles ) ) {
-            result = di_getPosition( &data->iter );
-        }
-        (*env)->ReleaseByteArrayElements( env, jtiles, tiles, 0 );
-        deleteLocalRef( env, jtiles );
-    }
-
-    DI_HEADER_END();
-    return result;
-}
-
-JNIEXPORT jstring JNICALL
-Java_org_eehouse_android_xw4_jni_XwJNI_di_1tilesToStr
-( JNIEnv* env, jclass C, jlong closure, jbyteArray jtiles, jstring jdelim )
-{
-    jstring result = NULL;
-    DI_HEADER();
-    XP_UCHAR buf[64];
-    const XP_UCHAR* delim = NULL;
-    if ( !!jdelim ) {
-        delim = (*env)->GetStringUTFChars( env, jdelim, NULL );
-    }
-
-    XP_U16 nTiles = (*env)->GetArrayLength( env, jtiles );
-    jbyte* tiles = (*env)->GetByteArrayElements( env, jtiles, NULL );
-
-    XP_U16 strLen = dict_tilesToString( data->dict, (Tile*)tiles, nTiles,
-                                        buf, VSIZE(buf), delim );
-    if ( 0 < strLen ) {
-        buf[strLen] = '\0';
-        result = (*env)->NewStringUTF( env, buf );
-    }
-
-    if ( !!jdelim ) {
-        (*env)->ReleaseStringUTFChars( env, jdelim, delim );
-    }
-    (*env)->ReleaseByteArrayElements( env, jtiles, tiles, 0 );
-    DI_HEADER_END();
-    return result;
-}
-
-JNIEXPORT jboolean JNICALL
-Java_org_eehouse_android_xw4_jni_XwJNI_di_1hasDuplicates
-( JNIEnv* env, jclass C, jlong closure )
-{
-    jboolean result;
-    DI_HEADER();
-    result = dict_hasDuplicates( data->dict );
-    DI_HEADER_END();
-    return result;
-}
-
-JNIEXPORT jstring JNICALL
-Java_org_eehouse_android_xw4_jni_XwJNI_di_1getDesc
-( JNIEnv* env, jclass C, jlong closure )
-{
-    jstring result = NULL;
-    DI_HEADER();
-    if ( NULL != data ) {
-        const XP_UCHAR* disc = dict_getDesc( data->dict );
-        if ( NULL != disc && '\0' != disc[0] ) {
-            result = (*env)->NewStringUTF( env, disc );
-        }
-    }
-    DI_HEADER_END();
-    return result;
-}
-
 static void
 freeIndices( DictIterData* data )
 {
-    IndexData* idata = &data->idata;
-    if ( !!idata->prefixes ) {
-        XP_FREE( data->globalState->mpool, idata->prefixes );
-        idata->prefixes = NULL;
-    }
-    if( !!idata->indices ) {
-        XP_FREE( data->globalState->mpool, idata->indices );
-        idata->indices = NULL;
+    if ( !!data ) {
+        IndexData* idata = &data->idata;
+        if ( !!idata->prefixes ) {
+            XP_FREE( data->globalState->mpool, idata->prefixes );
+            idata->prefixes = NULL;
+        }
+        if( !!idata->indices ) {
+            XP_FREE( data->globalState->mpool, idata->indices );
+            idata->indices = NULL;
+        }
     }
 }
 
@@ -2840,7 +2878,7 @@ makeIndex( DictIterData* data )
     idata->indices = XP_MALLOC( mpool, count * sizeof(*idata->indices) );
     idata->count = count;
 
-    di_makeIndex( &data->iter, data->depth, idata );
+    di_makeIndex( data->iter, data->depth, idata );
     if ( 0 < idata->count ) {
         idata->prefixes = XP_REALLOC( mpool, idata->prefixes,
                                       idata->count * data->depth *

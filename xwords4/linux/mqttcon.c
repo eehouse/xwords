@@ -57,7 +57,7 @@ loadClientID( LaunchParams* params, MQTTConStorage* storage )
 }
 
 static void
-onMessageReceived( struct mosquitto *mosq, void *userdata,
+onMessageReceived( struct mosquitto* XP_UNUSED_DBG(mosq), void *userdata,
                   const struct mosquitto_message* message )
 {
     XP_LOGFF( "(len=%d)", message->payloadlen );
@@ -74,7 +74,7 @@ onMessageReceived( struct mosquitto *mosq, void *userdata,
 }
 
 static void
-connect_callback( struct mosquitto *mosq, void *userdata, int err )
+connect_callback( struct mosquitto *mosq, void *userdata, int XP_UNUSED_DBG(err) )
 {
     XP_LOGFF( "(err=%s)", mosquitto_strerror(err) );
     XP_USE(mosq);
@@ -104,7 +104,8 @@ subscribe_callback( struct mosquitto *mosq, void *userdata, int mid,
 }
 
 static void
-log_callback( struct mosquitto *mosq, void *userdata, int level, const char *str )
+log_callback( struct mosquitto *mosq, void *userdata, int level,
+              const char* XP_UNUSED_DBG(str) )
 {
     XP_USE(mosq);
     XP_USE(userdata);
@@ -122,11 +123,17 @@ handle_gotmsg( GIOChannel* source, GIOCondition XP_UNUSED(condition), gpointer d
     int pipe = g_io_channel_unix_get_fd( source );
     XP_ASSERT( pipe == storage->msgPipe[0] );
     short len;
-    ssize_t nRead = read( pipe, &len, sizeof(len) );
+#ifdef DEBUG
+    ssize_t nRead =
+#endif
+        read( pipe, &len, sizeof(len) );
     XP_ASSERT( nRead == sizeof(len) );
     len = ntohs(len);
     XP_U8 buf[len];
-    nRead = read( pipe, buf, len );
+#ifdef DEBUG
+    nRead =
+#endif
+        read( pipe, buf, len );
     XP_ASSERT( nRead == len );
 
     dvc_parseMQTTPacket( storage->params->dutil, NULL_XWE, buf, len );
@@ -167,8 +174,10 @@ mqttc_init( LaunchParams* params )
     storage->params = params;
 
     loadClientID( params, storage );
-
-    int res = pipe( storage->msgPipe );
+#ifdef DEBUG
+    int res =
+#endif
+        pipe( storage->msgPipe );
     XP_ASSERT( !res );
     ADD_SOCKET( storage, storage->msgPipe[0], handle_gotmsg );
     
@@ -209,8 +218,10 @@ void
 mqttc_cleanup( LaunchParams* params )
 {
     MQTTConStorage* storage = getStorage( params );
-
-    int err = mosquitto_loop_stop( storage->mosq, true ); /* blocks until thread dies */
+#ifdef DEBUG
+    int err =
+#endif
+        mosquitto_loop_stop( storage->mosq, true ); /* blocks until thread dies */
     XP_LOGFF( "mosquitto_loop_stop() => %s", mosquitto_strerror(err) );
     mosquitto_destroy( storage->mosq );
     storage->mosq = NULL;
@@ -239,9 +250,11 @@ void
 mqttc_invite( LaunchParams* params, NetLaunchInfo* nli, const MQTTDevID* invitee )
 {
     MQTTConStorage* storage = getStorage( params );
+#ifdef DEBUG
     gchar buf[32];
     XP_LOGFF( "need to send to %s", formatMQTTDevID(invitee, buf, sizeof(buf) ) );
     XP_ASSERT( 16 == strlen(buf) );
+#endif
 
     XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(params->mpool)
                                                 params->vtMgr );

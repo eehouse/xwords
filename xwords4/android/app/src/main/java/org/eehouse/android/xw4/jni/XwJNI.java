@@ -22,6 +22,7 @@ package org.eehouse.android.xw4.jni;
 
 import android.graphics.Rect;
 
+import java.io.Serializable;
 import java.util.Arrays;
 
 import org.eehouse.android.xw4.Assert;
@@ -531,29 +532,130 @@ public class XwJNI {
     public static boolean dict_getInfo( byte[] dict, String name, String path,
                                         boolean check, DictInfo info )
     {
-        return dict_getInfo( getJNI().m_ptrGlobals, dict, name, path, check, info );
+        DictWrapper wrapper = makeDict( dict, name, path );
+        return dict_getInfo( wrapper, check, info );
+    }
+
+    public static boolean dict_getInfo( DictWrapper dict, boolean check, DictInfo info )
+    {
+        return dict_getInfo( getJNI().m_ptrGlobals, dict.getDictPtr(),
+                             check, info );
+    }
+
+    public static String dict_getDesc( DictWrapper dict )
+    {
+        return dict_getDesc( dict.getDictPtr() );
+    }
+
+    public static String dict_tilesToStr( DictWrapper dict, byte[] tiles, String delim )
+    {
+        return dict_tilesToStr( dict.getDictPtr(), tiles, delim );
+    }
+
+    public static byte[][] dict_strToTiles( DictWrapper dict, String str )
+    {
+        return dict_strToTiles( dict.getDictPtr(), str );
+    }
+
+    public static boolean dict_hasDuplicates( DictWrapper dict )
+    {
+        return dict_hasDuplicates( dict.getDictPtr() );
+    }
+
+    public static String getTilesInfo( DictWrapper dict )
+    {
+        return dict_getTilesInfo( getJNI().m_ptrGlobals, dict.getDictPtr() );
     }
 
     public static native int dict_getTileValue( long dictPtr, int tile );
 
     // Dict iterator
     public final static int MAX_COLS_DICT = 15; // from dictiter.h
-    public static long di_init( byte[] dict, String name, String path )
+    public static DictWrapper makeDict( byte[] bytes, String name, String path )
     {
-        return di_init( getJNI().m_ptrGlobals, dict, name, path );
+        long dict = dict_make( getJNI().m_ptrGlobals, bytes, name, path );
+        return new DictWrapper( dict );
     }
-    public static native void di_setMinMax( long closure, int min, int max );
-    public static native void di_destroy( long closure );
-    public static native int di_wordCount( long closure );
-    public static native int[] di_getCounts( long closure );
-    public static native String di_nthWord( long closure, int nn, String delim );
-    public static native String[] di_getPrefixes( long closure );
-    public static native int[] di_getIndices( long closure );
-    public static native byte[][] di_strToTiles( long closure, String str );
-    public static native int di_getStartsWith( long closure, byte[][] prefix );
-    public static native String di_getDesc( long closure );
-    public static native String di_tilesToStr( long closure, byte[] tiles, String delim );
-    public static native boolean di_hasDuplicates( long closure );
+
+    public static class PatDesc implements Serializable {
+        public String strPat;
+        public byte[] tilePat;
+        public boolean anyOrderOk;
+
+        @Override
+        public String toString()
+        {
+            return String.format( "{str: %s; nTiles: %d; anyOrderOk: %b}",
+                                  strPat, null == tilePat ? 0 : tilePat.length,
+                                  anyOrderOk );
+        }
+    }
+
+    public static class IterWrapper {
+        private long iterRef;
+
+        private IterWrapper(long ref) { this.iterRef = ref; }
+
+        private long getRef() { return this.iterRef; }
+
+        @Override
+        public void finalize() throws java.lang.Throwable
+        {
+            di_destroy( iterRef );
+            super.finalize();
+        }
+    }
+
+    public interface DictIterProcs {
+        void onIterReady( IterWrapper iterRef );
+    }
+
+    public static void di_init( DictWrapper dict, final PatDesc[] pats,
+                                final int minLen, final int maxLen,
+                                final DictIterProcs callback )
+    {
+        final long jniState = getJNI().m_ptrGlobals;
+        final long dictPtr = dict.getDictPtr();
+        new Thread( new Runnable() {
+                @Override
+                public void run() {
+                    long iterPtr = di_init( jniState, dictPtr, pats,
+                                            minLen, maxLen );
+                    callback.onIterReady( new IterWrapper(iterPtr) );
+                }
+            } ).start();
+    }
+
+    public static int di_wordCount( IterWrapper iter )
+    {
+        return di_wordCount( iter.getRef() );
+    }
+
+    public static String di_nthWord( IterWrapper iter, int nn, String delim )
+    {
+        return di_nthWord( iter.getRef(), nn, delim );
+    }
+
+    public static int[] di_getMinMax( IterWrapper iter ) {
+        return di_getMinMax( iter.getRef() );
+    }
+
+    public static String[] di_getPrefixes( IterWrapper iter )
+    {
+        return di_getPrefixes( iter.getRef() );
+    }
+
+    public static int[] di_getIndices( IterWrapper iter )
+    {
+        return di_getIndices( iter.getRef() );
+    }
+
+    private static native void di_destroy( long closure );
+    private static native int di_wordCount( long closure );
+    private static native String di_nthWord( long closure, int nn, String delim );
+    private static native int[] di_getMinMax( long closure );
+    private static native String[] di_getPrefixes( long closure );
+    private static native int[] di_getIndices( long closure );
 
     // Private methods -- called only here
     private static native long initGlobals( DUtilCtxt dutil, JNIUtils jniu );
@@ -575,14 +677,18 @@ public class XwJNI {
                                                 byte[] stream );
     private static native long initGameJNI( long jniState, int seed );
     private static native void envDone( long globals );
+    private static native long dict_make( long jniState, byte[] dict, String name, String path );
     private static native void dict_ref( long dictPtr );
     private static native void dict_unref( long dictPtr );
-    private static native boolean dict_getInfo( long jniState, byte[] dict,
-                                                String name, String path,
-                                                boolean check,
-                                                DictInfo info );
-    private static native long di_init( long jniState, byte[] dict,
-                                        String name, String path );
+    private static native byte[][] dict_strToTiles( long dictPtr, String str );
+    private static native String dict_tilesToStr( long dictPtr, byte[] tiles, String delim );
+    private static native boolean dict_hasDuplicates( long dictPtr );
+    private static native String dict_getTilesInfo( long jniState, long dictPtr );
+    private static native boolean dict_getInfo( long jniState, long dictPtr,
+                                                boolean check, DictInfo info );
+    private static native String dict_getDesc( long dictPtr );
+    private static native long di_init( long jniState, long dictPtr,
+                                        PatDesc[] pats, int minLen, int maxLen );
 
     private static native byte[][]
         smsproto_prepOutbound( long jniState, SMS_CMD cmd, int gameID, byte[] buf,

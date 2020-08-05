@@ -1,6 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- -*- compile-command: "cd ../../; ant install"; -*- -->
-
 <!-- top-level layout is hozontal, with an image and another layout -->
 <org.eehouse.android.xw4.GameListItem
      xmlns:android="http://schemas.android.com/apk/res/android"
@@ -99,9 +97,10 @@
                      android:textAppearance="?android:attr/textAppearanceMedium"
                      />
 
-                <ImageButton android:id="@+id/expander"
-                             style="@style/expander_button"
-                             />
+                <org.eehouse.android.xw4.ExpandImageButton
+                    android:id="@+id/expander"
+                    style="@style/expander_button"
+                    />
 
             </LinearLayout>
 
