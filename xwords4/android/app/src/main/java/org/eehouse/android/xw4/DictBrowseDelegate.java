@@ -133,6 +133,7 @@ public class DictBrowseDelegate extends DelegateBase
     private PatTableRow m_rows[] = { null, null, null };
     private Spinner m_spinnerMin;
     private Spinner m_spinnerMax;
+    private boolean m_newAlertShown;
 
     private class DictListAdapter extends BaseAdapter
         implements SectionIndexer {
@@ -688,10 +689,24 @@ public class DictBrowseDelegate extends DelegateBase
                                            m_browseState.onFilterAccepted( m_dict, null );
                                            initList( wrapper );
                                            setFindPats( m_browseState.m_pats );
+
+                                           newFeatureAlert();
                                        }
                                    } );
                            }
                        } );
+    }
+
+    private void newFeatureAlert()
+    {
+        if ( ! m_newAlertShown ) {
+            m_newAlertShown = true;
+            makeNotAgainBuilder( R.string.new_feature_filter, R.string.key_na_newFeatureFilter )
+                .setActionPair( Action.SHOW_FAQ, R.string.button_faq )
+                .setParams("filters", "intro")
+                .setTitle(R.string.new_feature_title)
+                .show();
+        }
     }
     
     private void initList( IterWrapper newIter )

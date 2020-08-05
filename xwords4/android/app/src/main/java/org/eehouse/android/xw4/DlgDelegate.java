@@ -124,6 +124,7 @@ public class DlgDelegate {
         ASKED_PHONE_STATE,
         PERMS_QUERY,
         PERMS_BANNED_INFO,
+        SHOW_FAQ,
     } // Action enum
 
     public static class ActionPair implements Serializable {

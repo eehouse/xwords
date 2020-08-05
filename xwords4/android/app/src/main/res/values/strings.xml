@@ -732,13 +732,13 @@
     <string name="button_revert_all">Restore all</string>
     <!-- Text of confirmation dialog for above -->
     <string name="confirm_revert_colors">Are you sure you want to
-      restore all color settings to their original values?</string>
+      restore all color settings to their default values?</string>
     <!-- Second menu item.  Reverts only the colors to their
          default/original values -->
     <string name="button_revert_colors">Restore colors</string>
     <!-- Text of confirmation dialog for above -->
     <string name="confirm_revert_all">Are you sure you want to restore
-      all settings to their original values?</string>
+      all settings to their default values?</string>
     <!--       
        ############################################################
        # :Screens:
@@ -1621,6 +1621,15 @@
     <string name="filter_title_fmt">Loading %1$s…</string>
     <!-- Message in progress alert shown while wordlist is loading -->
     <string name="filter_progress_fmt">Processing %1$d words</string>
+
+    <!-- Text of alert shown when user first opens wordlist
+         browser. Shown until not-again checkbox checked. -->
+    <string name="new_feature_filter">This wordlist browser now has
+    dramatically improved filtering abilities. As an example, you can
+    show all words containing \"QU\" and ending in \"ING\".\n\nAccess
+    filtering by tapping the Expander button at the upper-right corner
+    of the window.\n\nRead more on the FAQ by tapping the button
+    below.</string>
 
     <string name="board_menu_file_email">Email author</string>
     <!--  -->
@@ -2610,6 +2619,10 @@
          substituted is user's string; second substitution is name of
          language -->
     <string name="no_tiles_exist">\"%1$s\" cannot be spelled with %2$s tiles.</string>
+
+    <string name="new_feature_title">New Feature Alert</string>
+
+    <string name="button_faq">Show FAQ</string>
 
     <!-- MQTT stuff. May not see the light of day -->
     <string name="invite_choice_mqtt">Internet/MQTT</string>

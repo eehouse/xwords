@@ -319,6 +319,13 @@ public class DelegateBase implements DlgClickNotify,
         }
     }
 
+    private void showFaq( String category, String entry )
+    {
+        Context context = getActivity();
+        String uri = getString( R.string.faq_uri_fmt, category, entry );
+        NetUtils.launchWebBrowserWith( context, uri );
+    }
+
     protected String getString( int resID, Object... params )
     {
         return LocUtils.getString( m_activity, resID, params );
@@ -737,7 +744,7 @@ public class DelegateBase implements DlgClickNotify,
     public boolean onPosButton( Action action, Object[] params )
     {
         boolean handled = true;
-        Log.d( TAG, "%s.onPosButton(%s)", getClass().getSimpleName(), action );
+        // Log.d( TAG, "%s.onPosButton(%s)", getClass().getSimpleName(), action );
         switch( action ) {
         case ENABLE_NBS_ASK:
             showSMSEnableDialog( Action.ENABLE_NBS_DO );
@@ -757,8 +764,11 @@ public class DelegateBase implements DlgClickNotify,
         case PERMS_BANNED_INFO:
             NetUtils.launchWebBrowserWith( m_activity, R.string.nbs_ban_url );
             break;
+        case SHOW_FAQ:
+            showFaq( (String)params[0], (String)params[1] );
+            break;
         default:
-            Log.d( TAG, "unhandled action %s", action.toString() );
+            Log.d( TAG, "onPosButton(): unhandled action %s", action.toString() );
             // Assert.assertTrue( !BuildConfig.DEBUG );
             handled = false;
             break;

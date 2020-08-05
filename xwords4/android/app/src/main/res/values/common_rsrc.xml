@@ -156,6 +156,7 @@
   <string name="key_na_longtap_lookup">key_na_longtap_lookup</string>
   <string name="key_na_perms_phonestate">key_na_perms_phonestate</string>
   <string name="key_na_addBlankButton">key_na_addBlankButton</string>
+  <string name="key_na_newFeatureFilter">key_na_newFeatureFilter</string>
 
   <string name="key_na_dupstatus_host">key_na_dupstatus_host</string>
   <string name="key_na_dupstatus_guest">key_na_dupstatus_guest</string>
@@ -175,6 +176,8 @@
   <string name="default_update_url">https://eehouse.org/xw4/info.py</string>
   <string name="default_relay_url">https://eehouse.org/xw4/relay.py</string>
   <string name="default_mqtt_url">https://liquidsugar.net/xw4/api/v1</string>
+
+  <string name="faq_uri_fmt">https://eehouse.org/xw4/faq.html#%1$s</string>
 
   <string-array name="board_sizes">
     <item>15x15</item>
