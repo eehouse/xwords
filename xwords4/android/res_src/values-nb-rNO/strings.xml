@@ -971,4 +971,6 @@
     <string name="lang_name_hungarian">Ungarsk</string>
     <string name="robot_iq_label">Robot-IQ</string>
     <string name="dup_minutes_label">Minutter per tur</string>
+    <string name="str_submit_confirm">Send nåværende trekk\?
+\n</string>
 </resources>
