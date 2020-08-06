@@ -80,6 +80,7 @@ public class DictBrowseDelegate extends DelegateBase
         public PatDesc[] m_pats;
         public int[] m_counts;
         public boolean m_expanded;
+        public String m_delim;
 
         public DictBrowseState()
         {
@@ -155,7 +156,7 @@ public class DictBrowseDelegate extends DelegateBase
         {
             TextView text = (TextView)
                 inflate( android.R.layout.simple_list_item_1 );
-            String str = XwJNI.di_nthWord( m_diClosure, position, null );
+            String str = XwJNI.di_nthWord( m_diClosure, position, m_browseState.m_delim );
             if ( null != str ) {
                 if ( SHOW_NUM ) {
                     str = String.format( "%1$5d %2$s", position, str );
@@ -542,6 +543,7 @@ public class DictBrowseDelegate extends DelegateBase
                                 || !XwJNI.dict_hasDuplicates( m_dict ) ) {
                         pats[ii].tilePat = choices[0];
                     } else {
+                        m_browseState.m_delim = DELIM;
                         showDialogFragment( DlgID.CHOOSE_TILES, (Object)choices, ii );
                         pending = true;
                     }
