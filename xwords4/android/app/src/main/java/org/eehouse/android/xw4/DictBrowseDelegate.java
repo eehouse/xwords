@@ -308,6 +308,7 @@ public class DictBrowseDelegate extends DelegateBase
         switch ( dlgID ) {
         case CHOOSE_TILES:
             final byte[][] choices = (byte[][])params[0];
+            final int indx = (Integer)params[1];
             final String[] strs = new String[choices.length];
             for ( int ii = 0; ii < choices.length; ++ii ) {
                 strs[ii] = XwJNI.dict_tilesToStr( m_dict, choices[ii], DELIM );
@@ -327,7 +328,8 @@ public class DictBrowseDelegate extends DelegateBase
                                         public void onClick( DialogInterface dialog, int which )
                                         {
                                             if ( 0 <= chosen[0] ) {
-                                                Assert.failDbg();
+                                                int sel = chosen[0];
+                                                useButtonClicked( indx, choices[sel] );
                                             }
                                         }
                                     } )
@@ -507,7 +509,9 @@ public class DictBrowseDelegate extends DelegateBase
         }
     }
 
-    private void useButtonClicked()
+    private void useButtonClicked() { useButtonClicked( -1, null ); }
+
+    private void useButtonClicked( int justFixed, byte[] fixedTiles )
     {
         scrapeBrowseState();
         Log.d( TAG, "useButtonClicked(): m_browseState: %s", m_browseState );
@@ -521,25 +525,29 @@ public class DictBrowseDelegate extends DelegateBase
 
         PatDesc[] pats = m_browseState.m_pats;
         for ( int ii = 0; ii < pats.length && !pending; ++ii ) {
-            String strPat = pats[ii].strPat;
-            if ( null != strPat && 0 < strPat.length() ) {
-                byte[][] choices = XwJNI.dict_strToTiles( m_dict, strPat );
-                if ( null == choices || 0 == choices.length ) {
-                    String langName = DictLangCache.getLangName( m_activity, m_lang );
-                    String msg = getString( R.string.no_tiles_exist, strPat, langName );
-                    makeOkOnlyBuilder( msg )
-                        .setActionPair( Action.SHOW_TILES, R.string.show_tiles_button )
-                        .show();
-                    pending = true;
-                } else if ( 1 == choices.length
-                            || !XwJNI.dict_hasDuplicates( m_dict ) ) {
-                    pats[ii].tilePat = choices[0];
-                } else {
-                    showDialogFragment( DlgID.CHOOSE_TILES, (Object)choices );
-                    pending = true;
-                }
+            if ( justFixed == ii ) {
+                pats[ii].tilePat = fixedTiles;
             } else {
-                pats[ii].tilePat = null;
+                String strPat = pats[ii].strPat;
+                if ( null != strPat && 0 < strPat.length() ) {
+                    byte[][] choices = XwJNI.dict_strToTiles( m_dict, strPat );
+                    if ( null == choices || 0 == choices.length ) {
+                        String langName = DictLangCache.getLangName( m_activity, m_lang );
+                        String msg = getString( R.string.no_tiles_exist, strPat, langName );
+                        makeOkOnlyBuilder( msg )
+                            .setActionPair( Action.SHOW_TILES, R.string.show_tiles_button )
+                            .show();
+                        pending = true;
+                    } else if ( 1 == choices.length
+                                || !XwJNI.dict_hasDuplicates( m_dict ) ) {
+                        pats[ii].tilePat = choices[0];
+                    } else {
+                        showDialogFragment( DlgID.CHOOSE_TILES, (Object)choices, ii );
+                        pending = true;
+                    }
+                } else {
+                    pats[ii].tilePat = null;
+                }
             }
         }
 

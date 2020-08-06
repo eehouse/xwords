@@ -77,7 +77,7 @@ typedef struct DictIter DictIter;
  * ends-with. The first is more powerful but I'm not sure it'll ever be part
  * of a shipping UI.*/
 typedef struct _PatDesc {
-    const Tile* tiles;
+    Tile tiles[16];
     XP_U16 nTiles;
     XP_Bool anyOrderOk;
 } PatDesc;

@@ -832,6 +832,9 @@ typedef enum {
     ,CMD_TESTPAT
     ,CMD_TESTSTR
 #endif
+    ,CMD_TESTSTARTSW
+    ,CMD_TESTCONTAINS
+    ,CMD_TESTENDS
     ,CMD_DICTDIR
     ,CMD_PLAYERDICT
     ,CMD_SEED
@@ -971,6 +974,10 @@ static CmdInfoRec CmdInfoRecs[] = {
     ,{ CMD_TESTSTR, true, "test-string",
        "string to be tested against test-pat; exit with non-0 if doesn't match" }
 #endif
+    ,{CMD_TESTSTARTSW, true, "test-startsw", "use as 'start-with' for pattern"}
+    ,{CMD_TESTCONTAINS, true, "test-contains", "use as 'contains' for pattern"}
+    ,{CMD_TESTENDS, true, "test-endsw", "use as 'ends-with' for pattern"}
+
     ,{ CMD_DICTDIR, true, "dict-dir", "path to dir in which dicts will be sought" }
     ,{ CMD_PLAYERDICT, true, "player-dict", "dictionary name for player (in sequence)" }
     ,{ CMD_SEED, true, "seed", "random seed" }
@@ -1941,14 +1948,45 @@ tmp_noop_sigintterm( int XP_UNUSED(sig) )
     exit(0);
 }
 
+
+typedef struct _FTD {
+    PatDesc* desc;
+    XP_Bool called;
+} FTD;
+
+static XP_Bool
+onFoundTiles2( void* closure, const Tile* tiles, int nTiles )
+{
+    FTD* data = (FTD*)closure;
+    if ( data->called ) {
+        XP_LOGFF( "ERROR: called more than once; Hungarian case???" );
+    } else if ( nTiles > VSIZE(data->desc->tiles) ) {
+        XP_ASSERT(0);
+    } else {
+        data->called = XP_TRUE;
+        data->desc->nTiles = nTiles;
+        XP_MEMCPY( &data->desc->tiles[0], tiles, nTiles * sizeof(tiles[0]) );
+    }
+    return XP_TRUE;
+}
+
 #ifdef XWFEATURE_WALKDICT
+static void
+getPat( const DictionaryCtxt* dict, const XP_UCHAR* str, PatDesc* desc )
+{
+    if ( !!str && '\0' != str[0] ) {
+        FTD data = { .desc = desc, };
+        dict_tilesForString( dict, str, 0, onFoundTiles2, &data );
+    }
+}
+
 static DictIter*
 patsParamsToIter( const LaunchParams* params, const DictionaryCtxt* dict )
 {
     const XP_UCHAR** strPats = NULL;
     const XP_UCHAR* _strPats[4];
     XP_U16 nStrPats = 0;
-    const PatDesc* pats = NULL;
+    PatDesc descs[3] = {0};
     XP_U16 nPatDescs = 0;
 
     if ( !!params->iterTestPats ) {
@@ -1962,7 +2000,10 @@ patsParamsToIter( const LaunchParams* params, const DictionaryCtxt* dict )
             strPats[ii] = iter->data;
         }
     } else if ( !!params->patStartW || !!params->patContains || !!params->patEndsW ) {
-        XP_ASSERT(0);
+        getPat( dict, params->patStartW, &descs[0] );
+        getPat( dict, params->patContains, &descs[1] );
+        getPat( dict, params->patEndsW, &descs[2] );
+        nPatDescs = 3;
         /* and what about the boolean? */
     }
 
@@ -1973,7 +2014,7 @@ patsParamsToIter( const LaunchParams* params, const DictionaryCtxt* dict )
     }
 
     DictIter* iter = di_makeIter( dict, NULL_XWE, dimmp, strPats, nStrPats,
-                                  pats, nPatDescs );
+                                  descs, nPatDescs );
     return iter;
 }
 
@@ -2822,6 +2863,16 @@ main( int argc, char** argv )
             mainParams.iterTestPatStr = optarg;
             break;
 #endif
+        case CMD_TESTSTARTSW:
+            mainParams.patStartW = optarg;
+            break;
+        case CMD_TESTCONTAINS:
+            mainParams.patContains = optarg;
+            break;
+        case CMD_TESTENDS:
+            mainParams.patEndsW = optarg;
+            break;
+
         case CMD_DICTDIR:
             mainParams.dictDirs = g_slist_append( mainParams.dictDirs, optarg );
             break;

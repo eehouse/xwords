@@ -2664,25 +2664,30 @@ Java_org_eehouse_android_xw4_jni_XwJNI_di_1init
         data->guard = GI_GUARD;
 #endif
 
-        jobject jdescs[3];
-        PatDesc patDescs[3] = {{0}};
-        jbyteArray jtiles[3];
+        PatDesc patDescs[3];
+        XP_MEMSET( patDescs, 0, VSIZE(patDescs) * sizeof(patDescs[0]) );
 
         int len = 0;
         if ( !!jPatsArr ) {
             len = (*env)->GetArrayLength( env, jPatsArr );
             XP_ASSERT( len == 3 );
             for ( int ii = 0; ii < len ; ++ii ) {
-                jdescs[ii] = (*env)->GetObjectArrayElement( env, jPatsArr, ii );
-                if ( !!jdescs[ii] ) {
-                    if ( getObject( env, jdescs[ii], "tilePat", "[B", &jtiles[ii] ) ) {
-                        patDescs[ii].nTiles = (*env)->GetArrayLength( env, jtiles[ii] );
-                        patDescs[ii].tiles = (Tile*)
-                            (*env)->GetByteArrayElements( env, jtiles[ii], NULL );
-                        patDescs[ii].anyOrderOk = getBool( env, jdescs[ii], "anyOrderOk" );
+                jobject jdesc = (*env)->GetObjectArrayElement( env, jPatsArr, ii );
+                if ( !!jdesc ) {
+                    jbyteArray jtiles;
+                    if ( getObject( env, jdesc, "tilePat", "[B", &jtiles ) ) {
+                        int nTiles = (*env)->GetArrayLength( env, jtiles );
+                        if ( 0 < nTiles ) {
+                            patDescs[ii].nTiles = nTiles;
+                            jbyte* tiles = (*env)->GetByteArrayElements( env, jtiles, NULL );
+                            XP_MEMCPY( &patDescs[ii].tiles[0], tiles,
+                                       nTiles * sizeof(patDescs[ii].tiles[0]) );
+                            (*env)->ReleaseByteArrayElements( env, jtiles, tiles, 0 );
+                            patDescs[ii].anyOrderOk = getBool( env, jdesc, "anyOrderOk" );
+                        }
+                        deleteLocalRef( env, jtiles );
                     }
-                } else {
-                    jtiles[ii] = NULL;
+                    deleteLocalRef( env, jdesc );
                 }
             }
         }
@@ -2690,14 +2695,6 @@ Java_org_eehouse_android_xw4_jni_XwJNI_di_1init
         DIMinMax mm = { .min = minLen, .max = maxLen };
         data->iter = di_makeIter( data->dict, env, &mm, NULL, 0,
                                   !!jPatsArr ? patDescs : NULL, VSIZE(patDescs) );
-
-        for ( int ii = 0; ii < len ; ++ii ) {
-            if ( !!jtiles[ii] ) {
-                (*env)->ReleaseByteArrayElements( env, jtiles[ii],
-                                                  (jbyte*)patDescs[ii].tiles, 0 );
-                deleteLocalRef( env, jtiles[ii] );
-            }
-        }
 
         makeIndex( data );
         (void)di_firstWord( data->iter );
