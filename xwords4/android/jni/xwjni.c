@@ -2818,12 +2818,12 @@ Java_org_eehouse_android_xw4_jni_XwJNI_di_1getIndices
 
 JNIEXPORT jstring JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_di_1nthWord
-( JNIEnv* env, jclass C, jlong closure, jint nn, jstring jdelim )
+( JNIEnv* env, jclass C, jlong closure, jint jposn, jstring jdelim )
 {
     jstring result = NULL;
     DI_HEADER(XP_TRUE);
     if ( NULL != data ) {
-        if ( di_getNthWord( data->iter, env, nn, data->depth, &data->idata ) ) {
+        if ( di_getNthWord( data->iter, env, jposn, data->depth, &data->idata ) ) {
             XP_UCHAR buf[64];
             const XP_UCHAR* delim = NULL == jdelim ? NULL
                 : (*env)->GetStringUTFChars( env, jdelim, NULL );
@@ -2832,6 +2832,8 @@ Java_org_eehouse_android_xw4_jni_XwJNI_di_1nthWord
             if ( !!delim ) {
                 (*env)->ReleaseStringUTFChars( env, jdelim, delim );
             }
+        } else {
+            XP_LOGFF( "failed to get %dth word", jposn );
         }
     }
     DI_HEADER_END();

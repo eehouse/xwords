@@ -2014,7 +2014,7 @@ patsParamsToIter( const LaunchParams* params, const DictionaryCtxt* dict )
     }
 
     DictIter* iter = di_makeIter( dict, NULL_XWE, dimmp, strPats, nStrPats,
-                                  descs, nPatDescs );
+                                  0 == nPatDescs ? NULL : descs, nPatDescs );
     return iter;
 }
 

@@ -59,7 +59,7 @@ public class DictBrowseDelegate extends DelegateBase
     implements View.OnClickListener {
     private static final String TAG = DictBrowseDelegate.class.getSimpleName();
     private static final String DELIM = ".";
-    private static final boolean SHOW_NUM = false;
+    private static final boolean SHOW_NUM = BuildConfig.DEBUG;
     private static final String[] FAQ_PARAMS = {"filters", "intro"};
 
     private static final String DICT_NAME = "DICT_NAME";
@@ -159,7 +159,8 @@ public class DictBrowseDelegate extends DelegateBase
             String str = XwJNI.di_nthWord( m_diClosure, position, m_browseState.m_delim );
             if ( null != str ) {
                 if ( SHOW_NUM ) {
-                    str = String.format( "%1$5d %2$s", position, str );
+                    // Yep, 7 digits. Polish.
+                    str = String.format( "%1$7d %2$s", 1+position, str );
                 }
                 text.setText( str );
                 text.setOnClickListener( DictBrowseDelegate.this );
