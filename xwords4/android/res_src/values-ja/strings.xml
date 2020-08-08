@@ -981,7 +981,7 @@ WiFi ダイレクト経由で接続可能なデバイスはありません。</s
     <string name="invite_choice_mqtt">Internet/MQTT</string>
     <string name="no_tiles_exist">\"%1$s\" は %2$s のタイルで正しくスペルできません。</string>
     <string name="pick_tiles_title">「スペル」のタイルを選択してください</string>
-    <string name="expl_mqtt_url">新しい mqtt ベースのリレー API の URL</string>
+    <string name="expl_mqtt_url">新しい MQTT ベースのリレー API の URL</string>
     <string name="mqtt_qos">MQTT QOS</string>
     <string name="mqtt_port">MQTT ポート</string>
     <string name="mqtt_host">MQTT ホスト</string>
