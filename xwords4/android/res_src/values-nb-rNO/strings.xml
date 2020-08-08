@@ -973,4 +973,28 @@
     <string name="dup_minutes_label">Minutter per tur</string>
     <string name="str_submit_confirm">Send nåværende trekk\?
 \n</string>
+    <string name="logstore_cleared_fmt">%1$d loggenheter sletter</string>
+    <string name="logstore_notdumped">Kunne ikke skrive logger</string>
+    <string name="gamel_menu_logstore_dump">Skriv lagrede logger til fil</string>
+    <string name="gamel_menu_logstore_clear">Tøm loggføring</string>
+    <string name="gamel_menu_logstore_off">Skru av loggføring</string>
+    <string name="gamel_menu_logstore_on">Skru på loggføring</string>
+    <string name="gamel_menu_logs">Avlusingslogg</string>
+    <string name="word_blocked_by_phony">Ord eller ord som ikke er å finne i ordlisten %2$s: %1$s.</string>
+    <string name="unsafe_open_disregard">Åpne uansett</string>
+    <string name="history_autopause">Satt på pause automatisk.</string>
+    <string name="history_pause_fmt">Satt på pause av: %1$s</string>
+    <string name="history_unpause_fmt">Opphevet pause etter %2$s av: %1$s.</string>
+    <string name="autopause_expl_fmt">Tidsuret for spillet \"%1$s\" utløp, fordi ingen trekk ble utført, så det har blitt satt på pause for deg.</string>
+    <string name="unpause_notify_expl_fmt">Spiller %1$s har opphevet pausen fordi: %2$s</string>
+    <string name="pause_notify_expl_fmt">Spiller %1$s har satt spillet på pause fordi: %2$s</string>
+    <string name="unpause_notify_fmt">Spiller %1$s har opphevet pausen.</string>
+    <string name="pause_notify_fmt">Spiller %1$s har satt spillet på pause.</string>
+    <string name="pause_forget_msg">Glem melding</string>
+    <string name="pause_expl_hint">Hvorfor gjør jeg dette</string>
+    <string name="pause_save_msg">Husk melding</string>
+    <string name="unpause_title">Pause opphevet</string>
+    <string name="pause_title">Spill på pause</string>
+    <string name="expl_mqtt_url">Nettadresse for nytt MQTT-basert videresendings-API</string>
+    <string name="invite_subject">La oss spille CrossWords</string>
 </resources>
