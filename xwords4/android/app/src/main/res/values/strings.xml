@@ -2593,7 +2593,7 @@
     <!-- Debug-build-only menu to turn on saving of logs -->
     <string name="gamel_menu_logstore_on">Enable log storage</string>
     <!-- Debug-build-only menu to turn off saving of logs -->
-    <string name="gamel_menu_logstore_off">Diable log storage</string>
+    <string name="gamel_menu_logstore_off">Disable log storage</string>
     <!-- Debug-build-only menu to clear/delete saved logs -->
     <string name="gamel_menu_logstore_clear">Clear stored logs</string>
     <!-- Debug-build-only menu to write saved logs to a world-readable file -->
