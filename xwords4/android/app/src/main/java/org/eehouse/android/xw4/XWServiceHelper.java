@@ -50,7 +50,11 @@ abstract class XWServiceHelper {
 
     Context getContext() { return mContext; }
 
-    abstract MultiMsgSink getSink( long rowid );
+    MultiMsgSink getSink( long rowid )
+    {
+        return new MultiMsgSink( getContext(), rowid );
+    }
+
     abstract void postNotification( String device, int gameID, long rowid );
 
     protected ReceiveResult receiveMessage( int gameID,

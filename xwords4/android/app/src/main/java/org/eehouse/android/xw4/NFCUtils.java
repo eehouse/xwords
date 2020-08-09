@@ -381,7 +381,7 @@ public class NFCUtils {
                         addReplyFor( new byte[]{REPLY_NOGAME}, gameID[0] );
                     } else {
                         for ( long rowid : rowids ) {
-                            NFCMsgSink sink = new NFCMsgSink( context, rowid );
+                            MultiMsgSink sink = new MultiMsgSink( context, rowid );
                             helper.receiveMessage( rowid, sink, body );
                         }
                     }
@@ -1043,13 +1043,6 @@ public class NFCUtils {
         }
 
         @Override
-        protected MultiMsgSink getSink( long rowid )
-        {
-            Context context = getContext();
-            return new NFCMsgSink( context, rowid );
-        }
-
-        @Override
         void postNotification( String device, int gameID, long rowid )
         {
             Context context = getContext();
@@ -1057,17 +1050,10 @@ public class NFCUtils {
             GameUtils.postInvitedNotification( context, gameID, body, rowid );
         }
 
-        private void receiveMessage( long rowid, NFCMsgSink sink, byte[] msg )
+        private void receiveMessage( long rowid, MultiMsgSink sink, byte[] msg )
         {
             Log.d( TAG, "receiveMessage(rowid=%d, len=%d)", rowid, msg.length );
             receiveMessage( rowid, sink, msg, mAddr );
-        }
-    }
-
-    private static class NFCMsgSink extends MultiMsgSink {
-        NFCMsgSink( Context context, long rowid )
-        {
-            super( context, rowid );
         }
     }
 }
