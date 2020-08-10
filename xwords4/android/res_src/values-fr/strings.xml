@@ -3123,4 +3123,5 @@ pour la langue</string>
         <item quantity="one">Veuillez choisir le nom du périphérique WiFiDirect que vous voulez inviter à votre nouvelle partie, puis tapez « %2$s ».</item>
         <item quantity="other">Veuillez choisir les noms des %1$d périphériques WiFiDirect que vous voulez inviter à votre nouvelle partie, puis tapez « %2$s ».</item>
     </plurals>
+    <string name="use_duptimer">Activer le chronométrage par action</string>
 </resources>
