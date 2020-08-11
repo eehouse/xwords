@@ -333,7 +333,7 @@
     <string name="about_copyright">Copyright (C) 1998-2020 by Eric House. このフリー/オープンソース ソフトウェアは the GNU Public License に基づいてリリースされています.</string>
     <string name="about_web">マニュアルまたはソースコードは: http://xwords.sf.net/android.php を参照してください。バグの報告、機能の提案、支援の提供などは、メールしてください: xwords@eehouse.org 。</string>
     <string name="xlator">[空]</string>
-    <string name="about_credits">Sarah Chu のツールバーアイコン。名詞プロジェクトからの Navbar アイコン: Trendy の \"archive\"。 Becris の \"rematch\"。 iconomania の \"swap\"。flaticon.com から ultimatearm の \"建設中\" アイコン</string>
+    <string name="about_credits">Sarah Chu のツールバーアイコン。名詞プロジェクトからの Navbar アイコン: Trendy の \"archive\"。 Becris の \"rematch\"。 iconomania の \"swap\"。</string>
     <string name="changes_title">最近の変更</string>
     <string name="changes_button">最近の変更</string>
     <string name="button_lookup">単語を検索</string>
@@ -585,7 +585,14 @@
     </plurals>
     <string name="dict_desc_fmt">%1$s (%2$s/%3$d 語)</string>
     <string name="lang_unknown">不明</string>
-    <string name="not_again_dicts">この画面では、新しい単語リストをインストールしたり、既に持っているものを表示できます。\n\nインストールされている単語リストで決まること:\n • プレイできる言語\n • ロボット プレイヤーの賢さ\n • どの単語が正当か。\n\n上部にある \"ダウンロード可能を表示\" ボックスをチェックして、利用可能なものを参照してください。</string>
+    <string name="not_again_dicts">この画面では、新しい単語リストをインストールしたり、既に持っているものを表示できます。
+\n
+\nインストールされている単語リストで決まること:
+\n • プレイできる言語
+\n • ロボット プレイヤーの賢さ
+\n • どの単語が正当か
+\n
+\n上部にある \"ダウンロード可能を表示\" ボックスをチェックして、利用可能なものを参照してください。</string>
     <string name="force_tablet_title">タブレット (サイドバイサイド) レイアウトを使用する</string>
     <string name="nag_title">リマインダー: あなたの番です</string>
     <plurals name="nag_minutes_fmt">
@@ -988,4 +995,6 @@ WiFi ダイレクト経由で接続可能なデバイスはありません。</s
     <string name="lang_name_hungarian">ハンガリー語</string>
     <string name="invite_subject">クロスワードをプレイしましょう</string>
     <string name="phonies_block">フォニーをブロックする</string>
+    <string name="cellline">ボードの線</string>
+    <string name="board_line_pct">マスの線の太さ (パーセント、1-25)</string>
 </resources>
