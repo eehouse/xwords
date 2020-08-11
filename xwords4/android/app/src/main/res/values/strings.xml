@@ -1615,6 +1615,8 @@
     <!-- Shown when user tries to make a wordlist filter where max < min -->
     <string name="error_min_gt_max">The minimum length value cannot be
     greater than the maximum value.</string>
+    <!-- shown when something goes wrong building a filter -->
+    <string name="alrt_bad_filter">Unable to apply filter.</string>
 
     <!-- Title of progress alert shown while wordlist is loading. For
          huge lists like Polish this can take a few seconds. -->

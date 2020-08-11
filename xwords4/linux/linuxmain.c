@@ -1948,7 +1948,6 @@ tmp_noop_sigintterm( int XP_UNUSED(sig) )
     exit(0);
 }
 
-
 typedef struct _FTD {
     PatDesc* desc;
     XP_Bool called;
@@ -1960,9 +1959,7 @@ onFoundTiles2( void* closure, const Tile* tiles, int nTiles )
     FTD* data = (FTD*)closure;
     if ( data->called ) {
         XP_LOGFF( "ERROR: called more than once; Hungarian case???" );
-    } else if ( nTiles > VSIZE(data->desc->tiles) ) {
-        XP_ASSERT(0);
-    } else {
+    } else if ( nTiles <= VSIZE(data->desc->tiles) ) {
         data->called = XP_TRUE;
         data->desc->nTiles = nTiles;
         XP_MEMCPY( &data->desc->tiles[0], tiles, nTiles * sizeof(tiles[0]) );
@@ -2014,7 +2011,10 @@ patsParamsToIter( const LaunchParams* params, const DictionaryCtxt* dict )
     }
 
     DictIter* iter = di_makeIter( dict, NULL_XWE, dimmp, strPats, nStrPats,
-                                  descs, nPatDescs );
+                                  nPatDescs == 0 ? NULL : descs, nPatDescs );
+    if ( !iter ) {
+        XP_LOGFF( "Unable to build iter" );
+    }
     return iter;
 }
 
@@ -2025,37 +2025,39 @@ testGetNthWord( const LaunchParams* params, const DictionaryCtxt* dict,
                 const IndexData* data  )
 {
     DictIter* iter = patsParamsToIter( params, dict );
-    XP_U32 half = di_countWords( iter, NULL ) / 2;
-    XP_U32 interval = half / 100;
-    const XP_UCHAR* delim = params->dumpDelim; /* NULL is ok */
-    if ( interval == 0 ) {
-        ++interval;
-    }
+    if ( !!iter ) {
+        XP_U32 half = di_countWords( iter, NULL ) / 2;
+        XP_U32 interval = half / 100;
+        const XP_UCHAR* delim = params->dumpDelim; /* NULL is ok */
+        if ( interval == 0 ) {
+            ++interval;
+        }
 
-    XP_UCHAR buf[64];
-    int ii, jj;
-    for ( ii = 0, jj = half; ii < half; ii += interval, jj += interval ) {
-        if ( di_getNthWord( iter, NULL_XWE, ii, depth, data ) ) {
-            XP_UCHAR buf[64];
-            di_wordToString( iter, buf, VSIZE(buf), delim );
-            XP_ASSERT( 0 == strcmp( buf, words[ii] ) );
+        XP_UCHAR buf[64];
+        int ii, jj;
+        for ( ii = 0, jj = half; ii < half; ii += interval, jj += interval ) {
+            if ( di_getNthWord( iter, NULL_XWE, ii, depth, data ) ) {
+                XP_UCHAR buf[64];
+                di_wordToString( iter, buf, VSIZE(buf), delim );
+                XP_ASSERT( 0 == strcmp( buf, words[ii] ) );
 # ifdef PRINT_ALL
-            XP_LOGFF( "word[%d]: %s", ii, buf );
+                XP_LOGFF( "word[%d]: %s", ii, buf );
 # endif
-        } else {
-            XP_ASSERT( 0 );
-        }
-        if ( di_getNthWord( iter, NULL_XWE, jj, depth, data ) ) {
-            di_wordToString( iter, buf, VSIZE(buf), delim );
-            XP_ASSERT( 0 == strcmp( buf, words[jj] ) );
+            } else {
+                XP_ASSERT( 0 );
+            }
+            if ( di_getNthWord( iter, NULL_XWE, jj, depth, data ) ) {
+                di_wordToString( iter, buf, VSIZE(buf), delim );
+                XP_ASSERT( 0 == strcmp( buf, words[jj] ) );
 # ifdef PRINT_ALL
-            XP_LOGFF( "word[%d]: %s", jj, buf );
+                XP_LOGFF( "word[%d]: %s", jj, buf );
 # endif
-        } else {
-            XP_ASSERT( 0 );
+            } else {
+                XP_ASSERT( 0 );
+            }
         }
+        di_freeIter( iter, NULL_XWE );
     }
-    di_freeIter( iter, NULL_XWE );
 }
 
 typedef struct _FTData {
@@ -2109,124 +2111,126 @@ walk_dict_test( MPFORMAL const LaunchParams* params, const DictionaryCtxt* dict,
 {
 
     DictIter* iter = patsParamsToIter( params, dict );
-    LengthsArray lens;
-    XP_U32 count = di_countWords( iter, &lens );
+    if ( !!iter ) {
+        LengthsArray lens;
+        XP_U32 count = di_countWords( iter, &lens );
 
-    XP_U32 sum = 0;
-    for ( long ii = 0; ii < VSIZE(lens.lens); ++ii ) {
-        XP_LOGF( "%d words of length %ld", lens.lens[ii], ii );
-        sum += lens.lens[ii];
-    }
-    XP_ASSERT( sum == count );
-
-    if ( count > 0 ) {
-        const XP_UCHAR* delim = params->dumpDelim;
-        XP_Bool gotOne;
-        long jj;
-        char** words = g_malloc( count * sizeof(char*) );
-        XP_ASSERT( !!words );
-
-        for ( jj = 0, gotOne = di_firstWord( iter );
-              gotOne;
-              gotOne = di_getNextWord( iter ) ) {
-            XP_ASSERT( di_getPosition( iter ) == jj );
-            XP_UCHAR buf[64];
-            di_wordToString( iter, buf, VSIZE(buf), delim );
-# ifdef PRINT_ALL
-            fprintf( stderr, "%.6ld: %s\n", jj, buf );
-# endif
-            if ( !!words ) {
-                words[jj] = g_strdup( buf );
-            }
-            ++jj;
+        XP_U32 sum = 0;
+        for ( long ii = 0; ii < VSIZE(lens.lens); ++ii ) {
+            XP_LOGF( "%d words of length %ld", lens.lens[ii], ii );
+            sum += lens.lens[ii];
         }
-        XP_ASSERT( count == jj );
+        XP_ASSERT( sum == count );
 
-        XP_LOGFF( "comparing runs in both directions" );
-        for ( jj = 0, gotOne = di_lastWord( iter );
-              gotOne;
-              ++jj, gotOne = di_getPrevWord( iter ) ) {
-            XP_ASSERT( di_getPosition(iter) == count-jj-1 );
-            XP_UCHAR buf[64];
-            di_wordToString( iter, buf, VSIZE(buf), delim );
+        if ( count > 0 ) {
+            const XP_UCHAR* delim = params->dumpDelim;
+            XP_Bool gotOne;
+            long jj;
+            char** words = g_malloc( count * sizeof(char*) );
+            XP_ASSERT( !!words );
+
+            for ( jj = 0, gotOne = di_firstWord( iter );
+                  gotOne;
+                  gotOne = di_getNextWord( iter ) ) {
+                XP_ASSERT( di_getPosition( iter ) == jj );
+                XP_UCHAR buf[64];
+                di_wordToString( iter, buf, VSIZE(buf), delim );
 # ifdef PRINT_ALL
-            fprintf( stderr, "%.6ld: %s\n", jj, buf );
+                fprintf( stderr, "%.6ld: %s\n", jj, buf );
 # endif
-            if ( !!words ) {
-                if ( strcmp( buf, words[count-jj-1] ) ) {
-                    fprintf( stderr, "failure at %ld: %s going forward; %s "
-                             "going backward\n", jj, words[count-jj-1], buf );
-                    break;
+                if ( !!words ) {
+                    words[jj] = g_strdup( buf );
+                }
+                ++jj;
+            }
+            XP_ASSERT( count == jj );
+
+            XP_LOGFF( "comparing runs in both directions" );
+            for ( jj = 0, gotOne = di_lastWord( iter );
+                  gotOne;
+                  ++jj, gotOne = di_getPrevWord( iter ) ) {
+                XP_ASSERT( di_getPosition(iter) == count-jj-1 );
+                XP_UCHAR buf[64];
+                di_wordToString( iter, buf, VSIZE(buf), delim );
+# ifdef PRINT_ALL
+                fprintf( stderr, "%.6ld: %s\n", jj, buf );
+# endif
+                if ( !!words ) {
+                    if ( strcmp( buf, words[count-jj-1] ) ) {
+                        fprintf( stderr, "failure at %ld: %s going forward; %s "
+                                 "going backward\n", jj, words[count-jj-1], buf );
+                        break;
+                    }
                 }
             }
-        }
-        XP_ASSERT( count == jj );
-        XP_LOGFF( "FINISHED comparing runs in both directions" );
+            XP_ASSERT( count == jj );
+            XP_LOGFF( "FINISHED comparing runs in both directions" );
 
-        XP_LOGFF( "testing getNth" );
-        testGetNthWord( params, dict, words, 0, NULL );
-        XP_LOGFF( "FINISHED testing getNth" );
+            XP_LOGFF( "testing getNth" );
+            testGetNthWord( params, dict, words, 0, NULL );
+            XP_LOGFF( "FINISHED testing getNth" );
 
-        XP_U16 depth = 2;
-        XP_U16 maxCount = dict_numTileFaces( dict );
-        IndexData data;
-        data.count = maxCount * maxCount; /* squared because depth == 2! */
-        data.indices = XP_MALLOC( mpool,
-                                  data.count * depth * sizeof(data.indices[0]) );
-        data.prefixes = XP_MALLOC( mpool,
-                                   depth * data.count * sizeof(data.prefixes[0]) );
+            XP_U16 depth = 2;
+            XP_U16 maxCount = dict_numTileFaces( dict );
+            IndexData data;
+            data.count = maxCount * maxCount; /* squared because depth == 2! */
+            data.indices = XP_MALLOC( mpool,
+                                      data.count * depth * sizeof(data.indices[0]) );
+            data.prefixes = XP_MALLOC( mpool,
+                                       depth * data.count * sizeof(data.prefixes[0]) );
 
-        XP_LOGF( "making index..." );
-        di_makeIndex( iter, depth, &data );
-        XP_LOGF( "DONE making index (have %d indices)", data.count );
+            XP_LOGF( "making index..." );
+            di_makeIndex( iter, depth, &data );
+            XP_LOGF( "DONE making index (have %d indices)", data.count );
 
-        /* Resize 'em in case not all slots filled */
-        data.indices = XP_REALLOC( mpool, data.indices, 
-                                   data.count * depth * sizeof(*data.indices) );
-        data.prefixes = XP_REALLOC( mpool, data.prefixes,
-                                    depth * data.count * sizeof(*data.prefixes) );
+            /* Resize 'em in case not all slots filled */
+            data.indices = XP_REALLOC( mpool, data.indices, 
+                                       data.count * depth * sizeof(*data.indices) );
+            data.prefixes = XP_REALLOC( mpool, data.prefixes,
+                                        depth * data.count * sizeof(*data.prefixes) );
 #if 0
-        for ( ii = 0; ii < nIndices; ++ii ) {
-            if ( !dict_getNthWord( dict, &word, indices[ii] ) ) {
-                XP_ASSERT( 0 );
+            for ( ii = 0; ii < nIndices; ++ii ) {
+                if ( !dict_getNthWord( dict, &word, indices[ii] ) ) {
+                    XP_ASSERT( 0 );
+                }
+                XP_ASSERT( word.index == indices[ii] );
+                XP_UCHAR buf1[64];
+                dict_wordToString( dict, &word, buf1, VSIZE(buf1), delim );
+                XP_UCHAR buf2[64] = {0};
+                if ( ii > 0 && dict_getNthWord( dict, &word, indices[ii]-1 ) ) {
+                    dict_wordToString( dict, &word, buf2, VSIZE(buf2), delim );
+                }
+                char prfx[8];
+                dict_tilesToString( dict, &prefixes[depth*ii], depth, prfx, 
+                                    VSIZE(prfx), NULL );
+                fprintf( stderr, "%d: index: %ld; prefix: %s; word: %s (prev: %s)\n", 
+                         ii, indices[ii], prfx, buf1, buf2 );
             }
-            XP_ASSERT( word.index == indices[ii] );
-            XP_UCHAR buf1[64];
-            dict_wordToString( dict, &word, buf1, VSIZE(buf1), delim );
-            XP_UCHAR buf2[64] = {0};
-            if ( ii > 0 && dict_getNthWord( dict, &word, indices[ii]-1 ) ) {
-                dict_wordToString( dict, &word, buf2, VSIZE(buf2), delim );
-            }
-            char prfx[8];
-            dict_tilesToString( dict, &prefixes[depth*ii], depth, prfx, 
-                                VSIZE(prfx), NULL );
-            fprintf( stderr, "%d: index: %ld; prefix: %s; word: %s (prev: %s)\n", 
-                     ii, indices[ii], prfx, buf1, buf2 );
-        }
 #endif
 
-        XP_LOGFF( "testing getNth WITH INDEXING" );
-        testGetNthWord( params, dict, words, depth, &data );
-        XP_LOGFF( "DONE testing getNth WITH INDEXING" );
+            XP_LOGFF( "testing getNth WITH INDEXING" );
+            testGetNthWord( params, dict, words, depth, &data );
+            XP_LOGFF( "DONE testing getNth WITH INDEXING" );
 
-        if ( !!testPrefixes ) {
-            int ii;
-            guint count = g_slist_length( testPrefixes );
-            for ( ii = 0; ii < count; ++ii ) {
-                gchar* prefix = (gchar*)g_slist_nth_data( testPrefixes, ii );
-                XP_LOGFF( "prefix %d: %s", ii, prefix );
+            if ( !!testPrefixes ) {
+                int ii;
+                guint count = g_slist_length( testPrefixes );
+                for ( ii = 0; ii < count; ++ii ) {
+                    gchar* prefix = (gchar*)g_slist_nth_data( testPrefixes, ii );
+                    XP_LOGFF( "prefix %d: %s", ii, prefix );
 
-                FTData foundTilesData = { .iter = iter, .words = words,
-                                          .depth = depth, .data = &data,
-                                          .prefix = prefix, };
-                dict_tilesForString( dict, prefix, 0, onFoundTiles, &foundTilesData );
+                    FTData foundTilesData = { .iter = iter, .words = words,
+                                              .depth = depth, .data = &data,
+                                              .prefix = prefix, };
+                    dict_tilesForString( dict, prefix, 0, onFoundTiles, &foundTilesData );
+                }
             }
+            XP_FREE( mpool, data.indices );
+            XP_FREE( mpool, data.prefixes );
         }
-        XP_FREE( mpool, data.indices );
-        XP_FREE( mpool, data.prefixes );
+        di_freeIter( iter, NULL_XWE );
     }
-    di_freeIter( iter, NULL_XWE );
-    XP_LOGF( "done" );
+    XP_LOGFF( "done" );
 }
 
 static void
@@ -2253,15 +2257,17 @@ static void
 dumpDict( const LaunchParams* params, DictionaryCtxt* dict )
 {
     DictIter* iter = patsParamsToIter( params, dict );
-    const XP_UCHAR* delim = params->dumpDelim; /* NULL is ok */
-    for ( XP_Bool result = di_firstWord( iter );
-          result; 
-          result = di_getNextWord( iter ) ) {
-        XP_UCHAR buf[32];
-        di_wordToString( iter, buf, VSIZE(buf), delim );
-        fprintf( stdout, "%s\n", buf );
+    if ( !!iter ) {
+        const XP_UCHAR* delim = params->dumpDelim; /* NULL is ok */
+        for ( XP_Bool result = di_firstWord( iter );
+              result;
+              result = di_getNextWord( iter ) ) {
+            XP_UCHAR buf[32];
+            di_wordToString( iter, buf, VSIZE(buf), delim );
+            fprintf( stdout, "%s\n", buf );
+        }
+        di_freeIter( iter, NULL_XWE );
     }
-    di_freeIter( iter, NULL_XWE );
 }
 
 static void
@@ -2662,10 +2668,12 @@ testOneString( const LaunchParams* params, GSList* testDicts )
                                    params->useMmap );
         if ( NULL != dict ) {
             DictIter* iter = patsParamsToIter( params, dict );
-            if ( ! di_stringMatches( iter, params->iterTestPatStr ) ) {
-                result = 1;
+            if ( !!iter ) {
+                if ( ! di_stringMatches( iter, params->iterTestPatStr ) ) {
+                    result = 1;
+                }
+                di_freeIter( iter, NULL_XWE );
             }
-            di_freeIter( iter, NULL_XWE );
         }
     }
     return result;

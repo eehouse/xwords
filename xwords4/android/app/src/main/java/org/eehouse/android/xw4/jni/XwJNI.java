@@ -619,9 +619,13 @@ public class XwJNI {
         new Thread( new Runnable() {
                 @Override
                 public void run() {
+                    IterWrapper wrapper = null;
                     long iterPtr = di_init( jniState, dictPtr, pats,
                                             minLen, maxLen );
-                    callback.onIterReady( new IterWrapper(iterPtr) );
+                    if ( 0 != iterPtr ) {
+                        wrapper = new IterWrapper(iterPtr);
+                    }
+                    callback.onIterReady( wrapper );
                 }
             } ).start();
     }
