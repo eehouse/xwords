@@ -37,21 +37,21 @@
     <!-- First state: is configured to use a room but has not yet
          contacted the relay and been assigned that room. -->
     <string name="summary_relay_conf_fmt">Configured for room
-      \"%1$s\"</string>
+      “%1$s”</string>
     <!-- Second state: has been assigned to a room on the relay
          (meaning the network is working) but there are not yet as
          many players as expected: the game is not complete and play
          cannot happen. -->
     <string name="summary_relay_wait_fmt">Waiting for players in room
-      \"%1$s\"</string>
+      “%1$s”</string>
     <!-- Third state: enough devices have connected in the room to
          form a complete game.  We'll be in this state as long as the
          game exists. -->
-    <string name="summary_relay_conn_fmt">Game in play in room \"%1$s\"</string>
+    <string name="summary_relay_conn_fmt">Game in play in room “%1$s”</string>
     <!-- Final state: game is over. -->
-    <string name="summary_relay_gameover_fmt">Game over in room \"%1$s\"</string>
+    <string name="summary_relay_gameover_fmt">Game over in room “%1$s”</string>
     <string name="summary_invites_out">Players invited</string>
-    <string name="summary_invites_out_fmt">Players invited to room \"%1$s\"</string>
+    <string name="summary_invites_out_fmt">Players invited to room “%1$s”</string>
     <!-- Games that have ended are listed with this string -->
     <string name="gameOver">Game over</string>
     <!-- Otherwise they're listed with this to give some indication of
@@ -131,7 +131,7 @@
     <!-- If you try to copy a networked game you get this error
     message. -->
     <string name="no_copy_network">Games that have already connected
-      to the relay cannot be copied. Use \"New from\" for a
+      to the relay cannot be copied. Use “New from” for a
       ready-to-play copy with all the same settings.</string>
     <!--  -->
     <string name="game_rename_title">Rename game</string>
@@ -343,7 +343,7 @@
     <!-- title of popup used to determine how words are handled that
          are not in the wordlist used for the game (or player if using
          different wordlists per player) -->
-    <string name="phonies_spinner_prompt">How to handle \"phonies\"
+    <string name="phonies_spinner_prompt">How to handle “phonies”
         (words not in wordlist)</string>
     <!-- These are the three choices in the popup above whose text is
          phonies_spinner_prompt -->
@@ -360,7 +360,7 @@
     <!-- Shown when using the Game configure screen to configure a
          networked game and you try to make all players local. -->
     <string name="str_reg_server_sans_remote">At least one player must
-         be marked \"Remote\" for a game started as Host.</string>
+         be marked “Remote” for a game started as Host.</string>
     <!-- Used as the default name for remote players displayed within
          the Game configure screen -->
     <string name="guest_name">(Off-device player)</string>
@@ -517,7 +517,7 @@
     <!-- Toast when invite-by-visible-sms fails -->
     <string name="sms_invite_fail">Unable to launch SMS app</string>
     <string name="invit_expl_bt_fmt">Invite sent via Bluetooth to
-    paired device \"%1$s\" on %2$s</string>
+    paired device “%1$s” on %2$s</string>
     <string name="invit_expl_relay_fmt">Invite forwarded by the relay
     to another device on %1$s</string>
     <string name="invit_expl_notarget_fmt">Invite sent via %1$s on
@@ -534,15 +534,15 @@
          only once per game. -->
     <plurals name="msg_relay_waiting_fmt">
         <item quantity="one">Device %1$d connected to relay in
-      room \"%2$s\". Waiting for one player.</item>
+      room “%2$s”. Waiting for one player.</item>
         <item quantity="other">Device %1$d connected to relay in
-      room \"%2$s\". Waiting for %3$d players.</item>
+      room “%2$s”. Waiting for %3$d players.</item>
     </plurals>
     <!-- Text of "toast" shown when a game is notified by the relay
          that all expected players have registered.  At this point
          play can begin. -->
     <string name="msg_relay_all_here_fmt">All players are here in room
-      \"%1$s\".</string>
+      “%1$s”.</string>
     <!-- Title of dialog used to alert players to relay-related
          problems with the current game. -->
     <string name="relay_alert">Connection problem</string>
@@ -563,7 +563,7 @@
          relay.  Once this happens there is no way to continue the
          game so you might as well delete it (unless you're saving it
          for its history etc.) -->
-    <string name="msg_dev_deleted_fmt">The game named \"%1$s\" has been
+    <string name="msg_dev_deleted_fmt">The game named “%1$s” has been
     deleted on another device. You will not be able to play any
     further.</string>
     <!-- Partial text of alert posted when phonies_warn or
@@ -1025,7 +1025,7 @@
     <string name="invite_choice_data_sms">Data SMS</string>
     <string name="invite_choice_email">Email</string>
     <string name="invite_choice_bt">Bluetooth</string>
-    <string name="invite_choice_nfc">NFC (\"Android beaming\")</string>
+    <string name="invite_choice_nfc">NFC (“Android beaming”)</string>
     <string name="invite_choice_relay">Internet/Relay</string>
     <string name="invite_choice_p2p">Wifi Direct</string>
     <string name="invite_choice_title">Inviting players: How?</string>
@@ -1036,7 +1036,7 @@
     <!-- <string name="nfc_or_email">Send invitation using NFC (Android -->
     <!-- beaming &#8211; NEW) or via email?</string> -->
     <!-- <string name="nfc_or_sms_or_email">Send invitation using SMS -->
-    <!-- (texting) or NFC (\"Android beaming\" &#8211; NEW) or via email?</string> -->
+    <!-- (texting) or NFC (“Android beaming” &#8211; NEW) or via email?</string> -->
     <!-- When an invitation is sent, the user gets to choose between
     plaintext and html formatting.  These two strings are shown in the
     two buttons in the dialog. -->
@@ -1210,12 +1210,12 @@
          downloading and not opening the game.  This first message
          takes wordlist name and language substituted in for %1$ and
          %2$ -->
-    <string name="no_dict_fmt">Game \"%1$s\" requires a %2$s wordlist.
+    <string name="no_dict_fmt">Game “%1$s” requires a %2$s wordlist.
     Please download one before opening.</string>
     <!-- This is an alternative message presented when there's also
          the option of downloading another wordlist.  Game name,
          wordlist name and language are substituted in. -->
-    <string name="no_dict_subst_fmt">Unable to open game \"%1$s\" because
+    <string name="no_dict_subst_fmt">Unable to open game “%1$s” because
       wordlist %2$s not found. (It may have been deleted, or stored
       on an external card that is no longer available.)\n\nYou can
       download a replacement or substitute another %3$s
@@ -1240,7 +1240,7 @@
        ############################################################
        -->
     <!-- Text of dialog.  Player name is substituted -->
-    <string name="msg_ask_password_fmt">Password for \"%1$s\":</string>
+    <string name="msg_ask_password_fmt">Password for “%1$s”:</string>
     <!-- used to create default names of games (when user has not
          named them.) -->
     <string name="game_fmt">Game %1$d</string>
@@ -1395,7 +1395,7 @@
     <!-- This is shown when you choose the board_menu_done menu item.
          It's to let you know that there's a shortcut that does almost
          the same thing. -->
-    <string name="not_again_done">Tapping the \"pts\" counter that
+    <string name="not_again_done">Tapping the “pts” counter that
       appears at the right end of the rack is the easiest way to
       commit a move.</string>
     <!-- Shown in the Game configure screen when the game_locked
@@ -1429,7 +1429,7 @@
     <!-- This is not currently shown -->
     <!-- <string name="not_again_dicts">CrossWords wordlists, which are -->
     <!--   just compressed lists of words plus tile information, determine -->
-    <!--   what language a game is played in and how \"smart\" the robot -->
+    <!--   what language a game is played in and how “smart” the robot -->
     <!--   is.  You can download different sized wordlists in many -->
     <!--   languages here.  Email me at eehouse@eehouse.org for information -->
     <!--   on building and installing your own wordlists.</string> -->
@@ -1476,7 +1476,7 @@
     <!-- Welcome dialog text -->
     <string name="default_name_message">Please enter your name
     here. It will be used when creating new games. (You can change it
-    later in the \"New game default\" section of Settings.)</string>
+    later in the “New game default” section of Settings.)</string>
     <!-- 
        ###########################################################
        # :Dialogs:
@@ -1504,8 +1504,8 @@
     <!-- Another paragraph giving credit for work done other than by
          Eric House and translators -->
     <string name="about_credits">Toolbar icons by Sarah Chu. Navbar
-    icons from the Noun Project: \"archive\" by Trendy; \"rematch\" by
-    Becris; and \"swap\" by iconomania.</string>
+    icons from the Noun Project: “archive” by Trendy; “rematch” by
+    Becris; and “swap” by iconomania.</string>
     <!-- text of dialog showing the set of changes made since the last
          release -->
     <string name="changes_title">Recent changes</string>
@@ -1534,7 +1534,7 @@
     <string name="not_again_lookup">This button lets you look up,
       online, the words just played.</string>
     <string name="not_again_archive">Archiving uses a special group
-    called \"Archive\" to store finished games you want to keep. And,
+    called “Archive” to store finished games you want to keep. And,
     since deleting an entire archive is easy, archiving is also a
     great way to mark games for deletion – if that’s what you prefer
     to do.\n\n(Deleting the Archive group is safe because it will be
@@ -1643,7 +1643,7 @@
     <string name="email_author_chooser">Send comment via</string>
     <!--  -->
     <string name="email_body_rev_fmt">(If relevant, please include the
-      version: \"%1$s\"; and make/model of your phone or
+      version: “%1$s”; and make/model of your phone or
       tablet.)</string>
     <!-- <string name="newgame_enable_bt">Turn Bluetooth on</string> -->
     <!-- In invitation dialogs, button to remove checked items -->
@@ -1672,11 +1672,11 @@
     <string name="new_relay_body">Tap to open the new game</string>
     <!--  -->
     <string name="bt_bad_proto_fmt">The version of CrossWords on
-    \"%1$s\" is incompatible with this one for play using
+    “%1$s” is incompatible with this one for play using
     Bluetooth. One of you may need to upgrade before you can
     continue.</string>
     <string name="sms_bad_proto_fmt">The version of CrossWords on the
-    phone with number \"%1$s\" is incompatible with this one for play
+    phone with number “%1$s” is incompatible with this one for play
     using Data SMS. One of you may need to upgrade before you can
     continue.</string>
     <!--  -->
@@ -1722,9 +1722,9 @@
     <!--  -->
     <plurals name="invite_sms_desc_fmt">
         <item quantity="one">Please check the phone number you want to
-      invite to your new game, then tap \"%2$s\".</item>
+      invite to your new game, then tap “%2$s”.</item>
         <item quantity="other">Please check the %1$d phone numbers you
-      want to invite to your new game, then tap \"%2$s\".</item>
+      want to invite to your new game, then tap “%2$s”.</item>
     </plurals>
     <!-- Appears near top of invitation phone number picker when it's
          the user-visible SMS case -->
@@ -1740,17 +1740,17 @@
     <!--  -->
     <plurals name="invite_relay_desc_fmt">
         <item quantity="one">Please check the device you want to invite
-      to your new game, then tap \"%2$s\".</item>
+      to your new game, then tap “%2$s”.</item>
         <item quantity="other">Please check the %1$d devices you want to invite
-      to your new game, then tap \"%2$s\".</item>
+      to your new game, then tap “%2$s”.</item>
     </plurals>
     <!--  -->
     <plurals name="invite_p2p_desc_fmt">
         <item quantity="one">Please select the name of the
       WiFiDirect device you want to invite to your new game, then tap
-      \"%2$s\".</item>
+      “%2$s”.</item>
         <item quantity="other">Please select the %1$d WiFiDirect device names you
-      want to invite to your new game, then tap \"%2$s\".</item>
+      want to invite to your new game, then tap “%2$s”.</item>
     </plurals>
     <string name="invite_p2p_desc_extra">Only devices that are
     currently available are shown. If a nearby device isn’t showing
@@ -1758,10 +1758,10 @@
     installed, and that play via WiFi Direct is enabled.</string>
     <!--  -->
     <string name="warn_nomobile_fmt">The number %1$s for %2$s is not
-    a \"mobile\" number. Import anyway?</string>
+    a “mobile” number. Import anyway?</string>
     <!-- Shows in SMS Invite dialog when no phone numbers have been saved previously -->
     <string name="empty_sms_inviter">This phone list is empty. Use the
-    \"Import contact\" button to add people you want to invite, the +
+    “Import contact” button to add people you want to invite, the +
     button to enter numbers directly.</string>
     <string name="empty_bt_inviter">No paired devices detected yet.</string>
     <!-- Shows in WiFiDirect Invite dialog when no known peers -->
@@ -1769,8 +1769,8 @@
     reachable via WiFiDirect that have CrossWords installed.</string>
     <!--  -->
     <string name="empty_relay_inviter">This list of devices is
-    empty. Use the \"Scan games\" button to scan your old games
-    for opponents. Use the \"+\" button to enter device IDs directly.</string>
+    empty. Use the “Scan games” button to scan your old games
+    for opponents. Use the “+” button to enter device IDs directly.</string>
     <!--  -->
     <string name="get_sms_title">Manual entry</string>
     <string name="get_sms_number">Device phone number:</string>
@@ -1802,7 +1802,7 @@
     <string name="summary_conn_sms_fmt">Game in play with %1$s</string>
     <!--  -->
     <string name="warn_unlimited">Are you certain this number is on an
-    account with unlimited texting? Tap \"Cancel\" if you are
+    account with unlimited texting? Tap “Cancel” if you are
     not.</string>
     <!--  -->
     <string name="remote_undone">Remote device undid a turn.</string>
@@ -1990,7 +1990,7 @@
     <string name="button_archive">Archive\u200C</string>
     <string name="checkbox_archive">Move to Archive</string>
     <string name="group_name_archive">Archive</string>
-    <string name="duplicate_group_name_fmt">The group \"%1$s\" already exists.</string>
+    <string name="duplicate_group_name_fmt">The group “%1$s” already exists.</string>
     <string name="button_reconnect">Reconnect</string>
     <string name="square_tiles">Square rack tiles</string>
     <string name="square_tiles_summary">Even if they can be taller</string>
@@ -1999,7 +1999,7 @@
     <string name="not_again_newselect">Tapping a game opens it.\n\nYou
     can instead tap the icons at the left to select or deselect games,
     then act on selected games, e.g. to delete them, using the menu or
-    \"Actionbar.\"</string>
+    “Actionbar.”</string>
     <string name="not_again_backclears">The back button clears any
     selection instead of exiting. Hit it again to exit the
     app.</string>
@@ -2122,7 +2122,7 @@
     wordlists and view the ones you already have.\n\nWhat wordlists
     you have installed determines:\n• What languages you can play
     in\n• How smart the robot player is\n• What words are
-    legal\n\nCheck the \"Show downloadable\" box at the top to see
+    legal\n\nCheck the “Show downloadable” box at the top to see
     what’s available.</string>
     <string name="force_tablet_title">Use tablet (side-by-side) layout?</string>
     <string name="force_tablet_default">Use default for my device</string>
@@ -2199,7 +2199,7 @@
         <item quantity="other">%1$d players</item>
     </plurals>
     <string name="err_dup_invite_fmt">Duplicate invitation rejected:
-    device \"%1$s\" has already accepted an invitation to this
+    device “%1$s” has already accepted an invitation to this
     game.</string>
     <string name="network_advanced_title">Advanced</string>
     <string name="network_advanced_summary">For experienced players</string>
@@ -2326,20 +2326,20 @@
     <string name="confirm_drop_relay_sms">Not all carriers support play
   via Data SMS.</string>
     <string name="button_enable">Enable</string>
-    <string name="not_again_comms_relay">The \"relay\" is a server on
+    <string name="not_again_comms_relay">The “relay” is a server on
   the internet that passes messages between devices that are running
   CrossWords. It works any time you have a fully-functional internet
   connection, but might have problems on restricted WiFi
   networks.</string>
     <string name="not_again_comms_sms">Play via Data SMS uses the
-  technology on which \"texting\" is built. Though the messages are
+  technology on which “texting” is built. Though the messages are
   invisible to you, your carrier bills them as texts, so you want to
   avoid this feature unless you have an unlimited texting plan (or
   budget.) Note that Android only supports this feature on devices on
   a GSM carrier, i.e. every carrier in the world except Verizon and
   Sprint.</string>
     <string name="not_again_comms_bt">Use Bluetooth to play against a
-  nearby device that’s \"paired\" with yours.</string>
+  nearby device that’s “paired” with yours.</string>
     <string name="not_again_comms_p2p">Use WiFi Direct to play against a
   nearby WiFi Direct-capable device with CrossWords installed.</string>
     <string name="str_no_hint_found">Cannot find any moves</string>
@@ -2360,7 +2360,7 @@
     <string name="clip_label">Invitation URL</string>
     <!-- EXPERIMENTAL: Newbie hint next when invite_choice_clip shown
        when chosen -->
-    <string name="not_again_clip_expl_fmt">The \"%1$s\" option copies an
+    <string name="not_again_clip_expl_fmt">The “%1$s” option copies an
   invitation URL to the clipboard. Paste it into the app of your
   choice and send it to your friend.</string>
     <string name="confirm_clear_chat">Are you sure you want to delete
@@ -2374,7 +2374,7 @@
     <!-- Debug-only item for testing corrupt game warnings -->
     <string name="list_item_markbad">Mark corrupt</string>
     <string name="not_again_dfltname_fmt">You are using the default
-  player name \"%1$s\". Would you like to personalize with your own
+  player name “%1$s”. Would you like to personalize with your own
   name before you create this game?</string>
     <string name="no_invites">This game has sent no invitations</string>
     <string name="after_restart">This change will take effect after you
@@ -2408,7 +2408,7 @@
     previously stored any there.
   </string>
     <string name="phone_state_rationale">
-    Some phones can exchange SMS \"data\" messages. CrossWords would
+    Some phones can exchange SMS “data” messages. CrossWords would
     like to offer you this option but needs to ask your device about
     itself first (to learn if it’s a phone and if so what
     type.)\n\nIf your device can’t send data SMS (e.g. because it
@@ -2474,7 +2474,7 @@
     <string name="button_more_info">Read more</string>
     <string name="banned_nbs_perms">This game is set up to communicate via data SMS, but apps from the Google Play Store are no longer allowed to do so (with rare exceptions). You can still open the game, but it may not be able to send or receive moves.
 \n
-\nYou can remove the data SMS communication setting, or use the \"Read more\" button to check progress on the development of an alternative.</string>
+\nYou can remove the data SMS communication setting, or use the “Read more” button to check progress on the development of an alternative.</string>
     <string name="relay_poll_title">Check for moves how?</string>
     <string name="relay_poll_name_no_fcm">Poll only: no FCM messages</string>
     <string name="relay_poll_name_no_polling">FCM only: no polling</string>
@@ -2499,7 +2499,7 @@
   <string name="str_submit_confirm">Submit the current move?\n</string>
 
   <!-- In new-game preferences, do we default to dup-mode being on or off? -->
-  <string name="offerdupmode_title">Play in \"duplicate-mode\"</string>
+  <string name="offerdupmode_title">Play in “duplicate-mode”</string>
   <string name="offerdupmode_sum">(Experimental!!!) Style of play
   where all players have the same tiles</string>
 
@@ -2579,7 +2579,7 @@
     <string name="unpause_notify_expl_fmt">Player %1$s has un-paused
     this game, with this explanation: %2$s</string>
 
-    <string name="autopause_expl_fmt">The timer for game \"%1$s\" expired without
+    <string name="autopause_expl_fmt">The timer for game “%1$s” expired without
     any moves being made, so it has been paused for you.</string>
 
     <string name="history_unpause_fmt">Unpaused after %2$s by: %1$s.</string>
@@ -2619,12 +2619,12 @@
          browser. Displayed below are the possible
          spellings. Currently this can only happen with Hungarian
          wordlists.  -->
-    <string name="pick_tiles_title">Pick a tile \"spelling\"</string>
+    <string name="pick_tiles_title">Pick a tile “spelling”</string>
     <!-- Shown when user types a string that contains non-tiles,
          e.g. a Q alone when the langauge has only QU. First
          substituted is user's string; second substitution is name of
          language -->
-    <string name="no_tiles_exist">\"%1$s\" cannot be spelled with %2$s tiles.</string>
+    <string name="no_tiles_exist">“%1$s” cannot be spelled with %2$s tiles.</string>
 
     <string name="new_feature_title">New Feature Alert</string>
 
