@@ -633,6 +633,15 @@ formatCurWord( const DictIter* iter, XP_UCHAR* buf, XP_U16 bufLen )
     }
 }
 
+/* static void */
+/* logCurWord( const DictIter* iter, const XP_UCHAR* note ) */
+/* { */
+/*     XP_UCHAR buf[32]; */
+/*     XP_U16 bufLen = VSIZE(buf); */
+/*     formatCurWord( iter, buf, bufLen ); */
+/*     XP_LOGFF( "note: %s; word: %s", note, buf ); */
+/* } */
+
 #endif
 
 typedef struct _FaceTile {
@@ -1008,7 +1017,6 @@ patMatchFinished( const DictIter* iter, XP_Bool log )
         XP_UCHAR word[32];
         formatCurWord( iter, word, VSIZE(word) );
 
-
         if ( result ) {
             XP_UCHAR elemBuf[64];
             PrintState prs = { .iter = iter, .buf = elemBuf, .bufLen = VSIZE(elemBuf), };
@@ -1024,14 +1032,14 @@ patMatchFinished( const DictIter* iter, XP_Bool log )
 }
 
 static XP_Bool
-prevPeerMatch( DictIter* iter, array_edge** edgeP, PatMatch* matchP )
+prevPeerMatch( DictIter* iter, array_edge** edgeP, PatMatch* matchP, XP_Bool log )
 {
     const DictionaryCtxt* dict = iter->dict;
     array_edge* edge = *edgeP;
     XP_Bool found = XP_FALSE;
     for ( ; ; ) {
         PatMatch match = { 0 };
-        found = HAS_MATCH( iter, edge, &match, XP_FALSE );
+        found = HAS_MATCH( iter, edge, &match, log );
         if ( found ) {
             *edgeP = edge;
             *matchP = match;
@@ -1160,11 +1168,10 @@ isFirstEdge( const DictionaryCtxt* dict, array_edge* edge )
     return result;
 }
 
-static XP_Bool
-lastEdges( DictIter* iter )
+static void
+pushLastEdges( DictIter* iter, array_edge* edge, XP_Bool log )
 {
     const DictionaryCtxt* dict = iter->dict;
-    array_edge* edge = popEdge( iter );
 
     while ( iter->nEdges < iter->max ) {
         /* walk to the end ... */
@@ -1173,7 +1180,7 @@ lastEdges( DictIter* iter )
         }
         /* ... so we can then move back, testing */
         PatMatch match = {0};
-        if ( ! prevPeerMatch( iter, &edge, &match ) ) {
+        if ( ! prevPeerMatch( iter, &edge, &match, log ) ) {
             break;
         }
         pushEdge( iter, edge, &match );
@@ -1183,13 +1190,13 @@ lastEdges( DictIter* iter )
             break;
         }
     }
-    return ACCEPT_ITER( iter, XP_FALSE );
 }
 
 static XP_Bool
 prevWord( DictIter* iter, XP_Bool log )
 {
     const DictionaryCtxt* dict = iter->dict;
+
     XP_Bool success = XP_FALSE;
     while ( 0 < iter->nEdges && ! success ) {
         if ( isFirstEdge( dict, iter->stack[iter->nEdges-1].edge ) ) {
@@ -1202,20 +1209,14 @@ prevWord( DictIter* iter, XP_Bool log )
         array_edge* edge = popEdge(iter);
         XP_ASSERT( !isFirstEdge( dict, edge ) );
         edge -= dict->nodeSize;
+
         PatMatch match = {0};
-        if ( prevPeerMatch( iter, &edge, &match ) ) {
+        if ( prevPeerMatch( iter, &edge, &match, log ) ) {
             pushEdge( iter, edge, &match );
             if ( iter->nEdges < iter->max ) {
                 edge = dict_follow( dict, edge );
                 if ( NULL != edge ) {
-                    PatMatch match = {0};
-                    if ( HAS_MATCH( iter, edge, &match, log ) ) {
-                        pushEdge( iter, edge, &match );
-                        success = lastEdges( iter ) && iter->min <= iter->nEdges;
-                        if ( success ) {
-                            continue;
-                        }
-                    }
+                    pushLastEdges( iter, edge, log );
                 }
             }
         }
@@ -1799,11 +1800,21 @@ di_getNextWord( DictIter* iter )
 XP_Bool
 di_lastWord( DictIter* iter )
 {
-    ASSERT_INITED( iter );
-    iter->nEdges = 1;
-    iter->stack[0].edge = dict_getTopEdge( iter->dict );
+    const XP_Bool log = XP_FALSE;
 
-    XP_Bool success = lastEdges( iter ) || prevWord( iter, XP_FALSE );
+    ASSERT_INITED( iter );
+    while ( 0 < iter->nEdges ) {
+        popEdge( iter );
+    }
+
+    pushLastEdges( iter, dict_getTopEdge( iter->dict ), log );
+
+    XP_Bool success = ACCEPT_ITER( iter, log )
+        && iter->min <= iter->nEdges
+        && iter->nEdges <= iter->max;
+    if ( !success ) {
+        success = prevWord( iter, log );
+    }
     if ( success ) {
         iter->position = iter->nWords - 1;
     }
@@ -1890,8 +1901,8 @@ di_getNthWord( DictIter* iter, XWEnv xwe, DictPosition position, XP_U16 depth,
             }
             while ( repeats-- ) {
                 if ( !(*finder)( iter, XP_FALSE ) ) {
-                    break;
-                    XP_ASSERT(0); /* firing */
+                    XP_ASSERT(0);
+                    break;      /* prevents crash on release builds? */
                 }
             }
 

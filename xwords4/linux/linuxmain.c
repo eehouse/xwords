@@ -2011,7 +2011,7 @@ patsParamsToIter( const LaunchParams* params, const DictionaryCtxt* dict )
     }
 
     DictIter* iter = di_makeIter( dict, NULL_XWE, dimmp, strPats, nStrPats,
-                                  nPatDescs == 0 ? NULL : descs, nPatDescs );
+                                  0 == nPatDescs ? NULL : descs, nPatDescs );
     if ( !iter ) {
         XP_LOGFF( "Unable to build iter" );
     }
