@@ -314,24 +314,18 @@
          for network play will by default have the hint feature
          enabled. -->
     <string name="nethints_allowed">Allow hints (networked)</string>
-
     <!-- text of checkbox controlling whether there's a game timer, when duplicate is no checked -->
     <string name="use_timer">Enable game timer</string>
     <!-- text of checkbox controlling whether there's a game timer, when duplicate is checked -->
-
     <string name="use_duptimer">Enable per-move timer</string>
-
     <!-- label for the field used to set the timer's inital value, when duplicate is not checked -->
     <string name="minutes_label">Minutes per player</string>
     <!-- label for the field used to set the timer's inital value, when duplicate IS checked -->
     <string name="dup_minutes_label">Minutes per turn</string>
-
     <!-- Label to left of dropdown allowing to choose how smart robot is -->
     <string name="robot_iq_label">Robot IQ</string>
-
     <!-- Label to left of dropdown allowing to choose how to deal with words not in wordlist -->
     <string name="phonies_label">Phonies</string>
-
     <!-- title of popup used to select how "smart" (how capable) the
          robot player will be. Note that on newer version of Android
          spinners no longer have titles: this won't show up. -->
@@ -850,7 +844,6 @@
     <string name="keep_screenon">Keep screen on</string>
     <!-- clarification of above -->
     <string name="keep_screenon_summary">Keep board screen on 10 mins</string>
-
     <!-- Preference title: cell line thickness as pct of cell width -->
     <string name="board_line_pct">Cell line thickness (percent, limit 1 to 25)</string>
     <!--
@@ -2186,7 +2179,6 @@
     configured before it can be opened.</string>
     <string name="new_game_message_net">(You will have a chance to
     invite other players after it is created.)</string>
-
     <string name="use_defaults">Use defaults</string>
     <string name="nplayers_prompt">Number on this device</string>
     <plurals name="nplayers_fmt">
@@ -2289,7 +2281,7 @@
     <string name="game_summary_field_npackets">Pending packet count</string>
     <string name="expl_update_url">Update checks URL</string>
     <string name="expl_relay_url">URL for relay web API</string>
-    <string name="expl_mqtt_url">URL for new mqtt-based relay API</string>
+    <string name="expl_mqtt_url">URL for new MQTT-based relay API</string>
     <string name="got_langdict_title">Fetch default wordlist for language</string>
     <string name="got_langdict_summary">Don\'t try a second time</string>
     <string name="pref_group_sms_title">SMS Stuff</string>
@@ -2464,7 +2456,6 @@
 \nIf it happens again, e-mail the developer logs and info about your device.
 \n
 \nThis message will be seen at most once every %3$d minutes.</string>
-
     <string name="sms_banned_ok_only">The Google Play version of CrossWords no longer supports invitations or play via data SMS.</string>
     <string name="button_more_info">Read more</string>
     <string name="banned_nbs_perms">This game is set up to communicate via data SMS, but apps from the Google Play Store are no longer allowed to do so (with rare exceptions). You can still open the game, but it may not be able to send or receive moves.
@@ -2479,31 +2470,25 @@
   words.\n\nUse this feature to check the validity of words you\'re
   thinking of playing, or to look up an unfamiliar word provided as a
   hint.</string>
-
-  <string name="servicedesc">For transmitting CrossWords moves</string>
-
-  <!-- New strings for duplicate mode play -->
-  <!-- Checkbox in game config dialog -->
-  <string name="duplicate_check">Duplicate mode</string>
-
-  <!-- Tags duplicate-mode games in Games List, above thumbnail of board -->
-  <string name="dup_tag">Dup</string>
-  <!-- Mark game title; will produce something like "Kati vs. Eric (dup.)" -->
-  <string name="dupe_title_fmt">%1$s (dup.)</string>
-  <!-- Used instead of str_commit_confirm when in duplicate mode -->
-  <string name="str_submit_confirm">Submit the current move?\n</string>
-
-  <!-- In new-game preferences, do we default to dup-mode being on or off? -->
-  <string name="offerdupmode_title">Play in \"duplicate-mode\"</string>
-  <string name="offerdupmode_sum">(Experimental!!!) Style of play
+    <string name="servicedesc">For transmitting CrossWords moves</string>
+    <!-- New strings for duplicate mode play -->
+    <!-- Checkbox in game config dialog -->
+    <string name="duplicate_check">Duplicate mode</string>
+    <!-- Tags duplicate-mode games in Games List, above thumbnail of board -->
+    <string name="dup_tag">Dup</string>
+    <!-- Mark game title; will produce something like "Kati vs. Eric (dup.)" -->
+    <string name="dupe_title_fmt">%1$s (dup.)</string>
+    <!-- Used instead of str_commit_confirm when in duplicate mode -->
+    <string name="str_submit_confirm">Submit the current move?\n</string>
+    <!-- In new-game preferences, do we default to dup-mode being on or off? -->
+    <string name="offerdupmode_title">Play in \"duplicate-mode\"</string>
+    <string name="offerdupmode_sum">(Experimental!!!) Style of play
   where all players have the same tiles</string>
-
-  <!-- These are temporary: debug-only preferences to unhide duplicate
+    <!-- These are temporary: debug-only preferences to unhide duplicate
        mode. Will go away once it's no longer experimental. -->
-  <string name="unhide_dupmode_title">Unhide duplicate-mode options</string>
-  <string name="unhide_dupmode_summary">(It\'s too experimental right now)</string>
-
-      <!-- dup mode: tile assignment -->
+    <string name="unhide_dupmode_title">Unhide duplicate-mode options</string>
+    <string name="unhide_dupmode_summary">(It\'s too experimental right now)</string>
+    <!-- dup mode: tile assignment -->
     <string name="lmi_tiles_dup">Same tiles assigned to all players</string>
     <!-- dup mode: A "pass" is when nobody can score -->
     <string name="lmi_pass_dup">No players found a move (all passed)</string>
@@ -2516,7 +2501,6 @@
     points each. %3$s was played.</string>
     <!-- Used to concatenate names, stuck between all players' names when they tie -->
     <string name="name_concat_dup">\u0020and\u0020</string>
-
     <!-- Shown when in duplicate mode a guest commits a move. The
          point is to educate user why he won't see a change immediately. -->
     <string name="dup_client_sent">This device has sent its moves to
@@ -2528,35 +2512,27 @@
     <string name="dup_host_received_fmt">%1$d of %2$d players have
     reported their moves. When all moves have been received it will be
     your turn again.</string>
-
     <!-- Explanation, shown in Android settings app, for the class of
          notifications letting users know a duplicate-mode timer is
          running while they're doing something else. -->
     <string name="dup_timer_expl">Duplicate-mode timers running</string>
-
     <!-- Explanation, shown in Android settings app, for the class of
          notifications letting users know a game with a timer has been
          paused or un-paused. -->
     <string name="dup_paused_expl">Notice of games being paused and un-paused</string>
-
     <string name="dup_notif_title">Timer running</string>
     <string name="dup_notif_title_fmt">You have until %1$s to move.</string>
-
     <string name="board_menu_game_pause">Pause</string>
     <string name="board_menu_game_unpause">Un-pause</string>
-
     <string name="pause_expl">Pausing this game will stop the timers, and hide the game, on all devices.</string>
     <string name="unpause_expl">Un-Pausing this game will restart the timers on all devices.</string>
-
     <!-- Title for notification that another player paused a duplicate-mode game -->
     <string name="game_paused_title">Game paused</string>
     <!-- Title for notification that another player un-paused a duplicate-mode game -->
     <string name="game_unpaused_title">Game un-paused</string>
-
     <string name="dup_moved">Duplicate turn complete. Scores:\n</string>
     <string name="dup_traded_fmt">No moves made; traded %1$d tiles</string>
     <string name="dup_onescore_fmt">%1$s: %2$d points\n</string>
-
     <!-- Title of pause confirm/message edit dialog -->
     <string name="pause_title">Game pause</string>
     <!-- Title of unpause confirm/message edit dialog -->
@@ -2567,28 +2543,22 @@
     <string name="pause_forget_msg">Forget message</string>
     <!-- Hint in message edit when pausing -->
     <string name="pause_expl_hint">Why I\'m doing this</string>
-
     <string name="pause_notify_fmt">Player %1$s has paused this game.</string>
     <string name="unpause_notify_fmt">Player %1$s has un-paused this game.</string>
     <string name="pause_notify_expl_fmt">Player %1$s has paused this game, with this explanation: %2$s</string>
     <string name="unpause_notify_expl_fmt">Player %1$s has un-paused
     this game, with this explanation: %2$s</string>
-
     <string name="autopause_expl_fmt">The timer for game \"%1$s\" expired without
     any moves being made, so it has been paused for you.</string>
-
     <string name="history_unpause_fmt">Unpaused after %2$s by: %1$s.</string>
     <string name="history_pause_fmt">Paused by: %1$s.</string>
     <string name="history_msg_fmt"> Message: %1$s.</string>
     <string name="history_autopause">Auto-paused.</string>
-
     <string name="unsafe_open_warning">This game has caused CrossWords
     to crash recently and is likely damaged. Opening it might cause
     another crash. Do you want to open it anyway?</string>
     <string name="unsafe_open_disregard">Open anyway</string>
-
     <string name="word_blocked_by_phony">Word or words not found in wordlist %2$s: %1$s.</string>
-
     <string name="gamel_menu_logs">Debug logs</string>
     <!-- Debug-build-only menu to turn on saving of logs -->
     <string name="gamel_menu_logstore_on">Enable log storage</string>
