@@ -474,11 +474,11 @@
          The number of players missing is substituted for "%1$d". -->
     <plurals name="invite_msg_fmt">
         <item quantity="one">This game is waiting for one remote
-      player. Would you like to invite someone to join -- assuming you
-      haven\'t already?</item>
+      player. Would you like to invite someone to join—assuming you
+      haven’t already?</item>
         <item quantity="other">This game is waiting for %1$d remote
-      players. Would you like to invite someone to join -- assuming
-      you haven\'t already?</item>
+      players. Would you like to invite someone to join—assuming
+      you haven’t already?</item>
     </plurals>
     <plurals name="invite_sent_fmt">
         <item quantity="one">You have already invited a remote player to
@@ -503,7 +503,7 @@
          players to invite, IF the number of missing players is
          greater than one this text is appended to the above. -->
     <string name="invite_multiple">\u0020(You are expecting multiple
-    remote players. You don\'t have to invite them all at once, but
+    remote players. You don’t have to invite them all at once, but
     this alert will not be dismissed until everybody has been invited
     and all invitations have been accepted.)</string>
     <string name="invit_expl_sms_fmt">Invite sent via Data SMS to phone
@@ -511,8 +511,8 @@
     <string name="invit_expl_usrsms_fmt">Invite sent via SMS to %1$s on %2$s</string>
     <!-- shown when user chooses to invite via the default SMS app -->
     <string name="sms_invite_flakey">This new option launches your
-    default SMS app with an invitation ready to send -- when it
-    works. Each SMS app is different, and some won\'t
+    default SMS app with an invitation ready to send—when it
+    works. Each SMS app is different, and some won’t
     cooperate.</string>
     <!-- Toast when invite-by-visible-sms fails -->
     <string name="sms_invite_fail">Unable to launch SMS app</string>
@@ -950,7 +950,7 @@
     <string name="peek_other">View tiles out-of-turn</string>
     <!-- explanation of the above -->
     <string name="peek_other_summary">Tapping on scoreboard name shows
-        that player\'s tiles</string>
+        that player’s tiles</string>
     <!-- If this preference is checked the "crosshairs" (vertical and
          horzontal lines through the cell your finger is on that help
          you tell where the app thinks you're actually tapping) will
@@ -1045,8 +1045,8 @@
     <!-- <string name="button_nfc">NFC</string> -->
     <!-- This is the subject line of the email/text sent to invite
          someone to join a game. -->
-    <string name="invite_subject">Let\'s play CrossWords</string>
-    <string name="invite_subject_fmt">Let\'s play CrossWords (room %1$s)</string>
+    <string name="invite_subject">Let’s play CrossWords</string>
+    <string name="invite_subject_fmt">Let’s play CrossWords (room %1$s)</string>
     <!-- This is the body of the html version of the invitation. A URL
          is created with parameters describing the game and
          substituted for "%1$s".  (The funky \u003c and friends are
@@ -1137,7 +1137,7 @@
          move)</string>
     <!-- Displyed when you try to commit a move and it's not your
          turn. -->
-    <string name="str_not_your_turn">You can\'t do that; it\'s not
+    <string name="str_not_your_turn">You can’t do that; it’s not
          your turn!</string>
     <!-- Displayed when you try to reveal a robot player's tiles,
          either by tapping on its "hidden" rack (marked by "?"
@@ -1145,12 +1145,12 @@
          ability to reveal another players tiles this way is
          controlled by the peek_other preference and is disabled by
          default.)-->
-    <string name="str_no_peek_robot_tiles">No peeking at the robot\'s
+    <string name="str_no_peek_robot_tiles">No peeking at the robot’s
          tiles!</string>
     <!-- Same as above, but used when you try to show tiles belonging
          to a player on another device (a remote player.) -->
     <string name="str_no_peek_remote_tiles">No peeking at remote
-         players\' tiles!</string>
+         players’ tiles!</string>
     <!-- Displayed when you try to begin a trade but there are not
          seven or more tiles in the pool.  The rules don't allow
          trading in this case. -->
@@ -1167,7 +1167,7 @@
          there are no tiles on the board (no move has yet been made.)
          [If I'm being clever and disabling those features in this
          case there may be no way to see this.] -->
-    <string name="str_cant_undo_tileassign">Tile assignment can\'t be
+    <string name="str_cant_undo_tileassign">Tile assignment can’t be
          undone.</string>
     <!-- Using the hint feature is cheating by some players, and it
          can be disabled via the hints_allowed preference.  I should
@@ -1334,7 +1334,7 @@
        ########################################################### 
       -->
     <!-- Title of New user info dialog-->
-    <string name="newbie_title">Here\'s a tip</string>
+    <string name="newbie_title">Here’s a tip</string>
     <!-- Text for button in new-user-info dialog with title just
          above.  -->
     <string name="button_notagain">Do not show again</string>
@@ -1437,19 +1437,23 @@
          Board screen.  The idea is that you're tapping around
          figuring out how to play and when you tap an empty cell the
          arrow appears.  This explains it. -->
-    <string name="not_again_arrow">Moving tiles to the board:\nYou can
-      drag tiles between the rack and the board, or you can tap an
-      empty square to place the board arrow. Rack tiles you tap will
-      replace the arrow (moving it one square in the direction it
-      points.)  Tap the arrow once to change its orientation; a second
-      time, to hide it. A checkbox in the Appearance section of
-      Settings will hide it permanently.</string>
+    <string name="not_again_arrow">There are two ways to move tiles to
+    the board.
+    \n\n
+    • You can drag them between the rack and the board.
+    \n\n
+
+    • Or you can tap an empty square on the board to place the “board
+    arrow.” Then tiles in the rack replace the arrow when you tap
+    them. Tap the arrow to change its direction or to hide it.
+    </string>
+
     <!-- Shown when the board screen is visible and it's just become
          another players turn. The idea is to give a hint about how to
          find out about recent moves. -->
     <string name="not_again_turnchanged">The player whose turn it is
       is drawn large in the scoreboard.\n\nHold your finger on a name in
-      the scoreboard to get details about that player\'s most recent
+      the scoreboard to get details about that player’s most recent
       move.</string>
     <!-- Shown when you first pick the list_item_new_from menuitem -->
     <string name="not_again_newfrom">Create a new ready-to-play game
@@ -1532,7 +1536,7 @@
     <string name="not_again_archive">Archiving uses a special group
     called \"Archive\" to store finished games you want to keep. And,
     since deleting an entire archive is easy, archiving is also a
-    great way to mark games for deletion – if that\'s what you prefer
+    great way to mark games for deletion – if that’s what you prefer
     to do.\n\n(Deleting the Archive group is safe because it will be
     created anew when needed.)
     </string>
@@ -1562,7 +1566,7 @@
          but nothing can be done because there's not focussed text
          field -->
     <string name="blank_button_expl">This button inserts a blank at
-    the active text field\'s cursor, but there is no cursor
+    the active text field’s cursor, but there is no cursor
     now.</string>
 
     <!-- Label for first field in wordlist browser filter -->
@@ -1595,7 +1599,7 @@
     <string name="dict_browse_title_fmt">%1$s (%2$d words total)</string>
     <!--  -->
     <string name="not_again_browse">This button opens the wordlist
-      browser on the current player\'s wordlist.</string>
+      browser on the current player’s wordlist.</string>
     <!--  -->
     <string name="not_again_browseall">This button opens the wordlist
       browser on the wordlist of your choice.</string>
@@ -1626,10 +1630,9 @@
 
     <!-- Text of alert shown when user first opens wordlist
          browser. Shown until not-again checkbox checked. -->
-    <string name="new_feature_filter">This wordlist browser now has
-    dramatically improved filtering abilities. As an example, you can
-    show all words containing \"QU\" and ending in \"ING\".\n\nAccess
-    filtering by tapping the Expander button at the upper-right corner
+    <string name="new_feature_filter">You can now filter wordlists
+    based on what they start with, end with, and/or contain. Access
+    filtering by tapping the Expander Arrow at the upper-right corner
     of the window.\n\nRead more on the FAQ by tapping the button
     below.</string>
 
@@ -1727,7 +1730,7 @@
          the user-visible SMS case -->
     <string name="invite_sms_desc">Your SMS messaging app will then be
     launched with a message for you to send to the phone number
-    you\'ve selected.</string>
+    you’ve selected.</string>
     <!-- Appears near top of invitation phone number picker when it's
          the user-invisible Data SMS case -->
     <string name="invite_nbs_desc">A data message will then be
@@ -1750,7 +1753,7 @@
       want to invite to your new game, then tap \"%2$s\".</item>
     </plurals>
     <string name="invite_p2p_desc_extra">Only devices that are
-    currently available are shown. If a nearby device isn\'t showing
+    currently available are shown. If a nearby device isn’t showing
     up please make sure that WiFi is turned on, that CrossWords is
     installed, and that play via WiFi Direct is enabled.</string>
     <!--  -->
@@ -1825,7 +1828,7 @@
     <string name="summary_busy">Summary unavailable</string>
     <string name="connstat_net_noaddr">This networked game has no way
     to connect and cannot be played.\n\n(It was probably created from
-    an invitation that didn\'t specify any way of connecting that your
+    an invitation that didn’t specify any way of connecting that your
     device supports, or you may have recently removed its last way of
     connecting.)</string>
     <!--  -->
@@ -1863,7 +1866,7 @@
     <string name="confirm_sms_expl">Warning: This feature is meant for
     phones with unlimited texting plans. Once you enable it dozens of
     Data SMS messages will be sent (invisibly) for each game
-    played. If you don\'t have an unlimited plan your carrier may
+    played. If you don’t have an unlimited plan your carrier may
     charge you for each and every message!\n\nShould play via Data SMS
     be enabled?</string>
     <!--  -->
@@ -1873,7 +1876,7 @@
     <!--  -->
     <string name="confirm_sms_unlimited">Yes: I have unlimited texting</string>
     <!--  -->
-    <string name="confirm_sms_willpay">Yes: I\'ll pay all carrier charges</string>
+    <string name="confirm_sms_willpay">Yes: I’ll pay all carrier charges</string>
     <!--  -->
     <string name="warn_sms_disabled">Play via Data SMS is currently
     disabled. No moves will be sent via Data SMS.\n\nYou can enable
@@ -2120,13 +2123,13 @@
     you have installed determines:\n• What languages you can play
     in\n• How smart the robot player is\n• What words are
     legal\n\nCheck the \"Show downloadable\" box at the top to see
-    what\'s available.</string>
+    what’s available.</string>
     <string name="force_tablet_title">Use tablet (side-by-side) layout?</string>
     <string name="force_tablet_default">Use default for my device</string>
     <string name="force_tablet_tablet">Force tablet layout</string>
     <string name="force_tablet_phone">Force phone layout</string>
     <!-- Nagging: title of notification reminder message -->
-    <string name="nag_title">Reminder: It\'s your turn</string>
+    <string name="nag_title">Reminder: It’s your turn</string>
     <!-- body of warning notification reminder message. First three
     are used to build a string based on the length of time that's then
     inserted in the fourth.  E.g "PlayerName moved more than 2 day[s],
@@ -2219,7 +2222,7 @@
     <!-- Button for alert with title above -->
     <string name="button_close">Close</string>
     <string name="button_reinvite">Re-invite</string>
-    <string name="invite_stays">(This dialog will stay up until all
+    <string name="invite_stays">(You will see this dialog until all
     remote players have connected. You can close the game if you
     expect it to take a while. Remote players will still be able to
     connect, and you will be notified when they do.)</string>
@@ -2242,7 +2245,7 @@
     <string name="disable_nags_title">Turn reminders</string>
     <string name="disable_nag_title">Disable network game reminders</string>
     <string name="disable_nag_summary">Do not notify me no matter
-    how long it\'s been my turn</string>
+    how long it’s been my turn</string>
     <string name="disable_nag_solo_title">Disable solo game reminders</string>
     <string name="confirm_get_locdict_fmt">Your device is set up for
   %1$s. Would you like to download a wordlist so you can play
@@ -2281,7 +2284,7 @@
     <string name="enable_sms_toself_title">Short-circuit SMS to self</string>
     <string name="enable_sms_toself_summary">Skip radio when phone numbers same</string>
     <string name="force_radio_title">Pretend to have radio</string>
-    <string name="radio_name_real">Don\'t pretend</string>
+    <string name="radio_name_real">Don’t pretend</string>
     <string name="radio_name_tablet">Tablet/no radio</string>
     <string name="radio_name_gsm">GSM</string>
     <string name="radio_name_cdma">CDMA</string>
@@ -2293,7 +2296,7 @@
     <string name="expl_relay_url">URL for relay web API</string>
     <string name="expl_mqtt_url">URL for new mqtt-based relay API</string>
     <string name="got_langdict_title">Fetch default wordlist for language</string>
-    <string name="got_langdict_summary">Don\'t try a second time</string>
+    <string name="got_langdict_summary">Don’t try a second time</string>
     <string name="pref_group_sms_title">SMS Stuff</string>
     <string name="pref_group_sms_summary">Prefs related to play-via-sms</string>
     <string name="pref_group_relay_title">Relay Stuff</string>
@@ -2311,11 +2314,11 @@
   connect.\n\nPlease try opening the game again later after
   conditions have changed.</string>
     <string name="drop_relay_warning_fmt">(This game can also connect
-  via %1$s, so if you\'d like to play the game without a relay
+  via %1$s, so if you’d like to play the game without a relay
   connection you can.)
   </string>
     <string name="confirm_drop_relay">Are you sure you want to drop this
-  game\'s ability to communicate via the relay?</string>
+  game’s ability to communicate via the relay?</string>
     <string name="wifi_warning">\u0020For example, you may need to be on
   a different WiFi network.</string>
     <string name="confirm_drop_relay_bt">Bluetooth only works for nearby
@@ -2336,14 +2339,14 @@
   a GSM carrier, i.e. every carrier in the world except Verizon and
   Sprint.</string>
     <string name="not_again_comms_bt">Use Bluetooth to play against a
-  nearby device that\'s \"paired\" with yours.</string>
+  nearby device that’s \"paired\" with yours.</string>
     <string name="not_again_comms_p2p">Use WiFi Direct to play against a
   nearby WiFi Direct-capable device with CrossWords installed.</string>
     <string name="str_no_hint_found">Cannot find any moves</string>
     <string name="not_again_rematch_two_only">Rematch is limited to
-  two-person games, at least for now, because it\'s harder with more
-  devices and I think it\'s rare that people play with more than
-  two. Let me know if I\'m wrong and I\'ll up the priority.</string>
+  two-person games, at least for now, because it’s harder with more
+  devices and I think it’s rare that people play with more than
+  two. Let me know if I’m wrong and I’ll up the priority.</string>
     <string name="show_sms_title">Show SMS sends, receives</string>
     <string name="show_fcm_title">Show FCM receives</string>
     <!-- Shown after "resend messages" menuitem chosen -->
@@ -2392,13 +2395,13 @@
   \n\n
   You can read more using the button below.</string>
     <string name="download_rationale">CrossWords needs access to
-  temporary storage to keep what you\'re about to download.
+  temporary storage to keep what you’re about to download.
   </string>
     <string name="sms_invite_rationale">
     CrossWords needs permission to send an invitation via Data SMS.
   </string>
     <string name="dicts_storage_rationale">
-    CrossWords can store and read wordlists in your device\'s
+    CrossWords can store and read wordlists in your device’s
     Downloads area but it needs permission to access them
     there.\n\nYou can safely deny this permission if you will never
     download wordlists except from inside CrossWords and have not
@@ -2407,10 +2410,10 @@
     <string name="phone_state_rationale">
     Some phones can exchange SMS \"data\" messages. CrossWords would
     like to offer you this option but needs to ask your device about
-    itself first (to learn if it\'s a phone and if so what
-    type.)\n\nIf your device can\'t send data SMS (e.g. because it
-    isn\'t a phone) or you don\'t ever want to play via SMS
-    (e.g. because you pay for each message), it\'s safe to permanently
+    itself first (to learn if it’s a phone and if so what
+    type.)\n\nIf your device can’t send data SMS (e.g. because it
+    isn’t a phone) or you don’t ever want to play via SMS
+    (e.g. because you pay for each message), it’s safe to permanently
     deny permission.
   </string>
     <string name="phone_lookup_rationale">
@@ -2426,8 +2429,8 @@
   Data SMS.</string>
     <string name="contacts_rationale">
     CrossWords wants access to your contacts in order to put a name to
-    phone numbers that send you invitations via Data SMS. You\'ll
-    still be able to receive invitations if you don\'t grant this
+    phone numbers that send you invitations via Data SMS. You’ll
+    still be able to receive invitations if you don’t grant this
     permission, but only the phone number of the sender will be
     displayed.
   </string>
@@ -2450,14 +2453,14 @@
     <string name="gameevent_channel_expl">In-game events</string>
     <!-- Notification that the OS isn't scheduling background services -->
     <string name="servicestall_channel_expl">Stalled messaging alerts</string>
-    <string name="not_again_emptybtscan">If a scan doesn\'t find the device you expect:\n
+    <string name="not_again_emptybtscan">If a scan doesn’t find the device you expect:\n
   • First, just Rescan\n
   • Make sure Bluetooth is enabled on the other device\n
   • Launch CrossWords on the other device\n
   • If all else fails, reboot this device\n
   </string>
     <string name="title_enable_stallnotify">Show stalled network notification</string>
-    <string name="summary_enable_stallnotify">Notify when Android\'s
+    <string name="summary_enable_stallnotify">Notify when Android’s
   slow to process outgoing invitations and moves</string>
     <string name="notify_stall_title">Message sending is stalled</string>
     <string name="notify_stall_body_fmt">%1$s (and others?) could not send outbound messages
@@ -2477,8 +2480,8 @@
     <string name="relay_poll_name_no_polling">FCM only: no polling</string>
     <string name="relay_poll_name_both">Default: mix polling and FCM</string>
     <string name="not_again_longtap_lookup">You can look up words BEFORE
-  they\'re committed as moves -- by long-tapping, same as committed
-  words.\n\nUse this feature to check the validity of words you\'re
+  they’re committed as moves—by long-tapping, same as committed
+  words.\n\nUse this feature to check the validity of words you’re
   thinking of playing, or to look up an unfamiliar word provided as a
   hint.</string>
 
@@ -2503,7 +2506,7 @@
   <!-- These are temporary: debug-only preferences to unhide duplicate
        mode. Will go away once it's no longer experimental. -->
   <string name="unhide_dupmode_title">Unhide duplicate-mode options</string>
-  <string name="unhide_dupmode_summary">(It\'s too experimental right now)</string>
+  <string name="unhide_dupmode_summary">(It’s too experimental right now)</string>
 
       <!-- dup mode: tile assignment -->
     <string name="lmi_tiles_dup">Same tiles assigned to all players</string>
@@ -2568,7 +2571,7 @@
     <!-- Button in pause confirm/message edit dialog -->
     <string name="pause_forget_msg">Forget message</string>
     <!-- Hint in message edit when pausing -->
-    <string name="pause_expl_hint">Why I\'m doing this</string>
+    <string name="pause_expl_hint">Why I’m doing this</string>
 
     <string name="pause_notify_fmt">Player %1$s has paused this game.</string>
     <string name="unpause_notify_fmt">Player %1$s has un-paused this game.</string>
@@ -2584,9 +2587,10 @@
     <string name="history_msg_fmt"> Message: %1$s.</string>
     <string name="history_autopause">Auto-paused.</string>
 
-    <string name="unsafe_open_warning">This game has caused CrossWords
-    to crash recently and is likely damaged. Opening it might cause
-    another crash. Do you want to open it anyway?</string>
+    <string name="unsafe_open_warning">CrossWords seems to have
+    crashed recently while this game was open. It may be damaged, and
+    opening it might cause another crash. Do you want to try opening
+    it anyway?</string>
     <string name="unsafe_open_disregard">Open anyway</string>
 
     <string name="word_blocked_by_phony">Word or words not found in wordlist %2$s: %1$s.</string>
@@ -2629,6 +2633,6 @@
     <!-- MQTT stuff. May not see the light of day -->
     <string name="invite_choice_mqtt">Internet/MQTT</string>
     <string name="mqtt_invite_title">MQTT Invitation</string>
-    <string name="not_again_comms_mqtt">I\'m experimenting with this
+    <string name="not_again_comms_mqtt">I’m experimenting with this
     as a replacement for the relay.</string>
 </resources>
