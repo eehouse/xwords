@@ -1623,10 +1623,10 @@
 
     <!-- Text of alert shown when user first opens wordlist
          browser. Shown until not-again checkbox checked. -->
-    <string name="new_feature_filter">You can now filter wordlists
-    based on what they start with, end with, and/or contain. Access
-    filtering by tapping the Expander Arrow at the upper-right corner
-    of the window.\n\nRead more in the FAQ by tapping the button
+    <string name="new_feature_filter">You can now filter wordlists by
+    what words start with, end with, and/or contain. Access filtering
+    by tapping the Expander Arrow at the upper-right corner of the
+    window.\n\nRead more in the FAQ by tapping the button
     below.</string>
 
     <string name="board_menu_file_email">Email author</string>
