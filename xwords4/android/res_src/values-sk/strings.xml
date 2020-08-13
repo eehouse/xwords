@@ -1170,17 +1170,13 @@
     <string name="not_again_browse">XLATE ME: This button opens the wordlist
       browser on the current player\'s wordlist.</string>
     <!--  -->
-    <string name="dict_browse_nowords_fmt">XLATE ME: No word in %1$s starts with
-      %2$s.</string>
     <!--  -->
     <string name="pick_faceup">XLATE ME: Pick tiles face-up</string>
     <!--  -->
     <!--  -->
     <!--  -->
     <!--  -->
-    <string name="word_search_hint">XLATE ME: First letters</string>
     <!--  -->
-    <string name="button_search">XLATE ME: Find</string>
     <!--  -->
     <string name="button_move">XLATE ME: Move</string>
     <!--  -->

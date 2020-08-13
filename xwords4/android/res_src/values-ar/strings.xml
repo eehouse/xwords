@@ -57,7 +57,6 @@
     <string name="button_notagain">لا تعرض مجدداً</string>
     <string name="xlator">[فارغ]</string>
     <string name="button_newgroup">مجموعة جديدة</string>
-    <string name="word_search_hint">الأحرف الأولى</string>
     <string name="slmenu_select_all">تحديد الكل</string>
     <string name="loc_menu_xlate">ترجمة</string>
     <string name="loc_filters_prompt">فرز حسب:</string>

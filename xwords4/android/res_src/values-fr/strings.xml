@@ -1854,10 +1854,8 @@ ligne, les mots qui viennent d\'être joués.</string>
     <string name="button_newgroup">Nouveau groupe</string>
     <!--  -->
     <!--<string name="button_search">Find</string>-->
-    <string name="button_search">Trouver</string>
     <!--  -->
     <!--<string name="word_search_hint">First letters</string>-->
-    <string name="word_search_hint">Premières lettres</string>
     <!--  -->
     <!--<string name="tilepick_undo">Undo last\u200C</string>-->
     <!--  -->
@@ -1877,12 +1875,9 @@ ligne, les mots qui viennent d\'être joués.</string>
     <!--<string name="dict_browse_title1_fmt">%1$s (%2$d words using %3$d
       tiles)</string>-->
     <!--<string name="dict_browse_title1_fmt">%1$s (%2$d mots utilisant %3$d jetons)</string>-->
-    <string name="dict_browse_title1_fmt">%1$s (%2$d mots utilisant %3$d jetons)</string>
     <!--  -->
     <!--<string name="dict_browse_nowords_fmt">No word in %1$s starts with
       %2$s.</string>-->
-    <string name="dict_browse_nowords_fmt">Aucun mot de %1$s ne commence par
-%2$s.</string>
     <!--  -->
     <!--<string name="not_again_browse">This button opens the wordlist
       browser on the current player\'s wordlist.</string>-->

@@ -1443,9 +1443,7 @@
     <!--  -->
     <string name="button_move">Jogar</string>
     <!--  -->
-    <string name="button_search">Procurar</string>
     <!--  -->
-    <string name="word_search_hint">Primeiras letras</string>
     <!--  -->
     <!--  -->
     <!--  -->
@@ -1454,8 +1452,6 @@
     <!--  -->
     <!--  -->
     <!--  -->
-    <string name="dict_browse_nowords_fmt">Nenhuma palavra em %1$s começa com
-      %2$s.</string>
     <!--  -->
     <string name="not_again_browse">Esse botão abre o navegador de
     listas de palavras na lista do jogador atual.</string>
