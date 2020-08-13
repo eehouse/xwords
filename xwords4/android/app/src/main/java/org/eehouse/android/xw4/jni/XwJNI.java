@@ -173,7 +173,7 @@ public class XwJNI {
     // This needs to be called before the first attempt to use the
     // jni.
     static {
-        System.loadLibrary("xwjni");
+        System.loadLibrary( BuildConfig.JNI_LIB_NAME );
     }
 
     /* XW_TrayVisState enum */

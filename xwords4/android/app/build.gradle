@@ -79,6 +79,7 @@ android {
     flavorDimensions "variant"//, "abi"
     productFlavors {
         all {
+            buildConfigField "String", "JNI_LIB_NAME", "\"xwjni\""
             buildConfigField "String", "DB_NAME", "\"xwdb\""
             buildConfigField "String", "BUILD_INFO_NAME", "\"${BUILD_INFO_NAME}\""
             buildConfigField "boolean", "IS_TAGGED_BUILD", "${CURTAG}" == '' ? "false" : "true"
