@@ -369,14 +369,10 @@
 \n
 \n(Die Gruppe „Archiv“ kann sicher gelöscht werden, sie wird bei Bedarf neu erzeugt.)</string>
     <string name="button_newgroup">Neue Gruppe</string>
-    <string name="button_search">Suchen</string>
-    <string name="word_search_hint">Anfangsbuchstaben</string>
     <string name="tilepick_all_fmt">%1$d für mich auswählen</string>
     <string name="pick_faceup">Spielsteine aufgedeckt auswählen</string>
     <string name="disableds_title">Deaktivierte Adresstypen</string>
     <string name="dict_browse_title_fmt">%1$s (%2$d Wörter)</string>
-    <string name="dict_browse_title1_fmt">%1$s (%2$d Wörter mit %3$d Spielsteinen)</string>
-    <string name="dict_browse_nowords_fmt">Kein Wort in %1$s beginnt mit %2$s.</string>
     <string name="not_again_browse">Dieser Button öffnet den Wortlisten-Browser mit der Wortliste des gegenwärtigen Spielers.</string>
     <string name="not_again_browseall">Dieser Button öffnet den Wortlisten-Browser mit einer Wortliste Ihrer Wahl.</string>
     <string name="alert_empty_dict_fmt">Die Wortliste %1$s enthält nur Spielstein-Informationen, keine Wörter zum Browsen.</string>

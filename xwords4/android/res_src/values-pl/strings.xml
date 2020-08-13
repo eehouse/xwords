@@ -145,8 +145,6 @@
     <string name="default_name_message">Wpisz tutaj swoje imię. Będzie ono używane podczas tworzenia nowych gier. (Możesz zmienić go później w sekcji „Nowa gra domyślna” w Ustawieniach.)</string>
     <string name="not_again_lookup">Ten przycisk pozwala przeglądać w Internecie słowa, które właśnie zostały odtworzone.</string>
     <string name="button_newgroup">Nowa grupa</string>
-    <string name="button_search">Znajdź</string>
-    <string name="word_search_hint">Pierwsze litery</string>
     <string name="disableds_title">Wyłączone typy adresów</string>
     <string name="min_len">Minimalna długość</string>
     <string name="max_len">Maksymalna długość</string>
@@ -460,8 +458,6 @@
     <string name="button_move">Rusz się.</string>
     <string name="tilepick_all_fmt">Wybierz %1$d dla mnie</string>
     <string name="dict_browse_title_fmt">"%1$s (%2$d słów)"</string>
-    <string name="dict_browse_title1_fmt">%1$s (%2$d wyrazy przy użyciu %3$d kafelków)</string>
-    <string name="dict_browse_nowords_fmt">Żadne słowo w %1$s nie zaczyna się od %2$s.</string>
     <string name="not_again_browse">Ten przycisk otwiera przeglądarkę listy słów na liście słów bieżącego gracza.</string>
     <string name="not_again_browseall">Ten przycisk otwiera przeglądarkę listy słów na wybranej przez Ciebie liście słów.</string>
     <string name="alert_empty_dict_fmt">Lista słów %1$s zawiera tylko informacje o kafelkach. Nie ma słów do przeglądania.</string>

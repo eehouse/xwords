@@ -218,13 +218,9 @@
     <string name="not_again_lookup">Denne knappen lar deg slå opp ord som akkurat ble spilt på nett.</string>
     <string name="button_move">Flytt</string>
     <string name="button_newgroup">Ny gruppe</string>
-    <string name="button_search">Finn</string>
-    <string name="word_search_hint">Første bokstaver</string>
     <string name="tilepick_all_fmt">Plukk %1$d for meg</string>
     <string name="disableds_title">Avskrudde adressetyper</string>
     <string name="dict_browse_title_fmt">%1$s (%2$d ord)</string>
-    <string name="dict_browse_title1_fmt">%1$s (%2$d ord ved bruk av %3$d flis</string>
-    <string name="dict_browse_nowords_fmt">Ingen ord i %1$s starter med %2$s.</string>
     <string name="not_again_browse">Denne knappen åpner ordlisteutforskeren i gjeldende spillers ordliste.</string>
     <string name="not_again_browseall">Denne knappen åpner ordlisteutforskeren i ordlisten du ønsker.</string>
     <string name="alert_empty_dict_fmt">Ordlisten %1$s inneholder kun flisinformasjon. Det er ingen ord å utforske.</string>

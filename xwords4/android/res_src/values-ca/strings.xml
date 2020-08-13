@@ -371,12 +371,8 @@ Introduïu el vostre nom aquí. S\'usarà en crear partides noves. (Podreu
     <string name="not_again_lookup">Aquest botó us permet cercar, en línia, les paraules acabades de jugar.</string>
     <string name="button_move">Jugada</string>
     <string name="button_newgroup">Grup nou</string>
-    <string name="button_search">Cerca</string>
-    <string name="word_search_hint">Primeres lletres</string>
     <string name="pick_faceup">Tria les fitxes cara amunt</string>
     <string name="dict_browse_title_fmt">%1$s (%2$d paraules)</string>
-    <string name="dict_browse_title1_fmt">%1$s (%2$d paraules usant %3$d fitxes)</string>
-    <string name="dict_browse_nowords_fmt">No hi ha cap paraula a %1$s que comenci amb %2$s.</string>
     <string name="not_again_browse">Aquest botó obre l\'explorador de diccionaris en el diccionari actual del jugador.</string>
     <string name="not_again_browseall">Aquest botó obre l\'explorador de diccionaris en el diccionari de la vostra elecció.</string>
     <string name="alert_empty_dict_fmt">El diccionari %1$s conté només la informació de fitxes. No hi ha paraules a explorar.</string>
