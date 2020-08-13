@@ -283,6 +283,7 @@ REQUIRED_DEBS = gcc libgtk-3-dev \
 		libjson-c-dev \
 		libgtk-3-dev \
 		python3-requests \
+		libmosquitto-dev \
 
 .PHONY: debcheck debs_install
 
