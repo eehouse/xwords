@@ -334,7 +334,7 @@ public class GameListItem extends LinearLayout
             // temporarily after every game closes because an *already-open*
             // game always tests as not safe-to-open.
             boolean doShow = false;
-            boolean quarantined = (BuildConfig.DEBUG || !BuildConfig.IS_TAGGED_BUILD)
+            boolean quarantined = BuildConfig.NON_RELEASE
                 && !Quarantine.safeToOpen( m_rowid );
             ImageView iv = (ImageView)findViewById( R.id.has_chat_marker );
             if ( quarantined ) {

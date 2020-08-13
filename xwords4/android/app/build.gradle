@@ -89,6 +89,7 @@ android {
             buildConfigField "String", "KEY_FCMID", "\"FBMService_fcmid\""
             buildConfigField "boolean", "ATTACH_SUPPORTED", "false"
             buildConfigField "boolean", "OFFER_MQTT", "true"
+            buildConfigField "boolean", "NON_RELEASE", "DEBUG || !IS_TAGGED_BUILD"
         }
 
         xw4NoSMS {

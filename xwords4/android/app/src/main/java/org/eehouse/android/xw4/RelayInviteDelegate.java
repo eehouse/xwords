@@ -29,8 +29,7 @@ import org.eehouse.android.xw4.DBUtils.SentInvitesInfo;
 public class RelayInviteDelegate extends DevIDInviteDelegate {
     private static final String TAG = RelayInviteDelegate.class.getSimpleName();
     private static final String RECS_KEY = TAG + "/recs";
-    private static final boolean RELAYINVITE_SUPPORTED
-        = BuildConfig.DEBUG || !BuildConfig.IS_TAGGED_BUILD;
+    private static final boolean RELAYINVITE_SUPPORTED = BuildConfig.NON_RELEASE;
 
     private boolean m_immobileConfirmed;
     private String mRelayDevIDStr;

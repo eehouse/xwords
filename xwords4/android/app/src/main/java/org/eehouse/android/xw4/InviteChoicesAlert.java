@@ -65,7 +65,7 @@ public class InviteChoicesAlert extends DlgDelegateAlert {
         if ( Utils.deviceSupportsNBS(context) ) {
             add( items, means, R.string.invite_choice_data_sms, InviteMeans.SMS_DATA );
         }
-        if ( BuildConfig.DEBUG || !BuildConfig.IS_TAGGED_BUILD ) {
+        if ( BuildConfig.NON_RELEASE ) {
             add( items, means, R.string.invite_choice_relay, InviteMeans.RELAY );
         }
         if ( BuildConfig.OFFER_MQTT ) {

@@ -30,8 +30,7 @@ import org.eehouse.android.xw4.jni.XwJNI;
 public class MQTTInviteDelegate extends DevIDInviteDelegate {
     private static final String TAG = MQTTInviteDelegate.class.getSimpleName();
     private static final String RECS_KEY = TAG + "/recs";
-    private static final boolean MQTTINVITE_SUPPORTED
-        = BuildConfig.DEBUG || !BuildConfig.IS_TAGGED_BUILD;
+    private static final boolean MQTTINVITE_SUPPORTED = BuildConfig.NON_RELEASE;
 
     private String m_devIDStr;
 

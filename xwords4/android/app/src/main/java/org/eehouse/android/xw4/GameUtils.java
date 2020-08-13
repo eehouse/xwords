@@ -108,7 +108,7 @@ public class GameUtils {
             String msg = "savedGame(): unable to get lock; holder dump: "
                 + GameLock.getHolderDump( rowid );
             Log.d( TAG, msg );
-            if ( BuildConfig.DEBUG || !BuildConfig.IS_TAGGED_BUILD ) {
+            if ( BuildConfig.NON_RELEASE ) {
                 Utils.emailAuthor( context, msg );
             }
             throw new NoSuchGameException( rowid );

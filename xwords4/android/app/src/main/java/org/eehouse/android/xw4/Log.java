@@ -40,8 +40,7 @@ public class Log {
     private static final String TAG = Log.class.getSimpleName();
     private static final String PRE_TAG = BuildConfig.FLAVOR + "-";
     private static final String KEY_USE_DB = TAG + "/useDB";
-    private static final boolean LOGGING_ENABLED
-        = BuildConfig.DEBUG || !BuildConfig.IS_TAGGED_BUILD;
+    private static final boolean LOGGING_ENABLED = BuildConfig.NON_RELEASE;
     private static final boolean ERROR_LOGGING_ENABLED = true;
     private static final String LOGS_FILE_NAME = BuildConfig.FLAVOR + "_logsDB.txt";
     private static final String LOGS_DB_NAME = "xwlogs_db";

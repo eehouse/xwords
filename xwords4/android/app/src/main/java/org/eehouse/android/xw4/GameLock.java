@@ -52,8 +52,7 @@ import androidx.annotation.NonNull;
 public class GameLock implements AutoCloseable {
     private static final String TAG = GameLock.class.getSimpleName();
 
-    private static final boolean GET_OWNER_STACK =
-        BuildConfig.DEBUG || !BuildConfig.IS_TAGGED_BUILD;
+    private static final boolean GET_OWNER_STACK = BuildConfig.NON_RELEASE;
     private static final boolean DEBUG_LOCKS = false;
 
     // private static final long ASSERT_TIME = 2000;

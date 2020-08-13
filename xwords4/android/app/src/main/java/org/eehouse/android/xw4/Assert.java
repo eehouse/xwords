@@ -45,7 +45,7 @@ public class Assert {
     // NR: non-release
     public static void assertTrueNR( boolean val )
     {
-        if ( BuildConfig.DEBUG || !BuildConfig.IS_TAGGED_BUILD ) {
+        if ( BuildConfig.NON_RELEASE ) {
             assertTrue( val );
         }
     }

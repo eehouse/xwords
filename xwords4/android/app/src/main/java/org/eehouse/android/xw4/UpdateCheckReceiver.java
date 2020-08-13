@@ -46,8 +46,9 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
     public static final String NEW_DICT_NAME = "NEW_DICT_NAME";
     public static final String NEW_XLATION_CBK = "NEW_XLATION_CBK";
 
+    private static final long INTERVAL_ONEHOUR = 1000 * 60 * 60;
     // weekly
-    private static final long INTERVAL_ONEDAY = 1000 * 60 * 60 * 24;
+    private static final long INTERVAL_ONEDAY = INTERVAL_ONEHOUR * 24;
     private static final long INTERVAL_NDAYS = 7;
 
     // constants that are also used in info.py
@@ -93,10 +94,16 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
         PendingIntent pi = PendingIntent.getBroadcast( context, 0, intent, 0 );
         am.cancel( pi );
 
-        long interval_millis = INTERVAL_ONEDAY;
-        if ( !devOK( context ) ) {
-            interval_millis *= INTERVAL_NDAYS;
+        long interval_millis;
+        if ( BuildConfig.NON_RELEASE ) {
+            interval_millis = INTERVAL_ONEHOUR;
+        } else {
+            interval_millis = INTERVAL_ONEDAY;
+            if ( !devOK( context ) ) {
+                interval_millis *= INTERVAL_NDAYS;
+            }
         }
+
         interval_millis = (interval_millis / 2)
             + Math.abs(Utils.nextRandomInt() % interval_millis);
         am.setInexactRepeating( AlarmManager.ELAPSED_REALTIME_WAKEUP,
