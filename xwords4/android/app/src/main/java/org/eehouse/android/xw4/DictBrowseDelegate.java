@@ -701,10 +701,14 @@ public class DictBrowseDelegate extends DelegateBase
                                        public void run() {
                                            stopProgress();
 
-                                           m_browseState.onFilterAccepted( m_dict, null );
-                                           initList( wrapper );
-                                           setFindPats( m_browseState.m_pats );
-
+                                           if ( null != wrapper ) {
+                                               m_browseState.onFilterAccepted( m_dict, null );
+                                               initList( wrapper );
+                                               setFindPats( m_browseState.m_pats );
+                                           } else {
+                                               makeOkOnlyBuilder(R.string.alrt_bad_filter )
+                                                   .show();
+                                           }
                                            newFeatureAlert();
                                        }
                                    } );

@@ -2656,34 +2656,32 @@ Java_org_eehouse_android_xw4_jni_XwJNI_di_1init
 
     DictionaryCtxt* dict = (DictionaryCtxt*)dictPtr;
     if ( !!dict ) {
-        DictIterData* data = XP_CALLOC( globalState->mpool, sizeof(*data) );
-        data->globalState = globalState;
-        data->dict = dict_ref( dict, env );
-        data->depth = 2;
-#ifdef DEBUG
-        data->guard = GI_GUARD;
-#endif
-
         PatDesc patDescs[3];
         XP_MEMSET( patDescs, 0, VSIZE(patDescs) * sizeof(patDescs[0]) );
 
         int len = 0;
+        bool formatOK = true;
         if ( !!jPatsArr ) {
             len = (*env)->GetArrayLength( env, jPatsArr );
             XP_ASSERT( len == 3 );
-            for ( int ii = 0; ii < len ; ++ii ) {
+            for ( int ii = 0; formatOK && ii < len ; ++ii ) {
                 jobject jdesc = (*env)->GetObjectArrayElement( env, jPatsArr, ii );
                 if ( !!jdesc ) {
                     jbyteArray jtiles;
                     if ( getObject( env, jdesc, "tilePat", "[B", &jtiles ) ) {
                         int nTiles = (*env)->GetArrayLength( env, jtiles );
                         if ( 0 < nTiles ) {
-                            patDescs[ii].nTiles = nTiles;
-                            jbyte* tiles = (*env)->GetByteArrayElements( env, jtiles, NULL );
-                            XP_MEMCPY( &patDescs[ii].tiles[0], tiles,
-                                       nTiles * sizeof(patDescs[ii].tiles[0]) );
-                            (*env)->ReleaseByteArrayElements( env, jtiles, tiles, 0 );
-                            patDescs[ii].anyOrderOk = getBool( env, jdesc, "anyOrderOk" );
+                            PatDesc* pd = &patDescs[ii];
+                            /* If user adds too many tiles, we'll see it here */
+                            if ( nTiles <= VSIZE(pd->tiles) ) {
+                                pd->nTiles = nTiles;
+                                jbyte* tiles = (*env)->GetByteArrayElements( env, jtiles, NULL );
+                                XP_MEMCPY( &pd->tiles[0], tiles, nTiles * sizeof(pd->tiles[0]) );
+                                (*env)->ReleaseByteArrayElements( env, jtiles, tiles, 0 );
+                                pd->anyOrderOk = getBool( env, jdesc, "anyOrderOk" );
+                            } else {
+                                formatOK = false;
+                            }
                         }
                         deleteLocalRef( env, jtiles );
                     }
@@ -2692,14 +2690,27 @@ Java_org_eehouse_android_xw4_jni_XwJNI_di_1init
             }
         }
 
-        DIMinMax mm = { .min = minLen, .max = maxLen };
-        data->iter = di_makeIter( data->dict, env, &mm, NULL, 0,
-                                  !!jPatsArr ? patDescs : NULL, VSIZE(patDescs) );
+        DictIter* iter = NULL;
+        if ( formatOK ) {
+            DIMinMax mm = { .min = minLen, .max = maxLen };
+            iter = di_makeIter( dict, env, &mm, NULL, 0,
+                                !!jPatsArr ? patDescs : NULL, VSIZE(patDescs) );
+        }
 
-        makeIndex( data );
-        (void)di_firstWord( data->iter );
+        if ( !!iter ) {
+            DictIterData* data = XP_CALLOC( globalState->mpool, sizeof(*data) );
+            data->iter = iter;
+            data->globalState = globalState;
+            data->dict = dict_ref( dict, env );
+            data->depth = 2;
+#ifdef DEBUG
+            data->guard = GI_GUARD;
+#endif
+            makeIndex( data );
+            (void)di_firstWord( data->iter );
 
-        closure = (jlong)data;
+            closure = (jlong)data;
+        }
     }
     return closure;
 }

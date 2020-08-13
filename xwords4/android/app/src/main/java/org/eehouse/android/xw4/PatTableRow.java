@@ -23,13 +23,14 @@ import android.content.Context;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.CheckBox;
+import android.widget.EditText;
 import android.widget.TableRow;
 
 import org.eehouse.android.xw4.jni.XwJNI.PatDesc;
 
 public class PatTableRow extends TableRow {
     private static final String TAG = PatTableRow.class.getSimpleName();
-    private EditWClear mEdit;
+    private EditText mEdit;
     private CheckBox mCheck;
 
     public PatTableRow( Context context, AttributeSet as )
@@ -67,22 +68,14 @@ public class PatTableRow extends TableRow {
 
         boolean handled = mEdit.hasFocus();
         if ( handled ) {
-            mEdit.insertBlank( blank );
+            mEdit.getText().insert(mEdit.getSelectionStart(), blank );
         }
         return handled;
     }
 
     private void getFields()
     {
-        for ( int ii = 0;
-              (null == mEdit || null == mCheck) && ii < getChildCount();
-              ++ii ) {
-            View view = getChildAt( ii );
-            if ( view instanceof EditWClear ) {
-                mEdit = (EditWClear)view;
-            } else if ( view instanceof CheckBox ) {
-                mCheck = (CheckBox)view;
-            }
-        }
+        mEdit = (EditText)Utils.getChildInstanceOf( this, EditText.class );
+        mCheck = (CheckBox)Utils.getChildInstanceOf( this, CheckBox.class );
     }
 }

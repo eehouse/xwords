@@ -145,6 +145,27 @@ typedef enum { PatErrNone,
                PatErrDupInSet,
 } PatErr;
 
+#ifdef DEBUG
+static const XP_UCHAR*
+patErrToStr( PatErr err )
+{
+    const XP_UCHAR* result = NULL;
+# define CASESTR(s) case s: result = #s; break
+    switch ( err ) {
+        CASESTR(PatErrNone);
+        CASESTR(PatErrMissingClose);
+        CASESTR(PatErrMultipleSpellings);
+        CASESTR(PatErrBadCountTerm);
+        CASESTR(PatErrNoDigit);
+        CASESTR(PatErrTooComplex);
+        CASESTR(PatErrBogusTiles);
+        CASESTR(PatErrDupInSet);
+    }
+# undef CASESTR
+    return result;
+}
+#endif
+
 typedef struct _ParseState {
     const DictionaryCtxt* dict;
     const XP_UCHAR* pat;
@@ -263,7 +284,19 @@ onFoundTiles( void* closure, const Tile* tiles, int len )
     }
     return 1 == len && PatErrNone == data->err;
 }
-    
+
+static PatErr
+addElem( ParseState* ps, PatElem* elem )
+{
+    PatErr err = PatErrNone;
+    if ( ps->elemIndex < VSIZE(ps->elems) ) {
+        ps->elems[ps->elemIndex++] = *elem;
+    } else {
+        err = PatErrTooComplex;
+    }
+    return err;
+}
+
 static PatErr
 parseTile( ParseState* ps )
 {
@@ -390,9 +423,10 @@ compileParent( ParseState* ps )
     return err;
 }
 
-static void
+static PatErr
 initPS( ParseState* ps, const DictionaryCtxt* dict )
 {
+    PatErr result = PatErrNone;
     XP_MEMSET( ps, 0, sizeof(*ps) );
     XP_ASSERT( !!dict );
     ps->dict = dict;
@@ -407,8 +441,9 @@ initPS( ParseState* ps, const DictionaryCtxt* dict )
 
 #ifdef WITH_START
     PatElem start = { .typ = START, };
-    ps->elems[ps->elemIndex++] = start;
+    result = addElem( ps, &start );
 #endif
+    return result;
 }
 
 static XP_Bool
@@ -416,19 +451,13 @@ compilePat( ParseState* ps, const XP_UCHAR* strPat )
 {
     ps->pat = strPat;
     ps->patIndex = 0;
-    // XP_ASSERT( !!iter->dict );
 
-    /* ParseState ps = { .dict = iter->dict, */
-    /*                   .pat = strPat, */
-    /*                   .blankMask = ((TileSet)1) << dict_getBlankTile( iter->dict ), */
-    /* }; */
     PatErr err = compileParent( ps );
     
     XP_Bool success = err == PatErrNone && 0 < ps->elemIndex;
-    /* if ( success ) { */
-    /*     XP_ASSERT( ps.elemIndex < VSIZE(ps.elems) ); */
-    /*     replacePat( iter, &ps ); */
-    /* } */
+    if ( !success ) {
+        XP_LOGFF( "=> %s", patErrToStr(err) );
+    }
     return success;
 }
 
@@ -1310,34 +1339,40 @@ firstWord( DictIter* iter, XP_Bool log )
     return success;
 }
 
-static void
+static XP_Bool
 addTilePats( ParseState* ps, const PatDesc* pd )
 {
+    XP_Bool success = XP_TRUE;
     XP_Bool anyOrderOk = pd->anyOrderOk;
     PatElem elem = { .typ = CHILD,
                      .minMatched = 1,
                      .maxMatched = 1,
     };
-    for ( int ii = 0; ii < pd->nTiles; ++ii ) {
+    for ( int ii = 0; success && ii < pd->nTiles; ++ii ) {
 #ifdef MULTI_SET
         ++elem.u.child.tiles.cnts[pd->tiles[ii]];
 #else
         elem.u.child.tiles |= 1 << pd->tiles[ii];
 #endif
         if ( !anyOrderOk ) {
-            ps->elems[ps->elemIndex++] = elem;
+            success = ps->elemIndex < VSIZE(ps->elems);
+            if ( success ) {
+                success = PatErrNone == addElem( ps, &elem );
 #ifdef MULTI_SET
-            XP_MEMSET( &elem.u.child.tiles, 0, sizeof(elem.u.child.tiles) );
+                XP_MEMSET( &elem.u.child.tiles, 0, sizeof(elem.u.child.tiles) );
 #else
-            elem.u.child.tiles = 0;
+                elem.u.child.tiles = 0;
 #endif
+            }
         }
     }
     if ( anyOrderOk ) {
         elem.u.child.flags |= FLAG_SINGLE;
         elem.minMatched = elem.maxMatched = pd->nTiles;
-        ps->elems[ps->elemIndex++] = elem;
+        success = PatErrNone == addElem( ps, &elem );
     }
+    LOG_RETURNF( "%s", boolToStr(success) );
+    return success;
 }
 
 static void
@@ -1352,7 +1387,12 @@ addWildcard( ParseState* ps )
 #else
     elem.u.child.tiles = ps->blankMask;
 #endif
-    ps->elems[ps->elemIndex++] = elem;
+
+#ifdef DEBUG
+    PatErr err =
+#endif
+        addElem( ps, &elem );
+    XP_ASSERT( err == PatErrNone );
 }
 
 static void
@@ -1405,11 +1445,13 @@ di_makeIter( const DictionaryCtxt* dict, XWEnv xwe, const DIMinMax* minmax,
                 if ( ii != STARTS_WITH ) {
                     addWildcard( &ps );
                 }
-                addTilePats( &ps, ta );
-                if ( ii != ENDS_WITH ) {
-                    addWildcard( &ps );
+                success = addTilePats( &ps, ta );
+                if ( success ) {
+                    if ( ii != ENDS_WITH ) {
+                        addWildcard( &ps );
+                    }
+                    copyParsedPat( dict, &pats[nUsed++], &ps, NULL );
                 }
-                copyParsedPat( dict, &pats[nUsed++], &ps, NULL );
             }
         }
     }

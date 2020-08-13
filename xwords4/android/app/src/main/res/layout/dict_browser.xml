@@ -53,10 +53,12 @@
           android:layout_width="fill_parent"
           android:layout_height="wrap_content"
           >
-        <View android:layout_width="5dp"
-              android:layout_height="5dp"
-              android:layout_span="2"
-              />
+        <TextView style="@style/pat_table_label"
+                  android:visibility="invisible"
+                  />
+        <EditText style="@style/pat_table_edit"
+                  android:visibility="invisible"
+                  />
         <TextView android:layout_width="wrap_content"
                   android:layout_height="wrap_content"
                   android:text="@string/pat_col_anyorder"
@@ -69,9 +71,8 @@
         <TextView style="@style/pat_table_label"
                   android:text="@string/pat_starts_with"
                   />
-        <org.eehouse.android.xw4.EditWClear
-            style="@style/pat_table_edit"
-            />
+        <EditText style="@style/pat_table_edit"
+                  />
         <CheckBox style="@style/pat_table_check"
                   />
       </org.eehouse.android.xw4.PatTableRow>
@@ -82,9 +83,8 @@
         <TextView style="@style/pat_table_label"
                   android:text="@string/pat_contains"
                   />
-        <org.eehouse.android.xw4.EditWClear
-            style="@style/pat_table_edit"
-            />
+        <EditText style="@style/pat_table_edit"
+                  />
         <CheckBox style="@style/pat_table_check"
                   />
       </org.eehouse.android.xw4.PatTableRow>
@@ -95,9 +95,8 @@
         <TextView style="@style/pat_table_label"
                   android:text="@string/pat_ends_with"
                   />
-        <org.eehouse.android.xw4.EditWClear
-            style="@style/pat_table_edit"
-            />
+        <EditText style="@style/pat_table_edit"
+                  />
         <CheckBox style="@style/pat_table_check"
                   />
       </org.eehouse.android.xw4.PatTableRow>

@@ -120,10 +120,12 @@
     </style>
 
     <style name="pat_table_edit" parent="edit_w_clear">
-      <item name="android:layout_width">200dp</item>
+      <item name="android:layout_width">wrap_content</item>
       <item name="android:layout_height">wrap_content</item>
       <item name="android:maxLines">1</item>
+      <item name="android:maxLength">15</item>
       <item name="android:inputType">text</item>
+      <item name="android:layout_weight">1</item>
     </style>
 
     <style name="pat_table_check">
@@ -152,6 +154,7 @@
       <item name="android:layout_width">wrap_content</item>
       <item name="android:textAppearance">?android:attr/textAppearanceMedium</item>
       <item name="android:layout_weight">1</item>
+      <item name="android:maxLines">1</item>
     </style>
 
     <style name="config_spinner_spinner">

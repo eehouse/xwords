@@ -554,7 +554,7 @@ public class MQTTUtils extends Thread implements IMqttActionListener, MqttCallba
             notifyNotHere( context, from.mqtt_devID, gameID );
         } else {
             for ( long rowid : rowids ) {
-                MQTTMsgSink sink = new MQTTMsgSink( context, rowid );
+                MultiMsgSink sink = new MultiMsgSink( context, rowid );
                 helper.receiveMessage( rowid, sink, data );
             }
         }
@@ -585,13 +585,6 @@ public class MQTTUtils extends Thread implements IMqttActionListener, MqttCallba
         }
 
         @Override
-        protected MultiMsgSink getSink( long rowid )
-        {
-            Context context = getContext();
-            return new MQTTMsgSink( context, rowid );
-        }
-
-        @Override
         void postNotification( String device, int gameID, long rowid )
         {
             Assert.failDbg();
@@ -600,18 +593,10 @@ public class MQTTUtils extends Thread implements IMqttActionListener, MqttCallba
             // GameUtils.postInvitedNotification( mContext, gameID, body, rowid );
         }
 
-        private void receiveMessage( long rowid, MQTTMsgSink sink, byte[] msg )
+        private void receiveMessage( long rowid, MultiMsgSink sink, byte[] msg )
         {
             Log.d( TAG, "receiveMessage(rowid=%d, len=%d)", rowid, msg.length );
             receiveMessage( rowid, sink, msg, mReturnAddr );
         }
     }
-
-    private static class MQTTMsgSink extends MultiMsgSink {
-        MQTTMsgSink( Context context, long rowid )
-        {
-            super( context, rowid );
-        }
-    }
-
 }
