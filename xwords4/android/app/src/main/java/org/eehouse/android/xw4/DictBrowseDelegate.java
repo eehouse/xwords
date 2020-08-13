@@ -482,6 +482,20 @@ public class DictBrowseDelegate extends DelegateBase
         return m_stateKey;
     }
 
+    // We'll enable the button as soon as any row gets focus, since once one
+    // of them has focus one always will.
+    private boolean mBlankButtonEnabled = false;
+    private Runnable mFocusGainedProc = new Runnable() {
+            @Override
+            public void run() {
+                if ( !mBlankButtonEnabled ) {
+                    mBlankButtonEnabled = true;
+                    findViewById(R.id.button_addBlank)
+                        .setEnabled( true );
+                }
+            }
+        };
+
     private void findTableRows()
     {
         ViewGroup table = (ViewGroup)findViewById( R.id.config );
@@ -490,7 +504,9 @@ public class DictBrowseDelegate extends DelegateBase
         for ( int ii = 0; ii < count && nFound < m_rows.length; ++ii ) {
             View child = table.getChildAt( ii );
             if ( child instanceof PatTableRow ) {
-                m_rows[nFound++] = (PatTableRow)child;
+                PatTableRow row = (PatTableRow)child;
+                m_rows[nFound++] = row;
+                row.setOnFocusGained( mFocusGainedProc );
             }
         }
         Assert.assertTrueNR( nFound == m_rows.length );
@@ -575,12 +591,6 @@ public class DictBrowseDelegate extends DelegateBase
         boolean handled = false;
         for ( PatTableRow row : m_rows ) {
             handled = handled || row.addBlankToFocussed( "_" );
-        }
-        if ( !handled ) {
-            makeNotAgainBuilder( R.string.blank_button_expl,
-                                 R.string.key_na_addBlankButton )
-                .setTitle(null)
-                .show();
         }
     }
 

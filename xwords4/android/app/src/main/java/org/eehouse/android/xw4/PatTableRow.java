@@ -73,6 +73,20 @@ public class PatTableRow extends TableRow {
         return handled;
     }
 
+    void setOnFocusGained( final Runnable proc )
+    {
+        getFields();
+        mEdit.setOnFocusChangeListener( new View.OnFocusChangeListener() {
+                @Override
+                public void onFocusChange( View view, boolean hasFocus )
+                {
+                    if ( hasFocus ) {
+                        proc.run();
+                    }
+                }
+            } );
+    }
+
     private void getFields()
     {
         mEdit = (EditText)Utils.getChildInstanceOf( this, EditText.class );
