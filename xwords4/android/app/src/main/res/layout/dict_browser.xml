@@ -10,12 +10,6 @@
               android:layout_weight="1"
               >
 
-  <TextView android:id="@+id/desc"
-            android:layout_height="wrap_content"
-            android:layout_width="fill_parent"
-            android:visibility="gone"
-            />
-
   <!-- A summary followed by a hideable filter-config section -->
   <LinearLayout android:orientation="vertical"
                 android:layout_width="fill_parent" 

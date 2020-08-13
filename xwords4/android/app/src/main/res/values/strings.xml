@@ -2611,4 +2611,6 @@
     <string name="mqtt_invite_title">MQTT Invitation</string>
     <string name="not_again_comms_mqtt">I’m experimenting with this
     as a replacement for the relay.</string>
+
+    <string name="show_note_menu">About Wordlist</string>
 </resources>

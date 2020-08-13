@@ -26,6 +26,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -136,6 +137,7 @@ public class DictBrowseDelegate extends DelegateBase
     private Spinner m_spinnerMin;
     private Spinner m_spinnerMax;
     private boolean m_newAlertShown;
+    private String m_desc;
 
     private class DictListAdapter extends BaseAdapter
         implements SectionIndexer {
@@ -258,12 +260,7 @@ public class DictBrowseDelegate extends DelegateBase
                 } )
                 .setExpanded( m_browseState.m_expanded );
 
-            String desc = XwJNI.dict_getDesc( m_dict );
-            if ( null != desc ) {
-                TextView view = (TextView)findViewById( R.id.desc );
-                view.setVisibility( View.VISIBLE );
-                view.setText( desc );
-            }
+            m_desc = XwJNI.dict_getDesc( m_dict );
 
             int[] ids = { R.id.button_useconfig, R.id.button_addBlank, };
             for ( int id : ids ) {
@@ -359,6 +356,14 @@ public class DictBrowseDelegate extends DelegateBase
     }
 
     @Override
+    public boolean onPrepareOptionsMenu( Menu menu )
+    {
+        Utils.setItemVisible( menu, R.id.dicts_shownote,
+                              null != m_desc );
+        return true;
+    }
+
+    @Override
     public boolean onOptionsItemSelected( MenuItem item )
     {
         boolean handled = true;
@@ -369,6 +374,11 @@ public class DictBrowseDelegate extends DelegateBase
             break;
         case R.id.dicts_showfaq:
             showFaq( FAQ_PARAMS );
+            break;
+        case R.id.dicts_shownote:
+            makeOkOnlyBuilder( m_desc )
+                .setTitle(R.string.show_note_menu)
+                .show();
             break;
         default:
             handled = false;
