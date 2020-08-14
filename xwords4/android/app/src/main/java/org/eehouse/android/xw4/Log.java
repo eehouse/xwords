@@ -35,6 +35,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.lang.ref.WeakReference;
 import java.util.Formatter;
+import java.util.concurrent.LinkedBlockingQueue;
 
 public class Log {
     private static final String TAG = Log.class.getSimpleName();
@@ -42,7 +43,7 @@ public class Log {
     private static final String KEY_USE_DB = TAG + "/useDB";
     private static final boolean LOGGING_ENABLED = BuildConfig.NON_RELEASE;
     private static final boolean ERROR_LOGGING_ENABLED = true;
-    private static final String LOGS_FILE_NAME = BuildConfig.FLAVOR + "_logsDB.txt";
+    private static final String LOGS_FILE_NAME_FMT = BuildConfig.FLAVOR + "_logsDB_%d.txt";
     private static final String LOGS_DB_NAME = "xwlogs_db";
     private static final String LOGS_TABLE_NAME = "logs";
     private static final String COL_ENTRY = "entry";
@@ -89,24 +90,27 @@ public class Log {
         sEnabled = newVal;
     }
 
-    public static int clearStored()
+    interface ResultProcs {
+        void onDumped( File db );
+        void onCleared( int nCleared );
+    }
+
+    public static void clearStored( ResultProcs procs )
     {
         int result = 0;
         LogDBHelper helper = initDB();
         if ( null != helper ) {
-            result = helper.clear();
+            helper.clear( procs );
         }
-        return result;
     }
 
-    public static File dumpStored()
+    public static void dumpStored( ResultProcs procs )
     {
         File result = null;
         LogDBHelper helper = initDB();
         if ( null != helper ) {
-            result = helper.dumpToFile();
+            helper.dumpToFile( procs );
         }
-        return result;
     }
 
     public static void enable( Context context )
@@ -251,62 +255,107 @@ public class Log {
             int tid = Process.myTid();
             int pid = Process.myPid();
 
-            ContentValues values = new ContentValues();
+            final ContentValues values = new ContentValues();
             values.put( COL_ENTRY, msg );
             values.put( COL_THREAD, tid );
             values.put( COL_PID, pid );
             values.put( COL_TAG, tag );
             values.put( COL_LEVEL, level.ordinal() );
-            long res = getWritableDatabase().insert( LOGS_TABLE_NAME, null, values );
+            enqueue( new Runnable() {
+                    @Override
+                    public void run() {
+                        getWritableDatabase().insert( LOGS_TABLE_NAME, null, values );
+                    }
+                } );
         }
 
-        File dumpToFile()
+        void dumpToFile(final ResultProcs procs)
         {
-            File dir = Environment.getExternalStorageDirectory();
-            dir = new File( dir, Environment.DIRECTORY_DOWNLOADS );
-            File db = new File( dir, LOGS_FILE_NAME );
+            enqueue( new Runnable() {
+                    @Override
+                    public void run() {
+                        File dir = Environment.getExternalStorageDirectory();
+                        dir = new File( dir, Environment.DIRECTORY_DOWNLOADS );
+                        File db;
+                        for ( int ii = 1; ; ++ii ) {
+                            db = new File( dir, String.format( LOGS_FILE_NAME_FMT, ii ) );
+                            if ( !db.exists() ) {
+                                break;
+                            }
+                        }
 
-            try {
-                OutputStream os = new FileOutputStream( db );
-                OutputStreamWriter osw = new OutputStreamWriter(os);
+                        try {
+                            OutputStream os = new FileOutputStream( db );
+                            OutputStreamWriter osw = new OutputStreamWriter(os);
 
-                String[] columns = { COL_ENTRY, COL_TAG, COL_THREAD, COL_PID };
-                String selection = null;
-                String orderBy = COL_ROWID;
-                Cursor cursor = getReadableDatabase().query( LOGS_TABLE_NAME, columns,
-                                                             selection, null, null, null,
-                                                             orderBy );
-                llog( "dumpToFile(): got %d results", cursor.getCount() );
-                int indx0 = cursor.getColumnIndex( columns[0] );
-                int indx1 = cursor.getColumnIndex( columns[1] );
-                int indx2 = cursor.getColumnIndex( columns[2] );
-                int indx3 = cursor.getColumnIndex( columns[3] );
-                while ( cursor.moveToNext() ) {
-                    String data = cursor.getString(indx0);
-                    String tag = cursor.getString(indx1);
-                    int tid =  cursor.getInt(indx2);
-                    int pid =  cursor.getInt(indx3);
-                    StringBuilder builder = new StringBuilder()
-                        .append(String.format("% 5d % 5d", pid, tid)).append(":")
-                        .append(tag).append(":")
-                        .append(data).append("\n")
-                        ;
-                    osw.write( builder.toString() );
-                }
-                osw.close();
-            } catch ( IOException ioe ) {
-                llog( "dumpToFile(): ioe: %s", ioe );
-                db = null;
-            }
-            return db;
+                            String[] columns = { COL_ENTRY, COL_TAG, COL_THREAD, COL_PID };
+                            String selection = null;
+                            String orderBy = COL_ROWID;
+                            Cursor cursor = getReadableDatabase().query( LOGS_TABLE_NAME, columns,
+                                                                         selection, null, null, null,
+                                                                         orderBy );
+                            llog( "dumpToFile(): got %d results", cursor.getCount() );
+                            int indx0 = cursor.getColumnIndex( columns[0] );
+                            int indx1 = cursor.getColumnIndex( columns[1] );
+                            int indx2 = cursor.getColumnIndex( columns[2] );
+                            int indx3 = cursor.getColumnIndex( columns[3] );
+                            while ( cursor.moveToNext() ) {
+                                String data = cursor.getString(indx0);
+                                String tag = cursor.getString(indx1);
+                                int tid =  cursor.getInt(indx2);
+                                int pid =  cursor.getInt(indx3);
+                                StringBuilder builder = new StringBuilder()
+                                    .append(String.format("% 5d % 5d", pid, tid)).append(":")
+                                    .append(tag).append(":")
+                                    .append(data).append("\n")
+                                    ;
+                                osw.write( builder.toString() );
+                            }
+                            osw.close();
+                        } catch ( IOException ioe ) {
+                            llog( "dumpToFile(): ioe: %s", ioe );
+                            db = null;
+                        }
+                        if ( null != db ) {
+                            procs.onDumped(db);
+                        }
+                    }
+                } );
         }
 
         // Return the number of rows
-        int clear()
+        void clear( final ResultProcs procs )
         {
-            int result = getWritableDatabase()
-                .delete( LOGS_TABLE_NAME, "1", null );
-            return result;
+            enqueue( new Runnable() {
+                    @Override
+                    public void run() {
+                        int result = getWritableDatabase()
+                            .delete( LOGS_TABLE_NAME, "1", null );
+                        procs.onCleared( result );
+                    }
+                } );
+        }
+
+        private LinkedBlockingQueue<Runnable> mQueue;
+        private void enqueue( Runnable runnable )
+        {
+            if ( null == mQueue ) {
+                mQueue = new LinkedBlockingQueue<>();
+                new Thread( new Runnable() {
+                        @Override
+                        public void run() {
+                            for ( ; ; ) {
+                                try {
+                                    mQueue.take().run();
+                                } catch ( InterruptedException ie ) {
+                                    break;
+                                }
+                            }
+                        }
+                    }).start();
+            }
+
+            mQueue.add( runnable );
         }
     }
 }

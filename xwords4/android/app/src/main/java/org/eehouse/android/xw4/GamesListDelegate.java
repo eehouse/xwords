@@ -76,7 +76,7 @@ public class GamesListDelegate extends ListDelegateBase
     implements OnItemLongClickListener,
                DBUtils.DBChangeListener, SelectableItem,
                DownloadFinishedListener, DlgDelegate.HasDlgDelegate,
-               GroupStateListener {
+               GroupStateListener, Log.ResultProcs {
     private static final String TAG = GamesListDelegate.class.getSimpleName();
 
 
@@ -1306,6 +1306,38 @@ public class GamesListDelegate extends ListDelegateBase
         return selected;
     }
 
+    // Log.ResultProcs interface
+    @Override
+    public void onDumped( final File logLoc )
+    {
+        runOnUiThread( new Runnable() {
+                @Override
+                public void run() {
+                    String dumpMsg;
+                    if ( null == logLoc ) {
+                        dumpMsg = LocUtils.getString( m_activity,
+                                                      R.string.logstore_notdumped );
+                    } else {
+                        dumpMsg = LocUtils
+                            .getString( m_activity, R.string.logstore_dumped_fmt,
+                                        logLoc.getPath() );
+                    }
+                    makeOkOnlyBuilder( dumpMsg ).show();
+                }
+            } );
+    }
+
+    @Override
+    public void onCleared( final int nDumped )
+    {
+        runOnUiThread( new Runnable() {
+                @Override
+                public void run() {
+                    Utils.showToast( m_activity, R.string.logstore_cleared_fmt, nDumped );
+                }
+            } );
+    }
+
     // DlgDelegate.DlgClickNotify interface
     @Override
     public boolean onPosButton( Action action, Object[] params )
@@ -1413,27 +1445,11 @@ public class GamesListDelegate extends ListDelegateBase
             break;
 
         case WRITE_LOG_DB:
-            final File logLoc = Log.dumpStored();
-            post( new Runnable() {
-                    @Override
-                    public void run() {
-                        String dumpMsg;
-                        if ( null == logLoc ) {
-                            dumpMsg = LocUtils.getString( m_activity,
-                                                          R.string.logstore_notdumped );
-                        } else {
-                            dumpMsg = LocUtils
-                                .getString( m_activity, R.string.logstore_dumped_fmt,
-                                            logLoc.getPath() );
-                        }
-                        makeOkOnlyBuilder( dumpMsg ).show();
-                    }
-                } );
+            Log.dumpStored( this );
             break;
 
         case CLEAR_LOG_DB:
-            int nDumped = Log.clearStored();
-            Utils.showToast( m_activity, R.string.logstore_cleared_fmt, nDumped );
+            Log.clearStored( this );
             break;
 
         case ASKED_PHONE_STATE:
