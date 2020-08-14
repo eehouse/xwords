@@ -19,10 +19,9 @@
 
 package org.eehouse.android.xw4;
 
+import android.widget.SearchView;
 import android.content.Context;
 import android.util.AttributeSet;
-import android.widget.EditText;
-import android.widget.SearchView;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -32,7 +31,6 @@ public class EditWClear extends SearchView
     private static final String TAG = EditWClear.class.getSimpleName();
 
     private Set<TextWatcher> mWatchers;
-    private EditText mEdit;
 
     public interface TextWatcher {
         void onTextChanged( String newText );
@@ -41,12 +39,6 @@ public class EditWClear extends SearchView
     public EditWClear( Context context, AttributeSet as )
     {
         super( context, as );
-    }
-
-    @Override
-    protected void onFinishInflate()
-    {
-        mEdit = (EditText)Utils.getChildInstanceOf( this, EditText.class );
     }
 
     synchronized void addTextChangedListener( TextWatcher proc )
@@ -66,17 +58,6 @@ public class EditWClear extends SearchView
     CharSequence getText()
     {
         return super.getQuery();
-    }
-
-    void insertBlank( String blank )
-    {
-        // I'm not confident I'll always be able to get the edittext, so to be
-        // safe....
-        if ( null == mEdit ) {
-            setQuery( getQuery() + blank, false );
-        } else {
-            mEdit.getText().insert(mEdit.getSelectionStart(), blank );
-        }
     }
 
     // from SearchView.OnQueryTextListener
