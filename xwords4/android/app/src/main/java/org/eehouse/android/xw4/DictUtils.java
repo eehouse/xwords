@@ -579,8 +579,8 @@ public class DictUtils {
         boolean ok = file.endsWith( XWConstants.DICT_EXTN );
         if ( ok && null != dir ) {
             String fullPath = new File( dir, file ).getPath();
-            ok = XwJNI.dict_getInfo( null, removeDictExtn( file ), fullPath,
-                                     true, null );
+            ok = null != XwJNI.dict_getInfo( null, removeDictExtn( file ),
+                                             fullPath, true );
         }
         return ok;
     }

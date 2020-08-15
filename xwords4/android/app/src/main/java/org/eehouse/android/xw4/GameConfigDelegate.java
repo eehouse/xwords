@@ -578,15 +578,13 @@ public class GameConfigDelegate extends DelegateBase
                 m_gi = new CurGameInfo( m_giOrig );
             }
 
-            m_carOrig = new CommsAddrRec();
             if ( XwJNI.game_hasComms( gamePtr ) ) {
-                XwJNI.comms_getAddr( gamePtr, m_carOrig );
+                m_carOrig = XwJNI.comms_getAddr( gamePtr );
                 m_remoteAddrs = XwJNI.comms_getAddrs( gamePtr );
             } else if ( !localOnlyGame() ) {
                 String relayName = XWPrefs.getDefaultRelayHost( m_activity );
                 int relayPort = XWPrefs.getDefaultRelayPort( m_activity );
-                XwJNI.comms_getInitialAddr( m_carOrig, relayName,
-                                            relayPort );
+                m_carOrig = XwJNI.comms_getInitialAddr( relayName, relayPort );
             }
 
             // load if the first time through....

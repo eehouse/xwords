@@ -137,8 +137,7 @@ public class GameUtils {
 
         try ( GamePtr gamePtr = loadMakeGame( context, gi, lockSrc ) ) {
             if ( XwJNI.game_hasComms( gamePtr ) ) {
-                addr = new CommsAddrRec();
-                XwJNI.comms_getAddr( gamePtr, addr );
+                addr = XwJNI.comms_getAddr( gamePtr );
             }
         }
 
@@ -1066,9 +1065,7 @@ public class GameUtils {
                                     bmr.m_chatFrom = feedImpl.m_chatFrom;
                                     bmr.m_chatTs = feedImpl.m_ts;
                                 } else {
-                                    LastMoveInfo lmi = new LastMoveInfo();
-                                    XwJNI.model_getPlayersLastScore( gamePtr, -1, lmi );
-                                    bmr.m_lmi = lmi;
+                                    bmr.m_lmi = XwJNI.model_getPlayersLastScore( gamePtr, -1 );
                                 }
                             }
 

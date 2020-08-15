@@ -528,11 +528,17 @@ makeObject( JNIEnv* env, const char* className, const char* initSig, ... )
 }
 
 jobject
+makeObjectEmptyConst( JNIEnv* env, const char* className )
+{
+    return makeObject( env, className, "()V" );
+}
+
+jobject
 makeJAddr( JNIEnv* env, const CommsAddrRec* addr )
 {
     jobject jaddr = NULL;
     if ( NULL != addr ) {
-        jaddr = makeObject( env, PKG_PATH("jni/CommsAddrRec"), "()V" );
+        jaddr = makeObjectEmptyConst( env, PKG_PATH("jni/CommsAddrRec") );
         setJAddrRec( env, jaddr, addr );
     }
     return jaddr;
@@ -589,8 +595,8 @@ jobject
 addrTypesToJ( JNIEnv* env, const CommsAddrRec* addr )
 {
     XP_ASSERT( !!addr );
-    jobject result = makeObject( env, PKG_PATH("jni/CommsAddrRec$CommsConnTypeSet"),
-                                 "()V" );
+    jobject result =
+        makeObjectEmptyConst( env, PKG_PATH("jni/CommsAddrRec$CommsConnTypeSet") );
     XP_ASSERT( !!result );
 
     jmethodID mid2 = getMethodID( env, result, "add", 
@@ -712,7 +718,7 @@ intToJenumField( JNIEnv* env, jobject jobj, int val, const char* field,
 
     jobject jenum = (*env)->GetObjectField( env, jobj, fid );
     if ( !jenum ) {       /* won't exist in new object */
-        jenum = makeObject( env, fieldSig, "()V" );
+        jenum = makeObjectEmptyConst( env, fieldSig );
         XP_ASSERT( !!jenum );
         (*env)->SetObjectField( env, jobj, fid, jenum );
     }

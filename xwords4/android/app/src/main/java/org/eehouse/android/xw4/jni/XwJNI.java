@@ -206,14 +206,11 @@ public class XwJNI {
 
     public static NetLaunchInfo nliFromStream( byte[] stream )
     {
-        NetLaunchInfo nli = new NetLaunchInfo();
-        nli_from_stream( getJNI().m_ptrGlobals, nli, stream );
-        return nli;
+        return nli_from_stream( getJNI().m_ptrGlobals, stream );
     }
 
-    public static native void comms_getInitialAddr( CommsAddrRec addr,
-                                                    String relayHost,
-                                                    int relayPort );
+    public static native CommsAddrRec comms_getInitialAddr( String relayHost,
+                                                            int relayPort );
     public static native String comms_getUUID();
 
     // Game methods
@@ -414,9 +411,8 @@ public class XwJNI {
                                                         boolean gameOver );
     public static native int model_getNMoves( GamePtr gamePtr );
     public static native int model_getNumTilesInTray( GamePtr gamePtr, int player );
-    public static native void model_getPlayersLastScore( GamePtr gamePtr,
-                                                         int player,
-                                                         LastMoveInfo lmi );
+    public static native LastMoveInfo model_getPlayersLastScore( GamePtr gamePtr,
+                                                                 int player );
     // Server
     public static native void server_reset( GamePtr gamePtr );
     public static native void server_handleUndo( GamePtr gamePtr );
@@ -438,7 +434,7 @@ public class XwJNI {
     public static native void comms_start( GamePtr gamePtr );
     public static native void comms_stop( GamePtr gamePtr );
     public static native void comms_resetSame( GamePtr gamePtr );
-    public static native void comms_getAddr( GamePtr gamePtr, CommsAddrRec addr );
+    public static native CommsAddrRec comms_getAddr( GamePtr gamePtr );
     public static native CommsAddrRec[] comms_getAddrs( GamePtr gamePtr );
     public static native void comms_augmentHostAddr( GamePtr gamePtr, CommsAddrRec addr );
     public static native void comms_dropHostAddr( GamePtr gamePtr, CommsConnType typ );
@@ -529,17 +525,17 @@ public class XwJNI {
 
     public static native boolean dict_tilesAreSame( long dict1, long dict2 );
     public static native String[] dict_getChars( long dict );
-    public static boolean dict_getInfo( byte[] dict, String name, String path,
-                                        boolean check, DictInfo info )
+    public static DictInfo dict_getInfo( byte[] dict, String name, String path,
+                                         boolean check )
     {
         DictWrapper wrapper = makeDict( dict, name, path );
-        return dict_getInfo( wrapper, check, info );
+        return dict_getInfo( wrapper, check );
     }
 
-    public static boolean dict_getInfo( DictWrapper dict, boolean check, DictInfo info )
+    public static DictInfo dict_getInfo( DictWrapper dict, boolean check )
     {
         return dict_getInfo( getJNI().m_ptrGlobals, dict.getDictPtr(),
-                             check, info );
+                             check );
     }
 
     public static String dict_getDesc( DictWrapper dict )
@@ -677,8 +673,7 @@ public class XwJNI {
     private static native void gi_from_stream( long jniState, CurGameInfo gi,
                                                byte[] stream );
     private static native byte[] nli_to_stream( long jniState, NetLaunchInfo nli );
-    private static native void nli_from_stream( long jniState, NetLaunchInfo nli,
-                                                byte[] stream );
+    private static native NetLaunchInfo nli_from_stream( long jniState, byte[] stream );
     private static native long initGameJNI( long jniState, int seed );
     private static native void envDone( long globals );
     private static native long dict_make( long jniState, byte[] dict, String name, String path );
@@ -688,8 +683,8 @@ public class XwJNI {
     private static native String dict_tilesToStr( long dictPtr, byte[] tiles, String delim );
     private static native boolean dict_hasDuplicates( long dictPtr );
     private static native String dict_getTilesInfo( long jniState, long dictPtr );
-    private static native boolean dict_getInfo( long jniState, long dictPtr,
-                                                boolean check, DictInfo info );
+    private static native DictInfo dict_getInfo( long jniState, long dictPtr,
+                                                 boolean check );
     private static native String dict_getDesc( long dictPtr );
     private static native long di_init( long jniState, long dictPtr,
                                         PatDesc[] pats, int minLen, int maxLen );

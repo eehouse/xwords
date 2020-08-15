@@ -93,6 +93,7 @@ jmethodID getMethodID( JNIEnv* env, jobject obj, const char* proc,
                        const char* sig );
 
 jobject makeObject( JNIEnv* env, const char* className, const char* initSig, ... );
+jobject makeObjectEmptyConst( JNIEnv* env, const char* className );
 
 jobject makeJAddr( JNIEnv* env, const CommsAddrRec* addr );
 jobject setJAddrRec( JNIEnv* env, jobject jaddr, const CommsAddrRec* addr );

@@ -184,7 +184,7 @@ makeDSI( AndDraw* draw, XWEnv xwe, int indx, const DrawScoreInfo* dsi )
     jobject dsiobj = draw->jCache[indx];
 
     if ( !dsiobj ) {
-        dsiobj = makeObject( env, PKG_PATH("jni/DrawScoreInfo"), "()V" );
+        dsiobj = makeObjectEmptyConst( env, PKG_PATH("jni/DrawScoreInfo") );
 
         draw->jCache[indx] = (*env)->NewGlobalRef( env, dsiobj );
         deleteLocalRef( env, dsiobj );

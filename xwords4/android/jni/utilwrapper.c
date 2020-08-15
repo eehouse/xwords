@@ -856,7 +856,7 @@ and_dutil_onInviteReceived( XW_DUtilCtxt* duc, XWEnv xwe, const NetLaunchInfo* n
     DUTIL_CBK_HEADER( "onInviteReceived", "(L" PKG_PATH("NetLaunchInfo") ";)V" );
 
     /* Allocate a new NetLaunchInfo */
-    jobject jnli = makeObject( env, PKG_PATH("NetLaunchInfo"), "()V" );
+    jobject jnli = makeObjectEmptyConst( env, PKG_PATH("NetLaunchInfo") );
     XP_ASSERT( !!jnli );
     setNLI( env, jnli, nli );
 

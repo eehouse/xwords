@@ -495,16 +495,13 @@ public class DictLangCache {
             String[] names = { dal.name };
             DictUtils.DictPairs pairs = DictUtils.openDicts( context, names );
 
-            info = new DictInfo();
-            if ( XwJNI.dict_getInfo( pairs.m_bytes[0], dal.name,
-                                     pairs.m_paths[0],
-                                     DictLoc.DOWNLOAD == dal.loc,
-                                     info ) ) {
-
+            info = XwJNI.dict_getInfo( pairs.m_bytes[0], dal.name,
+                                       pairs.m_paths[0],
+                                       DictLoc.DOWNLOAD == dal.loc );
+            if ( null != info ) {
                 info.name = dal.name;
                 DBUtils.dictsSetInfo( context, dal, info );
             } else {
-                info = null;
                 Log.i( TAG, "getInfo(): unable to open dict %s", dal.name );
             }
         }

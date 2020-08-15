@@ -830,10 +830,11 @@ Java_org_eehouse_android_xw4_jni_XwJNI_nli_1to_1stream
     return result;
 }
 
-JNIEXPORT void JNICALL
+JNIEXPORT jobject JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_nli_1from_1stream
-( JNIEnv* env, jclass C, jlong jniGlobalPtr, jobject jnli, jbyteArray jstream )
+( JNIEnv* env, jclass C, jlong jniGlobalPtr, jbyteArray jstream )
 {
+    jobject jnli = NULL;
     LOG_FUNC();
     JNIGlobalState* globalState = (JNIGlobalState*)jniGlobalPtr;
 #ifdef MEM_DEBUG
@@ -844,6 +845,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_nli_1from_1stream
 
     NetLaunchInfo nli = {0};
     if ( nli_makeFromStream( &nli, stream ) ) {
+        jnli = makeObjectEmptyConst( env, PKG_PATH("NetLaunchInfo") );
         setNLI( env, jnli, &nli );
     } else {
         XP_LOGF( "%s: game_makeFromStream failed", __func__ );
@@ -851,18 +853,21 @@ Java_org_eehouse_android_xw4_jni_XwJNI_nli_1from_1stream
 
     stream_destroy( stream, env );
     releaseMPool( globalState );
+    return jnli;
 }
 
-JNIEXPORT void JNICALL
+JNIEXPORT jobject JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_comms_1getInitialAddr
-( JNIEnv* env, jclass C, jobject jaddr, jstring jname, jint port )
+( JNIEnv* env, jclass C, jstring jname, jint port )
 {
     CommsAddrRec addr;
 
     const char* chars = (*env)->GetStringUTFChars( env, jname, NULL );
     comms_getInitialAddr( &addr, chars, port );
     (*env)->ReleaseStringUTFChars( env, jname, chars );
+    jobject jaddr = makeObjectEmptyConst( env, PKG_PATH("jni/CommsAddrRec") );
     setJAddrRec( env, jaddr, &addr );
+    return jaddr;
 }
 
 JNIEXPORT jstring JNICALL
@@ -1016,26 +1021,23 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1tilesToStr
     return result;
 }
 
-JNIEXPORT jboolean JNICALL
+JNIEXPORT jobject JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_dict_1getInfo
 ( JNIEnv* env, jclass C, jlong jniGlobalPtr, jlong dictPtr,
-  jboolean check, jobject jinfo )
+  jboolean check )
 {
-    jboolean result = false;
+    jobject result = NULL;
 #ifdef MAP_THREAD_TO_ENV
     JNIGlobalState* globalState = (JNIGlobalState*)jniGlobalPtr;
     MAP_THREAD( &globalState->ti, env );
 #endif
     DictionaryCtxt* dict = (DictionaryCtxt*)dictPtr;
     if ( NULL != dict ) {
-        if ( NULL != jinfo ) {
-            XP_LangCode code = dict_getLangCode( dict );
-            XP_ASSERT( 0 < code );
-            setInt( env, jinfo, "langCode", code );
-            setInt( env, jinfo, "wordCount", dict_getWordCount( dict, env ) );
-            setString( env, jinfo, "md5Sum", dict_getMd5Sum( dict ) );
-        }
-        result = true;
+        result = makeObjectEmptyConst( env, PKG_PATH("jni/DictInfo") );
+        XP_LangCode code = dict_getLangCode( dict );
+        setInt( env, result, "langCode", code );
+        setInt( env, result, "wordCount", dict_getWordCount( dict, env ) );
+        setString( env, result, "md5Sum", dict_getMd5Sum( dict ) );
     }
 
     return result;
@@ -1980,15 +1982,18 @@ Java_org_eehouse_android_xw4_jni_XwJNI_model_1getNumTilesInTray
     return result;
 }
 
-JNIEXPORT void JNICALL
+JNIEXPORT jobject JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_model_1getPlayersLastScore
-( JNIEnv* env, jclass C, GamePtrType gamePtr, jint player, jobject jlmi )
+( JNIEnv* env, jclass C, GamePtrType gamePtr, jint player )
 {
+    jobject jlmi;
     XWJNI_START();
     XP_ASSERT( !!state->game.model );
     LastMoveInfo lmi;
     XP_Bool valid = model_getPlayersLastScore( state->game.model, env,
                                                player, &lmi );
+
+    jlmi = makeObjectEmptyConst( env, PKG_PATH("jni/LastMoveInfo") );
     setBool( env, jlmi, "isValid", valid );
     if ( valid ) {
         setBool( env, jlmi, "inDuplicateMode", lmi.inDuplicateMode );
@@ -1999,6 +2004,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_model_1getPlayersLastScore
         setString( env, jlmi, "word", lmi.word );
     }
     XWJNI_END();
+    return jlmi;
 }
 
 JNIEXPORT jstring JNICALL
@@ -2075,16 +2081,19 @@ Java_org_eehouse_android_xw4_jni_XwJNI_comms_1resetSame
     XWJNI_END();
 }
 
-JNIEXPORT void JNICALL
+JNIEXPORT jobject JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_comms_1getAddr
-(JNIEnv* env, jclass C, GamePtrType gamePtr, jobject jaddr )
+(JNIEnv* env, jclass C, GamePtrType gamePtr )
 {
+    jobject jaddr;
     XWJNI_START();
     XP_ASSERT( state->game.comms );
     CommsAddrRec addr;
     comms_getAddr( state->game.comms, &addr );
+    jaddr = makeObjectEmptyConst( env, PKG_PATH("jni/CommsAddrRec") );
     setJAddrRec( env, jaddr, &addr );
     XWJNI_END();
+    return jaddr;
 }
 
 JNIEXPORT jobjectArray JNICALL

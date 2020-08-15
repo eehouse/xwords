@@ -249,8 +249,7 @@ public class DictBrowseDelegate extends DelegateBase
             Assert.assertNotNull( m_browseState );
             m_dict = XwJNI.makeDict( pairs.m_bytes[0], m_name, pairs.m_paths[0] );
 
-            mDictInfo = new DictInfo();
-            XwJNI.dict_getInfo( m_dict, false, mDictInfo );
+            mDictInfo = XwJNI.dict_getInfo( m_dict, false );
             setTitle( getString( R.string.dict_browse_title_fmt, m_name, mDictInfo.wordCount ) );
 
             ExpandImageButton eib = (ExpandImageButton)findViewById( R.id.expander );

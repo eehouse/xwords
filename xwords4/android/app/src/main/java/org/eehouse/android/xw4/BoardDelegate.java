@@ -1891,8 +1891,7 @@ public class BoardDelegate extends DelegateBase
         @Override
         public void playerScoreHeld( int player )
         {
-            LastMoveInfo lmi = new LastMoveInfo();
-            XwJNI.model_getPlayersLastScore( m_jniGamePtr, player, lmi );
+            LastMoveInfo lmi = XwJNI.model_getPlayersLastScore( m_jniGamePtr, player );
             String expl = lmi.format( m_activity );
             if ( null == expl || 0 == expl.length() ) {
                 expl = getString( R.string.no_moves_made );
@@ -2170,10 +2169,8 @@ public class BoardDelegate extends DelegateBase
             } else if ( isVisible() ) {
                 Utils.playNotificationSound( m_activity );
             } else {
-                LastMoveInfo lmi = new LastMoveInfo();
-                XwJNI.model_getPlayersLastScore( m_jniGamePtr, turn, lmi );
                 GameUtils.BackMoveResult bmr = new GameUtils.BackMoveResult();
-                bmr.m_lmi = lmi;
+                bmr.m_lmi = XwJNI.model_getPlayersLastScore( m_jniGamePtr, turn );
                 boolean[] locals = m_gi.playersLocal();
                 GameUtils.postMoveNotification( m_activity, m_rowid,
                                                 bmr, locals[turn] );
