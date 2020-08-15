@@ -92,6 +92,8 @@ jbyteArray streamToBArray( JNIEnv *env, XWStreamCtxt* stream );
 jmethodID getMethodID( JNIEnv* env, jobject obj, const char* proc,
                        const char* sig );
 
+jobject makeObject( JNIEnv* env, const char* className, const char* initSig, ... );
+
 jobject makeJAddr( JNIEnv* env, const CommsAddrRec* addr );
 jobject setJAddrRec( JNIEnv* env, jobject jaddr, const CommsAddrRec* addr );
 void getJAddrRec( JNIEnv* env, CommsAddrRec* addr, jobject jaddr );

@@ -511,20 +511,29 @@ setTypeSetFieldIn( JNIEnv* env, const CommsAddrRec* addr, jobject jTarget,
 }
 
 jobject
+makeObject( JNIEnv* env, const char* className, const char* initSig, ... )
+{
+    jclass clazz = (*env)->FindClass( env, className );
+    XP_ASSERT( !!clazz );
+    jmethodID mid = (*env)->GetMethodID( env, clazz, "<init>", initSig );
+    XP_ASSERT( !!mid );
+
+    va_list ap;
+    va_start( ap, initSig );
+    jobject result = (*env)->NewObjectV( env, clazz, mid, ap );
+    va_end( ap );
+
+    deleteLocalRef( env, clazz );
+    return result;
+}
+
+jobject
 makeJAddr( JNIEnv* env, const CommsAddrRec* addr )
 {
     jobject jaddr = NULL;
     if ( NULL != addr ) {
-        jclass clazz
-            = (*env)->FindClass(env, PKG_PATH("jni/CommsAddrRec") );
-        XP_ASSERT( !!clazz );
-        jmethodID mid = getMethodID( env, clazz, "<init>", "()V" );
-        XP_ASSERT( !!mid );
-
-        jaddr = (*env)->NewObject( env, clazz, mid );
+        jaddr = makeObject( env, PKG_PATH("jni/CommsAddrRec"), "()V" );
         setJAddrRec( env, jaddr, addr );
-
-        deleteLocalRef( env, clazz );
     }
     return jaddr;
 }
@@ -580,12 +589,8 @@ jobject
 addrTypesToJ( JNIEnv* env, const CommsAddrRec* addr )
 {
     XP_ASSERT( !!addr );
-    jclass cls = 
-        (*env)->FindClass( env, PKG_PATH("jni/CommsAddrRec$CommsConnTypeSet") );
-    XP_ASSERT( !!cls );
-    jmethodID initId = (*env)->GetMethodID( env, cls, "<init>", "()V" );
-    XP_ASSERT( !!initId );
-    jobject result = (*env)->NewObject( env, cls, initId );
+    jobject result = makeObject( env, PKG_PATH("jni/CommsAddrRec$CommsConnTypeSet"),
+                                 "()V" );
     XP_ASSERT( !!result );
 
     jmethodID mid2 = getMethodID( env, result, "add", 
@@ -600,7 +605,6 @@ addrTypesToJ( JNIEnv* env, const CommsAddrRec* addr )
         (*env)->CallBooleanMethod( env, result, mid2, jtyp );
         deleteLocalRef( env, jtyp );
     }
-    deleteLocalRef( env, cls );
     return result;
 }
 
@@ -708,14 +712,9 @@ intToJenumField( JNIEnv* env, jobject jobj, int val, const char* field,
 
     jobject jenum = (*env)->GetObjectField( env, jobj, fid );
     if ( !jenum ) {       /* won't exist in new object */
-        jclass clazz = (*env)->FindClass( env, fieldSig );
-        XP_ASSERT( !!clazz );
-        jmethodID mid = getMethodID( env, clazz, "<init>", "()V" );
-        XP_ASSERT( !!mid );
-        jenum = (*env)->NewObject( env, clazz, mid );
+        jenum = makeObject( env, fieldSig, "()V" );
         XP_ASSERT( !!jenum );
         (*env)->SetObjectField( env, jobj, fid, jenum );
-        deleteLocalRef( env, clazz );
     }
 
     jobject jval = intToJEnum( env, val, fieldSig );

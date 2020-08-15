@@ -60,14 +60,11 @@ makeJRect( AndDraw* draw, JNIEnv* env, int indx, const XP_Rect* rect )
     int bottom = rect->top + rect->height;
 
     if ( !robj ) {
-        jclass rclass = (*env)->FindClass( env, "android/graphics/Rect");
-        jmethodID initId = (*env)->GetMethodID( env, rclass, "<init>", 
-                                                "(IIII)V" );
-        robj = (*env)->NewObject( env, rclass, initId, rect->left, rect->top,
-                                  right, bottom );
+        robj = makeObject(env, "android/graphics/Rect", "(IIII)V",
+                          rect->left, rect->top, right, bottom );
                  
         draw->jCache[indx] = (*env)->NewGlobalRef( env, robj );
-        deleteLocalRefs( env, robj, rclass, DELETE_NO_REF );
+        deleteLocalRef( env, robj );
         robj = draw->jCache[indx];
     } else {
         setInt( env, robj, "left", rect->left );
@@ -187,12 +184,10 @@ makeDSI( AndDraw* draw, XWEnv xwe, int indx, const DrawScoreInfo* dsi )
     jobject dsiobj = draw->jCache[indx];
 
     if ( !dsiobj ) {
-        jclass rclass = (*env)->FindClass( env, PKG_PATH("jni/DrawScoreInfo") );
-        jmethodID initId = (*env)->GetMethodID( env, rclass, "<init>", "()V" );
-        dsiobj = (*env)->NewObject( env, rclass, initId );
+        dsiobj = makeObject( env, PKG_PATH("jni/DrawScoreInfo"), "()V" );
 
         draw->jCache[indx] = (*env)->NewGlobalRef( env, dsiobj );
-        deleteLocalRefs( env, rclass, dsiobj, DELETE_NO_REF );
+        deleteLocalRef( env, dsiobj );
         dsiobj = draw->jCache[indx];
     }
 

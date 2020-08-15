@@ -856,17 +856,13 @@ and_dutil_onInviteReceived( XW_DUtilCtxt* duc, XWEnv xwe, const NetLaunchInfo* n
     DUTIL_CBK_HEADER( "onInviteReceived", "(L" PKG_PATH("NetLaunchInfo") ";)V" );
 
     /* Allocate a new NetLaunchInfo */
-    jclass cls = (*env)->FindClass( env, PKG_PATH("NetLaunchInfo") );
-    XP_ASSERT( !!cls );
-    jmethodID initId = (*env)->GetMethodID( env, cls, "<init>", "()V" );
-    XP_ASSERT( !!initId );
-    jobject jnli = (*env)->NewObject( env, cls, initId );
+    jobject jnli = makeObject( env, PKG_PATH("NetLaunchInfo"), "()V" );
     XP_ASSERT( !!jnli );
     setNLI( env, jnli, nli );
 
     (*env)->CallVoidMethod( env, dutil->jdutil, mid, jnli );
 
-    deleteLocalRefs( env, jnli, cls, DELETE_NO_REF );
+    deleteLocalRef( env, jnli );
     DUTIL_CBK_TAIL();
 }
 
