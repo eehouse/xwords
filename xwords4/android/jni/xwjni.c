@@ -1122,6 +1122,7 @@ msgArrayToJMsgArray( JNIEnv* env, const SMSMsgArray* arr )
         (*env)->SetObjectArrayElement( env, result, ii, jmsg );
         deleteLocalRef( env, jmsg );
     }
+    deleteLocalRef( env, clas );
     return result;
 }
 
