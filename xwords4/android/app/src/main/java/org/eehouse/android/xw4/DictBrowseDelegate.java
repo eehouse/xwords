@@ -151,21 +151,25 @@ public class DictBrowseDelegate extends DelegateBase
             super();
 
             m_nWords = XwJNI.di_wordCount( m_diClosure );
-            Log.d( TAG, "making DictListAdapter; have %d words", m_nWords );
+            // Log.d( TAG, "making DictListAdapter; have %d words", m_nWords );
         }
 
         public Object getItem( int position )
         {
             TextView text = (TextView)
                 inflate( android.R.layout.simple_list_item_1 );
+            text.setOnClickListener( DictBrowseDelegate.this );
+
             String str = XwJNI.di_nthWord( m_diClosure, position, m_browseState.m_delim );
             if ( null != str ) {
                 if ( SHOW_NUM ) {
-                    // Yep, 7 digits. Polish.
-                    str = String.format( "%1$7d %2$s", 1+position, str );
+                    str = String.format( "%1$d %2$s", 1+position, str );
                 }
+            } else if ( SHOW_NUM ) {
+                str = String.format( "%1$d <null>", 1+position );
+            }
+            if ( null != str ) {
                 text.setText( str );
-                text.setOnClickListener( DictBrowseDelegate.this );
             }
             return text;
         }
@@ -276,14 +280,6 @@ public class DictBrowseDelegate extends DelegateBase
     {
         scrapeBrowseState();
         storeBrowseState();
-        // if ( null != m_browseState ) {
-        //     if ( null != m_list ) { // there are words? (don't NPE on empty dict)
-        //         m_browseState.m_pos = m_list.getFirstVisiblePosition();
-        //         View view = m_list.getChildAt( 0 );
-        //         m_browseState.m_top = (view == null) ? 0 : view.getTop();
-        //     }
-        //     storeBrowseState();
-        // }
         super.onPause();
     }
 
@@ -292,10 +288,6 @@ public class DictBrowseDelegate extends DelegateBase
     {
         super.onResume();
         loadBrowseState();
-        // if ( null == m_browseState ) {
-        //     m_browseState = DBUtils.dictsGetOffset( m_activity, m_name, m_loc );
-        //     here
-        // }
         setFindPats( m_browseState.m_pats );
     }
 
@@ -312,6 +304,8 @@ public class DictBrowseDelegate extends DelegateBase
             for ( int ii = 0; ii < choices.length; ++ii ) {
                 strs[ii] = XwJNI.dict_tilesToStr( m_dict, choices[ii], DELIM );
             }
+            String title = getString( R.string.pick_tiles_title_fmt,
+                                      m_rows[indx].getFieldName() );
             final int[] chosen = {0};
             dialog = makeAlertBuilder()
                 .setSingleChoiceItems( strs, chosen[0], new DialogInterface.OnClickListener() {
@@ -332,7 +326,7 @@ public class DictBrowseDelegate extends DelegateBase
                                             }
                                         }
                                     } )
-                .setTitle( R.string.pick_tiles_title )
+                .setTitle( title )
                 .create();
             break;
         case SHOW_TILES:
@@ -341,7 +335,7 @@ public class DictBrowseDelegate extends DelegateBase
             addTileRows( tilesView, info );
 
             String langName = DictLangCache.getLangName( m_activity, m_lang );
-            String title = getString( R.string.show_tiles_title_fmt, langName );
+            title = getString( R.string.show_tiles_title_fmt, langName );
             dialog = makeAlertBuilder()
                 .setView( tilesView )
                 .setPositiveButton( android.R.string.ok, null )
@@ -400,9 +394,13 @@ public class DictBrowseDelegate extends DelegateBase
             addBlankButtonClicked();
             break;
         default:
-            TextView text = (TextView)view;
-            String[] words = { text.getText().toString() };
-            launchLookup( words, m_lang, true );
+            if ( view instanceof TextView ) {
+                TextView text = (TextView)view;
+                String[] words = { text.getText().toString() };
+                launchLookup( words, m_lang, true );
+            } else {
+                Assert.failDbg();
+            }
             break;
         }
     }
@@ -519,15 +517,16 @@ public class DictBrowseDelegate extends DelegateBase
             Serializable obj = DBUtils.getSerializableFor( m_activity, getStateKey() );
             if ( null != obj && obj instanceof DictBrowseState ) {
                 m_browseState = (DictBrowseState)obj;
-                if ( null == m_browseState.m_pats ) {
+                if ( null == m_browseState.m_pats ) { // remove if unneeded
                     m_browseState = null;
+                    Assert.failDbg();
                 }
             }
             if ( null == m_browseState ) {
                 m_browseState = new DictBrowseState();
             }
         }
-        Log.d( TAG, "loadBrowseState() => %s", m_browseState );
+        // Log.d( TAG, "loadBrowseState() => %s", m_browseState );
     }
 
     private void storeBrowseState()
@@ -541,11 +540,19 @@ public class DictBrowseDelegate extends DelegateBase
 
     private void useButtonClicked( int justFixed, byte[] fixedTiles )
     {
-        scrapeBrowseState();
-        Log.d( TAG, "useButtonClicked(): m_browseState: %s", m_browseState );
+        if ( -1 == justFixed ) {
+            // Hungarian fix: when we're called via button, clear state so we
+            // can know later when we have a tile pattern that it came from
+            // the user making a choice and we needn't offer it
+            // again. Otherwise if more than one of the lines is ambiguous
+            // (results in CHOOSE_TILES call) we loop forever.
+            scrapeBrowseState();
+            for ( PatDesc desc : m_browseState.m_pats ) {
+                desc.tilePat = null;
+            }
+        }
 
         boolean pending = false;
-
         if ( m_browseState.m_chosenMin > m_browseState.m_chosenMax ) {
             pending = true;
             makeOkOnlyBuilder( R.string.error_min_gt_max ).show();
@@ -554,8 +561,9 @@ public class DictBrowseDelegate extends DelegateBase
         PatDesc[] pats = m_browseState.m_pats;
         for ( int ii = 0; ii < pats.length && !pending; ++ii ) {
             if ( justFixed == ii ) {
+                Assert.assertTrueNR( null != fixedTiles );
                 pats[ii].tilePat = fixedTiles;
-            } else {
+            } else if ( null == pats[ii].tilePat ) {
                 String strPat = pats[ii].strPat;
                 if ( null != strPat && 0 < strPat.length() ) {
                     byte[][] choices = XwJNI.dict_strToTiles( m_dict, strPat );
@@ -574,8 +582,6 @@ public class DictBrowseDelegate extends DelegateBase
                         showDialogFragment( DlgID.CHOOSE_TILES, (Object)choices, ii );
                         pending = true;
                     }
-                } else {
-                    pats[ii].tilePat = null;
                 }
             }
         }

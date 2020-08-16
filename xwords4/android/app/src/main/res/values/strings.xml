@@ -2594,7 +2594,7 @@
          browser. Displayed below are the possible
          spellings. Currently this can only happen with Hungarian
          wordlists.  -->
-    <string name="pick_tiles_title">Pick a tile “spelling”</string>
+    <string name="pick_tiles_title_fmt">Pick a tile “spelling” for “%1$s”</string>
     <!-- Shown when user types a string that contains non-tiles,
          e.g. a Q alone when the langauge has only QU. First
          substituted is user's string; second substitution is name of

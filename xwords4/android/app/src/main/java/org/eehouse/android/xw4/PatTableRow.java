@@ -25,6 +25,7 @@ import android.view.View;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TableRow;
+import android.widget.TextView;
 
 import org.eehouse.android.xw4.jni.XwJNI.PatDesc;
 
@@ -71,6 +72,18 @@ public class PatTableRow extends TableRow {
             mEdit.getText().insert(mEdit.getSelectionStart(), blank );
         }
         return handled;
+    }
+
+    // Return the label (the first column)
+    public String getFieldName()
+    {
+        String result = "";
+        TextView tv = (TextView)Utils.getChildInstanceOf( this, TextView.class );
+        Assert.assertTrueNR( null != tv );
+        if ( null != tv ) {
+            result = tv.getText().toString();
+        }
+        return result;
     }
 
     void setOnFocusGained( final Runnable proc )
