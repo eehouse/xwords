@@ -635,41 +635,6 @@ public class DictBrowseDelegate extends DelegateBase
         return result;
     }
     
-    private void setMinMax( int min, int max )
-    {
-        // I can't make a second call to setListAdapter() work, nor does
-        // notifyDataSetChanged do anything toward refreshing the
-        // adapter/making it recognize a changed dataset.  So, as a
-        // workaround, relaunch the activity with different parameters.
-        // if ( m_browseState.m_minShown != min ||
-        //      m_browseState.m_maxShown != max ) {
-
-        //     m_browseState.m_pos = 0;
-        //     m_browseState.m_top = 0;
-        //     m_browseState.m_minShown = min;
-        //     m_browseState.m_maxShown = max;
-        //     m_browseState.m_pats = getFindText();
-        //     DBUtils.dictsSetOffset( m_activity, m_name, m_loc, m_browseState );
-
-        //     setUpSpinners();
-
-        //     initList();
-        // }
-    }
-
-    private void figureMinMax( int[] counts )
-    {
-        Assert.assertTrue( counts.length == XwJNI.MAX_COLS_DICT + 1 );
-        m_minAvail = 0;
-        while ( 0 == counts[m_minAvail] ) {
-            ++m_minAvail;
-        }
-        m_maxAvail = XwJNI.MAX_COLS_DICT;
-        while ( 0 == counts[m_maxAvail] ) { //
-            --m_maxAvail;
-        }
-    }
-
     private String[] m_nums;
     private void makeSpinnerAdapter( Spinner spinner, int curVal )
     {

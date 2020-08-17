@@ -1,6 +1,6 @@
 /* -*- compile-command: "cd ../linux && make MEMDEBUG=TRUE -j3"; -*- */
 /* 
- * Copyright 1997 - 2011 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 1997 - 2020 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -57,19 +57,17 @@ typedef struct DictIter DictIter;
  * tile sets (e.g. [A.B.C]); also [^A.B.C] means NOT these, and [+A.B.C] means
  * use at most once [+A.B.C]{3} would mean "use all of them once each"
  *
- * '?' (meaning anything, same as '.' in most regex languages),
+ * '_' (meaning blank/anything, same as '.' in most regex languages),
  *
  * '*' meaning 0 or more of what's before
  *
  * '+' meaning 1 or more of what's before
  *
- * '{m[,n]}' meaning between m and n of what's before, so ?{2,15} matches
+ * '{m[,n]}' meaning between m and n of what's before, so _{2,15} matches
  * everything
  *
- * '()' also required to express word length: (AB_*CD){2,15} is "an word
- * beginning with AB and ending with CD from 2 to 15 letters long.
- *
- * '^' and '$' matching beginning and end of word (not required, so not yet)
+ * '()' (not implemented) also required to express word length: (AB_*CD){2,15}
+ * is "an word beginning with AB and ending with CD from 2 to 15 letters long.
  */
 
 /* di_makeIter: It's either-or: provide the pattern as a reg-ex string, or as

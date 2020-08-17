@@ -43,16 +43,9 @@ public class PatTableRow extends TableRow {
     {
         getFields();
 
-        // PatDesc result = null;
         String strPat = mEdit.getText().toString();
         out.strPat = strPat;
         out.anyOrderOk = mCheck.isChecked();
-        // if ( null != strPat && 0 < strPat.length() ) {
-        //     result = new PatDesc();
-        //     result.strPat = strPat;
-        //     result.anyOrderOk = mCheck.isChecked();
-        // }
-        // return result;
     }
 
     public void setFromDesc( PatDesc desc )

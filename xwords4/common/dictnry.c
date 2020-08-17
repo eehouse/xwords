@@ -80,6 +80,8 @@ p_dict_unref( const DictionaryCtxt* dict, XWEnv xwe
 #endif
         pthread_mutex_unlock( &_dict->mutex );
         if ( 0 == _dict->refCount ) {
+            /* There's a race here. If another thread locks the mutex we'll
+               still destroy the dict (and the locked mutex!!!) PENDING */
             pthread_mutex_destroy( &_dict->mutex );
             (*dict->destructor)( _dict, xwe );
         }

@@ -101,7 +101,7 @@ dmgr_get( DictMgrCtxt* dmgr, XWEnv xwe, const XP_UCHAR* key )
 }
 
 void
-dmgr_put( DictMgrCtxt* dmgr, XWEnv xwe, const XP_UCHAR* key, DictionaryCtxt* dict )
+dmgr_put( DictMgrCtxt* dmgr, XWEnv xwe, const XP_UCHAR* key, const DictionaryCtxt* dict )
 {
     pthread_mutex_lock( &dmgr->mutex );
 
