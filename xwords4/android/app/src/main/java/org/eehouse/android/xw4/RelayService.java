@@ -687,7 +687,9 @@ public class RelayService extends XWJIService
                                                     CommsConnType.COMMS_CONN_RELAY,
                                                     succeeded );
                 } catch ( JSONException ex ) {
-                    Assert.failDbg();
+                    // this will happen if e.g. there's no 'data' in the result
+                    Log.ex( TAG, ex );
+                    sentLen = 0;
                 }
             }
         }
