@@ -119,7 +119,9 @@
       <item name="android:layout_gravity">center_vertical</item>
     </style>
 
-    <style name="pat_table_edit" parent="edit_w_clear">
+    <style name="pat_table_edit">
+      <item name="android:paddingTop">5dp</item>
+      <item name="android:paddingBottom">5dp</item>
       <item name="android:layout_width">wrap_content</item>
       <item name="android:layout_height">wrap_content</item>
       <item name="android:maxLines">1</item>
@@ -129,6 +131,7 @@
     </style>
 
     <style name="pat_table_check">
+      <item name="android:padding">0dp</item>
       <item name="android:layout_width">wrap_content</item>
       <item name="android:layout_height">wrap_content</item>
       <item name="android:layout_gravity">center</item>

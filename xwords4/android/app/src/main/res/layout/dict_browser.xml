@@ -94,17 +94,20 @@
         <CheckBox style="@style/pat_table_check"
                   />
       </org.eehouse.android.xw4.PatTableRow>
-      <TableRow android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                >
+      <LinearLayout android:layout_height="wrap_content"
+                    android:layout_width="wrap_content"
+                    android:orientation="horizontal"
+                    >
         <Button android:id="@+id/button_addBlank"
                 android:layout_height="wrap_content"
                 android:layout_width="wrap_content"
                 android:text="@string/button_addBlank"
                 android:layout_span="1"
                 android:enabled="false"
+                android:minHeight="0dp"
+                android:minWidth="0dp"
                 />
-      </TableRow>
+      </LinearLayout>
       <LinearLayout android:layout_height="wrap_content"
                     android:layout_width="wrap_content"
                     android:orientation="horizontal"
