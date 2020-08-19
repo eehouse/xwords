@@ -794,10 +794,6 @@
     </plurals>
     <string name="invite_dict_missing_body_fmt">%1$s har inviter deg til å spille CrossWords ved bruk av ordlisten %2$s (for spill i %3$s), men den er ikke installert. Ønsker du å laste ned ordlisten, eller avslå invitasjonen?</string>
     <string name="invite_dict_missing_body_noname_fmt">Du har blitt invitert til å spille CrossWords ved bruk av ordlisten %2$s (for spill i %3$s), men den er ikke installert. Ønsker du å laste ned ordlisten?</string>
-    <plurals name="groups_confirm_del_fmt">
-        <item quantity="one">Er du sikker på at du ønsker å slette valgt gruppe?</item>
-        <item quantity="other">Er du sikker på at du ønsker å slette %1$d valgt[e] gruppe[r]?</item>
-    </plurals>
     <plurals name="groups_confirm_del_games_fmt">
         <item quantity="one">"
 \n

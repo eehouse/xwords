@@ -473,9 +473,7 @@
     <string name="list_group_movedown">下に移動</string>
     <string name="group_cur_games">マイ ゲーム</string>
     <string name="group_new_games">新しいゲーム</string>
-    <plurals name="groups_confirm_del_fmt">
-        <item quantity="other">%1$d の選択したグループを削除してもよろしいですか\?</item>
-    </plurals>
+
     <plurals name="groups_confirm_del_games_fmt">
         <item quantity="other">"
 \n

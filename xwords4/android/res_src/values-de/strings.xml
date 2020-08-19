@@ -518,10 +518,6 @@
     <string name="list_group_movedown">Nach unten verschieben</string>
     <string name="group_cur_games">Meine Partien</string>
     <string name="group_new_games">Neue Partien</string>
-    <plurals name="groups_confirm_del_fmt">
-        <item quantity="one">Wollen Sie die ausgewählte Gruppe wirklich löschen?</item>
-        <item quantity="other">Wollen Sie die %1$d ausgewählten Gruppen wirklich löschen?</item>
-    </plurals>
     <plurals name="groups_confirm_del_games_fmt">
         <item quantity="one">"
 \n

@@ -2257,14 +2257,7 @@ mots ?</string>
     <string name="group_cur_games">Mes parties</string>
     <!--<string name="group_new_games">New games</string>-->
     <string name="group_new_games">Nouvelles parties</string>
-    <!--<string name="groups_confirm_del_fmt">Are you sure you want to delete
-    the %1$d selected group[s]?</string>-->
-    <!--<string name="groups_confirm_del_fmt">Êtes-vous sûr de vouloir effacer les
-%1$d groupes sélectionnés ?</string>-->
-    <plurals name="groups_confirm_del_fmt">
-        <item quantity="one">Êtes-vous sûr de vouloir supprimer le groupe sélectionné ?</item>
-        <item quantity="other">Êtes-vous sûr de vouloir supprimer les %1$d groupes sélectionnés ?</item>
-    </plurals>
+
     <!--<string name="groups_confirm_del_games_fmt">\n\n(%1$d game[s] will
     also be deleted.)</string>-->
     <!--<string name="groups_confirm_del_games_fmt">\n\n(%1$d parties seront aussi

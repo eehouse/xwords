@@ -1956,14 +1956,16 @@
     <string name="list_group_movedown">Move down</string>
     <string name="group_cur_games">My games</string>
     <string name="group_new_games">New games</string>
+    <!-- Shown to confirm deletion of one or more game-groups. Names
+         of the groups, joined by ", ", are substituted for %1$s. -->
     <plurals name="groups_confirm_del_fmt">
-        <item quantity="one">Are you sure you want to delete
-      the selected group?</item>
-        <item quantity="other">Are you sure you want to delete
-      the %1$d selected group[s]?</item>
+      <item quantity="one">Are you sure you want to delete
+      the group %1$s?</item>
+      <item quantity="other">Are you sure you want to delete
+      the groups %1$s?</item>
     </plurals>
     <plurals name="groups_confirm_del_games_fmt">
-        <item quantity="one">\n\n(one game will also be deleted.)</item>
+        <item quantity="one">\n\n(One game will also be deleted.)</item>
         <item quantity="other">\n\n(%1$d games will also be
       deleted.)</item>
     </plurals>

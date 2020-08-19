@@ -461,10 +461,6 @@
     <string name="list_group_movedown">Beweeg omlaag</string>
     <string name="group_cur_games">Mijn spellen</string>
     <string name="group_new_games">Nieuwe spellen</string>
-    <plurals name="groups_confirm_del_fmt">
-        <item quantity="one">Weet je zeker dat je de geselecteerde groep wilt verwijderen?</item>
-        <item quantity="other">Weet je zeker dat je de %1$d geselecteerde groepen wilt verwijderen?</item>
-    </plurals>
     <plurals name="groups_confirm_del_games_fmt">
         <item quantity="one">\n\n(een spel zal ook verwijderd worden.)</item>
         <item quantity="other">\n\n(%1$d spellen zullen ook verwijderd worden.)</item>

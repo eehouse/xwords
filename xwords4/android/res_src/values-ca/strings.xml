@@ -454,10 +454,6 @@ Introduïu el vostre nom aquí. S\'usarà en crear partides noves. (Podreu
     <string name="list_group_movedown">Mou avall</string>
     <string name="group_cur_games">Partides</string>
     <string name="group_new_games">Partides noves</string>
-    <plurals name="groups_confirm_del_fmt">
-        <item quantity="one">Esteu segur de voler suprimir el grup seleccionat?</item>
-        <item quantity="other">Esteu segur de voler suprimir els %1$d grups seleccionats?</item>
-    </plurals>
     <string name="rename_group_label">Canvia el nom d\'aquest grup a:</string>
     <plurals name="group_name_fmt">
         <item quantity="one">%1$s (%2$d partida)</item>

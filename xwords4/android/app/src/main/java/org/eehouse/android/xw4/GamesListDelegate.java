@@ -1,6 +1,6 @@
 /* -*- compile-command: "find-and-gradle.sh inXw4dDeb"; -*- */
 /*
- * Copyright 2009 - 2019 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2009 - 2020 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -342,6 +342,22 @@ public class GamesListDelegate extends ListDelegateBase
                 }
             }
             return m_groupPositions;
+        }
+
+        String formatGroupNames( long[] groupIDs )
+        {
+            List<String> names = new ArrayList<>();
+            // Iterate in-order to produce strings in order
+            long[] inOrder = getGroupPositions();
+            for ( long id : inOrder ) {
+                for ( long inSet : groupIDs ) {
+                    if ( id == inSet ) {
+                        names.add( groupName( id ) );
+                        break;
+                    }
+                }
+            }
+            return TextUtils.join( ", ", names );
         }
 
         int getChildrenCount( long groupID )
@@ -2045,8 +2061,9 @@ public class GamesListDelegate extends ListDelegateBase
                     makeOkOnlyBuilder( msg ).show();
                 } else {
                     Assert.assertTrue( 0 < groupIDs.length );
+                    String names = m_adapter.formatGroupNames( groupIDs );
                     msg = getQuantityString( R.plurals.groups_confirm_del_fmt,
-                                             groupIDs.length, groupIDs.length );
+                                             groupIDs.length, names );
 
                     int nGames = 0;
                     for ( long tmp : groupIDs ) {
