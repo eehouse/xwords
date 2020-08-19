@@ -392,20 +392,7 @@ public class XWPrefs {
         setPrefsLong( context, R.string.key_default_group, val );
     }
 
-    public static void clearGroupPositions( Context context )
-    {
-        setPrefsString( context, R.string.key_group_posns, null );
-    }
-
-    public static void setGroupPositions( Context context, long[] posns )
-    {
-        String[] asStrs = new String[posns.length];
-        for ( int ii = 0; ii < posns.length; ++ii ) {
-            asStrs[ii] = String.format( "%d", posns[ii] );
-        }
-        setPrefsStringArray( context, R.string.key_group_posns, asStrs );
-    }
-
+    // PENDING: remove this in a release or two.
     public static long[] getGroupPositions( Context context )
     {
         long[] posns = null;

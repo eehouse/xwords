@@ -147,11 +147,15 @@ public class DbgUtils {
 
     // public static String toString( long[] longs )
     // {
-    //     String[] asStrs = new String[longs.length];
-    //     for ( int ii = 0; ii < longs.length; ++ii ) {
-    //         asStrs[ii] = String.format("%d", longs[ii] );
+    //     String result = "";
+    //     if ( null != longs && 0 < longs.length ) {
+    //         String[] asStrs = new String[longs.length];
+    //         for ( int ii = 0; ii < longs.length; ++ii ) {
+    //             asStrs[ii] = String.format("%d", longs[ii] );
+    //         }
+    //         result = TextUtils.join( ", ", asStrs );
     //     }
-    //     return TextUtils.join( ", ", asStrs );
+    //     return result;
     // }
 
     // public static String toString( Object[] objs )

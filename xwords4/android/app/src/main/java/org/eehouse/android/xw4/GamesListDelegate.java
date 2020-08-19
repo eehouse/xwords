@@ -142,7 +142,7 @@ public class GamesListDelegate extends ListDelegateBase
         GameListAdapter()
         {
             super( new Class[] { GroupRec.class, GameRec.class } );
-            m_groupPositions = checkGroupPositions();
+            m_groupPositions = null;
         }
 
         protected Object[] makeListData()
@@ -310,31 +310,36 @@ public class GamesListDelegate extends ListDelegateBase
         long[] getGroupPositions()
         {
             // do not modify!!!!
-            final Set<Long> keys = DBUtils.getGroups( m_activity ).keySet();
+            final Set<Long> dbGroups = DBUtils.getGroups( m_activity ).keySet();
 
-            if ( null == m_groupPositions ||
-                 m_groupPositions.length != keys.size() ) {
+            if ( null == m_groupPositions || m_groupPositions.length != dbGroups.size() ) {
+                long[] groupPositions = loadGroupPositions();
 
-                HashSet<Long> unused = new HashSet<>( keys );
-                long[] newArray = new long[unused.size()];
+                // If the stored order is out-of-sync with the DB, e.g. if
+                // there have been additions or deletions, keep the ordering
+                // of groups that we have ordering for. Then add the rest.
+                m_groupPositions = new long[dbGroups.size()];
+                Set<Long> added = new HashSet<>();
 
-                // First copy the existing values, in order
                 int nextIndx = 0;
-                if ( null != m_groupPositions ) {
-                    for ( long id: m_groupPositions ) {
-                        if ( unused.contains( id ) ) {
-                            newArray[nextIndx++] = id;
-                            unused.remove( id );
-                        }
+                for ( long posn : groupPositions ) {
+                    if ( dbGroups.contains(posn) ) {
+                        m_groupPositions[nextIndx++] = posn;
+                        added.add(posn);
                     }
                 }
 
-                // Then copy in what's left
-                Iterator<Long> iter = unused.iterator();
-                while ( iter.hasNext() ) {
-                    newArray[nextIndx++] = iter.next();
+                // Now add at the end the ones we're missing
+                for ( long posn : dbGroups ) {
+                    if ( !added.contains(posn) ) {
+                        m_groupPositions[nextIndx++] = posn;
+                    }
                 }
-                m_groupPositions = newArray;
+
+            } else if ( BuildConfig.DEBUG ) {
+                for ( long posn : m_groupPositions ) {
+                    Assert.assertTrueNR( dbGroups.contains(posn) );
+                }
             }
             return m_groupPositions;
         }
@@ -354,7 +359,7 @@ public class GamesListDelegate extends ListDelegateBase
             long tmp = positions[src];
             positions[src] = positions[dest];
             positions[dest] = tmp;
-            // DbgUtils.logf( "positions now %s", DbgUtils.toString( positions ) );
+            storeGroupPositions( positions );
 
             swapGroups( src, dest );
         }
@@ -539,36 +544,6 @@ public class GamesListDelegate extends ListDelegateBase
                     result = id;
                     break;
                 }
-            }
-            return result;
-        }
-
-        private long[] checkGroupPositions()
-        {
-            long[] result = XWPrefs.getGroupPositions( m_activity );
-
-            if ( null != result ) {
-                final Map<Long,GameGroupInfo> groups =
-                    DBUtils.getGroups( m_activity );
-                Set<Long> posns = groups.keySet();
-                if ( result.length != posns.size() ) {
-                    result = null;
-                } else {
-                    for ( long id : result ) {
-                        if ( ! posns.contains( id ) ) {
-                            result = null;
-                            break;
-                        }
-                    }
-                }
-            }
-
-            if ( BuildConfig.DEBUG && null != result ) {
-                List<Long> list = new ArrayList<>();
-                for ( long ll : result ) {
-                    list.add( ll );
-                }
-                Log.d( TAG, "checkGroupPositions() => %s", TextUtils.join(",", list ));
             }
             return result;
         }
@@ -1055,7 +1030,7 @@ public class GamesListDelegate extends ListDelegateBase
         // mgr.listen( m_phoneStateListener, PhoneStateListener.LISTEN_NONE );
         // m_phoneStateListener = null;
         long[] positions = m_adapter.getGroupPositions();
-        XWPrefs.setGroupPositions( m_activity, positions );
+        storeGroupPositions( positions );
         super.onStop();
     }
 
@@ -1460,7 +1435,7 @@ public class GamesListDelegate extends ListDelegateBase
             int id = (Integer)params[0];
             if ( R.id.games_menu_loaddb == id ) {
                 DBUtils.loadDB( m_activity );
-                XWPrefs.clearGroupPositions( m_activity );
+                storeGroupPositions( null );
                 mkListAdapter();
             } else if ( R.id.games_menu_storedb == id ) {
                 DBUtils.saveDB( m_activity );
@@ -1888,6 +1863,26 @@ public class GamesListDelegate extends ListDelegateBase
             invalidateOptionsMenuIf();
             setTitle();
         }
+    }
+
+    private static final String GROUP_POSNS_KEY = TAG + "/group_posns";
+    private void storeGroupPositions( long[] posns )
+    {
+        // Log.d( TAG, "storeGroupPositions(%s)", DbgUtils.toString(posns) );
+        DBUtils.setSerializableFor( m_activity, GROUP_POSNS_KEY, posns );
+    }
+
+    private long[] loadGroupPositions()
+    {
+        long[] result;
+        Serializable obj = DBUtils.getSerializableFor( m_activity, GROUP_POSNS_KEY );
+        if ( null != obj && obj instanceof long[] ) {
+            result = (long[])obj;
+        } else {
+            result = XWPrefs.getGroupPositions( m_activity );
+        }
+        // Log.d( TAG, "loadGroupPositions() => %s", DbgUtils.toString(result) );
+        return result;
     }
 
     private void reloadGame( long rowID )
@@ -2773,8 +2768,8 @@ public class GamesListDelegate extends ListDelegateBase
         m_adapter = new GameListAdapter();
         setListAdapterKeepScroll( m_adapter );
 
-         ListView listView = getListView();
-         m_activity.registerForContextMenu( listView );
+        ListView listView = getListView();
+        m_activity.registerForContextMenu( listView );
 
         // String field = CommonPrefs.getSummaryField( m_activity );
         // long[] positions = XWPrefs.getGroupPositions( m_activity );
