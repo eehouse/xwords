@@ -1483,7 +1483,7 @@
     <string name="email_author_chooser">Enviar comentário por</string>
     <!--  -->
     <string name="email_body_rev_fmt">(Se relevante, por favor inclua a
-    versão: \"%1$s\"; e marca/modelo do seu telefone ou tablet.)"</string>
+    versão: \"%1$s\"; e marca/modelo do seu telefone ou tablet: %2$s/%3$s)"</string>
     <!--  -->
     <!--  -->
     <string name="bt_pick_clear_button">Remover selecionados</string>

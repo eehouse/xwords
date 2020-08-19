@@ -388,7 +388,7 @@ Introduïu el vostre nom aquí. S\'usarà en crear partides noves. (Podreu
     <string name="board_menu_file_email">Envia un correu-e a l\'autor</string>
     <string name="email_author_subject">Comentari sobre el CrossWords</string>
     <string name="email_author_chooser">Envia el comentari via</string>
-    <string name="email_body_rev_fmt">(Si és rellevant, incloeu la versió: «%1$s»; i el fabricant i model del telèfon o tauleta.)</string>
+    <string name="email_body_rev_fmt">(Si és rellevant, incloeu la versió: «%1$s»; i el fabricant i model del telèfon o tauleta: %2$s/%3$s.)</string>
     <string name="bt_pick_clear_button">Suprimeix</string>
     <string name="invite_progress_title">S\'està connectant…</string>
     <string name="invite_progress_fmt">S\'està enviant la invitació al CrossWords a %1$s</string>

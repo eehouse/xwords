@@ -1928,7 +1928,7 @@ seulement des informations sur les jetons. Il n\'y a pas de mots à parcourir.</
     <string name="email_author_chooser">Envoyer un commentaire par</string>
     <!--  -->
     <!-- Should not be translated -->
-    <string name="email_body_rev_fmt">(Si c\'est pertinent, merci d\'inclure la version : « %1$s » ; et le modèle de votre téléphone ou votre tablette.)</string>
+    <string name="email_body_rev_fmt">(Si c\'est pertinent, merci d\'inclure la version : « %1$s » ; et le modèle de votre téléphone ou votre tablette: %2$s/%3$s)</string>
     <!-- In the Bluetooth invite device dialog -->
     <!--<string name="bt_pick_addall_button">Add all Paired</string>-->
     <!--  -->
