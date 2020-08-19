@@ -352,16 +352,20 @@ public class GamesListDelegate extends ListDelegateBase
 
         void moveGroup( long groupID, boolean moveUp )
         {
-            int src = getGroupPosition( groupID );
-            int dest = src + (moveUp ? -1 : 1);
+            try {
+                int src = getGroupPosition( groupID );
+                int dest = src + (moveUp ? -1 : 1);
 
-            long[] positions = getGroupPositions();
-            long tmp = positions[src];
-            positions[src] = positions[dest];
-            positions[dest] = tmp;
-            storeGroupPositions( positions );
+                long[] positions = getGroupPositions();
+                long tmp = positions[src];
+                positions[src] = positions[dest];
+                positions[dest] = tmp;
+                storeGroupPositions( positions );
 
-            swapGroups( src, dest );
+                swapGroups( src, dest );
+            } catch ( ArrayIndexOutOfBoundsException ioob ) {
+                Log.ex( TAG, ioob );
+            }
         }
 
         boolean setField( String newField )
@@ -1566,10 +1570,7 @@ public class GamesListDelegate extends ListDelegateBase
                 // Move up/down enabled for groups if not the top-most or bottommost
                 // selected
                 enable = 1 == nGroupsSelected;
-                Utils.setItemVisible( menu, R.id.games_group_moveup,
-                                      enable && 0 < selGroupPos );
-                Utils.setItemVisible( menu, R.id.games_group_movedown, enable
-                                      && (selGroupPos + 1) < groupCount );
+                enableGroupUpDown( menu, selGroupPos, enable );
 
                 // New game available when nothing selected or one group
                 Utils.setItemVisible( menu, R.id.games_menu_newgame_solo,
@@ -1740,22 +1741,24 @@ public class GamesListDelegate extends ListDelegateBase
 
         int id = 0;
         boolean selected = false;
-        GameListItem item = null;
+        GameListItem gameItem = null;
+        int selGroupPos = -1;
         AdapterView.AdapterContextMenuInfo info
             = (AdapterView.AdapterContextMenuInfo)menuInfo;
         View targetView = info.targetView;
         Log.d( TAG, "onCreateContextMenu(t=%s)",
                targetView.getClass().getSimpleName() );
         if ( targetView instanceof GameListItem ) {
-            item = (GameListItem)targetView;
+            gameItem = (GameListItem)targetView;
             id = R.menu.games_list_game_menu;
 
-            selected = m_mySIS.selGames.contains( item.getRowID() );
+            selected = m_mySIS.selGames.contains( gameItem.getRowID() );
         } else if ( targetView instanceof GameListGroup ) {
             id = R.menu.games_list_group_menu;
 
             long groupID = ((GameListGroup)targetView).getGroupID();
             selected = m_mySIS.selGroupIDs.contains( groupID );
+            selGroupPos = m_adapter.getGroupPosition( groupID );
         } else {
             Assert.failDbg();
         }
@@ -1767,13 +1770,13 @@ public class GamesListDelegate extends ListDelegateBase
                 ? R.id.games_game_select : R.id.games_game_deselect;
             Utils.setItemVisible( menu, hideId, false );
 
-            if ( null != item ) {
-                long rowID = item.getRowID();
+            if ( null != gameItem ) {
+                long rowID = gameItem.getRowID();
                 enable = BoardDelegate.rematchSupported( m_activity, rowID );
                 Utils.setItemVisible( menu, R.id.games_game_rematch, enable );
 
                 // Deal with possibility summary's temporarily null....
-                GameSummary summary = item.getSummary();
+                GameSummary summary = gameItem.getSummary();
                 enable = false;
                 boolean isMultiGame = false;
                 if ( null != summary ) {
@@ -1790,6 +1793,8 @@ public class GamesListDelegate extends ListDelegateBase
                 enable = !m_launchedGames.contains( rowID );
                 Utils.setItemVisible( menu, R.id.games_game_delete, enable );
                 Utils.setItemVisible( menu, R.id.games_game_reset, enable );
+            } else {
+                enableGroupUpDown( menu, selGroupPos, true );
             }
         }
     } // onCreateContextMenu
@@ -1863,6 +1868,14 @@ public class GamesListDelegate extends ListDelegateBase
             invalidateOptionsMenuIf();
             setTitle();
         }
+    }
+
+    private void enableGroupUpDown( Menu menu, int selGroupPos, final boolean enable )
+    {
+        Utils.setItemVisible( menu, R.id.games_group_moveup,
+                              enable && 0 < selGroupPos );
+        Utils.setItemVisible( menu, R.id.games_group_movedown,
+                              enable && (selGroupPos + 1) < m_adapter.getGroupCount() );
     }
 
     private static final String GROUP_POSNS_KEY = TAG + "/group_posns";
