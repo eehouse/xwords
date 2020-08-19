@@ -576,7 +576,7 @@
     <string name="title_lookup_study">Trykk for å slå opp eller studere</string>
     <string name="board_menu_file_email">E-postforfatter</string>
     <string name="email_author_subject">Kommentar om CrossWords</string>
-    <string name="email_body_rev_fmt">(Hvis relevant, inkluder versjonen: \"%1$s\", og fabrikatet/modellen av din telefon eller nettbrett.)</string>
+    <string name="email_body_rev_fmt">(Hvis relevant, inkluder versjonen: \"%1$s\", og fabrikatet/modellen av din telefon eller nettbrett: %2$s/%3$s.)</string>
     <string name="bt_pick_clear_button">Fjern valgte</string>
     <string name="invite_progress_title">Kobler til…</string>
     <string name="invite_progress_fmt">Sender invitasjon til CrossWords på %1$s</string>

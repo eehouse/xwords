@@ -366,7 +366,7 @@
     <string name="board_menu_file_email">Email ontwikkelaar</string>
     <string name="email_author_subject">Geef je mening over CrossWords</string>
     <string name="email_author_chooser">Verstuur opmerking via</string>
-    <string name="email_body_rev_fmt">(Indien relevant, geef alsjeblieft het versienummer mee: \"%1$s\"; en fabrikant/model van je telefoon of tablet.)</string>
+    <string name="email_body_rev_fmt">(Indien relevant, geef alsjeblieft het versienummer mee: \"%1$s\"; en fabrikant/model van je telefoon of tablet: %2$s/%3$s)</string>
     <string name="bt_pick_clear_button">Verwijder geselecteerde[n]</string>
     <string name="invite_progress_title">Verbinden...</string>
     <string name="invite_progress_fmt">Uitnodiging om CrossWords te spelen versturen op %1$s</string>

@@ -388,7 +388,7 @@
     <string name="board_menu_file_email">Email an den Autor</string>
     <string name="email_author_subject">Kommentar zu CrossWords</string>
     <string name="email_author_chooser">Kommentar senden über</string>
-    <string name="email_body_rev_fmt">(Falls relevant, geben Sie bitte die Version: „%1$s“; und das Fabrikat/Modell Ihres Smartphones oder Tablets an.)</string>
+    <string name="email_body_rev_fmt">(Falls relevant, geben Sie bitte die Version: „%1$s“; und das Fabrikat/Modell Ihres Smartphones oder Tablets an: %2$s/%3$s.)</string>
     <string name="invite_notice_title">Neue Partie per Einladung</string>
     <string name="new_bt_body_fmt">Ein Spieler auf dem Gerät %1$s will eine Partie starten</string>
     <string name="new_relay_body">Zum Öffnen der neuen Partie antippen</string>

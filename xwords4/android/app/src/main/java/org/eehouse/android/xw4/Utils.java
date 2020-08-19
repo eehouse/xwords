@@ -37,10 +37,9 @@ import android.database.Cursor;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Looper;
 import android.provider.ContactsContract.PhoneLookup;
-import androidx.core.app.NotificationCompat;
-import androidx.core.content.FileProvider;
 import android.telephony.PhoneNumberUtils;
 import android.telephony.TelephonyManager;
 import android.text.ClipboardManager;
@@ -53,6 +52,8 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
+import androidx.core.app.NotificationCompat;
+import androidx.core.content.FileProvider;
 
 import org.json.JSONObject;
 
@@ -199,7 +200,8 @@ public class Utils {
                                                R.string.email_author_email ) };
         intent.putExtra( Intent.EXTRA_EMAIL, addrs );
         String body = LocUtils.getString( context, R.string.email_body_rev_fmt,
-                                          BuildConfig.GIT_REV );
+                                          BuildConfig.GIT_REV, Build.MODEL,
+                                          Build.VERSION.RELEASE );
         if ( null != msg ) {
             body += "\n\n" + msg;
         }
