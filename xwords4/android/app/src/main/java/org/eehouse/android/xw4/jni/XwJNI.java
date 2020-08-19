@@ -39,7 +39,7 @@ public class XwJNI {
 
     public static class GamePtr implements AutoCloseable {
         private long m_ptrGame = 0;
-        private int m_refCount = 0;
+        private int m_refCount = 1;
         private long m_rowid;
         private String mStack;
 
@@ -59,6 +59,7 @@ public class XwJNI {
 
         public synchronized GamePtr retain()
         {
+            Assert.assertTrueNR( 0 < m_refCount );
             ++m_refCount;
             Log.d( TAG, "retain(this=%H, rowid=%d): refCount now %d",
                    this, m_rowid, m_refCount );
@@ -230,7 +231,7 @@ public class XwJNI {
                         CommonPrefs cp, TransportProcs procs )
 
     {
-        GamePtr gamePtr = initGameJNI( rowid ).retain();
+        GamePtr gamePtr = initGameJNI( rowid );
         if ( ! game_makeFromStream( gamePtr, stream, gi, dictNames, dictBytes,
                                     dictPaths, langName, util, draw,
                                     cp, procs ) ) {
@@ -249,7 +250,7 @@ public class XwJNI {
         GamePtr gamePtr = initGameJNI( 0 );
         game_makeNewGame( gamePtr, gi, dictNames, dictBytes, dictPaths,
                           langName, util, draw, cp, procs );
-        return gamePtr.retain();
+        return gamePtr;
     }
 
     // hack to allow cleanup of env owned by thread that doesn't open game
