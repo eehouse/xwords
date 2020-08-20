@@ -68,6 +68,7 @@
                    android:layout_gravity="center_vertical|center_horizontal"
                    android:padding="2dip"
                    android:background="#FF7F7F7F"
+                   android:longClickable="true"
                    />
 
         <!-- this layout is vertical, holds everything but the status

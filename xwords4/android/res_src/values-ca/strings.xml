@@ -169,7 +169,6 @@
     <string name="game_fmt">Partida %1$d</string>
     <string name="player_fmt">Jugador %1$d</string>
     <string name="initial_player_minutes">Minuts de partida</string>
-    <string name="button_new_group">Afegeix un grup</string>
     <string name="str_game_name_fmt">%1$s (%2$s)</string>
     <string name="missing_player">(encara no és aquí...)</string>
     <string name="summary_relay_conf_fmt">Configurat per a la sala

@@ -14,7 +14,7 @@
           android:showAsAction="ifRoom"
           />
     <item android:id="@+id/games_menu_newgroup"
-          android:title="@string/button_new_group"
+          android:title="@string/button_newgroup"
           android:icon="@drawable/new_group__gen"
           android:showAsAction="ifRoom"
           />

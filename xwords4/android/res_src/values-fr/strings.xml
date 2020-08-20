@@ -13,9 +13,6 @@
        # This is the first screen you see when you launch CrossWords
        ############################################################ 
       -->
-    <!-- Text of menuitem in main games-list screen's menu -->
-    <!-- Games list screen menuitem text for creating a new group -->
-    <string name="button_new_group">Ajouter un groupe</string>
     <!-- Used to format game name plus some other information as the
          one-line summary for each game in the main screen.  The name
          of the game is substituted for %1$s.  Something else

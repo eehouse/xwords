@@ -11,7 +11,7 @@
     <!-- Text of button at bottom of main games-list screen and of
          menuitem in main games-list screen's menu.  (The botton can
          be hidden in the same way as the above text.) -->
-    <string name="button_new_group">Novo grupo</string>
+    <string name="button_newgroup">Novo grupo</string>
     <!-- Used to format game name plus some other information as the
          one-line summary for each game in the main screen.  The name
          of the game is substituted for %1$s.  Something else

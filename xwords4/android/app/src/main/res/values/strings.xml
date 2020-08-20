@@ -13,8 +13,6 @@
        # This is the first screen you see when you launch CrossWords
        ############################################################ 
       -->
-    <!-- Games list screen menuitem text for creating a new group -->
-    <string name="button_new_group">Add group</string>
     <!-- Used to format game name plus some other information as the
          one-line summary for each game in the main screen.  The name
          of the game is substituted for %1$s.  Something else
@@ -1628,7 +1626,7 @@
     window.\n\nRead more in the FAQ by tapping the button
     below.</string>
 
-    <string name="board_menu_file_email">Email author</string>
+    <string name="board_menu_file_email">Email author…</string>
     <!--  -->
     <string name="email_author_subject">Comment about CrossWords</string>
     <!--  -->

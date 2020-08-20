@@ -1170,6 +1170,7 @@ public class GamesListDelegate extends ListDelegateBase
     }
 
     // OnItemLongClickListener interface
+    @Override
     public boolean onItemLongClick( AdapterView<?> parent, View view,
                                     int position, long id ) {
         boolean success = ! XWApp.CONTEXT_MENUS_ENABLED
@@ -1815,6 +1816,7 @@ public class GamesListDelegate extends ListDelegateBase
         }
     } // onCreateContextMenu
 
+    @Override
     public boolean onContextItemSelected( MenuItem item )
     {
         boolean handled = true;

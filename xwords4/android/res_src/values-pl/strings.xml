@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="button_new_group">Dodaj grupę</string>
     <string name="missing_player">(jeszcze nie tutaj...)</string>
     <string name="summary_relay_gameover_fmt">Koniec gry w pokoju \"%1$s\"</string>
     <string name="summary_invites_out">Zaproszeni Gracze</string>
