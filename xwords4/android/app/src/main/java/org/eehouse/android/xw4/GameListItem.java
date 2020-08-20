@@ -166,11 +166,12 @@ public class GameListItem extends LinearLayout
     {
         int id = view.getId();
         switch ( id ) {
-        case R.id.view_loaded:
+        case R.id.game_view_container:
             toggleSelected();
             break;
 
         case R.id.right_side:
+        case R.id.thumbnail:
             if ( null != m_summary ) {
                 m_cb.itemClicked( GameListItem.this, m_summary );
             }
@@ -201,12 +202,13 @@ public class GameListItem extends LinearLayout
         m_expandButton.setOnExpandChangedListener( this );
         m_viewUnloaded = (TextView)findViewById( R.id.view_unloaded );
         m_viewLoaded = findViewById( R.id.view_loaded );
-        m_viewLoaded.setOnClickListener( this );
+        findViewById( R.id.game_view_container ).setOnClickListener(this);
         m_list = (LinearLayout)findViewById( R.id.player_list );
         m_state = (TextView)findViewById( R.id.state );
         m_modTime = (TextView)findViewById( R.id.modtime );
         m_gameTypeImage = (ImageView)findViewById( R.id.game_type_marker );
         m_thumb = (ImageView)findViewById( R.id.thumbnail );
+        m_thumb.setOnClickListener( this );
         m_role = (TextView)findViewById( R.id.role );
 
         findViewById( R.id.right_side ).setOnClickListener( this );
@@ -370,7 +372,7 @@ public class GameListItem extends LinearLayout
         if ( null != m_summary ) { // to be safe
             int iconID;
             if ( m_selected ) {
-                iconID = R.drawable.check_circle__gen;
+                iconID = R.drawable.ic_check_circle;
             } else if ( m_summary.isMultiGame() ) {
                 iconID = R.drawable.ic_multigame;
             } else {
