@@ -1997,8 +1997,8 @@
     <string name="not_again_backclears">The back button clears any
     selection instead of exiting. Hit it again to exit the
     app.</string>
-    <string name="sel_games_fmt">Games: %1$d</string>
-    <string name="sel_groups_fmt">Groups: %1$d</string>
+    <string name="sel_games_fmt">Selected Games: %1$d</string>
+    <string name="sel_groups_fmt">Selected Groups: %1$d</string>
     <string name="summary_thumbsize">Thumbnail size</string>
     <string name="thumb_off">Disabled</string>
     <!-- <string name="summary_thumb_enabled">Display snapshots of games</string> -->

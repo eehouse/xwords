@@ -25,6 +25,7 @@ SRC_SVGS = \
 	send.svg \
 	trade.svg \
 	untrade.svg \
+	check_circle.svg \
 
 XHDPI_IMGS:=$(foreach img,$(SRC_SVGS:.svg=__gen.png),$(IMG_DEST)/drawable-xhdpi/$(img))
 MDPI_IMGS:=$(foreach img,$(SRC_SVGS:.svg=__gen.png),$(IMG_DEST)/drawable-mdpi/$(img))

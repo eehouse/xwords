@@ -325,9 +325,7 @@ public class GameListItem extends LinearLayout
                                                             DateFormat.SHORT );
             m_modTime.setText( df.format( new Date( lastMoveTime ) ) );
 
-            int iconID = summary.isMultiGame() ?
-                R.drawable.ic_multigame : R.drawable.ic_sologame;
-            m_gameTypeImage.setImageResource( iconID );
+            setTypeIcon();
 
             // Let's use the chat-icon space for an ALERT icon when we're
             // quarantined. Not ready for non-debug use though, as it shows up
@@ -367,11 +365,28 @@ public class GameListItem extends LinearLayout
         }
     }
 
+    private void setTypeIcon()
+    {
+        if ( null != m_summary ) { // to be safe
+            int iconID;
+            if ( m_selected ) {
+                iconID = R.drawable.check_circle__gen;
+            } else if ( m_summary.isMultiGame() ) {
+                iconID = R.drawable.ic_multigame;
+            } else {
+                iconID = R.drawable.ic_sologame;
+            }
+            m_gameTypeImage.setImageResource( iconID );
+        }
+    }
+
     private void toggleSelected()
     {
         m_selected = !m_selected;
         m_dsdel.showSelected( m_selected );
         m_cb.itemToggled( this, m_selected );
+
+        setTypeIcon();
     }
 
     private void makeThumbnailIf( boolean expanded )
