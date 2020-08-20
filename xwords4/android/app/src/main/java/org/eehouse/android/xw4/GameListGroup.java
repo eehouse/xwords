@@ -134,7 +134,7 @@ public class GameListGroup extends ExpiringLinearLayout
         m_selected = !m_selected;
         m_dsdel.showSelected( m_selected );
         m_cb.itemToggled( this, m_selected );
-        m_check.setImageResource(m_selected ? R.drawable.ic_check_circle : 0);
+        m_check.setImageResource( m_selected ? R.drawable.ic_check_circle : 0 );
     }
 
     //////////////////////////////////////////////////
