@@ -1,6 +1,6 @@
 /* -*- compile-command: "find-and-gradle.sh inXw4dDeb"; -*- */
 /*
- * Copyright 2012 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2012 - 2020 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -24,6 +24,7 @@ import android.content.Context;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import org.eehouse.android.xw4.loc.LocUtils;
@@ -33,7 +34,7 @@ public class GameListGroup extends ExpiringLinearLayout
                View.OnClickListener,
                View.OnLongClickListener
 {
-
+    private static final String TAG = GameListGroup.class.getSimpleName();
     private long m_groupID;
     private boolean m_expanded;
     private SelectableItem m_cb;
@@ -43,6 +44,7 @@ public class GameListGroup extends ExpiringLinearLayout
     private int m_nGames;
     private DrawSelDelegate m_dsdel;
     private ImageButton m_expandButton;
+    private ImageView m_check;
 
     public static GameListGroup makeForPosition( Context context,
                                                  View convertView,
@@ -89,6 +91,8 @@ public class GameListGroup extends ExpiringLinearLayout
         super.onFinishInflate();
         m_etv = (TextView)findViewById( R.id.game_name );
         m_expandButton = (ImageButton)findViewById( R.id.expander );
+        m_check = (ImageView)findViewById( R.id.group_check );
+        m_check.setOnClickListener( this );
 
         // click on me OR the button expands/contracts...
         setOnClickListener( this );
@@ -119,6 +123,7 @@ public class GameListGroup extends ExpiringLinearLayout
     }
 
     // GameListAdapter.ClickHandler interface
+    @Override
     public void longClicked()
     {
         toggleSelected();
@@ -129,6 +134,7 @@ public class GameListGroup extends ExpiringLinearLayout
         m_selected = !m_selected;
         m_dsdel.showSelected( m_selected );
         m_cb.itemToggled( this, m_selected );
+        m_check.setImageResource(m_selected ? R.drawable.ic_check_circle : 0);
     }
 
     //////////////////////////////////////////////////
@@ -148,10 +154,17 @@ public class GameListGroup extends ExpiringLinearLayout
     //////////////////////////////////////////////////
     public void onClick( View view )
     {
-        if ( 0 < m_nGames ) {
-            m_expanded = !m_expanded;
-            m_gcb.onGroupExpandedChanged( this, m_expanded );
-            setButton();
+        int id = view.getId();
+        switch ( id ) {
+        case R.id.group_check:
+            toggleSelected();
+            break;
+        default:
+            if ( 0 < m_nGames ) {
+                m_expanded = !m_expanded;
+                m_gcb.onGroupExpandedChanged( this, m_expanded );
+                setButton();
+            }
         }
     }
 
