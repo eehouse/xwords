@@ -480,8 +480,12 @@
     <string name="relay_alert_title">Bericht van relay</string>
     <string name="not_again_newselect">Als je drukt op een spel open je het.\n\nJe kunt op de iconen aan de linkerkant drukken om spellen te selecteren of deselecteren. Daarna kun je de spellen bewerken, bijvoorbeeld verwijderen, met behulp van het menu of de actiebalk.</string>
     <string name="not_again_backclears">De terug knop maakt de selectie leeg in plaats van af te sluiten. Druk er nogmaals op om de app af te sluiten.</string>
-    <string name="sel_games_fmt">Spellen: %1$d</string>
-    <string name="sel_groups_fmt">Groepen: %1$d</string>
+    <plurals name="sel_games_fmt">
+      <item quantity="other">Spellen: %1$d</item>
+    </plurals>
+    <plurals name="sel_groups_fmt">
+      <item quantity="other">Groepen: %1$d</item>
+    </plurals>
     <string name="summary_thumbsize">Voorbeeldgrootte</string>
     <string name="thumb_off">Uitgeschakeld</string>
     <string name="dropped_dupe">Uitnodiging ontvangen maar genegeerd: er is al een nieuw spel met deze uitnodiging aangemaakt.</string>

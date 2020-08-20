@@ -2158,15 +2158,15 @@ public class GamesListDelegate extends ListDelegateBase
         int fmt = 0;
         int nSels = m_mySIS.selGames.size();
         if ( 0 < nSels ) {
-            fmt = R.string.sel_games_fmt;
+            fmt = R.plurals.sel_games_fmt;
         } else {
             nSels = m_mySIS.selGroupIDs.size();
             if ( 0 < nSels ) {
-                fmt = R.string.sel_groups_fmt;
+                fmt = R.plurals.sel_groups_fmt;
             }
         }
 
-        setTitle( 0 == fmt ? m_origTitle : getString( fmt, nSels ) );
+        setTitle( 0 == fmt ? m_origTitle : getQuantityString( fmt, nSels, nSels ) );
     }
 
     private boolean checkWarnNoDict( NetLaunchInfo nli )

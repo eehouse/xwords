@@ -302,8 +302,12 @@
     </plurals>
     <string name="button_reconnect">Koble til igjen</string>
     <string name="change_group">Flytt valgte spill til:</string>
-    <string name="sel_games_fmt">Spill: %1$d</string>
-    <string name="sel_groups_fmt">Grupper: %1$d</string>
+    <plurals name="sel_games_fmt">
+      <item quantity="other">Spill: %1$d</item>
+    </plurals>
+    <plurals name="sel_groups_fmt">
+      <item quantity="other">Grupper: %1$d</item>
+    </plurals>
     <string name="summary_thumbsize">Miniatyrbildestørrelse</string>
     <string name="thumb_off">Avskrudd</string>
     <string name="cur_menu_marker_fmt">%1$s (i bruk)</string>

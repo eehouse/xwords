@@ -463,8 +463,12 @@ Introduïu el vostre nom aquí. S\'usarà en crear partides noves. (Podreu
     <string name="button_reconnect">Torna a connectar</string>
     <string name="change_group">Mou les partides seleccionades a:</string>
     <string name="relay_alert_title">Missatge del dia</string>
-    <string name="sel_games_fmt">Partides: %1$d</string>
-    <string name="sel_groups_fmt">Grups: %1$d</string>
+    <plurals name="sel_games_fmt">
+      <item quantity="other">Partides: %1$d</item>
+    </plurals>
+    <plurals name="sel_groups_fmt">
+      <item quantity="other">Grups: %1$d</item>>
+    </plurals>
     <string name="summary_thumbsize">Mida de la miniatura</string>
     <string name="thumb_off">Desactivat</string>
     <string name="cur_menu_marker_fmt">%1$s (en ús)</string>

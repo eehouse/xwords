@@ -939,8 +939,6 @@
     has already been used to create a game.</string>
     <string name="thumb_off">XLATE ME: Disabled</string>
     <string name="summary_thumbsize">XLATE ME: Thumbnail size</string>
-    <string name="sel_groups_fmt">XLATE ME: Groups: %1$d</string>
-    <string name="sel_games_fmt">XLATE ME: Games: %1$d</string>
     <string name="not_again_backclears">XLATE ME: The back button clears any
     selection instead of exiting. Hit it again to exit the
     app.</string>

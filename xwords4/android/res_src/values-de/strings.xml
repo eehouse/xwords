@@ -545,8 +545,12 @@
 \n
 \nSie können stattdessen die Icons links antippen, um Partien aus- oder abzuwählen, und dann mit den ausgewählten Partien etwas tun, z. B. sie löschen, indem Sie das Menü oder die „Aktionsleiste“ benutzen.</string>
     <string name="not_again_backclears">Der Zurück-Button löscht die Auswahl anstatt die App zu beenden. Drücken Sie ihn erneut, um die App zu beenden.</string>
-    <string name="sel_games_fmt">Partien: %1$d</string>
-    <string name="sel_groups_fmt">Gruppen: %1$d</string>
+    <plurals name="sel_games_fmt">
+      <item quantity="other">Partien: %1$d</item>
+    </plurals>
+    <plurals name="sel_groups_fmt">
+      <item quantity="other">Gruppen: %1$d</item>
+    </plurals>
     <string name="summary_thumbsize">Vorschaubildgröße</string>
     <string name="thumb_off">Deaktiviert</string>
     <string name="dropped_dupe">Einladung erhalten, aber ignoriert: Sie wurde bereits verwendet, um eine Partie zu erzeugen.</string>

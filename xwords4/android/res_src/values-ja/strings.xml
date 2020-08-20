@@ -493,8 +493,12 @@
     <string name="relay_alert_title">リレーからのメッセージ</string>
     <string name="not_again_newselect">ゲームをタップすると開きます。\n\n代わりに、左にあるアイコンをタップしてゲームを選択または選択解除し、選択したゲームを操作することができます。例えば、削除する場合は、メニューまたは \"アクションバー\" を使用します</string>
     <string name="not_again_backclears">戻るボタンは、終了ではなくすべての選択がクリアされます。アプリを終了するには、もう一度押してください。</string>
-    <string name="sel_games_fmt">ゲーム: %1$d</string>
-    <string name="sel_groups_fmt">グループ: %1$d</string>
+    <plurals name="sel_games_fmt">
+      <item quantity="other">ゲーム: %1$d</item>
+    </plurals>
+    <plurals name="sel_groups_fmt">
+      <item quantity="other">グループ: %1$d</item>
+    </plurals>
     <string name="summary_thumbsize">サムネイルのサイズ</string>
     <string name="thumb_off">無効</string>
     <string name="dropped_dupe">招待を受けましたが無視しました: 既にゲームの作成に使用されています。</string>

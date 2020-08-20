@@ -2311,10 +2311,12 @@ effacées.)</string>-->
     app.</string>-->
     <string name="not_again_backclears">Le bouton retour efface les sélections
 au lieu de quitter. Pressez le de nouveau pour quitter l\'application.</string>
-    <!--<string name="sel_games_fmt">Games: %1$d</string>-->
-    <string name="sel_games_fmt">Parties : %1$d</string>
-    <!--<string name="sel_groups_fmt">Groups: %1$d</string>-->
-    <string name="sel_groups_fmt">Groupes : %1$d</string>
+    <plurals name="sel_games_fmt">
+      <item quantity="other">Parties : %1$d</item>
+    </plurals>
+    <plurals name="sel_groups_fmt">
+      <item quantity="other">Groupes : %1$d</item>
+    </plurals>
     <!--<string name="summary_thumbsize">Thumbnail size</string>-->
     <string name="summary_thumbsize">Taille des vignettes</string>
     <!--<string name="thumb_off">Disabled</string>-->

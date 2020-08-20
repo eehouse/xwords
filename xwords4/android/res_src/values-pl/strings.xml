@@ -595,8 +595,12 @@
 \n
 \nMożesz zamiast tego możesz stuknąć ikony po lewej stronie, aby wybrać lub odznaczyć gry, a następnie wykonać różne działania w wybranych grach, np. aby je usunąć, za pomocą menu lub „Paska zadań”</string>
     <string name="not_again_backclears">Przycisk Wstecz usuwa wszystkie zaznaczenia zamiast wyjść. Naciśnij go ponownie, aby opuścić aplikację.</string>
-    <string name="sel_games_fmt">Gry: %1$d</string>
-    <string name="sel_groups_fmt">Grupy: %1$d</string>
+    <plurals name="sel_games_fmt">
+      <item quantity="other">Gry: %1$d</item>
+    </plurals>
+    <plurals name="sel_groups_fmt">
+      <item quantity="other">Grupy: %1$d</item>
+    </plurals>
     <string name="summary_thumbsize">Rozmiar miniaturki</string>
     <string name="thumb_off">Wyłączone</string>
     <string name="dropped_dupe">Zaproszenie otrzymane, ale zignorowane: zostało już użyte do stworzenia gry.</string>
