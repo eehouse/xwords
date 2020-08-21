@@ -309,6 +309,7 @@ public class MQTTUtils extends Thread implements IMqttActionListener, MqttCallba
                 params.put( "vrntName", BuildConfig.VARIANT_NAME );
                 params.put( "dbg", BuildConfig.DEBUG );
                 params.put( "myNow", now );
+                params.put( "loc", LocUtils.getCurLocale( mContext ) );
 
                 String fcmid = FBMService.getFCMDevID( mContext );
                 if ( null != fcmid ) {
