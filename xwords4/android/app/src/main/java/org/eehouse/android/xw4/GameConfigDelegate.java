@@ -1,6 +1,6 @@
 /* -*- compile-command: "find-and-gradle.sh inXw4dDeb"; -*- */
 /*
- * Copyright 2009 - 2016 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2009 - 2020 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -585,6 +585,10 @@ public class GameConfigDelegate extends DelegateBase
                 String relayName = XWPrefs.getDefaultRelayHost( m_activity );
                 int relayPort = XWPrefs.getDefaultRelayPort( m_activity );
                 m_carOrig = XwJNI.comms_getInitialAddr( relayName, relayPort );
+            } else {
+                // Leaving this null breaks stuff: an empty set, rather than a
+                // null one, represents a standalone game
+                m_carOrig = new CommsAddrRec();
             }
 
             // load if the first time through....
