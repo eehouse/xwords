@@ -200,7 +200,8 @@ mqttc_init( LaunchParams* params )
 	int keepalive = 60;
 	err = mosquitto_connect( mosq, params->connInfo.mqtt.hostName,
                              params->connInfo.mqtt.port, keepalive );
-    XP_LOGFF( "mosquitto_connect() => %s", mosquitto_strerror(err) );
+    XP_LOGFF( "mosquitto_connect(host=%s) => %s", params->connInfo.mqtt.hostName,
+              mosquitto_strerror(err) );
     if ( MOSQ_ERR_SUCCESS == err ) {
         int mid;
         err = mosquitto_subscribe( mosq, &mid, storage->topic, DEFAULT_QOS );

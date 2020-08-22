@@ -1,4 +1,4 @@
-/* -*- compile-command: "find-and-gradle.sh inXw4Deb"; -*- */
+/* -*- compile-command: "find-and-gradle.sh inXw4dDeb"; -*- */
 /*
  * Copyright 2009 - 2020 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
@@ -572,8 +572,8 @@ public class NetLaunchInfo implements Serializable {
             }
         }
 
-        removeUnsupported( supported );
         _conTypes = addrs.toInt();
+        removeUnsupported( supported );
 
         calcValid();
     }
@@ -748,7 +748,7 @@ public class NetLaunchInfo implements Serializable {
               iter.hasNext(); ) {
             CommsConnType typ = iter.next();
             if ( !supported.contains( typ ) ) {
-                Log.d( TAG, "removing %s", typ );
+                Log.d( TAG, "removeUnsupported(): removing %s", typ );
                 iter.remove();
             }
         }
@@ -777,6 +777,9 @@ public class NetLaunchInfo implements Serializable {
                 case COMMS_CONN_MQTT:
                     valid = null != mqttDevID;
                     break;
+                }
+                if ( !valid ) {
+                    Log.d( TAG, "valid after %s: %b", typ, valid );
                 }
             }
         }

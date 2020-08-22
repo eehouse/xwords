@@ -50,6 +50,7 @@ def main():
     args = mkParser().parse_args()
 
     mqttc = makeClient()
+    mqttc.username_pw_set('xwuser', password='xw4r0cks')
     mqttc.connect(args.HOST, args.PORT)
     # Start subscribe, with QoS level 2
     for topic in g_topics:

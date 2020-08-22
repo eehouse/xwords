@@ -127,7 +127,14 @@ abstract class XWServiceHelper {
     protected boolean handleInvitation( NetLaunchInfo nli,
                                         String device, DictFetchOwner dfo )
     {
-        boolean success = nli.isValid() && checkNotInFlight( nli );
+        boolean success = false;
+        if ( !nli.isValid() ) {
+            Log.d( TAG, "invalid nli" );
+        } else if ( ! checkNotInFlight( nli ) ) {
+            Log.e( TAG, "checkNotInFlight() => false" );
+        } else {
+            success = true;
+        }
         CurGameInfo gi = null;
         if ( success ) {
             long[] rowids = DBUtils.getRowIDsFor( mContext, nli.gameID() );
