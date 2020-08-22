@@ -165,6 +165,9 @@ XP_Bool comms_checkAddr( XWEnv xwe, DeviceRole role, const CommsAddrRec* addr,
 
 void comms_getAddr( const CommsCtxt* comms, CommsAddrRec* addr );
 void comms_augmentHostAddr( CommsCtxt* comms, XWEnv xwe, const CommsAddrRec* addr );
+void comms_addMQTTDevID( CommsCtxt* comms, XP_PlayerAddr channelNo,
+                         const MQTTDevID* devID );
+
 void comms_getAddrs( const CommsCtxt* comms, XWEnv xwe,
                      CommsAddrRec addr[], XP_U16* nRecs );
 XP_Bool comms_formatRelayID( const CommsCtxt* comms, XP_U16 indx,

@@ -471,10 +471,9 @@ def build_cmds(args):
                     for dev in range(2, NDEVS + 1):
                         PARAMS += [ '--invitee-sms-number', makeSMSPhoneNo(GAME, dev) ]
 
-            if args.ADD_MQTT:
-                PARAMS += [ '--mqtt-port', args.MQTT_PORT, '--mqtt-host', args.MQTT_HOST ]
-                if DEV == 1:
-                    PARAMS += [ '--force-invite' ]
+            PARAMS += [ '--mqtt-port', args.MQTT_PORT, '--mqtt-host', args.MQTT_HOST ]
+            if args.ADD_MQTT and DEV == 1:
+                PARAMS += [ '--force-invite' ]
 
             if args.UNDO_PCT > 0:
                 PARAMS += ['--undo-pct', args.UNDO_PCT]

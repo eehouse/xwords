@@ -1028,6 +1028,29 @@ comms_augmentHostAddr( CommsCtxt* comms, XWEnv xwe, const CommsAddrRec* addr )
     }
 } /* comms_setHostAddr */
 
+void comms_addMQTTDevID( CommsCtxt* comms, XP_PlayerAddr channelNo,
+                         const MQTTDevID* devID )
+{
+    XP_LOGFF( "(devID: " MQTTDevID_FMT ")", *devID );
+    XP_Bool found = XP_FALSE;
+    for ( AddressRecord* rec = comms->recs; !!rec && !found; rec = rec->next ) {
+        found = rec->channelNo == channelNo;
+        if ( found ) {
+            if ( addr_hasType( &rec->addr, COMMS_CONN_MQTT ) ) {
+                XP_ASSERT( *devID == rec->addr.u.mqtt.devID );
+            }
+
+            CommsAddrRec addr = {0};
+            addr_setType( &addr, COMMS_CONN_MQTT );
+            addr.u.mqtt.devID = *devID;
+            augmentAddr( &rec->addr, &addr );
+        }
+    }
+    if ( !found ) {
+        XP_LOGFF( "unable to augment address!!" );
+    }
+}
+
 void
 comms_getAddrs( const CommsCtxt* comms, XWEnv XP_UNUSED_DBG(xwe),
                 CommsAddrRec addr[], XP_U16* nRecs )

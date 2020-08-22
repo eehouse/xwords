@@ -30,6 +30,7 @@
 #include "util.h"
 #include "pool.h"
 #include "engine.h"
+#include "device.h"
 #include "strutils.h"
 #include "dbgutil.h"
 
@@ -652,6 +653,41 @@ server_countTilesInPool( ServerCtxt* server )
 #define NAME_LEN_NBITS 6
 #define MAX_NAME_LEN ((1<<(NAME_LEN_NBITS-1))-1)
 #ifndef XWFEATURE_STANDALONE_ONLY
+
+/* addMQTTDevID() and readMQTTDevID() exist to work around the case where
+   folks start games using agreed-upon relay room names rather than
+   invitations. In that case the MQTT devID hasn't been transmitted and so
+   only old-style relay communication is possible. This hack sends the mqtt
+   devIDs in the same host->guest message that sets the gameID. Guests will
+   start using mqtt to transmit and in so doing transmit their own devIDs to
+   the host.
+*/
+static void
+addMQTTDevID( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* stream )
+{
+    MQTTDevID devID;
+    dvc_getMQTTDevID( server->vol.dutil, xwe, &devID );
+
+    XP_UCHAR buf[32];
+    formatMQTTDevID( &devID, buf, VSIZE(buf) );
+    stringToStream( stream, buf );
+}
+
+static void
+readMQTTDevID( ServerCtxt* server, XWStreamCtxt* stream )
+{
+    if ( 0 < stream_getSize( stream ) ) {
+        XP_UCHAR buf[32];
+        stringFromStreamHere( stream, buf, VSIZE(buf) );
+
+        MQTTDevID devID;
+        if ( strToMQTTCDevID( buf, &devID ) ) {
+            XP_PlayerAddr channelNo = stream_getAddress( stream );
+            comms_addMQTTDevID( server->vol.comms, channelNo, &devID );
+        }
+    }
+}
+
 XP_Bool
 server_initClientConnection( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* stream )
 {
@@ -1824,7 +1860,8 @@ client_readInitialMessage( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* stream )
         // XP_ASSERT( streamVersion <= CUR_STREAM_VERS ); /* else do what? */
 
         gameID = stream_getU32( stream );
-        XP_LOGF( "read gameID of %x; calling comms_setConnID", gameID );
+        XP_LOGFF( "read gameID of %x/%d; calling comms_setConnID (replacing %d)",
+                  gameID, gameID, server->vol.gi->gameID );
         server->vol.gi->gameID = gameID;
         comms_setConnID( server->vol.comms, gameID );
 
@@ -1916,6 +1953,8 @@ client_readInitialMessage( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* stream )
 
             sortTilesIf( server, ii );
         }
+
+        readMQTTDevID( server, stream );
 
         syncPlayers( server );
 
@@ -2012,6 +2051,8 @@ sendInitialMessage( ServerCtxt* server, XWEnv xwe )
                 break;
             }
         }
+
+        addMQTTDevID( server, xwe, stream );
 
         stream_destroy( stream, xwe );
     }
