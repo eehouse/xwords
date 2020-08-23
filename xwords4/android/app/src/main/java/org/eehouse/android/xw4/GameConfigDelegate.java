@@ -413,6 +413,7 @@ public class GameConfigDelegate extends DelegateBase
                 public void onCheckedChanged( CompoundButton buttonView,
                                               boolean checked ) {
                     lp.setIsRobot( checked );
+                    setPlayerName( playerView, lp );
                     checkShowPassword( playerView, lp );
                 }
             };
@@ -422,6 +423,14 @@ public class GameConfigDelegate extends DelegateBase
         Utils.setChecked( playerView, R.id.remote_check, ! lp.isLocal );
         checkShowPassword( playerView, lp );
         Log.d( TAG, "setPlayerSettings() DONE" );
+    }
+
+    private void setPlayerName( View playerView, LocalPlayer lp )
+    {
+        String name = lp.isRobot()
+            ? CommonPrefs.getDefaultRobotName( m_activity )
+            : CommonPrefs.getDefaultPlayerName( m_activity, m_whichPlayer );
+        setText( playerView, R.id.player_name_edit, name );
     }
 
     // We show the password stuff only if: non-robot player AND there's more

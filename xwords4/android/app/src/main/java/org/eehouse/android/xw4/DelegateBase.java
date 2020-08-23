@@ -383,12 +383,17 @@ public class DelegateBase implements DlgClickNotify,
         m_activity.runOnUiThread( runnable );
     }
 
-    public void setText( int id, String value )
+    public void setText( View parent, int id, String value )
     {
-        EditText editText = (EditText)findViewById( id );
+        EditText editText = (EditText)parent.findViewById( id );
         if ( null != editText ) {
             editText.setText( value, TextView.BufferType.EDITABLE );
         }
+    }
+
+    public void setText( int id, String value )
+    {
+        setText( m_rootView, id, value );
     }
 
     public String getText( View parent, int id )
