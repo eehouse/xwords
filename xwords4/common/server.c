@@ -3886,13 +3886,12 @@ handleIllegalWord( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* incoming )
 static XP_Bool
 handleMoveOk( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* XP_UNUSED(incoming) )
 {
-    XP_Bool accepted = XP_TRUE;
     XP_ASSERT( server->vol.gi->serverRole == SERVER_ISCLIENT );
-    XP_ASSERT( server->nv.gameState == XWSTATE_MOVE_CONFIRM_WAIT );
-
-    SETSTATE( server, XWSTATE_INTURN );
-    nextTurn( server, xwe, PICK_CUR );
-
+    XP_Bool accepted = server->nv.gameState == XWSTATE_MOVE_CONFIRM_WAIT;
+    if ( accepted ) {
+        SETSTATE( server, XWSTATE_INTURN );
+        nextTurn( server, xwe, PICK_CUR );
+    }
     return accepted;
 } /* handleMoveOk */
 
