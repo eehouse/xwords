@@ -30,6 +30,7 @@
               android:layout_width="wrap_content"
               android:layout_height="wrap_content"
               android:text="@string/remote_label"
+              android:textAppearance="?android:attr/textAppearanceMedium"
               />
 
     <!-- Use a layout to group elems we want to show/hide as a set -->
@@ -37,6 +38,40 @@
                   android:layout_height="wrap_content"
                   android:layout_width="fill_parent"
                   android:orientation="vertical">
+
+      <CheckBox android:id="@+id/robot_check"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/robot_label"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                />
+
+      <LinearLayout android:id="@+id/password_set"
+                    android:layout_height="wrap_content"
+                    android:layout_width="fill_parent"
+                    android:orientation="horizontal"
+                    android:paddingLeft="20dp"
+                    >
+
+        <TextView android:layout_height="wrap_content"
+                  android:layout_width="wrap_content"
+                  android:text="@string/password_label"
+                  android:gravity="left"
+                  android:textAppearance="?android:attr/textAppearanceMedium"
+                  />
+
+        <EditText android:id="@+id/password_edit"
+                  android:layout_height="wrap_content"
+                  android:layout_width="fill_parent"
+                  android:scrollHorizontally="true"
+                  android:gravity="fill_horizontal"
+                  android:maxLines="1"
+                  android:maxLength="6"
+                  android:inputType="textPassword"
+                  android:hint="@string/password_hint"
+                  android:textAppearance="?android:attr/textAppearanceMedium"
+                  />
+      </LinearLayout>
 
       <LinearLayout android:orientation="horizontal"
                     android:layout_height="wrap_content"
@@ -84,35 +119,6 @@
                  />
       </org.eehouse.android.xw4.LabeledSpinner>
 
-      <CheckBox android:id="@+id/robot_check"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/robot_label"
-                />
-
-      <LinearLayout android:id="@+id/password_set"
-                    android:layout_height="wrap_content"
-                    android:layout_width="fill_parent"
-                    android:orientation="horizontal"
-                    >
-
-        <TextView android:layout_height="wrap_content"
-                  android:layout_width="wrap_content"
-                  android:text="@string/password_label"
-                  android:gravity="left"
-                  android:textAppearance="?android:attr/textAppearanceMedium" 
-                  />
-        
-        <EditText android:id="@+id/password_edit"
-                  android:layout_height="wrap_content"
-                  android:layout_width="fill_parent"
-                  android:scrollHorizontally="true"
-                  android:gravity="fill_horizontal"
-                  android:maxLines="1"
-                  android:inputType="textPassword"
-                  android:textAppearance="?android:attr/textAppearanceMedium"
-                  />
-      </LinearLayout>
     </LinearLayout>
   </LinearLayout>
 </ScrollView>

@@ -26,15 +26,16 @@ import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
-import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
+import android.widget.CompoundButton;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -44,7 +45,6 @@ import android.widget.TextView;
 
 import java.util.HashMap;
 import java.util.Map;
-
 
 import org.eehouse.android.xw4.DictLangCache.LangsArrayAdapter;
 import org.eehouse.android.xw4.DlgDelegate.Action;
@@ -363,7 +363,7 @@ public class GameConfigDelegate extends DelegateBase
                           !m_isLocked || !isServer );
 
         // Hide remote option if in standalone mode...
-        LocalPlayer lp = m_gi.players[m_whichPlayer];
+        final LocalPlayer lp = m_gi.players[m_whichPlayer];
         Utils.setText( playerView, R.id.player_name_edit, lp.name );
         Utils.setText( playerView, R.id.password_edit, lp.password );
 
@@ -394,8 +394,10 @@ public class GameConfigDelegate extends DelegateBase
                 new OnCheckedChangeListener() {
                     public void onCheckedChanged( CompoundButton buttonView,
                                                   boolean checked ) {
+                        lp.isLocal = !checked;
                         localSet.setVisibility( checked ?
                                                 View.GONE : View.VISIBLE );
+                        checkShowPassword( playerView, lp );
                     }
                 };
             check.setOnCheckedChangeListener( lstnr );
@@ -410,15 +412,44 @@ public class GameConfigDelegate extends DelegateBase
             new OnCheckedChangeListener() {
                 public void onCheckedChanged( CompoundButton buttonView,
                                               boolean checked ) {
-                    View view = playerView.findViewById( R.id.password_set );
-                    view.setVisibility( checked ? View.GONE : View.VISIBLE );
+                    lp.setIsRobot( checked );
+                    checkShowPassword( playerView, lp );
                 }
             };
         check.setOnCheckedChangeListener( lstnr );
 
         Utils.setChecked( playerView, R.id.robot_check, lp.isRobot() );
         Utils.setChecked( playerView, R.id.remote_check, ! lp.isLocal );
+        checkShowPassword( playerView, lp );
         Log.d( TAG, "setPlayerSettings() DONE" );
+    }
+
+    // We show the password stuff only if: non-robot player AND there's more
+    // than one local non-robot OR there's already a password set.
+    private void checkShowPassword( View playerView, LocalPlayer lp )
+    {
+        boolean isRobotChecked = lp.isRobot();
+        // Log.d( TAG, "checkShowPassword(isRobotChecked=%b)", isRobotChecked );
+        boolean showPassword = !isRobotChecked;
+
+        if ( showPassword ) {
+            String pwd = getText( playerView, R.id.password_edit );
+            // If it's non-empty, we show it. Else count players
+            if ( TextUtils.isEmpty(pwd) ) {
+                int nLocalNonRobots = 0;
+                for ( int ii = 0; ii < m_gi.nPlayers; ++ii ) {
+                    LocalPlayer oneLP = m_gi.players[ii];
+                    if ( oneLP.isLocal && !oneLP.isRobot() ) {
+                        ++nLocalNonRobots;
+                    }
+                }
+                // Log.d( TAG, "nLocalNonRobots: %d", nLocalNonRobots );
+                showPassword = 1 < nLocalNonRobots;
+            }
+        }
+
+        View view = playerView.findViewById( R.id.password_set );
+        view.setVisibility( showPassword ? View.VISIBLE : View.GONE  );
     }
 
     private void getPlayerSettings( DialogInterface di )

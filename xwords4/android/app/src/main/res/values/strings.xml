@@ -1766,6 +1766,8 @@
     <string name="get_sms_number">Device phone number:</string>
     <string name="get_sms_name">Contact name (optional):</string>
     <string name="get_relay_name">Device name (optional):</string>
+    <!-- hint text in password-setting text area -->
+    <string name="password_hint">(Optional)</string>
     <string name="get_relay_number">Enter device ID:</string>
     <!--  -->
     <plurals name="confirm_clear_sms_fmt">

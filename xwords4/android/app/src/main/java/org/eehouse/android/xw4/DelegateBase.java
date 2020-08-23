@@ -391,10 +391,15 @@ public class DelegateBase implements DlgClickNotify,
         }
     }
 
+    public String getText( View parent, int id )
+    {
+        EditText editText = (EditText)parent.findViewById( id );
+        return editText.getText().toString();
+    }
+
     public String getText( int id )
     {
-        EditText editText = (EditText)findViewById( id );
-        return editText.getText().toString();
+        return getText( m_rootView, id );
     }
 
     public void setInt( int id, int value )
