@@ -75,13 +75,15 @@ checkServerRole( CurGameInfo* gi, XP_U16* nPlayersHere,
 } /* checkServerRole */
 
 static XP_U32
-makeGameID( XW_UtilCtxt* util, XWEnv xwe )
+makeGameID( XW_UtilCtxt* util )
 {
     XP_U32 gameID = 0;
     assertUtilOK( util );
     while ( 0 == gameID ) {
-        gameID = dutil_getCurSeconds( util_getDevUtilCtxt( util, xwe ), xwe );
+        /* High bit never set by XP_RANDOM() alone */
+        gameID = (XP_RANDOM() << 16) ^ XP_RANDOM();
     }
+    LOG_RETURNF( "%x", gameID );
     return gameID;
 }
 
@@ -121,7 +123,7 @@ game_makeNewGame( MPFORMAL XWEnv xwe, XWGame* game, CurGameInfo* gi,
     assertUtilOK( util );
 
     if ( 0 == gi->gameID ) {
-        gi->gameID = makeGameID( util, xwe );
+        gi->gameID = makeGameID( util );
     }
 
     game->util = util;
@@ -170,7 +172,7 @@ game_reset( MPFORMAL XWGame* game, XWEnv xwe, CurGameInfo* gi, XW_UtilCtxt* util
         XP_ASSERT( !!game->model );
         XP_ASSERT( !!gi );
 
-        gi->gameID = makeGameID( util, xwe );
+        gi->gameID = makeGameID( util );
 
 #ifndef XWFEATURE_STANDALONE_ONLY
         XP_U16 nPlayersHere = 0;
