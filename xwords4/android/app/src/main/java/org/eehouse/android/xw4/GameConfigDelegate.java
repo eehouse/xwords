@@ -377,7 +377,8 @@ public class GameConfigDelegate extends DelegateBase
         } else {
             dictLabel.setVisibility( View.GONE );
         }
-        m_playerDictSpinner = ((LabeledSpinner)playerView.findViewById( R.id.player_dict_spinner ))
+        m_playerDictSpinner = ((LabeledSpinner)playerView
+                               .findViewById( R.id.player_dict_spinner ))
             .getSpinner();
         if ( localOnlyGame() ) {
             configDictSpinner( m_playerDictSpinner, m_gi.dictLang, m_gi.dictName(lp) );
@@ -553,22 +554,25 @@ public class GameConfigDelegate extends DelegateBase
     @Override
     protected void onActivityResult( RequestCode requestCode, int resultCode, Intent data )
     {
-        if ( Activity.RESULT_CANCELED != resultCode ) {
-            loadGame();
-            switch( requestCode ) {
-            case REQUEST_DICT:
-                String dictName = data.getStringExtra( DictsDelegate.RESULT_LAST_DICT );
-                configDictSpinner( m_dictSpinner, m_gi.dictLang, dictName );
-                configDictSpinner( m_playerDictSpinner, m_gi.dictLang, dictName );
-                break;
-            case REQUEST_LANG_GC:
-                String langName = data.getStringExtra( DictsDelegate.RESULT_LAST_LANG );
-                selLangChanged( langName );
-                setLangSpinnerSelection( langName );
-                break;
-            default:
-                Assert.failDbg();
-            }
+        boolean cancelled = Activity.RESULT_CANCELED == resultCode;
+
+        loadGame();
+        switch( requestCode ) {
+        case REQUEST_DICT:
+            String dictName = cancelled ? m_gi.dictName
+                : data.getStringExtra( DictsDelegate.RESULT_LAST_DICT );
+            configDictSpinner( m_dictSpinner, m_gi.dictLang, dictName );
+            configDictSpinner( m_playerDictSpinner, m_gi.dictLang, dictName );
+            break;
+        case REQUEST_LANG_GC:
+            String langName = cancelled
+                ? DictLangCache.getLangName( m_activity, m_gi.dictLang )
+                : data.getStringExtra( DictsDelegate.RESULT_LAST_LANG );
+            selLangChanged( langName );
+            setLangSpinnerSelection( langName );
+            break;
+        default:
+            Assert.failDbg();
         }
     }
 
@@ -1206,7 +1210,6 @@ public class GameConfigDelegate extends DelegateBase
 
     private void adjustPlayersLabel()
     {
-        Log.i( TAG, "adjustPlayersLabel()" );
         String label;
         if ( localOnlyGame() ) {
             label = getString( R.string.players_label_standalone );
