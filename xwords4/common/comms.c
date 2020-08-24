@@ -2721,22 +2721,26 @@ void
 comms_getStats( CommsCtxt* comms, XWStreamCtxt* stream )
 {
     XP_UCHAR buf[100];
-    AddressRecord* rec;
-    MsgQueueElem* elem;
+
+    int nChannels = 0;
+    for ( AddressRecord* rec = comms->recs; !!rec; rec = rec->next ) {
+        ++nChannels;
+    }
 
     XP_SNPRINTF( (XP_UCHAR*)buf, sizeof(buf), 
-                 (XP_UCHAR*)"msg queue len: %d\n", comms->queueLen );
+                 (XP_UCHAR*)"msg queue len: %d; have %d channels\n",
+                 comms->queueLen, nChannels );
     stream_catString( stream, buf );
 
     XP_U16 indx = 0;
-    for ( elem = comms->msgQueueHead; !!elem; elem = elem->next ) {
+    for ( MsgQueueElem* elem = comms->msgQueueHead; !!elem; elem = elem->next ) {
         XP_SNPRINTF( buf, sizeof(buf), 
                      "%d: - channelNo=%.4X; msgID=" XP_LD "; len=%d\n",
                      indx++, elem->channelNo, elem->msgID, elem->len );
         stream_catString( stream, buf );
     }
 
-    for ( rec = comms->recs; !!rec; rec = rec->next ) {
+    for ( AddressRecord* rec = comms->recs; !!rec; rec = rec->next ) {
         XP_SNPRINTF( (XP_UCHAR*)buf, sizeof(buf),
                      (XP_UCHAR*)"Stats for channel %.4X\n",
                      rec->channelNo );
