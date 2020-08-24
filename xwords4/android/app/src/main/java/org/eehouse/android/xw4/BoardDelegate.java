@@ -1831,6 +1831,7 @@ public class BoardDelegate extends DelegateBase
         @Override
         public void setIsServer( boolean isServer )
         {
+            Log.d( TAG, "setIsServer(isServer=%b)", isServer );
             DeviceRole newRole = isServer? DeviceRole.SERVER_ISSERVER
                 : DeviceRole.SERVER_ISCLIENT;
             if ( newRole != m_gi.serverRole ) {
@@ -1838,6 +1839,8 @@ public class BoardDelegate extends DelegateBase
                 if ( !isServer ) {
                     handleViaThread( JNICmd.CMD_SWITCHCLIENT );
                 }
+            } else {
+                Log.d( TAG, "setIsServer(): no change" );
             }
         }
 

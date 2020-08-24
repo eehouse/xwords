@@ -1762,7 +1762,7 @@ got_connect_cmd( CommsCtxt* comms, XWEnv xwe, XWStreamCtxt* stream,
     isServer = HOST_ID_SERVER == comms->rr.myHostID;
 
     if ( isServer != comms->isServer ) {
-        XP_LOGF( "%s: becoming%s a server", __func__, isServer ? "" : " NOT" );
+        XP_LOGFF( "becoming%s a server", isServer ? "" : " NOT" );
         comms->isServer = isServer;
         util_setIsServer( comms->util, xwe, comms->isServer );
 

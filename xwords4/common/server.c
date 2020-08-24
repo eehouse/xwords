@@ -207,6 +207,8 @@ static void writeProto( const ServerCtxt* server, XWStreamCtxt* stream,
 #define PICK_NEXT -1
 #define PICK_CUR -2
 
+#define LOG_GAMEID()     XP_LOGFF("gameID: %d", server->vol.gi->gameID )
+
 #if defined DEBUG && ! defined XWFEATURE_STANDALONE_ONLY
 static char*
 getStateStr( XW_State st )
@@ -290,6 +292,7 @@ amServer( const ServerCtxt* server )
 static void
 initServer( ServerCtxt* server, XWEnv xwe )
 {
+    LOG_GAMEID();
     setTurn( server, xwe, -1 ); /* game isn't under way yet */
 
     if ( 0 ) {
@@ -585,6 +588,7 @@ cleanupServer( ServerCtxt* server, XWEnv xwe )
 void
 server_reset( ServerCtxt* server, XWEnv xwe, CommsCtxt* comms )
 {
+    LOG_GAMEID();
     ServerVolatiles vol = server->vol;
 
     cleanupServer( server, xwe );
@@ -744,8 +748,8 @@ server_initClientConnection( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* stream
 #endif
 
     } else {
-        XP_LOGF( "%s: wierd state: %s (expected XWSTATE_NONE); dropping message",
-                 __func__, getStateStr(server->nv.gameState) );
+        XP_LOGFF( "wierd state: %s (expected XWSTATE_NONE); dropping message",
+                  getStateStr(server->nv.gameState) );
     }
     stream_destroy( stream, xwe );
     return result;
@@ -1612,7 +1616,8 @@ server_do( ServerCtxt* server, XWEnv xwe )
     } else {
         XP_Bool moreToDo = XP_FALSE;
         server->serverDoing = XP_TRUE;
-        XP_LOGFF( "gameState: %s", getStateStr(server->nv.gameState) );
+        XP_LOGFF( "gameState: %s; gameID: %d", getStateStr(server->nv.gameState),
+                  server->vol.gi->gameID );
         switch( server->nv.gameState ) {
         case XWSTATE_BEGIN:
             if ( server->nv.pendingRegistrations == 0 ) { /* all players on
