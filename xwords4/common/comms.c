@@ -1557,6 +1557,13 @@ sendMsg( CommsCtxt* comms, XWEnv xwe, MsgQueueElem* elem, const CommsConnType fi
             default: {
                 XP_ASSERT( addr_hasType( &addr, typ ) );
 
+                /* A more general check that the address type has the settings
+                   it needs would be better here.... */
+                if ( typ == COMMS_CONN_MQTT && 0 == addr.u.mqtt.devID ) {
+                    XP_LOGFF( "not sending: MQTT address NULL" );
+                    break;
+                }
+
                 XP_ASSERT( !!comms->procs.send );
                 XP_U32 gameid = gameID( comms );
                 logAddr( comms, xwe, &addr, __func__ );
