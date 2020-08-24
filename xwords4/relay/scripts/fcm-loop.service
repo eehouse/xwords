@@ -1,0 +1,16 @@
+[Unit]
+Description=Loop to check xwrelay and post to devices via FCM
+After=postgresql.service
+
+[Service]
+User=eehouse
+WorkingDirectory=/var/www/html/xw4
+ExecStart=/var/www/html/xw4/fcm_loop.py --loop 5
+Restart=on-failure
+RestartPreventExitStatus=255
+# simple - A long-running process that does not background its self and stays attached to the shell.
+Type=simple
+
+[Install]
+WantedBy=multi-user.target
+Alias=fcm-loop.service
