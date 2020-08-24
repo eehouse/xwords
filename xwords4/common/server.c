@@ -696,7 +696,8 @@ XP_Bool
 server_initClientConnection( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* stream )
 {
     XP_Bool result;
-    LOG_FUNC();
+    XP_LOGFF( "gameState: %s; gameID: %d", getStateStr(server->nv.gameState),
+              server->vol.gi->gameID );
     CurGameInfo* gi = server->vol.gi;
     XP_U16 nPlayers;
     LocalPlayer* lp;

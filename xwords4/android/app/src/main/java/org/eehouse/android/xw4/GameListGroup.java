@@ -140,6 +140,7 @@ public class GameListGroup extends ExpiringLinearLayout
     //////////////////////////////////////////////////
     // View.OnLongClickListener interface
     //////////////////////////////////////////////////
+    @Override
     public boolean onLongClick( View view )
     {
         boolean handled = ! XWApp.CONTEXT_MENUS_ENABLED;
@@ -152,10 +153,10 @@ public class GameListGroup extends ExpiringLinearLayout
     //////////////////////////////////////////////////
     // View.OnClickListener interface
     //////////////////////////////////////////////////
+    @Override
     public void onClick( View view )
     {
-        int id = view.getId();
-        switch ( id ) {
+        switch ( view.getId() ) {
         case R.id.group_check:
             toggleSelected();
             break;

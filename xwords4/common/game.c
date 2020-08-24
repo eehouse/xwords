@@ -83,7 +83,7 @@ makeGameID( XW_UtilCtxt* util )
         /* High bit never set by XP_RANDOM() alone */
         gameID = (XP_RANDOM() << 16) ^ XP_RANDOM();
     }
-    LOG_RETURNF( "%x", gameID );
+    LOG_RETURNF( "%x/%d", gameID, gameID );
     return gameID;
 }
 

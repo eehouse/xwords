@@ -693,6 +693,7 @@ comms_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream, XW_UtilCtxt* uti
     }
     if ( addr_hasType(&addr, COMMS_CONN_RELAY ) ) {
         comms->rr.myHostID = stream_getU8( stream );
+        XP_LOGFF( "loaded myHostID: %d", comms->rr.myHostID );
         stringFromStreamHere( stream, comms->rr.connName, 
                               sizeof(comms->rr.connName) );
     }
@@ -920,6 +921,7 @@ comms_writeToStream( CommsCtxt* comms, XWEnv XP_UNUSED_DBG(xwe),
     stream_putU32( stream, comms->nextResend );
     if ( addr_hasType( &comms->addr, COMMS_CONN_RELAY ) ) {
         stream_putU8( stream, comms->rr.myHostID );
+        XP_LOGFF( "stored myHostID: %d", comms->rr.myHostID );
         stringToStream( stream, comms->rr.connName );
     }
 
@@ -1747,12 +1749,14 @@ static void
 got_connect_cmd( CommsCtxt* comms, XWEnv xwe, XWStreamCtxt* stream,
                  XP_Bool reconnected )
 {
+    LOG_FUNC();
     XP_U16 nHere, nSought;
     XP_Bool isServer;
 
     set_relay_state( comms, xwe, reconnected ? COMMS_RELAYSTATE_RECONNECTED
                      : COMMS_RELAYSTATE_CONNECTED );
     XWHostID myHostID = stream_getU8( stream );
+    XP_LOGFF( "myHostID: %d", myHostID );
     if ( comms->rr.myHostID != myHostID ) {
         XP_LOGF( "%s: changing rr.myHostID from %x to %x", __func__,
                  comms->rr.myHostID, myHostID );
@@ -1815,7 +1819,7 @@ got_connect_cmd( CommsCtxt* comms, XWEnv xwe, XWStreamCtxt* stream,
         (*comms->procs.rconnd)( xwe, comms->procs.closure,
                                 comms->addr.u.ip_relay.invite, reconnected,
                                 comms->rr.myHostID, XP_FALSE, nSought - nHere );
-        XP_LOGF( "%s: have %d of %d players", __func__, nHere, nSought );
+        XP_LOGFF( "have %d of %d players", nHere, nSought );
     }
     setHeartbeatTimer( comms );
 } /* got_connect_cmd */
@@ -3160,8 +3164,7 @@ relay_msg_to_stream( CommsCtxt* comms, XWEnv xwe, XWRELAY_Cmd cmd, XWHostID dest
             stream_putU8( stream, comms->rr.myHostID );
             XP_ASSERT( 0 < destID );
             stream_putU8( stream, destID );
-            XP_LOGF( "%s: wrote ids src %d, dest %d", __func__, 
-                     comms->rr.myHostID, destID );
+            XP_LOGFF( "wrote ids src %d, dest %d", comms->rr.myHostID, destID );
             if ( data != NULL && datalen > 0 ) {
                 stream_putBytes( stream, data, datalen );
             }

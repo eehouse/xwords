@@ -1026,21 +1026,21 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1getInfo
 ( JNIEnv* env, jclass C, jlong jniGlobalPtr, jlong dictPtr,
   jboolean check )
 {
-    jobject result = NULL;
+    jobject jinfo = NULL;
 #ifdef MAP_THREAD_TO_ENV
     JNIGlobalState* globalState = (JNIGlobalState*)jniGlobalPtr;
     MAP_THREAD( &globalState->ti, env );
 #endif
     DictionaryCtxt* dict = (DictionaryCtxt*)dictPtr;
     if ( NULL != dict ) {
-        result = makeObjectEmptyConst( env, PKG_PATH("jni/DictInfo") );
+        jinfo = makeObjectEmptyConst( env, PKG_PATH("jni/DictInfo") );
         XP_LangCode code = dict_getLangCode( dict );
-        setInt( env, result, "langCode", code );
-        setInt( env, result, "wordCount", dict_getWordCount( dict, env ) );
-        setString( env, result, "md5Sum", dict_getMd5Sum( dict ) );
+        setInt( env, jinfo, "langCode", code );
+        setInt( env, jinfo, "wordCount", dict_getWordCount( dict, env ) );
+        setString( env, jinfo, "md5Sum", dict_getMd5Sum( dict ) );
     }
 
-    return result;
+    return jinfo;
 }
 
 JNIEXPORT jstring JNICALL
