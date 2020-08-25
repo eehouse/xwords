@@ -766,7 +766,7 @@ public:
     MsgClosure( DevIDRelay dest, const vector<uint8_t>* packet,
                 int msgID, OnMsgAckProc proc, void* procClosure )
     {
-        assert(m_msgID != 0);
+        assert(msgID != 0);
         m_destDevID = dest;
         m_packet = *packet;
         m_proc = proc;
