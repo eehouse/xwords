@@ -99,6 +99,14 @@ timerChangeListener( XWEnv xwe, void* data, const XP_U32 gameID,
 }
 
 static void
+onRoleChanged( XWEnv xwe, void* closure, XP_Bool amNowGuest  )
+{
+    XP_ASSERT( amNowGuest );
+    XWGame* game = (XWGame*)closure;
+    server_onRoleChanged( game->server, xwe, amNowGuest );
+}
+
+static void
 setListeners( XWGame* game, const CommonPrefs* cp )
 {
     server_prefsChanged( game->server, cp );
@@ -136,7 +144,8 @@ game_makeNewGame( MPFORMAL XWEnv xwe, XWGame* game, CurGameInfo* gi,
         game->comms = comms_make( MPPARM(mpool) xwe, util,
                                   gi->serverRole != SERVER_ISCLIENT, 
                                   nPlayersHere, nPlayersTotal, 
-                                  procs, gi->forceChannel
+                                  procs, onRoleChanged, game,
+                                  gi->forceChannel
 #ifdef SET_GAMESEED
                                   , gameSeed
 #endif
@@ -191,6 +200,7 @@ game_reset( MPFORMAL XWGame* game, XWEnv xwe, CurGameInfo* gi, XW_UtilCtxt* util
             game->comms = comms_make( MPPARM(mpool) xwe, util,
                                       gi->serverRole != SERVER_ISCLIENT, 
                                       nPlayersHere, nPlayersTotal, procs,
+                                      onRoleChanged, game,
                                       gi->forceChannel
 #ifdef SET_GAMESEED
                                       , 0
@@ -281,7 +291,8 @@ game_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream, XWGame* game,
 
             if ( hasComms ) {
                 game->comms = comms_makeFromStream( MPPARM(mpool) xwe, stream, util,
-                                                    procs, gi->forceChannel );
+                                                    procs, onRoleChanged, game,
+                                                    gi->forceChannel );
             } else {
                 game->comms = NULL;
             }
@@ -301,6 +312,11 @@ game_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream, XWGame* game,
             success = XP_TRUE;
         } while( XP_FALSE );
     }
+
+    if ( success && !!game && !!game->comms ) {
+        XP_ASSERT( comms_getIsServer(game->comms) == server_getIsServer(game->server) );
+    }
+
     return success;
 } /* game_makeFromStream */
 

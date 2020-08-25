@@ -60,7 +60,6 @@ public class JNIThread extends Thread implements AutoCloseable {
             CMD_INVALALL,
             CMD_LAYOUT,
             CMD_START,
-            CMD_SWITCHCLIENT,
             CMD_RESET,
             CMD_SAVE,
             CMD_DO,
@@ -522,12 +521,6 @@ public class JNIThread extends Thread implements AutoCloseable {
                 // FALLTHRU
             case CMD_START:
                 draw = tryConnect( m_jniGamePtr, m_gi );
-                break;
-
-            case CMD_SWITCHCLIENT:
-                XwJNI.server_reset( m_jniGamePtr );
-                XwJNI.server_initClientConnection( m_jniGamePtr );
-                draw = XwJNI.server_do( m_jniGamePtr );
                 break;
 
             case CMD_DO:

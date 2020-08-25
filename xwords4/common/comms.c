@@ -110,6 +110,10 @@ struct CommsCtxt {
     AddressRecord* recs;        /* return addresses */
 
     TransportProcs procs;
+
+    RoleChangeProc rcProc;
+    void* rcClosure;
+
     XP_U32 xportFlags;
 #ifdef COMMS_HEARTBEAT
     XP_U32 lastMsgRcd;
@@ -355,7 +359,9 @@ CommsCtxt*
 comms_make( MPFORMAL XWEnv xwe, XW_UtilCtxt* util, XP_Bool isServer,
             XP_U16 XP_UNUSED_RELAY(nPlayersHere), 
             XP_U16 XP_UNUSED_RELAY(nPlayersTotal),
-            const TransportProcs* procs, XP_U16 forceChannel
+            const TransportProcs* procs,
+            RoleChangeProc rcp, void* rcClosure,
+            XP_U16 forceChannel
 #ifdef SET_GAMESEED
             , XP_U16 gameSeed
 #endif
@@ -379,6 +385,10 @@ comms_make( MPFORMAL XWEnv xwe, XW_UtilCtxt* util, XP_Bool isServer,
         comms->xportFlags = comms->procs.flags;
 #endif
     }
+    XP_ASSERT( rcp );
+    comms->rcProc = rcp;
+    comms->rcClosure = rcClosure;
+
     comms->dutil = util_getDevUtilCtxt( util, xwe );
     comms->util = util;
     comms->dutil = util_getDevUtilCtxt( util, xwe );
@@ -648,8 +658,11 @@ addrFromStream( CommsAddrRec* addrP, XWStreamCtxt* stream )
 }
 
 CommsCtxt* 
-comms_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream, XW_UtilCtxt* util,
-                      const TransportProcs* procs, XP_U16 forceChannel )
+comms_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
+                      XW_UtilCtxt* util,
+                      const TransportProcs* procs,
+                      RoleChangeProc rcp, void* rcClosure,
+                      XP_U16 forceChannel )
 {
     XP_U16 nPlayersHere, nPlayersTotal;
     AddressRecord** prevsAddrNext;
@@ -670,8 +683,8 @@ comms_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream, XW_UtilCtxt* uti
         nPlayersTotal = 0;
     }
     CommsCtxt* comms = comms_make( MPPARM(mpool) xwe, util, isServer,
-                                   nPlayersHere, nPlayersTotal, procs, 
-                                   forceChannel
+                                   nPlayersHere, nPlayersTotal, procs,
+                                   rcp, rcClosure, forceChannel
 #ifdef SET_GAMESEED
                                    , 0
 #endif
@@ -1768,8 +1781,11 @@ got_connect_cmd( CommsCtxt* comms, XWEnv xwe, XWStreamCtxt* stream,
     if ( isServer != comms->isServer ) {
         XP_LOGFF( "becoming%s a server", isServer ? "" : " NOT" );
         comms->isServer = isServer;
-        util_setIsServer( comms->util, xwe, comms->isServer );
-
+#ifdef DEBUG
+        XP_U16 queueLen = comms->queueLen;
+#endif
+        (*comms->rcProc)( xwe, comms->rcClosure, !isServer );
+        XP_ASSERT( queueLen == comms->queueLen ); /* callback should not send!!! */
         reset_internal( comms, xwe, isServer, comms->rr.nPlayersHere,
                         comms->rr.nPlayersTotal, XP_FALSE );
     }
@@ -2732,7 +2748,8 @@ comms_getStats( CommsCtxt* comms, XWStreamCtxt* stream )
     }
 
     XP_SNPRINTF( (XP_UCHAR*)buf, sizeof(buf), 
-                 (XP_UCHAR*)"msg queue len: %d; have %d channels\n",
+                 (XP_UCHAR*)"role: %s; msg queue len: %d; have %d channels\n",
+                 comms->isServer ? "host" : "guest",
                  comms->queueLen, nChannels );
     stream_catString( stream, buf );
 

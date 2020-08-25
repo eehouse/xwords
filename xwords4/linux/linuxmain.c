@@ -1865,36 +1865,6 @@ linux_util_addrChange( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe),
     }
 }
 
-static gint
-changeRolesIdle( gpointer data )
-{
-    CommonGlobals* cGlobals = (CommonGlobals*)data;
-    ServerCtxt* server = cGlobals->game.server;
-    server_reset( server, NULL_XWE, cGlobals->game.comms );
-    if ( SERVER_ISCLIENT == cGlobals->gi->serverRole ) {
-        XWStreamCtxt* stream =
-            mem_stream_make( MPPARM(cGlobals->util->mpool) cGlobals->params->vtMgr,
-                             cGlobals, CHANNEL_NONE, sendOnClose );
-        (void)server_initClientConnection( server, NULL_XWE, stream );
-    }
-    (void)server_do( server, NULL_XWE );
-    return 0;
-}
-
-static void
-linux_util_setIsServer( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe),XP_Bool isServer )
-{
-    XP_LOGF( "%s(isServer=%d)", __func__, isServer );
-    CommonGlobals* cGlobals = (CommonGlobals*)uc->closure;
-
-    DeviceRole newRole = isServer? SERVER_ISSERVER : SERVER_ISCLIENT;
-    cGlobals->params->serverRole = newRole;
-    cGlobals->gi->serverRole = newRole;
-
-    (void)ADD_ONETIME_IDLE( changeRolesIdle, cGlobals );
-    XP_ASSERT( isServer == game_getIsServer( &cGlobals->game ) );
-}
-
 #endif
 
 unsigned int
@@ -2552,7 +2522,6 @@ setupLinuxUtilCallbacks( XW_UtilCtxt* util )
 #ifndef XWFEATURE_STANDALONE_ONLY
     SET_PROC(informMissing);
     SET_PROC(addrChange);
-    SET_PROC(setIsServer);
 #endif
     SET_PROC(formatPauseHistory);
     SET_PROC(setTimer);

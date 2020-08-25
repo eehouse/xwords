@@ -61,7 +61,6 @@ public interface UtilCtxt {
     void requestTime();
     void remSelected();
     void timerSelected( boolean inDuplicateMode, boolean canPause );
-    void setIsServer( boolean isServer );
     void informWordsBlocked( int nWords, String words, String dict );
 
     void bonusSquareHeld( int bonus );

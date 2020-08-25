@@ -704,16 +704,6 @@ and_util_addrChange( XW_UtilCtxt* uc, XWEnv xwe,
 }
 
 static void
-and_util_setIsServer( XW_UtilCtxt* uc, XWEnv xwe, XP_Bool isServer )
-{
-    /* Change both the C and Java structs, which need to stay in sync */
-    uc->gameInfo->serverRole = isServer? SERVER_ISSERVER : SERVER_ISCLIENT;
-    UTIL_CBK_HEADER( "setIsServer", "(Z)V" );
-    (*env)->CallVoidMethod( env, util->jutil, mid, isServer );
-    UTIL_CBK_TAIL();
-}
-
-static void
 and_util_informWordsBlocked( XW_UtilCtxt* uc, XWEnv xwe, XP_U16 nBadWords,
                              XWStreamCtxt* words, const XP_UCHAR* dict )
 {
@@ -975,7 +965,6 @@ makeUtil( MPFORMAL JNIEnv* env,
 #ifndef XWFEATURE_STANDALONE_ONLY
     SET_PROC(informMissing);
     SET_PROC(addrChange);
-    SET_PROC(setIsServer);
 #endif
 #ifdef XWFEATURE_SEARCHLIMIT
     SET_PROC(getTraySearchLimits);

@@ -23,7 +23,7 @@
 enum {
     XWSTATE_NONE,               /* 0 */
     XWSTATE_BEGIN,              /* 1 */
-    __UNUSED1,                    /* was XWSTATE_POOL_INITED */
+    XWSTATE_NEWCLIENT,          /* was a host, now a reset client */
     XWSTATE_NEED_SHOWSCORE,       /* client-only */
     __XWSTATE_WAITING_ALL_REG,      /* 4 (unused) */
     XWSTATE_RECEIVED_ALL_REG,     /* includes waiting for dict from server */
@@ -34,7 +34,7 @@ enum {
     XWSTATE_INTURN,               /* 10 */
     XWSTATE_GAMEOVER,             /* 11 */
 
-    XWSTATE_LAST                  /* for asserts only :-) */
+    XWSTATE_LAST,                  /* for asserts only :-) */
 };
 typedef XP_U8 XW_State;
 #define XWSTATE_NBITS 4

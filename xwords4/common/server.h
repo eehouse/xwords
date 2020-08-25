@@ -43,6 +43,7 @@ void server_reset( ServerCtxt* server, XWEnv xwe, CommsCtxt* comms );
 void server_destroy( ServerCtxt* server, XWEnv xwe );
 
 void server_prefsChanged( ServerCtxt* server, const CommonPrefs* cp );
+void server_onRoleChanged( ServerCtxt* server, XWEnv xwe, XP_Bool amNowGuest );
 
 typedef void (*TurnChangeListener)( XWEnv xwe, void* data );
 void server_setTurnChangeListener( ServerCtxt* server, TurnChangeListener tl,
@@ -132,6 +133,10 @@ void server_writeFinalScores( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* strea
 
 #ifdef XWFEATURE_BONUSALL
 XP_U16 server_figureFinishBonus( const ServerCtxt* server, XP_U16 turn );
+#endif
+
+#ifdef DEBUG
+XP_Bool server_getIsServer( const ServerCtxt* server );
 #endif
 
 #ifdef CPLUS

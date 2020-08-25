@@ -1221,6 +1221,7 @@ struct _JNIState {
 #define XWJNI_START_GLOBALS()                           \
     XWJNI_START()                                       \
     AndGameGlobals* globals = &state->globals;          \
+    XP_USE(globals); /*no warnings */                   \
 
 #define XWJNI_END()                                   \
     }                                                 \

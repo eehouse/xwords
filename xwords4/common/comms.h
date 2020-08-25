@@ -102,6 +102,7 @@ typedef void (*RelayRequestJoinProc)( XWEnv xwe, void* closure, const XP_UCHAR* 
 #endif
 
 typedef void (*MsgCountChange)( XWEnv xwe, void* closure, XP_U16 msgCount );
+typedef void (*RoleChangeProc)( XWEnv xwe, void* closure, XP_Bool amNowGuest );
 
 typedef enum {
     COMMS_XPORT_FLAGS_NONE = 0
@@ -138,7 +139,9 @@ typedef struct _TransportProcs {
 CommsCtxt* comms_make( MPFORMAL XWEnv xwe, XW_UtilCtxt* util,
                        XP_Bool isServer, 
                        XP_U16 nPlayersHere, XP_U16 nPlayersTotal,
-                       const TransportProcs* procs, XP_U16 forceChannel
+                       const TransportProcs* procs,
+                       RoleChangeProc rcp, void* rcClosure,
+                       XP_U16 forceChannel
 #ifdef SET_GAMESEED
                        ,XP_U16 gameSeed
 #endif
@@ -187,6 +190,7 @@ XP_Bool comms_getIsServer( const CommsCtxt* comms );
 CommsCtxt* comms_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
                                  XW_UtilCtxt* util, 
                                  const TransportProcs* procs,
+                                 RoleChangeProc rcp, void* rcClosure,
                                  XP_U16 forceChannel );
 void comms_start( CommsCtxt* comms, XWEnv xwe );
 void comms_stop( CommsCtxt* comms, XWEnv xwe );

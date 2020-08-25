@@ -79,12 +79,14 @@ public class UtilCtxtImpl implements UtilCtxt {
     @Override
     public void setTimer( int why, int when, int handle )
     {
+        Log.e( TAG, "setTimer(%d) not doing anything...", why );
         subclassOverride( "setTimer" );
     }
 
     @Override
     public void clearTimer( int why )
     {
+        Log.e( TAG, "setTimer(%d) not doing anything...", why );
         subclassOverride( "clearTimer" );
     }
 
@@ -98,13 +100,6 @@ public class UtilCtxtImpl implements UtilCtxt {
     public void timerSelected( boolean inDuplicateMode, boolean canPause )
     {
         subclassOverride( "timerSelected" );
-    }
-
-    @Override
-    public void setIsServer( boolean isServer )
-    {
-        subclassOverride( "setIsServer" );
-        Assert.failDbg();
     }
 
     @Override

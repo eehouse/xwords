@@ -171,7 +171,6 @@ typedef struct UtilVtable {
                                  XP_U16 nMissing );
     void (*m_util_addrChange)( XW_UtilCtxt* uc, XWEnv xwe, const CommsAddrRec* oldAddr,
                                const CommsAddrRec* newAddr );
-    void (*m_util_setIsServer)(XW_UtilCtxt* uc, XWEnv xwe, XP_Bool isServer );
 #endif
 
     void (*m_util_informWordsBlocked)( XW_UtilCtxt* uc, XWEnv xwe, XP_U16 nBadWords,
@@ -306,8 +305,6 @@ struct XW_UtilCtxt {
     (uc)->vtable->m_util_informMissing((uc), (e), (is), (ct), (nd), (nm) )
 # define util_addrChange( uc,e, addro, addrn ) \
          (uc)->vtable->m_util_addrChange((uc), (e), (addro), (addrn))
-# define util_setIsServer( uc,e, is ) \
-         (uc)->vtable->m_util_setIsServer((uc), (e), (is))
 # else
 # define util_addrChange( uc,e, addro, addrn )
 #endif

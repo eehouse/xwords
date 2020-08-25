@@ -217,6 +217,7 @@ getStateStr( XW_State st )
     switch( st ) {
         CASESTR(XWSTATE_NONE);
         CASESTR(XWSTATE_BEGIN);
+        CASESTR(XWSTATE_NEWCLIENT);
         CASESTR(XWSTATE_NEED_SHOWSCORE);
         CASESTR(XWSTATE_RECEIVED_ALL_REG);
         CASESTR(XWSTATE_NEEDSEND_BADWORD_INFO);
@@ -226,6 +227,7 @@ getStateStr( XW_State st )
         CASESTR(XWSTATE_INTURN);
         CASESTR(XWSTATE_GAMEOVER);
     default:
+        XP_ASSERT(0);
         return "unknown";
     }
 #   undef CASESTR
@@ -288,6 +290,10 @@ amServer( const ServerCtxt* server )
     // LOG_RETURNF( "%d (seed=%d)", result, comms_getChannelSeed( server->vol.comms ) );
     return result;
 }
+
+#ifdef DEBUG
+XP_Bool server_getIsServer( const ServerCtxt* server ) { return amServer(server); }
+#endif
 
 static void
 initServer( ServerCtxt* server, XWEnv xwe )
@@ -557,6 +563,21 @@ server_writeToStream( const ServerCtxt* server, XWStreamCtxt* stream )
     writeStreamIf( stream, server->nv.prevMoveStream );
     writeStreamIf( stream, server->nv.prevWordsStream );
 } /* server_writeToStream */
+
+void
+server_onRoleChanged( ServerCtxt* server, XWEnv xwe, XP_Bool amNowGuest )
+{
+    if ( amNowGuest == amServer(server) ) { /* do I need to change */
+        XP_ASSERT ( amNowGuest );
+        if ( amNowGuest ) {
+            server->vol.gi->serverRole = SERVER_ISCLIENT;
+            server_reset( server, xwe, server->vol.comms );
+
+            SETSTATE( server, XWSTATE_NEWCLIENT );
+            util_requestTime( server->vol.util, xwe );
+        }
+    }
+}
 
 static void
 cleanupServer( ServerCtxt* server, XWEnv xwe )
@@ -1628,6 +1649,12 @@ server_do( ServerCtxt* server, XWEnv xwe )
                     moreToDo = XP_TRUE;
                 }
             }
+            break;
+
+        case XWSTATE_NEWCLIENT:
+            XP_ASSERT( !amServer( server ) );
+            SETSTATE( server, XWSTATE_NONE ); /* server_initClientConnection expects this */
+            server_initClientConnection( server, xwe );
             break;
 
         case XWSTATE_NEEDSEND_BADWORD_INFO:
