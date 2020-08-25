@@ -131,13 +131,7 @@ streamFromFile( CommonGlobals* cGlobals, char* name )
 void
 tryConnectToServer( CommonGlobals* cGlobals )
 {
-    LaunchParams* params = cGlobals->params;
-    XWStreamCtxt* stream =
-        mem_stream_make( MPPARM(cGlobals->util->mpool) params->vtMgr,
-                         cGlobals, CHANNEL_NONE,
-                         sendOnClose );
-    (void)server_initClientConnection( cGlobals->game.server, NULL_XWE,
-                                       stream );
+    (void)server_initClientConnection( cGlobals->game.server, NULL_XWE );
 }
 
 void

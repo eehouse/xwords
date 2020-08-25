@@ -115,8 +115,7 @@ XP_Bool server_receiveMessage( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* inco
 /* client-side messages.  Client (platform code)owns the stream used to talk
  * to the server, and passes it in. */
 #ifndef XWFEATURE_STANDALONE_ONLY
-XP_Bool server_initClientConnection( ServerCtxt* server, XWEnv xwe,
-                                     XWStreamCtxt* stream );
+XP_Bool server_initClientConnection( ServerCtxt* server, XWEnv xwe );
 #endif
 
 #ifdef XWFEATURE_CHAT

@@ -86,8 +86,8 @@ typedef XP_Bool (*XWTimerProc)( void* closure, XWEnv xwe, XWTimerReason why );
 typedef struct UtilVtable {
     
 #ifndef XWFEATURE_STANDALONE_ONLY
-    XWStreamCtxt* (*m_util_makeStreamFromAddr )(XW_UtilCtxt* uc, XWEnv xwe,
-                                                XP_PlayerAddr channelNo );
+    XWStreamCtxt* (*m_util_makeStreamFromAddr)(XW_UtilCtxt* uc, XWEnv xwe,
+                                               XP_PlayerAddr channelNo );
 #endif
     
     XWBonusType (*m_util_getSquareBonus)( XW_UtilCtxt* uc, XWEnv xwe, XP_U16 boardSize,

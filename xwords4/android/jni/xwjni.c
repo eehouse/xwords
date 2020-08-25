@@ -2038,9 +2038,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_server_1initClientConnection
     jboolean result;
     LOG_FUNC();
     XWJNI_START_GLOBALS();
-    XWStreamCtxt* stream = and_empty_stream( MPPARM(mpool) globals );
-    stream_setOnCloseProc( stream, and_send_on_close );
-    result = server_initClientConnection( state->game.server, env, stream );
+    result = server_initClientConnection( state->game.server, env );
     XWJNI_END();
     LOG_RETURNF( "%s", boolToStr(result) );
     return result;

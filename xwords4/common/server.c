@@ -693,7 +693,7 @@ readMQTTDevID( ServerCtxt* server, XWStreamCtxt* stream )
 }
 
 XP_Bool
-server_initClientConnection( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* stream )
+server_initClientConnection( ServerCtxt* server, XWEnv xwe )
 {
     XP_Bool result;
     XP_LOGFF( "gameState: %s; gameID: %d", getStateStr(server->nv.gameState),
@@ -706,13 +706,10 @@ server_initClientConnection( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* stream
 #endif
 
     XP_ASSERT( gi->serverRole == SERVER_ISCLIENT );
-    XP_ASSERT( stream != NULL );
     result = server->nv.gameState == XWSTATE_NONE;
     if ( result ) {
-        stream_open( stream );
-
-        writeProto( server, stream, XWPROTO_DEVICE_REGISTRATION );
-
+        XWStreamCtxt* stream = messageStreamWithHeader( server, xwe, SERVER_DEVICE,
+                                                        XWPROTO_DEVICE_REGISTRATION );
         nPlayers = gi->nPlayers;
         XP_ASSERT( nPlayers > 0 );
         XP_U16 localPlayers = gi_countLocalPlayers( gi, XP_FALSE);
@@ -747,12 +744,11 @@ server_initClientConnection( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* stream
 #ifdef STREAM_VERS_BIGBOARD
         stream_putU8( stream, CUR_STREAM_VERS );
 #endif
-
+        stream_destroy( stream, xwe );
     } else {
         XP_LOGFF( "wierd state: %s (expected XWSTATE_NONE); dropping message",
                   getStateStr(server->nv.gameState) );
     }
-    stream_destroy( stream, xwe );
     return result;
 } /* server_initClientConnection */
 #endif
