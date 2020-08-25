@@ -860,8 +860,11 @@ public class LocUtils {
         @Override
         public AlertDialog.Builder setTitle( int id )
         {
-            String str = getString( m_context, id );
-            return setTitle( str );
+            if ( 0 != id ) {
+                String str = getString( m_context, id );
+                setTitle( str );
+            }
+            return this;
         }
 
         public AlertDialog.Builder setMessage( int textId )
