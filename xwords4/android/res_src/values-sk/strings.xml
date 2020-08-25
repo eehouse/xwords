@@ -9,7 +9,6 @@
          ordering is wrong for your language.-->
     <string name="str_game_name_fmt">XLATE ME: %1$s (%2$s)</string>
     <!-- Games list screen menuitem text for creating a new group -->
-    <string name="button_new_group">XLATE ME: Add group</string>
     <string name="list_item_config">Konfigurovať</string>
     <!-- pulls up dialog to change the group of the selected game -->
     <string name="list_item_move">XLATE ME: Move to group…</string>

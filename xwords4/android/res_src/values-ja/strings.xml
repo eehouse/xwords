@@ -467,7 +467,6 @@
     <string name="list_group_movedown">下に移動</string>
     <string name="group_cur_games">マイ ゲーム</string>
     <string name="group_new_games">新しいゲーム</string>
-
     <plurals name="groups_confirm_del_games_fmt">
         <item quantity="other">"
 \n
@@ -488,10 +487,10 @@
     <string name="not_again_newselect">ゲームをタップすると開きます。\n\n代わりに、左にあるアイコンをタップしてゲームを選択または選択解除し、選択したゲームを操作することができます。例えば、削除する場合は、メニューまたは \"アクションバー\" を使用します</string>
     <string name="not_again_backclears">戻るボタンは、終了ではなくすべての選択がクリアされます。アプリを終了するには、もう一度押してください。</string>
     <plurals name="sel_games_fmt">
-      <item quantity="other">ゲーム: %1$d</item>
+        <item quantity="other">ゲーム: %1$d</item>
     </plurals>
     <plurals name="sel_groups_fmt">
-      <item quantity="other">グループ: %1$d</item>
+        <item quantity="other">グループ: %1$d</item>
     </plurals>
     <string name="summary_thumbsize">サムネイルのサイズ</string>
     <string name="thumb_off">無効</string>
@@ -983,7 +982,6 @@ WiFi ダイレクト経由で接続可能なデバイスはありません。</s
     <string name="mqtt_invite_title">MQTT 招待状</string>
     <string name="invite_choice_mqtt">Internet/MQTT</string>
     <string name="no_tiles_exist">\"%1$s\" は %2$s のタイルで正しくスペルできません。</string>
-    <string name="pick_tiles_title">「スペル」のタイルを選択してください</string>
     <string name="expl_mqtt_url">新しい MQTT ベースのリレー API の URL</string>
     <string name="mqtt_qos">MQTT QOS</string>
     <string name="mqtt_port">MQTT ポート</string>

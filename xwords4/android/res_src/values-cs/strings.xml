@@ -150,7 +150,6 @@
     <string name="game_fmt">Hra %1$d</string>
     <string name="player_fmt">Hráč %1$d</string>
     <string name="initial_player_minutes">Délka hry v minutách</string>
-    <string name="button_new_group">Přidat skupinu</string>
     <string name="str_game_name_fmt">%1$s (%2$s)</string>
     <string name="missing_player">(není tu ještě…)</string>
     <string name="summary_relay_conf_fmt">Nastaveno pro místnost
