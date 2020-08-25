@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="button_new_group">إضافة مجموعة</string>
     <string name="str_game_name_fmt">%1$s (%2$s)</string>
     <string name="button_delete">حذف</string>
     <string name="menu_prefs">إعدادات التطبيق…</string>
