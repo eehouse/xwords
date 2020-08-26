@@ -188,7 +188,7 @@ void comms_dropHostAddr( CommsCtxt* comms, CommsConnType typ );
 XP_Bool comms_getIsServer( const CommsCtxt* comms );
 
 CommsCtxt* comms_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
-                                 XW_UtilCtxt* util, 
+                                 XW_UtilCtxt* util, XP_Bool isServer,
                                  const TransportProcs* procs,
                                  RoleChangeProc rcp, void* rcClosure,
                                  XP_U16 forceChannel );

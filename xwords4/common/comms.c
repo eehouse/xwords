@@ -659,7 +659,7 @@ addrFromStream( CommsAddrRec* addrP, XWStreamCtxt* stream )
 
 CommsCtxt* 
 comms_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
-                      XW_UtilCtxt* util,
+                      XW_UtilCtxt* util, XP_Bool isServer,
                       const TransportProcs* procs,
                       RoleChangeProc rcp, void* rcClosure,
                       XP_U16 forceChannel )
@@ -671,7 +671,8 @@ comms_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
     CommsAddrRec addr;
     short ii;
 
-    XP_Bool isServer = stream_getU8( stream );
+    // FIX_NEXT_VERSION_CHANGE
+    (void)stream_getU8( stream ); /* no longer needed!!! */
     addrFromStream( &addr, stream );
 
     if ( version >= STREAM_VERS_DEVIDS
@@ -920,7 +921,8 @@ comms_writeToStream( CommsCtxt* comms, XWEnv XP_UNUSED_DBG(xwe),
 
     stream_setVersion( stream, CUR_STREAM_VERS );
 
-    stream_putU8( stream, (XP_U8)comms->isServer );
+    // FIX_NEXT_VERSION_CHANGE
+    stream_putU8( stream, (XP_U8)comms->isServer );    /* no longer needed!!! */
     logAddr( comms, xwe, &comms->addr, __func__ );
     addrToStream( stream, &comms->addr );
     stream_putBits( stream, 4, comms->rr.nPlayersHere );

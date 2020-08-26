@@ -291,6 +291,7 @@ game_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream, XWGame* game,
 
             if ( hasComms ) {
                 game->comms = comms_makeFromStream( MPPARM(mpool) xwe, stream, util,
+                                                    gi->serverRole != SERVER_ISCLIENT,
                                                     procs, onRoleChanged, game,
                                                     gi->forceChannel );
             } else {
