@@ -530,6 +530,14 @@ server_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream, ModelCtxt* mode
         server->nv.prevWordsStream = readStreamIf( server, stream );
     }
 
+    /* Hack alert: recovering from an apparent bug that leaves the game
+       thinking it's a client but being in the host-only XWSTATE_BEGIN
+       state. */
+    if ( server->nv.gameState == XWSTATE_BEGIN && !amServer(server) ) {
+        XP_LOGFF( "server_makeFromStream(): fixing state" );
+        SETSTATE( server, XWSTATE_NONE );
+    }
+
     informMissing( server, xwe );
     return server;
 } /* server_makeFromStream */
