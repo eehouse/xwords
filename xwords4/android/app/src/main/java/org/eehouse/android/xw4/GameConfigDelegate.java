@@ -111,6 +111,7 @@ public class GameConfigDelegate extends DelegateBase
     private CommonPrefs m_cp;
     private boolean m_gameStarted = false;
     private String[] m_connStrings;
+    private boolean m_nameWarningShown = false;
     private HashMap<CommsConnType, boolean[]> m_disabMap;
     private static final int[] s_disabledWhenLocked
         = { R.id.juggle_players,
@@ -520,6 +521,8 @@ public class GameConfigDelegate extends DelegateBase
             .getSpinner();
 
         m_connLabel = (TextView)findViewById( R.id.conns_label );
+
+        findViewById( R.id.room_edit ).setOnClickListener(this);
     } // init
 
     @Override
@@ -857,6 +860,14 @@ public class GameConfigDelegate extends DelegateBase
                     showDialogFragment( DlgID.CONFIRM_CHANGE_PLAY );
                 } else {
                     saveAndClose( false );
+                }
+                break;
+            case R.id.room_edit:
+                if ( ! m_nameWarningShown ) {
+                    m_nameWarningShown = true;
+                    makeNotAgainBuilder( R.string.not_again_warnRoomName,
+                                         R.string.key_na_warnRoomName )
+                        .show();
                 }
                 break;
             default:
