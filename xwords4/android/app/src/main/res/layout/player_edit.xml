@@ -31,13 +31,15 @@
               android:layout_height="wrap_content"
               android:text="@string/remote_label"
               android:textAppearance="?android:attr/textAppearanceMedium"
+              android:layout_marginBottom="10dp"
               />
 
     <!-- Use a layout to group elems we want to show/hide as a set -->
     <LinearLayout android:id="@+id/local_player_set"
                   android:layout_height="wrap_content"
                   android:layout_width="fill_parent"
-                  android:orientation="vertical">
+                  android:orientation="vertical"
+                  >
 
       <CheckBox android:id="@+id/robot_check"
                 android:layout_width="wrap_content"
@@ -51,6 +53,7 @@
                     android:layout_width="fill_parent"
                     android:orientation="horizontal"
                     android:paddingLeft="20dp"
+                    android:layout_marginBottom="10dp"
                     >
 
         <TextView android:layout_height="wrap_content"
