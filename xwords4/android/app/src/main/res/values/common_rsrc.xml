@@ -159,7 +159,6 @@
 
   <string name="key_na_dupstatus_host">key_na_dupstatus_host</string>
   <string name="key_na_dupstatus_guest">key_na_dupstatus_guest</string>
-  <string name="key_na_warnRoomName">key_na_warnRoomName</string>
 
   <!-- Nor is my email address -->
   <string name="email_author_email">xwords@eehouse.org</string>

@@ -1392,26 +1392,9 @@
     <!-- Shown in the Game configure screen when the game_locked
          checkbox is checked and you uncheck it.  -->
     <string name="not_again_unlock">This game is in play. Some
-      settings, e.g. the number of players, cannot be changed without
-      restarting it.  When you leave this page you will have a chance
-    to discard changes to avoid a restart.</string>
-    <!-- shown in the game configure screen the first time user taps
-         on the room name edit field. -->
-    <string name="not_again_warnRoomName">
-      Changing the room name? If you’re doing that to connect to an
-      existing game you should know that there’s a better way: have
-      the person who created the game send you an invitation. (She
-      will be prompted to send an invitation whenever she opens a game
-      that’s missing any players.)
-
-      \n\nIf you just want to have a cool room name, no problem!
-
-      \n\nAnd, if you still want to connect by setting room names
-      manually, try to keep the games open on both devices until you
-      see tiles appear.
-
-      \n\n(I am working on fixing this...)
-    </string>
+    settings, e.g. the number of players, cannot be changed without
+    restarting it.  When you leave this page you will have a chance to
+    discard changes to avoid a restart.</string>
 
     <!-- This is shown in the Board screen when you successfully
          connect a game to the relay and are the first device in the
