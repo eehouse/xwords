@@ -13,12 +13,12 @@ sDevIDPat = re.compile('xw4/device/([\dA-F]+)')
 
 # Define event callbacks
 def on_connect(client, userdata, flags, rc):
-    print("rc: " + str(rc))
+    print('on_connect(): rc: {}'.format(rc))
 
 def on_message(client, obj, msg):
     match = sDevIDPat.match(msg.topic)
     if match:
-        print('for: {}, len: {}'.format(match.group(1), len(msg.payload)))
+        print('on_message(): for: {}, len: {}'.format(match.group(1), len(msg.payload)))
 
 def on_publish(client, obj, mid):
     print("mid: " + str(mid))
@@ -52,6 +52,7 @@ def main():
     mqttc = makeClient()
     mqttc.username_pw_set('xwuser', password='xw4r0cks')
     mqttc.connect(args.HOST, args.PORT)
+    print('connected to {}:{}'.format(args.HOST, args.PORT))
     # Start subscribe, with QoS level 2
     for topic in g_topics:
         mqttc.subscribe(topic, 2)
