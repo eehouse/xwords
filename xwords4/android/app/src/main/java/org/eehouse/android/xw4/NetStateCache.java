@@ -29,7 +29,6 @@ import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.Handler;
 
-
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 
 import java.util.HashSet;
@@ -235,37 +234,40 @@ public class NetStateCache {
             // will only fire if we go that long without coming
             // through here again.
 
-            if ( null != mNotifyLater ) {
-                mHandler.removeCallbacks( mNotifyLater );
-                mNotifyLater = null;
-            }
-            if ( mLastStateSent != s_netAvail ) {
-                mNotifyLater = new Runnable() {
-                        @Override
-                        public void run() {
-                            if ( mLastStateSent != s_netAvail ) {
-                                mLastStateSent = s_netAvail;
+            if ( null == mHandler ) {
+                Log.e( TAG, "notifyStateChanged(): handler null so dropping" );
+            } else {
+                if ( null != mNotifyLater ) {
+                    mHandler.removeCallbacks( mNotifyLater );
+                    mNotifyLater = null;
+                }
+                if ( mLastStateSent != s_netAvail ) {
+                    mNotifyLater = new Runnable() {
+                            @Override
+                            public void run() {
+                                if ( mLastStateSent != s_netAvail ) {
+                                    mLastStateSent = s_netAvail;
 
-                                Log.i( TAG, "notifyStateChanged(%b)", s_netAvail );
+                                    Log.i( TAG, "notifyStateChanged(%b)", s_netAvail );
 
-                                synchronized( s_ifs ) {
-                                    Iterator<StateChangedIf> iter = s_ifs.iterator();
-                                    while ( iter.hasNext() ) {
-                                        iter.next().onNetAvail( s_netAvail );
+                                    synchronized( s_ifs ) {
+                                        Iterator<StateChangedIf> iter = s_ifs.iterator();
+                                        while ( iter.hasNext() ) {
+                                            iter.next().onNetAvail( s_netAvail );
+                                        }
+                                    }
+
+                                    if ( s_netAvail ) {
+                                        CommsConnType typ = CommsConnType
+                                            .COMMS_CONN_RELAY;
+                                        GameUtils.resendAllIf( context, typ );
                                     }
                                 }
-
-                                if ( s_netAvail ) {
-                                    CommsConnType typ = CommsConnType
-                                        .COMMS_CONN_RELAY;
-                                    GameUtils.resendAllIf( context, typ );
-                                }
                             }
-                        }
-                    };
-                mHandler.postDelayed( mNotifyLater, WAIT_STABLE_MILLIS );
+                        };
+                    mHandler.postDelayed( mNotifyLater, WAIT_STABLE_MILLIS );
+                }
             }
         }
     } // class PvtBroadcastReceiver
-
 }
