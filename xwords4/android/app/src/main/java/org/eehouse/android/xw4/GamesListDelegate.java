@@ -31,11 +31,14 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.text.TextUtils;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AbsListView.OnScrollListener;
+import android.widget.AbsListView;
 import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.AdapterView;
 import android.widget.Button;
@@ -43,7 +46,6 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.text.TextUtils;
 
 import org.eehouse.android.xw4.DBUtils.GameChangeType;
 import org.eehouse.android.xw4.DBUtils.GameGroupInfo;
@@ -614,6 +616,7 @@ public class GamesListDelegate extends ListDelegateBase
     private boolean m_haveShownGetDict;
     private Bundle m_rematchExtras;
     private Object[] m_newGameParams;
+    private int mCurScrollState;
 
     public GamesListDelegate( Delegator delegator, Bundle sis )
     {
@@ -982,10 +985,41 @@ public class GamesListDelegate extends ListDelegateBase
         };
 
         mkListAdapter();
-        getListView().setOnItemLongClickListener( this );
-        // Only works if scroller's on left side, as it otherwise steals
-        // events from the expander arrow things
-        getListView().setFastScrollEnabled( true );
+
+        final ListView lv = getListView();
+        lv.setOnItemLongClickListener( this );
+
+        // Can't just enable fast scrolling because the scroller's wide touch
+        // area disables taps on what's underneath. The expander arrows in
+        // this case. So these two listener callbacks enable fast scrolling
+        // only after the user's started scrolling and disable it when [s]he's
+        // done
+        //
+        // See https://stackoverflow.com/questions/33619453/scrollbar-touch-area-in-android-6
+        mCurScrollState = OnScrollListener.SCROLL_STATE_IDLE;
+        lv.setOnScrollListener( new OnScrollListener() {
+                @Override
+                public void onScroll( AbsListView absListView, int ii, int i1, int i2 )
+                {
+                    if ( mCurScrollState == OnScrollListener.SCROLL_STATE_TOUCH_SCROLL ) {
+                        lv.setFastScrollEnabled( true );
+                    }
+                }
+                @Override
+                public void onScrollStateChanged( AbsListView absListView, int state )
+                {
+                    if ( state == OnScrollListener.SCROLL_STATE_IDLE
+                         && mCurScrollState != state ) {
+                        lv.postDelayed( new Runnable() {
+                                @Override
+                                public void run() {
+                                    lv.setFastScrollEnabled( false );
+                                }
+                            }, 500 );
+                    }
+                    mCurScrollState = state;
+                }
+            } );
 
         NetUtils.informOfDeaths( m_activity );
 

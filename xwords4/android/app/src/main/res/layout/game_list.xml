@@ -12,11 +12,8 @@
             android:layout_height="fill_parent"
             android:layout_weight="1"
             android:drawSelectorOnTop="false"
-            android:verticalScrollbarPosition="left"
             />
 
-  <!-- These are hidden once the list is large enough that scrolling
-       is required -->
   <Button android:id="@+id/button_newgame_solo"
           android:text="@string/new_game"
 		  style="@style/new_game_buttons"
@@ -25,5 +22,4 @@
           android:text="@string/new_game_networked"
           style="@style/new_game_buttons"
           />
-
 </LinearLayout>
