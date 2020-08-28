@@ -533,7 +533,8 @@ server_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream, ModelCtxt* mode
     /* Hack alert: recovering from an apparent bug that leaves the game
        thinking it's a client but being in the host-only XWSTATE_BEGIN
        state. */
-    if ( server->nv.gameState == XWSTATE_BEGIN && !amServer(server) ) {
+    if ( server->nv.gameState == XWSTATE_BEGIN &&
+         server->vol.gi->serverRole == SERVER_ISCLIENT ) {
         XP_LOGFF( "server_makeFromStream(): fixing state" );
         SETSTATE( server, XWSTATE_NONE );
     }
