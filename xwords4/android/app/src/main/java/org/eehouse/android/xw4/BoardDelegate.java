@@ -629,7 +629,7 @@ public class BoardDelegate extends DelegateBase
                         if ( BuildConfig.REPORT_LOCKS && ++s_noLockCount == 3 ) {
                             String msg = "BoardDelegate unable to get lock; holder stack: "
                                 + GameLock.getHolderDump( m_rowid );
-                            CrashTrack.logAndSend( TAG, msg );
+                            Log.e( TAG, msg );
                         }
                     } else {
                         s_noLockCount = 0;

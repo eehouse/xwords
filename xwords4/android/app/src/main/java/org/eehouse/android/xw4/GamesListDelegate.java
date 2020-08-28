@@ -963,8 +963,6 @@ public class GamesListDelegate extends ListDelegateBase
         // Next line useful if contents of DB are crashing app on start
         // DBUtils.saveDB( m_activity );
 
-        CrashTrack.init( m_activity );
-
         getBundledData( savedInstanceState );
 
         DBUtils.setDBChangeListener( this );

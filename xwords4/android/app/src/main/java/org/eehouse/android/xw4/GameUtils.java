@@ -244,7 +244,7 @@ public class GameUtils {
                                gle, dump );
 
                         String msg = "getSummary() unable to lock; owner: " + dump;
-                        CrashTrack.logAndSend( TAG, msg );
+                        Log.e( TAG, msg );
                     }
                 }
             }

@@ -251,7 +251,7 @@ public class DbgUtils {
                             .append( "lock likely held by: " )
                             .append( likelyCulprit.mStartStack )
                             .toString();
-                        CrashTrack.logAndSend( TAG, msg );
+                        Log.e( TAG, msg );
                     }
 
                     removeSelf();

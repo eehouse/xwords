@@ -1,7 +1,6 @@
 def INITIAL_CLIENT_VERS = 10
 def VERSION_CODE_BASE = 160
 def VERSION_NAME = '4.4.164'
-def FABRIC_API_KEY = System.getenv("FABRIC_API_KEY")
 def BUILD_INFO_NAME = "build-info.txt"
 
 // Not all variants use the same BT_UUID. Those with the same talk to
@@ -31,12 +30,8 @@ def CURTAG = "git describe --exact-match".execute().text.trim()
 apply plugin: 'com.android.application'
 
 
-if ( FABRIC_API_KEY && hasProperty('useCrashlytics') ) { // rm-for-fdroid
-    apply plugin: 'io.fabric'                            // rm-for-fdroid
-}                                                        // rm-for-fdroid
 repositories {
     google()
-    maven { url 'https://maven.fabric.io/public' }       // rm-for-fdroid
     mavenCentral()
 }
 
@@ -57,7 +52,6 @@ android {
     applicationVariants.all { variant ->
         //     renameArtifact(variant)
         //     variant.buildConfigField "String", "FIELD_NAME", "\"my String\""
-        variant.buildConfigField "String", "FABRIC_API_KEY", "\"$FABRIC_API_KEY\""
 
         // We need both of these because xwprefs.xml can't reference
         // the BuildConfig constant
@@ -128,7 +122,6 @@ android {
             dimension "variant"
             buildConfigField "String", "DB_NAME", "\"xwddb\""
             applicationId "org.eehouse.android.xw4dbg"
-            manifestPlaceholders = [ FABRIC_API_KEY: "$FABRIC_API_KEY", APP_ID: applicationId, ]
             resValue "string", "app_name", "CrossDbg"
             resValue "string", "nbs_port", "3345"
             buildConfigField "boolean", "WIDIR_ENABLED", "true"
@@ -146,7 +139,6 @@ android {
             dimension "variant"
             applicationId "org.eehouse.android.xw4dbg"
             buildConfigField "String", "DB_NAME", "\"xwddb\""
-            manifestPlaceholders = [ FABRIC_API_KEY: "$FABRIC_API_KEY", APP_ID: applicationId, ]
             resValue "string", "app_name", "CrossDbg"
             resValue "string", "nbs_port", "3345"
             buildConfigField "boolean", "WIDIR_ENABLED", "true"
@@ -323,14 +315,6 @@ dependencies {
     implementation 'androidx.lifecycle:lifecycle-extensions:2.0.0'
     annotationProcessor 'androidx.lifecycle:lifecycle-compiler:2.0.0'
 
-    // 2.6.8 is probably as far forward as I can go without upping my
-    // min-supported SDK version
-    xw4dImplementation('com.crashlytics.sdk.android:crashlytics:2.6.3@aar') { // rm-for-fdroid
-        transitive = true                                                     // rm-for-fdroid
-    }                                                                         // rm-for-fdroid
-    xw4dNoSMSImplementation('com.crashlytics.sdk.android:crashlytics:2.6.3@aar') { // rm-for-fdroid
-        transitive = true                                                          // rm-for-fdroid
-    }                                                                              // rm-for-fdroid
 
     implementation 'com.google.firebase:firebase-messaging:17.3.4' // rm-for-fdroid
     implementation 'com.google.firebase:firebase-core:16.0.6'      // rm-for-fdroid
