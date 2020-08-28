@@ -392,21 +392,6 @@ public class XWPrefs {
         setPrefsLong( context, R.string.key_default_group, val );
     }
 
-    // PENDING: remove this in a release or two.
-    public static long[] getGroupPositions( Context context )
-    {
-        long[] posns = null;
-        String[] longStrs = getPrefsStringArray( context,
-                                                 R.string.key_group_posns );
-        if ( null != longStrs ) {
-            posns = new long[longStrs.length];
-            for ( int ii = 0; ii < longStrs.length; ++ii ) {
-                posns[ii] = Long.parseLong(longStrs[ii]);
-            }
-        }
-        return posns;
-    }
-
     public static boolean getThumbEnabled( Context context )
     {
         return 0 < getThumbPct( context );

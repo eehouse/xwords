@@ -315,7 +315,6 @@ public class GamesListDelegate extends ListDelegateBase
             final Set<Long> dbGroups = DBUtils.getGroups( m_activity ).keySet();
 
             if ( null == m_groupPositions || m_groupPositions.length != dbGroups.size() ) {
-                long[] groupPositions = loadGroupPositions();
 
                 // If the stored order is out-of-sync with the DB, e.g. if
                 // there have been additions or deletions, keep the ordering
@@ -323,6 +322,7 @@ public class GamesListDelegate extends ListDelegateBase
                 m_groupPositions = new long[dbGroups.size()];
                 Set<Long> added = new HashSet<>();
 
+                long[] groupPositions = loadGroupPositions();
                 int nextIndx = 0;
                 for ( long posn : groupPositions ) {
                     if ( dbGroups.contains(posn) ) {
@@ -1937,12 +1937,10 @@ public class GamesListDelegate extends ListDelegateBase
 
     private long[] loadGroupPositions()
     {
-        long[] result;
+        long[] result = {};
         Serializable obj = DBUtils.getSerializableFor( m_activity, GROUP_POSNS_KEY );
         if ( null != obj && obj instanceof long[] ) {
             result = (long[])obj;
-        } else {
-            result = XWPrefs.getGroupPositions( m_activity );
         }
         // Log.d( TAG, "loadGroupPositions() => %s", DbgUtils.toString(result) );
         return result;
