@@ -139,7 +139,7 @@ public class DlgDelegateAlert extends XWDialogFragment {
         Activity activity = getActivity();
         if ( activity instanceof DlgClickNotify ) {
             ((DlgClickNotify)activity)
-                .onDismissed( m_state.m_action, m_state.m_params );
+                .onDismissed( m_state.m_action, m_state.getParams() );
         }
     }
 
@@ -174,7 +174,7 @@ public class DlgDelegateAlert extends XWDialogFragment {
             public void onClick( DialogInterface dlg, int button ) {
                 checkNotAgainCheck( m_state, naView );
                 DlgClickNotify xwact = (DlgClickNotify)getActivity();
-                xwact.onPosButton( pair.action, m_state.m_params );
+                xwact.onPosButton( pair.action, m_state.getParams() );
             }
         };
     }
@@ -197,10 +197,10 @@ public class DlgDelegateAlert extends XWDialogFragment {
                         DlgClickNotify notify = (DlgClickNotify)activity;
                         switch ( button ) {
                         case AlertDialog.BUTTON_POSITIVE:
-                            notify.onPosButton( m_state.m_action, m_state.m_params );
+                            notify.onPosButton( m_state.m_action, m_state.getParams() );
                             break;
                         case AlertDialog.BUTTON_NEGATIVE:
-                            notify.onNegButton( m_state.m_action, m_state.m_params );
+                            notify.onNegButton( m_state.m_action, m_state.getParams() );
                             break;
                         default:
                             Log.e( TAG, "unexpected button %d", button );

@@ -68,7 +68,7 @@ public class EnableSMSAlert extends DlgDelegateAlert {
                 public void onClick( DialogInterface dlg, int item ) {
                     Assert.assertTrue( 0 < mSpinner.getSelectedItemPosition() );
                     XWActivity xwact = (XWActivity)getActivity();
-                    xwact.onPosButton( state.m_action, state.m_params );
+                    xwact.onPosButton( state.m_action, state.getParams() );
                 }
             };
 

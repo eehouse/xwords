@@ -236,7 +236,7 @@ public class DlgDelegate {
                         public void run() {
                             Log.d( TAG, "calling onPosButton()" );
                             XWActivity xwact = (XWActivity)m_activity;
-                            xwact.onPosButton( action, mState.m_params );
+                            xwact.onPosButton( action, mState.getParams() );
                         }
                     });
             }

@@ -51,9 +51,10 @@ public class InviteChoicesAlert extends DlgDelegateAlert {
         final ArrayList<InviteMeans> means = new ArrayList<>();
         ArrayList<String> items = new ArrayList<>();
         InviteMeans lastMeans = null;
-        if ( null != state.m_params
-             && state.m_params[0] instanceof SentInvitesInfo ) {
-            lastMeans = ((SentInvitesInfo)state.m_params[0]).getLastMeans();
+        Object[] params = state.getParams();
+        if ( null != params
+             && params[0] instanceof SentInvitesInfo ) {
+            lastMeans = ((SentInvitesInfo)params[0]).getLastMeans();
         }
 
         add( items, means, R.string.invite_choice_email, InviteMeans.EMAIL );
@@ -142,7 +143,7 @@ public class InviteChoicesAlert extends DlgDelegateAlert {
                         XWActivity activity = (XWActivity)context;
                         activity.inviteChoiceMade( state.m_action,
                                                    means.get(indx),
-                                                   state.m_params );
+                                                   state.getParams() );
                     }
                 }
             };
@@ -156,9 +157,9 @@ public class InviteChoicesAlert extends DlgDelegateAlert {
             OnClickListener ocl = new OnClickListener() {
                     @Override
                     public void onClick( DialogInterface dlg, int pos ) {
-                        if ( state.m_params[0] instanceof SentInvitesInfo ) {
-                            SentInvitesInfo sii = (SentInvitesInfo)
-                                state.m_params[0];
+                        Object[] params = state.getParams();
+                        if ( params[0] instanceof SentInvitesInfo ) {
+                            SentInvitesInfo sii = (SentInvitesInfo)params[0];
                             sii.setRemotesRobots();
                         }
                         okClicked.onClick( dlg, pos );
