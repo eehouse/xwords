@@ -139,7 +139,7 @@ public class DwnldDelegate extends ListDelegateBase {
                 InputStream is = conn.getInputStream();
                 String name = basename( m_uri.getPath() );
                 if ( m_isApp ) {
-                    m_appFile = saveToDownloads( is, name, this );
+                    m_appFile = saveToPrivate( is, name, this );
                 } else {
                     m_savedDict = saveDict( is, name, this );
                 }
@@ -200,14 +200,18 @@ public class DwnldDelegate extends ListDelegateBase {
                 });
         }
 
-        private File saveToDownloads( InputStream is, String name,
-                                      DictUtils.DownProgListener dpl )
+        private File saveToPrivate( InputStream is, String name,
+                                    DictUtils.DownProgListener dpl)
         {
+            File appFile = null;
             boolean success = false;
-            File appFile = new File( DictUtils.getDownloadDir( m_activity ), name );
-
             byte[] buf = new byte[1024*4];
+
             try {
+                // directory first
+                appFile = new File(m_activity.getFilesDir(), "apks");
+                appFile.mkdirs();
+                appFile = new File( appFile, name );
                 FileOutputStream fos = new FileOutputStream( appFile );
                 boolean cancelled = false;
                 for ( ; ; ) {
@@ -325,7 +329,9 @@ public class DwnldDelegate extends ListDelegateBase {
         DictUtils.DictLoc loc = XWPrefs.getDefaultLoc( m_activity );
 
         for ( DownloadFilesTask task : m_dfts ) {
-            if ( task.forApp() || DictUtils.DictLoc.DOWNLOAD == loc ) {
+            if ( task.forApp() ) {
+                // Needn't do anything
+            } else if ( DictUtils.DictLoc.DOWNLOAD == loc ) {
                 result = true;
                 break;
             }
