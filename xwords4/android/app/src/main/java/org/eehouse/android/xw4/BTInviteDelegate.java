@@ -315,7 +315,7 @@ public class BTInviteDelegate extends InviteDelegate {
                         if ( curProgress >= mProgressBar.getMax() ) {
                             hideProgress(); // create illusion it's done
                         } else {
-                            mProgressBar.setProgress( curProgress + 1, true );
+                            mProgressBar.setProgress( curProgress + 1 );
                             incrementProgressIn( 1 );
                         }
                     }
