@@ -47,9 +47,8 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
     public static final String NEW_XLATION_CBK = "NEW_XLATION_CBK";
 
     private static final long INTERVAL_ONEHOUR = 1000 * 60 * 60;
-    // weekly
     private static final long INTERVAL_ONEDAY = INTERVAL_ONEHOUR * 24;
-    private static final long INTERVAL_NDAYS = 7;
+    private static final long INTERVAL_NDAYS = 1;
 
     // constants that are also used in info.py
     private static final String k_NAME = "name";
@@ -76,7 +75,8 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
     @Override
     public void onReceive( Context context, Intent intent )
     {
-        if ( null != intent && null != intent.getAction()
+        if ( null != intent
+             && null != intent.getAction()
              && intent.getAction().equals( Intent.ACTION_BOOT_COMPLETED ) ) {
             restartTimer( context );
         } else {
