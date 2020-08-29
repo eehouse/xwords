@@ -288,7 +288,7 @@ public class DUtilCtxt {
                              String pauserName, String expl )
     {
         long[] rowids = DBUtils.getRowIDsFor( m_context, gameID );
-        Log.d( TAG, "got %d games with gameid", null == rowids ? 0 : rowids.length );
+        Log.d( TAG, "got %d games with gameid", rowids.length );
 
         final boolean isPause = UNPAUSED != pauseType;
 

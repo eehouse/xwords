@@ -2271,10 +2271,8 @@ public class GamesListDelegate extends ListDelegateBase
         if ( null != relayIDs ) {
             for ( String relayID : relayIDs ) {
                 long[] rowids = DBUtils.getRowIDsFor( m_activity, relayID );
-                if ( null != rowids ) {
-                    for ( long rowid : rowids ) {
-                        reloadGame( rowid );
-                    }
+                for ( long rowid : rowids ) {
+                    reloadGame( rowid );
                 }
             }
         }
@@ -2289,13 +2287,11 @@ public class GamesListDelegate extends ListDelegateBase
             outer:
             for ( String relayID : relayIDs ) {
                 long[] rowids = DBUtils.getRowIDsFor( m_activity, relayID );
-                if ( null != rowids ) {
-                    for ( long rowid : rowids ) {
-                        if ( GameUtils.gameDictsHere( m_activity, rowid ) ) {
-                            launchGame( rowid );
-                            launched = true;
-                            break outer;
-                        }
+                for ( long rowid : rowids ) {
+                    if ( GameUtils.gameDictsHere( m_activity, rowid ) ) {
+                        launchGame( rowid );
+                        launched = true;
+                        break outer;
                     }
                 }
             }
@@ -2390,7 +2386,7 @@ public class GamesListDelegate extends ListDelegateBase
     {
         boolean handled = false;
         long[] rowids = DBUtils.getRowIDsFor( m_activity, gameID );
-        if ( null != rowids && 0 < rowids.length ) {
+        if ( 0 < rowids.length ) {
             launchGame( rowids[0] );
             handled = true;
         }

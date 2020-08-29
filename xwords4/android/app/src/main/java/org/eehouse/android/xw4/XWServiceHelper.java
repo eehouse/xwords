@@ -63,7 +63,7 @@ abstract class XWServiceHelper {
     {
         ReceiveResult result;
         long[] rowids = DBUtils.getRowIDsFor( mContext, gameID );
-        if ( null == rowids || 0 == rowids.length ) {
+        if ( 0 == rowids.length ) {
             result = ReceiveResult.GAME_GONE;
         } else {
             result = ReceiveResult.UNCONSUMED;

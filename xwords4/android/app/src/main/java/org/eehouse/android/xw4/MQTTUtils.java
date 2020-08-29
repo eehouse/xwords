@@ -550,7 +550,7 @@ public class MQTTUtils extends Thread implements IMqttActionListener, MqttCallba
         Log.d( TAG, "handleMessage(gameID=%d): got message", gameID );
         MQTTServiceHelper helper = new MQTTServiceHelper( context, from );
         long[] rowids = DBUtils.getRowIDsFor( context, gameID );
-        Log.d( TAG, "got %d rows for gameID %d", rowids == null ? 0 : rowids.length, gameID );
+        Log.d( TAG, "got %d rows for gameID %d", rowids.length, gameID );
         if ( 0 == rowids.length ) {
             notifyNotHere( context, from.mqtt_devID, gameID );
         } else {

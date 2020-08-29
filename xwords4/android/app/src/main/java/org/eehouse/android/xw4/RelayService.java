@@ -755,11 +755,9 @@ public class RelayService extends XWJIService
             String relayID = relayIDs[ii];
             BackMoveResult bmr = bmrs[ii];
             long[] rowids = DBUtils.getRowIDsFor( this, relayID );
-            if ( null != rowids ) {
-                for ( long rowid : rowids ) {
-                    GameUtils.postMoveNotification( this, rowid, bmr,
-                                                    locals.get(ii) );
-                }
+            for ( long rowid : rowids ) {
+                GameUtils.postMoveNotification( this, rowid, bmr,
+                                                locals.get(ii) );
             }
         }
     }

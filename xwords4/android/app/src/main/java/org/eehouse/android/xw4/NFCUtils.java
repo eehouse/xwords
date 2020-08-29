@@ -377,7 +377,7 @@ public class NFCUtils {
                 switch ( typ[0] ) {
                 case MESSAGE:
                     long[] rowids = DBUtils.getRowIDsFor( context, gameID[0] );
-                    if ( null == rowids || 0 == rowids.length ) {
+                    if ( 0 == rowids.length ) {
                         addReplyFor( new byte[]{REPLY_NOGAME}, gameID[0] );
                     } else {
                         for ( long rowid : rowids ) {

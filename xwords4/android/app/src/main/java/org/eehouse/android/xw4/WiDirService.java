@@ -779,7 +779,7 @@ public class WiDirService extends XWService {
     private void makeGame( NetLaunchInfo nli, String senderMac )
     {
         long[] rowids = DBUtils.getRowIDsFor( this, nli.gameID() );
-        if ( null == rowids || 0 == rowids.length ) {
+        if ( 0 == rowids.length ) {
             CommsAddrRec addr = nli.makeAddrRec( this );
             long rowid = GameUtils.makeNewMultiGame( this, nli,
                                                      m_sink,

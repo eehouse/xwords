@@ -797,7 +797,7 @@ public class DBUtils {
 
     public static long[] getRowIDsFor( Context context, String relayID )
     {
-        long[] result = null;
+        long[] result = {};
         String[] columns = { ROW_ID };
         String selection = DBHelper.RELAYID + "='" + relayID + "'";
         initDB( context );
@@ -814,7 +814,7 @@ public class DBUtils {
 
     public static long[] getRowIDsFor( Context context, int gameID )
     {
-        long[] result = null;
+        long[] result = {};
         String[] columns = { ROW_ID };
         String selection = String.format( DBHelper.GAMEID + "=%d", gameID );
         initDB( context );
@@ -836,7 +836,7 @@ public class DBUtils {
     public static boolean haveGame( Context context, int gameID )
     {
         long[] rows = getRowIDsFor( context, gameID );
-        return rows != null && 0 < rows.length;
+        return 0 < rows.length;
     }
 
     public static boolean haveGame( Context context, long rowid )
@@ -1607,7 +1607,7 @@ public class DBUtils {
 
     public static long[] getGroupGames( Context context, long groupID )
     {
-        long[] result = null;
+        long[] result = {};
         initDB( context );
         String[] columns = { ROW_ID, DBHelper.HASMSGS };
         String selection = String.format( "%s=%d", DBHelper.GROUPID, groupID );
