@@ -135,48 +135,18 @@ abstract class XWServiceHelper {
         } else {
             success = true;
         }
-        CurGameInfo gi = null;
+
         if ( success ) {
-            long[] rowids = DBUtils.getRowIDsFor( mContext, nli.gameID() );
-            if ( 0 == rowids.length ) {
-                // cool: we're good
-            } else if ( rowids.length < nli.nPlayersT ) {
-                success = XWPrefs.getSecondInviteAllowed( mContext );
-
-                if ( BuildConfig.DEBUG && !success ) {
-                    DbgUtils.showf( mContext, "Dropping duplicate invite" );
-                }
-
-                // Allowing a second game allows the common testing action of
-                // sending invitation to myself. But we still need to check
-                // for duplicates! forceChannel's hard to dig up, but works
-                for ( int ii = 0; success && ii < rowids.length; ++ii ) {
-                    long rowid = rowids[ii];
-                    try ( GameLock lock = GameLock.tryLockRO( rowid ) ) {
-                        // drop invite if can't open game; likely a dupe!
-                        if ( null != lock ) {
-                            gi = new CurGameInfo( mContext );
-                            GamePtr gamePtr = GameUtils
-                                .loadMakeGame( mContext, gi, lock );
-                            gamePtr.release();
-                        } else {
-                            DbgUtils.toastNoLock( TAG, mContext, rowid,
-                                                  "handleInvitation()" );
-                        }
+            Map<Long, Integer> rowids = DBUtils.getRowIDsAndChannels( mContext, nli.gameID() );
+            // Accept only if there isn't already a game with the channel
+            for ( long rowid : rowids.keySet() ) {
+                if ( rowids.get( rowid ) == nli.forceChannel ) {
+                    if ( BuildConfig.DEBUG ) {
+                        DbgUtils.showf( mContext, "Dropping duplicate invite" );
                     }
-
-                    if ( null == gi ) {
-                        // locked. Maybe it's open?
-                        try ( JNIThread thrd = JNIThread.getRetained( rowid ) ) {
-                            if ( null != thrd ) {
-                                gi = thrd.getGI();
-                            }
-                        }
-                    }
-                    success = null != gi && gi.forceChannel != nli.forceChannel;
+                    success = false;
+                    break;
                 }
-            } else {
-                success = false;
             }
 
             if ( success ) {
@@ -198,7 +168,7 @@ abstract class XWServiceHelper {
                 }
             }
         }
-        Log.d( TAG, "handleInvitation() => %b (gi: %s)", success, gi );
+        Log.d( TAG, "handleInvitation() => %b", success );
         return success;
     }
 

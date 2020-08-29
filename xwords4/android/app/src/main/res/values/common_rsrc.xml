@@ -133,7 +133,6 @@
   <string name="key_na_sms_invite_flakey">key_na_sms_invite_flakey</string>
   <string name="key_na_dicts">key_na_dicts</string>
   <string name="key_enable_debug">key_enable_debug</string>
-  <string name="key_enable_dup_invite">key_enable_dup_invite</string>
   <string name="key_enable_pending_count">key_enable_pending_count</string>
   <string name="key_enable_sms_toself">key_enable_sms_toself</string>
   <string name="key_show_fcm">key_show_fcm2</string>

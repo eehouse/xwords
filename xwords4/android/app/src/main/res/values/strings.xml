@@ -1268,16 +1268,6 @@
          connect to the relay failed because the room named does not
          exist.  (I believe this no longer occurs.) -->
     <string name="button_retry">Retry</string>
-    <!-- Shown in the main screen when you launch CrossWords from an
-         invitation (received in email or messaging app, say) and
-         there's already a game running that matches that invitation.
-         It's to prevent you from opening multiple games and getting
-         confused.  But some people who play together all the time use
-         the same room name over and over so they'll get this warning
-         and it's harmless to ignore it. -->
-    <string name="dup_game_query_fmt">You already have a game that seems
-    to have been created (on %1$s) from the same invitation.  Are you
-    sure you want to create another?</string>
     <!-- Title of generic dialog used to display information -->
     <string name="info_title">FYI…</string>
     <!-- title of dialog allowing user to pick tiles "face up".  (This
@@ -2277,9 +2267,7 @@
     <string name="gamel_menu_storedb">Write games to SD card</string>
     <string name="gamel_menu_loaddb">Load games from SD card</string>
     <string name="gamel_menu_writegit">Copy git info to clipboard</string>
-    <string name="enable_dupes_title">Accept duplicate invites</string>
     <string name="xlations_locale">Fake locale for translation</string>
-    <string name="enable_dupes_summary">Accept invitations more than once</string>
     <string name="enable_pending_count_title">Show Pending messages</string>
     <string name="enable_pending_count_summary">Show number not yet acknowledged</string>
     <string name="nag_intervals">Reminder intervals (minutes1,minutes2,…)</string>

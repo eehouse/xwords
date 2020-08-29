@@ -2341,26 +2341,30 @@ public class GamesListDelegate extends ListDelegateBase
         boolean handled = false;
         Assert.assertTrue( nli.isValid() );
 
-        Date create = null;
-        create = DBUtils.getMostRecentCreate( m_activity, nli.gameID() );
+        Map<Long, Integer> rowids = DBUtils
+            .getRowIDsAndChannels( m_activity, nli.gameID() );
 
-        if ( null == create ) {
-            if ( checkWarnNoDict( nli ) ) {
-                makeNewNetGame( nli );
-                handled = true;
+        if ( 0 < rowids.size() ) {
+            // There's already a game? Better not have same channel as invite
+            // creates
+            for ( long rowid : rowids.keySet() ) {
+                if ( nli.forceChannel == rowids.get(rowid) ) {
+                    // May not want this at all if it's never a bad thing
+                    makeOkOnlyBuilder( R.string.dropped_dupe )
+                        .setParams(rowid)
+                        .setTitle("add open game button")
+                        .show();
+                    handled = true;
+                    break;
+                }
             }
-        } else if ( XWPrefs.getSecondInviteAllowed( m_activity ) ) {
-            String msg = getString( R.string.dup_game_query_fmt,
-                                    create.toString() );
-            m_netLaunchInfo = nli;
-            makeConfirmThenBuilder( msg, Action.NEW_NET_GAME )
-                .setParams( nli )
-                .show();
-            handled = true;
-        } else {
-            makeOkOnlyBuilder( R.string.dropped_dupe ).show();
+        }
+
+        if ( !handled && checkWarnNoDict( nli ) ) {
+            makeNewNetGame( nli );
             handled = true;
         }
+
         return handled;
     } // startNewNetGame
 

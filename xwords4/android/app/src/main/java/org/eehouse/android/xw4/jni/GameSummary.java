@@ -58,6 +58,8 @@ public class GameSummary implements Serializable {
     public static final int MSG_FLAGS_GAMEOVER = 4;
     public static final int MSG_FLAGS_ALL = 7;
     public static final int DUP_MODE_MASK = 1 << (CurGameInfo.MAX_NUM_PLAYERS * 2);
+    public static final int FORCE_CHANNEL_OFFSET = (CurGameInfo.MAX_NUM_PLAYERS * 2) + 1;
+    public static final int FORCE_CHANNEL_MASK = 0x03;
 
     public int lastMoveTime;  // set by jni's server.c on move receipt
     public int dupTimerExpires;
@@ -372,6 +374,12 @@ public class GameSummary implements Serializable {
             if ( m_gi.inDuplicateMode ) {
                 result |= DUP_MODE_MASK;
             }
+
+            Assert.assertTrue( (result & (FORCE_CHANNEL_MASK<<FORCE_CHANNEL_OFFSET)) == 0 );
+            // Make sure it's big enough
+            Assert.assertTrue( 0 == (~FORCE_CHANNEL_MASK & m_gi.forceChannel) );
+            result |= m_gi.forceChannel << FORCE_CHANNEL_OFFSET;
+            Log.d( TAG, "giflags(): adding forceChannel %d", m_gi.forceChannel );
         }
         return result;
     }

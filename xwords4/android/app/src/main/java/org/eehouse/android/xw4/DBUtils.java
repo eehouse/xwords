@@ -826,9 +826,31 @@ public class DBUtils {
             }
             cursor.close();
         }
-        if ( null != result && 1 < result.length ) {
+        if ( 1 < result.length ) {
             Log.i( TAG, "getRowIDsFor(%x)=>length %d array", gameID,
                    result.length );
+        }
+        return result;
+    }
+
+    static Map<Long, Integer> getRowIDsAndChannels( Context context, int gameID )
+    {
+        Map<Long, Integer> result = new HashMap<>();
+        String[] columns = { ROW_ID, DBHelper.GIFLAGS };
+        String selection = String.format( DBHelper.GAMEID + "=%d", gameID );
+        initDB( context );
+        synchronized( s_dbHelper ) {
+            Cursor cursor = query( TABLE_NAMES.SUM, columns, selection );
+            while ( cursor.moveToNext() ) {
+                int flags = cursor.getInt( cursor.getColumnIndex( DBHelper.GIFLAGS ) );
+                int forceChannel = (flags >> GameSummary.FORCE_CHANNEL_OFFSET)
+                    & GameSummary.FORCE_CHANNEL_MASK;
+                long rowid = cursor.getLong( cursor.getColumnIndex( ROW_ID ) );
+                result.put( rowid, forceChannel );
+                // Log.i( TAG, "getRowIDsAndChannels(): added %d => %d",
+                //        rowid, forceChannel );
+            }
+            cursor.close();
         }
         return result;
     }
@@ -898,28 +920,6 @@ public class DBUtils {
             }
             result.put( dev, gameIDs );
         }
-    }
-
-    // Return creation time of newest game matching this nli, or null
-    // if none found.
-    public static Date getMostRecentCreate( Context context, int gameID )
-    {
-        Date result = null;
-
-        String selection = String.format("%s=%d", DBHelper.GAMEID, gameID );
-        String[] columns = { DBHelper.CREATE_TIME };
-
-        initDB( context );
-        synchronized( s_dbHelper ) {
-            Cursor cursor = query( TABLE_NAMES.SUM, columns, selection );
-            if ( cursor.moveToNext() ) {
-                int indx = cursor.getColumnIndex( columns[0] );
-                result = new Date( cursor.getLong( indx ) );
-            }
-            cursor.close();
-        }
-
-        return result;
     }
 
     public static String[] getRelayIDs( Context context, long[][] rowIDs )

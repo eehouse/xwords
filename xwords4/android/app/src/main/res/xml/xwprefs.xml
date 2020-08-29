@@ -392,12 +392,6 @@
         android:title="@string/nag_intervals"
         />
 
-    <CheckBoxPreference android:key="@string/key_enable_dup_invite"
-                        android:title="@string/enable_dupes_title"
-                        android:summary="@string/enable_dupes_summary"
-                        android:defaultValue="@bool/DEBUG"
-                        />
-
     <CheckBoxPreference android:key="@string/key_enable_pending_count"
                         android:title="@string/enable_pending_count_title"
                         android:summary="@string/enable_pending_count_summary"
