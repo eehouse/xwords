@@ -2349,10 +2349,10 @@ public class GamesListDelegate extends ListDelegateBase
             // creates
             for ( long rowid : rowids.keySet() ) {
                 if ( nli.forceChannel == rowids.get(rowid) ) {
-                    // May not want this at all if it's never a bad thing
                     makeOkOnlyBuilder( R.string.dropped_dupe )
-                        .setParams(rowid)
-                        .setTitle("add open game button")
+                        .setActionPair( Action.OPEN_GAME,
+                                        R.string.button_open_game )
+                        .setParams( rowid, null ) // null: GameSummary
                         .show();
                     handled = true;
                     break;
@@ -2760,7 +2760,8 @@ public class GamesListDelegate extends ListDelegateBase
         final long rowid = (Long)params[0];
         GameSummary summary = (GameSummary)params[1];
 
-        if ( summary.conTypes.contains( CommsConnType.COMMS_CONN_RELAY )
+        if ( null != summary
+             && summary.conTypes.contains( CommsConnType.COMMS_CONN_RELAY )
              && summary.roomName.length() == 0 ) {
             Assert.failDbg();
         } else {
