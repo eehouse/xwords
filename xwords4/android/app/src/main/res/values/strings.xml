@@ -1342,13 +1342,13 @@
     <!-- Shown when you tap the Previous Hint button on the toolbar of
          the main Board screen -->
     <string name="not_again_hintprev">This button shows all possible
-      moves in ascending order (using tiles to the right of the rack
-      divider.)</string>
+    moves in ascending order by score.\n\n(Only tiles to the right of the
+    draggable rack divider are used.)</string>
     <!-- Shown when you tap the next hint button on the toolbar of the
          main Board screen -->
     <string name="not_again_hintnext">This button shows all possible
-      moves in descending order (using tiles to the right of the rack
-      divider.)</string>
+    moves in descending order by score.\n\n(Only tiles to the right of the
+    draggable rack divider are used.)</string>
     <!-- Shown when you tap the juggle button on the toolbar of the
          main Board screen -->
     <string name="not_again_juggle">This button randomly rearranges
