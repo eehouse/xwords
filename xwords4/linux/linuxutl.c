@@ -609,7 +609,7 @@ void
 formatSeconds( int unixSeconds, gchar* buf, int bufLen )
 {
     GDateTime* timeval = g_date_time_new_from_unix_local( unixSeconds );
-    gchar* str = g_date_time_format_iso8601 ( timeval );
+    gchar* str = g_date_time_format( timeval, "%c" );
     int len = strlen( str );
     if ( len < bufLen ) {
         XP_MEMCPY( buf, str, len + 1 );
