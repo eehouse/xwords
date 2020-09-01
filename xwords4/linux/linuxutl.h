@@ -59,4 +59,6 @@ XP_U32 linux_getCurSeconds();
 
 void formatTimerText( gchar* buf, int bufLen, int secondsLeft );
 
+void formatSeconds( int unixSeconds, gchar* buf, int bufLen );
+
 #endif

@@ -244,10 +244,11 @@ add_to_list( GtkWidget* list, sqlite3_int64 rowid, XP_Bool isNew,
     gchar* localString = 0 <= gib->turn ? gib->turnLocal ? "YES"
         : "NO" : "";
 
-    GTimeVal timeval = { tv_sec: gib->lastMoveTime, tv_usec: 0 };
-    gchar* timeStr = g_time_val_to_iso8601( &timeval );
-    GTimeVal timerVal = { tv_sec: gib->dupTimerExpires, tv_usec: 0 };
-    gchar* timerStr = g_time_val_to_iso8601( &timerVal );
+    gchar timeStr[64];
+    formatSeconds( gib->lastMoveTime, timeStr, VSIZE(timeStr) );
+    gchar timerStr[64];
+    formatSeconds( gib->dupTimerExpires, timerStr, VSIZE(timeStr) );
+
     gtk_list_store_set( store, &iter, 
                         ROW_ITEM, rowid,
                         ROW_THUMB, gib->snap,
@@ -267,7 +268,6 @@ add_to_list( GtkWidget* list, sqlite3_int64 rowid, XP_Bool isNew,
                         LASTTURN_ITEM, timeStr,
                         DUPTIMER_ITEM, timerStr,
                         -1 );
-    g_free( timeStr );
     XP_LOGF( "DONE adding" );
 }
 

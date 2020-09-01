@@ -603,7 +603,20 @@ formatTimerText( gchar* buf, int bufLen, int secondsLeft )
     int minutes = secondsLeft / 60;
     int seconds = secondsLeft % 60;
     XP_SNPRINTF( buf, bufLen, "% 1d:%02d", minutes, seconds );
-} /* gtkFormatTimerText */
+}
+
+void
+formatSeconds( int unixSeconds, gchar* buf, int bufLen )
+{
+    GDateTime* timeval = g_date_time_new_from_unix_local( unixSeconds );
+    gchar* str = g_date_time_format_iso8601 ( timeval );
+    int len = strlen( str );
+    if ( len < bufLen ) {
+        XP_MEMCPY( buf, str, len + 1 );
+    }
+    g_date_time_unref( timeval );
+    g_free( str );
+}
 
 #ifdef TEXT_MODEL
 /* This is broken for UTF-8, even Spanish */

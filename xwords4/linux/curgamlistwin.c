@@ -26,6 +26,7 @@
 #include "linuxmain.h"
 #include "device.h"
 #include "strutils.h"
+#include "linuxutl.h"
 
 struct CursGameList {
     WINDOW* window;
@@ -265,8 +266,9 @@ cgl_draw( CursGameList* cgl )
         data[line][col++] = g_strdup_printf( "%d", gi->nMoves );
         data[line][col++] = g_strdup_printf( "%d", gi->turn );
         data[line][col++] = g_strdup_printf( "%d", gi->nPending );
-        GTimeVal timerVal = { tv_sec: gi->dupTimerExpires, tv_usec: 0 };
-        data[line][col++] = g_time_val_to_iso8601( &timerVal );
+	gchar buf[64];
+	formatSeconds( gi->dupTimerExpires, buf, VSIZE(buf) );
+        data[line][col++] = g_strdup( buf );
 
         XP_ASSERT( col == VSIZE(data[line]) );
         ++line;
