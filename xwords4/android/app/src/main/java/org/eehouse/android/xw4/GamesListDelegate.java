@@ -1069,8 +1069,6 @@ public class GamesListDelegate extends ListDelegateBase
         Log.d( TAG, "handleNewIntent(extras={%s})", DbgUtils.extrasToString( intent ) );
         m_launchedGames.clear();
         Assert.assertNotNull( intent );
-        invalRelayIDs( intent.getStringArrayExtra( RELAYIDS_EXTRA ) );
-        reloadGame( intent.getLongExtra( ROWID_EXTRA, -1 ) );
         tryStartsFromIntent( intent );
     }
 
