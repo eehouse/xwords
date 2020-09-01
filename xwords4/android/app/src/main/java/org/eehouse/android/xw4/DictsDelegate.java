@@ -524,8 +524,9 @@ public class DictsDelegate extends ListDelegateBase
         makeNotAgainBuilder( R.string.not_again_dicts, R.string.key_na_dicts )
             .show();
 
-        tryGetPerms( Perm.STORAGE, R.string.dicts_storage_rationale,
-                     Action.STORAGE_CONFIRMED );
+        Perms23.tryGetPermsNA( this, Perm.STORAGE, R.string.dicts_storage_rationale,
+                               R.string.key_na_perms_storage_dicts,
+                               Action.STORAGE_CONFIRMED );
     } // init
 
     @Override
@@ -940,6 +941,20 @@ public class DictsDelegate extends ListDelegateBase
             break;
         default:
             handled = super.onPosButton( action, params );
+        }
+        return handled;
+    }
+
+    @Override
+    public boolean onNegButton( Action action, Object[] params )
+    {
+        boolean handled = true;
+        switch ( action ) {
+        case STORAGE_CONFIRMED:
+            mkListAdapter();
+            break;
+        default:
+            handled = super.onNegButton( action, params );
         }
         return handled;
     }

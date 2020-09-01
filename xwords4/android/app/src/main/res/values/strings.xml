@@ -2426,9 +2426,9 @@
     still be able to receive invitations if you don’t grant this
     permission, but only the phone number of the sender will be
     displayed.
-  </string>
+    </string>
     <string name="move_dict_rationale">Storing a wordlist in the
-  Downloads area requires permission.</string>
+    Downloads area requires Storage permission.</string>
     <string name="remove_sms">Remove SMS</string>
     <!-- In the permissions rationale explanation, means go ahead and
        have the OS ask for permission -->
