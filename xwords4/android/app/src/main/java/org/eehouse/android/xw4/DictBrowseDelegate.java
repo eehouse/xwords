@@ -60,7 +60,7 @@ public class DictBrowseDelegate extends DelegateBase
     implements View.OnClickListener {
     private static final String TAG = DictBrowseDelegate.class.getSimpleName();
     private static final String DELIM = ".";
-    private static final boolean SHOW_NUM = BuildConfig.DEBUG;
+    private static final boolean SHOW_NUM = false;
     private static final String[] FAQ_PARAMS = {"filters", "intro"};
 
     private static final String DICT_NAME = "DICT_NAME";
