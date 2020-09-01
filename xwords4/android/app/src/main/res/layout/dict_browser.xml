@@ -33,124 +33,129 @@
 
     <!-- Config panel. A vertical array of fields with button at
          bottom. Can be hidden -->
-    <TableLayout android:id="@+id/config"
-                 android:orientation="vertical"
-                 android:layout_width="wrap_content"
-                 android:layout_height="wrap_content"
-                 android:layout_gravity="center_horizontal"
-                 android:background="#FF1F1F1F"
-                 android:visibility="gone"
-                 android:paddingLeft="8dp"
-                 android:paddingRight="8dp"
-                 >
-      <TableRow
-          android:layout_width="fill_parent"
-          android:layout_height="wrap_content"
-          >
-        <TextView style="@style/pat_table_label"
-                  android:visibility="invisible"
-                  />
-        <EditText style="@style/pat_table_edit"
-                  android:visibility="invisible"
-                  />
-        <TextView android:layout_width="wrap_content"
-                  android:layout_height="wrap_content"
-                  android:text="@string/pat_col_anyorder"
-                  />
-      </TableRow>
-      <org.eehouse.android.xw4.PatTableRow
-          android:layout_width="fill_parent"
-          android:layout_height="wrap_content"
-          >
-        <TextView style="@style/pat_table_label"
-                  android:text="@string/pat_starts_with"
-                  />
-        <EditText style="@style/pat_table_edit"
-                  />
-        <CheckBox style="@style/pat_table_check"
-                  />
-      </org.eehouse.android.xw4.PatTableRow>
-      <org.eehouse.android.xw4.PatTableRow
-          android:layout_width="fill_parent"
-          android:layout_height="wrap_content"
-          >
-        <TextView style="@style/pat_table_label"
-                  android:text="@string/pat_contains"
-                  />
-        <EditText style="@style/pat_table_edit"
-                  />
-        <CheckBox style="@style/pat_table_check"
-                  />
-      </org.eehouse.android.xw4.PatTableRow>
-      <org.eehouse.android.xw4.PatTableRow
-          android:layout_width="fill_parent"
-          android:layout_height="wrap_content"
-          >
-        <TextView style="@style/pat_table_label"
-                  android:text="@string/pat_ends_with"
-                  />
-        <EditText style="@style/pat_table_edit"
-                  />
-        <CheckBox style="@style/pat_table_check"
-                  />
-      </org.eehouse.android.xw4.PatTableRow>
-      <LinearLayout android:layout_height="wrap_content"
-                    android:layout_width="wrap_content"
-                    android:orientation="horizontal"
-                    >
-        <Button android:id="@+id/button_addBlank"
+    <ScrollView android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_width="wrap_content"
-                android:text="@string/button_addBlank"
-                android:layout_span="1"
-                android:enabled="false"
-                android:minHeight="0dp"
-                android:minWidth="0dp"
-                />
-      </LinearLayout>
-      <LinearLayout android:layout_height="wrap_content"
-                    android:layout_width="wrap_content"
-                    android:orientation="horizontal"
-                    >
-        <org.eehouse.android.xw4.LabeledSpinner
-            android:id="@+id/spinner_min"
-            android:orientation="horizontal"
-            android:layout_height="wrap_content"
-            android:layout_width="wrap_content"
-            >
-          <TextView style="@style/config_spinner_label"
-                    android:text="@string/min_len"
-                    />
-          <Spinner android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_gravity="center_horizontal"
+                android:paddingLeft="8dp"
+                android:paddingRight="8dp"
+                >
+      <TableLayout android:id="@+id/config"
+                   android:orientation="vertical"
                    android:layout_width="wrap_content"
-                   android:drawSelectorOnTop="true"
-                   android:label="@string/title_langs_list"
-                   />
-        </org.eehouse.android.xw4.LabeledSpinner>
-        <org.eehouse.android.xw4.LabeledSpinner
-            android:id="@+id/spinner_max"
-            android:orientation="horizontal"
+                   android:layout_height="wrap_content"
+                   android:background="#FF1F1F1F"
+                   android:visibility="gone"
+                   >
+        <TableRow
+            android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:layout_width="wrap_content"
             >
-          <TextView style="@style/config_spinner_label"
-                    android:text="@string/max_len"
+          <TextView style="@style/pat_table_label"
+                    android:visibility="invisible"
                     />
-          <Spinner android:layout_height="wrap_content"
-                   android:layout_width="wrap_content"
-                   android:drawSelectorOnTop="true"
-                   android:label="@string/title_langs_list"
-                   />
-        </org.eehouse.android.xw4.LabeledSpinner>
-      </LinearLayout>
-      <Button android:id="@+id/button_useconfig"
+          <EditText style="@style/pat_table_edit"
+                    android:visibility="invisible"
+                    />
+          <TextView android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/pat_col_anyorder"
+                    />
+        </TableRow>
+        <org.eehouse.android.xw4.PatTableRow
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            >
+          <TextView style="@style/pat_table_label"
+                    android:text="@string/pat_starts_with"
+                    />
+          <EditText style="@style/pat_table_edit"
+                    />
+          <CheckBox style="@style/pat_table_check"
+                    />
+        </org.eehouse.android.xw4.PatTableRow>
+        <org.eehouse.android.xw4.PatTableRow
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            >
+          <TextView style="@style/pat_table_label"
+                    android:text="@string/pat_contains"
+                    />
+          <EditText style="@style/pat_table_edit"
+                    />
+          <CheckBox style="@style/pat_table_check"
+                    />
+        </org.eehouse.android.xw4.PatTableRow>
+        <org.eehouse.android.xw4.PatTableRow
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            >
+          <TextView style="@style/pat_table_label"
+                    android:text="@string/pat_ends_with"
+                    />
+          <EditText style="@style/pat_table_edit"
+                    />
+          <CheckBox style="@style/pat_table_check"
+                    />
+        </org.eehouse.android.xw4.PatTableRow>
+        <LinearLayout android:layout_height="wrap_content"
+                      android:layout_width="wrap_content"
+                      android:orientation="horizontal"
+                      >
+          <Button android:id="@+id/button_addBlank"
+                  android:layout_height="wrap_content"
+                  android:layout_width="wrap_content"
+                  android:text="@string/button_addBlank"
+                  android:layout_span="1"
+                  android:enabled="false"
+                  android:minHeight="0dp"
+                  android:minWidth="0dp"
+                  />
+        </LinearLayout>
+        <LinearLayout android:layout_height="wrap_content"
+                      android:layout_width="wrap_content"
+                      android:orientation="horizontal"
+                      >
+          <org.eehouse.android.xw4.LabeledSpinner
+              android:id="@+id/spinner_min"
+              android:orientation="horizontal"
               android:layout_height="wrap_content"
               android:layout_width="wrap_content"
-              android:text="@string/button_useconfig"
-              android:layout_gravity="center_horizontal"
-              android:layout_span="2"
-              />
-    </TableLayout>
+              >
+            <TextView style="@style/config_spinner_label"
+                      android:text="@string/min_len"
+                      />
+            <Spinner android:layout_height="wrap_content"
+                     android:layout_width="wrap_content"
+                     android:drawSelectorOnTop="true"
+                     android:label="@string/title_langs_list"
+                     />
+          </org.eehouse.android.xw4.LabeledSpinner>
+          <org.eehouse.android.xw4.LabeledSpinner
+              android:id="@+id/spinner_max"
+              android:orientation="horizontal"
+              android:layout_height="wrap_content"
+              android:layout_width="wrap_content"
+              >
+            <TextView style="@style/config_spinner_label"
+                      android:text="@string/max_len"
+                      />
+            <Spinner android:layout_height="wrap_content"
+                     android:layout_width="wrap_content"
+                     android:drawSelectorOnTop="true"
+                     android:label="@string/title_langs_list"
+                     />
+          </org.eehouse.android.xw4.LabeledSpinner>
+        </LinearLayout>
+        <Button android:id="@+id/button_useconfig"
+                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"
+                android:text="@string/button_useconfig"
+                android:layout_gravity="center_horizontal"
+                android:layout_span="2"
+                />
+      </TableLayout>
+    </ScrollView>
   </LinearLayout>
 
   <FrameLayout android:id="@+id/list_container"
