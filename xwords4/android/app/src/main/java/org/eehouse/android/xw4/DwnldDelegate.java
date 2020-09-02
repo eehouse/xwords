@@ -52,6 +52,7 @@ import org.eehouse.android.xw4.Perms23.Perm;
 
 public class DwnldDelegate extends ListDelegateBase {
     private static final String TAG = DwnldDelegate.class.getSimpleName();
+    private static final String APKS_DIR = "apks";
 
     // URIs coming in in intents
     private static final String APK_EXTRA = "APK";
@@ -106,8 +107,9 @@ public class DwnldDelegate extends ListDelegateBase {
             m_uri = uri;
             m_isApp = isApp;
             m_listItem = item;
-            m_progressBar = (ProgressBar)
-                item.findViewById( R.id.progress_bar );
+            m_progressBar = (ProgressBar)item.findViewById( R.id.progress_bar );
+
+            showOldFiles(isApp);
         }
 
         public DownloadFilesTask setLabel( String text )
@@ -118,6 +120,19 @@ public class DwnldDelegate extends ListDelegateBase {
         }
 
         private boolean forApp() { return m_isApp; }
+
+        private void showOldFiles( boolean isApp )
+        {
+            if ( isApp && BuildConfig.DEBUG ) {
+                File apksDir = new File( m_activity.getFilesDir(), APKS_DIR );
+                if ( apksDir.exists() ) {
+                    File[] files = apksDir.listFiles();
+                    if ( 0 < files.length ) {
+                        DbgUtils.showf( "Found %d old apks", files.length );
+                    }
+                }
+            }
+        }
 
         @Override
         protected Void doInBackground( Void... unused )
@@ -209,7 +224,7 @@ public class DwnldDelegate extends ListDelegateBase {
 
             try {
                 // directory first
-                appFile = new File(m_activity.getFilesDir(), "apks");
+                appFile = new File( m_activity.getFilesDir(), APKS_DIR );
                 appFile.mkdirs();
                 appFile = new File( appFile, name );
                 FileOutputStream fos = new FileOutputStream( appFile );
