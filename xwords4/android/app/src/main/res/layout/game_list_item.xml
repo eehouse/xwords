@@ -44,7 +44,6 @@
             <ImageView android:id="@+id/has_chat_marker"
                        android:layout_width="wrap_content"
                        android:layout_height="22dp"
-                       android:src="@drawable/green_chat__gen"
                        android:layout_alignParentBottom="true"
                        />
             <TextView android:id="@+id/dup_tag"

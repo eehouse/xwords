@@ -331,20 +331,23 @@ public class GameListItem extends LinearLayout
 
             // Let's use the chat-icon space for an ALERT icon when we're
             // quarantined. Not ready for non-debug use though, as it shows up
-            // temporarily after every game closes because an *already-open*
-            // game always tests as not safe-to-open.
-            boolean doShow = false;
-            boolean quarantined = BuildConfig.NON_RELEASE
-                && !Quarantine.safeToOpen( m_rowid );
-            ImageView iv = (ImageView)findViewById( R.id.has_chat_marker );
-            if ( quarantined ) {
-                iv.setImageResource( android.R.drawable.stat_sys_warning );
-                doShow = true;
-            } else if ( summary.isMultiGame() ) {
+            // periodically as a false positive. Chat icon wins if both should
+            // be displayed, mostly because of the false positives.
+            int resID = 0;
+            if ( summary.isMultiGame() ) {
                 int flags = DBUtils.getMsgFlags( m_context, m_rowid );
-                doShow = 0 != (flags & GameSummary.MSG_FLAGS_CHAT);
+                if ( 0 != (flags & GameSummary.MSG_FLAGS_CHAT) ) {
+                    resID = R.drawable.green_chat__gen;
+                }
             }
-            iv.setVisibility( doShow ? View.VISIBLE : View.GONE );
+            if ( 0 == resID
+                 && BuildConfig.NON_RELEASE
+                 && !Quarantine.safeToOpen( m_rowid ) ) {
+                resID = android.R.drawable.stat_sys_warning;
+            }
+            // Setting to 0 clears, which we want
+            ImageView iv = (ImageView)findViewById( R.id.has_chat_marker );
+            iv.setImageResource( resID );
 
             if ( XWPrefs.moveCountEnabled( m_context ) ) {
                 TextView tv = (TextView)findViewById( R.id.n_pending );

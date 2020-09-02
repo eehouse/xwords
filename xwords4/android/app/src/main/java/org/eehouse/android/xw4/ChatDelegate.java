@@ -191,15 +191,19 @@ public class ChatDelegate extends DelegateBase {
     }
 
     private void handleSend() {
-        String text = m_edit.getText().toString();
-        long ts = Utils.getCurSeconds();
-        DBUtils.appendChatHistory( m_activity, m_rowid, text, m_curPlayer, ts );
-        addRow( text, m_curPlayer, (int)ts );
-        m_edit.setText( null );
 
         try ( JNIThread thread = JNIThread.getRetained( m_rowid ) ) {
             if ( null != thread ) {
+                String text = m_edit.getText().toString();
+
                 thread.sendChat( text );
+
+                long ts = Utils.getCurSeconds();
+                DBUtils.appendChatHistory( m_activity, m_rowid, text, m_curPlayer, ts );
+                addRow( text, m_curPlayer, (int)ts );
+                m_edit.setText( null );
+            } else {
+                Log.e( TAG, "null thread; unable to send chat" );
             }
         }
     }
