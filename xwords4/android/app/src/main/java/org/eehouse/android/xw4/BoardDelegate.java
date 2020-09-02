@@ -694,11 +694,8 @@ public class BoardDelegate extends DelegateBase
     @Override
     protected void onStop()
     {
-        if ( null != m_jniThreadRef ) {
-            m_jniThreadRef.release();
-            m_jniThreadRef = null;
-        } else {
-            Log.d( TAG, "onStop(): m_jniThreadRef already null" );
+        if ( isFinishing() ) {
+            releaseThreadOnce();
         }
         super.onStop();
     }
@@ -707,12 +704,30 @@ public class BoardDelegate extends DelegateBase
     protected void onDestroy()
     {
         closeIfFinishing( true );
-        if ( null != m_jniThreadRef ) {
+        releaseThreadOnce();
+        GamesListDelegate.boardDestroyed( m_rowid );
+        super.onDestroy();
+    }
+
+    @Override
+    public void finalize() throws java.lang.Throwable
+    {
+        // This logging never shows up. Likely a logging limit
+        Log.d( TAG, "finalize()" );
+        if ( releaseThreadOnce() ) {
+            Log.e( TAG, "oops! Caught the leak" );
+        }
+        super.finalize();
+    }
+
+    private synchronized boolean releaseThreadOnce()
+    {
+        boolean needsRelease = null != m_jniThreadRef;
+        if ( needsRelease ) {
             m_jniThreadRef.release();
             m_jniThreadRef = null;
         }
-        GamesListDelegate.boardDestroyed( m_rowid );
-        super.onDestroy();
+        return needsRelease;
     }
 
     @Override
