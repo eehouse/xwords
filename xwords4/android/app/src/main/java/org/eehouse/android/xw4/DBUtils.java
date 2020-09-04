@@ -2303,9 +2303,6 @@ public class DBUtils {
 
     public static String getStringFor( Context context, String key, String dflt )
     {
-        String selection = String.format( "%s = '%s'", DBHelper.KEY, key );
-        String[] columns = { DBHelper.VALUE };
-
         initDB( context );
         synchronized( s_dbHelper ) {
             dflt = getStringForSync( s_db, key, dflt );
