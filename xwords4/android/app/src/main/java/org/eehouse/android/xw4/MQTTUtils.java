@@ -48,11 +48,13 @@ import org.eehouse.android.xw4.loc.LocUtils;
 public class MQTTUtils extends Thread implements IMqttActionListener, MqttCallbackExtended {
     private static final String TAG = MQTTUtils.class.getSimpleName();
     private static final String KEY_NEXT_REG = TAG + "/next_reg";
+    private static final String KEY_LAST_WRITE = TAG + "/last_write";
     private static enum State { NONE, CONNECTING, CONNECTED, SUBSCRIBING, SUBSCRIBED,
                                 CLOSING };
 
     private static MQTTUtils[] sInstance = {null};
     private static long sNextReg = 0;
+    private static String sLastRev = null;
 
     private MqttAsyncClient mClient;
     private String mDevID;
@@ -295,10 +297,11 @@ public class MQTTUtils extends Thread implements IMqttActionListener, MqttCallba
     {
         if ( 0 == sNextReg ) {
             sNextReg = DBUtils.getLongFor( mContext, KEY_NEXT_REG, 1 );
+            sLastRev = DBUtils.getStringFor( mContext, KEY_LAST_WRITE, "" );
         }
         long now = Utils.getCurSeconds();
         Log.d( TAG, "registerOnce(): now: %d; nextReg: %d", now, sNextReg );
-        if ( now > sNextReg ) {
+        if ( now > sNextReg || ! BuildConfig.GIT_REV.equals(sLastRev) ) {
             try {
                 JSONObject params = new JSONObject();
                 params.put( "devid", mDevID );
@@ -329,6 +332,8 @@ public class MQTTUtils extends Thread implements IMqttActionListener, MqttCallba
                         if ( 0 < atNext ) {
                             DBUtils.setLongFor( mContext, KEY_NEXT_REG, atNext );
                             sNextReg = atNext;
+                            DBUtils.setStringFor( mContext, KEY_LAST_WRITE, BuildConfig.GIT_REV );
+                            sLastRev = BuildConfig.GIT_REV;
                         }
                     }
                 } else {
