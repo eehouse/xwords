@@ -354,7 +354,7 @@ que connecti via el repetidor.</string>
 
 Introduïu el vostre nom aquí. S\'usarà en crear partides noves. (Podreu
  canviar-lo després a la secció «Partida nova predeterminada» de la configuració.)</string>
-    <string name="about_vers_fmt">CrossWords per a l\'Android, %1$s variant, versió %2$s, rev %3$s, construït en %4$s.</string>
+    <string name="about_vers_fmt">CrossWords per a l\'Android, %1$s variant, versió %2$s, rev %3$s, construït en %4$s. (DevID: %5$s)</string>
     <string name="about_credits">Icones de la barra d\'eines per Sarah Chu. Icones Navbar del Noun Project: «archive» per Trendy; «rematch» per Becris i «swap» per iconomania.</string>
     <string name="changes_title">Canvis recents</string>
     <string name="changes_button">Canvis recents</string>

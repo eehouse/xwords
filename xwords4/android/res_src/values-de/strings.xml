@@ -801,7 +801,7 @@
 \n
 \nHalten Sie Ihren Finger auf einen Namen auf der Punktetafel, um Details über den letzten Zug dieses Spielers anzuzeigen.</string>
     <string name="not_again_newfrom">Eine neue Partie erzeugen, die bereit zum Spielen ist, mit allen Einstellungen aus dieser Partie. Das heißt, diese Partie als Vorlage verwenden.</string>
-    <string name="about_vers_fmt">CrossWords für Android, %1$s Variant, Version %2$s, Rev. %3$s, Build-Datum %4$s.</string>
+    <string name="about_vers_fmt">CrossWords für Android, %1$s Variant, Version %2$s, Rev. %3$s, Build-Datum %4$s. (DevID: %5$s)</string>
     <string name="bt_pair_settings">Weitere paaren</string>
     <string name="invite_progress_title">Verbinde …</string>
     <string name="invite_progress_fmt">Sende Einladung an CrossWords auf %1$s</string>

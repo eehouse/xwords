@@ -28,9 +28,10 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
 
+import org.eehouse.android.xw4.jni.XwJNI;
+
 import java.text.DateFormat;
 import java.util.Date;
-
 
 import org.eehouse.android.xw4.loc.LocUtils;
 
@@ -53,11 +54,12 @@ public class AboutAlert extends XWDialogFragment {
                                                         DateFormat.FULL );
         String dateString
             = df.format( new Date( BuildConfig.BUILD_STAMP * 1000 ) );
+        String devID = XwJNI.dvc_getMQTTDevID(null);
         vers.setText( getString( R.string.about_vers_fmt,
                                  BuildConfig.VARIANT_NAME,
                                  BuildConfig.VERSION_NAME,
                                  BuildConfig.GIT_REV,
-                                 dateString ) );
+                                 dateString, devID ) );
 
         TextView xlator = (TextView)view.findViewById( R.id.about_xlator );
         String str = getString( R.string.xlator );
