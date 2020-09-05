@@ -1045,8 +1045,9 @@ comms_augmentHostAddr( CommsCtxt* comms, XWEnv xwe, const CommsAddrRec* addr )
     }
 } /* comms_setHostAddr */
 
-void comms_addMQTTDevID( CommsCtxt* comms, XP_PlayerAddr channelNo,
-                         const MQTTDevID* devID )
+void
+comms_addMQTTDevID( CommsCtxt* comms, XP_PlayerAddr channelNo,
+                    const MQTTDevID* devID )
 {
     XP_LOGFF( "(devID: " MQTTDevID_FMT ")", *devID );
     XP_Bool found = XP_FALSE;
@@ -2989,7 +2990,14 @@ augmentAddr( CommsAddrRec* destAddr, const CommsAddrRec* srcAddr )
             }
             if ( !!dest ) {
                 if ( 0 != XP_MEMCMP( dest, src, siz ) ) {
-                    XP_LOGFF( "actually changing addr info for typ %s", ConnType2Str(typ) );
+#ifdef DEBUG
+                    CommsAddrRec dummy = {0};
+                    if ( 0 == XP_MEMCMP( &dummy, dest, siz ) ) {
+                        XP_LOGFF( "setting %s-type addr for first time", ConnType2Str(typ) );
+                    } else if ( 0 != XP_MEMCMP( dest, src, siz ) ) {
+                        XP_LOGFF( "actually changing addr info for typ %s", ConnType2Str(typ) );
+                    }
+#endif
                     XP_MEMCPY( dest, src, siz );
                 }
             }

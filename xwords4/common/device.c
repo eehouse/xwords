@@ -97,11 +97,11 @@ dvc_getMQTTDevID( XW_DUtilCtxt* dutil, XWEnv xwe, MQTTDevID* devID )
         XP_UCHAR buf[32];
         formatMQTTDevID( &tmp, buf, VSIZE(buf) );
         /* This log statement is required by discon_ok2.py!!! (keep in sync) */
-        XP_LOGFF( "generated id: %s", buf );
+        XP_LOGFF( "generated id: %s; key: %s", buf, MQTT_DEVID_KEY );
 #endif
     }
     *devID = tmp;
-    // LOG_RETURNF( MQTTDevID_FMT, *devID );
+    // LOG_RETURNF( MQTTDevID_FMT " key: %s", *devID, MQTT_DEVID_KEY );
 }
 
 typedef enum { CMD_INVITE, CMD_MSG, CMD_DEVGONE, } MQTTCmd;
