@@ -75,6 +75,7 @@ import java.util.Random;
 
 import org.eehouse.android.xw4.Perms23.Perm;
 import org.eehouse.android.xw4.jni.CommonPrefs;
+import org.eehouse.android.xw4.jni.XwJNI;
 import org.eehouse.android.xw4.loc.LocUtils;
 
 public class Utils {
@@ -199,9 +200,10 @@ public class Utils {
         String[] addrs = { LocUtils.getString( context,
                                                R.string.email_author_email ) };
         intent.putExtra( Intent.EXTRA_EMAIL, addrs );
+        String devID = XwJNI.dvc_getMQTTDevID( null );
         String body = LocUtils.getString( context, R.string.email_body_rev_fmt,
                                           BuildConfig.GIT_REV, Build.MODEL,
-                                          Build.VERSION.RELEASE );
+                                          Build.VERSION.RELEASE, devID );
         if ( null != msg ) {
             body += "\n\n" + msg;
         }
