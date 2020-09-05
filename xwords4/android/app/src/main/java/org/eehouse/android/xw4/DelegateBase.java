@@ -445,11 +445,9 @@ public class DelegateBase implements DlgClickNotify,
         case DLG_CONNSTAT: {
             AlertDialog.Builder ab = makeAlertBuilder();
             GameSummary summary = (GameSummary)params[0];
-            int title = (Integer)params[1];
-            String msg = (String)params[2];
+            String msg = (String)params[1];
             final CommsConnTypeSet conTypes = summary.conTypes;
-            ab.setTitle( title )
-                .setMessage( msg )
+            ab.setMessage( msg )
                 .setPositiveButton( android.R.string.ok, null );
             if ( BuildConfig.DEBUG && null != conTypes
                  && (conTypes.contains( CommsConnType.COMMS_CONN_RELAY )
@@ -675,8 +673,7 @@ public class DelegateBase implements DlgClickNotify,
                         if ( null == msg ) {
                             askNoAddrsDelete();
                         } else {
-                            showDialogFragment( DlgID.DLG_CONNSTAT, summary,
-                                                R.string.info_title, msg );
+                            showDialogFragment( DlgID.DLG_CONNSTAT, summary, msg );
                         }
                     }
                 } );
