@@ -35,7 +35,6 @@ mkStream( XW_DUtilCtxt* dutil )
 }
 
 #ifdef XWFEATURE_DEVICE
-# define KEY_DEVSTATE PERSIST_KEY("devState")
 
 typedef struct _DevCtxt {
     XP_U16 devCount;
@@ -48,7 +47,7 @@ load( XW_DUtilCtxt* dutil, XWEnv xwe )
     DevCtxt* state = (DevCtxt*)dutil->devCtxt;
     if ( NULL == state ) {
         XWStreamCtxt* stream = mkStream( dutil );
-        dutil_loadStream( dutil, xwe, KEY_DEVSTATE, stream );
+        dutil_loadStream( dutil, xwe, KEY_DEVSTATE, SUFFIX_DEVSTATE, stream );
 
         state = XP_CALLOC( dutil->mpool, sizeof(*state) );
         dutil->devCtxt = state;
@@ -81,27 +80,12 @@ dvc_store( XW_DUtilCtxt* dutil, XWEnv xwe )
 
 #endif
 
-#define SUPPORT_OLD             /* only needed for a short while */
-#define MQTT_DEVID_KEY_OLD "mqtt_devid_key"
-#define MQTT_DEVID_KEY PERSIST_KEY("mqtt_devid_key")
-
 void
 dvc_getMQTTDevID( XW_DUtilCtxt* dutil, XWEnv xwe, MQTTDevID* devID )
 {
     MQTTDevID tmp = 0;
     XP_U16 len = sizeof(tmp);
-    dutil_loadPtr( dutil, xwe, MQTT_DEVID_KEY, &tmp, &len );
-
-#ifdef SUPPORT_OLD
-    if ( len == 0 ) {
-        len = sizeof(tmp);
-        dutil_loadPtr( dutil, xwe, MQTT_DEVID_KEY_OLD, &tmp, &len );
-        if ( len == sizeof(tmp) ) { /* got the old key; now store it */
-            XP_LOGFF( "storing using new key" );
-            dutil_storePtr( dutil, xwe, MQTT_DEVID_KEY, &tmp, sizeof(tmp) );
-        }
-    }
-#endif
+    dutil_loadPtr( dutil, xwe, MQTT_DEVID_KEY, SUFFIX_MQTT_DEVID, &tmp, &len );
 
     // XP_LOGFF( "len: %d; sizeof(tmp): %d", len, sizeof(tmp) );
     if ( len != sizeof(tmp) ) { /* not found, or bogus somehow */

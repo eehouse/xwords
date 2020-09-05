@@ -2262,18 +2262,51 @@ public class DBUtils {
         delete( db, TABLE_NAMES.PAIRS, selection, null );
     }
 
-    private static String getStringForSync( SQLiteDatabase db, String key, String dflt )
+    private static String getStringForSyncSel( SQLiteDatabase db, String selection )
     {
-        String selection = String.format( "%s = '%s'", DBHelper.KEY, key );
-        String[] columns = { DBHelper.VALUE };
+        String result = null;
+        String[] columns = { ROW_ID, DBHelper.VALUE };
 
         Cursor cursor = DBHelper.query( db, TABLE_NAMES.PAIRS, columns, selection );
-        Assert.assertTrue( 1 >= cursor.getCount() );
-        int indx = cursor.getColumnIndex( DBHelper.VALUE );
-        if ( cursor.moveToNext() ) {
-            dflt = cursor.getString( indx );
+        // Log.d( TAG, "getStringForSyncSel(selection=%s)", selection );
+        boolean tooMany = BuildConfig.DEBUG && 1 < cursor.getCount();
+
+        // If there are multiple matches, we want to use the newest. At least
+        // that's the right move where a devID's key has been changed with
+        // each upgrade.
+        long prevRow = 0;
+        while ( cursor.moveToNext() ) {
+            long row = cursor.getLong(cursor.getColumnIndex(ROW_ID));
+            if ( row > prevRow ) {
+                result = cursor.getString( cursor.getColumnIndex( DBHelper.VALUE ) );
+                prevRow = row;
+            }
         }
         cursor.close();
+
+        return result;
+    }
+
+    private static String getStringForSync( SQLiteDatabase db, String key,
+                                            String keyEndsWith, String dflt )
+    {
+        String selection = String.format( "%s = '%s'", DBHelper.KEY, key );
+        boolean found = false;
+
+        String oneResult = getStringForSyncSel( db, selection );
+        if ( null == oneResult && null != keyEndsWith ) {
+            selection = String.format( "%s LIKE '%%%s'", DBHelper.KEY, keyEndsWith );
+            oneResult = getStringForSyncSel( db, selection );
+            // Log.d( TAG, "getStringForSync() LIKE case: %s => %s", keyEndsWith, oneResult );
+            if ( null != oneResult ) {
+                setStringForSync( db, key, oneResult ); // store so won't need LIKE in future
+            }
+        }
+
+        if ( null != oneResult ) {
+            dflt = oneResult;
+        }
+
         return dflt;
     }
 
@@ -2286,7 +2319,7 @@ public class DBUtils {
         String result = null;
         initDB( context );
         synchronized( s_dbHelper ) {
-            result = getStringForSync( s_db, key, null );
+            result = getStringForSync( s_db, key, null, null );
             result = proc.modifySync( result );
             setStringForSync( s_db, key, result );
         }
@@ -2303,9 +2336,15 @@ public class DBUtils {
 
     public static String getStringFor( Context context, String key, String dflt )
     {
+        return getStringFor( context, key, null, dflt );
+    }
+
+    public static String getStringFor( Context context, String key,
+                                       String keyEndsWith, String dflt )
+    {
         initDB( context );
         synchronized( s_dbHelper ) {
-            dflt = getStringForSync( s_db, key, dflt );
+            dflt = getStringForSync( s_db, key, keyEndsWith, dflt );
         }
         return dflt;
     }
@@ -2386,11 +2425,15 @@ public class DBUtils {
 
     public static byte[] getBytesFor( Context context, String key )
     {
+        return getBytesFor( context, key, null );
+    }
+
+    public static byte[] getBytesFor( Context context, String key, String keyEndsWith )
+    {
         byte[] bytes = null;
-        String asStr = getStringFor( context, key, null );
+        String asStr = getStringFor( context, key, keyEndsWith, null );
         if ( null != asStr ) {
             bytes = Utils.base64Decode( asStr );
-            // DbgUtils.logf( "getBytesFor: loaded %d bytes", bytes.length );
         }
         return bytes;
     }

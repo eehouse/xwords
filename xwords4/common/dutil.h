@@ -45,10 +45,12 @@ typedef struct _DUtilVtable {
                                  XWStreamCtxt* data );
     /* Pass in an empty stream, and it'll be returned full */
     void (*m_dutil_loadStream)( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
+                                const XP_UCHAR* fallbackKey,   // PENDING() remove this after a few months.
                                 XWStreamCtxt* inOut );
     void (*m_dutil_storePtr)( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
                               const void* data, XP_U16 len );
     void (*m_dutil_loadPtr)( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
+                             const XP_UCHAR* fallbackKey,   // PENDING() remove this after a few months.
                              void* data, XP_U16* lenp );
 #ifdef XWFEATURE_SMS
     XP_Bool (*m_dutil_phoneNumbersSame)( XW_DUtilCtxt* uc, XWEnv xwe, const XP_UCHAR* p1,
@@ -101,10 +103,10 @@ struct XW_DUtilCtxt {
     (duc)->vtable.m_dutil_storeStream((duc), (e), (k), (s));
 #define dutil_storePtr(duc, e, k, p, l)                      \
     (duc)->vtable.m_dutil_storePtr((duc), (e), (k), (p), (l));
-#define dutil_loadStream(duc, e, k, s)                   \
-    (duc)->vtable.m_dutil_loadStream((duc), (e), (k), (s));
-#define dutil_loadPtr(duc, e, k, p, l)                           \
-    (duc)->vtable.m_dutil_loadPtr((duc), (e), (k), (p), (l));
+#define dutil_loadStream(duc, e, k, fk, s)                   \
+    (duc)->vtable.m_dutil_loadStream((duc), (e), (k), (fk), (s));
+#define dutil_loadPtr(duc, e, k, fk, p, l)                       \
+    (duc)->vtable.m_dutil_loadPtr((duc), (e), (k), (fk), (p), (l));
 
 #ifdef XWFEATURE_SMS
 # define dutil_phoneNumbersSame(duc,e,p1,p2)                    \

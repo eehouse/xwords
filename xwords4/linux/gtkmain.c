@@ -420,7 +420,7 @@ handle_delete_button( GtkWidget* XP_UNUSED(widget), void* closure )
         deleteGame( params->pDb, rowid );
 
         XP_UCHAR devIDBuf[64] = {0};
-        db_fetch_safe( params->pDb, KEY_RDEVID, devIDBuf, sizeof(devIDBuf) );
+        db_fetch_safe( params->pDb, KEY_RDEVID, NULL, devIDBuf, sizeof(devIDBuf) );
         if ( '\0' != devIDBuf[0] ) {
             relaycon_deleted( params, devIDBuf, clientToken );
         } else {
@@ -522,7 +522,7 @@ trySetWinConfig( GtkAppGlobals* apg )
     int height = 400;
 
     gchar buf[64];
-    if ( db_fetch_safe( apg->cag.params->pDb, KEY_WIN_LOC, buf, sizeof(buf)) ) {
+    if ( db_fetch_safe( apg->cag.params->pDb, KEY_WIN_LOC, NULL, buf, sizeof(buf)) ) {
         sscanf( buf, "%d:%d:%d:%d", &xx, &yy, &width, &height );
     }
 
@@ -784,7 +784,7 @@ requestMsgs( gpointer data )
 {
     GtkAppGlobals* apg = (GtkAppGlobals*)data;
     XP_UCHAR devIDBuf[64] = {0};
-    db_fetch_safe( apg->cag.params->pDb, KEY_RDEVID, devIDBuf, sizeof(devIDBuf) );
+    db_fetch_safe( apg->cag.params->pDb, KEY_RDEVID, NULL, devIDBuf, sizeof(devIDBuf) );
     if ( '\0' != devIDBuf[0] ) {
         relaycon_requestMsgs( apg->cag.params, devIDBuf );
     } else {

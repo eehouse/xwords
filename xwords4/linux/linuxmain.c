@@ -461,7 +461,7 @@ requestMsgsIdle( gpointer data )
 {
     CommonGlobals* cGlobals = (CommonGlobals*)data;
     XP_UCHAR devIDBuf[64] = {0};
-    db_fetch_safe( cGlobals->params->pDb, KEY_RDEVID, devIDBuf, sizeof(devIDBuf) );
+    db_fetch_safe( cGlobals->params->pDb, KEY_RDEVID, NULL, devIDBuf, sizeof(devIDBuf) );
     if ( '\0' != devIDBuf[0] ) {
         relaycon_requestMsgs( cGlobals->params, devIDBuf );
     } else {
@@ -1195,7 +1195,7 @@ linux_getDevIDRelay( LaunchParams* params )
 {
     XP_U32 result = 0;
     gchar buf[32];
-    if ( db_fetch_safe( params->pDb, KEY_RDEVID, buf, sizeof(buf) ) ) {
+    if ( db_fetch_safe( params->pDb, KEY_RDEVID, NULL, buf, sizeof(buf) ) ) {
         sscanf( buf, "%X", &result );
         /* XP_LOGF( "%s(): %s => %x", __func__, buf, result ); */
     }
@@ -1219,11 +1219,11 @@ linux_getDevID( LaunchParams* params, DevIDType* typ )
     if ( !!params->lDevID ) {
         result = params->lDevID;
         *typ = ID_TYPE_LINUX;
-    } else if ( db_fetch_safe( params->pDb, KEY_RDEVID, params->devIDStore,
+    } else if ( db_fetch_safe( params->pDb, KEY_RDEVID, NULL, params->devIDStore,
                                sizeof(params->devIDStore) ) ) {
         result = params->devIDStore;
         *typ = '\0' == result[0] ? ID_TYPE_ANON : ID_TYPE_RELAY;
-    } else if ( db_fetch_safe( params->pDb, KEY_LDEVID, params->devIDStore,
+    } else if ( db_fetch_safe( params->pDb, KEY_LDEVID, NULL, params->devIDStore,
                                sizeof(params->devIDStore) ) ) {
         result = params->devIDStore;
         *typ = '\0' == result[0] ? ID_TYPE_ANON : ID_TYPE_LINUX;
@@ -1238,7 +1238,7 @@ void
 linux_doInitialReg( LaunchParams* params, XP_Bool idIsNew )
 {
     gchar rDevIDBuf[64];
-    if ( !db_fetch_safe( params->pDb, KEY_RDEVID, rDevIDBuf,
+    if ( !db_fetch_safe( params->pDb, KEY_RDEVID, NULL, rDevIDBuf,
                          sizeof(rDevIDBuf) ) ) {
         rDevIDBuf[0] = '\0';
     }
@@ -1255,7 +1255,7 @@ linux_setupDevidParams( LaunchParams* params )
 {
     XP_Bool idIsNew = XP_TRUE;
     gchar oldLDevID[256];
-    if ( db_fetch_safe( params->pDb, KEY_LDEVID, oldLDevID, sizeof(oldLDevID) )
+    if ( db_fetch_safe( params->pDb, KEY_LDEVID, NULL, oldLDevID, sizeof(oldLDevID) )
          && (!params->lDevID || 0 == strcmp( oldLDevID, params->lDevID )) ) {
         idIsNew = XP_FALSE;
     } else {
@@ -1276,7 +1276,7 @@ parseSMSParams( LaunchParams* params, gchar** myPhone, XP_U16* myPort )
     if ( !!phone ) {
         db_store( params->pDb, KEY_SMSPHONE, phone );
         *myPhone = g_strdup( phone );
-    } else if ( !phone && db_fetch_safe( params->pDb, KEY_SMSPHONE, buf, VSIZE(buf) ) ) {
+    } else if ( !phone && db_fetch_safe( params->pDb, KEY_SMSPHONE, NULL, buf, VSIZE(buf) ) ) {
         params->connInfo.sms.myPhone = *myPhone = g_strdup(buf);
     } else {
         *myPhone = NULL;
@@ -1287,7 +1287,7 @@ parseSMSParams( LaunchParams* params, gchar** myPhone, XP_U16* myPort )
     if ( 0 < *myPort ) {
         sprintf( portbuf, "%d", *myPort );
         db_store( params->pDb, KEY_SMSPORT, portbuf );
-    } else if ( db_fetch_safe( params->pDb, KEY_SMSPORT, portbuf, VSIZE(portbuf) ) ) {
+    } else if ( db_fetch_safe( params->pDb, KEY_SMSPORT, NULL, portbuf, VSIZE(portbuf) ) ) {
         params->connInfo.sms.port = *myPort = atoi( portbuf );
     }
     return NULL != *myPhone && 0 < *myPort;

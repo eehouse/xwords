@@ -84,9 +84,6 @@ struct SMSProto {
     MPSLOT;
 };
 
-#define KEY_PARTIALS PERSIST_KEY("partials")
-#define KEY_NEXTID PERSIST_KEY("nextID")
-
 static int nextMsgID( SMSProto* state, XWEnv xwe );
 static XWStreamCtxt* mkStream( SMSProto* state );
 static void destroyStream( XWStreamCtxt* stream );
@@ -126,7 +123,8 @@ smsproto_init( MPFORMAL XWEnv xwe, XW_DUtilCtxt* dutil )
     MPASSIGN( state->mpool, mpool );
 
     XP_U16 siz = sizeof(state->nNextID);
-    dutil_loadPtr( state->dutil, xwe, KEY_NEXTID, &state->nNextID, &siz );
+    dutil_loadPtr( state->dutil, xwe, KEY_NEXTID, SUFFIX_NEXTID,
+                   &state->nNextID, &siz );
     XP_LOGF( "%s(): loaded nextMsgID: %d", __func__, state->nNextID );
 
     restorePartials( state, xwe );
@@ -715,7 +713,7 @@ restorePartials( SMSProto* state, XWEnv xwe )
 {
     XWStreamCtxt* stream = mkStream( state );
 
-    dutil_loadStream( state->dutil, xwe, KEY_PARTIALS, stream );
+    dutil_loadStream( state->dutil, xwe, KEY_PARTIALS, SUFFIX_PARTIALS, stream );
     if ( stream_getSize( stream ) >= 1
          && PARTIALS_FORMAT == stream_getU8( stream ) ) {
         int nFromPhones = stream_getU8( stream );

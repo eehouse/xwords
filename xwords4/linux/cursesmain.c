@@ -1262,7 +1262,7 @@ curses_requestMsgs( gpointer data )
 {
     CursesAppGlobals* aGlobals = (CursesAppGlobals*)data;
     XP_UCHAR devIDBuf[64] = {0};
-    db_fetch_safe( aGlobals->cag.params->pDb, KEY_RDEVID, devIDBuf,
+    db_fetch_safe( aGlobals->cag.params->pDb, KEY_RDEVID, NULL, devIDBuf,
                    sizeof(devIDBuf) );
     if ( '\0' != devIDBuf[0] ) {
         relaycon_requestMsgs( aGlobals->cag.params, devIDBuf );
@@ -1303,7 +1303,7 @@ cursesDevIDReceived( void* closure, const XP_UCHAR* devID,
 
         /* If we already have one, make sure it's the same! Else store. */
         gchar buf[64];
-        XP_Bool have = db_fetch_safe( pDb, KEY_RDEVID, buf, sizeof(buf) )
+        XP_Bool have = db_fetch_safe( pDb, KEY_RDEVID, NULL, buf, sizeof(buf) )
             && 0 == strcmp( buf, devID );
         if ( !have ) {
             db_store( pDb, KEY_RDEVID, devID );

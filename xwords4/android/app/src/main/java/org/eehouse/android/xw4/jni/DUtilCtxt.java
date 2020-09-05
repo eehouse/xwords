@@ -259,21 +259,21 @@ public class DUtilCtxt {
         if ( null != data ) {
             DBUtils.setBytesFor( m_context, key, data );
             if ( BuildConfig.DEBUG ) {
-                byte[] tmp = load( key );
+                byte[] tmp = load( key, null );
                 Assert.assertTrue( Arrays.equals( tmp, data ) );
             }
         }
     }
 
-    public byte[] load( String key )
+    public byte[] load( String key, String keySuffix )
     {
-        byte[] result = DBUtils.getBytesFor( m_context, key );
+        // Log.d( TAG, "load(%s, %s)", key, keySuffix );
+        byte[] result = DBUtils.getBytesFor( m_context, key, keySuffix );
 
-        // Log.d( TAG, "load(%s) returning %d bytes", key,
+        // Log.d( TAG, "load(%s, %s) returning %d bytes", key, keySuffix,
         //        null == result ? 0 : result.length );
         return result;
     }
-
 
     // Must match enum DupPauseType
     public static final int UNPAUSED = 0;

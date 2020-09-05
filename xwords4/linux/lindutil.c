@@ -35,13 +35,13 @@ static const XP_UCHAR* linux_dutil_getUserQuantityString( XW_DUtilCtxt* duc, XWE
                                                           XP_U16 quantity );
 
 static void linux_dutil_storeStream( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
-                               XWStreamCtxt* data );
+                                     XWStreamCtxt* data );
 static void linux_dutil_loadStream( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
-                                    XWStreamCtxt* inOut );
+                                    const XP_UCHAR* keySuffix, XWStreamCtxt* inOut );
 static void linux_dutil_storePtr( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
                                   const void* data, XP_U16 len );
 static void linux_dutil_loadPtr( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
-                                 void* data, XP_U16* lenp );
+                                 const XP_UCHAR* keySuffix, void* data, XP_U16* lenp );
 
 
 #ifdef XWFEATURE_SMS
@@ -290,13 +290,13 @@ linux_dutil_storeStream( XW_DUtilCtxt* duc, XWEnv xwe,
 
 static void
 linux_dutil_loadStream( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
-                        XWStreamCtxt* stream )
+                        const XP_UCHAR* keySuffix, XWStreamCtxt* stream )
 {
     XP_U16 len = 0;
-    linux_dutil_loadPtr( duc, xwe, key, NULL, &len );
+    linux_dutil_loadPtr( duc, xwe, key, keySuffix, NULL, &len );
     if ( 0 < len ) {
         XP_U8 buf[len];
-        linux_dutil_loadPtr( duc, xwe, key, buf, &len );
+        linux_dutil_loadPtr( duc, xwe, key, keySuffix, buf, &len );
 
         stream_putBytes( stream, buf, len );
     }
@@ -318,20 +318,20 @@ linux_dutil_storePtr( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe), const XP_UCHAR* k
 
 static void
 linux_dutil_loadPtr( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe), const XP_UCHAR* key,
-                     void* data, XP_U16* lenp )
+                     const XP_UCHAR* keySuffix, void* data, XP_U16* lenp )
 {
     LaunchParams* params = (LaunchParams*)duc->closure;
     sqlite3* pDb = params->pDb;
 
     gint buflen = 0;
-    FetchResult res = db_fetch( pDb, key, NULL, &buflen );
+    FetchResult res = db_fetch( pDb, key, keySuffix, NULL, &buflen );
     if ( res == BUFFER_TOO_SMALL ) { /* expected: I passed 0 */
         if ( 0 == *lenp ) {
             *lenp = buflen;
         } else {
             gchar* tmp = XP_MALLOC( duc->mpool, buflen );
             gint tmpLen = buflen;
-            res = db_fetch( pDb, key, tmp, &tmpLen );
+            res = db_fetch( pDb, key, keySuffix, tmp, &tmpLen );
             XP_ASSERT( buflen == tmpLen );
             XP_ASSERT( res == SUCCESS );
             XP_ASSERT( tmp[buflen-1] == '\0' );

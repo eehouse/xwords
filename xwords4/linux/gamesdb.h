@@ -88,8 +88,9 @@ void db_store( sqlite3* pDb, const gchar* key, const gchar* value );
 void db_remove( sqlite3* pDb, const gchar* key );
 
 typedef enum { NOT_THERE, BUFFER_TOO_SMALL, SUCCESS } FetchResult;
-FetchResult db_fetch( sqlite3* pDb, const gchar* key, gchar* buf, gint* buflen );
-XP_Bool db_fetch_safe( sqlite3* pDb, const gchar* key, gchar* buf, gint buflen );
-
+FetchResult db_fetch( sqlite3* pDb, const gchar* key, const gchar* keySuffix,
+                      gchar* buf, gint* buflen );
+XP_Bool db_fetch_safe( sqlite3* pDb, const gchar* key, const gchar* keySuffix,
+                       gchar* buf, gint buflen );
 
 #endif

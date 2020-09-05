@@ -506,24 +506,26 @@ and_dutil_storeStream( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
 }
 
 static jbyteArray
-loadToByteArray( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key )
+loadToByteArray( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
+                 const XP_UCHAR* keySuffix )
 {
     jbyteArray result = NULL;
-    DUTIL_CBK_HEADER( "load", "(Ljava/lang/String;)[B");
+    DUTIL_CBK_HEADER( "load", "(Ljava/lang/String;Ljava/lang/String;)[B");
 
     jstring jkey = (*env)->NewStringUTF( env, key );
-    result = (*env)->CallObjectMethod( env, dutil->jdutil, mid, jkey );
-    deleteLocalRef( env, jkey );
+    jstring jkeySuffix = (*env)->NewStringUTF( env, keySuffix );
+    result = (*env)->CallObjectMethod( env, dutil->jdutil, mid, jkey, jkeySuffix );
+    deleteLocalRefs( env, jkey, jkeySuffix, DELETE_NO_REF );
     DUTIL_CBK_TAIL();
     return result;
 }
 
 static void
 and_dutil_loadPtr( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
-                   void* data, XP_U16* lenp )
+                   const XP_UCHAR* keySuffix, void* data, XP_U16* lenp )
 {
     JNIEnv* env = xwe;
-    jbyteArray jvalue = loadToByteArray( duc, env, key );
+    jbyteArray jvalue = loadToByteArray( duc, env, key, keySuffix );
     jsize len = 0;
     if ( jvalue != NULL ) {
         len = (*env)->GetArrayLength( env, jvalue );
@@ -538,11 +540,11 @@ and_dutil_loadPtr( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
 }
 
 static void
-and_dutil_loadStream( XW_DUtilCtxt* duc, XWEnv xwe,
-                      const XP_UCHAR* key, XWStreamCtxt* stream )
+and_dutil_loadStream( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
+                      const XP_UCHAR* keySuffix, XWStreamCtxt* stream )
 {
     JNIEnv* env = xwe;
-    jbyteArray jvalue = loadToByteArray( duc, xwe, key );
+    jbyteArray jvalue = loadToByteArray( duc, xwe, key, keySuffix );
     if ( jvalue != NULL ) {
         jbyte* jelems = (*env)->GetByteArrayElements( env, jvalue, NULL );
         jsize len = (*env)->GetArrayLength( env, jvalue );

@@ -682,7 +682,7 @@ db_fetchInt( sqlite3* pDb, const gchar* key, int32_t* resultP )
 {
     gint buflen = 16;
     gchar buf[buflen];
-    FetchResult fr = db_fetch( pDb, key, buf, &buflen );
+    FetchResult fr = db_fetch( pDb, key, NULL, buf, &buflen );
     bool gotIt = SUCCESS == fr;
     if ( gotIt ) {
         buf[buflen] = '\0';
@@ -705,19 +705,13 @@ db_storeInt( sqlite3* pDb, const gchar* key, int32_t val )
 #endif
 }
 
-FetchResult
-db_fetch( sqlite3* pDb, const gchar* key, gchar* buf, gint* buflen )
+static FetchResult
+fetchQuery( sqlite3* pDb, const char* query, gchar* buf, gint* buflen )
 {
     XP_ASSERT( !!pDb );
     FetchResult fetchRes = NOT_THERE;
-    char query[256];
-#ifdef DEBUG
-    int len =
-#endif
-        snprintf( query, sizeof(query),
-                  "SELECT value from pairs where key = '%s'", key );
-    XP_ASSERT( len < sizeof(query) );
-    sqlite3_stmt *ppStmt;
+
+    sqlite3_stmt* ppStmt;
     int sqlResult = sqlite3_prepare_v2( pDb, query, -1, &ppStmt, NULL );
     XP_Bool found = SQLITE_OK == sqlResult;
     if ( found ) {
@@ -737,12 +731,46 @@ db_fetch( sqlite3* pDb, const gchar* key, gchar* buf, gint* buflen )
     return fetchRes;
 }
 
+FetchResult
+db_fetch( sqlite3* pDb, const gchar* key, const XP_UCHAR* keySuffix,
+          gchar* buf, gint* buflen )
+{
+    XP_ASSERT( !!pDb );
+    FetchResult fetchRes = NOT_THERE;
+    char query[256];
+#ifdef DEBUG
+    int len =
+#endif
+        snprintf( query, sizeof(query),
+                  "SELECT value from pairs where key = '%s'", key );
+    XP_ASSERT( len < sizeof(query) );
+    fetchRes = fetchQuery( pDb, query, buf, buflen );
+    if ( NOT_THERE == fetchRes && NULL != keySuffix ) {
+#ifdef DEBUG
+        len =
+#endif
+            snprintf( query, sizeof(query),
+                      "SELECT value from pairs where key LIKE '%%%s'", keySuffix );
+        XP_ASSERT( len < sizeof(query) );
+        fetchRes = fetchQuery( pDb, query, buf, buflen );
+
+        /* Let's rewrite it using the correct key so this code can eventually
+           go away */
+        if ( SUCCESS == fetchRes ) {
+            db_store( pDb, key, buf );
+        }
+    }
+
+    return fetchRes;
+}
+
 XP_Bool
-db_fetch_safe( sqlite3* pDb, const gchar* key, gchar* buf, gint buflen )
+db_fetch_safe( sqlite3* pDb, const gchar* key, const gchar* keySuffix,
+               gchar* buf, gint buflen )
 {
     XP_ASSERT( !!pDb );
     int tmp = buflen;
-    FetchResult result = db_fetch( pDb, key, buf, &tmp );
+    FetchResult result = db_fetch( pDb, key, keySuffix, buf, &tmp );
     XP_ASSERT( result != BUFFER_TOO_SMALL );
     return SUCCESS == result;
 }
