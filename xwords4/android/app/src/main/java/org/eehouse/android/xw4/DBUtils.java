@@ -2265,22 +2265,18 @@ public class DBUtils {
     private static String getStringForSyncSel( SQLiteDatabase db, String selection )
     {
         String result = null;
-        String[] columns = { ROW_ID, DBHelper.VALUE };
-
-        Cursor cursor = DBHelper.query( db, TABLE_NAMES.PAIRS, columns, selection );
-        // Log.d( TAG, "getStringForSyncSel(selection=%s)", selection );
-        boolean tooMany = BuildConfig.DEBUG && 1 < cursor.getCount();
-
+        String[] columns = { DBHelper.VALUE, };
         // If there are multiple matches, we want to use the newest. At least
         // that's the right move where a devID's key has been changed with
         // each upgrade.
-        long prevRow = 0;
-        while ( cursor.moveToNext() ) {
-            long row = cursor.getLong(cursor.getColumnIndex(ROW_ID));
-            if ( row > prevRow ) {
-                result = cursor.getString( cursor.getColumnIndex( DBHelper.VALUE ) );
-                prevRow = row;
-            }
+        String orderBy = ROW_ID + " DESC";
+
+        Cursor cursor = DBHelper.query( db, TABLE_NAMES.PAIRS, columns, selection, orderBy );
+        // Log.d( TAG, "getStringForSyncSel(selection=%s)", selection );
+        boolean tooMany = BuildConfig.DEBUG && 1 < cursor.getCount();
+
+        if ( cursor.moveToNext() ) {
+            result = cursor.getString( cursor.getColumnIndex(DBHelper.VALUE) );
         }
         cursor.close();
 
