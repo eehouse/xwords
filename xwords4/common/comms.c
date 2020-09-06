@@ -2420,7 +2420,6 @@ comms_checkIncomingStream( CommsCtxt* comms, XWEnv xwe, XWStreamCtxt* stream,
                     + sizeof(msgID) + sizeof(lastMsgRcd));
             if ( messageValid ) {
                 XP_U16 payloadSize = 0;
-                AddressRecord* rec = NULL;
 
                 XP_U16 flags;
                 (void)getFlags( stream, &connID, &flags );
@@ -2459,6 +2458,7 @@ comms_checkIncomingStream( CommsCtxt* comms, XWEnv xwe, XWStreamCtxt* stream,
                     XP_LOGF( TAGFMT() "got message to self?", TAGPRMS );
                 }
 
+                AddressRecord* rec = NULL;
                 if ( messageValid ) {
                     if ( connID == CONN_ID_NONE ) {
                         /* special case: initial message from client or server */
