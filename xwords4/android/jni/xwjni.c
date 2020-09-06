@@ -367,13 +367,17 @@ getState( JNIEnv* env, GamePtrType gamePtr, const char* func )
 #endif
 
 JNIEXPORT jlong JNICALL
-Java_org_eehouse_android_xw4_jni_XwJNI_initGlobals
-( JNIEnv* env, jclass C, jobject jdutil, jobject jniu )
+Java_org_eehouse_android_xw4_jni_XwJNI_globalsInit
+( JNIEnv* env, jclass C, jobject jdutil, jobject jniu, jlong jseed )
 {
 #ifdef MEM_DEBUG
     MemPoolCtx* mpool = mpool_make( NULL );
     XP_LOGF( "%s(): ptr size: %zu", __func__, sizeof(mpool) );
 #endif
+    int seed = (int)jseed;
+    XP_LOGFF( "calling srandom(seed %d)", seed );
+    srandom( seed );
+
     JNIGlobalState* globalState = (JNIGlobalState*)XP_CALLOC( mpool,
                                                               sizeof(*globalState) );
     map_init( MPPARM(mpool) &globalState->ti, env );
@@ -1227,8 +1231,8 @@ struct _JNIState {
     }                                                 \
 
 JNIEXPORT jlong JNICALL
-Java_org_eehouse_android_xw4_jni_XwJNI_initGameJNI
-( JNIEnv* env, jclass C, jlong jniGlobalPtr, jint seed )
+Java_org_eehouse_android_xw4_jni_XwJNI_gameJNIInit
+( JNIEnv* env, jclass C, jlong jniGlobalPtr )
 {
 #ifdef MEM_DEBUG
     MemPoolCtx* mpool = ((JNIGlobalState*)jniGlobalPtr)->mpool;
@@ -1244,9 +1248,6 @@ Java_org_eehouse_android_xw4_jni_XwJNI_initGameJNI
     globals->state = (JNIState*)state;
     MPASSIGN( state->mpool, mpool );
     globals->vtMgr = make_vtablemgr(MPPARM_NOCOMMA(mpool));
-
-    /* XP_LOGF( "%s: initing srand with %d", __func__, seed ); */
-    srandom( seed );
 
     /* LOG_RETURNF( "%p", state ); */
     return (jlong) state;

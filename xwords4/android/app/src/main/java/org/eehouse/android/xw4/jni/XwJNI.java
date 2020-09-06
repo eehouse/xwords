@@ -121,7 +121,11 @@ public class XwJNI {
     private long m_ptrGlobals;
     private XwJNI()
     {
-        m_ptrGlobals = initGlobals( new DUtilCtxt(), JNIUtilsImpl.get() );
+        long seed = Utils.nextRandomInt();
+        seed <<= 32;
+        seed |= Utils.nextRandomInt();
+        seed ^= System.currentTimeMillis();
+        m_ptrGlobals = globalsInit( new DUtilCtxt(), JNIUtilsImpl.get(), seed );
     }
 
     public static void cleanGlobalsEmu()
@@ -217,8 +221,7 @@ public class XwJNI {
     // Game methods
     private static GamePtr initGameJNI( long rowid )
     {
-        int seed = Utils.nextRandomInt();
-        long ptr = initGameJNI( getJNI().m_ptrGlobals, seed );
+        long ptr = gameJNIInit( getJNI().m_ptrGlobals );
         GamePtr result = 0 == ptr ? null : new GamePtr( ptr, rowid );
         return result;
     }
@@ -659,7 +662,7 @@ public class XwJNI {
     private static native int[] di_getIndices( long closure );
 
     // Private methods -- called only here
-    private static native long initGlobals( DUtilCtxt dutil, JNIUtils jniu );
+    private static native long globalsInit( DUtilCtxt dutil, JNIUtils jniu, long seed );
     private static native String dvc_getMQTTDevID( long jniState, String[] topic );
     private static native byte[] dvc_makeMQTTInvite( long jniState, NetLaunchInfo nli,
                                                      String[] addrToTopic );
@@ -675,7 +678,7 @@ public class XwJNI {
                                                byte[] stream );
     private static native byte[] nli_to_stream( long jniState, NetLaunchInfo nli );
     private static native NetLaunchInfo nli_from_stream( long jniState, byte[] stream );
-    private static native long initGameJNI( long jniState, int seed );
+    private static native long gameJNIInit( long jniState );
     private static native void envDone( long globals );
     private static native long dict_make( long jniState, byte[] dict, String name, String path );
     private static native void dict_ref( long dictPtr );
