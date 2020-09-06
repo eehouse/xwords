@@ -19,6 +19,7 @@
 
 package org.eehouse.android.xw4;
 
+import android.app.Activity;
 import android.app.Dialog;
 import android.os.Bundle;
 import android.os.Handler;
@@ -97,10 +98,10 @@ public class DBAlert extends XWDialogFragment {
         Dialog dialog = activity.makeDialog( this, mParams );
 
         if ( null == dialog ) {
-            dialog = LocUtils.makeAlertBuilder( getActivity() )
-                .setTitle( "Stub Alert" )
-                .setMessage( String.format( "Unable to create for %s",
-                                            getDlgID().toString() ) )
+            Log.e( TAG, "no dialog for %s from %s", getDlgID(), activity );
+            Assert.failDbg();
+            dialog = LocUtils.makeAlertBuilder( activity )
+                .setMessage( "Unable to create " + getDlgID() + " Alert" )
                 .setPositiveButton( "Bummer", null )
                 // .setNegativeButton( "Try now", new OnClickListener() {
                 //         @Override
@@ -115,10 +116,10 @@ public class DBAlert extends XWDialogFragment {
                     @Override
                     public void run() {
                         try {
-                            MainActivity activity = (MainActivity)getActivity();
-                            if ( null != activity ) {
+                            Activity activity = getActivity();
+                            if ( null != activity && activity instanceof MainActivity ) {
                                 DBAlert newMe = newInstance( getDlgID(), mParams );
-                                activity.show( newMe );
+                                ((MainActivity)activity).show( newMe );
                                 dismiss();          // kill myself...
                             } else {
                                 Log.d( TAG, "null activity..." );
