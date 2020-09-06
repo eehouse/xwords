@@ -33,7 +33,7 @@ else
 	echo "no such variant $VARIANT; try"
 	ALL=''
 	for DIR in $(ls -d $(dirname $0)/../app/build/intermediates/javac/*); do
-		ALL="$ALL $(basename $DIR)"
+		ALL="$ALL --variant $(basename $DIR)"
 	done
 	echo "$ALL"
 	exit 1
