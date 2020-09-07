@@ -553,6 +553,12 @@ public class BTService extends XWJIService {
             } catch ( IOException ioe ) {
                 m_serverSocket = null;
                 logIOE( ioe );
+            } catch ( SecurityException ex ) {
+                // Got this with a message saying not allowed to call
+                // listenUsingRfcommWithServiceRecord() in background (on
+                // Android 9)
+                m_serverSocket = null;
+                Log.ex( TAG, ex );
             }
 
             int nBadCount = 0;
