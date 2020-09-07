@@ -69,7 +69,7 @@ public class InviteChoicesAlert extends DlgDelegateAlert {
         if ( BuildConfig.NON_RELEASE ) {
             add( items, means, R.string.invite_choice_relay, InviteMeans.RELAY );
         }
-        if ( BuildConfig.OFFER_MQTT ) {
+        if ( BuildConfig.NON_RELEASE && BuildConfig.OFFER_MQTT ) {
             add( items, means, R.string.invite_choice_mqtt, InviteMeans.MQTT );
         }
         if ( WiDirWrapper.enabled() ) {
