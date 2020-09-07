@@ -2322,7 +2322,8 @@ public class BoardDelegate extends DelegateBase
                     setKeepScreenOn();
                     ConnStatusHandler.setHandler( this );
                 }
-            } catch ( GameUtils.NoSuchGameException nsge ) {
+            } catch ( GameUtils.NoSuchGameException | NullPointerException ex ) {
+                Log.ex( TAG, ex );
                 success = false;
             }
 
@@ -2396,7 +2397,7 @@ public class BoardDelegate extends DelegateBase
     {
         if ( null == m_jniThread ) {
             m_jniThread = m_jniThreadRef.retain();
-            m_gi = m_jniThread.getGI();
+            m_gi = m_jniThread.getGI(); // this can be null, per Play Store report
 
             m_summary = m_jniThread.getSummary();
 
