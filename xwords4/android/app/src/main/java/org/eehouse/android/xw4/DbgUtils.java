@@ -127,7 +127,7 @@ public class DbgUtils {
         List<String> strs = new ArrayList<>();
         if ( null != params ) {
             for ( Object obj : params ) {
-                strs.add( obj.toString() );
+                strs.add( String.format( "%s", obj ) );
             }
         }
         return TextUtils.join( ", ", strs );
