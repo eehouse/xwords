@@ -1522,9 +1522,6 @@ mots)</string>
     <!--<string name="dup_game_query_fmt">You already have a game that seems
     to have been created (on %1$s) from the same invitation.  Are you
     sure you want to create another?</string>-->
-    <string name="dup_game_query_fmt">Vous avez déjà une partie qui semble
-avoir été créée (sur %1$s) avec la même invitation. Êtes-vous sûr de vouloir en
-créer une autre ?</string>
     <!-- Title of generic dialog used to display information -->
     <!--<string name="info_title">FYI…</string>-->
     <string name="info_title">Pour information…</string>
@@ -1783,7 +1780,6 @@ modèle.</string>
        # Dialog giving copyright and other basic info about # the app
        ########################################################### 
       -->
-
     <!-- copyright info -->
     <!--<string name="about_copyright">Copyright (C) 1998-2015 by Eric
         House. This free/open source software is released under the GNU Public
@@ -2245,7 +2241,6 @@ mots ?</string>
     <string name="group_cur_games">Mes parties</string>
     <!--<string name="group_new_games">New games</string>-->
     <string name="group_new_games">Nouvelles parties</string>
-
     <!--<string name="groups_confirm_del_games_fmt">\n\n(%1$d game[s] will
     also be deleted.)</string>-->
     <!--<string name="groups_confirm_del_games_fmt">\n\n(%1$d parties seront aussi
@@ -2300,10 +2295,10 @@ effacées.)</string>-->
     <string name="not_again_backclears">Le bouton retour efface les sélections
 au lieu de quitter. Pressez le de nouveau pour quitter l\'application.</string>
     <plurals name="sel_games_fmt">
-      <item quantity="other">Parties : %1$d</item>
+        <item quantity="other">Parties : %1$d</item>
     </plurals>
     <plurals name="sel_groups_fmt">
-      <item quantity="other">Groupes : %1$d</item>
+        <item quantity="other">Groupes : %1$d</item>
     </plurals>
     <!--<string name="summary_thumbsize">Thumbnail size</string>-->
     <string name="summary_thumbsize">Taille des vignettes</string>
@@ -2788,7 +2783,6 @@ changement, ou l\'éditer pour lui attribuer une façon de se connecter ?</stri
     <string name="netstats_title">Statistiques réseau de la partie</string>
     <!--XLATE-ME-->
     <!--<string name="git_rev_title">Source version id</string>-->
-    <string name="git_rev_title">Identifiant de version du source</string>
     <!--XLATE-ME-->
     <!--<string name="relay_port">Relay game port</string>-->
     <string name="relay_port">Port de partie du relai</string>
@@ -2806,13 +2800,11 @@ changement, ou l\'éditer pour lui attribuer une façon de se connecter ?</stri
     <string name="gamel_menu_loaddb">Charger BDD depuis carte SD</string>
     <!--XLATE-ME-->
     <!--<string name="enable_dupes_title">Accept duplicate invites</string>-->
-    <string name="enable_dupes_title">Accepter les invitations redondantes</string>
     <!--XLATE-ME-->
     <!--<string name="xlations_locale">Fake locale for translation</string>-->
     <string name="xlations_locale">Fausse locale pour les traductions</string>
     <!--XLATE-ME-->
     <!--<string name="enable_dupes_summary">Accept invitations more than once</string>-->
-    <string name="enable_dupes_summary">Accepter les invitations plusieurs fois</string>
     <!--XLATE-ME-->
     <!--<string name="nag_intervals">Reminder intervals (minutes1,minutes2,...)</string>-->
     <string name="nag_intervals">Intervalles des rappels (minutes1,minutes2,…)</string>
@@ -2945,7 +2937,6 @@ pour la langue</string>
         <item quantity="other">Êtes-vous sûr de vouloir supprimer les %1$d numéros de téléphone cochés ?</item>
     </plurals>
     <string name="disable_nag_solo_title">Désactiver les rappels de parties en solo</string>
-    <string name="devid_title">Identifiant d\'appareil (sur le relai)</string>
     <string name="fetching_from_relay">Récupération des parties du relai</string>
     <string name="processing_games">Traitement des parties</string>
     <string name="list_item_select">Sélectionner</string>

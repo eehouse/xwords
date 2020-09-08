@@ -1200,9 +1200,6 @@
          confused.  But some people who play together all the time use
          the same room name over and over so they'll get this warning
          and it's harmless to ignore it. -->
-    <string name="dup_game_query_fmt">Você já tem um jogo aparentemente
-    criado (em %1$s) do mesmo convite.  Tem certeza que você quer
-    criar outro?</string>
     <!-- Title of generic dialog used to display information -->
     <string name="info_title">Para sua informação...</string>
     <!-- title of dialog allowing user to pick tiles "face up".  (This

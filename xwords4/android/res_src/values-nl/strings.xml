@@ -299,7 +299,6 @@
     <string name="button_save">Opslaan</string>
     <string name="button_discard">Annuleren</string>
     <string name="button_retry">Opnieuw proberen</string>
-    <string name="dup_game_query_fmt">Je hebt al een spel dat gemaakt is (via %1$s) met dezelfde uitnodiging. Weet je zeker dat je nog een spel aan wilt maken?</string>
     <string name="info_title">Ter informatie…</string>
     <string name="tiles_left_title">Letters in zak</string>
     <string name="counts_values_title">Letter hoeveelheid en waardes</string>
@@ -476,10 +475,10 @@
     <string name="not_again_newselect">Als je drukt op een spel open je het.\n\nJe kunt op de iconen aan de linkerkant drukken om spellen te selecteren of deselecteren. Daarna kun je de spellen bewerken, bijvoorbeeld verwijderen, met behulp van het menu of de actiebalk.</string>
     <string name="not_again_backclears">De terug knop maakt de selectie leeg in plaats van af te sluiten. Druk er nogmaals op om de app af te sluiten.</string>
     <plurals name="sel_games_fmt">
-      <item quantity="other">Spellen: %1$d</item>
+        <item quantity="other">Spellen: %1$d</item>
     </plurals>
     <plurals name="sel_groups_fmt">
-      <item quantity="other">Groepen: %1$d</item>
+        <item quantity="other">Groepen: %1$d</item>
     </plurals>
     <string name="summary_thumbsize">Voorbeeldgrootte</string>
     <string name="thumb_off">Uitgeschakeld</string>
@@ -643,15 +642,12 @@
     <string name="debug_features_summary">Menuitems etc. (enkel uitgegeven versies)</string>
     <string name="board_menu_game_netstats">Netwerkstatistieken</string>
     <string name="netstats_title">Netwerkstatistieken spel</string>
-    <string name="git_rev_title">Bron versie ID</string>
     <string name="relay_port">Relay spel poort</string>
     <string name="proxy_port">Relay apparaat poort</string>
     <string name="name_dict_fmt">%1$s/%2$s</string>
     <string name="gamel_menu_storedb">Schrijf spellen naar SD kaart</string>
     <string name="gamel_menu_loaddb">Laad spellen van SD kaart</string>
-    <string name="enable_dupes_title">Accepteer dubbele uitnodigingen</string>
     <string name="xlations_locale">Neppe taal voor vertalingen</string>
-    <string name="enable_dupes_summary">Accepteer uitnodigingen meer dan eens</string>
     <string name="nag_intervals">Herinnering intervallen (minuten1,minuten2,...)</string>
     <string name="enable_sms_toself_title">Stuur SMS berichten naar zelf</string>
     <string name="enable_sms_toself_summary">Schakel radio over als telefoonnummers gelijk zijn</string>
@@ -753,7 +749,6 @@
     <string name="disable_nags_title">Beurt herinneringen</string>
     <string name="disable_nag_solo_title">Schakel solo spel herinneringen uit</string>
     <string name="board_menu_game_showInvites">Toon uitnodigingen</string>
-    <string name="devid_title">Apparaat ID (op relay)</string>
     <string name="not_again_rematch_two_only">Rematch is momenteel enkel beschikbaar voor spellen met twee personen, omdat dit moeilijker is met meer apparaten en ik denk dat het niet vaak gebeurt dat mensen met meer dan twee spelen. Laat het me weten als ik het mis heb, dan hoog ik de prioriteit op.</string>
     <string name="rel_invite_title">Relay uitnodigingstitel</string>
     <string name="fetching_from_relay">Spellen ophalen van relay</string>

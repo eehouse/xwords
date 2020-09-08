@@ -316,7 +316,6 @@
     <string name="button_save">Speichern</string>
     <string name="button_discard">Verwerfen</string>
     <string name="button_retry">Erneut versuchen</string>
-    <string name="dup_game_query_fmt">Sie haben bereits eine Partie, die anscheinend von der selben Einladung erzeugt wurde (auf %1$s). Sind Sie sicher, dass Sie eine weitere erzeugen wollen?</string>
     <string name="info_title">Zur Information …</string>
     <string name="tile_button_txt_fmt">%1$s (%2$d)</string>
     <string name="tile_pick_summary_fmt">Aktuelle Auswahl: %1$s</string>
@@ -541,10 +540,10 @@
 \nSie können stattdessen die Icons links antippen, um Partien aus- oder abzuwählen, und dann mit den ausgewählten Partien etwas tun, z. B. sie löschen, indem Sie das Menü oder die „Aktionsleiste“ benutzen.</string>
     <string name="not_again_backclears">Der Zurück-Button löscht die Auswahl anstatt die App zu beenden. Drücken Sie ihn erneut, um die App zu beenden.</string>
     <plurals name="sel_games_fmt">
-      <item quantity="other">Partien: %1$d</item>
+        <item quantity="other">Partien: %1$d</item>
     </plurals>
     <plurals name="sel_groups_fmt">
-      <item quantity="other">Gruppen: %1$d</item>
+        <item quantity="other">Gruppen: %1$d</item>
     </plurals>
     <string name="summary_thumbsize">Vorschaubildgröße</string>
     <string name="thumb_off">Deaktiviert</string>
@@ -717,7 +716,6 @@
     <string name="board_menu_game_netstats">Netzwerk-Statistiken</string>
     <string name="gamel_menu_loaddb">Partien von SD-Karte laden</string>
     <string name="gamel_menu_writegit">Git-Informationen in die Zwischenablage kopieren</string>
-    <string name="enable_dupes_summary">Einladungen mehrfach annehmen</string>
     <string name="nag_intervals">Erinnerungsintervall (Minuten1, Minuten2, …)</string>
     <string name="radio_name_gsm">GSM</string>
     <string name="radio_name_cdma">CDMA</string>
@@ -837,13 +835,10 @@
     <string name="debug_features_summary">Menüeinträge usw. (nur Release-Builds)</string>
     <string name="board_menu_game_showInvites">Einladungen zeigen</string>
     <string name="netstats_title">Partie-Netzwerkstatistik</string>
-    <string name="git_rev_title">Version des Quellcodes</string>
-    <string name="devid_title">Geräte-ID (auf Zwischenstation)</string>
     <string name="relay_port">Spiel-Port auf Zwischenstation</string>
     <string name="proxy_port">Geräte-Port auf Zwischenstation</string>
     <string name="name_dict_fmt">%1$s/%2$s</string>
     <string name="gamel_menu_storedb">Partien auf SD-Kartie speichern</string>
-    <string name="enable_dupes_title">Doppelte Einladungen annehmen</string>
     <string name="xlations_locale">Pseudo-Locale zum Übersetzen</string>
     <string name="enable_sms_toself_title">SMS-Selbstverbindung aktivieren</string>
     <string name="enable_sms_toself_summary">Mobilfunk weglassen bei gleichen Nummern</string>
