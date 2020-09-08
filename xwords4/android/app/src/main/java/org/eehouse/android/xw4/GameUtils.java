@@ -1088,7 +1088,7 @@ public class GameUtils {
                 }
             } catch ( GameLock.GameLockedException gle ) {
                 DbgUtils.toastNoLock( TAG, context, rowid,
-                                      "feedMessage(): dropping message "
+                                      "feedMessage(): dropping message"
                                       + " for %d", rowid );
             }
         }
