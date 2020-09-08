@@ -76,9 +76,6 @@
          confused.  But some people who play together all the time use
          the same room name over and over so they'll get this warning
          and it's harmless to ignore it. -->
-    <string name="dup_game_query_fmt">XLATE ME: You already have a game that seems
-    to have been created (on %1$s) from the same invitation.  Are you
-    sure you want to create another?</string>
     <!-- Used for a button when informing user that his attempt to
          connect to the relay failed because the room named does not
          exist.  (I believe this no longer occurs.) -->

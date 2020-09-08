@@ -298,10 +298,10 @@
     <string name="button_reconnect">Koble til igjen</string>
     <string name="change_group">Flytt valgte spill til:</string>
     <plurals name="sel_games_fmt">
-      <item quantity="other">Spill: %1$d</item>
+        <item quantity="other">Spill: %1$d</item>
     </plurals>
     <plurals name="sel_groups_fmt">
-      <item quantity="other">Grupper: %1$d</item>
+        <item quantity="other">Grupper: %1$d</item>
     </plurals>
     <string name="summary_thumbsize">Miniatyrbildestørrelse</string>
     <string name="thumb_off">Avskrudd</string>
@@ -414,7 +414,6 @@
     <string name="name_dict_fmt">%1$s/%2$s</string>
     <string name="gamel_menu_storedb">Skriv spill til SD-kort</string>
     <string name="gamel_menu_loaddb">Last spill fra SD-kort</string>
-    <string name="enable_dupes_summary">Godta invitasjoner mer enn én gang</string>
     <string name="enable_sms_toself_title">Kortslutt SMS til deg selv</string>
     <string name="force_radio_title">Lat som du har radio</string>
     <string name="radio_name_real">Ikke lat som</string>
@@ -654,12 +653,9 @@
     <string name="dict_host">Ordlistenedlastingsnettadresse</string>
     <string name="debug_features_summary">Menyelementer osv. (kun utgivelsesbygg)</string>
     <string name="netstats_title">Spillnettverksstatistikk</string>
-    <string name="git_rev_title">Kildekodeversjons-ID</string>
-    <string name="devid_title">Enhets-ID (på relé)</string>
     <string name="relay_port">Relé-spillport</string>
     <string name="proxy_port">Relé-enhetsport</string>
     <string name="gamel_menu_writegit">Kopier Git-info til utklippstavle</string>
-    <string name="enable_dupes_title">Godta duplikatinvitasjoner</string>
     <string name="xlations_locale">Juks til lokale for oversettelse</string>
     <string name="nag_intervals">Påminnelsesintervall (minutt1,minutt2,…)</string>
     <string name="nfc_to_self">Send via NFC til egen ehet?</string>
@@ -692,7 +688,6 @@
     <string name="subst_dict_title">Erstatningsordliste (antall ord)</string>
     <string name="notify_title_fmt">Trekk i spillet %1$s</string>
     <string name="notify_title_turn_fmt">Din tur i spillet %1$s</string>
-    <string name="dup_game_query_fmt">Du har allerede et spill som ser ut til å ha blitt opprettet (den %1$s) fra samme invitasjon. Er du sikker på at du vil opprette en ny?</string>
     <string name="info_title">Til din opplysning…</string>
     <string name="tile_tray_picker">Velg nye flis for stativet</string>
     <string name="counts_values_title">Flisopptellinger og -verdier</string>

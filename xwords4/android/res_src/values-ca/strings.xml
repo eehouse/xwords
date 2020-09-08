@@ -458,10 +458,10 @@ Introduïu el vostre nom aquí. S\'usarà en crear partides noves. (Podreu
     <string name="change_group">Mou les partides seleccionades a:</string>
     <string name="relay_alert_title">Missatge del dia</string>
     <plurals name="sel_games_fmt">
-      <item quantity="other">Partides: %1$d</item>
+        <item quantity="other">Partides: %1$d</item>
     </plurals>
     <plurals name="sel_groups_fmt">
-      <item quantity="other">Grups: %1$d</item>>
+        <item quantity="other">Grups: %1$d</item>&gt;
     </plurals>
     <string name="summary_thumbsize">Mida de la miniatura</string>
     <string name="thumb_off">Desactivat</string>
@@ -556,8 +556,6 @@ Introduïu el vostre nom aquí. S\'usarà en crear partides noves. (Podreu
     <string name="relay_port">Port del repetidor de partides</string>
     <string name="gamel_menu_storedb">Escriu les partides a la targeta SD</string>
     <string name="gamel_menu_loaddb">Carrega les partides de la targeta SD</string>
-    <string name="enable_dupes_title">Accepta invitacions duplicades</string>
-    <string name="enable_dupes_summary">Accepta invitacions més d\'una vegada</string>
     <string name="radio_name_gsm">GSM</string>
     <string name="radio_name_cdma">CDMA</string>
     <string name="game_summary_field_rowid">rowid</string>
@@ -657,7 +655,6 @@ Introduïu el vostre nom aquí. S\'usarà en crear partides noves. (Podreu
     <string name="square_tiles">Fitxes els faristol quadrades</string>
     <string name="update_dicts_fmt">Les actualitzacions són disponibles per a algun dels diccionaris. Voleu baixar la versió nova de %1$s ara?</string>
     <string name="netstats_title">Estadístiques de la partida en xarxa</string>
-    <string name="git_rev_title">ID de la versió de codi font</string>
     <string name="proxy_port">Port de l\'aparell repetidor</string>
     <string name="enable_sms_toself_title">SMS curtcircuit a un mateix</string>
     <string name="force_radio_title">Simula tenir ràdio</string>
@@ -672,7 +669,6 @@ Introduïu el vostre nom aquí. S\'usarà en crear partides noves. (Podreu
     <string name="not_again_comms_sms">Jugar via SMS usa la mateixa tecnologia que els missatges SMS. Els missatges seran invisibles, l\'operadora els considera missatges de text, per tant potser preferiu inhabilitar aquesta característica llevat que tingueu missatges SMS il·limitats (o un bon pressupost). Noteu que l\'Android només permet aquesta característica en els dispositius amb operadora GSM, això és qualsevol operadora mundial, excepte Verizon i Sprint.</string>
     <string name="not_again_comms_bt">Useu Bluetooth per a jugar contra un aparell proper que estigui aparellat amb el vostre.</string>
     <string name="force_tablet_title">Voleu usar la disposició de tauleta (costat per costat)?</string>
-    <string name="dup_game_query_fmt">Ja teniu una partida que sembla s\'ha creat (el %1$s) amb la mateixa invitació. Esteu segur de voler crear-ne una altra?</string>
     <string name="not_again_sync">Aquesta acció comprova que no hi hagin jugades o missatges pendents al repetidor de totes partides i marca aquelles amb jugades pendents. Si obriu una partida marcada connectarà i sincronitzarà. (en una versió posterior aquestes jugades es baixaran en segon pla.)</string>
     <string name="not_again_conndfirst">Teniu una partida connectada i iniciada en una sala nova. Una vegada els aparells que falten s\'hagin unit a la vostra sala, i el CrossWords hagi assignat les fitxes, la partida pot començar.</string>
     <string name="not_again_conndmid">Heu connectat i unit a una partida al repetidor. Rebreu notificacions quan els aparells que manquen s\'hi hagin unit a la sala i pugui començar la partida.</string>
@@ -850,7 +846,6 @@ de %2$d destinataris. Useu el botó de tornar a
     <string name="warn_relay_havegames">Esteu segur de voler desactivar el joc via repetidor?</string>
     <string name="force_tablet_tablet">Força la disposició de tauleta</string>
     <string name="force_tablet_phone">Força la disposició de telèfon</string>
-    <string name="devid_title">ID de l\'aparell (en el repetidor)</string>
     <string name="gamel_menu_writegit">Copia la informació git al porta-retalls</string>
     <string name="expl_relay_url">URL per a l\'API web del repetidor</string>
     <string name="not_again_comms_p2p">Usa WiFi Direct per a jugar contra aparells propers amb WiFi Direct i el CrossWords instal·lat.</string>

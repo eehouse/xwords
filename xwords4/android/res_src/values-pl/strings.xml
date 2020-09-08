@@ -398,7 +398,6 @@
     <string name="player_fmt">Gracz %1$d</string>
     <string name="notify_title_fmt">Poruszaj się w grze %1$s</string>
     <string name="notify_chat_title_fmt">Wiadomość czatu w grze %1$s</string>
-    <string name="dup_game_query_fmt">"Masz już tę grę, która wydaje się być utworzona (na  %1$s) z tego samego zaproszenia. Czy na pewno chcesz utworzyć nową\?"</string>
     <string name="info_title">INFORMUJĘ, ŻE.…</string>
     <string name="title_blank_picker">Wybierz kafelek dla pustego</string>
     <string name="tile_tray_picker">Wybierz nowe kafelki do zasobnika</string>
@@ -590,10 +589,10 @@
 \nMożesz zamiast tego możesz stuknąć ikony po lewej stronie, aby wybrać lub odznaczyć gry, a następnie wykonać różne działania w wybranych grach, np. aby je usunąć, za pomocą menu lub „Paska zadań”</string>
     <string name="not_again_backclears">Przycisk Wstecz usuwa wszystkie zaznaczenia zamiast wyjść. Naciśnij go ponownie, aby opuścić aplikację.</string>
     <plurals name="sel_games_fmt">
-      <item quantity="other">Gry: %1$d</item>
+        <item quantity="other">Gry: %1$d</item>
     </plurals>
     <plurals name="sel_groups_fmt">
-      <item quantity="other">Grupy: %1$d</item>
+        <item quantity="other">Grupy: %1$d</item>
     </plurals>
     <string name="summary_thumbsize">Rozmiar miniaturki</string>
     <string name="thumb_off">Wyłączone</string>
@@ -757,17 +756,13 @@
     <string name="board_menu_game_netstats">Statystyki sieci</string>
     <string name="board_menu_game_showInvites">Pokaż zaproszenia</string>
     <string name="netstats_title">Statystyki gry sieciowej</string>
-    <string name="git_rev_title">Identyfikator wersji źródła</string>
-    <string name="devid_title">Identyfikator urządzenia (na przekaźniku)</string>
     <string name="relay_port">Przekaźnik portu gier</string>
     <string name="proxy_port">Przekaźnik portu urządzenia</string>
     <string name="name_dict_fmt">%1$s/%2$s</string>
     <string name="gamel_menu_storedb">Zapisz gry na kartę SD</string>
     <string name="gamel_menu_loaddb">Załaduj gry z karty SD</string>
     <string name="gamel_menu_writegit">Skopiuj informacje git do schowka</string>
-    <string name="enable_dupes_title">Zaakceptuj duplikaty zaproszeń</string>
     <string name="xlations_locale">Fałszywy język do tłumaczenia</string>
-    <string name="enable_dupes_summary">Akceptuj zaproszenia więcej niż raz</string>
     <string name="nag_intervals">Przypomnienie w odstępach (1 minuty, 2 minut,...)</string>
     <string name="enable_sms_toself_title">Akceptuj SMS do siebie</string>
     <string name="radio_name_gsm">GSM</string>
