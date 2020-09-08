@@ -2347,6 +2347,7 @@ public class GamesListDelegate extends ListDelegateBase
             // creates
             for ( long rowid : rowids.keySet() ) {
                 if ( nli.forceChannel == rowids.get(rowid) ) {
+                    DbgUtils.printStack( TAG );
                     makeOkOnlyBuilder( R.string.dropped_dupe )
                         .setActionPair( Action.OPEN_GAME,
                                         R.string.button_open_game )
