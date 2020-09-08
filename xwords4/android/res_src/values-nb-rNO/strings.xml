@@ -567,7 +567,6 @@
     <string name="str_cant_undo_tileassign">Tildelingen kan ikke angres.</string>
     <string name="finalscores_title">Sluttpoengsummer</string>
     <string name="ids_endnow">Er du sikker på at du ønsker å gi deg?</string>
-    <string name="about_vers_fmt">CrossWords for Android, %1$s variant, versjon %2$s, rev %3$s, bygd den %4$s. (DevID: %5$s)</string>
     <string name="about_copyright">Kopirett © 1998-2020 Eric House. Denne frie programvaren er lisensiert med GNU Public-lisens.</string>
     <string name="about_web">For manual eller kildekode, se: http://xwords.sf.net/android.php For å innrapportere feil, foreslå funksjoner, tilby hjelp, osv., send e-post til: xwords@eehouse.org</string>
     <string name="xlator">[tom]</string>

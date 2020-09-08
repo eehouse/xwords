@@ -50,16 +50,16 @@ public class AboutAlert extends XWDialogFragment {
         View view = LocUtils.inflate( context, R.layout.about_dlg );
         TextView vers = (TextView)view.findViewById( R.id.version_string );
 
-        DateFormat df = DateFormat.getDateTimeInstance( DateFormat.FULL,
-                                                        DateFormat.FULL );
+        DateFormat df = DateFormat.getDateTimeInstance( DateFormat.DEFAULT,
+                                                        DateFormat.DEFAULT );
         String dateString
             = df.format( new Date( BuildConfig.BUILD_STAMP * 1000 ) );
-        String devID = XwJNI.dvc_getMQTTDevID(null);
-        vers.setText( getString( R.string.about_vers_fmt,
+        vers.setText( getString( R.string.about_vers_fmt2,
                                  BuildConfig.VARIANT_NAME,
                                  BuildConfig.VERSION_NAME,
-                                 BuildConfig.GIT_REV,
-                                 dateString, devID ) );
+                                 BuildConfig.VERSION_CODE,
+                                 BuildConfig.GITREV_SHORT,
+                                 dateString ) );
 
         TextView xlator = (TextView)view.findViewById( R.id.about_xlator );
         String str = getString( R.string.xlator );
@@ -68,6 +68,10 @@ public class AboutAlert extends XWDialogFragment {
         } else {
             xlator.setVisibility( View.GONE );
         }
+
+        str = getString( R.string.about_devid_fmt, XwJNI.dvc_getMQTTDevID(null) );
+        ((TextView)view.findViewById( R.id.about_build ))
+            .setText( str );
 
         AlertDialog.Builder builder = LocUtils.makeAlertBuilder( context )
             .setIcon( R.drawable.icon48x48 )

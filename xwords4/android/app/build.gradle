@@ -22,6 +22,7 @@ if (! forFDroid) {
     GITREV += " --dirty"
 }
 GITREV = GITREV.execute().text.trim()
+def GITREV_SHORT = "git rev-parse --short HEAD".execute().text.trim()
 
 // Make CURTAG non-empty IFF we're at a tag (release build)
 def CURTAG = "git describe --exact-match".execute().text.trim()
@@ -55,8 +56,8 @@ android {
 
         // We need both of these because xwprefs.xml can't reference
         // the BuildConfig constant
-        resValue "string", "git_rev", "$GITREV"
         variant.buildConfigField "String", "GIT_REV", "\"$GITREV\""
+        variant.buildConfigField "String", "GITREV_SHORT", "\"$GITREV_SHORT\""
 
         // def stamp = Long.valueOf('date +\'%s\''.execute().text.trim());
         def stamp = Math.round(System.currentTimeMillis() / 1000)

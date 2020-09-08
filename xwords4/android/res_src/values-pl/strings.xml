@@ -437,7 +437,6 @@
 \n
 \nPrzytrzymaj palec na nazwie w tablicy wyników, aby uzyskać szczegółowe informacje na temat ostatniego ruchu tego gracza.</string>
     <string name="not_again_newfrom">Stwórz nową, gotową do gry grę, wykorzystując wszystkie ustawienia z tej gry. To znaczy, traktuj tę grę jak szablon.</string>
-    <string name="about_vers_fmt">CrossWords dla systemu Android, %1$s wariant, wersja %2$s, rev %3$s, oparty na %4$s. (DevID: %5$s)</string>
     <string name="about_copyright">Copyright (C) 1998-2020 by Eric House. To darmowe/otwartoźródłowe oprogramowanie jest wydawane na licencji publicznej GNU.</string>
     <string name="about_web">Instrukcja obsługi i kod źródłowy znajduje się na stronie: http://xwords.sf.net/android.php. Aby zgłosić błędy, zasugerować funkcje, zaoferować pomoc itp., proszę o kontakt mailowy: xwords@eehouse.org.</string>
     <string name="xlator">[pusta]</string>

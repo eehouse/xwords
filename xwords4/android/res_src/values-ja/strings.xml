@@ -328,7 +328,6 @@
     <string name="not_again_newfrom">ここからすべての設定を使用して、すぐにプレイできるゲームを新しく作成します。つまり、このゲームをテンプレートとして扱います。</string>
     <string name="default_name_title">デフォルト プレイヤー名</string>
     <string name="default_name_message">ここに名前を入力してください。これは新しいゲームを作成するときに使用されます。(後で、設定のセクション \"新しいゲームのデフォルト\" で変更できます)</string>
-    <string name="about_vers_fmt">Android 用クロスワード, %1$s バリアント, バージョン %2$s, リビジョン %3$s, ビルド %4$s. (DevID: %5$s)</string>
     <string name="about_copyright">Copyright (C) 1998-2020 by Eric House. このフリー/オープンソース ソフトウェアは the GNU Public License に基づいてリリースされています.</string>
     <string name="about_web">マニュアルまたはソースコードは: http://xwords.sf.net/android.php を参照してください。バグの報告、機能の提案、支援の提供などは、メールしてください: xwords@eehouse.org 。</string>
     <string name="xlator">[空]</string>

@@ -11,12 +11,12 @@
                 android:layout_height="fill_parent"
                 >
 
-    <TextView android:id="@+id/version_string"
-              style="@style/about_items"
+    <TextView style="@style/about_items"
+    	      android:text="@string/about_copyright"
               />
 
     <TextView style="@style/about_items"
-    	      android:text="@string/about_copyright"
+              android:id="@+id/version_string"
               />
 
     <TextView style="@style/about_items"
@@ -24,12 +24,16 @@
     	      android:autoLink="all" 
               />
 
-    <TextView android:id="@+id/about_xlator"
-              style="@style/about_items"
+    <TextView style="@style/about_items"
+              android:id="@+id/about_xlator"
               />
 
     <TextView style="@style/about_items"
               android:text="@string/about_credits"
+              />
+
+    <TextView style="@style/about_items"
+              android:id="@+id/about_build"
               />
 
   </LinearLayout>

@@ -1468,14 +1468,21 @@
        ########################################################### 
       -->
     <!-- String giving version info, which is substituted in. -->
-    <string name="about_vers_fmt">CrossWords for Android, %1$s variant, Version %2$s,
-        rev %3$s, built on %4$s. DevID: %5$s.</string>
+    <string name="about_vers_fmt2">Build information:
+    \n\tVariant: %1$s
+    \n\tVersion name: %2$s
+    \n\tVersion code: %3$d
+    \n\tSource (git) rev: %4$s
+    \n\tBuilt: %5$s</string>
+
+    <string name="about_devid_fmt">Device ID: %1$s</string>
+
     <!-- copyright info -->
-    <string name="about_copyright">Copyright (C) 1998-2020 by Eric
-        House. This free/open source software is released under the GNU Public
-        License.</string>
+    <string name="about_copyright">CrossWords for Android \nCopyright
+    (C) 1998-2020 by Eric House. This free/open source software is
+    released under the GNU Public License.</string>
     <!-- Another paragraph in the about dialog -->
-    <string name="about_web">For a manual or sourcecode see:
+    <string name="about_web">For an (old) manual or sourcecode see:
     http://xwords.sf.net/android.php.  To report bugs, suggest
     features, offer to help, etc., please email:
     xwords@eehouse.org.</string>
@@ -1485,9 +1492,10 @@
     <string name="xlator">[empty]</string>
     <!-- Another paragraph giving credit for work done other than by
          Eric House and translators -->
-    <string name="about_credits">Toolbar icons by Sarah Chu. Navbar
-    icons from the Noun Project: “archive” by Trendy; “rematch” by
-    Becris; and “swap” by iconomania.</string>
+    <string name="about_credits">Credits: Toolbar icons by Sarah
+    Chu. Navbar icons from the Noun Project: “archive” by Trendy;
+    “rematch” by Becris; and “swap” by iconomania. Localization by
+    volunteers via weblate.org.</string>
     <!-- text of dialog showing the set of changes made since the last
          release -->
     <string name="changes_title">Recent changes</string>
@@ -2260,8 +2268,6 @@
     <string name="board_menu_game_netstats">Network stats</string>
     <string name="board_menu_game_showInvites">Show invites</string>
     <string name="netstats_title">Game network stats</string>
-    <string name="git_rev_title">Source version id</string>
-    <string name="devid_title">Device ID (on relay)</string>
     <string name="relay_port">Relay game port</string>
     <string name="mqtt_port">MQTT port</string>
     <string name="mqtt_qos">MQTT QOS</string>
