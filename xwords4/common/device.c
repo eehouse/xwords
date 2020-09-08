@@ -106,7 +106,7 @@ dvc_getMQTTDevID( XW_DUtilCtxt* dutil, XWEnv xwe, MQTTDevID* devID )
 
 typedef enum { CMD_INVITE, CMD_MSG, CMD_DEVGONE, } MQTTCmd;
 
-#define PROTO_0 0
+// #define PROTO_0 0
 #define PROTO_1 1        /* moves gameID into "header" relay2 knows about */
 
 static void
@@ -158,9 +158,9 @@ dvc_parseMQTTPacket( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_U8* buf, XP_U16 le
     stream_putBytes( stream, buf, len );
 
     XP_U8 proto = stream_getU8( stream );
-    if ( proto != PROTO_0 && proto != PROTO_1 ) {
-        XP_LOGFF( "read proto %d, expected %d or %d; dropping packet",
-                  proto, PROTO_0, PROTO_1 );
+    if ( proto != PROTO_1 ) {
+        XP_LOGFF( "read proto %d, expected %d; dropping packet",
+                  proto, PROTO_1 );
     } else {
         MQTTDevID myID;
         stream_getBytes( stream, &myID, sizeof(myID) );
@@ -169,15 +169,8 @@ dvc_parseMQTTPacket( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_U8* buf, XP_U16 le
         MQTTCmd cmd;
         XP_U32 gameID = 0;
 
-        if ( PROTO_0 == proto ) {
-            cmd = stream_getU8( stream );
-            if ( CMD_INVITE != cmd ) {
-                gameID = stream_getU32( stream );
-            }
-        } else {
-            gameID = stream_getU32( stream );
-            cmd = stream_getU8( stream );
-        }
+        gameID = stream_getU32( stream );
+        cmd = stream_getU8( stream );
 
         switch ( cmd ) {
         case CMD_INVITE: {
