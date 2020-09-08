@@ -1,0 +1,24 @@
+[Unit]
+#  specifies metadata and dependencies
+Description=Start legacy CrossWords relay
+After=postgresql.service
+
+StartLimitIntervalSec=500
+StartLimitBurst=5
+
+[Service]
+# Service specify the user and group under which our process will run.
+User=relay
+
+WorkingDirectory=/home/relay/dev/git/xwords/xwords4/relay
+ExecStart=/home/relay/dev/git/xwords/xwords4/relay/xwrelay -F -D
+
+# on-failure ignores SIGTERM and a couple of other signals making it
+# harder to test. Not sure if there's downside to 'always' but that's
+# what I'm using for now
+# Restart=on-failure
+Restart=always
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target
