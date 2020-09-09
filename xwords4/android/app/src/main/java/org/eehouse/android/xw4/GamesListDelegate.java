@@ -997,8 +997,12 @@ public class GamesListDelegate extends ListDelegateBase
         mCurScrollState = OnScrollListener.SCROLL_STATE_IDLE;
         lv.setOnScrollListener( new OnScrollListener() {
                 @Override
-                public void onScroll( AbsListView absListView, int ii, int i1, int i2 )
+                public void onScroll( AbsListView absListView, int firstVis,
+                                      int visCount, int totalCount )
                 {
+                    if ( 0 < visCount && visCount < totalCount ) {
+                        checkOfferHideButtons();
+                    }
                     if ( mCurScrollState == OnScrollListener.SCROLL_STATE_TOUCH_SCROLL ) {
                         lv.setFastScrollEnabled( true );
                     }
@@ -1103,6 +1107,24 @@ public class GamesListDelegate extends ListDelegateBase
             outState.putBundle( SAVE_REMATCHEXTRAS, m_rematchExtras );
         }
         super.onSaveInstanceState( outState );
+    }
+
+    // Only called when scrolling's necessary
+    private boolean m_offeredHideButtons = false;
+    private void checkOfferHideButtons()
+    {
+        if ( !m_offeredHideButtons ) {
+            if ( XWPrefs.getHideNewgameButtons( m_activity ) ) {
+                m_offeredHideButtons = true; // don't do expensive check again
+            } else {
+                m_offeredHideButtons = true;
+                makeNotAgainBuilder( R.string.not_again_hidenewgamebuttons,
+                                     R.string.key_notagain_hidenewgamebuttons )
+                    .setActionPair( Action.SET_HIDE_NEWGAME_BUTTONS,
+                                    R.string.set_pref )
+                    .show();
+            }
+        }
     }
 
     private void getBundledData( Bundle bundle )
@@ -1399,11 +1421,8 @@ public class GamesListDelegate extends ListDelegateBase
             break;
 
         case SET_HIDE_NEWGAME_BUTTONS:
-            XWPrefs.setHideNewgameButtons(m_activity, true);
+            XWPrefs.setHideNewgameButtons( m_activity, true );
             setupButtons();
-            // FALLTHRU
-        case NEW_GAME_PRESSED:
-            handleNewGame( m_mySIS.nextIsSolo );
             break;
 
         case DELETE_GROUPS:
@@ -2147,39 +2166,10 @@ public class GamesListDelegate extends ListDelegateBase
         }
     }
 
-    private void handleNewGame( boolean solo )
-    {
-        m_mySIS.nextIsSolo = solo;
-        showDialogFragment( DlgID.GAMES_LIST_NEWGAME, solo );
-    }
-
     private void handleNewGameButton( boolean solo )
     {
         m_mySIS.nextIsSolo = solo;
-
-        boolean skipOffer = XWPrefs.getHideNewgameButtons( m_activity );
-        if ( ! skipOffer ) {
-            // If the API's availble, offer to hide buttons as soon as there
-            // are enough games that the list is scrollable. Otherwise fall
-            // back to there being at least four games.
-            if ( Build.VERSION.SDK_INT >= 19 ) {
-                ListView list = getListView();
-                skipOffer = !list.canScrollList( 1 ) && !list.canScrollList( -1 );
-            } else {
-                skipOffer = 4 > m_adapter.getCount();
-            }
-        }
-
-        if ( skipOffer ) {
-            handleNewGame( solo );
-        } else {
-            makeNotAgainBuilder( R.string.not_again_hidenewgamebuttons,
-                                 R.string.key_notagain_hidenewgamebuttons,
-                                 Action.NEW_GAME_PRESSED )
-                .setActionPair( Action.SET_HIDE_NEWGAME_BUTTONS,
-                                R.string.set_pref )
-                .show();
-        }
+        showDialogFragment( DlgID.GAMES_LIST_NEWGAME, solo );
     }
 
     @Override
