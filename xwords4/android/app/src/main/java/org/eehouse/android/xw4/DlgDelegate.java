@@ -46,7 +46,6 @@ public class DlgDelegate {
         OPEN_GAME,
         CLEAR_SELS,
         NEW_NET_GAME,
-        NEW_GAME_PRESSED,
         SET_HIDE_NEWGAME_BUTTONS,
         DWNLD_LOC_DICT,
         NEW_GAME_DFLT_NAME,
