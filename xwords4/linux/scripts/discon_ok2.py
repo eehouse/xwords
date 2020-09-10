@@ -914,7 +914,7 @@ def parseArgs():
 def assignDefaults(args):
     if not args.NROOMS: args.NROOMS = args.NGAMES
     if len(args.DICTS) == 0: args.DICTS.append('CollegeEng_2to8.xwd')
-    args.LOGDIR = os.path.basename(sys.argv[0]) + '_logs'
+    args.LOGDIR = os.path.splitext(os.path.basename(sys.argv[0]))[0] + '_logs'
     # Move an existing logdir aside
     if os.path.exists(args.LOGDIR):
         shutil.move(args.LOGDIR, '/tmp/' + args.LOGDIR + '_' + str(random.randint(0, 100000)))
