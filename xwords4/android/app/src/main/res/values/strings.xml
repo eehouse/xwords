@@ -502,7 +502,7 @@
     number %1$s on %2$s</string>
     <string name="invit_expl_usrsms_fmt">Invite sent via SMS to %1$s on %2$s</string>
     <!-- shown when user chooses to invite via the default SMS app -->
-    <string name="sms_invite_flakey">This new option launches your
+    <string name="sms_invite_flakey">This option launches your
     default SMS app with an invitation ready to send—when it
     works. Each SMS app is different, and some won’t
     cooperate.</string>
