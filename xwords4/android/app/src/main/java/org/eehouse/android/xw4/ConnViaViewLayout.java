@@ -38,6 +38,7 @@ import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;
 import org.eehouse.android.xw4.loc.LocUtils;
 
 public class ConnViaViewLayout extends LinearLayout {
+    private static final String TAG = ConnViaViewLayout.class.getSimpleName();
     private CommsConnTypeSet m_curSet;
     private DlgDelegate.HasDlgDelegate m_dlgDlgt;
     private Activity m_activity;

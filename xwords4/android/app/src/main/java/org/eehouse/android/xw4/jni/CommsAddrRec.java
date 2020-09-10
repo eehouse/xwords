@@ -213,6 +213,20 @@ public class CommsAddrRec {
             }
         }
 
+        @Override
+        public String toString()
+        {
+            if ( BuildConfig.NON_RELEASE ) {
+                List<String> tmp = new ArrayList<>();
+                for ( CommsConnType typ : getTypes() ) {
+                    tmp.add( typ.toString() );
+                }
+                return TextUtils.join(",", tmp );
+            } else {
+                return super.toString();
+            }
+        }
+
         public String toString( Context context, boolean longVersion )
         {
             String result;

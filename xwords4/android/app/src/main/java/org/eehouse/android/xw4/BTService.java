@@ -558,7 +558,8 @@ public class BTService extends XWJIService {
                 // listenUsingRfcommWithServiceRecord() in background (on
                 // Android 9)
                 m_serverSocket = null;
-                Log.ex( TAG, ex );
+                // I'm seeing too much of this on two-user systems.
+                // Log.ex( TAG, ex );
             }
 
             int nBadCount = 0;
