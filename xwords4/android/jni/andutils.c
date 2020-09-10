@@ -603,7 +603,6 @@ addrTypesToJ( JNIEnv* env, const CommsAddrRec* addr )
                                   "(Ljava/lang/Object;)Z" );
     XP_ASSERT( !!mid2 );
     CommsConnType typ;
-    /* far as it gets */
     for ( XP_U32 st = 0; addr_iter( addr, &typ, &st ); ) {
         jobject jtyp = intToJEnum( env, typ, 
                                    PKG_PATH("jni/CommsAddrRec$CommsConnType") );

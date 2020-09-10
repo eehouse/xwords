@@ -472,8 +472,10 @@ def build_cmds(args):
                         PARAMS += [ '--invitee-sms-number', makeSMSPhoneNo(GAME, dev) ]
 
             PARAMS += [ '--mqtt-port', args.MQTT_PORT, '--mqtt-host', args.MQTT_HOST ]
-            if args.ADD_MQTT and DEV == 1:
-                PARAMS += [ '--force-invite' ]
+            if args.ADD_MQTT:
+                PARAMS += [ '--with-mqtt' ]
+                if DEV == 1:
+                    PARAMS += [ '--force-invite' ]
 
             if args.UNDO_PCT > 0:
                 PARAMS += ['--undo-pct', args.UNDO_PCT]
@@ -648,6 +650,7 @@ def run_cmds(args, devs):
                 devs.remove(dev)
         else:
             time.sleep(1.0)
+        print('.', end='', flush=True)
 
     # if we get here via a break, kill any remaining games
     if devs:

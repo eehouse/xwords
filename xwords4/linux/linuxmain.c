@@ -2947,11 +2947,9 @@ main( int argc, char** argv )
             addr_addType( &mainParams.addr, COMMS_CONN_MQTT );
             break;
         case CMD_MQTTHOST:
-            addr_addType( &mainParams.addr, COMMS_CONN_MQTT );
             mainParams.connInfo.mqtt.hostName = optarg;
             break;
         case CMD_MQTTPORT:
-            addr_addType( &mainParams.addr, COMMS_CONN_MQTT );
             mainParams.connInfo.mqtt.port = atoi(optarg);
             break;
         case CMD_INVITEE_MQTTDEVID:

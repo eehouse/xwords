@@ -2183,15 +2183,15 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1summarize
             server_getDupTimerExpires(server) );
     
     if ( !!state->game.comms ) {
-        CommsAddrRec addr;
         CommsCtxt* comms = state->game.comms;
-        comms_getAddr( comms, &addr );
         setInt( env, jsummary, "seed", comms_getChannelSeed( comms ) );
         setInt( env, jsummary, "missingPlayers", 
                 server_getMissingPlayers( server ) );
         setInt( env, jsummary, "nPacketsPending", 
                 comms_countPendingPackets( state->game.comms ) );
 
+        CommsAddrRec addr;
+        comms_getAddr( comms, &addr );
         setTypeSetFieldIn( env, &addr, jsummary, "conTypes" );
 
         CommsConnType typ;
@@ -2226,7 +2226,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1summarize
                     case COMMS_CONN_SMS: addrps[ii] = (XP_UCHAR*)&addrs[ii].u.sms.phone; break;
                     default: XP_ASSERT(0); break;
                     }
-                    XP_LOGF( "%s: adding btaddr/phone/mac %s", __func__, addrps[ii] );
+                    XP_LOGFF( "adding btaddr/phone/mac %s", addrps[ii] );
                 }
                 setStringArray( env, jsummary, "remoteDevs", count, addrps );
             }
