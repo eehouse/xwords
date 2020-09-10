@@ -37,14 +37,14 @@ typedef XP_U8 XWHostID;
 
 typedef enum {
     COMMS_CONN_NONE           /* I want errors on uninited case */
-    ,COMMS_CONN_IR
-    ,COMMS_CONN_IP_DIRECT
-    ,COMMS_CONN_RELAY
-    ,COMMS_CONN_BT
-    ,COMMS_CONN_SMS
+    ,COMMS_CONN_IR            /* 1 */
+    ,COMMS_CONN_IP_DIRECT       /* 2 */
+    ,COMMS_CONN_RELAY           /* 3 */
+    ,COMMS_CONN_BT              /* 4 */
+    ,COMMS_CONN_SMS             /* 5 */
     ,COMMS_CONN_P2P             /* a.k.a. Wifi direct */
-    ,COMMS_CONN_NFC
-    ,COMMS_CONN_MQTT
+    ,COMMS_CONN_NFC             /* 7 */
+    ,COMMS_CONN_MQTT            /* 8 */
 
     ,COMMS_CONN_NTYPES
 } CommsConnType;
