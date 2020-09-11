@@ -1946,7 +1946,8 @@
     <string name="download_failed">Download unsuccessful</string>
     <string name="default_loc">Store wordlists internally</string>
     <string name="default_loc_summary">(Not in external/sdcard memory)</string>
-    <string name="download_path_title">Downloads Directory</string>
+    <string name="download_path_title">Public Directory</string>
+    <string name="download_path_hint">E.g. where email attachments are saved</string>
     <string name="newgroup_label">Name your new group:</string>
     <string name="list_group_delete">Delete group</string>
     <string name="list_group_rename">Rename group</string>

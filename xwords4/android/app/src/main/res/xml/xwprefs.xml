@@ -522,6 +522,7 @@
     <org.eehouse.android.xw4.XWEditTextPreference 
         android:key="@string/key_download_path"
         android:title="@string/download_path_title"
+        android:hint="@string/download_path_hint"
         />
 
     <org.eehouse.android.xw4.XWEditTextPreference
