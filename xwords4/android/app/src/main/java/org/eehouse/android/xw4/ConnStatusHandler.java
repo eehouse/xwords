@@ -722,7 +722,9 @@ public class ConnStatusHandler {
                                         fcmMsg );
                 break;
             case COMMS_CONN_MQTT:
-                result = String.format("DevID: %s", addr.mqtt_devID );
+                if ( null != addr ) {
+                    result = String.format("DevID: %s", addr.mqtt_devID );
+                }
                 break;
             case COMMS_CONN_P2P:
                 result = WiDirService.formatNetStateInfo();
