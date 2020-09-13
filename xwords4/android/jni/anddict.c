@@ -285,7 +285,7 @@ and_dictionary_make_empty( MPFORMAL JNIUtilCtxt* jniutil )
 }
 
 void
-makeDicts( MPFORMAL JNIEnv *env,
+makeDicts( MPFORMAL JNIEnv* env,
 #ifdef MAP_THREAD_TO_ENV
            EnvThreadInfo* ti,
 #endif
@@ -322,7 +322,7 @@ makeDicts( MPFORMAL JNIEnv *env,
 }
 
 DictionaryCtxt* 
-makeDict( MPFORMAL JNIEnv *env,
+makeDict( MPFORMAL JNIEnv* env,
 #ifdef MAP_THREAD_TO_ENV
           EnvThreadInfo* ti,
 #endif

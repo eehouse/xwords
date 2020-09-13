@@ -314,7 +314,7 @@ getBools( JNIEnv* env, void* cobj, jobject jobj, const SetInfo* sis, XP_U16 nSis
 }
 
 jintArray
-makeIntArray( JNIEnv *env, int count, const void* vals, size_t elemSize )
+makeIntArray( JNIEnv* env, int count, const void* vals, size_t elemSize )
 {
     jintArray array = (*env)->NewIntArray( env, count );
     XP_ASSERT( !!array );
@@ -344,7 +344,7 @@ makeIntArray( JNIEnv *env, int count, const void* vals, size_t elemSize )
 }
 
 void
-setIntArray( JNIEnv *env, jobject jowner, const char* fieldName,
+setIntArray( JNIEnv* env, jobject jowner, const char* fieldName,
              int count, const void* vals, size_t elemSize )
 {
     jintArray jarr = makeIntArray( env, count, vals, elemSize );
@@ -353,7 +353,7 @@ setIntArray( JNIEnv *env, jobject jowner, const char* fieldName,
 }
 
 jbyteArray
-makeByteArray( JNIEnv *env, int siz, const jbyte* vals )
+makeByteArray( JNIEnv* env, int siz, const jbyte* vals )
 {
     jbyteArray array = (*env)->NewByteArray( env, siz );
     XP_ASSERT( !!array );
@@ -367,7 +367,7 @@ makeByteArray( JNIEnv *env, int siz, const jbyte* vals )
 }
 
 jbyteArray
-streamToBArray( JNIEnv *env, XWStreamCtxt* stream )
+streamToBArray( JNIEnv* env, XWStreamCtxt* stream )
 {
     int nBytes = stream_getSize( stream );
     jbyteArray result = (*env)->NewByteArray( env, nBytes );
@@ -388,7 +388,7 @@ setBoolArray( JNIEnv* env, jbooleanArray jarr, int count,
 } 
 
 jbooleanArray
-makeBooleanArray( JNIEnv *env, int siz, const jboolean* vals )
+makeBooleanArray( JNIEnv* env, int siz, const jboolean* vals )
 {
     jbooleanArray array = (*env)->NewBooleanArray( env, siz );
     XP_ASSERT( !!array );
@@ -424,7 +424,7 @@ setIntInArray( JNIEnv* env, jintArray arr, int index, int val )
 }
 
 jobjectArray
-makeStringArray( JNIEnv *env, const int count, const XP_UCHAR** vals )
+makeStringArray( JNIEnv* env, const int count, const XP_UCHAR** vals )
 {
     jobjectArray jarray;
     {
@@ -444,7 +444,7 @@ makeStringArray( JNIEnv *env, const int count, const XP_UCHAR** vals )
 }
 
 void
-setStringArray( JNIEnv *env, jobject jowner, const char* ownerField,
+setStringArray( JNIEnv* env, jobject jowner, const char* ownerField,
                 int count, const XP_UCHAR** vals )
 {
     jobjectArray jaddrs = makeStringArray( env, count, vals );
@@ -453,7 +453,7 @@ setStringArray( JNIEnv *env, jobject jowner, const char* ownerField,
 }
 
 jobjectArray
-makeByteArrayArray( JNIEnv *env, int siz )
+makeByteArrayArray( JNIEnv* env, int siz )
 {
     jclass clas = (*env)->FindClass( env, "[B" );
     jobjectArray result = (*env)->NewObjectArray( env, siz, clas, NULL );
@@ -462,7 +462,7 @@ makeByteArrayArray( JNIEnv *env, int siz )
 }
 
 jstring
-streamToJString( JNIEnv *env, XWStreamCtxt* stream )
+streamToJString( JNIEnv* env, XWStreamCtxt* stream )
 {
     int len = stream_getSize( stream );
     XP_UCHAR buf[1 + len];

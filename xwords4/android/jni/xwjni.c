@@ -1454,7 +1454,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1setDraw
 
 JNIEXPORT void JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_board_1invalAll
-( JNIEnv *env, jclass C, GamePtrType gamePtr )
+( JNIEnv* env, jclass C, GamePtrType gamePtr )
 {
     XWJNI_START();
     board_invalAll( state->game.board );
@@ -1463,7 +1463,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1invalAll
 
 JNIEXPORT jboolean JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_board_1draw
-( JNIEnv *env, jclass C, GamePtrType gamePtr )
+( JNIEnv* env, jclass C, GamePtrType gamePtr )
 {
     jboolean result;
     XWJNI_START();
@@ -1474,7 +1474,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1draw
 
 JNIEXPORT void JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_board_1drawSnapshot
-( JNIEnv *env, jclass C, GamePtrType gamePtr, jobject jdraw, jint width,
+( JNIEnv* env, jclass C, GamePtrType gamePtr, jobject jdraw, jint width,
   jint height )
 {
     XWJNI_START();
@@ -1523,7 +1523,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1applyLayout
 
 JNIEXPORT void JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_board_1setPos
-(JNIEnv *env, jclass C, GamePtrType gamePtr, jint left, jint top, jint width,
+(JNIEnv* env, jclass C, GamePtrType gamePtr, jint left, jint top, jint width,
  jint height, jint maxCellSize, jboolean lefty )
 {
     XWJNI_START();
@@ -1534,7 +1534,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1setPos
 
 JNIEXPORT void JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_board_1setScoreboardLoc
-( JNIEnv *env, jclass C, GamePtrType gamePtr, jint left, jint top,
+( JNIEnv* env, jclass C, GamePtrType gamePtr, jint left, jint top,
   jint width, jint height, jboolean divideHorizontally )
 {
     XWJNI_START();
@@ -1545,7 +1545,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1setScoreboardLoc
 
 JNIEXPORT void JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_board_1setTrayLoc
-( JNIEnv *env, jclass C, GamePtrType gamePtr, jint left, jint top,
+( JNIEnv* env, jclass C, GamePtrType gamePtr, jint left, jint top,
   jint width, jint height, jint minDividerWidth )
 {
     XWJNI_START();
@@ -1597,7 +1597,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1getActiveRect
 #ifdef POINTER_SUPPORT
 JNIEXPORT jboolean JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_board_1handlePenDown
-(JNIEnv *env, jclass C, GamePtrType gamePtr, jint xx, jint yy, jbooleanArray barray )
+( JNIEnv* env, jclass C, GamePtrType gamePtr, jint xx, jint yy, jbooleanArray barray )
 {
     jboolean result;
     XWJNI_START();
@@ -1609,7 +1609,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1handlePenDown
 
 JNIEXPORT jboolean JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_board_1handlePenMove
-( JNIEnv *env, jclass C, GamePtrType gamePtr, jint xx, jint yy )
+( JNIEnv* env, jclass C, GamePtrType gamePtr, jint xx, jint yy )
 {
     jboolean result;
     XWJNI_START();
@@ -1620,7 +1620,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1handlePenMove
 
 JNIEXPORT jboolean JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_board_1handlePenUp
-( JNIEnv *env, jclass C, GamePtrType gamePtr, jint xx, jint yy )
+( JNIEnv* env, jclass C, GamePtrType gamePtr, jint xx, jint yy )
 {
     jboolean result;
     XWJNI_START();
