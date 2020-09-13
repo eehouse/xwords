@@ -90,8 +90,10 @@ dvc_getMQTTDevID( XW_DUtilCtxt* dutil, XWEnv xwe, MQTTDevID* devID )
     // XP_LOGFF( "len: %d; sizeof(tmp): %d", len, sizeof(tmp) );
     if ( len != sizeof(tmp) ) { /* not found, or bogus somehow */
         tmp = XP_RANDOM();
-        tmp <<= 32;
-        tmp |= XP_RANDOM();
+        tmp <<= 27;
+        tmp ^= XP_RANDOM();
+        tmp <<= 27;
+        tmp ^= XP_RANDOM();
         dutil_storePtr( dutil, xwe, MQTT_DEVID_KEY, &tmp, sizeof(tmp) );
 #ifdef DEBUG
         XP_UCHAR buf[32];
