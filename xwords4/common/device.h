@@ -31,7 +31,7 @@ void dvc_store( XW_DUtilCtxt* dctxt, XWEnv xwe );
 # endif
 
 void dvc_getMQTTDevID( XW_DUtilCtxt* dutil, XWEnv xwe, MQTTDevID* devID );
-
+void dvc_resetMQTTDevID( XW_DUtilCtxt* dutil, XWEnv xwe );
 void dvc_makeMQTTInvite( XW_DUtilCtxt* dutil, XWEnv xwe, XWStreamCtxt* stream,
                          const NetLaunchInfo* nli );
 void dvc_makeMQTTMessage( XW_DUtilCtxt* dutil, XWEnv xwe, XWStreamCtxt* stream,

@@ -648,6 +648,15 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dvc_1getMQTTDevID
     return result;
 }
 
+JNIEXPORT void JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_dvc_1resetMQTTDevID
+( JNIEnv* env, jclass C, jlong jniGlobalPtr )
+{
+    DVC_HEADER(jniGlobalPtr);
+    dvc_resetMQTTDevID( globalState->dutil, env );
+    DVC_HEADER_END();
+}
+
 static void
 addrToTopic( JNIEnv* env, jobjectArray jAddrToTopic )
 {

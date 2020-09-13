@@ -313,6 +313,7 @@ public class MQTTUtils extends Thread implements IMqttActionListener, MqttCallba
                 params.put( "dbg", BuildConfig.DEBUG );
                 params.put( "myNow", now );
                 params.put( "loc", LocUtils.getCurLocale( mContext ) );
+                params.put( "knowsDup", true );
 
                 String fcmid = FBMService.getFCMDevID( mContext );
                 if ( null != fcmid ) {
@@ -334,6 +335,16 @@ public class MQTTUtils extends Thread implements IMqttActionListener, MqttCallba
                             sNextReg = atNext;
                             DBUtils.setStringFor( mContext, KEY_LAST_WRITE, BuildConfig.GIT_REV );
                             sLastRev = BuildConfig.GIT_REV;
+                        }
+
+                        String dupID = response.optString( "dupID", "" );
+                        if ( dupID.equals( mDevID ) ) {
+                            Log.e( TAG, "********** %s bad; need new devID!!! **********", dupID );
+                            XwJNI.dvc_resetMQTTDevID();
+                            // Force a reconnect asap
+                            DBUtils.setLongFor( mContext, KEY_NEXT_REG, 0 );
+                            sNextReg = 0;
+                            clearInstance();
                         }
                     }
                 } else {

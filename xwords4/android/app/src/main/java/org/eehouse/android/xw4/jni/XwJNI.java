@@ -138,6 +138,11 @@ public class XwJNI {
         return dvc_getMQTTDevID( getJNI().m_ptrGlobals, topic );
     }
 
+    public static void dvc_resetMQTTDevID()
+    {
+        dvc_resetMQTTDevID( getJNI().m_ptrGlobals );
+    }
+
     public static byte[] dvc_makeMQTTInvite( NetLaunchInfo nli, String[] addrToTopic )
     {
         return dvc_makeMQTTInvite( getJNI().m_ptrGlobals, nli, addrToTopic );
@@ -664,6 +669,7 @@ public class XwJNI {
     // Private methods -- called only here
     private static native long globalsInit( DUtilCtxt dutil, JNIUtils jniu, long seed );
     private static native String dvc_getMQTTDevID( long jniState, String[] topic );
+    private static native void dvc_resetMQTTDevID( long jniState );
     private static native byte[] dvc_makeMQTTInvite( long jniState, NetLaunchInfo nli,
                                                      String[] addrToTopic );
     private static native byte[] dvc_makeMQTTMessage( long jniState, int gameID, byte[] buf,
