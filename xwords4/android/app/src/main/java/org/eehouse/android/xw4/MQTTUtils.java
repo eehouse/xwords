@@ -366,36 +366,40 @@ public class MQTTUtils extends Thread implements IMqttActionListener, MqttCallba
         // you're not subscribed. That can't prevent us from continuing to
         // disconnect() and close. Rather than wrap each in its own try/catch,
         // run 'em in a loop in a single try/catch.
-        outer:
-        for ( int ii = 0; ; ++ii ) {
-            String action = null;
-            try {
-                switch ( ii ) {
-                case 0:
-                    action = "unsubscribe";
-                    mClient.unsubscribe( mDevID );
-                    break;      // not continue, which skips the Log() below
-                case 1:
-                    action = "disconnect";
-                    mClient.disconnect();
-                    break;
-                case 2:
-                    action = "close";
-                    mClient.close();
-                    break;
-                default:
-                    break outer;
+        if ( null == mClient ) {
+            Log.e( TAG, "disconnect(): null client" );
+        } else {
+            outer:
+            for ( int ii = 0; ; ++ii ) {
+                String action = null;
+                try {
+                    switch ( ii ) {
+                    case 0:
+                        action = "unsubscribe";
+                        mClient.unsubscribe( mDevID );
+                        break;      // not continue, which skips the Log() below
+                    case 1:
+                        action = "disconnect";
+                        mClient.disconnect();
+                        break;
+                    case 2:
+                        action = "close";
+                        mClient.close();
+                        break;
+                    default:
+                        break outer;
+                    }
+                    Log.d( TAG, "%H.disconnect(): %s() succeeded", this, action );
+                } catch ( MqttException mex ) {
+                    Log.e( TAG, "%H.disconnect(): %s(): got mex %s",
+                           this, action, mex );
+                } catch ( Exception ex ) {
+                    Log.e( TAG, "%H.disconnect(): %s(): got ex %s",
+                           this, action, ex );
                 }
-                Log.d( TAG, "%H.disconnect(): %s() succeeded", this, action );
-            } catch ( MqttException mex ) {
-                Log.e( TAG, "%H.disconnect(): %s(): got mex %s",
-                       this, action, mex );
-            } catch ( Exception ex ) {
-                Log.e( TAG, "%H.disconnect(): %s(): got ex %s",
-                       this, action, ex );
             }
+            mClient = null;
         }
-        mClient = null;
 
         // Make sure we don't need to call clearInstance(this)
         synchronized ( sInstance ) {
