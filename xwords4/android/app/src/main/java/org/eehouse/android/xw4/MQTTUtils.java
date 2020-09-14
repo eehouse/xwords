@@ -49,6 +49,7 @@ public class MQTTUtils extends Thread implements IMqttActionListener, MqttCallba
     private static final String TAG = MQTTUtils.class.getSimpleName();
     private static final String KEY_NEXT_REG = TAG + "/next_reg";
     private static final String KEY_LAST_WRITE = TAG + "/last_write";
+    private static final String KEY_TMP_KEY = TAG + "/tmp_key";
     private static enum State { NONE, CONNECTING, CONNECTED, SUBSCRIBING, SUBSCRIBED,
                                 CLOSING };
 
@@ -314,6 +315,7 @@ public class MQTTUtils extends Thread implements IMqttActionListener, MqttCallba
                 params.put( "myNow", now );
                 params.put( "loc", LocUtils.getCurLocale( mContext ) );
                 params.put( "knowsDup", true );
+                params.put( "tmpKey", getTmpKey(mContext) );
 
                 String fcmid = FBMService.getFCMDevID( mContext );
                 if ( null != fcmid ) {
@@ -354,6 +356,19 @@ public class MQTTUtils extends Thread implements IMqttActionListener, MqttCallba
                 Log.e( TAG, "registerOnce() ex: %s", je );
             }
         }
+    }
+
+    private static int sTmpKey;
+    private static int getTmpKey( Context context )
+    {
+        while ( 0 == sTmpKey ) {
+            sTmpKey = DBUtils.getIntFor( context, KEY_TMP_KEY, 0 );
+            if ( 0 == sTmpKey ) {
+                sTmpKey = Math.abs( Utils.nextRandomInt() );
+                DBUtils.setIntFor( context, KEY_TMP_KEY, sTmpKey );
+            }
+        }
+        return sTmpKey;
     }
 
     private void disconnect()
