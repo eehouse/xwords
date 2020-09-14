@@ -1257,7 +1257,7 @@ public class BTService extends XWJIService {
                     dos = new DataOutputStream( socket.getOutputStream() );
                     dos.writeByte( BT_PROTO );
                     break;          // success!!!
-                } catch (IOException ioe) {
+                } catch (IOException|SecurityException ioe) {
                     // Log.d( TAG, "connect(): %s", ioe.getMessage() );
                     long msLeft = end - System.currentTimeMillis();
                     if ( msLeft <= 0 ) {
