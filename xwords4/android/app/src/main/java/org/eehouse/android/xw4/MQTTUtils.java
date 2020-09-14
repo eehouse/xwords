@@ -302,7 +302,8 @@ public class MQTTUtils extends Thread implements IMqttActionListener, MqttCallba
         }
         long now = Utils.getCurSeconds();
         Log.d( TAG, "registerOnce(): now: %d; nextReg: %d", now, sNextReg );
-        if ( now > sNextReg || ! BuildConfig.GIT_REV.equals(sLastRev) ) {
+        String revString = BuildConfig.GIT_REV + ':' + BuildConfig.VARIANT_NAME;
+        if ( now > sNextReg || ! revString.equals(sLastRev) ) {
             try {
                 JSONObject params = new JSONObject();
                 params.put( "devid", mDevID );
@@ -334,8 +335,8 @@ public class MQTTUtils extends Thread implements IMqttActionListener, MqttCallba
                         if ( 0 < atNext ) {
                             DBUtils.setLongFor( mContext, KEY_NEXT_REG, atNext );
                             sNextReg = atNext;
-                            DBUtils.setStringFor( mContext, KEY_LAST_WRITE, BuildConfig.GIT_REV );
-                            sLastRev = BuildConfig.GIT_REV;
+                            DBUtils.setStringFor( mContext, KEY_LAST_WRITE, revString );
+                            sLastRev = revString;
                         }
 
                         String dupID = response.optString( "dupID", "" );
