@@ -74,6 +74,11 @@
         <category android:name="android.intent.category.DEFAULT" />
         <category android:name="android.intent.category.BROWSABLE" />
 
+        <data android:scheme="https"
+              android:host="@string/invite_host"
+              android:pathPrefix="@string/invite_prefix"
+              />
+        <!-- Remove http once enough people have the https above -->
         <data android:scheme="http"
               android:host="@string/invite_host"
               android:pathPrefix="@string/invite_prefix"
