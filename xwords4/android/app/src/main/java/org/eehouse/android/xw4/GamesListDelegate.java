@@ -2338,12 +2338,17 @@ public class GamesListDelegate extends ListDelegateBase
             for ( long rowid : rowids.keySet() ) {
                 if ( nli.forceChannel == rowids.get(rowid) ) {
                     DbgUtils.printStack( TAG );
+                    if ( BuildConfig.NON_RELEASE ) {
+                        Utils.showToast( m_activity, R.string.dropped_dupe );
+                    }
 
-                    makeOkOnlyBuilder( R.string.dropped_dupe )
-                        .setActionPair( Action.OPEN_GAME,
-                                        R.string.button_open_game )
-                        .setParams( rowid, null ) // null: GameSummary
-                        .show();
+                    final Object[] params = { rowid, null };
+                    post( new Runnable() {
+                            @Override
+                            public void run() {
+                                doOpenGame( params );
+                            }
+                        } );
                     handled = true;
                     break;
                 }

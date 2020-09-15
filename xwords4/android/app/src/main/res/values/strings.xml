@@ -2013,8 +2013,6 @@
          email, for the second time. -->
     <string name="dropped_dupe">This invitation has already been used
     to create a game.</string>
-    <!-- Button in "Duplicate invitation ignored" alert -->
-    <string name="button_open_game">Open Game</string>
     <string name="cur_menu_marker_fmt">%1$s (in use)</string>
     <string name="board_menu_invite">Invite</string>
     <string name="enable_nfc">NFC is turned off on this device. You
