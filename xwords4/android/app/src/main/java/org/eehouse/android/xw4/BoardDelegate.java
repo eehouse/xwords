@@ -1185,7 +1185,7 @@ public class BoardDelegate extends DelegateBase
         case INVITE_SMS_DATA:
             int nMissing = (Integer)params[0];
             SentInvitesInfo info = (SentInvitesInfo)params[1];
-            launchPhoneNumberInvite( nMissing, info, InviteMeans.SMS_DATA,
+            launchPhoneNumberInvite( nMissing, info,
                                      RequestCode.SMS_DATA_INVITE_RESULT );
             break;
 
@@ -1280,7 +1280,7 @@ public class BoardDelegate extends DelegateBase
             if ( Perms23.bannedWithWorkaround( m_activity, perms ) ) {
                 int nMissing = (Integer)params[0];
                 SentInvitesInfo info = (SentInvitesInfo)params[1];
-                launchPhoneNumberInvite( nMissing, info, InviteMeans.SMS_DATA,
+                launchPhoneNumberInvite( nMissing, info,
                                          RequestCode.SMS_DATA_INVITE_RESULT );
             } else if ( Perms23.anyBanned( m_activity, perms ) ) {
                 makeOkOnlyBuilder( R.string.sms_banned_ok_only )
@@ -1362,10 +1362,6 @@ public class BoardDelegate extends DelegateBase
                                      Action.INVITE_SMS_DATA, m_mySIS.nMissing,
                                      info, perms );
                 break;
-            case SMS_USER:      // like an email invite, but we want the phone #
-                launchPhoneNumberInvite( m_mySIS.nMissing, info, means,
-                                         RequestCode.SMS_USER_INVITE_RESULT );
-                break;
             case RELAY:
                 RelayInviteDelegate.launchForResult( m_activity, m_mySIS.nMissing, info,
                                                      RequestCode.RELAY_INVITE_RESULT );
@@ -1379,6 +1375,7 @@ public class BoardDelegate extends DelegateBase
                                                      m_mySIS.nMissing, info,
                                                      RequestCode.P2P_INVITE_RESULT );
                 break;
+            case SMS_USER:
             case EMAIL:
             case CLIPBOARD:
                 NetLaunchInfo nli = new NetLaunchInfo( m_activity, m_summary, m_gi, 1,
@@ -1386,10 +1383,16 @@ public class BoardDelegate extends DelegateBase
                 if ( m_relayMissing ) {
                     nli.removeAddress( CommsConnType.COMMS_CONN_RELAY );
                 }
-                if ( InviteMeans.EMAIL == means ) {
+                switch ( means ) {
+                case EMAIL:
                     GameUtils.launchEmailInviteActivity( m_activity, nli );
-                } else if ( InviteMeans.CLIPBOARD == means ) {
+                    break;
+                case SMS_USER:
+                    GameUtils.launchSMSInviteActivity( m_activity, nli );
+                    break;
+                case CLIPBOARD:
                     GameUtils.inviteURLToClip( m_activity, nli );
+                    break;
                 }
                 recordInviteSent( means, null );
 
@@ -1668,10 +1671,9 @@ public class BoardDelegate extends DelegateBase
     }
 
     private void launchPhoneNumberInvite( int nMissing, SentInvitesInfo info,
-                                          InviteMeans means, RequestCode code )
+                                          RequestCode code )
     {
-        SMSInviteDelegate.launchForResult( m_activity, nMissing, info,
-                                           means, code );
+        SMSInviteDelegate.launchForResult( m_activity, nMissing, info, code );
     }
 
     private void deleteAndClose( int gameID )
@@ -2800,9 +2802,6 @@ public class BoardDelegate extends DelegateBase
                     }
                     BTService.inviteRemote( m_activity, dev, nli );
                     break;
-                case SMS_USER:
-                    GameUtils.launchSMSInviteActivity( m_activity, dev, nli );
-                    break;
                 case SMS_DATA:
                     sendNBSInviteIf( dev, nli, true );
                     dev = null; // don't record send a second time
@@ -2821,6 +2820,9 @@ public class BoardDelegate extends DelegateBase
                     break;
                 case MQTT:
                     MQTTUtils.inviteRemote( m_activity, dev, nli );
+                    break;
+                default:
+                    Assert.failDbg();
                     break;
                 }
 

@@ -57,24 +57,20 @@ public class SMSInviteDelegate extends InviteDelegate {
         R.id.manual_add_button,
         R.id.button_clear,
     };
-    private static final String INTENT_KEY_MEANS = "means";
 
     private ArrayList<PhoneRec> m_phoneRecs;
     private Activity m_activity;
-    private InviteMeans mMeans;
 
     public static void launchForResult( Activity activity, int nMissing,
                                         SentInvitesInfo info,
-                                        InviteMeans means,
                                         RequestCode requestCode )
     {
 
         Intent intent = InviteDelegate
             .makeIntent( activity, SMSInviteActivity.class,
-                         nMissing, info )
-            .putExtra( INTENT_KEY_MEANS, means.ordinal() );
+                         nMissing, info );
         if ( null != info ) {
-            String lastDev = info.getLastDev( means );
+            String lastDev = info.getLastDev( InviteMeans.SMS_DATA );
             intent.putExtra( INTENT_KEY_LASTDEV, lastDev );
         }
         activity.startActivityForResult( intent, requestCode.ordinal() );
@@ -91,7 +87,6 @@ public class SMSInviteDelegate extends InviteDelegate {
     {
         super.init( savedInstanceState );
 
-        mMeans = InviteMeans.values()[getIntent().getIntExtra(INTENT_KEY_MEANS, -1)];
         String msg = getString( R.string.button_invite );
         msg = getQuantityString( R.plurals.invite_sms_desc_fmt, m_nMissing,
                                  m_nMissing, msg );
@@ -105,22 +100,7 @@ public class SMSInviteDelegate extends InviteDelegate {
     }
 
     @Override
-    int getExtra()
-    {
-        int result = 0;
-        switch( mMeans ) {
-        case SMS_DATA:
-            result = R.string.invite_nbs_desc;
-            break;
-        case SMS_USER:
-            result = R.string.invite_sms_desc;
-            break;
-        default:
-            Assert.failDbg();
-            break;
-        }
-        return result;
-    }
+    int getExtra() { return R.string.invite_nbs_desc; }
 
     @Override
     protected void onBarButtonClicked( int id )
