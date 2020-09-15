@@ -341,7 +341,7 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
                                     .getString( m_context, R.string.new_app_avail );
                             }
                             Utils.postNotification( m_context, intent, title,
-                                                    body, url.hashCode() );
+                                                    body, title.hashCode() );
                             gotOne = true;
                         }
                     }
