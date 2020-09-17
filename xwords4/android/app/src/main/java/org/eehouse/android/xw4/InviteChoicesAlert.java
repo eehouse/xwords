@@ -1,6 +1,7 @@
 /* -*- compile-command: "find-and-gradle.sh inXw4dDebug"; -*- */
 /*
- * Copyright 2017 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2017 - 2020 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -49,7 +50,6 @@ public class InviteChoicesAlert extends DlgDelegateAlert {
                                  AlertDialog.Builder builder )
     {
         final ArrayList<InviteMeans> means = new ArrayList<>();
-        ArrayList<String> items = new ArrayList<>();
         InviteMeans lastMeans = null;
         Object[] params = state.getParams();
         if ( null != params
@@ -57,36 +57,36 @@ public class InviteChoicesAlert extends DlgDelegateAlert {
             lastMeans = ((SentInvitesInfo)params[0]).getLastMeans();
         }
 
-        add( items, means, R.string.invite_choice_email, InviteMeans.EMAIL );
-        add( items, means, R.string.invite_choice_user_sms, InviteMeans.SMS_USER );
+        means.add( InviteMeans.EMAIL );
+        means.add( InviteMeans.SMS_USER );
 
         if ( BTService.BTAvailable() ) {
-            add( items, means, R.string.invite_choice_bt, InviteMeans.BLUETOOTH );
+            means.add( InviteMeans.BLUETOOTH );
         }
         if ( Utils.deviceSupportsNBS(context) ) {
-            add( items, means, R.string.invite_choice_data_sms, InviteMeans.SMS_DATA );
+            means.add( InviteMeans.SMS_DATA );
         }
         if ( BuildConfig.NON_RELEASE ) {
-            add( items, means, R.string.invite_choice_relay, InviteMeans.RELAY );
+            means.add( InviteMeans.RELAY );
         }
         if ( BuildConfig.NON_RELEASE && BuildConfig.OFFER_MQTT ) {
-            add( items, means, R.string.invite_choice_mqtt, InviteMeans.MQTT );
+            means.add( InviteMeans.MQTT );
         }
         if ( WiDirWrapper.enabled() ) {
-            add( items, means, R.string.invite_choice_p2p, InviteMeans.WIFIDIRECT );
+            means.add( InviteMeans.WIFIDIRECT );
         }
         if ( NFCUtils.nfcAvail( context )[0] ) {
-            add( items, means, R.string.invite_choice_nfc, InviteMeans.NFC );
+            means.add( InviteMeans.NFC );
         }
-        add( items, means, R.string.slmenu_copy_sel, InviteMeans.CLIPBOARD );
+        means.add( InviteMeans.CLIPBOARD );
 
+        String[] items = new String[means.size()];
         final int[] sel = { -1 };
-        if ( null != lastMeans ) {
-            for ( int ii = 0; ii < means.size(); ++ii ) {
-                if ( lastMeans == means.get(ii) ) {
-                    sel[0] = ii;
-                    break;
-                }
+        for ( int ii = 0; ii < items.length; ++ii ) {
+            InviteMeans oneMeans = means.get(ii);
+            items[ii] = getString( oneMeans.getUserDescID() );
+            if ( lastMeans == oneMeans ) {
+                sel[0] = ii;
             }
         }
 
@@ -149,8 +149,7 @@ public class InviteChoicesAlert extends DlgDelegateAlert {
             };
 
         builder.setTitle( R.string.invite_choice_title )
-            .setSingleChoiceItems( items.toArray( new String[items.size()] ),
-                                   sel[0], selChanged )
+            .setSingleChoiceItems( items, sel[0], selChanged )
             .setPositiveButton( android.R.string.ok, okClicked )
             .setNegativeButton( android.R.string.cancel, null );
         if ( BuildConfig.DEBUG ) {
@@ -167,12 +166,5 @@ public class InviteChoicesAlert extends DlgDelegateAlert {
                 };
             builder.setNeutralButton( R.string.ok_with_robots, ocl );
         }
-    }
-
-    private void add( List<String> items, List<InviteMeans> means,
-                      int resID, InviteMeans oneMeans )
-    {
-        items.add( getString( resID ) );
-        means.add( oneMeans );
     }
 }

@@ -330,11 +330,21 @@ public class DlgDelegate {
         // These are stored in the INVITES table. Don't change order
         // gratuitously
         public static enum InviteMeans {
-            SMS_DATA, // classic NBS-based data sms
-            EMAIL, NFC, BLUETOOTH, CLIPBOARD, RELAY, WIFIDIRECT,
-            SMS_USER, // just launch the SMS app, as with email
-            MQTT,
+            SMS_DATA(R.string.invite_choice_data_sms), // classic NBS-based data sms
+            EMAIL(R.string.invite_choice_email),
+            NFC(R.string.invite_choice_nfc),
+            BLUETOOTH(R.string.invite_choice_bt),
+            CLIPBOARD(R.string.slmenu_copy_sel),
+            RELAY(R.string.invite_choice_relay),
+            WIFIDIRECT(R.string.invite_choice_p2p),
+            SMS_USER(R.string.invite_choice_user_sms), // just launch the SMS app, as with email
+            MQTT(R.string.invite_choice_mqtt);
+
+            private InviteMeans( int resid) { mResID = resid; }
+            private int mResID;
+            public int getUserDescID() { return mResID; }
         };
+
         boolean onPosButton( Action action, Object... params );
         boolean onNegButton( Action action, Object... params );
         boolean onDismissed( Action action, Object... params );
