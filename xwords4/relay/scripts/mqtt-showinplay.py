@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-import argparse, re
+import argparse, re, struct
 import paho.mqtt.client as mqtt
 
 g_topics = [
@@ -18,7 +18,8 @@ def on_connect(client, userdata, flags, rc):
 def on_message(client, obj, msg):
     match = sDevIDPat.match(msg.topic)
     if match:
-        print('on_message(): for: {}, len: {}'.format(match.group(1), len(msg.payload)))
+        (sender, gameID) = getSender(msg.payload)
+        print('on_message(): from {} to {}, len: {}'.format(sender, match.group(1), len(msg.payload)))
 
 def on_publish(client, obj, mid):
     print("mid: " + str(mid))
@@ -28,6 +29,16 @@ def on_subscribe(client, obj, mid, granted_qos):
 
 def on_log(client, obj, level, string):
     print(string)
+
+def getSender(payload):
+    result = None
+    got = struct.unpack_from('>bqI', payload)
+    if 0 == got[0] or 1 == got[0]:
+        devID = '{:016X}'.format(got[1])
+        gameID = 1 == got[0] and got[2] or 0
+        result = (devID, gameID)
+    # print('getSender() => {}'.format(result))
+    return result
 
 def makeClient():
     mqttc = mqtt.Client()
