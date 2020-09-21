@@ -87,7 +87,6 @@ static void gtkShowFinalScores( const GtkGameGlobals* globals,
                                 XP_Bool ignoreTimeout );
 static void send_invites( CommonGlobals* cGlobals, XP_U16 nPlayers,
                           XP_U32 relayDevID, const XP_UCHAR* relayID,
-                          MQTTDevID* mqttInviteeID,
                           const CommsAddrRec* addrs );
 
 #define GTK_TRAY_HT_ROWS 3
@@ -679,7 +678,7 @@ on_board_window_shown( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
                 CommsAddrRec addr = {0};
                 addrFromStream( &addr, stream );
 
-                send_invites( cGlobals, 1, 0, relayID, &addr.u.mqtt.devID, &addr );
+                send_invites( cGlobals, 1, 0, relayID, &addr );
             }
         }
         stream_destroy( stream, NULL_XWE );
@@ -1405,20 +1404,18 @@ handle_invite_button( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
     CommsAddrRec inviteAddr = {0};
     gint nPlayers = nMissing;
     XP_U32 relayDevID = 0;
-    MQTTDevID mqttInviteeID;
     XP_Bool confirmed = gtkInviteDlg( globals, &inviteAddr, &nPlayers,
-                                      &relayDevID, &mqttInviteeID );
-    XP_LOGF( "%s: inviteDlg => %d", __func__, confirmed );
+                                      &relayDevID );
+    XP_LOGF( "%s: inviteDlg => %s", __func__, boolToStr(confirmed) );
 
     if ( confirmed ) {
-        send_invites( cGlobals, nPlayers, relayDevID, NULL, &mqttInviteeID, &inviteAddr );
+        send_invites( cGlobals, nPlayers, relayDevID, NULL, &inviteAddr );
     }
 } /* handle_invite_button */
 
 static void
 send_invites( CommonGlobals* cGlobals, XP_U16 nPlayers,
               XP_U32 relayDevID, const XP_UCHAR* relayID,
-              MQTTDevID* mqttInviteeID,
               const CommsAddrRec* addrs )
 {
     CommsAddrRec addr = {0};
@@ -1468,7 +1465,7 @@ send_invites( CommonGlobals* cGlobals, XP_U16 nPlayers,
     }
 
     if ( addr_hasType( addrs, COMMS_CONN_MQTT ) ) {
-        mqttc_invite( cGlobals->params, &nli, mqttInviteeID );
+        mqttc_invite( cGlobals->params, &nli, &addrs->u.mqtt.devID );
     }
 
     /* while ( gtkaskm( "Invite how many and how?", infos, VSIZE(infos) ) ) {  */

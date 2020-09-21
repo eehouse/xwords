@@ -39,10 +39,10 @@ static XP_UCHAR s_devIDBuf[32] = {0};
 
 typedef struct _GtkInviteState {
     GtkGameGlobals* globals;
+    XW_DUtilCtxt* dutil;        /* hang onto as optimization */
     CommsAddrRec* addr;
     gint* nPlayersP;
     XP_U32* relayDevIDp;
-    MQTTDevID* mqttDevIDp;
     gint maxPlayers;
 
     GtkWidget* nPlayersCombo;
@@ -55,6 +55,9 @@ typedef struct _GtkInviteState {
     GtkWidget* smsport;
 
     GtkWidget* mqttDevID;
+
+    /* Known players */
+    GtkWidget* knownsCombo;
 
     GtkWidget* bgScanButton;
     GtkWidget* okButton;
@@ -96,37 +99,41 @@ handle_ok( GtkWidget* XP_UNUSED(widget), gpointer closure )
     PageData* data = &state->pageData[curPage];
     CommsConnType conType = data->pageType;
 
-    addr_addType( state->addr, conType );
-    switch ( conType ) {
+    if ( COMMS_CONN_NONE == conType ) {
+        gchar* name =
+            gtk_combo_box_text_get_active_text( GTK_COMBO_BOX_TEXT(state->knownsCombo) );
+        kplr_getAddr( state->dutil, NULL_XWE, name, state->addr );
+    } else {
+        addr_addType( state->addr, conType );
+        switch ( conType ) {
 #ifdef XWFEATURE_RELAY
-    case COMMS_CONN_RELAY:
-        txt = gtk_entry_get_text( GTK_ENTRY(state->devID) );
-        snprintf( s_devIDBuf, sizeof(s_devIDBuf), "%s", txt );
-        *state->relayDevIDp = atoi( txt );
-        break;
+        case COMMS_CONN_RELAY:
+            txt = gtk_entry_get_text( GTK_ENTRY(state->devID) );
+            snprintf( s_devIDBuf, sizeof(s_devIDBuf), "%s", txt );
+            *state->relayDevIDp = atoi( txt );
+            break;
 #endif
 #ifdef XWFEATURE_BLUETOOTH
-    case COMMS_CONN_BT:
-        txt = gtk_entry_get_text( GTK_ENTRY(state->bthost) );
-        XP_STRNCPY( state->addr->u.bt.hostName, txt, 
-                    sizeof(state->addr->u.bt.hostName) );
-        break;
+        case COMMS_CONN_BT:
+            txt = gtk_entry_get_text( GTK_ENTRY(state->bthost) );
+            XP_STRNCPY( state->addr->u.bt.hostName, txt,
+                        sizeof(state->addr->u.bt.hostName) );
+            break;
 #endif
-    case COMMS_CONN_SMS:
-        txt = gtk_entry_get_text( GTK_ENTRY(state->smsport) );
-        state->addr->u.sms.port = atoi( txt );
-        break;
-    case COMMS_CONN_MQTT:
-        txt = gtk_entry_get_text( GTK_ENTRY(state->mqttDevID) );
-        if ( strToMQTTCDevID( txt, &state->addr->u.mqtt.devID ) ) {
-            *state->mqttDevIDp = state->addr->u.mqtt.devID;
-        } else {
-            XP_ASSERT(0);
+        case COMMS_CONN_SMS:
+            txt = gtk_entry_get_text( GTK_ENTRY(state->smsport) );
+            state->addr->u.sms.port = atoi( txt );
+            break;
+        case COMMS_CONN_MQTT:
+            txt = gtk_entry_get_text( GTK_ENTRY(state->mqttDevID) );
+            if ( !strToMQTTCDevID( txt, &state->addr->u.mqtt.devID ) ) {
+                XP_ASSERT(0);
+            }
+            break;
+        default:
+            XP_ASSERT( 0 );     /* keep compiler happy */
+            break;
         }
-        break;
-    default:
-        XP_ASSERT( 0 );     /* keep compiler happy */
-        break;
     }
 
     /* get the number to invite */
@@ -266,7 +273,7 @@ makeSMSPage( GtkInviteState* state, PageData* data )
 
 
 static GtkWidget*
-makeKnownsPage( GtkInviteState* XP_UNUSED(state), XW_DUtilCtxt* dutil, PageData* data )
+makeKnownsPage( GtkInviteState* state, PageData* data )
 {
     data->okButtonTxt = "Invite Known Player";
 
@@ -275,17 +282,18 @@ makeKnownsPage( GtkInviteState* XP_UNUSED(state), XW_DUtilCtxt* dutil, PageData*
     gtk_box_pack_start( GTK_BOX(hbox), label, FALSE, TRUE, 0 );
 
     XP_U16 nFound = 0;
-    kplr_getPlayers( dutil, NULL_XWE, NULL, &nFound );
+    kplr_getPlayers( state->dutil, NULL_XWE, NULL, &nFound );
     XP_ASSERT( nFound > 0 );
     const XP_UCHAR* names[nFound];
-    kplr_getPlayers( dutil, NULL_XWE, names, &nFound );
+    kplr_getPlayers( state->dutil, NULL_XWE, names, &nFound );
 
-    GtkWidget* combo = gtk_combo_box_text_new();
+    GtkWidget* combo = state->knownsCombo = gtk_combo_box_text_new();
     for ( int ii = 0; ii < nFound; ++ii ) {
         gtk_combo_box_text_append_text( GTK_COMBO_BOX_TEXT(combo), names[ii] );
     }
     gtk_combo_box_set_active( GTK_COMBO_BOX(combo), 0 );
     gtk_box_pack_start( GTK_BOX(hbox), combo, FALSE, TRUE, 0 );
+    state->knownsCombo = combo;
 
     GtkWidget* vbox = gtk_box_new( GTK_ORIENTATION_VERTICAL, 0 );
     gtk_box_pack_start( GTK_BOX(vbox), hbox, FALSE, TRUE, 0 );
@@ -333,8 +341,7 @@ onPageChanged( GtkNotebook* XP_UNUSED(notebook), gpointer XP_UNUSED(arg1),
 
 XP_Bool
 gtkInviteDlg( GtkGameGlobals* globals, CommsAddrRec* addr, 
-              gint* nPlayersP, XP_U32* relayDevIDp,
-              MQTTDevID* mqttDevIDp )
+              gint* nPlayersP, XP_U32* relayDevIDp )
 {
     GtkInviteState state = {
         .globals = globals,
@@ -342,7 +349,7 @@ gtkInviteDlg( GtkGameGlobals* globals, CommsAddrRec* addr,
         .nPlayersP = nPlayersP,
         .relayDevIDp = relayDevIDp,
         .maxPlayers = *nPlayersP,
-        .mqttDevIDp = mqttDevIDp,
+        .dutil = globals->cGlobals.params->dutil,
     };
 
     GtkWidget* dialog;
@@ -370,11 +377,10 @@ gtkInviteDlg( GtkGameGlobals* globals, CommsAddrRec* addr,
 
     PageData* data;
 
-    XW_DUtilCtxt* dutil = globals->cGlobals.params->dutil;
-    if ( kplr_havePlayers( dutil, NULL_XWE ) ) {
+    if ( kplr_havePlayers( state.dutil, NULL_XWE ) ) {
         data = getNextData( &state, COMMS_CONN_NONE, "Knowns" );
         (void)gtk_notebook_append_page( GTK_NOTEBOOK(state.notebook),
-                                        makeKnownsPage( &state, dutil, data ),
+                                        makeKnownsPage( &state, data ),
                                         data->label );
     }
 

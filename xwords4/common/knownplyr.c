@@ -187,6 +187,22 @@ kplr_getPlayers( XW_DUtilCtxt* dutil, XWEnv xwe,
     *nFound = state->nPlayers;
 }
 
+XP_Bool
+kplr_getAddr( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* name,
+              CommsAddrRec* addr )
+{
+    KPState* state = loadState( dutil, xwe );
+    XP_Bool found = XP_FALSE;
+    for ( KnownPlayer* kp = state->players; !!kp && !found; kp = kp->next ) {
+        found = 0 == XP_STRCMP( kp->name, name );
+        if ( found ) {
+            *addr = kp->addr;
+        }
+    }
+    LOG_RETURNF( "%s", boolToStr(found) );
+    return found;
+}
+
 void
 kplr_cleanup( XW_DUtilCtxt* dutil )
 {
