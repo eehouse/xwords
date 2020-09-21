@@ -19,6 +19,7 @@
  */
 #ifdef PLATFORM_GTK
 
+#include "knownplyr.h"
 #include "gtkinvit.h"
 #include "gtkutils.h"
 #include "linuxbt.h"
@@ -263,6 +264,36 @@ makeSMSPage( GtkInviteState* state, PageData* data )
     return vbox;
 } /* makeBTPage */
 
+
+static GtkWidget*
+makeKnownsPage( GtkInviteState* XP_UNUSED(state), XW_DUtilCtxt* dutil, PageData* data )
+{
+    data->okButtonTxt = "Invite Known Player";
+
+    GtkWidget* hbox = gtk_box_new( GTK_ORIENTATION_HORIZONTAL, 0 );
+    GtkWidget* label = gtk_label_new( "Invite which player:" );
+    gtk_box_pack_start( GTK_BOX(hbox), label, FALSE, TRUE, 0 );
+
+    XP_U16 nFound = 0;
+    kplr_getPlayers( dutil, NULL_XWE, NULL, &nFound );
+    XP_ASSERT( nFound > 0 );
+    const XP_UCHAR* names[nFound];
+    kplr_getPlayers( dutil, NULL_XWE, names, &nFound );
+
+    GtkWidget* combo = gtk_combo_box_text_new();
+    for ( int ii = 0; ii < nFound; ++ii ) {
+        gtk_combo_box_text_append_text( GTK_COMBO_BOX_TEXT(combo), names[ii] );
+    }
+    gtk_combo_box_set_active( GTK_COMBO_BOX(combo), 0 );
+    gtk_box_pack_start( GTK_BOX(hbox), combo, FALSE, TRUE, 0 );
+
+    GtkWidget* vbox = gtk_box_new( GTK_ORIENTATION_VERTICAL, 0 );
+    gtk_box_pack_start( GTK_BOX(vbox), hbox, FALSE, TRUE, 0 );
+    gtk_widget_show( vbox );
+
+    return vbox;
+}
+
 static GtkWidget*
 makeMQTTPage( GtkInviteState* state, PageData* data )
 {
@@ -338,6 +369,14 @@ gtkInviteDlg( GtkGameGlobals* globals, CommsAddrRec* addr,
                       G_CALLBACK(onPageChanged), &state );
 
     PageData* data;
+
+    XW_DUtilCtxt* dutil = globals->cGlobals.params->dutil;
+    if ( kplr_havePlayers( dutil, NULL_XWE ) ) {
+        data = getNextData( &state, COMMS_CONN_NONE, "Knowns" );
+        (void)gtk_notebook_append_page( GTK_NOTEBOOK(state.notebook),
+                                        makeKnownsPage( &state, dutil, data ),
+                                        data->label );
+    }
 
     data = getNextData( &state, COMMS_CONN_MQTT, "MQTT" );
     (void)gtk_notebook_append_page( GTK_NOTEBOOK(state.notebook),

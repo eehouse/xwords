@@ -32,6 +32,7 @@
 #include "xwrelay.h"
 #include "strutils.h"
 #include "dbgutil.h"
+#include "knownplyr.h"
 
 #define HEARTBEAT_NONE 0
 
@@ -165,6 +166,8 @@ struct CommsCtxt {
         XP_Bool connecting;
     } rr;
 
+    XP_U8 flags;
+
     XP_Bool isServer;
     XP_Bool disableds[COMMS_CONN_NTYPES][2];
 #ifdef DEBUG
@@ -174,6 +177,8 @@ struct CommsCtxt {
 
     MPSLOT
 };
+
+#define FLAG_HARVEST_DONE 1
 
 #if defined XWFEATURE_IP_DIRECT || defined XWFEATURE_DIRECTIP
 typedef enum {
@@ -673,7 +678,7 @@ comms_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
     short ii;
 
     // FIX_NEXT_VERSION_CHANGE
-    (void)stream_getU8( stream ); /* no longer needed!!! */
+    XP_U8 flags = stream_getU8( stream ); /* no longer needed!!! */
     addrFromStream( &addr, stream );
 
     if ( version >= STREAM_VERS_DEVIDS
@@ -693,6 +698,7 @@ comms_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
                                    );
     XP_MEMCPY( &comms->addr, &addr, sizeof(comms->addr) );
     logAddr( comms, xwe, &addr, __func__ );
+    comms->flags = flags;
 
     comms->connID = stream_getU32( stream );
     comms->nextChannelNo = stream_getU16( stream );
@@ -923,7 +929,7 @@ comms_writeToStream( CommsCtxt* comms, XWEnv XP_UNUSED_DBG(xwe),
     stream_setVersion( stream, CUR_STREAM_VERS );
 
     // FIX_NEXT_VERSION_CHANGE
-    stream_putU8( stream, 0 );    /* no longer needed!!! */
+    stream_putU8( stream, comms->flags );    /* old code writes boolean!!! */
     logAddr( comms, xwe, &comms->addr, __func__ );
     addrToStream( stream, &comms->addr );
     stream_putBits( stream, 4, comms->rr.nPlayersHere );
@@ -2586,6 +2592,23 @@ comms_isConnected( const CommsCtxt* const comms )
     return result;
 }
 
+void
+comms_gatherPlayers( CommsCtxt* comms, XWEnv xwe )
+{
+    LOG_FUNC();
+    if ( 0 == (comms->flags & FLAG_HARVEST_DONE) ) {
+        CommsAddrRec addrs[4] = {{0}};
+        XP_U16 nRecs = VSIZE(addrs);
+        comms_getAddrs( comms, NULL, addrs, &nRecs );
+
+        const CurGameInfo* gi = comms->util->gameInfo;
+        if ( kplr_addAddrs( comms->dutil, xwe, gi, addrs, nRecs ) ) {
+            XP_LOGFF( "not setting flag :-)" );
+            // comms->flags |= FLAG_HARVEST_DONE;
+        }
+    }
+}
+
 #ifdef RELAY_VIA_HTTP
 void
 comms_gameJoined( CommsCtxt* comms, XWEnv xwe, const XP_UCHAR* connname, XWHostID hid )
@@ -2800,7 +2823,6 @@ comms_getAddrDisabled( const CommsCtxt* comms, CommsConnType typ,
     XP_ASSERT( !!comms );
     return comms->disableds[typ][send?0:1];
 }
-
 #endif
 
 static AddressRecord*

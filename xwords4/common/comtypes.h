@@ -228,6 +228,7 @@ typedef enum {
 #define SUFFIX_NEXTID "nextID"
 #define SUFFIX_DEVSTATE "devState"
 #define SUFFIX_MQTT_DEVID "mqtt_devid_key"
+#define SUFFIX_KNOWN_PLAYERS "known_players_key"
 
 #define FULL_KEY(PARTIAL) "persist_key:" PARTIAL
 
@@ -235,6 +236,7 @@ typedef enum {
 #define KEY_NEXTID FULL_KEY(SUFFIX_NEXTID)
 #define KEY_DEVSTATE FULL_KEY(SUFFIX_DEVSTATE)
 #define MQTT_DEVID_KEY FULL_KEY(SUFFIX_MQTT_DEVID)
+#define KNOWN_PLAYERS_KEY FULL_KEY(SUFFIX_KNOWN_PLAYERS)
 
 /* I need a way to communiate prefs to common/ code.  For now, though, I'll
  * leave storage of these values up to the platforms.  First, because I don't

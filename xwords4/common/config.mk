@@ -89,5 +89,6 @@ COMMON5 = \
 	$(COMMONOBJDIR)/dbgutil.o \
 	$(COMMONOBJDIR)/smsproto.o \
 	$(COMMONOBJDIR)/device.o \
+	$(COMMONOBJDIR)/knownplyr.o \
 
 COMMONOBJ = $(COMMON1) $(COMMON2) $(COMMON3) $(COMMON4) $(COMMON5)

@@ -19,6 +19,7 @@
 
 #include "dutil.h"
 #include "mempool.h"
+#include "knownplyr.h"
 #include "lindutil.h"
 #include "linuxutl.h"
 #include "linuxmain.h"
@@ -173,10 +174,11 @@ dutils_init( MPFORMAL VTableMgr* vtMgr, void* closure )
     return result;
 }
 
-void dutils_free( XW_DUtilCtxt** XP_UNUSED_DBG(ducp) )
+void dutils_free( XW_DUtilCtxt** dutil )
 {
+    kplr_cleanup( *dutil );
 # ifdef MEM_DEBUG
-    XP_FREEP( (*ducp)->mpool, ducp );
+    XP_FREEP( (*dutil)->mpool, dutil );
 # endif
 }
 

@@ -259,6 +259,9 @@ void comms_setAddrDisabled( CommsCtxt* comms, CommsConnType typ,
                             XP_Bool send, XP_Bool enabled );
 XP_Bool comms_getAddrDisabled( const CommsCtxt* comms, CommsConnType typ, 
                                XP_Bool send );
+
+void comms_gatherPlayers( CommsCtxt* comms, XWEnv xwe );
+
 # else
 #  define comms_setAddrDisabled( comms, typ, send, enabled )
 #  define comms_getAddrDisabled( comms, typ, send ) XP_FALSE

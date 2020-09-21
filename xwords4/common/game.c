@@ -316,6 +316,9 @@ game_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream, XWGame* game,
 
     if ( success && !!game && !!game->comms ) {
         XP_ASSERT( comms_getIsServer(game->comms) == server_getIsServer(game->server) );
+        if ( server_getGameIsConnected( game->server ) ) {
+            comms_gatherPlayers( game->comms, xwe );
+        }
     }
 
     return success;

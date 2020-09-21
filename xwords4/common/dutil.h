@@ -22,7 +22,6 @@
 #define _DEVUTIL_H_
 
 #include "comtypes.h"
-#include "mempool.h"
 #include "xwrelay.h"
 #include "vtabmgr.h"
 #include "commstyp.h"
@@ -85,6 +84,7 @@ struct XW_DUtilCtxt {
     DUtilVtable vtable;
     void* closure;
     void* devCtxt;              /* owned by device.c */
+    void* kpCtxt;               /* owned by knownplyr.c */
     VTableMgr* vtMgr;
     MPSLOT
 };
