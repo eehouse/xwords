@@ -36,6 +36,7 @@
 #include "nli.h"
 #include "smsproto.h"
 #include "device.h"
+#include "knownplyr.h"
 
 #include "utilwrapper.h"
 #include "drawwrapper.h"
@@ -768,6 +769,42 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dvc_1parseMQTTPacket
 
     (*env)->ReleaseByteArrayElements( env, jmsg, buf, 0 );
     DVC_HEADER_END();
+}
+
+JNIEXPORT jobjectArray JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_kplr_1getPlayers
+( JNIEnv* env, jclass C, jlong jniGlobalPtr )
+{
+    jobjectArray jnames = NULL;
+    DVC_HEADER(jniGlobalPtr);
+
+    XP_U16 nFound = 0;
+    kplr_getPlayers( globalState->dutil, env, NULL, &nFound );
+    if ( 0 < nFound ) {
+        const XP_UCHAR* names[nFound];
+        kplr_getPlayers( globalState->dutil, env, names, &nFound );
+        jnames = makeStringArray( env, nFound, names );
+    }
+    DVC_HEADER_END();
+    return jnames;
+}
+
+JNIEXPORT jobject JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_kplr_1getAddr
+( JNIEnv* env, jclass C, jlong jniGlobalPtr, jstring jName )
+{
+    jobject jaddr = NULL;
+    DVC_HEADER(jniGlobalPtr);
+
+    CommsAddrRec addr;
+    const char* name = (*env)->GetStringUTFChars( env, jName, NULL );
+    kplr_getAddr( globalState->dutil, env, name, &addr );
+    (*env)->ReleaseStringUTFChars( env, jName, name );
+    jaddr = makeObjectEmptyConst( env, PKG_PATH("jni/CommsAddrRec") );
+    setJAddrRec( env, jaddr, &addr );
+
+    DVC_HEADER_END();
+    return jaddr;
 }
 
 JNIEXPORT jbyteArray JNICALL

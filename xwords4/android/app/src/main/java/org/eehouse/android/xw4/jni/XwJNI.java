@@ -165,6 +165,16 @@ public class XwJNI {
         dvc_parseMQTTPacket( getJNI().m_ptrGlobals, buf );
     }
 
+    public static String[] kplr_getPlayers()
+    {
+        return kplr_getPlayers( getJNI().m_ptrGlobals );
+    }
+
+    public static CommsAddrRec kplr_getAddr( String name )
+    {
+        return kplr_getAddr( getJNI().m_ptrGlobals, name );
+    }
+
     private static void cleanGlobals()
     {
         synchronized( XwJNI.class ) { // let's be safe here
@@ -679,6 +689,10 @@ public class XwJNI {
                                                          String[] addrToTopic );
 
     private static native void dvc_parseMQTTPacket( long jniState, byte[] buf );
+
+    private static native String[] kplr_getPlayers( long jniState );
+    private static native CommsAddrRec kplr_getAddr( long jniState, String name );
+
     private static native void cleanGlobals( long jniState );
     private static native byte[] gi_to_stream( long jniState, CurGameInfo gi );
     private static native void gi_from_stream( long jniState, CurGameInfo gi,
