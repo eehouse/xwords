@@ -1,7 +1,6 @@
 /* -*- compile-command: "find-and-gradle.sh inXw4dDebug"; -*- */
 /*
- * Copyright 2017 - 2020 by Eric House (xwords@eehouse.org).  All rights
- * reserved.
+ * Copyright 2017 - 2020 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -25,6 +24,7 @@ import android.content.Context;
 import android.content.DialogInterface.OnClickListener;
 import android.content.DialogInterface;
 import android.widget.Button;
+import android.widget.RadioGroup;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,8 +33,12 @@ import org.eehouse.android.xw4.DBUtils.SentInvitesInfo;
 import org.eehouse.android.xw4.DlgDelegate.Action;
 import org.eehouse.android.xw4.DlgDelegate.DlgClickNotify.InviteMeans;
 import org.eehouse.android.xw4.Perms23.Perm;
+import org.eehouse.android.xw4.jni.CommsAddrRec;
+import org.eehouse.android.xw4.jni.XwJNI;
+import org.eehouse.android.xw4.loc.LocUtils;
 
-public class InviteChoicesAlert extends DlgDelegateAlert {
+public class InviteChoicesAlert extends DlgDelegateAlert
+    implements InviteView.ItemClicked  {
 
     public static InviteChoicesAlert newInstance( DlgState state )
     {
@@ -49,7 +53,7 @@ public class InviteChoicesAlert extends DlgDelegateAlert {
     public void populateBuilder( final Context context, final DlgState state,
                                  AlertDialog.Builder builder )
     {
-        final ArrayList<InviteMeans> means = new ArrayList<>();
+        ArrayList<InviteMeans> means = new ArrayList<>();
         InviteMeans lastMeans = null;
         Object[] params = state.getParams();
         if ( null != params
@@ -80,78 +84,53 @@ public class InviteChoicesAlert extends DlgDelegateAlert {
         }
         means.add( InviteMeans.CLIPBOARD );
 
-        String[] items = new String[means.size()];
-        final int[] sel = { -1 };
-        for ( int ii = 0; ii < items.length; ++ii ) {
-            InviteMeans oneMeans = means.get(ii);
-            items[ii] = getString( oneMeans.getUserDescID() );
-            if ( lastMeans == oneMeans ) {
-                sel[0] = ii;
+        int lastSelMeans = -1;
+        if ( null != lastMeans ) {
+            for ( int ii = 0; ii < means.size(); ++ii ) {
+                if ( lastMeans == means.get(ii) ) {
+                    lastSelMeans = ii;
+                    break;
+                }
             }
         }
 
-        OnClickListener selChanged = new OnClickListener() {
-                public void onClick( DialogInterface dlg, int pos ) {
-                    XWActivity activity = (XWActivity)getActivity();
-                    sel[0] = pos;
-                    switch ( means.get(pos) ) {
-                    case SMS_USER:
-                        activity
-                            .makeNotAgainBuilder( R.string.sms_invite_flakey,
-                                                  R.string.key_na_sms_invite_flakey )
-                            .show();
-                        break;
-                    case CLIPBOARD:
-                        String msg =
-                            getString( R.string.not_again_clip_expl_fmt,
-                                       getString(R.string.slmenu_copy_sel) );
-                        activity
-                            .makeNotAgainBuilder(msg, R.string.key_na_clip_expl)
-                            .show();
-                        break;
-                    case SMS_DATA:
-                        if ( !Perms23.havePermissions( activity, Perm.SEND_SMS, Perm.RECEIVE_SMS )
-                             && Perm.SEND_SMS.isBanned(activity) ) {
-                            activity
-                                .makeOkOnlyBuilder( R.string.sms_banned_ok_only )
-                                .setActionPair( Action.PERMS_BANNED_INFO,
-                                                R.string.button_more_info )
-                                .show();
-                        } else if ( ! XWPrefs.getNBSEnabled( context ) ) {
-                            activity
-                                .makeConfirmThenBuilder( R.string.warn_sms_disabled,
-                                                         Action.ENABLE_NBS_ASK )
-                                .setPosButton( R.string.button_enable_sms )
-                                .setNegButton( R.string.button_later )
-                                .show();
-                        }
-                        break;
-                    }
-
-                    Button button = ((AlertDialog)dlg)
-                        .getButton( AlertDialog.BUTTON_POSITIVE );
-                    button.setEnabled( true );
-                }
-            };
-
+        final InviteView inviteView = (InviteView)LocUtils
+            .inflate( context, R.layout.invite_view );
         final OnClickListener okClicked = new OnClickListener() {
                 @Override
                 public void onClick( DialogInterface dlg, int pos ) {
                     Assert.assertTrue( Action.SKIP_CALLBACK != state.m_action );
-                    int indx = sel[0];
-                    if ( 0 <= indx ) {
+                    Object choice = inviteView.getChoice();
+                    if ( null != choice ) {
                         XWActivity activity = (XWActivity)context;
-                        activity.inviteChoiceMade( state.m_action,
-                                                   means.get(indx),
-                                                   state.getParams() );
+                        if ( choice instanceof InviteMeans ) {
+                            InviteMeans means = (InviteMeans)choice;
+                            activity.inviteChoiceMade( state.m_action,
+                                                       means, state.getParams() );
+                        } else if ( choice instanceof String ) {
+                            String player = (String)choice;
+                            CommsAddrRec addr = XwJNI.kplr_getAddr( player );
+                            XWActivity xwact = (XWActivity)context;
+                            Object[] params = { addr };
+                            xwact.onPosButton( state.m_action, params );
+                        } else {
+                            Assert.failDbg();
+                        }
                     }
                 }
             };
 
-        builder.setTitle( R.string.invite_choice_title )
-            .setSingleChoiceItems( items, sel[0], selChanged )
+        builder
+            .setTitle( R.string.invite_choice_title )
+            .setView( inviteView )
             .setPositiveButton( android.R.string.ok, okClicked )
-            .setNegativeButton( android.R.string.cancel, null );
+            .setNegativeButton( android.R.string.cancel, null )
+            ;
+
+        String[] players = XwJNI.kplr_getPlayers();
+        inviteView.setChoices( means, lastSelMeans, players )
+            .setCallbacks( this );
+
         if ( BuildConfig.DEBUG ) {
             OnClickListener ocl = new OnClickListener() {
                     @Override
@@ -165,6 +144,48 @@ public class InviteChoicesAlert extends DlgDelegateAlert {
                     }
                 };
             builder.setNeutralButton( R.string.ok_with_robots, ocl );
+        }
+    }
+
+    @Override
+    public void meansClicked( InviteMeans means )
+    {
+        DlgDelegate.Builder builder = null;
+        XWActivity activity = (XWActivity)getActivity();
+        switch ( means ) {
+        case SMS_USER:
+            builder =activity
+                .makeNotAgainBuilder( R.string.sms_invite_flakey,
+                                      R.string.key_na_sms_invite_flakey );
+            break;
+        case CLIPBOARD:
+            String msg =
+                getString( R.string.not_again_clip_expl_fmt,
+                           getString(R.string.slmenu_copy_sel) );
+            builder = activity
+                .makeNotAgainBuilder(msg, R.string.key_na_clip_expl);
+            break;
+        case SMS_DATA:
+            if ( !Perms23.havePermissions( activity, Perm.SEND_SMS, Perm.RECEIVE_SMS )
+                 && Perm.SEND_SMS.isBanned(activity) ) {
+                builder = activity
+                    .makeOkOnlyBuilder( R.string.sms_banned_ok_only )
+                    .setActionPair( Action.PERMS_BANNED_INFO,
+                                    R.string.button_more_info )
+                    ;
+            } else if ( ! XWPrefs.getNBSEnabled( getContext() ) ) {
+                builder = activity
+                    .makeConfirmThenBuilder( R.string.warn_sms_disabled,
+                                             Action.ENABLE_NBS_ASK )
+                    .setPosButton( R.string.button_enable_sms )
+                    .setNegButton( R.string.button_later )
+                    ;
+            }
+            break;
+        }
+
+        if ( null != builder ) {
+            builder.show();
         }
     }
 }

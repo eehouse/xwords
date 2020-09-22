@@ -531,7 +531,7 @@ public class BoardDelegate extends DelegateBase
                             if ( state.summary.hasRematchInfo() ) {
                                 tryRematchInvites( true );
                             } else if ( state.summary.hasInviteInfo() ) {
-                                tryOtherInvites( true );
+                                tryOtherInvites();
                             } else {
                                 callInviteChoices( sentInfo[0] );
                             }
@@ -1240,6 +1240,11 @@ public class BoardDelegate extends DelegateBase
             showArchiveNA( false );
             break;
 
+        case LAUNCH_INVITE_ACTION:
+            CommsAddrRec addr = (CommsAddrRec)params[0];
+            tryOtherInvites( addr );
+            break;
+
         case ENABLE_NBS_DO:
             post( new Runnable() {
                     @Override
@@ -1773,7 +1778,7 @@ public class BoardDelegate extends DelegateBase
             if ( m_summary.hasRematchInfo() ) {
                 skipDismiss = !tryRematchInvites( false );
             } else if ( m_summary.hasInviteInfo() ) {
-                skipDismiss = !tryOtherInvites( false );
+                skipDismiss = !tryOtherInvites();
             } else if ( !m_haveInvited ) {
                 m_haveInvited = true;
                 showInviteAlertIf();
@@ -2775,7 +2780,7 @@ public class BoardDelegate extends DelegateBase
         if ( 0 < m_mySIS.nMissing && m_summary.hasRematchInfo() ) {
             tryRematchInvites( false );
         } else if ( 0 < m_mySIS.nMissing && m_summary.hasInviteInfo() ) {
-            tryOtherInvites( false );
+            tryOtherInvites();
         } else if ( null != m_missingDevs ) {
             Assert.assertNotNull( m_missingMeans );
             String gameName = GameUtils.getName( m_activity, m_rowid );
@@ -3196,43 +3201,48 @@ public class BoardDelegate extends DelegateBase
         return force;
     }
 
-    private boolean tryOtherInvites( boolean force )
+    private boolean tryOtherInvites()
     {
-        boolean result = true;
+        boolean result = false;
         Assert.assertNotNull( m_summary );
-        Assert.assertNotNull( m_gi );
         String str64 = m_summary.getStringExtra( GameSummary.EXTRA_REMATCH_ADDR );
         try {
             CommsAddrRec addr = (CommsAddrRec)Utils.string64ToSerializable( str64 );
-            NetLaunchInfo nli = nliForMe();
-            CommsConnTypeSet conTypes = addr.conTypes;
-            for ( CommsConnType typ : conTypes ) {
-                switch ( typ ) {
-                case COMMS_CONN_MQTT:
-                    MQTTUtils.inviteRemote( m_activity, addr.mqtt_devID, nli );
-                    recordInviteSent( InviteMeans.MQTT, addr.mqtt_devID );
-                    break;
-                case COMMS_CONN_BT:
-                    BTService.inviteRemote( m_activity, addr.bt_btAddr, nli );
-                    recordInviteSent( InviteMeans.BLUETOOTH, addr.bt_btAddr );
-                    break;
+            result = tryOtherInvites( addr );
+        } catch ( Exception ex ) {
+            Log.ex( TAG, ex );
+            Assert.failDbg();
+        }
+        return result;
+    }
+
+    private boolean tryOtherInvites( CommsAddrRec addr )
+    {
+        boolean result = true;
+        NetLaunchInfo nli = nliForMe();
+        CommsConnTypeSet conTypes = addr.conTypes;
+        for ( CommsConnType typ : conTypes ) {
+            switch ( typ ) {
+            case COMMS_CONN_MQTT:
+                MQTTUtils.inviteRemote( m_activity, addr.mqtt_devID, nli );
+                recordInviteSent( InviteMeans.MQTT, addr.mqtt_devID );
+                break;
+            case COMMS_CONN_BT:
+                BTService.inviteRemote( m_activity, addr.bt_btAddr, nli );
+                recordInviteSent( InviteMeans.BLUETOOTH, addr.bt_btAddr );
+                break;
                 // case COMMS_CONN_RELAY:
                 //     RelayService.inviteRemote( m_activity, m_jniGamePtr, 0, value, nli );
                 //     recordInviteSent( InviteMeans.RELAY );
                 //     break;
-                case COMMS_CONN_SMS:
-                    sendNBSInviteIf( addr.sms_phone, nli, true );
-                    recordInviteSent( InviteMeans.SMS_DATA, addr.sms_phone );
-                    break;
+            case COMMS_CONN_SMS:
+                sendNBSInviteIf( addr.sms_phone, nli, true );
+                recordInviteSent( InviteMeans.SMS_DATA, addr.sms_phone );
+                break;
 
-                default:
-                    Log.d( TAG, "not inviting using addr type %s", typ );
-                }
+            default:
+                Log.d( TAG, "not inviting using addr type %s", typ );
             }
-        } catch ( Exception ex ) {
-            Log.ex( TAG, ex );
-            Assert.failDbg();
-            result = false;
         }
         return result;
     }

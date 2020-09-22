@@ -1008,6 +1008,7 @@
     <string name="newgame_invite">Invite now</string>
     <string name="newgame_invite_more">More info</string>
     <string name="newgame_drop_relay">Drop Relay</string>
+
     <!-- EXPLAIN ME -->
     <!-- <string name="bt_disabled">Bluetooth is not available.  This may -->
     <!--   mean that your device doesn\'t support it, or that it\'s been -->
@@ -1022,7 +1023,13 @@
     <string name="invite_choice_nfc">NFC (“Android beaming”)</string>
     <string name="invite_choice_relay">Internet/Relay</string>
     <string name="invite_choice_p2p">Wifi Direct</string>
-    <string name="invite_choice_title">Inviting players: How?</string>
+    <string name="invite_choice_title">Inviting players</string>
+    <!-- Radio button in invite choices dialog for list of previous opponents -->
+    <string name="radio_who">Who?</string>
+    <!-- Text shown only when there are not any previous opponents to invite -->
+    <string name="invite_who_empty_expl">empty expl</string>
+    <!-- Radio button in invite choices dialog for list ways to send an invitation -->
+    <string name="radio_how">How?</string>
     <!-- Button, on DEBUG builds only, causes invitee players to be robots -->
     <string name="ok_with_robots">OK (robots)</string>
     <!-- <string name="sms_or_email">Send invitation using SMS (texting) or -->
