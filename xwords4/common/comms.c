@@ -923,7 +923,7 @@ comms_writeToStream( CommsCtxt* comms, XWEnv XP_UNUSED_DBG(xwe),
     stream_setVersion( stream, CUR_STREAM_VERS );
 
     // FIX_NEXT_VERSION_CHANGE
-    stream_putU8( stream, (XP_U8)comms->isServer );    /* no longer needed!!! */
+    stream_putU8( stream, 0 );    /* no longer needed!!! */
     logAddr( comms, xwe, &comms->addr, __func__ );
     addrToStream( stream, &comms->addr );
     stream_putBits( stream, 4, comms->rr.nPlayersHere );
