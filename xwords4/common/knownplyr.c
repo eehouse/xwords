@@ -33,6 +33,7 @@ typedef struct _KPState {
     KnownPlayer* players;
     XP_U16 nPlayers;
     XP_Bool dirty;
+    XP_Bool inUse;
 } KPState;
 
 /* enum { STREAM_VERSION_KP_1,     /\* initial *\/ */
@@ -75,6 +76,8 @@ loadState( XW_DUtilCtxt* dutil, XWEnv xwe )
 
         stream_destroy( stream, xwe );
     }
+    XP_ASSERT( !state->inUse );
+    state->inUse = XP_TRUE;
     return state;
 }
 
@@ -93,6 +96,14 @@ saveState( XW_DUtilCtxt* dutil, XWEnv xwe, KPState* state )
         stream_destroy( stream, xwe );
         state->dirty = XP_FALSE;
     }
+}
+
+static void
+releaseState( XW_DUtilCtxt* dutil, XWEnv xwe, KPState* state )
+{
+    XP_ASSERT( state->inUse );
+    saveState( dutil, xwe, state );
+    state->inUse = XP_FALSE;
 }
 
 static const XP_UCHAR*
@@ -158,7 +169,7 @@ kplr_addAddrs( XW_DUtilCtxt* dutil, XWEnv xwe, const CurGameInfo* gi,
                 XP_LOGFF( "unable to find %dth name", ii );
             }
         }
-        saveState( dutil, xwe, state );
+        releaseState( dutil, xwe, state );
     }
 
     return canUse;
@@ -169,6 +180,7 @@ kplr_havePlayers( XW_DUtilCtxt* dutil, XWEnv xwe )
 {
     KPState* state = loadState( dutil, xwe );
     XP_Bool result = 0 < state->nPlayers;
+    releaseState( dutil, xwe, state );
     LOG_RETURNF( "%s", boolToStr(result) );
     return result;
 }
@@ -185,6 +197,7 @@ kplr_getPlayers( XW_DUtilCtxt* dutil, XWEnv xwe,
         }
     }
     *nFound = state->nPlayers;
+    releaseState( dutil, xwe, state );
 }
 
 XP_Bool
@@ -199,6 +212,7 @@ kplr_getAddr( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* name,
             *addr = kp->addr;
         }
     }
+    releaseState( dutil, xwe, state );
     LOG_RETURNF( "%s", boolToStr(found) );
     return found;
 }
@@ -208,6 +222,7 @@ kplr_cleanup( XW_DUtilCtxt* dutil )
 {
     KPState** state = (KPState**)&dutil->kpCtxt;
     if ( !!*state ) {
+        XP_ASSERT( !(*state)->inUse );
         for ( KnownPlayer* kp = (*state)->players; !!kp; kp = kp->next ) {
             XP_FREEP( dutil->mpool, &kp->name );
             XP_FREE( dutil->mpool, kp );

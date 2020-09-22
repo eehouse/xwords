@@ -38,6 +38,7 @@ import android.text.TextUtils;
 import org.eehouse.android.xw4.DBHelper.TABLE_NAMES;
 import org.eehouse.android.xw4.DictUtils.DictLoc;
 import org.eehouse.android.xw4.DlgDelegate.DlgClickNotify.InviteMeans;
+import org.eehouse.android.xw4.jni.CommsAddrRec;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;
 import org.eehouse.android.xw4.jni.CurGameInfo;
@@ -368,6 +369,22 @@ public class DBUtils {
             NagTurnReceiver.setNagTimer( context );
         }
     } // saveSummary
+
+    public static void addRematchInfo( Context context, long rowid, CommsAddrRec addr )
+    {
+        try ( GameLock lock = GameLock.tryLock(rowid) ) {
+            if ( null != lock ) {
+                String as64 = Utils.serializableToString64( addr );
+                GameSummary summary = getSummary( context, lock )
+                    .putStringExtra( GameSummary.EXTRA_REMATCH_ADDR, as64 )
+                    ;
+                saveSummary( context, lock, summary );
+            } else {
+                Assert.failDbg();
+                Log.e( TAG, "addRematchInfo(%d): unable to lock game" );
+            }
+        }
+    }
 
     public static void addRematchInfo( Context context, long rowid, String btAddr,
                                        String phone, String relayID, String p2pAddr,

@@ -51,6 +51,7 @@ public class GameSummary implements Serializable {
     public static final String EXTRA_REMATCH_RELAY = "rm_relay";
     public static final String EXTRA_REMATCH_P2P = "rm_p2p";
     public static final String EXTRA_REMATCH_MQTT = "rm_mqtt";
+    public static final String EXTRA_REMATCH_ADDR = "rm_addr";
 
     public static final int MSG_FLAGS_NONE = 0;
     public static final int MSG_FLAGS_TURN = 1;
@@ -535,6 +536,12 @@ public class GameSummary implements Serializable {
             }
         }
         // Log.d( TAG, "hasRematchInfo() => %b", found );
+        return found;
+    }
+
+    public boolean hasInviteInfo()
+    {
+        boolean found = null != getStringExtra( EXTRA_REMATCH_ADDR );
         return found;
     }
 

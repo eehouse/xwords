@@ -165,6 +165,12 @@ public class XwJNI {
         dvc_parseMQTTPacket( getJNI().m_ptrGlobals, buf );
     }
 
+    public static boolean hasKnownPlayers()
+    {
+        String[] players = kplr_getPlayers();
+        return null != players && 0 < players.length;
+    }
+
     public static String[] kplr_getPlayers()
     {
         return kplr_getPlayers( getJNI().m_ptrGlobals );

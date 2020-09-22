@@ -43,7 +43,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 
-public class CommsAddrRec {
+public class CommsAddrRec implements java.io.Serializable {
     private static final String TAG = CommsAddrRec.class.getSimpleName();
 
     public enum CommsConnType {
