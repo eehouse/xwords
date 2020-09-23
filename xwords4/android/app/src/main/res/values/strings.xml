@@ -2633,6 +2633,12 @@
 
     <string name="button_faq">Show FAQ</string>
 
+    <string name="not_again_quicknetgame">There’s a new super-quick
+    way to start a game with somebody you’ve played against before. If
+    the person’s name is listed, just select it and an invitation will
+    be sent immediately.
+    </string>
+
     <!-- MQTT stuff. May not see the light of day -->
     <string name="invite_choice_mqtt">Internet/MQTT</string>
     <string name="mqtt_invite_title">MQTT Invitation</string>

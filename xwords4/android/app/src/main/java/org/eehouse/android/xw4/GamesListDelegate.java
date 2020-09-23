@@ -871,6 +871,10 @@ public class GamesListDelegate extends ListDelegateBase
             boolean forceConfig = 2 <= params.length && (Boolean)params[1];
             if ( !solo && !forceConfig && XwJNI.hasKnownPlayers() ) {
                 dialog = mkNewWithKnowns();
+                makeNotAgainBuilder( R.string.not_again_quicknetgame,
+                                     R.string.key_na_quicknetgame )
+                    .setTitle( R.string.new_feature_title )
+                    .show();
             } else {
                 dialog = mkNewGameDialog( solo );
             }
@@ -968,16 +972,17 @@ public class GamesListDelegate extends ListDelegateBase
             .setView( view )
             .setTitle( R.string.new_game_networked )
             .setIcon( R.drawable.ic_multigame )
-            .setPositiveButton( "Play Now", new OnClickListener() {
+            .setPositiveButton( R.string.play, new OnClickListener() {
                     @Override
                     public void onClick( DialogInterface dlg, int item ) {
                         String player = view.getSelPlayer();
-                        CommsAddrRec rec = XwJNI.kplr_getAddr( player );
-                        String gameName = view.gameName();
-                        launchLikeRematch( rec, gameName );
+                        CommsAddrRec addr = XwJNI.kplr_getAddr( player );
+                        if ( null != addr ) {
+                            launchLikeRematch( addr, view.gameName() );
+                        }
                     }
                 } )
-            .setNegativeButton( "Configure First", new OnClickListener() {
+            .setNegativeButton( R.string.newgame_configure_first, new OnClickListener() {
                     @Override
                     public void onClick( DialogInterface dlg, int item ) {
                         String name = view.gameName();
@@ -2378,10 +2383,10 @@ public class GamesListDelegate extends ListDelegateBase
     {
         boolean result = false;
         try {
-            CommsAddrRec rec = (CommsAddrRec)intent.getSerializableExtra( INVITEE_REC_EXTRA );
-            if ( null != rec ) {
+            CommsAddrRec addr = (CommsAddrRec)intent.getSerializableExtra( INVITEE_REC_EXTRA );
+            if ( null != addr ) {
                 String name = intent.getStringExtra( REMATCH_NEWNAME_EXTRA );
-                makeThenLaunchOrConfigure( name, false, false, rec );
+                makeThenLaunchOrConfigure( name, false, false, addr );
             }
         } catch ( Exception ex ) {
             Log.ex( TAG, ex );
@@ -2954,7 +2959,7 @@ public class GamesListDelegate extends ListDelegateBase
     }
 
     private void makeThenLaunchOrConfigure( String name, boolean doConfigure,
-                                            boolean skipAsk, CommsAddrRec rec )
+                                            boolean skipAsk, CommsAddrRec addr )
     {
         if ( skipAsk || !askingChangeName( name, doConfigure ) ) {
             long rowID;
@@ -2971,8 +2976,8 @@ public class GamesListDelegate extends ListDelegateBase
                 rowID = GameUtils.makeNewMultiGame( m_activity, groupID, name );
             }
 
-            if ( null != rec ) {
-                DBUtils.addRematchInfo( m_activity, rowID, rec );
+            if ( null != addr ) {
+                DBUtils.addRematchInfo( m_activity, rowID, addr );
             }
 
             if ( doConfigure ) {
@@ -3032,10 +3037,10 @@ public class GamesListDelegate extends ListDelegateBase
         return intent;
     }
 
-    private void launchLikeRematch( CommsAddrRec rec, String name )
+    private void launchLikeRematch( CommsAddrRec addr, String name )
     {
         Intent intent = makeSelfIntent( m_activity )
-            .putExtra( INVITEE_REC_EXTRA, (Serializable)rec )
+            .putExtra( INVITEE_REC_EXTRA, (Serializable)addr )
             .putExtra( REMATCH_NEWNAME_EXTRA, name )
             ;
         startActivity( intent );
