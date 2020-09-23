@@ -77,6 +77,7 @@ public class GameSummary implements Serializable {
     public String relayID;
     public int seed;
     public long modtime;
+    public long created;
     public int gameID;
     public String[] remoteDevs; // BTAddrs and phone numbers
 
@@ -124,6 +125,7 @@ public class GameSummary implements Serializable {
                     && gameOver == other.gameOver
                     && seed == other.seed
                     && modtime == other.modtime
+                    && created == other.created
                     && gameID == other.gameID
                     && dictLang == other.dictLang
                     && nPacketsPending == other.nPacketsPending

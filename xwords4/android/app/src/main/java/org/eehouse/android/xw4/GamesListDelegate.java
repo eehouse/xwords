@@ -559,6 +559,7 @@ public class GamesListDelegate extends ListDelegateBase
                 R.string.game_summary_field_gameid,
                 R.string.game_summary_field_npackets,
                 R.string.title_addrs_pref,
+                R.string.game_summary_field_created,
             };
             int result = ids[0]; // need a default in case set changes
             for ( int id : ids ) {

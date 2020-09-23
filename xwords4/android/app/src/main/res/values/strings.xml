@@ -815,6 +815,9 @@
     <string name="game_summary_field_opponents">Opponent name[s]</string>
     <!-- List the state of the game, "Game over" or "10 moves made"
          etc. -->
+    <!-- Debug-only: list creation date of game -->
+    <string name="game_summary_field_created">When created</string>
+    <!-- State the game is in, e.g. finished or awaiting players -->
     <string name="game_summary_field_state">Game state</string>
     <!-- Checkbox that when set prevents showing a title bar in the
          game board window to save space -->

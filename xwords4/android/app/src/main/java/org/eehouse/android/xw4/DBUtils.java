@@ -141,6 +141,7 @@ public class DBUtils {
                              DBHelper.LASTPLAY_TIME, DBHelper.REMOTEDEVS,
                              DBHelper.LASTMOVE, DBHelper.NPACKETSPENDING,
                              DBHelper.EXTRAS, DBHelper.NEXTDUPTIMER,
+                             DBHelper.CREATE_TIME,
         };
         String selection = String.format( ROW_ID_FMT, lock.getRowid() );
 
@@ -190,6 +191,9 @@ public class DBUtils {
                     cursor.getInt(cursor.getColumnIndex(DBHelper.LASTMOVE));
                 summary.dupTimerExpires =
                     cursor.getInt(cursor.getColumnIndex(DBHelper.NEXTDUPTIMER));
+                summary.created = cursor
+                    .getLong(cursor.getColumnIndex(DBHelper.CREATE_TIME));
+
                 String str = cursor
                     .getString(cursor.getColumnIndex(DBHelper.EXTRAS));
                 summary.setExtras( str );
@@ -1034,7 +1038,7 @@ public class DBUtils {
         ContentValues values = new ContentValues();
         values.put( DBHelper.SNAPSHOT, bytes );
 
-        long timestamp = new Date().getTime();
+        long timestamp = new Date().getTime(); // milliseconds since epoch
         values.put( DBHelper.CREATE_TIME, timestamp );
         values.put( DBHelper.LASTPLAY_TIME, timestamp );
         values.put( DBHelper.GROUPID, groupID );

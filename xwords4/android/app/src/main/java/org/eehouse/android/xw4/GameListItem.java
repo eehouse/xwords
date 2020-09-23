@@ -77,6 +77,10 @@ public class GameListItem extends LinearLayout
     private boolean m_selected = false;
     private DrawSelDelegate m_dsdel;
 
+    private static DateFormat sDF = DateFormat
+        .getDateTimeInstance( DateFormat.SHORT, DateFormat.SHORT );
+
+
     public GameListItem( Context cx, AttributeSet as )
     {
         super( cx, as );
@@ -276,6 +280,9 @@ public class GameListItem extends LinearLayout
             case R.string.title_addrs_pref:
                 value = m_summary.conTypes.toString( m_context, false );
                 break;
+            case R.string.game_summary_field_created:
+                value = sDF.format( new Date( m_summary.created ) );
+                break;
             }
 
             String name = GameUtils.getName( m_context, m_rowid );
@@ -323,9 +330,7 @@ public class GameListItem extends LinearLayout
 
             long lastMoveTime = summary.lastMoveTime;
             lastMoveTime *= 1000;
-            DateFormat df = DateFormat.getDateTimeInstance( DateFormat.SHORT,
-                                                            DateFormat.SHORT );
-            m_modTime.setText( df.format( new Date( lastMoveTime ) ) );
+            m_modTime.setText( sDF.format( new Date( lastMoveTime ) ) );
 
             setTypeIcon();
 
