@@ -131,7 +131,7 @@ public class InviteChoicesAlert extends DlgDelegateAlert
         inviteView.setChoices( means, lastSelMeans, players )
             .setCallbacks( this );
 
-        if ( BuildConfig.DEBUG ) {
+        if ( false && BuildConfig.DEBUG ) {
             OnClickListener ocl = new OnClickListener() {
                     @Override
                     public void onClick( DialogInterface dlg, int pos ) {
