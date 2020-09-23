@@ -43,7 +43,7 @@ public class NewWithKnowns extends LinearLayout {
         Spinner spinner = (Spinner)findViewById( R.id.names );
         spinner.setAdapter( adapter );
 
-        EditText et = (EditText)findViewById( R.id.name_edit );
+        EditWClear et = (EditWClear)findViewById( R.id.name_edit );
         et.setText( gameName );
     }
 
@@ -55,7 +55,7 @@ public class NewWithKnowns extends LinearLayout {
 
     String gameName()
     {
-        EditText et = (EditText)findViewById( R.id.name_edit );
+        EditWClear et = (EditWClear)findViewById( R.id.name_edit );
         return et.getText().toString();
     }
 }

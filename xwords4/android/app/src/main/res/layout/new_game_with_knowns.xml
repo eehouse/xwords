@@ -23,8 +23,10 @@
             android:text="Name your game"
             />
 
-  <EditText android:id="@+id/name_edit"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            />
+  <org.eehouse.android.xw4.EditWClear
+      style="@style/edit_w_clear"
+      android:id="@+id/name_edit"
+      android:layout_width="fill_parent"
+      android:layout_height="wrap_content"
+      />
 </org.eehouse.android.xw4.NewWithKnowns>
