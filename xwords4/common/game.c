@@ -463,35 +463,6 @@ game_dispose( XWGame* game, XWEnv xwe )
     }
 } /* game_dispose */
 
-void
-gi_initPlayerInfo( MPFORMAL CurGameInfo* gi, const XP_UCHAR* nameTemplate )
-{
-    XP_U16 ii;
-
-    XP_MEMSET( gi, 0, sizeof(*gi) );
-    gi->serverRole = SERVER_STANDALONE;
-    gi->nPlayers = 2;
-    gi->boardSize = 15;
-    gi->gameSeconds = 25 * 60; /* 25 minute game is common? */
-    
-    gi->confirmBTConnect = XP_TRUE;
-
-    for ( ii = 0; ii < MAX_NUM_PLAYERS; ++ii ) {
-        XP_UCHAR buf[20];
-        LocalPlayer* fp = &gi->players[ii];
-
-        if ( !!nameTemplate ) {
-            XP_SNPRINTF( buf, sizeof(buf), nameTemplate, ii+1 );
-            XP_ASSERT( fp->name == NULL );
-            fp->name = copyString( mpool, buf );
-        }
-
-        fp->robotIQ = (ii == 0) ? 1 : 0; /* one robot */
-        fp->isLocal = XP_TRUE;
-        fp->secondsUsed = 0;
-    }
-} /* game_initPlayerInfo */
-
 static void
 disposePlayerInfoInt( MPFORMAL CurGameInfo* gi )
 {

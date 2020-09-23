@@ -95,8 +95,6 @@ void game_dispose( XWGame* game, XWEnv xwe );
 void game_getState( const XWGame* game, XWEnv xwe, GameStateInfo* gsi );
 XP_Bool game_getIsServer( const XWGame* game );
 
-void gi_initPlayerInfo( MPFORMAL CurGameInfo* gi, 
-                        const XP_UCHAR* nameTemplate );
 void gi_setNPlayers( CurGameInfo* gi, XP_U16 nTotal, XP_U16 nHere );
 void gi_disposePlayerInfo( MPFORMAL CurGameInfo* gi );
 void gi_writeToStream( XWStreamCtxt* stream, const CurGameInfo* gi );
