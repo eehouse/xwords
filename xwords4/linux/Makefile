@@ -166,6 +166,7 @@ DEFINES += -DXWFEATURE_DIRECTIP
 DEFINES += -DXWFEATURE_SLOW_ROBOT -DXWFEATURE_ROBOTPHONIES
 
 DEFINES += -DXWFEATURE_DEVICE
+DEFINES += -DXWFEATURE_KNOWNPLAYERS
 
 # Support device-to-device connection via UDP, e.g. using wifi on a
 # LAN or where the host/server isn't behind a firewall.

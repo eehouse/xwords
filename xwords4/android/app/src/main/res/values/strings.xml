@@ -1023,7 +1023,13 @@
     <string name="invite_choice_nfc">NFC (“Android beaming”)</string>
     <string name="invite_choice_relay">Internet/Relay</string>
     <string name="invite_choice_p2p">Wifi Direct</string>
-    <string name="invite_choice_title">Inviting players</string>
+    <string name="invite_choice_title">Inviting a Player</string>
+
+    <!-- Text above choices for how to send invitations == ONLY WHEN
+         there's no choice between how and who. Replaces the how?/who?
+         choice radio group. -->
+    <string name="how_tab">Send invitation how?</string>
+
     <!-- Radio button in invite choices dialog for list of previous opponents -->
     <string name="radio_who">Who?</string>
     <!-- Text shown only when there are not any previous opponents to invite -->
@@ -2375,7 +2381,7 @@
        when chosen -->
     <string name="not_again_clip_expl_fmt">The “%1$s” option copies an
   invitation URL to the clipboard. Paste it into the app of your
-  choice and send it to your friend.</string>
+  choice and share it with a friend.</string>
     <string name="confirm_clear_chat">Are you sure you want to delete
   all chat history for this game?\n\n(This action cannot be
   undone.)</string>

@@ -1,7 +1,6 @@
 /* -*- compile-command: "cd ../linux && make MEMDEBUG=TRUE -j3"; -*- */
 /* 
- * Copyright 2001 - 2020 by Eric House (xwords@eehouse.org).  All rights
- * reserved.
+ * Copyright 2020 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -22,6 +21,8 @@
 #include "strutils.h"
 #include "comms.h"
 #include "dbgutil.h"
+
+#ifdef XWFEATURE_KNOWNPLAYERS
 
 typedef struct _KnownPlayer {
     struct _KnownPlayer* next;
@@ -230,3 +231,4 @@ kplr_cleanup( XW_DUtilCtxt* dutil )
         XP_FREEP( dutil->mpool, state );
     }
 }
+#endif

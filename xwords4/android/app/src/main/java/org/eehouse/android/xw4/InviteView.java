@@ -60,12 +60,17 @@ public class InviteView extends ScrollView
     {
         Context context = getContext();
 
-        mIsWho = null != players && 0 < players.length;
+        boolean showWho = null != players && 0 < players.length;
 
-        // top/horizontal group first
-        mGroupTab = (RadioGroup)findViewById( R.id.group_tab );
-        mGroupTab.check(mIsWho ? R.id.radio_who : R.id.radio_how );
-        mGroupTab.setOnCheckedChangeListener( this );
+        // top/horizontal group or title first
+        if ( showWho ) {
+            mGroupTab = (RadioGroup)findViewById( R.id.group_tab );
+            mGroupTab.check( R.id.radio_who );
+            mGroupTab.setOnCheckedChangeListener( this );
+            mGroupTab.setVisibility( View.VISIBLE );
+        } else {
+            findViewById( R.id.title_tab ).setVisibility( View.VISIBLE );
+        }
 
         mGroupHow = (RadioGroup)findViewById( R.id.group_how );
         mGroupHow.setOnCheckedChangeListener( this );
@@ -77,9 +82,9 @@ public class InviteView extends ScrollView
             mHowMeans.put( button, means );
         }
 
-        mGroupWho = (RadioGroup)findViewById( R.id.group_who );
-        mGroupWho.setOnCheckedChangeListener( this );
-        if ( mIsWho ) {
+        if ( showWho ) {
+            mGroupWho = (RadioGroup)findViewById( R.id.group_who );
+            mGroupWho.setOnCheckedChangeListener( this );
             for ( String player : players ) {
                 RadioButton button = new RadioButton( context );
                 button.setText( player );
@@ -87,6 +92,7 @@ public class InviteView extends ScrollView
                 mWhoPlayers.put( button, player );
             }
         }
+        mIsWho = showWho;
         showWhoOrHow();
 
         return this;
@@ -146,7 +152,9 @@ public class InviteView extends ScrollView
 
     private void showWhoOrHow()
     {
-        mGroupWho.setVisibility( mIsWho ? View.VISIBLE : View.INVISIBLE );
+        if ( null != mGroupWho ) {
+            mGroupWho.setVisibility( mIsWho ? View.VISIBLE : View.INVISIBLE );
+        }
         mGroupHow.setVisibility( mIsWho ? View.INVISIBLE : View.VISIBLE );
 
         boolean showEmpty = mIsWho && 0 == mWhoPlayers.size();

@@ -771,6 +771,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dvc_1parseMQTTPacket
     DVC_HEADER_END();
 }
 
+# ifdef XWFEATURE_KNOWNPLAYERS
 JNIEXPORT jobjectArray JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_kplr_1getPlayers
 ( JNIEnv* env, jclass C, jlong jniGlobalPtr )
@@ -806,6 +807,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_kplr_1getAddr
     DVC_HEADER_END();
     return jaddr;
 }
+#endif
 
 JNIEXPORT jbyteArray JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_gi_1to_1stream

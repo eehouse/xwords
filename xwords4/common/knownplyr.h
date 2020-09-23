@@ -27,6 +27,7 @@
 /* XP_UCHAR** knpl_listPlayers( XW_DUtilCtxt* dctxt, uint_t* nNames ); */
 /* void knpl_freePlayers( XW_DUtilCtxt* dctxt, XP_UCHAR** names ); */
 
+# ifdef XWFEATURE_KNOWNPLAYERS
 void kplr_cleanup( XW_DUtilCtxt* dutil );
 
 XP_Bool kplr_havePlayers( XW_DUtilCtxt* dutil, XWEnv xwe );
@@ -38,5 +39,7 @@ XP_Bool kplr_getAddr( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* name,
 
 XP_Bool kplr_addAddrs( XW_DUtilCtxt* dutil, XWEnv xwe, const CurGameInfo* gi,
                        CommsAddrRec addrs[], XP_U16 nAddrs );
-
+# else
+#  define kplr_cleanup( dutil )
+# endif
 #endif

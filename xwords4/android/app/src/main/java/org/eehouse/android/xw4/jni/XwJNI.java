@@ -173,12 +173,16 @@ public class XwJNI {
 
     public static String[] kplr_getPlayers()
     {
-        return kplr_getPlayers( getJNI().m_ptrGlobals );
+        return BuildConfig.HAVE_KNOWN_PLAYERS
+            ? kplr_getPlayers( getJNI().m_ptrGlobals )
+            : null;
     }
 
     public static CommsAddrRec kplr_getAddr( String name )
     {
-        return kplr_getAddr( getJNI().m_ptrGlobals, name );
+        return BuildConfig.HAVE_KNOWN_PLAYERS
+            ? kplr_getAddr( getJNI().m_ptrGlobals, name )
+            : null;
     }
 
     private static void cleanGlobals()

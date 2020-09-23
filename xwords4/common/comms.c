@@ -2595,6 +2595,7 @@ comms_isConnected( const CommsCtxt* const comms )
 void
 comms_gatherPlayers( CommsCtxt* comms, XWEnv xwe )
 {
+#ifdef XWFEATURE_KNOWNPLAYERS
     LOG_FUNC();
     if ( 0 == (comms->flags & FLAG_HARVEST_DONE) ) {
         CommsAddrRec addrs[4] = {{0}};
@@ -2607,6 +2608,10 @@ comms_gatherPlayers( CommsCtxt* comms, XWEnv xwe )
             // comms->flags |= FLAG_HARVEST_DONE;
         }
     }
+#else
+    XP_USE( comms );
+    XP_USE( xwe );
+#endif
 }
 
 #ifdef RELAY_VIA_HTTP
