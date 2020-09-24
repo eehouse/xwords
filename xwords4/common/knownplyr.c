@@ -37,12 +37,10 @@ typedef struct _KPState {
     XP_Bool inUse;
 } KPState;
 
-/* enum { STREAM_VERSION_KP_1,     /\* initial *\/ */
-/* }; */
-
-static void
-addPlayer( XW_DUtilCtxt* dutil, KPState* state,
-           const XP_UCHAR* name, const CommsAddrRec* addr );
+static void addPlayer( XW_DUtilCtxt* dutil, KPState* state,
+                       const XP_UCHAR* name, const CommsAddrRec* addr );
+static void getPlayersImpl( const KPState* state, const XP_UCHAR** players,
+                            XP_U16* nFound );
 
 static void
 loadFromStream( XW_DUtilCtxt* dutil, KPState* state, XWStreamCtxt* stream )
@@ -126,16 +124,66 @@ figureNameFor( XP_U16 posn, const CurGameInfo* gi )
 }
 
 static void
+makeUniqueName( const KPState* state, const XP_UCHAR* name,
+                XP_UCHAR newName[], XP_U16 len )
+{
+    XP_U16 nPlayers = state->nPlayers;
+    const XP_UCHAR* names[nPlayers];
+    getPlayersImpl( state, names, &nPlayers );
+    XP_ASSERT( nPlayers == state->nPlayers );
+    for ( int ii = 2; ; ++ii ) {
+        XP_SNPRINTF( newName, len, "%s %d", name, ii );
+        XP_Bool found = XP_FALSE;
+        for ( int jj = 0; !found && jj < nPlayers; ++jj ) {
+            found = 0 == XP_STRCMP( names[jj], newName );
+        }
+        if ( !found ) {
+            break;
+        }
+    }
+    XP_LOGFF( "created new name: %s", newName );
+}
+
+/* Adding players is the hard part. There will be a lot with the same name and
+ * representing the same device. That's easy: skip adding a new entry, but if
+ * there's a change or addition, make it. For changes, e.g. a different
+ * BlueTooth device name, the newer one wins.
+ *
+ * If two different names have the same mqtt devID, they're the same
+ * device!!. Change the name to be that of the newer of the two, making sure
+ * it's not a duplicate.
+ *
+ * For early testing, however, just make a new name.
+ */
+static void
 addPlayer( XW_DUtilCtxt* dutil, KPState* state,
            const XP_UCHAR* name, const CommsAddrRec* addr )
 {
     XP_LOGFF( "(name=%s)", name );
-    XP_Bool exists = XP_FALSE;
-    for ( KnownPlayer* kp = state->players; !!kp && !exists; kp = kp->next ) {
-        exists = 0 == XP_STRCMP( kp->name, name );
+    KnownPlayer* withSameDevID = NULL;
+    KnownPlayer* withSameName = NULL;
+
+    for ( KnownPlayer* kp = state->players;
+          !!kp && (!withSameDevID || !withSameName);
+          kp = kp->next ) {
+        if ( 0 == XP_STRCMP( kp->name, name ) ) {
+            withSameName = kp;
+        }
+        if ( addr->u.mqtt.devID == kp->addr.u.mqtt.devID ) {
+            withSameDevID = kp;
+        }
     }
-    if ( !exists ) {
-        XP_LOGFF( "adding new player!" );
+
+    XP_UCHAR tmpName[64];
+    if ( !!withSameDevID ) {    /* only one allowed */
+        state->dirty = augmentAddr( &withSameDevID->addr, addr ) || state->dirty;
+    } else {
+        if ( !!withSameName ) {
+        /* Same name but different devID? Create a unique name */
+            makeUniqueName( state, name, tmpName, VSIZE(tmpName) );
+            name = tmpName;
+        }
+        XP_LOGFF( "adding new player %s!", name );
         KnownPlayer* newPlayer = XP_CALLOC( dutil->mpool, sizeof(*newPlayer) );
         newPlayer->name = copyString( dutil->mpool, name );
         newPlayer->addr = *addr;
@@ -186,11 +234,9 @@ kplr_havePlayers( XW_DUtilCtxt* dutil, XWEnv xwe )
     return result;
 }
 
-void
-kplr_getPlayers( XW_DUtilCtxt* dutil, XWEnv xwe,
-                 const XP_UCHAR** players, XP_U16* nFound )
+static void
+getPlayersImpl( const KPState* state, const XP_UCHAR** players, XP_U16* nFound )
 {
-    KPState* state = loadState( dutil, xwe );
     if ( state->nPlayers <= *nFound && !!players ) {
         XP_U16 ii = 0;
         for ( KnownPlayer* kp = state->players; !!kp; kp = kp->next ) {
@@ -198,6 +244,14 @@ kplr_getPlayers( XW_DUtilCtxt* dutil, XWEnv xwe,
         }
     }
     *nFound = state->nPlayers;
+}
+
+void
+kplr_getPlayers( XW_DUtilCtxt* dutil, XWEnv xwe,
+                 const XP_UCHAR** players, XP_U16* nFound )
+{
+    KPState* state = loadState( dutil, xwe );
+    getPlayersImpl( state, players, nFound );
     releaseState( dutil, xwe, state );
 }
 

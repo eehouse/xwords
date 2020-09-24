@@ -238,6 +238,8 @@ XP_Bool comms_isConnected( const CommsCtxt* const comms );
 void comms_gameJoined( CommsCtxt* comms, const XP_UCHAR* connname, XWHostID hid );
 #endif
 
+XP_Bool augmentAddr( CommsAddrRec* addr, const CommsAddrRec* newer );
+
 CommsConnType addr_getType( const CommsAddrRec* addr );
 void addr_setType( CommsAddrRec* addr, CommsConnType type );
 void addr_addType( CommsAddrRec* addr, CommsConnType type );

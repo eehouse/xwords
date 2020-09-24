@@ -201,8 +201,8 @@ static AddressRecord* rememberChannelAddress( CommsCtxt* comms, XWEnv xwe,
                                               const CommsAddrRec* addr );
 static void augmentChannelAddr( CommsCtxt* comms, AddressRecord* rec,
                                 const CommsAddrRec* addr, XWHostID hostID );
-static void augmentAddr( CommsCtxt* comms, CommsAddrRec* dest,
-                         const CommsAddrRec* src );
+static XP_Bool augmentAddrIntrnl( CommsCtxt* comms, CommsAddrRec* dest,
+                                  const CommsAddrRec* src );
 static XP_Bool channelToAddress( CommsCtxt* comms, XWEnv xwe, XP_PlayerAddr channelNo,
                                  const CommsAddrRec** addr );
 static AddressRecord* getRecordFor( CommsCtxt* comms, XWEnv xwe,
@@ -1038,7 +1038,7 @@ comms_augmentHostAddr( CommsCtxt* comms, XWEnv xwe, const CommsAddrRec* addr )
         && ! addr_hasType( &comms->addr, COMMS_CONN_RELAY );
 
     CommsAddrRec tmp = comms->addr;
-    augmentAddr( comms, &tmp, addr );
+    augmentAddrIntrnl( comms, &tmp, addr );
     util_addrChange( comms->util, xwe, &comms->addr, &tmp );
     comms->addr = tmp;
 
@@ -1068,7 +1068,7 @@ comms_addMQTTDevID( CommsCtxt* comms, XP_PlayerAddr channelNo,
             CommsAddrRec addr = {0};
             addr_setType( &addr, COMMS_CONN_MQTT );
             addr.u.mqtt.devID = *devID;
-            augmentAddr( comms, &rec->addr, &addr );
+            augmentAddrIntrnl( comms, &rec->addr, &addr );
         }
     }
     if ( !found ) {
@@ -2955,7 +2955,7 @@ static void
 augmentChannelAddr( CommsCtxt* comms, AddressRecord* const rec,
                     const CommsAddrRec* addr, XWHostID hostID )
 {
-    augmentAddr( comms, &rec->addr, addr );
+    augmentAddrIntrnl( comms, &rec->addr, addr );
     if ( addr_hasType( &rec->addr, COMMS_CONN_RELAY ) ) {
         if ( 0 != hostID ) {
             rec->rr.hostID = hostID;
@@ -2974,10 +2974,11 @@ augmentChannelAddr( CommsCtxt* comms, AddressRecord* const rec,
 #endif
 }
 
-static void
-augmentAddr( CommsCtxt* comms, CommsAddrRec* destAddr,
-             const CommsAddrRec* srcAddr )
+static XP_Bool
+augmentAddrIntrnl( CommsCtxt* comms, CommsAddrRec* destAddr,
+                   const CommsAddrRec* srcAddr )
 {
+    XP_Bool changed = XP_FALSE;
     if ( !!srcAddr ) {
         CommsConnType typ;
         for ( XP_U32 st = 0; addr_iter( srcAddr, &typ, &st ); ) {
@@ -2988,8 +2989,9 @@ augmentAddr( CommsCtxt* comms, CommsAddrRec* destAddr,
                 /* If an address is getting added to a channel, the top-level
                    address should also include the type. The specifics of the
                    address don't make sense to copy, however. */
-                if ( ! addr_hasType( &comms->addr, typ ) ) {
-                    XP_ASSERT( destAddr != &comms->addr ); /* we just added it, so can't be comms->addr */
+                if ( !!comms && ! addr_hasType( &comms->addr, typ ) ) {
+                    /* we just added it, so can't be comms->addr */
+                    XP_ASSERT( destAddr != &comms->addr );
                     XP_LOGFF( "adding %s to comms->addr", ConnType2Str(typ) );
                     addr_addType( &comms->addr, typ );
                 }
@@ -3037,7 +3039,8 @@ augmentAddr( CommsCtxt* comms, CommsAddrRec* destAddr,
                 break;
             }
             if ( !!dest ) {
-                if ( 0 != XP_MEMCMP( dest, src, siz ) ) {
+                XP_Bool changing = 0 != XP_MEMCMP( dest, src, siz );
+                if ( changing ) {
 #ifdef DEBUG
                     CommsAddrRec dummy = {0};
                     if ( 0 == XP_MEMCMP( &dummy, dest, siz ) ) {
@@ -3048,9 +3051,17 @@ augmentAddr( CommsCtxt* comms, CommsAddrRec* destAddr,
 #endif
                     XP_MEMCPY( dest, src, siz );
                 }
+                changed = changed || changing;
             }
         }
     }
+    return changed;
+}
+
+XP_Bool
+augmentAddr( CommsAddrRec* addr, const CommsAddrRec* newer )
+{
+    return augmentAddrIntrnl( NULL, addr, newer );
 }
 
 static XP_Bool
