@@ -35,6 +35,8 @@
         ",dictlang INT" \
         ",scores TEXT" \
 
+#define VERS_1_TO_2 \
+        "created INT" \
 
 static XP_Bool getColumnText( sqlite3_stmt *ppStmt, int iCol, XP_UCHAR* buf,
                               int* len );
@@ -58,7 +60,7 @@ static void assertPrintResult( sqlite3* pDb, int result, int expect );
  * it's adding new fields or whatever.
  */
 
-#define CUR_DB_VERSION 1
+#define CUR_DB_VERSION 2
 
 sqlite3* 
 gdb_open( const char* dbName )
@@ -100,6 +102,10 @@ upgradeTables( sqlite3* pDb, int32_t oldVersion )
     case 0:
         XP_ASSERT( 1 == CUR_DB_VERSION );
         newCols = VERS_0_TO_1;
+        break;
+    case 1:
+        XP_ASSERT( 2 == CUR_DB_VERSION );
+        newCols = VERS_1_TO_2;
         break;
     default:
         XP_ASSERT(0);
@@ -172,6 +178,7 @@ createTables( sqlite3* pDb )
         ",lastMoveTime INT"
          ",dupTimerExpires INT"
         ","VERS_0_TO_1
+        ","VERS_1_TO_2
         // ",dupTimerExpires INT"
         ")";
     (void)sqlite3_exec( pDb, createGamesStr, NULL, NULL, NULL );
@@ -411,6 +418,7 @@ gdb_summarize( CommonGlobals* cGlobals )
     pairs[indx++] = g_strdup_printf( "scores='%s'", scoresStr);
     pairs[indx++] = g_strdup_printf( "nPending=%d", nPending );
     pairs[indx++] = g_strdup_printf( "role=%d", gi->serverRole);
+    pairs[indx++] = g_strdup_printf( "created=%d", game->created );
     pairs[indx++] = NULL;
     XP_ASSERT( indx < VSIZE(pairs) );
 
@@ -525,7 +533,7 @@ gdb_getGameInfo( sqlite3* pDb, sqlite3_int64 rowid, GameInfo* gib )
 {
     XP_Bool success = XP_FALSE;
     const char* fmt = "SELECT room, ended, turn, local, nmoves, ntotal, nmissing, "
-        "dictlang, seed, connvia, gameid, lastMoveTime, dupTimerExpires, relayid, scores, nPending, role, snap "
+        "dictlang, seed, connvia, gameid, lastMoveTime, dupTimerExpires, relayid, scores, nPending, role, created, snap "
         "FROM games WHERE rowid = %lld";
     XP_UCHAR query[256];
     snprintf( query, sizeof(query), fmt, rowid );
@@ -559,6 +567,7 @@ gdb_getGameInfo( sqlite3* pDb, sqlite3_int64 rowid, GameInfo* gib )
         getColumnText( ppStmt, col++, gib->scores, &len );
         gib->nPending = sqlite3_column_int( ppStmt, col++ );
         gib->role = sqlite3_column_int( ppStmt, col++ );
+        gib->created = sqlite3_column_int( ppStmt, col++ );
         snprintf( gib->name, sizeof(gib->name), "Game %lld", rowid );
 
 #ifdef PLATFORM_GTK

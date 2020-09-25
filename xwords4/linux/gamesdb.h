@@ -49,6 +49,7 @@ typedef struct _GameInfo {
     XP_U16 nPending;
     XP_U32 lastMoveTime;
     XP_U32 dupTimerExpires;
+    XP_U32 created;
     XP_U16 role;
 } GameInfo;
 

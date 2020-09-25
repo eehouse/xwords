@@ -59,6 +59,7 @@ typedef struct XWGame {
 #ifndef XWFEATURE_STANDALONE_ONLY
     CommsCtxt* comms;
 #endif
+    XP_U32 created;     /* dutil_getCurSeconds() of creation */
 } XWGame;
 
 void game_makeNewGame( MPFORMAL XWEnv xwe, XWGame* game, CurGameInfo* gi,

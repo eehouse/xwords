@@ -677,8 +677,10 @@ comms_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
     CommsAddrRec addr;
     short ii;
 
-    // FIX_NEXT_VERSION_CHANGE
     XP_U8 flags = stream_getU8( stream ); /* no longer needed!!! */
+    if ( version < STREAM_VERS_GICREATED ) {
+        flags = 0;
+    }
     addrFromStream( &addr, stream );
 
     if ( version >= STREAM_VERS_DEVIDS
@@ -928,7 +930,6 @@ comms_writeToStream( CommsCtxt* comms, XWEnv XP_UNUSED_DBG(xwe),
 
     stream_setVersion( stream, CUR_STREAM_VERS );
 
-    // FIX_NEXT_VERSION_CHANGE
     stream_putU8( stream, comms->flags );    /* old code writes boolean!!! */
     logAddr( comms, xwe, &comms->addr, __func__ );
     addrToStream( stream, &comms->addr );

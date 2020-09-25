@@ -80,9 +80,13 @@ findOpenGame( const GtkAppGlobals* apg, sqlite3_int64 rowid )
     return result;
 }
 
-enum { ROW_ITEM, ROW_THUMB, NAME_ITEM, ROOM_ITEM, GAMEID_ITEM, SEED_ITEM, ROLE_ITEM,
-       CONN_ITEM, RELAYID_ITEM, OVER_ITEM, TURN_ITEM, LOCAL_ITEM, NMOVES_ITEM, NTOTAL_ITEM,
-       MISSING_ITEM, LASTTURN_ITEM, DUPTIMER_ITEM, N_ITEMS };
+enum { ROW_ITEM, ROW_THUMB, NAME_ITEM, CREATED_ITEM, ROOM_ITEM, GAMEID_ITEM,
+       SEED_ITEM, ROLE_ITEM, CONN_ITEM, RELAYID_ITEM, OVER_ITEM, TURN_ITEM,
+       LOCAL_ITEM, NMOVES_ITEM, NTOTAL_ITEM, MISSING_ITEM, LASTTURN_ITEM,
+       DUPTIMER_ITEM,
+
+       N_ITEMS,
+};
 
 static void
 foreachProc( GtkTreeModel* model, GtkTreePath* XP_UNUSED(path),
@@ -168,6 +172,7 @@ init_games_list( GtkAppGlobals* apg )
     addTextColumn( list, "Row", ROW_ITEM );
     addImageColumn( list, "Snap", ROW_THUMB );
     addTextColumn( list, "Name", NAME_ITEM );
+    addTextColumn( list, "Created", CREATED_ITEM );
     addTextColumn( list, "Room", ROOM_ITEM );
     addTextColumn( list, "GameID", GAMEID_ITEM );
     addTextColumn( list, "Seed", SEED_ITEM );
@@ -187,6 +192,7 @@ init_games_list( GtkAppGlobals* apg )
                                               G_TYPE_INT64,   /* ROW_ITEM */
                                               GDK_TYPE_PIXBUF,/* ROW_THUMB */
                                               G_TYPE_STRING,  /* NAME_ITEM */
+                                              G_TYPE_STRING,  /* CREATED_ITEM */
                                               G_TYPE_STRING,  /* ROOM_ITEM */
                                               G_TYPE_INT,     /* GAMEID_ITEM */
                                               G_TYPE_INT,     /* SEED_ITEM */
@@ -244,6 +250,10 @@ add_to_list( GtkWidget* list, sqlite3_int64 rowid, XP_Bool isNew,
     gchar* localString = 0 <= gib->turn ? gib->turnLocal ? "YES"
         : "NO" : "";
 
+    gchar createdStr[64] = {0};
+    if ( 0 != gib->created ) {
+        formatSeconds( gib->created, createdStr, VSIZE(createdStr) );
+    }
     gchar timeStr[64];
     formatSeconds( gib->lastMoveTime, timeStr, VSIZE(timeStr) );
     gchar timerStr[64] = {0};
@@ -255,6 +265,7 @@ add_to_list( GtkWidget* list, sqlite3_int64 rowid, XP_Bool isNew,
                         ROW_ITEM, rowid,
                         ROW_THUMB, gib->snap,
                         NAME_ITEM, gib->name,
+                        CREATED_ITEM, createdStr,
                         ROOM_ITEM, gib->room,
                         GAMEID_ITEM, gib->gameID,
                         SEED_ITEM, gib->seed,

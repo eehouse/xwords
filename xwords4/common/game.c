@@ -26,6 +26,8 @@
 extern "C" {
 #endif
 
+#define FLAG_HASCOMMS 0x01
+
 #ifdef DEBUG
 static void
 assertUtilOK( XW_UtilCtxt* util )
@@ -133,6 +135,7 @@ game_makeNewGame( MPFORMAL XWEnv xwe, XWGame* game, CurGameInfo* gi,
     if ( 0 == gi->gameID ) {
         gi->gameID = makeGameID( util );
     }
+    game->created = dutil_getCurSeconds( util_getDevUtilCtxt( util, xwe ), xwe );
 
     game->util = util;
 
@@ -180,6 +183,8 @@ game_reset( MPFORMAL XWGame* game, XWEnv xwe, CurGameInfo* gi, XW_UtilCtxt* util
     if ( !!game->model ) {
         XP_ASSERT( !!game->model );
         XP_ASSERT( !!gi );
+
+        game->created = dutil_getCurSeconds( util_getDevUtilCtxt( util, xwe ), xwe );
 
         gi->gameID = makeGameID( util );
 
@@ -274,6 +279,8 @@ game_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream, XWGame* game,
                 break;
             }
             game->util = util;
+            game->created = strVersion < STREAM_VERS_GICREATED
+                ? 0 : stream_getU32( stream );
 
             /* Previous stream versions didn't save anything if built
              * standalone.  Now we always save something.  But we need to know
@@ -286,7 +293,12 @@ game_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream, XWGame* game,
                  || XP_TRUE                        /* old, but saved this anyway */
 #endif
                  ) {
-                hasComms = stream_getU8( stream );
+                if ( strVersion < STREAM_VERS_GICREATED ) {
+                    hasComms = stream_getU8( stream );
+                } else {
+                    XP_U8 flags = stream_getU8( stream );
+                    hasComms = flags & FLAG_HASCOMMS;
+                }
             }
 
             if ( hasComms ) {
@@ -356,12 +368,15 @@ game_saveToStream( const XWGame* game, XWEnv xwe, const CurGameInfo* gi,
     gi_writeToStream( stream, gi );
 
     if ( !!game ) {
+        stream_putU32( stream, game->created );
         XP_ASSERT( 0 != saveToken );
-        stream_putU8( stream, (XP_U8)!!game->comms );
+
+        XP_U8 flags = NULL == game->comms ? 0 : FLAG_HASCOMMS;
+        stream_putU8( stream, flags );
 #ifdef XWFEATURE_STANDALONE_ONLY
         XP_ASSERT( !game->comms );
 #endif
-        if ( !!game->comms ) {
+        if ( NULL != game->comms ) {
             comms_writeToStream( game->comms, xwe, stream, saveToken );
         }
 

@@ -47,6 +47,7 @@
 #endif
 #define MAX_COLS MAX_ROWS
 
+#define STREAM_VERS_GICREATED 0x1C /* CurGameInfo gets created timestamp */
 #define STREAM_VERS_DUPLICATE 0x1B
 #define STREAM_VERS_DISABLEDS 0x1A
 #define STREAM_VERS_DEVIDS 0x19
@@ -89,7 +90,7 @@
 #define STREAM_VERS_405  0x01
 
 /* search for FIX_NEXT_VERSION_CHANGE next time this is changed */
-#define CUR_STREAM_VERS STREAM_VERS_DUPLICATE
+#define CUR_STREAM_VERS STREAM_VERS_GICREATED
 
 typedef struct XP_Rect {
     XP_S16 left;
