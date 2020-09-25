@@ -35,15 +35,16 @@ public class NewWithKnowns extends LinearLayout {
 
     void setNames( String[] knowns, String gameName )
     {
-        final ArrayAdapter<String> adapter =
-            new ArrayAdapter<>( getContext(), android.R.layout.simple_spinner_item );
-        for ( String msg : knowns ) {
-            adapter.add( msg );
-        }
+        ArrayAdapter<String> adapter = new
+            ArrayAdapter<String>( getContext(),
+                                  android.R.layout.simple_spinner_item,
+                                  knowns );
+        adapter.setDropDownViewResource( android.R.layout
+                                         .simple_spinner_dropdown_item );
         Spinner spinner = (Spinner)findViewById( R.id.names );
         spinner.setAdapter( adapter );
 
-        EditWClear et = (EditWClear)findViewById( R.id.name_edit );
+        EditText et = (EditText)findViewById( R.id.name_edit );
         et.setText( gameName );
     }
 
@@ -55,7 +56,7 @@ public class NewWithKnowns extends LinearLayout {
 
     String gameName()
     {
-        EditWClear et = (EditWClear)findViewById( R.id.name_edit );
+        EditText et = (EditText)findViewById( R.id.name_edit );
         return et.getText().toString();
     }
 }

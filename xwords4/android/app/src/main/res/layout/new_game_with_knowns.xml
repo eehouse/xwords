@@ -16,6 +16,7 @@
   <Spinner android:id="@+id/names"
            android:layout_width="fill_parent"
            android:layout_height="wrap_content"
+           android:drawSelectorOnTop="true"
            />
 
   <TextView android:layout_width="fill_parent"
@@ -23,10 +24,8 @@
             android:text="Name your game"
             />
 
-  <org.eehouse.android.xw4.EditWClear
-      style="@style/edit_w_clear"
-      android:id="@+id/name_edit"
-      android:layout_width="fill_parent"
-      android:layout_height="wrap_content"
-      />
+  <EditText android:id="@+id/name_edit"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            />
 </org.eehouse.android.xw4.NewWithKnowns>
