@@ -202,7 +202,7 @@ static AddressRecord* rememberChannelAddress( CommsCtxt* comms, XWEnv xwe,
 static void augmentChannelAddr( CommsCtxt* comms, AddressRecord* rec,
                                 const CommsAddrRec* addr, XWHostID hostID );
 static XP_Bool augmentAddrIntrnl( CommsCtxt* comms, CommsAddrRec* dest,
-                                  const CommsAddrRec* src );
+                                  const CommsAddrRec* src, XP_Bool isNewer );
 static XP_Bool channelToAddress( CommsCtxt* comms, XWEnv xwe, XP_PlayerAddr channelNo,
                                  const CommsAddrRec** addr );
 static AddressRecord* getRecordFor( CommsCtxt* comms, XWEnv xwe,
@@ -1039,7 +1039,7 @@ comms_augmentHostAddr( CommsCtxt* comms, XWEnv xwe, const CommsAddrRec* addr )
         && ! addr_hasType( &comms->addr, COMMS_CONN_RELAY );
 
     CommsAddrRec tmp = comms->addr;
-    augmentAddrIntrnl( comms, &tmp, addr );
+    augmentAddrIntrnl( comms, &tmp, addr, XP_TRUE );
     util_addrChange( comms->util, xwe, &comms->addr, &tmp );
     comms->addr = tmp;
 
@@ -1069,7 +1069,7 @@ comms_addMQTTDevID( CommsCtxt* comms, XP_PlayerAddr channelNo,
             CommsAddrRec addr = {0};
             addr_setType( &addr, COMMS_CONN_MQTT );
             addr.u.mqtt.devID = *devID;
-            augmentAddrIntrnl( comms, &rec->addr, &addr );
+            augmentAddrIntrnl( comms, &rec->addr, &addr, XP_TRUE );
         }
     }
     if ( !found ) {
@@ -2594,7 +2594,7 @@ comms_isConnected( const CommsCtxt* const comms )
 }
 
 void
-comms_gatherPlayers( CommsCtxt* comms, XWEnv xwe )
+comms_gatherPlayers( CommsCtxt* comms, XWEnv xwe, XP_U32 created )
 {
 #ifdef XWFEATURE_KNOWNPLAYERS
     LOG_FUNC();
@@ -2604,7 +2604,7 @@ comms_gatherPlayers( CommsCtxt* comms, XWEnv xwe )
         comms_getAddrs( comms, NULL, addrs, &nRecs );
 
         const CurGameInfo* gi = comms->util->gameInfo;
-        if ( kplr_addAddrs( comms->dutil, xwe, gi, addrs, nRecs ) ) {
+        if ( kplr_addAddrs( comms->dutil, xwe, gi, addrs, nRecs, created ) ) {
             XP_LOGFF( "not setting flag :-)" );
             // comms->flags |= FLAG_HARVEST_DONE;
         }
@@ -2956,7 +2956,7 @@ static void
 augmentChannelAddr( CommsCtxt* comms, AddressRecord* const rec,
                     const CommsAddrRec* addr, XWHostID hostID )
 {
-    augmentAddrIntrnl( comms, &rec->addr, addr );
+    augmentAddrIntrnl( comms, &rec->addr, addr, XP_TRUE );
     if ( addr_hasType( &rec->addr, COMMS_CONN_RELAY ) ) {
         if ( 0 != hostID ) {
             rec->rr.hostID = hostID;
@@ -2977,13 +2977,15 @@ augmentChannelAddr( CommsCtxt* comms, AddressRecord* const rec,
 
 static XP_Bool
 augmentAddrIntrnl( CommsCtxt* comms, CommsAddrRec* destAddr,
-                   const CommsAddrRec* srcAddr )
+                   const CommsAddrRec* srcAddr, XP_Bool isNewer )
 {
     XP_Bool changed = XP_FALSE;
+    const CommsAddrRec empty = {0};
     if ( !!srcAddr ) {
         CommsConnType typ;
         for ( XP_U32 st = 0; addr_iter( srcAddr, &typ, &st ); ) {
-            if ( ! addr_hasType( destAddr, typ ) ) {
+            XP_Bool newType = !addr_hasType( destAddr, typ );
+            if ( newType ) {
                 XP_LOGFF( "adding new type %s to rec", ConnType2Str(typ) );
                 addr_addType( destAddr, typ );
 
@@ -3040,19 +3042,20 @@ augmentAddrIntrnl( CommsCtxt* comms, CommsAddrRec* destAddr,
                 break;
             }
             if ( !!dest ) {
-                XP_Bool changing = 0 != XP_MEMCMP( dest, src, siz );
-                if ( changing ) {
-#ifdef DEBUG
-                    CommsAddrRec dummy = {0};
-                    if ( 0 == XP_MEMCMP( &dummy, dest, siz ) ) {
-                        XP_LOGFF( "setting %s-type addr for first time", ConnType2Str(typ) );
-                    } else if ( 0 != XP_MEMCMP( dest, src, siz ) ) {
-                        XP_LOGFF( "actually changing addr info for typ %s", ConnType2Str(typ) );
+                XP_Bool different = 0 != XP_MEMCMP( dest, src, siz );
+                if ( different ) {
+                    /* If the dest is non-empty AND the src is older, don't do
+                       anything: don't replace newer info with older. Note
+                       that this assumes unset values are empty!!! */
+                    if ( !isNewer && !newType
+                         && 0 != XP_MEMCMP( &empty, dest, siz ) ) {
+                        XP_LOGFF( "%s: not replacing new info with old",
+                                  ConnType2Str(typ) );
+                    } else {
+                        XP_MEMCPY( dest, src, siz );
+                        changed = XP_TRUE;
                     }
-#endif
-                    XP_MEMCPY( dest, src, siz );
                 }
-                changed = changed || changing;
             }
         }
     }
@@ -3060,9 +3063,9 @@ augmentAddrIntrnl( CommsCtxt* comms, CommsAddrRec* destAddr,
 }
 
 XP_Bool
-augmentAddr( CommsAddrRec* addr, const CommsAddrRec* newer )
+augmentAddr( CommsAddrRec* addr, const CommsAddrRec* newer, XP_Bool isNewer )
 {
-    return augmentAddrIntrnl( NULL, addr, newer );
+    return augmentAddrIntrnl( NULL, addr, newer, isNewer );
 }
 
 static XP_Bool

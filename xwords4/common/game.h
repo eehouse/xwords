@@ -51,7 +51,7 @@ typedef struct _GameStateInfo {
     XP_Bool canUnpause;         /* duplicate-mode only */
 } GameStateInfo;
 
-typedef struct XWGame {
+typedef struct _XWGame {
     XW_UtilCtxt* util;
     BoardCtxt* board;
     ModelCtxt* model;

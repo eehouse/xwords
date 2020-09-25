@@ -32,13 +32,13 @@ void kplr_cleanup( XW_DUtilCtxt* dutil );
 
 XP_Bool kplr_havePlayers( XW_DUtilCtxt* dutil, XWEnv xwe );
 
-void kplr_getPlayers( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR** players,
-                      XP_U16* nFound );
+void kplr_getNames( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR** players,
+                    XP_U16* nFound );
 XP_Bool kplr_getAddr( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* name,
                       CommsAddrRec* addr );
 
 XP_Bool kplr_addAddrs( XW_DUtilCtxt* dutil, XWEnv xwe, const CurGameInfo* gi,
-                       CommsAddrRec addrs[], XP_U16 nAddrs );
+                       CommsAddrRec addrs[], XP_U16 nAddrs, XP_U32 modTime );
 # else
 #  define kplr_cleanup( dutil )
 # endif

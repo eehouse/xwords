@@ -780,10 +780,10 @@ Java_org_eehouse_android_xw4_jni_XwJNI_kplr_1getPlayers
     DVC_HEADER(jniGlobalPtr);
 
     XP_U16 nFound = 0;
-    kplr_getPlayers( globalState->dutil, env, NULL, &nFound );
+    kplr_getNames( globalState->dutil, env, NULL, &nFound );
     if ( 0 < nFound ) {
         const XP_UCHAR* names[nFound];
-        kplr_getPlayers( globalState->dutil, env, names, &nFound );
+        kplr_getNames( globalState->dutil, env, names, &nFound );
         jnames = makeStringArray( env, nFound, names );
     }
     DVC_HEADER_END();

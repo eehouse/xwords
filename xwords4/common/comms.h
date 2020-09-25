@@ -238,7 +238,8 @@ XP_Bool comms_isConnected( const CommsCtxt* const comms );
 void comms_gameJoined( CommsCtxt* comms, const XP_UCHAR* connname, XWHostID hid );
 #endif
 
-XP_Bool augmentAddr( CommsAddrRec* addr, const CommsAddrRec* newer );
+XP_Bool augmentAddr( CommsAddrRec* addr, const CommsAddrRec* newer,
+                     XP_Bool isNewer );
 
 CommsConnType addr_getType( const CommsAddrRec* addr );
 void addr_setType( CommsAddrRec* addr, CommsConnType type );
@@ -262,7 +263,7 @@ void comms_setAddrDisabled( CommsCtxt* comms, CommsConnType typ,
 XP_Bool comms_getAddrDisabled( const CommsCtxt* comms, CommsConnType typ, 
                                XP_Bool send );
 
-void comms_gatherPlayers( CommsCtxt* comms, XWEnv xwe );
+void comms_gatherPlayers( CommsCtxt* comms, XWEnv xwe, XP_U32 created );
 
 # else
 #  define comms_setAddrDisabled( comms, typ, send, enabled )

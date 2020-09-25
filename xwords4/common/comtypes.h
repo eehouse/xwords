@@ -229,7 +229,7 @@ typedef enum {
 #define SUFFIX_NEXTID "nextID"
 #define SUFFIX_DEVSTATE "devState"
 #define SUFFIX_MQTT_DEVID "mqtt_devid_key"
-#define SUFFIX_KNOWN_PLAYERS "known_players_key"
+#define SUFFIX_KNOWN_PLAYERS "known_players_key_dev1"
 
 #define FULL_KEY(PARTIAL) "persist_key:" PARTIAL
 

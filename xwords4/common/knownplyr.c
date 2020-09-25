@@ -26,6 +26,7 @@
 
 typedef struct _KnownPlayer {
     struct _KnownPlayer* next;
+    XP_U32 newestMod;
     XP_UCHAR* name;
     CommsAddrRec addr;
 } KnownPlayer;
@@ -38,7 +39,8 @@ typedef struct _KPState {
 } KPState;
 
 static void addPlayer( XW_DUtilCtxt* dutil, KPState* state,
-                       const XP_UCHAR* name, const CommsAddrRec* addr );
+                       const XP_UCHAR* name, const CommsAddrRec* addr,
+                       XP_U32 newestMod );
 static void getPlayersImpl( const KPState* state, const XP_UCHAR** players,
                             XP_U16* nFound );
 
@@ -47,13 +49,14 @@ loadFromStream( XW_DUtilCtxt* dutil, KPState* state, XWStreamCtxt* stream )
 {
     LOG_FUNC();
     while ( 0 < stream_getSize( stream ) ) {
+        XP_U32 newestMod = stream_getU32( stream );
         XP_UCHAR buf[64];
         stringFromStreamHere( stream, buf, VSIZE(buf) );
 
         CommsAddrRec addr = {0};
         addrFromStream( &addr, stream );
 
-        addPlayer( dutil, state, buf, &addr );
+        addPlayer( dutil, state, buf, &addr, newestMod );
     }
 }
 
@@ -88,6 +91,7 @@ saveState( XW_DUtilCtxt* dutil, XWEnv xwe, KPState* state )
                                                     dutil_getVTManager(dutil) );
         stream_putU8( stream, CUR_STREAM_VERS );
         for ( KnownPlayer* kp = state->players; !!kp; kp = kp->next ) {
+            stream_putU32( stream, kp->newestMod );
             stringToStream( stream, kp->name );
             addrToStream( stream, &kp->addr );
         }
@@ -156,8 +160,8 @@ makeUniqueName( const KPState* state, const XP_UCHAR* name,
  * For early testing, however, just make a new name.
  */
 static void
-addPlayer( XW_DUtilCtxt* dutil, KPState* state,
-           const XP_UCHAR* name, const CommsAddrRec* addr )
+addPlayer( XW_DUtilCtxt* dutil, KPState* state, const XP_UCHAR* name,
+           const CommsAddrRec* addr, XP_U32 newestMod )
 {
     XP_LOGFF( "(name=%s)", name );
     KnownPlayer* withSameDevID = NULL;
@@ -176,7 +180,12 @@ addPlayer( XW_DUtilCtxt* dutil, KPState* state,
 
     XP_UCHAR tmpName[64];
     if ( !!withSameDevID ) {    /* only one allowed */
-        state->dirty = augmentAddr( &withSameDevID->addr, addr ) || state->dirty;
+        XP_Bool isNewer = newestMod > withSameDevID->newestMod;
+        XP_Bool changed = augmentAddr( &withSameDevID->addr, addr, isNewer );
+        if ( isNewer ) {
+            withSameDevID->newestMod = newestMod;
+        }
+        state->dirty = changed || state->dirty;
     } else {
         if ( !!withSameName ) {
         /* Same name but different devID? Create a unique name */
@@ -197,7 +206,7 @@ addPlayer( XW_DUtilCtxt* dutil, KPState* state,
 
 XP_Bool
 kplr_addAddrs( XW_DUtilCtxt* dutil, XWEnv xwe, const CurGameInfo* gi,
-               CommsAddrRec addrs[], XP_U16 nAddrs )
+               CommsAddrRec addrs[], XP_U16 nAddrs, XP_U32 modTime )
 {
     LOG_FUNC();
     XP_Bool canUse = XP_TRUE;
@@ -213,7 +222,7 @@ kplr_addAddrs( XW_DUtilCtxt* dutil, XWEnv xwe, const CurGameInfo* gi,
         for ( int ii = 0; ii < nAddrs && canUse; ++ii ) {
             const XP_UCHAR* name = figureNameFor( ii, gi );
             if ( !!name ) {
-                addPlayer( dutil, state, name, &addrs[ii] );
+                addPlayer( dutil, state, name, &addrs[ii], modTime );
             } else {
                 XP_LOGFF( "unable to find %dth name", ii );
             }
@@ -247,8 +256,8 @@ getPlayersImpl( const KPState* state, const XP_UCHAR** players, XP_U16* nFound )
 }
 
 void
-kplr_getPlayers( XW_DUtilCtxt* dutil, XWEnv xwe,
-                 const XP_UCHAR** players, XP_U16* nFound )
+kplr_getNames( XW_DUtilCtxt* dutil, XWEnv xwe,
+               const XP_UCHAR** players, XP_U16* nFound )
 {
     KPState* state = loadState( dutil, xwe );
     getPlayersImpl( state, players, nFound );

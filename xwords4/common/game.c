@@ -136,7 +136,6 @@ game_makeNewGame( MPFORMAL XWEnv xwe, XWGame* game, CurGameInfo* gi,
         gi->gameID = makeGameID( util );
     }
     game->created = dutil_getCurSeconds( util_getDevUtilCtxt( util, xwe ), xwe );
-
     game->util = util;
 
     game->model = model_make( MPPARM(mpool) xwe, (DictionaryCtxt*)NULL,
@@ -328,9 +327,6 @@ game_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream, XWGame* game,
 
     if ( success && !!game && !!game->comms ) {
         XP_ASSERT( comms_getIsServer(game->comms) == server_getIsServer(game->server) );
-        if ( server_getGameIsConnected( game->server ) ) {
-            comms_gatherPlayers( game->comms, xwe );
-        }
     }
 
     return success;
@@ -368,7 +364,14 @@ game_saveToStream( const XWGame* game, XWEnv xwe, const CurGameInfo* gi,
     gi_writeToStream( stream, gi );
 
     if ( !!game ) {
-        stream_putU32( stream, game->created );
+        const XP_U32 created = game->created;
+        if ( !!game->comms
+             && 0 != created
+             && server_getGameIsConnected( game->server ) ) {
+            comms_gatherPlayers( game->comms, xwe, created );
+        }
+
+        stream_putU32( stream, created );
         XP_ASSERT( 0 != saveToken );
 
         XP_U8 flags = NULL == game->comms ? 0 : FLAG_HASCOMMS;
