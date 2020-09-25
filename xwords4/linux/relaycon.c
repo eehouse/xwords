@@ -995,7 +995,7 @@ checkForMovesOnce( RelayConStorage* storage )
 
     RelayTask* task = makeRelayTask( storage, QUERY );
     sqlite3* dbp = storage->params->pDb;
-    task->u.query.map = getRelayIDsToRowsMap( dbp );
+    task->u.query.map = gdb_getRelayIDsToRowsMap( dbp );
     addTask( storage, task );
 }
 

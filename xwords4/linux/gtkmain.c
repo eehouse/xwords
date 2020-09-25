@@ -246,8 +246,10 @@ add_to_list( GtkWidget* list, sqlite3_int64 rowid, XP_Bool isNew,
 
     gchar timeStr[64];
     formatSeconds( gib->lastMoveTime, timeStr, VSIZE(timeStr) );
-    gchar timerStr[64];
-    formatSeconds( gib->dupTimerExpires, timerStr, VSIZE(timeStr) );
+    gchar timerStr[64] = {0};
+    if ( gib->dupTimerExpires ) {
+        formatSeconds( gib->dupTimerExpires, timerStr, VSIZE(timeStr) );
+    }
 
     gtk_list_store_set( store, &iter, 
                         ROW_ITEM, rowid,
@@ -348,7 +350,7 @@ make_rematch( GtkAppGlobals* apg, const CommonGlobals* cGlobals )
     game_saveNewGame( MPPARM(cGlobals->util->mpool) NULL_XWE, &gi,
                       cGlobals->util, &cGlobals->cp, stream );
 
-    sqlite3_int64 rowID = writeNewGameToDB( stream, params->pDb );
+    sqlite3_int64 rowID = gdb_writeNewGame( stream, params->pDb );
     stream_destroy( stream, NULL_XWE );
     gi_disposePlayerInfo( MPPARM(cGlobals->util->mpool) &gi );
 
@@ -378,7 +380,7 @@ make_rematch( GtkAppGlobals* apg, const CommonGlobals* cGlobals )
             }
             addrToStream( stream, &addrs[ii] );
         }
-        saveInviteAddrs( stream, params->pDb, rowID );
+        gdb_saveInviteAddrs( stream, params->pDb, rowID );
         stream_destroy( stream, NULL_XWE );
     }
 
@@ -413,14 +415,14 @@ handle_delete_button( GtkWidget* XP_UNUSED(widget), void* closure )
 #ifdef DEBUG
         XP_Bool success = 
 #endif
-            getGameInfo( params->pDb, rowid, &gib );
+            gdb_getGameInfo( params->pDb, rowid, &gib );
         XP_ASSERT( success );
         XP_U32 clientToken = makeClientToken( rowid, gib.seed );
         removeRow( apg, rowid );
-        deleteGame( params->pDb, rowid );
+        gdb_deleteGame( params->pDb, rowid );
 
         XP_UCHAR devIDBuf[64] = {0};
-        db_fetch_safe( params->pDb, KEY_RDEVID, NULL, devIDBuf, sizeof(devIDBuf) );
+        gdb_fetch_safe( params->pDb, KEY_RDEVID, NULL, devIDBuf, sizeof(devIDBuf) );
         if ( '\0' != devIDBuf[0] ) {
             relaycon_deleted( params, devIDBuf, clientToken );
         } else {
@@ -450,7 +452,7 @@ handle_destroy( GtkWidget* XP_UNUSED(widget), gpointer data )
     sprintf( buf, "%d:%d:%d:%d", apg->lastConfigure.x,
              apg->lastConfigure.y, apg->lastConfigure.width,
              apg->lastConfigure.height );
-    db_store( apg->cag.params->pDb, KEY_WIN_LOC, buf );
+    gdb_store( apg->cag.params->pDb, KEY_WIN_LOC, buf );
 
     gtk_main_quit();
 }
@@ -522,7 +524,7 @@ trySetWinConfig( GtkAppGlobals* apg )
     int height = 400;
 
     gchar buf[64];
-    if ( db_fetch_safe( apg->cag.params->pDb, KEY_WIN_LOC, NULL, buf, sizeof(buf)) ) {
+    if ( gdb_fetch_safe( apg->cag.params->pDb, KEY_WIN_LOC, NULL, buf, sizeof(buf)) ) {
         sscanf( buf, "%d:%d:%d:%d", &xx, &yy, &width, &height );
     }
 
@@ -601,12 +603,12 @@ makeGamesWindow( GtkAppGlobals* apg )
     gtk_widget_show( list );
 
     if ( !!params->pDb ) {
-        GSList* games = listGames( params->pDb );
+        GSList* games = gdb_listGames( params->pDb );
         for ( GSList* iter = games; !!iter; iter = iter->next ) {
             sqlite3_int64* rowid = (sqlite3_int64*)iter->data;
             onNewData( apg, *rowid, XP_TRUE );
         }
-        freeGamesList( games );
+        gdb_freeGamesList( games );
     }
 
     GtkWidget* hbox = gtk_box_new( GTK_ORIENTATION_HORIZONTAL, 0 );
@@ -661,7 +663,7 @@ static void
 onNewData( GtkAppGlobals* apg, sqlite3_int64 rowid, XP_Bool isNew )
 {
     GameInfo gib;
-    if ( getGameInfo( apg->cag.params->pDb, rowid, &gib ) ) {
+    if ( gdb_getGameInfo( apg->cag.params->pDb, rowid, &gib ) ) {
         add_to_list( apg->listWidget, rowid, isNew, &gib );
         g_object_unref( gib.snap );
     }
@@ -734,7 +736,7 @@ relayInviteReceivedGTK( void* closure, const NetLaunchInfo* invite )
     XP_U32 gameID = invite->gameID;
     sqlite3_int64 rowids[1];
     int nRowIDs = VSIZE(rowids);
-    getRowsForGameID( apg->cag.params->pDb, gameID, rowids, &nRowIDs );
+    gdb_getRowsForGameID( apg->cag.params->pDb, gameID, rowids, &nRowIDs );
 
     bool doIt = 0 == nRowIDs;
     if ( ! doIt ) {
@@ -784,7 +786,7 @@ requestMsgs( gpointer data )
 {
     GtkAppGlobals* apg = (GtkAppGlobals*)data;
     XP_UCHAR devIDBuf[64] = {0};
-    db_fetch_safe( apg->cag.params->pDb, KEY_RDEVID, NULL, devIDBuf, sizeof(devIDBuf) );
+    gdb_fetch_safe( apg->cag.params->pDb, KEY_RDEVID, NULL, devIDBuf, sizeof(devIDBuf) );
     if ( '\0' != devIDBuf[0] ) {
         relaycon_requestMsgs( apg->cag.params, devIDBuf );
     } else {
@@ -824,7 +826,7 @@ msgReceivedGTK( void* closure, const CommsAddrRec* from, XP_U32 gameID,
 
     sqlite3_int64 rowids[4];
     int nRowIDs = VSIZE(rowids);
-    getRowsForGameID( params->pDb, gameID, rowids, &nRowIDs );
+    gdb_getRowsForGameID( params->pDb, gameID, rowids, &nRowIDs );
     XP_LOGF( "%s: found %d rows for gameID %d", __func__, nRowIDs, gameID );
     if ( 0 == nRowIDs ) {
         mqttc_notifyGameGone( params, &from->u.mqtt.devID, gameID );
@@ -859,13 +861,13 @@ gtkDevIDReceived( void* closure, const XP_UCHAR* devID, XP_U16 maxInterval )
     LaunchParams* params = apg->cag.params;
     if ( !!devID ) {
         XP_LOGF( "%s(devID=%s)", __func__, devID );
-        db_store( params->pDb, KEY_RDEVID, devID );
+        gdb_store( params->pDb, KEY_RDEVID, devID );
         (void)g_timeout_add_seconds( maxInterval, keepalive_timer, apg );
 
         setWindowTitle( apg );
     } else {
         XP_LOGF( "%s: bad relayid", __func__ );
-        db_remove( params->pDb, KEY_RDEVID );
+        gdb_remove( params->pDb, KEY_RDEVID );
 
         DevIDType typ;
         const XP_UCHAR* devID = linux_getDevID( params, &typ );

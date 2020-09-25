@@ -663,7 +663,8 @@ on_board_window_shown( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
         /* If it has pending invite info, send the invitation! */
         XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(cGlobals->util->mpool)
                                                     cGlobals->params->vtMgr );
-        if ( loadInviteAddrs( stream, cGlobals->params->pDb, cGlobals->rowid ) ) {
+        if ( gdb_loadInviteAddrs( stream, cGlobals->params->pDb,
+                                  cGlobals->rowid ) ) {
             CommsAddrRec addr = {0};
             addrFromStream( &addr, stream );
             comms_augmentHostAddr( cGlobals->game.comms, NULL_XWE, &addr );
@@ -2631,7 +2632,7 @@ loadGameNoDraw( GtkGameGlobals* globals, LaunchParams* params,
     cGlobals->rowid = rowid;
     XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(cGlobals->util->mpool)
                                                 params->vtMgr );
-    XP_Bool loaded = loadGame( stream, pDb, rowid );
+    XP_Bool loaded = gdb_loadGame( stream, pDb, rowid );
     if ( loaded ) {
         if ( NULL == cGlobals->dict ) {
             cGlobals->dict = makeDictForStream( cGlobals, stream );

@@ -299,7 +299,7 @@ handleDeleteGame( void* closure, int XP_UNUSED(key) )
 
         const GameInfo* gib = cgl_getSel( aGlobals->gameList );
         if ( !!gib ) {
-            deleteGame( aGlobals->cag.params->pDb, gib->rowid );
+            gdb_deleteGame( aGlobals->cag.params->pDb, gib->rowid );
             cgl_remove( aGlobals->gameList, gib->rowid );
         }
     }
@@ -1160,7 +1160,7 @@ inviteReceivedCurses( void* closure, const NetLaunchInfo* invite,
     CursesAppGlobals* aGlobals = (CursesAppGlobals*)closure;
     sqlite3_int64 rowids[1];
     int nRowIDs = VSIZE(rowids);
-    getRowsForGameID( aGlobals->cag.params->pDb, invite->gameID, rowids, &nRowIDs );
+    gdb_getRowsForGameID( aGlobals->cag.params->pDb, invite->gameID, rowids, &nRowIDs );
     bool doIt = 0 == nRowIDs;
     if ( ! doIt && !!aGlobals->mainWin ) {
         const gchar* question = "Duplicate invitation received. Accept anyway?";
@@ -1262,8 +1262,8 @@ curses_requestMsgs( gpointer data )
 {
     CursesAppGlobals* aGlobals = (CursesAppGlobals*)data;
     XP_UCHAR devIDBuf[64] = {0};
-    db_fetch_safe( aGlobals->cag.params->pDb, KEY_RDEVID, NULL, devIDBuf,
-                   sizeof(devIDBuf) );
+    gdb_fetch_safe( aGlobals->cag.params->pDb, KEY_RDEVID, NULL, devIDBuf,
+                    sizeof(devIDBuf) );
     if ( '\0' != devIDBuf[0] ) {
         relaycon_requestMsgs( aGlobals->cag.params, devIDBuf );
     } else {
@@ -1303,17 +1303,17 @@ cursesDevIDReceived( void* closure, const XP_UCHAR* devID,
 
         /* If we already have one, make sure it's the same! Else store. */
         gchar buf[64];
-        XP_Bool have = db_fetch_safe( pDb, KEY_RDEVID, NULL, buf, sizeof(buf) )
+        XP_Bool have = gdb_fetch_safe( pDb, KEY_RDEVID, NULL, buf, sizeof(buf) )
             && 0 == strcmp( buf, devID );
         if ( !have ) {
-            db_store( pDb, KEY_RDEVID, devID );
+            gdb_store( pDb, KEY_RDEVID, devID );
             XP_LOGFF( "storing new devid: %s", devID );
             cgl_draw( aGlobals->gameList );
         }
         (void)g_timeout_add_seconds( maxInterval, keepalive_timer, aGlobals );
     } else {
         XP_LOGFF( "bad relayid" );
-        db_remove( pDb, KEY_RDEVID );
+        gdb_remove( pDb, KEY_RDEVID );
 
         DevIDType typ;
         const XP_UCHAR* devID = linux_getDevID( aGlobals->cag.params, &typ );
