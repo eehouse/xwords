@@ -365,11 +365,13 @@ game_saveToStream( const XWGame* game, XWEnv xwe, const CurGameInfo* gi,
 
     if ( !!game ) {
         const XP_U32 created = game->created;
+#ifdef XWFEATURE_KNOWNPLAYERS
         if ( !!game->comms
              && 0 != created
              && server_getGameIsConnected( game->server ) ) {
             comms_gatherPlayers( game->comms, xwe, created );
         }
+#endif
 
         stream_putU32( stream, created );
         XP_ASSERT( 0 != saveToken );

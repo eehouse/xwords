@@ -287,7 +287,9 @@ kplr_cleanup( XW_DUtilCtxt* dutil )
     KPState** state = (KPState**)&dutil->kpCtxt;
     if ( !!*state ) {
         XP_ASSERT( !(*state)->inUse );
-        for ( KnownPlayer* kp = (*state)->players; !!kp; kp = kp->next ) {
+        KnownPlayer* next = NULL;
+        for ( KnownPlayer* kp = (*state)->players; !!kp; kp = next ) {
+            next = kp->next;
             XP_FREEP( dutil->mpool, &kp->name );
             XP_FREE( dutil->mpool, kp );
         }

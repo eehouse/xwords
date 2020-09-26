@@ -677,7 +677,7 @@ comms_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
     CommsAddrRec addr;
     short ii;
 
-    XP_U8 flags = stream_getU8( stream ); /* no longer needed!!! */
+    XP_U8 flags = stream_getU8( stream );
     if ( version < STREAM_VERS_GICREATED ) {
         flags = 0;
     }
@@ -930,7 +930,7 @@ comms_writeToStream( CommsCtxt* comms, XWEnv XP_UNUSED_DBG(xwe),
 
     stream_setVersion( stream, CUR_STREAM_VERS );
 
-    stream_putU8( stream, comms->flags );    /* old code writes boolean!!! */
+    stream_putU8( stream, comms->flags );
     logAddr( comms, xwe, &comms->addr, __func__ );
     addrToStream( stream, &comms->addr );
     stream_putBits( stream, 4, comms->rr.nPlayersHere );
@@ -2593,10 +2593,10 @@ comms_isConnected( const CommsCtxt* const comms )
     return result;
 }
 
+#ifdef XWFEATURE_KNOWNPLAYERS
 void
 comms_gatherPlayers( CommsCtxt* comms, XWEnv xwe, XP_U32 created )
 {
-#ifdef XWFEATURE_KNOWNPLAYERS
     LOG_FUNC();
     if ( 0 == (comms->flags & FLAG_HARVEST_DONE) ) {
         CommsAddrRec addrs[4] = {{0}};
@@ -2605,15 +2605,16 @@ comms_gatherPlayers( CommsCtxt* comms, XWEnv xwe, XP_U32 created )
 
         const CurGameInfo* gi = comms->util->gameInfo;
         if ( kplr_addAddrs( comms->dutil, xwe, gi, addrs, nRecs, created ) ) {
-            XP_LOGFF( "not setting flag :-)" );
-            // comms->flags |= FLAG_HARVEST_DONE;
+            if ( 1 ) {
+                XP_LOGFF( "not setting flag :-)" );
+            } else {
+                /* Need a way to force/override this manually? */
+                comms->flags |= FLAG_HARVEST_DONE;
+            }
         }
     }
-#else
-    XP_USE( comms );
-    XP_USE( xwe );
-#endif
 }
+#endif
 
 #ifdef RELAY_VIA_HTTP
 void
@@ -3042,6 +3043,8 @@ augmentAddrIntrnl( CommsCtxt* comms, CommsAddrRec* destAddr,
                 break;
             }
             if ( !!dest ) {
+                XP_ASSERT( !newType || 0 == XP_MEMCMP( &empty, dest, siz ) );
+
                 XP_Bool different = 0 != XP_MEMCMP( dest, src, siz );
                 if ( different ) {
                     /* If the dest is non-empty AND the src is older, don't do
