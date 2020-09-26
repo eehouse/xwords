@@ -2010,6 +2010,11 @@
       <item quantity="one">One group selected</item>
       <item quantity="other">%1$d groups selected</item>
     </plurals>
+
+    <!-- Name of group created to house games lost due to some old bug
+         I just found. I expect users to move them elsewhere. -->
+    <string name="recovered_group">Recovered games</string>
+
     <string name="summary_thumbsize">Thumbnail size</string>
     <string name="thumb_off">Disabled</string>
     <!-- Text of alert shown when user accepts an invitation, e.g. in

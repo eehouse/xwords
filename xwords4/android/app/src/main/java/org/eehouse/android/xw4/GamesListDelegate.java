@@ -1654,6 +1654,9 @@ public class GamesListDelegate extends ListDelegateBase
                 Utils.setItemVisible( menu, R.id.games_game_delete, enable );
                 Utils.setItemVisible( menu, R.id.games_game_reset, enable );
 
+                Utils.setItemVisible( menu, R.id.games_game_hide,
+                                      enable && BuildConfig.NON_RELEASE );
+
                 // multiple games can be regrouped/reset.
                 Utils.setItemVisible( menu, R.id.games_game_move,
                                       0 < nGamesSelected );
@@ -1995,6 +1998,10 @@ public class GamesListDelegate extends ListDelegateBase
         boolean dropSels = false;
 
         switch( itemID ) {
+        case R.id.games_game_hide:
+            DBUtils.hideGames( m_activity, selRowIDs[0] );
+            break;
+
         case R.id.games_game_delete:
             String msg = getQuantityString( R.plurals.confirm_seldeletes_fmt,
                                             selRowIDs.length, selRowIDs.length );

@@ -58,6 +58,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -1675,26 +1676,46 @@ public class DBUtils {
 
     public static long getGroup( Context context, String name )
     {
+        long result;
+        initDB( context );
+        synchronized( s_dbHelper ) {
+            result = getGroupImpl( name );
+        }
+        return result;
+    }
+
+    private static long getGroupImpl( String name )
+    {
         long result = GROUPID_UNSPEC;
         String[] columns = { ROW_ID };
         String selection = DBHelper.GROUPNAME + " = ?";
         String[] selArgs = { name };
 
-        initDB( context );
-        synchronized( s_dbHelper ) {
-            Cursor cursor = s_db.query( TABLE_NAMES.GROUPS.toString(), columns,
-                                        selection, selArgs,
-                                        null, // groupBy
-                                        null, // having
-                                        null // orderby
-                                        );
-            if ( cursor.moveToNext() ) {
-                result = cursor.getLong( cursor.getColumnIndex( ROW_ID ) );
-            }
-            cursor.close();
+        Cursor cursor = s_db.query( TABLE_NAMES.GROUPS.toString(), columns,
+                                    selection, selArgs,
+                                    null, // groupBy
+                                    null, // having
+                                    null // orderby
+                                    );
+        if ( cursor.moveToNext() ) {
+            result = cursor.getLong( cursor.getColumnIndex( ROW_ID ) );
         }
-        Log.d( TAG, "getGroup(%s) => %d", name, result );
+        cursor.close();
+
+        Log.d( TAG, "getGroupImpl(%s) => %d", name, result );
         return result;
+    }
+
+    private static long addGroupImpl( String name )
+    {
+        ContentValues values = new ContentValues();
+        values.put( DBHelper.GROUPNAME, name );
+        values.put( DBHelper.EXPANDED, 1 );
+
+        long rowid = insert( TABLE_NAMES.GROUPS, values );
+        invalGroupsCache();
+
+        return rowid;
     }
 
     public static long addGroup( Context context, String name )
@@ -1702,15 +1723,9 @@ public class DBUtils {
         long rowid = GROUPID_UNSPEC;
         if ( null != name && 0 < name.length() ) {
             if ( null == getGroups( context ).get( name ) ) {
-                ContentValues values = new ContentValues();
-                values.put( DBHelper.GROUPNAME, name );
-                values.put( DBHelper.EXPANDED, 1 );
-
-                // initDB( context ); <- getGroups will have called this
                 synchronized( s_dbHelper ) {
-                    rowid = insert( TABLE_NAMES.GROUPS, values );
+                    rowid = addGroupImpl( name );
                 }
-                invalGroupsCache();
             }
         }
         return rowid;
@@ -1878,7 +1893,7 @@ public class DBUtils {
             // debugged), this can be removed.
             ContentValues values = new ContentValues();
             values.putNull( DBHelper.CHAT_HISTORY );
-            updateRowImpl( s_db, TABLE_NAMES.SUM, rowid, values );
+            updateRowImpl( TABLE_NAMES.SUM, rowid, values );
         }
     }
 
@@ -2548,6 +2563,37 @@ public class DBUtils {
     //     updateRow( context, DBHelper.TABLE_NAMES.SUM, rowid, values );
     // }
 
+    private static void showHiddenGames( Context context, SQLiteDatabase db )
+    {
+        Log.d( TAG, "showHiddenGames()" );
+        String query = "select " + ROW_ID + " from summaries WHERE NOT groupid"
+            + " IN (SELECT " + ROW_ID + " FROM groups);";
+        List<String> ids = null;
+        Cursor cursor = db.rawQuery( query, null );
+        if ( 0 < cursor.getCount() ) {
+            ids = new ArrayList<>();
+            int indx = cursor.getColumnIndex( ROW_ID );
+            while ( cursor.moveToNext() ) {
+                long rowid = cursor.getLong( indx );
+                ids.add( String.format("%d", rowid ) );
+            }
+        }
+        cursor.close();
+
+        if ( null != ids ) {
+            String name = LocUtils.getString( context, R.string.recovered_group );
+            long groupid = getGroupImpl( name );
+            if ( GROUPID_UNSPEC == groupid ) {
+                groupid = addGroupImpl( name );
+            }
+
+            query = String.format( "UPDATE summaries SET groupid = %d"
+                                   + " WHERE rowid IN (%s);", groupid,
+                                   TextUtils.join(",", ids ) );
+            db.execSQL( query );
+        }
+    }
+
     private static void initDB( Context context )
     {
         synchronized( DBUtils.class ) {
@@ -2557,15 +2603,32 @@ public class DBUtils {
                 // force any upgrade
                 s_dbHelper.getWritableDatabase().close();
                 s_db = s_dbHelper.getWritableDatabase();
+
+                // Workaround for bug somewhere. Run this once on startup
+                // before anything else uses the db.
+                showHiddenGames( context, s_db );
             }
         }
     }
 
-    private static int updateRowImpl( SQLiteDatabase db, TABLE_NAMES table,
+    static void hideGames( Context context, long rowid )
+    {
+        if ( BuildConfig.NON_RELEASE ) {
+            int nonID = 500 + (Utils.nextRandomInt() % 1000);
+            String query = String.format( "UPDATE summaries set GROUPID = %d"
+                                          + " WHERE rowid = %d", nonID, rowid );
+            initDB( context );
+            synchronized( s_dbHelper ) {
+                s_db.execSQL( query );
+            }
+        }
+    }
+
+    private static int updateRowImpl( TABLE_NAMES table,
                                       long rowid, ContentValues values )
     {
         String selection = String.format( ROW_ID_FMT, rowid );
-        return DBHelper.update( db, table, values, selection );
+        return DBHelper.update( s_db, table, values, selection );
     }
 
 
@@ -2574,7 +2637,7 @@ public class DBUtils {
     {
         initDB( context );
         synchronized( s_dbHelper ) {
-            int result = updateRowImpl( s_db, table, rowid, values );
+            int result = updateRowImpl( table, rowid, values );
             if ( 0 == result ) {
                 Log.w( TAG, "updateRow failed" );
             }

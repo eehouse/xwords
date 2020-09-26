@@ -34,11 +34,14 @@
     <item android:id="@+id/games_game_deselect"
           android:title="@string/list_item_deselect"
           />
-    <!-- Debug only -->
+    <!-- below here: Debug only -->
     <item android:id="@+id/games_game_invites"
           android:title="@string/board_menu_game_showInvites"
           />
     <item android:id="@+id/games_game_markbad"
           android:title="@string/list_item_markbad"
+          />
+    <item android:id="@+id/games_game_hide"
+          android:title="Lose"
           />
 </menu>
