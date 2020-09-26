@@ -54,6 +54,7 @@ public class XwJNI {
         public synchronized long ptr()
         {
             Assert.assertTrue( 0 != m_ptrGame );
+            // Log.d( TAG, "ptr(): m_rowid: %d", m_rowid );
             return m_ptrGame;
         }
 

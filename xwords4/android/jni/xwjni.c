@@ -2409,17 +2409,22 @@ Java_org_eehouse_android_xw4_jni_XwJNI_comms_1resendAll
 ( JNIEnv* env, jclass C, GamePtrType gamePtr, jboolean force, jobject jFilter,
   jboolean thenAck )
 {
-    jint result;
+    jint result = 0;
     XWJNI_START();
     CommsCtxt* comms = state->game.comms;
     XP_ASSERT( !!comms );
-    CommsConnType filter =
-        NULL == jFilter ? COMMS_CONN_NONE : jEnumToInt( env, jFilter );
-    result = comms_resendAll( comms, env, filter, force );
-    if ( thenAck ) {
+    if ( !!comms ) {
+        CommsConnType filter =
+            NULL == jFilter ? COMMS_CONN_NONE : jEnumToInt( env, jFilter );
+        result = comms_resendAll( comms, env, filter, force );
+        if ( thenAck ) {
 #ifdef XWFEATURE_COMMSACK
-        comms_ackAny( comms, env );
+            comms_ackAny( comms, env );
 #endif
+        }
+    } else {
+        /* I've seen this once, but wasn't reproducible */
+        XP_LOGFF( "ERROR: called with null comms" );
     }
     XWJNI_END();
     return result;

@@ -41,6 +41,7 @@ import org.eehouse.android.xw4.DlgDelegate.DlgClickNotify.InviteMeans;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;
 import org.eehouse.android.xw4.jni.CurGameInfo;
+import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
 import org.eehouse.android.xw4.jni.DictInfo;
 import org.eehouse.android.xw4.jni.GameSummary;
 import org.eehouse.android.xw4.jni.XwJNI;
@@ -257,7 +258,7 @@ public class DBUtils {
 
                 col = cursor.getColumnIndex( DBHelper.SERVERROLE );
                 tmp = cursor.getInt( col );
-                summary.serverRole = CurGameInfo.DeviceRole.values()[tmp];
+                summary.serverRole = DeviceRole.values()[tmp];
             }
             cursor.close();
         }
@@ -761,7 +762,10 @@ public class DBUtils {
     {
         HashMap<Long, CommsConnTypeSet> result = new HashMap<>();
         String[] columns = { ROW_ID, DBHelper.CONTYPE };
-        String selection = String.format( "%s > 0 AND %s != %d", DBHelper.NPACKETSPENDING,
+        String selection = String.format( "%s != %d AND %s > 0 AND %s != %d",
+                                          DBHelper.SERVERROLE,
+                                          DeviceRole.SERVER_STANDALONE.ordinal(),
+                                          DBHelper.NPACKETSPENDING,
                                           DBHelper.GROUPID, getArchiveGroup( context ) );
         initDB( context );
         synchronized( s_dbHelper ) {
@@ -1333,11 +1337,11 @@ public class DBUtils {
         private boolean m_isSolo;
 
         public NeedsNagInfo( long rowid, long nextNag, long lastMove,
-                             CurGameInfo.DeviceRole role ) {
+                             DeviceRole role ) {
             m_rowid = rowid;
             m_nextNag = nextNag;
             m_lastMoveMillis = 1000 * lastMove;
-            m_isSolo = CurGameInfo.DeviceRole.SERVER_STANDALONE == role;
+            m_isSolo = DeviceRole.SERVER_STANDALONE == role;
         }
 
         public boolean isSolo() {
@@ -1369,8 +1373,8 @@ public class DBUtils {
                     long rowid = cursor.getLong( rowIndex );
                     long nextNag = cursor.getLong( nagIndex );
                     long lastMove = cursor.getLong( lastMoveIndex );
-                    CurGameInfo.DeviceRole role =
-                        CurGameInfo.DeviceRole.values()[cursor.getInt( roleIndex )];
+                    DeviceRole role =
+                        DeviceRole.values()[cursor.getInt( roleIndex )];
                     result[ii] = new NeedsNagInfo( rowid, nextNag, lastMove, role );
                 }
             }
