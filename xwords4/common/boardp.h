@@ -53,9 +53,8 @@ typedef enum {
     ,DT_BOARD
 } DragType;
 
-
 typedef struct _DragState {
-    DragType dtype;
+    DragType dtype;             /* where we started; does not change for life of drag */
     XP_Bool didMove;            /* there was change during the drag; not a
                                    tap */
     XP_Bool cellChanged;        /* nothing dragged but movement happened */
