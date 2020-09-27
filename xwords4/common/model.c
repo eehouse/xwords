@@ -2674,6 +2674,7 @@ model_listWordsThrough( ModelCtxt* model, XWEnv xwe, XP_U16 col, XP_U16 row,
         XP_LOGFF( "nWords: %d", lwtInfo.nWords );
         found = 0 < lwtInfo.nWords;
     }
+    stream_putU8( stream, '\0' ); /* null-terminate for good luck */
 
     model_destroy( tmpModel, xwe );
     return found;
