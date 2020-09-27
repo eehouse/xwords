@@ -29,15 +29,15 @@
                 android:layout_gravity="center_horizontal"
                 android:visibility="gone"
                 >
-      <RadioButton android:id="@+id/radio_who"
-                   android:layout_width="wrap_content"
-                   android:layout_height="wrap_content"
-                   android:text="@string/radio_who"
-                   />
       <RadioButton android:id="@+id/radio_how"
                    android:layout_width="wrap_content"
                    android:layout_height="wrap_content"
                    android:text="@string/radio_how"
+                   />
+      <RadioButton android:id="@+id/radio_who"
+                   android:layout_width="wrap_content"
+                   android:layout_height="wrap_content"
+                   android:text="@string/radio_who"
                    />
     </RadioGroup>
 

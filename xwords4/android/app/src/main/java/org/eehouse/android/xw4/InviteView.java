@@ -60,12 +60,12 @@ public class InviteView extends ScrollView
     {
         Context context = getContext();
 
-        boolean showWho = null != players && 0 < players.length;
+        boolean haveWho = null != players && 0 < players.length;
 
         // top/horizontal group or title first
-        if ( showWho ) {
+        if ( haveWho ) {
             mGroupTab = (RadioGroup)findViewById( R.id.group_tab );
-            mGroupTab.check( R.id.radio_who );
+            mGroupTab.check( R.id.radio_how );
             mGroupTab.setOnCheckedChangeListener( this );
             mGroupTab.setVisibility( View.VISIBLE );
         } else {
@@ -82,7 +82,7 @@ public class InviteView extends ScrollView
             mHowMeans.put( button, means );
         }
 
-        if ( showWho ) {
+        if ( haveWho ) {
             mGroupWho = (RadioGroup)findViewById( R.id.group_who );
             mGroupWho.setOnCheckedChangeListener( this );
             for ( String player : players ) {
@@ -92,7 +92,7 @@ public class InviteView extends ScrollView
                 mWhoPlayers.put( button, player );
             }
         }
-        mIsWho = showWho;
+        mIsWho = false;   // start with how
         showWhoOrHow();
 
         return this;
