@@ -9,6 +9,8 @@
   <LinearLayout android:orientation="horizontal"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
+                android:background="#FF7F7F7F"
+                android:layout_marginBottom="3dp"
                 >
 
     <TextView android:id="@+id/player_name"
