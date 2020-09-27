@@ -102,6 +102,12 @@ public class KnownPlayersDelegate extends DelegateBase {
             // Iterate over address types
             CommsConnTypeSet conTypes = addr.conTypes;
             ViewGroup list = (ViewGroup)item.findViewById( R.id.items );
+            if ( conTypes.contains( CommsAddrRec.CommsConnType.COMMS_CONN_BT ) ) {
+                addListing( list, R.string.knowns_bt_fmt, addr.bt_hostName );
+            }
+            if ( conTypes.contains( CommsAddrRec.CommsConnType.COMMS_CONN_SMS ) ) {
+                addListing( list, R.string.knowns_smsphone_fmt, addr.sms_phone );
+            }
             if ( BuildConfig.NON_RELEASE ) {
                 if ( conTypes.contains( CommsAddrRec.CommsConnType.COMMS_CONN_MQTT ) ) {
                     addListing( list, R.string.knowns_mqtt_fmt, addr.mqtt_devID );
@@ -109,12 +115,6 @@ public class KnownPlayersDelegate extends DelegateBase {
                 // if ( conTypes.contains( CommsAddrRec.CommsConnType.COMMS_CONN_RELAY ) ) {
                 //     addListing( item, R.string.knowns_relay_fmt, addr.relay_devID );
                 // }
-            }
-            if ( conTypes.contains( CommsAddrRec.CommsConnType.COMMS_CONN_BT ) ) {
-                addListing( list, R.string.knowns_bt_fmt, addr.bt_hostName );
-            }
-            if ( conTypes.contains( CommsAddrRec.CommsConnType.COMMS_CONN_SMS ) ) {
-                addListing( list, R.string.knowns_smsphone_fmt, addr.sms_phone );
             }
 
             item.findViewById( R.id.player_edit_name )

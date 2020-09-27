@@ -2648,6 +2648,11 @@
     <!-- Title of menuitem that launches Known Players viewer -->
     <string name="gamel_menu_knownplyrs">Known Players…</string>
 
+    <string name="kplayers_expl">Here are the remote players
+    CrossWords has seen enough to know how to invite them quickly to
+    new games. Their names default to what the remote user has chosen,
+    but you can edit them to make them easier for you to use.</string>
+
     <!-- Shown instead of Known Players viewer when there aren't any -->
     <string name="no_knowns_expl">There haven’t been any Known Players
     saved yet. Known Players are harvested from networked games after
