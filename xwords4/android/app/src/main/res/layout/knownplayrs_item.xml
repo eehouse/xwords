@@ -20,6 +20,7 @@
     <org.eehouse.android.xw4.ExpandImageButton
         android:id="@+id/expander"
         style="@style/expander_button"
+        android:src="@drawable/expander_ic_minimized"
         />
   </LinearLayout>
 
