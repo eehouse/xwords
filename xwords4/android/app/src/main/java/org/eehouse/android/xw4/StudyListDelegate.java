@@ -65,7 +65,6 @@ public class StudyListDelegate extends ListDelegateBase
     private Set<String> m_checkeds;
     private int m_langPosition;
     private SLWordsAdapter m_adapter;
-    private ListView m_list;
     private String m_origTitle;
 
     protected StudyListDelegate( Delegator delegator, Bundle sis )
@@ -77,8 +76,6 @@ public class StudyListDelegate extends ListDelegateBase
     @Override
     protected void init( Bundle sis )
     {
-        m_list = (ListView)findViewById( android.R.id.list );
-
         m_pickView = (LabeledSpinner)findViewById( R.id.pick_lang );
         m_spinner = m_pickView.getSpinner();
         m_checkeds = new HashSet<>();

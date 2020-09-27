@@ -39,7 +39,6 @@ import android.widget.ListView;
 
 import org.eehouse.android.xw4.DlgDelegate.Action;
 
-
 public class XWActivity extends FragmentActivity
     implements Delegator, DlgDelegate.DlgClickNotify {
     private static final String TAG = XWActivity.class.getSimpleName();
@@ -257,11 +256,13 @@ public class XWActivity extends FragmentActivity
         return false;
     }
 
+    @Override
     public void addFragment( XWFragment fragment, Bundle extras )
     {
         Assert.failDbg();
     }
 
+    @Override
     public void addFragmentForResult( XWFragment fragment, Bundle extras,
                                       RequestCode request  )
     {

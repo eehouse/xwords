@@ -113,6 +113,9 @@ public class DlgDelegate {
         // DwnldDelegate && GamesListDelegate
         STORAGE_CONFIRMED,
 
+        // Known Players
+        KNOWN_PLAYER_DELETE,
+
         // classify me
         ENABLE_NBS_ASK,
         ENABLE_NBS_DO,

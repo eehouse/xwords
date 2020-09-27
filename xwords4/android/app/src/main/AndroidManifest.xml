@@ -134,8 +134,8 @@
               android:windowSoftInputMode="stateAlwaysHidden|adjustPan"
               />
 
-    <activity android:name="StudyListActivity"
-              />
+    <activity android:name="StudyListActivity" />
+    <activity android:name="KnownPlayersActivity" />
 
     <receiver android:name="OnBootReceiver">
       <intent-filter>

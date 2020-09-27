@@ -2644,4 +2644,25 @@
     <string name="mqtt_invite_title">MQTT Invitation</string>
     <string name="not_again_comms_mqtt">I’m experimenting with this
     as a replacement for the relay.</string>
+
+    <!-- Title of menuitem that launches Known Players viewer -->
+    <string name="gamel_menu_knownplyrs">Known Players…</string>
+
+    <!-- Shown instead of Known Players viewer when there aren't any -->
+    <string name="no_knowns_expl">There haven’t been any Known Players
+    saved yet. Known Players are harvested from networked games after
+    they connect successfully. Give it time.</string>
+
+    <string name="knowns_mqtt_fmt">MQTT DevID: %1$s</string>
+    <string name="knowns_bt_fmt">Bluetooth name: %1$s</string>
+    <string name="knowns_smsphone_fmt">SMS Phone: %1$s</string>
+
+    <!-- Button in known player list element allowing to edit player's name -->
+    <string name="player_edit_name">Change name</string>
+
+    <!-- Shown to confirm deletion of a Knows Players viewer list item -->
+    <string name="player_delete_confirm_fmt">Are you sure you want to
+    delete the Known Player “%1$s”?\n\n(This action cannot be
+    undone.)</string>
+
 </resources>

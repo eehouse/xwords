@@ -1715,6 +1715,9 @@ public class GamesListDelegate extends ListDelegateBase
                 enable = nothingSelected && XWPrefs.getStudyEnabled( m_activity );
                 Utils.setItemVisible( menu, R.id.games_menu_study, enable );
 
+                enable = BuildConfig.HAVE_KNOWN_PLAYERS && nothingSelected;
+                Utils.setItemVisible( menu, R.id.games_menu_knownplyrs, enable );
+
                 enable = nothingSelected &&
                     0 < DBUtils.getGamesWithSendsPending( m_activity ).size();
                 Utils.setItemVisible( menu, R.id.games_menu_resend, enable );
@@ -1804,6 +1807,10 @@ public class GamesListDelegate extends ListDelegateBase
 
         case R.id.games_menu_study:
             StudyListDelegate.launchOrAlert( getDelegator(), StudyListDelegate.NO_LANG, this );
+            break;
+
+        case R.id.games_menu_knownplyrs:
+            KnownPlayersDelegate.launchOrAlert( getDelegator(), this );
             break;
 
         case R.id.games_menu_about:
