@@ -158,7 +158,9 @@ initFromDictFile( LinuxDictionaryCtxt* dctx, const LaunchParams* params,
     XP_U32 topOffset;
     char path[256];
 
-    if ( !getDictPath( params, fileName, path, VSIZE(path) ) ) {
+    if ( file_exists( fileName ) ) {
+        snprintf( path, VSIZE(path), "%s", fileName );
+    } else if ( !getDictPath( params, fileName, path, VSIZE(path) ) ) {
         XP_LOGF( "%s: path=%s", __func__, path );
         goto closeAndExit;
     }
