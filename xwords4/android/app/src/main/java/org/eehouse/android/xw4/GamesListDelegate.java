@@ -2671,19 +2671,6 @@ public class GamesListDelegate extends ListDelegateBase
         return namer;
     }
 
-    private Dialog buildNamerDlg( GameNamer namer, int titleID,
-                                  OnClickListener lstnr1, OnClickListener lstnr2,
-                                  DlgID dlgID )
-    {
-        Dialog dialog = makeAlertBuilder()
-            .setTitle( titleID )
-            .setPositiveButton( android.R.string.ok, lstnr1 )
-            .setNegativeButton( android.R.string.cancel, lstnr2 )
-            .setView( namer )
-            .create();
-        return dialog;
-    }
-
     private void showNewGroupIf()
     {
         long[] games = m_mySIS.moveAfterNewGroup;

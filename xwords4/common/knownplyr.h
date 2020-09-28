@@ -36,6 +36,8 @@ void kplr_getNames( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR** players,
                     XP_U16* nFound );
 XP_Bool kplr_getAddr( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* name,
                       CommsAddrRec* addr );
+void kplr_renamePlayer( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* oldName,
+                        const XP_UCHAR* newName );
 void kplr_deletePlayer( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* name );
 
 XP_Bool kplr_addAddrs( XW_DUtilCtxt* dutil, XWEnv xwe, const CurGameInfo* gi,

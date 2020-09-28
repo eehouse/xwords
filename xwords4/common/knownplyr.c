@@ -264,17 +264,28 @@ kplr_getNames( XW_DUtilCtxt* dutil, XWEnv xwe,
     releaseState( dutil, xwe, state );
 }
 
+static KnownPlayer*
+findByName( KPState* state, const XP_UCHAR* name )
+{
+    KnownPlayer* result = NULL;
+    for ( KnownPlayer* kp = state->players; !!kp && !result; kp = kp->next ) {
+        if ( 0 == XP_STRCMP( kp->name, name ) ) {
+            result = kp;
+        }
+    }
+    return result;
+}
+
 XP_Bool
 kplr_getAddr( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* name,
               CommsAddrRec* addr )
 {
     KPState* state = loadState( dutil, xwe );
     XP_Bool found = XP_FALSE;
-    for ( KnownPlayer* kp = state->players; !!kp && !found; kp = kp->next ) {
-        found = 0 == XP_STRCMP( kp->name, name );
-        if ( found ) {
-            *addr = kp->addr;
-        }
+    KnownPlayer* kp = findByName( state, name );
+    found = NULL != kp;
+    if ( found ) {
+        *addr = kp->addr;
     }
     releaseState( dutil, xwe, state );
     LOG_RETURNF( "%s", boolToStr(found) );
@@ -286,6 +297,20 @@ freeKP( XW_DUtilCtxt* dutil, KnownPlayer* kp )
 {
     XP_FREEP( dutil->mpool, &kp->name );
     XP_FREE( dutil->mpool, kp );
+}
+
+void
+kplr_renamePlayer( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* oldName,
+                   const XP_UCHAR* newName )
+{
+    KPState* state = loadState( dutil, xwe );
+    KnownPlayer* kp = findByName( state, oldName );
+    if ( !!kp ) {
+        XP_FREEP( dutil->mpool, &kp->name );
+        kp->name = copyString( dutil->mpool, newName );
+        state->dirty = XP_TRUE;
+    }
+    releaseState( dutil, xwe, state );
 }
 
 void

@@ -20,39 +20,32 @@
 package org.eehouse.android.xw4;
 
 import android.app.Activity;
-import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.os.Bundle;
-import android.text.ClipboardManager;
-import android.text.TextUtils;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemSelectedListener;
-import android.widget.ArrayAdapter;
 import android.widget.TextView;
-import android.widget.ListView;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import org.eehouse.android.xw4.DlgDelegate.Action;
 import org.eehouse.android.xw4.ExpandImageButton.ExpandChangeListener;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;
 import org.eehouse.android.xw4.jni.CommsAddrRec;
-import org.eehouse.android.xw4.jni.GameSummary;
 import org.eehouse.android.xw4.jni.XwJNI;
 import org.eehouse.android.xw4.loc.LocUtils;
-
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
 
 public class KnownPlayersDelegate extends DelegateBase {
     private static final String TAG = KnownPlayersDelegate.class.getSimpleName();
 
     private Activity mActivity;
     private ViewGroup mList;
+    private Map<String, ViewGroup> mChildren;
 
     protected KnownPlayersDelegate( Delegator delegator, Bundle sis )
     {
@@ -85,29 +78,77 @@ public class KnownPlayersDelegate extends DelegateBase {
         return handled;
     }
 
+    @Override
+    protected Dialog makeDialog( DBAlert alert, Object[] params )
+    {
+        Dialog dialog = null;
+
+        DlgID dlgID = alert.getDlgID();
+        switch ( dlgID ) {
+        case RENAME_PLAYER:
+            final String oldName = (String)params[0];
+            final GameNamer namer = (GameNamer)inflate( R.layout.rename_game );
+            namer.setName( oldName );
+            namer.setLabel( "some label" );
+
+            OnClickListener lstnr = new OnClickListener() {
+                    @Override
+                    public void onClick( DialogInterface dlg, int item ) {
+                        String newName = namer.getName();
+                        if ( ! newName.equals(oldName) && 0 < newName.length() ) {
+                            XwJNI.kplr_renamePlayer( oldName, newName );
+                            renameInPlace( oldName, newName );
+                        }
+                    }
+                };
+            dialog = buildNamerDlg( namer, R.string.game_name_group_title,
+                                    lstnr, null, dlgID );
+            break;
+        }
+
+        if ( null == dialog ) {
+            dialog = super.makeDialog( alert, params );
+        }
+        return dialog;
+    }
+
     private void populateList()
     {
         String[] players = XwJNI.kplr_getPlayers();
         if ( null == players ) {
             finish();
         } else {
+            mChildren = new HashMap<>();
             for ( String player : players ) {
-                View child = makePlayerElem( player );
+                ViewGroup child = makePlayerElem( player );
                 if ( null != child ) {
                     mList.addView( child );
+                    mChildren.put( player, child );
                 }
             }
         }
     }
 
-    private View makePlayerElem( final String player )
+    private void setName( ViewGroup item, String name )
     {
-        View view = null;
+        TextView tv = (TextView)item.findViewById( R.id.player_name );
+        tv.setText( name );
+    }
+
+    private void renameInPlace( String oldName, String newName )
+    {
+        ViewGroup child = mChildren.remove( oldName );
+        setName( child, newName );
+        mChildren.put( newName, child );
+    }
+
+    private ViewGroup makePlayerElem( final String player )
+    {
+        ViewGroup view = null;
         CommsAddrRec addr = XwJNI.kplr_getAddr( player );
         if ( null != addr ) {
             final ViewGroup item = (ViewGroup)LocUtils.inflate( mActivity, R.layout.knownplayrs_item );
-            TextView tv = (TextView)item.findViewById( R.id.player_name );
-            tv.setText( player );
+            setName( item, player );
             view = item;
 
             // Iterate over address types
@@ -132,7 +173,7 @@ public class KnownPlayersDelegate extends DelegateBase {
                 .setOnClickListener( new View.OnClickListener() {
                         @Override
                         public void onClick( View view ) {
-                            Utils.notImpl( mActivity );
+                            showDialogFragment( DlgID.RENAME_PLAYER, player );
                         }
                     } );
             item.findViewById( R.id.player_delete )
