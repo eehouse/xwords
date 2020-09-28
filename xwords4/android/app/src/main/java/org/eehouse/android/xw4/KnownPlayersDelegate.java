@@ -87,9 +87,10 @@ public class KnownPlayersDelegate extends DelegateBase {
         switch ( dlgID ) {
         case RENAME_PLAYER:
             final String oldName = (String)params[0];
-            final GameNamer namer = (GameNamer)inflate( R.layout.rename_game );
-            namer.setName( oldName );
-            namer.setLabel( "some label" );
+            final Renamer namer = ((Renamer)inflate( R.layout.renamer ))
+                .setName( oldName )
+                .setLabel( "some label" )
+                ;
 
             OnClickListener lstnr = new OnClickListener() {
                     @Override
@@ -135,6 +136,12 @@ public class KnownPlayersDelegate extends DelegateBase {
         tv.setText( name );
     }
 
+    private String getName( ViewGroup item )
+    {
+        TextView tv = (TextView)item.findViewById( R.id.player_name );
+        return tv.getText().toString();
+    }
+
     private void renameInPlace( String oldName, String newName )
     {
         ViewGroup child = mChildren.remove( oldName );
@@ -142,7 +149,7 @@ public class KnownPlayersDelegate extends DelegateBase {
         mChildren.put( newName, child );
     }
 
-    private ViewGroup makePlayerElem( final String player )
+    private ViewGroup makePlayerElem( String player )
     {
         ViewGroup view = null;
         CommsAddrRec addr = XwJNI.kplr_getAddr( player );
@@ -173,14 +180,14 @@ public class KnownPlayersDelegate extends DelegateBase {
                 .setOnClickListener( new View.OnClickListener() {
                         @Override
                         public void onClick( View view ) {
-                            showDialogFragment( DlgID.RENAME_PLAYER, player );
+                            showDialogFragment( DlgID.RENAME_PLAYER, getName(item) );
                         }
                     } );
             item.findViewById( R.id.player_delete )
                 .setOnClickListener( new View.OnClickListener() {
                         @Override
                         public void onClick( View view ) {
-                            confirmAndDelete( player );
+                            confirmAndDelete( getName(item) );
                         }
                     } );
 

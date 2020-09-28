@@ -525,7 +525,7 @@ public class DelegateBase implements DlgClickNotify,
         }
     }
 
-    protected Dialog buildNamerDlg( GameNamer namer, int titleID,
+    protected Dialog buildNamerDlg( Renamer namer, int titleID,
                                     OnClickListener lstnr1, OnClickListener lstnr2,
                                     DlgID dlgID )
     {

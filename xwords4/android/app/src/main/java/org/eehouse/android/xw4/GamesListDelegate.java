@@ -730,8 +730,8 @@ public class GamesListDelegate extends ListDelegateBase
             GameSummary summary = GameUtils.getSummary( m_activity, rowid );
             int labelID = (summary.isMultiGame() && !summary.anyMissing())
                 ? R.string.rename_label_caveat : R.string.rename_label;
-            final GameNamer namer =
-                buildNamer(GameUtils.getName( m_activity, rowid ), labelID );
+            final Renamer namer =
+                buildRenamer( GameUtils.getName( m_activity, rowid ), labelID );
             lstnr = new OnClickListener() {
                     public void onClick( DialogInterface dlg, int item ) {
                         String name = namer.getName();
@@ -747,8 +747,8 @@ public class GamesListDelegate extends ListDelegateBase
 
         case RENAME_GROUP: {
             final long groupID = (Long)params[0];
-            final GameNamer namer = buildNamer( m_adapter.groupName(groupID),
-                                                 R.string.rename_group_label );
+            final Renamer namer = buildRenamer( m_adapter.groupName(groupID),
+                                                R.string.rename_group_label );
             lstnr = new OnClickListener() {
                     public void onClick( DialogInterface dlg, int item ) {
                         GamesListDelegate self = curThis();
@@ -766,7 +766,7 @@ public class GamesListDelegate extends ListDelegateBase
             break;
 
         case NEW_GROUP: {
-            final GameNamer namer = buildNamer( "", R.string.newgroup_label );
+            final Renamer namer = buildRenamer( "", R.string.newgroup_label );
             lstnr = new OnClickListener() {
                     public void onClick( DialogInterface dlg, int item ) {
                         String name = namer.getName();
@@ -2663,12 +2663,13 @@ public class GamesListDelegate extends ListDelegateBase
         }
     }
 
-    private GameNamer buildNamer( String name, int labelID )
+    private Renamer buildRenamer( String name, int labelID )
     {
-        GameNamer namer = (GameNamer)inflate( R.layout.rename_game );
-        namer.setName( name );
-        namer.setLabel( labelID );
-        return namer;
+        Renamer renamer = ((Renamer)inflate( R.layout.renamer ))
+            .setName( name )
+            .setLabel( labelID )
+            ;
+        return renamer;
     }
 
     private void showNewGroupIf()
