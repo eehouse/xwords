@@ -30,7 +30,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.eehouse.android.xw4.DlgDelegate.Action;
@@ -68,7 +71,6 @@ public class KnownPlayersDelegate extends DelegateBase {
         case KNOWN_PLAYER_DELETE:
             String name = (String)params[0];
             XwJNI.kplr_deletePlayer( name );
-            mList.removeAllViews();
             populateList();
             break;
         default:
@@ -133,10 +135,20 @@ public class KnownPlayersDelegate extends DelegateBase {
             for ( String player : players ) {
                 ViewGroup child = makePlayerElem( player );
                 if ( null != child ) {
-                    mList.addView( child );
                     mChildren.put( player, child );
                 }
             }
+            addInOrder();
+        }
+    }
+
+    private void addInOrder()
+    {
+        mList.removeAllViews();
+        List<String> names = new ArrayList<>(mChildren.keySet());
+        Collections.sort(names);
+        for ( String name : names ) {
+            mList.addView( mChildren.get( name ) );
         }
     }
 
@@ -157,6 +169,7 @@ public class KnownPlayersDelegate extends DelegateBase {
         ViewGroup child = mChildren.remove( oldName );
         setName( child, newName );
         mChildren.put( newName, child );
+        addInOrder();
     }
 
     private ViewGroup makePlayerElem( String player )

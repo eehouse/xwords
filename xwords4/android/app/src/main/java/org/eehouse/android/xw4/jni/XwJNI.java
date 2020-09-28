@@ -173,9 +173,12 @@ public class XwJNI {
 
     public static String[] kplr_getPlayers()
     {
-        return BuildConfig.HAVE_KNOWN_PLAYERS
-            ? kplr_getPlayers( getJNI().m_ptrGlobals )
-            : null;
+        String[] result = null;
+        if ( BuildConfig.HAVE_KNOWN_PLAYERS ) {
+            result = kplr_getPlayers( getJNI().m_ptrGlobals );
+            Arrays.sort( result );
+        }
+        return result;
     }
 
     public static boolean kplr_renamePlayer( String oldName, String newName )
