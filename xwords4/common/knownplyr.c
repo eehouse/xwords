@@ -281,6 +281,41 @@ kplr_getAddr( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* name,
     return found;
 }
 
+static void
+freeKP( XW_DUtilCtxt* dutil, KnownPlayer* kp )
+{
+    XP_FREEP( dutil->mpool, &kp->name );
+    XP_FREE( dutil->mpool, kp );
+}
+
+void
+kplr_deletePlayer( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* name )
+{
+    KnownPlayer* doomed = NULL;
+    KPState* state = loadState( dutil, xwe );
+
+    KnownPlayer* prev = NULL;
+    for ( KnownPlayer* kp = state->players; !!kp && !doomed; kp = kp->next ) {
+        if ( 0 == XP_STRCMP( kp->name, name ) ) {
+            doomed = kp;
+            if ( NULL == prev ) { /* first time through? */
+                state->players = kp->next;
+            } else {
+                prev->next = kp->next;
+            }
+            --state->nPlayers;
+            state->dirty = XP_TRUE;
+        }
+        prev = kp;
+    }
+    releaseState( dutil, xwe, state );
+
+    XP_ASSERT( !!doomed );
+    if ( !!doomed ) {
+        freeKP( dutil, doomed );
+    }
+}
+
 void
 kplr_cleanup( XW_DUtilCtxt* dutil )
 {
@@ -290,8 +325,7 @@ kplr_cleanup( XW_DUtilCtxt* dutil )
         KnownPlayer* next = NULL;
         for ( KnownPlayer* kp = (*state)->players; !!kp; kp = next ) {
             next = kp->next;
-            XP_FREEP( dutil->mpool, &kp->name );
-            XP_FREE( dutil->mpool, kp );
+            freeKP( dutil, kp );
         }
         XP_FREEP( dutil->mpool, state );
     }

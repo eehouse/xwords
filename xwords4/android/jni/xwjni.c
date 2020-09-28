@@ -790,6 +790,17 @@ Java_org_eehouse_android_xw4_jni_XwJNI_kplr_1getPlayers
     return jnames;
 }
 
+JNIEXPORT void JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_kplr_1deletePlayer
+( JNIEnv* env, jclass C, jlong jniGlobalPtr, jstring jName )
+{
+    DVC_HEADER(jniGlobalPtr);
+    const char* name = (*env)->GetStringUTFChars( env, jName, NULL );
+    kplr_deletePlayer( globalState->dutil, env, name );
+    (*env)->ReleaseStringUTFChars( env, jName, name );
+    DVC_HEADER_END();
+}
+
 JNIEXPORT jobject JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_kplr_1getAddr
 ( JNIEnv* env, jclass C, jlong jniGlobalPtr, jstring jName )

@@ -178,6 +178,13 @@ public class XwJNI {
             : null;
     }
 
+    public static void kplr_deletePlayer( String player )
+    {
+        if ( BuildConfig.HAVE_KNOWN_PLAYERS ) {
+            kplr_deletePlayer( getJNI().m_ptrGlobals, player );
+        }
+    }
+
     public static CommsAddrRec kplr_getAddr( String name )
     {
         return BuildConfig.HAVE_KNOWN_PLAYERS
@@ -701,6 +708,7 @@ public class XwJNI {
     private static native void dvc_parseMQTTPacket( long jniState, byte[] buf );
 
     private static native String[] kplr_getPlayers( long jniState );
+    private static native void kplr_deletePlayer( long jniState, String player );
     private static native CommsAddrRec kplr_getAddr( long jniState, String name );
 
     private static native void cleanGlobals( long jniState );

@@ -64,14 +64,7 @@ public class KnownPlayersDelegate extends DelegateBase {
     protected void init( Bundle sis )
     {
         mList = (ViewGroup)findViewById( R.id.players_list );
-
-        String[] players = XwJNI.kplr_getPlayers();
-        for ( String player : players ) {
-            View child = makePlayerElem( player );
-            if ( null != child ) {
-                mList.addView( child );
-            }
-        }
+        populateList();
     }
 
     @Override
@@ -80,13 +73,31 @@ public class KnownPlayersDelegate extends DelegateBase {
         boolean handled = true;
         switch ( action ) {
         case KNOWN_PLAYER_DELETE:
-            Utils.notImpl( mActivity );
+            String name = (String)params[0];
+            XwJNI.kplr_deletePlayer( name );
+            mList.removeAllViews();
+            populateList();
             break;
         default:
             handled = super.onPosButton( action, params );
             break;
         }
         return handled;
+    }
+
+    private void populateList()
+    {
+        String[] players = XwJNI.kplr_getPlayers();
+        if ( null == players ) {
+            finish();
+        } else {
+            for ( String player : players ) {
+                View child = makePlayerElem( player );
+                if ( null != child ) {
+                    mList.addView( child );
+                }
+            }
+        }
     }
 
     private View makePlayerElem( final String player )
@@ -165,6 +176,7 @@ public class KnownPlayersDelegate extends DelegateBase {
                                          R.string.player_delete_confirm_fmt,
                                          name );
         makeConfirmThenBuilder( msg, Action.KNOWN_PLAYER_DELETE )
+            .setParams( name )
             .show();
     }
 
