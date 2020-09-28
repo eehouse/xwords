@@ -503,6 +503,7 @@ dragDropContinueImpl( BoardCtxt* board, XWEnv xwe, XP_U16 xx, XP_U16 yy,
     if ( !!onWhichP ) {
         *onWhichP = newInfo.obj;
     }
+    XP_Bool didMove = XP_FALSE;
     XP_Bool isLegalBoardDrag = XP_FALSE;
     if ( newInfo.obj == OBJ_BOARD
          && coordToCell( board, xx, yy, &newInfo.u.board.col,
@@ -551,10 +552,13 @@ dragDropContinueImpl( BoardCtxt* board, XWEnv xwe, XP_U16 xx, XP_U16 yy,
             moving = adjustYOffset( board, xwe, diff ) || moving;
         }
     } else if ( ds->dtype == DT_TILE ) {
-        if ( newInfo.obj == OBJ_BOARD && isLegalBoardDrag ) {
-                 moving = (newInfo.u.board.col != ds->cur.u.board.col)
+        if ( newInfo.obj == OBJ_BOARD ) {
+            didMove = (newInfo.u.board.col != ds->cur.u.board.col)
                 || (newInfo.u.board.row != ds->cur.u.board.row)
                 || (OBJ_TRAY == ds->cur.obj);
+            if ( isLegalBoardDrag ) {
+                moving = didMove;
+            }
         } else if ( newInfo.obj == OBJ_TRAY ) {
             XP_Bool onDivider;
             XP_S16 index = pointToTileIndex( board, xx, yy, &onDivider );
@@ -594,7 +598,7 @@ dragDropContinueImpl( BoardCtxt* board, XWEnv xwe, XP_U16 xx, XP_U16 yy,
         XP_ASSERT( 0 );
     }
 
-    if ( moving ) {
+    if ( moving || didMove ) {
         draw = XP_TRUE;
         if ( !ds->didMove ) {
             /* This is the first time we've moved!!!  Kill any future timers,
