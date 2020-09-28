@@ -1715,7 +1715,7 @@ public class GamesListDelegate extends ListDelegateBase
                 enable = nothingSelected && XWPrefs.getStudyEnabled( m_activity );
                 Utils.setItemVisible( menu, R.id.games_menu_study, enable );
 
-                enable = BuildConfig.HAVE_KNOWN_PLAYERS && nothingSelected;
+                enable = nothingSelected && XwJNI.hasKnownPlayers();
                 Utils.setItemVisible( menu, R.id.games_menu_knownplyrs, enable );
 
                 enable = nothingSelected &&

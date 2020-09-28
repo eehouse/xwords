@@ -194,8 +194,7 @@ public class KnownPlayersDelegate extends DelegateBase {
                 activity.startActivity( intent );
             }
         } else {
-            dlg.makeOkOnlyBuilder( R.string.no_knowns_expl )
-                .show();
+            Assert.failDbg();
         }
     }
 }

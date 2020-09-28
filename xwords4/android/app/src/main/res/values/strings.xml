@@ -2653,11 +2653,6 @@
     new games. Their names default to what the remote user has chosen,
     but you can edit them to make them easier for you to use.</string>
 
-    <!-- Shown instead of Known Players viewer when there aren't any -->
-    <string name="no_knowns_expl">There haven’t been any Known Players
-    saved yet. Known Players are harvested from networked games after
-    they connect successfully. Give it time.</string>
-
     <string name="knowns_mqtt_fmt">MQTT DevID: %1$s</string>
     <string name="knowns_bt_fmt">Bluetooth name: %1$s</string>
     <string name="knowns_smsphone_fmt">SMS Phone: %1$s</string>
