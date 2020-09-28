@@ -2665,6 +2665,10 @@
     delete the Known Player “%1$s”?\n\n(This action cannot be
     undone.)</string>
 
+    <!-- Title of Alert for renaming Known Player -->
+    <string name="knowns_rename_title">Rename Player</string>
+    <!-- Error message when rename fails (which right now should only
+         happen because the name is in use) -->
     <string name="knowns_dup_name_fmt">Unable to change name from
     “%1$s” to “%2$s”. Is “%2$s” already in use?</string>
 

@@ -89,7 +89,6 @@ public class KnownPlayersDelegate extends DelegateBase {
             final String oldName = (String)params[0];
             final Renamer namer = ((Renamer)inflate( R.layout.renamer ))
                 .setName( oldName )
-                .setLabel( "some label" )
                 ;
 
             OnClickListener lstnr = new OnClickListener() {
@@ -99,7 +98,7 @@ public class KnownPlayersDelegate extends DelegateBase {
                         tryRename( oldName, namer.getName() );
                     }
                 };
-            dialog = buildNamerDlg( namer, R.string.game_name_group_title,
+            dialog = buildNamerDlg( namer, R.string.knowns_rename_title,
                                     lstnr, null, dlgID );
             break;
         }
