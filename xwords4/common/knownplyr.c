@@ -299,23 +299,33 @@ freeKP( XW_DUtilCtxt* dutil, KnownPlayer* kp )
     XP_FREE( dutil->mpool, kp );
 }
 
-void
+KP_Rslt
 kplr_renamePlayer( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* oldName,
                    const XP_UCHAR* newName )
 {
+    KP_Rslt result;
     KPState* state = loadState( dutil, xwe );
+
     KnownPlayer* kp = findByName( state, oldName );
-    if ( !!kp ) {
+    if ( !kp ) {
+        result = KP_NAME_NOT_FOUND;
+    } else if ( NULL != findByName( state, newName ) ) {
+        result = KP_NAME_IN_USE;
+    } else {
         XP_FREEP( dutil->mpool, &kp->name );
         kp->name = copyString( dutil->mpool, newName );
         state->dirty = XP_TRUE;
+        result = KP_OK;
     }
+
     releaseState( dutil, xwe, state );
+    return result;
 }
 
-void
+KP_Rslt
 kplr_deletePlayer( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* name )
 {
+    KP_Rslt result = KP_NAME_NOT_FOUND;
     KnownPlayer* doomed = NULL;
     KPState* state = loadState( dutil, xwe );
 
@@ -330,6 +340,7 @@ kplr_deletePlayer( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* name )
             }
             --state->nPlayers;
             state->dirty = XP_TRUE;
+            result = KP_OK;
         }
         prev = kp;
     }
@@ -339,6 +350,7 @@ kplr_deletePlayer( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* name )
     if ( !!doomed ) {
         freeKP( dutil, doomed );
     }
+    return result;
 }
 
 void

@@ -94,12 +94,9 @@ public class KnownPlayersDelegate extends DelegateBase {
 
             OnClickListener lstnr = new OnClickListener() {
                     @Override
-                    public void onClick( DialogInterface dlg, int item ) {
-                        String newName = namer.getName();
-                        if ( ! newName.equals(oldName) && 0 < newName.length() ) {
-                            XwJNI.kplr_renamePlayer( oldName, newName );
-                            renameInPlace( oldName, newName );
-                        }
+                    public void onClick( DialogInterface dlg, int item )
+                    {
+                        tryRename( oldName, namer.getName() );
                     }
                 };
             dialog = buildNamerDlg( namer, R.string.game_name_group_title,
@@ -111,6 +108,20 @@ public class KnownPlayersDelegate extends DelegateBase {
             dialog = super.makeDialog( alert, params );
         }
         return dialog;
+    }
+
+    private void tryRename( String oldName, String newName )
+    {
+        if ( ! newName.equals(oldName) && 0 < newName.length() ) {
+            if ( XwJNI.kplr_renamePlayer( oldName, newName ) ) {
+                renameInPlace( oldName, newName );
+            } else {
+                String msg = LocUtils.getString( mActivity,
+                                                 R.string.knowns_dup_name_fmt,
+                                                 oldName, newName );
+                makeOkOnlyBuilder( msg ).show();
+            }
+        }
     }
 
     private void populateList()
@@ -221,7 +232,7 @@ public class KnownPlayersDelegate extends DelegateBase {
     private void confirmAndDelete( String name )
     {
         String msg = LocUtils.getString( mActivity,
-                                         R.string.player_delete_confirm_fmt,
+                                         R.string.knowns_delete_confirm_fmt,
                                          name );
         makeConfirmThenBuilder( msg, Action.KNOWN_PLAYER_DELETE )
             .setParams( name )

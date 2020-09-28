@@ -178,11 +178,11 @@ public class XwJNI {
             : null;
     }
 
-    public static void kplr_renamePlayer( String oldName, String newName )
+    public static boolean kplr_renamePlayer( String oldName, String newName )
     {
-        if ( BuildConfig.HAVE_KNOWN_PLAYERS ) {
-            kplr_renamePlayer( getJNI().m_ptrGlobals, oldName, newName );
-        }
+        return BuildConfig.HAVE_KNOWN_PLAYERS
+            ? kplr_renamePlayer( getJNI().m_ptrGlobals, oldName, newName )
+            : true;
     }
 
     public static void kplr_deletePlayer( String player )
@@ -715,8 +715,8 @@ public class XwJNI {
     private static native void dvc_parseMQTTPacket( long jniState, byte[] buf );
 
     private static native String[] kplr_getPlayers( long jniState );
-    private static native void kplr_renamePlayer( long jniState, String oldName,
-                                                  String newName );
+    private static native boolean kplr_renamePlayer( long jniState, String oldName,
+                                                     String newName );
     private static native void kplr_deletePlayer( long jniState, String player );
     private static native CommsAddrRec kplr_getAddr( long jniState, String name );
 

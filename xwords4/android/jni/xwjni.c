@@ -790,17 +790,19 @@ Java_org_eehouse_android_xw4_jni_XwJNI_kplr_1getPlayers
     return jnames;
 }
 
-JNIEXPORT void JNICALL
+JNIEXPORT jboolean JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_kplr_1renamePlayer
 ( JNIEnv* env, jclass C, jlong jniGlobalPtr, jstring jOldName, jstring jNewName )
 {
+    jboolean result;
     DVC_HEADER(jniGlobalPtr);
     const char* oldName = (*env)->GetStringUTFChars( env, jOldName, NULL );
     const char* newName = (*env)->GetStringUTFChars( env, jNewName, NULL );
-    kplr_renamePlayer( globalState->dutil, env, oldName, newName );
+    result = KP_OK == kplr_renamePlayer( globalState->dutil, env, oldName, newName );
     (*env)->ReleaseStringUTFChars( env, jOldName, oldName );
     (*env)->ReleaseStringUTFChars( env, jNewName, newName );
     DVC_HEADER_END();
+    return result;
 }
 
 JNIEXPORT void JNICALL
