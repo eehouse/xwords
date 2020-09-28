@@ -6,7 +6,8 @@
               android:layout_height="match_parent"
               >
 
-  <LinearLayout android:orientation="horizontal"
+  <LinearLayout android:id="@+id/player_line"
+                android:orientation="horizontal"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:background="#FF7F7F7F"
@@ -43,6 +44,7 @@
     <LinearLayout android:orientation="horizontal"
                   android:layout_width="match_parent"
                   android:layout_height="wrap_content"
+                  android:gravity="center"
                   >
       <Button android:id="@+id/player_edit_name"
               android:text="@string/player_edit_name"

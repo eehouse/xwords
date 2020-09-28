@@ -214,7 +214,7 @@ public class KnownPlayersDelegate extends DelegateBase {
                         }
                     } );
 
-            ExpandImageButton eib = (ExpandImageButton)item.findViewById( R.id.expander );
+            final ExpandImageButton eib = (ExpandImageButton)item.findViewById( R.id.expander );
             eib.setOnExpandChangedListener( new ExpandChangeListener() {
                     @Override
                     public void expandedChanged( boolean nowExpanded )
@@ -224,6 +224,13 @@ public class KnownPlayersDelegate extends DelegateBase {
                     }
                 } );
 
+            item.findViewById( R.id.player_line )
+                .setOnClickListener( new View.OnClickListener() {
+                        @Override
+                        public void onClick( View view ) {
+                            eib.toggle();
+                        }
+                } );
         }
         return view;
     }
