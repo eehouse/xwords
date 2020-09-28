@@ -822,8 +822,7 @@
     <!-- title of this sub-preference -->
     <string name="prefs_behavior">Comportamento</string>
     <!-- clarification of the above -->
-    <string name="prefs_behavior_summary">Configurações do
-    comportamento do aplicativo</string>
+    <string name="prefs_behavior_summary">Configurações do comportamento da app</string>
     <!-- if this preference is checked, a dialog will be posted every
          time a robot makes a move or a move is received from a remote
          player. -->
@@ -1710,8 +1709,8 @@
     <string name="msg_dev_deleted_fmt">O jogo chamado \"%1$s\" foi deletado em outro dispositivo. Não será mais possível jogá-lo.</string>
     <string name="invit_expl_notarget_fmt">Convite enviado via %1$s em %2$s. Destinatário desconhecido.</string>
     <string name="invit_expl_bt_fmt">Convite enviado via Bluetooth para o dispositivo pareado \"%1$s\" em %2$s</string>
-    <string name="sms_invite_fail">Não foi possível iniciar o aplicativo de SMS</string>
-    <string name="sms_invite_flakey">Essa nova opção inicia seu aplicativo padrão de SMS com um convite pronto para ser enviado -- quando funciona. Cada aplicativo de SMS é diferente e alguns não cooperam.</string>
+    <string name="sms_invite_fail">Não foi possível iniciar a app de SMS</string>
+    <string name="sms_invite_flakey">Essa nova opção inicia a sua app predefinida de SMS com um convite pronto para ser enviado — se funcionam. Cada app de SMS é diferente e alguns não cooperam.</string>
     <string name="invit_expl_usrsms_fmt">Convite enviado via SMS para %1$s em %2$s</string>
     <string name="invit_expl_sms_fmt">Convite enviado via Data SMS para o número de telefone %1$s em %2$s</string>
     <string name="invite_if_nfc">Ou apenas toque no Convite -- se o outro dispositivo também possuir Android Beaming e estiver perto.</string>
