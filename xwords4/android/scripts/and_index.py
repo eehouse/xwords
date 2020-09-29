@@ -1,5 +1,7 @@
 #!/usr/bin/python3
 
+import os
+
 try:
     from mod_python import apache
     apacheAvailable = True
@@ -19,39 +21,39 @@ def printHead():
 def printTail():
     return '</body></html>'
 
-def printAndroid():
+def printAndroid(appName, params):
     return """
 <div>
 
-<p>You should not be seeing this page.</p>
+<p>You just clicked a link in a {appName} invitation. You should not be
+seeing this page!</p>
 
-<p>One of two things went wrong:
-    <div>&bull; You don't have CrossWords installed</div>
-    <div>OR</div>
-    <div>&bull; When you clicked on a link and were asked to choose between a
-        browser and CrossWords you chose the browser.</div>
-</p>
+<p>One of three things went wrong:</p>
+<ol>
+    <li>You don't have {appName} installed</li>
 
-<p>In the first case, install the latest CrossWords, either <a
-href="market://search?q=pname:org.eehouse.android.xw4">via the Google
-Play store</a> or <a href="https://eehouse.org/latest.apk">directly
-from the author's site</a> (sideloading). After the install is
-finished go back to the invite email (or text) and tap the link
-again.</p>
+    <div><b>What to do:</b> Install <a
+    href="market://search?q=pname:org.eehouse.android.xw4">via Google's App
+    Store</a> or <a href="https://eehouse.org/latest.apk">directly
+    from the author's site</a> (sideloading)</div>
 
-<p>Otherwise, hit your browser&apos;s back button, click the
-invitation link again, and this time choose CrossWords to handle
-it.</p>
+    <li>When you were asked to choose between a browser and {appName}
+        you chose the browser</li>
 
-<p>(If you get tired of having to having to make that choice, Android
-will allow you to make CrossWords the default.  If you do that
-CrossWords will be launched for all URLs that start with
-"https://eehouse.org/and/" -- not all URLs of any type.)</p>
+    <div><b>What to do:</b> click the invitation link again, and this time
+    choose {appName}</div>
+
+    <li>You're on <em>Android 11</em>, where there appears to be a new
+    bug that prevents you being given a choice!</li>
+
+    <div><b>What to do:</b> Tap <a href="newxwgame://?{params}">this link</a>
+    to launch {appName}</div>
+ </ol>
 
 <p>Have fun. And as always, <a href="mailto:xwords@eehouse.org">let
 me know</a> if you have problems or suggestions.</p>
 </div>
-"""
+""".format(appName=appName, params=params)
 
 def printNonAndroid(agent):
     subject = 'Android device not identified'
@@ -73,10 +75,16 @@ def printNonAndroid(agent):
 
 def index(req):
     str = printHead()
+
+    typ = os.path.basename(os.path.dirname(req.filename))
+    if 'andd' == typ: appName = 'CrossDbg'
+    else: appName = 'CrossWords'
+
     agent = req.headers_in.get('User-Agent', None)
     if agent and 'Android' in agent:
-        str += printAndroid()
+        str += printAndroid(appName, req.args)
     else:
         str += printNonAndroid(agent)
+
     str += printTail()
     return str
