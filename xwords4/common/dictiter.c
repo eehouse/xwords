@@ -1130,13 +1130,15 @@ nextWord( DictIter* iter, XP_Bool log )
            we're done, and the top-level while will exit) */
         while ( 0 < iter->nEdges ) {
             /* remove so isn't part of the match of its peers! */
-            array_edge* edge = popEdge( iter ) + dict->nodeSize;
-
-            PatMatch match = {0};
-            if ( nextPeerMatch( iter, &edge, &match, log ) ) {
-                pushEdge( iter, edge, &match ); /* let the top of the loop examine this one */
-                success = iter->min <= iter->nEdges && ACCEPT_NODE( iter, edge, log );
-                break;
+            array_edge* edge = popEdge( iter );
+            if ( !IS_LAST_EDGE( dict, edge ) ) {
+                edge += dict->nodeSize;
+                PatMatch match = {0};
+                if ( nextPeerMatch( iter, &edge, &match, log ) ) {
+                    pushEdge( iter, edge, &match ); /* let the top of the loop examine this one */
+                    success = iter->min <= iter->nEdges && ACCEPT_NODE( iter, edge, log );
+                    break;
+                }
             }
         }
     }
