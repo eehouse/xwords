@@ -76,7 +76,8 @@ public class InviteView extends ScrollView
         mGroupHow.setOnCheckedChangeListener( this );
         for ( InviteMeans means : meansList ) {
             Assert.assertNotNull( means );
-            RadioButton button = new RadioButton( context );
+            RadioButton button = (RadioButton)LocUtils
+                .inflate( context, R.layout.invite_radio );
             button.setText( LocUtils.getString( context, means.getUserDescID() ) );
             mGroupHow.addView( button );
             mHowMeans.put( button, means );
@@ -86,7 +87,8 @@ public class InviteView extends ScrollView
             mGroupWho = (RadioGroup)findViewById( R.id.group_who );
             mGroupWho.setOnCheckedChangeListener( this );
             for ( String player : players ) {
-                RadioButton button = new RadioButton( context );
+                RadioButton button = (RadioButton)LocUtils
+                    .inflate( context, R.layout.invite_radio );
                 button.setText( player );
                 mGroupWho.addView( button );
                 mWhoPlayers.put( button, player );
