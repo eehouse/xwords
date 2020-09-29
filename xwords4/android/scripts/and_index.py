@@ -21,7 +21,7 @@ def printHead():
 def printTail():
     return '</body></html>'
 
-def printAndroid(appName, params):
+def printAndroid(appName, params, scheme):
     return """
 <div>
 
@@ -46,14 +46,14 @@ seeing this page!</p>
     <li>You're on <em>Android 11</em>, where there appears to be a new
     bug that prevents you being given a choice!</li>
 
-    <div><b>What to do:</b> Tap <a href="newxwgame://?{params}">this link</a>
+    <div><b>What to do:</b> Tap <a href="{scheme}://?{params}">this link</a>
     to launch {appName}</div>
  </ol>
 
 <p>Have fun. And as always, <a href="mailto:xwords@eehouse.org">let
 me know</a> if you have problems or suggestions.</p>
 </div>
-""".format(appName=appName, params=params)
+""".format(appName=appName, params=params, scheme=scheme)
 
 def printNonAndroid(agent):
     subject = 'Android device not identified'
@@ -77,12 +77,16 @@ def index(req):
     str = printHead()
 
     typ = os.path.basename(os.path.dirname(req.filename))
-    if 'andd' == typ: appName = 'CrossDbg'
-    else: appName = 'CrossWords'
+    if 'andd' == typ:
+        appName = 'CrossDbg'
+        scheme = 'newxwgamed'
+    else:
+        appName = 'CrossWords'
+        scheme = 'newxwgame'
 
     agent = req.headers_in.get('User-Agent', None)
     if agent and 'Android' in agent:
-        str += printAndroid(appName, req.args)
+        str += printAndroid(appName, req.args, scheme)
     else:
         str += printNonAndroid(agent)
 
