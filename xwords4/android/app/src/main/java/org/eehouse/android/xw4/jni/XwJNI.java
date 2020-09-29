@@ -176,7 +176,9 @@ public class XwJNI {
         String[] result = null;
         if ( BuildConfig.HAVE_KNOWN_PLAYERS ) {
             result = kplr_getPlayers( getJNI().m_ptrGlobals );
-            Arrays.sort( result );
+            if ( null != result ) {
+                Arrays.sort( result );
+            }
         }
         return result;
     }
