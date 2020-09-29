@@ -1932,7 +1932,7 @@ di_wordToString( const DictIter* iter, XP_UCHAR* buf, XP_U16 buflen,
     iterToString( iter, buf, buflen, delim );
 #ifdef DEBUG
     // If there's no delim, debug string should be same
-    if ( !delim || '\0' != *delim ) {
+    if ( !delim || '\0' == *delim ) {
         XP_ASSERT( 0 == XP_STRCMP( buf, iter->curWord ) );
     }
 #endif

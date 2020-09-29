@@ -47,7 +47,7 @@
 #endif
 #define MAX_COLS MAX_ROWS
 
-#define STREAM_VERS_GICREATED 0x1C /* CurGameInfo gets created timestamp */
+#define STREAM_VERS_GICREATED 0x1C /* game struct gets created timestamp */
 #define STREAM_VERS_DUPLICATE 0x1B
 #define STREAM_VERS_DISABLEDS 0x1A
 #define STREAM_VERS_DEVIDS 0x19
