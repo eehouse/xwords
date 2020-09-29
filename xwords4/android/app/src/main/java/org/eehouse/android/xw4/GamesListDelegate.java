@@ -2166,7 +2166,7 @@ public class GamesListDelegate extends ListDelegateBase
             switch( itemID ) {
             case R.id.games_group_delete:
                 long dftGroup = XWPrefs.getDefaultNewGameGroup( m_activity );
-                if ( m_mySIS.selGroupIDs.contains( dftGroup ) ) {
+                if ( groupID == dftGroup ) {
                     msg = getString( R.string.cannot_delete_default_group_fmt,
                                      m_adapter.groupName( dftGroup ) );
                     makeOkOnlyBuilder( msg ).show();
