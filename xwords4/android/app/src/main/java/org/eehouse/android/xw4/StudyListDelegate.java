@@ -209,9 +209,7 @@ public class StudyListDelegate extends ListDelegateBase
             break;
         case SL_COPY_ACTION:
             selWords = getSelWords();
-            ClipboardManager clipboard = (ClipboardManager)
-                getSystemService( Context.CLIPBOARD_SERVICE );
-            clipboard.setText( TextUtils.join( "\n", selWords ) );
+            Utils.stringToClip( m_activity, TextUtils.join( "\n", selWords ) );
 
             String msg = getQuantityString( R.plurals.paste_done_fmt,
                                             selWords.length, selWords.length );
@@ -243,6 +241,7 @@ public class StudyListDelegate extends ListDelegateBase
     //////////////////////////////////////////////////
     // View.OnLongClickListener interface
     //////////////////////////////////////////////////
+    @Override
     public boolean onLongClick( View view )
     {
         boolean success = view instanceof SelectableItem.LongClickHandler;
@@ -255,6 +254,7 @@ public class StudyListDelegate extends ListDelegateBase
     //////////////////////////////////////////////////
     // View.OnClickListener interface
     //////////////////////////////////////////////////
+    @Override
     public void onClick( View view )
     {
         XWListItem item = (XWListItem)view;
@@ -265,12 +265,14 @@ public class StudyListDelegate extends ListDelegateBase
     //////////////////////////////////////////////////
     // SelectableItem interface
     //////////////////////////////////////////////////
+    @Override
     public void itemClicked( SelectableItem.LongClickHandler clicked,
                              GameSummary summary )
     {
         m_checkeds.add( ((XWListItem)clicked).getText() );
     }
 
+    @Override
     public void itemToggled( SelectableItem.LongClickHandler toggled,
                              boolean selected )
     {
@@ -283,6 +285,7 @@ public class StudyListDelegate extends ListDelegateBase
         setTitleBar();
     }
 
+    @Override
     public boolean getSelected( SelectableItem.LongClickHandler obj )
     {
         return m_checkeds.contains( ((XWListItem)obj).getText() );

@@ -1627,6 +1627,9 @@
     <!-- shown when something goes wrong building a filter -->
     <string name="alrt_bad_filter">Unable to apply filter.</string>
 
+    <!-- Text of toast after long-tap copy of word from wordlist browser -->
+    <string name="word_to_clip_fmt">Copied “%1$s”</string>
+
     <!-- Title of progress alert shown while wordlist is loading. For
          huge lists like Polish this can take a few seconds. -->
     <string name="filter_title_fmt">Loading %1$s…</string>
