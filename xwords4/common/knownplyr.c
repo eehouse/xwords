@@ -292,6 +292,27 @@ kplr_getAddr( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* name,
     return found;
 }
 
+const XP_UCHAR*
+kplr_nameForMqttDev( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* mqttDevID )
+{
+    const XP_UCHAR* name = NULL;
+    MQTTDevID devID;
+    if ( strToMQTTCDevID( mqttDevID, &devID ) ) {
+        KPState* state = loadState( dutil, xwe );
+        for ( KnownPlayer* kp = state->players; !!kp && !name; kp = kp->next ) {
+            const CommsAddrRec* addr = &kp->addr;
+            if ( addr_hasType( addr, COMMS_CONN_MQTT ) ) {
+                if ( 0 == XP_MEMCMP( &addr->u.mqtt.devID, &devID, sizeof(devID) ) ) {
+                    name = kp->name;
+                }
+            }
+        }
+        releaseState( dutil, xwe, state );
+    }
+    LOG_RETURNF( "%s", name );
+    return name;
+}
+
 static void
 freeKP( XW_DUtilCtxt* dutil, KnownPlayer* kp )
 {

@@ -833,6 +833,20 @@ Java_org_eehouse_android_xw4_jni_XwJNI_kplr_1getAddr
     DVC_HEADER_END();
     return jaddr;
 }
+
+JNIEXPORT jstring JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_kplr_1nameForMqttDev
+( JNIEnv* env, jclass C, jlong jniGlobalPtr, jstring jDevID )
+{
+    jstring result = NULL;
+    DVC_HEADER(jniGlobalPtr);
+    const char* devid = (*env)->GetStringUTFChars( env, jDevID, NULL );
+    const XP_UCHAR* name = kplr_nameForMqttDev( globalState->dutil, env, devid );
+    result = (*env)->NewStringUTF( env, name );
+    (*env)->ReleaseStringUTFChars( env, jDevID, devid );
+    DVC_HEADER_END();
+    return result;
+}
 #endif
 
 JNIEXPORT jbyteArray JNICALL

@@ -603,6 +603,15 @@ public class DBUtils {
                         msg = LocUtils.getString( context, R.string.invit_expl_relay_fmt,
                                                   timestamp );
                         break;
+                    case MQTT:
+                        String player = XwJNI.kplr_nameForMqttDev( target );
+                        if ( null != player ) {
+                            msg = LocUtils.getString( context,
+                                                      R.string.invit_expl_player_fmt,
+                                                      player, timestamp );
+                            break;
+                        }
+                        // else FALLTHRU
                     default:
                         msg = LocUtils.getString( context, R.string.invit_expl_notarget_fmt,
                                                   means.toString(), timestamp );

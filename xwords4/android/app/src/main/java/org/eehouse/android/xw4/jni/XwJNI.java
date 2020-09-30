@@ -204,6 +204,13 @@ public class XwJNI {
             : null;
     }
 
+    public static String kplr_nameForMqttDev( String mqttID )
+    {
+        return BuildConfig.HAVE_KNOWN_PLAYERS
+            ? kplr_nameForMqttDev( getJNI().m_ptrGlobals, mqttID )
+            : null;
+    }
+
     private static void cleanGlobals()
     {
         synchronized( XwJNI.class ) { // let's be safe here
@@ -724,6 +731,7 @@ public class XwJNI {
                                                      String newName );
     private static native void kplr_deletePlayer( long jniState, String player );
     private static native CommsAddrRec kplr_getAddr( long jniState, String name );
+    public static native String kplr_nameForMqttDev( long jniState, String mqttID );
 
     private static native void cleanGlobals( long jniState );
     private static native byte[] gi_to_stream( long jniState, CurGameInfo gi );
