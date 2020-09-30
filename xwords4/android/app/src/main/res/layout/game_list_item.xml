@@ -41,6 +41,14 @@
                        android:layout_height="30dp"
                        android:layout_centerInParent="true"
                        />
+            <ImageView android:id="@+id/game_checked"
+                       android:layout_width="30dp"
+                       android:layout_height="30dp"
+                       android:layout_centerInParent="true"
+                       android:src="@drawable/ic_check_circle"
+                       android:alpha="0.7"
+                       android:visibility="gone"
+                       />
             <ImageView android:id="@+id/has_chat_marker"
                        android:layout_width="wrap_content"
                        android:layout_height="22dp"

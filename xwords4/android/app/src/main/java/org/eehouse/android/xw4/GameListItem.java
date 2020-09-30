@@ -378,14 +378,9 @@ public class GameListItem extends LinearLayout
     private void setTypeIcon()
     {
         if ( null != m_summary ) { // to be safe
-            int iconID;
-            if ( m_selected ) {
-                iconID = R.drawable.ic_check_circle;
-            } else if ( m_summary.isMultiGame() ) {
-                iconID = R.drawable.ic_multigame;
-            } else {
-                iconID = R.drawable.ic_sologame;
-            }
+            int iconID = m_summary.isMultiGame()
+                ? R.drawable.ic_multigame
+                : R.drawable.ic_sologame;
             m_gameTypeImage.setImageResource( iconID );
         }
     }
@@ -396,7 +391,8 @@ public class GameListItem extends LinearLayout
         m_dsdel.showSelected( m_selected );
         m_cb.itemToggled( this, m_selected );
 
-        setTypeIcon();
+        findViewById(R.id.game_checked)
+            .setVisibility(m_selected ? View.VISIBLE: View.GONE );
     }
 
     private void makeThumbnailIf( boolean expanded )
