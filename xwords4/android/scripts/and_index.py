@@ -14,6 +14,13 @@ def printHead():
   <head>
     <link rel="stylesheet" type="text/css" href="/xw4mobile.css" />
     <title>CrossWords Invite redirect</title>
+       <style>
+          div.ex {
+             margin: 1em;
+             margin-top: 3em;
+             font-family:arial,helvetica;
+          }
+       </style>
   </head>
   <body>
 """
@@ -23,11 +30,11 @@ def printTail():
 
 def printAndroid(appName, params, scheme):
     return """
-<div>
+<div class="ex">
 
-<p>You just clicked a link in a {appName} invitation. You should not be
+<p>You just clicked a link in a {appName} invitation, but you should not be
 seeing this page!</p>
-
+<hr>
 <p>One of three things went wrong:</p>
 <ol>
     <li>You don't have {appName} installed</li>
@@ -50,6 +57,7 @@ seeing this page!</p>
     to launch {appName}</div>
  </ol>
 
+<hr>
 <p>Have fun. And as always, <a href="mailto:xwords@eehouse.org">let
 me know</a> if you have problems or suggestions.</p>
 </div>
