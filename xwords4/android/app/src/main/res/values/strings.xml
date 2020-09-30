@@ -514,6 +514,11 @@
     to another device on %1$s</string>
     <string name="invit_expl_notarget_fmt">Invite sent via %1$s on
     %2$s. Recipient unknown.</string>
+    <!-- In "more info" about sent invitations when mqtt used and
+         player is known. -->
+    <string name="invit_expl_player_fmt">Invite forwarded via MQTT/internet
+    to known player “%1$s” on %2$s.</string>
+
     <!-- Short for "points", this is shown at the right end of the
          tray in place of the first tile placed along with the points
          the current move would earn if committed. -->
