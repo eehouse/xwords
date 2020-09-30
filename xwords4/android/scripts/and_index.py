@@ -47,7 +47,7 @@ seeing this page!</p>
     <li>When you were asked to choose between a browser and {appName}
         you chose the browser</li>
 
-    <div><b>What to do:</b> click the invitation link again, and this time
+    <div><b>What to do:</b> Click the invitation link again, and this time
     choose {appName}</div>
 
     <li>You're on <em>Android 11</em>, where there appears to be a new
