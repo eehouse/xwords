@@ -23,8 +23,24 @@
 #include "knownplyr.h"
 #include "strutils.h"
 
+typedef struct _GtkPlayerState {
+    XW_DUtilCtxt* dutil;
+    const XP_UCHAR* name;
+} GtkPlayerState;
+
+static void
+on_delete_button( GtkWidget* XP_UNUSED(widget), void* closure )
+{
+    GtkPlayerState* ps = (GtkPlayerState*)closure;
+    XP_LOGFF( "name: %s", ps->name );
+
+    if ( KP_OK == kplr_deletePlayer( ps->dutil, NULL_XWE, ps->name ) ) {
+        gtk_main_quit();
+    }
+}
+
 static GtkWidget*
-makeForPlayer( XW_DUtilCtxt* dutil, const gchar* name )
+makeForPlayer( XW_DUtilCtxt* dutil, const gchar* name, void* closure )
 {
     GtkWidget* vbox = NULL;
 
@@ -41,6 +57,10 @@ makeForPlayer( XW_DUtilCtxt* dutil, const gchar* name )
             label = gtk_label_new( buf );
             gtk_box_pack_start( GTK_BOX(vbox), label, FALSE, TRUE, 0 );
         }
+
+        GtkWidget* button = gtk_button_new_with_label( "Delete" );
+        g_signal_connect( button, "clicked", G_CALLBACK(on_delete_button), closure );
+        gtk_box_pack_start( GTK_BOX(vbox), button, FALSE, TRUE, 0 );
     }
     
     return vbox;
@@ -51,8 +71,13 @@ showDialog( XW_DUtilCtxt* dutil, const XP_UCHAR* players[], int nFound )
 {
     GtkWidget* vbox = gtk_box_new( GTK_ORIENTATION_VERTICAL, 0 );
 
+    GtkPlayerState states[nFound];
+
     for ( int ii = 0; ii < nFound; ++ii ) {
-        GtkWidget* one = makeForPlayer( dutil, players[ii] );
+        GtkPlayerState* ps = &states[ii];
+        ps->name = players[ii];
+        ps->dutil = dutil;
+        GtkWidget* one = makeForPlayer( dutil, players[ii], ps );
         if ( !!one ) {
             gtk_box_pack_start( GTK_BOX(vbox), one, FALSE, TRUE, 0 );
         }
