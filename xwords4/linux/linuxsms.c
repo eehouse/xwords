@@ -331,13 +331,19 @@ linux_sms_send( LaunchParams* params, const XP_U8* buf,
                 XP_U16 buflen, const XP_UCHAR* msgNo, const XP_UCHAR* phone,
                 XP_U16 port, XP_U32 gameID )
 {
+    XP_S16 nSent = -1;
     LinSMSData* storage = getStorage( params );
-    XP_U16 waitSecs;
-    SMSMsgArray* arr = smsproto_prepOutbound( storage->protoState, NULL_XWE, DATA, gameID,
-                                              buf, buflen, phone, port,
-                                              XP_TRUE, &waitSecs );
-    sendOrRetry( params, arr, DATA, waitSecs, phone, port, gameID, msgNo );
-    return buflen;
+    if ( !!storage->protoState ) {
+        XP_U16 waitSecs;
+        SMSMsgArray* arr = smsproto_prepOutbound( storage->protoState, NULL_XWE, DATA, gameID,
+                                                  buf, buflen, phone, port,
+                                                  XP_TRUE, &waitSecs );
+        sendOrRetry( params, arr, DATA, waitSecs, phone, port, gameID, msgNo );
+        nSent = buflen;
+    } else {
+        XP_LOGFF( "dropping: sms not configured" );
+    }
+    return nSent;
 }
 
 typedef struct _RetryClosure {

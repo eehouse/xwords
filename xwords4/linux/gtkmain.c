@@ -749,7 +749,7 @@ gameFromInvite( GtkAppGlobals* apg, const NetLaunchInfo* invite,
 }
 
 void
-relayInviteReceivedGTK( void* closure, const NetLaunchInfo* invite )
+inviteReceivedGTK( void* closure, const NetLaunchInfo* invite )
 {
     GtkAppGlobals* apg = (GtkAppGlobals*)closure;
 
@@ -951,7 +951,7 @@ gtkmain( LaunchParams* params )
                 .msgNoticeReceived = gtkNoticeRcvd,
                 .devIDReceived = gtkDevIDReceived,
                 .msgErrorMsg = gtkErrorMsgRcvd,
-                .inviteReceived = relayInviteReceivedGTK,
+                .inviteReceived = inviteReceivedGTK,
             };
 
             relaycon_init( params, &procs, &apg, 

@@ -1407,7 +1407,7 @@ handle_invite_button( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
     XP_U32 relayDevID = 0;
     XP_Bool confirmed = gtkInviteDlg( globals, &inviteAddr, &nPlayers,
                                       &relayDevID );
-    XP_LOGF( "%s: inviteDlg => %s", __func__, boolToStr(confirmed) );
+    XP_LOGFF( "gtkInviteDlg() => %s", boolToStr(confirmed) );
 
     if ( confirmed ) {
         send_invites( cGlobals, nPlayers, relayDevID, NULL, &inviteAddr );
@@ -1417,25 +1417,25 @@ handle_invite_button( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
 static void
 send_invites( CommonGlobals* cGlobals, XP_U16 nPlayers,
               XP_U32 relayDevID, const XP_UCHAR* relayID,
-              const CommsAddrRec* addrs )
+              const CommsAddrRec* destAddr )
 {
-    CommsAddrRec addr = {0};
+    CommsAddrRec myAddr = {0};
     CommsCtxt* comms = cGlobals->game.comms;
     XP_ASSERT( comms );
-    comms_getAddr( comms, &addr );
+    comms_getAddr( comms, &myAddr );
 
     gint forceChannel = 1;  /* 1 is what Android does. Limits to two-device games */
 
-    NetLaunchInfo nli = {0};
-    nli_init( &nli, cGlobals->gi, &addr, nPlayers, forceChannel );
-    if ( addr_hasType( &addr, COMMS_CONN_RELAY ) ) {
+    NetLaunchInfo nli = {0};    /* include everything!!! */
+    nli_init( &nli, cGlobals->gi, &myAddr, nPlayers, forceChannel );
+    if ( addr_hasType( &myAddr, COMMS_CONN_RELAY ) ) {
         XP_UCHAR buf[32];
         snprintf( buf, sizeof(buf), "%X", makeRandomInt() );
-        nli_setInviteID( &nli, buf ); /* should not be relay only!!! */
+        nli_setInviteID( &nli, buf ); /* PENDING: should not be relay only!!! */
     }
     // nli_setDevID( &nli, linux_getDevIDRelay( cGlobals->params ) );
 
-    if ( addr_hasType( &addr, COMMS_CONN_MQTT ) ) {
+    if ( addr_hasType( &myAddr, COMMS_CONN_MQTT ) ) {
         const MQTTDevID* devid = mqttc_getDevID( cGlobals->params );
         nli_setMQTTDevID( &nli, devid );
     }
@@ -1452,12 +1452,12 @@ send_invites( CommonGlobals* cGlobals, XP_U16 nPlayers,
     }
 #endif
 
-    if ( !!addrs && '\0' != addrs->u.sms.phone[0] && 0 < addrs->u.sms.port ) {
+    if ( !!destAddr && '\0' != destAddr->u.sms.phone[0] && 0 < destAddr->u.sms.port ) {
         gchar gameName[64];
         snprintf( gameName, VSIZE(gameName), "Game %d", cGlobals->gi->gameID );
 
         linux_sms_invite( cGlobals->params, &nli,
-                          addrs->u.sms.phone, addrs->u.sms.port );
+                          destAddr->u.sms.phone, destAddr->u.sms.port );
     }
 
     if ( 0 != relayDevID || !!relayID ) {
@@ -1465,8 +1465,8 @@ send_invites( CommonGlobals* cGlobals, XP_U16 nPlayers,
         relaycon_invite( cGlobals->params, relayDevID, relayID, &nli );
     }
 
-    if ( addr_hasType( addrs, COMMS_CONN_MQTT ) ) {
-        mqttc_invite( cGlobals->params, &nli, &addrs->u.mqtt.devID );
+    if ( addr_hasType( destAddr, COMMS_CONN_MQTT ) ) {
+        mqttc_invite( cGlobals->params, &nli, &destAddr->u.mqtt.devID );
     }
 
     /* while ( gtkaskm( "Invite how many and how?", infos, VSIZE(infos) ) ) {  */

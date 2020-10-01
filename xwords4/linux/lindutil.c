@@ -94,7 +94,7 @@ linux_dutil_onInviteReceived( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe),
         nli_makeAddrRec( nli, &addr );
         inviteReceivedCurses( params->appGlobals, nli, &addr );
     } else {
-        relayInviteReceivedGTK( params->appGlobals, nli );
+        inviteReceivedGTK( params->appGlobals, nli );
     }
 }
 
