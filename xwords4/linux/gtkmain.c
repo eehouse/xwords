@@ -33,6 +33,7 @@
 #include "linuxsms.h"
 #include "gtkask.h"
 #include "device.h"
+#include "gtkkpdlg.h"
 
 static void onNewData( GtkAppGlobals* apg, sqlite3_int64 rowid, 
                        XP_Bool isNew );
@@ -551,6 +552,12 @@ handle_movescheck( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* apg )
 }
 
 static void
+handle_known_players( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* apg )
+{
+    gtkkp_show( apg );
+}
+
+static void
 handle_relayid_to_clip( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* apg )
 {
     LaunchParams* params = apg->cag.params;
@@ -596,7 +603,9 @@ makeGamesWindow( GtkAppGlobals* apg )
 
     // add menubar here
     GtkWidget* menubar = gtk_menu_bar_new();
-    GtkWidget* netMenu = makeAddSubmenu( menubar, "Network" );
+    GtkWidget* netMenu = makeAddSubmenu( menubar, "Menu" );
+    (void)createAddItem( netMenu, "Known Players",
+                         (GCallback)handle_known_players, apg );
     if ( params->useHTTP ) {
         (void)createAddItem( netMenu, "Check for moves",
                              (GCallback)handle_movescheck, apg );

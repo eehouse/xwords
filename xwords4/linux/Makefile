@@ -208,7 +208,9 @@ GTK_OBJS = \
 	$(BUILD_PLAT_DIR)/gtkutils.o \
 	$(BUILD_PLAT_DIR)/gtkntilesask.o \
 	$(BUILD_PLAT_DIR)/gtkaskdict.o \
-	$(BUILD_PLAT_DIR)/gtkchat.o
+	$(BUILD_PLAT_DIR)/gtkchat.o \
+	$(BUILD_PLAT_DIR)/gtkkpdlg.o \
+
 endif
 ifdef DO_CURSES
 CURSES_OBJS = \
