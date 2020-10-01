@@ -23,8 +23,16 @@
 #include "knownplyr.h"
 #include "strutils.h"
 
-typedef struct _GtkPlayerState {
+typedef struct _GtkPlayerDlgState {
     XW_DUtilCtxt* dutil;
+    GtkWidget* dialog;
+    gulong handlerID;
+    GtkWidget* grid;
+    int curRow;
+} GtkPlayerDlgState;
+
+typedef struct _GtkPlayerState {
+    GtkPlayerDlgState* dlgState;
     const XP_UCHAR* name;
 } GtkPlayerState;
 
@@ -32,61 +40,95 @@ static void
 on_delete_button( GtkWidget* XP_UNUSED(widget), void* closure )
 {
     GtkPlayerState* ps = (GtkPlayerState*)closure;
+    GtkPlayerDlgState* dlgState = ps->dlgState;
     XP_LOGFF( "name: %s", ps->name );
 
-    if ( KP_OK == kplr_deletePlayer( ps->dutil, NULL_XWE, ps->name ) ) {
+    if ( KP_OK == kplr_deletePlayer( dlgState->dutil, NULL_XWE, ps->name ) ) {
+        g_signal_handler_disconnect( dlgState->dialog, dlgState->handlerID );
         gtk_main_quit();
     }
 }
 
-static GtkWidget*
-makeForPlayer( XW_DUtilCtxt* dutil, const gchar* name, void* closure )
+static void
+addForPlayer( GtkPlayerState* ps )
 {
-    GtkWidget* vbox = NULL;
+    GtkWidget* grid = ps->dlgState->grid;
+    gtk_grid_set_row_spacing( GTK_GRID(grid), 10 );
+    gtk_grid_set_column_spacing( GTK_GRID(grid), 10 );
+
+    GtkPlayerDlgState* dlgState = ps->dlgState;
 
     CommsAddrRec addr;
-    if ( kplr_getAddr( dutil, NULL_XWE, name, &addr ) ) {
-        vbox = gtk_box_new( GTK_ORIENTATION_VERTICAL, 0 );
-        
-        GtkWidget* label = gtk_label_new( name );
-        gtk_box_pack_start( GTK_BOX(vbox), label, FALSE, TRUE, 0 );
+    if ( kplr_getAddr( ps->dlgState->dutil, NULL_XWE, ps->name, &addr ) ) {
+        int curRow = dlgState->curRow++;
 
-        if ( addr_hasType( &addr, COMMS_CONN_MQTT ) ) {
-            XP_UCHAR buf[32];
-            formatMQTTDevID( &addr.u.mqtt.devID, buf, VSIZE(buf) );
-            label = gtk_label_new( buf );
-            gtk_box_pack_start( GTK_BOX(vbox), label, FALSE, TRUE, 0 );
+        GtkWidget* vbox = gtk_box_new( GTK_ORIENTATION_VERTICAL, 0 );
+        
+        GtkWidget* label = gtk_label_new( ps->name );
+        gtk_grid_attach( GTK_GRID(grid), label, 0, curRow, 1, 1 );
+
+        CommsConnType typ;
+        for ( XP_U32 state = 0; addr_iter( &addr, &typ, &state ); ) {
+            GtkWidget* line = NULL;
+            if ( COMMS_CONN_MQTT == typ ) {
+                XP_UCHAR tmp[32];
+                formatMQTTDevID( &addr.u.mqtt.devID, tmp, VSIZE(tmp) );
+                XP_UCHAR buf[64];
+                XP_SNPRINTF( buf, VSIZE(buf), "MQTT: %s", tmp );
+                line = gtk_label_new( buf );
+            } else if ( COMMS_CONN_SMS == typ ) {
+                XP_UCHAR buf[64];
+                XP_SNPRINTF( buf, VSIZE(buf), "SMS: %s", addr.u.sms.phone );
+                line = gtk_label_new( buf );
+            } else {
+                const char* str = ConnType2Str( typ );
+                line = gtk_label_new( str );
+            }
+            if ( !!line ) {
+                gtk_box_pack_start( GTK_BOX(vbox), line, FALSE, TRUE, 0 );
+            }
         }
 
+        gtk_grid_attach( GTK_GRID(grid), vbox, 1, curRow, 1, 1 );
+
         GtkWidget* button = gtk_button_new_with_label( "Delete" );
-        g_signal_connect( button, "clicked", G_CALLBACK(on_delete_button), closure );
-        gtk_box_pack_start( GTK_BOX(vbox), button, FALSE, TRUE, 0 );
+        g_signal_connect( button, "clicked", G_CALLBACK(on_delete_button), ps );
+        gtk_grid_attach( GTK_GRID(grid), button, 2, curRow, 1, 1 );
     }
-    
-    return vbox;
 }
 
 static void
-showDialog( XW_DUtilCtxt* dutil, const XP_UCHAR* players[], int nFound )
+showDialog( XW_DUtilCtxt* dutil, GtkWindow* parent,
+            const XP_UCHAR* players[], int nFound )
 {
-    GtkWidget* vbox = gtk_box_new( GTK_ORIENTATION_VERTICAL, 0 );
-
+    GtkWidget* dialog = gtk_dialog_new();
+    GtkWidget* grid = gtk_grid_new();
+    GtkPlayerDlgState pds = { .dutil = dutil,
+                              .grid = grid,
+                              .dialog = dialog,
+    };
     GtkPlayerState states[nFound];
 
-    for ( int ii = 0; ii < nFound; ++ii ) {
+    XP_ASSERT( 0 < nFound );
+    for ( int ii = 0; ; ) {
         GtkPlayerState* ps = &states[ii];
         ps->name = players[ii];
-        ps->dutil = dutil;
-        GtkWidget* one = makeForPlayer( dutil, players[ii], ps );
-        if ( !!one ) {
-            gtk_box_pack_start( GTK_BOX(vbox), one, FALSE, TRUE, 0 );
+        ps->dlgState = &pds;
+        addForPlayer( ps );
+
+        if ( ++ii == nFound ) {
+            break;
         }
+
+        GtkWidget* sep = gtk_separator_new( GTK_ORIENTATION_HORIZONTAL );
+        gtk_grid_attach( GTK_GRID(grid), sep, 0, pds.curRow++, 3, 1 );
     }
 
-    GtkWidget* dialog = gtk_dialog_new();
+    gtk_window_set_transient_for( GTK_WINDOW(dialog), GTK_WINDOW(parent));
     gtk_window_set_modal( GTK_WINDOW( dialog ), TRUE );
+    pds.handlerID = g_signal_connect( G_OBJECT(dialog), "destroy", gtk_main_quit, NULL );
     gtk_container_add( GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
-                       vbox );
+                       grid );
 
     gtk_widget_show_all( dialog );
     gtk_main();
@@ -94,7 +136,7 @@ showDialog( XW_DUtilCtxt* dutil, const XP_UCHAR* players[], int nFound )
 }
 
 void
-gtkkp_show( GtkAppGlobals* apg )
+gtkkp_show( GtkAppGlobals* apg, GtkWindow* parent )
 {
     XW_DUtilCtxt* dutil = apg->cag.params->dutil;
 
@@ -108,8 +150,9 @@ gtkkp_show( GtkAppGlobals* apg )
     }
 
     if ( 0 < nFound ) {
-        showDialog( dutil, players, nFound );
+        showDialog( dutil, parent, players, nFound );
     }
+    LOG_RETURN_VOID();
 }
 
 #endif

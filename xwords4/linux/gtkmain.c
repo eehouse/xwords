@@ -554,7 +554,7 @@ handle_movescheck( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* apg )
 static void
 handle_known_players( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* apg )
 {
-    gtkkp_show( apg );
+    gtkkp_show( apg, GTK_WINDOW(apg->window) );
 }
 
 static void

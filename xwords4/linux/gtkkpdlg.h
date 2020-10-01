@@ -23,7 +23,7 @@
 
 #include "main.h"
 
-void gtkkp_show( GtkAppGlobals* apg );
+void gtkkp_show( GtkAppGlobals* apg, GtkWindow *window );
 
 
 # endif
