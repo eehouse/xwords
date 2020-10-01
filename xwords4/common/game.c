@@ -365,14 +365,6 @@ game_saveToStream( const XWGame* game, XWEnv xwe, const CurGameInfo* gi,
 
     if ( !!game ) {
         const XP_U32 created = game->created;
-#ifdef XWFEATURE_KNOWNPLAYERS
-        if ( !!game->comms
-             && 0 != created
-             && server_getGameIsConnected( game->server ) ) {
-            comms_gatherPlayers( game->comms, xwe, created );
-        }
-#endif
-
         stream_putU32( stream, created );
         XP_ASSERT( 0 != saveToken );
 
@@ -463,6 +455,14 @@ game_getIsServer( const XWGame* game )
 void
 game_dispose( XWGame* game, XWEnv xwe )
 {
+#ifdef XWFEATURE_KNOWNPLAYERS
+    const XP_U32 created = game->created;
+    if ( !!game->comms && 0 != created
+         && server_getGameIsConnected( game->server ) ) {
+        comms_gatherPlayers( game->comms, xwe, created );
+    }
+#endif
+
     /* The board should be reused!!! PENDING(ehouse) */
     if ( !!game->board ) {
         board_destroy( game->board, xwe, XP_TRUE );
