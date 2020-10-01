@@ -64,6 +64,8 @@ static KPState*
 loadState( XW_DUtilCtxt* dutil, XWEnv xwe )
 {
     LOG_FUNC();
+    pthread_mutex_lock( &dutil->kpMutex );
+
     KPState* state = (KPState*)dutil->kpCtxt;
     if ( NULL == state ) {
         dutil->kpCtxt = state = XP_CALLOC( dutil->mpool, sizeof(*state) );
@@ -107,6 +109,8 @@ releaseState( XW_DUtilCtxt* dutil, XWEnv xwe, KPState* state )
     XP_ASSERT( state->inUse );
     saveState( dutil, xwe, state );
     state->inUse = XP_FALSE;
+
+    pthread_mutex_unlock( &dutil->kpMutex );
 }
 
 static const XP_UCHAR*

@@ -86,6 +86,7 @@ COMMON_SRC_FILES +=        \
 	$(COMMON_PATH)/dbgutil.c    \
 	$(COMMON_PATH)/nli.c    	\
 	$(COMMON_PATH)/smsproto.c  	\
+	$(COMMON_PATH)/dutil.c  	\
 	$(COMMON_PATH)/device.c  	\
 	$(COMMON_PATH)/knownplyr.c  \
 

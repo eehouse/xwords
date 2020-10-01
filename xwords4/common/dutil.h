@@ -84,10 +84,15 @@ struct XW_DUtilCtxt {
     DUtilVtable vtable;
     void* closure;
     void* devCtxt;              /* owned by device.c */
-    void* kpCtxt;               /* owned by knownplyr.c */
+#ifdef XWFEATURE_KNOWNPLAYERS   /* owned by knownplyr.c */
+    void* kpCtxt;
+    pthread_mutex_t kpMutex;
+#endif
     VTableMgr* vtMgr;
     MPSLOT
 };
+
+void dutil_super_init( MPFORMAL XW_DUtilCtxt* dutil );
 
 /* This one cheats: direct access */
 #define dutil_getVTManager(duc) (duc)->vtMgr

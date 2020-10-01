@@ -133,6 +133,9 @@ XW_DUtilCtxt*
 dutils_init( MPFORMAL VTableMgr* vtMgr, void* closure )
 {
     XW_DUtilCtxt* result = XP_CALLOC( mpool, sizeof(*result) );
+
+    dutil_super_init( MPPARM(mpool) result );
+
     result->vtMgr = vtMgr;
     result->closure = closure;
 
@@ -170,7 +173,6 @@ dutils_init( MPFORMAL VTableMgr* vtMgr, void* closure )
 
     assertTableFull( &result->vtable, sizeof(result->vtable), "lindutil" );
 
-    MPASSIGN( result->mpool, mpool );
     return result;
 }
 

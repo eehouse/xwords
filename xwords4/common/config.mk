@@ -49,6 +49,7 @@ COMMONSRC = \
 	$(COMMONDIR)/dictmgr.c \
 	$(COMMONDIR)/dbgutil.c \
 	$(COMMONDIR)/smsproto.c \
+	$(COMMONDIR)/dutil.c \
 	$(COMMONDIR)/device.c \
 
 # PENDING: define this in terms of above!!!
@@ -88,6 +89,7 @@ COMMON5 = \
 	$(COMMONOBJDIR)/dictmgr.o \
 	$(COMMONOBJDIR)/dbgutil.o \
 	$(COMMONOBJDIR)/smsproto.o \
+	$(COMMONOBJDIR)/dutil.o \
 	$(COMMONOBJDIR)/device.o \
 	$(COMMONOBJDIR)/knownplyr.o \
 

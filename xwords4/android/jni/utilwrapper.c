@@ -1006,6 +1006,7 @@ makeDUtil( MPFORMAL JNIEnv* env,
            JNIUtilCtxt* jniutil, void* closure )
 {
     AndDUtil* dutil = (AndDUtil*)XP_CALLOC( mpool, sizeof(*dutil) );
+    dutil_super_init( MPPARM(mpool) &dutil->dutil );
 #ifdef MAP_THREAD_TO_ENV
     dutil->ti = ti;
 #endif
@@ -1016,8 +1017,6 @@ makeDUtil( MPFORMAL JNIEnv* env,
     if ( NULL != jdutil ) {
         dutil->jdutil = (*env)->NewGlobalRef( env, jdutil );
     }
-
-    MPASSIGN( dutil->dutil.mpool, mpool );
 
     DUtilVtable* vtable = &dutil->dutil.vtable;
 #define SET_DPROC(nam) vtable->m_dutil_##nam = and_dutil_##nam
