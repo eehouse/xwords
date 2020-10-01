@@ -74,7 +74,7 @@
     <!-- Brings up the Wordlists (formerly Dictionaries) screen -->
     <string name="gamel_menu_dicts">Listas de palavras</string>
     <!-- text of menu that brings up the Settings (preferences) dialog -->
-    <string name="menu_prefs">Configurações</string>
+    <string name="menu_prefs">Configurações da app…</string>
     <!-- Regardless of the setting of the connect_frequency
          preference, checks the relay immediately for any moves for
          networked games on this device and posts a notification if
@@ -105,7 +105,7 @@
     <!-- pulls up dialog to change the group of the selected game -->
     <string name="list_item_move">Mover para grupo...</string>
     <!-- pulls up dialog to delete the selected game -->
-    <string name="list_item_delete">Excluir</string>
+    <string name="list_item_delete">Apagar o jogo</string>
     <!-- pulls up dialog to reset the selected game, that is to remove
          all moves so that it's the same as a newly created game
          except for any configuration. -->
@@ -1672,8 +1672,8 @@
     <string name="square_tiles_summary">Mesmo se puderem ser mais altas</string>
     <string name="rename_label_caveat">Altere o nome deste jogo (apenas neste dispositivo) para:</string>
     <plurals name="confirm_seldeletes_fmt">
-        <item quantity="one">Você tem certeza que deseja excluir o 1 jogo selecionado? Esta ação não poderá ser desfeita.</item>
-        <item quantity="other">Você tem certeza que deseja excluir os %1$d jogos selecionados? Esta ação não poderá ser desfeita.</item>
+        <item quantity="one">Tem certeza que deseja apagar o 1 jogo selecionado\? Esta ação não poderá ser desfeita.</item>
+        <item quantity="other">Tem certeza que deseja apagar os %1$d jogos selecionados\? Esta ação não poderá ser desfeita.</item>
     </plurals>
     <plurals name="confirm_reset_fmt">
         <item quantity="one">Você tem certeza de que deseja redefinir o 1 jogo selecionado?\n\n(Redefinir apaga todos os movimentos e as informações de conexão.)</item>
