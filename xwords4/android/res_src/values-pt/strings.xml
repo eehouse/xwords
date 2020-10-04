@@ -57,7 +57,7 @@
          list_item_delete contextual menu, you are asked to confirm.
          This is the text of the first button ("Cancel" is the
          second).  -->
-    <string name="button_delete">Excluir</string>
+    <string name="button_delete">Apagar</string>
     <!-- When you select the list_item_reset contextual menu, you are
           asked to confirm.  This is the text of the first button
           ("Cancel" is the second).  -->
