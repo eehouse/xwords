@@ -45,7 +45,6 @@ public class XWApp extends Application
     implements LifecycleObserver, NBSProxy.Callbacks {
     private static final String TAG = XWApp.class.getSimpleName();
 
-    public static final boolean BTSUPPORTED = true;
     public static final boolean DEBUG_EXP_TIMERS = false;
     public static final boolean LOCUTILS_ENABLED = false;
     public static final boolean CONTEXT_MENUS_ENABLED = true;

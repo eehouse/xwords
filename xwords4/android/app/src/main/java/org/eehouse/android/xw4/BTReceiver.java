@@ -32,29 +32,27 @@ public class BTReceiver extends BroadcastReceiver {
     @Override
     public void onReceive( Context context, Intent intent )
     {
-        if ( XWApp.BTSUPPORTED ) {
-            String action = intent.getAction();
-            Log.d( TAG, "BTReceiver.onReceive(action=%s, intent=%s)",
-                   action, intent.toString() );
+        String action = intent.getAction();
+        Log.d( TAG, "BTReceiver.onReceive(action=%s, intent=%s)",
+               action, intent.toString() );
 
-            switch (action ) {
-            case BluetoothDevice.ACTION_ACL_CONNECTED:
-                BTService.onACLConnected( context );
+        switch (action ) {
+        case BluetoothDevice.ACTION_ACL_CONNECTED:
+            BTService.onACLConnected( context );
+            break;
+        case BluetoothAdapter.ACTION_STATE_CHANGED:
+            int newState =
+                intent.getIntExtra( BluetoothAdapter.EXTRA_STATE, -1 );
+            switch ( newState ) {
+            case BluetoothAdapter.STATE_OFF:
+                BTService.radioChanged( context, false );
                 break;
-            case BluetoothAdapter.ACTION_STATE_CHANGED:
-                int newState =
-                    intent.getIntExtra( BluetoothAdapter.EXTRA_STATE, -1 );
-                switch ( newState ) {
-                case BluetoothAdapter.STATE_OFF:
-                    BTService.radioChanged( context, false );
-                    break;
-                case BluetoothAdapter.STATE_ON:
-                    BTService.radioChanged( context, true );
-                    break;
-                case BluetoothAdapter.STATE_TURNING_ON:
-                case BluetoothAdapter.STATE_TURNING_OFF:
-                    break;
-                }
+            case BluetoothAdapter.STATE_ON:
+                BTService.radioChanged( context, true );
+                break;
+            case BluetoothAdapter.STATE_TURNING_ON:
+            case BluetoothAdapter.STATE_TURNING_OFF:
+                break;
             }
         }
     }

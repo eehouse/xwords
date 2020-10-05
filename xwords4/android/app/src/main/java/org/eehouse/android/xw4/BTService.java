@@ -346,8 +346,7 @@ public class BTService extends XWJIService {
         m_btMsgSink = new BTMsgSink();
         mHandler = new Handler();
 
-        BluetoothAdapter adapter = XWApp.BTSUPPORTED
-            ? BluetoothAdapter.getDefaultAdapter() : null;
+        BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
         if ( null != adapter && adapter.isEnabled() ) {
             m_adapter = adapter;
             Log.i( TAG, "onCreate(); bt name = %s; bt addr = %s",
