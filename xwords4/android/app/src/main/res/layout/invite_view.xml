@@ -52,7 +52,21 @@
       <RadioGroup android:id="@+id/group_how"
                   android:layout_width="match_parent"
                   android:layout_height="wrap_content"
-                  />
+                  >
+
+        <!-- RadioButtons will be inserted above this item. -->
+        <TextView android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:text="@string/qrcode_invite_summary"
+                  android:textAppearance="?android:attr/textAppearanceMedium"
+                  android:padding="5dp"
+            />
+        <ImageView android:id="@+id/qr_view"
+                   android:layout_width="wrap_content"
+                   android:layout_height="wrap_content"
+                   android:layout_gravity="center_horizontal"
+                   />
+      </RadioGroup>
       <TextView android:id="@+id/who_empty"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

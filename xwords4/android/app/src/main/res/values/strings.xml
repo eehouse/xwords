@@ -1039,6 +1039,9 @@
     <string name="radio_who">Who?</string>
     <!-- Text shown only when there are not any previous opponents to invite -->
     <string name="invite_who_empty_expl">empty expl</string>
+    <!-- Shown above QR code in the how-to-invite dialog -->
+    <string name="qrcode_invite_summary">Or just have your opponent scan this QRCode</string>
+
     <!-- Radio button in invite choices dialog for list ways to send an invitation -->
     <string name="radio_how">How?</string>
     <!-- Button, on DEBUG builds only, causes invitee players to be robots -->

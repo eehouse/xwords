@@ -55,12 +55,16 @@ public class InviteChoicesAlert extends DlgDelegateAlert
     {
         ArrayList<InviteMeans> means = new ArrayList<>();
         InviteMeans lastMeans = null;
+        NetLaunchInfo nli = null;
         Object[] params = state.getParams();
-        if ( null != params
-             && params[0] instanceof SentInvitesInfo ) {
-            lastMeans = ((SentInvitesInfo)params[0]).getLastMeans();
+        if ( null != params ) {
+            if ( 0 < params.length && params[0] instanceof SentInvitesInfo ) {
+                lastMeans = ((SentInvitesInfo)params[0]).getLastMeans();
+            }
+            if ( 1 < params.length && params[1] instanceof NetLaunchInfo ) {
+                nli = (NetLaunchInfo)params[1];
+            }
         }
-
         means.add( InviteMeans.EMAIL );
         means.add( InviteMeans.SMS_USER );
 
@@ -129,7 +133,9 @@ public class InviteChoicesAlert extends DlgDelegateAlert
 
         String[] players = XwJNI.kplr_getPlayers();
         inviteView.setChoices( means, lastSelMeans, players )
-            .setCallbacks( this );
+            .setNli( nli )
+            .setCallbacks( this )
+            ;
 
         if ( false && BuildConfig.DEBUG ) {
             OnClickListener ocl = new OnClickListener() {

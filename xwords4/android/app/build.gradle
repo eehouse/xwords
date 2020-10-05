@@ -333,6 +333,8 @@ dependencies {
     implementation 'com.github.eehouse:nbsproxy:v0.2.2'
 
     implementation "org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.1.+"
+
+    implementation 'com.google.zxing:core:3.3.+'
 }
 
 task mkImages(type: Exec) {

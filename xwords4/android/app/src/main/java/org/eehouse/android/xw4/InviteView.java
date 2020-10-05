@@ -20,8 +20,11 @@
 package org.eehouse.android.xw4;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.util.AttributeSet;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.ScrollView;
@@ -29,6 +32,11 @@ import android.widget.ScrollView;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.MultiFormatWriter;
+import com.google.zxing.WriterException;
+import com.google.zxing.common.BitMatrix;
 
 import org.eehouse.android.xw4.DlgDelegate.DlgClickNotify.InviteMeans;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
@@ -38,6 +46,7 @@ public class InviteView extends ScrollView
     implements RadioGroup.OnCheckedChangeListener {
 
     private static final String TAG = InviteView.class.getSimpleName();
+    private static final int QRCODE_SIZE = 512;
     
     public interface ItemClicked {
         public void meansClicked( InviteMeans means );
@@ -79,7 +88,9 @@ public class InviteView extends ScrollView
             RadioButton button = (RadioButton)LocUtils
                 .inflate( context, R.layout.invite_radio );
             button.setText( LocUtils.getString( context, means.getUserDescID() ) );
-            mGroupHow.addView( button );
+            // -2: place before QR code and its explanatory text
+            int where = mGroupHow.getChildCount() - 2;
+            mGroupHow.addView( button, where );
             mHowMeans.put( button, means );
         }
 
@@ -100,6 +111,14 @@ public class InviteView extends ScrollView
         return this;
     }
 
+    public InviteView setNli( NetLaunchInfo nli )
+    {
+        if ( null != nli ) {
+            startQRCodeThread( nli );
+        }
+        return this;
+    }
+
     public InviteView setCallbacks( ItemClicked procs ) {
         mProcs = procs;
         return this;
@@ -117,7 +136,6 @@ public class InviteView extends ScrollView
                 result = mHowMeans.get(checked);
             }
         }
-        Log.d( TAG, "getChoice() => %s", result );
         return result;
     }
 
@@ -162,5 +180,38 @@ public class InviteView extends ScrollView
         boolean showEmpty = mIsWho && 0 == mWhoPlayers.size();
         findViewById( R.id.who_empty )
             .setVisibility( showEmpty ? View.VISIBLE : View.INVISIBLE );
+    }
+
+    private void startQRCodeThread( NetLaunchInfo nli )
+    {
+        final String url = nli.makeLaunchUri( getContext() ).toString();
+        new Thread( new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        MultiFormatWriter multiFormatWriter = new MultiFormatWriter();
+                        BitMatrix bitMatrix = multiFormatWriter.encode( url, BarcodeFormat.QR_CODE,
+                                                                        QRCODE_SIZE, QRCODE_SIZE );
+                        final Bitmap bitmap = Bitmap.createBitmap( QRCODE_SIZE, QRCODE_SIZE,
+                                                                   Bitmap.Config.ARGB_8888 );
+                        for ( int ii = 0; ii < QRCODE_SIZE; ++ii ) {
+                            for ( int jj = 0; jj < QRCODE_SIZE; ++jj ) {
+                                bitmap.setPixel( ii, jj, bitMatrix.get(ii, jj)
+                                                 ? Color.BLACK : Color.WHITE );
+                            }
+                        }
+
+                        post( new Runnable() {
+                                @Override
+                                public void run() {
+                                    ImageView iv = (ImageView)findViewById( R.id.qr_view );
+                                    iv.setImageBitmap( bitmap );
+                                }
+                            } );
+                    } catch ( WriterException we ) {
+                        Log.ex( TAG, we );
+                    }
+                }
+            } ).start();
     }
 }

@@ -821,7 +821,8 @@ public class BoardDelegate extends DelegateBase
     private void showInviteChoicesThen( Object[] params )
     {
         SentInvitesInfo info = (SentInvitesInfo)params[0];
-        showInviteChoicesThen( Action.LAUNCH_INVITE_ACTION, info );
+        NetLaunchInfo nli = nliForMe();
+        showInviteChoicesThen( Action.LAUNCH_INVITE_ACTION, info, nli );
     }
 
     @Override

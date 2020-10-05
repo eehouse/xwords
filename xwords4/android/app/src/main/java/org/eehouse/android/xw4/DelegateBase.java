@@ -595,9 +595,10 @@ public class DelegateBase implements DlgClickNotify,
     }
 
     protected void showInviteChoicesThen( Action action,
-                                          DBUtils.SentInvitesInfo info )
+                                          DBUtils.SentInvitesInfo info,
+                                          NetLaunchInfo nli)
     {
-        m_dlgDelegate.showInviteChoicesThen( action, info );
+        m_dlgDelegate.showInviteChoicesThen( action, info, nli );
     }
 
     public Builder makeOkOnlyBuilder( int msgID )
