@@ -2553,6 +2553,8 @@ public class BoardDelegate extends DelegateBase
         runOnUiThread( new Runnable() {
                 @Override
                 public void run() {
+                    InviteChoicesAlert.dismissAny();
+
                     if ( m_relayMissing && connected ) {
                         m_relayMissing = false;
                     }

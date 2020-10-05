@@ -26,6 +26,7 @@ import android.content.DialogInterface;
 import android.widget.Button;
 import android.widget.RadioGroup;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -40,14 +41,35 @@ import org.eehouse.android.xw4.loc.LocUtils;
 public class InviteChoicesAlert extends DlgDelegateAlert
     implements InviteView.ItemClicked  {
 
+    private static WeakReference<InviteChoicesAlert> sSelf;
+
     public static InviteChoicesAlert newInstance( DlgState state )
     {
         InviteChoicesAlert result = new InviteChoicesAlert();
         result.addStateArgument( state );
+        sSelf = new WeakReference<>(result);
         return result;
+    }
+
+    public static void dismissAny()
+    {
+        WeakReference<InviteChoicesAlert> ref = sSelf;
+        if ( null != ref ) {
+            InviteChoicesAlert self = ref.get();
+            if ( null != self ) {
+                self.dismiss();
+            }
+        }
     }
     
     public InviteChoicesAlert() {}
+
+    @Override
+    public void onDestroy()
+    {
+        sSelf = null;
+        super.onDestroy();
+    }
 
     @Override
     public void populateBuilder( final Context context, final DlgState state,
