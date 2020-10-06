@@ -965,10 +965,6 @@
     <!-- explanation of the above -->
     <string name="network_behavior_summary">Settings that apply to
         networked games</string>
-    <string name="relay_behavior">Relay play settings</string>
-    <!-- explanation of the above -->
-    <string name="relay_behavior_summary">Settings that apply to
-    internet-connected games </string>
     <string name="disable_relay">Disable play via the relay </string>
     <string name="disable_relay_summary">Disable all internet communication</string>
     <!--       
@@ -1040,7 +1036,9 @@
     <!-- Text shown only when there are not any previous opponents to invite -->
     <string name="invite_who_empty_expl">empty expl</string>
     <!-- Shown above QR code in the how-to-invite dialog -->
-    <string name="qrcode_invite_summary">Or just have your opponent scan this QRCode</string>
+    <string name="qrcode_invite_summary">QRCode your opponent can scan</string>
+    <!-- Shown in the middle of the invite-how radio buttons -->
+    <string name="local_invite_summary">If your opponent is nearby…</string>
 
     <!-- Radio button in invite choices dialog for list ways to send an invitation -->
     <string name="radio_how">How?</string>
@@ -1734,19 +1732,12 @@
     <!--  -->
     <string name="button_sms_add">Import contact</string>
     <!--  -->
-    <string name="button_relay_add">Scan games</string>
-    <!--  -->
     <plurals name="invite_sms_desc_fmt">
         <item quantity="one">Please check the phone number you want to
       invite to your new game, then tap “%2$s”.</item>
         <item quantity="other">Please check the %1$d phone numbers you
       want to invite to your new game, then tap “%2$s”.</item>
     </plurals>
-    <!-- Appears near top of invitation phone number picker when it's
-         the user-visible SMS case -->
-    <string name="invite_sms_desc">Your SMS messaging app will then be
-    launched with a message for you to send to the phone number
-    you’ve selected.</string>
     <!-- Appears near top of invitation phone number picker when it's
          the user-invisible Data SMS case -->
     <string name="invite_nbs_desc">A data message will then be
@@ -1784,17 +1775,11 @@
     <string name="empty_p2p_inviter">There are currently no devices
     reachable via WiFiDirect that have CrossWords installed.</string>
     <!--  -->
-    <string name="empty_relay_inviter">This list of devices is
-    empty. Use the “Scan games” button to scan your old games
-    for opponents. Use the “+” button to enter device IDs directly.</string>
-    <!--  -->
     <string name="get_sms_title">Manual entry</string>
     <string name="get_sms_number">Device phone number:</string>
     <string name="get_sms_name">Contact name (optional):</string>
-    <string name="get_relay_name">Device name (optional):</string>
     <!-- hint text in password-setting text area -->
     <string name="password_hint">(Optional)</string>
-    <string name="get_relay_number">Enter device ID:</string>
     <!--  -->
     <plurals name="confirm_clear_sms_fmt">
         <item quantity="one">Are you sure you want to delete the checked
@@ -2318,7 +2303,6 @@
     <string name="radio_name_tablet">Tablet/no radio</string>
     <string name="radio_name_gsm">GSM</string>
     <string name="radio_name_cdma">CDMA</string>
-    <string name="nfc_to_self">Send via NFC to self?</string>
     <string name="game_summary_field_rowid">rowid</string>
     <string name="game_summary_field_gameid">gameid</string>
     <string name="game_summary_field_npackets">Pending packet count</string>
@@ -2396,8 +2380,6 @@
     <string name="confirm_clear_chat">Are you sure you want to delete
   all chat history for this game?\n\n(This action cannot be
   undone.)</string>
-    <string name="rel_invite_title">Relay invite title</string>
-    <string name="fetching_from_relay">Fetching games from relay</string>
     <string name="processing_games">Processing games</string>
     <string name="list_item_select">Select</string>
     <string name="list_item_deselect">De-select</string>

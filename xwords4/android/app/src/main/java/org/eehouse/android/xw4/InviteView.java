@@ -83,13 +83,16 @@ public class InviteView extends ScrollView
 
         mGroupHow = (RadioGroup)findViewById( R.id.group_how );
         mGroupHow.setOnCheckedChangeListener( this );
+        final View divider = mGroupHow.findViewById( R.id.local_divider );
         for ( InviteMeans means : meansList ) {
             Assert.assertNotNull( means );
             RadioButton button = (RadioButton)LocUtils
                 .inflate( context, R.layout.invite_radio );
             button.setText( LocUtils.getString( context, means.getUserDescID() ) );
-            // -2: place before QR code and its explanatory text
-            int where = mGroupHow.getChildCount() - 2;
+            int where = means.isForLocal()
+                // -2: place before QR code and its explanatory text
+                ? mGroupHow.getChildCount() - 2
+                : mGroupHow.indexOfChild( divider );
             mGroupHow.addView( button, where );
             mHowMeans.put( button, means );
         }

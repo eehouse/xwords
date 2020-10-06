@@ -25,7 +25,7 @@ import android.view.View;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 
-public class ListDelegateBase extends DelegateBase {
+public abstract class ListDelegateBase extends DelegateBase {
 
     private Activity m_activity;
     private Delegator m_delegator;

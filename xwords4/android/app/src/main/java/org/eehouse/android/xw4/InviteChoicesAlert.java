@@ -90,17 +90,11 @@ public class InviteChoicesAlert extends DlgDelegateAlert
         means.add( InviteMeans.EMAIL );
         means.add( InviteMeans.SMS_USER );
 
-        if ( BTService.BTAvailable() ) {
-            means.add( InviteMeans.BLUETOOTH );
-        }
         if ( Utils.deviceSupportsNBS(context) ) {
             means.add( InviteMeans.SMS_DATA );
         }
-        if ( BuildConfig.NON_RELEASE ) {
-            means.add( InviteMeans.RELAY );
-        }
-        if ( BuildConfig.NON_RELEASE && BuildConfig.OFFER_MQTT ) {
-            means.add( InviteMeans.MQTT );
+        if ( BTService.BTAvailable() ) {
+            means.add( InviteMeans.BLUETOOTH );
         }
         if ( WiDirWrapper.enabled() ) {
             means.add( InviteMeans.WIFIDIRECT );

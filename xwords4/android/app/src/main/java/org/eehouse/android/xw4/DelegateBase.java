@@ -57,9 +57,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-public class DelegateBase implements DlgClickNotify,
-                                     DlgDelegate.HasDlgDelegate,
-                                     MultiService.MultiEventListener {
+public abstract class DelegateBase implements DlgClickNotify,
+                                              DlgDelegate.HasDlgDelegate,
+                                              MultiService.MultiEventListener {
     private static final String TAG = DelegateBase.class.getSimpleName();
 
     private DlgDelegate m_dlgDelegate;
@@ -94,7 +94,7 @@ public class DelegateBase implements DlgClickNotify,
     public Activity getActivity() { return m_activity; }
 
     // Does nothing unless overridden. These belong in an interface.
-    protected void init( Bundle savedInstanceState ) { Assert.failDbg(); }
+    protected abstract void init( Bundle savedInstanceState );
     protected void onSaveInstanceState( Bundle outState ) {}
     public boolean onPrepareOptionsMenu( Menu menu ) { return false; }
     public boolean onOptionsItemSelected( MenuItem item ) { return false; }

@@ -1371,12 +1371,9 @@ public class BoardDelegate extends DelegateBase
                                      info, perms );
                 break;
             case RELAY:
-                RelayInviteDelegate.launchForResult( m_activity, m_mySIS.nMissing, info,
-                                                     RequestCode.RELAY_INVITE_RESULT );
-                break;
             case MQTT:
-                MQTTInviteDelegate.launchForResult( m_activity, m_mySIS.nMissing, info,
-                                                    RequestCode.MQTT_INVITE_RESULT );
+                // These have been removed as options
+                Assert.failDbg();
                 break;
             case WIFIDIRECT:
                 WiDirInviteDelegate.launchForResult( m_activity,

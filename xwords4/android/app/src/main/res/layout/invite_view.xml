@@ -54,13 +54,21 @@
                   android:layout_height="wrap_content"
                   >
 
-        <!-- RadioButtons will be inserted above this item. -->
+        <!-- RadioButtons will be inserted relative to this item -->
+        <TextView android:id="@+id/local_divider"
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:text="@string/local_invite_summary"
+                  android:textAppearance="?android:attr/textAppearanceMedium"
+                  />
+
+        <!-- intro for QR code: these two elems stay at the bottom -->
         <TextView android:layout_width="wrap_content"
                   android:layout_height="wrap_content"
                   android:text="@string/qrcode_invite_summary"
                   android:textAppearance="?android:attr/textAppearanceMedium"
                   android:padding="5dp"
-            />
+                  />
         <ImageView android:id="@+id/qr_view"
                    android:layout_width="wrap_content"
                    android:layout_height="wrap_content"
