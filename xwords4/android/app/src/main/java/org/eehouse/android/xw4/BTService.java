@@ -164,21 +164,29 @@ public class BTService extends XWJIService {
 
     private static int s_errCount = 0;
 
+    public static BluetoothAdapter getAdapterIf()
+    {
+        // Later this will change to include at least a test whether we're
+        // running as background user account, a situation in which BT crashes
+        // a lot inside the OS.
+        return BluetoothAdapter.getDefaultAdapter();
+    }
+
     public static boolean BTAvailable()
     {
-        BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
+        BluetoothAdapter adapter = getAdapterIf();
         return null != adapter;
     }
 
     public static boolean BTEnabled()
     {
-        BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
+        BluetoothAdapter adapter = getAdapterIf();
         return null != adapter && adapter.isEnabled();
     }
 
     public static void enable()
     {
-        BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
+        BluetoothAdapter adapter = getAdapterIf();
         if ( null != adapter ) {
             // Only do this after explicit action from user -- Android guidelines
             adapter.enable();
@@ -187,7 +195,7 @@ public class BTService extends XWJIService {
 
     public static String[] getBTNameAndAddress()
     {
-        BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
+        BluetoothAdapter adapter = getAdapterIf();
         return null == adapter ? null
             : new String[] { adapter.getName(), adapter.getAddress() };
     }
@@ -195,7 +203,7 @@ public class BTService extends XWJIService {
     public static int getPairedCount( Activity activity )
     {
         int result = 0;
-        BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
+        BluetoothAdapter adapter = getAdapterIf();
         if ( null != adapter ) {
             Set<BluetoothDevice> pairedDevs = adapter.getBondedDevices();
             result = pairedDevs.size();
@@ -212,7 +220,7 @@ public class BTService extends XWJIService {
 
     public static String nameForAddr( String btAddr )
     {
-        BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
+        BluetoothAdapter adapter = getAdapterIf();
         return nameForAddr( adapter, btAddr );
     }
 
@@ -346,7 +354,7 @@ public class BTService extends XWJIService {
         m_btMsgSink = new BTMsgSink();
         mHandler = new Handler();
 
-        BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
+        BluetoothAdapter adapter = getAdapterIf();
         if ( null != adapter && adapter.isEnabled() ) {
             m_adapter = adapter;
             Log.i( TAG, "onCreate(); bt name = %s; bt addr = %s",
@@ -542,7 +550,7 @@ public class BTService extends XWJIService {
 
         @Override
         public void run() {     // receive thread
-            BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
+            BluetoothAdapter adapter = getAdapterIf();
             String appName = XWApp.getAppName( XWApp.getContext() );
 
             try {
@@ -685,7 +693,7 @@ public class BTService extends XWJIService {
                 btAddr = null;
             }
             if ( null == btAddr ) {
-                BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
+                BluetoothAdapter adapter = getAdapterIf();
                 if ( null != adapter ) {
                     for ( BluetoothDevice dev : adapter.getBondedDevices() ) {
                         // Log.d( TAG, "%s => %s", dev.getName(), dev.getAddress() );
@@ -706,21 +714,36 @@ public class BTService extends XWJIService {
         Set<BluetoothDevice> pairedDevs = m_adapter.getBondedDevices();
         Map<BluetoothDevice, PacketAccumulator> pas = new HashMap<>();
         for ( BluetoothDevice dev : pairedDevs ) {
-            // Skip things that can't host an Android app
+            // Skip things that can't host an Android app. BUT: one of my
+            // phones, and presumably lots of others, aren't listed as
+            // PHONE. So let's try negative testing instead
             int clazz = dev.getBluetoothClass().getMajorDeviceClass();
-            if ( Major.PHONE == clazz || Major.COMPUTER == clazz ) {
-                PacketAccumulator pa =
-                    new PacketAccumulator( dev.getAddress(), timeoutMS )
-                    .addPing( 0 )
-                    .setExitWhenEmpty()
-                    .setLifetimeMS(timeoutMS)
-                    .setService( this )
-                    ;
-                pas.put( dev, pa );
-            } else {
-                Log.d( TAG, "skipping %s (clazz=%d); not an android device!",
-                       dev.getName(), clazz );
+            String reject = null;
+            switch ( clazz ) {
+            case Major.AUDIO_VIDEO:
+                reject = "audio"; break;
+            case Major.HEALTH:
+                reject = "health"; break;
+            case Major.IMAGING:
+                reject = "imaging"; break;
+            case Major.TOY:
+                reject = "toy"; break;
+            case Major.PERIPHERAL:
+                reject = "peripheral"; break;
             }
+            if ( null != reject ) {
+                Log.d( TAG, "sendPings(): %s is a %s; dropping", dev.getName(), reject );
+                continue;
+            }
+            Log.d( TAG, "sendPings(): sending to %s (a %d)", dev.getName(), clazz );
+            PacketAccumulator pa =
+                new PacketAccumulator( dev.getAddress(), timeoutMS )
+                .addPing( 0 )
+                .setExitWhenEmpty()
+                .setLifetimeMS(timeoutMS)
+                .setService( this )
+                ;
+            pas.put( dev, pa );
         }
 
         for ( BluetoothDevice dev : pas.keySet() ) {
@@ -1414,7 +1437,7 @@ public class BTService extends XWJIService {
         {
             Assert.assertFalse( BOGUS_MARSHMALLOW_ADDR.equals( addr ) );
             String result = "<unknown>";
-            BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
+            BluetoothAdapter adapter = getAdapterIf();
             if ( null != adapter ) {
                 Set<BluetoothDevice> devs = adapter.getBondedDevices();
                 Iterator<BluetoothDevice> iter = devs.iterator();
