@@ -269,6 +269,7 @@ public class BoardDelegate extends DelegateBase
                 .setMessage( getString( R.string.msg_dev_deleted_fmt, gameName ) )
                 .setPositiveButton( android.R.string.ok, null );
             lstnr = new OnClickListener() {
+                    @Override
                     public void onClick( DialogInterface dlg,
                                          int whichButton ) {
                         deleteAndClose( gameID );
@@ -1684,7 +1685,9 @@ public class BoardDelegate extends DelegateBase
     private void deleteAndClose( int gameID )
     {
         if ( null != m_gi && gameID == m_gi.gameID ) {
-            GameUtils.deleteGame( m_activity, m_jniThread.getLock(), false, false );
+            if ( null != m_jniThread ) {
+                GameUtils.deleteGame( m_activity, m_jniThread.getLock(), false, false );
+            }
         } else {
             Log.e( TAG, "deleteAndClose() called with wrong gameID %d", gameID );
         }
