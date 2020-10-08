@@ -99,7 +99,7 @@ public class BTInviteDelegate extends InviteDelegate {
                 for ( Iterator<TwoStringPair> iter = pairs.iterator();
                       iter.hasNext(); ) {
                     TwoStringPair pair = iter.next();
-                    if ( TextUtils.equals( pair.str2, dev ) ) {
+                    if ( TextUtils.equals( pair.getDev(), dev ) ) {
                         iter.remove();
                         break;
                     }
@@ -173,7 +173,7 @@ public class BTInviteDelegate extends InviteDelegate {
         if ( sPersistedRef[0].empty() ) {
             scan();
         } else {
-            updateList( sPersistedRef[0].pairs );
+            updateListIn( 0 );
         }
     }
 
@@ -283,7 +283,7 @@ public class BTInviteDelegate extends InviteDelegate {
         sPersistedRef[0].add( dev.getAddress(), dev.getName() );
         store( m_activity );
 
-        updateList( sPersistedRef[0].pairs );
+        updateList();
         tryEnable();
     }
 
@@ -356,6 +356,22 @@ public class BTInviteDelegate extends InviteDelegate {
         }
     }
 
+    private void updateListIn( final long inSecs )
+    {
+        m_handler.postDelayed( new Runnable() {
+                @Override
+                public void run() {
+                    updateList();
+                    updateListIn( 10 );
+                }
+            }, inSecs * 1000 );
+    }
+
+    private void updateList()
+    {
+        updateList( sPersistedRef[0].pairs );
+    }
+
     private synchronized static void load( Context context )
     {
         if ( null == sPersistedRef[0] ) {
@@ -394,7 +410,7 @@ public class BTInviteDelegate extends InviteDelegate {
             store( m_activity );
 
             clearChecked();
-            updateList( sPersistedRef[0].pairs );
+            updateList();
             tryEnable();
             break;
         default:

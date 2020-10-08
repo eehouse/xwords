@@ -224,6 +224,7 @@ abstract class InviteDelegate extends DelegateBase
     ////////////////////////////////////////
     // View.OnClickListener
     ////////////////////////////////////////
+    @Override
     public void onClick( View view )
     {
         if ( m_inviteButton == view ) {
