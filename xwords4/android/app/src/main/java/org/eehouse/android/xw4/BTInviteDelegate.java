@@ -262,7 +262,8 @@ public class BTInviteDelegate extends InviteDelegate {
             sPersistedRef[0].add( "00:00:00:00:00:00", "Do Not Invite Me" );
         }
 
-        int count = BTService.getPairedCount( m_activity );
+        Set<BluetoothDevice> devs = BTService.getCandidates();
+        int count = devs.size();
         if ( 0 < count ) {
             mNDevsThisScan = 0;
             showProgress( count, 2 * SCAN_SECONDS );
@@ -330,7 +331,7 @@ public class BTInviteDelegate extends InviteDelegate {
         Log.d( TAG, "removeNotPaired()" );
         BluetoothAdapter adapter = BTService.getAdapterIf();
         if ( null != adapter ) {
-            Set<BluetoothDevice> pairedDevs = adapter.getBondedDevices();
+            Set<BluetoothDevice> pairedDevs = BTService.getCandidates();
             Set<String> paired = new HashSet<>();
             for ( BluetoothDevice dev : pairedDevs ) {
                 Log.d( TAG, "removeNotPaired(): paired dev: %s", dev.getName() );

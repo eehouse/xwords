@@ -338,7 +338,9 @@ public class CommsAddrRec implements java.io.Serializable {
     public void setBTParams( String btAddr, String btName )
     {
         bt_hostName = btName;
-        bt_btAddr = btAddr;
+        if ( ! BTService.isBogusAddr( btAddr ) ) {
+            bt_btAddr = btAddr;
+        }
     }
 
     public void setSMSParams( String phone )

@@ -149,6 +149,7 @@ public abstract class DelegateBase implements DlgClickNotify,
         m_isVisible = true;
         XWServiceHelper.setListener( this );
         runIfVisible();
+        BTService.setAmForeground();
     }
 
     protected void onPause()

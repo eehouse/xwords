@@ -50,10 +50,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 // Notes on running under Oreo
 //
@@ -84,6 +86,7 @@ public class BTService extends XWJIService {
         XWJIService.register( BTService.class, sJobID,
                               CommsConnType.COMMS_CONN_BT );
     }
+    private static AtomicBoolean sBackUser = new AtomicBoolean(false);
 
     // half minute for testing; maybe 15 on ship? Or make it a debug config.
     private static int DEFAULT_KEEPALIVE_SECONDS = 15 * 60;
@@ -166,10 +169,19 @@ public class BTService extends XWJIService {
 
     public static BluetoothAdapter getAdapterIf()
     {
+        BluetoothAdapter result = null;
         // Later this will change to include at least a test whether we're
         // running as background user account, a situation in which BT crashes
         // a lot inside the OS.
-        return BluetoothAdapter.getDefaultAdapter();
+        if ( !sBackUser.get() ) {
+            result = BluetoothAdapter.getDefaultAdapter();
+        }
+        return result;
+    }
+
+    public static void setAmForeground()
+    {
+        sBackUser.set(false);
     }
 
     public static boolean BTAvailable()
@@ -184,6 +196,13 @@ public class BTService extends XWJIService {
         return null != adapter && adapter.isEnabled();
     }
 
+    public static boolean isBogusAddr( String addr )
+    {
+        boolean result = BOGUS_MARSHMALLOW_ADDR.equals( addr );
+        Log.d( TAG, "isBogusAddr(%s) => %b", addr, result );
+        return result;
+    }
+
     public static void enable()
     {
         BluetoothAdapter adapter = getAdapterIf();
@@ -195,18 +214,14 @@ public class BTService extends XWJIService {
 
     public static String[] getBTNameAndAddress()
     {
-        BluetoothAdapter adapter = getAdapterIf();
-        return null == adapter ? null
-            : new String[] { adapter.getName(), adapter.getAddress() };
-    }
-
-    public static int getPairedCount( Activity activity )
-    {
-        int result = 0;
+        String[] result = null;
         BluetoothAdapter adapter = getAdapterIf();
         if ( null != adapter ) {
-            Set<BluetoothDevice> pairedDevs = adapter.getBondedDevices();
-            result = pairedDevs.size();
+            String addr = adapter.getAddress();
+            if ( isBogusAddr( addr ) ) {
+                addr = null;
+            }
+            result = new String[] { adapter.getName(), addr };
         }
         return result;
     }
@@ -357,8 +372,7 @@ public class BTService extends XWJIService {
         BluetoothAdapter adapter = getAdapterIf();
         if ( null != adapter && adapter.isEnabled() ) {
             m_adapter = adapter;
-            Log.i( TAG, "onCreate(); bt name = %s; bt addr = %s",
-                   adapter.getName(), adapter.getAddress() );
+            Log.i( TAG, "onCreate(); my BT name: %s", adapter.getName() );
             startListener();
         } else {
             Log.w( TAG, "not starting threads: BT not available" );
@@ -565,6 +579,7 @@ public class BTService extends XWJIService {
                 // listenUsingRfcommWithServiceRecord() in background (on
                 // Android 9)
                 m_serverSocket = null;
+                sBackUser.set( true );
                 // I'm seeing too much of this on two-user systems.
                 // Log.ex( TAG, ex );
             }
@@ -681,7 +696,7 @@ public class BTService extends XWJIService {
     private static String getSafeAddr( CommsAddrRec addr )
     {
         String btAddr = addr.bt_btAddr;
-        if ( BOGUS_MARSHMALLOW_ADDR.equals( btAddr ) ) {
+        if ( TextUtils.isEmpty(btAddr) || BOGUS_MARSHMALLOW_ADDR.equals( btAddr ) ) {
             String btName = addr.bt_hostName;
             if ( null == s_namesToAddrs ) {
                 s_namesToAddrs = new HashMap<>();
@@ -692,16 +707,14 @@ public class BTService extends XWJIService {
             } else {
                 btAddr = null;
             }
-            if ( null == btAddr ) {
-                BluetoothAdapter adapter = getAdapterIf();
-                if ( null != adapter ) {
-                    for ( BluetoothDevice dev : adapter.getBondedDevices() ) {
-                        // Log.d( TAG, "%s => %s", dev.getName(), dev.getAddress() );
-                        if ( btName.equals( dev.getName() ) ) {
-                            btAddr = dev.getAddress();
-                            s_namesToAddrs.put( btName, btAddr );
-                            break;
-                        }
+            if ( TextUtils.isEmpty( btAddr ) ) {
+                Set<BluetoothDevice> devs = getCandidates();
+                for ( BluetoothDevice dev : devs ) {
+                    // Log.d( TAG, "%s => %s", dev.getName(), dev.getAddress() );
+                    if ( btName.equals( dev.getName() ) ) {
+                        btAddr = dev.getAddress();
+                        s_namesToAddrs.put( btName, btAddr );
+                        break;
                     }
                 }
             }
@@ -709,33 +722,34 @@ public class BTService extends XWJIService {
         return btAddr;
     }
 
+    public static Set<BluetoothDevice> getCandidates()
+    {
+        Set<BluetoothDevice> result = new HashSet<>();
+        BluetoothAdapter adapter = getAdapterIf();
+        if ( null != adapter ) {
+            for ( BluetoothDevice dev : adapter.getBondedDevices() ) {
+                int clazz = dev.getBluetoothClass().getMajorDeviceClass();
+                switch ( clazz ) {
+                case Major.AUDIO_VIDEO:
+                case Major.HEALTH:
+                case Major.IMAGING:
+                case Major.TOY:
+                case Major.PERIPHERAL:
+                    break;
+                default:
+                    result.add( dev );
+                    break;
+                }
+            }
+        }
+        return result;
+    }
+
     private void sendPings( MultiEvent event, int timeoutMS )
     {
-        Set<BluetoothDevice> pairedDevs = m_adapter.getBondedDevices();
+        Set<BluetoothDevice> pairedDevs = getCandidates();
         Map<BluetoothDevice, PacketAccumulator> pas = new HashMap<>();
         for ( BluetoothDevice dev : pairedDevs ) {
-            // Skip things that can't host an Android app. BUT: one of my
-            // phones, and presumably lots of others, aren't listed as
-            // PHONE. So let's try negative testing instead
-            int clazz = dev.getBluetoothClass().getMajorDeviceClass();
-            String reject = null;
-            switch ( clazz ) {
-            case Major.AUDIO_VIDEO:
-                reject = "audio"; break;
-            case Major.HEALTH:
-                reject = "health"; break;
-            case Major.IMAGING:
-                reject = "imaging"; break;
-            case Major.TOY:
-                reject = "toy"; break;
-            case Major.PERIPHERAL:
-                reject = "peripheral"; break;
-            }
-            if ( null != reject ) {
-                Log.d( TAG, "sendPings(): %s is a %s; dropping", dev.getName(), reject );
-                continue;
-            }
-            Log.d( TAG, "sendPings(): sending to %s (a %d)", dev.getName(), clazz );
             PacketAccumulator pa =
                 new PacketAccumulator( dev.getAddress(), timeoutMS )
                 .addPing( 0 )
@@ -1437,18 +1451,15 @@ public class BTService extends XWJIService {
         {
             Assert.assertFalse( BOGUS_MARSHMALLOW_ADDR.equals( addr ) );
             String result = "<unknown>";
-            BluetoothAdapter adapter = getAdapterIf();
-            if ( null != adapter ) {
-                Set<BluetoothDevice> devs = adapter.getBondedDevices();
-                Iterator<BluetoothDevice> iter = devs.iterator();
-                while ( iter.hasNext() ) {
-                    BluetoothDevice dev = iter.next();
-                    String devAddr = dev.getAddress();
-                    Assert.assertFalse( BOGUS_MARSHMALLOW_ADDR.equals( devAddr ) );
-                    if ( devAddr.equals( addr ) ) {
-                        result = dev.getName();
-                        break;
-                    }
+            Set<BluetoothDevice> devs = getCandidates();
+            Iterator<BluetoothDevice> iter = devs.iterator();
+            while ( iter.hasNext() ) {
+                BluetoothDevice dev = iter.next();
+                String devAddr = dev.getAddress();
+                Assert.assertFalse( BOGUS_MARSHMALLOW_ADDR.equals( devAddr ) );
+                if ( devAddr.equals( addr ) ) {
+                    result = dev.getName();
+                    break;
                 }
             }
             return result;
@@ -1562,10 +1573,12 @@ public class BTService extends XWJIService {
 
     private static PacketAccumulator getSenderFor( String addr, boolean create )
     {
+        Assert.assertTrueNR( ! BOGUS_MARSHMALLOW_ADDR.equals( addr ) );
         PacketAccumulator result;
         try ( DeadlockWatch dw = new DeadlockWatch( sSenders ) ) {
             synchronized ( sSenders ) {
                 if ( create && !sSenders.containsKey( addr ) ) {
+                    // Log.d( TAG, "adding %s to senders", addr );
                     sSenders.put( addr, new PacketAccumulator( addr ) );
                 }
                 result = sSenders.get( addr );
