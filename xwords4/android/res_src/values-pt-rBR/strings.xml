@@ -1,2 +1,187 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources></resources>
+<resources>
+    <string name="str_pass">passar
+\n</string>
+    <string name="strd_time_penalty_sub_fmt">- %1$d [tempo]</string>
+    <string name="str_remote_moved_fmt">"Jogador remoto %1$s fez essa jogada: "</string>
+    <string name="strd_cumulative_score_fmt">Ponto cumulativo: %1$d
+\n</string>
+    <string name="board_menu_tray_show">Mostrar quadrados</string>
+    <string name="board_menu_tray_hide">Esconder quadrados</string>
+    <string name="entering_trade">Toque nos quadrados para selecionar…</string>
+    <string name="strs_new_tiles_fmt">Novos quadrados: %1$s</string>
+    <plurals name="strd_robot_traded_fmt">
+        <item quantity="one">Um quadrado trocado.</item>
+        <item quantity="other">%1$d quadrados trocados.</item>
+    </plurals>
+    <string name="strd_unused_tiles_sub_fmt">- %1$d [quadrados não usados]</string>
+    <string name="strd_remaining_tiles_add_fmt">+ %1$d [todos os quadrados restantes]</string>
+    <string name="strs_values_header_fmt">%1$s contagens/valores:
+\n</string>
+    <string name="str_robot_moved_fmt">"O robô t %1$s fez essa jogada: "</string>
+    <string name="board_menu_game_resend">Reenviar jogadas</string>
+    <string name="board_menu_game_resign">Abandonar</string>
+    <string name="board_menu_game_final">Pontuação final</string>
+    <string name="board_menu_game_history">Histórico do jogo…</string>
+    <string name="board_menu_game_left">Quadros restantes…</string>
+    <string name="board_menu_game_counts">Contagens e valores…</string>
+    <string name="board_submenu_game">Jogo</string>
+    <string name="board_menu_undo_last">Desfazer último</string>
+    <string name="board_menu_trade">Trocar</string>
+    <string name="board_menu_done">Turno terminado</string>
+    <string name="badwords_title">Palavra ilegal[s]</string>
+    <string name="badwords_lost">Turno perdido.</string>
+    <string name="badwords_accept">" Você ainda quer aceitar essa jogada\?"</string>
+    <string name="ids_badwords_fmt">Palavra[s] %1$s não encontrada na lista de palavras %2$s.</string>
+    <string name="msg_dev_deleted_fmt">O jogo de nome “%1$s” foi apagado em outro dispositivo. Você não poderá jogar mais.</string>
+    <string name="msg_lost_other">O servidor perdeu contato com outro dispositivo neste jogo.</string>
+    <string name="msg_dup_room">Outro host já registrou uma sala usando este nome. Renomeei o seu ou tente novamente mais tarde.</string>
+    <string name="msg_no_room">Nenhum host registrou uma sala por este nome.</string>
+    <string name="msg_too_many">Você está com mais jogadores do que o host exige.</string>
+    <string name="relay_alert">Problema de conexão</string>
+    <string name="msg_relay_all_here_fmt">Todos os jogadores estão na sala “%1$s”.</string>
+    <plurals name="msg_relay_waiting_fmt">
+        <item quantity="one">Dispositivo %1$d conectado ao servidor na sala “%2$s”. Aguardando por um jogador.</item>
+        <item quantity="other">Dispositivo %1$d conectado ao servidor na sala “%2$s”. Aguardando por %3$d jogadores.</item>
+    </plurals>
+    <string name="pts">pontos</string>
+    <string name="invit_expl_notarget_fmt">Convite enviado via %1$s no %2$s. Recebedor desconhecido.</string>
+    <string name="invit_expl_relay_fmt">Convite enviado pelo servidor para outro dispositivo no %1$s</string>
+    <string name="invit_expl_bt_fmt">Convite enviado via Bluetooth para dispositivos emparelhados “%1$s” no %2$s</string>
+    <string name="sms_invite_flakey">Esta opção envia seu SMS padrão do app com um convite pronto para envio—Quando funciona. Cada SMS do aplicativo é diferente, e algum deles não cooperam.</string>
+    <string name="sms_invite_fail">Impossibilitado de mandar SMS do aplicativo</string>
+    <string name="invit_expl_usrsms_fmt">Convite enviado via SMS para %1$s no %2$s</string>
+    <string name="invit_expl_sms_fmt">Convite enviado via Dados de SMS para o número de telefone %1$s no %2$s</string>
+    <string name="invite_multiple">" (Você está esperando vários jogadores remotos. Você não precisa convida-los um de cada vez, mas este alerta não será rejeitado até que todo mundo tenha sido convidado e todos os convites tenham sido aceitos.)"</string>
+    <string name="invite_if_nfc">Ou apenas toque para Convidar -- Se o outro dispositivo também tiver Android Beaming e estiver próximo.</string>
+    <string name="invited_msg">Esse jogo foi criado a partir de um convite que você recebeu. Assim que conectar a quem o enviou e qualquer outro convidado que apareceu o jogo irá começar.</string>
+    <plurals name="invite_sent_fmt">
+        <item quantity="one">Você já enviou um convite para um jogador remoto desse jogo. Estamos aguardando ele/ela responder. Por favor, use o botão reenviar convite se você acha que ele não foi enviado.</item>
+        <item quantity="other">Você já enviou %1$d únicos convites para esse jogo. Estamos aguardando por %2$d jogadores responder. Por favor, use o botão reenviar convites se você acha que eles não foram enviados.</item>
+    </plurals>
+    <plurals name="invite_msg_fmt">
+        <item quantity="one">Essa partida está aguardando por um jogador remoto. Você gostaria de convidar alguém para participar—Considerando que você não começou a partida\?</item>
+        <item quantity="other">Essa partida está aguardando por %1$d jogadores remotos. Você gostaria de convidar alguém para participar—Considerando que você não começou a partida\?</item>
+    </plurals>
+    <string name="no_moves_made">(Sem jogadas ainda)</string>
+    <string name="force_expl">Em um partida com muitos dispositivos deve ter pelo menos um jogador desse dispositivo e outro não. Por favor, verifique os jogadores remotos.</string>
+    <string name="bonus_l2x_summary">2L</string>
+    <string name="bonus_w3x_summary">3P</string>
+    <string name="bonus_l3x_summary">3L</string>
+    <string name="bonus_w2x_summary">2P</string>
+    <string name="button_trade_cancel">Cancelar troca</string>
+    <string name="button_trade_commit">Trocar</string>
+    <string name="password_label">Senha:</string>
+    <string name="robot_label">Jogador robô</string>
+    <string name="dicts_list_prompt_fmt">Listas de palavras instaladas (in %1$s)</string>
+    <string name="dict_lang_label_fmt">Lista de palavras (%1$s)</string>
+    <string name="player_label">Nome:</string>
+    <string name="remote_label">Jogador remoto</string>
+    <string name="player_edit_title">Editar jogador</string>
+    <string name="forced_consistent">Modificar primeiro jogador.</string>
+    <string name="force_title">Jogador[s] remoto</string>
+    <string name="play">Jogar</string>
+    <string name="confirm_save_title">Confirmar salvamento</string>
+    <string name="confirm_save">Este partida está em progresso. Se você salvar essas mudanças podem ser restauradas. Você quer salvar essas mudanças\?</string>
+    <string name="guest_name">(jogador remoto)</string>
+    <string name="str_reg_server_sans_remote">Pelo menos um jogador deve estar marcado como \"Remoto\" para um jogo começar como principal.</string>
+    <string name="phonies_block">Bloquear palavras falsas</string>
+    <string name="phonies_disallow">Proibir palavras falsas</string>
+    <string name="phonies_warn">Avisar se são palavras falsas</string>
+    <string name="phonies_ignore">ignorar as palavras falsas</string>
+    <string name="phonies_spinner_prompt">Como lidar com \"palavras falsas\" (palavras que não estão na lista)</string>
+    <string name="phonies_label">Palavras Falsas</string>
+    <string name="robot_smartest">O robô mais inteligente</string>
+    <string name="robot_smarter">Robô mais inteligente</string>
+    <string name="robot_spinner_prompt">Quão inteligente o robô jogador pode ser\?</string>
+    <string name="robot_smart">Robô inteligente</string>
+    <string name="robot_iq_label">QI do Robô</string>
+    <string name="dup_minutes_label">Minutos por turno</string>
+    <string name="minutes_label">Minutos por jogador</string>
+    <string name="use_duptimer">Permitir timer por jogada</string>
+    <string name="use_timer">Permitir timer do jogo</string>
+    <string name="nethints_allowed">Permitir dicas (em rede)</string>
+    <string name="hints_allowed">Permitir dicas</string>
+    <string name="settings_label">Outras configurações</string>
+    <string name="no_name_found_fmt">Salas públicas não encontradas para %1$d-jogador na partida %2$s. Tente atualizar ou criar sua própria sala.</string>
+    <string name="public_names_progress_fmt">Buscando salas públicas para %1$d-jogadores na partida %2$s.</string>
+    <string name="room_public_prompt">Selecionar sala pública</string>
+    <string name="room_public">Criar uma nova sala pública</string>
+    <string name="new_room_hint">Nome da sala</string>
+    <string name="join_room">Entrar em sala pública</string>
+    <string name="connect_label_fmt">Conexão (via %1$s)</string>
+    <string name="langdict_label">Idioma do jogo/lista de palavras</string>
+    <string name="lang_label">Idioma do jogo</string>
+    <string name="button_juggle_players">Misturar jogadores</string>
+    <string name="button_add_player">Adicionar jogador</string>
+    <string name="title_gamenet_config_fmt">%1$s configurações (na rede)</string>
+    <string name="title_game_config_fmt">Configurações para %1$s</string>
+    <string name="loc_downloads">Baixados</string>
+    <string name="players_label_host_fmt">Jogadores (%1$d local, %2$d remoto)</string>
+    <string name="players_label_standalone">Jogadores (toque para editar)</string>
+    <string name="confirm_deleteonly_dicts_fmt">Apagar %1$s deixará você sem qualquer %2$s listas de palavras. Um ou mais jogos não abrirão (até você baixar uma lista de substituição.)</string>
+    <string name="rename_label_caveat">Mude o nome desse jogo (somente nesse dispositivo) para:</string>
+    <string name="rename_label">Mude o nome desse jogo para:</string>
+    <string name="no_copy_network">Partidas que já foram conectadas no servidor não podem ser copiadas. Use \"Novo jogo de\" para criar uma cópia para jogar com as mesmas configurações.</string>
+    <plurals name="confirm_seldeletes_fmt">
+        <item quantity="one">Você tem certeza que quer apagar o jogo selecionado\? Esta ação não poder ser desfeita.</item>
+        <item quantity="other">Você tem certeza que quer apagar %1$d jogos selecionados\? Esta ação não poder ser desfeita.</item>
+    </plurals>
+    <string name="no_games_to_refresh">Nenhum jogo encontrado que conecte pelo servidor.</string>
+    <string name="msgs_progress">Verificar servidor para jogadas etc…</string>
+    <string name="summary_relay_conn_fmt">Partida iniciada na sala “%1$s”</string>
+    <plurals name="moves_fmt">
+        <item quantity="one">Uma jogada realizada</item>
+        <item quantity="other">%1$d jogadas realizadas</item>
+    </plurals>
+    <string name="button_reset">Redefinir</string>
+    <string name="menu_prefs">Configurações do APP…</string>
+    <string name="game_locked">Bloquear configurações</string>
+    <string name="download_more">Baixar mais…</string>
+    <string name="set_default_message_fmt">Para quais jogadores a lista de palavras %1$s pode ser padrão para novas partidas\? (O idioma %2$s será padrão para ambos.)</string>
+    <string name="str_game_name_fmt">%1$s (%2$s)</string>
+    <string name="title_langs_list">Idiomas (baseados nas listas de palavras instaladas)</string>
+    <string name="loc_external">Externo</string>
+    <string name="loc_internal">Interno</string>
+    <string name="move_dict_fmt">Local para lista de palavras %1$s</string>
+    <string name="button_default_both">Ambos</string>
+    <string name="button_default_robot">Robô</string>
+    <string name="button_default_human">Humano</string>
+    <plurals name="confirm_delete_dict_fmt">
+        <item quantity="one">Você tem certeza que quer apagar a lista de palavra %1$s\?</item>
+        <item quantity="other">Você tem certeza que quer deletar as listas de palavras %1$s\?</item>
+    </plurals>
+    <string name="dicts_item_select">Tornar padrão</string>
+    <string name="dicts_item_move">Mudar local de armazenamento</string>
+    <string name="loc_builtin">Incluir</string>
+    <string name="title_dicts_list">Lista de palavras do CrossWords</string>
+    <plurals name="confirm_reset_fmt">
+        <item quantity="one">Você tem certeza que quer reiniciar o jogo selecionado\?
+\n
+\n(Reiniciar apaga todas as jogadas e qualquer informação de conexão.)</item>
+        <item quantity="other">Você tem certeza que quer reiniciar %1$d jogos selecionados\?
+\n
+\n(Reiniciar apaga todas as jogadas e qualquer informação de conexão.)</item>
+    </plurals>
+    <string name="game_rename_title">Renomear jogo</string>
+    <string name="list_item_netstats">Conexões…</string>
+    <string name="list_item_copy">Copiar</string>
+    <string name="list_item_new_from">Novo jogo de</string>
+    <string name="list_item_reset">Restaurar</string>
+    <string name="list_item_delete">Apagar jogo</string>
+    <string name="list_item_move">Mudar para grupo…</string>
+    <string name="list_item_rename">Renomear…</string>
+    <string name="list_item_config">Opções de jogo…</string>
+    <string name="board_menu_file_about">Sobre o CrossWords…</string>
+    <string name="gamel_menu_checkmoves">Verificar jogadas</string>
+    <string name="gamel_menu_dicts">Listas de palavras…</string>
+    <string name="button_delete">Apagar</string>
+    <string name="gameOver">Fim de jogo sddsf</string>
+    <string name="summary_invites_out_fmt">Jogadores convidados para a sala “%1$s”</string>
+    <string name="summary_invites_out">Jogadores convidados</string>
+    <string name="summary_relay_gameover_fmt">Fim de jogo na sala “%1$s”</string>
+    <string name="summary_relay_conf_fmt">Configurado para sala “%1$s”</string>
+    <string name="summary_relay_wait_fmt">Aguardando jogadores na sala “%1$s”</string>
+    <string name="missing_player">(não está aqui…)</string>
+    <string name="robot_name_fmt">%1$s (robô)</string>
+</resources>
