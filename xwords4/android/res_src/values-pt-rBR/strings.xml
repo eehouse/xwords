@@ -184,4 +184,12 @@
     <string name="summary_relay_wait_fmt">Aguardando jogadores na sala “%1$s”</string>
     <string name="missing_player">(não está aqui…)</string>
     <string name="robot_name_fmt">%1$s (robô)</string>
+    <string name="str_phony_rejected">palavra ilegal na jogada; turno perdido!</string>
+    <string name="strss_traded_for_fmt">Trocado %1$s para %2$s.</string>
+    <string name="strs_tray_at_start_fmt">Histórico do inicio: %1$s
+\n</string>
+    <string name="strs_move_down_fmt">jogada (de %1$s baixo)
+\n</string>
+    <string name="strs_move_across_fmt">jogada (de %1$s cruzado)
+\n</string>
 </resources>
