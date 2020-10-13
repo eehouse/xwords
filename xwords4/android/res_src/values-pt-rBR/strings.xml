@@ -192,4 +192,12 @@
 \n</string>
     <string name="strs_move_across_fmt">jogada (de %1$s cruzado)
 \n</string>
+    <string name="strd_turn_score_fmt">Pontuação por turno: %1$d
+\n</string>
+    <string name="str_bonus_all">Bônus por usar todos os quadrados: 50
+\n</string>
+    <string name="vs_join">" vs. "</string>
+    <string name="str_nonlocal_name_fmt">%1$s (remoto)</string>
+    <string name="str_commit_confirm">Executar a jogada atual\?
+\n</string>
 </resources>
