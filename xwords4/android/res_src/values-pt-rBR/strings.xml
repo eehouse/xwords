@@ -200,4 +200,42 @@
     <string name="str_nonlocal_name_fmt">%1$s (remoto)</string>
     <string name="str_commit_confirm">Executar a jogada atual\?
 \n</string>
+    <string name="prefs_appearance">Aparência</string>
+    <string name="board_size">Tamanho do tabuleiro</string>
+    <string name="initial_player_minutes">Minutos por jogador</string>
+    <string name="phonies_found_title">Palavras falsas encontradas</string>
+    <string name="default_phonies">Lidar com palavras falsas</string>
+    <string name="init_autojuggle_sum">Aleatoriamente, para novos jogos</string>
+    <string name="init_autojuggle">Alternar jogadores</string>
+    <string name="nethints_allowed_sum">Permitir dicas para dois dispositivos do jogo</string>
+    <string name="hints_allowed_sum">Permitir a função de dicas</string>
+    <string name="default_robodict">Lista de Palavras para robôs</string>
+    <string name="default_dict">Listas de palavras para humanos</string>
+    <string name="prefs_dicts_summary">Listas de Palavras padrão</string>
+    <string name="prefs_dicts">Listas de Palavras</string>
+    <string name="pref_human_name">Jogador humano (seu nome)</string>
+    <string name="pref_player4_name">Quarto jogador</string>
+    <string name="pref_player3_name">Terceiro jogador</string>
+    <string name="pref_player2_name">Segundo jogador</string>
+    <string name="pref_player1_name">Primeiro jogador</string>
+    <string name="prefs_names_summary">Predefinição dos nomes dos jogadores</string>
+    <string name="prefs_names">Nomes dos jogadores</string>
+    <string name="prefs_defaults_summary">Configurações padrões para novos jogos</string>
+    <string name="prefs_defaults">Novos predefinições do jogo</string>
+    <string name="confirm_revert_all">Você tem certeza que quer restaurar as configurações para o seus valores padrões\?</string>
+    <string name="button_revert_colors">Restaurar cores</string>
+    <string name="confirm_revert_colors">Você tem certeza que restaurar todas as configurações de cores para os valores padrões delas\?</string>
+    <string name="button_revert_all">Restaurar tudo</string>
+    <string name="title_prefs">Configurações do CrossWords</string>
+    <string name="confirm_undo_last">Você tem certeza que quer desfazer o último turno executado\? (Não há opção de refazer.)</string>
+    <plurals name="strd_remains_header_fmt">
+        <item quantity="one">Falta um quadrado no agrupamento.</item>
+        <item quantity="other">Faltam %1$d quadrados no agrupamento .</item>
+    </plurals>
+    <plurals name="strd_remains_expl_fmt">
+        <item quantity="one">Falta um quadrado no quadro escondido:
+\n</item>
+        <item quantity="other">Faltam %1$d quadrados no agrupamento e no quadro escondido:
+\n</item>
+    </plurals>
 </resources>
