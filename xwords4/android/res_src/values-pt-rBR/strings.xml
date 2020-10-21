@@ -201,7 +201,7 @@
     <string name="str_commit_confirm">Executar a jogada atual\?
 \n</string>
     <string name="prefs_appearance">Aparência</string>
-    <string name="board_size">Tamanho do tabuleiro</string>
+    <string name="board_size">Tamanho do quadro</string>
     <string name="initial_player_minutes">Minutos por jogador</string>
     <string name="phonies_found_title">Palavras falsas encontradas</string>
     <string name="default_phonies">Lidar com palavras falsas</string>
@@ -238,4 +238,15 @@
         <item quantity="other">Faltam %1$d quadrados no agrupamento e no quadro escondido:
 \n</item>
     </plurals>
+    <string name="show_arrow">Mostrar a seta do quadro</string>
+    <string name="hide_newgames_summary">Esconder os botões do jogo na tela principal deixa os jogos mais visíveis</string>
+    <string name="hide_newgames_title">Esconder botões do novo jogo</string>
+    <string name="hide_title_summary">Esconder o nome do jogo deixa o quadro levemente mais largo</string>
+    <string name="hide_title">Esconder barra de título</string>
+    <string name="game_summary_field_state">Estado do jogo</string>
+    <string name="game_summary_field_opponents">Nome(s) do(s) oponente(s)</string>
+    <string name="game_summary_field_language">Idioma do jogo</string>
+    <string name="game_summary_field_empty">&lt;Nada&gt;</string>
+    <string name="summary_field">Incluir na lista do jogo</string>
+    <string name="prefs_appearance_summary">Configurações da aparência do controle</string>
 </resources>
