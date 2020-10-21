@@ -214,7 +214,8 @@ abstract class InviteDelegate extends DelegateBase
         updateChecked( items );
 
         m_lv.removeAllViews();
-        for ( InviterItem item : items ) {
+        InviterItem[] itemsArr = items.toArray( new InviterItem[items.size()] );
+        for ( InviterItem item : itemsArr ) {
             m_lv.addView( makeViewFor( itemId, item ) );
         }
     }
