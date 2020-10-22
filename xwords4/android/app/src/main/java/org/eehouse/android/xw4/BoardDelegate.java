@@ -2597,8 +2597,7 @@ public class BoardDelegate extends DelegateBase
             CommsAddrRec[] addrs = XwJNI.comms_getAddrs( m_jniGamePtr );
             for ( CommsAddrRec addr : addrs ) {
                 if ( addr.contains( CommsConnType.COMMS_CONN_BT ) ) {
-                    BTService.pingHost( m_activity, addr.bt_btAddr,
-                                        m_gi.gameID );
+                    BTUtils.pingHost( m_activity, addr.bt_btAddr, m_gi.gameID );
                 }
             }
         }
@@ -2810,7 +2809,7 @@ public class BoardDelegate extends DelegateBase
                 case BLUETOOTH:
                     if ( ! m_progressShown ) {
                         m_progressShown = true;
-                        String progMsg = BTService.nameForAddr( dev );
+                        String progMsg = BTUtils.nameForAddr( dev );
                         progMsg = getString( R.string.invite_progress_fmt, progMsg );
                         startProgress( R.string.invite_progress_title, progMsg,
                                        new OnCancelListener() {
@@ -2820,7 +2819,7 @@ public class BoardDelegate extends DelegateBase
                                            }
                                        });
                     }
-                    BTService.inviteRemote( m_activity, dev, nli );
+                    BTUtils.inviteRemote( m_activity, dev, nli );
                     break;
                 case SMS_DATA:
                     sendNBSInviteIf( dev, nli, true );
@@ -3186,7 +3185,7 @@ public class BoardDelegate extends DelegateBase
             }
             value = m_summary.getStringExtra( GameSummary.EXTRA_REMATCH_BTADDR );
             if ( null != value ) {
-                BTService.inviteRemote( m_activity, value, nli );
+                BTUtils.inviteRemote( m_activity, value, nli );
                 recordInviteSent( InviteMeans.BLUETOOTH, value );
             }
             value = m_summary.getStringExtra( GameSummary.EXTRA_REMATCH_RELAY );
@@ -3237,7 +3236,7 @@ public class BoardDelegate extends DelegateBase
                 recordInviteSent( InviteMeans.MQTT, addr.mqtt_devID );
                 break;
             case COMMS_CONN_BT:
-                BTService.inviteRemote( m_activity, addr.bt_btAddr, nli );
+                BTUtils.inviteRemote( m_activity, addr.bt_btAddr, nli );
                 recordInviteSent( InviteMeans.BLUETOOTH, addr.bt_btAddr );
                 break;
                 // case COMMS_CONN_RELAY:

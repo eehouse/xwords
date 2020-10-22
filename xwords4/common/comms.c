@@ -1057,6 +1057,12 @@ void
 comms_addMQTTDevID( CommsCtxt* comms, XP_PlayerAddr channelNo,
                     const MQTTDevID* devID )
 {
+#ifdef NO_ADD_MQTT_TO_ALL       /* set for (usually) BT testing on Android */
+    XP_LOGFF("ifdef'd out");
+    XP_USE( comms );
+    XP_USE( channelNo );
+    XP_USE( devID );
+#else
     XP_LOGFF( "(devID: " MQTTDevID_FMT ")", *devID );
     XP_Bool found = XP_FALSE;
     for ( AddressRecord* rec = comms->recs; !!rec && !found; rec = rec->next ) {
@@ -1075,6 +1081,7 @@ comms_addMQTTDevID( CommsCtxt* comms, XP_PlayerAddr channelNo,
     if ( !found ) {
         XP_LOGFF( "unable to augment address!!" );
     }
+#endif
 }
 
 void

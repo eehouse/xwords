@@ -981,7 +981,7 @@ public class RelayService extends XWJIService
     private void gotPacket( DatagramPacket packet )
     {
         ConnStatusHandler.showSuccessIn();
-        RelayTimerReceiver.restartBackoff( this, TAG );
+        TimerReceiver.restartBackoff( this );
 
         int packetLen = packet.getLength();
         byte[] data = new byte[packetLen];
@@ -1698,7 +1698,7 @@ public class RelayService extends XWJIService
      *
      * Goal: maintain connection by keeping this service alive with
      * its periodic pings to relay.  When it dies or is killed,
-     * notice, and use RelayTimerReceiver's timer to get it restarted a bit
+     * notice, and use TimerReceiver's timer to get it restarted a bit
      * later.  But note: s_lastFCM will not be set when the app is
      * relaunched.
      */

@@ -123,7 +123,7 @@ public class ConnViaViewLayout extends LinearLayout {
             enabled = XWPrefs.getNBSEnabled( context );
             break;
         case COMMS_CONN_BT:
-            enabled = BTService.BTEnabled();
+            enabled = BTUtils.BTEnabled();
             break;
         case COMMS_CONN_RELAY:
             enabled = XWPrefs.getRelayEnabled( context );

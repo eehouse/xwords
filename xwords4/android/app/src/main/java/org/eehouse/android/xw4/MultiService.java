@@ -74,8 +74,6 @@ public class MultiService {
                              APP_NOT_FOUND_BT,
                              BT_ENABLED,
                              BT_DISABLED,
-                             SCAN_DONE,
-                             HOST_PONGED,
                              NEWGAME_SUCCESS,
                              NEWGAME_FAILURE,
                              NEWGAME_DUP_REJECTED,

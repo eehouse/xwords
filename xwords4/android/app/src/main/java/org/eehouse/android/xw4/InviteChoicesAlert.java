@@ -93,7 +93,7 @@ public class InviteChoicesAlert extends DlgDelegateAlert
         if ( Utils.deviceSupportsNBS(context) ) {
             means.add( InviteMeans.SMS_DATA );
         }
-        if ( BTService.BTAvailable() ) {
+        if ( BTUtils.BTAvailable() ) {
             means.add( InviteMeans.BLUETOOTH );
         }
         if ( WiDirWrapper.enabled() ) {

@@ -38,7 +38,6 @@ import org.eehouse.android.xw4.jni.XwJNI;
 
 import java.util.UUID;
 
-
 import static androidx.lifecycle.Lifecycle.Event.ON_ANY;
 
 public class XWApp extends Application
@@ -102,6 +101,7 @@ public class XWApp extends Application
         DupeModeTimer.init( this );
 
         MQTTUtils.init( this );
+        BTUtils.init( this, getAppName(), getAppUUID() );
     }
 
     @OnLifecycleEvent(ON_ANY)
@@ -111,11 +111,15 @@ public class XWApp extends Application
         switch( event ) {
         case ON_RESUME:
             MQTTUtils.onResume( this );
+            BTUtils.onResume( this );
             // Do here what checkForMoves does
             if ( null != DBUtils.getRelayIDs( this, null ) ) {
                 RelayService.timerFired( this );
             }
             GameUtils.resendAllIf( this, null );
+            break;
+        case ON_STOP:
+            BTUtils.onStop( this );
             break;
         }
     }
@@ -168,8 +172,9 @@ public class XWApp extends Application
         return s_UUID;
     }
 
-    public static String getAppName( Context context )
+    public static String getAppName()
     {
+        Context context = getContext();
         return context.getString( R.string.app_name );
     }
 

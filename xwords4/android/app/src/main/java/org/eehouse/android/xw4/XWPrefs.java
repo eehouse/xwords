@@ -507,7 +507,7 @@ public class XWPrefs {
             if ( getRelayEnabled( context ) ) {
                 result.addWithCheck( CommsConnType.COMMS_CONN_RELAY );
             }
-            if ( BTService.BTEnabled() ) {
+            if ( BTUtils.BTEnabled() ) {
                 result.add( CommsConnType.COMMS_CONN_BT );
             }
         } else {

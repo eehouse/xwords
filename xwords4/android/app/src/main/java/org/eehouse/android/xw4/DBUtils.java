@@ -595,7 +595,7 @@ public class DBUtils {
                         msg = LocUtils.getString( context, fmt, target, timestamp );
                         break;
                     case BLUETOOTH:
-                        String devName = BTService.nameForAddr( target );
+                        String devName = BTUtils.nameForAddr( target );
                         msg = LocUtils.getString( context, R.string.invit_expl_bt_fmt,
                                                   devName, timestamp );
                         break;

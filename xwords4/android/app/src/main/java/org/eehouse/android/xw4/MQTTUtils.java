@@ -500,7 +500,7 @@ public class MQTTUtils extends Thread implements IMqttActionListener, MqttCallba
         ConnStatusHandler
             .updateStatusIn( mContext, CommsConnType.COMMS_CONN_MQTT, true );
 
-        RelayTimerReceiver.restartBackoff( mContext, TAG );
+        TimerReceiver.restartBackoff( mContext );
     }
 
     @Override
@@ -509,7 +509,7 @@ public class MQTTUtils extends Thread implements IMqttActionListener, MqttCallba
         Log.d( TAG, "%H.deliveryComplete(token=%s)", this, token );
         ConnStatusHandler
             .updateStatusOut( mContext, CommsConnType.COMMS_CONN_MQTT, true );
-        RelayTimerReceiver.restartBackoff( mContext, TAG );
+        TimerReceiver.restartBackoff( mContext );
     }
 
     private void subscribe()

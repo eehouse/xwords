@@ -451,7 +451,7 @@ public class NetLaunchInfo implements Serializable {
 
             if ( addrs.contains( CommsConnType.COMMS_CONN_BT ) ) {
                 obj.put( MultiService.BT_NAME, btName );
-                if ( ! BTService.isBogusAddr( btAddress ) ) {
+                if ( ! BTUtils.isBogusAddr( btAddress ) ) {
                     obj.put( MultiService.BT_ADDRESS, btAddress );
                 }
             }
@@ -657,7 +657,7 @@ public class NetLaunchInfo implements Serializable {
 
     public void addBTInfo()
     {
-        String[] got = BTService.getBTNameAndAddress();
+        String[] got = BTUtils.getBTNameAndAddress();
         if ( null != got ) {
             btName = got[0];
             btAddress = got[1];

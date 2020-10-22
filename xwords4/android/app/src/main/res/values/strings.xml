@@ -1702,7 +1702,7 @@
     </plurals>
     <!-- Appended to above -->
     <string name="invite_bt_desc_postscript">\n\n(The list is of
-    paired devices on which CrossWords has been detected via a
+    paired devices where CrossWords has been detected via a
     scan.)</string>
     <plurals name="bt_scan_progress_fmt">
         <item quantity="one">Scanning for CrossWords</item>
