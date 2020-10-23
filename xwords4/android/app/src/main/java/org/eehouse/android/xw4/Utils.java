@@ -799,6 +799,16 @@ public class Utils {
         }
     }
 
+    static int getFirstVersion( Context context )
+    {
+        SharedPreferences prefs =
+            context.getSharedPreferences( HIDDEN_PREFS,
+                                          Context.MODE_PRIVATE );
+        int firstVersion = prefs.getInt( FIRST_VERSION_KEY, Integer.MAX_VALUE );
+        Assert.assertTrueNR( firstVersion < Integer.MAX_VALUE );
+        return firstVersion;
+    }
+
     private static void setFirstBootStatics( Context context )
     {
         if ( null == s_isFirstBootThisVersion ) {

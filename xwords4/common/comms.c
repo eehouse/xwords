@@ -1650,7 +1650,7 @@ resendImpl( CommsCtxt* comms, XWEnv xwe, CommsConnType filter, XP_Bool force,
 
     XP_U32 now = dutil_getCurSeconds( comms->dutil, xwe );
     if ( !force && (now < comms->nextResend) ) {
-        XP_LOGF( "%s: aborting: %d seconds left in backoff", __func__, 
+        XP_LOGFF( "aborting: %d seconds left in backoff",
                  comms->nextResend - now );
         success = XP_FALSE;
 
@@ -1868,7 +1868,7 @@ relayPreProcess( CommsCtxt* comms, XWEnv xwe, XWStreamCtxt* stream, XWHostID* se
 
     /* nothing for us to do here if not using relay */
     XWRELAY_Cmd cmd = stream_getU8( stream );
-    XP_LOGF( "%s(%s)", __func__, relayCmdToStr( cmd ) );
+    XP_LOGFF( "(%s)", relayCmdToStr( cmd ) );
     switch( cmd ) {
 
     case XWRELAY_CONNECT_RESP:
@@ -2017,7 +2017,7 @@ relayPreProcess( CommsCtxt* comms, XWEnv xwe, XWStreamCtxt* stream, XWHostID* se
         XP_LOGF( "%s: dropping relay msg with cmd %d", __func__, (XP_U16)cmd );
     }
     
-    LOG_RETURNF( "%s", boolToStr(consumed) );
+    LOG_RETURNF( "consumed=%s", boolToStr(consumed) );
     return consumed;
 } /* relayPreProcess */
 #endif
@@ -2065,7 +2065,7 @@ preProcess( CommsCtxt* comms, XWEnv xwe, const CommsAddrRec* useAddr,
 
     /* There should be exactly one type associated with an incoming message */
     CommsConnType typ = addr_getType( useAddr );
-    XP_LOGF( "%s(typ=%s)", __func__, ConnType2Str(typ) );
+    XP_LOGFF( "(typ=%s)", ConnType2Str(typ) );
 
     switch ( typ ) {
 #ifdef XWFEATURE_RELAY
@@ -2611,6 +2611,7 @@ comms_gatherPlayers( CommsCtxt* comms, XWEnv xwe, XP_U32 created )
         comms_getAddrs( comms, NULL, addrs, &nRecs );
 
         const CurGameInfo* gi = comms->util->gameInfo;
+        XP_ASSERT( 0 < gi->nPlayers );
         if ( kplr_addAddrs( comms->dutil, xwe, gi, addrs, nRecs, created ) ) {
             if ( 1 ) {
                 XP_LOGFF( "not setting flag :-)" );

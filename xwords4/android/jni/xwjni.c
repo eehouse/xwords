@@ -882,8 +882,8 @@ Java_org_eehouse_android_xw4_jni_XwJNI_gi_1from_1stream
     XWStreamCtxt* stream = streamFromJStream( MPPARM(mpool) env,
                                               globalState->vtMgr, jstream );
 
-    CurGameInfo gi;
-    XP_MEMSET( &gi, 0, sizeof(gi) );
+    CurGameInfo gi = {0};
+    // XP_MEMSET( &gi, 0, sizeof(gi) );
     if ( game_makeFromStream( MPPARM(mpool) env, stream, NULL,
                               &gi, NULL, NULL, NULL, NULL, NULL, NULL ) ) {
         setJGI( env, jgi, &gi );
@@ -910,7 +910,6 @@ Java_org_eehouse_android_xw4_jni_XwJNI_nli_1to_1stream
     jbyteArray result;
     NetLaunchInfo nli = {0};
     loadNLI( env, &nli, jnli );
-    /* CurGameInfo* gi = makeGI( MPPARM(mpool) env, jgi ); */
     XWStreamCtxt* stream = mem_stream_make( MPPARM(mpool) globalState->vtMgr,
                                             NULL, 0, NULL );
 
@@ -1412,9 +1411,9 @@ JNIEXPORT void JNICALL Java_org_eehouse_android_xw4_jni_XwJNI_game_1dispose
 #endif
     AndGameGlobals* globals = &state->globals;
 
-    destroyGI( MPPARM(mpool) &globals->gi );
-
     game_dispose( &state->game, env );
+    /* Must happen after game_dispose, which uses it */
+    destroyGI( MPPARM(mpool) &globals->gi );
 
     destroyDraw( &globals->dctx, env );
     destroyXportProcs( &globals->xportProcs, env );

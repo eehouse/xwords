@@ -117,7 +117,6 @@ static const XP_UCHAR*
 figureNameFor( XP_U16 posn, const CurGameInfo* gi )
 {
     const XP_UCHAR* result = NULL;
-    // int nthRemote = 0;
     for ( int ii = 0, nthRemote = 0;
           NULL == result && ii < gi->nPlayers;
           ++ii ) {

@@ -247,7 +247,7 @@ drawScoreBoard( BoardCtxt* board, XWEnv xwe )
                 totalDim = 0;
                 XP_U16 missingPlayers = server_getMissingPlayers( board->server );
                 for ( dp = datum, ii = 0; ii < nPlayers; ++ii, ++dp ) {
-                    LocalPlayer* lp = &board->gi->players[ii];
+                    const LocalPlayer* lp = &board->gi->players[ii];
                     XP_Bool isMissing = 0 != ((1 << ii) & missingPlayers);
 
                     /* This is a hack! */
