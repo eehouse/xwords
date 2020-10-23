@@ -41,7 +41,7 @@
   <string name="key_relay_via_http_first">key_relay_via_http_first</string>
   <string name="key_update_url">key_update_url2</string>
   <string name="key_relay_url">key_relay_url2</string>
-  <string name="key_mqtt_url">key_mqtt_url</string>
+  <string name="key_mqtt_url2">key_mqtt_url2</string>
   <string name="key_mqtt_host">key_mqtt_host</string>
   <string name="key_mqtt_port">key_mqtt_port</string>
   <string name="key_mqtt_qos">key_mqtt_qos</string>
@@ -175,7 +175,7 @@
   <string name="nbs_ban_url">https://eehouse.org/sms.html</string>
   <string name="default_update_url">https://eehouse.org/xw4/info.py</string>
   <string name="default_relay_url">https://eehouse.org/xw4/relay.py</string>
-  <string name="default_mqtt_url">https://liquidsugar.net/xw4/api/v1</string>
+  <string name="default_mqtt_url2">https://eehouse.org/xw4/api/v1</string>
 
   <string name="faq_uri_fmt">https://eehouse.org/xw4/faq.html#%1$s</string>
 

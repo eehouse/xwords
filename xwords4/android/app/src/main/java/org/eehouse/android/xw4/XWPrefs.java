@@ -146,9 +146,9 @@ public class XWPrefs {
 
     public static String getDefaultMQTTUrl( Context context )
     {
-        String result = getPrefsString( context, R.string.key_mqtt_url );
+        String result = getPrefsString( context, R.string.key_mqtt_url2 );
         if ( result == null || 0 == result.length() ) {
-            result = context.getString( R.string.default_mqtt_url );
+            result = context.getString( R.string.default_mqtt_url2 );
         }
         return result;
     }
