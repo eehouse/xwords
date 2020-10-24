@@ -46,7 +46,7 @@ public class InviteView extends ScrollView
     implements RadioGroup.OnCheckedChangeListener {
 
     private static final String TAG = InviteView.class.getSimpleName();
-    private static final int QRCODE_SIZE = 512;
+    private static final int QRCODE_SIZE = 256;
     
     public interface ItemClicked {
         public void meansClicked( InviteMeans means );
