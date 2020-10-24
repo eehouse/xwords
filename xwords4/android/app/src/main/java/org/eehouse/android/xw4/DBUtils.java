@@ -646,11 +646,15 @@ public class DBUtils {
                 int indxTS = cursor.getColumnIndex( DBHelper.TIMESTAMP );
                 int indxTrgt = cursor.getColumnIndex( DBHelper.TARGET );
 
+                InviteMeans[] values = InviteMeans.values();
                 while ( cursor.moveToNext() ) {
-                    InviteMeans means = InviteMeans.values()[cursor.getInt( indxMns )];
-                    Date ts = new Date(cursor.getLong(indxTS));
-                    String target = cursor.getString( indxTrgt );
-                    result.addEntry( means, target, ts );
+                    int ordinal = cursor.getInt( indxMns );
+                    if ( ordinal < values.length ) {
+                        InviteMeans means = values[ordinal];
+                        Date ts = new Date(cursor.getLong(indxTS));
+                        String target = cursor.getString( indxTrgt );
+                        result.addEntry( means, target, ts );
+                    }
                 }
             }
             cursor.close();
