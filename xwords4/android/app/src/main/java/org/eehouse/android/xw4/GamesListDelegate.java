@@ -965,6 +965,7 @@ public class GamesListDelegate extends ListDelegateBase
     private Dialog mkNewWithKnowns()
     {
         String[] names = XwJNI.kplr_getPlayers();
+        final String[] nameRef = {null};
         final NewWithKnowns view = (NewWithKnowns)
             LocUtils.inflate( m_activity, R.layout.new_game_with_knowns );
         view.setNames( names, GameUtils.makeDefaultName( m_activity ) );
@@ -972,11 +973,11 @@ public class GamesListDelegate extends ListDelegateBase
             .setView( view )
             .setTitle( R.string.new_game_networked )
             .setIcon( R.drawable.ic_multigame )
-            .setPositiveButton( R.string.play, new OnClickListener() {
+            .setPositiveButton( "…" /* can't be empty*/, new OnClickListener() {
                     @Override
                     public void onClick( DialogInterface dlg, int item ) {
-                        String player = view.getSelPlayer();
-                        CommsAddrRec addr = XwJNI.kplr_getAddr( player );
+                        Assert.assertTrueNR( null != nameRef[0] );
+                        CommsAddrRec addr = XwJNI.kplr_getAddr( nameRef[0] );
                         if ( null != addr ) {
                             launchLikeRematch( addr, view.gameName() );
                         }
@@ -991,7 +992,22 @@ public class GamesListDelegate extends ListDelegateBase
                 } )
             ;
 
-        return ab.create();
+        final AlertDialog dialog = ab.create();
+        view.setOnNameChangeListener( new NewWithKnowns.OnNameChangeListener() {
+                @Override
+                public void onNewName( String name ) {
+                    nameRef[0] = name;
+                    Button button = dialog.getButton( DialogInterface.BUTTON_POSITIVE );
+                    if ( null != button ) {
+                        String msg = getString( R.string.invite_player_fmt, name );
+                        button.setText( msg );
+                    } else {
+                        Log.e( TAG, "Button still null" );
+                    }
+                }
+            } );
+
+        return dialog;
     }
 
     private void enableMoveGroupButton( DialogInterface dlgi )
