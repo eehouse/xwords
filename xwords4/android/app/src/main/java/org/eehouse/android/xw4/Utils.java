@@ -820,8 +820,6 @@ public class Utils {
 
 
             if ( 0 < thisVersion ) {
-                prefs = context.getSharedPreferences( HIDDEN_PREFS,
-                                                      Context.MODE_PRIVATE );
                 prevVersion = prefs.getInt( SHOWN_VERSION_KEY, -1 );
             }
             boolean newVersion = prevVersion != thisVersion;
