@@ -1007,6 +1007,8 @@
          it immediately because an email or messaging app will be
          launched to send your invitation. -->
     <string name="newgame_invite">Invite now</string>
+    <!-- Button offering to invite Known Player to a new game -->
+    <string name="invite_player_fmt">Invite %1$s</string>
     <string name="newgame_invite_more">More info</string>
     <string name="newgame_drop_relay">Drop Relay</string>
 

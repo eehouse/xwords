@@ -458,9 +458,6 @@ public class BTUtils {
                 PacketAccumulator pa = pas.get( dev );
                 try {
                     pa.join();
-                    if ( 0 < pa.getResponseCount() ) {
-                        callListeners( dev );
-                    }
                 } catch ( InterruptedException ex ) {
                     Assert.failDbg();
                 }
@@ -560,9 +557,11 @@ public class BTUtils {
         private volatile boolean mExitWhenEmpty = false;
         private BluetoothAdapter mAdapter;
         private BTHelper mHelper;
+        private boolean mPostOnResponse;
 
         PacketAccumulator( String addr ) { this(addr, 20000); }
 
+        // Ping case -- used only once
         PacketAccumulator( String addr, int timeoutMS )
         {
             Assert.assertTrue( !TextUtils.isEmpty(addr) );
@@ -575,6 +574,7 @@ public class BTUtils {
             mAdapter = getAdapterIf();
             Assert.assertTrueNR( null != mAdapter );
             mHelper = new BTHelper( mName, mAddr );
+            mPostOnResponse = true;
             start();
         }
 
@@ -612,11 +612,6 @@ public class BTUtils {
         {
             mDieTimeMS = System.currentTimeMillis() + msToLive;
             return this;
-        }
-
-        int getResponseCount()
-        {
-            return mResponseCount;
         }
 
         void addInvite( NetLaunchInfo nli )
@@ -825,6 +820,9 @@ public class BTUtils {
                            mName, dos );
                     nDone += writeAndCheck( socket, dos );
                     updateStatusOut( true );
+                    if ( mPostOnResponse ) {
+                        callListeners( socket.getRemoteDevice() );
+                    }
                 }
             } catch ( IOException ioe ) {
                 Log.e( TAG, "PacketAccumulator.run(): ioe: %s",

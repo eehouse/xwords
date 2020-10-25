@@ -21,16 +21,32 @@ package org.eehouse.android.xw4;
 
 import android.content.Context;
 import android.util.AttributeSet;
+import android.view.View;
+import android.widget.AdapterView.OnItemSelectedListener;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
+import android.widget.TextView;
 
-public class NewWithKnowns extends LinearLayout {
+public class NewWithKnowns extends LinearLayout implements OnItemSelectedListener
+{
+    public interface OnNameChangeListener {
+        void onNewName( String name );
+    }
+
+    private OnNameChangeListener mListener;
 
     public NewWithKnowns( Context cx, AttributeSet as )
     {
         super( cx, as );
+    }
+
+    void setOnNameChangeListener( OnNameChangeListener listener )
+    {
+        Assert.assertTrueNR( null == mListener );
+        mListener = listener;
     }
 
     void setNames( String[] knowns, String gameName )
@@ -43,15 +59,10 @@ public class NewWithKnowns extends LinearLayout {
                                          .simple_spinner_dropdown_item );
         Spinner spinner = (Spinner)findViewById( R.id.names );
         spinner.setAdapter( adapter );
+        spinner.setOnItemSelectedListener( this );
 
         EditText et = (EditText)findViewById( R.id.name_edit );
         et.setText( gameName );
-    }
-
-    String getSelPlayer()
-    {
-        Spinner spinner = (Spinner)findViewById( R.id.names );
-        return spinner.getSelectedItem().toString();
     }
 
     String gameName()
@@ -59,4 +70,18 @@ public class NewWithKnowns extends LinearLayout {
         EditText et = (EditText)findViewById( R.id.name_edit );
         return et.getText().toString();
     }
+
+    @Override
+    public void onItemSelected( AdapterView<?> parent, View view,
+                                int pos, long id )
+    {
+        OnNameChangeListener listener = mListener;
+        if ( null != listener && view instanceof TextView ) {
+            TextView tv = (TextView)view;
+            listener.onNewName( tv.getText().toString() );
+        }
+    }
+
+    @Override
+    public void onNothingSelected( AdapterView<?> parent ) {}
 }
