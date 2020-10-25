@@ -61,6 +61,9 @@ public class BTUtils {
     private static final String BOGUS_MARSHMALLOW_ADDR = "02:00:00:00:00:00";
     private static final int MAX_PACKET_LEN = 4 * 1024;
     private static int CONNECT_SLEEP_MS = 2500;
+    private static Set<ScanListener> sListeners = new HashSet<>();
+    private static Map<String, PacketAccumulator> sSenders = new HashMap<>();
+    private static Map<String, String> s_namesToAddrs;
 
     private enum BTCmd {
         BAD_PROTO,
@@ -69,14 +72,14 @@ public class BTUtils {
         SCAN,
         INVITE,
         INVITE_ACCPT,
-        INVITE_DECL,            // unused
+        _INVITE_DECL,            // unused
         INVITE_DUPID,
-        INVITE_FAILED,      // generic error
+        _INVITE_FAILED,      // generic error, and unused
         MESG_SEND,
         MESG_ACCPT,
-        MESG_DECL,              // unused
+        _MESG_DECL,              // unused
         MESG_GAMEGONE,
-        REMOVE_FOR,             // unused
+        _REMOVE_FOR,             // unused
         INVITE_DUP_INVITE,
     };
 
@@ -115,6 +118,18 @@ public class BTUtils {
         }
     }
 
+    static BluetoothAdapter getAdapterIf()
+    {
+        BluetoothAdapter result = null;
+        // Later this will change to include at least a test whether we're
+        // running as background user account, a situation in which BT crashes
+        // a lot inside the OS.
+        if ( !sBackUser.get() ) {
+            result = BluetoothAdapter.getDefaultAdapter();
+        }
+        return result;
+    }
+
     static void init( Context context, String appName, UUID uuid )
     {
         Log.d( TAG, "init()" );
@@ -151,7 +166,7 @@ public class BTUtils {
     public static boolean isBogusAddr( String addr )
     {
         boolean result = BOGUS_MARSHMALLOW_ADDR.equals( addr );
-        Log.d( TAG, "isBogusAddr(%s) => %b", addr, result );
+        // Log.d( TAG, "isBogusAddr(%s) => %b", addr, result );
         return result;
     }
 
@@ -177,7 +192,7 @@ public class BTUtils {
 
     public static void setAmForeground()
     {
-        sBackUser.set(false);
+        sBackUser.set( false );
     }
 
     private static String nameForAddr( BluetoothAdapter adapter, String btAddr )
@@ -197,8 +212,7 @@ public class BTUtils {
         int nSent = -1;
         String name = targetAddr.bt_hostName;
         if ( isActivePeer( name ) ) {
-            String btAddr = getSafeAddr(targetAddr);
-            getPA( btAddr ).addMsg( gameID, buf, msgID );
+            getPA( getSafeAddr(targetAddr) ).addMsg( gameID, buf, msgID );
         } else {
             Log.d( TAG, "sendPacket(): addressee %s unknown so dropping", name );
         }
@@ -221,7 +235,6 @@ public class BTUtils {
         getPA( btAddr ).addInvite( nli );
     }
 
-    private static Set<ScanListener> sListeners = new HashSet<>();
     public static void addScanListener( ScanListener listener )
     {
         synchronized ( sListeners ) {
@@ -238,7 +251,6 @@ public class BTUtils {
 
     private static void callListeners( BluetoothDevice dev )
     {
-        Log.d( TAG, "callListeners(%s)", dev.getName() );
         synchronized ( sListeners ) {
             for ( ScanListener listener : sListeners ) {
                 listener.onDeviceScanned( dev );
@@ -248,25 +260,12 @@ public class BTUtils {
 
     public static int scan( Context context, int timeoutMS )
     {
-        Log.e( TAG, "scan(): not implemented" );
         Set<BluetoothDevice> devs = getCandidates();
         int count = devs.size();
         if ( 0 < count ) {
             ScanThread.startOnce( timeoutMS, devs );
         }
         return count;
-    }
-
-    static BluetoothAdapter getAdapterIf()
-    {
-        BluetoothAdapter result = null;
-        // Later this will change to include at least a test whether we're
-        // running as background user account, a situation in which BT crashes
-        // a lot inside the OS.
-        if ( !sBackUser.get() ) {
-            result = BluetoothAdapter.getDefaultAdapter();
-        }
-        return result;
     }
 
     private static boolean isActivePeer( String devName )
@@ -280,10 +279,13 @@ public class BTUtils {
                 break;
             }
         }
-        Log.d( TAG, "isActivePeer(%s) => %b", devName, result );
+        if ( !result ) {
+            Log.d( TAG, "isActivePeer(%s) => FALSE", devName );
+        }
         return result;
     }
 
+    private static boolean sHaveLogged = false;
     static Set<BluetoothDevice> getCandidates()
     {
         Set<BluetoothDevice> result = new HashSet<>();
@@ -299,10 +301,15 @@ public class BTUtils {
                 case Major.PERIPHERAL:
                     break;
                 default:
+                    if ( ! sHaveLogged ) {
+                        Log.d( TAG, "getCandidates(): adding %s of type %d",
+                               dev.getName(), clazz );
+                    }
                     result.add( dev );
                     break;
                 }
             }
+            sHaveLogged = true;
         }
         return result;
     }
@@ -325,7 +332,7 @@ public class BTUtils {
     {
         Assert.assertTrue( !TextUtils.isEmpty(addr) );
         PacketAccumulator pa = getSenderFor( addr ).wake();
-        return pa; // .setService( this );
+        return pa;
     }
 
     private static void removeSenderFor( PacketAccumulator pa )
@@ -341,7 +348,6 @@ public class BTUtils {
         }
     }
 
-    private static Map<String, PacketAccumulator> sSenders = new HashMap<>();
     private static PacketAccumulator getSenderFor( String addr )
     {
         return getSenderFor( addr, true );
@@ -361,8 +367,54 @@ public class BTUtils {
         return result;
     }
 
+    private static String getSafeAddr( CommsAddrRec addr )
+    {
+        String btAddr = addr.bt_btAddr;
+        if ( TextUtils.isEmpty(btAddr) || BOGUS_MARSHMALLOW_ADDR.equals( btAddr ) ) {
+            final String original = btAddr;
+            String btName = addr.bt_hostName;
+            if ( null == s_namesToAddrs ) {
+                s_namesToAddrs = new HashMap<>();
+            }
+
+            if ( s_namesToAddrs.containsKey( btName ) ) {
+                btAddr = s_namesToAddrs.get( btName );
+            } else {
+                btAddr = null;
+            }
+            if ( null == btAddr ) {
+                Set<BluetoothDevice> devs = getCandidates();
+                for ( BluetoothDevice dev : devs ) {
+                    // Log.d( TAG, "%s => %s", dev.getName(), dev.getAddress() );
+                    if ( btName.equals( dev.getName() ) ) {
+                        btAddr = dev.getAddress();
+                        s_namesToAddrs.put( btName, btAddr );
+                        break;
+                    }
+                }
+            }
+            Log.d( TAG, "getSafeAddr(\"%s\") => %s", original, btAddr );
+        }
+        return btAddr;
+    }
+
+    private static void clearInstance( Thread[] holder, Thread instance )
+    {
+        synchronized ( holder ) {
+            if ( holder[0] == null ) {
+                // nothing to do
+            } else if ( holder[0] == instance ) {
+                holder[0] = null;
+            } else {
+                Log.e( TAG, "clearInstance(): cur instance %s not == %s",
+                       holder[0], instance );
+            }
+        }
+
+    }
+
     private static class ScanThread extends Thread {
-        static ScanThread[] sInstance = {null};
+        private static Thread[] sInstance = {null};
         private int mTimeoutMS;
         private Set<BluetoothDevice> mDevs;
 
@@ -373,20 +425,6 @@ public class BTUtils {
                     ScanThread thread = new ScanThread( timeoutMS, devs );
                     sInstance[0] = thread;
                     thread.start();
-                }
-            }
-        }
-
-        private static void clearInstance( ScanThread instance )
-        {
-            synchronized (sInstance) {
-                if ( sInstance[0] == null ) {
-                    // nothing to do
-                } else if ( sInstance[0] == instance ) {
-                    sInstance[0] = null;
-                } else {
-                    Log.e( TAG, "ScanThread.clearInstance(): cur instance %s not == %s",
-                           sInstance[0], instance );
                 }
             }
         }
@@ -414,6 +452,8 @@ public class BTUtils {
                 pas.put( dev, pa );
             }
 
+            // PENDING: figure out how to let these send results the minute
+            // they have one!!!
             for ( BluetoothDevice dev : pas.keySet() ) {
                 PacketAccumulator pa = pas.get( dev );
                 try {
@@ -426,11 +466,28 @@ public class BTUtils {
                 }
             }
 
-            clearInstance( this );
+            synchronized ( sListeners ) {
+                for ( ScanListener listener : sListeners ) {
+                    listener.onScanDone();
+                }
+            }
+
+            clearInstance( sInstance, this );
         }
     }
 
     private static class PacketAccumulator extends Thread {
+
+        private static class OutputPair {
+            ByteArrayOutputStream bos;
+            DataOutputStream dos;
+            OutputPair() {
+                bos = new ByteArrayOutputStream();
+                dos = new DataOutputStream( bos );
+            }
+
+            int length() { return bos.toByteArray().length; }
+        }
 
         private static class MsgElem {
             BTCmd mCmd;
@@ -545,16 +602,6 @@ public class BTUtils {
             return this;
         }
         
-        // synchronized PacketAccumulator setService( BTService service )
-        // {
-        //     Assert.assertNotNull( service );
-        //     mService = service;
-
-        //     notifyAll();
-
-        //     return this;
-        // }
-
         PacketAccumulator setExitWhenEmpty()
         {
             mExitWhenEmpty = true;
@@ -757,7 +804,7 @@ public class BTUtils {
                     }
                 }
             }
-            Log.d( TAG, "%s.figureWait() => %dms", this, result );
+            // Log.d( TAG, "%s.figureWait() => %dms", this, result );
             return result;
         }
 
@@ -775,7 +822,7 @@ public class BTUtils {
                     updateStatusOut( false );
                 } else {
                     Log.d( TAG, "PacketAccumulator.run(): connect(%s) => %s",
-                           getBTName(), dos );
+                           mName, dos );
                     nDone += writeAndCheck( socket, dos );
                     updateStatusOut( true );
                 }
@@ -875,7 +922,7 @@ public class BTUtils {
                 updateStatusOut( true );
             }
             return nDone;
-        }
+        } // writeAndCheck()
 
         private void handleReply( DataInputStream inStream, BTCmd cmd, int gameID,
                                   BTCmd reply ) throws IOException
@@ -965,27 +1012,7 @@ public class BTUtils {
             return dos;
         }
 
-        // private long figureWait()
-        // {
-        //     long waitFromNow;
-        //     try ( DeadlockWatch dw = new DeadlockWatch( this ) ) {
-        //         synchronized ( this ) {
-        //             if ( 0 == mElems.size() ) { // nothing to send
-        //                 waitFromNow = Long.MAX_VALUE;
-        //             } else if ( 0 == mFailCount ) {
-        //                 waitFromNow = 0;
-        //             } else {
-        //                 // If we're failing, use a backoff.
-        //                 long wait = 1000 * (long)Math.pow( mFailCount, 2 );
-        //                 waitFromNow = wait - (System.currentTimeMillis() - mLastFailTime);
-        //             }
-        //         }
-        //     }
-        //     Log.d( TAG, "%s.figureWait() => %dms", this, waitFromNow );
-        //     return waitFromNow;
-        // }
-
-        void setNoHost()
+        private void setNoHost()
         {
             try ( DeadlockWatch dw = new DeadlockWatch( this ) ) {
                 synchronized ( this ) {
@@ -1021,53 +1048,10 @@ public class BTUtils {
 
             return sb.append('}').toString();
         }
-    }
-
-    private static class OutputPair {
-        ByteArrayOutputStream bos;
-        DataOutputStream dos;
-        OutputPair() {
-            bos = new ByteArrayOutputStream();
-            dos = new DataOutputStream( bos );
-        }
-
-        int length() { return bos.toByteArray().length; }
-    }
-
-    private static Map<String, String> s_namesToAddrs;
-    private static String getSafeAddr( CommsAddrRec addr )
-    {
-        String btAddr = addr.bt_btAddr;
-        if ( TextUtils.isEmpty(btAddr) || BOGUS_MARSHMALLOW_ADDR.equals( btAddr ) ) {
-            final String original = btAddr;
-            String btName = addr.bt_hostName;
-            if ( null == s_namesToAddrs ) {
-                s_namesToAddrs = new HashMap<>();
-            }
-
-            if ( s_namesToAddrs.containsKey( btName ) ) {
-                btAddr = s_namesToAddrs.get( btName );
-            } else {
-                btAddr = null;
-            }
-            if ( null == btAddr ) {
-                Set<BluetoothDevice> devs = getCandidates();
-                for ( BluetoothDevice dev : devs ) {
-                    // Log.d( TAG, "%s => %s", dev.getName(), dev.getAddress() );
-                    if ( btName.equals( dev.getName() ) ) {
-                        btAddr = dev.getAddress();
-                        s_namesToAddrs.put( btName, btAddr );
-                        break;
-                    }
-                }
-            }
-            Log.d( TAG, "getSafeAddr(\"%s\") => %s", original, btAddr );
-        }
-        return btAddr;
-    }
+    } // class PacketAccumulator
 
     private static class ListenThread extends Thread {
-        private static ListenThread[] sInstance = {null};
+        private static Thread[] sInstance = {null};
         private BluetoothAdapter mAdapter;
 
         private ListenThread( BluetoothAdapter adapter )
@@ -1082,6 +1066,7 @@ public class BTUtils {
 
             BluetoothServerSocket serverSocket;
             try {
+                Assert.assertTrueNR( null != sAppName && null != sUUID );
                 serverSocket = mAdapter
                     .listenUsingRfcommWithServiceRecord( sAppName, sUUID );
             } catch ( IOException ioe ) {
@@ -1101,14 +1086,14 @@ public class BTUtils {
                 try {
                     BluetoothSocket socket = serverSocket.accept(); // blocks
                     Log.d( TAG, "%s.run(): accept() returned", this );
-                    ReadThread.read( socket );
+                    ReadThread.handle( socket );
                 } catch ( IOException ioe ) {
                     Log.ex( TAG, ioe );
-                    break;
+                    serverSocket = null;
                 }
             }
 
-            clearInstance( this );
+            clearInstance( sInstance, this );
             Log.d( TAG, "ListenThread: %s.run() exiting", this );
         }
 
@@ -1118,7 +1103,7 @@ public class BTUtils {
             BluetoothAdapter adapter = getAdapterIf();
             if ( null != adapter ) {
                 synchronized (sInstance) {
-                    result = sInstance[0];
+                    result = (ListenThread)sInstance[0];
                     if ( null == result ) {
                         sInstance[0] = result = new ListenThread( adapter );
                         result.start();
@@ -1127,26 +1112,19 @@ public class BTUtils {
             }
             return result;
         }
-
-        private static void clearInstance( ListenThread instance )
-        {
-            synchronized (sInstance) {
-                if ( sInstance[0] == null ) {
-                    // nothing to do
-                } else if ( sInstance[0] == instance ) {
-                    sInstance[0] = null;
-                } else {
-                    Log.e( TAG, "clearInstance(): cur instance %s not == %s",
-                           sInstance[0], instance );
-                }
-            }
-        }
     }
 
     private static class ReadThread extends Thread {
-        private static ReadThread[] sInstance = {null};
+        private static Thread[] sInstance = {null};
         private LinkedBlockingQueue<BluetoothSocket> mQueue;
         private BTMsgSink mBTMsgSink;
+
+        static void handle( BluetoothSocket incoming )
+        {
+            Log.d( TAG, "read(%s)", incoming );
+            ReadThread self = getOrStart();
+            self.enqueue( incoming );
+        }
 
         private ReadThread()
         {
@@ -1181,7 +1159,8 @@ public class BTUtils {
                     Log.ex( TAG, ioe );
                 }
             }
-            clearInstance( this );
+
+            clearInstance( sInstance, this );
             Log.d( TAG, "ReadThread: %s.run() exiting", this );
         }
 
@@ -1333,38 +1312,17 @@ public class BTUtils {
             mQueue.add( socket );
         }
 
-        static void read( BluetoothSocket incoming )
-        {
-            Log.d( TAG, "read(%s)", incoming );
-            ReadThread self = getOrStart();
-            self.enqueue( incoming );
-        }
-
         private static ReadThread getOrStart()
         {
             ReadThread result;
-            synchronized (sInstance) {
-                result = sInstance[0];
+            synchronized ( sInstance ) {
+                result = (ReadThread)sInstance[0];
                 if ( null == result ) {
                     sInstance[0] = result = new ReadThread();
                     result.start();
                 }
             }
             return result;
-        }
-
-        private static void clearInstance( ReadThread instance )
-        {
-            synchronized (sInstance) {
-                if ( sInstance[0] == null ) {
-                    // nothing to do
-                } else if ( sInstance[0] == instance ) {
-                    sInstance[0] = null;
-                } else {
-                    Log.e( TAG, "clearInstance(): cur instance %s not == %s",
-                           sInstance[0], instance );
-                }
-            }
         }
     }
 
