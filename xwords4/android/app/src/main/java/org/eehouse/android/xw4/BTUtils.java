@@ -1424,7 +1424,7 @@ public class BTUtils {
         void postNotification( String device, int gameID, long rowid )
         {
             Context context = XWApp.getContext();
-            String body = LocUtils.getString( context, R.string.new_relay_body );
+            String body = LocUtils.getString( context, R.string.new_game_body );
             GameUtils.postInvitedNotification( context, gameID, body, rowid );
         }
 

@@ -765,7 +765,7 @@ de %2$d destinataris. Useu el botó de tornar a
     <string name="chat_hint">Escriviu aquí…</string>
     <string name="notify_title_turn_fmt">Teniu el torn en la partida %1$s</string>
     <string name="invite_notice_title">Partida nova via invitació</string>
-    <string name="new_relay_body">Toqueu per a obrir una partida nova</string>
+    <string name="new_game_body">Toqueu per a obrir una partida nova</string>
     <string name="relay_invite_title">Invitació via repetidor</string>
     <string name="p2p_invite_title">Invitació via mode directe per WiFi</string>
     <string name="get_relay_number">Introduïu l\'ID de l\'aparell:</string>

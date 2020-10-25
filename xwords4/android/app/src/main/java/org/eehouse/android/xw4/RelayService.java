@@ -1859,7 +1859,7 @@ public class RelayService extends XWJIService
         @Override
         void postNotification( String device, int gameID, long rowid )
         {
-            String body = LocUtils.getString( mService, R.string.new_relay_body );
+            String body = LocUtils.getString( mService, R.string.new_game_body );
             GameUtils.postInvitedNotification( mService, gameID, body, rowid );
         }
     }

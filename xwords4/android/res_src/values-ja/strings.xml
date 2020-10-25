@@ -705,7 +705,7 @@
     <string name="not_again_clip_expl_fmt">\"%1$s\" オプションが招待 URL をクリップボードにコピーします。お好みのアプリに貼り付けたり、あなたの友人に送信してください。</string>
     <string name="invite_choice_relay">インターネット/リレー</string>
     <string name="invite_notice_title">招待状を介した新しいゲーム</string>
-    <string name="new_relay_body">タップすると、新しいゲームを開きます</string>
+    <string name="new_game_body">タップすると、新しいゲームを開きます</string>
     <string name="relay_invite_title">リレーの招待</string>
     <string name="button_relay_add">ゲームをスキャン</string>
     <plurals name="invite_relay_desc_fmt">

@@ -1046,7 +1046,7 @@ public class NFCUtils {
         void postNotification( String device, int gameID, long rowid )
         {
             Context context = getContext();
-            String body = LocUtils.getString( context, R.string.new_relay_body );
+            String body = LocUtils.getString( context, R.string.new_game_body );
             GameUtils.postInvitedNotification( context, gameID, body, rowid );
         }
 

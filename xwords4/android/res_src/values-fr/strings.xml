@@ -2924,7 +2924,7 @@ pour la langue</string>
 (Cette action ne peut pas être annulée.)</string>
     <string name="invite_choice_relay">Internet/Relai</string>
     <string name="invite_notice_title">Nouvelle partie via une invitation</string>
-    <string name="new_relay_body">Touchez pour commencer la nouvelle partie</string>
+    <string name="new_game_body">Touchez pour commencer la nouvelle partie</string>
     <string name="relay_invite_title">Invitation par relai</string>
     <string name="button_relay_add">Parcourir les parties</string>
     <plurals name="invite_relay_desc_fmt">

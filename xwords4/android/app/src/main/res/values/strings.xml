@@ -1683,7 +1683,7 @@
     <string name="invite_notice_title">New game via Invitation</string>
     <!--  -->
     <string name="new_bt_body_fmt">A player on the device %1$s wants to start a game</string>
-    <string name="new_relay_body">Tap to open the new game</string>
+    <string name="new_game_body">Tap to open the new game</string>
     <!--  -->
     <string name="bt_bad_proto_fmt">The version of CrossWords on
     “%1$s” is incompatible with this one for play using

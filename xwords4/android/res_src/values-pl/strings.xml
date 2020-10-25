@@ -475,7 +475,7 @@
     <string name="summary_conn">Gra w grę</string>
     <string name="invite_notice_title">Nowa gra poprzez zaproszenie</string>
     <string name="new_bt_body_fmt">Gracz na urządzeniu %1$s chce rozpocząć grę</string>
-    <string name="new_relay_body">Stuknij, aby otworzyć nową grę</string>
+    <string name="new_game_body">Stuknij, aby otworzyć nową grę</string>
     <string name="bt_bad_proto_fmt">Wersja CrossWords na \"%1$s\" jest niezgodna z tą wersją do gry przez Bluetooth. Jeden z Was może potrzebować aktualizacji, zanim będzie można kontynuować.</string>
     <string name="sms_bad_proto_fmt">Wersja CrossWords na telefonie z numerem \"%1$s\" jest niezgodna z tą wersją do gry za pomocą wiadomości Data SMS. Jeden z Was może potrzebować aktualizacji, zanim będzie można kontynuować.</string>
     <string name="bt_resend_fmt">Wysyłanie przez Bluetooth do %1$s nie powiodło się; ponów próbę %3$d w ciągu %2$d sekund.</string>
