@@ -86,6 +86,7 @@ public class GamesListDelegate extends ListDelegateBase
     private static final String SAVE_NEXTSOLO = "SAVE_NEXTSOLO";
     private static final String SAVE_REMATCHEXTRAS = "SAVE_REMATCHEXTRAS";
     private static final String SAVE_MYSIS = TAG + "/MYSIS";
+    private static final String KP_NAME_KEY = TAG + "/kp_last_name";
 
     private static final String RELAYIDS_EXTRA = "relayids";
     private static final String ROWID_EXTRA = "rowid";
@@ -965,10 +966,11 @@ public class GamesListDelegate extends ListDelegateBase
     private Dialog mkNewWithKnowns()
     {
         String[] names = XwJNI.kplr_getPlayers();
-        final String[] nameRef = {null};
+        final String[] nameRef
+            = { DBUtils.getStringFor( m_activity, KP_NAME_KEY, null ) };
         final NewWithKnowns view = (NewWithKnowns)
             LocUtils.inflate( m_activity, R.layout.new_game_with_knowns );
-        view.setNames( names, GameUtils.makeDefaultName( m_activity ) );
+        view.setNames( names, nameRef[0], GameUtils.makeDefaultName( m_activity ) );
         AlertDialog.Builder ab = makeAlertBuilder()
             .setView( view )
             .setTitle( R.string.new_game_networked )
@@ -977,6 +979,7 @@ public class GamesListDelegate extends ListDelegateBase
                     @Override
                     public void onClick( DialogInterface dlg, int item ) {
                         Assert.assertTrueNR( null != nameRef[0] );
+                        DBUtils.setStringFor( m_activity, KP_NAME_KEY, nameRef[0] );
                         CommsAddrRec addr = XwJNI.kplr_getAddr( nameRef[0] );
                         if ( null != addr ) {
                             launchLikeRematch( addr, view.gameName() );

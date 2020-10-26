@@ -20,6 +20,7 @@
 package org.eehouse.android.xw4;
 
 import android.content.Context;
+import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.AdapterView.OnItemSelectedListener;
@@ -49,7 +50,7 @@ public class NewWithKnowns extends LinearLayout implements OnItemSelectedListene
         mListener = listener;
     }
 
-    void setNames( String[] knowns, String gameName )
+    void setNames( String[] knowns, String dflt, String gameName )
     {
         ArrayAdapter<String> adapter = new
             ArrayAdapter<String>( getContext(),
@@ -60,6 +61,14 @@ public class NewWithKnowns extends LinearLayout implements OnItemSelectedListene
         Spinner spinner = (Spinner)findViewById( R.id.names );
         spinner.setAdapter( adapter );
         spinner.setOnItemSelectedListener( this );
+        if ( !TextUtils.isEmpty( dflt ) ) {
+            for ( int ii = 0; ii < knowns.length; ++ii ) {
+                if ( knowns[ii].equals( dflt ) ) {
+                    spinner.setSelection( ii );
+                    break;
+                }
+            }
+        }
 
         EditText et = (EditText)findViewById( R.id.name_edit );
         et.setText( gameName );

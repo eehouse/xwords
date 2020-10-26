@@ -2667,4 +2667,9 @@
     <string name="knowns_dup_name_fmt">Unable to change name from
     “%1$s” to “%2$s”. Is “%2$s” already in use?</string>
 
+    <!-- Title of known-player spinner in quick-invite new game dialog -->
+    <string name="name_game">Name your game</string>
+    <!-- Title of the game name field in quick-invite new game dialog -->
+    <string name="choose_opponent">Choose your opponent</string>
+
 </resources>

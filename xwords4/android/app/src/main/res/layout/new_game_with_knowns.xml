@@ -10,7 +10,7 @@
 
   <TextView android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:text="Choose your opponent"
+            android:text="@string/choose_opponent"
             />
 
   <Spinner android:id="@+id/names"
@@ -21,7 +21,7 @@
 
   <TextView android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:text="Name your game"
+            android:text="@string/name_game"
             />
 
   <EditText android:id="@+id/name_edit"
