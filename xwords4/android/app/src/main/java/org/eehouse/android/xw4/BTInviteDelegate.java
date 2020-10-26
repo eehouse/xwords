@@ -128,9 +128,19 @@ public class BTInviteDelegate extends InviteDelegate
             Collections.sort( pairs, new Comparator<TwoStringPair>() {
                     @Override
                     public int compare( TwoStringPair rec1, TwoStringPair rec2 ) {
-                        long val1 = stamps.get( rec1.str2 );
-                        long val2 = stamps.get( rec2.str2 );
-                        return (int)(val2 - val1);
+                        int result = 0;
+                        try {
+                            long val1 = stamps.get( rec1.str2 );
+                            long val2 = stamps.get( rec2.str2 );
+                            if ( val2 > val1 ) {
+                                result = 1;
+                            } else if ( val1 > val2 ) {
+                                result = -1;
+                            }
+                        } catch ( Exception ex ) {
+                            Log.e( TAG, "ex %s on %s vs %s", ex, rec1, rec2 );
+                        }
+                        return result;
                     }
                 });
         }

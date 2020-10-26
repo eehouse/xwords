@@ -82,6 +82,12 @@ abstract class InviteDelegate extends DelegateBase
             }
             return result;
         }
+
+        @Override
+        public String toString()
+        {
+            return String.format( "{dev: \"%s\", str2: \"%s\"}", mDev, str2 );
+        }
     }
 
     public static final String DEVS = "DEVS";
