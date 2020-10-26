@@ -251,7 +251,7 @@
     <string name="prefs_appearance_summary">Configurações da aparência do controle</string>
     <string name="explain_robot_summary">Mostrar resumo da pontuação depois do turno de cada jogador robô ou remoto</string>
     <string name="title_sort_tiles">Novos tipos de quadrados</string>
-    <string name="skip_confirm_turn_summary">Não mostrar resumo da pontuação depois do turno de cada jogador humano</string>
+    <string name="skip_confirm_turn_summary">NÃO mostrar resumo da pontuação depois do turno de cada jogador humano</string>
     <string name="skip_confirm_turn">Pular confirmação do turno</string>
     <string name="explain_robot">Explicar outras jogadas</string>
     <string name="prefs_behavior">Funcionamento</string>
