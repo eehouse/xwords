@@ -481,7 +481,8 @@ public class DBUtils {
         return result;
     }
 
-    public static class SentInvitesInfo implements Serializable {
+    public static class SentInvitesInfo
+        implements Serializable /* Serializable b/c passed as param to alerts */ {
         public long m_rowid;
         private ArrayList<InviteMeans> m_means;
         private ArrayList<String> m_targets;
@@ -505,7 +506,8 @@ public class DBUtils {
             return result;
         }
 
-        private SentInvitesInfo( long rowID ) {
+        private SentInvitesInfo( long rowID )
+        {
             m_rowid = rowID;
             m_means = new ArrayList<>();
             m_targets = new ArrayList<>();
@@ -640,7 +642,8 @@ public class DBUtils {
         String orderBy = DBHelper.TIMESTAMP + " DESC";
 
         synchronized( s_dbHelper ) {
-            Cursor cursor = DBHelper.query( s_db, TABLE_NAMES.INVITES, columns, selection, orderBy );
+            Cursor cursor = DBHelper.query( s_db, TABLE_NAMES.INVITES, columns,
+                                            selection, orderBy );
             if ( 0 < cursor.getCount() ) {
                 int indxMns = cursor.getColumnIndex( DBHelper.MEANS );
                 int indxTS = cursor.getColumnIndex( DBHelper.TIMESTAMP );
@@ -677,7 +680,6 @@ public class DBUtils {
         synchronized( s_dbHelper ) {
             insert( TABLE_NAMES.INVITES, values );
         }
-
     }
 
     private static void setSummaryInt( long rowid, String column, int value )
