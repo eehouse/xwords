@@ -31,13 +31,20 @@ public class Quarantine {
     private static final String TAG = Quarantine.class.getSimpleName();
     private static final String DATA_KEY = TAG + "/key";
     private static final int BAD_COUNT = 2;
+    private static Data[] sDataRef = {null};
+
+    public static int getCount( long rowid )
+    {
+        int result;
+        synchronized ( sDataRef ) {
+            result = get().getFor( rowid );
+        }
+        return result;
+    }
 
     public static boolean safeToOpen( long rowid )
     {
-        int count;
-        synchronized ( sDataRef ) {
-            count = get().getFor( rowid );
-        }
+        int count = getCount( rowid );
         boolean result = count < BAD_COUNT;
         if ( !result ) {
             Log.d( TAG, "safeToOpen(%d) => %b (count=%d)", rowid, result, count );
@@ -136,8 +143,6 @@ public class Quarantine {
         }
     }
 
-    private static Data[] sDataRef = {null};
-    
     private static void store()
     {
         synchronized( sDataRef ) {

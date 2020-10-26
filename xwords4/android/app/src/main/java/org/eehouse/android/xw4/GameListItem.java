@@ -353,6 +353,11 @@ public class GameListItem extends LinearLayout
             // Setting to 0 clears, which we want
             ImageView iv = (ImageView)findViewById( R.id.has_chat_marker );
             iv.setImageResource( resID );
+            if ( BuildConfig.NON_RELEASE ) {
+                int quarCount = Quarantine.getCount( m_rowid );
+                ((TextView)findViewById(R.id.corrupt_count_marker))
+                    .setText( 0 == quarCount ? "" : "" + quarCount );
+            }
 
             if ( XWPrefs.moveCountEnabled( m_context ) ) {
                 TextView tv = (TextView)findViewById( R.id.n_pending );
