@@ -51,7 +51,7 @@
     <string name="summary_invites_out">Players invited</string>
     <string name="summary_invites_out_fmt">Players invited to room “%1$s”</string>
     <!-- Games that have ended are listed with this string -->
-    <string name="gameOver">Game over</string>
+    <string name="gameOver">Game over sddsf</string>
     <!-- Otherwise they're listed with this to give some indication of
          how far along they are.  I may list "tiles left" someday
          instead... -->
@@ -1409,7 +1409,6 @@
     settings, e.g. the number of players, cannot be changed without
     restarting it.  When you leave this page you will have a chance to
     discard changes to avoid a restart.</string>
-
     <!-- This is shown in the Board screen when you successfully
          connect a game to the relay and are the first device in the
          game to do so. -->
@@ -1453,7 +1452,6 @@
     arrow.” Then tiles in the rack replace the arrow when you tap
     them. Tap the arrow to change its direction or to hide it.
     </string>
-
     <!-- Shown when the board screen is visible and it's just become
          another players turn. The idea is to give a hint about how to
          find out about recent moves. -->
@@ -1498,9 +1496,7 @@
     \n\tVersion code: %3$d
     \n\tSource (git) rev: %4$s
     \n\tBuilt: %5$s</string>
-
     <string name="about_devid_fmt">Device ID: %1$s</string>
-
     <!-- copyright info -->
     <string name="about_copyright">CrossWords for Android \nCopyright
     (C) 1998-2020 by Eric House. This free/open source software is
@@ -1557,7 +1553,6 @@
     <!--  -->
     <string name="button_move">Move</string>
     <string name="button_newgroup">New group</string>
-
     <!-- For user to confirm/apply wordlist filter -->
     <string name="button_useconfig">Apply Filter</string>
     <!-- Button in wordlist filter: keep it short!!!! -->
@@ -1575,13 +1570,11 @@
     <!-- title of dialog showing the list of tiles. Passed language
          name, e.g. Tiles for English -->
     <string name="show_tiles_title_fmt">Tiles for %1$s</string>
-
     <!-- Menuitem in Wordlist browser, and title of the alert you get
          when you choose it. The alert shows the note that's part of
          the wordlist, typically telling where it comes from. If
          there's no note in a wordlist the menuitem is disabled. -->
     <string name="show_note_menu">About Wordlist</string>
-
     <!-- Label for first field in wordlist browser filter -->
     <string name="pat_starts_with">Starts with</string>
     <!-- Label for middle field in wordlist browser filter -->
@@ -1593,7 +1586,6 @@
          words ending in GIN if the box under this head is
          checked-->
     <string name="pat_col_anyorder">Any Order</string>
-
     <!-- Headers for columns in tiles table: 1: letter on tile -->
     <string name="tiles_header_face">Letter</string>
     <!-- Headers for columns in tiles table: 2: Number of tiles with
@@ -1601,7 +1593,6 @@
     <string name="tiles_header_count">Number</string>
     <!-- Headers for columns in tiles table: 3: Value of each tile -->
     <string name="tiles_header_value">Value</string>
-
     <!--  -->
     <string name="tilepick_all_fmt">Pick %1$d for me</string>
     <!--  -->
@@ -1628,13 +1619,11 @@
     <!--  -->
     <string name="prompt_max_len">Words no longer than</string>
     <!--  -->
-
     <!-- Shown when user tries to make a wordlist filter where max < min -->
     <string name="error_min_gt_max">The minimum length value cannot be
     greater than the maximum value.</string>
     <!-- shown when something goes wrong building a filter -->
     <string name="alrt_bad_filter">Unable to apply filter.</string>
-
     <!-- Text of toast after long-tap copy of word from wordlist browser -->
     <string name="word_to_clip_fmt">Copied “%1$s”</string>
 
@@ -1643,7 +1632,6 @@
     <string name="filter_title_fmt">Loading %1$s…</string>
     <!-- Message in progress alert shown while wordlist is loading -->
     <string name="filter_progress_fmt">Processing %1$d words</string>
-
     <!-- Text of alert shown when user first opens wordlist
          browser. Shown until not-again checkbox checked. -->
     <string name="new_feature_filter">You can now filter wordlists by
@@ -1651,7 +1639,6 @@
     by tapping the Expander Arrow at the upper-right corner of the
     window.\n\nRead more in the FAQ by tapping the button
     below.</string>
-
     <string name="board_menu_file_email">Email author…</string>
     <!--  -->
     <string name="email_author_subject">Comment about CrossWords</string>
@@ -1973,9 +1960,9 @@
     <!-- Shown to confirm deletion of one or more game-groups. Names
          of the groups, joined by ", ", are substituted for %1$s. -->
     <plurals name="groups_confirm_del_fmt">
-      <item quantity="one">Are you sure you want to delete
+        <item quantity="one">Are you sure you want to delete
       the group %1$s?</item>
-      <item quantity="other">Are you sure you want to delete
+        <item quantity="other">Are you sure you want to delete
       the groups %1$s?</item>
     </plurals>
     <plurals name="groups_confirm_del_games_fmt">
@@ -2014,12 +2001,12 @@
     selection instead of exiting. Hit it again to exit the
     app.</string>
     <plurals name="sel_games_fmt">
-      <item quantity="one">One game selected</item>
-      <item quantity="other">%1$d games selected</item>
+        <item quantity="one">One game selected</item>
+        <item quantity="other">%1$d games selected</item>
     </plurals>
     <plurals name="sel_groups_fmt">
-      <item quantity="one">One group selected</item>
-      <item quantity="other">%1$d groups selected</item>
+        <item quantity="one">One group selected</item>
+        <item quantity="other">%1$d groups selected</item>
     </plurals>
 
     <!-- Name of group created to house games lost due to some old bug
@@ -2497,9 +2484,7 @@
     words.\n\nUse this feature to check the validity of words you’re
     thinking of playing, or to look up an unfamiliar word provided as a
     hint.</string>
-
     <string name="servicedesc">For transmitting CrossWords moves</string>
-
     <!-- New strings for duplicate mode play -->
     <!-- Checkbox in game config dialog -->
     <string name="duplicate_check">Duplicate mode</string>
@@ -2507,7 +2492,6 @@
     <string name="dup_tag">Dup</string>
     <!-- Mark game title; will produce something like "Kati vs. Eric (dup.)" -->
     <string name="dupe_title_fmt">%1$s (dup.)</string>
-
     <!-- Used instead of str_commit_confirm when in duplicate mode -->
     <string name="str_submit_confirm">Submit the current move?\n</string>
     <!-- In new-game preferences, do we default to dup-mode being on or off? -->
@@ -2516,10 +2500,8 @@
     where all players have the same tiles</string>
     <!-- These are temporary: debug-only preferences to unhide duplicate
          mode. Will go away once it's no longer experimental. -->
-
     <string name="unhide_dupmode_title">Unhide duplicate-mode options</string>
     <string name="unhide_dupmode_summary">(It’s too experimental right now)</string>
-
     <!-- dup mode: tile assignment -->
     <string name="lmi_tiles_dup">Same tiles assigned to all players</string>
     <!-- dup mode: A "pass" is when nobody can score -->
@@ -2586,7 +2568,6 @@
     <string name="history_pause_fmt">Paused by: %1$s.</string>
     <string name="history_msg_fmt"> Message: %1$s.</string>
     <string name="history_autopause">Auto-paused.</string>
-
     <string name="unsafe_open_warning">CrossWords seems to have
     crashed recently while this game was open. It may be damaged, and
     opening it might cause another crash. Do you want to try opening
@@ -2611,7 +2592,6 @@
     <!-- Debug-build-only question asked to confirm deletion of saved logs -->
     <string name="logstore_clear_confirm">Are you sure you want to
     erase your debug logs? This action cannot be undone.</string>
-
     <!-- Shown when there's more than one sequence of tiles with which
          to "spell" the string a user has entered in the wordlist
          browser. Displayed below are the possible
@@ -2623,9 +2603,7 @@
          substituted is user's string; second substitution is name of
          language -->
     <string name="no_tiles_exist">“%1$s” cannot be spelled with %2$s tiles.</string>
-
     <string name="new_feature_title">New Feature Alert</string>
-
     <string name="button_faq">Show FAQ</string>
 
     <string name="not_again_quicknetgame">There’s a new super-quick

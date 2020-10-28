@@ -57,7 +57,7 @@
          list_item_delete contextual menu, you are asked to confirm.
          This is the text of the first button ("Cancel" is the
          second).  -->
-    <string name="button_delete">Excluir</string>
+    <string name="button_delete">Apagar</string>
     <!-- When you select the list_item_reset contextual menu, you are
           asked to confirm.  This is the text of the first button
           ("Cancel" is the second).  -->
@@ -74,7 +74,7 @@
     <!-- Brings up the Wordlists (formerly Dictionaries) screen -->
     <string name="gamel_menu_dicts">Listas de palavras</string>
     <!-- text of menu that brings up the Settings (preferences) dialog -->
-    <string name="menu_prefs">Configurações</string>
+    <string name="menu_prefs">Configurações da app…</string>
     <!-- Regardless of the setting of the connect_frequency
          preference, checks the relay immediately for any moves for
          networked games on this device and posts a notification if
@@ -105,7 +105,7 @@
     <!-- pulls up dialog to change the group of the selected game -->
     <string name="list_item_move">Mover para grupo...</string>
     <!-- pulls up dialog to delete the selected game -->
-    <string name="list_item_delete">Excluir</string>
+    <string name="list_item_delete">Apagar o jogo</string>
     <!-- pulls up dialog to reset the selected game, that is to remove
          all moves so that it's the same as a newly created game
          except for any configuration. -->
@@ -822,8 +822,7 @@
     <!-- title of this sub-preference -->
     <string name="prefs_behavior">Comportamento</string>
     <!-- clarification of the above -->
-    <string name="prefs_behavior_summary">Configurações do
-    comportamento do aplicativo</string>
+    <string name="prefs_behavior_summary">Configurações do comportamento da app</string>
     <!-- if this preference is checked, a dialog will be posted every
          time a robot makes a move or a move is received from a remote
          player. -->
@@ -1673,8 +1672,8 @@
     <string name="square_tiles_summary">Mesmo se puderem ser mais altas</string>
     <string name="rename_label_caveat">Altere o nome deste jogo (apenas neste dispositivo) para:</string>
     <plurals name="confirm_seldeletes_fmt">
-        <item quantity="one">Você tem certeza que deseja excluir o 1 jogo selecionado? Esta ação não poderá ser desfeita.</item>
-        <item quantity="other">Você tem certeza que deseja excluir os %1$d jogos selecionados? Esta ação não poderá ser desfeita.</item>
+        <item quantity="one">Tem certeza que deseja apagar o 1 jogo selecionado\? Esta ação não poderá ser desfeita.</item>
+        <item quantity="other">Tem certeza que deseja apagar os %1$d jogos selecionados\? Esta ação não poderá ser desfeita.</item>
     </plurals>
     <plurals name="confirm_reset_fmt">
         <item quantity="one">Você tem certeza de que deseja redefinir o 1 jogo selecionado?\n\n(Redefinir apaga todos os movimentos e as informações de conexão.)</item>
@@ -1710,9 +1709,9 @@
     <string name="msg_dev_deleted_fmt">O jogo chamado \"%1$s\" foi deletado em outro dispositivo. Não será mais possível jogá-lo.</string>
     <string name="invit_expl_notarget_fmt">Convite enviado via %1$s em %2$s. Destinatário desconhecido.</string>
     <string name="invit_expl_bt_fmt">Convite enviado via Bluetooth para o dispositivo pareado \"%1$s\" em %2$s</string>
-    <string name="sms_invite_fail">Não foi possível iniciar o aplicativo de SMS</string>
-    <string name="sms_invite_flakey">Essa nova opção inicia seu aplicativo padrão de SMS com um convite pronto para ser enviado -- quando funciona. Cada aplicativo de SMS é diferente e alguns não cooperam.</string>
-    <string name="invit_expl_usrsms_fmt">Convite enviado via SMS em %1$s</string>
+    <string name="sms_invite_fail">Não foi possível iniciar a app de SMS</string>
+    <string name="sms_invite_flakey">Essa nova opção inicia a sua app predefinida de SMS com um convite pronto para ser enviado — se funcionam. Cada app de SMS é diferente e alguns não cooperam.</string>
+    <string name="invit_expl_usrsms_fmt">Convite enviado via SMS para %1$s em %2$s</string>
     <string name="invit_expl_sms_fmt">Convite enviado via Data SMS para o número de telefone %1$s em %2$s</string>
     <string name="invite_if_nfc">Ou apenas toque no Convite -- se o outro dispositivo também possuir Android Beaming e estiver perto.</string>
     <string name="invited_msg">Esse jogo foi criado a partir de um convite que você recebeu. Assim que for possível conectar com o remetente e todos os outros convidados chegarem o jogo será iniciado.</string>
