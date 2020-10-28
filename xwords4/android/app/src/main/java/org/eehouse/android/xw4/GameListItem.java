@@ -77,6 +77,10 @@ public class GameListItem extends LinearLayout
     private boolean m_selected = false;
     private DrawSelDelegate m_dsdel;
 
+    private static DateFormat sDF = DateFormat
+        .getDateTimeInstance( DateFormat.SHORT, DateFormat.SHORT );
+
+
     public GameListItem( Context cx, AttributeSet as )
     {
         super( cx, as );
@@ -276,6 +280,9 @@ public class GameListItem extends LinearLayout
             case R.string.title_addrs_pref:
                 value = m_summary.conTypes.toString( m_context, false );
                 break;
+            case R.string.game_summary_field_created:
+                value = sDF.format( new Date( m_summary.created ) );
+                break;
             }
 
             String name = GameUtils.getName( m_context, m_rowid );
@@ -323,9 +330,7 @@ public class GameListItem extends LinearLayout
 
             long lastMoveTime = summary.lastMoveTime;
             lastMoveTime *= 1000;
-            DateFormat df = DateFormat.getDateTimeInstance( DateFormat.SHORT,
-                                                            DateFormat.SHORT );
-            m_modTime.setText( df.format( new Date( lastMoveTime ) ) );
+            m_modTime.setText( sDF.format( new Date( lastMoveTime ) ) );
 
             setTypeIcon();
 
@@ -348,6 +353,11 @@ public class GameListItem extends LinearLayout
             // Setting to 0 clears, which we want
             ImageView iv = (ImageView)findViewById( R.id.has_chat_marker );
             iv.setImageResource( resID );
+            if ( BuildConfig.NON_RELEASE ) {
+                int quarCount = Quarantine.getCount( m_rowid );
+                ((TextView)findViewById(R.id.corrupt_count_marker))
+                    .setText( 0 == quarCount ? "" : "" + quarCount );
+            }
 
             if ( XWPrefs.moveCountEnabled( m_context ) ) {
                 TextView tv = (TextView)findViewById( R.id.n_pending );
@@ -373,14 +383,9 @@ public class GameListItem extends LinearLayout
     private void setTypeIcon()
     {
         if ( null != m_summary ) { // to be safe
-            int iconID;
-            if ( m_selected ) {
-                iconID = R.drawable.ic_check_circle;
-            } else if ( m_summary.isMultiGame() ) {
-                iconID = R.drawable.ic_multigame;
-            } else {
-                iconID = R.drawable.ic_sologame;
-            }
+            int iconID = m_summary.isMultiGame()
+                ? R.drawable.ic_multigame
+                : R.drawable.ic_sologame;
             m_gameTypeImage.setImageResource( iconID );
         }
     }
@@ -391,7 +396,8 @@ public class GameListItem extends LinearLayout
         m_dsdel.showSelected( m_selected );
         m_cb.itemToggled( this, m_selected );
 
-        setTypeIcon();
+        findViewById(R.id.game_checked)
+            .setVisibility(m_selected ? View.VISIBLE: View.GONE );
     }
 
     private void makeThumbnailIf( boolean expanded )

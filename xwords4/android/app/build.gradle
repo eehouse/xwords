@@ -1,6 +1,6 @@
 def INITIAL_CLIENT_VERS = 10
-def VERSION_CODE_BASE = 162
-def VERSION_NAME = '4.4.166'
+def VERSION_CODE_BASE = 165
+def VERSION_NAME = '4.4.169'
 def BUILD_INFO_NAME = "build-info.txt"
 
 // Not all variants use the same BT_UUID. Those with the same talk to
@@ -79,6 +79,7 @@ android {
             buildConfigField "String", "BUILD_INFO_NAME", "\"${BUILD_INFO_NAME}\""
             buildConfigField "boolean", "IS_TAGGED_BUILD", "${CURTAG}" == '' ? "false" : "true"
             resValue "string", "invite_prefix", "/and/"
+            resValue "string", "newgame_scheme", "newxwgame"
             buildConfigField "boolean", "UDP_ENABLED", "true"
             buildConfigField "boolean", "REPORT_LOCKS", "false"
             buildConfigField "boolean", "LOG_LIFECYLE", "false"
@@ -86,6 +87,7 @@ android {
             buildConfigField "boolean", "ATTACH_SUPPORTED", "false"
             buildConfigField "boolean", "OFFER_MQTT", "true"
             buildConfigField "boolean", "NON_RELEASE", "DEBUG || !IS_TAGGED_BUILD"
+            buildConfigField "boolean", "HAVE_KNOWN_PLAYERS", "false"
         }
 
         xw4NoSMS {
@@ -126,6 +128,7 @@ android {
             resValue "string", "app_name", "CrossDbg"
             resValue "string", "nbs_port", "3345"
             resValue "string", "invite_prefix", "/andd/"
+            resValue "string", "newgame_scheme", "newxwgamed"
             buildConfigField "boolean", "WIDIR_ENABLED", "true"
             buildConfigField "String", "VARIANT_NAME", "\"Dev/Debug\""
             buildConfigField "int", "VARIANT_CODE", "3"
@@ -135,6 +138,8 @@ android {
             resValue "string", "nfc_aid", "$NFC_AID_XW4d"
             externalNativeBuild.ndkBuild.cFlags += ['-DVARIANT_xw4d']
             externalNativeBuild.ndkBuild.arguments += ['XW_BT_UUID=' + XWD_UUID]
+            externalNativeBuild.ndkBuild.cFlags += ['-DXWFEATURE_KNOWNPLAYERS']
+            buildConfigField "boolean", "HAVE_KNOWN_PLAYERS", "true"
         }
 
         xw4dNoSMS {
@@ -144,6 +149,7 @@ android {
             resValue "string", "app_name", "CrossDbg"
             resValue "string", "nbs_port", "3345"
             resValue "string", "invite_prefix", "/andd/"
+            resValue "string", "newgame_scheme", "newxwgamed"
             buildConfigField "boolean", "WIDIR_ENABLED", "true"
             buildConfigField "String", "VARIANT_NAME", "\"Dev/Debug NoSMS\""
             buildConfigField "int", "VARIANT_CODE", "4"
@@ -152,6 +158,8 @@ android {
             resValue "string", "nfc_aid", "$NFC_AID_XW4d"
             externalNativeBuild.ndkBuild.cFlags += ['-DVARIANT_xw4dNoSMS']
             externalNativeBuild.ndkBuild.arguments += ['XW_BT_UUID=' + XWD_UUID]
+            externalNativeBuild.ndkBuild.cFlags += ['-DXWFEATURE_KNOWNPLAYERS']
+            buildConfigField "boolean", "HAVE_KNOWN_PLAYERS", "true"
         }
 
         xw4SMS {
@@ -325,6 +333,8 @@ dependencies {
     implementation 'com.github.eehouse:nbsproxy:v0.2.2'
 
     implementation "org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.1.+"
+
+    implementation 'com.google.zxing:core:3.3.+'
 }
 
 task mkImages(type: Exec) {

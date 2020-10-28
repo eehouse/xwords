@@ -450,8 +450,10 @@ public class NetLaunchInfo implements Serializable {
             }
 
             if ( addrs.contains( CommsConnType.COMMS_CONN_BT ) ) {
-                obj.put( MultiService.BT_NAME, btName )
-                    .put( MultiService.BT_ADDRESS, btAddress );
+                obj.put( MultiService.BT_NAME, btName );
+                if ( ! BTUtils.isBogusAddr( btAddress ) ) {
+                    obj.put( MultiService.BT_ADDRESS, btAddress );
+                }
             }
             if ( addrs.contains( CommsConnType.COMMS_CONN_SMS ) ) {
                 obj.put( PHONE_KEY, phone )
@@ -539,7 +541,7 @@ public class NetLaunchInfo implements Serializable {
             case COMMS_CONN_BT:
                 btAddress = json.optString( MultiService.BT_ADDRESS );
                 btName = json.optString( MultiService.BT_NAME );
-                doAdd = !hasAddrs && !btAddress.isEmpty();
+                doAdd = !hasAddrs && !btName.isEmpty();
                 break;
             case COMMS_CONN_RELAY:
                 room = json.getString( MultiService.ROOM );
@@ -588,7 +590,7 @@ public class NetLaunchInfo implements Serializable {
         String host = LocUtils.getString( context, R.string.invite_host );
         host = NetUtils.forceHost( host );
         Uri.Builder ub = new Uri.Builder()
-            .scheme( "http" )
+            .scheme( "http" )   // PENDING: should be https soon
             .path( String.format( "//%s%s", host,
                                   LocUtils.getString(context, R.string.invite_prefix) ) );
         appendInt( ub, LANG_KEY, lang );
@@ -612,7 +614,9 @@ public class NetLaunchInfo implements Serializable {
             ub.appendQueryParameter( ID_KEY, inviteID );
         }
         if ( addrs.contains( CommsConnType.COMMS_CONN_BT ) ) {
-            ub.appendQueryParameter( BTADDR_KEY, btAddress );
+            if ( null != btAddress ) {
+                ub.appendQueryParameter( BTADDR_KEY, btAddress );
+            }
             ub.appendQueryParameter( BTNAME_KEY, btName );
         }
         if ( addrs.contains( CommsConnType.COMMS_CONN_SMS ) ) {
@@ -653,7 +657,7 @@ public class NetLaunchInfo implements Serializable {
 
     public void addBTInfo()
     {
-        String[] got = BTService.getBTNameAndAddress();
+        String[] got = BTUtils.getBTNameAndAddress();
         if ( null != got ) {
             btName = got[0];
             btAddress = got[1];
@@ -769,7 +773,7 @@ public class NetLaunchInfo implements Serializable {
                     valid = null != room && null != inviteID();
                     break;
                 case COMMS_CONN_BT:
-                    valid = null != btAddress;
+                    valid = null != btName;
                     break;
                 case COMMS_CONN_SMS:
                     valid = null != phone && 0 < osVers;

@@ -38,9 +38,11 @@ import android.text.TextUtils;
 import org.eehouse.android.xw4.DBHelper.TABLE_NAMES;
 import org.eehouse.android.xw4.DictUtils.DictLoc;
 import org.eehouse.android.xw4.DlgDelegate.DlgClickNotify.InviteMeans;
+import org.eehouse.android.xw4.jni.CommsAddrRec;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;
 import org.eehouse.android.xw4.jni.CurGameInfo;
+import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
 import org.eehouse.android.xw4.jni.DictInfo;
 import org.eehouse.android.xw4.jni.GameSummary;
 import org.eehouse.android.xw4.jni.XwJNI;
@@ -58,6 +60,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -141,6 +144,7 @@ public class DBUtils {
                              DBHelper.LASTPLAY_TIME, DBHelper.REMOTEDEVS,
                              DBHelper.LASTMOVE, DBHelper.NPACKETSPENDING,
                              DBHelper.EXTRAS, DBHelper.NEXTDUPTIMER,
+                             DBHelper.CREATE_TIME,
         };
         String selection = String.format( ROW_ID_FMT, lock.getRowid() );
 
@@ -190,6 +194,9 @@ public class DBUtils {
                     cursor.getInt(cursor.getColumnIndex(DBHelper.LASTMOVE));
                 summary.dupTimerExpires =
                     cursor.getInt(cursor.getColumnIndex(DBHelper.NEXTDUPTIMER));
+                summary.created = cursor
+                    .getLong(cursor.getColumnIndex(DBHelper.CREATE_TIME));
+
                 String str = cursor
                     .getString(cursor.getColumnIndex(DBHelper.EXTRAS));
                 summary.setExtras( str );
@@ -252,7 +259,7 @@ public class DBUtils {
 
                 col = cursor.getColumnIndex( DBHelper.SERVERROLE );
                 tmp = cursor.getInt( col );
-                summary.serverRole = CurGameInfo.DeviceRole.values()[tmp];
+                summary.serverRole = DeviceRole.values()[tmp];
             }
             cursor.close();
         }
@@ -363,6 +370,22 @@ public class DBUtils {
         }
     } // saveSummary
 
+    public static void addRematchInfo( Context context, long rowid, CommsAddrRec addr )
+    {
+        try ( GameLock lock = GameLock.tryLock(rowid) ) {
+            if ( null != lock ) {
+                String as64 = Utils.serializableToString64( addr );
+                GameSummary summary = getSummary( context, lock )
+                    .putStringExtra( GameSummary.EXTRA_REMATCH_ADDR, as64 )
+                    ;
+                saveSummary( context, lock, summary );
+            } else {
+                Assert.failDbg();
+                Log.e( TAG, "addRematchInfo(%d): unable to lock game" );
+            }
+        }
+    }
+
     public static void addRematchInfo( Context context, long rowid, String btAddr,
                                        String phone, String relayID, String p2pAddr,
                                        String mqttDevID )
@@ -458,7 +481,8 @@ public class DBUtils {
         return result;
     }
 
-    public static class SentInvitesInfo implements Serializable {
+    public static class SentInvitesInfo
+        implements Serializable /* Serializable b/c passed as param to alerts */ {
         public long m_rowid;
         private ArrayList<InviteMeans> m_means;
         private ArrayList<String> m_targets;
@@ -482,7 +506,8 @@ public class DBUtils {
             return result;
         }
 
-        private SentInvitesInfo( long rowID ) {
+        private SentInvitesInfo( long rowID )
+        {
             m_rowid = rowID;
             m_means = new ArrayList<>();
             m_targets = new ArrayList<>();
@@ -566,13 +591,15 @@ public class DBUtils {
 
                     switch ( means ) {
                     case SMS_DATA:
-                    case SMS_USER:
-                        int fmt = means == InviteMeans.SMS_DATA
-                            ? R.string.invit_expl_sms_fmt : R.string.invit_expl_usrsms_fmt;
+                        int fmt = R.string.invit_expl_sms_fmt;
                         msg = LocUtils.getString( context, fmt, target, timestamp );
                         break;
+                    case SMS_USER:
+                        fmt = R.string.invit_expl_usrsms_fmt;
+                        msg = LocUtils.getString( context, fmt, timestamp );
+                        break;
                     case BLUETOOTH:
-                        String devName = BTService.nameForAddr( target );
+                        String devName = BTUtils.nameForAddr( target );
                         msg = LocUtils.getString( context, R.string.invit_expl_bt_fmt,
                                                   devName, timestamp );
                         break;
@@ -580,6 +607,15 @@ public class DBUtils {
                         msg = LocUtils.getString( context, R.string.invit_expl_relay_fmt,
                                                   timestamp );
                         break;
+                    case MQTT:
+                        String player = XwJNI.kplr_nameForMqttDev( target );
+                        if ( null != player ) {
+                            msg = LocUtils.getString( context,
+                                                      R.string.invit_expl_player_fmt,
+                                                      player, timestamp );
+                            break;
+                        }
+                        // else FALLTHRU
                     default:
                         msg = LocUtils.getString( context, R.string.invit_expl_notarget_fmt,
                                                   means.toString(), timestamp );
@@ -608,17 +644,22 @@ public class DBUtils {
         String orderBy = DBHelper.TIMESTAMP + " DESC";
 
         synchronized( s_dbHelper ) {
-            Cursor cursor = DBHelper.query( s_db, TABLE_NAMES.INVITES, columns, selection, orderBy );
+            Cursor cursor = DBHelper.query( s_db, TABLE_NAMES.INVITES, columns,
+                                            selection, orderBy );
             if ( 0 < cursor.getCount() ) {
                 int indxMns = cursor.getColumnIndex( DBHelper.MEANS );
                 int indxTS = cursor.getColumnIndex( DBHelper.TIMESTAMP );
                 int indxTrgt = cursor.getColumnIndex( DBHelper.TARGET );
 
+                InviteMeans[] values = InviteMeans.values();
                 while ( cursor.moveToNext() ) {
-                    InviteMeans means = InviteMeans.values()[cursor.getInt( indxMns )];
-                    Date ts = new Date(cursor.getLong(indxTS));
-                    String target = cursor.getString( indxTrgt );
-                    result.addEntry( means, target, ts );
+                    int ordinal = cursor.getInt( indxMns );
+                    if ( ordinal < values.length ) {
+                        InviteMeans means = values[ordinal];
+                        Date ts = new Date(cursor.getLong(indxTS));
+                        String target = cursor.getString( indxTrgt );
+                        result.addEntry( means, target, ts );
+                    }
                 }
             }
             cursor.close();
@@ -641,7 +682,6 @@ public class DBUtils {
         synchronized( s_dbHelper ) {
             insert( TABLE_NAMES.INVITES, values );
         }
-
     }
 
     private static void setSummaryInt( long rowid, String column, int value )
@@ -756,7 +796,10 @@ public class DBUtils {
     {
         HashMap<Long, CommsConnTypeSet> result = new HashMap<>();
         String[] columns = { ROW_ID, DBHelper.CONTYPE };
-        String selection = String.format( "%s > 0 AND %s != %d", DBHelper.NPACKETSPENDING,
+        String selection = String.format( "%s != %d AND %s > 0 AND %s != %d",
+                                          DBHelper.SERVERROLE,
+                                          DeviceRole.SERVER_STANDALONE.ordinal(),
+                                          DBHelper.NPACKETSPENDING,
                                           DBHelper.GROUPID, getArchiveGroup( context ) );
         initDB( context );
         synchronized( s_dbHelper ) {
@@ -1034,7 +1077,7 @@ public class DBUtils {
         ContentValues values = new ContentValues();
         values.put( DBHelper.SNAPSHOT, bytes );
 
-        long timestamp = new Date().getTime();
+        long timestamp = new Date().getTime(); // milliseconds since epoch
         values.put( DBHelper.CREATE_TIME, timestamp );
         values.put( DBHelper.LASTPLAY_TIME, timestamp );
         values.put( DBHelper.GROUPID, groupID );
@@ -1328,11 +1371,11 @@ public class DBUtils {
         private boolean m_isSolo;
 
         public NeedsNagInfo( long rowid, long nextNag, long lastMove,
-                             CurGameInfo.DeviceRole role ) {
+                             DeviceRole role ) {
             m_rowid = rowid;
             m_nextNag = nextNag;
             m_lastMoveMillis = 1000 * lastMove;
-            m_isSolo = CurGameInfo.DeviceRole.SERVER_STANDALONE == role;
+            m_isSolo = DeviceRole.SERVER_STANDALONE == role;
         }
 
         public boolean isSolo() {
@@ -1364,8 +1407,8 @@ public class DBUtils {
                     long rowid = cursor.getLong( rowIndex );
                     long nextNag = cursor.getLong( nagIndex );
                     long lastMove = cursor.getLong( lastMoveIndex );
-                    CurGameInfo.DeviceRole role =
-                        CurGameInfo.DeviceRole.values()[cursor.getInt( roleIndex )];
+                    DeviceRole role =
+                        DeviceRole.values()[cursor.getInt( roleIndex )];
                     result[ii] = new NeedsNagInfo( rowid, nextNag, lastMove, role );
                 }
             }
@@ -1671,26 +1714,46 @@ public class DBUtils {
 
     public static long getGroup( Context context, String name )
     {
+        long result;
+        initDB( context );
+        synchronized( s_dbHelper ) {
+            result = getGroupImpl( name );
+        }
+        return result;
+    }
+
+    private static long getGroupImpl( String name )
+    {
         long result = GROUPID_UNSPEC;
         String[] columns = { ROW_ID };
         String selection = DBHelper.GROUPNAME + " = ?";
         String[] selArgs = { name };
 
-        initDB( context );
-        synchronized( s_dbHelper ) {
-            Cursor cursor = s_db.query( TABLE_NAMES.GROUPS.toString(), columns,
-                                        selection, selArgs,
-                                        null, // groupBy
-                                        null, // having
-                                        null // orderby
-                                        );
-            if ( cursor.moveToNext() ) {
-                result = cursor.getLong( cursor.getColumnIndex( ROW_ID ) );
-            }
-            cursor.close();
+        Cursor cursor = s_db.query( TABLE_NAMES.GROUPS.toString(), columns,
+                                    selection, selArgs,
+                                    null, // groupBy
+                                    null, // having
+                                    null // orderby
+                                    );
+        if ( cursor.moveToNext() ) {
+            result = cursor.getLong( cursor.getColumnIndex( ROW_ID ) );
         }
-        Log.d( TAG, "getGroup(%s) => %d", name, result );
+        cursor.close();
+
+        Log.d( TAG, "getGroupImpl(%s) => %d", name, result );
         return result;
+    }
+
+    private static long addGroupImpl( String name )
+    {
+        ContentValues values = new ContentValues();
+        values.put( DBHelper.GROUPNAME, name );
+        values.put( DBHelper.EXPANDED, 1 );
+
+        long rowid = insert( TABLE_NAMES.GROUPS, values );
+        invalGroupsCache();
+
+        return rowid;
     }
 
     public static long addGroup( Context context, String name )
@@ -1698,15 +1761,9 @@ public class DBUtils {
         long rowid = GROUPID_UNSPEC;
         if ( null != name && 0 < name.length() ) {
             if ( null == getGroups( context ).get( name ) ) {
-                ContentValues values = new ContentValues();
-                values.put( DBHelper.GROUPNAME, name );
-                values.put( DBHelper.EXPANDED, 1 );
-
-                // initDB( context ); <- getGroups will have called this
                 synchronized( s_dbHelper ) {
-                    rowid = insert( TABLE_NAMES.GROUPS, values );
+                    rowid = addGroupImpl( name );
                 }
-                invalGroupsCache();
             }
         }
         return rowid;
@@ -1874,7 +1931,7 @@ public class DBUtils {
             // debugged), this can be removed.
             ContentValues values = new ContentValues();
             values.putNull( DBHelper.CHAT_HISTORY );
-            updateRowImpl( s_db, TABLE_NAMES.SUM, rowid, values );
+            updateRowImpl( TABLE_NAMES.SUM, rowid, values );
         }
     }
 
@@ -2544,6 +2601,37 @@ public class DBUtils {
     //     updateRow( context, DBHelper.TABLE_NAMES.SUM, rowid, values );
     // }
 
+    private static void showHiddenGames( Context context, SQLiteDatabase db )
+    {
+        Log.d( TAG, "showHiddenGames()" );
+        String query = "select " + ROW_ID + " from summaries WHERE NOT groupid"
+            + " IN (SELECT " + ROW_ID + " FROM groups);";
+        List<String> ids = null;
+        Cursor cursor = db.rawQuery( query, null );
+        if ( 0 < cursor.getCount() ) {
+            ids = new ArrayList<>();
+            int indx = cursor.getColumnIndex( ROW_ID );
+            while ( cursor.moveToNext() ) {
+                long rowid = cursor.getLong( indx );
+                ids.add( String.format("%d", rowid ) );
+            }
+        }
+        cursor.close();
+
+        if ( null != ids ) {
+            String name = LocUtils.getString( context, R.string.recovered_group );
+            long groupid = getGroupImpl( name );
+            if ( GROUPID_UNSPEC == groupid ) {
+                groupid = addGroupImpl( name );
+            }
+
+            query = String.format( "UPDATE summaries SET groupid = %d"
+                                   + " WHERE rowid IN (%s);", groupid,
+                                   TextUtils.join(",", ids ) );
+            db.execSQL( query );
+        }
+    }
+
     private static void initDB( Context context )
     {
         synchronized( DBUtils.class ) {
@@ -2553,15 +2641,32 @@ public class DBUtils {
                 // force any upgrade
                 s_dbHelper.getWritableDatabase().close();
                 s_db = s_dbHelper.getWritableDatabase();
+
+                // Workaround for bug somewhere. Run this once on startup
+                // before anything else uses the db.
+                showHiddenGames( context, s_db );
             }
         }
     }
 
-    private static int updateRowImpl( SQLiteDatabase db, TABLE_NAMES table,
+    static void hideGames( Context context, long rowid )
+    {
+        if ( BuildConfig.NON_RELEASE ) {
+            int nonID = 500 + (Utils.nextRandomInt() % 1000);
+            String query = String.format( "UPDATE summaries set GROUPID = %d"
+                                          + " WHERE rowid = %d", nonID, rowid );
+            initDB( context );
+            synchronized( s_dbHelper ) {
+                s_db.execSQL( query );
+            }
+        }
+    }
+
+    private static int updateRowImpl( TABLE_NAMES table,
                                       long rowid, ContentValues values )
     {
         String selection = String.format( ROW_ID_FMT, rowid );
-        return DBHelper.update( db, table, values, selection );
+        return DBHelper.update( s_db, table, values, selection );
     }
 
 
@@ -2570,7 +2675,7 @@ public class DBUtils {
     {
         initDB( context );
         synchronized( s_dbHelper ) {
-            int result = updateRowImpl( s_db, table, rowid, values );
+            int result = updateRowImpl( table, rowid, values );
             if ( 0 == result ) {
                 Log.w( TAG, "updateRow failed" );
             }

@@ -1,7 +1,6 @@
 /* -*- compile-command: "find-and-gradle.sh inXw4dDeb"; -*- */
 /*
- * Copyright 2015 - 2020 by Eric House (xwords@eehouse.org).  All rights
- * reserved.
+ * Copyright 2020 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -22,13 +21,13 @@ package org.eehouse.android.xw4;
 
 import android.os.Bundle;
 
-public class MQTTInviteActivity extends InviteActivity {
-    private MQTTInviteDelegate m_dlgt;
+public class KnownPlayersActivity extends XWActivity {
 
     @Override
     protected void onCreate( Bundle savedInstanceState )
     {
-        m_dlgt = new MQTTInviteDelegate( this, savedInstanceState );
-        super.onCreate( savedInstanceState, m_dlgt );
+        KnownPlayersDelegate dlgt =
+            new KnownPlayersDelegate( this, savedInstanceState );
+        super.onCreate( savedInstanceState, dlgt );
     }
 }

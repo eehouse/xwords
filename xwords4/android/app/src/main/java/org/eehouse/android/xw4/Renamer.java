@@ -29,29 +29,32 @@ import android.widget.TextView;
 
 import org.eehouse.android.xw4.loc.LocUtils;
 
-public class GameNamer extends LinearLayout {
+public class Renamer extends LinearLayout {
 
     private Context m_context;
 
-    public GameNamer( Context cx, AttributeSet as ) {
+    public Renamer( Context cx, AttributeSet as ) {
         super( cx, as );
         m_context = cx;
     }
 
-    public void setLabel( String label )
+    public Renamer setLabel( String label )
     {
         TextView view = (TextView)findViewById( R.id.name_label );
         view.setText( label );
+        return this;
     }
 
-    public void setLabel( int id )
+    public Renamer setLabel( int id )
     {
         setLabel( LocUtils.getString( getContext(), id ) );
+        return this;
     }
 
-    public void setName( String text )
+    public Renamer setName( String text )
     {
         getEdit().setText( text );
+        return this;
     }
 
     public String getName()

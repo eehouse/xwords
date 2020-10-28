@@ -26,6 +26,8 @@
 extern "C" {
 #endif
 
+#define FLAG_HASCOMMS 0x01
+
 #ifdef DEBUG
 static void
 assertUtilOK( XW_UtilCtxt* util )
@@ -133,7 +135,7 @@ game_makeNewGame( MPFORMAL XWEnv xwe, XWGame* game, CurGameInfo* gi,
     if ( 0 == gi->gameID ) {
         gi->gameID = makeGameID( util );
     }
-
+    game->created = dutil_getCurSeconds( util_getDevUtilCtxt( util, xwe ), xwe );
     game->util = util;
 
     game->model = model_make( MPPARM(mpool) xwe, (DictionaryCtxt*)NULL,
@@ -180,6 +182,8 @@ game_reset( MPFORMAL XWGame* game, XWEnv xwe, CurGameInfo* gi, XW_UtilCtxt* util
     if ( !!game->model ) {
         XP_ASSERT( !!game->model );
         XP_ASSERT( !!gi );
+
+        game->created = dutil_getCurSeconds( util_getDevUtilCtxt( util, xwe ), xwe );
 
         gi->gameID = makeGameID( util );
 
@@ -274,6 +278,8 @@ game_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream, XWGame* game,
                 break;
             }
             game->util = util;
+            game->created = strVersion < STREAM_VERS_GICREATED
+                ? 0 : stream_getU32( stream );
 
             /* Previous stream versions didn't save anything if built
              * standalone.  Now we always save something.  But we need to know
@@ -286,7 +292,12 @@ game_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream, XWGame* game,
                  || XP_TRUE                        /* old, but saved this anyway */
 #endif
                  ) {
-                hasComms = stream_getU8( stream );
+                if ( strVersion < STREAM_VERS_GICREATED ) {
+                    hasComms = stream_getU8( stream );
+                } else {
+                    XP_U8 flags = stream_getU8( stream );
+                    hasComms = flags & FLAG_HASCOMMS;
+                }
             }
 
             if ( hasComms ) {
@@ -353,12 +364,16 @@ game_saveToStream( const XWGame* game, XWEnv xwe, const CurGameInfo* gi,
     gi_writeToStream( stream, gi );
 
     if ( !!game ) {
+        const XP_U32 created = game->created;
+        stream_putU32( stream, created );
         XP_ASSERT( 0 != saveToken );
-        stream_putU8( stream, (XP_U8)!!game->comms );
+
+        XP_U8 flags = NULL == game->comms ? 0 : FLAG_HASCOMMS;
+        stream_putU8( stream, flags );
 #ifdef XWFEATURE_STANDALONE_ONLY
         XP_ASSERT( !game->comms );
 #endif
-        if ( !!game->comms ) {
+        if ( NULL != game->comms ) {
             comms_writeToStream( game->comms, xwe, stream, saveToken );
         }
 
@@ -440,6 +455,14 @@ game_getIsServer( const XWGame* game )
 void
 game_dispose( XWGame* game, XWEnv xwe )
 {
+#ifdef XWFEATURE_KNOWNPLAYERS
+    const XP_U32 created = game->created;
+    if ( !!game->comms && 0 != created
+         && server_getGameIsConnected( game->server ) ) {
+        comms_gatherPlayers( game->comms, xwe, created );
+    }
+#endif
+
     /* The board should be reused!!! PENDING(ehouse) */
     if ( !!game->board ) {
         board_destroy( game->board, xwe, XP_TRUE );
@@ -462,35 +485,6 @@ game_dispose( XWGame* game, XWEnv xwe )
         game->server = NULL;
     }
 } /* game_dispose */
-
-void
-gi_initPlayerInfo( MPFORMAL CurGameInfo* gi, const XP_UCHAR* nameTemplate )
-{
-    XP_U16 ii;
-
-    XP_MEMSET( gi, 0, sizeof(*gi) );
-    gi->serverRole = SERVER_STANDALONE;
-    gi->nPlayers = 2;
-    gi->boardSize = 15;
-    gi->gameSeconds = 25 * 60; /* 25 minute game is common? */
-    
-    gi->confirmBTConnect = XP_TRUE;
-
-    for ( ii = 0; ii < MAX_NUM_PLAYERS; ++ii ) {
-        XP_UCHAR buf[20];
-        LocalPlayer* fp = &gi->players[ii];
-
-        if ( !!nameTemplate ) {
-            XP_SNPRINTF( buf, sizeof(buf), nameTemplate, ii+1 );
-            XP_ASSERT( fp->name == NULL );
-            fp->name = copyString( mpool, buf );
-        }
-
-        fp->robotIQ = (ii == 0) ? 1 : 0; /* one robot */
-        fp->isLocal = XP_TRUE;
-        fp->secondsUsed = 0;
-    }
-} /* game_initPlayerInfo */
 
 static void
 disposePlayerInfoInt( MPFORMAL CurGameInfo* gi )

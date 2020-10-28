@@ -49,34 +49,35 @@ typedef struct _GameInfo {
     XP_U16 nPending;
     XP_U32 lastMoveTime;
     XP_U32 dupTimerExpires;
+    XP_U32 created;
     XP_U16 role;
 } GameInfo;
 
-sqlite3* openGamesDB( const char* dbName );
-void closeGamesDB( sqlite3* pDb );
+sqlite3* gdb_open( const char* dbName );
+void gdb_close( sqlite3* pDb );
 
-void writeToDB( XWStreamCtxt* stream, XWEnv xwe, void* closure );
-sqlite3_int64 writeNewGameToDB( XWStreamCtxt* stream, sqlite3* pDb );
+void gdb_write( XWStreamCtxt* stream, XWEnv xwe, void* closure );
+sqlite3_int64 gdb_writeNewGame( XWStreamCtxt* stream, sqlite3* pDb );
 
-void summarize( CommonGlobals* cGlobals );
+void gdb_summarize( CommonGlobals* cGlobals );
 
 /* Return GSList whose data is (ptrs to) rowids */
-GSList* listGames( sqlite3* pDb );
+GSList* gdb_listGames( sqlite3* pDb );
 /* free list and data allocated by above */
-void freeGamesList( GSList* games );
+void gdb_freeGamesList( GSList* games );
 
 /* Mapping of relayID -> rowid */
-GHashTable* getRelayIDsToRowsMap( sqlite3* pDb );
+GHashTable* gdb_getRelayIDsToRowsMap( sqlite3* pDb );
 
-XP_Bool getGameInfo( sqlite3* pDb, sqlite3_int64 rowid, GameInfo* gib );
-void getRowsForGameID( sqlite3* pDb, XP_U32 gameID, sqlite3_int64* rowids, 
-                       int* nRowIDs );
-XP_Bool loadGame( XWStreamCtxt* stream, sqlite3* pDb, sqlite3_int64 rowid );
-void saveInviteAddrs( XWStreamCtxt* stream, sqlite3* pDb, 
-                      sqlite3_int64 rowid );
-XP_Bool loadInviteAddrs( XWStreamCtxt* stream, sqlite3* pDb, 
+XP_Bool gdb_getGameInfo( sqlite3* pDb, sqlite3_int64 rowid, GameInfo* gib );
+void gdb_getRowsForGameID( sqlite3* pDb, XP_U32 gameID, sqlite3_int64* rowids,
+                           int* nRowIDs );
+XP_Bool gdb_loadGame( XWStreamCtxt* stream, sqlite3* pDb, sqlite3_int64 rowid );
+void gdb_saveInviteAddrs( XWStreamCtxt* stream, sqlite3* pDb,
+                          sqlite3_int64 rowid );
+XP_Bool gdb_loadInviteAddrs( XWStreamCtxt* stream, sqlite3* pDb,
                          sqlite3_int64 rowid );
-void deleteGame( sqlite3* pDb, sqlite3_int64 rowid );
+void gdb_deleteGame( sqlite3* pDb, sqlite3_int64 rowid );
 
 #define KEY_RDEVID "RDEVID"
 #define KEY_LDEVID "LDEVID"
@@ -84,13 +85,13 @@ void deleteGame( sqlite3* pDb, sqlite3_int64 rowid );
 #define KEY_SMSPORT "SMSPORT"
 #define KEY_WIN_LOC "WIN_LOC"
 
-void db_store( sqlite3* pDb, const gchar* key, const gchar* value );
-void db_remove( sqlite3* pDb, const gchar* key );
+void gdb_store( sqlite3* pDb, const gchar* key, const gchar* value );
+void gdb_remove( sqlite3* pDb, const gchar* key );
 
 typedef enum { NOT_THERE, BUFFER_TOO_SMALL, SUCCESS } FetchResult;
-FetchResult db_fetch( sqlite3* pDb, const gchar* key, const gchar* keySuffix,
-                      gchar* buf, gint* buflen );
-XP_Bool db_fetch_safe( sqlite3* pDb, const gchar* key, const gchar* keySuffix,
-                       gchar* buf, gint buflen );
+FetchResult gdb_fetch( sqlite3* pDb, const gchar* key, const gchar* keySuffix,
+                       gchar* buf, gint* buflen );
+XP_Bool gdb_fetch_safe( sqlite3* pDb, const gchar* key, const gchar* keySuffix,
+                        gchar* buf, gint buflen );
 
 #endif

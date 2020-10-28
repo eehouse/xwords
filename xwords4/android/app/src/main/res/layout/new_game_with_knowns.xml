@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<org.eehouse.android.xw4.NewWithKnowns
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:padding="8dp"
+    >
+
+  <TextView android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/choose_opponent"
+            />
+
+  <Spinner android:id="@+id/names"
+           android:layout_width="fill_parent"
+           android:layout_height="wrap_content"
+           android:drawSelectorOnTop="true"
+           />
+
+  <TextView android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/name_game"
+            />
+
+  <EditText android:id="@+id/name_edit"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            />
+</org.eehouse.android.xw4.NewWithKnowns>

@@ -39,6 +39,17 @@
               android:padding="20dp"
               />
 
+    <Button android:id="@+id/button_invite"
+            android:text="@string/button_invite"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            />
+
+    <FrameLayout android:id="@+id/button_bar"
+                 android:layout_width="match_parent"
+                 android:layout_height="wrap_content"
+                 />
+
     <LinearLayout android:id="@+id/progress_line"
                   android:orientation="vertical"
                   android:layout_width="match_parent"
@@ -60,18 +71,6 @@
                    android:min="0"
                    />
     </LinearLayout>
-
-
-    <Button android:id="@+id/button_invite"
-            android:text="@string/button_invite"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            />
-
-    <FrameLayout android:id="@+id/button_bar"
-                 android:layout_width="match_parent"
-                 android:layout_height="wrap_content"
-                 />
 
   </LinearLayout>
 </ScrollView>

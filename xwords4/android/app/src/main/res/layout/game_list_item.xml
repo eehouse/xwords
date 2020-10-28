@@ -41,11 +41,24 @@
                        android:layout_height="30dp"
                        android:layout_centerInParent="true"
                        />
+            <ImageView android:id="@+id/game_checked"
+                       android:layout_width="30dp"
+                       android:layout_height="30dp"
+                       android:layout_centerInParent="true"
+                       android:src="@drawable/ic_check_circle"
+                       android:visibility="gone"
+                       />
             <ImageView android:id="@+id/has_chat_marker"
                        android:layout_width="wrap_content"
                        android:layout_height="22dp"
                        android:layout_alignParentBottom="true"
                        />
+            <!-- Debug only -->
+            <TextView android:id="@+id/corrupt_count_marker"
+                      android:layout_width="wrap_content"
+                      android:layout_height="22dp"
+                      android:layout_alignParentBottom="true"
+                      />
             <TextView android:id="@+id/dup_tag"
                       android:layout_width="wrap_content"
 	                  android:layout_height="wrap_content"

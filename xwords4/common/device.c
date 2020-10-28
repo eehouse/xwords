@@ -80,28 +80,73 @@ dvc_store( XW_DUtilCtxt* dutil, XWEnv xwe )
 
 #endif
 
-void
-dvc_getMQTTDevID( XW_DUtilCtxt* dutil, XWEnv xwe, MQTTDevID* devID )
+// #define BOGUS_ALL_SAME_DEVID
+
+static void
+getMQTTDevID( XW_DUtilCtxt* dutil, XWEnv xwe, XP_Bool forceNew, MQTTDevID* devID )
 {
+#ifdef BOGUS_ALL_SAME_DEVID
+    XP_USE(forceNew);
+    MQTTDevID bogusID = 0;
+    XP_UCHAR* str = "ABCDEF0123456789";
+    XP_Bool ok = strToMQTTCDevID( str, &bogusID );
+    XP_ASSERT( ok );
+
     MQTTDevID tmp = 0;
     XP_U16 len = sizeof(tmp);
     dutil_loadPtr( dutil, xwe, MQTT_DEVID_KEY, SUFFIX_MQTT_DEVID, &tmp, &len );
+    if ( len != sizeof(tmp) || 0 != XP_MEMCMP( &bogusID, &tmp, sizeof(tmp) ) ) {
+        dutil_storePtr( dutil, xwe, MQTT_DEVID_KEY, &bogusID, sizeof(bogusID) );
+    }
+    *devID = bogusID;
 
-    // XP_LOGFF( "len: %d; sizeof(tmp): %d", len, sizeof(tmp) );
-    if ( len != sizeof(tmp) ) { /* not found, or bogus somehow */
+#else
+
+    MQTTDevID tmp = 0;
+    XP_U16 len = sizeof(tmp);
+    if ( !forceNew ) {
+        dutil_loadPtr( dutil, xwe, MQTT_DEVID_KEY, SUFFIX_MQTT_DEVID, &tmp, &len );
+    }
+
+    XP_LOGFF( "len: %d; sizeof(tmp): %zu", len, sizeof(tmp) );
+    if ( forceNew || len != sizeof(tmp) ) { /* not found, or bogus somehow */
         tmp = XP_RANDOM();
-        tmp <<= 32;
-        tmp |= XP_RANDOM();
+        tmp <<= 27;
+        tmp ^= XP_RANDOM();
+        tmp <<= 27;
+        tmp ^= XP_RANDOM();
         dutil_storePtr( dutil, xwe, MQTT_DEVID_KEY, &tmp, sizeof(tmp) );
-#ifdef DEBUG
+
+# ifdef DEBUG
         XP_UCHAR buf[32];
         formatMQTTDevID( &tmp, buf, VSIZE(buf) );
         /* This log statement is required by discon_ok2.py!!! (keep in sync) */
         XP_LOGFF( "generated id: %s; key: %s", buf, MQTT_DEVID_KEY );
-#endif
+# endif
     }
     *devID = tmp;
-    // LOG_RETURNF( MQTTDevID_FMT " key: %s", *devID, MQTT_DEVID_KEY );
+#endif
+    LOG_RETURNF( MQTTDevID_FMT " key: %s", *devID, MQTT_DEVID_KEY );
+}
+
+void
+dvc_getMQTTDevID( XW_DUtilCtxt* dutil, XWEnv xwe, MQTTDevID* devID )
+{
+    getMQTTDevID( dutil, xwe, XP_FALSE, devID );
+}
+
+void
+dvc_resetMQTTDevID( XW_DUtilCtxt* dutil, XWEnv xwe )
+{
+    LOG_FUNC();
+#ifdef BOGUS_ALL_SAME_DEVID
+    XP_LOGFF( "doing nothing" );
+    XP_USE( dutil );
+    XP_USE( xwe );
+#else
+    MQTTDevID ignored;
+    getMQTTDevID( dutil, xwe, XP_TRUE, &ignored );
+#endif
 }
 
 typedef enum { CMD_INVITE, CMD_MSG, CMD_DEVGONE, } MQTTCmd;

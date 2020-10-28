@@ -87,7 +87,6 @@ static void gtkShowFinalScores( const GtkGameGlobals* globals,
                                 XP_Bool ignoreTimeout );
 static void send_invites( CommonGlobals* cGlobals, XP_U16 nPlayers,
                           XP_U32 relayDevID, const XP_UCHAR* relayID,
-                          MQTTDevID* mqttInviteeID,
                           const CommsAddrRec* addrs );
 
 #define GTK_TRAY_HT_ROWS 3
@@ -664,7 +663,8 @@ on_board_window_shown( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
         /* If it has pending invite info, send the invitation! */
         XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(cGlobals->util->mpool)
                                                     cGlobals->params->vtMgr );
-        if ( loadInviteAddrs( stream, cGlobals->params->pDb, cGlobals->rowid ) ) {
+        if ( gdb_loadInviteAddrs( stream, cGlobals->params->pDb,
+                                  cGlobals->rowid ) ) {
             CommsAddrRec addr = {0};
             addrFromStream( &addr, stream );
             comms_augmentHostAddr( cGlobals->game.comms, NULL_XWE, &addr );
@@ -679,7 +679,7 @@ on_board_window_shown( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
                 CommsAddrRec addr = {0};
                 addrFromStream( &addr, stream );
 
-                send_invites( cGlobals, 1, 0, relayID, &addr.u.mqtt.devID, &addr );
+                send_invites( cGlobals, 1, 0, relayID, &addr );
             }
         }
         stream_destroy( stream, NULL_XWE );
@@ -1405,39 +1405,37 @@ handle_invite_button( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
     CommsAddrRec inviteAddr = {0};
     gint nPlayers = nMissing;
     XP_U32 relayDevID = 0;
-    MQTTDevID mqttInviteeID;
     XP_Bool confirmed = gtkInviteDlg( globals, &inviteAddr, &nPlayers,
-                                      &relayDevID, &mqttInviteeID );
-    XP_LOGF( "%s: inviteDlg => %d", __func__, confirmed );
+                                      &relayDevID );
+    XP_LOGFF( "gtkInviteDlg() => %s", boolToStr(confirmed) );
 
     if ( confirmed ) {
-        send_invites( cGlobals, nPlayers, relayDevID, NULL, &mqttInviteeID, &inviteAddr );
+        send_invites( cGlobals, nPlayers, relayDevID, NULL, &inviteAddr );
     }
 } /* handle_invite_button */
 
 static void
 send_invites( CommonGlobals* cGlobals, XP_U16 nPlayers,
               XP_U32 relayDevID, const XP_UCHAR* relayID,
-              MQTTDevID* mqttInviteeID,
-              const CommsAddrRec* addrs )
+              const CommsAddrRec* destAddr )
 {
-    CommsAddrRec addr = {0};
+    CommsAddrRec myAddr = {0};
     CommsCtxt* comms = cGlobals->game.comms;
     XP_ASSERT( comms );
-    comms_getAddr( comms, &addr );
+    comms_getAddr( comms, &myAddr );
 
     gint forceChannel = 1;  /* 1 is what Android does. Limits to two-device games */
 
-    NetLaunchInfo nli = {0};
-    nli_init( &nli, cGlobals->gi, &addr, nPlayers, forceChannel );
-    if ( addr_hasType( &addr, COMMS_CONN_RELAY ) ) {
+    NetLaunchInfo nli = {0};    /* include everything!!! */
+    nli_init( &nli, cGlobals->gi, &myAddr, nPlayers, forceChannel );
+    if ( addr_hasType( &myAddr, COMMS_CONN_RELAY ) ) {
         XP_UCHAR buf[32];
         snprintf( buf, sizeof(buf), "%X", makeRandomInt() );
-        nli_setInviteID( &nli, buf ); /* should not be relay only!!! */
+        nli_setInviteID( &nli, buf ); /* PENDING: should not be relay only!!! */
     }
     // nli_setDevID( &nli, linux_getDevIDRelay( cGlobals->params ) );
 
-    if ( addr_hasType( &addr, COMMS_CONN_MQTT ) ) {
+    if ( addr_hasType( &myAddr, COMMS_CONN_MQTT ) ) {
         const MQTTDevID* devid = mqttc_getDevID( cGlobals->params );
         nli_setMQTTDevID( &nli, devid );
     }
@@ -1454,12 +1452,12 @@ send_invites( CommonGlobals* cGlobals, XP_U16 nPlayers,
     }
 #endif
 
-    if ( !!addrs && '\0' != addrs->u.sms.phone[0] && 0 < addrs->u.sms.port ) {
+    if ( !!destAddr && '\0' != destAddr->u.sms.phone[0] && 0 < destAddr->u.sms.port ) {
         gchar gameName[64];
         snprintf( gameName, VSIZE(gameName), "Game %d", cGlobals->gi->gameID );
 
         linux_sms_invite( cGlobals->params, &nli,
-                          addrs->u.sms.phone, addrs->u.sms.port );
+                          destAddr->u.sms.phone, destAddr->u.sms.port );
     }
 
     if ( 0 != relayDevID || !!relayID ) {
@@ -1467,8 +1465,8 @@ send_invites( CommonGlobals* cGlobals, XP_U16 nPlayers,
         relaycon_invite( cGlobals->params, relayDevID, relayID, &nli );
     }
 
-    if ( addr_hasType( addrs, COMMS_CONN_MQTT ) ) {
-        mqttc_invite( cGlobals->params, &nli, mqttInviteeID );
+    if ( addr_hasType( destAddr, COMMS_CONN_MQTT ) ) {
+        mqttc_invite( cGlobals->params, &nli, &destAddr->u.mqtt.devID );
     }
 
     /* while ( gtkaskm( "Invite how many and how?", infos, VSIZE(infos) ) ) {  */
@@ -2634,7 +2632,7 @@ loadGameNoDraw( GtkGameGlobals* globals, LaunchParams* params,
     cGlobals->rowid = rowid;
     XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(cGlobals->util->mpool)
                                                 params->vtMgr );
-    XP_Bool loaded = loadGame( stream, pDb, rowid );
+    XP_Bool loaded = gdb_loadGame( stream, pDb, rowid );
     if ( loaded ) {
         if ( NULL == cGlobals->dict ) {
             cGlobals->dict = makeDictForStream( cGlobals, stream );

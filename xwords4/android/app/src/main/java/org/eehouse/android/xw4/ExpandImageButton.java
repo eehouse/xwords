@@ -25,8 +25,13 @@ import android.util.AttributeSet;
 import android.view.View;
 import android.widget.ImageButton;
 
-public class ExpandImageButton extends ImageButton {
+import java.util.HashSet;
+import java.util.Set;
+
+public class ExpandImageButton extends ImageButton
+    implements View.OnClickListener {
     private boolean m_expanded;
+    private Set<ExpandChangeListener> mListeners = new HashSet<>();
     
     public interface ExpandChangeListener {
         public void expandedChanged( boolean nowExpanded );
@@ -37,27 +42,51 @@ public class ExpandImageButton extends ImageButton {
         super( context, as );
     }
 
+    @Override
+    protected void onFinishInflate()
+    {
+        super.onFinishInflate();
+        setOnClickListener( this );
+
+        setImageResource();
+    }
+
+    @Override
+    public void onClick( View view )
+    {
+        toggle();
+    }
+
     public ExpandImageButton setExpanded( boolean expanded )
     {
-        m_expanded = expanded;
+        boolean changed = m_expanded != expanded;
+        if ( changed ) {
+            m_expanded = expanded;
 
-        setImageResource( expanded ?
-                          R.drawable.expander_ic_maximized :
-                          R.drawable.expander_ic_minimized);
+            setImageResource();
+
+            for ( ExpandChangeListener proc : mListeners ) {
+                proc.expandedChanged( m_expanded );
+            }
+        }
         return this;
     }
     
     public ExpandImageButton setOnExpandChangedListener( final ExpandChangeListener listener )
     {
-        setOnClickListener( new View.OnClickListener() {
-                @Override
-                public void onClick( View view )
-                {
-                    m_expanded = ! m_expanded;
-                    setExpanded( m_expanded );
-                    listener.expandedChanged( m_expanded );
-                }
-            } );
+        mListeners.add( listener );
         return this;
+    }
+
+    public void toggle()
+    {
+        setExpanded( ! m_expanded );
+    }
+
+    private void setImageResource()
+    {
+        setImageResource( m_expanded ?
+                          R.drawable.expander_ic_maximized :
+                          R.drawable.expander_ic_minimized);
     }
 }

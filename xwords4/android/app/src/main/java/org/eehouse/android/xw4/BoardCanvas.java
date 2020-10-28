@@ -571,7 +571,9 @@ public class BoardCanvas extends Canvas implements DrawCtx {
             drawLine( xx, rect.top, xx, rect.top + rect.height(),
                       m_strokePaint );
 
-            if ( mPendingCount > 0 ) {
+            // Remove this for now. It comes up at the wrong time for new
+            // installs. Need to delay it. PENDING
+            if ( false && mPendingCount > 0 ) {
                 mPendingCount = 0;
                 postNAHint( R.string.not_again_longtap_lookup,
                             R.string.key_na_longtap_lookup );

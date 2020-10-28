@@ -500,7 +500,7 @@
     and all invitations have been accepted.)</string>
     <string name="invit_expl_sms_fmt">Invite sent via Data SMS to phone
     number %1$s on %2$s</string>
-    <string name="invit_expl_usrsms_fmt">Invite sent via SMS to %1$s on %2$s</string>
+    <string name="invit_expl_usrsms_fmt">Invite sent via SMS on %1$s</string>
     <!-- shown when user chooses to invite via the default SMS app -->
     <string name="sms_invite_flakey">This option launches your
     default SMS app with an invitation ready to send—when it
@@ -514,6 +514,11 @@
     to another device on %1$s</string>
     <string name="invit_expl_notarget_fmt">Invite sent via %1$s on
     %2$s. Recipient unknown.</string>
+    <!-- In "more info" about sent invitations when mqtt used and
+         player is known. -->
+    <string name="invit_expl_player_fmt">Invite forwarded via MQTT/internet
+    to known player “%1$s” on %2$s.</string>
+
     <!-- Short for "points", this is shown at the right end of the
          tray in place of the first tile placed along with the points
          the current move would earn if committed. -->
@@ -815,6 +820,9 @@
     <string name="game_summary_field_opponents">Opponent name[s]</string>
     <!-- List the state of the game, "Game over" or "10 moves made"
          etc. -->
+    <!-- Debug-only: list creation date of game -->
+    <string name="game_summary_field_created">When created</string>
+    <!-- State the game is in, e.g. finished or awaiting players -->
     <string name="game_summary_field_state">Game state</string>
     <!-- Checkbox that when set prevents showing a title bar in the
          game board window to save space -->
@@ -957,10 +965,6 @@
     <!-- explanation of the above -->
     <string name="network_behavior_summary">Settings that apply to
         networked games</string>
-    <string name="relay_behavior">Relay play settings</string>
-    <!-- explanation of the above -->
-    <string name="relay_behavior_summary">Settings that apply to
-    internet-connected games </string>
     <string name="disable_relay">Disable play via the relay </string>
     <string name="disable_relay_summary">Disable all internet communication</string>
     <!--       
@@ -1003,8 +1007,11 @@
          it immediately because an email or messaging app will be
          launched to send your invitation. -->
     <string name="newgame_invite">Invite now</string>
+    <!-- Button offering to invite Known Player to a new game -->
+    <string name="invite_player_fmt">Invite %1$s</string>
     <string name="newgame_invite_more">More info</string>
     <string name="newgame_drop_relay">Drop Relay</string>
+
     <!-- EXPLAIN ME -->
     <!-- <string name="bt_disabled">Bluetooth is not available.  This may -->
     <!--   mean that your device doesn\'t support it, or that it\'s been -->
@@ -1019,7 +1026,24 @@
     <string name="invite_choice_nfc">NFC (“Android beaming”)</string>
     <string name="invite_choice_relay">Internet/Relay</string>
     <string name="invite_choice_p2p">Wifi Direct</string>
-    <string name="invite_choice_title">Inviting players: How?</string>
+    <string name="invite_choice_title">Inviting a Player</string>
+
+    <!-- Text above choices for how to send invitations == ONLY WHEN
+         there's no choice between how and who. Replaces the how?/who?
+         choice radio group. -->
+    <string name="how_tab">Send invitation how?</string>
+
+    <!-- Radio button in invite choices dialog for list of previous opponents -->
+    <string name="radio_who">Who?</string>
+    <!-- Text shown only when there are not any previous opponents to invite -->
+    <string name="invite_who_empty_expl">empty expl</string>
+    <!-- Shown above QR code in the how-to-invite dialog -->
+    <string name="qrcode_invite_summary">QRCode your opponent can scan</string>
+    <!-- Shown in the middle of the invite-how radio buttons -->
+    <string name="local_invite_summary">If your opponent is nearby…</string>
+
+    <!-- Radio button in invite choices dialog for list ways to send an invitation -->
+    <string name="radio_how">How?</string>
     <!-- Button, on DEBUG builds only, causes invitee players to be robots -->
     <string name="ok_with_robots">OK (robots)</string>
     <!-- <string name="sms_or_email">Send invitation using SMS (texting) or -->
@@ -1600,6 +1624,9 @@
     greater than the maximum value.</string>
     <!-- shown when something goes wrong building a filter -->
     <string name="alrt_bad_filter">Unable to apply filter.</string>
+    <!-- Text of toast after long-tap copy of word from wordlist browser -->
+    <string name="word_to_clip_fmt">Copied “%1$s”</string>
+
     <!-- Title of progress alert shown while wordlist is loading. For
          huge lists like Polish this can take a few seconds. -->
     <string name="filter_title_fmt">Loading %1$s…</string>
@@ -1645,7 +1672,7 @@
     <string name="invite_notice_title">New game via Invitation</string>
     <!--  -->
     <string name="new_bt_body_fmt">A player on the device %1$s wants to start a game</string>
-    <string name="new_relay_body">Tap to open the new game</string>
+    <string name="new_game_body">Tap to open the new game</string>
     <!--  -->
     <string name="bt_bad_proto_fmt">The version of CrossWords on
     “%1$s” is incompatible with this one for play using
@@ -1664,7 +1691,7 @@
     </plurals>
     <!-- Appended to above -->
     <string name="invite_bt_desc_postscript">\n\n(The list is of
-    paired devices on which CrossWords has been detected via a
+    paired devices where CrossWords has been detected via a
     scan.)</string>
     <plurals name="bt_scan_progress_fmt">
         <item quantity="one">Scanning for CrossWords</item>
@@ -1694,19 +1721,12 @@
     <!--  -->
     <string name="button_sms_add">Import contact</string>
     <!--  -->
-    <string name="button_relay_add">Scan games</string>
-    <!--  -->
     <plurals name="invite_sms_desc_fmt">
         <item quantity="one">Please check the phone number you want to
       invite to your new game, then tap “%2$s”.</item>
         <item quantity="other">Please check the %1$d phone numbers you
       want to invite to your new game, then tap “%2$s”.</item>
     </plurals>
-    <!-- Appears near top of invitation phone number picker when it's
-         the user-visible SMS case -->
-    <string name="invite_sms_desc">Your SMS messaging app will then be
-    launched with a message for you to send to the phone number
-    you’ve selected.</string>
     <!-- Appears near top of invitation phone number picker when it's
          the user-invisible Data SMS case -->
     <string name="invite_nbs_desc">A data message will then be
@@ -1744,17 +1764,11 @@
     <string name="empty_p2p_inviter">There are currently no devices
     reachable via WiFiDirect that have CrossWords installed.</string>
     <!--  -->
-    <string name="empty_relay_inviter">This list of devices is
-    empty. Use the “Scan games” button to scan your old games
-    for opponents. Use the “+” button to enter device IDs directly.</string>
-    <!--  -->
     <string name="get_sms_title">Manual entry</string>
     <string name="get_sms_number">Device phone number:</string>
     <string name="get_sms_name">Contact name (optional):</string>
-    <string name="get_relay_name">Device name (optional):</string>
     <!-- hint text in password-setting text area -->
     <string name="password_hint">(Optional)</string>
-    <string name="get_relay_number">Enter device ID:</string>
     <!--  -->
     <plurals name="confirm_clear_sms_fmt">
         <item quantity="one">Are you sure you want to delete the checked
@@ -1933,7 +1947,8 @@
     <string name="download_failed">Download unsuccessful</string>
     <string name="default_loc">Store wordlists internally</string>
     <string name="default_loc_summary">(Not in external/sdcard memory)</string>
-    <string name="download_path_title">Downloads Directory</string>
+    <string name="download_path_title">Public Directory</string>
+    <string name="download_path_hint">E.g. where email attachments are saved</string>
     <string name="newgroup_label">Name your new group:</string>
     <string name="list_group_delete">Delete group</string>
     <string name="list_group_rename">Rename group</string>
@@ -1993,14 +2008,17 @@
         <item quantity="one">One group selected</item>
         <item quantity="other">%1$d groups selected</item>
     </plurals>
+
+    <!-- Name of group created to house games lost due to some old bug
+         I just found. I expect users to move them elsewhere. -->
+    <string name="recovered_group">Recovered games</string>
+
     <string name="summary_thumbsize">Thumbnail size</string>
     <string name="thumb_off">Disabled</string>
     <!-- Text of alert shown when user accepts an invitation, e.g. in
          email, for the second time. -->
     <string name="dropped_dupe">This invitation has already been used
     to create a game.</string>
-    <!-- Button in "Duplicate invitation ignored" alert -->
-    <string name="button_open_game">Open Game</string>
     <string name="cur_menu_marker_fmt">%1$s (in use)</string>
     <string name="board_menu_invite">Invite</string>
     <string name="enable_nfc">NFC is turned off on this device. You
@@ -2274,7 +2292,6 @@
     <string name="radio_name_tablet">Tablet/no radio</string>
     <string name="radio_name_gsm">GSM</string>
     <string name="radio_name_cdma">CDMA</string>
-    <string name="nfc_to_self">Send via NFC to self?</string>
     <string name="game_summary_field_rowid">rowid</string>
     <string name="game_summary_field_gameid">gameid</string>
     <string name="game_summary_field_npackets">Pending packet count</string>
@@ -2348,12 +2365,10 @@
        when chosen -->
     <string name="not_again_clip_expl_fmt">The “%1$s” option copies an
   invitation URL to the clipboard. Paste it into the app of your
-  choice and send it to your friend.</string>
+  choice and share it with a friend.</string>
     <string name="confirm_clear_chat">Are you sure you want to delete
   all chat history for this game?\n\n(This action cannot be
   undone.)</string>
-    <string name="rel_invite_title">Relay invite title</string>
-    <string name="fetching_from_relay">Fetching games from relay</string>
     <string name="processing_games">Processing games</string>
     <string name="list_item_select">Select</string>
     <string name="list_item_deselect">De-select</string>
@@ -2590,9 +2605,49 @@
     <string name="no_tiles_exist">“%1$s” cannot be spelled with %2$s tiles.</string>
     <string name="new_feature_title">New Feature Alert</string>
     <string name="button_faq">Show FAQ</string>
+
+    <string name="not_again_quicknetgame">There’s a new super-quick
+    way to start a game with somebody you’ve played against before. If
+    the person’s name is listed, just select it and an invitation will
+    be sent immediately.
+    </string>
+
     <!-- MQTT stuff. May not see the light of day -->
     <string name="invite_choice_mqtt">Internet/MQTT</string>
     <string name="mqtt_invite_title">MQTT Invitation</string>
     <string name="not_again_comms_mqtt">I’m experimenting with this
     as a replacement for the relay.</string>
+
+    <!-- Title of menuitem that launches Known Players viewer -->
+    <string name="gamel_menu_knownplyrs">Known Players…</string>
+
+    <string name="knowns_expl">These are the remote players
+    CrossWords has seen enough to know how to invite them quickly to
+    new games. Their names default to what the remote user has chosen,
+    but you can edit them to make them easier for you to use.</string>
+
+    <string name="knowns_mqtt_fmt">MQTT DevID: %1$s</string>
+    <string name="knowns_bt_fmt">Bluetooth name: %1$s</string>
+    <string name="knowns_smsphone_fmt">SMS Phone: %1$s</string>
+
+    <!-- Button in known player list element allowing to edit player's name -->
+    <string name="player_edit_name">Change name</string>
+
+    <!-- Shown to confirm deletion of a Knows Players viewer list item -->
+    <string name="knowns_delete_confirm_fmt">Are you sure you want to
+    delete the Known Player “%1$s”?\n\n(This action cannot be
+    undone.)</string>
+
+    <!-- Title of Alert for renaming Known Player -->
+    <string name="knowns_rename_title">Rename Player</string>
+    <!-- Error message when rename fails (which right now should only
+         happen because the name is in use) -->
+    <string name="knowns_dup_name_fmt">Unable to change name from
+    “%1$s” to “%2$s”. Is “%2$s” already in use?</string>
+
+    <!-- Title of known-player spinner in quick-invite new game dialog -->
+    <string name="name_game">Name your game</string>
+    <!-- Title of the game name field in quick-invite new game dialog -->
+    <string name="choose_opponent">Choose your opponent</string>
+
 </resources>

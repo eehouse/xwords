@@ -352,7 +352,7 @@ public class DictsDelegate extends ListDelegateBase
 
     protected DictsDelegate( Delegator delegator, Bundle savedInstanceState )
     {
-        super( delegator, savedInstanceState, R.layout.dict_browse,
+        super( delegator, savedInstanceState, R.layout.dicts_browse,
                R.menu.dicts_menu );
         m_activity = delegator.getActivity();
     }
@@ -374,6 +374,7 @@ public class DictsDelegate extends ListDelegateBase
 
             OnClickListener newSelLstnr =
                 new OnClickListener() {
+                    @Override
                     public void onClick( DialogInterface dlgi, int item ) {
                         moveTo[0] = item;
                         AlertDialog dlg = (AlertDialog)dlgi;
@@ -390,6 +391,7 @@ public class DictsDelegate extends ListDelegateBase
                 };
 
             lstnr = new OnClickListener() {
+                    @Override
                     public void onClick( DialogInterface dlg, int item ) {
                         DictLoc toLoc = itemToRealLoc( moveTo[0] );
                         moveDicts( selNames, toLoc );
@@ -409,6 +411,7 @@ public class DictsDelegate extends ListDelegateBase
         case SET_DEFAULT: {
             final String name = m_selDicts.keySet().iterator().next();
             lstnr = new OnClickListener() {
+                    @Override
                     public void onClick( DialogInterface dlg, int item ) {
                         if ( DialogInterface.BUTTON_NEGATIVE == item
                              || DialogInterface.BUTTON_POSITIVE == item ) {
@@ -437,6 +440,7 @@ public class DictsDelegate extends ListDelegateBase
 
         case DICT_OR_DECLINE: {
             lstnr = new OnClickListener() {
+                    @Override
                     public void onClick( DialogInterface dlg, int item ) {
                         Intent intent = getIntent();
                         int lang = intent.getIntExtra( MultiService.LANG, -1 );
@@ -448,6 +452,7 @@ public class DictsDelegate extends ListDelegateBase
                     }
                 };
             lstnr2 = new OnClickListener() {
+                    @Override
                     public void onClick( DialogInterface dlg, int item ) {
                         curThis().finish();
                     }
@@ -563,6 +568,7 @@ public class DictsDelegate extends ListDelegateBase
         }
     }
 
+    @Override
     public void onClick( View view )
     {
         if ( view == m_checkbox ) {
@@ -773,6 +779,7 @@ public class DictsDelegate extends ListDelegateBase
     //////////////////////////////////////////////////////////////////////
     // GroupStateListener interface
     //////////////////////////////////////////////////////////////////////
+    @Override
     public void onGroupExpandedChanged( Object groupObj, boolean expanded )
     {
         ListGroup lg = (ListGroup)groupObj;
@@ -790,6 +797,7 @@ public class DictsDelegate extends ListDelegateBase
     //////////////////////////////////////////////////////////////////////
     // OnItemLongClickListener interface
     //////////////////////////////////////////////////////////////////////
+    @Override
     public boolean onItemLongClick( AdapterView<?> parent, View view,
                                     int position, long id ) {
         boolean success = view instanceof SelectableItem.LongClickHandler;
@@ -1132,6 +1140,7 @@ public class DictsDelegate extends ListDelegateBase
                 (LinearLayout)inflate( R.layout.remote_dict_details );
             Button button = (Button)view.findViewById( R.id.download_button );
             button.setOnClickListener( new View.OnClickListener() {
+                    @Override
                     public void onClick( View view ) {
                         DwnldDelegate.
                             downloadDictInBack( m_activity, info.m_lang,

@@ -35,11 +35,13 @@
         ",dictlang INT" \
         ",scores TEXT" \
 
+#define VERS_1_TO_2 \
+        "created INT" \
 
 static XP_Bool getColumnText( sqlite3_stmt *ppStmt, int iCol, XP_UCHAR* buf,
                               int* len );
-static bool db_fetchInt( sqlite3* pDb, const gchar* key, int32_t* resultP );
-static void db_storeInt( sqlite3* pDb, const gchar* key, int32_t val );
+static bool fetchInt( sqlite3* pDb, const gchar* key, int32_t* resultP );
+static void storeInt( sqlite3* pDb, const gchar* key, int32_t val );
 static void createTables( sqlite3* pDb );
 static bool gamesTableExists( sqlite3* pDb );
 static void upgradeTables( sqlite3* pDb, int32_t oldVersion );
@@ -58,10 +60,10 @@ static void assertPrintResult( sqlite3* pDb, int result, int expect );
  * it's adding new fields or whatever.
  */
 
-#define CUR_DB_VERSION 1
+#define CUR_DB_VERSION 2
 
 sqlite3* 
-openGamesDB( const char* dbName )
+gdb_open( const char* dbName )
 {
 #ifdef DEBUG
     int result =
@@ -78,7 +80,7 @@ openGamesDB( const char* dbName )
 
     if ( gamesTableExists( pDb ) ) {
         int32_t oldVersion;
-        if ( !db_fetchInt( pDb, KEY_DB_VERSION, &oldVersion ) ) {
+        if ( !fetchInt( pDb, KEY_DB_VERSION, &oldVersion ) ) {
             oldVersion = 0;
             XP_LOGFF( "no version found; assuming %d", oldVersion );
         }
@@ -101,6 +103,10 @@ upgradeTables( sqlite3* pDb, int32_t oldVersion )
         XP_ASSERT( 1 == CUR_DB_VERSION );
         newCols = VERS_0_TO_1;
         break;
+    case 1:
+        XP_ASSERT( 2 == CUR_DB_VERSION );
+        newCols = VERS_1_TO_2;
+        break;
     default:
         XP_ASSERT(0);
         break;
@@ -119,7 +125,7 @@ upgradeTables( sqlite3* pDb, int32_t oldVersion )
         }
         g_strfreev( strs );
 
-        db_storeInt( pDb, KEY_DB_VERSION, CUR_DB_VERSION );
+        storeInt( pDb, KEY_DB_VERSION, CUR_DB_VERSION );
     }
 }
 
@@ -172,15 +178,16 @@ createTables( sqlite3* pDb )
         ",lastMoveTime INT"
          ",dupTimerExpires INT"
         ","VERS_0_TO_1
+        ","VERS_1_TO_2
         // ",dupTimerExpires INT"
         ")";
     (void)sqlite3_exec( pDb, createGamesStr, NULL, NULL, NULL );
 
-    db_storeInt( pDb, KEY_DB_VERSION, CUR_DB_VERSION );
+    storeInt( pDb, KEY_DB_VERSION, CUR_DB_VERSION );
 }
 
 void
-closeGamesDB( sqlite3* pDb )
+gdb_close( sqlite3* pDb )
 {
     sqlite3_close( pDb );
     LOG_RETURN_VOID();
@@ -254,14 +261,14 @@ writeBlobColumnStream( XWStreamCtxt* stream, sqlite3* pDb, sqlite3_int64 curRow,
 }
 
 sqlite3_int64
-writeNewGameToDB( XWStreamCtxt* stream, sqlite3* pDb )
+gdb_writeNewGame( XWStreamCtxt* stream, sqlite3* pDb )
 {
     sqlite3_int64 newRow = writeBlobColumnStream( stream, pDb, -1, "game" );
     return newRow;
 }
 
 void
-writeToDB( XWStreamCtxt* stream, XWEnv XP_UNUSED(xwe), void* closure )
+gdb_write( XWStreamCtxt* stream, XWEnv XP_UNUSED(xwe), void* closure )
 {
     CommonGlobals* cGlobals = (CommonGlobals*)closure;
     sqlite3_int64 selRow = cGlobals->rowid;
@@ -308,7 +315,7 @@ addSnapshot( CommonGlobals* cGlobals )
 #endif
 
 void
-summarize( CommonGlobals* cGlobals )
+gdb_summarize( CommonGlobals* cGlobals )
 {
     const XWGame* game = &cGlobals->game;
     XP_S16 nMoves = model_getNMoves( game->model );
@@ -411,7 +418,9 @@ summarize( CommonGlobals* cGlobals )
     pairs[indx++] = g_strdup_printf( "scores='%s'", scoresStr);
     pairs[indx++] = g_strdup_printf( "nPending=%d", nPending );
     pairs[indx++] = g_strdup_printf( "role=%d", gi->serverRole);
+    pairs[indx++] = g_strdup_printf( "created=%d", game->created );
     pairs[indx++] = NULL;
+    XP_ASSERT( indx < VSIZE(pairs) );
 
     gchar* vals = g_strjoinv( ",", pairs );
     for ( int ii = 0; !!pairs[ii]; ++ii ) {
@@ -440,7 +449,7 @@ summarize( CommonGlobals* cGlobals )
 }
 
 GSList*
-listGames( sqlite3* pDb )
+gdb_listGames( sqlite3* pDb )
 {
     GSList* list = NULL;
     
@@ -479,13 +488,13 @@ dataKiller( gpointer data )
 }
 
 void
-freeGamesList( GSList* games )
+gdb_freeGamesList( GSList* games )
 {
     g_slist_free_full( games, dataKiller );
 }
 
 GHashTable*
-getRelayIDsToRowsMap( sqlite3* pDb )
+gdb_getRelayIDsToRowsMap( sqlite3* pDb )
 {
     GHashTable* table = g_hash_table_new( g_str_hash, g_str_equal );
     sqlite3_stmt *ppStmt;
@@ -520,11 +529,11 @@ getRelayIDsToRowsMap( sqlite3* pDb )
 }
 
 XP_Bool
-getGameInfo( sqlite3* pDb, sqlite3_int64 rowid, GameInfo* gib )
+gdb_getGameInfo( sqlite3* pDb, sqlite3_int64 rowid, GameInfo* gib )
 {
     XP_Bool success = XP_FALSE;
     const char* fmt = "SELECT room, ended, turn, local, nmoves, ntotal, nmissing, "
-        "dictlang, seed, connvia, gameid, lastMoveTime, dupTimerExpires, relayid, scores, nPending, role, snap "
+        "dictlang, seed, connvia, gameid, lastMoveTime, dupTimerExpires, relayid, scores, nPending, role, created, snap "
         "FROM games WHERE rowid = %lld";
     XP_UCHAR query[256];
     snprintf( query, sizeof(query), fmt, rowid );
@@ -558,6 +567,7 @@ getGameInfo( sqlite3* pDb, sqlite3_int64 rowid, GameInfo* gib )
         getColumnText( ppStmt, col++, gib->scores, &len );
         gib->nPending = sqlite3_column_int( ppStmt, col++ );
         gib->role = sqlite3_column_int( ppStmt, col++ );
+        gib->created = sqlite3_column_int( ppStmt, col++ );
         snprintf( gib->name, sizeof(gib->name), "Game %lld", rowid );
 
 #ifdef PLATFORM_GTK
@@ -582,8 +592,8 @@ getGameInfo( sqlite3* pDb, sqlite3_int64 rowid, GameInfo* gib )
 }
 
 void
-getRowsForGameID( sqlite3* pDb, XP_U32 gameID, sqlite3_int64* rowids, 
-                  int* nRowIDs )
+gdb_getRowsForGameID( sqlite3* pDb, XP_U32 gameID, sqlite3_int64* rowids,
+                      int* nRowIDs )
 {
     int maxRowIDs = *nRowIDs;
     *nRowIDs = 0;
@@ -638,27 +648,27 @@ loadBlobColumn( XWStreamCtxt* stream, sqlite3* pDb, sqlite3_int64 rowid,
 }
 
 XP_Bool
-loadGame( XWStreamCtxt* stream, sqlite3* pDb, sqlite3_int64 rowid )
+gdb_loadGame( XWStreamCtxt* stream, sqlite3* pDb, sqlite3_int64 rowid )
 {
     return loadBlobColumn( stream, pDb, rowid, "game" );
 }
 
 /* Used for rematch only. But do I need it? */
 void
-saveInviteAddrs( XWStreamCtxt* stream, sqlite3* pDb, sqlite3_int64 rowid )
+gdb_saveInviteAddrs( XWStreamCtxt* stream, sqlite3* pDb, sqlite3_int64 rowid )
 {
     sqlite3_int64 row = writeBlobColumnStream( stream, pDb, rowid, "inviteInfo" );
     assert( row == rowid );
 }
 
 XP_Bool
-loadInviteAddrs( XWStreamCtxt* stream, sqlite3* pDb, sqlite3_int64 rowid )
+gdb_loadInviteAddrs( XWStreamCtxt* stream, sqlite3* pDb, sqlite3_int64 rowid )
 {
     return loadBlobColumn( stream, pDb, rowid, "inviteInfo" );
 }
 
 void
-deleteGame( sqlite3* pDb, sqlite3_int64 rowid )
+gdb_deleteGame( sqlite3* pDb, sqlite3_int64 rowid )
 {
     XP_ASSERT( !!pDb );
     char query[256];
@@ -667,7 +677,7 @@ deleteGame( sqlite3* pDb, sqlite3_int64 rowid )
 }
 
 void
-db_store( sqlite3* pDb, const gchar* key, const gchar* value )
+gdb_store( sqlite3* pDb, const gchar* key, const gchar* value )
 {
     XP_ASSERT( !!pDb );
     gchar* query =
@@ -678,11 +688,11 @@ db_store( sqlite3* pDb, const gchar* key, const gchar* value )
 }
 
 static bool
-db_fetchInt( sqlite3* pDb, const gchar* key, int32_t* resultP )
+fetchInt( sqlite3* pDb, const gchar* key, int32_t* resultP )
 {
     gint buflen = 16;
     gchar buf[buflen];
-    FetchResult fr = db_fetch( pDb, key, NULL, buf, &buflen );
+    FetchResult fr = gdb_fetch( pDb, key, NULL, buf, &buflen );
     bool gotIt = SUCCESS == fr;
     if ( gotIt ) {
         buf[buflen] = '\0';
@@ -692,15 +702,15 @@ db_fetchInt( sqlite3* pDb, const gchar* key, int32_t* resultP )
 }
 
 static void
-db_storeInt( sqlite3* pDb, const gchar* key, int32_t val )
+storeInt( sqlite3* pDb, const gchar* key, int32_t val )
 {
     gchar buf[32];
     snprintf( buf, VSIZE(buf), "%x", val );
-    db_store( pDb, key, buf );
+    gdb_store( pDb, key, buf );
 
 #ifdef DEBUG
     int32_t tmp;
-    bool worked = db_fetchInt( pDb, key, &tmp );
+    bool worked = fetchInt( pDb, key, &tmp );
     XP_ASSERT( worked && tmp == val );
 #endif
 }
@@ -732,8 +742,8 @@ fetchQuery( sqlite3* pDb, const char* query, gchar* buf, gint* buflen )
 }
 
 FetchResult
-db_fetch( sqlite3* pDb, const gchar* key, const XP_UCHAR* keySuffix,
-          gchar* buf, gint* buflen )
+gdb_fetch( sqlite3* pDb, const gchar* key, const XP_UCHAR* keySuffix,
+           gchar* buf, gint* buflen )
 {
     XP_ASSERT( !!pDb );
     FetchResult fetchRes = NOT_THERE;
@@ -757,7 +767,7 @@ db_fetch( sqlite3* pDb, const gchar* key, const XP_UCHAR* keySuffix,
         /* Let's rewrite it using the correct key so this code can eventually
            go away */
         if ( SUCCESS == fetchRes ) {
-            db_store( pDb, key, buf );
+            gdb_store( pDb, key, buf );
         }
     }
 
@@ -765,18 +775,18 @@ db_fetch( sqlite3* pDb, const gchar* key, const XP_UCHAR* keySuffix,
 }
 
 XP_Bool
-db_fetch_safe( sqlite3* pDb, const gchar* key, const gchar* keySuffix,
-               gchar* buf, gint buflen )
+gdb_fetch_safe( sqlite3* pDb, const gchar* key, const gchar* keySuffix,
+                gchar* buf, gint buflen )
 {
     XP_ASSERT( !!pDb );
     int tmp = buflen;
-    FetchResult result = db_fetch( pDb, key, keySuffix, buf, &tmp );
+    FetchResult result = gdb_fetch( pDb, key, keySuffix, buf, &tmp );
     XP_ASSERT( result != BUFFER_TOO_SMALL );
     return SUCCESS == result;
 }
 
 void
-db_remove( sqlite3* pDb, const gchar* key )
+gdb_remove( sqlite3* pDb, const gchar* key )
 {
     XP_ASSERT( !!pDb );
     char query[256];

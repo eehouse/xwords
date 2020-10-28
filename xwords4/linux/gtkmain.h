@@ -27,7 +27,7 @@ int gtkmain( LaunchParams* params );
 void windowDestroyed( GtkGameGlobals* globals );
 void gtkOnGameSaved( void* closure, sqlite3_int64 rowid, XP_Bool firstTime );
 void make_rematch( GtkAppGlobals* apg, const CommonGlobals* cGlobals );
-void relayInviteReceivedGTK( void* closure, const NetLaunchInfo* invite );
+void inviteReceivedGTK( void* closure, const NetLaunchInfo* invite );
 void msgReceivedGTK( void* closure, const CommsAddrRec* from, XP_U32 gameID,
                      const XP_U8* buf, XP_U16 len );
 void gameGoneGTK( void* closure, const CommsAddrRec* from, XP_U32 gameID );

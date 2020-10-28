@@ -768,7 +768,10 @@ public class GameUtils {
     // There seems to be no standard on how to launch an SMS app to send a
     // message. So let's gather here the stuff that works, and try in order
     // until something succeeds.
-    public static void launchSMSInviteActivity( Activity activity, String phone,
+    //
+    // And, added later and without the ability to test all of these, let's
+    // not include a phone number.
+    public static void launchSMSInviteActivity( Activity activity,
                                                 NetLaunchInfo nli )
     {
         String message = makeInviteMessage( activity, nli,
@@ -790,22 +793,17 @@ public class GameUtils {
                         .setPackage( defaultSmsPkg )
                         .setType( "text/plain" )
                         .putExtra( Intent.EXTRA_TEXT, message )
-                        .setData( Uri.parse("sms:" + phone) )
                         .putExtra( "sms_body", message )
-                        .putExtra( "address", phone)
-                        .setData(Uri.parse("smsto:" + phone))
                         ;
                     break;
                 case 1:         // test case: Signal
-                    intent = new Intent( Intent.ACTION_SENDTO,
-                                         Uri.parse("smsto:" + phone) )
+                    intent = new Intent( Intent.ACTION_SENDTO )
                         .putExtra("sms_body", message)
                         .setPackage( defaultSmsPkg )
                         ;
                     break;
                 case 2:
                     intent = new Intent( Intent.ACTION_VIEW )
-                        .setData( Uri.parse("sms:" + phone) )
                         .putExtra( "sms_body", message )
                         ;
                     break;
@@ -1313,7 +1311,7 @@ public class GameUtils {
                                 // see below
                                 break;
                             case COMMS_CONN_BT:
-                                BTService.gameDied( context, addr.bt_btAddr, gameID );
+                                BTUtils.gameDied( context, addr.bt_btAddr, gameID );
                                 break;
                             case COMMS_CONN_SMS:
                                 NBSProto.gameDied( context, gameID, addr.sms_phone );

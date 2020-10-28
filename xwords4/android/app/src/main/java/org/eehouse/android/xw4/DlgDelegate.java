@@ -113,6 +113,9 @@ public class DlgDelegate {
         // DwnldDelegate && GamesListDelegate
         STORAGE_CONFIRMED,
 
+        // Known Players
+        KNOWN_PLAYER_DELETE,
+
         // classify me
         ENABLE_NBS_ASK,
         ENABLE_NBS_DO,
@@ -330,11 +333,26 @@ public class DlgDelegate {
         // These are stored in the INVITES table. Don't change order
         // gratuitously
         public static enum InviteMeans {
-            SMS_DATA, // classic NBS-based data sms
-            EMAIL, NFC, BLUETOOTH, CLIPBOARD, RELAY, WIFIDIRECT,
-            SMS_USER, // just launch the SMS app, as with email
-            MQTT,
+            SMS_DATA(R.string.invite_choice_data_sms, false), // classic NBS-based data sms
+            EMAIL(R.string.invite_choice_email, false),
+            NFC(R.string.invite_choice_nfc, true),
+            BLUETOOTH(R.string.invite_choice_bt, true),
+            CLIPBOARD(R.string.slmenu_copy_sel, false),
+            RELAY(R.string.invite_choice_relay, false),
+            WIFIDIRECT(R.string.invite_choice_p2p, false),
+            SMS_USER(R.string.invite_choice_user_sms, false), // just launch the SMS app, as with email
+            MQTT(R.string.invite_choice_mqtt, false);
+
+            private InviteMeans( int resid, boolean local) {
+                mResID = resid;
+                mIsLocal = local;
+            }
+            private int mResID;
+            private boolean mIsLocal;
+            public int getUserDescID() { return mResID; }
+            public boolean isForLocal() { return mIsLocal; }
         };
+
         boolean onPosButton( Action action, Object... params );
         boolean onNegButton( Action action, Object... params );
         boolean onDismissed( Action action, Object... params );
@@ -381,11 +399,12 @@ public class DlgDelegate {
     }
 
     public void showInviteChoicesThen( final Action action,
-                                       SentInvitesInfo info )
+                                       SentInvitesInfo info,
+                                       NetLaunchInfo nli )
     {
         DlgState state = new DlgState( DlgID.INVITE_CHOICES_THEN )
             .setAction( action )
-            .setParams( info );
+            .setParams( info, nli );
         m_dlgt.show( state );
     }
 

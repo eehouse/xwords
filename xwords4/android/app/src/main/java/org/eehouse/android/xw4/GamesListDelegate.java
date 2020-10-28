@@ -62,6 +62,7 @@ import org.eehouse.android.xw4.jni.CommsAddrRec;
 import org.eehouse.android.xw4.jni.CurGameInfo;
 import org.eehouse.android.xw4.jni.GameSummary;
 import org.eehouse.android.xw4.jni.LastMoveInfo;
+import org.eehouse.android.xw4.jni.XwJNI;
 import org.eehouse.android.xw4.loc.LocUtils;
 
 import java.io.File;
@@ -85,10 +86,12 @@ public class GamesListDelegate extends ListDelegateBase
     private static final String SAVE_NEXTSOLO = "SAVE_NEXTSOLO";
     private static final String SAVE_REMATCHEXTRAS = "SAVE_REMATCHEXTRAS";
     private static final String SAVE_MYSIS = TAG + "/MYSIS";
+    private static final String KP_NAME_KEY = TAG + "/kp_last_name";
 
     private static final String RELAYIDS_EXTRA = "relayids";
     private static final String ROWID_EXTRA = "rowid";
     private static final String GAMEID_EXTRA = "gameid";
+    private static final String INVITEE_REC_EXTRA = "invitee_rec";
     private static final String REMATCH_ROWID_EXTRA = "rm_rowid";
     private static final String REMATCH_GROUPID_EXTRA = "rm_groupid";
     private static final String REMATCH_DICT_EXTRA = "rm_dict";
@@ -559,6 +562,7 @@ public class GamesListDelegate extends ListDelegateBase
                 R.string.game_summary_field_gameid,
                 R.string.game_summary_field_npackets,
                 R.string.title_addrs_pref,
+                R.string.game_summary_field_created,
             };
             int result = ids[0]; // need a default in case set changes
             for ( int id : ids ) {
@@ -727,8 +731,8 @@ public class GamesListDelegate extends ListDelegateBase
             GameSummary summary = GameUtils.getSummary( m_activity, rowid );
             int labelID = (summary.isMultiGame() && !summary.anyMissing())
                 ? R.string.rename_label_caveat : R.string.rename_label;
-            final GameNamer namer =
-                buildNamer(GameUtils.getName( m_activity, rowid ), labelID );
+            final Renamer namer =
+                buildRenamer( GameUtils.getName( m_activity, rowid ), labelID );
             lstnr = new OnClickListener() {
                     public void onClick( DialogInterface dlg, int item ) {
                         String name = namer.getName();
@@ -744,8 +748,8 @@ public class GamesListDelegate extends ListDelegateBase
 
         case RENAME_GROUP: {
             final long groupID = (Long)params[0];
-            final GameNamer namer = buildNamer( m_adapter.groupName(groupID),
-                                                 R.string.rename_group_label );
+            final Renamer namer = buildRenamer( m_adapter.groupName(groupID),
+                                                R.string.rename_group_label );
             lstnr = new OnClickListener() {
                     public void onClick( DialogInterface dlg, int item ) {
                         GamesListDelegate self = curThis();
@@ -763,7 +767,7 @@ public class GamesListDelegate extends ListDelegateBase
             break;
 
         case NEW_GROUP: {
-            final GameNamer namer = buildNamer( "", R.string.newgroup_label );
+            final Renamer namer = buildRenamer( "", R.string.newgroup_label );
             lstnr = new OnClickListener() {
                     public void onClick( DialogInterface dlg, int item ) {
                         String name = namer.getName();
@@ -863,49 +867,18 @@ public class GamesListDelegate extends ListDelegateBase
         }
             break;
 
-        case GAMES_LIST_NEWGAME: {
+        case GAMES_LIST_NEWGAME:
             boolean solo = (Boolean)params[0];
-            final LinearLayout view = (LinearLayout)
-                LocUtils.inflate( m_activity, R.layout.msg_label_and_edit );
-            final EditWClear edit = (EditWClear)view.findViewById( R.id.edit );
-            edit.setText( GameUtils.makeDefaultName( m_activity ) );
-
-            boolean canDoDefaults = solo ||
-                0 < XWPrefs.getAddrTypes( m_activity ).size();
-            int iconResID = solo ? R.drawable.ic_sologame : R.drawable.ic_multigame;
-            int titleID = solo ? R.string.new_game : R.string.new_game_networked;
-
-            String msg = getString( canDoDefaults ? R.string.new_game_message
-                                    : R.string.new_game_message_nodflt );
-            if ( !solo ) {
-                msg += "\n\n" + getString( R.string.new_game_message_net );
+            boolean forceConfig = 2 <= params.length && (Boolean)params[1];
+            if ( !solo && !forceConfig && XwJNI.hasKnownPlayers() ) {
+                dialog = mkNewWithKnowns();
+                makeNotAgainBuilder( R.string.not_again_quicknetgame,
+                                     R.string.key_na_quicknetgame )
+                    .setTitle( R.string.new_feature_title )
+                    .show();
+            } else {
+                dialog = mkNewGameDialog( solo );
             }
-            TextView tmpEdit = (TextView)view.findViewById( R.id.msg );
-            tmpEdit.setText( msg );
-
-            lstnr = new OnClickListener() {
-                    public void onClick( DialogInterface dlg, int item ) {
-                        String name = edit.getText().toString();
-                        curThis().makeThenLaunchOrConfigure( name, true, false );
-                    }
-                };
-
-            ab = makeAlertBuilder()
-                .setView( view )
-                .setTitle( titleID )
-                .setIcon( iconResID )
-                .setPositiveButton( R.string.newgame_configure_first, lstnr );
-            if ( canDoDefaults ) {
-                lstnr2 = new OnClickListener() {
-                        public void onClick( DialogInterface dlg, int item ) {
-                            String name = edit.getText().toString();
-                            curThis().makeThenLaunchOrConfigure( name, false, false );
-                        }
-                    };
-                ab.setNegativeButton( R.string.use_defaults, lstnr2 );
-            }
-            dialog = ab.create();
-        }
             break;
 
         case GAMES_LIST_NAME_REMATCH: {
@@ -915,7 +888,7 @@ public class GamesListDelegate extends ListDelegateBase
             if ( null != m_rematchExtras ) {
                 EditWClear edit = (EditWClear)view.findViewById( R.id.edit );
                 edit.setText( m_rematchExtras.getString( REMATCH_NEWNAME_EXTRA ));
-                boolean solo = m_rematchExtras.getBoolean( REMATCH_IS_SOLO, true );
+                solo = m_rematchExtras.getBoolean( REMATCH_IS_SOLO, true );
                 if ( !solo ) {
                     iconResID = R.drawable.ic_multigame;
                 }
@@ -945,6 +918,100 @@ public class GamesListDelegate extends ListDelegateBase
         }
         return dialog;
     } // makeDialog
+
+    private Dialog mkNewGameDialog( boolean solo )
+    {
+        final LinearLayout view = (LinearLayout)
+            LocUtils.inflate( m_activity, R.layout.msg_label_and_edit );
+        final EditWClear edit = (EditWClear)view.findViewById( R.id.edit );
+        edit.setText( GameUtils.makeDefaultName( m_activity ) );
+
+        boolean canDoDefaults = solo ||
+            0 < XWPrefs.getAddrTypes( m_activity ).size();
+        int iconResID = solo ? R.drawable.ic_sologame : R.drawable.ic_multigame;
+        int titleID = solo ? R.string.new_game : R.string.new_game_networked;
+
+        String msg = getString( canDoDefaults ? R.string.new_game_message
+                                : R.string.new_game_message_nodflt );
+        if ( !solo ) {
+            msg += "\n\n" + getString( R.string.new_game_message_net );
+        }
+        TextView tmpEdit = (TextView)view.findViewById( R.id.msg );
+        tmpEdit.setText( msg );
+
+        OnClickListener lstnr = new OnClickListener() {
+                public void onClick( DialogInterface dlg, int item ) {
+                    String name = edit.getText().toString();
+                    curThis().makeThenLaunchOrConfigure( name, true, false );
+                }
+            };
+
+        AlertDialog.Builder ab = makeAlertBuilder()
+            .setView( view )
+            .setTitle( titleID )
+            .setIcon( iconResID )
+            .setPositiveButton( R.string.newgame_configure_first, lstnr );
+        if ( canDoDefaults ) {
+           OnClickListener lstnr2 = new OnClickListener() {
+                    public void onClick( DialogInterface dlg, int item ) {
+                        String name = edit.getText().toString();
+                        curThis().makeThenLaunchOrConfigure( name, false, false );
+                    }
+                };
+            ab.setNegativeButton( R.string.use_defaults, lstnr2 );
+        }
+        return ab.create();
+    }
+
+    private Dialog mkNewWithKnowns()
+    {
+        String[] names = XwJNI.kplr_getPlayers();
+        final String[] nameRef
+            = { DBUtils.getStringFor( m_activity, KP_NAME_KEY, null ) };
+        final NewWithKnowns view = (NewWithKnowns)
+            LocUtils.inflate( m_activity, R.layout.new_game_with_knowns );
+        view.setNames( names, nameRef[0], GameUtils.makeDefaultName( m_activity ) );
+        AlertDialog.Builder ab = makeAlertBuilder()
+            .setView( view )
+            .setTitle( R.string.new_game_networked )
+            .setIcon( R.drawable.ic_multigame )
+            .setPositiveButton( "…" /* can't be empty*/, new OnClickListener() {
+                    @Override
+                    public void onClick( DialogInterface dlg, int item ) {
+                        Assert.assertTrueNR( null != nameRef[0] );
+                        DBUtils.setStringFor( m_activity, KP_NAME_KEY, nameRef[0] );
+                        CommsAddrRec addr = XwJNI.kplr_getAddr( nameRef[0] );
+                        if ( null != addr ) {
+                            launchLikeRematch( addr, view.gameName() );
+                        }
+                    }
+                } )
+            .setNegativeButton( R.string.newgame_configure_first, new OnClickListener() {
+                    @Override
+                    public void onClick( DialogInterface dlg, int item ) {
+                        String name = view.gameName();
+                        curThis().makeThenLaunchOrConfigure( name, true, false );
+                    }
+                } )
+            ;
+
+        final AlertDialog dialog = ab.create();
+        view.setOnNameChangeListener( new NewWithKnowns.OnNameChangeListener() {
+                @Override
+                public void onNewName( String name ) {
+                    nameRef[0] = name;
+                    Button button = dialog.getButton( DialogInterface.BUTTON_POSITIVE );
+                    if ( null != button ) {
+                        String msg = getString( R.string.invite_player_fmt, name );
+                        button.setText( msg );
+                    } else {
+                        Log.e( TAG, "Button still null" );
+                    }
+                }
+            } );
+
+        return dialog;
+    }
 
     private void enableMoveGroupButton( DialogInterface dlgi )
     {
@@ -1653,6 +1720,9 @@ public class GamesListDelegate extends ListDelegateBase
                 Utils.setItemVisible( menu, R.id.games_game_delete, enable );
                 Utils.setItemVisible( menu, R.id.games_game_reset, enable );
 
+                Utils.setItemVisible( menu, R.id.games_game_hide,
+                                      enable && BuildConfig.NON_RELEASE );
+
                 // multiple games can be regrouped/reset.
                 Utils.setItemVisible( menu, R.id.games_game_move,
                                       0 < nGamesSelected );
@@ -1663,6 +1733,9 @@ public class GamesListDelegate extends ListDelegateBase
 
                 enable = nothingSelected && XWPrefs.getStudyEnabled( m_activity );
                 Utils.setItemVisible( menu, R.id.games_menu_study, enable );
+
+                enable = nothingSelected && XwJNI.hasKnownPlayers();
+                Utils.setItemVisible( menu, R.id.games_menu_knownplyrs, enable );
 
                 enable = nothingSelected &&
                     0 < DBUtils.getGamesWithSendsPending( m_activity ).size();
@@ -1753,6 +1826,10 @@ public class GamesListDelegate extends ListDelegateBase
 
         case R.id.games_menu_study:
             StudyListDelegate.launchOrAlert( getDelegator(), StudyListDelegate.NO_LANG, this );
+            break;
+
+        case R.id.games_menu_knownplyrs:
+            KnownPlayersDelegate.launchOrAlert( getDelegator(), this );
             break;
 
         case R.id.games_menu_about:
@@ -1994,6 +2071,10 @@ public class GamesListDelegate extends ListDelegateBase
         boolean dropSels = false;
 
         switch( itemID ) {
+        case R.id.games_game_hide:
+            DBUtils.hideGames( m_activity, selRowIDs[0] );
+            break;
+
         case R.id.games_game_delete:
             String msg = getQuantityString( R.plurals.confirm_seldeletes_fmt,
                                             selRowIDs.length, selRowIDs.length );
@@ -2104,7 +2185,7 @@ public class GamesListDelegate extends ListDelegateBase
             switch( itemID ) {
             case R.id.games_group_delete:
                 long dftGroup = XWPrefs.getDefaultNewGameGroup( m_activity );
-                if ( m_mySIS.selGroupIDs.contains( dftGroup ) ) {
+                if ( groupID == dftGroup ) {
                     msg = getString( R.string.cannot_delete_default_group_fmt,
                                      m_adapter.groupName( dftGroup ) );
                     makeOkOnlyBuilder( msg ).show();
@@ -2324,6 +2405,22 @@ public class GamesListDelegate extends ListDelegateBase
         return result;
     }
 
+    private boolean startWithInvitee( Intent intent )
+    {
+        boolean result = false;
+        try {
+            CommsAddrRec addr = (CommsAddrRec)intent.getSerializableExtra( INVITEE_REC_EXTRA );
+            if ( null != addr ) {
+                String name = intent.getStringExtra( REMATCH_NEWNAME_EXTRA );
+                makeThenLaunchOrConfigure( name, false, false, addr );
+            }
+        } catch ( Exception ex ) {
+            Log.ex( TAG, ex );
+        }
+
+        return result;
+    }
+
     private boolean startNewNetGame( NetLaunchInfo nli )
     {
         boolean handled = false;
@@ -2338,12 +2435,17 @@ public class GamesListDelegate extends ListDelegateBase
             for ( long rowid : rowids.keySet() ) {
                 if ( nli.forceChannel == rowids.get(rowid) ) {
                     DbgUtils.printStack( TAG );
+                    if ( BuildConfig.NON_RELEASE ) {
+                        Utils.showToast( m_activity, R.string.dropped_dupe );
+                    }
 
-                    makeOkOnlyBuilder( R.string.dropped_dupe )
-                        .setActionPair( Action.OPEN_GAME,
-                                        R.string.button_open_game )
-                        .setParams( rowid, null ) // null: GameSummary
-                        .show();
+                    final Object[] params = { rowid, null };
+                    post( new Runnable() {
+                            @Override
+                            public void run() {
+                                doOpenGame( params );
+                            }
+                        } );
                     handled = true;
                     break;
                 }
@@ -2580,25 +2682,13 @@ public class GamesListDelegate extends ListDelegateBase
         }
     }
 
-    private GameNamer buildNamer( String name, int labelID )
+    private Renamer buildRenamer( String name, int labelID )
     {
-        GameNamer namer = (GameNamer)inflate( R.layout.rename_game );
-        namer.setName( name );
-        namer.setLabel( labelID );
-        return namer;
-    }
-
-    private Dialog buildNamerDlg( GameNamer namer, int titleID,
-                                  OnClickListener lstnr1, OnClickListener lstnr2,
-                                  DlgID dlgID )
-    {
-        Dialog dialog = makeAlertBuilder()
-            .setTitle( titleID )
-            .setPositiveButton( android.R.string.ok, lstnr1 )
-            .setNegativeButton( android.R.string.cancel, lstnr2 )
-            .setView( namer )
-            .create();
-        return dialog;
+        Renamer renamer = ((Renamer)inflate( R.layout.renamer ))
+            .setName( name )
+            .setLabel( labelID )
+            ;
+        return renamer;
     }
 
     private void showNewGroupIf()
@@ -2736,6 +2826,7 @@ public class GamesListDelegate extends ListDelegateBase
     {
         Log.d( TAG, "tryStartsFromIntent(extras={%s})", DbgUtils.extrasToString( intent ) );
         boolean handled = startFirstHasDict( intent )
+            || startWithInvitee( intent )
             || startNewNetGame( intent )
             || startHasGameID( intent )
             || startRematch( intent )
@@ -2878,6 +2969,12 @@ public class GamesListDelegate extends ListDelegateBase
     private void makeThenLaunchOrConfigure( String name, boolean doConfigure,
                                             boolean skipAsk )
     {
+        makeThenLaunchOrConfigure( name, doConfigure, skipAsk, null );
+    }
+
+    private void makeThenLaunchOrConfigure( String name, boolean doConfigure,
+                                            boolean skipAsk, CommsAddrRec addr )
+    {
         if ( skipAsk || !askingChangeName( name, doConfigure ) ) {
             long rowID;
             long groupID = 1 == m_mySIS.selGroupIDs.size()
@@ -2891,6 +2988,10 @@ public class GamesListDelegate extends ListDelegateBase
                                            groupID, name );
             } else {
                 rowID = GameUtils.makeNewMultiGame( m_activity, groupID, name );
+            }
+
+            if ( null != addr ) {
+                DBUtils.addRematchInfo( m_activity, rowID, addr );
             }
 
             if ( doConfigure ) {
@@ -2948,6 +3049,15 @@ public class GamesListDelegate extends ListDelegateBase
         Intent intent = makeSelfIntent( context )
             .putExtra( GAMEID_EXTRA, gameID );
         return intent;
+    }
+
+    private void launchLikeRematch( CommsAddrRec addr, String name )
+    {
+        Intent intent = makeSelfIntent( m_activity )
+            .putExtra( INVITEE_REC_EXTRA, (Serializable)addr )
+            .putExtra( REMATCH_NEWNAME_EXTRA, name )
+            ;
+        startActivity( intent );
     }
 
     public static Intent makeRematchIntent( Context context, long rowid,

@@ -19,6 +19,7 @@
 
 #include "dutil.h"
 #include "mempool.h"
+#include "knownplyr.h"
 #include "lindutil.h"
 #include "linuxutl.h"
 #include "linuxmain.h"
@@ -93,7 +94,7 @@ linux_dutil_onInviteReceived( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe),
         nli_makeAddrRec( nli, &addr );
         inviteReceivedCurses( params->appGlobals, nli, &addr );
     } else {
-        relayInviteReceivedGTK( params->appGlobals, nli );
+        inviteReceivedGTK( params->appGlobals, nli );
     }
 }
 
@@ -132,6 +133,9 @@ XW_DUtilCtxt*
 dutils_init( MPFORMAL VTableMgr* vtMgr, void* closure )
 {
     XW_DUtilCtxt* result = XP_CALLOC( mpool, sizeof(*result) );
+
+    dutil_super_init( MPPARM(mpool) result );
+
     result->vtMgr = vtMgr;
     result->closure = closure;
 
@@ -169,14 +173,14 @@ dutils_init( MPFORMAL VTableMgr* vtMgr, void* closure )
 
     assertTableFull( &result->vtable, sizeof(result->vtable), "lindutil" );
 
-    MPASSIGN( result->mpool, mpool );
     return result;
 }
 
-void dutils_free( XW_DUtilCtxt** XP_UNUSED_DBG(ducp) )
+void dutils_free( XW_DUtilCtxt** dutil )
 {
+    kplr_cleanup( *dutil );
 # ifdef MEM_DEBUG
-    XP_FREEP( (*ducp)->mpool, ducp );
+    XP_FREEP( (*dutil)->mpool, dutil );
 # endif
 }
 
@@ -312,7 +316,7 @@ linux_dutil_storePtr( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe), const XP_UCHAR* k
     sqlite3* pDb = params->pDb;
 
     gchar* b64 = g_base64_encode( data, len);
-    db_store( pDb, key, b64 );
+    gdb_store( pDb, key, b64 );
     g_free( b64 );
 }
 
@@ -324,14 +328,14 @@ linux_dutil_loadPtr( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe), const XP_UCHAR* ke
     sqlite3* pDb = params->pDb;
 
     gint buflen = 0;
-    FetchResult res = db_fetch( pDb, key, keySuffix, NULL, &buflen );
+    FetchResult res = gdb_fetch( pDb, key, keySuffix, NULL, &buflen );
     if ( res == BUFFER_TOO_SMALL ) { /* expected: I passed 0 */
         if ( 0 == *lenp ) {
             *lenp = buflen;
         } else {
             gchar* tmp = XP_MALLOC( duc->mpool, buflen );
             gint tmpLen = buflen;
-            res = db_fetch( pDb, key, keySuffix, tmp, &tmpLen );
+            res = gdb_fetch( pDb, key, keySuffix, tmp, &tmpLen );
             XP_ASSERT( buflen == tmpLen );
             XP_ASSERT( res == SUCCESS );
             XP_ASSERT( tmp[buflen-1] == '\0' );
@@ -388,7 +392,7 @@ linux_dutil_deviceRegistered( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe), DevIDType
     case ID_TYPE_RELAY:
         if ( !!params->pDb && 0 < strlen( idRelay ) ) {
             XP_LOGF( "%s: new id: %s", __func__, idRelay );
-            db_store( params->pDb, KEY_RDEVID, idRelay );
+            gdb_store( params->pDb, KEY_RDEVID, idRelay );
         }
         break;
     default:

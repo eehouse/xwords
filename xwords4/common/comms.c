@@ -32,6 +32,7 @@
 #include "xwrelay.h"
 #include "strutils.h"
 #include "dbgutil.h"
+#include "knownplyr.h"
 
 #define HEARTBEAT_NONE 0
 
@@ -165,6 +166,8 @@ struct CommsCtxt {
         XP_Bool connecting;
     } rr;
 
+    XP_U8 flags;
+
     XP_Bool isServer;
     XP_Bool disableds[COMMS_CONN_NTYPES][2];
 #ifdef DEBUG
@@ -174,6 +177,8 @@ struct CommsCtxt {
 
     MPSLOT
 };
+
+#define FLAG_HARVEST_DONE 1
 
 #if defined XWFEATURE_IP_DIRECT || defined XWFEATURE_DIRECTIP
 typedef enum {
@@ -196,8 +201,8 @@ static AddressRecord* rememberChannelAddress( CommsCtxt* comms, XWEnv xwe,
                                               const CommsAddrRec* addr );
 static void augmentChannelAddr( CommsCtxt* comms, AddressRecord* rec,
                                 const CommsAddrRec* addr, XWHostID hostID );
-static void augmentAddr( CommsCtxt* comms, CommsAddrRec* dest,
-                         const CommsAddrRec* src );
+static XP_Bool augmentAddrIntrnl( CommsCtxt* comms, CommsAddrRec* dest,
+                                  const CommsAddrRec* src, XP_Bool isNewer );
 static XP_Bool channelToAddress( CommsCtxt* comms, XWEnv xwe, XP_PlayerAddr channelNo,
                                  const CommsAddrRec** addr );
 static AddressRecord* getRecordFor( CommsCtxt* comms, XWEnv xwe,
@@ -672,8 +677,10 @@ comms_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
     CommsAddrRec addr;
     short ii;
 
-    // FIX_NEXT_VERSION_CHANGE
-    (void)stream_getU8( stream ); /* no longer needed!!! */
+    XP_U8 flags = stream_getU8( stream );
+    if ( version < STREAM_VERS_GICREATED ) {
+        flags = 0;
+    }
     addrFromStream( &addr, stream );
 
     if ( version >= STREAM_VERS_DEVIDS
@@ -693,6 +700,7 @@ comms_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
                                    );
     XP_MEMCPY( &comms->addr, &addr, sizeof(comms->addr) );
     logAddr( comms, xwe, &addr, __func__ );
+    comms->flags = flags;
 
     comms->connID = stream_getU32( stream );
     comms->nextChannelNo = stream_getU16( stream );
@@ -922,8 +930,7 @@ comms_writeToStream( CommsCtxt* comms, XWEnv XP_UNUSED_DBG(xwe),
 
     stream_setVersion( stream, CUR_STREAM_VERS );
 
-    // FIX_NEXT_VERSION_CHANGE
-    stream_putU8( stream, (XP_U8)comms->isServer );    /* no longer needed!!! */
+    stream_putU8( stream, comms->flags );
     logAddr( comms, xwe, &comms->addr, __func__ );
     addrToStream( stream, &comms->addr );
     stream_putBits( stream, 4, comms->rr.nPlayersHere );
@@ -1032,7 +1039,7 @@ comms_augmentHostAddr( CommsCtxt* comms, XWEnv xwe, const CommsAddrRec* addr )
         && ! addr_hasType( &comms->addr, COMMS_CONN_RELAY );
 
     CommsAddrRec tmp = comms->addr;
-    augmentAddr( comms, &tmp, addr );
+    augmentAddrIntrnl( comms, &tmp, addr, XP_TRUE );
     util_addrChange( comms->util, xwe, &comms->addr, &tmp );
     comms->addr = tmp;
 
@@ -1050,6 +1057,12 @@ void
 comms_addMQTTDevID( CommsCtxt* comms, XP_PlayerAddr channelNo,
                     const MQTTDevID* devID )
 {
+#ifdef NO_ADD_MQTT_TO_ALL       /* set for (usually) BT testing on Android */
+    XP_LOGFF("ifdef'd out");
+    XP_USE( comms );
+    XP_USE( channelNo );
+    XP_USE( devID );
+#else
     XP_LOGFF( "(devID: " MQTTDevID_FMT ")", *devID );
     XP_Bool found = XP_FALSE;
     for ( AddressRecord* rec = comms->recs; !!rec && !found; rec = rec->next ) {
@@ -1062,12 +1075,13 @@ comms_addMQTTDevID( CommsCtxt* comms, XP_PlayerAddr channelNo,
             CommsAddrRec addr = {0};
             addr_setType( &addr, COMMS_CONN_MQTT );
             addr.u.mqtt.devID = *devID;
-            augmentAddr( comms, &rec->addr, &addr );
+            augmentAddrIntrnl( comms, &rec->addr, &addr, XP_TRUE );
         }
     }
     if ( !found ) {
         XP_LOGFF( "unable to augment address!!" );
     }
+#endif
 }
 
 void
@@ -1636,7 +1650,7 @@ resendImpl( CommsCtxt* comms, XWEnv xwe, CommsConnType filter, XP_Bool force,
 
     XP_U32 now = dutil_getCurSeconds( comms->dutil, xwe );
     if ( !force && (now < comms->nextResend) ) {
-        XP_LOGF( "%s: aborting: %d seconds left in backoff", __func__, 
+        XP_LOGFF( "aborting: %d seconds left in backoff",
                  comms->nextResend - now );
         success = XP_FALSE;
 
@@ -1854,7 +1868,7 @@ relayPreProcess( CommsCtxt* comms, XWEnv xwe, XWStreamCtxt* stream, XWHostID* se
 
     /* nothing for us to do here if not using relay */
     XWRELAY_Cmd cmd = stream_getU8( stream );
-    XP_LOGF( "%s(%s)", __func__, relayCmdToStr( cmd ) );
+    XP_LOGFF( "(%s)", relayCmdToStr( cmd ) );
     switch( cmd ) {
 
     case XWRELAY_CONNECT_RESP:
@@ -2003,7 +2017,7 @@ relayPreProcess( CommsCtxt* comms, XWEnv xwe, XWStreamCtxt* stream, XWHostID* se
         XP_LOGF( "%s: dropping relay msg with cmd %d", __func__, (XP_U16)cmd );
     }
     
-    LOG_RETURNF( "%s", boolToStr(consumed) );
+    LOG_RETURNF( "consumed=%s", boolToStr(consumed) );
     return consumed;
 } /* relayPreProcess */
 #endif
@@ -2051,7 +2065,7 @@ preProcess( CommsCtxt* comms, XWEnv xwe, const CommsAddrRec* useAddr,
 
     /* There should be exactly one type associated with an incoming message */
     CommsConnType typ = addr_getType( useAddr );
-    XP_LOGF( "%s(typ=%s)", __func__, ConnType2Str(typ) );
+    XP_LOGFF( "(typ=%s)", ConnType2Str(typ) );
 
     switch ( typ ) {
 #ifdef XWFEATURE_RELAY
@@ -2586,6 +2600,30 @@ comms_isConnected( const CommsCtxt* const comms )
     return result;
 }
 
+#ifdef XWFEATURE_KNOWNPLAYERS
+void
+comms_gatherPlayers( CommsCtxt* comms, XWEnv xwe, XP_U32 created )
+{
+    LOG_FUNC();
+    if ( 0 == (comms->flags & FLAG_HARVEST_DONE) ) {
+        CommsAddrRec addrs[4] = {{0}};
+        XP_U16 nRecs = VSIZE(addrs);
+        comms_getAddrs( comms, NULL, addrs, &nRecs );
+
+        const CurGameInfo* gi = comms->util->gameInfo;
+        XP_ASSERT( 0 < gi->nPlayers );
+        if ( kplr_addAddrs( comms->dutil, xwe, gi, addrs, nRecs, created ) ) {
+            if ( 1 ) {
+                XP_LOGFF( "not setting flag :-)" );
+            } else {
+                /* Need a way to force/override this manually? */
+                comms->flags |= FLAG_HARVEST_DONE;
+            }
+        }
+    }
+}
+#endif
+
 #ifdef RELAY_VIA_HTTP
 void
 comms_gameJoined( CommsCtxt* comms, XWEnv xwe, const XP_UCHAR* connname, XWHostID hid )
@@ -2800,7 +2838,6 @@ comms_getAddrDisabled( const CommsCtxt* comms, CommsConnType typ,
     XP_ASSERT( !!comms );
     return comms->disableds[typ][send?0:1];
 }
-
 #endif
 
 static AddressRecord*
@@ -2928,7 +2965,7 @@ static void
 augmentChannelAddr( CommsCtxt* comms, AddressRecord* const rec,
                     const CommsAddrRec* addr, XWHostID hostID )
 {
-    augmentAddr( comms, &rec->addr, addr );
+    augmentAddrIntrnl( comms, &rec->addr, addr, XP_TRUE );
     if ( addr_hasType( &rec->addr, COMMS_CONN_RELAY ) ) {
         if ( 0 != hostID ) {
             rec->rr.hostID = hostID;
@@ -2947,22 +2984,26 @@ augmentChannelAddr( CommsCtxt* comms, AddressRecord* const rec,
 #endif
 }
 
-static void
-augmentAddr( CommsCtxt* comms, CommsAddrRec* destAddr,
-             const CommsAddrRec* srcAddr )
+static XP_Bool
+augmentAddrIntrnl( CommsCtxt* comms, CommsAddrRec* destAddr,
+                   const CommsAddrRec* srcAddr, XP_Bool isNewer )
 {
+    XP_Bool changed = XP_FALSE;
+    const CommsAddrRec empty = {0};
     if ( !!srcAddr ) {
         CommsConnType typ;
         for ( XP_U32 st = 0; addr_iter( srcAddr, &typ, &st ); ) {
-            if ( ! addr_hasType( destAddr, typ ) ) {
+            XP_Bool newType = !addr_hasType( destAddr, typ );
+            if ( newType ) {
                 XP_LOGFF( "adding new type %s to rec", ConnType2Str(typ) );
                 addr_addType( destAddr, typ );
 
                 /* If an address is getting added to a channel, the top-level
                    address should also include the type. The specifics of the
                    address don't make sense to copy, however. */
-                if ( ! addr_hasType( &comms->addr, typ ) ) {
-                    XP_ASSERT( destAddr != &comms->addr ); /* we just added it, so can't be comms->addr */
+                if ( !!comms && ! addr_hasType( &comms->addr, typ ) ) {
+                    /* we just added it, so can't be comms->addr */
+                    XP_ASSERT( destAddr != &comms->addr );
                     XP_LOGFF( "adding %s to comms->addr", ConnType2Str(typ) );
                     addr_addType( &comms->addr, typ );
                 }
@@ -3010,20 +3051,32 @@ augmentAddr( CommsCtxt* comms, CommsAddrRec* destAddr,
                 break;
             }
             if ( !!dest ) {
-                if ( 0 != XP_MEMCMP( dest, src, siz ) ) {
-#ifdef DEBUG
-                    CommsAddrRec dummy = {0};
-                    if ( 0 == XP_MEMCMP( &dummy, dest, siz ) ) {
-                        XP_LOGFF( "setting %s-type addr for first time", ConnType2Str(typ) );
-                    } else if ( 0 != XP_MEMCMP( dest, src, siz ) ) {
-                        XP_LOGFF( "actually changing addr info for typ %s", ConnType2Str(typ) );
+                XP_ASSERT( !newType || 0 == XP_MEMCMP( &empty, dest, siz ) );
+
+                XP_Bool different = 0 != XP_MEMCMP( dest, src, siz );
+                if ( different ) {
+                    /* If the dest is non-empty AND the src is older, don't do
+                       anything: don't replace newer info with older. Note
+                       that this assumes unset values are empty!!! */
+                    if ( !isNewer && !newType
+                         && 0 != XP_MEMCMP( &empty, dest, siz ) ) {
+                        XP_LOGFF( "%s: not replacing new info with old",
+                                  ConnType2Str(typ) );
+                    } else {
+                        XP_MEMCPY( dest, src, siz );
+                        changed = XP_TRUE;
                     }
-#endif
-                    XP_MEMCPY( dest, src, siz );
                 }
             }
         }
     }
+    return changed;
+}
+
+XP_Bool
+augmentAddr( CommsAddrRec* addr, const CommsAddrRec* newer, XP_Bool isNewer )
+{
+    return augmentAddrIntrnl( NULL, addr, newer, isNewer );
 }
 
 static XP_Bool
