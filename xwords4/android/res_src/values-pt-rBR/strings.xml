@@ -275,4 +275,6 @@
     <string name="keep_screenon_summary">Manter a tela do quadro ligada por 10 min</string>
     <string name="keep_screenon">Manter a tela ligada</string>
     <string name="show_arrow_summary">Quadrados tocados ficam nesta seta quando está visível</string>
+    <string name="peek_other">Visualizar quadrados fora do turno</string>
+    <string name="summary_sort_tiles">Tipos de grades toda vez que novos quadrados são adicionados</string>
 </resources>
