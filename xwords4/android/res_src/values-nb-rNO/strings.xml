@@ -234,7 +234,7 @@
     <string name="summary_conn">Spill underveis</string>
     <string name="invite_notice_title">Nytt spill via invitasjon</string>
     <string name="new_bt_body_fmt">En spiller på enheten %1$s ønsker å starte et spill</string>
-    <string name="new_relay_body">Trykk for å åpne et nytt spill</string>
+    <string name="new_game_body">Trykk for å åpne et nytt spill</string>
     <string name="bt_resend_fmt">Blåtannsforsendelse til %1$s mislyktes; prøv %3$d i %2$d sekunder.</string>
     <string name="bt_fail_fmt">Blåtannsforsendelser til %1$s har mislyktes for mange ganger. Åpne spillet igjen og prøv på nytt.</string>
     <string name="bt_invite_title">Blåtannsinvitasjon</string>
@@ -912,7 +912,7 @@
     <string name="sms_invite_fail">Kunne ikke starte SMS-program</string>
     <string name="checkbox_archive">Flytt til arkiv</string>
     <string name="button_more_info">Les mer</string>
-    <string name="invit_expl_usrsms_fmt">Invitasjon sendt via SMS-melding til telefonnummer %1$s på %2$s</string>
+    <string name="invit_expl_usrsms_fmt">Invitasjon sendt via SMS-melding på %1$s</string>
     <string name="msg_dev_deleted_fmt">Spillet ved navn \"%1$s\" har blitt slettet på en annen enhet. Du vil ikke kunne spille videre.</string>
     <string name="invite_choice_data_sms">Data-SMS</string>
     <string name="empty_bt_inviter">Ingen parrede enheter oppdaget enda.</string>

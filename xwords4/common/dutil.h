@@ -22,7 +22,6 @@
 #define _DEVUTIL_H_
 
 #include "comtypes.h"
-#include "mempool.h"
 #include "xwrelay.h"
 #include "vtabmgr.h"
 #include "commstyp.h"
@@ -85,9 +84,15 @@ struct XW_DUtilCtxt {
     DUtilVtable vtable;
     void* closure;
     void* devCtxt;              /* owned by device.c */
+#ifdef XWFEATURE_KNOWNPLAYERS   /* owned by knownplyr.c */
+    void* kpCtxt;
+    pthread_mutex_t kpMutex;
+#endif
     VTableMgr* vtMgr;
     MPSLOT
 };
+
+void dutil_super_init( MPFORMAL XW_DUtilCtxt* dutil );
 
 /* This one cheats: direct access */
 #define dutil_getVTManager(duc) (duc)->vtMgr

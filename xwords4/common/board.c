@@ -879,7 +879,7 @@ board_canHint( const BoardCtxt* board )
         && 0 < model_getNumTilesTotal( board->model, board->selPlayer )
         && ! board->pti[board->selPlayer].tradeInProgress;
     if ( canHint ) {
-        LocalPlayer* lp = &board->gi->players[board->selPlayer];
+        const LocalPlayer* lp = &board->gi->players[board->selPlayer];
         canHint = lp->isLocal && !LP_IS_ROBOT(lp);
     }
     return canHint;

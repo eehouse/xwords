@@ -52,12 +52,13 @@ import org.eehouse.android.xw4.jni.XwJNI.DictWrapper;
 import org.eehouse.android.xw4.jni.XwJNI.IterWrapper;
 import org.eehouse.android.xw4.jni.XwJNI.PatDesc;
 import org.eehouse.android.xw4.jni.XwJNI;
+import org.eehouse.android.xw4.loc.LocUtils;
 
 import java.util.Arrays;
 import java.io.Serializable;
 
 public class DictBrowseDelegate extends DelegateBase
-    implements View.OnClickListener {
+    implements View.OnClickListener, View.OnLongClickListener {
     private static final String TAG = DictBrowseDelegate.class.getSimpleName();
     private static final String DELIM = ".";
     private static final boolean SHOW_NUM = false;
@@ -159,6 +160,7 @@ public class DictBrowseDelegate extends DelegateBase
             TextView text = (TextView)
                 inflate( android.R.layout.simple_list_item_1 );
             text.setOnClickListener( DictBrowseDelegate.this );
+            text.setOnLongClickListener( DictBrowseDelegate.this );
 
             String str = XwJNI.di_nthWord( m_diClosure, position, m_browseState.m_delim );
             if ( null != str ) {
@@ -377,6 +379,25 @@ public class DictBrowseDelegate extends DelegateBase
             handled = false;
         }
         return handled;
+    }
+
+    //////////////////////////////////////////////////
+    // View.OnLongClickListener interface
+    //////////////////////////////////////////////////
+    @Override
+    public boolean onLongClick( View view )
+    {
+        boolean success = view instanceof TextView;
+        if ( success ) {
+            TextView text = (TextView)view;
+            String word = text.getText().toString();
+            Utils.stringToClip( m_activity, word );
+
+            String msg = LocUtils
+                .getString( m_activity, R.string.word_to_clip_fmt, word );
+            showToast( msg );
+        }
+        return success;
     }
 
     //////////////////////////////////////////////////

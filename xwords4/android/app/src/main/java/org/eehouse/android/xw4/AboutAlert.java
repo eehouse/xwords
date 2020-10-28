@@ -1,6 +1,7 @@
-/* -*- compile-command: "find-and-gradle.sh inXw4dDebug"; -*- */
+/* -*- compile-command: "find-and-gradle.sh inXw4dDeb"; -*- */
 /*
- * Copyright 2017 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2017 - 2020 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -54,15 +55,19 @@ public class AboutAlert extends XWDialogFragment {
                                                         DateFormat.DEFAULT );
         String dateString
             = df.format( new Date( BuildConfig.BUILD_STAMP * 1000 ) );
-        vers.setText( getString( R.string.about_vers_fmt2,
-                                 BuildConfig.VARIANT_NAME,
-                                 BuildConfig.VERSION_NAME,
-                                 BuildConfig.VERSION_CODE,
-                                 BuildConfig.GITREV_SHORT,
-                                 dateString ) );
+        String str = getString( R.string.about_vers_fmt2,
+                                BuildConfig.VARIANT_NAME,
+                                BuildConfig.VERSION_NAME,
+                                BuildConfig.VERSION_CODE,
+                                BuildConfig.GITREV_SHORT,
+                                dateString );
+        if ( BuildConfig.NON_RELEASE ) {
+            str += "\n\t" + BuildConfig.GIT_REV;
+        }
+        vers.setText( str );
 
         TextView xlator = (TextView)view.findViewById( R.id.about_xlator );
-        String str = getString( R.string.xlator );
+        str = getString( R.string.xlator );
         if ( str.length() > 0 && !str.equals("[empty]") ) {
             xlator.setText( str );
         } else {

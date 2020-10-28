@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="vertical"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:padding="8dp"
+              >
+
+  <TextView android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/knowns_expl"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+      />
+
+  <ScrollView android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:orientation="vertical"
+              android:layout_gravity="center_horizontal"
+              android:padding="8dp"
+              >
+    
+    <!-- Players go here. -->
+    <LinearLayout android:id="@+id/players_list"
+                  android:orientation="vertical"
+                  android:layout_width="fill_parent"
+                  android:layout_height="fill_parent"
+                  android:layout_weight="1"
+                  android:drawSelectorOnTop="false"
+                  />
+  </ScrollView>
+</LinearLayout>

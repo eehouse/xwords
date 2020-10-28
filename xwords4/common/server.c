@@ -3760,6 +3760,12 @@ server_getGameIsOver( const ServerCtxt* server )
     return server->nv.gameState == XWSTATE_GAMEOVER;
 } /* server_getGameIsOver */
 
+XP_Bool
+server_getGameIsConnected( const ServerCtxt* server )
+{
+    return server->nv.gameState >= XWSTATE_NEWCLIENT;
+} /* server_getGameIsConnected */
+
 XP_U16
 server_getMissingPlayers( const ServerCtxt* server )
 {

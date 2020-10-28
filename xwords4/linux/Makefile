@@ -166,6 +166,7 @@ DEFINES += -DXWFEATURE_DIRECTIP
 DEFINES += -DXWFEATURE_SLOW_ROBOT -DXWFEATURE_ROBOTPHONIES
 
 DEFINES += -DXWFEATURE_DEVICE
+DEFINES += -DXWFEATURE_KNOWNPLAYERS
 
 # Support device-to-device connection via UDP, e.g. using wifi on a
 # LAN or where the host/server isn't behind a firewall.
@@ -207,7 +208,9 @@ GTK_OBJS = \
 	$(BUILD_PLAT_DIR)/gtkutils.o \
 	$(BUILD_PLAT_DIR)/gtkntilesask.o \
 	$(BUILD_PLAT_DIR)/gtkaskdict.o \
-	$(BUILD_PLAT_DIR)/gtkchat.o
+	$(BUILD_PLAT_DIR)/gtkchat.o \
+	$(BUILD_PLAT_DIR)/gtkkpdlg.o \
+
 endif
 ifdef DO_CURSES
 CURSES_OBJS = \

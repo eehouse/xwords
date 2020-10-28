@@ -193,7 +193,7 @@ linuxOpenGame( CommonGlobals* cGlobals, const TransportProcs* procs,
     } else if ( !!params->pDb && 0 <= cGlobals->rowid ) {
         stream = mem_stream_make_raw( MPPARM(cGlobals->util->mpool)
                                       params->vtMgr );
-        if ( !loadGame( stream, params->pDb, cGlobals->rowid ) ) {
+        if ( !gdb_loadGame( stream, params->pDb, cGlobals->rowid ) ) {
             stream_destroy( stream, NULL_XWE);
             stream = NULL;
         }
@@ -461,7 +461,8 @@ requestMsgsIdle( gpointer data )
 {
     CommonGlobals* cGlobals = (CommonGlobals*)data;
     XP_UCHAR devIDBuf[64] = {0};
-    db_fetch_safe( cGlobals->params->pDb, KEY_RDEVID, NULL, devIDBuf, sizeof(devIDBuf) );
+    gdb_fetch_safe( cGlobals->params->pDb, KEY_RDEVID, NULL, devIDBuf,
+                    sizeof(devIDBuf) );
     if ( '\0' != devIDBuf[0] ) {
         relaycon_requestMsgs( cGlobals->params, devIDBuf );
     } else {
@@ -592,11 +593,11 @@ linuxSaveGame( CommonGlobals* cGlobals )
 
         if ( doSave ) {
             if ( !!pDb ) {
-                summarize( cGlobals );
+                gdb_summarize( cGlobals );
             }
 
             XWStreamCtxt* outStream;
-            MemStreamCloseCallback onClose = !!pDb? writeToDB : writeToFile;
+            MemStreamCloseCallback onClose = !!pDb? gdb_write : writeToFile;
             outStream = 
                 mem_stream_make_sized( MPPARM(cGlobals->util->mpool)
                                        cGlobals->params->vtMgr, 
@@ -1195,7 +1196,7 @@ linux_getDevIDRelay( LaunchParams* params )
 {
     XP_U32 result = 0;
     gchar buf[32];
-    if ( db_fetch_safe( params->pDb, KEY_RDEVID, NULL, buf, sizeof(buf) ) ) {
+    if ( gdb_fetch_safe( params->pDb, KEY_RDEVID, NULL, buf, sizeof(buf) ) ) {
         sscanf( buf, "%X", &result );
         /* XP_LOGF( "%s(): %s => %x", __func__, buf, result ); */
     }
@@ -1219,12 +1220,12 @@ linux_getDevID( LaunchParams* params, DevIDType* typ )
     if ( !!params->lDevID ) {
         result = params->lDevID;
         *typ = ID_TYPE_LINUX;
-    } else if ( db_fetch_safe( params->pDb, KEY_RDEVID, NULL, params->devIDStore,
-                               sizeof(params->devIDStore) ) ) {
+    } else if ( gdb_fetch_safe( params->pDb, KEY_RDEVID, NULL, params->devIDStore,
+                                sizeof(params->devIDStore) ) ) {
         result = params->devIDStore;
         *typ = '\0' == result[0] ? ID_TYPE_ANON : ID_TYPE_RELAY;
-    } else if ( db_fetch_safe( params->pDb, KEY_LDEVID, NULL, params->devIDStore,
-                               sizeof(params->devIDStore) ) ) {
+    } else if ( gdb_fetch_safe( params->pDb, KEY_LDEVID, NULL, params->devIDStore,
+                                sizeof(params->devIDStore) ) ) {
         result = params->devIDStore;
         *typ = '\0' == result[0] ? ID_TYPE_ANON : ID_TYPE_LINUX;
     } else if ( !params->noAnonDevid ) {
@@ -1238,8 +1239,8 @@ void
 linux_doInitialReg( LaunchParams* params, XP_Bool idIsNew )
 {
     gchar rDevIDBuf[64];
-    if ( !db_fetch_safe( params->pDb, KEY_RDEVID, NULL, rDevIDBuf,
-                         sizeof(rDevIDBuf) ) ) {
+    if ( !gdb_fetch_safe( params->pDb, KEY_RDEVID, NULL, rDevIDBuf,
+                          sizeof(rDevIDBuf) ) ) {
         rDevIDBuf[0] = '\0';
     }
     DevIDType typ = ID_TYPE_NONE;
@@ -1255,7 +1256,7 @@ linux_setupDevidParams( LaunchParams* params )
 {
     XP_Bool idIsNew = XP_TRUE;
     gchar oldLDevID[256];
-    if ( db_fetch_safe( params->pDb, KEY_LDEVID, NULL, oldLDevID, sizeof(oldLDevID) )
+    if ( gdb_fetch_safe( params->pDb, KEY_LDEVID, NULL, oldLDevID, sizeof(oldLDevID) )
          && (!params->lDevID || 0 == strcmp( oldLDevID, params->lDevID )) ) {
         idIsNew = XP_FALSE;
     } else {
@@ -1263,7 +1264,7 @@ linux_setupDevidParams( LaunchParams* params )
         if ( NULL == lDevID ) {
             lDevID = "";        /* we'll call this ANONYMOUS */
         }
-        db_store( params->pDb, KEY_LDEVID, lDevID );
+        gdb_store( params->pDb, KEY_LDEVID, lDevID );
     }
     return idIsNew;
 }
@@ -1274,9 +1275,10 @@ parseSMSParams( LaunchParams* params, gchar** myPhone, XP_U16* myPort )
     gchar buf[32];
     const XP_UCHAR* phone = params->connInfo.sms.myPhone;
     if ( !!phone ) {
-        db_store( params->pDb, KEY_SMSPHONE, phone );
+        gdb_store( params->pDb, KEY_SMSPHONE, phone );
         *myPhone = g_strdup( phone );
-    } else if ( !phone && db_fetch_safe( params->pDb, KEY_SMSPHONE, NULL, buf, VSIZE(buf) ) ) {
+    } else if ( !phone && gdb_fetch_safe( params->pDb, KEY_SMSPHONE, NULL,
+                                          buf, VSIZE(buf) ) ) {
         params->connInfo.sms.myPhone = *myPhone = g_strdup(buf);
     } else {
         *myPhone = NULL;
@@ -1286,8 +1288,9 @@ parseSMSParams( LaunchParams* params, gchar** myPhone, XP_U16* myPort )
     gchar portbuf[8];
     if ( 0 < *myPort ) {
         sprintf( portbuf, "%d", *myPort );
-        db_store( params->pDb, KEY_SMSPORT, portbuf );
-    } else if ( db_fetch_safe( params->pDb, KEY_SMSPORT, NULL, portbuf, VSIZE(portbuf) ) ) {
+        gdb_store( params->pDb, KEY_SMSPORT, portbuf );
+    } else if ( gdb_fetch_safe( params->pDb, KEY_SMSPORT, NULL, portbuf,
+                                VSIZE(portbuf) ) ) {
         params->connInfo.sms.port = *myPort = atoi( portbuf );
     }
     return NULL != *myPhone && 0 < *myPort;
@@ -2590,7 +2593,7 @@ initParams( LaunchParams* params )
 static void
 freeParams( LaunchParams* params )
 {
-    closeGamesDB( params->pDb );
+    gdb_close( params->pDb );
     params->pDb = NULL;
     
     vtmgr_destroy( MPPARM(params->mpool) params->vtMgr );
@@ -3392,7 +3395,7 @@ main( int argc, char** argv )
         }
 
         XP_ASSERT( !!mainParams.dbName );
-        mainParams.pDb = openGamesDB( mainParams.dbName );
+        mainParams.pDb = gdb_open( mainParams.dbName );
         
         if ( mainParams.useCurses ) {
             /* if ( mainParams.needsNewGame ) { */

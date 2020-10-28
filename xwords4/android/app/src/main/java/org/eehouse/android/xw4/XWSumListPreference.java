@@ -32,6 +32,7 @@ public class XWSumListPreference extends XWListPreference {
         R.string.game_summary_field_rowid,
         R.string.game_summary_field_gameid,
         R.string.title_addrs_pref,
+        R.string.game_summary_field_created,
     };
 
     public XWSumListPreference( Context context, AttributeSet attrs )

@@ -234,10 +234,15 @@ public class Utils {
         }
 
         if ( null != sb ) {
-            ClipboardManager clipboard = (ClipboardManager)
-                context.getSystemService(Context.CLIPBOARD_SERVICE);
-            clipboard.setText( sb.toString() );
+            stringToClip( context, sb.toString() );
         }
+    }
+
+    static void stringToClip( Context context, String str )
+    {
+        ClipboardManager clipboard = (ClipboardManager)
+            context.getSystemService(Context.CLIPBOARD_SERVICE);
+        clipboard.setText( str );
     }
 
     public static void postNotification( Context context, Intent intent,
@@ -794,6 +799,16 @@ public class Utils {
         }
     }
 
+    static int getFirstVersion( Context context )
+    {
+        SharedPreferences prefs =
+            context.getSharedPreferences( HIDDEN_PREFS,
+                                          Context.MODE_PRIVATE );
+        int firstVersion = prefs.getInt( FIRST_VERSION_KEY, Integer.MAX_VALUE );
+        Assert.assertTrueNR( firstVersion < Integer.MAX_VALUE );
+        return firstVersion;
+    }
+
     private static void setFirstBootStatics( Context context )
     {
         if ( null == s_isFirstBootThisVersion ) {
@@ -805,8 +820,6 @@ public class Utils {
 
 
             if ( 0 < thisVersion ) {
-                prefs = context.getSharedPreferences( HIDDEN_PREFS,
-                                                      Context.MODE_PRIVATE );
                 prevVersion = prefs.getInt( SHOWN_VERSION_KEY, -1 );
             }
             boolean newVersion = prevVersion != thisVersion;

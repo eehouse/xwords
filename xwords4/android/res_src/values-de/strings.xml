@@ -385,7 +385,7 @@
     <string name="email_body_rev_fmt">(Falls relevant, geben Sie bitte die Version: „%1$s“; und das Fabrikat/Modell Ihres Smartphones oder Tablets an: %2$s/%3$s.)</string>
     <string name="invite_notice_title">Neue Partie per Einladung</string>
     <string name="new_bt_body_fmt">Ein Spieler auf dem Gerät %1$s will eine Partie starten</string>
-    <string name="new_relay_body">Zum Öffnen der neuen Partie antippen</string>
+    <string name="new_game_body">Zum Öffnen der neuen Partie antippen</string>
     <string name="bt_bad_proto_fmt">Die Version von CrossWords auf „%1$s“ ist nicht mit dieser kompatibel, um über Bluetooth zu spielen. Einer von Ihnen muss seine Version aktualisieren, bevor Sie fortfahren können.</string>
     <string name="sms_bad_proto_fmt">Die Version von CrossWords auf dem Telefon mit Nummer „%1$s” ist nicht mit dieser kompatibel, um über Daten-SMS zu spielen. Einer von Ihnen muss seine Version aktualisieren, bevor Sie fortfahren können.</string>
     <string name="bt_resend_fmt">Senden per Bluetooth an %1$s fehlgeschlagen; Versuch %3$d in %2$d Sekunden.</string>
@@ -915,7 +915,7 @@
 \n • Starten Sie CrossWords auf dem anderen Gerät
 \n • Wenn alles nichts hilft, booten Sie dieses Gerät
 \n</string>
-    <string name="invit_expl_usrsms_fmt">"Einladung per SMS an %1$s  an %2$s gesendet"</string>
+    <string name="invit_expl_usrsms_fmt">"Einladung per SMS an %1$s gesendet"</string>
     <string name="sms_invite_flakey">Diese neue Option startet Ihre Standard-SMS-App mit einer versandfertigen Einladung - wenn es funktioniert. Jede SMS-App ist anders, und mit einigen funktioniert es nicht.</string>
     <string name="sms_invite_fail">SMS-App konnte nicht gestartet werden</string>
     <string name="msg_dev_deleted_fmt">Das Spiel mit dem Namen „%1$s” wurde auf einem anderen Gerät gelöscht. Sie werden es nicht mehr spielen können.</string>

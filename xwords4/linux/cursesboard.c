@@ -671,7 +671,7 @@ cb_feedGame( CursesBoardState* cbState, XP_U32 gameID,
     sqlite3_int64 rowids[4];
     int nRows = VSIZE( rowids );
     LaunchParams* params = cbState->params;
-    getRowsForGameID( params->pDb, gameID, rowids, &nRows );
+    gdb_getRowsForGameID( params->pDb, gameID, rowids, &nRows );
     XP_LOGF( "%s(): found %d rows for gameID %d", __func__, nRows, gameID );
     for ( int ii = 0; ii < nRows; ++ii ) {
 #ifdef DEBUG

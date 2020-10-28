@@ -674,8 +674,7 @@ public class ConnStatusHandler {
                 && !getAirplaneModeOn( context );
             break;
         case COMMS_CONN_BT:
-            result = XWApp.BTSUPPORTED && BTService.BTEnabled()
-                && BTService.BTEnabled();
+            result = BTUtils.BTEnabled();
             // No: we can be in airplane mode but with BT turned on manually.
             //!getAirplaneModeOn( context );
             break;
@@ -722,7 +721,9 @@ public class ConnStatusHandler {
                                         fcmMsg );
                 break;
             case COMMS_CONN_MQTT:
-                result = String.format("DevID: %s", addr.mqtt_devID );
+                if ( null != addr ) {
+                    result = String.format("DevID: %s", addr.mqtt_devID );
+                }
                 break;
             case COMMS_CONN_P2P:
                 result = WiDirService.formatNetStateInfo();

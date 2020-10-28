@@ -165,7 +165,7 @@ class Device():
     sTilesLeftTrayPat = re.compile('.*player \d+ now has (\d+) tiles')
     sRelayIDPat = re.compile('.*UPDATE games.*seed=(\d+),.*relayid=\'([^\']+)\'.*')
     sDevIDPat = re.compile('.*storing new devid: ([\da-fA-F]+).*')
-    sMQTTDevIDPat = re.compile('.*dvc_getMQTTDevID.*: generated id: ([\d[A-F]+).*')
+    sMQTTDevIDPat = re.compile('.*getMQTTDevID.*: generated id: ([\d[A-F]+).*')
     sConnPat = re.compile('.*linux_util_informMissing\(isServer.*nMissing=0\).*')
 
     sScoresDup = []

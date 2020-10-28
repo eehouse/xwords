@@ -24,7 +24,7 @@ import android.content.Context;
 import android.text.TextUtils;
 
 import org.eehouse.android.xw4.Assert;
-import org.eehouse.android.xw4.BTService;
+import org.eehouse.android.xw4.BTUtils;
 import org.eehouse.android.xw4.BuildConfig;
 import org.eehouse.android.xw4.GameUtils;
 import org.eehouse.android.xw4.Log;
@@ -43,7 +43,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 
-public class CommsAddrRec {
+public class CommsAddrRec implements java.io.Serializable {
     private static final String TAG = CommsAddrRec.class.getSimpleName();
 
     public enum CommsConnType {
@@ -154,7 +154,7 @@ public class CommsAddrRec {
             if ( BuildConfig.OFFER_MQTT ) {
                 supported.add( CommsConnType.COMMS_CONN_MQTT );
             }
-            if ( BTService.BTAvailable() ) {
+            if ( BTUtils.BTAvailable() ) {
                 supported.add( CommsConnType.COMMS_CONN_BT );
             }
             if ( WiDirWrapper.enabled() ) {
@@ -338,7 +338,9 @@ public class CommsAddrRec {
     public void setBTParams( String btAddr, String btName )
     {
         bt_hostName = btName;
-        bt_btAddr = btAddr;
+        if ( ! BTUtils.isBogusAddr( btAddr ) ) {
+            bt_btAddr = btAddr;
+        }
     }
 
     public void setSMSParams( String phone )
@@ -429,7 +431,7 @@ public class CommsAddrRec {
             setRelayParams( host, port, room );
             break;
         case COMMS_CONN_BT:
-            String[] strs = BTService.getBTNameAndAddress();
+            String[] strs = BTUtils.getBTNameAndAddress();
             if ( null != strs ) {
                 bt_hostName = strs[0];
                 bt_btAddr = strs[1];

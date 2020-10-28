@@ -22,6 +22,7 @@ package org.eehouse.android.xw4;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.content.Intent;
@@ -42,11 +43,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-public class BTInviteDelegate extends InviteDelegate {
+public class BTInviteDelegate extends InviteDelegate
+    implements BTUtils.ScanListener {
+
     private static final String TAG = BTInviteDelegate.class.getSimpleName();
     private static final String KEY_PERSIST = TAG + "_persist";
     private static final int[] BUTTONIDS = { R.id.button_scan,
@@ -56,7 +60,7 @@ public class BTInviteDelegate extends InviteDelegate {
     private static final boolean ENABLE_FAKER = false;
     private static final int SCAN_SECONDS = 5;
 
-    private static Persisted sPersisted;
+    private static Persisted[] sPersistedRef = {null};
 
     private Activity m_activity;
     private ProgressBar mProgressBar;
@@ -97,7 +101,7 @@ public class BTInviteDelegate extends InviteDelegate {
                 for ( Iterator<TwoStringPair> iter = pairs.iterator();
                       iter.hasNext(); ) {
                     TwoStringPair pair = iter.next();
-                    if ( TextUtils.equals( pair.str2, dev ) ) {
+                    if ( TextUtils.equals( pair.getDev(), dev ) ) {
                         iter.remove();
                         break;
                     }
@@ -124,9 +128,19 @@ public class BTInviteDelegate extends InviteDelegate {
             Collections.sort( pairs, new Comparator<TwoStringPair>() {
                     @Override
                     public int compare( TwoStringPair rec1, TwoStringPair rec2 ) {
-                        long val1 = stamps.get( rec1.str2 );
-                        long val2 = stamps.get( rec2.str2 );
-                        return (int)(val2 - val1);
+                        int result = 0;
+                        try {
+                            long val1 = stamps.get( rec1.str2 );
+                            long val2 = stamps.get( rec2.str2 );
+                            if ( val2 > val1 ) {
+                                result = 1;
+                            } else if ( val1 > val2 ) {
+                                result = -1;
+                            }
+                        } catch ( Exception ex ) {
+                            Log.e( TAG, "ex %s on %s vs %s", ex, rec1, rec2 );
+                        }
+                        return result;
                     }
                 });
         }
@@ -168,11 +182,25 @@ public class BTInviteDelegate extends InviteDelegate {
         addButtonBar( R.layout.bt_buttons, BUTTONIDS );
 
         load( m_activity );
-        if ( sPersisted.empty() ) {
+        if ( sPersistedRef[0].empty() ) {
             scan();
         } else {
-            updateList( sPersisted.pairs );
+            updateListIn( 0 );
         }
+    }
+
+    @Override
+    protected void onResume()
+    {
+        BTUtils.addScanListener( this );
+        super.onResume();
+    }
+
+    @Override
+    protected void onPause()
+    {
+        BTUtils.removeScanListener( this );
+        super.onResume();
     }
 
     @Override
@@ -183,7 +211,7 @@ public class BTInviteDelegate extends InviteDelegate {
             scan();
             break;
         case R.id.button_settings:
-            BTService.openBTSettings( m_activity );
+            BTUtils.openBTSettings( m_activity );
             break;
         case R.id.button_clear:
             int count = getChecked().size();
@@ -195,46 +223,15 @@ public class BTInviteDelegate extends InviteDelegate {
         }
     }
 
-    // MultiService.MultiEventListener interface
-    @Override
-    public void eventOccurred( MultiService.MultiEvent event, final Object ... args )
-    {
-        switch( event ) {
-        case SCAN_DONE:
-            post( new Runnable() {
-                    public void run() {
-                        hideProgress();
-
-                        if ( sPersisted.empty() || 0 == mNDevsThisScan ) {
-                            makeNotAgainBuilder( R.string.not_again_emptybtscan,
-                                                 R.string.key_notagain_emptybtscan )
-                                .show();
-                        }
-                    }
-                } );
-            break;
-        case HOST_PONGED:
-            post( new Runnable() {
-                    @Override
-                    public void run() {
-                        processScanResult( (BluetoothDevice)args[0] );
-                    }
-                } );
-            break;
-        default:
-            super.eventOccurred( event, args );
-        }
-    }
-
     @Override
     protected void onChildAdded( View child, InviterItem data )
     {
         String devName = ((TwoStringPair)data).str2;
 
         String msg = null;
-        if ( sPersisted.stamps.containsKey( devName ) ) {
+        if ( sPersistedRef[0].stamps.containsKey( devName ) ) {
             CharSequence elapsed = DateUtils
-                .getRelativeTimeSpanString( sPersisted.stamps.get( devName ),
+                .getRelativeTimeSpanString( sPersistedRef[0].stamps.get( devName ),
                                             System.currentTimeMillis(),
                                             DateUtils.SECOND_IN_MILLIS );
             msg = getString( R.string.bt_scan_age_fmt, elapsed );
@@ -254,17 +251,45 @@ public class BTInviteDelegate extends InviteDelegate {
         }
     }
 
+    // interface ScanListener
+    @Override
+    public void onDeviceScanned( final BluetoothDevice dev )
+    {
+        post( new Runnable() {
+                @Override
+                public void run() {
+                    processScanResult( dev );
+                }
+            } );
+    }
+
+    @Override
+    public void onScanDone()
+    {
+        post( new Runnable() {
+                @Override
+                public void run() {
+                    hideProgress();
+
+                    if ( sPersistedRef[0].empty() || 0 == mNDevsThisScan ) {
+                        makeNotAgainBuilder( R.string.not_again_emptybtscan,
+                                             R.string.key_notagain_emptybtscan )
+                            .show();
+                    }
+                }
+            } );
+    }
+
     private void scan()
     {
         if ( ENABLE_FAKER && Utils.nextRandomInt() % 5 == 0 ) {
-            sPersisted.add( "00:00:00:00:00:00", "Do Not Invite Me" );
+            sPersistedRef[0].add( "00:00:00:00:00:00", "Do Not Invite Me" );
         }
 
-        int count = BTService.getPairedCount( m_activity );
+        int count = BTUtils.scan( m_activity, 1000 * SCAN_SECONDS );
         if ( 0 < count ) {
             mNDevsThisScan = 0;
             showProgress( count, 2 * SCAN_SECONDS );
-            BTService.scan( m_activity, 1000 * SCAN_SECONDS );
         } else {
             makeConfirmThenBuilder( R.string.bt_no_devs,
                                     Action.OPEN_BT_PREFS_ACTION )
@@ -278,10 +303,10 @@ public class BTInviteDelegate extends InviteDelegate {
         DbgUtils.assertOnUIThread();
 
         ++mNDevsThisScan;
-        sPersisted.add( dev.getAddress(), dev.getName() );
+        sPersistedRef[0].add( dev.getAddress(), dev.getName() );
         store( m_activity );
 
-        updateList( sPersisted.pairs );
+        updateList();
         tryEnable();
     }
 
@@ -323,23 +348,75 @@ public class BTInviteDelegate extends InviteDelegate {
             }, 1000 * inSeconds );
     }
 
+    private static void removeNotPaired( Persisted prs )
+    {
+        Log.d( TAG, "removeNotPaired()" );
+        BluetoothAdapter adapter = BTUtils.getAdapterIf();
+        if ( null != adapter ) {
+            Set<BluetoothDevice> pairedDevs = BTUtils.getCandidates();
+            Set<String> paired = new HashSet<>();
+            for ( BluetoothDevice dev : pairedDevs ) {
+                Log.d( TAG, "removeNotPaired(): paired dev: %s", dev.getName() );
+                paired.add( dev.getName() );
+            }
+
+            Set<String> toRemove = new HashSet<>();
+            for ( TwoStringPair pair : prs.pairs ) {
+                String name = pair.str2;
+                if ( ! paired.contains( name ) ) {
+                    Log.d( TAG, "%s no longer paired; removing", name );
+                    toRemove.add( name );
+                } else {
+                    Log.d( TAG, "%s STILL paired", name );
+                }
+            }
+
+            if ( ! toRemove.isEmpty() ) {
+                prs.remove( toRemove );
+            }
+        } else {
+            Log.e( TAG, "removeNotPaired(): adapter null" );
+        }
+    }
+
+    private void updateListIn( final long inSecs )
+    {
+        m_handler.postDelayed( new Runnable() {
+                @Override
+                public void run() {
+                    updateList();
+                    updateListIn( 10 );
+                }
+            }, inSecs * 1000 );
+    }
+
+    private void updateList()
+    {
+        updateList( sPersistedRef[0].pairs );
+    }
+
     private synchronized static void load( Context context )
     {
-        if ( null == sPersisted ) {
+        if ( null == sPersistedRef[0] ) {
+            Persisted prs;
             try {
-                sPersisted = (Persisted)DBUtils.getSerializableFor( context, KEY_PERSIST );
-                sPersisted.removeNulls(); // clean up earlier mistakes
-            } catch ( Exception ex ) {} // NPE, de-serialization problems, etc.
+                prs = (Persisted)DBUtils.getSerializableFor( context, KEY_PERSIST );
+                prs.removeNulls(); // clean up earlier mistakes
+                removeNotPaired( prs );
+            } catch ( Exception ex ) {
+                prs = null;
+            } // NPE, de-serialization problems, etc.
 
-            if ( null == sPersisted ) {
-                sPersisted = new Persisted();
+            if ( null == prs ) {
+                prs = new Persisted();
             }
+            sPersistedRef[0] = prs;
         }
     }
 
     private synchronized static void store( Context context )
     {
-        DBUtils.setSerializableFor( context, KEY_PERSIST, sPersisted );
+        DBUtils.setSerializableFor( context, KEY_PERSIST, sPersistedRef[0] );
     }
 
     // DlgDelegate.DlgClickNotify interface
@@ -349,14 +426,14 @@ public class BTInviteDelegate extends InviteDelegate {
         boolean handled = true;
         switch( action ) {
         case OPEN_BT_PREFS_ACTION:
-            BTService.openBTSettings( m_activity );
+            BTUtils.openBTSettings( m_activity );
             break;
         case CLEAR_ACTION:
-            sPersisted.remove( getChecked() );
+            sPersistedRef[0].remove( getChecked() );
             store( m_activity );
 
             clearChecked();
-            updateList( sPersisted.pairs );
+            updateList();
             tryEnable();
             break;
         default:
@@ -365,10 +442,11 @@ public class BTInviteDelegate extends InviteDelegate {
         return handled;
     }
 
-    public static void onHeardFromDev( Context context, BluetoothDevice dev )
+    public static void onHeardFromDev( BluetoothDevice dev )
     {
+        Context context = XWApp.getContext();
         load( context );
-        sPersisted.add( dev.getAddress(), dev.getName() );
+        sPersistedRef[0].add( dev.getAddress(), dev.getName() );
         store( context );
     }
 }

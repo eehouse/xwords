@@ -70,6 +70,7 @@ public enum DlgID {
     , ASK_DUP_PAUSE
     , CHOOSE_TILES
     , SHOW_TILES
+    , RENAME_PLAYER
     ;
 
     private boolean m_addToStack;

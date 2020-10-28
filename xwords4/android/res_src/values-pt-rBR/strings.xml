@@ -50,7 +50,7 @@
     <string name="invit_expl_bt_fmt">Convite enviado via Bluetooth para dispositivos emparelhados “%1$s” no %2$s</string>
     <string name="sms_invite_flakey">Esta opção envia seu SMS padrão do app com um convite pronto para envio—Quando funciona. Cada SMS do aplicativo é diferente, e algum deles não cooperam.</string>
     <string name="sms_invite_fail">Impossibilitado de mandar SMS do aplicativo</string>
-    <string name="invit_expl_usrsms_fmt">Convite enviado via SMS para %1$s no %2$s</string>
+    <string name="invit_expl_usrsms_fmt">Convite enviado via SMS no %1$s</string>
     <string name="invit_expl_sms_fmt">Convite enviado via Dados de SMS para o número de telefone %1$s no %2$s</string>
     <string name="invite_multiple">" (Você está esperando vários jogadores remotos. Você não precisa convida-los um de cada vez, mas este alerta não será rejeitado até que todo mundo tenha sido convidado e todos os convites tenham sido aceitos.)"</string>
     <string name="invite_if_nfc">Ou apenas toque para Convidar -- Se o outro dispositivo também tiver Android Beaming e estiver próximo.</string>

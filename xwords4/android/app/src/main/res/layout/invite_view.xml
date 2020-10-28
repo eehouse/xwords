@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<org.eehouse.android.xw4.InviteView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="10dp"
+    >
+
+  <!-- Parent is a ScrollView, so I'm the only child -->
+  <LinearLayout android:orientation="vertical"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                >
+
+    <!-- One of these next two will be unhidden -->
+    <TextView android:id="@+id/title_tab"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:text="@string/how_tab"
+              android:textAppearance="?android:attr/textAppearanceMedium"
+              android:visibility="gone"
+              />
+
+    <RadioGroup android:id="@+id/group_tab"
+                android:orientation="horizontal"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:visibility="gone"
+                >
+      <RadioButton android:id="@+id/radio_how"
+                   android:layout_width="wrap_content"
+                   android:layout_height="wrap_content"
+                   android:text="@string/radio_how"
+                   />
+      <RadioButton android:id="@+id/radio_who"
+                   android:layout_width="wrap_content"
+                   android:layout_height="wrap_content"
+                   android:text="@string/radio_who"
+                   />
+    </RadioGroup>
+
+    <FrameLayout android:layout_width="match_parent"
+                 android:layout_height="match_parent"
+                 >
+      <RadioGroup android:id="@+id/group_who"
+                  android:layout_width="match_parent"
+                  android:layout_height="wrap_content"
+                  />
+
+      <RadioGroup android:id="@+id/group_how"
+                  android:layout_width="match_parent"
+                  android:layout_height="wrap_content"
+                  >
+
+        <!-- RadioButtons will be inserted relative to this item -->
+        <TextView android:id="@+id/local_divider"
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:text="@string/local_invite_summary"
+                  android:textAppearance="?android:attr/textAppearanceMedium"
+                  />
+
+        <!-- intro for QR code: these two elems stay at the bottom -->
+        <TextView android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:text="@string/qrcode_invite_summary"
+                  android:textAppearance="?android:attr/textAppearanceMedium"
+                  android:padding="5dp"
+                  />
+        <ImageView android:id="@+id/qr_view"
+                   android:layout_width="wrap_content"
+                   android:layout_height="wrap_content"
+                   android:layout_gravity="center_horizontal"
+                   android:paddingTop="10dp"
+                   />
+      </RadioGroup>
+      <TextView android:id="@+id/who_empty"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/invite_who_empty_expl"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                />
+    </FrameLayout>
+    
+  </LinearLayout>
+</org.eehouse.android.xw4.InviteView>

@@ -107,9 +107,13 @@ typedef struct _Indexer {
 
 struct DictIter {
     XP_U16 nEdges;
+#ifdef DEBUG
+    /* Current string: useful when stepping in gdb */
+    XP_UCHAR curWord[32];
+#endif
     struct {
 #ifdef DEBUG
-        XP_UCHAR face[8];
+        XP_U16 faceLen;
 #endif
         array_edge* edge;
         PatMatch match;
@@ -624,15 +628,6 @@ struct _IPattern {
 } DIPattern;
 
 #ifdef DEBUG
-static void
-formatCurWord( const DictIter* iter, XP_UCHAR* buf, XP_U16 bufLen )
-{
-    int index = 0;
-    for ( int ii = 0; ii < iter->nEdges; ++ii ) {
-        index += XP_SNPRINTF( buf +index, bufLen - index, "%s", iter->stack[ii].face );
-    }
-}
-
 /* static void */
 /* logCurWord( const DictIter* iter, const XP_UCHAR* note ) */
 /* { */
@@ -1014,17 +1009,14 @@ patMatchFinished( const DictIter* iter, XP_Bool log )
 
 #ifdef DEBUG
     if ( log ) {
-        XP_UCHAR word[32];
-        formatCurWord( iter, word, VSIZE(word) );
-
         if ( result ) {
             XP_UCHAR elemBuf[64];
             PrintState prs = { .iter = iter, .buf = elemBuf, .bufLen = VSIZE(elemBuf), };
             formatElem( &prs, params.elem );
-            XP_LOGFF( "for word %s: => %s (matched elem %d: %s)", word, boolToStr(result),
+            XP_LOGFF( "for word %s: => %s (matched elem %d: %s)", iter->curWord, boolToStr(result),
                       params.patElemIndx, elemBuf );
         } else {
-            XP_LOGFF( "for word %s: => %s", word, boolToStr(result) );
+            XP_LOGFF( "for word %s: => %s", iter->curWord, boolToStr(result) );
         }
     }
 #endif
@@ -1084,9 +1076,12 @@ pushEdge( DictIter* iter, array_edge* edge, PatMatch* match )
     iter->stack[nEdges].match = *match;
 #ifdef DEBUG
     if ( !!edge ) { /* Will fail when called from di_stringMatches() */
+        // XP_LOGFF( "before: %s", iter->curWord );
         Tile tile = EDGETILE( iter->dict, edge );
         const XP_UCHAR* face = dict_getTileString( iter->dict, tile );
-        XP_STRNCPY( iter->stack[nEdges].face, face, VSIZE(iter->stack[nEdges].face) );
+        iter->stack[nEdges].faceLen = XP_STRLEN( face );
+        XP_STRCAT( iter->curWord, face );
+        // XP_LOGFF( "after: %s", iter->curWord );
     }
 #endif
     return ++iter->nEdges;
@@ -1096,6 +1091,14 @@ static array_edge*
 popEdge( DictIter* iter )
 {
     XP_ASSERT( 0 < iter->nEdges );
+#ifdef DEBUG
+    // XP_LOGFF( "before: %s", iter->curWord );
+    XP_U16 curLen = XP_STRLEN( iter->curWord );
+    XP_U16 popLen = iter->stack[iter->nEdges-1].faceLen;
+    XP_ASSERT( curLen >= popLen );
+    iter->curWord[curLen-popLen] = '\0';
+    // XP_LOGFF( "after: %s", iter->curWord );
+#endif
     return iter->stack[--iter->nEdges].edge;
 }
 
@@ -1127,13 +1130,15 @@ nextWord( DictIter* iter, XP_Bool log )
            we're done, and the top-level while will exit) */
         while ( 0 < iter->nEdges ) {
             /* remove so isn't part of the match of its peers! */
-            array_edge* edge = popEdge( iter ) + dict->nodeSize;
-
-            PatMatch match = {0};
-            if ( nextPeerMatch( iter, &edge, &match, log ) ) {
-                pushEdge( iter, edge, &match ); /* let the top of the loop examine this one */
-                success = iter->min <= iter->nEdges && ACCEPT_NODE( iter, edge, log );
-                break;
+            array_edge* edge = popEdge( iter );
+            if ( !IS_LAST_EDGE( dict, edge ) ) {
+                edge += dict->nodeSize;
+                PatMatch match = {0};
+                if ( nextPeerMatch( iter, &edge, &match, log ) ) {
+                    pushEdge( iter, edge, &match ); /* let the top of the loop examine this one */
+                    success = iter->min <= iter->nEdges && ACCEPT_NODE( iter, edge, log );
+                    break;
+                }
             }
         }
     }
@@ -1145,9 +1150,7 @@ nextWord( DictIter* iter, XP_Bool log )
 #ifdef DEBUG
     if ( log ) {
         if ( success ) {
-            XP_UCHAR buf[32] = {0};
-            formatCurWord( iter, buf, VSIZE( buf ) );
-            XP_LOGFF( "word found: %s", buf );
+            XP_LOGFF( "word found: %s", iter->curWord );
         } else {
             XP_LOGFF( "NOTHING FOUND" );
         }
@@ -1228,19 +1231,11 @@ prevWord( DictIter* iter, XP_Bool log )
 #ifdef DEBUG
     if ( log ) {
         if ( success ) {
-            XP_UCHAR buf[32] = {0};
-            formatCurWord( iter, buf, VSIZE( buf ) );
-            XP_LOGFF( "word found: %s", buf );
+            XP_LOGFF( "word found: %s", iter->curWord );
         } else {
             XP_LOGFF( "NOTHING FOUND" );
         }
     }
-
-    /* if ( log && success ) { */
-    /*     XP_UCHAR buf[32] = {0}; */
-    /*     formatCurWord( iter, buf, VSIZE( buf ) ); */
-    /*     XP_LOGFF( "word found: %s", buf ); */
-    /* } */
 #endif
     XP_ASSERT( (iter->min <= iter->nEdges && iter->nEdges <= iter->max) || !success );
     return success;
@@ -1253,6 +1248,9 @@ findStartsWithTiles( DictIter* iter, const Tile* tiles, XP_U16 nTiles )
     const DictionaryCtxt* dict = iter->dict;
     array_edge* edge = dict_getTopEdge( dict );
     iter->nEdges = 0;
+#ifdef DEBUG
+    iter->curWord[0] = '\0';
+#endif
 
     while ( nTiles > 0 ) {
         Tile tile = *tiles++;
@@ -1932,6 +1930,12 @@ di_wordToString( const DictIter* iter, XP_UCHAR* buf, XP_U16 buflen,
 {
     ASSERT_INITED( iter );
     iterToString( iter, buf, buflen, delim );
+#ifdef DEBUG
+    // If there's no delim, debug string should be same
+    if ( !delim || '\0' == *delim ) {
+        XP_ASSERT( 0 == XP_STRCMP( buf, iter->curWord ) );
+    }
+#endif
 }
 
 DictPosition

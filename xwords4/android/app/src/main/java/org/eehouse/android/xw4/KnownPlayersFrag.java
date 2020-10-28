@@ -1,6 +1,6 @@
 /* -*- compile-command: "find-and-gradle.sh inXw4dDeb"; -*- */
 /*
- * Copyright 2015 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2014 - 2020 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -22,13 +22,18 @@ package org.eehouse.android.xw4;
 
 import android.os.Bundle;
 
-public class RelayInviteActivity extends InviteActivity {
-    private RelayInviteDelegate m_dlgt;
+public class KnownPlayersFrag extends XWFragment {
+
+    public KnownPlayersFrag() {}
+
+    public static XWFragment newInstance( Delegator parent )
+    {
+        return new KnownPlayersFrag().setParentName( parent );
+    }
 
     @Override
-    protected void onCreate( Bundle savedInstanceState )
+    public void onCreate( Bundle sis )
     {
-        m_dlgt = new RelayInviteDelegate( this, savedInstanceState );
-        super.onCreate( savedInstanceState, m_dlgt );
+        super.onCreate( new KnownPlayersDelegate( this, sis ), sis, true );
     }
 }

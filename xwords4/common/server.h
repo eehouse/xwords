@@ -78,6 +78,8 @@ XP_Bool server_handleUndo( ServerCtxt* server, XWEnv xwe, XP_U16 limit );
 XP_S16 server_getCurrentTurn( const ServerCtxt* server, XP_Bool* isLocal );
 XP_Bool server_isPlayersTurn( const ServerCtxt* server, XP_U16 turn );
 XP_Bool server_getGameIsOver( const ServerCtxt* server );
+XP_Bool server_getGameIsConnected( const ServerCtxt* server );
+
 XP_S32 server_getDupTimerExpires( const ServerCtxt* server );
 XP_S16 server_getTimerSeconds( const ServerCtxt* server, XWEnv xwe, XP_U16 turn );
 XP_Bool server_dupTurnDone( const ServerCtxt* server, XP_U16 turn );

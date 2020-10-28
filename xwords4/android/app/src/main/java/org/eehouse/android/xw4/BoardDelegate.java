@@ -263,15 +263,15 @@ public class BoardDelegate extends DelegateBase
             break;
 
         case DLG_DELETED: {
-            final int gameID = (Integer)params[0];
             String gameName = GameUtils.getName( m_activity, m_rowid );
             ab = ab.setTitle( R.string.query_title )
                 .setMessage( getString( R.string.msg_dev_deleted_fmt, gameName ) )
                 .setPositiveButton( android.R.string.ok, null );
             lstnr = new OnClickListener() {
+                    @Override
                     public void onClick( DialogInterface dlg,
                                          int whichButton ) {
-                        deleteAndClose( gameID );
+                        deleteAndClose();
                     }
                 };
             ab.setNegativeButton( R.string.button_delete, lstnr );
@@ -429,6 +429,21 @@ public class BoardDelegate extends DelegateBase
         return dialog;
     } // makeDialog
 
+    private boolean mDeletePosted;
+    private void postDeleteOnce()
+    {
+        if ( !mDeletePosted ) {
+            // PENDING: could clear this if user says "ok" rather than "delete"
+            mDeletePosted = true;
+            post( new Runnable() {
+                    @Override
+                    public void run() {
+                        showDialogFragment( DlgID.DLG_DELETED );
+                    }
+                } );
+        }
+    }
+
     private static class InviteAlertState implements Serializable {
         GameSummary summary;
         CurGameInfo gi;
@@ -530,6 +545,8 @@ public class BoardDelegate extends DelegateBase
                             Assert.assertTrue( 0 < state.nMissing );
                             if ( state.summary.hasRematchInfo() ) {
                                 tryRematchInvites( true );
+                            } else if ( state.summary.hasInviteInfo() ) {
+                                tryOtherInvites();
                             } else {
                                 callInviteChoices( sentInfo[0] );
                             }
@@ -819,7 +836,8 @@ public class BoardDelegate extends DelegateBase
     private void showInviteChoicesThen( Object[] params )
     {
         SentInvitesInfo info = (SentInvitesInfo)params[0];
-        showInviteChoicesThen( Action.LAUNCH_INVITE_ACTION, info );
+        NetLaunchInfo nli = nliForMe();
+        showInviteChoicesThen( Action.LAUNCH_INVITE_ACTION, info, nli );
     }
 
     @Override
@@ -1176,7 +1194,7 @@ public class BoardDelegate extends DelegateBase
             dropConViaAndRestart( CommsConnType.COMMS_CONN_RELAY );
             break;
         case DELETE_AND_EXIT:
-            deleteAndClose( m_gi.gameID );
+            deleteAndClose();
             break;
         case DROP_SMS_ACTION:   // do nothing; work done in onNegButton case
             alertOrderIncrIfAt( StartAlertOrder.NBS_PERMS );
@@ -1185,7 +1203,7 @@ public class BoardDelegate extends DelegateBase
         case INVITE_SMS_DATA:
             int nMissing = (Integer)params[0];
             SentInvitesInfo info = (SentInvitesInfo)params[1];
-            launchPhoneNumberInvite( nMissing, info, InviteMeans.SMS_DATA,
+            launchPhoneNumberInvite( nMissing, info,
                                      RequestCode.SMS_DATA_INVITE_RESULT );
             break;
 
@@ -1238,6 +1256,11 @@ public class BoardDelegate extends DelegateBase
             showArchiveNA( false );
             break;
 
+        case LAUNCH_INVITE_ACTION:
+            CommsAddrRec addr = (CommsAddrRec)params[0];
+            tryOtherInvites( addr );
+            break;
+
         case ENABLE_NBS_DO:
             post( new Runnable() {
                     @Override
@@ -1280,7 +1303,7 @@ public class BoardDelegate extends DelegateBase
             if ( Perms23.bannedWithWorkaround( m_activity, perms ) ) {
                 int nMissing = (Integer)params[0];
                 SentInvitesInfo info = (SentInvitesInfo)params[1];
-                launchPhoneNumberInvite( nMissing, info, InviteMeans.SMS_DATA,
+                launchPhoneNumberInvite( nMissing, info,
                                          RequestCode.SMS_DATA_INVITE_RESULT );
             } else if ( Perms23.anyBanned( m_activity, perms ) ) {
                 makeOkOnlyBuilder( R.string.sms_banned_ok_only )
@@ -1362,23 +1385,17 @@ public class BoardDelegate extends DelegateBase
                                      Action.INVITE_SMS_DATA, m_mySIS.nMissing,
                                      info, perms );
                 break;
-            case SMS_USER:      // like an email invite, but we want the phone #
-                launchPhoneNumberInvite( m_mySIS.nMissing, info, means,
-                                         RequestCode.SMS_USER_INVITE_RESULT );
-                break;
             case RELAY:
-                RelayInviteDelegate.launchForResult( m_activity, m_mySIS.nMissing, info,
-                                                     RequestCode.RELAY_INVITE_RESULT );
-                break;
             case MQTT:
-                MQTTInviteDelegate.launchForResult( m_activity, m_mySIS.nMissing, info,
-                                                    RequestCode.MQTT_INVITE_RESULT );
+                // These have been removed as options
+                Assert.failDbg();
                 break;
             case WIFIDIRECT:
                 WiDirInviteDelegate.launchForResult( m_activity,
                                                      m_mySIS.nMissing, info,
                                                      RequestCode.P2P_INVITE_RESULT );
                 break;
+            case SMS_USER:
             case EMAIL:
             case CLIPBOARD:
                 NetLaunchInfo nli = new NetLaunchInfo( m_activity, m_summary, m_gi, 1,
@@ -1386,10 +1403,16 @@ public class BoardDelegate extends DelegateBase
                 if ( m_relayMissing ) {
                     nli.removeAddress( CommsConnType.COMMS_CONN_RELAY );
                 }
-                if ( InviteMeans.EMAIL == means ) {
+                switch ( means ) {
+                case EMAIL:
                     GameUtils.launchEmailInviteActivity( m_activity, nli );
-                } else if ( InviteMeans.CLIPBOARD == means ) {
+                    break;
+                case SMS_USER:
+                    GameUtils.launchSMSInviteActivity( m_activity, nli );
+                    break;
+                case CLIPBOARD:
                     GameUtils.inviteURLToClip( m_activity, nli );
+                    break;
                 }
                 recordInviteSent( means, null );
 
@@ -1432,12 +1455,7 @@ public class BoardDelegate extends DelegateBase
         case MESSAGE_NOGAME:
             final int gameID = (Integer)args[0];
             if ( null != m_gi && gameID == m_gi.gameID && !isFinishing() ) {
-                post( new Runnable() {
-                        @Override
-                        public void run() {
-                            showDialogFragment( DlgID.DLG_DELETED, gameID );
-                        }
-                    } );
+                postDeleteOnce();
             }
             break;
 
@@ -1534,8 +1552,7 @@ public class BoardDelegate extends DelegateBase
 
         case DEADGAME:
         case DELETED:
-            params = new Object[] { m_gi.gameID };
-            dlgID = DlgID.DLG_DELETED;
+            postDeleteOnce();
             break;
 
         case OLDFLAGS:
@@ -1668,18 +1685,17 @@ public class BoardDelegate extends DelegateBase
     }
 
     private void launchPhoneNumberInvite( int nMissing, SentInvitesInfo info,
-                                          InviteMeans means, RequestCode code )
+                                          RequestCode code )
     {
-        SMSInviteDelegate.launchForResult( m_activity, nMissing, info,
-                                           means, code );
+        SMSInviteDelegate.launchForResult( m_activity, nMissing, info, code );
     }
 
-    private void deleteAndClose( int gameID )
+    private void deleteAndClose()
     {
-        if ( null != m_gi && gameID == m_gi.gameID ) {
-            GameUtils.deleteGame( m_activity, m_jniThread.getLock(), false, false );
+        if ( null == m_jniThread ) { // test probably no longer necessary
+            Assert.failDbg();
         } else {
-            Log.e( TAG, "deleteAndClose() called with wrong gameID %d", gameID );
+            GameUtils.deleteGame( m_activity, m_jniThread.getLock(), false, false );
         }
         waitCloseGame( false );
         finish();
@@ -1768,6 +1784,8 @@ public class BoardDelegate extends DelegateBase
         } else if ( nMissing > 0 ) {
             if ( m_summary.hasRematchInfo() ) {
                 skipDismiss = !tryRematchInvites( false );
+            } else if ( m_summary.hasInviteInfo() ) {
+                skipDismiss = !tryOtherInvites();
             } else if ( !m_haveInvited ) {
                 m_haveInvited = true;
                 showInviteAlertIf();
@@ -2541,6 +2559,8 @@ public class BoardDelegate extends DelegateBase
         runOnUiThread( new Runnable() {
                 @Override
                 public void run() {
+                    InviteChoicesAlert.dismissAny();
+
                     if ( m_relayMissing && connected ) {
                         m_relayMissing = false;
                     }
@@ -2577,8 +2597,7 @@ public class BoardDelegate extends DelegateBase
             CommsAddrRec[] addrs = XwJNI.comms_getAddrs( m_jniGamePtr );
             for ( CommsAddrRec addr : addrs ) {
                 if ( addr.contains( CommsConnType.COMMS_CONN_BT ) ) {
-                    BTService.pingHost( m_activity, addr.bt_btAddr,
-                                        m_gi.gameID );
+                    BTUtils.pingHost( m_activity, addr.bt_btAddr, m_gi.gameID );
                 }
             }
         }
@@ -2768,6 +2787,8 @@ public class BoardDelegate extends DelegateBase
     {
         if ( 0 < m_mySIS.nMissing && m_summary.hasRematchInfo() ) {
             tryRematchInvites( false );
+        } else if ( 0 < m_mySIS.nMissing && m_summary.hasInviteInfo() ) {
+            tryOtherInvites();
         } else if ( null != m_missingDevs ) {
             Assert.assertNotNull( m_missingMeans );
             String gameName = GameUtils.getName( m_activity, m_rowid );
@@ -2788,7 +2809,7 @@ public class BoardDelegate extends DelegateBase
                 case BLUETOOTH:
                     if ( ! m_progressShown ) {
                         m_progressShown = true;
-                        String progMsg = BTService.nameForAddr( dev );
+                        String progMsg = BTUtils.nameForAddr( dev );
                         progMsg = getString( R.string.invite_progress_fmt, progMsg );
                         startProgress( R.string.invite_progress_title, progMsg,
                                        new OnCancelListener() {
@@ -2798,10 +2819,7 @@ public class BoardDelegate extends DelegateBase
                                            }
                                        });
                     }
-                    BTService.inviteRemote( m_activity, dev, nli );
-                    break;
-                case SMS_USER:
-                    GameUtils.launchSMSInviteActivity( m_activity, dev, nli );
+                    BTUtils.inviteRemote( m_activity, dev, nli );
                     break;
                 case SMS_DATA:
                     sendNBSInviteIf( dev, nli, true );
@@ -2821,6 +2839,9 @@ public class BoardDelegate extends DelegateBase
                     break;
                 case MQTT:
                     MQTTUtils.inviteRemote( m_activity, dev, nli );
+                    break;
+                default:
+                    Assert.failDbg();
                     break;
                 }
 
@@ -3134,6 +3155,15 @@ public class BoardDelegate extends DelegateBase
         }
     }
 
+    private NetLaunchInfo nliForMe()
+    {
+        int numHere = 1;
+        int forceChannel = 1;
+        NetLaunchInfo nli = new NetLaunchInfo( m_activity, m_summary, m_gi,
+                                               numHere, forceChannel );
+        return nli;
+    }
+
     // Return true if anything sent
     private boolean tryRematchInvites( boolean force )
     {
@@ -3146,10 +3176,7 @@ public class BoardDelegate extends DelegateBase
             Assert.assertNotNull( m_summary );
             Assert.assertNotNull( m_gi );
             // only supports a single invite for now!
-            int numHere = 1;
-            int forceChannel = 1;
-            NetLaunchInfo nli = new NetLaunchInfo( m_activity, m_summary, m_gi,
-                                                   numHere, forceChannel );
+            NetLaunchInfo nli = nliForMe();
 
             String value;
             value = m_summary.getStringExtra( GameSummary.EXTRA_REMATCH_PHONE );
@@ -3158,7 +3185,7 @@ public class BoardDelegate extends DelegateBase
             }
             value = m_summary.getStringExtra( GameSummary.EXTRA_REMATCH_BTADDR );
             if ( null != value ) {
-                BTService.inviteRemote( m_activity, value, nli );
+                BTUtils.inviteRemote( m_activity, value, nli );
                 recordInviteSent( InviteMeans.BLUETOOTH, value );
             }
             value = m_summary.getStringExtra( GameSummary.EXTRA_REMATCH_RELAY );
@@ -3180,6 +3207,52 @@ public class BoardDelegate extends DelegateBase
             showToast( R.string.rematch_sent_toast );
         }
         return force;
+    }
+
+    private boolean tryOtherInvites()
+    {
+        boolean result = false;
+        Assert.assertNotNull( m_summary );
+        String str64 = m_summary.getStringExtra( GameSummary.EXTRA_REMATCH_ADDR );
+        try {
+            CommsAddrRec addr = (CommsAddrRec)Utils.string64ToSerializable( str64 );
+            result = tryOtherInvites( addr );
+        } catch ( Exception ex ) {
+            Log.ex( TAG, ex );
+            Assert.failDbg();
+        }
+        return result;
+    }
+
+    private boolean tryOtherInvites( CommsAddrRec addr )
+    {
+        boolean result = true;
+        NetLaunchInfo nli = nliForMe();
+        CommsConnTypeSet conTypes = addr.conTypes;
+        for ( CommsConnType typ : conTypes ) {
+            switch ( typ ) {
+            case COMMS_CONN_MQTT:
+                MQTTUtils.inviteRemote( m_activity, addr.mqtt_devID, nli );
+                recordInviteSent( InviteMeans.MQTT, addr.mqtt_devID );
+                break;
+            case COMMS_CONN_BT:
+                BTUtils.inviteRemote( m_activity, addr.bt_btAddr, nli );
+                recordInviteSent( InviteMeans.BLUETOOTH, addr.bt_btAddr );
+                break;
+                // case COMMS_CONN_RELAY:
+                //     RelayService.inviteRemote( m_activity, m_jniGamePtr, 0, value, nli );
+                //     recordInviteSent( InviteMeans.RELAY );
+                //     break;
+            case COMMS_CONN_SMS:
+                sendNBSInviteIf( addr.sms_phone, nli, true );
+                recordInviteSent( InviteMeans.SMS_DATA, addr.sms_phone );
+                break;
+
+            default:
+                Log.d( TAG, "not inviting using addr type %s", typ );
+            }
+        }
+        return result;
     }
 
     private void sendNBSInviteIf( String phone, NetLaunchInfo nli,

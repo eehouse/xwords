@@ -49,6 +49,7 @@ public class MQTTUtils extends Thread implements IMqttActionListener, MqttCallba
     private static final String TAG = MQTTUtils.class.getSimpleName();
     private static final String KEY_NEXT_REG = TAG + "/next_reg";
     private static final String KEY_LAST_WRITE = TAG + "/last_write";
+    private static final String KEY_TMP_KEY = TAG + "/tmp_key";
     private static enum State { NONE, CONNECTING, CONNECTED, SUBSCRIBING, SUBSCRIBED,
                                 CLOSING };
 
@@ -301,7 +302,8 @@ public class MQTTUtils extends Thread implements IMqttActionListener, MqttCallba
         }
         long now = Utils.getCurSeconds();
         Log.d( TAG, "registerOnce(): now: %d; nextReg: %d", now, sNextReg );
-        if ( now > sNextReg || ! BuildConfig.GIT_REV.equals(sLastRev) ) {
+        String revString = BuildConfig.GIT_REV + ':' + BuildConfig.VARIANT_NAME;
+        if ( now > sNextReg || ! revString.equals(sLastRev) ) {
             try {
                 JSONObject params = new JSONObject();
                 params.put( "devid", mDevID );
@@ -313,6 +315,8 @@ public class MQTTUtils extends Thread implements IMqttActionListener, MqttCallba
                 params.put( "dbg", BuildConfig.DEBUG );
                 params.put( "myNow", now );
                 params.put( "loc", LocUtils.getCurLocale( mContext ) );
+                params.put( "tmpKey", getTmpKey(mContext) );
+                params.put( "frstV", Utils.getFirstVersion( mContext ) );
 
                 String fcmid = FBMService.getFCMDevID( mContext );
                 if ( null != fcmid ) {
@@ -332,8 +336,18 @@ public class MQTTUtils extends Thread implements IMqttActionListener, MqttCallba
                         if ( 0 < atNext ) {
                             DBUtils.setLongFor( mContext, KEY_NEXT_REG, atNext );
                             sNextReg = atNext;
-                            DBUtils.setStringFor( mContext, KEY_LAST_WRITE, BuildConfig.GIT_REV );
-                            sLastRev = BuildConfig.GIT_REV;
+                            DBUtils.setStringFor( mContext, KEY_LAST_WRITE, revString );
+                            sLastRev = revString;
+                        }
+
+                        String dupID = response.optString( "dupID", "" );
+                        if ( dupID.equals( mDevID ) ) {
+                            Log.e( TAG, "********** %s bad; need new devID!!! **********", dupID );
+                            XwJNI.dvc_resetMQTTDevID();
+                            // Force a reconnect asap
+                            DBUtils.setLongFor( mContext, KEY_NEXT_REG, 0 );
+                            sNextReg = 0;
+                            clearInstance();
                         }
                     }
                 } else {
@@ -343,6 +357,19 @@ public class MQTTUtils extends Thread implements IMqttActionListener, MqttCallba
                 Log.e( TAG, "registerOnce() ex: %s", je );
             }
         }
+    }
+
+    private static int sTmpKey;
+    private static int getTmpKey( Context context )
+    {
+        while ( 0 == sTmpKey ) {
+            sTmpKey = DBUtils.getIntFor( context, KEY_TMP_KEY, 0 );
+            if ( 0 == sTmpKey ) {
+                sTmpKey = Math.abs( Utils.nextRandomInt() );
+                DBUtils.setIntFor( context, KEY_TMP_KEY, sTmpKey );
+            }
+        }
+        return sTmpKey;
     }
 
     private void disconnect()
@@ -366,36 +393,40 @@ public class MQTTUtils extends Thread implements IMqttActionListener, MqttCallba
         // you're not subscribed. That can't prevent us from continuing to
         // disconnect() and close. Rather than wrap each in its own try/catch,
         // run 'em in a loop in a single try/catch.
-        outer:
-        for ( int ii = 0; ; ++ii ) {
-            String action = null;
-            try {
-                switch ( ii ) {
-                case 0:
-                    action = "unsubscribe";
-                    mClient.unsubscribe( mDevID );
-                    break;      // not continue, which skips the Log() below
-                case 1:
-                    action = "disconnect";
-                    mClient.disconnect();
-                    break;
-                case 2:
-                    action = "close";
-                    mClient.close();
-                    break;
-                default:
-                    break outer;
+        if ( null == mClient ) {
+            Log.e( TAG, "disconnect(): null client" );
+        } else {
+            outer:
+            for ( int ii = 0; ; ++ii ) {
+                String action = null;
+                try {
+                    switch ( ii ) {
+                    case 0:
+                        action = "unsubscribe";
+                        mClient.unsubscribe( mDevID );
+                        break;      // not continue, which skips the Log() below
+                    case 1:
+                        action = "disconnect";
+                        mClient.disconnect();
+                        break;
+                    case 2:
+                        action = "close";
+                        mClient.close();
+                        break;
+                    default:
+                        break outer;
+                    }
+                    Log.d( TAG, "%H.disconnect(): %s() succeeded", this, action );
+                } catch ( MqttException mex ) {
+                    Log.e( TAG, "%H.disconnect(): %s(): got mex %s",
+                           this, action, mex );
+                } catch ( Exception ex ) {
+                    Log.e( TAG, "%H.disconnect(): %s(): got ex %s",
+                           this, action, ex );
                 }
-                Log.d( TAG, "%H.disconnect(): %s() succeeded", this, action );
-            } catch ( MqttException mex ) {
-                Log.e( TAG, "%H.disconnect(): %s(): got mex %s",
-                       this, action, mex );
-            } catch ( Exception ex ) {
-                Log.e( TAG, "%H.disconnect(): %s(): got ex %s",
-                       this, action, ex );
             }
+            mClient = null;
         }
-        mClient = null;
 
         // Make sure we don't need to call clearInstance(this)
         synchronized ( sInstance ) {
@@ -470,7 +501,7 @@ public class MQTTUtils extends Thread implements IMqttActionListener, MqttCallba
         ConnStatusHandler
             .updateStatusIn( mContext, CommsConnType.COMMS_CONN_MQTT, true );
 
-        RelayTimerReceiver.restartBackoff( mContext, TAG );
+        TimerReceiver.restartBackoff( mContext );
     }
 
     @Override
@@ -479,7 +510,7 @@ public class MQTTUtils extends Thread implements IMqttActionListener, MqttCallba
         Log.d( TAG, "%H.deliveryComplete(token=%s)", this, token );
         ConnStatusHandler
             .updateStatusOut( mContext, CommsConnType.COMMS_CONN_MQTT, true );
-        RelayTimerReceiver.restartBackoff( mContext, TAG );
+        TimerReceiver.restartBackoff( mContext );
     }
 
     private void subscribe()

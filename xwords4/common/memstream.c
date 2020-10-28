@@ -440,7 +440,7 @@ static void
 mem_stream_setVersion( XWStreamCtxt* p_sctx, XP_U16 vers )
 {
     MemStreamCtxt* stream = (MemStreamCtxt*)p_sctx;
-    /* Something's wrong if we're changing it -- I think */
+    /* Something's wrong if we're changing it */
     XP_ASSERT( 0 == stream->version || vers == stream->version );
     stream->version = vers;
 } /* mem_stream_setVersion */

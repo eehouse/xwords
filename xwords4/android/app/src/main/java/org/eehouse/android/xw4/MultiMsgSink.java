@@ -54,8 +54,6 @@ public class MultiMsgSink implements TransportProcs {
     public long getRowID() { return m_rowid; };
     public MultiMsgSink setRowID( long rowID ) { m_rowid = rowID; return this; };
 
-    // These will be overridden by e.g. BTService which for sendViaBluetooth()
-    // can just insert a message into its queue
     int sendViaRelay( byte[] buf, String msgID, int gameID )
     {
         Assert.assertTrue( BuildConfig.UDP_ENABLED );
@@ -65,7 +63,7 @@ public class MultiMsgSink implements TransportProcs {
     int sendViaBluetooth( byte[] buf, String msgID, int gameID,
                                  CommsAddrRec addr )
     {
-        return BTService.sendPacket( m_context, buf, msgID, addr, gameID );
+        return BTUtils.sendPacket( m_context, buf, msgID, addr, gameID );
     }
 
     int sendViaSMS( byte[] buf, String msgID, int gameID, CommsAddrRec addr )

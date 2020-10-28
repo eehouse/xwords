@@ -57,9 +57,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-public class DelegateBase implements DlgClickNotify,
-                                     DlgDelegate.HasDlgDelegate,
-                                     MultiService.MultiEventListener {
+public abstract class DelegateBase implements DlgClickNotify,
+                                              DlgDelegate.HasDlgDelegate,
+                                              MultiService.MultiEventListener {
     private static final String TAG = DelegateBase.class.getSimpleName();
 
     private DlgDelegate m_dlgDelegate;
@@ -94,7 +94,7 @@ public class DelegateBase implements DlgClickNotify,
     public Activity getActivity() { return m_activity; }
 
     // Does nothing unless overridden. These belong in an interface.
-    protected void init( Bundle savedInstanceState ) { Assert.failDbg(); }
+    protected abstract void init( Bundle savedInstanceState );
     protected void onSaveInstanceState( Bundle outState ) {}
     public boolean onPrepareOptionsMenu( Menu menu ) { return false; }
     public boolean onOptionsItemSelected( MenuItem item ) { return false; }
@@ -149,6 +149,7 @@ public class DelegateBase implements DlgClickNotify,
         m_isVisible = true;
         XWServiceHelper.setListener( this );
         runIfVisible();
+        BTUtils.setAmForeground();
     }
 
     protected void onPause()
@@ -525,6 +526,19 @@ public class DelegateBase implements DlgClickNotify,
         }
     }
 
+    protected Dialog buildNamerDlg( Renamer namer, int titleID,
+                                    OnClickListener lstnr1, OnClickListener lstnr2,
+                                    DlgID dlgID )
+    {
+        Dialog dialog = makeAlertBuilder()
+            .setTitle( titleID )
+            .setPositiveButton( android.R.string.ok, lstnr1 )
+            .setNegativeButton( android.R.string.cancel, lstnr2 )
+            .setView( namer )
+            .create();
+        return dialog;
+    }
+
     protected AlertDialog.Builder makeAlertBuilder()
     {
         return LocUtils.makeAlertBuilder( m_activity );
@@ -582,9 +596,10 @@ public class DelegateBase implements DlgClickNotify,
     }
 
     protected void showInviteChoicesThen( Action action,
-                                          DBUtils.SentInvitesInfo info )
+                                          DBUtils.SentInvitesInfo info,
+                                          NetLaunchInfo nli)
     {
-        m_dlgDelegate.showInviteChoicesThen( action, info );
+        m_dlgDelegate.showInviteChoicesThen( action, info, nli );
     }
 
     public Builder makeOkOnlyBuilder( int msgID )
@@ -760,7 +775,7 @@ public class DelegateBase implements DlgClickNotify,
             XWPrefs.setNBSEnabled( m_activity, true );
             break;
         case ENABLE_BT_DO:
-            BTService.enable();
+            BTUtils.enable();
             break;
         case ENABLE_RELAY_DO:
             RelayService.setEnabled( m_activity, true );

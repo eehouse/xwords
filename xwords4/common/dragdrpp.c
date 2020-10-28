@@ -24,6 +24,7 @@ extern "C" {
 
 #include "dragdrpp.h"
 #include "game.h"
+#include "dbgutil.h"
 
 /* How many squares must scroll gesture take in to be recognized. */
 #ifndef SCROLL_DRAG_THRESHHOLD
@@ -47,6 +48,13 @@ static void crosshairs_clear( BoardCtxt* board );
 #else
 # define crosshairs_set( board, col, row, com ) XP_FALSE;
 # define crosshairs_clear( board )
+#endif
+
+#ifdef DEBUG
+static void log_ds( const DragState* ds, const char* proc, const char* comment );
+# define LOG_DS(DS, COMMENT) log_ds( (DS), __func__, (COMMENT) )
+#else
+# define LOG_DS(DS, COMMENT)
 #endif
 
 static void startScrollTimerIf( BoardCtxt* board, XWEnv xwe );
@@ -242,6 +250,8 @@ dragDropEnd( BoardCtxt* board, XWEnv xwe, XP_U16 xx, XP_U16 yy, XP_Bool* dragged
     DragState* ds = &board->dragState;
     BoardObjectType newObj;
 
+    LOG_DS( ds, "starting" );
+
     XP_ASSERT( dragDropInProgress(board) );
 
     (void)dragDropContinueImpl( board, xwe, xx, yy, &newObj );
@@ -274,13 +284,13 @@ dragDropEnd( BoardCtxt* board, XWEnv xwe, XP_U16 xx, XP_U16 yy, XP_Bool* dragged
 #endif
     } else if ( ds->dtype == DT_BOARD ) {
         /* do nothing */
-    } else {
+    } else if ( ds->dtype == DT_TILE ) {
         XP_U16 mod_startc, mod_startr;
 
         flipIf( board, ds->start.u.board.col, ds->start.u.board.row,
                 &mod_startc, &mod_startr );
 
-        if ( newObj == OBJ_TRAY ) {
+        if ( ds->cur.obj == OBJ_TRAY ) {
             if ( ds->start.obj == OBJ_BOARD ) { /* board->tray is pending */
                 model_moveBoardToTray( board->model, xwe, board->selPlayer,
                                        mod_startc, mod_startr, 
@@ -290,9 +300,12 @@ dragDropEnd( BoardCtxt* board, XWEnv xwe, XP_U16 xx, XP_U16 yy, XP_Bool* dragged
                                       ds->start.u.tray.index,
                                       ds->cur.u.tray.index );
             }
-        } else if ( (newObj == OBJ_BOARD) &&
-                    !cellOccupied( board, ds->cur.u.board.col, 
-                                   ds->cur.u.board.row, XP_TRUE ) ) {
+        } else if ( ds->cur.obj == OBJ_BOARD
+            /* PENDING: This test shouldn't be necessary. It's tied up in the
+               pen timer triggering a words-under-here listing when it
+               shouldn't */
+                    && !cellOccupied( board, ds->cur.u.board.col,
+                                      ds->cur.u.board.row, XP_TRUE ) ) {
             if ( ds->start.obj == OBJ_TRAY ) {
                 /* moveTileToBoard flips its inputs */
                 (void)moveTileToBoard( board, xwe, ds->cur.u.board.col,
@@ -490,10 +503,14 @@ dragDropContinueImpl( BoardCtxt* board, XWEnv xwe, XP_U16 xx, XP_U16 yy,
     if ( !!onWhichP ) {
         *onWhichP = newInfo.obj;
     }
-
-    if ( newInfo.obj == OBJ_BOARD ) {
-        (void)coordToCell( board, xx, yy, &newInfo.u.board.col, 
-                           &newInfo.u.board.row );
+    XP_Bool didMove = XP_FALSE;
+    XP_Bool isLegalBoardDrag = XP_FALSE;
+    if ( newInfo.obj == OBJ_BOARD
+         && coordToCell( board, xx, yy, &newInfo.u.board.col,
+                         &newInfo.u.board.row )
+         && !cellOccupied( board, newInfo.u.board.col,
+                           newInfo.u.board.row, XP_TRUE ) ) {
+        isLegalBoardDrag = XP_TRUE;
 #ifdef XWFEATURE_CROSSHAIRS
         if ( !board->hideCrosshairs ) {
             draw = crosshairs_set( board, newInfo.u.board.col, 
@@ -536,9 +553,12 @@ dragDropContinueImpl( BoardCtxt* board, XWEnv xwe, XP_U16 xx, XP_U16 yy,
         }
     } else if ( ds->dtype == DT_TILE ) {
         if ( newInfo.obj == OBJ_BOARD ) {
-                 moving = (newInfo.u.board.col != ds->cur.u.board.col)
+            didMove = (newInfo.u.board.col != ds->cur.u.board.col)
                 || (newInfo.u.board.row != ds->cur.u.board.row)
                 || (OBJ_TRAY == ds->cur.obj);
+            if ( isLegalBoardDrag ) {
+                moving = didMove;
+            }
         } else if ( newInfo.obj == OBJ_TRAY ) {
             XP_Bool onDivider;
             XP_S16 index = pointToTileIndex( board, xx, yy, &onDivider );
@@ -578,7 +598,7 @@ dragDropContinueImpl( BoardCtxt* board, XWEnv xwe, XP_U16 xx, XP_U16 yy,
         XP_ASSERT( 0 );
     }
 
-    if ( moving ) {
+    if ( moving || didMove ) {
         draw = XP_TRUE;
         if ( !ds->didMove ) {
             /* This is the first time we've moved!!!  Kill any future timers,
@@ -738,6 +758,57 @@ static void
 crosshairs_clear( BoardCtxt* board )
 {
     crosshairs_set( board, -1, -1, XP_FALSE );
+}
+#endif
+
+#ifdef DEBUG
+
+const XP_UCHAR*
+DragTypeToStr( DragType typ )
+{
+#define CASE_STR(typ) case (typ): return #typ
+    switch( typ ) {
+        CASE_STR(DT_NONE);
+        CASE_STR(DT_DIVIDER);
+        CASE_STR(DT_TILE);
+#ifdef XWFEATURE_SEARCHLIMIT
+        CASE_STR(DT_HINTRGN);
+#endif
+        CASE_STR(DT_BOARD);
+    }
+#undef CASE_STR
+    XP_ASSERT(0);
+    return NULL;
+}
+
+static const XP_UCHAR*
+formatDragObj( const DragObjInfo* doi, XP_UCHAR buf[], XP_U16 len )
+{
+    switch( doi->obj ) {
+    case OBJ_BOARD:
+        XP_SNPRINTF( buf, len, "board: {%d, %d}", doi->u.board.col, doi->u.board.row );
+        break;
+    case OBJ_TRAY:
+        XP_SNPRINTF( buf, len, "tray: {%d}", doi->u.tray.index );
+        break;
+    case OBJ_NONE:
+        XP_SNPRINTF( buf, len, "NONE" );
+        break;
+    default:
+        XP_ASSERT(0);
+    }
+    return buf;
+}
+
+static void
+log_ds( const DragState* ds, const char* proc, const char* comment )
+{
+    XP_UCHAR startBuf[64];
+    XP_UCHAR curBuf[64];
+    XP_LOGF( "%s: DragState from %s(): {type: %s, start: %s, cur: %s}",
+             comment, proc, DragTypeToStr(ds->dtype),
+             formatDragObj(&ds->start, startBuf, VSIZE(startBuf) ),
+             formatDragObj(&ds->cur, curBuf, VSIZE(curBuf) ) );
 }
 #endif
 

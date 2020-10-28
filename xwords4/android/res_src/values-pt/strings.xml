@@ -1711,7 +1711,7 @@
     <string name="invit_expl_bt_fmt">Convite enviado via Bluetooth para o dispositivo pareado \"%1$s\" em %2$s</string>
     <string name="sms_invite_fail">Não foi possível iniciar a app de SMS</string>
     <string name="sms_invite_flakey">Essa nova opção inicia a sua app predefinida de SMS com um convite pronto para ser enviado — se funcionam. Cada app de SMS é diferente e alguns não cooperam.</string>
-    <string name="invit_expl_usrsms_fmt">Convite enviado via SMS para %1$s em %2$s</string>
+    <string name="invit_expl_usrsms_fmt">Convite enviado via SMS em %1$s</string>
     <string name="invit_expl_sms_fmt">Convite enviado via Data SMS para o número de telefone %1$s em %2$s</string>
     <string name="invite_if_nfc">Ou apenas toque no Convite -- se o outro dispositivo também possuir Android Beaming e estiver perto.</string>
     <string name="invited_msg">Esse jogo foi criado a partir de um convite que você recebeu. Assim que for possível conectar com o remetente e todos os outros convidados chegarem o jogo será iniciado.</string>

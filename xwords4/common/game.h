@@ -51,7 +51,7 @@ typedef struct _GameStateInfo {
     XP_Bool canUnpause;         /* duplicate-mode only */
 } GameStateInfo;
 
-typedef struct XWGame {
+typedef struct _XWGame {
     XW_UtilCtxt* util;
     BoardCtxt* board;
     ModelCtxt* model;
@@ -59,6 +59,7 @@ typedef struct XWGame {
 #ifndef XWFEATURE_STANDALONE_ONLY
     CommsCtxt* comms;
 #endif
+    XP_U32 created;     /* dutil_getCurSeconds() of creation */
 } XWGame;
 
 void game_makeNewGame( MPFORMAL XWEnv xwe, XWGame* game, CurGameInfo* gi,
@@ -95,8 +96,6 @@ void game_dispose( XWGame* game, XWEnv xwe );
 void game_getState( const XWGame* game, XWEnv xwe, GameStateInfo* gsi );
 XP_Bool game_getIsServer( const XWGame* game );
 
-void gi_initPlayerInfo( MPFORMAL CurGameInfo* gi, 
-                        const XP_UCHAR* nameTemplate );
 void gi_setNPlayers( CurGameInfo* gi, XP_U16 nTotal, XP_U16 nHere );
 void gi_disposePlayerInfo( MPFORMAL CurGameInfo* gi );
 void gi_writeToStream( XWStreamCtxt* stream, const CurGameInfo* gi );

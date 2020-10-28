@@ -82,6 +82,12 @@ abstract class InviteDelegate extends DelegateBase
             }
             return result;
         }
+
+        @Override
+        public String toString()
+        {
+            return String.format( "{dev: \"%s\", str2: \"%s\"}", mDev, str2 );
+        }
     }
 
     public static final String DEVS = "DEVS";
@@ -214,7 +220,8 @@ abstract class InviteDelegate extends DelegateBase
         updateChecked( items );
 
         m_lv.removeAllViews();
-        for ( InviterItem item : items ) {
+        InviterItem[] itemsArr = items.toArray( new InviterItem[items.size()] );
+        for ( InviterItem item : itemsArr ) {
             m_lv.addView( makeViewFor( itemId, item ) );
         }
     }
@@ -224,6 +231,7 @@ abstract class InviteDelegate extends DelegateBase
     ////////////////////////////////////////
     // View.OnClickListener
     ////////////////////////////////////////
+    @Override
     public void onClick( View view )
     {
         if ( m_inviteButton == view ) {

@@ -47,6 +47,7 @@
 #endif
 #define MAX_COLS MAX_ROWS
 
+#define STREAM_VERS_GICREATED 0x1C /* game struct gets created timestamp */
 #define STREAM_VERS_DUPLICATE 0x1B
 #define STREAM_VERS_DISABLEDS 0x1A
 #define STREAM_VERS_DEVIDS 0x19
@@ -89,7 +90,7 @@
 #define STREAM_VERS_405  0x01
 
 /* search for FIX_NEXT_VERSION_CHANGE next time this is changed */
-#define CUR_STREAM_VERS STREAM_VERS_DUPLICATE
+#define CUR_STREAM_VERS STREAM_VERS_GICREATED
 
 typedef struct XP_Rect {
     XP_S16 left;
@@ -228,6 +229,7 @@ typedef enum {
 #define SUFFIX_NEXTID "nextID"
 #define SUFFIX_DEVSTATE "devState"
 #define SUFFIX_MQTT_DEVID "mqtt_devid_key"
+#define SUFFIX_KNOWN_PLAYERS "known_players_key_dev1"
 
 #define FULL_KEY(PARTIAL) "persist_key:" PARTIAL
 
@@ -235,6 +237,7 @@ typedef enum {
 #define KEY_NEXTID FULL_KEY(SUFFIX_NEXTID)
 #define KEY_DEVSTATE FULL_KEY(SUFFIX_DEVSTATE)
 #define MQTT_DEVID_KEY FULL_KEY(SUFFIX_MQTT_DEVID)
+#define KNOWN_PLAYERS_KEY FULL_KEY(SUFFIX_KNOWN_PLAYERS)
 
 /* I need a way to communiate prefs to common/ code.  For now, though, I'll
  * leave storage of these values up to the platforms.  First, because I don't
