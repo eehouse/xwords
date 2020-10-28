@@ -1376,14 +1376,6 @@ public class BTUtils {
             mReturnAddr = addr;
         }
 
-        @Override
-        void postNotification( String device, int gameID, long rowid )
-        {
-            Context context = XWApp.getContext();
-            String body = LocUtils.getString( context, R.string.new_game_body );
-            GameUtils.postInvitedNotification( context, gameID, body, rowid );
-        }
-
         private void receiveMessage( long rowid, MultiMsgSink sink, byte[] msg )
         {
             Log.d( TAG, "receiveMessage(rowid=%d, len=%d)", rowid, msg.length );

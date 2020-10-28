@@ -59,6 +59,7 @@ public class MultiService {
                                  OWNER_RELAY,
                                  OWNER_BT,
                                  OWNER_P2P,
+                                 OWNER_MQTT,
     };
 
     private static final String ACTION_FETCH_DICT = "_afd";
@@ -213,8 +214,11 @@ public class MultiService {
                         break;
                     case OWNER_RELAY:
                     case OWNER_BT:
+                    case OWNER_MQTT:
                         GamesListDelegate.onGameDictDownload( context, intent );
                         break;
+                    default:
+                        Assert.failDbg();
                     }
                 }
             }
