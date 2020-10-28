@@ -3079,7 +3079,7 @@ pour la langue</string>
 \n • Lancez CrossWords sur l\'autre périphérique
 \n • Si tout cela échoue, redémarrez le périphérique
 \n</string>
-    <string name="invit_expl_usrsms_fmt">Invitation envoyée par SMS à %1$s sur %2$s</string>
+    <string name="invit_expl_usrsms_fmt">Invitation envoyée par SMS sur %1$s</string>
     <string name="msg_dev_deleted_fmt">La partie nommée \"%1$s\" a été effacée sur un autre périphérique. Vous ne pourrez plus y jouer.</string>
     <string name="invite_choice_user_sms">SMS</string>
     <string name="invite_choice_data_sms">MMS</string>

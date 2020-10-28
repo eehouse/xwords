@@ -880,7 +880,7 @@ de %2$d destinataris. Useu el botó de tornar a
 \n(Només podeu tornar a afegir els aparells que són accessibles via Bluetooth.)"</string>
     <string name="button_close">Tanca</string>
     <string name="gameevent_channel_expl">Esdeveniments durant la partida</string>
-    <string name="invit_expl_usrsms_fmt">S\'ha enviat la invitació via SMS al telèfon %1$s a %2$s</string>
+    <string name="invit_expl_usrsms_fmt">S\'ha enviat la invitació via SMS a %1$s</string>
     <string name="invite_choice_user_sms">SMS (missatges de text)</string>
     <string name="ok_with_robots">D\'acord (robots)</string>
     <string name="sms_invite_flakey">Aquesta opció nova executa l\'aplicació de missatgeria SMS amb una invitació llesta per a enviar, si funciona. Cada aplicació de missatgeria SMS és diferent i algunes no cooperen.</string>

@@ -930,7 +930,7 @@
 \n
 \n(%1$d gier zostanie również usuniętych.)"</item>
     </plurals>
-    <string name="invit_expl_usrsms_fmt">Zaproszenie wysłane przez SMS do %1$s na %2$s</string>
+    <string name="invit_expl_usrsms_fmt">Zaproszenie wysłane przez SMS na %1$s</string>
     <string name="sms_invite_flakey">Ta opcja uruchamia domyślną aplikację SMS z zaproszeniem gotowym do wysłania -- gdy działa. Każda aplikacja SMS jest inna, a niektóre nie współpracują.</string>
     <string name="sms_invite_fail">Nie można uruchomić aplikacji SMS</string>
     <string name="msg_dev_deleted_fmt">Gra o nazwie \"%1$s\" została usunięta na innym urządzeniu. Nie będziesz mógł grać dalej.</string>

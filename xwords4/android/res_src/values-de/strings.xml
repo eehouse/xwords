@@ -915,7 +915,7 @@
 \n • Starten Sie CrossWords auf dem anderen Gerät
 \n • Wenn alles nichts hilft, booten Sie dieses Gerät
 \n</string>
-    <string name="invit_expl_usrsms_fmt">"Einladung per SMS an %1$s  an %2$s gesendet"</string>
+    <string name="invit_expl_usrsms_fmt">"Einladung per SMS an %1$s gesendet"</string>
     <string name="sms_invite_flakey">Diese neue Option startet Ihre Standard-SMS-App mit einer versandfertigen Einladung - wenn es funktioniert. Jede SMS-App ist anders, und mit einigen funktioniert es nicht.</string>
     <string name="sms_invite_fail">SMS-App konnte nicht gestartet werden</string>
     <string name="msg_dev_deleted_fmt">Das Spiel mit dem Namen „%1$s” wurde auf einem anderen Gerät gelöscht. Sie werden es nicht mehr spielen können.</string>

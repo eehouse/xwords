@@ -591,10 +591,12 @@ public class DBUtils {
 
                     switch ( means ) {
                     case SMS_DATA:
-                    case SMS_USER:
-                        int fmt = means == InviteMeans.SMS_DATA
-                            ? R.string.invit_expl_sms_fmt : R.string.invit_expl_usrsms_fmt;
+                        int fmt = R.string.invit_expl_sms_fmt;
                         msg = LocUtils.getString( context, fmt, target, timestamp );
+                        break;
+                    case SMS_USER:
+                        fmt = R.string.invit_expl_usrsms_fmt;
+                        msg = LocUtils.getString( context, fmt, timestamp );
                         break;
                     case BLUETOOTH:
                         String devName = BTUtils.nameForAddr( target );

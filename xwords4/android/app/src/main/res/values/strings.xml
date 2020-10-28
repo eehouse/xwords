@@ -500,7 +500,7 @@
     and all invitations have been accepted.)</string>
     <string name="invit_expl_sms_fmt">Invite sent via Data SMS to phone
     number %1$s on %2$s</string>
-    <string name="invit_expl_usrsms_fmt">Invite sent via SMS to %1$s on %2$s</string>
+    <string name="invit_expl_usrsms_fmt">Invite sent via SMS on %1$s</string>
     <!-- shown when user chooses to invite via the default SMS app -->
     <string name="sms_invite_flakey">This option launches your
     default SMS app with an invitation ready to send—when it

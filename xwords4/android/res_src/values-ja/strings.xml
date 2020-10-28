@@ -864,7 +864,7 @@ WiFi ダイレクト経由で接続可能なデバイスはありません。</s
 \n • 他のデバイスでクロスワードを起動してみます
 \n • それでも失敗する場合は、このデバイスを再起動します
 \n</string>
-    <string name="invit_expl_usrsms_fmt">%2$s の %1$s に SMS で招待を送信しました</string>
+    <string name="invit_expl_usrsms_fmt">%1$s の SMS で招待を送信しました</string>
     <string name="sms_invite_flakey">この新しいオプションを使用すると、デフォルトのSMSアプリが起動し、招待状が送信可能になります（機能する場合）。各SMSアプリは異なり、一部は連携しません。</string>
     <string name="sms_invite_fail">SMS アプリを起動できません</string>
     <string name="msg_dev_deleted_fmt">\"%1$s\" という名前のゲームが別のデバイスで削除されました。これ以上プレイすることはできません。</string>

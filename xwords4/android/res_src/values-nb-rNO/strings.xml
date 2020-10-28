@@ -912,7 +912,7 @@
     <string name="sms_invite_fail">Kunne ikke starte SMS-program</string>
     <string name="checkbox_archive">Flytt til arkiv</string>
     <string name="button_more_info">Les mer</string>
-    <string name="invit_expl_usrsms_fmt">Invitasjon sendt via SMS-melding til telefonnummer %1$s på %2$s</string>
+    <string name="invit_expl_usrsms_fmt">Invitasjon sendt via SMS-melding på %1$s</string>
     <string name="msg_dev_deleted_fmt">Spillet ved navn \"%1$s\" har blitt slettet på en annen enhet. Du vil ikke kunne spille videre.</string>
     <string name="invite_choice_data_sms">Data-SMS</string>
     <string name="empty_bt_inviter">Ingen parrede enheter oppdaget enda.</string>
