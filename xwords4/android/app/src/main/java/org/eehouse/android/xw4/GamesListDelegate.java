@@ -1357,6 +1357,7 @@ public class GamesListDelegate extends ListDelegateBase
                 makeConfirmThenBuilder( R.string.unsafe_open_warning,
                                         Action.QUARANTINE_CLEAR )
                     .setPosButton( R.string.unsafe_open_disregard )
+                    .setNegButton( 0 )
                     .setActionPair( Action.QUARANTINE_DELETE,
                                     R.string.button_delete )
                     .setParams( rowid, summary )
@@ -1501,7 +1502,7 @@ public class GamesListDelegate extends ListDelegateBase
             mkListAdapter();
             break;
         case DELETE_GAMES:
-            deleteGames( (long[])params[0], false );
+            deleteGames( (long[])params[0], (Boolean)params[1] );
             break;
         case OPEN_GAME:
             doOpenGame( params );
@@ -1514,8 +1515,7 @@ public class GamesListDelegate extends ListDelegateBase
             break;
 
         case QUARANTINE_DELETE:
-            rowid = (long)params[0];
-            deleteGames( new long[] {rowid}, true );
+            deleteIfConfirmed( new long[] {(long)params[0]}, true );
             break;
 
         case CLEAR_SELS:
@@ -2076,12 +2076,7 @@ public class GamesListDelegate extends ListDelegateBase
             break;
 
         case R.id.games_game_delete:
-            String msg = getQuantityString( R.plurals.confirm_seldeletes_fmt,
-                                            selRowIDs.length, selRowIDs.length );
-            makeConfirmThenBuilder( msg, Action.DELETE_GAMES )
-                .setPosButton( R.string.button_delete )
-                .setParams( selRowIDs )
-                .show();
+            deleteIfConfirmed( selRowIDs, false );
             break;
 
         case R.id.games_game_rematch:
@@ -2148,7 +2143,7 @@ public class GamesListDelegate extends ListDelegateBase
 
             // DEBUG only
         case R.id.games_game_invites:
-            msg = GameUtils.getSummary( m_activity, selRowIDs[0] )
+            String msg = GameUtils.getSummary( m_activity, selRowIDs[0] )
                 .conTypes.toString( m_activity, true );
             msg = getString( R.string.invites_net_fmt, msg );
 
@@ -2698,6 +2693,16 @@ public class GamesListDelegate extends ListDelegateBase
             m_mySIS.moveAfterNewGroup = null;
             showDialogFragment( DlgID.CHANGE_GROUP, games );
         }
+    }
+
+    private void deleteIfConfirmed( long[] rowids, boolean skipTell )
+    {
+        String msg = getQuantityString( R.plurals.confirm_seldeletes_fmt,
+                                        rowids.length, rowids.length );
+        makeConfirmThenBuilder( msg, Action.DELETE_GAMES )
+            .setPosButton( R.string.button_delete )
+            .setParams( rowids, skipTell )
+            .show();
     }
 
     private void deleteGames( long[] rowids, boolean skipTell )

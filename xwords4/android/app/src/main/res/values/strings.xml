@@ -2568,10 +2568,11 @@
     <string name="history_pause_fmt">Paused by: %1$s.</string>
     <string name="history_msg_fmt"> Message: %1$s.</string>
     <string name="history_autopause">Auto-paused.</string>
-    <string name="unsafe_open_warning">CrossWords seems to have
-    crashed recently while this game was open. It may be damaged, and
-    opening it might cause another crash. Do you want to try opening
-    it anyway?</string>
+    <string name="unsafe_open_warning">This game did not close
+    properly last time it was opened.  \n\nThat can happen when
+    CrossWords is force-closed, but it is possible that the game is
+    damaged and will cause a crash when opened. If that happens you
+    may want to delete it.</string>
     <string name="unsafe_open_disregard">Open anyway</string>
     <string name="word_blocked_by_phony">Word or words not found in wordlist %2$s: %1$s.</string>
     <string name="gamel_menu_logs">Debug logs</string>
