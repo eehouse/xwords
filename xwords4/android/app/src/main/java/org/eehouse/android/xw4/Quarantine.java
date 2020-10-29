@@ -63,18 +63,21 @@ public class Quarantine {
     public static void recordOpened( long rowid )
     {
         synchronized ( sDataRef ) {
-            get().increment( rowid );
+            int newCount = get().increment( rowid );
             store();
-            Log.d( TAG, "recordOpened(%d): %s", rowid, sDataRef[0].toString() );
+            Log.d( TAG, "recordOpened(%d): %s (count now %d)", rowid,
+                   sDataRef[0].toString(), newCount );
+            // DbgUtils.printStack( TAG );
         }
     }
 
     public static void recordClosed( long rowid )
     {
         synchronized ( sDataRef ) {
-            get().decrement( rowid );
+            get().clear( rowid );
             store();
-            Log.d( TAG, "recordClosed(%d): %s", rowid, sDataRef[0].toString() );
+            Log.d( TAG, "recordClosed(%d): %s (count now 0)", rowid,
+                   sDataRef[0].toString() );
         }
     }
 
@@ -92,18 +95,14 @@ public class Quarantine {
     private static class Data implements Serializable {
         private HashMap<Long, Integer> mCounts = new HashMap<>();
 
-        synchronized void increment( long rowid ) {
+        synchronized int increment( long rowid )
+        {
             if ( ! mCounts.containsKey(rowid) ) {
                 mCounts.put(rowid, 0);
             }
-            mCounts.put( rowid, mCounts.get(rowid) + 1 );
-        }
-
-        synchronized void decrement( long rowid )
-        {
-            Assert.assertTrue( mCounts.containsKey(rowid) );
-            mCounts.put( rowid, mCounts.get(rowid) - 1 );
-            Assert.assertTrueNR( mCounts.get(rowid) >= 0 );
+            int result = mCounts.get(rowid) + 1;
+            mCounts.put( rowid, result );
+            return result;
         }
 
         synchronized int getFor( long rowid )
