@@ -662,7 +662,8 @@ public abstract class DelegateBase implements DlgClickNotify,
         return false;
     }
 
-    protected void handleNewIntent( Intent intent ) {
+    protected void handleNewIntent( Intent intent )
+    {
         Log.d( TAG, "handleNewIntent(%s): not handling", intent.toString() );
     }
 
