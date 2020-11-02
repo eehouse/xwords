@@ -2643,6 +2643,7 @@
 
     <string name="knowns_mqtt_fmt">MQTT DevID: %1$s</string>
     <string name="knowns_bt_fmt">Bluetooth name: %1$s</string>
+    <string name="knowns_bta_fmt">Bluetooth addr: %1$s</string>
     <string name="knowns_smsphone_fmt">SMS Phone: %1$s</string>
 
     <!-- Button in known player list element allowing to edit player's name -->
