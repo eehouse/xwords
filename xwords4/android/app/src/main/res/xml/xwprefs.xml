@@ -369,6 +369,13 @@
         android:defaultValue="false"
         />
 
+    <org.eehouse.android.xw4.BTCheckBoxPreference
+        android:key="@string/key_disable_bt"
+        android:title="@string/disable_bt"
+        android:summary="@string/disable_bt_summary"
+        android:defaultValue="false"
+        />
+
   </PreferenceScreen>
 
   <!-- For Debugging -->

@@ -47,6 +47,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.eehouse.android.xw4.DbgUtils.DeadlockWatch;
 import org.eehouse.android.xw4.MultiService.DictFetchOwner;
@@ -99,7 +100,7 @@ public class BTUtils {
 
     public static boolean BTAvailable()
     {
-        BluetoothAdapter adapter = getAdapterIf();
+        BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
         return null != adapter;
     }
 
@@ -109,22 +110,38 @@ public class BTUtils {
         return null != adapter && adapter.isEnabled();
     }
 
-    public static void enable()
+    public static void enable( Context context )
     {
         BluetoothAdapter adapter = getAdapterIf();
         if ( null != adapter ) {
             // Only do this after explicit action from user -- Android guidelines
             adapter.enable();
         }
+        XWPrefs.setBTDisabled( context, false );
+    }
+
+    public static void setEnabled( Context context, boolean enabled )
+    {
+        if ( enabled ) {
+            onResume( context );
+        } else {
+            stopThreads();
+        }
+    }
+
+    public static void disabledChanged( Context context )
+    {
+        boolean disabled = XWPrefs.getBTDisabled( context );
+        setEnabled( context, !disabled );
     }
 
     static BluetoothAdapter getAdapterIf()
     {
         BluetoothAdapter result = null;
-        // Later this will change to include at least a test whether we're
-        // running as background user account, a situation in which BT crashes
-        // a lot inside the OS.
-        if ( !sBackUser.get() ) {
+        // BT crashes a lot inside the OS when running on behalf of a
+        // background user account. We catch exceptions that indicate that's
+        // going on and set this flag.
+        if ( ! XWPrefs.getBTDisabled( getContext() ) && !sBackUser.get() ) {
             result = BluetoothAdapter.getDefaultAdapter();
         }
         return result;
@@ -193,6 +210,12 @@ public class BTUtils {
     public static void setAmForeground()
     {
         sBackUser.set( false );
+    }
+
+    private static void stopThreads()
+    {
+        ListenThread.stopSelf();
+        ReadThread.stopSelf();
     }
 
     private static String nameForAddr( BluetoothAdapter adapter, String btAddr )
@@ -316,14 +339,14 @@ public class BTUtils {
 
     private static void updateStatusIn( boolean success )
     {
-        Context context = XWApp.getContext();
+        Context context = getContext();
         ConnStatusHandler
             .updateStatusIn( context, CommsConnType.COMMS_CONN_BT, success );
     }
 
     private static void updateStatusOut( boolean success )
     {
-        Context context = XWApp.getContext();
+        Context context = getContext();
         ConnStatusHandler
             .updateStatusOut( context, CommsConnType.COMMS_CONN_BT, success );
     }
@@ -398,32 +421,36 @@ public class BTUtils {
         return btAddr;
     }
 
-    private static void clearInstance( Thread[] holder, Thread instance )
+    private static void clearInstance( AtomicReference<Thread> holder,
+                                       Thread instance )
     {
         synchronized ( holder ) {
-            if ( holder[0] == null ) {
+            Thread curThread = holder.get();
+            if ( null == curThread ) {
                 // nothing to do
-            } else if ( holder[0] == instance ) {
-                holder[0] = null;
+            } else if ( instance == curThread ) {
+                holder.set( null );
             } else {
                 Log.e( TAG, "clearInstance(): cur instance %s not == %s",
-                       holder[0], instance );
+                       curThread, instance );
             }
         }
-
     }
 
+    // Save a few keystrokes...
+    private static Context getContext() { return XWApp.getContext(); }
+
     private static class ScanThread extends Thread {
-        private static Thread[] sInstance = {null};
+        private static AtomicReference<Thread> sInstance = new AtomicReference<>();
         private int mTimeoutMS;
         private Set<BluetoothDevice> mDevs;
 
         static void startOnce( int timeoutMS, Set<BluetoothDevice> devs )
         {
             synchronized ( sInstance ) {
-                if ( sInstance[0] == null ) {
+                if ( null == sInstance.get() ) {
                     ScanThread thread = new ScanThread( timeoutMS, devs );
-                    sInstance[0] = thread;
+                    Assert.assertTrueNR( thread == sInstance.get() );
                     thread.start();
                 }
             }
@@ -433,12 +460,13 @@ public class BTUtils {
         {
             mTimeoutMS = timeoutMS;
             mDevs = devs;
+            sInstance.set( this );
         }
 
         @Override
         public void run()
         {
-            Assert.assertTrueNR( this == sInstance[0] );
+            Assert.assertTrueNR( this == sInstance.get() );
             Map<BluetoothDevice, PacketAccumulator> pas = new HashMap<>();
 
             for ( BluetoothDevice dev : mDevs ) {
@@ -1049,12 +1077,14 @@ public class BTUtils {
     } // class PacketAccumulator
 
     private static class ListenThread extends Thread {
-        private static Thread[] sInstance = {null};
+        private static AtomicReference<Thread> sInstance = new AtomicReference<>();
         private BluetoothAdapter mAdapter;
+        private BluetoothServerSocket mServerSocket;
 
         private ListenThread( BluetoothAdapter adapter )
         {
             mAdapter = adapter;
+            sInstance.set( this );
         }
 
         @Override
@@ -1062,32 +1092,31 @@ public class BTUtils {
         {
             Log.d( TAG, "ListenThread: %s.run() starting", this );
 
-            BluetoothServerSocket serverSocket;
             try {
                 Assert.assertTrueNR( null != sAppName && null != sUUID );
-                serverSocket = mAdapter
+                mServerSocket = mAdapter
                     .listenUsingRfcommWithServiceRecord( sAppName, sUUID );
             } catch ( IOException ioe ) {
                 Log.ex( TAG, ioe );
-                serverSocket = null;
+                mServerSocket = null;
             } catch ( SecurityException ex ) {
                 // Got this with a message saying not allowed to call
                 // listenUsingRfcommWithServiceRecord() in background (on
                 // Android 9)
                 sBackUser.set( true ); // two-user system: disable BT
                 Log.d( TAG, "set sBackUser; outta here (first case)" );
-                serverSocket = null;
+                mServerSocket = null;
             }
 
-            while ( null != serverSocket ) {
+            while ( null != mServerSocket && this == sInstance.get() ) {
                 Log.d( TAG, "%s.run(): calling accept()", this );
                 try {
-                    BluetoothSocket socket = serverSocket.accept(); // blocks
+                    BluetoothSocket socket = mServerSocket.accept(); // blocks
                     Log.d( TAG, "%s.run(): accept() returned", this );
                     ReadThread.handle( socket );
                 } catch ( IOException ioe ) {
                     Log.ex( TAG, ioe );
-                    serverSocket = null;
+                    mServerSocket = null;
                 }
             }
 
@@ -1100,20 +1129,41 @@ public class BTUtils {
             ListenThread result = null;
             BluetoothAdapter adapter = getAdapterIf();
             if ( null != adapter ) {
-                synchronized (sInstance) {
-                    result = (ListenThread)sInstance[0];
+                synchronized ( sInstance ) {
+                    result = (ListenThread)sInstance.get();
                     if ( null == result ) {
-                        sInstance[0] = result = new ListenThread( adapter );
+                        result = new ListenThread( adapter );
+                        Assert.assertTrueNR( result == sInstance.get() );
                         result.start();
                     }
                 }
             }
             return result;
         }
+
+        private static void stopSelf()
+        {
+            synchronized ( sInstance ) {
+                ListenThread self = (ListenThread)sInstance.get();
+                Log.d( TAG, "ListenThread.stopSelf(): self: %s", self );
+                if ( null != self ) {
+                    sInstance.set( null );
+
+                    BluetoothServerSocket serverSocket = self.mServerSocket;
+                    if ( null != serverSocket ) {
+                        try {
+                            serverSocket.close();
+                        } catch ( IOException ioe ) {
+                            Log.ex( TAG, ioe );
+                        }
+                    }
+                }
+            }
+        }
     }
 
     private static class ReadThread extends Thread {
-        private static Thread[] sInstance = {null};
+        private static AtomicReference<Thread> sInstance = new AtomicReference<>();
         private LinkedBlockingQueue<BluetoothSocket> mQueue;
         private BTMsgSink mBTMsgSink;
 
@@ -1128,13 +1178,14 @@ public class BTUtils {
         {
             mQueue = new LinkedBlockingQueue<>();
             mBTMsgSink = new BTMsgSink();
+            sInstance.set( this );
         }
 
         @Override
         public void run()
         {
             Log.d( TAG, "ReadThread: %s.run() starting", this );
-            for ( ; ; ) {
+            while ( this == sInstance.get() ) {
                 try {
                     BluetoothSocket socket = mQueue.take();
                     DataInputStream inStream =
@@ -1144,7 +1195,7 @@ public class BTUtils {
                         BTInviteDelegate.onHeardFromDev( socket.getRemoteDevice() );
                         parsePacket( proto, inStream, socket );
                         updateStatusIn( true );
-                        TimerReceiver.restartBackoff( XWApp.getContext() );
+                        TimerReceiver.restartBackoff( getContext() );
                         // nBadCount = 0;
                     } else {
                         writeBack( socket, BTCmd.BAD_PROTO );
@@ -1210,7 +1261,7 @@ public class BTUtils {
                         case INVITE:
                             NetLaunchInfo nli;
                             if ( isOldProto ) {
-                                nli = NetLaunchInfo.makeFrom( XWApp.getContext(),
+                                nli = NetLaunchInfo.makeFrom( getContext(),
                                                               dis.readUTF() );
                             } else {
                                 data = new byte[dis.readShort()];
@@ -1258,7 +1309,7 @@ public class BTUtils {
         {
             Log.d( TAG, "receivePing()" );
             boolean deleted = 0 != gameID
-                && !DBUtils.haveGame( XWApp.getContext(), gameID );
+                && !DBUtils.haveGame( getContext(), gameID );
 
             DataOutputStream os = new DataOutputStream( socket.getOutputStream() );
             os.writeByte( BTCmd.PONG.ordinal() );
@@ -1314,18 +1365,30 @@ public class BTUtils {
         {
             ReadThread result;
             synchronized ( sInstance ) {
-                result = (ReadThread)sInstance[0];
+                result = (ReadThread)sInstance.get();
                 if ( null == result ) {
-                    sInstance[0] = result = new ReadThread();
+                    result = new ReadThread();
+                    Assert.assertTrueNR( result == sInstance.get() );
                     result.start();
                 }
             }
             return result;
         }
+
+        private static void stopSelf()
+        {
+            synchronized ( sInstance ) {
+                ReadThread self = (ReadThread)sInstance.get();
+                if ( null != self ) {
+                    sInstance.set( null );
+                    self.interrupt();
+                }
+            }
+        }
     }
 
     private static class BTMsgSink extends MultiMsgSink {
-        public BTMsgSink() { super( XWApp.getContext() ); }
+        public BTMsgSink() { super( getContext() ); }
 
         @Override
         public int sendViaBluetooth( byte[] buf, String msgID, int gameID,
@@ -1348,7 +1411,7 @@ public class BTUtils {
         private CommsAddrRec mReturnAddr;
         private Context mContext;
 
-        private BTHelper() { super( XWApp.getContext() ); }
+        private BTHelper() { super( BTUtils.getContext() ); }
 
         BTHelper( CommsAddrRec from )
         {

@@ -61,6 +61,7 @@ public class PrefsDelegate extends DelegateBase
         R.string.key_disable_nag,
         R.string.key_disable_nag_solo,
         R.string.key_disable_relay,
+        R.string.key_disable_bt,
         R.string.key_force_tablet,
         R.string.key_mqtt_host,
         R.string.key_mqtt_port,
@@ -237,6 +238,9 @@ public class PrefsDelegate extends DelegateBase
             case R.string.key_disable_relay:
                 RelayService.enabledChanged( m_activity );
                 break;
+            case R.string.key_disable_bt:
+                BTUtils.disabledChanged( m_activity );
+                break;
             case R.string.key_force_tablet:
                 makeOkOnlyBuilder( R.string.after_restart ).show();
                 break;
@@ -264,6 +268,10 @@ public class PrefsDelegate extends DelegateBase
         case DISABLE_RELAY_DO:
             RelayService.setEnabled( m_activity, false );
             RelayCheckBoxPreference.setChecked();
+            break;
+        case DISABLE_BT_DO:
+            BTUtils.setEnabled( m_activity, false );
+            BTCheckBoxPreference.setChecked();
             break;
         default:
             handled = super.onPosButton( action, params );

@@ -161,6 +161,18 @@ public class XWPrefs {
         return enabled;
     }
 
+    public static boolean getBTDisabled( Context context )
+    {
+        boolean disabled = getPrefsBoolean( context, R.string.key_disable_bt,
+                                            false );
+        return disabled;
+    }
+
+    public static void setBTDisabled( Context context, boolean disabled )
+    {
+        setPrefsBoolean( context, R.string.key_disable_bt, disabled );
+    }
+
     public static boolean getSkipToWebAPI( Context context )
     {
         return getPrefsBoolean( context, R.string.key_relay_via_http_first, false );
