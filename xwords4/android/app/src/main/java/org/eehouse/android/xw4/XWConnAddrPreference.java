@@ -59,45 +59,52 @@ public class XWConnAddrPreference extends DialogPreference {
         final PrefsActivity activity = (PrefsActivity)m_context;
         m_view.configure( XWPrefs.getAddrTypes( m_context ),
                           new ConnViaViewLayout.CheckEnabledWarner() {
+                              @Override
                               public void warnDisabled( CommsConnType typ ) {
+                                  String msg = null;
+                                  int msgID = 0;
+                                  Action action = null;
+                                  int buttonID = 0;
                                   switch( typ ) {
                                   case COMMS_CONN_SMS:
-                                      activity
-                                          .makeConfirmThenBuilder( R.string.warn_sms_disabled,
-                                                                   Action.ENABLE_NBS_ASK )
-                                          .setPosButton( R.string.button_enable_sms )
-                                          .setNegButton( R.string.button_later )
-                                          .show();
+                                      msgID = R.string.warn_sms_disabled;
+                                      action = Action.ENABLE_NBS_ASK;
+                                      buttonID = R.string.button_enable_sms;
                                       break;
                                   case COMMS_CONN_BT:
-                                      activity
-                                          .makeConfirmThenBuilder( R.string.warn_bt_disabled,
-                                                                   Action.ENABLE_BT_DO )
-                                          .setPosButton( R.string.button_enable_bt )
-                                          .setNegButton( R.string.button_later )
-                                          .show();
+                                      msgID = R.string.warn_bt_disabled;
+                                      action = Action.ENABLE_BT_DO;
+                                      buttonID = R.string.button_enable_bt;
                                       break;
                                   case COMMS_CONN_RELAY:
-                                      String msg = LocUtils
+                                      msg = LocUtils
                                           .getString( m_context, R.string
                                                       .warn_relay_disabled );
                                       msg += "\n\n" + LocUtils
                                           .getString( m_context,
                                                       R.string.warn_relay_later );
-                                      activity
-                                          .makeConfirmThenBuilder( msg, Action
-                                                                   .ENABLE_RELAY_DO )
-                                          .setPosButton( R.string.button_enable_relay )
-                                          .setNegButton( R.string.button_later )
-                                          .show();
+                                      action = Action.ENABLE_RELAY_DO;
+                                      buttonID = R.string.button_enable_relay;
                                       break;
                                   default:
                                       Assert.failDbg();
                                       break;
                                   }
+
+                                  if ( 0 != msgID ) {
+                                      Assert.assertTrueNR( null == msg );
+                                      msg = LocUtils.getString( activity, msgID );
+                                  }
+                                  if ( null != msg ) {
+                                      activity.makeConfirmThenBuilder( msg, action )
+                                          .setPosButton( buttonID )
+                                          .setNegButton( R.string.button_later )
+                                          .show();
+                                  }
                               }
                           },
                           new ConnViaViewLayout.SetEmptyWarner() {
+                              @Override
                               public void typeSetEmpty() {
                                   PrefsActivity activity = (PrefsActivity)m_context;
                                   activity

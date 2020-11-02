@@ -1880,7 +1880,7 @@
     disabled, and no moves will be exchanged via Bluetooth until it is
     enabled.\n\nYou can enable Bluetooth now, or later.
     </string>
-    <string name="warn_relay_disabled">Relay play is currently disable
+    <string name="warn_relay_disabled">Relay play is currently disabled
     on this device. No moves will be sent or received via the
     relay. </string>
     <string name="warn_relay_later">You can enable relay play now, or
