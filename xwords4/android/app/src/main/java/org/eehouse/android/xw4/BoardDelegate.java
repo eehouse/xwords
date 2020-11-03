@@ -2816,7 +2816,7 @@ public class BoardDelegate extends DelegateBase
                     if ( ! m_progressShown ) {
                         m_progressShown = true;
                         String progMsg = BTUtils.nameForAddr( dev );
-                        progMsg = getString( R.string.invite_progress_fmt, progMsg );
+                        progMsg = getString( R.string.invite_progress_bt_fmt, progMsg );
                         startProgress( R.string.invite_progress_title, progMsg,
                                        new OnCancelListener() {
                                            public void onCancel( DialogInterface dlg )
