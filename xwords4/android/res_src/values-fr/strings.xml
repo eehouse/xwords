@@ -1921,8 +1921,7 @@ seulement des informations sur les jetons. Il n\'y a pas de mots à parcourir.</
     <!--  -->
     <!--<string name="invite_progress_title">Connecting...</string>-->
     <string name="invite_progress_title">Connexion…</string>
-    <!--<string name="invite_progress_fmt">Sending invitation to CrossWords on %1$s</string>-->
-    <string name="invite_progress_fmt">Envoi d\'une invitation à CrossWords sur %1$s</string>
+    <string name="invite_progress_bt_fmt">Envoi d\'une invitation à CrossWords sur %1$s</string>
     <!--  -->
     <!--<string name="summary_wait_host">Waiting for connection[s]</string>-->
     <string name="summary_wait_host">En attente de connexion[s]</string>

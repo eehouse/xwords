@@ -468,7 +468,7 @@
     <string name="bt_pick_clear_button">Usuń</string>
     <string name="bt_pair_settings">Paruj więcej</string>
     <string name="invite_progress_title">Łączenie…</string>
-    <string name="invite_progress_fmt">Wysyłanie zaproszenia do CrossWords na %1$s</string>
+    <string name="invite_progress_bt_fmt">Wysyłanie zaproszenia do CrossWords na %1$s</string>
     <string name="summary_wait_host">Oczekiwanie na połączenie[a]</string>
     <string name="summary_wait_guest">Nieodłączony</string>
     <string name="summary_gameover">Koniec gry</string>

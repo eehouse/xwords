@@ -797,7 +797,7 @@
     <string name="not_again_newfrom">Eine neue Partie erzeugen, die bereit zum Spielen ist, mit allen Einstellungen aus dieser Partie. Das heißt, diese Partie als Vorlage verwenden.</string>
     <string name="bt_pair_settings">Weitere paaren</string>
     <string name="invite_progress_title">Verbinde …</string>
-    <string name="invite_progress_fmt">Sende Einladung an CrossWords auf %1$s</string>
+    <string name="invite_progress_bt_fmt">Sende Einladung an CrossWords auf %1$s</string>
     <string name="summary_wait_host">Warte auf Verbindung[en]</string>
     <string name="summary_wait_guest">Nicht verbunden</string>
     <string name="summary_gameover">Partie beendet</string>
