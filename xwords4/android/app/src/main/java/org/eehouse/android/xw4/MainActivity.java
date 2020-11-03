@@ -62,7 +62,7 @@ public class MainActivity extends XWActivity
     @Override
     protected void onCreate( Bundle savedInstanceState )
     {
-        if ( BuildConfig.DEBUG && !isTaskRoot() ) {
+        if ( BuildConfig.NON_RELEASE && !isTaskRoot() ) {
             Log.e( TAG, "isTaskRoot() => false!!! What to do?" );
         }
 

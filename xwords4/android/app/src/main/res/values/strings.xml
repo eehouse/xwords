@@ -967,6 +967,8 @@
         networked games</string>
     <string name="disable_relay">Disable play via the relay </string>
     <string name="disable_relay_summary">Disable all internet communication</string>
+    <string name="disable_bt">Disable play via Bluetooth</string>
+    <string name="disable_bt_summary">Disable all Bluetooth communication</string>
     <!--       
        ############################################################
        # :Screens:
@@ -1874,11 +1876,11 @@
     disabled. No moves will be sent via Data SMS.\n\nYou can enable
     play via Data SMS now, or later.
     </string>
-    <string name="warn_bt_disabled">Bluetooth is currently off on this
-    device. No moves will be sent via Bluetooth.\n\nYou can enable
-    Bluetooth now, or later.
+    <string name="warn_bt_disabled">Bluetooth play is currently
+    disabled, and no moves will be exchanged via Bluetooth until it is
+    enabled.\n\nYou can enable Bluetooth now, or later.
     </string>
-    <string name="warn_relay_disabled">Relay play is currently disable
+    <string name="warn_relay_disabled">Relay play is currently disabled
     on this device. No moves will be sent or received via the
     relay. </string>
     <string name="warn_relay_later">You can enable relay play now, or
@@ -1891,14 +1893,26 @@
     Most networked games exchange moves via the relay, so only do this
     if you plan to play ALL games against a robot on this same
     device.</string>
+    <string name="warn_bt_havegames">Are you sure you want to
+    disable play using Bluetooth?
+    \n\nBluetooth is useful for exchanging moves, and especially
+    invitations, with devices physically close to you. Unless you’re
+    certain you won’t play against anybody nearby there’s little harm
+    in leaving it on.
+    </string>
     <plurals name="warn_relay_games_fmt">
         <item quantity="one">\n\n(You have one active game using the relay now.)</item>
         <item quantity="other">\n\n(You have %1$d active games using the relay now.)</item>
+    </plurals>
+    <plurals name="warn_bt_games_fmt">
+        <item quantity="one">\n\n(You have one active game using Bluetooth.)</item>
+        <item quantity="other">\n\n(You have %1$d active games using Bluetooth.)</item>
     </plurals>
     <string name="button_enable_sms">Enable Data SMS</string>
     <string name="button_enable_bt">Enable Bluetooth</string>
     <string name="button_enable_relay">Enable Relay play</string>
     <string name="button_disable_relay">Disable Relay play</string>
+    <string name="button_disable_bt">Disable Bluetooth play</string>
     <string name="button_later">Later</string>
     <!--  -->
     <string name="gamel_menu_checkupdates">Check for updates</string>
@@ -2568,10 +2582,11 @@
     <string name="history_pause_fmt">Paused by: %1$s.</string>
     <string name="history_msg_fmt"> Message: %1$s.</string>
     <string name="history_autopause">Auto-paused.</string>
-    <string name="unsafe_open_warning">CrossWords seems to have
-    crashed recently while this game was open. It may be damaged, and
-    opening it might cause another crash. Do you want to try opening
-    it anyway?</string>
+    <string name="unsafe_open_warning">This game did not close
+    properly last time it was opened.  \n\nThat can happen when
+    CrossWords is force-closed, but it is possible that the game is
+    damaged and will cause a crash when opened. If that happens you
+    may want to delete it.</string>
     <string name="unsafe_open_disregard">Open anyway</string>
     <string name="word_blocked_by_phony">Word or words not found in wordlist %2$s: %1$s.</string>
     <string name="gamel_menu_logs">Debug logs</string>
@@ -2628,6 +2643,7 @@
 
     <string name="knowns_mqtt_fmt">MQTT DevID: %1$s</string>
     <string name="knowns_bt_fmt">Bluetooth name: %1$s</string>
+    <string name="knowns_bta_fmt">Bluetooth addr: %1$s</string>
     <string name="knowns_smsphone_fmt">SMS Phone: %1$s</string>
 
     <!-- Button in known player list element allowing to edit player's name -->

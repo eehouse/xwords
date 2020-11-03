@@ -1843,24 +1843,15 @@ public class RelayService extends XWJIService
     }
 
     private class RelayServiceHelper extends XWServiceHelper {
-
-        private Service mService;
-        RelayServiceHelper( Service service ) {
-            super( service );
-            mService = service;
+        RelayServiceHelper( Context context )
+        {
+            super( context );
         }
 
         @Override
         protected MultiMsgSink getSink( long rowid )
         {
             return new RelayMsgSink().setRowID( rowid );
-        }
-
-        @Override
-        void postNotification( String device, int gameID, long rowid )
-        {
-            String body = LocUtils.getString( mService, R.string.new_game_body );
-            GameUtils.postInvitedNotification( mService, gameID, body, rowid );
         }
     }
 }

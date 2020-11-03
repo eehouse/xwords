@@ -324,27 +324,16 @@ public class Utils {
         PendingIntent pi = null == intent
             ? null : getPendingIntent( context, intent );
 
-        int defaults = Notification.FLAG_AUTO_CANCEL;
-        if ( CommonPrefs.getSoundNotify( context ) ) {
-            defaults |= Notification.DEFAULT_SOUND;
-        }
-        if ( CommonPrefs.getVibrateNotify( context ) ) {
-            defaults |= Notification.DEFAULT_VIBRATE;
-        }
-
         String channelID  = Channels.getChannelID( context, channel );
         NotificationCompat.Builder builder =
             new NotificationCompat.Builder( context, channelID )
             .setContentIntent( pi )
             .setSmallIcon( R.drawable.notify )
-            //.setTicker(body)
-            //.setWhen(time)
             .setOngoing( ongoing )
             .setAutoCancel( true )
-            .setDefaults( defaults )
             .setContentTitle( title )
             .setContentText( body )
-                ;
+            ;
 
         if ( null != actionIntent ) {
             PendingIntent actionPI = getPendingIntent( context, actionIntent );
@@ -352,11 +341,9 @@ public class Utils {
                                actionPI );
         }
 
-        Notification notification = builder.build();
-
         NotificationManager nm = (NotificationManager)
             context.getSystemService( Context.NOTIFICATION_SERVICE );
-        nm.notify( id, notification );
+        nm.notify( id, builder.build() );
     }
 
     private static PendingIntent getPendingIntent( Context context, Intent intent )

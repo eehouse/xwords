@@ -351,31 +351,26 @@ public class BTInviteDelegate extends InviteDelegate
     private static void removeNotPaired( Persisted prs )
     {
         Log.d( TAG, "removeNotPaired()" );
-        BluetoothAdapter adapter = BTUtils.getAdapterIf();
-        if ( null != adapter ) {
-            Set<BluetoothDevice> pairedDevs = BTUtils.getCandidates();
-            Set<String> paired = new HashSet<>();
-            for ( BluetoothDevice dev : pairedDevs ) {
-                Log.d( TAG, "removeNotPaired(): paired dev: %s", dev.getName() );
-                paired.add( dev.getName() );
-            }
+        Set<BluetoothDevice> pairedDevs = BTUtils.getCandidates();
+        Set<String> paired = new HashSet<>();
+        for ( BluetoothDevice dev : pairedDevs ) {
+            Log.d( TAG, "removeNotPaired(): paired dev: %s", dev.getName() );
+            paired.add( dev.getName() );
+        }
 
-            Set<String> toRemove = new HashSet<>();
-            for ( TwoStringPair pair : prs.pairs ) {
-                String name = pair.str2;
-                if ( ! paired.contains( name ) ) {
-                    Log.d( TAG, "%s no longer paired; removing", name );
-                    toRemove.add( name );
-                } else {
-                    Log.d( TAG, "%s STILL paired", name );
-                }
+        Set<String> toRemove = new HashSet<>();
+        for ( TwoStringPair pair : prs.pairs ) {
+            String name = pair.str2;
+            if ( ! paired.contains( name ) ) {
+                Log.d( TAG, "%s no longer paired; removing", name );
+                toRemove.add( pair.getDev() );
+            } else {
+                Log.d( TAG, "%s STILL paired", name );
             }
+        }
 
-            if ( ! toRemove.isEmpty() ) {
-                prs.remove( toRemove );
-            }
-        } else {
-            Log.e( TAG, "removeNotPaired(): adapter null" );
+        if ( ! toRemove.isEmpty() ) {
+            prs.remove( toRemove );
         }
     }
 

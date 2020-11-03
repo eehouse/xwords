@@ -32,6 +32,7 @@ import org.eehouse.android.xw4.jni.JNIThread;
 import org.eehouse.android.xw4.jni.UtilCtxt;
 import org.eehouse.android.xw4.jni.UtilCtxtImpl;
 import org.eehouse.android.xw4.jni.XwJNI.GamePtr;
+import org.eehouse.android.xw4.loc.LocUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -55,7 +56,12 @@ abstract class XWServiceHelper {
         return new MultiMsgSink( getContext(), rowid );
     }
 
-    abstract void postNotification( String device, int gameID, long rowid );
+    void postNotification( String device, int gameID, long rowid )
+    {
+        Context context = getContext();
+        String body = LocUtils.getString( context, R.string.new_game_body );
+        GameUtils.postInvitedNotification( context, gameID, body, rowid );
+    }
 
     protected ReceiveResult receiveMessage( int gameID,
                                             MultiMsgSink sink, byte[] msg,

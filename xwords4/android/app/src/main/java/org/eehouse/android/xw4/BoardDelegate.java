@@ -242,6 +242,7 @@ public class BoardDelegate extends DelegateBase
             int title = (Integer)params[0];
             String msg = (String)params[1];
             lstnr = new OnClickListener() {
+                    @Override
                     public void onClick( DialogInterface dlg,
                                          int whichButton ) {
                         if ( DlgID.DLG_USEDICT == dlgID ) {
@@ -283,6 +284,7 @@ public class BoardDelegate extends DelegateBase
         case QUERY_MOVE: {
             String msg = (String)params[0];
             lstnr = new OnClickListener() {
+                    @Override
                     public void onClick( DialogInterface dialog,
                                          int whichButton ) {
                         handleViaThread( JNICmd.CMD_COMMIT, true, true );
@@ -298,6 +300,7 @@ public class BoardDelegate extends DelegateBase
 
         case NOTIFY_BADWORDS: {
             lstnr = new OnClickListener() {
+                    @Override
                     public void onClick( DialogInterface dlg, int bx ) {
                         handleViaThread( JNICmd.CMD_COMMIT, true, false );
                     }
@@ -334,6 +337,7 @@ public class BoardDelegate extends DelegateBase
                         buttonTxt = getString( resID );
                     }
                     lstnr = new OnClickListener() {
+                            @Override
                             public void onClick( DialogInterface dialog,
                                                  int whichButton ) {
                                     makeNotAgainBuilder( R.string.not_again_lookup,
@@ -539,6 +543,7 @@ public class BoardDelegate extends DelegateBase
                 .setMessage( message );
 
             OnClickListener lstnr = new OnClickListener() {
+                    @Override
                     public void onClick( DialogInterface dialog, int item ){
                         if ( !state.relayMissing ||
                              ! state.connTypes.contains(CommsConnType.COMMS_CONN_RELAY) ) {
@@ -559,6 +564,7 @@ public class BoardDelegate extends DelegateBase
 
             if ( showNeutButton ) {
                 lstnr = new OnClickListener() {
+                        @Override
                         public void onClick( DialogInterface dialog,
                                              int item ) {
                             String msg = sentInfo[0].getAsText( activity );

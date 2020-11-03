@@ -662,7 +662,8 @@ public abstract class DelegateBase implements DlgClickNotify,
         return false;
     }
 
-    protected void handleNewIntent( Intent intent ) {
+    protected void handleNewIntent( Intent intent )
+    {
         Log.d( TAG, "handleNewIntent(%s): not handling", intent.toString() );
     }
 
@@ -775,7 +776,7 @@ public abstract class DelegateBase implements DlgClickNotify,
             XWPrefs.setNBSEnabled( m_activity, true );
             break;
         case ENABLE_BT_DO:
-            BTUtils.enable();
+            BTUtils.enable( m_activity );
             break;
         case ENABLE_RELAY_DO:
             RelayService.setEnabled( m_activity, true );

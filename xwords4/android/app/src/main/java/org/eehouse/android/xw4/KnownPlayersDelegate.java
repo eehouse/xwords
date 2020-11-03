@@ -186,6 +186,9 @@ public class KnownPlayersDelegate extends DelegateBase {
             ViewGroup list = (ViewGroup)item.findViewById( R.id.items );
             if ( conTypes.contains( CommsAddrRec.CommsConnType.COMMS_CONN_BT ) ) {
                 addListing( list, R.string.knowns_bt_fmt, addr.bt_hostName );
+                if ( BuildConfig.NON_RELEASE ) {
+                    addListing( list, R.string.knowns_bta_fmt, addr.bt_btAddr );
+                }
             }
             if ( conTypes.contains( CommsAddrRec.CommsConnType.COMMS_CONN_SMS ) ) {
                 addListing( list, R.string.knowns_smsphone_fmt, addr.sms_phone );

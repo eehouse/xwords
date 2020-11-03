@@ -610,24 +610,28 @@ public class MQTTUtils extends Thread implements IMqttActionListener, MqttCallba
         }
     }
 
+    public static void makeOrNotify( Context context, NetLaunchInfo nli )
+    {
+        new MQTTServiceHelper( context ).handleInvitation( nli );
+    }
+
     private static class MQTTServiceHelper extends XWServiceHelper {
         private CommsAddrRec mReturnAddr;
-        private Context mContext;
+
+        MQTTServiceHelper( Context context )
+        {
+            super( context );
+        }
 
         MQTTServiceHelper( Context context, CommsAddrRec from )
         {
-            super( context );
-            mContext = context;
+            this( context );
             mReturnAddr = from;
         }
 
-        @Override
-        void postNotification( String device, int gameID, long rowid )
+        private void handleInvitation( NetLaunchInfo nli )
         {
-            Assert.failDbg();
-            // Context context = getContext();
-            // String body = LocUtils.getString( mContext, R.string.new_relay_body );
-            // GameUtils.postInvitedNotification( mContext, gameID, body, rowid );
+            handleInvitation( nli, null, MultiService.DictFetchOwner.OWNER_MQTT );
         }
 
         private void receiveMessage( long rowid, MultiMsgSink sink, byte[] msg )

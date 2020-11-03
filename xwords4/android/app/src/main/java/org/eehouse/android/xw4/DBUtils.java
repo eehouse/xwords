@@ -819,7 +819,8 @@ public class DBUtils {
         return result;
     }
 
-    public static int getRelayGameCount( Context context ) {
+    public static int getGameCountUsing( Context context, CommsConnType typ )
+    {
         int result = 0;
         String[] columns = { DBHelper.CONTYPE };
         String selection = String.format( "%s = 0", DBHelper.GAME_OVER );
@@ -829,7 +830,7 @@ public class DBUtils {
             int indx = cursor.getColumnIndex( DBHelper.CONTYPE );
             while ( cursor.moveToNext() ) {
                 CommsConnTypeSet typs = new CommsConnTypeSet( cursor.getInt(indx) );
-                if ( typs.contains(CommsConnType.COMMS_CONN_RELAY) ) {
+                if ( typs.contains( typ ) ) {
                     ++result;
                 }
             }

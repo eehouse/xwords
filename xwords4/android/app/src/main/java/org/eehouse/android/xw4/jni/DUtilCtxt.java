@@ -344,7 +344,7 @@ public class DUtilCtxt {
     public void onInviteReceived( NetLaunchInfo nli )
     {
         Log.d( TAG, "onInviteReceived(%s)", nli );
-        GamesListDelegate.postReceivedInvite( m_context, nli.asByteArray() );
+        MQTTUtils.makeOrNotify( m_context, nli );
     }
 
     public void onMessageReceived( int gameID, CommsAddrRec from, byte[] msg )
