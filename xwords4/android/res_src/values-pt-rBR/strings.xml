@@ -356,7 +356,6 @@
     <string name="notify_sound">Tocar som</string>
     <string name="disable_relay_summary">Desabilitar toda a comunicação da internet</string>
     <string name="disable_relay">Desabilitar jogo pelo servidor</string>
-    <string name="relay_behavior_summary">Configurações que se aplicam para jogos conectados a internet</string>
     <string name="relay_behavior">Configurações jogo no servidor</string>
     <string name="network_behavior_summary">Configurações aplicadas para os jogos em rede</string>
     <string name="network_behavior">Configurações do jogo na rede</string>

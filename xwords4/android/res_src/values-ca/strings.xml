@@ -660,7 +660,6 @@ Introduïu el vostre nom aquí. S\'usarà en crear partides noves. (Podreu
     <string name="force_radio_title">Simula tenir ràdio</string>
     <string name="radio_name_real">No ho simulis</string>
     <string name="radio_name_tablet">Tauleta/sense ràdio</string>
-    <string name="nfc_to_self">Envia via NFC a un mateix?</string>
     <string name="got_langdict_title">Obté el diccionari predeterminat per a la llengua</string>
     <string name="wifi_warning">" Per exemple, potser necessitareu estar en una xarxa WiFi diferent."</string>
     <string name="confirm_drop_relay_bt">Bluetooth només per a aparells propers.</string>
@@ -768,7 +767,6 @@ de %2$d destinataris. Useu el botó de tornar a
     <string name="new_game_body">Toqueu per a obrir una partida nova</string>
     <string name="relay_invite_title">Invitació via repetidor</string>
     <string name="p2p_invite_title">Invitació via mode directe per WiFi</string>
-    <string name="get_relay_number">Introduïu l\'ID de l\'aparell:</string>
     <string name="chat_sender_fmt">%1$s:</string>
     <string name="summary_busy">Resum no disponible</string>
     <plurals name="warn_relay_games_fmt">
@@ -799,7 +797,6 @@ de %2$d destinataris. Useu el botó de tornar a
     <string name="invit_expl_relay_fmt">S\'ha enviat la invitació via el repetidor d\'un altre aparell a %1$s</string>
     <string name="invit_expl_notarget_fmt">S\'ha enviat la invitació via %1$s a %2$s. Destinatari desconegut.</string>
     <string name="phonies_found_title">S\'ha trobat llufes</string>
-    <string name="relay_behavior">Configuració de les partides per repetidor</string>
     <string name="relay_behavior_summary">La configuració que s\'aplica a les partides per Internet</string>
     <string name="title_blank_picker">Trieu una fitxa per a l\'escarràs</string>
     <string name="tile_tray_picker">Trieu fitxes noves per al faristol</string>
@@ -807,10 +804,8 @@ de %2$d destinataris. Useu el botó de tornar a
     <string name="tile_pick_summary_fmt">Selecció actual: %1$s</string>
     <string name="tilepick_all_fmt">Tria\'n %1$d per mi</string>
     <string name="disableds_title">Tipus d\'adreces inhabilitades</string>
-    <string name="button_relay_add">Cerca partides</string>
     <string name="get_sms_title">Entrada manual</string>
     <string name="get_sms_name">Nom del contacte (opcional):</string>
-    <string name="get_relay_name">Nom de l\'aparell (opcional):</string>
     <string name="title_enable_p2p">Activa la WiFi Direct</string>
     <string name="summary_enable_p2p">Experimental, usa molta bateria</string>
     <string name="button_archive">Arxiva</string>
@@ -830,7 +825,6 @@ de %2$d destinataris. Useu el botó de tornar a
     </plurals>
     <string name="invite_p2p_desc_extra">Només es mostren els aparells que són disponibles actualment. Si un aparell proper no es mostra, assegureu-vos que la WiFi és habilitada, que té el CrossWords instal·lat i que el joc via «WiFi Direct» és habilitat.</string>
     <string name="empty_p2p_inviter">Ara mateix no hi ha cap aparell accessible via WiFiDirect que tingui el CrossWords instal·lat.</string>
-    <string name="empty_relay_inviter">La llista d\'aparell és buida. Useu el botó «Cerca partides» per a cerca les partides antigues amb els adversaris. Useu el botó «+» per a introduir la ID de l\'aparell directament.</string>
     <plurals name="confirm_clear_sms_fmt">
         <item quantity="one">Esteu segur de voler suprimir el número de telèfon seleccionat?</item>
         <item quantity="other">Esteu segur de voler suprimir els %1$d números de telèfon seleccionats?</item>
@@ -850,7 +844,6 @@ de %2$d destinataris. Useu el botó de tornar a
     <string name="expl_relay_url">URL per a l\'API web del repetidor</string>
     <string name="not_again_comms_p2p">Usa WiFi Direct per a jugar contra aparells propers amb WiFi Direct i el CrossWords instal·lat.</string>
     <string name="show_sms_title">Mostra els missatges SMS enviats i rebuts</string>
-    <string name="rel_invite_title">Títol de la invitació per repetidor</string>
     <string name="fetching_from_relay">Recupera les partides del repetidor</string>
     <string name="rematch_sent_toast">S\'han enviat les invitacions per a tornar a jugar</string>
     <string name="not_again_dfltname_fmt">Esteu fent servir el nom de jugador predeterminat «%1$s». Voleu personalitzar-lo amb el vostre nom abans de crear aquesta partida\?</string>

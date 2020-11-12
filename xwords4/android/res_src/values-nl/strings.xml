@@ -656,7 +656,6 @@
     <string name="radio_name_tablet">Tablet/geen radio</string>
     <string name="radio_name_gsm">GSM</string>
     <string name="radio_name_cdma">CDMA</string>
-    <string name="nfc_to_self">Verstuur via NFC naar jezelf?</string>
     <string name="game_summary_field_rowid">regelid</string>
     <string name="game_summary_field_gameid">spelid</string>
     <string name="game_summary_field_npackets">Nog te verwerken pakketten</string>
@@ -706,7 +705,6 @@
     <string name="invit_expl_bt_fmt">Uitnodiging verstuurd via Bluetooth naar gepaard apparaat \"%1$s\" op %2$s</string>
     <string name="invit_expl_relay_fmt">Uitnodiging doorgestuurd door de relay naar een ander apparaat op %1$s</string>
     <string name="invit_expl_notarget_fmt">Uitnodiging verstuurd via %1$s op %2$s. Ontvanger onbekend.</string>
-    <string name="relay_behavior">Relay speel instellingen</string>
     <string name="relay_behavior_summary">"Instellingen voor internet-verbonden spellen "</string>
     <string name="disable_relay">"Schakel spelen via de relay uit "</string>
     <string name="disable_relay_summary">Schakel alle internetcommunicatie uit</string>
@@ -717,12 +715,10 @@
     <string name="invite_notice_title">Nieuw spel via Uitnodiging</string>
     <string name="new_game_body">Raak aan om het nieuwe spel te openen</string>
     <string name="relay_invite_title">Relay Uitnodiging</string>
-    <string name="button_relay_add">Scan spellen</string>
     <plurals name="invite_relay_desc_fmt">
         <item quantity="one">Selecteer het apparaat dat je uit wilt nodigen voor jouw nieuwe spel en druk op \"%2$s\".</item>
         <item quantity="other">Selecteer de %1$d apparaten die je uit wilt nodigen voor jouw nieuwe spel en druk op \"%2$s\".</item>
     </plurals>
-    <string name="empty_relay_inviter">De lijst van apparaten is leeg. Gebruik de \"Scan spellen\" knop om oude spellen te doorzoeken voor tegenstanders. Gebruik de \"+\" knop om een apparaat ID direct in te voeren.</string>
     <string name="get_relay_number">Voer apparaat ID in:</string>
     <plurals name="confirm_clear_sms_fmt">
         <item quantity="one">Weet je zeker dat je het geselecteerde telefoonnummer wilt verwijderen?</item>
@@ -750,7 +746,6 @@
     <string name="disable_nag_solo_title">Schakel solo spel herinneringen uit</string>
     <string name="board_menu_game_showInvites">Toon uitnodigingen</string>
     <string name="not_again_rematch_two_only">Rematch is momenteel enkel beschikbaar voor spellen met twee personen, omdat dit moeilijker is met meer apparaten en ik denk dat het niet vaak gebeurt dat mensen met meer dan twee spelen. Laat het me weten als ik het mis heb, dan hoog ik de prioriteit op.</string>
-    <string name="rel_invite_title">Relay uitnodigingstitel</string>
     <string name="fetching_from_relay">Spellen ophalen van relay</string>
     <string name="processing_games">Spellen behandelen</string>
     <string name="list_item_select">Selecteer</string>

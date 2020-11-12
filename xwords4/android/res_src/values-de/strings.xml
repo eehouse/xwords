@@ -77,7 +77,6 @@
         <item quantity="other">Gerät %1$d verbunden mit Zwischenstation in Raum „%2$s“. Warte auf %3$d Spieler.</item>
     </plurals>
     <string name="msg_lost_other">Die Zwischenstation hat den Kontakt zu einem anderen Gerät in dieser Partie verloren.</string>
-    <string name="relay_behavior">Einstellungen für Partien über Zwischenstation</string>
     <string name="disable_relay">"Spielen über Zwischenstation deaktivieren "</string>
     <string name="newgame_drop_relay">Zwischenstation löschen</string>
     <string name="invite_choice_relay">Internet/Zwischenstation</string>
@@ -398,7 +397,6 @@
     <string name="game_name_label">Name der neuen Partie:</string>
     <string name="new_name_body_fmt">%1$s hat Sie zum Spielen eingeladen</string>
     <string name="button_sms_add">Kontakt importieren</string>
-    <string name="button_relay_add">Partien durchsuchen</string>
     <plurals name="invite_sms_desc_fmt">
         <item quantity="one">Bitte überprüfen Sie die Telefonnummer, die Sie zu Ihrer neuen Partie einladen wollen, tippen Sie dann „%2$s” an.</item>
         <item quantity="other">Bitte überprüfen Sie die %1$d Telefonnummern, die Sie zu Ihrer neuen Partie einladen wollen, tippen Sie dann „%2$s” an.</item>
@@ -415,11 +413,9 @@
     <string name="warn_nomobile_fmt">Die Nummer %1$s für %2$s ist keine „Mobiltelefonnummer“. Trotzdem importieren?</string>
     <string name="empty_sms_inviter">Die Telefonliste ist leer. Benutzen Sie den Button „Kontakt importieren“, um Personen hinzuzufügen, die Sie einladen wollen, den + Button, um direkt Nummern einzugeben.</string>
     <string name="empty_p2p_inviter">Derzeit sind keine Geräte per Wi-Fi-Direct erreichbar, auf denen CrossWords installiert ist.</string>
-    <string name="empty_relay_inviter">"Die Geräteliste ist leer. Benutzen Sie den Button „Partien durchsuchen“, um in alten Partien  nach Gegner zu suchen. Benutzen Sie den Button „+“, um Geräte-IDs direkt einzugeben."</string>
     <string name="get_sms_title">Manuelle Eingabe</string>
     <string name="get_sms_number">Geräte-Telefonnummer:</string>
     <string name="get_sms_name">Kontaktname (optional):</string>
-    <string name="get_relay_name">Gerätename (optional):</string>
     <string name="get_relay_number">Geräte-ID eingeben:</string>
     <plurals name="confirm_clear_sms_fmt">
         <item quantity="one">Sind Sie sicher, dass Sie die ausgewählte Telefonnummer löschen wollen?</item>
@@ -751,7 +747,6 @@
     <string name="confirm_clear_chat">Sind Sie sicher, dass Sie das Chat-Protokoll für diese Partie löschen wollen?
 \n
 \n(Diese Aktion kann nicht rückgängig gemacht werden.)</string>
-    <string name="rel_invite_title">Zwischenstation-Einladungs-Titel</string>
     <string name="fetching_from_relay">Partien werden von Zwischenstation geholt</string>
     <string name="processing_games">Partien werden verarbeitet</string>
     <string name="list_item_select">Auswählen</string>
@@ -783,7 +778,6 @@
     <string name="peek_other">Spielsteine ansehen wenn nicht am Zug</string>
     <string name="peek_other_summary">"Antippen von Namen auf der Punktetafel  zeigt die Spielsteine dieses Spielers"</string>
     <string name="hide_crosshairs_summary">Angetipptes Spielfeld nicht anzeigen</string>
-    <string name="relay_behavior_summary">Einstellungen zu Partien über Internet</string>
     <string name="invite_choice_title">Spieler einladen: Wie?</string>
     <string name="title_blank_picker">Spielstein für Joker wählen</string>
     <string name="tile_tray_picker">Neue Spielsteine für Ablage wählen</string>
@@ -845,7 +839,6 @@
     <string name="force_radio_title">Mobilfunk vortäuschen</string>
     <string name="radio_name_real">Nicht vortäuschen</string>
     <string name="radio_name_tablet">Tablet/kein Mobilfunk</string>
-    <string name="nfc_to_self">Über NFC an sich selbst senden?</string>
     <string name="game_summary_field_npackets">Ausstehende Paketanzahl</string>
     <string name="expl_update_url">Aktualisierung prüft URL</string>
     <string name="expl_relay_url">URL für Zwischenstation-Web-API</string>
@@ -923,7 +916,6 @@
     <string name="invite_choice_data_sms">Daten-SMS</string>
     <string name="ok_with_robots">OK (Computer)</string>
     <string name="invite_sms_fmt">Tippen Sie auf den Link, um meine Einladung anzunehmen und an einem CrossWords-Spiel teilzunehmen: %1$s</string>
-    <string name="invite_sms_desc">Ihre SMS-App wird dann mit einer Nachricht gestartet, die Sie an die von Ihnen gewählte Telefonnummer senden können.</string>
     <string name="invite_nbs_desc">Eine Datennachricht wird dann an das Gerät mit dieser Telefonnummer gesendet. Wenn CrossWords dort installiert ist und über die notwendigen Berechtigungen verfügt, erhält es die Einladung und das Spiel kann beginnen.</string>
     <string name="empty_bt_inviter">Es wurden noch keine gekoppelten Geräte erkannt.</string>
     <string name="checkbox_archive">Ins Archiv verschieben+</string>

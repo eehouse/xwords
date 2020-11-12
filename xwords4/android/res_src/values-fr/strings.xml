@@ -2831,7 +2831,6 @@ numéros de téléphones sont les mêmes</string>
     <string name="radio_name_cdma">CDMA</string>
     <!--XLATE-ME-->
     <!--<string name="nfc_to_self">Send via NFC to self?</string>-->
-    <string name="nfc_to_self">Envoyer par NFC à soi-même ?</string>
     <!--XLATE-ME-->
     <!--<string name="game_summary_field_rowid">rowid</string>-->
     <string name="game_summary_field_rowid">Identifiant d\'enregistrement</string>
@@ -2925,18 +2924,15 @@ pour la langue</string>
     <string name="invite_notice_title">Nouvelle partie via une invitation</string>
     <string name="new_game_body">Touchez pour commencer la nouvelle partie</string>
     <string name="relay_invite_title">Invitation par relai</string>
-    <string name="button_relay_add">Parcourir les parties</string>
     <plurals name="invite_relay_desc_fmt">
         <item quantity="one">Cochez l\'appareil que vous voulez inviter à votre nouvelle partie, puis touchez \"%2$s\".</item>
         <item quantity="other">Cochez les %1$d appareils que vous voulez inviter à votre nouvelle partie, puis touchez \"%2$s\".</item>
     </plurals>
-    <string name="get_relay_number">Saisissez l\'identifiant d\'appareil :</string>
     <plurals name="confirm_clear_sms_fmt">
         <item quantity="one">Êtes-vous sûr de vouloir effacer le numéro de téléphone coché ?</item>
         <item quantity="other">Êtes-vous sûr de vouloir supprimer les %1$d numéros de téléphone cochés ?</item>
     </plurals>
     <string name="disable_nag_solo_title">Désactiver les rappels de parties en solo</string>
-    <string name="fetching_from_relay">Récupération des parties du relai</string>
     <string name="processing_games">Traitement des parties</string>
     <string name="list_item_select">Sélectionner</string>
     <string name="list_item_deselect">Déselectionner</string>
@@ -2950,13 +2946,11 @@ pour la langue</string>
     <string name="invited_msg">Cette partie a été créée depuis une invitation que vous avez reçue. Dès qu\'elle pourra se connecter à l\'expéditeur et que les autres invités seront arrivés, la partie commencera.</string>
     <string name="newgame_invite_more">Plus d\'informations</string>
     <string name="notify_title_turn_fmt">Votre tour dans la partie %1$s</string>
-    <string name="empty_relay_inviter">La liste des appareils est vide. Utilisez le bouton \"Scanner les parties\" pour chercher des adversaires dans vos anciennes parties. Utilisez le bouton \"+\" pour saisir les identifiants d\'appareil directement.</string>
     <string name="invites_net_fmt">Invitations envoyées pour la partie connectée via %1$s :</string>
     <string name="waiting_invite_title">En attente de réponse</string>
     <string name="button_reinvite">Réinviter</string>
     <string name="disable_nags_title">Rappels de tour</string>
     <string name="board_menu_game_showInvites">Montrer les invitations</string>
-    <string name="rel_invite_title">Titre de l\'invitation de relai</string>
     <string name="no_invites">Cette partie n\'a envoyé aucune invitation</string>
     <string name="rematch_name_fmt">Revanche : %1$s</string>
     <string name="waiting_rematch_title">Revanche en cours</string>
@@ -2968,7 +2962,6 @@ pour la langue</string>
     <string name="chat_hint">Tapez ici…</string>
     <string name="chat_sender_fmt">%1$s :</string>
     <string name="summary_busy">Résumé indisponible</string>
-    <string name="relay_behavior">Paramètres des parties par relai</string>
     <string name="relay_behavior_summary">Paramètres des parties connectées à Internet</string>
     <string name="disable_relay">Désactiver le jeu par relai</string>
     <string name="disable_relay_summary">Désactiver toute communication par Internet</string>
@@ -3018,7 +3011,6 @@ pour la langue</string>
     <string name="download_more">Autres téléchargements…</string>
     <string name="disableds_title">Types d\'adresses désactivées</string>
     <string name="get_sms_name">Nom de contact (optionnel) :</string>
-    <string name="get_relay_name">Nom de l\'appareil (optionnel) :</string>
     <plurals name="confirm_clear_relay_fmt">
         <item quantity="one">Êtes-vous sûr de vouloir effacer l\'enregistrement RelayID sélectionné ?</item>
         <item quantity="other">Êtes-vous sûr de vouloir effacer les %1$d enregistrements RelayID sélectionnés ?</item>
@@ -3084,7 +3076,6 @@ pour la langue</string>
     <string name="invite_choice_data_sms">MMS</string>
     <string name="ok_with_robots">OK (robots)</string>
     <string name="invite_sms_fmt">Suivez le lien pour accepter mon invitation et rejoindre une partie de CrossWords : %1$s</string>
-    <string name="invite_sms_desc">Votre application de SMS sera ensuite lancée avec un message à envoyer au numéro de téléphone que vous avez sélectionné.</string>
     <string name="empty_bt_inviter">Aucun périphérique appairé détecté pour le moment.</string>
     <string name="checkbox_archive">Archiver</string>
     <string name="button_more_info">Lire davantage</string>
