@@ -94,8 +94,8 @@ public class InviteView extends ScrollView
                 .inflate( context, R.layout.invite_radio );
             button.setText( LocUtils.getString( context, means.getUserDescID() ) );
             int where = means.isForLocal()
-                // -2: place before QR code and its explanatory text
-                ? mGroupHow.getChildCount() - 2
+                // -1: place before QRcode-wrapper
+                ? mGroupHow.getChildCount() - 1
                 : mGroupHow.indexOfChild( divider );
             mGroupHow.addView( button, where );
             mHowMeans.put( button, means );
@@ -147,7 +147,6 @@ public class InviteView extends ScrollView
         Object result = null;
         RadioButton checked = getCurCheckedFor();
         if ( null != checked ) {
-            // result = new InviteChoice();
             if ( mIsWho ) {
                 result = mWhoPlayers.get(checked);
             } else {
@@ -170,11 +169,18 @@ public class InviteView extends ScrollView
                 RadioButton button = (RadioButton)group.findViewById(checkedId);
                 InviteMeans means = mHowMeans.get( button );
                 mProcs.meansClicked( means );
+                setShowQR( means.equals( InviteMeans.QRCODE ) );
                 break;
             case R.id.group_who:
                 break;
             }
         }
+    }
+
+    private void setShowQR( boolean show )
+    {
+        findViewById( R.id.qrcode_stuff )
+            .setVisibility( show ? View.VISIBLE: View.GONE );
     }
 
     private RadioButton getCurCheckedFor()

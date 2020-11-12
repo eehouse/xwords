@@ -63,28 +63,35 @@
                   />
 
         <!-- intro for QR code: these two elems stay at the bottom -->
-        <LinearLayout android:orientation="horizontal"
-                      android:layout_width="wrap_content"
+        <LinearLayout android:id="@+id/qrcode_stuff"
+                      android:orientation="vertical"
+                      android:layout_width="match_parent"
                       android:layout_height="wrap_content"
-                      android:padding="5dp"
+                      android:visibility="gone"
                       >
-          <TextView android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="@string/qrcode_invite_summary"
-                    android:textAppearance="?android:attr/textAppearanceMedium"
-                    android:layout_weight="1"
-                    />
-          <org.eehouse.android.xw4.ExpandImageButton android:id="@+id/expander"
-                                                     style="@style/expander_button"
-                                                     android:layout_weight="0"
-                                                     />
+          <LinearLayout android:orientation="horizontal"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:padding="5dp"
+                        >
+            <TextView android:layout_width="match_parent"
+                      android:layout_height="wrap_content"
+                      android:text="@string/qrcode_invite_summary"
+                      android:textAppearance="?android:attr/textAppearanceMedium"
+                      android:layout_weight="1"
+                      />
+            <org.eehouse.android.xw4.ExpandImageButton android:id="@+id/expander"
+                                                       style="@style/expander_button"
+                                                       android:layout_weight="0"
+                                                       />
+          </LinearLayout>
+          <ImageView android:id="@+id/qr_view"
+                     android:layout_width="wrap_content"
+                     android:layout_height="wrap_content"
+                     android:layout_gravity="center_horizontal"
+                     android:paddingTop="10dp"
+                     />
         </LinearLayout>
-        <ImageView android:id="@+id/qr_view"
-                   android:layout_width="wrap_content"
-                   android:layout_height="wrap_content"
-                   android:layout_gravity="center_horizontal"
-                   android:paddingTop="10dp"
-                   />
       </RadioGroup>
       <TextView android:id="@+id/who_empty"
                 android:layout_width="wrap_content"

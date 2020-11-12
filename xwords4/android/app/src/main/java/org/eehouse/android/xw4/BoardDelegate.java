@@ -1373,7 +1373,7 @@ public class BoardDelegate extends DelegateBase
             SentInvitesInfo info = 0 < params.length
                 && params[0] instanceof SentInvitesInfo
                 ? (SentInvitesInfo)params[0] : null;
-            switch( means ) {
+            switch ( means ) {
             case NFC:
                 if ( ! NFCUtils.nfcAvail( m_activity )[1] ) {
                     showDialogFragment( DlgID.ENABLE_NFC );
@@ -1423,6 +1423,8 @@ public class BoardDelegate extends DelegateBase
                 recordInviteSent( means, null );
 
                 break;
+            case QRCODE:
+                break;          // nothing to do
             default:
                 Assert.failDbg();
             }

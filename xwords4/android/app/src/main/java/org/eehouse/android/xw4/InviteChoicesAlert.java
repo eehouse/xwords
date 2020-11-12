@@ -103,6 +103,7 @@ public class InviteChoicesAlert extends DlgDelegateAlert
             means.add( InviteMeans.NFC );
         }
         means.add( InviteMeans.CLIPBOARD );
+        means.add( InviteMeans.QRCODE );
 
         int lastSelMeans = -1;
         if ( null != lastMeans ) {
@@ -174,9 +175,10 @@ public class InviteChoicesAlert extends DlgDelegateAlert
     {
         DlgDelegate.Builder builder = null;
         XWActivity activity = (XWActivity)getActivity();
+
         switch ( means ) {
         case SMS_USER:
-            builder =activity
+            builder = activity
                 .makeNotAgainBuilder( R.string.sms_invite_flakey,
                                       R.string.key_na_sms_invite_flakey );
             break;
@@ -186,6 +188,11 @@ public class InviteChoicesAlert extends DlgDelegateAlert
                            getString(R.string.slmenu_copy_sel) );
             builder = activity
                 .makeNotAgainBuilder(msg, R.string.key_na_clip_expl);
+            break;
+        case QRCODE:
+            builder = activity
+                .makeNotAgainBuilder( R.string.qrcode_invite_expl,
+                                      R.string.key_na_qrcode_invite );
             break;
         case SMS_DATA:
             if ( !Perms23.havePermissions( activity, Perm.SEND_SMS, Perm.RECEIVE_SMS )
