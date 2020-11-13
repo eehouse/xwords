@@ -1034,7 +1034,7 @@
     <string name="invite_choice_nfc">NFC (“Android beaming”)</string>
     <string name="invite_choice_relay">Internet/Relay</string>
     <string name="invite_choice_p2p">Wifi Direct</string>
-    <string name="invite_choice_qrcode">QR Code (below)</string>
+    <string name="invite_choice_qrcode">QR Code</string>
     <string name="invite_choice_title">Inviting a Player</string>
 
     <!-- Text above choices for how to send invitations == ONLY WHEN
