@@ -17,7 +17,16 @@ sPIDPat = re.compile('.*\s(\d+)\s(\d+)\sI\sXWApp.*git_rev.*')
 sLinePatFmt = '.* (\d+:\d+:\d+.\d+) {pid} (\d+) D (.*): .*'
 sLinePats = {}
 
-def output_reader(proc):
+def addPid(pid):
+    if not pid in sLinePats:
+        pat = sLinePatFmt.format(pid=pid)
+        reg = re.compile(pat)
+        sLinePats[pid] = reg
+        print('got pid {}'.format(pid))
+
+def output_reader(proc, args):
+    if 'PID' in args: addPid(args.PID)
+
     for line in iter(proc.stdout.readline, b''):
         line = str(line, 'utf8').strip()
         match = sPIDPat.match(line)
@@ -25,11 +34,7 @@ def output_reader(proc):
             pid1 = int(match.group(1))
             pid2 = int(match.group(2))
             assert pid1 == pid2
-            if not pid1 in sLinePats:
-                pat = sLinePatFmt.format(pid=pid1)
-                reg = re.compile(pat)
-                sLinePats[pid1] = reg
-                print('got pid {}'.format(pid1))
+            addPid(pid1)
         else:
             for pat in sLinePats.values():
                 match = pat.match(line)
@@ -41,6 +46,8 @@ def mkParser():
     parser = argparse.ArgumentParser()
     parser.add_argument('--device', dest = 'DEVICE', type = str, default = None,
                         help = 'device to follow')
+    parser.add_argument('--pid', dest = 'PID', type = int, default = 0,
+                        help = 'pid of process')
     return parser
 
 def main():
@@ -52,7 +59,7 @@ def main():
     proc = subprocess.Popen( cmds, stdout=subprocess.PIPE,
                              stderr=subprocess.STDOUT)
 
-    threading.Thread(target=output_reader, args=(proc,)).start()
+    threading.Thread(target=output_reader, args=(proc,args,)).start()
 
 ##############################################################################
 if __name__ == '__main__':
