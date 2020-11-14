@@ -1,6 +1,6 @@
 /* -*- compile-command: "find-and-gradle.sh inXw4dDeb"; -*- */
 /*
- * Copyright 2009-2012 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2009-2020 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -56,7 +56,8 @@ public class GameListItem extends LinearLayout
     private boolean m_loaded;
     private long m_rowid;
     private View m_hideable;
-    private ImageView m_thumb;
+    private ImageView mThumbView;
+    private Bitmap mThumb;
     private ExpiringTextView m_name;
     private TextView m_viewUnloaded;
     private View m_viewLoaded;
@@ -211,8 +212,8 @@ public class GameListItem extends LinearLayout
         m_state = (TextView)findViewById( R.id.state );
         m_modTime = (TextView)findViewById( R.id.modtime );
         m_gameTypeImage = (ImageView)findViewById( R.id.game_type_marker );
-        m_thumb = (ImageView)findViewById( R.id.thumbnail );
-        m_thumb.setOnClickListener( this );
+        mThumbView = (ImageView)findViewById( R.id.thumbnail );
+        mThumbView.setOnClickListener( this );
         m_role = (TextView)findViewById( R.id.role );
 
         findViewById( R.id.right_side ).setOnClickListener( this );
@@ -238,9 +239,15 @@ public class GameListItem extends LinearLayout
         m_expandButton.setExpanded( m_expanded );
         m_hideable.setVisibility( m_expanded? View.VISIBLE : View.GONE );
 
-        int vis = m_expanded && XWPrefs.getThumbEnabled( m_context )
-            ? View.VISIBLE : View.GONE;
-        m_thumb.setVisibility( vis );
+        boolean showThumb = null != mThumb
+            && XWPrefs.getThumbEnabled( m_context )
+            && m_expanded;
+        if ( showThumb ) {
+            mThumbView.setVisibility( View.VISIBLE );
+            mThumbView.setImageBitmap( mThumb );
+        } else {
+            mThumbView.setVisibility( View.GONE );
+        }
 
         m_name.setBackgroundColor( android.R.color.transparent );
         m_name.setPct( m_handler, m_haveTurn && !m_expanded,
@@ -490,7 +497,6 @@ public class GameListItem extends LinearLayout
         }
         long m_rowid;
         GameListItem m_item;
-        int m_nTries = 0;
     }
     private static LinkedBlockingQueue<ThumbQueueElem> s_queue
         = new LinkedBlockingQueue<>();
@@ -515,14 +521,9 @@ public class GameListItem extends LinearLayout
                 public void run()
                 {
                     for ( ; ; ) {
-                        ThumbQueueElem elem;
+                        final ThumbQueueElem elem;
                         try {
                             elem = s_queue.take();
-                            if ( 0 < elem.m_nTries ) {
-                                // This is a second pass. give whatever caused
-                                // failure time to go away
-                                Thread.sleep(200);
-                            }
                         } catch ( InterruptedException ie ) {
                             Log.w( TAG, "interrupted; killing s_thumbThread" );
                             break;
@@ -535,19 +536,14 @@ public class GameListItem extends LinearLayout
                             thumb = GameUtils.loadMakeBitmap( activity, rowid );
                         }
 
-                        if ( null == thumb ) {
-                            if ( ++elem.m_nTries < 3 ) {
-                                s_queue.add( elem );
-                            }
-                        } else {
-                            final GameListItem item = elem.m_item;
-                            final Bitmap ft = thumb;
+                        if ( null != thumb ) {
+                            final Bitmap fThumb = thumb;
                             activity.runOnUiThread( new Runnable() {
+                                    @Override
                                     public void run() {
-                                        ImageView iview = item.m_thumb;
-                                        if ( null != iview ) {
-                                            iview.setImageBitmap( ft );
-                                        }
+                                        GameListItem item = elem.m_item;
+                                        item.mThumb = fThumb;
+                                        item.showHide();
                                     }
                                 });
                         }
