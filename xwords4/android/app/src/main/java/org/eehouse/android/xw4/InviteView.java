@@ -52,6 +52,7 @@ public class InviteView extends ScrollView
     
     public interface ItemClicked {
         public void meansClicked( InviteMeans means );
+        public void checkButton();
     }
 
     private ItemClicked mProcs;
@@ -174,6 +175,8 @@ public class InviteView extends ScrollView
             case R.id.group_who:
                 break;
             }
+
+            mProcs.checkButton();
         }
     }
 

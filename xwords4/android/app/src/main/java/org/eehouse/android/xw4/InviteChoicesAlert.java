@@ -20,6 +20,7 @@
 package org.eehouse.android.xw4;
 
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface.OnClickListener;
 import android.content.DialogInterface;
@@ -40,8 +41,12 @@ import org.eehouse.android.xw4.loc.LocUtils;
 
 public class InviteChoicesAlert extends DlgDelegateAlert
     implements InviteView.ItemClicked  {
+    private static final String TAG = InviteChoicesAlert.class.getSimpleName();
 
     private static WeakReference<InviteChoicesAlert> sSelf;
+
+    private Button mPosButton;
+    private InviteView mInviteView;
 
     public static InviteChoicesAlert newInstance( DlgState state )
     {
@@ -115,13 +120,13 @@ public class InviteChoicesAlert extends DlgDelegateAlert
             }
         }
 
-        final InviteView inviteView = (InviteView)LocUtils
+        mInviteView = (InviteView)LocUtils
             .inflate( context, R.layout.invite_view );
         final OnClickListener okClicked = new OnClickListener() {
                 @Override
                 public void onClick( DialogInterface dlg, int pos ) {
                     Assert.assertTrue( Action.SKIP_CALLBACK != state.m_action );
-                    Object choice = inviteView.getChoice();
+                    Object choice = mInviteView.getChoice();
                     if ( null != choice ) {
                         XWActivity activity = (XWActivity)context;
                         if ( choice instanceof InviteMeans ) {
@@ -143,31 +148,47 @@ public class InviteChoicesAlert extends DlgDelegateAlert
 
         builder
             .setTitle( R.string.invite_choice_title )
-            .setView( inviteView )
+            .setView( mInviteView )
             .setPositiveButton( android.R.string.ok, okClicked )
             .setNegativeButton( android.R.string.cancel, null )
             ;
 
         String[] players = XwJNI.kplr_getPlayers();
-        inviteView.setChoices( means, lastSelMeans, players )
+        mInviteView.setChoices( means, lastSelMeans, players )
             .setNli( nli )
             .setCallbacks( this )
             ;
 
-        if ( false && BuildConfig.DEBUG ) {
-            OnClickListener ocl = new OnClickListener() {
-                    @Override
-                    public void onClick( DialogInterface dlg, int pos ) {
-                        Object[] params = state.getParams();
-                        if ( params[0] instanceof SentInvitesInfo ) {
-                            SentInvitesInfo sii = (SentInvitesInfo)params[0];
-                            sii.setRemotesRobots();
-                        }
-                        okClicked.onClick( dlg, pos );
-                    }
-                };
-            builder.setNeutralButton( R.string.ok_with_robots, ocl );
-        }
+        // if ( BuildConfig.DEBUG ) {
+        //     OnClickListener ocl = new OnClickListener() {
+        //             @Override
+        //             public void onClick( DialogInterface dlg, int pos ) {
+        //                 Object[] params = state.getParams();
+        //                 if ( params[0] instanceof SentInvitesInfo ) {
+        //                     SentInvitesInfo sii = (SentInvitesInfo)params[0];
+        //                     sii.setRemotesRobots();
+        //                 }
+        //                 okClicked.onClick( dlg, pos );
+        //             }
+        //         };
+        //     builder.setNeutralButton( R.string.ok_with_robots, ocl );
+        // }
+    }
+
+    @Override
+    Dialog create( AlertDialog.Builder builder )
+    {
+        Dialog dialog = super.create( builder );
+        dialog.setOnShowListener(new DialogInterface.OnShowListener() {
+                @Override
+                public void onShow( DialogInterface diface ) {
+                    mPosButton = ((AlertDialog)diface)
+                        .getButton( AlertDialog.BUTTON_POSITIVE );
+                    enableOkButton();
+                }
+            });
+
+        return dialog;
     }
 
     @Override
@@ -215,6 +236,19 @@ public class InviteChoicesAlert extends DlgDelegateAlert
 
         if ( null != builder ) {
             builder.show();
+        }
+    }
+
+    @Override
+    public void checkButton()
+    {
+        enableOkButton();
+    }
+
+    private void enableOkButton()
+    {
+        if ( null != mPosButton ) {
+            mPosButton.setEnabled( null != mInviteView.getChoice() );
         }
     }
 }
