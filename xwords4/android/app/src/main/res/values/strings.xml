@@ -2674,4 +2674,7 @@
     <!-- Title of the game name field in quick-invite new game dialog -->
     <string name="choose_opponent">Choose your opponent</string>
 
+    <!-- Board window title when host has not yet had all remote
+         players connect -->
+    <string name="title_missing_fmt">%1$s (missing %2$d)</string>
 </resources>

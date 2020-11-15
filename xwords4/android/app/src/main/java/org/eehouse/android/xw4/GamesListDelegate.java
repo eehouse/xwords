@@ -2797,7 +2797,7 @@ public class GamesListDelegate extends ListDelegateBase
         return madeGame;
     }
 
-    private void launchGame( long rowid, boolean invited, Bundle extras )
+    private void launchGame( long rowid, Bundle extras )
     {
         if ( DBUtils.ROWID_NOTFOUND == rowid ) {
             Log.d( TAG, "launchGame(): dropping bad rowid" );
@@ -2806,25 +2806,20 @@ public class GamesListDelegate extends ListDelegateBase
             if ( m_adapter.inExpandedGroup( rowid ) ) {
                 setSelGame( rowid );
             }
-            GameUtils.launchGame( getDelegator(), rowid, invited, extras );
+            GameUtils.launchGame( getDelegator(), rowid, extras );
         }
     }
 
     private void launchGame( long rowid )
     {
-        launchGame( rowid, false, null );
-    }
-
-    private void launchGame( long rowid, Bundle extras )
-    {
-        launchGame( rowid, false, extras );
+        launchGame( rowid, null );
     }
 
     private void makeNewNetGame( NetLaunchInfo nli )
     {
         long rowid = DBUtils.ROWID_NOTFOUND;
         rowid = GameUtils.makeNewMultiGame( m_activity, nli );
-        launchGame( rowid, true, null );
+        launchGame( rowid, null );
     }
 
     private void tryStartsFromIntent( Intent intent )

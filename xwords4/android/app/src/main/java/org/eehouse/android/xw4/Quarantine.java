@@ -51,6 +51,8 @@ public class Quarantine {
         if ( !result ) {
             Log.d( TAG, "safeToOpen(%d) => %b (count=%d)", rowid, result, count );
             if ( BuildConfig.NON_RELEASE ) {
+                Log.d( TAG, "printing calling stack:" );
+                DbgUtils.printStack( TAG );
                 List<StackTraceElement[]> list = get().listFor( rowid );
                 for ( int ii = 0; ii < list.size(); ++ii ) {
                     StackTraceElement[] trace = list.get( ii );

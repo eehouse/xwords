@@ -125,7 +125,6 @@ public class BoardDelegate extends DelegateBase
     private JNIThread.GameStateInfo m_gsi;
 
     private int m_nGuestDevs = -1;
-    private boolean m_haveInvited = false;
     private boolean m_showedReInvite;
     private boolean m_overNotShown;
     private boolean m_dropRelayOnDismiss;
@@ -637,7 +636,6 @@ public class BoardDelegate extends DelegateBase
         Bundle args = getArguments();
         m_rowid = args.getLong( GameUtils.INTENT_KEY_ROWID, -1 );
         Log.i( TAG, "opening rowid %d", m_rowid );
-        m_haveInvited = args.getBoolean( GameUtils.INVITED, false );
         m_overNotShown = true;
     } // init
 
@@ -849,11 +847,20 @@ public class BoardDelegate extends DelegateBase
     @Override
     protected void setTitle()
     {
-        String title = GameUtils.getName( m_activity, m_rowid );
-        if ( null != m_gi && m_gi.inDuplicateMode ) {
-            title = LocUtils.getString( m_activity, R.string.dupe_title_fmt, title );
-        }
-        setTitle( title );
+        runOnUiThread( new Runnable() {
+                @Override
+                public void run() {
+                    String title = GameUtils.getName( m_activity, m_rowid );
+                    if ( 0 < m_mySIS.nMissing ) {
+                        title = LocUtils.getString( m_activity, R.string.title_missing_fmt,
+                                                    title, m_mySIS.nMissing );
+                    }
+                    if ( null != m_gi && m_gi.inDuplicateMode ) {
+                        title = LocUtils.getString( m_activity, R.string.dupe_title_fmt, title );
+                    }
+                    setTitle( title );
+                }
+            } );
     }
 
     private void initToolbar()
@@ -1727,7 +1734,7 @@ public class BoardDelegate extends DelegateBase
 
         finish();
 
-        GameUtils.launchGame( getDelegator(), m_rowid, m_haveInvited );
+        GameUtils.launchGame( getDelegator(), m_rowid );
     }
 
     private void setGotGameDict( String getDict )
@@ -1737,7 +1744,7 @@ public class BoardDelegate extends DelegateBase
         String msg = getString( R.string.reload_new_dict_fmt, getDict );
         showToast( msg );
         finish();
-        GameUtils.launchGame( getDelegator(), m_rowid, false );
+        GameUtils.launchGame( getDelegator(), m_rowid );
     }
 
     private XwJNI.XP_Key keyCodeToXPKey( int keyCode )
@@ -1794,11 +1801,9 @@ public class BoardDelegate extends DelegateBase
                 skipDismiss = !tryRematchInvites( false );
             } else if ( m_summary.hasInviteInfo() ) {
                 skipDismiss = !tryOtherInvites();
-            } else if ( !m_haveInvited ) {
-                m_haveInvited = true;
-                showInviteAlertIf();
-                invalidateOptionsMenuIf();
+            } else if ( showInviteAlertIf() ) {
                 skipDismiss = true;
+                invalidateOptionsMenuIf();
             } else {
                 toastStr = getQuantityString( R.plurals.msg_relay_waiting_fmt, nMissing,
                                               devOrder, room, nMissing );
@@ -1828,6 +1833,7 @@ public class BoardDelegate extends DelegateBase
         }
 
         invalidateOptionsMenuIf();
+        setTitle();
     } // handleConndMessage
 
     private class BoardUtilCtxt extends UtilCtxtImpl {
@@ -2023,6 +2029,7 @@ public class BoardDelegate extends DelegateBase
                 post( new Runnable() {
                         @Override
                         public void run() {
+                            setTitle();
                             makeNotAgainBuilder( R.string.not_again_turnchanged,
                                                  R.string.key_notagain_turnchanged )
                                 .show();
@@ -2165,10 +2172,11 @@ public class BoardDelegate extends DelegateBase
             m_nGuestDevs = nDevs;
 
             m_mySIS.nMissing = nMissing; // will be 0 unless isServer is true
+            setTitle();
 
             if ( null != connTypes && 0 == connTypes.size() ) {
                 askNoAddrsDelete();
-            } else if ( 0 < nMissing && isServer && !m_haveInvited ) {
+            } else if ( 0 < nMissing && isServer ) {
                 doDismiss = false;
                 post( new Runnable() {
                         @Override
@@ -2679,8 +2687,9 @@ public class BoardDelegate extends DelegateBase
     // This is failing sometimes, and so the null == m_inviteAlert test means
     // we never post it. BUT on a lot of devices without the test we wind up
     // trying over and over to put the thing up.
-    private void showInviteAlertIf()
+    private boolean showInviteAlertIf()
     {
+        boolean success = false;
         DbgUtils.assertOnUIThread();
         if ( alertOrderAt( StartAlertOrder.INVITE ) ) {
             if ( ! m_haveStartedShowing && null == m_inviteAlert
@@ -2694,10 +2703,12 @@ public class BoardDelegate extends DelegateBase
                 ias.nMissing = m_mySIS.nMissing;
                 showDialogFragment( DlgID.DLG_INVITE, ias );
                 m_haveStartedShowing = true;
+                success = true;
             } else {
                 alertOrderIncrIfAt( StartAlertOrder.INVITE );
             }
         }
+        return success;
     }
 
     private boolean doZoom( int zoomBy )
