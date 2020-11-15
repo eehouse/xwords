@@ -1289,7 +1289,6 @@ public class BTUtils {
                                + " skipping %d bytes", cmdOrd, oneLen );
                         if ( oneLen <= dis.available() ) {
                             dis.readFully( new byte[oneLen] );
-                            Assert.failDbg();
                         }
                     }
 
