@@ -1215,7 +1215,7 @@ public class GameUtils {
     {
         Assert.assertTrue( 0 != gameID );
         // substring: Keep it short so fits in SMS better
-        return String.format( "%X", gameID ).substring( 0, 4 );
+        return String.format( "%X", gameID ).substring( 0, 5 );
     }
 
     public static String makeRandomID()
