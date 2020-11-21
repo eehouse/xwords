@@ -1310,7 +1310,7 @@ public class GameUtils {
                                 WiDirService.gameDied( addr.p2p_addr, gameID );
                                 break;
                             case COMMS_CONN_MQTT:
-                                MQTTUtils.gameDied( addr.mqtt_devID, gameID );
+                                MQTTUtils.gameDied( context, addr.mqtt_devID, gameID );
                                 break;
                             }
                         }

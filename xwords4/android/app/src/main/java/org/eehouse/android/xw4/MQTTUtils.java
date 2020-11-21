@@ -473,9 +473,15 @@ public class MQTTUtils extends Thread implements IMqttActionListener, MqttCallba
         }
     }
 
-    public static void gameDied( String devID, int gameID )
+    public static void gameDied( Context context, String devID, int gameID )
     {
-        Log.e( TAG, "gameDied() not handled" );
+        if ( BuildConfig.DO_MQTT_GAME_GONE ) {
+            String[] topic = { devID };
+            byte[] packet = XwJNI.dvc_makeMQTTNoSuchGame( gameID, topic );
+            addToSendQueue( context, topic[0], packet );
+        } else {
+            Log.e( TAG, "gameDied() not handled" ); // fix me
+        }
     }
 
     @Override
