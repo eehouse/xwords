@@ -519,7 +519,7 @@ public abstract class DelegateBase implements DlgClickNotify,
     protected void show( XWDialogFragment df )
     {
         DbgUtils.assertOnUIThread();
-        if ( m_activity instanceof XWActivity ) {
+        if ( null != df && m_activity instanceof XWActivity ) {
             ((XWActivity)m_activity).show( df );
         } else {
             Assert.failDbg();
@@ -596,10 +596,9 @@ public abstract class DelegateBase implements DlgClickNotify,
     }
 
     protected void showInviteChoicesThen( Action action,
-                                          DBUtils.SentInvitesInfo info,
-                                          NetLaunchInfo nli)
+                                          NetLaunchInfo nli )
     {
-        m_dlgDelegate.showInviteChoicesThen( action, info, nli );
+        m_dlgDelegate.showInviteChoicesThen( action, nli );
     }
 
     public Builder makeOkOnlyBuilder( int msgID )

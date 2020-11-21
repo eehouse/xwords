@@ -28,6 +28,7 @@ import android.widget.ImageView;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.ScrollView;
+import android.widget.TextView;
 
 import java.util.HashMap;
 import java.util.List;
@@ -238,6 +239,11 @@ public class InviteView extends ScrollView
                                     public void run() {
                                         ImageView iv = (ImageView)findViewById( R.id.qr_view );
                                         iv.setImageBitmap( bitmap );
+                                        if ( BuildConfig.NON_RELEASE ) {
+                                            TextView tv = (TextView)findViewById( R.id.qr_url );
+                                            tv.setVisibility( View.VISIBLE );
+                                            tv.setText( url );
+                                        }
                                         post ( new Runnable() {
                                                 @Override
                                                 public void run() {

@@ -81,7 +81,7 @@ public class BoardDelegate extends DelegateBase
     implements TransportProcs.TPMsgHandler, View.OnClickListener,
                DwnldDelegate.DownloadFinishedListener,
                ConnStatusHandler.ConnStatusCBacks,
-               Wrapper.Procs {
+               Wrapper.Procs, InvitesNeededAlert.Callbacks {
     private static final String TAG = BoardDelegate.class.getSimpleName();
 
     private static final int SCREEN_ON_TIME = 10 * 60 * 1000; // 10 mins
@@ -124,11 +124,9 @@ public class BoardDelegate extends DelegateBase
     private boolean m_startSkipped;
     private JNIThread.GameStateInfo m_gsi;
 
-    private int m_nGuestDevs = -1;
     private boolean m_showedReInvite;
     private boolean m_overNotShown;
     private boolean m_dropRelayOnDismiss;
-    private DBAlert m_inviteAlert;
     private boolean m_haveStartedShowing;
 
     private Wrapper mNFCWrapper;
@@ -163,12 +161,11 @@ public class BoardDelegate extends DelegateBase
     private static enum StartAlertOrder { NBS_PERMS, NO_MEANS, INVITE, DONE, };
 
     private static class MySIS implements Serializable {
-        MySIS() { nMissing = -1; }
         String toastStr;
         String[] words;
         String getDict;
-        int nMissing;
-        int nAlerts;
+        int nMissing = -1;
+        int nGuestDevs;
         boolean inTrade;
         StartAlertOrder mAlertOrder = StartAlertOrder.values()[0];
     }
@@ -177,7 +174,8 @@ public class BoardDelegate extends DelegateBase
     private boolean alertOrderAt( StartAlertOrder ord )
     {
         boolean result = m_mySIS.mAlertOrder == ord;
-        // Log.d( TAG, "alertOrderAt(%s) => %b", ord, result );
+        // Log.d( TAG, "alertOrderAt(%s) => %b (at %s)", ord, result,
+        // m_mySIS.mAlertOrder );
         return result;
     }
 
@@ -414,10 +412,8 @@ public class BoardDelegate extends DelegateBase
                 .setNegativeButton( R.string.button_no, null )
                 .create();
             break;
-        case DLG_INVITE: {
-            InviteAlertState state = (InviteAlertState)params[0];
-            dialog = makeInviteDialog( alert, state );
-        }
+        case DLG_INVITE:
+            dialog = InvitesNeededAlert.make( this, alert, params );
             break;
 
         case ENABLE_NFC:
@@ -446,160 +442,6 @@ public class BoardDelegate extends DelegateBase
                 } );
         }
     }
-
-    private static class InviteAlertState implements Serializable {
-        GameSummary summary;
-        CurGameInfo gi;
-        boolean relayMissing;
-        CommsConnTypeSet connTypes;
-        long rowid;
-        int nMissing;
-    }
-
-    private Dialog makeInviteDialog( final DBAlert alert,
-                                     final InviteAlertState state )
-    {
-        Dialog dialog = null;
-        final Activity activity = alert.getActivity();
-        if ( null != activity ) {
-            final SentInvitesInfo[] sentInfo = { null };
-            String message;
-            int titleID;
-            boolean showInviteButton = true;
-            boolean showNeutButton = false;
-
-            int buttonTxt = R.string.newgame_invite;
-
-            if ( state.relayMissing ) {
-                titleID = R.string.seeking_relay;
-                // If relay is only means, don't allow at all
-                boolean relayOnly = 1 >= state.connTypes.size();
-                showInviteButton = !relayOnly;
-                message = activity.getString( R.string.no_relay_conn );
-                if ( NetStateCache.netAvail( activity )
-                     && NetStateCache.onWifi() ) {
-                    message += LocUtils.getString( activity, R.string.wifi_warning );
-                }
-                if ( !relayOnly ) {
-                    CommsConnTypeSet without = (CommsConnTypeSet)
-                        state.connTypes.clone();
-                    without.remove( CommsConnType.COMMS_CONN_RELAY );
-                    message += "\n\n"
-                        + LocUtils.getString( activity,
-                                              R.string.drop_relay_warning_fmt,
-                                              without.toString( activity, true ) );
-                    buttonTxt = R.string.newgame_drop_relay;
-                }
-            } else {
-                sentInfo[0] = DBUtils.getInvitesFor( activity, state.rowid );
-                int nSent = sentInfo[0].getMinPlayerCount();
-                boolean invitesSent = nSent >= state.nMissing;
-                if ( invitesSent ) {
-                    m_showedReInvite = true;
-                    if ( state.summary.hasRematchInfo() ) {
-                        titleID = R.string.waiting_rematch_title;
-                        message = LocUtils.getString( activity, R.string.rematch_msg );
-                    } else {
-                        titleID = R.string.waiting_invite_title;
-                        message = LocUtils
-                            .getQuantityString( activity, R.plurals.invite_sent_fmt,
-                                                nSent, nSent, state.nMissing );
-                    }
-                    buttonTxt = R.string.button_reinvite;
-                    showNeutButton = true;
-                } else if ( DeviceRole.SERVER_ISCLIENT == state.gi.serverRole ) {
-                    Assert.assertFalse( state.summary.hasRematchInfo() );
-                    message = LocUtils.getString( activity, R.string.invited_msg );
-                    titleID = R.string.waiting_title;
-                    showInviteButton = false;
-                } else {
-                    titleID = R.string.waiting_title;
-                    message = LocUtils
-                        .getQuantityString( activity, R.plurals.invite_msg_fmt,
-                                            state.nMissing, state.nMissing );
-                }
-
-                if ( ! invitesSent && showInviteButton ) {
-                    String ps = null;
-                    if ( state.nMissing > 1 ) {
-                        ps = LocUtils.getString( activity, R.string.invite_multiple );
-                    } else {
-                        boolean[] avail = NFCUtils.nfcAvail( activity );
-                        if ( avail[1] ) {
-                            ps = LocUtils.getString( activity, R.string.invite_if_nfc );
-                        }
-                    }
-                    if ( null != ps ) {
-                        message += "\n\n" + ps;
-                    }
-                }
-
-                message += "\n\n" + LocUtils.getString( activity, R.string.invite_stays );
-            }
-
-            AlertDialog.Builder ab = makeAlertBuilder()
-                .setTitle( titleID )
-                .setMessage( message );
-
-            OnClickListener lstnr = new OnClickListener() {
-                    @Override
-                    public void onClick( DialogInterface dialog, int item ){
-                        if ( !state.relayMissing ||
-                             ! state.connTypes.contains(CommsConnType.COMMS_CONN_RELAY) ) {
-                            Assert.assertTrue( 0 < state.nMissing );
-                            if ( state.summary.hasRematchInfo() ) {
-                                tryRematchInvites( true );
-                            } else if ( state.summary.hasInviteInfo() ) {
-                                tryOtherInvites();
-                            } else {
-                                callInviteChoices( sentInfo[0] );
-                            }
-                        } else {
-                            askDropRelay();
-                        }
-                    }
-                };
-            alert.setNoDismissListenerPos( ab, buttonTxt, lstnr );
-
-            if ( showNeutButton ) {
-                lstnr = new OnClickListener() {
-                        @Override
-                        public void onClick( DialogInterface dialog,
-                                             int item ) {
-                            String msg = sentInfo[0].getAsText( activity );
-                            makeOkOnlyBuilder( msg )
-                                .setAction( Action.INVITE_INFO )
-                                .show();
-                        }
-                    };
-                alert.setNoDismissListenerNeut( ab, R.string.newgame_invite_more,
-                                                lstnr );
-            }
-            if ( showInviteButton ) {
-                lstnr = new OnClickListener() {
-                        @Override
-                        public void onClick( DialogInterface di, int item ) {
-                            alert.dismiss();
-                            finish();
-                        }
-                    };
-                alert.setNoDismissListenerNeg( ab, R.string.button_close, lstnr );
-            }
-
-            dialog = ab.create();
-
-            // Hack: I can't prevent screen rotation from duplicating this alert
-            dismissInviteAlert();
-            m_inviteAlert = alert;
-            alert.setOnCancelListener( new DBAlert.OnCancelListener() {
-                    @Override
-                    public void onCancelled( XWDialogFragment frag ) {
-                        finish();
-                    }
-                } );
-        }
-        return dialog;
-    } // makeInviteDialog
 
     public BoardDelegate( Delegator delegator, Bundle savedInstanceState )
     {
@@ -829,19 +671,18 @@ public class BoardDelegate extends DelegateBase
     // loop of showing the rationale over and over. Android will always tell
     // us to show the rationale, but if we've done it already we need to go
     // straight to asking for the permission.
-    private void callInviteChoices( final SentInvitesInfo info )
+    private void callInviteChoices()
     {
         Perms23.tryGetPermsNA( this, Perm.READ_PHONE_STATE,
                                R.string.phone_state_rationale,
                                R.string.key_na_perms_phonestate,
-                               Action.ASKED_PHONE_STATE, info );
+                               Action.ASKED_PHONE_STATE );
     }
 
-    private void showInviteChoicesThen( Object[] params )
+    private void showInviteChoicesThen()
     {
-        SentInvitesInfo info = (SentInvitesInfo)params[0];
         NetLaunchInfo nli = nliForMe();
-        showInviteChoicesThen( Action.LAUNCH_INVITE_ACTION, info, nli );
+        showInviteChoicesThen( Action.LAUNCH_INVITE_ACTION, nli );
     }
 
     @Override
@@ -1221,7 +1062,7 @@ public class BoardDelegate extends DelegateBase
             break;
 
         case ASKED_PHONE_STATE:
-            showInviteChoicesThen( params );
+            showInviteChoicesThen();
             break;
 
         case BLANK_PICKED:
@@ -1309,7 +1150,7 @@ public class BoardDelegate extends DelegateBase
             finish();
             break;
         case ASKED_PHONE_STATE:
-            showInviteChoicesThen( params );
+            showInviteChoicesThen();
             break;
         case INVITE_SMS_DATA:
             Perms23.Perm[] perms = (Perms23.Perm[])params[2];
@@ -1411,8 +1252,9 @@ public class BoardDelegate extends DelegateBase
             case SMS_USER:
             case EMAIL:
             case CLIPBOARD:
-                NetLaunchInfo nli = new NetLaunchInfo( m_activity, m_summary, m_gi, 1,
-                                                       1 + m_nGuestDevs );
+                NetLaunchInfo nli = new NetLaunchInfo( m_activity, m_summary, m_gi,
+                                                       1, // nPlayers
+                                                       1 + m_mySIS.nGuestDevs ); // fc
                 if ( m_relayMissing ) {
                     nli.removeAddress( CommsConnType.COMMS_CONN_RELAY );
                 }
@@ -1526,17 +1368,6 @@ public class BoardDelegate extends DelegateBase
     //////////////////////////////////////////////////
     // TransportProcs.TPMsgHandler interface
     //////////////////////////////////////////////////
-    @Override
-    public void tpmRelayConnd( final String room, final int devOrder,
-                               final boolean allHere, final int nMissing )
-    {
-        runOnUiThread( new Runnable() {
-                @Override
-                public void run() {
-                    handleConndMessage( room, devOrder, allHere, nMissing ); // from here too
-                }
-            } );
-    }
 
     @Override
     public void tpmRelayErrorProc( TransportProcs.XWRELAY_ERROR relayErr )
@@ -1655,14 +1486,38 @@ public class BoardDelegate extends DelegateBase
         // Do we need this?
     }
 
+    ////////////////////////////////////////////////////////////
+    // InvitesNeededAlert.Callbacks
+    ////////////////////////////////////////////////////////////
+    @Override
+    public DelegateBase getDelegate() { return this; }
+
+    @Override
+    public void onCloseClicked()
+    {
+        post( new Runnable() {
+                @Override
+                public void run() {
+                    InvitesNeededAlert.dismiss();
+                    finish();
+                }
+            } );
+    }
+
+    @Override
+    public void onInviteClicked()
+    {
+        callInviteChoices();
+    }
+
     private byte[] getInvite()
     {
         byte[] result = null;
         if ( 0 < m_mySIS.nMissing // Isn't there a better test??
              && DeviceRole.SERVER_ISSERVER == m_gi.serverRole ) {
             NetLaunchInfo nli = new NetLaunchInfo( m_gi );
-            Assert.assertTrue( 0 <= m_nGuestDevs );
-            nli.forceChannel = 1 + m_nGuestDevs;
+            Assert.assertTrue( 0 <= m_mySIS.nGuestDevs );
+            nli.forceChannel = 1 + m_mySIS.nGuestDevs;
 
             for ( Iterator<CommsConnType> iter = m_connTypes.iterator();
                   iter.hasNext(); ) {
@@ -1773,68 +1628,6 @@ public class BoardDelegate extends DelegateBase
         }
         return xpKey;
     }
-
-    private void handleConndMessage( String room, int devOrder, // <- hostID
-                                     boolean allHere, int nMissing )
-    {
-        boolean skipDismiss = false;
-
-        int naMsg = 0;
-        int naKey = 0;
-        String toastStr = null;
-        m_mySIS.nMissing = nMissing;
-        if ( allHere ) {
-            // All players have now joined the game.  The device that
-            // created the room will assign tiles.  Then it will be
-            // the first player's turn
-
-            // Skip this until there's a way to show it only once per game
-            if ( false ) {
-                toastStr = getString( R.string.msg_relay_all_here_fmt, room );
-                if ( devOrder > 1 ) {
-                    naMsg = R.string.not_again_conndall;
-                    naKey = R.string.key_notagain_conndall;
-                }
-            }
-        } else if ( nMissing > 0 ) {
-            if ( m_summary.hasRematchInfo() ) {
-                skipDismiss = !tryRematchInvites( false );
-            } else if ( m_summary.hasInviteInfo() ) {
-                skipDismiss = !tryOtherInvites();
-            } else if ( showInviteAlertIf() ) {
-                skipDismiss = true;
-                invalidateOptionsMenuIf();
-            } else {
-                toastStr = getQuantityString( R.plurals.msg_relay_waiting_fmt, nMissing,
-                                              devOrder, room, nMissing );
-                if ( devOrder == 1 ) {
-                    naMsg = R.string.not_again_conndfirst;
-                    naKey = R.string.key_notagain_conndfirst;
-                } else {
-                    naMsg = R.string.not_again_conndmid;
-                    naKey = R.string.key_notagain_conndmid;
-                }
-            }
-        }
-
-        if ( null != toastStr ) {
-            Log.i( TAG, "handleConndMessage(): toastStr: %s", toastStr );
-            m_mySIS.toastStr = toastStr;
-            if ( naMsg == 0 ) {
-                onPosButton( Action.SHOW_EXPL_ACTION, null );
-            } else {
-                makeNotAgainBuilder( naMsg, naKey, Action.SHOW_EXPL_ACTION )
-                    .show();
-            }
-        }
-
-        if ( !skipDismiss ) {
-            dismissInviteAlert( nMissing, true ); // NO!!!
-        }
-
-        invalidateOptionsMenuIf();
-        setTitle();
-    } // handleConndMessage
 
     private class BoardUtilCtxt extends UtilCtxtImpl {
 
@@ -2162,33 +1955,19 @@ public class BoardDelegate extends DelegateBase
         // missing or not.
         @Override
         public void informMissing( boolean isServer, CommsConnTypeSet connTypes,
-                                   int nDevs, final int nMissing )
+                                   int nDevs, int nMissing )
         {
-            boolean doDismiss = true;
-            m_connTypes = connTypes;
-            Assert.assertTrue( isServer || 0 == nMissing );
-            // DbgUtils.logf( "BoardDelegate.informMissing(isServer=%b, nDevs=%d, nMissing=%d)",
-            //                isServer, nDevs, nMissing );
-            m_nGuestDevs = nDevs;
-
             m_mySIS.nMissing = nMissing; // will be 0 unless isServer is true
-            setTitle();
+            m_mySIS.nGuestDevs = nDevs;
+            m_connTypes = connTypes;
 
-            if ( null != connTypes && 0 == connTypes.size() ) {
-                askNoAddrsDelete();
-            } else if ( 0 < nMissing && isServer ) {
-                doDismiss = false;
-                post( new Runnable() {
+            if ( isServer ) {
+                runOnUiThread( new Runnable() {
                         @Override
                         public void run() {
                             showInviteAlertIf();
                         }
                     } );
-            }
-
-            // If we might have put up an alert earlier, take it down
-            if ( doDismiss ) {
-                dismissInviteAlert( nMissing, !m_relayMissing );
             }
         }
 
@@ -2570,42 +2349,6 @@ public class BoardDelegate extends DelegateBase
         }
     }
 
-    private void dismissInviteAlert( final int nMissing, final boolean connected )
-    {
-        runOnUiThread( new Runnable() {
-                @Override
-                public void run() {
-                    InviteChoicesAlert.dismissAny();
-
-                    if ( m_relayMissing && connected ) {
-                        m_relayMissing = false;
-                    }
-                    // Why this m_relayMissing thing?
-                    if ( 0 == nMissing /* || !m_relayMissing*/ ) {
-                        // Log.d( TAG, "dismissing invite alert %H", m_inviteAlert );
-                        dismissInviteAlert();
-                    }
-                }
-            } );
-    }
-
-    private void dismissInviteAlert()
-    {
-        if ( null != m_inviteAlert ) {
-            // Play Console reports a crash inside DialogFragment.dismiss()
-            // resulting from getFragmentManager() returning null. That
-            // probably means I'm on the way out and can safely drop?  Let's
-            // see....
-            try {
-                m_inviteAlert.dismiss();
-            } catch ( NullPointerException | IllegalStateException ex ) {
-                Log.ex( TAG, ex );
-            }
-            m_inviteAlert = null;
-            m_haveStartedShowing = false;
-        }
-    }
-
     private void pingBTRemotes()
     {
         if ( null != m_connTypes
@@ -2687,28 +2430,13 @@ public class BoardDelegate extends DelegateBase
     // This is failing sometimes, and so the null == m_inviteAlert test means
     // we never post it. BUT on a lot of devices without the test we wind up
     // trying over and over to put the thing up.
-    private boolean showInviteAlertIf()
+    private void showInviteAlertIf()
     {
-        boolean success = false;
-        DbgUtils.assertOnUIThread();
-        if ( alertOrderAt( StartAlertOrder.INVITE ) ) {
-            if ( ! m_haveStartedShowing && null == m_inviteAlert
-                 && m_mySIS.nMissing > 0 && !isFinishing() ) {
-                InviteAlertState ias = new InviteAlertState();
-                ias.summary = m_summary;
-                ias.gi = m_gi;
-                ias.relayMissing = m_relayMissing;
-                ias.connTypes = m_connTypes;
-                ias.rowid = m_rowid;
-                ias.nMissing = m_mySIS.nMissing;
-                showDialogFragment( DlgID.DLG_INVITE, ias );
-                m_haveStartedShowing = true;
-                success = true;
-            } else {
-                alertOrderIncrIfAt( StartAlertOrder.INVITE );
-            }
+        if ( alertOrderAt( StartAlertOrder.INVITE ) && ! isFinishing() ) {
+            boolean isRematch = null != m_summary && m_summary.hasRematchInfo();
+            InvitesNeededAlert.showOrHide( this, m_mySIS.nGuestDevs,
+                                           m_mySIS.nMissing, isRematch );
         }
-        return success;
     }
 
     private boolean doZoom( int zoomBy )
@@ -2814,8 +2542,8 @@ public class BoardDelegate extends DelegateBase
             for ( int ii = 0; ii < m_missingDevs.length; ++ii ) {
                 String dev = m_missingDevs[ii];
                 int nPlayers = m_missingCounts[ii];
-                Assert.assertTrue( 0 <= m_nGuestDevs );
-                int forceChannel = ii + m_nGuestDevs + 1;
+                Assert.assertTrue( 0 <= m_mySIS.nGuestDevs );
+                int forceChannel = ii + m_mySIS.nGuestDevs + 1;
                 NetLaunchInfo nli = new NetLaunchInfo( m_activity, m_summary, m_gi,
                                                        nPlayers, forceChannel )
                     .setRemotesAreRobots( m_remotesAreRobots );
@@ -3177,7 +2905,7 @@ public class BoardDelegate extends DelegateBase
     private NetLaunchInfo nliForMe()
     {
         int numHere = 1;
-        int forceChannel = 1;
+        int forceChannel = 1 + m_mySIS.nGuestDevs;
         NetLaunchInfo nli = new NetLaunchInfo( m_activity, m_summary, m_gi,
                                                numHere, forceChannel );
         return nli;
@@ -3314,7 +3042,6 @@ public class BoardDelegate extends DelegateBase
         DBUtils.recordInviteSent( m_activity, m_rowid, means, dev );
 
         if ( !invitesSent ) {
-            dismissInviteAlert();
             Log.d( TAG, "recordInviteSent(): redoing invite alert" );
             showInviteAlertIf();
         }

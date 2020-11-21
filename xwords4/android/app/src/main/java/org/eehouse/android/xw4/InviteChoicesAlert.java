@@ -85,11 +85,8 @@ public class InviteChoicesAlert extends DlgDelegateAlert
         NetLaunchInfo nli = null;
         Object[] params = state.getParams();
         if ( null != params ) {
-            if ( 0 < params.length && params[0] instanceof SentInvitesInfo ) {
-                lastMeans = ((SentInvitesInfo)params[0]).getLastMeans();
-            }
-            if ( 1 < params.length && params[1] instanceof NetLaunchInfo ) {
-                nli = (NetLaunchInfo)params[1];
+            if ( 0 < params.length && params[0] instanceof NetLaunchInfo ) {
+                nli = (NetLaunchInfo)params[0];
             }
         }
         means.add( InviteMeans.EMAIL );

@@ -395,7 +395,7 @@ public class CommsTransport implements TransportProcs,
     public void relayConnd( String room, int devOrder, boolean allHere,
                             int nMissing )
     {
-        m_tpHandler.tpmRelayConnd( room, devOrder, allHere, nMissing );
+        // m_tpHandler.tpmRelayConnd( room, devOrder, allHere, nMissing );
     }
 
     @Override

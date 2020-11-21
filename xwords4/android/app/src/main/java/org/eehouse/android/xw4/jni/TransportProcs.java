@@ -65,8 +65,8 @@ public interface TransportProcs {
     boolean relayNoConnProc( byte[] buf, String msgNo, String relayID );
 
     public interface TPMsgHandler {
-        public void tpmRelayConnd( String room, int devOrder, boolean allHere,
-                                   int nMissing );
+        // public void tpmRelayConnd( String room, int devOrder, boolean allHere,
+        //                            int nMissing );
         public void tpmRelayErrorProc( XWRELAY_ERROR relayErr );
         public void tpmCountChanged( int newCount );
     }

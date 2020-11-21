@@ -99,7 +99,7 @@ public class DBAlert extends XWDialogFragment {
 
         if ( null == dialog ) {
             Log.e( TAG, "no dialog for %s from %s", getDlgID(), activity );
-            Assert.failDbg();
+            // Assert.failDbg();   // remove: better to see what users will see
             dialog = LocUtils.makeAlertBuilder( activity )
                 .setMessage( "Unable to create " + getDlgID() + " Alert" )
                 .setPositiveButton( "Bummer", null )

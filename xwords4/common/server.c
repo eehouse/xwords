@@ -194,7 +194,8 @@ static XWStreamCtxt* messageStreamWithHeader( ServerCtxt* server, XWEnv xwe,
                                               XP_U16 devIndex, XW_Proto code );
 static XP_Bool handleRegistrationMsg( ServerCtxt* server, XWEnv xwe,
                                       XWStreamCtxt* stream );
-static XP_S8 registerRemotePlayer( ServerCtxt* server, XWStreamCtxt* stream );
+static XP_S8 registerRemotePlayer( ServerCtxt* server, XWEnv xwe,
+                                   XWStreamCtxt* stream );
 static void sendInitialMessage( ServerCtxt* server, XWEnv xwe );
 static void sendBadWordMsgs( ServerCtxt* server, XWEnv xwe );
 static XP_Bool handleIllegalWord( ServerCtxt* server, XWEnv xwe,
@@ -914,7 +915,7 @@ handleRegistrationMsg( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* stream )
         XP_S8 prevIndex = -1;
 #endif
         for ( ; ii < playersInMsg; ++ii ) {
-            clientIndex = registerRemotePlayer( server, stream );
+            clientIndex = registerRemotePlayer( server, xwe, stream );
             if ( -1 == clientIndex ) {
                 success = XP_FALSE;
                 break;
@@ -1790,7 +1791,7 @@ findFirstPending( ServerCtxt* server, ServerPlayer** playerP )
 } /* findFirstPending */
 
 static XP_S8
-registerRemotePlayer( ServerCtxt* server, XWStreamCtxt* stream )
+registerRemotePlayer( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* stream )
 {
     XP_S8 deviceIndex = -1;
     XP_PlayerAddr channelNo;
@@ -1839,6 +1840,8 @@ registerRemotePlayer( ServerCtxt* server, XWStreamCtxt* stream )
         }
 
         player->deviceIndex = deviceIndex;
+
+        informMissing( server, xwe );
     }
     return deviceIndex;
 } /* registerRemotePlayer */

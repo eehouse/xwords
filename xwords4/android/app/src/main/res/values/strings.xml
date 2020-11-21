@@ -466,26 +466,34 @@
          The number of players missing is substituted for "%1$d". -->
     <plurals name="invite_msg_fmt">
         <item quantity="one">This game is waiting for one remote
-      player. Would you like to invite someone to join—assuming you
-      haven’t already?</item>
+        player to respond to an invitation.</item>
         <item quantity="other">This game is waiting for %1$d remote
-      players. Would you like to invite someone to join—assuming
-      you haven’t already?</item>
+        players to repond to invitations.</item>
     </plurals>
-    <plurals name="invite_sent_fmt">
-        <item quantity="one">You have already invited a remote player to
-      this game. We are waiting for him/her to respond. Please
-      use the re-invite button if you think the invitation did not go
-      out.</item>
-        <item quantity="other">You have already sent %1$d unique
-      invitations for this game. We are waiting for %2$d of the
-      recipients to respond. Please use the re-invite button if you
-      think the invitations did not go out.</item>
-    </plurals>
-    <string name="invited_msg">This game was created from an
-    invitation you received. As soon as it is able to connect to the
-    sender and any other invitees have arrived play will
-    begin.</string>
+
+    <string name="invite_msg_extra">You will see this message until
+    all expected players have connected. If you’ve already sent an
+    invitation and suspect it was lost, there’s no harm in sending
+    another.</string>
+
+    <string name="invite_msg_extra_rematch">With rematches, all
+    necessary invitations will have been sent automatically. But you
+    can always send new ones if an invitee is not responding.</string>
+
+    <!-- <plurals name="invite_sent_fmt"> -->
+    <!--     <item quantity="one">You have already invited a remote player to -->
+    <!--   this game. We are waiting for him/her to respond. Please -->
+    <!--   use the re-invite button if you think the invitation did not go -->
+    <!--   out.</item> -->
+    <!--     <item quantity="other">You have already sent %1$d unique -->
+    <!--   invitations for this game. We are waiting for %2$d of the -->
+    <!--   recipients to respond. Please use the re-invite button if you -->
+    <!--   think the invitations did not go out.</item> -->
+    <!-- </plurals> -->
+    <!-- <string name="invited_msg">This game was created from an -->
+    <!-- invitation you received. As soon as it is able to connect to the -->
+    <!-- sender and any other invitees have arrived play will -->
+    <!-- begin.</string> -->
     <!-- Appended to message above if local device has NFC available -->
     <string name="invite_if_nfc">Or just Tap to Invite -- if the other
     device also has Android Beaming and is nearby.</string>
@@ -2245,7 +2253,10 @@
     to make more games visible.\n\n(If you later want to unhide the
     buttons go to the Appearance section of App settings).
     </string>
-    <string name="waiting_title">Waiting for players</string>
+    <plurals name="waiting_title_fmt">
+      <item quantity="one">Waiting for player</item>
+      <item quantity="other">Waiting for %1$d players</item>
+    </plurals>
     <!-- Button for alert with title above -->
     <string name="waiting_invite_title">Waiting for response</string>
     <string name="waiting_rematch_title">Rematch in progress</string>
