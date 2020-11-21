@@ -682,7 +682,8 @@ public class BoardDelegate extends DelegateBase
     private void showInviteChoicesThen()
     {
         NetLaunchInfo nli = nliForMe();
-        showInviteChoicesThen( Action.LAUNCH_INVITE_ACTION, nli );
+        showInviteChoicesThen( Action.LAUNCH_INVITE_ACTION, nli,
+                               m_mySIS.nMissing );
     }
 
     @Override
@@ -1111,8 +1112,13 @@ public class BoardDelegate extends DelegateBase
             break;
 
         case LAUNCH_INVITE_ACTION:
-            CommsAddrRec addr = (CommsAddrRec)params[0];
-            tryOtherInvites( addr );
+            for ( Object obj : params ) {
+                if ( obj instanceof CommsAddrRec ) {
+                    tryOtherInvites( (CommsAddrRec)obj );
+                } else {
+                    break;
+                }
+            }
             break;
 
         case ENABLE_NBS_DO:
@@ -1508,6 +1514,23 @@ public class BoardDelegate extends DelegateBase
     public void onInviteClicked()
     {
         callInviteChoices();
+    }
+
+    @Override
+    public void onInfoClicked()
+    {
+        SentInvitesInfo sentInfo = DBUtils.getInvitesFor( m_activity, m_rowid );
+        String msg = sentInfo.getAsText( m_activity );
+        makeOkOnlyBuilder( msg )
+            .setTitle( R.string.title_invite_history )
+            .setAction( Action.INVITE_INFO )
+            .show();
+    }
+
+    @Override
+    public long getRowID()
+    {
+        return m_rowid;
     }
 
     private byte[] getInvite()

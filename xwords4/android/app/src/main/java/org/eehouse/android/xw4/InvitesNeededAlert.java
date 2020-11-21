@@ -28,6 +28,7 @@ import android.content.DialogInterface;
 
 import java.io.Serializable;
 
+import org.eehouse.android.xw4.DBUtils.SentInvitesInfo;
 import org.eehouse.android.xw4.DlgDelegate.Action;
 import org.eehouse.android.xw4.Perms23.Perm;
 import org.eehouse.android.xw4.loc.LocUtils;
@@ -57,12 +58,14 @@ class InvitesNeededAlert {
 
     interface Callbacks {
         DelegateBase getDelegate();
+        long getRowID();
         void onCloseClicked();
         void onInviteClicked();
+        void onInfoClicked();
     }
 
-    static void showOrHide( Callbacks callbacks, int nDevsSeen, int nPlayersMissing,
-                            boolean isRematch )
+    static void showOrHide( Callbacks callbacks, int nDevsSeen,
+                            int nPlayersMissing, boolean isRematch )
     {
         DbgUtils.assertOnUIThread();
         InvitesNeededAlert self = sInstance[0];
@@ -102,8 +105,8 @@ class InvitesNeededAlert {
         }
     }
 
-    private static void makeNew( Callbacks callbacks,
-                                 int nDevsSeen, int nPlayersMissing, boolean isRematch )
+    private static void makeNew( Callbacks callbacks, int nDevsSeen,
+                                 int nPlayersMissing, boolean isRematch )
     {
         Log.d( TAG, "makeNew(nDevsSeen=%d, nPlayersMissing=%d)", nDevsSeen, nPlayersMissing );
         State state = new State( nDevsSeen, nPlayersMissing, isRematch );
@@ -174,6 +177,22 @@ class InvitesNeededAlert {
                                            }
                                        } );
 
+        if ( BuildConfig.NON_RELEASE ) {
+            long rowid = mCallbacks.getRowID();
+            SentInvitesInfo sentInfo = DBUtils.getInvitesFor( context, rowid );
+            int nSent = sentInfo.getMinPlayerCount();
+            boolean invitesSent = nSent >= state.nPlayersMissing;
+            if ( invitesSent ) {
+                alert.setNoDismissListenerNeut( ab, R.string.newgame_invite_more,
+                                                new OnClickListener() {
+                                                    @Override
+                                                    public void onClick( DialogInterface dlg, int item ) {
+                                                        onNeutClick();
+                                                    }
+                                                } );
+            }
+        }
+
         alert.setNoDismissListenerNeg( ab, R.string.button_close,
                                        new OnClickListener() {
                                            @Override
@@ -189,6 +208,11 @@ class InvitesNeededAlert {
     private void onPosClick()
     {
         mCallbacks.onInviteClicked();
+    }
+
+    private void onNeutClick()
+    {
+        mCallbacks.onInfoClicked();
     }
 
     private void onNegClick()

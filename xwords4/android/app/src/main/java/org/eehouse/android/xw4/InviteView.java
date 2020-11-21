@@ -59,10 +59,9 @@ public class InviteView extends ScrollView
     private ItemClicked mProcs;
     private boolean mIsWho;
     private RadioGroup mGroupTab;
-    private RadioGroup mGroupWho;
+    private LimSelGroup mGroupWho;
     private RadioGroup mGroupHow;
     private Map<RadioButton, InviteMeans> mHowMeans = new HashMap<>();
-    private Map<RadioButton, String> mWhoPlayers = new HashMap<>();
     private boolean mExpanded = false;
     private NetLaunchInfo mNli;
 
@@ -71,7 +70,7 @@ public class InviteView extends ScrollView
     }
 
     public InviteView setChoices( List<InviteMeans> meansList, int sel,
-                                  String[] players )
+                                  String[] players, int maxPlayers )
     {
         final Context context = getContext();
 
@@ -104,15 +103,10 @@ public class InviteView extends ScrollView
         }
 
         if ( haveWho ) {
-            mGroupWho = (RadioGroup)findViewById( R.id.group_who );
-            mGroupWho.setOnCheckedChangeListener( this );
-            for ( String player : players ) {
-                RadioButton button = (RadioButton)LocUtils
-                    .inflate( context, R.layout.invite_radio );
-                button.setText( player );
-                mGroupWho.addView( button );
-                mWhoPlayers.put( button, player );
-            }
+            mGroupWho = ((LimSelGroup)findViewById( R.id.group_who ))
+                .setLimit( maxPlayers )
+                .addPlayers( players )
+                ;
         }
         mIsWho = false;   // start with how
         showWhoOrHow();
@@ -139,20 +133,22 @@ public class InviteView extends ScrollView
         return this;
     }
 
-    public InviteView setCallbacks( ItemClicked procs ) {
+    public InviteView setCallbacks( ItemClicked procs )
+    {
         mProcs = procs;
+        mGroupWho.setCallbacks( procs );
         return this;
     }
 
     public Object getChoice()
     {
         Object result = null;
-        RadioButton checked = getCurCheckedFor();
-        if ( null != checked ) {
-            if ( mIsWho ) {
-                result = mWhoPlayers.get(checked);
-            } else {
-                result = mHowMeans.get(checked);
+        if ( mIsWho ) {
+            result = mGroupWho.getSelected();
+        } else {
+            int curSel = mGroupHow.getCheckedRadioButtonId();
+            if ( 0 <= curSel ) {
+                result = (RadioButton)findViewById(curSel);
             }
         }
         return result;
@@ -187,17 +183,6 @@ public class InviteView extends ScrollView
             .setVisibility( show ? View.VISIBLE: View.GONE );
     }
 
-    private RadioButton getCurCheckedFor()
-    {
-        RadioButton result = null;
-        RadioGroup group = mIsWho ? mGroupWho : mGroupHow;
-        int curSel = group.getCheckedRadioButtonId();
-        if ( 0 <= curSel ) {
-            result = (RadioButton)findViewById(curSel);
-        }
-        return result;
-    }
-
     private void showWhoOrHow()
     {
         if ( null != mGroupWho ) {
@@ -205,7 +190,7 @@ public class InviteView extends ScrollView
         }
         mGroupHow.setVisibility( mIsWho ? View.INVISIBLE : View.VISIBLE );
 
-        boolean showEmpty = mIsWho && 0 == mWhoPlayers.size();
+        boolean showEmpty = mIsWho && 0 == mGroupWho.getChildCount();
         findViewById( R.id.who_empty )
             .setVisibility( showEmpty ? View.VISIBLE : View.INVISIBLE );
     }

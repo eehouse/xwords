@@ -44,10 +44,12 @@
     <FrameLayout android:layout_width="match_parent"
                  android:layout_height="match_parent"
                  >
-      <RadioGroup android:id="@+id/group_who"
-                  android:layout_width="match_parent"
-                  android:layout_height="wrap_content"
-                  />
+      <org.eehouse.android.xw4.LimSelGroup
+          android:id="@+id/group_who"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:orientation="vertical"
+          />
 
       <RadioGroup android:id="@+id/group_how"
                   android:layout_width="match_parent"

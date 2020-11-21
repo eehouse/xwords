@@ -84,9 +84,13 @@ public class InviteChoicesAlert extends DlgDelegateAlert
         InviteMeans lastMeans = null;
         NetLaunchInfo nli = null;
         Object[] params = state.getParams();
+        int nMissing = 0;
         if ( null != params ) {
             if ( 0 < params.length && params[0] instanceof NetLaunchInfo ) {
                 nli = (NetLaunchInfo)params[0];
+            }
+            if ( 1 < params.length && params[1] instanceof Integer ) {
+                nMissing = (Integer)params[1];
             }
         }
         means.add( InviteMeans.EMAIL );
@@ -130,11 +134,15 @@ public class InviteChoicesAlert extends DlgDelegateAlert
                             InviteMeans means = (InviteMeans)choice;
                             activity.inviteChoiceMade( state.m_action,
                                                        means, state.getParams() );
-                        } else if ( choice instanceof String ) {
-                            String player = (String)choice;
-                            CommsAddrRec addr = XwJNI.kplr_getAddr( player );
+                        } else if ( choice instanceof String[] ) {
+                            String[] players = (String[])choice;
+                            Object[] params = new Object[players.length];
+                            for ( int ii = 0; ii < params.length; ++ii ) {
+                                String player = players[ii];
+                                CommsAddrRec addr = XwJNI.kplr_getAddr( player );
+                                params[ii] = addr;
+                            }
                             XWActivity xwact = (XWActivity)context;
-                            Object[] params = { addr };
                             xwact.onPosButton( state.m_action, params );
                         } else {
                             Assert.failDbg();
@@ -151,7 +159,7 @@ public class InviteChoicesAlert extends DlgDelegateAlert
             ;
 
         String[] players = XwJNI.kplr_getPlayers();
-        mInviteView.setChoices( means, lastSelMeans, players )
+        mInviteView.setChoices( means, lastSelMeans, players, nMissing )
             .setNli( nli )
             .setCallbacks( this )
             ;

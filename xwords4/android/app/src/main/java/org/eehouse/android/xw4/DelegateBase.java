@@ -595,10 +595,10 @@ public abstract class DelegateBase implements DlgClickNotify,
         m_dlgDelegate.launchLookup( words, lang, !studyOn );
     }
 
-    protected void showInviteChoicesThen( Action action,
-                                          NetLaunchInfo nli )
+    protected void showInviteChoicesThen( Action action, NetLaunchInfo nli,
+                                          int nMissing )
     {
-        m_dlgDelegate.showInviteChoicesThen( action, nli );
+        m_dlgDelegate.showInviteChoicesThen( action, nli, nMissing );
     }
 
     public Builder makeOkOnlyBuilder( int msgID )
