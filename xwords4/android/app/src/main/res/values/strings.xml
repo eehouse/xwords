@@ -530,8 +530,7 @@
     <!-- Explanation shown when you choose the radio button to invite
          by QR Code -->
     <string name="qrcode_invite_expl">To invite via QRCode, let your
-    opponent scan the code with his/her phone (using the Camera app’s
-    “Lens” feature or a QR-reader app.)</string>
+    opponent scan the code with their Android phone’s camera.</string>
 
     <!-- Short for "points", this is shown at the right end of the
          tray in place of the first tile placed along with the points
