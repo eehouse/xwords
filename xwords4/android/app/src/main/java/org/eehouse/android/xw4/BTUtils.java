@@ -61,10 +61,12 @@ public class BTUtils {
     private static final String TAG = BTUtils.class.getSimpleName();
     private static final String BOGUS_MARSHMALLOW_ADDR = "02:00:00:00:00:00";
     private static final int MAX_PACKET_LEN = 4 * 1024;
-    private static int CONNECT_SLEEP_MS = 2500;
+    private static final int CONNECT_SLEEP_MS = 2500;
+    private static final String KEY_OWN_MAC = TAG + ":own_mac";
     private static Set<ScanListener> sListeners = new HashSet<>();
     private static Map<String, PacketAccumulator> sSenders = new HashMap<>();
     private static Map<String, String> s_namesToAddrs;
+    private static String sMyMacAddr = null;
 
     private enum BTCmd {
         BAD_PROTO,
@@ -82,6 +84,8 @@ public class BTUtils {
         MESG_GAMEGONE,
         _REMOVE_FOR,             // unused
         INVITE_DUP_INVITE,
+        MAC_ASK,                // ask peer what my mac address is
+        MAC_REPLY,              // reply to above
     };
 
     interface ScanListener {
@@ -152,6 +156,7 @@ public class BTUtils {
         Log.d( TAG, "init()" );
         sAppName = appName;
         sUUID = uuid;
+        loadOwnMac( context );
         onResume( context );
     }
 
@@ -165,7 +170,8 @@ public class BTUtils {
         Log.d( TAG, "onResume()" );
         // Should only run this in the background if we have BT games
         // going. In the foreground we want to
-        ListenThread.getOrStart();
+        SecureListenThread.getOrStart();
+        InsecureListenThread.getOrStart();
     }
 
     static void onStop( Context context )
@@ -192,11 +198,7 @@ public class BTUtils {
         String[] result = null;
         BluetoothAdapter adapter = getAdapterIf();
         if ( null != adapter ) {
-            String addr = adapter.getAddress();
-            if ( isBogusAddr( addr ) ) {
-                addr = null;
-            }
-            result = new String[] { adapter.getName(), addr };
+            result = new String[] { adapter.getName(), sMyMacAddr };
         }
         return result;
     }
@@ -214,7 +216,8 @@ public class BTUtils {
 
     private static void stopThreads()
     {
-        ListenThread.stopSelf();
+        SecureListenThread.stopSelf();
+        InsecureListenThread.stopSelf();
         ReadThread.stopSelf();
     }
 
@@ -225,6 +228,17 @@ public class BTUtils {
             result = adapter.getRemoteDevice( btAddr ).getName();
         }
         return result;
+    }
+
+    private static void loadOwnMac( Context context )
+    {
+        sMyMacAddr = DBUtils.getStringFor( context, KEY_OWN_MAC, null );
+    }
+
+    private static void storeOwnMac( String macAddr )
+    {
+        Context context = getContext();
+        DBUtils.setStringFor( context, KEY_OWN_MAC, macAddr );
     }
 
     public static int sendPacket( Context context, byte[] buf, String msgID,
@@ -587,7 +601,7 @@ public class BTUtils {
         private BTHelper mHelper;
         private boolean mPostOnResponse;
 
-        PacketAccumulator( String addr ) { this(addr, 20000); }
+        PacketAccumulator( String addr ) { this( addr, 20000 ); }
 
         // Ping case -- used only once
         PacketAccumulator( String addr, int timeoutMS )
@@ -603,6 +617,11 @@ public class BTUtils {
             Assert.assertTrueNR( null != mAdapter );
             mHelper = new BTHelper( mName, mAddr );
             mPostOnResponse = true;
+
+            if ( null == sMyMacAddr ) {
+                addGetMac();
+            }
+
             start();
         }
 
@@ -690,6 +709,15 @@ public class BTUtils {
                 OutputPair op = new OutputPair();
                 op.dos.writeInt( gameID );
                 append( BTCmd.MESG_GAMEGONE, gameID, op );
+            } catch ( IOException ioe ) {
+                Assert.failDbg();
+            }
+        }
+
+        private void addGetMac()
+        {
+            try {
+                append( BTCmd.MAC_ASK, new OutputPair() );
             } catch ( IOException ioe ) {
                 Assert.failDbg();
             }
@@ -837,16 +865,15 @@ public class BTUtils {
             BluetoothSocket socket = null;
             try {
                 Log.d( TAG, "trySend(): attempting to connect to %s", mName );
-                socket = mAdapter.getRemoteDevice( getBTAddr() )
-                    .createRfcommSocketToServiceRecord( sUUID );
-                DataOutputStream dos = connect( socket, mTimeoutMS );
-                if ( null == dos ) {
+                BluetoothDevice dev = mAdapter.getRemoteDevice( getBTAddr() );
+                socket = connect( dev, mTimeoutMS );
+                if ( null == socket ) {
                     setNoHost();
                     updateStatusOut( false );
                 } else {
                     Log.d( TAG, "PacketAccumulator.run(): connect(%s) => %s",
-                           mName, dos );
-                    nDone += writeAndCheck( socket, dos );
+                           mName, socket );
+                    nDone += writeAndCheck( socket );
                     updateStatusOut( true );
                     if ( mPostOnResponse ) {
                         callListeners( socket.getRemoteDevice() );
@@ -864,11 +891,12 @@ public class BTUtils {
             return nDone;
         }
 
-        private int writeAndCheck( BluetoothSocket socket, DataOutputStream dos )
+        private int writeAndCheck( BluetoothSocket socket )
             throws IOException
         {
+            DataOutputStream dos = new DataOutputStream( socket.getOutputStream() );
             Log.d( TAG, "%s.writeAndCheck() IN", this );
-            Assert.assertNotNull( dos );
+            dos.writeByte( BT_PROTO );
 
             List<MsgElem> localElems = new ArrayList<>();
             try ( DeadlockWatch dw = new DeadlockWatch( this ) ) {
@@ -986,6 +1014,16 @@ public class BTUtils {
                 }
                 break;
 
+            case MAC_ASK:
+                if ( BTCmd.MAC_REPLY == reply ) {
+                    String mac = inStream.readUTF();
+                    Assert.assertTrueNR( null == sMyMacAddr || sMyMacAddr.equals(mac) );
+                    sMyMacAddr = mac;
+                    Log.d( TAG, "got %s as my mac addr", sMyMacAddr );
+                    storeOwnMac( sMyMacAddr );
+                }
+                break;
+
             default:
                 Log.e( TAG, "handleReply(cmd=%s) case not handled", cmd );
                 Assert.failDbg(); // fired
@@ -996,9 +1034,9 @@ public class BTUtils {
             }
         }
 
-        private DataOutputStream connect( BluetoothSocket socket, int timeout )
+        private BluetoothSocket connect( BluetoothDevice remote, int timeout )
         {
-            BluetoothDevice remote = socket.getRemoteDevice();
+            BluetoothSocket socket = null;
             String name = remote.getName();
             String addr = remote.getAddress();
             Log.w( TAG, "connect(%s/%s, timeout=%d) starting", name, addr, timeout );
@@ -1006,22 +1044,21 @@ public class BTUtils {
             // Docs say always call cancelDiscovery before trying to connect
             mAdapter.cancelDiscovery();
 
-            DataOutputStream dos = null;
-
             // Retry for some time. Some devices take a long time to generate and
             // broadcast ACL conn ACTION
             int nTries = 0;
             for ( long end = timeout + System.currentTimeMillis(); ; ) {
                 try {
-                    // Log.d( TAG, "trying connect(%s/%s) (check accept() logs)", name, addr );
-                    ++nTries;
+                    boolean useInsecure = 0 == nTries++ % 2;
+                    socket = useInsecure
+                        ? remote.createInsecureRfcommSocketToServiceRecord( sUUID )
+                        : remote.createRfcommSocketToServiceRecord( sUUID );
                     socket.connect();
-                    Log.i( TAG, "connect(%s/%s) succeeded after %d tries",
-                           name, addr, nTries );
-                    dos = new DataOutputStream( socket.getOutputStream() );
-                    dos.writeByte( BT_PROTO );
+                    Log.i( TAG, "connect(%s/%s/useInsecure=%b) succeeded after %d tries",
+                           name, addr, useInsecure, nTries );
                     break;          // success!!!
                 } catch (IOException|SecurityException ioe) {
+                    socket = null;
                     // Log.d( TAG, "connect(): %s", ioe.getMessage() );
                     long msLeft = end - System.currentTimeMillis();
                     if ( msLeft <= 0 ) {
@@ -1034,8 +1071,8 @@ public class BTUtils {
                     }
                 }
             }
-            Log.e( TAG, "connect(%s/%s) => %s", name, addr, dos );
-            return dos;
+            Log.e( TAG, "connect(%s/%s) => %s", name, addr, socket );
+            return socket;
         }
 
         private void setNoHost()
@@ -1076,26 +1113,27 @@ public class BTUtils {
         }
     } // class PacketAccumulator
 
-    private static class ListenThread extends Thread {
-        private static AtomicReference<Thread> sInstance = new AtomicReference<>();
+    private abstract static class ListenThread extends Thread {
         private BluetoothAdapter mAdapter;
         private BluetoothServerSocket mServerSocket;
 
         private ListenThread( BluetoothAdapter adapter )
         {
             mAdapter = adapter;
-            sInstance.set( this );
         }
+
+        abstract BluetoothServerSocket openListener( BluetoothAdapter adapter )
+            throws IOException;
 
         @Override
         public void run()
         {
-            Log.d( TAG, "ListenThread: %s.run() starting", this );
+            String simpleName = getClass().getSimpleName();
+            Log.d( TAG, "%s.run() starting", simpleName );
 
             try {
                 Assert.assertTrueNR( null != sAppName && null != sUUID );
-                mServerSocket = mAdapter
-                    .listenUsingRfcommWithServiceRecord( sAppName, sUUID );
+                mServerSocket = openListener( mAdapter );
             } catch ( IOException ioe ) {
                 Log.ex( TAG, ioe );
                 mServerSocket = null;
@@ -1108,11 +1146,12 @@ public class BTUtils {
                 mServerSocket = null;
             }
 
-            while ( null != mServerSocket && this == sInstance.get() ) {
-                Log.d( TAG, "%s.run(): calling accept()", this );
+            AtomicReference<Thread> wrapper = getWrapper();
+            while ( null != mServerSocket && this == wrapper.get() ) {
+                Log.d( TAG, "%s.run(): calling accept()", simpleName );
                 try {
                     BluetoothSocket socket = mServerSocket.accept(); // blocks
-                    Log.d( TAG, "%s.run(): accept() returned", this );
+                    Log.d( TAG, "%s.run(): accept() returned", simpleName );
                     ReadThread.handle( socket );
                 } catch ( IOException ioe ) {
                     Log.ex( TAG, ioe );
@@ -1120,43 +1159,118 @@ public class BTUtils {
                 }
             }
 
-            clearInstance( sInstance, this );
-            Log.d( TAG, "ListenThread: %s.run() exiting", this );
+            clearInstance( wrapper, this );
+            Log.d( TAG, "%s.run() exiting", simpleName );
         }
 
-        private static ListenThread getOrStart()
+        void closeListener()
         {
-            ListenThread result = null;
+            BluetoothServerSocket serverSocket = mServerSocket;
+            if ( null != serverSocket ) {
+                try {
+                    serverSocket.close();
+                } catch ( IOException ioe ) {
+                    Log.ex( TAG, ioe );
+                }
+            }
+        }
+
+        abstract AtomicReference<Thread> getWrapper();
+    }
+
+    private static class SecureListenThread extends ListenThread {
+        private static AtomicReference<Thread> sInstance = new AtomicReference<>();
+
+        private SecureListenThread( BluetoothAdapter adapter )
+        {
+            super( adapter );
+            Assert.assertTrueNR( null == sInstance.get() );
+            sInstance.set( this );
+        }
+
+        @Override
+        BluetoothServerSocket openListener( BluetoothAdapter adapter )
+            throws IOException
+        {
+            return adapter.listenUsingRfcommWithServiceRecord( sAppName, sUUID );
+        }
+
+        @Override
+        AtomicReference<Thread> getWrapper() { return sInstance; }
+
+        private static void getOrStart()
+        {
             BluetoothAdapter adapter = getAdapterIf();
             if ( null != adapter ) {
                 synchronized ( sInstance ) {
-                    result = (ListenThread)sInstance.get();
-                    if ( null == result ) {
-                        result = new ListenThread( adapter );
-                        Assert.assertTrueNR( result == sInstance.get() );
-                        result.start();
+                    SecureListenThread thread = (SecureListenThread)sInstance.get();
+                    if ( null == thread ) {
+                        thread = new SecureListenThread( adapter );
+                        Assert.assertTrueNR( thread == sInstance.get() );
+                        thread.start();
                     }
                 }
             }
-            return result;
         }
 
         private static void stopSelf()
         {
             synchronized ( sInstance ) {
-                ListenThread self = (ListenThread)sInstance.get();
-                Log.d( TAG, "ListenThread.stopSelf(): self: %s", self );
+                SecureListenThread self = (SecureListenThread)sInstance.get();
+                Log.d( TAG, "SecureListenThread.stopSelf(): self: %s", self );
                 if ( null != self ) {
                     sInstance.set( null );
+                    self.closeListener();
+                }
+            }
+        }
+    }
 
-                    BluetoothServerSocket serverSocket = self.mServerSocket;
-                    if ( null != serverSocket ) {
-                        try {
-                            serverSocket.close();
-                        } catch ( IOException ioe ) {
-                            Log.ex( TAG, ioe );
-                        }
+    private static class InsecureListenThread extends ListenThread {
+        private static AtomicReference<Thread> sInstance = new AtomicReference<>();
+
+        private InsecureListenThread( BluetoothAdapter adapter )
+        {
+            super( adapter );
+            Assert.assertTrueNR( null == sInstance.get() );
+            sInstance.set( this );
+        }
+
+
+        @Override
+        BluetoothServerSocket openListener( BluetoothAdapter adapter )
+            throws IOException
+        {
+            return adapter
+                .listenUsingInsecureRfcommWithServiceRecord( sAppName, sUUID );
+        }
+
+        @Override
+        AtomicReference<Thread> getWrapper() { return sInstance; }
+
+        private static void getOrStart()
+        {
+            BluetoothAdapter adapter = getAdapterIf();
+            if ( null != adapter ) {
+                synchronized ( sInstance ) {
+                    InsecureListenThread thread = (InsecureListenThread)sInstance.get();
+                    if ( null == thread ) {
+                        thread = new InsecureListenThread( adapter );
+                        Assert.assertTrueNR( thread == sInstance.get() );
+                        thread.start();
                     }
+                }
+            }
+        }
+
+        private static void stopSelf()
+        {
+            synchronized ( sInstance ) {
+                InsecureListenThread self = (InsecureListenThread)sInstance.get();
+                Log.d( TAG, "InsecureListenThread.stopSelf(): self: %s", self );
+                if ( null != self ) {
+                    sInstance.set( null );
+                    self.closeListener();
                 }
             }
         }
@@ -1169,9 +1283,8 @@ public class BTUtils {
 
         static void handle( BluetoothSocket incoming )
         {
-            Log.d( TAG, "read(%s)", incoming );
-            ReadThread self = getOrStart();
-            self.enqueue( incoming );
+            Log.d( TAG, "read(from=%s)", incoming.getRemoteDevice().getName() );
+            getOrStart().enqueue( incoming );
         }
 
         private ReadThread()
@@ -1280,6 +1393,9 @@ public class BTUtils {
                             gameID = dis.readInt();
                             receiveGameGone( gameID, socket );
                             break;
+                        case MAC_ASK:
+                            receiveMacAsk( socket );
+                            break;
                         default:
                             Assert.failDbg();
                             break;
@@ -1353,6 +1469,14 @@ public class BTUtils {
             BTHelper helper = new BTHelper( socket );
             helper.postEvent( MultiEvent.MESSAGE_NOGAME, gameID );
             writeBack( socket, BTCmd.MESG_ACCPT );
+        }
+
+        private void receiveMacAsk( BluetoothSocket socket ) throws IOException
+        {
+            DataOutputStream os = new DataOutputStream( socket.getOutputStream() );
+            os.writeByte( BTCmd.MAC_REPLY.ordinal() );
+            String addr = socket.getRemoteDevice().getAddress();
+            os.writeUTF( addr );
         }
 
         private void enqueue( BluetoothSocket socket )
