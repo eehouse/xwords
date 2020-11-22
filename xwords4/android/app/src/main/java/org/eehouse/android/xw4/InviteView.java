@@ -148,7 +148,8 @@ public class InviteView extends ScrollView
         } else {
             int curSel = mGroupHow.getCheckedRadioButtonId();
             if ( 0 <= curSel ) {
-                result = (RadioButton)findViewById(curSel);
+                RadioButton button = (RadioButton)findViewById(curSel);
+                result = mHowMeans.get( button );
             }
         }
         return result;
