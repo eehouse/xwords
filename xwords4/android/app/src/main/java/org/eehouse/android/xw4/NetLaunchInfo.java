@@ -54,7 +54,7 @@ public class NetLaunchInfo implements Serializable {
     private static final String PHONE_KEY = "phn";
     private static final String GSM_KEY = "gsm";
     private static final String OSVERS_KEY = "osv";
-    private static final String BTADDR_KEY = "bta";
+    private static final String BTADDR_KEY = "btas";
     private static final String BTNAME_KEY = "btn";
     private static final String ROOM_KEY = "room";
     private static final String ID_KEY = "id";
@@ -203,7 +203,7 @@ public class NetLaunchInfo implements Serializable {
                         boolean doAdd;
                         switch ( typ ) {
                         case COMMS_CONN_BT:
-                            btAddress = data.getQueryParameter( BTADDR_KEY );
+                            btAddress = expand( data.getQueryParameter( BTADDR_KEY ) );
                             btName = data.getQueryParameter( BTNAME_KEY );
                             doAdd = !hasAddrs && null != btAddress;
                             break;
@@ -615,7 +615,7 @@ public class NetLaunchInfo implements Serializable {
         }
         if ( addrs.contains( CommsConnType.COMMS_CONN_BT ) ) {
             if ( null != btAddress ) {
-                ub.appendQueryParameter( BTADDR_KEY, btAddress );
+                ub.appendQueryParameter( BTADDR_KEY, shorten(btAddress) );
             }
             ub.appendQueryParameter( BTNAME_KEY, btName );
         }
@@ -757,6 +757,31 @@ public class NetLaunchInfo implements Serializable {
             }
         }
         _conTypes = addrs.toInt();
+    }
+
+    private String shorten( String addr )
+    {
+        String result = null;
+        if ( ! TextUtils.isEmpty( addr ) ) {
+            String[] pairs = TextUtils.split( addr, ":" );
+            result = TextUtils.join( "", pairs );
+        }
+        return result;
+    }
+
+    private String expand( String addr )
+    {
+        String result = null;
+        if ( null != addr && 12 == addr.length() ) {
+            String[] pairs = new String[6];
+            for ( int ii = 0; ii < 6; ++ii ) {
+                int start = ii * 2;
+                pairs[ii] = addr.substring( start, start + 2 );
+            }
+
+            result = TextUtils.join( ":", pairs );
+        }
+        return result;
     }
 
     private void calcValid()
