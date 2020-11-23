@@ -1970,6 +1970,8 @@ public class BoardDelegate extends DelegateBase
         public void informMissing( boolean isServer, CommsConnTypeSet connTypes,
                                    int nDevs, int nMissing )
         {
+            // Log.d( TAG, "informMissing(isServer: %b, nDevs: %d; nMissing: %d",
+            //        isServer, nDevs, nMissing );
             m_mySIS.nMissing = nMissing; // will be 0 unless isServer is true
             m_mySIS.nGuestDevs = nDevs;
             m_connTypes = connTypes;

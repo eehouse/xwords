@@ -33,7 +33,7 @@ import org.eehouse.android.xw4.DlgDelegate.Action;
 import org.eehouse.android.xw4.Perms23.Perm;
 import org.eehouse.android.xw4.loc.LocUtils;
 
-class InvitesNeededAlert {
+class InvitesNeededAlert implements DialogInterface.OnDismissListener {
     private static final String TAG = InvitesNeededAlert.class.getSimpleName();
 
     private static InvitesNeededAlert[] sInstance = {null};
@@ -118,11 +118,23 @@ class InvitesNeededAlert {
     {
         DbgUtils.assertOnUIThread();
         Assert.assertTrueNR( self == sInstance[0] );
-        sInstance[0] = null;
-        if ( null != self.mAlert ) {
-            InviteChoicesAlert.dismissAny();
-            self.mAlert.dismiss();
+        if ( self == sInstance[0] ) {
+            sInstance[0] = null;
+            if ( null != self.mAlert ) {
+                InviteChoicesAlert.dismissAny();
+                self.mAlert.dismiss();
+            }
         }
+    }
+
+    ////////////////////////////////////////
+    // DialogInterface.OnDismissListener
+    ////////////////////////////////////////
+    @Override
+    public void onDismiss( DialogInterface dialog )
+    {
+        Log.d( TAG, "onDismiss()" );
+        close( this );
     }
 
     private InvitesNeededAlert( Callbacks callbacks, State state )
@@ -202,6 +214,7 @@ class InvitesNeededAlert {
                                        } );
 
         result = ab.create();
+        result.setOnDismissListener( this );
         return result;
     }
 
