@@ -689,20 +689,11 @@ public class BoardDelegate extends DelegateBase
     @Override
     protected void setTitle()
     {
-        runOnUiThread( new Runnable() {
-                @Override
-                public void run() {
-                    String title = GameUtils.getName( m_activity, m_rowid );
-                    if ( 0 < m_mySIS.nMissing ) {
-                        title = LocUtils.getString( m_activity, R.string.title_missing_fmt,
-                                                    title, m_mySIS.nMissing );
-                    }
-                    if ( null != m_gi && m_gi.inDuplicateMode ) {
-                        title = LocUtils.getString( m_activity, R.string.dupe_title_fmt, title );
-                    }
-                    setTitle( title );
-                }
-            } );
+        String title = GameUtils.getName( m_activity, m_rowid );
+        if ( null != m_gi && m_gi.inDuplicateMode ) {
+            title = LocUtils.getString( m_activity, R.string.dupe_title_fmt, title );
+        }
+        setTitle( title );
     }
 
     private void initToolbar()
@@ -1845,7 +1836,6 @@ public class BoardDelegate extends DelegateBase
                 post( new Runnable() {
                         @Override
                         public void run() {
-                            setTitle();
                             makeNotAgainBuilder( R.string.not_again_turnchanged,
                                                  R.string.key_notagain_turnchanged )
                                 .show();
