@@ -42,8 +42,9 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.io.Serializable;
 
-public class CommsAddrRec implements java.io.Serializable {
+public class CommsAddrRec implements Serializable {
     private static final String TAG = CommsAddrRec.class.getSimpleName();
 
     public enum CommsConnType {
@@ -98,6 +99,23 @@ public class CommsAddrRec implements java.io.Serializable {
             return parts[parts.length - 1];
         }
     };
+
+    // Pairs how and name of device in that context
+    public static class ConnExpl implements Serializable {
+        public final CommsConnType mType;
+        public final String mName;
+
+        public ConnExpl( CommsConnType typ, String name )
+        {
+            mType = typ;
+            mName = name;
+        }
+
+        public String getUserExpl( Context context )
+        {
+            return String.format( "%s: %s", mType, mName );
+        }
+    }
 
     public static class CommsConnTypeSet extends HashSet<CommsConnType> {
         private static final int BIT_VECTOR_MASK = 0x8000;

@@ -53,6 +53,7 @@ import org.eehouse.android.xw4.DbgUtils.DeadlockWatch;
 import org.eehouse.android.xw4.MultiService.DictFetchOwner;
 import org.eehouse.android.xw4.MultiService.MultiEvent;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
+import org.eehouse.android.xw4.jni.CommsAddrRec.ConnExpl;
 import org.eehouse.android.xw4.jni.CommsAddrRec;
 import org.eehouse.android.xw4.jni.XwJNI;
 import org.eehouse.android.xw4.loc.LocUtils;
@@ -962,7 +963,8 @@ public class BTUtils {
                             mHelper.postEvent( MultiEvent.BAD_PROTO_BT,
                                                socket.getRemoteDevice().getName() );
                         } else {
-                            handleReply( inStream, cmd, gameID, reply );
+                            String remoteName = socket.getRemoteDevice().getName();
+                            handleReply( inStream, cmd, gameID, remoteName, reply );
                         }
                         ++nDone;
                     }
@@ -979,18 +981,19 @@ public class BTUtils {
         } // writeAndCheck()
 
         private void handleReply( DataInputStream inStream, BTCmd cmd, int gameID,
-                                  BTCmd reply ) throws IOException
+                                  String remoteName, BTCmd reply ) throws IOException
         {
-            MultiEvent evt = null;
             switch ( cmd ) {
             case MESG_SEND:
             case MESG_GAMEGONE:
                 switch ( reply ) {
                 case MESG_ACCPT:
-                    evt = MultiEvent.MESSAGE_ACCEPTED;
+                    mHelper.postEvent( MultiEvent.MESSAGE_ACCEPTED, gameID, 0, mName );
                     break;
                 case MESG_GAMEGONE:
-                    evt = MultiEvent.MESSAGE_NOGAME;
+                    ConnExpl expl = new ConnExpl( CommsConnType.COMMS_CONN_BT,
+                                                  remoteName );
+                    mHelper.postEvent( MultiEvent.MESSAGE_NOGAME, gameID, expl );
                     break;
                 }
                 break;
@@ -1027,10 +1030,6 @@ public class BTUtils {
             default:
                 Log.e( TAG, "handleReply(cmd=%s) case not handled", cmd );
                 Assert.failDbg(); // fired
-            }
-
-            if ( null != evt ) {
-                mHelper.postEvent( evt, gameID, 0, mName );
             }
         }
 

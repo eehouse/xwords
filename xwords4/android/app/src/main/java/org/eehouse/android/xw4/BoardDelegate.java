@@ -262,8 +262,14 @@ public class BoardDelegate extends DelegateBase
 
         case DLG_DELETED: {
             String gameName = GameUtils.getName( m_activity, m_rowid );
+            CommsAddrRec.ConnExpl expl = params.length == 0 ? null
+                : (CommsAddrRec.ConnExpl)params[0];
+            String message = getString( R.string.msg_dev_deleted_fmt, gameName );
+            if ( null != expl ) {
+                message += "\n\n" + expl.getUserExpl( m_activity );
+            }
             ab = ab.setTitle( R.string.query_title )
-                .setMessage( getString( R.string.msg_dev_deleted_fmt, gameName ) )
+                .setMessage( message )
                 .setPositiveButton( android.R.string.ok, null );
             lstnr = new OnClickListener() {
                     @Override
@@ -429,7 +435,7 @@ public class BoardDelegate extends DelegateBase
     } // makeDialog
 
     private boolean mDeletePosted;
-    private void postDeleteOnce()
+    private void postDeleteOnce( final CommsAddrRec.ConnExpl expl )
     {
         if ( !mDeletePosted ) {
             // PENDING: could clear this if user says "ok" rather than "delete"
@@ -437,7 +443,7 @@ public class BoardDelegate extends DelegateBase
             post( new Runnable() {
                     @Override
                     public void run() {
-                        showDialogFragment( DlgID.DLG_DELETED );
+                        showDialogFragment( DlgID.DLG_DELETED, expl );
                     }
                 } );
         }
@@ -1309,7 +1315,11 @@ public class BoardDelegate extends DelegateBase
         case MESSAGE_NOGAME:
             final int gameID = (Integer)args[0];
             if ( null != m_gi && gameID == m_gi.gameID && !isFinishing() ) {
-                postDeleteOnce();
+                CommsAddrRec.ConnExpl expl = null;
+                if ( 1 < args.length && args[1] instanceof CommsAddrRec.ConnExpl ) {
+                    expl = (CommsAddrRec.ConnExpl)args[1];
+                }
+                postDeleteOnce( expl );
             }
             break;
 
@@ -1395,7 +1405,7 @@ public class BoardDelegate extends DelegateBase
 
         case DEADGAME:
         case DELETED:
-            postDeleteOnce();
+            postDeleteOnce( null );
             break;
 
         case OLDFLAGS:
