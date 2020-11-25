@@ -265,7 +265,7 @@ public class BoardDelegate extends DelegateBase
             CommsAddrRec.ConnExpl expl = params.length == 0 ? null
                 : (CommsAddrRec.ConnExpl)params[0];
             String message = getString( R.string.msg_dev_deleted_fmt, gameName );
-            if ( null != expl ) {
+            if ( BuildConfig.NON_RELEASE && null != expl ) {
                 message += "\n\n" + expl.getUserExpl( m_activity );
             }
             ab = ab.setTitle( R.string.query_title )

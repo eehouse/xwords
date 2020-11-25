@@ -113,7 +113,8 @@ public class CommsAddrRec implements Serializable {
 
         public String getUserExpl( Context context )
         {
-            return String.format( "%s: %s", mType, mName );
+            Assert.assertTrueNR(  BuildConfig.NON_RELEASE );
+            return String.format( "(Msg src: {%s: %s})", mType, mName );
         }
     }
 
