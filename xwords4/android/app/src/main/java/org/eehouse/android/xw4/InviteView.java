@@ -136,7 +136,9 @@ public class InviteView extends ScrollView
     public InviteView setCallbacks( ItemClicked procs )
     {
         mProcs = procs;
-        mGroupWho.setCallbacks( procs );
+        if ( null != mGroupWho ) {
+            mGroupWho.setCallbacks( procs );
+        }
         return this;
     }
 
