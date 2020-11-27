@@ -331,7 +331,7 @@ des parties à %1$d joueurs en %2$s.</string>
     <string name="use_timer">Activer le chronomètre</string>
     <!-- label for the field used to set the timer's inital value -->
     <!--<string name="minutes_label">Minutes per player</string>-->
-    <string name="minutes_label">Nombre de minutes par joueur :</string>
+    <string name="minutes_label">Nombre de minutes par joueur</string>
     <!-- title of popup used to select how "smart" (how capable) the
     robot player will be. -->
     <!--<string name="robot_spinner_prompt">How smart is the robot player?</string>-->
@@ -3086,4 +3086,5 @@ pour la langue</string>
 \nCe message sera vu au plus une fois toutes les %3$d minutes.</string>
     <string name="download_path_hint">Par exemple, là où les pièces jointes des courriels sont enregistrées</string>
     <string name="phonies_label">Néologismes</string>
+    <string name="phonies_block">Interdire les néologismes</string>
 </resources>
