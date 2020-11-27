@@ -135,9 +135,8 @@ obtenir une copie avec les mêmes paramètres.</string>
     <!--<string name="confirm_seldeletes_fmt">Êtes-vous sûr de vouloir effacer les
 %1$d parties sélectionnées ? Cette action ne peut pas être annulée.</string>-->
     <plurals name="confirm_seldeletes_fmt">
-        <item quantity="one">Êtes-vous sûr de vouloir effacer la partie
- sélectionnée ? Cette action ne peut pas être annulée.</item>
-        <item quantity="other">"Êtes-vous sûr de vouloir supprimer les  %1$d parties sélectionnées ? Cette action ne peut pas être annulée."</item>
+        <item quantity="one">Êtes-vous sûr·e de vouloir effacer la partie sélectionnée \? Cette action ne peut pas être annulée.</item>
+        <item quantity="other">Êtes-vous sûr·e de vouloir supprimer les %1$d parties sélectionnées \? Cette action ne peut pas être annulée.</item>
     </plurals>
     <!-- Text of confirmation dialog posted when list_item_reset menu
          is selected -->
@@ -518,7 +517,7 @@ fait ?</item>
     <!-- Appended to message above if local device has NFC available -->
     <!--<string name="invite_if_nfc">(Or just Tap to Invite - if the
         other device also has Android Beaming and is nearby.)</string>-->
-    <string name="invite_if_nfc">Ou toucher pour inviter -- si un autre appareil a aussi Android Beam et est proche.</string>
+    <string name="invite_if_nfc">Ou toucher pour inviter – si un autre appareil a aussi Android Beam et est proche.</string>
     <!-- Most users create games with only two players, which is the
          default, but CrossWords supports up to four.  When I'm using
          the above string to encourage the opener of a game missing
@@ -1227,7 +1226,7 @@ arrivent</string>
     <!--<string name="invite_chooser_fmt">Send invitation via %1$s</string>-->
     <string name="invite_chooser_fmt">Envoyer l\'invitation par %1$s</string>
     <!--<string name="invite_chooser_email">email</string>-->
-    <string name="invite_chooser_email">email</string>
+    <string name="invite_chooser_email">courriel</string>
     <!--<string name="invite_chooser_sms">sms</string>-->
     <!-- Text of dialog asking user to confirm a move that exchanges
          tiles (instead of forming a new word to earn points) -->
@@ -1790,10 +1789,7 @@ modèle.</string>
     http://xwords.sf.net/android.php.  To report bugs, suggest
     features, offer to help, etc., please email:
     xwords@eehouse.org.</string>-->
-    <string name="about_web">Pour un manuel ou le code source, voyez :
-http://xwords.sf.net/android.php. Pour rapporter des bugs, suggérer des
-fonctionnalités, offrir votre aide, etc., veuillez envoyer un email à :
-xwords@eehouse.org.</string>
+    <string name="about_web">Pour un manuel ou le code source, voyez : http://xwords.sf.net/android.php. Pour rapporter des bugs, suggérer des fonctionnalités, offrir votre aide, etc., veuillez envoyer un courriel à : xwords@eehouse.org.</string>
     <!-- Empty in English, this should contain the name of the
          translator/creator of the strings.xml file for this
          language-->
@@ -1801,7 +1797,7 @@ xwords@eehouse.org.</string>
     <!-- Another paragraph giving credit for work done other than by
          Eric House and translators -->
     <!--<string name="about_credits">Toolbar icons by Sarah Chu.</string>-->
-    <string name="about_credits">"Icônes de la barre d\'outils par Sarah Chu. Icônes de la barre de navigation du Noun Project : \"archive\" par Trendy ;  \"rematch\" par Becris ; et \"swap\" par iconomania."</string>
+    <string name="about_credits">Crédits : Icônes de la barre d\'outils par Sarah Chu. Icônes de la barre de navigation du projet Noun : « archive » par Trendy ; « Revanche » de Becris ; et « swap » par iconomania. Localisation par des bénévoles via weblate.org.</string>
     <!-- text of dialog showing the set of changes made since the last
          release -->
     <!--<string name="changes_title">Recent changes</string>-->
@@ -1903,7 +1899,7 @@ seulement des informations sur les jetons. Il n\'y a pas de mots à parcourir.</
     <string name="prompt_max_len">Mots pas plus longs que</string>
     <!--  -->
     <!--<string name="board_menu_file_email">Email author</string>-->
-    <string name="board_menu_file_email">Envoyer un mail à l\'auteur</string>
+    <string name="board_menu_file_email">Envoyer un courriel à l\'auteur</string>
     <!--  -->
     <!-- Should not be translated -->
     <string name="email_author_subject">Commentaire sur CrossWords</string>
@@ -2314,7 +2310,7 @@ utilisée pour créer une partie.</string>
     <string name="board_menu_invite">Inviter</string>
     <!--<string name="enable_nfc">NFC is turned off on this device. You
     can use the Android Settings app to turn it on .</string>-->
-    <string name="enable_nfc">La NFC est éteinte sur cet appareil. Vous pouvez utiliser l\'application des Paramètres Android pour l\'allumer.</string>
+    <string name="enable_nfc">La CCP est éteinte sur cet appareil. Vous pouvez utiliser l\'application des Paramètres Android pour l\'allumer.</string>
     <string name="button_go_settings">Lancer Paramètres</string>
     <!--<string name="sms_ready_text">Tap the receiving device now</string>-->
     <!--<string name="pct_suffix">\u0020pct.</string>-->
@@ -2342,13 +2338,12 @@ de mots à retenir</string>
     <!--<string name="confirm_studylist_clear_fmt">Êtes-vous sûr de vouloir effacer
 les %1$d mots sélectionnés ?\n\n(Cette action ne peut pas être annulée.)</string>-->
     <plurals name="confirm_studylist_clear_fmt">
-        <item quantity="one">Êtes-vous sûr de vouloir effacer
-le mot sélectionné ?
-
-(Cette action ne peut pas être annulée.)</item>
-        <item quantity="other">Êtes-vous sûr de vouloir supprimer les %1$d mots sélectionnés ?
-
-(Cette action ne peut pas être annulée.)</item>
+        <item quantity="one">Êtes-vous sûr de vouloir effacer le mot sélectionné \?
+\n
+\n(Cette action ne peut pas être annulée.)</item>
+        <item quantity="other">Êtes-vous sûr de vouloir supprimer les %1$d mots sélectionnés \?
+\n
+\n(Cette action ne peut pas être annulée.)</item>
     </plurals>
     <!--<string name="paste_done_fmt">%1$d word[s] copied</string>-->
     <!--<string name="paste_done_fmt">%1$d mots copiés</string>-->
@@ -2373,10 +2368,7 @@ une liste d\'étude.</string>
     <!--<string name="not_again_studycopy">The selected words will be
     copied to the system clipboard. You can then paste them into any
     app that supports pasting text, e.g. an email app.</string>-->
-    <string name="not_again_studycopy">Les mots sélectionnés seront copiés dans
-le presse-papier du système. Vous pourrez ensuite les coller dans toute
-application qui supporte le collage de texte, par exemple une application de
-mails.</string>
+    <string name="not_again_studycopy">Les mots sélectionnés seront copiés dans le presse-papier du système. Vous pourrez ensuite les coller dans toute application qui prend en charge le collage de texte, par exemple une application de messagerie.</string>
     <!--<string name="lookup_title">Word lookup</string>-->
     <string name="lookup_title">Recherche de mot</string>
     <!--<string name="slmenu_select_all">Select all</string>-->
@@ -2712,7 +2704,7 @@ voir et rejoindre</string>
     <!--<string name="nfc_just_tap">To invite via NFC just touch the back
     of this device against the one you want to invite—any time the
     game is open.</string>-->
-    <string name="nfc_just_tap">Pour inviter par NFC, mettez le dos de cet appareil contre celui que vous voulez inviter – à n\'importe quel moment quand la partie est ouverte.</string>
+    <string name="nfc_just_tap">Pour inviter par CCP, mettez le dos de cet appareil contre celui que vous voulez inviter – à n\'importe quel moment quand la partie est ouverte.</string>
     <!--XLATE-ME-->
     <!--<string name="warn_no_comms">Every networked game must have at
     least one way of communicating. If you have no default connection
@@ -2848,11 +2840,11 @@ numéros de téléphones sont les mêmes</string>
          explanation/guidance. -->
     <!--<string name="invite_choice_sms">SMS (texting)</string>-->
     <!--<string name="invite_choice_email">Email</string>-->
-    <string name="invite_choice_email">Email</string>
+    <string name="invite_choice_email">Courriel</string>
     <!--<string name="invite_choice_bt">Bluetooth</string>-->
     <string name="invite_choice_bt">Bluetooth</string>
     <!--<string name="invite_choice_nfc">NFC (\"Android beaming\")</string>-->
-    <string name="invite_choice_nfc">NFC (\"Android Beam\")</string>
+    <string name="invite_choice_nfc">CCP (Android Beam)</string>
     <!--<string name="invite_choice_title">Inviting players: How?</string>-->
     <string name="invite_choice_title">Comment inviter les joueurs ?</string>
     <!--<string name="got_langdict_title">Fetch default wordlist for language</string>-->
@@ -2908,7 +2900,7 @@ pour la langue</string>
     <string name="button_enable">Activer</string>
     <string name="not_again_comms_relay">Le \"relai\" est un serveur sur Internet qui permet l\'échange de messages entre appareils qui font tourner CrossWords. Il fonctionne dès que vous avez une connexion à Internet pleinement fonctionnelle, mais peut avoir des problèmes sur des réseaux Wifi restreints.</string>
     <string name="not_again_comms_sms">Les parties par MMS utilisent la même technologie que l\'envoi de SMS normaux. Bien que les messages soient invisibles pour vous, votre opérateur les considère comme des messages normaux, donc vous pourriez vouloir éviter cette fonctionnalité si vous n\'avez pas un forfait (ou un budget) illimité.</string>
-    <string name="not_again_comms_bt">"Utilisez le Bluetooth  pour jouer contre un appareil à proximité appairé avec le votre."</string>
+    <string name="not_again_comms_bt">Utilisez le Bluetooth pour jouer contre un appareil à proximité qui est « appairé » au vôtre.</string>
     <string name="str_no_hint_found">Ne peut trouver aucun coup</string>
     <plurals name="resent_msgs_fmt">
         <item quantity="one">Un coup renvoyé</item>
@@ -2917,9 +2909,9 @@ pour la langue</string>
     <string name="invite_copied">Invitation prête à coller</string>
     <string name="clip_label">Adresse de l\'invitation</string>
     <string name="not_again_clip_expl_fmt">L\'option \"%1$s\" copie une adresse d\'invitation dans le presse-papier. Collez-là dans l\'application de votre choix et envoyez-là à votre ami.</string>
-    <string name="confirm_clear_chat">Êtes-vous sûr de vouloir supprimer tout l\'historique de discussion pour cette partie ?
-
-(Cette action ne peut pas être annulée.)</string>
+    <string name="confirm_clear_chat">Êtes-vous sûr·e de vouloir supprimer tout l\'historique de discussion pour cette partie \?
+\n
+\n(Cette action ne peut pas être annulée.)</string>
     <string name="invite_choice_relay">Internet/Relai</string>
     <string name="invite_notice_title">Nouvelle partie via une invitation</string>
     <string name="new_game_body">Touchez pour commencer la nouvelle partie</string>
@@ -3087,4 +3079,11 @@ pour la langue</string>
         <item quantity="other">Veuillez choisir les noms des %1$d périphériques WiFiDirect que vous voulez inviter à votre nouvelle partie, puis tapez « %2$s ».</item>
     </plurals>
     <string name="use_duptimer">Activer le chronométrage par action</string>
+    <string name="notify_stall_body_fmt">%1$s (et d\'autres \?) n\'ont pas pu envoyer de messages sortants pendant %2$d secondes.
+\n
+\nSi cela se reproduit, envoyez un courriel aux journaux des développeurs et aux informations sur votre appareil.
+\n
+\nCe message sera vu au plus une fois toutes les %3$d minutes.</string>
+    <string name="download_path_hint">Par exemple, là où les pièces jointes des courriels sont enregistrées</string>
+    <string name="phonies_label">Néologismes</string>
 </resources>
