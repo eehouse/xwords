@@ -3,7 +3,7 @@
     <string name="str_game_name_fmt">%1$s (%2$s)</string>
     <string name="robot_name_fmt">%1$s (Computer)</string>
     <string name="missing_player">(noch nicht hier …)</string>
-    <string name="summary_relay_conf_fmt">Konfiguriert für Raum „%1$s”</string>
+    <string name="summary_relay_conf_fmt">Konfiguriert für Raum “%1$s”</string>
     <string name="summary_relay_wait_fmt">Auf Spieler in Raum „%1$s” warten</string>
     <string name="summary_relay_conn_fmt">Partie läuft in Raum „%1$s“</string>
     <string name="summary_relay_gameover_fmt">Partie beendet in Raum „%1$s“</string>
