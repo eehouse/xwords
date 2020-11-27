@@ -262,14 +262,14 @@
     <string name="newgame_configure_first">Zuerst konfigurieren</string>
     <string name="newgame_invite">Jetzt einladen</string>
     <string name="newgame_invite_more">Weitere Informationen</string>
-    <string name="invite_choice_email">Email</string>
+    <string name="invite_choice_email">E-Mail</string>
     <string name="invite_choice_bt">Bluetooth</string>
     <string name="invite_choice_nfc">NFC („Android-Beaming“)</string>
     <string name="invite_choice_p2p">Wi-Fi Direct</string>
     <string name="invite_subject_fmt">Lass\' uns CrossWords spielen (Raum %1$s)</string>
     <string name="invite_htm_fmt">&lt;a href=\"%1$s\"&gt;Hier tippen&lt;/a&gt; (oder den vollständigen Link unten, um an diesem Spiel teilzunehmen. Wenn Sie bereits CrossWords installiert haben, können Sie den Anhang öffnen,). &lt;br \\&gt; &lt;br \\&gt; (Vollständiger Link: %1$s)</string>
     <string name="invite_chooser_fmt">Einladung senden über %1$s</string>
-    <string name="invite_chooser_email">Email</string>
+    <string name="invite_chooser_email">E-Mail</string>
     <plurals name="query_trade_fmt">
         <item quantity="one">Sind Sie sicher, dass Sie den ausgewählten Spielstein austauschen wollen (%2$s)?</item>
         <item quantity="other">Sind Sie sicher, dass Sie die %1$d ausgewählten Spielsteine austauschen wollen (%2$s)?</item>
@@ -347,7 +347,7 @@
     <string name="default_name_title">Standardspielername</string>
     <string name="default_name_message">Bitte geben Sie hier Ihren Namen ein. Er wird beim Erzeugen neuer Partien benutzt. (Sie können ihn später im Abschnitt „Standard für neue Partien“ in den Einstellungen ändern.)</string>
     <string name="about_copyright">Copyright © 1998-2020 Eric House. Dies ist Freie/Open-Source-Software verfügbar unter der GNU Public License.</string>
-    <string name="about_web">Ein Handbuch und den Quelltext finden Sie unter: http://xwords.sf.net/android.php. Für Fehlerberichte, Funktionswünsche, Mitarbeit usw. bitten eine Email an xwords@eehouse.org.</string>
+    <string name="about_web">Ein Handbuch und den Quelltext finden Sie unter: http://xwords.sf.net/android.php. Für Fehlerberichte, Funktionswünsche, Mitarbeit usw. bitten eine E-Mail an xwords@eehouse.org.</string>
     <string name="xlator">[leer]</string>
     <string name="about_credits">Icons der Werkzeugleiste von Sarah Chu. Icons der Navigationsleiste vom Noun Project: „Archive“ von Trendy; „Rematch“ von Becris; und „Swap“ von iconomania.</string>
     <string name="changes_title">Letzte Änderungen</string>
@@ -378,7 +378,7 @@
     <string name="max_len">Max. Länge</string>
     <string name="prompt_min_len">Wörter nicht kürzer als</string>
     <string name="prompt_max_len">Wörter nicht länger als</string>
-    <string name="board_menu_file_email">Email an den Autor</string>
+    <string name="board_menu_file_email">E-Mail an den Autor …</string>
     <string name="email_author_subject">Kommentar zu CrossWords</string>
     <string name="email_author_chooser">Kommentar senden über</string>
     <string name="email_body_rev_fmt">(Falls relevant, geben Sie bitte die Version: „%1$s“; und das Fabrikat/Modell Ihres Smartphones oder Tablets an: %2$s/%3$s.)</string>
@@ -571,7 +571,7 @@
     <string name="study_langpick">Ihre Wörter für:</string>
     <string name="study_no_lang_fmt">Sie haben noch keine Wörter in einer Lernliste für %1$s gespeichert.</string>
     <string name="study_no_lists">Sie haben noch keine Wörter in einer Lernliste gespeichert.</string>
-    <string name="not_again_studycopy">Die ausgewählten Wörter werden in die Zwischenablage kopiert. Sie können Sie dann in jede App einfügen, die das Einfügen von Text unterstützt, zum Beispiel in eine Email-App.</string>
+    <string name="not_again_studycopy">Die ausgewählten Wörter werden in die Zwischenablage kopiert. Sie können Sie dann in jede Anwendung einfügen, die das Einfügen von Text unterstützt, zum Beispiel in eine E-Mail-Anwendung.</string>
     <string name="lookup_title">Wort nachschlagen</string>
     <string name="sel_items_fmt">Ausgewählt: %1$d</string>
     <string name="loc_menu_xlate">Übersetzen</string>
@@ -930,11 +930,11 @@
     <string name="title_enable_stallnotify">Gesperrte Netzwerkbenachrichtigung anzeigen</string>
     <string name="summary_enable_stallnotify">Benachrichtigen, wenn Android nur langsam ausgehende Einladungen und Züge verarbeitet</string>
     <string name="notify_stall_title">Das Senden von Nachrichten ist gesperrt</string>
-    <string name="notify_stall_body_fmt">%1$s: Obwohl es normalerweise weniger als eine Sekunde dauert, konnte Android die ausgehenden Nachrichten von CrossWords für mehr als %2$d Sekunden nicht verarbeiten. Dies kann daran liegen, dass Ihr Gerät besonders ausgelastet ist, oder weil CrossWords eine Weile nicht im Vordergrund gelaufen ist. 
+    <string name="notify_stall_body_fmt">%1$s (und andere\?) konnten ausgehende Nachrichten für %2$d Sekunden nicht senden.
 \n
-\nWenn das Problem weiterhin besteht (d.h. Sie sehen es häufig), senden Sie mir bitte eine E-Mail mit Informationen über Ihr Gerät, damit ich versuchen kann, es zu reproduzieren und zu beheben. 
+\nWenn es erneut passiert, senden Sie eine E-Mail mit den Entwicklerprotokollen und Informationen zu Ihrem Gerät.
 \n
-\nDiese Meldung wird höchstens einmal alle %3$d Minuten angezeigt.</string>
+\nDiese Meldung wird höchstens alle %3$d Minuten angezeigt.</string>
     <string name="sms_banned_ok_only">Die Google Play-Version von CrossWords unterstützt keine Einladungen mehr oder das Spielen per Daten-SMS.</string>
     <string name="button_more_info">Mehr erfahren</string>
     <string name="banned_nbs_perms">Dieses Spiel ist für die Kommunikation per Daten-SMS eingerichtet, aber Apps aus dem Google Play Store dürfen dies (bis auf wenige Ausnahmen) nicht mehr tun. Sie können das Spiel immer noch öffnen, aber es ist mehr möglicherweise, Züge zu senden oder zu empfangen.
@@ -947,4 +947,5 @@
     <string name="not_again_longtap_lookup">Sie können Wörter nachschlagen, BEVOR sie als Züge übertragen werden - durch langes Antippen, genau wie bei gebundenen Wörtern.
 \n
 \nVerwenden Sie diese Funktion, um die Gültigkeit von Wörtern zu überprüfen, die Sie spielen möchten, oder um ein unbekanntes Wort als Hinweis nachzuschlagen.</string>
+    <string name="download_path_hint">Z.B. wo E-Mail-Anhänge gespeichert werden</string>
 </resources>
