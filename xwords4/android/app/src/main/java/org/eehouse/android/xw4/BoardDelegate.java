@@ -130,6 +130,7 @@ public class BoardDelegate extends DelegateBase
     private boolean m_haveStartedShowing;
 
     private Wrapper mNFCWrapper;
+    private InvitesNeededAlert.Wrapper mINAWrapper;
 
     public class TimerRunnable implements Runnable {
         private int m_why;
@@ -419,7 +420,7 @@ public class BoardDelegate extends DelegateBase
                 .create();
             break;
         case DLG_INVITE:
-            dialog = InvitesNeededAlert.make( this, alert, params );
+            dialog = mINAWrapper.make( alert, params );
             break;
 
         case ENABLE_NFC:
@@ -1505,7 +1506,7 @@ public class BoardDelegate extends DelegateBase
         post( new Runnable() {
                 @Override
                 public void run() {
-                    InvitesNeededAlert.dismiss();
+                    mINAWrapper.dismiss();
                     finish();
                 }
             } );
@@ -2459,8 +2460,10 @@ public class BoardDelegate extends DelegateBase
     {
         if ( alertOrderAt( StartAlertOrder.INVITE ) && ! isFinishing() ) {
             boolean isRematch = null != m_summary && m_summary.hasRematchInfo();
-            InvitesNeededAlert.showOrHide( this, m_mySIS.nGuestDevs,
-                                           m_mySIS.nMissing, isRematch );
+            if ( null == mINAWrapper ) {
+                mINAWrapper = new InvitesNeededAlert.Wrapper( this );
+            }
+            mINAWrapper.showOrHide( m_mySIS.nGuestDevs, m_mySIS.nMissing, isRematch );
         }
     }
 

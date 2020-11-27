@@ -36,23 +36,75 @@ import org.eehouse.android.xw4.loc.LocUtils;
 class InvitesNeededAlert implements DialogInterface.OnDismissListener {
     private static final String TAG = InvitesNeededAlert.class.getSimpleName();
 
-    private static InvitesNeededAlert[] sInstance = {null};
-
-    private DBAlert mAlert;
-    private State mState;
-    private Callbacks mCallbacks;
     private DelegateBase mDelegate;
+    private State mState;
+    private DBAlert mAlert;
 
+    static class Wrapper {
+        private Callbacks mCallbacks;
+        private InvitesNeededAlert mSelf;
+
+        Wrapper( Callbacks callbacks ) { mCallbacks = callbacks; }
+
+        void showOrHide( int nDevsSeen, int nPlayersMissing, boolean isRematch )
+        {
+            DbgUtils.assertOnUIThread();
+            Log.d( TAG, "showOnceIf(nDevsSeen=%d, nPlayersMissing=%d); self: %s",
+                   nDevsSeen, nPlayersMissing, mSelf );
+
+            if ( null == mSelf && 0 == nPlayersMissing ) {
+                // cool: need and have nothing, so do nothing
+            } else if ( 0 < nPlayersMissing && null == mSelf ) { // Need but don't have
+                makeNew( nDevsSeen, nPlayersMissing, isRematch );
+            } else if ( 0 == nPlayersMissing && null != mSelf ) { // Have and need to close
+                mSelf.close();
+            } else if ( null != mSelf && nPlayersMissing != mSelf.mState.mNPlayersMissing ) {
+                mSelf.close();
+                makeNew( nDevsSeen, nPlayersMissing, isRematch );
+            } else if ( null != mSelf && nPlayersMissing == mSelf.mState.mNPlayersMissing ) {
+                // nothing to do
+            } else {
+                Assert.failDbg();
+            }
+        }
+
+        Dialog make( DBAlert alert, Object[] params )
+        {
+            DbgUtils.assertOnUIThread();
+            return mSelf.makeImpl( mCallbacks, alert, params );
+        }
+
+        void dismiss()
+        {
+            Log.d( TAG, "dismiss()" );
+            DbgUtils.assertOnUIThread();
+            if ( null != mSelf ) {
+                mSelf.close();
+                mSelf = null;
+            }
+        }
+
+        private void makeNew( int nDevsSeen, int nPlayersMissing, boolean isRematch )
+        {
+            Log.d( TAG, "makeNew(nDevsSeen=%d, nPlayersMissing=%d)", nDevsSeen, nPlayersMissing );
+            State state = new State( nDevsSeen, nPlayersMissing, isRematch );
+            mSelf = new InvitesNeededAlert( mCallbacks.getDelegate(), state );
+            mCallbacks.getDelegate().showDialogFragment( DlgID.DLG_INVITE, state );
+        }
+    }
+
+    // Must be kept separate from this because gets passed as param to
+    // showDialogFragment()
     private static class State implements Serializable {
-        int nDevsSeen;
-        int nPlayersMissing;
-        boolean isRematch;
+        private int mNDevsSeen;
+        private int mNPlayersMissing;
+        private boolean mIsRematch;
 
         State( int nDevs, int nPlayers, boolean rematch )
         {
-            nDevsSeen = nDevs;
-            nPlayersMissing = nPlayers;
-            isRematch = rematch;
+            mNDevsSeen = nDevs;
+            mNPlayersMissing = nPlayers;
+            mIsRematch = rematch;
         }
     }
 
@@ -64,69 +116,6 @@ class InvitesNeededAlert implements DialogInterface.OnDismissListener {
         void onInfoClicked();
     }
 
-    static void showOrHide( Callbacks callbacks, int nDevsSeen,
-                            int nPlayersMissing, boolean isRematch )
-    {
-        DbgUtils.assertOnUIThread();
-        InvitesNeededAlert self = sInstance[0];
-        Log.d( TAG, "showOnceIf(nDevsSeen=%d, nPlayersMissing=%d); self: %s",
-               nDevsSeen, nPlayersMissing, self );
-
-        if ( null == self && 0 == nPlayersMissing ) {
-            // cool: need and have nothing, so do nothing
-        } else if ( 0 < nPlayersMissing && null == self ) { // Need but don't have
-            makeNew( callbacks, nDevsSeen, nPlayersMissing, isRematch );
-        } else if ( 0 == nPlayersMissing && null != self ) { // Have and need to close
-            close( self );
-        } else if ( null != self && nPlayersMissing != self.mState.nPlayersMissing ) {
-            close( self );
-            makeNew( callbacks, nDevsSeen, nPlayersMissing, isRematch );
-        } else if ( null != self && nPlayersMissing == self.mState.nPlayersMissing ) {
-            // nothing to do
-        } else {
-            Assert.failDbg();
-        }
-    }
-
-    static Dialog make( Callbacks callbacks, DBAlert alert, Object[] params )
-    {
-        DbgUtils.assertOnUIThread();
-        InvitesNeededAlert self = sInstance[0];
-        return self.makeImpl( callbacks, alert, params );
-    }
-
-    static void dismiss()
-    {
-        Log.d( TAG, "dismiss()" );
-        DbgUtils.assertOnUIThread();
-        InvitesNeededAlert self = sInstance[0];
-        if ( null != self ) {
-            close( self );
-        }
-    }
-
-    private static void makeNew( Callbacks callbacks, int nDevsSeen,
-                                 int nPlayersMissing, boolean isRematch )
-    {
-        Log.d( TAG, "makeNew(nDevsSeen=%d, nPlayersMissing=%d)", nDevsSeen, nPlayersMissing );
-        State state = new State( nDevsSeen, nPlayersMissing, isRematch );
-        InvitesNeededAlert self = new InvitesNeededAlert( callbacks, state );
-        callbacks.getDelegate().showDialogFragment( DlgID.DLG_INVITE, state );
-    }
-
-    private static void close( InvitesNeededAlert self )
-    {
-        DbgUtils.assertOnUIThread();
-        Assert.assertTrueNR( self == sInstance[0] );
-        if ( self == sInstance[0] ) {
-            sInstance[0] = null;
-            if ( null != self.mAlert ) {
-                InviteChoicesAlert.dismissAny();
-                self.mAlert.dismiss();
-            }
-        }
-    }
-
     ////////////////////////////////////////
     // DialogInterface.OnDismissListener
     ////////////////////////////////////////
@@ -134,20 +123,26 @@ class InvitesNeededAlert implements DialogInterface.OnDismissListener {
     public void onDismiss( DialogInterface dialog )
     {
         Log.d( TAG, "onDismiss()" );
-        close( this );
+        close();
     }
 
-    private InvitesNeededAlert( Callbacks callbacks, State state )
+    private void close()
     {
-        mState = state;
-        mCallbacks = callbacks;
-        mDelegate = callbacks.getDelegate();
         DbgUtils.assertOnUIThread();
-        Assert.assertTrueNR( null == sInstance[0] );
-        sInstance[0] = this;
+        if ( null != mAlert ) {
+            InviteChoicesAlert.dismissAny();
+            mAlert.dismiss();
+        }
     }
 
-    private Dialog makeImpl( Callbacks callbacks, final DBAlert alert,
+    private InvitesNeededAlert( DelegateBase delegate, State state )
+    {
+        DbgUtils.assertOnUIThread();
+        mDelegate = delegate;
+        mState = state;
+    }
+
+    private Dialog makeImpl( final Callbacks callbacks, final DBAlert alert,
                              Object[] params )
     {
         Dialog result = null;
@@ -157,18 +152,19 @@ class InvitesNeededAlert implements DialogInterface.OnDismissListener {
         Context context = mDelegate.getActivity();
         String title;
 
-        boolean isRematch = state.isRematch;
+        boolean isRematch = state.mIsRematch;
+        final int nPlayersMissing = state.mNPlayersMissing;
         if ( isRematch ) {
             title = LocUtils.getString( context, R.string.waiting_rematch_title );
         } else {
             title = LocUtils
                 .getQuantityString( context, R.plurals.waiting_title_fmt,
-                                    state.nPlayersMissing, state.nPlayersMissing );
+                                    nPlayersMissing, nPlayersMissing );
         }
 
         String message = LocUtils
             .getQuantityString( context, R.plurals.invite_msg_fmt,
-                                state.nPlayersMissing, state.nPlayersMissing );
+                                nPlayersMissing, nPlayersMissing );
         message += "\n\n"
             + LocUtils.getString( context, R.string.invite_msg_extra );
 
@@ -185,21 +181,21 @@ class InvitesNeededAlert implements DialogInterface.OnDismissListener {
                                        new OnClickListener() {
                                            @Override
                                            public void onClick( DialogInterface dlg, int item ) {
-                                               onPosClick();
+                                               callbacks.onInviteClicked();
                                            }
                                        } );
 
         if ( BuildConfig.NON_RELEASE ) {
-            long rowid = mCallbacks.getRowID();
+            long rowid = callbacks.getRowID();
             SentInvitesInfo sentInfo = DBUtils.getInvitesFor( context, rowid );
             int nSent = sentInfo.getMinPlayerCount();
-            boolean invitesSent = nSent >= state.nPlayersMissing;
+            boolean invitesSent = nSent >= nPlayersMissing;
             if ( invitesSent ) {
                 alert.setNoDismissListenerNeut( ab, R.string.newgame_invite_more,
                                                 new OnClickListener() {
                                                     @Override
                                                     public void onClick( DialogInterface dlg, int item ) {
-                                                        onNeutClick();
+                                                        callbacks.onInfoClicked();
                                                     }
                                                 } );
             }
@@ -209,28 +205,12 @@ class InvitesNeededAlert implements DialogInterface.OnDismissListener {
                                        new OnClickListener() {
                                            @Override
                                            public void onClick( DialogInterface dlg, int item ) {
-                                               onNegClick();
+                                               callbacks.onCloseClicked();
                                            }
                                        } );
 
         result = ab.create();
         result.setOnDismissListener( this );
         return result;
-    }
-
-    private void onPosClick()
-    {
-        mCallbacks.onInviteClicked();
-    }
-
-    private void onNeutClick()
-    {
-        mCallbacks.onInfoClicked();
-    }
-
-    private void onNegClick()
-    {
-        Log.d( TAG, "onNegClick()" );
-        mCallbacks.onCloseClicked();
     }
 }
