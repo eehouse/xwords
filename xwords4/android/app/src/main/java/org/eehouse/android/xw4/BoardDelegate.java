@@ -2463,7 +2463,7 @@ public class BoardDelegate extends DelegateBase
             if ( null == mINAWrapper ) {
                 mINAWrapper = new InvitesNeededAlert.Wrapper( this );
             }
-            mINAWrapper.showOrHide( m_mySIS.nGuestDevs, m_mySIS.nMissing, isRematch );
+            mINAWrapper.showOrHide( m_mySIS.nMissing, isRematch );
         }
     }
 

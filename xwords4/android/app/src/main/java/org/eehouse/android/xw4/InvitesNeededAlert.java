@@ -46,21 +46,20 @@ class InvitesNeededAlert {
 
         Wrapper( Callbacks callbacks ) { mCallbacks = callbacks; }
 
-        void showOrHide( int nDevsSeen, int nPlayersMissing, boolean isRematch )
+        void showOrHide( int nPlayersMissing, boolean isRematch )
         {
             DbgUtils.assertOnUIThread();
-            Log.d( TAG, "showOnceIf(nDevsSeen=%d, nPlayersMissing=%d); self: %s",
-                   nDevsSeen, nPlayersMissing, mSelf );
+            Log.d( TAG, "showOnceIf(nPlayersMissing=%d); self: %s", nPlayersMissing, mSelf );
 
             if ( null == mSelf && 0 == nPlayersMissing ) {
                 // cool: need and have nothing, so do nothing
             } else if ( 0 < nPlayersMissing && null == mSelf ) { // Need but don't have
-                makeNew( nDevsSeen, nPlayersMissing, isRematch );
+                makeNew( nPlayersMissing, isRematch );
             } else if ( 0 == nPlayersMissing && null != mSelf ) { // Have and need to close
                 mSelf.close();
             } else if ( null != mSelf && nPlayersMissing != mSelf.mState.mNPlayersMissing ) {
                 mSelf.close();
-                makeNew( nDevsSeen, nPlayersMissing, isRematch );
+                makeNew( nPlayersMissing, isRematch );
             } else if ( null != mSelf && nPlayersMissing == mSelf.mState.mNPlayersMissing ) {
                 // nothing to do
             } else {
@@ -84,10 +83,10 @@ class InvitesNeededAlert {
             }
         }
 
-        private void makeNew( int nDevsSeen, int nPlayersMissing, boolean isRematch )
+        private void makeNew( int nPlayersMissing, boolean isRematch )
         {
-            Log.d( TAG, "makeNew(nDevsSeen=%d, nPlayersMissing=%d)", nDevsSeen, nPlayersMissing );
-            State state = new State( nDevsSeen, nPlayersMissing, isRematch );
+            Log.d( TAG, "makeNew(nPlayersMissing=%d)", nPlayersMissing );
+            State state = new State( nPlayersMissing, isRematch );
             mSelf = new InvitesNeededAlert( mCallbacks.getDelegate(), state );
             mCallbacks.getDelegate().showDialogFragment( DlgID.DLG_INVITE, state );
         }
@@ -96,13 +95,11 @@ class InvitesNeededAlert {
     // Must be kept separate from this because gets passed as param to
     // showDialogFragment()
     private static class State implements Serializable {
-        private int mNDevsSeen;
         private int mNPlayersMissing;
         private boolean mIsRematch;
 
-        State( int nDevs, int nPlayers, boolean rematch )
+        State( int nPlayers, boolean rematch )
         {
-            mNDevsSeen = nDevs;
             mNPlayersMissing = nPlayers;
             mIsRematch = rematch;
         }
