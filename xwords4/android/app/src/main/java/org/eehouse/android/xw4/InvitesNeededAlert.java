@@ -33,7 +33,7 @@ import org.eehouse.android.xw4.DlgDelegate.Action;
 import org.eehouse.android.xw4.Perms23.Perm;
 import org.eehouse.android.xw4.loc.LocUtils;
 
-class InvitesNeededAlert implements DialogInterface.OnDismissListener {
+class InvitesNeededAlert {
     private static final String TAG = InvitesNeededAlert.class.getSimpleName();
 
     private DelegateBase mDelegate;
@@ -114,16 +114,6 @@ class InvitesNeededAlert implements DialogInterface.OnDismissListener {
         void onCloseClicked();
         void onInviteClicked();
         void onInfoClicked();
-    }
-
-    ////////////////////////////////////////
-    // DialogInterface.OnDismissListener
-    ////////////////////////////////////////
-    @Override
-    public void onDismiss( DialogInterface dialog )
-    {
-        Log.d( TAG, "onDismiss()" );
-        close();
     }
 
     private void close()
@@ -209,8 +199,17 @@ class InvitesNeededAlert implements DialogInterface.OnDismissListener {
                                            }
                                        } );
 
+        alert.setOnCancelListener(  new XWDialogFragment.OnCancelListener() {
+                @Override
+                public void onCancelled( XWDialogFragment frag ) {
+                    // Log.d( TAG, "onCancelled(frag=%s)", frag );
+                    callbacks.onCloseClicked();
+                    close();
+                }
+            } );
+
         result = ab.create();
-        result.setOnDismissListener( this );
+        result.setCanceledOnTouchOutside( false );
         return result;
     }
 }
