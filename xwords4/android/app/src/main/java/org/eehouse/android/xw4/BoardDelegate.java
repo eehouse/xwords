@@ -167,6 +167,7 @@ public class BoardDelegate extends DelegateBase
         String getDict;
         int nMissing = -1;
         int nGuestDevs;
+        boolean isServer;
         boolean inTrade;
         StartAlertOrder mAlertOrder = StartAlertOrder.values()[0];
     }
@@ -1985,16 +1986,15 @@ public class BoardDelegate extends DelegateBase
             //        isServer, nDevs, nMissing );
             m_mySIS.nMissing = nMissing; // will be 0 unless isServer is true
             m_mySIS.nGuestDevs = nDevs;
+            m_mySIS.isServer = isServer;
             m_connTypes = connTypes;
 
-            if ( isServer ) {
-                runOnUiThread( new Runnable() {
-                        @Override
-                        public void run() {
-                            showInviteAlertIf();
-                        }
-                    } );
-            }
+            runOnUiThread( new Runnable() {
+                    @Override
+                    public void run() {
+                        showInviteAlertIf();
+                    }
+                } );
         }
 
         @Override
@@ -2463,7 +2463,7 @@ public class BoardDelegate extends DelegateBase
             if ( null == mINAWrapper ) {
                 mINAWrapper = new InvitesNeededAlert.Wrapper( this );
             }
-            mINAWrapper.showOrHide( m_mySIS.nMissing, isRematch );
+            mINAWrapper.showOrHide( m_mySIS.isServer, m_mySIS.nMissing, isRematch );
         }
     }
 

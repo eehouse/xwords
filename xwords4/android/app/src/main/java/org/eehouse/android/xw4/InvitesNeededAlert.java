@@ -46,7 +46,7 @@ class InvitesNeededAlert {
 
         Wrapper( Callbacks callbacks ) { mCallbacks = callbacks; }
 
-        void showOrHide( int nPlayersMissing, boolean isRematch )
+        void showOrHide( boolean isServer, int nPlayersMissing, boolean isRematch )
         {
             DbgUtils.assertOnUIThread();
             Log.d( TAG, "showOnceIf(nPlayersMissing=%d); self: %s", nPlayersMissing, mSelf );
@@ -54,12 +54,12 @@ class InvitesNeededAlert {
             if ( null == mSelf && 0 == nPlayersMissing ) {
                 // cool: need and have nothing, so do nothing
             } else if ( 0 < nPlayersMissing && null == mSelf ) { // Need but don't have
-                makeNew( nPlayersMissing, isRematch );
+                makeNew( isServer, nPlayersMissing, isRematch );
             } else if ( 0 == nPlayersMissing && null != mSelf ) { // Have and need to close
                 mSelf.close();
             } else if ( null != mSelf && nPlayersMissing != mSelf.mState.mNPlayersMissing ) {
                 mSelf.close();
-                makeNew( nPlayersMissing, isRematch );
+                makeNew( isServer, nPlayersMissing, isRematch );
             } else if ( null != mSelf && nPlayersMissing == mSelf.mState.mNPlayersMissing ) {
                 // nothing to do
             } else {
@@ -83,10 +83,10 @@ class InvitesNeededAlert {
             }
         }
 
-        private void makeNew( int nPlayersMissing, boolean isRematch )
+        private void makeNew( boolean isServer, int nPlayersMissing, boolean isRematch )
         {
             Log.d( TAG, "makeNew(nPlayersMissing=%d)", nPlayersMissing );
-            State state = new State( nPlayersMissing, isRematch );
+            State state = new State( isServer, nPlayersMissing, isRematch );
             mSelf = new InvitesNeededAlert( mCallbacks.getDelegate(), state );
             mCallbacks.getDelegate().showDialogFragment( DlgID.DLG_INVITE, state );
         }
@@ -97,11 +97,13 @@ class InvitesNeededAlert {
     private static class State implements Serializable {
         private int mNPlayersMissing;
         private boolean mIsRematch;
+        private boolean mIsServer;
 
-        State( int nPlayers, boolean rematch )
+        State( boolean isServer, int nPlayers, boolean rematch )
         {
             mNPlayersMissing = nPlayers;
             mIsRematch = rematch;
+            mIsServer = isServer;
         }
     }
 
@@ -129,13 +131,59 @@ class InvitesNeededAlert {
         mState = state;
     }
 
-    private Dialog makeImpl( final Callbacks callbacks, final DBAlert alert,
-                             Object[] params )
+    private Dialog makeImpl( final Callbacks callbacks, DBAlert alert, Object[] params )
     {
-        Dialog result = null;
         State state = (State)params[0];
+        AlertDialog.Builder ab = mDelegate.makeAlertBuilder();
         mAlert = alert;
 
+        if ( state.mIsServer ) {
+            makeImplHost( ab, callbacks, alert, state );
+        } else {
+            makeImplGuest( ab, state );
+        }
+
+        alert.setOnCancelListener( new XWDialogFragment.OnCancelListener() {
+                @Override
+                public void onCancelled( XWDialogFragment frag ) {
+                    // Log.d( TAG, "onCancelled(frag=%s)", frag );
+                    callbacks.onCloseClicked();
+                    close();
+                }
+            } );
+
+
+        alert.setNoDismissListenerNeg( ab, R.string.button_close_game,
+                                       new OnClickListener() {
+                                           @Override
+                                           public void onClick( DialogInterface dlg, int item ) {
+                                               callbacks.onCloseClicked();
+                                           }
+                                       } );
+
+        Dialog result = ab.create();
+        result.setCanceledOnTouchOutside( false );
+        return result;
+    }
+
+    private void makeImplGuest( AlertDialog.Builder ab, State state )
+    {
+        Context context = mDelegate.getActivity();
+        String message = LocUtils.getString( context, R.string.waiting_host_expl );
+
+        if ( 1 < state.mNPlayersMissing ) {
+            message += "\n\n" +
+                LocUtils.getString( context, R.string.waiting_host_expl_multi );
+        }
+
+        ab.setTitle( R.string.waiting_host_title )
+            .setMessage( message )
+            ;
+    }
+
+    private void makeImplHost( AlertDialog.Builder ab, final Callbacks callbacks,
+                               DBAlert alert, State state )
+    {
         Context context = mDelegate.getActivity();
         String title;
 
@@ -160,8 +208,7 @@ class InvitesNeededAlert {
                 + LocUtils.getString( context, R.string.invite_msg_extra_rematch );
         }
 
-        AlertDialog.Builder ab = mDelegate.makeAlertBuilder()
-            .setTitle( title )
+        ab.setTitle( title )
             .setMessage( message );
         
         alert.setNoDismissListenerPos( ab, R.string.newgame_invite,
@@ -187,26 +234,5 @@ class InvitesNeededAlert {
                                                 } );
             }
         }
-
-        alert.setNoDismissListenerNeg( ab, R.string.button_close,
-                                       new OnClickListener() {
-                                           @Override
-                                           public void onClick( DialogInterface dlg, int item ) {
-                                               callbacks.onCloseClicked();
-                                           }
-                                       } );
-
-        alert.setOnCancelListener(  new XWDialogFragment.OnCancelListener() {
-                @Override
-                public void onCancelled( XWDialogFragment frag ) {
-                    // Log.d( TAG, "onCancelled(frag=%s)", frag );
-                    callbacks.onCloseClicked();
-                    close();
-                }
-            } );
-
-        result = ab.create();
-        result.setCanceledOnTouchOutside( false );
-        return result;
     }
 }

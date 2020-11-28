@@ -2260,6 +2260,17 @@
     <!-- Button for alert with title above -->
     <string name="waiting_invite_title">Waiting for response</string>
     <string name="waiting_rematch_title">Rematch in progress</string>
+
+    <!-- Title for when I'm a guest waiting for host to begin game -->
+    <string name="waiting_host_title">Waiting for host</string>
+    <string name="waiting_host_expl">This game is waiting for the host
+    device to begin the game. That usually means that the host is not
+    communicating (it’s temporarily offline?)</string>
+
+    <string name="waiting_host_expl_multi">In this case, because the
+    game is expecting more than just this device to connect, it could
+    also mean that it hasn’t invited everybody yet.</string>
+
     <!-- Button for alert with title above -->
     <string name="button_close">Close</string>
     <string name="button_reinvite">Re-invite</string>
