@@ -242,10 +242,8 @@
     <string name="game_name_label">Nytt spillnavn:</string>
     <string name="new_name_body_fmt">%1$s har invitert deg til å spille</string>
     <string name="button_sms_add">Importer kontakt</string>
-    <string name="button_relay_add">Skann spill</string>
     <string name="get_sms_number">Enhetens telefonnummer:</string>
     <string name="get_sms_name">Kontaktnavn (valgfritt):</string>
-    <string name="get_relay_name">Enhetsnavn (valgfritt):</string>
     <string name="get_relay_number">Skriv inn enhets-ID:</string>
     <string name="summary_conn_sms_fmt">Spill underveis med %1$s</string>
     <string name="menu_hint_prev">Forrige hint</string>
@@ -540,7 +538,6 @@
     <string name="peek_other">Vis flis ute av tur</string>
     <string name="hide_crosshairs">Skru av retikler</string>
     <string name="hide_crosshairs_summary">Ikke vis hvilken bordcelle som berøres</string>
-    <string name="relay_behavior">Innstillinger for gjentakelsesavspilling</string>
     <string name="relay_behavior_summary">Innstillinger som har med internettilknyttede spill å gjøre</string>
     <string name="disable_relay">Skru av spill via relé-et</string>
     <string name="disable_relay_summary">Skru av all internettkommunikasjon</string>
@@ -658,7 +655,6 @@
     <string name="gamel_menu_writegit">Kopier Git-info til utklippstavle</string>
     <string name="xlations_locale">Juks til lokale for oversettelse</string>
     <string name="nag_intervals">Påminnelsesintervall (minutt1,minutt2,…)</string>
-    <string name="nfc_to_self">Send via NFC til egen ehet?</string>
     <string name="game_summary_field_rowid">rad-ID</string>
     <string name="game_summary_field_gameid">spill-ID</string>
     <string name="game_summary_field_npackets">Antall ventende pakker</string>
@@ -671,7 +667,6 @@
     <string name="confirm_drop_relay_bt">Blåtann fungerer kun for enheter i nærheten.</string>
     <string name="confirm_drop_relay_sms">Ikke alle tilbydere støtter spill via SMS.</string>
     <string name="invite_copied">Invitasjon klar til innliming</string>
-    <string name="rel_invite_title">Reléinvitasjonstittel</string>
     <string name="fetching_from_relay">Henter spill fra relé-et</string>
     <string name="processing_games">Behandler spill</string>
     <string name="no_invites">Dette spillet har ikke sendt noen invitasjoner</string>
@@ -760,7 +755,6 @@
 \n(Sletting av arkivgruppen er trygt fordi den vil bli gjenopprettet igjen når det trengs.)</string>
     <string name="pick_faceup">Plukk flis med bokstavene avdekt</string>
     <string name="invite_p2p_desc_extra">Kun spillere som er tilgjengelig vises. Hvis en enhet i nærheten ikke vises, forsikre deg om at Wi-Fi er slått på, og at CrossWords er installert, og at spill via Wi-Fi Direct er påslått.</string>
-    <string name="empty_relay_inviter">Listen over enheter er tom. Bruk \"Skann spill\"-knappen for å skanne dine gamle spill for motstandere. Bruk \"+\"knappen for å skrive inn enhets-ID-er direkte.</string>
     <plurals name="confirm_clear_relay_fmt">
         <item quantity="one">Er du sikker på at du ønsker å slette valgt relé-ID-opptak?</item>
         <item quantity="other">Er du sikker på at du ønsker å slette %1$d valgte relé-ID-opptak?</item>
@@ -922,7 +916,6 @@
     <string name="invite_choice_user_sms">SMS (tekstmelding)</string>
     <string name="ok_with_robots">OK (maskinspiller)</string>
     <string name="invite_sms_fmt">Trykk på lenken for å godta min invitasjon og ta del i et CrossWords-spill: %1$s</string>
-    <string name="invite_sms_desc">Ditt SMS-meldingsforsendelsesprogram vil startes med en melding du kan sende til telefonnummeret du har valgt.</string>
     <string name="invite_nbs_desc">En datamelding vil så leveres til enheten med det telefonnummeret. Hvis CrossWords er installert der og har nødvendige tilganger vil det motta invitasjonen og spillet kan begynne.</string>
     <string name="show_fcm_title">Vis FCM-mottak</string>
     <string name="nbsproxy_channel_expl">Varsler om NBSProxy</string>

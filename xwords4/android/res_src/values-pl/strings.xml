@@ -108,7 +108,6 @@
     <string name="hide_crosshairs_summary">Nie pokazuj, która komórka planszy jest dotknięta</string>
     <string name="network_behavior">Ustawienia gry sieciowej</string>
     <string name="network_behavior_summary">Ustawienia mające zastosowanie do gier sieciowych</string>
-    <string name="relay_behavior_summary">Ustawienia, które mają zastosowanie do gier online</string>
     <string name="notify_sound">Odtwórz dźwięk</string>
     <string name="notify_vibrate">Wibracje</string>
     <string name="newgame_configure_first">Najpierw skonfiguruj</string>
@@ -199,7 +198,6 @@
     <string name="force_radio_title">Udawaj, że masz radio</string>
     <string name="radio_name_real">Nie udawaj</string>
     <string name="radio_name_tablet">Tablet/bez radia</string>
-    <string name="nfc_to_self">Wysłać za pomocą NFC do siebie\?</string>
     <string name="game_summary_field_npackets">Oczekująca liczba pakietów</string>
     <string name="got_langdict_title">Pobierz domyślną listę słów dla języka</string>
     <string name="got_langdict_summary">Nie próbuj po raz drugi</string>
@@ -361,7 +359,6 @@
     <string name="title_sort_tiles">Sortuj nowe kafelki</string>
     <string name="summary_sort_tiles">Sortuj stoisko za każdym razem, gdy dodawane są nowe kafelki</string>
     <string name="peek_other_summary">Stuknięcie w nazwę tablicy wyników pokaże kafelek gracza</string>
-    <string name="relay_behavior">Ustawienia przekaźnika gry</string>
     <string name="disable_relay">Wyłącz gracza przez przekaźnik</string>
     <string name="disable_relay_summary">Wyłącz całą komunikację internetową</string>
     <string name="notify_other_summary">Kiedy przeciwnik się rusza</string>
@@ -488,16 +485,13 @@
     <string name="game_name_label">Nazwa nowej gry:</string>
     <string name="new_name_body_fmt">%1$s zaprosił cię do gry</string>
     <string name="button_sms_add">Importuj kontakt</string>
-    <string name="button_relay_add">Skanuj gry</string>
     <string name="invite_p2p_desc_extra">Wyświetlane są tylko urządzenia, które są obecnie dostępne. Jeśli urządzenie w pobliżu nie pojawi się, upewnij się, czy WiFi jest włączone, czy CrossWords jest zainstalowane, a gra za pośrednictwem WiFi Direct jest włączona.</string>
     <string name="warn_nomobile_fmt">Liczba %1$s dla %2$s nie jest numerem „mobilnym”. Czy mimo to zaimportować\?</string>
     <string name="empty_sms_inviter">Ta lista jest pusta. Użyj przycisku \"Importuj kontakt\", aby dodać osoby, które chcesz zaprosić, a przycisku +, aby bezpośrednio wprowadzić numer telefonu.</string>
     <string name="empty_p2p_inviter">Obecnie nie ma urządzeń dostępnych poprzez WiFiDirect, które mają zainstalowany CrossWords.</string>
-    <string name="empty_relay_inviter">Lista urządzeń jest pusta. Użyj przycisku „Skanuj gry”, aby zeskanować stare gry w poszukiwaniu przeciwników. Użyj przycisku „+”, aby bezpośrednio wprowadzić identyfikatory urządzeń.</string>
     <string name="get_sms_title">Ręczne wprowadzanie</string>
     <string name="get_sms_number">Numer telefonu urządzenia:</string>
     <string name="get_sms_name">Nazwa kontaktu (opcjonalne):</string>
-    <string name="get_relay_name">Nazwa urządzenia (opcjonalne):</string>
     <string name="get_relay_number">Wprowadź identyfikator urządzenia:</string>
     <string name="summary_conn_sms_fmt">Gra w grę z %1$s</string>
     <string name="warn_unlimited">Jesteś pewien, że ten numer jest na koncie z nieograniczonymi SMS-ami\? Jeśli nie, stuknij opcję \"Anuluj\".</string>
@@ -804,7 +798,6 @@
     <string name="confirm_clear_chat">Czy na pewno chcesz usunąć całą historię czatu dla tej gry\?
 \n
 \n(Tej akcji nie można cofnąć.)</string>
-    <string name="rel_invite_title">Tytuł zaproszenia do przekazywania</string>
     <string name="fetching_from_relay">Pobieranie gier z przekaźnika</string>
     <string name="processing_games">Przetwarzanie gier</string>
     <string name="list_item_select">Wybierz</string>
@@ -938,7 +931,6 @@
     <string name="invite_choice_data_sms">Data SMS</string>
     <string name="ok_with_robots">OK (roboty)</string>
     <string name="invite_sms_fmt">Stuknij link, aby zaakceptować moje zaproszenie i dołączyć do gry CrossWords: %1$s</string>
-    <string name="invite_sms_desc">Zostanie uruchomiona aplikacja do wysyłania wiadomości SMS z komunikatem, który należy wysłać na wybrany numer telefonu.</string>
     <string name="invite_nbs_desc">Następnie do urządzenia zostanie dostarczona wiadomość z tym numerem telefonu. Jeśli CrossWords jest tam zainstalowany i posiada niezbędne uprawnienia, otrzyma zaproszenie i gra może się rozpocząć.</string>
     <string name="empty_bt_inviter">Nie wykryto jeszcze sparowanych urządzeń.</string>
     <string name="checkbox_archive">Przenieś do archiwum</string>

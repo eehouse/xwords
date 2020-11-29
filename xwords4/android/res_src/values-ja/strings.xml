@@ -666,7 +666,6 @@
     <string name="radio_name_tablet">タブレット/無線なし</string>
     <string name="radio_name_gsm">GSM</string>
     <string name="radio_name_cdma">CDMA</string>
-    <string name="nfc_to_self">自分に NFC 経由で送信しますか?</string>
     <string name="game_summary_field_rowid">行id</string>
     <string name="game_summary_field_gameid">ゲームid</string>
     <string name="game_summary_field_npackets">保留中のパケット数</string>
@@ -707,12 +706,10 @@
     <string name="invite_notice_title">招待状を介した新しいゲーム</string>
     <string name="new_game_body">タップすると、新しいゲームを開きます</string>
     <string name="relay_invite_title">リレーの招待</string>
-    <string name="button_relay_add">ゲームをスキャン</string>
     <plurals name="invite_relay_desc_fmt">
         <item quantity="one">あなたの新しいゲームに招待するデバイスをチェックして、\"%2$s\" をタップしてください。</item>
         <item quantity="other">あなたの新しいゲームに招待する%1$dのデバイスをチェックして、\"%2$s\" をタップしてください。</item>
     </plurals>
-    <string name="empty_relay_inviter">このデバイスのリストは空です。\"ゲームをスキャン\" ボタンを使用すると、相手のあなたの古いゲームをスキャンします。デバイス ID を直接入力するには \"+\" ボタンを使用します。</string>
     <string name="get_relay_number">デバイス ID を入力します:</string>
     <plurals name="confirm_clear_sms_fmt">
         <item quantity="other">%1$d のチェックした電話番号を削除してもよろしいですか\?</item>
@@ -721,7 +718,6 @@
     <string name="disable_nags_title">リマインダーの切り替え</string>
     <string name="disable_nag_solo_title">一人ゲーム リマインダーを無効にする</string>
     <string name="not_again_rematch_two_only">再戦は2人のゲームに限られていますが、少なくとも今のところは、より多くのデバイスでは難しく、2人以上でプレイすることはまれだと思います。私が間違っているようであれば、優先順位を上げますのでお知らせください。</string>
-    <string name="rel_invite_title">招待タイトルのリレー</string>
     <string name="fetching_from_relay">リレーからゲームを取得中</string>
     <string name="processing_games">ゲームの処理中</string>
     <string name="list_item_select">選択</string>
@@ -748,7 +744,6 @@
     <string name="chat_hint">ここに入力…</string>
     <string name="chat_sender_fmt">%1$s:</string>
     <string name="summary_busy">概要は利用できません</string>
-    <string name="relay_behavior">リレー プレイ設定</string>
     <string name="relay_behavior_summary">インターネット接続したゲームに適用される設定</string>
     <string name="disable_relay">リレーを経由したプレイを無効にする</string>
     <string name="disable_relay_summary">すべてのインターネット通信を無効にします</string>
@@ -820,7 +815,6 @@ WiFi ダイレクト経由で接続可能なデバイスはありません。</s
     <string name="disableds_title">無効なアドレスの種類</string>
     <string name="get_sms_title">手動入力</string>
     <string name="get_sms_name">連絡先の名前 (オプション):</string>
-    <string name="get_relay_name">デバイス名 (オプション):</string>
     <plurals name="confirm_clear_relay_fmt">
         <item quantity="other">%1$d のチェックした RelayID レコードを削除してもよろしいですか?</item>
     </plurals>
@@ -872,7 +866,6 @@ WiFi ダイレクト経由で接続可能なデバイスはありません。</s
     <string name="invite_choice_data_sms">データ SMS</string>
     <string name="ok_with_robots">OK (ロボット)</string>
     <string name="invite_sms_fmt">リンクをタップすると招待を受け入れて、クロスワードゲームに参加します: %1$s</string>
-    <string name="invite_sms_desc">SMS メッセージングアプリが起動され、選択した電話番号に送信するメッセージが表示されます。</string>
     <string name="invite_nbs_desc">その後、データメッセージがその電話番号のデバイスに配信されます。クロスワードがインストールされていて、必要なアクセス許可がある場合は、招待状を受け取ってプレイを開始できます。</string>
     <string name="empty_bt_inviter">ペアリングされたデバイスはまだ検出されていません。</string>
     <string name="checkbox_archive">アーカイブに移動</string>

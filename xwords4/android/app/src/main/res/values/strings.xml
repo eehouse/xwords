@@ -2695,4 +2695,5 @@
     <string name="name_game">Name your game</string>
     <!-- Title of the game name field in quick-invite new game dialog -->
     <string name="choose_opponent">Choose your opponent</string>
+
 </resources>

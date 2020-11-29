@@ -277,9 +277,9 @@
     <string name="show_arrow_summary">Quadrados tocados ficam nesta seta quando está visível</string>
     <string name="peek_other">Visualizar quadrados fora do turno</string>
     <string name="summary_sort_tiles">Tipos de grades toda vez que novos quadrados são adicionados</string>
-    <string name="tiles_left_title">Quadros restantes</string>
-    <string name="tile_tray_picker">Escolha novos quadros na tabela</string>
-    <string name="title_blank_picker">Escolha quadro em branco</string>
+    <string name="tiles_left_title">Quadrados restantes</string>
+    <string name="tile_tray_picker">Escolha novos quadrados na tabela</string>
+    <string name="title_blank_picker">Escolha de quadrado em branco</string>
     <string name="tile_pick_summary_fmt">Escolha atual: %1$s</string>
     <string name="tile_button_txt_fmt">%1$s (%2$d)</string>
     <string name="info_title">Para sua informação…</string>
@@ -308,19 +308,19 @@
     <string name="str_server_dict_wins">Conflito entre listas de palavras do Anfitrião e do Convidado; Anfitrião vence.</string>
     <string name="str_reg_unexpected_user">Tentativa recusada para registrar um usuário inesperado.</string>
     <string name="str_cant_hint_while_disabled">A função de dica está desabilidade para esse jogo. Habilite-a para um novo jogo usando o diálogo de Configurações.</string>
-    <string name="str_cant_undo_tileassign">Quadro atribuído não pode ser desfeito.</string>
-    <string name="str_tiles_not_in_line">Todos os quadros jogados podem ficar em uma fileira.</string>
+    <string name="str_cant_undo_tileassign">Quadrados atribuído não pode ser desfeito.</string>
+    <string name="str_tiles_not_in_line">Todos os quadrados jogados podem ficar em uma fileira.</string>
     <plurals name="too_many_trade_fmt">
-        <item quantity="one">Muitos quadros selecionados. Por favor selecione apenas um.</item>
-        <item quantity="other">Muitos quadros selecionados. Por favor selecione mais do que %1$d.</item>
+        <item quantity="one">Muitos quadrados selecionados. Por favor selecione apenas um.</item>
+        <item quantity="other">Muitos quadrados selecionados. Por favor selecione mais do que %1$d.</item>
     </plurals>
-    <string name="str_too_few_tiles_left_to_trade">Poucos quadros deixados para trocar.</string>
-    <string name="str_no_peek_remote_tiles">Não olhar os quadros dos jogadores remotos!</string>
-    <string name="str_no_peek_robot_tiles">Não olhar os quadros dos robôs!</string>
+    <string name="str_too_few_tiles_left_to_trade">Poucos quadrados deixados para trocar.</string>
+    <string name="str_no_peek_remote_tiles">Não olhar os quadrados dos jogadores remotos!</string>
+    <string name="str_no_peek_robot_tiles">Não olhar os quadrados dos robôs!</string>
     <string name="str_not_your_turn">Você não pode fazer isso; Não é a sua vez!</string>
     <string name="str_tiles_must_contact">Novas peças podem se conectar a outras já colocadas (ou no meio do quadro na primeira jogada)</string>
     <string name="str_two_tiles_first_move">Pode jogar duas ou mais peças na primeira jogada.</string>
-    <string name="str_no_empties_in_turn">Quadrados vazios podem ser separados por quadros jogados.</string>
+    <string name="str_no_empties_in_turn">Quadrados vazios podem ser separados por quadrados jogados.</string>
     <string name="no_empty_rooms">Esse jogo não pode ser conectado sem um nome da sala.</string>
     <string name="chat_menu_clear">Limpar histórico</string>
     <string name="chat_hint">Escreva aqui…</string>
@@ -339,7 +339,7 @@
     <string name="invite_subject_fmt">Vamos jogar Palavras Cruzadas (sala %1$s)</string>
     <string name="invite_subject">Vamos jogar Palavras Cruzadas</string>
     <string name="ok_with_robots">Okay (robôs)</string>
-    <string name="invite_choice_title">Convidar jogadores: Como\?</string>
+    <string name="invite_choice_title">Convidar um jogador</string>
     <string name="invite_choice_p2p">Direto do Wifi</string>
     <string name="invite_choice_relay">Internet/Servidor</string>
     <string name="invite_choice_nfc">Comunicação de Campo Próximo(“Android beaming”)</string>
@@ -356,11 +356,45 @@
     <string name="notify_sound">Tocar som</string>
     <string name="disable_relay_summary">Desabilitar toda a comunicação da internet</string>
     <string name="disable_relay">Desabilitar jogo pelo servidor</string>
-    <string name="relay_behavior_summary">Configurações que se aplicam para jogos conectados a internet</string>
     <string name="relay_behavior">Configurações jogo no servidor</string>
     <string name="network_behavior_summary">Configurações aplicadas para os jogos em rede</string>
     <string name="network_behavior">Configurações do jogo na rede</string>
     <string name="hide_crosshairs_summary">Não mostrar qual célula do quadro é tocada</string>
     <string name="hide_crosshairs">Desabilitar miras</string>
     <string name="peek_other_summary">Tocar no nome do placar mostra que quadrados são dos jogadores</string>
+    <string name="not_again_undo">Esse botão desfaz ou refaz o turno atual.</string>
+    <string name="not_again_flip">Esse botão inverte a tabela horizontal para um eixo diagonal.</string>
+    <string name="not_again_juggle">Esse botão aleatoriamente reorganiza os quadrados na grade.</string>
+    <string name="not_again_hintnext">Esse botão mostra todas as jogadas em ordem decrescente pela pontuação.
+\n
+\n(Somente os quadrados da direita deslocados da grade divisora são usados.)</string>
+    <string name="not_again_hintprev">Esse botão mostra todos os movimentos possivéis em ordem crescente pela pontuação.
+\n
+\n(Somente os quadrados da direita deslocados da grade divisora são usados.)</string>
+    <string name="not_again_trading_menu">Use o menu ou a barra de ação para excutar seu turno ou sair do modo de troca.</string>
+    <string name="not_again_trading_buttons">Use os botões para excutar seu turno ou sair do modo de troca.</string>
+    <string name="not_again_trading">Você está no modo de troca de quadrados.
+\n
+\nToque nos quadrados para adicionar/remove-los do jogo para serem trocado.
+\n
+\n</string>
+    <string name="not_again_sync">Essa ação verifica o servidor para jogadas/mensagens para todos os jogos em rede.</string>
+    <string name="button_notagain">Não mostrar novamente</string>
+    <string name="newbie_title">Uma dica</string>
+    <string name="query_title">Uma pergunta…</string>
+    <string name="ids_endnow">Você tem certeza que quer abandonar\?</string>
+    <string name="finalscores_title">Pontuações finais</string>
+    <string name="history_title">Histórico do jogo</string>
+    <string name="counts_values_title">Contagens de quadrados e Valores</string>
+    <string name="radio_how">Como\?</string>
+    <string name="local_invite_summary">Se seu oponente estiver por perto…</string>
+    <string name="qrcode_invite_summary">QR-Code que seu oponente pode escanear</string>
+    <string name="invite_who_empty_expl">vazio</string>
+    <string name="radio_who">Quem\?</string>
+    <string name="how_tab">Enviar um convite como\?</string>
+    <string name="invite_player_fmt">Convidar %1$s</string>
+    <string name="disable_bt_summary">Disablitar toda a comunicação via Bluetooth</string>
+    <string name="disable_bt">Desabilitar</string>
+    <string name="game_summary_field_created">Quando criado</string>
+    <string name="invit_expl_player_fmt">Convite encaminhado via MQTT/internet para jogador conhecido “%1$s” on %2$s.</string>
 </resources>
