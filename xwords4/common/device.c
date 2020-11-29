@@ -18,6 +18,7 @@
  */
 
 #include <endian.h>
+#include <inttypes.h>
 
 #include "device.h"
 #include "comtypes.h"
@@ -81,6 +82,7 @@ dvc_store( XW_DUtilCtxt* dutil, XWEnv xwe )
 #endif
 
 // #define BOGUS_ALL_SAME_DEVID
+#define NUM_RUNS 1              /* up this to see how random things look */
 
 static void
 getMQTTDevID( XW_DUtilCtxt* dutil, XWEnv xwe, XP_Bool forceNew, MQTTDevID* devID )
@@ -110,11 +112,27 @@ getMQTTDevID( XW_DUtilCtxt* dutil, XWEnv xwe, XP_Bool forceNew, MQTTDevID* devID
 
     XP_LOGFF( "len: %d; sizeof(tmp): %zu", len, sizeof(tmp) );
     if ( forceNew || len != sizeof(tmp) ) { /* not found, or bogus somehow */
-        tmp = XP_RANDOM();
-        tmp <<= 27;
-        tmp ^= XP_RANDOM();
-        tmp <<= 27;
-        tmp ^= XP_RANDOM();
+        int total = 0;
+        for ( int ii = 0; ii < NUM_RUNS; ++ii ) {
+            tmp = XP_RANDOM();
+            tmp <<= 27;
+            tmp ^= XP_RANDOM();
+            tmp <<= 27;
+            tmp ^= XP_RANDOM();
+
+            int count = 0;
+            MQTTDevID tmp2 = tmp;
+            while ( 0 != tmp2 ) {
+                if ( 0 != (1 & tmp2) ) {
+                    ++count;
+                    ++total;
+                }
+                tmp2 >>= 1;
+            }
+            XP_LOGFF( "got: %" PRIX64 " (set: %d/%zd)", tmp, count, sizeof(tmp2)*8 );
+        }
+        XP_LOGFF( "average bits set: %d", total / NUM_RUNS );
+
         dutil_storePtr( dutil, xwe, MQTT_DEVID_KEY, &tmp, sizeof(tmp) );
 
 # ifdef DEBUG
