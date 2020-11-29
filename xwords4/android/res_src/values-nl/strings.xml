@@ -622,7 +622,6 @@
     <string name="connection_via_label">Verander communiceren via</string>
     <string name="set_pref">Verberg knoppen</string>
     <string name="not_again_hidenewgamebuttons">"Deze twee knoppen doen hetzelfde als de eerste twee items in de actiebalk (of menu). Indien je wilt kun je deze knoppen verbergen zodat meer spellen getoond worden.\n\n(Als je ze later wilt verbergen, ga naar de Uiterlijk sectie in de Instellingen). "</string>
-    <string name="waiting_title">Op spelers wachten</string>
     <string name="invite_stays">(Dit scherm blijft getoond tot alle spelers verbonden hebben. Je kan dit spel sluiten als je denk dat dit nog wel een tijdje zal duren. Ze kunnen dan nog steeds verbinden.)</string>
     <string name="nfc_just_tap">Om uit te nodigen via NFC hoef je enkel de achterkant van dit apparaat tegen het apparaat dat je uit wilt nodigen te houden terwijl het spel open staat.</string>
     <string name="warn_no_comms">Elk netwerk spel moet tenminste een manier van communiceren hebben. Als je geen standaard opties hebt zal elk spel via netwerk handmatig ingesteld moeten worden.</string>
@@ -696,16 +695,11 @@
     </plurals>
     <string name="confirm_clear_chat">Weet je zeker dat je alle chatberichten voor dit spel wilt verwijderen?\n\n(Deze actie kan niet ongedaan gemaakt worden.)</string>
     <string name="summary_invites_out">Spelers uitgenodigd</string>
-    <plurals name="invite_sent_fmt">
-        <item quantity="one">Je hebt een speler op afstand voor dit spel uitgenodigd. We wachten tot hij/zij reageert. Gebruik a.u.b. de opnieuw uitnodigen knop als je denkt dat de speler de uitnodiging niet ontvangen heeft.</item>
-        <item quantity="other">Je hebt als %1$d unieke uitnodigingen gestuurd voor dit spel. We wachten op een reactie van %2$d ontvangen. Gebruik a.u.b. de opnieuw uitnodigen knop als je denk dat de spelers de uitnodigingen niet ontvangen hebben.</item>
-    </plurals>
     <string name="invited_msg">Dit spel was gemaakt naar aanleiding van een uitnodiging die je ontvangen hebt. Zodra het met de verstuurder kan verbinden en andere uitgenodigden bijgetreden zijn zal het spel beginnen.</string>
     <string name="invit_expl_sms_fmt">Uitnodiging verstuurd via SMS naar telefoonnummer %1$s op %2$s</string>
     <string name="invit_expl_bt_fmt">Uitnodiging verstuurd via Bluetooth naar gepaard apparaat \"%1$s\" op %2$s</string>
     <string name="invit_expl_relay_fmt">Uitnodiging doorgestuurd door de relay naar een ander apparaat op %1$s</string>
     <string name="invit_expl_notarget_fmt">Uitnodiging verstuurd via %1$s op %2$s. Ontvanger onbekend.</string>
-    <string name="relay_behavior_summary">"Instellingen voor internet-verbonden spellen "</string>
     <string name="disable_relay">"Schakel spelen via de relay uit "</string>
     <string name="disable_relay_summary">Schakel alle internetcommunicatie uit</string>
     <string name="newgame_invite_more">Meer info</string>
@@ -719,7 +713,6 @@
         <item quantity="one">Selecteer het apparaat dat je uit wilt nodigen voor jouw nieuwe spel en druk op \"%2$s\".</item>
         <item quantity="other">Selecteer de %1$d apparaten die je uit wilt nodigen voor jouw nieuwe spel en druk op \"%2$s\".</item>
     </plurals>
-    <string name="get_relay_number">Voer apparaat ID in:</string>
     <plurals name="confirm_clear_sms_fmt">
         <item quantity="one">Weet je zeker dat je het geselecteerde telefoonnummer wilt verwijderen?</item>
         <item quantity="other">Weet je zeker dat je de %1$d selecteerde telefoonnummers wilt verwijderen?</item>
@@ -746,7 +739,6 @@
     <string name="disable_nag_solo_title">Schakel solo spel herinneringen uit</string>
     <string name="board_menu_game_showInvites">Toon uitnodigingen</string>
     <string name="not_again_rematch_two_only">Rematch is momenteel enkel beschikbaar voor spellen met twee personen, omdat dit moeilijker is met meer apparaten en ik denk dat het niet vaak gebeurt dat mensen met meer dan twee spelen. Laat het me weten als ik het mis heb, dan hoog ik de prioriteit op.</string>
-    <string name="fetching_from_relay">Spellen ophalen van relay</string>
     <string name="processing_games">Spellen behandelen</string>
     <string name="list_item_select">Selecteer</string>
     <string name="list_item_deselect">Deselecteer</string>

@@ -120,7 +120,6 @@
         <item quantity="one">"La partida está esperando un jugador remoto.  Si aún no lo has hecho, ¿te gustaría invitar a alguien a unirse\?"</item>
         <item quantity="other">"La partida está esperando %1$d jugadores remotos.  Si aún no lo has hecho, ¿te gustaría invitar a alguien a unirse\?"</item>
     </plurals>
-    <string name="invited_msg">Esta partida ha sido creada a partir de una invitación que has recibido. La partida comenzará tan pronto como se pueda conectar con el remitente y cualquier otro invitado.</string>
     <string name="invite_if_nfc">O simplemente pulsa para invitar -- si el otro dispositivo tiene también Android Beaming y está cerca.</string>
     <string name="invite_multiple">" (Estás esperando a varios jugadores remotos. No tienes que invitarlos a todos a la vez, pero esta alerta no será descartada hasta que todos hayan sido invitados y las invitaciones aceptadas.)"</string>
     <string name="invit_expl_sms_fmt">Invitación enviada por SMS al número de teléfono %1$s a %2$s</string>
