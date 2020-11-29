@@ -88,7 +88,7 @@ android {
             buildConfigField "boolean", "OFFER_MQTT", "true"
             buildConfigField "boolean", "NON_RELEASE", "DEBUG || !IS_TAGGED_BUILD"
             buildConfigField "boolean", "HAVE_KNOWN_PLAYERS", "false"
-            buildConfigField "boolean", "DO_MQTT_GAME_GONE", "false"
+            buildConfigField "boolean", "DO_MQTT_GAME_GONE", "true"
         }
 
         xw4NoSMS {
@@ -141,7 +141,6 @@ android {
             externalNativeBuild.ndkBuild.arguments += ['XW_BT_UUID=' + XWD_UUID]
             externalNativeBuild.ndkBuild.cFlags += ['-DXWFEATURE_KNOWNPLAYERS']
             buildConfigField "boolean", "HAVE_KNOWN_PLAYERS", "true"
-            buildConfigField "boolean", "DO_MQTT_GAME_GONE", "true"
         }
 
         xw4dNoSMS {
@@ -162,7 +161,6 @@ android {
             externalNativeBuild.ndkBuild.arguments += ['XW_BT_UUID=' + XWD_UUID]
             externalNativeBuild.ndkBuild.cFlags += ['-DXWFEATURE_KNOWNPLAYERS']
             buildConfigField "boolean", "HAVE_KNOWN_PLAYERS", "true"
-            buildConfigField "boolean", "DO_MQTT_GAME_GONE", "true"
         }
 
         xw4SMS {
