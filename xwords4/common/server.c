@@ -2012,6 +2012,7 @@ client_readInitialMessage( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* stream )
 
         /* Give board a chance to redraw self with the full compliment of known
            players */
+        informMissing( server, xwe );
         setTurn( server, xwe, 0 );
         dupe_resetTimer( server, xwe );
     } else {
