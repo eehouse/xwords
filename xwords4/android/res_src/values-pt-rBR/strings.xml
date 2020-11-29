@@ -54,10 +54,6 @@
     <string name="invit_expl_sms_fmt">Convite enviado via Dados de SMS para o número de telefone %1$s no %2$s</string>
     <string name="invite_multiple">" (Você está esperando vários jogadores remotos. Você não precisa convida-los um de cada vez, mas este alerta não será rejeitado até que todo mundo tenha sido convidado e todos os convites tenham sido aceitos.)"</string>
     <string name="invite_if_nfc">Ou apenas toque para Convidar -- Se o outro dispositivo também tiver Android Beaming e estiver próximo.</string>
-    <plurals name="invite_sent_fmt">
-        <item quantity="one">Você já enviou um convite para um jogador remoto desse jogo. Estamos aguardando ele/ela responder. Por favor, use o botão reenviar convite se você acha que ele não foi enviado.</item>
-        <item quantity="other">Você já enviou %1$d únicos convites para esse jogo. Estamos aguardando por %2$d jogadores responder. Por favor, use o botão reenviar convites se você acha que eles não foram enviados.</item>
-    </plurals>
     <plurals name="invite_msg_fmt">
         <item quantity="one">Essa partida está aguardando por um jogador remoto. Você gostaria de convidar alguém para participar—Considerando que você não começou a partida\?</item>
         <item quantity="other">Essa partida está aguardando por %1$d jogadores remotos. Você gostaria de convidar alguém para participar—Considerando que você não começou a partida\?</item>

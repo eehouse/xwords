@@ -1714,8 +1714,4 @@
     <string name="invit_expl_usrsms_fmt">Convite enviado via SMS em %1$s</string>
     <string name="invit_expl_sms_fmt">Convite enviado via Data SMS para o número de telefone %1$s em %2$s</string>
     <string name="invite_if_nfc">Ou apenas toque no Convite -- se o outro dispositivo também possuir Android Beaming e estiver perto.</string>
-    <plurals name="invite_sent_fmt">
-        <item quantity="one">Você já convidou um jogador remoto para esse jogo. Nós estamos esperando ele/ela responder. Por favor, utilize o botão de re-convite caso você ache que o convite não foi enviado.</item>
-        <item quantity="other">Você já enviou %1$d convites exclusivos para esse jogo . Nós estamos esperando %2$d dos dentinários responderem. Por favor, utilize o botão de re-convite caso você ache que os convites não foram enviados.</item>
-    </plurals>
 </resources>

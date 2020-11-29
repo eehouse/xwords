@@ -695,7 +695,6 @@
     </plurals>
     <string name="confirm_clear_chat">Weet je zeker dat je alle chatberichten voor dit spel wilt verwijderen?\n\n(Deze actie kan niet ongedaan gemaakt worden.)</string>
     <string name="summary_invites_out">Spelers uitgenodigd</string>
-    <string name="invited_msg">Dit spel was gemaakt naar aanleiding van een uitnodiging die je ontvangen hebt. Zodra het met de verstuurder kan verbinden en andere uitgenodigden bijgetreden zijn zal het spel beginnen.</string>
     <string name="invit_expl_sms_fmt">Uitnodiging verstuurd via SMS naar telefoonnummer %1$s op %2$s</string>
     <string name="invit_expl_bt_fmt">Uitnodiging verstuurd via Bluetooth naar gepaard apparaat \"%1$s\" op %2$s</string>
     <string name="invit_expl_relay_fmt">Uitnodiging doorgestuurd door de relay naar een ander apparaat op %1$s</string>

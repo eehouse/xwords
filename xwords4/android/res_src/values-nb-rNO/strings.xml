@@ -465,7 +465,6 @@
         <item quantity="one">Dette spiller venter på én ekstern spiller. Ønsker du å invitere noen til spill, sett at du ikke har gjort det allerede?</item>
         <item quantity="other">Dette spiller venter på %1$d eksterne spillere. Ønsker du å invitere noen til spill, sett at du ikke har gjort det allerede?</item>
     </plurals>
-    <string name="invited_msg">Dette spillet ble opprettet fra en invitasjon du mottok. Det vil begynne så snart det kan koble til senderen og en annen invitert har ankommet.</string>
     <string name="msgs_progress">Sjekker relé for trekk osv…</string>
     <string name="no_games_to_refresh">"Fant ingen spill som kobler til gjennom relé-et. "</string>
     <string name="no_copy_network">Spill som allerede har koblet til gjennom relé-et kan ikke kopieres. Bruk \"Ny fra\" for kopi klar til spilling med de samme innstillingene.</string>
