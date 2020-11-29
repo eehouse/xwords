@@ -63,7 +63,6 @@ import java.util.Map;
 public class GameUtils {
     private static final String TAG = GameUtils.class.getSimpleName();
 
-    public static final String INVITED = "invited";
     public static final String INTENT_KEY_ROWID = "rowid";
 
     interface ResendDoneProc {
@@ -943,26 +942,22 @@ public class GameUtils {
         return file.endsWith( XWConstants.GAME_EXTN );
     }
 
-    private static Bundle makeLaunchExtras( long rowid, boolean invited )
+    private static Bundle makeLaunchExtras( long rowid )
     {
         Bundle bundle = new Bundle();
         bundle.putLong( INTENT_KEY_ROWID, rowid );
-        if ( invited ) {
-            bundle.putBoolean( INVITED, true );
-        }
         return bundle;
     }
 
-    public static void launchGame( Delegator delegator, long rowid,
-                                   boolean invited )
+    public static void launchGame( Delegator delegator, long rowid )
     {
-        launchGame( delegator, rowid, invited, null );
+        launchGame( delegator, rowid, null );
     }
 
     public static void launchGame( Delegator delegator, long rowid,
-                                   boolean invited, Bundle moreExtras )
+                                   Bundle moreExtras )
     {
-        Bundle extras = makeLaunchExtras( rowid, invited );
+        Bundle extras = makeLaunchExtras( rowid );
         if ( null != moreExtras ) {
             extras.putAll( moreExtras );
         }
@@ -975,11 +970,6 @@ public class GameUtils {
             intent.putExtras( extras );
             activity.startActivity( intent );
         }
-    }
-
-    public static void launchGame( Delegator delegator, long rowid )
-    {
-        launchGame( delegator, rowid, false );
     }
 
     private static class FeedUtilsImpl extends UtilCtxtImpl {
@@ -1225,7 +1215,7 @@ public class GameUtils {
     {
         Assert.assertTrue( 0 != gameID );
         // substring: Keep it short so fits in SMS better
-        return String.format( "%X", gameID ).substring( 0, 4 );
+        return String.format( "%X", gameID ).substring( 0, 5 );
     }
 
     public static String makeRandomID()
@@ -1320,7 +1310,7 @@ public class GameUtils {
                                 WiDirService.gameDied( addr.p2p_addr, gameID );
                                 break;
                             case COMMS_CONN_MQTT:
-                                MQTTUtils.gameDied( addr.mqtt_devID, gameID );
+                                MQTTUtils.gameDied( context, addr.mqtt_devID, gameID );
                                 break;
                             }
                         }

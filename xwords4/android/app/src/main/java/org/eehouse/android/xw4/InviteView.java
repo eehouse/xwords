@@ -28,6 +28,7 @@ import android.widget.ImageView;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.ScrollView;
+import android.widget.TextView;
 
 import java.util.HashMap;
 import java.util.List;
@@ -46,28 +47,32 @@ public class InviteView extends ScrollView
     implements RadioGroup.OnCheckedChangeListener {
 
     private static final String TAG = InviteView.class.getSimpleName();
-    private static final int QRCODE_SIZE = 320;
+    private static final String KEY_EXPANDED = TAG + ":expanded";
+    private static final int QRCODE_SIZE_SMALL = 320;
+    private static final int QRCODE_SIZE_LARGE = QRCODE_SIZE_SMALL * 2;
     
     public interface ItemClicked {
         public void meansClicked( InviteMeans means );
+        public void checkButton();
     }
 
     private ItemClicked mProcs;
     private boolean mIsWho;
     private RadioGroup mGroupTab;
-    private RadioGroup mGroupWho;
+    private LimSelGroup mGroupWho;
     private RadioGroup mGroupHow;
     private Map<RadioButton, InviteMeans> mHowMeans = new HashMap<>();
-    private Map<RadioButton, String> mWhoPlayers = new HashMap<>();
+    private boolean mExpanded = false;
+    private NetLaunchInfo mNli;
 
     public InviteView( Context context, AttributeSet as ) {
         super( context, as );
     }
 
     public InviteView setChoices( List<InviteMeans> meansList, int sel,
-                                  String[] players )
+                                  String[] players, int maxPlayers )
     {
-        Context context = getContext();
+        final Context context = getContext();
 
         boolean haveWho = null != players && 0 < players.length;
 
@@ -90,53 +95,63 @@ public class InviteView extends ScrollView
                 .inflate( context, R.layout.invite_radio );
             button.setText( LocUtils.getString( context, means.getUserDescID() ) );
             int where = means.isForLocal()
-                // -2: place before QR code and its explanatory text
-                ? mGroupHow.getChildCount() - 2
+                // -1: place before QRcode-wrapper
+                ? mGroupHow.getChildCount() - 1
                 : mGroupHow.indexOfChild( divider );
             mGroupHow.addView( button, where );
             mHowMeans.put( button, means );
         }
 
         if ( haveWho ) {
-            mGroupWho = (RadioGroup)findViewById( R.id.group_who );
-            mGroupWho.setOnCheckedChangeListener( this );
-            for ( String player : players ) {
-                RadioButton button = (RadioButton)LocUtils
-                    .inflate( context, R.layout.invite_radio );
-                button.setText( player );
-                mGroupWho.addView( button );
-                mWhoPlayers.put( button, player );
-            }
+            mGroupWho = ((LimSelGroup)findViewById( R.id.group_who ))
+                .setLimit( maxPlayers )
+                .addPlayers( players )
+                ;
         }
         mIsWho = false;   // start with how
         showWhoOrHow();
+
+        mExpanded = DBUtils.getBoolFor( context, KEY_EXPANDED, false );
+        ((ExpandImageButton)findViewById( R.id.expander ))
+            .setOnExpandChangedListener( new ExpandImageButton.ExpandChangeListener() {
+                    @Override
+                    public void expandedChanged( boolean nowExpanded )
+                    {
+                        mExpanded = nowExpanded;
+                        DBUtils.setBoolFor( context, KEY_EXPANDED, nowExpanded );
+                        startQRCodeThread( null );
+                    }
+                } )
+            .setExpanded( mExpanded );
 
         return this;
     }
 
     public InviteView setNli( NetLaunchInfo nli )
     {
-        if ( null != nli ) {
-            startQRCodeThread( nli );
-        }
+        startQRCodeThread( nli );
         return this;
     }
 
-    public InviteView setCallbacks( ItemClicked procs ) {
+    public InviteView setCallbacks( ItemClicked procs )
+    {
         mProcs = procs;
+        if ( null != mGroupWho ) {
+            mGroupWho.setCallbacks( procs );
+        }
         return this;
     }
 
     public Object getChoice()
     {
         Object result = null;
-        RadioButton checked = getCurCheckedFor();
-        if ( null != checked ) {
-            // result = new InviteChoice();
-            if ( mIsWho ) {
-                result = mWhoPlayers.get(checked);
-            } else {
-                result = mHowMeans.get(checked);
+        if ( mIsWho ) {
+            result = mGroupWho.getSelected();
+        } else {
+            int curSel = mGroupHow.getCheckedRadioButtonId();
+            if ( 0 <= curSel ) {
+                RadioButton button = (RadioButton)findViewById(curSel);
+                result = mHowMeans.get( button );
             }
         }
         return result;
@@ -155,22 +170,20 @@ public class InviteView extends ScrollView
                 RadioButton button = (RadioButton)group.findViewById(checkedId);
                 InviteMeans means = mHowMeans.get( button );
                 mProcs.meansClicked( means );
+                setShowQR( means.equals( InviteMeans.QRCODE ) );
                 break;
             case R.id.group_who:
                 break;
             }
+
+            mProcs.checkButton();
         }
     }
 
-    private RadioButton getCurCheckedFor()
+    private void setShowQR( boolean show )
     {
-        RadioButton result = null;
-        RadioGroup group = mIsWho ? mGroupWho : mGroupHow;
-        int curSel = group.getCheckedRadioButtonId();
-        if ( 0 <= curSel ) {
-            result = (RadioButton)findViewById(curSel);
-        }
-        return result;
+        findViewById( R.id.qrcode_stuff )
+            .setVisibility( show ? View.VISIBLE: View.GONE );
     }
 
     private void showWhoOrHow()
@@ -180,41 +193,58 @@ public class InviteView extends ScrollView
         }
         mGroupHow.setVisibility( mIsWho ? View.INVISIBLE : View.VISIBLE );
 
-        boolean showEmpty = mIsWho && 0 == mWhoPlayers.size();
+        boolean showEmpty = mIsWho && 0 == mGroupWho.getChildCount();
         findViewById( R.id.who_empty )
             .setVisibility( showEmpty ? View.VISIBLE : View.INVISIBLE );
     }
 
     private void startQRCodeThread( NetLaunchInfo nli )
     {
-        final String url = nli.makeLaunchUri( getContext() ).toString();
-        new Thread( new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        MultiFormatWriter multiFormatWriter = new MultiFormatWriter();
-                        BitMatrix bitMatrix = multiFormatWriter.encode( url, BarcodeFormat.QR_CODE,
-                                                                        QRCODE_SIZE, QRCODE_SIZE );
-                        final Bitmap bitmap = Bitmap.createBitmap( QRCODE_SIZE, QRCODE_SIZE,
-                                                                   Bitmap.Config.ARGB_8888 );
-                        for ( int ii = 0; ii < QRCODE_SIZE; ++ii ) {
-                            for ( int jj = 0; jj < QRCODE_SIZE; ++jj ) {
-                                bitmap.setPixel( ii, jj, bitMatrix.get(ii, jj)
-                                                 ? Color.BLACK : Color.WHITE );
-                            }
-                        }
-
-                        post( new Runnable() {
-                                @Override
-                                public void run() {
-                                    ImageView iv = (ImageView)findViewById( R.id.qr_view );
-                                    iv.setImageBitmap( bitmap );
+        if ( null != nli ) {
+            mNli = nli;
+        }
+        if ( null != mNli ) {
+            final String url = mNli.makeLaunchUri( getContext() ).toString();
+            new Thread( new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            int qrSize = mExpanded ? QRCODE_SIZE_LARGE : QRCODE_SIZE_SMALL;
+                            MultiFormatWriter multiFormatWriter = new MultiFormatWriter();
+                            BitMatrix bitMatrix = multiFormatWriter.encode( url, BarcodeFormat.QR_CODE,
+                                                                            qrSize, qrSize );
+                            final Bitmap bitmap = Bitmap.createBitmap( qrSize, qrSize,
+                                                                       Bitmap.Config.ARGB_8888 );
+                            for ( int ii = 0; ii < qrSize; ++ii ) {
+                                for ( int jj = 0; jj < qrSize; ++jj ) {
+                                    bitmap.setPixel( ii, jj, bitMatrix.get(ii, jj)
+                                                     ? Color.BLACK : Color.WHITE );
                                 }
-                            } );
-                    } catch ( WriterException we ) {
-                        Log.ex( TAG, we );
+                            }
+
+                            post( new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        ImageView iv = (ImageView)findViewById( R.id.qr_view );
+                                        iv.setImageBitmap( bitmap );
+                                        if ( BuildConfig.NON_RELEASE ) {
+                                            TextView tv = (TextView)findViewById( R.id.qr_url );
+                                            tv.setVisibility( View.VISIBLE );
+                                            tv.setText( url );
+                                        }
+                                        post ( new Runnable() {
+                                                @Override
+                                                public void run() {
+                                                    scrollTo( 0, getBottom() );
+                                                }
+                                            } );
+                                    }
+                                } );
+                        } catch ( WriterException we ) {
+                            Log.ex( TAG, we );
+                        }
                     }
-                }
-            } ).start();
+                } ).start();
+        }
     }
 }

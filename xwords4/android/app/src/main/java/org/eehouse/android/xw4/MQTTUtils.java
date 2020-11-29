@@ -40,8 +40,9 @@ import javax.net.ssl.HttpsURLConnection;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import org.eehouse.android.xw4.jni.CommsAddrRec;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
+import org.eehouse.android.xw4.jni.CommsAddrRec.ConnExpl;
+import org.eehouse.android.xw4.jni.CommsAddrRec;
 import org.eehouse.android.xw4.jni.XwJNI;
 import org.eehouse.android.xw4.loc.LocUtils;
 
@@ -473,9 +474,15 @@ public class MQTTUtils extends Thread implements IMqttActionListener, MqttCallba
         }
     }
 
-    public static void gameDied( String devID, int gameID )
+    public static void gameDied( Context context, String devID, int gameID )
     {
-        Log.e( TAG, "gameDied() not handled" );
+        if ( BuildConfig.DO_MQTT_GAME_GONE ) {
+            String[] topic = { devID };
+            byte[] packet = XwJNI.dvc_makeMQTTNoSuchGame( gameID, topic );
+            addToSendQueue( context, topic[0], packet );
+        } else {
+            Log.e( TAG, "gameDied() not handled" ); // fix me
+        }
     }
 
     @Override
@@ -598,9 +605,16 @@ public class MQTTUtils extends Thread implements IMqttActionListener, MqttCallba
 
     public static void handleGameGone( Context context, CommsAddrRec from, int gameID )
     {
-        // new MQTTServiceHelper( context, from )
-        //     .postEvent( MultiService.MultiEvent.MESSAGE_NOGAME, gameID );
-        Log.d( TAG, "not posting game-gone for now (gameID: %d)" , gameID );
+        if ( BuildConfig.DO_MQTT_GAME_GONE ) {
+            String player = XwJNI.kplr_nameForMqttDev( from.mqtt_devID );
+            ConnExpl expl = null == player ? null
+                : new ConnExpl( CommsConnType.COMMS_CONN_MQTT, player );
+            new MQTTServiceHelper( context, from )
+                .postEvent( MultiService.MultiEvent.MESSAGE_NOGAME, gameID,
+                            expl );
+        } else {
+            Log.d( TAG, "not posting game-gone for now (gameID: %d)" , gameID );
+        }
     }
 
     public static void fcmConfirmed( Context context, boolean working )

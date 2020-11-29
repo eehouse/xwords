@@ -132,6 +132,7 @@
   <string name="key_na_fmt_expl">key_na_fmt_expl</string>
   <string name="key_na_clip_expl">key_na_clip_expl</string>
   <string name="key_na_sms_invite_flakey">key_na_sms_invite_flakey</string>
+  <string name="key_na_qrcode_invite">key_na_qrcode_invite</string>
   <string name="key_na_dicts">key_na_dicts</string>
   <string name="key_enable_debug">key_enable_debug</string>
   <string name="key_enable_pending_count">key_enable_pending_count</string>

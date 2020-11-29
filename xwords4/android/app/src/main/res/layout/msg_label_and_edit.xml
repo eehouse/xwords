@@ -25,6 +25,7 @@
         android:maxLength="32"
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:selectAllOnFocus="true"
+        android:focusable="false"
         />
 
     <TextView android:id="@+id/msg"

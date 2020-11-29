@@ -22,32 +22,44 @@ package org.eehouse.android.xw4;
 
 import android.content.Context;
 
+import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
-import java.io.Serializable;
 
 public class Quarantine {
     private static final String TAG = Quarantine.class.getSimpleName();
     private static final String DATA_KEY = TAG + "/key";
     private static final int BAD_COUNT = 2;
-    private static Data[] sDataRef = {null};
+    private static QData[] sDataRef = {null};
 
     public static int getCount( long rowid )
     {
         int result;
         synchronized ( sDataRef ) {
-            result = get().getFor( rowid );
+            result = get().countFor( rowid );
         }
         return result;
     }
 
-    public static boolean safeToOpen( long rowid )
+    public synchronized static boolean safeToOpen( long rowid )
     {
         int count = getCount( rowid );
         boolean result = count < BAD_COUNT;
         if ( !result ) {
             Log.d( TAG, "safeToOpen(%d) => %b (count=%d)", rowid, result, count );
+            if ( BuildConfig.NON_RELEASE ) {
+                Log.d( TAG, "printing calling stack:" );
+                DbgUtils.printStack( TAG );
+                List<StackTraceElement[]> list = get().listFor( rowid );
+                for ( int ii = 0; ii < list.size(); ++ii ) {
+                    StackTraceElement[] trace = list.get( ii );
+                    Log.d( TAG, "printing saved stack %d (of %d):", ii, list.size() );
+                    DbgUtils.printStack( TAG, trace );
+                }
+            }
         }
         return result;
     }
@@ -92,35 +104,44 @@ public class Quarantine {
         }
     }
 
-    private static class Data implements Serializable {
-        private HashMap<Long, Integer> mCounts = new HashMap<>();
+    private static class QData implements Serializable {
+        private HashMap<Long, List<StackTraceElement[]>> mCounts = new HashMap<>();
 
         synchronized int increment( long rowid )
         {
             if ( ! mCounts.containsKey(rowid) ) {
-                mCounts.put(rowid, 0);
+                mCounts.put(rowid, new ArrayList<StackTraceElement[]>());
             }
-            int result = mCounts.get(rowid) + 1;
-            mCounts.put( rowid, result );
+            // null: in release case, we just need size() to work
+            StackTraceElement[] stack = BuildConfig.NON_RELEASE
+                ? Thread.currentThread().getStackTrace() : null;
+            List<StackTraceElement[]> list = mCounts.get( rowid );
+            list.add( stack );
+            return list.size();
+        }
+
+        synchronized int countFor( long rowid )
+        {
+            List<StackTraceElement[]> list =  listFor( rowid );
+            int result = list == null ? 0 : list.size();
             return result;
         }
 
-        synchronized int getFor( long rowid )
+        synchronized List<StackTraceElement[]> listFor( long rowid )
         {
-            int result = mCounts.containsKey(rowid) ? mCounts.get( rowid ) : 0;
-            return result;
+            return mCounts.containsKey( rowid ) ? mCounts.get( rowid ) : null;
         }
 
         synchronized void clear( long rowid )
         {
-            mCounts.put( rowid, 0 );
+            mCounts.remove( rowid );
         }
 
         synchronized void removeZeros()
         {
-            for ( Iterator<Integer> iter = mCounts.values().iterator();
+            for ( Iterator<List<StackTraceElement[]>> iter = mCounts.values().iterator();
                   iter.hasNext(); ) {
-                if ( 0 == iter.next() ) {
+                if ( 0 == iter.next().size() ) {
                     iter.remove();
                 }
             }
@@ -134,7 +155,7 @@ public class Quarantine {
                 sb.append("{len:").append(mCounts.size())
                     .append(", data:[");
                 for ( long rowid : mCounts.keySet() ) {
-                    int count = mCounts.get(rowid);
+                    int count = mCounts.get(rowid).size();
                     sb.append( String.format("{%d: %d}", rowid, count ) );
                 }
             }
@@ -149,15 +170,15 @@ public class Quarantine {
         }
     }
 
-    private static Data get()
+    private static QData get()
     {
-        Data data;
+        QData data;
         synchronized ( sDataRef ) {
             data = sDataRef[0];
             if ( null == data ) {
-                data = (Data)DBUtils.getSerializableFor( getContext(), DATA_KEY );
+                data = (QData)DBUtils.getSerializableFor( getContext(), DATA_KEY );
                 if ( null == data ) {
-                    data = new Data();
+                    data = new QData();
                 } else {
                     Log.d( TAG, "loading existing: %s", data );
                     data.removeZeros();

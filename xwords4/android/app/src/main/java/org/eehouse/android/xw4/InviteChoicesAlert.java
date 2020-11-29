@@ -20,6 +20,7 @@
 package org.eehouse.android.xw4;
 
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface.OnClickListener;
 import android.content.DialogInterface;
@@ -40,8 +41,12 @@ import org.eehouse.android.xw4.loc.LocUtils;
 
 public class InviteChoicesAlert extends DlgDelegateAlert
     implements InviteView.ItemClicked  {
+    private static final String TAG = InviteChoicesAlert.class.getSimpleName();
 
     private static WeakReference<InviteChoicesAlert> sSelf;
+
+    private Button mPosButton;
+    private InviteView mInviteView;
 
     public static InviteChoicesAlert newInstance( DlgState state )
     {
@@ -79,12 +84,13 @@ public class InviteChoicesAlert extends DlgDelegateAlert
         InviteMeans lastMeans = null;
         NetLaunchInfo nli = null;
         Object[] params = state.getParams();
+        int nMissing = 0;
         if ( null != params ) {
-            if ( 0 < params.length && params[0] instanceof SentInvitesInfo ) {
-                lastMeans = ((SentInvitesInfo)params[0]).getLastMeans();
+            if ( 0 < params.length && params[0] instanceof NetLaunchInfo ) {
+                nli = (NetLaunchInfo)params[0];
             }
-            if ( 1 < params.length && params[1] instanceof NetLaunchInfo ) {
-                nli = (NetLaunchInfo)params[1];
+            if ( 1 < params.length && params[1] instanceof Integer ) {
+                nMissing = (Integer)params[1];
             }
         }
         means.add( InviteMeans.EMAIL );
@@ -103,6 +109,7 @@ public class InviteChoicesAlert extends DlgDelegateAlert
             means.add( InviteMeans.NFC );
         }
         means.add( InviteMeans.CLIPBOARD );
+        means.add( InviteMeans.QRCODE );
 
         int lastSelMeans = -1;
         if ( null != lastMeans ) {
@@ -114,24 +121,28 @@ public class InviteChoicesAlert extends DlgDelegateAlert
             }
         }
 
-        final InviteView inviteView = (InviteView)LocUtils
+        mInviteView = (InviteView)LocUtils
             .inflate( context, R.layout.invite_view );
         final OnClickListener okClicked = new OnClickListener() {
                 @Override
                 public void onClick( DialogInterface dlg, int pos ) {
                     Assert.assertTrue( Action.SKIP_CALLBACK != state.m_action );
-                    Object choice = inviteView.getChoice();
+                    Object choice = mInviteView.getChoice();
                     if ( null != choice ) {
                         XWActivity activity = (XWActivity)context;
                         if ( choice instanceof InviteMeans ) {
                             InviteMeans means = (InviteMeans)choice;
                             activity.inviteChoiceMade( state.m_action,
                                                        means, state.getParams() );
-                        } else if ( choice instanceof String ) {
-                            String player = (String)choice;
-                            CommsAddrRec addr = XwJNI.kplr_getAddr( player );
+                        } else if ( choice instanceof String[] ) {
+                            String[] players = (String[])choice;
+                            Object[] params = new Object[players.length];
+                            for ( int ii = 0; ii < params.length; ++ii ) {
+                                String player = players[ii];
+                                CommsAddrRec addr = XwJNI.kplr_getAddr( player );
+                                params[ii] = addr;
+                            }
                             XWActivity xwact = (XWActivity)context;
-                            Object[] params = { addr };
                             xwact.onPosButton( state.m_action, params );
                         } else {
                             Assert.failDbg();
@@ -142,31 +153,47 @@ public class InviteChoicesAlert extends DlgDelegateAlert
 
         builder
             .setTitle( R.string.invite_choice_title )
-            .setView( inviteView )
+            .setView( mInviteView )
             .setPositiveButton( android.R.string.ok, okClicked )
             .setNegativeButton( android.R.string.cancel, null )
             ;
 
         String[] players = XwJNI.kplr_getPlayers();
-        inviteView.setChoices( means, lastSelMeans, players )
+        mInviteView.setChoices( means, lastSelMeans, players, nMissing )
             .setNli( nli )
             .setCallbacks( this )
             ;
 
-        if ( false && BuildConfig.DEBUG ) {
-            OnClickListener ocl = new OnClickListener() {
-                    @Override
-                    public void onClick( DialogInterface dlg, int pos ) {
-                        Object[] params = state.getParams();
-                        if ( params[0] instanceof SentInvitesInfo ) {
-                            SentInvitesInfo sii = (SentInvitesInfo)params[0];
-                            sii.setRemotesRobots();
-                        }
-                        okClicked.onClick( dlg, pos );
-                    }
-                };
-            builder.setNeutralButton( R.string.ok_with_robots, ocl );
-        }
+        // if ( BuildConfig.DEBUG ) {
+        //     OnClickListener ocl = new OnClickListener() {
+        //             @Override
+        //             public void onClick( DialogInterface dlg, int pos ) {
+        //                 Object[] params = state.getParams();
+        //                 if ( params[0] instanceof SentInvitesInfo ) {
+        //                     SentInvitesInfo sii = (SentInvitesInfo)params[0];
+        //                     sii.setRemotesRobots();
+        //                 }
+        //                 okClicked.onClick( dlg, pos );
+        //             }
+        //         };
+        //     builder.setNeutralButton( R.string.ok_with_robots, ocl );
+        // }
+    }
+
+    @Override
+    Dialog create( AlertDialog.Builder builder )
+    {
+        Dialog dialog = super.create( builder );
+        dialog.setOnShowListener(new DialogInterface.OnShowListener() {
+                @Override
+                public void onShow( DialogInterface diface ) {
+                    mPosButton = ((AlertDialog)diface)
+                        .getButton( AlertDialog.BUTTON_POSITIVE );
+                    enableOkButton();
+                }
+            });
+
+        return dialog;
     }
 
     @Override
@@ -174,9 +201,10 @@ public class InviteChoicesAlert extends DlgDelegateAlert
     {
         DlgDelegate.Builder builder = null;
         XWActivity activity = (XWActivity)getActivity();
+
         switch ( means ) {
         case SMS_USER:
-            builder =activity
+            builder = activity
                 .makeNotAgainBuilder( R.string.sms_invite_flakey,
                                       R.string.key_na_sms_invite_flakey );
             break;
@@ -186,6 +214,11 @@ public class InviteChoicesAlert extends DlgDelegateAlert
                            getString(R.string.slmenu_copy_sel) );
             builder = activity
                 .makeNotAgainBuilder(msg, R.string.key_na_clip_expl);
+            break;
+        case QRCODE:
+            builder = activity
+                .makeNotAgainBuilder( R.string.qrcode_invite_expl,
+                                      R.string.key_na_qrcode_invite );
             break;
         case SMS_DATA:
             if ( !Perms23.havePermissions( activity, Perm.SEND_SMS, Perm.RECEIVE_SMS )
@@ -208,6 +241,19 @@ public class InviteChoicesAlert extends DlgDelegateAlert
 
         if ( null != builder ) {
             builder.show();
+        }
+    }
+
+    @Override
+    public void checkButton()
+    {
+        enableOkButton();
+    }
+
+    private void enableOkButton()
+    {
+        if ( null != mPosButton ) {
+            mPosButton.setEnabled( null != mInviteView.getChoice() );
         }
     }
 }

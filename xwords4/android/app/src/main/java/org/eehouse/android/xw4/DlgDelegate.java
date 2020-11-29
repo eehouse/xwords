@@ -342,7 +342,8 @@ public class DlgDelegate {
             RELAY(R.string.invite_choice_relay, false),
             WIFIDIRECT(R.string.invite_choice_p2p, false),
             SMS_USER(R.string.invite_choice_user_sms, false), // just launch the SMS app, as with email
-            MQTT(R.string.invite_choice_mqtt, false);
+            MQTT(R.string.invite_choice_mqtt, false),
+            QRCODE(R.string.invite_choice_qrcode, true);
 
             private InviteMeans( int resid, boolean local) {
                 mResID = resid;
@@ -400,12 +401,11 @@ public class DlgDelegate {
     }
 
     public void showInviteChoicesThen( final Action action,
-                                       SentInvitesInfo info,
-                                       NetLaunchInfo nli )
+                                       NetLaunchInfo nli, int nMissing )
     {
         DlgState state = new DlgState( DlgID.INVITE_CHOICES_THEN )
             .setAction( action )
-            .setParams( info, nli );
+            .setParams( nli, nMissing );
         m_dlgt.show( state );
     }
 

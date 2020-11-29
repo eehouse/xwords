@@ -519,7 +519,7 @@ public abstract class DelegateBase implements DlgClickNotify,
     protected void show( XWDialogFragment df )
     {
         DbgUtils.assertOnUIThread();
-        if ( m_activity instanceof XWActivity ) {
+        if ( null != df && m_activity instanceof XWActivity ) {
             ((XWActivity)m_activity).show( df );
         } else {
             Assert.failDbg();
@@ -595,11 +595,10 @@ public abstract class DelegateBase implements DlgClickNotify,
         m_dlgDelegate.launchLookup( words, lang, !studyOn );
     }
 
-    protected void showInviteChoicesThen( Action action,
-                                          DBUtils.SentInvitesInfo info,
-                                          NetLaunchInfo nli)
+    protected void showInviteChoicesThen( Action action, NetLaunchInfo nli,
+                                          int nMissing )
     {
-        m_dlgDelegate.showInviteChoicesThen( action, info, nli );
+        m_dlgDelegate.showInviteChoicesThen( action, nli, nMissing );
     }
 
     public Builder makeOkOnlyBuilder( int msgID )

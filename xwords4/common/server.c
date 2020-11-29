@@ -97,7 +97,7 @@ typedef struct ServerNonvolatiles {
     XW_State stateAfterShow;
     XP_S8 currentTurn; /* invalid when game is over */
     XP_S8 quitter;     /* -1 unless somebody resigned */
-    XP_U8 pendingRegistrations;
+    XP_U8 pendingRegistrations; /* server-case only */
     XP_Bool showRobotScores;
     XP_Bool sortNewTiles;
 #ifdef STREAM_VERS_BIGBOARD
@@ -194,7 +194,8 @@ static XWStreamCtxt* messageStreamWithHeader( ServerCtxt* server, XWEnv xwe,
                                               XP_U16 devIndex, XW_Proto code );
 static XP_Bool handleRegistrationMsg( ServerCtxt* server, XWEnv xwe,
                                       XWStreamCtxt* stream );
-static XP_S8 registerRemotePlayer( ServerCtxt* server, XWStreamCtxt* stream );
+static XP_S8 registerRemotePlayer( ServerCtxt* server, XWEnv xwe,
+                                   XWStreamCtxt* stream );
 static void sendInitialMessage( ServerCtxt* server, XWEnv xwe );
 static void sendBadWordMsgs( ServerCtxt* server, XWEnv xwe );
 static XP_Bool handleIllegalWord( ServerCtxt* server, XWEnv xwe,
@@ -466,8 +467,9 @@ writeStreamIf( XWStreamCtxt* dest, XWStreamCtxt* src )
 static void
 informMissing( const ServerCtxt* server, XWEnv xwe )
 {
-    XP_Bool isServer = amServer( server );
+    const XP_Bool isServer = amServer( server );
     const CommsCtxt* comms = server->vol.comms;
+    const CurGameInfo* gi = server->vol.gi;
     CommsAddrRec addr;
     CommsAddrRec* addrP;
     if ( !comms ) {
@@ -477,8 +479,16 @@ informMissing( const ServerCtxt* server, XWEnv xwe )
         comms_getAddr( comms, addrP );
     }
 
-    XP_U16 nDevs = isServer ? server->nv.nDevices - 1 : 0;
-    XP_U16 nPending = isServer ? server->nv.pendingRegistrations : 0;
+    XP_U16 nDevs = 0;
+    XP_U16 nPending = 0;
+    if ( XWSTATE_BEGIN < server->nv.gameState ) {
+        /* do nothing */
+    } else if ( isServer ) {
+        nPending = server->nv.pendingRegistrations;
+        nDevs = server->nv.nDevices - 1;
+    } else if ( SERVER_ISCLIENT == gi->serverRole ) {
+        nPending = gi->nPlayers - gi_countLocalPlayers( gi, XP_FALSE);
+    }
     util_informMissing( server->vol.util, xwe, isServer, addrP, nDevs, nPending );
 }
 
@@ -914,7 +924,7 @@ handleRegistrationMsg( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* stream )
         XP_S8 prevIndex = -1;
 #endif
         for ( ; ii < playersInMsg; ++ii ) {
-            clientIndex = registerRemotePlayer( server, stream );
+            clientIndex = registerRemotePlayer( server, xwe, stream );
             if ( -1 == clientIndex ) {
                 success = XP_FALSE;
                 break;
@@ -1790,7 +1800,7 @@ findFirstPending( ServerCtxt* server, ServerPlayer** playerP )
 } /* findFirstPending */
 
 static XP_S8
-registerRemotePlayer( ServerCtxt* server, XWStreamCtxt* stream )
+registerRemotePlayer( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* stream )
 {
     XP_S8 deviceIndex = -1;
     XP_PlayerAddr channelNo;
@@ -1839,6 +1849,8 @@ registerRemotePlayer( ServerCtxt* server, XWStreamCtxt* stream )
         }
 
         player->deviceIndex = deviceIndex;
+
+        informMissing( server, xwe );
     }
     return deviceIndex;
 } /* registerRemotePlayer */
@@ -2000,6 +2012,7 @@ client_readInitialMessage( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* stream )
 
         /* Give board a chance to redraw self with the full compliment of known
            players */
+        informMissing( server, xwe );
         setTurn( server, xwe, 0 );
         dupe_resetTimer( server, xwe );
     } else {
