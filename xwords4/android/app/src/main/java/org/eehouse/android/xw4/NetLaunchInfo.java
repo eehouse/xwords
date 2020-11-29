@@ -615,7 +615,7 @@ public class NetLaunchInfo implements Serializable {
         }
         if ( addrs.contains( CommsConnType.COMMS_CONN_BT ) ) {
             if ( null != btAddress ) {
-                ub.appendQueryParameter( BTADDR_KEY, btAddress );
+                ub.appendQueryParameter( BTADDR_KEY, shorten(btAddress) );
             }
             ub.appendQueryParameter( BTNAME_KEY, btName );
         }
