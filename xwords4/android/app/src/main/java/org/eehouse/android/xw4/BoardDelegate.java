@@ -130,7 +130,6 @@ public class BoardDelegate extends DelegateBase
     private boolean m_haveStartedShowing;
 
     private Wrapper mNFCWrapper;
-    private InvitesNeededAlert.Wrapper mINAWrapper;
 
     public class TimerRunnable implements Runnable {
         private int m_why;
@@ -421,7 +420,7 @@ public class BoardDelegate extends DelegateBase
                 .create();
             break;
         case DLG_INVITE:
-            dialog = mINAWrapper.make( alert, params );
+            dialog = getINAWrapper().make( alert, params );
             break;
 
         case ENABLE_NFC:
@@ -1507,7 +1506,7 @@ public class BoardDelegate extends DelegateBase
         post( new Runnable() {
                 @Override
                 public void run() {
-                    mINAWrapper.dismiss();
+                    getINAWrapper().dismiss();
                     finish();
                 }
             } );
@@ -2459,12 +2458,24 @@ public class BoardDelegate extends DelegateBase
     private void showInviteAlertIf()
     {
         if ( alertOrderAt( StartAlertOrder.INVITE ) && ! isFinishing() ) {
-            boolean isRematch = null != m_summary && m_summary.hasRematchInfo();
-            if ( null == mINAWrapper ) {
-                mINAWrapper = new InvitesNeededAlert.Wrapper( this );
-            }
-            mINAWrapper.showOrHide( m_mySIS.isServer, m_mySIS.nMissing, isRematch );
+            showOrHide( getINAWrapper() );
         }
+    }
+
+    private void showOrHide( InvitesNeededAlert.Wrapper wrapper )
+    {
+        boolean isRematch = null != m_summary && m_summary.hasRematchInfo();
+        wrapper.showOrHide( m_mySIS.isServer, m_mySIS.nMissing, isRematch );
+    }
+
+    private InvitesNeededAlert.Wrapper mINAWrapper;
+    private InvitesNeededAlert.Wrapper getINAWrapper()
+    {
+        if ( null == mINAWrapper ) {
+            mINAWrapper = new InvitesNeededAlert.Wrapper( this );
+            showOrHide( mINAWrapper );
+        }
+        return mINAWrapper;
     }
 
     private boolean doZoom( int zoomBy )
