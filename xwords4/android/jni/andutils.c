@@ -1,6 +1,6 @@
-/* -*- compile-command: "find-and-ant.sh debug install"; -*- */
+/* -*- compile-command: "find-and-gradle.sh inXw4dDeb"; -*- */
 /*
- * Copyright © 2009-2010 by Eric House (xwords@eehouse.org).  All
+ * Copyright © 2009-2020 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
  *
  * This program is free software; you can redistribute it and/or
