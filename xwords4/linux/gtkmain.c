@@ -460,11 +460,7 @@ handle_destroy( GtkWidget* XP_UNUSED(widget), gpointer data )
     }
     g_slist_free( apg->cag.globalsList );
 
-    gchar buf[64];
-    sprintf( buf, "%d:%d:%d:%d", apg->lastConfigure.x,
-             apg->lastConfigure.y, apg->lastConfigure.width,
-             apg->lastConfigure.height );
-    gdb_store( apg->cag.params->pDb, KEY_WIN_LOC, buf );
+    saveSize( &apg->lastConfigure, apg->cag.params->pDb, KEY_WIN_LOC );
 
     gtk_main_quit();
 }
@@ -477,11 +473,11 @@ handle_quit_button( GtkWidget* XP_UNUSED(widget), gpointer data )
 }
 
 static gboolean
-window_configured( GtkWidget* XP_UNUSED(widget),
-                   GdkEventConfigure* event, GtkAppGlobals* apg )
+on_window_configured( GtkWidget* XP_UNUSED(widget),
+                      GdkEventConfigure* event, GtkAppGlobals* apg )
 {
-    /* XP_LOGF( "%s(x=%d, y=%d, width=%d, height=%d)", __func__, */
-    /*          event->x, event->y, event->width, event->height ); */
+    /* XP_LOGFF( "(x=%d, y=%d, width=%d, height=%d)",  */
+    /*           event->x, event->y, event->width, event->height ); */
     apg->lastConfigure = *event;
     return FALSE;
 }
@@ -527,22 +523,34 @@ setWindowTitle( GtkAppGlobals* apg )
     gtk_window_set_title( GTK_WINDOW(window), title );
 }
 
-static void
-trySetWinConfig( GtkAppGlobals* apg )
+#define COORDS_FORMAT "x:%d;y:%d;w:%d;h:%d"
+void
+resizeFromSaved( GtkWidget* window, sqlite3* pDb, const gchar* key )
 {
-    int xx = 20;                /* defaults */
-    int yy = 20;
-    int width = 600;
-    int height = 400;
-
     gchar buf[64];
-    if ( gdb_fetch_safe( apg->cag.params->pDb, KEY_WIN_LOC, NULL, buf, sizeof(buf)) ) {
-        sscanf( buf, "%d:%d:%d:%d", &xx, &yy, &width, &height );
+    if ( gdb_fetch_safe( pDb, key, NULL, buf, sizeof(buf)) ) {
+        gint xx, yy, width, height;
+        sscanf( buf, COORDS_FORMAT, &xx, &yy, &width, &height );
+        gtk_window_resize( GTK_WINDOW(window), width, height );
+        gtk_window_move( GTK_WINDOW(window), xx, yy );
     }
-
-    gtk_window_resize( GTK_WINDOW(apg->window), width, height );
-    gtk_window_move (GTK_WINDOW(apg->window), xx, yy );
 }
+
+static void
+formatCoords( gchar* buf, const GdkEventConfigure* lastSize )
+{
+    sprintf( buf, COORDS_FORMAT, lastSize->x, lastSize->y,
+             lastSize->width, lastSize->height );
+}
+
+void
+saveSize( const GdkEventConfigure* lastSize, sqlite3* pDb, const gchar* key )
+{
+    gchar buf[64];
+    formatCoords( buf, lastSize );
+    gdb_store( pDb, key, buf );
+}
+#undef COORDS_FORMAT
 
 static void
 handle_movescheck( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* apg )
@@ -587,11 +595,11 @@ makeGamesWindow( GtkAppGlobals* apg )
     g_signal_connect( G_OBJECT(window), "destroy",
                       G_CALLBACK(handle_destroy), apg );
     g_signal_connect( window, "configure_event",
-                      G_CALLBACK(window_configured), apg );
+                      G_CALLBACK(on_window_configured), apg );
 
     setWindowTitle( apg );
 
-    trySetWinConfig( apg );
+    resizeFromSaved( window, params->pDb, KEY_WIN_LOC );
 
     GtkWidget* swin = gtk_scrolled_window_new( NULL, NULL );
     gtk_container_add( GTK_CONTAINER(window), swin );

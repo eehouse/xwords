@@ -571,6 +571,39 @@ addDropChecks( GtkGameGlobals* globals )
 #endif
 
 static void
+formatSizeKey( gchar* key, sqlite3_int64 rowid )
+{
+    sprintf( key, KEY_WIN_LOC ":%llx", rowid );
+}
+
+static void
+resizeFromRowid( GtkGameGlobals* globals )
+{
+    CommonGlobals* cGlobals = &globals->cGlobals;
+    const sqlite3_int64 rowid = cGlobals->rowid;
+    if ( 0 != rowid ) {
+        // XP_LOGFF( "(rowid=%lld)", rowid );
+        gchar key[128];
+        formatSizeKey( key, rowid );
+        resizeFromSaved( globals->window, cGlobals->params->pDb, key );
+        globals->winSizeSet = TRUE;
+    }
+}
+
+static void
+saveSizeRowid( GtkGameGlobals* globals )
+{
+    if ( globals->winSizeSet ) {
+        sqlite3_int64 rowid = globals->cGlobals.rowid;
+
+        gchar key[128];
+        formatSizeKey( key, rowid );
+        // XP_LOGFF( "key: %s", key );
+        saveSize( &globals->lastConfigure, globals->cGlobals.params->pDb, key );
+    }
+}
+
+static void
 createOrLoadObjects( GtkGameGlobals* globals )
 {
 #ifndef XWFEATURE_STANDALONE_ONLY
@@ -603,8 +636,8 @@ createOrLoadObjects( GtkGameGlobals* globals )
  * draw using that size.
  */
 static gboolean
-configure_event( GtkWidget* widget, GdkEventConfigure* XP_UNUSED(event),
-                 GtkGameGlobals* globals )
+on_drawing_configure( GtkWidget* widget, GdkEventConfigure* XP_UNUSED(event),
+                      GtkGameGlobals* globals )
 {
     globals->gridOn = XP_TRUE;
     CommonGlobals* cGlobals = &globals->cGlobals;
@@ -635,8 +668,18 @@ configure_event( GtkWidget* widget, GdkEventConfigure* XP_UNUSED(event),
     board_zoom( board, NULL_XWE, 0, inOut );
     setZoomButtons( globals, inOut );
 
-    return TRUE;
-} /* configure_event */
+    return FALSE;
+} /* on_drawing_configure */
+
+static gboolean
+on_window_configure( GtkWidget* XP_UNUSED(widget), GdkEventConfigure* event,
+                     GtkGameGlobals* globals )
+{
+    globals->lastConfigure = *event;
+    // saveSizeRowid( globals );
+
+    return FALSE;
+}
 
 void
 destroy_board_window( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
@@ -646,6 +689,7 @@ destroy_board_window( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
         comms_stop( globals->cGlobals.game.comms, NULL_XWE );
     }
     linuxSaveGame( &globals->cGlobals );
+    saveSizeRowid( globals );
     windowDestroyed( globals );
 }
 
@@ -684,6 +728,8 @@ on_board_window_shown( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
         }
         stream_destroy( stream, NULL_XWE );
     }
+
+    resizeFromRowid( globals );
 } /* on_board_window_shown */
 
 static void
@@ -2478,6 +2524,9 @@ initBoardGlobalsGtk( GtkGameGlobals* globals, LaunchParams* params,
         gtk_window_set_title( GTK_WINDOW(window), params->fileName );
     }
 
+    g_signal_connect( window, "configure-event",
+                      G_CALLBACK(on_window_configure), globals );
+
     vbox = gtk_box_new( GTK_ORIENTATION_VERTICAL, 0 );
     gtk_container_add( GTK_CONTAINER(window), vbox );
     gtk_widget_show( vbox );
@@ -2564,7 +2613,7 @@ initBoardGlobalsGtk( GtkGameGlobals* globals, LaunchParams* params,
     id =
 #endif
         g_signal_connect( drawing_area, "configure-event",
-                          G_CALLBACK(configure_event), globals );
+                          G_CALLBACK(on_drawing_configure), globals );
     XP_ASSERT( id > 0 );
 #ifdef DEBUG
     id =

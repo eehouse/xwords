@@ -134,6 +134,9 @@ typedef struct GtkGameGlobals {
     XP_Bool gridOn;
     XP_Bool mouseDown;
     XP_Bool altKeyDown;
+    XP_Bool winSizeSet;
+    /* save window position */
+    GdkEventConfigure lastConfigure;
 #ifdef KEYBOARD_NAV
     XP_Bool keyDown;
 #endif

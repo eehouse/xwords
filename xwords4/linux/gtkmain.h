@@ -31,4 +31,6 @@ void inviteReceivedGTK( void* closure, const NetLaunchInfo* invite );
 void msgReceivedGTK( void* closure, const CommsAddrRec* from, XP_U32 gameID,
                      const XP_U8* buf, XP_U16 len );
 void gameGoneGTK( void* closure, const CommsAddrRec* from, XP_U32 gameID );
+void resizeFromSaved( GtkWidget* window, sqlite3* pDb, const gchar* key );
+void saveSize( const GdkEventConfigure* lastSize, sqlite3* pDb, const gchar* key );
 #endif
