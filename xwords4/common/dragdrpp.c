@@ -507,10 +507,9 @@ dragDropContinueImpl( BoardCtxt* board, XWEnv xwe, XP_U16 xx, XP_U16 yy,
     XP_Bool isLegalBoardDrag = XP_FALSE;
     if ( newInfo.obj == OBJ_BOARD
          && coordToCell( board, xx, yy, &newInfo.u.board.col,
-                         &newInfo.u.board.row )
-         && !cellOccupied( board, newInfo.u.board.col,
-                           newInfo.u.board.row, XP_TRUE ) ) {
-        isLegalBoardDrag = XP_TRUE;
+                         &newInfo.u.board.row ) ) {
+        isLegalBoardDrag = !cellOccupied( board, newInfo.u.board.col,
+                                          newInfo.u.board.row, XP_TRUE );
 #ifdef XWFEATURE_CROSSHAIRS
         if ( !board->hideCrosshairs ) {
             draw = crosshairs_set( board, newInfo.u.board.col, 
