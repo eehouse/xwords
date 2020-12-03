@@ -1340,7 +1340,7 @@ timerFiredForPen( BoardCtxt* board, XWEnv xwe )
                    putting up a square bonus if we're on a square with
                    something that can be dragged */
 #ifdef XWFEATURE_RAISETILE
-                draw = dragDropSetAdd( board );
+                draw = dragDropSetAdd( board, xwe );
 #endif
             }
 
@@ -1461,7 +1461,7 @@ p_tray_timerFired( void* closure, XWEnv xwe, XWTimerReason why )
     XP_Bool draw = XP_FALSE;
     BoardCtxt* board = (BoardCtxt*)closure;
     if ( why == TIMER_PENDOWN ) {
-        draw = dragDropSetAdd( board );
+        draw = dragDropSetAdd( board, xwe );
     }
     return draw;
 }
