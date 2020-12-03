@@ -1,6 +1,6 @@
 /* -*-mode: C; fill-column: 78; compile-command: "cd ../linux && make MEMDEBUG=TRUE -j3"; -*- */
 /* 
- * Copyright 1997 - 2010 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 1997 - 2020 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -349,7 +349,7 @@ dragDropSetAdd( BoardCtxt* board, XWEnv xwe )
     draw = dragDropInProgress(board) && !dragDropIsDividerDrag( board )
         && !dragDropHasMoved( board );
     if ( draw ) {
-        ds->yyAdd = (board->trayBounds.height * 2) / 3;
+        ds->yyAdd = (board->trayBounds.height * 90) / 100;
         draw = dragDropContinueImpl( board, xwe, board->penDownX,
                                      board->penDownY, NULL );
     }
