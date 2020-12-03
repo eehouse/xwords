@@ -126,11 +126,6 @@
         <item quantity="one">Diese Partie wartet auf 1 externen Spieler. Wollen Sie noch jemanden einladen – falls Sie das nicht bereits haben?</item>
         <item quantity="other">Diese Partie wartet auf %1$d externe Spieler. Wollen Sie noch jemanden einladen – falls Sie das nicht bereits haben?</item>
     </plurals>
-    <plurals name="invite_sent_fmt">
-        <item quantity="one">Sie haben bereits einen externen Spieler zu dieser Partie eingeladen. Wir warten auf seine/ihre Antwort. Benutzen Sie den Button „Neu einladen“, wenn Sie denken, dass die Einladung nicht abgeschickt wurde.</item>
-        <item quantity="other">"Sie haben bereits Einladungen an %1$d  Spieler für diese Partie abgeschickt. Wir warten auf die Antwort von %2$d der Eingeladenen. Benutzen Sie den Button „Neu einladen“, wenn Sie denken, dass die Einladungen nicht abgeschickt wurden."</item>
-    </plurals>
-    <string name="invited_msg">Diese Partie entstand aus einer erhaltenen Einladung. Sie beginnt, sobald die Verbindung zum Absender aufgebaut werden kann und die anderen Eingeladenen dazugekommen sind.</string>
     <string name="invite_if_nfc">Oder einfach zum Einladen antippen – wenn das andere Gerät ebenfalls Android Beaming unterstützt und in der Nähe ist.</string>
     <string name="invite_multiple">" (Sie erwarten mehrere externe Spieler. Sie müssen sie nicht alle auf einmal einladen, aber diese Warnung wird so lange angezeigt, bis alle eingeladen sind und alle Einladungen angenommen wurden.)"</string>
     <string name="invit_expl_sms_fmt">"Einladung per SMS an Telefonnummer %1$s  an %2$s gesendet"</string>
@@ -416,7 +411,6 @@
     <string name="get_sms_title">Manuelle Eingabe</string>
     <string name="get_sms_number">Geräte-Telefonnummer:</string>
     <string name="get_sms_name">Kontaktname (optional):</string>
-    <string name="get_relay_number">Geräte-ID eingeben:</string>
     <plurals name="confirm_clear_sms_fmt">
         <item quantity="one">Sind Sie sicher, dass Sie die ausgewählte Telefonnummer löschen wollen?</item>
         <item quantity="other">Sind Sie sicher, dass Sie die %1$d ausgewählten Telefonnummer löschen wollen?</item>
@@ -691,7 +685,6 @@
     <string name="not_again_hidenewgamebuttons">Die zwei Buttons am unteren Rand des Bildschirms und die beiden ersten Elemente der Aktionsleiste (oder des Menüs) haben die gleiche Funktion. Wenn Sie wollen, können Sie die Buttons ausblenden, um Platz für mehr Partien zu schaffen.
 \n
 \n(Wenn Sie später die Buttons wieder einblenden wollen, gehen Sie ins Darstellungs-Menü der App-Einstellungen).</string>
-    <string name="waiting_title">Warte auf Spieler</string>
     <string name="waiting_invite_title">Warte auf Antwort</string>
     <string name="waiting_rematch_title">Revanchepartie läuft</string>
     <string name="button_reinvite">Neu einladen</string>
@@ -747,7 +740,6 @@
     <string name="confirm_clear_chat">Sind Sie sicher, dass Sie das Chat-Protokoll für diese Partie löschen wollen?
 \n
 \n(Diese Aktion kann nicht rückgängig gemacht werden.)</string>
-    <string name="fetching_from_relay">Partien werden von Zwischenstation geholt</string>
     <string name="processing_games">Partien werden verarbeitet</string>
     <string name="list_item_select">Auswählen</string>
     <string name="list_item_deselect">Aufheben der Auswahl</string>

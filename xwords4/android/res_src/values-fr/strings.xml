@@ -2693,7 +2693,6 @@ voir et rejoindre</string>
 \n(Si vous voulez faire réapparaître les boutons, allez dans la section Apparence des paramètres de l\'application.)</string>
     <!--XLATE-ME-->
     <!--<string name="waiting_title">Waiting for players</string>-->
-    <string name="waiting_title">En attente de joueurs</string>
     <!--XLATE-ME-->
     <!--<string name="invite_stays">(This dialog will stay up until all
     remote players have connected. You can close the game if you
@@ -2931,11 +2930,6 @@ pour la langue</string>
     <string name="not_again_dfltname_fmt">Vous utilisez le nom par défaut de joueur \"%1$s\". Souhaitez-vous le personnaliser avec votre propre nom avant de créer cette partie ?</string>
     <string name="not_again_rematch_two_only">Les revanches sont limitées aux parties à deux joueurs, au moins pour l\'instant, parce que c\'est plus difficile avec plus d\'appareils et je pense qu\'il est rare que les gens jouent à plus que deux. Faites-le moi savoir si j\'ai tort et je remonterai la priorité.</string>
     <string name="summary_invites_out">Joueurs invités</string>
-    <plurals name="invite_sent_fmt">
-        <item quantity="one">Vous avez déjà invité un joueur distant à cette partie. Nous attendons sa réponse. Utilisez le bouton réinviter si vous pensez que l\'invitation n\'est pas partie.</item>
-        <item quantity="other">Vous avez déjà envoyé %1$d invitations pour cette partie. Nous attendons les réponses de %2$d des destinataires. Utilisez le bouton réinviter si vous pensez que les invitations ne sont pas parties.</item>
-    </plurals>
-    <string name="invited_msg">Cette partie a été créée depuis une invitation que vous avez reçue. Dès qu\'elle pourra se connecter à l\'expéditeur et que les autres invités seront arrivés, la partie commencera.</string>
     <string name="newgame_invite_more">Plus d\'informations</string>
     <string name="notify_title_turn_fmt">Votre tour dans la partie %1$s</string>
     <string name="invites_net_fmt">Invitations envoyées pour la partie connectée via %1$s :</string>
@@ -2954,7 +2948,6 @@ pour la langue</string>
     <string name="chat_hint">Tapez ici…</string>
     <string name="chat_sender_fmt">%1$s :</string>
     <string name="summary_busy">Résumé indisponible</string>
-    <string name="relay_behavior_summary">Paramètres des parties connectées à Internet</string>
     <string name="disable_relay">Désactiver le jeu par relai</string>
     <string name="disable_relay_summary">Désactiver toute communication par Internet</string>
     <string name="warn_relay_disabled">Le jeu par relai est pour l\'instant désactivé sur cet appareil. Aucun coup ne sera envoyé ou reçu par le relai.</string>

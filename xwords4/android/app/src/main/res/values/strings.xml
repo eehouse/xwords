@@ -470,16 +470,13 @@
         <item quantity="other">This game is waiting for %1$d remote
         players to repond to invitations.</item>
     </plurals>
-
     <string name="invite_msg_extra">You will see this message until
     all expected players have connected. If you’ve already sent an
     invitation and suspect it was lost, there’s no harm in sending
     another.</string>
-
     <string name="invite_msg_extra_rematch">With rematches, all
     necessary invitations will have been sent automatically. But you
     can always send new ones if an invitee is not responding.</string>
-
     <!-- <plurals name="invite_sent_fmt"> -->
     <!--     <item quantity="one">You have already invited a remote player to -->
     <!--   this game. We are waiting for him/her to respond. Please -->
@@ -524,14 +521,10 @@
     %2$s. Recipient unknown.</string>
     <!-- In "more info" about sent invitations when mqtt used and
          player is known. -->
-    <string name="invit_expl_player_fmt">Invite forwarded via MQTT/internet
-    to Known Player “%1$s” on %2$s.</string>
-
+    <string name="invit_expl_player_fmt">Invite forwarded via MQTT/Internet to the known player “%1$s” on %2$s.</string>
     <!-- Explanation shown when you choose the radio button to invite
          by QR Code -->
-    <string name="qrcode_invite_expl">To invite via QRCode, let your
-    opponent scan the code with their Android phone’s camera.</string>
-
+    <string name="qrcode_invite_expl">To invite via QR code, let your opponent scan the code with the camera on their Android phone.</string>
     <!-- Short for "points", this is shown at the right end of the
          tray in place of the first tile placed along with the points
          the current move would earn if committed. -->
@@ -1027,7 +1020,6 @@
     <string name="newgame_invite_more">History</string>
     <string name="title_invite_history">Invitations Sent</string>
     <string name="newgame_drop_relay">Drop Relay</string>
-
     <!-- EXPLAIN ME -->
     <!-- <string name="bt_disabled">Bluetooth is not available.  This may -->
     <!--   mean that your device doesn\'t support it, or that it\'s been -->
@@ -1044,21 +1036,18 @@
     <string name="invite_choice_p2p">Wifi Direct</string>
     <string name="invite_choice_qrcode">QR Code</string>
     <string name="invite_choice_title">Inviting a Player</string>
-
     <!-- Text above choices for how to send invitations == ONLY WHEN
          there's no choice between how and who. Replaces the how?/who?
          choice radio group. -->
     <string name="how_tab">Send invitation how?</string>
-
     <!-- Radio button in invite choices dialog for list of previous opponents -->
     <string name="radio_who">Who?</string>
     <!-- Text shown only when there are not any previous opponents to invite -->
     <string name="invite_who_empty_expl">empty expl</string>
     <!-- Shown above QR code in the how-to-invite dialog -->
-    <string name="qrcode_invite_summary">QRCode your opponent can scan</string>
+    <string name="qrcode_invite_summary">QR code your opponent can scan</string>
     <!-- Shown in the middle of the invite-how radio buttons -->
     <string name="local_invite_summary">If your opponent is nearby…</string>
-
     <!-- Radio button in invite choices dialog for list ways to send an invitation -->
     <string name="radio_how">How?</string>
     <!-- Button, on DEBUG builds only, causes invitee players to be robots -->
@@ -1507,12 +1496,12 @@
        ########################################################### 
       -->
     <!-- String giving version info, which is substituted in. -->
-    <string name="about_vers_fmt2">Build information:
-    \n\tVariant: %1$s
-    \n\tVersion name: %2$s
-    \n\tVersion code: %3$d
-    \n\tSource (git) rev: %4$s
-    \n\tBuilt: %5$s</string>
+    <string name="about_vers_fmt2">Build info:
+\n\tVariant: %1$s
+\n\tVersion name: %2$s
+\n\tVersion code: %3$d
+\n\tSource (Git) rev: %4$s
+\n\tBuilt: %5$s</string>
     <string name="about_devid_fmt">Device ID: %1$s</string>
     <!-- copyright info -->
     <string name="about_copyright">CrossWords for Android \nCopyright
@@ -1643,7 +1632,6 @@
     <string name="alrt_bad_filter">Unable to apply filter.</string>
     <!-- Text of toast after long-tap copy of word from wordlist browser -->
     <string name="word_to_clip_fmt">Copied “%1$s”</string>
-
     <!-- Title of progress alert shown while wordlist is loading. For
          huge lists like Polish this can take a few seconds. -->
     <string name="filter_title_fmt">Loading %1$s…</string>
@@ -2038,11 +2026,9 @@
         <item quantity="one">One group selected</item>
         <item quantity="other">%1$d groups selected</item>
     </plurals>
-
     <!-- Name of group created to house games lost due to some old bug
          I just found. I expect users to move them elsewhere. -->
     <string name="recovered_group">Recovered games</string>
-
     <string name="summary_thumbsize">Thumbnail size</string>
     <string name="thumb_off">Disabled</string>
     <!-- Text of alert shown when user accepts an invitation, e.g. in
@@ -2254,23 +2240,20 @@
     buttons go to the Appearance section of App settings).
     </string>
     <plurals name="waiting_title_fmt">
-      <item quantity="one">Waiting for player</item>
-      <item quantity="other">Waiting for %1$d players</item>
+        <item quantity="one">Waiting for player</item>
+        <item quantity="other">Waiting for %1$d players</item>
     </plurals>
     <!-- Button for alert with title above -->
     <string name="waiting_invite_title">Waiting for response</string>
     <string name="waiting_rematch_title">Rematch in progress</string>
-
     <!-- Title for when I'm a guest waiting for host to begin game -->
     <string name="waiting_host_title">Waiting for host</string>
     <string name="waiting_host_expl">This game is waiting for the host
     device to begin the game. That usually means that the host is not
     communicating (it’s temporarily offline?)</string>
-
     <string name="waiting_host_expl_multi">In this case, because the
     game is expecting more than just this device to connect, it could
     also mean that it hasn’t invited everybody yet.</string>
-
     <!-- Button for alert with title above -->
     <string name="button_close">Close</string>
     <string name="button_reinvite">Re-invite</string>
@@ -2650,50 +2633,40 @@
     <string name="no_tiles_exist">“%1$s” cannot be spelled with %2$s tiles.</string>
     <string name="new_feature_title">New Feature Alert</string>
     <string name="button_faq">Show FAQ</string>
-
     <string name="not_again_quicknetgame">There’s a new super-quick
     way to start a game with somebody you’ve played against before. If
     the person’s name is listed, just select it and an invitation will
     be sent immediately.
     </string>
-
     <!-- MQTT stuff. May not see the light of day -->
     <string name="invite_choice_mqtt">Internet/MQTT</string>
     <string name="mqtt_invite_title">MQTT Invitation</string>
     <string name="not_again_comms_mqtt">I’m experimenting with this
     as a replacement for the relay.</string>
-
     <!-- Title of menuitem that launches Known Players viewer -->
     <string name="gamel_menu_knownplyrs">Known Players…</string>
-
     <string name="knowns_expl">These are the remote players
     CrossWords has seen enough to know how to invite them quickly to
     new games. Their names default to what the remote user has chosen,
     but you can edit them to make them easier for you to use.</string>
-
     <string name="knowns_mqtt_fmt">MQTT DevID: %1$s</string>
     <string name="knowns_bt_fmt">Bluetooth name: %1$s</string>
     <string name="knowns_bta_fmt">Bluetooth addr: %1$s</string>
     <string name="knowns_smsphone_fmt">SMS Phone: %1$s</string>
-
     <!-- Button in known player list element allowing to edit player's name -->
     <string name="player_edit_name">Change name</string>
-
     <!-- Shown to confirm deletion of a Knows Players viewer list item -->
     <string name="knowns_delete_confirm_fmt">Are you sure you want to
     delete the Known Player “%1$s”?\n\n(This action cannot be
     undone.)</string>
-
     <!-- Title of Alert for renaming Known Player -->
     <string name="knowns_rename_title">Rename Player</string>
     <!-- Error message when rename fails (which right now should only
          happen because the name is in use) -->
     <string name="knowns_dup_name_fmt">Unable to change name from
     “%1$s” to “%2$s”. Is “%2$s” already in use?</string>
-
     <!-- Title of known-player spinner in quick-invite new game dialog -->
     <string name="name_game">Name your game</string>
     <!-- Title of the game name field in quick-invite new game dialog -->
     <string name="choose_opponent">Choose your opponent</string>
-
 </resources>

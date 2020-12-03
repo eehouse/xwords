@@ -547,7 +547,6 @@ Introduïu el vostre nom aquí. S\'usarà en crear partides noves. (Podreu
     <string name="invite_multi_summary">Convideu a més d\'un jugador per a aparell remot</string>
     <string name="enable_pubroom_title">Habilita les sales públiques</string>
     <string name="set_pref">Amaga botons</string>
-    <string name="waiting_title">S\'estan esperant els jugadors</string>
     <string name="button_edit">Edita</string>
     <string name="button_discard_changes">Descarta els canvis</string>
     <string name="dict_host">URL de baixada de diccionari</string>
@@ -745,16 +744,6 @@ Introduïu el vostre nom aquí. S\'usarà en crear partides noves. (Podreu
     </plurals>
     <string name="confirm_clear_chat">Esteu segur de voler suprimir tot l\'historial de conversa d\'aquesta partida?\n\n(Aquesta acció no és pot desfer.)</string>
     <string name="summary_invites_out">Jugadors convidats</string>
-    <plurals name="invite_sent_fmt">
-        <item quantity="one">Ja heu convidat un jugador remot a
-aquesta partida. N\'estem esperant resposta.
-Useu el botó de tornar a convidar si penseu que
- la invitació no ha arribat.</item>
-        <item quantity="other">Ja heu enviat %1$d invitacions a
-aquesta partida. N\'estem esperant resposta.
-de %2$d destinataris. Useu el botó de tornar a
- convidar si penseu que les invitacions no ha arribat.</item>
-    </plurals>
     <string name="invit_expl_sms_fmt">S\'ha enviat la invitació via SMS de dades al telèfon %1$s a %2$s</string>
     <string name="disable_relay">"Desactiva el joc via repetidor "</string>
     <string name="disable_relay_summary">Inhabilita la comunicació per Internet</string>
@@ -797,7 +786,6 @@ de %2$d destinataris. Useu el botó de tornar a
     <string name="invit_expl_relay_fmt">S\'ha enviat la invitació via el repetidor d\'un altre aparell a %1$s</string>
     <string name="invit_expl_notarget_fmt">S\'ha enviat la invitació via %1$s a %2$s. Destinatari desconegut.</string>
     <string name="phonies_found_title">S\'ha trobat llufes</string>
-    <string name="relay_behavior_summary">La configuració que s\'aplica a les partides per Internet</string>
     <string name="title_blank_picker">Trieu una fitxa per a l\'escarràs</string>
     <string name="tile_tray_picker">Trieu fitxes noves per al faristol</string>
     <string name="tile_button_txt_fmt">%1$s (%2$d)</string>
@@ -813,7 +801,6 @@ de %2$d destinataris. Useu el botó de tornar a
     <string name="duplicate_group_name_fmt">El grup «%1$s» ja existeix.</string>
     <string name="waiting_invite_title">S\'està esperant una resposta</string>
     <string name="relay_via_http_first">Usa primer les API Web</string>
-    <string name="invited_msg">Aquesta partida s\'ha creat amb una invitació que heu rebut. Tan aviat com es pugui connectar amb el remitent i arribin els altres convidats, començarà la partida.</string>
     <plurals name="msg_relay_waiting_fmt">
         <item quantity="one">"L\'aparell %1$d  s\'ha connectat al repetidor en la sala «%2$s». Està esperant un jugador."</item>
         <item quantity="other">"L\'aparell %1$d  s\'ha connectat al repetidor en la sala «%2$s». Està esperant %3$d jugadors."</item>
@@ -844,7 +831,6 @@ de %2$d destinataris. Useu el botó de tornar a
     <string name="expl_relay_url">URL per a l\'API web del repetidor</string>
     <string name="not_again_comms_p2p">Usa WiFi Direct per a jugar contra aparells propers amb WiFi Direct i el CrossWords instal·lat.</string>
     <string name="show_sms_title">Mostra els missatges SMS enviats i rebuts</string>
-    <string name="fetching_from_relay">Recupera les partides del repetidor</string>
     <string name="rematch_sent_toast">S\'han enviat les invitacions per a tornar a jugar</string>
     <string name="not_again_dfltname_fmt">Esteu fent servir el nom de jugador predeterminat «%1$s». Voleu personalitzar-lo amb el vostre nom abans de crear aquesta partida\?</string>
     <string name="sms_invite_rationale">CrossWords necessita permís per a enviar una invitació via SMS.</string>

@@ -263,12 +263,6 @@
         <item quantity="few">Ta gra czeka na %1$d zdalnych zawodników. Czy chciałbyś zaprosić kogoś do przyłączenia się -- zakładając, że już tego nie zrobiłeś\?</item>
         <item quantity="many">Ta gra czeka na %1$d zdalnych graczy. Czy chciałbyś zaprosić kogoś do przyłączenia się -- zakładając, że już tego nie zrobiłeś\?</item>
     </plurals>
-    <plurals name="invite_sent_fmt">
-        <item quantity="one">Zaprosiłeś już zdalnego gracza do tej gry. Czekam na jego/jej odpowiedź. Proszę użyć przycisku ponownego zaproszenia, jeśli uważasz, że zaproszenie nie doszło.</item>
-        <item quantity="few">Zaprosiłeś już zdalnych graczy do tej gry. Czekam na jego/jej odpowiedź. Proszę użyć przycisku ponownego zaproszenia, jeśli uważasz, że zaproszenie nie doszło.</item>
-        <item quantity="many">Zaprosiłeś już zdalnych zawodników do tej gry. Czekam na jego/jej odpowiedź. Proszę użyć przycisku ponownego zaproszenia, jeśli uważasz, że zaproszenie nie doszło.</item>
-    </plurals>
-    <string name="invited_msg">Ta gra została stworzona na podstawie otrzymanego zaproszenia. Gdy tylko będziesz mógł połączyć się z nadawcą i pojawią się inni zaproszeni, rozpocznie się gra.</string>
     <string name="invit_expl_relay_fmt">Zaproszenie przesłane przez przekaźnik do innego urządzenia na %1$s</string>
     <string name="invit_expl_notarget_fmt">Zaproszenie wysłane przez %1$s na %2$s. Odbiorca nieznany.</string>
     <string name="pts">pkt</string>
@@ -492,7 +486,6 @@
     <string name="get_sms_title">Ręczne wprowadzanie</string>
     <string name="get_sms_number">Numer telefonu urządzenia:</string>
     <string name="get_sms_name">Nazwa kontaktu (opcjonalne):</string>
-    <string name="get_relay_number">Wprowadź identyfikator urządzenia:</string>
     <string name="summary_conn_sms_fmt">Gra w grę z %1$s</string>
     <string name="warn_unlimited">Jesteś pewien, że ten numer jest na koncie z nieograniczonymi SMS-ami\? Jeśli nie, stuknij opcję \"Anuluj\".</string>
     <string name="remote_undone">Zdalne urządzenie cofnęło kolej.</string>
@@ -722,7 +715,6 @@
     <string name="enable_pubroom_summary">Pokoje, które inni mogą zobaczyć i dołączyć</string>
     <string name="connection_via_label">Zmień komunikację przez</string>
     <string name="set_pref">Ukryj przyciski</string>
-    <string name="waiting_title">Czekam na graczy</string>
     <string name="waiting_invite_title">Czekam na odpowiedź</string>
     <string name="waiting_rematch_title">Trwa rewanż</string>
     <string name="button_reinvite">Ponowne zaproszenie</string>
@@ -798,7 +790,6 @@
     <string name="confirm_clear_chat">Czy na pewno chcesz usunąć całą historię czatu dla tej gry\?
 \n
 \n(Tej akcji nie można cofnąć.)</string>
-    <string name="fetching_from_relay">Pobieranie gier z przekaźnika</string>
     <string name="processing_games">Przetwarzanie gier</string>
     <string name="list_item_select">Wybierz</string>
     <string name="list_item_deselect">Odznacz</string>

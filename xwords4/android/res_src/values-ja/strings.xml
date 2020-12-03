@@ -632,7 +632,6 @@
     <string name="not_again_hidenewgamebuttons">この画面の下部にある 2 つのボタンと、アクション バー (またはメニュー) の最初の 2 つの項目は同じことを行います。あなたが好きなら、より多くのゲームを表示するためにボタンを非表示にすることができます。
 \n
 \n(後でボタンを再表示する場合は、アプリの設定セクションに移動してください)。</string>
-    <string name="waiting_title">プレイヤーを待っています</string>
     <string name="invite_stays">(このダイアログボックスは、すべてのリモートプレイヤーが接続するまで表示します。しばらく時間がかかると予想される場合は、ゲームを閉じることができます。リモートプレイヤーは引き続き接続することができ、接続されると通知を受け取ります。)</string>
     <string name="nfc_just_tap">NFC 経由で招待するには、招待したい人に対してこのデバイスの背面をタッチしてください —随時ゲームが開かれます。</string>
     <string name="warn_no_comms">すべてのネットワーク ゲームは、少なくとも 1 つ通信方法が必要です。デフォルトの接続オプションがない場合は、新しいネットワーク ゲームはすべて手動で設定する必要があります。</string>
@@ -710,7 +709,6 @@
         <item quantity="one">あなたの新しいゲームに招待するデバイスをチェックして、\"%2$s\" をタップしてください。</item>
         <item quantity="other">あなたの新しいゲームに招待する%1$dのデバイスをチェックして、\"%2$s\" をタップしてください。</item>
     </plurals>
-    <string name="get_relay_number">デバイス ID を入力します:</string>
     <plurals name="confirm_clear_sms_fmt">
         <item quantity="other">%1$d のチェックした電話番号を削除してもよろしいですか\?</item>
     </plurals>
@@ -718,16 +716,11 @@
     <string name="disable_nags_title">リマインダーの切り替え</string>
     <string name="disable_nag_solo_title">一人ゲーム リマインダーを無効にする</string>
     <string name="not_again_rematch_two_only">再戦は2人のゲームに限られていますが、少なくとも今のところは、より多くのデバイスでは難しく、2人以上でプレイすることはまれだと思います。私が間違っているようであれば、優先順位を上げますのでお知らせください。</string>
-    <string name="fetching_from_relay">リレーからゲームを取得中</string>
     <string name="processing_games">ゲームの処理中</string>
     <string name="list_item_select">選択</string>
     <string name="list_item_deselect">選択解除</string>
     <string name="not_again_dfltname_fmt">デフォルト プレイヤー名 \"%1$s\" を使用しています。ゲームを作成する前に、独自の名前でパーソナル化しますか?</string>
     <string name="summary_invites_out">プレイヤーを招待しました</string>
-    <plurals name="invite_sent_fmt">
-        <item quantity="other">すでにこのゲームに %1$d の招待状を送信しています。%2$d 人が応答するのを待っています。招待状が送られていないと思う場合は、再招待ボタンを使用してください。</item>
-    </plurals>
-    <string name="invited_msg">このゲームは、あなたが受け取った招待状から作成されました。送信者に接続して、他の参加者が到着すると、すぐにプレイが開始されます。</string>
     <string name="invit_expl_sms_fmt">データ SMS 経由で %2$s の電話番号 %1$s に招待を送信しました</string>
     <string name="invit_expl_bt_fmt">%2$s で、ペアのデバイス \"%1$s\" に Bluetooth 経由で招待を送信しました</string>
     <string name="invit_expl_relay_fmt">%1$s で他のデバイスにリレーによって招待を転送しました</string>
@@ -744,7 +737,6 @@
     <string name="chat_hint">ここに入力…</string>
     <string name="chat_sender_fmt">%1$s:</string>
     <string name="summary_busy">概要は利用できません</string>
-    <string name="relay_behavior_summary">インターネット接続したゲームに適用される設定</string>
     <string name="disable_relay">リレーを経由したプレイを無効にする</string>
     <string name="disable_relay_summary">すべてのインターネット通信を無効にします</string>
     <string name="warn_relay_disabled">このデバイスでリレー プレイは現在無効です。移動はリレーを介して送信も受信されません。</string>

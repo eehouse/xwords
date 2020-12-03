@@ -244,7 +244,6 @@
     <string name="button_sms_add">Importer kontakt</string>
     <string name="get_sms_number">Enhetens telefonnummer:</string>
     <string name="get_sms_name">Kontaktnavn (valgfritt):</string>
-    <string name="get_relay_number">Skriv inn enhets-ID:</string>
     <string name="summary_conn_sms_fmt">Spill underveis med %1$s</string>
     <string name="menu_hint_prev">Forrige hint</string>
     <string name="menu_hint_next">Neste hint</string>
@@ -397,7 +396,6 @@
     <string name="enable_pubroom_title">Skru på offentlige rom</string>
     <string name="enable_pubroom_summary">Rom andre kan se og ta del i</string>
     <string name="set_pref">Skjul knapper</string>
-    <string name="waiting_title">Venter på spillere</string>
     <string name="waiting_invite_title">Venter på svar</string>
     <string name="waiting_rematch_title">Omkamp underveis</string>
     <string name="button_edit">Rediger</string>
@@ -448,7 +446,7 @@
 \n(Tilbakestilling sletter alle trekk og all tilknyttet informasjon.)</item>
     </plurals>
     <string name="players_label_host_fmt">Spillere (%1$d lokale, %2$d eksterne)</string>
-    <string name="phonies_spinner_prompt">Hvordan \"ønskeord\" skal behandles (altså dem som ikke finnes i ordlisten)</string>
+    <string name="phonies_spinner_prompt">Hvordan «ønskeord» skal behandles (altså dem som ikke finnes i ordlisten)</string>
     <string name="phonies_ignore">Ingorer ønskeord</string>
     <string name="phonies_warn">Advar hvis ønskeord</string>
     <string name="phonies_disallow">Ikke tillat ønskeord</string>
@@ -467,11 +465,6 @@
         <item quantity="one">Dette spiller venter på én ekstern spiller. Ønsker du å invitere noen til spill, sett at du ikke har gjort det allerede?</item>
         <item quantity="other">Dette spiller venter på %1$d eksterne spillere. Ønsker du å invitere noen til spill, sett at du ikke har gjort det allerede?</item>
     </plurals>
-    <plurals name="invite_sent_fmt">
-        <item quantity="one">Du har allerede invitert en ekstern spiller til dette spillet. Vi venter på at vedkommende skal svare. Bruk gjeninvitasjonsknappen hvis du tror invitasjonen ikke ble sendt.</item>
-        <item quantity="other">Du har allerede sendt %1$d unike invitasjoner til dette spillet. Vi venter på %2$d av de inviterte skal svare. Bruk gjeninvitasjonsknappen hvis du tror invitasjonen ikke ble sendt.</item>
-    </plurals>
-    <string name="invited_msg">Dette spillet ble opprettet fra en invitasjon du mottok. Det vil begynne så snart det kan koble til senderen og en annen invitert har ankommet.</string>
     <string name="msgs_progress">Sjekker relé for trekk osv…</string>
     <string name="no_games_to_refresh">"Fant ingen spill som kobler til gjennom relé-et. "</string>
     <string name="no_copy_network">Spill som allerede har koblet til gjennom relé-et kan ikke kopieres. Bruk \"Ny fra\" for kopi klar til spilling med de samme innstillingene.</string>
@@ -525,8 +518,8 @@
     <string name="title_prefs">CrossWords-innstillinger</string>
     <string name="button_revert_all">Gjenopprett alle</string>
     <string name="confirm_revert_colors">Er du sikker på at du ønsker å gjenopprette alle fargeinnstillingene til deres opprinnelige verdier?</string>
-    <string name="default_phonies">Ta hånd om falsknere</string>
-    <string name="phonies_found_title">Fant falsknere</string>
+    <string name="default_phonies">Håndter ønskeord</string>
+    <string name="phonies_found_title">Fant ønskeord</string>
     <string name="initial_player_minutes">Spillminutt per spiller</string>
     <string name="show_arrow_summary">Trykkede stativflis lander på denne pilen når den er synlig</string>
     <string name="clr_crosshairs">Retikkelfarge</string>
@@ -538,7 +531,6 @@
     <string name="peek_other">Vis flis ute av tur</string>
     <string name="hide_crosshairs">Skru av retikler</string>
     <string name="hide_crosshairs_summary">Ikke vis hvilken bordcelle som berøres</string>
-    <string name="relay_behavior_summary">Innstillinger som har med internettilknyttede spill å gjøre</string>
     <string name="disable_relay">Skru av spill via relé-et</string>
     <string name="disable_relay_summary">Skru av all internettkommunikasjon</string>
     <string name="newgame_configure_first">Sett opp først</string>
@@ -667,7 +659,6 @@
     <string name="confirm_drop_relay_bt">Blåtann fungerer kun for enheter i nærheten.</string>
     <string name="confirm_drop_relay_sms">Ikke alle tilbydere støtter spill via SMS.</string>
     <string name="invite_copied">Invitasjon klar til innliming</string>
-    <string name="fetching_from_relay">Henter spill fra relé-et</string>
     <string name="processing_games">Behandler spill</string>
     <string name="no_invites">Dette spillet har ikke sendt noen invitasjoner</string>
     <string name="after_restart">Dette vil tre i effekt etter at du har startet CrossWords på ny.</string>
@@ -979,4 +970,55 @@
     <string name="pause_title">Spill på pause</string>
     <string name="expl_mqtt_url">Nettadresse for nytt MQTT-basert videresendings-API</string>
     <string name="invite_subject">La oss spille CrossWords</string>
+    <string name="qrcode_invite_expl">La motstanderen skanne QR-koden med sin Android-telefon for å invitere på den måten.</string>
+    <string name="new_feature_title">Varsel om ny funksjon</string>
+    <string name="knowns_dup_name_fmt">Kan ikke endre navn fra “%1$s” til “%2$s”. Er “%2$s” allerede i bruk\?</string>
+    <string name="name_game">Gi spillet et navn</string>
+    <string name="choose_opponent">Velg din motstander</string>
+    <string name="knowns_rename_title">Gi spiller nytt navn</string>
+    <string name="player_edit_name">Endre navn</string>
+    <string name="knowns_bta_fmt">Blåtannsadresse:</string>
+    <string name="knowns_bt_fmt">Blåtannsnavn:</string>
+    <string name="gamel_menu_knownplyrs">Kjente spillere …</string>
+    <string name="button_faq">Vis O-S-S</string>
+    <string name="dup_onescore_fmt">%1$s: %2$d poeng
+\n</string>
+    <string name="waiting_host_title">Venter på vert</string>
+    <plurals name="waiting_title_fmt">
+        <item quantity="one">Venter på spiller</item>
+        <item quantity="other">Venter på %1$d spillere</item>
+    </plurals>
+    <string name="tiles_header_value">Verdi</string>
+    <string name="tiles_header_count">Tall</string>
+    <string name="tiles_header_face">Bokstav</string>
+    <string name="pat_col_anyorder">Vikårlig rekkefølge</string>
+    <string name="pat_ends_with">Slutter med</string>
+    <string name="pat_contains">Inneholder</string>
+    <string name="pat_starts_with">Starter med</string>
+    <string name="show_note_menu">Om ordliste</string>
+    <string name="show_tiles_title_fmt">Flis for</string>
+    <string name="show_tiles_menu">Vis flis</string>
+    <string name="show_tiles_button">Vis flis</string>
+    <string name="about_devid_fmt">Enhets-ID:</string>
+    <string name="about_vers_fmt2">Bygginfo:
+\n\tVariant: %1$s
+\n\tVersjonsnavn: %2$s
+\n\tVersjonskode: %3$d
+\n\tKilde (Git) rev: %4$s
+\n\tBygd: %5$s</string>
+    <string name="radio_who">Hvem\?</string>
+    <string name="radio_how">Hvordan\?</string>
+    <string name="local_invite_summary">Hvis din motstander er i nærheten …</string>
+    <string name="qrcode_invite_summary">QR-kode din motstander kan skanne</string>
+    <string name="invite_choice_qrcode">QR-kode</string>
+    <string name="title_invite_history">Invitasjoner sendt</string>
+    <string name="phonies_label">Ønskeord</string>
+    <string name="phonies_block">Blokker ønskeord</string>
+    <string name="disable_bt">Skru av spill via Blåtann</string>
+    <string name="disable_bt_summary">Skru av all Blåtannskommunikasjon</string>
+    <string name="invite_player_fmt">Inviter</string>
+    <string name="cellline">Brettlinjer</string>
+    <string name="invite_msg_extra_rematch">Med omkamper, vil alle nødvendige invitasjoner sendes automatisk. Du kan alltids sende nye hvis motstanderen ikke svarer.</string>
+    <string name="invite_msg_extra">Du vil se denne meldingen til alle forventede spillere har koblet til. Hvis du allerede har sendt en invitasjon og antar at den har gått tapt, er det ingen skade i å sende en ny.</string>
+    <string name="use_duptimer">Skru på tidsur for hvert trekk</string>
 </resources>
