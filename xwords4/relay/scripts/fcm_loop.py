@@ -6,7 +6,7 @@
 #
 # Depends on the gcm module
 
-import getpass, sys, psycopg2, time, signal, shelve, json, urllib2
+import argparse, getpass, sys, psycopg2, time, signal, shelve, json, urllib2
 from time import gmtime, strftime
 from os import path
 from oauth2client.service_account import ServiceAccountCredentials
@@ -135,8 +135,7 @@ def asGCMIds(con, devids, typ):
     if g_debug: print 'asGCMIds() =>', result
     return result
 
-def notifyViaFCM( devids, typ, target ):
-    global g_accessToken
+def notifyViaFCM(devids, typ, target):
     success = False
     if typ == DEVTYPE_FCM:
         if 'clntVers' in target and 3 <= target['clntVers'] and target['msg64']:
@@ -152,38 +151,43 @@ def notifyViaFCM( devids, typ, target ):
                 'data' : data,
             }
         }
-        params = json.dumps( values )
-
-        if g_skipSend:
-            print
-            print "not sending:", params
-        else:
-            for ignore in [True, True]: # try twice at most
-                req = urllib2.Request( FCM_URL, params )
-                req.add_header( 'Authorization', 'Bearer ' + g_accessToken )
-                req.add_header( 'Content-Type', 'application/json' )
-                try:
-                    response = urllib2.urlopen( req ).read()
-                    asJson = json.loads( response  )
-
-                    # not sure what the response format looks like to test for success....
-                    if 'name' in asJson: # and len(asJson['name']) == len(devids):
-                        print "OK; no failures: ", response
-                        success = True
-                    else:
-                        print "Errors: "
-                        print response
-                    break
-
-                except urllib2.URLError as e:
-                    print 'error from urlopen:', e.reason
-                    if e.reason == 'Unauthorized':
-                        g_accessToken = get_access_token()
-                    else:
-                        break
-
+        success = send(values)
     else:
         print "not sending to", len(devids), "devices because typ ==", typ
+    return success
+
+def send(values):
+    global g_accessToken
+    success = False
+    params = json.dumps(values)
+
+    if g_skipSend:
+        print
+        print "not sending:", params
+    else:
+        for ignore in [True, True]: # try twice at most
+            req = urllib2.Request( FCM_URL, params )
+            req.add_header( 'Authorization', 'Bearer ' + g_accessToken )
+            req.add_header( 'Content-Type', 'application/json' )
+            try:
+                response = urllib2.urlopen( req ).read()
+                asJson = json.loads( response  )
+
+                # not sure what the response format looks like to test for success....
+                if 'name' in asJson: # and len(asJson['name']) == len(devids):
+                    print "OK; no failures: ", response
+                    success = True
+                else:
+                    print "Errors: "
+                    print response
+                break
+
+            except urllib2.URLError as e:
+                print 'error from urlopen:', e.reason
+                if e.reason == 'Unauthorized':
+                    g_accessToken = get_access_token()
+                else:
+                    break
     return success
 
 def shouldSend(val):
@@ -238,39 +242,17 @@ def handleSigTERM( one, two ):
     print 'handleSigTERM called: ', one, two
     cleanup()
 
-def usage():
-    print "usage:", sys.argv[0], "[--loop <nSeconds>] [--type typ] [--verbose]"
-    sys.exit();
-
-def main():
+def loop(args):
     global g_con, g_sent, g_debug
-    loopInterval = 0
     g_con = init()
     emptyCount = 0
-    typ = DEVTYPE_FCM
-
-    ii = 1
-    while ii < len(sys.argv):
-        arg = sys.argv[ii]
-        if arg == '--loop':
-            ii += 1
-            loopInterval = float(sys.argv[ii])
-        elif arg == '--type':
-            ii += 1
-            typ = int(sys.argv[ii])
-        elif arg == '--verbose':
-            g_debug = True
-        else:
-            usage()
-        ii = ii + 1
-
     signal.signal( signal.SIGTERM, handleSigTERM )
     signal.signal( signal.SIGINT, handleSigTERM )
 
     while g_con:
         if g_debug: print
         nSent = 0
-        devids = getPendingMsgs( g_con, typ )
+        devids = getPendingMsgs( g_con, args.TYPE )
         # print "got msgs:", len(devids)
         if 0 < len(devids):
             devids = addClntVers( g_con, devids )
@@ -284,7 +266,7 @@ def main():
                 toDelete = []
                 for devid in targets.keys():
                     for targetRow in targets[devid]:
-                        if notifyViaFCM( asGCMIds(g_con, [devid], typ), typ, targetRow ) \
+                        if notifyViaFCM( asGCMIds(g_con, [devid], args.TYPE), args.TYPE, targetRow ) \
                            and 3 <= targetRow['clntVers'] \
                            and targetRow['msg64']:
                             toDelete.append( str(targetRow['id']) )
@@ -299,10 +281,48 @@ def main():
                 sys.stdout.write('.')
                 sys.stdout.flush()
             if 0 == (emptyCount % (LINE_LEN*5)): print ""
-        if 0 == loopInterval: break
-        time.sleep( loopInterval )
+        if 0 == args.LOOP_SECONDS: break
+        time.sleep( args.LOOP_SECONDS )
 
     cleanup()
+
+def sendMessage(args):
+    message = args.SEND_MSG
+    fcmid = args.FCMID
+    if not message:
+        print('--send-msg required')
+    elif not fcmid:
+        print('--fcmid required')
+    else:
+        data = {'msg': message, 'title' : 'needs title'}
+        values = {
+            'message' : {
+                'token' : fcmid,
+                'data' : data,
+            }
+        }
+        success = send(values)
+        print( 'sendMessage({}): send() => {}'.format(message, success))
+
+def mkParser():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--send-msg', dest = 'SEND_MSG', type = str, default = None,
+                        help = 'a message to send (then exit)')
+    parser.add_argument('--fcmid', dest = 'FCMID', type = str, default = None,
+                        help = 'the FCMID of the device to send to (then exit)')
+    parser.add_argument('--loop', dest = 'LOOP_SECONDS', type = int, default = 5,
+                        help = 'loop forever, checking the relay every <loop> seconds' )
+    parser.add_argument('--type', dest = 'TYPE', type = int, default = DEVTYPE_FCM,
+                        help = 'type. Just use the default')
+    parser.add_argument('--verbose', dest = 'VERBOSE', action = 'store_true', default = False)
+    return parser
+
+def main():
+    args = mkParser().parse_args()
+    global g_debug
+    g_debug = args.VERBOSE
+    if args.SEND_MSG or args.FCMID: sendMessage( args )
+    else: loop(args);
 
 ##############################################################################
 if __name__ == '__main__':
