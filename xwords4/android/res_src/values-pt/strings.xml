@@ -1561,7 +1561,7 @@
     <!--  -->
     <string name="game_list_tmp">Carregando resumo do jogo…</string>
     <!--  -->
-    <string name="connstat_net_fmt">Informações de rede para jogo conectado
+    <string name="connstat_net_fmt">Informações de rede (ID=%2$X) para jogo conectado
     por %1$s:</string>
     <!--  -->
     <string name="connstat_succ">com sucesso</string>

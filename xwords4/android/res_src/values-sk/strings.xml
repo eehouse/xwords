@@ -1051,9 +1051,6 @@
     <!--  -->
     <string name="connstat_succ">XLATE ME: successful</string>
     <!--  -->
-    <string name="connstat_net_fmt">XLATE ME: Network status for game connected via
-    %1$s:</string>
-    <!--  -->
     <string name="game_list_tmp">XLATE ME: Building game summary…</string>
     <!-- board menu for small devices only -->
     <string name="board_menu_dict">XLATE ME: Browse wordlist</string>
