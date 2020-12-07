@@ -91,8 +91,8 @@ static MemPoolCtx*
 getMPoolImpl( JNIGlobalState* globalState, const char* user )
 {
     if ( globalState->mpoolInUse ) {
-        XP_LOGF( "%s(): mpoolInUse ALREADY SET!!!! (by %s)",
-                 __func__, globalState->mpoolUser );
+        XP_LOGFF( "mpoolInUse ALREADY SET!!!! (by %s)",
+                  globalState->mpoolUser );
     }
     globalState->mpoolInUse = XP_TRUE;
     globalState->mpoolUser = user;
@@ -106,8 +106,7 @@ releaseMPool( JNIGlobalState* globalState )
 {
     // XP_ASSERT( globalState->mpoolInUse ); /* fired again!!! */
     if ( !globalState->mpoolInUse ) {
-        XP_LOGF( "%s() line %d; ERROR ERROR ERROR mpoolInUse not set",
-                 __func__, __LINE__ );
+        XP_LOGFF( "line %d; ERROR ERROR ERROR mpoolInUse not set", __LINE__ );
     }
     globalState->mpoolInUse = XP_FALSE;
 }
@@ -133,7 +132,7 @@ countUsed( const EnvThreadInfo* ti )
         EnvThreadEntry* entry = &ti->entries[ii];
         if ( 0 != entry->owner ) {
 #  ifdef LOG_MAPPING_ALL
-            XP_LOGF( "%s(): ii=%d; owner: %x", __func__, ii, (unsigned int)entry->owner );
+            XP_LOGFF( "ii=%d; owner: %x", ii, (unsigned int)entry->owner );
 #  endif
             ++count;
         }
@@ -292,7 +291,7 @@ envForMe( EnvThreadInfo* ti, const char* caller )
 #ifdef DEBUG
     if( !result ) {
         pthread_t self = pthread_self();
-        XP_LOGF( "no env for %s (thread %x)", caller, (int)self );
+        XP_LOGFF( "no env for %s (thread %x)", caller, (int)self );
         XP_ASSERT(0);
     }
 #endif
@@ -354,8 +353,8 @@ getState( JNIEnv* env, GamePtrType gamePtr, const char* func )
 {
 #ifdef DEBUG
     if ( NULL == gamePtr ) {
-        XP_LOGF( "ERROR: getState() called from %s() with null gamePtr",
-                 func );
+        XP_LOGFF( "ERROR: getState() called from %s() with null gamePtr",
+                  func );
     }
 #endif
     XP_ASSERT( NULL != gamePtr ); /* fired */
@@ -373,7 +372,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_globalsInit
 {
 #ifdef MEM_DEBUG
     MemPoolCtx* mpool = mpool_make( NULL );
-    XP_LOGF( "%s(): ptr size: %zu", __func__, sizeof(mpool) );
+    XP_LOGFF( "ptr size: %zu", sizeof(mpool) );
 #endif
     int seed = (int)jseed;
     XP_LOGFF( "calling srandom(seed %d)", seed );
@@ -888,7 +887,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_gi_1from_1stream
                               &gi, NULL, NULL, NULL, NULL, NULL, NULL ) ) {
         setJGI( env, jgi, &gi );
     } else {
-        XP_LOGF( "%s: game_makeFromStream failed", __func__ );
+        XP_LOGFF( "game_makeFromStream failed" );
     }
 
     gi_disposePlayerInfo( MPPARM(mpool) &gi );
@@ -939,7 +938,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_nli_1from_1stream
         jnli = makeObjectEmptyConst( env, PKG_PATH("NetLaunchInfo") );
         setNLI( env, jnli, &nli );
     } else {
-        XP_LOGF( "%s: game_makeFromStream failed", __func__ );
+        XP_LOGFF( "game_makeFromStream failed" );
     }
 
     stream_destroy( stream, env );
@@ -1282,7 +1281,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_smsproto_1prepInbound
         (*env)->ReleaseStringUTFChars( env, jFromPhone, fromPhone );
         (*env)->ReleaseByteArrayElements( env, jData, data, 0 );
     } else {
-        XP_LOGF( "%s() => null (null input)", __func__ );
+        XP_LOGFF( " => null (null input)" );
     }
     return result;
 }
@@ -1389,7 +1388,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeNewGame
                j_paths, j_lang );
 #ifdef STUBBED_DICT
     if ( !dict ) {
-        XP_LOGF( "falling back to stubbed dict" );
+        XP_LOGFF( "falling back to stubbed dict" );
         dict = make_stubbed_dict( MPPARM_NOCOMMA(mpool) );
     }
 #endif
@@ -2219,7 +2218,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_comms_1augmentHostAddr
         getJAddrRec( env, &addr, jaddr );
         comms_augmentHostAddr( state->game.comms, env, &addr );
     } else {
-        XP_LOGF( "%s: no comms this game", __func__ );
+        XP_LOGFF( "no comms this game" );
     }
     XWJNI_END();
 }

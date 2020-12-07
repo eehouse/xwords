@@ -487,8 +487,8 @@ getMethodID( JNIEnv* env, jobject obj, const char* proc, const char* sig )
 #endif
     jmethodID mid = (*env)->GetMethodID( env, cls, proc, sig );
     if ( !mid ) {
-        XP_LOGF( "%s: no mid for proc %s, sig %s in object of class %s",
-                 __func__, proc, sig, buf );
+        XP_LOGFF( "no mid for proc %s, sig %s in object of class %s",
+                  proc, sig, buf );
     }
     XP_ASSERT( !!mid );
     deleteLocalRef( env, cls );

@@ -75,7 +75,7 @@ and_xport_send( XWEnv xwe, const XP_U8* buf, XP_U16 len,
     }
 
     if ( result < len ) {
-        XP_LOGF( "%s(): changing result %d to -1", __func__, result );
+        XP_LOGFF( "changing result %d to -1", result );
         result = -1;            /* signal failure. Not sure where 0's coming from */
     }
 

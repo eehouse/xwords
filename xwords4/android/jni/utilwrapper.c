@@ -86,8 +86,7 @@ and_util_makeStreamFromAddr( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe),
 
 #define UTIL_CBK_TAIL()                                                 \
     } else {                                                            \
-        XP_LOGF( "%s: skipping call into java because jutil==NULL",     \
-                 __func__ );                                            \
+        XP_LOGFF( "skipping call into java because jutil==NULL" );      \
     }
 
 #define DUTIL_CBK_HEADER(nam,sig)                                       \
@@ -135,7 +134,7 @@ and_util_userError( XW_UtilCtxt* uc, XWEnv xwe, UtilErrID id )
     if ((*env)->ExceptionOccurred(env)) {
         (*env)->ExceptionDescribe(env);
         (*env)->ExceptionClear(env);
-        XP_LOGF( "exception found" );
+        XP_LOGFF( "exception found" );
     }
     UTIL_CBK_TAIL();
 }
@@ -333,10 +332,10 @@ utilTimerFired( XW_UtilCtxt* uc, XWEnv xwe, XWTimerReason why, int handle )
         if ( !!proc ) {
             handled = (*proc)( timerStorage->closure, xwe, why );
         } else {
-            XP_LOGF( "%s(why=%d): ERROR: no proc set", __func__, why );
+            XP_LOGFF( "(why=%d): ERROR: no proc set", why );
         }
     } else {
-        XP_LOGF( "%s: mismatch: handle=%d; timerStorage=%d", __func__,
+        XP_LOGFF( "mismatch: handle=%d; timerStorage=%d",
                  handle, (int)timerStorage );
     }
     return handled;
@@ -454,10 +453,10 @@ and_dutil_getUserQuantityString( XW_DUtilCtxt* duc, XWEnv xwe,
     int indx = 0;
     for ( ; indx < MAX_QUANTITY_STRS; ++indx ) {
         if ( !ptrs[indx] ) {
-            XP_LOGF( "%s: found empty slot %d for %s", __func__, indx, jchars );
+            XP_LOGFF( "found empty slot %d for %s", indx, jchars );
             break;
         } else if ( 0 == XP_STRCMP( jchars, ptrs[indx] ) ) {
-            XP_LOGF( "%s: found %s at slot %d", __func__, jchars, indx );
+            XP_LOGFF( "found %s at slot %d", jchars, indx );
             break;
         }
     }
@@ -731,9 +730,9 @@ and_dutil_getDevID( XW_DUtilCtxt* duc, XWEnv xwe, DevIDType* typ )
         jsize len = (*env)->GetStringUTFLength( env, jresult );
         if ( NULL != dutil->devIDStorage
              && 0 == XP_MEMCMP( dutil->devIDStorage, jchars, len ) ) {
-            XP_LOGF( "%s: already have matching devID", __func__ );
+            XP_LOGFF( "already have matching devID" );
         } else {
-            XP_LOGF( "%s: allocating storage for devID", __func__ );
+            XP_LOGFF( "allocating storage for devID" );
             XP_FREEP( dutil->dutil.mpool, &dutil->devIDStorage );
             dutil->devIDStorage = XP_MALLOC( dutil->dutil.mpool, len + 1 );
             XP_MEMCPY( dutil->devIDStorage, jchars, len );
