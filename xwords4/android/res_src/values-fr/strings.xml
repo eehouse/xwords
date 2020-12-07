@@ -2063,8 +2063,8 @@ illimités ? Annulez si vous n\'êtes pas sûr.</string>
     <!--  -->
     <!--<string name="connstat_net_fmt">Network status for game connected via
     %1$s:</string>-->
-    <string name="connstat_net_fmt">État du réseau pour la partie connectée par
-%1$s :</string>
+    <string name="connstat_net_fmt">État du réseau (ID=%2$X) pour la
+    partie connectée par %1$s :</string>
     <!--  -->
     <!--<string name="connstat_succ">successful</string>-->
     <string name="connstat_succ">succès</string>

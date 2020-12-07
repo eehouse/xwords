@@ -1830,7 +1830,7 @@
     device supports, or you may have recently removed its last way of
     connecting.)</string>
     <!--  -->
-    <string name="connstat_net_fmt">Network status for game connected via
+    <string name="connstat_net_fmt">Network status for game (ID=%2$X) connected via
     %1$s:</string>
     <!-- First line of debug-only Invites list dialog -->
     <string name="invites_net_fmt">Invitations sent for game connected via

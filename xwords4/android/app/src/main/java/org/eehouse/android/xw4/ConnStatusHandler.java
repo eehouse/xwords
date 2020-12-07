@@ -178,7 +178,7 @@ public class ConnStatusHandler {
     };
 
     public static String getStatusText( Context context, XwJNI.GamePtr gamePtr,
-                                        CommsConnTypeSet connTypes,
+                                        int gameID, CommsConnTypeSet connTypes,
                                         CommsAddrRec addr )
     {
         String msg;
@@ -190,7 +190,8 @@ public class ConnStatusHandler {
             synchronized( ConnStatusHandler.class ) {
                 sb.append( LocUtils.getString( context,
                                                R.string.connstat_net_fmt,
-                                               connTypes.toString( context, true )));
+                                               connTypes.toString( context, true ),
+                                               gameID ));
                 for ( CommsConnType typ : sDisplayOrder ) {
                     if ( !connTypes.contains(typ) ) {
                         continue;
