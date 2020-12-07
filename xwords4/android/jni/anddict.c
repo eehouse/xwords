@@ -206,7 +206,7 @@ and_dictionary_destroy( DictionaryCtxt* dict, XWEnv xwe )
 {
     AndDictionaryCtxt* ctxt = (AndDictionaryCtxt*)dict;
     ASSERT_ENV( ctxt->ti, xwe );
-    XP_LOGF( "%s(dict=%p); code=%x", __func__, ctxt, ctxt->dbgid );
+    XP_LOGFF( "(dict=%p); code=%x", ctxt, ctxt->dbgid );
     XP_U16 nSpecials = countSpecials( &ctxt->super );
     JNIEnv* env = xwe;
 
@@ -376,7 +376,7 @@ makeDict( MPFORMAL JNIEnv* env,
 
             /* copy the name */
             anddict->super.name = copyString( mpool, name );
-            XP_LOGF( "%s(dict=%p); code=%x; name=%s", __func__, anddict, 
+            XP_LOGFF( "(dict=%p); code=%x; name=%s", anddict,
                      anddict->dbgid, anddict->super.name );
             anddict->super.langName = getStringCopy( MPPARM(mpool) 
                                                      env, jlangname );

@@ -112,7 +112,7 @@ and_util_getMD5SumForDict( JNIUtilCtxt* jniutil, JNIEnv* env, const XP_UCHAR* na
 #ifdef DEBUG
     if ( !!result ) {
         const char* chars = (*env)->GetStringUTFChars( env, result, NULL );
-        XP_LOGF( "%s(%s, len=%d) => %s", __func__, name, len, chars );
+        XP_LOGFF( "(%s, len=%d) => %s", name, len, chars );
         (*env)->ReleaseStringUTFChars( env, result, chars );
     }
 #endif

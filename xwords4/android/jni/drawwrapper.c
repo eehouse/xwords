@@ -379,7 +379,7 @@ and_draw_drawTimer( DrawCtx* dctx, XWEnv xwe, const XP_Rect* rect, XP_U16 player
                     XP_S16 secondsLeft, XP_Bool inDuplicateMode )
 {
     if ( rect->width == 0 ) {
-        XP_LOGF( "%s: exiting b/c rect empty", __func__ );
+        XP_LOGFF( "exiting b/c rect empty" );
     } else {
         DRAW_CBK_HEADER("drawTimer", "(Landroid/graphics/Rect;IIZ)V" );
 
