@@ -33,6 +33,8 @@ import org.json.JSONArray;
 
 import java.util.Map;
 
+import org.eehouse.android.xw4.loc.LocUtils;
+
 public class FBMService extends FirebaseMessagingService {
     private static final String TAG = FBMService.class.getSimpleName();
 
@@ -111,18 +113,19 @@ public class FBMService extends FirebaseMessagingService {
 
             value = data.get( "msg" );
             if ( null != value ) {
-                String title = data.get( "title" );
-                if ( null != title ) {
-                    String teaser = data.get( "teaser" );
-                    if ( null == teaser ) {
-                        teaser = value;
-                    }
-                    Intent alertIntent = GamesListDelegate
-                        .makeAlertIntent( this, value );
-                    int code = value.hashCode() ^ title.hashCode();
-                    Utils.postNotification( this, alertIntent, title,
-                                            teaser, code );
+                String title = data.get( "titlexx" );
+                if ( null == title ) {
+                    title = LocUtils.getString( this, R.string.remote_msg_title );
                 }
+                String teaser = data.get( "teaser" );
+                if ( null == teaser ) {
+                    teaser = value;
+                }
+                Intent alertIntent = GamesListDelegate
+                    .makeAlertIntent( this, value );
+                int code = value.hashCode() ^ title.hashCode();
+                Utils.postNotification( this, alertIntent, title,
+                                        teaser, code );
             }
         }
     }

@@ -2638,6 +2638,11 @@
     the person’s name is listed, just select it and an invitation will
     be sent immediately.
     </string>
+
+    <!-- Default title of notification sent via FCM from
+         relay. Currently I use this only for testing.  -->
+    <string name="remote_msg_title">Remote message</string>
+
     <!-- MQTT stuff. May not see the light of day -->
     <string name="invite_choice_mqtt">Internet/MQTT</string>
     <string name="mqtt_invite_title">MQTT Invitation</string>
