@@ -113,7 +113,7 @@ public class FBMService extends FirebaseMessagingService {
 
             value = data.get( "msg" );
             if ( null != value ) {
-                String title = data.get( "titlexx" );
+                String title = data.get( "title" );
                 if ( null == title ) {
                     title = LocUtils.getString( this, R.string.remote_msg_title );
                 }
