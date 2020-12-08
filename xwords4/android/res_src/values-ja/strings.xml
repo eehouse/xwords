@@ -399,7 +399,7 @@
     <string name="connstat_net_noaddr">このネットワークゲームは接続する方法がなく、プレイできません。
 \n
 \n(お使いデバイスがサポートしていない接続方法が指定された招待状から作成したか、最新の接続方法を削除した可能性があります。)</string>
-    <string name="connstat_net_fmt">%1$s 経由で接続されたゲーム(ID=%2$X)のネットワーク状況:</string>
+    <string name="connstat_net_fmt">%1$s 経由で接続されたゲーム(ID=%2$d)のネットワーク状況:</string>
     <string name="connstat_succ">成功</string>
     <string name="connstat_unsucc">不成功</string>
     <string name="connstat_lastsend_fmt">最後の送信 %1$s (%2$s)</string>
