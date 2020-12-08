@@ -400,7 +400,7 @@
     <string name="board_menu_dict">Bekijk woordenlijst</string>
     <string name="game_list_tmp">Samenvatting spel opbouwen…</string>
     <string name="connstat_net_noaddr">Dit netwerk spel heeft geen manier om te verbinden en zal nooit speelbaar worden.\n\n(Het was waarschijnlijk gemaakt via een uitnodiging die geen verbindingsmanier specificeert die jouw apparaat ondersteund.)</string>
-    <string name="connstat_net_fmt">Netwerkstatus voor spel (ID=%2$X) verbonden via %1$s:</string>
+    <string name="connstat_net_fmt">Netwerkstatus voor spel (ID=%2$d) verbonden via %1$s:</string>
     <string name="connstat_succ">succesvol</string>
     <string name="connstat_unsucc">onsuccesvol</string>
     <string name="connstat_lastsend_fmt">Laatst verstuurd was %1$s (%2$s)</string>
