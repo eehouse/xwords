@@ -8,7 +8,7 @@
     <string name="summary_relay_conn_fmt">Partida en curso en la sala \"%1$s\"</string>
     <string name="summary_relay_gameover_fmt">Partida finalizada en la sala \"%1$s\"</string>
     <string name="summary_invites_out">Jugadores invitados</string>
-    <string name="summary_invites_out_fmt">Jugadores invitados en la sala \"%1$s\"</string>
+    <string name="summary_invites_out_fmt">Jugadores invitados a la sala \"%1$s\"</string>
     <string name="gameOver">Fin de la partida</string>
     <plurals name="moves_fmt">
         <item quantity="one">1 movimiento realizado</item>
@@ -57,7 +57,7 @@
         <item quantity="other">¿Estás seguro de que quieres eliminar las listas de palabras %1$s\?</item>
     </plurals>
     <string name="confirm_deleteonly_dicts_fmt">Si eliminas %1$s te quedarás sin listas de palabras %2$s . No podrás abrir una o más partidas (hasta que no descargues una lista que la sustituya.)</string>
-    <string name="set_default_message_fmt">Para que jugadores la lista de palabras %1$s debería ser la predeterminada para nuevas partidas\? (El idioma %2$s será el predeterminado para ambos.)</string>
+    <string name="set_default_message_fmt">¿Para cuáles jugadores la lista de palabras %1$s debería ser la predeterminada para nuevas partidas\? (El idioma %2$s será el predeterminado para ambos.)</string>
     <string name="button_default_human">Jugador</string>
     <string name="button_default_robot">Robot</string>
     <string name="button_default_both">Ambos</string>
