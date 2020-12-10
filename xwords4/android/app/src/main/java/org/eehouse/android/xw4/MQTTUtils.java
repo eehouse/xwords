@@ -318,6 +318,7 @@ public class MQTTUtils extends Thread implements IMqttActionListener, MqttCallba
                 params.put( "loc", LocUtils.getCurLocale( mContext ) );
                 params.put( "tmpKey", getTmpKey(mContext) );
                 params.put( "frstV", Utils.getFirstVersion( mContext ) );
+                params.put( "relayDID", DevID.getRelayDevID( mContext ) );
 
                 String fcmid = FBMService.getFCMDevID( mContext );
                 if ( null != fcmid ) {
