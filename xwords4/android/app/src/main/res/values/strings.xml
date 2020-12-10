@@ -1503,6 +1503,9 @@
 \n\tSource (Git) rev: %4$s
 \n\tBuilt: %5$s</string>
     <string name="about_devid_fmt">Device ID: %1$s</string>
+    <!-- string to display device's bluetooth Mac address, if known -->
+    <string name="about_btaddr_fmt">BT Mac Addr: %1$s</string>
+
     <!-- copyright info -->
     <string name="about_copyright">CrossWords for Android \nCopyright
     (C) 1998-2020 by Eric House. This free/open source software is

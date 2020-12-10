@@ -75,6 +75,12 @@ public class AboutAlert extends XWDialogFragment {
         }
 
         str = getString( R.string.about_devid_fmt, XwJNI.dvc_getMQTTDevID(null) );
+        if ( BuildConfig.NON_RELEASE ) {
+            String[] pair = BTUtils.getBTNameAndAddress();
+            if ( null != pair && 2 >= pair.length && null != pair[1] ) {
+                str += "\n\n" + getString( R.string.about_btaddr_fmt, pair[1] );
+            }
+        }
         ((TextView)view.findViewById( R.id.about_build ))
             .setText( str );
 
