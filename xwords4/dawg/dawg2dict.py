@@ -155,11 +155,14 @@ def process(args):
             
             print( 'header: read nWords: {}'.format(nWords ), file=sys.stderr )
 
-            msg = getNullTermParam(header)
-            if args.DUMP_MSG:
-                print( 'msg: {}'.format(msg))
-            md5Sum = getNullTermParam(header)
-            print( 'header: read sum: {}'.format(md5Sum), file=sys.stderr )
+            try: # older wordlists won't have these
+                msg = getNullTermParam(header)
+                if args.DUMP_MSG:
+                    print( 'msg: {}'.format(msg))
+                md5Sum = getNullTermParam(header)
+                print( 'header: read sum: {}'.format(md5Sum), file=sys.stderr )
+            except:
+                md5Sum = None
 
             if args.GET_SUM:
                 print( '{}'.format(md5Sum), file=sys.stdout )
