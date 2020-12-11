@@ -521,7 +521,8 @@
     %2$s. Recipient unknown.</string>
     <!-- In "more info" about sent invitations when mqtt used and
          player is known. -->
-    <string name="invit_expl_player_fmt">Invite forwarded via MQTT/Internet to the known player “%1$s” on %2$s.</string>
+    <string name="invit_expl_player_fmt">Invite forwarded via MQTT/internet
+    to Known Player “%1$s” on %2$s.</string>
     <!-- Explanation shown when you choose the radio button to invite
          by QR Code -->
     <string name="qrcode_invite_expl">To invite via QR code, let your opponent scan the code with the camera on their Android phone.</string>
@@ -1503,9 +1504,9 @@
 \n\tSource (Git) rev: %4$s
 \n\tBuilt: %5$s</string>
     <string name="about_devid_fmt">Device ID: %1$s</string>
-    <!-- string to display device's bluetooth Mac address, if known -->
+    <!-- string to display device's bluetooth Mac address, if
+         known. Shown only on debug builds -->
     <string name="about_btaddr_fmt">BT Mac Addr: %1$s</string>
-
     <!-- copyright info -->
     <string name="about_copyright">CrossWords for Android \nCopyright
     (C) 1998-2020 by Eric House. This free/open source software is
