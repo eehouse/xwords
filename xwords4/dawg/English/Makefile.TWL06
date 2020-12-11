@@ -22,11 +22,11 @@ TARGET_TYPE=WINCE
 
 include ../Makefile.langcommon
 
-# from http://www.3zsoftware.com/en/wordmagic/lists.php
-SOURCEDICT ?= $(XWDICTPATH)/English/twl06.zip
+DICTNOTE = "from http://www.3zsoftware.com/en/wordmagic/lists.php"
+SOURCEDICT ?= $(XWDICTPATH)/English/TWL06.txt
 
 $(XWLANG)Main.dict.gz: $(SOURCEDICT) Makefile
-	zcat $< | grep -e "^[A-Z]\{2,15\}$$" | gzip -c > $@
+	cat $< | grep -e "^[A-Z]\{2,15\}$$" | gzip -c > $@
 
 # Everything but creating of the Main.dict file is inherited from the
 # "parent" Makefile.langcommon in the parent directory.
