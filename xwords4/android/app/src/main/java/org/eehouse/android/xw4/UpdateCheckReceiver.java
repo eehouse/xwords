@@ -33,9 +33,11 @@ import android.os.SystemClock;
 
 import java.io.File;
 import javax.net.ssl.HttpsURLConnection;
-import org.eehouse.android.xw4.loc.LocUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
+
+import org.eehouse.android.xw4.jni.XwJNI;
+import org.eehouse.android.xw4.loc.LocUtils;
 
 public class UpdateCheckReceiver extends BroadcastReceiver {
     private static final String TAG = UpdateCheckReceiver.class.getSimpleName();
@@ -66,6 +68,7 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
     private static final String k_LEN = "len";
     private static final String k_URL = "url";
     private static final String k_DEVID = "did";
+    private static final String k_MQTTDEVID = "devid";
     private static final String k_DEBUG = "dbg";
     private static final String k_XLATEINFO = "xlatinfo";
     private static final String k_STRINGSHASH = "strings";
@@ -148,6 +151,10 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
                 appParams.put( k_DEBUG, BuildConfig.DEBUG );
                 params.put( k_APP, appParams );
                 params.put( k_DEVID, XWPrefs.getDevID( context ) );
+
+                String[] topic = {null};
+                String devID = XwJNI.dvc_getMQTTDevID( topic );
+                params.put( k_MQTTDEVID, devID );
             } catch ( org.json.JSONException jse ) {
                 Log.ex( TAG, jse );
             }
