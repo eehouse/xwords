@@ -1664,7 +1664,7 @@ public class GamesListDelegate extends ListDelegateBase
             if ( m_menuPrepared ) {
                 boolean nothingSelected = 0 == (nGroupsSelected + nGamesSelected);
 
-                final boolean showDbg = BuildConfig.DEBUG
+                final boolean showDbg = BuildConfig.NON_RELEASE
                     || XWPrefs.getDebugEnabled( m_activity );
                 showItemsIf( DEBUG_ITEMS, menu, nothingSelected && showDbg );
                 Utils.setItemVisible( menu, R.id.games_menu_loaddb,
