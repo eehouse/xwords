@@ -167,6 +167,9 @@ def process(args):
             if args.GET_SUM:
                 print( '{}'.format(md5Sum), file=sys.stdout )
                 sys.exit(0)
+            elif args.GET_NWORDS:
+                print( '{}'.format(nWords), file=sys.stdout )
+                sys.exit(0)
 
         nodeSize = 0
         isUTF8 = False
@@ -246,6 +249,8 @@ def mkParser():
                         action = 'store_true', help = 'write header user-visible message to stdout')
     parser.add_argument('--get-sum', dest = 'GET_SUM', default = False,
                         action = 'store_true', help = 'write md5sum to stdout')
+    parser.add_argument('--get-nwords', dest = 'GET_NWORDS', default = False,
+                        action = 'store_true', help = 'write count of words to stdout')
     parser.add_argument('--separator', dest = 'DELIM', default = '', help = 'printed between tiles')
 
     # [-raw | -json]  [-get-sum] [-get-desc] -dict <xwdORpdb>
