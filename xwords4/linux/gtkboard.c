@@ -326,7 +326,7 @@ relay_status_gtk( XWEnv XP_UNUSED(xwe), void* closure, CommsRelayState state )
     if ( !!cGlobals->draw ) {
         cGlobals->state = state;
         globals->stateChar = 'A' + COMMS_RELAYSTATE_ALLCONNECTED - state;
-        draw_gtk_status( (GtkDrawCtx*)cGlobals->draw, globals->stateChar );
+        draw_gtk_status( (GtkDrawCtx*)(void*)cGlobals->draw, globals->stateChar );
     }
 }
 
@@ -2492,7 +2492,7 @@ on_draw_event( GtkWidget* widget, cairo_t* cr, gpointer user_data )
     CommonGlobals* cGlobals = &globals->cGlobals;
     board_invalAll( cGlobals->game.board );
     board_draw( cGlobals->game.board, NULL_XWE );
-    draw_gtk_status( (GtkDrawCtx*)cGlobals->draw, globals->stateChar );
+    draw_gtk_status( (GtkDrawCtx*)(void*)cGlobals->draw, globals->stateChar );
 
     XP_USE(widget);
     XP_USE(cr);

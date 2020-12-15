@@ -1239,7 +1239,7 @@ inviteList( CommonGlobals* cGlobals, CommsAddrRec* addr, GSList* invitees,
             nli_init( &nli, cGlobals->gi, addr, nPlayersH, forceChannel );
             switch ( typ ) {
             case COMMS_CONN_RELAY: {
-                uint64_t inviteeRelayID = (uint64_t)g_slist_nth_data( invitees, ii );
+                uint64_t inviteeRelayID = *(uint64_t*)g_slist_nth_data( invitees, ii );
                 relaycon_invite( params, (XP_U32)inviteeRelayID, NULL, &nli );
             }
                 break;

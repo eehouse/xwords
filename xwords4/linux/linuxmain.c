@@ -3054,11 +3054,13 @@ main( int argc, char** argv )
         case CMD_BONUSFILE:
             mainParams.bonusFile = optarg;
             break;
-        case CMD_INVITEE_RELAYID:
+        case CMD_INVITEE_RELAYID: {
+            uint64_t* ptr = g_malloc( sizeof(*ptr) );
+            *ptr = (uint64_t)atoi(optarg);
             mainParams.connInfo.relay.inviteeRelayIDs =
-                g_slist_append(mainParams.connInfo.relay.inviteeRelayIDs,
-                               (void*)(uint64_t)atoi(optarg));
+                g_slist_append(mainParams.connInfo.relay.inviteeRelayIDs, ptr );
             addr_addType( &mainParams.addr, COMMS_CONN_RELAY );
+        }
             break;
 #endif
         case CMD_CLOSESTDIN:

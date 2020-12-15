@@ -442,7 +442,7 @@ freer( gpointer data, gpointer XP_UNUSED(user_data) )
 static void
 gtk_draw_destroyCtxt( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe) )
 {
-    GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
+    GtkDrawCtx* dctx = (GtkDrawCtx*)(void*)p_dctx;
     GtkAllocation alloc;
     gtk_widget_get_allocation( dctx->drawing_area, &alloc );
 
@@ -471,7 +471,7 @@ static XP_Bool
 gtk_draw_beginDraw( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe) )
 {
 #ifdef USE_CAIRO
-    GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
+    GtkDrawCtx* dctx = (GtkDrawCtx*)(void*)p_dctx;
     return initCairo( dctx );
 #else
     fix this
@@ -482,7 +482,7 @@ static void
 gtk_draw_endDraw( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe) )
 {
 #ifdef USE_CAIRO
-    GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
+    GtkDrawCtx* dctx = (GtkDrawCtx*)(void*)p_dctx;
     destroyCairo( dctx );
 #endif
 }
@@ -493,13 +493,13 @@ gtk_draw_boardBegin( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe), const XP_Rect* rect,
                      DrawFocusState XP_UNUSED(dfs) )
 {
     GdkRectangle gdkrect;
-    GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
+    GtkDrawCtx* dctx = (GtkDrawCtx*)(void*)p_dctx;
     dctx->cellWidth = width;
     dctx->cellHeight = height;
 
     gtkSetForeground( dctx, &dctx->black );
 
-    gdkrect = *(GdkRectangle*)rect;
+    gdkrect = *(GdkRectangle*)(void*)rect;
     ++gdkrect.width;
     ++gdkrect.height;
 
@@ -518,7 +518,7 @@ static XP_Bool
 gtk_draw_vertScrollBoard( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe), XP_Rect* rect,
                           XP_S16 dist, DrawFocusState XP_UNUSED(dfs) )
 {
-    GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
+    GtkDrawCtx* dctx = (GtkDrawCtx*)(void*)p_dctx;
     XP_Bool down = dist <= 0;
     gint ysrc, ydest;
 
@@ -612,7 +612,7 @@ gtk_draw_drawCell( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe), const XP_Rect* rect, c
                    XP_U16 XP_UNUSED(value), XP_S16 owner, XWBonusType bonus, 
                    HintAtts hintAtts, CellFlags flags )
 {
-    GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
+    GtkDrawCtx* dctx = (GtkDrawCtx*)(void*)p_dctx;
     XP_Rect rectInset = *rect;
     GtkGameGlobals* globals = dctx->globals;
     XP_Bool showGrid = globals->gridOn;
@@ -741,7 +741,7 @@ gtk_draw_trayBegin( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe), const XP_Rect* XP_UNU
                     XP_U16 owner, XP_S16 XP_UNUSED(owner), 
                     DrawFocusState XP_UNUSED(dfs) )
 {
-    GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
+    GtkDrawCtx* dctx = (GtkDrawCtx*)(void*)p_dctx;
     XP_Bool doDraw = !dctx->surface;
     if ( doDraw ) {
         dctx->trayOwner = owner;
@@ -754,7 +754,7 @@ gtkDrawTileImpl( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe), const XP_Rect* rect, con
                  const XP_Bitmaps* bitmaps, XP_U16 val, CellFlags flags, 
                  XP_Bool clearBack )
 {
-    GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
+    GtkDrawCtx* dctx = (GtkDrawCtx*)(void*)p_dctx;
     XP_UCHAR numbuf[3];
     XP_Rect insetR = *rect;
     XP_Bool isCursor = (flags & CELL_ISCURSOR) != 0;
@@ -838,7 +838,7 @@ static XP_Bool
 gtk_draw_drawTileBack( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe), const XP_Rect* rect, 
                        CellFlags flags )
 {
-    GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
+    GtkDrawCtx* dctx = (GtkDrawCtx*)(void*)p_dctx;
     XP_Bool hasCursor = (flags & CELL_ISCURSOR) != 0;
     XP_Rect r = *rect;
 
@@ -859,7 +859,7 @@ static void
 gtk_draw_drawTrayDivider( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe),
                           const XP_Rect* rect, CellFlags flags )
 {
-    GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
+    GtkDrawCtx* dctx = (GtkDrawCtx*)(void*)p_dctx;
     XP_Rect r = *rect;
     XP_Bool selected = 0 != (flags & (CELL_RECENT|CELL_PENDING));
     XP_Bool isCursor = 0 != (flags & CELL_ISCURSOR);
@@ -882,7 +882,7 @@ gtk_draw_drawTrayDivider( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe),
 static void 
 gtk_draw_clearRect( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe), const XP_Rect* rectP )
 {
-    GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
+    GtkDrawCtx* dctx = (GtkDrawCtx*)(void*)p_dctx;
     XP_Rect rect = *rectP;
 
     ++rect.width;
@@ -897,7 +897,7 @@ gtk_draw_drawBoardArrow( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe), const XP_Rect* r
                          XWBonusType XP_UNUSED(cursorBonus), XP_Bool vertical,
                          HintAtts hintAtts, CellFlags XP_UNUSED(flags) )
 {
-    GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
+    GtkDrawCtx* dctx = (GtkDrawCtx*)(void*)p_dctx;
     const XP_UCHAR* curs = vertical? "|":"-";
 
     /* font needs to be small enough that "|" doesn't overwrite cell below */
@@ -914,7 +914,7 @@ gtk_draw_scoreBegin( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe), const XP_Rect* rect,
                      XP_S16 XP_UNUSED(remCount), 
                      DrawFocusState XP_UNUSED(dfs) )
 {
-    GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
+    GtkDrawCtx* dctx = (GtkDrawCtx*)(void*)p_dctx;
     XP_Bool doDraw = !dctx->surface;
     if ( doDraw ) {
         gtkEraseRect( dctx, rect );
@@ -962,7 +962,7 @@ static void
 gtkDrawDrawRemText( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe), const XP_Rect* rect,
                     XP_S16 nTilesLeft, XP_U16* widthP, XP_U16* heightP, XP_Bool focussed )
 {
-    GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
+    GtkDrawCtx* dctx = (GtkDrawCtx*)(void*)p_dctx;
     XP_UCHAR buf[10];
     XP_SNPRINTF( buf, sizeof(buf), "rem:%d", nTilesLeft );
     PangoLayout* layout = getLayoutToFitRect( dctx, buf, rect, NULL );
@@ -996,7 +996,7 @@ gtk_draw_score_drawPlayer( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe), const XP_Rect*
                            const XP_Rect* rOuter, 
                            XP_U16 XP_UNUSED(gotPct), const DrawScoreInfo* dsi )
 {
-    GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
+    GtkDrawCtx* dctx = (GtkDrawCtx*)(void*)p_dctx;
     XP_Bool hasCursor = (dsi->flags & CELL_ISCURSOR) != 0;
     GdkRGBA* cursor = NULL;
     XP_U16 playerNum = dsi->playerNum;
@@ -1190,7 +1190,7 @@ gtk_draw_measureScoreText( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe), const XP_Rect*
                            const DrawScoreInfo* dsi,
                            XP_U16* widthP, XP_U16* heightP )
 {
-    GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
+    GtkDrawCtx* dctx = (GtkDrawCtx*)(void*)p_dctx;
     XP_UCHAR buf[VSIZE(dctx->scoreCache[0].str)];
     PangoLayout* layout;
     int lineHeight = GTK_HOR_SCORE_HEIGHT, nLines;
@@ -1212,7 +1212,7 @@ gtk_draw_score_pendingScore( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe), const XP_Rec
                              XP_S16 score, XP_U16 XP_UNUSED(playerNum),
                              XP_Bool curTurn, CellFlags flags )
 {
-    GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
+    GtkDrawCtx* dctx = (GtkDrawCtx*)(void*)p_dctx;
     XP_UCHAR buf[5];
     XP_U16 ht;
     XP_Rect localR;
@@ -1251,7 +1251,7 @@ gtk_draw_drawTimer( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe), const XP_Rect* rInner
                     XP_U16 playerNum, XP_S16 secondsLeft,
                     XP_Bool localTurnDone )
 {
-    GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
+    GtkDrawCtx* dctx = (GtkDrawCtx*)(void*)p_dctx;
     XP_Bool hadCairo = haveCairo( dctx );
     if ( hadCairo || initCairo( dctx ) ) {
         gtkEraseRect( dctx, rInner );
@@ -1355,10 +1355,6 @@ gtk_draw_drawMiniWindow( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe), const XP_UCHAR* 
      c.green = (g); \
      c.blue = (b); \
 }
-static void
-draw_doNothing( DrawCtx* XP_UNUSED(dctx), ... )
-{
-} /* draw_doNothing */
 
 static gdouble
 figureColor( int in )
@@ -1404,11 +1400,11 @@ gtkDrawCtxtMake( GtkWidget* drawing_area, GtkGameGlobals* globals )
 
     size_t tableSize = sizeof(*(((GtkDrawCtx*)dctx)->vtable));
     dctx->vtable = g_malloc( tableSize );
-    void** ptr = (void**)dctx->vtable;
-    void** end = (void**)(((unsigned char*)ptr) + tableSize);
-    while ( ptr < end ) {
-        *ptr++ = draw_doNothing;
-    }
+    /* void** ptr = (void**)dctx->vtable; */
+    /* void** end = (void**)(((unsigned char*)ptr) + tableSize); */
+    /* while ( ptr < end ) { */
+    /*     *ptr++ = draw_doNothing; */
+    /* } */
 
     SET_VTABLE_ENTRY( dctx->vtable, draw_clearRect, gtk );
 

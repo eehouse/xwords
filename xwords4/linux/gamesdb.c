@@ -294,7 +294,7 @@ addSnapshot( CommonGlobals* cGlobals )
     LOG_FUNC();
 
     BoardCtxt* board = cGlobals->game.board;
-    GtkDrawCtx* dctx = (GtkDrawCtx*)board_getDraw( board );
+    GtkDrawCtx* dctx = (GtkDrawCtx*)(void*)board_getDraw( board );
     if ( !!dctx ) {
         addSurface( dctx, SNAP_WIDTH, SNAP_HEIGHT );
         board_drawSnapshot( board, NULL_XWE, (DrawCtx*)dctx, SNAP_WIDTH, SNAP_HEIGHT );
