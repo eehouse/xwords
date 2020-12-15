@@ -1,2 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources></resources>
+<resources>
+    <string name="list_item_netstats">Connessioni…</string>
+    <string name="list_item_copy">Copia</string>
+    <string name="list_item_new_from">Nuovo gioco da</string>
+    <string name="list_item_reset">Reset</string>
+    <string name="list_item_delete">Cancella partita</string>
+    <string name="list_item_move">Sposta al gruppo…</string>
+    <string name="list_item_rename">Rinomina…</string>
+    <string name="list_item_config">Impostazioni…</string>
+    <string name="board_menu_file_about">Info CrossWords…</string>
+    <string name="no_games_to_refresh">Nessun gioco trovato in connessione.</string>
+    <string name="msgs_progress">Controllo risposta per mosse etc…</string>
+    <string name="gamel_menu_checkmoves">Controllo mosse</string>
+    <string name="menu_prefs">Impostazioni…</string>
+    <string name="gamel_menu_dicts">Lista parole…</string>
+    <string name="button_reset">Reset</string>
+    <string name="button_delete">Cancella</string>
+    <plurals name="moves_fmt">
+        <item quantity="one">una mossa giocata</item>
+        <item quantity="other">%1$d mosse giocate</item>
+    </plurals>
+    <string name="gameOver">Game Over</string>
+    <string name="summary_invites_out_fmt">Giocatori invitati alla stanza \"%1$s\"</string>
+    <string name="summary_invites_out">Giocatori invitati</string>
+    <string name="summary_relay_gameover_fmt">Gioco finito nella stanza \"%1$s\"</string>
+    <string name="summary_relay_conn_fmt">Gioco in corso nella stanza \"%1$s\"</string>
+    <string name="summary_relay_wait_fmt">Aspettando giocatori per la stanza \"%1$s\"</string>
+    <string name="summary_relay_conf_fmt">Configurato per la stanza \"%1$s\"</string>
+    <string name="missing_player">(Non ancora qui...)</string>
+</resources>
