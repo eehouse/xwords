@@ -96,7 +96,7 @@ public class BTUtils {
 
     private static final int BT_PROTO_JSONS = 1; // using jsons instead of lots of fields
     private static final int BT_PROTO_BATCH = 2;
-    private static final int BT_PROTO = BT_PROTO_JSONS; /* BT_PROTO_BATCH */
+    private static final int BT_PROTO = BT_PROTO_BATCH;
     private static boolean IS_BATCH_PROTO() { return BT_PROTO_BATCH == BT_PROTO; }
 
     private static AtomicBoolean sBackUser = new AtomicBoolean(false);
