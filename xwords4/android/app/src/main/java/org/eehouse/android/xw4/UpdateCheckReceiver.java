@@ -362,18 +362,8 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
                                 String url = dict.getString( k_URL );
                                 int index = dict.getInt( k_INDEX );
                                 DictUtils.DictAndLoc dal = m_dals[index];
-                                Intent intent =
-                                    new Intent( m_context, DictsActivity.class );
-                                intent.putExtra( NEW_DICT_URL, url );
-                                intent.putExtra( NEW_DICT_NAME, dal.name );
-                                intent.putExtra( NEW_DICT_LOC, dal.loc.ordinal() );
-                                String body =
-                                    LocUtils.getString( m_context,
-                                                        R.string.new_dict_avail_fmt,
-                                                        dal.name );
-                                Utils.postNotification( m_context, intent,
-                                                        R.string.new_dict_avail,
-                                                        body, url.hashCode() );
+                                postDictNotification( m_context, url,
+                                                      dal.name, dal.loc, true );
                                 gotOne = true;
                             }
                         }
@@ -404,5 +394,38 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
                 Utils.showToast( m_context, R.string.checkupdates_none_found );
             }
         }
+    }
+
+    private static void postDictNotification( Context context, String url,
+                                              String name, DictUtils.DictLoc loc,
+                                              boolean isUpdate )
+    {
+        Intent intent =
+            new Intent( context, DictsActivity.class );
+        intent.putExtra( NEW_DICT_URL, url );
+        intent.putExtra( NEW_DICT_NAME, name );
+        intent.putExtra( NEW_DICT_LOC, loc.ordinal() );
+
+        int strID = isUpdate ? R.string.new_dict_avail_fmt
+            : R.string.dict_avail_fmt;
+        String body = LocUtils.getString( context, strID, name );
+
+        Utils.postNotification( context, intent,
+                                R.string.new_dict_avail,
+                                body, url.hashCode() );
+    }
+
+    static boolean postedForDictDownload( Context context, final Uri uri )
+    {
+        String durl = uri.getQueryParameter( "durl" );
+        boolean isDownloadURI = null != durl;
+        if ( isDownloadURI ) {
+            String name = uri.getQueryParameter( "name" );
+            Assert.assertTrueNR( null != name ); // derive from uri?
+            postDictNotification( context, durl, name,
+                                  DictUtils.DictLoc.INTERNAL, false );
+        }
+        // Log.d( TAG, "postDictNotification(%s) => %b", uri, isDownloadURI );
+        return isDownloadURI;
     }
 }

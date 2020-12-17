@@ -1929,6 +1929,8 @@
     <string name="new_dict_avail">New wordlist available</string>
     <!--  -->
     <string name="new_dict_avail_fmt">Tap to update %1$s</string>
+    <!-- A wordlist that's not necessarily a replacement is available -->
+    <string name="dict_avail_fmt">Tap to download wordlist “%1$s”</string>
     <!--  -->
     <string name="new_app_avail_fmt">New version of %1$s</string>
     <!--  -->

@@ -2416,6 +2416,14 @@ public class GamesListDelegate extends ListDelegateBase
         return result;
     }
 
+    private boolean postWordlistURL( Intent intent )
+    {
+        Uri data = intent.getData();
+        boolean result = null != data
+            && UpdateCheckReceiver.postedForDictDownload( m_activity, data );
+        return result;
+    }
+
     private boolean startNewNetGame( NetLaunchInfo nli )
     {
         boolean handled = false;
@@ -2827,6 +2835,7 @@ public class GamesListDelegate extends ListDelegateBase
         Log.d( TAG, "tryStartsFromIntent(extras={%s})", DbgUtils.extrasToString( intent ) );
         boolean handled = startFirstHasDict( intent )
             || startWithInvitee( intent )
+            || postWordlistURL( intent )
             || startNewNetGame( intent )
             || startHasGameID( intent )
             || startRematch( intent )

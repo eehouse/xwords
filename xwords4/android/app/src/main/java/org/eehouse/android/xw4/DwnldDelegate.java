@@ -57,6 +57,7 @@ public class DwnldDelegate extends ListDelegateBase {
     // URIs coming in in intents
     private static final String APK_EXTRA = "APK";
     private static final String DICTS_EXTRA = "XWDS";
+    private static final String NAMES_EXTRA = "NAMES";
 
     private Activity m_activity;
     private ArrayList<LinearLayout> m_views;
@@ -95,16 +96,18 @@ public class DwnldDelegate extends ListDelegateBase {
         implements DictUtils.DownProgListener {
         private String m_savedDict = null;
         private Uri m_uri = null;
+        private String m_name;
         private boolean m_isApp = false;
         private File m_appFile = null;
         private int m_totalRead = 0;
         private LinearLayout m_listItem;
         private ProgressBar m_progressBar;
 
-        public DownloadFilesTask( Uri uri, LinearLayout item, boolean isApp )
+        public DownloadFilesTask( Uri uri, String name, LinearLayout item, boolean isApp )
         {
             super();
             m_uri = uri;
+            m_name = name;
             m_isApp = isApp;
             m_listItem = item;
             m_progressBar = (ProgressBar)item.findViewById( R.id.progress_bar );
@@ -152,8 +155,10 @@ public class DwnldDelegate extends ListDelegateBase {
                         }
                     });
                 InputStream is = conn.getInputStream();
-                String name = basename( m_uri.getPath() );
+                String name = null == m_name
+                    ? basename( m_uri.getPath() ) : m_name;
                 if ( m_isApp ) {
+                    Assert.assertTrueNR( null == m_name );
                     m_appFile = saveToPrivate( is, name, this );
                 } else {
                     m_savedDict = saveDict( is, name, this );
@@ -277,11 +282,13 @@ public class DwnldDelegate extends ListDelegateBase {
         Uri uri = intent.getData(); // launched from Manifest case
         if ( null == uri ) {
             String appUrl = intent.getStringExtra( APK_EXTRA );
+            String[] names = null;
             boolean isApp = null != appUrl;
             if ( isApp ) {
                 uris = new Uri[] { Uri.parse( appUrl ) };
             } else {
                 Parcelable[] parcels = intent.getParcelableArrayExtra( DICTS_EXTRA );
+                names = intent.getStringArrayExtra( NAMES_EXTRA );
                 uris = new Uri[parcels.length];
                 for ( int ii = 0; ii < parcels.length; ++ii ) {
                     uris[ii] = (Uri)(parcels[ii]);
@@ -291,7 +298,8 @@ public class DwnldDelegate extends ListDelegateBase {
                 m_views = new ArrayList<>();
                 for ( int ii = 0; ii < uris.length; ++ii ) {
                     item = (LinearLayout)inflate( R.layout.import_dict_item );
-                    m_dfts.add( new DownloadFilesTask( uris[ii], item, isApp ));
+                    String name = null == names ? null : names[ii];
+                    m_dfts.add( new DownloadFilesTask( uris[ii], name, item, isApp ));
                     m_views.add( item );
                 }
             }
@@ -299,7 +307,7 @@ public class DwnldDelegate extends ListDelegateBase {
                      && intent.getType().equals( "application/x-xwordsdict" ))
                     || uri.toString().endsWith( XWConstants.DICT_EXTN ) ) {
             item = (LinearLayout)inflate( R.layout.import_dict_item );
-            dft = new DownloadFilesTask( uri, item, false );
+            dft = new DownloadFilesTask( uri, null, item, false );
             uris = new Uri[] { uri };
         }
 
@@ -468,8 +476,8 @@ public class DwnldDelegate extends ListDelegateBase {
                                            String name,
                                            DownloadFinishedListener lstnr )
     {
-        Uri[] uris = new Uri[] { uri };
-        String[] names = new String[] { name };
+        Uri[] uris = { uri };
+        String[] names = { name };
         downloadDictsInBack( context, uris, names, lstnr );
     }
 
@@ -485,6 +493,7 @@ public class DwnldDelegate extends ListDelegateBase {
 
         Intent intent = new Intent( context, DwnldActivity.class );
         intent.putExtra( DICTS_EXTRA, uris ); // uris implement Parcelable
+        intent.putExtra( NAMES_EXTRA, names );
         context.startActivity( intent );
     }
 
