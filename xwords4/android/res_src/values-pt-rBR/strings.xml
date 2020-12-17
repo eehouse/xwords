@@ -391,4 +391,6 @@
     <string name="disable_bt">Desabilitar</string>
     <string name="game_summary_field_created">Quando criado</string>
     <string name="invit_expl_player_fmt">Convite encaminhado via MQTT/internet para jogador conhecido “%1$s” on %2$s.</string>
+    <string name="qrcode_invite_expl">Para convidar via código QR, deixe seu oponente escanear o código com a câmera do telefone Android dele.</string>
+    <string name="invite_msg_extra">Você verá esta mensagem até todos os jogadores se conectarem. Se você já enviou um convite e suspeita que foi perdido, não há problema em enviar outro.</string>
 </resources>
