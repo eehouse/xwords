@@ -83,9 +83,6 @@ android {
         def stamp = Math.round(System.currentTimeMillis() / 1000)
         variant.buildConfigField "long", "BUILD_STAMP", "$stamp"
 
-        // FIX ME
-        variant.buildConfigField "String", "STRINGS_HASH", "\"00000\""
-
         variant.buildConfigField "short", "CLIENT_VERS_RELAY", "$INITIAL_CLIENT_VERS"
 
         variant.buildConfigField "boolean", "FOR_FDROID", "$forFDroid"

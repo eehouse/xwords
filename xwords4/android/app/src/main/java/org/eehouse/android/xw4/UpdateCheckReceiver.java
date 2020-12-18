@@ -71,7 +71,6 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
     private static final String k_MQTTDEVID = "devid";
     private static final String k_DEBUG = "dbg";
     private static final String k_XLATEINFO = "xlatinfo";
-    private static final String k_STRINGSHASH = "strings";
     private static final String k_UPGRADE_TITLE = "title";
     private static final String k_UPGRADE_BODY = "body";
 
@@ -187,7 +186,6 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
 
         if ( 0 < params.length() ) {
             try {
-                params.put( k_STRINGSHASH, BuildConfig.STRINGS_HASH );
                 params.put( k_NAME, packageName );
                 params.put( k_AVERS, versionCode );
                 if ( LOG_QUERIES ) {
