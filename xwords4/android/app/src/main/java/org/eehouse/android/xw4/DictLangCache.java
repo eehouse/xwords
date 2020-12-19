@@ -290,6 +290,16 @@ public class DictLangCache {
         return getInfo( context, dal ).langCode;
     }
 
+    private static String[] s_langCodeStrs;
+    static String getLangCodeStr( Context context, int code )
+    {
+        if ( null == s_langCodeStrs ) {
+            s_langCodeStrs = context.getResources()
+                .getStringArray( R.array.language_codes );
+        }
+        return s_langCodeStrs[code];
+    }
+
     public static String getDictMD5Sum( Context context, String dict )
     {
         String result = null;

@@ -63,6 +63,7 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
     private static final String k_APP = "app";
     private static final String k_DICTS = "dicts";
     private static final String k_LANG = "lang";
+    private static final String k_LANGCODE = "lc";
     private static final String k_MD5SUM = "md5sum";
     private static final String k_INDEX = "index";
     private static final String k_LEN = "len";
@@ -229,12 +230,14 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
     {
         JSONObject params = new JSONObject();
         int lang = DictLangCache.getDictLangCode( context, dal );
+        String langCode = DictLangCache.getLangCodeStr( context, lang );
         String langStr = DictLangCache.getLangName( context, lang );
         String sum = DictLangCache.getDictMD5Sum( context, dal.name );
         long len = DictLangCache.getFileLen( context, dal );
         try {
             params.put( k_NAME, dal.name );
             params.put( k_LANG, langStr );
+            params.put( k_LANGCODE, langCode );
             params.put( k_MD5SUM, sum );
             params.put( k_INDEX, index );
             params.put( k_LEN, len );
