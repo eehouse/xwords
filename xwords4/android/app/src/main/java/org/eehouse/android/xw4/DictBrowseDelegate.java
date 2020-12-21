@@ -596,7 +596,7 @@ public class DictBrowseDelegate extends DelegateBase
                         pending = true;
                     } else if ( 1 == choices.length
                                 || !XwJNI.dict_hasDuplicates( m_dict ) ) {
-                        pats[ii].tilePat = choices[0];
+                        pats[ii].tilePat = choices[choices.length - 1];
                     } else {
                         m_browseState.m_delim = DELIM;
                         showDialogFragment( DlgID.CHOOSE_TILES, (Object)choices, ii );
