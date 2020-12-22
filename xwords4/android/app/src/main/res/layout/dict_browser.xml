@@ -15,6 +15,11 @@
                 android:layout_width="fill_parent" 
                 android:layout_height="wrap_content"
                 >
+      <TextView android:id="@+id/md5sum_summary"
+                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"
+                android:visibility="gone"
+                />
     <!-- Here's the summary -->
     <LinearLayout android:orientation="horizontal"
                   android:layout_width="fill_parent"
