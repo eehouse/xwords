@@ -337,7 +337,9 @@ parseTile( ParseState* ps )
 #endif
     } else {
         err = PatErrBogusTiles; /* in case we fail */
+        XP_U16 maxTileChars = dict_getMaxTileChars( ps->dict );
         XP_U16 maxLen = XP_STRLEN( &ps->pat[ps->patIndex] );
+        maxLen = XP_MIN( maxLen, maxTileChars );
         FoundData data = { .dict = ps->dict };
         for ( int nChars = 1; nChars <= maxLen; ++nChars ) {
             XP_UCHAR buf[24];

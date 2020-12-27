@@ -374,19 +374,24 @@ countSpecials( DictionaryCtxt* ctxt )
 void
 setBlankTile( DictionaryCtxt* dict ) 
 {
-    XP_U16 ii;
-
     dict->blankTile = -1; /* no known blank */
-
-    for ( ii = 0; ii < dict->nFaces; ++ii ) {
-        if ( dict->facePtrs[ii][0] == 0 ) {
+    XP_U16 maxLen = 0;
+    for ( int tile = 0; tile < dict->nFaces; ++tile ) {
+        const XP_UCHAR* facePtr = dict->facePtrs[tile];
+        if ( facePtr[0] == 0 ) {
             XP_ASSERT( dict->blankTile == -1 ); /* only one passes test? */
-            dict->blankTile = (XP_S8)ii;
-#ifndef DEBUG
-            break;
-#endif
+            dict->blankTile = (XP_S8)tile;
         }
-    }    
+
+        if ( IS_SPECIAL( *facePtr ) ) {
+            facePtr = dict_getTileString( dict, tile );
+        }
+        XP_U16 thisLen = XP_STRLEN( facePtr );
+        if ( thisLen > maxLen ) {
+            maxLen = thisLen;
+        }
+    }
+    dict->maxChars = maxLen;
 } /* setBlankTile */
 
 /* #if defined BLANKS_FIRST || defined DEBUG */
@@ -480,6 +485,13 @@ dict_numTileFaces( const DictionaryCtxt* dict )
 {
     return dict->nFaces;
 } /* dict_numTileFaces */
+
+XP_U16
+dict_getMaxTileChars( const DictionaryCtxt* ctxt )
+{
+    XP_ASSERT( 0 != ctxt->maxChars );
+    return ctxt->maxChars;
+}
 
 static void
 appendIfSpace( XP_UCHAR** bufp, const XP_UCHAR* end, const XP_UCHAR* newtxt )

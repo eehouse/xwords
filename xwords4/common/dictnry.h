@@ -97,6 +97,7 @@ struct DictionaryCtxt {
 
     XP_U16 refCount;
     XP_U16 headerFlags;
+    XP_U16 maxChars;
     XP_U8 nFaces;
     XP_U8 nodeSize;
     XP_Bool is_4_byte;
@@ -178,6 +179,7 @@ Tile dict_getBlankTile( const DictionaryCtxt* dict );
 XP_U16 dict_getTileValue( const DictionaryCtxt* ctxt, Tile tile );
 XP_U16 dict_numTiles( const DictionaryCtxt* ctxt, Tile tile );
 XP_U16 dict_numTileFaces( const DictionaryCtxt* ctxt );
+XP_U16 dict_getMaxTileChars( const DictionaryCtxt* ctxt );
 
 XP_U16 dict_tilesToString( const DictionaryCtxt* ctxt, const Tile* tiles, 
                            XP_U16 nTiles, XP_UCHAR* buf, XP_U16 bufSize,
