@@ -258,35 +258,56 @@ parseCounts( ParseState* ps, int elemIndex )
 }
     
 typedef struct _FoundData {
-    PatErr err;
+    const DictionaryCtxt* dict;
     int nCalls;
-    PatElem* elem;
+    int nChars;
+    Tile tile;
 } FoundData;
     
 static XP_Bool
-onFoundTiles( void* closure, const Tile* tiles, int len )
+onFoundTiles( void* closure, const Tile* tiles, int nTiles )
 {
-    XP_ASSERT( len == 1 );
     FoundData* data = (FoundData*)closure;
-    if ( 1 == len ) {
-        XP_ASSERT( 0 == data->nCalls );
-        ++data->nCalls;
-        for ( int ii = 0; ii < len; ++ii ) {
-            Tile tile = tiles[ii];
-#ifdef MULTI_SET
-            ++data->elem->u.child.tiles.cnts[tile];
-#else
-            TileSet mask = 1 << tile;
-            if ( 0 == (data->elem->u.child.tiles & mask ) ) {
-                data->elem->u.child.tiles |= mask;
-            } else {
-                data->err = PatErrDupInSet;
-                break;
-            }
-#endif
+    if ( 1 == nTiles ) {
+        XP_UCHAR buf[16];
+        XP_U16 len = dict_tilesToString( data->dict, tiles, nTiles,
+                                         buf, VSIZE(buf), NULL );
+        if ( 0 == data->nCalls || data->nChars < len ) {
+            data->nChars = len;
+            data->tile = tiles[0];
         }
+        ++data->nCalls;
     }
-    return 1 == len && PatErrNone == data->err;
+    return XP_TRUE;
+}
+
+static PatErr
+checkData( FoundData* data, ParseState* ps )
+{
+    PatErr result = PatErrBogusTiles;
+
+    if ( 1 <= data->nCalls ) {
+        result = PatErrNone;
+
+        Tile tile = data->tile;
+        PatElem* elem = &ps->elems[ps->elemIndex];
+#ifdef MULTI_SET
+        ++elem->u.child.tiles.cnts[tile];
+#else
+        TileSet mask = 1 << tile;
+        if ( 0 == (elem->u.child.tiles & mask ) ) {
+            elem->u.child.tiles |= mask;
+        } else {
+            result = PatErrDupInSet;
+        }
+#endif
+    }
+
+    if ( PatErrNone == result ) {
+        ps->patIndex += data->nChars;
+    }
+
+    return result;
 }
 
 static PatErr
@@ -317,18 +338,14 @@ parseTile( ParseState* ps )
     } else {
         err = PatErrBogusTiles; /* in case we fail */
         XP_U16 maxLen = XP_STRLEN( &ps->pat[ps->patIndex] );
+        FoundData data = { .dict = ps->dict };
         for ( int nChars = 1; nChars <= maxLen; ++nChars ) {
-            FoundData data = { .err = PatErrNone,
-                               .elem = &ps->elems[ps->elemIndex],
-                               .nCalls = 0,
-            };
-            dict_tilesForString( ps->dict, &ps->pat[ps->patIndex], nChars, onFoundTiles, &data );
-            if ( 1 == data.nCalls ) { /* found something? We can proceed */
-                ps->patIndex += nChars;
-                err = PatErrNone;
-                break;
-            }
+            XP_UCHAR buf[24];
+            XP_MEMCPY( buf, &ps->pat[ps->patIndex], nChars * sizeof(buf[0]) );
+            buf[nChars] = '\0';
+            dict_tilesForString( ps->dict, buf, nChars, onFoundTiles, &data );
         }
+        err = checkData( &data, ps );
     }
 
     return err;                 /* nothing can go wrong? */
