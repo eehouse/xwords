@@ -587,11 +587,12 @@ public class DictBrowseDelegate extends DelegateBase
 
         PatDesc[] pats = m_browseState.m_pats;
         for ( int ii = 0; ii < pats.length && !pending; ++ii ) {
+            final PatDesc thisPats = pats[ii];
             if ( justFixed == ii ) {
                 Assert.assertTrueNR( null != fixedTiles );
-                pats[ii].tilePat = fixedTiles;
-            } else if ( null == pats[ii].tilePat ) {
-                String strPat = pats[ii].strPat;
+                thisPats.tilePat = fixedTiles;
+            } else if ( null == thisPats.tilePat ) {
+                String strPat = thisPats.strPat;
                 if ( null != strPat && 0 < strPat.length() ) {
                     byte[][] choices = XwJNI.dict_strToTiles( m_dict, strPat );
                     if ( null == choices || 0 == choices.length ) {
@@ -603,7 +604,16 @@ public class DictBrowseDelegate extends DelegateBase
                         pending = true;
                     } else if ( 1 == choices.length
                                 || !XwJNI.dict_hasDuplicates( m_dict ) ) {
-                        pats[ii].tilePat = choices[choices.length - 1];
+                        // Pick the shortest option, i.e. when there's a
+                        // choice between using one or several tiles to spell
+                        // something choose one.
+                        thisPats.tilePat = choices[0];
+                        for ( int jj = 1; jj < choices.length; ++jj ) {
+                            byte[] tilePat = choices[jj];
+                            if ( tilePat.length < thisPats.tilePat.length ) {
+                                thisPats.tilePat = tilePat;
+                            }
+                        }
                     } else {
                         m_browseState.m_delim = DELIM;
                         showDialogFragment( DlgID.CHOOSE_TILES, (Object)choices, ii );
