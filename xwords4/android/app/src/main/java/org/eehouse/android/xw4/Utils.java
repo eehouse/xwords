@@ -614,7 +614,9 @@ public class Utils {
             Assert.assertNotNull( langName );
             builder.appendPath( DictUtils.addDictExtn( name ) );
         }
-        return builder.build();
+        Uri result = builder.build();
+        // Log.d( TAG, "makeDictUri(langName=%s, name=%s) => %s", langName, name, result );
+        return result;
     }
 
     public static Uri makeDictUri( Context context, int lang, String name )
@@ -623,7 +625,9 @@ public class Utils {
         if ( 0 < lang ) {
             langName = DictLangCache.getLangName( context, lang );
         }
-        return makeDictUri( context, langName, name );
+        Uri result = makeDictUri( context, langName, name );
+        // Log.d( TAG, "makeDictUri(lang=%d, name=%s) => %s", lang, name, result );
+        return result;
     }
 
     public static int getAppVersion( Context context )

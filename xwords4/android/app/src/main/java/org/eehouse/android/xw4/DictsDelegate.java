@@ -1403,7 +1403,7 @@ public class DictsDelegate extends ListDelegateBase
                 // DictLangCache hits the DB hundreds of times below. Fix!
                 Log.w( TAG, "Fix me I'm stupid" );
                 try {
-                    // DbgUtils.logf( "data: %s", jsonData );
+                    // Log.d( TAG, "data: %s", jsonData );
                     JSONObject obj = new JSONObject( jsonData );
                     langs = obj.optJSONArray( "langs" );
 
