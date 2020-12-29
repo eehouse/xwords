@@ -1,4 +1,4 @@
-/* -*- compile-command: "find-and-gradle.sh inXw4Deb"; -*- */
+/* -*- compile-command: "find-and-gradle.sh inXw4dDeb"; -*- */
 /*
  * Copyright 2010 - 2019 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
@@ -62,8 +62,9 @@ public class NBSProto {
                                    String phone, short port )
     {
         addPacketFrom( context, phone, port, buffer );
+        Log.d( TAG, "got %d bytes from %s", buffer.length, phone );
         if ( (0 == (++s_nReceived % TOAST_FREQ)) && showToasts( context ) ) {
-            DbgUtils.showf( context, "Got msg %d", s_nReceived );
+            DbgUtils.showf( context, "Got NBS msg %d", s_nReceived );
         }
 
         ConnStatusHandler.updateStatusIn( context, CommsConnType.COMMS_CONN_SMS,
@@ -196,8 +197,8 @@ public class NBSProto {
                     }
                     getHelper().postEvent( MultiEvent.SMS_RECEIVE_OK );
                 } else {
-                    Log.d( TAG, "receiveBuffer(): bogus or incomplete message from %s",
-                           elem.phone );
+                    Log.d( TAG, "processReceive(): bogus or incomplete message "
+                           + "(%d bytes from %s)", elem.data.length, elem.phone );
                 }
             }
             if ( null != elem.nli ) {

@@ -2656,10 +2656,10 @@
     as a replacement for the relay.</string>
     <!-- Title of menuitem that launches Known Players viewer -->
     <string name="gamel_menu_knownplyrs">Known Players…</string>
-    <string name="knowns_expl">These are the remote players
-    CrossWords has seen enough to know how to invite them quickly to
-    new games. Their names default to what the remote user has chosen,
-    but you can edit them to make them easier for you to use.</string>
+    <string name="knowns_expl">These are the remote players CrossWords
+    has seen enough to know how to invite them quickly to new
+    games. Their names default to what the remote player has chosen,
+    but you can change the names if you want.</string>
     <string name="knowns_mqtt_fmt">MQTT DevID: %1$s</string>
     <string name="knowns_bt_fmt">Bluetooth name: %1$s</string>
     <string name="knowns_bta_fmt">Bluetooth addr: %1$s</string>
