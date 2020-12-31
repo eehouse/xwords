@@ -84,8 +84,6 @@ android {
         variant.buildConfigField "long", "BUILD_STAMP", "$stamp"
 
         variant.buildConfigField "short", "CLIENT_VERS_RELAY", "$INITIAL_CLIENT_VERS"
-
-        variant.buildConfigField "boolean", "FOR_FDROID", "$forFDroid"
     }
     
     flavorDimensions "variant"//, "abi"
@@ -106,6 +104,7 @@ android {
             buildConfigField "boolean", "NON_RELEASE", "DEBUG || !IS_TAGGED_BUILD"
             buildConfigField "boolean", "HAVE_KNOWN_PLAYERS", "false"
             buildConfigField "boolean", "DO_MQTT_GAME_GONE", "true"
+            buildConfigField "boolean", "FOR_FDROID", "false"
         }
 
         xw4NoSMS {
