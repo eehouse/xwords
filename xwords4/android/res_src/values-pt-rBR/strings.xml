@@ -393,4 +393,267 @@
     <string name="invit_expl_player_fmt">Convite encaminhado via MQTT/internet para jogador conhecido “%1$s” on %2$s.</string>
     <string name="qrcode_invite_expl">Para convidar via código QR, deixe seu oponente escanear o código com a câmera do telefone Android dele.</string>
     <string name="invite_msg_extra">Você verá esta mensagem até todos os jogadores se conectarem. Se você já enviou um convite e suspeita que foi perdido, não há problema em enviar outro.</string>
+    <string name="after_restart">Esta mudança terá efeito depois de reiniciar CrossWords.</string>
+    <string name="no_invites">Este jogo não enviou nenhum convite</string>
+    <string name="button_enable">Ativar</string>
+    <string name="confirm_drop_relay_sms">Nem todas as operadoras suportam jogar via dados SMS.</string>
+    <string name="summary_enable_p2p">Experimental, usa bastante da bateria</string>
+    <string name="recovered_group">Jogos recuperados</string>
+    <string name="sms_invite_title">Convite SMS</string>
+    <string name="bt_invite_title">Convite Bluetooth</string>
+    <string name="button_invite">Convite checado</string>
+    <string name="bt_fail_fmt">Envios Bluetooth para %1$s falharam vezes demais. Reabra o jogo para tentar de novo.</string>
+    <string name="bt_resend_fmt">Envio Bluetooth para %1$s falhou; tente %3$d novamente em %2$d segundos.</string>
+    <plurals name="bt_scan_progress_fmt">
+        <item quantity="one">Escaneando por CrossWords</item>
+        <item quantity="other">Escaneando por CrossWords em %1$d dispositivos emparelhados</item>
+    </plurals>
+    <string name="invite_bt_desc_postscript">"
+\n
+\n(A lista é de dispositivos emparelhados onde CrossWords foi detectado via um escaneamento.)"</string>
+    <plurals name="invite_bt_desc_fmt_2">
+        <item quantity="one">Por favor cheque o dispositivo que quer incluir neste jogo.</item>
+        <item quantity="other">Por favor cheque os %1$d dispositivos que quer incluir neste jogo.</item>
+    </plurals>
+    <string name="sms_bad_proto_fmt">A versão de CrossWords no telefone com número “%1$s” é incompatível com esta aqui para jogar usando dados de SMS. Um de vocês talvez precisará de atualizar antes de continuar.</string>
+    <string name="bt_bad_proto_fmt">A versão de CrossWords de “%1$s” é incompatível com esta aqui para jogar usando Bluetooth. Um de vocês talvez precisará de atualizar antes de continuar.</string>
+    <string name="button_useconfig">Aplicar filtro</string>
+    <string name="menu_chat">Bate-papo</string>
+    <string name="loc_menu_xlate">Traduzir</string>
+    <string name="max_len">Tamanho máx.</string>
+    <string name="loc_item_clear">Limpar</string>
+    <string name="lang_name_hungarian">Húngaro</string>
+    <string name="lang_name_slovak">Eslovaco</string>
+    <string name="lang_name_greek">Grego</string>
+    <string name="lang_name_czech">Tcheco</string>
+    <string name="lang_name_russian">Russo</string>
+    <string name="lang_name_portuguese">Português</string>
+    <string name="lang_name_catalan">Catalão</string>
+    <string name="lang_name_dutch">Holandês</string>
+    <string name="lang_name_italian">Italiano</string>
+    <string name="lang_name_danish">Dinamarquês</string>
+    <string name="lang_name_polish">Polandês</string>
+    <string name="lang_name_swedish">Sueco</string>
+    <string name="lang_name_spanish">Espanhol</string>
+    <string name="lang_name_arabic">Árabe</string>
+    <string name="lang_name_turkish">Turco</string>
+    <string name="lang_name_german">Alemão</string>
+    <string name="lang_name_french">Francês</string>
+    <string name="lang_name_english">Inglês</string>
+    <string name="loc_filters_modified">Modificadas por mim</string>
+    <string name="loc_filters_menu">Último menu</string>
+    <string name="loc_filters_screen">Última tela</string>
+    <string name="loc_filters_all">Tudo</string>
+    <string name="loc_search_prompt">Pesquisar por:</string>
+    <string name="loc_filters_prompt">Filtrar por:</string>
+    <string name="xlations_enabled_summary">Adicionar opção para toda tela de menu</string>
+    <string name="xlations_enabled_title">Ativar tradução local</string>
+    <plurals name="new_xlations_fmt">
+        <item quantity="one">Instalou uma tradução nova</item>
+        <item quantity="other">Instalou %1$d novas traduções</item>
+    </plurals>
+    <string name="loc_lang_local">%1$s (seu)</string>
+    <string name="loc_lang_blessed">%1$s (oficial)</string>
+    <string name="menu_hint_prev">Dica ant.</string>
+    <string name="board_menu_undo_current">Desfazer/Refazer</string>
+    <string name="menu_hint_next">Próx. dica</string>
+    <string name="remote_undone">Dispositivo remoto desfez uma rodada.</string>
+    <string name="remote_digesting">Processando informação da lista de palavras…</string>
+    <string name="remote_empty">Captando informações da lista de palavras do servidor…</string>
+    <string name="not_again_fmt_expl">Esta strinf tem especificadores de formato especiais (p. ex. %1$s). Por favor certifique-se que sua tradução tenha os mesmos que o original.
+\n
+\n(Você não poderá salvá-la a não que ser que tenham.)</string>
+    <string name="loc_fmts_mismatch">Tradução ilegal: uma string traduzida precisa ter os mesmo especificadores de formato (p. ex. %1$s) que o original.</string>
+    <string name="loc_item_copy_bless">Copiar oficial</string>
+    <string name="loc_item_copy_eng">Copiar Inglês</string>
+    <string name="loc_item_check">Checar</string>
+    <string name="logstore_cleared_fmt">%1$d entradas de log deletadas</string>
+    <string name="not_again_studycopy">As palavras selecionadas serão copiadas para a área de transferência do sistema. Você pode então colá-las em qualquer app que suporte colar texto, p. ex. um app de e-mail.</string>
+    <string name="study_no_lists">Você ainda não salvou nenhuma palavra em uma lista de estudos.</string>
+    <string name="study_no_lang_fmt">Você ainda não salvou nenhuma palavra em uma lista de estudos para %1$s.</string>
+    <string name="study_langpick">Suas palavras para:</string>
+    <string name="studylist_title_fmt">Lista de estudos para %1$s</string>
+    <string name="add_done_fmt">%1$s adicionado à lista de estudos %2$s</string>
+    <plurals name="paste_done_fmt">
+        <item quantity="one">Uma palavra copiada</item>
+        <item quantity="other">%1$d palavras copiadas</item>
+    </plurals>
+    <plurals name="confirm_studylist_clear_fmt">
+        <item quantity="one">Tem certeza que quer deletar a palavra selecionada\?
+\n
+\n(Esta ação não pode ser desfeita.)</item>
+        <item quantity="other">Tem certeza que quer deletar as %1$d palavras selecionadas\?)
+\n
+\n(Esta ação não pode ser desfeita.)</item>
+    </plurals>
+    <string name="slmenu_clear_sel">Deletar selecionados</string>
+    <string name="button_reconnect">Reconectar</string>
+    <string name="duplicate_group_name_fmt">O grupo “%1$s” já existe.</string>
+    <string name="group_name_archive">Arquivo</string>
+    <string name="cannot_delete_default_group_fmt">O grupo para jogos novos, %1$s, não pode ser deletado.</string>
+    <string name="game_name_group_title">Nome do grupo</string>
+    <string name="rename_group_label">Mudar nome deste grupo para:</string>
+    <plurals name="groups_confirm_del_games_fmt">
+        <item quantity="one">"
+\n
+\n(Um jogo também será deletado.)"</item>
+        <item quantity="other">"
+\n
+\n(%1$d jogos também serão deletados.)"</item>
+    </plurals>
+    <plurals name="groups_confirm_del_fmt">
+        <item quantity="one">Tem certeza que quer deletar o grupo %1$s\?</item>
+        <item quantity="other">Tem certeza que quer deletar os grupos %1$s\?</item>
+    </plurals>
+    <string name="group_new_games">Novos jogos</string>
+    <string name="group_cur_games">Meus jogos</string>
+    <string name="list_group_movedown">Mover para baixo</string>
+    <string name="lmi_pass_fmt">%1$s passou (0 pontos)</string>
+    <string name="prev_player">Seu oponente</string>
+    <string name="nag_warn_last_fmt">Último aviso: %1$s</string>
+    <string name="nag_body_fmt">%1$s moveu mais de %2$s atrás.</string>
+    <plurals name="nag_days_fmt">
+        <item quantity="one">%1$d dia</item>
+        <item quantity="other">%1$d dias</item>
+    </plurals>
+    <plurals name="nag_hours_fmt">
+        <item quantity="one">%1$d hora</item>
+        <item quantity="other">%1$d horas</item>
+    </plurals>
+    <plurals name="nag_minutes_fmt">
+        <item quantity="one">%1$d minuto</item>
+        <item quantity="other">%1$d minutos</item>
+    </plurals>
+    <string name="nag_title">Lembrete: É a sua vez</string>
+    <string name="force_tablet_phone">Forçar layout telefone</string>
+    <string name="force_tablet_tablet">Forçar layout tablet</string>
+    <string name="force_tablet_default">Usar padrão para o meu dispositivo</string>
+    <string name="force_tablet_title">Usar layout tablet (lado a lado)\?</string>
+    <string name="not_again_dicts">Esta tela permite que você instale novas listas de palavras e que veja as que você já tem.
+\n
+\nQue listas de palavras você tem determinam:
+\n• Em quais línguas você pode jogar
+\n• Quão inteligente é o jogador robô
+\n• Quais palavras são legais
+\n
+\nCheque a caixa “Mostrar baixáveis” no topo para ver quais estão disponíveis.</string>
+    <string name="lang_unknown">Desconhecido</string>
+    <plurals name="lang_name_fmt">
+        <item quantity="one">%1$s (lista de palavras de %2$d)</item>
+        <item quantity="other">%1$s (listas de palavras de %2$d)</item>
+    </plurals>
+    <string name="dict_on_server">Toque para detalhes</string>
+    <string name="note_none">(Nenhum)</string>
+    <string name="dict_info_fmt">Número de palavras: %1$d
+\nTamanho do download: %2$dK
+\nNota: %3$s</string>
+    <string name="progress_title">Baixando</string>
+    <string name="update_dicts_fmt">Atualizações estão disponíveis para uma ou mais listas de palavras instaladas. Gostaria de baixar a(s) nova(s) versão(ões) de %1$s agora\?</string>
+    <string name="show_remote">Mostrar baixáveis</string>
+    <string name="delete_dicts">Deletar lista(s) de palavras</string>
+    <string name="remote_no_net">Incapaz de captar informação da lista de palavras do servidor.</string>
+    <string name="confirm_get_locdict_fmt">Seu dispositivo está configurado para %1$s. Gostaria de baixar uma lista de palavras para jogar CrossWords em %1$s\?</string>
+    <string name="disable_nag_solo_title">Desativar lembretes de jogo solo</string>
+    <string name="disable_nag_summary">Não me notifique não importa há quanto tempo for minha vez</string>
+    <string name="disable_nag_title">Desativar lembretes de jogo em rede</string>
+    <string name="disable_nags_title">Ativar lembretes</string>
+    <string name="button_discard_changes">Descartar mudanças</string>
+    <string name="button_edit">Editar</string>
+    <string name="config_no_connvia">Este jogo não tem nenhuma maneira de se conectar e não pode ser salvo. Gostaria de descartar suas mudanças, ou editar para dar a ele uma forma de se conectar\?</string>
+    <string name="warn_no_comms">Todo jogo em rede precisa ter pelo menos uma maneira de se comunicar. Se você não tiver opções padrão de conexão todo jogo em rede precisará ser configurado manualmente.</string>
+    <string name="nfc_just_tap">Para convidar via NFC apenas encoste a parte traseira deste dispositivo com a parte traseira do que você quer conectar—a qualquer momento enquanto o jogo estiver aberto.</string>
+    <string name="invite_stays">(Você verá esta mensagem até que todos os jogadores remotos tenham conectado. Você pode fechar o jogo se acha que irá demorar um pouco. Jogadores remotos ainda poderão conectar, e você será notificado quando isso acontecer.)</string>
+    <string name="button_reinvite">Re-convidar</string>
+    <string name="button_close">Fechar</string>
+    <string name="waiting_host_expl_multi">Neste caso, é porque o jogo está esperando mais que apenas esse dispositivo para conectar, pode também significar que ele não convidou todo mundo ainda.</string>
+    <string name="waiting_host_expl">Este jogo está esperando o dispositivo host para começar. Geralmente significa que o host não está comunicando (está temporariamente offline\?)</string>
+    <string name="waiting_host_title">Esperando host</string>
+    <string name="waiting_invite_title">Esperando resposta</string>
+    <plurals name="waiting_title_fmt">
+        <item quantity="one">Esperando jogador</item>
+        <item quantity="other">Esperando %1$d jogadores</item>
+    </plurals>
+    <string name="not_again_hidenewgamebuttons">Os dois botões no fim desta tela e os dois primeiros itens na sua Barra de Ação (ou menu) fazem a mesma coisa.
+\n
+\n(Se você depois quiser exibir novamente os botões vá à seção Aparência nas configurações do App).</string>
+    <string name="set_pref">Esconder botões</string>
+    <string name="connection_via_label">Mudar Comunicar via</string>
+    <string name="enable_pubroom_summary">Salas que outros podem ver e entrar</string>
+    <string name="enable_pubroom_title">Ativar salas públicas</string>
+    <string name="invite_multi_summary">Convidar mais de um jogador por dispositivo remoto</string>
+    <string name="invite_multi_title">Convidar vários</string>
+    <string name="network_advanced_summary">Para jogadores expert</string>
+    <string name="network_advanced_title">Avançado</string>
+    <string name="err_dup_invite_fmt">Convite duplo rejeitado: dispositivo “%1$s” já aceitou um convite para este jogo.</string>
+    <plurals name="nplayers_fmt">
+        <item quantity="one">Um jogador</item>
+        <item quantity="other">%1$d jogadores</item>
+    </plurals>
+    <string name="nplayers_prompt">Número neste dispositivo</string>
+    <string name="use_defaults">Usar padrão</string>
+    <string name="new_game_message_net">(Você terá uma chance de convidar outros jogadores depois que for criado.)</string>
+    <string name="new_game_message_nodflt">Este jogo precisa ser configurado antes que possa ser aberto.</string>
+    <string name="new_game_message">Gostaria de criar este jogo usando os ajustes padrão\?
+\n
+\nOu gostaria de configurá-lo antes\?</string>
+    <string name="new_game_networked">Novo jogo em rede</string>
+    <string name="new_game">Novo jogo de um dispositivo</string>
+    <string name="title_addrs_pref">Comunicar via</string>
+    <string name="default_language">Língua padrão</string>
+    <string name="app_not_found_fmt">Incapaz de conectar CrossWords via Bluetooth no dispositivo %1$s. Por favor cheque que o dispositivo esteja no alcance do Bluetooth e que o CrossWords esteja instalado nele.</string>
+    <string name="lmi_phony_fmt">%1$s perdeu uma rodada</string>
+    <plurals name="lmi_move_fmt">
+        <item quantity="one">%1$s jogou %2$s por um ponto</item>
+        <item quantity="other">%1$s jogou %2$s por %3$d pontos</item>
+    </plurals>
+    <string name="list_item_deselect">Des-selecionar</string>
+    <string name="list_item_select">Selecionar</string>
+    <string name="list_group_default">Coloque novos jogos aqui</string>
+    <string name="list_group_rename">Renomear grupo</string>
+    <string name="list_group_delete">Deletar grupo</string>
+    <string name="newgroup_label">Nomeie seu novo grupo:</string>
+    <string name="download_path_hint">P. ex. onde os anexos de e-mail são salvos</string>
+    <string name="download_path_title">Diretório Público</string>
+    <string name="default_loc_summary">(Não na memória externa/cartão SD)</string>
+    <string name="default_loc">Salvar listas de palavras internamente</string>
+    <string name="download_failed">Download mal-sucedido</string>
+    <string name="download_done">Download concluído</string>
+    <string name="button_decline">Recusar</string>
+    <string name="invite_dict_missing_body_noname_fmt">Você foi convidado a jogar CrossWords usando a lista de palavras %2$s (para jogar em %3$s), mas ela não está instalada. Gostaria de baixar a lista de palavras\?</string>
+    <string name="invite_dict_missing_body_fmt">%1$s te convidou a jogar CrossWords usando a lista de palavras %2$s (para jogar em %3$s), mas ela não está instalada. Gostaria de baixar a lista de palavras ou recusar o convite\?</string>
+    <string name="invite_dict_missing_title">Lista de palavras faltando</string>
+    <string name="choose_opponent">Escolha seu oponente</string>
+    <string name="name_game">Nomeie seu jogo</string>
+    <string name="knowns_dup_name_fmt">Incapaz de mudar o nome de “%1$s” para “%2$s”. “%2$s” já está em uso\?</string>
+    <string name="knowns_rename_title">Renomear Jogador</string>
+    <string name="knowns_delete_confirm_fmt">Tem certeza que quer deletar o Jogador Conhecido “%1$s”\?
+\n
+\n(Esta ação não pode ser desfeita.)</string>
+    <string name="player_edit_name">Mudar nome</string>
+    <string name="knowns_expl">Estes são jogadores remotos que o CrossWords viu vezes o bastante para saber como convidá-los rapidamente para jogos novos. Por padrão os nomes são os que o usuário remoto escolheu, mas você pode editá-los para facilitar a você usar.</string>
+    <string name="gamel_menu_knownplyrs">Jogadores Conhecidos…</string>
+    <string name="remote_msg_title">Mensagem remota</string>
+    <string name="not_again_quicknetgame">Há uma maneira super-rápida de começar um jogo com alguém com qual você já jogou. Se o nome da pessoa estiver na lista, apenas selecione-a e um convite será enviado imediatamente.</string>
+    <string name="button_faq">Mostrar FAQ</string>
+    <string name="logstore_clear_confirm">Tem certeza que quer apagar seus logs de debug\? Esta ação não pode ser desfeita.</string>
+    <string name="logstore_notdumped">Incapaz de escrever logs</string>
+    <string name="logstore_dumped_fmt">Logs escritos no arquivo %1$s</string>
+    <string name="gamel_menu_logstore_dump">Escrever logs armazenados no arquivo</string>
+    <string name="gamel_menu_logstore_clear">Limpar logs armazenados</string>
+    <string name="gamel_menu_logstore_off">Desativar armazenamento de logs</string>
+    <string name="gamel_menu_logstore_on">Ativar armazenamento de logs</string>
+    <string name="word_blocked_by_phony">Palavra ou palavras não encontradas na lista de palavras %2$s: %1$s.</string>
+    <string name="unsafe_open_disregard">Abrir mesmo assim</string>
+    <string name="unsafe_open_warning">Este jogo não foi fechado corretamente da última vez que foi aberto.
+\n
+\nIsso pode acontecer quando o CrossWords é fechado forçadamente, mas é possível que o jogo foi danificado e poderá causar um crash quando aberto. Se isso acontecer você pode querer deletá-lo.</string>
+    <string name="history_autopause">Auto-pausado.</string>
+    <string name="history_msg_fmt">Mensagem: %1$s.</string>
+    <string name="history_pause_fmt">Pausado por: %1$s.</string>
+    <string name="history_unpause_fmt">Despausado depois de %2$s por: %1$s.</string>
+    <string name="autopause_expl_fmt">O timer para o jogo “%1$s” expirou sem nenhum movimento sido feito, então ele foi pausado para você.</string>
+    <string name="no_market">App do Google Play não encontrado</string>
+    <string name="clip_label">URL do convite</string>
+    <string name="invite_copied">Convite pronto para colar</string>
+    <string name="invite_choice_qrcode">Código QR</string>
 </resources>
