@@ -158,7 +158,8 @@ def process(args):
             try: # older wordlists won't have these
                 msg = getNullTermParam(header)
                 if args.DUMP_MSG:
-                    print( 'msg: {}'.format(msg))
+                    print(msg, file=sys.stdout)
+                    sys.exit(0)
                 md5Sum = getNullTermParam(header)
                 print( 'header: read sum: {}'.format(md5Sum), file=sys.stderr )
             except:
