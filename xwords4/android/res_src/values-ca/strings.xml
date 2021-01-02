@@ -520,7 +520,8 @@ Introduïu el vostre nom aquí. S\'usarà en crear partides noves. (Podreu
     <string name="delete_dicts">Suprimeix els diccionaris</string>
     <string name="show_remote">Mostra els baixables</string>
     <string name="progress_title">S\'està baixant</string>
-    <string name="dict_info_fmt">Nombre de paraules: %1$d\nMida de la baixada: %2$dK\nNota: %3$s</string>
+    <string name="dict_info_fmt">Nombre de paraules: %1$d\nMida de la baixada: %2$dK</string>
+    <string name="dict_info_note_fmt">Nota: %1$s</string>
     <string name="note_none">(Cap)</string>
     <string name="dict_on_server">Toqueu per a baixar</string>
     <string name="dict_desc_fmt">%1$s (%2$s/%3$d paraules)</string>

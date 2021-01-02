@@ -571,7 +571,8 @@
     <string name="show_remote">ダウンロード可能を表示</string>
     <string name="update_dicts_fmt">1 つまたは複数のインストールされている単語リストに更新があります。%1$s の新しいバージョンを今すぐダウンロードしますか?</string>
     <string name="progress_title">ダウンロードしています</string>
-    <string name="dict_info_fmt">単語の数: %1$d\nダウンロード サイズ: %2$dK\n注: %3$s</string>
+    <string name="dict_info_fmt">単語の数: %1$d\nダウンロード サイズ: %2$dK</string>
+    <string name="dict_info_note_fmt">注: %1$s</string>
     <string name="note_none">(なし)</string>
     <string name="dict_on_server">詳細はタップしてください</string>
     <plurals name="lang_name_fmt">

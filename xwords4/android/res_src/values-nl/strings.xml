@@ -559,7 +559,8 @@
     <string name="show_remote">Toon downloadbaar</string>
     <string name="update_dicts_fmt">Updates zijn beschikbaar voor een of meer geïnstalleerde woordenlijsten. Wil je de nieuwe versie[s] van %1$s nu downloaden?</string>
     <string name="progress_title">Downloaden</string>
-    <string name="dict_info_fmt">Hoeveelheid woorden: %1$d\nDownloadgrootte: %2$dK\nNotitie: %3$s</string>
+    <string name="dict_info_fmt">Hoeveelheid woorden: %1$d\nDownloadgrootte: %2$dK</string>
+    <string name="dict_info_note_fmt">Notitie: %1$s</string>
     <string name="note_none">(Geen)</string>
     <string name="dict_on_server">Druk om te downloaden</string>
     <plurals name="lang_name_fmt">

@@ -2140,11 +2140,12 @@
     version[s] of %1$s now?</string>
     <string name="progress_title">Downloading</string>
     <string name="dict_info_fmt">Number of words: %1$d\nDownload size:
-    %2$dK\nNote: %3$s</string>
+    %2$dK</string>
+    <string name="dict_info_note_fmt">Note: %1$s</string>
     <string name="note_none">(None)</string>
     <string name="dict_on_server">Tap for details</string>
     <plurals name="lang_name_fmt">
-        <item quantity="one">%1$s (%2$d wordlist)</item>
+        <item quantity="one">%1$s (one wordlist)</item>
         <item quantity="other">%1$s (%2$d wordlists)</item>
     </plurals>
     <string name="dict_desc_fmt">%1$s (%2$s/%3$d words)</string>

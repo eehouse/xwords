@@ -614,8 +614,8 @@
     <string name="remote_empty">Henter ordlisteinfo fra tjener…</string>
     <string name="remote_no_net">Klarte ikke å hente ordlisteinfo fra tjener.</string>
     <string name="dict_info_fmt">Antall ord: %1$d
-\nNedlastingsstørrelse: %2$dK
-\nMerk: %3$s</string>
+    \nNedlastingsstørrelse: %2$dK</string>
+    <string name="dict_info_note_fmt">Merk: %1$s</string>
     <string name="note_none">(Ingen)</string>
     <string name="nag_title">Påminnelse: Det er din tur</string>
     <plurals name="nag_minutes_fmt">

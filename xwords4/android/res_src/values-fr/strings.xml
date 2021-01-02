@@ -2472,7 +2472,8 @@ versions de %1$s maintenant ?</string>
     <!--<string name="dict_info_fmt">Number of words: %1$d\nDownload size:
     %2$dK\nNote: %3$s</string>-->
     <string name="dict_info_fmt">Nombre de mots : %1$d\nTaille du
-téléchargement : %2$dk\nNote : %3$s</string>
+    téléchargement : %2$dk</string>
+    <string name="dict_info_note_fmt">Note : %1$s</string>
     <!--<string name="note_none">(None)</string>-->
     <string name="note_none">(aucune)</string>
     <!--<string name="dict_on_server">Tap to download</string>-->

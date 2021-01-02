@@ -807,8 +807,8 @@
     <string name="update_dicts_fmt">Es sind Aktualisierungen für mindestens eine installierte Wortliste verfügbar. Wollen Sie die neue(n) Version(en) von %1$s jetzt herunterladen?</string>
     <string name="progress_title">Wird heruntergeladen</string>
     <string name="dict_info_fmt">Wortanzahl: %1$d
-\nDownload-Größe: %2$dK
-\nHinweis: %3$s</string>
+    \nDownload-Größe: %2$dK</string>
+    <string name="dict_info_note_fmt">Hinweis: %1$s</string>
     <string name="note_none">(Keiner)</string>
     <string name="new_game">Neue Ein-Geräte-Partie</string>
     <string name="disable_nag_solo_title">Erinnerungen für Solitair-Partien deaktivieren</string>

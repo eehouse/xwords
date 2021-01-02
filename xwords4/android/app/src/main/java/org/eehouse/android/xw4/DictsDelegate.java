@@ -110,7 +110,6 @@ public class DictsDelegate extends ListDelegateBase
     private String m_onServerStr;
     private String m_lastLang;
     private String m_lastDict;
-    private String m_noteNone;
 
     private static interface SafePopup {
         public void doPopup( Delegator dlgtor, View button,
@@ -484,7 +483,6 @@ public class DictsDelegate extends ListDelegateBase
         m_expandedItems = new HashSet<>();
 
         m_locNames = getStringArray( R.array.loc_names );
-        m_noteNone = getString( R.string.note_none );
 
         m_listView = getListView();
         m_listView.setOnItemLongClickListener( this );
@@ -1150,9 +1148,11 @@ public class DictsDelegate extends ListDelegateBase
                 } );
 
             long kBytes = (info.m_nBytes + 999) / 1000;
-            String note = null == info.m_note ? m_noteNone : info.m_note;
             String msg = getString( R.string.dict_info_fmt, info.m_nWords,
-                                    kBytes, note );
+                                    kBytes );
+            if ( ! TextUtils.isEmpty(info.m_note) ) {
+                msg += "\n" + getString( R.string.dict_info_note_fmt, info.m_note );
+            }
             TextView summary = (TextView)view.findViewById( R.id.details );
             summary.setText( msg );
 

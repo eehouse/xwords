@@ -637,8 +637,8 @@
     <string name="update_dicts_fmt">Aktualizacje są dostępne dla jednej lub więcej zainstalowanych list słów. Czy chcesz teraz pobrać nową wersję z %1$s\?</string>
     <string name="progress_title">Pobieranie</string>
     <string name="dict_info_fmt">Liczba słów: %1$d
-\nRozmiar pliku do pobrania: %2$dK
-\nUwaga: %3$s</string>
+    \nRozmiar pliku do pobrania: %2$dK</string>
+    <string name="dict_info_note_fmt">Uwaga: %1$s</string>
     <string name="note_none">(Brak)</string>
     <string name="dict_on_server">Dotknij, aby poznać szczegóły</string>
     <plurals name="lang_name_fmt">
