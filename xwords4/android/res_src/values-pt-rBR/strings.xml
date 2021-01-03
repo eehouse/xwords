@@ -55,8 +55,8 @@
     <string name="invite_multiple">" (Você está esperando vários jogadores remotos. Você não precisa convida-los um de cada vez, mas este alerta não será rejeitado até que todo mundo tenha sido convidado e todos os convites tenham sido aceitos.)"</string>
     <string name="invite_if_nfc">Ou apenas toque para Convidar -- Se o outro dispositivo também tiver Android Beaming e estiver próximo.</string>
     <plurals name="invite_msg_fmt">
-        <item quantity="one">Essa partida está aguardando por um jogador remoto. Você gostaria de convidar alguém para participar—Considerando que você não começou a partida\?</item>
-        <item quantity="other">Essa partida está aguardando por %1$d jogadores remotos. Você gostaria de convidar alguém para participar—Considerando que você não começou a partida\?</item>
+        <item quantity="one">Esta partida está aguardando um jogador remoto responder aos convites.</item>
+        <item quantity="other">Esta partida está aguardando %1$d jogadores remotos responderem aos convites.</item>
     </plurals>
     <string name="no_moves_made">(Sem jogadas ainda)</string>
     <string name="force_expl">Em um partida com muitos dispositivos deve ter pelo menos um jogador desse dispositivo e outro não. Por favor, verifique os jogadores remotos.</string>
@@ -206,7 +206,7 @@
     <string name="default_robodict">Lista de Palavras para robôs</string>
     <string name="default_dict">Listas de palavras para humanos</string>
     <string name="prefs_dicts_summary">Listas de Palavras padrão</string>
-    <string name="prefs_dicts">Listas de Palavras</string>
+    <string name="prefs_dicts">Língua e Listas de Palavras</string>
     <string name="pref_human_name">Jogador humano (seu nome)</string>
     <string name="pref_player4_name">Quarto jogador</string>
     <string name="pref_player3_name">Terceiro jogador</string>
@@ -342,7 +342,7 @@
     <string name="invite_choice_data_sms">Data do SMS</string>
     <string name="invite_choice_user_sms">SMS (mensagem de texto)</string>
     <string name="newgame_drop_relay">Queda do servidor</string>
-    <string name="newgame_invite_more">Mais informações</string>
+    <string name="newgame_invite_more">Histórico</string>
     <string name="newgame_invite">Convidar agora</string>
     <string name="newgame_configure_first">Configurar primeiro</string>
     <string name="notify_other_summary">Quando a jogada do oponente aparece</string>
@@ -381,7 +381,7 @@
     <string name="counts_values_title">Contagens de quadrados e Valores</string>
     <string name="radio_how">Como\?</string>
     <string name="local_invite_summary">Se seu oponente estiver por perto…</string>
-    <string name="qrcode_invite_summary">QR-Code que seu oponente pode escanear</string>
+    <string name="qrcode_invite_summary">Código QR que seu oponente pode escanear</string>
     <string name="invite_who_empty_expl">vazio</string>
     <string name="radio_who">Quem\?</string>
     <string name="how_tab">Enviar um convite como\?</string>
@@ -389,7 +389,7 @@
     <string name="disable_bt_summary">Disablitar toda a comunicação via Bluetooth</string>
     <string name="disable_bt">Desabilitar</string>
     <string name="game_summary_field_created">Quando criado</string>
-    <string name="invit_expl_player_fmt">Convite encaminhado via MQTT/internet para jogador conhecido “%1$s” on %2$s.</string>
+    <string name="invit_expl_player_fmt">Convite encaminhado via MQTT/internet para Jogador Conhecido “%1$s” em %2$s.</string>
     <string name="qrcode_invite_expl">Para convidar via código QR, deixe seu oponente escanear o código com a câmera do telefone Android dele.</string>
     <string name="invite_msg_extra">Você verá esta mensagem até todos os jogadores se conectarem. Se você já enviou um convite e suspeita que foi perdido, não há problema em enviar outro.</string>
     <string name="after_restart">Esta mudança terá efeito depois de reiniciar CrossWords.</string>
@@ -538,14 +538,13 @@
 \nCheque a caixa “Mostrar baixáveis” no topo para ver quais estão disponíveis.</string>
     <string name="lang_unknown">Desconhecido</string>
     <plurals name="lang_name_fmt">
-        <item quantity="one">%1$s (lista de palavras de %2$d)</item>
-        <item quantity="other">%1$s (listas de palavras de %2$d)</item>
+        <item quantity="one">%1$s (uma lista de palavras)</item>
+        <item quantity="other">%1$s (%2$d listas de palavras)</item>
     </plurals>
     <string name="dict_on_server">Toque para detalhes</string>
     <string name="note_none">(Nenhum)</string>
     <string name="dict_info_fmt">Número de palavras: %1$d
-\nTamanho do download: %2$dK
-\nNota: %3$s</string>
+\nTamanho do download: %2$dK</string>
     <string name="progress_title">Baixando</string>
     <string name="update_dicts_fmt">Atualizações estão disponíveis para uma ou mais listas de palavras instaladas. Gostaria de baixar a(s) nova(s) versão(ões) de %1$s agora\?</string>
     <string name="show_remote">Mostrar baixáveis</string>
@@ -621,14 +620,13 @@
     <string name="invite_dict_missing_body_noname_fmt">Você foi convidado a jogar CrossWords usando a lista de palavras %2$s (para jogar em %3$s), mas ela não está instalada. Gostaria de baixar a lista de palavras\?</string>
     <string name="invite_dict_missing_body_fmt">%1$s te convidou a jogar CrossWords usando a lista de palavras %2$s (para jogar em %3$s), mas ela não está instalada. Gostaria de baixar a lista de palavras ou recusar o convite\?</string>
     <string name="invite_dict_missing_title">Lista de palavras faltando</string>
-    <string name="name_game">Nomeie seu jogo</string>
     <string name="knowns_dup_name_fmt">Incapaz de mudar o nome de “%1$s” para “%2$s”. “%2$s” já está em uso\?</string>
     <string name="knowns_rename_title">Renomear Jogador</string>
     <string name="knowns_delete_confirm_fmt">Tem certeza que quer deletar o Jogador Conhecido “%1$s”\?
 \n
 \n(Esta ação não pode ser desfeita.)</string>
     <string name="player_edit_name">Mudar nome</string>
-    <string name="knowns_expl">Estes são jogadores remotos que o CrossWords viu vezes o bastante para saber como convidá-los rapidamente para jogos novos. Por padrão os nomes são os que o usuário remoto escolheu, mas você pode editá-los para facilitar a você usar.</string>
+    <string name="knowns_expl">Estes são jogadores remotos que o CrossWords viu vezes o bastante para saber como convidá-los rapidamente para jogos novos. Por padrão os nomes são os que o usuário remoto escolheu, mas você pode editá-los se quiser.</string>
     <string name="gamel_menu_knownplyrs">Jogadores Conhecidos…</string>
     <string name="remote_msg_title">Mensagem remota</string>
     <string name="not_again_quicknetgame">Há uma maneira super-rápida de começar um jogo com alguém com qual você já jogou. Se o nome da pessoa estiver na lista, apenas selecione-a e um convite será enviado imediatamente.</string>
@@ -972,7 +970,7 @@
     </plurals>
     <string name="button_sms_add">Importar contato</string>
     <string name="new_name_body_fmt">%1$s te convidou para jogar</string>
-    <string name="game_name_label">Nome do novo jogo:</string>
+    <string name="game_name_label">Nome do jogo:</string>
     <string name="gamel_menu_loaddb">Carregar jogos do cartão SD</string>
     <string name="toast_no_permission">Permissão não concedida</string>
     <string name="perms_rationale_title">Permissões Android</string>
@@ -998,4 +996,127 @@
     <string name="missing_sms_perms">Este jogo foi configurado para comunicar usando dados SMS mas CrossWords não tem permissão para tal. Você ainda poderá abrir o jogo, mas talvez não consiga fazer ou receber jogadas.
 \n
 \nVocê pode reabri-lo para pedir permissão de novo. Ou pode remover a configuração de comunicação por dados SMS.</string>
+    <string name="menu_juggle">Reorganizar quadrados</string>
+    <string name="knowns_mqtt_fmt">DevID do MQTT: %1$s</string>
+    <string name="notify_stall_body_fmt">%1$s (e outros\?) não puderam enviar mensagens por %2$d segundos.
+\n
+\nSe isto acontecer de novo, mande um e-mail ao desenvolvedor com logs e informações sobre seu dispositivo.
+\n
+\nEsta mensagem será vista no máximo uma vez a cada %3$d minutos.</string>
+    <string name="notify_stall_title">Envio de mensagens parado</string>
+    <string name="title_enable_stallnotify">Exibir notificação de rede parada</string>
+    <string name="servicestall_channel_expl">Alertas de mensagem parados</string>
+    <string name="name_concat_dup">" e "</string>
+    <string name="newgame_configure_game">Configurar jogo</string>
+    <string name="newgame_open_game">Começar jogo</string>
+    <string name="newgame_invite_fmt">Começar com %1$s</string>
+    <string name="newgame_radio_unknown">Convite Desconhecido</string>
+    <string name="newgame_radio_known">Convite Conhecido</string>
+    <string name="choose_expl_config">OU comece um jogo após configurá-lo, p. ex. para mudar a língua ou número de jogadores</string>
+    <string name="choose_expl_known">OU comece um jogo com alguém com quem você já jogou antes, sem precisar de convites</string>
+    <string name="choose_expl_new">Comece um jogo com uma nova pessoa, enviando um convite via e-mail, SMS, ou até código QR</string>
+    <string name="dup_timer_expl">Timers do modo duplicado rodando</string>
+    <string name="lmi_move_tie_dup_fmt">Jogadores %1$s empataram com %2$d pontos cada. %3$s foi jogado.</string>
+    <string name="lmi_trade_dup_fmt">%1$d quadrados trocados para todos os jogadores</string>
+    <string name="lmi_move_one_dup_fmt">%1$s venceu esta rodada jogando %2$s por %3$d pontos</string>
+    <string name="lmi_pass_dup">Nenhum jogador achou uma jogada (todos passaram)</string>
+    <string name="lmi_tiles_dup">Os mesmos quadrados designados a todos os jogadores</string>
+    <string name="unhide_dupmode_title">Exibir opções do modo duplicado</string>
+    <string name="offerdupmode_title">Jogar no \"modo duplicado\"</string>
+    <string name="duplicate_check">Modo duplicado</string>
+    <string name="servicedesc">Para transmitir jogadas do CrossWords</string>
+    <string name="not_again_longtap_lookup">Você pode pesquisar palavras ANTES de serem jogadas–tocando e segurando, do mesmo jeito que palavras jogadas.
+\n
+\nUse esta ferramenta para checar a validade de palavras que está pensando em jogar, ou pesquisar uma palavra não familiar dada como dica.</string>
+    <string name="banned_nbs_perms">Este jogo foi configurado para comunicar usando dados SMS, mas apps do Google Play Store não têm mais permissão para tal (com raras exceções). Você ainda poderá abrir o jogo, mas talvez não consiga fazer ou receber jogadas.
+\n
+\nVocê pode remover a opção de comunicação via dados SMS, ou usar o botão \"Ler mais\" para checar o progresso do desenvolvimento de uma alternativa.</string>
+    <string name="not_again_emptybtscan">Se um escaneamento não achar o dispositivo que espera:
+\n • Primeiramente apenas reescaneie
+\n • Certifique-se que o Bluetooth esteja ativo no outro dispositivo
+\n • Abra CrossWords no outro dispositivo
+\n • Se tudo falhar, reeinicie este dispositivo
+\n</string>
+    <string name="mqtt_qos">QOS do MQTT</string>
+    <string name="enable_sms_toself_title">Ativar curto-circuito do SMS para si mesmo</string>
+    <string name="gamel_menu_writegit">Copiar informação git para a área de transferência</string>
+    <string name="debug_features_summary">Menu, itens etc.</string>
+    <string name="list_item_markbad">Marcar corrompido</string>
+    <plurals name="resent_msgs_fmt">
+        <item quantity="one">Uma jogada reenviada</item>
+        <item quantity="other">%1$s jogadas reenviadas</item>
+    </plurals>
+    <string name="show_fcm_title">Mostrar recebidos FCM</string>
+    <string name="show_sms_title">Mostrar enviados e recebidos SMS</string>
+    <string name="not_again_comms_relay">O “relay” é um servidor na internet que passa mensagens entre dispositivos que rodam o CrossWords. Ele funciona sempre que tiver uma rede de internet totalmente funcional, mas pode ter problemas em redes WiFi restritas.</string>
+    <string name="seeking_relay">Conectando ao relay…</string>
+    <string name="got_langdict_title">Captar lista de palavras padrão para o idioma</string>
+    <string name="expl_mqtt_url">URL para nova API de relay baseada em MQTT</string>
+    <string name="expl_relay_url">URL para a API web de relay</string>
+    <string name="expl_update_url">Atualização checa URL</string>
+    <string name="radio_name_tablet">Tablet/sem ondas de rádio</string>
+    <string name="radio_name_real">Não fingir</string>
+    <string name="force_radio_title">Fingir ter ondas de rádio</string>
+    <string name="enable_sms_toself_summary">Pular ondas de rádio quando os números forem os mesmos</string>
+    <string name="proxy_port">Porta do dispositivo relay</string>
+    <string name="board_menu_game_netstats">Status da rede</string>
+    <string name="bt_scan_age_fmt">Última vez visto: %1$s</string>
+    <string name="bt_no_devs">Você atualmente não tem dispositivos Bluetooth emparelhados (ou o Bluetooth está desativado). Gostaria de abrir o Painel de Configurações do Android para adicionar um ou mais\?
+\n
+\n(Você talvez precise também abrir o painel de Configurações no dispositivo com qual quer emparelhar.)</string>
+    <string name="lmi_tiles_fmt">Quadrados designados a %1$s</string>
+    <plurals name="lmi_trade_fmt">
+        <item quantity="one">%1$s trocou um quadrado</item>
+        <item quantity="other">%1$s trocou %2$d quadrados</item>
+    </plurals>
+    <string name="dict_desc_fmt">%1$s (%2$s de %3$d palavras)</string>
+    <string name="dict_info_note_fmt">Nota: %1$s</string>
+    <string name="lookup_title">Pesquisa de palavras</string>
+    <string name="square_tiles_summary">Mesmo que possam ser mais altos</string>
+    <string name="square_tiles">Blocos em forma de quadrado</string>
+    <string name="not_again_newselect">Tocar a listagem de um jogo abre o jogo.
+\n
+\nA não ser que você toque os ícones à esquerda. Tocar lá seleciona ou des-seleciona jogos (ou grupos).
+\n
+\nUma vez que tiver um ou mais itens selecionados use o menu ou \"barra de ações\", p. ex. para deletar todos os jogos selecionados.</string>
+    <string name="thumb_off">Desativado</string>
+    <string name="summary_thumbsize">Tamanho da miniatura</string>
+    <plurals name="group_name_fmt">
+        <item quantity="one">%1$s (%2$d jogo)</item>
+        <item quantity="other">%1$s (%2$d jogos)</item>
+    </plurals>
+    <string name="menu_flip">Virar tabuleiro</string>
+    <string name="menu_toggle_values">Alternar valores</string>
+    <plurals name="confirm_clear_relay_fmt">
+        <item quantity="one">Tem certeza que quer deletar o registro RelayID checado\?</item>
+        <item quantity="other">Tem certeza que quer deletar os %1$d registros RelayID checados\?</item>
+    </plurals>
+    <string name="button_addBlank">+Vazio</string>
+    <string name="not_again_arrow">Há duas maneiras de mover quadrados para o tabuleiro.
+\n
+\n • Você pode arrastá-los entre os quadrados e o tabuleiro.
+\n 
+\n • Ou você pode tocar um quadrado vazio no tabuleiro para colocar a \"seta do tabuleiro.\" Então os quadrados substituem a seta quando você tocá-los. Toque a seta para mudar sua direção ou para escondê-la.</string>
+    <string name="not_again_done">Tocar o contador \"pontos\" que aparece na direita extrema dos quadrados é a forma mais fácil de fazer uma jogada.</string>
+    <string name="about_vers_fmt2">Informações da build:
+\n\tVariante: %1$s
+\n\tNome da versão: %2$s
+\n\tCódigo da versão: %3$d
+\n\tFonte (Git) rev: %4$s
+\n\tBuilt: %5$s</string>
+    <string name="about_credits">Créditos: ícones da barra de ferramentas por Sarah Chu. Ícones da barra de navegação do Noun Project: \"archive\" por Trendy: \"rematch\" por Becris e \"swap\" por iconomania. Localização por voluntários via weblate.org.</string>
+    <string name="about_copyright">CrossWords for Android
+\nCopyright (C) 1998-2020 por Eric House. Este software livre/de código aberto está disponível sob a Licença Pública GNU.</string>
+    <string name="about_devid_fmt">ID do dispositivo: %1$s</string>
+    <string name="about_btaddr_fmt">Endr Mac BT: %1$s</string>
+    <string name="phone_lookup_rationale_others">Sem esta permissão a revanche continuará mas irá gerar um jogo que não pode ser jogado via dados SMS.</string>
+    <string name="phone_lookup_rationale_drop">Jogar revanche com este jogo que usa apenas dados SMS não é possível sem essa permissão.</string>
+    <string name="phone_lookup_rationale">Para jogar revanche em um jogo que use dados SMS CrossWords precisa de permissão para acessar seu número de telefone.</string>
+    <string name="not_again_rematch_two_only">Revanches são limitadas a jogos de dois jogadores, pelo menos por enquanto, porque é mais difícil com mais dispositivos e acho raro que pessoas joguem com mais de dois. Se eu estiver errado me avise e eu aumentarei a prioridade.</string>
+    <string name="rematch_msg">Este jogo está hospedando uma revanche e enviou um convite. Você verá esta mensagem até o convite ser aceito.</string>
+    <string name="rematch_sent_toast">Convites da revanche enviados</string>
+    <string name="waiting_rematch_title">Revanche em progresso</string>
+    <string name="button_rematch">Revanche</string>
+    <string name="filter_sum_pat_fmt">Exibindo: %1$s, de tamanho %2$d-%3$d (%4$d palavras)</string>
+    <string name="invite_msg_extra_rematch">Com revanches, todos os convites necessários são enviados automaticamente. Mas você sempre pode enviar novos se um convidado não estiver respondendo.</string>
 </resources>
