@@ -939,7 +939,6 @@
 \n
 \nVerwenden Sie diese Funktion, um die Gültigkeit von Wörtern zu überprüfen, die Sie spielen möchten, oder um ein unbekanntes Wort als Hinweis nachzuschlagen.</string>
     <string name="download_path_hint">Z.B. wo E-Mail-Anhänge gespeichert werden</string>
-    <string name="name_game">Benennen Sie Ihr Spiel</string>
     <string name="knowns_dup_name_fmt">Der Name kann nicht von „%1$s“ in „%2$s“ geändert werden. Ist „%2$s“ bereits verwendet\?</string>
     <string name="knowns_rename_title">Spieler umbenennen</string>
     <string name="player_edit_name">Namen ändern</string>
