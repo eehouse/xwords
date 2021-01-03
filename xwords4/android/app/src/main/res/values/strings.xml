@@ -2681,8 +2681,9 @@
     <string name="newgame_radio_known">Invite Known</string>
     <string name="newgame_radio_unknown">Invite Unknown</string>
 
-    <string name="newgame_invite_fmt">Start with %1$s</string>
+    <!-- Button text depending on the radio button chosen.  -->
     <string name="newgame_open_game">Start game</string>
+    <string name="newgame_invite_fmt">Start game with %1$s</string>
     <string name="newgame_configure_game">Configure game</string>
 
     <!-- Text of second of two buttons for new standalone games.

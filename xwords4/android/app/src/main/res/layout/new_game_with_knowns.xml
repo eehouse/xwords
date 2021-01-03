@@ -16,18 +16,16 @@
               >
 
     <RadioButton android:id="@+id/radio_unknown"
-                 android:layout_width="wrap_content"
-                 android:layout_height="wrap_content"
                  android:text="@string/newgame_radio_unknown"
+                 style="@style/new_game_radio"
                  />
     <TextView android:text="@string/choose_expl_new"
               style="@style/new_game_expl"
               />
 
     <RadioButton android:id="@+id/radio_known"
-                 android:layout_width="wrap_content"
-                 android:layout_height="wrap_content"
                  android:text="@string/newgame_radio_known"
+                 style="@style/new_game_radio"
                  />
     <Spinner android:id="@+id/names"
              android:layout_width="match_parent"
@@ -41,9 +39,8 @@
               />
 
     <RadioButton android:id="@+id/radio_configure"
-                 android:layout_width="wrap_content"
-                 android:layout_height="wrap_content"
                  android:text="@string/newgame_configure_first"
+                 style="@style/new_game_radio"
                  />
     <TextView android:text="@string/choose_expl_config"
               style="@style/new_game_expl"
