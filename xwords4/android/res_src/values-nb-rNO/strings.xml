@@ -972,7 +972,6 @@
     <string name="qrcode_invite_expl">La motstanderen skanne QR-koden med sin Android-telefon for å invitere på den måten.</string>
     <string name="new_feature_title">Varsel om ny funksjon</string>
     <string name="knowns_dup_name_fmt">Kan ikke endre navn fra “%1$s” til “%2$s”. Er “%2$s” allerede i bruk\?</string>
-    <string name="name_game">Gi spillet et navn</string>
     <string name="choose_opponent">Velg din motstander</string>
     <string name="knowns_rename_title">Gi spiller nytt navn</string>
     <string name="player_edit_name">Endre navn</string>
