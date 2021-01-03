@@ -85,7 +85,6 @@
     <string name="guest_name">(jugador visitant)</string>
     <string name="player_edit_title">Jugador</string>
     <string name="players_label_standalone">Jugadors</string>
-    <string name="players_label_host_fmt">Jugadors (%1$d locals, %2$d remots)</string>
     <string name="button_add_player">Afegeix un jugador</string>
     <string name="button_juggle_players">Remena els jugadors</string>
     <string name="dicts_item_select">Estableix com a predeterminat</string>

@@ -264,11 +264,6 @@
     <!-- text for separator above the list of players that's used for
          non-networked games -->
     <string name="players_label_standalone">Players (tap to edit)</string>
-    <!-- text for separator above the list of players that's used for
-         networked games.  The numbers of local and non-local players
-         are substituted for %1$d and %2$d. -->
-    <string name="players_label_host_fmt">Players (%1$d local, %2$d
-      off-device)</string>
     <!-- text of button for adding new player to game -->
     <string name="button_add_player">Add player</string>
     <!-- text of button to juggle (randomly rearrange order of) players -->
@@ -770,7 +765,7 @@
     <!-- Label for the first "human player" name preference -->
     <string name="pref_human_name">Human player (your name)</string>
     <!-- sub-preference for dictionaries (soon to be called "word lists") -->
-    <string name="prefs_dicts">Wordlists</string>
+    <string name="prefs_dicts">Language and Wordlists</string>
     <!-- clarification of above -->
     <string name="prefs_dicts_summary">Default wordlists</string>
     <!-- dictionary used by default for human players when creating

@@ -112,7 +112,6 @@
     <string name="title_gamenet_config_fmt">%1$s configurações (na rede)</string>
     <string name="title_game_config_fmt">Configurações para %1$s</string>
     <string name="loc_downloads">Baixados</string>
-    <string name="players_label_host_fmt">Jogadores (%1$d local, %2$d remoto)</string>
     <string name="players_label_standalone">Jogadores (toque para editar)</string>
     <string name="confirm_deleteonly_dicts_fmt">Apagar %1$s deixará você sem qualquer %2$s listas de palavras. Um ou mais jogos não abrirão (até você baixar uma lista de substituição.)</string>
     <string name="rename_label_caveat">Mude o nome desse jogo (somente nesse dispositivo) para:</string>

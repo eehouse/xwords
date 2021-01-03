@@ -69,7 +69,6 @@
     <string name="title_langs_list">Idiomas (basado en las listas de palabras instaladas)</string>
     <string name="game_locked">Ajustes de bloqueo</string>
     <string name="players_label_standalone">Jugadores (pulsa para editar)</string>
-    <string name="players_label_host_fmt">Jugadores (%1$d locales, %2$d remotos)</string>
     <string name="button_add_player">Añadir jugador</string>
     <string name="button_juggle_players">Barajar jugadores</string>
     <string name="lang_label">Idioma de la partida</string>

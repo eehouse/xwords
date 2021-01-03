@@ -65,7 +65,6 @@
     <string name="title_langs_list">Talen (gebaseerd op geïnstalleerde woordenlijsten)</string>
     <string name="game_locked">Instellingen vastzetten</string>
     <string name="players_label_standalone">Spelers (druk om te bewerken)</string>
-    <string name="players_label_host_fmt">Spelers (%1$d lokaal, %2$d op een ander apparaat)</string>
     <string name="button_add_player">Speler toevoegen</string>
     <string name="button_juggle_players">Spelers schudden</string>
     <string name="lang_label">Speltaal</string>

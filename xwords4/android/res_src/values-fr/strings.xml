@@ -268,9 +268,6 @@ installées)</string>
     <!-- text for separator above the list of players that's used for
          networked games.  The numbers of local and non-local players
          are substituted for %1$d and %2$d. -->
-    <!--<string name="players_label_host_fmt">Players (%1$d local, %2$d
-      off-device)</string>-->
-    <string name="players_label_host_fmt">Joueurs (%1$d locaux, %2$d hors-appareil)</string>
     <!-- text of button for adding new player to game -->
     <!--<string name="button_add_player">Add player</string>-->
     <string name="button_add_player">Ajouter un joueur</string>

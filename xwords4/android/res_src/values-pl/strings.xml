@@ -237,7 +237,6 @@
     <string name="set_default_message_fmt">Dla jakich graczy lista słów %1$s powinna być domyślna dla nowych gier\? (Język %2$s będzie domyślny dla obu.)</string>
     <string name="button_default_robot">Robot</string>
     <string name="button_default_both">Oba</string>
-    <string name="players_label_host_fmt">Gracze (%1$d lokalny, %2$d wyłączone urządzenie)</string>
     <string name="public_names_progress_fmt">Pobieranie publicznych pokoi dla gier %1$d -graczy w grach %2$s.</string>
     <string name="no_name_found_fmt">Nie znaleziono pokoi publicznych dla gier %1$d-player w %2$s. Spróbuj odświeżyć lub stworzyć własne.</string>
     <string name="robot_smarter">Inteligentniejszy robot</string>

@@ -49,6 +49,7 @@
     <LinearLayout android:layout_width="fill_parent"
                   android:layout_height="fill_parent"
                   android:orientation="vertical"
+                  android:layout_margin="4dp"
                   >
 
       <TextView style="@style/config_separator"
@@ -60,12 +61,14 @@
                android:layout_height="wrap_content"
                android:drawSelectorOnTop="true"
                android:prompt="@string/title_langs_list"
+               android:layout_marginTop="8dp"
+               android:layout_marginBottom="5dp"
                />
       <Spinner android:id="@+id/dict_spinner"
                android:layout_width="fill_parent"
                android:layout_height="wrap_content"
                android:drawSelectorOnTop="true"
-               android:layout_marginLeft="20sp"
+               android:layout_marginLeft="20dp"
                />
 
       <!-- players -->

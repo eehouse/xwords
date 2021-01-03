@@ -95,7 +95,6 @@
     <string name="set_default_message_fmt">"Für welche Spieler soll die Wortliste %1$s  Standardeinstellung für neue Partien sein? (Die Sprache %2$s wird Standardeinstellung für beide.)"</string>
     <string name="game_locked">Sperreinstellungen</string>
     <string name="players_label_standalone">Spieler (zum Bearbeiten antippen)</string>
-    <string name="players_label_host_fmt">Spieler (%1$d lokal, %2$d extern)</string>
     <string name="join_room">Öffentlichen Raum betreten</string>
     <string name="public_names_progress_fmt">Öffentliche Räume für %1$d-Spieler-Partien in %2$s werden geholt.</string>
     <string name="no_name_found_fmt">Keine öffentlichen Räume für %1$d-Spieler-Partien in %2$s gefunden. Versuchen Sie zu aktualisieren oder erzeugen Sie Ihre eigenen.</string>

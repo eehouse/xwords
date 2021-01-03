@@ -242,11 +242,6 @@
     <!-- text for separator above the list of players that's used for
          non-networked games -->
     <string name="players_label_standalone">Jogadores</string>
-    <!-- text for separator above the list of players that's used for
-         networked games.  The numbers of local and non-local players
-         are substituted for %1$d and %2$d. -->
-    <string name="players_label_host_fmt">Jogadores (%1$d local, %2$d
-      remoto)</string>
     <!-- text of button for adding new player to game -->
     <string name="button_add_player">Adicionar jogador</string>
     <!-- text of button to juggle (randomly rearrange order of) players -->

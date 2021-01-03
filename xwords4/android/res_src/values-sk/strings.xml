@@ -422,11 +422,6 @@
     <string name="button_trade_commit">XLATE ME: Commit trade</string>
     <string name="player_edit_title">Hráč</string>
     <string name="players_label_standalone">Hráči</string>
-    <!-- text for separator above the list of players that's used for
-         networked games.  The numbers of local and non-local players
-         are substituted for %1$d and %2$d. -->
-    <string name="players_label_host_fmt">XLATE ME: Players (%1$d local, %2$d
-      off-device)</string>
     <string name="button_add_player">Pridať hráča</string>
     <string name="button_juggle_players">Prehodiť hráča</string>
     <!-- If the query returns no rooms, this message is displayed,

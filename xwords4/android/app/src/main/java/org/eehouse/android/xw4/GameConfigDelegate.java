@@ -1210,15 +1210,7 @@ public class GameConfigDelegate extends DelegateBase
 
     private void adjustPlayersLabel()
     {
-        String label;
-        if ( localOnlyGame() ) {
-            label = getString( R.string.players_label_standalone );
-        } else {
-            int remoteCount = m_gi.remoteCount();
-            label = getString( R.string.players_label_host_fmt,
-                               m_gi.nPlayers - remoteCount,
-                               remoteCount );
-        }
+        String label = getString( R.string.players_label_standalone );
         ((TextView)findViewById( R.id.players_label )).setText( label );
     }
 

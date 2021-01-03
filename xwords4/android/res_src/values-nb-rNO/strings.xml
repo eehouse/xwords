@@ -445,7 +445,6 @@
 \n
 \n(Tilbakestilling sletter alle trekk og all tilknyttet informasjon.)</item>
     </plurals>
-    <string name="players_label_host_fmt">Spillere (%1$d lokale, %2$d eksterne)</string>
     <string name="phonies_spinner_prompt">Hvordan «ønskeord» skal behandles (altså dem som ikke finnes i ordlisten)</string>
     <string name="phonies_ignore">Ingorer ønskeord</string>
     <string name="phonies_warn">Advar hvis ønskeord</string>

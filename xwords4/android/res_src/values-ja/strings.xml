@@ -59,7 +59,6 @@
     <string name="title_langs_list">言語 (インストールされている単語リストに基づく)</string>
     <string name="game_locked">ロック設定</string>
     <string name="players_label_standalone">プレイヤー (タップして編集)</string>
-    <string name="players_label_host_fmt">プレイヤー (%1$d ローカル、%2$d 他のデバイス)</string>
     <string name="button_add_player">プレイヤーを追加</string>
     <string name="button_juggle_players">プレイヤーをシャッフル</string>
     <string name="lang_label">ゲームの言語</string>
