@@ -3,29 +3,72 @@
 <org.eehouse.android.xw4.NewWithKnowns
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
     android:padding="8dp"
     >
 
-  <TextView android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/choose_opponent"
-            />
 
-  <Spinner android:id="@+id/names"
-           android:layout_width="fill_parent"
-           android:layout_height="wrap_content"
-           android:drawSelectorOnTop="true"
-           />
+  <RadioGroup android:id="@+id/group"
+              android:orientation="vertical"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              >
 
-  <TextView android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/name_game"
-            />
+    <RadioButton android:id="@+id/radio_unknown"
+                 android:layout_width="wrap_content"
+                 android:layout_height="wrap_content"
+                 android:text="@string/newgame_radio_unknown"
+                 />
+    <TextView android:text="@string/choose_expl_new"
+              style="@style/new_game_expl"
+              />
 
-  <EditText android:id="@+id/name_edit"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            />
+    <RadioButton android:id="@+id/radio_known"
+                 android:layout_width="wrap_content"
+                 android:layout_height="wrap_content"
+                 android:text="@string/newgame_radio_known"
+                 />
+    <Spinner android:id="@+id/names"
+             android:layout_width="match_parent"
+             android:layout_height="wrap_content"
+             android:drawSelectorOnTop="true"
+             android:paddingLeft="8dp"
+             android:visibility="gone"
+             />
+    <TextView android:text="@string/choose_expl_known"
+              style="@style/new_game_expl"
+              />
+
+    <RadioButton android:id="@+id/radio_configure"
+                 android:layout_width="wrap_content"
+                 android:layout_height="wrap_content"
+                 android:text="@string/newgame_configure_first"
+                 />
+    <TextView android:text="@string/choose_expl_config"
+              style="@style/new_game_expl"
+              />
+  </RadioGroup>
+
+  <LinearLayout android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                >
+    <TextView android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:text="@string/game_name_label"
+              android:layout_gravity="center_vertical"
+              />
+    <org.eehouse.android.xw4.EditWClear
+        android:id="@+id/name_edit"
+        style="@style/edit_w_clear"
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:scrollHorizontally="true"
+        android:maxLines="1"
+        android:maxLength="32"
+        android:selectAllOnFocus="true"
+        android:focusable="false"
+        />
+  </LinearLayout>
 </org.eehouse.android.xw4.NewWithKnowns>

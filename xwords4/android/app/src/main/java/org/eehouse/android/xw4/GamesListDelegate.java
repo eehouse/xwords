@@ -82,11 +82,9 @@ public class GamesListDelegate extends ListDelegateBase
                GroupStateListener, Log.ResultProcs {
     private static final String TAG = GamesListDelegate.class.getSimpleName();
 
-
     private static final String SAVE_NEXTSOLO = "SAVE_NEXTSOLO";
     private static final String SAVE_REMATCHEXTRAS = "SAVE_REMATCHEXTRAS";
     private static final String SAVE_MYSIS = TAG + "/MYSIS";
-    private static final String KP_NAME_KEY = TAG + "/kp_last_name";
 
     private static final String RELAYIDS_EXTRA = "relayids";
     private static final String ROWID_EXTRA = "rowid";
@@ -966,44 +964,46 @@ public class GamesListDelegate extends ListDelegateBase
     private Dialog mkNewWithKnowns()
     {
         String[] names = XwJNI.kplr_getPlayers();
-        final String[] nameRef
-            = { DBUtils.getStringFor( m_activity, KP_NAME_KEY, null ) };
         final NewWithKnowns view = (NewWithKnowns)
             LocUtils.inflate( m_activity, R.layout.new_game_with_knowns );
-        view.setNames( names, nameRef[0], GameUtils.makeDefaultName( m_activity ) );
+        view.setNames( names, GameUtils.makeDefaultName( m_activity ) );
         AlertDialog.Builder ab = makeAlertBuilder()
             .setView( view )
             .setTitle( R.string.new_game_networked )
             .setIcon( R.drawable.ic_multigame )
-            .setPositiveButton( "…" /* can't be empty*/, new OnClickListener() {
+            .setPositiveButton( android.R.string.cancel, new OnClickListener() {
                     @Override
                     public void onClick( DialogInterface dlg, int item ) {
-                        Assert.assertTrueNR( null != nameRef[0] );
-                        DBUtils.setStringFor( m_activity, KP_NAME_KEY, nameRef[0] );
-                        CommsAddrRec addr = XwJNI.kplr_getAddr( nameRef[0] );
-                        if ( null != addr ) {
-                            launchLikeRematch( addr, view.gameName() );
-                        }
+                        view.onButtonPressed(new NewWithKnowns.ButtonCallbacks() {
+                                @Override
+                                public void onUseKnown( String knownName, String gameName )
+                                {
+                                    CommsAddrRec addr = XwJNI.kplr_getAddr( knownName );
+                                    if ( null != addr ) {
+                                        launchLikeRematch( addr, gameName );
+                                    }
+                                }
+                                @Override
+                                public void onInviteLater( String gameName )
+                                {
+                                    curThis().makeThenLaunchOrConfigure( gameName, false, false );
+                                }
+                                @Override
+                                public void onConfigureFirst( String gameName )
+                                {
+                                    curThis().makeThenLaunchOrConfigure( gameName, true, false );
+                                }
+                            } );
                     }
-                } )
-            .setNegativeButton( R.string.newgame_configure_first, new OnClickListener() {
-                    @Override
-                    public void onClick( DialogInterface dlg, int item ) {
-                        String name = view.gameName();
-                        curThis().makeThenLaunchOrConfigure( name, true, false );
-                    }
-                } )
-            ;
+                } );
 
         final AlertDialog dialog = ab.create();
-        view.setOnNameChangeListener( new NewWithKnowns.OnNameChangeListener() {
+        view.setCallback( new NewWithKnowns.ButtonChangeListener() {
                 @Override
-                public void onNewName( String name ) {
-                    nameRef[0] = name;
+                public void onNewButtonText( String txt ) {
                     Button button = dialog.getButton( DialogInterface.BUTTON_POSITIVE );
                     if ( null != button ) {
-                        String msg = getString( R.string.invite_player_fmt, name );
-                        button.setText( msg );
+                        button.setText( txt );
                     } else {
                         Log.e( TAG, "Button still null" );
                     }

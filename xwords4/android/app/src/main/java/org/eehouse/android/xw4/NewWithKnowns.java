@@ -26,57 +26,95 @@ import android.view.View;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.RadioGroup;
 import android.widget.Spinner;
 import android.widget.TextView;
 
-public class NewWithKnowns extends LinearLayout implements OnItemSelectedListener
+import org.eehouse.android.xw4.loc.LocUtils;
+
+public class NewWithKnowns extends LinearLayout
+    implements OnItemSelectedListener, RadioGroup.OnCheckedChangeListener
 {
-    public interface OnNameChangeListener {
-        void onNewName( String name );
+    private static final String TAG = NewWithKnowns.class.getSimpleName();
+    private static final String KP_NAME_KEY = TAG + "/kp_last_name";
+
+    public interface ButtonChangeListener {
+        void onNewButtonText( String txt );
     }
 
-    private OnNameChangeListener mListener;
+    public interface ButtonCallbacks {
+        void onUseKnown( String knownName, String gameName );
+        void onInviteLater( String gameName );
+        void onConfigureFirst( String gameName );
+    }
+
+    private ButtonChangeListener mListener;
+    private String mCurKnown;
+    private int mCurRadio;
+    private Spinner mNamesSpinner;
 
     public NewWithKnowns( Context cx, AttributeSet as )
     {
         super( cx, as );
     }
 
-    void setOnNameChangeListener( OnNameChangeListener listener )
+    void setCallback( ButtonChangeListener listener )
     {
         Assert.assertTrueNR( null == mListener );
         mListener = listener;
     }
 
-    void setNames( String[] knowns, String dflt, String gameName )
+    void setNames( String[] knowns, String gameName )
     {
+        mCurKnown = DBUtils.getStringFor( getContext(), KP_NAME_KEY,
+                                          knowns[0] );
         ArrayAdapter<String> adapter = new
             ArrayAdapter<String>( getContext(),
                                   android.R.layout.simple_spinner_item,
                                   knowns );
         adapter.setDropDownViewResource( android.R.layout
                                          .simple_spinner_dropdown_item );
-        Spinner spinner = (Spinner)findViewById( R.id.names );
-        spinner.setAdapter( adapter );
-        spinner.setOnItemSelectedListener( this );
-        if ( !TextUtils.isEmpty( dflt ) ) {
-            for ( int ii = 0; ii < knowns.length; ++ii ) {
-                if ( knowns[ii].equals( dflt ) ) {
-                    spinner.setSelection( ii );
-                    break;
-                }
+        mNamesSpinner = (Spinner)findViewById( R.id.names );
+        mNamesSpinner.setAdapter( adapter );
+        mNamesSpinner.setOnItemSelectedListener( this );
+        Assert.assertTrueNR( !TextUtils.isEmpty( mCurKnown ) );
+        for ( int ii = 0; ii < knowns.length; ++ii ) {
+            if ( knowns[ii].equals( mCurKnown ) ) {
+                mNamesSpinner.setSelection( ii );
+                break;
             }
         }
 
-        EditText et = (EditText)findViewById( R.id.name_edit );
+        EditWClear et = (EditWClear)findViewById( R.id.name_edit );
         et.setText( gameName );
+
+        RadioGroup group = (RadioGroup)findViewById( R.id.group );
+        group.setOnCheckedChangeListener( this );
     }
 
-    String gameName()
+    void onButtonPressed( ButtonCallbacks procs )
     {
-        EditText et = (EditText)findViewById( R.id.name_edit );
+        String gameName = gameName();
+        switch ( mCurRadio ) {
+        case R.id.radio_known:
+            DBUtils.setStringFor( getContext(), KP_NAME_KEY, mCurKnown );
+            procs.onUseKnown( mCurKnown, gameName );
+            break;
+        case R.id.radio_unknown:
+            procs.onInviteLater( gameName );
+            break;
+        case R.id.radio_configure:
+            procs.onConfigureFirst( gameName );
+            break;
+        default:
+            break;
+        }
+    }
+
+    private String gameName()
+    {
+        EditWClear et = (EditWClear)findViewById( R.id.name_edit );
         return et.getText().toString();
     }
 
@@ -84,13 +122,52 @@ public class NewWithKnowns extends LinearLayout implements OnItemSelectedListene
     public void onItemSelected( AdapterView<?> parent, View view,
                                 int pos, long id )
     {
-        OnNameChangeListener listener = mListener;
-        if ( null != listener && view instanceof TextView ) {
+        if ( view instanceof TextView ) {
             TextView tv = (TextView)view;
-            listener.onNewName( tv.getText().toString() );
+            mCurKnown = tv.getText().toString();
+            onRadioChanged();
         }
     }
 
     @Override
     public void onNothingSelected( AdapterView<?> parent ) {}
+
+    @Override
+    public void onCheckedChanged( RadioGroup group, int checkedId )
+    {
+        mCurRadio = checkedId;
+        onRadioChanged();
+    }
+
+    private void onRadioChanged()
+    {
+        mNamesSpinner.setVisibility( mCurRadio == R.id.radio_known
+                                     ? View.VISIBLE : View.GONE );
+
+        Context context = getContext();
+        int resId = 0;
+        String msg = null;
+        switch ( mCurRadio ) {
+        case R.id.radio_known:
+            msg = LocUtils
+                .getString( context, R.string.newgame_invite_fmt, mCurKnown );
+            break;
+        case R.id.radio_unknown:
+            resId = R.string.newgame_open_game;
+            break;
+        case R.id.radio_configure:
+            resId = R.string.newgame_configure_game;
+            break;
+        }
+
+        if ( 0 != resId ) {
+            msg = LocUtils.getString( context, resId );
+        }
+        if ( null != msg ) {
+            ButtonChangeListener listener = mListener;
+            if ( null != listener ) {
+                listener.onNewButtonText( msg );
+            }
+        }
+    }
 }
