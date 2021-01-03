@@ -388,8 +388,15 @@ public class MainActivity extends XWActivity
 
     protected XWFragment[] getVisibleFragments()
     {
+        return getFragments( true );
+    }
+
+    protected XWFragment[] getFragments( boolean visibleOnly )
+    {
         int childCount = m_root.getChildCount();
-        int count = Math.min( maxPanes(), childCount );
+        int count = visibleOnly
+            ? Math.min( maxPanes(), childCount )
+            : childCount;
         XWFragment[] result = new XWFragment[count];
         for ( int ii = 0; ii < count; ++ii ) {
             View child = m_root.getChildAt( childCount - 1 - ii );

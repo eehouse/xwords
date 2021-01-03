@@ -51,7 +51,7 @@ public class DualpaneDelegate extends DelegateBase {
     {
         Dialog dialog = null;
         MainActivity main = (MainActivity)m_activity;
-        XWFragment[] frags = main.getVisibleFragments();
+        XWFragment[] frags = main.getFragments( false );
         for ( XWFragment frag : frags ) {
             dialog = frag.getDelegate().makeDialog( alert, params );
             if ( null != dialog ) {
