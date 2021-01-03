@@ -621,7 +621,6 @@
     <string name="invite_dict_missing_body_noname_fmt">Você foi convidado a jogar CrossWords usando a lista de palavras %2$s (para jogar em %3$s), mas ela não está instalada. Gostaria de baixar a lista de palavras\?</string>
     <string name="invite_dict_missing_body_fmt">%1$s te convidou a jogar CrossWords usando a lista de palavras %2$s (para jogar em %3$s), mas ela não está instalada. Gostaria de baixar a lista de palavras ou recusar o convite\?</string>
     <string name="invite_dict_missing_title">Lista de palavras faltando</string>
-    <string name="choose_opponent">Escolha seu oponente</string>
     <string name="name_game">Nomeie seu jogo</string>
     <string name="knowns_dup_name_fmt">Incapaz de mudar o nome de “%1$s” para “%2$s”. “%2$s” já está em uso\?</string>
     <string name="knowns_rename_title">Renomear Jogador</string>
