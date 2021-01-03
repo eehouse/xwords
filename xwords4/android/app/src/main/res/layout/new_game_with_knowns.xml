@@ -31,7 +31,7 @@
              android:layout_width="match_parent"
              android:layout_height="wrap_content"
              android:drawSelectorOnTop="true"
-             android:paddingLeft="8dp"
+             android:paddingLeft="32dp"
              android:visibility="gone"
              />
     <TextView android:text="@string/choose_expl_known"

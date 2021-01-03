@@ -179,9 +179,9 @@
       <item name="android:layout_width">match_parent</item>
       <item name="android:layout_height">match_parent</item>
       <item name="android:textStyle">italic</item>
-      <item name="android:paddingLeft">20dp</item>
+      <item name="android:paddingLeft">32dp</item>
       <item name="android:paddingBottom">8dp</item>
-      <item name="android:textSize">10dp</item>
+      <item name="android:textSize">11dp</item>
     </style>
     <style name="new_game_radio">
       <item name="android:layout_width">wrap_content</item>

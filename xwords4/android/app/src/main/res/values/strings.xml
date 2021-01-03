@@ -2678,8 +2678,8 @@
     <string name="choose_expl_config">OR start a game after configuring
     it, e.g. to change the language or number of players</string>
 
-    <string name="newgame_radio_known">Invite Known</string>
-    <string name="newgame_radio_unknown">Invite Unknown</string>
+    <string name="newgame_radio_known">Invite Known Player</string>
+    <string name="newgame_radio_unknown">Invite New Player</string>
 
     <!-- Button text depending on the radio button chosen.  -->
     <string name="newgame_open_game">Start game</string>
