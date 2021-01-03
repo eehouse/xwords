@@ -1071,7 +1071,6 @@
         <item quantity="other">%1$s trocou %2$d quadrados</item>
     </plurals>
     <string name="dict_desc_fmt">%1$s (%2$s de %3$d palavras)</string>
-    <string name="dict_info_note_fmt">Nota: %1$s</string>
     <string name="lookup_title">Pesquisa de palavras</string>
     <string name="square_tiles_summary">Mesmo que possam ser mais altos</string>
     <string name="square_tiles">Blocos em forma de quadrado</string>
