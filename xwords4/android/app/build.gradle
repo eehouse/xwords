@@ -103,7 +103,6 @@ android {
             buildConfigField "boolean", "OFFER_MQTT", "true"
             buildConfigField "boolean", "NON_RELEASE", "DEBUG || !IS_TAGGED_BUILD"
             buildConfigField "boolean", "HAVE_KNOWN_PLAYERS", "false"
-            buildConfigField "boolean", "DO_MQTT_GAME_GONE", "true"
             buildConfigField "boolean", "FOR_FDROID", "false"
         }
 
