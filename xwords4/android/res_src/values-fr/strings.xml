@@ -2635,7 +2635,6 @@ avant de pouvoir être ouverte.</string>
     <!--XLATE-ME-->
     <!--<string name="new_game_message_net">(You will have a chance to
     invite other players when it is open.)</string>-->
-    <string name="new_game_message_net">(Vous aurez la possibilité d\'inviter d\'autres joueurs après qu\'elle soit ouverte.)</string>
     <!--XLATE-ME-->
     <!--<string name="use_defaults">Use defaults</string>-->
     <string name="use_defaults">Utiliser param. par défaut</string>

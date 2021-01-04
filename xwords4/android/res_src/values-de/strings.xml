@@ -665,7 +665,6 @@
 \n
 \nOder wollen Sie sie zuerst konfigurieren?</string>
     <string name="new_game_message_nodflt">Diese Partie muss vor dem Öffnen konfiguriert werden.</string>
-    <string name="new_game_message_net">(Sie haben die Möglichkeit andere Spieler einzuladen, wenn sie geöffnet ist.)</string>
     <string name="use_defaults">Standardeinstellungen</string>
     <string name="nplayers_prompt">Nummer auf diesem Gerät</string>
     <plurals name="nplayers_fmt">

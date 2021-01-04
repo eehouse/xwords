@@ -616,7 +616,6 @@
     <string name="new_game_networked">新しいネットワーク ゲーム</string>
     <string name="new_game_message">デフォルトの設定を使用して、このゲームを作成しますか?\n\nそれとも、最初に設定しますか?</string>
     <string name="new_game_message_nodflt">このゲームを開く前に設定する必要があります。</string>
-    <string name="new_game_message_net">(開くときに他のプレイヤーを招待するチャンスがあります)</string>
     <string name="use_defaults">デフォルトを使用する</string>
     <plurals name="nplayers_fmt">
         <item quantity="other">%1$d つの プレイヤー</item>

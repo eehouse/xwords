@@ -590,7 +590,6 @@
     </plurals>
     <string name="nplayers_prompt">Número neste dispositivo</string>
     <string name="use_defaults">Usar padrão</string>
-    <string name="new_game_message_net">(Você terá uma chance de convidar outros jogadores depois que for criado.)</string>
     <string name="new_game_message_nodflt">Este jogo precisa ser configurado antes que possa ser aberto.</string>
     <string name="new_game_message">Gostaria de criar este jogo usando os ajustes padrão\?
 \n
