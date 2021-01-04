@@ -697,7 +697,6 @@
 \n 
 \nCzy chcesz ją najpierw skonfigurować\?</string>
     <string name="new_game_message_nodflt">Ta gra musi zostać skonfigurowana, zanim będzie można ją otworzyć.</string>
-    <string name="new_game_message_net">(Będziesz miał okazję zaprosić innych graczy, gdy będzie otwarta.)</string>
     <string name="use_defaults">Użyj ustawień domyślnych</string>
     <string name="nplayers_prompt">Numer na tym urządzeniu</string>
     <plurals name="nplayers_fmt">

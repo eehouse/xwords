@@ -605,7 +605,6 @@
     <string name="new_game_networked">Nieuw spel op netwerk</string>
     <string name="new_game_message">Wil je dit spel maken met de standaardinstellingen?\n\nOf wil je het spel eerst configureren?</string>
     <string name="new_game_message_nodflt">Dit spel moet ingesteld zijn voordat het geopend kan worden.</string>
-    <string name="new_game_message_net">(Je krijgt de kans om andere spelers uit te nodigen als het open is.)</string>
     <string name="use_defaults">Standaard</string>
     <string name="nplayers_prompt">Hoeveelheid op dit apparaat</string>
     <plurals name="nplayers_fmt">

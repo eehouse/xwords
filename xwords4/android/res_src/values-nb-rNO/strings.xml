@@ -630,7 +630,6 @@
     <string name="new_game_message">Ønsker du å opprette dette spillet med forvalgte innstillinger?
 \n
 \nEller ønsker du å sette det opp først?</string>
-    <string name="new_game_message_net">(Du vil kunne invitere andre spillere når det er åpent.)</string>
     <string name="nplayers_prompt">Nummeret på denne enheten</string>
     <string name="err_dup_invite_fmt">Duplikatinvitasjon avslått: Enheten \"%1$s\" har allerede godtatt en invitasjon til dette spillet.</string>
     <string name="invite_multi_summary">Inviter mer enn én spiller per enhet annensteds fra</string>
