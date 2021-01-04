@@ -105,7 +105,7 @@ handle_ok( GtkWidget* XP_UNUSED(widget), gpointer closure )
     } else if ( COMMS_CONN_NONE == conType ) {
         gchar* name =
             gtk_combo_box_text_get_active_text( GTK_COMBO_BOX_TEXT(state->knownsCombo) );
-        kplr_getAddr( state->dutil, NULL_XWE, name, state->addr );
+        kplr_getAddr( state->dutil, NULL_XWE, name, state->addr, NULL );
 #endif
     } else {
         addr_addType( state->addr, conType );

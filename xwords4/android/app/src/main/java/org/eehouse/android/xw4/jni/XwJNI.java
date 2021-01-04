@@ -199,8 +199,13 @@ public class XwJNI {
 
     public static CommsAddrRec kplr_getAddr( String name )
     {
+        return kplr_getAddr( name, null );
+    }
+
+    public static CommsAddrRec kplr_getAddr( String name, int[] lastMod )
+    {
         return BuildConfig.HAVE_KNOWN_PLAYERS
-            ? kplr_getAddr( getJNI().m_ptrGlobals, name )
+            ? kplr_getAddr( getJNI().m_ptrGlobals, name, lastMod )
             : null;
     }
 
@@ -730,7 +735,8 @@ public class XwJNI {
     private static native boolean kplr_renamePlayer( long jniState, String oldName,
                                                      String newName );
     private static native void kplr_deletePlayer( long jniState, String player );
-    private static native CommsAddrRec kplr_getAddr( long jniState, String name );
+    private static native CommsAddrRec kplr_getAddr( long jniState, String name,
+                                                     int[] lastMod );
     public static native String kplr_nameForMqttDev( long jniState, String mqttID );
 
     private static native void cleanGlobals( long jniState );

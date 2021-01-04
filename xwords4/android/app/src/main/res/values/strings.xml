@@ -2653,6 +2653,9 @@
     has seen enough to know how to invite them quickly to new
     games. Their names default to what the remote player has chosen,
     but you can change the names if you want.</string>
+    <!-- Creation date of newest game with that player -->
+    <string name="knowns_ts_fmt">Newest game: %1$s</string>
+    <!-- Players MQTT/device ID -->
     <string name="knowns_mqtt_fmt">MQTT DevID: %1$s</string>
     <string name="knowns_bt_fmt">Bluetooth name: %1$s</string>
     <string name="knowns_bta_fmt">Bluetooth addr: %1$s</string>

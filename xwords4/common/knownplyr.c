@@ -63,7 +63,7 @@ loadFromStream( XW_DUtilCtxt* dutil, KPState* state, XWStreamCtxt* stream )
 static KPState*
 loadState( XW_DUtilCtxt* dutil, XWEnv xwe )
 {
-    LOG_FUNC();
+    // LOG_FUNC();
     pthread_mutex_lock( &dutil->kpMutex );
 
     KPState* state = (KPState*)dutil->kpCtxt;
@@ -281,7 +281,7 @@ findByName( KPState* state, const XP_UCHAR* name )
 
 XP_Bool
 kplr_getAddr( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* name,
-              CommsAddrRec* addr )
+              CommsAddrRec* addr, XP_U32* lastMod )
 {
     KPState* state = loadState( dutil, xwe );
     XP_Bool found = XP_FALSE;
@@ -289,6 +289,9 @@ kplr_getAddr( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* name,
     found = NULL != kp;
     if ( found ) {
         *addr = kp->addr;
+        if ( !!lastMod ) {
+            *lastMod = kp->newestMod;
+        }
     }
     releaseState( dutil, xwe, state );
     LOG_RETURNF( "%s", boolToStr(found) );

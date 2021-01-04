@@ -817,17 +817,22 @@ Java_org_eehouse_android_xw4_jni_XwJNI_kplr_1deletePlayer
 
 JNIEXPORT jobject JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_kplr_1getAddr
-( JNIEnv* env, jclass C, jlong jniGlobalPtr, jstring jName )
+( JNIEnv* env, jclass C, jlong jniGlobalPtr, jstring jName, jintArray jLastMod )
 {
     jobject jaddr = NULL;
     DVC_HEADER(jniGlobalPtr);
 
     CommsAddrRec addr;
     const char* name = (*env)->GetStringUTFChars( env, jName, NULL );
-    kplr_getAddr( globalState->dutil, env, name, &addr );
+    XP_U32 lastMod;
+    kplr_getAddr( globalState->dutil, env, name, &addr, &lastMod );
     (*env)->ReleaseStringUTFChars( env, jName, name );
     jaddr = makeObjectEmptyConst( env, PKG_PATH("jni/CommsAddrRec") );
     setJAddrRec( env, jaddr, &addr );
+
+    if ( !!jLastMod ) {
+        setIntInArray( env, jLastMod, 0, lastMod );
+    }
 
     DVC_HEADER_END();
     return jaddr;

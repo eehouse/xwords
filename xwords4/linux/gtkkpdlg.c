@@ -59,7 +59,7 @@ addForPlayer( GtkPlayerState* ps )
     GtkPlayerDlgState* dlgState = ps->dlgState;
 
     CommsAddrRec addr;
-    if ( kplr_getAddr( ps->dlgState->dutil, NULL_XWE, ps->name, &addr ) ) {
+    if ( kplr_getAddr( ps->dlgState->dutil, NULL_XWE, ps->name, &addr, NULL ) ) {
         int curRow = dlgState->curRow++;
 
         GtkWidget* vbox = gtk_box_new( GTK_ORIENTATION_VERTICAL, 0 );

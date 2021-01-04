@@ -30,8 +30,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -175,7 +177,9 @@ public class KnownPlayersDelegate extends DelegateBase {
     private ViewGroup makePlayerElem( String player )
     {
         ViewGroup view = null;
-        CommsAddrRec addr = XwJNI.kplr_getAddr( player );
+        int lastMod[] = {0};
+        CommsAddrRec addr = XwJNI.kplr_getAddr( player, lastMod );
+
         if ( null != addr ) {
             final ViewGroup item = (ViewGroup)LocUtils.inflate( mActivity, R.layout.knownplayrs_item );
             setName( item, player );
@@ -184,6 +188,14 @@ public class KnownPlayersDelegate extends DelegateBase {
             // Iterate over address types
             CommsConnTypeSet conTypes = addr.conTypes;
             ViewGroup list = (ViewGroup)item.findViewById( R.id.items );
+
+            long timeStmp = 1000L * lastMod[0];
+            if ( BuildConfig.NON_RELEASE && 0 < timeStmp ) {
+                String str = DateFormat.getDateTimeInstance()
+                    .format(new Date(timeStmp));
+                addListing( list, R.string.knowns_ts_fmt, str );
+            }
+
             if ( conTypes.contains( CommsAddrRec.CommsConnType.COMMS_CONN_BT ) ) {
                 addListing( list, R.string.knowns_bt_fmt, addr.bt_hostName );
                 if ( BuildConfig.NON_RELEASE ) {
