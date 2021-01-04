@@ -2213,8 +2213,6 @@
     first?</string>
     <string name="new_game_message_nodflt">This game must be
     configured before it can be opened.</string>
-    <string name="new_game_message_net">(You will have a chance to
-    invite other players after it is created.)</string>
     <string name="use_defaults">Use defaults</string>
     <string name="nplayers_prompt">Number on this device</string>
     <plurals name="nplayers_fmt">

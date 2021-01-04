@@ -867,15 +867,16 @@ public class GamesListDelegate extends ListDelegateBase
 
         case GAMES_LIST_NEWGAME:
             boolean solo = (Boolean)params[0];
-            boolean forceConfig = 2 <= params.length && (Boolean)params[1];
-            if ( !solo && !forceConfig && XwJNI.hasKnownPlayers() ) {
-                dialog = mkNewWithKnowns();
-                makeNotAgainBuilder( R.string.not_again_quicknetgame,
-                                     R.string.key_na_quicknetgame )
-                    .setTitle( R.string.new_feature_title )
-                    .show();
+            if ( solo ) {
+                dialog = mkNewSoloGameDialog();
             } else {
-                dialog = mkNewGameDialog( solo );
+                dialog = mkNewNetGameDialog();
+                if ( XwJNI.hasKnownPlayers() ) {
+                    makeNotAgainBuilder( R.string.not_again_quicknetgame,
+                                         R.string.key_na_quicknetgame )
+                        .setTitle( R.string.new_feature_title )
+                        .show();
+                }
             }
             break;
 
@@ -917,23 +918,14 @@ public class GamesListDelegate extends ListDelegateBase
         return dialog;
     } // makeDialog
 
-    private Dialog mkNewGameDialog( boolean solo )
+    private Dialog mkNewSoloGameDialog()
     {
         final LinearLayout view = (LinearLayout)
             LocUtils.inflate( m_activity, R.layout.msg_label_and_edit );
         final EditWClear edit = (EditWClear)view.findViewById( R.id.edit );
         edit.setText( GameUtils.makeDefaultName( m_activity ) );
 
-        boolean canDoDefaults = solo ||
-            0 < XWPrefs.getAddrTypes( m_activity ).size();
-        int iconResID = solo ? R.drawable.ic_sologame : R.drawable.ic_multigame;
-        int titleID = solo ? R.string.new_game : R.string.new_game_networked;
-
-        String msg = getString( canDoDefaults ? R.string.new_game_message
-                                : R.string.new_game_message_nodflt );
-        if ( !solo ) {
-            msg += "\n\n" + getString( R.string.new_game_message_net );
-        }
+        String msg = getString( R.string.new_game_message );
         TextView tmpEdit = (TextView)view.findViewById( R.id.msg );
         tmpEdit.setText( msg );
 
@@ -946,27 +938,25 @@ public class GamesListDelegate extends ListDelegateBase
 
         AlertDialog.Builder ab = makeAlertBuilder()
             .setView( view )
-            .setTitle( titleID )
-            .setIcon( iconResID )
+            .setTitle( R.string.new_game )
+            .setIcon( R.drawable.ic_sologame )
             .setPositiveButton( R.string.newgame_configure_first, lstnr );
-        if ( canDoDefaults ) {
-           OnClickListener lstnr2 = new OnClickListener() {
-                    public void onClick( DialogInterface dlg, int item ) {
-                        String name = edit.getText().toString();
-                        curThis().makeThenLaunchOrConfigure( name, false, false );
-                    }
-                };
-            ab.setNegativeButton( R.string.use_defaults, lstnr2 );
-        }
+        OnClickListener lstnr2 = new OnClickListener() {
+                public void onClick( DialogInterface dlg, int item ) {
+                    String name = edit.getText().toString();
+                    curThis().makeThenLaunchOrConfigure( name, false, false );
+                }
+            };
+        ab.setNegativeButton( R.string.use_defaults, lstnr2 );
         return ab.create();
     }
 
-    private Dialog mkNewWithKnowns()
+    private Dialog mkNewNetGameDialog()
     {
-        String[] names = XwJNI.kplr_getPlayers();
+        // String[] names = XwJNI.kplr_getPlayers();
         final NewWithKnowns view = (NewWithKnowns)
             LocUtils.inflate( m_activity, R.layout.new_game_with_knowns );
-        view.setNames( names, GameUtils.makeDefaultName( m_activity ) );
+        view.setGameName( GameUtils.makeDefaultName( m_activity ) );
         AlertDialog.Builder ab = makeAlertBuilder()
             .setView( view )
             .setTitle( R.string.new_game_networked )

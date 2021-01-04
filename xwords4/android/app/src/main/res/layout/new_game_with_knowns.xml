@@ -34,7 +34,8 @@
              android:paddingLeft="32dp"
              android:visibility="gone"
              />
-    <TextView android:text="@string/choose_expl_known"
+    <TextView android:id="@+id/expl_known"
+              android:text="@string/choose_expl_known"
               style="@style/new_game_expl"
               />
 

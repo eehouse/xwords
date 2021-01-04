@@ -31,6 +31,7 @@ import android.widget.RadioGroup;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import org.eehouse.android.xw4.jni.XwJNI;
 import org.eehouse.android.xw4.loc.LocUtils;
 
 public class NewWithKnowns extends LinearLayout
@@ -65,24 +66,33 @@ public class NewWithKnowns extends LinearLayout
         mListener = listener;
     }
 
-    void setNames( String[] knowns, String gameName )
+    void setGameName( String gameName )
     {
-        mCurKnown = DBUtils.getStringFor( getContext(), KP_NAME_KEY,
-                                          knowns[0] );
-        ArrayAdapter<String> adapter = new
-            ArrayAdapter<String>( getContext(),
-                                  android.R.layout.simple_spinner_item,
-                                  knowns );
-        adapter.setDropDownViewResource( android.R.layout
-                                         .simple_spinner_dropdown_item );
-        mNamesSpinner = (Spinner)findViewById( R.id.names );
-        mNamesSpinner.setAdapter( adapter );
-        mNamesSpinner.setOnItemSelectedListener( this );
-        Assert.assertTrueNR( !TextUtils.isEmpty( mCurKnown ) );
-        for ( int ii = 0; ii < knowns.length; ++ii ) {
-            if ( knowns[ii].equals( mCurKnown ) ) {
-                mNamesSpinner.setSelection( ii );
-                break;
+        boolean hasKnowns = XwJNI.hasKnownPlayers();
+        if ( hasKnowns ) {
+            String[] knowns = XwJNI.kplr_getPlayers();
+            mCurKnown = DBUtils.getStringFor( getContext(), KP_NAME_KEY,
+                                              knowns[0] );
+            ArrayAdapter<String> adapter = new
+                ArrayAdapter<String>( getContext(),
+                                      android.R.layout.simple_spinner_item,
+                                      knowns );
+            adapter.setDropDownViewResource( android.R.layout
+                                             .simple_spinner_dropdown_item );
+            mNamesSpinner = (Spinner)findViewById( R.id.names );
+            mNamesSpinner.setAdapter( adapter );
+            mNamesSpinner.setOnItemSelectedListener( this );
+            Assert.assertTrueNR( !TextUtils.isEmpty( mCurKnown ) );
+            for ( int ii = 0; ii < knowns.length; ++ii ) {
+                if ( knowns[ii].equals( mCurKnown ) ) {
+                    mNamesSpinner.setSelection( ii );
+                    break;
+                }
+            }
+        } else {
+            int[] toHide = { R.id.radio_known, R.id.names, R.id.expl_known };
+            for ( int resID : toHide ) {
+                findViewById(resID).setVisibility( View.GONE );
             }
         }
 
@@ -141,8 +151,10 @@ public class NewWithKnowns extends LinearLayout
 
     private void onRadioChanged()
     {
-        mNamesSpinner.setVisibility( mCurRadio == R.id.radio_known
-                                     ? View.VISIBLE : View.GONE );
+        if ( null != mNamesSpinner ) {
+            mNamesSpinner.setVisibility( mCurRadio == R.id.radio_known
+                                         ? View.VISIBLE : View.GONE );
+        }
 
         Context context = getContext();
         int resId = 0;
