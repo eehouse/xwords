@@ -21,13 +21,14 @@ package org.eehouse.android.xw4;
 
 import android.app.Activity;
 import android.app.Dialog;
+import android.content.DialogInterface.OnClickListener;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.os.Handler;
 
 import org.eehouse.android.xw4.loc.LocUtils;
 
 import java.io.Serializable;
-
 
 public class DBAlert extends XWDialogFragment {
     private static final String TAG = DBAlert.class.getSimpleName();
@@ -102,34 +103,15 @@ public class DBAlert extends XWDialogFragment {
             // Assert.failDbg();   // remove: better to see what users will see
             dialog = LocUtils.makeAlertBuilder( activity )
                 .setMessage( "Unable to create " + getDlgID() + " Alert" )
-                .setPositiveButton( "Bummer", null )
-                // .setNegativeButton( "Try now", new OnClickListener() {
-                //         @Override
-                //         public void onClick( DialogInterface dlg, int button ) {
-                //             DBAlert alrt = newInstance( mDlgID, mParams );
-                //             ((MainActivity)getActivity()).show( alrt );
-                //         }
-                //     })
-                .create();
-
-            new Handler().post( new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            Activity activity = getActivity();
-                            if ( null != activity && activity instanceof MainActivity ) {
-                                DBAlert newMe = newInstance( getDlgID(), mParams );
-                                ((MainActivity)activity).show( newMe );
-                                dismiss();          // kill myself...
-                            } else {
-                                Log.d( TAG, "null activity..." );
-                            }
-                        } catch ( IllegalStateException ex ) {
-                            // Assert.assertFalse( BuildConfig.DEBUG );
-                            Log.e( TAG, "got ISE; dropping alert" );
+                .setPositiveButton( android.R.string.ok, null )
+                .setNegativeButton( "Try again", new OnClickListener() {
+                        @Override
+                        public void onClick( DialogInterface dlg, int button ) {
+                            DBAlert alrt = newInstance( mDlgID, mParams );
+                            ((MainActivity)getActivity()).show( alrt );
                         }
-                    }
-                } );
+                    })
+                .create();
         }
         return dialog;
     }
