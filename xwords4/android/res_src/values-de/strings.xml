@@ -340,7 +340,7 @@
 \nSie können Spielsteine zwischen Ablage und Brett hin- und herziehen, oder Sie können ein leeres Feld antippen, um den Brett-Pfeil zu positionieren. Angetippte Spielsteine in der Ablage ersetzen den Pfeil (indem er ein Feld in seine gegenwärtige Richtung verschoben wird.) Tippen Sie den Pfeil einmal an, um seine Richtung zu ändern, zweimal, um ihn zu verbergen. Ein Kontrollkästchen im Abschnitt Darstellung in den Einstellungen verbirgt ihn dauerhaft.</string>
     <string name="default_name_title">Standardspielername</string>
     <string name="default_name_message">Bitte geben Sie hier Ihren Namen ein. Er wird beim Erzeugen neuer Partien benutzt. (Sie können ihn später im Abschnitt „Standard für neue Partien“ in den Einstellungen ändern.)</string>
-    <string name="about_copyright">Copyright © 1998-2020 Eric House. Dies ist Freie/Open-Source-Software verfügbar unter der GNU Public License.</string>
+    <string name="about_copyright">Copyright © 1998-2021 Eric House. Dies ist Freie/Open-Source-Software verfügbar unter der GNU Public License.</string>
     <string name="about_web">Ein Handbuch und den Quelltext finden Sie unter: http://xwords.sf.net/android.php. Für Fehlerberichte, Funktionswünsche, Mitarbeit usw. bitten eine E-Mail an xwords@eehouse.org.</string>
     <string name="xlator">[leer]</string>
     <string name="about_credits">Icons der Werkzeugleiste von Sarah Chu. Icons der Navigationsleiste vom Noun Project: „Archive“ von Trendy; „Rematch“ von Becris; und „Swap“ von iconomania.</string>

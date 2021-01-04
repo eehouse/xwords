@@ -550,7 +550,7 @@
     <string name="str_cant_undo_tileassign">Tildelingen kan ikke angres.</string>
     <string name="finalscores_title">Sluttpoengsummer</string>
     <string name="ids_endnow">Er du sikker på at du ønsker å gi deg?</string>
-    <string name="about_copyright">Kopirett © 1998-2020 Eric House. Denne frie programvaren er lisensiert med GNU Public-lisens.</string>
+    <string name="about_copyright">Kopirett © 1998-2021 Eric House. Denne frie programvaren er lisensiert med GNU Public-lisens.</string>
     <string name="about_web">For manual eller kildekode, se: http://xwords.sf.net/android.php For å innrapportere feil, foreslå funksjoner, tilby hjelp, osv., send e-post til: xwords@eehouse.org</string>
     <string name="xlator">[tom]</string>
     <string name="about_credits">Verktøyslinjeinkoner av Sarah Chu. Navigeringsfeltsikoner fra Noun-prosjektet: \"arkiver\" av Trendy; \"omkamp\" av Becris; og \"bytte\" av iconmania.</string>
