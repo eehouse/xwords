@@ -35,6 +35,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -47,10 +48,12 @@ import org.eehouse.android.xw4.loc.LocUtils;
 
 public class KnownPlayersDelegate extends DelegateBase {
     private static final String TAG = KnownPlayersDelegate.class.getSimpleName();
+    private static final String KEY_EXPSET = TAG + "/expset";
 
     private Activity mActivity;
     private ViewGroup mList;
     private Map<String, ViewGroup> mChildren;
+    private HashSet<String> mExpSet;
 
     protected KnownPlayersDelegate( Delegator delegator, Bundle sis )
     {
@@ -62,6 +65,7 @@ public class KnownPlayersDelegate extends DelegateBase {
     protected void init( Bundle sis )
     {
         mList = (ViewGroup)findViewById( R.id.players_list );
+        loadExpanded();
         populateList();
     }
 
@@ -174,7 +178,7 @@ public class KnownPlayersDelegate extends DelegateBase {
         addInOrder();
     }
 
-    private ViewGroup makePlayerElem( String player )
+    private ViewGroup makePlayerElem( final String player )
     {
         ViewGroup view = null;
         int lastMod[] = {0};
@@ -236,8 +240,15 @@ public class KnownPlayersDelegate extends DelegateBase {
                     {
                         item.findViewById(R.id.hidden_part)
                             .setVisibility(nowExpanded?View.VISIBLE:View.GONE);
+                        if ( nowExpanded ) {
+                            mExpSet.add( player );
+                        } else {
+                            mExpSet.remove( player );
+                        }
+                        saveExpanded();
                     }
                 } );
+            eib.setExpanded( mExpSet.contains(player) );
 
             item.findViewById( R.id.player_line )
                 .setOnClickListener( new View.OnClickListener() {
@@ -271,6 +282,27 @@ public class KnownPlayersDelegate extends DelegateBase {
         makeConfirmThenBuilder( msg, Action.KNOWN_PLAYER_DELETE )
             .setParams( name )
             .show();
+    }
+
+    private void loadExpanded()
+    {
+        HashSet<String> expSet;
+        try {
+            expSet = (HashSet<String>)DBUtils.getSerializableFor( mActivity, KEY_EXPSET );
+        } catch ( Exception ex ) {
+            Log.ex( TAG, ex );
+            expSet = null;
+        }
+        if ( null == expSet ) {
+            expSet = new HashSet<>();
+        }
+
+        mExpSet = expSet;
+    }
+
+    private void saveExpanded()
+    {
+        DBUtils.setSerializableFor( mActivity, KEY_EXPSET, mExpSet );
     }
 
     public static void launchOrAlert( Delegator delegator, 
