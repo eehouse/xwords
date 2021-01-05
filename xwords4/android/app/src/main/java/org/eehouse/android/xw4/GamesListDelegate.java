@@ -950,6 +950,18 @@ public class GamesListDelegate extends ListDelegateBase
                             } );
                     }
                 } );
+        if ( !standalone && XwJNI.hasKnownPlayers() ) {
+            ab.setNegativeButton( R.string.gamel_menu_knownplyrs,
+                                  new OnClickListener() {
+                                      @Override
+                                      public void onClick( DialogInterface dlg,
+                                                           int item ) {
+                                          KnownPlayersDelegate
+                                              .launchOrAlert( getDelegator(),
+                                                              GamesListDelegate.this );
+                                      }
+                                  } );
+        }
 
         final AlertDialog dialog = ab.create();
         view.setCallback( new NewWithKnowns.ButtonChangeListener() {
