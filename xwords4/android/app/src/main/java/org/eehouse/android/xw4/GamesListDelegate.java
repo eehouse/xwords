@@ -867,16 +867,12 @@ public class GamesListDelegate extends ListDelegateBase
 
         case GAMES_LIST_NEWGAME:
             boolean solo = (Boolean)params[0];
-            if ( solo ) {
-                dialog = mkNewSoloGameDialog();
-            } else {
-                dialog = mkNewNetGameDialog();
-                if ( XwJNI.hasKnownPlayers() ) {
-                    makeNotAgainBuilder( R.string.not_again_quicknetgame,
-                                         R.string.key_na_quicknetgame )
-                        .setTitle( R.string.new_feature_title )
-                        .show();
-                }
+            dialog = mkNewNetGameDialog( solo );
+            if ( !solo && XwJNI.hasKnownPlayers() ) {
+                makeNotAgainBuilder( R.string.not_again_quicknetgame,
+                                     R.string.key_na_quicknetgame )
+                    .setTitle( R.string.new_feature_title )
+                    .show();
             }
             break;
 
@@ -918,49 +914,16 @@ public class GamesListDelegate extends ListDelegateBase
         return dialog;
     } // makeDialog
 
-    private Dialog mkNewSoloGameDialog()
-    {
-        final LinearLayout view = (LinearLayout)
-            LocUtils.inflate( m_activity, R.layout.msg_label_and_edit );
-        final EditWClear edit = (EditWClear)view.findViewById( R.id.edit );
-        edit.setText( GameUtils.makeDefaultName( m_activity ) );
-
-        String msg = getString( R.string.new_game_message );
-        TextView tmpEdit = (TextView)view.findViewById( R.id.msg );
-        tmpEdit.setText( msg );
-
-        OnClickListener lstnr = new OnClickListener() {
-                public void onClick( DialogInterface dlg, int item ) {
-                    String name = edit.getText().toString();
-                    curThis().makeThenLaunchOrConfigure( name, true, false );
-                }
-            };
-
-        AlertDialog.Builder ab = makeAlertBuilder()
-            .setView( view )
-            .setTitle( R.string.new_game )
-            .setIcon( R.drawable.ic_sologame )
-            .setPositiveButton( R.string.newgame_configure_first, lstnr );
-        OnClickListener lstnr2 = new OnClickListener() {
-                public void onClick( DialogInterface dlg, int item ) {
-                    String name = edit.getText().toString();
-                    curThis().makeThenLaunchOrConfigure( name, false, false );
-                }
-            };
-        ab.setNegativeButton( R.string.use_defaults, lstnr2 );
-        return ab.create();
-    }
-
-    private Dialog mkNewNetGameDialog()
+    private Dialog mkNewNetGameDialog( final boolean standalone )
     {
         // String[] names = XwJNI.kplr_getPlayers();
         final NewWithKnowns view = (NewWithKnowns)
             LocUtils.inflate( m_activity, R.layout.new_game_with_knowns );
-        view.setGameName( GameUtils.makeDefaultName( m_activity ) );
+        view.configure( standalone, GameUtils.makeDefaultName( m_activity ) );
         AlertDialog.Builder ab = makeAlertBuilder()
             .setView( view )
-            .setTitle( R.string.new_game_networked )
-            .setIcon( R.drawable.ic_multigame )
+            .setTitle( standalone ? R.string.new_game : R.string.new_game_networked )
+            .setIcon( standalone ? R.drawable.ic_sologame: R.drawable.ic_multigame )
             .setPositiveButton( android.R.string.cancel, new OnClickListener() {
                     @Override
                     public void onClick( DialogInterface dlg, int item ) {
@@ -968,20 +931,21 @@ public class GamesListDelegate extends ListDelegateBase
                                 @Override
                                 public void onUseKnown( String knownName, String gameName )
                                 {
+                                    Assert.assertTrueNR( !standalone );
                                     CommsAddrRec addr = XwJNI.kplr_getAddr( knownName );
                                     if ( null != addr ) {
                                         launchLikeRematch( addr, gameName );
                                     }
                                 }
                                 @Override
-                                public void onInviteLater( String gameName )
+                                public void onStartGame( String gameName, boolean solo,
+                                                         boolean configFirst )
                                 {
-                                    curThis().makeThenLaunchOrConfigure( gameName, false, false );
-                                }
-                                @Override
-                                public void onConfigureFirst( String gameName )
-                                {
-                                    curThis().makeThenLaunchOrConfigure( gameName, true, false );
+                                    Assert.assertTrueNR( solo == standalone );
+                                    Assert.assertTrueNR( solo == m_mySIS.nextIsSolo );
+                                    curThis().makeThenLaunchOrConfigure( gameName,
+                                                                         configFirst,
+                                                                         false );
                                 }
                             } );
                     }

@@ -15,11 +15,23 @@
               android:layout_height="wrap_content"
               >
 
+    <!-- One of these two pairs gets hidden -->
+    <RadioButton android:id="@+id/radio_default"
+                 android:text="@string/use_defaults"
+                 style="@style/new_game_radio"
+                 />
+    <TextView android:id="@+id/choose_expl_default"
+              android:text="@string/choose_expl_default"
+              style="@style/new_game_expl"
+              />
+
+    <!-- pair 2 (networked games case) -->
     <RadioButton android:id="@+id/radio_unknown"
                  android:text="@string/newgame_radio_unknown"
                  style="@style/new_game_radio"
                  />
-    <TextView android:text="@string/choose_expl_new"
+    <TextView android:id="@+id/choose_expl_new"
+              android:text="@string/choose_expl_new"
               style="@style/new_game_expl"
               />
 

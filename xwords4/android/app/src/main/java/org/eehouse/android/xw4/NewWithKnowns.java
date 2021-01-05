@@ -46,14 +46,14 @@ public class NewWithKnowns extends LinearLayout
 
     public interface ButtonCallbacks {
         void onUseKnown( String knownName, String gameName );
-        void onInviteLater( String gameName );
-        void onConfigureFirst( String gameName );
+        void onStartGame( String gameName, boolean solo, boolean configFirst );
     }
 
     private ButtonChangeListener mListener;
     private String mCurKnown;
     private int mCurRadio;
     private Spinner mNamesSpinner;
+    private boolean mStandalone;
 
     public NewWithKnowns( Context cx, AttributeSet as )
     {
@@ -66,9 +66,11 @@ public class NewWithKnowns extends LinearLayout
         mListener = listener;
     }
 
-    void setGameName( String gameName )
+    void configure( boolean standalone, String gameName )
     {
-        boolean hasKnowns = XwJNI.hasKnownPlayers();
+        mStandalone = standalone;
+        boolean hasKnowns = !standalone && XwJNI.hasKnownPlayers();
+        int[] toHide;
         if ( hasKnowns ) {
             String[] knowns = XwJNI.kplr_getPlayers();
             mCurKnown = DBUtils.getStringFor( getContext(), KP_NAME_KEY,
@@ -89,11 +91,16 @@ public class NewWithKnowns extends LinearLayout
                     break;
                 }
             }
+            toHide = new int[]{ R.id.radio_default, R.id.choose_expl_default,
+            };
         } else {
-            int[] toHide = { R.id.radio_known, R.id.names, R.id.expl_known };
-            for ( int resID : toHide ) {
-                findViewById(resID).setVisibility( View.GONE );
-            }
+            toHide = new int[]{ R.id.radio_known, R.id.names, R.id.expl_known,
+                                R.id.radio_unknown, R.id.choose_expl_new,
+            };
+        }
+
+        for ( int resID : toHide ) {
+            findViewById(resID).setVisibility(View.GONE);
         }
 
         EditWClear et = (EditWClear)findViewById( R.id.name_edit );
@@ -112,12 +119,14 @@ public class NewWithKnowns extends LinearLayout
             procs.onUseKnown( mCurKnown, gameName );
             break;
         case R.id.radio_unknown:
-            procs.onInviteLater( gameName );
+        case R.id.radio_default:
+            procs.onStartGame( gameName, mStandalone, false );
             break;
         case R.id.radio_configure:
-            procs.onConfigureFirst( gameName );
+            procs.onStartGame( gameName, mStandalone, true );
             break;
         default:
+            Assert.failDbg();
             break;
         }
     }
@@ -165,11 +174,14 @@ public class NewWithKnowns extends LinearLayout
                 .getString( context, R.string.newgame_invite_fmt, mCurKnown );
             break;
         case R.id.radio_unknown:
+        case R.id.radio_default:
             resId = R.string.newgame_open_game;
             break;
         case R.id.radio_configure:
             resId = R.string.newgame_configure_game;
             break;
+        default:
+            Assert.failDbg();
         }
 
         if ( 0 != resId ) {

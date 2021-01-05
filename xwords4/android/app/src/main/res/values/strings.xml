@@ -2208,9 +2208,6 @@
     <string name="new_game">New one-device game</string>
     <string name="new_game_networked">New networked game</string>
     <string name="rematch_name_fmt">%1$s</string>
-    <string name="new_game_message">Would you like to create this game
-    using default settings?\n\nOr would you like to configure it
-    first?</string>
     <string name="new_game_message_nodflt">This game must be
     configured before it can be opened.</string>
     <string name="use_defaults">Use defaults</string>
@@ -2672,6 +2669,8 @@
     “%1$s” to “%2$s”. Is “%2$s” already in use?</string>
 
     <!-- Quick-start new game explanations and buttons -->
+    <string name="choose_expl_default">Start a solo game using the
+    current defaults</string>
     <string name="choose_expl_new">Start a game with somebody new,
     sending an invitation via email, SMS, or even a QR code</string>
     <string name="choose_expl_known">OR start a game with somebody you’ve
