@@ -661,9 +661,6 @@
     <string name="title_addrs_pref">Verbindungsart</string>
     <string name="new_game_networked">Neue Netzwerk-Partie</string>
     <string name="rematch_name_fmt">%1$s</string>
-    <string name="new_game_message">Wollen Sie diese neue Partie mit Standardeinstellungen erzeugen?
-\n
-\nOder wollen Sie sie zuerst konfigurieren?</string>
     <string name="new_game_message_nodflt">Diese Partie muss vor dem Öffnen konfiguriert werden.</string>
     <string name="use_defaults">Standardeinstellungen</string>
     <string name="nplayers_prompt">Nummer auf diesem Gerät</string>

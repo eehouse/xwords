@@ -697,7 +697,6 @@ Introduïu el vostre nom aquí. S\'usarà en crear partides noves. (Podreu
 \nTambé podeu tocar les icones a l\'esquerra per a seleccionar o treure partides, i aleshores actuar en les partides seleccionades, p. ex. suprimir-les, fent servir el menú o la barra d\'accions.</string>
     <string name="not_again_backclears">El botó enrere anul·la qualsevol selecció en comptes de sortir. Toqueu-lo una altra vegada per a sortir de l\'aplicació.</string>
     <string name="dropped_dupe">Invitació rebuda però ignorada, ja s\'havia fet servir per a crear una partida.</string>
-    <string name="new_game_message">Voleu crear aquesta partida usant els paràmetres predeterminats?\n\nO voleu configurar-la abans?</string>
     <string name="nplayers_prompt">Número d\'aquest aparell</string>
     <string name="err_dup_invite_fmt">Invitació duplicada rebutjada: l\'aparell «%1$s» ja té una invitació acceptada per a aquesta partida.</string>
     <string name="connection_via_label">Canvia la via de comunicació</string>

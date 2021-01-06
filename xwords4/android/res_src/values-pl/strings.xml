@@ -693,9 +693,6 @@
     <string name="default_language">Język domyślny</string>
     <string name="title_addrs_pref">Komunikuj się przez</string>
     <string name="rematch_name_fmt">%1$s</string>
-    <string name="new_game_message">Chcesz utworzyć grę przy użyciu ustawień domyślnych\? 
-\n 
-\nCzy chcesz ją najpierw skonfigurować\?</string>
     <string name="new_game_message_nodflt">Ta gra musi zostać skonfigurowana, zanim będzie można ją otworzyć.</string>
     <string name="use_defaults">Użyj ustawień domyślnych</string>
     <string name="nplayers_prompt">Numer na tym urządzeniu</string>

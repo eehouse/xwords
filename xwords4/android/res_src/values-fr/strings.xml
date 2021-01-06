@@ -2625,8 +2625,6 @@ parties sur l\'écran principal permet de voir plus de parties</string>
     <!--<string name="new_game_message">Would you like to create this game
     using default settings?\n\nOr would you like to configure it
     first?</string>-->
-    <string name="new_game_message">Voulez-vous créer cette partie en utilisant
-les paramètres par défaut ?\n\nOu voulez-vous d\'abord la configurer ?</string>
     <!--XLATE-ME-->
     <!--<string name="new_game_message_nodflt">This game must be
     configured before it can be opened.</string>-->

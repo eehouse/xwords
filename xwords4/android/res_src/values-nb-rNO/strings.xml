@@ -627,9 +627,6 @@
         <item quantity="other">%1$s byttet %2$d flis</item>
     </plurals>
     <string name="lmi_tiles_fmt">Flis tildelt %1$s</string>
-    <string name="new_game_message">Ønsker du å opprette dette spillet med forvalgte innstillinger?
-\n
-\nEller ønsker du å sette det opp først?</string>
     <string name="nplayers_prompt">Nummeret på denne enheten</string>
     <string name="err_dup_invite_fmt">Duplikatinvitasjon avslått: Enheten \"%1$s\" har allerede godtatt en invitasjon til dette spillet.</string>
     <string name="invite_multi_summary">Inviter mer enn én spiller per enhet annensteds fra</string>
