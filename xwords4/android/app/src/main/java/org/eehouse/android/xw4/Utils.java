@@ -521,10 +521,21 @@ public class Utils {
         setText( parent, id, str );
     }
 
+    public static void setEnabled( View view, boolean enabled )
+    {
+        view.setEnabled( enabled );
+        if ( view instanceof ViewGroup ) {
+            ViewGroup asGroup = (ViewGroup)view;
+            for ( int ii = 0; ii < asGroup.getChildCount(); ++ii ) {
+                setEnabled( asGroup.getChildAt( ii ), enabled );
+            }
+        }
+    }
+
     public static void setEnabled( View parent, int id, boolean enabled )
     {
         View view = parent.findViewById( id );
-        parent.setEnabled( enabled );
+        setEnabled( view, enabled );
     }
 
     public static boolean getChecked( Dialog dialog, int id )
