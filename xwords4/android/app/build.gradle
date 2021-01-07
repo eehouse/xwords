@@ -104,6 +104,7 @@ android {
             buildConfigField "boolean", "NON_RELEASE", "DEBUG || !IS_TAGGED_BUILD"
             buildConfigField "boolean", "HAVE_KNOWN_PLAYERS", "false"
             buildConfigField "boolean", "FOR_FDROID", "false"
+            buildConfigField "boolean", "HAVE_PASSWORD", "false"
         }
 
         xw4NoSMS {

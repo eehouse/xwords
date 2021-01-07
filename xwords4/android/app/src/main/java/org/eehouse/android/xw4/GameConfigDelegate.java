@@ -365,7 +365,11 @@ public class GameConfigDelegate extends DelegateBase
         // Hide remote option if in standalone mode...
         final LocalPlayer lp = m_gi.players[m_whichPlayer];
         Utils.setText( playerView, R.id.player_name_edit, lp.name );
-        Utils.setText( playerView, R.id.password_edit, lp.password );
+        if ( BuildConfig.HAVE_PASSWORD ) {
+            Utils.setText( playerView, R.id.password_edit, lp.password );
+        } else {
+            playerView.findViewById(R.id.password_set).setVisibility( View.GONE );
+        }
 
         // Dicts spinner with label
         TextView dictLabel = (TextView)playerView
@@ -396,8 +400,7 @@ public class GameConfigDelegate extends DelegateBase
                     public void onCheckedChanged( CompoundButton buttonView,
                                                   boolean checked ) {
                         lp.isLocal = !checked;
-                        localSet.setVisibility( checked ?
-                                                View.GONE : View.VISIBLE );
+                        Utils.setEnabled( localSet, !checked );
                         checkShowPassword( playerView, lp );
                     }
                 };
@@ -405,7 +408,7 @@ public class GameConfigDelegate extends DelegateBase
             check.setVisibility( View.VISIBLE );
         } else {
             check.setVisibility( View.GONE );
-            localSet.setVisibility( View.VISIBLE );
+            Utils.setEnabled( localSet, true );
         }
 
         check = (CheckBox)playerView.findViewById( R.id.robot_check );
@@ -440,7 +443,7 @@ public class GameConfigDelegate extends DelegateBase
     {
         boolean isRobotChecked = lp.isRobot();
         // Log.d( TAG, "checkShowPassword(isRobotChecked=%b)", isRobotChecked );
-        boolean showPassword = !isRobotChecked;
+        boolean showPassword = !isRobotChecked && BuildConfig.HAVE_PASSWORD;
 
         if ( showPassword ) {
             String pwd = getText( playerView, R.id.password_edit );
@@ -458,8 +461,8 @@ public class GameConfigDelegate extends DelegateBase
             }
         }
 
-        View view = playerView.findViewById( R.id.password_set );
-        view.setVisibility( showPassword ? View.VISIBLE : View.GONE  );
+        playerView.findViewById( R.id.password_set )
+            .setVisibility( showPassword ? View.VISIBLE : View.GONE  );
     }
 
     private void getPlayerSettings( DialogInterface di )
@@ -467,7 +470,9 @@ public class GameConfigDelegate extends DelegateBase
         Dialog dialog = (Dialog)di;
         LocalPlayer lp = m_gi.players[m_whichPlayer];
         lp.name = Utils.getText( dialog, R.id.player_name_edit );
-        lp.password = Utils.getText( dialog, R.id.password_edit );
+        if ( BuildConfig.HAVE_PASSWORD ) {
+            lp.password = Utils.getText( dialog, R.id.password_edit );
+        }
 
         if ( localOnlyGame() ) {
             int position = m_playerDictSpinner.getSelectedItemPosition();
