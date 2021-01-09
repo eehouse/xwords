@@ -522,7 +522,7 @@
     <string name="initial_player_minutes">Spillminutt per spiller</string>
     <string name="show_arrow_summary">Trykkede stativflis lander på denne pilen når den er synlig</string>
     <string name="clr_crosshairs">Retikkelfarge</string>
-    <string name="prefs_behavior_summary">Instillinger for programoppførsel</string>
+    <string name="prefs_behavior_summary">Innstillinger for programoppførsel</string>
     <string name="explain_robot_summary">Viser poengsumssammendrag etter hver maskinspiller- eller -tur annensteds fra</string>
     <string name="skip_confirm_turn">Hopp over bekreftelsestur</string>
     <string name="skip_confirm_turn_summary">IKKE vis poengsum etter hver mennesketur</string>
