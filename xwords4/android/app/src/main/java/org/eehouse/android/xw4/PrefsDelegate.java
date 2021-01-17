@@ -1,7 +1,7 @@
 /* -*- compile-command: "find-and-gradle.sh inXw4dDeb"; -*- */
 /*
- * Copyright 2009-2014 by Eric House (xwords@eehouse.org).  All
- * rights reserved.
+ * Copyright 2009 - 2021 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -414,6 +414,10 @@ public class PrefsDelegate extends DelegateBase
 
         if ( CommonPrefs.getDupModeHidden( m_activity ) ) {
             hideOne( R.string.key_init_dupmodeon, R.string.key_prefs_defaults );
+        }
+
+        if ( null == BuildConfig.KEY_FCMID ) {
+            hideOne( R.string.key_relay_poll, R.string.pref_group_relay_title );
         }
     }
 

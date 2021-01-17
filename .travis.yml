@@ -35,7 +35,8 @@ before_install:
 - sudo apt-get -qq update
 - sudo apt-get install -y python3-lxml imagemagick
 script:
-- "./gradlew -PuseCrashlytics asXw4dNoSMSDeb"
+- sed -i -e '/\/\/ rm-for-fdroid$/d' {.,app}/build.gradle
+- ./gradlew asXw4dDeb
 - scp -o "StrictHostKeyChecking no" -i /tmp/id_rsa_uploader -d app/build/outputs/apk/*/debug/*.apk
   uploader@eehouse.org:XW4D_UPLOAD
 notifications:

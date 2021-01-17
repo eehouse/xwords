@@ -1,1 +1,1 @@
-../../../../../../xw4NoSMS/java/org/eehouse/android/xw4/FBMService.java
+../../../../../../xw4fdroid/java/org/eehouse/android/xw4/FBMService.java

@@ -1,6 +1,7 @@
 /* -*- compile-command: "find-and-gradle.sh -PuseCrashlytics insXw4dDeb"; -*- */
 /*
- * Copyright 2019 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2019 - 2021 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -28,6 +29,7 @@ public class FBMService {
     public static void init( Context context )
     {
         Log.d( TAG, "init()" );
+        Assert.assertTrueNR( null == BuildConfig.KEY_FCMID );
         RelayService.fcmConfirmed( context, false );
     }
 

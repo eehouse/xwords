@@ -1,6 +1,7 @@
 /* -*- compile-command: "find-and-gradle.sh -PuseCrashlytics insXw4dDeb"; -*- */
 /*
- * Copyright 2019 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2019 - 2021 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -41,6 +42,7 @@ public class FBMService extends FirebaseMessagingService {
     public static void init( Context context )
     {
         Log.d( TAG, "init()" );
+        Assert.assertTrueNR( null != BuildConfig.KEY_FCMID );
         getTokenAsync( context );
     }
 
@@ -132,6 +134,7 @@ public class FBMService extends FirebaseMessagingService {
 
     public static String getFCMDevID( Context context )
     {
+        Assert.assertTrueNR( null != BuildConfig.KEY_FCMID );
         String result = DBUtils.getStringFor( context, BuildConfig.KEY_FCMID, null );
 
         if ( null == result ) {
