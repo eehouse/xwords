@@ -1498,7 +1498,7 @@
     <string name="about_devid_fmt">Device ID: %1$s</string>
     <!-- string to display device's bluetooth Mac address, if
          known. Shown only on debug builds -->
-    <string name="about_btaddr_fmt">BT Mac Addr: %1$s</string>
+    <string name="about_btaddr_fmt">BT MAC Addr: %1$s</string>
     <!-- copyright info -->
     <string name="about_copyright">CrossWords for Android \nCopyright
     (C) 1998-2021 by Eric House. This free/open source software is
@@ -2632,11 +2632,9 @@
     the person’s name is listed, just select it and an invitation will
     be sent immediately.
     </string>
-
     <!-- Default title of notification sent via FCM from
          relay. Currently I use this only for testing.  -->
     <string name="remote_msg_title">Remote message</string>
-
     <!-- MQTT stuff. May not see the light of day -->
     <string name="invite_choice_mqtt">Internet/MQTT</string>
     <string name="mqtt_invite_title">MQTT Invitation</string>
@@ -2667,7 +2665,6 @@
          happen because the name is in use) -->
     <string name="knowns_dup_name_fmt">Unable to change name from
     “%1$s” to “%2$s”. Is “%2$s” already in use?</string>
-
     <!-- Quick-start new game explanations and buttons -->
     <string name="choose_expl_default">Start a solo game using the
     current defaults</string>
@@ -2677,18 +2674,14 @@
     played before, no invitation required</string>
     <string name="choose_expl_config">OR start a game after configuring
     it, e.g. to change the language or number of players</string>
-
     <string name="newgame_radio_known">Invite Known Player</string>
     <string name="newgame_radio_unknown">Invite New Player</string>
-
     <!-- Button text depending on the radio button chosen.  -->
     <string name="newgame_open_game">Start game</string>
     <string name="newgame_invite_fmt">Start game with %1$s</string>
     <string name="newgame_configure_game">Configure game</string>
-
     <!-- Text of second of two buttons for new standalone games.
          Tap this and you'll get taken to the "Game configure"
          screen -->
     <string name="newgame_configure_first">Configure first</string>
-
 </resources>
