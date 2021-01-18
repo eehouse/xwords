@@ -168,7 +168,7 @@ static void setTurn( ServerCtxt* server, XWEnv xwe, XP_S16 turn );
 static XWStreamCtxt* mkServerStream( ServerCtxt* server );
 static void fetchTiles( ServerCtxt* server, XWEnv xwe, XP_U16 playerNum,
                         XP_U16 nToFetch, const TrayTileSet* tradedTiles,
-                        TrayTileSet* resultTiles, XP_Bool forceCanPlay );
+                        TrayTileSet* resultTiles );
 static void finishMove( ServerCtxt* server, XWEnv xwe,
                         TrayTileSet* newTiles, XP_U16 turn );
 static XP_Bool dupe_checkTurns( ServerCtxt* server, XWEnv xwe );
@@ -1602,7 +1602,7 @@ server_tilesPicked( ServerCtxt* server, XWEnv xwe, XP_U16 player,
     TrayTileSet newTiles = *newTilesP;
     pool_removeTiles( server->pool, &newTiles );
 
-    fetchTiles( server, xwe, player, MAX_TRAY_TILES, NULL, &newTiles, XP_FALSE );
+    fetchTiles( server, xwe, player, MAX_TRAY_TILES, NULL, &newTiles );
     XP_ASSERT( !inDuplicateMode(server) );
     model_assignPlayerTiles( server->vol.model, player, &newTiles );
 
@@ -2438,8 +2438,7 @@ dupe_trayAllowsMoves( ServerCtxt* server, XWEnv xwe, XP_U16 turn,
  */
 static void
 fetchTiles( ServerCtxt* server, XWEnv xwe, XP_U16 playerNum, XP_U16 nToFetch,
-            const TrayTileSet* tradedTiles, TrayTileSet* resultTiles,
-            XP_Bool forceCanPlay /* First player shouldn't have unplayable rack*/ )
+            const TrayTileSet* tradedTiles, TrayTileSet* resultTiles )
 {
     XP_ASSERT( server->vol.gi->serverRole != SERVER_ISCLIENT || !inDuplicateMode(server) );
     XP_Bool ask;
@@ -2516,7 +2515,7 @@ fetchTiles( ServerCtxt* server, XWEnv xwe, XP_U16 playerNum, XP_U16 nToFetch,
     for ( XP_U16 nBadTrays = 0; 0 < nLeft; ) {
         pool_requestTiles( pool, &resultTiles->tiles[nSoFar], &nLeft );
 
-        if ( !inDuplicateMode( server ) && !forceCanPlay ) {
+        if ( !inDuplicateMode( server ) ) {
             break;
         } else if ( dupe_trayAllowsMoves( server, xwe, playerNum, &resultTiles->tiles[0],
                                           nSoFar + nLeft )
@@ -2584,7 +2583,7 @@ assignTilesToAll( ServerCtxt* server, XWEnv xwe )
             }
             if ( 0 == ii || !gi->inDuplicateMode ) {
                 newTiles.nTiles = 0;
-                fetchTiles( server, xwe, ii, numAssigned, NULL, &newTiles, ii == 0 );
+                fetchTiles( server, xwe, ii, numAssigned, NULL, &newTiles );
             }
 
             if ( gi->inDuplicateMode ) {
@@ -3202,7 +3201,7 @@ dupe_makeAndReportTrade( ServerCtxt* server, XWEnv xwe )
     pool_replaceTiles( pool, &oldTiles );
 
     TrayTileSet newTiles = {0};
-    fetchTiles( server, xwe, DUP_PLAYER, oldTiles.nTiles, NULL, &newTiles, XP_FALSE );
+    fetchTiles( server, xwe, DUP_PLAYER, oldTiles.nTiles, NULL, &newTiles );
 
     model_commitDupeTrade( model, &oldTiles, &newTiles );
 
@@ -3356,7 +3355,7 @@ dupe_commitAndReportMove( ServerCtxt* server, XWEnv xwe, XP_U16 winner,
     model_currentMoveToMoveInfo( model, winner, &moveInfo );
 
     TrayTileSet newTiles = {0};
-    fetchTiles( server, xwe, winner, nTiles, NULL, &newTiles, XP_FALSE );
+    fetchTiles( server, xwe, winner, nTiles, NULL, &newTiles );
 
     for ( XP_U16 player = 0; player < nPlayers; ++player ) {
         model_resetCurrentTurn( model, xwe, player );
@@ -3666,7 +3665,7 @@ finishMove( ServerCtxt* server, XWEnv xwe, TrayTileSet* newTiles, XP_U16 turn )
     server->vol.pickTilesCalled[turn] = XP_FALSE;
 
     XP_U16 nTilesMoved = model_getCurrentMoveCount( model, turn );
-    fetchTiles( server, xwe, turn, nTilesMoved, NULL, newTiles, XP_FALSE );
+    fetchTiles( server, xwe, turn, nTilesMoved, NULL, newTiles );
 
     XP_Bool isClient = gi->serverRole == SERVER_ISCLIENT;
     XP_Bool isLegalMove = XP_TRUE;
@@ -3719,7 +3718,7 @@ server_commitTrade( ServerCtxt* server, XWEnv xwe, const TrayTileSet* oldTiles,
     }
     XP_U16 turn = server->nv.currentTurn;
 
-    fetchTiles( server, xwe, turn, oldTiles->nTiles, oldTiles, &newTiles, XP_FALSE );
+    fetchTiles( server, xwe, turn, oldTiles->nTiles, oldTiles, &newTiles );
 
 #ifndef XWFEATURE_STANDALONE_ONLY
     if ( server->vol.gi->serverRole == SERVER_ISCLIENT ) {
