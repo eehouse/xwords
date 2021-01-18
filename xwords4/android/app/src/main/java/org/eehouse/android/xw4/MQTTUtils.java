@@ -310,7 +310,9 @@ public class MQTTUtils extends Thread implements IMqttActionListener, MqttCallba
                 params.put( "devid", mDevID );
                 params.put( "gitrev", BuildConfig.GIT_REV );
                 params.put( "os", Build.MODEL );
+                // PENDING remove me in favor of SDK_INT
                 params.put( "vers", Build.VERSION.RELEASE );
+                params.put( "versI", Build.VERSION.SDK_INT );
                 params.put( "vrntCode", BuildConfig.VARIANT_CODE );
                 params.put( "vrntName", BuildConfig.VARIANT_NAME );
                 params.put( "dbg", BuildConfig.DEBUG );
