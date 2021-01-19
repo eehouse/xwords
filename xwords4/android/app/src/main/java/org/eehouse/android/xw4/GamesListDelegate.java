@@ -919,7 +919,6 @@ public class GamesListDelegate extends ListDelegateBase
         // String[] names = XwJNI.kplr_getPlayers();
         final NewWithKnowns view = (NewWithKnowns)
             LocUtils.inflate( m_activity, R.layout.new_game_with_knowns );
-        view.configure( standalone, GameUtils.makeDefaultName( m_activity ) );
         AlertDialog.Builder ab = makeAlertBuilder()
             .setView( view )
             .setTitle( standalone ? R.string.new_game : R.string.new_game_networked )
@@ -964,17 +963,24 @@ public class GamesListDelegate extends ListDelegateBase
         }
 
         final AlertDialog dialog = ab.create();
-        view.setCallback( new NewWithKnowns.ButtonChangeListener() {
-                @Override
-                public void onNewButtonText( String txt ) {
-                    Button button = dialog.getButton( DialogInterface.BUTTON_POSITIVE );
-                    if ( null != button ) {
-                        button.setText( txt );
-                    } else {
-                        Log.e( TAG, "Button still null" );
-                    }
-                }
-            } );
+
+        dialog.setOnShowListener(new DialogInterface.OnShowListener() {
+            @Override
+            public void onShow( DialogInterface diface ) {
+                view.setCallback( new NewWithKnowns.ButtonChangeListener() {
+                        @Override
+                        public void onNewButtonText( String txt ) {
+                            Button button = dialog.getButton( DialogInterface.BUTTON_POSITIVE );
+                            if ( null != button ) {
+                                button.setText( txt );
+                            } else {
+                                Assert.failDbg();
+                            }
+                        }
+                    } );
+                view.configure( standalone, GameUtils.makeDefaultName( m_activity ) );
+            }
+        });
 
         return dialog;
     }
