@@ -778,7 +778,7 @@ def mkParser():
     parser.add_argument('--http-pct', dest = 'HTTP_PCT', default = 0, type = int,
                         help = 'pct of games to be using web api')
 
-    parser.add_argument('--undo-pct', dest = 'UNDO_PCT', default = 5, type = int)
+    parser.add_argument('--undo-pct', dest = 'UNDO_PCT', default = 0, type = int)
     parser.add_argument('--trade-pct', dest = 'TRADE_PCT', default = 10, type = int)
 
     parser.add_argument('--add-sms', dest = 'ADD_SMS', default = False, action = 'store_true')
