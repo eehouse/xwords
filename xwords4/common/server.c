@@ -2408,7 +2408,11 @@ dupe_trayAllowsMoves( ServerCtxt* server, XWEnv xwe, XP_U16 turn,
     XP_MEMCPY( &tmpTiles[nInTray], &tiles[0], nTiles * sizeof(tmpTiles[0]) );
 
     /* XP_LOGF( "%s(nTiles=%d)", __func__, nTiles ); */
+    EngineCtxt* tmpEngine = NULL;
     EngineCtxt* engine = server_getEngineFor( server, turn );
+    if ( !engine ) {
+        tmpEngine = engine = engine_make( MPPARM(server->mpool) server->vol.util );
+    }
     XP_Bool canMove;
     MoveInfo newMove = {0};
     XP_U16 score = 0;
@@ -2428,7 +2432,11 @@ dupe_trayAllowsMoves( ServerCtxt* server, XWEnv xwe, XP_U16 turn,
         XP_LOGF( "%s(): no moves found for tray!!!", __func__ );
     }
 
-    server_resetEngine( server, turn );
+    if ( !!tmpEngine ) {
+        engine_destroy( tmpEngine );
+    } else {
+        server_resetEngine( server, turn );
+    }
 
     return result;
 }
