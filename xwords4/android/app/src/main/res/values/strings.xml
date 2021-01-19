@@ -2671,8 +2671,8 @@
     <!-- Quick-start new game explanations and buttons -->
     <string name="choose_expl_default">Start a solo game using the
     current defaults</string>
-    <string name="choose_expl_new">Start a game with somebody new,
-    sending an invitation via email, SMS, or even a QR code</string>
+    <string name="choose_expl_new">Start a game by sending an
+    invitation via email, SMS, or even a QR code</string>
     <string name="choose_expl_known">OR start a game with somebody you’ve
     played before, no invitation required</string>
     <string name="choose_expl_config">OR start a game after configuring
