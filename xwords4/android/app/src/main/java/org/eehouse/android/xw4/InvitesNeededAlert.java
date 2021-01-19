@@ -120,7 +120,11 @@ class InvitesNeededAlert {
         DbgUtils.assertOnUIThread();
         if ( null != mAlert ) {
             InviteChoicesAlert.dismissAny();
-            mAlert.dismiss();
+            try {
+                mAlert.dismiss(); // I've seen this throw a NPE inside
+            } catch ( Exception ex ) {
+                Log.ex( TAG, ex );
+            }
         }
     }
 
