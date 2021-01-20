@@ -101,13 +101,7 @@
 \nPuoi rimuovere le impostazioni di comunicazione via SMS o usare il tasto \"Leggi di Più\" per aggiornarti sui progressi sullo sviluppo di un \'alternativa.</string>
     <string name="button_more_info">Leggi di più</string>
     <string name="sms_banned_ok_only">La versione Google Play di CrossWords non supporta più gli inviti e le partite via dati SMS.</string>
-    <string name="notify_stall_body_fmt">%1$s (e altri\?) non possono inviare messaggi per %2$d secondi,
-\n
-\nSe avviene nuovamente, scrivi agli sviluppatori allegando i messaggi di log e informazioni sul tuo dispositivo.
-\n
-\nQuesto messaggio sarà inviato almeno ogni %3$d minuti.</string>
     <string name="notify_stall_title">Invio messaggio è bloccato</string>
-    <string name="summary_enable_stallnotify">Notifica quando Android si rallenta a processare inviti e mosse in uscita</string>
     <string name="title_enable_stallnotify">Mostra notifiche in linea bloccate</string>
     <string name="not_again_emptybtscan">Se lo scanner non trova il dispositivo dovresti:
 \n • Primo, provare di nuovo a scannerizzare
@@ -115,7 +109,6 @@
 \n • Avviare CrossWords sull\'altro dispositivo
 \n • Se il problema persiste, riavviare questo dispositivo
 \n</string>
-    <string name="servicestall_channel_expl">Avviso messaggi bloccati</string>
     <string name="gameevent_channel_expl">Eventi in partita</string>
     <string name="nbsproxy_channel_expl">Avviso su NBSProxy</string>
     <string name="toast_no_permission">Permessi non attivati</string>

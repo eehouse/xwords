@@ -695,7 +695,6 @@
     <string name="confirm_drop_relay">Tem certeza que quer remover a habilidade deste jogo de comunicar via relay\?</string>
     <string name="drop_relay_warning_fmt">(Este jogo pode também conectar via %1$s, então se gostaria de jogar sem usar uma conexão relay você pode.)</string>
     <string name="p2p_invite_title">Convite do WiFi Direct</string>
-    <string name="summary_enable_stallnotify">Notificar quando o Android estiver lento para processar convites e jogadas</string>
     <string name="confirm_clear_bt_postscript">"
 \n
 \n(Você só pode readicionar dispositivos que estiverem no alcance do Bluetooth.)"</string>
@@ -995,13 +994,7 @@
 \nVocê pode reabri-lo para pedir permissão de novo. Ou pode remover a configuração de comunicação por dados SMS.</string>
     <string name="menu_juggle">Reorganizar quadrados</string>
     <string name="knowns_mqtt_fmt">DevID do MQTT: %1$s</string>
-    <string name="notify_stall_body_fmt">%1$s (e outros\?) não puderam enviar mensagens por %2$d segundos.
-\n
-\nSe isto acontecer de novo, mande um e-mail ao desenvolvedor com logs e informações sobre seu dispositivo.
-\n
-\nEsta mensagem será vista no máximo uma vez a cada %3$d minutos.</string>
     <string name="notify_stall_title">Envio de mensagens parado</string>
-    <string name="title_enable_stallnotify">Exibir notificação de rede parada</string>
     <string name="servicestall_channel_expl">Alertas de mensagem parados</string>
     <string name="name_concat_dup">" e "</string>
     <string name="newgame_configure_game">Configurar jogo</string>

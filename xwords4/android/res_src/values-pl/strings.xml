@@ -930,15 +930,8 @@
 \n
 \n Więcej na ten temat można przeczytać za pomocą poniższego przycisku.</string>
     <string name="nbsproxy_channel_expl">Alerty o NBSProxy</string>
-    <string name="servicestall_channel_expl">Wstrzymane komunikaty alarmowe</string>
     <string name="title_enable_stallnotify">Pokaż zablokowane powiadomienie sieciowe</string>
-    <string name="summary_enable_stallnotify">Powiadom kiedy Android powoli przetwarza wychodzące zaproszenia i ruchy</string>
     <string name="notify_stall_title">Wysyłanie wiadomości jest wstrzymane</string>
-    <string name="notify_stall_body_fmt">%1$s: Chociaż zwykle zajmuje mniej niż sekundę, Android nie był w stanie przetworzyć wiadomości wychodzących CrossWords więcej niż %2$d sekund. Może to być spowodowane tym, że urządzenie jest szczególnie zajęte lub CrossWords nie działa na pierwszym planie na chwilę. 
-\n
-\nJeśli problem będzie się powtarzał (tzn. widzisz to często), rozważ wysłanie mi wiadomości e-mail z informacjami o twoim urządzeniu, abym mógł spróbować je odtworzyć i naprawić. 
-\n
-\nWiadomość tę zobaczysz co najwyżej raz na %3$d minut..</string>
     <string name="sms_banned_ok_only">Wersja CrossWords w sklepie Google Play nie obsługuje już zapraszania lub grania za pomocą Data SMS.</string>
     <string name="button_more_info">Czytaj więcej</string>
     <string name="banned_nbs_perms">Ta gra jest skonfigurowana do komunikacji za pośrednictwem Data SMS, ale aplikacje ze sklepu Google Play Store nie mogą już tego robić (z rzadkimi wyjątkami). Możesz jeszcze otworzyć grę, ale może nie być w stanie wysyłać lub odbierać ruchów.

@@ -866,15 +866,8 @@ WiFi ダイレクト経由で接続可能なデバイスはありません。</s
 \n
 \n下のボタンを使用すると、詳細を参照することができます。</string>
     <string name="nbsproxy_channel_expl">NBSProxy に関するアラート</string>
-    <string name="servicestall_channel_expl">停止したメッセージングのアラート</string>
     <string name="title_enable_stallnotify">停止したネットワーク通知を表示</string>
-    <string name="summary_enable_stallnotify">Android が招待の発信や移動を処理するのが遅いときに通知します</string>
     <string name="notify_stall_title">メッセージの送信が停止しています</string>
-    <string name="notify_stall_body_fmt">%1$s (その他\?) %2$d 秒間メッセージを 送信できませんでした。 
-\n 
-\n再度発生する場合は、開発者ログとデバイスに関する情報をメールで送ってください。 
-\n 
-\nこのメッセージは、最大 %3$d 分に 1 回表示されます。</string>
     <string name="sms_banned_ok_only">Google Play バージョンのクロスワードは、データ SMS 経由で招待やプレイできなくなりました。</string>
     <string name="button_more_info">続きを読む</string>
     <string name="banned_nbs_perms">このゲームは、データSMSを介して通信するように設定されていますが、Google Playストアのアプリは、もはや (まれな例外を除いて) 許可されていません。まだゲームを開くことはできますが、移動を送受信できない場合があります。

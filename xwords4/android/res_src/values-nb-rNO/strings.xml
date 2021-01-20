@@ -916,15 +916,8 @@
     <string name="banned_nbs_perms">Dette spillet er satt opp til å kommunisere via data-SMS, men programmer fra Google Play-butikken tillates ikke lenger å gjøre dette (dog med noen unntak). Du kan fremdeles åpne spillet, men vil ikke kunne sende eller motta trekk.
 \n
 \nDu kan fjerne innstillingen for kommunikasjon per data-SMS, eller brue \"Les mer\"-knappen for å se hvordan utviklingen med å tilby et alternativ går.</string>
-    <string name="servicestall_channel_expl">Stagnerte meldingsvarsler</string>
     <string name="title_enable_stallnotify">Vis merknad for stagnert nettverk</string>
-    <string name="summary_enable_stallnotify">Merknad når Android er treg med å behandle utgående invitasjoner og trekk</string>
     <string name="notify_stall_title">Meldingsforsendelse har stagnert</string>
-    <string name="notify_stall_body_fmt">%1$s: Kunne ikke sende utgående meldinger i løpet av %2$d sekunder.
-\n
-\nHvis dette skjer igjen, send en e-post til utvikleren inneholdende logger og info om din enhet.
-\n
-\nDenne meldingen vil vises toppen én gang hvert %3$d minutt.</string>
     <string name="relay_poll_name_no_fcm">Kun prøv: Ingen FCM-meldinger</string>
     <string name="relay_poll_name_no_polling">Kun FCM: Ingen prøving</string>
     <string name="relay_poll_name_both">Forvalg: Miks prøving og FCM</string>
