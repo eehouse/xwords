@@ -3067,11 +3067,6 @@ pour la langue</string>
         <item quantity="other">Veuillez choisir les noms des %1$d périphériques WiFiDirect que vous voulez inviter à votre nouvelle partie, puis tapez « %2$s ».</item>
     </plurals>
     <string name="use_duptimer">Activer le chronométrage par action</string>
-    <string name="notify_stall_body_fmt">%1$s (et d\'autres \?) n\'ont pas pu envoyer de messages sortants pendant %2$d secondes.
-\n
-\nSi cela se reproduit, envoyez un courriel aux journaux des développeurs et aux informations sur votre appareil.
-\n
-\nCe message sera vu au plus une fois toutes les %3$d minutes.</string>
     <string name="download_path_hint">Par exemple, là où les pièces jointes des courriels sont enregistrées</string>
     <string name="phonies_label">Néologismes</string>
     <string name="phonies_block">Interdire les néologismes</string>

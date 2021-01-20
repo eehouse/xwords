@@ -913,15 +913,8 @@
 \n
 \nSie können mehr darüber erfahren, indem Sie auf die Schaltfläche unten klicken.</string>
     <string name="nbsproxy_channel_expl">Benachrichtigungen über NBSProxy</string>
-    <string name="servicestall_channel_expl">Gesperrte Benachrichtigungenshinweise</string>
     <string name="title_enable_stallnotify">Gesperrte Netzwerkbenachrichtigung anzeigen</string>
-    <string name="summary_enable_stallnotify">Benachrichtigen, wenn Android nur langsam ausgehende Einladungen und Züge verarbeitet</string>
     <string name="notify_stall_title">Das Senden von Nachrichten ist gesperrt</string>
-    <string name="notify_stall_body_fmt">%1$s (und andere\?) konnten ausgehende Nachrichten für %2$d Sekunden nicht senden.
-\n
-\nWenn es erneut passiert, senden Sie eine E-Mail mit den Entwicklerprotokollen und Informationen zu Ihrem Gerät.
-\n
-\nDiese Meldung wird höchstens alle %3$d Minuten angezeigt.</string>
     <string name="sms_banned_ok_only">Die Google Play-Version von CrossWords unterstützt keine Einladungen mehr oder das Spielen per Daten-SMS.</string>
     <string name="button_more_info">Mehr erfahren</string>
     <string name="banned_nbs_perms">Dieses Spiel ist für die Kommunikation per Daten-SMS eingerichtet, aber Apps aus dem Google Play Store dürfen dies (bis auf wenige Ausnahmen) nicht mehr tun. Sie können das Spiel immer noch öffnen, aber es ist mehr möglicherweise, Züge zu senden oder zu empfangen.

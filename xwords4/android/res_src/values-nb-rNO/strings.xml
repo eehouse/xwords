@@ -916,15 +916,8 @@
     <string name="banned_nbs_perms">Dette spillet er satt opp til å kommunisere via data-SMS, men programmer fra Google Play-butikken tillates ikke lenger å gjøre dette (dog med noen unntak). Du kan fremdeles åpne spillet, men vil ikke kunne sende eller motta trekk.
 \n
 \nDu kan fjerne innstillingen for kommunikasjon per data-SMS, eller brue \"Les mer\"-knappen for å se hvordan utviklingen med å tilby et alternativ går.</string>
-    <string name="servicestall_channel_expl">Stagnerte meldingsvarsler</string>
     <string name="title_enable_stallnotify">Vis merknad for stagnert nettverk</string>
-    <string name="summary_enable_stallnotify">Merknad når Android er treg med å behandle utgående invitasjoner og trekk</string>
     <string name="notify_stall_title">Meldingsforsendelse har stagnert</string>
-    <string name="notify_stall_body_fmt">%1$s: Kunne ikke sende utgående meldinger i løpet av %2$d sekunder.
-\n
-\nHvis dette skjer igjen, send en e-post til utvikleren inneholdende logger og info om din enhet.
-\n
-\nDenne meldingen vil vises toppen én gang hvert %3$d minutt.</string>
     <string name="relay_poll_name_no_fcm">Kun prøv: Ingen FCM-meldinger</string>
     <string name="relay_poll_name_no_polling">Kun FCM: Ingen prøving</string>
     <string name="relay_poll_name_both">Forvalg: Miks prøving og FCM</string>
@@ -1014,4 +1007,20 @@
     <string name="invite_msg_extra_rematch">Med omkamper, vil alle nødvendige invitasjoner sendes automatisk. Du kan alltids sende nye hvis motstanderen ikke svarer.</string>
     <string name="invite_msg_extra">Du vil se denne meldingen til alle forventede spillere har koblet til. Hvis du allerede har sendt en invitasjon og antar at den har gått tapt, er det ingen skade i å sende en ny.</string>
     <string name="use_duptimer">Skru på tidsur for hvert trekk</string>
+    <string name="name_concat_dup">" og "</string>
+    <string name="game_paused_title">Spill på pause</string>
+    <string name="game_unpaused_title">Spillpause opphevet</string>
+    <string name="no_tiles_exist">Kan ikke skrive «%1$s» med %2$s flis.</string>
+    <string name="newgame_configure_game">Sett opp spill</string>
+    <string name="newgame_invite_fmt">Start spill med %1$s</string>
+    <string name="newgame_open_game">Start spill</string>
+    <string name="newgame_radio_unknown">Inviter ny spiller</string>
+    <string name="newgame_radio_known">Inviter kjent spiller</string>
+    <string name="knowns_ts_fmt">Nyeste spill:</string>
+    <string name="servicedesc">For overføring av CrossWords-trekk</string>
+    <string name="list_item_markbad">Marker som skadet</string>
+    <string name="enable_pending_count_title">Vis ventende meldinger</string>
+    <string name="dict_avail_fmt">Trykk for å laste ned ordlisten «%1$s»</string>
+    <string name="button_disable_bt">Skru av Blåtannsspilling</string>
+    <string name="filter_progress_fmt">Behandler %1$d ord</string>
 </resources>
