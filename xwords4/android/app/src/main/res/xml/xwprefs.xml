@@ -341,11 +341,6 @@
                         android:summary="@string/summary_enable_p2p"
                         android:defaultValue="false"
                         />
-    <CheckBoxPreference android:key="@string/key_enable_stallnotify"
-                        android:title="@string/title_enable_stallnotify"
-                        android:summary="@string/summary_enable_stallnotify"
-                        android:defaultValue="@bool/DEBUG"
-                        />
 
     <PreferenceScreen android:title="@string/network_advanced_title"
                       android:summary="@string/network_advanced_summary"

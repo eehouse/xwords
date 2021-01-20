@@ -39,7 +39,6 @@ public class Channels {
         // HIGH seems to be required for sound
         ,GAME_EVENT( R.string.gameevent_channel_expl,
                      NotificationManager.IMPORTANCE_HIGH )
-        ,SERVICE_STALL( R.string.servicestall_channel_expl )
         ,DUP_TIMER_RUNNING( R.string.dup_timer_expl )
         ,DUP_PAUSED( R.string.dup_paused_expl )
         ;

@@ -354,39 +354,6 @@ public class Utils {
         return pi;
     }
 
-    private static final String KEY_LAST_STALL_NOT = TAG + ".last_stall_note";
-    private static final long MIN_STALL_NOTE_INTERVAL_MS = 1000 * 60 * 30;
-    public static void showStallNotification( Context context, String typ,
-                                              long ageMS )
-    {
-        String body = LocUtils.getString( context, R.string.notify_stall_body_fmt,
-                                          typ, (ageMS + 500) / 1000,
-                                          MIN_STALL_NOTE_INTERVAL_MS / (1000 * 60));
-
-        long now = System.currentTimeMillis();
-        long lastStallNotify = DBUtils.getLongFor( context, KEY_LAST_STALL_NOT, 0 );
-        if ( now - lastStallNotify > MIN_STALL_NOTE_INTERVAL_MS ) {
-            String title = LocUtils.getString( context, R.string.notify_stall_title );
-            Intent intent = GamesListDelegate
-                .makeAlertWithEmailIntent( context, body );
-            postNotification( context, intent, title, body,
-                              R.string.notify_stall_title,
-                              Channels.ID.SERVICE_STALL, false, null, 0 );
-            DBUtils.setLongFor( context, KEY_LAST_STALL_NOT, now );
-        } else {
-            Log.e( TAG, "stalled, but too recent for notification: %s",
-                   body );
-        }
-    }
-
-    // If the OS starts delivering Intents before the user notices the
-    // notification, remove it. PENDING: should I replace it with something
-    // that tells how long the stall was?
-    public static void clearStallNotification( Context context, long age )
-    {
-        cancelNotification( context, R.string.notify_stall_title );
-    }
-
     public static void cancelNotification( Context context, Channels.ID channel,
                                            long rowid )
     {

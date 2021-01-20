@@ -2473,24 +2473,13 @@
     <string name="nbsproxy_channel_expl">Alerts about NBSProxy</string>
     <!-- Explanation in settings for traditional move-arrived notification -->
     <string name="gameevent_channel_expl">In-game events</string>
-    <!-- Notification that the OS isn't scheduling background services -->
-    <string name="servicestall_channel_expl">Stalled messaging alerts</string>
     <string name="not_again_emptybtscan">If a scan doesn’t find the device you expect:\n
   • First, just Rescan\n
   • Make sure Bluetooth is enabled on the other device\n
   • Launch CrossWords on the other device\n
   • If all else fails, reboot this device\n
-  </string>
-    <string name="title_enable_stallnotify">Show stalled network notification</string>
-    <string name="summary_enable_stallnotify">Notify when Android’s
-  slow to process outgoing invitations and moves</string>
-    <string name="notify_stall_title">Message sending is stalled</string>
-    <string name="notify_stall_body_fmt">%1$s (and others?) could not send outbound messages
-    for %2$d seconds.
-\n
-\nIf it happens again, e-mail the developer logs and info about your device.
-\n
-\nThis message will be seen at most once every %3$d minutes.</string>
+    </string>
+
     <string name="sms_banned_ok_only">The Google Play version of CrossWords no longer supports invitations or play via data SMS.</string>
     <string name="button_more_info">Read more</string>
     <string name="banned_nbs_perms">This game is set up to communicate via data SMS, but apps from the Google Play Store are no longer allowed to do so (with rare exceptions). You can still open the game, but it may not be able to send or receive moves.
