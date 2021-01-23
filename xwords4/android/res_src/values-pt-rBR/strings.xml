@@ -994,7 +994,6 @@
 \nVocê pode reabri-lo para pedir permissão de novo. Ou pode remover a configuração de comunicação por dados SMS.</string>
     <string name="menu_juggle">Reorganizar quadrados</string>
     <string name="knowns_mqtt_fmt">DevID do MQTT: %1$s</string>
-    <string name="notify_stall_title">Envio de mensagens parado</string>
     <string name="servicestall_channel_expl">Alertas de mensagem parados</string>
     <string name="name_concat_dup">" e "</string>
     <string name="newgame_configure_game">Configurar jogo</string>
@@ -1004,7 +1003,7 @@
     <string name="newgame_radio_known">Convide um Jogador Conhecido</string>
     <string name="choose_expl_config">OU comece um jogo após configurá-lo, p. ex. para mudar a língua ou número de jogadores</string>
     <string name="choose_expl_known">OU comece um jogo com alguém com quem você já jogou antes, sem precisar de convites</string>
-    <string name="choose_expl_new">Comece um jogo com uma nova pessoa, enviando um convite via e-mail, SMS, ou até código QR</string>
+    <string name="choose_expl_new">Inicie uma partida enviando um convite através do e-mail, SMS ou até por código QR</string>
     <string name="dup_timer_expl">Timers do modo duplicado rodando</string>
     <string name="lmi_move_tie_dup_fmt">Jogadores %1$s empataram com %2$d pontos cada. %3$s foi jogado.</string>
     <string name="lmi_trade_dup_fmt">%1$d quadrados trocados para todos os jogadores</string>
@@ -1097,7 +1096,7 @@
     <string name="about_copyright">CrossWords for Android
 \nCopyright (C) 1998-2021 por Eric House. Este software livre/de código aberto está disponível sob a Licença Pública GNU.</string>
     <string name="about_devid_fmt">ID do dispositivo: %1$s</string>
-    <string name="about_btaddr_fmt">Endr Mac BT: %1$s</string>
+    <string name="about_btaddr_fmt">Endr MAC BT: %1$s</string>
     <string name="phone_lookup_rationale_others">Sem esta permissão a revanche continuará mas irá gerar um jogo que não pode ser jogado via dados SMS.</string>
     <string name="phone_lookup_rationale_drop">Jogar revanche com este jogo que usa apenas dados SMS não é possível sem essa permissão.</string>
     <string name="phone_lookup_rationale">Para jogar revanche em um jogo que use dados SMS CrossWords precisa de permissão para acessar seu número de telefone.</string>
