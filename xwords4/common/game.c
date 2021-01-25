@@ -84,6 +84,9 @@ makeGameID( XW_UtilCtxt* util )
     while ( 0 == gameID ) {
         /* High bit never set by XP_RANDOM() alone */
         gameID = (XP_RANDOM() << 16) ^ XP_RANDOM();
+        /* But let's clear it -- set high-bit causes problems for existing
+           postgres DB where INTEGER is apparently a signed 32-bit */
+        gameID &= 0x7FFFFFFF;
     }
     LOG_RETURNF( "%x/%d", gameID, gameID );
     return gameID;
