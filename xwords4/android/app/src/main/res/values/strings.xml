@@ -2646,8 +2646,9 @@
     <string name="player_edit_name">Change name</string>
     <!-- Shown to confirm deletion of a Knows Players viewer list item -->
     <string name="knowns_delete_confirm_fmt">Are you sure you want to
-    delete the Known Player “%1$s”?\n\n(This action cannot be
-    undone.)</string>
+    remove “%1$s” from Known Players?\n\n(This action cannot be
+    undone, but players may reappear if you still have active games
+    with them.)</string>
     <!-- Title of Alert for renaming Known Player -->
     <string name="knowns_rename_title">Rename Player</string>
     <!-- Error message when rename fails (which right now should only
