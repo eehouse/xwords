@@ -19,8 +19,8 @@
  */
 
 def INITIAL_CLIENT_VERS = 10
-def VERSION_CODE_BASE = 168
-def VERSION_NAME = '4.4.172'
+def VERSION_CODE_BASE = 169
+def VERSION_NAME = '4.4.173'
 def BUILD_INFO_NAME = "build-info.txt"
 
 // Not all variants use the same BT_UUID. Those with the same talk to

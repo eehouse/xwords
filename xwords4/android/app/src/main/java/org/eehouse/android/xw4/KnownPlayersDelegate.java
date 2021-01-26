@@ -185,7 +185,8 @@ public class KnownPlayersDelegate extends DelegateBase {
         CommsAddrRec addr = XwJNI.kplr_getAddr( player, lastMod );
 
         if ( null != addr ) {
-            final ViewGroup item = (ViewGroup)LocUtils.inflate( mActivity, R.layout.knownplayrs_item );
+            final ViewGroup item = (ViewGroup)LocUtils
+                .inflate( mActivity, R.layout.knownplayrs_item );
             setName( item, player );
             view = item;
 
