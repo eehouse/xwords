@@ -5,74 +5,57 @@
             android:layout_height="fill_parent"
             android:orientation="vertical">
 
-  <LinearLayout android:orientation="vertical"
-                android:layout_width="fill_parent" 
-                android:layout_height="fill_parent"
-                android:paddingLeft="8dp"
-                android:paddingRight="8dp"
-                >
+  <TableLayout android:orientation="vertical"
+               android:layout_width="fill_parent"
+               android:layout_height="fill_parent"
+               android:padding="8dp"
+               >
 
     <View android:id="@+id/color_edit_sample" 
-          android:layout_width="96sp"
+          android:layout_width="match_parent"
           android:layout_height="32sp"
-          android:layout_gravity="center_vertical|center_horizontal"
-          android:layout_marginRight="6sp"
-          android:focusable="false"
-          android:clickable="false" 
+          android:layout_marginLeft="36sp"
+          android:layout_marginRight="36sp"
           />
 
-    <TextView android:layout_height="wrap_content"
-              android:layout_width="fill_parent"
-              android:text="@string/red"
-              android:textAppearance="?android:attr/textAppearanceMedium"
-              />
-    <LinearLayout android:orientation="horizontal"
-                  android:layout_width="fill_parent" 
-                  android:layout_height="wrap_content"
-                  >
+    <TableRow style="@style/color_edit_row"
+              >
+      <TextView style="@style/color_edit_label"
+                android:text="@string/red"
+                />
       <SeekBar android:id="@+id/seek_red" 
                style="@style/color_seek_bar"
                />
       <EditText android:id="@+id/edit_red" 
                 style="@style/color_edit_text"
                 />
-    </LinearLayout>
+    </TableRow>
 
-    <TextView android:layout_height="wrap_content"
-              android:layout_width="fill_parent"
-              android:text="@string/green"
-              android:textAppearance="?android:attr/textAppearanceMedium"
-              />
-    <LinearLayout android:orientation="horizontal"
-                  android:layout_width="fill_parent" 
-                  android:layout_height="wrap_content"
-                  >
-      <SeekBar android:id="@+id/seek_green" 
+    <TableRow style="@style/color_edit_row"
+              >
+      <TextView style="@style/color_edit_label"
+                android:text="@string/green"
+                />
+      <SeekBar android:id="@+id/seek_green"
                style="@style/color_seek_bar"
                />
-      <EditText android:id="@+id/edit_green" 
+      <EditText android:id="@+id/edit_green"
                 style="@style/color_edit_text"
                 />
-    </LinearLayout>
+    </TableRow>
 
-    <TextView android:layout_height="wrap_content"
-              android:layout_width="wrap_content"
-              android:text="@string/blue"
-              android:textAppearance="?android:attr/textAppearanceMedium"
-              />
-    <LinearLayout android:orientation="horizontal"
-                  android:layout_width="fill_parent" 
-                  android:layout_height="wrap_content"
-                  >
+    <TableRow style="@style/color_edit_row"
+              >
+      <TextView style="@style/color_edit_label"
+                android:text="@string/blue"
+                />
       <SeekBar android:id="@+id/seek_blue"
                style="@style/color_seek_bar"
                />
-
-      <EditText android:id="@+id/edit_blue" 
+      <EditText android:id="@+id/edit_blue"
                 style="@style/color_edit_text"
                 />
-    </LinearLayout>
-
-  </LinearLayout>
+    </TableRow>
+  </TableLayout>
 
 </ScrollView>
