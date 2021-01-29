@@ -21,7 +21,7 @@
 package org.eehouse.android.xw4;
 
 import android.content.Context;
-import android.preference.EditTextPreference;
+import androidx.preference.EditTextPreference;
 import android.util.AttributeSet;
 
 public class XWEditTextPreference extends EditTextPreference {
@@ -31,9 +31,10 @@ public class XWEditTextPreference extends EditTextPreference {
         super( context, attrs );
     }
 
-    protected void onAttachedToActivity()
+    @Override
+    public void onAttached()
     {
-        super.onAttachedToActivity();
+        super.onAttached();
         setSummary( getPersistedString( "" ) );
     }
 

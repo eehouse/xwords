@@ -28,11 +28,12 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.ListPreference;
-import android.preference.Preference;
-import android.preference.PreferenceActivity;
-import android.preference.PreferenceManager;
-import android.preference.PreferenceScreen;
+import androidx.preference.ListPreference;
+import androidx.preference.Preference;
+import androidx.preference.PreferenceFragmentCompat;
+import androidx.preference.PreferenceManager;
+import androidx.preference.PreferenceScreen;
+import androidx.preference.PreferenceCategory;
 import android.view.View;
 import android.widget.Button;
 
@@ -45,10 +46,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class PrefsDelegate extends DelegateBase
-    implements SharedPreferences.OnSharedPreferenceChangeListener {
+    implements SharedPreferences.OnSharedPreferenceChangeListener,
+               View.OnClickListener {
     private static final String TAG = PrefsDelegate.class.getSimpleName();
 
-    private PreferenceActivity m_activity;
+    private XWActivity mActivity;
+    private PreferenceFragmentCompat mFragment;
     private static int[] s_keys = {
         R.string.key_logging_on,
         R.string.key_show_sms,
@@ -69,22 +72,25 @@ public class PrefsDelegate extends DelegateBase
     };
     private static Map<String, Integer> s_keysHash = null;
 
-    public PrefsDelegate( PreferenceActivity activity, Delegator delegator,
+    public PrefsDelegate( XWActivity activity, Delegator delegator,
                           Bundle savedInstanceState )
     {
         super( delegator, savedInstanceState, R.layout.prefs_w_buttons );
-        m_activity = activity;
+        mActivity = activity;
     }
 
-    protected Dialog onCreateDialog( int id )
+    @Override
+    protected Dialog makeDialog( DBAlert alert, Object[] params )
     {
+        final DlgID dlgID = alert.getDlgID();
         DialogInterface.OnClickListener lstnr = null;
         int confirmID = 0;
 
-        switch( DlgID.values()[id] ) {
+        switch( dlgID ) {
         case REVERT_COLORS:
             confirmID = R.string.confirm_revert_colors;
             lstnr = new DialogInterface.OnClickListener() {
+                    @Override
                     public void onClick( DialogInterface dlg, int item ) {
                         PrefsDelegate self = (PrefsDelegate)curThis();
                         SharedPreferences sp = self.getSharedPreferences();
@@ -116,6 +122,7 @@ public class PrefsDelegate extends DelegateBase
         case REVERT_ALL:
             confirmID = R.string.confirm_revert_all;
             lstnr = new DialogInterface.OnClickListener() {
+                    @Override
                     public void onClick( DialogInterface dlg, int item ) {
                         PrefsDelegate self = (PrefsDelegate)curThis();
                         SharedPreferences sp = self.getSharedPreferences();
@@ -143,6 +150,7 @@ public class PrefsDelegate extends DelegateBase
     @Override
     protected void init( Bundle savedInstanceState )
     {
+        // Assert.assertNotNull( m_fragment );
         if ( null == s_keysHash ) {
             s_keysHash = new HashMap<>();
             for ( int key : s_keys ) {
@@ -150,26 +158,12 @@ public class PrefsDelegate extends DelegateBase
                 s_keysHash.put( str, key );
             }
         }
+    }
 
-        // Load the preferences from an XML resource
-        m_activity.addPreferencesFromResource( R.xml.xwprefs );
-
-        Button button = (Button)findViewById( R.id.revert_colors );
-        button.setOnClickListener( new View.OnClickListener() {
-                public void onClick( View v ) {
-                    showDialog( DlgID.REVERT_COLORS );
-                }
-            } );
-        button = (Button)findViewById( R.id.revert_all );
-        button.setOnClickListener(new View.OnClickListener() {
-                public void onClick( View v ) {
-                    showDialog( DlgID.REVERT_ALL );
-                }
-            } );
-
-        setupLangPref();
-
-        hideStuff();
+    void setRootFragment( PreferenceFragmentCompat fragment )
+    {
+        Assert.assertNotNull( fragment );
+        mFragment = fragment;
     }
 
     @Override
@@ -177,14 +171,42 @@ public class PrefsDelegate extends DelegateBase
     {
         super.onResume();
         getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
+
+        // It's too early somehow to do this in init() above
+        findViewById( R.id.revert_colors ).setOnClickListener(this);
+        findViewById( R.id.revert_all ).setOnClickListener(this);
     }
 
+    @Override
     protected void onPause()
     {
         getSharedPreferences().unregisterOnSharedPreferenceChangeListener(this);
         super.onPause();
     }
 
+    // interface View.OnClickListener
+    @Override
+    public void onClick( View view )
+    {
+        DlgID dlgID = null;
+        int id = view.getId();
+        switch ( id ) {
+        case R.id.revert_all:
+            dlgID = DlgID.REVERT_ALL;
+            break;
+        case R.id.revert_colors:
+            dlgID = DlgID.REVERT_COLORS;
+            break;
+        default:
+            Assert.failDbg();
+        }
+
+        if ( null != dlgID ) {
+            showDialogFragment( dlgID );
+        }
+    }
+
+    // interface SharedPreferences.OnSharedPreferenceChangeListener
     @Override
     public void onSharedPreferenceChanged( SharedPreferences sp, String key )
     {
@@ -220,26 +242,26 @@ public class PrefsDelegate extends DelegateBase
                 DictUtils.invalDictList();
                 break;
             case R.string.key_thumbsize:
-                DBUtils.clearThumbnails( m_activity );
+                DBUtils.clearThumbnails( mActivity );
                 break;
             case R.string.key_xlations_locale:
-                LocUtils.localeChanged( m_activity, sp.getString( key, null ) );
+                LocUtils.localeChanged( mActivity, sp.getString( key, null ) );
                 break;
             case R.string.key_default_language:
-                forceDictsMatch( sp.getString( key, null ) );
+                // forceDictsMatch( sp.getString( key, null ) );
                 break;
             case R.string.key_force_radio:
                 SMSPhoneInfo.reset();
                 break;
             case R.string.key_disable_nag:
             case R.string.key_disable_nag_solo:
-                NagTurnReceiver.resetNagsDisabled( m_activity );
+                NagTurnReceiver.resetNagsDisabled( mActivity );
                 break;
             case R.string.key_disable_relay:
-                RelayService.enabledChanged( m_activity );
+                RelayService.enabledChanged( mActivity );
                 break;
             case R.string.key_disable_bt:
-                BTUtils.disabledChanged( m_activity );
+                BTUtils.disabledChanged( mActivity );
                 break;
             case R.string.key_force_tablet:
                 makeOkOnlyBuilder( R.string.after_restart ).show();
@@ -247,7 +269,7 @@ public class PrefsDelegate extends DelegateBase
             case R.string.key_mqtt_host:
             case R.string.key_mqtt_port:
             case R.string.key_mqtt_qos:
-                MQTTUtils.onConfigChanged( m_activity );
+                MQTTUtils.onConfigChanged( mActivity );
                 break;
             default:
                 Assert.failDbg();
@@ -262,15 +284,15 @@ public class PrefsDelegate extends DelegateBase
         boolean handled = true;
         switch ( action ) {
         case ENABLE_NBS_DO:
-            XWPrefs.setNBSEnabled( m_activity, true );
+            XWPrefs.setNBSEnabled( mActivity, true );
             SMSCheckBoxPreference.setChecked();
             break;
         case DISABLE_RELAY_DO:
-            RelayService.setEnabled( m_activity, false );
+            RelayService.setEnabled( mActivity, false );
             RelayCheckBoxPreference.setChecked();
             break;
         case DISABLE_BT_DO:
-            BTUtils.setEnabled( m_activity, false );
+            BTUtils.setEnabled( mActivity, false );
             BTCheckBoxPreference.setChecked();
             break;
         default:
@@ -288,7 +310,7 @@ public class PrefsDelegate extends DelegateBase
         case DIALOG_OKONLY:
         case DIALOG_ENABLESMS:
         case DIALOG_NOTAGAIN:
-            HostDelegate.showForResult( m_activity, state );
+            HostDelegate.showForResult( mActivity, state );
             break;
 
         default:
@@ -307,118 +329,18 @@ public class PrefsDelegate extends DelegateBase
 
     private void relaunch()
     {
-        PreferenceManager.setDefaultValues( m_activity, R.xml.xwprefs,
+        PreferenceManager.setDefaultValues( mActivity, R.xml.prefs,
                                             false );
 
         // Now replace this activity with a new copy
         // so the new values get loaded.
-        PrefsDelegate.launch( m_activity );
+        PrefsDelegate.launch( mActivity );
         finish();
     }
 
     private SharedPreferences getSharedPreferences()
     {
-        return m_activity.getPreferenceScreen().getSharedPreferences();
-    }
-
-    private void setupLangPref()
-    {
-        String keyLangs = getString( R.string.key_default_language );
-        ListPreference lp = (ListPreference)
-            m_activity.findPreference( keyLangs );
-        String curLang = lp.getValue().toString();
-        boolean haveDictForLang = false;
-
-        String[] langs = DictLangCache.listLangs( m_activity );
-        String[] langsLoc = new String[langs.length];
-        for ( int ii = 0; ii < langs.length; ++ii ) {
-            String lang = langs[ii];
-            haveDictForLang = haveDictForLang
-                || lang.equals( curLang );
-            langsLoc[ii] = xlateLang( lang, true );
-        }
-
-        if ( !haveDictForLang ) {
-            curLang = DictLangCache.getLangName( m_activity, 1 ); // English, unlocalized
-            lp.setValue( curLang );
-        }
-        forceDictsMatch( curLang );
-
-        lp.setEntries( langsLoc );
-        lp.setDefaultValue( xlateLang( curLang, true ) );
-        lp.setEntryValues( langs );
-    }
-
-    private void forceDictsMatch( String newLang )
-    {
-        int code = DictLangCache.getLangLangCode( m_activity, newLang );
-        int[] keyIds = { R.string.key_default_dict,
-                         R.string.key_default_robodict };
-        for ( int id : keyIds ) {
-            String key = getString( id );
-            DictListPreference pref = (DictListPreference)m_activity.findPreference( key );
-            String curDict = pref.getValue().toString();
-            if ( ! DictUtils.dictExists( m_activity, curDict )
-                 || code != DictLangCache.getDictLangCode( m_activity,
-                                                           curDict ) ) {
-                pref.invalidate();
-            }
-        }
-    }
-
-    private void hideOne( int prefID, int screenID )
-    {
-        try {
-            Preference pref = m_activity.findPreference( getString( prefID ) );
-            String key = getString( screenID );
-            ((PreferenceScreen)m_activity.findPreference( key ))
-                .removePreference( pref );
-        } catch ( NullPointerException ex ) {
-            // This is happening hiding key_enable_sms, but the hide still
-            // works!
-            // Log.ex( TAG, ex );
-        }
-    }
-
-    private void showDialog( DlgID dlgID )
-    {
-        if ( !m_activity.isFinishing() ) {
-            m_activity.showDialog( dlgID.ordinal() );
-        }
-    }
-
-    private void hideStuff()
-    {
-        if ( !Utils.isGSMPhone( m_activity ) || Perms23.haveNativePerms() ) {
-            hideOne( R.string.key_enable_nbs, R.string.key_network_behavior );
-        }
-
-        if ( ABUtils.haveActionBar() ) {
-            hideOne( R.string.key_hide_title, R.string.prefs_appearance );
-        }
-
-        if ( ! BuildConfig.WIDIR_ENABLED ) {
-            hideOne( R.string.key_enable_p2p, R.string.key_network_behavior );
-        }
-
-        if ( null == FBMService.getFCMDevID( m_activity ) ) {
-            hideOne( R.string.key_show_fcm, R.string.pref_group_relay_title );
-        }
-
-        if ( BuildConfig.DEBUG ) {
-            hideOne( R.string.key_logging_on, R.string.advanced_summary );
-            hideOne( R.string.key_enable_debug, R.string.advanced_summary );
-        } else {
-            hideOne( R.string.key_unhide_dupmode, R.string.advanced_summary );
-        }
-
-        if ( CommonPrefs.getDupModeHidden( m_activity ) ) {
-            hideOne( R.string.key_init_dupmodeon, R.string.key_prefs_defaults );
-        }
-
-        if ( null == BuildConfig.KEY_FCMID ) {
-            hideOne( R.string.key_relay_poll, R.string.pref_group_relay_title );
-        }
+        return mFragment.getPreferenceScreen().getSharedPreferences();
     }
 
     public static void launch( Context context )

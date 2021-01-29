@@ -35,9 +35,10 @@ public class XWThumbListPreference extends XWListPreference {
     }
 
     // Why I exist: insert the rowid and gameid lines if debug is on
-    protected void onAttachedToActivity()
+    @Override
+    public void onAttached()
     {
-        super.onAttachedToActivity();
+        super.onAttached();
 
         CharSequence[] newEntries = new CharSequence[7];
         newEntries[0] = LocUtils.getString( m_context, R.string.thumb_off );

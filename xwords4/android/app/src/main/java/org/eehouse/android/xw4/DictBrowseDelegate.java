@@ -794,15 +794,8 @@ public class DictBrowseDelegate extends DelegateBase
 
     private static void launch( Delegator delegator, Bundle bundle )
     {
-        if ( delegator.inDPMode() ) {
-            delegator.addFragment( DictBrowseFrag.newInstance( delegator ),
-                                   bundle );
-        } else {
-            Activity activity = delegator.getActivity();
-            Intent intent = new Intent( activity, DictBrowseActivity.class );
-            intent.putExtras( bundle );
-            activity.startActivity( intent );
-        }
+        delegator.addFragment( DictBrowseFrag.newInstance( delegator ),
+                               bundle );
     }
 
     public static void launch( Delegator delegator, String name,

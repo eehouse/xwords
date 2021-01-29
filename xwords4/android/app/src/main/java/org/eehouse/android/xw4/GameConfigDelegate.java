@@ -1390,17 +1390,9 @@ public class GameConfigDelegate extends DelegateBase
         bundle.putLong( GameUtils.INTENT_KEY_ROWID, rowID );
         bundle.putBoolean( INTENT_FORRESULT_NEWGAME, newGame );
 
-        if ( delegator.inDPMode() ) {
-            delegator
-                .addFragmentForResult( GameConfigFrag.newInstance( delegator ),
-                                       bundle, requestCode );
-        } else {
-            Activity activity = delegator.getActivity();
-            Intent intent = new Intent( activity, GameConfigActivity.class );
-            intent.setAction( Intent.ACTION_EDIT );
-            intent.putExtras( bundle );
-            activity.startActivityForResult( intent, requestCode.ordinal() );
-        }
+        delegator
+            .addFragmentForResult( GameConfigFrag.newInstance( delegator ),
+                                   bundle, requestCode );
     }
 
     private void setConnLabel()

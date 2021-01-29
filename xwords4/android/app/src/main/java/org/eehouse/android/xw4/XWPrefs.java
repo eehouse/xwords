@@ -23,7 +23,7 @@ package org.eehouse.android.xw4;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
-import android.preference.PreferenceManager;
+import androidx.preference.PreferenceManager;
 import android.text.TextUtils;
 
 import org.json.JSONException;

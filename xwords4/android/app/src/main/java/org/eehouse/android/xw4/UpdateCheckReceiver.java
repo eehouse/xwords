@@ -401,8 +401,7 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
                                               String name, DictUtils.DictLoc loc,
                                               boolean isUpdate )
     {
-        Intent intent =
-            new Intent( context, DictsActivity.class );
+        Intent intent = new Intent( context, MainActivity.class ); // PENDING TEST THIS!!!
         intent.putExtra( NEW_DICT_URL, url );
         intent.putExtra( NEW_DICT_NAME, name );
         intent.putExtra( NEW_DICT_LOC, loc.ordinal() );

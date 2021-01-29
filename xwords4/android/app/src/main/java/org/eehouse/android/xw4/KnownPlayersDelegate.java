@@ -312,13 +312,8 @@ public class KnownPlayersDelegate extends DelegateBase {
         Activity activity = delegator.getActivity();
 
         if ( XwJNI.hasKnownPlayers() ) {
-            if ( delegator.inDPMode() ) {
-                delegator.addFragment( KnownPlayersFrag.newInstance( delegator ),
-                                       null );
-            } else {
-                Intent intent = new Intent( activity, KnownPlayersActivity.class );
-                activity.startActivity( intent );
-            }
+            delegator.addFragment( KnownPlayersFrag.newInstance( delegator ),
+                                   null );
         } else {
             Assert.failDbg();
         }

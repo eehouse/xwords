@@ -275,13 +275,6 @@ public class ChatDelegate extends DelegateBase {
         bundle.putStringArray( INTENT_KEY_NAMES, names );
         bundle.putBooleanArray( INTENT_KEY_LOCS, locs );
 
-        if ( delegator.inDPMode() ) {
-            delegator.addFragment( ChatFrag.newInstance( delegator ), bundle );
-        } else {
-            Activity activity = delegator.getActivity();
-            Intent intent = new Intent( activity, ChatActivity.class );
-            intent.putExtras( bundle );
-            activity.startActivity( intent );
-        }
+        delegator.addFragment( ChatFrag.newInstance( delegator ), bundle );
     }
 }

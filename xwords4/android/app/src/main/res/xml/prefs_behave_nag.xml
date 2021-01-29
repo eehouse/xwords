@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+                  xmlns:app="http://schemas.android.com/apk/res-auto">
+
+  <PreferenceCategory app:title="@string/disable_nags_title"
+                      >
+      <CheckBoxPreference android:key="@string/key_disable_nag"
+                          android:title="@string/disable_nag_title"
+                          android:summary="@string/disable_nag_summary"
+                          android:defaultValue="false"
+                          />
+      <CheckBoxPreference android:key="@string/key_disable_nag_solo"
+                          android:title="@string/disable_nag_solo_title"
+                          android:summary="@string/disable_nag_summary"
+                          android:defaultValue="true"
+                          />
+  </PreferenceCategory>
+</PreferenceScreen>

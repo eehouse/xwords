@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+                  xmlns:app="http://schemas.android.com/apk/res-auto">
+
+  <PreferenceCategory app:title="@string/prefs_behavior"
+                      >
+
+    <CheckBoxPreference android:key="@string/key_explain_robot"
+                        android:title="@string/explain_robot"
+                        android:summary="@string/explain_robot_summary"
+                        android:defaultValue="true"
+                        />
+    <CheckBoxPreference android:key="@string/key_skip_confirm"
+                        android:title="@string/skip_confirm_turn"
+                        android:summary="@string/skip_confirm_turn_summary"
+                        android:defaultValue="false"
+                        />
+
+    <CheckBoxPreference android:key="@string/key_notify_sound"
+                        android:title="@string/notify_sound"
+                        android:summary="@string/notify_other_summary"
+                        android:defaultValue="true"
+                        />
+
+    <Preference app:title="@string/disable_nags_title"
+                app:fragment="org.eehouse.android.xw4.PrefsActivity$FragPrefsBehaveNag"
+                />
+
+    <CheckBoxPreference android:key="@string/key_default_loc"
+                        android:title="@string/default_loc"
+                        android:summary="@string/default_loc_summary"
+                        android:defaultValue="true"
+                        />
+    <CheckBoxPreference android:key="@string/key_sort_tiles"
+                        android:title="@string/title_sort_tiles"
+                        android:summary="@string/summary_sort_tiles"
+                        android:defaultValue="true"
+                        />
+    <CheckBoxPreference android:key="@string/key_studyon"
+                        android:title="@string/title_studyon"
+                        android:summary="@string/summary_studyon"
+                        android:defaultValue="true"
+                        />
+    <CheckBoxPreference android:key="@string/key_hide_crosshairs"
+                        android:title="@string/hide_crosshairs"
+                        android:summary="@string/hide_crosshairs_summary"
+                        android:defaultValue="false"
+                        />
+    <CheckBoxPreference android:key="@string/key_peek_other"
+                        android:title="@string/peek_other"
+                        android:summary="@string/peek_other_summary"
+                        android:defaultValue="false"
+                        />
+  </PreferenceCategory>
+
+</PreferenceScreen>

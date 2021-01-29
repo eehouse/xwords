@@ -23,12 +23,8 @@ package org.eehouse.android.xw4;
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.os.Bundle;
-import androidx.fragment.app.DialogFragment;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentActivity;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.ContextMenu;
 import android.view.Menu;
@@ -36,6 +32,11 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ListAdapter;
 import android.widget.ListView;
+import androidx.fragment.app.DialogFragment;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 
 import org.eehouse.android.xw4.DlgDelegate.Action;
 
@@ -52,12 +53,24 @@ public class XWActivity extends FragmentActivity
                    this, savedInstanceState );
         }
         super.onCreate( savedInstanceState );
+        Assert.assertNotNull( dlgt );
         m_dlgt = dlgt;
-
         Assert.assertTrue( getApplicationContext() == XWApp.getContext() );
+
+        int orientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
+        if ( XWPrefs.getIsTablet( this ) ) {
+            orientation = ActivityInfo.SCREEN_ORIENTATION_USER;
+        } else {
+            Assert.assertTrueNR( 9 <= Integer.valueOf( android.os.Build.VERSION.SDK ) );
+            orientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT;
+        }
+        if ( ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED != orientation ) {
+            setRequestedOrientation( orientation );
+        }
 
         int layoutID = m_dlgt.getLayoutID();
         if ( 0 < layoutID ) {
+            Log.d( TAG, "onCreate() calling setContentView()" );
             m_dlgt.setContentView( layoutID );
         }
 
@@ -116,7 +129,8 @@ public class XWActivity extends FragmentActivity
             Log.i( TAG, "%s.onStart(this=%H)", getClass().getSimpleName(), this );
         }
         super.onStart();
-        m_dlgt.onStart();
+        Assert.assertNotNull( m_dlgt );
+        m_dlgt.onStart();       // m_dlgt null?
     }
 
     @Override
@@ -250,10 +264,6 @@ public class XWActivity extends FragmentActivity
     public ListAdapter getListAdapter()
     {
         return getListView().getAdapter();
-    }
-
-    public boolean inDPMode() {
-        return false;
     }
 
     @Override

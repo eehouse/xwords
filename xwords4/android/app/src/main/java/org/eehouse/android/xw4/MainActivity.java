@@ -47,9 +47,6 @@ public class MainActivity extends XWActivity
     private static final boolean LOG_IDS = true;
 
     private DelegateBase m_dlgt;
-    private boolean m_dpEnabled;
-
-    // Used only if m_dpEnabled is true
     private LinearLayout m_root;
     private boolean m_safeToCommit;
     private ArrayList<Runnable> m_runWhenSafe = new ArrayList<>();
@@ -66,23 +63,18 @@ public class MainActivity extends XWActivity
             Log.e( TAG, "isTaskRoot() => false!!! What to do?" );
         }
 
-        m_dpEnabled = XWPrefs.getIsTablet( this );
-
-        m_dlgt = m_dpEnabled ? new DualpaneDelegate( this, savedInstanceState )
-            : new GamesListDelegate( this, savedInstanceState );
+        m_dlgt = new DualpaneDelegate( this, savedInstanceState );
         super.onCreate( savedInstanceState, m_dlgt );
 
-        if ( m_dpEnabled ) {
-            m_root = (LinearLayout)findViewById( R.id.main_container );
-            getSupportFragmentManager().addOnBackStackChangedListener( this );
+        m_root = (LinearLayout)findViewById( R.id.main_container );
+        getSupportFragmentManager().addOnBackStackChangedListener( this );
 
-            // Nothing to do if we're restarting
-            if ( savedInstanceState == null ) {
-                // In case this activity was started with special instructions from an Intent,
-                // pass the Intent's extras to the fragment as arguments
-                addFragmentImpl( GamesListFrag.newInstance(),
-                                 getIntent().getExtras(), null );
-            }
+        // Nothing to do if we're restarting
+        if ( savedInstanceState == null ) {
+            // In case this activity was started with special instructions from an Intent,
+            // pass the Intent's extras to the fragment as arguments
+            addFragmentImpl( GamesListFrag.newInstance(),
+                             getIntent().getExtras(), null );
         }
 
         setSafeToRun();
@@ -100,9 +92,7 @@ public class MainActivity extends XWActivity
     {
         setSafeToRun();
         super.onPostResume();
-        if ( m_dpEnabled ) {
-            setVisiblePanes();
-        }
+        setVisiblePanes();
         logPaneFragments();
     }
 
@@ -250,11 +240,6 @@ public class MainActivity extends XWActivity
     //////////////////////////////////////////////////////////////////////
     // Delegator interface
     //////////////////////////////////////////////////////////////////////
-    @Override
-    public boolean inDPMode() {
-        return m_dpEnabled;
-    }
-
     @Override
     public void addFragment( XWFragment fragment, Bundle extras )
     {

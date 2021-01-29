@@ -20,25 +20,29 @@
 
 package org.eehouse.android.xw4;
 
-import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.res.TypedArray;
-import android.preference.DialogPreference;
+import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.SeekBar;
+import androidx.preference.DialogPreference;
+import androidx.preference.PreferenceViewHolder;
 
 import org.eehouse.android.xw4.loc.LocUtils;
 
-public class EditColorPreference extends DialogPreference {
+public class EditColorPreference extends DialogPreference
+    implements PrefsActivity.DialogProc {
+    private static final String TAG = EditColorPreference.class.getSimpleName();
 
-    private Context m_context;
-    private int m_curColor;
+    private Context mContext;
+    private int mCurColor;
+    private View mWidget;
     // m_updateText: prevent loop that resets edittext cursor
     private boolean m_updateText = true;
     private static final int m_seekbarIds[] = { R.id.seek_red, R.id.seek_green,
@@ -57,6 +61,7 @@ public class EditColorPreference extends DialogPreference {
             m_editTxt = editTxt;
         }
 
+        @Override
         public void onProgressChanged( SeekBar seekBar, int progress,
                                        boolean fromUser )
         {
@@ -66,29 +71,27 @@ public class EditColorPreference extends DialogPreference {
 
             int shift = 16 - (m_index * 8);
             // mask out the byte we're changing
-            int color = m_curColor & ~(0xFF << shift);
+            int color = mCurColor & ~(0xFF << shift);
             // add in the new version of the byte
             color |= progress << shift;
-            m_curColor = color;
-            m_sample.setBackgroundColor( m_curColor );
+            mCurColor = color;
+            m_sample.setBackgroundColor( mCurColor );
         }
 
+        @Override
         public void onStartTrackingTouch( SeekBar seekBar ) {}
-
+        @Override
         public void onStopTrackingTouch( SeekBar seekBar ) {}
     }
 
     private class TCL implements TextWatcher {
         private SeekBar m_seekBar;
         public TCL( SeekBar seekBar ) { m_seekBar = seekBar; }
-        public void afterTextChanged( Editable s )
-        {
-        }
-
-        public void beforeTextChanged( CharSequence s, int st, int cnt, int a )
-        {
-        }
-
+        @Override
+        public void afterTextChanged( Editable s ) {}
+        @Override
+        public void beforeTextChanged( CharSequence s, int st, int cnt, int a ) {}
+        @Override
         public void onTextChanged( CharSequence s, int start,
                                    int before, int count )
         {
@@ -107,80 +110,116 @@ public class EditColorPreference extends DialogPreference {
     public EditColorPreference( Context context, AttributeSet attrs )
     {
         super( context, attrs );
-        m_context = context;
+        mContext = context;
 
         setWidgetLayoutResource( R.layout.color_display );
-        setDialogLayoutResource( R.layout.color_edit );
-
-        String title = getDialogTitle().toString();
-        String newTitle = LocUtils.xlateString( m_context, title );
-        if ( null != newTitle ) {
-            setDialogTitle( newTitle );
-        }
-
-        setNegativeButtonText( LocUtils.getString( context, android.R.string.cancel ) );
     }
 
     @Override
-    protected Object onGetDefaultValue(TypedArray a, int index) {
-        return a.getInteger(index, 0);
+    public void onBindViewHolder( PreferenceViewHolder holder )
+    {
+        mWidget = holder.itemView;
+        setWidgetColor();
+
+        super.onBindViewHolder( holder );
+    }
+
+    private void setWidgetColor()
+    {
+        mWidget.findViewById( R.id.color_display_sample )
+            .setBackgroundColor( getPersistedColor() );
     }
 
     @Override
-    protected void onSetInitialValue(boolean restoreValue, Object defaultValue) {
+    protected Object onGetDefaultValue( TypedArray arr, int index )
+    {
+        return arr.getInteger( index, 0 );
+    }
+
+    @Override
+    protected void onSetInitialValue( boolean restoreValue, Object defaultValue )
+    {
         if ( !restoreValue ) {
             persistInt( (Integer)defaultValue );
         }
     }
 
+    // PrefsActivity.DialogProc interface
     @Override
-    protected void onBindView( View parent )
+    public XWDialogFragment makeDialogFrag()
     {
-        super.onBindView( parent );
-        View sample = parent.findViewById( R.id.color_display_sample );
-        sample.setBackgroundColor( getPersistedColor() );
+        return new ColorEditDialogFrag( this );
     }
 
-    @Override
-    protected void onBindDialogView( View view )
-    {
-        LocUtils.xlateView( m_context, view );
+    public static class ColorEditDialogFrag extends XWDialogFragment
+        implements DialogInterface.OnShowListener {
 
-        m_curColor = getPersistedColor();
+        private EditColorPreference mPref;
+        private View mView;
+
+        ColorEditDialogFrag( EditColorPreference pref ) { mPref = pref; }
+
+        @Override
+        public Dialog onCreateDialog( Bundle sis )
+        {
+            mView = LocUtils.inflate( mPref.getContext(), R.layout.color_edit );
+
+            DialogInterface.OnClickListener onOk =
+                new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick( DialogInterface di,
+                                         int which )
+                    {
+                        Log.d( TAG, "onClick()" );
+
+                        int color = (getOneByte( di, R.id.seek_red ) << 16)
+                            | (getOneByte( di, R.id.seek_green ) << 8)
+                            | getOneByte( di, R.id.seek_blue );
+
+                        mPref.persistInt( color );
+                        mPref.setWidgetColor();
+                        // notifyChanged();
+                    }
+                };
+
+            Dialog dialog = LocUtils.makeAlertBuilder( mPref.getContext() )
+                .setView( mView )
+                .setTitle( mPref.getTitle() )
+                .setPositiveButton( android.R.string.ok, onOk )
+                .setNegativeButton( android.R.string.cancel, null )
+                .create();
+
+            dialog.setOnShowListener( this );
+            return dialog;
+        }
+
+        @Override
+        public void onShow( DialogInterface dlg )
+        {
+            mPref.onBindDialogView( mView );
+        }
+
+        @Override
+        protected String getFragTag() { return getClass().getSimpleName(); }
+    }
+
+    private void onBindDialogView( View view )
+    {
+        LocUtils.xlateView( mContext, view );
+
+        mCurColor = getPersistedColor();
         setOneByte( view, 0 );
         setOneByte( view, 1 );
         setOneByte( view, 2 );
 
-        View sample = view.findViewById( R.id.color_edit_sample );
-        sample.setBackgroundColor( m_curColor );
-    }
-
-    @Override
-    protected void onPrepareDialogBuilder( AlertDialog.Builder builder )
-    {
-        DialogInterface.OnClickListener lstnr =
-            new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick( DialogInterface dialog, int which )
-                {
-                    int color = (getOneByte( dialog, R.id.seek_red ) << 16)
-                        | (getOneByte( dialog, R.id.seek_green ) << 8)
-                        | getOneByte( dialog, R.id.seek_blue );
-
-                    persistInt( color );
-                    notifyChanged();
-                }
-            };
-
-        String okText = LocUtils.getString( m_context, android.R.string.ok );
-        builder.setPositiveButton( okText, lstnr );
-        super.onPrepareDialogBuilder( builder );
+        view.findViewById( R.id.color_edit_sample )
+            .setBackgroundColor( mCurColor );
     }
 
     private void setOneByte( View parent, int indx )
     {
         int shift = 16 - (indx*8);
-        int byt = (m_curColor >> shift) & 0xFF;
+        int byt = (mCurColor >> shift) & 0xFF;
         SeekBar seekbar = (SeekBar)parent.findViewById( m_seekbarIds[indx] );
         EditText edittext = (EditText)parent.findViewById( m_editIds[indx] );
 
@@ -197,7 +236,8 @@ public class EditColorPreference extends DialogPreference {
         }
     }
 
-    private int getOneByte( DialogInterface parent, int id ) {
+    private static int getOneByte( DialogInterface parent, int id )
+    {
         int val = 0;
         Dialog dialog = (Dialog)parent;
         SeekBar seekbar = (SeekBar)dialog.findViewById( id );

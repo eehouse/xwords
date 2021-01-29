@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+                  xmlns:app="http://schemas.android.com/apk/res-auto"
+                  >
+
+  <PreferenceCategory app:title="@string/prefs_defaults"
+                      >
+
+    <Preference app:title="@string/prefs_names"
+                app:summary="@string/prefs_names_summary"
+                app:fragment="org.eehouse.android.xw4.PrefsActivity$FragPrefsDfltsNames"
+                />
+
+    <org.eehouse.android.xw4.XWConnAddrPreference
+        app:key="@string/key_addrs_pref"
+        app:title="@string/title_addrs_pref"
+        />
+
+    <Preference app:title="@string/prefs_dicts"
+                app:summary="@string/prefs_dicts_summary"
+                app:fragment="org.eehouse.android.xw4.PrefsActivity$FragPrefsDfltsDicts"
+                />
+
+    <CheckBoxPreference app:key="@string/key_init_hintsallowed"
+                        app:title="@string/hints_allowed"
+                        app:summary="@string/hints_allowed_sum"
+                        app:defaultValue="true"
+                        />
+
+    <CheckBoxPreference app:key="@string/key_init_nethintsallowed"
+                        app:title="@string/nethints_allowed"
+                        app:summary="@string/nethints_allowed_sum"
+                        app:defaultValue="true"
+                        />
+
+    <CheckBoxPreference app:key="@string/key_init_dupmodeon"
+                        app:title="@string/offerdupmode_title"
+                        app:summary="@string/offerdupmode_sum"
+                        app:defaultValue="false"
+                        />
+
+    <CheckBoxPreference app:key="@string/key_init_autojuggle"
+                        app:title="@string/init_autojuggle"
+                        app:summary="@string/init_autojuggle_sum"
+                        app:defaultValue="false"
+                        />
+
+    <org.eehouse.android.xw4.XWListPreference
+        app:key="@string/key_default_phonies"
+        app:title="@string/default_phonies"
+        app:entries="@array/phony_names"
+        app:entryValues="@array/phony_names"
+        app:defaultValue="@string/phonies_warn"
+        />
+
+    <CheckBoxPreference app:key="@string/key_default_timerenabled"
+                        app:title="@string/use_timer"
+                        app:defaultValue="false"
+                        />
+
+    <org.eehouse.android.xw4.XWEditTextPreference
+        app:key="@string/key_initial_player_minutes"
+        app:title="@string/initial_player_minutes"
+        app:defaultValue="25"
+        android:numeric="decimal"
+        />
+
+    <org.eehouse.android.xw4.XWListPreference 
+        app:key="@string/key_board_size"
+        app:title="@string/board_size"
+        app:entries="@array/board_sizes"
+        app:entryValues="@array/board_sizes"
+        app:defaultValue="15x15"
+        />
+
+  </PreferenceCategory>
+</PreferenceScreen>

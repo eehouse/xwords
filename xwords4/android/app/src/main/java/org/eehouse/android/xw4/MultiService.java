@@ -129,7 +129,7 @@ public class MultiService {
     public static Intent makeMissingDictIntent( Context context, NetLaunchInfo nli,
                                                 DictFetchOwner owner )
     {
-        Intent intent = new Intent( context, DictsActivity.class );
+        Intent intent = new Intent( context, MainActivity.class ); // PENDING TEST THIS!!!
         intent.setAction( ACTION_FETCH_DICT );
         intent.putExtra( LANG, nli.lang );
         intent.putExtra( DICT, nli.dict );

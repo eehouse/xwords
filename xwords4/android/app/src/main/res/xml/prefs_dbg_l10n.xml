@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+                  xmlns:app="http://schemas.android.com/apk/res-auto">
+
+  <PreferenceCategory app:title="@string/pref_group_l10n_title"
+                      >
+    <CheckBoxPreference android:key="@string/key_got_langdict"
+                        android:title="@string/got_langdict_title"
+                        android:summary="@string/got_langdict_summary"
+                        android:defaultValue="false"
+                        />
+
+    <org.eehouse.android.xw4.XWEditTextPreference
+        android:key="@string/key_xlations_locale"
+        android:title="@string/xlations_locale"
+        />
+
+    <CheckBoxPreference android:key="@string/key_xlations_enabled"
+                        android:title="@string/xlations_enabled_title"
+                        android:summary="@string/xlations_enabled_summary"
+                        android:defaultValue="false"
+                        />
+  </PreferenceCategory>
+</PreferenceScreen>

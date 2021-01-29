@@ -28,7 +28,6 @@ public interface Delegator {
     Activity getActivity();
     Bundle getArguments();
     void finish();
-    boolean inDPMode();
     void addFragment( XWFragment fragment, Bundle extras );
     void addFragmentForResult( XWFragment fragment, Bundle extras,
                                RequestCode requestCode );

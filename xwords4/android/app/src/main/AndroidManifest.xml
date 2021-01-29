@@ -97,10 +97,6 @@
               android:theme="@android:style/Theme.Translucent.NoTitleBar"
               />
 
-    <activity android:name="DictsActivity"
-              android:label="@string/title_dicts_list"
-          />
-    
     <activity android:name="BTInviteActivity"
 			  android:label="@string/bt_invite_title"
               />
@@ -115,27 +111,13 @@
 			  android:label="@string/mqtt_invite_title"
               />
 
-    <activity android:name="GameConfigActivity"
-              android:screenOrientation="sensor"
-              android:windowSoftInputMode="stateAlwaysHidden"
-              >
-      <intent-filter>
-        <action android:name="android.intent.action.EDIT" />
-      </intent-filter>
-    </activity>
 
     <activity android:name="PrefsActivity"
               android:label="@string/title_prefs"
               android:screenOrientation="sensor"
+               android:theme="@style/Theme.AppCompat"
               />
 
-    <activity android:name="BoardActivity"
-              android:screenOrientation="portrait"
-              android:windowSoftInputMode="stateAlwaysHidden|adjustPan"
-              />
-
-    <activity android:name="StudyListActivity" />
-    <activity android:name="KnownPlayersActivity" />
 
     <receiver android:name="OnBootReceiver">
       <intent-filter>
@@ -154,7 +136,7 @@
       </intent-filter>
     </receiver>
 
-    <!-- downloading dicts -->
+    <!-- downloading dicts == can be fragment?? -->
     <activity android:name=".DwnldActivity"
               android:label="@string/app_name"
               android:theme="@android:style/Theme.Dialog"

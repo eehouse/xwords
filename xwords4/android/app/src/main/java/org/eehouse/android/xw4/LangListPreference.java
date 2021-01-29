@@ -21,23 +21,101 @@
 package org.eehouse.android.xw4;
 
 import android.content.Context;
+import android.os.Handler;
 import android.util.AttributeSet;
+import androidx.preference.Preference;
+import androidx.preference.PreferenceManager;
 
 import org.eehouse.android.xw4.loc.LocUtils;
 
-public class LangListPreference extends XWListPreference {
-    private Context m_context;
+public class LangListPreference extends XWListPreference
+    implements Preference.OnPreferenceChangeListener {
+    private static final String TAG = LangListPreference.class.getSimpleName();
+    private Context mContext;
+    private String mKey;
 
     public LangListPreference( Context context, AttributeSet attrs )
     {
         super( context, attrs );
-        m_context = context;
+        mContext = context;
+        mKey = context.getString( R.string.key_default_language );
     }
 
     @Override
     public void setSummary( CharSequence summary )
     {
-        super.setSummary( LocUtils.xlateLang( m_context, summary.toString(), true ) );
+        super.setSummary( LocUtils.xlateLang( mContext, summary.toString(), true ) );
     }
 
+    @Override
+    public void onAttached()
+    {
+        super.onAttached();
+        setOnPreferenceChangeListener( this );
+        setupLangPref();
+    }
+
+    @Override
+    public boolean onPreferenceChange( Preference preference, Object newValue )
+    {
+        final String newLang = (String)newValue;
+        new Handler().post( new Runnable() {
+                @Override
+                public void run() {
+                    forceDictsMatch( newLang );
+                }
+            } );
+        return true;
+    }
+
+    private void setupLangPref()
+    {
+        String keyLangs = mContext.getString( R.string.key_default_language );
+        String value = getValue();
+        String curLang = null == value ? null : value.toString();
+        boolean haveDictForLang = false;
+
+        String[] langs = DictLangCache.listLangs( m_context );
+        String[] langsLoc = new String[langs.length];
+        for ( int ii = 0; ii < langs.length; ++ii ) {
+            String lang = langs[ii];
+            haveDictForLang = haveDictForLang || lang.equals( curLang );
+            langsLoc[ii] = LocUtils.xlateLang( mContext, lang, true );
+        }
+
+        if ( !haveDictForLang ) {
+            curLang = DictLangCache.getLangName( mContext, 1 ); // English, unlocalized
+            setValue( curLang );
+        }
+        forceDictsMatch( curLang );
+
+        setEntries( langsLoc );
+        setDefaultValue( LocUtils.xlateLang( mContext, curLang, true ) );
+        setEntryValues( langs );
+    }
+
+    private void forceDictsMatch( String newLang )
+    {
+        if ( null != newLang ) {
+            int code = DictLangCache.getLangLangCode( mContext, newLang );
+            int[] keyIds = { R.string.key_default_dict,
+                             R.string.key_default_robodict };
+            for ( int id : keyIds ) {
+                String key = mContext.getString( id );
+
+                PreferenceManager mgr = getPreferenceManager();
+                Assert.assertNotNull( mgr );
+
+                DictListPreference pref = (DictListPreference)mgr.findPreference( key );
+                Assert.assertNotNull( pref );
+
+                String curDict = pref.getValue().toString();
+                if ( ! DictUtils.dictExists( mContext, curDict )
+                     || code != DictLangCache.getDictLangCode( mContext,
+                                                               curDict ) ) {
+                    pref.invalidate();
+                }
+            }
+        }
+    }
 }

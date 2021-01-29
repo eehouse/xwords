@@ -36,9 +36,9 @@ public class SMSCheckBoxPreference extends ConfirmingCheckBoxPreference {
     }
 
     @Override
-    protected void onAttachedToActivity()
+    public void onAttached()
     {
-        super.onAttachedToActivity();
+        super.onAttached();
         if ( !Utils.deviceSupportsNBS( getContext() ) ) {
             setEnabled( false );
         }

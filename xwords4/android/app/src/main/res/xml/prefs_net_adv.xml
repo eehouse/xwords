@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+                  xmlns:app="http://schemas.android.com/apk/res-auto">
+
+  <PreferenceCategory app:title="@string/network_advanced_title"
+                      >
+    <CheckBoxPreference android:key="@string/key_enable_pubroom"
+                        android:title="@string/enable_pubroom_title"
+                        android:summary="@string/enable_pubroom_summary"
+                        android:defaultValue="false"
+                        />
+    <CheckBoxPreference android:key="@string/key_invite_multi"
+                        android:title="@string/invite_multi_title"
+                        android:summary="@string/invite_multi_summary"
+                        android:defaultValue="false"
+                        />
+</PreferenceCategory>
+</PreferenceScreen>

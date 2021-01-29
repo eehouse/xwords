@@ -401,14 +401,8 @@ public class StudyListDelegate extends ListDelegateBase
                 bundle.putInt( START_LANG, lang );
             }
 
-            if ( delegator.inDPMode() ) {
-                delegator.addFragment( StudyListFrag.newInstance( delegator ),
-                                       bundle );
-            } else {
-                Intent intent = new Intent( activity, StudyListActivity.class );
-                intent.putExtras( bundle );
-                activity.startActivity( intent );
-            }
+            delegator.addFragment( StudyListFrag.newInstance( delegator ),
+                                   bundle );
         }
 
         if ( null != msg ) {

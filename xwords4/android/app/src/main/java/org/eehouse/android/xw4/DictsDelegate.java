@@ -32,7 +32,7 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
+import androidx.preference.PreferenceManager;
 import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -1501,13 +1501,7 @@ public class DictsDelegate extends ListDelegateBase
 
     public static void start( Delegator delegator )
     {
-        if ( delegator.inDPMode() ) {
-            delegator.addFragment( DictsFrag.newInstance( delegator ), null );
-        } else {
-            Activity activity = delegator.getActivity();
-            Intent intent = new Intent( activity, DictsActivity.class );
-            activity.startActivity( intent );
-        }
+        delegator.addFragment( DictsFrag.newInstance( delegator ), null );
     }
 
     public static void downloadForResult( Delegator delegator,
@@ -1523,14 +1517,7 @@ public class DictsDelegate extends ListDelegateBase
             Assert.assertTrue( lang != 0 );
             bundle.putString( DICT_NAME_EXTRA, name );
         }
-        if ( delegator.inDPMode() ) {
-            delegator.addFragmentForResult( DictsFrag.newInstance( delegator ),
-                                            bundle, requestCode );
-        } else {
-            Activity activity = delegator.getActivity();
-            Intent intent = new Intent( activity, DictsActivity.class );
-            intent.putExtras( bundle );
-            activity.startActivityForResult( intent, requestCode.ordinal() );
-        }
+        delegator.addFragmentForResult( DictsFrag.newInstance( delegator ),
+                                        bundle, requestCode );
     }
 }

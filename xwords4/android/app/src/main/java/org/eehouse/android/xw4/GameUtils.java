@@ -962,14 +962,7 @@ public class GameUtils {
             extras.putAll( moreExtras );
         }
 
-        if ( delegator.inDPMode() ) {
-            delegator.addFragment( BoardFrag.newInstance( delegator ), extras );
-        } else {
-            Activity activity = delegator.getActivity();
-            Intent intent = new Intent( activity, BoardActivity.class );
-            intent.putExtras( extras );
-            activity.startActivity( intent );
-        }
+        delegator.addFragment( BoardFrag.newInstance( delegator ), extras );
     }
 
     private static class FeedUtilsImpl extends UtilCtxtImpl {

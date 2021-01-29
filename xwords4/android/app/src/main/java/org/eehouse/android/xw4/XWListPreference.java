@@ -21,7 +21,7 @@
 package org.eehouse.android.xw4;
 
 import android.content.Context;
-import android.preference.ListPreference;
+import androidx.preference.ListPreference;
 import android.util.AttributeSet;
 
 import org.eehouse.android.xw4.loc.LocUtils;
@@ -36,9 +36,9 @@ public class XWListPreference extends ListPreference {
     }
 
     @Override
-    protected void onAttachedToActivity()
+    public void onAttached()
     {
-        super.onAttachedToActivity();
+        super.onAttached();
         setSummary( getPersistedString( "" ) );
     }
 

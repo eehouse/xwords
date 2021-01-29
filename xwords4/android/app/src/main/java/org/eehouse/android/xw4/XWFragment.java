@@ -214,13 +214,6 @@ abstract class XWFragment extends Fragment implements Delegator {
     public void setTitle() { m_dlgt.setTitle(); }
 
     @Override
-    public boolean inDPMode() {
-        MainActivity main = (MainActivity)getActivity();
-        Assert.assertTrue( !isAdded() || main.inDPMode() ); // otherwise should be somewhere else
-        return true;
-    }
-
-    @Override
     public void addFragment( XWFragment fragment, Bundle extras )
     {
         MainActivity main = (MainActivity)getActivity();

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+                  xmlns:app="http://schemas.android.com/apk/res-auto">
+
+  <PreferenceCategory app:title="@string/pref_group_sms_title"
+                      >
+
+    <CheckBoxPreference android:key="@string/key_enable_sms_toself"
+                        android:title="@string/enable_sms_toself_title"
+                        android:summary="@string/enable_sms_toself_summary"
+                        android:defaultValue="false"
+                        />
+    <org.eehouse.android.xw4.XWListPreference
+        android:key="@string/key_force_radio"
+        android:title="@string/force_radio_title"
+        android:entries="@array/force_radio_names"
+        android:entryValues="@array/force_radio_names"
+        android:defaultValue="@string/radio_name_real"
+        />
+
+    <CheckBoxPreference android:key="@string/key_show_sms"
+                        android:title="@string/show_sms_title"
+                        android:defaultValue="false"
+                        />
+
+  </PreferenceCategory>
+</PreferenceScreen>

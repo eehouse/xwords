@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+                  xmlns:app="http://schemas.android.com/apk/res-auto"
+                  >
+
+  <PreferenceCategory app:title="@string/prefs_dicts"
+                      >
+
+    <!-- entries provided programatically -->
+    <org.eehouse.android.xw4.LangListPreference
+        app:key="@string/key_default_language"
+        app:title="@string/default_language"
+        app:defaultValue="@string/lang_name_english"
+        />
+
+    <org.eehouse.android.xw4.DictListPreference
+        app:key="@string/key_default_dict"
+        app:title="@string/default_dict"
+        app:defaultValue="CollegeEng_2to8"
+        />
+
+    <org.eehouse.android.xw4.DictListPreference
+        app:key="@string/key_default_robodict"
+        app:title="@string/default_robodict"
+        app:defaultValue="Top5000"
+        />
+  </PreferenceCategory>
+</PreferenceScreen>

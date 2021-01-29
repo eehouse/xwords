@@ -20,44 +20,55 @@
 
 package org.eehouse.android.xw4;
 
-import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.preference.DialogPreference;
+import android.os.Bundle;
 import android.util.AttributeSet;
 import android.view.View;
-
-
+import androidx.preference.DialogPreference;
+import androidx.preference.Preference;
 import org.eehouse.android.xw4.DlgDelegate.Action;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;
 import org.eehouse.android.xw4.loc.LocUtils;
 
-public class XWConnAddrPreference extends DialogPreference {
-
+public class XWConnAddrPreference extends DialogPreference
+    implements PrefsActivity.DialogProc {
+    private static final String TAG = XWConnAddrPreference.class.getSimpleName();
     private Context m_context;
     private ConnViaViewLayout m_view;
 
     public XWConnAddrPreference( Context context, AttributeSet attrs )
     {
         super( context, attrs );
-        m_context = context;
-
-        setDialogLayoutResource( R.layout.conn_types_display );
-
-        setNegativeButtonText( LocUtils.getString( context, android.R.string.cancel ) );
 
         CommsConnTypeSet curSet = XWPrefs.getAddrTypes( context );
         setSummary( curSet.toString( context, true ) );
     }
 
     @Override
-    protected void onBindDialogView( View view )
+    public XWDialogFragment makeDialogFrag()
     {
-        LocUtils.xlateView( m_context, view );
-        m_view = (ConnViaViewLayout)view.findViewById( R.id.conn_types );
-        final PrefsActivity activity = (PrefsActivity)m_context;
-        m_view.configure( XWPrefs.getAddrTypes( m_context ),
+        return new XWConnAddrDialogFrag( this );
+    }
+
+    public static class XWConnAddrDialogFrag extends XWDialogFragment {
+        private XWConnAddrPreference mSelf;
+
+        public XWConnAddrDialogFrag( XWConnAddrPreference self )
+        {
+            mSelf = self;
+        }
+
+        @Override
+        public Dialog onCreateDialog( Bundle sis )
+        {
+            final PrefsActivity activity = (PrefsActivity)getContext();
+            View view = LocUtils.inflate( activity, R.layout.conn_types_display );
+
+            final ConnViaViewLayout cvl = (ConnViaViewLayout)view.findViewById( R.id.conn_types );
+            cvl.configure( XWPrefs.getAddrTypes( activity ),
                           new ConnViaViewLayout.CheckEnabledWarner() {
                               @Override
                               public void warnDisabled( CommsConnType typ ) {
@@ -78,10 +89,10 @@ public class XWConnAddrPreference extends DialogPreference {
                                       break;
                                   case COMMS_CONN_RELAY:
                                       msg = LocUtils
-                                          .getString( m_context, R.string
+                                          .getString( activity, R.string
                                                       .warn_relay_disabled );
                                       msg += "\n\n" + LocUtils
-                                          .getString( m_context,
+                                          .getString( activity,
                                                       R.string.warn_relay_later );
                                       action = Action.ENABLE_RELAY_DO;
                                       buttonID = R.string.button_enable_relay;
@@ -106,22 +117,34 @@ public class XWConnAddrPreference extends DialogPreference {
                           new ConnViaViewLayout.SetEmptyWarner() {
                               @Override
                               public void typeSetEmpty() {
-                                  PrefsActivity activity = (PrefsActivity)m_context;
                                   activity
                                       .makeOkOnlyBuilder( R.string.warn_no_comms )
                                       .show();
                               }
                           }, activity );
-    }
 
-    @Override
-    public void onClick( DialogInterface dialog, int which )
-    {
-        if ( AlertDialog.BUTTON_POSITIVE == which && null != m_view ) {
-            CommsConnTypeSet curSet = m_view.getTypes();
-            XWPrefs.setAddrTypes( m_context, curSet );
-            setSummary( curSet.toString( m_context, true ) );
+            DialogInterface.OnClickListener onOk =
+                new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick( DialogInterface di,
+                                         int which )
+                    {
+                        Log.d( TAG, "onClick()" );
+                        CommsConnTypeSet curSet = cvl.getTypes();
+                        XWPrefs.setAddrTypes( activity, curSet );
+                        mSelf.setSummary( curSet.toString( activity, true ) );
+                    }
+                };
+
+            return LocUtils.makeAlertBuilder( activity )
+                .setTitle( R.string.title_addrs_pref )
+                .setView( view )
+                .setPositiveButton( android.R.string.ok, onOk )
+                .setNegativeButton( android.R.string.cancel, null )
+                .create();
         }
-        super.onClick( dialog, which );
+
+        @Override
+        protected String getFragTag() { return getClass().getSimpleName(); }
     }
 }

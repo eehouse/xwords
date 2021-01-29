@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+                  xmlns:app="http://schemas.android.com/apk/res-auto">
+
+  <PreferenceCategory app:title="@string/network_behavior"
+                      >
+    <org.eehouse.android.xw4.SMSCheckBoxPreference
+        android:key="@string/key_enable_nbs"
+        android:title="@string/enable_sms"
+        android:summary="@string/enable_sms_summary"
+        android:defaultValue="false"
+        />
+
+    <CheckBoxPreference android:key="@string/key_notify_vibrate"
+                        android:title="@string/notify_vibrate"
+                        android:summary="@string/notify_other_summary"
+                        android:defaultValue="false"
+                        />
+    <CheckBoxPreference android:key="@string/key_enable_p2p"
+                        android:title="@string/title_enable_p2p"
+                        android:summary="@string/summary_enable_p2p"
+                        android:defaultValue="false"
+                        />
+
+    <Preference app:title="@string/network_advanced_title"
+                app:summary="@string/network_advanced_summary"
+                app:fragment="org.eehouse.android.xw4.PrefsActivity$FragPrefsNetAdv"
+                />
+
+    <org.eehouse.android.xw4.RelayCheckBoxPreference
+        android:key="@string/key_disable_relay"
+        android:title="@string/disable_relay"
+        android:summary="@string/disable_relay_summary"
+        android:defaultValue="false"
+        />
+
+    <org.eehouse.android.xw4.BTCheckBoxPreference
+        android:key="@string/key_disable_bt"
+        android:title="@string/disable_bt"
+        android:summary="@string/disable_bt_summary"
+        android:defaultValue="false"
+        />
+
+  </PreferenceCategory>
+</PreferenceScreen>

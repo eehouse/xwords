@@ -42,9 +42,9 @@ public class XWSumListPreference extends XWListPreference {
 
     // Why I exist: insert the rowid and gameid lines if debug is on
     @Override
-    protected void onAttachedToActivity()
+    public void onAttached()
     {
-        super.onAttachedToActivity();
+        super.onAttached();
 
         CharSequence[] entries = getEntries();
         CharSequence[] newEntries = LocUtils.xlateStrings( m_context, entries );

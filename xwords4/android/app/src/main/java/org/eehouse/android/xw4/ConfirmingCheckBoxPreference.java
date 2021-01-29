@@ -21,7 +21,7 @@
 package org.eehouse.android.xw4;
 
 import android.content.Context;
-import android.preference.CheckBoxPreference;
+import androidx.preference.CheckBoxPreference;
 import android.util.AttributeSet;
 
 public abstract class ConfirmingCheckBoxPreference extends CheckBoxPreference {
@@ -33,8 +33,9 @@ public abstract class ConfirmingCheckBoxPreference extends CheckBoxPreference {
     }
 
     @Override
-    protected void onAttachedToActivity() {
-        super.onAttachedToActivity();
+    public void onAttached()
+    {
+        super.onAttached();
         m_attached = true;
     }
 
