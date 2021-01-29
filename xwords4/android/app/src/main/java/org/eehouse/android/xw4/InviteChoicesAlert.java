@@ -99,6 +99,7 @@ public class InviteChoicesAlert extends DlgDelegateAlert
         if ( Utils.deviceSupportsNBS(context) ) {
             means.add( InviteMeans.SMS_DATA );
         }
+        means.add( InviteMeans.QRCODE );
         if ( BTUtils.BTAvailable() ) {
             means.add( InviteMeans.BLUETOOTH );
         }
@@ -109,7 +110,6 @@ public class InviteChoicesAlert extends DlgDelegateAlert
             means.add( InviteMeans.NFC );
         }
         means.add( InviteMeans.CLIPBOARD );
-        means.add( InviteMeans.QRCODE );
 
         int lastSelMeans = -1;
         if ( null != lastMeans ) {
