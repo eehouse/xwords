@@ -3,24 +3,11 @@
           package="org.eehouse.android.xw4"
           >
 
-  <!-- Added for wifi-direct; don't ship until move to 23!!! -->
-  <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
-  <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
-
-  <!-- for crittercism -->
-  <uses-permission android:name="android.permission.GET_TASKS"/>
-
   <application android:icon="@drawable/icon48x48"
                android:label="@string/app_name"
                android:name=".XWApp"
                android:theme="@style/AppTheme"
                >
-
-    <activity android:name="WiDirInviteActivity"
-			  android:label="@string/p2p_invite_title"
-              />
-
-    <service android:name="WiDirService" />
 
     <service android:name="FBMService">
       <intent-filter>

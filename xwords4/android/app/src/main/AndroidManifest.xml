@@ -197,12 +197,6 @@
         </intent-filter>
     </receiver>
 
-    <service android:name="FBMService">
-      <intent-filter>
-        <action android:name="com.google.firebase.MESSAGING_EVENT" />
-      </intent-filter>
-    </service>
-
     <service android:name="NFCCardService" android:exported="true"
              android:permission="android.permission.BIND_NFC_SERVICE">
       <intent-filter>
