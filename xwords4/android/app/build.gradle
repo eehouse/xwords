@@ -37,11 +37,9 @@ boolean forFDroid = hasProperty('forFDroid')
 // Get the git revision we're using. Since fdroid modifies files as
 // part of its build process -dirty will always be added, confusing
 // users. So add that for the non-fdroid case.
-def GITREV = "git describe --tags"
-if (! forFDroid) {
-    GITREV += " --dirty"
+if (! project.hasProperty('GITREV')) {
+    ext.GITREV = 'git describe --tags --dirty'.execute().text.trim()
 }
-GITREV = GITREV.execute().text.trim()
 def GITREV_SHORT = "git rev-parse --short HEAD".execute().text.trim()
 
 // Make CURTAG non-empty IFF we're at a tag (release build)
