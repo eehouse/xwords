@@ -83,6 +83,16 @@ android {
 
         variant.buildConfigField "short", "CLIENT_VERS_RELAY", "$INITIAL_CLIENT_VERS"
     }
+
+    /* Variants:
+     *
+     * GPlay: for the Google Play store, include FCM but not SMS-data.
+     *
+     * FDroid: for the f-droid store, includes SMS-data but not FCM.
+     *
+     * Foss: released via SourceForge and Github, and auto-upgraded
+     * within the app. Includes both SMS-data and FCM
+     */
     
     flavorDimensions "variant"//, "abi"
     productFlavors {
@@ -105,7 +115,7 @@ android {
             buildConfigField "boolean", "HAVE_PASSWORD", "false"
         }
 
-        xw4NoSMS {
+        xw4GPlay {
             dimension "variant"
             applicationId "org.eehouse.android.xw4"
             manifestPlaceholders = [ APP_ID: applicationId ]
@@ -116,7 +126,7 @@ android {
             buildConfigField "int", "VARIANT_CODE", "1"
             buildConfigField "String", "NFC_AID", "\"${NFC_AID_XW4}\""
             resValue "string", "nfc_aid", "$NFC_AID_XW4"
-            externalNativeBuild.ndkBuild.cFlags += ['-DVARIANT_xw4NoSMS']
+            externalNativeBuild.ndkBuild.cFlags += ['-DVARIANT_xw4GPlay']
             externalNativeBuild.ndkBuild.arguments += ['XW_BT_UUID=' + XW_UUID]
         }
 
@@ -158,7 +168,7 @@ android {
             buildConfigField "boolean", "HAVE_KNOWN_PLAYERS", "true"
         }
 
-        xw4dNoSMS {
+        xw4dGPlay {
             dimension "variant"
             applicationId "org.eehouse.android.xw4dbg"
             buildConfigField "String", "DB_NAME", "\"xwddb\""
@@ -167,18 +177,18 @@ android {
             resValue "string", "invite_prefix", "/andd/"
             resValue "string", "newgame_scheme", "newxwgamed"
             buildConfigField "boolean", "WIDIR_ENABLED", "true"
-            buildConfigField "String", "VARIANT_NAME", "\"Dev/Debug NoSMS\""
+            buildConfigField "String", "VARIANT_NAME", "\"Dev/Debug GPlay\""
             buildConfigField "int", "VARIANT_CODE", "4"
             buildConfigField "boolean", "REPORT_LOCKS", "true"
             buildConfigField "String", "NFC_AID", "\"${NFC_AID_XW4d}\""
             resValue "string", "nfc_aid", "$NFC_AID_XW4d"
-            externalNativeBuild.ndkBuild.cFlags += ['-DVARIANT_xw4dNoSMS']
+            externalNativeBuild.ndkBuild.cFlags += ['-DVARIANT_xw4dGPlay']
             externalNativeBuild.ndkBuild.arguments += ['XW_BT_UUID=' + XWD_UUID]
             externalNativeBuild.ndkBuild.cFlags += ['-DXWFEATURE_KNOWNPLAYERS']
             buildConfigField "boolean", "HAVE_KNOWN_PLAYERS", "true"
         }
 
-        xw4SMS {
+        xw4Foss {
             dimension "variant"
             applicationId "org.eehouse.android.xw4"
             manifestPlaceholders = [ APP_ID: applicationId ]
@@ -189,7 +199,7 @@ android {
             buildConfigField "int", "VARIANT_CODE", "5"
             buildConfigField "String", "NFC_AID", "\"${NFC_AID_XW4}\""
             resValue "string", "nfc_aid", "$NFC_AID_XW4"
-            externalNativeBuild.ndkBuild.cFlags += ['-DVARIANT_xw4SMS']
+            externalNativeBuild.ndkBuild.cFlags += ['-DVARIANT_xw4Foss']
             externalNativeBuild.ndkBuild.arguments += ['XW_BT_UUID=' + XW_UUID]
         }
 
@@ -279,12 +289,12 @@ android {
         // directories here. AS doesn't respect what's set here: it'll
         // compile, but post-install app launch and source-level
         // debugging don't work.
-        xw4NoSMS {
+        xw4GPlay {
             release {
-                jniLibs.srcDir "../libs-xw4NoSMSRelease"
+                jniLibs.srcDir "../libs-xw4GPlayRelease"
             }
             debug {
-                jniLibs.srcDir "../libs-xw4NoSMSDebug"
+                jniLibs.srcDir "../libs-xw4GPlayDebug"
             }
         }
         xw4d {
@@ -295,20 +305,20 @@ android {
                 jniLibs.srcDir "../libs-xw4dDebug"
             }
         }
-        xw4dNoSMS {
+        xw4dGPlay {
             release {
-                jniLibs.srcDir "../libs-xw4dNoSMSRelease"
+                jniLibs.srcDir "../libs-xw4dGPlayRelease"
             }
             debug {
-                jniLibs.srcDir "../libs-xw4dNoSMSDebug"
+                jniLibs.srcDir "../libs-xw4dGPlayDebug"
             }
         }
-        xw4SMS {
+        xw4Foss {
             release {
-                jniLibs.srcDir "../libs-xw4SMSRelease"
+                jniLibs.srcDir "../libs-xw4FossRelease"
             }
             debug {
-                jniLibs.srcDir "../libs-xw4SMSDebug"
+                jniLibs.srcDir "../libs-xw4FossDebug"
             }
         }
         xw4fdroid {
@@ -374,7 +384,7 @@ task myPreBuild(dependsOn: ['mkImages',
                             'copyLocStrings',
                             'mkXml',
                             'copyStringsXw4D',
-                            'copyStringsXw4DNoSMS']) {
+                            'copyStringsXw4DGPlay']) {
 }
 preBuild.dependsOn myPreBuild
 
@@ -392,11 +402,11 @@ task copyStringsXw4D(type: Exec) {
     "src/xw4d/res/values/strings.xml"
 }
 
-task copyStringsXw4DNoSMS(type: Exec) {
+task copyStringsXw4DGPlay(type: Exec) {
     workingDir './'
     environment.put('APPNAME', 'CrossDbg')
     commandLine 'make', '-f', '../scripts/Variant.mk',
-    "src/xw4dNoSMS/res/values/strings.xml"
+    "src/xw4dGPlay/res/values/strings.xml"
 }
 
 task makeBuildAssets() {

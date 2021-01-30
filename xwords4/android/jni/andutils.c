@@ -887,11 +887,11 @@ debugf( const char* format, va_list ap )
     }
 
     const char* tag =
-# if defined VARIANT_xw4NoSMS || defined VARIANT_xw4fdroid || defined VARIANT_xw4SMS
+# if defined VARIANT_xw4GPlay || defined VARIANT_xw4fdroid || defined VARIANT_xw4Foss
                                "xw4"
-# elif defined VARIANT_xw4d || defined VARIANT_xw4dNoSMS
+# elif defined VARIANT_xw4d || defined VARIANT_xw4dGPlay
                                "x4bg"
-# elif defined VARIANT_xw4dup || defined VARIANT_xw4dupNoSMS
+# elif defined VARIANT_xw4dup || defined VARIANT_xw4dupGPlay
                                "x4du"
 # endif
         ;
