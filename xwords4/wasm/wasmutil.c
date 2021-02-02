@@ -158,7 +158,11 @@ static void
 wasm_util_setTimer( XW_UtilCtxt* uc, XWEnv xwe, XWTimerReason why, XP_U16 when,
                     XWTimerProc proc, void* closure )
 {
-    LOG_FUNC();
+    XP_LOGFF( "(why: %d)", why );
+    WasmUtilCtx* wuctxt = (WasmUtilCtx*)uc;
+    Globals* globals = (Globals*)wuctxt->closure;
+    main_set_timer( globals, why, when, proc, closure );
+    LOG_RETURN_VOID();
 }
 
 static void
@@ -212,6 +216,18 @@ wasm_util_formatPauseHistory( XW_UtilCtxt* uc, XWEnv xwe, XWStreamCtxt* stream,
                               DupPauseType typ, XP_S16 turn,
                               XP_U32 secsPrev, XP_U32 secsCur,
                               const XP_UCHAR* msg )
+{
+    LOG_FUNC();
+}
+
+static void
+wasm_util_bonusSquareHeld( XW_UtilCtxt* uc, XWEnv xwe, XWBonusType bonus )
+{
+    LOG_FUNC();
+}
+
+static void
+wasm_util_playerScoreHeld( XW_UtilCtxt* uc, XWEnv xwe, XP_U16 player )
 {
     LOG_FUNC();
 }
@@ -316,6 +332,9 @@ wasm_util_make( MPFORMAL CurGameInfo* gi, XW_DUtilCtxt* dctxt, void* closure )
     SET_VTABLE_ENTRY( wuctxt->super.vtable, util_remSelected, wasm );
     SET_VTABLE_ENTRY( wuctxt->super.vtable, util_timerSelected, wasm );
     SET_VTABLE_ENTRY( wuctxt->super.vtable, util_formatPauseHistory, wasm );
+    SET_VTABLE_ENTRY( wuctxt->super.vtable, util_bonusSquareHeld, wasm );
+    SET_VTABLE_ENTRY( wuctxt->super.vtable, util_playerScoreHeld, wasm );
+
 #ifdef XWFEATURE_BOARDWORDS
     SET_VTABLE_ENTRY( wuctxt->super.vtable, util_cellSquareHeld, wasm );
 #endif

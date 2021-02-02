@@ -7,6 +7,13 @@
 
 #include "game.h"
 
+typedef struct _TimerState {
+    void* closure;
+    XWTimerReason why;
+    XWTimerProc proc;
+    time_t when;
+} TimerState;
+
 typedef struct _Globals {
     SDL_Window* window;
     SDL_Renderer* renderer;
@@ -20,7 +27,13 @@ typedef struct _Globals {
     TransportProcs procs;
     CommonPrefs cp;
 
+    TimerState timers[NUM_TIMERS_PLUS_ONE];
+
     MemPoolCtx* mpool;
 } Globals;
+
+void main_set_timer( Globals* globals, XWTimerReason why, XP_U16 when,
+                     XWTimerProc proc, void* closure );
+
 
 #endif

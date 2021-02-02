@@ -3,6 +3,7 @@
 // University of Illinois/NCSA Open Source License.  Both these licenses can be
 // found in the LICENSE file.
 
+#include <sys/time.h>
 #include <stdio.h>
 #include <stdarg.h>
 #include <SDL2/SDL.h>
@@ -36,6 +37,7 @@ static void
 initGlobals( Globals* globals )
 {
     globals->cp.showBoardArrow = XP_TRUE;
+    globals->cp.allowPeek = XP_TRUE;
 
     globals->gi.serverRole = SERVER_STANDALONE;
     globals->gi.nPlayers = 2;
@@ -82,6 +84,45 @@ makeAndDraw( Globals* globals )
     board_draw( globals->game.board, NULL );
 }
 
+static time_t
+getCurMS()
+{
+    struct timeval tv;
+    gettimeofday( &tv, NULL );
+    time_t result = tv.tv_sec * 1000; /* convert to millis */
+    result += tv.tv_usec / 1000;         /* convert to millis too */
+    // LOG_RETURNF( "%x", result );
+    return result;
+}
+
+static void
+checkForTimers( Globals* globals )
+{
+    time_t now = getCurMS();
+    for ( XWTimerReason why = 0; why < NUM_TIMERS_PLUS_ONE; ++why ) {
+        TimerState* timer = &globals->timers[why];
+        XWTimerProc proc = timer->proc;
+        if ( !!proc && now >= timer->when ) {
+            timer->proc = NULL;
+            XP_LOGFF( "timer fired (why=%d): calling proc", why );
+            (*proc)( timer->closure, NULL, why );
+            XP_LOGFF( "back from proc" );
+        }
+    }
+}
+
+void
+main_set_timer( Globals* globals, XWTimerReason why, XP_U16 when,
+                XWTimerProc proc, void* closure )
+{
+    TimerState* timer = &globals->timers[why];
+    timer->proc = proc;
+    timer->closure = closure;
+
+    time_t now = getCurMS();
+    timer->when = now + (1000 * when);
+}
+
 static void
 checkForEvent( Globals* globals )
 {
@@ -120,6 +161,7 @@ static void
 looper( void* closure )
 {
     Globals* globals = (Globals*)closure;
+    checkForTimers( globals );
     checkForEvent( globals );
 }
 
