@@ -231,7 +231,7 @@ XP_Bool parseCommon( DictionaryCtxt* dict, XWEnv xwe, const XP_U8** ptrp,
 XP_Bool checkSanity( DictionaryCtxt* dict, XP_U32 numEdges );
 
 /* To be called only by subclasses!!! */
-void dict_super_init( DictionaryCtxt* ctxt );
+void dict_super_init( MPFORMAL DictionaryCtxt* ctxt );
 /* Must be implemented by subclasses */
 void dict_splitFaces( DictionaryCtxt* dict, XWEnv xwe, const XP_U8* bytes,
                       XP_U16 nBytes, XP_U16 nFaceos );

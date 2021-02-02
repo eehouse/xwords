@@ -1104,8 +1104,9 @@ dict_super_edge_with_tile( const DictionaryCtxt* dict, array_edge* from,
 } /* edge_with_tile */
 
 void
-dict_super_init( DictionaryCtxt* dict )
+dict_super_init( MPFORMAL DictionaryCtxt* dict )
 {
+    dict->mpool = mpool;
     /* subclass may change these later.... */
     dict->func_edge_for_index = dict_super_edge_for_index;
     dict->func_dict_getTopEdge = dict_super_getTopEdge;
