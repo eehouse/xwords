@@ -28,5 +28,6 @@ all: main.html
 main.html: ${INPUTS} Makefile
 	emcc $(DEFINES) -I . -I ../common -I ../relay -s USE_SDL=2 \
 		--preload-file assets_dir \
-		-s USE_SDL_IMAGE=2 -s SDL2_IMAGE_FORMATS='["png"]' ${INPUTS} -o $@
+		-s USE_SDL_TTF=2 -s USE_SDL_IMAGE=2 -s SDL2_IMAGE_FORMATS='["png"]' \
+		${INPUTS} -o $@
 	scp main.html main.js main.wasm main.data pi4:/tmp

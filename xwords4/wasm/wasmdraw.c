@@ -1,4 +1,5 @@
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_ttf.h>
 
 #include "comtypes.h"
 #include "wasmdraw.h"
@@ -9,6 +10,8 @@
 typedef struct _WasmDrawCtx {
     DrawCtxVTable* vtable;
     SDL_Renderer* renderer;
+
+    TTF_Font* font12;
 } WasmDrawCtx;
 
 static int sBonusColors[4][3] = {
@@ -19,40 +22,58 @@ static int sBonusColors[4][3] = {
 };
 
 static void
+rectXPToSDL( SDL_Rect* sdlr, const XP_Rect* rect )
+{
+    sdlr->x = rect->left;
+    sdlr->y = rect->top;
+    sdlr->w = rect->width + 1;
+    sdlr->h = rect->height + 1;
+}
+
+static void
 clearRect( WasmDrawCtx* wdctx, const XP_Rect* rect )
 {
-    SDL_Rect sdl_rect = { .x = rect->left,
-                          .y = rect->top,
-                          .w = rect->width,
-                          .h = rect->height,
-    };
+    SDL_Rect sdlr;
+    rectXPToSDL( &sdlr, rect );
     SDL_SetRenderDrawColor( wdctx->renderer, COLOR_BACK, 255 );
-    SDL_RenderFillRect( wdctx->renderer, &sdl_rect );
+    SDL_RenderFillRect( wdctx->renderer, &sdlr );
 }
 
 static void
 fillRect( WasmDrawCtx* wdctx, const XP_Rect* rect, int colorParts[] )
 {
-    SDL_Rect sdl_rect = { .x = rect->left,
-                          .y = rect->top,
-                          .w = rect->width,
-                          .h = rect->height,
-    };
+    SDL_Rect sdlr;
+    rectXPToSDL( &sdlr, rect );
     SDL_SetRenderDrawColor( wdctx->renderer, colorParts[0], colorParts[1],
                             colorParts[2], 255 );
-    SDL_RenderFillRect( wdctx->renderer, &sdl_rect );
+    SDL_RenderFillRect( wdctx->renderer, &sdlr );
 }
 
 static void
 frameRect( WasmDrawCtx* wdctx, const XP_Rect* rect )
 {
-    SDL_Rect sdl_rect = { .x = rect->left,
-                          .y = rect->top,
-                          .w = rect->width,
-                          .h = rect->height,
-    };
+    SDL_Rect sdlr;
+    rectXPToSDL( &sdlr, rect );
     SDL_SetRenderDrawColor( wdctx->renderer, COLOR_BLACK, 255 );
-    SDL_RenderDrawRect( wdctx->renderer, &sdl_rect );
+    SDL_RenderDrawRect( wdctx->renderer, &sdlr );
+}
+
+static void
+drawTile( WasmDrawCtx* wdctx, const XP_UCHAR* face, XP_U16 val, const XP_Rect* rect )
+{
+    clearRect( wdctx, rect );
+    frameRect( wdctx, rect );
+
+	SDL_Color color = {0,0,0,255};
+    SDL_Surface* text_surface = TTF_RenderText_Blended( wdctx->font12, face, color );
+    SDL_Texture* text_tex = SDL_CreateTextureFromSurface( wdctx->renderer, text_surface );
+    SDL_FreeSurface( text_surface );
+
+    SDL_Rect sdlr;
+    rectXPToSDL( &sdlr, rect );
+    SDL_QueryTexture( text_tex, NULL, NULL, &sdlr.w, &sdlr.h);
+    SDL_RenderCopy( wdctx->renderer, text_tex, NULL, &sdlr );
+    SDL_DestroyTexture( text_tex );
 }
 
 static void
@@ -230,6 +251,8 @@ wasm_draw_drawTileBack( DrawCtx* dctx, XWEnv xwe, const XP_Rect* rect,
                         CellFlags flags )
 {
     LOG_FUNC();
+    WasmDrawCtx* wdctx = (WasmDrawCtx*)dctx;
+    drawTile( wdctx, "?", -1, rect );
     return XP_TRUE;
 }
 
@@ -259,8 +282,13 @@ wasm_draw_drawBoardArrow ( DrawCtx* dctx, XWEnv xwe,
 DrawCtx*
 wasm_draw_make( MPFORMAL SDL_Renderer* renderer )
 {
+    LOG_FUNC();
     WasmDrawCtx* dctx = XP_MALLOC( mpool, sizeof(*dctx) );
     dctx->renderer = renderer;
+
+    dctx->font12 = TTF_OpenFont( "assets_dir/FreeSans.ttf", 30 );
+    XP_LOGFF( "got font: %p", dctx->font12 );
+    XP_ASSERT( !!dctx->font12 );
 
     dctx->vtable = XP_MALLOC( mpool, sizeof(*dctx->vtable) );
 
@@ -268,7 +296,7 @@ wasm_draw_make( MPFORMAL SDL_Renderer* renderer )
     SET_VTABLE_ENTRY( dctx->vtable, draw_dictChanged, wasm );
     SET_VTABLE_ENTRY( dctx->vtable, draw_beginDraw, wasm );
 
-        SET_VTABLE_ENTRY( dctx->vtable, draw_clearRect, wasm );
+    SET_VTABLE_ENTRY( dctx->vtable, draw_clearRect, wasm );
     SET_VTABLE_ENTRY( dctx->vtable, draw_dictChanged, wasm );
     SET_VTABLE_ENTRY( dctx->vtable, draw_beginDraw, wasm );
     SET_VTABLE_ENTRY( dctx->vtable, draw_destroyCtxt, wasm );

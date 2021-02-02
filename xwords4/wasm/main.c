@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <SDL2/SDL.h>
-#include <SDL2/SDL_image.h>
+#include <SDL2/SDL_ttf.h>
 #include <emscripten.h>
 #include <unistd.h>
 #include <stdlib.h>
@@ -88,7 +88,7 @@ makeAndDraw( Globals* globals )
     model_setDictionary( globals->game.model, NULL, globals->dict );
     // model_setSquareBonuses( globals->game.model, XWBonusType* bonuses, XP_U16 nBonuses )
 
-    board_invalAll( globals->game.board );
+    (void)server_do( globals->game.server, NULL ); /* assign tiles, etc. */
     board_draw( globals->game.board, NULL );
 }
 
@@ -97,6 +97,7 @@ int main( int argc, char** argv )
     LOG_FUNC();
     Globals globals = {0};
     SDL_Init(SDL_INIT_VIDEO);
+    TTF_Init();
 
     SDL_CreateWindowAndRenderer(600, 400, 0,
                                 &globals.window, &globals.renderer);
