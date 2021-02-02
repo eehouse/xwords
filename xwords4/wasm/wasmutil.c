@@ -1,11 +1,13 @@
 
 #include "util.h"
 #include "comtypes.h"
+#include "main.h"
 
 typedef struct _WasmUtilCtx {
     XW_UtilCtxt super;
 
     XW_DUtilCtxt* dctxt;
+    void* closure;
 } WasmUtilCtx;
 
 static XWStreamCtxt*
@@ -51,7 +53,11 @@ wasm_util_userError( XW_UtilCtxt* uc, XWEnv xwe, UtilErrID id )
 static void
 wasm_util_notifyMove( XW_UtilCtxt* uc, XWEnv xwe, XWStreamCtxt* stream )
 {
-    LOG_FUNC();
+    WasmUtilCtx* wuctxt = (WasmUtilCtx*)uc;
+    Globals* globals = (Globals*)wuctxt->closure;
+    if ( board_commitTurn( globals->game.board, NULL, XP_TRUE, XP_TRUE, NULL ) ) {
+        board_draw( globals->game.board, NULL );
+    }
 }
 
 static void
@@ -266,7 +272,7 @@ wasm_util_getDevUtilCtxt( XW_UtilCtxt* uc, XWEnv xwe )
 }
 
 XW_UtilCtxt*
-wasm_util_make( MPFORMAL CurGameInfo* gi, XW_DUtilCtxt* dctxt )
+wasm_util_make( MPFORMAL CurGameInfo* gi, XW_DUtilCtxt* dctxt, void* closure )
 {
     LOG_FUNC();
     WasmUtilCtx* wuctxt = XP_MALLOC( mpool, sizeof(*wuctxt) );
@@ -275,6 +281,7 @@ wasm_util_make( MPFORMAL CurGameInfo* gi, XW_DUtilCtxt* dctxt )
     wuctxt->super.gameInfo = gi;
 
     wuctxt->dctxt = dctxt;
+    wuctxt->closure = closure;
 
     SET_VTABLE_ENTRY( wuctxt->super.vtable, util_userError, wasm );
     SET_VTABLE_ENTRY( wuctxt->super.vtable, util_makeStreamFromAddr, wasm );

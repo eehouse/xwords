@@ -14,6 +14,7 @@
 #include "game.h"
 #include "mempool.h"
 
+#include "main.h"
 #include "wasmdraw.h"
 #include "wasmutil.h"
 #include "wasmdutil.h"
@@ -25,24 +26,11 @@
 
 #define WASM_BOARD_LEFT 0
 #define WASM_HOR_SCORE_TOP 0
+
+#define WINDOW_WIDTH 400
+#define WINDOW_HEIGHT 600
 #define BDWIDTH 330
 #define BDHEIGHT 330
-
-typedef struct _Globals {
-    SDL_Window* window;
-    SDL_Renderer* renderer;
-    XWGame game;
-    CurGameInfo gi;
-    VTableMgr* vtMgr;
-    XW_DUtilCtxt* dutil;
-    XW_UtilCtxt* util;
-    DrawCtx* draw;
-    DictionaryCtxt* dict;
-    TransportProcs procs;
-    CommonPrefs cp;
-
-    MemPoolCtx* mpool;
-} Globals;
 
 static void
 initGlobals( Globals* globals )
@@ -61,10 +49,12 @@ initGlobals( Globals* globals )
     globals->mpool = mpool_make( "wasm" );
     globals->vtMgr = make_vtablemgr( globals->mpool );
     globals->dutil = wasm_dutil_make( globals->mpool, globals->vtMgr, globals );
-    globals->util = wasm_util_make( globals->mpool, &globals->gi, globals->dutil );
+    globals->util = wasm_util_make( globals->mpool, &globals->gi,
+                                    globals->dutil, globals );
     globals->dict = wasm_load_dict( globals->mpool );
 
-    globals->draw = wasm_draw_make( MPPARM(globals->mpool) globals->renderer );
+    globals->draw = wasm_draw_make( MPPARM(globals->mpool)
+                                    WINDOW_WIDTH, WINDOW_HEIGHT );
 }
 
 static void
@@ -92,15 +82,60 @@ makeAndDraw( Globals* globals )
     board_draw( globals->game.board, NULL );
 }
 
+static void
+checkForEvent( Globals* globals )
+{
+    XP_Bool handled;
+    XP_Bool draw = XP_FALSE;
+    SDL_Event event;
+    if ( SDL_PollEvent(&event) ) {
+        switch ( event.type ) {
+        case SDL_MOUSEBUTTONDOWN:
+            draw = event.button.button == SDL_BUTTON_LEFT
+                && board_handlePenDown( globals->game.board, NULL,
+                                        event.button.x, event.button.y,
+                                        &handled );
+            break;
+        case SDL_MOUSEBUTTONUP:
+            draw = event.button.button == SDL_BUTTON_LEFT
+                && board_handlePenUp( globals->game.board, NULL,
+                                      event.button.x, event.button.y );
+            break;
+            // SDL_MouseButtonEvent
+        default:
+            break;
+        }
+    }
+
+    // XP_LOGFF( "draw: %d", draw );
+    if ( draw ) {
+        SDL_RenderClear( globals->renderer );
+        board_draw( globals->game.board, NULL );
+        wasm_draw_render( globals->draw, globals->renderer );
+        SDL_RenderPresent( globals->renderer );
+    }
+}
+
+static void
+looper( void* closure )
+{
+    Globals* globals = (Globals*)closure;
+    checkForEvent( globals );
+}
+
 int main( int argc, char** argv )
 {
     LOG_FUNC();
     Globals globals = {0};
-    SDL_Init(SDL_INIT_VIDEO);
+    SDL_Init( SDL_INIT_EVENTS );
     TTF_Init();
+    int foo = SDL_SWSURFACE;
 
-    SDL_CreateWindowAndRenderer(600, 400, 0,
-                                &globals.window, &globals.renderer);
+    // Do I want SDL_CreateWindow() plus something else?
+
+    
+    SDL_CreateWindowAndRenderer( WINDOW_WIDTH, WINDOW_HEIGHT, 0,
+                                 &globals.window, &globals.renderer );
 
     /**
      * Set up a white background
@@ -114,9 +149,10 @@ int main( int argc, char** argv )
     /**
      * Show what is in the renderer
      */
-    SDL_RenderPresent(globals.renderer);
+    wasm_draw_render( globals.draw, globals.renderer );
+    SDL_RenderPresent( globals.renderer );
 
-    printf("you should see an image.\n");
+    emscripten_set_main_loop_arg( looper, &globals, -1, 1 );
 
     return 0;
 }

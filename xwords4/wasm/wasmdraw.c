@@ -10,8 +10,12 @@
 typedef struct _WasmDrawCtx {
     DrawCtxVTable* vtable;
     SDL_Renderer* renderer;
-
+    SDL_Surface* surface;
+    SDL_Texture* texture;
     TTF_Font* font12;
+    TTF_Font* font20;
+    TTF_Font* font36;
+    TTF_Font* font48;
 } WasmDrawCtx;
 
 static int sBonusColors[4][3] = {
@@ -59,21 +63,38 @@ frameRect( WasmDrawCtx* wdctx, const XP_Rect* rect )
 }
 
 static void
+textInRect( WasmDrawCtx* wdctx, const XP_UCHAR* text, const XP_Rect* rect )
+{
+    TTF_Font* font;
+    if ( rect->height <= 12 ) {
+        font = wdctx->font12;
+    } else if ( rect->height <= 20 ) {
+        font = wdctx->font20;
+    } else if ( rect->height <= 36 ) {
+        font = wdctx->font36;
+    } else {
+        XP_LOGFF( "unexpected height: %d", rect->height );
+        font = wdctx->font48;
+    }
+
+    SDL_Color color = { 0, 0, 0, 255 };
+    SDL_Surface* surface = TTF_RenderText_Blended( font, text, color );
+    SDL_Texture* texture = SDL_CreateTextureFromSurface( wdctx->renderer, surface );
+    SDL_FreeSurface( surface );
+
+    SDL_Rect sdlr;
+    rectXPToSDL( &sdlr, rect );
+    // SDL_QueryTexture( texture, NULL, NULL, &sdlr.w, &sdlr.h );
+    SDL_RenderCopy( wdctx->renderer, texture, NULL, &sdlr );
+    SDL_DestroyTexture( texture );
+}
+
+static void
 drawTile( WasmDrawCtx* wdctx, const XP_UCHAR* face, XP_U16 val, const XP_Rect* rect )
 {
     clearRect( wdctx, rect );
     frameRect( wdctx, rect );
-
-	SDL_Color color = {0,0,0,255};
-    SDL_Surface* text_surface = TTF_RenderText_Blended( wdctx->font12, face, color );
-    SDL_Texture* text_tex = SDL_CreateTextureFromSurface( wdctx->renderer, text_surface );
-    SDL_FreeSurface( text_surface );
-
-    SDL_Rect sdlr;
-    rectXPToSDL( &sdlr, rect );
-    SDL_QueryTexture( text_tex, NULL, NULL, &sdlr.w, &sdlr.h);
-    SDL_RenderCopy( wdctx->renderer, text_tex, NULL, &sdlr );
-    SDL_DestroyTexture( text_tex );
+    textInRect( wdctx, face, rect );
 }
 
 static void
@@ -87,6 +108,8 @@ static XP_Bool
 wasm_draw_beginDraw( DrawCtx* dctx, XWEnv xwe )
 {
     LOG_FUNC();
+    WasmDrawCtx* wdctx = (WasmDrawCtx*)dctx;
+    SDL_RenderPresent( wdctx->renderer );
     return XP_TRUE;
 }
 
@@ -174,13 +197,28 @@ wasm_draw_score_drawPlayer( DrawCtx* dctx, XWEnv xwe,
                             const XP_Rect* rOuter, 
                             XP_U16 gotPct, 
                             const DrawScoreInfo* dsi ){ LOG_FUNC(); }
+
 static void
 wasm_draw_score_pendingScore( DrawCtx* dctx, XWEnv xwe,
                               const XP_Rect* rect,
-                              XP_S16 score,
-                              XP_U16 playerNum,
-                              XP_Bool curTurn,
-                              CellFlags flags ){ LOG_FUNC(); }
+                              XP_S16 score, XP_U16 playerNum,
+                              XP_Bool curTurn, CellFlags flags )
+{
+    WasmDrawCtx* wdctx = (WasmDrawCtx*)dctx;
+    clearRect( wdctx, rect );
+
+    XP_Rect tmp = *rect;
+    tmp.height /= 2;
+    textInRect( wdctx, "Pts:", &tmp );
+    tmp.top += tmp.height;
+    XP_UCHAR buf[16];
+    if ( score >= 0 ) {
+        XP_SNPRINTF( buf, VSIZE(buf), "%.3d", score );
+    } else {
+        XP_STRNCPY( buf, "???", VSIZE(buf)  );
+    }
+    textInRect( wdctx, buf, &tmp );
+}
 
 static void
 wasm_draw_drawTimer( DrawCtx* dctx, XWEnv xwe, const XP_Rect* rect,
@@ -199,11 +237,18 @@ wasm_draw_drawCell( DrawCtx* dctx, XWEnv xwe, const XP_Rect* rect,
                     CellFlags flags )
 {
     WasmDrawCtx* wdctx = (WasmDrawCtx*)dctx;
-    if ( BONUS_NONE == bonus ) {
-        clearRect( wdctx, rect );
-    } else {
-        fillRect( wdctx, rect, sBonusColors[bonus-1] );
+    clearRect( wdctx, rect );
+
+    if ( (flags & (CELL_DRAGSRC|CELL_ISEMPTY)) != 0 ) {
+        if ( BONUS_NONE == bonus ) {
+            clearRect( wdctx, rect );
+        } else {
+            fillRect( wdctx, rect, sBonusColors[bonus-1] );
+        }
+    } else if ( !!text ) {
+        textInRect( wdctx, text, rect );
     }
+    
     frameRect( wdctx, rect );
 
     return XP_TRUE;
@@ -225,8 +270,7 @@ wasm_draw_drawTile( DrawCtx* dctx, XWEnv xwe, const XP_Rect* rect,
 {
     XP_LOGFF( "(text=%s)", text );
     WasmDrawCtx* wdctx = (WasmDrawCtx*)dctx;
-    clearRect( wdctx, rect );
-    frameRect( wdctx, rect );
+    drawTile( wdctx, text, val, rect );
     return XP_TRUE;
 }
 
@@ -242,6 +286,8 @@ wasm_draw_drawTileMidDrag( DrawCtx* dctx, XWEnv xwe,
                            CellFlags flags )
 {
     LOG_FUNC();
+    WasmDrawCtx* wdctx = (WasmDrawCtx*)dctx;
+    drawTile( wdctx, text, val, rect );
     return XP_TRUE;
 }
 #endif
@@ -274,53 +320,94 @@ static void
 wasm_draw_drawBoardArrow ( DrawCtx* dctx, XWEnv xwe,
                            const XP_Rect* rect, 
                            XWBonusType bonus, XP_Bool vert,
-                           HintAtts hintAtts, CellFlags flags)
+                           HintAtts hintAtts, CellFlags flags )
 {
     LOG_FUNC();
+    WasmDrawCtx* wdctx = (WasmDrawCtx*)dctx;
+    const XP_UCHAR* str = vert ? "|" : "-";
+    textInRect( wdctx, str, rect );
+}
+
+static void
+createSurface( WasmDrawCtx* wdctx, int width, int height )
+{
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+    uint32_t rmask = 0xff000000;
+    uint32_t gmask = 0x00ff0000;
+    uint32_t bmask = 0x0000ff00;
+    uint32_t amask = 0x000000ff;
+#else
+    uint32_t rmask = 0x000000ff;
+    uint32_t gmask = 0x0000ff00;
+    uint32_t bmask = 0x00ff0000;
+    uint32_t amask = 0xff000000;
+#endif
+    wdctx->surface = SDL_CreateRGBSurface( 0, width, height, 32,
+                                           rmask, gmask, bmask, amask );
+    wdctx->renderer = SDL_CreateSoftwareRenderer( wdctx->surface );
+    // wdctx->texture = SDL_CreateTextureFromSurface( wdctx->renderer, wdctx->surface );
+}
+
+void
+wasm_draw_render( DrawCtx* dctx, SDL_Renderer* dest )
+{
+    LOG_FUNC();
+    WasmDrawCtx* wdctx = (WasmDrawCtx*)dctx;
+
+    // SDL_RenderPresent( wdctx->renderer );
+    
+    SDL_Texture* texture =
+        SDL_CreateTextureFromSurface( dest, wdctx->surface );
+    SDL_RenderCopyEx( dest, texture, NULL, NULL, 0,
+                      NULL, SDL_FLIP_NONE );
+    SDL_DestroyTexture( texture );
 }
 
 DrawCtx*
-wasm_draw_make( MPFORMAL SDL_Renderer* renderer )
+wasm_draw_make( MPFORMAL int width, int height )
 {
     LOG_FUNC();
-    WasmDrawCtx* dctx = XP_MALLOC( mpool, sizeof(*dctx) );
-    dctx->renderer = renderer;
+    WasmDrawCtx* wdctx = XP_MALLOC( mpool, sizeof(*wdctx) );
 
-    dctx->font12 = TTF_OpenFont( "assets_dir/FreeSans.ttf", 30 );
-    XP_LOGFF( "got font: %p", dctx->font12 );
-    XP_ASSERT( !!dctx->font12 );
+    wdctx->font12 = TTF_OpenFont( "assets_dir/FreeSans.ttf", 12 );
+    XP_ASSERT( !!wdctx->font12 );
+    wdctx->font20 = TTF_OpenFont( "assets_dir/FreeSans.ttf", 20 );
+    wdctx->font36 = TTF_OpenFont( "assets_dir/FreeSans.ttf", 36 );
+    wdctx->font48 = TTF_OpenFont( "assets_dir/FreeSans.ttf", 48 );
 
-    dctx->vtable = XP_MALLOC( mpool, sizeof(*dctx->vtable) );
+    wdctx->vtable = XP_MALLOC( mpool, sizeof(*wdctx->vtable) );
 
-    SET_VTABLE_ENTRY( dctx->vtable, draw_clearRect, wasm );
-    SET_VTABLE_ENTRY( dctx->vtable, draw_dictChanged, wasm );
-    SET_VTABLE_ENTRY( dctx->vtable, draw_beginDraw, wasm );
+    SET_VTABLE_ENTRY( wdctx->vtable, draw_clearRect, wasm );
+    SET_VTABLE_ENTRY( wdctx->vtable, draw_dictChanged, wasm );
+    SET_VTABLE_ENTRY( wdctx->vtable, draw_beginDraw, wasm );
 
-    SET_VTABLE_ENTRY( dctx->vtable, draw_clearRect, wasm );
-    SET_VTABLE_ENTRY( dctx->vtable, draw_dictChanged, wasm );
-    SET_VTABLE_ENTRY( dctx->vtable, draw_beginDraw, wasm );
-    SET_VTABLE_ENTRY( dctx->vtable, draw_destroyCtxt, wasm );
-    SET_VTABLE_ENTRY( dctx->vtable, draw_endDraw, wasm );
-    SET_VTABLE_ENTRY( dctx->vtable, draw_boardBegin, wasm );
-    SET_VTABLE_ENTRY( dctx->vtable, draw_objFinished, wasm );
-    SET_VTABLE_ENTRY( dctx->vtable, draw_vertScrollBoard, wasm );
-    SET_VTABLE_ENTRY( dctx->vtable, draw_trayBegin, wasm );
-    SET_VTABLE_ENTRY( dctx->vtable, draw_scoreBegin, wasm );
-    SET_VTABLE_ENTRY( dctx->vtable, draw_measureRemText, wasm );
-    SET_VTABLE_ENTRY( dctx->vtable, draw_drawRemText, wasm );
-    SET_VTABLE_ENTRY( dctx->vtable, draw_measureScoreText, wasm );
-    SET_VTABLE_ENTRY( dctx->vtable, draw_score_drawPlayer, wasm );
-    SET_VTABLE_ENTRY( dctx->vtable, draw_score_pendingScore, wasm );
-    SET_VTABLE_ENTRY( dctx->vtable, draw_drawTimer, wasm );
-    SET_VTABLE_ENTRY( dctx->vtable, draw_drawCell, wasm );
-    SET_VTABLE_ENTRY( dctx->vtable, draw_invertCell, wasm );
-    SET_VTABLE_ENTRY( dctx->vtable, draw_drawTile, wasm );
+    SET_VTABLE_ENTRY( wdctx->vtable, draw_clearRect, wasm );
+    SET_VTABLE_ENTRY( wdctx->vtable, draw_dictChanged, wasm );
+    SET_VTABLE_ENTRY( wdctx->vtable, draw_beginDraw, wasm );
+    SET_VTABLE_ENTRY( wdctx->vtable, draw_destroyCtxt, wasm );
+    SET_VTABLE_ENTRY( wdctx->vtable, draw_endDraw, wasm );
+    SET_VTABLE_ENTRY( wdctx->vtable, draw_boardBegin, wasm );
+    SET_VTABLE_ENTRY( wdctx->vtable, draw_objFinished, wasm );
+    SET_VTABLE_ENTRY( wdctx->vtable, draw_vertScrollBoard, wasm );
+    SET_VTABLE_ENTRY( wdctx->vtable, draw_trayBegin, wasm );
+    SET_VTABLE_ENTRY( wdctx->vtable, draw_scoreBegin, wasm );
+    SET_VTABLE_ENTRY( wdctx->vtable, draw_measureRemText, wasm );
+    SET_VTABLE_ENTRY( wdctx->vtable, draw_drawRemText, wasm );
+    SET_VTABLE_ENTRY( wdctx->vtable, draw_measureScoreText, wasm );
+    SET_VTABLE_ENTRY( wdctx->vtable, draw_score_drawPlayer, wasm );
+    SET_VTABLE_ENTRY( wdctx->vtable, draw_score_pendingScore, wasm );
+    SET_VTABLE_ENTRY( wdctx->vtable, draw_drawTimer, wasm );
+    SET_VTABLE_ENTRY( wdctx->vtable, draw_drawCell, wasm );
+    SET_VTABLE_ENTRY( wdctx->vtable, draw_invertCell, wasm );
+    SET_VTABLE_ENTRY( wdctx->vtable, draw_drawTile, wasm );
 #ifdef POINTER_SUPPORT
-    SET_VTABLE_ENTRY( dctx->vtable, draw_drawTileMidDrag, wasm );
+    SET_VTABLE_ENTRY( wdctx->vtable, draw_drawTileMidDrag, wasm );
 #endif
-    SET_VTABLE_ENTRY( dctx->vtable, draw_drawTileBack, wasm );
-    SET_VTABLE_ENTRY( dctx->vtable, draw_drawTrayDivider, wasm );
-    SET_VTABLE_ENTRY( dctx->vtable, draw_drawBoardArrow, wasm );
+    SET_VTABLE_ENTRY( wdctx->vtable, draw_drawTileBack, wasm );
+    SET_VTABLE_ENTRY( wdctx->vtable, draw_drawTrayDivider, wasm );
+    SET_VTABLE_ENTRY( wdctx->vtable, draw_drawBoardArrow, wasm );
 
-    return (DrawCtx*)dctx;
+    createSurface( wdctx, width, height );
+
+    return (DrawCtx*)wdctx;
 }
