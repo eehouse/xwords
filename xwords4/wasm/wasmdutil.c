@@ -2,6 +2,7 @@
 
 #include "wasmdutil.h"
 #include "dbgutil.h"
+#include "LocalizedStrIncludes.h"
 
 static XP_U32
 wasm_dutil_getCurSeconds( XW_DUtilCtxt* XP_UNUSED(duc), XWEnv XP_UNUSED(xwe) )
@@ -13,8 +14,86 @@ wasm_dutil_getCurSeconds( XW_DUtilCtxt* XP_UNUSED(duc), XWEnv XP_UNUSED(xwe) )
 static const XP_UCHAR*
 wasm_dutil_getUserString( XW_DUtilCtxt* duc, XWEnv xwe, XP_U16 code )
 {
-    LOG_FUNC();
-    return "a string";
+    switch( code ) {
+    case STRD_REMAINING_TILES_ADD:
+        return (XP_UCHAR*)"+ %d [all remaining tiles]";
+    case STRD_UNUSED_TILES_SUB:
+        return (XP_UCHAR*)"- %d [unused tiles]";
+    case STR_COMMIT_CONFIRM:
+        return (XP_UCHAR*)"Are you sure you want to commit the current move?\n";
+    case STR_SUBMIT_CONFIRM:
+        return (XP_UCHAR*)"Submit the current move?\n";
+    case STRD_TURN_SCORE:
+        return (XP_UCHAR*)"Score for turn: %d\n";
+    case STR_BONUS_ALL:
+        return (XP_UCHAR*)"Bonus for using all tiles: 50\n";
+    case STR_PENDING_PLAYER:
+        return (XP_UCHAR*)"(remote)";
+    case STRD_TIME_PENALTY_SUB:
+        return (XP_UCHAR*)" - %d [time]";
+        /* added.... */
+    case STRD_CUMULATIVE_SCORE:
+        return (XP_UCHAR*)"Cumulative score: %d\n";
+    case STRS_TRAY_AT_START:
+        return (XP_UCHAR*)"Tray at start: %s\n";
+    case STRS_MOVE_DOWN:
+        return (XP_UCHAR*)"move (from %s down)\n";
+    case STRS_MOVE_ACROSS:
+        return (XP_UCHAR*)"move (from %s across)\n";
+    case STRS_NEW_TILES:
+        return (XP_UCHAR*)"New tiles: %s\n";
+    case STRSS_TRADED_FOR:
+        return (XP_UCHAR*)"Traded %s for %s.";
+    case STR_PASS:
+        return (XP_UCHAR*)"pass\n";
+    case STR_PHONY_REJECTED:
+        return (XP_UCHAR*)"Illegal word in move; turn lost!\n";
+
+    case STRD_ROBOT_TRADED:
+        return (XP_UCHAR*)"%d tiles traded this turn.";
+    case STR_ROBOT_MOVED:
+        return (XP_UCHAR*)"The robot \"%s\" moved:\n";
+    case STRS_REMOTE_MOVED:
+        return (XP_UCHAR*)"Remote player \"%s\" moved:\n";
+#ifndef XWFEATURE_STANDALONE_ONLY
+    case STR_LOCALPLAYERS:
+        return (XP_UCHAR*)"Local players";
+    case STR_REMOTE:
+        return (XP_UCHAR*)"Remote";
+#endif
+    case STR_TOTALPLAYERS:
+        return (XP_UCHAR*)"Total players";
+
+    case STRS_VALUES_HEADER:
+        return (XP_UCHAR*)"%s counts/values:\n";
+
+    case STRD_REMAINS_HEADER:
+        return (XP_UCHAR*)"%d tiles left in pool.";
+    case STRD_REMAINS_EXPL:
+        return (XP_UCHAR*)"%d tiles left in pool and hidden trays:\n";
+
+    case STRSD_RESIGNED:
+        return "[Resigned] %s: %d";
+    case STRSD_WINNER:
+        return "[Winner] %s: %d";
+    case STRDSD_PLACER:
+        return "[#%d] %s: %d";
+    case STR_DUP_MOVED:
+        return (XP_UCHAR*)"Duplicate turn complete. Scores:\n";
+    case STR_DUP_CLIENT_SENT:
+        return "This device has sent its moves to the host. When all players "
+            "have sent their moves it will be your turn again.";
+    case STRDD_DUP_HOST_RECEIVED:
+        return "%d of %d players have reported their moves.";
+    case STRD_DUP_TRADED:
+        return "No moves made; traded %d tiles";
+    case STRSD_DUP_ONESCORE:
+        return "%s: %d points\n";
+
+    default:
+        XP_LOGF( "%s(code=%d)", __func__, code );
+        return (XP_UCHAR*)"unknown code";
+    }
 }
 
 static const XP_UCHAR*

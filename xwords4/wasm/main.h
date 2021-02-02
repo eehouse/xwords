@@ -14,6 +14,7 @@ typedef struct _TimerState {
     time_t when;
 } TimerState;
 
+
 typedef struct _Globals {
     SDL_Window* window;
     SDL_Renderer* renderer;
@@ -34,6 +35,11 @@ typedef struct _Globals {
 
 void main_set_timer( Globals* globals, XWTimerReason why, XP_U16 when,
                      XWTimerProc proc, void* closure );
+
+typedef void (*QueryProc)(void* closure, XP_Bool confirmed);
+
+void main_query( Globals* globals, const XP_UCHAR* query,
+                 QueryProc proc, void* closure );
 
 
 #endif

@@ -51,13 +51,28 @@ wasm_util_userError( XW_UtilCtxt* uc, XWEnv xwe, UtilErrID id )
 }
 
 static void
+query_proc_notifyMove( void* closure, XP_Bool confirmed )
+{
+    if ( confirmed ) {
+        WasmUtilCtx* wuctxt = (WasmUtilCtx*)closure;
+        Globals* globals = (Globals*)wuctxt->closure;
+        if ( board_commitTurn( globals->game.board, NULL, XP_TRUE, XP_TRUE, NULL ) ) {
+            board_draw( globals->game.board, NULL );
+        }
+    }
+}
+
+static void
 wasm_util_notifyMove( XW_UtilCtxt* uc, XWEnv xwe, XWStreamCtxt* stream )
 {
     WasmUtilCtx* wuctxt = (WasmUtilCtx*)uc;
     Globals* globals = (Globals*)wuctxt->closure;
-    if ( board_commitTurn( globals->game.board, NULL, XP_TRUE, XP_TRUE, NULL ) ) {
-        board_draw( globals->game.board, NULL );
-    }
+
+    XP_U16 len = stream_getSize( stream );
+    XP_UCHAR buf[len+1];
+    stream_getBytes( stream, buf, len );
+    buf[len] = '\0';
+    main_query( globals, buf, query_proc_notifyMove, uc );
 }
 
 static void

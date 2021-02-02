@@ -33,6 +33,10 @@
 #define BDWIDTH 400
 #define BDHEIGHT 400
 
+EM_JS(bool, call_confirm, (const char* str), {
+        return confirm(UTF8ToString(str));
+});
+
 static void
 initGlobals( Globals* globals )
 {
@@ -121,6 +125,13 @@ main_set_timer( Globals* globals, XWTimerReason why, XP_U16 when,
 
     /* time_t now = getCurMS(); */
     /* timer->when = now + (1000 * when); */
+}
+
+void
+main_query( Globals* globals, const XP_UCHAR* query, QueryProc proc, void* closure )
+{
+    bool ok = call_confirm( query );
+    (*proc)( closure, ok );
 }
 
 static void
