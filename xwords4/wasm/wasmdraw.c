@@ -16,6 +16,8 @@ typedef struct _WasmDrawCtx {
     TTF_Font* font20;
     TTF_Font* font36;
     TTF_Font* font48;
+
+    int trayOwner;
 } WasmDrawCtx;
 
 static int sBonusColors[4][3] = {
@@ -23,6 +25,13 @@ static int sBonusColors[4][3] = {
     {0x00, 0x80, 0xFF},
     {0x80, 0x00, 0xFF},
     {0xFF, 0x80, 0x00},
+};
+
+static SDL_Color sPlayerColors[4] = {
+    {0x00, 0x00, 0x00, 0xFF},
+    {0xFF, 0x00, 0x00, 0xFF},
+    {0x80, 0x00, 0xFF, 0xFF},
+    {0xFF, 0x80, 0x00, 0xFF},
 };
 
 static void
@@ -37,10 +46,23 @@ rectXPToSDL( SDL_Rect* sdlr, const XP_Rect* rect )
 static void
 clearRect( WasmDrawCtx* wdctx, const XP_Rect* rect )
 {
+    Uint8 red, green, blue, alpha;
+    SDL_GetRenderDrawColor( wdctx->renderer, &red, &green, &blue, &alpha );
+    SDL_SetRenderDrawColor( wdctx->renderer, COLOR_BACK, 255 );
+
     SDL_Rect sdlr;
     rectXPToSDL( &sdlr, rect );
-    SDL_SetRenderDrawColor( wdctx->renderer, COLOR_BACK, 255 );
     SDL_RenderFillRect( wdctx->renderer, &sdlr );
+
+    SDL_SetRenderDrawColor( wdctx->renderer, red, green, blue, alpha );
+}
+
+static void
+setPlayerColor( WasmDrawCtx* wdctx, int owner )
+{
+    SDL_Color colorParts = sPlayerColors[owner];
+    SDL_SetRenderDrawColor( wdctx->renderer, colorParts.r, colorParts.g,
+                            colorParts.b, colorParts.a );
 }
 
 static void
@@ -48,9 +70,13 @@ fillRect( WasmDrawCtx* wdctx, const XP_Rect* rect, int colorParts[] )
 {
     SDL_Rect sdlr;
     rectXPToSDL( &sdlr, rect );
+    Uint8 red, green, blue, alpha;
+
+    SDL_GetRenderDrawColor( wdctx->renderer, &red, &green, &blue, &alpha );
     SDL_SetRenderDrawColor( wdctx->renderer, colorParts[0], colorParts[1],
                             colorParts[2], 255 );
     SDL_RenderFillRect( wdctx->renderer, &sdlr );
+    SDL_SetRenderDrawColor( wdctx->renderer, red, green, blue, alpha );
 }
 
 static void
@@ -58,12 +84,13 @@ frameRect( WasmDrawCtx* wdctx, const XP_Rect* rect )
 {
     SDL_Rect sdlr;
     rectXPToSDL( &sdlr, rect );
-    SDL_SetRenderDrawColor( wdctx->renderer, COLOR_BLACK, 255 );
+    // SDL_SetRenderDrawColor( wdctx->renderer, COLOR_BLACK, 255 );
     SDL_RenderDrawRect( wdctx->renderer, &sdlr );
 }
 
 static void
-textInRect( WasmDrawCtx* wdctx, const XP_UCHAR* text, const XP_Rect* rect )
+textInRect( WasmDrawCtx* wdctx, const XP_UCHAR* text, const XP_Rect* rect,
+            const SDL_Color* color )
 {
     TTF_Font* font;
     if ( rect->height <= 12 ) {
@@ -77,24 +104,36 @@ textInRect( WasmDrawCtx* wdctx, const XP_UCHAR* text, const XP_Rect* rect )
         font = wdctx->font48;
     }
 
-    SDL_Color color = { 0, 0, 0, 255 };
-    SDL_Surface* surface = TTF_RenderText_Blended( font, text, color );
+    XP_Rect tmpR = *rect;
+
+    SDL_Color black = { 0, 0, 0, 255 };
+    if ( NULL == color ) {
+        color = &black;
+    }
+    SDL_Surface* surface = TTF_RenderText_Blended( font, text, *color );
     SDL_Texture* texture = SDL_CreateTextureFromSurface( wdctx->renderer, surface );
     SDL_FreeSurface( surface );
 
+    int width, height;
+    SDL_QueryTexture( texture, NULL, NULL, &width, &height );
+    XP_LOGFF( "have w: %d; h: %d; got w: %d; h: %d",
+              tmpR.width, tmpR.height, width, height );
+    tmpR.width = width;
+
     SDL_Rect sdlr;
-    rectXPToSDL( &sdlr, rect );
-    // SDL_QueryTexture( texture, NULL, NULL, &sdlr.w, &sdlr.h );
+    rectXPToSDL( &sdlr, &tmpR );
     SDL_RenderCopy( wdctx->renderer, texture, NULL, &sdlr );
     SDL_DestroyTexture( texture );
 }
 
 static void
-drawTile( WasmDrawCtx* wdctx, const XP_UCHAR* face, XP_U16 val, const XP_Rect* rect )
+drawTile( WasmDrawCtx* wdctx, const XP_UCHAR* face, XP_U16 val,
+          int owner, const XP_Rect* rect )
 {
     clearRect( wdctx, rect );
+    // setPlayerColor( wdctx, owner );
     frameRect( wdctx, rect );
-    textInRect( wdctx, face, rect );
+    textInRect( wdctx, face, rect, &sPlayerColors[owner] );
 }
 
 static void
@@ -131,9 +170,7 @@ wasm_draw_boardBegin( DrawCtx* dctx, XWEnv xwe,
                       XP_U16 hScale, XP_U16 vScale,
                       DrawFocusState dfs )
 {
-    LOG_FUNC();
-    /* WasmDrawCtx* wdctx = (WasmDrawCtx*)dctx; */
-    /* SDL_SetRenderDrawColor( wdctx->renderer, 255, 0, 0, 0 ); */
+    // LOG_FUNC();
     return XP_TRUE;
 }
 
@@ -155,7 +192,9 @@ wasm_draw_trayBegin( DrawCtx* dctx, XWEnv xwe, const XP_Rect* rect,
                      XP_U16 owner, XP_S16 score,
                      DrawFocusState dfs )
 {
-    LOG_FUNC();
+    XP_LOGFF( "(owner=%d)", owner );
+    WasmDrawCtx* wdctx = (WasmDrawCtx*)dctx;
+    wdctx->trayOwner = owner;
     return XP_TRUE;
 }
 
@@ -166,16 +205,27 @@ wasm_draw_scoreBegin( DrawCtx* dctx, XWEnv xwe, const XP_Rect* rect,
                       XP_S16 remCount, DrawFocusState dfs )
 {
     LOG_FUNC();
+    WasmDrawCtx* wdctx = (WasmDrawCtx*)dctx;
+    clearRect( wdctx, rect );
     return XP_TRUE;
 }
 
 static XP_Bool
-wasm_draw_measureRemText( DrawCtx* dctx, XWEnv xwe, const XP_Rect* r,
+wasm_draw_measureRemText( DrawCtx* dctx, XWEnv xwe, const XP_Rect* rect,
                           XP_S16 nTilesLeft,
                           XP_U16* width, XP_U16* height )
 {
     LOG_FUNC();
-    return XP_FALSE;
+    XP_Bool drawIt = 0 <= nTilesLeft;
+    if ( drawIt ) {
+        XP_UCHAR buf[4];
+        XP_SNPRINTF( buf, VSIZE(buf), "%d", nTilesLeft );
+
+        WasmDrawCtx* wdctx = (WasmDrawCtx*)dctx;
+        textInRect( wdctx, buf, rect, NULL );
+        *width = *height = rect->height;
+    }
+    return drawIt;
 }
 
 static void
@@ -188,15 +238,26 @@ wasm_draw_drawRemText( DrawCtx* dctx, XWEnv xwe, const XP_Rect* rInner,
 
 static void
 wasm_draw_measureScoreText( DrawCtx* dctx, XWEnv xwe,
-                            const XP_Rect* r, 
+                            const XP_Rect* rect, 
                             const DrawScoreInfo* dsi,
-                            XP_U16* width, XP_U16* height ){ LOG_FUNC(); }
+                            XP_U16* width, XP_U16* height )
+{
+    LOG_FUNC();
+    *width = rect->width / 2;
+    *height = rect->height;
+}
+
 static void
 wasm_draw_score_drawPlayer( DrawCtx* dctx, XWEnv xwe,
                             const XP_Rect* rInner, 
                             const XP_Rect* rOuter, 
                             XP_U16 gotPct, 
-                            const DrawScoreInfo* dsi ){ LOG_FUNC(); }
+                            const DrawScoreInfo* dsi )
+{
+    XP_LOGFF( "(playerNum: %d)", dsi->playerNum );
+    WasmDrawCtx* wdctx = (WasmDrawCtx*)dctx;
+    textInRect( wdctx, dsi->name, rInner, &sPlayerColors[dsi->playerNum] );
+}
 
 static void
 wasm_draw_score_pendingScore( DrawCtx* dctx, XWEnv xwe,
@@ -209,7 +270,7 @@ wasm_draw_score_pendingScore( DrawCtx* dctx, XWEnv xwe,
 
     XP_Rect tmp = *rect;
     tmp.height /= 2;
-    textInRect( wdctx, "Pts:", &tmp );
+    textInRect( wdctx, "Pts:", &tmp, NULL );
     tmp.top += tmp.height;
     XP_UCHAR buf[16];
     if ( score >= 0 ) {
@@ -217,7 +278,7 @@ wasm_draw_score_pendingScore( DrawCtx* dctx, XWEnv xwe,
     } else {
         XP_STRNCPY( buf, "???", VSIZE(buf)  );
     }
-    textInRect( wdctx, buf, &tmp );
+    textInRect( wdctx, buf, &tmp, NULL );
 }
 
 static void
@@ -246,7 +307,7 @@ wasm_draw_drawCell( DrawCtx* dctx, XWEnv xwe, const XP_Rect* rect,
             fillRect( wdctx, rect, sBonusColors[bonus-1] );
         }
     } else if ( !!text ) {
-        textInRect( wdctx, text, rect );
+        textInRect( wdctx, text, rect, NULL );
     }
     
     frameRect( wdctx, rect );
@@ -270,7 +331,7 @@ wasm_draw_drawTile( DrawCtx* dctx, XWEnv xwe, const XP_Rect* rect,
 {
     XP_LOGFF( "(text=%s)", text );
     WasmDrawCtx* wdctx = (WasmDrawCtx*)dctx;
-    drawTile( wdctx, text, val, rect );
+    drawTile( wdctx, text, val, wdctx->trayOwner, rect );
     return XP_TRUE;
 }
 
@@ -287,7 +348,7 @@ wasm_draw_drawTileMidDrag( DrawCtx* dctx, XWEnv xwe,
 {
     LOG_FUNC();
     WasmDrawCtx* wdctx = (WasmDrawCtx*)dctx;
-    drawTile( wdctx, text, val, rect );
+    drawTile( wdctx, text, val, wdctx->trayOwner, rect );
     return XP_TRUE;
 }
 #endif
@@ -298,7 +359,7 @@ wasm_draw_drawTileBack( DrawCtx* dctx, XWEnv xwe, const XP_Rect* rect,
 {
     LOG_FUNC();
     WasmDrawCtx* wdctx = (WasmDrawCtx*)dctx;
-    drawTile( wdctx, "?", -1, rect );
+    drawTile( wdctx, "?", -1, wdctx->trayOwner, rect );
     return XP_TRUE;
 }
 
@@ -325,7 +386,7 @@ wasm_draw_drawBoardArrow ( DrawCtx* dctx, XWEnv xwe,
     LOG_FUNC();
     WasmDrawCtx* wdctx = (WasmDrawCtx*)dctx;
     const XP_UCHAR* str = vert ? "|" : "-";
-    textInRect( wdctx, str, rect );
+    textInRect( wdctx, str, rect, NULL );
 }
 
 static void
