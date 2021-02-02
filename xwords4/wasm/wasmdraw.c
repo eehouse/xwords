@@ -84,7 +84,7 @@ frameRect( WasmDrawCtx* wdctx, const XP_Rect* rect )
 {
     SDL_Rect sdlr;
     rectXPToSDL( &sdlr, rect );
-    // SDL_SetRenderDrawColor( wdctx->renderer, COLOR_BLACK, 255 );
+    SDL_SetRenderDrawColor( wdctx->renderer, COLOR_BLACK, 255 );
     SDL_RenderDrawRect( wdctx->renderer, &sdlr );
 }
 
@@ -118,7 +118,8 @@ textInRect( WasmDrawCtx* wdctx, const XP_UCHAR* text, const XP_Rect* rect,
     SDL_QueryTexture( texture, NULL, NULL, &width, &height );
     XP_LOGFF( "have w: %d; h: %d; got w: %d; h: %d",
               tmpR.width, tmpR.height, width, height );
-    tmpR.width = width;
+    tmpR.width = XP_MIN( width, tmpR.width );
+    tmpR.height = XP_MIN( height, tmpR.height );
 
     SDL_Rect sdlr;
     rectXPToSDL( &sdlr, &tmpR );
@@ -127,13 +128,27 @@ textInRect( WasmDrawCtx* wdctx, const XP_UCHAR* text, const XP_Rect* rect,
 }
 
 static void
-drawTile( WasmDrawCtx* wdctx, const XP_UCHAR* face, XP_U16 val,
+drawTile( WasmDrawCtx* wdctx, const XP_UCHAR* face, int val,
           int owner, const XP_Rect* rect )
 {
     clearRect( wdctx, rect );
-    // setPlayerColor( wdctx, owner );
     frameRect( wdctx, rect );
-    textInRect( wdctx, face, rect, &sPlayerColors[owner] );
+
+    XP_Rect tmp = *rect;
+    tmp.width = 3 * tmp.width / 4;
+    tmp.height = 3 * tmp.height / 4;
+    textInRect( wdctx, face, &tmp, &sPlayerColors[owner] );
+
+    if ( 0 <= val ) {
+        XP_Rect tmp = *rect;
+        tmp.width = tmp.width / 4;
+        tmp.left += tmp.width * 3;
+        tmp.height = tmp.height / 4;
+        tmp.top += tmp.height * 3;
+        XP_UCHAR buf[4];
+        XP_SNPRINTF( buf, VSIZE(buf), "%d", val );
+        textInRect( wdctx, buf, &tmp, &sPlayerColors[owner] );
+    }
 }
 
 static void
@@ -256,7 +271,9 @@ wasm_draw_score_drawPlayer( DrawCtx* dctx, XWEnv xwe,
 {
     XP_LOGFF( "(playerNum: %d)", dsi->playerNum );
     WasmDrawCtx* wdctx = (WasmDrawCtx*)dctx;
-    textInRect( wdctx, dsi->name, rInner, &sPlayerColors[dsi->playerNum] );
+    XP_UCHAR buf[32];
+    XP_SNPRINTF( buf, VSIZE(buf), "%s: %d", dsi->name, dsi->totalScore );
+    textInRect( wdctx, buf, rInner, &sPlayerColors[dsi->playerNum] );
 }
 
 static void

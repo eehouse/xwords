@@ -30,8 +30,8 @@
 
 #define WINDOW_WIDTH 400
 #define WINDOW_HEIGHT 600
-#define BDWIDTH 330
-#define BDHEIGHT 330
+#define BDWIDTH 400
+#define BDHEIGHT 400
 
 static void
 initGlobals( Globals* globals )
@@ -115,12 +115,12 @@ void
 main_set_timer( Globals* globals, XWTimerReason why, XP_U16 when,
                 XWTimerProc proc, void* closure )
 {
-    TimerState* timer = &globals->timers[why];
-    timer->proc = proc;
-    timer->closure = closure;
+    /* TimerState* timer = &globals->timers[why]; */
+    /* timer->proc = proc; */
+    /* timer->closure = closure; */
 
-    time_t now = getCurMS();
-    timer->when = now + (1000 * when);
+    /* time_t now = getCurMS(); */
+    /* timer->when = now + (1000 * when); */
 }
 
 static void
@@ -128,21 +128,26 @@ checkForEvent( Globals* globals )
 {
     XP_Bool handled;
     XP_Bool draw = XP_FALSE;
+    BoardCtxt* board = globals->game.board;
+
     SDL_Event event;
     if ( SDL_PollEvent(&event) ) {
         switch ( event.type ) {
         case SDL_MOUSEBUTTONDOWN:
             draw = event.button.button == SDL_BUTTON_LEFT
-                && board_handlePenDown( globals->game.board, NULL,
+                && board_handlePenDown( board, NULL,
                                         event.button.x, event.button.y,
                                         &handled );
             break;
         case SDL_MOUSEBUTTONUP:
             draw = event.button.button == SDL_BUTTON_LEFT
-                && board_handlePenUp( globals->game.board, NULL,
+                && board_handlePenUp( board, NULL,
                                       event.button.x, event.button.y );
             break;
-            // SDL_MouseButtonEvent
+        case SDL_MOUSEMOTION:
+            draw = board_handlePenMove( board, NULL,
+                                        event.motion.x, event.motion.y );
+            break;
         default:
             break;
         }
