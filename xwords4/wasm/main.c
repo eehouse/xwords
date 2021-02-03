@@ -25,6 +25,9 @@
 #include <emscripten.h>
 #endif
 
+/* Might want to pass this from the Makefile */
+#define NAKED_MODE 1
+
 #define WASM_BOARD_LEFT 0
 #define WASM_HOR_SCORE_TOP 0
 
@@ -220,7 +223,11 @@ looper( void* closure )
 
 }
 
+#ifdef NAKED_MODE
+void mainf()
+#else
 int main( int argc, char** argv )
+#endif
 {
     LOG_FUNC();
     Globals globals = {0};
@@ -251,5 +258,7 @@ int main( int argc, char** argv )
 
     emscripten_set_main_loop_arg( looper, &globals, -1, 1 );
 
+#ifndef NAKED_MODE
     return 0;
+#endif
 }

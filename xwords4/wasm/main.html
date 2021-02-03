@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en-us">
+    <head>
+        <meta charset="utf-8">
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+        <style>
+            canvas.emscripten {
+                border: 0px none;
+				margin-left:auto;
+				margin-right:auto;
+				display:block;
+            }
+            p.startButton {
+                text-align: center;
+				background-color: #4c7aff;
+				font-family: Sans-Serif;
+				padding: 10px;
+			}
+			#loadingDiv {
+				text-align: center;
+			}
+        </style>
+    </head>
+
+    <body>
+        <div id="loadingDiv">CrossWords is loading...</div>
+        <canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()"></canvas>
+        <div style="width:200px; margin-left:auto; margin-right:auto">
+            <p class="startButton" onclick="start_function(this)">Click to start</p>
+            <p id="fullScreenButton" onclick="Module.requestFullScreen(true, false)">Click for full-screen</p>
+        </div>
+
+        <script type='text/javascript'>
+            var Module = {
+				onRuntimeInitialized: function() {
+					var e = document.getElementById('loadingDiv');
+					e.style.visibility = 'hidden';
+				}, 
+				canvas: (function() {
+					var canvas = document.getElementById('canvas');
+					return canvas;
+				})()
+            };
+
+            var start_function = function(o) {
+				o.style.visibility = "hidden";
+				document.getElementById("fullScreenButton").style.visibility="visible";
+				Module.ccall('mainf', null, null);
+            };
+        </script>
+
+        <script>
+            (function() {
+				var memoryInitializer = 'main.js.mem';
+				if (typeof Module['locateFile'] === 'function') {
+					memoryInitializer = Module['locateFile'](memoryInitializer);
+				} else if (Module['memoryInitializerPrefixURL']) {
+					memoryInitializer = Module['memoryInitializerPrefixURL'] + memoryInitializer;
+				}
+				var xhr = Module['memoryInitializerRequest'] = new XMLHttpRequest();
+				xhr.open('GET', memoryInitializer, true);
+				xhr.responseType = 'arraybuffer';
+				xhr.send(null);
+			})();
+
+            var script = document.createElement('script');
+            script.src = "main.js";
+            document.body.appendChild(script);
+        </script>
+    </body>
+</html>
+
+

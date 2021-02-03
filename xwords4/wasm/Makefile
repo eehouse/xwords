@@ -22,12 +22,17 @@ DEFINES += -DSTREAM_VERS_HASHSTREAM
 DEFINES += -DXWFEATURE_KNOWNPLAYERS
 DEFINES += -DXWFEATURE_DICTSANITY
 DEFINES += -DPOINTER_SUPPORT
+DEFINES += -O2
 
-all: main.html
+OUTPUTS = main.html main.js main.js.mem main.data
 
-main.html: ${INPUTS} Makefile
+all: main.js
+
+main.js: ${INPUTS} Makefile
 	emcc $(DEFINES) -I . -I ../common -I ../relay -s USE_SDL=2 \
-		--preload-file assets_dir \
+		--preload-file assets_dir --memory-init-file 1 \
 		-s USE_SDL_TTF=2 -s USE_SDL_IMAGE=2 -s SDL2_IMAGE_FORMATS='["png"]' \
+		-s EXPORTED_FUNCTIONS='["_mainf"]' -s WASM=0 \
+		-s "EXTRA_EXPORTED_RUNTIME_METHODS=['ccall']" \
 		${INPUTS} -o $@
-	scp main.html main.js main.wasm main.data pi4:/tmp
+	scp ${OUTPUTS} pi4:/tmp
