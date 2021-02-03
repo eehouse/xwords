@@ -293,7 +293,9 @@ parseCommon( DictionaryCtxt* dctx, XWEnv xwe, const XP_U8** ptrp, const XP_U8* e
             if ( NULL == dctx->md5Sum ) {
                 dctx->md5Sum = copyString( dctx->mpool, checksum );
             } else {
+#ifndef PLATFORM_WASM
                 XP_ASSERT( 0 == XP_STRCMP( dctx->md5Sum, checksum ) );
+#endif
             }
         }
 

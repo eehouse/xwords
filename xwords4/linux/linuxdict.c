@@ -71,7 +71,7 @@ linux_dictionary_make( MPFORMAL XWEnv xwe, const LaunchParams* params,
     if ( !result ) {
         result = (LinuxDictionaryCtxt*)XP_CALLOC(mpool, sizeof(*result));
 
-        dict_super_init( &result->super );
+        dict_super_init( MPPARM(mpool) &result->super );
         MPASSIGN( result->super.mpool, mpool );
         result->super.destructor = linux_dictionary_destroy;
 

@@ -277,7 +277,7 @@ and_dictionary_make_empty( MPFORMAL JNIUtilCtxt* jniutil )
 #ifdef DEBUG
     anddict->dbgid = rand();
 #endif
-    dict_super_init( (DictionaryCtxt*)anddict );
+    dict_super_init( MPPARM(mpool) (DictionaryCtxt*)anddict );
     MPASSIGN( anddict->super.mpool, mpool );
 
     LOG_RETURNF( "%p", anddict );

@@ -21,6 +21,8 @@
 #ifndef _DEVUTIL_H_
 #define _DEVUTIL_H_
 
+#include <pthread.h>
+
 #include "comtypes.h"
 #include "xwrelay.h"
 #include "vtabmgr.h"
