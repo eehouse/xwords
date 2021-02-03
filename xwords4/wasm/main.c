@@ -36,21 +36,29 @@
 EM_JS(bool, call_confirm, (const char* str), {
         return confirm(UTF8ToString(str));
 });
+EM_JS(void, call_alert, (const char* str), {
+        alert(UTF8ToString(str));
+});
 
 static void
 initGlobals( Globals* globals )
 {
     globals->cp.showBoardArrow = XP_TRUE;
     globals->cp.allowPeek = XP_TRUE;
+    globals->cp.showRobotScores = XP_TRUE;
+    globals->cp.sortNewTiles = XP_TRUE;
 
     globals->gi.serverRole = SERVER_STANDALONE;
+    globals->gi.phoniesAction = PHONIES_WARN;
+
     globals->gi.nPlayers = 2;
     globals->gi.boardSize = 15;
     globals->gi.dictName = "myDict";
-    globals->gi.players[0].name = "Eric";
+    globals->gi.players[0].name = "You";
     globals->gi.players[0].isLocal = XP_TRUE;
-    globals->gi.players[1].name = "Kati";
+    globals->gi.players[1].name = "Robot";
     globals->gi.players[1].isLocal = XP_TRUE;
+    globals->gi.players[1].robotIQ = 99;
 
     globals->mpool = mpool_make( "wasm" );
     globals->vtMgr = make_vtablemgr( globals->mpool );
@@ -99,20 +107,33 @@ getCurMS()
     return result;
 }
 
-static void
+static XP_Bool
 checkForTimers( Globals* globals )
 {
+    XP_Bool draw = XP_FALSE;
     time_t now = getCurMS();
     for ( XWTimerReason why = 0; why < NUM_TIMERS_PLUS_ONE; ++why ) {
         TimerState* timer = &globals->timers[why];
         XWTimerProc proc = timer->proc;
         if ( !!proc && now >= timer->when ) {
             timer->proc = NULL;
-            XP_LOGFF( "timer fired (why=%d): calling proc", why );
             (*proc)( timer->closure, NULL, why );
-            XP_LOGFF( "back from proc" );
+            draw = XP_TRUE;     /* just in case */
         }
     }
+    return draw;
+}
+
+static XP_Bool
+checkForIdle( Globals* globals )
+{
+    XP_Bool draw = XP_FALSE;
+    IdleProc proc = globals->idleProc;
+    if ( !!proc ) {
+        globals->idleProc = NULL;
+        draw = (*proc)(globals->idleClosure);
+    }
+    return draw;
 }
 
 void
@@ -134,7 +155,21 @@ main_query( Globals* globals, const XP_UCHAR* query, QueryProc proc, void* closu
     (*proc)( closure, ok );
 }
 
-static void
+void
+main_alert( Globals* globals, const XP_UCHAR* msg )
+{
+    call_alert( msg );
+}
+
+void
+main_set_idle( Globals* globals, IdleProc proc, void* closure )
+{
+    XP_ASSERT( !globals->idleProc );
+    globals->idleProc = proc;
+    globals->idleClosure = closure;
+}
+
+static XP_Bool
 checkForEvent( Globals* globals )
 {
     XP_Bool handled;
@@ -165,20 +200,24 @@ checkForEvent( Globals* globals )
     }
 
     // XP_LOGFF( "draw: %d", draw );
-    if ( draw ) {
-        SDL_RenderClear( globals->renderer );
-        board_draw( globals->game.board, NULL );
-        wasm_draw_render( globals->draw, globals->renderer );
-        SDL_RenderPresent( globals->renderer );
-    }
+    return draw;
 }
 
 static void
 looper( void* closure )
 {
     Globals* globals = (Globals*)closure;
-    checkForTimers( globals );
-    checkForEvent( globals );
+    XP_Bool draw = checkForTimers( globals );
+    draw = checkForIdle( globals ) || draw;
+    draw = checkForEvent( globals ) || draw;
+
+    if ( draw ) {
+        SDL_RenderClear( globals->renderer );
+        board_draw( globals->game.board, NULL );
+        wasm_draw_render( globals->draw, globals->renderer );
+        SDL_RenderPresent( globals->renderer );
+    }
+
 }
 
 int main( int argc, char** argv )

@@ -2,6 +2,7 @@
 #include "util.h"
 #include "comtypes.h"
 #include "main.h"
+#include "dbgutil.h"
 
 typedef struct _WasmUtilCtx {
     XW_UtilCtxt super;
@@ -44,10 +45,159 @@ wasm_util_getSquareBonus( XW_UtilCtxt* uc, XWEnv xwe, XP_U16 boardSize,
     return s_buttsBoard[row][col];
 }
 
+static const XP_UCHAR*
+wasm_getErrString( UtilErrID id, XP_Bool* silent )
+{
+    *silent = XP_FALSE;
+    const char* message = NULL;
+
+    switch( (int)id ) {
+    case ERR_TILES_NOT_IN_LINE:
+        message = "All tiles played must be in a line.";
+        break;
+    case ERR_NO_EMPTIES_IN_TURN:
+        message = "Empty squares cannot separate tiles played.";
+        break;
+
+    case ERR_TOO_FEW_TILES_LEFT_TO_TRADE:
+        message = "Too few tiles left to trade.";
+        break;
+
+    case ERR_TWO_TILES_FIRST_MOVE:
+        message = "Must play two or more pieces on the first move.";
+        break;
+    case ERR_TILES_MUST_CONTACT:
+        message = "New pieces must contact others already in place (or "
+            "the middle square on the first move).";
+        break;
+    case ERR_NOT_YOUR_TURN:
+        message = "You can't do that; it's not your turn!";
+        break;
+    case ERR_NO_PEEK_ROBOT_TILES:
+        message = "No peeking at the robot's tiles!";
+        break;
+
+#ifndef XWFEATURE_STANDALONE_ONLY
+    case ERR_NO_PEEK_REMOTE_TILES:
+        message = "No peeking at remote players' tiles!";
+        break;
+    case ERR_REG_UNEXPECTED_USER:
+        message = "Refused attempt to register unexpected user[s].";
+        break;
+    case ERR_SERVER_DICT_WINS:
+        message = "Conflict between Host and Guest dictionaries; Host wins.";
+        XP_WARNF( "GTK may have problems here." );
+        break;
+    case ERR_REG_SERVER_SANS_REMOTE:
+        message = "At least one player must be marked remote for a game "
+            "started as Host.";
+        break;
+#endif
+
+    case ERR_NO_EMPTY_TRADE:
+        message = "No tiles selected; trade cancelled.";
+        break;
+
+    case ERR_TOO_MANY_TRADE:
+        message = "More tiles selected than remain in pool.";
+        break;
+
+    case ERR_NO_HINT_FOUND:
+        message = "Unable to suggest any moves.";
+        break;
+
+    case ERR_CANT_UNDO_TILEASSIGN:
+        message = "Tile assignment can't be undone.";
+        break;
+
+    case ERR_CANT_HINT_WHILE_DISABLED:
+        message = "The hint feature is disabled for this game.  Enable "
+            "it for a new game using the Preferences dialog.";
+        break;
+
+/*     case INFO_REMOTE_CONNECTED: */
+/*         message = "Another device has joined the game"; */
+/*         break; */
+
+    case ERR_RELAY_BASE + XWRELAY_ERROR_LOST_OTHER:
+        *silent = XP_TRUE;
+        message = "XWRELAY_ERROR_LOST_OTHER";
+        break;
+
+    case ERR_RELAY_BASE + XWRELAY_ERROR_TIMEOUT:
+        message = "The relay timed you out; other players "
+            "have left or never showed up.";
+        break;
+
+    case ERR_RELAY_BASE + XWRELAY_ERROR_HEART_YOU:
+        message = "You were disconnected from relay because it didn't "
+            "hear from you in too long.";
+        break;
+    case ERR_RELAY_BASE + XWRELAY_ERROR_HEART_OTHER:
+/*         *silent = XP_TRUE; */
+        message = "The relay has lost contact with a device in this game.";
+        break;
+
+    case ERR_RELAY_BASE + XWRELAY_ERROR_OLDFLAGS:
+        message = "You need to upgrade your copy of Crosswords.";
+        break;
+        
+    case ERR_RELAY_BASE + XWRELAY_ERROR_SHUTDOWN:
+        message = "Relay disconnected you to shut down (and probably reboot).";
+        break;
+
+    case ERR_RELAY_BASE + XWRELAY_ERROR_BADPROTO:
+        message = "XWRELAY_ERROR_BADPROTO";
+        break;
+    case ERR_RELAY_BASE + XWRELAY_ERROR_RELAYBUSY:
+        message = "XWRELAY_ERROR_RELAYBUSY";
+        break;
+
+    case ERR_RELAY_BASE + XWRELAY_ERROR_OTHER_DISCON:
+        *silent = XP_TRUE;      /* happens all the time, and shouldn't matter */
+        message = "XWRELAY_ERROR_OTHER_DISCON";
+        break;
+
+    case ERR_RELAY_BASE + XWRELAY_ERROR_NO_ROOM:
+        message = "No such room.  Has the host connected yet to reserve it?";
+        break;
+    case ERR_RELAY_BASE + XWRELAY_ERROR_DUP_ROOM:
+        message = "That room is reserved by another host.  Rename your room, "
+            "become a guest, or try again in a few minutes.";
+        break;
+
+    case ERR_RELAY_BASE + XWRELAY_ERROR_TOO_MANY:
+        message = "You tried to supply more players than the host expected.";
+        break;
+
+    case ERR_RELAY_BASE + XWRELAY_ERROR_DELETED:
+        message = "Game deleted .";
+        break;
+    case ERR_RELAY_BASE + XWRELAY_ERROR_NORECONN:
+        message = "Cannot reconnect.";
+        break;
+    case ERR_RELAY_BASE + XWRELAY_ERROR_DEADGAME:
+        message = "Game is listed as dead on relay.";
+        break;
+
+    default:
+        XP_LOGF( "no code for error: %d", id );
+        message = "<unrecognized error code reported>";
+    }
+
+    return (XP_UCHAR*)message;
+}
+
 static void
 wasm_util_userError( XW_UtilCtxt* uc, XWEnv xwe, UtilErrID id )
 {
-    LOG_FUNC();
+    WasmUtilCtx* wuctxt = (WasmUtilCtx*)uc;
+    Globals* globals = (Globals*)wuctxt->closure;
+    XP_Bool silent;
+    const XP_UCHAR* str = wasm_getErrString( id, &silent );
+    if ( !silent ) {
+        main_alert( globals, str );
+    }
 }
 
 static void
@@ -81,6 +231,7 @@ wasm_util_notifyTrade( XW_UtilCtxt* uc, XWEnv xwe, const XP_UCHAR** tiles,
 {
     LOG_FUNC();
 }
+
 static void
 wasm_util_notifyPickTileBlank( XW_UtilCtxt* uc, XWEnv xwe, XP_U16 playerNum,
                                         XP_U16 col, XP_U16 row,
@@ -92,9 +243,9 @@ wasm_util_notifyPickTileBlank( XW_UtilCtxt* uc, XWEnv xwe, XP_U16 playerNum,
 
 static void
 wasm_util_informNeedPickTiles( XW_UtilCtxt* uc, XWEnv xwe, XP_Bool isInitial,
-                                        XP_U16 player, XP_U16 nToPick,
-                                        XP_U16 nFaces, const XP_UCHAR** faces,
-                                        const XP_U16* counts )
+                               XP_U16 player, XP_U16 nToPick,
+                               XP_U16 nFaces, const XP_UCHAR** faces,
+                               const XP_U16* counts )
 {
     LOG_FUNC();
 }
@@ -136,9 +287,17 @@ wasm_util_notifyDupStatus( XW_UtilCtxt* uc, XWEnv xwe, XP_Bool amHost,
 
 static void
 wasm_util_informMove( XW_UtilCtxt* uc, XWEnv xwe, XP_S16 turn, 
-                               XWStreamCtxt* expl, XWStreamCtxt* words )
+                      XWStreamCtxt* expl, XWStreamCtxt* words )
 {
-    LOG_FUNC();
+    XWStreamCtxt* useMe = expl; /*!!words ? words : expl;*/
+    XP_U16 len = stream_getSize( useMe );
+    XP_UCHAR buf[len+1];
+    stream_getBytes( useMe, buf, len );
+    buf[len] = '\0';
+
+    WasmUtilCtx* wuctxt = (WasmUtilCtx*)uc;
+    Globals* globals = (Globals*)wuctxt->closure;
+    main_alert( globals, buf );
 }
 
 static void
@@ -160,13 +319,16 @@ wasm_util_informNetDict( XW_UtilCtxt* uc, XWEnv xwe, XP_LangCode lang,
 static void
 wasm_util_notifyGameOver( XW_UtilCtxt* uc, XWEnv xwe, XP_S16 quitter )
 {
-    LOG_FUNC();
+    WasmUtilCtx* wuctxt = (WasmUtilCtx*)uc;
+    Globals* globals = (Globals*)wuctxt->closure;
+    main_alert( globals, "Game over" );
 }
 
-static XP_Bool wasm_util_engineProgressCallback( XW_UtilCtxt* uc, XWEnv xwe )
+static XP_Bool
+wasm_util_engineProgressCallback( XW_UtilCtxt* uc, XWEnv xwe )
 {
-    LOG_FUNC();
-    return XP_FALSE;
+    // LOG_RETURN_VOID();
+    return XP_TRUE;
 }
 
 static void
@@ -186,10 +348,20 @@ wasm_util_clearTimer( XW_UtilCtxt* uc, XWEnv xwe, XWTimerReason why )
     LOG_FUNC();
 }
 
+static XP_Bool
+on_idle( void* closure )
+{
+    WasmUtilCtx* wuctxt = (WasmUtilCtx*)closure;
+    Globals* globals = (Globals*)wuctxt->closure;
+    return server_do( globals->game.server, NULL );
+}
+
 static void
 wasm_util_requestTime( XW_UtilCtxt* uc, XWEnv xwe )
 {
-    LOG_FUNC();
+    WasmUtilCtx* wuctxt = (WasmUtilCtx*)uc;
+    Globals* globals = (Globals*)wuctxt->closure;
+    main_set_idle( globals, on_idle, wuctxt );
 }
 
 static XP_Bool
@@ -208,20 +380,38 @@ wasm_util_makeEmptyDict( XW_UtilCtxt* uc, XWEnv xwe )
 
 static void
 wasm_util_notifyIllegalWords( XW_UtilCtxt* uc, XWEnv xwe, BadWordInfo* bwi,
-                                       XP_U16 turn, XP_Bool turnLost )
+                              XP_U16 turn, XP_Bool turnLost )
+{
+    XP_UCHAR words[256];
+    int offset = 0;
+
+    for ( int ii = 0; ;  ) {
+        offset += XP_SNPRINTF( &words[offset], VSIZE(words) - offset, "%s",
+                               bwi->words[ii] );
+        if ( ++ii >= bwi->nWords ) {
+            break;
+        }
+        offset += XP_SNPRINTF( &words[offset], VSIZE(words) - offset, ", " );
+    }
+    
+    XP_UCHAR buf[256];
+    XP_SNPRINTF( buf, VSIZE(buf), "Word[s] \"%s\" not in the current "
+                 "dictionary (%s). Use anyway?", words, bwi->dictName );
+
+    WasmUtilCtx* wuctxt = (WasmUtilCtx*)uc;
+    Globals* globals = (Globals*)wuctxt->closure;
+    main_query( globals, buf, query_proc_notifyMove, uc );
+}
+
+static void
+wasm_util_remSelected( XW_UtilCtxt* uc, XWEnv xwe )
 {
     LOG_FUNC();
 }
 
 static void
-wasm_util_remSelected(XW_UtilCtxt* uc, XWEnv xwe)
-{
-    LOG_FUNC();
-}
-
-static void
-wasm_util_timerSelected(XW_UtilCtxt* uc, XWEnv xwe, XP_Bool inDuplicateMode,
-                                 XP_Bool canPause)
+wasm_util_timerSelected( XW_UtilCtxt* uc, XWEnv xwe, XP_Bool inDuplicateMode,
+                         XP_Bool canPause )
 {
     LOG_FUNC();
 }
@@ -317,7 +507,6 @@ wasm_util_make( MPFORMAL CurGameInfo* gi, XW_DUtilCtxt* dctxt, void* closure )
     SET_VTABLE_ENTRY( wuctxt->super.vtable, util_userError, wasm );
     SET_VTABLE_ENTRY( wuctxt->super.vtable, util_makeStreamFromAddr, wasm );
     SET_VTABLE_ENTRY( wuctxt->super.vtable, util_getSquareBonus, wasm );
-    SET_VTABLE_ENTRY( wuctxt->super.vtable, util_userError, wasm );
 
     SET_VTABLE_ENTRY( wuctxt->super.vtable, util_notifyMove, wasm );
     SET_VTABLE_ENTRY( wuctxt->super.vtable, util_notifyTrade, wasm );
@@ -334,6 +523,7 @@ wasm_util_make( MPFORMAL CurGameInfo* gi, XW_DUtilCtxt* dctxt, void* closure )
     SET_VTABLE_ENTRY( wuctxt->super.vtable, util_informUndo, wasm );
     SET_VTABLE_ENTRY( wuctxt->super.vtable, util_informNetDict, wasm );
     SET_VTABLE_ENTRY( wuctxt->super.vtable, util_notifyGameOver, wasm );
+    SET_VTABLE_ENTRY( wuctxt->super.vtable, util_engineProgressCallback, wasm );
 #ifdef XWFEATURE_HILITECELL
     SET_VTABLE_ENTRY( wuctxt->super.vtable, util_hiliteCell, wasm );
 #endif
@@ -358,6 +548,9 @@ wasm_util_make( MPFORMAL CurGameInfo* gi, XW_DUtilCtxt* dctxt, void* closure )
     SET_VTABLE_ENTRY( wuctxt->super.vtable, util_informWordsBlocked, wasm );
     SET_VTABLE_ENTRY( wuctxt->super.vtable, util_showChat, wasm );
     SET_VTABLE_ENTRY( wuctxt->super.vtable, util_getDevUtilCtxt, wasm );
+
+    size_t sizeInBytes = sizeof(*wuctxt->super.vtable);
+    assertTableFull( wuctxt->super.vtable, sizeInBytes, "wasmutilctx" );
 
     LOG_RETURNF( "%p", wuctxt );
     return (XW_UtilCtxt*)wuctxt;

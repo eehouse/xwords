@@ -1,5 +1,6 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
+#include <SDL2/SDL_image.h>
 
 #include "comtypes.h"
 #include "wasmdraw.h"
@@ -16,6 +17,10 @@ typedef struct _WasmDrawCtx {
     TTF_Font* font20;
     TTF_Font* font36;
     TTF_Font* font48;
+
+    SDL_Surface* arrowDown;
+    SDL_Surface* arrowRight;
+    SDL_Surface* origin;
 
     int trayOwner;
 } WasmDrawCtx;
@@ -116,13 +121,23 @@ textInRect( WasmDrawCtx* wdctx, const XP_UCHAR* text, const XP_Rect* rect,
 
     int width, height;
     SDL_QueryTexture( texture, NULL, NULL, &width, &height );
-    XP_LOGFF( "have w: %d; h: %d; got w: %d; h: %d",
-              tmpR.width, tmpR.height, width, height );
+    /* XP_LOGFF( "have w: %d; h: %d; got w: %d; h: %d", */
+    /*           tmpR.width, tmpR.height, width, height ); */
     tmpR.width = XP_MIN( width, tmpR.width );
     tmpR.height = XP_MIN( height, tmpR.height );
 
     SDL_Rect sdlr;
     rectXPToSDL( &sdlr, &tmpR );
+    SDL_RenderCopy( wdctx->renderer, texture, NULL, &sdlr );
+    SDL_DestroyTexture( texture );
+}
+
+static void
+imgInRect( WasmDrawCtx* wdctx, SDL_Surface* img, const XP_Rect* rect )
+{
+    SDL_Texture* texture = SDL_CreateTextureFromSurface( wdctx->renderer, img );
+    SDL_Rect sdlr;
+    rectXPToSDL( &sdlr, rect );
     SDL_RenderCopy( wdctx->renderer, texture, NULL, &sdlr );
     SDL_DestroyTexture( texture );
 }
@@ -323,6 +338,9 @@ wasm_draw_drawCell( DrawCtx* dctx, XWEnv xwe, const XP_Rect* rect,
         } else {
             fillRect( wdctx, rect, sBonusColors[bonus-1] );
         }
+        if ( 0 != (flags & CELL_ISSTAR) ) {
+            imgInRect( wdctx, wdctx->origin, rect );
+        }
     } else if ( !!text ) {
         textInRect( wdctx, text, rect, NULL );
     }
@@ -400,10 +418,11 @@ wasm_draw_drawBoardArrow ( DrawCtx* dctx, XWEnv xwe,
                            XWBonusType bonus, XP_Bool vert,
                            HintAtts hintAtts, CellFlags flags )
 {
-    LOG_FUNC();
     WasmDrawCtx* wdctx = (WasmDrawCtx*)dctx;
     const XP_UCHAR* str = vert ? "|" : "-";
-    textInRect( wdctx, str, rect, NULL );
+    SDL_Surface* img = vert ? wdctx->arrowDown : wdctx->arrowRight;
+
+    imgInRect( wdctx, img, rect );
 }
 
 static void
@@ -452,6 +471,10 @@ wasm_draw_make( MPFORMAL int width, int height )
     wdctx->font20 = TTF_OpenFont( "assets_dir/FreeSans.ttf", 20 );
     wdctx->font36 = TTF_OpenFont( "assets_dir/FreeSans.ttf", 36 );
     wdctx->font48 = TTF_OpenFont( "assets_dir/FreeSans.ttf", 48 );
+
+    wdctx->arrowDown = IMG_Load( "assets_dir/ic_downarrow.png" );
+    wdctx->arrowRight = IMG_Load( "assets_dir/ic_rightarrow.png" );
+    wdctx->origin = IMG_Load( "assets_dir/ic_origin.png" );
 
     wdctx->vtable = XP_MALLOC( mpool, sizeof(*wdctx->vtable) );
 
