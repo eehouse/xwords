@@ -3,10 +3,8 @@
 #include <SDL2/SDL_image.h>
 
 #include "comtypes.h"
+#include "strutils.h"
 #include "wasmdraw.h"
-
-#define COLOR_BACK 255, 255, 255
-#define COLOR_BLACK 0, 0, 0
 
 typedef struct _WasmDrawCtx {
     DrawCtxVTable* vtable;
@@ -23,13 +21,21 @@ typedef struct _WasmDrawCtx {
     SDL_Surface* origin;
 
     int trayOwner;
+    XP_Bool inTrade;
 } WasmDrawCtx;
 
-static int sBonusColors[4][3] = {
-    {0x00, 0xFF, 0x80},
-    {0x00, 0x80, 0xFF},
-    {0x80, 0x00, 0xFF},
-    {0xFF, 0x80, 0x00},
+static SDL_Color sBonusColors[4] = {
+    {0xAF, 0xAF, 0x00, 0xFF},
+    {0x00, 0xAF, 0xAF,0xFF},
+    {0xAF, 0x00, 0xAF,0xFF},
+    {0xAF, 0xAF, 0xAF,0xFF},
+};
+
+static XP_UCHAR* sBonusSummaries[] = {
+    "2L",
+    "2W",
+    "3L",
+    "3W",
 };
 
 static SDL_Color sPlayerColors[4] = {
@@ -37,6 +43,27 @@ static SDL_Color sPlayerColors[4] = {
     {0xFF, 0x00, 0x00, 0xFF},
     {0x80, 0x00, 0xFF, 0xFF},
     {0xFF, 0x80, 0x00, 0xFF},
+};
+
+enum { BLACK,
+       WHITE,
+       COLOR_FOCUS,
+       COLOR_NOTILE,
+       COLOR_TILE_BACK,
+       COLOR_BONUSHINT,
+       COLOR_BACK,
+
+       N_COLORS,
+};
+
+static SDL_Color sOtherColors[N_COLORS] = {
+    {0x00, 0x00, 0x00, 0xFF},   /* BLACK */
+    {0xFF, 0xFF, 0xFF, 0xFF},   /* WHITE */
+    {0x70, 0x70, 0xFF, 0xFF}, /* COLOR_FOCUS, */
+    {0xFF, 0xFF, 0xFF, 0xFF},   /* COLOR_NOTILE, */
+    {0xFF, 0xFF, 0x99, 0xFF}, /* COLOR_TILE_BACK, */
+    {0x7F, 0x7F, 0x7F, 0xFF},/* COLOR_BONUSHINT, */
+    {0xFF, 0xFF, 0xFF, 0xFF}, /* COLOR_BACK, */
 };
 
 static void
@@ -53,7 +80,8 @@ clearRect( WasmDrawCtx* wdctx, const XP_Rect* rect )
 {
     Uint8 red, green, blue, alpha;
     SDL_GetRenderDrawColor( wdctx->renderer, &red, &green, &blue, &alpha );
-    SDL_SetRenderDrawColor( wdctx->renderer, COLOR_BACK, 255 );
+    const SDL_Color* back = &sOtherColors[COLOR_BACK];
+    SDL_SetRenderDrawColor( wdctx->renderer, back->r, back->g, back->b, back->a );
 
     SDL_Rect sdlr;
     rectXPToSDL( &sdlr, rect );
@@ -71,15 +99,15 @@ setPlayerColor( WasmDrawCtx* wdctx, int owner )
 }
 
 static void
-fillRect( WasmDrawCtx* wdctx, const XP_Rect* rect, int colorParts[] )
+fillRect( WasmDrawCtx* wdctx, const XP_Rect* rect, const SDL_Color* colorParts )
 {
     SDL_Rect sdlr;
     rectXPToSDL( &sdlr, rect );
     Uint8 red, green, blue, alpha;
 
     SDL_GetRenderDrawColor( wdctx->renderer, &red, &green, &blue, &alpha );
-    SDL_SetRenderDrawColor( wdctx->renderer, colorParts[0], colorParts[1],
-                            colorParts[2], 255 );
+    SDL_SetRenderDrawColor( wdctx->renderer, colorParts->r, colorParts->g,
+                            colorParts->b, colorParts->a );
     SDL_RenderFillRect( wdctx->renderer, &sdlr );
     SDL_SetRenderDrawColor( wdctx->renderer, red, green, blue, alpha );
 }
@@ -89,7 +117,9 @@ frameRect( WasmDrawCtx* wdctx, const XP_Rect* rect )
 {
     SDL_Rect sdlr;
     rectXPToSDL( &sdlr, rect );
-    SDL_SetRenderDrawColor( wdctx->renderer, COLOR_BLACK, 255 );
+    const SDL_Color* black = &sOtherColors[BLACK];
+    SDL_SetRenderDrawColor( wdctx->renderer, black->r, black->g,
+                            black->b, black->a );
     SDL_RenderDrawRect( wdctx->renderer, &sdlr );
 }
 
@@ -318,6 +348,31 @@ wasm_draw_drawTimer( DrawCtx* dctx, XWEnv xwe, const XP_Rect* rect,
                      XP_U16 player, XP_S16 secondsLeft,
                      XP_Bool turnDone ){ LOG_FUNC(); }
 
+static void
+markBlank( WasmDrawCtx* wdctx, const XP_Rect* rect, const SDL_Color* backColor )
+{
+}
+
+static void
+drawCrosshairs( WasmDrawCtx* wdctx, const XP_Rect* rect, CellFlags flags )
+{
+    const SDL_Color* color = &sOtherColors[COLOR_FOCUS];
+    if ( 0 != (flags & CELL_CROSSHOR) ) {
+        XP_Rect hairRect = *rect;
+        XP_LOGFF( "hairRect before: l: %d, t: %d, w: %d, h: %d",
+                  hairRect.left, hairRect.top, hairRect.width, hairRect.height );
+        insetRect( &hairRect, 0, hairRect.height / 3 );
+        XP_LOGFF( "hairRect after: l: %d, t: %d, w: %d, h: %d",
+                  hairRect.left, hairRect.top, hairRect.width, hairRect.height );
+        fillRect( wdctx, &hairRect, color );
+    }
+    if ( 0 != (flags & CELL_CROSSVERT) ) {
+        XP_Rect hairRect = *rect;
+        insetRect( &hairRect, hairRect.width / 3, 0 );
+        fillRect( wdctx, &hairRect, color );
+    }
+}
+
 static XP_Bool
 wasm_draw_drawCell( DrawCtx* dctx, XWEnv xwe, const XP_Rect* rect,
                     /* at least one of these two will be
@@ -330,23 +385,62 @@ wasm_draw_drawCell( DrawCtx* dctx, XWEnv xwe, const XP_Rect* rect,
                     CellFlags flags )
 {
     WasmDrawCtx* wdctx = (WasmDrawCtx*)dctx;
-    clearRect( wdctx, rect );
+    const SDL_Color* backColor = NULL;
+    XP_Bool empty = 0 != (flags & (CELL_DRAGSRC|CELL_ISEMPTY));
+    XP_Bool pending = 0 != (flags & CELL_PENDING);
+    XP_Bool recent = 0 != (flags & CELL_RECENT);
+    XP_UCHAR* bonusStr = NULL;
 
-    if ( (flags & (CELL_DRAGSRC|CELL_ISEMPTY)) != 0 ) {
-        if ( BONUS_NONE == bonus ) {
-            clearRect( wdctx, rect );
-        } else {
-            fillRect( wdctx, rect, sBonusColors[bonus-1] );
-        }
-        if ( 0 != (flags & CELL_ISSTAR) ) {
-            imgInRect( wdctx, wdctx->origin, rect );
-        }
-    } else if ( !!text ) {
-        textInRect( wdctx, text, rect, NULL );
+    /* if ( wdctx->inTrade ) { */
+    /*     fillRectOther( rect, CommonPrefs.COLOR_BACKGRND ); */
+    /* } */
+
+    if ( owner < 0 ) {
+        owner = 0;
     }
-    
+    const SDL_Color* foreColor = &sPlayerColors[owner];
+
+    if ( 0 != (flags & CELL_ISCURSOR) ) {
+        backColor = &sOtherColors[COLOR_FOCUS];
+    } else if ( empty ) {
+        if ( 0 == bonus ) {
+            backColor = &sOtherColors[COLOR_NOTILE];
+        } else {
+            backColor = &sBonusColors[bonus-1];
+            bonusStr = sBonusSummaries[bonus-1];
+        }
+    } else if ( pending || recent ) {
+        foreColor = &sOtherColors[WHITE];
+        backColor = &sOtherColors[BLACK];
+    } else {
+        backColor = &sOtherColors[COLOR_TILE_BACK];
+    }
+
+    fillRect( wdctx, rect, backColor );
+
+    if ( empty ) {
+        if ( (CELL_ISSTAR & flags) != 0 ) {
+            imgInRect( wdctx, wdctx->origin, rect );
+        } else if ( NULL != bonusStr ) {
+            const SDL_Color* color = &sOtherColors[COLOR_BONUSHINT];
+            /* m_fillPaint.setColor( adjustColor(color) ); */
+            /* Rect brect = new Rect( rect ); */
+            /* brect.inset( 0, brect.height()/10 ); */
+            /* drawCentered( bonusStr, brect, m_fontDims ); */
+            textInRect( wdctx, bonusStr, rect, color );
+        }
+    } else {
+        textInRect( wdctx, text, rect, foreColor );
+    }
+
+    if ( (CELL_ISBLANK & flags) != 0 ) {
+        markBlank( wdctx, rect, backColor );
+    }
+
+    // frame the cell
     frameRect( wdctx, rect );
 
+    drawCrosshairs( wdctx, rect, flags );
     return XP_TRUE;
 }
 

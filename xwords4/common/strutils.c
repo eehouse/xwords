@@ -366,6 +366,15 @@ p_replaceStringIfDifferent( MPFORMAL XP_UCHAR** curLoc, const XP_UCHAR* newStr
     *curLoc = curStr;
 } /* replaceStringIfDifferent */
 
+void
+insetRect( XP_Rect* rect, XP_S16 byWidth, XP_S16 byHeight )
+{
+    rect->width -= byWidth * 2;
+    rect->left += byWidth;
+    rect->height -= byHeight * 2;
+    rect->top += byHeight;
+}
+
 XP_U32
 augmentHash( XP_U32 hash, const XP_U8* ptr, XP_U16 len )
 {
