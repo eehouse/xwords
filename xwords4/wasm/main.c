@@ -25,9 +25,6 @@
 #include <emscripten.h>
 #endif
 
-/* Might want to pass this from the Makefile */
-#define NAKED_MODE 1
-
 #define WASM_BOARD_LEFT 0
 #define WASM_HOR_SCORE_TOP 0
 
@@ -50,7 +47,7 @@ initGlobals( Globals* globals )
 {
     globals->cp.showBoardArrow = XP_TRUE;
     globals->cp.allowPeek = XP_TRUE;
-    globals->cp.showRobotScores = XP_TRUE;
+    // globals->cp.showRobotScores = XP_TRUE;
     globals->cp.sortNewTiles = XP_TRUE;
 
     globals->gi.serverRole = SERVER_STANDALONE;

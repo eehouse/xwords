@@ -23,21 +23,30 @@ DEFINES += -DXWFEATURE_KNOWNPLAYERS
 DEFINES += -DXWFEATURE_DICTSANITY
 DEFINES += -DPOINTER_SUPPORT
 DEFINES += -DPLATFORM_WASM
-DEFINES += -O2
 
-OUTPUTS = main.html main.js main.js.mem main.data
+OUTPUTS = main.html main.js main.js.mem main.data main.html.mem
 
 all: main.js
 
 # PHONY: upload
 
 main.js: ${INPUTS} Makefile
-	emcc $(DEFINES) -I . -I ../common -I ../relay -s USE_SDL=2 \
+	emcc $(DEFINES) -O2 -DNAKED_MODE=1 -I . -I ../common -I ../relay -s USE_SDL=2 \
 		--preload-file assets_dir --memory-init-file 1 \
 		-s USE_SDL_TTF=2 -s USE_SDL_IMAGE=2 -s SDL2_IMAGE_FORMATS='["png"]' \
 		-s EXPORTED_FUNCTIONS='["_mainf", "_button"]' -s WASM=0 \
 		-s "EXTRA_EXPORTED_RUNTIME_METHODS=['ccall']" \
 		${INPUTS} -o $@
 
+main.html: ${INPUTS} Makefile
+	emcc $(DEFINES) -I . -I ../common -I ../relay -s USE_SDL=2 \
+		--preload-file assets_dir \
+		-s USE_SDL_TTF=2 -s USE_SDL_IMAGE=2 -s SDL2_IMAGE_FORMATS='["png"]' \
+		-s WASM=0 \
+		${INPUTS} -o $@
+
 upload: main.js
 	scp ${OUTPUTS} pi4:/tmp
+
+clean:
+	rm ${OUTPUTS}
