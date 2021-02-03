@@ -51,6 +51,7 @@ COMMONSRC = \
 	$(COMMONDIR)/smsproto.c \
 	$(COMMONDIR)/dutil.c \
 	$(COMMONDIR)/device.c \
+	$(COMMONDIR)/knownplyr.c \
 
 # PENDING: define this in terms of above!!!
 
