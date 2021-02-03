@@ -174,7 +174,7 @@ main_alert( Globals* globals, const XP_UCHAR* msg )
 void
 main_set_idle( Globals* globals, IdleProc proc, void* closure )
 {
-    XP_ASSERT( !globals->idleProc );
+    XP_ASSERT( !globals->idleProc || globals->idleProc == proc );
     globals->idleProc = proc;
     globals->idleClosure = closure;
 }
@@ -286,6 +286,15 @@ initOnce()
 }
 
 #ifdef NAKED_MODE
+void
+newgame(bool p0, bool p1)
+{
+    XP_LOGFF( "(args: %d,%d)", p0, p1 );
+    if ( !!sGlobals ) {
+        makeAndDraw( sGlobals, p0, p1 );
+    }
+}
+
 void
 mainf()
 {

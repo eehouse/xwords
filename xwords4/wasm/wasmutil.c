@@ -560,7 +560,6 @@ void
 wasm_util_destroy( XW_UtilCtxt* util )
 {
     LOG_FUNC();
-    XP_ASSERT(0);
     WasmUtilCtx* wuctxt = (WasmUtilCtx*)util;
     XP_FREEP( wuctxt->super.mpool, &wuctxt->super.vtable );
     XP_FREEP( wuctxt->super.mpool, &wuctxt );
