@@ -43,6 +43,8 @@ EM_JS(void, call_alert, (const char* str), {
         alert(UTF8ToString(str));
 });
 
+static Globals* sGlobals;
+
 static void
 initGlobals( Globals* globals )
 {
@@ -207,6 +209,15 @@ checkForEvent( Globals* globals )
 }
 
 static void
+updateScreen( Globals* globals )
+{
+    SDL_RenderClear( globals->renderer );
+    board_draw( globals->game.board, NULL );
+    wasm_draw_render( globals->draw, globals->renderer );
+    SDL_RenderPresent( globals->renderer );
+}
+
+static void
 looper( void* closure )
 {
     Globals* globals = (Globals*)closure;
@@ -215,13 +226,38 @@ looper( void* closure )
     draw = checkForEvent( globals ) || draw;
 
     if ( draw ) {
-        SDL_RenderClear( globals->renderer );
-        board_draw( globals->game.board, NULL );
-        wasm_draw_render( globals->draw, globals->renderer );
-        SDL_RenderPresent( globals->renderer );
+        updateScreen( globals );
     }
 
 }
+
+#ifdef NAKED_MODE
+void
+button( const char* msg )
+{
+    XP_Bool draw = XP_FALSE;
+    Globals* globals = sGlobals;
+    BoardCtxt* board = globals->game.board;
+    XP_Bool redo;
+
+    if ( 0 == strcmp(msg, "hintdown") ) {
+        draw = board_requestHint( board, NULL, XP_TRUE, &redo );
+    } else if ( 0 == strcmp(msg, "hintup") ) {
+        draw = board_requestHint( board, NULL, XP_FALSE, &redo );
+    } else if ( 0 == strcmp(msg, "flip") ) {
+        draw = board_flip( board );
+    } else if ( 0 == strcmp(msg, "redo") ) {
+        draw = board_redoReplacedTiles( board, NULL )
+            || board_replaceTiles( board, NULL );
+    } else if ( 0 == strcmp(msg, "vals") ) {
+        draw = board_toggle_showValues( board );
+    }
+
+    if ( draw ) {
+        updateScreen( globals );
+    }
+}
+#endif
 
 #ifdef NAKED_MODE
 void mainf()
@@ -231,6 +267,7 @@ int main( int argc, char** argv )
 {
     LOG_FUNC();
     Globals globals = {0};
+    sGlobals = &globals;
     SDL_Init( SDL_INIT_EVENTS );
     TTF_Init();
     int foo = SDL_SWSURFACE;

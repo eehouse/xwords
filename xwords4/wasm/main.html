@@ -19,6 +19,9 @@
 			#loadingDiv {
 				text-align: center;
 			}
+			div.buttons {
+				text-align: center;
+			}
         </style>
     </head>
 
@@ -27,8 +30,14 @@
         <canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()"></canvas>
         <div style="width:200px; margin-left:auto; margin-right:auto">
             <p class="startButton" onclick="start_function(this)">Click to start</p>
-            <p id="fullScreenButton" onclick="Module.requestFullScreen(true, false)">Click for full-screen</p>
-        </div>
+			</div>
+			<div class="buttons">
+			<button onclick="Module.ccall('button', null, ['string'], ['hintdown']);">Hint Down</button>
+			<button onclick="Module.ccall('button', null, ['string'], ['hintup']);">Hint Up</button>
+			<button onclick="Module.ccall('button', null, ['string'], ['flip']);">Flip</button>
+			<button onclick="Module.ccall('button', null, ['string'], ['redo']);">Un/Redo</button>
+			<button onclick="Module.ccall('button', null, ['string'], ['vals']);">Vals</button>
+			</div>
 
         <script type='text/javascript'>
             var Module = {
@@ -44,7 +53,6 @@
 
             var start_function = function(o) {
 				o.style.visibility = "hidden";
-				document.getElementById("fullScreenButton").style.visibility="visible";
 				Module.ccall('mainf', null, null);
             };
         </script>
