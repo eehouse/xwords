@@ -43,30 +43,16 @@ EM_JS(void, call_alert, (const char* str), {
 static Globals* sGlobals;
 
 static void
-initGlobals( Globals* globals )
+initDeviceGlobals( Globals* globals )
 {
     globals->cp.showBoardArrow = XP_TRUE;
     globals->cp.allowPeek = XP_TRUE;
     // globals->cp.showRobotScores = XP_TRUE;
     globals->cp.sortNewTiles = XP_TRUE;
 
-    globals->gi.serverRole = SERVER_STANDALONE;
-    globals->gi.phoniesAction = PHONIES_WARN;
-
-    globals->gi.nPlayers = 2;
-    globals->gi.boardSize = 15;
-    globals->gi.dictName = "myDict";
-    globals->gi.players[0].name = "You";
-    globals->gi.players[0].isLocal = XP_TRUE;
-    globals->gi.players[1].name = "Robot";
-    globals->gi.players[1].isLocal = XP_TRUE;
-    globals->gi.players[1].robotIQ = 99;
-
     globals->mpool = mpool_make( "wasm" );
     globals->vtMgr = make_vtablemgr( globals->mpool );
     globals->dutil = wasm_dutil_make( globals->mpool, globals->vtMgr, globals );
-    globals->util = wasm_util_make( globals->mpool, &globals->gi,
-                                    globals->dutil, globals );
     globals->dict = wasm_load_dict( globals->mpool );
 
     globals->draw = wasm_draw_make( MPPARM(globals->mpool)
@@ -74,25 +60,47 @@ initGlobals( Globals* globals )
 }
 
 static void
-makeAndDraw( Globals* globals )
+makeAndDraw( Globals* globals, bool p0robot, bool p1robot )
 {
+    if ( !!globals->util ) {
+        game_dispose( &globals->game, NULL );
+        wasm_util_destroy( globals->util );
+        globals->util = NULL;
+    }
+
+    globals->gi.serverRole = SERVER_STANDALONE;
+    globals->gi.phoniesAction = PHONIES_WARN;
+
+    globals->gi.nPlayers = 2;
+    globals->gi.boardSize = 15;
+    globals->gi.dictName = "myDict";
+    globals->gi.players[0].name = "Player 1";
+    globals->gi.players[0].isLocal = XP_TRUE;
+    if ( p0robot ) {
+        globals->gi.players[0].robotIQ = 99;
+    }
+    globals->gi.players[1].name = "Player 2";
+    globals->gi.players[1].isLocal = XP_TRUE;
+    if ( p1robot ) {
+        globals->gi.players[1].robotIQ = 99;
+    }
+
+    globals->util = wasm_util_make( globals->mpool, &globals->gi,
+                                    globals->dutil, globals );
+
     XP_LOGFF( "calling game_makeNewGame()" );
     game_makeNewGame( MPPARM(globals->mpool) NULL,
                       &globals->game, &globals->gi,
                       globals->util, globals->draw, 
                       &globals->cp, &globals->procs );
 
-    XP_LOGFF( "calling board_figureLayout()" );
     BoardDims dims;
     board_figureLayout( globals->game.board, NULL, &globals->gi,
                         WASM_BOARD_LEFT, WASM_HOR_SCORE_TOP, BDWIDTH, BDHEIGHT,
                         110, 150, 200, BDWIDTH-25, 16, 16, XP_FALSE, &dims );
-    XP_LOGFF( "calling board_applyLayout()" );
     board_applyLayout( globals->game.board, NULL, &dims );
-    XP_LOGFF( "calling board_draw()" );
 
     model_setDictionary( globals->game.model, NULL, globals->dict );
-    // model_setSquareBonuses( globals->game.model, XWBonusType* bonuses, XP_U16 nBonuses )
 
     (void)server_do( globals->game.server, NULL ); /* assign tiles, etc. */
     board_draw( globals->game.board, NULL );
@@ -256,43 +264,51 @@ button( const char* msg )
 }
 #endif
 
-#ifdef NAKED_MODE
-void mainf()
-#else
-int main( int argc, char** argv )
-#endif
+static Globals*
+initOnce()
 {
-    LOG_FUNC();
-    Globals globals = {0};
-    sGlobals = &globals;
+    Globals* globals = calloc(1, sizeof(*globals));
+    sGlobals = globals;
+
     SDL_Init( SDL_INIT_EVENTS );
     TTF_Init();
-    int foo = SDL_SWSURFACE;
 
-    // Do I want SDL_CreateWindow() plus something else?
-
-    
     SDL_CreateWindowAndRenderer( WINDOW_WIDTH, WINDOW_HEIGHT, 0,
-                                 &globals.window, &globals.renderer );
+                                 &globals->window, &globals->renderer );
 
-    /**
-     * Set up a white background
-     */
-    SDL_SetRenderDrawColor(globals.renderer, 255, 255, 50, 50);
-    SDL_RenderClear(globals.renderer);
+    /* whip the canvas to background */
+    SDL_SetRenderDrawColor( globals->renderer, 155, 155, 155, 255 );
+    SDL_RenderClear( globals->renderer );
 
-    initGlobals( &globals );
-    makeAndDraw( &globals );
+    initDeviceGlobals( globals );
+
+    return globals;
+}
+
+#ifdef NAKED_MODE
+void
+mainf()
+{
+    LOG_FUNC();
+    Globals* globals = initOnce();
+    emscripten_set_main_loop_arg( looper, globals, -1, 1 );
+}
+#else
+int
+main( int argc, char** argv )
+{
+    LOG_FUNC();
+    Globals* globals = initOnce();
+    makeAndDraw( globals, false, true );
 
     /**
      * Show what is in the renderer
      */
-    wasm_draw_render( globals.draw, globals.renderer );
-    SDL_RenderPresent( globals.renderer );
+    /* wasm_draw_render( globals.draw, globals.renderer ); */
+    /* SDL_RenderPresent( globals.renderer ); */
 
-    emscripten_set_main_loop_arg( looper, &globals, -1, 1 );
+    emscripten_set_main_loop_arg( looper, globals, -1, 1 );
 
-#ifndef NAKED_MODE
     return 0;
-#endif
 }
+#endif
