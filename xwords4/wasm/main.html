@@ -26,8 +26,8 @@
 		<script>
 			function callNewGame() {
 				var args = [
-					document.getElementById('player0Checked').checked,
-					document.getElementById('player1Checked').checked,
+					document.getElementById("player0Checked").checked,
+					document.getElementById("player1Checked").checked,
 				]
 				Module.ccall('newgame', null, ['boolean', 'boolean'], args);
 			}
@@ -50,14 +50,14 @@
 
 		<div class="buttons">
 			<span>Player 1</span>
-			<input type="checkbox" id="player0Checked" value="0">Is Robot</input>
+			<input type="checkbox" id="player0Checked">Is Robot</input>
 		</div>
 		<div class="buttons">
 			<span>Player 2</span>
-			<input type="checkbox" id="player1Checked" value="0">Is Robot</input>
+			<input type="checkbox" id="player1Checked">Is Robot</input>
 		</div>
 		<div class="buttons">
-			<button onclick="callNewGame()">New Game</button>
+			<button type="button" onclick="callNewGame();">New Game</button>
 		</div>
 
         <script type='text/javascript'>

@@ -486,9 +486,7 @@ wasm_util_showChat( XW_UtilCtxt* uc, XWEnv xwe, const XP_UCHAR* const msg,
 static XW_DUtilCtxt*
 wasm_util_getDevUtilCtxt( XW_UtilCtxt* uc, XWEnv xwe )
 {
-    LOG_FUNC();
     WasmUtilCtx* wuctxt = (WasmUtilCtx*)uc;
-    LOG_RETURNF( "%p", wuctxt->dctxt );
     return wuctxt->dctxt;
 }
 

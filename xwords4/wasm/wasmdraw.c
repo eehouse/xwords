@@ -135,7 +135,6 @@ textInRect( WasmDrawCtx* wdctx, const XP_UCHAR* text, const XP_Rect* rect,
     } else if ( rect->height <= 36 ) {
         font = wdctx->font36;
     } else {
-        XP_LOGFF( "unexpected height: %d", rect->height );
         font = wdctx->font48;
     }
 
