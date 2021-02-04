@@ -272,6 +272,9 @@ button( const char* msg )
 static Globals*
 initOnce()
 {
+    time_t now = getCurMS();
+    srandom( now );
+
     Globals* globals = calloc(1, sizeof(*globals));
     sGlobals = globals;
 

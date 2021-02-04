@@ -1,8 +1,14 @@
 #include <time.h>
 
+#include <emscripten.h>
+
 #include "wasmdutil.h"
 #include "dbgutil.h"
 #include "LocalizedStrIncludes.h"
+
+typedef struct _WasmDUtilCtxt {
+    XW_DUtilCtxt super;
+} WasmDUtilCtxt;
 
 static XP_U32
 wasm_dutil_getCurSeconds( XW_DUtilCtxt* XP_UNUSED(duc), XWEnv XP_UNUSED(xwe) )
@@ -104,10 +110,58 @@ wasm_dutil_getUserQuantityString( XW_DUtilCtxt* duc, XWEnv xwe, XP_U16 code,
 }
 
 static void
+base16Encode( const uint8_t* data, int dataLen, char* out, int outLen )
+{
+    int used = 0;
+    for ( int ii = 0; ii < dataLen; ++ii ) {
+        uint8_t byt = data[ii];
+        out[used++] = 'A' + ((byt >> 4) & 0x0F);
+        out[used++] = 'A' + (byt & 0x0F);
+    }
+    out[used] = '\0';
+}
+
+static void
+base16Decode( uint8_t* decodeBuf, int len, const char* str )
+{
+    int offset = 0;
+    for ( ; ; ) {
+        char chr = *str++;
+        if ( chr < 'A' || chr > ('A' + 16) ) {
+            break;
+        }
+        uint8_t byt = (chr - 'A') << 4;
+        chr = *str++;
+        if ( chr < 'A' || chr > ('A' + 16) ) {
+            break;
+        }
+        byt |= chr - 'A';
+        decodeBuf[offset++] = byt;
+    }
+    XP_LOGFF( "offset: %d; len: %d", offset, len );
+    XP_ASSERT( offset == len );
+}
+
+/* static void testBase16() */
+/* { */
+/*     const XP_U8 testBuf[] = {0x03, 0x04, 0x78, 0xF8, 0x99 }; */
+
+/*     XP_UCHAR chars[(VSIZE(testBuf) * 2) + 1]; */
+/*     base16Encode( testBuf, VSIZE(testBuf), chars, sizeof(chars) ); */
+
+/*     int len = XP_STRLEN( chars ); */
+/*     XP_U8 decodeBuf[len / 2]; */
+/*     base16Decode( decodeBuf, VSIZE(decodeBuf), chars ); */
+
+/*     XP_ASSERT( 0 == XP_MEMCMP( testBuf, decodeBuf, VSIZE(testBuf) ) ); */
+/* } */
+
+static void
 wasm_dutil_storeStream( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
                         XWStreamCtxt* data )
 {
     LOG_FUNC();
+    XP_ASSERT(0);
 }
 
 static void
@@ -115,6 +169,54 @@ wasm_dutil_loadStream( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
                        const XP_UCHAR* keySuffix, XWStreamCtxt* inOut )
 {
     LOG_FUNC();
+    XP_ASSERT(0);
+}
+
+EM_JS(const char*, get_stored_value, (const char* key), {
+        var result = null;
+        var jsKey = UTF8ToString(key);
+        var jsString = localStorage.getItem(jsKey);
+        if ( jsString != null ) {
+            var lengthBytes = lengthBytesUTF8(jsString)+1;
+            var result = _malloc(lengthBytes);
+            stringToUTF8(jsString, result, lengthBytes);
+        }
+        return result;
+    });
+
+EM_JS(void, set_stored_value, (const char* key, const char* val), {
+        var jsKey = UTF8ToString(key);
+        var jsVal = UTF8ToString(val);
+        var jsString = localStorage.setItem(jsKey, jsVal);
+    });
+
+/* EM_JS(void, clear_stored, (), { */
+/*         localStorage.clear(); */
+/*     }); */
+
+static void
+wasm_dutil_loadPtr( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
+                    const XP_UCHAR* keySuffix, void* data, XP_U16* lenp )
+{
+    XP_LOGFF( "(key: %s, keySuffix: %s)", key, keySuffix );
+
+    const char* val = get_stored_value(key);
+    XP_LOGFF( "get_stored_value(%s) => %s", key, val );
+    if ( !!val ) {
+        size_t len = XP_STRLEN(val);
+        XP_ASSERT( (len % 2) == 0 );
+        XP_U8 decodeBuf[len/2];
+        len = VSIZE(decodeBuf);
+        if ( len <= *lenp ) {
+            base16Decode( decodeBuf, len, val );
+            XP_MEMCPY( data, decodeBuf, len );
+        }
+        *lenp = len;
+        free( (void*)val );
+    } else {
+        *lenp = 0;              /* signal failure */
+    }
+    LOG_RETURN_VOID();
 }
 
 static void
@@ -122,14 +224,15 @@ wasm_dutil_storePtr( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
                       const void* data, XP_U16 len )
 {
     XP_LOGFF( "(key: %s; len: %d)", key, len );
-}
 
-static void
-wasm_dutil_loadPtr( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
-                    const XP_UCHAR* keySuffix, void* data, XP_U16* lenp )
-{
-    XP_LOGFF( "(key: %s, keySuffix: %s)", key, keySuffix );
-    *lenp = 0;
+    XP_UCHAR out[len*2+1];
+    base16Encode( data, len, out, sizeof(out) );
+
+    set_stored_value( key, out );
+    /* const char* tmp = get_stored_value( key ); */
+    /* XP_LOGFF( "TEST: got back %s for key %s", tmp, key ); */
+
+    LOG_RETURN_VOID();
 }
 
 static const XP_UCHAR*
@@ -199,15 +302,15 @@ wasm_dutil_onGameGoneReceived( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe),
 XW_DUtilCtxt*
 wasm_dutil_make( MPFORMAL VTableMgr* vtMgr, void* closure )
 {
-    XW_DUtilCtxt* result = XP_CALLOC( mpool, sizeof(*result) );
+    WasmDUtilCtxt* result = XP_CALLOC( mpool, sizeof(*result) );
 
-    dutil_super_init( MPPARM(mpool) result );
+    dutil_super_init( MPPARM(mpool) &result->super );
 
-    result->vtMgr = vtMgr;
-    result->closure = closure;
+    result->super.vtMgr = vtMgr;
+    result->super.closure = closure;
 
 # define SET_PROC(nam) \
-    result->vtable.m_dutil_ ## nam = wasm_dutil_ ## nam;
+    result->super.vtable.m_dutil_ ## nam = wasm_dutil_ ## nam;
 
     SET_PROC(getCurSeconds);
     SET_PROC(getUserString);
@@ -238,12 +341,17 @@ wasm_dutil_make( MPFORMAL VTableMgr* vtMgr, void* closure )
 
 # undef SET_PROC
 
-    assertTableFull( &result->vtable, sizeof(result->vtable), "wasmutil" );
+    assertTableFull( &result->super.vtable, sizeof(result->super.vtable), "wasmutil" );
 
-    return result;
+    /* clear_stored(); */
+    /* testBase16(); */
+
+    LOG_RETURNF( "%p", &result->super );
+    return &result->super;
 }
 
 void
 wasm_dutil_destroy( XW_DUtilCtxt* dutil )
 {
+    XP_ASSERT(0);
 }
