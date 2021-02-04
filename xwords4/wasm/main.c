@@ -13,6 +13,7 @@
 #include <stdlib.h>
 
 #include "game.h"
+#include "device.h"
 #include "mempool.h"
 
 #include "main.h"
@@ -57,6 +58,10 @@ initDeviceGlobals( Globals* globals )
 
     globals->draw = wasm_draw_make( MPPARM(globals->mpool)
                                     WINDOW_WIDTH, WINDOW_HEIGHT );
+
+    MQTTDevID devID;
+    dvc_getMQTTDevID( globals->dutil, NULL, &devID );
+    XP_LOGFF( "got devID: %X", devID );
 }
 
 static void

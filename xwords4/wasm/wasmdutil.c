@@ -7,8 +7,7 @@
 static XP_U32
 wasm_dutil_getCurSeconds( XW_DUtilCtxt* XP_UNUSED(duc), XWEnv XP_UNUSED(xwe) )
 {
-    LOG_FUNC();
-    return (XP_U32)time(NULL);//tv.tv_sec;
+    return (XP_U32)time(NULL);
 }
 
 static const XP_UCHAR*
@@ -122,14 +121,15 @@ static void
 wasm_dutil_storePtr( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
                       const void* data, XP_U16 len )
 {
-    LOG_FUNC();
+    XP_LOGFF( "(key: %s; len: %d)", key, len );
 }
 
 static void
 wasm_dutil_loadPtr( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
                     const XP_UCHAR* keySuffix, void* data, XP_U16* lenp )
 {
-    LOG_FUNC();
+    XP_LOGFF( "(key: %s, keySuffix: %s)", key, keySuffix );
+    *lenp = 0;
 }
 
 static const XP_UCHAR*
