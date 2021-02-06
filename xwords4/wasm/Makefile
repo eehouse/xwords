@@ -1,6 +1,8 @@
 
 include ../common/config.mk
 
+DEBS = cmake
+
 INPUTS = main.c wasmdict.c wasmutls.c wasmdraw.c wasmutil.c wasmdutil.c ${COMMONSRC}
 
 DEFINES += -DMEM_DEBUG -DDEBUG
@@ -46,8 +48,13 @@ main.html: ${INPUTS} Makefile
 		-s WASM=0 \
 		${INPUTS} -o $@
 
-upload: main.js
-	scp ${OUTPUTS} pi4:/tmp
+upload:
+	if [ -n "${XW_WASM_DEST}" ]; then \
+		scp ${OUTPUTS} ${XW_WASM_DEST}; \
+	fi
 
 clean:
 	rm ${OUTPUTS}
+
+debs_install:
+	sudo apt-get install ${DEBS}
