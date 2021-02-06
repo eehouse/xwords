@@ -22,6 +22,36 @@
 #include "mempool.h"
 #include "comtypes.h"
 #include "dutil.h"
+#include "xwstream.h"
+
+static void
+super_dutil_storeStream( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
+                         XWStreamCtxt* data )
+{
+    const void* ptr = stream_getPtr( data );
+    XP_U16 len = stream_getSize( data );
+    dutil_storePtr( duc, xwe, key, ptr, len );
+}
+
+static void
+super_dutil_loadStream( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
+                        // PENDING() remove this after a few months.
+                        const XP_UCHAR* fallbackKey,
+                        XWStreamCtxt* inOut )
+{
+    /* get the size */
+    XP_U16 len = 0;
+    dutil_loadPtr( duc, xwe, key, fallbackKey, NULL, &len );
+
+    /* load if it exists */
+    if ( 0 < len ) {
+        void* buf = XP_MALLOC( duc->mpool, len );
+        dutil_loadPtr( duc, xwe, key, fallbackKey, buf, &len );
+
+        stream_putBytes( inOut, buf, len );
+        XP_FREEP( duc->mpool, &buf );
+    }
+}
 
 void
 dutil_super_init( MPFORMAL XW_DUtilCtxt* dutil )
@@ -31,4 +61,7 @@ dutil_super_init( MPFORMAL XW_DUtilCtxt* dutil )
 #endif
 
     MPASSIGN( dutil->mpool, mpool );
+
+    SET_VTABLE_ENTRY( &dutil->vtable, dutil_loadStream, super );
+    SET_VTABLE_ENTRY( &dutil->vtable, dutil_storeStream, super );
 }

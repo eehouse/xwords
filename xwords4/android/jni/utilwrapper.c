@@ -494,16 +494,6 @@ and_dutil_storePtr( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
     DUTIL_CBK_TAIL();
 }
 
-static void
-and_dutil_storeStream( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
-                       XWStreamCtxt* stream )
-{
-    const void* ptr = stream_getPtr( stream );
-    XP_U16 len = stream_getSize( stream );
-
-    and_dutil_storePtr( duc, xwe, key, ptr, len );
-}
-
 static jbyteArray
 loadToByteArray( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
                  const XP_UCHAR* keySuffix )
@@ -536,21 +526,6 @@ and_dutil_loadPtr( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
         deleteLocalRef( env, jvalue );
     }
     *lenp = len;
-}
-
-static void
-and_dutil_loadStream( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
-                      const XP_UCHAR* keySuffix, XWStreamCtxt* stream )
-{
-    JNIEnv* env = xwe;
-    jbyteArray jvalue = loadToByteArray( duc, xwe, key, keySuffix );
-    if ( jvalue != NULL ) {
-        jbyte* jelems = (*env)->GetByteArrayElements( env, jvalue, NULL );
-        jsize len = (*env)->GetArrayLength( env, jvalue );
-        stream_putBytes( stream, jelems, len );
-        (*env)->ReleaseByteArrayElements( env, jvalue, jelems, 0 );
-        deleteLocalRef( env, jvalue );
-    }
 }
 
 static void
@@ -1022,8 +997,6 @@ makeDUtil( MPFORMAL JNIEnv* env,
     SET_DPROC(getCurSeconds);
     SET_DPROC(getUserString);
     SET_DPROC(getUserQuantityString);
-    SET_DPROC(storeStream);
-    SET_DPROC(loadStream);
     SET_DPROC(storePtr);
     SET_DPROC(loadPtr);
 # ifdef XWFEATURE_DEVID

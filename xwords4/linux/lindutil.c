@@ -35,10 +35,6 @@ static const XP_UCHAR* linux_dutil_getUserString( XW_DUtilCtxt* duc, XWEnv xwe, 
 static const XP_UCHAR* linux_dutil_getUserQuantityString( XW_DUtilCtxt* duc, XWEnv xwe, XP_U16 code,
                                                           XP_U16 quantity );
 
-static void linux_dutil_storeStream( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
-                                     XWStreamCtxt* data );
-static void linux_dutil_loadStream( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
-                                    const XP_UCHAR* keySuffix, XWStreamCtxt* inOut );
 static void linux_dutil_storePtr( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
                                   const void* data, XP_U16 len );
 static void linux_dutil_loadPtr( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
@@ -145,8 +141,6 @@ dutils_init( MPFORMAL VTableMgr* vtMgr, void* closure )
     SET_PROC(getCurSeconds);
     SET_PROC(getUserString);
     SET_PROC(getUserQuantityString);
-    SET_PROC(storeStream);
-    SET_PROC(loadStream);
     SET_PROC(storePtr);
     SET_PROC(loadPtr);
 
@@ -281,31 +275,6 @@ linux_dutil_getUserQuantityString( XW_DUtilCtxt* duc, XWEnv xwe, XP_U16 code,
                                    XP_U16 XP_UNUSED(quantity) )
 {
     return linux_dutil_getUserString( duc, xwe, code );
-}
-
-static void
-linux_dutil_storeStream( XW_DUtilCtxt* duc, XWEnv xwe,
-                         const XP_UCHAR* key, XWStreamCtxt* stream )
-{
-    const void* ptr = stream_getPtr( stream );
-    XP_U16 len = stream_getSize( stream );
-    linux_dutil_storePtr( duc, xwe, key, ptr, len );
-}
-
-static void
-linux_dutil_loadStream( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
-                        const XP_UCHAR* keySuffix, XWStreamCtxt* stream )
-{
-    XP_U16 len = 0;
-    linux_dutil_loadPtr( duc, xwe, key, keySuffix, NULL, &len );
-    if ( 0 < len ) {
-        XP_U8 buf[len];
-        linux_dutil_loadPtr( duc, xwe, key, keySuffix, buf, &len );
-
-        stream_putBytes( stream, buf, len );
-    }
-
-    XP_LOGF( "%s(key=%s) => len: %d", __func__, key, stream_getSize(stream) );
 }
 
 static void
