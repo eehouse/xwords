@@ -57,6 +57,8 @@ EM_JS(void, call_alert, (const char* str), {
         alert(UTF8ToString(str));
 });
 
+static void updateScreen( Globals* globals );
+
 static Globals* sGlobals;
 
 static void
@@ -81,7 +83,7 @@ initDeviceGlobals( Globals* globals )
 }
 
 static void
-makeAndDraw( Globals* globals, bool p0robot, bool p1robot )
+makeAndDraw( Globals* globals, bool forceNew, bool p0robot, bool p1robot )
 {
     if ( !!globals->util ) {
         game_dispose( &globals->game, NULL );
@@ -109,11 +111,31 @@ makeAndDraw( Globals* globals, bool p0robot, bool p1robot )
     globals->util = wasm_util_make( globals->mpool, &globals->gi,
                                     globals->dutil, globals );
 
-    XP_LOGFF( "calling game_makeNewGame()" );
-    game_makeNewGame( MPPARM(globals->mpool) NULL,
-                      &globals->game, &globals->gi,
-                      globals->util, globals->draw, 
-                      &globals->cp, &globals->procs );
+    XP_Bool loaded = XP_FALSE;
+    if ( ! forceNew ) {
+        /* Let's see if there's a saved game */
+        XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(globals->mpool)
+                                                    globals->vtMgr );
+        dutil_loadStream( globals->dutil, NULL, KEY_GAME, NULL, stream );
+        if ( 0 < stream_getSize( stream ) ) {
+            XP_LOGFF( "there's a saved game!!" );
+            loaded = game_makeFromStream( MPPARM(globals->mpool) NULL, stream,
+                                          &globals->game, &globals->gi,
+                                          globals->dict, NULL,
+                                          globals->util, globals->draw,
+                                          &globals->cp, &globals->procs );
+
+        }
+        stream_destroy( stream, NULL );
+    }
+
+    if ( !loaded ) {
+        XP_LOGFF( "calling game_makeNewGame()" );
+        game_makeNewGame( MPPARM(globals->mpool) NULL,
+                          &globals->game, &globals->gi,
+                          globals->util, globals->draw,
+                          &globals->cp, &globals->procs );
+    }
 
     BoardDims dims;
     board_figureLayout( globals->game.board, NULL, &globals->gi,
@@ -124,7 +146,9 @@ makeAndDraw( Globals* globals, bool p0robot, bool p1robot )
     model_setDictionary( globals->game.model, NULL, globals->dict );
 
     (void)server_do( globals->game.server, NULL ); /* assign tiles, etc. */
-    board_draw( globals->game.board, NULL );
+    // board_draw( globals->game.board, NULL );
+
+    updateScreen( globals );
 }
 
 static time_t
@@ -293,8 +317,8 @@ button( const char* msg )
 }
 #endif
 
-static Globals*
-initOnce()
+static void
+initNoReturn()
 {
     time_t now = getCurMS();
     srandom( now );
@@ -315,7 +339,9 @@ initOnce()
 
     initDeviceGlobals( globals );
 
-    return globals;
+    makeAndDraw( globals, false, false, true );
+
+    emscripten_set_main_loop_arg( looper, globals, -1, 1 );
 }
 
 #ifdef NAKED_MODE
@@ -324,7 +350,7 @@ newgame(bool p0, bool p1)
 {
     XP_LOGFF( "(args: %d,%d)", p0, p1 );
     if ( !!sGlobals ) {
-        makeAndDraw( sGlobals, p0, p1 );
+        makeAndDraw( sGlobals, true, p0, p1 );
     }
 }
 
@@ -332,25 +358,14 @@ void
 mainf()
 {
     LOG_FUNC();
-    Globals* globals = initOnce();
-    emscripten_set_main_loop_arg( looper, globals, -1, 1 );
+    initNoReturn();
 }
 #else
 int
 main( int argc, char** argv )
 {
-    LOG_FUNC();
-    Globals* globals = initOnce();
-    makeAndDraw( globals, false, true );
-
-    /**
-     * Show what is in the renderer
-     */
-    /* wasm_draw_render( globals.draw, globals.renderer ); */
-    /* SDL_RenderPresent( globals.renderer ); */
-
-    emscripten_set_main_loop_arg( looper, globals, -1, 1 );
-
+    XP_LOGFF( "(argc=%d)", argc );
+    initNoReturn();
     return 0;
 }
 #endif

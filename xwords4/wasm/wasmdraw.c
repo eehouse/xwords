@@ -457,7 +457,6 @@ wasm_draw_drawTile( DrawCtx* dctx, XWEnv xwe, const XP_Rect* rect,
                     const XP_Bitmaps* bitmaps,
                     XP_U16 val, CellFlags flags )
 {
-    XP_LOGFF( "(text=%s)", text );
     WasmDrawCtx* wdctx = (WasmDrawCtx*)dctx;
     drawTile( wdctx, text, val, wdctx->trayOwner, rect );
     return XP_TRUE;
@@ -495,7 +494,8 @@ static void
 wasm_draw_drawTrayDivider( DrawCtx* dctx, XWEnv xwe, const XP_Rect* rect,
                            CellFlags flags )
 {
-    LOG_FUNC();
+    WasmDrawCtx* wdctx = (WasmDrawCtx*)dctx;
+    fillRect( wdctx, rect, &sOtherColors[BLACK] );
 }
 
 static void

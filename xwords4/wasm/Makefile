@@ -50,11 +50,14 @@ main.html: ${INPUTS} Makefile
 
 upload:
 	if [ -n "${XW_WASM_DEST}" ]; then \
-		scp ${OUTPUTS} ${XW_WASM_DEST}; \
+		for FILE in ${OUTPUTS}; do \
+			[ -f $$FILE ] && scp $$FILE ${XW_WASM_DEST}; \
+			echo "$$FILE copied"; \
+		done; \
 	fi
 
 clean:
-	rm ${OUTPUTS}
+	rm -f ${OUTPUTS}
 
 debs_install:
 	sudo apt-get install ${DEBS}
