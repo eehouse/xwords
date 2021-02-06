@@ -34,6 +34,8 @@ typedef struct _Globals {
     IdleProc idleProc;
     void* idleClosure;
 
+    XP_U16 saveToken;
+
     MemPoolCtx* mpool;
 } Globals;
 

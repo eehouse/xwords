@@ -1,7 +1,21 @@
-// Copyright 2011 The Emscripten Authors.  All rights reserved.
-// Emscripten is available under two separate licenses, the MIT license and the
-// University of Illinois/NCSA Open Source License.  Both these licenses can be
-// found in the LICENSE file.
+/* -*- compile-command: "cd ../wasm && make main.html -j3"; -*- */
+/*
+ * Copyright 2021 by Eric House (xwords@eehouse.org).  All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ */
 
 #include <sys/time.h>
 #include <stdio.h>
@@ -33,6 +47,8 @@
 #define WINDOW_HEIGHT 600
 #define BDWIDTH 400
 #define BDHEIGHT 400
+
+#define KEY_GAME "the_game"
 
 EM_JS(bool, call_confirm, (const char* str), {
         return confirm(UTF8ToString(str));
@@ -225,6 +241,15 @@ updateScreen( Globals* globals )
     board_draw( globals->game.board, NULL );
     wasm_draw_render( globals->draw, globals->renderer );
     SDL_RenderPresent( globals->renderer );
+
+    /* Let's save state here too, though likely too often */
+    XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(globals->mpool)
+                                                globals->vtMgr );
+    game_saveToStream( &globals->game, NULL, &globals->gi,
+                        stream, ++globals->saveToken );
+    dutil_storeStream( globals->dutil, NULL, KEY_GAME, stream );
+    stream_destroy( stream, NULL );
+    game_saveSucceeded( &globals->game, NULL, globals->saveToken );
 }
 
 static void
@@ -238,7 +263,6 @@ looper( void* closure )
     if ( draw ) {
         updateScreen( globals );
     }
-
 }
 
 #ifdef NAKED_MODE
@@ -274,6 +298,7 @@ initOnce()
 {
     time_t now = getCurMS();
     srandom( now );
+    XP_LOGFF( "called(srandom( %x )", now );
 
     Globals* globals = calloc(1, sizeof(*globals));
     sGlobals = globals;

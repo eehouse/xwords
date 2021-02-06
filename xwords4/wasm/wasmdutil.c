@@ -156,22 +156,6 @@ base16Decode( uint8_t* decodeBuf, int len, const char* str )
 /*     XP_ASSERT( 0 == XP_MEMCMP( testBuf, decodeBuf, VSIZE(testBuf) ) ); */
 /* } */
 
-static void
-wasm_dutil_storeStream( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
-                        XWStreamCtxt* data )
-{
-    LOG_FUNC();
-    XP_ASSERT(0);
-}
-
-static void
-wasm_dutil_loadStream( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
-                       const XP_UCHAR* keySuffix, XWStreamCtxt* inOut )
-{
-    LOG_FUNC();
-    XP_ASSERT(0);
-}
-
 EM_JS(const char*, get_stored_value, (const char* key), {
         var result = null;
         var jsKey = UTF8ToString(key);
@@ -315,8 +299,6 @@ wasm_dutil_make( MPFORMAL VTableMgr* vtMgr, void* closure )
     SET_PROC(getCurSeconds);
     SET_PROC(getUserString);
     SET_PROC(getUserQuantityString);
-    SET_PROC(storeStream);
-    SET_PROC(loadStream);
     SET_PROC(storePtr);
     SET_PROC(loadPtr);
 
