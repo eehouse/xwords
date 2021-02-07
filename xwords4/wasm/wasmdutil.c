@@ -265,13 +265,14 @@ static void
 wasm_dutil_onInviteReceived( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe),
                              const NetLaunchInfo* nli )
 {
-    LOG_FUNC();
+    Globals* globals = (Globals*)duc->closure;
+    main_gameFromInvite( globals, nli );
 }
 
 static void
 wasm_dutil_onMessageReceived( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe),
-                               XP_U32 gameID, const CommsAddrRec* from,
-                               XWStreamCtxt* stream )
+                              XP_U32 gameID, const CommsAddrRec* from,
+                              XWStreamCtxt* stream )
 {
     LOG_FUNC();
 }

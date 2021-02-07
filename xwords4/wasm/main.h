@@ -41,6 +41,7 @@ typedef struct _Globals {
 
 void main_set_timer( Globals* globals, XWTimerReason why, XP_U16 when,
                      XWTimerProc proc, void* closure );
+void main_clear_timer( Globals* globals, XWTimerReason why );
 
 typedef void (*QueryProc)(void* closure, XP_Bool confirmed);
 void main_query( Globals* globals, const XP_UCHAR* query,
@@ -49,4 +50,9 @@ void main_query( Globals* globals, const XP_UCHAR* query,
 void main_set_idle( Globals* globals, IdleProc proc, void* closure );
 
 void main_alert( Globals* globals, const XP_UCHAR* msg );
+
+void main_gameFromInvite( Globals* globals, const NetLaunchInfo* invite );
+
+void main_sendOnClose( XWStreamCtxt* stream, XWEnv env, void* closure );
+
 #endif

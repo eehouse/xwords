@@ -29,6 +29,8 @@
 #include "game.h"
 #include "device.h"
 #include "mempool.h"
+#include "nli.h"
+#include "strutils.h"
 
 #include "main.h"
 #include "wasmdraw.h"
@@ -56,10 +58,53 @@ EM_JS(bool, call_confirm, (const char* str), {
 EM_JS(void, call_alert, (const char* str), {
         alert(UTF8ToString(str));
 });
+EM_JS(void, call_haveDevID, (const char* devid), {
+        onHaveDevID(UTF8ToString(devid));
+});
+
+EM_JS(void, call_mqttSend, (const char* topic, const uint8_t* ptr, int len), {
+        let topStr = UTF8ToString(topic);
+        let buffer = new Uint8Array(Module.HEAPU8.buffer, ptr, len);
+        mqttSend(topStr, buffer);
+});
 
 static void updateScreen( Globals* globals );
 
 static Globals* sGlobals;
+
+static XP_S16
+send_msg( XWEnv xwe, const XP_U8* buf, XP_U16 len,
+          const XP_UCHAR* msgNo, const CommsAddrRec* addr,
+          CommsConnType conType, XP_U32 gameID, void* closure )
+{
+    XP_S16 nSent = -1;
+    LOG_FUNC();
+    Globals* globals = (Globals*)closure;
+    XP_ASSERT( globals == sGlobals );
+
+    if ( addr_hasType( addr, COMMS_CONN_MQTT ) ) {
+        MQTTDevID devID = addr->u.mqtt.devID;
+
+        XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(globals->mpool)
+                                                    globals->vtMgr );
+        dvc_makeMQTTMessage( globals->dutil, NULL, stream,
+                             gameID, buf, len );
+
+        XP_UCHAR topic[64];
+        formatMQTTTopic( &devID, topic, sizeof(topic) );
+
+        XP_U16 streamLen = stream_getSize( stream );
+
+        XP_LOGFF( "calling call_mqttSend" );
+        call_mqttSend( topic, stream_getPtr( stream ), streamLen );
+        XP_LOGFF( "back from call_mqttSend" );
+        stream_destroy( stream, NULL );
+        nSent = len;
+    }
+
+    LOG_RETURNF( "%d", nSent );
+    return nSent;
+}
 
 static void
 initDeviceGlobals( Globals* globals )
@@ -69,17 +114,51 @@ initDeviceGlobals( Globals* globals )
     // globals->cp.showRobotScores = XP_TRUE;
     globals->cp.sortNewTiles = XP_TRUE;
 
+    globals->procs.send = send_msg;
+    globals->procs.closure = globals;
+
     globals->mpool = mpool_make( "wasm" );
     globals->vtMgr = make_vtablemgr( globals->mpool );
     globals->dutil = wasm_dutil_make( globals->mpool, globals->vtMgr, globals );
     globals->dict = wasm_load_dict( globals->mpool );
+    dict_ref( globals->dict, NULL );
 
     globals->draw = wasm_draw_make( MPPARM(globals->mpool)
                                     WINDOW_WIDTH, WINDOW_HEIGHT );
 
     MQTTDevID devID;
     dvc_getMQTTDevID( globals->dutil, NULL, &devID );
-    XP_LOGFF( "got devID: %X", devID );
+    XP_UCHAR buf[32];
+    XP_SNPRINTF( buf, VSIZE(buf), MQTTDevID_FMT, devID );
+    XP_LOGFF( "got mqtt devID: %s", buf );
+    call_haveDevID( buf );
+}
+
+static void
+startGame( Globals* globals )
+{
+    LOG_FUNC();
+    BoardDims dims;
+    board_figureLayout( globals->game.board, NULL, &globals->gi,
+                        WASM_BOARD_LEFT, WASM_HOR_SCORE_TOP, BDWIDTH, BDHEIGHT,
+                        110, 150, 200, BDWIDTH-25, BDWIDTH/15, BDHEIGHT/15,
+                        XP_FALSE, &dims );
+    XP_LOGFF( "calling board_applyLayout" );
+    board_applyLayout( globals->game.board, NULL, &dims );
+    XP_LOGFF( "calling model_setDictionary" );
+    model_setDictionary( globals->game.model, NULL, globals->dict );
+
+    if ( SERVER_ISCLIENT == globals->gi.serverRole ) {
+        server_initClientConnection( globals->game.server, NULL );
+    }
+    
+    (void)server_do( globals->game.server, NULL ); /* assign tiles, etc. */
+    /* if ( !!globals->game.comms ) { */
+    /*     comms_resendAll( globals->game.comms, NULL, COMMS_CONN_NONE, XP_TRUE ); */
+    /* } */
+
+    updateScreen( globals );
+    LOG_RETURN_VOID();
 }
 
 static void
@@ -96,13 +175,13 @@ makeAndDraw( Globals* globals, bool forceNew, bool p0robot, bool p1robot )
 
     globals->gi.nPlayers = 2;
     globals->gi.boardSize = 15;
-    globals->gi.dictName = "myDict";
-    globals->gi.players[0].name = "Player 1";
+    // globals->gi.dictName = "myDict";
+    globals->gi.players[0].name = copyString( globals->mpool, "Player 1" );
     globals->gi.players[0].isLocal = XP_TRUE;
     if ( p0robot ) {
         globals->gi.players[0].robotIQ = 99;
     }
-    globals->gi.players[1].name = "Player 2";
+    globals->gi.players[1].name = copyString( globals->mpool, "Player 1" );
     globals->gi.players[1].isLocal = XP_TRUE;
     if ( p1robot ) {
         globals->gi.players[1].robotIQ = 99;
@@ -137,19 +216,63 @@ makeAndDraw( Globals* globals, bool forceNew, bool p0robot, bool p1robot )
                           &globals->cp, &globals->procs );
     }
 
-    BoardDims dims;
-    board_figureLayout( globals->game.board, NULL, &globals->gi,
-                        WASM_BOARD_LEFT, WASM_HOR_SCORE_TOP, BDWIDTH, BDHEIGHT,
-                        110, 150, 200, BDWIDTH-25, BDWIDTH/15, BDHEIGHT/15,
-                        XP_FALSE, &dims );
-    board_applyLayout( globals->game.board, NULL, &dims );
+    startGame( globals );
+}
 
-    model_setDictionary( globals->game.model, NULL, globals->dict );
+void
+main_gameFromInvite( Globals* globals, const NetLaunchInfo* invite )
+{
+    LOG_FUNC();
+    if ( ! call_confirm( "Invitation received; replace current game?" ) ) {
+    } else if ( invite->lang != 1 ) {
+        call_alert( "Invitation received, but only English supported now" );
+    } else {
+        if ( !!globals->util ) {
+            XP_LOGFF( "calling game_dispose" );
+            game_dispose( &globals->game, NULL );
+            XP_LOGFF( "calling wasm_util_destroy" );
+            wasm_util_destroy( globals->util );
+            globals->util = NULL;
+        }
+        XP_LOGFF( "done with cleanup" ); /* not reaching this */
+        
+        XP_MEMSET( &globals->gi, 0, sizeof(globals->gi) );
 
-    (void)server_do( globals->game.server, NULL ); /* assign tiles, etc. */
-    // board_draw( globals->game.board, NULL );
+        gi_setNPlayers( &globals->gi, invite->nPlayersT, invite->nPlayersH );
+        // ensureLocalPlayerNames( params, &gi );
 
-    updateScreen( globals );
+        globals->gi.boardSize = 15;
+        globals->gi.gameID = invite->gameID;
+        globals->gi.dictLang = invite->lang;
+        globals->gi.forceChannel = invite->forceChannel;
+        globals->gi.inDuplicateMode = invite->inDuplicateMode;
+        globals->gi.serverRole = SERVER_ISCLIENT; /* recipient of invitation is client */
+        replaceStringIfDifferent( globals->mpool, &globals->gi.dictName,
+                                  invite->dict );
+
+        globals->util = wasm_util_make( globals->mpool, &globals->gi,
+                                        globals->dutil, globals );
+        
+        game_makeNewGame( MPPARM(globals->mpool) NULL,
+                          &globals->game, &globals->gi,
+                          globals->util, globals->draw,
+                          &globals->cp, &globals->procs );
+
+        CommsAddrRec returnAddr;
+        nli_makeAddrRec( invite, &returnAddr );
+        comms_augmentHostAddr( globals->game.comms, NULL, &returnAddr );
+
+        startGame( globals );
+    }
+    LOG_RETURN_VOID();
+}
+
+void
+main_sendOnClose( XWStreamCtxt* stream, XWEnv env, void* closure )
+{
+    Globals* globals = (Globals*)closure;
+    XP_LOGFF( "called with msg of len %d", stream_getSize(stream) );
+    (void)comms_send( globals->game.comms, NULL, stream );
 }
 
 static time_t
@@ -193,9 +316,16 @@ checkForIdle( Globals* globals )
 }
 
 void
+main_clear_timer( Globals* globals, XWTimerReason why )
+{
+    XP_LOGFF( "why: %d" );
+}
+
+void
 main_set_timer( Globals* globals, XWTimerReason why, XP_U16 when,
                 XWTimerProc proc, void* closure )
 {
+    XP_LOGFF( "why: %d" );
     /* TimerState* timer = &globals->timers[why]; */
     /* timer->proc = proc; */
     /* timer->closure = closure; */
@@ -262,19 +392,27 @@ checkForEvent( Globals* globals )
 static void
 updateScreen( Globals* globals )
 {
+    LOG_FUNC();
     SDL_RenderClear( globals->renderer );
+    XP_LOGFF( "calling board_draw" );
     board_draw( globals->game.board, NULL );
+    XP_LOGFF( "calling wasm_draw_render" );
     wasm_draw_render( globals->draw, globals->renderer );
+    XP_LOGFF( "calling SDL_RenderPresent" );
     SDL_RenderPresent( globals->renderer );
 
     /* Let's save state here too, though likely too often */
     XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(globals->mpool)
                                                 globals->vtMgr );
+    XP_LOGFF( "calling game_saveToStream" );
     game_saveToStream( &globals->game, NULL, &globals->gi,
                         stream, ++globals->saveToken );
+    XP_LOGFF( "calling dutil_storeStream" );
     dutil_storeStream( globals->dutil, NULL, KEY_GAME, stream );
     stream_destroy( stream, NULL );
+    XP_LOGFF( "calling game_saveSucceeded" );
     game_saveSucceeded( &globals->game, NULL, globals->saveToken );
+    LOG_RETURN_VOID();
 }
 
 static void
@@ -353,6 +491,25 @@ newgame(bool p0, bool p1)
     if ( !!sGlobals ) {
         makeAndDraw( sGlobals, true, p0, p1 );
     }
+}
+
+void
+gotMQTTMsg( int len, const uint8_t* msg )
+{
+    XP_LOGFF( "got msg of len %d", len );
+
+    dvc_parseMQTTPacket( sGlobals->dutil, NULL, msg, len );
+    
+    /* XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(sGlobals->mpool) */
+    /*                                             sGlobals->vtMgr ); */
+    /* stream_putBytes( stream, msg, len ); */
+    /* NetLaunchInfo nli; */
+    /* XP_Bool valid = nli_makeFromStream( &nli, stream ); */
+    /* stream_destroy( stream, NULL ); */
+
+    /* if ( valid ) { */
+    /*     dutil_onInviteReceived( sGlobals->dutil, NULL, &nli ); */
+    /* } */
 }
 
 void

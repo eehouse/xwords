@@ -5,6 +5,7 @@
 #include "comtypes.h"
 #include "strutils.h"
 #include "wasmdraw.h"
+#include "dbgutil.h"
 
 typedef struct _WasmDrawCtx {
     DrawCtxVTable* vtable;

@@ -44,7 +44,6 @@ typedef struct _DevCtxt {
 static DevCtxt*
 load( XW_DUtilCtxt* dutil, XWEnv xwe )
 {
-    LOG_FUNC();
     DevCtxt* state = (DevCtxt*)dutil->devCtxt;
     if ( NULL == state ) {
         XWStreamCtxt* stream = mkStream( dutil );
@@ -69,7 +68,6 @@ load( XW_DUtilCtxt* dutil, XWEnv xwe )
 void
 dvc_store( XW_DUtilCtxt* dutil, XWEnv xwe )
 {
-    LOG_FUNC();
     DevCtxt* state = load( dutil, xwe );
     XWStreamCtxt* stream = mkStream( dutil );
     stream_putU16( stream, state->devCount );

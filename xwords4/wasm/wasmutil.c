@@ -12,11 +12,16 @@ typedef struct _WasmUtilCtx {
 } WasmUtilCtx;
 
 static XWStreamCtxt*
-wasm_util_makeStreamFromAddr(XW_UtilCtxt* uc, XWEnv xwe,
-                              XP_PlayerAddr channelNo )
+wasm_util_makeStreamFromAddr( XW_UtilCtxt* uc, XWEnv xwe, XP_PlayerAddr channelNo )
 {
     LOG_FUNC();
-    return NULL;
+
+    WasmUtilCtx* wuctxt = (WasmUtilCtx*)uc;
+    Globals* globals = (Globals*)wuctxt->closure;
+    XWStreamCtxt* stream = mem_stream_make( MPPARM(uc->mpool)
+                                            globals->vtMgr, globals, 
+                                            channelNo, main_sendOnClose );
+    return stream;
 }
 
 static XWBonusType
@@ -346,6 +351,9 @@ static void
 wasm_util_clearTimer( XW_UtilCtxt* uc, XWEnv xwe, XWTimerReason why )
 {
     LOG_FUNC();
+    WasmUtilCtx* wuctxt = (WasmUtilCtx*)uc;
+    Globals* globals = (Globals*)wuctxt->closure;
+    main_clear_timer( globals, why );
 }
 
 static XP_Bool

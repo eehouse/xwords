@@ -107,7 +107,7 @@ static void freeMsgIDRec( SMSProto* state, MsgIDRec* rec, int fromPhoneIndex,
 static void freeForPhone( SMSProto* state, const XP_UCHAR* phone );
 static void freeMsg( SMSProto* state, MsgRec** msg );
 static void freeRec( SMSProto* state, ToPhoneRec* rec );
-#ifdef DEBUG
+#if defined DEBUG && defined COMMS_CHECKSUM
 static void logResult( const SMSProto* state, XWEnv xwe,
                        const SMSMsgArray* result, const char* caller );
 #else
@@ -220,7 +220,7 @@ smsproto_prepOutbound( SMSProto* state, XWEnv xwe, SMS_CMD cmd, XP_U32 gameID,
     SMSMsgArray* result = NULL;
     pthread_mutex_lock( &state->mutex );
 
-#ifdef DEBUG
+#if defined DEBUG && defined COMMS_CHECKSUM
     XP_UCHAR* checksum = dutil_md5sum( state->dutil, xwe, buf, buflen );
     XP_LOGFF( "(cmd=%d, gameID=%d): len=%d, sum=%s, toPhone=%s", cmd,
               gameID, buflen, checksum, toPhone );
@@ -301,7 +301,7 @@ smsproto_prepInbound( SMSProto* state, XWEnv xwe, const XP_UCHAR* fromPhone,
 {
     XP_LOGFF( "len=%d, fromPhone=%s", len, fromPhone );
 
-#ifdef DEBUG
+#if defined DEBUG && defined COMMS_CHECKSUM
     XP_UCHAR* checksum = dutil_md5sum( state->dutil, xwe, data, len );
     XP_LOGFF( "(fromPhone=%s, len=%d); sum=%s", fromPhone, len, checksum );
     XP_FREEP( state->mpool, &checksum );
@@ -410,7 +410,7 @@ smsproto_freeMsgArray( SMSProto* state, SMSMsgArray* arr )
     pthread_mutex_unlock( &state->mutex );
 }
 
-#ifdef DEBUG
+#if defined DEBUG && defined COMMS_CHECKSUM
 static void
 logResult( const SMSProto* state, XWEnv xwe, const SMSMsgArray* result,
            const char* caller )

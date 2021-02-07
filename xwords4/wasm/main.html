@@ -24,6 +24,7 @@
 			}
         </style>
 		<script>
+            var client = null;
 			function callNewGame() {
 				var args = [
 					document.getElementById("player0Checked").checked,
@@ -31,6 +32,64 @@
 				]
 				Module.ccall('newgame', null, ['boolean', 'boolean'], args);
 			}
+
+			function onHaveDevID(devid) {
+				console.log('got ' + devid);
+				document.getElementById("mqtt_span").textContent=devid;
+
+                client = new Paho.MQTT.Client("eehouse.org", 8883, '/wss', devid);
+
+				// set callback handlers
+				client.onConnectionLost = function onConnectionLost(responseObject) {
+					document.getElementById("mqtt_status").textContent="Disconnected";
+					if (responseObject.errorCode !== 0) {
+						console.log("onConnectionLost:"+responseObject.errorMessage);
+					}
+				};
+				client.onMessageArrived = function onMessageArrived(message) {
+					var payload = message.payloadBytes;
+					var length = payload.length;
+					Module.ccall('gotMQTTMsg', null, ['number', 'array'], [length, payload]);
+				};
+
+				function onConnect() {
+					document.getElementById("mqtt_status").textContent="Connected";
+
+					var subscribeOptions = {
+						qos: 2,  // QoS
+						// invocationContext: {foo: true},  // Passed to success / failure callback
+						// onSuccess: function() { alert('subscribe succeeded'); },
+						onFailure: function() { alert('subscribe failed'); },
+						timeout: 10,
+					};
+					client.subscribe('xw4/device/' + devid, subscribeOptions);
+
+					// Try a send-to-self for sanity
+					// message = new Paho.MQTT.Message("Hello");
+					// message.destinationName = devid;
+					// client.send(message);
+				}
+
+				// connect the client -- throws SecurityError: “The operation is insecure.”
+				client.connect({"mqttVersion": 3,
+								"userName": "xwuser",
+								"password": "xw4r0cks",
+								"useSSL": true,
+								"reconnect": true,
+								"onSuccess": onConnect,
+								"onFailure": function() { alert('onFailure'); },
+							   });
+			}
+
+            function mqttSend (topic, ptr) {
+				if ( null != client ) {
+					message = new Paho.MQTT.Message(ptr);
+					message.destinationName = topic;
+					client.send(message);
+				} else {
+					alert('null client');
+				}
+            }
 		</script>
     </head>
 
@@ -54,8 +113,11 @@
 			<input type="checkbox" id="player1Checked">Is Robot</input>
 		</div>
 		<div class="buttons">
-			<button type="button" onclick="callNewGame();">New Game</button>
-		</div>
+			<button type="button" onclick="callNewGame();">New Local Game</button>
+	    </div>
+
+	    <div><span>MQTT Dev ID:</span><span id="mqtt_span"></span></div>
+        <div><span>MQTT Status:</span><span id="mqtt_status">Unconnected</span></div>
 
         <script type='text/javascript'>
             var Module = {
@@ -87,6 +149,9 @@
 
             var script = document.createElement('script');
             script.src = "main.js";
+            document.body.appendChild(script);
+            script = document.createElement('script');
+            script.src = "paho-mqtt.js";
             document.body.appendChild(script);
         </script>
     </body>
