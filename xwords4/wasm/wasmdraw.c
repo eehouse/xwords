@@ -495,7 +495,7 @@ wasm_draw_drawTrayDivider( DrawCtx* dctx, XWEnv xwe, const XP_Rect* rect,
                            CellFlags flags )
 {
     WasmDrawCtx* wdctx = (WasmDrawCtx*)dctx;
-    fillRect( wdctx, rect, &sOtherColors[BLACK] );
+    fillRect( wdctx, rect, &sPlayerColors[wdctx->trayOwner] );
 }
 
 static void

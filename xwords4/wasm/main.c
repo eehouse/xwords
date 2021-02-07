@@ -45,8 +45,8 @@
 
 #define WINDOW_WIDTH 400
 #define WINDOW_HEIGHT 600
-#define BDWIDTH 400
-#define BDHEIGHT 400
+#define BDWIDTH WINDOW_WIDTH
+#define BDHEIGHT WINDOW_HEIGHT
 
 #define KEY_GAME "the_game"
 
@@ -140,7 +140,8 @@ makeAndDraw( Globals* globals, bool forceNew, bool p0robot, bool p1robot )
     BoardDims dims;
     board_figureLayout( globals->game.board, NULL, &globals->gi,
                         WASM_BOARD_LEFT, WASM_HOR_SCORE_TOP, BDWIDTH, BDHEIGHT,
-                        110, 150, 200, BDWIDTH-25, 16, 16, XP_FALSE, &dims );
+                        110, 150, 200, BDWIDTH-25, BDWIDTH/15, BDHEIGHT/15,
+                        XP_FALSE, &dims );
     board_applyLayout( globals->game.board, NULL, &dims );
 
     model_setDictionary( globals->game.model, NULL, globals->dict );
