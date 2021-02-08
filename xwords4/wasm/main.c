@@ -514,17 +514,6 @@ gotMQTTMsg( int len, const uint8_t* msg )
     XP_LOGFF( "got msg of len %d", len );
 
     dvc_parseMQTTPacket( sGlobals->dutil, NULL, msg, len );
-    
-    /* XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(sGlobals->mpool) */
-    /*                                             sGlobals->vtMgr ); */
-    /* stream_putBytes( stream, msg, len ); */
-    /* NetLaunchInfo nli; */
-    /* XP_Bool valid = nli_makeFromStream( &nli, stream ); */
-    /* stream_destroy( stream, NULL ); */
-
-    /* if ( valid ) { */
-    /*     dutil_onInviteReceived( sGlobals->dutil, NULL, &nli ); */
-    /* } */
 }
 
 void
