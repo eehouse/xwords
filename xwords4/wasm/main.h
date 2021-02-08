@@ -6,6 +6,7 @@
 #include <SDL2/SDL_ttf.h>
 
 #include "game.h"
+#include "dictmgr.h"
 
 typedef struct _TimerState {
     void* closure;
@@ -28,6 +29,7 @@ typedef struct _Globals {
     DictionaryCtxt* dict;
     TransportProcs procs;
     CommonPrefs cp;
+    DictMgrCtxt* dictMgr;
 
     TimerState timers[NUM_TIMERS_PLUS_ONE];
 
@@ -52,6 +54,8 @@ void main_set_idle( Globals* globals, IdleProc proc, void* closure );
 void main_alert( Globals* globals, const XP_UCHAR* msg );
 
 void main_gameFromInvite( Globals* globals, const NetLaunchInfo* invite );
+void main_onGameMessage( Globals* globals, XP_U32 gameID,
+                         const CommsAddrRec* from, XWStreamCtxt* stream );
 
 void main_sendOnClose( XWStreamCtxt* stream, XWEnv env, void* closure );
 

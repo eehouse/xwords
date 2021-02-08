@@ -1338,7 +1338,9 @@ static void
 notifyQueueChanged( const CommsCtxt* comms, XWEnv xwe )
 {
     XP_U16 count = comms->queueLen;
-    (*comms->procs.countChanged)( xwe, comms->procs.closure, count );
+    if ( !!comms->procs.countChanged ) {
+        (*comms->procs.countChanged)( xwe, comms->procs.closure, count );
+    }
 }
 
 /* Add new message to the end of the list.  The list needs to be kept in order
@@ -1553,8 +1555,10 @@ sendMsg( CommsCtxt* comms, XWEnv xwe, MsgQueueElem* elem, const CommsConnType fi
             XP_LOGF( "%s: dropping message because not of type %s", __func__,
                      ConnType2Str( filter ) );
         } else {
+#ifdef COMMS_CHECKSUM
             XP_LOGF( TAGFMT() "sending msg with sum %s using typ %s", TAGPRMS,
                      elem->checksum, ConnType2Str(typ) );
+#endif
             switch ( typ ) {
 #ifdef XWFEATURE_RELAY
             case COMMS_CONN_RELAY: {
@@ -1854,10 +1858,12 @@ got_connect_cmd( CommsCtxt* comms, XWEnv xwe, XWStreamCtxt* stream,
     /* Don't bother notifying if the game's already in play on some other
        transport */
     if ( CONN_ID_NONE == comms->connID ) {
-        (*comms->procs.rconnd)( xwe, comms->procs.closure,
-                                comms->addr.u.ip_relay.invite, reconnected,
-                                comms->rr.myHostID, XP_FALSE, nSought - nHere );
-        XP_LOGFF( "have %d of %d players", nHere, nSought );
+        if ( !!comms->procs.rconnd ) {
+            (*comms->procs.rconnd)( xwe, comms->procs.closure,
+                                    comms->addr.u.ip_relay.invite, reconnected,
+                                    comms->rr.myHostID, XP_FALSE, nSought - nHere );
+            XP_LOGFF( "have %d of %d players", nHere, nSought );
+        }
     }
     setHeartbeatTimer( comms );
 } /* got_connect_cmd */
@@ -3050,13 +3056,13 @@ augmentAddrIntrnl( CommsCtxt* comms, CommsAddrRec* destAddr,
                 src = &srcAddr->u.p2p;
                 siz = sizeof(destAddr->u.p2p);
                 break;
-#ifdef XWFEATURE_BLUETOOTH
             case COMMS_CONN_BT:
+#ifdef XWFEATURE_BLUETOOTH
                 dest = &destAddr->u.bt;
                 src = &srcAddr->u.bt;
                 siz = sizeof(destAddr->u.bt);
-                break;
 #endif
+                break;
             case COMMS_CONN_NFC:
                 break;
             case COMMS_CONN_MQTT:

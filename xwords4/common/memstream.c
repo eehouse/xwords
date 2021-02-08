@@ -334,13 +334,13 @@ mem_stream_putBits( XWStreamCtxt* p_sctx, XP_U16 nBits, XP_U32 data
         putOneBit( stream, (XP_U16)(((data & 1L) != 0)? 1:0) );
         data >>= 1;
     }
-    XP_ASSERT( data == 0 );     /* otherwise nBits was too small */
 #ifdef DEBUG
     if ( data != 0 ) {
         XP_LOGF( "%s: nBits was %d from line %d, %s", __func__, 
                  origBits, lin, fil );
     }
 #endif
+    XP_ASSERT( data == 0 );     /* otherwise nBits was too small */
 } /* mem_stream_putBits */
 
 static void

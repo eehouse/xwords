@@ -3,6 +3,7 @@
 #include "comtypes.h"
 #include "main.h"
 #include "dbgutil.h"
+#include "wasmdict.h"
 
 typedef struct _WasmUtilCtx {
     XW_UtilCtxt super;
@@ -382,8 +383,8 @@ wasm_util_altKeyDown( XW_UtilCtxt* uc, XWEnv xwe )
 static DictionaryCtxt*
 wasm_util_makeEmptyDict( XW_UtilCtxt* uc, XWEnv xwe )
 {
-    LOG_FUNC();
-    return NULL;
+    LOG_FUNC();                 /* firing */
+    return wasm_dictionary_make( MPPARM(uc->mpool) NULL, uc->closure, NULL, false );
 }
 
 static void

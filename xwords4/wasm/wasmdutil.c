@@ -3,6 +3,7 @@
 #include <emscripten.h>
 
 #include "wasmdutil.h"
+#include "main.h"
 #include "dbgutil.h"
 #include "LocalizedStrIncludes.h"
 
@@ -182,8 +183,6 @@ static void
 wasm_dutil_loadPtr( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
                     const XP_UCHAR* keySuffix, void* data, XP_U16* lenp )
 {
-    XP_LOGFF( "(key: %s, keySuffix: %s)", key, keySuffix );
-
     const char* val = get_stored_value(key);
     XP_LOGFF( "get_stored_value(%s) => %s", key, val );
     if ( !!val ) {
@@ -200,23 +199,16 @@ wasm_dutil_loadPtr( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
     } else {
         *lenp = 0;              /* signal failure */
     }
-    LOG_RETURN_VOID();
 }
 
 static void
 wasm_dutil_storePtr( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
                       const void* data, XP_U16 len )
 {
-    XP_LOGFF( "(key: %s; len: %d)", key, len );
-
     XP_UCHAR out[len*2+1];
     base16Encode( data, len, out, sizeof(out) );
 
     set_stored_value( key, out );
-    /* const char* tmp = get_stored_value( key ); */
-    /* XP_LOGFF( "TEST: got back %s for key %s", tmp, key ); */
-
-    LOG_RETURN_VOID();
 }
 
 static const XP_UCHAR*
@@ -274,7 +266,8 @@ wasm_dutil_onMessageReceived( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe),
                               XP_U32 gameID, const CommsAddrRec* from,
                               XWStreamCtxt* stream )
 {
-    LOG_FUNC();
+    Globals* globals = (Globals*)duc->closure;
+    main_onGameMessage( globals, gameID, from, stream );
 }
 
 static void

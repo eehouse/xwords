@@ -51,6 +51,7 @@
 #define BDHEIGHT WINDOW_HEIGHT
 
 #define KEY_GAME "the_game"
+#define DICTNAME "assets_dir/CollegeEng_2to8.xwd"
 
 EM_JS(bool, call_confirm, (const char* str), {
         return confirm(UTF8ToString(str));
@@ -120,7 +121,10 @@ initDeviceGlobals( Globals* globals )
     globals->mpool = mpool_make( "wasm" );
     globals->vtMgr = make_vtablemgr( globals->mpool );
     globals->dutil = wasm_dutil_make( globals->mpool, globals->vtMgr, globals );
-    globals->dict = wasm_load_dict( globals->mpool );
+    globals->dictMgr = dmgr_make( MPPARM_NOCOMMA(globals->mpool) );
+    globals->dict = wasm_dictionary_make( MPPARM(globals->mpool) NULL,
+                                          globals, DICTNAME, true );
+
     dict_ref( globals->dict, NULL );
 
     globals->draw = wasm_draw_make( MPPARM(globals->mpool)
@@ -260,11 +264,22 @@ main_gameFromInvite( Globals* globals, const NetLaunchInfo* invite )
 
         CommsAddrRec returnAddr;
         nli_makeAddrRec( invite, &returnAddr );
+        addr_setType( &returnAddr, COMMS_CONN_MQTT ); /* nuke everything else */
         comms_augmentHostAddr( globals->game.comms, NULL, &returnAddr );
 
         startGame( globals );
     }
     LOG_RETURN_VOID();
+}
+
+void
+main_onGameMessage( Globals* globals, XP_U32 gameID,
+                    const CommsAddrRec* from, XWStreamCtxt* stream )
+{
+    XP_Bool draw = game_receiveMessage( &globals->game, NULL, stream, from );
+    if ( draw ) {
+        updateScreen( globals );
+    }
 }
 
 void
