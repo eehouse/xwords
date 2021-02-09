@@ -30,4 +30,29 @@
     <string name="list_item_rename">Yeniden Adlandır…</string>
     <string name="list_item_config">Oyun ayarları…</string>
     <string name="board_menu_file_about">CrossWords Hakkında…</string>
+    <plurals name="confirm_delete_dict_fmt">
+        <item quantity="one">%1$s kelime listesini silmek istiyor musun\?</item>
+        <item quantity="other">%1$s kelime listesini silmek istiyor musun\?</item>
+    </plurals>
+    <string name="dicts_item_select">Varsayılan yap</string>
+    <string name="dicts_item_move">Depolama konumunu değiştir</string>
+    <string name="loc_downloads">İndirilmiş</string>
+    <string name="loc_builtin">Yerleşik</string>
+    <string name="download_more">Daha fazla indir…</string>
+    <string name="title_dicts_list">CrossWords Kelime Listeleri</string>
+    <plurals name="confirm_seldeletes_fmt">
+        <item quantity="one">Seçili oyunu silmek istiyor musun\? Bu eylem geri alınamaz.</item>
+        <item quantity="other">Seçilen %1$d adet oyunu silmek istiyor musun\? Bu eylem geri alınamaz.</item>
+    </plurals>
+    <plurals name="confirm_reset_fmt">
+        <item quantity="one">Seçili oyunu sıfırlamak istiyor musun\?
+\n
+\n(Sıfırlama, tüm hareketleri ve tüm bağlantı bilgilerini siler.)</item>
+        <item quantity="other">Seçilen %1$d adet oyunu sıfırlamak istiyor musun\?
+\n
+\n(Sıfırlama, tüm hareketleri ve tüm bağlantı bilgilerini siler.)</item>
+    </plurals>
+    <string name="rename_label_caveat">Bu oyunun adını (yalnızca bu cihazda) şu şekilde değiştir:</string>
+    <string name="rename_label">Bu oyunun adını şu şekilde değiştir:</string>
+    <string name="game_rename_title">Oyunu yeniden adlandır</string>
 </resources>
