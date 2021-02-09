@@ -28,30 +28,31 @@ DEFINES += -DPLATFORM_WASM
 DEFINES += -DXWFEATURE_CROSSHAIRS
 DEFINES += -DNATIVE_NLI
 DEFINES += -DDEBUG_REF
-
-OUTPUTS = main.html main.js main.js.mem main.data main.html.mem
+OUTPUTS = main.html main.js main.js.mem main.data main.html.mem main.wasm
 
 all: main.js
 
 # PHONY: upload
 
-main.js: ${INPUTS} Makefile
-	emcc $(DEFINES) -O2 -DNAKED_MODE=1 -I . -I ../common -I ../relay -s USE_SDL=2 \
-		--preload-file assets_dir --memory-init-file 1 \
-		-s USE_SDL_TTF=2 -s USE_SDL_IMAGE=2 -s SDL2_IMAGE_FORMATS='["png"]' \
-		-s EXPORTED_FUNCTIONS='["_mainf", "_button", "_newgame", "_gotMQTTMsg"]' -s WASM=0 \
-		-s "EXTRA_EXPORTED_RUNTIME_METHODS=['ccall']" \
-		${INPUTS} -o $@
-
-# This isn't a thing any more
-# main.html: ${INPUTS} Makefile
-# 	emcc $(DEFINES) -I . -I ../common -I ../relay -s USE_SDL=2 \
-# 		--preload-file assets_dir \
+# main.js: ${INPUTS} Makefile
+# 	emcc $(DEFINES) -O2 -I . -I ../common -I ../relay -s USE_SDL=2 \
+# 		--preload-file assets_dir --memory-init-file 1 \
 # 		-s USE_SDL_TTF=2 -s USE_SDL_IMAGE=2 -s SDL2_IMAGE_FORMATS='["png"]' \
-# 		-s WASM=0 \
+# 		-s EXPORTED_FUNCTIONS='["_mainf", "_button", "_newgame", "_gotMQTTMsg"]' -s WASM=0 \
+# 		-s "EXTRA_EXPORTED_RUNTIME_METHODS=['ccall']" \
 # 		${INPUTS} -o $@
 
-upload: main.js
+# This isn't a thing any more
+main.html: ${INPUTS} Makefile shell_minimal.html
+	emcc $(DEFINES) -I . -I ../common -I ../relay -s USE_SDL=2 \
+		--preload-file assets_dir --shell-file shell_minimal.html \
+		-s USE_SDL_TTF=2 -s USE_SDL_IMAGE=2 -s SDL2_IMAGE_FORMATS='["png"]' \
+		-s "EXTRA_EXPORTED_RUNTIME_METHODS=['ccall']" \
+		-s EXPORTED_FUNCTIONS='["_main", "_button", "_newgame", "_gotMQTTMsg"]' -s WASM=0 \
+		-s WASM=1 \
+		${INPUTS} -o $@
+
+upload: main.html
 	if [ -n "${XW_WASM_DEST}" ]; then \
 		for FILE in ${OUTPUTS} paho-mqtt.js; do \
 			[ -f $$FILE ] && scp $$FILE ${XW_WASM_DEST}; \

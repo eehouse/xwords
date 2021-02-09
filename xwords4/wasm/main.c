@@ -182,14 +182,11 @@ makeAndDraw( Globals* globals, bool forceNew, bool p0robot, bool p1robot )
     // globals->gi.dictName = "myDict";
     globals->gi.players[0].name = copyString( globals->mpool, "Player 1" );
     globals->gi.players[0].isLocal = XP_TRUE;
-    if ( p0robot ) {
-        globals->gi.players[0].robotIQ = 99;
-    }
+    globals->gi.players[0].robotIQ = p0robot ? 99 : 0;
+
     globals->gi.players[1].name = copyString( globals->mpool, "Player 1" );
     globals->gi.players[1].isLocal = XP_TRUE;
-    if ( p1robot ) {
-        globals->gi.players[1].robotIQ = 99;
-    }
+    globals->gi.players[1].robotIQ = p1robot ? 99 : 0;
 
     globals->util = wasm_util_make( globals->mpool, &globals->gi,
                                     globals->dutil, globals );
@@ -443,7 +440,6 @@ looper( void* closure )
     }
 }
 
-#ifdef NAKED_MODE
 void
 button( const char* msg )
 {
@@ -469,7 +465,6 @@ button( const char* msg )
         updateScreen( globals );
     }
 }
-#endif
 
 static void
 initNoReturn()
@@ -498,14 +493,12 @@ initNoReturn()
     emscripten_set_main_loop_arg( looper, globals, -1, 1 );
 }
 
-#ifdef NAKED_MODE
 void
 newgame(bool p0, bool p1)
 {
     XP_LOGFF( "(args: %d,%d)", p0, p1 );
-    if ( !!sGlobals ) {
-        makeAndDraw( sGlobals, true, p0, p1 );
-    }
+    XP_ASSERT( !!sGlobals );
+    makeAndDraw( sGlobals, true, p0, p1 );
 }
 
 void
@@ -516,18 +509,13 @@ gotMQTTMsg( int len, const uint8_t* msg )
     dvc_parseMQTTPacket( sGlobals->dutil, NULL, msg, len );
 }
 
-void
-mainf()
-{
-    LOG_FUNC();
-    initNoReturn();
-}
-#else
 int
 main( int argc, char** argv )
 {
     XP_LOGFF( "(argc=%d)", argc );
+    for ( int ii = 0; ii < argc; ++ii ) {
+        XP_LOGFF( "arg[%d]: %s", ii, argv[ii] );
+    }
     initNoReturn();
     return 0;
 }
-#endif
