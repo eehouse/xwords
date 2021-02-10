@@ -179,6 +179,7 @@
     <script>
         var state = {client: null,
                      closure: null,
+					 connected: false,
 					};
 
 		function callNewGame() {
@@ -197,6 +198,7 @@
 
 			// set callback handlers
 			state.client.onConnectionLost = function onConnectionLost(responseObject) {
+				state.connected = false;
 				document.getElementById("mqtt_status").textContent="Disconnected";
 				if (responseObject.errorCode !== 0) {
 					console.log("onConnectionLost:"+responseObject.errorMessage);
@@ -210,6 +212,7 @@
 			};
 
 			function onConnect() {
+				state.connected = true
 				document.getElementById("mqtt_status").textContent="Connected";
 
 				var subscribeOptions = {
@@ -233,15 +236,17 @@
 
        }
 
-       function mqttSend (topic, ptr) {
-		   if ( null != state.client ) {
+       function mqttSend( topic, ptr ) {
+		   let canSend = null != state.client && state.connected;
+		   if ( canSend ) {
 			   message = new Paho.MQTT.Message(ptr);
 			   message.destinationName = topic;
 			   message.qos = 2;
 			   state.client.send(message);
 		   } else {
-			   alert('null client');
+			   console.log('mqttSend: not connected');
 		   }
+		   return canSend;
        }
 
         let script = document.createElement('script');

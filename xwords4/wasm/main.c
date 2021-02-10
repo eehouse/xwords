@@ -63,10 +63,10 @@ EM_JS(void, call_haveDevID, (void* closure, const char* devid), {
         onHaveDevID(closure, UTF8ToString(devid));
 });
 
-EM_JS(void, call_mqttSend, (const char* topic, const uint8_t* ptr, int len), {
+EM_JS(bool, call_mqttSend, (const char* topic, const uint8_t* ptr, int len), {
         let topStr = UTF8ToString(topic);
         let buffer = new Uint8Array(Module.HEAPU8.buffer, ptr, len);
-        mqttSend(topStr, buffer);
+        return mqttSend(topStr, buffer);
 });
 
 static void updateScreen( Globals* globals );
@@ -97,10 +97,11 @@ send_msg( XWEnv xwe, const XP_U8* buf, XP_U16 len,
         XP_U16 streamLen = stream_getSize( stream );
 
         XP_LOGFF( "calling call_mqttSend" );
-        call_mqttSend( topic, stream_getPtr( stream ), streamLen );
+        if ( call_mqttSend( topic, stream_getPtr( stream ), streamLen ) ) {
+            nSent = len;
+        }
         XP_LOGFF( "back from call_mqttSend" );
         stream_destroy( stream, NULL );
-        nSent = len;
     }
 
     LOG_RETURNF( "%d", nSent );
