@@ -69,7 +69,7 @@ EM_JS(bool, call_mqttSend, (const char* topic, const uint8_t* ptr, int len), {
         return mqttSend(topStr, buffer);
 });
 
-static void updateScreen( Globals* globals );
+static void updateScreen( Globals* globals, bool doSave );
 
 static Globals* sGlobals;
 
@@ -162,24 +162,37 @@ startGame( Globals* globals )
         comms_resendAll( globals->game.comms, NULL, COMMS_CONN_MQTT, XP_TRUE );
     }
 
-    updateScreen( globals );
+    updateScreen( globals, true );
     LOG_RETURN_VOID();
 }
 
 static bool
 gameFromInvite( Globals* globals, const NetLaunchInfo* invite )
 {
-    bool success = false;
-    if ( ! call_confirm( "Invitation received; replace current game?" ) ) {
+    bool loaded = false;
+    bool needsLoad = true;
+    XP_LOGFF( "model: %p", globals->game.model );
+    if ( NULL != globals->game.model ) {
+        XP_LOGFF( "have game: TRUE" );
+        /* there's a current game. Ignore the invitation if it has the same
+           gameID. Otherwise ask to replace */
+        if ( globals->gi.gameID == invite->gameID ) {
+            XP_LOGFF( "duplicate invite; ignoring" );
+            needsLoad = false;
+        } else if ( ! call_confirm( "Invitation received; replace current game?" ) ) {
+            needsLoad = false;
+        }
     } else if ( invite->lang != 1 ) {
         call_alert( "Invitations are only supported for play in English right now." );
-    } else {
+        needsLoad = false;
+    }
+
+    if ( needsLoad ) {
         if ( !!globals->util ) {
             game_dispose( &globals->game, NULL );
             wasm_util_destroy( globals->util );
             globals->util = NULL;
         }
-        XP_LOGFF( "done with cleanup" ); /* not reaching this */
 
         gi_disposePlayerInfo( MPPARM(globals->mpool) &globals->gi );
         XP_MEMSET( &globals->gi, 0, sizeof(globals->gi) );
@@ -187,18 +200,48 @@ gameFromInvite( Globals* globals, const NetLaunchInfo* invite )
         globals->util = wasm_util_make( globals->mpool, &globals->gi,
                                         globals->dutil, globals );
 
-        success = game_makeFromInvite( MPPARM(globals->mpool) NULL, invite,
-                                       &globals->game, &globals->gi,
-                                       globals->dict, NULL,
-                                       globals->util, globals->draw,
-                                       &globals->cp, &globals->procs );
+        loaded = game_makeFromInvite( MPPARM(globals->mpool) NULL, invite,
+                                      &globals->game, &globals->gi,
+                                      globals->dict, NULL,
+                                      globals->util, globals->draw,
+                                      &globals->cp, &globals->procs );
 
+    } else {
+        loaded = true;
     }
-    return success;
+    LOG_RETURNF( "%d", loaded );
+    return loaded;
+}
+
+static bool
+loadSavedGame( Globals* globals )
+{
+    bool loaded = false;
+    XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(globals->mpool)
+                                                globals->vtMgr );
+    dutil_loadStream( globals->dutil, NULL, KEY_GAME, NULL, stream );
+    if ( 0 < stream_getSize( stream ) ) {
+        XP_ASSERT( !globals->util );
+        globals->util = wasm_util_make( globals->mpool, &globals->gi,
+                                        globals->dutil, globals );
+
+        XP_LOGFF( "there's a saved game!!" );
+        loaded = game_makeFromStream( MPPARM(globals->mpool) NULL, stream,
+                                      &globals->game, &globals->gi,
+                                      globals->dict, NULL,
+                                      globals->util, globals->draw,
+                                      &globals->cp, &globals->procs );
+
+        if ( loaded ) {
+            updateScreen( globals, false );
+        }
+    }
+    stream_destroy( stream, NULL );
+    return loaded;
 }
 
 static void
-makeAndDraw( Globals* globals, const NetLaunchInfo* invite,
+loadAndDraw( Globals* globals, const NetLaunchInfo* invite,
              bool forceNew, bool p0robot, bool p1robot )
 {
     if ( !!globals->util ) {
@@ -207,46 +250,36 @@ makeAndDraw( Globals* globals, const NetLaunchInfo* invite,
         globals->util = NULL;
     }
 
-    globals->gi.serverRole = SERVER_STANDALONE;
-    globals->gi.phoniesAction = PHONIES_WARN;
+    bool haveGame;
+    if ( forceNew ) {
+        haveGame = false;
+    } else {
+        /* First, load any saved game. We need it e.g. to confirm that an incoming
+           invite is a dup and should be dropped. */
+        haveGame = loadSavedGame( globals );
 
-    globals->gi.nPlayers = 2;
-    globals->gi.boardSize = 15;
-    // globals->gi.dictName = "myDict";
-    globals->gi.players[0].name = copyString( globals->mpool, "Player 1" );
-    globals->gi.players[0].isLocal = XP_TRUE;
-    globals->gi.players[0].robotIQ = p0robot ? 99 : 0;
-
-    globals->gi.players[1].name = copyString( globals->mpool, "Player 2" );
-    globals->gi.players[1].isLocal = XP_TRUE;
-    globals->gi.players[1].robotIQ = p1robot ? 99 : 0;
-
-    globals->util = wasm_util_make( globals->mpool, &globals->gi,
-                                    globals->dutil, globals );
-
-    XP_Bool loaded = XP_FALSE;
-    XP_ASSERT( !forceNew || !invite ); /* won't both be set */
-
-    if ( !!invite ) {
-        loaded = gameFromInvite( globals, invite );
-    } else if ( ! forceNew ) {
-        /* Let's see if there's a saved game */
-        XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(globals->mpool)
-                                                    globals->vtMgr );
-        dutil_loadStream( globals->dutil, NULL, KEY_GAME, NULL, stream );
-        if ( 0 < stream_getSize( stream ) ) {
-            XP_LOGFF( "there's a saved game!!" );
-            loaded = game_makeFromStream( MPPARM(globals->mpool) NULL, stream,
-                                          &globals->game, &globals->gi,
-                                          globals->dict, NULL,
-                                          globals->util, globals->draw,
-                                          &globals->cp, &globals->procs );
-
+        if ( !!invite ) {
+            haveGame = gameFromInvite( globals, invite );
         }
-        stream_destroy( stream, NULL );
     }
 
-    if ( !loaded ) {
+    if ( !haveGame ) {
+        globals->gi.serverRole = SERVER_STANDALONE;
+        globals->gi.phoniesAction = PHONIES_WARN;
+        globals->gi.gameID = 0;
+        globals->gi.nPlayers = 2;
+        globals->gi.boardSize = 15;
+        globals->gi.players[0].name = copyString( globals->mpool, "Player 1" );
+        globals->gi.players[0].isLocal = XP_TRUE;
+        globals->gi.players[0].robotIQ = p0robot ? 99 : 0;
+
+        globals->gi.players[1].name = copyString( globals->mpool, "Player 2" );
+        globals->gi.players[1].isLocal = XP_TRUE;
+        globals->gi.players[1].robotIQ = p1robot ? 99 : 0;
+
+        globals->util = wasm_util_make( globals->mpool, &globals->gi,
+                                        globals->dutil, globals );
+
         XP_LOGFF( "calling game_makeNewGame()" );
         game_makeNewGame( MPPARM(globals->mpool) NULL,
                           &globals->game, &globals->gi,
@@ -271,7 +304,7 @@ main_onGameMessage( Globals* globals, XP_U32 gameID,
 {
     XP_Bool draw = game_receiveMessage( &globals->game, NULL, stream, from );
     if ( draw ) {
-        updateScreen( globals );
+        updateScreen( globals, true );
     }
 }
 
@@ -398,29 +431,23 @@ checkForEvent( Globals* globals )
 }
 
 static void
-updateScreen( Globals* globals )
+updateScreen( Globals* globals, bool doSave )
 {
-    LOG_FUNC();
     SDL_RenderClear( globals->renderer );
-    XP_LOGFF( "calling board_draw" );
     board_draw( globals->game.board, NULL );
-    XP_LOGFF( "calling wasm_draw_render" );
     wasm_draw_render( globals->draw, globals->renderer );
-    XP_LOGFF( "calling SDL_RenderPresent" );
     SDL_RenderPresent( globals->renderer );
 
     /* Let's save state here too, though likely too often */
-    XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(globals->mpool)
-                                                globals->vtMgr );
-    XP_LOGFF( "calling game_saveToStream" );
-    game_saveToStream( &globals->game, NULL, &globals->gi,
-                        stream, ++globals->saveToken );
-    XP_LOGFF( "calling dutil_storeStream" );
-    dutil_storeStream( globals->dutil, NULL, KEY_GAME, stream );
-    stream_destroy( stream, NULL );
-    XP_LOGFF( "calling game_saveSucceeded" );
-    game_saveSucceeded( &globals->game, NULL, globals->saveToken );
-    LOG_RETURN_VOID();
+    if ( doSave ) {
+        XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(globals->mpool)
+                                                    globals->vtMgr );
+        game_saveToStream( &globals->game, NULL, &globals->gi,
+                           stream, ++globals->saveToken );
+        dutil_storeStream( globals->dutil, NULL, KEY_GAME, stream );
+        stream_destroy( stream, NULL );
+        game_saveSucceeded( &globals->game, NULL, globals->saveToken );
+    }
 }
 
 static void
@@ -432,7 +459,7 @@ looper( void* closure )
     draw = checkForEvent( globals ) || draw;
 
     if ( draw ) {
-        updateScreen( globals );
+        updateScreen( globals, true );
     }
 }
 
@@ -448,6 +475,11 @@ button( const char* msg )
         draw = board_requestHint( board, NULL, XP_TRUE, &redo );
     } else if ( 0 == strcmp(msg, "hintup") ) {
         draw = board_requestHint( board, NULL, XP_FALSE, &redo );
+    } else if ( 0 == strcmp(msg, "trade") ) {
+        // draw = board_beginTrade( board, NULL );
+        call_alert("not implemented");
+    } else if ( 0 == strcmp(msg, "commit") ) {
+        draw = board_commitTurn( board, NULL, XP_FALSE, XP_FALSE, NULL );
     } else if ( 0 == strcmp(msg, "flip") ) {
         draw = board_flip( board );
     } else if ( 0 == strcmp(msg, "redo") ) {
@@ -458,7 +490,7 @@ button( const char* msg )
     }
 
     if ( draw ) {
-        updateScreen( globals );
+        updateScreen( globals, true );
     }
 }
 
@@ -560,7 +592,7 @@ initNoReturn( int argc, const char** argv )
 
     initDeviceGlobals( globals );
 
-    makeAndDraw( globals, nlip, false, false, true );
+    loadAndDraw( globals, nlip, false, false, true );
 
     emscripten_set_main_loop_arg( looper, globals, -1, 1 );
 }
@@ -570,7 +602,9 @@ newgame(bool p0, bool p1)
 {
     XP_LOGFF( "(args: %d,%d)", p0, p1 );
     XP_ASSERT( !!sGlobals );
-    makeAndDraw( sGlobals, NULL, true, p0, p1 );
+    if ( call_confirm("Are you sure you want to replace the current game?") ) {
+        loadAndDraw( sGlobals, NULL, true, p0, p1 );
+    }
 }
 
 void

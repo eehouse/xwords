@@ -23,6 +23,8 @@ typedef struct _WasmDrawCtx {
 
     int trayOwner;
     XP_Bool inTrade;
+
+    MPSLOT;
 } WasmDrawCtx;
 
 static SDL_Color sBonusColors[4] = {
@@ -216,12 +218,20 @@ static void
 wasm_draw_destroyCtxt( DrawCtx* dctx, XWEnv xwe )
 {
     LOG_FUNC();
+    WasmDrawCtx* wdctx = (WasmDrawCtx*)dctx;
+
+    TTF_CloseFont( wdctx->font12 );
+    TTF_CloseFont( wdctx->font20 );
+    TTF_CloseFont( wdctx->font36 );
+    TTF_CloseFont( wdctx->font48 );
+
+    XP_FREEP( wdctx->mpool, &wdctx->vtable );
+    XP_FREEP( wdctx->mpool, &wdctx );
 }
 
 static void
 wasm_draw_endDraw( DrawCtx* dctx, XWEnv xwe )
 {
-    LOG_FUNC();
 }
 
 static XP_Bool
@@ -230,14 +240,15 @@ wasm_draw_boardBegin( DrawCtx* dctx, XWEnv xwe,
                       XP_U16 hScale, XP_U16 vScale,
                       DrawFocusState dfs )
 {
-    // LOG_FUNC();
     return XP_TRUE;
 }
 
 static void
 wasm_draw_objFinished( DrawCtx* dctx, XWEnv xwe, BoardObjectType typ,
                        const XP_Rect* rect, 
-                       DrawFocusState dfs ){ LOG_FUNC(); }
+                       DrawFocusState dfs )
+{
+}
 
 static XP_Bool
 wasm_draw_vertScrollBoard(DrawCtx* dctx, XWEnv xwe, XP_Rect* rect,
@@ -252,7 +263,6 @@ wasm_draw_trayBegin( DrawCtx* dctx, XWEnv xwe, const XP_Rect* rect,
                      XP_U16 owner, XP_S16 score,
                      DrawFocusState dfs )
 {
-    XP_LOGFF( "(owner=%d)", owner );
     WasmDrawCtx* wdctx = (WasmDrawCtx*)dctx;
     wdctx->trayOwner = owner;
     return XP_TRUE;
@@ -264,7 +274,6 @@ wasm_draw_scoreBegin( DrawCtx* dctx, XWEnv xwe, const XP_Rect* rect,
                       const XP_S16* const scores,
                       XP_S16 remCount, DrawFocusState dfs )
 {
-    LOG_FUNC();
     WasmDrawCtx* wdctx = (WasmDrawCtx*)dctx;
     clearRect( wdctx, rect );
     return XP_TRUE;
@@ -275,7 +284,6 @@ wasm_draw_measureRemText( DrawCtx* dctx, XWEnv xwe, const XP_Rect* rect,
                           XP_S16 nTilesLeft,
                           XP_U16* width, XP_U16* height )
 {
-    LOG_FUNC();
     XP_Bool drawIt = 0 <= nTilesLeft;
     if ( drawIt ) {
         XP_UCHAR buf[4];
@@ -293,7 +301,6 @@ wasm_draw_drawRemText( DrawCtx* dctx, XWEnv xwe, const XP_Rect* rInner,
                        const XP_Rect* rOuter,
                        XP_S16 nTilesLeft, XP_Bool focussed )
 {
-    LOG_FUNC();
 }
 
 static void
@@ -302,7 +309,6 @@ wasm_draw_measureScoreText( DrawCtx* dctx, XWEnv xwe,
                             const DrawScoreInfo* dsi,
                             XP_U16* width, XP_U16* height )
 {
-    LOG_FUNC();
     *width = rect->width / 2;
     *height = rect->height;
 }
@@ -314,7 +320,6 @@ wasm_draw_score_drawPlayer( DrawCtx* dctx, XWEnv xwe,
                             XP_U16 gotPct, 
                             const DrawScoreInfo* dsi )
 {
-    XP_LOGFF( "(playerNum: %d)", dsi->playerNum );
     WasmDrawCtx* wdctx = (WasmDrawCtx*)dctx;
     XP_UCHAR buf[32];
     XP_SNPRINTF( buf, VSIZE(buf), "%s: %d", dsi->name, dsi->totalScore );
@@ -346,7 +351,10 @@ wasm_draw_score_pendingScore( DrawCtx* dctx, XWEnv xwe,
 static void
 wasm_draw_drawTimer( DrawCtx* dctx, XWEnv xwe, const XP_Rect* rect,
                      XP_U16 player, XP_S16 secondsLeft,
-                     XP_Bool turnDone ){ LOG_FUNC(); }
+                     XP_Bool turnDone )
+{
+    LOG_FUNC();
+}
 
 static void
 markBlank( WasmDrawCtx* wdctx, const XP_Rect* rect, const SDL_Color* backColor )
@@ -470,7 +478,6 @@ wasm_draw_drawTileMidDrag( DrawCtx* dctx, XWEnv xwe,
                            XP_U16 val, XP_U16 owner, 
                            CellFlags flags )
 {
-    LOG_FUNC();
     WasmDrawCtx* wdctx = (WasmDrawCtx*)dctx;
     drawTile( wdctx, text, val, wdctx->trayOwner, rect );
     return XP_TRUE;
@@ -481,7 +488,6 @@ static XP_Bool
 wasm_draw_drawTileBack( DrawCtx* dctx, XWEnv xwe, const XP_Rect* rect,
                         CellFlags flags )
 {
-    LOG_FUNC();
     WasmDrawCtx* wdctx = (WasmDrawCtx*)dctx;
     drawTile( wdctx, "?", -1, wdctx->trayOwner, rect );
     return XP_TRUE;
@@ -538,11 +544,8 @@ createSurface( WasmDrawCtx* wdctx, int width, int height )
 void
 wasm_draw_render( DrawCtx* dctx, SDL_Renderer* dest )
 {
-    LOG_FUNC();
     WasmDrawCtx* wdctx = (WasmDrawCtx*)dctx;
 
-    // SDL_RenderPresent( wdctx->renderer );
-    
     SDL_Texture* texture =
         SDL_CreateTextureFromSurface( dest, wdctx->surface );
     SDL_RenderCopyEx( dest, texture, NULL, NULL, 0,
@@ -555,6 +558,7 @@ wasm_draw_make( MPFORMAL int width, int height )
 {
     LOG_FUNC();
     WasmDrawCtx* wdctx = XP_MALLOC( mpool, sizeof(*wdctx) );
+    MPASSIGN( wdctx->mpool, mpool );
 
     wdctx->font12 = TTF_OpenFont( "assets_dir/FreeSans.ttf", 12 );
     XP_ASSERT( !!wdctx->font12 );
