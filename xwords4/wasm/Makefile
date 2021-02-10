@@ -32,7 +32,7 @@ OUTPUTS = main.html main.js main.js.mem main.data main.html.mem main.wasm
 
 all: main.js
 
-# PHONY: upload
+# PHONY: install
 
 # main.js: ${INPUTS} Makefile
 # 	emcc $(DEFINES) -O2 -I . -I ../common -I ../relay -s USE_SDL=2 \
@@ -43,7 +43,7 @@ all: main.js
 # 		${INPUTS} -o $@
 
 # This isn't a thing any more
-main.html: ${INPUTS} Makefile shell_minimal.html
+main.html: ${INPUTS} $(MAKEFILE) shell_minimal.html
 	emcc $(DEFINES) -I . -I ../common -I ../relay -s USE_SDL=2 \
 		--preload-file assets_dir --shell-file shell_minimal.html \
 		-s USE_SDL_TTF=2 -s USE_SDL_IMAGE=2 -s SDL2_IMAGE_FORMATS='["png"]' \
@@ -52,7 +52,7 @@ main.html: ${INPUTS} Makefile shell_minimal.html
 		-s WASM=1 \
 		${INPUTS} -o $@
 
-upload: main.html
+install: main.html $(MAKEFILE)
 	if [ -n "${XW_WASM_DEST}" ]; then \
 		for FILE in ${OUTPUTS} paho-mqtt.js; do \
 			[ -f $$FILE ] && scp $$FILE ${XW_WASM_DEST}; \
