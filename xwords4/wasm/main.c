@@ -166,8 +166,40 @@ startGame( Globals* globals )
     LOG_RETURN_VOID();
 }
 
+static bool
+gameFromInvite( Globals* globals, const NetLaunchInfo* invite )
+{
+    bool success = false;
+    if ( ! call_confirm( "Invitation received; replace current game?" ) ) {
+    } else if ( invite->lang != 1 ) {
+        call_alert( "Invitations are only supported for play in English right now." );
+    } else {
+        if ( !!globals->util ) {
+            game_dispose( &globals->game, NULL );
+            wasm_util_destroy( globals->util );
+            globals->util = NULL;
+        }
+        XP_LOGFF( "done with cleanup" ); /* not reaching this */
+
+        gi_disposePlayerInfo( MPPARM(globals->mpool) &globals->gi );
+        XP_MEMSET( &globals->gi, 0, sizeof(globals->gi) );
+
+        globals->util = wasm_util_make( globals->mpool, &globals->gi,
+                                        globals->dutil, globals );
+
+        success = game_makeFromInvite( MPPARM(globals->mpool) NULL, invite,
+                                       &globals->game, &globals->gi,
+                                       globals->dict, NULL,
+                                       globals->util, globals->draw,
+                                       &globals->cp, &globals->procs );
+
+    }
+    return success;
+}
+
 static void
-makeAndDraw( Globals* globals, bool forceNew, bool p0robot, bool p1robot )
+makeAndDraw( Globals* globals, const NetLaunchInfo* invite,
+             bool forceNew, bool p0robot, bool p1robot )
 {
     if ( !!globals->util ) {
         game_dispose( &globals->game, NULL );
@@ -193,7 +225,11 @@ makeAndDraw( Globals* globals, bool forceNew, bool p0robot, bool p1robot )
                                     globals->dutil, globals );
 
     XP_Bool loaded = XP_FALSE;
-    if ( ! forceNew ) {
+    XP_ASSERT( !forceNew || !invite ); /* won't both be set */
+
+    if ( !!invite ) {
+        loaded = gameFromInvite( globals, invite );
+    } else if ( ! forceNew ) {
         /* Let's see if there's a saved game */
         XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(globals->mpool)
                                                     globals->vtMgr );
@@ -224,50 +260,9 @@ makeAndDraw( Globals* globals, bool forceNew, bool p0robot, bool p1robot )
 void
 main_gameFromInvite( Globals* globals, const NetLaunchInfo* invite )
 {
-    LOG_FUNC();
-    if ( ! call_confirm( "Invitation received; replace current game?" ) ) {
-    } else if ( invite->lang != 1 ) {
-        call_alert( "Invitation received, but only English supported now" );
-    } else {
-        if ( !!globals->util ) {
-            XP_LOGFF( "calling game_dispose" );
-            game_dispose( &globals->game, NULL );
-            XP_LOGFF( "calling wasm_util_destroy" );
-            wasm_util_destroy( globals->util );
-            globals->util = NULL;
-        }
-        XP_LOGFF( "done with cleanup" ); /* not reaching this */
-        
-        XP_MEMSET( &globals->gi, 0, sizeof(globals->gi) );
-
-        gi_setNPlayers( &globals->gi, invite->nPlayersT, invite->nPlayersH );
-        // ensureLocalPlayerNames( params, &gi );
-
-        globals->gi.boardSize = 15;
-        globals->gi.gameID = invite->gameID;
-        globals->gi.dictLang = invite->lang;
-        globals->gi.forceChannel = invite->forceChannel;
-        globals->gi.inDuplicateMode = invite->inDuplicateMode;
-        globals->gi.serverRole = SERVER_ISCLIENT; /* recipient of invitation is client */
-        replaceStringIfDifferent( globals->mpool, &globals->gi.dictName,
-                                  invite->dict );
-
-        globals->util = wasm_util_make( globals->mpool, &globals->gi,
-                                        globals->dutil, globals );
-        
-        game_makeNewGame( MPPARM(globals->mpool) NULL,
-                          &globals->game, &globals->gi,
-                          globals->util, globals->draw,
-                          &globals->cp, &globals->procs );
-
-        CommsAddrRec returnAddr;
-        nli_makeAddrRec( invite, &returnAddr );
-        addr_setType( &returnAddr, COMMS_CONN_MQTT ); /* nuke everything else */
-        comms_augmentHostAddr( globals->game.comms, NULL, &returnAddr );
-
+    if ( gameFromInvite( globals, invite ) ) {
         startGame( globals );
     }
-    LOG_RETURN_VOID();
 }
 
 void
@@ -467,8 +462,78 @@ button( const char* msg )
     }
 }
 
+static bool
+loadInvite( Globals* globals, NetLaunchInfo* nlip,
+            int argc, const char** argv )
+{
+    LOG_FUNC();
+    CurGameInfo gi = {0};
+    CommsAddrRec addr = {0};
+    MQTTDevID mqttDevID = 0;
+    XP_U16 nPlayersH = 0;
+    XP_U16 forceChannel = 0;
+    const XP_UCHAR* gameName = NULL;
+    const XP_UCHAR* inviteID = NULL;
+
+    for ( int ii = 0; ii < argc; ++ii ) {
+        const char* argp = argv[ii];
+        char* param = strchr(argp, '=');
+        if ( !param ) {         /* no '='? */
+            continue;
+        }
+        char arg[8];
+        int argLen = param - argp;
+        XP_MEMCPY( arg, argp, argLen );
+        arg[argLen] = '\0';
+        ++param;                /* skip the '=' */
+
+        if ( 0 == strcmp( "lang", arg ) ) {
+            gi.dictLang = atoi(param);
+        } else if ( 0 == strcmp( "np", arg ) ) {
+            gi.nPlayers = atoi(param);
+        } else if ( 0 == strcmp( "nh", arg ) ) {
+            nPlayersH = atoi(param);
+        } else if ( 0 == strcmp( "gid", arg ) ) {
+            gi.gameID = atoi(param);
+        } else if ( 0 == strcmp( "fc", arg ) ) {
+            gi.forceChannel = atoi(param);
+        } else if ( 0 == strcmp( "nm", arg ) ) {
+            gameName = param;
+        } else if ( 0 == strcmp( "id", arg ) ) {
+            inviteID = param;
+        } else if ( 0 == strcmp( "wl", arg ) ) {
+            replaceStringIfDifferent( globals->mpool, &gi.dictName, param );
+        } else if ( 0 == strcmp( "r2id", arg ) ) {
+            if ( strToMQTTCDevID( param, &addr.u.mqtt.devID ) ) {
+                addr_addType( &addr, COMMS_CONN_MQTT );
+            } else {
+                XP_LOGFF( "bad devid %s", param );
+            }
+        } else {
+            XP_LOGFF( "dropping arg %s, param %s", arg, param );
+        }
+    }
+
+    bool success = 0 < nPlayersH &&
+        addr_hasType( &addr, COMMS_CONN_MQTT );
+
+    if ( success ) {
+        nli_init( nlip, &gi, &addr, nPlayersH, forceChannel );
+        if ( !!gameName ) {
+            nli_setGameName( nlip, gameName );
+        }
+        if ( !!inviteID ) {
+            nli_setInviteID( nlip, inviteID );
+        }
+        LOGNLI( nlip );
+    }
+    gi_disposePlayerInfo( MPPARM(globals->mpool) &gi );
+    LOG_RETURNF( "%d", success );
+    return success;
+}
+
 static void
-initNoReturn()
+initNoReturn( int argc, const char** argv )
 {
     time_t now = getCurMS();
     srandom( now );
@@ -476,6 +541,12 @@ initNoReturn()
 
     Globals* globals = calloc(1, sizeof(*globals));
     sGlobals = globals;
+
+    NetLaunchInfo nli = {0};
+    NetLaunchInfo* nlip = NULL;
+    if ( loadInvite( globals, &nli, argc, argv ) ) {
+        nlip = &nli;
+    }
 
     SDL_Init( SDL_INIT_EVENTS );
     TTF_Init();
@@ -489,7 +560,7 @@ initNoReturn()
 
     initDeviceGlobals( globals );
 
-    makeAndDraw( globals, false, false, true );
+    makeAndDraw( globals, nlip, false, false, true );
 
     emscripten_set_main_loop_arg( looper, globals, -1, 1 );
 }
@@ -499,7 +570,7 @@ newgame(bool p0, bool p1)
 {
     XP_LOGFF( "(args: %d,%d)", p0, p1 );
     XP_ASSERT( !!sGlobals );
-    makeAndDraw( sGlobals, true, p0, p1 );
+    makeAndDraw( sGlobals, NULL, true, p0, p1 );
 }
 
 void
@@ -511,12 +582,9 @@ gotMQTTMsg( void* closure, int len, const uint8_t* msg )
 }
 
 int
-main( int argc, char** argv )
+main( int argc, const char** argv )
 {
     XP_LOGFF( "(argc=%d)", argc );
-    for ( int ii = 0; ii < argc; ++ii ) {
-        XP_LOGFF( "arg[%d]: %s", ii, argv[ii] );
-    }
-    initNoReturn();
+    initNoReturn( argc, argv );
     return 0;
 }

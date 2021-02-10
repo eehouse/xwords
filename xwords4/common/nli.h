@@ -34,7 +34,7 @@
 
 void
 nli_init( NetLaunchInfo* nli, const CurGameInfo* gi, const CommsAddrRec* addr,
-          XP_U16 nPlayers, XP_U16 forceChannel );
+          XP_U16 nPlayersH, XP_U16 forceChannel );
 
 
 XP_Bool nli_makeFromStream( NetLaunchInfo* nli, XWStreamCtxt* stream );

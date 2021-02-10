@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <title>Emscripten-Generated Code</title>
+    <title>CrossWords webapp prototype</title>
     <style>
       .emscripten { padding-right: 0; margin-left: auto; margin-right: auto; display: block; }
       textarea.emscripten { font-family: monospace; width: 80%; }
@@ -97,12 +97,9 @@
     <script type='text/javascript'>
       var statusElement = document.getElementById('status');
       var progressElement = document.getElementById('progress');
-        var spinnerElement = document.getElementById('spinner');
+      var spinnerElement = document.getElementById('spinner');
 
-        var arguments = []
-        for (let pair of window.location.search.substr(1).trim().split('&')) {
-            arguments = arguments.concat( pair.split('=') )
-        }
+      let arguments = window.location.search.replaceAll('?', '').trim().split('&');
 
       var Module = {
         preRun: [],

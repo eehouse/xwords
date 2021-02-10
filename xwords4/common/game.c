@@ -21,6 +21,7 @@
 #include "game.h"
 #include "dictnry.h"
 #include "strutils.h"
+#include "nli.h"
 
 #ifdef CPLUS
 extern "C" {
@@ -334,6 +335,33 @@ game_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream, XWGame* game,
 
     return success;
 } /* game_makeFromStream */
+
+XP_Bool
+game_makeFromInvite( MPFORMAL XWEnv xwe, const NetLaunchInfo* nli,
+                     XWGame* game, CurGameInfo* gi,
+                     DictionaryCtxt* dict, const PlayerDicts* dicts,
+                     XW_UtilCtxt* util, DrawCtx* draw,
+                     CommonPrefs* cp, const TransportProcs* procs )
+{
+    gi_setNPlayers( gi, nli->nPlayersT, nli->nPlayersH );
+    gi->boardSize = 15;
+    gi->gameID = nli->gameID;
+    gi->dictLang = nli->lang;
+    gi->forceChannel = nli->forceChannel;
+    gi->inDuplicateMode = nli->inDuplicateMode;
+    gi->serverRole = SERVER_ISCLIENT; /* recipient of invitation is client */
+    replaceStringIfDifferent( mpool, &gi->dictName, nli->dict );
+
+    game_makeNewGame( MPPARM(mpool) xwe, game, gi, util, draw, cp, procs );
+    model_setDictionary( game->model, xwe, dict );
+    model_setPlayerDicts( game->model, xwe, dicts );
+
+    CommsAddrRec returnAddr;
+    nli_makeAddrRec( nli, &returnAddr );
+    comms_augmentHostAddr( game->comms, NULL, &returnAddr );
+
+    return XP_TRUE;
+}
 
 void
 game_saveNewGame( MPFORMAL XWEnv xwe, const CurGameInfo* gi, XW_UtilCtxt* util,

@@ -96,6 +96,12 @@ nli_setInviteID( NetLaunchInfo* nli, const XP_UCHAR* inviteID )
 }
 
 void
+nli_setGameName( NetLaunchInfo* nli, const XP_UCHAR* gameName )
+{
+    XP_SNPRINTF( nli->gameName, sizeof(nli->gameName), "%s", gameName );
+}
+
+void
 nli_setMQTTDevID( NetLaunchInfo* nli, const MQTTDevID* mqttDevID )
 {
     types_addType( &nli->_conTypes, COMMS_CONN_MQTT );
