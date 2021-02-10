@@ -79,6 +79,12 @@ EM_JS(void, jscallback_set, (JSCallback proc, void* closure, int inMS), {
         setTimeout( timerproc, inMS, closure );
     });
 
+EM_JS(void, setButtonText, (const char* id, const char* text), {
+        let jsid = UTF8ToString(id);
+        let jstext = UTF8ToString(text);
+        document.getElementById(jsid).textContent = jstext;
+    });
+
 static void updateScreen( Globals* globals, bool doSave );
 
 static XP_S16
@@ -113,6 +119,14 @@ send_msg( XWEnv xwe, const XP_U8* buf, XP_U16 len,
 
     LOG_RETURNF( "%d", nSent );
     return nSent;
+}
+
+static void
+updateTradeButton( Globals* globals )
+{
+    XP_Bool inTrade = board_inTrade( globals->game.board, NULL );
+    const char* text = inTrade ? "Cancel trade" : "Trade";
+    setButtonText( "trade", text );
 }
 
 static void
@@ -242,6 +256,7 @@ loadSavedGame( Globals* globals )
         if ( loaded ) {
             updateScreen( globals, false );
         }
+        updateTradeButton( globals );
     }
     stream_destroy( stream, NULL );
     return loaded;
@@ -412,6 +427,7 @@ main_query( Globals* globals, const XP_UCHAR* query, QueryProc proc, void* closu
 {
     bool ok = call_confirm( query );
     (*proc)( closure, ok );
+    updateTradeButton( globals );
 }
 
 void
@@ -526,8 +542,10 @@ button( void* closure, const char* msg )
     } else if ( 0 == strcmp(msg, "hintup") ) {
         draw = board_requestHint( board, NULL, XP_FALSE, &redo );
     } else if ( 0 == strcmp(msg, "trade") ) {
-        // draw = board_beginTrade( board, NULL );
-        call_alert("not implemented");
+        draw = board_inTrade( board, NULL )
+            ? board_endTrade( board )
+            : board_beginTrade( board, NULL );
+        updateTradeButton( globals );
     } else if ( 0 == strcmp(msg, "commit") ) {
         draw = board_commitTurn( board, NULL, XP_FALSE, XP_FALSE, NULL );
     } else if ( 0 == strcmp(msg, "flip") ) {

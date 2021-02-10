@@ -58,13 +58,13 @@
       <canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()" tabindex=-1></canvas>
     </div>
 	<div>
-		<button onclick="callButton('hintdown');">Prev Hint</button>
-		<button onclick="callButton('hintup');">Next Hint</button>
-		<button onclick="callButton('trade');">Trade</button>
-		<button onclick="callButton('commit');">Commit</button>
-		<button onclick="callButton('flip');">Flip</button>
-		<button onclick="callButton('redo');">Un/Redo</button>
-		<button onclick="callButton('vals');">Vals</button>
+		<button id="hintdown", onclick="callButton(this);">Prev Hint</button>
+		<button id="hintup", onclick="callButton(this);">Next Hint</button>
+	    <button id="trade", onclick="callButton(this);">Trade</button>
+		<button id="commit", onclick="callButton(this);">Commit</button>
+		<button id="flip", onclick="callButton(this);">Flip</button>
+		<button id="redo", onclick="callButton(this);">Un/Redo</button>
+		<button id="vals", onclick="callButton(this);">Vals</button>
 	</div>
 	<div>
 		<span>Player 1</span>
@@ -73,10 +73,6 @@
 	<div>
 		<span>Player 2</span>
 		<input type="checkbox" id="player1Checked">Is Robot</input>
-	</div>
-	<div>
-	    <span>Local player name:</span>
-		<input type="textarea" id="playerName">Player 1</input>
 	</div>
 	<div>
 		<button type="button" onclick="callNewGame();">New Local Game</button>
@@ -193,8 +189,8 @@
 			Module.ccall('newgame', null, ['number', 'boolean', 'boolean'], args);
 		}
 
-        function callButton(name) {
-			Module.ccall('button', null, ['number', 'string'], [state.closure, name]);
+        function callButton(obj) {
+			Module.ccall('button', null, ['number', 'string'], [state.closure, obj.id]);
 		}
 
         function onHaveDevID(closure, devid) {

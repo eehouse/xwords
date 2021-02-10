@@ -235,7 +235,12 @@ static void
 wasm_util_notifyTrade( XW_UtilCtxt* uc, XWEnv xwe, const XP_UCHAR** tiles,
                        XP_U16 nTiles )
 {
-    LOG_FUNC();
+    WasmUtilCtx* wuctxt = (WasmUtilCtx*)uc;
+    Globals* globals = (Globals*)wuctxt->closure;
+    XP_UCHAR buf[128];
+    XP_SNPRINTF( buf, sizeof(buf),
+                 "Are you sure you want to trade the %d selected tiles?", nTiles );
+    main_query( globals, buf, query_proc_notifyMove, uc );
 }
 
 static void
@@ -519,7 +524,7 @@ wasm_util_make( MPFORMAL CurGameInfo* gi, XW_DUtilCtxt* dctxt, void* closure )
 
     SET_VTABLE_ENTRY( wuctxt->super.vtable, util_notifyMove, wasm );
     SET_VTABLE_ENTRY( wuctxt->super.vtable, util_notifyTrade, wasm );
-                          SET_VTABLE_ENTRY( wuctxt->super.vtable, util_notifyPickTileBlank, wasm );
+    SET_VTABLE_ENTRY( wuctxt->super.vtable, util_notifyPickTileBlank, wasm );
     SET_VTABLE_ENTRY( wuctxt->super.vtable, util_informNeedPickTiles, wasm );
     SET_VTABLE_ENTRY( wuctxt->super.vtable, util_informNeedPassword, wasm );
     SET_VTABLE_ENTRY( wuctxt->super.vtable, util_trayHiddenChange, wasm );

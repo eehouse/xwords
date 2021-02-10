@@ -176,7 +176,7 @@ imgInRect( WasmDrawCtx* wdctx, SDL_Surface* img, const XP_Rect* rect )
 
 static void
 drawTile( WasmDrawCtx* wdctx, const XP_UCHAR* face, int val,
-          int owner, const XP_Rect* rect )
+          int owner, const XP_Rect* rect, CellFlags flags )
 {
     clearRect( wdctx, rect );
     frameRect( wdctx, rect );
@@ -195,6 +195,14 @@ drawTile( WasmDrawCtx* wdctx, const XP_UCHAR* face, int val,
         XP_UCHAR buf[4];
         XP_SNPRINTF( buf, VSIZE(buf), "%d", val );
         textInRect( wdctx, buf, &tmp, &sPlayerColors[owner] );
+    }
+
+    if ( 0 != (flags & (CELL_PENDING|CELL_RECENT)) ) {
+        XP_Rect tmp = *rect;
+        for ( int ii = 0; ii < 3; ++ii ) {
+            insetRect( &tmp, 1, 1 );
+            frameRect( wdctx, &tmp );
+        }
     }
 }
 
@@ -463,7 +471,7 @@ wasm_draw_drawTile( DrawCtx* dctx, XWEnv xwe, const XP_Rect* rect,
                     XP_U16 val, CellFlags flags )
 {
     WasmDrawCtx* wdctx = (WasmDrawCtx*)dctx;
-    drawTile( wdctx, text, val, wdctx->trayOwner, rect );
+    drawTile( wdctx, text, val, wdctx->trayOwner, rect, flags );
     return XP_TRUE;
 }
 
@@ -479,7 +487,7 @@ wasm_draw_drawTileMidDrag( DrawCtx* dctx, XWEnv xwe,
                            CellFlags flags )
 {
     WasmDrawCtx* wdctx = (WasmDrawCtx*)dctx;
-    drawTile( wdctx, text, val, wdctx->trayOwner, rect );
+    drawTile( wdctx, text, val, wdctx->trayOwner, rect, flags );
     return XP_TRUE;
 }
 #endif
@@ -489,7 +497,7 @@ wasm_draw_drawTileBack( DrawCtx* dctx, XWEnv xwe, const XP_Rect* rect,
                         CellFlags flags )
 {
     WasmDrawCtx* wdctx = (WasmDrawCtx*)dctx;
-    drawTile( wdctx, "?", -1, wdctx->trayOwner, rect );
+    drawTile( wdctx, "?", -1, wdctx->trayOwner, rect, flags );
     return XP_TRUE;
 }
 
