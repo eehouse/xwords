@@ -2721,7 +2721,7 @@ model_getPlayersLastScore( ModelCtxt* model, XWEnv xwe,
         XP_ASSERT( -1 == player || inDuplicateMode || player == entry.playerNum );
 
 
-        XP_LOGF( "%s: found move %d", __func__, which );
+        XP_LOGFF( "found move %d", which );
         lmi->names[0] = model->vol.gi->players[entry.playerNum].name;
         lmi->nWinners = 1;
         lmi->moveType = entry.moveType;

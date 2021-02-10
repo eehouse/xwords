@@ -31,6 +31,7 @@
 #include "mempool.h"
 #include "nli.h"
 #include "strutils.h"
+#include "movestak.h"
 
 #include "main.h"
 #include "wasmdraw.h"
@@ -325,6 +326,34 @@ main_sendOnClose( XWStreamCtxt* stream, XWEnv env, void* closure )
     (void)comms_send( globals->game.comms, NULL, stream );
 }
 
+void
+main_playerScoreHeld( Globals* globals, XP_U16 player )
+{
+    LastMoveInfo lmi;
+    XP_UCHAR buf[128];
+    if ( model_getPlayersLastScore( globals->game.model, NULL, player, &lmi ) ) {
+        switch ( lmi.moveType ) {
+        case ASSIGN_TYPE:
+            XP_SNPRINTF( buf, sizeof(buf), "Tiles assigned to %s", lmi.names[0] );
+            break;
+        case MOVE_TYPE:
+            XP_SNPRINTF( buf, sizeof(buf), "%s formed %s for %d points", lmi.names[0],
+                         lmi.word, lmi.score );
+            break;
+        case TRADE_TYPE:
+            XP_SNPRINTF( buf, sizeof(buf), "%s traded %d tiles", lmi.names[0],
+                         lmi.nTiles );
+            break;
+        default:
+            buf[0] = '\0';
+        }
+    }
+
+    if ( buf[0] ) {
+        call_alert( buf );
+    }
+}
+
 static time_t
 getCurMS()
 {
@@ -336,52 +365,49 @@ getCurMS()
     return result;
 }
 
-static XP_Bool
-checkForTimers( Globals* globals )
-{
-    XP_Bool draw = XP_FALSE;
-    time_t now = getCurMS();
-    for ( XWTimerReason why = 0; why < NUM_TIMERS_PLUS_ONE; ++why ) {
-        TimerState* timer = &globals->timers[why];
-        XWTimerProc proc = timer->proc;
-        if ( !!proc && now >= timer->when ) {
-            timer->proc = NULL;
-            (*proc)( timer->closure, NULL, why );
-            draw = XP_TRUE;     /* just in case */
-        }
-    }
-    return draw;
-}
-
-static XP_Bool
-checkForIdle( Globals* globals )
-{
-    XP_Bool draw = XP_FALSE;
-    IdleProc proc = globals->idleProc;
-    if ( !!proc ) {
-        globals->idleProc = NULL;
-        draw = (*proc)(globals->idleClosure);
-    }
-    return draw;
-}
-
 void
 main_clear_timer( Globals* globals, XWTimerReason why )
 {
     XP_LOGFF( "why: %d" );
+    XP_ASSERT(0);
+}
+
+typedef struct _TimerClosure {
+    Globals* globals;
+    XWTimerReason why;
+    XWTimerProc proc;
+    void* closure;
+} TimerClosure;
+
+static void
+onTimerFired( void* closure )
+{
+    LOG_FUNC();
+    TimerClosure* tc = (TimerClosure*)closure;
+    XP_Bool draw = (*tc->proc)( tc->closure, NULL, tc->why );
+    if ( draw ) {
+        updateScreen( tc->globals, true );
+    }
+    XP_FREE( tc->globals->mpool, tc );
 }
 
 void
 main_set_timer( Globals* globals, XWTimerReason why, XP_U16 when,
                 XWTimerProc proc, void* closure )
 {
-    XP_LOGFF( "why: %d" );
-    /* TimerState* timer = &globals->timers[why]; */
-    /* timer->proc = proc; */
-    /* timer->closure = closure; */
+    XP_LOGFF( "why: %d", why );
+    TimerClosure* tc = XP_MALLOC( globals->mpool, sizeof(*tc) );
+    tc->globals = globals;
+    tc->proc = proc;
+    tc->closure = closure;
+    tc->why = why;
 
-    /* time_t now = getCurMS(); */
-    /* timer->when = now + (1000 * when); */
+    if ( 0 == when ) {
+        when = 1;
+    }
+    when *= 1000;               /* convert to ms */
+
+    jscallback_set( onTimerFired, tc, when );
 }
 
 void
@@ -485,11 +511,7 @@ static void
 looper( void* closure )
 {
     Globals* globals = (Globals*)closure;
-    XP_Bool draw = checkForTimers( globals );
-    draw = checkForIdle( globals ) || draw;
-    draw = checkForEvent( globals ) || draw;
-
-    if ( draw ) {
+    if ( checkForEvent( globals ) ) {
         updateScreen( globals, true );
     }
 }

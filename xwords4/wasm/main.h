@@ -31,14 +31,11 @@ typedef struct _Globals {
     CommonPrefs cp;
     DictMgrCtxt* dictMgr;
 
-    TimerState timers[NUM_TIMERS_PLUS_ONE];
-
-    IdleProc idleProc;
-    void* idleClosure;
-
     XP_U16 saveToken;
 
+#ifdef MEM_DEBUG
     MemPoolCtx* mpool;
+#endif
 } Globals;
 
 void main_set_timer( Globals* globals, XWTimerReason why, XP_U16 when,
@@ -58,5 +55,6 @@ void main_onGameMessage( Globals* globals, XP_U32 gameID,
                          const CommsAddrRec* from, XWStreamCtxt* stream );
 
 void main_sendOnClose( XWStreamCtxt* stream, XWEnv env, void* closure );
+void main_playerScoreHeld( Globals* globals, XP_U16 player );
 
 #endif

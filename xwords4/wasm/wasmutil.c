@@ -443,7 +443,9 @@ wasm_util_bonusSquareHeld( XW_UtilCtxt* uc, XWEnv xwe, XWBonusType bonus )
 static void
 wasm_util_playerScoreHeld( XW_UtilCtxt* uc, XWEnv xwe, XP_U16 player )
 {
-    LOG_FUNC();
+    WasmUtilCtx* wuctxt = (WasmUtilCtx*)uc;
+    Globals* globals = (Globals*)wuctxt->closure;
+    main_playerScoreHeld( globals, player );
 }
 
 #ifdef XWFEATURE_BOARDWORDS
