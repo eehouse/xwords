@@ -59,8 +59,8 @@ EM_JS(bool, call_confirm, (const char* str), {
 EM_JS(void, call_alert, (const char* str), {
         alert(UTF8ToString(str));
 });
-EM_JS(void, call_haveDevID, (const char* devid), {
-        onHaveDevID(UTF8ToString(devid));
+EM_JS(void, call_haveDevID, (void* closure, const char* devid), {
+        onHaveDevID(closure, UTF8ToString(devid));
 });
 
 EM_JS(void, call_mqttSend, (const char* topic, const uint8_t* ptr, int len), {
@@ -135,7 +135,7 @@ initDeviceGlobals( Globals* globals )
     XP_UCHAR buf[32];
     XP_SNPRINTF( buf, VSIZE(buf), MQTTDevID_FMT, devID );
     XP_LOGFF( "got mqtt devID: %s", buf );
-    call_haveDevID( buf );
+    call_haveDevID( globals, buf );
 }
 
 static void
@@ -157,9 +157,9 @@ startGame( Globals* globals )
     }
     
     (void)server_do( globals->game.server, NULL ); /* assign tiles, etc. */
-    /* if ( !!globals->game.comms ) { */
-    /*     comms_resendAll( globals->game.comms, NULL, COMMS_CONN_NONE, XP_TRUE ); */
-    /* } */
+    if ( !!globals->game.comms ) {
+        comms_resendAll( globals->game.comms, NULL, COMMS_CONN_MQTT, XP_TRUE );
+    }
 
     updateScreen( globals );
     LOG_RETURN_VOID();
@@ -184,7 +184,7 @@ makeAndDraw( Globals* globals, bool forceNew, bool p0robot, bool p1robot )
     globals->gi.players[0].isLocal = XP_TRUE;
     globals->gi.players[0].robotIQ = p0robot ? 99 : 0;
 
-    globals->gi.players[1].name = copyString( globals->mpool, "Player 1" );
+    globals->gi.players[1].name = copyString( globals->mpool, "Player 2" );
     globals->gi.players[1].isLocal = XP_TRUE;
     globals->gi.players[1].robotIQ = p1robot ? 99 : 0;
 
@@ -502,11 +502,11 @@ newgame(bool p0, bool p1)
 }
 
 void
-gotMQTTMsg( int len, const uint8_t* msg )
+gotMQTTMsg( void* closure, int len, const uint8_t* msg )
 {
-    XP_LOGFF( "got msg of len %d", len );
-
-    dvc_parseMQTTPacket( sGlobals->dutil, NULL, msg, len );
+    XP_LOGFF( "got msg of len %d (%p vs %p)", len, closure, sGlobals );
+    Globals* globals = (Globals*)closure;
+    dvc_parseMQTTPacket( globals->dutil, NULL, msg, len );
 }
 
 int

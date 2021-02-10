@@ -249,9 +249,9 @@ dict_splitFaces( DictionaryCtxt* dict, XWEnv xwe, const XP_U8* utf8,
     XP_ASSERT( !dict->facePtrs );
     dict->facePtrs = ptrs;
 
-    for ( int ii = 0; ii < nFaces; ++ii ) {
-        XP_LOGFF( "face %d: %s", ii, dict->facePtrs[ii] );
-    }
+    /* for ( int ii = 0; ii < nFaces; ++ii ) { */
+    /*     XP_LOGFF( "face %d: %s", ii, dict->facePtrs[ii] ); */
+    /* } */
 } /* dict_splitFaces */
 
 void

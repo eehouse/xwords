@@ -359,11 +359,7 @@ drawCrosshairs( WasmDrawCtx* wdctx, const XP_Rect* rect, CellFlags flags )
     const SDL_Color* color = &sOtherColors[COLOR_FOCUS];
     if ( 0 != (flags & CELL_CROSSHOR) ) {
         XP_Rect hairRect = *rect;
-        XP_LOGFF( "hairRect before: l: %d, t: %d, w: %d, h: %d",
-                  hairRect.left, hairRect.top, hairRect.width, hairRect.height );
         insetRect( &hairRect, 0, hairRect.height / 3 );
-        XP_LOGFF( "hairRect after: l: %d, t: %d, w: %d, h: %d",
-                  hairRect.left, hairRect.top, hairRect.width, hairRect.height );
         fillRect( wdctx, &hairRect, color );
     }
     if ( 0 != (flags & CELL_CROSSVERT) ) {

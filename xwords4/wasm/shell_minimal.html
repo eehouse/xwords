@@ -7,6 +7,7 @@
     <style>
       .emscripten { padding-right: 0; margin-left: auto; margin-right: auto; display: block; }
       textarea.emscripten { font-family: monospace; width: 80%; }
+      body.centered { text-align: center; }
       div.emscripten { text-align: center; }
       div.emscripten_border { border: 1px solid black; }
       /* the canvas *must not* have any border or padding, or mouse coords will be wrong */
@@ -46,7 +47,7 @@
 
     </style>
   </head>
-  <body>
+  <body class="centered">
     <hr/>
     <figure style="overflow:visible;" id="spinner"><div class="spinner"></div><center style="margin-top:0.5em"><strong>emscripten</strong></center></figure>
     <div class="emscripten" id="status">Downloading...</div>
@@ -176,6 +177,10 @@
       };
     </script>
     <script>
+        var state = {client: null,
+                     closure: null,
+					};
+
 		function callNewGame() {
 			var args = [
 				document.getElementById("player0Checked").checked,
@@ -183,10 +188,65 @@
 			]
 			Module.ccall('newgame', null, ['boolean', 'boolean'], args);
 		}
-        function onHaveDevID(devid) {
+        function onHaveDevID(closure, devid) {
         	console.log('got ' + devid);
+			state.closure = closure;
 			document.getElementById("mqtt_span").textContent=devid;
-        }
+
+			state.client = new Paho.MQTT.Client("eehouse.org", 8883, '/wss', devid);
+
+			// set callback handlers
+			state.client.onConnectionLost = function onConnectionLost(responseObject) {
+				document.getElementById("mqtt_status").textContent="Disconnected";
+				if (responseObject.errorCode !== 0) {
+					console.log("onConnectionLost:"+responseObject.errorMessage);
+				}
+			};
+			state.client.onMessageArrived = function onMessageArrived(message) {
+				var payload = message.payloadBytes;
+				var length = payload.length;
+				Module.ccall('gotMQTTMsg', null, ['number', 'number', 'array'],
+							 [state.closure, length, payload]);
+			};
+
+			function onConnect() {
+				document.getElementById("mqtt_status").textContent="Connected";
+
+				var subscribeOptions = {
+					qos: 2,  // QoS
+					// invocationContext: {foo: true},  // Passed to success / failure callback
+					// onSuccess: function() { alert('subscribe succeeded'); },
+					onFailure: function() { alert('subscribe failed'); },
+					timeout: 10,
+				};
+				state.client.subscribe('xw4/device/' + devid, subscribeOptions);
+			}
+
+			state.client.connect({mqttVersion: 3,
+								  userName: "xwuser",
+								  password: "xw4r0cks",
+								  useSSL: true,
+								  reconnect: true,
+								  onSuccess: onConnect,
+								  onFailure: function() { alert('onFailure'); },
+								 });
+
+       }
+
+       function mqttSend (topic, ptr) {
+		   if ( null != state.client ) {
+			   message = new Paho.MQTT.Message(ptr);
+			   message.destinationName = topic;
+			   message.qos = 2;
+			   state.client.send(message);
+		   } else {
+			   alert('null client');
+		   }
+       }
+
+        let script = document.createElement('script');
+        script.src = "paho-mqtt.js";
+        document.body.appendChild(script);
     </script>
     {{{ SCRIPT }}}
   </body>
