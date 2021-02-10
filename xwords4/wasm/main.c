@@ -69,6 +69,15 @@ EM_JS(bool, call_mqttSend, (const char* topic, const uint8_t* ptr, int len), {
         return mqttSend(topStr, buffer);
 });
 
+typedef void (*JSCallback)(void* closure);
+
+EM_JS(void, jscallback_set, (JSCallback proc, void* closure, int inMS), {
+        let timerproc = function(closure) {
+            ccall('jscallback', null, ['number', 'number'], [proc, closure]);
+        };
+        setTimeout( timerproc, inMS, closure );
+    });
+
 static void updateScreen( Globals* globals, bool doSave );
 
 static Globals* sGlobals;
@@ -388,12 +397,34 @@ main_alert( Globals* globals, const XP_UCHAR* msg )
     call_alert( msg );
 }
 
+typedef struct _IdleClosure {
+    Globals* globals;
+    IdleProc proc;
+    void* closure;
+} IdleClosure;
+
+static void
+onIdleFired( void* closure )
+{
+    LOG_FUNC();
+    IdleClosure* ic = (IdleClosure*)closure;
+    XP_Bool draw = (*ic->proc)(ic->closure);
+    if ( draw ) {
+        updateScreen( ic->globals, true );
+    }
+    XP_FREE( ic->globals->mpool, ic );
+}
+
 void
 main_set_idle( Globals* globals, IdleProc proc, void* closure )
 {
-    XP_ASSERT( !globals->idleProc || globals->idleProc == proc );
-    globals->idleProc = proc;
-    globals->idleClosure = closure;
+    LOG_FUNC();
+    IdleClosure* ic = XP_MALLOC( globals->mpool, sizeof(*ic) );
+    ic->globals = globals;
+    ic->proc = proc;
+    ic->closure = closure;
+
+    jscallback_set( onIdleFired, ic, 0 );
 }
 
 static XP_Bool
@@ -613,6 +644,13 @@ gotMQTTMsg( void* closure, int len, const uint8_t* msg )
     XP_LOGFF( "got msg of len %d (%p vs %p)", len, closure, sGlobals );
     Globals* globals = (Globals*)closure;
     dvc_parseMQTTPacket( globals->dutil, NULL, msg, len );
+}
+
+void
+jscallback( JSCallback proc, void* closure )
+{
+    LOG_FUNC();
+    (*proc)(closure);
 }
 
 int

@@ -48,7 +48,7 @@ main.html: ${INPUTS} $(MAKEFILE) shell_minimal.html
 		--preload-file assets_dir --shell-file shell_minimal.html \
 		-s USE_SDL_TTF=2 -s USE_SDL_IMAGE=2 -s SDL2_IMAGE_FORMATS='["png"]' \
 		-s "EXTRA_EXPORTED_RUNTIME_METHODS=['ccall']" \
-		-s EXPORTED_FUNCTIONS='["_main", "_button", "_newgame", "_gotMQTTMsg"]' -s WASM=0 \
+		-s EXPORTED_FUNCTIONS='["_main", "_button", "_newgame", "_gotMQTTMsg", "_jscallback"]' \
 		-s WASM=1 \
 		${INPUTS} -o $@
 
