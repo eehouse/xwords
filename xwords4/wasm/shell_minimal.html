@@ -195,7 +195,7 @@
 		}
 
         function callButton(name) {
-			Module.ccall('button', null, ['string'], [name]);
+			Module.ccall('button', null, ['number', 'string'], [state.closure, name]);
 		}
 
         function onHaveDevID(closure, devid) {

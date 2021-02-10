@@ -517,10 +517,10 @@ looper( void* closure )
 }
 
 void
-button( const char* msg )
+button( void* closure, const char* msg )
 {
     XP_Bool draw = XP_FALSE;
-    Globals* globals = sGlobals;
+    Globals* globals = (Globals*)closure;
     BoardCtxt* board = globals->game.board;
     XP_Bool redo;
 
