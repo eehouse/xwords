@@ -81,8 +81,6 @@ EM_JS(void, jscallback_set, (JSCallback proc, void* closure, int inMS), {
 
 static void updateScreen( Globals* globals, bool doSave );
 
-static Globals* sGlobals;
-
 static XP_S16
 send_msg( XWEnv xwe, const XP_U8* buf, XP_U16 len,
           const XP_UCHAR* msgNo, const CommsAddrRec* addr,
@@ -91,7 +89,6 @@ send_msg( XWEnv xwe, const XP_U8* buf, XP_U16 len,
     XP_S16 nSent = -1;
     LOG_FUNC();
     Globals* globals = (Globals*)closure;
-    XP_ASSERT( globals == sGlobals );
 
     if ( addr_hasType( addr, COMMS_CONN_MQTT ) ) {
         MQTTDevID devID = addr->u.mqtt.devID;
@@ -369,7 +366,7 @@ void
 main_clear_timer( Globals* globals, XWTimerReason why )
 {
     XP_LOGFF( "why: %d" );
-    XP_ASSERT(0);
+    // XP_ASSERT(0); fires when start new game
 }
 
 typedef struct _TimerClosure {
@@ -625,7 +622,6 @@ initNoReturn( int argc, const char** argv )
     XP_LOGFF( "called(srandom( %x )", now );
 
     Globals* globals = calloc(1, sizeof(*globals));
-    sGlobals = globals;
 
     NetLaunchInfo nli = {0};
     NetLaunchInfo* nlip = NULL;
@@ -651,19 +647,18 @@ initNoReturn( int argc, const char** argv )
 }
 
 void
-newgame(bool p0, bool p1)
+newgame( void* closure, bool p0, bool p1 )
 {
+    Globals* globals = (Globals*)closure;
     XP_LOGFF( "(args: %d,%d)", p0, p1 );
-    XP_ASSERT( !!sGlobals );
     if ( call_confirm("Are you sure you want to replace the current game?") ) {
-        loadAndDraw( sGlobals, NULL, true, p0, p1 );
+        loadAndDraw( globals, NULL, true, p0, p1 );
     }
 }
 
 void
 gotMQTTMsg( void* closure, int len, const uint8_t* msg )
 {
-    XP_LOGFF( "got msg of len %d (%p vs %p)", len, closure, sGlobals );
     Globals* globals = (Globals*)closure;
     dvc_parseMQTTPacket( globals->dutil, NULL, msg, len );
 }

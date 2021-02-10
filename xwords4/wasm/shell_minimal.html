@@ -186,12 +186,11 @@
 					};
 
 		function callNewGame() {
-			var args = [
-				document.getElementById("player0Checked").checked,
-		        document.getElementById("player1Checked").checked,
-        		document.getElementById("playerName").checked,
-			]
-			Module.ccall('newgame', null, ['boolean', 'boolean', 'string'], args);
+			var args = [ state.closure,
+						 document.getElementById("player0Checked").checked,
+						 document.getElementById("player1Checked").checked,
+					   ];
+			Module.ccall('newgame', null, ['number', 'boolean', 'boolean'], args);
 		}
 
         function callButton(name) {
