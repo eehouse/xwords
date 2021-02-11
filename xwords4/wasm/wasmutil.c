@@ -1,3 +1,21 @@
+/* -*- compile-command: "cd ../wasm && make main.html -j3"; -*- */
+/*
+ * Copyright 2021 by Eric House (xwords@eehouse.org).  All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ */
 
 #include "util.h"
 #include "comtypes.h"
@@ -512,7 +530,7 @@ wasm_util_make( MPFORMAL CurGameInfo* gi, XW_DUtilCtxt* dctxt, void* closure )
     LOG_FUNC();
     WasmUtilCtx* wuctxt = XP_MALLOC( mpool, sizeof(*wuctxt) );
     wuctxt->super.vtable = XP_MALLOC( mpool, sizeof(*wuctxt->super.vtable) );
-    wuctxt->super.mpool = mpool;
+    MPASSIGN( wuctxt->super.mpool, mpool );
     wuctxt->super.gameInfo = gi;
 
     wuctxt->dctxt = dctxt;

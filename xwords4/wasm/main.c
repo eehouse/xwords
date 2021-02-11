@@ -140,9 +140,11 @@ initDeviceGlobals( Globals* globals )
     globals->procs.send = send_msg;
     globals->procs.closure = globals;
 
+#ifdef MEMDEBUG
     globals->mpool = mpool_make( "wasm" );
-    globals->vtMgr = make_vtablemgr( globals->mpool );
-    globals->dutil = wasm_dutil_make( globals->mpool, globals->vtMgr, globals );
+#endif
+    globals->vtMgr = make_vtablemgr( MPPARM_NOCOMMA(globals->mpool) );
+    globals->dutil = wasm_dutil_make( MPPARM(globals->mpool) globals->vtMgr, globals );
     globals->dictMgr = dmgr_make( MPPARM_NOCOMMA(globals->mpool) );
     globals->dict = wasm_dictionary_make( MPPARM(globals->mpool) NULL,
                                           globals, DICTNAME, true );
@@ -218,7 +220,7 @@ gameFromInvite( Globals* globals, const NetLaunchInfo* invite )
         gi_disposePlayerInfo( MPPARM(globals->mpool) &globals->gi );
         XP_MEMSET( &globals->gi, 0, sizeof(globals->gi) );
 
-        globals->util = wasm_util_make( globals->mpool, &globals->gi,
+        globals->util = wasm_util_make( MPPARM(globals->mpool) &globals->gi,
                                         globals->dutil, globals );
 
         loaded = game_makeFromInvite( MPPARM(globals->mpool) NULL, invite,
@@ -243,7 +245,7 @@ loadSavedGame( Globals* globals )
     dutil_loadStream( globals->dutil, NULL, KEY_GAME, NULL, stream );
     if ( 0 < stream_getSize( stream ) ) {
         XP_ASSERT( !globals->util );
-        globals->util = wasm_util_make( globals->mpool, &globals->gi,
+        globals->util = wasm_util_make( MPPARM(globals->mpool) &globals->gi,
                                         globals->dutil, globals );
 
         XP_LOGFF( "there's a saved game!!" );
@@ -299,7 +301,7 @@ loadAndDraw( Globals* globals, const NetLaunchInfo* invite,
         globals->gi.players[1].isLocal = XP_TRUE;
         globals->gi.players[1].robotIQ = p1robot ? 99 : 0;
 
-        globals->util = wasm_util_make( globals->mpool, &globals->gi,
+        globals->util = wasm_util_make( MPPARM(globals->mpool) &globals->gi,
                                         globals->dutil, globals );
 
         XP_LOGFF( "calling game_makeNewGame()" );

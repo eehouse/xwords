@@ -1,3 +1,20 @@
+# -*- mode: makefile; compile-command: "make -j3 MEMDEBUG=TRUE install"; -*-
+# Copyright 2021 by Eric House (xwords@eehouse.org).  All rights
+# reserved.
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 include ../common/config.mk
 
@@ -5,7 +22,6 @@ DEBS = cmake
 
 INPUTS = main.c wasmdict.c wasmutls.c wasmdraw.c wasmutil.c wasmdutil.c ${COMMONSRC}
 
-DEFINES += -DMEM_DEBUG -DDEBUG
 DEFINES += -DXWFEATURE_CHAT
 DEFINES += -DXWFEATURE_BONUSALL
 DEFINES += -DMAX_ROWS=32
@@ -28,6 +44,13 @@ DEFINES += -DPLATFORM_WASM
 DEFINES += -DXWFEATURE_CROSSHAIRS
 DEFINES += -DNATIVE_NLI
 DEFINES += -DDEBUG_REF
+
+ifeq ($(MEMDEBUG),TRUE)
+	DEFINES += -DMEM_DEBUG -DDEBUG -O
+else
+	DEFINES += -O3
+endif
+
 OUTPUTS = main.html main.js main.js.mem main.data main.html.mem main.wasm
 
 all: main.js
