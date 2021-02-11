@@ -862,7 +862,7 @@
        ############################################################
       -->
     <!-- title of this sub-preference -->
-    <string name="prefs_colors">Individual colors</string>
+    <string name="prefs_colors">Board colors</string>
     <!-- clarification of the above -->
     <string name="prefs_colors_summary">Edit colors used on the board</string>
     <!-- The remaining strings (down to the color edit dialog below)
@@ -892,7 +892,7 @@
     <string name="background">Board background</string>
     <!-- the color of text, e.g. "2L", shown on a bonus square on the
          board -->
-    <string name="key_bonushint">In-square bonus hint</string>
+    <string name="key_bonushint">Bonus square text</string>
     <!-- The color of the lines delimiting cells on the board -->
     <string name="cellline">Board lines</string>
     <!--       
