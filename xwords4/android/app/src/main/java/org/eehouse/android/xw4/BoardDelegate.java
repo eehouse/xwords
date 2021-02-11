@@ -57,6 +57,7 @@ import org.eehouse.android.xw4.DlgDelegate.ActionPair;
 import org.eehouse.android.xw4.Perms23.Perm;
 import org.eehouse.android.xw4.Toolbar.Buttons;
 import org.eehouse.android.xw4.jni.CommonPrefs;
+import org.eehouse.android.xw4.jni.CommonPrefs.TileValueType;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;
 import org.eehouse.android.xw4.jni.CommsAddrRec;
@@ -2496,34 +2497,34 @@ public class BoardDelegate extends DelegateBase
     {
         PopupMenu popup = new PopupMenu( m_activity, button );
         popup.inflate( R.menu.tile_values );
+        final int[][] map = { {R.id.values_faces, TileValueType.TVT_FACES.ordinal() },
+                              {R.id.values_values, TileValueType.TVT_VALUES.ordinal() },
+                              {R.id.values_both, TileValueType.TVT_BOTH.ordinal() },
+        };
         popup.setOnMenuItemClickListener( new PopupMenu.OnMenuItemClickListener() {
                 @Override
                 public boolean onMenuItemClick( MenuItem item ) {
-                    CommonPrefs.TileValueType tvType = null;
-                    int id = item.getItemId();
-                    switch ( id ) {
-                    case R.id.values_faces:
-                        tvType = CommonPrefs.TileValueType.TVT_FACES;
-                        break;
-                    case R.id.values_values:
-                        tvType = CommonPrefs.TileValueType.TVT_VALUES;
-                        break;
-                    case R.id.values_both:
-                        tvType = CommonPrefs.TileValueType.TVT_BOTH;
-                        break;
-                    default:
-                        Assert.failDbg();
-                    }
-
-                    if ( null != tvType ) {
-                        XWPrefs.setPrefsInt( m_activity,
-                                             R.string.key_tile_valuetype,
-                                             tvType.ordinal() );
-                        handleViaThread( JNICmd.CMD_PREFS_CHANGE );
+                    int menuId = item.getItemId();
+                    for ( int[] pair : map ) {
+                        if ( pair[0] == menuId ) {
+                            XWPrefs.setPrefsInt( m_activity,
+                                                 R.string.key_tile_valuetype,
+                                                 pair[1] );
+                            handleViaThread( JNICmd.CMD_PREFS_CHANGE );
+                            break;
+                        }
                     }
                     return true;
                 }
             } );
+
+        int curOrd = CommonPrefs.get(m_activity).tvType.ordinal();
+        for ( int[] pair : map ) {
+            if ( pair[1] == curOrd ) {
+                popup.getMenu().findItem(pair[0]).setChecked(true);
+                break;
+            }
+        }
         popup.show();
     }
 
