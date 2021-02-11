@@ -22,6 +22,8 @@ package org.eehouse.android.xw4.jni;
 
 import android.graphics.Rect;
 
+import org.eehouse.android.xw4.jni.CommonPrefs.TileValueType;
+
 public interface DrawCtx {
     // These must be kept in sync with the enum CellFlags in draw.h
     static final int CELL_NONE = 0x00;
@@ -59,8 +61,8 @@ public interface DrawCtx {
 
     void drawTimer( Rect rect, int player, int secondsLeft, boolean inDuplicateMode );
 
-    boolean drawCell( Rect rect, String text, int tile, String value,
-                      int owner, int bonus, int hintAtts, int flags );
+    boolean drawCell( Rect rect, String text, int tile, int value,
+                      int owner, int bonus, int flags, TileValueType tvType );
     void drawBoardArrow ( Rect rect, int bonus, boolean vert, int hintAtts,
                           int flags );
     boolean trayBegin ( Rect rect, int owner, int score );

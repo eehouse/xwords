@@ -77,7 +77,7 @@ typedef struct GtkDrawCtx {
     XP_U16 trayOwner;
     XP_U16 cellWidth;
     XP_U16 cellHeight;
-
+    TileValueType tvType;
     XP_Bool scoreIsVertical;
 } GtkDrawCtx;
 

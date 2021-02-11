@@ -172,7 +172,7 @@ drawTray( BoardCtxt* board, XWEnv xwe )
                     XP_U16 numInTray = countTilesToShow( board );
                     XP_Bool isBlank;
                     XP_Bool isADrag = dragDropInProgress( board );
-                    CellFlags baseFlags = board->hideValsInTray && !board->showCellValues
+                    CellFlags baseFlags = board->hideValsInTray
                         ? CELL_VALHIDDEN : CELL_NONE;
                     
                     dragDropGetTrayChanges( board, &ddRmvdIndx, &ddAddedIndx );

@@ -38,6 +38,7 @@ import java.util.Set;
 
 import org.eehouse.android.xw4.jni.BoardDims;
 import org.eehouse.android.xw4.jni.CommonPrefs;
+import org.eehouse.android.xw4.jni.CommonPrefs.TileValueType;
 import org.eehouse.android.xw4.jni.DrawCtx;
 import org.eehouse.android.xw4.jni.DrawScoreInfo;
 import org.eehouse.android.xw4.jni.JNIThread;
@@ -372,8 +373,8 @@ public class BoardCanvas extends Canvas implements DrawCtx {
     }
 
     @Override
-    public boolean drawCell( Rect rect, String text, int tile, String value,
-                             int owner, int bonus, int hintAtts, int flags )
+    public boolean drawCell( Rect rect, String text, int tile, int tileValue,
+                             int owner, int bonus, int flags, TileValueType tvType )
     {
         boolean canDraw = figureFontDims();
         if ( canDraw ) {
@@ -431,6 +432,19 @@ public class BoardCanvas extends Canvas implements DrawCtx {
                     drawCentered( bonusStr, brect, m_fontDims );
                 }
             } else {
+                String value = String.format( "%d", tileValue );
+                switch ( tvType ) {
+                case TVT_BOTH:
+                    break;
+                case TVT_FACES:
+                    value = null;
+                    break;
+                case TVT_VALUES:
+                    text = value;
+                    value = null;
+                    break;
+                }
+
                 m_fillPaint.setColor( adjustColor(foreColor) );
                 if ( null == value ) {
                     drawCentered( text, rect, m_fontDims );
@@ -441,8 +455,8 @@ public class BoardCanvas extends Canvas implements DrawCtx {
                     drawCentered( text, smaller, m_fontDims );
 
                     smaller = new Rect(rect);
-                    smaller.left += (3 * smaller.width()) / 4;
-                    smaller.top += (3 * smaller.height()) / 4;
+                    smaller.left += (2 * smaller.width()) / 3;
+                    smaller.top += (2 * smaller.height()) / 3;
                     drawCentered( value, smaller, m_fontDims );
                 }
             }

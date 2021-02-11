@@ -66,9 +66,6 @@
   <item android:id="@+id/board_menu_chat"
         android:title="@string/menu_chat"
         />
-  <item android:id="@+id/board_menu_toggle"
-        android:title="@string/menu_toggle_values"
-        />
 
   <item android:title="@string/board_submenu_game">
     <menu>

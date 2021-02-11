@@ -1221,9 +1221,10 @@ static gboolean
 handle_value_button( GtkWidget* XP_UNUSED(widget), gpointer closure )
 {
     GtkGameGlobals* globals = (GtkGameGlobals*)closure;
-    if ( board_toggle_showValues( globals->cGlobals.game.board ) ) {
-        board_draw( globals->cGlobals.game.board, NULL_XWE );
-    }
+    CommonGlobals* cGlobals = &globals->cGlobals;
+    cGlobals->cp.tvType = (cGlobals->cp.tvType + 1) % TVT_N_ENTRIES;
+    board_prefsChanged( cGlobals->game.board, &cGlobals->cp );
+    board_draw( cGlobals->game.board, NULL_XWE );
     return TRUE;
 } /* handle_value_button */
 

@@ -216,6 +216,14 @@ typedef enum {
     BONUS_LAST
 } XWBonusType;
 
+typedef enum _TileValueType {
+    TVT_BOTH,
+    TVT_FACES,
+    TVT_VALUES,
+
+    TVT_N_ENTRIES,
+} TileValueType;
+
 /* For now, let's define keys here. Old method based on __FILE__ was
  * stupid. Can be more clever later -- as long as these don't change again
 */
@@ -262,6 +270,7 @@ typedef struct CommonPrefs {
 #ifdef XWFEATURE_ROBOTPHONIES
     XP_U16          makePhonyPct;
 #endif
+    TileValueType tvType;
 } CommonPrefs;
 
 typedef struct _PlayerDicts {

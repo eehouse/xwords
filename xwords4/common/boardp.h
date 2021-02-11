@@ -177,6 +177,7 @@ struct BoardCtxt {
 #ifdef XWFEATURE_CROSSHAIRS
     XP_Bool hideCrosshairs;
 #endif
+    TileValueType tvType;
 
     XP_Bool eraseTray;
     XP_Bool boardObscuresTray;
@@ -228,7 +229,7 @@ struct BoardCtxt {
 
     XW_TrayVisState trayVisState;
     XP_Bool penTimerFired;
-    XP_Bool showCellValues;
+    XP_Bool unused_showCellValues;
     XP_Bool showColors;
 
     MPSLOT

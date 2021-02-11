@@ -414,7 +414,6 @@ public class XwJNI {
     public static native int board_getTrayVisState( GamePtr gamePtr );
     public static native boolean board_hideTray( GamePtr gamePtr );
     public static native boolean board_showTray( GamePtr gamePtr );
-    public static native boolean board_toggle_showValues( GamePtr gamePtr );
     public static native boolean board_commitTurn( GamePtr gamePtr,
                                                    boolean phoniesConfirmed,
                                                    boolean turnConfirmed,

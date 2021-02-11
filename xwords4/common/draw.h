@@ -123,7 +123,7 @@ typedef struct DrawCtxVTable {
     XP_Bool DRAW_VTABLE_NAME(boardBegin) ( DrawCtx* dctx, XWEnv xwe,
                                            const XP_Rect* rect, 
                                            XP_U16 hScale, XP_U16 vScale,
-                                           DrawFocusState dfs );
+                                           DrawFocusState dfs, TileValueType tvType );
     void DRAW_VTABLE_NAME(objFinished)( DrawCtx* dctx, XWEnv xwe, BoardObjectType typ,
                                         const XP_Rect* rect, 
                                         DrawFocusState dfs );
@@ -179,7 +179,7 @@ typedef struct DrawCtxVTable {
     XP_Bool DRAW_VTABLE_NAME(drawCell) ( DrawCtx* dctx, XWEnv xwe, const XP_Rect* rect,
                                          /* at least one of these two will be null */
                                          const XP_UCHAR* text, const XP_Bitmaps* bitmaps,
-                                         Tile tile, const XP_UCHAR* value, /* null if hidden */
+                                         Tile tile, XP_U16 value,
                                          XP_S16 owner, /* -1 means don't use */
                                          XWBonusType bonus, HintAtts hintAtts,
                                          CellFlags flags );
@@ -279,8 +279,8 @@ struct DrawCtx {
 #define draw_dictChanged( dc, e, n, d ) CALL_DRAW_NAME2(dictChanged, (dc),(e),(n),(d))
 #define draw_beginDraw( dc,e ) CALL_DRAW_NAME0(beginDraw, (dc), (e))
 #define draw_endDraw( dc,e ) CALL_DRAW_NAME0(endDraw, (dc), (e))
-#define draw_boardBegin( dc,e,r,h,v,f ) CALL_DRAW_NAME4(boardBegin, (dc), (e), \
-                                                      (r),(h),(v),(f))
+#define draw_boardBegin( dc,e,r,h,v,f,tvt ) CALL_DRAW_NAME5(boardBegin, (dc), (e), \
+                                                        (r),(h),(v),(f), (tvt))
 #define draw_objFinished( dc, e, t, r, d )                  \
     CALL_DRAW_NAME3(objFinished, (dc),(e), (t), (r), (d))
 #define draw_trayBegin( dc, e, r, o, s, f )      \

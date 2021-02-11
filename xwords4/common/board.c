@@ -231,7 +231,9 @@ board_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream, ModelCtxt* model
     board->isFlipped = (XP_Bool)stream_getBits( stream, 1 );
     board->gameOver = (XP_Bool)stream_getBits( stream, 1 );
     board->showColors = (XP_Bool)stream_getBits( stream, 1 );
-    board->showCellValues = (XP_Bool)stream_getBits( stream, 1 );
+    // board->showCellValues = (XP_Bool)
+    // FIX_NEXT_VERSION_CHANGE: remove this conditionally
+    (void)stream_getBits( stream, 1 ); /* REMOVE ME */
 
     if ( version >= STREAM_VERS_KEYNAV ) {
         board->focussed = (BoardObjectType)stream_getBits( stream, 2 );
@@ -330,7 +332,8 @@ board_writeToStream( const BoardCtxt* board, XWStreamCtxt* stream )
     stream_putBits( stream, 1, board->isFlipped );
     stream_putBits( stream, 1, board->gameOver );
     stream_putBits( stream, 1, board->showColors );
-    stream_putBits( stream, 1, board->showCellValues );
+    // FIX_NEXT_VERSION_CHANGE: remove this
+    stream_putBits( stream, 1, 0 ); // board->showCellValues );
     stream_putBits( stream, 2, board->focussed );
 #ifdef KEYBOARD_NAV
     stream_putBits( stream, 1, board->focusHasDived );
@@ -684,13 +687,10 @@ board_getScale( BoardCtxt* board, XP_U16* hScale, XP_U16* vScale )
 XP_Bool
 board_prefsChanged( BoardCtxt* board, const CommonPrefs* cp )
 {
-    XP_Bool showArrowChanged;
-    XP_Bool hideValChanged;
-    XP_Bool showColorsChanged;
-
-    showArrowChanged = cp->showBoardArrow == board->disableArrow;
-    hideValChanged = cp->hideTileValues != board->hideValsInTray;
-    showColorsChanged = board->showColors != cp->showColors;
+    XP_Bool showArrowChanged = cp->showBoardArrow == board->disableArrow;
+    XP_Bool hideValChanged = cp->hideTileValues != board->hideValsInTray;
+    XP_Bool showColorsChanged = board->showColors != cp->showColors;
+    XP_Bool showValsChanged = board->tvType != cp->tvType;
 
     board->disableArrow = !cp->showBoardArrow;
     board->hideValsInTray = cp->hideTileValues;
@@ -700,6 +700,7 @@ board_prefsChanged( BoardCtxt* board, const CommonPrefs* cp )
 #ifdef XWFEATURE_CROSSHAIRS
     board->hideCrosshairs = cp->hideCrosshairs;
 #endif
+    board->tvType = cp->tvType;
 
     if ( showArrowChanged ) {
         showArrowChanged = setArrowVisible( board, XP_FALSE );
@@ -707,7 +708,7 @@ board_prefsChanged( BoardCtxt* board, const CommonPrefs* cp )
     if ( hideValChanged ) {
         board_invalTrayTiles( board, ALLTILES );
     }
-    if ( showColorsChanged ) {
+    if ( showColorsChanged || showValsChanged ) {
         board->scoreBoardInvalid = XP_TRUE;
         showColorsChanged = invalCellsWithTiles( board );
     }
@@ -2058,23 +2059,6 @@ board_inTrade( const BoardCtxt* board, XP_Bool* anySelected )
     }
     return pti->tradeInProgress;
 }
-
-XP_Bool
-board_toggle_showValues( BoardCtxt* board )
-{
-    XP_Bool changed;
-    board->showCellValues = !board->showCellValues;
-
-    /* We show the tile values when showCellValues is set even if
-       hideValsInTray is set.  So inval the tray if there will be a change.
-       And set changed to true in case there are no tiles on the baord yet. 
-    */
-    changed = board->hideValsInTray && (board->trayVisState == TRAY_REVEALED);
-    if ( changed ) {
-        board_invalTrayTiles( board, ALLTILES );
-    }
-    return invalCellsWithTiles( board ) || changed;
-} /* board_toggle_showValues */
 
 XP_Bool
 board_replaceNTiles( BoardCtxt* board, XWEnv xwe, XP_U16 nTiles )

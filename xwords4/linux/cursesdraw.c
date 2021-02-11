@@ -95,7 +95,8 @@ static XP_Bool
 curses_draw_boardBegin( DrawCtx* XP_UNUSED(p_dctx), XWEnv XP_UNUSED(xwe),
                         const XP_Rect* XP_UNUSED(rect), 
                         XP_U16 XP_UNUSED(width), XP_U16 XP_UNUSED(height),
-                        DrawFocusState XP_UNUSED(dfs) )
+                        DrawFocusState XP_UNUSED(dfs),
+                        TileValueType XP_UNUSED(tvType) )
 {
     return XP_TRUE;
 } /* curses_draw_boardBegin */
@@ -392,7 +393,7 @@ static XP_Bool
 curses_draw_drawCell( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe), const XP_Rect* rect,
                       const XP_UCHAR* letter, 
                       const XP_Bitmaps* XP_UNUSED(bitmaps),
-                      Tile XP_UNUSED(tile), const XP_UCHAR* XP_UNUSED(value),
+                      Tile XP_UNUSED(tile), const XP_U16 XP_UNUSED(value),
                       XP_S16 XP_UNUSED(owner), XWBonusType bonus, 
                       HintAtts XP_UNUSED(hintAtts), CellFlags flags )
 {

@@ -84,7 +84,6 @@ public class JNIThread extends Thread implements AutoCloseable {
             CMD_ZOOM,
             CMD_PREV_HINT,
             CMD_NEXT_HINT,
-            CMD_VALUES,
             CMD_COUNTS_VALUES,
             CMD_REMAINING,
             CMD_RESEND,
@@ -639,10 +638,6 @@ public class JNIThread extends Thread implements AutoCloseable {
                 draw = XwJNI.board_zoom( m_jniGamePtr,
                                          ((Integer)args[0]).intValue(),
                                          barr );
-                break;
-
-            case CMD_VALUES:
-                draw = XwJNI.board_toggle_showValues( m_jniGamePtr );
                 break;
 
             case CMD_COUNTS_VALUES:

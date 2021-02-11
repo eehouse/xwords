@@ -1180,13 +1180,9 @@ handleFlip( void* closure, int XP_UNUSED(key) )
 } /* handleFlip */
 
 static bool
-handleToggleValues( void* closure, int XP_UNUSED(key) )
+handleToggleValues( void* XP_UNUSED(closure), int XP_UNUSED(key) )
 {
-    CursesBoardGlobals* bGlobals = (CursesBoardGlobals*)closure;
-    CommonGlobals* cGlobals = &bGlobals->cGlobals;
-    if ( board_toggle_showValues( cGlobals->game.board ) ) {
-        board_draw( cGlobals->game.board, NULL_XWE );
-    }
+    XP_ASSERT( 0 );
     return XP_TRUE;
 } /* handleToggleValues */
 

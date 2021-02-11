@@ -490,12 +490,13 @@ gtk_draw_endDraw( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe) )
 static XP_Bool
 gtk_draw_boardBegin( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe), const XP_Rect* rect,
                      XP_U16 width, XP_U16 height,
-                     DrawFocusState XP_UNUSED(dfs) )
+                     DrawFocusState XP_UNUSED(dfs), TileValueType tvType )
 {
     GdkRectangle gdkrect;
     GtkDrawCtx* dctx = (GtkDrawCtx*)(void*)p_dctx;
     dctx->cellWidth = width;
     dctx->cellHeight = height;
+    dctx->tvType = tvType;
 
     gtkSetForeground( dctx, &dctx->black );
 
@@ -610,7 +611,7 @@ static XP_Bool
 gtk_draw_drawCell( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe), const XP_Rect* rect,
                    const XP_UCHAR* letter,
                    const XP_Bitmaps* bitmaps, Tile XP_UNUSED(tile), 
-                   const XP_UCHAR* value, XP_S16 owner, XWBonusType bonus,
+                   const XP_U16 tileValue, XP_S16 owner, XWBonusType bonus,
                    HintAtts hintAtts, CellFlags flags )
 {
     GtkDrawCtx* dctx = (GtkDrawCtx*)(void*)p_dctx;
@@ -622,6 +623,10 @@ gtk_draw_drawCell( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe), const XP_Rect* rect,
     GdkRGBA* cursor = 
         ((flags & CELL_ISCURSOR) != 0) ? &dctx->cursor : NULL;
     GdkRGBA* foreground = &dctx->white;
+
+    XP_UCHAR valBuf[4];
+    XP_SNPRINTF( valBuf, sizeof(valBuf), "%d", tileValue );
+    const XP_UCHAR* value = valBuf;
 
     gtkEraseRect( dctx, rect );
 
@@ -669,6 +674,7 @@ gtk_draw_drawCell( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe), const XP_Rect* rect,
                             XP_GTK_JUST_CENTER, &dctx->black, NULL );
         }
     } else if ( !!bitmaps && !!bitmaps->bmps[0] ) {
+        XP_ASSERT(0);           /* we don't handle this now */
         XP_Rect tmpRect = *rect;
         if ( !!value ) {
             tmpRect.width = tmpRect.width * 3 / 4;
@@ -676,6 +682,14 @@ gtk_draw_drawCell( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe), const XP_Rect* rect,
         }
         drawBitmapFromLBS( dctx, bitmaps->bmps[0], &tmpRect );
     } else if ( !!letter ) {
+        TileValueType useTyp = dctx->tvType;
+        if ( TVT_VALUES == useTyp ) {
+            letter = value;
+            useTyp = TVT_FACES;
+        }
+        if ( TVT_FACES == useTyp ) {
+            value = NULL;
+        }
         XP_Bool isBlank = (flags & CELL_ISBLANK) != 0;
         if ( cursor ) {
             gtkSetForeground( dctx, cursor );
@@ -722,12 +736,13 @@ gtk_draw_drawCell( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe), const XP_Rect* rect,
     }
 
     if ( !!value ) {
+        const int fraction = 3;
         XP_Rect tmpRect = *rect;
-        tmpRect.left += tmpRect.width * 3 / 4;
-        tmpRect.width /= 4;
-        tmpRect.top += tmpRect.height * 3 / 4;
-        tmpRect.height /= 4;
-        draw_string_at( dctx, NULL, value, dctx->cellHeight/4, &tmpRect,
+        tmpRect.left += tmpRect.width * (fraction-1) / fraction;
+        tmpRect.width /= fraction;
+        tmpRect.top += tmpRect.height * (fraction-1) / fraction;
+        tmpRect.height /= fraction;
+        draw_string_at( dctx, NULL, value, dctx->cellHeight/fraction, &tmpRect,
                         XP_GTK_JUST_CENTER, foreground, cursor );
     }
 

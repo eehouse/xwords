@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+  <item android:id="@+id/values_both"
+        android:title="@string/values_menu_both"
+        />
+  <item android:id="@+id/values_faces"
+        android:title="@string/values_menu_faces"
+        />
+  <item android:id="@+id/values_values"
+        android:title="@string/values_menu_values"
+        />
+</menu>

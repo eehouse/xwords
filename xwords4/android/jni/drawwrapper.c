@@ -43,11 +43,14 @@ typedef struct _AndDraw {
     jobject jdraw;             /* global ref; free it! */
     XP_LangCode curLang;
     jobject jCache[JCACHE_COUNT];
+    jobject jTvType;
     XP_UCHAR miniTextBuf[128];
     MPSLOT
 } AndDraw;
 
 #define CHECKOUT_MARKER ((jobject)-1)
+
+static void deleteGlobalRef( JNIEnv* env, jobject jobj );
 
 static jobject
 makeJRect( AndDraw* draw, JNIEnv* env, int indx, const XP_Rect* rect )
@@ -399,24 +402,32 @@ static XP_Bool and_draw_beginDraw( DrawCtx* XP_UNUSED(dctx),
 static void and_draw_endDraw( DrawCtx* XP_UNUSED(dctx), XWEnv XP_UNUSED(xwe) ) {}
 
 static XP_Bool
-and_draw_boardBegin( DrawCtx* XP_UNUSED(dctx), XWEnv XP_UNUSED(xwe),
-                     const XP_Rect* XP_UNUSED(rect),
+and_draw_boardBegin( DrawCtx* dctx, XWEnv xwe, const XP_Rect* XP_UNUSED(rect),
                      XP_U16 XP_UNUSED(cellWidth), XP_U16 XP_UNUSED(cellHeight),
-                     DrawFocusState XP_UNUSED(dfs) )
+                     DrawFocusState XP_UNUSED(dfs), TileValueType tvType )
 {
+    JNIEnv* env = xwe;
+    AndDraw* draw = (AndDraw*)dctx;
+
+    jobject jTvType = intToJEnum( env, tvType, PKG_PATH("jni/CommonPrefs$TileValueType") );
+    draw->jTvType = (*env)->NewGlobalRef( env, jTvType );
+    deleteLocalRef( env, jTvType );
+
     return XP_TRUE;
 }
 
 static XP_Bool 
 and_draw_drawCell( DrawCtx* dctx, XWEnv xwe, const XP_Rect* rect,
                    const XP_UCHAR* text, const XP_Bitmaps* bitmaps,
-                   Tile tile, const XP_UCHAR* value,
+                   Tile tile, XP_U16 value,
                    XP_S16 owner, XWBonusType bonus, HintAtts hintAtts, 
                    CellFlags flags )
 {
     jboolean result;
     DRAW_CBK_HEADER("drawCell",
-                    "(Landroid/graphics/Rect;Ljava/lang/String;ILjava/lang/String;IIII)Z" );
+                    "(Landroid/graphics/Rect;Ljava/lang/String;IIIII"
+                    "L" PKG_PATH("jni/CommonPrefs$TileValueType") ";)Z" );
+
     jobject jrect = makeJRect( draw, xwe, JCACHE_RECT0, rect );
     jstring jtext = NULL;
     if ( !!text ) {
@@ -425,14 +436,12 @@ and_draw_drawCell( DrawCtx* dctx, XWEnv xwe, const XP_Rect* rect,
         }
         jtext = (*env)->NewStringUTF( env, text );
     }
-    jstring jval = !!value ? (*env)->NewStringUTF( env, value ) : NULL;
 
-    result = (*env)->CallBooleanMethod( env, draw->jdraw, mid,
-                                        jrect, jtext, tile, jval,
-                                        owner, bonus, hintAtts,
-                                        flags );
+    result = (*env)->CallBooleanMethod( env, draw->jdraw, mid, jrect,
+                                        jtext, tile, value, owner, bonus,
+                                        flags, draw->jTvType );
     returnJRect( draw, JCACHE_RECT0, jrect );
-    deleteLocalRefs( env, jtext, jval, DELETE_NO_REF );
+    deleteLocalRef( env, jtext );
 
     DRAW_CBK_HEADER_END();
     return result;
@@ -576,6 +585,10 @@ and_draw_objFinished( DrawCtx* dctx, XWEnv xwe, BoardObjectType typ,
     (*env)->CallVoidMethod( env, draw->jdraw, mid, 
                             (jint)typ, jrect );
     returnJRect( draw, JCACHE_RECT0, jrect );
+
+    if ( OBJ_BOARD == typ ) {
+        deleteGlobalRef( env, draw->jTvType );
+    }
     DRAW_CBK_HEADER_END();
 #endif
 }
@@ -734,20 +747,23 @@ makeDraw( MPFORMAL JNIEnv* env,
     return (DrawCtx*)draw;
 }
 
+static void
+deleteGlobalRef( JNIEnv* env, jobject jobj )
+{
+    if ( !!jobj ) {
+        (*env)->DeleteGlobalRef( env, jobj );
+    }
+}
+
 void
 destroyDraw( DrawCtx** dctx, JNIEnv* env )
 {
     if ( !!*dctx ) {
         AndDraw* draw = (AndDraw*)*dctx;
-        if ( NULL != draw->jdraw ) {
-            (*env)->DeleteGlobalRef( env, draw->jdraw );
-        }
+        deleteGlobalRef( env, draw->jdraw );
 
         for ( int ii = 0; ii < JCACHE_COUNT; ++ii ) {
-            jobject jobj = draw->jCache[ii];
-            if ( !!jobj ) {
-                (*env)->DeleteGlobalRef( env, jobj );
-            }
+            deleteGlobalRef( env, draw->jCache[ii] );
         }
 
         XP_FREE( draw->mpool, draw->vtable );

@@ -1813,8 +1813,6 @@
     <!--  -->
     <string name="menu_chat">Chat</string>
     <string name="chat_sender_fmt">%1$s:</string>
-    <!--  -->
-    <string name="menu_toggle_values">Toggle values</string>
     <!-- board menu for small devices only -->
     <string name="board_menu_dict">Browse wordlist</string>
     <!--  -->
@@ -2673,4 +2671,10 @@
          Tap this and you'll get taken to the "Game configure"
          screen -->
     <string name="newgame_configure_first">Configure first</string>
+
+    <!-- For the (new) popup menu for how tile displayed on board -->
+    <string name="values_menu_faces">Letters only</string>
+    <string name="values_menu_values">Values only</string>
+    <string name="values_menu_both">Letters and Values</string>
+
 </resources>

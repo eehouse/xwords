@@ -41,6 +41,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.PopupMenu;
 import android.widget.TextView;
 
 import java.io.Serializable;
@@ -761,8 +762,6 @@ public class BoardDelegate extends DelegateBase
 
             Utils.setItemVisible( menu, R.id.board_menu_flip,
                                   m_gsi.visTileCount >= 1 );
-            Utils.setItemVisible( menu, R.id.board_menu_toggle,
-                                  m_gsi.visTileCount >= 1 );
             Utils.setItemVisible( menu, R.id.board_menu_juggle,
                                   m_gsi.canShuffle );
             Utils.setItemVisible( menu, R.id.board_menu_undo_current,
@@ -884,9 +883,6 @@ public class BoardDelegate extends DelegateBase
             break;
         case R.id.board_menu_chat:
             startChatActivity();
-            break;
-        case R.id.board_menu_toggle:
-            cmd = JNICmd.CMD_VALUES;
             break;
 
         case R.id.board_menu_trade:
@@ -1031,7 +1027,7 @@ public class BoardDelegate extends DelegateBase
             cmd = JNICmd.CMD_UNDO_CUR;
             break;
         case VALUES_ACTION:
-            cmd = JNICmd.CMD_VALUES;
+            doValuesPopup( m_toolbar.getButtonFor( Buttons.BUTTON_VALUES ) );
             break;
         case CHAT_ACTION:
             startChatActivity();
@@ -2494,6 +2490,41 @@ public class BoardDelegate extends DelegateBase
         boolean[] locs = m_gi.playersLocal(); // to convert old histories
         ChatDelegate.start( getDelegator(), m_rowid, curPlayer,
                             names, locs );
+    }
+
+    private void doValuesPopup( View button )
+    {
+        PopupMenu popup = new PopupMenu( m_activity, button );
+        popup.inflate( R.menu.tile_values );
+        popup.setOnMenuItemClickListener( new PopupMenu.OnMenuItemClickListener() {
+                @Override
+                public boolean onMenuItemClick( MenuItem item ) {
+                    CommonPrefs.TileValueType tvType = null;
+                    int id = item.getItemId();
+                    switch ( id ) {
+                    case R.id.values_faces:
+                        tvType = CommonPrefs.TileValueType.TVT_FACES;
+                        break;
+                    case R.id.values_values:
+                        tvType = CommonPrefs.TileValueType.TVT_VALUES;
+                        break;
+                    case R.id.values_both:
+                        tvType = CommonPrefs.TileValueType.TVT_BOTH;
+                        break;
+                    default:
+                        Assert.failDbg();
+                    }
+
+                    if ( null != tvType ) {
+                        XWPrefs.setPrefsInt( m_activity,
+                                             R.string.key_tile_valuetype,
+                                             tvType.ordinal() );
+                        handleViaThread( JNICmd.CMD_PREFS_CHANGE );
+                    }
+                    return true;
+                }
+            } );
+        popup.show();
     }
 
     private void getConfirmPause( boolean isPause )

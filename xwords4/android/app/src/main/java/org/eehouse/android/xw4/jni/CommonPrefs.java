@@ -35,6 +35,12 @@ import org.eehouse.android.xw4.loc.LocUtils;
 public class CommonPrefs extends XWPrefs {
     private static final String TAG = CommonPrefs.class.getSimpleName();
 
+    public enum TileValueType {
+        TVT_BOTH,
+        TVT_FACES,
+        TVT_VALUES,
+    };
+
     public static final int COLOR_TILE_BACK = 0;
     public static final int COLOR_NOTILE = 1;
     public static final int COLOR_FOCUS = 2;
@@ -53,6 +59,7 @@ public class CommonPrefs extends XWPrefs {
     public boolean sortNewTiles;
     public boolean allowPeek;
     public boolean hideCrosshairs;
+    public TileValueType tvType;
 
     public int[] playerColors;
     public int[] bonusColors;
@@ -84,6 +91,9 @@ public class CommonPrefs extends XWPrefs {
         sortNewTiles = getBoolean( context, sp, R.string.key_sort_tiles, true );
         allowPeek = getBoolean( context, sp, R.string.key_peek_other, false );
         hideCrosshairs = getBoolean( context, sp, R.string.key_hide_crosshairs, false );
+
+        int ord = getInt(context, sp, R.string.key_tile_valuetype, 0);
+        tvType = TileValueType.values()[ord];
 
         int ids[] = { R.string.key_player0,
                       R.string.key_player1,
@@ -123,6 +133,13 @@ public class CommonPrefs extends XWPrefs {
     {
         String key = LocUtils.getString( context, id );
         return sp.getBoolean( key, dflt );
+    }
+
+    private int getInt( Context context, SharedPreferences sp,
+                        int id, int dflt )
+    {
+        String key = LocUtils.getString( context, id );
+        return sp.getInt( key, dflt );
     }
 
     private int prefToColor( Context context, SharedPreferences sp, int id )

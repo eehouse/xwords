@@ -598,6 +598,8 @@ loadCommonPrefs( JNIEnv* env, CommonPrefs* cp, jobject j_cp )
 #ifdef XWFEATURE_CROSSHAIRS
     cp->hideCrosshairs = getBool( env, j_cp, "hideCrosshairs" );
 #endif
+    cp->tvType = jenumFieldToInt( env, j_cp, "tvType",
+                                  PKG_PATH("jni/CommonPrefs$TileValueType"));
 }
 
 static XWStreamCtxt*
@@ -1830,17 +1832,6 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1setBlankValue
     jboolean result;
     XWJNI_START();
     result = board_setBlankValue( state->game.board, player, col, row, tile );
-    XWJNI_END();
-    return result;
-}
-
-JNIEXPORT jboolean JNICALL
-Java_org_eehouse_android_xw4_jni_XwJNI_board_1toggle_1showValues
-( JNIEnv* env, jclass C, GamePtrType gamePtr )
-{
-    jboolean result;
-    XWJNI_START();
-    result = board_toggle_showValues( state->game.board );
     XWJNI_END();
     return result;
 }

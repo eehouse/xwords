@@ -269,7 +269,7 @@ drawBoard( BoardCtxt* board, XWEnv xwe )
          && draw_boardBegin( board->draw, xwe, &board->boardBounds,
                              board->sd[SCROLL_H].scale,
                              board->sd[SCROLL_V].scale,
-                             dfsFor( board, OBJ_BOARD ) ) ) {
+                             dfsFor( board, OBJ_BOARD ), board->tvType ) ) {
 
         XP_Bool allDrawn = XP_TRUE;
         XP_S16 ii;
@@ -404,8 +404,7 @@ drawCell( BoardCtxt* board, XWEnv xwe, const XP_U16 col,
             HintAtts hintAtts;
             CellFlags flags = CELL_NONE;
             XP_Bool isOrigin;
-            XP_UCHAR valBuf[4];
-            XP_UCHAR* value = NULL;
+            XP_U16 value = 0;
 
             isEmpty = !model_getTile( model, modelCol, modelRow, showPending,
                                         selPlayer, &tile, &isBlank,
@@ -426,17 +425,13 @@ drawCell( BoardCtxt* board, XWEnv xwe, const XP_U16 col,
                 break;
             } else {
                 Tile valTile = isBlank? dict_getBlankTile( dict ) : tile;
-                XP_U16 val = dict_getTileValue( dict, valTile );
+                value = dict_getTileValue( dict, valTile );
 
                 if ( board->showColors ) {
                     owner = (XP_S16)model_getCellOwner( model, modelCol, 
                                                         modelRow );
                 }
 
-                if ( board->showCellValues ) {
-                    XP_SNPRINTF( valBuf, VSIZE(valBuf), "%d", val );
-                    value = valBuf;
-                }
                 if ( dict_faceIsBitmap( dict, tile ) ) {
                     dict_getFaceBitmaps( dict, tile, &bitmaps );
                     bptr = &bitmaps;
@@ -550,7 +545,7 @@ drawDragTileIf( BoardCtxt* board, XWEnv xwe )
             if ( isBlank ) {
                 flags |= CELL_ISBLANK;
             }
-            if ( board->hideValsInTray && !board->showCellValues ) {
+            if ( board->hideValsInTray ) {
                 flags |= CELL_VALHIDDEN;
             }
             draw_drawTileMidDrag( board->draw, xwe, &rect, face,

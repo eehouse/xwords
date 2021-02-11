@@ -15,6 +15,7 @@
   <string name="key_sort_tiles">key_sort_tiles</string>
   <string name="key_peek_other">key_peek_other</string>
   <string name="key_hide_crosshairs">key_hide_crosshairs</string>
+  <string name="key_tile_valuetype">key_tile_valuetype</string>
   <string name="key_hide_values">key_hide_values</string>
   <string name="key_hide_title">key_hide_title</string>
   <string name="key_hide_newgames">key_hide_newgames</string>
