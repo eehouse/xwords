@@ -607,9 +607,10 @@ drawCrosshairs( GtkDrawCtx* dctx, const XP_Rect* rect, CellFlags flags )
 #endif
 
 static XP_Bool
-gtk_draw_drawCell( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe), const XP_Rect* rect, const XP_UCHAR* letter,
+gtk_draw_drawCell( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe), const XP_Rect* rect,
+                   const XP_UCHAR* letter,
                    const XP_Bitmaps* bitmaps, Tile XP_UNUSED(tile), 
-                   XP_U16 XP_UNUSED(value), XP_S16 owner, XWBonusType bonus, 
+                   const XP_UCHAR* value, XP_S16 owner, XWBonusType bonus,
                    HintAtts hintAtts, CellFlags flags )
 {
     GtkDrawCtx* dctx = (GtkDrawCtx*)(void*)p_dctx;
@@ -620,6 +621,7 @@ gtk_draw_drawCell( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe), const XP_Rect* rect, c
     XP_Bool pending = (flags & CELL_PENDING) != 0;
     GdkRGBA* cursor = 
         ((flags & CELL_ISCURSOR) != 0) ? &dctx->cursor : NULL;
+    GdkRGBA* foreground = &dctx->white;
 
     gtkEraseRect( dctx, rect );
 
@@ -643,13 +645,12 @@ gtk_draw_drawCell( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe), const XP_Rect* rect, c
        in the cell or if CELL_DRAGSRC is set */
     if ( (flags & (CELL_DRAGSRC|CELL_ISEMPTY)) != 0 ) {
         if ( !!cursor || bonus != BONUS_NONE ) {
-            GdkRGBA* foreground;
             if ( !!cursor ) {
                 foreground = cursor;
             } else if ( bonus != BONUS_NONE ) {
                 foreground = &dctx->bonusColors[bonus-1];
-            } else {
-                foreground = &dctx->white;
+            /* } else { */
+            /*     foreground = &dctx->white; */
             }
             if ( !!foreground ) {
 #ifdef USE_CAIRO
@@ -668,10 +669,14 @@ gtk_draw_drawCell( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe), const XP_Rect* rect, c
                             XP_GTK_JUST_CENTER, &dctx->black, NULL );
         }
     } else if ( !!bitmaps && !!bitmaps->bmps[0] ) {
-        drawBitmapFromLBS( dctx, bitmaps->bmps[0], rect );
+        XP_Rect tmpRect = *rect;
+        if ( !!value ) {
+            tmpRect.width = tmpRect.width * 3 / 4;
+            tmpRect.height = tmpRect.height * 3 / 4;
+        }
+        drawBitmapFromLBS( dctx, bitmaps->bmps[0], &tmpRect );
     } else if ( !!letter ) {
         XP_Bool isBlank = (flags & CELL_ISBLANK) != 0;
-        GdkRGBA* foreground;
         if ( cursor ) {
             gtkSetForeground( dctx, cursor );
         } else if ( !recent && !pending ) {
@@ -692,7 +697,14 @@ gtk_draw_drawCell( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe), const XP_Rect* rect, c
         } else {
             foreground = &dctx->playerColors[owner];
         }
-        draw_string_at( dctx, NULL, letter, dctx->cellHeight, &rectInset, 
+        XP_Rect tmpRect = rectInset;
+        XP_U16 fontHt = dctx->cellHeight;
+        if ( !!value ) {
+            tmpRect.width = tmpRect.width * 3 / 4;
+            tmpRect.height = tmpRect.height * 3 / 4;
+            fontHt = fontHt * 3 / 4;
+        }
+        draw_string_at( dctx, NULL, letter, fontHt, &tmpRect,
                         XP_GTK_JUST_CENTER, foreground, cursor );
 
         if ( isBlank ) {
@@ -707,6 +719,16 @@ gtk_draw_drawCell( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe), const XP_Rect* rect, c
                           0, 360*64 );
 #endif
         }
+    }
+
+    if ( !!value ) {
+        XP_Rect tmpRect = *rect;
+        tmpRect.left += tmpRect.width * 3 / 4;
+        tmpRect.width /= 4;
+        tmpRect.top += tmpRect.height * 3 / 4;
+        tmpRect.height /= 4;
+        draw_string_at( dctx, NULL, value, dctx->cellHeight/4, &tmpRect,
+                        XP_GTK_JUST_CENTER, foreground, cursor );
     }
 
     drawHintBorders( dctx, rect, hintAtts );

@@ -1,6 +1,6 @@
-/* -*-mode: C; compile-command: "find-and-gradle.sh insXwdDeb"; -*- */
+/* -*- compile-command: "find-and-gradle.sh inXw4dDeb"; -*- */
 /* 
- * Copyright 2001-2010 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2001-2021 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -409,14 +409,14 @@ and_draw_boardBegin( DrawCtx* XP_UNUSED(dctx), XWEnv XP_UNUSED(xwe),
 
 static XP_Bool 
 and_draw_drawCell( DrawCtx* dctx, XWEnv xwe, const XP_Rect* rect,
-                   const XP_UCHAR* text,
-                   const XP_Bitmaps* bitmaps, Tile tile, XP_U16 value,
+                   const XP_UCHAR* text, const XP_Bitmaps* bitmaps,
+                   Tile tile, const XP_UCHAR* value,
                    XP_S16 owner, XWBonusType bonus, HintAtts hintAtts, 
                    CellFlags flags )
 {
     jboolean result;
     DRAW_CBK_HEADER("drawCell",
-                    "(Landroid/graphics/Rect;Ljava/lang/String;IIIIII)Z" );
+                    "(Landroid/graphics/Rect;Ljava/lang/String;ILjava/lang/String;IIII)Z" );
     jobject jrect = makeJRect( draw, xwe, JCACHE_RECT0, rect );
     jstring jtext = NULL;
     if ( !!text ) {
@@ -425,13 +425,14 @@ and_draw_drawCell( DrawCtx* dctx, XWEnv xwe, const XP_Rect* rect,
         }
         jtext = (*env)->NewStringUTF( env, text );
     }
+    jstring jval = !!value ? (*env)->NewStringUTF( env, value ) : NULL;
 
     result = (*env)->CallBooleanMethod( env, draw->jdraw, mid,
-                                        jrect, jtext, tile, value,
+                                        jrect, jtext, tile, jval,
                                         owner, bonus, hintAtts,
                                         flags );
     returnJRect( draw, JCACHE_RECT0, jrect );
-    deleteLocalRef( env, jtext );
+    deleteLocalRefs( env, jtext, jval, DELETE_NO_REF );
 
     DRAW_CBK_HEADER_END();
     return result;

@@ -372,7 +372,7 @@ public class BoardCanvas extends Canvas implements DrawCtx {
     }
 
     @Override
-    public boolean drawCell( Rect rect, String text, int tile, int value,
+    public boolean drawCell( Rect rect, String text, int tile, String value,
                              int owner, int bonus, int hintAtts, int flags )
     {
         boolean canDraw = figureFontDims();
@@ -432,15 +432,19 @@ public class BoardCanvas extends Canvas implements DrawCtx {
                 }
             } else {
                 m_fillPaint.setColor( adjustColor(foreColor) );
-                Rect smaller = new Rect(rect);
-                smaller.bottom -= smaller.height() / 4;
-                smaller.right -= smaller.width() / 4;
-                drawCentered( text, smaller, m_fontDims );
+                if ( null == value ) {
+                    drawCentered( text, rect, m_fontDims );
+                } else {
+                    Rect smaller = new Rect(rect);
+                    smaller.bottom -= smaller.height() / 4;
+                    smaller.right -= smaller.width() / 4;
+                    drawCentered( text, smaller, m_fontDims );
 
-                smaller = new Rect(rect);
-                smaller.left += (3 * smaller.width()) / 4;
-                smaller.top += (3 * smaller.height()) / 4;
-                drawCentered( String.format("%d", value), smaller, m_fontDims );
+                    smaller = new Rect(rect);
+                    smaller.left += (3 * smaller.width()) / 4;
+                    smaller.top += (3 * smaller.height()) / 4;
+                    drawCentered( value, smaller, m_fontDims );
+                }
             }
 
             if ( (CELL_ISBLANK & flags) != 0 ) {
@@ -667,7 +671,6 @@ public class BoardCanvas extends Canvas implements DrawCtx {
     {
         boolean canDraw = figureFontDims();
         if ( canDraw ) {
-            // boolean valHidden = (flags & CELL_VALHIDDEN) != 0;
             boolean notEmpty = (flags & CELL_ISEMPTY) == 0;
             boolean isCursor = (flags & CELL_ISCURSOR) != 0;
 

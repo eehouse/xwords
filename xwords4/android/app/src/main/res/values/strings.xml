@@ -1394,8 +1394,8 @@
          remind themselves how much played tiles are worth while
          planning a move. -->
     <string name="not_again_values">This button changes whether the
-        board shows letters on placed tiles or their point values.
-        Use it to remind yourself what a tile is worth.</string>
+    board shows values (in addition to letters) on tiles on the
+    board.</string>
     <!-- This is shown when you choose the board_menu_done menu item.
          It's to let you know that there's a shortcut that does almost
          the same thing. -->

@@ -30,7 +30,7 @@ public interface DrawCtx {
     static final int CELL_ISSTAR = 0x04;
     static final int CELL_ISCURSOR = 0x08;
     static final int CELL_ISEMPTY = 0x10;       /* of a tray tile slot */
-    static final int CELL_VALHIDDEN = 0x20;     /* show letter only, not value */
+    // static final int CELL_VALHIDDEN = 0x20;     /* show letter only, not value */
     static final int CELL_DRAGSRC = 0x40;       /* where drag originated */
     static final int CELL_DRAGCUR = 0x80;       /* where drag is now */
     static final int CELL_CROSSVERT = 0x100;
@@ -59,7 +59,7 @@ public interface DrawCtx {
 
     void drawTimer( Rect rect, int player, int secondsLeft, boolean inDuplicateMode );
 
-    boolean drawCell( Rect rect, String text, int tile, int value,
+    boolean drawCell( Rect rect, String text, int tile, String value,
                       int owner, int bonus, int hintAtts, int flags );
     void drawBoardArrow ( Rect rect, int bonus, boolean vert, int hintAtts,
                           int flags );

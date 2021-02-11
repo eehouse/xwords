@@ -177,11 +177,9 @@ typedef struct DrawCtxVTable {
                                        XP_Bool turnDone );
 
     XP_Bool DRAW_VTABLE_NAME(drawCell) ( DrawCtx* dctx, XWEnv xwe, const XP_Rect* rect,
-                                         /* at least one of these two will be
-                                            null */
-                                         const XP_UCHAR* text,
-                                         const XP_Bitmaps* bitmaps,
-                                         Tile tile, XP_U16 value,
+                                         /* at least one of these two will be null */
+                                         const XP_UCHAR* text, const XP_Bitmaps* bitmaps,
+                                         Tile tile, const XP_UCHAR* value, /* null if hidden */
                                          XP_S16 owner, /* -1 means don't use */
                                          XWBonusType bonus, HintAtts hintAtts,
                                          CellFlags flags );

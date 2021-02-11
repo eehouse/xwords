@@ -397,7 +397,6 @@ drawCell( BoardCtxt* board, XWEnv xwe, const XP_U16 col,
         while ( board->trayVisState == TRAY_HIDDEN ||
                 !rectContainsRect( &board->trayBounds, &cellRect ) ) {
             XP_Bool recent = XP_FALSE;
-            XP_UCHAR ch[4] = {'\0'};
             XP_S16 owner = -1;
             XP_Bitmaps bitmaps;
             XP_Bitmaps* bptr = NULL;
@@ -405,7 +404,8 @@ drawCell( BoardCtxt* board, XWEnv xwe, const XP_U16 col,
             HintAtts hintAtts;
             CellFlags flags = CELL_NONE;
             XP_Bool isOrigin;
-            XP_U16 value = 0;
+            XP_UCHAR valBuf[4];
+            XP_UCHAR* value = NULL;
 
             isEmpty = !model_getTile( model, modelCol, modelRow, showPending,
                                         selPlayer, &tile, &isBlank,
@@ -426,7 +426,7 @@ drawCell( BoardCtxt* board, XWEnv xwe, const XP_U16 col,
                 break;
             } else {
                 Tile valTile = isBlank? dict_getBlankTile( dict ) : tile;
-                value = dict_getTileValue( dict, valTile );
+                XP_U16 val = dict_getTileValue( dict, valTile );
 
                 if ( board->showColors ) {
                     owner = (XP_S16)model_getCellOwner( model, modelCol, 
@@ -434,15 +434,14 @@ drawCell( BoardCtxt* board, XWEnv xwe, const XP_U16 col,
                 }
 
                 if ( board->showCellValues ) {
-                    XP_SNPRINTF( ch, VSIZE(ch), "%d", value );
-                    textP = ch;
-                } else {
-                    if ( dict_faceIsBitmap( dict, tile ) ) {
-                        dict_getFaceBitmaps( dict, tile, &bitmaps );
-                        bptr = &bitmaps;
-                    }
-                    textP = dict_getTileString( dict, tile );
+                    XP_SNPRINTF( valBuf, VSIZE(valBuf), "%d", val );
+                    value = valBuf;
                 }
+                if ( dict_faceIsBitmap( dict, tile ) ) {
+                    dict_getFaceBitmaps( dict, tile, &bitmaps );
+                    bptr = &bitmaps;
+                }
+                textP = dict_getTileString( dict, tile );
             }
             bonus = model_getSquareBonus( model, xwe, col, row );
             hintAtts = figureHintAtts( board, col, row );
