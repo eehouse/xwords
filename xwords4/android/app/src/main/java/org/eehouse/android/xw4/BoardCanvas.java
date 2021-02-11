@@ -432,7 +432,15 @@ public class BoardCanvas extends Canvas implements DrawCtx {
                 }
             } else {
                 m_fillPaint.setColor( adjustColor(foreColor) );
-                drawCentered( text, rect, m_fontDims );
+                Rect smaller = new Rect(rect);
+                smaller.bottom -= smaller.height() / 4;
+                smaller.right -= smaller.width() / 4;
+                drawCentered( text, smaller, m_fontDims );
+
+                smaller = new Rect(rect);
+                smaller.left += (3 * smaller.width()) / 4;
+                smaller.top += (3 * smaller.height()) / 4;
+                drawCentered( String.format("%d", value), smaller, m_fontDims );
             }
 
             if ( (CELL_ISBLANK & flags) != 0 ) {
