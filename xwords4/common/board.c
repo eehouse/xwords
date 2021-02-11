@@ -2060,12 +2060,6 @@ board_inTrade( const BoardCtxt* board, XP_Bool* anySelected )
 }
 
 XP_Bool
-board_get_showValues( const BoardCtxt* board )
-{
-    return board->showCellValues;
-}
-
-XP_Bool
 board_toggle_showValues( BoardCtxt* board )
 {
     XP_Bool changed;
