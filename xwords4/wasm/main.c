@@ -136,6 +136,7 @@ initDeviceGlobals( Globals* globals )
     globals->cp.allowPeek = XP_TRUE;
     // globals->cp.showRobotScores = XP_TRUE;
     globals->cp.sortNewTiles = XP_TRUE;
+    globals->cp.showColors = XP_TRUE;
 
     globals->procs.send = send_msg;
     globals->procs.closure = globals;

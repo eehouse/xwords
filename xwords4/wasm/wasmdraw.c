@@ -26,15 +26,19 @@
 #include "wasmdraw.h"
 #include "dbgutil.h"
 
+typedef struct FontRec{
+    struct FontRec* next;
+    int size;
+    TTF_Font* font;
+} FontRec;
+
 typedef struct _WasmDrawCtx {
     DrawCtxVTable* vtable;
     SDL_Renderer* renderer;
     SDL_Surface* surface;
     SDL_Texture* texture;
-    TTF_Font* font12;
-    TTF_Font* font20;
-    TTF_Font* font36;
-    TTF_Font* font48;
+
+    FontRec* fonts;
 
     SDL_Surface* arrowDown;
     SDL_Surface* arrowRight;
@@ -78,6 +82,31 @@ enum { BLACK,
 
        N_COLORS,
 };
+
+static TTF_Font*
+fontFor( WasmDrawCtx* wdctx, int height )
+{
+    TTF_Font* result = NULL;
+    for ( FontRec* rec = wdctx->fonts; !!rec; rec = rec->next ) {
+        if ( rec->size == height ) {
+            result = rec->font;
+            break;
+        }
+    }
+
+    if ( !result ) {
+        FontRec* rec = XP_MALLOC( wdctx->mpool, sizeof(*rec) );
+        rec->next = wdctx->fonts;
+        wdctx->fonts = rec;
+
+        rec->size = height;
+        rec->font = TTF_OpenFont( "assets_dir/FreeSans.ttf", height );
+        result = rec->font;
+        XP_LOGFF( "made font for size %d", height );
+    }
+
+    return result;
+}
 
 static SDL_Color sOtherColors[N_COLORS] = {
     {0x00, 0x00, 0x00, 0xFF},   /* BLACK */
@@ -150,16 +179,7 @@ static void
 textInRect( WasmDrawCtx* wdctx, const XP_UCHAR* text, const XP_Rect* rect,
             const SDL_Color* color )
 {
-    TTF_Font* font;
-    if ( rect->height <= 12 ) {
-        font = wdctx->font12;
-    } else if ( rect->height <= 20 ) {
-        font = wdctx->font20;
-    } else if ( rect->height <= 36 ) {
-        font = wdctx->font36;
-    } else {
-        font = wdctx->font48;
-    }
+    TTF_Font* font = fontFor( wdctx, rect->height );
 
     XP_Rect tmpR = *rect;
 
@@ -248,10 +268,12 @@ wasm_draw_destroyCtxt( DrawCtx* dctx, XWEnv xwe )
     LOG_FUNC();
     WasmDrawCtx* wdctx = (WasmDrawCtx*)dctx;
 
-    TTF_CloseFont( wdctx->font12 );
-    TTF_CloseFont( wdctx->font20 );
-    TTF_CloseFont( wdctx->font36 );
-    TTF_CloseFont( wdctx->font48 );
+    FontRec* next = NULL;
+    for ( FontRec* rec = wdctx->fonts; !!rec; rec = next ) {
+        TTF_CloseFont( rec->font );
+        next = rec->next;
+        XP_FREE( wdctx->mpool, rec );
+    }
 
     XP_FREEP( wdctx->mpool, &wdctx->vtable );
     XP_FREEP( wdctx->mpool, &wdctx );
@@ -485,10 +507,10 @@ wasm_draw_drawCell( DrawCtx* dctx, XWEnv xwe, const XP_Rect* rect,
         textInRect( wdctx, text, &tmpRect, foreColor );
         if ( !!valueStr ) {
             XP_Rect tmpRect = *rect;
-            tmpRect.left += tmpRect.width * 2 / 3;
-            tmpRect.top += tmpRect.height * 2 / 3;
-            tmpRect.width /= 3;
-            tmpRect.height /= 3;
+            tmpRect.left += tmpRect.width * 1 / 2;
+            tmpRect.top += tmpRect.height * 1 / 2;
+            tmpRect.width /= 2;
+            tmpRect.height /= 2;
             textInRect( wdctx, valueStr, &tmpRect, foreColor );
         }
     }
@@ -615,12 +637,6 @@ wasm_draw_make( MPFORMAL int width, int height )
     LOG_FUNC();
     WasmDrawCtx* wdctx = XP_MALLOC( mpool, sizeof(*wdctx) );
     MPASSIGN( wdctx->mpool, mpool );
-
-    wdctx->font12 = TTF_OpenFont( "assets_dir/FreeSans.ttf", 12 );
-    XP_ASSERT( !!wdctx->font12 );
-    wdctx->font20 = TTF_OpenFont( "assets_dir/FreeSans.ttf", 20 );
-    wdctx->font36 = TTF_OpenFont( "assets_dir/FreeSans.ttf", 36 );
-    wdctx->font48 = TTF_OpenFont( "assets_dir/FreeSans.ttf", 48 );
 
     wdctx->arrowDown = IMG_Load( "assets_dir/ic_downarrow.png" );
     wdctx->arrowRight = IMG_Load( "assets_dir/ic_rightarrow.png" );
