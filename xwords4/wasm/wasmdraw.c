@@ -176,6 +176,21 @@ frameRect( WasmDrawCtx* wdctx, const XP_Rect* rect )
 }
 
 static void
+measureText( WasmDrawCtx* wdctx, const XP_UCHAR* text, int fontHeight,
+             int* widthP, int* heightP )
+{
+    SDL_Color black = { 0, 0, 0, 255 };
+    TTF_Font* font = fontFor( wdctx, fontHeight );
+    SDL_Surface* surface = TTF_RenderText_Blended( font, text, black );
+    SDL_Texture* texture = SDL_CreateTextureFromSurface( wdctx->renderer,
+                                                         surface );
+    SDL_QueryTexture( texture, NULL, NULL, widthP, heightP );
+
+    SDL_FreeSurface( surface );
+    SDL_DestroyTexture( texture );
+}
+
+static void
 textInRect( WasmDrawCtx* wdctx, const XP_UCHAR* text, const XP_Rect* rect,
             const SDL_Color* color )
 {
@@ -193,9 +208,8 @@ textInRect( WasmDrawCtx* wdctx, const XP_UCHAR* text, const XP_Rect* rect,
 
     int width, height;
     SDL_QueryTexture( texture, NULL, NULL, &width, &height );
-    /* XP_LOGFF( "have w: %d; h: %d; got w: %d; h: %d", */
-    /*           tmpR.width, tmpR.height, width, height ); */
     tmpR.width = XP_MIN( width, tmpR.width );
+    tmpR.left += (rect->width - tmpR.width) / 2;
     tmpR.height = XP_MIN( height, tmpR.height );
 
     SDL_Rect sdlr;
@@ -256,7 +270,6 @@ wasm_draw_dictChanged( DrawCtx* dctx, XWEnv xwe, XP_S16 playerNum,
 static XP_Bool
 wasm_draw_beginDraw( DrawCtx* dctx, XWEnv xwe )
 {
-    LOG_FUNC();
     WasmDrawCtx* wdctx = (WasmDrawCtx*)dctx;
     SDL_RenderPresent( wdctx->renderer );
     return XP_TRUE;
@@ -333,8 +346,7 @@ wasm_draw_scoreBegin( DrawCtx* dctx, XWEnv xwe, const XP_Rect* rect,
 
 static XP_Bool
 wasm_draw_measureRemText( DrawCtx* dctx, XWEnv xwe, const XP_Rect* rect,
-                          XP_S16 nTilesLeft,
-                          XP_U16* width, XP_U16* height )
+                          XP_S16 nTilesLeft, XP_U16* widthP, XP_U16* heightP )
 {
     XP_Bool drawIt = 0 <= nTilesLeft;
     if ( drawIt ) {
@@ -342,8 +354,10 @@ wasm_draw_measureRemText( DrawCtx* dctx, XWEnv xwe, const XP_Rect* rect,
         XP_SNPRINTF( buf, VSIZE(buf), "%d", nTilesLeft );
 
         WasmDrawCtx* wdctx = (WasmDrawCtx*)dctx;
-        textInRect( wdctx, buf, rect, NULL );
-        *width = *height = rect->height;
+        int width, height;
+        measureText( wdctx, buf, rect->height, &width, &height );
+        *widthP = XP_MIN( width, rect->width );
+        *heightP = XP_MIN( height, rect->height );
     }
     return drawIt;
 }
@@ -353,6 +367,10 @@ wasm_draw_drawRemText( DrawCtx* dctx, XWEnv xwe, const XP_Rect* rInner,
                        const XP_Rect* rOuter,
                        XP_S16 nTilesLeft, XP_Bool focussed )
 {
+    WasmDrawCtx* wdctx = (WasmDrawCtx*)dctx;
+    XP_UCHAR buf[4];
+    XP_SNPRINTF( buf, VSIZE(buf), "%d", nTilesLeft );
+    textInRect( wdctx, buf, rInner, NULL );
 }
 
 static void
