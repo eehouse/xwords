@@ -556,7 +556,8 @@ button( void* closure, const char* msg )
         draw = board_redoReplacedTiles( board, NULL )
             || board_replaceTiles( board, NULL );
     } else if ( 0 == strcmp(msg, "vals") ) {
-        draw = board_toggle_showValues( board );
+        globals->cp.tvType = (globals->cp.tvType + 1) % TVT_N_ENTRIES;
+        draw = board_prefsChanged( board, &globals->cp );
     }
 
     if ( draw ) {

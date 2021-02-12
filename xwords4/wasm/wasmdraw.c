@@ -42,6 +42,7 @@ typedef struct _WasmDrawCtx {
 
     int trayOwner;
     XP_Bool inTrade;
+    TileValueType tvType;
 
     MPSLOT;
 } WasmDrawCtx;
@@ -265,8 +266,10 @@ static XP_Bool
 wasm_draw_boardBegin( DrawCtx* dctx, XWEnv xwe,
                       const XP_Rect* rect, 
                       XP_U16 hScale, XP_U16 vScale,
-                      DrawFocusState dfs )
+                      DrawFocusState dfs, TileValueType tvType )
 {
+    WasmDrawCtx* wdctx = (WasmDrawCtx*)dctx;
+    wdctx->tvType = tvType;
     return XP_TRUE;
 }
 
@@ -408,8 +411,7 @@ static XP_Bool
 wasm_draw_drawCell( DrawCtx* dctx, XWEnv xwe, const XP_Rect* rect,
                     /* at least one of these two will be
                        null */
-                    const XP_UCHAR* text,
-                    const XP_Bitmaps* bitmaps,
+                    const XP_UCHAR* text, const XP_Bitmaps* bitmaps,
                     Tile tile, XP_U16 value,
                     XP_S16 owner, /* -1 means don't use */
                     XWBonusType bonus, HintAtts hintAtts,
@@ -461,7 +463,34 @@ wasm_draw_drawCell( DrawCtx* dctx, XWEnv xwe, const XP_Rect* rect,
             textInRect( wdctx, bonusStr, rect, color );
         }
     } else {
-        textInRect( wdctx, text, rect, foreColor );
+        XP_UCHAR valBuf[4];
+        XP_SNPRINTF( valBuf, sizeof(valBuf), "%d", value );
+        const XP_UCHAR* valueStr = valBuf;
+        switch ( wdctx->tvType ) {
+        case TVT_BOTH:
+            break;
+        case TVT_FACES:
+            valueStr = NULL;
+            break;
+        case TVT_VALUES:
+            text = valueStr;
+            valueStr = NULL;
+            break;
+        }
+        XP_Rect tmpRect = *rect;
+        if ( !!valueStr ) {
+            tmpRect.width = tmpRect.width * 4 / 5;
+            tmpRect.height = tmpRect.height * 4 / 5;
+        }
+        textInRect( wdctx, text, &tmpRect, foreColor );
+        if ( !!valueStr ) {
+            XP_Rect tmpRect = *rect;
+            tmpRect.left += tmpRect.width * 2 / 3;
+            tmpRect.top += tmpRect.height * 2 / 3;
+            tmpRect.width /= 3;
+            tmpRect.height /= 3;
+            textInRect( wdctx, valueStr, &tmpRect, foreColor );
+        }
     }
 
     if ( (CELL_ISBLANK & flags) != 0 ) {
