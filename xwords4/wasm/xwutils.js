@@ -86,6 +86,7 @@ function nbDialog(msg, buttons, proc, closure) {
 	dlg.appendChild( txtDiv );
 
 	let span = document.createElement('div');
+	span.classList.add('buttonRow');
 	for ( let buttonTxt of buttons ) {
 		let button = document.createElement('button');
 		button.textContent = buttonTxt;

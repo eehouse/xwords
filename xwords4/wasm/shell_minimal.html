@@ -13,6 +13,11 @@
       /* the canvas *must not* have any border or padding, or mouse coords will be wrong */
       canvas.emscripten { border: 0px none; background-color: black; }
 
+	  div.buttonRow {
+		  text-align: center;
+		  padding: 7px;
+	  }
+
       .spinner {
         height: 50px;
         width: 50px;
@@ -46,6 +51,21 @@
       }
 
       #nbalert {
+		  display: none;
+		  position: absolute;
+		  text-align: left;
+		  z-index: 10000;
+		  left: 33%;
+		  top: 250px;
+		  width: 33%;
+		  background-color: #FFF;
+		  min-width: 217px;
+		  border-radius: 10px 10px;
+		  border: solid;
+		  border-width: 1px;
+		  border-color: #000;
+		  vertical-align: top;
+		  padding: 10px;
       }
 
     </style>
@@ -61,7 +81,7 @@
     <div class="emscripten_border">
       <canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()" tabindex=-1></canvas>
     </div>
-	<div>
+	<div class='buttonRow'>
 		<button id="hintdown", onclick="callButton(this);">Prev Hint</button>
 		<button id="hintup", onclick="callButton(this);">Next Hint</button>
 	    <button id="trade", onclick="callButton(this);">Trade</button>
