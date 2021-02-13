@@ -16,7 +16,17 @@ function callButton(obj) {
 }
 
 function onHaveDevID(closure, devid) {
-    console.log('got ' + devid);
+	// Set a unique tag so we know if somebody comes along later
+	let tabID = Math.random();
+	localStorage.setItem('tabID', tabID);
+	window.addEventListener('storage', function () {
+		newTabID = 	localStorage.getItem('tabID');
+		if ( newTabID != tabID ) {
+			state.client.disconnect();
+			Module.ccall('button', null, ['number', 'string'], [state.closure, 'exit']);
+		}
+	} );
+
 	state.closure = closure;
 	document.getElementById("mqtt_span").textContent=devid;
 

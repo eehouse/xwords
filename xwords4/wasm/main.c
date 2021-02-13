@@ -570,6 +570,14 @@ updateScreen( Globals* globals, bool doSave )
 }
 
 static void
+doExit( Globals* globals )
+{
+    call_alert( "Control passed to another tab" );
+    XP_MEMSET( globals, 0, sizeof(*globals) ); /* stop everything :-) */
+    // emscripten_cancel_main_loop(); <-- does nothing
+}
+
+static void
 looper( void* closure )
 {
     Globals* globals = (Globals*)closure;
@@ -605,6 +613,8 @@ button( void* closure, const char* msg )
     } else if ( 0 == strcmp(msg, "vals") ) {
         globals->cp.tvType = (globals->cp.tvType + 1) % TVT_N_ENTRIES;
         draw = board_prefsChanged( board, &globals->cp );
+    } else if ( 0 == strcmp(msg, "exit") ) {
+        doExit( globals );
     }
 
     if ( draw ) {
