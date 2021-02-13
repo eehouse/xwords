@@ -350,7 +350,7 @@ wasm_util_notifyGameOver( XW_UtilCtxt* uc, XWEnv xwe, XP_S16 quitter )
 {
     WasmUtilCtx* wuctxt = (WasmUtilCtx*)uc;
     Globals* globals = (Globals*)wuctxt->closure;
-    main_alert( globals, "Game over" );
+    main_showGameOver( globals );
 }
 
 static XP_Bool

@@ -395,6 +395,18 @@ main_playerScoreHeld( Globals* globals, XP_U16 player )
     }
 }
 
+
+void
+main_showGameOver( Globals* globals )
+{
+    XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(globals->mpool)
+                                                globals->vtMgr );
+    server_writeFinalScores( globals->game.server, NULL, stream );
+    stream_putU8( stream, 0 );
+    call_alert( (const XP_UCHAR*)stream_getPtr( stream ) );
+    stream_destroy( stream, NULL );
+}
+
 static time_t
 getCurMS()
 {
