@@ -54,12 +54,30 @@
 #define KEY_GAME "the_game"
 #define DICTNAME "assets_dir/CollegeEng_2to8.xwd"
 
-EM_JS(bool, call_confirm, (const char* str), {
-        return confirm(UTF8ToString(str));
-});
-EM_JS(void, call_alert, (const char* str), {
-        alert(UTF8ToString(str));
-});
+#define BUTTON_OK "OK"
+#define BUTTON_CANCEL "Cancel"
+
+typedef void (*AlertProc)(void* closure, const char* button);
+
+/* typedef struct _Buttons { */
+/*     int nButtons; */
+/*     const char** buttons; */
+/* } Buttons; */
+
+EM_JS(void, call_dialog, (const char* str, const char** but_strs,
+                          AlertProc proc, void* closure), {
+          var buttons = [];
+          for ( let ii = 0; ii < 3; ++ii ) {
+              const mem = HEAP32[(but_strs + (ii * 4)) >> 2];
+              if ( 0 == mem ) {
+                  break;
+              }
+              const str = UTF8ToString(mem);
+              buttons.push(str);
+          }
+          nbDialog(UTF8ToString(str), buttons, proc, closure);
+      } );
+
 EM_JS(void, call_haveDevID, (void* closure, const char* devid), {
         onHaveDevID(closure, UTF8ToString(devid));
 });
@@ -86,6 +104,13 @@ EM_JS(void, setButtonText, (const char* id, const char* text), {
     });
 
 static void updateScreen( Globals* globals, bool doSave );
+
+static void
+call_alert( const char* msg )
+{
+    const char* buttons[] = { BUTTON_OK, NULL };
+    call_dialog( msg, buttons, NULL, NULL );
+}
 
 static XP_S16
 send_msg( XWEnv xwe, const XP_U8* buf, XP_U16 len,
@@ -203,8 +228,9 @@ gameFromInvite( Globals* globals, const NetLaunchInfo* invite )
         if ( globals->gi.gameID == invite->gameID ) {
             XP_LOGFF( "duplicate invite; ignoring" );
             needsLoad = false;
-        } else if ( ! call_confirm( "Invitation received; replace current game?" ) ) {
-            needsLoad = false;
+        } else {
+            call_alert( "Invitation received; replace current game?" );
+            // needsLoad = false;
         }
     } else if ( invite->lang != 1 ) {
         call_alert( "Invitations are only supported for play in English right now." );
@@ -425,12 +451,32 @@ main_set_timer( Globals* globals, XWTimerReason why, XP_U16 when,
     jscallback_set( onTimerFired, tc, when );
 }
 
+typedef struct _QueryState {
+    Globals* globals;
+    QueryProc proc;
+    void* closure;
+} QueryState;
+
+static void
+onQueryCalled( void* closure, const char* button )
+{
+    QueryState* qs = (QueryState*)closure;
+    bool ok = 0 == strcmp( button, BUTTON_OK );
+    (*qs->proc)( qs->closure, ok );
+    updateTradeButton( qs->globals );
+    XP_FREE( qs->globals->mpool, qs );
+}
+
 void
 main_query( Globals* globals, const XP_UCHAR* query, QueryProc proc, void* closure )
 {
-    bool ok = call_confirm( query );
-    (*proc)( closure, ok );
-    updateTradeButton( globals );
+    QueryState* qs = XP_MALLOC( globals->mpool, sizeof(*qs) );
+    qs->proc = proc;
+    qs->closure = closure;
+    qs->globals = globals;
+
+    const char* buttons[] = { BUTTON_CANCEL, BUTTON_OK, NULL };
+    call_dialog( query, buttons, onQueryCalled, qs );
 }
 
 void
@@ -668,14 +714,35 @@ initNoReturn( int argc, const char** argv )
     emscripten_set_main_loop_arg( looper, globals, -1, 1 );
 }
 
+typedef struct _NewgameState {
+    Globals* globals;
+    bool p0;
+    bool p1;
+} NewgameState;
+
+static void
+onNewgameResponse( void* closure, const char* button )
+{
+    NewgameState* ngs = (NewgameState*)closure;
+    Globals* globals = ngs->globals;
+    if ( 0 == strcmp( button, BUTTON_OK ) ) {
+        loadAndDraw( ngs->globals, NULL, true, ngs->p0, ngs->p1 );
+    }
+    XP_FREE( globals->mpool, ngs );
+}
+
 void
 newgame( void* closure, bool p0, bool p1 )
 {
     Globals* globals = (Globals*)closure;
+    NewgameState* ngs = XP_MALLOC( globals->mpool, sizeof(*ngs) );
+    ngs->globals = globals;
+    ngs->p0 = p0;
+    ngs->p1 = p1;
     XP_LOGFF( "(args: %d,%d)", p0, p1 );
-    if ( call_confirm("Are you sure you want to replace the current game?") ) {
-        loadAndDraw( globals, NULL, true, p0, p1 );
-    }
+    const char* query = "Are you sure you want to replace the current game?";
+    const char* buttons[] = { BUTTON_CANCEL, BUTTON_OK, NULL };
+    call_dialog( query, buttons, onNewgameResponse, ngs );
 }
 
 void
@@ -690,6 +757,14 @@ jscallback( JSCallback proc, void* closure )
 {
     LOG_FUNC();
     (*proc)(closure);
+}
+
+void
+onDlgButton( AlertProc proc, void* closure, const char* button )
+{
+    if ( !!proc ) {
+        (*proc)( closure, button );
+    }
 }
 
 int
