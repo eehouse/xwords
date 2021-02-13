@@ -78,7 +78,7 @@ main.html: ${INPUTS} $(MAKEFILE) shell_minimal.html
 
 install: main.html $(MAKEFILE)
 	if [ -n "${XW_WASM_DEST}" ]; then \
-		for FILE in ${OUTPUTS} paho-mqtt.js; do \
+		for FILE in ${OUTPUTS} paho-mqtt.jspi xwutils.js; do \
 			[ -f $$FILE ] && scp $$FILE ${XW_WASM_DEST}; \
 			echo "$$FILE copied"; \
 		done; \
