@@ -1,4 +1,4 @@
-/* -*- compile-command: "cd ../wasm && make main.html -j3"; -*- */
+/* -*- compile-command: "cd ../wasm && make MEMDEBUG=TRUE main.html -j3"; -*- */
 /*
  * Copyright 2021 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
@@ -105,6 +105,35 @@ EM_JS(void, setButtonText, (const char* id, const char* text), {
 
 static void updateScreen( Globals* globals, bool doSave );
 
+typedef void (*ConfirmProc)( void* closure, bool confirmed );
+
+typedef struct _ConfirmState {
+    Globals* globals;
+    ConfirmProc proc;
+    void* closure;
+} ConfirmState;
+
+static void
+onConfirmed( void* closure, const char* button )
+{
+    bool confirmed = 0 == strcmp( button, BUTTON_OK );
+    ConfirmState* cs = (ConfirmState*)closure;
+    (*cs->proc)( cs->closure, confirmed );
+    XP_FREE( cs->globals->mpool, cs );
+}
+
+static void
+call_confirm( Globals* globals, const char* msg,
+              ConfirmProc proc, void* closure )
+{
+    const char* buttons[] = { BUTTON_CANCEL, BUTTON_OK, NULL };
+    ConfirmState* cs = XP_MALLOC( globals->mpool, sizeof(*cs) );
+    cs->globals = globals;
+    cs->proc = proc;
+    cs->closure = closure;
+    call_dialog( msg, buttons, onConfirmed, cs );
+}
+
 static void
 call_alert( const char* msg )
 {
@@ -134,11 +163,9 @@ send_msg( XWEnv xwe, const XP_U8* buf, XP_U16 len,
 
         XP_U16 streamLen = stream_getSize( stream );
 
-        XP_LOGFF( "calling call_mqttSend" );
         if ( call_mqttSend( topic, stream_getPtr( stream ), streamLen ) ) {
             nSent = len;
         }
-        XP_LOGFF( "back from call_mqttSend" );
         stream_destroy( stream, NULL );
     }
 
@@ -215,29 +242,18 @@ startGame( Globals* globals )
     LOG_RETURN_VOID();
 }
 
-static bool
-gameFromInvite( Globals* globals, const NetLaunchInfo* invite )
-{
-    bool loaded = false;
-    bool needsLoad = true;
-    XP_LOGFF( "model: %p", globals->game.model );
-    if ( NULL != globals->game.model ) {
-        XP_LOGFF( "have game: TRUE" );
-        /* there's a current game. Ignore the invitation if it has the same
-           gameID. Otherwise ask to replace */
-        if ( globals->gi.gameID == invite->gameID ) {
-            XP_LOGFF( "duplicate invite; ignoring" );
-            needsLoad = false;
-        } else {
-            call_alert( "Invitation received; replace current game?" );
-            // needsLoad = false;
-        }
-    } else if ( invite->lang != 1 ) {
-        call_alert( "Invitations are only supported for play in English right now." );
-        needsLoad = false;
-    }
+typedef struct _AskReplaceState {
+    Globals* globals;
+    NetLaunchInfo invite;
+} AskReplaceState;
 
-    if ( needsLoad ) {
+static void
+onReplaceConfirmed( void* closure, bool confirmed )
+{
+    AskReplaceState* ars = (AskReplaceState*)closure;
+    Globals* globals = ars->globals;
+
+    if ( confirmed ) {
         if ( !!globals->util ) {
             game_dispose( &globals->game, NULL );
             wasm_util_destroy( globals->util );
@@ -250,15 +266,44 @@ gameFromInvite( Globals* globals, const NetLaunchInfo* invite )
         globals->util = wasm_util_make( MPPARM(globals->mpool) &globals->gi,
                                         globals->dutil, globals );
 
-        loaded = game_makeFromInvite( MPPARM(globals->mpool) NULL, invite,
-                                      &globals->game, &globals->gi,
-                                      globals->dict, NULL,
-                                      globals->util, globals->draw,
-                                      &globals->cp, &globals->procs );
+        game_makeFromInvite( MPPARM(globals->mpool) NULL, &ars->invite,
+                             &globals->game, &globals->gi,
+                             globals->dict, NULL,
+                             globals->util, globals->draw,
+                             &globals->cp, &globals->procs );
 
-    } else {
-        loaded = true;
+        startGame( globals );
     }
+
+    XP_FREE( globals->mpool, ars );
+}
+
+static bool
+gameFromInvite( Globals* globals, const NetLaunchInfo* invite )
+{
+    bool needsLoad = true;
+    XP_LOGFF( "model: %p", globals->game.model );
+    if ( NULL != globals->game.model ) {
+        XP_LOGFF( "have game: TRUE" );
+        /* there's a current game. Ignore the invitation if it has the same
+           gameID. Otherwise ask to replace */
+        if ( globals->gi.gameID == invite->gameID ) {
+            XP_LOGFF( "duplicate invite; ignoring" );
+            needsLoad = false;
+        } else {
+            AskReplaceState* ars = XP_MALLOC( globals->mpool, sizeof(*ars) );
+            ars->globals = globals;
+            XP_MEMCPY( &ars->invite, invite, sizeof(ars->invite) );
+            call_confirm( globals, "Invitation received; replace current game?",
+                          onReplaceConfirmed, ars );
+            needsLoad = false;
+        }
+    } else if ( invite->lang != 1 ) {
+        call_alert( "Invitations are only supported for play in English right now." );
+        needsLoad = false;
+    }
+
+    bool loaded = !needsLoad;
     LOG_RETURNF( "%d", loaded );
     return loaded;
 }
@@ -353,9 +398,24 @@ void
 main_onGameMessage( Globals* globals, XP_U32 gameID,
                     const CommsAddrRec* from, XWStreamCtxt* stream )
 {
-    XP_Bool draw = game_receiveMessage( &globals->game, NULL, stream, from );
-    if ( draw ) {
-        updateScreen( globals, true );
+    if ( gameID == globals->gi.gameID ) {
+        XP_Bool draw = game_receiveMessage( &globals->game, NULL, stream, from );
+        if ( draw ) {
+            updateScreen( globals, true );
+        }
+    } else {
+        XP_LOGFF( "dropping packet for wrong game" );
+
+        XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(globals->mpool)
+                                                    globals->vtMgr );
+        dvc_makeMQTTNoSuchGame( globals->dutil, NULL, stream, gameID );
+
+        XP_UCHAR topic[64];
+        formatMQTTTopic( &from->u.mqtt.devID, topic, sizeof(topic) );
+
+        XP_U16 streamLen = stream_getSize( stream );
+        call_mqttSend( topic, stream_getPtr( stream ), streamLen );
+        stream_destroy( stream, NULL );
     }
 }
 
@@ -765,6 +825,16 @@ newgame( void* closure, bool p0, bool p1 )
     const char* query = "Are you sure you want to replace the current game?";
     const char* buttons[] = { BUTTON_CANCEL, BUTTON_OK, NULL };
     call_dialog( query, buttons, onNewgameResponse, ngs );
+}
+
+void
+MQTTConnectedChanged( void* closure, bool connected )
+{
+    XP_LOGFF( "connected=%d", connected);
+    Globals* globals = (Globals*)closure;
+    if ( connected && !!globals->game.comms ) {
+        comms_resendAll( globals->game.comms, NULL, COMMS_CONN_MQTT, XP_TRUE );
+    }
 }
 
 void

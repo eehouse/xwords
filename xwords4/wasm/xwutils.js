@@ -30,12 +30,17 @@ function onHaveDevID(closure, devid) {
 	state.closure = closure;
 	document.getElementById("mqtt_span").textContent=devid;
 
+	function tellConnected(isConn) {
+		Module.ccall('MQTTConnectedChanged', null, ['number', 'boolean'], [state.closure, isConn]);
+	}
+
 	state.client = new Paho.MQTT.Client("eehouse.org", 8883, '/wss', devid);
 
 	// set callback handlers
 	state.client.onConnectionLost = function onConnectionLost(responseObject) {
 		state.connected = false;
 		document.getElementById("mqtt_status").textContent="Disconnected";
+		tellConnected(false);
 		if (responseObject.errorCode !== 0) {
 			console.log("onConnectionLost:"+responseObject.errorMessage);
 		}
@@ -50,6 +55,7 @@ function onHaveDevID(closure, devid) {
 	function onConnect() {
 		state.connected = true
 		document.getElementById("mqtt_status").textContent="Connected";
+		tellConnected(true);
 
 		var subscribeOptions = {
 			qos: 2,  // QoS

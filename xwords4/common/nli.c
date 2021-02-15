@@ -208,6 +208,7 @@ nli_makeFromStream( NetLaunchInfo* nli, XWStreamCtxt* stream )
 void
 nli_makeAddrRec( const NetLaunchInfo* nli, CommsAddrRec* addr )
 {
+    XP_MEMSET( addr, 0, sizeof(*addr) );
     CommsConnType type;
     for ( XP_U32 state = 0; types_iter( nli->_conTypes, &type, &state ); ) {
         addr_addType( addr, type );
