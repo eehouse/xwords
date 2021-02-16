@@ -103,6 +103,12 @@ EM_JS(void, setButtonText, (const char* id, const char* text), {
         document.getElementById(jsid).textContent = jstext;
     });
 
+EM_JS(bool, getChecked, (const char* id), {
+        let jsid = UTF8ToString(id);
+        let box = document.getElementById(jsid);
+        return box.checked;
+    });
+
 static void updateScreen( Globals* globals, bool doSave );
 
 typedef void (*ConfirmProc)( void* closure, bool confirmed );
@@ -338,7 +344,7 @@ loadSavedGame( Globals* globals )
 
 static void
 loadAndDraw( Globals* globals, const NetLaunchInfo* invite,
-             bool forceNew, bool p0robot, bool p1robot )
+             bool forceNew )
 {
     if ( !!globals->util ) {
         game_dispose( &globals->game, NULL );
@@ -360,6 +366,8 @@ loadAndDraw( Globals* globals, const NetLaunchInfo* invite,
     }
 
     if ( !haveGame ) {
+        bool p0robot = getChecked("robot0");
+        bool p1robot = getChecked("robot1");
         globals->gi.serverRole = SERVER_STANDALONE;
         globals->gi.phoniesAction = PHONIES_WARN;
         globals->gi.gameID = 0;
@@ -791,40 +799,26 @@ initNoReturn( int argc, const char** argv )
 
     initDeviceGlobals( globals );
 
-    loadAndDraw( globals, nlip, false, false, true );
+    loadAndDraw( globals, nlip, false );
 
     emscripten_set_main_loop_arg( looper, globals, -1, 1 );
 }
 
-typedef struct _NewgameState {
-    Globals* globals;
-    bool p0;
-    bool p1;
-} NewgameState;
-
 static void
-onNewgameResponse( void* closure, const char* button )
+onNewgameResponse( void* closure, bool confirmed )
 {
-    NewgameState* ngs = (NewgameState*)closure;
-    Globals* globals = ngs->globals;
-    if ( 0 == strcmp( button, BUTTON_OK ) ) {
-        loadAndDraw( ngs->globals, NULL, true, ngs->p0, ngs->p1 );
+    Globals* globals = (Globals*)closure;
+    if ( confirmed ) {
+        loadAndDraw( globals, NULL, true );
     }
-    XP_FREE( globals->mpool, ngs );
 }
 
 void
-newgame( void* closure, bool p0, bool p1 )
+newgame( void* closure )
 {
     Globals* globals = (Globals*)closure;
-    NewgameState* ngs = XP_MALLOC( globals->mpool, sizeof(*ngs) );
-    ngs->globals = globals;
-    ngs->p0 = p0;
-    ngs->p1 = p1;
-    XP_LOGFF( "(args: %d,%d)", p0, p1 );
-    const char* query = "Are you sure you want to replace the current game?";
-    const char* buttons[] = { BUTTON_CANCEL, BUTTON_OK, NULL };
-    call_dialog( query, buttons, onNewgameResponse, ngs );
+    const char* query = "Replace the current game?";
+    call_confirm( globals, query, onNewgameResponse, globals );
 }
 
 void

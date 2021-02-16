@@ -4,11 +4,7 @@ var state = {client: null,
 			};
 
 function callNewGame() {
-	var args = [ state.closure,
-				 document.getElementById("player0Checked").checked,
-				 document.getElementById("player1Checked").checked,
-			   ];
-	Module.ccall('newgame', null, ['number', 'boolean', 'boolean'], args);
+	Module.ccall('newgame', null, ['number'], [state.closure]);
 }
 
 function callButton(obj) {
