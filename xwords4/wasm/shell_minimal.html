@@ -129,7 +129,8 @@
       let arguments = window.location.search.replaceAll('?', '').trim().split('&');
 
       var Module = {
-        preRun: [],
+        // preRun: see https://stackoverflow.com/questions/45936800/emscripten-canvas-jquery-toggle-focus/46083467
+        preRun: [function () {ENV.SDL_EMSCRIPTEN_KEYBOARD_ELEMENT = "#canvas";}],
         postRun: [],
         arguments: arguments,
         print: (function() {

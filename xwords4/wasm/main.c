@@ -1,4 +1,4 @@
-/* -*- compile-command: "cd ../wasm && make MEMDEBUG=TRUE main.html -j3"; -*- */
+/* -*- compile-command: "cd ../wasm && make MEMDEBUG=TRUE install -j3"; -*- */
 /*
  * Copyright 2021 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
