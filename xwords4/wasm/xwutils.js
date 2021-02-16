@@ -88,14 +88,16 @@ function mqttSend( topic, ptr ) {
 }
 
 function nbDialog(msg, buttons, proc, closure) {
-	let dlg = document.getElementById('nbalert');
-	while (dlg.firstChild) {
-        dlg.removeChild(dlg.firstChild);
-    }
+	let container = document.getElementById('nbalert');
+
+	let dlg = document.createElement('div');
+	dlg.classList.add('nbalert');
+	dlg.style.zIndex = 10000;
+	container.appendChild( dlg );
 
 	let txtDiv = document.createElement('div');
-	txtDiv.textContent = msg
 	dlg.appendChild( txtDiv );
+	txtDiv.textContent = msg
 
 	let span = document.createElement('div');
 	span.classList.add('buttonRow');
@@ -105,13 +107,11 @@ function nbDialog(msg, buttons, proc, closure) {
 		button.onclick = function() {
 			Module.ccall('onDlgButton', null, ['number', 'number', 'string'],
 						 [proc, closure, buttonTxt]);
-			dlg.style.display = 'none'; // hide
+			container.removeChild(dlg);
 		};
 		span.appendChild( button );
 	}
 	dlg.appendChild( span );
-
-	dlg.style.display = 'block'; // reveal
 }
 
 for ( let one of ['paho-mqtt.js'] ) {
