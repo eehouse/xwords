@@ -38,6 +38,7 @@
 #include "wasmutil.h"
 #include "wasmdutil.h"
 #include "wasmdict.h"
+#include "wasmasm.h"
 
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>
@@ -52,6 +53,7 @@
 #define BDHEIGHT WINDOW_HEIGHT
 
 #define KEY_GAME "the_game"
+#define KEY_PLAYER_NAME "player_name"
 #define DICTNAME "assets_dir/CollegeEng_2to8.xwd"
 
 #define BUTTON_OK "OK"
@@ -229,7 +231,7 @@ initDeviceGlobals( Globals* globals )
 }
 
 static void
-startGame( Globals* globals )
+startGame( Globals* globals, const char* name )
 {
     LOG_FUNC();
     BoardDims dims;
@@ -243,6 +245,11 @@ startGame( Globals* globals )
     model_setDictionary( globals->game.model, NULL, globals->dict );
 
     if ( SERVER_ISCLIENT == globals->gi.serverRole ) {
+        if ( !!name ) {
+            replaceStringIfDifferent( globals->mpool,
+                                      &globals->gi.players[0].name,
+                                      name );
+        }
         server_initClientConnection( globals->game.server, NULL );
     }
     
@@ -259,6 +266,16 @@ typedef struct _AskReplaceState {
     Globals* globals;
     NetLaunchInfo invite;
 } AskReplaceState;
+
+static void
+onPlayerNamed( void* closure, const char* name )
+{
+    Globals* globals = (Globals*)closure;
+    if ( !!name ) {
+        set_stored_value( KEY_PLAYER_NAME, name );
+        startGame( globals, name );
+    }
+}
 
 static void
 onReplaceConfirmed( void* closure, bool confirmed )
@@ -285,7 +302,14 @@ onReplaceConfirmed( void* closure, bool confirmed )
                              globals->util, globals->draw,
                              &globals->cp, &globals->procs );
 
-        startGame( globals );
+        const char* name = get_stored_value( KEY_PLAYER_NAME );
+        if ( NULL != name ) {
+            startGame( globals, name );
+            free( (void*)name );
+        } else {
+            const char* msg = "Please enter your name so you opponent knows it's you";
+            call_get_string( msg, "Player 1", onPlayerNamed, globals );
+        }
     }
 
     XP_FREE( globals->mpool, ars );
@@ -295,13 +319,12 @@ static bool
 gameFromInvite( Globals* globals, const NetLaunchInfo* invite )
 {
     bool needsLoad = true;
-    XP_LOGFF( "model: %p", globals->game.model );
+
     if ( NULL != globals->game.model ) {
-        XP_LOGFF( "have game: TRUE" );
         /* there's a current game. Ignore the invitation if it has the same
            gameID. Otherwise ask to replace */
         if ( globals->gi.gameID == invite->gameID ) {
-            XP_LOGFF( "duplicate invite; ignoring" );
+            call_alert( "Duplicate invitation: game already open" );
             needsLoad = false;
         } else {
             AskReplaceState* ars = XP_MALLOC( globals->mpool, sizeof(*ars) );
@@ -398,14 +421,14 @@ loadAndDraw( Globals* globals, const NetLaunchInfo* invite,
                           &globals->cp, &globals->procs );
     }
 
-    startGame( globals );
+    startGame( globals, NULL );
 }
 
 void
 main_gameFromInvite( Globals* globals, const NetLaunchInfo* invite )
 {
     if ( gameFromInvite( globals, invite ) ) {
-        startGame( globals );
+        startGame( globals, NULL );
     }
 }
 
