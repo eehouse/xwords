@@ -25,6 +25,7 @@
 #include "main.h"
 #include "dbgutil.h"
 #include "LocalizedStrIncludes.h"
+#include "wasmasm.h"
 
 typedef struct _WasmDUtilCtxt {
     XW_DUtilCtxt super;
@@ -161,42 +162,6 @@ base16Decode( uint8_t* decodeBuf, int len, const char* str )
     XP_LOGFF( "offset: %d; len: %d", offset, len );
     XP_ASSERT( offset == len );
 }
-
-/* static void testBase16() */
-/* { */
-/*     const XP_U8 testBuf[] = {0x03, 0x04, 0x78, 0xF8, 0x99 }; */
-
-/*     XP_UCHAR chars[(VSIZE(testBuf) * 2) + 1]; */
-/*     base16Encode( testBuf, VSIZE(testBuf), chars, sizeof(chars) ); */
-
-/*     int len = XP_STRLEN( chars ); */
-/*     XP_U8 decodeBuf[len / 2]; */
-/*     base16Decode( decodeBuf, VSIZE(decodeBuf), chars ); */
-
-/*     XP_ASSERT( 0 == XP_MEMCMP( testBuf, decodeBuf, VSIZE(testBuf) ) ); */
-/* } */
-
-EM_JS(const char*, get_stored_value, (const char* key), {
-        var result = null;
-        var jsKey = UTF8ToString(key);
-        var jsString = localStorage.getItem(jsKey);
-        if ( jsString != null ) {
-            var lengthBytes = lengthBytesUTF8(jsString)+1;
-            var result = _malloc(lengthBytes);
-            stringToUTF8(jsString, result, lengthBytes);
-        }
-        return result;
-    });
-
-EM_JS(void, set_stored_value, (const char* key, const char* val), {
-        var jsKey = UTF8ToString(key);
-        var jsVal = UTF8ToString(val);
-        var jsString = localStorage.setItem(jsKey, jsVal);
-    });
-
-/* EM_JS(void, clear_stored, (), { */
-/*         localStorage.clear(); */
-/*     }); */
 
 static void
 wasm_dutil_loadPtr( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,

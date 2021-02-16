@@ -20,7 +20,7 @@ include ../common/config.mk
 
 DEBS = cmake
 
-INPUTS = main.c wasmdict.c wasmutls.c wasmdraw.c wasmutil.c wasmdutil.c ${COMMONSRC}
+INPUTS = main.c wasmdict.c wasmutls.c wasmdraw.c wasmutil.c wasmdutil.c wasmasm.c ${COMMONSRC}
 
 DEFINES += -DXWFEATURE_CHAT
 DEFINES += -DXWFEATURE_BONUSALL
