@@ -78,6 +78,13 @@ EM_JS(void, call_dialog, (const char* str, const char** but_strs,
           nbDialog(UTF8ToString(str), buttons, proc, closure);
       } );
 
+EM_JS(void, call_get_string, (const char* msg, const char* dflt,
+                              AlertProc proc, void* closure), {
+          let jsMgs = UTF8ToString(msg);
+          let jsDflt = UTF8ToString(dflt);
+          nbGetString( jsMgs, jsDflt, proc, closure );
+      } );
+
 EM_JS(void, call_haveDevID, (void* closure, const char* devid), {
         onHaveDevID(closure, UTF8ToString(devid));
 });
