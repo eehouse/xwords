@@ -191,7 +191,7 @@ typedef struct DrawCtxVTable {
                                             null*/
                                          const XP_UCHAR* text,
                                          const XP_Bitmaps* bitmaps,
-                                         XP_U16 val, CellFlags flags );
+                                         XP_S16 val, CellFlags flags );
 #ifdef POINTER_SUPPORT
     XP_Bool DRAW_VTABLE_NAME(drawTileMidDrag) ( DrawCtx* dctx, XWEnv xwe,
                                                 const XP_Rect* rect, 

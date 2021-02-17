@@ -494,7 +494,7 @@ curses_stringInTile( CursesDrawCtx* dctx, const XP_Rect* rect,
 static XP_Bool
 curses_draw_drawTile( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe), const XP_Rect* rect,
                       const XP_UCHAR* textP, const XP_Bitmaps* XP_UNUSED(bitmaps),
-                      XP_U16 val, CellFlags flags )
+                      XP_S16 val, CellFlags flags )
 {
     char numbuf[5];
     XP_UCHAR letterbuf[5];

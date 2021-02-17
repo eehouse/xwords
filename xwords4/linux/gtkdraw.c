@@ -788,7 +788,7 @@ gtk_draw_trayBegin( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe), const XP_Rect* XP_UNU
 
 static XP_Bool
 gtkDrawTileImpl( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe), const XP_Rect* rect, const XP_UCHAR* textP,
-                 const XP_Bitmaps* bitmaps, XP_U16 val, CellFlags flags, 
+                 const XP_Bitmaps* bitmaps, XP_S16 val, CellFlags flags,
                  XP_Bool clearBack )
 {
     GtkDrawCtx* dctx = (GtkDrawCtx*)(void*)p_dctx;
@@ -854,7 +854,7 @@ gtkDrawTileImpl( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe), const XP_Rect* rect, con
 
 static XP_Bool
 gtk_draw_drawTile( DrawCtx* p_dctx, XWEnv xwe, const XP_Rect* rect, const XP_UCHAR* textP,
-                   const XP_Bitmaps* bitmaps, XP_U16 val, CellFlags flags )
+                   const XP_Bitmaps* bitmaps, XP_S16 val, CellFlags flags )
 {
     return gtkDrawTileImpl( p_dctx, xwe, rect, textP, bitmaps, val, flags, XP_TRUE );
 }

@@ -489,7 +489,7 @@ and_draw_trayBegin( DrawCtx* dctx, XWEnv xwe, const XP_Rect* rect, XP_U16 owner,
 static XP_Bool
 and_draw_drawTile( DrawCtx* dctx, XWEnv xwe, const XP_Rect* rect,
                    const XP_UCHAR* text, const XP_Bitmaps* bitmaps,
-                   XP_U16 val, CellFlags flags )
+                   XP_S16 val, CellFlags flags )
 {
     XP_Bool result;
     DRAW_CBK_HEADER( "drawTile",

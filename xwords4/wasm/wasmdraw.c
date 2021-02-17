@@ -1,4 +1,4 @@
-/* -*- compile-command: "cd ../wasm && make main.html -j3"; -*- */
+/* -*- compile-command: "cd ../wasm && make MEMDEBUG=TRUE install"; -*- */
 /*
  * Copyright 2021 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
@@ -556,7 +556,7 @@ wasm_draw_drawTile( DrawCtx* dctx, XWEnv xwe, const XP_Rect* rect,
                        null*/
                     const XP_UCHAR* text,
                     const XP_Bitmaps* bitmaps,
-                    XP_U16 val, CellFlags flags )
+                    XP_S16 val, CellFlags flags )
 {
     WasmDrawCtx* wdctx = (WasmDrawCtx*)dctx;
     drawTile( wdctx, text, val, wdctx->trayOwner, rect, flags );
