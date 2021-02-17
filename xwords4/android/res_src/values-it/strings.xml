@@ -101,7 +101,6 @@
 \nPuoi rimuovere le impostazioni di comunicazione via SMS o usare il tasto \"Leggi di Più\" per aggiornarti sui progressi sullo sviluppo di un \'alternativa.</string>
     <string name="button_more_info">Leggi di più</string>
     <string name="sms_banned_ok_only">La versione Google Play di CrossWords non supporta più gli inviti e le partite via dati SMS.</string>
-    <string name="title_enable_stallnotify">Mostra notifiche in linea bloccate</string>
     <string name="not_again_emptybtscan">Se lo scanner non trova il dispositivo dovresti:
 \n • Primo, provare di nuovo a scannerizzare
 \n • Assicurarsi che il Bluetooth sia attivo sull\'altro dispositivo

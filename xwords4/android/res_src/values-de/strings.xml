@@ -912,7 +912,6 @@
 \n
 \nSie können mehr darüber erfahren, indem Sie auf die Schaltfläche unten klicken.</string>
     <string name="nbsproxy_channel_expl">Benachrichtigungen über NBSProxy</string>
-    <string name="notify_stall_title">Das Senden von Nachrichten ist gesperrt</string>
     <string name="sms_banned_ok_only">Die Google Play-Version von CrossWords unterstützt keine Einladungen mehr oder das Spielen per Daten-SMS.</string>
     <string name="button_more_info">Mehr erfahren</string>
     <string name="banned_nbs_perms">Dieses Spiel ist für die Kommunikation per Daten-SMS eingerichtet, aber Apps aus dem Google Play Store dürfen dies (bis auf wenige Ausnahmen) nicht mehr tun. Sie können das Spiel immer noch öffnen, aber es ist mehr möglicherweise, Züge zu senden oder zu empfangen.
