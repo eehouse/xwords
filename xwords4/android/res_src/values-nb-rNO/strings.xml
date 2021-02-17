@@ -915,7 +915,6 @@
     <string name="banned_nbs_perms">Dette spillet er satt opp til å kommunisere via data-SMS, men programmer fra Google Play-butikken tillates ikke lenger å gjøre dette (dog med noen unntak). Du kan fremdeles åpne spillet, men vil ikke kunne sende eller motta trekk.
 \n
 \nDu kan fjerne innstillingen for kommunikasjon per data-SMS, eller brue \"Les mer\"-knappen for å se hvordan utviklingen med å tilby et alternativ går.</string>
-    <string name="notify_stall_title">Meldingsforsendelse har stagnert</string>
     <string name="relay_poll_name_no_fcm">Kun prøv: Ingen FCM-meldinger</string>
     <string name="relay_poll_name_no_polling">Kun FCM: Ingen prøving</string>
     <string name="relay_poll_name_both">Forvalg: Miks prøving og FCM</string>

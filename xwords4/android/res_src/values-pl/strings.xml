@@ -929,7 +929,6 @@
 \n
 \n Więcej na ten temat można przeczytać za pomocą poniższego przycisku.</string>
     <string name="nbsproxy_channel_expl">Alerty o NBSProxy</string>
-    <string name="notify_stall_title">Wysyłanie wiadomości jest wstrzymane</string>
     <string name="sms_banned_ok_only">Wersja CrossWords w sklepie Google Play nie obsługuje już zapraszania lub grania za pomocą Data SMS.</string>
     <string name="button_more_info">Czytaj więcej</string>
     <string name="banned_nbs_perms">Ta gra jest skonfigurowana do komunikacji za pośrednictwem Data SMS, ale aplikacje ze sklepu Google Play Store nie mogą już tego robić (z rzadkimi wyjątkami). Możesz jeszcze otworzyć grę, ale może nie być w stanie wysyłać lub odbierać ruchów.
