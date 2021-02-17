@@ -225,7 +225,7 @@ public class InviteView extends ScrollView
                             post( new Runnable() {
                                     @Override
                                     public void run() {
-                                        ImageView iv = (ImageView)findViewById( R.id.qr_view );
+                                        final ImageView iv = (ImageView)findViewById( R.id.qr_view );
                                         iv.setImageBitmap( bitmap );
                                         if ( BuildConfig.NON_RELEASE ) {
                                             TextView tv = (TextView)findViewById( R.id.qr_url );
@@ -235,7 +235,7 @@ public class InviteView extends ScrollView
                                         post ( new Runnable() {
                                                 @Override
                                                 public void run() {
-                                                    scrollTo( 0, getBottom() );
+                                                    scrollTo( 0, iv.getTop() );
                                                 }
                                             } );
                                     }
