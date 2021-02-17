@@ -250,7 +250,6 @@
     <string name="board_menu_undo_current">Angre/gjenta</string>
     <string name="menu_chat">Sludring</string>
     <string name="chat_sender_fmt">%1$s:</string>
-    <string name="menu_toggle_values">Veksle verdier</string>
     <string name="board_menu_dict">Utforsk ordliste</string>
     <string name="connstat_lastsend_fmt">Siste forsendelse var %1$s (%2$s)</string>
     <string name="connstat_lastreceipt_fmt">Siste kvittering var %1$s</string>
@@ -916,7 +915,6 @@
     <string name="banned_nbs_perms">Dette spillet er satt opp til å kommunisere via data-SMS, men programmer fra Google Play-butikken tillates ikke lenger å gjøre dette (dog med noen unntak). Du kan fremdeles åpne spillet, men vil ikke kunne sende eller motta trekk.
 \n
 \nDu kan fjerne innstillingen for kommunikasjon per data-SMS, eller brue \"Les mer\"-knappen for å se hvordan utviklingen med å tilby et alternativ går.</string>
-    <string name="title_enable_stallnotify">Vis merknad for stagnert nettverk</string>
     <string name="notify_stall_title">Meldingsforsendelse har stagnert</string>
     <string name="relay_poll_name_no_fcm">Kun prøv: Ingen FCM-meldinger</string>
     <string name="relay_poll_name_no_polling">Kun FCM: Ingen prøving</string>

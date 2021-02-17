@@ -392,7 +392,6 @@
     <string name="menu_juggle">ラックをシャッフル</string>
     <string name="menu_flip">ボードをフリップ</string>
     <string name="menu_chat">チャット</string>
-    <string name="menu_toggle_values">値の切り替え</string>
     <string name="board_menu_dict">単語リストを参照</string>
     <string name="game_list_tmp">ゲームの概要を構築しています…</string>
     <string name="connstat_net_noaddr">このネットワークゲームは接続する方法がなく、プレイできません。
@@ -866,7 +865,6 @@ WiFi ダイレクト経由で接続可能なデバイスはありません。</s
 \n
 \n下のボタンを使用すると、詳細を参照することができます。</string>
     <string name="nbsproxy_channel_expl">NBSProxy に関するアラート</string>
-    <string name="title_enable_stallnotify">停止したネットワーク通知を表示</string>
     <string name="notify_stall_title">メッセージの送信が停止しています</string>
     <string name="sms_banned_ok_only">Google Play バージョンのクロスワードは、データ SMS 経由で招待やプレイできなくなりました。</string>
     <string name="button_more_info">続きを読む</string>
