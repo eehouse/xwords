@@ -102,22 +102,28 @@ function newDlgWMsg(msg) {
 	return dlg;
 }
 
-function nbDialog(msg, buttons, proc, closure) {
-	let dlg = newDlgWMsg( msg );
-
-	let span = document.createElement('div');
-	span.classList.add('buttonRow');
+function newButtonDiv(buttons, proc) {
+	let div = document.createElement('div');
+	div.classList.add('buttonRow');
 	for ( let buttonTxt of buttons ) {
 		let button = document.createElement('button');
 		button.textContent = buttonTxt;
-		button.onclick = function() {
-			Module.ccall('onDlgButton', null, ['number', 'number', 'string'],
-						 [proc, closure, buttonTxt]);
-			dlg.parentNode.removeChild(dlg);
-		};
-		span.appendChild( button );
+		button.onclick = function() { proc(buttonTxt); };
+		div.appendChild( button );
 	}
-	dlg.appendChild( span );
+
+	return div;
+}
+
+function nbDialog(msg, buttons, proc, closure) {
+	let dlg = newDlgWMsg( msg );
+
+	butProc = function(buttonTxt) {
+		Module.ccall('onDlgButton', null, ['number', 'number', 'string'],
+					 [proc, closure, buttonTxt]);
+		dlg.parentNode.removeChild(dlg);
+	}
+	dlg.appendChild( newButtonDiv( buttons, butProc ) );
 }
 
 function nbGetString(msg, dflt, proc, closure) {
@@ -134,16 +140,15 @@ function nbGetString(msg, dflt, proc, closure) {
 					 [proc, closure, str]);
 	}
 
-	let buttons = document.createElement('div');
-	dlg.appendChild(buttons);
-	let cancel = document.createElement('button');
-	cancel.textContent = "Cancel";
-	buttons.appendChild(cancel);
-	cancel.onclick = function() { dismissed(null);}
-	let ok = document.createElement('button');
-	ok.textContent = 'OK';
-	buttons.appendChild(ok);
-	ok.onclick = function() { dismissed(tarea.value);}
+	buttons = ["Cancel", "OK"];
+	butProc = function(str) {
+		if ( str == buttons[0] ) {
+			dismissed(null);
+		} else if ( str == buttons[1] ) {
+			dismissed(tarea.value);
+		}
+	}
+	dlg.appendChild( newButtonDiv( buttons, butProc ) );
 }
 
 for ( let one of ['paho-mqtt.js'] ) {
