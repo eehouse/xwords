@@ -46,6 +46,7 @@ import android.widget.TextView;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -2495,36 +2496,34 @@ public class BoardDelegate extends DelegateBase
 
     private void doValuesPopup( View button )
     {
+        final int FAKE_GROUP = 100;
+        final TileValueType selType = CommonPrefs.get(m_activity).tvType;
         PopupMenu popup = new PopupMenu( m_activity, button );
-        popup.inflate( R.menu.tile_values );
-        final int[][] map = { {R.id.values_faces, TileValueType.TVT_FACES.ordinal() },
-                              {R.id.values_values, TileValueType.TVT_VALUES.ordinal() },
-                              {R.id.values_both, TileValueType.TVT_BOTH.ordinal() },
-        };
+        Menu menu = popup.getMenu();
+
+        final Map<MenuItem, TileValueType> map = new HashMap<>();
+        for ( TileValueType typ : TileValueType.values() ) {
+            MenuItem item = menu.add( FAKE_GROUP, Menu.NONE, Menu.NONE, typ.getExpl() );
+            map.put( item, typ );
+
+            if ( selType == typ ) {
+                item.setChecked(true);
+            }
+        }
+        menu.setGroupCheckable( FAKE_GROUP, true, true );
+
         popup.setOnMenuItemClickListener( new PopupMenu.OnMenuItemClickListener() {
                 @Override
                 public boolean onMenuItemClick( MenuItem item ) {
-                    int menuId = item.getItemId();
-                    for ( int[] pair : map ) {
-                        if ( pair[0] == menuId ) {
-                            XWPrefs.setPrefsInt( m_activity,
-                                                 R.string.key_tile_valuetype,
-                                                 pair[1] );
-                            handleViaThread( JNICmd.CMD_PREFS_CHANGE );
-                            break;
-                        }
-                    }
+                    TileValueType typ = map.get( item );
+                    XWPrefs.setPrefsInt( m_activity,
+                                         R.string.key_tile_valuetype,
+                                         typ.ordinal() );
+                    handleViaThread( JNICmd.CMD_PREFS_CHANGE );
                     return true;
                 }
             } );
 
-        int curOrd = CommonPrefs.get(m_activity).tvType.ordinal();
-        for ( int[] pair : map ) {
-            if ( pair[1] == curOrd ) {
-                popup.getMenu().findItem(pair[0]).setChecked(true);
-                break;
-            }
-        }
         popup.show();
     }
 

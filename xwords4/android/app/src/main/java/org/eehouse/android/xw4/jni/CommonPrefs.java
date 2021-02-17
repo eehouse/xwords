@@ -35,10 +35,15 @@ import org.eehouse.android.xw4.loc.LocUtils;
 public class CommonPrefs extends XWPrefs {
     private static final String TAG = CommonPrefs.class.getSimpleName();
 
+    // Keep in sync with TileValueType enum in comtypes.h
     public enum TileValueType {
-        TVT_BOTH,
-        TVT_FACES,
-        TVT_VALUES,
+        TVT_FACES(R.string.values_faces),
+        TVT_VALUES(R.string.values_values),
+        TVT_BOTH(R.string.values_both);
+
+        private int mExplID;
+        private TileValueType(int explID) { mExplID = explID ;}
+        public int getExpl() { return mExplID; }
     };
 
     public static final int COLOR_TILE_BACK = 0;

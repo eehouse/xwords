@@ -217,9 +217,9 @@ typedef enum {
 } XWBonusType;
 
 typedef enum _TileValueType {
-    TVT_BOTH,
     TVT_FACES,
     TVT_VALUES,
+    TVT_BOTH,
 
     TVT_N_ENTRIES,
 } TileValueType;

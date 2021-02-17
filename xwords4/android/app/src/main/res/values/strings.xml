@@ -2673,8 +2673,8 @@
     <string name="newgame_configure_first">Configure first</string>
 
     <!-- For the (new) popup menu for how tile displayed on board -->
-    <string name="values_menu_faces">Letters only</string>
-    <string name="values_menu_values">Values only</string>
-    <string name="values_menu_both">Letters and Values</string>
+    <string name="values_faces">Letters only</string>
+    <string name="values_values">Values only</string>
+    <string name="values_both">Letters and Values</string>
 
 </resources>
