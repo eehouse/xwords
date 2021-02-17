@@ -75,5 +75,6 @@ void main_onGameMessage( Globals* globals, XP_U32 gameID,
 void main_sendOnClose( XWStreamCtxt* stream, XWEnv env, void* closure );
 void main_playerScoreHeld( Globals* globals, XP_U16 player );
 void main_showGameOver( Globals* globals );
+void main_showRemaining( Globals* globals );
 
 #endif

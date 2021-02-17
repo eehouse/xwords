@@ -126,8 +126,7 @@ static const XP_UCHAR*
 wasm_dutil_getUserQuantityString( XW_DUtilCtxt* duc, XWEnv xwe, XP_U16 code,
                                   XP_U16 quantity )
 {
-    LOG_FUNC();
-    return NULL;
+    return wasm_dutil_getUserString( duc, xwe, code );
 }
 
 static void

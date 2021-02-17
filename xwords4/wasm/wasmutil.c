@@ -1,4 +1,4 @@
-/* -*- compile-command: "cd ../wasm && make main.html -j3"; -*- */
+/* -*- compile-command: "cd ../wasm && make MEMDEBUG=TRUE install -j3"; -*- */
 /*
  * Copyright 2021 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
@@ -438,7 +438,9 @@ wasm_util_notifyIllegalWords( XW_UtilCtxt* uc, XWEnv xwe, BadWordInfo* bwi,
 static void
 wasm_util_remSelected( XW_UtilCtxt* uc, XWEnv xwe )
 {
-    LOG_FUNC();
+    WasmUtilCtx* wuctxt = (WasmUtilCtx*)uc;
+    Globals* globals = (Globals*)wuctxt->closure;
+    main_showRemaining( globals );
 }
 
 static void

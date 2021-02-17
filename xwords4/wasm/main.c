@@ -493,6 +493,16 @@ main_playerScoreHeld( Globals* globals, XP_U16 player )
     }
 }
 
+void
+main_showRemaining( Globals* globals )
+{
+    XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(globals->mpool)
+                                                globals->vtMgr );
+    board_formatRemainingTiles( globals->game.board, NULL, stream );
+    stream_putU8( stream, 0 );
+    call_alert( (const XP_UCHAR*)stream_getPtr( stream ) );
+    stream_destroy( stream, NULL );
+}
 
 void
 main_showGameOver( Globals* globals )
