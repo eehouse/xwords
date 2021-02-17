@@ -395,7 +395,6 @@
     <string name="menu_juggle">Schud rek</string>
     <string name="menu_flip">Draai bord</string>
     <string name="menu_chat">Chat</string>
-    <string name="menu_toggle_values">Schakel waardes in/uit</string>
     <string name="board_menu_dict">Bekijk woordenlijst</string>
     <string name="game_list_tmp">Samenvatting spel opbouwen…</string>
     <string name="connstat_net_noaddr">Dit netwerk spel heeft geen manier om te verbinden en zal nooit speelbaar worden.\n\n(Het was waarschijnlijk gemaakt via een uitnodiging die geen verbindingsmanier specificeert die jouw apparaat ondersteund.)</string>

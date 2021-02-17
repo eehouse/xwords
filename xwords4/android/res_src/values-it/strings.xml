@@ -101,7 +101,6 @@
 \nPuoi rimuovere le impostazioni di comunicazione via SMS o usare il tasto \"Leggi di Più\" per aggiornarti sui progressi sullo sviluppo di un \'alternativa.</string>
     <string name="button_more_info">Leggi di più</string>
     <string name="sms_banned_ok_only">La versione Google Play di CrossWords non supporta più gli inviti e le partite via dati SMS.</string>
-    <string name="notify_stall_title">Invio messaggio è bloccato</string>
     <string name="title_enable_stallnotify">Mostra notifiche in linea bloccate</string>
     <string name="not_again_emptybtscan">Se lo scanner non trova il dispositivo dovresti:
 \n • Primo, provare di nuovo a scannerizzare
@@ -476,7 +475,6 @@
     <string name="summary_busy">Riassunto non disponibile</string>
     <string name="game_list_tmp">Costruendo riassunto di gioco…</string>
     <string name="board_menu_dict">Vedi lista parole</string>
-    <string name="menu_toggle_values">Alterna valori</string>
     <string name="chat_sender_fmt">%1$s:</string>
     <string name="menu_chat">Chat</string>
     <string name="menu_flip">Ruota tavolo da gioco</string>

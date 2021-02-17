@@ -2041,7 +2041,6 @@ illimités ? Annulez si vous n\'êtes pas sûr.</string>
     <string name="menu_chat">Discussion</string>
     <!--  -->
     <!--<string name="menu_toggle_values">Toggle values</string>-->
-    <string name="menu_toggle_values">Basculer l\'affichage des valeurs</string>
     <!-- board menu for small devices only -->
     <!--<string name="board_menu_dict">Browse wordlist</string>-->
     <string name="board_menu_dict">Parcourir la liste de mots</string>

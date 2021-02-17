@@ -1050,7 +1050,6 @@
     <!-- board menu for small devices only -->
     <string name="board_menu_dict">XLATE ME: Browse wordlist</string>
     <!--  -->
-    <string name="menu_toggle_values">XLATE ME: Toggle values</string>
     <!--  -->
     <string name="menu_chat">XLATE ME: Chat</string>
     <!--  -->

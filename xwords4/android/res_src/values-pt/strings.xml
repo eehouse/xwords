@@ -1550,7 +1550,6 @@
     <!--  -->
     <string name="menu_chat">Conversa</string>
     <!--  -->
-    <string name="menu_toggle_values">Modificar valores</string>
     <!-- board menu for small devices only -->
     <string name="board_menu_dict">Navegar lista de palavras</string>
     <!--  -->

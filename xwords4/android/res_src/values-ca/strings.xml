@@ -607,7 +607,6 @@ Introduïu el vostre nom aquí. S\'usarà en crear partides noves. (Podreu
     <string name="warn_nomobile_fmt">El número %1$s de %2$s no sembla un número de mòbil. Voleu importar-lo igualment?</string>
     <string name="get_sms_number">Número de telèfon de l\'aparell:</string>
     <string name="summary_conn_sms_fmt">Partida en joc amb %1$s</string>
-    <string name="menu_toggle_values">Canvia els valors</string>
     <string name="invite_dict_missing_body_noname_fmt">Us han convidat a jugar al CrossWords amb el diccionari %2$s (per a jugar en %3$s), però no el teniu instal·lat. Voleu baixar el diccionari?</string>
     <string name="invite_dict_missing_body_fmt">%1$s us ha convidat a jugar al CrossWords amb el diccionari %2$s (per a jugar en %3$s), però no el teniu instal·lat. Voleu baixar el diccionari o rebutjar la invitació?</string>
     <string name="missing_dict_title">Invitació a una partida pendent</string>

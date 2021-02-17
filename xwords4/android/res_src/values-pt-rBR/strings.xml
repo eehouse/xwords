@@ -994,7 +994,6 @@
 \nVocê pode reabri-lo para pedir permissão de novo. Ou pode remover a configuração de comunicação por dados SMS.</string>
     <string name="menu_juggle">Reorganizar quadrados</string>
     <string name="knowns_mqtt_fmt">DevID do MQTT: %1$s</string>
-    <string name="servicestall_channel_expl">Alertas de mensagem parados</string>
     <string name="name_concat_dup">" e "</string>
     <string name="newgame_configure_game">Configurar jogo</string>
     <string name="newgame_open_game">Começar jogo</string>
@@ -1074,7 +1073,6 @@
         <item quantity="other">%1$s (%2$d jogos)</item>
     </plurals>
     <string name="menu_flip">Virar tabuleiro</string>
-    <string name="menu_toggle_values">Alternar valores</string>
     <plurals name="confirm_clear_relay_fmt">
         <item quantity="one">Tem certeza que quer deletar o registro RelayID checado\?</item>
         <item quantity="other">Tem certeza que quer deletar os %1$d registros RelayID checados\?</item>

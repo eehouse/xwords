@@ -428,7 +428,6 @@
     <string name="menu_flip">Brett umdrehen</string>
     <string name="menu_chat">Chat</string>
     <string name="chat_sender_fmt">%1$s:</string>
-    <string name="menu_toggle_values">Werte umschalten</string>
     <string name="board_menu_dict">Wortliste durchsuchen</string>
     <string name="game_list_tmp">Zusammenfassung der Partie wird erstellt …</string>
     <string name="summary_busy">Zusammenfassung nicht verfügbar</string>
@@ -913,7 +912,6 @@
 \n
 \nSie können mehr darüber erfahren, indem Sie auf die Schaltfläche unten klicken.</string>
     <string name="nbsproxy_channel_expl">Benachrichtigungen über NBSProxy</string>
-    <string name="title_enable_stallnotify">Gesperrte Netzwerkbenachrichtigung anzeigen</string>
     <string name="notify_stall_title">Das Senden von Nachrichten ist gesperrt</string>
     <string name="sms_banned_ok_only">Die Google Play-Version von CrossWords unterstützt keine Einladungen mehr oder das Spielen per Daten-SMS.</string>
     <string name="button_more_info">Mehr erfahren</string>
