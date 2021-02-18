@@ -34,20 +34,18 @@
          three. -->
     <!-- First state: is configured to use a room but has not yet
          contacted the relay and been assigned that room. -->
-    <string name="summary_relay_conf_fmt">Configuré pour le salon
-      \"%1$s\"</string>
+    <string name="summary_relay_conf_fmt">Configuré pour le salon « %1$s »</string>
     <!-- Second state: has been assigned to a room on the relay
          (meaning the network is working) but there are not yet as
          many players as expected: the game is not complete and play
          cannot happen. -->
-    <string name="summary_relay_wait_fmt">En attente de joueurs pour le salon
-      \"%1$s\"</string>
+    <string name="summary_relay_wait_fmt">En attente de joueurs pour le salon « %1$s »</string>
     <!-- Third state: enough devices have connected in the room to
          form a complete game.  We'll be in this state as long as the
          game exists. -->
-    <string name="summary_relay_conn_fmt">Partie en cours dans le salon \"%1$s\"</string>
+    <string name="summary_relay_conn_fmt">Partie en cours dans le salon « %1$s »</string>
     <!-- Final state: game is over. -->
-    <string name="summary_relay_gameover_fmt">Partie finie dans le salon \"%1$s\"</string>
+    <string name="summary_relay_gameover_fmt">Partie finie dans le salon « %1$s »</string>
     <!-- Games that have ended are listed with this string -->
     <string name="gameOver">Partie finie</string>
     <!-- Otherwise they're listed with this to give some indication of
@@ -124,9 +122,7 @@
          list_item_rename) -->
     <!-- If you try to copy a networked game you get this error
     message. -->
-    <string name="no_copy_network">Les parties qui sont déjà connectées au
-relai ne peuvent pas être copiées. Utilisez \"Utiliser comme modèle\" pour
-obtenir une copie avec les mêmes paramètres.</string>
+    <string name="no_copy_network">Les parties qui sont déjà connectées au relai ne peuvent pas être copiées. Utilisez « Utiliser comme modèle » pour obtenir une copie avec les mêmes paramètres.</string>
     <!--  -->
     <string name="game_rename_title">Renommer la partie</string>
     <!-- text within rename dialog (triggered by selecting
@@ -264,7 +260,7 @@ installées)</string>
     <!-- text for separator above the list of players that's used for
          non-networked games -->
     <!--<string name="players_label_standalone">Players (tap to edit)</string>-->
-    <string name="players_label_standalone">Joueurs (toucher pour modifier)</string>
+    <string name="players_label_standalone">Joueurs (appuyer pour modifier)</string>
     <!-- text for separator above the list of players that's used for
          networked games.  The numbers of local and non-local players
          are substituted for %1$d and %2$d. -->
@@ -345,8 +341,7 @@ des parties à %1$d joueurs en %2$s.</string>
          different wordlists per player) -->
     <!--<string name="phonies_spinner_prompt">How to handle \"phonies\"
         (words not in wordlist)</string>-->
-    <string name="phonies_spinner_prompt">Comment gérer les \"mots faux\" (mots
-qui ne sont pas dans la liste de mots)</string>
+    <string name="phonies_spinner_prompt">Comment gérer les « mots faux » (mots qui ne sont pas dans la liste de mots)</string>
     <!-- These are the three choices in the popup above whose text is
          phonies_spinner_prompt -->
     <!-- Don't care if words played are in the wordlist or not -->
@@ -364,7 +359,7 @@ qui ne sont pas dans la liste de mots)</string>
          networked game and you try to make all players local. -->
     <!--<string name="str_reg_server_sans_remote">At least one player must
          be marked \"Remote\" for a game started as Host.</string>-->
-    <string name="str_reg_server_sans_remote">Au moins un joueur doit être indiqué \"distant\" pour une partie démarrée comme hôte.</string>
+    <string name="str_reg_server_sans_remote">Au moins un joueur doit être indiqué « distant » pour une partie démarrée comme hôte.</string>
     <!-- Used as the default name for remote players displayed within
          the Game configure screen -->
     <!--<string name="guest_name">(Off-device player)</string>-->
@@ -471,7 +466,7 @@ changements ?</string>
     <!--<string name="button_trade_cancel">Cancel trade</string>-->
     <string name="button_trade_cancel">Annuler l\'échange</string>
     <!--<string name="entering_trade">Tap tiles to select…</string>-->
-    <string name="entering_trade">Toucher des jetons pour les sélectionner…</string>
+    <string name="entering_trade">Appuyer sur les jetons pour les sélectionner…</string>
     <!-- Bonus value hint that's displayed in gray text in the colored
          bonus square. Double-letter -->
     <string name="bonus_l2x_summary">L2</string>
@@ -509,7 +504,7 @@ fait ?</string>-->
     <!-- Appended to message above if local device has NFC available -->
     <!--<string name="invite_if_nfc">(Or just Tap to Invite - if the
         other device also has Android Beaming and is nearby.)</string>-->
-    <string name="invite_if_nfc">Ou toucher pour inviter – si un autre appareil a aussi Android Beam et est proche.</string>
+    <string name="invite_if_nfc">Ou appuyer pour inviter – si un autre appareil a aussi Android Beam et est proche.</string>
     <!-- Most users create games with only two players, which is the
          default, but CrossWords supports up to four.  When I'm using
          the above string to encourage the opener of a game missing
@@ -535,7 +530,7 @@ fait ?</string>-->
     <!--<string name="msg_relay_waiting_fmt">Le périphérique %1$d est connecté au
 relai dans le salon \"%2$s\". En attente de %3$d joueur[s].</string>-->
     <plurals name="msg_relay_waiting_fmt">
-        <item quantity="one">L\'appareil %1$d est connecté au relai dans le salon \"%2$s\". En attente d\'un joueur.</item>
+        <item quantity="one">L\'appareil %1$d est connecté au relai dans le salon « %2$s ». En attente d\'un joueur.</item>
         <item quantity="other">L\'appareil %1$d est connecté au relai dans le salon \"%2$s\". En attente de %3$d joueurs.</item>
     </plurals>
     <!-- Text of "toast" shown when a game is notified by the relay
@@ -543,8 +538,7 @@ relai dans le salon \"%2$s\". En attente de %3$d joueur[s].</string>-->
          play can begin. -->
     <!--<string name="msg_relay_all_here_fmt">All players are here in room
       \"%1$s\".</string>-->
-    <string name="msg_relay_all_here_fmt">Tous les joueurs sont présents dans
-le salon \"%1$s\".</string>
+    <string name="msg_relay_all_here_fmt">Tous les joueurs sont présents dans le salon « %1$s ».</string>
     <!-- Title of dialog used to alert players to relay-related
          problems with the current game. -->
     <!--<string name="relay_alert">Connection problem</string>-->
@@ -930,7 +924,7 @@ dernier tour validé ? (Il n\'y a pas d\'option pour le rétablir.)</string>
     <!-- clarification of above -->
     <!--<string name="show_arrow_summary">Tapped rack tiles land on this
         arrow when it is visible</string>-->
-    <string name="show_arrow_summary">Les jetons du chevalet touchés se calent sur cette flèche quand elle est visible</string>
+    <string name="show_arrow_summary">Les jetons du chevalet sélectionnés se calent sur cette flèche quand elle est visible</string>
     <!-- Checkbox that when set keeps the device screen from dimming
          if the board screen is what's displayed.  This is to allow
          users to think about a move without having to touch the
@@ -949,7 +943,7 @@ dernier tour validé ? (Il n\'y a pas d\'option pour le rétablir.)</string>
       -->
     <!-- title of this sub-preference -->
     <!--<string name="prefs_colors">Individual colors</string>-->
-    <string name="prefs_colors">Couleurs</string>
+    <string name="prefs_colors">Couleurs du plateau</string>
     <!-- clarification of the above -->
     <!--<string name="prefs_colors_summary">Edit colors used on the board</string>-->
     <string name="prefs_colors_summary">Modifier les couleurs utilisées sur le
@@ -990,7 +984,7 @@ plateau</string>
     <!-- the color of text, e.g. "2L", shown on a bonus square on the
          board -->
     <!--<string name="key_bonushint">In-square bonus hint</string>-->
-    <string name="key_bonushint">Indication de prime dans la case</string>
+    <string name="key_bonushint">Texte du bonus des cases</string>
     <!--       
        ############################################################
        # :Dialogs:
@@ -1071,8 +1065,7 @@ jetons sont ajoutés</string>
     <!-- explanation of the above -->
     <!--<string name="peek_other_summary">Tapping on scoreboard name shows
         that player\'s tiles</string>-->
-    <string name="peek_other_summary">Toucher un nom sur le tableau d\'affichage
-montre les jetons de ce joueur</string>
+    <string name="peek_other_summary">Appuyer sur un nom du tableau d\'affichage montre les jetons de ce joueur</string>
     <!-- If this preference is checked the "crosshairs" (vertical and
          horzontal lines through the cell your finger is on that help
          you tell where the app thinks you're actually tapping) will
@@ -1202,7 +1195,7 @@ arrivent</string>
     \u003Cbr \\\u003E
     (full link: %1$s )
     </string>-->
-    <string name="invite_htm_fmt">Tapez le lien complet ci-dessous pour rejoindre cette partie. &lt;br \\&gt; &lt;br \\&gt; (lien complet : %1$s )</string>
+    <string name="invite_htm_fmt">Appuyez sur le lien complet ci-dessous pour rejoindre cette partie. &lt;br \\&gt; &lt;br \\&gt; (lien complet : %1$s )</string>
     <!-- This is the body of the text version of the invitation. A URL
          is created with parameters describing the game and
          substituted for "%1$s".-->
@@ -1422,8 +1415,7 @@ l\'Hôte et l\'invité ; l\'Hôte gagne.</string>
          %2$ -->
     <!--<string name="no_dict_fmt">Game \"%1$s\" requires a %2$s wordlist.
     Please download one before opening.</string>-->
-    <string name="no_dict_fmt">La partie \"%1$s\" nécessite une liste de mots
-en %2$s. Téléchargez-en une avant de commencer.</string>
+    <string name="no_dict_fmt">La partie « %1$s » nécessite une liste de mots en %2$s. Téléchargez-en une avant de commencer.</string>
     <!-- This is an alternative message presented when there's also
          the option of downloading another wordlist.  Game name,
          wordlist name and language are substituted in. -->
@@ -1432,7 +1424,7 @@ en %2$s. Téléchargez-en une avant de commencer.</string>
       on an external card that is no longer available.)\n\nYou can
       download a replacement or substitute another %3$s
       wordlist.</string>-->
-    <string name="no_dict_subst_fmt">Impossible de charger la partie \"%1$s\" car la liste de mots %2$s n\'a pas été trouvée. (Elle a pu être supprimée, ou stockée sur une carte mémoire externe qui n\'est plus disponible.)
+    <string name="no_dict_subst_fmt">Impossible de charger la partie « %1$s » car la liste de mots %2$s n\'a pas été trouvée. (Elle a pu être supprimée, ou stockée sur une carte mémoire externe qui n\'est plus disponible.)
 \n
 \nVous pouvez en télécharger une autre ou utiliser une autre liste de mots en %3$s.</string>
     <!-- Text of button displayed when downloading is an option -->
@@ -1460,7 +1452,7 @@ mots)</string>
        -->
     <!-- Text of dialog.  Player name is substituted -->
     <!--<string name="msg_ask_password_fmt">Password for \"%1$s\":</string>-->
-    <string name="msg_ask_password_fmt">Mot de passe pour \"%1$s\" :</string>
+    <string name="msg_ask_password_fmt">Mot de passe pour « %1$s » :</string>
     <!-- used to create default names of games (when user has not
          named them.) -->
     <!--<string name="game_fmt">Game %1$d</string>-->
@@ -1583,9 +1575,11 @@ mots)</string>
     <!--<string name="not_again_trading">You are entering tile-exchange
       mode.\n\nTap tiles to add/remove them from the set to be
       exchanged.\n\n</string>-->
-    <string name="not_again_trading">Vous entrez dans le mode d\'échange de
-jetons.\n\nTouchez des jetons pour les ajouter ou les retirer de l\'ensemble de
-ceux à échanger.\n\n</string>
+    <string name="not_again_trading">Vous entrez dans le mode d\'échange de jetons.
+\n
+\nAppuyez sur les jetons pour les ajouter ou les retirer de l\'ensemble de ceux à échanger.
+\n
+\n</string>
     <!--<string name="not_again_trading_buttons">Use the buttons to
       commit your turn or exit exchange mode.</string>-->
     <string name="not_again_trading_buttons">Utilisez les boutons pour
@@ -1651,17 +1645,14 @@ courant.</string>
     <!--<string name="not_again_values">This button changes whether the
         board shows letters on placed tiles or their point values.
         Use it to remind yourself what a tile is worth.</string>-->
-    <string name="not_again_values">Ce bouton fait alterner l\'affichage des
-jetons du plateau entre lettres et valeurs. Utilisez-le pour vous rappeler ce
-que vaut un jeton.</string>
+    <string name="not_again_values">Ce bouton détermine l\'affichage des valeurs (en plus des lettres) des jetons sur le plateau.</string>
     <!-- This is shown when you choose the board_menu_done menu item.
          It's to let you know that there's a shortcut that does almost
          the same thing. -->
     <!--<string name="not_again_done">Tapping the \"pts\" counter that
       appears at the right end of the rack is the easiest way to
       commit a move.</string>-->
-    <string name="not_again_done">Toucher le compteur \"pts\" qui se trouve à
-droite du chevalet est la façon la plus simple de valider un coup.</string>
+    <string name="not_again_done">Appuyer sur le compteur « pts » qui se trouve à droite du chevalet est la façon la plus simple de valider un coup.</string>
     <!-- Shown in the Game configure screen when the game_locked
          checkbox is checked and you uncheck it.  -->
     <!--<string name="not_again_unlock">This game is in play. Some
@@ -1719,7 +1710,7 @@ d\'annuler les changements afin d\'éviter un redémarrage.</string>
 \n
 \n • Vous pouvez déplacer les jetons entre le chevalet et le plateau.
 \n
-\n • Ou vous pouvez toucher une case vide sur le plateau pour placer la \"flèche du plateau\". Ensuite les jetons du chevalet remplacent la flèche quand vous les touchez. Touchez la flèche pour changer sa direction ou la cacher.</string>
+\n • Ou vous pouvez appuyer sur une case vide sur le plateau pour placer la « flèche du plateau ». Ensuite les jetons du chevalet remplacent la flèche quand vous appuyez dessus. Appuyez sur la flèche pour changer sa direction ou la cacher.</string>
     <!-- Shown when the board screen is visible and it's just become
          another players turn. The idea is to give a hint about how to
          find out about recent moves. -->
@@ -1758,7 +1749,7 @@ modèle.</string>
       CrossWords!\n\nFeel free to enter your name here. It will be used
       when creating new games.  (You can change it later in the \"New
       game default\" section of Settings.)</string>-->
-    <string name="default_name_message">Saisissez votre nom ici. Il sera utilisé lors de la création de nouvelles parties. (Vous pourrez le changer plus tard dans la section \"Nouvelles parties\" des Paramètres.)</string>
+    <string name="default_name_message">Saisissez votre nom ici. Il sera utilisé lors de la création de nouvelles parties. (Vous pourrez le changer plus tard dans la section « Nouvelles parties » des Paramètres.)</string>
     <!-- 
        ###########################################################
        # :Dialogs:
@@ -1808,9 +1799,9 @@ modèle.</string>
     <string name="button_lookup_study_fmt">Chercher/étudier %1$s</string>
     <!--  -->
     <!--<string name="title_lookup">Tap to look up</string>-->
-    <string name="title_lookup">Toucher pour chercher</string>
+    <string name="title_lookup">Appuyer pour chercher</string>
     <!--<string name="title_lookup_study">Tap to look up or study</string>-->
-    <string name="title_lookup_study">Toucher pour chercher ou étudier</string>
+    <string name="title_lookup_study">Appuyer pour chercher ou étudier</string>
     <!--  -->
     <!--<string name="button_done">Done</string>-->
     <string name="button_done">Fini</string>
@@ -1929,7 +1920,7 @@ seulement des informations sur les jetons. Il n\'y a pas de mots à parcourir.</
     \"%1$s\" is incompatible with this one for play using
     Bluetooth. One of you may need to upgrade before you can
     continue.</string>-->
-    <string name="bt_bad_proto_fmt">La version de CrossWords sur \"%1$s\" est incompatible avec celle-ci pour jouer par Bluetooth. L\'un de vous devrait se mettre à jour avant de pouvoir continuer.</string>
+    <string name="bt_bad_proto_fmt">La version de CrossWords sur « %1$s » est incompatible avec celle-ci pour jouer par Bluetooth. L\'un de vous devrait se mettre à jour avant de pouvoir continuer.</string>
     <!--  -->
     <!--  -->
     <!--<string name="new_move_body">One or more moves has arrived</string>-->
@@ -1979,25 +1970,20 @@ fois. Ouvrez à nouveau la partie pour réessayer.</string>
     <!--<string name="invite_sms_desc_fmt">Vérifiez les %1$d numéros de téléphone
 que vous voulez inviter à votre partie, puis touchez \"%2$s\".</string>-->
     <plurals name="invite_sms_desc_fmt">
-        <item quantity="one">Vérifiez le numéro de téléphone
-que vous voulez inviter à votre partie, puis touchez \"%2$s\".</item>
-        <item quantity="other">Vérifiez les %1$d numéros de téléphone
-que vous voulez inviter à votre partie, puis touchez \"%2$s\".</item>
+        <item quantity="one">Vérifiez le numéro de téléphone que vous voulez inviter à votre partie, puis appuyez sur « %2$s ».</item>
+        <item quantity="other">Vérifiez les %1$d numéros de téléphone que vous voulez inviter à votre partie, puis appuyez sur « %2$s ».</item>
     </plurals>
     <!--  -->
     <!--<string name="manual_owner_name">(Not in contacts)</string>-->
     <!--  -->
     <!--<string name="warn_nomobile_fmt">The number %1$s for %2$s is not
     a \"mobile\" number. Import anyway?</string>-->
-    <string name="warn_nomobile_fmt">Le numéro %1$s pour %2$s n\'est pas un
-numéro de \"portable\". Importer malgré tout ?</string>
+    <string name="warn_nomobile_fmt">Le numéro %1$s pour %2$s n\'est pas un numéro de « portable ». Importer malgré tout \?</string>
     <!-- Shows in SMS Invite dialog when no phone numbers have been saved previously -->
     <!--<string name="empty_sms_inviter">This phone list is empty. Use the
     \"Import contact\" button to add people you want to invite, the +
     button to enter numbers directly.</string>-->
-    <string name="empty_sms_inviter">Cette liste de numéros est vide. Utilisez
-le bouton \"Importer le contact\" pour ajouter des gens que vous voulez
-inviter, ou le bouton + pour saisir des numéros directement.</string>
+    <string name="empty_sms_inviter">Cette liste de numéros est vide. Utilisez le bouton « Importer le contact » pour ajouter des gens que vous voulez inviter, ou le bouton + pour saisir des numéros directement.</string>
     <!--  -->
     <!--<string name="get_sms_number">Enter phone number:</string>-->
     <string name="get_sms_number">Numéro de téléphone d\'appareil :</string>
@@ -2135,13 +2121,13 @@ réseau.)</string>-->
     <string name="new_dict_avail">Nouvelle liste de mots disponible</string>
     <!--  -->
     <!--<string name="new_dict_avail_fmt">Tap to update %1$s</string>-->
-    <string name="new_dict_avail_fmt">Toucher pour mettre à jour %1$s</string>
+    <string name="new_dict_avail_fmt">Appuyer pour mettre à jour %1$s</string>
     <!--  -->
     <!--<string name="new_app_avail_fmt">New version of %1$s</string>-->
     <string name="new_app_avail_fmt">Nouvelle version de %1$s</string>
     <!--  -->
     <!--<string name="new_app_avail">Tap to download and install</string>-->
-    <string name="new_app_avail">Toucher pour télécharger et installer</string>
+    <string name="new_app_avail">Appuyer pour télécharger et installer</string>
     <!-- Used in formatting final scores display -->
     <!--<string name="str_winner_fmt" formatted="false">[Winner] %s: %d</string>-->
     <string name="str_winner_fmt" formatted="false">[Vainqueur] %1$s : %2$d</string>
@@ -2176,8 +2162,7 @@ télécharger.)</string>
     <!-- body of notification shown when invitation requires a
 	     wordslist that's not installed -->
     <!--<string name="missing_dict_detail">Tap to download missing wordlist</string>-->
-    <string name="missing_dict_detail">Toucher pour télécharger la liste de
-mots manquante</string>
+    <string name="missing_dict_detail">Appuyer pour télécharger la liste de mots manquante</string>
     <!--<string name="invite_dict_missing_title">Missing wordlist</string>-->
     <string name="invite_dict_missing_title">Liste de mots manquantes</string>
     <!--<string name="invite_dict_missing_body_fmt">%1$s has invited you to
@@ -2273,7 +2258,7 @@ effacées.)</string>-->
 \n
 \nÀ moins que vous n\'appuyiez sur les icônes à gauche. Appuyer là sélectionne ou désélectionne des parties (ou des groupes).
 \n
-\nUne fois que vous avez un ou plusieurs items sélectionnés, utilisez le menu ou la \"barre d\'action\", par ex. pour effacer chaque partie sélectionnée.</string>
+\nUne fois que vous avez un ou plusieurs items sélectionnés, utilisez le menu ou la « barre d\'action », par ex. pour effacer chaque partie sélectionnée.</string>
     <!--<string name="not_again_backclears">The back button clears any
     selection instead of exiting. Hit it again to exit the
     app.</string>-->
@@ -2468,7 +2453,7 @@ versions de %1$s maintenant ?</string>
     <!--<string name="note_none">(None)</string>-->
     <string name="note_none">(aucune)</string>
     <!--<string name="dict_on_server">Tap to download</string>-->
-    <string name="dict_on_server">Toucher pour les détails</string>
+    <string name="dict_on_server">Appuyer pour les détails</string>
     <!--<string name="lang_name_fmt">%1$s (%2$d wordlists)</string>    -->
     <!--<string name="lang_name_fmt">%1$s (%2$d listes de mots)</string>    -->
     <plurals name="lang_name_fmt">
@@ -2485,12 +2470,14 @@ versions de %1$s maintenant ?</string>
     in\n• How smart the robot player is\n• What words are
     legal.\n\nCheck the \"Show downloadable\" box at the top to see
     what\'s available.</string>-->
-    <string name="not_again_dicts">Cet écran vous permet d\'installer de
-nouvelles listes de mots et de voir celles que vous avez déjà.\n\nLes listes de
-mots que vous avez installées déterminent :\n– dans quelle langue vous pouvez
-jouer ;\n– le degré d\'intelligence du joueur robot ;\n– quels mots sont
-autorisés.\n\nCochez la case \"Montrer les listes téléchargeables\" en haut
-pour voir ce qui est disponible.</string>
+    <string name="not_again_dicts">Cet écran vous permet d\'installer de nouvelles listes de mots et de voir celles que vous avez déjà.
+\n
+\nLes listes de mots que vous avez installées déterminent :
+\n– dans quelle langue vous pouvez jouer ;
+\n– le degré d\'intelligence du joueur robot ;
+\n– quels mots sont autorisés.
+\n
+\nCochez la case « Montrer les listes téléchargeables » en haut pour voir ce qui est disponible.</string>
     <!--<string name="force_tablet_title">Force tablet layout</string>-->
     <string name="force_tablet_title">Utiliser la mise en page de tablette (côte à côte) ?</string>
     <!--<string name="force_tablet_summary">Even if my screen is too small</string>-->
@@ -2629,7 +2616,7 @@ avant de pouvoir être ouverte.</string>
     invite other players when it is open.)</string>-->
     <!--XLATE-ME-->
     <!--<string name="use_defaults">Use defaults</string>-->
-    <string name="use_defaults">Utiliser param. par défaut</string>
+    <string name="use_defaults">Paramètres par défaut</string>
     <!--XLATE-ME-->
     <!--<string name="nplayers_prompt">Number on this device</string>-->
     <string name="nplayers_prompt">Nombre sur ce appareil</string>
@@ -2644,7 +2631,7 @@ avant de pouvoir être ouverte.</string>
     <!--<string name="err_dup_invite_fmt">Duplicate invitation rejected:
     device \"%1$s\" has already accepted an invitation to this
     game.</string>-->
-    <string name="err_dup_invite_fmt">Invitation redondante rejetée : l\'appareil \"%1$s\" a déjà accepté une invitation à cette partie.</string>
+    <string name="err_dup_invite_fmt">Invitation redondante rejetée : l\'appareil « %1$s » a déjà accepté une invitation à cette partie.</string>
     <!--XLATE-ME-->
     <!--<string name="network_advanced_title">Advanced</string>-->
     <string name="network_advanced_title">Avancé</string>
@@ -2886,7 +2873,7 @@ pour la langue</string>
     <string name="notify_chat_title_fmt">Message de discussion dans la partie %1$s</string>
     <string name="notify_chat_body_fmt">%1$s : %2$s</string>
     <string name="button_enable">Activer</string>
-    <string name="not_again_comms_relay">Le \"relai\" est un serveur sur Internet qui permet l\'échange de messages entre appareils qui font tourner CrossWords. Il fonctionne dès que vous avez une connexion à Internet pleinement fonctionnelle, mais peut avoir des problèmes sur des réseaux Wifi restreints.</string>
+    <string name="not_again_comms_relay">Le « relai» est un serveur sur Internet qui permet l\'échange de messages entre appareils qui font tourner CrossWords. Il fonctionne dès que vous avez une connexion à Internet pleinement fonctionnelle, mais peut avoir des problèmes sur des réseaux Wifi restreints.</string>
     <string name="not_again_comms_sms">Les parties par MMS utilisent la même technologie que l\'envoi de SMS normaux. Bien que les messages soient invisibles pour vous, votre opérateur les considère comme des messages normaux, donc vous pourriez vouloir éviter cette fonctionnalité si vous n\'avez pas un forfait (ou un budget) illimité.</string>
     <string name="not_again_comms_bt">Utilisez le Bluetooth pour jouer contre un appareil à proximité qui est « appairé » au vôtre.</string>
     <string name="str_no_hint_found">Ne peut trouver aucun coup</string>
@@ -2896,17 +2883,17 @@ pour la langue</string>
     </plurals>
     <string name="invite_copied">Invitation prête à coller</string>
     <string name="clip_label">Adresse de l\'invitation</string>
-    <string name="not_again_clip_expl_fmt">L\'option \"%1$s\" copie une adresse d\'invitation dans le presse-papier. Collez-la dans l\'application de votre choix et partagez-la avec un ami.</string>
+    <string name="not_again_clip_expl_fmt">L\'option « %1$s » copie une adresse d\'invitation dans le presse-papier. Collez-la dans l\'application de votre choix et partagez-la avec un ami.</string>
     <string name="confirm_clear_chat">Êtes-vous sûr·e de vouloir supprimer tout l\'historique de discussion pour cette partie \?
 \n
 \n(Cette action ne peut pas être annulée.)</string>
     <string name="invite_choice_relay">Internet/Relai</string>
     <string name="invite_notice_title">Nouvelle partie via une invitation</string>
-    <string name="new_game_body">Touchez pour commencer la nouvelle partie</string>
+    <string name="new_game_body">Appuyer pour commencer la nouvelle partie</string>
     <string name="relay_invite_title">Invitation par relai</string>
     <plurals name="invite_relay_desc_fmt">
-        <item quantity="one">Cochez l\'appareil que vous voulez inviter à votre nouvelle partie, puis touchez \"%2$s\".</item>
-        <item quantity="other">Cochez les %1$d appareils que vous voulez inviter à votre nouvelle partie, puis touchez \"%2$s\".</item>
+        <item quantity="one">Cochez l\'appareil que vous voulez inviter à votre nouvelle partie, puis appuyez sur « %2$s ».</item>
+        <item quantity="other">Cochez les %1$d appareils que vous voulez inviter à votre nouvelle partie, puis appuyez sur « %2$s ».</item>
     </plurals>
     <plurals name="confirm_clear_sms_fmt">
         <item quantity="one">Êtes-vous sûr de vouloir effacer le numéro de téléphone coché ?</item>
@@ -2916,7 +2903,7 @@ pour la langue</string>
     <string name="processing_games">Traitement des parties</string>
     <string name="list_item_select">Sélectionner</string>
     <string name="list_item_deselect">Déselectionner</string>
-    <string name="not_again_dfltname_fmt">Vous utilisez le nom par défaut de joueur \"%1$s\". Souhaitez-vous le personnaliser avec votre propre nom avant de créer cette partie ?</string>
+    <string name="not_again_dfltname_fmt">Vous utilisez le nom par défaut de joueur « %1$s ». Souhaitez-vous le personnaliser avec votre propre nom avant de créer cette partie \?</string>
     <string name="not_again_rematch_two_only">Les revanches sont limitées aux parties à deux joueurs, au moins pour l\'instant, parce que c\'est plus difficile avec plus d\'appareils et je pense qu\'il est rare que les gens jouent à plus que deux. Faites-le moi savoir si j\'ai tort et je remonterai la priorité.</string>
     <string name="summary_invites_out">Joueurs invités</string>
     <string name="newgame_invite_more">Historique</string>
@@ -2931,7 +2918,7 @@ pour la langue</string>
     <string name="waiting_rematch_title">Revanche en cours</string>
     <string name="rematch_sent_toast">Invitations à la revanche envoyées</string>
     <string name="invit_expl_sms_fmt">Invitation envoyée par MMS au numéro de téléphone %1$s sur %2$s</string>
-    <string name="invit_expl_bt_fmt">Invitation envoyée par Bluetooth à l\'appareil appairé \"%1$s\" sur %2$s</string>
+    <string name="invit_expl_bt_fmt">Invitation envoyée par Bluetooth à l\'appareil appairé « %1$s » sur %2$s</string>
     <string name="invit_expl_relay_fmt">Invitation transmise par le relai à un autre appareil sur %1$s</string>
     <string name="invit_expl_notarget_fmt">Invitation envoyée par %1$s sur %2$s. Destinataire inconnu.</string>
     <string name="chat_hint">Tapez ici…</string>
@@ -2973,13 +2960,13 @@ pour la langue</string>
     <string name="sms_send_failed">Échec de l\'envoi de SMS</string>
     <string name="button_skip">Sauter</string>
     <string name="perms_rationale_title">Permissions Android</string>
-    <string name="phone_state_rationale">Certains téléphones peuvent échanger des SMS \"de données\". CrossWords souhaite vous offrir cette possibilité mais a d\'abord besoin d\'interroger votre appareil sur lui-même (pour savoir si c\'est un téléphone et, le cas échéant, de quel type).
+    <string name="phone_state_rationale">Certains téléphones peuvent échanger des SMS « de données ». CrossWords souhaite vous offrir cette possibilité mais a d\'abord besoin d\'interroger votre appareil sur lui-même (pour savoir si c\'est un téléphone et, le cas échéant, de quel type).
 \n
 \nSi votre appareil ne peut pas envoyer de SMS de données (par ex. parce que ce n\'est pas un téléphone) ou que vous ne souhaiterez jamais jouer par SMS (par ex. parce que vous payez pour chaque message), il est raisonnable que refuser cette permission de manière permanente.</string>
     <string name="title_enable_p2p">Activer Wi-Fi Direct</string>
     <string name="summary_enable_p2p">Expérimental, utilise beaucoup de batterie</string>
     <string name="remove_sms">Effacer SMS</string>
-    <string name="summary_invites_out_fmt">Joueurs invités au salon \"%1$s\"</string>
+    <string name="summary_invites_out_fmt">Joueurs invités au salon « %1$s »</string>
     <string name="phonies_found_title">Faux mots trouvés</string>
     <string name="tile_button_txt_fmt">%1$s (%2$d)</string>
     <string name="force_tablet_tablet">Forcer la mise en page pour tablette</string>
@@ -2991,12 +2978,12 @@ pour la langue</string>
         <item quantity="one">Êtes-vous sûr de vouloir effacer l\'enregistrement RelayID sélectionné ?</item>
         <item quantity="other">Êtes-vous sûr de vouloir effacer les %1$d enregistrements RelayID sélectionnés ?</item>
     </plurals>
-    <string name="not_again_archive">L\'archivage utilise un groupe spécial nommé \"Archive\" pour enregistrer les parties finies que vous souhaitez garder. Et, vu qu\'effacer une archive entière est facile, l\'archivage est aussi une bonne manière de sélectionner des parties à effacer – si c\'est ce que vous préférez faire.
+    <string name="not_again_archive">L\'archivage utilise un groupe spécial nommé « Archive » pour enregistrer les parties finies que vous souhaitez garder. Et, vu qu\'effacer une archive entière est facile, l\'archivage est aussi une bonne manière de sélectionner des parties à effacer – si c\'est ce que vous préférez faire.
 \n
 \n(Effacer le groupe Archive ne cause pas de problème car il sera recréé de zéro si nécessaire.)</string>
     <string name="button_archive">Archive</string>
     <string name="group_name_archive">Archive</string>
-    <string name="duplicate_group_name_fmt">Le groupe \"%1$s\" existe déjà.</string>
+    <string name="duplicate_group_name_fmt">Le groupe « %1$s » existe déjà.</string>
     <string name="gamel_menu_writegit">Copier l\'info git dans le presse-papier</string>
     <string name="dicts_storage_rationale">CrossWords peut enregistrer et accéder à des listes de mots dans l\'espace de Téléchargements de votre appareil mais a besoin de la permission d\'y accéder à cet endroit.
 \n
@@ -3047,7 +3034,7 @@ pour la langue</string>
 \n • Si tout cela échoue, redémarrez l\'appareil
 \n</string>
     <string name="invit_expl_usrsms_fmt">Invitation envoyée par SMS sur %1$s</string>
-    <string name="msg_dev_deleted_fmt">La partie nommée \"%1$s\" a été effacée sur un autre périphérique. Vous ne pourrez plus y jouer.</string>
+    <string name="msg_dev_deleted_fmt">La partie nommée « %1$s » a été effacée sur un autre périphérique. Vous ne pourrez plus y jouer.</string>
     <string name="invite_choice_user_sms">SMS</string>
     <string name="invite_choice_data_sms">MMS</string>
     <string name="ok_with_robots">OK (robots)</string>
@@ -3059,8 +3046,8 @@ pour la langue</string>
     <string name="robot_iq_label">QI du robot</string>
     <string name="enable_pending_count_title">Montrer les messages en attente</string>
     <plurals name="invite_p2p_desc_fmt">
-        <item quantity="one">Veuillez choisir le nom du périphérique WiFiDirect que vous voulez inviter à votre nouvelle partie, puis tapez « %2$s ».</item>
-        <item quantity="other">Veuillez choisir les noms des %1$d périphériques WiFiDirect que vous voulez inviter à votre nouvelle partie, puis tapez « %2$s ».</item>
+        <item quantity="one">Veuillez choisir le nom du périphérique WiFiDirect que vous voulez inviter à votre nouvelle partie, puis appuyez sur « %2$s ».</item>
+        <item quantity="other">Veuillez choisir les noms des %1$d périphériques WiFiDirect que vous voulez inviter à votre nouvelle partie, puis appuyez sur « %2$s ».</item>
     </plurals>
     <string name="use_duptimer">Activer le chronométrage par action</string>
     <string name="download_path_hint">Par exemple, là où les pièces jointes des courriels sont enregistrées</string>
@@ -3077,12 +3064,12 @@ pour la langue</string>
     <string name="choose_expl_new">Démarrez une partie en envoyant une invitation par e-mail, SMS ou même un code QR</string>
     <string name="choose_expl_default">Démarrer une partie en solo en utilisant les paramètres par défaut actuels</string>
     <string name="knowns_dup_name_fmt">Impossible de renommer « %1$s » en « %2$s ». « %2$s » est-il déjà utilisé \?</string>
-    <string name="knowns_delete_confirm_fmt">Êtes-vous sûr que de vouloir supprimer le joueur connu « %1$s » \?
+    <string name="knowns_delete_confirm_fmt">Êtes-vous sûr de vouloir supprimer « %1$s » des Joueurs Connus  \?
 \n
-\n(Cette action ne peut pas être annulée.)</string>
+\n(Cette action ne peut pas être annulée, mais les joueurs peuvent réapparaître si vous avez toujours des parties actives avec eux.)</string>
     <string name="knowns_smsphone_fmt">Téléphone SMS : %1$s</string>
     <string name="knowns_mqtt_fmt">DevID MQTT : %1$s</string>
-    <string name="knowns_expl">Ce sont les joueurs distants que CrossWords a suffisamment vus pour savoir comment les inviter rapidement à de nouvelles parties. Leurs noms par défaut correspondent à ce que le joueur distant a choisi, mais vous pouvez modifier les noms si vous le souhaitez.</string>
+    <string name="knowns_expl">Ce sont vos joueurs distants connus. Leurs noms par défaut correspondent à ce que le joueur distant a choisi, mais vous pouvez modifier les noms si vous le souhaitez.</string>
     <string name="gamel_menu_knownplyrs">Joueurs connus…</string>
     <string name="mqtt_invite_title">Invitation MQTT</string>
     <string name="invite_choice_mqtt">Internet/MQTT</string>
@@ -3156,7 +3143,7 @@ pour la langue</string>
         <item quantity="one">En attente d\'un joueur</item>
         <item quantity="other">En attente de %1$d joueurs</item>
     </plurals>
-    <string name="dict_avail_fmt">Appuyez pour télécharger la liste de mots \"%1$s\"</string>
+    <string name="dict_avail_fmt">Appuyez pour télécharger la liste de mots « %1$s »</string>
     <string name="button_disable_bt">Désactiver le jeu par Bluetooth</string>
     <plurals name="warn_bt_games_fmt">
         <item quantity="one">"
@@ -3217,7 +3204,7 @@ pour la langue</string>
 \nLisez-en plus dans la FAQ en appuyant sur le bouton ci-dessous.</string>
     <string name="filter_progress_fmt">Traitement de %1$d mots</string>
     <string name="filter_title_fmt">Chargement de %1$s…</string>
-    <string name="word_to_clip_fmt">\"%1$s\" copié</string>
+    <string name="word_to_clip_fmt">« %1$s » copié</string>
     <string name="alrt_bad_filter">Impossible d\'appliquer le filtre.</string>
     <string name="error_min_gt_max">La valeur de la longueur minimale ne peut pas être plus grande que la valeur maximale.</string>
     <string name="tiles_header_value">Valeur</string>
@@ -3256,4 +3243,8 @@ pour la langue</string>
     <string name="cellline">Lignes du plateau</string>
     <string name="qrcode_invite_expl">Pour inviter par code QR, faites scanner le code par l\'appareil photo du téléphone Android de votre adversaire.</string>
     <string name="invite_msg_extra">Vous verrez ce message jusqu\'à ce que tous les joueurs attendus se soient connectés. Si vous avez déjà envoyé une invitation et craignez qu\'elle ait été perdue, il n\'y a pas de danger à en envoyer une autre.</string>
+    <string name="relay_poll_title">Comment vérifier les coups \?</string>
+    <string name="values_menu_both">Lettres et valeurs</string>
+    <string name="values_menu_values">Valeurs uniquement</string>
+    <string name="values_menu_faces">Lettres uniquement</string>
 </resources>
