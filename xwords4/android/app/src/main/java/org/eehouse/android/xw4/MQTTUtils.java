@@ -232,10 +232,9 @@ public class MQTTUtils extends Thread implements IMqttActionListener, MqttCallba
         mMsgThread = new MsgThread();
 
         String host = XWPrefs.getPrefsString( context, R.string.key_mqtt_host );
-        Log.d( TAG, "host: %s", host );
         int port = XWPrefs.getPrefsInt( context, R.string.key_mqtt_port, 1883 );
         String url = String.format( java.util.Locale.US, "tcp://%s:%d", host, port );
-        Log.d( TAG, "using url: %s", url );
+        Log.d( TAG, "Using url: %s", url );
         mClient = new MqttAsyncClient( url, mDevID, new MemoryPersistence() );
         mClient.setCallback( this );
     }

@@ -5,50 +5,72 @@
   <PreferenceCategory app:title="@string/pref_group_relay_title"
                       >
 
-    <org.eehouse.android.xw4.XWEditTextPreference
-        android:key="@string/key_nag_intervals"
-        android:title="@string/nag_intervals"
+    <org.eehouse.android.xw4.XWListPreference
+        android:key="@string/key_relay_poll"
+        android:title="@string/relay_poll_title"
+        android:entries="@array/relay_poll_names"
+        android:entryValues="@array/relay_poll_names"
+        android:defaultValue="@string/relay_poll_name_both"
         />
 
-    <CheckBoxPreference android:key="@string/key_enable_pending_count"
-                        android:title="@string/enable_pending_count_title"
-                        android:summary="@string/enable_pending_count_summary"
+    <CheckBoxPreference android:key="@string/key_show_fcm"
+                        android:title="@string/show_fcm_title"
                         android:defaultValue="@bool/DEBUG"
                         />
-
-    <!-- For broken devices like my Blaze 4G that report a download
-         directory that doesn't exist, allow users to set it.  Mine:
-         /sdcard/external_sd/download     
-    -->
     <org.eehouse.android.xw4.XWEditTextPreference 
-        android:key="@string/key_download_path"
-        android:title="@string/download_path_title"
-        android:hint="@string/download_path_hint"
+        android:key="@string/key_relay_host"
+        android:title="@string/relay_host"
+        android:defaultValue="@string/default_host"
         />
 
-    <org.eehouse.android.xw4.XWEditTextPreference
-        android:key="@string/key_dict_host4"
-        android:title="@string/dict_host"
-        android:defaultValue="@string/dict_url"
-        />
-
-    <org.eehouse.android.xw4.XWEditTextPreference
-        android:key="@string/key_update_url"
-        android:title="@string/expl_update_url"
-        android:defaultValue="@string/default_update_url"
-        />
-    <CheckBoxPreference android:key="@string/key_update_prerel"
-                        android:title="@string/pref_item_update_title"
-                        android:summary="@string/pref_item_update_summary"
+    <CheckBoxPreference android:key="@string/key_relay_via_http_first"
+                        android:title="@string/relay_via_http_first"
+                        android:summary="@string/relay_via_http_first_summary"
                         android:defaultValue="false"
                         />
 
-    <!-- Keep all dup-mode related stuff hidden -->
-    <CheckBoxPreference android:key="@string/key_unhide_dupmode"
-                        android:title="@string/unhide_dupmode_title"
-                        android:summary="@string/unhide_dupmode_summary"
-                        android:defaultValue="false"
-                        />
+    <org.eehouse.android.xw4.XWEditTextPreference
+        android:key="@string/key_relay_url"
+        android:title="@string/expl_relay_url"
+        android:defaultValue="@string/default_relay_url"
+        />
+
+    <org.eehouse.android.xw4.XWEditTextPreference
+        android:key="@string/key_relay_port"
+        android:title="@string/relay_port"
+        android:defaultValue="10997"
+        android:numeric="decimal"
+        />
+    <org.eehouse.android.xw4.XWEditTextPreference
+        android:key="@string/key_proxy_port"
+        android:title="@string/proxy_port"
+        android:defaultValue="10998"
+        android:numeric="decimal"
+        />
+
+    <org.eehouse.android.xw4.XWEditTextPreference
+        android:key="@string/key_mqtt_host"
+        android:title="@string/mqtt_host"
+        android:defaultValue="@string/default_host"
+        />
+    <org.eehouse.android.xw4.XWEditTextPreference
+        android:key="@string/key_mqtt_port"
+        android:title="@string/mqtt_port"
+        android:defaultValue="1883"
+        android:numeric="decimal"
+        />
+    <org.eehouse.android.xw4.XWListPreference
+        android:key="@string/key_mqtt_qos"
+        android:title="@string/mqtt_qos"
+        android:entries="@array/mqtt_qos_values"
+        android:entryValues="@array/mqtt_qos_values"
+        android:defaultValue="2"
+        />
+    <org.eehouse.android.xw4.XWEditTextPreference
+        android:key="@string/key_mqtt_url2"
+        android:title="@string/expl_mqtt_url"
+        android:defaultValue="@string/default_mqtt_url2"
+        />
 
   </PreferenceCategory>
 </PreferenceScreen>
