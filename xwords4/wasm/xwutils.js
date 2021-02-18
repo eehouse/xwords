@@ -126,6 +126,21 @@ function nbDialog(msg, buttons, proc, closure) {
 	dlg.appendChild( newButtonDiv( buttons, butProc ) );
 }
 
+function nbBlankPick(title, buttons, proc, closure) {
+	let dlg = newDlgWMsg( title );
+
+	butProc = function(buttonTxt) {
+		Module.ccall('onDlgButton', null, ['number', 'number', 'string'],
+					 [proc, closure, buttonTxt]);
+		dlg.parentNode.removeChild(dlg);
+	}
+
+	let ROWLEN = 6;
+	for (ii = 0; ii < buttons.length; ii += ROWLEN) {
+		dlg.appendChild( newButtonDiv( buttons.slice(ii, ii + ROWLEN), butProc ) );
+	}
+}
+
 function nbGetString(msg, dflt, proc, closure) {
 	let dlg = newDlgWMsg( msg );
 

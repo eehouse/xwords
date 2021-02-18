@@ -263,11 +263,12 @@ wasm_util_notifyTrade( XW_UtilCtxt* uc, XWEnv xwe, const XP_UCHAR** tiles,
 
 static void
 wasm_util_notifyPickTileBlank( XW_UtilCtxt* uc, XWEnv xwe, XP_U16 playerNum,
-                                        XP_U16 col, XP_U16 row,
-                                        const XP_UCHAR** tileFaces, 
-                                        XP_U16 nTiles )
+                               XP_U16 col, XP_U16 row,
+                               const XP_UCHAR** tileFaces, XP_U16 nTiles )
 {
-    LOG_FUNC();
+    WasmUtilCtx* wuctxt = (WasmUtilCtx*)uc;
+    Globals* globals = (Globals*)wuctxt->closure;
+    main_pickBlank( globals, playerNum, col, row, tileFaces, nTiles );
 }
 
 static void

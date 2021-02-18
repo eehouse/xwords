@@ -69,7 +69,7 @@ typedef void (*AlertProc)(void* closure, const char* button);
 EM_JS(void, call_dialog, (const char* str, const char** but_strs,
                           AlertProc proc, void* closure), {
           var buttons = [];
-          for ( let ii = 0; ii < 3; ++ii ) {
+          for ( let ii = 0; ; ++ii ) {
               const mem = HEAP32[(but_strs + (ii * 4)) >> 2];
               if ( 0 == mem ) {
                   break;
@@ -79,6 +79,17 @@ EM_JS(void, call_dialog, (const char* str, const char** but_strs,
           }
           nbDialog(UTF8ToString(str), buttons, proc, closure);
       } );
+
+EM_JS(void, call_pickBlank, (const char* msg, const char** strs, int nStrs,
+                              AlertProc proc, void* closure), {
+          var buttons = [];
+          for ( let ii = 0; ii < nStrs; ++ii ) {
+              const mem = HEAP32[(strs + (ii * 4)) >> 2];
+              const str = UTF8ToString(mem);
+              buttons.push(str);
+          }
+          nbBlankPick(UTF8ToString(msg), buttons, proc, closure);
+       } );
 
 EM_JS(void, call_get_string, (const char* msg, const char* dflt,
                               AlertProc proc, void* closure), {
@@ -502,6 +513,58 @@ main_showRemaining( Globals* globals )
     stream_putU8( stream, 0 );
     call_alert( (const XP_UCHAR*)stream_getPtr( stream ) );
     stream_destroy( stream, NULL );
+}
+
+typedef struct _BlankPickState {
+    Globals* globals;
+    int col, row;
+    int nTiles;
+    int playerNum;
+    char** faces;
+} BlankPickState;
+
+static void
+onBlankPicked( void* closure, const char* face )
+{
+    XP_LOGFF( "face: %s", face );
+    BlankPickState* bps = (BlankPickState*)closure;
+    Globals* globals = bps->globals;
+
+    int indx = -1;
+    for ( int ii = 0; ii < bps->nTiles; ++ii ) {
+        char* oneFace = bps->faces[ii];
+        if ( indx < 0 && 0 == strcmp( face, oneFace ) ) {
+            indx = ii;
+        }
+        XP_FREE( globals->mpool, oneFace );
+    }
+    XP_FREE( globals->mpool, bps->faces );
+
+    if ( board_setBlankValue( globals->game.board, bps->playerNum,
+                              bps->col, bps->row, indx ) ) {
+        updateScreen( globals, true );
+    }
+
+    XP_FREE( bps->globals->mpool, bps );
+}
+
+void
+main_pickBlank( Globals* globals, int playerNum, int col, int row,
+                const char** tileFaces, int nTiles )
+{
+    BlankPickState* bps = XP_MALLOC( globals->mpool, sizeof(*bps) );
+    bps->globals = globals;
+    bps->row = row;
+    bps->col = col;
+    bps->playerNum = playerNum;
+    bps->nTiles = nTiles;
+    bps->faces = XP_CALLOC( globals->mpool, nTiles * sizeof(bps->faces[0]) );
+    for ( int ii = 0; ii < nTiles; ++ii ) {
+        replaceStringIfDifferent( globals->mpool, &bps->faces[ii], tileFaces[ii] );
+    }
+
+    call_pickBlank( "Pick for your blank", tileFaces, nTiles,
+                    onBlankPicked, bps );
 }
 
 void
