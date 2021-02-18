@@ -8,7 +8,7 @@
 
     <Preference app:title="@string/prefs_names"
                 app:summary="@string/prefs_names_summary"
-                app:fragment="org.eehouse.android.xw4.PrefsActivity$prefs_dflts_names"
+                app:fragment="org.eehouse.android.xw4.gen.PrefsWrappers$prefs_dflts_names"
                 />
 
     <org.eehouse.android.xw4.XWConnAddrPreference
@@ -18,7 +18,7 @@
 
     <Preference app:title="@string/prefs_dicts"
                 app:summary="@string/prefs_dicts_summary"
-                app:fragment="org.eehouse.android.xw4.PrefsActivity$prefs_dflts_dicts"
+                app:fragment="org.eehouse.android.xw4.gen.PrefsWrappers$prefs_dflts_dicts"
                 />
 
     <CheckBoxPreference android:key="@string/key_init_hintsallowed"

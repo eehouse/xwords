@@ -38,6 +38,7 @@ import android.view.View;
 import android.widget.Button;
 
 import org.eehouse.android.xw4.DlgDelegate.Action;
+import org.eehouse.android.xw4.gen.PrefsWrappers;
 import org.eehouse.android.xw4.jni.CommonPrefs;
 import org.eehouse.android.xw4.loc.LocUtils;
 
@@ -329,8 +330,7 @@ public class PrefsDelegate extends DelegateBase
 
     private void relaunch()
     {
-        PreferenceManager.setDefaultValues( mActivity, R.xml.prefs,
-                                            false );
+        resetPrefs( mActivity, true );
 
         // Now replace this activity with a new copy
         // so the new values get loaded.
@@ -347,5 +347,13 @@ public class PrefsDelegate extends DelegateBase
     {
         Intent intent = new Intent( context, PrefsActivity.class );
         context.startActivity( intent );
+    }
+
+    public static void resetPrefs( Context context, boolean mustCheck )
+    {
+        int[] prefIDs = PrefsWrappers.getPrefsResIDs();
+        for ( int id : prefIDs ) {
+            PreferenceManager.setDefaultValues( context, id, mustCheck );
+        }
     }
 }

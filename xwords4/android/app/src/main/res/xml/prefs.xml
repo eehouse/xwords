@@ -1,29 +1,54 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+
+Note about the prefs files in this directory:
+
+The represent a heirarchy that you can see from their names:
+
+top level:    prefs.xml
+Its children: prefs_<something>.xml
+and so on
+
+For a file to allow referencing a child, it has an element like this from prefs.xml:
+  <Preference app:title="@string/prefs_defaults"
+              app:summary="@string/prefs_defaults_summary"
+              app:fragment="org.eehouse.android.xw4.gen.PrefsWrappers$prefs_dflts"
+              />
+
+The app:fragment references a class that's a wrapper for the child
+file prefs_dflts.xml. That's per a naming convention that MUST BE
+ADHERED TO because the classes are generated.
+
+Be careful because there's no build-time checking for the existance of
+classes, so if you misspell one you won't know until you crash trying
+to open the child file.
+
+-->
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
                   xmlns:app="http://schemas.android.com/apk/res-auto"
                   >
 
   <Preference app:title="@string/prefs_defaults"
               app:summary="@string/prefs_defaults_summary"
-              app:fragment="org.eehouse.android.xw4.PrefsActivity$prefs_dflts"
+              app:fragment="org.eehouse.android.xw4.gen.PrefsWrappers$prefs_dflts"
               />
   <Preference app:title="@string/prefs_appearance"
               app:summary="@string/prefs_appearance_summary"
-              app:fragment="org.eehouse.android.xw4.PrefsActivity$prefs_appear"
+              app:fragment="org.eehouse.android.xw4.gen.PrefsWrappers$prefs_appear"
               />
 
   <Preference app:title="@string/prefs_behavior"
               app:summary="@string/prefs_behavior_summary"
-              app:fragment="org.eehouse.android.xw4.PrefsActivity$prefs_behave"
+              app:fragment="org.eehouse.android.xw4.gen.PrefsWrappers$prefs_behave"
               />
 
   <Preference app:title="@string/network_behavior"
               app:summary="@string/network_behavior_summary"
-              app:fragment="org.eehouse.android.xw4.PrefsActivity$prefs_net"
+              app:fragment="org.eehouse.android.xw4.gen.PrefsWrappers$prefs_net"
               />
 
   <Preference app:title="@string/advanced"
               app:summary="@string/advanced_summary"
-              app:fragment="org.eehouse.android.xw4.PrefsActivity$prefs_dbg"
+              app:fragment="org.eehouse.android.xw4.gen.PrefsWrappers$prefs_dbg"
               />
 </PreferenceScreen>

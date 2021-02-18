@@ -29,17 +29,17 @@
 
     <Preference app:title="@string/pref_group_relay_title"
                 android:summary="@string/pref_group_relay_summary"
-                app:fragment="org.eehouse.android.xw4.PrefsActivity$prefs_dbg_net"
+                app:fragment="org.eehouse.android.xw4.gen.PrefsWrappers$prefs_dbg_net"
                 />
 
     <Preference app:title="@string/pref_group_sms_title"
                 android:summary="@string/pref_group_sms_summary"
-                app:fragment="org.eehouse.android.xw4.PrefsActivity$prefs_dbg_sms"
+                app:fragment="org.eehouse.android.xw4.gen.PrefsWrappers$prefs_dbg_sms"
                 />
 
     <Preference app:title="@string/pref_group_l10n_title"
-                app:fragment="org.eehouse.android.xw4.PrefsActivity$prefs_dbg_l10n"
                 android:summary="@string/pref_group_l10n_summary"
+                app:fragment="org.eehouse.android.xw4.gen.PrefsWrappers$prefs_dbg_l10n"
                 />
 
     <!-- For broken devices like my Blaze 4G that report a download

@@ -2304,7 +2304,7 @@
     <string name="enable_pending_count_title">Show Pending messages</string>
     <string name="enable_pending_count_summary">Show number not yet acknowledged</string>
     <string name="nag_intervals">Reminder intervals (minutes1,minutes2,…)</string>
-    <string name="enable_sms_toself_title">Short-circuit SMS to self</string>
+    <string name="enable_sms_toself_title">Short-circuit Data SMS to self</string>
     <string name="enable_sms_toself_summary">Skip radio when phone numbers same</string>
     <string name="force_radio_title">Pretend to have radio</string>
     <string name="radio_name_real">Don’t pretend</string>
@@ -2319,7 +2319,7 @@
     <string name="expl_mqtt_url">URL for new MQTT-based relay API</string>
     <string name="got_langdict_title">Fetch default wordlist for language</string>
     <string name="got_langdict_summary">Don’t try a second time</string>
-    <string name="pref_group_sms_title">SMS Stuff</string>
+    <string name="pref_group_sms_title">Data SMS Stuff</string>
     <string name="pref_group_sms_summary">Prefs related to play-via-sms</string>
     <string name="pref_group_relay_title">Relay Stuff</string>
     <string name="pref_group_relay_summary">Prefs related to play via internet/relay</string>
@@ -2369,7 +2369,7 @@
   two-person games, at least for now, because it’s harder with more
   devices and I think it’s rare that people play with more than
   two. Let me know if I’m wrong and I’ll up the priority.</string>
-    <string name="show_sms_title">Show SMS sends, receives</string>
+    <string name="show_sms_title">Show Data SMS sends, receives</string>
     <string name="show_fcm_title">Show FCM receives</string>
     <!-- Shown after "resend messages" menuitem chosen -->
     <plurals name="resent_msgs_fmt">

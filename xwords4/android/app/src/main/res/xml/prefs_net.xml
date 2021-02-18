@@ -26,7 +26,7 @@
 
     <Preference app:title="@string/network_advanced_title"
                 app:summary="@string/network_advanced_summary"
-                app:fragment="org.eehouse.android.xw4.PrefsActivity$prefs_net_adv"
+                app:fragment="org.eehouse.android.xw4.gen.PrefsWrappers$prefs_net_adv"
                 />
 
     <org.eehouse.android.xw4.RelayCheckBoxPreference

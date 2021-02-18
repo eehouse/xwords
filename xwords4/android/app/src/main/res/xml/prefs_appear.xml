@@ -58,7 +58,7 @@
 
     <Preference app:title="@string/prefs_colors"
                 app:summary="@string/prefs_colors_summary"
-                app:fragment="org.eehouse.android.xw4.PrefsActivity$prefs_appear_colors"
+                app:fragment="org.eehouse.android.xw4.gen.PrefsWrappers$prefs_appear_colors"
                 />
 
   </PreferenceCategory>

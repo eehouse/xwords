@@ -374,15 +374,26 @@ task copyLocStrings(type: Exec) {
     commandLine 'make', '-f', './scripts/copy-strings.mk'
 }
 
+task mkPrefsWrapper(type: Exec) {
+    workingDir '../'
+    commandLine 'make', '-f', './scripts/prefsWrapper.mk'
+}
+
+task cleanPrefsWrapper(type: Exec) {
+    workingDir '../'
+    commandLine 'make', '-f', './scripts/prefsWrapper.mk', 'clean'
+}
+
 task cleanLocStrings(type: Exec) {
     workingDir '../'
     commandLine 'make', '-f', './scripts/copy-strings.mk', 'clean'
 }
-clean.dependsOn cleanLocStrings
+clean.dependsOn cleanLocStrings, cleanPrefsWrapper
 
 task myPreBuild(dependsOn: ['mkImages',
                             'copyLocStrings',
                             'mkXml',
+                            'mkPrefsWrapper',
                             'copyStringsXw4D',
                             'copyStringsXw4DGPlay']) {
 }

@@ -29,7 +29,6 @@ import androidx.lifecycle.ProcessLifecycleOwner;
 import android.content.Context;
 import android.graphics.Color;
 import android.os.Build;
-import androidx.preference.PreferenceManager;
 
 import org.eehouse.android.nbsplib.NBSProxy;
 
@@ -80,7 +79,7 @@ public class XWApp extends Application
         OnBootReceiver.startTimers( this );
 
         boolean mustCheck = Utils.firstBootThisVersion( this );
-        PreferenceManager.setDefaultValues( this, R.xml.prefs, mustCheck );
+        PrefsDelegate.resetPrefs( this, mustCheck );
         if ( mustCheck ) {
             XWPrefs.setHaveCheckedUpgrades( this, false );
         } else {

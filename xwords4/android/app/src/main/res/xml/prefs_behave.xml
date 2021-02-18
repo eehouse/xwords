@@ -24,7 +24,7 @@
                         />
 
     <Preference app:title="@string/disable_nags_title"
-                app:fragment="org.eehouse.android.xw4.PrefsActivity$prefs_behave_nag"
+                app:fragment="org.eehouse.android.xw4.gen.PrefsWrappers$prefs_behave_nag"
                 />
 
     <CheckBoxPreference android:key="@string/key_default_loc"

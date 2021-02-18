@@ -40,6 +40,7 @@ import java.util.Set;
     
 import org.eehouse.android.xw4.DlgDelegate.Action;
 import org.eehouse.android.xw4.DlgDelegate.Builder;
+import org.eehouse.android.xw4.gen.PrefsWrappers;
 import org.eehouse.android.xw4.jni.CommonPrefs;
 
 public class PrefsActivity extends XWActivity
@@ -65,7 +66,7 @@ public class PrefsActivity extends XWActivity
         Assert.assertTrue( 0 < layoutID );
         m_dlgt.setContentView( layoutID );
 
-        PreferenceFragmentCompat rootFrag = new prefs();
+        PreferenceFragmentCompat rootFrag = new PrefsWrappers.prefs();
         m_dlgt.setRootFragment( rootFrag );
 
         getSupportFragmentManager()
@@ -174,9 +175,13 @@ public class PrefsActivity extends XWActivity
 
     // Every subscreen in the prefs.xml heierarchy has to have a class
     // associated with it just to provide its xml-file ID. Stupid design; not
-    // mine!
+    // mine! To make this a bit less gross, the classes are generated in
+    // gen/PrefsWrappers.java for files matching the pattern
+    // main/res/xml/prefs*.xml.
+    //
+    // See the notes in res/xml/prefs.xml
 
-    private abstract static class BasePrefsFrag extends PreferenceFragmentCompat {
+    abstract public static class BasePrefsFrag extends PreferenceFragmentCompat {
         @Override
         public void onCreatePreferences( Bundle savedInstanceState, String rootKey )
         {
@@ -201,63 +206,6 @@ public class PrefsActivity extends XWActivity
             super.onViewCreated( view, savedInstanceState );
         }
 
-        abstract int getResID();
-    }
-
-    public static class prefs extends BasePrefsFrag {
-        @Override
-        int getResID() { return R.xml.prefs; }
-    }
-    public static class prefs_dflts extends BasePrefsFrag {
-        @Override
-        int getResID() { return R.xml.prefs_dflts; }
-    }
-    public static class prefs_dflts_names extends BasePrefsFrag {
-        @Override
-        int getResID() { return R.xml.prefs_dflts_names; }
-    }
-    public static class prefs_dflts_dicts extends BasePrefsFrag {
-        @Override
-        int getResID() { return R.xml.prefs_dflts_dicts; }
-    }
-    public static class prefs_appear extends BasePrefsFrag {
-        @Override
-        int getResID() { return R.xml.prefs_appear; }
-    }
-    public static class prefs_appear_colors extends BasePrefsFrag {
-        @Override
-        int getResID() { return R.xml.prefs_appear_colors; }
-    }
-    public static class prefs_behave extends BasePrefsFrag {
-        @Override
-        int getResID() { return R.xml.prefs_behave; }
-    }
-    public static class prefs_behave_nag extends BasePrefsFrag {
-        @Override
-        int getResID() { return R.xml.prefs_behave_nag; }
-    }
-    public static class prefs_net extends BasePrefsFrag {
-        @Override
-        int getResID() { return R.xml.prefs_net; }
-    }
-    public static class prefs_net_adv extends BasePrefsFrag {
-        @Override
-        int getResID() { return R.xml.prefs_net_adv; }
-    }
-    public static class prefs_dbg extends BasePrefsFrag {
-        @Override
-        int getResID() { return R.xml.prefs_dbg; }
-    }
-    public static class prefs_dbg_net extends BasePrefsFrag {
-        @Override
-        int getResID() { return R.xml.prefs_dbg_net; }
-    }
-    public static class prefs_dbg_sms extends BasePrefsFrag {
-        @Override
-        int getResID() { return R.xml.prefs_dbg_sms; }
-    }
-    public static class prefs_dbg_l10n extends BasePrefsFrag {
-        @Override
-        int getResID() { return R.xml.prefs_dbg_l10n; }
+        public abstract int getResID();
     }
 }
