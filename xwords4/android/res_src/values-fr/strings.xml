@@ -3245,4 +3245,7 @@ pour la langue</string>
     <string name="invite_msg_extra">Vous verrez ce message jusqu\'à ce que tous les joueurs attendus se soient connectés. Si vous avez déjà envoyé une invitation et craignez qu\'elle ait été perdue, il n\'y a pas de danger à en envoyer une autre.</string>
     <string name="relay_poll_title">Comment vérifier les coups \?</string>
     <string name="values_values">Valeurs uniquement</string>
+    <string name="title_blank_picker">Choisir un jeton pour la lettre blanche</string>
+    <string name="values_both">Lettres et valeurs</string>
+    <string name="values_faces">Lettres uniquement</string>
 </resources>
