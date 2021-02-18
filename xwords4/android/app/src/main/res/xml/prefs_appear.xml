@@ -1,63 +1,65 @@
 <?xml version="1.0" encoding="utf-8"?>
-<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+                  xmlns:app="http://schemas.android.com/apk/res-auto"
+                  >
 
-  <PreferenceCategory app:title="@string/prefs_appearance"
+  <PreferenceCategory android:title="@string/prefs_appearance"
+                      android:summary="@string/prefs_appearance_summary"
                       >
 
     <org.eehouse.android.xw4.XWThumbListPreference
-        app:key="@string/key_thumbsize"
-        app:title="@string/summary_thumbsize"
-        app:defaultValue="30"
+        android:key="@string/key_thumbsize"
+        android:title="@string/summary_thumbsize"
+        android:defaultValue="30"
         />
 
     <org.eehouse.android.xw4.XWSumListPreference
-        app:key="@string/key_summary_field"
-        app:title="@string/summary_field"
-        app:entries="@array/game_summary_values"
-        app:entryValues="@array/game_summary_values"
-        app:defaultValue="@string/game_summary_field_opponents"
+        android:key="@string/key_summary_field"
+        android:title="@string/summary_field"
+        android:entries="@array/game_summary_values"
+        android:entryValues="@array/game_summary_values"
+        android:defaultValue="@string/game_summary_field_opponents"
         />
 
-    <CheckBoxPreference app:key="@string/key_hide_newgames"
-                        app:title="@string/hide_newgames_title"
-                        app:summary="@string/hide_newgames_summary"
-                        app:defaultValue="false"
+    <CheckBoxPreference android:key="@string/key_hide_newgames"
+                        android:title="@string/hide_newgames_title"
+                        android:summary="@string/hide_newgames_summary"
+                        android:defaultValue="false"
                         />
-    <CheckBoxPreference app:key="@string/key_hide_title"
-                        app:title="@string/hide_title"
-                        app:summary="@string/hide_title_summary"
-                        app:defaultValue="false"
+    <CheckBoxPreference android:key="@string/key_hide_title"
+                        android:title="@string/hide_title"
+                        android:summary="@string/hide_title_summary"
+                        android:defaultValue="false"
                         />
 
     <org.eehouse.android.xw4.XWListPreference
-        app:key="@string/key_force_tablet"
-        app:title="@string/force_tablet_title"
-        app:entries="@array/force_tablet_names"
-        app:entryValues="@array/force_tablet_names"
-        app:defaultValue="@string/force_tablet_default"
+        android:key="@string/key_force_tablet"
+        android:title="@string/force_tablet_title"
+        android:entries="@array/force_tablet_names"
+        android:entryValues="@array/force_tablet_names"
+        android:defaultValue="@string/force_tablet_default"
         />
 
-    <CheckBoxPreference app:key="@string/key_show_arrow"
-                        app:title="@string/show_arrow"
-                        app:summary="@string/show_arrow_summary"
-                        app:defaultValue="true"
+    <CheckBoxPreference android:key="@string/key_show_arrow"
+                        android:title="@string/show_arrow"
+                        android:summary="@string/show_arrow_summary"
+                        android:defaultValue="true"
                         />
-    <CheckBoxPreference app:key="@string/key_square_tiles"
-                        app:title="@string/square_tiles"
-                        app:summary="@string/square_tiles_summary"
-                        app:defaultValue="false"
+    <CheckBoxPreference android:key="@string/key_square_tiles"
+                        android:title="@string/square_tiles"
+                        android:summary="@string/square_tiles_summary"
+                        android:defaultValue="false"
                         />
-    <CheckBoxPreference app:key="@string/key_keep_screenon"
-                        app:title="@string/keep_screenon"
-                        app:summary="@string/keep_screenon_summary"
-                        app:defaultValue="false"
+    <CheckBoxPreference android:key="@string/key_keep_screenon"
+                        android:title="@string/keep_screenon"
+                        android:summary="@string/keep_screenon_summary"
+                        android:defaultValue="false"
                         />
 
     <Preference app:title="@string/prefs_colors"
                 app:summary="@string/prefs_colors_summary"
-                app:fragment="org.eehouse.android.xw4.PrefsActivity$FragPrefsAppearColors"
+                app:fragment="org.eehouse.android.xw4.PrefsActivity$prefs_appear_colors"
                 />
 
-    </PreferenceCategory>
-
+  </PreferenceCategory>
 </PreferenceScreen>

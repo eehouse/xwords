@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
-                  xmlns:app="http://schemas.android.com/apk/res-auto">
-
-  <PreferenceCategory app:title="@string/advanced"
+                  xmlns:app="http://schemas.android.com/apk/res-auto"
+                  >
+  <PreferenceCategory android:title="@string/advanced"
+                      android:summary="@string/advanced_summary"
                       >
 
     <CheckBoxPreference android:key="@string/key_logging_on"
@@ -27,15 +28,20 @@
                         />
 
     <Preference app:title="@string/pref_group_relay_title"
-                app:fragment="org.eehouse.android.xw4.PrefsActivity$FragPrefsDbgNet"
+                android:summary="@string/pref_group_relay_summary"
+                app:fragment="org.eehouse.android.xw4.PrefsActivity$prefs_dbg_net"
                 />
+
     <Preference app:title="@string/pref_group_sms_title"
-                app:fragment="org.eehouse.android.xw4.PrefsActivity$FragPrefsDbgSms"
+                android:summary="@string/pref_group_sms_summary"
+                app:fragment="org.eehouse.android.xw4.PrefsActivity$prefs_dbg_sms"
                 />
+
     <Preference app:title="@string/pref_group_l10n_title"
-                app:fragment="org.eehouse.android.xw4.PrefsActivity$FragPrefsDbgL10n"
+                app:fragment="org.eehouse.android.xw4.PrefsActivity$prefs_dbg_l10n"
+                android:summary="@string/pref_group_l10n_summary"
                 />
-    
+
     <!-- For broken devices like my Blaze 4G that report a download
          directory that doesn't exist, allow users to set it.  Mine:
          /sdcard/external_sd/download     
@@ -69,6 +75,5 @@
                         android:summary="@string/unhide_dupmode_summary"
                         android:defaultValue="false"
                         />
-
   </PreferenceCategory>
 </PreferenceScreen>

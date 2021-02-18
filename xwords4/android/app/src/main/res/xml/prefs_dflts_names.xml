@@ -2,9 +2,10 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
                   xmlns:app="http://schemas.android.com/apk/res-auto"
                   >
-
-  <PreferenceCategory app:title="@string/prefs_names"
+  <PreferenceCategory android:title="@string/prefs_names"
+                      android:summary="@string/prefs_names_summary"
                       >
+
     <org.eehouse.android.xw4.XWEditTextPreference
         android:key="@string/key_player1_name"
         android:title="@string/pref_human_name"
@@ -25,4 +26,3 @@
         />
   </PreferenceCategory>
 </PreferenceScreen>
-

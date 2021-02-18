@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
-                  xmlns:app="http://schemas.android.com/apk/res-auto">
+                  xmlns:app="http://schemas.android.com/apk/res-auto"
+                  >
 
-  <PreferenceCategory app:title="@string/prefs_behavior"
+  <PreferenceCategory android:title="@string/prefs_behavior"
+                      android:summary="@string/prefs_behavior_summary"
                       >
-
     <CheckBoxPreference android:key="@string/key_explain_robot"
                         android:title="@string/explain_robot"
                         android:summary="@string/explain_robot_summary"
@@ -23,7 +24,7 @@
                         />
 
     <Preference app:title="@string/disable_nags_title"
-                app:fragment="org.eehouse.android.xw4.PrefsActivity$FragPrefsBehaveNag"
+                app:fragment="org.eehouse.android.xw4.PrefsActivity$prefs_behave_nag"
                 />
 
     <CheckBoxPreference android:key="@string/key_default_loc"
@@ -52,5 +53,4 @@
                         android:defaultValue="false"
                         />
   </PreferenceCategory>
-
 </PreferenceScreen>

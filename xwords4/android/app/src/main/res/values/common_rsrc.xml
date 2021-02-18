@@ -73,7 +73,6 @@
   <string name="key_notify_vibrate">key_notify_vibrate</string>
   <string name="key_enable_nbs">key_enable_nbs</string>
   <string name="key_enable_p2p">key_enable_p2p</string>
-  <string name="key_prefs_defaults">key_prefs_defaults</string>
   <string name="key_network_behavior">key_network_behavior</string>
   <string name="key_keep_screenon">key_keep_screenon</string>
   <string name="key_thumbsize">key_thumbsize3</string>

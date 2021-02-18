@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
-                  xmlns:app="http://schemas.android.com/apk/res-auto">
+                  xmlns:app="http://schemas.android.com/apk/res-auto"
+                  >
 
-  <PreferenceCategory app:title="@string/pref_group_sms_title"
+  <PreferenceCategory android:title="@string/pref_group_sms_title"
+                      android:summary="@string/pref_group_sms_summary"
                       >
-
     <CheckBoxPreference android:key="@string/key_enable_sms_toself"
                         android:title="@string/enable_sms_toself_title"
                         android:summary="@string/enable_sms_toself_summary"
@@ -22,6 +23,5 @@
                         android:title="@string/show_sms_title"
                         android:defaultValue="false"
                         />
-
   </PreferenceCategory>
 </PreferenceScreen>

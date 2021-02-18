@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
-                  xmlns:app="http://schemas.android.com/apk/res-auto">
+                  xmlns:app="http://schemas.android.com/apk/res-auto"
+                  >
 
-  <PreferenceCategory app:title="@string/network_behavior"
+  <PreferenceCategory android:title="@string/network_behavior"
+                      android:summary="@string/network_behavior_summary"
                       >
     <org.eehouse.android.xw4.SMSCheckBoxPreference
         android:key="@string/key_enable_nbs"
@@ -24,7 +26,7 @@
 
     <Preference app:title="@string/network_advanced_title"
                 app:summary="@string/network_advanced_summary"
-                app:fragment="org.eehouse.android.xw4.PrefsActivity$FragPrefsNetAdv"
+                app:fragment="org.eehouse.android.xw4.PrefsActivity$prefs_net_adv"
                 />
 
     <org.eehouse.android.xw4.RelayCheckBoxPreference

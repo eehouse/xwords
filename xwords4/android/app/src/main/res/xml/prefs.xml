@@ -1,34 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
                   xmlns:app="http://schemas.android.com/apk/res-auto"
                   >
-  <PreferenceCategory app:title="@string/title_prefs"
-                      >
-    <Preference app:title="@string/prefs_defaults"
-                app:summary="@string/prefs_defaults_summary"
-                app:key="@string/key_prefs_defaults"
-                app:fragment="org.eehouse.android.xw4.PrefsActivity$FragPrefsDflts"
-                />
 
-    <Preference app:title="@string/prefs_appearance"
-                app:summary="@string/prefs_appearance_summary"
-                app:key="@string/prefs_appearance"
-                app:fragment="org.eehouse.android.xw4.PrefsActivity$FragPrefsAppear"
-                />
+  <Preference app:title="@string/prefs_defaults"
+              app:summary="@string/prefs_defaults_summary"
+              app:fragment="org.eehouse.android.xw4.PrefsActivity$prefs_dflts"
+              />
+  <Preference app:title="@string/prefs_appearance"
+              app:summary="@string/prefs_appearance_summary"
+              app:fragment="org.eehouse.android.xw4.PrefsActivity$prefs_appear"
+              />
 
-    <Preference app:title="@string/prefs_behavior"
-                app:summary="@string/prefs_behavior_summary"
-                app:fragment="org.eehouse.android.xw4.PrefsActivity$FragPrefsBehave"
-                />
+  <Preference app:title="@string/prefs_behavior"
+              app:summary="@string/prefs_behavior_summary"
+              app:fragment="org.eehouse.android.xw4.PrefsActivity$prefs_behave"
+              />
 
-    <Preference app:title="@string/network_behavior"
-                app:summary="@string/network_behavior_summary"
-                app:fragment="org.eehouse.android.xw4.PrefsActivity$FragPrefsNet"
-                />
-    <Preference app:title="@string/advanced"
-                app:summary="@string/advanced_summary"
-                app:fragment="org.eehouse.android.xw4.PrefsActivity$FragPrefsDbg"
-                />
-  </PreferenceCategory>
+  <Preference app:title="@string/network_behavior"
+              app:summary="@string/network_behavior_summary"
+              app:fragment="org.eehouse.android.xw4.PrefsActivity$prefs_net"
+              />
+
+  <Preference app:title="@string/advanced"
+              app:summary="@string/advanced_summary"
+              app:fragment="org.eehouse.android.xw4.PrefsActivity$prefs_dbg"
+              />
 </PreferenceScreen>

@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
-                  xmlns:app="http://schemas.android.com/apk/res-auto">
-
-  <PreferenceCategory app:title="@string/pref_group_relay_title"
+                  xmlns:app="http://schemas.android.com/apk/res-auto"
+                  >
+  <PreferenceCategory android:title="@string/pref_group_relay_title"
+                      android:summary="@string/pref_group_relay_summary"
                       >
-
     <org.eehouse.android.xw4.XWListPreference
         android:key="@string/key_relay_poll"
         android:title="@string/relay_poll_title"

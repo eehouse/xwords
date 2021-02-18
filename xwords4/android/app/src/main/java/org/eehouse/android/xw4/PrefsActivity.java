@@ -65,7 +65,7 @@ public class PrefsActivity extends XWActivity
         Assert.assertTrue( 0 < layoutID );
         m_dlgt.setContentView( layoutID );
 
-        PreferenceFragmentCompat rootFrag = new FragPrefs();
+        PreferenceFragmentCompat rootFrag = new prefs();
         m_dlgt.setRootFragment( rootFrag );
 
         getSupportFragmentManager()
@@ -204,59 +204,59 @@ public class PrefsActivity extends XWActivity
         abstract int getResID();
     }
 
-    public static class FragPrefs extends BasePrefsFrag {
+    public static class prefs extends BasePrefsFrag {
         @Override
         int getResID() { return R.xml.prefs; }
     }
-    public static class FragPrefsDflts extends BasePrefsFrag {
+    public static class prefs_dflts extends BasePrefsFrag {
         @Override
         int getResID() { return R.xml.prefs_dflts; }
     }
-    public static class FragPrefsDfltsNames extends BasePrefsFrag {
+    public static class prefs_dflts_names extends BasePrefsFrag {
         @Override
         int getResID() { return R.xml.prefs_dflts_names; }
     }
-    public static class FragPrefsDfltsDicts extends BasePrefsFrag {
+    public static class prefs_dflts_dicts extends BasePrefsFrag {
         @Override
         int getResID() { return R.xml.prefs_dflts_dicts; }
     }
-    public static class FragPrefsAppear extends BasePrefsFrag {
+    public static class prefs_appear extends BasePrefsFrag {
         @Override
         int getResID() { return R.xml.prefs_appear; }
     }
-    public static class FragPrefsAppearColors extends BasePrefsFrag {
+    public static class prefs_appear_colors extends BasePrefsFrag {
         @Override
         int getResID() { return R.xml.prefs_appear_colors; }
     }
-    public static class FragPrefsBehave extends BasePrefsFrag {
+    public static class prefs_behave extends BasePrefsFrag {
         @Override
         int getResID() { return R.xml.prefs_behave; }
     }
-    public static class FragPrefsBehaveNag extends BasePrefsFrag {
+    public static class prefs_behave_nag extends BasePrefsFrag {
         @Override
         int getResID() { return R.xml.prefs_behave_nag; }
     }
-    public static class FragPrefsNet extends BasePrefsFrag {
+    public static class prefs_net extends BasePrefsFrag {
         @Override
         int getResID() { return R.xml.prefs_net; }
     }
-    public static class FragPrefsNetAdv extends BasePrefsFrag {
+    public static class prefs_net_adv extends BasePrefsFrag {
         @Override
         int getResID() { return R.xml.prefs_net_adv; }
     }
-    public static class FragPrefsDbg extends BasePrefsFrag {
+    public static class prefs_dbg extends BasePrefsFrag {
         @Override
         int getResID() { return R.xml.prefs_dbg; }
     }
-    public static class FragPrefsDbgNet extends BasePrefsFrag {
+    public static class prefs_dbg_net extends BasePrefsFrag {
         @Override
         int getResID() { return R.xml.prefs_dbg_net; }
     }
-    public static class FragPrefsDbgSms extends BasePrefsFrag {
+    public static class prefs_dbg_sms extends BasePrefsFrag {
         @Override
         int getResID() { return R.xml.prefs_dbg_sms; }
     }
-    public static class FragPrefsDbgL10n extends BasePrefsFrag {
+    public static class prefs_dbg_l10n extends BasePrefsFrag {
         @Override
         int getResID() { return R.xml.prefs_dbg_l10n; }
     }
