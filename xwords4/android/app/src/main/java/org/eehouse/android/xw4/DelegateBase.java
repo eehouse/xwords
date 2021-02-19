@@ -296,13 +296,11 @@ public abstract class DelegateBase implements DlgClickNotify,
         boolean handled = false;
         if ( m_activity instanceof MainActivity ) {
             MainActivity main = (MainActivity)m_activity;
-            if ( true /*main.inDPMode()*/ ) {
-                if ( !m_finishCalled ) {
-                    m_finishCalled = true;
-                    main.finishFragment( (XWFragment)m_delegator );
-                }
-                handled = true;
+            if ( !m_finishCalled ) {
+                m_finishCalled = true;
+                main.finishFragment( (XWFragment)m_delegator );
             }
+            handled = true;
         }
 
         if ( !handled ) {
