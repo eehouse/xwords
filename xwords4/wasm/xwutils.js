@@ -200,8 +200,48 @@ function nbGetString(msg, dflt, proc, closure) {
 	dlg.appendChild( newButtonDiv( buttons, butProc ) );
 }
 
+function newRadio(txt, id, proc) {
+	let span = document.createElement('span');
+	let radio = document.createElement('input');
+	radio.type = 'radio';
+	radio.id = id;
+	radio.name = id;
+	radio.onclick = proc;
+
+	let label = document.createElement('label')
+	label.htmlFor = id;
+	var description = document.createTextNode(txt);
+	label.appendChild(description);
+
+	span.appendChild(label);
+	span.appendChild(radio);
+
+	return span;
+}
+
+function nbGetNewGame(closure, msg) {
+	let dlg = newDlgWMsg('Is your opponent a robot or someone you will invite?');
+
+	let radioDiv = document.createElement('div');
+	dlg.appendChild( radioDiv );
+	var robotSet = [null];
+	radioDiv.appendChild(newRadio('Robot', 'newgame', function() {robotSet[0] = true;}));
+	radioDiv.appendChild(newRadio('Remote player', 'newgame', function() {robotSet[0] = false;}));
+
+	butProc = function(str) {
+		if ( str === 'OK' && null !== robotSet[0]) {
+			types = ['number', 'boolean'];
+			params = [closure, robotSet[0]];
+			Module.ccall('onNewGame', null, types, params);
+		}
+		dlg.parentNode.removeChild(dlg);
+	}
+
+	dlg.appendChild( newButtonDiv( ['Cancel', 'OK'], butProc ) );
+}
+
 for ( let one of ['paho-mqtt.js'] ) {
 	let script = document.createElement('script');
-	script.src = one
+	script.src = one;
 	document.body.appendChild(script);
 }

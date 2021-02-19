@@ -22,5 +22,6 @@
 
 const char* get_stored_value( const char* key );
 void set_stored_value(const char* key, const char* val);
+void remove_stored_value(const char* key);
 
 #endif

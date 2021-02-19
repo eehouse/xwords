@@ -83,9 +83,13 @@
 #define BUTTON_GAME_DELETE "Delete Game"
 #define MAX_BUTTONS 20          /* not sure what's safe here */
 
+typedef struct _NewGameParams {
+    bool isRobotNotRemote;
+    bool hintsNotAllowed;
+} NewGameParams;
 
 static void loadAndDraw( Globals* globals, const NetLaunchInfo* invite,
-                         const char* key, bool forceNew );
+                         const char* key, NewGameParams* params );
 static void nameGame( Globals* globals );
 static void ensureName( Globals* globals );
 static void loadName( Globals* globals );
@@ -205,6 +209,11 @@ EM_JS(void, setButtons, (const char* id, const char** bstrs,
           setDivButtons(UTF8ToString(id), buttons, proc, closure);
     });
 
+EM_JS(void, callNewGame, (const char* msg, void* closure), {
+        let jsmsg = UTF8ToString(msg);
+        nbGetNewGame(closure, jsmsg);
+    });
+
 static void updateScreen( Globals* globals, bool doSave );
 
 typedef void (*ConfirmProc)( void* closure, bool confirmed );
@@ -290,9 +299,15 @@ formatGameID( char* buf, size_t len, int gameID )
 }
 
 static void
-formatGameKey( char* buf, size_t len, const char* gameID )
+formatGameKeyStr( char* buf, size_t len, const char* gameID )
 {
     snprintf( buf, len, KEY_GAME_PREFIX "%s", gameID );
+}
+
+static void
+formatGameKeyInt( char* buf, size_t len, int gameID )
+{
+    snprintf( buf, len, KEY_GAME_PREFIX "%X", gameID );
 }
 
 static void
@@ -342,33 +357,34 @@ onGameButton( void* closure, const char* button )
 static void
 updateGameButtons( Globals* globals )
 {
-    GameStateInfo gsi;
-    game_getState( &globals->gs.game, NULL, &gsi );
-
     const char* buttons[MAX_BUTTONS];
     int cur = 0;
 
-    if ( gsi.canHint ) {
-        buttons[cur++] = BUTTON_HINTDOWN;
-        buttons[cur++] = BUTTON_HINTUP;
+    if ( !!globals->gs.util ) {
+        GameStateInfo gsi;
+        game_getState( &globals->gs.game, NULL, &gsi );
+
+        if ( gsi.canHint ) {
+            buttons[cur++] = BUTTON_HINTDOWN;
+            buttons[cur++] = BUTTON_HINTUP;
+        }
+
+        if ( gsi.inTrade ) {
+            buttons[cur++] = BUTTON_STOPTRADE;
+        } else if ( gsi.canTrade ) {
+            buttons[cur++] = BUTTON_TRADE;
+        }
+        buttons[cur++] = BUTTON_COMMIT;
+        buttons[cur++] = BUTTON_FLIP;
+
+        if ( gsi.canUndo ) {
+            buttons[cur++] = BUTTON_UNDO;
+        } else if ( gsi.canRedo ) {
+            buttons[cur++] = BUTTON_REDO;
+        }
+
+        buttons[cur++] = BUTTON_VALS;
     }
-
-    if ( gsi.inTrade ) {
-        buttons[cur++] = BUTTON_STOPTRADE;
-    } else if ( gsi.canTrade ) {
-        buttons[cur++] = BUTTON_TRADE;
-    }
-    buttons[cur++] = BUTTON_COMMIT;
-    buttons[cur++] = BUTTON_FLIP;
-
-    if ( gsi.canUndo ) {
-        buttons[cur++] = BUTTON_UNDO;
-    } else if ( gsi.canRedo ) {
-        buttons[cur++] = BUTTON_REDO;
-    }
-
-    buttons[cur++] = BUTTON_VALS;
-
     buttons[cur++] = NULL;
 
     setButtons( BUTTONS_ID_GAME, buttons, onGameButton, globals );
@@ -378,7 +394,7 @@ static void
 onGameChosen( void* closure, const char* key )
 {
     Globals* globals = (Globals*)closure;
-    loadAndDraw( globals, NULL, key, false );
+    loadAndDraw( globals, NULL, key, NULL );
 }
 
 static void
@@ -395,12 +411,46 @@ onGameRanamed( void* closure, const char* newName )
 }
 
 static void
+cleanupGame( Globals* globals )
+{
+    if ( !!globals->gs.util ) {
+        game_dispose( &globals->gs.game, NULL );
+        wasm_util_destroy( globals->gs.util );
+        XP_MEMSET( &globals->gs, 0, sizeof(globals->gs) );
+    }
+}
+
+static void
+deleteCurGame( Globals* globals )
+{
+    int gameID = globals->gs.gi.gameID; /* remember it */
+    cleanupGame( globals );
+
+    char key[32];
+    formatNameKey( key, sizeof(key), gameID );
+    remove_stored_value( key );
+
+    formatGameKeyInt( key, sizeof(key), gameID );
+    remove_stored_value( key );
+}
+
+static void
+onDeleteConfirmed( void* closure, bool confirmed )
+{
+    if ( confirmed ) {
+        Globals* globals = (Globals*)closure;
+        deleteCurGame( globals );
+        updateScreen( globals, false );
+    }
+}
+
+static void
 onDeviceButton( void* closure, const char* button )
 {
     Globals* globals = (Globals*)closure;
     XP_LOGFF( "(button=%s)", button );
     if ( 0 == strcmp(button, BUTTON_GAME_NEW) ) {
-        loadAndDraw( globals, NULL, NULL, true );
+        callNewGame("Configure your new game", globals);
     } else if ( 0 == strcmp(button, BUTTON_GAME_OPEN) ) {
         const char* msg = "Choose game to open";
         call_pickGame( msg, onGameChosen, globals);
@@ -409,6 +459,11 @@ onDeviceButton( void* closure, const char* button )
         call_get_string( "Rename your game", globals->gs.gameName,
                          onGameRanamed, globals );
     } else if ( 0 == strcmp(button, BUTTON_GAME_DELETE) ) {
+        char msg[256];
+        snprintf( msg, sizeof(msg), "Are you sure you want to delete the game \"%s\"?"
+                  "\nThis action cannot be undone.",
+                  globals->gs.gameName );
+        call_confirm( globals, msg, onDeleteConfirmed, globals );
     }
 }
 
@@ -490,16 +545,6 @@ startGame( Globals* globals, const char* name )
 
     updateScreen( globals, true );
     LOG_RETURN_VOID();
-}
-
-static void
-cleanupGame( Globals* globals )
-{
-    if ( !!globals->gs.util ) {
-        game_dispose( &globals->gs.game, NULL );
-        wasm_util_destroy( globals->gs.util );
-        XP_MEMSET( &globals->gs, 0, sizeof(globals->gs) );
-    }
 }
 
 typedef struct _AskReplaceState {
@@ -588,7 +633,7 @@ loadSavedGame( Globals* globals, const char* key )
     XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(globals->mpool)
                                                 globals->vtMgr );
     char buf[32];
-    formatGameKey( buf, sizeof(buf), key );
+    formatGameKeyStr( buf, sizeof(buf), key );
     dutil_loadStream( globals->dutil, NULL, buf, NULL, stream );
     if ( 0 < stream_getSize( stream ) ) {
         XP_ASSERT( !globals->gs.util );
@@ -653,12 +698,12 @@ nameGame( Globals* globals )
 
 static void
 loadAndDraw( Globals* globals, const NetLaunchInfo* invite,
-             const char* key, bool forceNew )
+             const char* key, NewGameParams* params )
 {
     cleanupGame( globals );
 
     bool haveGame;
-    if ( forceNew ) {
+    if ( !!params ) {
         haveGame = false;
     } else {
         /* First, load any saved game. We need it e.g. to confirm that an incoming
@@ -672,24 +717,25 @@ loadAndDraw( Globals* globals, const NetLaunchInfo* invite,
     }
 
     if ( !haveGame ) {
-        bool p0robot = false;
-        bool p1robot = true;
-        globals->gs.gi.serverRole = SERVER_STANDALONE;
+        globals->gs.gi.serverRole = !!params && !params->isRobotNotRemote
+            ? SERVER_ISSERVER : SERVER_STANDALONE;
+
         globals->gs.gi.phoniesAction = PHONIES_WARN;
-        globals->gs.gi.hintsNotAllowed = false;
+        globals->gs.gi.hintsNotAllowed = !!params && params->hintsNotAllowed || false;
         globals->gs.gi.gameID = 0;
         globals->gs.gi.nPlayers = 2;
         globals->gs.gi.boardSize = 15;
-        globals->gs.gi.players[0].name = copyString( globals->mpool, "Player 1" );
+        globals->gs.gi.players[0].name = copyString( globals->mpool, "Player 1" ); /* FIXME */
         globals->gs.gi.players[0].isLocal = XP_TRUE;
-        globals->gs.gi.players[0].robotIQ = p0robot ? 99 : 0;
+        globals->gs.gi.players[0].robotIQ = 0;
 
         globals->gs.gi.players[1].name = copyString( globals->mpool, "Player 2" );
-        globals->gs.gi.players[1].isLocal = XP_TRUE;
-        globals->gs.gi.players[1].robotIQ = p1robot ? 99 : 0;
+        globals->gs.gi.players[1].isLocal = !!params ? params->isRobotNotRemote : true;
+        XP_LOGFF( "set isLocal[1]: %d", globals->gs.gi.players[1].isLocal );
+        globals->gs.gi.players[1].robotIQ = 99; /* doesn't matter if remote */
 
         globals->gs.util = wasm_util_make( MPPARM(globals->mpool) &globals->gs.gi,
-                                        globals->dutil, globals );
+                                           globals->dutil, globals );
 
         XP_LOGFF( "calling game_makeNewGame()" );
         game_makeNewGame( MPPARM(globals->mpool) NULL,
@@ -1001,8 +1047,10 @@ static void
 updateScreen( Globals* globals, bool doSave )
 {
     SDL_RenderClear( globals->renderer );
-    board_draw( globals->gs.game.board, NULL );
-    wasm_draw_render( globals->draw, globals->renderer );
+    if ( !!globals->gs.game.board ) {
+        board_draw( globals->gs.game.board, NULL );
+        wasm_draw_render( globals->draw, globals->renderer );
+    }
     SDL_RenderPresent( globals->renderer );
 
     updateGameButtons( globals );
@@ -1014,14 +1062,14 @@ updateScreen( Globals* globals, bool doSave )
         game_saveToStream( &globals->gs.game, NULL, &globals->gs.gi,
                            stream, ++globals->gs.saveToken );
 
-        char gidBuf[16];
-        formatGameID( gidBuf, sizeof(gidBuf), globals->gs.gi.gameID );
         char buf[32];
-        formatGameKey( buf, sizeof(buf), gidBuf );
+        formatGameKeyInt( buf, sizeof(buf), globals->gs.gi.gameID );
         dutil_storeStream( globals->dutil, NULL, buf, stream );
         stream_destroy( stream, NULL );
         game_saveSucceeded( &globals->gs.game, NULL, globals->gs.saveToken );
 
+        char gidBuf[16];
+        formatGameID( gidBuf, sizeof(gidBuf), globals->gs.gi.gameID );
         set_stored_value( KEY_LAST, gidBuf );
         XP_LOGFF( "saved KEY_LAST: %s", gidBuf );
     }
@@ -1135,7 +1183,7 @@ initNoReturn( int argc, const char** argv )
 
     const char* lastKey = get_stored_value( KEY_LAST );
     XP_LOGFF( "loaded KEY_LAST: %s", lastKey );
-    loadAndDraw( globals, nlip, lastKey, false );
+    loadAndDraw( globals, nlip, lastKey, NULL );
     if ( !!lastKey ) {
         free( (void*)lastKey );
     }
@@ -1175,6 +1223,17 @@ onDlgButton( AlertProc proc, void* closure, const char* button )
     if ( !!proc ) {
         (*proc)( closure, button );
     }
+}
+
+void
+onNewGame( void* closure, bool opponentIsRobot )
+{
+    Globals* globals = (Globals*)closure;
+    XP_LOGFF( "isRobot: %d", opponentIsRobot );
+
+    NewGameParams ngp = {0};
+    ngp.isRobotNotRemote = opponentIsRobot;
+    loadAndDraw( globals, NULL, NULL, &ngp );
 }
 
 int

@@ -38,3 +38,8 @@ EM_JS(void, set_stored_value, (const char* key, const char* val), {
         var jsVal = UTF8ToString(val);
         var jsString = localStorage.setItem(jsKey, jsVal);
     });
+
+EM_JS(void, remove_stored_value, (const char* key), {
+        var jsKey = UTF8ToString(key);
+        var jsString = localStorage.removeItem(jsKey);
+    });
