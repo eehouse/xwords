@@ -230,8 +230,9 @@ query_proc_notifyMove( void* closure, XP_Bool confirmed )
     if ( confirmed ) {
         WasmUtilCtx* wuctxt = (WasmUtilCtx*)closure;
         Globals* globals = (Globals*)wuctxt->closure;
-        if ( board_commitTurn( globals->game.board, NULL, XP_TRUE, XP_TRUE, NULL ) ) {
-            board_draw( globals->game.board, NULL );
+        if ( board_commitTurn( globals->gs.game.board, NULL,
+                               XP_TRUE, XP_TRUE, NULL ) ) {
+            board_draw( globals->gs.game.board, NULL );
         }
     }
 }
@@ -386,7 +387,7 @@ on_idle( void* closure )
 {
     WasmUtilCtx* wuctxt = (WasmUtilCtx*)closure;
     Globals* globals = (Globals*)wuctxt->closure;
-    return server_do( globals->game.server, NULL );
+    return server_do( globals->gs.game.server, NULL );
 }
 
 static void

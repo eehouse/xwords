@@ -251,7 +251,7 @@ onGameButton( void* closure, const char* button )
         Globals* globals = (Globals*)closure;
 
         XP_Bool draw = XP_FALSE;
-        BoardCtxt* board = globals->game.board;
+        BoardCtxt* board = globals->gs.game.board;
         XP_Bool redo;
 
         if ( 0 == strcmp(button, BUTTON_HINTDOWN ) ) {
@@ -286,7 +286,7 @@ static void
 updateGameButtons( Globals* globals )
 {
     GameStateInfo gsi;
-    game_getState( &globals->game, NULL, &gsi );
+    game_getState( &globals->gs.game, NULL, &gsi );
 
     const char* buttons[MAX_BUTTONS];
     int cur = 0;
@@ -381,27 +381,27 @@ startGame( Globals* globals, const char* name )
 {
     LOG_FUNC();
     BoardDims dims;
-    board_figureLayout( globals->game.board, NULL, &globals->gi,
+    board_figureLayout( globals->gs.game.board, NULL, &globals->gs.gi,
                         WASM_BOARD_LEFT, WASM_HOR_SCORE_TOP, BDWIDTH, BDHEIGHT,
                         110, 150, 200, BDWIDTH-25, BDWIDTH/15, BDHEIGHT/15,
                         XP_FALSE, &dims );
     XP_LOGFF( "calling board_applyLayout" );
-    board_applyLayout( globals->game.board, NULL, &dims );
+    board_applyLayout( globals->gs.game.board, NULL, &dims );
     XP_LOGFF( "calling model_setDictionary" );
-    model_setDictionary( globals->game.model, NULL, globals->dict );
+    model_setDictionary( globals->gs.game.model, NULL, globals->dict );
 
-    if ( SERVER_ISCLIENT == globals->gi.serverRole ) {
+    if ( SERVER_ISCLIENT == globals->gs.gi.serverRole ) {
         if ( !!name ) {
             replaceStringIfDifferent( globals->mpool,
-                                      &globals->gi.players[0].name,
+                                      &globals->gs.gi.players[0].name,
                                       name );
         }
-        server_initClientConnection( globals->game.server, NULL );
+        server_initClientConnection( globals->gs.game.server, NULL );
     }
     
-    (void)server_do( globals->game.server, NULL ); /* assign tiles, etc. */
-    if ( !!globals->game.comms ) {
-        comms_resendAll( globals->game.comms, NULL, COMMS_CONN_MQTT, XP_TRUE );
+    (void)server_do( globals->gs.game.server, NULL ); /* assign tiles, etc. */
+    if ( !!globals->gs.game.comms ) {
+        comms_resendAll( globals->gs.game.comms, NULL, COMMS_CONN_MQTT, XP_TRUE );
     }
 
     updateScreen( globals, true );
@@ -430,22 +430,22 @@ onReplaceConfirmed( void* closure, bool confirmed )
     Globals* globals = ars->globals;
 
     if ( confirmed ) {
-        if ( !!globals->util ) {
-            game_dispose( &globals->game, NULL );
-            wasm_util_destroy( globals->util );
-            globals->util = NULL;
+        if ( !!globals->gs.util ) {
+            game_dispose( &globals->gs.game, NULL );
+            wasm_util_destroy( globals->gs.util );
+            globals->gs.util = NULL;
         }
 
-        gi_disposePlayerInfo( MPPARM(globals->mpool) &globals->gi );
-        XP_MEMSET( &globals->gi, 0, sizeof(globals->gi) );
+        gi_disposePlayerInfo( MPPARM(globals->mpool) &globals->gs.gi );
+        XP_MEMSET( &globals->gs.gi, 0, sizeof(globals->gs.gi) );
 
-        globals->util = wasm_util_make( MPPARM(globals->mpool) &globals->gi,
+        globals->gs.util = wasm_util_make( MPPARM(globals->mpool) &globals->gs.gi,
                                         globals->dutil, globals );
 
         game_makeFromInvite( MPPARM(globals->mpool) NULL, &ars->invite,
-                             &globals->game, &globals->gi,
+                             &globals->gs.game, &globals->gs.gi,
                              globals->dict, NULL,
-                             globals->util, globals->draw,
+                             globals->gs.util, globals->draw,
                              &globals->cp, &globals->procs );
 
         const char* name = get_stored_value( KEY_PLAYER_NAME );
@@ -466,10 +466,10 @@ gameFromInvite( Globals* globals, const NetLaunchInfo* invite )
 {
     bool needsLoad = true;
 
-    if ( NULL != globals->game.model ) {
+    if ( NULL != globals->gs.game.model ) {
         /* there's a current game. Ignore the invitation if it has the same
            gameID. Otherwise ask to replace */
-        if ( globals->gi.gameID == invite->gameID ) {
+        if ( globals->gs.gi.gameID == invite->gameID ) {
             call_alert( "Duplicate invitation: game already open" );
             needsLoad = false;
         } else {
@@ -498,15 +498,15 @@ loadSavedGame( Globals* globals )
                                                 globals->vtMgr );
     dutil_loadStream( globals->dutil, NULL, KEY_GAME, NULL, stream );
     if ( 0 < stream_getSize( stream ) ) {
-        XP_ASSERT( !globals->util );
-        globals->util = wasm_util_make( MPPARM(globals->mpool) &globals->gi,
+        XP_ASSERT( !globals->gs.util );
+        globals->gs.util = wasm_util_make( MPPARM(globals->mpool) &globals->gs.gi,
                                         globals->dutil, globals );
 
         XP_LOGFF( "there's a saved game!!" );
         loaded = game_makeFromStream( MPPARM(globals->mpool) NULL, stream,
-                                      &globals->game, &globals->gi,
+                                      &globals->gs.game, &globals->gs.gi,
                                       globals->dict, NULL,
-                                      globals->util, globals->draw,
+                                      globals->gs.util, globals->draw,
                                       &globals->cp, &globals->procs );
 
         if ( loaded ) {
@@ -521,10 +521,10 @@ static void
 loadAndDraw( Globals* globals, const NetLaunchInfo* invite,
              bool forceNew )
 {
-    if ( !!globals->util ) {
-        game_dispose( &globals->game, NULL );
-        wasm_util_destroy( globals->util );
-        globals->util = NULL;
+    if ( !!globals->gs.util ) {
+        game_dispose( &globals->gs.game, NULL );
+        wasm_util_destroy( globals->gs.util );
+        globals->gs.util = NULL;
     }
 
     bool haveGame;
@@ -543,27 +543,27 @@ loadAndDraw( Globals* globals, const NetLaunchInfo* invite,
     if ( !haveGame ) {
         bool p0robot = getChecked("robot0");
         bool p1robot = getChecked("robot1");
-        globals->gi.serverRole = SERVER_STANDALONE;
-        globals->gi.phoniesAction = PHONIES_WARN;
-        globals->gi.hintsNotAllowed = false;
-        globals->gi.gameID = 0;
-        globals->gi.nPlayers = 2;
-        globals->gi.boardSize = 15;
-        globals->gi.players[0].name = copyString( globals->mpool, "Player 1" );
-        globals->gi.players[0].isLocal = XP_TRUE;
-        globals->gi.players[0].robotIQ = p0robot ? 99 : 0;
+        globals->gs.gi.serverRole = SERVER_STANDALONE;
+        globals->gs.gi.phoniesAction = PHONIES_WARN;
+        globals->gs.gi.hintsNotAllowed = false;
+        globals->gs.gi.gameID = 0;
+        globals->gs.gi.nPlayers = 2;
+        globals->gs.gi.boardSize = 15;
+        globals->gs.gi.players[0].name = copyString( globals->mpool, "Player 1" );
+        globals->gs.gi.players[0].isLocal = XP_TRUE;
+        globals->gs.gi.players[0].robotIQ = p0robot ? 99 : 0;
 
-        globals->gi.players[1].name = copyString( globals->mpool, "Player 2" );
-        globals->gi.players[1].isLocal = XP_TRUE;
-        globals->gi.players[1].robotIQ = p1robot ? 99 : 0;
+        globals->gs.gi.players[1].name = copyString( globals->mpool, "Player 2" );
+        globals->gs.gi.players[1].isLocal = XP_TRUE;
+        globals->gs.gi.players[1].robotIQ = p1robot ? 99 : 0;
 
-        globals->util = wasm_util_make( MPPARM(globals->mpool) &globals->gi,
+        globals->gs.util = wasm_util_make( MPPARM(globals->mpool) &globals->gs.gi,
                                         globals->dutil, globals );
 
         XP_LOGFF( "calling game_makeNewGame()" );
         game_makeNewGame( MPPARM(globals->mpool) NULL,
-                          &globals->game, &globals->gi,
-                          globals->util, globals->draw,
+                          &globals->gs.game, &globals->gs.gi,
+                          globals->gs.util, globals->draw,
                           &globals->cp, &globals->procs );
     }
 
@@ -582,8 +582,8 @@ void
 main_onGameMessage( Globals* globals, XP_U32 gameID,
                     const CommsAddrRec* from, XWStreamCtxt* stream )
 {
-    if ( gameID == globals->gi.gameID ) {
-        XP_Bool draw = game_receiveMessage( &globals->game, NULL, stream, from );
+    if ( gameID == globals->gs.gi.gameID ) {
+        XP_Bool draw = game_receiveMessage( &globals->gs.game, NULL, stream, from );
         if ( draw ) {
             updateScreen( globals, true );
         }
@@ -608,7 +608,7 @@ main_sendOnClose( XWStreamCtxt* stream, XWEnv env, void* closure )
 {
     Globals* globals = (Globals*)closure;
     XP_LOGFF( "called with msg of len %d", stream_getSize(stream) );
-    (void)comms_send( globals->game.comms, NULL, stream );
+    (void)comms_send( globals->gs.game.comms, NULL, stream );
 }
 
 void
@@ -616,7 +616,7 @@ main_playerScoreHeld( Globals* globals, XP_U16 player )
 {
     LastMoveInfo lmi;
     XP_UCHAR buf[128];
-    if ( model_getPlayersLastScore( globals->game.model, NULL, player, &lmi ) ) {
+    if ( model_getPlayersLastScore( globals->gs.game.model, NULL, player, &lmi ) ) {
         switch ( lmi.moveType ) {
         case ASSIGN_TYPE:
             XP_SNPRINTF( buf, sizeof(buf), "Tiles assigned to %s", lmi.names[0] );
@@ -644,7 +644,7 @@ main_showRemaining( Globals* globals )
 {
     XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(globals->mpool)
                                                 globals->vtMgr );
-    board_formatRemainingTiles( globals->game.board, NULL, stream );
+    board_formatRemainingTiles( globals->gs.game.board, NULL, stream );
     stream_putU8( stream, 0 );
     call_alert( (const XP_UCHAR*)stream_getPtr( stream ) );
     stream_destroy( stream, NULL );
@@ -675,7 +675,7 @@ onBlankPicked( void* closure, const char* face )
     }
     XP_FREE( globals->mpool, bps->faces );
 
-    if ( board_setBlankValue( globals->game.board, bps->playerNum,
+    if ( board_setBlankValue( globals->gs.game.board, bps->playerNum,
                               bps->col, bps->row, indx ) ) {
         updateScreen( globals, true );
     }
@@ -707,7 +707,7 @@ main_showGameOver( Globals* globals )
 {
     XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(globals->mpool)
                                                 globals->vtMgr );
-    server_writeFinalScores( globals->game.server, NULL, stream );
+    server_writeFinalScores( globals->gs.game.server, NULL, stream );
     stream_putU8( stream, 0 );
     call_alert( (const XP_UCHAR*)stream_getPtr( stream ) );
     stream_destroy( stream, NULL );
@@ -837,7 +837,7 @@ checkForEvent( Globals* globals )
 {
     XP_Bool handled;
     XP_Bool draw = XP_FALSE;
-    BoardCtxt* board = globals->game.board;
+    BoardCtxt* board = globals->gs.game.board;
 
     SDL_Event event;
     if ( SDL_PollEvent(&event) ) {
@@ -870,7 +870,7 @@ static void
 updateScreen( Globals* globals, bool doSave )
 {
     SDL_RenderClear( globals->renderer );
-    board_draw( globals->game.board, NULL );
+    board_draw( globals->gs.game.board, NULL );
     wasm_draw_render( globals->draw, globals->renderer );
     SDL_RenderPresent( globals->renderer );
 
@@ -880,11 +880,11 @@ updateScreen( Globals* globals, bool doSave )
     if ( doSave ) {
         XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(globals->mpool)
                                                     globals->vtMgr );
-        game_saveToStream( &globals->game, NULL, &globals->gi,
-                           stream, ++globals->saveToken );
+        game_saveToStream( &globals->gs.game, NULL, &globals->gs.gi,
+                           stream, ++globals->gs.saveToken );
         dutil_storeStream( globals->dutil, NULL, KEY_GAME, stream );
         stream_destroy( stream, NULL );
-        game_saveSucceeded( &globals->game, NULL, globals->saveToken );
+        game_saveSucceeded( &globals->gs.game, NULL, globals->gs.saveToken );
     }
 }
 
@@ -1023,8 +1023,8 @@ MQTTConnectedChanged( void* closure, bool connected )
 {
     XP_LOGFF( "connected=%d", connected);
     Globals* globals = (Globals*)closure;
-    if ( connected && !!globals->game.comms ) {
-        comms_resendAll( globals->game.comms, NULL, COMMS_CONN_MQTT, XP_TRUE );
+    if ( connected && !!globals->gs.game.comms ) {
+        comms_resendAll( globals->gs.game.comms, NULL, COMMS_CONN_MQTT, XP_TRUE );
     }
 }
 

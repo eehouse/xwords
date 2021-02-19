@@ -35,21 +35,25 @@ typedef struct _TimerState {
 
 typedef XP_Bool (*IdleProc)(void* closure);
 
+typedef struct _GameState {
+    CurGameInfo gi;
+    XWGame game;
+    XW_UtilCtxt* util;
+    XP_U16 saveToken;
+    char gameKey[64];
+} GameState;
+
 typedef struct _Globals {
     SDL_Window* window;
     SDL_Renderer* renderer;
-    XWGame game;
-    CurGameInfo gi;
+    GameState gs;
     VTableMgr* vtMgr;
     XW_DUtilCtxt* dutil;
-    XW_UtilCtxt* util;
     DrawCtx* draw;
     DictionaryCtxt* dict;
     TransportProcs procs;
     CommonPrefs cp;
     DictMgrCtxt* dictMgr;
-
-    XP_U16 saveToken;
 
 #ifdef MEM_DEBUG
     MemPoolCtx* mpool;
