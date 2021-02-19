@@ -141,6 +141,20 @@ function nbBlankPick(title, buttons, proc, closure) {
 	}
 }
 
+function setDivButtons(divid, buttons, proc, closure) {
+	let parent = document.getElementById(divid);
+	while ( parent.lastElementChild ) {
+		parent.removeChild(parent.lastElementChild);
+	}
+
+	butProc = function(buttonTxt) {
+		Module.ccall('onDlgButton', null, ['number', 'number', 'string'],
+					 [proc, closure, buttonTxt]);
+	}
+
+	parent.appendChild( newButtonDiv( buttons, butProc ) );
+}
+
 function nbGetString(msg, dflt, proc, closure) {
 	let dlg = newDlgWMsg( msg );
 

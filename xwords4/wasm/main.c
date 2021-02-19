@@ -59,6 +59,29 @@
 #define BUTTON_OK "OK"
 #define BUTTON_CANCEL "Cancel"
 
+#define BUTTONS_ID_GAME "game_buttons"
+#define BUTTONS_ID_DEVICE "device_buttons"
+
+#define BUTTON_HINTDOWN "Prev Hint"
+#define BUTTON_HINTUP "Next Hint"
+#define BUTTON_TRADE "Trade"
+#define BUTTON_STOPTRADE "Cancel Trade"
+#define BUTTON_COMMIT "Commit"
+#define BUTTON_FLIP "Flip"
+#define BUTTON_UNDO "Undo"
+#define BUTTON_REDO "Redo"
+#define BUTTON_VALS "Vals"
+#define BUTTON_EXIT "Quit"
+
+#define BUTTON_GAME_NEW "New Game"
+#define BUTTON_GAME_OPEN "Open Game"
+#define BUTTON_GAME_RENAME "Rename Game"
+#define BUTTON_GAME_DELETE "Delete Game"
+
+
+#define MAX_BUTTONS 20          /* not sure what's safe here */
+
+
 typedef void (*AlertProc)(void* closure, const char* button);
 
 /* typedef struct _Buttons { */
@@ -127,6 +150,20 @@ EM_JS(bool, getChecked, (const char* id), {
         let jsid = UTF8ToString(id);
         let box = document.getElementById(jsid);
         return box.checked;
+    });
+
+EM_JS(void, setButtons, (const char* id, const char** bstrs,
+                         AlertProc proc, void* closure), {
+          var buttons = [];
+          for ( let ii = 0; ; ++ii ) {
+              const mem = HEAP32[(bstrs + (ii * 4)) >> 2];
+              if ( 0 == mem ) {
+                  break;
+              }
+              const str = UTF8ToString(mem);
+              buttons.push(str);
+          }
+          setDivButtons(UTF8ToString(id), buttons, proc, closure);
     });
 
 static void updateScreen( Globals* globals, bool doSave );
@@ -200,11 +237,109 @@ send_msg( XWEnv xwe, const XP_U8* buf, XP_U16 len,
 }
 
 static void
-updateTradeButton( Globals* globals )
+doExit( Globals* globals )
 {
-    XP_Bool inTrade = board_inTrade( globals->game.board, NULL );
-    const char* text = inTrade ? "Cancel trade" : "Trade";
-    setButtonText( "trade", text );
+    call_alert( "Control passed to another tab" );
+    XP_MEMSET( globals, 0, sizeof(*globals) ); /* stop everything :-) */
+    // emscripten_cancel_main_loop(); <-- does nothing
+}
+
+static void
+onGameButton( void* closure, const char* button )
+{
+    if ( !!button ) {
+        Globals* globals = (Globals*)closure;
+
+        XP_Bool draw = XP_FALSE;
+        BoardCtxt* board = globals->game.board;
+        XP_Bool redo;
+
+        if ( 0 == strcmp(button, BUTTON_HINTDOWN ) ) {
+            draw = board_requestHint( board, NULL, XP_TRUE, &redo );
+        } else if ( 0 == strcmp(button, BUTTON_HINTUP) ) {
+            draw = board_requestHint( board, NULL, XP_FALSE, &redo );
+        } else if ( 0 == strcmp(button, BUTTON_TRADE ) ) {
+            draw = board_beginTrade( board, NULL );
+        } else if ( 0 == strcmp(button, BUTTON_STOPTRADE ) ) {
+            draw = board_endTrade( board );
+        } else if ( 0 == strcmp(button, BUTTON_COMMIT) ) {
+            draw = board_commitTurn( board, NULL, XP_FALSE, XP_FALSE, NULL );
+        } else if ( 0 == strcmp(button, BUTTON_FLIP) ) {
+            draw = board_flip( board );
+        } else if ( 0 == strcmp(button, BUTTON_REDO) ) {
+            draw = board_redoReplacedTiles( board, NULL )
+                || board_replaceTiles( board, NULL );
+        } else if ( 0 == strcmp(button, BUTTON_VALS) ) {
+            globals->cp.tvType = (globals->cp.tvType + 1) % TVT_N_ENTRIES;
+            draw = board_prefsChanged( board, &globals->cp );
+        } else if ( 0 == strcmp(button, BUTTON_EXIT) ) {
+            doExit( globals );
+        }
+
+        if ( draw ) {
+            updateScreen( globals, true );
+        }
+    }
+}
+
+static void
+updateGameButtons( Globals* globals )
+{
+    GameStateInfo gsi;
+    game_getState( &globals->game, NULL, &gsi );
+
+    const char* buttons[MAX_BUTTONS];
+    int cur = 0;
+
+    if ( gsi.canHint ) {
+        buttons[cur++] = BUTTON_HINTDOWN;
+        buttons[cur++] = BUTTON_HINTUP;
+    }
+
+    if ( gsi.inTrade ) {
+        buttons[cur++] = BUTTON_STOPTRADE;
+    } else if ( gsi.canTrade ) {
+        buttons[cur++] = BUTTON_TRADE;
+    }
+    buttons[cur++] = BUTTON_COMMIT;
+    buttons[cur++] = BUTTON_FLIP;
+
+    if ( gsi.canUndo ) {
+        buttons[cur++] = BUTTON_UNDO;
+    } else if ( gsi.canRedo ) {
+        buttons[cur++] = BUTTON_REDO;
+    }
+
+    buttons[cur++] = BUTTON_VALS;
+
+    buttons[cur++] = NULL;
+
+    setButtons( BUTTONS_ID_GAME, buttons, onGameButton, globals );
+}
+
+static void
+onDeviceButton( void* closure, const char* button )
+{
+    XP_LOGFF( "(button=%s)", button );
+    if ( 0 == strcmp(button, BUTTON_GAME_NEW) ) {
+    } else if ( 0 == strcmp(button, BUTTON_GAME_OPEN) ) {
+    } else if ( 0 == strcmp(button, BUTTON_GAME_RENAME ) ) {
+    } else if ( 0 == strcmp(button, BUTTON_GAME_DELETE) ) {
+    }
+}
+
+static void
+updateDeviceButtons( Globals* globals )
+{
+    const char* buttons[MAX_BUTTONS];
+    int cur = 0;
+    buttons[cur++] = BUTTON_GAME_NEW;
+    buttons[cur++] = BUTTON_GAME_OPEN;
+    buttons[cur++] = BUTTON_GAME_RENAME;
+    buttons[cur++] = BUTTON_GAME_DELETE;
+    buttons[cur++] = NULL;
+
+    setButtons( BUTTONS_ID_DEVICE, buttons, onDeviceButton, globals );
 }
 
 static void
@@ -377,7 +512,6 @@ loadSavedGame( Globals* globals )
         if ( loaded ) {
             updateScreen( globals, false );
         }
-        updateTradeButton( globals );
     }
     stream_destroy( stream, NULL );
     return loaded;
@@ -411,6 +545,7 @@ loadAndDraw( Globals* globals, const NetLaunchInfo* invite,
         bool p1robot = getChecked("robot1");
         globals->gi.serverRole = SERVER_STANDALONE;
         globals->gi.phoniesAction = PHONIES_WARN;
+        globals->gi.hintsNotAllowed = false;
         globals->gi.gameID = 0;
         globals->gi.nPlayers = 2;
         globals->gi.boardSize = 15;
@@ -646,7 +781,6 @@ onQueryCalled( void* closure, const char* button )
     QueryState* qs = (QueryState*)closure;
     bool ok = 0 == strcmp( button, BUTTON_OK );
     (*qs->proc)( qs->closure, ok );
-    updateTradeButton( qs->globals );
     XP_FREE( qs->globals->mpool, qs );
 }
 
@@ -740,6 +874,8 @@ updateScreen( Globals* globals, bool doSave )
     wasm_draw_render( globals->draw, globals->renderer );
     SDL_RenderPresent( globals->renderer );
 
+    updateGameButtons( globals );
+
     /* Let's save state here too, though likely too often */
     if ( doSave ) {
         XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(globals->mpool)
@@ -753,54 +889,10 @@ updateScreen( Globals* globals, bool doSave )
 }
 
 static void
-doExit( Globals* globals )
-{
-    call_alert( "Control passed to another tab" );
-    XP_MEMSET( globals, 0, sizeof(*globals) ); /* stop everything :-) */
-    // emscripten_cancel_main_loop(); <-- does nothing
-}
-
-static void
 looper( void* closure )
 {
     Globals* globals = (Globals*)closure;
     if ( checkForEvent( globals ) ) {
-        updateScreen( globals, true );
-    }
-}
-
-void
-button( void* closure, const char* msg )
-{
-    XP_Bool draw = XP_FALSE;
-    Globals* globals = (Globals*)closure;
-    BoardCtxt* board = globals->game.board;
-    XP_Bool redo;
-
-    if ( 0 == strcmp(msg, "hintdown") ) {
-        draw = board_requestHint( board, NULL, XP_TRUE, &redo );
-    } else if ( 0 == strcmp(msg, "hintup") ) {
-        draw = board_requestHint( board, NULL, XP_FALSE, &redo );
-    } else if ( 0 == strcmp(msg, "trade") ) {
-        draw = board_inTrade( board, NULL )
-            ? board_endTrade( board )
-            : board_beginTrade( board, NULL );
-        updateTradeButton( globals );
-    } else if ( 0 == strcmp(msg, "commit") ) {
-        draw = board_commitTurn( board, NULL, XP_FALSE, XP_FALSE, NULL );
-    } else if ( 0 == strcmp(msg, "flip") ) {
-        draw = board_flip( board );
-    } else if ( 0 == strcmp(msg, "redo") ) {
-        draw = board_redoReplacedTiles( board, NULL )
-            || board_replaceTiles( board, NULL );
-    } else if ( 0 == strcmp(msg, "vals") ) {
-        globals->cp.tvType = (globals->cp.tvType + 1) % TVT_N_ENTRIES;
-        draw = board_prefsChanged( board, &globals->cp );
-    } else if ( 0 == strcmp(msg, "exit") ) {
-        doExit( globals );
-    }
-
-    if ( draw ) {
         updateScreen( globals, true );
     }
 }
@@ -903,6 +995,8 @@ initNoReturn( int argc, const char** argv )
     initDeviceGlobals( globals );
 
     loadAndDraw( globals, nlip, false );
+
+    updateDeviceButtons( globals );
 
     emscripten_set_main_loop_arg( looper, globals, -1, 1 );
 }

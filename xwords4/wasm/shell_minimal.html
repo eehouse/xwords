@@ -85,28 +85,10 @@
     <div class="emscripten_border">
       <canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()" tabindex=-1></canvas>
     </div>
-	<div class='buttonRow'>
-		<button id="hintdown", onclick="callButton(this);">Prev Hint</button>
-		<button id="hintup", onclick="callButton(this);">Next Hint</button>
-	    <button id="trade", onclick="callButton(this);">Trade</button>
-		<button id="commit", onclick="callButton(this);">Commit</button>
-		<button id="flip", onclick="callButton(this);">Flip</button>
-		<button id="redo", onclick="callButton(this);">Un/Redo</button>
-		<button id="vals", onclick="callButton(this);">Vals</button>
-	</div>
-	<div>
-		<span>Player 1</span>
-		<input type="checkbox" id="robot0">Is Robot</input>
-	</div>
-	<div>
-		<span>Player 2</span>
-		<input type="checkbox" id="robot1">Is Robot</input>
-	</div>
-	<div>
-		<button type="button" onclick="callNewGame();">New Local Game</button>
-	</div>
-	<hr/>
-
+	<div class='buttonRow' id="game_buttons"></div>
+    <hr/>
+    <div class='buttonRow' id="device_buttons"></div>
+    <hr/>
     <div><span>MQTT Dev ID:</span><span id="mqtt_span"></span></div>
     <div><span>MQTT Status:</span><span id="mqtt_status">Unconnected</span></div>
 	<div>
