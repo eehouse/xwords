@@ -52,7 +52,7 @@
 #define BDWIDTH WINDOW_WIDTH
 #define BDHEIGHT WINDOW_HEIGHT
 
-#define KEY_GAME "the_game"
+#define KEY_LAST "cur_game"
 #define KEY_PLAYER_NAME "player_name"
 #define DICTNAME "assets_dir/CollegeEng_2to8.xwd"
 
@@ -78,6 +78,8 @@
 #define BUTTON_GAME_RENAME "Rename Game"
 #define BUTTON_GAME_DELETE "Delete Game"
 
+static void loadAndDraw( Globals* globals, const NetLaunchInfo* invite,
+                         const char* key, bool forceNew );
 
 #define MAX_BUTTONS 20          /* not sure what's safe here */
 
@@ -104,7 +106,7 @@ EM_JS(void, call_dialog, (const char* str, const char** but_strs,
       } );
 
 EM_JS(void, call_pickBlank, (const char* msg, const char** strs, int nStrs,
-                              AlertProc proc, void* closure), {
+                             AlertProc proc, void* closure), {
           var buttons = [];
           for ( let ii = 0; ii < nStrs; ++ii ) {
               const mem = HEAP32[(strs + (ii * 4)) >> 2];
@@ -112,7 +114,19 @@ EM_JS(void, call_pickBlank, (const char* msg, const char** strs, int nStrs,
               buttons.push(str);
           }
           nbBlankPick(UTF8ToString(msg), buttons, proc, closure);
-       } );
+      } );
+
+EM_JS(void, call_pickGame, (const char* msg, AlertProc proc, void* closure), {
+        var buttons = [];
+        for (var ii = 0; ii < localStorage.length; ++ii ) {
+            var key = localStorage.key(ii);
+            if ( key.startsWith('game_key_') ) {
+                buttons.push(key);
+            }
+        }
+
+        nbBlankPick(UTF8ToString(msg), buttons, proc, closure);
+    } );
 
 EM_JS(void, call_get_string, (const char* msg, const char* dflt,
                               AlertProc proc, void* closure), {
@@ -144,12 +158,6 @@ EM_JS(void, setButtonText, (const char* id, const char* text), {
         let jsid = UTF8ToString(id);
         let jstext = UTF8ToString(text);
         document.getElementById(jsid).textContent = jstext;
-    });
-
-EM_JS(bool, getChecked, (const char* id), {
-        let jsid = UTF8ToString(id);
-        let box = document.getElementById(jsid);
-        return box.checked;
     });
 
 EM_JS(void, setButtons, (const char* id, const char** bstrs,
@@ -318,11 +326,22 @@ updateGameButtons( Globals* globals )
 }
 
 static void
+onGameChosen( void* closure, const char* key )
+{
+    Globals* globals = (Globals*)closure;
+    loadAndDraw( globals, NULL, key, false );
+}
+
+static void
 onDeviceButton( void* closure, const char* button )
 {
+    Globals* globals = (Globals*)closure;
     XP_LOGFF( "(button=%s)", button );
     if ( 0 == strcmp(button, BUTTON_GAME_NEW) ) {
+        loadAndDraw( globals, NULL, NULL, true );
     } else if ( 0 == strcmp(button, BUTTON_GAME_OPEN) ) {
+        const char* msg = "Choose game to open";
+        call_pickGame( msg, onGameChosen, globals);
     } else if ( 0 == strcmp(button, BUTTON_GAME_RENAME ) ) {
     } else if ( 0 == strcmp(button, BUTTON_GAME_DELETE) ) {
     }
@@ -433,7 +452,7 @@ onReplaceConfirmed( void* closure, bool confirmed )
         if ( !!globals->gs.util ) {
             game_dispose( &globals->gs.game, NULL );
             wasm_util_destroy( globals->gs.util );
-            globals->gs.util = NULL;
+            XP_MEMSET( &globals->gs, 0, sizeof(globals->gs) );
         }
 
         gi_disposePlayerInfo( MPPARM(globals->mpool) &globals->gs.gi );
@@ -491,12 +510,12 @@ gameFromInvite( Globals* globals, const NetLaunchInfo* invite )
 }
 
 static bool
-loadSavedGame( Globals* globals )
+loadSavedGame( Globals* globals, const char* key )
 {
     bool loaded = false;
     XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(globals->mpool)
                                                 globals->vtMgr );
-    dutil_loadStream( globals->dutil, NULL, KEY_GAME, NULL, stream );
+    dutil_loadStream( globals->dutil, NULL, key, NULL, stream );
     if ( 0 < stream_getSize( stream ) ) {
         XP_ASSERT( !globals->gs.util );
         globals->gs.util = wasm_util_make( MPPARM(globals->mpool) &globals->gs.gi,
@@ -510,6 +529,7 @@ loadSavedGame( Globals* globals )
                                       &globals->cp, &globals->procs );
 
         if ( loaded ) {
+            strcpy( globals->gs.gameKey, key );
             updateScreen( globals, false );
         }
     }
@@ -518,8 +538,16 @@ loadSavedGame( Globals* globals )
 }
 
 static void
+makeGameKey( Globals* globals )
+{
+    snprintf( globals->gs.gameKey, sizeof(globals->gs.gameKey),
+              "game_key_%X", globals->gs.gi.gameID );
+    XP_LOGFF( "made key: %s", globals->gs.gameKey );
+}
+
+static void
 loadAndDraw( Globals* globals, const NetLaunchInfo* invite,
-             bool forceNew )
+             const char* key, bool forceNew )
 {
     if ( !!globals->gs.util ) {
         game_dispose( &globals->gs.game, NULL );
@@ -533,16 +561,17 @@ loadAndDraw( Globals* globals, const NetLaunchInfo* invite,
     } else {
         /* First, load any saved game. We need it e.g. to confirm that an incoming
            invite is a dup and should be dropped. */
-        haveGame = loadSavedGame( globals );
-
+        if ( !!key ) {
+            haveGame = loadSavedGame( globals, key );
+        }
         if ( !!invite ) {
             haveGame = gameFromInvite( globals, invite );
         }
     }
 
     if ( !haveGame ) {
-        bool p0robot = getChecked("robot0");
-        bool p1robot = getChecked("robot1");
+        bool p0robot = false;
+        bool p1robot = true;
         globals->gs.gi.serverRole = SERVER_STANDALONE;
         globals->gs.gi.phoniesAction = PHONIES_WARN;
         globals->gs.gi.hintsNotAllowed = false;
@@ -566,7 +595,7 @@ loadAndDraw( Globals* globals, const NetLaunchInfo* invite,
                           globals->gs.util, globals->draw,
                           &globals->cp, &globals->procs );
     }
-
+    makeGameKey( globals );
     startGame( globals, NULL );
 }
 
@@ -882,9 +911,10 @@ updateScreen( Globals* globals, bool doSave )
                                                     globals->vtMgr );
         game_saveToStream( &globals->gs.game, NULL, &globals->gs.gi,
                            stream, ++globals->gs.saveToken );
-        dutil_storeStream( globals->dutil, NULL, KEY_GAME, stream );
+        dutil_storeStream( globals->dutil, NULL, globals->gs.gameKey, stream );
         stream_destroy( stream, NULL );
         game_saveSucceeded( &globals->gs.game, NULL, globals->gs.saveToken );
+        set_stored_value( KEY_LAST, globals->gs.gameKey );
     }
 }
 
@@ -994,28 +1024,15 @@ initNoReturn( int argc, const char** argv )
 
     initDeviceGlobals( globals );
 
-    loadAndDraw( globals, nlip, false );
+    const char* lastKey = get_stored_value( KEY_LAST );
+    loadAndDraw( globals, nlip, lastKey, false );
+    if ( !!lastKey ) {
+        free( (void*)lastKey );
+    }
 
     updateDeviceButtons( globals );
 
     emscripten_set_main_loop_arg( looper, globals, -1, 1 );
-}
-
-static void
-onNewgameResponse( void* closure, bool confirmed )
-{
-    Globals* globals = (Globals*)closure;
-    if ( confirmed ) {
-        loadAndDraw( globals, NULL, true );
-    }
-}
-
-void
-newgame( void* closure )
-{
-    Globals* globals = (Globals*)closure;
-    const char* query = "Replace the current game?";
-    call_confirm( globals, query, onNewgameResponse, globals );
 }
 
 void
