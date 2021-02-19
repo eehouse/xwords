@@ -54,7 +54,11 @@
 
 #define KEY_LAST "cur_game"
 #define KEY_PLAYER_NAME "player_name"
+#define KEY_GAME_PREFIX "key_data_"
+#define KEY_NAME_PREFIX "key_name_"
+
 #define DICTNAME "assets_dir/CollegeEng_2to8.xwd"
+
 
 #define BUTTON_OK "OK"
 #define BUTTON_CANCEL "Cancel"
@@ -77,11 +81,15 @@
 #define BUTTON_GAME_OPEN "Open Game"
 #define BUTTON_GAME_RENAME "Rename Game"
 #define BUTTON_GAME_DELETE "Delete Game"
+#define MAX_BUTTONS 20          /* not sure what's safe here */
+
 
 static void loadAndDraw( Globals* globals, const NetLaunchInfo* invite,
                          const char* key, bool forceNew );
-
-#define MAX_BUTTONS 20          /* not sure what's safe here */
+static void nameGame( Globals* globals );
+static void ensureName( Globals* globals );
+static void loadName( Globals* globals );
+static void saveName( Globals* globals );
 
 
 typedef void (*AlertProc)(void* closure, const char* button);
@@ -117,15 +125,25 @@ EM_JS(void, call_pickBlank, (const char* msg, const char** strs, int nStrs,
       } );
 
 EM_JS(void, call_pickGame, (const char* msg, AlertProc proc, void* closure), {
-        var buttons = [];
+        var map = {};
         for (var ii = 0; ii < localStorage.length; ++ii ) {
             var key = localStorage.key(ii);
-            if ( key.startsWith('game_key_') ) {
-                buttons.push(key);
+            if ( key.startsWith('key_data_') ) { // KEY_GAME_PREFIX
+                /* This is a legit stored game. Get the gameID part as key,
+                   mapped to name if known. */
+                let arr = key.split('_');
+                let id = arr[arr.length - 1];
+
+                let name = localStorage.getItem('key_name_' + id);
+                if (! name ) {
+                    name = key;
+                }
+                map[id] = name;
+                console.log('added ' + id + ' -> ' + name);
             }
         }
 
-        nbBlankPick(UTF8ToString(msg), buttons, proc, closure);
+        nbGamePick(UTF8ToString(msg), map, proc, closure);
     } );
 
 EM_JS(void, call_get_string, (const char* msg, const char* dflt,
@@ -144,6 +162,19 @@ EM_JS(bool, call_mqttSend, (const char* topic, const uint8_t* ptr, int len), {
         let buffer = new Uint8Array(Module.HEAPU8.buffer, ptr, len);
         return mqttSend(topStr, buffer);
 });
+
+EM_JS(int, getNextGameNo, (void), {
+        let jskey = UTF8ToString('next_gameno_2');
+        let val = localStorage.getItem(jskey);
+        if (val) {
+            val = parseInt(val);
+        } else {
+            val = 0;
+        }
+        ++val;
+        localStorage.setItem(jskey, val);
+        return val;
+    });
 
 typedef void (*JSCallback)(void* closure);
 
@@ -253,6 +284,24 @@ doExit( Globals* globals )
 }
 
 static void
+formatGameID( char* buf, size_t len, int gameID )
+{
+    snprintf( buf, len, "%X", gameID );
+}
+
+static void
+formatGameKey( char* buf, size_t len, const char* gameID )
+{
+    snprintf( buf, len, KEY_GAME_PREFIX "%s", gameID );
+}
+
+static void
+formatNameKey( char* buf, size_t len, int gameID )
+{
+    snprintf( buf, len, KEY_NAME_PREFIX "%X", gameID );
+}
+
+static void
 onGameButton( void* closure, const char* button )
 {
     if ( !!button ) {
@@ -333,6 +382,19 @@ onGameChosen( void* closure, const char* key )
 }
 
 static void
+onGameRanamed( void* closure, const char* newName )
+{
+    if ( !!newName ) {
+        Globals* globals = (Globals*)closure;
+        snprintf( globals->gs.gameName, sizeof(globals->gs.gameName) - 1,
+                  "%s", newName );
+        // be safe
+        globals->gs.gameName[sizeof(globals->gs.gameName)-1] = '\0';
+        saveName( globals );
+    }
+}
+
+static void
 onDeviceButton( void* closure, const char* button )
 {
     Globals* globals = (Globals*)closure;
@@ -343,6 +405,9 @@ onDeviceButton( void* closure, const char* button )
         const char* msg = "Choose game to open";
         call_pickGame( msg, onGameChosen, globals);
     } else if ( 0 == strcmp(button, BUTTON_GAME_RENAME ) ) {
+        ensureName( globals );
+        call_get_string( "Rename your game", globals->gs.gameName,
+                         onGameRanamed, globals );
     } else if ( 0 == strcmp(button, BUTTON_GAME_DELETE) ) {
     }
 }
@@ -427,6 +492,16 @@ startGame( Globals* globals, const char* name )
     LOG_RETURN_VOID();
 }
 
+static void
+cleanupGame( Globals* globals )
+{
+    if ( !!globals->gs.util ) {
+        game_dispose( &globals->gs.game, NULL );
+        wasm_util_destroy( globals->gs.util );
+        XP_MEMSET( &globals->gs, 0, sizeof(globals->gs) );
+    }
+}
+
 typedef struct _AskReplaceState {
     Globals* globals;
     NetLaunchInfo invite;
@@ -449,11 +524,7 @@ onReplaceConfirmed( void* closure, bool confirmed )
     Globals* globals = ars->globals;
 
     if ( confirmed ) {
-        if ( !!globals->gs.util ) {
-            game_dispose( &globals->gs.game, NULL );
-            wasm_util_destroy( globals->gs.util );
-            XP_MEMSET( &globals->gs, 0, sizeof(globals->gs) );
-        }
+        cleanupGame( globals );
 
         gi_disposePlayerInfo( MPPARM(globals->mpool) &globals->gs.gi );
         XP_MEMSET( &globals->gs.gi, 0, sizeof(globals->gs.gi) );
@@ -512,10 +583,13 @@ gameFromInvite( Globals* globals, const NetLaunchInfo* invite )
 static bool
 loadSavedGame( Globals* globals, const char* key )
 {
+    XP_LOGFF( "key: %s", key );
     bool loaded = false;
     XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(globals->mpool)
                                                 globals->vtMgr );
-    dutil_loadStream( globals->dutil, NULL, key, NULL, stream );
+    char buf[32];
+    formatGameKey( buf, sizeof(buf), key );
+    dutil_loadStream( globals->dutil, NULL, buf, NULL, stream );
     if ( 0 < stream_getSize( stream ) ) {
         XP_ASSERT( !globals->gs.util );
         globals->gs.util = wasm_util_make( MPPARM(globals->mpool) &globals->gs.gi,
@@ -529,7 +603,8 @@ loadSavedGame( Globals* globals, const char* key )
                                       &globals->cp, &globals->procs );
 
         if ( loaded ) {
-            strcpy( globals->gs.gameKey, key );
+            loadName( globals );
+            ensureName( globals );
             updateScreen( globals, false );
         }
     }
@@ -538,22 +613,49 @@ loadSavedGame( Globals* globals, const char* key )
 }
 
 static void
-makeGameKey( Globals* globals )
+saveName( Globals* globals )
 {
-    snprintf( globals->gs.gameKey, sizeof(globals->gs.gameKey),
-              "game_key_%X", globals->gs.gi.gameID );
-    XP_LOGFF( "made key: %s", globals->gs.gameKey );
+    char key[32];
+    formatNameKey( key, sizeof(key), globals->gs.gi.gameID );
+    set_stored_value( key, globals->gs.gameName );
+    XP_LOGFF( "wrote %s => %s", key, globals->gs.gameName );
+}
+
+static void
+loadName( Globals* globals )
+{
+    char key[32];
+    formatNameKey( key, sizeof(key), globals->gs.gi.gameID );
+    const char* ptr = get_stored_value( key );
+    if ( !!ptr ) {
+        snprintf( globals->gs.gameName, sizeof(globals->gs.gameName),
+                  "%s", ptr );
+        free( (void*)ptr );
+    }
+}
+
+static void
+ensureName( Globals* globals )
+{
+    if ( '\0' == globals->gs.gameName[0] ) {
+        nameGame( globals );
+        saveName( globals );
+    }
+}
+
+static void
+nameGame( Globals* globals )
+{
+    snprintf( globals->gs.gameName, sizeof(globals->gs.gameName),
+              "Game %d", getNextGameNo() );
+    XP_LOGFF( "named game: %s", globals->gs.gameName );
 }
 
 static void
 loadAndDraw( Globals* globals, const NetLaunchInfo* invite,
              const char* key, bool forceNew )
 {
-    if ( !!globals->gs.util ) {
-        game_dispose( &globals->gs.game, NULL );
-        wasm_util_destroy( globals->gs.util );
-        globals->gs.util = NULL;
-    }
+    cleanupGame( globals );
 
     bool haveGame;
     if ( forceNew ) {
@@ -594,8 +696,8 @@ loadAndDraw( Globals* globals, const NetLaunchInfo* invite,
                           &globals->gs.game, &globals->gs.gi,
                           globals->gs.util, globals->draw,
                           &globals->cp, &globals->procs );
+        nameGame( globals );
     }
-    makeGameKey( globals );
     startGame( globals, NULL );
 }
 
@@ -911,10 +1013,17 @@ updateScreen( Globals* globals, bool doSave )
                                                     globals->vtMgr );
         game_saveToStream( &globals->gs.game, NULL, &globals->gs.gi,
                            stream, ++globals->gs.saveToken );
-        dutil_storeStream( globals->dutil, NULL, globals->gs.gameKey, stream );
+
+        char gidBuf[16];
+        formatGameID( gidBuf, sizeof(gidBuf), globals->gs.gi.gameID );
+        char buf[32];
+        formatGameKey( buf, sizeof(buf), gidBuf );
+        dutil_storeStream( globals->dutil, NULL, buf, stream );
         stream_destroy( stream, NULL );
         game_saveSucceeded( &globals->gs.game, NULL, globals->gs.saveToken );
-        set_stored_value( KEY_LAST, globals->gs.gameKey );
+
+        set_stored_value( KEY_LAST, gidBuf );
+        XP_LOGFF( "saved KEY_LAST: %s", gidBuf );
     }
 }
 
@@ -1025,6 +1134,7 @@ initNoReturn( int argc, const char** argv )
     initDeviceGlobals( globals );
 
     const char* lastKey = get_stored_value( KEY_LAST );
+    XP_LOGFF( "loaded KEY_LAST: %s", lastKey );
     loadAndDraw( globals, nlip, lastKey, false );
     if ( !!lastKey ) {
         free( (void*)lastKey );

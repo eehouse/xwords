@@ -141,6 +141,26 @@ function nbBlankPick(title, buttons, proc, closure) {
 	}
 }
 
+function nbGamePick(title, gameMap, proc, closure) {
+	let dlg = newDlgWMsg( title );
+
+	buttons = [];
+	revMap = {}
+	Object.keys(gameMap).forEach( function(key) {
+		let val = gameMap[key]
+		buttons.push(val);
+		revMap[val] = key;
+	});
+	
+	butProc = function(buttonTxt) {
+		Module.ccall('onDlgButton', null, ['number', 'number', 'string'],
+		 			 [proc, closure, revMap[buttonTxt]]);
+		dlg.parentNode.removeChild(dlg);
+	}
+
+	dlg.appendChild( newButtonDiv( buttons, butProc ) );
+}
+
 function setDivButtons(divid, buttons, proc, closure) {
 	let parent = document.getElementById(divid);
 	while ( parent.lastElementChild ) {

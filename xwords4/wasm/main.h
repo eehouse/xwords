@@ -40,7 +40,7 @@ typedef struct _GameState {
     XWGame game;
     XW_UtilCtxt* util;
     XP_U16 saveToken;
-    char gameKey[64];
+    char gameName[32];
 } GameState;
 
 typedef struct _Globals {
