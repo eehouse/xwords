@@ -2,7 +2,7 @@
 
 set -e -u
 
-VARIANT=Xw4NoSMS
+VARIANT=Xw4Foss
 
 usage () {
     echo "usage: $(basename $0) [--tag tagname | --branch branchname] \\"
