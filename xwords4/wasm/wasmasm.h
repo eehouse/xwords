@@ -20,8 +20,11 @@
 #ifndef _WASMASM_H_
 #define _WASMASM_H_
 
+#include <stdbool.h>
+
 const char* get_stored_value( const char* key );
 void set_stored_value(const char* key, const char* val);
 void remove_stored_value(const char* key);
+bool have_stored_value(const char* key);
 
 #endif

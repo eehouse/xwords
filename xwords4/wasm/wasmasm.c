@@ -43,3 +43,10 @@ EM_JS(void, remove_stored_value, (const char* key), {
         var jsKey = UTF8ToString(key);
         var jsString = localStorage.removeItem(jsKey);
     });
+
+EM_JS(bool, have_stored_value, (const char* key), {
+        let jsKey = UTF8ToString(key);
+        let jsVal = localStorage.getItem(jsKey);
+        let result = null !== jsVal;
+        return result;
+    });

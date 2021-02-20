@@ -818,18 +818,24 @@ main_onGameMessage( Globals* globals, XP_U32 gameID,
             updateScreen( globals, true );
         }
     } else {
-        call_alert( "dropping packet for wrong game" );
+        char key[32];
+        formatGameKeyInt( key, sizeof(key), gameID );
+        if ( have_stored_value( key ) ) {
+            call_alert( "Dropping packet for closed game" );
+        } else {
+            XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(globals->mpool)
+                                                        globals->vtMgr );
+            dvc_makeMQTTNoSuchGame( globals->dutil, NULL, stream, gameID );
 
-        XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(globals->mpool)
-                                                    globals->vtMgr );
-        dvc_makeMQTTNoSuchGame( globals->dutil, NULL, stream, gameID );
+            XP_UCHAR topic[64];
+            formatMQTTTopic( &from->u.mqtt.devID, topic, sizeof(topic) );
 
-        XP_UCHAR topic[64];
-        formatMQTTTopic( &from->u.mqtt.devID, topic, sizeof(topic) );
+            XP_U16 streamLen = stream_getSize( stream );
+            call_mqttSend( topic, stream_getPtr( stream ), streamLen );
+            stream_destroy( stream, NULL );
 
-        XP_U16 streamLen = stream_getSize( stream );
-        call_mqttSend( topic, stream_getPtr( stream ), streamLen );
-        stream_destroy( stream, NULL );
+            call_alert( "Dropping packet for non-existant game" );
+        }
     }
 }
 
