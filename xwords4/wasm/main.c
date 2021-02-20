@@ -530,7 +530,7 @@ initDeviceGlobals( Globals* globals )
 {
     globals->cp.showBoardArrow = XP_TRUE;
     globals->cp.allowPeek = XP_TRUE;
-    // globals->cp.showRobotScores = XP_TRUE;
+    globals->cp.showRobotScores = XP_TRUE;
     globals->cp.sortNewTiles = XP_TRUE;
     globals->cp.showColors = XP_TRUE;
 
@@ -619,13 +619,14 @@ onReplaceConfirmed( void* closure, bool confirmed )
         XP_MEMSET( &globals->gs.gi, 0, sizeof(globals->gs.gi) );
 
         globals->gs.util = wasm_util_make( MPPARM(globals->mpool) &globals->gs.gi,
-                                        globals->dutil, globals );
+                                           globals->dutil, globals );
 
         game_makeFromInvite( MPPARM(globals->mpool) NULL, &ars->invite,
                              &globals->gs.game, &globals->gs.gi,
                              globals->dict, NULL,
                              globals->gs.util, globals->draw,
                              &globals->cp, &globals->procs );
+        ensureName( globals );
 
         const char* name = get_stored_value( KEY_PLAYER_NAME );
         if ( NULL != name ) {
@@ -682,7 +683,7 @@ loadSavedGame( Globals* globals, const char* key )
     if ( 0 < stream_getSize( stream ) ) {
         XP_ASSERT( !globals->gs.util );
         globals->gs.util = wasm_util_make( MPPARM(globals->mpool) &globals->gs.gi,
-                                        globals->dutil, globals );
+                                           globals->dutil, globals );
 
         XP_LOGFF( "there's a saved game!!" );
         loaded = game_makeFromStream( MPPARM(globals->mpool) NULL, stream,
@@ -789,7 +790,7 @@ loadAndDraw( Globals* globals, const NetLaunchInfo* invite,
                           &globals->gs.game, &globals->gs.gi,
                           globals->gs.util, globals->draw,
                           &globals->cp, &globals->procs );
-        nameGame( globals );
+        ensureName( globals );
         if ( !!globals->gs.game.comms ) {
             CommsAddrRec addr = {0};
             makeSelfAddr( globals, &addr );
@@ -817,7 +818,7 @@ main_onGameMessage( Globals* globals, XP_U32 gameID,
             updateScreen( globals, true );
         }
     } else {
-        XP_LOGFF( "dropping packet for wrong game" );
+        call_alert( "dropping packet for wrong game" );
 
         XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(globals->mpool)
                                                     globals->vtMgr );
@@ -1125,6 +1126,12 @@ updateScreen( Globals* globals, bool doSave )
         set_stored_value( KEY_LAST, gidBuf );
         XP_LOGFF( "saved KEY_LAST: %s", gidBuf );
     }
+}
+
+void
+main_updateScreen( Globals* globals )
+{
+    updateScreen( globals, true );
 }
 
 static void

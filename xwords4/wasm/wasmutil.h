@@ -23,7 +23,7 @@
 #include "dutil.h"
 
 XW_UtilCtxt* wasm_util_make( MPFORMAL CurGameInfo* gi, XW_DUtilCtxt* dutil,
-                             void* closure );
+                             Globals* closure );
 void wasm_util_destroy( XW_UtilCtxt* util );
 
 #endif

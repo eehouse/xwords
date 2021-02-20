@@ -87,6 +87,15 @@ function mqttSend( topic, ptr ) {
 	return canSend;
 }
 
+function addDepthNote(dlg) {
+	let depth = dlg.parentNode.childElementCount;
+	if ( depth > 1 ) {
+		let div = document.createElement('div');
+		div.textContent = '(Depth: ' + depth + ')';
+		dlg.appendChild(div);
+	}
+}
+
 function newDlgWMsg(msg) {
 	let container = document.getElementById('nbalert');
 
@@ -124,6 +133,7 @@ function nbDialog(msg, buttons, proc, closure) {
 		dlg.parentNode.removeChild(dlg);
 	}
 	dlg.appendChild( newButtonDiv( buttons, butProc ) );
+	addDepthNote(dlg);
 }
 
 function nbBlankPick(title, buttons, proc, closure) {
@@ -139,6 +149,7 @@ function nbBlankPick(title, buttons, proc, closure) {
 	for (ii = 0; ii < buttons.length; ii += ROWLEN) {
 		dlg.appendChild( newButtonDiv( buttons.slice(ii, ii + ROWLEN), butProc ) );
 	}
+	addDepthNote(dlg);
 }
 
 function nbGamePick(title, gameMap, proc, closure) {
@@ -159,6 +170,7 @@ function nbGamePick(title, gameMap, proc, closure) {
 	}
 
 	dlg.appendChild( newButtonDiv( buttons, butProc ) );
+	addDepthNote(dlg);
 }
 
 function setDivButtons(divid, buttons, proc, closure) {
@@ -198,6 +210,7 @@ function nbGetString(msg, dflt, proc, closure) {
 		}
 	}
 	dlg.appendChild( newButtonDiv( buttons, butProc ) );
+	addDepthNote(dlg);
 }
 
 function newRadio(txt, id, proc) {
@@ -238,6 +251,7 @@ function nbGetNewGame(closure, msg) {
 	}
 
 	dlg.appendChild( newButtonDiv( ['Cancel', 'OK'], butProc ) );
+	addDepthNote(dlg);
 }
 
 for ( let one of ['paho-mqtt.js'] ) {

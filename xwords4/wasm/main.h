@@ -82,5 +82,6 @@ void main_showGameOver( Globals* globals );
 void main_showRemaining( Globals* globals );
 void main_pickBlank( Globals* globals, int playerNum, int col, int row,
                      const char** tileFaces, int nTiles );
+void main_updateScreen( Globals* globals );
 
 #endif
