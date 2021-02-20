@@ -821,7 +821,12 @@ main_onGameMessage( Globals* globals, XP_U32 gameID,
         char key[32];
         formatGameKeyInt( key, sizeof(key), gameID );
         if ( have_stored_value( key ) ) {
-            call_alert( "Dropping packet for closed game" );
+            formatNameKey( key, sizeof(key), gameID );
+            const char* name = get_stored_value( key );
+            char buf[128];
+            snprintf( buf, sizeof(buf), "Dropping packet for closed game \"%s\"", name );
+            free( (void*)name);
+            call_alert( buf );
         } else {
             XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(globals->mpool)
                                                         globals->vtMgr );
