@@ -102,7 +102,6 @@ fontFor( WasmDrawCtx* wdctx, int height )
         rec->size = height;
         rec->font = TTF_OpenFont( "assets_dir/FreeSans.ttf", height );
         result = rec->font;
-        XP_LOGFF( "made font for size %d", height );
     }
 
     return result;
@@ -396,7 +395,7 @@ wasm_draw_measureScoreText( DrawCtx* dctx, XWEnv xwe,
     int width, height;
     measureText( wdctx, buf, fontHeight, &width, &height );
 
-    *widthP = width;
+    *widthP = XP_MIN( width, rect->height );
     *heightP = XP_MIN( height, rect->height );
 }
 
