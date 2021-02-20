@@ -169,7 +169,7 @@ function nbGamePick(title, gameMap, proc, closure) {
 		dlg.parentNode.removeChild(dlg);
 	}
 
-	dlg.appendChild( newButtonDiv( buttons, butProc ) );
+	dlg.appendChild( newButtonDiv( buttons.sort(), butProc ) );
 	addDepthNote(dlg);
 }
 

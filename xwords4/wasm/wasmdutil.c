@@ -257,7 +257,8 @@ static void
 wasm_dutil_onGameGoneReceived( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe),
                                XP_U32 gameID, const CommsAddrRec* from )
 {
-    LOG_FUNC();
+    Globals* globals = (Globals*)duc->closure;
+    main_onGameGone( globals, gameID );
 }
 
 XW_DUtilCtxt*

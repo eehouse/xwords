@@ -75,7 +75,7 @@ void main_alert( Globals* globals, const XP_UCHAR* msg );
 void main_gameFromInvite( Globals* globals, const NetLaunchInfo* invite );
 void main_onGameMessage( Globals* globals, XP_U32 gameID,
                          const CommsAddrRec* from, XWStreamCtxt* stream );
-
+void main_onGameGone( Globals* globals, XP_U32 gameID );
 void main_sendOnClose( XWStreamCtxt* stream, XWEnv env, void* closure );
 void main_playerScoreHeld( Globals* globals, XP_U16 player );
 void main_showGameOver( Globals* globals );

@@ -72,7 +72,6 @@
 #define BUTTON_STOPTRADE "Cancel Trade"
 #define BUTTON_COMMIT "Commit"
 #define BUTTON_FLIP "Flip"
-#define BUTTON_UNDO "Undo"
 #define BUTTON_REDO "Redo"
 #define BUTTON_VALS "Vals"
 #define BUTTON_INVITE "Invite"
@@ -399,33 +398,31 @@ updateGameButtons( Globals* globals )
     int cur = 0;
 
     if ( !!globals->gs.util ) {
-        GameStateInfo gsi;
-        game_getState( &globals->gs.game, NULL, &gsi );
-
-        if ( gsi.canHint ) {
-            buttons[cur++] = BUTTON_HINTDOWN;
-            buttons[cur++] = BUTTON_HINTUP;
-        }
-
-        if ( gsi.inTrade ) {
-            buttons[cur++] = BUTTON_STOPTRADE;
-        } else if ( gsi.canTrade ) {
-            buttons[cur++] = BUTTON_TRADE;
-        }
-        buttons[cur++] = BUTTON_COMMIT;
-        buttons[cur++] = BUTTON_FLIP;
-
-        if ( gsi.canUndo ) {
-            buttons[cur++] = BUTTON_UNDO;
-        } else if ( gsi.canRedo ) {
-            buttons[cur++] = BUTTON_REDO;
-        }
-
-        buttons[cur++] = BUTTON_VALS;
-
         XP_U16 nPending = server_getPendingRegs( globals->gs.game.server );
         if ( 0 < nPending ) {
             buttons[cur++] = BUTTON_INVITE;
+        } else {
+            GameStateInfo gsi;
+            game_getState( &globals->gs.game, NULL, &gsi );
+
+            if ( gsi.canHint ) {
+                buttons[cur++] = BUTTON_HINTDOWN;
+                buttons[cur++] = BUTTON_HINTUP;
+            }
+
+            if ( gsi.inTrade ) {
+                buttons[cur++] = BUTTON_STOPTRADE;
+            } else if ( gsi.canTrade ) {
+                buttons[cur++] = BUTTON_TRADE;
+            }
+            buttons[cur++] = BUTTON_COMMIT;
+            buttons[cur++] = BUTTON_FLIP;
+
+            if ( gsi.canRedo ) {
+                buttons[cur++] = BUTTON_REDO;
+            }
+
+            buttons[cur++] = BUTTON_VALS;
         }
     }
     buttons[cur++] = NULL;
@@ -697,6 +694,8 @@ loadSavedGame( Globals* globals, const char* key )
             ensureName( globals );
             updateScreen( globals, false );
         }
+    } else {
+        XP_LOGFF( "ERROR: no saved data for key %s", key );
     }
     stream_destroy( stream, NULL );
     return loaded;
@@ -836,6 +835,16 @@ main_onGameMessage( Globals* globals, XP_U32 gameID,
             call_alert( "Dropping packet for non-existant game" );
         }
     }
+    LOG_RETURN_VOID();
+}
+
+void
+main_onGameGone( Globals* globals, XP_U32 gameID )
+{
+    LOG_FUNC();
+    const char* msg = "This game has been deleted on the remote device. "
+        "Delete here too?";
+    call_confirm( globals, msg, onDeleteConfirmed, globals );
 }
 
 void
