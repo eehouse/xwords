@@ -55,6 +55,9 @@ typedef XP_U8 PosWhich;
 
 
 typedef struct StreamCtxVTable {
+#ifdef XWFEATURE_STREAMREF
+    XWStreamCtxt* (*m_stream_ref)( XWStreamCtxt* dctx );
+#endif
     void (*m_stream_destroy)( XWStreamCtxt* dctx, XWEnv xwe );
 
     XP_U8 (*m_stream_getU8)( DBG_PROC_FORMAL XWStreamCtxt* dctx );
@@ -110,6 +113,10 @@ struct XWStreamCtxt {
     StreamCtxVTable* vtable;
 };
 
+#ifdef XWFEATURE_STREAMREF
+# define stream_ref(sc)                          \
+    (sc)->vtable->m_stream_ref((sc))
+#endif
 
 #define stream_destroy(sc,e)                    \
          (sc)->vtable->m_stream_destroy(sc,(e))

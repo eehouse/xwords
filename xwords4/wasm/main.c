@@ -604,35 +604,41 @@ onPlayerNamed( void* closure, const char* name )
 }
 
 static void
+doReplace( Globals* globals, const NetLaunchInfo* invite )
+{
+    cleanupGame( globals );
+
+    gi_disposePlayerInfo( MPPARM(globals->mpool) &globals->gs.gi );
+    XP_MEMSET( &globals->gs.gi, 0, sizeof(globals->gs.gi) );
+
+    globals->gs.util = wasm_util_make( MPPARM(globals->mpool) &globals->gs.gi,
+                                       globals->dutil, globals );
+
+    game_makeFromInvite( MPPARM(globals->mpool) NULL, invite,
+                         &globals->gs.game, &globals->gs.gi,
+                         globals->dict, NULL,
+                         globals->gs.util, globals->draw,
+                         &globals->cp, &globals->procs );
+    ensureName( globals );
+
+    const char* name = get_stored_value( KEY_PLAYER_NAME );
+    if ( NULL != name ) {
+        startGame( globals, name );
+        free( (void*)name );
+    } else {
+        const char* msg = "Please enter your name so you opponent knows it's you";
+        call_get_string( msg, "Player 1", onPlayerNamed, globals );
+    }
+}
+
+static void
 onReplaceConfirmed( void* closure, bool confirmed )
 {
     AskReplaceState* ars = (AskReplaceState*)closure;
     Globals* globals = ars->globals;
 
     if ( confirmed ) {
-        cleanupGame( globals );
-
-        gi_disposePlayerInfo( MPPARM(globals->mpool) &globals->gs.gi );
-        XP_MEMSET( &globals->gs.gi, 0, sizeof(globals->gs.gi) );
-
-        globals->gs.util = wasm_util_make( MPPARM(globals->mpool) &globals->gs.gi,
-                                           globals->dutil, globals );
-
-        game_makeFromInvite( MPPARM(globals->mpool) NULL, &ars->invite,
-                             &globals->gs.game, &globals->gs.gi,
-                             globals->dict, NULL,
-                             globals->gs.util, globals->draw,
-                             &globals->cp, &globals->procs );
-        ensureName( globals );
-
-        const char* name = get_stored_value( KEY_PLAYER_NAME );
-        if ( NULL != name ) {
-            startGame( globals, name );
-            free( (void*)name );
-        } else {
-            const char* msg = "Please enter your name so you opponent knows it's you";
-            call_get_string( msg, "Player 1", onPlayerNamed, globals );
-        }
+        doReplace( globals, &ars->invite );
     }
 
     XP_FREE( globals->mpool, ars );
@@ -652,7 +658,7 @@ gameFromInvite( Globals* globals, const NetLaunchInfo* invite )
         } else {
             AskReplaceState* ars = XP_MALLOC( globals->mpool, sizeof(*ars) );
             ars->globals = globals;
-            XP_MEMCPY( &ars->invite, invite, sizeof(ars->invite) );
+            ars->invite = *invite;
             call_confirm( globals, "Invitation received; replace current game?",
                           onReplaceConfirmed, ars );
             needsLoad = false;
@@ -660,6 +666,9 @@ gameFromInvite( Globals* globals, const NetLaunchInfo* invite )
     } else if ( invite->lang != 1 ) {
         call_alert( "Invitations are only supported for play in English right now." );
         needsLoad = false;
+    } else {
+        // No game open. Just do it
+        doReplace( globals, invite );
     }
 
     bool loaded = !needsLoad;
@@ -807,13 +816,39 @@ main_gameFromInvite( Globals* globals, const NetLaunchInfo* invite )
     }
 }
 
+typedef struct _OpenForMessageState {
+    Globals* globals;
+    int gameID;
+    CommsAddrRec from;
+    XWStreamCtxt* stream;
+} OpenForMessageState;
+
+static void
+onOpenForMsgConfirmed( void* closure, bool confirmed )
+{
+    OpenForMessageState* ofm = (OpenForMessageState*)closure;
+    Globals* globals = ofm->globals;
+    if ( confirmed ) {
+
+        char gameID[16];
+        formatGameID( gameID, sizeof(gameID), ofm->gameID );
+        loadAndDraw( globals, NULL, gameID, NULL );
+        XP_ASSERT( globals->gs.gi.gameID == ofm->gameID );
+
+        if ( game_receiveMessage( &globals->gs.game, NULL, ofm->stream, &ofm->from ) ) {
+            updateScreen( globals, true );
+        }
+    }
+    stream_destroy( ofm->stream, NULL );
+    XP_FREE( globals->mpool, ofm );
+}
+
 void
 main_onGameMessage( Globals* globals, XP_U32 gameID,
                     const CommsAddrRec* from, XWStreamCtxt* stream )
 {
-    if ( gameID == globals->gs.gi.gameID ) {
-        XP_Bool draw = game_receiveMessage( &globals->gs.game, NULL, stream, from );
-        if ( draw ) {
+    if ( gameID == globals->gs.gi.gameID ) { /* current game open */
+        if ( game_receiveMessage( &globals->gs.game, NULL, stream, from ) ) {
             updateScreen( globals, true );
         }
     } else {
@@ -822,20 +857,28 @@ main_onGameMessage( Globals* globals, XP_U32 gameID,
         if ( have_stored_value( key ) ) {
             formatNameKey( key, sizeof(key), gameID );
             const char* name = get_stored_value( key );
-            char buf[128];
-            snprintf( buf, sizeof(buf), "Dropping packet for closed game \"%s\"", name );
+            XP_ASSERT( !!name );
+            char msg[128];
+            snprintf( msg, sizeof(msg), "Move arrived for closed game \"%s\"; "
+                      "Shall I open it?", name );
             free( (void*)name);
-            call_alert( buf );
+
+            OpenForMessageState* ofm = XP_MALLOC( globals->mpool, sizeof(*ofm) );
+            ofm->globals = globals;
+            ofm->gameID = gameID;
+            ofm->from = *from;
+            ofm->stream = stream_ref( stream );
+
+            call_confirm( globals, msg, onOpenForMsgConfirmed, ofm );
         } else {
             XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(globals->mpool)
                                                         globals->vtMgr );
             dvc_makeMQTTNoSuchGame( globals->dutil, NULL, stream, gameID );
             sendStreamToDev( stream, &from->u.mqtt.devID );
 
-            call_alert( "Dropping packet for non-existant game" );
+            call_alert( "Dropping move for deleted game" );
         }
     }
-    LOG_RETURN_VOID();
 }
 
 void

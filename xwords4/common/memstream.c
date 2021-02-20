@@ -38,6 +38,12 @@ extern "C" {
 
 #define STREAM_INCR_SIZE 100
 
+#ifdef XWFEATURE_STREAMREF
+# define REFCOUNT refCount
+#else
+# define REFCOUNT _unused_refCount
+#endif
+
 #define SOCKET_STREAM_SUPER_COMMON_SLOTS \
     StreamCtxVTable* vtable; \
     void* closure; \
@@ -51,6 +57,7 @@ extern "C" {
     XP_U16 version; \
     XP_U8 nReadBits; \
     XP_U8 nWriteBits; \
+    XP_U8 REFCOUNT; \
     XP_Bool isOpen; \
     MPSLOT
 
@@ -93,7 +100,9 @@ mem_stream_make( MPFORMAL VTableMgr* vtmgr, void* closure,
     result->onClose = onClose;
 
     result->isOpen = XP_TRUE;
-
+#ifdef XWFEATURE_STREAMREF
+    result->refCount = 1;
+#endif
     return (XWStreamCtxt*)result;
 } /* make_mem_stream */
 
@@ -492,18 +501,34 @@ mem_stream_setPos( XWStreamCtxt* p_sctx, PosWhich which, XWStreamPos newpos )
     return oldPos;
 } /* mem_stream_setPos */
 
+#ifdef XWFEATURE_STREAMREF
+static XWStreamCtxt*
+mem_stream_ref( XWStreamCtxt* p_sctx )
+{
+    MemStreamCtxt* stream = (MemStreamCtxt*)p_sctx;
+    ++stream->refCount;
+    return p_sctx;
+}
+#endif
+
 static void
 mem_stream_destroy( XWStreamCtxt* p_sctx, XWEnv xwe )
 {
     MemStreamCtxt* stream = (MemStreamCtxt*)p_sctx;
+    if ( 0 ) {
+#ifdef XWFEATURE_STREAMREF
+    } else if ( 0 == --stream->refCount ) {
+#else
+    } else {
+#endif
+        if ( stream->isOpen ) {
+            stream_close( p_sctx, xwe );
+        }
 
-    if ( stream->isOpen ) {
-        stream_close( p_sctx, xwe );
-    }
-
-    XP_FREEP( stream->mpool, &stream->buf );
+        XP_FREEP( stream->mpool, &stream->buf );
     
-    XP_FREE( stream->mpool, stream );
+        XP_FREE( stream->mpool, stream );
+    }
 } /* mem_stream_destroy */
 
 static StreamCtxVTable*
@@ -535,7 +560,9 @@ make_vtable( MemStreamCtxt* stream )
 
     SET_VTABLE_ENTRY( vtable, stream_setPos, mem );
     SET_VTABLE_ENTRY( vtable, stream_getPos, mem );
-
+#ifdef XWFEATURE_STREAMREF
+    SET_VTABLE_ENTRY( vtable, stream_ref, mem );
+#endif
     SET_VTABLE_ENTRY( vtable, stream_destroy, mem );
     SET_VTABLE_ENTRY( vtable, stream_open, mem );
     SET_VTABLE_ENTRY( vtable, stream_close, mem );
