@@ -75,6 +75,7 @@
 #define BUTTON_UNDO "Undo"
 #define BUTTON_REDO "Redo"
 #define BUTTON_VALS "Vals"
+#define BUTTON_INVITE "Invite"
 #define BUTTON_EXIT "Quit"
 
 #define BUTTON_GAME_NEW "New Game"
@@ -252,32 +253,37 @@ call_alert( const char* msg )
     call_dialog( msg, buttons, NULL, NULL );
 }
 
+static bool
+sendStreamToDev( XWStreamCtxt* stream, const MQTTDevID* devID )
+{
+    XP_S16 nSent = -1;
+    XP_UCHAR topic[64];
+    formatMQTTTopic( devID, topic, sizeof(topic) );
+
+    XP_U16 streamLen = stream_getSize( stream );
+    bool success = call_mqttSend( topic, stream_getPtr( stream ), streamLen );
+    stream_destroy( stream, NULL );
+    LOG_RETURNF("%d", nSent);
+    return success;
+}
+
 static XP_S16
 send_msg( XWEnv xwe, const XP_U8* buf, XP_U16 len,
           const XP_UCHAR* msgNo, const CommsAddrRec* addr,
           CommsConnType conType, XP_U32 gameID, void* closure )
 {
     XP_S16 nSent = -1;
-    LOG_FUNC();
     Globals* globals = (Globals*)closure;
 
     if ( addr_hasType( addr, COMMS_CONN_MQTT ) ) {
-        MQTTDevID devID = addr->u.mqtt.devID;
-
+        // MQTTDevID devID = addr->u.mqtt.devID;
         XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(globals->mpool)
                                                     globals->vtMgr );
         dvc_makeMQTTMessage( globals->dutil, NULL, stream,
                              gameID, buf, len );
-
-        XP_UCHAR topic[64];
-        formatMQTTTopic( &devID, topic, sizeof(topic) );
-
-        XP_U16 streamLen = stream_getSize( stream );
-
-        if ( call_mqttSend( topic, stream_getPtr( stream ), streamLen ) ) {
+        if ( sendStreamToDev( stream, &addr->u.mqtt.devID ) ) {
             nSent = len;
         }
-        stream_destroy( stream, NULL );
     }
 
     LOG_RETURNF( "%d", nSent );
@@ -317,6 +323,35 @@ formatNameKey( char* buf, size_t len, int gameID )
 }
 
 static void
+makeSelfAddr( Globals* globals, CommsAddrRec* addr )
+{
+    addr_setType( addr, COMMS_CONN_MQTT );
+    dvc_getMQTTDevID( globals->dutil, NULL, &addr->u.mqtt.devID );
+}
+
+static void
+onGotInviteeID( void* closure, const char* mqttid )
+{
+    MQTTDevID remoteDevID;
+    if ( strToMQTTCDevID( mqttid, &remoteDevID ) ) {
+        Globals* globals = (Globals*)closure;
+        CommsAddrRec myAddr = {0};
+        makeSelfAddr( globals, &myAddr );
+
+        NetLaunchInfo nli = {0};    /* include everything!!! */
+        nli_init( &nli, &globals->gs.gi, &myAddr, 1, 1 );
+
+        XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(globals->mpool)
+                                                    globals->vtMgr );
+        dvc_makeMQTTInvite( globals->dutil, NULL, stream, &nli );
+
+        sendStreamToDev( stream, &remoteDevID );
+    } else {
+        call_alert( "MQTT id looks badly formed" );
+    }
+}
+
+static void
 onGameButton( void* closure, const char* button )
 {
     if ( !!button ) {
@@ -344,6 +379,9 @@ onGameButton( void* closure, const char* button )
         } else if ( 0 == strcmp(button, BUTTON_VALS) ) {
             globals->cp.tvType = (globals->cp.tvType + 1) % TVT_N_ENTRIES;
             draw = board_prefsChanged( board, &globals->cp );
+        } else if ( 0 == strcmp(button, BUTTON_INVITE) ) {
+            call_get_string( "Invitee's MQTT Device ID?", "",
+                             onGotInviteeID, globals );
         } else if ( 0 == strcmp(button, BUTTON_EXIT) ) {
             doExit( globals );
         }
@@ -384,6 +422,11 @@ updateGameButtons( Globals* globals )
         }
 
         buttons[cur++] = BUTTON_VALS;
+
+        XP_U16 nPending = server_getPendingRegs( globals->gs.game.server );
+        if ( 0 < nPending ) {
+            buttons[cur++] = BUTTON_INVITE;
+        }
     }
     buttons[cur++] = NULL;
 
@@ -415,6 +458,7 @@ cleanupGame( Globals* globals )
 {
     if ( !!globals->gs.util ) {
         game_dispose( &globals->gs.game, NULL );
+        gi_disposePlayerInfo( MPPARM(globals->mpool) &globals->gs.gi );
         wasm_util_destroy( globals->gs.util );
         XP_MEMSET( &globals->gs, 0, sizeof(globals->gs) );
     }
@@ -723,6 +767,9 @@ loadAndDraw( Globals* globals, const NetLaunchInfo* invite,
         globals->gs.gi.phoniesAction = PHONIES_WARN;
         globals->gs.gi.hintsNotAllowed = !!params && params->hintsNotAllowed || false;
         globals->gs.gi.gameID = 0;
+        globals->gs.gi.dictLang = 1; /* English only for now */
+        replaceStringIfDifferent( globals->mpool, &globals->gs.gi.dictName,
+                                  "CollegeEng_2to8" );
         globals->gs.gi.nPlayers = 2;
         globals->gs.gi.boardSize = 15;
         globals->gs.gi.players[0].name = copyString( globals->mpool, "Player 1" ); /* FIXME */
@@ -743,6 +790,11 @@ loadAndDraw( Globals* globals, const NetLaunchInfo* invite,
                           globals->gs.util, globals->draw,
                           &globals->cp, &globals->procs );
         nameGame( globals );
+        if ( !!globals->gs.game.comms ) {
+            CommsAddrRec addr = {0};
+            makeSelfAddr( globals, &addr );
+            comms_augmentHostAddr( globals->gs.game.comms, NULL, &addr );
+        }
     }
     startGame( globals, NULL );
 }
