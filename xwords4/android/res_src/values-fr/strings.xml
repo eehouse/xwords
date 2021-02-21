@@ -504,7 +504,6 @@ fait ?</string>-->
     <!-- Appended to message above if local device has NFC available -->
     <!--<string name="invite_if_nfc">(Or just Tap to Invite - if the
         other device also has Android Beaming and is nearby.)</string>-->
-    <string name="invite_if_nfc">Ou appuyer pour inviter – si un autre appareil a aussi Android Beam et est proche.</string>
     <!-- Most users create games with only two players, which is the
          default, but CrossWords supports up to four.  When I'm using
          the above string to encourage the opener of a game missing
@@ -3242,7 +3241,6 @@ pour la langue</string>
     <string name="disable_bt">Désactiver le jeu par Bluetooth</string>
     <string name="cellline">Lignes du plateau</string>
     <string name="qrcode_invite_expl">Pour inviter par code QR, faites scanner le code par l\'appareil photo du téléphone Android de votre adversaire.</string>
-    <string name="invite_msg_extra">Vous verrez ce message jusqu\'à ce que tous les joueurs attendus se soient connectés. Si vous avez déjà envoyé une invitation et craignez qu\'elle ait été perdue, il n\'y a pas de danger à en envoyer une autre.</string>
     <string name="relay_poll_title">Comment vérifier les coups \?</string>
     <string name="values_values">Valeurs uniquement</string>
     <string name="title_blank_picker">Choisir un jeton pour la lettre blanche</string>

@@ -116,7 +116,6 @@
         <item quantity="one">Dit spel wacht op 1 speler op afstand. Wil je iemand uitnodigen om mee te doen, indien je dit nog niet gedaan hebt?</item>
         <item quantity="other">Dit spel wacht op %1$d spelers op afstand. Wil je iemand uitnodigen om mee te doen, indien je dit nog niet gedaan hebt?</item>
     </plurals>
-    <string name="invite_if_nfc">Of druk om uit te nodigen, indien het andere apparaat dichtbij is en Android Beam (NFC) ondersteund.</string>
     <string name="invite_multiple">" (Je verwacht meerdere spelers op afstand. Je hoeft ze niet allemaal tegelijk uit te nodigen, maar dit bericht zal niet verdwijnen totdat iedereen uitgenodigd is en de uitnodiging geaccepteerd heeft.)"</string>
     <string name="pts">pntn</string>
     <plurals name="msg_relay_waiting_fmt">

@@ -387,9 +387,6 @@
          the above string to encourage the opener of a game missing
          players to invite, IF the number of missing players is
          greater than one this text is appended to the above. -->
-    <string name="invite_multiple">XLATE ME: \u0020(You are expecting multiple
-      remote players.  Be sure to address your invitation to
-      that many people.)</string>
     <!-- displayed when you long-tap a scoreboard entry and there's no
          most recent score to show -->
     <string name="no_moves_made">XLATE ME: (No moves yet)</string>

@@ -435,9 +435,6 @@
          the above string to encourage the opener of a game missing
          players to invite, IF the number of missing players is
          greater than one this text is appended to the above. -->
-    <string name="invite_multiple">\u0020(Você está esperando vários
-    jogadores remotos.  Certifique-se de convidar o número certo de
-    pessoas.)</string>
     <!-- Short for "points", this is shown at the right end of the
          tray in place of the first tile placed along with the points
          the current move would earn if committed. -->
@@ -1707,5 +1704,4 @@
     <string name="sms_invite_flakey">Essa nova opção inicia a sua app predefinida de SMS com um convite pronto para ser enviado — se funcionam. Cada app de SMS é diferente e alguns não cooperam.</string>
     <string name="invit_expl_usrsms_fmt">Convite enviado via SMS em %1$s</string>
     <string name="invit_expl_sms_fmt">Convite enviado via Data SMS para o número de telefone %1$s em %2$s</string>
-    <string name="invite_if_nfc">Ou apenas toque no Convite -- se o outro dispositivo também possuir Android Beaming e estiver perto.</string>
 </resources>

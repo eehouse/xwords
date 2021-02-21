@@ -125,7 +125,6 @@
         <item quantity="one">Diese Partie wartet auf 1 externen Spieler. Wollen Sie noch jemanden einladen – falls Sie das nicht bereits haben?</item>
         <item quantity="other">Diese Partie wartet auf %1$d externe Spieler. Wollen Sie noch jemanden einladen – falls Sie das nicht bereits haben?</item>
     </plurals>
-    <string name="invite_if_nfc">Oder einfach zum Einladen antippen – wenn das andere Gerät ebenfalls Android Beaming unterstützt und in der Nähe ist.</string>
     <string name="invite_multiple">" (Sie erwarten mehrere externe Spieler. Sie müssen sie nicht alle auf einmal einladen, aber diese Warnung wird so lange angezeigt, bis alle eingeladen sind und alle Einladungen angenommen wurden.)"</string>
     <string name="invit_expl_sms_fmt">"Einladung per SMS an Telefonnummer %1$s  an %2$s gesendet"</string>
     <string name="invit_expl_bt_fmt">Einladung per Bluetooth an gepaartes Gerät „%1$s“ in „%2$s“ geschickt</string>

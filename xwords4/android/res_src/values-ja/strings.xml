@@ -109,7 +109,6 @@
     <plurals name="invite_msg_fmt">
         <item quantity="other">このゲームは %1$d リモート プレイヤーを待っています。まだであれば -- 参加するユーザーを招待しますか\?</item>
     </plurals>
-    <string name="invite_if_nfc">またはタップして招待します -- 他のデバイスにも Android ビームがあり、近くにいる場合。</string>
     <string name="invite_multiple">" (複数のリモートプレイヤーを期待している場合。一度にみんなを招待する必要はありませんが、招待されたみんなが招待状を受け入れるまで、このアラートは消えません)"</string>
     <string name="pts">ﾎﾟｲﾝﾄ</string>
     <plurals name="msg_relay_waiting_fmt">
