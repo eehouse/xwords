@@ -467,7 +467,6 @@
     <string name="no_games_to_refresh">"Fant ingen spill som kobler til gjennom relé-et. "</string>
     <string name="no_copy_network">Spill som allerede har koblet til gjennom relé-et kan ikke kopieres. Bruk \"Ny fra\" for kopi klar til spilling med de samme innstillingene.</string>
     <string name="set_default_message_fmt">For hvilke spillere skal ordlisten %1$s være forvalg for nye spill? (Språket %2$s vil være forvalg for begge.)</string>
-    <string name="invite_if_nfc">Eller bare trykk for å invitere -- hvis den andre enheten også har Android-stråling og er i nærheten.</string>
     <string name="invite_multiple">" (Du forventer flere spillere annensteds fra. Du trenger ikke å invitere dem alle samtidig, men dette varselet vil ikke forsvinne med mindre alle har blitt invitert, og alle invitasjonene har blitt godkjent.)"</string>
     <string name="invit_expl_sms_fmt">Invitasjon sendt via SMS til telefonnummer %1$s på %2$s</string>
     <string name="invit_expl_relay_fmt">Invitasjon videresendt av relé-et til en annen enhet på %1$s</string>
@@ -1002,7 +1001,6 @@
     <string name="invite_player_fmt">Inviter</string>
     <string name="cellline">Brettlinjer</string>
     <string name="invite_msg_extra_rematch">Med omkamper, vil alle nødvendige invitasjoner sendes automatisk. Du kan alltids sende nye hvis motstanderen ikke svarer.</string>
-    <string name="invite_msg_extra">Du vil se denne meldingen til alle forventede spillere har koblet til. Hvis du allerede har sendt en invitasjon og antar at den har gått tapt, er det ingen skade i å sende en ny.</string>
     <string name="use_duptimer">Skru på tidsur for hvert trekk</string>
     <string name="name_concat_dup">" og "</string>
     <string name="game_paused_title">Spill på pause</string>

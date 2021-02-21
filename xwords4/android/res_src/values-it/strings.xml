@@ -986,9 +986,7 @@
     <string name="sms_invite_flakey">Questa opzione avvia l\'applicazione SMS con un invito preimpostato - se funzionante. Ogni App SMS è differente e non tutte sono compatibili.</string>
     <string name="invit_expl_usrsms_fmt">Invito inviato via SMS su %1$s</string>
     <string name="invit_expl_sms_fmt">Invito mandato via SMS al numero %1$s su %2$s</string>
-    <string name="invite_multiple">" (Sei in attesa di giocatori multipli in remoto. Non è necessario invitarli tutti insieme, ma questo messaggio non può essere eliminato finché tutti non siano stati invitati e gli inviti vengano accettati)"</string>
     <string name="invite_if_nfc">O tocca qui per invitare -- se l\'altro dispositivo ha attivo l\'Android Beaming ed è nelle vicinanze.</string>
-    <string name="invite_msg_extra">Vedrai questo messaggio fino a quando tutti i giocatori saranno connessi. Se hai già inviato un invito e credi non sia stato accettato, non c\'è bisogno di inviarlo nuovamente.</string>
     <plurals name="invite_msg_fmt">
         <item quantity="one">Questa partita è in attesa di un giocatore remoto per rispondere ad un invito.</item>
         <item quantity="other">Questa partita è in attesa di %1$d giocatori remoti per rispondere ad un invito.</item>

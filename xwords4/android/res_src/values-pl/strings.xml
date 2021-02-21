@@ -63,7 +63,6 @@
     <string name="player_label">Imię:</string>
     <string name="dict_lang_label_fmt">Lista słów (%1$s)</string>
     <string name="password_label">Hasło:</string>
-    <string name="invite_if_nfc">Lub po prostu dotknij, aby zaprosić - jeśli inne urządzenie ma także Android Beaming i jest w pobliżu.</string>
     <string name="invite_multiple">" (Oczekujesz wielu zdalnych graczy. Nie musisz zapraszać ich wszystkich naraz, ale ten alert nie zostanie odrzucony, dopóki wszyscy nie zostaną zaproszeni i wszystkie zaproszenia nie zostaną zaakceptowane.)"</string>
     <string name="invit_expl_sms_fmt">Zaproszenie wysłane za pośrednictwem Data SMS na numer telefonu %1$s na %2$s</string>
     <string name="invit_expl_bt_fmt">Zaproś wysłając przez Bluetooth do urządzenia \"%1$s\" na %2$s</string>

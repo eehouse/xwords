@@ -258,7 +258,6 @@ que connecti via el repetidor.</string>
         <item quantity="one">Aquesta partida està esperant a 1 jugador remot. Si encara no ho heu fet, voleu convidar algú a unir-s\'hi?</item>
         <item quantity="other">Aquesta partida està esperant a %1$d jugadors remots. Si encara no ho heu fet, voleu convidar algú a unir-s\'hi?</item>
     </plurals>
-    <string name="invite_if_nfc">O simplement toqueu per a convidar, si l\'altre aparell també té Android Beaming i és a prop.</string>
     <string name="invite_multiple">" (Esteu esperant més d\'un jugador remot. No els heu de convidar a tots a la vegada, però aquest avís no desapareixerà fins que hàgiu convidat a tothom i totes les invitacions s\'hagin acceptat.)"</string>
     <string name="msg_relay_all_here_fmt">Tots els jugadors són a la sala «%1$s».</string>
     <string name="board_menu_tray_hide">Amaga el faristol</string>

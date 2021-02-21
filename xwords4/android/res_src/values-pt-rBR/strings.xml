@@ -52,7 +52,6 @@
     <string name="sms_invite_fail">Impossibilitado de mandar SMS do aplicativo</string>
     <string name="invit_expl_usrsms_fmt">Convite enviado via SMS no %1$s</string>
     <string name="invit_expl_sms_fmt">Convite enviado via Dados de SMS para o número de telefone %1$s no %2$s</string>
-    <string name="invite_multiple">" (Você está esperando vários jogadores remotos. Você não precisa convida-los um de cada vez, mas este alerta não será rejeitado até que todo mundo tenha sido convidado e todos os convites tenham sido aceitos.)"</string>
     <string name="invite_if_nfc">Ou apenas toque para Convidar -- Se o outro dispositivo também tiver Android Beaming e estiver próximo.</string>
     <plurals name="invite_msg_fmt">
         <item quantity="one">Esta partida está aguardando um jogador remoto responder aos convites.</item>
@@ -391,7 +390,6 @@
     <string name="game_summary_field_created">Quando criado</string>
     <string name="invit_expl_player_fmt">Convite encaminhado via MQTT/internet para Jogador Conhecido “%1$s” em %2$s.</string>
     <string name="qrcode_invite_expl">Para convidar via código QR, deixe seu oponente escanear o código com a câmera do telefone Android dele.</string>
-    <string name="invite_msg_extra">Você verá esta mensagem até todos os jogadores se conectarem. Se você já enviou um convite e suspeita que foi perdido, não há problema em enviar outro.</string>
     <string name="after_restart">Esta mudança terá efeito depois de reiniciar CrossWords.</string>
     <string name="no_invites">Este jogo não enviou nenhum convite</string>
     <string name="button_enable">Ativar</string>
