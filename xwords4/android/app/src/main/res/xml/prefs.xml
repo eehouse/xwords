@@ -27,28 +27,30 @@ to open the child file.
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
                   xmlns:app="http://schemas.android.com/apk/res-auto"
                   >
+  <PreferenceCategory android:title="@string/title_prefs"
+                      >
+    <Preference app:title="@string/prefs_defaults"
+                app:summary="@string/prefs_defaults_summary"
+                app:fragment="org.eehouse.android.xw4.gen.PrefsWrappers$prefs_dflts"
+                />
+    <Preference app:title="@string/prefs_appearance"
+                app:summary="@string/prefs_appearance_summary"
+                app:fragment="org.eehouse.android.xw4.gen.PrefsWrappers$prefs_appear"
+                />
 
-  <Preference app:title="@string/prefs_defaults"
-              app:summary="@string/prefs_defaults_summary"
-              app:fragment="org.eehouse.android.xw4.gen.PrefsWrappers$prefs_dflts"
-              />
-  <Preference app:title="@string/prefs_appearance"
-              app:summary="@string/prefs_appearance_summary"
-              app:fragment="org.eehouse.android.xw4.gen.PrefsWrappers$prefs_appear"
-              />
+    <Preference app:title="@string/prefs_behavior"
+                app:summary="@string/prefs_behavior_summary"
+                app:fragment="org.eehouse.android.xw4.gen.PrefsWrappers$prefs_behave"
+                />
 
-  <Preference app:title="@string/prefs_behavior"
-              app:summary="@string/prefs_behavior_summary"
-              app:fragment="org.eehouse.android.xw4.gen.PrefsWrappers$prefs_behave"
-              />
+    <Preference app:title="@string/network_behavior"
+                app:summary="@string/network_behavior_summary"
+                app:fragment="org.eehouse.android.xw4.gen.PrefsWrappers$prefs_net"
+                />
 
-  <Preference app:title="@string/network_behavior"
-              app:summary="@string/network_behavior_summary"
-              app:fragment="org.eehouse.android.xw4.gen.PrefsWrappers$prefs_net"
-              />
-
-  <Preference app:title="@string/advanced"
-              app:summary="@string/advanced_summary"
-              app:fragment="org.eehouse.android.xw4.gen.PrefsWrappers$prefs_dbg"
-              />
+    <Preference app:title="@string/advanced"
+                app:summary="@string/advanced_summary"
+                app:fragment="org.eehouse.android.xw4.gen.PrefsWrappers$prefs_dbg"
+                />
+  </PreferenceCategory>
 </PreferenceScreen>
