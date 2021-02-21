@@ -498,8 +498,13 @@ changements ?</string>
 partie. Voulez-vous inviter quelqu\'un - - à moins que vous ne l\'ayez déjà
 fait ?</string>-->
     <plurals name="invite_msg_fmt">
-        <item quantity="one">Cette partie attend qu\'un joueur distant réponde à une invitation.</item>
-        <item quantity="other">Cette partie attend que %1$d joueurs distants répondent à une invitation.</item>
+        <item quantity="one">Cette partie attend qu\'un joueur distant reçoive et réponde à une invitation.
+\n
+\nVous verrez ce message jusqu\'à ce que le joueur invité ait répondu. Si vous craignez que l\'invitation que vous avez envoyée ait été perdue, il n\'y a pas de danger à en envoyer une autre.</item>
+        <item quantity="other">Cette partie attend que %1$d joueurs distants répondent aux invitations.
+\n
+\n
+\nVous verrez ce message jusqu\'à ce que tous les joueurs attendus aient répondu. Si vous craignez que des invitations que vous avez envoyées aient été perdues, il n\'y a pas de danger à en envoyer d\'autres.</item>
     </plurals>
     <!-- Appended to message above if local device has NFC available -->
     <!--<string name="invite_if_nfc">(Or just Tap to Invite - if the
