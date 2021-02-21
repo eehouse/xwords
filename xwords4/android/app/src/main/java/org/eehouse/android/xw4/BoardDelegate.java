@@ -1208,6 +1208,10 @@ public class BoardDelegate extends DelegateBase
             alertOrderIncrIfAt( StartAlertOrder.NBS_PERMS );
             break;
 
+        case LAUNCH_INVITE_ACTION:
+            showInviteAlertIf();
+            break;
+
         default:
             handled = super.onDismissed( action, params );
             break;
@@ -1513,6 +1517,7 @@ public class BoardDelegate extends DelegateBase
     @Override
     public void onInviteClicked()
     {
+        getINAWrapper().dismiss();
         callInviteChoices();
     }
 
