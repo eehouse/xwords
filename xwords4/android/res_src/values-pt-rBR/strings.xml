@@ -52,7 +52,6 @@
     <string name="sms_invite_fail">Impossibilitado de mandar SMS do aplicativo</string>
     <string name="invit_expl_usrsms_fmt">Convite enviado via SMS no %1$s</string>
     <string name="invit_expl_sms_fmt">Convite enviado via Dados de SMS para o número de telefone %1$s no %2$s</string>
-    <string name="invite_if_nfc">Ou apenas toque para Convidar -- Se o outro dispositivo também tiver Android Beaming e estiver próximo.</string>
     <plurals name="invite_msg_fmt">
         <item quantity="one">Esta partida está aguardando um jogador remoto responder aos convites.</item>
         <item quantity="other">Esta partida está aguardando %1$d jogadores remotos responderem aos convites.</item>
