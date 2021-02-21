@@ -75,7 +75,6 @@
 #define BUTTON_REDO "Redo"
 #define BUTTON_VALS "Vals"
 #define BUTTON_INVITE "Invite"
-#define BUTTON_EXIT "Quit"
 
 #define BUTTON_GAME_NEW "New Game"
 #define BUTTON_GAME_OPEN "Open Game"
@@ -157,8 +156,8 @@ EM_JS(void, call_get_string, (const char* msg, const char* dflt,
           nbGetString( jsMgs, jsDflt, proc, closure );
       } );
 
-EM_JS(void, call_haveDevID, (void* closure, const char* devid), {
-        onHaveDevID(closure, UTF8ToString(devid));
+EM_JS(void, call_haveDevID, (void* closure, const char* devid, AlertProc proc), {
+        onHaveDevID(closure, UTF8ToString(devid), proc);
 });
 
 EM_JS(bool, call_mqttSend, (const char* topic, const uint8_t* ptr, int len), {
@@ -290,14 +289,6 @@ send_msg( XWEnv xwe, const XP_U8* buf, XP_U16 len,
 }
 
 static void
-doExit( Globals* globals )
-{
-    call_alert( "Control passed to another tab" );
-    XP_MEMSET( globals, 0, sizeof(*globals) ); /* stop everything :-) */
-    // emscripten_cancel_main_loop(); <-- does nothing
-}
-
-static void
 formatGameID( char* buf, size_t len, int gameID )
 {
     snprintf( buf, len, "%X", gameID );
@@ -381,8 +372,6 @@ onGameButton( void* closure, const char* button )
         } else if ( 0 == strcmp(button, BUTTON_INVITE) ) {
             call_get_string( "Invitee's MQTT Device ID?", "",
                              onGotInviteeID, globals );
-        } else if ( 0 == strcmp(button, BUTTON_EXIT) ) {
-            doExit( globals );
         }
 
         if ( draw ) {
@@ -523,6 +512,14 @@ updateDeviceButtons( Globals* globals )
 }
 
 static void
+onConflict( void* closure, const char* ignored )
+{
+    Globals* globals = (Globals*)closure;
+    call_alert( "Control passed to another tab" );
+    XP_MEMSET( globals, 0, sizeof(*globals) ); /* stop everything :-) */
+}
+
+static void
 initDeviceGlobals( Globals* globals )
 {
     globals->cp.showBoardArrow = XP_TRUE;
@@ -553,7 +550,7 @@ initDeviceGlobals( Globals* globals )
     XP_UCHAR buf[32];
     XP_SNPRINTF( buf, VSIZE(buf), MQTTDevID_FMT, devID );
     XP_LOGFF( "got mqtt devID: %s", buf );
-    call_haveDevID( globals, buf );
+    call_haveDevID( globals, buf, onConflict );
 }
 
 static void

@@ -7,11 +7,12 @@ function callNewGame() {
 	Module.ccall('newgame', null, ['number'], [state.closure]);
 }
 
-function callButton(obj) {
-	Module.ccall('button', null, ['number', 'string'], [state.closure, obj.id]);
+function ccallDlgButton(proc, closure, str) {
+	Module.ccall('onDlgButton', null, ['number', 'number', 'string'],
+				 [proc, closure, str]);
 }
 
-function onHaveDevID(closure, devid) {
+function onHaveDevID(closure, devid, proc) {
 	// Set a unique tag so we know if somebody comes along later
 	let tabID = Math.random();
 	localStorage.setItem('tabID', tabID);
@@ -19,7 +20,7 @@ function onHaveDevID(closure, devid) {
 		newTabID = 	localStorage.getItem('tabID');
 		if ( newTabID != tabID ) {
 			state.client.disconnect();
-			Module.ccall('button', null, ['number', 'string'], [state.closure, 'exit']);
+			ccallDlgButton(proc, state.closure, '');
 		}
 	} );
 
@@ -128,9 +129,8 @@ function nbDialog(msg, buttons, proc, closure) {
 	let dlg = newDlgWMsg( msg );
 
 	butProc = function(buttonTxt) {
-		Module.ccall('onDlgButton', null, ['number', 'number', 'string'],
-					 [proc, closure, buttonTxt]);
 		dlg.parentNode.removeChild(dlg);
+		ccallDlgButton(proc, closure, buttonTxt);
 	}
 	dlg.appendChild( newButtonDiv( buttons, butProc ) );
 	addDepthNote(dlg);
@@ -140,9 +140,8 @@ function nbBlankPick(title, buttons, proc, closure) {
 	let dlg = newDlgWMsg( title );
 
 	butProc = function(buttonTxt) {
-		Module.ccall('onDlgButton', null, ['number', 'number', 'string'],
-					 [proc, closure, buttonTxt]);
 		dlg.parentNode.removeChild(dlg);
+		ccallDlgButton(proc, closure, buttonTxt);
 	}
 
 	let ROWLEN = 6;
@@ -164,9 +163,8 @@ function nbGamePick(title, gameMap, proc, closure) {
 	});
 	
 	butProc = function(buttonTxt) {
-		Module.ccall('onDlgButton', null, ['number', 'number', 'string'],
-		 			 [proc, closure, revMap[buttonTxt]]);
 		dlg.parentNode.removeChild(dlg);
+		ccallDlgButton(proc, closure, revMap[buttonTxt]);
 	}
 
 	dlg.appendChild( newButtonDiv( buttons.sort(), butProc ) );
@@ -180,8 +178,7 @@ function setDivButtons(divid, buttons, proc, closure) {
 	}
 
 	butProc = function(buttonTxt) {
-		Module.ccall('onDlgButton', null, ['number', 'number', 'string'],
-					 [proc, closure, buttonTxt]);
+		ccallDlgButton(proc, closure, buttonTxt);
 	}
 
 	parent.appendChild( newButtonDiv( buttons, butProc ) );
@@ -197,8 +194,7 @@ function nbGetString(msg, dflt, proc, closure) {
 
 	dismissed = function(str) {
 		dlg.parentNode.removeChild(dlg);
-		Module.ccall('onDlgButton', null, ['number', 'number', 'string'],
-					 [proc, closure, str]);
+		ccallDlgButton(proc, closure, str);
 	}
 
 	buttons = ["Cancel", "OK"];
