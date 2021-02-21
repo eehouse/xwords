@@ -467,7 +467,6 @@
     <string name="no_games_to_refresh">"Fant ingen spill som kobler til gjennom relé-et. "</string>
     <string name="no_copy_network">Spill som allerede har koblet til gjennom relé-et kan ikke kopieres. Bruk \"Ny fra\" for kopi klar til spilling med de samme innstillingene.</string>
     <string name="set_default_message_fmt">For hvilke spillere skal ordlisten %1$s være forvalg for nye spill? (Språket %2$s vil være forvalg for begge.)</string>
-    <string name="invite_multiple">" (Du forventer flere spillere annensteds fra. Du trenger ikke å invitere dem alle samtidig, men dette varselet vil ikke forsvinne med mindre alle har blitt invitert, og alle invitasjonene har blitt godkjent.)"</string>
     <string name="invit_expl_sms_fmt">Invitasjon sendt via SMS til telefonnummer %1$s på %2$s</string>
     <string name="invit_expl_relay_fmt">Invitasjon videresendt av relé-et til en annen enhet på %1$s</string>
     <string name="pts">p.</string>

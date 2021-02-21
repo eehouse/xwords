@@ -119,7 +119,6 @@
         <item quantity="one">"La partida está esperando un jugador remoto.  Si aún no lo has hecho, ¿te gustaría invitar a alguien a unirse\?"</item>
         <item quantity="other">"La partida está esperando %1$d jugadores remotos.  Si aún no lo has hecho, ¿te gustaría invitar a alguien a unirse\?"</item>
     </plurals>
-    <string name="invite_multiple">" (Estás esperando a varios jugadores remotos. No tienes que invitarlos a todos a la vez, pero esta alerta no será descartada hasta que todos hayan sido invitados y las invitaciones aceptadas.)"</string>
     <string name="invit_expl_sms_fmt">Invitación enviada por SMS al número de teléfono %1$s a %2$s</string>
     <string name="invit_expl_usrsms_fmt">Invitación enviada por SMS en %1$s</string>
     <string name="sms_invite_flakey">Esta nueva opción ejecuta tu aplicación SMS por defecto con una invitación preparada para invitar -- cuando funciona. Cada aplicación SMS es diferente, y algunas no funcionarán.</string>
