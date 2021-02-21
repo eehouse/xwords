@@ -453,51 +453,48 @@
     <string name="no_moves_made">(No moves yet)</string>
     <!-- If a networked game is opened and is not complete, i.e. if it
          is listed as expecting remote players who have not yet shown
-         up, then the most likely explanation is that none has been
-         invited.  (It's also possible that an invitation has been
-         sent, but I have no way of knowing that.) So every time I
-         open such a game I give the user a chance to issue an
-         invititation while trying to warn him not to send duplicates.
-         The number of players missing is substituted for "%1$d". -->
+         up, then IF nobody's been invited (the initial case) the user
+         needs to invite. But once that's done, there's nothing to do
+         until recipients respond. So there are two messages for the
+         two cases. This is the first-->
+    <string name="invites_unsent">This game is configured to expect a
+    remote player.
+    \n\nWould you like to invite someone?</string>
+
+    <!-- This is the second: invitations have been sent but players
+         are still missing. -->
     <plurals name="invite_msg_fmt">
         <item quantity="one">This game is waiting for one remote
-        player to respond to an invitation.</item>
+        player to receive and respond to an invitation.
+
+        \n\nYou will see this message until the invited player has
+        responded. If you suspect the invitation you sent was lost,
+        there’s no harm in sending another.</item>
+
         <item quantity="other">This game is waiting for %1$d remote
-        players to repond to invitations.</item>
+        players to repond to invitations.
+
+        \n\nYou will see this message until all expected players have
+        responded. If you suspect any invitations you sent were lost,
+        there’s no harm in sending more.</item>
     </plurals>
-    <string name="invite_msg_extra">You will see this message until
-    all expected players have connected. If you’ve already sent an
-    invitation and suspect it was lost, there’s no harm in sending
-    another.</string>
+
     <string name="invite_msg_extra_rematch">With rematches, all
     necessary invitations will have been sent automatically. But you
     can always send new ones if an invitee is not responding.</string>
-    <!-- <plurals name="invite_sent_fmt"> -->
-    <!--     <item quantity="one">You have already invited a remote player to -->
-    <!--   this game. We are waiting for him/her to respond. Please -->
-    <!--   use the re-invite button if you think the invitation did not go -->
-    <!--   out.</item> -->
-    <!--     <item quantity="other">You have already sent %1$d unique -->
-    <!--   invitations for this game. We are waiting for %2$d of the -->
-    <!--   recipients to respond. Please use the re-invite button if you -->
-    <!--   think the invitations did not go out.</item> -->
-    <!-- </plurals> -->
-    <!-- <string name="invited_msg">This game was created from an -->
-    <!-- invitation you received. As soon as it is able to connect to the -->
-    <!-- sender and any other invitees have arrived play will -->
-    <!-- begin.</string> -->
-    <!-- Appended to message above if local device has NFC available -->
-    <string name="invite_if_nfc">Or just Tap to Invite -- if the other
-    device also has Android Beaming and is nearby.</string>
+    <!-- Appended to message above if local device has NFC
+         available. But not used right now -->
+    <!--string name="invite_if_nfc">Or just Tap to Invite - if the other
+    device also has Android Beaming and is nearby.</string-->
     <!-- Most users create games with only two players, which is the
          default, but CrossWords supports up to four.  When I'm using
          the above string to encourage the opener of a game missing
          players to invite, IF the number of missing players is
          greater than one this text is appended to the above. -->
-    <string name="invite_multiple">\u0020(You are expecting multiple
-    remote players. You don’t have to invite them all at once, but
-    this alert will not be dismissed until everybody has been invited
-    and all invitations have been accepted.)</string>
+    <!-- <string name="invite_multiple">\u0020(You are expecting multiple -->
+    <!-- remote players. You don’t have to invite them all at once, but -->
+    <!-- this alert will not be dismissed until everybody has been invited -->
+    <!-- and all invitations have been accepted.)</string> -->
     <string name="invit_expl_sms_fmt">Invite sent via Data SMS to phone
     number %1$s on %2$s</string>
     <string name="invit_expl_usrsms_fmt">Invite sent via SMS on %1$s</string>
@@ -1008,6 +1005,7 @@
          it immediately because an email or messaging app will be
          launched to send your invitation. -->
     <string name="newgame_invite">Invite now</string>
+    <string name="newgame_reinvite">Invite again</string>
     <!-- Button offering to invite Known Player to a new game -->
     <string name="invite_player_fmt">Invite %1$s</string>
     <string name="newgame_invite_more">History</string>

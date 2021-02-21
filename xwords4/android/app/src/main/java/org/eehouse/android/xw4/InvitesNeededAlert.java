@@ -140,9 +140,10 @@ class InvitesNeededAlert {
         State state = (State)params[0];
         AlertDialog.Builder ab = mDelegate.makeAlertBuilder();
         mAlert = alert;
+        int[] closeLoc = { AlertDialog.BUTTON_NEGATIVE };
 
         if ( state.mIsServer ) {
-            makeImplHost( ab, callbacks, alert, state );
+            makeImplHost( ab, callbacks, alert, state, closeLoc );
         } else {
             makeImplGuest( ab, state );
         }
@@ -156,14 +157,22 @@ class InvitesNeededAlert {
                 }
             } );
 
-
-        alert.setNoDismissListenerNeg( ab, R.string.button_close_game,
-                                       new OnClickListener() {
-                                           @Override
-                                           public void onClick( DialogInterface dlg, int item ) {
-                                               callbacks.onCloseClicked();
-                                           }
-                                       } );
+        OnClickListener onClose = new OnClickListener() {
+                @Override
+                public void onClick( DialogInterface dlg, int item ) {
+                    callbacks.onCloseClicked();
+                }
+            };
+        switch ( closeLoc[0] ) {
+        case AlertDialog.BUTTON_NEGATIVE:
+            alert.setNoDismissListenerNeg( ab, R.string.button_close_game, onClose );
+            break;
+        case AlertDialog.BUTTON_POSITIVE:
+            alert.setNoDismissListenerPos( ab, R.string.button_close_game, onClose );
+            break;
+        default:
+            Assert.failDbg();
+        }
 
         Dialog result = ab.create();
         result.setCanceledOnTouchOutside( false );
@@ -186,13 +195,18 @@ class InvitesNeededAlert {
     }
 
     private void makeImplHost( AlertDialog.Builder ab, final Callbacks callbacks,
-                               DBAlert alert, State state )
+                               DBAlert alert, State state, int[] closeLoc )
     {
         Context context = mDelegate.getActivity();
-        String title;
-
-        boolean isRematch = state.mIsRematch;
         final int nPlayersMissing = state.mNPlayersMissing;
+
+        long rowid = callbacks.getRowID();
+        SentInvitesInfo sentInfo = DBUtils.getInvitesFor( context, rowid );
+        int nSent = sentInfo.getMinPlayerCount();
+        boolean invitesNeeded = nPlayersMissing > nSent;
+
+        String title;
+        boolean isRematch = state.mIsRematch;
         if ( isRematch ) {
             title = LocUtils.getString( context, R.string.waiting_rematch_title );
         } else {
@@ -200,43 +214,40 @@ class InvitesNeededAlert {
                 .getQuantityString( context, R.plurals.waiting_title_fmt,
                                     nPlayersMissing, nPlayersMissing );
         }
+        ab.setTitle( title );
 
-        String message = LocUtils
-            .getQuantityString( context, R.plurals.invite_msg_fmt,
-                                nPlayersMissing, nPlayersMissing );
-        message += "\n\n"
-            + LocUtils.getString( context, R.string.invite_msg_extra );
-
-        if ( isRematch ) {
-            message += "\n\n"
-                + LocUtils.getString( context, R.string.invite_msg_extra_rematch );
-        }
-
-        ab.setTitle( title )
-            .setMessage( message );
-        
-        alert.setNoDismissListenerPos( ab, R.string.newgame_invite,
-                                       new OnClickListener() {
-                                           @Override
-                                           public void onClick( DialogInterface dlg, int item ) {
-                                               callbacks.onInviteClicked();
-                                           }
-                                       } );
-
-        if ( BuildConfig.NON_RELEASE ) {
-            long rowid = callbacks.getRowID();
-            SentInvitesInfo sentInfo = DBUtils.getInvitesFor( context, rowid );
-            int nSent = sentInfo.getMinPlayerCount();
-            boolean invitesSent = nSent >= nPlayersMissing;
-            if ( invitesSent ) {
-                alert.setNoDismissListenerNeut( ab, R.string.newgame_invite_more,
-                                                new OnClickListener() {
-                                                    @Override
-                                                    public void onClick( DialogInterface dlg, int item ) {
-                                                        callbacks.onInfoClicked();
-                                                    }
-                                                } );
+        String message;
+        int inviteButtonTxt;
+        if ( invitesNeeded ) {
+            Assert.assertTrueNR( !isRematch );
+            message = LocUtils.getString( context, R.string.invites_unsent );
+            inviteButtonTxt = R.string.newgame_invite;
+        } else {
+            message = LocUtils
+                .getQuantityString( context, R.plurals.invite_msg_fmt, // here
+                                    nPlayersMissing, nPlayersMissing );
+            if ( isRematch ) {
+                message += "\n\n"
+                    + LocUtils.getString( context, R.string.invite_msg_extra_rematch );
             }
+            inviteButtonTxt = R.string.newgame_reinvite;
+        }
+        ab.setMessage( message );
+
+        // If user needs to act, emphasize that by having the positive button
+        // be Invite. If not, have the positive button be Close
+        OnClickListener onInvite = new OnClickListener() {
+                @Override
+                public void onClick( DialogInterface dlg, int item ) {
+                    callbacks.onInviteClicked();
+                }
+            };
+
+        if ( invitesNeeded ) {
+            alert.setNoDismissListenerPos( ab, inviteButtonTxt, onInvite );
+        } else {
+            alert.setNoDismissListenerNeg( ab, inviteButtonTxt, onInvite );
+            closeLoc[0] = DialogInterface.BUTTON_POSITIVE;
         }
     }
 }
