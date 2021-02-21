@@ -512,7 +512,6 @@ fait ?</string>-->
     <!--<string name="invite_multiple">\u0020(You are expecting multiple
       remote players.  Be sure to address your invitation to
       that many people.)</string>-->
-    <string name="invite_multiple">" (Vous attendez plusieurs joueurs distants. Nous n\'avez pas à tous les inviter d\'un coup, mais cette alerte ne s\'effacera pas tant que tout le monde n\'aura pas été invité et que toutes les invitations n\'auront pas été acceptées.)"</string>
     <!-- Short for "points", this is shown at the right end of the
          tray in place of the first tile placed along with the points
          the current move would earn if committed. -->
@@ -2775,7 +2774,7 @@ changement, ou l\'éditer pour lui attribuer une façon de se connecter ?</stri
     <string name="nag_intervals">Intervalles des rappels (minutes1,minutes2,…)</string>
     <!--XLATE-ME-->
     <!--<string name="enable_sms_toself_title">Short-circuit SMS to self</string>-->
-    <string name="enable_sms_toself_title">Court-circuiter les SMS vers soi-même</string>
+    <string name="enable_sms_toself_title">Court-circuiter les MMS vers soi-même</string>
     <!--XLATE-ME-->
     <!--<string name="enable_sms_toself_summary">Skip radio when phone numbers same</string>-->
     <string name="enable_sms_toself_summary">Ne pas utiliser la radio quand les
@@ -2827,7 +2826,7 @@ pour la langue</string>
     <!--<string name="got_langdict_summary">Don\'t try a second time</string>-->
     <string name="got_langdict_summary">Ne pas essayer une seconde fois</string>
     <!--<string name="pref_group_sms_title">SMS Stuff</string>-->
-    <string name="pref_group_sms_title">Trucs pour les SMS</string>
+    <string name="pref_group_sms_title">Trucs pour les MMS</string>
     <!--<string name="pref_group_sms_summary">Prefs related to play-via-sms</string>-->
     <string name="pref_group_sms_summary">Préférences pour le jeu par SMS</string>
     <!--<string name="pref_group_relay_title">Relay Stuff</string>-->
@@ -3246,4 +3245,8 @@ pour la langue</string>
     <string name="title_blank_picker">Choisir un jeton pour la lettre blanche</string>
     <string name="values_both">Lettres et valeurs</string>
     <string name="values_faces">Lettres uniquement</string>
+    <string name="newgame_reinvite">Inviter de nouveau</string>
+    <string name="invites_unsent">Cette partie est configurée pour attendre un joueur distant.
+\n
+\nSouhaitez-vous inviter quelqu\'un \?</string>
 </resources>
