@@ -3,12 +3,8 @@ var state = {client: null,
 			 connected: false,
 			};
 
-function callNewGame() {
-	Module.ccall('newgame', null, ['number'], [state.closure]);
-}
-
-function ccallDlgButton(proc, closure, str) {
-	Module.ccall('onDlgButton', null, ['number', 'number', 'string'],
+function ccallString(proc, closure, str) {
+	Module.ccall('cbckString', null, ['number', 'number', 'string'],
 				 [proc, closure, str]);
 }
 
@@ -16,13 +12,15 @@ function onHaveDevID(closure, devid, proc) {
 	// Set a unique tag so we know if somebody comes along later
 	let tabID = Math.random();
 	localStorage.setItem('tabID', tabID);
-	window.addEventListener('storage', function () {
+	let listener = function () {
 		newTabID = 	localStorage.getItem('tabID');
 		if ( newTabID != tabID ) {
 			state.client.disconnect();
-			ccallDlgButton(proc, state.closure, '');
+			ccallString(proc, state.closure, '');
+			window.removeEventListener('storage', listener);
 		}
-	} );
+	};
+	window.addEventListener('storage', listener);
 
 	state.closure = closure;
 	document.getElementById("mqtt_span").textContent=devid;
@@ -130,7 +128,7 @@ function nbDialog(msg, buttons, proc, closure) {
 
 	butProc = function(buttonTxt) {
 		dlg.parentNode.removeChild(dlg);
-		ccallDlgButton(proc, closure, buttonTxt);
+		ccallString(proc, closure, buttonTxt);
 	}
 	dlg.appendChild( newButtonDiv( buttons, butProc ) );
 	addDepthNote(dlg);
@@ -141,7 +139,7 @@ function nbBlankPick(title, buttons, proc, closure) {
 
 	butProc = function(buttonTxt) {
 		dlg.parentNode.removeChild(dlg);
-		ccallDlgButton(proc, closure, buttonTxt);
+		ccallString(proc, closure, buttonTxt);
 	}
 
 	let ROWLEN = 6;
@@ -164,7 +162,7 @@ function nbGamePick(title, gameMap, proc, closure) {
 	
 	butProc = function(buttonTxt) {
 		dlg.parentNode.removeChild(dlg);
-		ccallDlgButton(proc, closure, revMap[buttonTxt]);
+		ccallString(proc, closure, revMap[buttonTxt]);
 	}
 
 	dlg.appendChild( newButtonDiv( buttons.sort(), butProc ) );
@@ -178,7 +176,7 @@ function setDivButtons(divid, buttons, proc, closure) {
 	}
 
 	butProc = function(buttonTxt) {
-		ccallDlgButton(proc, closure, buttonTxt);
+		ccallString(proc, closure, buttonTxt);
 	}
 
 	parent.appendChild( newButtonDiv( buttons, butProc ) );
@@ -194,7 +192,7 @@ function nbGetString(msg, dflt, proc, closure) {
 
 	dismissed = function(str) {
 		dlg.parentNode.removeChild(dlg);
-		ccallDlgButton(proc, closure, str);
+		ccallString(proc, closure, str);
 	}
 
 	buttons = ["Cancel", "OK"];

@@ -390,7 +390,7 @@ wasm_draw_measureScoreText( DrawCtx* dctx, XWEnv xwe,
 
     int fontHeight = rect->height;
     if ( !dsi->isTurn ) {
-        fontHeight = fontHeight / 2; // / 3;
+        fontHeight = fontHeight * 2 / 5;
     }
     int width, height;
     measureText( wdctx, buf, fontHeight, &width, &height );

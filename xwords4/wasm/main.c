@@ -95,7 +95,7 @@ static void loadName( Globals* globals );
 static void saveName( Globals* globals );
 
 
-typedef void (*AlertProc)(void* closure, const char* button);
+typedef void (*StringProc)(void* closure, const char* str);
 
 /* typedef struct _Buttons { */
 /*     int nButtons; */
@@ -103,7 +103,7 @@ typedef void (*AlertProc)(void* closure, const char* button);
 /* } Buttons; */
 
 EM_JS(void, call_dialog, (const char* str, const char** but_strs,
-                          AlertProc proc, void* closure), {
+                          StringProc proc, void* closure), {
           var buttons = [];
           for ( let ii = 0; ; ++ii ) {
               const mem = HEAP32[(but_strs + (ii * 4)) >> 2];
@@ -117,7 +117,7 @@ EM_JS(void, call_dialog, (const char* str, const char** but_strs,
       } );
 
 EM_JS(void, call_pickBlank, (const char* msg, const char** strs, int nStrs,
-                             AlertProc proc, void* closure), {
+                             StringProc proc, void* closure), {
           var buttons = [];
           for ( let ii = 0; ii < nStrs; ++ii ) {
               const mem = HEAP32[(strs + (ii * 4)) >> 2];
@@ -127,7 +127,7 @@ EM_JS(void, call_pickBlank, (const char* msg, const char** strs, int nStrs,
           nbBlankPick(UTF8ToString(msg), buttons, proc, closure);
       } );
 
-EM_JS(void, call_pickGame, (const char* msg, AlertProc proc, void* closure), {
+EM_JS(void, call_pickGame, (const char* msg, StringProc proc, void* closure), {
         var map = {};
         for (var ii = 0; ii < localStorage.length; ++ii ) {
             var key = localStorage.key(ii);
@@ -150,13 +150,13 @@ EM_JS(void, call_pickGame, (const char* msg, AlertProc proc, void* closure), {
     } );
 
 EM_JS(void, call_get_string, (const char* msg, const char* dflt,
-                              AlertProc proc, void* closure), {
+                              StringProc proc, void* closure), {
           let jsMgs = UTF8ToString(msg);
           let jsDflt = UTF8ToString(dflt);
           nbGetString( jsMgs, jsDflt, proc, closure );
       } );
 
-EM_JS(void, call_haveDevID, (void* closure, const char* devid, AlertProc proc), {
+EM_JS(void, call_haveDevID, (void* closure, const char* devid, StringProc proc), {
         onHaveDevID(closure, UTF8ToString(devid), proc);
 });
 
@@ -183,7 +183,7 @@ typedef void (*JSCallback)(void* closure);
 
 EM_JS(void, jscallback_set, (JSCallback proc, void* closure, int inMS), {
         let timerproc = function(closure) {
-            ccall('jscallback', null, ['number', 'number'], [proc, closure]);
+            ccall('cbckVoid', null, ['number', 'number'], [proc, closure]);
         };
         setTimeout( timerproc, inMS, closure );
     });
@@ -195,7 +195,7 @@ EM_JS(void, setButtonText, (const char* id, const char* text), {
     });
 
 EM_JS(void, setButtons, (const char* id, const char** bstrs,
-                         AlertProc proc, void* closure), {
+                         StringProc proc, void* closure), {
           var buttons = [];
           for ( let ii = 0; ; ++ii ) {
               const mem = HEAP32[(bstrs + (ii * 4)) >> 2];
@@ -1324,21 +1324,6 @@ gotMQTTMsg( void* closure, int len, const uint8_t* msg )
 }
 
 void
-jscallback( JSCallback proc, void* closure )
-{
-    LOG_FUNC();
-    (*proc)(closure);
-}
-
-void
-onDlgButton( AlertProc proc, void* closure, const char* button )
-{
-    if ( !!proc ) {
-        (*proc)( closure, button );
-    }
-}
-
-void
 onNewGame( void* closure, bool opponentIsRobot )
 {
     Globals* globals = (Globals*)closure;
@@ -1347,6 +1332,23 @@ onNewGame( void* closure, bool opponentIsRobot )
     NewGameParams ngp = {0};
     ngp.isRobotNotRemote = opponentIsRobot;
     loadAndDraw( globals, NULL, NULL, &ngp );
+}
+
+/* Called from js with a proc and closure */
+void
+cbckVoid( JSCallback proc, void* closure )
+{
+    LOG_FUNC();
+    (*proc)(closure);
+}
+
+/* Called from js with a proc, closure, and string */
+void
+cbckString( StringProc proc, void* closure, const char* str )
+{
+    if ( !!proc ) {
+        (*proc)( closure, str );
+    }
 }
 
 int
