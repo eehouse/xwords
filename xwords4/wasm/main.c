@@ -156,9 +156,11 @@ EM_JS(void, call_get_string, (const char* msg, const char* dflt,
           nbGetString( jsMgs, jsDflt, proc, closure );
       } );
 
-EM_JS(void, call_haveDevID, (void* closure, const char* devid, StringProc proc), {
-        onHaveDevID(closure, UTF8ToString(devid), proc);
-});
+EM_JS(void, call_haveDevID, (void* closure, const char* devid,
+                             const char* gitrev, int now, StringProc proc), {
+          let jsgr = UTF8ToString(gitrev);
+          onHaveDevID(closure, UTF8ToString(devid), jsgr, now, proc);
+      });
 
 EM_JS(bool, call_mqttSend, (const char* topic, const uint8_t* ptr, int len), {
         let topStr = UTF8ToString(topic);
@@ -550,7 +552,8 @@ initDeviceGlobals( Globals* globals )
     XP_UCHAR buf[32];
     XP_SNPRINTF( buf, VSIZE(buf), MQTTDevID_FMT, devID );
     XP_LOGFF( "got mqtt devID: %s", buf );
-    call_haveDevID( globals, buf, onConflict );
+    int now = dutil_getCurSeconds( globals->dutil, NULL );
+    call_haveDevID( globals, buf, GITREV, now, onConflict );
 }
 
 static void

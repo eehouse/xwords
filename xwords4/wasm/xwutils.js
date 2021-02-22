@@ -8,7 +8,46 @@ function ccallString(proc, closure, str) {
 				 [proc, closure, str]);
 }
 
-function onHaveDevID(closure, devid, proc) {
+function registerOnce(devid, gitrev, now) {
+	let nextTimeKey = 'next_reg';
+	let gitKey = 'last_write';
+	let nextTime = localStorage.getItem(nextTimeKey);
+	let prevGit = localStorage.getItem(gitKey);
+	// false: for now, always register. PENDING
+	if ( false && prevGit == gitrev && now < nextTime ) {
+		// console.log("registerOnce: skipping");
+	} else {
+		let args = { devid: devid,
+					 gitrev: gitrev,
+					 loc: navigator.language,
+					 os: navigator.appName,
+					 vers: '0.0',
+					 dbg: true,
+					 myNow: now,
+					 vrntName: 'wasm',
+				   };
+		let body = JSON.stringify(args);
+		// console.log('registerOnce(): args: ' + body);
+
+		fetch('/xw4/api/v1/register', {
+			method: 'post',
+			body: body,
+			headers: {
+				'Content-Type': 'application/json'
+			},
+		}).then(res => {
+			return res.json();
+		}).then(data => {
+			console.log('data: ' + JSON.stringify(data));
+			if ( data.success ) {
+				localStorage.setItem(nextTimeKey, data.atNext);
+				localStorage.setItem(gitKey, gitrev);
+			}
+		});
+	}
+}
+
+function onHaveDevID(closure, devid, gitrev, now, proc) {
 	// Set a unique tag so we know if somebody comes along later
 	let tabID = Math.random();
 	localStorage.setItem('tabID', tabID);
@@ -21,6 +60,8 @@ function onHaveDevID(closure, devid, proc) {
 		}
 	};
 	window.addEventListener('storage', listener);
+
+	registerOnce(devid, gitrev, now);
 
 	state.closure = closure;
 	document.getElementById("mqtt_span").textContent=devid;

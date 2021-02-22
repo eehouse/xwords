@@ -46,6 +46,7 @@ DEFINES += -DXWFEATURE_STREAMREF
 DEFINES += -DNATIVE_NLI
 DEFINES += -DDEBUG_REF
 DEFINES += -Wno-switch
+DEFINES += -DGITREV=\"$(shell git describe --tags --dirty)\"
 
 ifeq ($(MEMDEBUG),TRUE)
 	DEFINES += -DMEM_DEBUG -DDEBUG -O0
