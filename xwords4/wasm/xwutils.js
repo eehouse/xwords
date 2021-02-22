@@ -11,11 +11,10 @@ function ccallString(proc, closure, str) {
 function registerOnce(devid, gitrev, now) {
 	let nextTimeKey = 'next_reg';
 	let gitKey = 'last_write';
-	let nextTime = localStorage.getItem(nextTimeKey);
+	let nextTime = parseInt(localStorage.getItem(nextTimeKey));
 	let prevGit = localStorage.getItem(gitKey);
-	// false: for now, always register. PENDING
-	if ( false && prevGit == gitrev && now < nextTime ) {
-		// console.log("registerOnce: skipping");
+	if ( prevGit == gitrev && now < nextTime ) {
+		console.log('registerOnce(): next in ' + (nextTime - now) + ' secs');
 	} else {
 		let args = { devid: devid,
 					 gitrev: gitrev,
@@ -27,7 +26,6 @@ function registerOnce(devid, gitrev, now) {
 					 vrntName: 'wasm',
 				   };
 		let body = JSON.stringify(args);
-		// console.log('registerOnce(): args: ' + body);
 
 		fetch('/xw4/api/v1/register', {
 			method: 'post',
