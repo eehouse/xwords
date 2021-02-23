@@ -21,9 +21,10 @@
 #define _WASMASM_H_
 
 #include <stdbool.h>
+#include <unistd.h>
 
-const char* get_stored_value( const char* key );
 void set_stored_value(const char* key, const char* val);
+bool get_stored_value(const char* key, char out[], size_t* len);
 void remove_stored_value(const char* key);
 bool have_stored_value(const char* key);
 

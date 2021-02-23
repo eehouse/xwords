@@ -94,7 +94,7 @@ static GameState* getSavedGame( Globals* globals, int gameID );
 static void loadAndDraw( Globals* globals, const NetLaunchInfo* invite,
                          const char* gameID, NewGameParams* params );
 static GameState* getCurGame( Globals* globals );
-static void nameGame( GameState* gs );
+static void nameGame( GameState* gs, const char* name );
 static void ensureName( GameState* gs );
 static void loadName( GameState* gs );
 static void saveName( GameState* gs );
@@ -443,13 +443,9 @@ onGameChosen( void* closure, const char* key )
 static void
 onGameRanamed( void* closure, const char* newName )
 {
-    CAST_GS(GameState*, gs, closure);
     if ( !!newName ) {
-        snprintf( gs->gameName, sizeof(gs->gameName) - 1,
-                  "%s", newName );
-        // be safe
-        gs->gameName[sizeof(gs->gameName)-1] = '\0';
-        saveName( gs );
+        CAST_GS(GameState*, gs, closure);
+        nameGame( gs, newName );
     }
 }
 
@@ -635,6 +631,15 @@ onPlayerNamed( void* closure, const char* name )
     }
 }
 
+static void
+getPlayerName( Globals* globals, char* playerName, size_t buflen )
+{
+    size_t len = buflen;
+    if ( !get_stored_value( KEY_PLAYER_NAME, playerName, &len ) ) {
+        strcpy( playerName, "Player 1" );
+    }
+}
+
 static GameState*
 newFromInvite( Globals* globals, const NetLaunchInfo* invite )
 {
@@ -642,13 +647,16 @@ newFromInvite( Globals* globals, const NetLaunchInfo* invite )
     gs->util = wasm_util_make( MPPARM(globals->mpool) &gs->gi,
                                globals->dutil, gs );
 
+    char playerName[32];
+    getPlayerName( globals, playerName, sizeof(playerName) );
+
     game_makeFromInvite( MPPARM(globals->mpool) NULL, invite,
-                         &gs->game, &gs->gi,
+                         &gs->game, &gs->gi, playerName,
                          globals->dict, NULL,
                          gs->util, globals->draw,
                          &globals->cp, &globals->procs );
     if ( invite->gameName[0] ) {
-        strcpy( gs->gameName, invite->gameName );
+        nameGame( gs, invite->gameName );
     }
     ensureName( gs );
     return gs;
@@ -769,28 +777,29 @@ loadName( GameState* gs )
 {
     char key[32];
     formatNameKey( key, sizeof(key), gs->gi.gameID );
-    const char* ptr = get_stored_value( key );
-    if ( !!ptr ) {
-        snprintf( gs->gameName, sizeof(gs->gameName),
-                  "%s", ptr );
-        free( (void*)ptr );
-    }
+
+    size_t len = sizeof(gs->gameName);
+    get_stored_value( key, gs->gameName, &len );
 }
 
 static void
 ensureName( GameState* gs )
 {
     if ( '\0' == gs->gameName[0] ) {
-        nameGame( gs );
-        saveName( gs );
+        nameGame( gs, NULL );
     }
 }
 
 static void
-nameGame( GameState* gs )
+nameGame( GameState* gs, const char* name )
 {
-    snprintf( gs->gameName, sizeof(gs->gameName),
-              "Game %d", getNextGameNo() );
+    if ( !!name ) {
+        snprintf( gs->gameName, sizeof(gs->gameName), "%s", name );
+    } else {
+        snprintf( gs->gameName, sizeof(gs->gameName),
+                  "Game %d", getNextGameNo() );
+    }
+    saveName( gs );
     XP_LOGFF( "named game: %s", gs->gameName );
 }
 
@@ -816,6 +825,9 @@ loadAndDraw( Globals* globals, const NetLaunchInfo* invite,
     }
 
     if ( !gs ) {
+        char playerName[32];
+        getPlayerName( globals, playerName, sizeof(playerName) );
+
         gs = newGameState( globals );
         gs->gi.serverRole = !!params && !params->isRobotNotRemote
             ? SERVER_ISSERVER : SERVER_STANDALONE;
@@ -828,7 +840,7 @@ loadAndDraw( Globals* globals, const NetLaunchInfo* invite,
                                   "CollegeEng_2to8" );
         gs->gi.nPlayers = 2;
         gs->gi.boardSize = 15;
-        gs->gi.players[0].name = copyString( globals->mpool, "Player 1" ); /* FIXME */
+        gs->gi.players[0].name = copyString( globals->mpool, playerName );
         gs->gi.players[0].isLocal = XP_TRUE;
         gs->gi.players[0].robotIQ = 0;
 
@@ -1360,12 +1372,12 @@ initNoReturn( int argc, const char** argv )
 
     initDeviceGlobals( &globals );
 
-    const char* lastKey = get_stored_value( KEY_LAST_GID );
+    size_t len = 0;
+    get_stored_value( KEY_LAST_GID, NULL, &len );
+    char lastKey[len];
+    get_stored_value( KEY_LAST_GID, lastKey, &len );
     XP_LOGFF( "loaded KEY_LAST_GID: %s", lastKey );
     loadAndDraw( &globals, nlip, lastKey, NULL );
-    if ( !!lastKey ) {
-        free( (void*)lastKey );
-    }
 
     updateDeviceButtons( &globals );
 

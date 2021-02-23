@@ -338,7 +338,7 @@ game_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream, XWGame* game,
 
 XP_Bool
 game_makeFromInvite( MPFORMAL XWEnv xwe, const NetLaunchInfo* nli,
-                     XWGame* game, CurGameInfo* gi,
+                     XWGame* game, CurGameInfo* gi, const XP_UCHAR* plyrName,
                      DictionaryCtxt* dict, const PlayerDicts* dicts,
                      XW_UtilCtxt* util, DrawCtx* draw,
                      CommonPrefs* cp, const TransportProcs* procs )
@@ -350,6 +350,8 @@ game_makeFromInvite( MPFORMAL XWEnv xwe, const NetLaunchInfo* nli,
     gi->forceChannel = nli->forceChannel;
     gi->inDuplicateMode = nli->inDuplicateMode;
     gi->serverRole = SERVER_ISCLIENT; /* recipient of invitation is client */
+    XP_ASSERT( gi->players[0].isLocal );
+    replaceStringIfDifferent( mpool, &gi->players[0].name, plyrName );
     replaceStringIfDifferent( mpool, &gi->dictName, nli->dict );
 
     game_makeNewGame( MPPARM(mpool) xwe, game, gi, util, draw, cp, procs );
@@ -428,8 +430,13 @@ game_receiveMessage( XWGame* game, XWEnv xwe, XWStreamCtxt* stream,
 {
     ServerCtxt* server = game->server;
     CommsMsgState commsState;
-    XP_Bool result = comms_checkIncomingStream( game->comms, xwe, stream, retAddr,
-                                                &commsState );
+    XP_Bool result = NULL != game->comms;
+    if ( result ) {
+        result = comms_checkIncomingStream( game->comms, xwe, stream, retAddr,
+                                            &commsState );
+    } else {
+        XP_LOGFF( "ERROR: comms NULL!" );
+    }
     if ( result ) {
         (void)server_do( server, xwe );
 

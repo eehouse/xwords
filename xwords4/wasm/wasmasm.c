@@ -18,10 +18,13 @@
  */
 
 #include <emscripten.h>
+#include <string.h>
+#include <stdlib.h>
 
 #include "wasmasm.h"
+#include "comtypes.h"
 
-EM_JS(const char*, get_stored_value, (const char* key), {
+EM_JS(const char*, _get_stored_value, (const char* key), {
         var result = null;
         var jsKey = UTF8ToString(key);
         var jsString = localStorage.getItem(jsKey);
@@ -50,3 +53,21 @@ EM_JS(bool, have_stored_value, (const char* key), {
         let result = null !== jsVal;
         return result;
     });
+
+bool
+get_stored_value( const char* key, char out[], size_t* len )
+{
+    bool success = false;
+    const char* tmp = _get_stored_value( key );
+    if ( !!tmp ) {
+        size_t slen = 1 + strlen(tmp);
+        if ( !!out && slen <= *len ) {
+            memcpy( out, tmp, slen );
+            success = true;
+        }
+        *len = slen;
+        free( (void*)tmp );
+    }
+
+    return success;
+}

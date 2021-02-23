@@ -1,4 +1,4 @@
-/* -*- compile-command: "cd ../wasm && make main.html -j3"; -*- */
+/* -*- compile-command: "cd ../wasm && make MEMDEBUG=TRUE install -j3"; -*- */
 /*
  * Copyright 2021 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
@@ -166,10 +166,12 @@ static void
 wasm_dutil_loadPtr( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
                     const XP_UCHAR* keySuffix, void* data, XP_U16* lenp )
 {
-    const char* val = get_stored_value(key);
-    XP_LOGFF( "get_stored_value(%s) => %s", key, val );
-    if ( !!val ) {
-        size_t len = XP_STRLEN(val);
+    size_t len;
+    get_stored_value(key, NULL, &len);
+    char val[len];
+    if ( get_stored_value( key, val, &len ) ) {
+        // XP_LOGFF( "get_stored_value(%s) => %s", key, val );
+        len = XP_STRLEN(val);
         XP_ASSERT( (len % 2) == 0 );
         XP_U8 decodeBuf[len/2];
         len = VSIZE(decodeBuf);
@@ -178,7 +180,6 @@ wasm_dutil_loadPtr( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
             XP_MEMCPY( data, decodeBuf, len );
         }
         *lenp = len;
-        free( (void*)val );
     } else {
         *lenp = 0;              /* signal failure */
     }

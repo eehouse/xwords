@@ -82,7 +82,7 @@ XP_Bool game_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
                              CommonPrefs* cp, const TransportProcs* procs );
 
 XP_Bool game_makeFromInvite( MPFORMAL XWEnv xwe, const NetLaunchInfo* nli,
-                             XWGame* game, CurGameInfo* gi,
+                             XWGame* game, CurGameInfo* gi, const XP_UCHAR* plyrName,
                              DictionaryCtxt* dict, const PlayerDicts* dicts,
                              XW_UtilCtxt* util, DrawCtx* draw,
                              CommonPrefs* cp, const TransportProcs* procs );
