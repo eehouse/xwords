@@ -1,4 +1,4 @@
-/* -*- compile-command: "cd ../wasm && make main.html -j3"; -*- */
+/* -*- compile-command: "cd ../wasm && make MEMDEBUG=TRUE install -j3"; -*- */
 /*
  * Copyright 2021 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
@@ -35,7 +35,13 @@ typedef struct _TimerState {
 
 typedef XP_Bool (*IdleProc)(void* closure);
 
-typedef struct _GameState {
+typedef struct GameState {
+#ifdef DEBUG
+    int _GUARD;
+#endif
+    struct GameState* next;
+    struct Globals* globals;
+
     CurGameInfo gi;
     XWGame game;
     XW_UtilCtxt* util;
@@ -43,10 +49,14 @@ typedef struct _GameState {
     char gameName[32];
 } GameState;
 
-typedef struct _Globals {
+typedef struct Globals {
+#ifdef DEBUG
+    int _GUARD;
+#endif
     SDL_Window* window;
     SDL_Renderer* renderer;
-    GameState gs;
+    GameState* games;
+    GameState* curGame;         /* if non-null, ptr to the one of games that's visible */
     VTableMgr* vtMgr;
     XW_DUtilCtxt* dutil;
     DrawCtx* draw;
@@ -60,28 +70,35 @@ typedef struct _Globals {
 #endif
 } Globals;
 
-void main_set_timer( Globals* globals, XWTimerReason why, XP_U16 when,
+#define GUARD_GLOB 0x76AB98CD
+#define GUARD_GS 0x12347890
+
+#define CAST_GLOB(typ, var, ptr) XP_ASSERT(((typ)(ptr))->_GUARD == GUARD_GLOB); typ var = (typ)(ptr)
+#define CAST_GS(typ, var, ptr) XP_ASSERT(((typ)(ptr))->_GUARD == GUARD_GS); typ var = (typ)(ptr)
+
+void main_set_timer( GameState* gs, XWTimerReason why, XP_U16 when,
                      XWTimerProc proc, void* closure );
-void main_clear_timer( Globals* globals, XWTimerReason why );
+void main_clear_timer( GameState* gs, XWTimerReason why );
 
 typedef void (*QueryProc)(void* closure, XP_Bool confirmed);
-void main_query( Globals* globals, const XP_UCHAR* query,
+void main_query( GameState* gs, const XP_UCHAR* query,
                  QueryProc proc, void* closure );
 
-void main_set_idle( Globals* globals, IdleProc proc, void* closure );
+void main_set_idle( GameState* gs, IdleProc proc, void* closure );
 
-void main_alert( Globals* globals, const XP_UCHAR* msg );
+void main_alert( GameState* gs, const XP_UCHAR* msg );
 
 void main_gameFromInvite( Globals* globals, const NetLaunchInfo* invite );
 void main_onGameMessage( Globals* globals, XP_U32 gameID,
                          const CommsAddrRec* from, XWStreamCtxt* stream );
 void main_onGameGone( Globals* globals, XP_U32 gameID );
 void main_sendOnClose( XWStreamCtxt* stream, XWEnv env, void* closure );
-void main_playerScoreHeld( Globals* globals, XP_U16 player );
-void main_showGameOver( Globals* globals );
-void main_showRemaining( Globals* globals );
-void main_pickBlank( Globals* globals, int playerNum, int col, int row,
+void main_playerScoreHeld( GameState* gs, XP_U16 player );
+void main_showGameOver( GameState* gs );
+void main_showRemaining( GameState* gs );
+void main_turnChanged(GameState* gs, int newTurn);
+void main_pickBlank( GameState* gs, int playerNum, int col, int row,
                      const char** tileFaces, int nTiles );
-void main_updateScreen( Globals* globals );
+void main_updateScreen( GameState* gs );
 
 #endif

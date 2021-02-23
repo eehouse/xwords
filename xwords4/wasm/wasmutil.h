@@ -1,4 +1,4 @@
-/* -*- compile-command: "cd ../wasm && make main.html -j3"; -*- */
+/* -*- compile-command: "cd ../wasm && make MEMDEBUG=TRUE install -j3"; -*- */
 /*
  * Copyright 2021 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
@@ -23,7 +23,7 @@
 #include "dutil.h"
 
 XW_UtilCtxt* wasm_util_make( MPFORMAL CurGameInfo* gi, XW_DUtilCtxt* dutil,
-                             Globals* closure );
+                             GameState* closure );
 void wasm_util_destroy( XW_UtilCtxt* util );
 
 #endif

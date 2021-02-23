@@ -27,7 +27,7 @@ typedef struct _WasmUtilCtx {
     XW_UtilCtxt super;
 
     XW_DUtilCtxt* dctxt;
-    Globals* closure;
+    GameState* closure;
 } WasmUtilCtx;
 
 static XWStreamCtxt*
@@ -36,9 +36,9 @@ wasm_util_makeStreamFromAddr( XW_UtilCtxt* uc, XWEnv xwe, XP_PlayerAddr channelN
     LOG_FUNC();
 
     WasmUtilCtx* wuctxt = (WasmUtilCtx*)uc;
-    Globals* globals = wuctxt->closure;
+    GameState* gs = wuctxt->closure;
     XWStreamCtxt* stream = mem_stream_make( MPPARM(uc->mpool)
-                                            globals->vtMgr, globals, 
+                                            gs->globals->vtMgr, gs,
                                             channelNo, main_sendOnClose );
     return stream;
 }
@@ -216,11 +216,11 @@ static void
 wasm_util_userError( XW_UtilCtxt* uc, XWEnv xwe, UtilErrID id )
 {
     WasmUtilCtx* wuctxt = (WasmUtilCtx*)uc;
-    Globals* globals = wuctxt->closure;
+    GameState* gs = wuctxt->closure;
     XP_Bool silent;
     const XP_UCHAR* str = wasm_getErrString( id, &silent );
     if ( !silent ) {
-        main_alert( globals, str );
+        main_alert( gs, str );
     }
 }
 
@@ -229,10 +229,10 @@ query_proc_notifyMove( void* closure, XP_Bool confirmed )
 {
     if ( confirmed ) {
         WasmUtilCtx* wuctxt = (WasmUtilCtx*)closure;
-        Globals* globals = wuctxt->closure;
-        if ( board_commitTurn( globals->gs.game.board, NULL,
+        GameState* gs = wuctxt->closure;
+        if ( board_commitTurn( gs->game.board, NULL,
                                XP_TRUE, XP_TRUE, NULL ) ) {
-            main_updateScreen( globals );
+            main_updateScreen( gs );
         }
     }
 }
@@ -241,13 +241,13 @@ static void
 wasm_util_notifyMove( XW_UtilCtxt* uc, XWEnv xwe, XWStreamCtxt* stream )
 {
     WasmUtilCtx* wuctxt = (WasmUtilCtx*)uc;
-    Globals* globals = wuctxt->closure;
+    GameState* gs = wuctxt->closure;
 
     XP_U16 len = stream_getSize( stream );
     XP_UCHAR buf[len+1];
     stream_getBytes( stream, buf, len );
     buf[len] = '\0';
-    main_query( globals, buf, query_proc_notifyMove, uc );
+    main_query( gs, buf, query_proc_notifyMove, uc );
 }
 
 static void
@@ -255,11 +255,11 @@ wasm_util_notifyTrade( XW_UtilCtxt* uc, XWEnv xwe, const XP_UCHAR** tiles,
                        XP_U16 nTiles )
 {
     WasmUtilCtx* wuctxt = (WasmUtilCtx*)uc;
-    Globals* globals = wuctxt->closure;
+    GameState* gs = wuctxt->closure;
     XP_UCHAR buf[128];
     XP_SNPRINTF( buf, sizeof(buf),
                  "Are you sure you want to trade the %d selected tiles?", nTiles );
-    main_query( globals, buf, query_proc_notifyMove, uc );
+    main_query( gs, buf, query_proc_notifyMove, uc );
 }
 
 static void
@@ -268,8 +268,8 @@ wasm_util_notifyPickTileBlank( XW_UtilCtxt* uc, XWEnv xwe, XP_U16 playerNum,
                                const XP_UCHAR** tileFaces, XP_U16 nTiles )
 {
     WasmUtilCtx* wuctxt = (WasmUtilCtx*)uc;
-    Globals* globals = wuctxt->closure;
-    main_pickBlank( globals, playerNum, col, row, tileFaces, nTiles );
+    GameState* gs = wuctxt->closure;
+    main_pickBlank( gs, playerNum, col, row, tileFaces, nTiles );
 }
 
 static void
@@ -306,7 +306,9 @@ wasm_util_yOffsetChange( XW_UtilCtxt* uc, XWEnv xwe, XP_U16 maxOffset,
 static void
 wasm_util_turnChanged(XW_UtilCtxt* uc, XWEnv xwe, XP_S16 newTurn)
 {
-    LOG_FUNC();
+    WasmUtilCtx* wuctxt = (WasmUtilCtx*)uc;
+    GameState* gs = wuctxt->closure;
+    main_turnChanged(gs, newTurn);
 }
 
 static void
@@ -327,8 +329,8 @@ wasm_util_informMove( XW_UtilCtxt* uc, XWEnv xwe, XP_S16 turn,
     buf[len] = '\0';
 
     WasmUtilCtx* wuctxt = (WasmUtilCtx*)uc;
-    Globals* globals = wuctxt->closure;
-    main_alert( globals, buf );
+    GameState* gs = wuctxt->closure;
+    main_alert( gs, buf );
 }
 
 static void
@@ -351,8 +353,8 @@ static void
 wasm_util_notifyGameOver( XW_UtilCtxt* uc, XWEnv xwe, XP_S16 quitter )
 {
     WasmUtilCtx* wuctxt = (WasmUtilCtx*)uc;
-    Globals* globals = wuctxt->closure;
-    main_showGameOver( globals );
+    GameState* gs = wuctxt->closure;
+    main_showGameOver( gs );
 }
 
 static XP_Bool
@@ -368,8 +370,8 @@ wasm_util_setTimer( XW_UtilCtxt* uc, XWEnv xwe, XWTimerReason why, XP_U16 when,
 {
     XP_LOGFF( "(why: %d)", why );
     WasmUtilCtx* wuctxt = (WasmUtilCtx*)uc;
-    Globals* globals = wuctxt->closure;
-    main_set_timer( globals, why, when, proc, closure );
+    GameState* gs = wuctxt->closure;
+    main_set_timer( gs, why, when, proc, closure );
     LOG_RETURN_VOID();
 }
 
@@ -378,24 +380,24 @@ wasm_util_clearTimer( XW_UtilCtxt* uc, XWEnv xwe, XWTimerReason why )
 {
     LOG_FUNC();
     WasmUtilCtx* wuctxt = (WasmUtilCtx*)uc;
-    Globals* globals = wuctxt->closure;
-    main_clear_timer( globals, why );
+    GameState* gs = wuctxt->closure;
+    main_clear_timer( gs, why );
 }
 
 static XP_Bool
 on_idle( void* closure )
 {
     WasmUtilCtx* wuctxt = (WasmUtilCtx*)closure;
-    Globals* globals = wuctxt->closure;
-    return server_do( globals->gs.game.server, NULL );
+    GameState* gs = wuctxt->closure;
+    return server_do( gs->game.server, NULL );
 }
 
 static void
 wasm_util_requestTime( XW_UtilCtxt* uc, XWEnv xwe )
 {
     WasmUtilCtx* wuctxt = (WasmUtilCtx*)uc;
-    Globals* globals = wuctxt->closure;
-    main_set_idle( globals, on_idle, wuctxt );
+    GameState* gs = wuctxt->closure;
+    main_set_idle( gs, on_idle, wuctxt );
 }
 
 static XP_Bool
@@ -433,16 +435,16 @@ wasm_util_notifyIllegalWords( XW_UtilCtxt* uc, XWEnv xwe, BadWordInfo* bwi,
                  "dictionary (%s). Use anyway?", words, bwi->dictName );
 
     WasmUtilCtx* wuctxt = (WasmUtilCtx*)uc;
-    Globals* globals = wuctxt->closure;
-    main_query( globals, buf, query_proc_notifyMove, uc );
+    GameState* gs = wuctxt->closure;
+    main_query( gs, buf, query_proc_notifyMove, uc );
 }
 
 static void
 wasm_util_remSelected( XW_UtilCtxt* uc, XWEnv xwe )
 {
     WasmUtilCtx* wuctxt = (WasmUtilCtx*)uc;
-    Globals* globals = wuctxt->closure;
-    main_showRemaining( globals );
+    GameState* gs = wuctxt->closure;
+    main_showRemaining( gs );
 }
 
 static void
@@ -471,8 +473,8 @@ static void
 wasm_util_playerScoreHeld( XW_UtilCtxt* uc, XWEnv xwe, XP_U16 player )
 {
     WasmUtilCtx* wuctxt = (WasmUtilCtx*)uc;
-    Globals* globals = wuctxt->closure;
-    main_playerScoreHeld( globals, player );
+    GameState* gs = wuctxt->closure;
+    main_playerScoreHeld( gs, player );
 }
 
 #ifdef XWFEATURE_BOARDWORDS
@@ -529,7 +531,7 @@ wasm_util_getDevUtilCtxt( XW_UtilCtxt* uc, XWEnv xwe )
 }
 
 XW_UtilCtxt*
-wasm_util_make( MPFORMAL CurGameInfo* gi, XW_DUtilCtxt* dctxt, Globals* closure )
+wasm_util_make( MPFORMAL CurGameInfo* gi, XW_DUtilCtxt* dctxt, GameState* closure )
 {
     LOG_FUNC();
     WasmUtilCtx* wuctxt = XP_MALLOC( mpool, sizeof(*wuctxt) );

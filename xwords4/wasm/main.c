@@ -52,7 +52,7 @@
 #define BDWIDTH WINDOW_WIDTH
 #define BDHEIGHT WINDOW_HEIGHT
 
-#define KEY_LAST "cur_game"
+#define KEY_LAST_GID "cur_game"
 #define KEY_PLAYER_NAME "player_name"
 #define KEY_GAME_PREFIX "key_data_"
 #define KEY_NAME_PREFIX "key_name_"
@@ -87,20 +87,25 @@ typedef struct _NewGameParams {
     bool hintsNotAllowed;
 } NewGameParams;
 
+static void updateScreen( GameState* gs, bool doSave );
+static void clearScreen( Globals* globals );
+static GameState* newGameState( Globals* globals );
+static GameState* getSavedGame( Globals* globals, int gameID );
 static void loadAndDraw( Globals* globals, const NetLaunchInfo* invite,
-                         const char* key, NewGameParams* params );
-static void nameGame( Globals* globals );
-static void ensureName( Globals* globals );
-static void loadName( Globals* globals );
-static void saveName( Globals* globals );
+                         const char* gameID, NewGameParams* params );
+static GameState* getCurGame( Globals* globals );
+static void nameGame( GameState* gs );
+static void ensureName( GameState* gs );
+static void loadName( GameState* gs );
+static void saveName( GameState* gs );
 
 
 typedef void (*StringProc)(void* closure, const char* str);
 
-/* typedef struct _Buttons { */
-/*     int nButtons; */
-/*     const char** buttons; */
-/* } Buttons; */
+EM_JS(void, show_name, (const char* name), {
+        let jsname = UTF8ToString(name);
+        document.getElementById('gamename').textContent = jsname;
+    });
 
 EM_JS(void, call_dialog, (const char* str, const char** but_strs,
                           StringProc proc, void* closure), {
@@ -215,8 +220,6 @@ EM_JS(void, callNewGame, (const char* msg, void* closure), {
         nbGetNewGame(closure, jsmsg);
     });
 
-static void updateScreen( Globals* globals, bool doSave );
-
 typedef void (*ConfirmProc)( void* closure, bool confirmed );
 
 typedef struct _ConfirmState {
@@ -297,6 +300,13 @@ formatGameID( char* buf, size_t len, int gameID )
 }
 
 static void
+unformatGameID( int* gameID, const char* gameIDStr )
+{
+    sscanf( gameIDStr, "%X", gameID );
+    XP_LOGFF( "unformatGameID(%s) => %X", gameIDStr, *gameID );
+}
+
+static void
 formatGameKeyStr( char* buf, size_t len, const char* gameID )
 {
     snprintf( buf, len, KEY_GAME_PREFIX "%s", gameID );
@@ -326,12 +336,13 @@ onGotInviteeID( void* closure, const char* mqttid )
 {
     MQTTDevID remoteDevID;
     if ( strToMQTTCDevID( mqttid, &remoteDevID ) ) {
-        Globals* globals = (Globals*)closure;
+        CAST_GS(GameState*, gs, closure);
+        Globals* globals = gs->globals;
         CommsAddrRec myAddr = {0};
         makeSelfAddr( globals, &myAddr );
 
         NetLaunchInfo nli = {0};    /* include everything!!! */
-        nli_init( &nli, &globals->gs.gi, &myAddr, 1, 1 );
+        nli_init( &nli, &gs->gi, &myAddr, 1, 1 );
 
         XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(globals->mpool)
                                                     globals->vtMgr );
@@ -347,10 +358,10 @@ static void
 onGameButton( void* closure, const char* button )
 {
     if ( !!button ) {
-        Globals* globals = (Globals*)closure;
+        CAST_GS(GameState*, gs, closure);
 
         XP_Bool draw = XP_FALSE;
-        BoardCtxt* board = globals->gs.game.board;
+        BoardCtxt* board = gs->game.board;
         XP_Bool redo;
 
         if ( 0 == strcmp(button, BUTTON_HINTDOWN ) ) {
@@ -369,32 +380,33 @@ onGameButton( void* closure, const char* button )
             draw = board_redoReplacedTiles( board, NULL )
                 || board_replaceTiles( board, NULL );
         } else if ( 0 == strcmp(button, BUTTON_VALS) ) {
+            Globals* globals = gs->globals;
             globals->cp.tvType = (globals->cp.tvType + 1) % TVT_N_ENTRIES;
             draw = board_prefsChanged( board, &globals->cp );
         } else if ( 0 == strcmp(button, BUTTON_INVITE) ) {
             call_get_string( "Invitee's MQTT Device ID?", "",
-                             onGotInviteeID, globals );
+                             onGotInviteeID, gs );
         }
 
         if ( draw ) {
-            updateScreen( globals, true );
+            updateScreen( gs, true );
         }
     }
 }
 
 static void
-updateGameButtons( Globals* globals )
+updateGameButtons( GameState* gs )
 {
     const char* buttons[MAX_BUTTONS];
     int cur = 0;
 
-    if ( !!globals->gs.util ) {
-        XP_U16 nPending = server_getPendingRegs( globals->gs.game.server );
+    if ( !!gs->util ) {
+        XP_U16 nPending = server_getPendingRegs( gs->game.server );
         if ( 0 < nPending ) {
             buttons[cur++] = BUTTON_INVITE;
         } else {
             GameStateInfo gsi;
-            game_getState( &globals->gs.game, NULL, &gsi );
+            game_getState( &gs->game, NULL, &gsi );
 
             if ( gsi.canHint ) {
                 buttons[cur++] = BUTTON_HINTDOWN;
@@ -418,45 +430,46 @@ updateGameButtons( Globals* globals )
     }
     buttons[cur++] = NULL;
 
-    setButtons( BUTTONS_ID_GAME, buttons, onGameButton, globals );
+    setButtons( BUTTONS_ID_GAME, buttons, onGameButton, gs );
 }
 
 static void
 onGameChosen( void* closure, const char* key )
 {
-    Globals* globals = (Globals*)closure;
+    CAST_GLOB(Globals*, globals, closure);
     loadAndDraw( globals, NULL, key, NULL );
 }
 
 static void
 onGameRanamed( void* closure, const char* newName )
 {
+    CAST_GS(GameState*, gs, closure);
     if ( !!newName ) {
-        Globals* globals = (Globals*)closure;
-        snprintf( globals->gs.gameName, sizeof(globals->gs.gameName) - 1,
+        snprintf( gs->gameName, sizeof(gs->gameName) - 1,
                   "%s", newName );
         // be safe
-        globals->gs.gameName[sizeof(globals->gs.gameName)-1] = '\0';
-        saveName( globals );
+        gs->gameName[sizeof(gs->gameName)-1] = '\0';
+        saveName( gs );
     }
 }
 
 static void
-cleanupGame( Globals* globals )
+cleanupGame( GameState* gs )
 {
-    if ( !!globals->gs.util ) {
-        game_dispose( &globals->gs.game, NULL );
-        gi_disposePlayerInfo( MPPARM(globals->mpool) &globals->gs.gi );
-        wasm_util_destroy( globals->gs.util );
-        XP_MEMSET( &globals->gs, 0, sizeof(globals->gs) );
+    if ( !!gs->util ) {
+        game_dispose( &gs->game, NULL );
+        gi_disposePlayerInfo( MPPARM(gs->globals->mpool) &gs->gi );
+        wasm_util_destroy( gs->util );
+        gs->util = NULL;
+        // XP_MEMSET( &gs, 0, sizeof(globals->gs) );
     }
 }
 
 static void
-deleteCurGame( Globals* globals )
+deleteGame( GameState* gs )
 {
-    int gameID = globals->gs.gi.gameID; /* remember it */
-    cleanupGame( globals );
+    int gameID = gs->gi.gameID; /* remember it */
+    cleanupGame( gs );
 
     char key[32];
     formatNameKey( key, sizeof(key), gameID );
@@ -470,32 +483,35 @@ static void
 onDeleteConfirmed( void* closure, bool confirmed )
 {
     if ( confirmed ) {
-        Globals* globals = (Globals*)closure;
-        deleteCurGame( globals );
-        updateScreen( globals, false );
+        CAST_GS(GameState*, gs, closure);
+        Globals* globals = gs->globals;
+        deleteGame( gs );
+        clearScreen( globals );
     }
 }
 
 static void
 onDeviceButton( void* closure, const char* button )
 {
-    Globals* globals = (Globals*)closure;
+    CAST_GLOB(Globals*, globals, closure);
     XP_LOGFF( "(button=%s)", button );
     if ( 0 == strcmp(button, BUTTON_GAME_NEW) ) {
         callNewGame("Configure your new game", globals);
     } else if ( 0 == strcmp(button, BUTTON_GAME_OPEN) ) {
         const char* msg = "Choose game to open";
-        call_pickGame( msg, onGameChosen, globals);
+        call_pickGame( msg, onGameChosen, globals );
     } else if ( 0 == strcmp(button, BUTTON_GAME_RENAME ) ) {
-        ensureName( globals );
-        call_get_string( "Rename your game", globals->gs.gameName,
-                         onGameRanamed, globals );
+        GameState* curGS = getCurGame( globals );
+        ensureName( curGS );
+        call_get_string( "Rename your game", curGS->gameName,
+                         onGameRanamed, curGS );
     } else if ( 0 == strcmp(button, BUTTON_GAME_DELETE) ) {
+        GameState* curGS = getCurGame( globals );
         char msg[256];
         snprintf( msg, sizeof(msg), "Are you sure you want to delete the game \"%s\"?"
                   "\nThis action cannot be undone.",
-                  globals->gs.gameName );
-        call_confirm( globals, msg, onDeleteConfirmed, globals );
+                  curGS->gameName );
+        call_confirm( globals, msg, onDeleteConfirmed, curGS );
     }
 }
 
@@ -557,34 +573,50 @@ initDeviceGlobals( Globals* globals )
 }
 
 static void
-startGame( Globals* globals, const char* name )
+storeCurOpen( GameState* gs )
 {
-    LOG_FUNC();
+    char gidBuf[16];
+    formatGameID( gidBuf, sizeof(gidBuf), gs->gi.gameID );
+    set_stored_value( KEY_LAST_GID, gidBuf );
+    // XP_LOGFF( "saved KEY_LAST_GID: %s", gidBuf );
+}
+
+static void
+startGame( GameState* gs, const char* name )
+{
+    gs->globals->curGame = gs;
+    ensureName( gs );
+    XP_LOGFF( "changed curGame to %s", gs->gameName );
+    show_name( gs->gameName );
+    storeCurOpen( gs );
+
     BoardDims dims;
-    board_figureLayout( globals->gs.game.board, NULL, &globals->gs.gi,
+    board_figureLayout( gs->game.board, NULL, &gs->gi,
                         WASM_BOARD_LEFT, WASM_HOR_SCORE_TOP, BDWIDTH, BDHEIGHT,
                         110, 150, 200, BDWIDTH-25, BDWIDTH/15, BDHEIGHT/15,
                         XP_FALSE, &dims );
     XP_LOGFF( "calling board_applyLayout" );
-    board_applyLayout( globals->gs.game.board, NULL, &dims );
+    board_applyLayout( gs->game.board, NULL, &dims );
     XP_LOGFF( "calling model_setDictionary" );
-    model_setDictionary( globals->gs.game.model, NULL, globals->dict );
+    model_setDictionary( gs->game.model, NULL, gs->globals->dict );
 
-    if ( SERVER_ISCLIENT == globals->gs.gi.serverRole ) {
+    board_invalAll( gs->game.board ); /* redraw screen on loading new game */
+
+    if ( SERVER_ISCLIENT == gs->gi.serverRole ) {
         if ( !!name ) {
-            replaceStringIfDifferent( globals->mpool,
-                                      &globals->gs.gi.players[0].name,
+            replaceStringIfDifferent( gs->globals->mpool,
+                                      &gs->gi.players[0].name,
                                       name );
         }
-        server_initClientConnection( globals->gs.game.server, NULL );
+        server_initClientConnection( gs->game.server, NULL );
     }
     
-    (void)server_do( globals->gs.game.server, NULL ); /* assign tiles, etc. */
-    if ( !!globals->gs.game.comms ) {
-        comms_resendAll( globals->gs.game.comms, NULL, COMMS_CONN_MQTT, XP_TRUE );
+    (void)server_do( gs->game.server, NULL ); /* assign tiles, etc. */
+    if ( !!gs->game.comms ) {
+        comms_resendAll( gs->game.comms, NULL, COMMS_CONN_MQTT, XP_TRUE );
     }
 
-    updateScreen( globals, true );
+    updateScreen( gs, true );
     LOG_RETURN_VOID();
 }
 
@@ -596,223 +628,244 @@ typedef struct _AskReplaceState {
 static void
 onPlayerNamed( void* closure, const char* name )
 {
-    Globals* globals = (Globals*)closure;
+    CAST_GS(GameState*, gs, closure);
     if ( !!name ) {
         set_stored_value( KEY_PLAYER_NAME, name );
-        startGame( globals, name );
+        startGame( gs, name );
     }
 }
 
-static void
-doReplace( Globals* globals, const NetLaunchInfo* invite )
+static GameState*
+newFromInvite( Globals* globals, const NetLaunchInfo* invite )
 {
-    cleanupGame( globals );
-
-    gi_disposePlayerInfo( MPPARM(globals->mpool) &globals->gs.gi );
-    XP_MEMSET( &globals->gs.gi, 0, sizeof(globals->gs.gi) );
-
-    globals->gs.util = wasm_util_make( MPPARM(globals->mpool) &globals->gs.gi,
-                                       globals->dutil, globals );
+    GameState* gs = newGameState(globals);
+    gs->util = wasm_util_make( MPPARM(globals->mpool) &gs->gi,
+                               globals->dutil, gs );
 
     game_makeFromInvite( MPPARM(globals->mpool) NULL, invite,
-                         &globals->gs.game, &globals->gs.gi,
+                         &gs->game, &gs->gi,
                          globals->dict, NULL,
-                         globals->gs.util, globals->draw,
+                         gs->util, globals->draw,
                          &globals->cp, &globals->procs );
-    ensureName( globals );
-
-    const char* name = get_stored_value( KEY_PLAYER_NAME );
-    if ( NULL != name ) {
-        startGame( globals, name );
-        free( (void*)name );
-    } else {
-        const char* msg = "Please enter your name so you opponent knows it's you";
-        call_get_string( msg, "Player 1", onPlayerNamed, globals );
-    }
+    ensureName( gs );
+    return gs;
 }
 
-static void
-onReplaceConfirmed( void* closure, bool confirmed )
-{
-    AskReplaceState* ars = (AskReplaceState*)closure;
-    Globals* globals = ars->globals;
-
-    if ( confirmed ) {
-        doReplace( globals, &ars->invite );
-    }
-
-    XP_FREE( globals->mpool, ars );
-}
-
-static bool
+/* If you launch a URL that encodes an invitation, you'll get here. If it's
+ * the first time (the game hasn't been created yet) you'll get a new game
+ * that connects to the host. If you've already created the game, you'll be
+ * taken to it in whatever state it's in. If you've deleted the game, bad
+ * situation: you'll get a new game that will be unable to connect to any
+ * host.
+ */
+static GameState*
 gameFromInvite( Globals* globals, const NetLaunchInfo* invite )
 {
     bool needsLoad = true;
-
-    if ( NULL != globals->gs.game.model ) {
-        /* there's a current game. Ignore the invitation if it has the same
-           gameID. Otherwise ask to replace */
-        if ( globals->gs.gi.gameID == invite->gameID ) {
-            call_alert( "Duplicate invitation: game already open" );
-            needsLoad = false;
+    GameState* gs = getSavedGame( globals, invite->gameID );
+    if ( !gs ) {
+        if ( invite->lang == 1 ) {
+            gs = newFromInvite( globals, invite );
         } else {
-            AskReplaceState* ars = XP_MALLOC( globals->mpool, sizeof(*ars) );
-            ars->globals = globals;
-            ars->invite = *invite;
-            call_confirm( globals, "Invitation received; replace current game?",
-                          onReplaceConfirmed, ars );
-            needsLoad = false;
+            call_alert( "Invitations are only supported for play in English right now." );
         }
-    } else if ( invite->lang != 1 ) {
-        call_alert( "Invitations are only supported for play in English right now." );
-        needsLoad = false;
-    } else {
-        // No game open. Just do it
-        doReplace( globals, invite );
     }
-
-    bool loaded = !needsLoad;
-    LOG_RETURNF( "%d", loaded );
-    return loaded;
+    return gs;
 }
 
-static bool
-loadSavedGame( Globals* globals, const char* key )
+static GameState*
+newGameState( Globals* globals )
 {
-    XP_LOGFF( "key: %s", key );
-    bool loaded = false;
-    XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(globals->mpool)
-                                                globals->vtMgr );
-    char buf[32];
-    formatGameKeyStr( buf, sizeof(buf), key );
-    dutil_loadStream( globals->dutil, NULL, buf, NULL, stream );
-    if ( 0 < stream_getSize( stream ) ) {
-        XP_ASSERT( !globals->gs.util );
-        globals->gs.util = wasm_util_make( MPPARM(globals->mpool) &globals->gs.gi,
-                                           globals->dutil, globals );
+    GameState* gs = XP_CALLOC( globals->mpool, sizeof(*gs) );
+    gs->globals = globals;
+#ifdef DEBUG
+    gs->_GUARD = GUARD_GS;
+#endif
+    gs->next = globals->games;
+    globals->games = gs;
 
-        XP_LOGFF( "there's a saved game!!" );
-        loaded = game_makeFromStream( MPPARM(globals->mpool) NULL, stream,
-                                      &globals->gs.game, &globals->gs.gi,
-                                      globals->dict, NULL,
-                                      globals->gs.util, globals->draw,
-                                      &globals->cp, &globals->procs );
+    return gs;
+}
 
-        if ( loaded ) {
-            loadName( globals );
-            ensureName( globals );
-            updateScreen( globals, false );
-        }
-    } else {
-        XP_LOGFF( "ERROR: no saved data for key %s", key );
-    }
-    stream_destroy( stream, NULL );
-    return loaded;
+static GameState*
+getCurGame( Globals* globals )
+{
+    return globals->curGame;
 }
 
 static void
-saveName( Globals* globals )
+removeGameState( GameState* gs )
 {
-    char key[32];
-    formatNameKey( key, sizeof(key), globals->gs.gi.gameID );
-    set_stored_value( key, globals->gs.gameName );
-    XP_LOGFF( "wrote %s => %s", key, globals->gs.gameName );
+    XP_ASSERT(0);
+}
+
+static GameState*
+getSavedGame( Globals* globals, int gameID )
+{
+    GameState* gs;
+
+    for ( gs = globals->games; !!gs; gs = gs->next ) {
+        if ( gameID == gs->gi.gameID ) {
+            break;
+        }
+    }
+
+    if ( !gs ) {
+        gs = newGameState( globals );
+
+        XP_LOGFF( "gameID: %X", gameID );
+        bool loaded = false;
+        XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(globals->mpool)
+                                                    globals->vtMgr );
+        char key[32];
+        formatGameKeyInt( key, sizeof(key), gameID );
+        dutil_loadStream( globals->dutil, NULL, key, NULL, stream );
+        if ( 0 < stream_getSize( stream ) ) {
+            XP_ASSERT( !gs->util );
+            gs->util = wasm_util_make( MPPARM(globals->mpool) &gs->gi,
+                                       globals->dutil, gs );
+
+            XP_LOGFF( "there's a saved game!!" );
+            loaded = game_makeFromStream( MPPARM(globals->mpool) NULL, stream,
+                                          &gs->game, &gs->gi,
+                                          globals->dict, NULL,
+                                          gs->util, globals->draw,
+                                          &globals->cp, &globals->procs );
+
+            if ( loaded ) {
+                loadName( gs );
+                ensureName( gs );
+                updateScreen( gs, false );
+            } else {
+                removeGameState( gs );
+            }
+        } else {
+            XP_LOGFF( "ERROR: no saved data for key %s", key );
+            XP_ASSERT( globals->games == gs );
+            globals->games = gs->next;
+            XP_FREE( globals->mpool, gs );
+            gs = NULL;
+        }
+        stream_destroy( stream, NULL );
+    }
+    XP_LOGFF( "(%X) => %p", gameID, gs );
+    return gs;
 }
 
 static void
-loadName( Globals* globals )
+saveName( GameState* gs )
 {
     char key[32];
-    formatNameKey( key, sizeof(key), globals->gs.gi.gameID );
+    formatNameKey( key, sizeof(key), gs->gi.gameID );
+    set_stored_value( key, gs->gameName );
+    XP_LOGFF( "wrote %s => %s", key, gs->gameName );
+}
+
+static void
+loadName( GameState* gs )
+{
+    char key[32];
+    formatNameKey( key, sizeof(key), gs->gi.gameID );
     const char* ptr = get_stored_value( key );
     if ( !!ptr ) {
-        snprintf( globals->gs.gameName, sizeof(globals->gs.gameName),
+        snprintf( gs->gameName, sizeof(gs->gameName),
                   "%s", ptr );
         free( (void*)ptr );
     }
 }
 
 static void
-ensureName( Globals* globals )
+ensureName( GameState* gs )
 {
-    if ( '\0' == globals->gs.gameName[0] ) {
-        nameGame( globals );
-        saveName( globals );
+    if ( '\0' == gs->gameName[0] ) {
+        nameGame( gs );
+        saveName( gs );
     }
 }
 
 static void
-nameGame( Globals* globals )
+nameGame( GameState* gs )
 {
-    snprintf( globals->gs.gameName, sizeof(globals->gs.gameName),
+    snprintf( gs->gameName, sizeof(gs->gameName),
               "Game %d", getNextGameNo() );
-    XP_LOGFF( "named game: %s", globals->gs.gameName );
+    XP_LOGFF( "named game: %s", gs->gameName );
 }
 
 static void
 loadAndDraw( Globals* globals, const NetLaunchInfo* invite,
-             const char* key, NewGameParams* params )
+             const char* gameIDStr, NewGameParams* params )
 {
-    cleanupGame( globals );
+    XP_LOGFF( "(gameIDStr: %s)", gameIDStr );
+    GameState* gs = NULL;
 
     bool haveGame;
-    if ( !!params ) {
-        haveGame = false;
-    } else {
+    if ( !params ) {
         /* First, load any saved game. We need it e.g. to confirm that an incoming
            invite is a dup and should be dropped. */
-        if ( !!key ) {
-            haveGame = loadSavedGame( globals, key );
+        if ( !!gameIDStr ) {
+            int gameID;
+            unformatGameID( &gameID, gameIDStr );
+            gs = getSavedGame( globals, gameID );
         }
-        if ( !!invite ) {
-            haveGame = gameFromInvite( globals, invite );
+        if ( !!invite ) {   /* overwrite gs is ok: we'll likely want both games  */
+            gs = gameFromInvite( globals, invite );
         }
     }
 
-    if ( !haveGame ) {
-        globals->gs.gi.serverRole = !!params && !params->isRobotNotRemote
+    if ( !gs ) {
+        gs = newGameState( globals );
+        gs->gi.serverRole = !!params && !params->isRobotNotRemote
             ? SERVER_ISSERVER : SERVER_STANDALONE;
 
-        globals->gs.gi.phoniesAction = PHONIES_WARN;
-        globals->gs.gi.hintsNotAllowed = !!params && params->hintsNotAllowed || false;
-        globals->gs.gi.gameID = 0;
-        globals->gs.gi.dictLang = 1; /* English only for now */
-        replaceStringIfDifferent( globals->mpool, &globals->gs.gi.dictName,
+        gs->gi.phoniesAction = PHONIES_WARN;
+        gs->gi.hintsNotAllowed = !!params && params->hintsNotAllowed || false;
+        gs->gi.gameID = 0;
+        gs->gi.dictLang = 1; /* English only for now */
+        replaceStringIfDifferent( globals->mpool, &gs->gi.dictName,
                                   "CollegeEng_2to8" );
-        globals->gs.gi.nPlayers = 2;
-        globals->gs.gi.boardSize = 15;
-        globals->gs.gi.players[0].name = copyString( globals->mpool, "Player 1" ); /* FIXME */
-        globals->gs.gi.players[0].isLocal = XP_TRUE;
-        globals->gs.gi.players[0].robotIQ = 0;
+        gs->gi.nPlayers = 2;
+        gs->gi.boardSize = 15;
+        gs->gi.players[0].name = copyString( globals->mpool, "Player 1" ); /* FIXME */
+        gs->gi.players[0].isLocal = XP_TRUE;
+        gs->gi.players[0].robotIQ = 0;
 
-        globals->gs.gi.players[1].name = copyString( globals->mpool, "Player 2" );
-        globals->gs.gi.players[1].isLocal = !!params ? params->isRobotNotRemote : true;
-        XP_LOGFF( "set isLocal[1]: %d", globals->gs.gi.players[1].isLocal );
-        globals->gs.gi.players[1].robotIQ = 99; /* doesn't matter if remote */
+        gs->gi.players[1].name = copyString( globals->mpool, "Player 2" );
+        gs->gi.players[1].isLocal = !!params ? params->isRobotNotRemote : true;
+        XP_LOGFF( "set isLocal[1]: %d", gs->gi.players[1].isLocal );
+        gs->gi.players[1].robotIQ = 99; /* doesn't matter if remote */
 
-        globals->gs.util = wasm_util_make( MPPARM(globals->mpool) &globals->gs.gi,
-                                           globals->dutil, globals );
+        gs->util = wasm_util_make( MPPARM(globals->mpool) &gs->gi,
+                                           globals->dutil, gs );
 
         XP_LOGFF( "calling game_makeNewGame()" );
         game_makeNewGame( MPPARM(globals->mpool) NULL,
-                          &globals->gs.game, &globals->gs.gi,
-                          globals->gs.util, globals->draw,
+                          &gs->game, &gs->gi,
+                          gs->util, globals->draw,
                           &globals->cp, &globals->procs );
-        ensureName( globals );
-        if ( !!globals->gs.game.comms ) {
+
+        ensureName( gs );
+        if ( !!gs->game.comms ) {
             CommsAddrRec addr = {0};
             makeSelfAddr( globals, &addr );
-            comms_augmentHostAddr( globals->gs.game.comms, NULL, &addr );
+            comms_augmentHostAddr( gs->game.comms, NULL, &addr );
         }
     }
-    startGame( globals, NULL );
+    startGame( gs, NULL );
+    LOG_RETURN_VOID();
+}
+
+static bool
+isVisible( GameState* gs )
+{
+    return getCurGame(gs->globals) == gs;
 }
 
 void
 main_gameFromInvite( Globals* globals, const NetLaunchInfo* invite )
 {
-    if ( gameFromInvite( globals, invite ) ) {
-        startGame( globals, NULL );
+    GameState* gs = gameFromInvite( globals, invite );
+    if ( gs ) {
+        startGame( gs, NULL );
     }
 }
 
@@ -823,87 +876,49 @@ typedef struct _OpenForMessageState {
     XWStreamCtxt* stream;
 } OpenForMessageState;
 
-static void
-onOpenForMsgConfirmed( void* closure, bool confirmed )
-{
-    OpenForMessageState* ofm = (OpenForMessageState*)closure;
-    Globals* globals = ofm->globals;
-    if ( confirmed ) {
-
-        char gameID[16];
-        formatGameID( gameID, sizeof(gameID), ofm->gameID );
-        loadAndDraw( globals, NULL, gameID, NULL );
-        XP_ASSERT( globals->gs.gi.gameID == ofm->gameID );
-
-        if ( game_receiveMessage( &globals->gs.game, NULL, ofm->stream, &ofm->from ) ) {
-            updateScreen( globals, true );
-        }
-    }
-    stream_destroy( ofm->stream, NULL );
-    XP_FREE( globals->mpool, ofm );
-}
-
 void
 main_onGameMessage( Globals* globals, XP_U32 gameID,
                     const CommsAddrRec* from, XWStreamCtxt* stream )
 {
-    if ( gameID == globals->gs.gi.gameID ) { /* current game open */
-        if ( game_receiveMessage( &globals->gs.game, NULL, stream, from ) ) {
-            updateScreen( globals, true );
+    GameState* gs = getSavedGame( globals, gameID );
+    if ( !!gs ) {
+        if ( game_receiveMessage( &gs->game, NULL, stream, from ) ) {
+            updateScreen( gs, true );
+        }
+        if ( gs != getCurGame(gs->globals) ) {
         }
     } else {
-        char key[32];
-        formatGameKeyInt( key, sizeof(key), gameID );
-        if ( have_stored_value( key ) ) {
-            formatNameKey( key, sizeof(key), gameID );
-            const char* name = get_stored_value( key );
-            XP_ASSERT( !!name );
-            char msg[128];
-            snprintf( msg, sizeof(msg), "Move arrived for closed game \"%s\"; "
-                      "Shall I open it?", name );
-            free( (void*)name);
-
-            OpenForMessageState* ofm = XP_MALLOC( globals->mpool, sizeof(*ofm) );
-            ofm->globals = globals;
-            ofm->gameID = gameID;
-            ofm->from = *from;
-            ofm->stream = stream_ref( stream );
-
-            call_confirm( globals, msg, onOpenForMsgConfirmed, ofm );
-        } else {
-            XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(globals->mpool)
-                                                        globals->vtMgr );
-            dvc_makeMQTTNoSuchGame( globals->dutil, NULL, stream, gameID );
-            sendStreamToDev( stream, &from->u.mqtt.devID );
-
-            call_alert( "Dropping move for deleted game" );
-        }
+        char msg[128];
+        snprintf( msg, sizeof(msg), "Dropping move for deleted game (id: %X)", gameID );
+        call_alert( msg );
     }
 }
 
 void
 main_onGameGone( Globals* globals, XP_U32 gameID )
 {
-    LOG_FUNC();
-    const char* msg = "This game has been deleted on the remote device. "
-        "Delete here too?";
-    call_confirm( globals, msg, onDeleteConfirmed, globals );
+    GameState* gs = getSavedGame( globals, gameID );
+    if ( !!gs ) {
+        const char* msg = "This game has been deleted on the remote device. "
+            "Delete here too?";
+        call_confirm( globals, msg, onDeleteConfirmed, gs );
+    }
 }
 
 void
 main_sendOnClose( XWStreamCtxt* stream, XWEnv env, void* closure )
 {
-    Globals* globals = (Globals*)closure;
+    CAST_GS(GameState*, gs, closure );
     XP_LOGFF( "called with msg of len %d", stream_getSize(stream) );
-    (void)comms_send( globals->gs.game.comms, NULL, stream );
+    (void)comms_send( gs->game.comms, NULL, stream );
 }
 
 void
-main_playerScoreHeld( Globals* globals, XP_U16 player )
+main_playerScoreHeld( GameState* gs, XP_U16 player )
 {
     LastMoveInfo lmi;
     XP_UCHAR buf[128];
-    if ( model_getPlayersLastScore( globals->gs.game.model, NULL, player, &lmi ) ) {
+    if ( model_getPlayersLastScore( gs->game.model, NULL, player, &lmi ) ) {
         switch ( lmi.moveType ) {
         case ASSIGN_TYPE:
             XP_SNPRINTF( buf, sizeof(buf), "Tiles assigned to %s", lmi.names[0] );
@@ -927,18 +942,41 @@ main_playerScoreHeld( Globals* globals, XP_U16 player )
 }
 
 void
-main_showRemaining( Globals* globals )
+main_showRemaining( GameState* gs )
 {
-    XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(globals->mpool)
-                                                globals->vtMgr );
-    board_formatRemainingTiles( globals->gs.game.board, NULL, stream );
+    XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(gs->globals->mpool)
+                                                gs->globals->vtMgr );
+    board_formatRemainingTiles( gs->game.board, NULL, stream );
     stream_putU8( stream, 0 );
     call_alert( (const XP_UCHAR*)stream_getPtr( stream ) );
     stream_destroy( stream, NULL );
 }
 
+static void
+openConfirmed(void* closure, bool confirmed)
+{
+    if ( confirmed ) {
+        CAST_GS(GameState*, gs, closure);
+        char key[16];
+        formatGameID( key, sizeof(key), gs->gi.gameID );
+        loadAndDraw( gs->globals, NULL, key, NULL );
+    }
+}
+
+void
+main_turnChanged( GameState* gs, int newTurn )
+{
+    if ( 0 <= newTurn && !isVisible(gs) && gs->gi.players[newTurn].isLocal ) {
+        char msg[128];
+        snprintf( msg, sizeof(msg),
+                  "It's your turn in background game \"%s\". Would you like to open it now?",
+                  gs->gameName );
+        call_confirm( gs->globals, msg, openConfirmed, gs );
+    }
+}
+
 typedef struct _BlankPickState {
-    Globals* globals;
+    GameState* gs;
     int col, row;
     int nTiles;
     int playerNum;
@@ -950,7 +988,8 @@ onBlankPicked( void* closure, const char* face )
 {
     XP_LOGFF( "face: %s", face );
     BlankPickState* bps = (BlankPickState*)closure;
-    Globals* globals = bps->globals;
+    GameState* gs = bps->gs;
+    Globals* globals = gs->globals;
 
     int indx = -1;
     for ( int ii = 0; ii < bps->nTiles; ++ii ) {
@@ -962,27 +1001,27 @@ onBlankPicked( void* closure, const char* face )
     }
     XP_FREE( globals->mpool, bps->faces );
 
-    if ( board_setBlankValue( globals->gs.game.board, bps->playerNum,
+    if ( board_setBlankValue( gs->game.board, bps->playerNum,
                               bps->col, bps->row, indx ) ) {
-        updateScreen( globals, true );
+        updateScreen( gs, true );
     }
 
-    XP_FREE( bps->globals->mpool, bps );
+    XP_FREE( globals->mpool, bps );
 }
 
 void
-main_pickBlank( Globals* globals, int playerNum, int col, int row,
+main_pickBlank( GameState* gs, int playerNum, int col, int row,
                 const char** tileFaces, int nTiles )
 {
-    BlankPickState* bps = XP_MALLOC( globals->mpool, sizeof(*bps) );
-    bps->globals = globals;
+    BlankPickState* bps = XP_MALLOC( gs->globals->mpool, sizeof(*bps) );
+    bps->gs = gs;
     bps->row = row;
     bps->col = col;
     bps->playerNum = playerNum;
     bps->nTiles = nTiles;
-    bps->faces = XP_CALLOC( globals->mpool, nTiles * sizeof(bps->faces[0]) );
+    bps->faces = XP_CALLOC( gs->globals->mpool, nTiles * sizeof(bps->faces[0]) );
     for ( int ii = 0; ii < nTiles; ++ii ) {
-        replaceStringIfDifferent( globals->mpool, &bps->faces[ii], tileFaces[ii] );
+        replaceStringIfDifferent( gs->globals->mpool, &bps->faces[ii], tileFaces[ii] );
     }
 
     call_pickBlank( "Pick for your blank", tileFaces, nTiles,
@@ -990,14 +1029,16 @@ main_pickBlank( Globals* globals, int playerNum, int col, int row,
 }
 
 void
-main_showGameOver( Globals* globals )
+main_showGameOver( GameState* gs )
 {
-    XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(globals->mpool)
-                                                globals->vtMgr );
-    server_writeFinalScores( globals->gs.game.server, NULL, stream );
-    stream_putU8( stream, 0 );
-    call_alert( (const XP_UCHAR*)stream_getPtr( stream ) );
-    stream_destroy( stream, NULL );
+    if ( isVisible(gs) ) {
+        XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(gs->globals->mpool)
+                                                    gs->globals->vtMgr );
+        server_writeFinalScores( gs->game.server, NULL, stream );
+        stream_putU8( stream, 0 );
+        call_alert( (const XP_UCHAR*)stream_getPtr( stream ) );
+        stream_destroy( stream, NULL );
+    }
 }
 
 static time_t
@@ -1012,14 +1053,14 @@ getCurMS()
 }
 
 void
-main_clear_timer( Globals* globals, XWTimerReason why )
+main_clear_timer( GameState* gs, XWTimerReason why )
 {
     XP_LOGFF( "why: %d" );
     // XP_ASSERT(0); fires when start new game
 }
 
 typedef struct _TimerClosure {
-    Globals* globals;
+    GameState* gs;
     XWTimerReason why;
     XWTimerProc proc;
     void* closure;
@@ -1032,18 +1073,18 @@ onTimerFired( void* closure )
     TimerClosure* tc = (TimerClosure*)closure;
     XP_Bool draw = (*tc->proc)( tc->closure, NULL, tc->why );
     if ( draw ) {
-        updateScreen( tc->globals, true );
+        updateScreen( tc->gs, true );
     }
-    XP_FREE( tc->globals->mpool, tc );
+    XP_FREE( tc->gs->globals->mpool, tc );
 }
 
 void
-main_set_timer( Globals* globals, XWTimerReason why, XP_U16 when,
+main_set_timer( GameState* gs, XWTimerReason why, XP_U16 when,
                 XWTimerProc proc, void* closure )
 {
     XP_LOGFF( "why: %d", why );
-    TimerClosure* tc = XP_MALLOC( globals->mpool, sizeof(*tc) );
-    tc->globals = globals;
+    TimerClosure* tc = XP_MALLOC( gs->globals->mpool, sizeof(*tc) );
+    tc->gs = gs;
     tc->proc = proc;
     tc->closure = closure;
     tc->why = why;
@@ -1057,7 +1098,7 @@ main_set_timer( Globals* globals, XWTimerReason why, XP_U16 when,
 }
 
 typedef struct _QueryState {
-    Globals* globals;
+    GameState* gs;
     QueryProc proc;
     void* closure;
 } QueryState;
@@ -1068,29 +1109,33 @@ onQueryCalled( void* closure, const char* button )
     QueryState* qs = (QueryState*)closure;
     bool ok = 0 == strcmp( button, BUTTON_OK );
     (*qs->proc)( qs->closure, ok );
-    XP_FREE( qs->globals->mpool, qs );
+    XP_FREE( qs->gs->globals->mpool, qs );
 }
 
 void
-main_query( Globals* globals, const XP_UCHAR* query, QueryProc proc, void* closure )
+main_query( GameState* gs, const XP_UCHAR* query, QueryProc proc, void* closure )
 {
-    QueryState* qs = XP_MALLOC( globals->mpool, sizeof(*qs) );
-    qs->proc = proc;
-    qs->closure = closure;
-    qs->globals = globals;
+    if ( isVisible(gs) ) {
+        QueryState* qs = XP_MALLOC( gs->globals->mpool, sizeof(*qs) );
+        qs->proc = proc;
+        qs->closure = closure;
+        qs->gs = gs;
 
-    const char* buttons[] = { BUTTON_CANCEL, BUTTON_OK, NULL };
-    call_dialog( query, buttons, onQueryCalled, qs );
+        const char* buttons[] = { BUTTON_CANCEL, BUTTON_OK, NULL };
+        call_dialog( query, buttons, onQueryCalled, qs );
+    }
 }
 
 void
-main_alert( Globals* globals, const XP_UCHAR* msg )
+main_alert( GameState* gs, const XP_UCHAR* msg )
 {
-    call_alert( msg );
+    if ( isVisible(gs) ) {
+        call_alert( msg );
+    }
 }
 
 typedef struct _IdleClosure {
-    Globals* globals;
+    GameState* gs;
     IdleProc proc;
     void* closure;
 } IdleClosure;
@@ -1102,17 +1147,17 @@ onIdleFired( void* closure )
     IdleClosure* ic = (IdleClosure*)closure;
     XP_Bool draw = (*ic->proc)(ic->closure);
     if ( draw ) {
-        updateScreen( ic->globals, true );
+        updateScreen( ic->gs, true );
     }
-    XP_FREE( ic->globals->mpool, ic );
+    XP_FREE( ic->gs->globals->mpool, ic );
 }
 
 void
-main_set_idle( Globals* globals, IdleProc proc, void* closure )
+main_set_idle( GameState* gs, IdleProc proc, void* closure )
 {
     LOG_FUNC();
-    IdleClosure* ic = XP_MALLOC( globals->mpool, sizeof(*ic) );
-    ic->globals = globals;
+    IdleClosure* ic = XP_MALLOC( gs->globals->mpool, sizeof(*ic) );
+    ic->gs = gs;
     ic->proc = proc;
     ic->closure = closure;
 
@@ -1120,11 +1165,11 @@ main_set_idle( Globals* globals, IdleProc proc, void* closure )
 }
 
 static XP_Bool
-checkForEvent( Globals* globals )
+checkForEvent( GameState* gs )
 {
     XP_Bool handled;
     XP_Bool draw = XP_FALSE;
-    BoardCtxt* board = globals->gs.game.board;
+    BoardCtxt* board = gs->game.board;
 
     SDL_Event event;
     if ( SDL_PollEvent(&event) ) {
@@ -1154,55 +1199,67 @@ checkForEvent( Globals* globals )
 }
 
 static void
-updateScreen( Globals* globals, bool doSave )
+clearScreen( Globals* globals )
 {
     SDL_RenderClear( globals->renderer );
-    if ( !!globals->gs.game.board ) {
-        board_draw( globals->gs.game.board, NULL );
-        wasm_draw_render( globals->draw, globals->renderer );
-    }
     SDL_RenderPresent( globals->renderer );
+}
 
-    updateGameButtons( globals );
+static void
+updateScreen( GameState* gs, bool doSave )
+{
+    Globals* globals = gs->globals;
+    if ( gs == getCurGame(globals) ) {
+        SDL_RenderClear( globals->renderer );
+        if ( !!gs->game.board ) {
+            board_draw( gs->game.board, NULL );
+            wasm_draw_render( globals->draw, globals->renderer );
+        }
+        SDL_RenderPresent( globals->renderer );
+
+        updateGameButtons( gs );
+    } else {
+        XP_LOGFF( "not drawing %s; not visible", gs->gameName );
+    }
 
     /* Let's save state here too, though likely too often */
     if ( doSave ) {
         XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(globals->mpool)
                                                     globals->vtMgr );
-        game_saveToStream( &globals->gs.game, NULL, &globals->gs.gi,
-                           stream, ++globals->gs.saveToken );
+        game_saveToStream( &gs->game, NULL, &gs->gi,
+                           stream, ++gs->saveToken );
 
         char buf[32];
-        formatGameKeyInt( buf, sizeof(buf), globals->gs.gi.gameID );
+        formatGameKeyInt( buf, sizeof(buf), gs->gi.gameID );
         dutil_storeStream( globals->dutil, NULL, buf, stream );
         stream_destroy( stream, NULL );
-        game_saveSucceeded( &globals->gs.game, NULL, globals->gs.saveToken );
-
-        char gidBuf[16];
-        formatGameID( gidBuf, sizeof(gidBuf), globals->gs.gi.gameID );
-        set_stored_value( KEY_LAST, gidBuf );
-        XP_LOGFF( "saved KEY_LAST: %s", gidBuf );
+        game_saveSucceeded( &gs->game, NULL, gs->saveToken );
     }
 }
 
 void
-main_updateScreen( Globals* globals )
+main_updateScreen( GameState* gs )
 {
-    updateScreen( globals, true );
+    updateScreen( gs, true );
 }
 
 static void
 looper( void* closure )
 {
     Globals* globals = (Globals*)closure;
-    if ( checkForEvent( globals ) ) {
-        updateScreen( globals, true );
+    GameState* gs = getCurGame( globals );
+    if ( !!gs ) {
+        if ( checkForEvent( gs ) ) {
+            updateScreen( gs, true );
+        }
+    } else {
+        XP_LOGFF( "no visible game" );
     }
 }
 
 static bool
-loadInvite( Globals* globals, NetLaunchInfo* nlip,
-            int argc, const char** argv )
+inviteFromArgv( Globals* globals, NetLaunchInfo* nlip,
+                int argc, const char** argv )
 {
     LOG_FUNC();
     CurGameInfo gi = {0};
@@ -1277,11 +1334,14 @@ initNoReturn( int argc, const char** argv )
     srandom( now );
     XP_LOGFF( "called(srandom( %x )", now );
 
-    Globals* globals = calloc(1, sizeof(*globals));
+    Globals globals = {0}; // calloc(1, sizeof(*globals));
+#ifdef DEBUG
+    globals._GUARD = GUARD_GLOB;
+#endif
 
     NetLaunchInfo nli = {0};
     NetLaunchInfo* nlip = NULL;
-    if ( loadInvite( globals, &nli, argc, argv ) ) {
+    if ( inviteFromArgv( &globals, &nli, argc, argv ) ) {
         nlip = &nli;
     }
 
@@ -1289,33 +1349,36 @@ initNoReturn( int argc, const char** argv )
     TTF_Init();
 
     SDL_CreateWindowAndRenderer( WINDOW_WIDTH, WINDOW_HEIGHT, 0,
-                                 &globals->window, &globals->renderer );
+                                 &globals.window, &globals.renderer );
 
     /* whip the canvas to background */
-    SDL_SetRenderDrawColor( globals->renderer, 155, 155, 155, 255 );
-    SDL_RenderClear( globals->renderer );
+    SDL_SetRenderDrawColor( globals.renderer, 155, 155, 155, 255 );
+    SDL_RenderClear( globals.renderer );
 
-    initDeviceGlobals( globals );
+    initDeviceGlobals( &globals );
 
-    const char* lastKey = get_stored_value( KEY_LAST );
-    XP_LOGFF( "loaded KEY_LAST: %s", lastKey );
-    loadAndDraw( globals, nlip, lastKey, NULL );
+    const char* lastKey = get_stored_value( KEY_LAST_GID );
+    XP_LOGFF( "loaded KEY_LAST_GID: %s", lastKey );
+    loadAndDraw( &globals, nlip, lastKey, NULL );
     if ( !!lastKey ) {
         free( (void*)lastKey );
     }
 
-    updateDeviceButtons( globals );
+    updateDeviceButtons( &globals );
 
-    emscripten_set_main_loop_arg( looper, globals, -1, 1 );
+    emscripten_set_main_loop_arg( looper, &globals, -1, 1 );
 }
 
 void
 MQTTConnectedChanged( void* closure, bool connected )
 {
     XP_LOGFF( "connected=%d", connected);
-    Globals* globals = (Globals*)closure;
-    if ( connected && !!globals->gs.game.comms ) {
-        comms_resendAll( globals->gs.game.comms, NULL, COMMS_CONN_MQTT, XP_TRUE );
+    if ( connected ) {
+        CAST_GLOB(Globals*, globals, closure);
+        GameState* gs = getCurGame( globals );
+        if ( !!gs && !!gs->game.comms ) {
+            comms_resendAll( gs->game.comms, NULL, COMMS_CONN_MQTT, XP_TRUE );
+        }
     }
 }
 
