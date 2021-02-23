@@ -24,16 +24,12 @@
 #include "wasmasm.h"
 #include "comtypes.h"
 
-EM_JS(const char*, _get_stored_value, (const char* key), {
+EM_JS(void, _get_stored_value, (const char* key,
+                                StringProc proc, void* closure), {
         var result = null;
         var jsKey = UTF8ToString(key);
-        var jsString = localStorage.getItem(jsKey);
-        if ( jsString != null ) {
-            var lengthBytes = lengthBytesUTF8(jsString)+1;
-            result = _malloc(lengthBytes);
-            stringToUTF8(jsString, result, lengthBytes);
-        }
-        return result;
+        var val = localStorage.getItem(jsKey);
+        ccallString(proc, closure, val);
     });
 
 EM_JS(void, set_stored_value, (const char* key, const char* val), {
@@ -54,20 +50,30 @@ EM_JS(bool, have_stored_value, (const char* key), {
         return result;
     });
 
+typedef struct _ValState {
+    void* ptr;
+    size_t** len;
+    bool success;
+} ValState;
+
+static void
+onGotVal(void* closure, const char* val)
+{
+    if ( !!val ) {
+        ValState* vs = (ValState*)closure;
+        size_t slen = 1 + strlen(val);
+        if ( !!vs->ptr && slen <= **vs->len ) {
+            memcpy( vs->ptr, val, slen );
+            vs->success = true;
+        }
+        **vs->len = slen;
+    }
+}
+
 bool
 get_stored_value( const char* key, char out[], size_t* len )
 {
-    bool success = false;
-    const char* tmp = _get_stored_value( key );
-    if ( !!tmp ) {
-        size_t slen = 1 + strlen(tmp);
-        if ( !!out && slen <= *len ) {
-            memcpy( out, tmp, slen );
-            success = true;
-        }
-        *len = slen;
-        free( (void*)tmp );
-    }
-
-    return success;
+    ValState state = { .ptr = out, .len = &len, .success = false, };
+    _get_stored_value( key, onGotVal, &state );
+    return state.success;
 }

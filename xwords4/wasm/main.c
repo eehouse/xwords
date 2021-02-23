@@ -99,9 +99,6 @@ static void ensureName( GameState* gs );
 static void loadName( GameState* gs );
 static void saveName( GameState* gs );
 
-
-typedef void (*StringProc)(void* closure, const char* str);
-
 EM_JS(void, show_name, (const char* name), {
         let jsname = UTF8ToString(name);
         document.getElementById('gamename').textContent = jsname;

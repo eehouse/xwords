@@ -23,6 +23,8 @@
 #include <stdbool.h>
 #include <unistd.h>
 
+typedef void (*StringProc)(void* closure, const char* str);
+
 void set_stored_value(const char* key, const char* val);
 bool get_stored_value(const char* key, char out[], size_t* len);
 void remove_stored_value(const char* key);
