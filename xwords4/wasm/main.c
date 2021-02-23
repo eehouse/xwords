@@ -647,6 +647,9 @@ newFromInvite( Globals* globals, const NetLaunchInfo* invite )
                          globals->dict, NULL,
                          gs->util, globals->draw,
                          &globals->cp, &globals->procs );
+    if ( invite->gameName[0] ) {
+        strcpy( gs->gameName, invite->gameName );
+    }
     ensureName( gs );
     return gs;
 }
