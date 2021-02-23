@@ -152,10 +152,11 @@ function newDlgWMsg(msg) {
 function newButtonDiv(buttons, proc) {
 	let div = document.createElement('div');
 	div.classList.add('buttonRow');
-	for ( let buttonTxt of buttons ) {
+	for ( let ii = 0; ii < buttons.length; ++ii ) {
+		let buttonTxt = buttons[ii];
 		let button = document.createElement('button');
 		button.textContent = buttonTxt;
-		button.onclick = function() { proc(buttonTxt); };
+		button.onclick = function() { proc(ii); };
 		div.appendChild( button );
 	}
 
@@ -163,11 +164,11 @@ function newButtonDiv(buttons, proc) {
 }
 
 function nbDialog(msg, buttons, proc, closure) {
-	let dlg = newDlgWMsg( msg );
+	const dlg = newDlgWMsg( msg );
 
-	butProc = function(buttonTxt) {
+	const butProc = function(indx) {
 		dlg.parentNode.removeChild(dlg);
-		ccallString(proc, closure, buttonTxt);
+		ccallString(proc, closure, buttons[indx]);
 	}
 	dlg.appendChild( newButtonDiv( buttons, butProc ) );
 	addDepthNote(dlg);
@@ -176,9 +177,9 @@ function nbDialog(msg, buttons, proc, closure) {
 function nbBlankPick(title, buttons, proc, closure) {
 	let dlg = newDlgWMsg( title );
 
-	butProc = function(buttonTxt) {
+	const butProc = function(indx) {
 		dlg.parentNode.removeChild(dlg);
-		ccallString(proc, closure, buttonTxt);
+		ccallString(proc, closure, buttons[indx]);
 	}
 
 	let ROWLEN = 6;
@@ -191,20 +192,22 @@ function nbBlankPick(title, buttons, proc, closure) {
 function nbGamePick(title, gameMap, proc, closure) {
 	let dlg = newDlgWMsg( title );
 
-	buttons = [];
-	revMap = {}
+	let buttons = [];
+	let keys = [];
 	Object.keys(gameMap).forEach( function(key) {
-		let val = gameMap[key]
-		buttons.push(val);
-		revMap[val] = key;
+		buttons.push(gameMap[key]);
+		keys.push(key);
 	});
 	
-	butProc = function(buttonTxt) {
+	butProc = function(indx) {
 		dlg.parentNode.removeChild(dlg);
-		ccallString(proc, closure, revMap[buttonTxt]);
+		console.log('nbGamePick.proc(' + indx + ')');
+		let key = keys[indx];
+		console.log('key: ' + key);
+		ccallString(proc, closure, key);
 	}
 
-	dlg.appendChild( newButtonDiv( buttons.sort(), butProc ) );
+	dlg.appendChild( newButtonDiv( buttons, butProc ) );
 	addDepthNote(dlg);
 }
 
@@ -214,8 +217,8 @@ function setDivButtons(divid, buttons, proc, closure) {
 		parent.removeChild(parent.lastElementChild);
 	}
 
-	butProc = function(buttonTxt) {
-		ccallString(proc, closure, buttonTxt);
+	butProc = function(indx) {
+		ccallString(proc, closure, buttons[indx]);
 	}
 
 	parent.appendChild( newButtonDiv( buttons, butProc ) );
@@ -234,11 +237,11 @@ function nbGetString(msg, dflt, proc, closure) {
 		ccallString(proc, closure, str);
 	}
 
-	buttons = ["Cancel", "OK"];
-	butProc = function(str) {
-		if ( str == buttons[0] ) {
+	let buttons = ["Cancel", "OK"];
+	butProc = function(indx) {
+		if ( indx == 0 ) {		// CANCEL
 			dismissed(null);
-		} else if ( str == buttons[1] ) {
+		} else if ( indx == 1 ) { // OK
 			dismissed(tarea.value);
 		}
 	}
@@ -266,18 +269,18 @@ function newRadio(txt, id, proc) {
 }
 
 function nbGetNewGame(closure, msg) {
-	let dlg = newDlgWMsg('Is your opponent a robot or someone you will invite?');
+	const dlg = newDlgWMsg('Is your opponent a robot or someone you will invite?');
 
-	let radioDiv = document.createElement('div');
+	const radioDiv = document.createElement('div');
 	dlg.appendChild( radioDiv );
-	var robotSet = [null];
+	const robotSet = [null];
 	radioDiv.appendChild(newRadio('Robot', 'newgame', function() {robotSet[0] = true;}));
 	radioDiv.appendChild(newRadio('Remote player', 'newgame', function() {robotSet[0] = false;}));
 
-	butProc = function(str) {
-		if ( str === 'OK' && null !== robotSet[0]) {
-			types = ['number', 'boolean'];
-			params = [closure, robotSet[0]];
+	const butProc = function(indx) {
+		if ( indx === 1 && null !== robotSet[0]) {
+			const types = ['number', 'boolean'];
+			const params = [closure, robotSet[0]];
 			Module.ccall('onNewGame', null, types, params);
 		}
 		dlg.parentNode.removeChild(dlg);

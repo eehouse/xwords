@@ -434,7 +434,13 @@ static void
 onGameChosen( void* closure, const char* key )
 {
     CAST_GLOB(Globals*, globals, closure);
-    loadAndDraw( globals, NULL, key, NULL );
+    /* To be safe, let's make sure the game exists. We don't want to create
+     * another if somehow it doesn't */
+    int gameID;
+    unformatGameID( &gameID, key );
+    if ( !!getSavedGame(globals, gameID) ) {
+        loadAndDraw( globals, NULL, key, NULL );
+    }
 }
 
 static void
