@@ -186,22 +186,31 @@ function nbBlankPick(title, buttons, proc, closure) {
 	addDepthNote(dlg);
 }
 
+// To enable sorting of names on buttons while keeping existing code,
+// I'm creating an array of pairs then sorting that.
 function nbGamePick(title, gameMap, proc, closure) {
 	let dlg = newDlgWMsg( title );
 
-	let buttons = [];
-	let keys = [];
+	let pairs = [];
 	Object.keys(gameMap).forEach( function(key) {
-		buttons.push(gameMap[key]);
-		keys.push(key);
+		pairs.push({id:key, txt:gameMap[key]});
 	});
+
+	pairs.sort(function(a, b){
+		var stra = a.txt.toLowerCase();
+		var strb = b.txt.toLowerCase();
+		if (stra < strb) {return -1;}
+		if (stra > strb) {return 1;}
+		return parseInt(a.id) - parseInt(b.id);
+	});
+	let buttons = [];
+	for ( pair of pairs ) {
+		buttons.push(pair.txt);
+	}
 	
 	butProc = function(indx) {
 		dlg.parentNode.removeChild(dlg);
-		console.log('nbGamePick.proc(' + indx + ')');
-		let key = keys[indx];
-		console.log('key: ' + key);
-		ccallString(proc, closure, key);
+		ccallString(proc, closure, pairs[indx].id);
 	}
 
 	dlg.appendChild( newButtonDiv( buttons, butProc ) );
