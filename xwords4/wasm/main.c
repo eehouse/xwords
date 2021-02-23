@@ -998,29 +998,20 @@ typedef struct _BlankPickState {
     int col, row;
     int nTiles;
     int playerNum;
-    char** faces;
 } BlankPickState;
 
 static void
-onBlankPicked( void* closure, const char* face )
+onBlankPicked( void* closure, const char* str )
 {
-    XP_LOGFF( "face: %s", face );
+    XP_LOGFF( "index: %s", str );
     BlankPickState* bps = (BlankPickState*)closure;
     GameState* gs = bps->gs;
     Globals* globals = gs->globals;
 
-    int indx = -1;
-    for ( int ii = 0; ii < bps->nTiles; ++ii ) {
-        char* oneFace = bps->faces[ii];
-        if ( indx < 0 && 0 == strcmp( face, oneFace ) ) {
-            indx = ii;
-        }
-        XP_FREE( globals->mpool, oneFace );
-    }
-    XP_FREE( globals->mpool, bps->faces );
-
-    if ( board_setBlankValue( gs->game.board, bps->playerNum,
-                              bps->col, bps->row, indx ) ) {
+    int indx = atoi(str);
+    if ( 0 <= indx && indx < bps->nTiles
+         && board_setBlankValue( gs->game.board, bps->playerNum,
+                                 bps->col, bps->row, indx ) ) {
         updateScreen( gs, true );
     }
 
@@ -1037,12 +1028,7 @@ main_pickBlank( GameState* gs, int playerNum, int col, int row,
     bps->col = col;
     bps->playerNum = playerNum;
     bps->nTiles = nTiles;
-    bps->faces = XP_CALLOC( gs->globals->mpool, nTiles * sizeof(bps->faces[0]) );
-    for ( int ii = 0; ii < nTiles; ++ii ) {
-        replaceStringIfDifferent( gs->globals->mpool, &bps->faces[ii], tileFaces[ii] );
-    }
-
-    call_pickBlank( "Pick for your blank", tileFaces, nTiles,
+    call_pickBlank( "Pick a tile for your blank", tileFaces, nTiles,
                     onBlankPicked, bps );
 }
 

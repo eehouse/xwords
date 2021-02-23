@@ -179,13 +179,10 @@ function nbBlankPick(title, buttons, proc, closure) {
 
 	const butProc = function(indx) {
 		dlg.parentNode.removeChild(dlg);
-		ccallString(proc, closure, buttons[indx]);
+		ccallString(proc, closure, indx.toString());
 	}
 
-	let ROWLEN = 6;
-	for (ii = 0; ii < buttons.length; ii += ROWLEN) {
-		dlg.appendChild( newButtonDiv( buttons.slice(ii, ii + ROWLEN), butProc ) );
-	}
+	dlg.appendChild( newButtonDiv( buttons, butProc ) );
 	addDepthNote(dlg);
 }
 
