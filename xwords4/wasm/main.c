@@ -453,12 +453,13 @@ onGameButton( void* closure, const char* button )
 }
 
 static void
-updateGameButtons( GameState* gs )
+updateGameButtons( Globals* globals )
 {
+    GameState* gs = getCurGame(globals);
     const char* buttons[MAX_BUTTONS];
     int cur = 0;
 
-    if ( !!gs->util ) {
+    if ( gs && !!gs->util ) {
         XP_U16 nPending = server_getPendingRegs( gs->game.server );
         if ( 0 < nPending ) {
             buttons[cur++] = BUTTON_INVITE;
@@ -486,8 +487,8 @@ updateGameButtons( GameState* gs )
             buttons[cur++] = BUTTON_VALS;
         }
     }
-    buttons[cur++] = NULL;
 
+    buttons[cur++] = NULL;
     setButtons( BUTTONS_ID_GAME, buttons, onGameButton, gs );
 }
 
@@ -529,6 +530,11 @@ static void
 deleteGame( GameState* gs )
 {
     Globals* globals = gs->globals;
+    if ( globals->curGame == gs ) {
+        globals->curGame = NULL;
+    }
+    updateGameButtons( globals );
+
     int gameID = gs->gi.gameID; /* remember it */
     cleanupGame( gs );
 
@@ -920,7 +926,7 @@ loadAndDraw( Globals* globals, const NetLaunchInfo* invite,
         gs->gi.players[0].isLocal = XP_TRUE;
         gs->gi.players[0].robotIQ = 0;
 
-        gs->gi.players[1].name = copyString( globals->mpool, "Player 2" );
+        gs->gi.players[1].name = copyString( globals->mpool, "Robot" );
         gs->gi.players[1].isLocal = !!params ? params->isRobotNotRemote : true;
         XP_LOGFF( "set isLocal[1]: %d", gs->gi.players[1].isLocal );
         gs->gi.players[1].robotIQ = 99; /* doesn't matter if remote */
@@ -1294,10 +1300,11 @@ updateScreen( GameState* gs, bool doSave )
         }
         SDL_RenderPresent( globals->renderer );
 
-        updateGameButtons( gs );
     } else {
         XP_LOGFF( "not drawing %s; not visible", gs->gameName );
     }
+
+    updateGameButtons( globals );
 
     /* Let's save state here too, though likely too often */
     if ( doSave ) {
@@ -1329,8 +1336,6 @@ looper( void* closure )
         if ( checkForEvent( gs ) ) {
             updateScreen( gs, true );
         }
-    } else {
-        XP_LOGFF( "no visible game" );
     }
 }
 
