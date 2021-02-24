@@ -986,8 +986,14 @@ main_onGameMessage( Globals* globals, XP_U32 gameID,
         }
     } else {
         char msg[128];
-        snprintf( msg, sizeof(msg), "Dropping move for deleted game (id: %X)", gameID );
+        snprintf( msg, sizeof(msg), "Dropping move for deleted game (id: %X/%d)",
+                  gameID, gameID );
         call_alert( msg );
+
+        XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(globals->mpool)
+                                                    globals->vtMgr );
+        dvc_makeMQTTNoSuchGame( globals->dutil, NULL, stream, gameID );
+        sendStreamToDev( stream, &from->u.mqtt.devID );
     }
 }
 
