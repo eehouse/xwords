@@ -32,6 +32,7 @@
 #include "nli.h"
 #include "strutils.h"
 #include "movestak.h"
+#include "knownplyr.h"
 
 #include "main.h"
 #include "wasmdraw.h"
@@ -98,6 +99,7 @@ static void nameGame( GameState* gs, const char* name );
 static void ensureName( GameState* gs );
 static void loadName( GameState* gs );
 static void saveName( GameState* gs );
+static bool isVisible( GameState* gs );
 
 EM_JS(void, show_name, (const char* name), {
         let jsname = UTF8ToString(name);
@@ -329,25 +331,85 @@ makeSelfAddr( Globals* globals, CommsAddrRec* addr )
 }
 
 static void
+sendInviteTo(GameState* gs, const MQTTDevID* remoteDevID)
+{
+    Globals* globals = gs->globals;
+    CommsAddrRec myAddr = {0};
+    makeSelfAddr( globals, &myAddr );
+
+    NetLaunchInfo nli = {0};    /* include everything!!! */
+    nli_init( &nli, &gs->gi, &myAddr, 1, 1 );
+    nli_setGameName( &nli, gs->gameName );
+
+
+    XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(globals->mpool)
+                                                globals->vtMgr );
+    dvc_makeMQTTInvite( globals->dutil, NULL, stream, &nli );
+
+    sendStreamToDev( stream, remoteDevID );
+}
+
+static void
 onGotInviteeID( void* closure, const char* mqttid )
 {
     MQTTDevID remoteDevID;
     if ( strToMQTTCDevID( mqttid, &remoteDevID ) ) {
         CAST_GS(GameState*, gs, closure);
-        Globals* globals = gs->globals;
-        CommsAddrRec myAddr = {0};
-        makeSelfAddr( globals, &myAddr );
-
-        NetLaunchInfo nli = {0};    /* include everything!!! */
-        nli_init( &nli, &gs->gi, &myAddr, 1, 1 );
-
-        XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(globals->mpool)
-                                                    globals->vtMgr );
-        dvc_makeMQTTInvite( globals->dutil, NULL, stream, &nli );
-
-        sendStreamToDev( stream, &remoteDevID );
+        sendInviteTo( gs, &remoteDevID );
     } else {
         call_alert( "MQTT id looks badly formed" );
+    }
+}
+
+typedef struct _KnownSelState {
+    GameState* gs;
+    const char** names;
+    XP_U16 nNames;
+} KnownSelState;
+
+static void
+onKnownSelected( void* closure, const char* name )
+{
+    XP_LOGFF( "(name=%s)", name );
+    KnownSelState* kss = (KnownSelState*)closure;
+    GameState* gs = kss->gs;
+    if ( 0 == strcmp( BUTTON_CANCEL, name ) ) {
+        call_get_string( "Invitee's MQTT Device ID?", "",
+                         onGotInviteeID, gs );
+    } else {
+        CommsAddrRec addr;
+        if ( kplr_getAddr( gs->globals->dutil, NULL, name, &addr, NULL ) ) {
+            sendInviteTo(gs, &addr.u.mqtt.devID);
+        }
+    }
+
+    XP_FREE( gs->globals->mpool, kss->names );
+    XP_FREE( gs->globals->mpool, kss );
+}
+
+static void
+handleInvite( GameState* gs )
+{
+    if ( isVisible(gs) ) {
+        Globals* globals = gs->globals;
+        XW_DUtilCtxt* dutil = globals->dutil;
+        if ( kplr_havePlayers( dutil, NULL ) ) {
+            KnownSelState* kss = XP_MALLOC( globals->mpool, sizeof(*kss) );
+            kss->gs = gs;
+            kss->nNames = 0;
+            kplr_getNames( dutil, NULL, NULL, &kss->nNames );
+            kss->names = XP_CALLOC( globals->mpool,
+                                    (kss->nNames + 2) * sizeof(kss->names[0]) );
+            kplr_getNames( dutil, NULL, kss->names, &kss->nNames );
+            kss->names[kss->nNames] = BUTTON_CANCEL;
+            XP_ASSERT( NULL == kss->names[kss->nNames+1] );
+            const char* msg = "Pick an invitee you've played before, "
+                "or cancel to enter manually.";
+            call_dialog( msg, kss->names, onKnownSelected, kss );
+        } else {
+            call_get_string( "Invitee's MQTT Device ID?", "",
+                             onGotInviteeID, gs );
+        }
     }
 }
 
@@ -381,8 +443,7 @@ onGameButton( void* closure, const char* button )
             globals->cp.tvType = (globals->cp.tvType + 1) % TVT_N_ENTRIES;
             draw = board_prefsChanged( board, &globals->cp );
         } else if ( 0 == strcmp(button, BUTTON_INVITE) ) {
-            call_get_string( "Invitee's MQTT Device ID?", "",
-                             onGotInviteeID, gs );
+            handleInvite(gs);
         }
 
         if ( draw ) {

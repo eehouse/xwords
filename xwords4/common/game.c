@@ -333,6 +333,14 @@ game_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream, XWGame* game,
         XP_ASSERT( comms_getIsServer(game->comms) == server_getIsServer(game->server) );
     }
 
+#ifdef XWFEATURE_KNOWNPLAYERS
+    const XP_U32 created = game->created;
+    if ( !!game->comms && 0 != created
+         && server_getGameIsConnected( game->server ) ) {
+        comms_gatherPlayers( game->comms, xwe, created );
+    }
+#endif
+
     return success;
 } /* game_makeFromStream */
 
