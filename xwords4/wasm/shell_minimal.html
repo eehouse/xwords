@@ -113,6 +113,9 @@
       var spinnerElement = document.getElementById('spinner');
 
       let arguments = window.location.search.replaceAll('?', '').trim().split('&');
+      for ( let ii = 0; ii < arguments.length; ++ii ) {
+		  arguments[ii] = decodeURIComponent(arguments[ii]);
+      }
 
       var Module = {
         // preRun: see https://stackoverflow.com/questions/45936800/emscripten-canvas-jquery-toggle-focus/46083467
