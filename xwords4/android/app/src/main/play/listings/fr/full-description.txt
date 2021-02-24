@@ -1,0 +1,17 @@
+Un jeu multiplateforme avec les mêmes règles que le Scrabble, qui peut
+être joué localement (sur le même appareil), ou contre un autre appareil
+par MMS, Bluetooth et Internet. Commencez les parties via une invitation
+envoyée par email, SMS, ou Bluetooth, ou, si quelqu'un est à proximité,
+en lui faisant scanner un code QR.
+
+Déplacez les lettres sur le plateau à côté d'autres lettres pour faire
+des nouveaux mots ; appuyez sur le nombre sur la droite de l'écran pour
+valider votre coup et laisser la prochaine personne jouer. Une liste de
+mots en anglais est fournie, mais il y a un lien vers le site web pour
+télécharger des listes de mots pour jouer dans d'autres langues.
+
+Le code source gère les envois de messages par Google Play, mais cela ne
+fonctionnera pas dans cette version, même si Google Play est installé.
+Cela signifie juste que les coups ne seront pas transmis aussi
+rapidement que si ils étaient gérés. Le jeu par SMS ou Bluetooth n'est
+pas affecté par ça.
