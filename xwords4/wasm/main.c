@@ -528,8 +528,20 @@ cleanupGame( GameState* gs )
 static void
 deleteGame( GameState* gs )
 {
+    Globals* globals = gs->globals;
     int gameID = gs->gi.gameID; /* remember it */
     cleanupGame( gs );
+
+    // Remove from linked list, but don't actually free because could live in
+    // a js-side object still. Needs refcounting or somesuch
+    GameState** prev = &globals->games;
+    for ( GameState* cur = globals->games; !!cur; cur = cur->next ) {
+        if ( gs == cur ) {
+            *prev = cur->next;
+            break;
+        }
+        prev = &cur->next;
+    }
 
     char key[32];
     formatNameKey( key, sizeof(key), gameID );
