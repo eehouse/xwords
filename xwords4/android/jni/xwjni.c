@@ -2542,6 +2542,20 @@ Java_org_eehouse_android_xw4_jni_XwJNI_comms_1getPending
     return result;
 }
 
+JNIEXPORT jint JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_comms_1countPendingPackets
+( JNIEnv* env, jclass C, GamePtrType gamePtr )
+{
+    jint result = 0;
+    XWJNI_START();
+    const CommsCtxt* comms = state->game.comms;
+    if ( !!comms ) {
+        result = comms_countPendingPackets( comms );
+    }
+    XWJNI_END();
+    return result;
+}
+
 #ifdef XWFEATURE_COMMSACK
 JNIEXPORT void JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_comms_1ackAny

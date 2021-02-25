@@ -2215,10 +2215,13 @@ public class BoardDelegate extends DelegateBase
                             runOnUiThread( new Runnable() {
                                     @Override
                                     public void run() {
+                                        boolean hasPending = 0 < XwJNI.
+                                            comms_countPendingPackets( m_jniGamePtr );
                                         show( GameOverAlert
                                               .newInstance( m_summary,
                                                             msg.arg1,
                                                             (String)msg.obj,
+                                                            hasPending,
                                                             inArchiveGroup() ) );
                                     }
                                 } );

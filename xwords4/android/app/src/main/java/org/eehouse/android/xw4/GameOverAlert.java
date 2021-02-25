@@ -44,6 +44,7 @@ public class GameOverAlert extends XWDialogFragment
     private static final String TITLE = "TITLE";
     private static final String MSG = "MSG";
     private static final String IN_ARCH = "IN_ARCH";
+    private static final String HAS_PENDING = "HAS_PENDING";
 
     private AlertDialog mDialog;
     private GameSummary mSummary;
@@ -52,10 +53,11 @@ public class GameOverAlert extends XWDialogFragment
     private ViewGroup mView;
     private boolean mInArchive;
     private CheckBox mArchiveBox;
+    private boolean mHasPending;
 
     public static GameOverAlert newInstance( GameSummary summary,
                                              int titleID, String msg,
-                                             boolean inArchiveGroup )
+                                             boolean hasPending, boolean inArchiveGroup )
     {
         Log.d( TAG, "newInstance(msg=%s)", msg );
         GameOverAlert result = new GameOverAlert();
@@ -64,6 +66,7 @@ public class GameOverAlert extends XWDialogFragment
         args.putInt( TITLE, titleID );
         args.putString( MSG, msg );
         args.putBoolean( IN_ARCH, inArchiveGroup );
+        args.putBoolean( HAS_PENDING, hasPending );
         result.setArguments( args );
         Log.d( TAG, "newInstance() => %s", result );
         return result;
@@ -78,6 +81,7 @@ public class GameOverAlert extends XWDialogFragment
         bundle.putInt( TITLE, mTitleID );
         bundle.putString( MSG, mMsg );
         bundle.putBoolean( IN_ARCH, mInArchive );
+        bundle.putBoolean( HAS_PENDING, mHasPending );
         super.onSaveInstanceState( bundle );
     }
     
@@ -92,6 +96,7 @@ public class GameOverAlert extends XWDialogFragment
         mTitleID = sis.getInt( TITLE );
         mMsg = sis.getString( MSG );
         mInArchive = sis.getBoolean( IN_ARCH );
+        boolean hasPending = sis.getBoolean( HAS_PENDING );
 
         Activity activity = getActivity();
         mView = (ViewGroup)LocUtils.inflate( activity, R.layout.game_over );
@@ -102,8 +107,12 @@ public class GameOverAlert extends XWDialogFragment
             .setView( mView )
             .setPositiveButton( android.R.string.ok, this )
             .setNeutralButton( R.string.button_rematch, this )
-            .setNegativeButton( R.string.button_delete, this )
             ;
+        if ( hasPending ) {
+            mArchiveBox.setVisibility( View.GONE );
+        } else {
+            ab.setNegativeButton( R.string.button_delete, this );
+        }
 
         mDialog = ab.create();
         mDialog.setOnShowListener( new DialogInterface.OnShowListener() {
