@@ -263,6 +263,9 @@ public class DictBrowseDelegate extends DelegateBase
                     {
                         m_browseState.m_expanded = nowExpanded;
                         setShowConfig();
+                        if ( !nowExpanded ) {
+                            hideSoftKeyboard();
+                        }
                     }
                 } )
                 .setExpanded( m_browseState.m_expanded );
@@ -467,7 +470,6 @@ public class DictBrowseDelegate extends DelegateBase
     @Override
     public boolean enterPressed()
     {
-        hideSoftKeyboard();
         useButtonClicked();
         return true;
     }
@@ -645,6 +647,7 @@ public class DictBrowseDelegate extends DelegateBase
         if ( !pending ) {
             storeBrowseState();
             replaceIter( false );
+            hideSoftKeyboard();
         }
     }
 
