@@ -95,8 +95,6 @@ public class EnableSMSAlert extends DlgDelegateAlert {
     private void checkEnableButton( AlertDialog dialog )
     {
         boolean enabled = 0 < mSpinner.getSelectedItemPosition();
-        ((AlertDialog)dialog)
-            .getButton( AlertDialog.BUTTON_POSITIVE )
-            .setEnabled( enabled );
+        Utils.enableAlertButton( dialog, AlertDialog.BUTTON_POSITIVE, enabled );
     }
 }

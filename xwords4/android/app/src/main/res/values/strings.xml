@@ -1997,6 +1997,10 @@
     <string name="button_archive">Archive\u200C</string>
     <string name="checkbox_archive">Move to Archive</string>
     <string name="group_name_archive">Archive</string>
+    <!-- When you choose "delete" from the game-over dialog, you see
+         this string in a comfirmation dialog -->
+    <string name="confirm_delete">Are you sure you want to delete the
+    current game? \n\n(This action cannot be undone.)</string>
     <string name="duplicate_group_name_fmt">The group “%1$s” already exists.</string>
     <string name="button_reconnect">Reconnect</string>
     <string name="square_tiles">Square rack tiles</string>

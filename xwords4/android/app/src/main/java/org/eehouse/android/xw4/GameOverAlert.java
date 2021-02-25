@@ -37,7 +37,7 @@ import org.eehouse.android.xw4.jni.GameSummary;
 import org.eehouse.android.xw4.loc.LocUtils;
 
 public class GameOverAlert extends XWDialogFragment
-    implements DialogInterface.OnClickListener
+    implements DialogInterface.OnClickListener, CompoundButton.OnCheckedChangeListener
 {
     private static final String TAG = GameOverAlert.class.getSimpleName();
     private static final String SUMMARY = "SUMMARY";
@@ -45,14 +45,13 @@ public class GameOverAlert extends XWDialogFragment
     private static final String MSG = "MSG";
     private static final String IN_ARCH = "IN_ARCH";
 
-    private AlertDialog m_dialog;
+    private AlertDialog mDialog;
     private GameSummary mSummary;
     private int mTitleID;
     private String mMsg;
-    private ViewGroup m_view;
+    private ViewGroup mView;
     private boolean mInArchive;
     private CheckBox mArchiveBox;
-    // private boolean mArchiveChecked;
 
     public static GameOverAlert newInstance( GameSummary summary,
                                              int titleID, String msg,
@@ -95,42 +94,52 @@ public class GameOverAlert extends XWDialogFragment
         mInArchive = sis.getBoolean( IN_ARCH );
 
         Activity activity = getActivity();
-        m_view = (ViewGroup)LocUtils.inflate( activity, R.layout.game_over );
+        mView = (ViewGroup)LocUtils.inflate( activity, R.layout.game_over );
         initView();
 
         AlertDialog.Builder ab = LocUtils.makeAlertBuilder( activity )
             .setTitle( mTitleID )
-            .setView( m_view )
+            .setView( mView )
             .setPositiveButton( android.R.string.ok, this )
             .setNeutralButton( R.string.button_rematch, this )
+            .setNegativeButton( R.string.button_delete, this )
             ;
 
-        m_dialog = ab.create();
-        Log.d( TAG, "onCreateDialog() => %s", m_dialog );
-        return m_dialog;
+        mDialog = ab.create();
+        mDialog.setOnShowListener( new DialogInterface.OnShowListener() {
+                @Override
+                public void onShow( DialogInterface dialog ) {
+                    boolean nowChecked = mArchiveBox.isChecked();
+                    onCheckedChanged( null, nowChecked );
+                }
+            });
+
+        Log.d( TAG, "onCreateDialog() => %s", mDialog );
+        return mDialog;
     }
 
     @Override
     protected String getFragTag() { return TAG; }
-
-    // @Override
-    // public void onCheckedChanged( CompoundButton buttonView, boolean isChecked )
-    // {
-    //     Log.d( TAG, "onCheckedChanged(%b)", isChecked );
-    //     mArchiveChecked = isChecked;
-    // }
 
     @Override
     public void onClick( DialogInterface dialog, int which )
     {
         Action action = null;
         boolean archiveAfter =
-            ((CheckBox)m_view.findViewById(R.id.archive_check))
+            ((CheckBox)mView.findViewById(R.id.archive_check))
             .isChecked();
-        if ( which == AlertDialog.BUTTON_NEUTRAL ) {
+        switch ( which ) {
+        case AlertDialog.BUTTON_NEUTRAL:
             action = Action.REMATCH_ACTION;
-        } else if ( which == AlertDialog.BUTTON_POSITIVE && archiveAfter ) {
-            action = Action.ARCHIVE_SEL_ACTION;
+            break;
+        case AlertDialog.BUTTON_POSITIVE:
+            if ( archiveAfter ) {
+                action = Action.ARCHIVE_SEL_ACTION;
+            }
+            break;
+        case AlertDialog.BUTTON_NEGATIVE:
+            action = Action.DELETE_ACTION;
+            break;
         }
 
         if ( null != action ) {
@@ -143,16 +152,18 @@ public class GameOverAlert extends XWDialogFragment
         }
     }
 
-    // private void trySend( Action action, boolean bool )
-    // {
-    //     Log.d( TAG, "trySend(%s)", action );
-    // }
+    @Override
+    public void onCheckedChanged( CompoundButton bv, boolean isChecked )
+    {
+        Utils.enableAlertButton( mDialog, AlertDialog.BUTTON_NEGATIVE, !isChecked );
+    }
 
     private void initView()
     {
-        ((TextView)m_view.findViewById( R.id.msg )).setText( mMsg );
+        ((TextView)mView.findViewById( R.id.msg )).setText( mMsg );
 
-        mArchiveBox = (CheckBox)m_view.findViewById( R.id.archive_check );
+        mArchiveBox = (CheckBox)mView.findViewById( R.id.archive_check );
+        mArchiveBox.setOnCheckedChangeListener( this );
         if ( mInArchive ) {
             mArchiveBox.setVisibility( View.GONE );
         }

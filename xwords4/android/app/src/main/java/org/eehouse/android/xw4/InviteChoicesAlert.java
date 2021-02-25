@@ -23,7 +23,6 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface.OnClickListener;
 import android.content.DialogInterface;
-import android.widget.Button;
 import android.widget.RadioGroup;
 
 import java.lang.ref.WeakReference;
@@ -44,8 +43,8 @@ public class InviteChoicesAlert extends DlgDelegateAlert
 
     private static WeakReference<InviteChoicesAlert> sSelf;
 
-    private Button mPosButton;
     private InviteView mInviteView;
+    private AlertDialog mDialog;
 
     public static InviteChoicesAlert newInstance( DlgState state )
     {
@@ -182,17 +181,15 @@ public class InviteChoicesAlert extends DlgDelegateAlert
     @Override
     AlertDialog create( AlertDialog.Builder builder )
     {
-        AlertDialog dialog = super.create( builder );
-        dialog.setOnShowListener(new DialogInterface.OnShowListener() {
+        mDialog = super.create( builder );
+        mDialog.setOnShowListener(new DialogInterface.OnShowListener() {
                 @Override
                 public void onShow( DialogInterface diface ) {
-                    mPosButton = ((AlertDialog)diface)
-                        .getButton( AlertDialog.BUTTON_POSITIVE );
                     enableOkButton();
                 }
             });
 
-        return dialog;
+        return mDialog;
     }
 
     @Override
@@ -251,8 +248,7 @@ public class InviteChoicesAlert extends DlgDelegateAlert
 
     private void enableOkButton()
     {
-        if ( null != mPosButton ) {
-            mPosButton.setEnabled( null != mInviteView.getChoice() );
-        }
+        boolean enable = null != mInviteView.getChoice();
+        Utils.enableAlertButton( mDialog, AlertDialog.BUTTON_POSITIVE, enable );
     }
 }

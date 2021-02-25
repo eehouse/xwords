@@ -83,6 +83,7 @@ public class DlgDelegate {
         ARCHIVE_SEL_ACTION,     // archive was clicked
         ARCHIVE_ACTION,
         REMATCH_ACTION,
+        DELETE_ACTION,
 
         // Dict Browser
         FINISH_ACTION,

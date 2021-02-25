@@ -987,9 +987,8 @@ public class GamesListDelegate extends ListDelegateBase
 
     private void enableMoveGroupButton( DialogInterface dlgi )
     {
-        ((AlertDialog)dlgi)
-            .getButton( AlertDialog.BUTTON_POSITIVE )
-            .setEnabled( 0 <= m_mySIS.groupSelItem );
+        Utils.enableAlertButton( (AlertDialog)dlgi, AlertDialog.BUTTON_POSITIVE,
+                                 0 <= m_mySIS.groupSelItem );
     }
 
     @Override

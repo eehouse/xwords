@@ -1107,6 +1107,17 @@ public class BoardDelegate extends DelegateBase
             showArchiveNA( false );
             break;
 
+        case DELETE_ACTION:
+            if ( 0 < params.length && (Boolean)params[0] ) {
+                deleteAndClose();
+            } else {
+                makeConfirmThenBuilder( R.string.confirm_delete,
+                                        Action.DELETE_ACTION )
+                    .setParams(true)
+                    .show();
+            }
+            break;
+
         case LAUNCH_INVITE_ACTION:
             for ( Object obj : params ) {
                 if ( obj instanceof CommsAddrRec ) {
