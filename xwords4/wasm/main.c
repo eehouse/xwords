@@ -161,9 +161,12 @@ EM_JS(void, call_get_string, (const char* msg, const char* dflt,
       } );
 
 EM_JS(void, call_haveDevID, (void* closure, const char* devid,
-                             const char* gitrev, int now, StringProc proc), {
+                             const char* gitrev, int now,
+                             StringProc conflictProc,
+                             StringProc focussedProc ), {
           let jsgr = UTF8ToString(gitrev);
-          onHaveDevID(closure, UTF8ToString(devid), jsgr, now, proc);
+          onHaveDevID(closure, UTF8ToString(devid), jsgr, now,
+                      conflictProc, focussedProc);
       });
 
 EM_JS(bool, call_mqttSend, (const char* topic, const uint8_t* ptr, int len), {
@@ -610,9 +613,22 @@ updateDeviceButtons( Globals* globals )
 static void
 onConflict( void* closure, const char* ignored )
 {
-    Globals* globals = (Globals*)closure;
+    CAST_GLOB(Globals*, globals, closure);
     call_alert( "Control passed to another tab" );
     XP_MEMSET( globals, 0, sizeof(*globals) ); /* stop everything :-) */
+}
+
+static void
+onFocussed( void* closure, const char* ignored )
+{
+    XP_LOGFF("Need to refresh...");
+    /* This hasn't worked.... */
+    /* CAST_GLOB(Globals*, globals, closure); */
+    /* GameState* gs = getCurGame( globals ); */
+    /* if ( !!gs ) { */
+    /*     board_invalAll( gs->game.board ); */
+    /*     updateScreen( gs, false ); */
+    /* } */
 }
 
 static void
@@ -647,7 +663,7 @@ initDeviceGlobals( Globals* globals )
     XP_SNPRINTF( buf, VSIZE(buf), MQTTDevID_FMT, devID );
     XP_LOGFF( "got mqtt devID: %s", buf );
     int now = dutil_getCurSeconds( globals->dutil, NULL );
-    call_haveDevID( globals, buf, GITREV, now, onConflict );
+    call_haveDevID( globals, buf, GITREV, now, onConflict, onFocussed );
 }
 
 static void

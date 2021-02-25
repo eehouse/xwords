@@ -45,7 +45,7 @@ function registerOnce(devid, gitrev, now) {
 	}
 }
 
-function onHaveDevID(closure, devid, gitrev, now, proc) {
+function onHaveDevID(closure, devid, gitrev, now, noTabProc, focusProc) {
 	// Set a unique tag so we know if somebody comes along later
 	let tabID = Math.random();
 	localStorage.setItem('tabID', tabID);
@@ -53,11 +53,15 @@ function onHaveDevID(closure, devid, gitrev, now, proc) {
 		newTabID = 	localStorage.getItem('tabID');
 		if ( newTabID != tabID ) {
 			state.client.disconnect();
-			ccallString(proc, state.closure, '');
+			ccallString(noTabProc, state.closure, '');
 			window.removeEventListener('storage', listener);
 		}
 	};
 	window.addEventListener('storage', listener);
+
+	window.onfocus = function () {
+		ccallString(focusProc, state.closure, '');
+	};
 
 	registerOnce(devid, gitrev, now);
 
