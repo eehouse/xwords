@@ -824,10 +824,12 @@ public class DictBrowseDelegate extends DelegateBase
 
     private void hideSoftKeyboard()
     {
-        InputMethodManager imm = (InputMethodManager)
-            m_activity.getSystemService(Activity.INPUT_METHOD_SERVICE);
-        imm.hideSoftInputFromWindow( m_activity.getCurrentFocus()
-                                     .getWindowToken(), 0);
+        View hasFocus = m_activity.getCurrentFocus();
+        if ( null != hasFocus ) {
+            InputMethodManager imm = (InputMethodManager)
+                m_activity.getSystemService( Activity.INPUT_METHOD_SERVICE );
+            imm.hideSoftInputFromWindow( hasFocus.getWindowToken(), 0 );
+        }
     }
 
     private static void launch( Delegator delegator, Bundle bundle )
