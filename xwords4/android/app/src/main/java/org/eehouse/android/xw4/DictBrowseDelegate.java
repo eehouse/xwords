@@ -30,6 +30,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
@@ -58,7 +59,8 @@ import java.util.Arrays;
 import java.io.Serializable;
 
 public class DictBrowseDelegate extends DelegateBase
-    implements View.OnClickListener, View.OnLongClickListener {
+    implements View.OnClickListener, View.OnLongClickListener,
+               PatTableRow.EnterPressed {
     private static final String TAG = DictBrowseDelegate.class.getSimpleName();
     private static final String DELIM = ".";
     private static final boolean SHOW_NUM = false;
@@ -285,6 +287,7 @@ public class DictBrowseDelegate extends DelegateBase
         }
     } // init
 
+    @Override
     protected void onPause()
     {
         scrapeBrowseState();
@@ -458,6 +461,17 @@ public class DictBrowseDelegate extends DelegateBase
         return handled;
     }
 
+    //////////////////////////////////////////////////
+    // PatTableRow.EnterPressed
+    //////////////////////////////////////////////////
+    @Override
+    public boolean enterPressed()
+    {
+        hideSoftKeyboard();
+        useButtonClicked();
+        return true;
+    }
+
     private void scrapeBrowseState()
     {
         Assert.assertTrueNR( null != m_browseState );
@@ -536,6 +550,7 @@ public class DictBrowseDelegate extends DelegateBase
                 PatTableRow row = (PatTableRow)child;
                 m_rows[nFound++] = row;
                 row.setOnFocusGained( mFocusGainedProc );
+                row.setOnEnterPressed(this);
             }
         }
         Assert.assertTrueNR( nFound == m_rows.length );
@@ -802,6 +817,14 @@ public class DictBrowseDelegate extends DelegateBase
                              nWords );
         TextView tv = (TextView)findViewById( R.id.filter_summary );
         tv.setText( summary );
+    }
+
+    private void hideSoftKeyboard()
+    {
+        InputMethodManager imm = (InputMethodManager)
+            m_activity.getSystemService(Activity.INPUT_METHOD_SERVICE);
+        imm.hideSoftInputFromWindow( m_activity.getCurrentFocus()
+                                     .getWindowToken(), 0);
     }
 
     private static void launch( Delegator delegator, Bundle bundle )

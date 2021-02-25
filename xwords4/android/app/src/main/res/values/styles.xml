@@ -143,6 +143,7 @@
       <item name="android:maxLength">15</item>
       <item name="android:inputType">textCapCharacters|textNoSuggestions</item>
       <item name="android:layout_weight">1</item>
+      <item name="android:imeOptions">actionSend</item>
     </style>
 
     <style name="pat_table_check">
