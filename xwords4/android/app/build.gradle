@@ -446,4 +446,9 @@ gradle.projectsEvaluated {
     build.dependsOn(makeBuildAssets)
 }
 
+// To turn on javac options
+// tasks.withType(JavaCompile) {
+//     options.compilerArgs += ["-Xdiags:verbose"]
+// }
+
 apply plugin: 'com.google.gms.google-services'    // rm-for-fdroid
