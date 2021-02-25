@@ -34,7 +34,6 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ListView;
 import android.widget.SectionIndexer;
@@ -268,7 +267,8 @@ public class DictBrowseDelegate extends DelegateBase
 
             m_desc = XwJNI.dict_getDesc( m_dict );
 
-            int[] ids = { R.id.button_useconfig, R.id.button_addBlank, };
+            int[] ids = { R.id.button_useconfig, R.id.button_addBlank,
+                          R.id.button_reset, };
             for ( int id : ids ) {
                 findViewById( id ).setOnClickListener(this);
             }
@@ -420,6 +420,9 @@ public class DictBrowseDelegate extends DelegateBase
             break;
         case R.id.button_addBlank:
             addBlankButtonClicked();
+            break;
+        case R.id.button_reset:
+            resetClicked();
             break;
         default:
             if ( view instanceof TextView ) {
@@ -636,6 +639,14 @@ public class DictBrowseDelegate extends DelegateBase
         for ( PatTableRow row : m_rows ) {
             handled = handled || row.addBlankToFocussed( "_" );
         }
+    }
+
+    private void resetClicked()
+    {
+        m_browseState = new DictBrowseState();
+        storeBrowseState();
+        loadBrowseState();
+        setFindPats( m_browseState.m_pats );
     }
 
     private void setShowConfig()

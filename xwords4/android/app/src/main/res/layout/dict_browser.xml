@@ -111,12 +111,18 @@
         <LinearLayout android:layout_height="wrap_content"
                       android:layout_width="wrap_content"
                       android:orientation="horizontal"
+                      android:layout_gravity="center_horizontal"
                       >
           <Button android:id="@+id/button_addBlank"
                   android:layout_height="wrap_content"
                   android:layout_width="wrap_content"
                   android:text="@string/button_addBlank"
                   android:enabled="false"
+                  />
+          <Button android:id="@+id/button_reset"
+                  android:layout_height="wrap_content"
+                  android:layout_width="wrap_content"
+                  android:text="@string/button_reset"
                   />
         </LinearLayout>
         <LinearLayout android:layout_height="wrap_content"
