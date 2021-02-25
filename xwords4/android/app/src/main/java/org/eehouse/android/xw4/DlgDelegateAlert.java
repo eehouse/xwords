@@ -22,7 +22,6 @@ package org.eehouse.android.xw4;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface.OnClickListener;
 import android.content.DialogInterface;
@@ -92,7 +91,7 @@ public class DlgDelegateAlert extends XWDialogFragment {
         }
     }
 
-    Dialog create( AlertDialog.Builder builder ) { return builder.create(); }
+    AlertDialog create( AlertDialog.Builder builder ) { return builder.create(); }
 
     private NotAgainView addNAView( DlgState state, AlertDialog.Builder builder )
     {
@@ -109,7 +108,7 @@ public class DlgDelegateAlert extends XWDialogFragment {
     }
 
     @Override
-    public final Dialog onCreateDialog( Bundle sis )
+    public final AlertDialog onCreateDialog( Bundle sis )
     {
         Context context = getActivity();
         DlgState state = getState( sis );

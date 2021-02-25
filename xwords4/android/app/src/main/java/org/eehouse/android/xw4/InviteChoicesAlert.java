@@ -20,7 +20,6 @@
 package org.eehouse.android.xw4;
 
 import android.app.AlertDialog;
-import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface.OnClickListener;
 import android.content.DialogInterface;
@@ -181,9 +180,9 @@ public class InviteChoicesAlert extends DlgDelegateAlert
     }
 
     @Override
-    Dialog create( AlertDialog.Builder builder )
+    AlertDialog create( AlertDialog.Builder builder )
     {
-        Dialog dialog = super.create( builder );
+        AlertDialog dialog = super.create( builder );
         dialog.setOnShowListener(new DialogInterface.OnShowListener() {
                 @Override
                 public void onShow( DialogInterface diface ) {
