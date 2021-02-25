@@ -45,64 +45,69 @@
                 android:paddingLeft="8dp"
                 android:paddingRight="8dp"
                 >
-      <TableLayout android:id="@+id/config"
-                   android:orientation="vertical"
-                   android:layout_width="wrap_content"
-                   android:layout_height="wrap_content"
-                   android:background="#FF1F1F1F"
-                   android:visibility="gone"
-                   >
-        <TableRow
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            >
-          <TextView style="@style/pat_table_label"
-                    android:visibility="invisible"
-                    />
-          <EditText style="@style/pat_table_edit"
-                    android:visibility="invisible"
-                    />
-          <TextView android:layout_width="wrap_content"
+      <LinearLayout android:id="@+id/config"
+                    android:orientation="vertical"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="@string/pat_col_anyorder"
-                    />
-        </TableRow>
-        <org.eehouse.android.xw4.PatTableRow
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            >
-          <TextView style="@style/pat_table_label"
-                    android:text="@string/pat_starts_with"
-                    />
-          <EditText style="@style/pat_table_edit"
-                    />
-          <CheckBox style="@style/pat_table_check"
-                    />
-        </org.eehouse.android.xw4.PatTableRow>
-        <org.eehouse.android.xw4.PatTableRow
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            >
-          <TextView style="@style/pat_table_label"
-                    android:text="@string/pat_contains"
-                    />
-          <EditText style="@style/pat_table_edit"
-                    />
-          <CheckBox style="@style/pat_table_check"
-                    />
-        </org.eehouse.android.xw4.PatTableRow>
-        <org.eehouse.android.xw4.PatTableRow
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            >
-          <TextView style="@style/pat_table_label"
-                    android:text="@string/pat_ends_with"
-                    />
-          <EditText style="@style/pat_table_edit"
-                    />
-          <CheckBox style="@style/pat_table_check"
-                    />
-        </org.eehouse.android.xw4.PatTableRow>
+                    android:background="#FF1F1F1F"
+                    android:visibility="gone"
+                    >
+        <TableLayout android:id="@+id/table"
+                     android:layout_width="match_parent"
+                     android:layout_height="wrap_content"
+                     >
+          <TableRow
+              android:layout_width="fill_parent"
+              android:layout_height="wrap_content"
+              >
+            <TextView style="@style/pat_table_label"
+                      android:visibility="invisible"
+                      />
+            <EditText style="@style/pat_table_edit"
+                      android:visibility="invisible"
+                      />
+            <TextView android:layout_width="wrap_content"
+                      android:layout_height="wrap_content"
+                      android:text="@string/pat_col_anyorder"
+                      />
+          </TableRow>
+          <org.eehouse.android.xw4.PatTableRow
+              android:layout_width="fill_parent"
+              android:layout_height="wrap_content"
+              >
+            <TextView style="@style/pat_table_label"
+                      android:text="@string/pat_starts_with"
+                      />
+            <EditText style="@style/pat_table_edit"
+                      />
+            <CheckBox style="@style/pat_table_check"
+                      />
+          </org.eehouse.android.xw4.PatTableRow>
+          <org.eehouse.android.xw4.PatTableRow
+              android:layout_width="fill_parent"
+              android:layout_height="wrap_content"
+              >
+            <TextView style="@style/pat_table_label"
+                      android:text="@string/pat_contains"
+                      />
+            <EditText style="@style/pat_table_edit"
+                      />
+            <CheckBox style="@style/pat_table_check"
+                      />
+          </org.eehouse.android.xw4.PatTableRow>
+          <org.eehouse.android.xw4.PatTableRow
+              android:layout_width="fill_parent"
+              android:layout_height="wrap_content"
+              >
+            <TextView style="@style/pat_table_label"
+                      android:text="@string/pat_ends_with"
+                      />
+            <EditText style="@style/pat_table_edit"
+                      />
+            <CheckBox style="@style/pat_table_check"
+                      />
+          </org.eehouse.android.xw4.PatTableRow>
+        </TableLayout>
         <LinearLayout android:layout_height="wrap_content"
                       android:layout_width="wrap_content"
                       android:orientation="horizontal"
@@ -111,10 +116,7 @@
                   android:layout_height="wrap_content"
                   android:layout_width="wrap_content"
                   android:text="@string/button_addBlank"
-                  android:layout_span="1"
                   android:enabled="false"
-                  android:minHeight="0dp"
-                  android:minWidth="0dp"
                   />
         </LinearLayout>
         <LinearLayout android:layout_height="wrap_content"
@@ -154,12 +156,12 @@
         </LinearLayout>
         <Button android:id="@+id/button_useconfig"
                 android:layout_height="wrap_content"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:text="@string/button_useconfig"
                 android:layout_gravity="center_horizontal"
                 android:layout_span="2"
                 />
-      </TableLayout>
+      </LinearLayout>
     </ScrollView>
   </LinearLayout>
 

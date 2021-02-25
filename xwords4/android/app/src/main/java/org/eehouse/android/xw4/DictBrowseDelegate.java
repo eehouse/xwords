@@ -39,6 +39,7 @@ import android.widget.FrameLayout;
 import android.widget.ListView;
 import android.widget.SectionIndexer;
 import android.widget.Spinner;
+import android.widget.TableLayout;
 import android.widget.TextView;
 
 import java.util.ArrayList;
@@ -523,7 +524,7 @@ public class DictBrowseDelegate extends DelegateBase
 
     private void findTableRows()
     {
-        ViewGroup table = (ViewGroup)findViewById( R.id.config );
+        TableLayout table = (TableLayout)findViewById( R.id.table );
         int count = table.getChildCount();
         int nFound = 0;
         for ( int ii = 0; ii < count && nFound < m_rows.length; ++ii ) {
