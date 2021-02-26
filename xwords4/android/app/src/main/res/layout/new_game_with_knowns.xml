@@ -8,6 +8,27 @@
     android:padding="8dp"
     >
 
+  <LinearLayout android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                >
+    <TextView android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:text="@string/game_name_label"
+              android:layout_gravity="center_vertical"
+              />
+    <org.eehouse.android.xw4.EditWClear
+        android:id="@+id/name_edit"
+        style="@style/edit_w_clear"
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:scrollHorizontally="true"
+        android:maxLines="1"
+        android:maxLength="32"
+        android:selectAllOnFocus="true"
+        android:focusable="false"
+        />
+  </LinearLayout>
 
   <RadioGroup android:id="@+id/group"
               android:orientation="vertical"
@@ -60,25 +81,4 @@
               />
   </RadioGroup>
 
-  <LinearLayout android:orientation="horizontal"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                >
-    <TextView android:layout_width="wrap_content"
-              android:layout_height="wrap_content"
-              android:text="@string/game_name_label"
-              android:layout_gravity="center_vertical"
-              />
-    <org.eehouse.android.xw4.EditWClear
-        android:id="@+id/name_edit"
-        style="@style/edit_w_clear"
-        android:layout_height="wrap_content"
-        android:layout_width="wrap_content"
-        android:scrollHorizontally="true"
-        android:maxLines="1"
-        android:maxLength="32"
-        android:selectAllOnFocus="true"
-        android:focusable="false"
-        />
-  </LinearLayout>
 </org.eehouse.android.xw4.NewWithKnowns>

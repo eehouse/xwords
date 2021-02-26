@@ -84,7 +84,7 @@
                    />
 
         <!-- this layout is vertical, holds everything but the status
-             icon[s] (plural later) -->
+             icon[s] (plural later) and thumbnail -->
         <LinearLayout android:id="@+id/right_side"
                       android:orientation="vertical"
                       android:layout_width="fill_parent"
