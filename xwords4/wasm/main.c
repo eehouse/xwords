@@ -97,6 +97,7 @@ typedef struct _NewGameParams {
 } NewGameParams;
 
 static void updateScreen( GameState* gs, bool doSave );
+static void updateDeviceButtons( Globals* globals );
 static void clearScreen( Globals* globals );
 static GameState* newGameState( Globals* globals );
 static GameState* getSavedGame( Globals* globals, int gameID );
@@ -497,6 +498,8 @@ onGameChosen( void* closure, const char* key )
     XP_FREE( globals->mpool, nis->names );
     XP_FREE( globals->mpool, nis->ids );
     XP_FREE( globals->mpool, nis );
+
+    updateDeviceButtons( globals );
 }
 
 static XP_Bool
@@ -582,6 +585,7 @@ onDeleteConfirmed( void* closure, bool confirmed )
         Globals* globals = gs->globals;
         deleteGame( gs );
         clearScreen( globals );
+        updateDeviceButtons( globals );
     }
 }
 
@@ -609,15 +613,36 @@ onDeviceButton( void* closure, const char* button )
     }
 }
 
+static XP_Bool
+upCounter( void* closure, const XP_UCHAR* indx, const void* val, XP_U32 valLen )
+{
+    XP_LOGFF("(indx: %s)", indx);
+    int* intp = (int*)closure;
+    ++*intp;
+    return true;
+}
+
+static int
+countGames( Globals* globals )
+{
+    int nFound = 0;
+    dutil_forEachIndx( globals->dutil, NULL, KEY_NAME, upCounter, &nFound );
+    return nFound;
+}
+
 static void
 updateDeviceButtons( Globals* globals )
 {
     const char* buttons[MAX_BUTTONS];
     int cur = 0;
     buttons[cur++] = BUTTON_GAME_NEW;
-    buttons[cur++] = BUTTON_GAME_OPEN;
-    buttons[cur++] = BUTTON_GAME_RENAME;
-    buttons[cur++] = BUTTON_GAME_DELETE;
+    if ( 0 < countGames(globals) ) {
+        buttons[cur++] = BUTTON_GAME_OPEN;
+    }
+    if ( !!getCurGame( globals ) ) {
+        buttons[cur++] = BUTTON_GAME_RENAME;
+        buttons[cur++] = BUTTON_GAME_DELETE;
+    }
     buttons[cur++] = NULL;
 
     setButtons( BUTTONS_ID_DEVICE, buttons, onDeviceButton, globals );
@@ -1534,6 +1559,7 @@ onNewGame( void* closure, bool opponentIsRobot )
     NewGameParams ngp = {0};
     ngp.isRobotNotRemote = opponentIsRobot;
     loadAndDraw( globals, NULL, NULL, &ngp );
+    updateDeviceButtons( globals );
 }
 
 /* Called from js with a proc and closure */
