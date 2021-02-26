@@ -300,7 +300,7 @@ static void
 wasm_util_yOffsetChange( XW_UtilCtxt* uc, XWEnv xwe, XP_U16 maxOffset,
                          XP_U16 oldOffset, XP_U16 newOffset )
 {
-    LOG_FUNC();
+    // XP_LOGFF( "(oldOffset=%d; newOffset=%d)", oldOffset, newOffset );
 }
 
 static void

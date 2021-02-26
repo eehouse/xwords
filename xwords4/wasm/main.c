@@ -62,8 +62,9 @@
 
 #define KEY_LAST_GID "cur_game"
 #define KEY_PLAYER_NAME "player_name"
-#define KEY_GAME_PREFIX "key_data_"
-#define KEY_NAME_PREFIX "key_name_"
+#define KEY_GAME "game_data"
+#define KEY_NAME "game_name"
+#define KEY_NEXT_GAME "next_game"
 
 #define DICTNAME "assets_dir/CollegeEng_2to8.xwd"
 
@@ -138,23 +139,15 @@ EM_JS(void, call_pickBlank, (const char* msg, const char** strs, int nStrs,
           nbBlankPick(UTF8ToString(msg), buttons, proc, closure);
       } );
 
-EM_JS(void, call_pickGame, (const char* msg, StringProc proc, void* closure), {
-        var map = {};
-        for (var ii = 0; ii < localStorage.length; ++ii ) {
-            var key = localStorage.key(ii);
-            if ( key.startsWith('key_data_') ) { // KEY_GAME_PREFIX
-                /* This is a legit stored game. Get the gameID part as key,
-                   mapped to name if known. */
-                let arr = key.split('_');
-                let id = arr[arr.length - 1];
-
-                let name = localStorage.getItem('key_name_' + id);
-                if (! name ) {
-                    name = key;
-                }
-                map[id] = name;
-                console.log('added ' + id + ' -> ' + name);
-            }
+EM_JS(void, call_pickGame, (const char* msg, char** ids, char** names,
+                            int nEntries, StringProc proc, void* closure), {
+        let map = {};
+        for (let ii = 0; ii < nEntries; ++ii ) {
+            const idsMem = HEAP32[(ids + (ii * 4)) >> 2];
+            const namesMem = HEAP32[(names + (ii * 4)) >> 2];
+            let id = UTF8ToString(idsMem);
+            map[id] = UTF8ToString(namesMem);
+            console.log('added ' + id + ' -> ' + map[id]);
         }
 
         nbGamePick(UTF8ToString(msg), map, proc, closure);
@@ -181,19 +174,6 @@ EM_JS(bool, call_mqttSend, (const char* topic, const uint8_t* ptr, int len), {
         let buffer = new Uint8Array(Module.HEAPU8.buffer, ptr, len);
         return mqttSend(topStr, buffer);
 });
-
-EM_JS(int, getNextGameNo, (void), {
-        let jskey = UTF8ToString('next_gameno_2');
-        let val = localStorage.getItem(jskey);
-        if (val) {
-            val = parseInt(val);
-        } else {
-            val = 0;
-        }
-        ++val;
-        localStorage.setItem(jskey, val);
-        return val;
-    });
 
 typedef void (*JSCallback)(void* closure);
 
@@ -305,32 +285,14 @@ send_msg( XWEnv xwe, const XP_U8* buf, XP_U16 len,
 static void
 formatGameID( char* buf, size_t len, int gameID )
 {
-    snprintf( buf, len, "%X", gameID );
+    snprintf( buf, len, "gid=%X", gameID );
 }
 
 static void
 unformatGameID( int* gameID, const char* gameIDStr )
 {
-    sscanf( gameIDStr, "%X", gameID );
+    sscanf( gameIDStr, "gid=%X", gameID );
     XP_LOGFF( "unformatGameID(%s) => %X", gameIDStr, *gameID );
-}
-
-static void
-formatGameKeyStr( char* buf, size_t len, const char* gameID )
-{
-    snprintf( buf, len, KEY_GAME_PREFIX "%s", gameID );
-}
-
-static void
-formatGameKeyInt( char* buf, size_t len, int gameID )
-{
-    snprintf( buf, len, KEY_GAME_PREFIX "%X", gameID );
-}
-
-static void
-formatNameKey( char* buf, size_t len, int gameID )
-{
-    snprintf( buf, len, KEY_NAME_PREFIX "%X", gameID );
 }
 
 static void
@@ -503,9 +465,27 @@ updateGameButtons( Globals* globals )
 }
 
 static void
+onGameRanamed( void* closure, const char* newName )
+{
+    if ( !!newName ) {
+        CAST_GS(GameState*, gs, closure);
+        nameGame( gs, newName );
+    }
+}
+
+typedef struct _NameIterState {
+    Globals* globals;
+    int count;
+    char** names;
+    char** ids;
+} NameIterState;
+
+static void
 onGameChosen( void* closure, const char* key )
 {
-    CAST_GLOB(Globals*, globals, closure);
+    NameIterState* nis = (NameIterState*)closure;
+    Globals* globals = nis->globals;
+
     /* To be safe, let's make sure the game exists. We don't want to create
      * another if somehow it doesn't */
     int gameID;
@@ -513,15 +493,45 @@ onGameChosen( void* closure, const char* key )
     if ( !!getSavedGame(globals, gameID) ) {
         loadAndDraw( globals, NULL, key, NULL );
     }
+
+    XP_FREE( globals->mpool, nis->names );
+    XP_FREE( globals->mpool, nis->ids );
+    XP_FREE( globals->mpool, nis );
+}
+
+static XP_Bool
+onOneIndx( void* closure, const XP_UCHAR* indx, const void* val, XP_U32 valLen )
+{
+    XP_LOGFF( "(indx: %s, len: %d, val: %s)", indx, valLen, (char*)val );
+    NameIterState* nis = (NameIterState*)closure;
+    Globals* globals = nis->globals;
+    ++nis->count;
+    nis->names = XP_REALLOC( globals->mpool, nis->names,
+                             nis->count * sizeof(nis->names[0]) );
+    nis->names[nis->count-1] = XP_MALLOC( globals->mpool, valLen );
+    XP_MEMCPY( nis->names[nis->count-1], val, valLen );
+
+    nis->ids = XP_REALLOC( globals->mpool, nis->ids,
+                           nis->count * sizeof(nis->ids[0]) );
+    nis->ids[nis->count-1] = XP_MALLOC( globals->mpool, 1 + strlen(indx) );
+    strcpy( nis->ids[nis->count-1], indx );
+
+    XP_LOGFF( "recorded %s => %s", nis->ids[nis->count-1], nis->names[nis->count-1] );
+
+    return true;                /* keep going */
 }
 
 static void
-onGameRanamed( void* closure, const char* newName )
+pickGame( Globals* globals )
 {
-    if ( !!newName ) {
-        CAST_GS(GameState*, gs, closure);
-        nameGame( gs, newName );
-    }
+    XW_DUtilCtxt* dutil = globals->dutil;
+    NameIterState* nis = XP_CALLOC( globals->mpool, sizeof(*nis) );
+    nis->globals = globals;
+
+    dutil_forEachIndx( dutil, NULL, KEY_NAME, onOneIndx, nis );
+
+    const char* msg = "Choose game to open:";
+    call_pickGame(msg, nis->ids, nis->names, nis->count, onGameChosen, nis);
 }
 
 static void
@@ -559,12 +569,9 @@ deleteGame( GameState* gs )
         prev = &cur->next;
     }
 
-    char key[32];
-    formatNameKey( key, sizeof(key), gameID );
-    remove_stored_value( key );
-
-    formatGameKeyInt( key, sizeof(key), gameID );
-    remove_stored_value( key );
+    char indx[16];
+    formatGameID( indx, sizeof(indx), gameID );
+    dutil_removeAllIndx( globals->dutil, indx );
 }
 
 static void
@@ -586,8 +593,7 @@ onDeviceButton( void* closure, const char* button )
     if ( 0 == strcmp(button, BUTTON_GAME_NEW) ) {
         callNewGame("Configure your new game", globals);
     } else if ( 0 == strcmp(button, BUTTON_GAME_OPEN) ) {
-        const char* msg = "Choose game to open";
-        call_pickGame( msg, onGameChosen, globals );
+        pickGame( globals );
     } else if ( 0 == strcmp(button, BUTTON_GAME_RENAME ) ) {
         GameState* curGS = getCurGame( globals );
         ensureName( curGS );
@@ -676,10 +682,8 @@ initDeviceGlobals( Globals* globals )
 static void
 storeCurOpen( GameState* gs )
 {
-    char gidBuf[16];
-    formatGameID( gidBuf, sizeof(gidBuf), gs->gi.gameID );
-    set_stored_value( KEY_LAST_GID, gidBuf );
-    // XP_LOGFF( "saved KEY_LAST_GID: %s", gidBuf );
+    dutil_storePtr( gs->globals->dutil, NULL, KEY_LAST_GID,
+                    &gs->gi.gameID, sizeof(gs->gi.gameID) );
 }
 
 static void
@@ -731,7 +735,8 @@ onPlayerNamed( void* closure, const char* name )
 {
     CAST_GS(GameState*, gs, closure);
     if ( !!name ) {
-        set_stored_value( KEY_PLAYER_NAME, name );
+        dutil_storePtr( gs->globals->dutil, NULL, KEY_PLAYER_NAME,
+                        name, 1 + strlen(name) );
         startGame( gs, name );
     }
 }
@@ -739,8 +744,11 @@ onPlayerNamed( void* closure, const char* name )
 static void
 getPlayerName( Globals* globals, char* playerName, size_t buflen )
 {
-    size_t len = buflen;
-    if ( !get_stored_value( KEY_PLAYER_NAME, playerName, &len ) ) {
+    XP_U32 len = buflen;
+    dutil_loadPtr( globals->dutil, NULL, KEY_PLAYER_NAME, NULL,
+                   playerName, &len );
+    XP_LOGFF( "after: len: %d", len );
+    if ( 0 == len ) {        /* not found? */
         strcpy( playerName, "Player 1" );
     }
 }
@@ -833,9 +841,9 @@ getSavedGame( Globals* globals, int gameID )
         bool loaded = false;
         XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(globals->mpool)
                                                     globals->vtMgr );
-        char key[32];
-        formatGameKeyInt( key, sizeof(key), gameID );
-        dutil_loadStream( globals->dutil, NULL, key, NULL, stream );
+        char indx[16];
+        formatGameID( indx, sizeof(indx), gameID );
+        dutil_loadIndxStream( globals->dutil, NULL, KEY_GAME, NULL, indx, stream );
         if ( 0 < stream_getSize( stream ) ) {
             XP_ASSERT( !gs->util );
             gs->util = wasm_util_make( MPPARM(globals->mpool) &gs->gi,
@@ -856,7 +864,7 @@ getSavedGame( Globals* globals, int gameID )
                 removeGameState( gs );
             }
         } else {
-            XP_LOGFF( "ERROR: no saved data for key %s", key );
+            XP_LOGFF( "ERROR: no saved data for key %s", indx );
             XP_ASSERT( globals->games == gs );
             globals->games = gs->next;
             XP_FREE( globals->mpool, gs );
@@ -871,20 +879,21 @@ getSavedGame( Globals* globals, int gameID )
 static void
 saveName( GameState* gs )
 {
-    char key[32];
-    formatNameKey( key, sizeof(key), gs->gi.gameID );
-    set_stored_value( key, gs->gameName );
-    XP_LOGFF( "wrote %s => %s", key, gs->gameName );
+    char indx[32];
+    formatGameID( indx, sizeof(indx), gs->gi.gameID );
+    dutil_storeIndxPtr( gs->globals->dutil, NULL, KEY_NAME, indx,
+                        (XP_U8*)gs->gameName, 1 + strlen(gs->gameName) );
 }
 
 static void
 loadName( GameState* gs )
 {
-    char key[32];
-    formatNameKey( key, sizeof(key), gs->gi.gameID );
+    char indx[32];
+    formatGameID( indx, sizeof(indx), gs->gi.gameID );
 
-    size_t len = sizeof(gs->gameName);
-    get_stored_value( key, gs->gameName, &len );
+    XP_U32 len = sizeof(gs->gameName);
+    dutil_loadIndxPtr( gs->globals->dutil, NULL, KEY_NAME, indx,
+                       (XP_U8*)gs->gameName, &len );
 }
 
 static void
@@ -895,6 +904,18 @@ ensureName( GameState* gs )
     }
 }
 
+static int
+getNextGameNo( Globals* globals )
+{
+    int val = 0;
+    XP_U32 len = sizeof(val);
+    dutil_loadPtr( globals->dutil, NULL, KEY_NEXT_GAME, NULL, (XP_U8*)&val, &len );
+    ++val;
+    dutil_storePtr( globals->dutil, NULL, KEY_NEXT_GAME, (XP_U8*)&val, sizeof(val) );
+    XP_LOGFF( "getNextGameNo() => %d", val );
+    return val;
+}
+
 static void
 nameGame( GameState* gs, const char* name )
 {
@@ -902,7 +923,7 @@ nameGame( GameState* gs, const char* name )
         snprintf( gs->gameName, sizeof(gs->gameName), "%s", name );
     } else {
         snprintf( gs->gameName, sizeof(gs->gameName),
-                  "Game %d", getNextGameNo() );
+                  "Game %d", getNextGameNo(gs->globals) );
     }
     saveName( gs );
     XP_LOGFF( "named game: %s", gs->gameName );
@@ -919,7 +940,7 @@ loadAndDraw( Globals* globals, const NetLaunchInfo* invite,
     if ( !params ) {
         /* First, load any saved game. We need it e.g. to confirm that an incoming
            invite is a dup and should be dropped. */
-        if ( !!gameIDStr ) {
+        if ( !!gameIDStr && gameIDStr[0] ) {
             int gameID;
             unformatGameID( &gameID, gameIDStr );
             gs = getSavedGame( globals, gameID );
@@ -1342,9 +1363,9 @@ updateScreen( GameState* gs, bool doSave )
         game_saveToStream( &gs->game, NULL, &gs->gi,
                            stream, ++gs->saveToken );
 
-        char buf[32];
-        formatGameKeyInt( buf, sizeof(buf), gs->gi.gameID );
-        dutil_storeStream( globals->dutil, NULL, buf, stream );
+        char indx[32];
+        formatGameID( indx, sizeof(indx), gs->gi.gameID );
+        dutil_storeIndxStream( globals->dutil, NULL, KEY_GAME, indx, stream );
         stream_destroy( stream, NULL );
         game_saveSucceeded( &gs->game, NULL, gs->saveToken );
     }
@@ -1468,10 +1489,14 @@ initNoReturn( int argc, const char** argv )
 
     initDeviceGlobals( &globals );
 
-    size_t len = 0;
-    get_stored_value( KEY_LAST_GID, NULL, &len );
-    char lastKey[len];
-    get_stored_value( KEY_LAST_GID, lastKey, &len );
+    char lastKey[16] = {0};
+    int gameID = 0;
+    XP_U32 len = sizeof(gameID);
+    dutil_loadPtr( globals.dutil, NULL, KEY_LAST_GID, NULL,
+                   (XP_U8*)&gameID, &len );
+    if ( len == sizeof(gameID) ) {
+        formatGameID( lastKey, sizeof(lastKey), gameID );
+    }
     XP_LOGFF( "loaded KEY_LAST_GID: %s", lastKey );
     loadAndDraw( &globals, nlip, lastKey, NULL );
 

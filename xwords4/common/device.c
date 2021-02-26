@@ -103,7 +103,7 @@ getMQTTDevID( XW_DUtilCtxt* dutil, XWEnv xwe, XP_Bool forceNew, MQTTDevID* devID
 #else
 
     MQTTDevID tmp = 0;
-    XP_U16 len = sizeof(tmp);
+    XP_U32 len = sizeof(tmp);
     if ( !forceNew ) {
         dutil_loadPtr( dutil, xwe, MQTT_DEVID_KEY, SUFFIX_MQTT_DEVID, &tmp, &len );
     }

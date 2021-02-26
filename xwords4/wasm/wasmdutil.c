@@ -31,6 +31,85 @@ typedef struct _WasmDUtilCtxt {
     XW_DUtilCtxt super;
 } WasmDUtilCtxt;
 
+EM_JS(void, _get_stored_value, (const char* key,
+                                StringProc proc, void* closure), {
+          var result = null;
+          var jsKey = UTF8ToString(key);
+          console.log('_get_stored_value(key:' + jsKey + ')');
+          var val = localStorage.getItem(jsKey);
+          ccallString(proc, closure, val);
+      });
+
+EM_JS(void, set_stored_value, (const char* key, const char* val), {
+        var jsKey = UTF8ToString(key);
+        var jsVal = UTF8ToString(val);
+        console.log('set_stored_value(key:' + jsKey + ', val:' + jsVal + ')');
+        var jsString = localStorage.setItem(jsKey, jsVal);
+    });
+
+EM_JS(void, remove_stored_value, (const char* key), {
+        var jsKey = UTF8ToString(key);
+        var jsString = localStorage.removeItem(jsKey);
+    });
+
+EM_JS(bool, have_stored_value, (const char* key), {
+        let jsKey = UTF8ToString(key);
+        let jsVal = localStorage.getItem(jsKey);
+        let result = null !== jsVal;
+        return result;
+    });
+
+EM_JS(void, call_for_each_key, (StringProc proc, void* closure), {
+        for (let ii = 0; ii < localStorage.length; ++ii ) {
+            let key = localStorage.key(ii);
+            Module.ccall('cbckString', null, ['number', 'number', 'string'],
+                         [proc, closure, key]);
+        }
+    });
+
+#define SEP_STR "\n"
+#define PREFIX "v.2" SEP_STR
+#define MAKE_PREFIX(BUF, KEY) \
+    char BUF[128];            \
+    sprintf( BUF, "%s%s", PREFIX, KEY )
+
+#define MAKE_INDEX(BUF, KEY, IDX)                   \
+    char BUF[128];                                  \
+    size_t _len = snprintf( BUF, sizeof(BUF), "%s" SEP_STR "%s", KEY, IDX);    \
+    XP_ASSERT( _len < sizeof(BUF) )
+
+typedef struct _ValState {
+    void* ptr;
+    size_t* lenp;
+    bool success;
+} ValState;
+
+static void
+onGotVal( void* closure, const char* val )
+{
+    XP_LOGFF("val: %s", val);
+    ValState* vs = (ValState*)closure;
+    if ( !!val ) {
+        size_t slen = 1 + strlen(val);
+        if ( !!vs->ptr && slen <= *vs->lenp ) {
+            memcpy( vs->ptr, val, slen );
+            vs->success = true;
+        }
+        *vs->lenp = slen;
+    } else {
+        *vs->lenp = 0;
+    }
+    LOG_RETURN_VOID();
+}
+
+static bool
+get_stored_value( const char* key, void* out, size_t* lenp )
+{
+    ValState state = { .ptr = out, .lenp = lenp, .success = false, };
+    _get_stored_value( key, onGotVal, &state );
+    return state.success;
+}
+
 static XP_U32
 wasm_dutil_getCurSeconds( XW_DUtilCtxt* XP_UNUSED(duc), XWEnv XP_UNUSED(xwe) )
 {
@@ -164,13 +243,17 @@ base16Decode( uint8_t* decodeBuf, int len, const char* str )
 
 static void
 wasm_dutil_loadPtr( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
-                    const XP_UCHAR* keySuffix, void* data, XP_U16* lenp )
+                    const XP_UCHAR* keySuffix, void* data, XP_U32* lenp )
 {
+    XP_LOGFF( "(key: %s)", key );
+    MAKE_PREFIX(fullKey, key);
+
     size_t len;
-    get_stored_value(key, NULL, &len);
+    get_stored_value(fullKey, NULL, &len);
+
     char val[len];
-    if ( get_stored_value( key, val, &len ) ) {
-        // XP_LOGFF( "get_stored_value(%s) => %s", key, val );
+    if ( get_stored_value( fullKey, val, &len ) ) {
+        XP_LOGFF( "get_stored_value(%s) => %s", fullKey, val );
         len = XP_STRLEN(val);
         XP_ASSERT( (len % 2) == 0 );
         XP_U8 decodeBuf[len/2];
@@ -183,16 +266,164 @@ wasm_dutil_loadPtr( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
     } else {
         *lenp = 0;              /* signal failure */
     }
+    XP_LOGFF("(%s)=> len: %d", fullKey, *lenp );
 }
 
 static void
 wasm_dutil_storePtr( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
-                      const void* data, XP_U16 len )
+                      const void* data, XP_U32 len )
 {
     XP_UCHAR out[len*2+1];
     base16Encode( data, len, out, sizeof(out) );
+    MAKE_PREFIX(fullKey, key);
+    XP_LOGFF( "fullKey: %s", fullKey );
+    set_stored_value( fullKey, out );
+}
 
-    set_stored_value( key, out );
+static void
+wasm_dutil_storeIndxStream( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
+                            const XP_UCHAR* indx, XWStreamCtxt* data )
+{
+    XP_LOGFF( "(key: %s; indx: %s)", key, indx );
+    MAKE_INDEX(ikey, key, indx);
+    dutil_storeStream( duc, xwe, ikey, data );
+}
+
+static void
+wasm_dutil_loadIndxStream(XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
+                          const XP_UCHAR* fallbackKey,
+                          const char* indx, XWStreamCtxt* inOut)
+{
+    XP_LOGFF( "(key: %s; indx: %s)", key, indx );
+    MAKE_INDEX(ikey, key, indx);
+    dutil_loadStream( duc, xwe, ikey, fallbackKey, inOut );
+}
+
+static void
+wasm_dutil_storeIndxPtr(XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
+                        const XP_UCHAR* indx, const void* data, XP_U32 len )
+{
+    LOG_FUNC();
+    MAKE_INDEX(ikey, key, indx);
+    wasm_dutil_storePtr(duc, xwe, ikey, data, len );
+}
+
+static void
+wasm_dutil_loadIndxPtr( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
+                        const XP_UCHAR* indx, void* data, XP_U32* lenp )
+{
+    LOG_FUNC();
+    MAKE_INDEX(ikey, key, indx);
+
+    wasm_dutil_loadPtr( duc, xwe, ikey, NULL, data, lenp );
+}
+
+static bool
+splitFullKey( char key[], char indx[], const char* fullKey )
+{
+    bool matches = false;
+    if ( 0 == strncmp( fullKey, PREFIX, strlen(PREFIX) ) ) {
+        fullKey += strlen(PREFIX);
+        char* breakLoc = strstr( fullKey, SEP_STR );
+        if ( !!breakLoc ) {
+            indx[0] = key[0] = '\0';
+            XP_ASSERT( '\n' == *breakLoc );
+            strncat( key, fullKey, breakLoc - fullKey );
+            strcat( indx, 1 + breakLoc );
+            matches = true;
+        }
+    }
+    return matches;
+}
+
+typedef struct _ForEachStateKey {
+    XW_DUtilCtxt* duc;
+    XWEnv xwe;
+    OnOneProc onOneProc;
+    void* onOneClosure;
+    const char* key;
+} ForEachStateKey;
+
+/* I'm called with a full key, PREFIX + KEY + INDEX. I'm interested in it IFF
+   the KEY part matches, and in that case pass INDEX plus value to the
+   callback. */
+static void
+withOneKey( void* closure, const char* fullKey )
+{
+    XP_LOGFF("(key: %s)", fullKey );
+    ForEachStateKey* fes = (ForEachStateKey*)closure;
+
+    char key[128];
+    char indx[128];
+    if ( splitFullKey( key, indx, fullKey ) ) {
+        if ( 0 == strcmp(key, fes->key) ) {
+            XP_LOGFF( "MATCH: key: %s, indx: %s", key, indx );
+
+            XP_U32 len = 0;
+            wasm_dutil_loadIndxPtr( fes->duc, fes->xwe, key, indx, NULL, &len );
+            uint8_t val[len];
+            wasm_dutil_loadIndxPtr( fes->duc, fes->xwe, key, indx, val, &len );
+            (*fes->onOneProc)(fes->onOneClosure, indx, val, len);
+        }
+    } else {
+        XP_LOGFF( "fullKey %s rejected", fullKey );
+    }
+}
+
+static void
+wasm_dutil_forEachIndx( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
+                        OnOneProc proc, void* closure )
+{
+    LOG_FUNC();
+    ForEachStateKey fes = { .duc = duc,
+                         .xwe = xwe,
+                         .onOneProc = proc,
+                         .onOneClosure = closure,
+                         .key = key,
+    };
+    call_for_each_key( withOneKey, &fes );
+}
+
+typedef struct _ForEachStateIndx {
+    XW_DUtilCtxt* duc;
+    const XP_UCHAR* indx;
+    char** keys;
+    int nKeys;
+} ForEachStateIndx;
+
+static void
+deleteWithIndx( void* closure, const char* fullKey )
+{
+    char key[128];
+    char indx[128];
+    if ( splitFullKey( key, indx, fullKey ) ) {
+        ForEachStateIndx* fesi = (ForEachStateIndx*)closure;
+        if ( 0 == strcmp( indx, fesi->indx ) ) {
+            int cur = fesi->nKeys++;
+            // XP_LOGFF( "adding key[%d]: %s", cur, fullKey );
+            fesi->keys = XP_REALLOC( fesi->duc->mpool, fesi->keys,
+                                     (fesi->nKeys) * sizeof(fesi->keys[0]) );
+            fesi->keys[cur] = XP_MALLOC(fesi->duc->mpool, 1 + strlen(fullKey));
+            strcpy( fesi->keys[cur], fullKey );
+        }
+    }
+}
+
+static void
+wasm_dutil_removeAllIndx( XW_DUtilCtxt* duc, const XP_UCHAR* indx )
+{
+    LOG_FUNC();
+    ForEachStateIndx fesi = { .duc = duc,
+                             .indx = indx,
+    };
+    XP_ASSERT( !fesi.keys );
+    call_for_each_key( deleteWithIndx, &fesi );
+    for ( int ii = 0; ii < fesi.nKeys; ++ii ) {
+        // XP_LOGFF( "removing key %s", fesi.keys[ii] );
+        remove_stored_value( fesi.keys[ii] );
+        XP_FREE( duc->mpool, fesi.keys[ii] );
+    }
+    XP_FREEP( duc->mpool, &fesi.keys );
 }
 
 static const XP_UCHAR*
@@ -299,6 +530,13 @@ wasm_dutil_make( MPFORMAL VTableMgr* vtMgr, void* closure )
     SET_PROC(onInviteReceived);
     SET_PROC(onMessageReceived);
     SET_PROC(onGameGoneReceived);
+
+    SET_PROC(storeIndxStream);
+    SET_PROC(loadIndxStream);
+    SET_PROC(storeIndxPtr);
+    SET_PROC(loadIndxPtr);
+    SET_PROC(forEachIndx);
+    SET_PROC(removeAllIndx);
 
 # undef SET_PROC
 

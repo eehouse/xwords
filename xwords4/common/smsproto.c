@@ -122,7 +122,7 @@ smsproto_init( MPFORMAL XWEnv xwe, XW_DUtilCtxt* dutil )
     state->dutil = dutil;
     MPASSIGN( state->mpool, mpool );
 
-    XP_U16 siz = sizeof(state->nNextID);
+    XP_U32 siz = sizeof(state->nNextID);
     dutil_loadPtr( state->dutil, xwe, KEY_NEXTID, SUFFIX_NEXTID,
                    &state->nNextID, &siz );
     XP_LOGF( "%s(): loaded nextMsgID: %d", __func__, state->nNextID );

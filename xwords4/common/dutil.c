@@ -40,7 +40,7 @@ super_dutil_loadStream( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
                         XWStreamCtxt* inOut )
 {
     /* get the size */
-    XP_U16 len = 0;
+    XP_U32 len = 0;
     dutil_loadPtr( duc, xwe, key, fallbackKey, NULL, &len );
 
     /* load if it exists */
