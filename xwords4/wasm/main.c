@@ -17,6 +17,13 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+/* TODO
+ *
+ * Downloading wordlists. Will likely need to fetch and store them as base64
+ * data, meaning I'll need a working btoa to use them. Here's one way to download:
+ * https://emscripten.org/docs/api_reference/fetch.html
+ */
+
 #include <sys/time.h>
 #include <stdio.h>
 #include <stdarg.h>

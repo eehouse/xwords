@@ -45,6 +45,28 @@ function registerOnce(devid, gitrev, now) {
 	}
 }
 
+// function getDict(closure, proc, lang) {
+// 	console.log('getDict()');
+// 	fetch('/xw4/info.py/listDicts?lc=fr', {
+// 		method: 'post',
+// 		headers: {
+// 			'Content-Type': 'application/json',
+// 		},
+// 	}).then(response => {
+// 		console.log(response);
+// 		if (response.ok) {
+// 			return response.json();
+// 		} else {
+// 			console.log('bad respose; status: ' + respose.status);
+// 			console.log('text: ' + response.statusText);
+// 			console.log(response.type);
+// 		}
+// 	}).then(data => {
+// 		console.log('data: ' + JSON.stringify(data));
+// 	});
+// 	console.log('getDict() done');
+// }
+
 function onHaveDevID(closure, devid, gitrev, now, noTabProc, focusProc) {
 	// Set a unique tag so we know if somebody comes along later
 	let tabID = Math.random();
