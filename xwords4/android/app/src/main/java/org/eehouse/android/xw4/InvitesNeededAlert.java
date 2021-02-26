@@ -21,7 +21,6 @@
 package org.eehouse.android.xw4;
 
 import android.app.AlertDialog;
-import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface.OnClickListener;
 import android.content.DialogInterface;
@@ -29,7 +28,6 @@ import android.content.DialogInterface;
 import java.io.Serializable;
 
 import org.eehouse.android.xw4.DBUtils.SentInvitesInfo;
-import org.eehouse.android.xw4.DlgDelegate.Action;
 import org.eehouse.android.xw4.Perms23.Perm;
 import org.eehouse.android.xw4.loc.LocUtils;
 
@@ -67,7 +65,7 @@ class InvitesNeededAlert {
             }
         }
 
-        Dialog make( DBAlert alert, Object[] params )
+        AlertDialog make( DBAlert alert, Object[] params )
         {
             DbgUtils.assertOnUIThread();
             return mSelf.makeImpl( mCallbacks, alert, params );
@@ -135,7 +133,8 @@ class InvitesNeededAlert {
         mState = state;
     }
 
-    private Dialog makeImpl( final Callbacks callbacks, DBAlert alert, Object[] params )
+    private AlertDialog makeImpl( final Callbacks callbacks,
+                                  DBAlert alert, Object[] params )
     {
         State state = (State)params[0];
         AlertDialog.Builder ab = mDelegate.makeAlertBuilder();
@@ -174,7 +173,7 @@ class InvitesNeededAlert {
             Assert.failDbg();
         }
 
-        Dialog result = ab.create();
+        AlertDialog result = ab.create();
         result.setCanceledOnTouchOutside( false );
         return result;
     }
