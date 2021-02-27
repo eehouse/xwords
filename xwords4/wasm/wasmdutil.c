@@ -243,27 +243,29 @@ static void
 wasm_dutil_loadPtr( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
                     const XP_UCHAR* keySuffix, void* data, XP_U32* lenp )
 {
-    // XP_LOGFF( "(key: %s)", key );
+    // XP_LOGFF( "(key: %s, len: %d)", key, *lenp );
     MAKE_PREFIX(fullKey, key);
 
     size_t len;
     get_stored_value(fullKey, NULL, &len);
 
-    char val[len];
+    char* val = XP_MALLOC( duc->mpool, len );
     if ( get_stored_value( fullKey, val, &len ) ) {
         // XP_LOGFF( "get_stored_value(%s) => %s", fullKey, val );
         len = XP_STRLEN(val);
         XP_ASSERT( (len % 2) == 0 );
-        XP_U8 decodeBuf[len/2];
-        len = VSIZE(decodeBuf);
+        XP_U8* decodeBuf = XP_MALLOC( duc->mpool, len/2 );
+        len = len/2;
         if ( len <= *lenp ) {
             base16Decode( decodeBuf, len, val );
             XP_MEMCPY( data, decodeBuf, len );
         }
         *lenp = len;
+        XP_FREE( duc->mpool, decodeBuf );
     } else {
         *lenp = 0;              /* signal failure */
     }
+    XP_FREE( duc->mpool, val );
     // XP_LOGFF("(%s)=> len: %d", fullKey, *lenp );
 }
 
@@ -271,10 +273,11 @@ static void
 wasm_dutil_storePtr( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
                       const void* data, XP_U32 len )
 {
-    XP_UCHAR out[len*2+1];
+    XP_UCHAR* out = XP_MALLOC( duc->mpool, len*2+1 );
     base16Encode( data, len, out, sizeof(out) );
     MAKE_PREFIX(fullKey, key);
     set_stored_value( fullKey, out );
+    XP_FREE( duc->mpool, out );
 }
 
 static void

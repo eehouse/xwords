@@ -1,4 +1,4 @@
-/* -*- compile-command: "cd ../wasm && make main.html -j3"; -*- */
+/* -*- compile-command: "cd ../wasm && make MEMDEBUG=TRUE install -j3"; -*- */
 /*
  * Copyright 2021 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
@@ -49,7 +49,8 @@ getShortName( const DictionaryCtxt* dict )
 }
 
 static XP_Bool
-initFromDictFile( WasmDictionaryCtxt* dctx, const char* fileName )
+initFromDictFile( WasmDictionaryCtxt* dctx, const char* fileName,
+                  uint8_t* dictBase )
 {
     XP_Bool formatOk = XP_TRUE;
     size_t dictLength;
@@ -71,7 +72,9 @@ initFromDictFile( WasmDictionaryCtxt* dctx, const char* fileName )
     {
         FILE* dictF = fopen( path, "r" );
         XP_ASSERT( !!dictF );
-        if ( dctx->useMMap ) {
+        if ( !!dictBase ) {
+            dctx->dictBase = dictBase;
+        } else if ( dctx->useMMap ) {
             dctx->dictBase = mmap( NULL, dctx->dictLength, PROT_READ, 
                                    MAP_PRIVATE, fileno(dictF), 0 );
         } else {
@@ -189,7 +192,8 @@ wasm_dictionary_destroy( DictionaryCtxt* dict, XWEnv xwe )
 
 DictionaryCtxt* 
 wasm_dictionary_make( MPFORMAL XWEnv xwe, Globals* globals,
-                      const char* dictFileName, bool useMMap )
+                      const char* dictFileName, bool useMMap,
+                      uint8_t* base )
 {
     WasmDictionaryCtxt* result = NULL;
     if ( !!dictFileName ) {
@@ -207,7 +211,7 @@ wasm_dictionary_make( MPFORMAL XWEnv xwe, Globals* globals,
         result->useMMap = useMMap;
 
         if ( !!dictFileName ) {
-            XP_Bool success = initFromDictFile( result, dictFileName );
+            XP_Bool success = initFromDictFile( result, dictFileName, base );
             if ( success ) {
                 result->super.func_dict_getShortName = getShortName;
                 setBlankTile( &result->super );
@@ -225,6 +229,25 @@ wasm_dictionary_make( MPFORMAL XWEnv xwe, Globals* globals,
     }
 
     return &result->super;
+}
+
+uint8_t*
+wasm_dictionary_load(MPFORMAL const char* dictFileName, XP_U32* len )
+{
+    uint8_t* result = NULL;
+    *len = 0;
+    struct stat statbuf;
+    if ( 0 == stat( dictFileName, &statbuf ) && 0 != statbuf.st_size ) {
+        result = XP_MALLOC( mpool, statbuf.st_size );
+        FILE* dictF = fopen( dictFileName, "r" );
+        size_t nRead = fread( result, 1, statbuf.st_size, dictF );
+        XP_ASSERT( nRead == statbuf.st_size );
+        fclose( dictF );
+        *len = statbuf.st_size;
+        XP_LOGFF( "loaded %d bytes", statbuf.st_size );
+    }
+
+    return result;
 }
 
 void

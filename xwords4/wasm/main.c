@@ -62,6 +62,7 @@
 
 #define KEY_LAST_GID "cur_game"
 #define KEY_PLAYER_NAME "player_name"
+#define KEY_DICTS "dicts_3"
 #define KEY_GAME "game_data"
 #define KEY_NAME "game_name"
 #define KEY_NEXT_GAME "next_game"
@@ -89,6 +90,7 @@
 #define BUTTON_GAME_OPEN "Open Game"
 #define BUTTON_GAME_RENAME "Rename Game"
 #define BUTTON_GAME_DELETE "Delete Game"
+#define BUTTON_NAME "My Name"
 #define MAX_BUTTONS 20          /* not sure what's safe here */
 
 typedef struct _NewGameParams {
@@ -471,6 +473,7 @@ onGameRanamed( void* closure, const char* newName )
     if ( !!newName ) {
         CAST_GS(GameState*, gs, closure);
         nameGame( gs, newName );
+        show_name( newName );
     }
 }
 
@@ -590,6 +593,28 @@ onDeleteConfirmed( void* closure, bool confirmed )
 }
 
 static void
+getPlayerName( Globals* globals, char* playerName, size_t buflen )
+{
+    XP_U32 len = buflen;
+    dutil_loadPtr( globals->dutil, NULL, KEY_PLAYER_NAME, NULL,
+                   playerName, &len );
+    XP_LOGFF( "after: len: %d", len );
+    if ( 0 == len ) {        /* not found? */
+        strcpy( playerName, "Player 1" );
+    }
+}
+
+static void
+onPlayerNamed( void* closure, const char* name )
+{
+    CAST_GLOB(Globals*, globals, closure);
+    if ( !!name ) {
+        dutil_storePtr( globals->dutil, NULL, KEY_PLAYER_NAME,
+                        name, 1 + strlen(name) );
+    }
+}
+
+static void
 onDeviceButton( void* closure, const char* button )
 {
     CAST_GLOB(Globals*, globals, closure);
@@ -610,6 +635,11 @@ onDeviceButton( void* closure, const char* button )
                   "\nThis action cannot be undone.",
                   curGS->gameName );
         call_confirm( globals, msg, onDeleteConfirmed, curGS );
+    } else if ( 0 == strcmp(button, BUTTON_NAME ) ) {
+        char playerName[32];
+        getPlayerName( globals, playerName, sizeof(playerName)-1 );
+        call_get_string( "Set your (local) player name", playerName,
+                         onPlayerNamed, globals );
     }
 }
 
@@ -643,6 +673,7 @@ updateDeviceButtons( Globals* globals )
         buttons[cur++] = BUTTON_GAME_RENAME;
         buttons[cur++] = BUTTON_GAME_DELETE;
     }
+    buttons[cur++] = BUTTON_NAME;
     buttons[cur++] = NULL;
 
     setButtons( BUTTONS_ID_DEVICE, buttons, onDeviceButton, globals );
@@ -669,6 +700,46 @@ onFocussed( void* closure, const char* ignored )
     /* } */
 }
 
+static DictionaryCtxt*
+playLoadingDict( Globals* globals )
+{
+    /* Looking at whether the storage system can hold a dict. Let's see if
+       it's stored, and if it isn't store it. They try passing a ptr for
+       making the actual dict from. */
+
+    XP_U32 len = 0;
+    dutil_loadIndxPtr( globals->dutil, NULL, KEY_DICTS, DICTNAME, NULL, &len );
+    if ( 0 == len ) {
+        XP_LOGFF( "not found; storing now..." );
+        XP_U32 dictLen;
+        uint8_t* dictBytes = wasm_dictionary_load(MPPARM(globals->mpool)
+                                                  DICTNAME, &dictLen);
+
+        if ( !!dictBytes ) {
+            XP_LOGFF( "loaded %d bytes of dict", dictLen );
+            dutil_storeIndxPtr( globals->dutil, NULL, KEY_DICTS, DICTNAME,
+                                dictBytes, dictLen );
+            XP_FREE( globals->mpool, dictBytes );
+        }
+        len = dictLen;
+    } else {
+        XP_LOGFF( "using stored wordlist of len %d", len );
+    }
+
+    XP_U32 oldLen = len;
+    XP_LOGFF( "oldLen: %d", oldLen );
+    uint8_t* bytes = XP_MALLOC( globals->mpool, len );
+    dutil_loadIndxPtr( globals->dutil, NULL, KEY_DICTS, DICTNAME,
+                       bytes, &len );
+    XP_ASSERT( len == oldLen );
+
+    DictionaryCtxt* dict =
+        wasm_dictionary_make( MPPARM(globals->mpool) NULL,
+                              globals, DICTNAME, false, bytes );
+    LOG_RETURNF( "%p", dict );
+    return dict;
+}
+
 static void
 initDeviceGlobals( Globals* globals )
 {
@@ -687,8 +758,8 @@ initDeviceGlobals( Globals* globals )
     globals->vtMgr = make_vtablemgr( MPPARM_NOCOMMA(globals->mpool) );
     globals->dutil = wasm_dutil_make( MPPARM(globals->mpool) globals->vtMgr, globals );
     globals->dictMgr = dmgr_make( MPPARM_NOCOMMA(globals->mpool) );
-    globals->dict = wasm_dictionary_make( MPPARM(globals->mpool) NULL,
-                                          globals, DICTNAME, true );
+
+    globals->dict = playLoadingDict( globals );
 
     dict_ref( globals->dict, NULL );
 
@@ -748,34 +819,6 @@ startGame( GameState* gs, const char* name )
 
     updateScreen( gs, true );
     LOG_RETURN_VOID();
-}
-
-typedef struct _AskReplaceState {
-    Globals* globals;
-    NetLaunchInfo invite;
-} AskReplaceState;
-
-static void
-onPlayerNamed( void* closure, const char* name )
-{
-    CAST_GS(GameState*, gs, closure);
-    if ( !!name ) {
-        dutil_storePtr( gs->globals->dutil, NULL, KEY_PLAYER_NAME,
-                        name, 1 + strlen(name) );
-        startGame( gs, name );
-    }
-}
-
-static void
-getPlayerName( Globals* globals, char* playerName, size_t buflen )
-{
-    XP_U32 len = buflen;
-    dutil_loadPtr( globals->dutil, NULL, KEY_PLAYER_NAME, NULL,
-                   playerName, &len );
-    XP_LOGFF( "after: len: %d", len );
-    if ( 0 == len ) {        /* not found? */
-        strcpy( playerName, "Player 1" );
-    }
 }
 
 static GameState*
@@ -1050,8 +1093,6 @@ main_onGameMessage( Globals* globals, XP_U32 gameID,
     if ( !!gs ) {
         if ( game_receiveMessage( &gs->game, NULL, stream, from ) ) {
             updateScreen( gs, true );
-        }
-        if ( gs != getCurGame(gs->globals) ) {
         }
     } else {
         char msg[128];
