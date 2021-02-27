@@ -45,29 +45,67 @@ function registerOnce(devid, gitrev, now) {
 	}
 }
 
-// function getDict(closure, proc, lang) {
-// 	console.log('getDict()');
-// 	fetch('/xw4/info.py/listDicts?lc=fr', {
-// 		method: 'post',
-// 		headers: {
-// 			'Content-Type': 'application/json',
-// 		},
-// 	}).then(response => {
-// 		console.log(response);
-// 		if (response.ok) {
-// 			return response.json();
-// 		} else {
-// 			console.log('bad respose; status: ' + respose.status);
-// 			console.log('text: ' + response.statusText);
-// 			console.log(response.type);
-// 		}
-// 	}).then(data => {
-// 		console.log('data: ' + JSON.stringify(data));
-// 	});
-// 	console.log('getDict() done');
-// }
+function getDict(closure) {
+	// set these later
+	let gots = {};
 
-function onHaveDevID(closure, devid, gitrev, now, noTabProc, focusProc) {
+	let langs = 'fr'; // navigator.language;
+	if (langs) {
+		langs = [langs.split('-')[0]];
+	}
+	console.log('langs: ' + langs + '; langs[0]: ' + langs[0]);
+	if (langs[0] != 'en' ) {
+		langs.push('en');
+	}
+	let args = '?lc=' + langs.join('|');
+	console.log('args: ' + args);
+	fetch('/xw4/info.py/listDicts' + args, {
+		method: 'post',
+		headers: {
+			'Content-Type': 'application/json',
+		},
+	}).then(response => {
+		console.log(response);
+		if (response.ok) {
+			return response.json();
+		} else {
+			console.log('bad respose; status: ' + respose.status);
+			console.log('text: ' + response.statusText);
+			console.log(response.type);
+		}
+	}).then(data => {
+		// let langs = data.langs;
+		// console.log('data: ' + JSON.stringify(data));
+		for ( lang of data.langs ) {
+			console.log('lang: ' + JSON.stringify(lang));
+			// wget --no-check-certificate 'http://pi4.lan/android/French/ODS7_2to15.xwd'
+			let dict = lang.dicts[0];
+			gots.xwd = dict.xwd;
+			gots.langName = lang.lang;
+			gots.lc = lang.lc;
+			let path = '/' + ['android', gots.langName, gots.xwd].join('/');
+			return fetch(path);
+		}
+	}).then(response => {
+		// console.log('got here!!!' + response);
+		return response.arrayBuffer();
+	}).then(data=> {
+		let len = data.byteLength;
+		let dataPtr = Module._malloc(len);
+		// Copy data to Emscripten heap
+		var dataHeap = new Uint8Array(Module.HEAPU8.buffer, dataPtr, len);
+		dataHeap.set( new Uint8Array(data) );
+		// console.log('made array?: ' + dataHeap);
+		Module.ccall('gotDictBinary', null,
+					 ['number', 'string', 'string', 'string', 'number', 'array'],
+					 [closure, gots.xwd, gots.langName, gots.lc, len, dataHeap]);
+		Module._free(dataPtr);
+	});
+	console.log('getDict() done');
+}
+
+// Called from main() asap after things are initialized etc.
+function jssetup(closure, devid, gitrev, now, noTabProc, focusProc, msgProc) {
 	// Set a unique tag so we know if somebody comes along later
 	let tabID = Math.random();
 	localStorage.setItem('tabID', tabID);
@@ -88,10 +126,12 @@ function onHaveDevID(closure, devid, gitrev, now, noTabProc, focusProc) {
 	registerOnce(devid, gitrev, now);
 
 	state.closure = closure;
+	state.msgProc = msgProc;
 	document.getElementById("mqtt_span").textContent=devid;
 
 	function tellConnected(isConn) {
-		Module.ccall('MQTTConnectedChanged', null, ['number', 'boolean'], [state.closure, isConn]);
+		Module.ccall('MQTTConnectedChanged', null, ['number', 'boolean'],
+					 [state.closure, isConn]);
 	}
 
 	state.client = new Paho.MQTT.Client("eehouse.org", 8883, '/wss', devid);
@@ -106,10 +146,10 @@ function onHaveDevID(closure, devid, gitrev, now, noTabProc, focusProc) {
 		}
 	};
 	state.client.onMessageArrived = function onMessageArrived(message) {
-		var payload = message.payloadBytes;
-		var length = payload.length;
-		Module.ccall('gotMQTTMsg', null, ['number', 'number', 'array'],
-					 [state.closure, length, payload]);
+		let payload = message.payloadBytes;
+		let length = payload.length;
+		Module.ccall('cbckBinary', null, ['number', 'number', 'number', 'array'],
+					 [state.msgProc, state.closure, length, payload]);
 	};
 
 	function onConnect() {

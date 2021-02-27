@@ -112,6 +112,12 @@ static void loadName( GameState* gs );
 static void saveName( GameState* gs );
 static bool isVisible( GameState* gs );
 
+typedef void (*BinProc)(void* closure, const uint8_t* data, int len );
+
+EM_JS(void, call_get_dict, (void* closure), {
+        getDict(closure);
+    });
+
 EM_JS(void, show_name, (const char* name), {
         let jsname = UTF8ToString(name);
         document.getElementById('gamename').textContent = jsname;
@@ -163,13 +169,14 @@ EM_JS(void, call_get_string, (const char* msg, const char* dflt,
           nbGetString( jsMgs, jsDflt, proc, closure );
       } );
 
-EM_JS(void, call_haveDevID, (void* closure, const char* devid,
-                             const char* gitrev, int now,
-                             StringProc conflictProc,
-                             StringProc focussedProc ), {
+EM_JS(void, call_setup, (void* closure, const char* devid,
+                         const char* gitrev, int now,
+                         StringProc conflictProc,
+                         StringProc focussedProc,
+                         BinProc msgProc), {
           let jsgr = UTF8ToString(gitrev);
-          onHaveDevID(closure, UTF8ToString(devid), jsgr, now,
-                      conflictProc, focussedProc);
+          jssetup(closure, UTF8ToString(devid), jsgr, now,
+                      conflictProc, focussedProc, msgProc);
       });
 
 EM_JS(bool, call_mqttSend, (const char* topic, const uint8_t* ptr, int len), {
@@ -741,6 +748,13 @@ playLoadingDict( Globals* globals )
 }
 
 static void
+onMqttMsg(void* closure, const uint8_t* data, int len )
+{
+    CAST_GLOB(Globals*, globals, closure);
+    dvc_parseMQTTPacket( globals->dutil, NULL, data, len );
+}
+
+static void
 initDeviceGlobals( Globals* globals )
 {
     globals->cp.showBoardArrow = XP_TRUE;
@@ -772,7 +786,9 @@ initDeviceGlobals( Globals* globals )
     XP_SNPRINTF( buf, VSIZE(buf), MQTTDevID_FMT, devID );
     XP_LOGFF( "got mqtt devID: %s", buf );
     int now = dutil_getCurSeconds( globals->dutil, NULL );
-    call_haveDevID( globals, buf, GITREV, now, onConflict, onFocussed );
+    call_setup( globals, buf, GITREV, now, onConflict, onFocussed, onMqttMsg );
+
+    call_get_dict( globals );
 }
 
 static void
@@ -1585,10 +1601,9 @@ MQTTConnectedChanged( void* closure, bool connected )
 }
 
 void
-gotMQTTMsg( void* closure, int len, const uint8_t* msg )
+cbckBinary( BinProc proc, void* closure, int len, const uint8_t* msg )
 {
-    Globals* globals = (Globals*)closure;
-    dvc_parseMQTTPacket( globals->dutil, NULL, msg, len );
+    (*proc)(closure, msg, len );
 }
 
 void
@@ -1617,6 +1632,16 @@ cbckString( StringProc proc, void* closure, const char* str )
 {
     if ( !!proc ) {
         (*proc)( closure, str );
+    }
+}
+
+void
+gotDictBinary( void* closure, const char* xwd, const char* lang,
+               const char* lc, int len, uint8_t* data )
+{
+    XP_LOGFF( "xwd: %s; lang: %s, lc: %s, len: %d", xwd, lang, lc, len );
+    for ( int ii = 0; ii < 10; ++ii ) {
+        XP_LOGFF( "byte[%d]: 0x%X", ii, data[ii] );
     }
 }
 
