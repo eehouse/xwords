@@ -757,7 +757,6 @@ cleanup( GtkGameGlobals* globals )
 #endif
     game_dispose( &cGlobals->game, NULL_XWE );
     gi_disposePlayerInfo( MEMPOOL cGlobals->gi );
-    dict_unref( cGlobals->dict, NULL_XWE );
 
     linux_util_vt_destroy( cGlobals->util );
     free( cGlobals->util );
@@ -2513,12 +2512,6 @@ initBoardGlobalsGtk( GtkGameGlobals* globals, LaunchParams* params,
     GtkWidget* hbox;
 
     initGlobalsNoDraw( globals, params, gi );
-    if ( !!gi ) {
-        XP_ASSERT( !cGlobals->dict );
-        cGlobals->dict = linux_dictionary_make( MEMPOOL NULL_XWE, params,
-                                                gi->dictName, XP_TRUE );
-        gi->dictLang = dict_getLangCode( cGlobals->dict );
-    }
 
     globals->window = window = gtk_window_new( GTK_WINDOW_TOPLEVEL );
     if ( !!params->fileName ) {
@@ -2684,13 +2677,9 @@ loadGameNoDraw( GtkGameGlobals* globals, LaunchParams* params,
                                                 params->vtMgr );
     XP_Bool loaded = gdb_loadGame( stream, pDb, rowid );
     if ( loaded ) {
-        if ( NULL == cGlobals->dict ) {
-            cGlobals->dict = makeDictForStream( cGlobals, stream );
-        }
         loaded = game_makeFromStream( MEMPOOL NULL_XWE, stream, &cGlobals->game,
-                                      cGlobals->gi, cGlobals->dict,
-                                      &cGlobals->dicts, cGlobals->util, 
-                                      (DrawCtx*)NULL, &cGlobals->cp, &procs );
+                                      cGlobals->gi,
+                                      cGlobals->util, (DrawCtx*)NULL, &cGlobals->cp, &procs );
         if ( loaded ) {
             XP_LOGF( "%s: game loaded", __func__ );
 #ifndef XWFEATURE_STANDALONE_ONLY
@@ -2729,12 +2718,6 @@ makeNewGame( GtkGameGlobals* globals )
     CurGameInfo* gi = cGlobals->gi;
     XP_Bool success = gtkNewGameDialog( globals, gi, &cGlobals->addr,
                                         XP_TRUE, XP_FALSE );
-    if ( success && !!gi->dictName && !cGlobals->dict ) {
-        cGlobals->dict =
-            linux_dictionary_make( MEMPOOL NULL_XWE, cGlobals->params,
-                                   gi->dictName, XP_TRUE );
-        gi->dictLang = dict_getLangCode( cGlobals->dict );
-    }
     LOG_RETURNF( "%s", boolToStr(success) );
     return success;
 }

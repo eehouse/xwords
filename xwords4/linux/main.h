@@ -229,8 +229,6 @@ struct CommonGlobals {
     DrawCtx* draw;
     CurGameInfo* gi;
     CommsAddrRec addr;
-    DictionaryCtxt* dict;
-    PlayerDicts dicts;
     XP_U16 lastNTilesToUse;
     XP_U16 lastStreamSize;
     XP_U16 nMissing;

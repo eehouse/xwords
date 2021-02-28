@@ -22,7 +22,7 @@
 
 #include "dutil.h"
 
-XW_DUtilCtxt* dutils_init( MPFORMAL VTableMgr* vtMgr, void* closure );
-void dutils_free( XW_DUtilCtxt** ducp );
+XW_DUtilCtxt* linux_dutils_init( MPFORMAL VTableMgr* vtMgr, void* closure );
+void linux_dutils_free( XW_DUtilCtxt** ducp );
 
 #endif

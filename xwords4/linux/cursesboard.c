@@ -438,14 +438,6 @@ commonInit( CursesBoardState* cbState, sqlite3_int64 rowid,
 
     copyParmsAddr( cGlobals );
 
-    CurGameInfo* gi = cGlobals->gi;
-    if ( !!gi ) {
-        XP_ASSERT( !cGlobals->dict );
-        cGlobals->dict = linux_dictionary_make( MPPARM(cGlobals->util->mpool)
-                                                NULL_XWE, params, gi->dictName, XP_TRUE );
-        gi->dictLang = dict_getLangCode( cGlobals->dict );
-    }
-
     setOneSecondTimer( cGlobals );
     return bGlobals;
 } /* commonInit */
@@ -478,10 +470,6 @@ disposeBoard( CursesBoardGlobals* bGlobals )
 
     gi_disposePlayerInfo( MPPARM(cGlobals->util->mpool) cGlobals->gi );
     game_dispose( &cGlobals->game, NULL_XWE );
-
-    if ( !!cGlobals->dict ) {
-        dict_unref( cGlobals->dict, NULL_XWE );
-    }
 
     disposeUtil( cGlobals );
 
@@ -529,12 +517,11 @@ utf8_len( const char* face )
 }
 
 static void
-getFromDict( const CommonGlobals* cGlobals, XP_U16* fontWidthP,
+getFromDict( const DictionaryCtxt* dict, XP_U16* fontWidthP,
              XP_U16* fontHtP )
 {
     int maxSide = 1;
 
-    DictionaryCtxt* dict = cGlobals->dict;
     for ( Tile tile = 0; tile < dict->nFaces; ++tile ) {
         const XP_UCHAR* face = dict_getTileString( dict, tile );
         int thisLen = utf8_len( face );
@@ -558,7 +545,8 @@ setupBoard( CursesBoardGlobals* bGlobals )
     const int height = bGlobals->winHeight;
 
     XP_U16 fontWidth, fontHt;
-    getFromDict( cGlobals, &fontWidth, &fontHt );
+    const DictionaryCtxt* dict = model_getDictionary( cGlobals->game.model );
+    getFromDict( dict, &fontWidth, &fontHt );
     BoardDims dims;
     board_figureLayout( board, NULL_XWE, cGlobals->gi,
                         0, 0, width, height, 100,

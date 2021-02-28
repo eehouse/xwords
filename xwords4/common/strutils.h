@@ -86,6 +86,8 @@ void insetRect( XP_Rect* rect, XP_S16 byWidth, XP_S16 byHeight );
 XP_U32 augmentHash( XP_U32 hash, const XP_U8* ptr, XP_U16 len );
 XP_U32 finishHash( XP_U32 hash );
 
+const XP_UCHAR* lcToLocale( XP_LangCode lc );
+
 void p_replaceStringIfDifferent( MPFORMAL XP_UCHAR** curLoc, 
                                  const XP_UCHAR* newStr
 #ifdef MEM_DEBUG

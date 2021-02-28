@@ -100,9 +100,6 @@ void assertDrawCallbacksSet( const DrawCtxVTable* vtable );
 void setupUtil( CommonGlobals* cGlobals );
 void disposeUtil( CommonGlobals* cGlobals );
 
-DictionaryCtxt* makeDictForStream( CommonGlobals* cGlobals, 
-                                   XWStreamCtxt* stream );
-
 void sendRelayReg( LaunchParams* params, sqlite3* pDb );
 void gameGotBuf( CommonGlobals* globals, XP_Bool haveDraw, 
                  const XP_U8* buf, XP_U16 len, const CommsAddrRec* from );

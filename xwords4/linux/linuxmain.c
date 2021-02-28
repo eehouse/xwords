@@ -200,15 +200,9 @@ linuxOpenGame( CommonGlobals* cGlobals, const TransportProcs* procs,
     }
 
     if ( !!stream ) {
-        if ( NULL == cGlobals->dict ) {
-            cGlobals->dict = makeDictForStream( cGlobals, stream );
-            XP_ASSERT( !!cGlobals->dict );
-        }
-
         opened = game_makeFromStream( MEMPOOL NULL_XWE, stream, &cGlobals->game,
-                                      cGlobals->gi, cGlobals->dict,
-                                      &cGlobals->dicts, cGlobals->util,
-                                      cGlobals->draw,
+                                      cGlobals->gi,
+                                      cGlobals->util, cGlobals->draw,
                                       &cGlobals->cp, procs );
         XP_LOGF( "%s: loaded gi at %p", __func__, &cGlobals->gi );
         stream_destroy( stream, NULL_XWE );
@@ -281,10 +275,7 @@ linuxOpenGame( CommonGlobals* cGlobals, const TransportProcs* procs,
             }
         }
 
-        XP_ASSERT( !!cGlobals->dict );
-        model_setDictionary( cGlobals->game.model, NULL_XWE, cGlobals->dict );
         setSquareBonuses( cGlobals );
-        model_setPlayerDicts( cGlobals->game.model, NULL_XWE, &cGlobals->dicts );
 
         /* Need to save in order to have a valid selRow for the first send */
         linuxSaveGame( cGlobals );
@@ -404,25 +395,6 @@ streamFromDB( CommonGlobals* cGlobals )
     return stream;
 }
 #endif
-
-DictionaryCtxt*
-makeDictForStream( CommonGlobals* cGlobals, XWStreamCtxt* stream ) 
-{
-    CurGameInfo gi = {0};
-    XWStreamPos pos = stream_getPos( stream, POS_READ );
-    if ( !game_makeFromStream( MPPARM(cGlobals->util->mpool) NULL_XWE, stream,
-                               NULL, &gi, NULL, NULL, NULL, NULL, NULL, NULL ) ) {
-        XP_ASSERT(0);
-    }
-    stream_setPos( stream, POS_READ, pos );
-
-    DictionaryCtxt* dict =
-        linux_dictionary_make( MPPARM(cGlobals->util->mpool) NULL_XWE, cGlobals->params,
-                               gi.dictName, XP_TRUE );
-    gi_disposePlayerInfo( MPPARM(cGlobals->util->mpool) &gi );
-    XP_ASSERT( !!dict );
-    return dict;
-}
 
 void
 gameGotBuf( CommonGlobals* cGlobals, XP_Bool hasDraw, const XP_U8* buf, 
@@ -631,10 +603,8 @@ handle_messages_from( CommonGlobals* cGlobals, const TransportProcs* procs,
     XP_Bool opened = 
 #endif
         game_makeFromStream( MPPARM(cGlobals->util->mpool) 
-                             NULL_XWE, stream, &cGlobals->game,
-                             cGlobals->gi, cGlobals->dict, 
-                             &cGlobals->dicts, cGlobals->util, 
-                             NULL /*draw*/,
+                             NULL_XWE, stream, &cGlobals->game, cGlobals->gi,
+                             cGlobals->util, NULL /*draw*/,
                              &cGlobals->cp, procs );
     XP_ASSERT( opened );
     stream_destroy( stream, NULL_XWE );
@@ -679,9 +649,8 @@ read_pipe_then_close( CommonGlobals* cGlobals, const TransportProcs* procs )
 #endif
         game_makeFromStream( MPPARM(cGlobals->util->mpool) 
                              NULL_XWE, stream, &cGlobals->game,
-                             cGlobals->gi, cGlobals->dict, 
-                             &cGlobals->dicts, cGlobals->util, 
-                             NULL /*draw*/,
+                             cGlobals->gi,
+                             cGlobals->util, NULL /*draw*/,
                              &cGlobals->cp, procs );
     XP_ASSERT( opened );
     stream_destroy( stream, NULL_XWE );
@@ -2587,7 +2556,7 @@ initParams( LaunchParams* params )
     /* params->util->vtable->m_util_setIsServer = linux_util_setIsServer; */
 #endif
 
-    params->dutil = dutils_init( MPPARM(params->mpool) params->vtMgr, params );
+    params->dutil = linux_dutils_init( MPPARM(params->mpool) params->vtMgr, params );
 }
 
 static void
@@ -2597,7 +2566,7 @@ freeParams( LaunchParams* params )
     params->pDb = NULL;
     
     vtmgr_destroy( MPPARM(params->mpool) params->vtMgr );
-    dutils_free( &params->dutil );
+    linux_dutils_free( &params->dutil );
     dmgr_destroy( params->dictMgr, NULL_XWE );
 
     gi_disposePlayerInfo( MPPARM(params->mpool) &params->pgi );

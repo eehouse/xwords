@@ -62,13 +62,13 @@ typedef struct _XWGame {
     XP_U32 created;     /* dutil_getCurSeconds() of creation */
 } XWGame;
 
-void game_makeNewGame( MPFORMAL XWEnv xwe, XWGame* game, CurGameInfo* gi,
-                       XW_UtilCtxt* util, DrawCtx* draw, 
-                       const CommonPrefs* cp, const TransportProcs* procs
+XP_Bool game_makeNewGame( MPFORMAL XWEnv xwe, XWGame* game, CurGameInfo* gi,
+                          XW_UtilCtxt* util, DrawCtx* draw,
+                          const CommonPrefs* cp, const TransportProcs* procs
 #ifdef SET_GAMESEED
-                       ,XP_U16 gameSeed
+                          ,XP_U16 gameSeed
 #endif
-                       );
+                          );
 XP_Bool game_reset( MPFORMAL XWGame* game, XWEnv xwe, CurGameInfo* gi,
                     XW_UtilCtxt* util, CommonPrefs* cp,
                     const TransportProcs* procs );
@@ -77,13 +77,11 @@ void game_changeDict( MPFORMAL XWGame* game, XWEnv xwe, CurGameInfo* gi,
 
 XP_Bool game_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
                              XWGame* game, CurGameInfo* gi,
-                             DictionaryCtxt* dict, const PlayerDicts* dicts,
                              XW_UtilCtxt* util, DrawCtx* draw,
                              CommonPrefs* cp, const TransportProcs* procs );
 
 XP_Bool game_makeFromInvite( MPFORMAL XWEnv xwe, const NetLaunchInfo* nli,
                              XWGame* game, CurGameInfo* gi, const XP_UCHAR* plyrName,
-                             DictionaryCtxt* dict, const PlayerDicts* dicts,
                              XW_UtilCtxt* util, DrawCtx* draw,
                              CommonPrefs* cp, const TransportProcs* procs );
 

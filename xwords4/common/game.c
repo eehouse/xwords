@@ -120,7 +120,39 @@ setListeners( XWGame* game, const CommonPrefs* cp )
     server_setTimerChangeListener( game->server, timerChangeListener, game );
 }
 
-void
+static DictionaryCtxt*
+getDicts( const CurGameInfo* gi, XW_UtilCtxt* util, XWEnv xwe,
+          PlayerDicts* playerDicts )
+{
+    XW_DUtilCtxt* dutil = util_getDevUtilCtxt( util, xwe );
+    DictionaryCtxt* result = dutil_getDict( dutil, xwe, gi->dictName );
+    XP_MEMSET( playerDicts, 0, sizeof(*playerDicts) );
+    if ( !!result ) {
+        for ( int ii = 0; ii < gi->nPlayers; ++ii ) {
+            const LocalPlayer* lp = &gi->players[ii];
+            if ( lp->isLocal && !!lp->dictName ) {
+                playerDicts->dicts[ii] = dutil_getDict( dutil, xwe, lp->dictName );
+            }
+        }
+    }
+    return result;
+}
+
+static void
+unrefDicts( XWEnv xwe, DictionaryCtxt* dict, PlayerDicts* playerDicts )
+{
+    if ( !!dict ) {
+        dict_unref( dict, xwe );
+    }
+    for ( int ii = 0; ii < VSIZE(playerDicts->dicts); ++ii ) {
+        const DictionaryCtxt* dict = playerDicts->dicts[ii];
+        if ( !!dict ) {
+            dict_unref( dict, xwe );
+        }
+    }
+}
+
+XP_Bool
 game_makeNewGame( MPFORMAL XWEnv xwe, XWGame* game, CurGameInfo* gi,
                   XW_UtilCtxt* util, DrawCtx* draw, 
                   const CommonPrefs* cp, const TransportProcs* procs
@@ -142,37 +174,53 @@ game_makeNewGame( MPFORMAL XWEnv xwe, XWGame* game, CurGameInfo* gi,
     game->created = dutil_getCurSeconds( util_getDevUtilCtxt( util, xwe ), xwe );
     game->util = util;
 
-    game->model = model_make( MPPARM(mpool) xwe, (DictionaryCtxt*)NULL,
-                              NULL, util, gi->boardSize );
+    PlayerDicts playerDicts;
+    DictionaryCtxt* dict = getDicts( gi, util, xwe, &playerDicts );
+    XP_Bool success = !!dict;
+
+    if ( success ) {
+        gi->dictLang = dict_getLangCode( dict );
+        game->model = model_make( MPPARM(mpool) xwe, (DictionaryCtxt*)NULL,
+                                  NULL, util, gi->boardSize );
+
+        model_setDictionary( game->model, xwe, dict );
+        model_setPlayerDicts( game->model, xwe, &playerDicts );
 
 #ifndef XWFEATURE_STANDALONE_ONLY
-    if ( gi->serverRole != SERVER_STANDALONE ) {
-        game->comms = comms_make( MPPARM(mpool) xwe, util,
-                                  gi->serverRole != SERVER_ISCLIENT, 
-                                  nPlayersHere, nPlayersTotal, 
-                                  procs, onRoleChanged, game,
-                                  gi->forceChannel
+        if ( gi->serverRole != SERVER_STANDALONE ) {
+            game->comms = comms_make( MPPARM(mpool) xwe, util,
+                                      gi->serverRole != SERVER_ISCLIENT,
+                                      nPlayersHere, nPlayersTotal,
+                                      procs, onRoleChanged, game,
+                                      gi->forceChannel
 #ifdef SET_GAMESEED
-                                  , gameSeed
+                                      , gameSeed
 #endif
-                                  );
-    } else {
-        game->comms = (CommsCtxt*)NULL;
-    }
-#endif
-    game->server = server_make( MPPARM(mpool) xwe, game->model,
-#ifndef XWFEATURE_STANDALONE_ONLY
-                                game->comms, 
-#else
-                                (CommsCtxt*)NULL,
-#endif
-                                util );
-    game->board = board_make( MPPARM(mpool) xwe, game->model, game->server,
-                              NULL, util );
-    board_setCallbacks( game->board, xwe );
+                                      );
+        } else {
+            game->comms = (CommsCtxt*)NULL;
+        }
 
-    board_setDraw( game->board, xwe, draw );
-    setListeners( game, cp );
+
+#endif
+        game->server = server_make( MPPARM(mpool) xwe, game->model,
+#ifndef XWFEATURE_STANDALONE_ONLY
+                                    game->comms,
+#else
+                                    (CommsCtxt*)NULL,
+#endif
+                                    util );
+        game->board = board_make( MPPARM(mpool) xwe, game->model, game->server,
+                                  NULL, util );
+        board_setCallbacks( game->board, xwe );
+
+        board_setDraw( game->board, xwe, draw );
+        setListeners( game, cp );
+    }
+
+    unrefDicts( xwe, dict, &playerDicts );
+
+    return success;
 } /* game_makeNewGame */
 
 XP_Bool
@@ -252,10 +300,9 @@ game_changeDict( MPFORMAL XWGame* game, XWEnv xwe, CurGameInfo* gi, DictionaryCt
 #endif
 
 XP_Bool
-game_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream, XWGame* game,
-                     CurGameInfo* gi, DictionaryCtxt* dict, 
-                     const PlayerDicts* dicts, XW_UtilCtxt* util, 
-                     DrawCtx* draw, CommonPrefs* cp, 
+game_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
+                     XWGame* game, CurGameInfo* gi,
+                     XW_UtilCtxt* util, DrawCtx* draw, CommonPrefs* cp,
                      const TransportProcs* procs )
 {
     XP_Bool success = XP_FALSE;
@@ -284,6 +331,13 @@ game_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream, XWGame* game,
             game->util = util;
             game->created = strVersion < STREAM_VERS_GICREATED
                 ? 0 : stream_getU32( stream );
+
+            PlayerDicts playerDicts;
+            DictionaryCtxt* dict = getDicts( gi, util, xwe, &playerDicts );
+            if ( !dict ) {
+                break;
+            }
+            XP_ASSERT( gi->dictLang == dict_getLangCode(dict) );
 
             /* Previous stream versions didn't save anything if built
              * standalone.  Now we always save something.  But we need to know
@@ -314,7 +368,7 @@ game_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream, XWGame* game,
             }
 
             game->model = model_makeFromStream( MPPARM(mpool) xwe, stream, dict,
-                                                dicts, util );
+                                                &playerDicts, util );
 
             game->server = server_makeFromStream( MPPARM(mpool) xwe, stream,
                                                   game->model, game->comms, 
@@ -326,6 +380,7 @@ game_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream, XWGame* game,
             setListeners( game, cp );
             board_setDraw( game->board, xwe, draw );
             success = XP_TRUE;
+            unrefDicts( xwe, dict, &playerDicts );
         } while( XP_FALSE );
     }
 
@@ -347,7 +402,6 @@ game_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream, XWGame* game,
 XP_Bool
 game_makeFromInvite( MPFORMAL XWEnv xwe, const NetLaunchInfo* nli,
                      XWGame* game, CurGameInfo* gi, const XP_UCHAR* plyrName,
-                     DictionaryCtxt* dict, const PlayerDicts* dicts,
                      XW_UtilCtxt* util, DrawCtx* draw,
                      CommonPrefs* cp, const TransportProcs* procs )
 {
@@ -362,15 +416,13 @@ game_makeFromInvite( MPFORMAL XWEnv xwe, const NetLaunchInfo* nli,
     replaceStringIfDifferent( mpool, &gi->players[0].name, plyrName );
     replaceStringIfDifferent( mpool, &gi->dictName, nli->dict );
 
-    game_makeNewGame( MPPARM(mpool) xwe, game, gi, util, draw, cp, procs );
-    model_setDictionary( game->model, xwe, dict );
-    model_setPlayerDicts( game->model, xwe, dicts );
-
-    CommsAddrRec returnAddr;
-    nli_makeAddrRec( nli, &returnAddr );
-    comms_augmentHostAddr( game->comms, NULL, &returnAddr );
-
-    return XP_TRUE;
+    XP_Bool success = game_makeNewGame( MPPARM(mpool) xwe, game, gi, util, draw, cp, procs );
+    if ( success ) {
+        CommsAddrRec returnAddr;
+        nli_makeAddrRec( nli, &returnAddr );
+        comms_augmentHostAddr( game->comms, NULL, &returnAddr );
+    }
+    return success;
 }
 
 void

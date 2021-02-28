@@ -27,6 +27,8 @@
 #include "dbgutil.h"
 #include "LocalizedStrIncludes.h"
 #include "nli.h"
+
+#include "linuxdict.h"
 #include "cursesmain.h"
 #include "gtkmain.h"
 
@@ -57,6 +59,16 @@ static void linux_dutil_deviceRegistered( XW_DUtilCtxt* duc, XWEnv xwe, DevIDTyp
 static XP_UCHAR* linux_dutil_md5sum( XW_DUtilCtxt* duc, XWEnv xwe, const XP_U8* ptr,
                                      XP_U32 len );
 #endif
+
+static DictionaryCtxt*
+linux_dutil_getDict( XW_DUtilCtxt* duc, XWEnv xwe,
+                     const XP_UCHAR* dictName )
+{
+    LaunchParams* params = (LaunchParams*)duc->closure;
+    DictionaryCtxt* result = linux_dictionary_make( MPPARM(duc->mpool) xwe,
+                                                    params, dictName, XP_TRUE );
+    return result;
+}
 
 static void
 linux_dutil_notifyPause( XW_DUtilCtxt* XP_UNUSED(duc), XWEnv XP_UNUSED(xwe),
@@ -126,7 +138,7 @@ linux_dutil_onGameGoneReceived( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe),
 }
 
 XW_DUtilCtxt*
-dutils_init( MPFORMAL VTableMgr* vtMgr, void* closure )
+linux_dutils_init( MPFORMAL VTableMgr* vtMgr, void* closure )
 {
     XW_DUtilCtxt* result = XP_CALLOC( mpool, sizeof(*result) );
 
@@ -156,7 +168,7 @@ dutils_init( MPFORMAL VTableMgr* vtMgr, void* closure )
 #ifdef COMMS_CHECKSUM
     SET_PROC(md5sum);
 #endif
-
+    SET_PROC(getDict);
     SET_PROC(notifyPause);
     SET_PROC(onDupTimerChanged);
     SET_PROC(onInviteReceived);
@@ -170,7 +182,8 @@ dutils_init( MPFORMAL VTableMgr* vtMgr, void* closure )
     return result;
 }
 
-void dutils_free( XW_DUtilCtxt** dutil )
+void
+linux_dutils_free( XW_DUtilCtxt** dutil )
 {
     kplr_cleanup( *dutil );
 # ifdef MEM_DEBUG
