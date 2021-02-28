@@ -47,20 +47,22 @@ typedef struct _DUtilVtable {
                                                       XP_U16 quantity );
     void (*m_dutil_storeStream)( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
                                  XWStreamCtxt* data );
-    void (*m_dutil_storeIndxStream)( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
-                                     const XP_UCHAR* indx, XWStreamCtxt* data );
     /* Pass in an empty stream, and it'll be returned full */
     void (*m_dutil_loadStream)( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
                                 const XP_UCHAR* fallbackKey,   // PENDING() remove this after a few months.
                                 XWStreamCtxt* inOut );
-    void (*m_dutil_loadIndxStream)( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
-                                    const XP_UCHAR* fallbackKey,   // PENDING() remove this after a few months.
-                                    const char* indx, XWStreamCtxt* inOut );
     void (*m_dutil_storePtr)( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
                               const void* data, XP_U32 len );
     void (*m_dutil_loadPtr)( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
                              const XP_UCHAR* fallbackKey,   // PENDING() remove this after a few months.
                              void* data, XP_U32* lenp );
+
+#ifdef XWFEATURE_INDEXSTORE
+    void (*m_dutil_storeIndxStream)( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
+                                     const XP_UCHAR* indx, XWStreamCtxt* data );
+    void (*m_dutil_loadIndxStream)( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
+                                    const XP_UCHAR* fallbackKey,   // PENDING() remove this after a few months.
+                                    const char* indx, XWStreamCtxt* inOut );
     void (*m_dutil_storeIndxPtr)( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
                                   const XP_UCHAR* indx, const void* data, XP_U32 len );
     void (*m_dutil_loadIndxPtr)( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
@@ -68,10 +70,10 @@ typedef struct _DUtilVtable {
 
     void (*m_dutil_forEachIndx)( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
                                  OnOneProc proc, void* closure );
-
     /* remove everything with the index, regardless of key. Only applies to
        storeIndx* cases */
     void (*m_dutil_removeAllIndx)(XW_DUtilCtxt* duc, const XP_UCHAR* indx);
+#endif
 
 #ifdef XWFEATURE_SMS
     XP_Bool (*m_dutil_phoneNumbersSame)( XW_DUtilCtxt* uc, XWEnv xwe, const XP_UCHAR* p1,
@@ -85,7 +87,7 @@ typedef struct _DUtilVtable {
 #endif
 
 #ifdef COMMS_CHECKSUM
-    XP_UCHAR* (*m_dutil_md5sum)( XW_DUtilCtxt* duc, XWEnv xwe, const XP_U8* ptr, XP_U16 len );
+    XP_UCHAR* (*m_dutil_md5sum)( XW_DUtilCtxt* duc, XWEnv xwe, const XP_U8* ptr, XP_U32 len );
 #endif
 
     void (*m_dutil_notifyPause)( XW_DUtilCtxt* duc, XWEnv xwe, XP_U32 gameID,

@@ -36,9 +36,9 @@ static const XP_UCHAR* linux_dutil_getUserQuantityString( XW_DUtilCtxt* duc, XWE
                                                           XP_U16 quantity );
 
 static void linux_dutil_storePtr( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
-                                  const void* data, XP_U16 len );
+                                  const void* data, XP_U32 len );
 static void linux_dutil_loadPtr( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
-                                 const XP_UCHAR* keySuffix, void* data, XP_U16* lenp );
+                                 const XP_UCHAR* keySuffix, void* data, XP_U32* lenp );
 
 
 #ifdef XWFEATURE_SMS
@@ -55,7 +55,7 @@ static void linux_dutil_deviceRegistered( XW_DUtilCtxt* duc, XWEnv xwe, DevIDTyp
 
 #ifdef COMMS_CHECKSUM
 static XP_UCHAR* linux_dutil_md5sum( XW_DUtilCtxt* duc, XWEnv xwe, const XP_U8* ptr,
-                                     XP_U16 len );
+                                     XP_U32 len );
 #endif
 
 static void
@@ -279,7 +279,7 @@ linux_dutil_getUserQuantityString( XW_DUtilCtxt* duc, XWEnv xwe, XP_U16 code,
 
 static void
 linux_dutil_storePtr( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe), const XP_UCHAR* key,
-                      const void* data, const XP_U16 len )
+                      const void* data, const XP_U32 len )
 {
     LaunchParams* params = (LaunchParams*)duc->closure;
     sqlite3* pDb = params->pDb;
@@ -291,7 +291,7 @@ linux_dutil_storePtr( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe), const XP_UCHAR* k
 
 static void
 linux_dutil_loadPtr( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe), const XP_UCHAR* key,
-                     const XP_UCHAR* keySuffix, void* data, XP_U16* lenp )
+                     const XP_UCHAR* keySuffix, void* data, XP_U32* lenp )
 {
     LaunchParams* params = (LaunchParams*)duc->closure;
     sqlite3* pDb = params->pDb;
@@ -374,10 +374,10 @@ linux_dutil_deviceRegistered( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe), DevIDType
 #ifdef COMMS_CHECKSUM
 static XP_UCHAR*
 linux_dutil_md5sum( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe),
-                    const XP_U8* ptr, XP_U16 len )
+                    const XP_U8* ptr, XP_U32 len )
 {
     gchar* sum = g_compute_checksum_for_data( G_CHECKSUM_MD5, ptr, len );
-    XP_U16 sumlen = 1 + strlen( sum );
+    XP_U32 sumlen = 1 + strlen( sum );
     XP_UCHAR* result = XP_MALLOC( duc->mpool, sumlen );
     XP_MEMCPY( result, sum, sumlen );
     g_free( sum );
