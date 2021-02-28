@@ -107,6 +107,7 @@ static void ensureName( GameState* gs );
 static void loadName( GameState* gs );
 static void saveName( GameState* gs );
 static bool isVisible( GameState* gs );
+static int countDicts( Globals* globals );
 
 typedef void (*BinProc)(void* closure, const uint8_t* data, int len );
 
@@ -471,12 +472,24 @@ updateGameButtons( Globals* globals )
 }
 
 static void
+showName( GameState* gs )
+{
+    const char* title = gs->gameName;
+    char buf[64];
+    if ( 1 < countDicts( gs->globals ) ) {
+        sprintf( buf, "%s (%s)", gs->gameName, lcToLocale(gs->gi.dictLang) );
+        title = buf;
+    }
+    show_name( title );
+}
+
+static void
 onGameRanamed( void* closure, const char* newName )
 {
     if ( !!newName ) {
         CAST_GS(GameState*, gs, closure);
         nameGame( gs, newName );
-        show_name( newName );
+        showName( gs );
     }
 }
 
@@ -514,7 +527,7 @@ onOneIndx( void* closure, const XP_UCHAR* indx )
     XP_LOGFF( "(indx: %s)", indx );
     NameIterState* nis = (NameIterState*)closure;
     Globals* globals = nis->globals;
-    ++nis->count;
+    int cur = nis->count++;
     nis->names = XP_REALLOC( globals->mpool, nis->names,
                              nis->count * sizeof(nis->names[0]) );
 
@@ -522,15 +535,13 @@ onOneIndx( void* closure, const XP_UCHAR* indx )
     dutil_loadIndxPtr( globals->dutil, NULL, KEY_NAME, indx, NULL, &valLen );
     uint8_t val[valLen];
     dutil_loadIndxPtr( globals->dutil, NULL, KEY_NAME, indx, val, &valLen );
-    nis->names[nis->count-1] = XP_MALLOC( globals->mpool, valLen );
-    XP_MEMCPY( nis->names[nis->count-1], val, valLen );
+    nis->names[cur] = XP_MALLOC( globals->mpool, valLen );
+    XP_MEMCPY( nis->names[cur], val, valLen );
 
     nis->ids = XP_REALLOC( globals->mpool, nis->ids,
                            nis->count * sizeof(nis->ids[0]) );
-    nis->ids[nis->count-1] = XP_MALLOC( globals->mpool, 1 + strlen(indx) );
-    strcpy( nis->ids[nis->count-1], indx );
-
-    XP_LOGFF( "recorded %s => %s", nis->ids[nis->count-1], nis->names[nis->count-1] );
+    nis->ids[cur] = XP_MALLOC( globals->mpool, 1 + strlen(indx) );
+    strcpy( nis->ids[cur], indx );
 
     return true;                /* keep going */
 }
@@ -782,7 +793,7 @@ startGame( GameState* gs, const char* name )
     gs->globals->curGame = gs;
     ensureName( gs );
     XP_LOGFF( "changed curGame to %s", gs->gameName );
-    show_name( gs->gameName );
+    showName( gs );
     storeCurOpen( gs );
 
     BoardDims dims;
@@ -998,7 +1009,7 @@ onOneDict( void* closure, const XP_UCHAR* indx )
     FindOneState* fos = (FindOneState*)closure;
     XW_DUtilCtxt* dutil = fos->globals->dutil;
 
-    XP_U32 len = 0;
+    XP_U32 len;
     dutil_loadIndxPtr( dutil, NULL, KEY_DICTS, indx, NULL, &len );
     uint8_t* ptr = XP_MALLOC( fos->globals->mpool, len );
     dutil_loadIndxPtr( dutil, NULL, KEY_DICTS, indx, ptr, &len );

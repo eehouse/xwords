@@ -257,14 +257,14 @@ wasm_dutil_loadPtr( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
         // XP_LOGFF( "get_stored_value(%s) => %s", fullKey, val );
         len = XP_STRLEN(val);
         XP_ASSERT( (len % 2) == 0 );
-        XP_U8* decodeBuf = XP_MALLOC( duc->mpool, len/2 );
-        len = len/2;
-        if ( len <= *lenp ) {
+        len /= 2;
+        if ( !!data && len <= *lenp ) {
+            uint8_t* decodeBuf = XP_MALLOC( duc->mpool, len );
             base16Decode( decodeBuf, len, val );
             XP_MEMCPY( data, decodeBuf, len );
+            XP_FREE( duc->mpool, decodeBuf );
         }
         *lenp = len;
-        XP_FREE( duc->mpool, decodeBuf );
     } else {
         *lenp = 0;              /* signal failure */
     }
