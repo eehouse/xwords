@@ -49,43 +49,16 @@ getShortName( const DictionaryCtxt* dict )
 }
 
 static XP_Bool
-initFromDictFile( WasmDictionaryCtxt* dctx, const char* fileName,
-                  uint8_t* dictBase )
+initFromPtr( WasmDictionaryCtxt* dctx, const char* name,
+             uint8_t* dictBase, size_t len )
 {
     XP_Bool formatOk = XP_TRUE;
     size_t dictLength;
     XP_U32 topOffset;
     char path[256];
 
-    if ( !!fileName ) {
-        snprintf( path, VSIZE(path), "%s", fileName );
-    } else { // if ( !getDictPath( params, fileName, path, VSIZE(path) ) ) {
-        XP_LOGF( "%s: path=%s", __func__, path );
-        goto closeAndExit;
-    }
-    struct stat statbuf;
-    if ( 0 != stat( path, &statbuf ) || 0 == statbuf.st_size ) {
-        goto closeAndExit;
-    }
-    dctx->dictLength = statbuf.st_size;
-
-    {
-        FILE* dictF = fopen( path, "r" );
-        XP_ASSERT( !!dictF );
-        if ( !!dictBase ) {
-            dctx->dictBase = dictBase;
-        } else if ( dctx->useMMap ) {
-            dctx->dictBase = mmap( NULL, dctx->dictLength, PROT_READ, 
-                                   MAP_PRIVATE, fileno(dictF), 0 );
-        } else {
-            dctx->dictBase = XP_MALLOC( dctx->super.mpool, dctx->dictLength );
-            if ( dctx->dictLength != fread( dctx->dictBase, 1, 
-                                            dctx->dictLength, dictF ) ) {
-                XP_ASSERT( 0 );
-            }
-        }
-        fclose( dictF );
-    }
+    dctx->dictLength = len;
+    dctx->dictBase = dictBase;
 
     const XP_U8* ptr = dctx->dictBase;
     const XP_U8* end = ptr + dctx->dictLength;
@@ -120,7 +93,7 @@ initFromDictFile( WasmDictionaryCtxt* dctx, const char* fileName,
             numEdges = 0;
         }
 
-        dctx->super.name = copyString( dctx->super.mpool, fileName );
+        dctx->super.name = copyString( dctx->super.mpool, name );
 
         if ( ! checkSanity( &dctx->super, numEdges ) ) {
             goto closeAndExit;
@@ -191,63 +164,31 @@ wasm_dictionary_destroy( DictionaryCtxt* dict, XWEnv xwe )
 }
 
 DictionaryCtxt* 
-wasm_dictionary_make( MPFORMAL XWEnv xwe, Globals* globals,
-                      const char* dictFileName, bool useMMap,
-                      uint8_t* base )
+wasm_dictionary_make( Globals* globals, XWEnv xwe,
+                      const char* name, uint8_t* base, size_t len )
 {
-    WasmDictionaryCtxt* result = NULL;
-    if ( !!dictFileName ) {
-        /* dmgr_get increments ref count before returning! */
-        result = (WasmDictionaryCtxt*)dmgr_get( globals->dictMgr, xwe,
-                                                dictFileName );
+    WasmDictionaryCtxt* result = (WasmDictionaryCtxt*)
+        XP_CALLOC(globals->mpool, sizeof(*result));
+    result->globals = globals;
+
+    dict_super_init( MPPARM(globals->mpool) &result->super );
+    result->super.destructor = wasm_dictionary_destroy;
+
+    result->useMMap = false;
+
+    XP_Bool success = initFromPtr( result, name, base, len );
+    if ( success ) {
+        result->super.func_dict_getShortName = getShortName;
+        setBlankTile( &result->super );
+    } else {
+        XP_ASSERT( 0 ); /* gonna crash anyway */
+        XP_FREE( globals->mpool, result );
+        result = NULL;
     }
-    if ( !result ) {
-        result = (WasmDictionaryCtxt*)XP_CALLOC(mpool, sizeof(*result));
-        result->globals = globals;
+    (void)dict_ref( &result->super, xwe );
 
-        dict_super_init( MPPARM(mpool) &result->super );
-        result->super.destructor = wasm_dictionary_destroy;
-
-        result->useMMap = useMMap;
-
-        if ( !!dictFileName ) {
-            XP_Bool success = initFromDictFile( result, dictFileName, base );
-            if ( success ) {
-                result->super.func_dict_getShortName = getShortName;
-                setBlankTile( &result->super );
-            } else {
-                XP_ASSERT( 0 ); /* gonna crash anyway */
-                XP_FREE( mpool, result );
-                result = NULL;
-            }
-
-            dmgr_put( globals->dictMgr, xwe, dictFileName, &result->super );
-        } else {
-            XP_LOGF( "%s(): no file name!!", __func__ );
-        }
-        (void)dict_ref( &result->super, xwe );
-    }
-
+    LOG_RETURNF( "%p", &result->super );
     return &result->super;
-}
-
-uint8_t*
-wasm_dictionary_load(MPFORMAL const char* dictFileName, XP_U32* len )
-{
-    uint8_t* result = NULL;
-    *len = 0;
-    struct stat statbuf;
-    if ( 0 == stat( dictFileName, &statbuf ) && 0 != statbuf.st_size ) {
-        result = XP_MALLOC( mpool, statbuf.st_size );
-        FILE* dictF = fopen( dictFileName, "r" );
-        size_t nRead = fread( result, 1, statbuf.st_size, dictF );
-        XP_ASSERT( nRead == statbuf.st_size );
-        fclose( dictF );
-        *len = statbuf.st_size;
-        XP_LOGFF( "loaded %d bytes", statbuf.st_size );
-    }
-
-    return result;
 }
 
 void
@@ -301,4 +242,10 @@ computeChecksum( DictionaryCtxt* dctx, XWEnv xwe, const XP_U8* ptr,
                  XP_U32 len, XP_UCHAR* out )
 {
     *out = '\0';
+}
+
+void
+formatDictIndx( char buf[], size_t len, const char* lang, const char* name )
+{
+    snprintf( buf, len, "%s/%s", lang, name );
 }

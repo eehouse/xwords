@@ -423,7 +423,7 @@ lcToLocale( XP_LangCode lc )
     /* <item>@string/lang_name_slovak</item> */
     /* <item>@string/lang_name_hungarian</item> */
     }
-
+    XP_ASSERT( !!result );
     return result;
 }
 

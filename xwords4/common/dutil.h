@@ -34,8 +34,7 @@ typedef enum { UNPAUSED,
                AUTOPAUSED,
 } DupPauseType;
 
-typedef XP_Bool (*OnOneProc)(void* closure, const XP_UCHAR* indx,
-                             const void* val, XP_U32 valLen);
+typedef XP_Bool (*OnOneProc)(void* closure, const XP_UCHAR* indx);
 
 typedef struct _DUtilVtable {
     XP_U32 (*m_dutil_getCurSeconds)( XW_DUtilCtxt* duc, XWEnv xwe );
@@ -90,8 +89,8 @@ typedef struct _DUtilVtable {
     XP_UCHAR* (*m_dutil_md5sum)( XW_DUtilCtxt* duc, XWEnv xwe, const XP_U8* ptr, XP_U32 len );
 #endif
 
-    DictionaryCtxt* (*m_dutil_getDict)( XW_DUtilCtxt* duc, XWEnv xwe,
-                                        const XP_UCHAR* dictName );
+    const DictionaryCtxt* (*m_dutil_getDict)( XW_DUtilCtxt* duc, XWEnv xwe,
+                                              XP_LangCode lang, const XP_UCHAR* dictName );
 
     void (*m_dutil_notifyPause)( XW_DUtilCtxt* duc, XWEnv xwe, XP_U32 gameID,
                                  DupPauseType pauseTyp, XP_U16 pauser,
@@ -171,8 +170,8 @@ void dutil_super_init( MPFORMAL XW_DUtilCtxt* dutil );
     (duc)->vtable.m_dutil_md5sum((duc), (e), (p), (l))
 #endif
 
-#define dutil_getDict( duc, xwe, dictName )                       \
-    (duc)->vtable.m_dutil_getDict( (duc), (xwe), (dictName) )
+#define dutil_getDict( duc, xwe, lc, dictName )                     \
+    (duc)->vtable.m_dutil_getDict( (duc), (xwe), (lc), (dictName) )
 
 #define dutil_notifyPause( duc, e, id, ip, p, n, m )                     \
     (duc)->vtable.m_dutil_notifyPause( (duc), (e), (id), (ip), (p), (n), (m) )

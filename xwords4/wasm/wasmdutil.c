@@ -21,11 +21,14 @@
 
 #include <emscripten.h>
 
+#include "strutils.h"
+
 #include "wasmdutil.h"
 #include "main.h"
 #include "dbgutil.h"
 #include "LocalizedStrIncludes.h"
 #include "wasmasm.h"
+#include "wasmdict.h"
 
 typedef struct _WasmDUtilCtxt {
     XW_DUtilCtxt super;
@@ -340,6 +343,7 @@ typedef struct _ForEachStateKey {
     OnOneProc onOneProc;
     void* onOneClosure;
     const char* key;
+    bool doMore;
 } ForEachStateKey;
 
 /* I'm called with a full key, PREFIX + KEY + INDEX. I'm interested in it IFF
@@ -349,17 +353,13 @@ static void
 withOneKey( void* closure, const char* fullKey )
 {
     ForEachStateKey* fes = (ForEachStateKey*)closure;
-
-    char key[128];
-    char indx[128];
-    if ( splitFullKey( key, indx, fullKey ) ) {
-        if ( 0 == strcmp(key, fes->key) ) {
-
-            XP_U32 len = 0;
-            wasm_dutil_loadIndxPtr( fes->duc, fes->xwe, key, indx, NULL, &len );
-            uint8_t val[len];
-            wasm_dutil_loadIndxPtr( fes->duc, fes->xwe, key, indx, val, &len );
-            (*fes->onOneProc)(fes->onOneClosure, indx, val, len);
+    if ( fes->doMore ) {
+        char key[128];
+        char indx[128];
+        if ( splitFullKey( key, indx, fullKey ) ) {
+            if ( 0 == strcmp(key, fes->key) ) {
+                fes->doMore = (*fes->onOneProc)(fes->onOneClosure, indx);
+            }
         }
     }
 }
@@ -369,10 +369,11 @@ wasm_dutil_forEachIndx( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
                         OnOneProc proc, void* closure )
 {
     ForEachStateKey fes = { .duc = duc,
-                         .xwe = xwe,
-                         .onOneProc = proc,
-                         .onOneClosure = closure,
-                         .key = key,
+                            .xwe = xwe,
+                            .onOneProc = proc,
+                            .onOneClosure = closure,
+                            .key = key,
+                            .doMore = true,
     };
     call_for_each_key( withOneKey, &fes );
 }
@@ -438,6 +439,35 @@ wasm_dutil_md5sum( XW_DUtilCtxt* duc, XWEnv xwe, const XP_U8* ptr,
 {
     LOG_FUNC();
     return NULL;
+}
+
+static const DictionaryCtxt*
+wasm_dutil_getDict( XW_DUtilCtxt* duc, XWEnv xwe,
+                    XP_LangCode lang, const XP_UCHAR* dictName )
+{
+    XP_LOGFF( "(dictName: %s)", dictName );
+
+    char indx[64];
+    const char* lc = lcToLocale( lang );
+    formatDictIndx( indx, sizeof(indx), lc, dictName );
+
+    CAST_GLOB( Globals*, globals, duc->closure );
+    const DictionaryCtxt* result = dmgr_get( globals->dictMgr, xwe, indx );
+    if ( !result ) {
+        XP_U32 len = 0;
+        dutil_loadIndxPtr( duc, xwe, KEY_DICTS, indx, NULL, &len );
+        if ( 0 < len ) {
+            uint8_t* ptr = XP_MALLOC( duc->mpool, len );
+            dutil_loadIndxPtr( duc, xwe, KEY_DICTS, indx, ptr, &len );
+            result = wasm_dictionary_make( globals, xwe, dictName, ptr, len );
+            dmgr_put( globals->dictMgr, xwe, indx, result );
+        } else {
+            XP_LOGFF( "indx %s not found", indx );
+        }
+    }
+
+    LOG_RETURNF( "%p", result );
+    return result;
 }
 
 static void
@@ -517,6 +547,7 @@ wasm_dutil_make( MPFORMAL VTableMgr* vtMgr, void* closure )
     SET_PROC(md5sum);
 #endif
 
+    SET_PROC(getDict);
     SET_PROC(notifyPause);
     SET_PROC(onDupTimerChanged);
     SET_PROC(onInviteReceived);

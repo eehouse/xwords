@@ -411,8 +411,10 @@ static DictionaryCtxt*
 wasm_util_makeEmptyDict( XW_UtilCtxt* uc, XWEnv xwe )
 {
     LOG_FUNC();                 /* firing */
-    return wasm_dictionary_make( MPPARM(uc->mpool) NULL, uc->closure,
-                                 NULL, false, NULL );
+    XP_ASSERT(0);
+    /* return wasm_dictionary_make( MPPARM(uc->mpool) NULL, uc->closure, */
+    /*                              NULL, false, NULL ); */
+    return NULL;
 }
 
 static void

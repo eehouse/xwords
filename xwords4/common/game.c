@@ -120,18 +120,19 @@ setListeners( XWGame* game, const CommonPrefs* cp )
     server_setTimerChangeListener( game->server, timerChangeListener, game );
 }
 
-static DictionaryCtxt*
+static const DictionaryCtxt*
 getDicts( const CurGameInfo* gi, XW_UtilCtxt* util, XWEnv xwe,
-          PlayerDicts* playerDicts )
+          XP_LangCode langCode, PlayerDicts* playerDicts )
 {
     XW_DUtilCtxt* dutil = util_getDevUtilCtxt( util, xwe );
-    DictionaryCtxt* result = dutil_getDict( dutil, xwe, gi->dictName );
+    const DictionaryCtxt* result = dutil_getDict( dutil, xwe, langCode, gi->dictName );
     XP_MEMSET( playerDicts, 0, sizeof(*playerDicts) );
     if ( !!result ) {
         for ( int ii = 0; ii < gi->nPlayers; ++ii ) {
             const LocalPlayer* lp = &gi->players[ii];
             if ( lp->isLocal && !!lp->dictName ) {
-                playerDicts->dicts[ii] = dutil_getDict( dutil, xwe, lp->dictName );
+                playerDicts->dicts[ii] = dutil_getDict( dutil, xwe, langCode,
+                                                        lp->dictName );
             }
         }
     }
@@ -139,7 +140,7 @@ getDicts( const CurGameInfo* gi, XW_UtilCtxt* util, XWEnv xwe,
 }
 
 static void
-unrefDicts( XWEnv xwe, DictionaryCtxt* dict, PlayerDicts* playerDicts )
+unrefDicts( XWEnv xwe, const DictionaryCtxt* dict, PlayerDicts* playerDicts )
 {
     if ( !!dict ) {
         dict_unref( dict, xwe );
@@ -175,7 +176,7 @@ game_makeNewGame( MPFORMAL XWEnv xwe, XWGame* game, CurGameInfo* gi,
     game->util = util;
 
     PlayerDicts playerDicts;
-    DictionaryCtxt* dict = getDicts( gi, util, xwe, &playerDicts );
+    const DictionaryCtxt* dict = getDicts( gi, util, xwe, gi->dictLang, &playerDicts );
     XP_Bool success = !!dict;
 
     if ( success ) {
@@ -333,7 +334,8 @@ game_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
                 ? 0 : stream_getU32( stream );
 
             PlayerDicts playerDicts;
-            DictionaryCtxt* dict = getDicts( gi, util, xwe, &playerDicts );
+            const DictionaryCtxt* dict = getDicts( gi, util, xwe,
+                                                   gi->dictLang, &playerDicts );
             if ( !dict ) {
                 break;
             }

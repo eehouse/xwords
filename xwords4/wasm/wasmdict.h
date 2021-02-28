@@ -24,9 +24,8 @@
 #include "dictnry.h"
 #include "main.h"
 
-DictionaryCtxt* wasm_dictionary_make( MPFORMAL XWEnv xwe, Globals* globals,
-                                      const char* dictFileName, bool useMMap,
-                                      uint8_t* base );
-uint8_t* wasm_dictionary_load(MPFORMAL const char* dictFileName, XP_U32* len );
+DictionaryCtxt* wasm_dictionary_make( Globals* globals, XWEnv xwe,
+                                      const char* name, uint8_t* base, size_t len );
+void formatDictIndx( char buf[], size_t len, const char* lang, const char* name );
 
 #endif

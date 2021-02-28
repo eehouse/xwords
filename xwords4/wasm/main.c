@@ -62,13 +62,9 @@
 
 #define KEY_LAST_GID "cur_game"
 #define KEY_PLAYER_NAME "player_name"
-#define KEY_DICTS "dicts_3"
 #define KEY_GAME "game_data"
 #define KEY_NAME "game_name"
 #define KEY_NEXT_GAME "next_game"
-
-#define DICTNAME "assets_dir/CollegeEng_2to8.xwd"
-
 
 #define BUTTON_OK "OK"
 #define BUTTON_CANCEL "Cancel"
@@ -513,14 +509,19 @@ onGameChosen( void* closure, const char* key )
 }
 
 static XP_Bool
-onOneIndx( void* closure, const XP_UCHAR* indx, const void* val, XP_U32 valLen )
+onOneIndx( void* closure, const XP_UCHAR* indx )
 {
-    XP_LOGFF( "(indx: %s, len: %d, val: %s)", indx, valLen, (char*)val );
+    XP_LOGFF( "(indx: %s)", indx );
     NameIterState* nis = (NameIterState*)closure;
     Globals* globals = nis->globals;
     ++nis->count;
     nis->names = XP_REALLOC( globals->mpool, nis->names,
                              nis->count * sizeof(nis->names[0]) );
+
+    XP_U32 valLen;
+    dutil_loadIndxPtr( globals->dutil, NULL, KEY_NAME, indx, NULL, &valLen );
+    uint8_t val[valLen];
+    dutil_loadIndxPtr( globals->dutil, NULL, KEY_NAME, indx, val, &valLen );
     nis->names[nis->count-1] = XP_MALLOC( globals->mpool, valLen );
     XP_MEMCPY( nis->names[nis->count-1], val, valLen );
 
@@ -651,7 +652,7 @@ onDeviceButton( void* closure, const char* button )
 }
 
 static XP_Bool
-upCounter( void* closure, const XP_UCHAR* indx, const void* val, XP_U32 valLen )
+upCounter( void* closure, const XP_UCHAR* indx )
 {
     XP_LOGFF("(indx: %s)", indx);
     int* intp = (int*)closure;
@@ -667,12 +668,31 @@ countGames( Globals* globals )
     return nFound;
 }
 
+static XP_Bool
+onOneDictCount( void* closure, const XP_UCHAR* indx )
+{
+    int* ip = (int*)closure;
+    ++*ip;
+    return XP_TRUE;
+}
+
+static int
+countDicts( Globals* globals )
+{
+    int count = 0;
+    dutil_forEachIndx( globals->dutil, NULL, KEY_DICTS, onOneDictCount, &count );
+    LOG_RETURNF( "%d", count );
+    return count;
+}
+
 static void
 updateDeviceButtons( Globals* globals )
 {
     const char* buttons[MAX_BUTTONS];
     int cur = 0;
-    buttons[cur++] = BUTTON_GAME_NEW;
+    if ( 0 < countDicts( globals ) ) {
+        buttons[cur++] = BUTTON_GAME_NEW;
+    }
     if ( 0 < countGames(globals) ) {
         buttons[cur++] = BUTTON_GAME_OPEN;
     }
@@ -707,46 +727,6 @@ onFocussed( void* closure, const char* ignored )
     /* } */
 }
 
-static DictionaryCtxt*
-playLoadingDict( Globals* globals )
-{
-    /* Looking at whether the storage system can hold a dict. Let's see if
-       it's stored, and if it isn't store it. They try passing a ptr for
-       making the actual dict from. */
-
-    XP_U32 len = 0;
-    dutil_loadIndxPtr( globals->dutil, NULL, KEY_DICTS, DICTNAME, NULL, &len );
-    if ( 0 == len ) {
-        XP_LOGFF( "not found; storing now..." );
-        XP_U32 dictLen;
-        uint8_t* dictBytes = wasm_dictionary_load(MPPARM(globals->mpool)
-                                                  DICTNAME, &dictLen);
-
-        if ( !!dictBytes ) {
-            XP_LOGFF( "loaded %d bytes of dict", dictLen );
-            dutil_storeIndxPtr( globals->dutil, NULL, KEY_DICTS, DICTNAME,
-                                dictBytes, dictLen );
-            XP_FREE( globals->mpool, dictBytes );
-        }
-        len = dictLen;
-    } else {
-        XP_LOGFF( "using stored wordlist of len %d", len );
-    }
-
-    XP_U32 oldLen = len;
-    XP_LOGFF( "oldLen: %d", oldLen );
-    uint8_t* bytes = XP_MALLOC( globals->mpool, len );
-    dutil_loadIndxPtr( globals->dutil, NULL, KEY_DICTS, DICTNAME,
-                       bytes, &len );
-    XP_ASSERT( len == oldLen );
-
-    DictionaryCtxt* dict =
-        wasm_dictionary_make( MPPARM(globals->mpool) NULL,
-                              globals, DICTNAME, false, bytes );
-    LOG_RETURNF( "%p", dict );
-    return dict;
-}
-
 static void
 onMqttMsg(void* closure, const uint8_t* data, int len )
 {
@@ -773,10 +753,6 @@ initDeviceGlobals( Globals* globals )
     globals->dutil = wasm_dutil_make( MPPARM(globals->mpool) globals->vtMgr, globals );
     globals->dictMgr = dmgr_make( MPPARM_NOCOMMA(globals->mpool) );
 
-    globals->dict = playLoadingDict( globals );
-
-    dict_ref( globals->dict, NULL );
-
     globals->draw = wasm_draw_make( MPPARM(globals->mpool)
                                     WINDOW_WIDTH, WINDOW_HEIGHT );
 
@@ -788,7 +764,9 @@ initDeviceGlobals( Globals* globals )
     int now = dutil_getCurSeconds( globals->dutil, NULL );
     call_setup( globals, buf, GITREV, now, onConflict, onFocussed, onMqttMsg );
 
-    call_get_dict( globals );
+    if ( 0 == countDicts( globals ) ) {
+        call_get_dict( globals );
+    }
 }
 
 static void
@@ -812,10 +790,7 @@ startGame( GameState* gs, const char* name )
                         WASM_BOARD_LEFT, WASM_HOR_SCORE_TOP, BDWIDTH, BDHEIGHT,
                         110, 150, 200, BDWIDTH-25, BDWIDTH/15, BDHEIGHT/15,
                         XP_FALSE, &dims );
-    XP_LOGFF( "calling board_applyLayout" );
     board_applyLayout( gs->game.board, NULL, &dims );
-    XP_LOGFF( "calling model_setDictionary" );
-    model_setDictionary( gs->game.model, NULL, gs->globals->dict );
 
     board_invalAll( gs->game.board ); /* redraw screen on loading new game */
 
@@ -849,7 +824,6 @@ newFromInvite( Globals* globals, const NetLaunchInfo* invite )
 
     game_makeFromInvite( MPPARM(globals->mpool) NULL, invite,
                          &gs->game, &gs->gi, playerName,
-                         globals->dict, NULL,
                          gs->util, globals->draw,
                          &globals->cp, &globals->procs );
     if ( invite->gameName[0] ) {
@@ -936,7 +910,6 @@ getSavedGame( Globals* globals, int gameID )
             XP_LOGFF( "there's a saved game!!" );
             loaded = game_makeFromStream( MPPARM(globals->mpool) NULL, stream,
                                           &gs->game, &gs->gi,
-                                          globals->dict, NULL,
                                           gs->util, globals->draw,
                                           &globals->cp, &globals->procs );
 
@@ -1013,6 +986,37 @@ nameGame( GameState* gs, const char* name )
     XP_LOGFF( "named game: %s", gs->gameName );
 }
 
+typedef struct _FindOneState {
+    Globals* globals;
+    DictionaryCtxt* dict;
+} FindOneState;
+
+static XP_Bool
+onOneDict( void* closure, const XP_UCHAR* indx )
+{
+    XP_LOGFF( "indx: %s", indx );
+    FindOneState* fos = (FindOneState*)closure;
+    XW_DUtilCtxt* dutil = fos->globals->dutil;
+
+    XP_U32 len = 0;
+    dutil_loadIndxPtr( dutil, NULL, KEY_DICTS, indx, NULL, &len );
+    uint8_t* ptr = XP_MALLOC( fos->globals->mpool, len );
+    dutil_loadIndxPtr( dutil, NULL, KEY_DICTS, indx, ptr, &len );
+    XP_ASSERT( !fos->dict );
+    fos->dict = wasm_dictionary_make( fos->globals, NULL, indx, ptr, len );
+    return XP_FALSE;
+}
+
+static DictionaryCtxt*
+loadAnyDict( Globals* globals )
+{
+    FindOneState fos = {.globals = globals,
+    };
+    dutil_forEachIndx( globals->dutil, NULL, KEY_DICTS, onOneDict, &fos );
+    LOG_RETURNF( "%p", fos.dict );
+    return fos.dict;
+}
+
 static void
 loadAndDraw( Globals* globals, const NetLaunchInfo* invite,
              const char* gameIDStr, NewGameParams* params )
@@ -1035,47 +1039,53 @@ loadAndDraw( Globals* globals, const NetLaunchInfo* invite,
     }
 
     if ( !gs ) {
-        char playerName[32];
-        getPlayerName( globals, playerName, sizeof(playerName) );
+        DictionaryCtxt* dict = loadAnyDict( globals );
+        if ( !!dict ) {
+            char playerName[32];
+            getPlayerName( globals, playerName, sizeof(playerName) );
 
-        gs = newGameState( globals );
-        gs->gi.serverRole = !!params && !params->isRobotNotRemote
-            ? SERVER_ISSERVER : SERVER_STANDALONE;
+            gs = newGameState( globals );
+            gs->gi.serverRole = !!params && !params->isRobotNotRemote
+                ? SERVER_ISSERVER : SERVER_STANDALONE;
 
-        gs->gi.phoniesAction = PHONIES_WARN;
-        gs->gi.hintsNotAllowed = !!params && params->hintsNotAllowed || false;
-        gs->gi.gameID = 0;
-        gs->gi.dictLang = 1; /* English only for now */
-        replaceStringIfDifferent( globals->mpool, &gs->gi.dictName,
-                                  "CollegeEng_2to8" );
-        gs->gi.nPlayers = 2;
-        gs->gi.boardSize = 15;
-        gs->gi.players[0].name = copyString( globals->mpool, playerName );
-        gs->gi.players[0].isLocal = XP_TRUE;
-        gs->gi.players[0].robotIQ = 0;
+            gs->gi.phoniesAction = PHONIES_WARN;
+            gs->gi.hintsNotAllowed = !!params && params->hintsNotAllowed || false;
+            gs->gi.gameID = 0;
+            gs->gi.dictLang = dict_getLangCode(dict);
+            replaceStringIfDifferent( globals->mpool, &gs->gi.dictName,
+                                      dict_getShortName(dict) );
+            gs->gi.nPlayers = 2;
+            gs->gi.boardSize = 15;
+            gs->gi.players[0].name = copyString( globals->mpool, playerName );
+            gs->gi.players[0].isLocal = XP_TRUE;
+            gs->gi.players[0].robotIQ = 0;
 
-        gs->gi.players[1].name = copyString( globals->mpool, "Robot" );
-        gs->gi.players[1].isLocal = !!params ? params->isRobotNotRemote : true;
-        XP_LOGFF( "set isLocal[1]: %d", gs->gi.players[1].isLocal );
-        gs->gi.players[1].robotIQ = 99; /* doesn't matter if remote */
+            gs->gi.players[1].name = copyString( globals->mpool, "Robot" );
+            gs->gi.players[1].isLocal = !!params ? params->isRobotNotRemote : true;
+            XP_LOGFF( "set isLocal[1]: %d", gs->gi.players[1].isLocal );
+            gs->gi.players[1].robotIQ = 99; /* doesn't matter if remote */
 
-        gs->util = wasm_util_make( MPPARM(globals->mpool) &gs->gi,
-                                           globals->dutil, gs );
+            gs->util = wasm_util_make( MPPARM(globals->mpool) &gs->gi,
+                                       globals->dutil, gs );
 
-        XP_LOGFF( "calling game_makeNewGame()" );
-        game_makeNewGame( MPPARM(globals->mpool) NULL,
-                          &gs->game, &gs->gi,
-                          gs->util, globals->draw,
-                          &globals->cp, &globals->procs );
+            XP_LOGFF( "calling game_makeNewGame()" );
+            game_makeNewGame( MPPARM(globals->mpool) NULL,
+                              &gs->game, &gs->gi,
+                              gs->util, globals->draw,
+                              &globals->cp, &globals->procs );
 
-        ensureName( gs );
-        if ( !!gs->game.comms ) {
-            CommsAddrRec addr = {0};
-            makeSelfAddr( globals, &addr );
-            comms_augmentHostAddr( gs->game.comms, NULL, &addr );
+            ensureName( gs );
+            if ( !!gs->game.comms ) {
+                CommsAddrRec addr = {0};
+                makeSelfAddr( globals, &addr );
+                comms_augmentHostAddr( gs->game.comms, NULL, &addr );
+            }
+            dict_unref( dict, NULL );
         }
     }
-    startGame( gs, NULL );
+    if ( !!gs ) {
+        startGame( gs, NULL );
+    }
     LOG_RETURN_VOID();
 }
 
@@ -1640,9 +1650,13 @@ gotDictBinary( void* closure, const char* xwd, const char* lang,
                const char* lc, int len, uint8_t* data )
 {
     XP_LOGFF( "xwd: %s; lang: %s, lc: %s, len: %d", xwd, lang, lc, len );
-    for ( int ii = 0; ii < 10; ++ii ) {
-        XP_LOGFF( "byte[%d]: 0x%X", ii, data[ii] );
-    }
+
+    CAST_GLOB(Globals*, globals, closure);
+    char key[64];
+    formatDictIndx( key, sizeof(key), lc, xwd );
+    dutil_storeIndxPtr( globals->dutil, NULL, KEY_DICTS, key, data, len );
+
+    updateDeviceButtons( globals );
 }
 
 int
