@@ -476,7 +476,7 @@ showName( GameState* gs )
 {
     const char* title = gs->gameName;
     char buf[64];
-    if ( 1 < countDicts( gs->globals ) ) {
+    if ( true || 1 < countDicts( gs->globals ) ) {
         sprintf( buf, "%s (%s)", gs->gameName, lcToLocale(gs->gi.dictLang) );
         title = buf;
     }

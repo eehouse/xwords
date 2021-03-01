@@ -52,8 +52,10 @@ DEFINES += -DGITREV=\"$(shell git describe --tags --dirty)\"
 
 ifeq ($(MEMDEBUG),TRUE)
 	DEFINES += -DMEM_DEBUG -DDEBUG -O0
+	WEBDIR = dbg
 else
 	DEFINES += -O3
+	WEBDIR = rel
 endif
 
 OUTPUTS = main.html main.js main.js.mem main.data main.html.mem main.wasm
@@ -83,7 +85,7 @@ main.html: ${INPUTS} Makefile shell_minimal.html
 install: main.html
 	if [ -n "${XW_WASM_DEST}" ]; then \
 		for FILE in ${OUTPUTS} paho-mqtt.js xwutils.js; do \
-			[ -f $$FILE ] && scp $$FILE ${XW_WASM_DEST}; \
+			[ -f $$FILE ] && scp $$FILE ${XW_WASM_DEST}/${WEBDIR}/; \
 			echo "$$FILE copied"; \
 		done; \
 	fi
