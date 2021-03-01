@@ -49,7 +49,7 @@ function getDict(closure) {
 	// set these later
 	let gots = {};
 
-	let langs = 'fr'; // navigator.language;
+	let langs = 'en'; // navigator.language;
 	if (langs) {
 		langs = [langs.split('-')[0]];
 	}
@@ -68,23 +68,23 @@ function getDict(closure) {
 		console.log(response);
 		if (response.ok) {
 			return response.json();
-		} else {
-			console.log('bad respose; status: ' + respose.status);
-			console.log('text: ' + response.statusText);
-			console.log(response.type);
 		}
 	}).then(data => {
-		// let langs = data.langs;
 		// console.log('data: ' + JSON.stringify(data));
 		for ( lang of data.langs ) {
-			console.log('lang: ' + JSON.stringify(lang));
-			// wget --no-check-certificate 'http://pi4.lan/android/French/ODS7_2to15.xwd'
-			let dict = lang.dicts[0];
-			gots.xwd = dict.xwd;
-			gots.langName = lang.lang;
-			gots.lc = lang.lc;
-			let path = '/' + ['android', gots.langName, gots.xwd].join('/');
-			return fetch(path);
+			let dict = null;
+			for ( one of lang.dicts ) {
+				if ( !dict || one.nBytes < dict.nBytes ) {
+					dict = one;
+				}
+			}
+			if ( dict ) {
+				gots.xwd = dict.xwd;
+				gots.langName = lang.lang;
+				gots.lc = lang.lc;
+				let path = '/' + ['android', gots.langName, gots.xwd].join('/');
+				return fetch(path);
+			}
 		}
 	}).then(response => {
 		// console.log('got here!!!' + response);
