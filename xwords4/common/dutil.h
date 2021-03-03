@@ -36,6 +36,9 @@ typedef enum { UNPAUSED,
 
 typedef XP_Bool (*OnOneProc)(void* closure, const XP_UCHAR* indx);
 
+typedef void (*OnStoreProc)( void* closure, bool success );
+typedef void (*OnLoadProc)( void* closure, const char* key, void* data, int len );
+
 typedef struct _DUtilVtable {
     XP_U32 (*m_dutil_getCurSeconds)( XW_DUtilCtxt* duc, XWEnv xwe );
     const XP_UCHAR* (*m_dutil_getUserString)( XW_DUtilCtxt* duc, XWEnv xwe,
@@ -55,6 +58,11 @@ typedef struct _DUtilVtable {
     void (*m_dutil_loadPtr)( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
                              const XP_UCHAR* fallbackKey,   // PENDING() remove this after a few months.
                              void* data, XP_U32* lenp );
+
+    void (*m_dutil_startStore)( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
+                                const void* data, XP_U32 len, OnStoreProc proc, void* closure );
+    void (*m_dutil_startLoad)( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
+                               OnLoadProc proc, void* closure );
 
 #ifdef XWFEATURE_INDEXSTORE
     void (*m_dutil_storeIndxStream)( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
@@ -152,6 +160,11 @@ void dutil_super_init( MPFORMAL XW_DUtilCtxt* dutil );
 
 #define dutil_removeAllIndx(duc, indx)                  \
     (duc)->vtable.m_dutil_removeAllIndx((duc), (indx));
+
+#define dutil_startStore( duc, xwe, key, data, len, proc, closure ) \
+    (duc)->vtable.m_dutil_startStore((duc), (xwe), (key), (data), (len), (proc), (closure) )
+#define dutil_startLoad( duc, xwe, key, proc, closure ) \
+    (duc)->vtable.m_dutil_startLoad((duc), (xwe), (key), (proc), (closure) )
 
 #ifdef XWFEATURE_SMS
 # define dutil_phoneNumbersSame(duc,e,p1,p2)                    \

@@ -64,6 +64,8 @@ typedef struct Globals {
     CommonPrefs cp;
     DictMgrCtxt* dictMgr;
 
+    char playerName[32];
+
 #ifdef MEM_DEBUG
     MemPoolCtx* mpool;
 #endif

@@ -612,24 +612,13 @@ onDeleteConfirmed( void* closure, bool confirmed )
 }
 
 static void
-getPlayerName( Globals* globals, char* playerName, size_t buflen )
-{
-    XP_U32 len = buflen;
-    dutil_loadPtr( globals->dutil, NULL, KEY_PLAYER_NAME, NULL,
-                   playerName, &len );
-    XP_LOGFF( "after: len: %d", len );
-    if ( 0 == len ) {        /* not found? */
-        strcpy( playerName, "Player 1" );
-    }
-}
-
-static void
 onPlayerNamed( void* closure, const char* name )
 {
     CAST_GLOB(Globals*, globals, closure);
     if ( !!name ) {
-        dutil_storePtr( globals->dutil, NULL, KEY_PLAYER_NAME,
-                        name, 1 + strlen(name) );
+        strncpy( globals->playerName, name, VSIZE(globals->playerName) );
+        dutil_startStore( globals->dutil, NULL, KEY_PLAYER_NAME,
+                          name, 1 + strlen(name), NULL, NULL );
     }
 }
 
@@ -655,9 +644,7 @@ onDeviceButton( void* closure, const char* button )
                   curGS->gameName );
         call_confirm( globals, msg, onDeleteConfirmed, curGS );
     } else if ( 0 == strcmp(button, BUTTON_NAME ) ) {
-        char playerName[32];
-        getPlayerName( globals, playerName, sizeof(playerName)-1 );
-        call_get_string( "Set your (local) player name", playerName,
+        call_get_string( "Set your (local) player name", globals->playerName,
                          onPlayerNamed, globals );
     }
 }
@@ -783,8 +770,9 @@ initDeviceGlobals( Globals* globals )
 static void
 storeCurOpen( GameState* gs )
 {
-    dutil_storePtr( gs->globals->dutil, NULL, KEY_LAST_GID,
-                    &gs->gi.gameID, sizeof(gs->gi.gameID) );
+    dutil_startStore( gs->globals->dutil, NULL, KEY_LAST_GID,
+                      &gs->gi.gameID, sizeof(gs->gi.gameID),
+                      NULL, NULL );
 }
 
 static void
@@ -830,11 +818,8 @@ newFromInvite( Globals* globals, const NetLaunchInfo* invite )
     gs->util = wasm_util_make( MPPARM(globals->mpool) &gs->gi,
                                globals->dutil, gs );
 
-    char playerName[32];
-    getPlayerName( globals, playerName, sizeof(playerName) );
-
     game_makeFromInvite( MPPARM(globals->mpool) NULL, invite,
-                         &gs->game, &gs->gi, playerName,
+                         &gs->game, &gs->gi, globals->playerName,
                          gs->util, globals->draw,
                          &globals->cp, &globals->procs );
     if ( invite->gameName[0] ) {
@@ -1052,9 +1037,6 @@ loadAndDraw( Globals* globals, const NetLaunchInfo* invite,
     if ( !gs ) {
         DictionaryCtxt* dict = loadAnyDict( globals );
         if ( !!dict ) {
-            char playerName[32];
-            getPlayerName( globals, playerName, sizeof(playerName) );
-
             gs = newGameState( globals );
             gs->gi.serverRole = !!params && !params->isRobotNotRemote
                 ? SERVER_ISSERVER : SERVER_STANDALONE;
@@ -1067,7 +1049,7 @@ loadAndDraw( Globals* globals, const NetLaunchInfo* invite,
                                       dict_getShortName(dict) );
             gs->gi.nPlayers = 2;
             gs->gi.boardSize = 15;
-            gs->gi.players[0].name = copyString( globals->mpool, playerName );
+            gs->gi.players[0].name = copyString( globals->mpool, globals->playerName );
             gs->gi.players[0].isLocal = XP_TRUE;
             gs->gi.players[0].robotIQ = 0;
 
@@ -1562,6 +1544,44 @@ inviteFromArgv( Globals* globals, NetLaunchInfo* nlip,
     return success;
 }
 
+typedef struct _GameStartState {
+    Globals* globals;
+    NetLaunchInfo nli;
+    NetLaunchInfo* nlip;
+    char lastKey[16];
+    int nWanted;
+} GameStartState;
+
+/* Will get called twice, once with KEY_PLAYER_NAME and once with KEY_LAST_GID */
+static void
+onReqsLoaded(void* closure, const char* key, void* data, int dataLen)
+{
+    GameStartState* gss = (GameStartState*)closure;
+    Globals* globals = gss->globals;
+    XP_LOGFF( "(key: %s, len: %d)", key, dataLen );
+
+    if ( 0 == strcmp( key, KEY_LAST_GID ) ) {
+        int gameID = 0;
+        if ( !!data && dataLen == sizeof(gameID) ) {
+            gameID = *(int*)data;
+            formatGameID( gss->lastKey, sizeof(gss->lastKey), gameID );
+        }
+        XP_LOGFF( "loaded KEY_LAST_GID: %s", gss->lastKey );
+    } else if ( 0 == strcmp( key, KEY_PLAYER_NAME ) ) {
+        if ( !!data && 0 < dataLen && dataLen < VSIZE(globals->playerName) ) {
+            XP_MEMCPY( globals->playerName, data, dataLen );
+        } else {
+            strcat( globals->playerName, "Player 1" );
+        }
+    }
+
+    if ( 0 == --gss->nWanted ) {
+        loadAndDraw( globals, gss->nlip, gss->lastKey, NULL );
+        updateDeviceButtons( globals );
+        XP_FREE(  globals->mpool, gss );
+    }
+}
+
 static void
 initNoReturn( int argc, const char** argv )
 {
@@ -1574,10 +1594,12 @@ initNoReturn( int argc, const char** argv )
     globals._GUARD = GUARD_GLOB;
 #endif
 
-    NetLaunchInfo nli = {0};
-    NetLaunchInfo* nlip = NULL;
-    if ( inviteFromArgv( &globals, &nli, argc, argv ) ) {
-        nlip = &nli;
+    /* I don't think this ever gets popped off stack, but to be safe.... */
+    GameStartState* gss = XP_CALLOC( globals.mpool, sizeof(*gss) );
+    gss->globals = &globals;
+
+    if ( inviteFromArgv( &globals, &gss->nli, argc, argv ) ) {
+        gss->nlip = &gss->nli;
     }
 
     SDL_Init( SDL_INIT_EVENTS );
@@ -1586,24 +1608,16 @@ initNoReturn( int argc, const char** argv )
     SDL_CreateWindowAndRenderer( WINDOW_WIDTH, WINDOW_HEIGHT, 0,
                                  &globals.window, &globals.renderer );
 
-    /* whip the canvas to background */
+    /* wipe the canvas to background */
     SDL_SetRenderDrawColor( globals.renderer, 155, 155, 155, 255 );
     SDL_RenderClear( globals.renderer );
 
     initDeviceGlobals( &globals );
 
-    char lastKey[16] = {0};
-    int gameID = 0;
-    XP_U32 len = sizeof(gameID);
-    dutil_loadPtr( globals.dutil, NULL, KEY_LAST_GID, NULL,
-                   (XP_U8*)&gameID, &len );
-    if ( len == sizeof(gameID) ) {
-        formatGameID( lastKey, sizeof(lastKey), gameID );
-    }
-    XP_LOGFF( "loaded KEY_LAST_GID: %s", lastKey );
-    loadAndDraw( &globals, nlip, lastKey, NULL );
-
-    updateDeviceButtons( &globals );
+    /* Load the two bits we need from storage before starting */
+    dutil_startLoad( globals.dutil, NULL, KEY_PLAYER_NAME, onReqsLoaded, gss );
+    dutil_startLoad( globals.dutil, NULL, KEY_LAST_GID, onReqsLoaded, gss );
+    gss->nWanted = 2;
 
     emscripten_set_main_loop_arg( looper, &globals, -1, 1 );
 }

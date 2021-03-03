@@ -30,6 +30,8 @@
 #include "wasmasm.h"
 #include "wasmdict.h"
 
+#define DB_NAME "kvstore0.1"
+
 typedef struct _WasmDUtilCtxt {
     XW_DUtilCtxt super;
 } WasmDUtilCtxt;
@@ -283,6 +285,93 @@ wasm_dutil_storePtr( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
     XP_FREE( duc->mpool, out );
 }
 
+typedef struct _StoreState {
+    XW_DUtilCtxt* duc;
+    OnStoreProc proc;
+    void* closure;
+} StoreState;
+
+static void
+callStoredAndFree( void* closure, bool success )
+{
+    if ( !!closure ) {
+        StoreState* ss = (StoreState*)closure;
+        (*ss->proc)(ss->closure, success);
+        XP_FREE( ss->duc->mpool, ss );
+    }
+}
+
+static void
+onStoreSuccess( void* closure )
+{
+    callStoredAndFree( closure, true );
+}
+
+static void
+onStoreError( void* closure )
+{
+    callStoredAndFree( closure, false );
+}
+
+static void
+wasm_dutil_startStore( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
+                       const void* data, XP_U32 len, OnStoreProc proc, void* closure )
+{
+    XP_LOGFF("(key: %s)", key);
+    StoreState* ss = NULL;
+    if ( !!proc ) {
+        ss = XP_MALLOC( duc->mpool, sizeof(*ss) );
+        ss->duc = duc;
+        ss->proc = proc;
+        ss->closure = closure;
+    }
+
+    emscripten_idb_async_store( DB_NAME, key, (void*)data, len,
+                                ss, onStoreSuccess, onStoreError );
+}
+
+typedef struct _LoadState {
+    XW_DUtilCtxt* duc;
+    OnLoadProc proc;
+    void* closure;
+    char* key;
+} LoadState;
+
+static void
+callLoadedAndFree(void* closure, void* data, int len )
+{
+    LoadState* ls = (LoadState*)closure;
+    (*ls->proc)(ls->closure, ls->key, data, len );
+    XP_FREE( ls->duc->mpool, (void*)ls->key );
+    XP_FREE( ls->duc->mpool, ls );
+}
+
+static void
+onLoadSuccess( void* closure, void* data, int len )
+{
+    callLoadedAndFree( closure, data, len );
+}
+
+static void
+onLoadError( void *closure )
+{
+    callLoadedAndFree( closure, NULL, 0 );
+}
+
+static void
+wasm_dutil_startLoad( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
+                      OnLoadProc proc, void* closure )
+{
+    LoadState* ls = XP_MALLOC( duc->mpool, sizeof(*ls) );
+    ls->duc = duc;
+    ls->proc = proc;
+    ls->closure = closure;
+    ls->key = NULL;
+    replaceStringIfDifferent( duc->mpool, &ls->key, key );
+
+    emscripten_idb_async_load(DB_NAME, key, ls, onLoadSuccess, onLoadError);
+}
+
 static void
 wasm_dutil_storeIndxStream( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
                             const XP_UCHAR* indx, XWStreamCtxt* data )
@@ -533,6 +622,8 @@ wasm_dutil_make( MPFORMAL VTableMgr* vtMgr, void* closure )
     SET_PROC(getUserQuantityString);
     SET_PROC(storePtr);
     SET_PROC(loadPtr);
+    SET_PROC(startStore);
+    SET_PROC(startLoad);
 
 #ifdef XWFEATURE_SMS
     SET_PROC(phoneNumbersSame);
