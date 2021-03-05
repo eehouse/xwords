@@ -18,6 +18,12 @@
  */
 
 #include <time.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <dirent.h>
+#include <errno.h>
 
 #include <emscripten.h>
 
@@ -30,88 +36,20 @@
 #include "wasmasm.h"
 #include "wasmdict.h"
 
-#define DB_NAME "kvstore0.1"
-
 typedef struct _WasmDUtilCtxt {
     XW_DUtilCtxt super;
 } WasmDUtilCtxt;
 
-EM_JS(void, _get_stored_value, (const char* key,
-                                StringProc proc, void* closure), {
-          var result = null;
-          var jsKey = UTF8ToString(key);
-          // console.log('_get_stored_value(key:' + jsKey + ')');
-          var val = localStorage.getItem(jsKey);
-          ccallString(proc, closure, val);
-      });
-
-EM_JS(void, set_stored_value, (const char* key, const char* val), {
-        var jsKey = UTF8ToString(key);
-        var jsVal = UTF8ToString(val);
-        // console.log('set_stored_value(key:' + jsKey + ', val:' + jsVal + ')');
-        var jsString = localStorage.setItem(jsKey, jsVal);
+EM_JS( void, fsSyncOut, (), {
+        FS.syncfs(false, function (err) {
+                // assert(!err);
+                if ( err ) {
+                    console.log('sync err: ' + err);
+                } else {
+                    console.log('sync succeeded');
+                }
+            });
     });
-
-EM_JS(void, remove_stored_value, (const char* key), {
-        var jsKey = UTF8ToString(key);
-        var jsString = localStorage.removeItem(jsKey);
-    });
-
-EM_JS(bool, have_stored_value, (const char* key), {
-        let jsKey = UTF8ToString(key);
-        let jsVal = localStorage.getItem(jsKey);
-        let result = null !== jsVal;
-        return result;
-    });
-
-EM_JS(void, call_for_each_key, (StringProc proc, void* closure), {
-        for (let ii = 0; ii < localStorage.length; ++ii ) {
-            let key = localStorage.key(ii);
-            Module.ccall('cbckString', null, ['number', 'number', 'string'],
-                         [proc, closure, key]);
-        }
-    });
-
-#define SEP_STR "\n"
-#define PREFIX "v.2" SEP_STR
-#define MAKE_PREFIX(BUF, KEY) \
-    char BUF[128];            \
-    sprintf( BUF, "%s%s", PREFIX, KEY )
-
-#define MAKE_INDEX(BUF, KEY, IDX)                   \
-    char BUF[128];                                  \
-    size_t _len = snprintf( BUF, sizeof(BUF), "%s" SEP_STR "%s", KEY, IDX);    \
-    XP_ASSERT( _len < sizeof(BUF) )
-
-typedef struct _ValState {
-    void* ptr;
-    size_t* lenp;
-    bool success;
-} ValState;
-
-static void
-onGotVal( void* closure, const char* val )
-{
-    ValState* vs = (ValState*)closure;
-    if ( !!val ) {
-        size_t slen = 1 + strlen(val);
-        if ( !!vs->ptr && slen <= *vs->lenp ) {
-            memcpy( vs->ptr, val, slen );
-            vs->success = true;
-        }
-        *vs->lenp = slen;
-    } else {
-        *vs->lenp = 0;
-    }
-}
-
-static bool
-get_stored_value( const char* key, void* out, size_t* lenp )
-{
-    ValState state = { .ptr = out, .lenp = lenp, .success = false, };
-    _get_stored_value( key, onGotVal, &state );
-    return state.success;
-}
 
 static XP_U32
 wasm_dutil_getCurSeconds( XW_DUtilCtxt* XP_UNUSED(duc), XWEnv XP_UNUSED(xwe) )
@@ -245,269 +183,209 @@ base16Decode( uint8_t* decodeBuf, int len, const char* str )
 }
 
 static void
-wasm_dutil_loadPtr( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
-                    const XP_UCHAR* keySuffix, void* data, XP_U32* lenp )
+ensurePath(const char* keys[], char buf[], bool mkDirs)
 {
-    // XP_LOGFF( "(key: %s, len: %d)", key, *lenp );
-    MAKE_PREFIX(fullKey, key);
+    buf[0] = '\0';
+    int offset = 0;
+    offset += sprintf( buf+offset, "%s", "/persisted" );
 
-    size_t len;
-    get_stored_value(fullKey, NULL, &len);
-
-    char* val = XP_MALLOC( duc->mpool, len );
-    if ( get_stored_value( fullKey, val, &len ) ) {
-        // XP_LOGFF( "get_stored_value(%s) => %s", fullKey, val );
-        len = XP_STRLEN(val);
-        XP_ASSERT( (len % 2) == 0 );
-        len /= 2;
-        if ( !!data && len <= *lenp ) {
-            uint8_t* decodeBuf = XP_MALLOC( duc->mpool, len );
-            base16Decode( decodeBuf, len, val );
-            XP_MEMCPY( data, decodeBuf, len );
-            XP_FREE( duc->mpool, decodeBuf );
+    /* Iterate path elements. Last is a file. So if we're not at the end, make
+       a directory */
+    for ( int ii = 0; ; ++ii ) {
+        const char* elem = keys[ii];
+        // XP_LOGFF( "elem[%d]: %s", ii, elem );
+        if ( !elem ) {
+            break;
         }
-        *lenp = len;
-    } else {
-        *lenp = 0;              /* signal failure */
-    }
-    XP_FREE( duc->mpool, val );
-    // XP_LOGFF("(%s)=> len: %d", fullKey, *lenp );
-}
 
-static void
-wasm_dutil_storePtr( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
-                      const void* data, XP_U32 len )
-{
-    XP_UCHAR* out = XP_MALLOC( duc->mpool, len*2+1 );
-    base16Encode( data, len, out, sizeof(out) );
-    MAKE_PREFIX(fullKey, key);
-    set_stored_value( fullKey, out );
-    XP_FREE( duc->mpool, out );
-}
-
-typedef struct _StoreState {
-    XW_DUtilCtxt* duc;
-    OnStoreProc proc;
-    void* closure;
-} StoreState;
-
-static void
-callStoredAndFree( void* closure, bool success )
-{
-    if ( !!closure ) {
-        StoreState* ss = (StoreState*)closure;
-        (*ss->proc)(ss->closure, success);
-        XP_FREE( ss->duc->mpool, ss );
-    }
-}
-
-static void
-onStoreSuccess( void* closure )
-{
-    callStoredAndFree( closure, true );
-}
-
-static void
-onStoreError( void* closure )
-{
-    callStoredAndFree( closure, false );
-}
-
-static void
-wasm_dutil_startStore( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
-                       const void* data, XP_U32 len, OnStoreProc proc, void* closure )
-{
-    XP_LOGFF("(key: %s)", key);
-    StoreState* ss = NULL;
-    if ( !!proc ) {
-        ss = XP_MALLOC( duc->mpool, sizeof(*ss) );
-        ss->duc = duc;
-        ss->proc = proc;
-        ss->closure = closure;
-    }
-
-    emscripten_idb_async_store( DB_NAME, key, (void*)data, len,
-                                ss, onStoreSuccess, onStoreError );
-}
-
-typedef struct _LoadState {
-    XW_DUtilCtxt* duc;
-    OnLoadProc proc;
-    void* closure;
-    char* key;
-} LoadState;
-
-static void
-callLoadedAndFree(void* closure, void* data, int len )
-{
-    LoadState* ls = (LoadState*)closure;
-    (*ls->proc)(ls->closure, ls->key, data, len );
-    XP_FREE( ls->duc->mpool, (void*)ls->key );
-    XP_FREE( ls->duc->mpool, ls );
-}
-
-static void
-onLoadSuccess( void* closure, void* data, int len )
-{
-    callLoadedAndFree( closure, data, len );
-}
-
-static void
-onLoadError( void *closure )
-{
-    callLoadedAndFree( closure, NULL, 0 );
-}
-
-static void
-wasm_dutil_startLoad( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
-                      OnLoadProc proc, void* closure )
-{
-    LoadState* ls = XP_MALLOC( duc->mpool, sizeof(*ls) );
-    ls->duc = duc;
-    ls->proc = proc;
-    ls->closure = closure;
-    ls->key = NULL;
-    replaceStringIfDifferent( duc->mpool, &ls->key, key );
-
-    emscripten_idb_async_load(DB_NAME, key, ls, onLoadSuccess, onLoadError);
-}
-
-static void
-wasm_dutil_storeIndxStream( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
-                            const XP_UCHAR* indx, XWStreamCtxt* data )
-{
-    MAKE_INDEX(ikey, key, indx);
-    dutil_storeStream( duc, xwe, ikey, data );
-}
-
-static void
-wasm_dutil_loadIndxStream(XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
-                          const XP_UCHAR* fallbackKey,
-                          const char* indx, XWStreamCtxt* inOut)
-{
-    MAKE_INDEX(ikey, key, indx);
-    dutil_loadStream( duc, xwe, ikey, fallbackKey, inOut );
-}
-
-static void
-wasm_dutil_storeIndxPtr(XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
-                        const XP_UCHAR* indx, const void* data, XP_U32 len )
-{
-    // LOG_FUNC();
-    MAKE_INDEX(ikey, key, indx);
-    wasm_dutil_storePtr(duc, xwe, ikey, data, len );
-}
-
-static void
-wasm_dutil_loadIndxPtr( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
-                        const XP_UCHAR* indx, void* data, XP_U32* lenp )
-{
-    // LOG_FUNC();
-    MAKE_INDEX(ikey, key, indx);
-
-    wasm_dutil_loadPtr( duc, xwe, ikey, NULL, data, lenp );
-}
-
-static bool
-splitFullKey( char key[], char indx[], const char* fullKey )
-{
-    bool matches = false;
-    if ( 0 == strncmp( fullKey, PREFIX, strlen(PREFIX) ) ) {
-        fullKey += strlen(PREFIX);
-        char* breakLoc = strstr( fullKey, SEP_STR );
-        if ( !!breakLoc ) {
-            indx[0] = key[0] = '\0';
-            XP_ASSERT( '\n' == *breakLoc );
-            strncat( key, fullKey, breakLoc - fullKey );
-            strcat( indx, 1 + breakLoc );
-            matches = true;
-        }
-    }
-    return matches;
-}
-
-typedef struct _ForEachStateKey {
-    XW_DUtilCtxt* duc;
-    XWEnv xwe;
-    OnOneProc onOneProc;
-    void* onOneClosure;
-    const char* key;
-    bool doMore;
-} ForEachStateKey;
-
-/* I'm called with a full key, PREFIX + KEY + INDEX. I'm interested in it IFF
-   the KEY part matches, and in that case pass INDEX plus value to the
-   callback. */
-static void
-withOneKey( void* closure, const char* fullKey )
-{
-    ForEachStateKey* fes = (ForEachStateKey*)closure;
-    if ( fes->doMore ) {
-        char key[128];
-        char indx[128];
-        if ( splitFullKey( key, indx, fullKey ) ) {
-            if ( 0 == strcmp(key, fes->key) ) {
-                fes->doMore = (*fes->onOneProc)(fes->onOneClosure, indx);
+        if ( mkDirs ) {
+            struct stat statbuf;
+            if ( 0 == stat(buf, &statbuf) ) {
+                // XP_LOGFF( "%s already exists", buf );
+            } else {
+                /* XP_LOGFF( "calling mkdir(%s) before appending %s", buf, elem ); */
+                int err = mkdir(buf, 0777);
+                /* XP_LOGFF( "mkdir(%s) => %d", buf, err); */
+                if ( err != 0 ) {
+                    XP_LOGFF( "error from mkdir: %s", strerror(errno) );
+                }
             }
         }
+        offset += sprintf( buf+offset, "/%s", elem );
+        // XP_LOGFF( "path now %s", buf );
     }
 }
 
 static void
-wasm_dutil_forEachIndx( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
-                        OnOneProc proc, void* closure )
+wasm_dutil_storeStream( XW_DUtilCtxt* duc, XWEnv xwe, const char* keys[],
+                        XWStreamCtxt* stream )
 {
-    ForEachStateKey fes = { .duc = duc,
-                            .xwe = xwe,
-                            .onOneProc = proc,
-                            .onOneClosure = closure,
-                            .key = key,
-                            .doMore = true,
-    };
-    call_for_each_key( withOneKey, &fes );
+    /* char path[128]; */
+    /* ensurePath(keys, path, true); */
+    /* XP_LOGFF( "(path: %s)", path ); */
+
+    const XP_U8* data = stream_getPtr(stream);
+    XP_U32 len = stream_getSize(stream);
+    dutil_storePtr( duc, xwe, keys, (void*)data, len );
+    /* writeToPath( buf, data, len ); */
+    LOG_RETURN_VOID();
 }
 
-typedef struct _ForEachStateIndx {
-    XW_DUtilCtxt* duc;
-    const XP_UCHAR* indx;
-    char** keys;
-    int nKeys;
-} ForEachStateIndx;
+static void
+wasm_dutil_loadStream( XW_DUtilCtxt* duc, XWEnv xwe, const char* keys[],
+                       XWStreamCtxt* inOut )
+{
+    XP_U32 len;
+    dutil_loadPtr( duc, xwe, keys, NULL, &len );
+    if ( 0 < len  ) {
+        uint8_t* ptr = XP_MALLOC( duc->mpool, len );
+        dutil_loadPtr( duc, xwe, keys, ptr, &len );
+        stream_putBytes( inOut, ptr, len );
+        XP_FREE( duc->mpool, ptr );
+    }
+    LOG_RETURN_VOID();
+}
 
 static void
-deleteWithIndx( void* closure, const char* fullKey )
+wasm_dutil_storePtr( XW_DUtilCtxt* duc, XWEnv xwe,
+                     const char* keys[],
+                     void* data, XP_U32 len )
 {
-    char key[128];
-    char indx[128];
-    if ( splitFullKey( key, indx, fullKey ) ) {
-        ForEachStateIndx* fesi = (ForEachStateIndx*)closure;
-        if ( 0 == strcmp( indx, fesi->indx ) ) {
-            int cur = fesi->nKeys++;
-            // XP_LOGFF( "adding key[%d]: %s", cur, fullKey );
-            fesi->keys = XP_REALLOC( fesi->duc->mpool, fesi->keys,
-                                     (fesi->nKeys) * sizeof(fesi->keys[0]) );
-            fesi->keys[cur] = XP_MALLOC(fesi->duc->mpool, 1 + strlen(fullKey));
-            strcpy( fesi->keys[cur], fullKey );
+    char path[128];
+    ensurePath(keys, path, true);
+
+    // XP_LOGFF( "opening %s", path );
+    int fd = open(path, O_RDWR | O_CREAT, 0666);
+    if ( -1 == fd ) {
+        XP_LOGFF( "error from open(%s): %s", path, strerror(errno));
+    }
+    XP_ASSERT( fd != -1 );      /* firing */
+    ssize_t nWritten = write(fd, data, len);
+    // XP_LOGFF( "wrote %d bytes to path %s", nWritten, path );
+    XP_ASSERT( nWritten == len );
+
+    fsSyncOut();
+    LOG_RETURN_VOID();
+}
+
+static void
+wasm_dutil_loadPtr( XW_DUtilCtxt* duc, XWEnv xwe,
+                    const char* keys[],
+                    void* data, XP_U32* lenp )
+{
+    char path[128];
+    ensurePath(keys, path, false);
+    // XP_LOGFF( "(path: %s)", path );
+
+    struct stat statbuf;
+    int err = stat(path, &statbuf);
+    if ( 0 == err ) {
+        if ( NULL != data && statbuf.st_size <= *lenp ) {
+            int fd = open(path, O_RDONLY);
+            ssize_t nRead = read(fd, data, statbuf.st_size);
+            // XP_LOGFF( "read %d bytes from file %s", nRead, path );
+            close( fd );
         }
+        *lenp = statbuf.st_size;
+    } else {
+        XP_LOGFF( "no file at %s", path );
+        *lenp = 0;              /* does not exist */
+    }
+    LOG_RETURN_VOID();
+}
+
+/* Iterate over every child of the provided path. This isn't a recursive
+ * operation since it's only at one level - UNLESS there are wildcards.
+ *
+ * We only call the callback when we've reached the end!
+ */
+static bool
+callWithKeys( XW_DUtilCtxt* duc, char path[], int depth,
+              const char* keysIn[], const char* keysOut[],
+              OnOneProc proc, void* closure )
+{
+    const char* elem = keysIn[depth];
+    // XP_LOGFF( "(path:%s; depth: %d; elem: %s)", path, depth, elem );
+
+    bool goOn = true;
+    struct stat statbuf;
+    int err = stat(path, &statbuf);
+    if ( 0 == err ) {
+        char* curBase = path + strlen(path);
+        if ( NULL == elem ) {
+            goOn = (*proc)(closure, keysOut);
+        } else if ( 0 == strcmp( KEY_WILDCARD, elem ) ) {
+            DIR* dir = opendir(path);
+            if ( !!dir ) {
+                struct dirent* dent; // for the directory entries
+                while (goOn && (dent = readdir(dir)) != NULL) {
+                    if ( '.' != dent->d_name[0] ) {
+                        keysOut[depth] = dent->d_name;
+                        sprintf( curBase, "/%s", dent->d_name );
+                        goOn = callWithKeys( duc, path, depth + 1, keysIn,
+                                             keysOut, proc, closure );
+                    }
+                }
+                closedir(dir);
+            } else {
+                XP_LOGFF( "error from opendir(%s): %s", path, strerror(errno));
+            }
+        } else {
+            keysOut[depth] = elem;
+            sprintf( curBase, "/%s", elem );
+            goOn = callWithKeys( duc, path, depth + 1, keysIn, keysOut, proc, closure );
+        }
+        keysOut[depth] = NULL;
+    }
+    return goOn;
+}
+
+static void
+wasm_dutil_forEach( XW_DUtilCtxt* duc, XWEnv xwe,
+                    const char* keysIn[],
+                    OnOneProc proc, void* closure )
+{
+    char path[256];
+    sprintf( path, "%s", ROOT_PATH );
+    const char* keysOut[10] = {0};
+    callWithKeys( duc, path, 0, keysIn, keysOut, proc, closure );
+}
+
+static void
+deleteAll( char path[] )
+{
+    DIR* dir = opendir(path);
+    if ( !!dir ) {
+        char* base = path + strlen(path);
+        struct dirent* dent; // for the directory entries
+        while ((dent = readdir(dir)) != NULL) {
+            if ( '.' != dent->d_name[0] ) {
+                sprintf( base, "/%s", dent->d_name );
+                deleteAll( path );
+            }
+        }
+        closedir(dir);
+        *base = '\0';
+        rmdir(path);
+        XP_LOGFF( "removed directory %s", path );
+    } else {
+        unlink( path );
+        XP_LOGFF( "removed file %s", path );
     }
 }
 
 static void
-wasm_dutil_removeAllIndx( XW_DUtilCtxt* duc, const XP_UCHAR* indx )
+wasm_dutil_remove( XW_DUtilCtxt* duc, const XP_UCHAR* keys[] )
 {
-    ForEachStateIndx fesi = { .duc = duc,
-                             .indx = indx,
-    };
+    char path[256];
+    ensurePath(keys, path, false);
+    XP_LOGFF( "(path: %s)", path );
 
-    call_for_each_key( deleteWithIndx, &fesi );
-    for ( int ii = 0; ii < fesi.nKeys; ++ii ) {
-        // XP_LOGFF( "removing key %s", fesi.keys[ii] );
-        remove_stored_value( fesi.keys[ii] );
-        XP_FREE( duc->mpool, fesi.keys[ii] );
-    }
-    XP_FREEP( duc->mpool, &fesi.keys );
+    deleteAll(path);
+    fsSyncOut();
 }
 
+#ifdef XWFEATURE_DEVID
 static const XP_UCHAR*
 wasm_dutil_getDevID( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe), DevIDType* typ )
 {
@@ -521,6 +399,7 @@ wasm_dutil_deviceRegistered( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe), DevIDType 
 {
     LOG_FUNC();
 }
+#endif
 
 static XP_UCHAR*
 wasm_dutil_md5sum( XW_DUtilCtxt* duc, XWEnv xwe, const XP_U8* ptr,
@@ -536,22 +415,19 @@ wasm_dutil_getDict( XW_DUtilCtxt* duc, XWEnv xwe,
 {
     XP_LOGFF( "(dictName: %s)", dictName );
 
-    char indx[64];
     const char* lc = lcToLocale( lang );
-    formatDictIndx( indx, sizeof(indx), lc, dictName );
 
     CAST_GLOB( Globals*, globals, duc->closure );
-    const DictionaryCtxt* result = dmgr_get( globals->dictMgr, xwe, indx );
+    const DictionaryCtxt* result = dmgr_get( globals->dictMgr, xwe, dictName );
     if ( !result ) {
         XP_U32 len = 0;
-        dutil_loadIndxPtr( duc, xwe, KEY_DICTS, indx, NULL, &len );
+        const char* keys[] = {KEY_DICTS, lc, dictName, NULL };
+        dutil_loadPtr( duc, xwe, keys, NULL, &len );
         if ( 0 < len ) {
             uint8_t* ptr = XP_MALLOC( duc->mpool, len );
-            dutil_loadIndxPtr( duc, xwe, KEY_DICTS, indx, ptr, &len );
+            dutil_loadPtr( duc, xwe, keys, ptr, &len );
             result = wasm_dictionary_make( globals, xwe, dictName, ptr, len );
-            dmgr_put( globals->dictMgr, xwe, indx, result );
-        } else {
-            XP_LOGFF( "indx %s not found", indx );
+            dmgr_put( globals->dictMgr, xwe, dictName, result );
         }
     }
 
@@ -620,10 +496,11 @@ wasm_dutil_make( MPFORMAL VTableMgr* vtMgr, void* closure )
     SET_PROC(getCurSeconds);
     SET_PROC(getUserString);
     SET_PROC(getUserQuantityString);
+
     SET_PROC(storePtr);
     SET_PROC(loadPtr);
-    SET_PROC(startStore);
-    SET_PROC(startLoad);
+    SET_PROC(forEach);
+    SET_PROC(remove);
 
 #ifdef XWFEATURE_SMS
     SET_PROC(phoneNumbersSame);
@@ -645,19 +522,9 @@ wasm_dutil_make( MPFORMAL VTableMgr* vtMgr, void* closure )
     SET_PROC(onMessageReceived);
     SET_PROC(onGameGoneReceived);
 
-    SET_PROC(storeIndxStream);
-    SET_PROC(loadIndxStream);
-    SET_PROC(storeIndxPtr);
-    SET_PROC(loadIndxPtr);
-    SET_PROC(forEachIndx);
-    SET_PROC(removeAllIndx);
-
 # undef SET_PROC
 
     assertTableFull( &result->super.vtable, sizeof(result->super.vtable), "wasmutil" );
-
-    /* clear_stored(); */
-    /* testBase16(); */
 
     LOG_RETURNF( "%p", &result->super );
     return &result->super;

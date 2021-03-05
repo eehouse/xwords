@@ -123,8 +123,8 @@ smsproto_init( MPFORMAL XWEnv xwe, XW_DUtilCtxt* dutil )
     MPASSIGN( state->mpool, mpool );
 
     XP_U32 siz = sizeof(state->nNextID);
-    dutil_loadPtr( state->dutil, xwe, KEY_NEXTID, SUFFIX_NEXTID,
-                   &state->nNextID, &siz );
+    const XP_UCHAR* keys[] = { KEY_NEXTID, NULL, };
+    dutil_loadPtr( state->dutil, xwe, keys, &state->nNextID, &siz );
     XP_LOGF( "%s(): loaded nextMsgID: %d", __func__, state->nNextID );
 
     restorePartials( state, xwe );
@@ -699,7 +699,8 @@ savePartials( SMSProto* state, XWEnv xwe )
     if ( state->lastStoredSize == 2 && newSize == 2 ) {
         XP_LOGFF( "not storing empty again" );
     } else {
-        dutil_storeStream( state->dutil, xwe, KEY_PARTIALS, stream );
+        const XP_UCHAR* keys[] = { KEY_PARTIALS, NULL, };
+        dutil_storeStream( state->dutil, xwe, keys, stream );
         state->lastStoredSize = newSize;
     }
 
@@ -713,7 +714,8 @@ restorePartials( SMSProto* state, XWEnv xwe )
 {
     XWStreamCtxt* stream = mkStream( state );
 
-    dutil_loadStream( state->dutil, xwe, KEY_PARTIALS, SUFFIX_PARTIALS, stream );
+    const XP_UCHAR* keys[] = { KEY_PARTIALS, NULL, };
+    dutil_loadStream( state->dutil, xwe, keys, stream );
     if ( stream_getSize( stream ) >= 1
          && PARTIALS_FORMAT == stream_getU8( stream ) ) {
         int nFromPhones = stream_getU8( stream );
@@ -874,7 +876,8 @@ static int
 nextMsgID( SMSProto* state, XWEnv xwe )
 {
     int result = ++state->nNextID % 0x000000FF;
-    dutil_storePtr( state->dutil, xwe, KEY_NEXTID, &state->nNextID,
+    const XP_UCHAR* keys[] = { KEY_NEXTID, NULL, };
+    dutil_storePtr( state->dutil, xwe, keys, &state->nNextID,
                     sizeof(state->nNextID) );
     LOG_RETURNF( "%d", result );
     return result;

@@ -44,7 +44,6 @@ DEFINES += -DPLATFORM_WASM
 DEFINES += -DXWFEATURE_CROSSHAIRS
 DEFINES += -DXWFEATURE_STREAMREF
 DEFINES += -DXWFEATURE_TURNCHANGENOTIFY
-DEFINES += -DXWFEATURE_INDEXSTORE
 DEFINES += -DNATIVE_NLI
 DEFINES += -DDEBUG_REF
 DEFINES += -Wno-switch
@@ -76,9 +75,9 @@ all: main.js
 main.html: ${INPUTS} Makefile shell_minimal.html
 	emcc $(DEFINES) -I . -I ../common -I ../relay -s USE_SDL=2 \
 		--preload-file assets_dir --shell-file shell_minimal.html \
-		-s USE_SDL_TTF=2 -s USE_SDL_IMAGE=2 -s SDL2_IMAGE_FORMATS='["png"]' \
+		-s USE_SDL_TTF=2 -s USE_SDL_IMAGE=2 -s SDL2_IMAGE_FORMATS='["png"]' -lidbfs.js \
 		-s "EXTRA_EXPORTED_RUNTIME_METHODS=['ccall']" \
-		-s EXPORTED_FUNCTIONS='["_main", "_cbckBinary", "_cbckVoid", "_cbckString", "_MQTTConnectedChanged", "_onNewGame", "_gotDictBinary"]' \
+		-s EXPORTED_FUNCTIONS='["_main", "_mainPostSync", "_cbckBinary", "_cbckVoid", "_cbckString", "_MQTTConnectedChanged", "_onNewGame", "_gotDictBinary"]' \
 		-s WASM=1 \
 		${INPUTS} -o $@
 

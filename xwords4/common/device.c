@@ -85,6 +85,7 @@ dvc_store( XW_DUtilCtxt* dutil, XWEnv xwe )
 static void
 getMQTTDevID( XW_DUtilCtxt* dutil, XWEnv xwe, XP_Bool forceNew, MQTTDevID* devID )
 {
+    const XP_UCHAR* keys[] = { MQTT_DEVID_KEY, NULL };
 #ifdef BOGUS_ALL_SAME_DEVID
     XP_USE(forceNew);
     MQTTDevID bogusID = 0;
@@ -93,10 +94,10 @@ getMQTTDevID( XW_DUtilCtxt* dutil, XWEnv xwe, XP_Bool forceNew, MQTTDevID* devID
     XP_ASSERT( ok );
 
     MQTTDevID tmp = 0;
-    XP_U16 len = sizeof(tmp);
-    dutil_loadPtr( dutil, xwe, MQTT_DEVID_KEY, SUFFIX_MQTT_DEVID, &tmp, &len );
+    XP_U32 len = sizeof(tmp);
+    dutil_loadPtr( dutil, xwe, keys, &tmp, &len );
     if ( len != sizeof(tmp) || 0 != XP_MEMCMP( &bogusID, &tmp, sizeof(tmp) ) ) {
-        dutil_storePtr( dutil, xwe, MQTT_DEVID_KEY, &bogusID, sizeof(bogusID) );
+        dutil_storePtr( dutil, xwe, keys, &bogusID, sizeof(bogusID) );
     }
     *devID = bogusID;
 
@@ -105,7 +106,7 @@ getMQTTDevID( XW_DUtilCtxt* dutil, XWEnv xwe, XP_Bool forceNew, MQTTDevID* devID
     MQTTDevID tmp = 0;
     XP_U32 len = sizeof(tmp);
     if ( !forceNew ) {
-        dutil_loadPtr( dutil, xwe, MQTT_DEVID_KEY, SUFFIX_MQTT_DEVID, &tmp, &len );
+        dutil_loadPtr( dutil, xwe, keys, &tmp, &len );
     }
 
     /* XP_LOGFF( "len: %d; sizeof(tmp): %zu", len, sizeof(tmp) ); */
@@ -131,7 +132,7 @@ getMQTTDevID( XW_DUtilCtxt* dutil, XWEnv xwe, XP_Bool forceNew, MQTTDevID* devID
         }
         XP_LOGFF( "average bits set: %d", total / NUM_RUNS );
 
-        dutil_storePtr( dutil, xwe, MQTT_DEVID_KEY, &tmp, sizeof(tmp) );
+        dutil_storePtr( dutil, xwe, keys, &tmp, sizeof(tmp) );
 
 # ifdef DEBUG
         XP_UCHAR buf[32];

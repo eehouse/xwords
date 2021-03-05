@@ -62,6 +62,7 @@
 
 #define KEY_LAST_GID "cur_game"
 #define KEY_PLAYER_NAME "player_name"
+#define KEY_GAMES "games"
 #define KEY_GAME "game_data"
 #define KEY_NAME "game_name"
 #define KEY_NEXT_GAME "next_game"
@@ -292,13 +293,13 @@ send_msg( XWEnv xwe, const XP_U8* buf, XP_U16 len,
 static void
 formatGameID( char* buf, size_t len, int gameID )
 {
-    snprintf( buf, len, "gid=%X", gameID );
+    snprintf( buf, len, "%X", gameID );
 }
 
 static void
 unformatGameID( int* gameID, const char* gameIDStr )
 {
-    sscanf( gameIDStr, "gid=%X", gameID );
+    sscanf( gameIDStr, "%X", gameID );
     XP_LOGFF( "unformatGameID(%s) => %X", gameIDStr, *gameID );
 }
 
@@ -522,27 +523,33 @@ onGameChosen( void* closure, const char* key )
 }
 
 static XP_Bool
-onOneIndx( void* closure, const XP_UCHAR* indx )
+onOneGameName( void* closure, const XP_UCHAR* keys[] )
 {
-    XP_LOGFF( "(indx: %s)", indx );
-    NameIterState* nis = (NameIterState*)closure;
-    Globals* globals = nis->globals;
-    int cur = nis->count++;
-    nis->names = XP_REALLOC( globals->mpool, nis->names,
-                             nis->count * sizeof(nis->names[0]) );
+    const char* gameIDStr = keys[1];
+    if ( 0 != strcmp( gameIDStr, "0" ) ) { /* temporary */
+        NameIterState* nis = (NameIterState*)closure;
+        Globals* globals = nis->globals;
 
-    XP_U32 valLen;
-    dutil_loadIndxPtr( globals->dutil, NULL, KEY_NAME, indx, NULL, &valLen );
-    uint8_t val[valLen];
-    dutil_loadIndxPtr( globals->dutil, NULL, KEY_NAME, indx, val, &valLen );
-    nis->names[cur] = XP_MALLOC( globals->mpool, valLen );
-    XP_MEMCPY( nis->names[cur], val, valLen );
+        /* Make sure game exists. This may be unnecessary later */
+        const XP_UCHAR* dataKeys[] = { keys[0], keys[1], KEY_GAME, NULL };
+        XP_U32 dataLen;
+        dutil_loadPtr( globals->dutil, NULL, dataKeys, NULL, &dataLen );
+        if ( 0 < dataLen ) {
+            int cur = nis->count++;
+            nis->names = XP_REALLOC( globals->mpool, nis->names,
+                                     nis->count * sizeof(nis->names[0]) );
 
-    nis->ids = XP_REALLOC( globals->mpool, nis->ids,
-                           nis->count * sizeof(nis->ids[0]) );
-    nis->ids[cur] = XP_MALLOC( globals->mpool, 1 + strlen(indx) );
-    strcpy( nis->ids[cur], indx );
+            XP_U32 valLen;
+            dutil_loadPtr( globals->dutil, NULL, keys, NULL, &valLen );
+            nis->names[cur] = XP_MALLOC( globals->mpool, valLen );
+            dutil_loadPtr( globals->dutil, NULL, keys, nis->names[cur], &valLen );
 
+            nis->ids = XP_REALLOC( globals->mpool, nis->ids,
+                                   nis->count * sizeof(nis->ids[0]) );
+            nis->ids[cur] = XP_MALLOC( globals->mpool, 1 + strlen(gameIDStr) );
+            strcpy( nis->ids[cur], gameIDStr );
+        }
+    }
     return true;                /* keep going */
 }
 
@@ -553,7 +560,8 @@ pickGame( Globals* globals )
     NameIterState* nis = XP_CALLOC( globals->mpool, sizeof(*nis) );
     nis->globals = globals;
 
-    dutil_forEachIndx( dutil, NULL, KEY_NAME, onOneIndx, nis );
+    const XP_UCHAR* keys[] = {KEY_GAMES, KEY_WILDCARD, KEY_NAME, NULL};
+    dutil_forEach( dutil, NULL, keys, onOneGameName, nis );
 
     const char* msg = "Choose game to open:";
     call_pickGame(msg, nis->ids, nis->names, nis->count, onGameChosen, nis);
@@ -594,9 +602,10 @@ deleteGame( GameState* gs )
         prev = &cur->next;
     }
 
-    char indx[16];
-    formatGameID( indx, sizeof(indx), gameID );
-    dutil_removeAllIndx( globals->dutil, indx );
+    char gameIDStr[16];
+    formatGameID( gameIDStr, sizeof(gameIDStr), gameID );
+    const XP_UCHAR* keys[] = {KEY_GAMES, gameIDStr, NULL};
+    dutil_remove( globals->dutil, keys );
 }
 
 static void
@@ -612,13 +621,23 @@ onDeleteConfirmed( void* closure, bool confirmed )
 }
 
 static void
+getPlayerName( Globals* globals, char* playerName, size_t buflen )
+{
+    XP_U32 len = buflen;
+    const XP_UCHAR* keys[] = {KEY_PLAYER_NAME, NULL};
+    dutil_loadPtr( globals->dutil, NULL, keys, playerName, &len );
+    if ( 0 == len ) {        /* not found? */
+        strcpy( playerName, "Player 1" );
+    }
+}
+
+static void
 onPlayerNamed( void* closure, const char* name )
 {
     CAST_GLOB(Globals*, globals, closure);
     if ( !!name ) {
-        strncpy( globals->playerName, name, VSIZE(globals->playerName) );
-        dutil_startStore( globals->dutil, NULL, KEY_PLAYER_NAME,
-                          name, 1 + strlen(name), NULL, NULL );
+        const XP_UCHAR* keys[] = {KEY_PLAYER_NAME, NULL};
+        dutil_storePtr( globals->dutil, NULL, keys, (void*)name, 1 + strlen(name) );
     }
 }
 
@@ -644,15 +663,16 @@ onDeviceButton( void* closure, const char* button )
                   curGS->gameName );
         call_confirm( globals, msg, onDeleteConfirmed, curGS );
     } else if ( 0 == strcmp(button, BUTTON_NAME ) ) {
-        call_get_string( "Set your (local) player name", globals->playerName,
+        char playerName[32];
+        getPlayerName( globals, playerName, sizeof(playerName)-1 );
+        call_get_string( "Set your (local) player name", playerName,
                          onPlayerNamed, globals );
     }
 }
 
 static XP_Bool
-upCounter( void* closure, const XP_UCHAR* indx )
+upCounter( void* closure, const XP_UCHAR* keys[] )
 {
-    XP_LOGFF("(indx: %s)", indx);
     int* intp = (int*)closure;
     ++*intp;
     return true;
@@ -662,23 +682,17 @@ static int
 countGames( Globals* globals )
 {
     int nFound = 0;
-    dutil_forEachIndx( globals->dutil, NULL, KEY_NAME, upCounter, &nFound );
+    const XP_UCHAR* keys[] = {KEY_GAMES, KEY_WILDCARD, KEY_GAME, NULL};
+    dutil_forEach( globals->dutil, NULL, keys, upCounter, &nFound );
     return nFound;
-}
-
-static XP_Bool
-onOneDictCount( void* closure, const XP_UCHAR* indx )
-{
-    int* ip = (int*)closure;
-    ++*ip;
-    return XP_TRUE;
 }
 
 static int
 countDicts( Globals* globals )
 {
     int count = 0;
-    dutil_forEachIndx( globals->dutil, NULL, KEY_DICTS, onOneDictCount, &count );
+    const XP_UCHAR* keys[] = {KEY_DICTS, KEY_WILDCARD, NULL};
+    dutil_forEach( globals->dutil, NULL, keys, upCounter, &count );
     LOG_RETURNF( "%d", count );
     return count;
 }
@@ -770,9 +784,9 @@ initDeviceGlobals( Globals* globals )
 static void
 storeCurOpen( GameState* gs )
 {
-    dutil_startStore( gs->globals->dutil, NULL, KEY_LAST_GID,
-                      &gs->gi.gameID, sizeof(gs->gi.gameID),
-                      NULL, NULL );
+    const XP_UCHAR* keys[] = {KEY_LAST_GID, NULL};
+    dutil_storePtr( gs->globals->dutil, NULL, keys,
+                    &gs->gi.gameID, sizeof(gs->gi.gameID) );
 }
 
 static void
@@ -818,8 +832,11 @@ newFromInvite( Globals* globals, const NetLaunchInfo* invite )
     gs->util = wasm_util_make( MPPARM(globals->mpool) &gs->gi,
                                globals->dutil, gs );
 
+    char playerName[32];
+    getPlayerName( globals, playerName, sizeof(playerName) );
+
     game_makeFromInvite( MPPARM(globals->mpool) NULL, invite,
-                         &gs->game, &gs->gi, globals->playerName,
+                         &gs->game, &gs->gi, playerName,
                          gs->util, globals->draw,
                          &globals->cp, &globals->procs );
     if ( invite->gameName[0] ) {
@@ -895,9 +912,10 @@ getSavedGame( Globals* globals, int gameID )
         bool loaded = false;
         XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(globals->mpool)
                                                     globals->vtMgr );
-        char indx[16];
-        formatGameID( indx, sizeof(indx), gameID );
-        dutil_loadIndxStream( globals->dutil, NULL, KEY_GAME, NULL, indx, stream );
+        char gameIDStr[16];
+        formatGameID( gameIDStr, sizeof(gameIDStr), gameID );
+        const XP_UCHAR* keys[] = {KEY_GAMES, gameIDStr, KEY_GAME, NULL};
+        dutil_loadStream( globals->dutil, NULL, keys, stream );
         if ( 0 < stream_getSize( stream ) ) {
             XP_ASSERT( !gs->util );
             gs->util = wasm_util_make( MPPARM(globals->mpool) &gs->gi,
@@ -917,7 +935,7 @@ getSavedGame( Globals* globals, int gameID )
                 removeGameState( gs );
             }
         } else {
-            XP_LOGFF( "ERROR: no saved data for key %s", indx );
+            XP_LOGFF( "ERROR: no saved data for game %s", gameIDStr );
             XP_ASSERT( globals->games == gs );
             globals->games = gs->next;
             XP_FREE( globals->mpool, gs );
@@ -932,21 +950,22 @@ getSavedGame( Globals* globals, int gameID )
 static void
 saveName( GameState* gs )
 {
-    char indx[32];
-    formatGameID( indx, sizeof(indx), gs->gi.gameID );
-    dutil_storeIndxPtr( gs->globals->dutil, NULL, KEY_NAME, indx,
-                        (XP_U8*)gs->gameName, 1 + strlen(gs->gameName) );
+    char gameIDStr[32];
+    formatGameID( gameIDStr, sizeof(gameIDStr), gs->gi.gameID );
+    const XP_UCHAR* keys[] = {KEY_GAMES, gameIDStr, KEY_NAME, NULL};
+    dutil_storePtr( gs->globals->dutil, NULL, keys,
+                    (XP_U8*)gs->gameName, 1 + strlen(gs->gameName) );
 }
 
 static void
 loadName( GameState* gs )
 {
-    char indx[32];
-    formatGameID( indx, sizeof(indx), gs->gi.gameID );
+    char gameIDStr[32];
+    formatGameID( gameIDStr, sizeof(gameIDStr), gs->gi.gameID );
 
     XP_U32 len = sizeof(gs->gameName);
-    dutil_loadIndxPtr( gs->globals->dutil, NULL, KEY_NAME, indx,
-                       (XP_U8*)gs->gameName, &len );
+    const XP_UCHAR* keys[] = {KEY_GAMES, gameIDStr, KEY_NAME, NULL};
+    dutil_loadPtr( gs->globals->dutil, NULL, keys, (XP_U8*)gs->gameName, &len );
 }
 
 static void
@@ -961,10 +980,11 @@ static int
 getNextGameNo( Globals* globals )
 {
     int val = 0;
+    const XP_UCHAR* keys[] = { KEY_NEXT_GAME, NULL };
     XP_U32 len = sizeof(val);
-    dutil_loadPtr( globals->dutil, NULL, KEY_NEXT_GAME, NULL, (XP_U8*)&val, &len );
+    dutil_loadPtr( globals->dutil, NULL, keys, (XP_U8*)&val, &len );
     ++val;
-    dutil_storePtr( globals->dutil, NULL, KEY_NEXT_GAME, (XP_U8*)&val, sizeof(val) );
+    dutil_storePtr( globals->dutil, NULL, keys, (XP_U8*)&val, sizeof(val) );
     XP_LOGFF( "getNextGameNo() => %d", val );
     return val;
 }
@@ -988,18 +1008,19 @@ typedef struct _FindOneState {
 } FindOneState;
 
 static XP_Bool
-onOneDict( void* closure, const XP_UCHAR* indx )
+onOneDict( void* closure, const XP_UCHAR* keys[] )
 {
-    XP_LOGFF( "indx: %s", indx );
+    const XP_UCHAR* dictName = keys[2];
+    XP_LOGFF( "dictName: %s", dictName );
     FindOneState* fos = (FindOneState*)closure;
+    XP_ASSERT( !fos->dict );
     XW_DUtilCtxt* dutil = fos->globals->dutil;
 
     XP_U32 len;
-    dutil_loadIndxPtr( dutil, NULL, KEY_DICTS, indx, NULL, &len );
+    dutil_loadPtr( dutil, NULL, keys, NULL, &len );
     uint8_t* ptr = XP_MALLOC( fos->globals->mpool, len );
-    dutil_loadIndxPtr( dutil, NULL, KEY_DICTS, indx, ptr, &len );
-    XP_ASSERT( !fos->dict );
-    fos->dict = wasm_dictionary_make( fos->globals, NULL, indx, ptr, len );
+    dutil_loadPtr( dutil, NULL, keys, ptr, &len );
+    fos->dict = wasm_dictionary_make( fos->globals, NULL, dictName, ptr, len );
     return XP_FALSE;
 }
 
@@ -1008,7 +1029,8 @@ loadAnyDict( Globals* globals )
 {
     FindOneState fos = {.globals = globals,
     };
-    dutil_forEachIndx( globals->dutil, NULL, KEY_DICTS, onOneDict, &fos );
+    const XP_UCHAR* keys[] = {KEY_DICTS, KEY_WILDCARD, KEY_WILDCARD, NULL};
+    dutil_forEach( globals->dutil, NULL, keys, onOneDict, &fos );
     LOG_RETURNF( "%p", fos.dict );
     return fos.dict;
 }
@@ -1037,6 +1059,9 @@ loadAndDraw( Globals* globals, const NetLaunchInfo* invite,
     if ( !gs ) {
         DictionaryCtxt* dict = loadAnyDict( globals );
         if ( !!dict ) {
+            char playerName[32];
+            getPlayerName( globals, playerName, sizeof(playerName) );
+
             gs = newGameState( globals );
             gs->gi.serverRole = !!params && !params->isRobotNotRemote
                 ? SERVER_ISSERVER : SERVER_STANDALONE;
@@ -1049,7 +1074,7 @@ loadAndDraw( Globals* globals, const NetLaunchInfo* invite,
                                       dict_getShortName(dict) );
             gs->gi.nPlayers = 2;
             gs->gi.boardSize = 15;
-            gs->gi.players[0].name = copyString( globals->mpool, globals->playerName );
+            gs->gi.players[0].name = copyString( globals->mpool, playerName );
             gs->gi.players[0].isLocal = XP_TRUE;
             gs->gi.players[0].robotIQ = 0;
 
@@ -1448,9 +1473,10 @@ updateScreen( GameState* gs, bool doSave )
         game_saveToStream( &gs->game, NULL, &gs->gi,
                            stream, ++gs->saveToken );
 
-        char indx[32];
-        formatGameID( indx, sizeof(indx), gs->gi.gameID );
-        dutil_storeIndxStream( globals->dutil, NULL, KEY_GAME, indx, stream );
+        char gameIDStr[32];
+        formatGameID( gameIDStr, sizeof(gameIDStr), gs->gi.gameID );
+        const XP_UCHAR* keys[] = { KEY_GAMES, gameIDStr, KEY_GAME, NULL };
+        dutil_storeStream( globals->dutil, NULL, keys, stream );
         stream_destroy( stream, NULL );
         game_saveSucceeded( &gs->game, NULL, gs->saveToken );
     }
@@ -1544,44 +1570,6 @@ inviteFromArgv( Globals* globals, NetLaunchInfo* nlip,
     return success;
 }
 
-typedef struct _GameStartState {
-    Globals* globals;
-    NetLaunchInfo nli;
-    NetLaunchInfo* nlip;
-    char lastKey[16];
-    int nWanted;
-} GameStartState;
-
-/* Will get called twice, once with KEY_PLAYER_NAME and once with KEY_LAST_GID */
-static void
-onReqsLoaded(void* closure, const char* key, void* data, int dataLen)
-{
-    GameStartState* gss = (GameStartState*)closure;
-    Globals* globals = gss->globals;
-    XP_LOGFF( "(key: %s, len: %d)", key, dataLen );
-
-    if ( 0 == strcmp( key, KEY_LAST_GID ) ) {
-        int gameID = 0;
-        if ( !!data && dataLen == sizeof(gameID) ) {
-            gameID = *(int*)data;
-            formatGameID( gss->lastKey, sizeof(gss->lastKey), gameID );
-        }
-        XP_LOGFF( "loaded KEY_LAST_GID: %s", gss->lastKey );
-    } else if ( 0 == strcmp( key, KEY_PLAYER_NAME ) ) {
-        if ( !!data && 0 < dataLen && dataLen < VSIZE(globals->playerName) ) {
-            XP_MEMCPY( globals->playerName, data, dataLen );
-        } else {
-            strcat( globals->playerName, "Player 1" );
-        }
-    }
-
-    if ( 0 == --gss->nWanted ) {
-        loadAndDraw( globals, gss->nlip, gss->lastKey, NULL );
-        updateDeviceButtons( globals );
-        XP_FREE(  globals->mpool, gss );
-    }
-}
-
 static void
 initNoReturn( int argc, const char** argv )
 {
@@ -1594,12 +1582,10 @@ initNoReturn( int argc, const char** argv )
     globals._GUARD = GUARD_GLOB;
 #endif
 
-    /* I don't think this ever gets popped off stack, but to be safe.... */
-    GameStartState* gss = XP_CALLOC( globals.mpool, sizeof(*gss) );
-    gss->globals = &globals;
-
-    if ( inviteFromArgv( &globals, &gss->nli, argc, argv ) ) {
-        gss->nlip = &gss->nli;
+    NetLaunchInfo nli = {0};
+    NetLaunchInfo* nlip = NULL;
+    if ( inviteFromArgv( &globals, &nli, argc, argv ) ) {
+        nlip = &nli;
     }
 
     SDL_Init( SDL_INIT_EVENTS );
@@ -1614,12 +1600,26 @@ initNoReturn( int argc, const char** argv )
 
     initDeviceGlobals( &globals );
 
-    /* Load the two bits we need from storage before starting */
-    dutil_startLoad( globals.dutil, NULL, KEY_PLAYER_NAME, onReqsLoaded, gss );
-    dutil_startLoad( globals.dutil, NULL, KEY_LAST_GID, onReqsLoaded, gss );
-    gss->nWanted = 2;
+    char lastKey[16] = {0};
+    int gameID = 0;
+    XP_U32 len = sizeof(gameID);
+    const XP_UCHAR* keys[] = {KEY_LAST_GID, NULL};
+    dutil_loadPtr( globals.dutil, NULL, keys, (XP_U8*)&gameID, &len );
+    if ( len == sizeof(gameID) ) {
+        formatGameID( lastKey, sizeof(lastKey), gameID );
+    }
+    XP_LOGFF( "loaded KEY_LAST_GID: %s", lastKey );
+    loadAndDraw( &globals, nlip, lastKey, NULL );
 
+    updateDeviceButtons( &globals );
+
+#if 1
     emscripten_set_main_loop_arg( looper, &globals, -1, 1 );
+#else
+    /* crashes on button press, touching board, etc. if I do this, but hasn't
+       always */
+    emscripten_set_main_loop_arg( looper, &globals, -1, 0 );
+#endif
 }
 
 void
@@ -1677,17 +1677,35 @@ gotDictBinary( void* closure, const char* xwd, const char* lang,
     XP_LOGFF( "xwd: %s; lang: %s, lc: %s, len: %d", xwd, lang, lc, len );
 
     CAST_GLOB(Globals*, globals, closure);
-    char key[64];
-    formatDictIndx( key, sizeof(key), lc, xwd );
-    dutil_storeIndxPtr( globals->dutil, NULL, KEY_DICTS, key, data, len );
+    const XP_UCHAR* keys[] = {KEY_DICTS, lc, xwd, NULL};
+    dutil_storePtr( globals->dutil, NULL, keys, data, len );
 
     updateDeviceButtons( globals );
 }
+
+void
+mainPostSync( int argc, const char** argv )
+{
+    XP_LOGFF( "(argc=%d)", argc );
+    initNoReturn( argc, argv );
+}
+
+EM_JS( void, loadDBThen, (const char* root, int argc, const char** argv), {
+        let jsroot = UTF8ToString(root);
+        FS.mkdir(jsroot);
+        FS.mount(IDBFS, {}, jsroot);
+        FS.syncfs(true, function (err) {
+                if ( err ) {
+                    console.log('fsSyncIn: err: ' + err);
+                }
+                ccall('mainPostSync', null, ['number', 'number'], [argc, argv]);
+            });
+    });
 
 int
 main( int argc, const char** argv )
 {
     XP_LOGFF( "(argc=%d)", argc );
-    initNoReturn( argc, argv );
+    loadDBThen( ROOT_PATH, argc, argv );
     return 0;
 }

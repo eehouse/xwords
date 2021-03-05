@@ -77,7 +77,8 @@ typedef struct Globals {
 #define CAST_GLOB(typ, var, ptr) XP_ASSERT(((typ)(ptr))->_GUARD == GUARD_GLOB); typ var = (typ)(ptr)
 #define CAST_GS(typ, var, ptr) XP_ASSERT(((typ)(ptr))->_GUARD == GUARD_GS); typ var = (typ)(ptr)
 
-#define KEY_DICTS "dicts_3"
+#define KEY_DICTS "dicts"
+#define ROOT_PATH "/persisted"
 
 void main_set_timer( GameState* gs, XWTimerReason why, XP_U16 when,
                      XWTimerProc proc, void* closure );

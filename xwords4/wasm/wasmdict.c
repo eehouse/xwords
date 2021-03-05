@@ -243,9 +243,3 @@ computeChecksum( DictionaryCtxt* dctx, XWEnv xwe, const XP_U8* ptr,
 {
     *out = '\0';
 }
-
-void
-formatDictIndx( char buf[], size_t len, const char* lang, const char* name )
-{
-    snprintf( buf, len, "%s/%s", lang, name );
-}

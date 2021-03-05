@@ -25,28 +25,26 @@
 #include "xwstream.h"
 
 static void
-super_dutil_storeStream( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
+super_dutil_storeStream( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* keys[],
                          XWStreamCtxt* data )
 {
     const void* ptr = stream_getPtr( data );
     XP_U16 len = stream_getSize( data );
-    dutil_storePtr( duc, xwe, key, ptr, len );
+    dutil_storePtr( duc, xwe, keys, (void*)ptr, len );
 }
 
 static void
-super_dutil_loadStream( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
-                        // PENDING() remove this after a few months.
-                        const XP_UCHAR* fallbackKey,
-                        XWStreamCtxt* inOut )
+super_dutil_loadStream( XW_DUtilCtxt* duc, XWEnv xwe,
+                        const XP_UCHAR* keys[], XWStreamCtxt* inOut )
 {
     /* get the size */
     XP_U32 len = 0;
-    dutil_loadPtr( duc, xwe, key, fallbackKey, NULL, &len );
+    dutil_loadPtr( duc, xwe, keys, NULL, &len );
 
     /* load if it exists */
     if ( 0 < len ) {
         void* buf = XP_MALLOC( duc->mpool, len );
-        dutil_loadPtr( duc, xwe, key, fallbackKey, buf, &len );
+        dutil_loadPtr( duc, xwe, keys, buf, &len );
 
         stream_putBytes( inOut, buf, len );
         XP_FREEP( duc->mpool, &buf );
