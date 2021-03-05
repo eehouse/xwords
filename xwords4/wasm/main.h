@@ -34,6 +34,8 @@ typedef struct _TimerState {
 } TimerState;
 
 typedef XP_Bool (*IdleProc)(void* closure);
+typedef void (*BinProc)(void* closure, const uint8_t* data, int len );
+typedef void (*BoolProc)(void* closure, bool result);
 
 typedef struct GameState {
 #ifdef DEBUG

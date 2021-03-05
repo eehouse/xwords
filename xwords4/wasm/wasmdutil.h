@@ -26,6 +26,7 @@
 #include "mempool.h"
 
 XW_DUtilCtxt* wasm_dutil_make( MPFORMAL VTableMgr* vtMgr, void* closure );
+void wasm_dutil_syncIf( XW_DUtilCtxt* duc );
 void wasm_dutil_destroy( XW_DUtilCtxt* dutil );
 
 #endif

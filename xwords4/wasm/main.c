@@ -110,8 +110,6 @@ static void saveName( GameState* gs );
 static bool isVisible( GameState* gs );
 static int countDicts( Globals* globals );
 
-typedef void (*BinProc)(void* closure, const uint8_t* data, int len );
-
 EM_JS(void, call_get_dict, (void* closure), {
         getDict(closure);
     });
@@ -159,7 +157,6 @@ EM_JS(void, call_pickGame, (const char* msg, char** ids, char** names,
             const namesMem = HEAP32[(names + (ii * 4)) >> 2];
             let id = UTF8ToString(idsMem);
             map[id] = UTF8ToString(namesMem);
-            console.log('added ' + id + ' -> ' + map[id]);
         }
 
         nbGamePick(UTF8ToString(msg), map, proc, closure);
@@ -216,11 +213,9 @@ EM_JS(void, callNewGame, (const char* msg, void* closure), {
         nbGetNewGame(closure, jsmsg);
     });
 
-typedef void (*ConfirmProc)( void* closure, bool confirmed );
-
 typedef struct _ConfirmState {
     Globals* globals;
-    ConfirmProc proc;
+    BoolProc proc;
     void* closure;
 } ConfirmState;
 
@@ -235,7 +230,7 @@ onConfirmed( void* closure, const char* button )
 
 static void
 call_confirm( Globals* globals, const char* msg,
-              ConfirmProc proc, void* closure )
+              BoolProc proc, void* closure )
 {
     const char* buttons[] = { BUTTON_CANCEL, BUTTON_OK, NULL };
     ConfirmState* cs = XP_MALLOC( globals->mpool, sizeof(*cs) );
@@ -1497,6 +1492,8 @@ looper( void* closure )
             updateScreen( gs, true );
         }
     }
+    wasm_dutil_syncIf( globals->dutil );
+
 #ifdef MEM_DEBUG
     if ( mpool_getStats( globals->mpool, &globals->mpstats ) ) {
         show_pool(globals->mpstats.curBytes, globals->mpstats.maxBytes);

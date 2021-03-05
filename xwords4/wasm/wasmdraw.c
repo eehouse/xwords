@@ -373,9 +373,16 @@ wasm_draw_drawRemText( DrawCtx* dctx, XWEnv xwe, const XP_Rect* rInner,
 }
 
 static void
-formatScoreText(XP_UCHAR* out, int outLen, const XP_UCHAR* name, int score )
+formatScoreText(XP_UCHAR* out, int outLen, const DrawScoreInfo* dsi )
 {
-    XP_SNPRINTF( out, outLen, "%s: %d", name, score );
+    const char* name = dsi->name;
+    int score = dsi->totalScore;
+    int offset = XP_SNPRINTF( out, outLen, "%s:%d", name, score );
+
+    int nTilesLeft = dsi->nTilesLeft;
+    if ( (nTilesLeft < MAX_TRAY_TILES) && (nTilesLeft > 0) ) {
+        XP_SNPRINTF( out + offset, outLen-offset, ":%d", nTilesLeft );
+    }
 }
 
 static void
@@ -386,7 +393,8 @@ wasm_draw_measureScoreText( DrawCtx* dctx, XWEnv xwe,
 {
     WasmDrawCtx* wdctx = (WasmDrawCtx*)dctx;
     XP_UCHAR buf[32];
-    formatScoreText( buf, sizeof(buf), dsi->name, dsi->totalScore );
+    formatScoreText( buf, sizeof(buf), dsi );
+
 
     int fontHeight = rect->height;
     if ( !dsi->isTurn ) {
@@ -408,7 +416,7 @@ wasm_draw_score_drawPlayer( DrawCtx* dctx, XWEnv xwe,
 {
     WasmDrawCtx* wdctx = (WasmDrawCtx*)dctx;
     XP_UCHAR buf[32];
-    formatScoreText( buf, sizeof(buf), dsi->name, dsi->totalScore );
+    formatScoreText( buf, sizeof(buf), dsi );
     textInRect( wdctx, buf, rInner, &sPlayerColors[dsi->playerNum] );
 }
 

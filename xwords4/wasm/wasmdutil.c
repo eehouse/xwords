@@ -38,15 +38,16 @@
 
 typedef struct _WasmDUtilCtxt {
     XW_DUtilCtxt super;
+    int dirtyCount;
 } WasmDUtilCtxt;
 
-EM_JS( void, fsSyncOut, (), {
+EM_JS( void, fsSyncOut, (StringProc proc, void* closure), {
         FS.syncfs(false, function (err) {
-                // assert(!err);
-                if ( err ) {
-                    console.log('sync err: ' + err);
-                } else {
-                    console.log('sync succeeded');
+                console.log('sync done: ' + err);
+                if ( proc ) {
+                    let str = !err ? "success" : err.toString();
+                    ccall('cbckString', null, ['number', 'number', 'string'],
+                          [proc, closure, str]);
                 }
             });
     });
@@ -264,7 +265,7 @@ wasm_dutil_storePtr( XW_DUtilCtxt* duc, XWEnv xwe,
     // XP_LOGFF( "wrote %d bytes to path %s", nWritten, path );
     XP_ASSERT( nWritten == len );
 
-    fsSyncOut();
+    ++((WasmDUtilCtxt*)duc)->dirtyCount;
     LOG_RETURN_VOID();
 }
 
@@ -382,7 +383,7 @@ wasm_dutil_remove( XW_DUtilCtxt* duc, const XP_UCHAR* keys[] )
     XP_LOGFF( "(path: %s)", path );
 
     deleteAll(path);
-    fsSyncOut();
+    ++((WasmDUtilCtxt*)duc)->dirtyCount;
 }
 
 #ifdef XWFEATURE_DEVID
@@ -478,6 +479,28 @@ wasm_dutil_onGameGoneReceived( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe),
 {
     Globals* globals = (Globals*)duc->closure;
     main_onGameGone( globals, gameID );
+}
+
+static void
+onSynced(void* closure, const char* str)
+{
+    XW_DUtilCtxt* duc = (XW_DUtilCtxt*)closure;
+    XP_LOGFF( "(str: %s)", str );
+    if ( 0 == strcmp( "success", str ) ) {
+        WasmDUtilCtxt* wduc = (WasmDUtilCtxt*)closure;
+        wduc->dirtyCount = 0;
+    }
+}
+
+void
+wasm_dutil_syncIf( XW_DUtilCtxt* duc )
+{
+    WasmDUtilCtxt* wduc = (WasmDUtilCtxt*)duc;
+    if ( 0 < wduc->dirtyCount ) {
+        wduc->dirtyCount = 0;
+        StringProc proc = NULL; // onSynced;
+        fsSyncOut(proc, duc);
+    }
 }
 
 XW_DUtilCtxt*
