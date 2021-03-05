@@ -188,7 +188,7 @@ ensurePath(const char* keys[], char buf[], bool mkDirs)
 {
     buf[0] = '\0';
     int offset = 0;
-    offset += sprintf( buf+offset, "%s", "/persisted" );
+    offset += sprintf( buf+offset, "%s", ROOT_PATH );
 
     /* Iterate path elements. Last is a file. So if we're not at the end, make
        a directory */
