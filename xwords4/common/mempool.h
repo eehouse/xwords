@@ -50,6 +50,14 @@ void mpool_freep( MemPoolCtx* mpool, void** ptr, const char* file,
 void mpool_stats( MemPoolCtx* mpool, XWStreamCtxt* stream );
 XP_U16 mpool_getNUsed( MemPoolCtx* mpool );
 
+typedef struct _MPStatsBuf {
+    XP_U32 curBytes;
+    XP_U32 maxBytes;
+} MPStatsBuf;
+/* Returns true IFF any fields have changed (so assumes you use the same
+   buffer over and over */
+XP_Bool mpool_getStats( const MemPoolCtx* mpool, MPStatsBuf* io );
+
 #ifdef CPLUS
 }
 #endif

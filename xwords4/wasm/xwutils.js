@@ -176,14 +176,6 @@ function jssetup(closure, devid, gitrev, now, noTabProc, focusProc, msgProc) {
 						  onFailure: function() { alert('onFailure'); },
 						 });
 
-	// let's sum up storage
-	let total = 0;
-	for (let ii = 0; ii < localStorage.length; ++ii ) {
-        let key = localStorage.key(ii);
-		let val = localStorage.getItem(key);
-		total += key.length + val.length;
-	}
-	document.getElementById("storage_used").textContent=total + 'b';
 }
 
 function mqttSend( topic, ptr ) {

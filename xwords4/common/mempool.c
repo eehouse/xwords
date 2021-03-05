@@ -72,6 +72,8 @@ struct MemPoolCtx {
     XP_U16 nFree;
     XP_U16 nUsed;
     XP_U16 nAllocs;
+    XP_U32 maxBytes;
+    XP_U32 curBytes;
 
     XP_UCHAR tag[64];
 };
@@ -212,6 +214,10 @@ mpool_alloc( MemPoolCtx* mpool, XP_U32 size, const char* file,
     entry->index = ++mpool->nAllocs;
 
     ++mpool->nUsed;
+    mpool->curBytes += size;
+    if ( mpool->curBytes > mpool->maxBytes ) {
+        mpool->maxBytes = mpool->curBytes;
+    }
 
 #ifdef MPOOL_DEBUG
     XP_LOGF( "%s(size=%ld,index=%d,file=%s,lineNo=%ld)=>%p",
@@ -309,6 +315,7 @@ mpool_free( MemPoolCtx* mpool, void* ptr, const char* file,
         } else {
             mpool->usedList = entry->next;
         }
+        mpool->curBytes -= entry->size;
 
         XP_MEMSET( entry->ptr, 0x00, entry->size );
         XP_PLATFREE( entry->ptr );
@@ -339,6 +346,22 @@ mpool_freep( MemPoolCtx* mpool, void** ptr, const char* file,
     } else { \
         XP_LOGF( "%s", buf ); \
     } \
+
+XP_Bool
+mpool_getStats( const MemPoolCtx* mpool, MPStatsBuf* io )
+{
+    XP_Bool changed = XP_FALSE;
+
+    if ( io->curBytes != mpool->curBytes ) {
+        changed = XP_TRUE;
+        io->curBytes = mpool->curBytes;
+    }
+    if ( io->maxBytes != mpool->maxBytes ) {
+        changed = XP_TRUE;
+        io->maxBytes = mpool->maxBytes;
+    }
+    return changed;
+}
 
 void
 mpool_stats( MemPoolCtx* mpool, XWStreamCtxt* stream )

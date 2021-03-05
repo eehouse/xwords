@@ -121,6 +121,11 @@ EM_JS(void, show_name, (const char* name), {
         document.getElementById('gamename').textContent = jsname;
     });
 
+EM_JS(void, show_pool, (int cur, int max), {
+        let msg = 'cur: ' + cur + 'b; max: ' + max + 'b';
+        document.getElementById('mempool').textContent = msg;
+    });
+
 EM_JS(void, call_dialog, (const char* str, const char** but_strs,
                           StringProc proc, void* closure), {
           var buttons = [];
@@ -190,12 +195,6 @@ EM_JS(void, jscallback_set, (JSCallback proc, void* closure, int inMS), {
             ccall('cbckVoid', null, ['number', 'number'], [proc, closure]);
         };
         setTimeout( timerproc, inMS, closure );
-    });
-
-EM_JS(void, setButtonText, (const char* id, const char* text), {
-        let jsid = UTF8ToString(id);
-        let jstext = UTF8ToString(text);
-        document.getElementById(jsid).textContent = jstext;
     });
 
 EM_JS(void, setButtons, (const char* id, const char** bstrs,
@@ -1498,6 +1497,13 @@ looper( void* closure )
             updateScreen( gs, true );
         }
     }
+#ifdef MEM_DEBUG
+    if ( mpool_getStats( globals->mpool, &globals->mpstats ) ) {
+        show_pool(globals->mpstats.curBytes, globals->mpstats.maxBytes);
+        /* XP_LOGFF( "mempool: cur: %d; max: %d", globals->mpstats.curBytes, */
+        /*           globals->mpstats.maxBytes ); */
+    }
+#endif
 }
 
 static bool

@@ -67,6 +67,7 @@ typedef struct Globals {
     char playerName[32];
 
 #ifdef MEM_DEBUG
+    MPStatsBuf mpstats;
     MemPoolCtx* mpool;
 #endif
 } Globals;
