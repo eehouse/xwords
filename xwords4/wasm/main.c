@@ -93,6 +93,7 @@
 typedef struct _NewGameParams {
     bool isRobotNotRemote;
     bool hintsNotAllowed;
+    const char* lc;
 } NewGameParams;
 
 static void updateScreen( GameState* gs, bool doSave );
@@ -221,10 +222,19 @@ EM_JS(void, setButtons, (const char* id, const char** bstrs,
           setDivButtons(UTF8ToString(id), buttons, proc, closure);
     });
 
-EM_JS(void, callNewGame, (const char* msg, void* closure), {
-        let jsmsg = UTF8ToString(msg);
-        nbGetNewGame(closure, jsmsg);
-    });
+EM_JS(void, js_callNewGame, (const char* msg, void* closure,
+                             char** langs, int nLangs), {
+          let jsmsg = UTF8ToString(msg);
+
+          let jlangs = [];
+          for ( let ii = 0; ii < nLangs; ++ii ) {
+              const mem = HEAP32[(langs + (ii * 4)) >> 2];
+              let str = UTF8ToString(mem);
+              console.log('pushing ' + str);
+              jlangs.push(str);
+          }
+          nbGetNewGame(closure, jsmsg, jlangs);
+      });
 
 typedef struct _ConfirmState {
     Globals* globals;
@@ -647,13 +657,40 @@ onPlayerNamed( void* closure, const char* name )
     }
 }
 
+typedef struct _NewGameState {
+    Globals* globals;
+    char* langs[16];
+    int nLangs;
+} NewGameState;
+
+static XP_Bool
+onOneLang( void* closure, const XP_UCHAR* keys[] )
+{
+    NewGameState* ngs = (NewGameState*)closure;
+    replaceStringIfDifferent( ngs->globals->mpool, &ngs->langs[ngs->nLangs], keys[1] );
+    XP_LOGFF( "set langs[%d] %s", ngs->nLangs, ngs->langs[ngs->nLangs] );
+    ++ngs->nLangs;
+    XP_ASSERT( ngs->nLangs < VSIZE(ngs->langs));
+    return true;
+}
+
+static void
+callNewGame( Globals* globals )
+{
+    NewGameState ngs = {.globals = globals};
+    const XP_UCHAR* keys[] = {KEY_DICTS, KEY_WILDCARD, NULL};
+    dutil_forEach( globals->dutil, NULL, keys, onOneLang, &ngs );
+
+    js_callNewGame("Configure your new game", globals, ngs.langs, ngs.nLangs);
+}
+
 static void
 onDeviceButton( void* closure, const char* button )
 {
     CAST_GLOB(Globals*, globals, closure);
     XP_LOGFF( "(button=%s)", button );
     if ( 0 == strcmp(button, BUTTON_GAME_NEW) ) {
-        callNewGame("Configure your new game", globals);
+        callNewGame(globals);
     } else if ( 0 == strcmp(button, BUTTON_GAME_OPEN) ) {
         pickGame( globals );
     } else if ( 0 == strcmp(button, BUTTON_GAME_RENAME ) ) {
@@ -1108,11 +1145,11 @@ onOneDict( void* closure, const XP_UCHAR* keys[] )
 }
 
 static DictionaryCtxt*
-loadAnyDict( Globals* globals )
+loadAnyDict( Globals* globals, const char* lc )
 {
     FindOneState fos = {.globals = globals,
     };
-    const XP_UCHAR* keys[] = {KEY_DICTS, KEY_WILDCARD, KEY_WILDCARD, NULL};
+    const XP_UCHAR* keys[] = {KEY_DICTS, lc, KEY_WILDCARD, NULL};
     dutil_forEach( globals->dutil, NULL, keys, onOneDict, &fos );
     LOG_RETURNF( "%p", fos.dict );
     return fos.dict;
@@ -1140,7 +1177,8 @@ loadAndDraw( Globals* globals, const NetLaunchInfo* invite,
     }
 
     if ( !gs ) {
-        DictionaryCtxt* dict = loadAnyDict( globals );
+        const char* lc = NULL == params ? "en" : params->lc;
+        DictionaryCtxt* dict = loadAnyDict( globals, lc );
         if ( !!dict ) {
             char playerName[32];
             getPlayerName( globals, playerName, sizeof(playerName) );
@@ -1734,13 +1772,14 @@ cbckBinary( BinProc proc, void* closure, int len, const uint8_t* msg )
 }
 
 void
-onNewGame( void* closure, bool opponentIsRobot )
+onNewGame( void* closure, bool opponentIsRobot, const char* lc )
 {
     Globals* globals = (Globals*)closure;
-    XP_LOGFF( "isRobot: %d", opponentIsRobot );
+    XP_LOGFF( "isRobot: %d; lc: %s", opponentIsRobot, lc );
 
-    NewGameParams ngp = {0};
-    ngp.isRobotNotRemote = opponentIsRobot;
+    NewGameParams ngp = { .isRobotNotRemote = opponentIsRobot,
+                          .lc = lc,
+    };
     loadAndDraw( globals, NULL, NULL, &ngp );
     updateDeviceButtons( globals );
 }
