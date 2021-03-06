@@ -45,18 +45,11 @@ function registerOnce(devid, gitrev, now) {
 	}
 }
 
-function getDict(closure) {
+function getDict(langs, proc, closure) {
 	// set these later
 	let gots = {};
 
-	let langs = 'en'; // navigator.language;
-	if (langs) {
-		langs = [langs.split('-')[0]];
-	}
 	console.log('langs: ' + langs + '; langs[0]: ' + langs[0]);
-	if (langs[0] != 'en' ) {
-		langs.push('en');
-	}
 	let args = '?lc=' + langs.join('|');
 	console.log('args: ' + args);
 	fetch('/xw4/info.py/listDicts' + args, {
@@ -97,8 +90,8 @@ function getDict(closure) {
 		dataHeap.set( new Uint8Array(data) );
 		// console.log('made array?: ' + dataHeap);
 		Module.ccall('gotDictBinary', null,
-					 ['number', 'string', 'string', 'string', 'number', 'array'],
-					 [closure, gots.xwd, gots.langName, gots.lc, len, dataHeap]);
+					 ['number', 'number', 'string', 'string', 'array', 'number'],
+					 [proc, closure, gots.xwd, gots.lc, dataHeap, len]);
 		Module._free(dataPtr);
 	});
 	console.log('getDict() done');

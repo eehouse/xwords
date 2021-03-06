@@ -410,6 +410,28 @@ wasm_dutil_md5sum( XW_DUtilCtxt* duc, XWEnv xwe, const XP_U8* ptr,
     return NULL;
 }
 
+typedef struct _ForLangState {
+    XW_DUtilCtxt* duc;
+    XWEnv xwe;
+    uint8_t* ptr;
+    XP_U32 len;
+} ForLangState;
+
+static XP_Bool
+gotForLang( void* closure, const XP_UCHAR* keys[] )
+{
+    XP_LOGFF("name: %s", keys[2]);
+    ForLangState* fls = (ForLangState*)closure;
+    dutil_loadPtr( fls->duc, fls->xwe, keys, NULL, &fls->len );
+    if ( 0 < fls->len ) {
+        fls->ptr = XP_MALLOC( fls->duc->mpool, fls->len );
+        dutil_loadPtr( fls->duc, fls->xwe, keys, fls->ptr, &fls->len );
+    } else {
+        XP_LOGFF( "nothing for %s/%s", keys[1], keys[2] );
+    }
+    return NULL != fls->ptr;
+}
+
 static const DictionaryCtxt*
 wasm_dutil_getDict( XW_DUtilCtxt* duc, XWEnv xwe,
                     XP_LangCode lang, const XP_UCHAR* dictName )
@@ -429,10 +451,22 @@ wasm_dutil_getDict( XW_DUtilCtxt* duc, XWEnv xwe,
             dutil_loadPtr( duc, xwe, keys, ptr, &len );
             result = wasm_dictionary_make( globals, xwe, dictName, ptr, len );
             dmgr_put( globals->dictMgr, xwe, dictName, result );
+        } else {
+            /* Try another dict in same language */
+            XP_LOGFF( "trying for another %s dict", lc );
+            ForLangState fls = { .duc = duc,
+                                 .xwe = xwe,
+            };
+            const char* langKeys[] = {KEY_DICTS, lc, KEY_WILDCARD, NULL};
+            dutil_forEach( duc, xwe, langKeys, gotForLang, &fls );
+            if ( !!fls.ptr ) {
+                result = wasm_dictionary_make( globals, xwe, dictName, fls.ptr, fls.len );
+                dmgr_put( globals->dictMgr, xwe, dictName, result );
+            }
         }
     }
 
-    LOG_RETURNF( "%p", result );
+    XP_LOGFF("(%s, %s)=>%p", lc, dictName, result );
     return result;
 }
 

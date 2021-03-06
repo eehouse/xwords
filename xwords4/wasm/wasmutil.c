@@ -410,11 +410,9 @@ wasm_util_altKeyDown( XW_UtilCtxt* uc, XWEnv xwe )
 static DictionaryCtxt*
 wasm_util_makeEmptyDict( XW_UtilCtxt* uc, XWEnv xwe )
 {
-    LOG_FUNC();                 /* firing */
-    XP_ASSERT(0);
-    /* return wasm_dictionary_make( MPPARM(uc->mpool) NULL, uc->closure, */
-    /*                              NULL, false, NULL ); */
-    return NULL;
+    WasmUtilCtx* wuctxt = (WasmUtilCtx*)uc;
+    GameState* gs = wuctxt->closure;
+    return wasm_dictionary_make_empty( gs->globals );
 }
 
 static void

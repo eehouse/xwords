@@ -163,6 +163,16 @@ wasm_dictionary_destroy( DictionaryCtxt* dict, XWEnv xwe )
     XP_FREE( dict->mpool, ctxt );
 }
 
+DictionaryCtxt*
+wasm_dictionary_make_empty( Globals* globals )
+{
+    WasmDictionaryCtxt* wdict = XP_CALLOC( globals->mpool, sizeof( *wdict ) );
+    dict_super_init( MPPARM(globals->mpool) (DictionaryCtxt*)wdict );
+
+    LOG_RETURNF( "%p", wdict );
+    return (DictionaryCtxt*)wdict;
+}
+
 DictionaryCtxt* 
 wasm_dictionary_make( Globals* globals, XWEnv xwe,
                       const char* name, uint8_t* base, size_t len )

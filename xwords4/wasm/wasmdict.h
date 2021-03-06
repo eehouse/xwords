@@ -26,6 +26,7 @@
 
 DictionaryCtxt* wasm_dictionary_make( Globals* globals, XWEnv xwe,
                                       const char* name, uint8_t* base, size_t len );
+DictionaryCtxt* wasm_dictionary_make_empty( Globals* globals );
 void formatDictIndx( char buf[], size_t len, const char* lang, const char* name );
 
 #endif

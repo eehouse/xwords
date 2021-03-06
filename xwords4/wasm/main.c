@@ -110,8 +110,21 @@ static void saveName( GameState* gs );
 static bool isVisible( GameState* gs );
 static int countDicts( Globals* globals );
 
-EM_JS(void, call_get_dict, (void* closure), {
-        getDict(closure);
+typedef void (*GotDictProc)(void* closure, const char* lc, const char* name,
+                            uint8_t* data, int len);
+
+EM_JS(void, call_get_dict, (const char* lc, GotDictProc proc,
+                            void* closure), {
+        let langs;
+        if (lc) {
+            langs = [UTF8ToString(lc)];
+        } else {
+            langs = [navigator.language.split('-')[0]];
+            if (langs[0] != 'en') {
+                langs.push('en');
+            }
+        }
+        getDict(langs, proc, closure);
     });
 
 EM_JS(void, show_name, (const char* name), {
@@ -314,7 +327,6 @@ sendInviteTo(GameState* gs, const MQTTDevID* remoteDevID)
     NetLaunchInfo nli = {0};    /* include everything!!! */
     nli_init( &nli, &gs->gi, &myAddr, 1, 1 );
     nli_setGameName( &nli, gs->gameName );
-
 
     XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(globals->mpool)
                                                 globals->vtMgr );
@@ -691,6 +703,15 @@ countDicts( Globals* globals )
     return count;
 }
 
+static bool
+haveDictFor(Globals* globals, const char* lc)
+{
+    int count = 0;
+    const XP_UCHAR* keys[] = {KEY_DICTS, lc, NULL};
+    dutil_forEach( globals->dutil, NULL, keys, upCounter, &count );
+    return 0 < count;
+}
+
 static void
 updateDeviceButtons( Globals* globals )
 {
@@ -741,6 +762,31 @@ onMqttMsg(void* closure, const uint8_t* data, int len )
 }
 
 static void
+storeAsDict(Globals* globals, const char* lc, const char* name,
+            uint8_t* data, int len  )
+{
+    char shortName[32];
+    sprintf( shortName, "%s", name );
+    char* dot = strstr(shortName, ".xwd");
+    if ( !!dot ) {
+        *dot = '\0';
+    }
+    XP_LOGFF("shortName: %s", shortName);
+
+    const XP_UCHAR* keys[] = {KEY_DICTS, lc, shortName, NULL};
+    dutil_storePtr( globals->dutil, NULL, keys, data, len );
+}
+
+static void
+onGotDict( void* closure, const char* lc, const char* name,
+           uint8_t* data, int len)
+{
+    CAST_GLOB(Globals*, globals, closure);
+    storeAsDict( globals, lc, name, data, len );
+    updateDeviceButtons( globals );
+}
+
+static void
 initDeviceGlobals( Globals* globals )
 {
     globals->cp.showBoardArrow = XP_TRUE;
@@ -771,7 +817,7 @@ initDeviceGlobals( Globals* globals )
     call_setup( globals, buf, GITREV, now, onConflict, onFocussed, onMqttMsg );
 
     if ( 0 == countDicts( globals ) ) {
-        call_get_dict( globals );
+        call_get_dict( NULL, onGotDict, globals );
     }
 }
 
@@ -840,6 +886,40 @@ newFromInvite( Globals* globals, const NetLaunchInfo* invite )
     return gs;
 }
 
+typedef struct _DictDownState {
+    Globals* globals;
+    NetLaunchInfo invite;
+    const char* lc;
+} DictDownState;
+
+
+static void
+onDictForInvite( void* closure, const char* lc, const char* name,
+                 uint8_t* data, int len )
+{
+    DictDownState* dds = (DictDownState*)closure;
+    if ( !!data && 0 < len ) {
+        storeAsDict( dds->globals, lc, name, data, len );
+        loadAndDraw( dds->globals, &dds->invite, NULL, NULL );
+    } else {
+        char msg[128];
+        sprintf( msg, "Unable to download %s worldlist for invitation", dds->lc );
+        call_alert( msg );
+    }
+    XP_FREE( dds->globals->mpool, dds );
+}
+
+static void
+onDictConfirmed( void* closure, bool confirmed )
+{
+    DictDownState* dds = (DictDownState*)closure;
+    if ( confirmed ) {
+        call_get_dict( dds->lc, onDictForInvite, dds );
+    } else {
+        XP_FREE( dds->globals->mpool, dds );
+    }
+ }
+
 /* If you launch a URL that encodes an invitation, you'll get here. If it's
  * the first time (the game hasn't been created yet) you'll get a new game
  * that connects to the host. If you've already created the game, you'll be
@@ -853,10 +933,19 @@ gameFromInvite( Globals* globals, const NetLaunchInfo* invite )
     bool needsLoad = true;
     GameState* gs = getSavedGame( globals, invite->gameID );
     if ( !gs ) {
-        if ( invite->lang == 1 ) {
+        const char* lc = lcToLocale( invite->lang );
+        if ( haveDictFor(globals, lc) ) {
             gs = newFromInvite( globals, invite );
         } else {
-            call_alert( "Invitations are only supported for play in English right now." );
+            char msg[128];
+            sprintf( msg, "Invitation requires a wordlist %s for "
+                     "language %s; download now?", invite->dict, lc );
+
+            DictDownState* dds = XP_MALLOC( globals->mpool, sizeof(*dds) );
+            dds->globals = globals;
+            dds->invite = *invite;
+            dds->lc = lc;
+            call_confirm(globals, msg, onDictConfirmed, dds);
         }
     }
     return gs;
@@ -1674,16 +1763,11 @@ cbckString( StringProc proc, void* closure, const char* str )
 }
 
 void
-gotDictBinary( void* closure, const char* xwd, const char* lang,
-               const char* lc, int len, uint8_t* data )
+gotDictBinary( GotDictProc proc, void* closure, const char* xwd,
+               const char* lc, uint8_t* data, int len )
 {
-    XP_LOGFF( "xwd: %s; lang: %s, lc: %s, len: %d", xwd, lang, lc, len );
-
-    CAST_GLOB(Globals*, globals, closure);
-    const XP_UCHAR* keys[] = {KEY_DICTS, lc, xwd, NULL};
-    dutil_storePtr( globals->dutil, NULL, keys, data, len );
-
-    updateDeviceButtons( globals );
+    XP_LOGFF( "lc: %s, xwd: %s; len: %d", lc, xwd, len );
+    (*proc)(closure, lc, xwd, data, len);
 }
 
 void
