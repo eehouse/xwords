@@ -354,8 +354,8 @@ wasm_draw_measureRemText( DrawCtx* dctx, XWEnv xwe, const XP_Rect* rect,
 
         WasmDrawCtx* wdctx = (WasmDrawCtx*)dctx;
         int width, height;
-        measureText( wdctx, buf, rect->height, &width, &height );
-        *widthP = XP_MIN( width, rect->width );
+        measureText( wdctx, buf, rect->height/2, &width, &height );
+        *widthP = XP_MIN( width * 5 / 3, rect->width );
         *heightP = XP_MIN( height, rect->height );
     }
     return drawIt;
@@ -369,7 +369,8 @@ wasm_draw_drawRemText( DrawCtx* dctx, XWEnv xwe, const XP_Rect* rInner,
     WasmDrawCtx* wdctx = (WasmDrawCtx*)dctx;
     XP_UCHAR buf[4];
     XP_SNPRINTF( buf, VSIZE(buf), "%d", nTilesLeft );
-    textInRect( wdctx, buf, rInner, NULL );
+    fillRect( wdctx, rOuter, &sOtherColors[BLACK] );
+    textInRect( wdctx, buf, rInner, &sOtherColors[WHITE] );
 }
 
 static void

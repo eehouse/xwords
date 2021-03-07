@@ -43,7 +43,9 @@ typedef struct _WasmDUtilCtxt {
 
 EM_JS( void, fsSyncOut, (StringProc proc, void* closure), {
         FS.syncfs(false, function (err) {
-                console.log('sync done: ' + err);
+                if ( err ) {
+                    console.log('sync done: ' + err);
+                }
                 if ( proc ) {
                     let str = !err ? "success" : err.toString();
                     ccall('cbckString', null, ['number', 'number', 'string'],
@@ -266,7 +268,6 @@ wasm_dutil_storePtr( XW_DUtilCtxt* duc, XWEnv xwe,
     XP_ASSERT( nWritten == len );
 
     ++((WasmDUtilCtxt*)duc)->dirtyCount;
-    LOG_RETURN_VOID();
 }
 
 static void

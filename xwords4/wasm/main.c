@@ -56,7 +56,7 @@
 #define WASM_HOR_SCORE_TOP 0
 
 #define WINDOW_WIDTH 400
-#define WINDOW_HEIGHT 600
+#define WINDOW_HEIGHT 520
 #define BDWIDTH WINDOW_WIDTH
 #define BDHEIGHT WINDOW_HEIGHT
 
@@ -89,6 +89,9 @@
 #define BUTTON_GAME_DELETE "Delete Game"
 #define BUTTON_NAME "My Name"
 #define MAX_BUTTONS 20          /* not sure what's safe here */
+
+// I get a JS exception if I do this... So don't
+// #define GLOBALS_ON_STACK
 
 typedef struct _NewGameParams {
     bool isRobotNotRemote;
@@ -1700,58 +1703,6 @@ inviteFromArgv( Globals* globals, NetLaunchInfo* nlip,
     return success;
 }
 
-static void
-initNoReturn( int argc, const char** argv )
-{
-    time_t now = getCurMS();
-    srandom( now );
-    XP_LOGFF( "called(srandom( %x )", now );
-
-    Globals globals = {0}; // calloc(1, sizeof(*globals));
-#ifdef DEBUG
-    globals._GUARD = GUARD_GLOB;
-#endif
-
-    NetLaunchInfo nli = {0};
-    NetLaunchInfo* nlip = NULL;
-    if ( inviteFromArgv( &globals, &nli, argc, argv ) ) {
-        nlip = &nli;
-    }
-
-    SDL_Init( SDL_INIT_EVENTS );
-    TTF_Init();
-
-    SDL_CreateWindowAndRenderer( WINDOW_WIDTH, WINDOW_HEIGHT, 0,
-                                 &globals.window, &globals.renderer );
-
-    /* wipe the canvas to background */
-    SDL_SetRenderDrawColor( globals.renderer, 155, 155, 155, 255 );
-    SDL_RenderClear( globals.renderer );
-
-    initDeviceGlobals( &globals );
-
-    char lastKey[16] = {0};
-    int gameID = 0;
-    XP_U32 len = sizeof(gameID);
-    const XP_UCHAR* keys[] = {KEY_LAST_GID, NULL};
-    dutil_loadPtr( globals.dutil, NULL, keys, (XP_U8*)&gameID, &len );
-    if ( len == sizeof(gameID) ) {
-        formatGameID( lastKey, sizeof(lastKey), gameID );
-    }
-    XP_LOGFF( "loaded KEY_LAST_GID: %s", lastKey );
-    loadAndDraw( &globals, nlip, lastKey, NULL );
-
-    updateDeviceButtons( &globals );
-
-#if 1
-    emscripten_set_main_loop_arg( looper, &globals, -1, 1 );
-#else
-    /* crashes on button press, touching board, etc. if I do this, but hasn't
-       always */
-    emscripten_set_main_loop_arg( looper, &globals, -1, 0 );
-#endif
-}
-
 void
 MQTTConnectedChanged( void* closure, bool connected )
 {
@@ -1813,7 +1764,56 @@ void
 mainPostSync( int argc, const char** argv )
 {
     XP_LOGFF( "(argc=%d)", argc );
-    initNoReturn( argc, argv );
+    time_t now = getCurMS();
+    srandom( now );
+    XP_LOGFF( "called(srandom( %x )", now );
+
+#ifdef GLOBALS_ON_STACK
+    Globals _globals = {0};
+    Globals* globals = &_globals;
+#else
+    Globals* globals = calloc(1, sizeof(*globals));
+#endif
+#ifdef DEBUG
+    globals->_GUARD = GUARD_GLOB;
+#endif
+
+    NetLaunchInfo nli = {0};
+    NetLaunchInfo* nlip = NULL;
+    if ( inviteFromArgv( globals, &nli, argc, argv ) ) {
+        nlip = &nli;
+    }
+
+    SDL_Init( SDL_INIT_EVENTS );
+    TTF_Init();
+
+    SDL_CreateWindowAndRenderer( WINDOW_WIDTH, WINDOW_HEIGHT, 0,
+                                 &globals->window, &globals->renderer );
+
+    /* wipe the canvas to background */
+    SDL_SetRenderDrawColor( globals->renderer, 155, 155, 155, 255 );
+    SDL_RenderClear( globals->renderer );
+
+    initDeviceGlobals( globals );
+
+    char lastKey[16] = {0};
+    int gameID = 0;
+    XP_U32 len = sizeof(gameID);
+    const XP_UCHAR* keys[] = {KEY_LAST_GID, NULL};
+    dutil_loadPtr( globals->dutil, NULL, keys, (XP_U8*)&gameID, &len );
+    if ( len == sizeof(gameID) ) {
+        formatGameID( lastKey, sizeof(lastKey), gameID );
+    }
+    XP_LOGFF( "loaded KEY_LAST_GID: %s", lastKey );
+    loadAndDraw( globals, nlip, lastKey, NULL );
+
+    updateDeviceButtons( globals );
+
+#ifdef GLOBALS_ON_STACK
+    emscripten_set_main_loop_arg( looper, globals, -1, 1 );
+#else
+    emscripten_set_main_loop_arg( looper, globals, -1, 0 );
+#endif
 }
 
 EM_JS( void, loadDBThen, (const char* root, int argc, const char** argv), {
@@ -1831,7 +1831,7 @@ EM_JS( void, loadDBThen, (const char* root, int argc, const char** argv), {
 int
 main( int argc, const char** argv )
 {
-    XP_LOGFF( "(argc=%d)", argc );
+    XP_LOGFF( "MAIN ENTRY(argc=%d)", argc );
     loadDBThen( ROOT_PATH, argc, argv );
     return 0;
 }
