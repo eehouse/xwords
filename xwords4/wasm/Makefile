@@ -53,10 +53,13 @@ DEFINES += -DGITREV=\"$(shell git describe --tags --dirty)\"
 ifeq ($(MEMDEBUG),TRUE)
 	DEFINES += -DMEM_DEBUG -DDEBUG -O0
 	WEBDIR = dbg
+	ROOT_PATH = "/persisted0.3"
 else
 	DEFINES += -O3
 	WEBDIR = rel
+	ROOT_PATH = "/persisted_rel0.0"
 endif
+DEFINES += -DROOT_PATH=\"$(ROOT_PATH)\"
 
 OUTPUTS = main.html main.js main.js.mem main.data main.html.mem main.wasm
 
