@@ -31,6 +31,7 @@ import org.eehouse.android.xw4.BuildConfig;
 import org.eehouse.android.xw4.Channels;
 import org.eehouse.android.xw4.DBUtils;
 import org.eehouse.android.xw4.DevID;
+import org.eehouse.android.xw4.DictUtils;
 import org.eehouse.android.xw4.DupeModeTimer;
 import org.eehouse.android.xw4.FBMService;
 import org.eehouse.android.xw4.GameUtils;
@@ -259,16 +260,16 @@ public class DUtilCtxt {
         if ( null != data ) {
             DBUtils.setBytesFor( m_context, key, data );
             if ( BuildConfig.DEBUG ) {
-                byte[] tmp = load( key, null );
+                byte[] tmp = load( key );
                 Assert.assertTrue( Arrays.equals( tmp, data ) );
             }
         }
     }
 
-    public byte[] load( String key, String keySuffix )
+    public byte[] load( String key )
     {
         // Log.d( TAG, "load(%s, %s)", key, keySuffix );
-        byte[] result = DBUtils.getBytesFor( m_context, key, keySuffix );
+        byte[] result = DBUtils.getBytesFor( m_context, key );
 
         // Log.d( TAG, "load(%s, %s) returning %d bytes", key, keySuffix,
         //        null == result ? 0 : result.length );
@@ -334,6 +335,17 @@ public class DUtilCtxt {
             }
         }
         return msg;
+    }
+
+    public String getDictPath( int lang, String name )
+    {
+        Log.d( TAG, "getDictPath(%d, %s)", lang, name );
+        String[] names = { name };
+        DictUtils.DictPairs pairs = DictUtils.openDicts( m_context, names );
+        String path = pairs.m_paths[0];
+        Assert.assertNotNull( path );
+        Log.d( TAG, "getDictPath(%s) => %s", name, path );
+        return path;
     }
 
     public void onDupTimerChanged( int gameID, int oldVal, int newVal )

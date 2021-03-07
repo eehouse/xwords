@@ -130,7 +130,7 @@ getDicts( const CurGameInfo* gi, XW_UtilCtxt* util, XWEnv xwe,
     if ( !!result ) {
         for ( int ii = 0; ii < gi->nPlayers; ++ii ) {
             const LocalPlayer* lp = &gi->players[ii];
-            if ( lp->isLocal && !!lp->dictName ) {
+            if ( lp->isLocal && !!lp->dictName && lp->dictName[0] ) {
                 playerDicts->dicts[ii] = dutil_getDict( dutil, xwe, langCode,
                                                         lp->dictName );
             }

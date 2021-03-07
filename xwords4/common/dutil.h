@@ -57,15 +57,16 @@ typedef struct _DUtilVtable {
                                 XWStreamCtxt* inOut );
     void (*m_dutil_storePtr)( XW_DUtilCtxt* duc, XWEnv xwe,
                               const XP_UCHAR* keys[],
-                              void* data, XP_U32 len);
+                              const void* data, XP_U32 len);
     void (*m_dutil_loadPtr)( XW_DUtilCtxt* duc, XWEnv xwe,
                              const XP_UCHAR* keys[],
                              void* data, XP_U32* lenp );
+# ifdef XWFEATURE_DEVICE
     void (*m_dutil_forEach)( XW_DUtilCtxt* duc, XWEnv xwe,
                              const XP_UCHAR* keys[],
                              OnOneProc proc, void* closure );
     void (*m_dutil_remove)( XW_DUtilCtxt* duc, const XP_UCHAR* keys[] );
-
+#endif
 #ifdef XWFEATURE_SMS
     XP_Bool (*m_dutil_phoneNumbersSame)( XW_DUtilCtxt* uc, XWEnv xwe, const XP_UCHAR* p1,
                                          const XP_UCHAR* p2 );
@@ -125,11 +126,11 @@ void dutil_super_init( MPFORMAL XW_DUtilCtxt* dutil );
 #define dutil_storeStream(duc, e, k, s)                         \
     (duc)->vtable.m_dutil_storeStream((duc), (e), (k), (s));
 #define dutil_storePtr(duc, e, k, p, l)                         \
-    (duc)->vtable.m_dutil_storePtr((duc), (e), (k), (p), (l));
+    (duc)->vtable.m_dutil_storePtr((duc), (e), (k), (p), (l))
 #define dutil_loadStream(duc, e, k, s)                      \
-    (duc)->vtable.m_dutil_loadStream((duc), (e), (k), (s));
-#define dutil_loadPtr(duc, e, k, p, l)                          \
-    (duc)->vtable.m_dutil_loadPtr((duc), (e), (k), (p), (l));
+    (duc)->vtable.m_dutil_loadStream((duc), (e), (k), (s))
+#define dutil_loadPtr(duc, e, k, p, l)                         \
+    (duc)->vtable.m_dutil_loadPtr((duc), (e), (k), (p), (l))
 # define dutil_forEach( duc, xwe, keys, proc, closure )                 \
     (duc)->vtable.m_dutil_forEach((duc), (xwe), (keys), (proc), (closure) )
 #define dutil_remove(duc, keys)                 \

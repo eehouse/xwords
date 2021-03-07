@@ -26,6 +26,7 @@
 #include "game.h"
 #include "util.h"
 #include "dutil.h"
+#include "dictmgr.h"
 #include "andglobals.h"
 #include "jniutlswrapper.h"
 
@@ -34,7 +35,8 @@ XW_DUtilCtxt* makeDUtil( MPFORMAL JNIEnv* env,
                          EnvThreadInfo* ti,
 #endif
                          jobject j_dutil, VTableMgr* vtMgr,
-                         JNIUtilCtxt* jniutil, void* closure );
+                         DictMgrCtxt* dmgr, JNIUtilCtxt* jniutil,
+                         void* closure );
 void destroyDUtil( XW_DUtilCtxt** dutilp, JNIEnv* env );
 
 XW_UtilCtxt* makeUtil( MPFORMAL JNIEnv* env,

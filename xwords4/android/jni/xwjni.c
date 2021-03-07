@@ -383,10 +383,10 @@ Java_org_eehouse_android_xw4_jni_XwJNI_globalsInit
     map_init( MPPARM(mpool) &globalState->ti, env );
     globalState->jniutil = makeJNIUtil( MPPARM(mpool) env, TI_IF(&globalState->ti) jniu );
     globalState->vtMgr = make_vtablemgr( MPPARM_NOCOMMA(mpool) );
-    globalState->dutil = makeDUtil( MPPARM(mpool) env, TI_IF(&globalState->ti)
-                                    jdutil, globalState->vtMgr,
-                                    globalState->jniutil, NULL );
     globalState->dictMgr = dmgr_make( MPPARM_NOCOMMA( mpool ) );
+    globalState->dutil = makeDUtil( MPPARM(mpool) env, TI_IF(&globalState->ti)
+                                    jdutil, globalState->vtMgr, globalState->dictMgr,
+                                    globalState->jniutil, NULL );
     globalState->smsProto = smsproto_init( MPPARM( mpool ) env, globalState->dutil );
     MPASSIGN( globalState->mpool, mpool );
     setGlobalState( globalState );
@@ -891,7 +891,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_gi_1from_1stream
     CurGameInfo gi = {0};
     // XP_MEMSET( &gi, 0, sizeof(gi) );
     if ( game_makeFromStream( MPPARM(mpool) env, stream, NULL,
-                              &gi, NULL, NULL, NULL, NULL, NULL, NULL ) ) {
+                              &gi, NULL, NULL, NULL, NULL ) ) {
         setJGI( env, jgi, &gi );
     } else {
         XP_LOGFF( "game_makeFromStream failed" );
@@ -1470,9 +1470,8 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeFromStream
     CommonPrefs cp;
     loadCommonPrefs( env, &cp, jcp );
     result = game_makeFromStream( MPPARM(mpool) env, stream, &state->game,
-                                  globals->gi, dict, &dicts,
-                                  globals->util, globals->dctx, &cp,
-                                  globals->xportProcs );
+                                  globals->gi, globals->util, globals->dctx,
+                                  &cp, globals->xportProcs );
     stream_destroy( stream, env );
     dict_unref( dict, env );         /* game owns it now */
     dict_unref_all( &dicts, env );

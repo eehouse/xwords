@@ -36,6 +36,7 @@ typedef struct _AndDUtil {
     XW_DUtilCtxt dutil;
     JNIUtilCtxt* jniutil;
     jobject jdutil;  /* global ref to object implementing XW_DUtilCtxt */
+    DictMgrCtxt* dictMgr;
     XP_UCHAR* userStrings[N_AND_USER_STRINGS];
     XP_U32 userStringsBits;
 #ifdef MAP_THREAD_TO_ENV
@@ -479,13 +480,14 @@ and_dutil_getUserQuantityString( XW_DUtilCtxt* duc, XWEnv xwe,
 }
 
 static void
-and_dutil_storePtr( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
-                    const void* data, XP_U16 len )
+and_dutil_storePtr( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* keys[],
+                    const void* data, XP_U32 len )
 {
     DUTIL_CBK_HEADER( "store", "(Ljava/lang/String;[B)V" );
+    XP_ASSERT( NULL == keys[1] );
 
     jbyteArray jdata = makeByteArray( env, len, data );
-    jstring jkey = (*env)->NewStringUTF( env, key );
+    jstring jkey = (*env)->NewStringUTF( env, keys[0] );
 
     (*env)->CallVoidMethod( env, dutil->jdutil, mid, jkey, jdata );
 
@@ -495,26 +497,25 @@ and_dutil_storePtr( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
 }
 
 static jbyteArray
-loadToByteArray( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
-                 const XP_UCHAR* keySuffix )
+loadToByteArray( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key )
 {
     jbyteArray result = NULL;
-    DUTIL_CBK_HEADER( "load", "(Ljava/lang/String;Ljava/lang/String;)[B");
+    DUTIL_CBK_HEADER( "load", "(Ljava/lang/String;)[B");
 
     jstring jkey = (*env)->NewStringUTF( env, key );
-    jstring jkeySuffix = (*env)->NewStringUTF( env, keySuffix );
-    result = (*env)->CallObjectMethod( env, dutil->jdutil, mid, jkey, jkeySuffix );
-    deleteLocalRefs( env, jkey, jkeySuffix, DELETE_NO_REF );
+    result = (*env)->CallObjectMethod( env, dutil->jdutil, mid, jkey );
+    deleteLocalRef( env, jkey );
     DUTIL_CBK_TAIL();
     return result;
 }
 
 static void
-and_dutil_loadPtr( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
-                   const XP_UCHAR* keySuffix, void* data, XP_U16* lenp )
+and_dutil_loadPtr( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* keys[],
+                   void* data, XP_U32* lenp )
 {
+    XP_ASSERT( NULL == keys[1] );
     JNIEnv* env = xwe;
-    jbyteArray jvalue = loadToByteArray( duc, env, key, keySuffix );
+    jbyteArray jvalue = loadToByteArray( duc, env, keys[0] );
     jsize len = 0;
     if ( jvalue != NULL ) {
         len = (*env)->GetArrayLength( env, jvalue );
@@ -527,6 +528,21 @@ and_dutil_loadPtr( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
     }
     *lenp = len;
 }
+
+#ifdef XWFEATURE_DEVICE
+static void
+and_dutil_forEach( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* keys[],
+                   OnOneProc proc, void* closure )
+{
+    XP_ASSERT(0);
+}
+
+static void
+and_dutil_remove( XW_DUtilCtxt* duc, const XP_UCHAR* keys[] )
+{
+    XP_ASSERT(0);
+}
+#endif
 
 static void
 and_util_notifyIllegalWords( XW_UtilCtxt* uc, XWEnv xwe, BadWordInfo* bwi,
@@ -780,7 +796,7 @@ and_util_getDevUtilCtxt( XW_UtilCtxt* uc, XWEnv xwe )
 
 #ifdef COMMS_CHECKSUM
 static XP_UCHAR*
-and_dutil_md5sum( XW_DUtilCtxt* duc, XWEnv xwe, const XP_U8* ptr, XP_U16 len )
+and_dutil_md5sum( XW_DUtilCtxt* duc, XWEnv xwe, const XP_U8* ptr, XP_U32 len )
 {
     AndDUtil* dutil = (AndDUtil*)duc;
     JNIEnv* env = xwe;
@@ -791,6 +807,35 @@ and_dutil_md5sum( XW_DUtilCtxt* duc, XWEnv xwe, const XP_U8* ptr, XP_U16 len )
     return result;
 }
 #endif
+
+const DictionaryCtxt*
+and_dutil_getDict( XW_DUtilCtxt* duc, XWEnv xwe,
+                   XP_LangCode lang, const XP_UCHAR* dictName )
+{
+    XP_LOGFF( "(lang: %d, name: %s)", lang, dictName );
+    JNIEnv* env = xwe;
+    AndDUtil* dutil = (AndDUtil*)duc;
+    JNIUtilCtxt* jniutil = dutil->jniutil;
+
+    DictMgrCtxt* dictMgr = dutil->dictMgr;
+    DictionaryCtxt* dict = (DictionaryCtxt*)
+        dmgr_get( dictMgr, xwe, dictName );
+    if ( !dict ) {
+        jstring jname = (*env)->NewStringUTF( env, dictName );
+        jstring jpath = NULL;
+        DUTIL_CBK_HEADER( "getDictPath", "(ILjava/lang/String;)Ljava/lang/String;" );
+        jpath = (*env)->CallObjectMethod( env, dutil->jdutil, mid, lang, jname );
+        DUTIL_CBK_TAIL();
+
+        dict = makeDict( MPPARM(duc->mpool) xwe,
+                         TI_IF(&globalState->ti)
+                         dictMgr, jniutil,
+                         jname, NULL, jpath, NULL, false );
+        deleteLocalRefs( env, jname, jpath, DELETE_NO_REF );
+    }
+    LOG_RETURNF( "%p", dict );
+    return dict;
+}
 
 static void
 and_dutil_notifyPause( XW_DUtilCtxt* duc, XWEnv xwe, XP_U32 gameID, DupPauseType pauseTyp,
@@ -977,7 +1022,8 @@ makeDUtil( MPFORMAL JNIEnv* env,
            EnvThreadInfo* ti,
 #endif
            jobject jdutil, VTableMgr* vtMgr,
-           JNIUtilCtxt* jniutil, void* closure )
+           DictMgrCtxt* dmgr, JNIUtilCtxt* jniutil,
+           void* closure )
 {
     AndDUtil* dutil = (AndDUtil*)XP_CALLOC( mpool, sizeof(*dutil) );
     dutil_super_init( MPPARM(mpool) &dutil->dutil );
@@ -987,6 +1033,7 @@ makeDUtil( MPFORMAL JNIEnv* env,
     dutil->jniutil = jniutil;
     dutil->dutil.closure = closure;
     dutil->dutil.vtMgr = vtMgr;
+    dutil->dictMgr = dmgr;
 
     if ( NULL != jdutil ) {
         dutil->jdutil = (*env)->NewGlobalRef( env, jdutil );
@@ -999,6 +1046,11 @@ makeDUtil( MPFORMAL JNIEnv* env,
     SET_DPROC(getUserQuantityString);
     SET_DPROC(storePtr);
     SET_DPROC(loadPtr);
+# ifdef XWFEATURE_DEVICE
+    SET_DPROC(forEach);
+    SET_DPROC(remove);
+# endif
+
 # ifdef XWFEATURE_DEVID
     SET_DPROC(getDevID);
     SET_DPROC(deviceRegistered);
@@ -1009,6 +1061,7 @@ makeDUtil( MPFORMAL JNIEnv* env,
 #ifdef COMMS_CHECKSUM
     SET_DPROC(md5sum);
 #endif
+    SET_DPROC(getDict);
     SET_DPROC(notifyPause);
     SET_DPROC(onDupTimerChanged);
 
