@@ -233,7 +233,6 @@ EM_JS(void, js_callNewGame, (const char* msg, void* closure,
           for ( let ii = 0; ii < nLangs; ++ii ) {
               const mem = HEAP32[(langs + (ii * 4)) >> 2];
               let str = UTF8ToString(mem);
-              console.log('pushing ' + str);
               jlangs.push(str);
           }
           nbGetNewGame(closure, jsmsg, jlangs);

@@ -14,7 +14,7 @@ function registerOnce(devid, gitrev, now) {
 	let nextTime = parseInt(localStorage.getItem(nextTimeKey));
 	let prevGit = localStorage.getItem(gitKey);
 	if ( prevGit == gitrev && now < nextTime ) {
-		console.log('registerOnce(): next in ' + (nextTime - now) + ' secs');
+		// console.log('registerOnce(): next in ' + (nextTime - now) + ' secs');
 	} else {
 		let args = { devid: devid,
 					 gitrev: gitrev,
@@ -36,7 +36,7 @@ function registerOnce(devid, gitrev, now) {
 		}).then(res => {
 			return res.json();
 		}).then(data => {
-			console.log('data: ' + JSON.stringify(data));
+			// console.log('data: ' + JSON.stringify(data));
 			if ( data.success ) {
 				localStorage.setItem(nextTimeKey, data.atNext);
 				localStorage.setItem(gitKey, gitrev);
@@ -355,7 +355,6 @@ function nbGetNewGame(closure, msg, langs) {
 		dlg.appendChild( langsDiv );
 		for ( let ii = 0; ii < langs.length; ++ii ) {
 			let langName = langs[ii];
-			console.log('adding radio for ' + langName);
 			langsDiv.appendChild(newRadio(langName, 'lang', function() {chosenLang[0] = langName;}));
 		}
 	}
