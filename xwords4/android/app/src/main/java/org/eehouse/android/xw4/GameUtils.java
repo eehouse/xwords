@@ -131,8 +131,6 @@ public class GameUtils {
     {
         CurGameInfo gi = new CurGameInfo( context );
         CommsAddrRec addr = null;
-        String[] dictNames = gi.dictNames();
-        DictUtils.DictPairs pairs = DictUtils.openDicts( context, dictNames );
 
         try ( GamePtr gamePtr = loadMakeGame( context, gi, lockSrc ) ) {
             if ( XwJNI.game_hasComms( gamePtr ) ) {
@@ -141,10 +139,8 @@ public class GameUtils {
         }
 
         try ( GamePtr gamePtr = XwJNI
-              .initNew( gi, dictNames, pairs.m_bytes, pairs.m_paths,
-                        gi.langName( context ), (UtilCtxt)null,
-                        (DrawCtx)null, CommonPrefs.get( context ),
-                        (TransportProcs)null ) ) {
+              .initNew( gi, (UtilCtxt)null, (DrawCtx)null,
+                        CommonPrefs.get( context ), (TransportProcs)null ) ) {
 
             if ( juggle ) {
                 gi.juggle();
@@ -411,16 +407,11 @@ public class GameUtils {
                        TextUtils.join( ",", dictNames ) );
             } else {
                 String langName = gi.langName( context );
-                gamePtr = XwJNI.initFromStream( rowid, stream, gi, dictNames,
-                                                pairs.m_bytes, pairs.m_paths,
-                                                langName, util,
-                                                null,
+                gamePtr = XwJNI.initFromStream( rowid, stream, gi, util, null,
                                                 CommonPrefs.get(context),
                                                 tp );
                 if ( null == gamePtr ) {
-                    gamePtr = XwJNI.initNew( gi, dictNames,
-                                             pairs.m_bytes, pairs.m_paths,
-                                             langName, (UtilCtxt)null, null,
+                    gamePtr = XwJNI.initNew( gi, (UtilCtxt)null, null,
                                              CommonPrefs.get(context), null );
                 }
             }
@@ -1099,15 +1090,9 @@ public class GameUtils {
                     // first time required so dictNames() will work
                     gi.replaceDicts( context, newDict );
 
-                    String[] dictNames = gi.dictNames();
-                    DictUtils.DictPairs pairs = DictUtils.openDicts( context,
-                                                                     dictNames );
-
                     try ( GamePtr gamePtr =
-                          XwJNI.initFromStream( rowid, stream, gi, dictNames,
-                                                pairs.m_bytes, pairs.m_paths,
-                                                gi.langName( context ), null,
-                                                null, CommonPrefs.get( context ), null ) ) {
+                          XwJNI.initFromStream( rowid, stream, gi, null, null,
+                                                CommonPrefs.get( context ), null ) ) {
                         // second time required as game_makeFromStream can overwrite
                         gi.replaceDicts( context, newDict );
 
@@ -1140,9 +1125,6 @@ public class GameUtils {
         // somesuch.  But: do we have a way to save changes to a gi
         // that don't reset the game, e.g. player name for standalone
         // games?
-        String[] dictNames = gi.dictNames();
-        DictUtils.DictPairs pairs = DictUtils.openDicts( context, dictNames );
-        String langName = gi.langName( context );
         boolean madeGame = false;
         CommonPrefs cp = CommonPrefs.get( context );
 
@@ -1154,8 +1136,6 @@ public class GameUtils {
             try ( GamePtr gamePtr = XwJNI
                   .initFromStream( lock.getRowid(), stream,
                                    new CurGameInfo(context),
-                                   dictNames, pairs.m_bytes,
-                                   pairs.m_paths, langName,
                                    null, null, cp, null ) ) {
                 if ( null != gamePtr ) {
                     applyChanges( context, sink, gi, car, disab,
@@ -1166,9 +1146,8 @@ public class GameUtils {
         }
 
         if ( forceNew || !madeGame ) {
-            try ( GamePtr gamePtr = XwJNI.initNew( gi, dictNames, pairs.m_bytes,
-                                                   pairs.m_paths, langName, util,
-                                                   (DrawCtx)null, cp, sink ) ) {
+            try ( GamePtr gamePtr = XwJNI.initNew( gi, util, (DrawCtx)null,
+                                                   cp, sink ) ) {
                 if ( null != gamePtr ) {
                     applyChanges( context, sink, gi, car, disab, lock, gamePtr );
                 }

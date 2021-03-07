@@ -1359,8 +1359,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_envDone
 JNIEXPORT void JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeNewGame
 ( JNIEnv* env, jclass C, GamePtrType gamePtr, jobject j_gi,
-  jobjectArray j_names, jobjectArray j_dicts, jobjectArray j_paths,
-  jstring j_lang, jobject j_util, jobject j_draw, jobject j_cp,
+  jobject j_util, jobject j_draw, jobject j_cp,
   jobject j_procs )
 {
     XWJNI_START_GLOBALS();
@@ -1385,24 +1384,24 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeNewGame
     game_makeNewGame( MPPARM(mpool) env, &state->game, gi,
                       globals->util, dctx, &cp, globals->xportProcs );
 
-    DictionaryCtxt* dict;
-    PlayerDicts dicts;
+    /* DictionaryCtxt* dict; */
+    /* PlayerDicts dicts; */
 
-    makeDicts( MPPARM(state->globalJNI->mpool) env,
-               TI_IF(&state->globalJNI->ti)
-               state->globalJNI->dictMgr,
-               globals->jniutil, &dict, &dicts, j_names, j_dicts, 
-               j_paths, j_lang );
-#ifdef STUBBED_DICT
-    if ( !dict ) {
-        XP_LOGFF( "falling back to stubbed dict" );
-        dict = make_stubbed_dict( MPPARM_NOCOMMA(mpool) );
-    }
-#endif
-    model_setDictionary( state->game.model, env, dict );
-    dict_unref( dict, env );         /* game owns it now */
-    model_setPlayerDicts( state->game.model, env, &dicts );
-    dict_unref_all( &dicts, env );
+/*     makeDicts( MPPARM(state->globalJNI->mpool) env, */
+/*                TI_IF(&state->globalJNI->ti) */
+/*                state->globalJNI->dictMgr, */
+/*                globals->jniutil, &dict, &dicts, j_names, j_dicts,  */
+/*                j_paths, j_lang ); */
+/* #ifdef STUBBED_DICT */
+/*     if ( !dict ) { */
+/*         XP_LOGFF( "falling back to stubbed dict" ); */
+/*         dict = make_stubbed_dict( MPPARM_NOCOMMA(mpool) ); */
+/*     } */
+/* #endif */
+/*     model_setDictionary( state->game.model, env, dict ); */
+/*     dict_unref( dict, env );         /\* game owns it now *\/ */
+    /* model_setPlayerDicts( state->game.model, env, &dicts ); */
+    /* dict_unref_all( &dicts, env ); */
     XWJNI_END();
 } /* makeNewGame */
 
@@ -1437,12 +1436,11 @@ JNIEXPORT void JNICALL Java_org_eehouse_android_xw4_jni_XwJNI_game_1dispose
 JNIEXPORT jboolean JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeFromStream
 ( JNIEnv* env, jclass C, GamePtrType gamePtr, jbyteArray jstream, jobject /*out*/jgi,
-  jobjectArray jdictNames, jobjectArray jdicts, jobjectArray jpaths,
-  jstring jlang, jobject jutil, jobject jdraw, jobject jcp, jobject jprocs )
+  jobject jutil, jobject jdraw, jobject jcp, jobject jprocs )
 {
     jboolean result;
-    DictionaryCtxt* dict;
-    PlayerDicts dicts;
+    /* DictionaryCtxt* dict; */
+    /* PlayerDicts dicts; */
     XWJNI_START_GLOBALS();
 
     globals->gi = (CurGameInfo*)XP_CALLOC( mpool, sizeof(*globals->gi) );
@@ -1450,11 +1448,11 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeFromStream
                               TI_IF(&state->globalJNI->ti)
                               jutil, globals->gi, globals);
     globals->jniutil = state->globalJNI->jniutil;
-    makeDicts( MPPARM(state->globalJNI->mpool) env,
-               TI_IF(&state->globalJNI->ti)
-               state->globalJNI->dictMgr,
-               globals->jniutil, &dict, &dicts, jdictNames, jdicts, jpaths, 
-               jlang );
+    /* makeDicts( MPPARM(state->globalJNI->mpool) env, */
+    /*            TI_IF(&state->globalJNI->ti) */
+    /*            state->globalJNI->dictMgr, */
+    /*            globals->jniutil, &dict, &dicts, jdictNames, jdicts, jpaths,  */
+    /*            jlang ); */
     if ( !!jdraw ) {
         globals->dctx = makeDraw( MPPARM(mpool) env,
                                   TI_IF(&state->globalJNI->ti)
@@ -1473,8 +1471,8 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeFromStream
                                   globals->gi, globals->util, globals->dctx,
                                   &cp, globals->xportProcs );
     stream_destroy( stream, env );
-    dict_unref( dict, env );         /* game owns it now */
-    dict_unref_all( &dicts, env );
+    /* dict_unref( dict, env );         /\* game owns it now *\/ */
+    /* dict_unref_all( &dicts, env ); */
 
     /* If game_makeFromStream() fails, the platform-side caller still needs to
        call game_dispose. That requirement's better than having cleanup code

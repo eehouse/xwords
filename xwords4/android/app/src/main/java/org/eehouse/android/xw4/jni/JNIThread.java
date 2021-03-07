@@ -230,16 +230,10 @@ public class JNIThread extends Thread implements AutoCloseable {
                 m_jniGamePtr = null;
                 if ( null != stream ) {
                     m_jniGamePtr = XwJNI.initFromStream( m_rowid, stream, m_gi,
-                                                         dictNames, pairs.m_bytes,
-                                                         pairs.m_paths,
-                                                         m_gi.langName( m_context ),
                                                          utils, null, cp, m_xport );
                 }
                 if ( null == m_jniGamePtr ) {
-                    m_jniGamePtr = XwJNI.initNew( m_gi, dictNames, pairs.m_bytes,
-                                                  pairs.m_paths,
-                                                  m_gi.langName(m_context),
-                                                  utils, null, cp, m_xport );
+                    m_jniGamePtr = XwJNI.initNew( m_gi, utils, null, cp, m_xport );
                 }
                 Assert.assertNotNull( m_jniGamePtr );
                 notifyAll();

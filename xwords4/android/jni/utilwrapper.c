@@ -822,16 +822,22 @@ and_dutil_getDict( XW_DUtilCtxt* duc, XWEnv xwe,
         dmgr_get( dictMgr, xwe, dictName );
     if ( !dict ) {
         jstring jname = (*env)->NewStringUTF( env, dictName );
-        jstring jpath = NULL;
-        DUTIL_CBK_HEADER( "getDictPath", "(ILjava/lang/String;)Ljava/lang/String;" );
-        jpath = (*env)->CallObjectMethod( env, dutil->jdutil, mid, lang, jname );
+
+        jobjectArray jstrs = makeStringArray( env, 1, NULL );
+        jobjectArray jbytes = makeByteArrayArray( env, 1 );
+
+        DUTIL_CBK_HEADER( "getDictPath", "(ILjava/lang/String;[Ljava/lang/String;[[B)V" );
+        (*env)->CallVoidMethod( env, dutil->jdutil, mid, lang, jname, jstrs, jbytes );
         DUTIL_CBK_TAIL();
+
+        jstring jpath = (*env)->GetObjectArrayElement( env, jstrs, 0 );
+        jbyteArray jdata = (*env)->GetObjectArrayElement( env, jbytes, 0 );
 
         dict = makeDict( MPPARM(duc->mpool) xwe,
                          TI_IF(&globalState->ti)
                          dictMgr, jniutil,
-                         jname, NULL, jpath, NULL, false );
-        deleteLocalRefs( env, jname, jpath, DELETE_NO_REF );
+                         jname, jdata, jpath, NULL, false );
+        deleteLocalRefs( env, jname, jstrs, jbytes, jdata, jpath, DELETE_NO_REF );
     }
     LOG_RETURNF( "%p", dict );
     return dict;

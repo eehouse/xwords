@@ -285,15 +285,12 @@ public class XwJNI {
 
     public static synchronized GamePtr
         initFromStream( long rowid, byte[] stream, CurGameInfo gi,
-                        String[] dictNames, byte[][] dictBytes,
-                        String[] dictPaths, String langName,
                         UtilCtxt util, DrawCtx draw,
                         CommonPrefs cp, TransportProcs procs )
 
     {
         GamePtr gamePtr = initGameJNI( rowid );
-        if ( ! game_makeFromStream( gamePtr, stream, gi, dictNames, dictBytes,
-                                    dictPaths, langName, util, draw,
+        if ( ! game_makeFromStream( gamePtr, stream, gi, util, draw,
                                     cp, procs ) ) {
             gamePtr.release();
             gamePtr = null;
@@ -303,13 +300,11 @@ public class XwJNI {
     }
 
     public static synchronized GamePtr
-        initNew( CurGameInfo gi, String[] dictNames, byte[][] dictBytes,
-                 String[] dictPaths, String langName, UtilCtxt util,
-                 DrawCtx draw, CommonPrefs cp, TransportProcs procs )
+        initNew( CurGameInfo gi, UtilCtxt util, DrawCtx draw,
+                 CommonPrefs cp, TransportProcs procs )
     {
         GamePtr gamePtr = initGameJNI( 0 );
-        game_makeNewGame( gamePtr, gi, dictNames, dictBytes, dictPaths,
-                          langName, util, draw, cp, procs );
+        game_makeNewGame( gamePtr, gi, util, draw, cp, procs );
         return gamePtr;
     }
 
@@ -321,10 +316,6 @@ public class XwJNI {
 
     private static native void game_makeNewGame( GamePtr gamePtr,
                                                  CurGameInfo gi,
-                                                 String[] dictNames,
-                                                 byte[][] dictBytes,
-                                                 String[] dictPaths,
-                                                 String langName,
                                                  UtilCtxt util,
                                                  DrawCtx draw, CommonPrefs cp,
                                                  TransportProcs procs );
@@ -332,10 +323,6 @@ public class XwJNI {
     private static native boolean game_makeFromStream( GamePtr gamePtr,
                                                        byte[] stream,
                                                        CurGameInfo gi,
-                                                       String[] dictNames,
-                                                       byte[][] dictBytes,
-                                                       String[] dictPaths,
-                                                       String langName,
                                                        UtilCtxt util,
                                                        DrawCtx draw,
                                                        CommonPrefs cp,
