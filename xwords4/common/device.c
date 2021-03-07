@@ -47,7 +47,8 @@ load( XW_DUtilCtxt* dutil, XWEnv xwe )
     DevCtxt* state = (DevCtxt*)dutil->devCtxt;
     if ( NULL == state ) {
         XWStreamCtxt* stream = mkStream( dutil );
-        dutil_loadStream( dutil, xwe, KEY_DEVSTATE, SUFFIX_DEVSTATE, stream );
+        const XP_UCHAR* keys[] = { KEY_DEVSTATE, NULL };
+        dutil_loadStream( dutil, xwe, keys, stream );
 
         state = XP_CALLOC( dutil->mpool, sizeof(*state) );
         dutil->devCtxt = state;
@@ -71,7 +72,8 @@ dvc_store( XW_DUtilCtxt* dutil, XWEnv xwe )
     DevCtxt* state = load( dutil, xwe );
     XWStreamCtxt* stream = mkStream( dutil );
     stream_putU16( stream, state->devCount );
-    dutil_storeStream( dutil, xwe, KEY_DEVSTATE, stream );
+    const XP_UCHAR* keys[] = { KEY_DEVSTATE, NULL };
+    dutil_storeStream( dutil, xwe, keys, stream );
     stream_destroy( stream, NULL );
 
     XP_FREEP( dutil->mpool, &dutil->devCtxt );

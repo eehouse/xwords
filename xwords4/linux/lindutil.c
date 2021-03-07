@@ -37,11 +37,14 @@ static const XP_UCHAR* linux_dutil_getUserString( XW_DUtilCtxt* duc, XWEnv xwe, 
 static const XP_UCHAR* linux_dutil_getUserQuantityString( XW_DUtilCtxt* duc, XWEnv xwe, XP_U16 code,
                                                           XP_U16 quantity );
 
-static void linux_dutil_storePtr( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
-                                  const void* data, XP_U32 len );
-static void linux_dutil_loadPtr( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
-                                 const XP_UCHAR* keySuffix, void* data, XP_U32* lenp );
-
+static void linux_dutil_storePtr( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* keys[],
+                                  void* data, XP_U32 len );
+static void linux_dutil_loadPtr( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* keys[],
+                                 void* data, XP_U32* lenp );
+static void linux_dutil_forEach( XW_DUtilCtxt* duc, XWEnv xwe,
+                                 const XP_UCHAR* keys[],
+                                 OnOneProc proc, void* closure );
+static void linux_dutil_remove( XW_DUtilCtxt* duc, const XP_UCHAR* keys[] );
 
 #ifdef XWFEATURE_SMS
 static XP_Bool  linux_dutil_phoneNumbersSame( XW_DUtilCtxt* duc, XWEnv xwe,
@@ -60,9 +63,9 @@ static XP_UCHAR* linux_dutil_md5sum( XW_DUtilCtxt* duc, XWEnv xwe, const XP_U8* 
                                      XP_U32 len );
 #endif
 
-static DictionaryCtxt*
+static const DictionaryCtxt*
 linux_dutil_getDict( XW_DUtilCtxt* duc, XWEnv xwe,
-                     const XP_UCHAR* dictName )
+                     XP_LangCode XP_UNUSED(lang), const XP_UCHAR* dictName )
 {
     LaunchParams* params = (LaunchParams*)duc->closure;
     DictionaryCtxt* result = linux_dictionary_make( MPPARM(duc->mpool) xwe,
@@ -155,6 +158,8 @@ linux_dutils_init( MPFORMAL VTableMgr* vtMgr, void* closure )
     SET_PROC(getUserQuantityString);
     SET_PROC(storePtr);
     SET_PROC(loadPtr);
+    SET_PROC(forEach);
+    SET_PROC(remove);
 
 #ifdef XWFEATURE_SMS
     SET_PROC(phoneNumbersSame);
@@ -291,33 +296,37 @@ linux_dutil_getUserQuantityString( XW_DUtilCtxt* duc, XWEnv xwe, XP_U16 code,
 }
 
 static void
-linux_dutil_storePtr( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe), const XP_UCHAR* key,
-                      const void* data, const XP_U32 len )
+linux_dutil_storePtr( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe),
+                      const XP_UCHAR* keys[],
+                      void* data, const XP_U32 len )
 {
+    XP_ASSERT( keys[1] == NULL );
     LaunchParams* params = (LaunchParams*)duc->closure;
     sqlite3* pDb = params->pDb;
 
     gchar* b64 = g_base64_encode( data, len);
-    gdb_store( pDb, key, b64 );
+    gdb_store( pDb, keys[0], b64 );
     g_free( b64 );
 }
 
 static void
-linux_dutil_loadPtr( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe), const XP_UCHAR* key,
-                     const XP_UCHAR* keySuffix, void* data, XP_U32* lenp )
+linux_dutil_loadPtr( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe),
+                     const XP_UCHAR* keys[],
+                     void* data, XP_U32* lenp )
 {
+    XP_ASSERT( NULL == keys[1] );
     LaunchParams* params = (LaunchParams*)duc->closure;
     sqlite3* pDb = params->pDb;
 
     gint buflen = 0;
-    FetchResult res = gdb_fetch( pDb, key, keySuffix, NULL, &buflen );
+    FetchResult res = gdb_fetch( pDb, keys[0], NULL, NULL, &buflen );
     if ( res == BUFFER_TOO_SMALL ) { /* expected: I passed 0 */
         if ( 0 == *lenp ) {
             *lenp = buflen;
         } else {
             gchar* tmp = XP_MALLOC( duc->mpool, buflen );
             gint tmpLen = buflen;
-            res = gdb_fetch( pDb, key, keySuffix, tmp, &tmpLen );
+            res = gdb_fetch( pDb, keys[0], NULL, tmp, &tmpLen );
             XP_ASSERT( buflen == tmpLen );
             XP_ASSERT( res == SUCCESS );
             XP_ASSERT( tmp[buflen-1] == '\0' );
@@ -335,7 +344,22 @@ linux_dutil_loadPtr( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe), const XP_UCHAR* ke
         *lenp = 0;              /* doesn't exist */
     }
 
-    /* XP_LOGFF( "(key=%s) => len: %d", key, *lenp ); */
+    XP_LOGF( "%s(key=%s) => len: %d", __func__, keys[0], *lenp );
+}
+
+static void
+linux_dutil_forEach( XW_DUtilCtxt* XP_UNUSED(duc),
+                     XWEnv XP_UNUSED(xwe),
+                     const XP_UCHAR* XP_UNUSED(keys[]),
+                     OnOneProc XP_UNUSED(proc), void* XP_UNUSED(closure) )
+{
+    XP_ASSERT(0);
+}
+
+static void
+linux_dutil_remove( XW_DUtilCtxt* XP_UNUSED(duc), const XP_UCHAR* XP_UNUSED(keys[]) )
+{
+    XP_ASSERT(0);
 }
 
 #ifdef XWFEATURE_SMS

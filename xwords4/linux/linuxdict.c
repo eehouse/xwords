@@ -113,13 +113,12 @@ dict_splitFaces( DictionaryCtxt* dict, XWEnv XP_UNUSED(xwe), const XP_U8* utf8,
 {
     XP_UCHAR* faces = XP_MALLOC( dict->mpool, nBytes + nFaces );
     const XP_UCHAR** ptrs = XP_MALLOC( dict->mpool, nFaces * sizeof(ptrs[0]));
-    XP_U16 ii;
     XP_Bool isUTF8 = dict->isUTF8;
     XP_UCHAR* next = faces;
     const gchar* bytesIn = (const gchar*)utf8;
     const gchar* bytesEnd = bytesIn + nBytes;
 
-    for ( ii = 0; ii < nFaces; ++ii ) {
+    for ( int ii = 0; ii < nFaces; ++ii ) {
         ptrs[ii] = next;
         if ( isUTF8 ) {
             for ( ; ; ) {

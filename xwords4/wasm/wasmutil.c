@@ -482,7 +482,12 @@ wasm_util_playerScoreHeld( XW_UtilCtxt* uc, XWEnv xwe, XP_U16 player )
 static void
 wasm_util_cellSquareHeld( XW_UtilCtxt* uc, XWEnv xwe, XWStreamCtxt* words )
 {
-    LOG_FUNC();
+    char* ptr = (char*)stream_getPtr(words);
+    const char* end = ptr + stream_getSize(words);
+    while ( ptr < end ) {
+        XP_LOGFF( "word: %s", (char*)ptr );
+        ptr += 1 + strlen(ptr);
+    }
 }
 #endif
 

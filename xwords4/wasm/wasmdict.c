@@ -17,6 +17,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#include <emscripten.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -198,53 +199,98 @@ wasm_dictionary_make( Globals* globals, XWEnv xwe,
     (void)dict_ref( &result->super, xwe );
 
     LOG_RETURNF( "%p", &result->super );
+
+    /* XP_U16 nf = dict_numTileFaces( &result->super ); */
+    /* for ( Tile tile = 0; tile < nf; ++tile ) { */
+    /*     const XP_UCHAR* face = dict_getTileString( &result->super, tile ); */
+    /*     XP_LOGFF( "faces[%d]: %s", tile, face ); */
+    /* } */
+
     return &result->super;
+}
+
+EM_JS(void, js_splitFaces, (const uint8_t* ptr, int len,
+                            StringProc proc, void* closure), {
+          const callWith = function(str) {
+              ccallString(proc, closure, str);
+          };
+
+          let jsarr = new Uint8Array(Module.HEAPU8.buffer, ptr, len);
+          let chrs = [];
+          for ( let chr of jsarr ) {
+              /* I'm assuming here that there is no legit utf-8 byte valued
+                 less than 32. Is that true? PENDING */
+              if ( chr < 32 ) {
+                  callWith(chr.toString());
+                  assert(chrs.length == 0);
+              } else {
+                  chrs.push(chr);
+                  try {
+                      let ab = new Uint8Array(chrs);
+                      const decoder = new TextDecoder('utf-8', { fatal: true });
+                      let asStr = decoder.decode(ab);
+                      callWith( asStr );
+                      chrs = [];
+                  } catch (ex) {
+                      /* we get here when have first of multi-byte string */
+                      // console.log('failed decoding:' + chrs);
+                  }
+              }
+          }
+    });
+
+typedef struct _SplitState {
+    DictionaryCtxt* dict;
+    bool prevWasDelim;
+    XP_UCHAR* data;             /* holds everything; lots of NULL chars inside */
+    int curOffset;              /* where we are in data */
+    const XP_UCHAR** facePtrs;        /* ptrs into data */
+    int curFace;                /* how many faces have we seen */
+} SplitState;
+
+static void
+gotDictString( void* closure, const char* str )
+{
+    SplitState* ss = (SplitState*)closure;
+    if ( 0 == strcmp(str, " ") ) {   /* delimter */
+        XP_ASSERT(!ss->prevWasDelim);
+        ss->prevWasDelim = true;
+    } else {
+        if ( !ss->prevWasDelim ) {
+            ss->facePtrs[ss->curFace++] = ss->data + ss->curOffset;
+        }
+        if ( '0' <= str[0] && str[0] <= '9') {
+            XP_ASSERT( !ss->prevWasDelim );
+            ss->data[ss->curOffset++] = atoi(str);
+            ss->data[ss->curOffset++] = '\0';
+        } else {
+            ss->curOffset += 1 + sprintf( ss->data + ss->curOffset, "%s", str );
+        }
+        ss->prevWasDelim = false;
+    }
 }
 
 void
 dict_splitFaces( DictionaryCtxt* dict, XWEnv xwe, const XP_U8* utf8,
                  XP_U16 nBytes, XP_U16 nFaces )
 {
-    XP_UCHAR* faces = XP_MALLOC( dict->mpool, nBytes + nFaces );
-    const XP_UCHAR** ptrs = XP_MALLOC( dict->mpool, nFaces * sizeof(ptrs[0]));
-    XP_U16 ii;
-    XP_Bool isUTF8 = dict->isUTF8;
-    XP_UCHAR* next = faces;
-    const XP_U8* bytesIn = utf8;
-    const XP_U8* bytesEnd = bytesIn + nBytes;
+    XP_ASSERT( dict->isUTF8 );  /* assumed by code here */
 
-    for ( ii = 0; ii < nFaces; ++ii ) {
-        ptrs[ii] = next;
-        if ( isUTF8 ) {
-            for ( ; ; ) {
-                const XP_U8* cp = bytesIn + 1; // g_utf8_offset_to_pointer( bytesIn, 1 );
-                size_t len = cp - bytesIn;
-                XP_MEMCPY( next, bytesIn, len );
-                next += len;
-                bytesIn += len;
-                if ( bytesIn >= bytesEnd || SYNONYM_DELIM != bytesIn[0] ) {
-                    break;
-                }
-                ++bytesIn;        /* skip delimiter */
-                *next++ = '\0';
-            }
-        } else {
-            XP_ASSERT( 0 == *bytesIn );
-            ++bytesIn;            /* skip empty */
-            *next++ = *bytesIn++;
-        }
-        XP_ASSERT( next < faces + nFaces + nBytes );
-        *next++ = '\0';
-    }
+    SplitState ss = {
+        .dict = dict,
+        .data = XP_MALLOC( dict->mpool, nBytes + nFaces ),
+        .facePtrs = XP_CALLOC(dict->mpool, nFaces * sizeof(ss.facePtrs[0])),
+    };
+    js_splitFaces( utf8, nBytes, gotDictString, &ss );
+    XP_ASSERT( ss.curFace == nFaces ); /* got 'em all? */
+
     XP_ASSERT( !dict->faces );
-    dict->faces = faces;
-    dict->facesEnd = faces + nFaces + nBytes;
+    dict->faces = ss.data;
+    dict->facesEnd = dict->faces + nFaces + nBytes;
     XP_ASSERT( !dict->facePtrs );
-    dict->facePtrs = ptrs;
+    dict->facePtrs = ss.facePtrs;
 
-    /* for ( int ii = 0; ii < nFaces; ++ii ) { */
-    /*     XP_LOGFF( "face %d: %s", ii, dict->facePtrs[ii] ); */
-    /* } */
+    LOG_RETURN_VOID();
 } /* dict_splitFaces */
 
 void
