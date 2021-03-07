@@ -100,7 +100,7 @@ fontFor( WasmDrawCtx* wdctx, int height )
         wdctx->fonts = rec;
 
         rec->size = height;
-        rec->font = TTF_OpenFont( "assets_dir/FreeSans.ttf", height );
+        rec->font = TTF_OpenFont( "assets_dir/DejaVuSansCondensed.ttf", height );
         result = rec->font;
     }
 
@@ -180,7 +180,7 @@ measureText( WasmDrawCtx* wdctx, const XP_UCHAR* text, int fontHeight,
 {
     SDL_Color black = { 0, 0, 0, 255 };
     TTF_Font* font = fontFor( wdctx, fontHeight );
-    SDL_Surface* surface = TTF_RenderText_Blended( font, text, black );
+    SDL_Surface* surface = TTF_RenderUTF8_Blended( font, text, black );
     SDL_Texture* texture = SDL_CreateTextureFromSurface( wdctx->renderer,
                                                          surface );
     SDL_QueryTexture( texture, NULL, NULL, widthP, heightP );
@@ -201,7 +201,7 @@ textInRect( WasmDrawCtx* wdctx, const XP_UCHAR* text, const XP_Rect* rect,
     if ( NULL == color ) {
         color = &black;
     }
-    SDL_Surface* surface = TTF_RenderText_Blended( font, text, *color );
+    SDL_Surface* surface = TTF_RenderUTF8_Blended( font, text, *color );
     SDL_Texture* texture = SDL_CreateTextureFromSurface( wdctx->renderer, surface );
     SDL_FreeSurface( surface );
 
