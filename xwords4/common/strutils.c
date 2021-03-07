@@ -401,27 +401,25 @@ lcToLocale( XP_LangCode lc )
 {
     const XP_UCHAR* result = NULL;
     switch ( lc ) {
-    /* <item>@string/lang_unknown</item> <!-- Unknown --> */
+        /* <item>@string/lang_unknown</item> <!-- Unknown --> */
     case 1: result = "en"; break;
     case 2: result = "fr"; break;
     case 3: result = "de"; break;
-    /* <item>@string/lang_name_turkish</item> <!-- 4 --> */
-    /* <item>@string/lang_name_arabic</item>  <!-- 5 --> */
+    case 4: result = "tr"; break;
+    case 5: result = "ar"; break;
     case 6: result = "es"; break;
-    /* <item>@string/lang_name_swedish</item> <!-- 7 --> */
-    /* <item>@string/lang_name_polish</item>  <!-- 8 --> */
-    /* <item>@string/lang_name_danish</item>  <!-- 9 --> */
+    case 7: result = "sv"; break;
+    case 8: result = "pl"; break;
+    case 9: result = "da"; break;
     case 0xA: result = "it"; break;
-    /* <item>@string/lang_name_dutch</item>   <!-- B --> */
+    case 0xB: result = "nl"; break;
     case 0xC: result = "ca"; break;
-    /* <item>@string/lang_name_portuguese</item> <!-- D --> */
-    /* <item></item> <!-- E --> */
-    /* <item>@string/lang_name_russian</item> */
-    /* <item></item> <!-- 10 --> */
-    /* <item>@string/lang_name_czech</item> */
-    /* <item>@string/lang_name_greek</item> */
-    /* <item>@string/lang_name_slovak</item> */
-    /* <item>@string/lang_name_hungarian</item> */
+    case 0xD: result = "pt"; break;
+    case 0xF: result = "ru"; break;
+    case 0x11: result = "cs"; break;
+    case 0x12: result = "el"; break;
+    case 0x13: result = "sk"; break;
+    case 0x14: result = "hu"; break;
     }
     XP_ASSERT( !!result );
     return result;

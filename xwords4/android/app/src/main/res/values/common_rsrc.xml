@@ -225,12 +225,12 @@
     <item>@string/lang_name_catalan</item> <!-- C -->
     <item>@string/lang_name_portuguese</item> <!-- D -->
     <item></item> <!-- E -->
-    <item>@string/lang_name_russian</item>
+    <item>@string/lang_name_russian</item> <!--F-->
     <item></item> <!-- 10 -->
-    <item>@string/lang_name_czech</item>
-    <item>@string/lang_name_greek</item>
-    <item>@string/lang_name_slovak</item>
-    <item>@string/lang_name_hungarian</item>
+    <item>@string/lang_name_czech</item> <!--0x11-->
+    <item>@string/lang_name_greek</item> <!--0x12-->
+    <item>@string/lang_name_slovak</item> <!--0x13-->
+    <item>@string/lang_name_hungarian</item> <!--0x14-->
   </string-array>
 
   <string-array name="language_codes">
