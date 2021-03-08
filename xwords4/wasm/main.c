@@ -361,7 +361,7 @@ onGotInviteeID( void* closure, const char* mqttid )
     if ( strToMQTTCDevID( mqttid, &remoteDevID ) ) {
         CAST_GS(GameState*, gs, closure);
         sendInviteTo( gs, &remoteDevID );
-    } else {
+    } else if (!!mqttid) {
         call_alert( "MQTT id looks badly formed" );
     }
 }
