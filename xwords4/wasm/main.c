@@ -813,18 +813,14 @@ storeAsDict(Globals* globals, const char* lc, const char* name,
 
     /* First make a dict of it. If it doesn't work out, don't store the
        data! */
-    uint8_t* poolCopy = XP_MALLOC( globals->mpool, len );
-    XP_MEMCPY( poolCopy, data, len );
     DictionaryCtxt* dict =
-        wasm_dictionary_make( globals, NULL, shortName, poolCopy, len );
+        wasm_dictionary_make( globals, NULL, shortName, data, len );
     bool success = !!dict;
     if ( success ) {
         dict_unref( dict, NULL );
 
         const XP_UCHAR* keys[] = {KEY_DICTS, lc, shortName, NULL};
         dutil_storePtr( globals->dutil, NULL, keys, data, len );
-    } else {
-        XP_FREE( globals->mpool, poolCopy );
     }
     LOG_RETURNF( "%d", success );
     return success;
@@ -1162,6 +1158,7 @@ onOneDict( void* closure, const XP_UCHAR* keys[] )
     uint8_t* ptr = XP_MALLOC( fos->globals->mpool, len );
     dutil_loadPtr( dutil, NULL, keys, ptr, &len );
     fos->dict = wasm_dictionary_make( fos->globals, NULL, dictName, ptr, len );
+    XP_FREE( fos->globals->mpool, ptr );
     return XP_FALSE;
 }
 

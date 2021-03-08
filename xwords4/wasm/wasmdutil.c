@@ -429,7 +429,7 @@ gotForLang( void* closure, const XP_UCHAR* keys[] )
     } else {
         XP_LOGFF( "nothing for %s/%s", keys[1], keys[2] );
     }
-    return NULL != fls->ptr;
+    return NULL == fls->ptr;
 }
 
 static const DictionaryCtxt*
@@ -447,7 +447,9 @@ wasm_dutil_getDict( XW_DUtilCtxt* duc, XWEnv xwe,
         const char* keys[] = {KEY_DICTS, lc, dictName, NULL };
         dutil_loadPtr( duc, xwe, keys, NULL, &len );
         if ( 0 < len ) {
-            uint8_t* ptr = XP_MALLOC( duc->mpool, len );
+            XP_LOGFF( "making stack alloc of %d bytes", len );
+            uint8_t ptr[len];   /* this should blow up. JS is special. */
+            XP_LOGFF( "MADE stack alloc of %d bytes!!!", len );
             dutil_loadPtr( duc, xwe, keys, ptr, &len );
             result = wasm_dictionary_make( globals, xwe, dictName, ptr, len );
             dmgr_put( globals->dictMgr, xwe, dictName, result );
@@ -460,7 +462,9 @@ wasm_dutil_getDict( XW_DUtilCtxt* duc, XWEnv xwe,
             const char* langKeys[] = {KEY_DICTS, lc, KEY_WILDCARD, NULL};
             dutil_forEach( duc, xwe, langKeys, gotForLang, &fls );
             if ( !!fls.ptr ) {
-                result = wasm_dictionary_make( globals, xwe, dictName, fls.ptr, fls.len );
+                result = wasm_dictionary_make( globals, xwe, dictName,
+                                               fls.ptr, fls.len );
+                XP_FREE( globals->mpool, fls.ptr );
                 dmgr_put( globals->dictMgr, xwe, dictName, result );
             }
         }

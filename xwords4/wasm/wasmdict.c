@@ -51,24 +51,21 @@ getShortName( const DictionaryCtxt* dict )
 
 static XP_Bool
 initFromPtr( WasmDictionaryCtxt* dctx, const char* name,
-             uint8_t* dictBase, size_t len )
+             uint8_t* data, size_t len )
 {
-    XP_Bool formatOk = XP_TRUE;
-    size_t dictLength;
-    XP_U32 topOffset;
-    char path[256];
-
     dctx->dictLength = len;
-    dctx->dictBase = dictBase;
+    dctx->dictBase = XP_MALLOC( dctx->super.mpool, len );
+    XP_MEMCPY( dctx->dictBase, data, len );
 
     const XP_U8* ptr = dctx->dictBase;
     const XP_U8* end = ptr + dctx->dictLength;
-    formatOk = parseCommon( &dctx->super, NULL, &ptr, end );
+    XP_Bool formatOk = parseCommon( &dctx->super, NULL, &ptr, end );
         /* && loadSpecialData( &dctx->super, &ptr, end ); */
 
     if ( formatOk ) {
         size_t curPos = ptr - dctx->dictBase;
-        dictLength = dctx->dictLength - curPos;
+        size_t dictLength = dctx->dictLength - curPos;
+        XP_U32 topOffset;
 
         if ( dictLength > 0 ) {
             memcpy( &topOffset, ptr, sizeof(topOffset) );
@@ -171,7 +168,7 @@ wasm_dictionary_make_empty( Globals* globals )
     dict_super_init( MPPARM(globals->mpool) (DictionaryCtxt*)wdict );
 
     LOG_RETURNF( "%p", wdict );
-    return (DictionaryCtxt*)wdict;
+    return &wdict->super;
 }
 
 DictionaryCtxt* 
