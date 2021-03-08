@@ -324,13 +324,14 @@ function nbGetString(msg, dflt, proc, closure) {
 	addDepthNote(dlg);
 }
 
-function newRadio(txt, id, proc) {
+function newRadio(txt, id, isSet, proc) {
 	let span = document.createElement('span');
 	let radio = document.createElement('input');
 	radio.type = 'radio';
 	radio.id = id;
 	radio.name = id;
 	radio.onclick = proc;
+	radio.checked = isSet;
 
 	let label = document.createElement('label')
 	label.htmlFor = id;
@@ -352,11 +353,14 @@ function nbGetNewGame(closure, msg, langs) {
 
 	const radioDiv = document.createElement('div');
 	dlg.appendChild( radioDiv );
-	const robotSet = [null];
-	radioDiv.appendChild(newRadio('Robot', 'newgame', function() {robotSet[0] = true;}));
-	radioDiv.appendChild(newRadio('Remote player', 'newgame', function() {robotSet[0] = false;}));
+	let robotSet = true;
+	radioDiv.appendChild(newRadio('Robot', 'newgame', robotSet,
+								  function() {robotSet = true;}));
+	radioDiv.appendChild(newRadio('Remote player', 'newgame', !robotSet,
+								  function() {robotSet = false;} ));
 
-	let chosenLang = [langs[0]];
+	const dfltLangIndx = 0;
+	let chosenLang = langs[dfltLangIndx];
 	if ( 1 < langs.length ) {
 		const langsExplDiv = document.createElement('div');
 		dlg.appendChild( langsExplDiv );
@@ -365,14 +369,15 @@ function nbGetNewGame(closure, msg, langs) {
 		dlg.appendChild( langsDiv );
 		for ( let ii = 0; ii < langs.length; ++ii ) {
 			let langName = langs[ii];
-			langsDiv.appendChild(newRadio(langName, 'lang', function() {chosenLang[0] = langName;}));
+			langsDiv.appendChild(newRadio(langName, 'lang', ii == dfltLangIndx,
+										  function() {chosenLang = langName;}));
 		}
 	}
 
 	const butProc = function(indx) {
-		if ( indx === 1 && null !== robotSet[0]) {
+		if ( indx === 1 ) {
 			const types = ['number', 'boolean', 'string'];
-			const params = [closure, robotSet[0], chosenLang[0]];
+			const params = [closure, robotSet, chosenLang];
 			Module.ccall('onNewGame', null, types, params);
 		}
 		dlg.parentNode.removeChild(dlg);
