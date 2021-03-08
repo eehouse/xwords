@@ -196,11 +196,11 @@ wasm_dictionary_make( Globals* globals, XWEnv xwe, const char* name,
     if ( !!result ) {
         (void)dict_ref( &result->super, xwe );
 
-        XP_U16 nf = dict_numTileFaces( &result->super );
-        for ( Tile tile = 0; tile < nf; ++tile ) {
-            const XP_UCHAR* face = dict_getTileString( &result->super, tile );
-            XP_LOGFF( "faces[%d]: %s", tile, face );
-        }
+        /* XP_U16 nf = dict_numTileFaces( &result->super ); */
+        /* for ( Tile tile = 0; tile < nf; ++tile ) { */
+        /*     const XP_UCHAR* face = dict_getTileString( &result->super, tile ); */
+        /*     XP_LOGFF( "faces[%d]: %s", tile, face ); */
+        /* } */
     }
 
     LOG_RETURNF( "%p", &result->super );

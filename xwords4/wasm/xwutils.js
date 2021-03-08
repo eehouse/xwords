@@ -54,10 +54,10 @@ function handleFetchErrors(response) {
 }
 
 function getDict(langs, proc, closure) {
-	function callWhenDone(xwd, lc, data, len) {
+	function callWhenDone(xwd, lc, langName, data, len) {
 		Module.ccall('gotDictBinary', null,
-					 ['number', 'number', 'string', 'string', 'array', 'number'],
-					 [proc, closure, xwd, lc, data, len ]);
+					 ['number', 'number', 'string', 'string', 'string', 'array', 'number'],
+					 [proc, closure, xwd, lc, langName, data, len ]);
 	}
 
 	let gots = {};				// for later
@@ -100,10 +100,10 @@ function getDict(langs, proc, closure) {
 		// Copy data to Emscripten heap
 		var dataHeap = new Uint8Array(Module.HEAPU8.buffer, dataPtr, len);
 		dataHeap.set( new Uint8Array(data) );
-		callWhenDone(gots.xwd, gots.lc, dataHeap, len);
+		callWhenDone(gots.xwd, gots.lc, gots.langName, dataHeap, len);
 		Module._free(dataPtr);
 	}).catch(ex => {
-		callWhenDone(null, null, [], 0);
+		callWhenDone(null, null, null, [], 0);
 	});
 }
 

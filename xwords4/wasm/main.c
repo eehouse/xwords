@@ -65,6 +65,7 @@
 #define KEY_GAME "game_data"
 #define KEY_NAME "game_name"
 #define KEY_NEXT_GAME "next_game"
+#define KEY_LANG_NAME "lang_name"
 
 #define BUTTON_OK "OK"
 #define BUTTON_CANCEL "Cancel"
@@ -113,8 +114,8 @@ static void saveName( GameState* gs );
 static bool isVisible( GameState* gs );
 static int countDicts( Globals* globals );
 
-typedef void (*GotDictProc)(void* closure, const char* lc, const char* name,
-                            uint8_t* data, int len);
+typedef void (*GotDictProc)(void* closure, const char* lc, const char* langName,
+                            const char* dictName, uint8_t* data, int len);
 
 EM_JS(void, call_get_dict, (const char* lc, GotDictProc proc,
                             void* closure), {
@@ -492,10 +493,19 @@ updateGameButtons( Globals* globals )
 static void
 showName( GameState* gs )
 {
+    Globals* globals = gs->globals;
     const char* title = gs->gameName;
     char buf[64];
-    if ( true || 1 < countDicts( gs->globals ) ) {
-        sprintf( buf, "%s (%s)", gs->gameName, lcToLocale(gs->gi.dictLang) );
+    if ( true || 1 < countDicts( globals ) ) {
+        char langName[32];
+        const char* lc = lcToLocale(gs->gi.dictLang);
+        const XP_UCHAR* keys[] = {KEY_DICTS, lc, KEY_LANG_NAME, NULL };
+        XP_U32 len = sizeof(langName);
+        dutil_loadPtr( globals->dutil, NULL, keys, langName, &len );
+        if ( 0 != len ) {
+            lc = langName;
+        }
+        sprintf( buf, "%s (%s)", title, lc );
         title = buf;
     }
     show_name( title );
@@ -800,11 +810,11 @@ onMqttMsg(void* closure, const uint8_t* data, int len )
 }
 
 static bool
-storeAsDict(Globals* globals, const char* lc, const char* name,
-            uint8_t* data, int len  )
+storeAsDict(Globals* globals, const char* lc, const char* langName,
+            const char* dictName, uint8_t* data, int len )
 {
     char shortName[32];
-    sprintf( shortName, "%s", name );
+    sprintf( shortName, "%s", dictName );
     char* dot = strstr(shortName, ".xwd");
     if ( !!dot ) {
         *dot = '\0';
@@ -821,17 +831,20 @@ storeAsDict(Globals* globals, const char* lc, const char* name,
 
         const XP_UCHAR* keys[] = {KEY_DICTS, lc, shortName, NULL};
         dutil_storePtr( globals->dutil, NULL, keys, data, len );
+        keys[2] = KEY_LANG_NAME;
+        dutil_storePtr( globals->dutil, NULL, keys, langName,
+                        strlen(langName) + 1 );
     }
     LOG_RETURNF( "%d", success );
     return success;
 }
 
 static void
-onGotDict( void* closure, const char* lc, const char* name,
-           uint8_t* data, int len)
+onGotDict( void* closure, const char* lc, const char* langName,
+           const char* dictName, uint8_t* data, int len)
 {
     CAST_GLOB(Globals*, globals, closure);
-    if ( storeAsDict( globals, lc, name, data, len ) ) {
+    if ( storeAsDict( globals, lc, langName, dictName, data, len ) ) {
         if ( 0 == countGames(globals) ) {
             loadAndDraw( globals, NULL, NULL, NULL );
         }
@@ -947,13 +960,13 @@ typedef struct _DictDownState {
 
 
 static void
-onDictForInvite( void* closure, const char* lc, const char* name,
-                 uint8_t* data, int len )
+onDictForInvite( void* closure, const char* lc, const char* langName,
+                 const char* dictName, uint8_t* data, int len )
 {
     DictDownState* dds = (DictDownState*)closure;
     if ( !!data
          && 0 < len
-         && storeAsDict( dds->globals, lc, name, data, len ) ) {
+         && storeAsDict( dds->globals, lc, langName, dictName, data, len ) ) {
         loadAndDraw( dds->globals, &dds->invite, NULL, NULL );
     } else {
         char msg[128];
@@ -1769,10 +1782,12 @@ cbckString( StringProc proc, void* closure, const char* str )
 
 void
 gotDictBinary( GotDictProc proc, void* closure, const char* xwd,
-               const char* lc, uint8_t* data, int len )
+               const char* lc, const char* langName,
+               uint8_t* data, int len )
 {
-    XP_LOGFF( "lc: %s, xwd: %s; len: %d", lc, xwd, len );
-    (*proc)(closure, lc, xwd, data, len);
+    XP_LOGFF( "lc: %s, langName: %s, xwd: %s; len: %d",
+              lc, langName, xwd, len );
+    (*proc)(closure, lc, langName, xwd, data, len);
 }
 
 void
