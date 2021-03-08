@@ -799,7 +799,7 @@ onMqttMsg(void* closure, const uint8_t* data, int len )
     dvc_parseMQTTPacket( globals->dutil, NULL, data, len );
 }
 
-static void
+static bool
 storeAsDict(Globals* globals, const char* lc, const char* name,
             uint8_t* data, int len  )
 {
@@ -811,8 +811,23 @@ storeAsDict(Globals* globals, const char* lc, const char* name,
     }
     XP_LOGFF("shortName: %s", shortName);
 
-    const XP_UCHAR* keys[] = {KEY_DICTS, lc, shortName, NULL};
-    dutil_storePtr( globals->dutil, NULL, keys, data, len );
+    /* First make a dict of it. If it doesn't work out, don't store the
+       data! */
+    uint8_t* poolCopy = XP_MALLOC( globals->mpool, len );
+    XP_MEMCPY( poolCopy, data, len );
+    DictionaryCtxt* dict =
+        wasm_dictionary_make( globals, NULL, shortName, poolCopy, len );
+    bool success = !!dict;
+    if ( success ) {
+        dict_unref( dict, NULL );
+
+        const XP_UCHAR* keys[] = {KEY_DICTS, lc, shortName, NULL};
+        dutil_storePtr( globals->dutil, NULL, keys, data, len );
+    } else {
+        XP_FREE( globals->mpool, poolCopy );
+    }
+    LOG_RETURNF( "%d", success );
+    return success;
 }
 
 static void
@@ -820,8 +835,12 @@ onGotDict( void* closure, const char* lc, const char* name,
            uint8_t* data, int len)
 {
     CAST_GLOB(Globals*, globals, closure);
-    storeAsDict( globals, lc, name, data, len );
-    updateDeviceButtons( globals );
+    if ( storeAsDict( globals, lc, name, data, len ) ) {
+        if ( 0 == countGames(globals) ) {
+            loadAndDraw( globals, NULL, NULL, NULL );
+        }
+        updateDeviceButtons( globals );
+    }
 }
 
 static void
@@ -936,8 +955,9 @@ onDictForInvite( void* closure, const char* lc, const char* name,
                  uint8_t* data, int len )
 {
     DictDownState* dds = (DictDownState*)closure;
-    if ( !!data && 0 < len ) {
-        storeAsDict( dds->globals, lc, name, data, len );
+    if ( !!data
+         && 0 < len
+         && storeAsDict( dds->globals, lc, name, data, len ) ) {
         loadAndDraw( dds->globals, &dds->invite, NULL, NULL );
     } else {
         char msg[128];

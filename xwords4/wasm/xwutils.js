@@ -45,9 +45,22 @@ function registerOnce(devid, gitrev, now) {
 	}
 }
 
+function handleFetchErrors(response) {
+	if ( response.ok ) {
+		return response;
+	} else {
+		throw Error(response.statusText);
+	}
+}
+
 function getDict(langs, proc, closure) {
-	// set these later
-	let gots = {};
+	function callWhenDone(xwd, lc, data, len) {
+		Module.ccall('gotDictBinary', null,
+					 ['number', 'number', 'string', 'string', 'array', 'number'],
+					 [proc, closure, xwd, lc, data, len ]);
+	}
+
+	let gots = {};				// for later
 
 	console.log('langs: ' + langs + '; langs[0]: ' + langs[0]);
 	let args = '?lc=' + langs.join('|');
@@ -57,11 +70,9 @@ function getDict(langs, proc, closure) {
 		headers: {
 			'Content-Type': 'application/json',
 		},
-	}).then(response => {
-		console.log(response);
-		if (response.ok) {
+	}).then(handleFetchErrors)
+      .then(response => {
 			return response.json();
-		}
 	}).then(data => {
 		// console.log('data: ' + JSON.stringify(data));
 		for ( lang of data.langs ) {
@@ -75,11 +86,12 @@ function getDict(langs, proc, closure) {
 				gots.xwd = dict.xwd;
 				gots.langName = lang.lang;
 				gots.lc = lang.lc;
-				let path = '/' + ['android', gots.langName, gots.xwd].join('/');
+				let path = '/' + ['and_wordlists', gots.langName, gots.xwd].join('/');
 				return fetch(path);
 			}
 		}
-	}).then(response => {
+	}).then(handleFetchErrors)
+	  .then(response => {
 		// console.log('got here!!!' + response);
 		return response.arrayBuffer();
 	}).then(data=> {
@@ -88,13 +100,11 @@ function getDict(langs, proc, closure) {
 		// Copy data to Emscripten heap
 		var dataHeap = new Uint8Array(Module.HEAPU8.buffer, dataPtr, len);
 		dataHeap.set( new Uint8Array(data) );
-		// console.log('made array?: ' + dataHeap);
-		Module.ccall('gotDictBinary', null,
-					 ['number', 'number', 'string', 'string', 'array', 'number'],
-					 [proc, closure, gots.xwd, gots.lc, dataHeap, len]);
+		callWhenDone(gots.xwd, gots.lc, dataHeap, len);
 		Module._free(dataPtr);
+	}).catch(ex => {
+		callWhenDone(null, null, [], 0);
 	});
-	console.log('getDict() done');
 }
 
 // Called from main() asap after things are initialized etc.

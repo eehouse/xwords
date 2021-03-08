@@ -175,8 +175,8 @@ wasm_dictionary_make_empty( Globals* globals )
 }
 
 DictionaryCtxt* 
-wasm_dictionary_make( Globals* globals, XWEnv xwe,
-                      const char* name, uint8_t* base, size_t len )
+wasm_dictionary_make( Globals* globals, XWEnv xwe, const char* name,
+                      uint8_t* base, size_t len )
 {
     WasmDictionaryCtxt* result = (WasmDictionaryCtxt*)
         XP_CALLOC(globals->mpool, sizeof(*result));
@@ -192,20 +192,21 @@ wasm_dictionary_make( Globals* globals, XWEnv xwe,
         result->super.func_dict_getShortName = getShortName;
         setBlankTile( &result->super );
     } else {
-        XP_ASSERT( 0 ); /* gonna crash anyway */
         XP_FREE( globals->mpool, result );
         result = NULL;
     }
-    (void)dict_ref( &result->super, xwe );
+
+    if ( !!result ) {
+        (void)dict_ref( &result->super, xwe );
+
+        XP_U16 nf = dict_numTileFaces( &result->super );
+        for ( Tile tile = 0; tile < nf; ++tile ) {
+            const XP_UCHAR* face = dict_getTileString( &result->super, tile );
+            XP_LOGFF( "faces[%d]: %s", tile, face );
+        }
+    }
 
     LOG_RETURNF( "%p", &result->super );
-
-    /* XP_U16 nf = dict_numTileFaces( &result->super ); */
-    /* for ( Tile tile = 0; tile < nf; ++tile ) { */
-    /*     const XP_UCHAR* face = dict_getTileString( &result->super, tile ); */
-    /*     XP_LOGFF( "faces[%d]: %s", tile, face ); */
-    /* } */
-
     return &result->super;
 }
 

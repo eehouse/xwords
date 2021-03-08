@@ -401,7 +401,7 @@ lcToLocale( XP_LangCode lc )
 {
     const XP_UCHAR* result = NULL;
     switch ( lc ) {
-        /* <item>@string/lang_unknown</item> <!-- Unknown --> */
+    case 0: result = "??"; break;
     case 1: result = "en"; break;
     case 2: result = "fr"; break;
     case 3: result = "de"; break;

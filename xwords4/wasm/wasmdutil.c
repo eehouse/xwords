@@ -292,7 +292,7 @@ wasm_dutil_loadPtr( XW_DUtilCtxt* duc, XWEnv xwe,
         XP_LOGFF( "no file at %s", path );
         *lenp = 0;              /* does not exist */
     }
-    LOG_RETURN_VOID();
+    // XP_LOGFF( "(path: %s)=> (len: %d)", path, *lenp );
 }
 
 /* Iterate over every child of the provided path. This isn't a recursive
