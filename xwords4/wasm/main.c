@@ -691,7 +691,12 @@ static XP_Bool
 onOneLang( void* closure, const XP_UCHAR* keys[] )
 {
     NewGameState* ngs = (NewGameState*)closure;
-    replaceStringIfDifferent( ngs->globals->mpool, &ngs->langs[ngs->nLangs], keys[1] );
+
+    char langName[32];
+    XP_U32 len = sizeof(langName);
+    dutil_loadPtr( ngs->globals->dutil, NULL, keys, langName, &len );
+
+    replaceStringIfDifferent( ngs->globals->mpool, &ngs->langs[ngs->nLangs], langName );
     XP_LOGFF( "set langs[%d] %s", ngs->nLangs, ngs->langs[ngs->nLangs] );
     ++ngs->nLangs;
     XP_ASSERT( ngs->nLangs < VSIZE(ngs->langs));
@@ -702,7 +707,7 @@ static void
 callNewGame( Globals* globals )
 {
     NewGameState ngs = {.globals = globals};
-    const XP_UCHAR* keys[] = {KEY_DICTS, KEY_WILDCARD, NULL};
+    const XP_UCHAR* keys[] = {KEY_DICTS, KEY_WILDCARD, KEY_LANG_NAME, NULL};
     dutil_forEach( globals->dutil, NULL, keys, onOneLang, &ngs );
 
     js_callNewGame("Configure your new game", globals, ngs.langs, ngs.nLangs);
@@ -1196,6 +1201,40 @@ loadAnyDict( Globals* globals, const char* lc )
     dutil_forEach( globals->dutil, NULL, keys, onOneDict, &fos );
     LOG_RETURNF( "%p", fos.dict );
     return fos.dict;
+}
+
+typedef struct _FindLCState {
+    Globals* globals;
+    const char* langName;
+    char* lc;
+} FindLCState;
+
+static XP_Bool
+onOneLangName( void* closure, const XP_UCHAR* keys[] )
+{
+    bool found = false;
+    FindLCState* lcs = (FindLCState*)closure;
+
+    char langName[32];
+    XP_U32 len = sizeof(langName);
+    dutil_loadPtr( lcs->globals->dutil, NULL, keys, langName, &len );
+
+    if ( 0 == strcmp( lcs->langName, langName ) ) {
+        strcpy( lcs->lc, keys[1] );
+        found = true;
+    }
+    return !found;
+}
+
+static void
+langNameToLC(Globals* globals, const char* langName, char lc[], size_t len)
+{
+    FindLCState lcc = { .globals = globals,
+                        .lc = lc,
+                        .langName = langName,
+    };
+    const XP_UCHAR* keys[] = {KEY_DICTS, KEY_WILDCARD, KEY_LANG_NAME, NULL};
+    dutil_forEach( globals->dutil, NULL, keys, onOneLangName, &lcc );
 }
 
 static void
@@ -1758,10 +1797,13 @@ cbckBinary( BinProc proc, void* closure, int len, const uint8_t* msg )
 }
 
 void
-onNewGame( void* closure, bool opponentIsRobot, const char* lc )
+onNewGame( void* closure, bool opponentIsRobot, const char* langName )
 {
     Globals* globals = (Globals*)closure;
-    XP_LOGFF( "isRobot: %d; lc: %s", opponentIsRobot, lc );
+    XP_LOGFF( "isRobot: %d; lc: %s", opponentIsRobot, langName );
+
+    char lc[8];
+    langNameToLC(globals, langName, lc, sizeof(lc));
 
     NewGameParams ngp = { .isRobotNotRemote = opponentIsRobot,
                           .lc = lc,
