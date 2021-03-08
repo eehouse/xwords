@@ -46,7 +46,6 @@
 #include "wasmutil.h"
 #include "wasmdutil.h"
 #include "wasmdict.h"
-#include "wasmasm.h"
 
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>

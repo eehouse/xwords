@@ -123,7 +123,6 @@ model_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
 {
     ModelCtxt* model;
     XP_U16 nCols;
-    XP_U16 ii;
     XP_U16 nPlayers;
     XP_U16 version = stream_getVersion( stream );
 
@@ -152,7 +151,7 @@ model_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
             model->vol.bonuses = 
                 XP_MALLOC( model->vol.mpool,
                            model->vol.nBonuses * sizeof( model->vol.bonuses[0] ) );
-            for ( ii = 0; ii < model->vol.nBonuses; ++ii ) {
+            for ( int ii = 0; ii < model->vol.nBonuses; ++ii ) {
                 model->vol.bonuses[ii] = stream_getBits( stream, 4 );
             }
         }
@@ -174,7 +173,7 @@ model_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
                          (XWStreamCtxt*)NULL, (WordNotifierInfo*)NULL,
                          pre, post, closure );
 
-    for ( ii = 0; ii < model->nPlayers; ++ii ) {
+    for ( int ii = 0; ii < model->nPlayers; ++ii ) {
         loadPlayerCtxt( model, stream, version, &model->players[ii] );
         setPendingCounts( model, ii );
         invalidateScore( model, ii );

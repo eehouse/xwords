@@ -33,7 +33,6 @@
 #include "main.h"
 #include "dbgutil.h"
 #include "LocalizedStrIncludes.h"
-#include "wasmasm.h"
 #include "wasmdict.h"
 
 typedef struct _WasmDUtilCtxt {
@@ -252,7 +251,7 @@ wasm_dutil_loadStream( XW_DUtilCtxt* duc, XWEnv xwe, const char* keys[],
 static void
 wasm_dutil_storePtr( XW_DUtilCtxt* duc, XWEnv xwe,
                      const char* keys[],
-                     void* data, XP_U32 len )
+                     const void* data, XP_U32 len )
 {
     char path[128];
     ensurePath(keys, path, true);

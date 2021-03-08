@@ -38,7 +38,7 @@ static const XP_UCHAR* linux_dutil_getUserQuantityString( XW_DUtilCtxt* duc, XWE
                                                           XP_U16 quantity );
 
 static void linux_dutil_storePtr( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* keys[],
-                                  void* data, XP_U32 len );
+                                  const void* data, XP_U32 len );
 static void linux_dutil_loadPtr( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* keys[],
                                  void* data, XP_U32* lenp );
 static void linux_dutil_forEach( XW_DUtilCtxt* duc, XWEnv xwe,
@@ -298,7 +298,7 @@ linux_dutil_getUserQuantityString( XW_DUtilCtxt* duc, XWEnv xwe, XP_U16 code,
 static void
 linux_dutil_storePtr( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe),
                       const XP_UCHAR* keys[],
-                      void* data, const XP_U32 len )
+                      const void* data, const XP_U32 len )
 {
     XP_ASSERT( keys[1] == NULL );
     LaunchParams* params = (LaunchParams*)duc->closure;
