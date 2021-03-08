@@ -105,7 +105,7 @@ static void clearScreen( Globals* globals );
 static GameState* newGameState( Globals* globals );
 static GameState* getSavedGame( Globals* globals, int gameID );
 static void loadAndDraw( Globals* globals, const NetLaunchInfo* invite,
-                         const char* gameID, NewGameParams* params );
+                         int gameID, NewGameParams* params );
 static GameState* getCurGame( Globals* globals );
 static void nameGame( GameState* gs, const char* name );
 static void ensureName( GameState* gs );
@@ -114,8 +114,15 @@ static void saveName( GameState* gs );
 static bool isVisible( GameState* gs );
 static int countDicts( Globals* globals );
 
-typedef void (*GotDictProc)(void* closure, const char* lc, const char* langName,
-                            const char* dictName, uint8_t* data, int len);
+typedef struct _GotDictData {
+    const char* lc;
+    const char* langName;
+    const char* dictName;
+    uint8_t* data;
+    int len;
+} GotDictData;
+
+typedef void (*GotDictProc)(void* closure, GotDictData* data);
 
 EM_JS(void, call_get_dict, (const char* lc, GotDictProc proc,
                             void* closure), {
@@ -542,7 +549,7 @@ onGameChosen( void* closure, const char* key )
     int gameID;
     unformatGameID( &gameID, key );
     if ( !!getSavedGame(globals, gameID) ) {
-        loadAndDraw( globals, NULL, key, NULL );
+        loadAndDraw( globals, NULL, gameID, NULL );
     }
 
     XP_FREE( globals->mpool, nis->names );
@@ -651,15 +658,17 @@ onDeleteConfirmed( void* closure, bool confirmed )
     }
 }
 
-static void
-getPlayerName( Globals* globals, char* playerName, size_t buflen )
+static bool
+getLocalName( Globals* globals, char* playerName, size_t buflen )
 {
     XP_U32 len = buflen;
     const XP_UCHAR* keys[] = {KEY_PLAYER_NAME, NULL};
     dutil_loadPtr( globals->dutil, NULL, keys, playerName, &len );
-    if ( 0 == len ) {        /* not found? */
+    bool haveName = 0 != len;
+    if ( !haveName ) {        /* not found? */
         strcpy( playerName, "Player 1" );
     }
+    return haveName;
 }
 
 static void
@@ -722,7 +731,7 @@ onDeviceButton( void* closure, const char* button )
         call_confirm( globals, msg, onDeleteConfirmed, curGS );
     } else if ( 0 == strcmp(button, BUTTON_NAME ) ) {
         char playerName[32];
-        getPlayerName( globals, playerName, sizeof(playerName)-1 );
+        getLocalName( globals, playerName, sizeof(playerName)-1 );
         call_get_string( "Set your (local) player name", playerName,
                          onPlayerNamed, globals );
     }
@@ -814,11 +823,10 @@ onMqttMsg(void* closure, const uint8_t* data, int len )
 }
 
 static bool
-storeAsDict(Globals* globals, const char* lc, const char* langName,
-            const char* dictName, uint8_t* data, int len )
+storeAsDict(Globals* globals, GotDictData* gdd )
 {
     char shortName[32];
-    sprintf( shortName, "%s", dictName );
+    sprintf( shortName, "%s", gdd->dictName );
     char* dot = strstr(shortName, ".xwd");
     if ( !!dot ) {
         *dot = '\0';
@@ -828,33 +836,33 @@ storeAsDict(Globals* globals, const char* lc, const char* langName,
     /* First make a dict of it. If it doesn't work out, don't store the
        data! */
     DictionaryCtxt* dict =
-        wasm_dictionary_make( globals, NULL, shortName, data, len );
+        wasm_dictionary_make( globals, NULL, shortName, gdd->data, gdd->len );
     bool success = !!dict;
     if ( success ) {
         dict_unref( dict, NULL );
 
-        const XP_UCHAR* keys[] = {KEY_DICTS, lc, shortName, NULL};
-        dutil_storePtr( globals->dutil, NULL, keys, data, len );
+        const XP_UCHAR* keys[] = {KEY_DICTS, gdd->lc, shortName, NULL};
+        dutil_storePtr( globals->dutil, NULL, keys, gdd->data, gdd->len );
         keys[2] = KEY_LANG_NAME;
-        dutil_storePtr( globals->dutil, NULL, keys, langName,
-                        strlen(langName) + 1 );
+        dutil_storePtr( globals->dutil, NULL, keys, gdd->langName,
+                        strlen(gdd->langName) + 1 );
     }
     LOG_RETURNF( "%d", success );
     return success;
 }
 
-static void
-onGotDict( void* closure, const char* lc, const char* langName,
-           const char* dictName, uint8_t* data, int len)
-{
-    CAST_GLOB(Globals*, globals, closure);
-    if ( storeAsDict( globals, lc, langName, dictName, data, len ) ) {
-        if ( 0 == countGames(globals) ) {
-            loadAndDraw( globals, NULL, NULL, NULL );
-        }
-        updateDeviceButtons( globals );
-    }
-}
+/* static void */
+/* onGotDict( void* closure, const char* lc, const char* langName, */
+/*            const char* dictName, uint8_t* data, int len) */
+/* { */
+/*     CAST_GLOB(Globals*, globals, closure); */
+/*     if ( storeAsDict( globals, lc, langName, dictName, data, len ) ) { */
+/*         if ( 0 == countGames(globals) ) { */
+/*             loadAndDraw( globals, NULL, NULL, NULL ); */
+/*         } */
+/*         updateDeviceButtons( globals ); */
+/*     } */
+/* } */
 
 static void
 initDeviceGlobals( Globals* globals )
@@ -885,10 +893,6 @@ initDeviceGlobals( Globals* globals )
     XP_LOGFF( "got mqtt devID: %s", buf );
     int now = dutil_getCurSeconds( globals->dutil, NULL );
     call_setup( globals, buf, GITREV, now, onConflict, onFocussed, onMqttMsg );
-
-    if ( 0 == countDicts( globals ) ) {
-        call_get_dict( NULL, onGotDict, globals );
-    }
 }
 
 static void
@@ -943,7 +947,7 @@ newFromInvite( Globals* globals, const NetLaunchInfo* invite )
                                globals->dutil, gs );
 
     char playerName[32];
-    getPlayerName( globals, playerName, sizeof(playerName) );
+    getLocalName( globals, playerName, sizeof(playerName) );
 
     game_makeFromInvite( MPPARM(globals->mpool) NULL, invite,
                          &gs->game, &gs->gi, playerName,
@@ -964,14 +968,13 @@ typedef struct _DictDownState {
 
 
 static void
-onDictForInvite( void* closure, const char* lc, const char* langName,
-                 const char* dictName, uint8_t* data, int len )
+onDictForInvite( void* closure, GotDictData* gdd )
 {
     DictDownState* dds = (DictDownState*)closure;
-    if ( !!data
-         && 0 < len
-         && storeAsDict( dds->globals, lc, langName, dictName, data, len ) ) {
-        loadAndDraw( dds->globals, &dds->invite, NULL, NULL );
+    if ( !!gdd->data
+         && 0 < gdd->len
+         && storeAsDict( dds->globals, gdd ) ) {
+        loadAndDraw( dds->globals, &dds->invite, 0, NULL );
     } else {
         char msg[128];
         sprintf( msg, "Unable to download %s worldlist for invitation", dds->lc );
@@ -1192,18 +1195,16 @@ loadAnyDict( Globals* globals, const char* lc )
 
 static void
 loadAndDraw( Globals* globals, const NetLaunchInfo* invite,
-             const char* gameIDStr, NewGameParams* params )
+             int gameID, NewGameParams* params )
 {
-    XP_LOGFF( "(gameIDStr: %s)", gameIDStr );
+    XP_LOGFF( "(gameID: %X)", gameID );
     GameState* gs = NULL;
 
     bool haveGame;
     if ( !params ) {
         /* First, load any saved game. We need it e.g. to confirm that an incoming
            invite is a dup and should be dropped. */
-        if ( !!gameIDStr && gameIDStr[0] ) {
-            int gameID;
-            unformatGameID( &gameID, gameIDStr );
+        if ( 0 != gameID ) {
             gs = getSavedGame( globals, gameID );
         }
         if ( !!invite ) {   /* overwrite gs is ok: we'll likely want both games  */
@@ -1216,7 +1217,7 @@ loadAndDraw( Globals* globals, const NetLaunchInfo* invite,
         DictionaryCtxt* dict = loadAnyDict( globals, lc );
         if ( !!dict ) {
             char playerName[32];
-            getPlayerName( globals, playerName, sizeof(playerName) );
+            getLocalName( globals, playerName, sizeof(playerName) );
 
             gs = newGameState( globals );
             gs->gi.serverRole = !!params && !params->isRobotNotRemote
@@ -1370,9 +1371,7 @@ openConfirmed(void* closure, bool confirmed)
 {
     if ( confirmed ) {
         CAST_GS(GameState*, gs, closure);
-        char key[16];
-        formatGameID( key, sizeof(key), gs->gi.gameID );
-        loadAndDraw( gs->globals, NULL, key, NULL );
+        loadAndDraw( gs->globals, NULL, gs->gi.gameID, NULL );
     }
 }
 
@@ -1738,7 +1737,6 @@ inviteFromArgv( Globals* globals, NetLaunchInfo* nlip,
 void
 MQTTConnectedChanged( void* closure, bool connected )
 {
-    XP_LOGFF( "connected=%d", connected);
     if ( connected ) {
         CAST_GLOB(Globals*, globals, closure);
         GameState* gs = getCurGame( globals );
@@ -1763,7 +1761,7 @@ onNewGame( void* closure, bool opponentIsRobot, const char* lc )
     NewGameParams ngp = { .isRobotNotRemote = opponentIsRobot,
                           .lc = lc,
     };
-    loadAndDraw( globals, NULL, NULL, &ngp );
+    loadAndDraw( globals, NULL, 0, &ngp );
     updateDeviceButtons( globals );
 }
 
@@ -1791,7 +1789,108 @@ gotDictBinary( GotDictProc proc, void* closure, const char* xwd,
 {
     XP_LOGFF( "lc: %s, langName: %s, xwd: %s; len: %d",
               lc, langName, xwd, len );
-    (*proc)(closure, lc, langName, xwd, data, len);
+    GotDictData gdd = { .lc = lc,
+                        .dictName = xwd,
+                        .langName = langName,
+                        .data = data,
+                        .len = len,
+    };
+    (*proc)(closure, &gdd);
+}
+
+/* On first launch, we may have an invitation. Or not. We want to ask for a
+ * local name (but only once), then download any wordlist we need, then open
+ * any pre-existing game or else a new one.
+ */
+
+typedef struct _LaunchState {
+    Globals* globals;
+    NetLaunchInfo invite;
+    char playerName[32];
+    bool hadName;
+    bool needDict;
+} LaunchState;
+
+static void
+onGotDictAtLaunch( void* closure, GotDictData* gdd )
+{
+    LaunchState* ls = (LaunchState*)closure;
+    Globals* globals = ls->globals;
+
+    if ( ls->needDict ) {
+        if ( 0 == gdd->len || !storeAsDict( globals, gdd ) ) {
+            call_alert( "Unable to download wordlist. Reload the page to try again?" );
+        }
+    }
+
+    /* We're ready to start. If we had an invitation, launch for it. Otherwise
+       launch the last game that was open */
+    NetLaunchInfo* nlip = ls->invite.lang == 0 ? NULL : &ls->invite;
+    int gameID = 0;
+    XP_U32 len = sizeof(gameID);
+    const XP_UCHAR* keys[] = {KEY_LAST_GID, NULL};
+    dutil_loadPtr( globals->dutil, NULL, keys, (XP_U8*)&gameID, &len );
+    XP_LOGFF( "loaded KEY_LAST_GID: %X", gameID );
+    loadAndDraw( globals, nlip, gameID, NULL );
+
+    updateDeviceButtons( globals );
+
+    XP_FREE( globals->mpool, ls );
+}
+
+static void
+onPlayerNamedAtLaunch( void* closure, const char* responseName )
+{
+    LaunchState* ls = (LaunchState*)closure;
+
+    /* Did user change name? Save it */
+    if ( !!responseName && 0 != strcmp( responseName, ls->playerName ) ) {
+        onPlayerNamed( ls->globals, responseName );
+    } else if ( !ls->hadName ) {
+        onPlayerNamed( ls->globals, ls->playerName );
+
+        char buf[128];
+        sprintf( buf, "Ok. Using default name %s. You can change it anytime "
+                 "using the \"%s\" button.", ls->playerName, BUTTON_NAME );
+        call_alert( buf );
+    }
+
+    /* Now download a wordlist if we need one */
+    const char* neededLC = NULL;
+    if ( 0 != ls->invite.lang ) {   /* 0 means unset: no invite */
+        const char* lc = lcToLocale( ls->invite.lang );
+        if ( !haveDictFor(ls->globals, lc) ) {
+            neededLC = lc;
+            ls->needDict = true;
+        }
+    } else if ( 0 == countDicts( ls->globals ) ) {
+        ls->needDict = true;
+    }
+    if ( ls->needDict ) {
+        call_get_dict( neededLC, onGotDictAtLaunch, ls );
+    } else {
+        onGotDictAtLaunch( ls, NULL);
+    }
+ }
+
+static void
+startLaunchSequence( Globals* globals, NetLaunchInfo* nli )
+{
+    LaunchState* ls = XP_CALLOC( globals->mpool, sizeof(*ls) );
+    ls->globals = globals;
+    if ( NULL != nli ) {
+        ls->invite = *nli;
+    }
+
+    /* No saved name? Ask. Politely */
+    if ( getLocalName( globals, ls->playerName, sizeof(ls->playerName) ) ) {
+        ls->hadName = true;
+        onPlayerNamedAtLaunch( ls, NULL );
+    } else {
+        call_get_string( "Please choose a name for your player. It's what you "
+                         "and others will see in the scoreboard", ls->playerName,
+                         onPlayerNamedAtLaunch, ls );
+    }
 }
 
 void
@@ -1828,20 +1927,10 @@ mainPostSync( int argc, const char** argv )
     SDL_SetRenderDrawColor( globals->renderer, 155, 155, 155, 255 );
     SDL_RenderClear( globals->renderer );
 
-    initDeviceGlobals( globals );
+    initDeviceGlobals( globals ); /* takes care of getting mqtt devid */
 
-    char lastKey[16] = {0};
-    int gameID = 0;
-    XP_U32 len = sizeof(gameID);
-    const XP_UCHAR* keys[] = {KEY_LAST_GID, NULL};
-    dutil_loadPtr( globals->dutil, NULL, keys, (XP_U8*)&gameID, &len );
-    if ( len == sizeof(gameID) ) {
-        formatGameID( lastKey, sizeof(lastKey), gameID );
-    }
-    XP_LOGFF( "loaded KEY_LAST_GID: %s", lastKey );
-    loadAndDraw( globals, nlip, lastKey, NULL );
+    startLaunchSequence( globals, nlip );
 
-    updateDeviceButtons( globals );
 
 #ifdef GLOBALS_ON_STACK
     emscripten_set_main_loop_arg( looper, globals, -1, 1 );
