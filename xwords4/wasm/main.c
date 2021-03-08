@@ -132,7 +132,7 @@ EM_JS(void, call_get_dict, (const char* lc, GotDictProc proc,
     });
 
 EM_JS(void, show_name, (const char* name), {
-        let jsname = UTF8ToString(name);
+        let jsname = name ? UTF8ToString(name) : "";
         document.getElementById('gamename').textContent = jsname;
     });
 
@@ -493,20 +493,23 @@ updateGameButtons( Globals* globals )
 static void
 showName( GameState* gs )
 {
-    Globals* globals = gs->globals;
-    const char* title = gs->gameName;
-    char buf[64];
-    if ( true || 1 < countDicts( globals ) ) {
-        char langName[32];
-        const char* lc = lcToLocale(gs->gi.dictLang);
-        const XP_UCHAR* keys[] = {KEY_DICTS, lc, KEY_LANG_NAME, NULL };
-        XP_U32 len = sizeof(langName);
-        dutil_loadPtr( globals->dutil, NULL, keys, langName, &len );
-        if ( 0 != len ) {
-            lc = langName;
+    const char* title = NULL;
+    if ( !!gs ) {
+        Globals* globals = gs->globals;
+        title = gs->gameName;
+        char buf[64];
+        if ( true || 1 < countDicts( globals ) ) {
+            char langName[32];
+            const char* lc = lcToLocale(gs->gi.dictLang);
+            const XP_UCHAR* keys[] = {KEY_DICTS, lc, KEY_LANG_NAME, NULL };
+            XP_U32 len = sizeof(langName);
+            dutil_loadPtr( globals->dutil, NULL, keys, langName, &len );
+            if ( 0 != len ) {
+                lc = langName;
+            }
+            sprintf( buf, "%s (%s)", title, lc );
+            title = buf;
         }
-        sprintf( buf, "%s (%s)", title, lc );
-        title = buf;
     }
     show_name( title );
 }
@@ -633,6 +636,7 @@ deleteGame( GameState* gs )
     formatGameID( gameIDStr, sizeof(gameIDStr), gameID );
     const XP_UCHAR* keys[] = {KEY_GAMES, gameIDStr, NULL};
     dutil_remove( globals->dutil, keys );
+    showName( NULL );
 }
 
 static void
@@ -1006,7 +1010,7 @@ gameFromInvite( Globals* globals, const NetLaunchInfo* invite )
         } else {
             char msg[128];
             sprintf( msg, "Invitation requires a wordlist %s for "
-                     "language %s; download now?", invite->dict, lc );
+                     "locale %s; download now?", invite->dict, lc );
 
             DictDownState* dds = XP_MALLOC( globals->mpool, sizeof(*dds) );
             dds->globals = globals;

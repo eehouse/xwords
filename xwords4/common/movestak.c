@@ -541,7 +541,7 @@ stack_getNextTurn( StackCtxt* stack )
         stack_freeEntry( stack, &dummy );
     }
 
-    LOG_RETURNF( "%d", result );
+    // LOG_RETURNF( "%d", result );
     return result;
 }
 

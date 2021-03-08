@@ -3685,7 +3685,6 @@ server_commitMove( ServerCtxt* server, XWEnv xwe, XP_U16 player, TrayTileSet* ne
 static void
 finishMove( ServerCtxt* server, XWEnv xwe, TrayTileSet* newTiles, XP_U16 turn )
 {
-    LOG_FUNC();
     ModelCtxt* model = server->vol.model;
     CurGameInfo* gi = server->vol.gi;
 
@@ -3732,8 +3731,8 @@ finishMove( ServerCtxt* server, XWEnv xwe, TrayTileSet* newTiles, XP_U16 turn )
     } else {
         nextTurn( server, xwe, PICK_NEXT );
     }
-    XP_LOGFF( "player %d now has %d tiles", turn,
-              model_getNumTilesInTray( model, turn ) );
+    /* XP_LOGFF( "player %d now has %d tiles", turn, */
+    /*           model_getNumTilesInTray( model, turn ) ); */
 } /* finishMove */
     
 XP_Bool
