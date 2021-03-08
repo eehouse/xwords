@@ -78,7 +78,7 @@ function getDict(langs, proc, closure) {
 		for ( lang of data.langs ) {
 			let dict = null;
 			for ( one of lang.dicts ) {
-				if ( !dict || one.nBytes < dict.nBytes ) {
+				if ( !dict || one.nBytes > dict.nBytes ) {
 					dict = one;
 				}
 			}

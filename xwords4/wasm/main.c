@@ -823,7 +823,7 @@ onMqttMsg(void* closure, const uint8_t* data, int len )
 }
 
 static bool
-storeAsDict(Globals* globals, GotDictData* gdd )
+storeAsDict( Globals* globals, GotDictData* gdd )
 {
     char shortName[32];
     sprintf( shortName, "%s", gdd->dictName );
@@ -846,6 +846,11 @@ storeAsDict(Globals* globals, GotDictData* gdd )
         keys[2] = KEY_LANG_NAME;
         dutil_storePtr( globals->dutil, NULL, keys, gdd->langName,
                         strlen(gdd->langName) + 1 );
+
+        char msg[128];
+        sprintf( msg, "Successfull installed wordlist for play in %s.",
+                 gdd->langName );
+        call_alert( msg );
     }
     LOG_RETURNF( "%d", success );
     return success;
@@ -1808,20 +1813,26 @@ typedef struct _LaunchState {
     NetLaunchInfo invite;
     char playerName[32];
     bool hadName;
-    bool needDict;
 } LaunchState;
 
 static void
-onGotDictAtLaunch( void* closure, GotDictData* gdd )
+storeOrAlert( Globals* globals, GotDictData* gdd )
 {
-    LaunchState* ls = (LaunchState*)closure;
-    Globals* globals = ls->globals;
-
-    if ( ls->needDict ) {
+    if ( !!gdd ) {
         if ( 0 == gdd->len || !storeAsDict( globals, gdd ) ) {
             call_alert( "Unable to download wordlist. Reload the page to try again?" );
         }
     }
+}
+
+static void
+onGotInviteDictAtLaunch( void* closure, GotDictData* gdd )
+{
+    // XP_LOGFF("(gdd: %p)", gdd );
+    LaunchState* ls = (LaunchState*)closure;
+    Globals* globals = ls->globals;
+
+    storeOrAlert( globals, gdd );
 
     /* We're ready to start. If we had an invitation, launch for it. Otherwise
        launch the last game that was open */
@@ -1839,21 +1850,12 @@ onGotDictAtLaunch( void* closure, GotDictData* gdd )
 }
 
 static void
-onPlayerNamedAtLaunch( void* closure, const char* responseName )
+onGotNativeDictAtLaunch( void* closure, GotDictData* gdd )
 {
     LaunchState* ls = (LaunchState*)closure;
-
-    /* Did user change name? Save it */
-    if ( !!responseName && 0 != strcmp( responseName, ls->playerName ) ) {
-        onPlayerNamed( ls->globals, responseName );
-    } else if ( !ls->hadName ) {
-        onPlayerNamed( ls->globals, ls->playerName );
-
-        char buf[128];
-        sprintf( buf, "Ok. Using default name %s. You can change it anytime "
-                 "using the \"%s\" button.", ls->playerName, BUTTON_NAME );
-        call_alert( buf );
-    }
+    Globals* globals = ls->globals;
+    // XP_LOGFF("(gdd: %p)", gdd );
+    storeOrAlert( globals, gdd );
 
     /* Now download a wordlist if we need one */
     const char* neededLC = NULL;
@@ -1861,15 +1863,38 @@ onPlayerNamedAtLaunch( void* closure, const char* responseName )
         const char* lc = lcToLocale( ls->invite.lang );
         if ( !haveDictFor(ls->globals, lc) ) {
             neededLC = lc;
-            ls->needDict = true;
         }
-    } else if ( 0 == countDicts( ls->globals ) ) {
-        ls->needDict = true;
     }
-    if ( ls->needDict ) {
-        call_get_dict( neededLC, onGotDictAtLaunch, ls );
+    if ( !!neededLC ) {
+        call_get_dict( neededLC, onGotInviteDictAtLaunch, ls );
     } else {
-        onGotDictAtLaunch( ls, NULL);
+        onGotInviteDictAtLaunch( ls, NULL);
+    }
+}
+
+static void
+onPlayerNamedAtLaunch( void* closure, const char* responseName )
+{
+    LaunchState* ls = (LaunchState*)closure;
+    Globals* globals = ls->globals;
+    // XP_LOGFF("(name: %s)", responseName );
+
+    /* Did user change name? Save it */
+    if ( !!responseName && 0 != strcmp( responseName, ls->playerName ) ) {
+        onPlayerNamed( globals, responseName );
+    } else if ( !ls->hadName ) {
+        onPlayerNamed( globals, ls->playerName );
+
+        char buf[128];
+        sprintf( buf, "Ok. Using default name %s. You can change it anytime "
+                 "using the \"%s\" button.", ls->playerName, BUTTON_NAME );
+        call_alert( buf );
+    }
+
+    if ( 0 == countDicts( globals ) ) {
+        call_get_dict( NULL, onGotNativeDictAtLaunch, ls );
+    } else {
+        onGotNativeDictAtLaunch( ls, NULL );
     }
  }
 
