@@ -280,6 +280,10 @@ mpool_realloc( MemPoolCtx* mpool, void* ptr, XP_U32 newsize, const char* file,
             entry->fileName = file;
             entry->func = func;
             entry->lineNo = lineNo;
+            mpool->curBytes += newsize - entry->size;
+            if ( mpool->curBytes > mpool->maxBytes ) {
+                mpool->maxBytes = mpool->curBytes;
+            }
             entry->size = newsize;
         }
         result = entry->ptr;

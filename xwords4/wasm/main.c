@@ -518,7 +518,7 @@ showName( GameState* gs )
         Globals* globals = gs->globals;
         title = gs->gameName;
         char buf[64];
-        if ( true || 1 < countDicts( globals ) ) {
+        if ( 1 < countDicts( globals ) ) {
             char langName[32];
             if ( !langNameFor( globals, gs->gi.dictLang, langName, sizeof(langName) ) ) {
                 strcpy( langName, "??" );
