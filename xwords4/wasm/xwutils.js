@@ -118,9 +118,10 @@ function getDict(langs, proc, closure) {
 function jssetup(closure, dbg, devid, gitrev, now, noTabProc, focusProc, msgProc) {
 	// Set a unique tag so we know if somebody comes along later
 	let tabID = Math.random();
-	localStorage.setItem('tabID', tabID);
+	let item = 'tabID/' + dbg;
+	localStorage.setItem(item, tabID);
 	let listener = function () {
-		newTabID = 	localStorage.getItem('tabID');
+		newTabID = 	localStorage.getItem(item);
 		if ( newTabID != tabID ) {
 			state.client.disconnect();
 			ccallString(noTabProc, state.closure, '');
