@@ -196,14 +196,14 @@ EM_JS(void, call_get_string, (const char* msg, const char* dflt,
           nbGetString( jsMgs, jsDflt, proc, closure );
       } );
 
-EM_JS(void, call_setup, (void* closure, const char* devid,
+EM_JS(void, call_setup, (void* closure, bool dbg, const char* devid,
                          const char* gitrev, int now,
                          StringProc conflictProc,
                          StringProc focussedProc,
                          BinProc msgProc), {
           let jsgr = UTF8ToString(gitrev);
-          jssetup(closure, UTF8ToString(devid), jsgr, now,
-                      conflictProc, focussedProc, msgProc);
+          jssetup(closure, dbg, UTF8ToString(devid), jsgr, now,
+                  conflictProc, focussedProc, msgProc);
       });
 
 EM_JS(bool, call_mqttSend, (const char* topic, const uint8_t* ptr, int len), {
@@ -941,7 +941,14 @@ initDeviceGlobals( Globals* globals )
     XP_SNPRINTF( buf, VSIZE(buf), MQTTDevID_FMT, devID );
     XP_LOGFF( "got mqtt devID: %s", buf );
     int now = dutil_getCurSeconds( globals->dutil, NULL );
-    call_setup( globals, buf, GITREV, now, onConflict, onFocussed, onMqttMsg );
+    bool dbg =
+#ifdef DEBUG
+        true
+#else
+        false
+#endif
+        ;
+    call_setup( globals, dbg, buf, GITREV, now, onConflict, onFocussed, onMqttMsg );
 }
 
 static void

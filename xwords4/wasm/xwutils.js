@@ -8,22 +8,26 @@ function ccallString(proc, closure, str) {
 				 [proc, closure, str]);
 }
 
-function registerOnce(devid, gitrev, now) {
+function registerOnce(devid, gitrev, now, dbg) {
 	let nextTimeKey = 'next_reg';
 	let gitKey = 'last_write';
 	let nextTime = parseInt(localStorage.getItem(nextTimeKey));
 	let prevGit = localStorage.getItem(gitKey);
 	if ( prevGit == gitrev && now < nextTime ) {
-		// console.log('registerOnce(): next in ' + (nextTime - now) + ' secs');
+		if ( dbg ) {
+			console.log('registerOnce(): next in ' + (nextTime - now) + ' secs');
+		}
 	} else {
+		let vrntName = window.location.host;
+		vrntName += window.location.pathname.split('/').slice(0, -1).join('/');
 		let args = { devid: devid,
 					 gitrev: gitrev,
 					 loc: navigator.language,
 					 os: navigator.appName,
 					 vers: '0.0',
-					 dbg: true,
+					 dbg: dbg,
 					 myNow: now,
-					 vrntName: 'wasm',
+					 vrntName: vrntName,
 				   };
 		let body = JSON.stringify(args);
 
@@ -33,7 +37,8 @@ function registerOnce(devid, gitrev, now) {
 			headers: {
 				'Content-Type': 'application/json'
 			},
-		}).then(res => {
+		}).then(handleFetchErrors)
+		  .then(res => {
 			return res.json();
 		}).then(data => {
 			// console.log('data: ' + JSON.stringify(data));
@@ -41,6 +46,8 @@ function registerOnce(devid, gitrev, now) {
 				localStorage.setItem(nextTimeKey, data.atNext);
 				localStorage.setItem(gitKey, gitrev);
 			}
+		}).catch(ex => {
+			console.error('registerOnce(): fetch()=>' + ex);
 		});
 	}
 }
@@ -108,7 +115,7 @@ function getDict(langs, proc, closure) {
 }
 
 // Called from main() asap after things are initialized etc.
-function jssetup(closure, devid, gitrev, now, noTabProc, focusProc, msgProc) {
+function jssetup(closure, dbg, devid, gitrev, now, noTabProc, focusProc, msgProc) {
 	// Set a unique tag so we know if somebody comes along later
 	let tabID = Math.random();
 	localStorage.setItem('tabID', tabID);
@@ -126,10 +133,11 @@ function jssetup(closure, devid, gitrev, now, noTabProc, focusProc, msgProc) {
 		ccallString(focusProc, state.closure, '');
 	};
 
-	registerOnce(devid, gitrev, now);
-
 	state.closure = closure;
 	state.msgProc = msgProc;
+
+	registerOnce(devid, gitrev, now, dbg);
+
 	document.getElementById("mqtt_span").textContent=devid;
 
 	function tellConnected(isConn) {
