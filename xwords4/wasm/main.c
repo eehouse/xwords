@@ -62,6 +62,7 @@
 #define KEY_LAST_GID "cur_game"
 #define KEY_PLAYER_NAME "player_name"
 #define KEY_GAMES "games"
+#define KEY_SUMMARY "summary"
 #define KEY_GAME "game_data"
 #define KEY_NAME "game_name"
 #define KEY_NEXT_GAME "next_game"
@@ -84,7 +85,7 @@
 #define BUTTON_INVITE "Invite"
 
 #define BUTTON_GAME_NEW "New Game"
-#define BUTTON_GAME_OPEN "Open Game"
+#define BUTTON_GAME_OPEN "Games"
 #define BUTTON_GAME_RENAME "Rename Game"
 #define BUTTON_GAME_DELETE "Delete Game"
 #define BUTTON_NAME "My Name"
@@ -144,8 +145,10 @@ EM_JS(void, show_name, (const char* name), {
     });
 
 EM_JS(void, show_pool, (int cur, int max), {
-        let msg = 'cur: ' + cur + 'b; max: ' + max + 'b';
-        document.getElementById('mempool').textContent = msg;
+        const msg = 'cur: ' + cur + 'b; max: ' + max + 'b';
+        const div = document.getElementById('mempool');
+        div.textContent = msg;
+        div.parentNode.hidden = 0;
     });
 
 EM_JS(void, call_dialog, (const char* str, const char** but_strs,
@@ -497,6 +500,16 @@ updateGameButtons( Globals* globals )
     setButtons( BUTTONS_ID_GAME, buttons, onGameButton, gs );
 }
 
+static bool
+langNameFor( Globals* globals, XP_LangCode code, char buf[], size_t buflen )
+{
+    const char* lc = lcToLocale( code );
+    const XP_UCHAR* keys[] = { KEY_DICTS, lc, KEY_LANG_NAME, NULL };
+    XP_U32 len = buflen;
+    dutil_loadPtr( globals->dutil, NULL, keys, buf, &len );
+    return 0 < len;
+}
+
 static void
 showName( GameState* gs )
 {
@@ -507,14 +520,10 @@ showName( GameState* gs )
         char buf[64];
         if ( true || 1 < countDicts( globals ) ) {
             char langName[32];
-            const char* lc = lcToLocale(gs->gi.dictLang);
-            const XP_UCHAR* keys[] = {KEY_DICTS, lc, KEY_LANG_NAME, NULL };
-            XP_U32 len = sizeof(langName);
-            dutil_loadPtr( globals->dutil, NULL, keys, langName, &len );
-            if ( 0 != len ) {
-                lc = langName;
+            if ( !langNameFor( globals, gs->gi.dictLang, langName, sizeof(langName) ) ) {
+                strcpy( langName, "??" );
             }
-            sprintf( buf, "%s (%s)", title, lc );
+            sprintf( buf, "%s (%s)", title, langName );
             title = buf;
         }
     }
@@ -541,8 +550,7 @@ typedef struct _NameIterState {
 static void
 onGameChosen( void* closure, const char* key )
 {
-    NameIterState* nis = (NameIterState*)closure;
-    Globals* globals = nis->globals;
+    CAST_GLOB(Globals*, globals, closure);
 
     /* To be safe, let's make sure the game exists. We don't want to create
      * another if somehow it doesn't */
@@ -552,11 +560,39 @@ onGameChosen( void* closure, const char* key )
         loadAndDraw( globals, NULL, gameID, NULL );
     }
 
-    XP_FREE( globals->mpool, nis->names );
-    XP_FREE( globals->mpool, nis->ids );
-    XP_FREE( globals->mpool, nis );
-
     updateDeviceButtons( globals );
+}
+
+static char*
+formatForGame(Globals* globals, bool multiLangs, const XP_UCHAR* gameKey )
+{
+    const XP_UCHAR* keys[] = {KEY_GAMES, gameKey, KEY_NAME, NULL};
+    char gameName[32];
+    XP_U32 len = sizeof(gameName);
+    dutil_loadPtr( globals->dutil, NULL, keys, gameName, &len );
+
+    char buf[256];
+    int offset = snprintf( buf, sizeof(buf), "%s", gameName );
+
+    GameSummary summary;
+    len = sizeof(summary);
+    keys[2] = KEY_SUMMARY;
+    dutil_loadPtr( globals->dutil, NULL, keys, &summary, &len );
+    if ( len == sizeof(summary) ) {
+        if ( multiLangs ) {
+            char langName[32];
+            if ( langNameFor( globals, summary.lang, langName, sizeof(langName) ) ) {
+                offset += snprintf( buf+offset, sizeof(buf)-offset, " (in %s)", langName );
+            }
+        }
+        offset += snprintf( buf+offset, sizeof(buf)-offset, " My turn: %s",
+                            summary.turnIsLocal ? "YES" : "NO" );
+        offset += snprintf( buf+offset, sizeof(buf)-offset, " Opponent: %s",
+                            summary.opponents );
+    }
+    char* result = NULL;
+    replaceStringIfDifferent( globals->mpool, &result, buf );
+    return result;
 }
 
 static XP_Bool
@@ -566,6 +602,7 @@ onOneGameName( void* closure, const XP_UCHAR* keys[] )
     if ( 0 != strcmp( gameIDStr, "0" ) ) { /* temporary */
         NameIterState* nis = (NameIterState*)closure;
         Globals* globals = nis->globals;
+        bool multiLangs = 1 < countDicts(globals);
 
         /* Make sure game exists. This may be unnecessary later */
         const XP_UCHAR* dataKeys[] = { keys[0], keys[1], KEY_GAME, NULL };
@@ -575,12 +612,7 @@ onOneGameName( void* closure, const XP_UCHAR* keys[] )
             int cur = nis->count++;
             nis->names = XP_REALLOC( globals->mpool, nis->names,
                                      nis->count * sizeof(nis->names[0]) );
-
-            XP_U32 valLen;
-            dutil_loadPtr( globals->dutil, NULL, keys, NULL, &valLen );
-            nis->names[cur] = XP_MALLOC( globals->mpool, valLen );
-            dutil_loadPtr( globals->dutil, NULL, keys, nis->names[cur], &valLen );
-
+            nis->names[cur] = formatForGame( globals, multiLangs, keys[1] );
             nis->ids = XP_REALLOC( globals->mpool, nis->ids,
                                    nis->count * sizeof(nis->ids[0]) );
             nis->ids[cur] = XP_MALLOC( globals->mpool, 1 + strlen(gameIDStr) );
@@ -594,14 +626,16 @@ static void
 pickGame( Globals* globals )
 {
     XW_DUtilCtxt* dutil = globals->dutil;
-    NameIterState* nis = XP_CALLOC( globals->mpool, sizeof(*nis) );
-    nis->globals = globals;
+    NameIterState nis = { .globals = globals, };
 
     const XP_UCHAR* keys[] = {KEY_GAMES, KEY_WILDCARD, KEY_NAME, NULL};
-    dutil_forEach( dutil, NULL, keys, onOneGameName, nis );
+    dutil_forEach( dutil, NULL, keys, onOneGameName, &nis );
 
     const char* msg = "Choose game to open:";
-    call_pickGame(msg, nis->ids, nis->names, nis->count, onGameChosen, nis);
+    call_pickGame(msg, nis.ids, nis.names, nis.count, onGameChosen, globals);
+
+    XP_FREE( globals->mpool, nis.names );
+    XP_FREE( globals->mpool, nis.ids );
 }
 
 static void
@@ -1066,6 +1100,7 @@ getSavedGame( Globals* globals, int gameID )
 {
     GameState* gs;
 
+    /* Is it already open? */
     for ( gs = globals->games; !!gs; gs = gs->next ) {
         if ( gameID == gs->gi.gameID ) {
             break;
@@ -1100,6 +1135,7 @@ getSavedGame( Globals* globals, int gameID )
                 updateScreen( gs, false );
             } else {
                 removeGameState( gs );
+                gs = NULL;
             }
         } else {
             XP_LOGFF( "ERROR: no saved data for game %s", gameIDStr );
@@ -1672,12 +1708,18 @@ updateScreen( GameState* gs, bool doSave )
         game_saveToStream( &gs->game, NULL, &gs->gi,
                            stream, ++gs->saveToken );
 
+        GameSummary summary;
+        game_summarize( &gs->game, &gs->gi, &summary );
+
         char gameIDStr[32];
         formatGameID( gameIDStr, sizeof(gameIDStr), gs->gi.gameID );
         const XP_UCHAR* keys[] = { KEY_GAMES, gameIDStr, KEY_GAME, NULL };
         dutil_storeStream( globals->dutil, NULL, keys, stream );
         stream_destroy( stream, NULL );
         game_saveSucceeded( &gs->game, NULL, gs->saveToken );
+
+        keys[2] = KEY_SUMMARY;
+        dutil_storePtr( globals->dutil, NULL, keys, &summary, sizeof(summary) );
     }
 }
 

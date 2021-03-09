@@ -218,7 +218,7 @@ function newDlgWMsg(msg) {
 	return dlg;
 }
 
-function newButtonDiv(buttons, proc) {
+function newButtonDiv(buttons, proc, asDivs) {
 	let div = document.createElement('div');
 	div.classList.add('buttonRow');
 	for ( let ii = 0; ii < buttons.length; ++ii ) {
@@ -226,7 +226,12 @@ function newButtonDiv(buttons, proc) {
 		let button = document.createElement('button');
 		button.textContent = buttonTxt;
 		button.onclick = function() { proc(ii); };
-		div.appendChild( button );
+		if ( asDivs ) {
+			let bdiv = document.createElement('div');
+			bdiv.appendChild(button);
+			button = bdiv;
+		}
+		div.appendChild(button);
 	}
 
 	return div;
@@ -239,7 +244,7 @@ function nbDialog(msg, buttons, proc, closure) {
 		dlg.parentNode.removeChild(dlg);
 		ccallString(proc, closure, buttons[indx]);
 	}
-	dlg.appendChild( newButtonDiv( buttons, butProc ) );
+	dlg.appendChild( newButtonDiv( buttons, butProc, false ) );
 	addDepthNote(dlg);
 }
 
@@ -251,7 +256,7 @@ function nbBlankPick(title, buttons, proc, closure) {
 		ccallString(proc, closure, indx.toString());
 	}
 
-	dlg.appendChild( newButtonDiv( buttons, butProc ) );
+	dlg.appendChild( newButtonDiv( buttons, butProc, false ) );
 	addDepthNote(dlg);
 }
 
@@ -281,8 +286,14 @@ function nbGamePick(title, gameMap, proc, closure) {
 		dlg.parentNode.removeChild(dlg);
 		ccallString(proc, closure, pairs[indx].id);
 	}
+	dlg.appendChild( newButtonDiv( buttons, butProc, true ) );
 
-	dlg.appendChild( newButtonDiv( buttons, butProc ) );
+	cancelProc = function() {
+		dlg.parentNode.removeChild(dlg);
+		ccallString(proc, closure, null);
+	};
+	dlg.appendChild( newButtonDiv( ['Cancel'], cancelProc, false ) );
+
 	addDepthNote(dlg);
 }
 
@@ -296,7 +307,7 @@ function setDivButtons(divid, buttons, proc, closure) {
 		ccallString(proc, closure, buttons[indx]);
 	}
 
-	parent.appendChild( newButtonDiv( buttons, butProc ) );
+	parent.appendChild( newButtonDiv( buttons, butProc, false ) );
 }
 
 function nbGetString(msg, dflt, proc, closure) {
@@ -320,7 +331,7 @@ function nbGetString(msg, dflt, proc, closure) {
 			dismissed(tarea.value);
 		}
 	}
-	dlg.appendChild( newButtonDiv( buttons, butProc ) );
+	dlg.appendChild( newButtonDiv( buttons, butProc, false ) );
 	addDepthNote(dlg);
 }
 
@@ -383,7 +394,7 @@ function nbGetNewGame(closure, msg, langs) {
 		dlg.parentNode.removeChild(dlg);
 	}
 
-	dlg.appendChild( newButtonDiv( ['Cancel', 'OK'], butProc ) );
+	dlg.appendChild( newButtonDiv( ['Cancel', 'OK'], butProc, false ) );
 	addDepthNote(dlg);
 }
 

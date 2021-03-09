@@ -51,6 +51,17 @@ typedef struct _GameStateInfo {
     XP_Bool canUnpause;         /* duplicate-mode only */
 } GameStateInfo;
 
+typedef struct _GameSummary {
+    XP_Bool turnIsLocal;
+    XP_Bool inPlay;
+    XP_S8 turn;
+    XP_U32 lastMoveTime;
+    XP_U8 missingPlayers;
+    XP_U8 nPacketsPending;
+    XP_LangCode lang;
+    XP_UCHAR opponents[64];
+} GameSummary;
+
 typedef struct _XWGame {
     XW_UtilCtxt* util;
     BoardCtxt* board;
@@ -97,6 +108,7 @@ XP_Bool game_receiveMessage( XWGame* game, XWEnv xwe, XWStreamCtxt* stream,
 
 void game_dispose( XWGame* game, XWEnv xwe );
 
+void game_summarize( XWGame* game, CurGameInfo* gi, GameSummary* summary );
 void game_getState( const XWGame* game, XWEnv xwe, GameStateInfo* gsi );
 XP_Bool game_getIsServer( const XWGame* game );
 

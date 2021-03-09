@@ -545,6 +545,30 @@ game_getState( const XWGame* game, XWEnv xwe, GameStateInfo* gsi )
     gsi->canUnpause = server_canUnpause( server );
 }
 
+void
+game_summarize( XWGame* game, CurGameInfo* gi, GameSummary* summary )
+{
+    XP_MEMSET( summary, 0, sizeof(*summary) );
+    ServerCtxt* server = game->server;
+    summary->turn = server_getCurrentTurn( server, &summary->turnIsLocal );
+    summary->lastMoveTime = server_getLastMoveTime(server);
+    summary->lang = gi->dictLang;
+    for ( int ii = 0; ii < gi->nPlayers; ++ii ) {
+        LocalPlayer* lp  = &gi->players[ii];
+        if ( LP_IS_ROBOT(lp) || !LP_IS_LOCAL(lp) ) {
+            if ( '\0' != summary->opponents[0] ) {
+                XP_STRCAT( summary->opponents, ", " );
+            }
+            XP_STRCAT( summary->opponents, lp->name );
+        }
+    }
+    if ( !!game->comms ) {
+        CommsCtxt* comms = game->comms;
+        summary->missingPlayers = server_getMissingPlayers( server );
+        summary->nPacketsPending = comms_countPendingPackets( comms );
+    }
+}
+
 XP_Bool
 game_getIsServer( const XWGame* game )
 {
