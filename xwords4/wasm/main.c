@@ -634,6 +634,10 @@ pickGame( Globals* globals )
     const char* msg = "Choose game to open:";
     call_pickGame(msg, nis.ids, nis.names, nis.count, onGameChosen, globals);
 
+    for ( int ii = 0; ii < nis.count; ++ii ) {
+        XP_FREE( globals->mpool, nis.names[ii] );
+        XP_FREE( globals->mpool, nis.ids[ii] );
+    }
     XP_FREE( globals->mpool, nis.names );
     XP_FREE( globals->mpool, nis.ids );
 }
