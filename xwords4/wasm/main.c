@@ -821,11 +821,11 @@ updateDeviceButtons( Globals* globals )
 {
     const char* buttons[MAX_BUTTONS];
     int cur = 0;
-    if ( 0 < countDicts( globals ) ) {
-        buttons[cur++] = BUTTON_GAME_NEW;
-    }
     if ( 0 < countGames(globals) ) {
         buttons[cur++] = BUTTON_GAME_OPEN;
+    }
+    if ( 0 < countDicts( globals ) ) {
+        buttons[cur++] = BUTTON_GAME_NEW;
     }
     if ( !!getCurGame( globals ) ) {
         buttons[cur++] = BUTTON_GAME_RENAME;
@@ -833,6 +833,7 @@ updateDeviceButtons( Globals* globals )
     }
     buttons[cur++] = BUTTON_NAME;
     buttons[cur++] = NULL;
+    XP_ASSERT( cur <= VSIZE(buttons) );
 
     setButtons( BUTTONS_ID_DEVICE, buttons, onDeviceButton, globals );
 }
