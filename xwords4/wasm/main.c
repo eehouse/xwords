@@ -84,8 +84,8 @@
 #define BUTTON_VALS "Vals"
 #define BUTTON_INVITE "Invite"
 
+#define BUTTON_GAME_GAMES "Games"
 #define BUTTON_GAME_NEW "New Game"
-#define BUTTON_GAME_OPEN "Games"
 #define BUTTON_GAME_RENAME "Rename Game"
 #define BUTTON_GAME_DELETE "Delete Game"
 #define BUTTON_NAME "My Name"
@@ -758,7 +758,7 @@ onDeviceButton( void* closure, const char* button )
     XP_LOGFF( "(button=%s)", button );
     if ( 0 == strcmp(button, BUTTON_GAME_NEW) ) {
         callNewGame(globals);
-    } else if ( 0 == strcmp(button, BUTTON_GAME_OPEN) ) {
+    } else if ( 0 == strcmp(button, BUTTON_GAME_GAMES) ) {
         pickGame( globals );
     } else if ( 0 == strcmp(button, BUTTON_GAME_RENAME ) ) {
         GameState* curGS = getCurGame( globals );
@@ -822,7 +822,7 @@ updateDeviceButtons( Globals* globals )
     const char* buttons[MAX_BUTTONS];
     int cur = 0;
     if ( 0 < countGames(globals) ) {
-        buttons[cur++] = BUTTON_GAME_OPEN;
+        buttons[cur++] = BUTTON_GAME_GAMES;
     }
     if ( 0 < countDicts( globals ) ) {
         buttons[cur++] = BUTTON_GAME_NEW;
