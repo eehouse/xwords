@@ -233,6 +233,7 @@ function newButtonDiv(buttons, proc, asDivs) {
 	for ( let ii = 0; ii < buttons.length; ++ii ) {
 		let buttonTxt = buttons[ii];
 		let button = document.createElement('button');
+		button.classList.add('xwbutton');
 		button.textContent = buttonTxt;
 		button.onclick = function() { proc(ii); };
 		if ( asDivs ) {
@@ -369,7 +370,7 @@ function nbGetNewGame(closure, msg, langs) {
 
 	const explDiv = document.createElement('div');
 	dlg.appendChild( explDiv );
-	explDiv.textContent = 'Is your opponent a robot or someone you will invite?';
+	explDiv.textContent = '>> Is your opponent a robot or someone you will invite?';
 
 	const radioDiv = document.createElement('div');
 	dlg.appendChild( radioDiv );
@@ -384,7 +385,7 @@ function nbGetNewGame(closure, msg, langs) {
 	if ( 1 < langs.length ) {
 		const langsExplDiv = document.createElement('div');
 		dlg.appendChild( langsExplDiv );
-		langsExplDiv.textContent = "Choose your game language";
+		langsExplDiv.textContent = ">> Choose your game language";
 		const langsDiv = document.createElement('div');
 		dlg.appendChild( langsDiv );
 		for ( let ii = 0; ii < langs.length; ++ii ) {
