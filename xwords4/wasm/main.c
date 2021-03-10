@@ -1417,15 +1417,16 @@ main_onGameMessage( Globals* globals, XP_U32 gameID,
             }
         }
     } else {
-        char msg[128];
-        snprintf( msg, sizeof(msg), "Dropping move for deleted game (id: %X/%d)",
-                  gameID, gameID );
-        call_alert( msg );
-
         XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(globals->mpool)
                                                     globals->vtMgr );
         dvc_makeMQTTNoSuchGame( globals->dutil, NULL, stream, gameID );
         sendStreamToDev( stream, &from->u.mqtt.devID );
+#ifdef DEBUG
+        char msg[128];
+        snprintf( msg, sizeof(msg), "Dropping move for deleted game (id: %X/%d)",
+                  gameID, gameID );
+        call_alert( msg );
+#endif
     }
 }
 
@@ -1893,13 +1894,16 @@ onAllowNotify(void* closure, bool confirmed)
 }
 
 void
-onNewGame( void* closure, bool opponentIsRobot, const char* langName )
+onNewGame( void* closure, bool opponentIsRobot, const char* langName,
+           bool allowHints)
 {
     Globals* globals = (Globals*)closure;
-    XP_LOGFF( "isRobot: %d; lc: %s", opponentIsRobot, langName );
+    XP_LOGFF( "isRobot: %d; lc: %s; allow: %d", opponentIsRobot,
+              langName, allowHints );
 
     NewGameParams* ngp = XP_CALLOC( globals->mpool, sizeof(*ngp) );
     ngp->globals = globals;
+    ngp->hintsNotAllowed = !allowHints;
     ngp->isRobotNotRemote = opponentIsRobot;
     langNameToLC(globals, langName, ngp->lc, sizeof(ngp->lc));
 

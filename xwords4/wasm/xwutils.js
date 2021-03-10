@@ -368,8 +368,29 @@ function newRadio(txt, id, isSet, proc) {
 	return span;
 }
 
+function newCheckbox(txt, id, val) {
+	let span = document.createElement('span');
+	let checkbox = document.createElement('input');
+	checkbox.type = 'checkbox';
+	checkbox.id = id;
+	checkbox.checked = val;
+
+	let label = document.createElement('label')
+	var description = document.createTextNode(txt);
+	label.appendChild(description);
+
+	span.appendChild(label);
+	span.appendChild(checkbox);
+
+	return span;
+}
+
 function nbGetNewGame(closure, msg, langs) {
 	const dlg = newDlgWMsg(msg);
+
+	let hintsDiv = document.createElement('div');
+	dlg.appendChild(hintsDiv);
+	hintsDiv.appendChild(newCheckbox("Allow hints", 'allowHints', true));
 
 	const explDiv = document.createElement('div');
 	dlg.appendChild( explDiv );
@@ -400,8 +421,10 @@ function nbGetNewGame(closure, msg, langs) {
 
 	const butProc = function(indx) {
 		if ( indx === 1 ) {
-			const types = ['number', 'boolean', 'string'];
-			const params = [closure, robotSet, chosenLang];
+			let allowHints = document.getElementById('allowHints').checked;
+			const types = ['number', 'boolean', 'string', 'boolean'];
+			const params = [closure, robotSet, chosenLang, allowHints];
+			console.log('passing ', params, 'to onNewGame');
 			Module.ccall('onNewGame', null, types, params);
 		}
 		dlg.parentNode.removeChild(dlg);
