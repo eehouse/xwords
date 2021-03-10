@@ -22,7 +22,6 @@ DEBS = cmake
 
 INPUTS = main.c wasmdict.c wasmutls.c wasmdraw.c wasmutil.c wasmdutil.c ${COMMONSRC}
 
-DEFINES += -DXWFEATURE_CHAT
 DEFINES += -DXWFEATURE_BONUSALL
 DEFINES += -DMAX_ROWS=32
 DEFINES += -DCOMMON_LAYOUT

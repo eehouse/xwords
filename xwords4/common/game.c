@@ -553,6 +553,8 @@ game_summarize( XWGame* game, CurGameInfo* gi, GameSummary* summary )
     summary->turn = server_getCurrentTurn( server, &summary->turnIsLocal );
     summary->lastMoveTime = server_getLastMoveTime(server);
     summary->lang = gi->dictLang;
+    summary->gameOver = server_getGameIsOver( server );
+
     for ( int ii = 0; ii < gi->nPlayers; ++ii ) {
         LocalPlayer* lp  = &gi->players[ii];
         if ( LP_IS_ROBOT(lp) || !LP_IS_LOCAL(lp) ) {

@@ -131,7 +131,10 @@ function jssetup(closure, dbg, devid, gitrev, now, noTabProc, focusProc, msgProc
 	window.addEventListener('storage', listener);
 
 	window.onfocus = function () {
-		ccallString(focusProc, state.closure, '');
+		ccallString(focusProc, state.closure, 'focus');
+	};
+	window.onblur = function () {
+		ccallString(focusProc, state.closure, 'blur');
 	};
 
 	state.closure = closure;

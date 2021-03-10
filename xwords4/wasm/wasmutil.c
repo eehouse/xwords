@@ -590,7 +590,9 @@ wasm_util_make( MPFORMAL CurGameInfo* gi, XW_DUtilCtxt* dctxt, GameState* closur
     SET_VTABLE_ENTRY( wuctxt->super.vtable, util_informMissing, wasm );
     SET_VTABLE_ENTRY( wuctxt->super.vtable, util_addrChange, wasm );
     SET_VTABLE_ENTRY( wuctxt->super.vtable, util_informWordsBlocked, wasm );
+#ifdef XWFEATURE_CHAT
     SET_VTABLE_ENTRY( wuctxt->super.vtable, util_showChat, wasm );
+#endif
     SET_VTABLE_ENTRY( wuctxt->super.vtable, util_getDevUtilCtxt, wasm );
 
     size_t sizeInBytes = sizeof(*wuctxt->super.vtable);

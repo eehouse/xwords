@@ -95,9 +95,10 @@
 // #define GLOBALS_ON_STACK
 
 typedef struct _NewGameParams {
+    Globals* globals;
     bool isRobotNotRemote;
     bool hintsNotAllowed;
-    const char* lc;
+    char lc[8];
 } NewGameParams;
 
 static void updateScreen( GameState* gs, bool doSave );
@@ -247,6 +248,22 @@ EM_JS(void, js_callNewGame, (const char* msg, void* closure,
           }
           nbGetNewGame(closure, jsmsg, jlangs);
       });
+
+EM_JS(bool, js_getHaveNotifyPerm, (), {
+        let perm = Notification.permission;
+        return perm == 'granted';
+    });
+
+EM_JS(void, js_requestNotify, (), {
+        Notification.requestPermission();
+    });
+
+EM_JS( void, js_notify, (const char* msg), {
+        const jsmsg = UTF8ToString(msg);
+        new Notification('WASM CrossWords',
+                         { body: jsmsg, renotify: true, }
+                         );
+    });
 
 typedef struct _ConfirmState {
     Globals* globals;
@@ -585,10 +602,10 @@ formatForGame(Globals* globals, bool multiLangs, const XP_UCHAR* gameKey )
                 offset += snprintf( buf+offset, sizeof(buf)-offset, " (in %s)", langName );
             }
         }
-        offset += snprintf( buf+offset, sizeof(buf)-offset, " My turn: %s",
-                            summary.turnIsLocal ? "YES" : "NO" );
         offset += snprintf( buf+offset, sizeof(buf)-offset, " Opponent: %s",
                             summary.opponents );
+        offset += snprintf( buf+offset, sizeof(buf)-offset, " My turn: %s",
+                            0 <= summary.turn && summary.turnIsLocal ? "YES" : "NO" );
     }
     char* result = NULL;
     replaceStringIfDifferent( globals->mpool, &result, buf );
@@ -847,16 +864,17 @@ onConflict( void* closure, const char* ignored )
 }
 
 static void
-onFocussed( void* closure, const char* ignored )
+onFocussed( void* closure, const char* newState )
 {
-    XP_LOGFF("Need to refresh...");
+    CAST_GLOB(Globals*, globals, closure);
+    globals->focussed = 0 == strcmp("focus", newState);
+    XP_LOGFF( "focussed now: %d", globals->focussed );
     /* This hasn't worked.... */
-    /* CAST_GLOB(Globals*, globals, closure); */
-    /* GameState* gs = getCurGame( globals ); */
-    /* if ( !!gs ) { */
-    /*     board_invalAll( gs->game.board ); */
-    /*     updateScreen( gs, false ); */
-    /* } */
+    GameState* gs = getCurGame( globals );
+    if ( !!gs ) {
+        board_invalAll( gs->game.board );
+        updateScreen( gs, false );
+    }
 }
 
 static void
@@ -1327,8 +1345,10 @@ loadAndDraw( Globals* globals, const NetLaunchInfo* invite,
             gs->gi.players[0].isLocal = XP_TRUE;
             gs->gi.players[0].robotIQ = 0;
 
-            gs->gi.players[1].name = copyString( globals->mpool, "Robot" );
-            gs->gi.players[1].isLocal = !!params ? params->isRobotNotRemote : true;
+            bool otherLocal = !!params ? params->isRobotNotRemote : true;
+            gs->gi.players[1].name = copyString( globals->mpool,
+                                                 otherLocal ? "Robot" : "(remote)" );
+            gs->gi.players[1].isLocal = otherLocal;
             XP_LOGFF( "set isLocal[1]: %d", gs->gi.players[1].isLocal );
             gs->gi.players[1].robotIQ = 99; /* doesn't matter if remote */
 
@@ -1386,6 +1406,15 @@ main_onGameMessage( Globals* globals, XP_U32 gameID,
     if ( !!gs ) {
         if ( game_receiveMessage( &gs->game, NULL, stream, from ) ) {
             updateScreen( gs, true );
+        }
+        if ( !globals->focussed && js_getHaveNotifyPerm() ) {
+            GameSummary summary;
+            game_summarize( &gs->game, &gs->gi, &summary );
+            if ( summary.turnIsLocal ) {
+                char buf[128];
+                sprintf( buf, "Your turn in game %s", gs->gameName );
+                js_notify( buf );
+            }
         }
     } else {
         char msg[128];
@@ -1473,7 +1502,7 @@ main_turnChanged( GameState* gs, int newTurn )
     if ( 0 <= newTurn && !isVisible(gs) && gs->gi.players[newTurn].isLocal ) {
         char msg[128];
         snprintf( msg, sizeof(msg),
-                  "It's your turn in background game \"%s\". Would you like to open it now?",
+                  "It's your turn in game \"%s\". Would you like to open it now?",
                   gs->gameName );
         call_confirm( gs->globals, msg, openConfirmed, gs );
     }
@@ -1850,20 +1879,37 @@ cbckBinary( BinProc proc, void* closure, int len, const uint8_t* msg )
     (*proc)(closure, msg, len );
 }
 
+static void
+onAllowNotify(void* closure, bool confirmed)
+{
+    NewGameParams* ngp = (NewGameParams*)closure;
+    Globals* globals = ngp->globals;
+    if ( confirmed ) {
+        js_requestNotify();
+    }
+    loadAndDraw( globals, NULL, 0, ngp );
+    updateDeviceButtons( globals );
+    XP_FREE( globals->mpool, ngp );
+}
+
 void
 onNewGame( void* closure, bool opponentIsRobot, const char* langName )
 {
     Globals* globals = (Globals*)closure;
     XP_LOGFF( "isRobot: %d; lc: %s", opponentIsRobot, langName );
 
-    char lc[8];
-    langNameToLC(globals, langName, lc, sizeof(lc));
+    NewGameParams* ngp = XP_CALLOC( globals->mpool, sizeof(*ngp) );
+    ngp->globals = globals;
+    ngp->isRobotNotRemote = opponentIsRobot;
+    langNameToLC(globals, langName, ngp->lc, sizeof(ngp->lc));
 
-    NewGameParams ngp = { .isRobotNotRemote = opponentIsRobot,
-                          .lc = lc,
-    };
-    loadAndDraw( globals, NULL, 0, &ngp );
-    updateDeviceButtons( globals );
+    if ( !opponentIsRobot && !js_getHaveNotifyPerm() ) {
+        const char* msg = "You are creating a networked game. Would you like "
+            "notifications when a move arrives and it becomes your turn?";
+        call_confirm( globals, msg, onAllowNotify, ngp );
+    } else {
+        onAllowNotify(ngp, false);
+    }
 }
 
 /* Called from js with a proc and closure */

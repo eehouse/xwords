@@ -67,6 +67,8 @@ typedef struct Globals {
     CommonPrefs cp;
     DictMgrCtxt* dictMgr;
 
+    bool focussed;              /* window is in foreground */
+
     char playerName[32];
 
 #ifdef MEM_DEBUG
