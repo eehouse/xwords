@@ -338,9 +338,9 @@ function nbGetString(msg, dflt, proc, closure) {
 
 	let buttons = ["Cancel", "OK"];
 	butProc = function(indx) {
-		if ( indx == 0 ) {		// CANCEL
+		if ( buttons[indx] == 'Cancel' ) {
 			dismissed(null);
-		} else if ( indx == 1 ) { // OK
+		} else if ( buttons[indx] == 'OK' ) {
 			dismissed(tarea.value);
 		}
 	}
@@ -385,12 +385,12 @@ function newCheckbox(txt, id, val) {
 	return span;
 }
 
-function nbGetNewGame(closure, msg, langs) {
+function nbGetNewGame(closure, msg, allowHints, isRobot, langs, langName) {
 	const dlg = newDlgWMsg(msg);
 
 	let hintsDiv = document.createElement('div');
 	dlg.appendChild(hintsDiv);
-	hintsDiv.appendChild(newCheckbox("Allow hints", 'allowHints', true));
+	hintsDiv.appendChild(newCheckbox("Allow hints", 'allowHints', allowHints));
 
 	const explDiv = document.createElement('div');
 	dlg.appendChild( explDiv );
@@ -398,14 +398,13 @@ function nbGetNewGame(closure, msg, langs) {
 
 	const radioDiv = document.createElement('div');
 	dlg.appendChild( radioDiv );
-	let robotSet = true;
+	let robotSet = isRobot;
 	radioDiv.appendChild(newRadio('Robot', 'newgame', robotSet,
 								  function() {robotSet = true;}));
 	radioDiv.appendChild(newRadio('Remote player', 'newgame', !robotSet,
 								  function() {robotSet = false;} ));
 
-	const dfltLangIndx = 0;
-	let chosenLang = langs[dfltLangIndx];
+	let chosenLang = langName ? langName : langs[0];
 	if ( 1 < langs.length ) {
 		const langsExplDiv = document.createElement('div');
 		dlg.appendChild( langsExplDiv );
@@ -414,23 +413,24 @@ function nbGetNewGame(closure, msg, langs) {
 		dlg.appendChild( langsDiv );
 		for ( let ii = 0; ii < langs.length; ++ii ) {
 			let langName = langs[ii];
-			langsDiv.appendChild(newRadio(langName, 'lang', ii == dfltLangIndx,
+			let isSet = langName == chosenLang;
+			langsDiv.appendChild(newRadio(langName, 'lang', isSet,
 										  function() {chosenLang = langName;}));
 		}
 	}
 
+	const buttons = ['Cancel', 'OK'];
 	const butProc = function(indx) {
-		if ( indx === 1 ) {
+		if ( buttons[indx] == 'OK' ) {
 			let allowHints = document.getElementById('allowHints').checked;
 			const types = ['number', 'boolean', 'string', 'boolean'];
 			const params = [closure, robotSet, chosenLang, allowHints];
-			console.log('passing ', params, 'to onNewGame');
 			Module.ccall('onNewGame', null, types, params);
 		}
 		dlg.parentNode.removeChild(dlg);
 	}
 
-	dlg.appendChild( newButtonDiv( ['Cancel', 'OK'], butProc, false ) );
+	dlg.appendChild( newButtonDiv( buttons, butProc, false ) );
 	addDepthNote(dlg);
 }
 

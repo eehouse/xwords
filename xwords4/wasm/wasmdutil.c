@@ -444,7 +444,7 @@ wasm_dutil_getDict( XW_DUtilCtxt* duc, XWEnv xwe,
     const DictionaryCtxt* result = dmgr_get( globals->dictMgr, xwe, dictName );
     if ( !result ) {
         XP_U32 len = 0;
-        const char* keys[] = {KEY_DICTS, lc, dictName, NULL };
+        const char* keys[] = {KEY_DICTS, lc, KEY_DICTS, dictName, NULL };
         dutil_loadPtr( duc, xwe, keys, NULL, &len );
         if ( 0 < len ) {
             XP_LOGFF( "making stack alloc of %d bytes", len );
@@ -459,7 +459,7 @@ wasm_dutil_getDict( XW_DUtilCtxt* duc, XWEnv xwe,
             ForLangState fls = { .duc = duc,
                                  .xwe = xwe,
             };
-            const char* langKeys[] = {KEY_DICTS, lc, KEY_WILDCARD, NULL};
+            const char* langKeys[] = {KEY_DICTS, lc, KEY_DICTS, KEY_WILDCARD, NULL};
             dutil_forEach( duc, xwe, langKeys, gotForLang, &fls );
             if ( !!fls.ptr ) {
                 result = wasm_dictionary_make( globals, xwe, dictName,

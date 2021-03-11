@@ -54,8 +54,8 @@
 #define WASM_BOARD_LEFT 0
 #define WASM_HOR_SCORE_TOP 0
 
-#define WINDOW_WIDTH 800
-#define WINDOW_HEIGHT 1040
+#define WINDOW_WIDTH 600
+#define WINDOW_HEIGHT 850
 #define BDWIDTH WINDOW_WIDTH
 #define BDHEIGHT WINDOW_HEIGHT
 
@@ -67,6 +67,7 @@
 #define KEY_NAME "game_name"
 #define KEY_NEXT_GAME "next_game"
 #define KEY_LANG_NAME "lang_name"
+#define KEY_NEWGAME_DFLTS "ng_defaults"
 
 #define BUTTON_OK "OK"
 #define BUTTON_CANCEL "Cancel"
@@ -96,9 +97,9 @@
 
 typedef struct _NewGameParams {
     Globals* globals;
-    bool isRobotNotRemote;
-    bool hintsNotAllowed;
-    char lc[8];
+    bool isRobot;
+    bool allowHints;
+    char langName[32];
 } NewGameParams;
 
 static void updateScreen( GameState* gs, bool doSave );
@@ -114,7 +115,7 @@ static void ensureName( GameState* gs );
 static void loadName( GameState* gs );
 static void saveName( GameState* gs );
 static bool isVisible( GameState* gs );
-static int countDicts( Globals* globals );
+static int countLangs( Globals* globals );
 
 typedef struct _GotDictData {
     const char* lc;
@@ -237,7 +238,9 @@ EM_JS(void, setButtons, (const char* id, const char** bstrs,
     });
 
 EM_JS(void, js_callNewGame, (const char* msg, void* closure,
-                             char** langs, int nLangs), {
+                             bool allowHints, bool isRobot,
+                             const char* langName, char** langs, int nLangs), {
+          let jslangName = UTF8ToString(langName);
           let jsmsg = UTF8ToString(msg);
 
           let jlangs = [];
@@ -246,12 +249,33 @@ EM_JS(void, js_callNewGame, (const char* msg, void* closure,
               let str = UTF8ToString(mem);
               jlangs.push(str);
           }
-          nbGetNewGame(closure, jsmsg, jlangs);
+          nbGetNewGame(closure, jsmsg, allowHints, isRobot, jlangs, jslangName );
       });
 
-EM_JS(bool, js_getHaveNotifyPerm, (), {
-        let perm = Notification.permission;
-        return perm == 'granted';
+/* Keep these in sync with ints used in js_getHaveNotifyPerm!!! */
+typedef enum {UNSUPPORTED = 0,
+              UNREQUESTED = 1,
+              BLOCKED = 2,
+              GRANTED = 3,
+} NOTIFY_STATE;
+
+
+EM_JS(int, js_getHaveNotifyPerm, (), {
+        let state = 1; // UNREQUESTED;
+        try {
+            let asStr = Notification.permission;
+            console.error('permission: ', asStr);
+            if ( asStr == 'granted' ) {
+                state = 3; // GRANTED;
+            } else if ( asStr == 'denied' ) {
+                state = 2; // BLOCKED;
+            } else {
+                state = 1; // UNREQUESTED;
+            }
+        } catch (ex) {
+            state = 0; // UNSUPPORTED
+        }
+        return state;
     });
 
 EM_JS(void, js_requestNotify, (), {
@@ -502,7 +526,9 @@ updateGameButtons( Globals* globals )
             } else if ( gsi.canTrade ) {
                 buttons[cur++] = BUTTON_TRADE;
             }
-            buttons[cur++] = BUTTON_COMMIT;
+            if ( gsi.curTurnSelected ) {
+                buttons[cur++] = BUTTON_COMMIT;
+            }
             buttons[cur++] = BUTTON_FLIP;
 
             if ( gsi.canRedo ) {
@@ -535,7 +561,7 @@ showName( GameState* gs )
         Globals* globals = gs->globals;
         title = gs->gameName;
         char buf[64];
-        if ( 1 < countDicts( globals ) ) {
+        if ( 1 < countLangs( globals ) ) {
             char langName[32];
             if ( !langNameFor( globals, gs->gi.dictLang, langName, sizeof(langName) ) ) {
                 strcpy( langName, "??" );
@@ -602,10 +628,20 @@ formatForGame(Globals* globals, bool multiLangs, const XP_UCHAR* gameKey )
                 offset += snprintf( buf+offset, sizeof(buf)-offset, " (in %s)", langName );
             }
         }
-        offset += snprintf( buf+offset, sizeof(buf)-offset, " Opponent: %s",
-                            summary.opponents );
-        offset += snprintf( buf+offset, sizeof(buf)-offset, " My turn: %s",
-                            0 <= summary.turn && summary.turnIsLocal ? "YES" : "NO" );
+        bool inPlay = 0 <= summary.turn;
+        if ( inPlay ) {
+            offset += snprintf( buf+offset, sizeof(buf)-offset, " Opponent: %s",
+                                summary.opponents );
+        }
+
+        if ( summary.gameOver ) {
+            offset += snprintf( buf+offset, sizeof(buf)-offset, " Game over" );
+        } else if ( !inPlay ) {
+            offset += snprintf( buf+offset, sizeof(buf)-offset, " Game NOT in play" );
+        } else {
+            offset += snprintf( buf+offset, sizeof(buf)-offset, " My turn: %s",
+                                0 <= summary.turn && summary.turnIsLocal ? "YES" : "NO" );
+        }
     }
     char* result = NULL;
     replaceStringIfDifferent( globals->mpool, &result, buf );
@@ -619,7 +655,7 @@ onOneGameName( void* closure, const XP_UCHAR* keys[] )
     if ( 0 != strcmp( gameIDStr, "0" ) ) { /* temporary */
         NameIterState* nis = (NameIterState*)closure;
         Globals* globals = nis->globals;
-        bool multiLangs = 1 < countDicts(globals);
+        bool multiLangs = 1 < countLangs(globals);
 
         /* Make sure game exists. This may be unnecessary later */
         const XP_UCHAR* dataKeys[] = { keys[0], keys[1], KEY_GAME, NULL };
@@ -672,6 +708,20 @@ cleanupGame( GameState* gs )
 }
 
 static void
+removeGameState( GameState* gs )
+{
+    Globals* globals = gs->globals;
+    GameState** prev = &globals->games;
+    for ( GameState* cur = globals->games; !!cur; cur = cur->next ) {
+        if ( gs == cur ) {
+            *prev = cur->next;
+            break;
+        }
+        prev = &cur->next;
+    }
+}
+
+static void
 deleteGame( GameState* gs )
 {
     Globals* globals = gs->globals;
@@ -685,14 +735,7 @@ deleteGame( GameState* gs )
 
     // Remove from linked list, but don't actually free because could live in
     // a js-side object still. Needs refcounting or somesuch
-    GameState** prev = &globals->games;
-    for ( GameState* cur = globals->games; !!cur; cur = cur->next ) {
-        if ( gs == cur ) {
-            *prev = cur->next;
-            break;
-        }
-        prev = &cur->next;
-    }
+    removeGameState( gs );
 
     char gameIDStr[16];
     formatGameID( gameIDStr, sizeof(gameIDStr), gameID );
@@ -759,13 +802,30 @@ onOneLang( void* closure, const XP_UCHAR* keys[] )
 }
 
 static void
+setNewGameDefaults( Globals* globals, NewGameParams* params )
+{
+    XP_MEMSET( params, 0, sizeof(*params) );
+    params->allowHints = true;
+    params->isRobot = true;
+}
+
+static void
 callNewGame( Globals* globals )
 {
     NewGameState ngs = {.globals = globals};
-    const XP_UCHAR* keys[] = {KEY_DICTS, KEY_WILDCARD, KEY_LANG_NAME, NULL};
-    dutil_forEach( globals->dutil, NULL, keys, onOneLang, &ngs );
+    const XP_UCHAR* keys1[] = {KEY_DICTS, KEY_WILDCARD, KEY_LANG_NAME, NULL};
+    dutil_forEach( globals->dutil, NULL, keys1, onOneLang, &ngs );
 
-    js_callNewGame("Configure your new game", globals, ngs.langs, ngs.nLangs);
+    NewGameParams params;
+    XP_U32 len = sizeof(params);
+    const XP_UCHAR* keys2[] = {KEY_NEWGAME_DFLTS, NULL};
+    dutil_loadPtr( globals->dutil, NULL, keys2, &params, &len );
+    if ( len != sizeof(params) ) {
+        setNewGameDefaults( globals, &params );
+    }
+
+    js_callNewGame("Configure your new game", globals, params.allowHints,
+                   params.isRobot, params.langName, ngs.langs, ngs.nLangs );
 }
 
 static void
@@ -815,7 +875,7 @@ countGames( Globals* globals )
 }
 
 static int
-countDicts( Globals* globals )
+countLangs( Globals* globals )
 {
     int count = 0;
     const XP_UCHAR* keys[] = {KEY_DICTS, KEY_WILDCARD, NULL};
@@ -828,7 +888,7 @@ static bool
 haveDictFor(Globals* globals, const char* lc)
 {
     int count = 0;
-    const XP_UCHAR* keys[] = {KEY_DICTS, lc, NULL};
+    const XP_UCHAR* keys[] = {KEY_DICTS, lc, KEY_DICTS, KEY_WILDCARD, NULL};
     dutil_forEach( globals->dutil, NULL, keys, upCounter, &count );
     return 0 < count;
 }
@@ -841,7 +901,7 @@ updateDeviceButtons( Globals* globals )
     if ( 0 < countGames(globals) ) {
         buttons[cur++] = BUTTON_GAME_GAMES;
     }
-    if ( 0 < countDicts( globals ) ) {
+    if ( 0 < countLangs( globals ) ) {
         buttons[cur++] = BUTTON_GAME_NEW;
     }
     if ( !!getCurGame( globals ) ) {
@@ -903,10 +963,10 @@ storeAsDict( Globals* globals, GotDictData* gdd )
     if ( success ) {
         dict_unref( dict, NULL );
 
-        const XP_UCHAR* keys[] = {KEY_DICTS, gdd->lc, shortName, NULL};
-        dutil_storePtr( globals->dutil, NULL, keys, gdd->data, gdd->len );
-        keys[2] = KEY_LANG_NAME;
-        dutil_storePtr( globals->dutil, NULL, keys, gdd->langName,
+        const XP_UCHAR* keys1[] = {KEY_DICTS, gdd->lc, KEY_DICTS, shortName, NULL};
+        dutil_storePtr( globals->dutil, NULL, keys1, gdd->data, gdd->len );
+        const XP_UCHAR* keys2[] = {KEY_DICTS, gdd->lc, KEY_LANG_NAME, NULL};
+        dutil_storePtr( globals->dutil, NULL, keys2, gdd->langName,
                         strlen(gdd->langName) + 1 );
 
         char msg[128];
@@ -1119,12 +1179,6 @@ getCurGame( Globals* globals )
     return globals->curGame;
 }
 
-static void
-removeGameState( GameState* gs )
-{
-    XP_ASSERT(0);
-}
-
 static GameState*
 getSavedGame( Globals* globals, int gameID )
 {
@@ -1237,33 +1291,50 @@ nameGame( GameState* gs, const char* name )
 
 typedef struct _FindOneState {
     Globals* globals;
+    const char* langName;
     DictionaryCtxt* dict;
 } FindOneState;
 
 static XP_Bool
-onOneDict( void* closure, const XP_UCHAR* keys[] )
+onOneDict( void* closure, const XP_UCHAR* keysIn[] )
 {
-    const XP_UCHAR* dictName = keys[2];
-    XP_LOGFF( "dictName: %s", dictName );
+    // XP_LOGFF( "(%s/%s/%s/%s)", keysIn[0], keysIn[1], keysIn[2], keysIn[3] );
     FindOneState* fos = (FindOneState*)closure;
-    XP_ASSERT( !fos->dict );
-    XW_DUtilCtxt* dutil = fos->globals->dutil;
+    Globals* globals = fos->globals;
+    XW_DUtilCtxt* dutil = globals->dutil;
+    /* I've got a dict directory with its language name. IF the name's a
+       match, or if I'm not looking for a match, load and make a dict from
+       it */
+    char langName[32];
+    XP_U32 len = sizeof(langName);
+    const XP_UCHAR* keys[] = { keysIn[0], keysIn[1], KEY_LANG_NAME, NULL };
+    dutil_loadPtr( dutil, NULL, keys, langName, &len );
+    XP_ASSERT( 0 < len );
+    // XP_LOGFF( "langName: %s", langName );
 
-    XP_U32 len;
-    dutil_loadPtr( dutil, NULL, keys, NULL, &len );
-    uint8_t* ptr = XP_MALLOC( fos->globals->mpool, len );
-    dutil_loadPtr( dutil, NULL, keys, ptr, &len );
-    fos->dict = wasm_dictionary_make( fos->globals, NULL, dictName, ptr, len );
-    XP_FREE( fos->globals->mpool, ptr );
-    return XP_FALSE;
+    bool useIt = NULL == fos->langName || 0 == strcmp( fos->langName, langName );
+    if ( useIt ) {
+        const XP_UCHAR* dictName = keysIn[3];
+        // XP_LOGFF( "dictName: %s", dictName );
+        XP_ASSERT( !fos->dict );
+
+        XP_U32 len;
+        dutil_loadPtr( dutil, NULL, keysIn, NULL, &len );
+        uint8_t* ptr = XP_MALLOC( globals->mpool, len );
+        dutil_loadPtr( dutil, NULL, keysIn, ptr, &len );
+        fos->dict = wasm_dictionary_make( globals, NULL, dictName, ptr, len );
+        XP_FREE( globals->mpool, ptr );
+    }
+    return NULL == fos->dict;
 }
 
 static DictionaryCtxt*
-loadAnyDict( Globals* globals, const char* lc )
+loadAnyDict( Globals* globals, const char* langName )
 {
     FindOneState fos = {.globals = globals,
+                        .langName = langName,
     };
-    const XP_UCHAR* keys[] = {KEY_DICTS, lc, KEY_WILDCARD, NULL};
+    const XP_UCHAR* keys[] = {KEY_DICTS, KEY_WILDCARD, KEY_DICTS, KEY_WILDCARD, NULL};
     dutil_forEach( globals->dutil, NULL, keys, onOneDict, &fos );
     LOG_RETURNF( "%p", fos.dict );
     return fos.dict;
@@ -1293,17 +1364,6 @@ onOneLangName( void* closure, const XP_UCHAR* keys[] )
 }
 
 static void
-langNameToLC(Globals* globals, const char* langName, char lc[], size_t len)
-{
-    FindLCState lcc = { .globals = globals,
-                        .lc = lc,
-                        .langName = langName,
-    };
-    const XP_UCHAR* keys[] = {KEY_DICTS, KEY_WILDCARD, KEY_LANG_NAME, NULL};
-    dutil_forEach( globals->dutil, NULL, keys, onOneLangName, &lcc );
-}
-
-static void
 loadAndDraw( Globals* globals, const NetLaunchInfo* invite,
              int gameID, NewGameParams* params )
 {
@@ -1323,18 +1383,18 @@ loadAndDraw( Globals* globals, const NetLaunchInfo* invite,
     }
 
     if ( !gs ) {
-        const char* lc = NULL == params ? "en" : params->lc;
-        DictionaryCtxt* dict = loadAnyDict( globals, lc );
+        const char* langName = NULL == params ? NULL : params->langName;
+        DictionaryCtxt* dict = loadAnyDict( globals, langName );
         if ( !!dict ) {
             char playerName[32];
             getLocalName( globals, playerName, sizeof(playerName) );
 
             gs = newGameState( globals );
-            gs->gi.serverRole = !!params && !params->isRobotNotRemote
+            gs->gi.serverRole = !!params && !params->isRobot
                 ? SERVER_ISSERVER : SERVER_STANDALONE;
 
             gs->gi.phoniesAction = PHONIES_WARN;
-            gs->gi.hintsNotAllowed = !!params && params->hintsNotAllowed || false;
+            gs->gi.hintsNotAllowed = !!params && !params->allowHints || false;
             gs->gi.gameID = 0;
             gs->gi.dictLang = dict_getLangCode(dict);
             replaceStringIfDifferent( globals->mpool, &gs->gi.dictName,
@@ -1345,7 +1405,7 @@ loadAndDraw( Globals* globals, const NetLaunchInfo* invite,
             gs->gi.players[0].isLocal = XP_TRUE;
             gs->gi.players[0].robotIQ = 0;
 
-            bool otherLocal = !!params ? params->isRobotNotRemote : true;
+            bool otherLocal = !!params ? params->isRobot : true;
             gs->gi.players[1].name = copyString( globals->mpool,
                                                  otherLocal ? "Robot" : "(remote)" );
             gs->gi.players[1].isLocal = otherLocal;
@@ -1407,10 +1467,10 @@ main_onGameMessage( Globals* globals, XP_U32 gameID,
         if ( game_receiveMessage( &gs->game, NULL, stream, from ) ) {
             updateScreen( gs, true );
         }
-        if ( !globals->focussed && js_getHaveNotifyPerm() ) {
+        if ( !globals->focussed && GRANTED == js_getHaveNotifyPerm() ) {
             GameSummary summary;
             game_summarize( &gs->game, &gs->gi, &summary );
-            if ( summary.turnIsLocal ) {
+            if ( summary.turnIsLocal && 0 <= summary.turn ) {
                 char buf[128];
                 sprintf( buf, "Your turn in game %s", gs->gameName );
                 js_notify( buf );
@@ -1894,20 +1954,20 @@ onAllowNotify(void* closure, bool confirmed)
 }
 
 void
-onNewGame( void* closure, bool opponentIsRobot, const char* langName,
+onNewGame( void* closure, bool isRobot, const char* langName,
            bool allowHints)
 {
-    Globals* globals = (Globals*)closure;
-    XP_LOGFF( "isRobot: %d; lc: %s; allow: %d", opponentIsRobot,
-              langName, allowHints );
+    CAST_GLOB(Globals*, globals, closure);
 
     NewGameParams* ngp = XP_CALLOC( globals->mpool, sizeof(*ngp) );
+    ngp->allowHints = allowHints;
+    ngp->isRobot = isRobot;
+    strcpy( ngp->langName, langName );
+    const XP_UCHAR* keys[] = {KEY_NEWGAME_DFLTS, NULL};
+    dutil_storePtr( globals->dutil, NULL, keys, ngp, sizeof(*ngp) );
     ngp->globals = globals;
-    ngp->hintsNotAllowed = !allowHints;
-    ngp->isRobotNotRemote = opponentIsRobot;
-    langNameToLC(globals, langName, ngp->lc, sizeof(ngp->lc));
 
-    if ( !opponentIsRobot && !js_getHaveNotifyPerm() ) {
+    if ( !isRobot && UNREQUESTED == js_getHaveNotifyPerm() ) {
         const char* msg = "You are creating a networked game. Would you like "
             "notifications when a move arrives and it becomes your turn?";
         call_confirm( globals, msg, onAllowNotify, ngp );
@@ -2037,7 +2097,7 @@ onPlayerNamedAtLaunch( void* closure, const char* responseName )
         call_alert( buf );
     }
 
-    if ( 0 == countDicts( globals ) ) {
+    if ( 0 == countLangs( globals ) ) {
         call_get_dict( NULL, onGotNativeDictAtLaunch, ls );
     } else {
         onGotNativeDictAtLaunch( ls, NULL );
