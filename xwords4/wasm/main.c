@@ -878,7 +878,7 @@ static int
 countLangs( Globals* globals )
 {
     int count = 0;
-    const XP_UCHAR* keys[] = {KEY_DICTS, KEY_WILDCARD, NULL};
+    const XP_UCHAR* keys[] = {KEY_DICTS, KEY_WILDCARD, KEY_DICTS, NULL};
     dutil_forEach( globals->dutil, NULL, keys, upCounter, &count );
     LOG_RETURNF( "%d", count );
     return count;
