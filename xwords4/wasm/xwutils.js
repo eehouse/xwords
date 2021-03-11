@@ -326,10 +326,14 @@ function setDivButtons(divid, buttons, proc, closure) {
 function nbGetString(msg, dflt, proc, closure) {
 	let dlg = newDlgWMsg( msg );
 
+	let div = document.createElement('div');
+	div.classList.add('emscripten');
+	dlg.appendChild(div);
+
 	let tarea = document.createElement('textarea');
 	tarea.classList.add('stringedit');
 	tarea.value = dflt;
-	dlg.appendChild( tarea );
+	div.appendChild( tarea );
 
 	dismissed = function(str) {
 		dlg.parentNode.removeChild(dlg);
