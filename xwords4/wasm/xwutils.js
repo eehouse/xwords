@@ -166,6 +166,9 @@ function jssetup(closure, dbg, devid, gitrev, now, noTabProc, focusProc, msgProc
 
 		Module.ccall('MQTTConnectedChanged', null, ['number', 'boolean'],
 					 [state.closure, isConn]);
+
+		console.error('new conn state: ', isConn, '; total conn: ', state.connTimeMS,
+					  '; total disconn: ', state.disconnTimeMS );
 	}
 
 	state.client = new Paho.MQTT.Client("eehouse.org", 8883, '/wss', devid);

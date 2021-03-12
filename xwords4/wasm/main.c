@@ -40,6 +40,7 @@
 #include "strutils.h"
 #include "movestak.h"
 #include "knownplyr.h"
+#include "dbgutil.h"
 
 #include "main.h"
 #include "wasmdraw.h"
@@ -750,8 +751,12 @@ onDeleteConfirmed( void* closure, bool confirmed )
     if ( confirmed ) {
         CAST_GS(GameState*, gs, closure);
         Globals* globals = gs->globals;
+        bool wasVisible = gs == getCurGame(globals);
+
         deleteGame( gs );
-        clearScreen( globals );
+        if ( wasVisible ) {
+            clearScreen( globals );
+        }
         updateDeviceButtons( globals );
     }
 }
@@ -1319,11 +1324,11 @@ onOneDict( void* closure, const XP_UCHAR* keysIn[] )
         XP_ASSERT( !fos->dict );
 
         XP_U32 len;
-        dutil_loadPtr( dutil, NULL, keysIn, NULL, &len );
-        uint8_t* ptr = XP_MALLOC( globals->mpool, len );
-        dutil_loadPtr( dutil, NULL, keysIn, ptr, &len );
-        fos->dict = wasm_dictionary_make( globals, NULL, dictName, ptr, len );
-        XP_FREE( globals->mpool, ptr );
+        uint8_t* ptr = wasm_dutil_mallocAndLoad( dutil, keysIn, &len );
+        if ( !!ptr ) {
+            fos->dict = wasm_dictionary_make( globals, NULL, dictName, ptr, len );
+            XP_FREE( globals->mpool, ptr );
+        }
     }
     return NULL == fos->dict;
 }
@@ -1495,8 +1500,9 @@ main_onGameGone( Globals* globals, XP_U32 gameID )
 {
     GameState* gs = getSavedGame( globals, gameID );
     if ( !!gs ) {
-        const char* msg = "This game has been deleted on the remote device. "
-            "Delete here too?";
+        char msg[128];
+        sprintf( msg, "The game %s has been deleted on the remote "
+                 "device. Delete here too?", gs->gameName );
         call_confirm( globals, msg, onDeleteConfirmed, gs );
     }
 }

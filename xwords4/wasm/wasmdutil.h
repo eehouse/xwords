@@ -1,4 +1,4 @@
-/* -*- compile-command: "cd ../wasm && make main.html -j3"; -*- */
+/* -*- compile-command: "cd ../wasm && make MEMDEBUG=TRUE install -j3"; -*- */
 /*
  * Copyright 2021 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
@@ -22,11 +22,16 @@
 
 #include <pthread.h>
 
+#include "main.h"
 #include "dutil.h"
 #include "mempool.h"
 
 XW_DUtilCtxt* wasm_dutil_make( MPFORMAL VTableMgr* vtMgr, void* closure );
 void wasm_dutil_syncIf( XW_DUtilCtxt* duc );
 void wasm_dutil_destroy( XW_DUtilCtxt* dutil );
+
+void* wasm_dutil_mallocAndLoad( XW_DUtilCtxt* dutil, const XP_UCHAR* keys[],
+                                XP_U32* len );
+
 
 #endif

@@ -219,36 +219,6 @@ ensurePath(const char* keys[], char buf[], bool mkDirs)
 }
 
 static void
-wasm_dutil_storeStream( XW_DUtilCtxt* duc, XWEnv xwe, const char* keys[],
-                        XWStreamCtxt* stream )
-{
-    /* char path[128]; */
-    /* ensurePath(keys, path, true); */
-    /* XP_LOGFF( "(path: %s)", path ); */
-
-    const XP_U8* data = stream_getPtr(stream);
-    XP_U32 len = stream_getSize(stream);
-    dutil_storePtr( duc, xwe, keys, (void*)data, len );
-    /* writeToPath( buf, data, len ); */
-    LOG_RETURN_VOID();
-}
-
-static void
-wasm_dutil_loadStream( XW_DUtilCtxt* duc, XWEnv xwe, const char* keys[],
-                       XWStreamCtxt* inOut )
-{
-    XP_U32 len;
-    dutil_loadPtr( duc, xwe, keys, NULL, &len );
-    if ( 0 < len  ) {
-        uint8_t* ptr = XP_MALLOC( duc->mpool, len );
-        dutil_loadPtr( duc, xwe, keys, ptr, &len );
-        stream_putBytes( inOut, ptr, len );
-        XP_FREE( duc->mpool, ptr );
-    }
-    LOG_RETURN_VOID();
-}
-
-static void
 wasm_dutil_storePtr( XW_DUtilCtxt* duc, XWEnv xwe,
                      const char* keys[],
                      const void* data, XP_U32 len )
@@ -422,11 +392,8 @@ gotForLang( void* closure, const XP_UCHAR* keys[] )
 {
     XP_LOGFF("name: %s", keys[2]);
     ForLangState* fls = (ForLangState*)closure;
-    dutil_loadPtr( fls->duc, fls->xwe, keys, NULL, &fls->len );
-    if ( 0 < fls->len ) {
-        fls->ptr = XP_MALLOC( fls->duc->mpool, fls->len );
-        dutil_loadPtr( fls->duc, fls->xwe, keys, fls->ptr, &fls->len );
-    } else {
+    fls->ptr = wasm_dutil_mallocAndLoad( fls->duc, keys, &fls->len );
+    if ( !fls->ptr ) {
         XP_LOGFF( "nothing for %s/%s", keys[1], keys[2] );
     }
     return NULL == fls->ptr;
@@ -445,16 +412,9 @@ wasm_dutil_getDict( XW_DUtilCtxt* duc, XWEnv xwe,
     if ( !result ) {
         XP_U32 len = 0;
         const char* keys[] = {KEY_DICTS, lc, KEY_DICTS, dictName, NULL };
-        dutil_loadPtr( duc, xwe, keys, NULL, &len );
-        if ( 0 < len ) {
-            XP_LOGFF( "making stack alloc of %d bytes", len );
-            uint8_t ptr[len];   /* this should blow up. JS is special. */
-            XP_LOGFF( "MADE stack alloc of %d bytes!!!", len );
-            dutil_loadPtr( duc, xwe, keys, ptr, &len );
-            result = wasm_dictionary_make( globals, xwe, dictName, ptr, len );
-            dmgr_put( globals->dictMgr, xwe, dictName, result );
-        } else {
-            /* Try another dict in same language */
+
+        uint8_t* ptr = wasm_dutil_mallocAndLoad( duc, keys, &len );
+        if ( !ptr ) {
             XP_LOGFF( "trying for another %s dict", lc );
             ForLangState fls = { .duc = duc,
                                  .xwe = xwe,
@@ -462,11 +422,15 @@ wasm_dutil_getDict( XW_DUtilCtxt* duc, XWEnv xwe,
             const char* langKeys[] = {KEY_DICTS, lc, KEY_DICTS, KEY_WILDCARD, NULL};
             dutil_forEach( duc, xwe, langKeys, gotForLang, &fls );
             if ( !!fls.ptr ) {
-                result = wasm_dictionary_make( globals, xwe, dictName,
-                                               fls.ptr, fls.len );
-                XP_FREE( globals->mpool, fls.ptr );
-                dmgr_put( globals->dictMgr, xwe, dictName, result );
+                ptr = fls.ptr;
+                len = fls.len;
             }
+        }
+
+        if ( !!ptr ) {
+            result = wasm_dictionary_make( globals, xwe, dictName, ptr, len );
+            XP_FREE( globals->mpool, ptr );
+            dmgr_put( globals->dictMgr, xwe, dictName, result );
         }
     }
 
@@ -595,4 +559,17 @@ void
 wasm_dutil_destroy( XW_DUtilCtxt* dutil )
 {
     XP_ASSERT(0);
+}
+
+void*
+wasm_dutil_mallocAndLoad( XW_DUtilCtxt* dutil, const XP_UCHAR* keys[],
+                          XP_U32* len )
+{
+    void* result = NULL;
+    dutil_loadPtr( dutil, NULL, keys, NULL, len );
+    if ( 0 < *len ) {
+        result = XP_MALLOC( dutil->mpool, *len );
+        dutil_loadPtr( dutil, NULL, keys, result, len );
+    }
+    return result;
 }

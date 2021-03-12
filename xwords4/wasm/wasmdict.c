@@ -33,7 +33,6 @@ typedef struct _WasmDictionaryCtxt {
     Globals* globals;
     size_t dictLength;
     XP_U8* dictBase;
-    XP_Bool useMMap;
 } WasmDictionaryCtxt;
 
 static const XP_UCHAR*
@@ -144,11 +143,7 @@ wasm_dictionary_destroy( DictionaryCtxt* dict, XWEnv xwe )
     freeSpecials( ctxt );
 
     if ( !!ctxt->dictBase ) {
-        if ( ctxt->useMMap ) {
-            (void)munmap( ctxt->dictBase, ctxt->dictLength );
-        } else {
-            XP_FREE( dict->mpool, ctxt->dictBase );
-        }
+        XP_FREE( dict->mpool, ctxt->dictBase );
     }
 
     /* super's destructor should do this!!!! */
@@ -181,8 +176,6 @@ wasm_dictionary_make( Globals* globals, XWEnv xwe, const char* name,
 
     dict_super_init( MPPARM(globals->mpool) &result->super );
     result->super.destructor = wasm_dictionary_destroy;
-
-    result->useMMap = false;
 
     XP_Bool success = initFromPtr( result, name, base, len );
     if ( success ) {
