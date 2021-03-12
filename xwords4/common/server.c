@@ -4291,7 +4291,7 @@ server_receiveMessage( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* incoming )
     default:
         XP_WARNF( "%s: Unknown code on incoming message: %d\n",
                   __func__, code );
-        XP_ASSERT( 0 );
+        // will happen e.g. if we don't support chat and remote sends. Is ok.
         break;
     } /* switch */
 
