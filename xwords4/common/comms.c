@@ -2367,7 +2367,9 @@ validateChannelMessage( CommsCtxt* comms, XWEnv xwe, const CommsAddrRec* addr,
         } else if ( msgID != rec->lastMsgRcd + 1 ) {
             XP_LOGF( TAGFMT() "expected %d, got %d", TAGPRMS,
                      rec->lastMsgRcd + 1, msgID );
-            ackAnyImpl( comms, xwe, XP_TRUE );
+            /* Let's not do this yet. I need to understand why there are
+               messages with msgID==0 and how to get rid of them. */
+            // ackAnyImpl( comms, xwe, XP_TRUE );
             rec = NULL;
         }
     } else {
