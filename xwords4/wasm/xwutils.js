@@ -1,6 +1,9 @@
 var state = {client: null,
              closure: null,
 			 connected: false,
+			 disconnTimeMS: 0,
+			 connTimeMS: 0,
+			 connChangeStamp: 0,
 			};
 
 function ccallString(proc, closure, str) {
@@ -144,7 +147,23 @@ function jssetup(closure, dbg, devid, gitrev, now, noTabProc, focusProc, msgProc
 
 	document.getElementById("mqtt_span").textContent=devid;
 
-	function tellConnected(isConn) {
+	function onConnChange(isConn) {
+		state.connected = isConn;
+
+		const now = Date.now();
+		if ( 0 != state.connChangeStamp ) {
+			const incr = now - state.connChangeStamp;
+			if ( isConn ) {
+				state.disconnTimeMS += incr;
+			} else {
+				state.connTimeMS += incr;
+			}
+		}
+		state.connChangeStamp = now;
+
+		let stateStr = isConn ? 'Connected' : 'Disconnected';
+		document.getElementById("mqtt_status").textContent = stateStr;
+
 		Module.ccall('MQTTConnectedChanged', null, ['number', 'boolean'],
 					 [state.closure, isConn]);
 	}
@@ -153,9 +172,7 @@ function jssetup(closure, dbg, devid, gitrev, now, noTabProc, focusProc, msgProc
 
 	// set callback handlers
 	state.client.onConnectionLost = function onConnectionLost(responseObject) {
-		state.connected = false;
-		document.getElementById("mqtt_status").textContent="Disconnected";
-		tellConnected(false);
+		onConnChange(false);
 		if (responseObject.errorCode !== 0) {
 			console.log("onConnectionLost:"+responseObject.errorMessage);
 		}
@@ -168,9 +185,7 @@ function jssetup(closure, dbg, devid, gitrev, now, noTabProc, focusProc, msgProc
 	};
 
 	function onConnect() {
-		state.connected = true
-		document.getElementById("mqtt_status").textContent="Connected";
-		tellConnected(true);
+		onConnChange(true);
 
 		var subscribeOptions = {
 			qos: 2,  // QoS
@@ -188,7 +203,7 @@ function jssetup(closure, dbg, devid, gitrev, now, noTabProc, focusProc, msgProc
 						  useSSL: true,
 						  reconnect: true,
 						  onSuccess: onConnect,
-						  onFailure: function() { alert('onFailure'); },
+						  onFailure: function() { console.error('mqtt.client.connect.onFailure'); },
 						 });
 
 }
@@ -201,7 +216,7 @@ function mqttSend( topic, ptr ) {
 		message.qos = 2;
 		state.client.send(message);
 	} else {
-		console.log('mqttSend: not connected');
+		console.error('mqttSend: not connected');
 	}
 	return canSend;
 }

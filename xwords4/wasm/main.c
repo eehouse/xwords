@@ -326,14 +326,14 @@ call_alert( const char* msg )
 static bool
 sendStreamToDev( XWStreamCtxt* stream, const MQTTDevID* devID )
 {
-    XP_S16 nSent = -1;
     XP_UCHAR topic[64];
     formatMQTTTopic( devID, topic, sizeof(topic) );
 
     XP_U16 streamLen = stream_getSize( stream );
     bool success = call_mqttSend( topic, stream_getPtr( stream ), streamLen );
     stream_destroy( stream, NULL );
-    LOG_RETURNF("%d", nSent);
+
+    XP_LOGFF("(to: %s) => %s", topic, boolToStr(success) );
     return success;
 }
 

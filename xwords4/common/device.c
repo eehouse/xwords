@@ -157,7 +157,6 @@ dvc_getMQTTDevID( XW_DUtilCtxt* dutil, XWEnv xwe, MQTTDevID* devID )
 void
 dvc_resetMQTTDevID( XW_DUtilCtxt* dutil, XWEnv xwe )
 {
-    LOG_FUNC();
 #ifdef BOGUS_ALL_SAME_DEVID
     XP_LOGFF( "doing nothing" );
     XP_USE( dutil );
@@ -193,7 +192,6 @@ void
 dvc_makeMQTTInvite( XW_DUtilCtxt* dutil, XWEnv xwe, XWStreamCtxt* stream,
                     const NetLaunchInfo* nli )
 {
-    LOG_FUNC();
     addHeaderGameIDAndCmd( dutil, xwe, CMD_INVITE, nli->gameID, stream );
     nli_saveToStream( nli, stream );
 }
@@ -202,7 +200,6 @@ void
 dvc_makeMQTTMessage( XW_DUtilCtxt* dutil, XWEnv xwe, XWStreamCtxt* stream,
                      XP_U32 gameID, const XP_U8* buf, XP_U16 len )
 {
-    LOG_FUNC();
     addHeaderGameIDAndCmd( dutil, xwe, CMD_MSG, gameID, stream );
     stream_putBytes( stream, buf, len );
 }
