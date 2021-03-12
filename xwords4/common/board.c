@@ -231,9 +231,9 @@ board_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream, ModelCtxt* model
     board->isFlipped = (XP_Bool)stream_getBits( stream, 1 );
     board->gameOver = (XP_Bool)stream_getBits( stream, 1 );
     board->showColors = (XP_Bool)stream_getBits( stream, 1 );
-    // board->showCellValues = (XP_Bool)
-    // FIX_NEXT_VERSION_CHANGE: remove this conditionally
-    (void)stream_getBits( stream, 1 ); /* REMOVE ME */
+    if ( version < STREAM_VERS_NOEMPTYDICT ) {
+        (void)stream_getBits( stream, 1 );
+    }
 
     if ( version >= STREAM_VERS_KEYNAV ) {
         board->focussed = (BoardObjectType)stream_getBits( stream, 2 );
@@ -332,8 +332,6 @@ board_writeToStream( const BoardCtxt* board, XWStreamCtxt* stream )
     stream_putBits( stream, 1, board->isFlipped );
     stream_putBits( stream, 1, board->gameOver );
     stream_putBits( stream, 1, board->showColors );
-    // FIX_NEXT_VERSION_CHANGE: remove this
-    stream_putBits( stream, 1, 0 ); // board->showCellValues );
     stream_putBits( stream, 2, board->focussed );
 #ifdef KEYBOARD_NAV
     stream_putBits( stream, 1, board->focusHasDived );

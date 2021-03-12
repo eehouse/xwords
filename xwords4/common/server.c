@@ -1854,21 +1854,6 @@ registerRemotePlayer( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* stream )
     }
     return deviceIndex;
 } /* registerRemotePlayer */
-
-static void
-clearLocalRobots( ServerCtxt* server )
-{
-    XP_U16 ii;
-    CurGameInfo* gi = server->vol.gi;
-    XP_U16 nPlayers = gi->nPlayers;
-
-    for ( ii = 0; ii < nPlayers; ++ii ) {
-        LocalPlayer* player = &gi->players[ii];
-        if ( LP_IS_LOCAL( player ) ) {
-            player->robotIQ = 0;
-        }
-    }
-} /* clearLocalRobots */
 #endif
 
 static void
@@ -1924,8 +1909,16 @@ client_readInitialMessage( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* stream )
 
         XP_U16 nCols = localGI.boardSize;
 
-        DictionaryCtxt* newDict = util_makeEmptyDict( server->vol.util, xwe );
-        dict_loadFromStream( newDict, xwe, stream );
+        XP_LOGFF( "streamVersion: %d; STREAM_VERS_NOEMPTYDICT: %d",
+                  streamVersion, STREAM_VERS_NOEMPTYDICT );
+        if ( streamVersion < STREAM_VERS_NOEMPTYDICT ) {
+            XP_LOGFF( "loading and dropping empty dict" );
+            DictionaryCtxt* empty = util_makeEmptyDict( server->vol.util, xwe );
+            dict_loadFromStream( empty, xwe, stream );
+            dict_unref( empty, xwe );
+        } else {
+            XP_LOGFF( "NO empty dict bytes to skip" );
+        }
 
 #ifdef STREAM_VERS_BIGBOARD
         if ( STREAM_VERS_DICTNAME <= streamVersion ) {
@@ -1953,11 +1946,9 @@ client_readInitialMessage( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* stream )
 
         const DictionaryCtxt* curDict = model_getDictionary( model );
 
-        XP_ASSERT( !!newDict );
-
         if ( curDict == NULL ) {
-            model_setDictionary( model, xwe, newDict );
-        } else if ( dict_tilesAreSame( newDict, curDict ) ) {
+            XP_ASSERT(0);
+        } else {
             /* keep the dict the local user installed */
 #ifdef STREAM_VERS_BIGBOARD
             if ( '\0' != rmtDictName[0] ) {
@@ -1968,12 +1959,7 @@ client_readInitialMessage( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* stream )
                                     rmtDictSum, localGI.phoniesAction );
             }
 #endif
-        } else {
-            model_setDictionary( model, xwe, newDict );
-            util_userError( server->vol.util, xwe, ERR_SERVER_DICT_WINS );
-            clearLocalRobots( server );
         }
-        dict_unref( newDict, xwe );  /* new owner will have ref'd */
 
         XP_ASSERT( !server->pool );
         makePoolOnce( server );
@@ -2088,7 +2074,12 @@ sendInitialMessage( ServerCtxt* server, XWEnv xwe )
         gi_writeToStream( stream, &localGI );
 
         const DictionaryCtxt* dict = model_getDictionary( model );
-        dict_writeToStream( dict, stream );
+        if ( streamVersion < STREAM_VERS_NOEMPTYDICT ) {
+            XP_LOGFF( "writing dict to stream" );
+            dict_writeToStream( dict, stream );
+        } else {
+            XP_LOGFF( "SKIPPING write of dict to stream" );
+        }
 #ifdef STREAM_VERS_BIGBOARD
         if ( STREAM_VERS_DICTNAME <= streamVersion ) {
             stringToStream( stream, dict_getShortName(dict) );

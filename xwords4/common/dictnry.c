@@ -72,6 +72,7 @@ p_dict_unref( const DictionaryCtxt* dict, XWEnv xwe
     if ( !!dict ) {
         DictionaryCtxt* _dict = (DictionaryCtxt*)dict;
         pthread_mutex_lock( &_dict->mutex );
+        XP_ASSERT( 0 != _dict->refCount );
         --_dict->refCount;
         XP_ASSERT( 0 <= _dict->refCount );
 #ifdef DEBUG_REF
@@ -767,7 +768,6 @@ common_destructor( DictionaryCtxt* dict, XWEnv XP_UNUSED(xwe) )
     XP_FREE( dict->mpool, dict );
 } /* common_destructor */
 
-#ifndef XWFEATURE_STANDALONE_ONLY
 void
 dict_loadFromStream( DictionaryCtxt* dict, XWEnv xwe, XWStreamCtxt* stream )
 {
@@ -828,7 +828,16 @@ dict_loadFromStream( DictionaryCtxt* dict, XWEnv xwe, XWStreamCtxt* stream )
     }
     setBlankTile( dict );
 } /* dict_loadFromStream */
-#endif
+
+void
+dict_skipFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream )
+{
+    DictionaryCtxt* dict = XP_CALLOC( mpool, sizeof(*dict)); /* leaked */
+    MPASSIGN( dict->mpool, mpool );
+    dict_ref( dict, xwe );      /* so unref works :-) */
+    dict_loadFromStream( dict, xwe, stream );
+    dict_unref( dict, xwe );
+}
 
 #ifdef TEXT_MODEL
 /* Return the strlen of the longest face, e.g. 1 for English and Italian;

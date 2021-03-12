@@ -124,7 +124,6 @@ model_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
     ModelCtxt* model;
     XP_U16 nCols;
     XP_U16 ii;
-    XP_Bool hasDict;
     XP_U16 nPlayers;
     XP_U16 version = stream_getVersion( stream );
 
@@ -141,15 +140,7 @@ model_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
     }
     XP_ASSERT( MAX_COLS >= nCols );
 
-    hasDict = (version >= STREAM_VERS_MODEL_NO_DICT)
-        ? XP_FALSE : stream_getBits( stream, 1 );
     nPlayers = (XP_U16)stream_getBits( stream, NPLAYERS_NBITS );
-
-    if ( hasDict ) {
-        DictionaryCtxt* savedDict = util_makeEmptyDict( util, xwe );
-        dict_loadFromStream( savedDict, xwe, stream );
-        dict_unref( savedDict, xwe );
-    }
 
     model = model_make( MPPARM(mpool) xwe, dict, dicts, util, nCols );
     model->nPlayers = nPlayers;
