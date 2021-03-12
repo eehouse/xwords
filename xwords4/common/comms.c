@@ -1714,32 +1714,35 @@ comms_getPending( CommsCtxt* comms, XWEnv xwe, PendingMsgProc proc, void* closur
 }
 
 #ifdef XWFEATURE_COMMSACK
-void
-comms_ackAny( CommsCtxt* comms, XWEnv xwe )
+static void
+ackAnyImpl( CommsCtxt* comms, XWEnv xwe, XP_Bool force )
 {
     if ( CONN_ID_NONE == comms->connID ) {
-        XP_LOGF( "%s: doing nothing because connID still unset", __func__ );
+        XP_LOGFF( "doing nothing because connID still unset" );
     } else {
-#ifdef DEBUG
         XP_U16 nSent = 0;
-#endif 
         AddressRecord* rec;
         for ( rec = comms->recs; !!rec; rec = rec->next ) {
-            if ( rec->lastMsgAckd < rec->lastMsgRcd ) {
-#ifdef DEBUG
+            if ( force || rec->lastMsgAckd < rec->lastMsgRcd ) {
                 ++nSent;
-#endif 
                 CNO_FMT( cbuf, rec->channelNo );
-                XP_LOGF( "%s: %s; %d < %d: rec needs ack", __func__,
-                         cbuf, rec->lastMsgAckd, rec->lastMsgRcd );
+                XP_LOGFF( "%s; %d < %d (or force: %s): rec getting ack",
+                          cbuf, rec->lastMsgAckd, rec->lastMsgRcd,
+                          boolToStr(force) );
                 sendEmptyMsg( comms, xwe, rec );
             }
         }
-#ifdef DEBUG
         XP_LOGF( "%s: sent for %d channels", __func__, nSent );
-#endif 
     } 
 }
+
+void
+comms_ackAny( CommsCtxt* comms, XWEnv xwe )
+{
+    ackAnyImpl( comms, xwe, XP_FALSE );
+}
+#else
+# define ackAnyImpl( comms, xwe, force )
 #endif
 
 #ifdef XWFEATURE_RELAY
@@ -2364,6 +2367,7 @@ validateChannelMessage( CommsCtxt* comms, XWEnv xwe, const CommsAddrRec* addr,
         } else if ( msgID != rec->lastMsgRcd + 1 ) {
             XP_LOGF( TAGFMT() "expected %d, got %d", TAGPRMS,
                      rec->lastMsgRcd + 1, msgID );
+            ackAnyImpl( comms, xwe, XP_TRUE );
             rec = NULL;
         }
     } else {
