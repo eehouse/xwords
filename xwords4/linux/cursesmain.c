@@ -52,7 +52,6 @@
 #include "board.h"
 #include "engine.h"
 /* #include "compipe.h" */
-#include "xwproto.h"
 #include "xwstream.h"
 #include "xwstate.h"
 #include "strutils.h"
