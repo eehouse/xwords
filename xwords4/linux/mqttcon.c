@@ -110,7 +110,8 @@ log_callback( struct mosquitto *mosq, void *userdata, int level,
     XP_USE(mosq);
     XP_USE(userdata);
     XP_USE(level);
-    XP_LOGFF( "msg: %s", str );
+    XP_USE(str);
+    /* XP_LOGFF( "msg: %s", str ); */
 }
 
 static gboolean

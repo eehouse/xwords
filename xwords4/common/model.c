@@ -314,7 +314,7 @@ model_hashMatches( const ModelCtxt* model, const XP_U32 hash )
 {
     StackCtxt* stack = model->vol.stack;
     XP_Bool matches = hash == stack_getHash( stack );
-    XP_LOGFF( "(hash=%X) => %d", hash, matches );
+    XP_LOGFF( "(hash=%X) => %s", hash, boolToStr(matches) );
     return matches;
 }
 

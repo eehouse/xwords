@@ -110,7 +110,7 @@ getMQTTDevID( XW_DUtilCtxt* dutil, XWEnv xwe, XP_Bool forceNew, MQTTDevID* devID
         dutil_loadPtr( dutil, xwe, MQTT_DEVID_KEY, SUFFIX_MQTT_DEVID, &tmp, &len );
     }
 
-    XP_LOGFF( "len: %d; sizeof(tmp): %zu", len, sizeof(tmp) );
+    /* XP_LOGFF( "len: %d; sizeof(tmp): %zu", len, sizeof(tmp) ); */
     if ( forceNew || len != sizeof(tmp) ) { /* not found, or bogus somehow */
         int total = 0;
         for ( int ii = 0; ii < NUM_RUNS; ++ii ) {
@@ -144,7 +144,7 @@ getMQTTDevID( XW_DUtilCtxt* dutil, XWEnv xwe, XP_Bool forceNew, MQTTDevID* devID
     }
     *devID = tmp;
 #endif
-    LOG_RETURNF( MQTTDevID_FMT " key: %s", *devID, MQTT_DEVID_KEY );
+    // LOG_RETURNF( MQTTDevID_FMT " key: %s", *devID, MQTT_DEVID_KEY );
 }
 
 void

@@ -263,10 +263,10 @@ game_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream, XWGame* game,
     XP_Bool hasComms;
 #endif
     strVersion = stream_getU8( stream );
-    XP_DEBUGF( "%s: strVersion = 0x%x", __func__, (XP_U16)strVersion );
+    XP_LOGFF( "strVersion = 0x%x", (XP_U16)strVersion );
 
     if ( strVersion > CUR_STREAM_VERS ) {
-        XP_LOGF( "%s: aborting; stream version too new (%d > %d)!", __func__, 
+        XP_LOGFF( "aborting; stream version too new (%d > %d)!",
                  strVersion, CUR_STREAM_VERS );
     } else {
         do { /* do..while so can break */
@@ -277,7 +277,7 @@ game_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream, XWGame* game,
                 success = XP_TRUE;
                 break;
             } else if ( stream_getSize(stream) == 0 ) {
-                XP_LOGF( "%s: gi was all we got; failing.", __func__ );
+                XP_LOGFF( "gi was all we got; failing." );
                 break;
             }
             game->util = util;

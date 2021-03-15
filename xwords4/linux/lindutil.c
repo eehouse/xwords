@@ -353,7 +353,7 @@ linux_dutil_loadPtr( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe), const XP_UCHAR* ke
         *lenp = 0;              /* doesn't exist */
     }
 
-    XP_LOGF( "%s(key=%s) => len: %d", __func__, key, *lenp );
+    /* XP_LOGFF( "(key=%s) => len: %d", key, *lenp ); */
 }
 
 #ifdef XWFEATURE_SMS
