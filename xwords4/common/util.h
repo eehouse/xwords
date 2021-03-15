@@ -128,6 +128,9 @@ typedef struct UtilVtable {
                                   const XP_UCHAR* newSum,
                                   XWPhoniesChoice phoniesAction );
 
+    const DictionaryCtxt* (*m_util_getDict)( XW_UtilCtxt* uc, XWEnv xwe,
+                                             XP_LangCode lang, const XP_UCHAR* dictName );
+
     void (*m_util_notifyGameOver)( XW_UtilCtxt* uc, XWEnv xwe, XP_S16 quitter );
 #ifdef XWFEATURE_HILITECELL
     XP_Bool (*m_util_hiliteCell)( XW_UtilCtxt* uc, XWEnv xwe, XP_U16 col, XP_U16 row );
@@ -251,6 +254,9 @@ struct XW_UtilCtxt {
 #define util_informNetDict(uc,e, cd, on, nn, ns, pa )                      \
          (uc)->vtable->m_util_informNetDict( (uc), (e), (cd), (on), (nn), (ns), \
                                              (pa) )
+#define util_getDict( uc, xwe, lang, dictName )                     \
+         (uc)->vtable->m_util_getDict((uc), (xwe), (lang), (dictName))
+
 #define util_notifyGameOver( uc,e, q )                  \
          (uc)->vtable->m_util_notifyGameOver((uc), (e), (q))
 

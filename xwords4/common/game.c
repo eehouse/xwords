@@ -125,14 +125,14 @@ getDicts( const CurGameInfo* gi, XW_UtilCtxt* util, XWEnv xwe,
           XP_LangCode langCode, PlayerDicts* playerDicts )
 {
     XW_DUtilCtxt* dutil = util_getDevUtilCtxt( util, xwe );
-    const DictionaryCtxt* result = dutil_getDict( dutil, xwe, langCode, gi->dictName );
+    const DictionaryCtxt* result = util_getDict( util, xwe, langCode, gi->dictName );
     XP_MEMSET( playerDicts, 0, sizeof(*playerDicts) );
     if ( !!result ) {
         for ( int ii = 0; ii < gi->nPlayers; ++ii ) {
             const LocalPlayer* lp = &gi->players[ii];
             if ( lp->isLocal && !!lp->dictName && lp->dictName[0] ) {
-                playerDicts->dicts[ii] = dutil_getDict( dutil, xwe, langCode,
-                                                        lp->dictName );
+                playerDicts->dicts[ii] = util_getDict( util, xwe, langCode,
+                                                       lp->dictName );
             }
         }
     }

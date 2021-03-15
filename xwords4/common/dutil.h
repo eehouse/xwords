@@ -82,9 +82,6 @@ typedef struct _DUtilVtable {
     XP_UCHAR* (*m_dutil_md5sum)( XW_DUtilCtxt* duc, XWEnv xwe, const XP_U8* ptr, XP_U32 len );
 #endif
 
-    const DictionaryCtxt* (*m_dutil_getDict)( XW_DUtilCtxt* duc, XWEnv xwe,
-                                              XP_LangCode lang, const XP_UCHAR* dictName );
-
     void (*m_dutil_notifyPause)( XW_DUtilCtxt* duc, XWEnv xwe, XP_U32 gameID,
                                  DupPauseType pauseTyp, XP_U16 pauser,
                                  const XP_UCHAR* name, const XP_UCHAR* msg );
@@ -152,9 +149,6 @@ void dutil_super_init( MPFORMAL XW_DUtilCtxt* dutil );
 # define dutil_md5sum( duc, e, p, l )                   \
     (duc)->vtable.m_dutil_md5sum((duc), (e), (p), (l))
 #endif
-
-#define dutil_getDict( duc, xwe, lc, dictName )                     \
-    (duc)->vtable.m_dutil_getDict( (duc), (xwe), (lc), (dictName) )
 
 #define dutil_notifyPause( duc, e, id, ip, p, n, m )                     \
     (duc)->vtable.m_dutil_notifyPause( (duc), (e), (id), (ip), (p), (n), (m) )

@@ -1838,6 +1838,23 @@ main_updateScreen( GameState* gs )
 }
 
 static void
+onGotMissingDict( void* closure, GotDictData* gdd )
+{
+    CAST_GLOB(Globals*, globals, closure);
+    if ( !!gdd->data
+         && 0 < gdd->len ) {
+        storeAsDict( globals, gdd );
+    }
+}
+
+void
+main_needDictForGame(GameState* gs, XP_LangCode lang, const XP_UCHAR* dictName)
+{
+    const char* lc = lcToLocale(lang);
+    call_get_dict( lc, onGotMissingDict, gs->globals );
+}
+
+static void
 looper( void* closure )
 {
     Globals* globals = (Globals*)closure;

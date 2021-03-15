@@ -380,64 +380,6 @@ wasm_dutil_md5sum( XW_DUtilCtxt* duc, XWEnv xwe, const XP_U8* ptr,
     return NULL;
 }
 
-typedef struct _ForLangState {
-    XW_DUtilCtxt* duc;
-    XWEnv xwe;
-    uint8_t* ptr;
-    XP_U32 len;
-} ForLangState;
-
-static XP_Bool
-gotForLang( void* closure, const XP_UCHAR* keys[] )
-{
-    XP_LOGFF("name: %s", keys[2]);
-    ForLangState* fls = (ForLangState*)closure;
-    fls->ptr = wasm_dutil_mallocAndLoad( fls->duc, keys, &fls->len );
-    if ( !fls->ptr ) {
-        XP_LOGFF( "nothing for %s/%s", keys[1], keys[2] );
-    }
-    return NULL == fls->ptr;
-}
-
-static const DictionaryCtxt*
-wasm_dutil_getDict( XW_DUtilCtxt* duc, XWEnv xwe,
-                    XP_LangCode lang, const XP_UCHAR* dictName )
-{
-    XP_LOGFF( "(dictName: %s)", dictName );
-
-    const char* lc = lcToLocale( lang );
-
-    CAST_GLOB( Globals*, globals, duc->closure );
-    const DictionaryCtxt* result = dmgr_get( globals->dictMgr, xwe, dictName );
-    if ( !result ) {
-        XP_U32 len = 0;
-        const char* keys[] = {KEY_DICTS, lc, KEY_DICTS, dictName, NULL };
-
-        uint8_t* ptr = wasm_dutil_mallocAndLoad( duc, keys, &len );
-        if ( !ptr ) {
-            XP_LOGFF( "trying for another %s dict", lc );
-            ForLangState fls = { .duc = duc,
-                                 .xwe = xwe,
-            };
-            const char* langKeys[] = {KEY_DICTS, lc, KEY_DICTS, KEY_WILDCARD, NULL};
-            dutil_forEach( duc, xwe, langKeys, gotForLang, &fls );
-            if ( !!fls.ptr ) {
-                ptr = fls.ptr;
-                len = fls.len;
-            }
-        }
-
-        if ( !!ptr ) {
-            result = wasm_dictionary_make( globals, xwe, dictName, ptr, len );
-            XP_FREE( globals->mpool, ptr );
-            dmgr_put( globals->dictMgr, xwe, dictName, result );
-        }
-    }
-
-    XP_LOGFF("(%s, %s)=>%p", lc, dictName, result );
-    return result;
-}
-
 static void
 wasm_dutil_notifyPause( XW_DUtilCtxt* XP_UNUSED(duc), XWEnv XP_UNUSED(xwe),
                          XP_U32 XP_UNUSED_DBG(gameID),
@@ -540,7 +482,6 @@ wasm_dutil_make( MPFORMAL VTableMgr* vtMgr, void* closure )
     SET_PROC(md5sum);
 #endif
 
-    SET_PROC(getDict);
     SET_PROC(notifyPause);
     SET_PROC(onDupTimerChanged);
     SET_PROC(onInviteReceived);

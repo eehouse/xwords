@@ -19,9 +19,11 @@
 
 #include "util.h"
 #include "comtypes.h"
+#include "strutils.h"
 #include "main.h"
 #include "dbgutil.h"
 #include "wasmdict.h"
+#include "wasmdutil.h"
 
 typedef struct _WasmUtilCtx {
     XW_UtilCtxt super;
@@ -478,6 +480,71 @@ wasm_util_playerScoreHeld( XW_UtilCtxt* uc, XWEnv xwe, XP_U16 player )
     main_playerScoreHeld( gs, player );
 }
 
+typedef struct _ForLangState {
+    XW_DUtilCtxt* duc;
+    XWEnv xwe;
+    uint8_t* ptr;
+    XP_U32 len;
+} ForLangState;
+
+static XP_Bool
+gotForLang( void* closure, const XP_UCHAR* keys[] )
+{
+    XP_LOGFF("name: %s", keys[2]);
+    ForLangState* fls = (ForLangState*)closure;
+    fls->ptr = wasm_dutil_mallocAndLoad( fls->duc, keys, &fls->len );
+    if ( !fls->ptr ) {
+        XP_LOGFF( "nothing for %s/%s", keys[1], keys[2] );
+    }
+    return NULL == fls->ptr;
+}
+
+static const DictionaryCtxt*
+wasm_util_getDict( XW_UtilCtxt* uc, XWEnv xwe,
+                   XP_LangCode lang, const XP_UCHAR* dictName )
+{
+    XP_LOGFF( "(dictName: %s)", dictName );
+    WasmUtilCtx* wuctxt = (WasmUtilCtx*)uc;
+    GameState* gs = wuctxt->closure;
+    Globals* globals = gs->globals;
+    XW_DUtilCtxt* duc = util_getDevUtilCtxt(uc, xwe);
+
+    const char* lc = lcToLocale( lang );
+
+    const DictionaryCtxt* result = dmgr_get( globals->dictMgr, xwe, dictName );
+    if ( !result ) {
+        XP_U32 len = 0;
+        const char* keys[] = {KEY_DICTS, lc, KEY_DICTS, dictName, NULL };
+
+        uint8_t* ptr = wasm_dutil_mallocAndLoad( duc, keys, &len );
+        if ( !ptr ) {
+            XP_LOGFF( "trying for another %s dict", lc );
+            ForLangState fls = { .duc = duc,
+                                 .xwe = xwe,
+            };
+            const char* langKeys[] = {KEY_DICTS, lc, KEY_DICTS, KEY_WILDCARD, NULL};
+            dutil_forEach( duc, xwe, langKeys, gotForLang, &fls );
+            if ( !!fls.ptr ) {
+                ptr = fls.ptr;
+                len = fls.len;
+            }
+        }
+
+        if ( !!ptr ) {
+            result = wasm_dictionary_make( globals, xwe, dictName, ptr, len );
+            XP_FREE( globals->mpool, ptr );
+            dmgr_put( globals->dictMgr, xwe, dictName, result );
+        }
+    }
+
+    if ( !result ) {
+        main_needDictForGame( gs, lang, dictName );
+    }
+
+    XP_LOGFF("(%s, %s)=>%p", lc, dictName, result );
+    return result;
+}
+
 #ifdef XWFEATURE_BOARDWORDS
 static void
 wasm_util_cellSquareHeld( XW_UtilCtxt* uc, XWEnv xwe, XWStreamCtxt* words )
@@ -583,6 +650,8 @@ wasm_util_make( MPFORMAL CurGameInfo* gi, XW_DUtilCtxt* dctxt, GameState* closur
     SET_VTABLE_ENTRY( wuctxt->super.vtable, util_formatPauseHistory, wasm );
     SET_VTABLE_ENTRY( wuctxt->super.vtable, util_bonusSquareHeld, wasm );
     SET_VTABLE_ENTRY( wuctxt->super.vtable, util_playerScoreHeld, wasm );
+
+    SET_VTABLE_ENTRY( wuctxt->super.vtable, util_getDict, wasm );
 
 #ifdef XWFEATURE_BOARDWORDS
     SET_VTABLE_ENTRY( wuctxt->super.vtable, util_cellSquareHeld, wasm );

@@ -109,5 +109,6 @@ void main_turnChanged(GameState* gs, int newTurn);
 void main_pickBlank( GameState* gs, int playerNum, int col, int row,
                      const char** tileFaces, int nTiles );
 void main_updateScreen( GameState* gs );
+void main_needDictForGame(GameState* gs, XP_LangCode lang, const XP_UCHAR* dictName);
 
 #endif
