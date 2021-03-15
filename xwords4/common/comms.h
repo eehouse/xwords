@@ -218,8 +218,12 @@ typedef struct _CommsMsgState {
     struct AddressRecord* rec;
     XP_U32 msgID;
     XP_PlayerAddr channelNo;
+    XP_U16 len;
 #ifdef DEBUG
     const CommsCtxt* comms;
+#endif
+#ifdef COMMS_CHECKSUM
+    XP_UCHAR sum[36];
 #endif
 } CommsMsgState;
 

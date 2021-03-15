@@ -1525,8 +1525,8 @@ sendMsg( CommsCtxt* comms, XWEnv xwe, MsgQueueElem* elem, const CommsConnType fi
     CNO_FMT( cbuf, channelNo );
 
 #ifdef COMMS_CHECKSUM
-    XP_LOGF( TAGFMT() "sending message of len %d on %s with sum %s", TAGPRMS,
-             elem->len, cbuf, elem->checksum );
+    XP_LOGF( TAGFMT() "sending message on %s: id: %d; len: %d; sum: %s", TAGPRMS,
+             cbuf, elem->msgID, elem->len, elem->checksum );
 #endif
 
     CommsAddrRec addr;
@@ -2425,15 +2425,14 @@ comms_checkIncomingStream( CommsCtxt* comms, XWEnv xwe, XWStreamCtxt* stream,
             MsgID lastMsgRcd = 0;
 
 #ifdef COMMS_CHECKSUM
-            {
-                XP_U16 len = stream_getSize( stream );
-                // stream_getPtr pts at base, but sum excludes relay header
-                const XP_U8* ptr = initialLen - len + stream_getPtr( stream );
-                XP_UCHAR* sum = dutil_md5sum( comms->dutil, xwe, ptr, len );
-                XP_LOGF( TAGFMT() "got message of len %d with sum %s",
-                         TAGPRMS, len, sum );
-                XP_FREE( comms->mpool, sum );
-            }
+            state->len = stream_getSize( stream );
+            // stream_getPtr pts at base, but sum excludes relay header
+            const XP_U8* ptr = initialLen - state->len + stream_getPtr( stream );
+            XP_UCHAR* tmpsum = dutil_md5sum( comms->dutil, xwe, ptr, state->len );
+            XP_STRCAT( state->sum, tmpsum );
+            XP_LOGF( TAGFMT() "got message of len %d with sum %s",
+                     TAGPRMS, state->len, state->sum );
+            XP_FREE( comms->mpool, tmpsum );
 #endif
             /* reject too-small message */
             messageValid = stream_getSize( stream ) 
@@ -2469,7 +2468,7 @@ comms_checkIncomingStream( CommsCtxt* comms, XWEnv xwe, XWStreamCtxt* stream,
                 }
 
                 if ( messageValid ) {
-                    msgID = stream_getU32( stream );
+                    state->msgID = msgID = stream_getU32( stream );
                     lastMsgRcd = stream_getU32( stream );
                     CNO_FMT( cbuf, channelNo );
                     XP_LOGF( TAGFMT() "rcd on %s: msgID=%d, lastMsgRcd=%d ",
@@ -2501,7 +2500,6 @@ comms_checkIncomingStream( CommsCtxt* comms, XWEnv xwe, XWStreamCtxt* stream,
                     CNO_FMT( cbuf, channelNo );
                     XP_LOGF( TAGFMT() "got %s; msgID=%d; len=%d", TAGPRMS, cbuf, 
                              msgID, payloadSize );
-                    state->msgID = msgID;
                     state->channelNo = channelNo;
                     comms->lastSaveToken = 0; /* lastMsgRcd no longer valid */
                     stream_setAddress( stream, channelNo );
@@ -2517,7 +2515,7 @@ comms_checkIncomingStream( CommsCtxt* comms, XWEnv xwe, XWStreamCtxt* stream,
         noteHBReceived( comms/* , addr */ );
 
     }
-    LOG_RETURNF( "%s", messageValid?"valid":"invalid" );
+    LOG_RETURNF( "%s (len: %d; sum: %s)", boolToStr(messageValid), state->len, state->sum );
     return messageValid;
 } /* comms_checkIncomingStream */
 
@@ -2525,6 +2523,10 @@ void
 comms_msgProcessed( CommsCtxt* comms, XWEnv xwe,
                     CommsMsgState* state, XP_Bool rejected )
 {
+#ifdef COMMS_CHECKSUM
+    XP_LOGFF( "id: %d; len: %d; sum: %s; rejected: %s", state->msgID, state->len, state->sum,
+              boolToStr(rejected) );
+#endif
     XP_ASSERT( comms == state->comms );
     XP_ASSERT( comms->processingMsg );
 
@@ -2647,12 +2649,21 @@ comms_gameJoined( CommsCtxt* comms, XWEnv xwe, const XP_UCHAR* connname, XWHostI
 static void
 sendEmptyMsg( CommsCtxt* comms, XWEnv xwe, AddressRecord* rec )
 {
-    MsgQueueElem* elem = makeElemWithID( comms, xwe,
-                                         0 /*rec? rec->lastMsgRcd : 0*/,
-                                         rec, 
-                                         rec? rec->channelNo : 0, NULL );
+    XWStreamCtxt* stream = NULL;
+#ifdef DEBUG
+    XP_U16 sumFood = XP_RANDOM();
+    stream = mem_stream_make_raw( MPPARM(comms->mpool)
+                                  dutil_getVTManager(comms->dutil));
+    stream_putU16( stream, sumFood );
+#endif
+    MsgQueueElem* elem = makeElemWithID( comms, xwe, 0, // msgID
+                                         rec, rec? rec->channelNo : 0,
+                                         stream );
     (void)sendMsg( comms, xwe, elem, COMMS_CONN_NONE );
     freeElem( comms, elem );
+#ifdef DEBUG
+    stream_destroy( stream, xwe );
+#endif
 } /* sendEmptyMsg */
 #endif
 

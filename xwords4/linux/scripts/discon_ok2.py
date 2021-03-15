@@ -159,7 +159,7 @@ def logReaderStub(dev): dev.logReaderMain()
 
 class Device():
     sHasLDevIDMap = {}
-    sConnNamePat = re.compile('.*got_connect_cmd: connName: "([^"]+)".*$')
+    # sConnNamePat = re.compile('.*got_connect_cmd: connName: "([^"]+)".*$')
     sGameOverPat = re.compile('^\[(\#\d|Winner)\] (.*): (\d+)')
     sTilesLeftPoolPat = re.compile('.*pool_r.*Tiles: (\d+) tiles left in pool')
     sTilesLeftTrayPat = re.compile('.*player \d+ now has (\d+) tiles')
