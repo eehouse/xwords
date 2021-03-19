@@ -213,7 +213,7 @@ class Device():
 
     def setApp(self, pct):
         if self.app == self.args.APP_OLD and not self.app == self.args.APP_NEW:
-            if os.path.exists(self.script) and pct >= random.randint(0, 99):
+            if os.path.exists(self.script) and pct > random.randint(0, 99):
                 print('launch(): upgrading {} from {} to {}' \
                       .format(self.devName(), self.app, self.args.APP_NEW))
                 self.app = self.args.APP_NEW
