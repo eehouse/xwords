@@ -256,9 +256,14 @@ XP_Bool addr_iter( const CommsAddrRec* addr, CommsConnType* typp,
                    XP_U32* state );
 XP_Bool types_iter( XP_U32 conTypes, CommsConnType* typp, XP_U32* state );
 
+#ifdef XWFEATURE_KNOWNPLAYERS
+void comms_gatherPlayers( CommsCtxt* comms, XWEnv xwe, XP_U32 created );
+#endif
+
+const char* ConnType2Str( CommsConnType typ );
+
 # ifdef DEBUG
 void comms_getStats( CommsCtxt* comms, XWStreamCtxt* stream );
-const char* ConnType2Str( CommsConnType typ );
 const char* CommsRelayState2Str( CommsRelayState state );
 const char* XWREASON2Str( XWREASON reason );
 
@@ -266,8 +271,6 @@ void comms_setAddrDisabled( CommsCtxt* comms, CommsConnType typ,
                             XP_Bool send, XP_Bool enabled );
 XP_Bool comms_getAddrDisabled( const CommsCtxt* comms, CommsConnType typ, 
                                XP_Bool send );
-
-void comms_gatherPlayers( CommsCtxt* comms, XWEnv xwe, XP_U32 created );
 
 # else
 #  define comms_setAddrDisabled( comms, typ, send, enabled )

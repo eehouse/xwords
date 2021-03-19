@@ -829,16 +829,6 @@ dict_loadFromStream( DictionaryCtxt* dict, XWEnv xwe, XWStreamCtxt* stream )
     setBlankTile( dict );
 } /* dict_loadFromStream */
 
-void
-dict_skipFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream )
-{
-    DictionaryCtxt* dict = XP_CALLOC( mpool, sizeof(*dict)); /* leaked */
-    MPASSIGN( dict->mpool, mpool );
-    dict_ref( dict, xwe );      /* so unref works :-) */
-    dict_loadFromStream( dict, xwe, stream );
-    dict_unref( dict, xwe );
-}
-
 #ifdef TEXT_MODEL
 /* Return the strlen of the longest face, e.g. 1 for English and Italian;
    2 for Spanish; 3 for Catalan */

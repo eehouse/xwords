@@ -105,7 +105,7 @@ subscribe_callback( struct mosquitto *mosq, void *userdata, int mid,
 
 static void
 log_callback( struct mosquitto *mosq, void *userdata, int level,
-              const char* XP_UNUSED_DBG(str) )
+              const char* str )
 {
     XP_USE(mosq);
     XP_USE(userdata);

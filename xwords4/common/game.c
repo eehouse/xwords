@@ -77,7 +77,7 @@ checkServerRole( CurGameInfo* gi, XP_U16* nPlayersHere,
 } /* checkServerRole */
 
 static XP_U32
-makeGameID( XW_UtilCtxt* util )
+makeGameID( XW_UtilCtxt* XP_UNUSED_DBG(util) )
 {
     XP_U32 gameID = 0;
     assertUtilOK( util );

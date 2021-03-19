@@ -163,7 +163,7 @@ makeUniqueName( const KPState* state, const XP_UCHAR* name,
  * For early testing, however, just make a new name.
  */
 static void
-addPlayer( XW_DUtilCtxt* dutil, KPState* state, const XP_UCHAR* name,
+addPlayer( XW_DUtilCtxt* XP_UNUSED_DBG(dutil), KPState* state, const XP_UCHAR* name,
            const CommsAddrRec* addr, XP_U32 newestMod )
 {
     XP_LOGFF( "(name=%s)", name );
@@ -320,7 +320,7 @@ kplr_nameForMqttDev( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* mqttDevID )
 }
 
 static void
-freeKP( XW_DUtilCtxt* dutil, KnownPlayer* kp )
+freeKP( XW_DUtilCtxt* XP_UNUSED_DBG(dutil), KnownPlayer* kp )
 {
     XP_FREEP( dutil->mpool, &kp->name );
     XP_FREE( dutil->mpool, kp );

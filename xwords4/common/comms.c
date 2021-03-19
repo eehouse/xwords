@@ -1745,9 +1745,10 @@ comms_ackAny( CommsCtxt* comms, XWEnv xwe )
 # define ackAnyImpl( comms, xwe, force )
 #endif
 
+# define CASESTR(s) case s: return #s
+
 #ifdef XWFEATURE_RELAY
 # ifdef DEBUG
-# define CASESTR(s) case s: return #s
 static const char*
 relayCmdToStr( XWRELAY_Cmd cmd )
 {
@@ -2775,7 +2776,6 @@ setHeartbeatTimer( CommsCtxt* comms )
 } /* setHeartbeatTimer */
 #endif
 
-#ifdef DEBUG
 const char*
 ConnType2Str( CommsConnType typ )
 {
@@ -2796,6 +2796,7 @@ ConnType2Str( CommsConnType typ )
     return "<unknown>";
 } /* ConnType2Str */
 
+#ifdef DEBUG
 void
 comms_getStats( CommsCtxt* comms, XWStreamCtxt* stream )
 {
