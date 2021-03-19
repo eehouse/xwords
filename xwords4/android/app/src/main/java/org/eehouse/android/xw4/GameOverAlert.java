@@ -96,7 +96,7 @@ public class GameOverAlert extends XWDialogFragment
         mTitleID = sis.getInt( TITLE );
         mMsg = sis.getString( MSG );
         mInArchive = sis.getBoolean( IN_ARCH );
-        boolean hasPending = sis.getBoolean( HAS_PENDING );
+        mHasPending = sis.getBoolean( HAS_PENDING );
 
         Activity activity = getActivity();
         mView = (ViewGroup)LocUtils.inflate( activity, R.layout.game_over );
@@ -108,11 +108,7 @@ public class GameOverAlert extends XWDialogFragment
             .setPositiveButton( android.R.string.ok, this )
             .setNeutralButton( R.string.button_rematch, this )
             ;
-        if ( hasPending ) {
-            mArchiveBox.setVisibility( View.GONE );
-        } else {
-            ab.setNegativeButton( R.string.button_delete, this );
-        }
+        ab.setNegativeButton( R.string.button_delete, this );
 
         mDialog = ab.create();
         mDialog.setOnShowListener( new DialogInterface.OnShowListener() {
@@ -120,6 +116,8 @@ public class GameOverAlert extends XWDialogFragment
                 public void onShow( DialogInterface dialog ) {
                     boolean nowChecked = mArchiveBox.isChecked();
                     onCheckedChanged( null, nowChecked );
+
+                    updateForPending();
                 }
             });
 
@@ -165,6 +163,20 @@ public class GameOverAlert extends XWDialogFragment
     public void onCheckedChanged( CompoundButton bv, boolean isChecked )
     {
         Utils.enableAlertButton( mDialog, AlertDialog.BUTTON_NEGATIVE, !isChecked );
+    }
+
+    public void pendingCountChanged( int newCount )
+    {
+        if ( 0 == newCount && mHasPending ) {
+            mHasPending = false;
+            updateForPending();
+        }
+    }
+
+    private void updateForPending()
+    {
+        mArchiveBox.setVisibility( mHasPending ? View.GONE : View.VISIBLE );
+        Utils.enableAlertButton( mDialog, AlertDialog.BUTTON_NEGATIVE, !mHasPending );
     }
 
     private void initView()

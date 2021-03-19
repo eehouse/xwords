@@ -133,6 +133,7 @@ public class BoardDelegate extends DelegateBase
     private boolean m_haveStartedShowing;
 
     private Wrapper mNFCWrapper;
+    private GameOverAlert mGameOverAlert; // how to clear after?
 
     public class TimerRunnable implements Runnable {
         private int m_why;
@@ -1449,10 +1450,20 @@ public class BoardDelegate extends DelegateBase
     }
 
     @Override
-    public void tpmCountChanged( int newCount )
+    public void tpmCountChanged( final int newCount )
     {
         Log.d( TAG, "tpmCountChanged(%d)", newCount );
         ConnStatusHandler.updateMoveCount( m_activity, newCount );
+
+        final GameOverAlert goAlert = mGameOverAlert;
+        if ( null != goAlert ) {
+            runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        goAlert.pendingCountChanged( newCount );
+                    }
+                });
+        }
     }
 
     //////////////////////////////////////////////////
@@ -2217,12 +2228,13 @@ public class BoardDelegate extends DelegateBase
                                     public void run() {
                                         boolean hasPending = 0 < XwJNI.
                                             comms_countPendingPackets( m_jniGamePtr );
-                                        show( GameOverAlert
-                                              .newInstance( m_summary,
-                                                            msg.arg1,
-                                                            (String)msg.obj,
-                                                            hasPending,
-                                                            inArchiveGroup() ) );
+                                        mGameOverAlert = GameOverAlert
+                                            .newInstance( m_summary,
+                                                          msg.arg1,
+                                                          (String)msg.obj,
+                                                          hasPending,
+                                                          inArchiveGroup() );
+                                        show( mGameOverAlert );
                                     }
                                 } );
                         }
