@@ -36,8 +36,10 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.eehouse.android.xw4.DlgDelegate.Action;
 import org.eehouse.android.xw4.ExpandImageButton.ExpandChangeListener;
@@ -145,6 +147,7 @@ public class KnownPlayersDelegate extends DelegateBase {
                 }
             }
             addInOrder();
+            pruneExpanded();
         }
     }
 
@@ -155,6 +158,22 @@ public class KnownPlayersDelegate extends DelegateBase {
         Collections.sort(names);
         for ( String name : names ) {
             mList.addView( mChildren.get( name ) );
+        }
+    }
+
+    private void pruneExpanded()
+    {
+        boolean doSave = false;
+        Set<String> children = mChildren.keySet();
+        for ( Iterator<String> iter = mExpSet.iterator(); iter.hasNext(); ) {
+            String child = iter.next();
+            if ( !children.contains(child) ) {
+                iter.remove();
+                doSave = true;
+            }
+        }
+        if ( doSave ) {
+            saveExpanded();
         }
     }
 
