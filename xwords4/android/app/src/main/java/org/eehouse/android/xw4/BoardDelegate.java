@@ -1009,10 +1009,15 @@ public class BoardDelegate extends DelegateBase
             View button = m_toolbar.getButtonFor( Buttons.BUTTON_BROWSE_DICT );
             if ( Action.BUTTON_BROWSEALL_ACTION == action &&
                  DictsDelegate.handleDictsPopup( getDelegator(), button,
-                                                 curDict, m_gi.dictLang ) ){
-                break;
+                                                 curDict, m_gi.dictLang ) ) {
+                // do nothing
+            } else {
+                String selDict = DictsDelegate.prevSelFor( m_activity, m_gi.dictLang );
+                if ( null == selDict ) {
+                    selDict = curDict;
+                }
+                DictBrowseDelegate.launch( getDelegator(), selDict );
             }
-            DictBrowseDelegate.launch( getDelegator(), curDict );
             break;
         case PREV_HINT_ACTION:
             cmd = JNICmd.CMD_PREV_HINT;

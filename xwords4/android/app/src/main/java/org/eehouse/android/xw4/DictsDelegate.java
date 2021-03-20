@@ -119,42 +119,51 @@ public class DictsDelegate extends ListDelegateBase
 
     private static class SafePopupImpl implements SafePopup {
         public void doPopup( final Delegator dlgtor, View button,
-                             String curDict, int lang ) {
+                             String curDict, final int lang ) {
 
             final HashMap<MenuItem, DictAndLoc> itemData
                 = new HashMap<>();
+            final Context context = dlgtor.getActivity();
 
             MenuItem.OnMenuItemClickListener listener =
                 new MenuItem.OnMenuItemClickListener() {
                     public boolean onMenuItemClick( MenuItem item )
                     {
                         DictAndLoc dal = itemData.get( item );
-
+                        String prevKey = keyForLang( lang );
+                        DBUtils.setStringFor( context, prevKey, dal.name );
                         DictBrowseDelegate.launch( dlgtor, dal.name,
                                                    dal.loc );
                         return true;
                     }
                 };
 
-            Context context = dlgtor.getActivity();
+            String prevSel = prevSelFor( context, lang );
             PopupMenu popup = new PopupMenu( context, button );
             Menu menu = popup.getMenu();
 
             // Add at top but save until have dal info
-            MenuItem curItem =
-                menu.add( LocUtils.getString( context,
-                                              R.string.cur_menu_marker_fmt,
-                                              curDict ) );
-
+            MenuItem curItem = addItem( menu,
+                                        LocUtils.getString( context,
+                                                            R.string.cur_menu_marker_fmt,
+                                                            curDict ) );
             DictAndLoc[] dals = DictLangCache.getDALsHaveLang( context, lang );
             for ( DictAndLoc dal : dals ) {
-                MenuItem item = dal.name.equals(curDict)
-                    ? curItem : menu.add( dal.name );
+                boolean isCur = dal.name.equals(curDict);
+                MenuItem item = isCur ? curItem : addItem( menu, dal.name );
                 item.setOnMenuItemClickListener( listener );
                 itemData.put( item, dal );
+                item.setChecked( dal.name.equals(prevSel) );
             }
+            menu.setGroupCheckable( FAKE_GROUP, true, true );
 
             popup.show();
+        }
+
+        private static final int FAKE_GROUP = 101;
+        private MenuItem addItem(Menu menu, String name)
+        {
+            return menu.add( FAKE_GROUP, Menu.NONE, Menu.NONE, name );
         }
     }
 
@@ -1118,6 +1127,17 @@ public class DictsDelegate extends ListDelegateBase
             s_safePopup.doPopup( delegator, button, curDict, lang );
         }
         return canHandle;
+    }
+
+    private static String keyForLang(int lang)
+    {
+        return String.format( "%s:lang=%d", TAG, lang );
+    }
+
+    static String prevSelFor( Context context, int lang )
+    {
+        String key = keyForLang( lang );
+        return DBUtils.getStringFor( context, key, null );
     }
 
     @Override
