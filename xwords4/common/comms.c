@@ -2522,7 +2522,11 @@ comms_checkIncomingStream( CommsCtxt* comms, XWEnv xwe, XWStreamCtxt* stream,
         noteHBReceived( comms/* , addr */ );
 
     }
+#ifdef COMMS_CHECKSUM
     LOG_RETURNF( "%s (len: %d; sum: %s)", boolToStr(messageValid), state->len, state->sum );
+#else
+    LOG_RETURNF( "%s (len: %d)", boolToStr(messageValid), state->len );
+#endif
     return messageValid;
 } /* comms_checkIncomingStream */
 
