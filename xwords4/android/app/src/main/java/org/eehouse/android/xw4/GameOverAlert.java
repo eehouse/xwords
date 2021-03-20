@@ -129,6 +129,9 @@ public class GameOverAlert extends XWDialogFragment
     protected String getFragTag() { return TAG; }
 
     @Override
+    public boolean belongsOnBackStack() { return true; }
+
+    @Override
     public void onClick( DialogInterface dialog, int which )
     {
         Action action = null;
