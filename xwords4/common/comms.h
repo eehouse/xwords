@@ -120,6 +120,7 @@ typedef struct _TransportProcs {
     XP_U32 flags;
 #endif
     TransportSend send;
+    MsgCountChange countChanged;
 #ifdef COMMS_HEARTBEAT
     TransportReset reset;
 #endif
@@ -131,7 +132,6 @@ typedef struct _TransportProcs {
 # ifdef RELAY_VIA_HTTP
     RelayRequestJoinProc requestJoin;
 # endif
-    MsgCountChange countChanged;
 #endif
     void* closure;
 } TransportProcs;

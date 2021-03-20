@@ -220,14 +220,15 @@ static void notifyQueueChanged( const CommsCtxt* comms, XWEnv xwe );
 #if 0 < COMMS_VERSION
 static XP_U16 makeFlags( const CommsCtxt* comms );
 #endif
+
+static XP_Bool sendNoConn( CommsCtxt* comms, XWEnv xwe,
+                           const MsgQueueElem* elem, XWHostID destID );
 #ifdef XWFEATURE_RELAY
 static XP_Bool relayConnect( CommsCtxt* comms, XWEnv xwe );
 static void relayDisconnect( CommsCtxt* comms, XWEnv xwe );
 static XP_Bool send_via_relay( CommsCtxt* comms, XWEnv xwe, XWRELAY_Cmd cmd,
                                XWHostID destID, void* data, int dlen,
                                const XP_UCHAR* msgNo );
-static XP_Bool sendNoConn( CommsCtxt* comms, XWEnv xwe,
-                           const MsgQueueElem* elem, XWHostID destID );
 static XWHostID getDestID( CommsCtxt* comms, XWEnv xwe, XP_PlayerAddr channelNo );
 static void set_reset_timer( CommsCtxt* comms, XWEnv xwe );
 # ifdef XWFEATURE_DEVID
@@ -235,7 +236,11 @@ static void putDevID( const CommsCtxt* comms, XWEnv xwe, XWStreamCtxt* stream );
 # else
 #  define putDevID( comms, xwe, stream )
 # endif
-# ifdef DEBUG
+# else
+# define relayDisconnect( comms, xwe )
+#endif
+
+#ifdef DEBUG
 static const char* relayCmdToStr( XWRELAY_Cmd cmd );
 static void printQueue( const CommsCtxt* comms );
 static void logAddr( const CommsCtxt* comms, XWEnv xwe,
@@ -243,11 +248,10 @@ static void logAddr( const CommsCtxt* comms, XWEnv xwe,
 static void logAddrs( const CommsCtxt* comms, XWEnv xwe,
                       const char* caller );
 
-# else
-# define printQueue( comms )
-# define logAddr( comms, xwe, addr, caller)
-# define logAddrs( comms, caller )
-# endif
+#else
+#define printQueue( comms )
+#define logAddr( comms, xwe, addr, caller)
+#define logAddrs( comms, caller )
 #endif
 #if defined RELAY_HEARTBEAT || defined COMMS_HEARTBEAT
 static void setHeartbeatTimer( CommsCtxt* comms );
@@ -269,7 +273,6 @@ static void sendEmptyMsg( CommsCtxt* comms, XWEnv xwe, AddressRecord* rec );
 /****************************************************************************
  *                               implementation 
  ****************************************************************************/
-#ifdef XWFEATURE_RELAY
 
 #ifdef DEBUG
 # define CNO_FMT(buf, cno)                                         \
@@ -279,6 +282,8 @@ static void sendEmptyMsg( CommsCtxt* comms, XWEnv xwe, AddressRecord* rec );
 #else
 # define CNO_FMT(buf, cno)
 #endif
+
+#ifdef XWFEATURE_RELAY
 
 #ifdef DEBUG
 const char*
@@ -492,10 +497,11 @@ reset_internal( CommsCtxt* comms, XWEnv xwe, XP_Bool isServer,
        originally. So comment it out. */
     // XP_ASSERT( 0 == comms->nextChannelNo );
     // comms->nextChannelNo = 0;
+#ifdef XWFEATURE_RELAY
     if ( resetRelay ) {
         comms->channelSeed = 0;
     }
-
+#endif
     comms->connID = CONN_ID_NONE;
 #ifdef XWFEATURE_RELAY
     if ( resetRelay ) {
@@ -1140,13 +1146,6 @@ comms_formatRelayID( const CommsCtxt* comms, XP_U16 indx,
     return success;
 }
 
-static void
-formatMsgNo( const CommsCtxt* comms, const MsgQueueElem* elem,
-             XP_UCHAR* buf, XP_U16 len )
-{
-    XP_SNPRINTF( buf, len, "%d:%d", comms->rr.myHostID, elem->msgID );
-}
-
 /* Get *my* "relayID", a combo of connname and host id */
 XP_Bool
 comms_getRelayID( const CommsCtxt* comms, XP_UCHAR* buf, XP_U16* lenp )
@@ -1156,6 +1155,13 @@ comms_getRelayID( const CommsCtxt* comms, XP_UCHAR* buf, XP_U16* lenp )
     return result;
 }
 #endif
+
+static void
+formatMsgNo( const CommsCtxt* comms, const MsgQueueElem* elem,
+             XP_UCHAR* buf, XP_U16 len )
+{
+    XP_SNPRINTF( buf, len, "%d:%d", comms->rr.myHostID, elem->msgID );
+}
 
 void
 comms_getInitialAddr( CommsAddrRec* addr
@@ -1182,7 +1188,7 @@ comms_getInitialAddr( CommsAddrRec* addr
        Palm... */
     addr->conType = COMMS_CONN_IR;
 #else
-    addr->conType = COMMS_CONN_SMS;
+    addr_setType( addr, COMMS_CONN_MQTT );
 #endif
 } /* comms_getInitialAddr */
 
@@ -1633,13 +1639,15 @@ sendMsg( CommsCtxt* comms, XWEnv xwe, MsgQueueElem* elem, const CommsConnType fi
     return result;
 } /* sendMsg */
 
+#ifdef XWFEATURE_RELAY
 static void
-send_ack( CommsCtxt* comms, XWEnv xwe )
+send_relay_ack( CommsCtxt* comms, XWEnv xwe )
 {
     LOG_FUNC();
     (void)send_via_relay( comms, xwe, XWRELAY_ACK, comms->rr.myHostID,
                           NULL, 0, NULL );
 }
+#endif
 
 typedef XP_S16 (*MsgProc)( CommsCtxt* comms, XWEnv xwe, MsgQueueElem* msg,
                            CommsConnType filter, void* closure );
@@ -1883,7 +1891,7 @@ relayPreProcess( CommsCtxt* comms, XWEnv xwe, XWStreamCtxt* stream, XWHostID* se
 
     case XWRELAY_CONNECT_RESP:
         got_connect_cmd( comms, xwe, stream, XP_FALSE );
-        send_ack( comms, xwe );
+        send_relay_ack( comms, xwe );
         break;
     case XWRELAY_RECONNECT_RESP:
         got_connect_cmd( comms, xwe, stream, XP_TRUE );
