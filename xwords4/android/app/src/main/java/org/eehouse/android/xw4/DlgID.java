@@ -61,7 +61,7 @@ public enum DlgID {
     , QUERY_TRADE
     , ASK_PASSWORD
     , DLG_RETRY
-    , DLG_SCORES
+    , DLG_SCORES(true)
     , DLG_USEDICT
     , DLG_GETDICT
     , GAMES_LIST_NEWGAME
