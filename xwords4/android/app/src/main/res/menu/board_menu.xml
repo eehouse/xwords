@@ -29,16 +29,16 @@
           />
   </group>
 
-    <item android:id="@+id/board_menu_trade_cancel"
-          android:title="@string/button_trade_cancel"
-          android:showAsAction="ifRoom"
-          android:icon="@drawable/untrade__gen"
-          />
-
     <item android:id="@+id/board_menu_trade_commit"
           android:title="@string/button_trade_commit"
           android:showAsAction="ifRoom"
           android:icon="@drawable/save__gen"
+          />
+
+    <item android:id="@+id/board_menu_trade_cancel"
+          android:title="@string/button_trade_cancel"
+          android:showAsAction="ifRoom"
+          android:icon="@drawable/untrade__gen"
           />
 
     <item android:id="@+id/board_menu_undo_last"
