@@ -25,7 +25,7 @@
           android:title="@string/board_menu_trade"
           android:alphabeticShortcut="T"
           android:showAsAction="ifRoom"
-          android:icon="@drawable/trade__gen"
+          android:icon="@drawable/ic_trade"
           />
   </group>
 
