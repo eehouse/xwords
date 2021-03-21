@@ -144,6 +144,16 @@
         <item quantity="other">Are you sure you want to delete
       the %1$d selected games? This action cannot be undone.</item>
     </plurals>
+
+    <!-- Same as above, but games are named rather than just called
+         "selected." This may eventually replace the above (after some
+         time for translation :-) -->
+    <plurals name="confirm_nameddeletes_fmt">
+      <item quantity="one">Are you sure you want to delete
+      the game %1$s? This action cannot be undone.</item>
+      <item quantity="other">Are you sure you want to delete
+      the games %1$s? This action cannot be undone.</item>
+    </plurals>
     <!-- Text of confirmation dialog posted when list_item_reset menu
          is selected -->
     <plurals name="confirm_reset_fmt">
@@ -1223,7 +1233,7 @@
          takes wordlist name and language substituted in for %1$ and
          %2$ -->
     <string name="no_dict_fmt">Game “%1$s” requires a %2$s wordlist.
-    Please download one before opening.</string>
+    Please download one to open it.</string>
     <!-- This is an alternative message presented when there's also
          the option of downloading another wordlist.  Game name,
          wordlist name and language are substituted in. -->
@@ -1937,6 +1947,17 @@
     too?</string>
     <string name="inform_dict_download">\u0020(You will have to download it
     first.)</string>
+
+    <!-- Title of notification shown when an incoming move has been
+         dropped because the game requires a wordlist that isn't
+         available (likely deleted since the game was created.) -->
+    <string name="no_dict_for_move_title">Incoming move lost</string>
+    <!-- Body of above notification. Tapping will attempt to open the
+         game, causing user to see a choice between downloading the
+         wordlist, deleting the game, or doing nothing.  -->
+    <string name="no_dict_for_move_fmt">Tap to download %1$s wordlist
+    and recover</string>
+
     <!-- Shown in toast when relaunching after switching dicts -->
     <string name="reload_new_dict_fmt">Reloading game with %1$s</string>
     <!-- Title of notification shown when invitation requires a
