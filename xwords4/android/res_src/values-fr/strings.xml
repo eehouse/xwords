@@ -1417,7 +1417,7 @@ l\'Hôte et l\'invité ; l\'Hôte gagne.</string>
          %2$ -->
     <!--<string name="no_dict_fmt">Game \"%1$s\" requires a %2$s wordlist.
     Please download one before opening.</string>-->
-    <string name="no_dict_fmt">La partie « %1$s » nécessite une liste de mots en %2$s. Téléchargez-en une avant de commencer.</string>
+    <string name="no_dict_fmt">La partie « %1$s » nécessite une liste de mots en %2$s. Téléchargez-en une pour la commencer.</string>
     <!-- This is an alternative message presented when there's also
          the option of downloading another wordlist.  Game name,
          wordlist name and language are substituted in. -->
@@ -3256,4 +3256,9 @@ pour la langue</string>
     <string name="confirm_delete">Êtes-vous sûr de vouloir effacer la partie en cours \?
 \n
 \n(Cette action ne peut pas être annulée.)</string>
+    <string name="no_dict_for_move_fmt">Appuyez pour télécharger la liste de mots %1$s et reprendre</string>
+    <plurals name="confirm_nameddeletes_fmt">
+        <item quantity="one">Êtes-vous sûr de vouloir effacer la partie %1$s \? Cette action ne peut pas être annulée.</item>
+        <item quantity="other">Êtes-vous sûr de vouloir effacer les parties %1$s \? Cette action ne peut pas être annulée.</item>
+    </plurals>
 </resources>
