@@ -170,15 +170,16 @@ public class GameOverAlert extends XWDialogFragment
 
     public void pendingCountChanged( int newCount )
     {
-        if ( 0 == newCount && mHasPending ) {
-            mHasPending = false;
+        boolean hasPending = 0 < newCount;
+        if ( hasPending != mHasPending ) {
+            mHasPending = hasPending;
             updateForPending();
         }
     }
 
     private void updateForPending()
     {
-        mArchiveBox.setVisibility( mHasPending ? View.GONE : View.VISIBLE );
+        mArchiveBox.setVisibility( mHasPending || mInArchive ? View.GONE : View.VISIBLE );
         Utils.enableAlertButton( mDialog, AlertDialog.BUTTON_NEGATIVE, !mHasPending );
     }
 
