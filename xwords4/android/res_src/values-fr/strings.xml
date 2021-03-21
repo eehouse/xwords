@@ -503,7 +503,6 @@ fait ?</string>-->
 \nVous verrez ce message jusqu\'à ce que le joueur invité ait répondu. Si vous craignez que l\'invitation que vous avez envoyée ait été perdue, il n\'y a pas de danger à en envoyer une autre.</item>
         <item quantity="other">Cette partie attend que %1$d joueurs distants répondent aux invitations.
 \n
-\n
 \nVous verrez ce message jusqu\'à ce que tous les joueurs attendus aient répondu. Si vous craignez que des invitations que vous avez envoyées aient été perdues, il n\'y a pas de danger à en envoyer d\'autres.</item>
     </plurals>
     <!-- Appended to message above if local device has NFC available -->
@@ -3254,4 +3253,7 @@ pour la langue</string>
     <string name="invites_unsent">Cette partie est configurée pour attendre un joueur distant.
 \n
 \nSouhaitez-vous inviter quelqu\'un \?</string>
+    <string name="confirm_delete">Êtes-vous sûr de vouloir effacer la partie en cours \?
+\n
+\n(Cette action ne peut pas être annulée.)</string>
 </resources>
