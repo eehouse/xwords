@@ -1612,11 +1612,11 @@
     <!--  -->
     <string name="dict_browse_title_fmt">%1$s (%2$d words total)</string>
     <!--  -->
-    <string name="not_again_browse">This button opens the wordlist
-      browser on the current player’s wordlist.</string>
+    <string name="not_again_browse">This button lets you browse the
+    most recently viewed wordlist.</string>
     <!--  -->
-    <string name="not_again_browseall">This button opens the wordlist
-      browser on the wordlist of your choice.</string>
+    <string name="not_again_browseall">This button lets you choose
+    which wordlist in the current game language to browse.</string>
     <!--  -->
     <string name="alert_empty_dict_fmt">The wordlist %1$s contains only
       tile information.  There are no words to browse.</string>

@@ -111,62 +111,6 @@ public class DictsDelegate extends ListDelegateBase
     private String m_lastLang;
     private String m_lastDict;
 
-    private static interface SafePopup {
-        public void doPopup( Delegator dlgtor, View button,
-                             String curDict, int lang );
-    }
-    private static SafePopup s_safePopup = null;
-
-    private static class SafePopupImpl implements SafePopup {
-        public void doPopup( final Delegator dlgtor, View button,
-                             String curDict, final int lang ) {
-
-            final HashMap<MenuItem, DictAndLoc> itemData
-                = new HashMap<>();
-            final Context context = dlgtor.getActivity();
-
-            MenuItem.OnMenuItemClickListener listener =
-                new MenuItem.OnMenuItemClickListener() {
-                    public boolean onMenuItemClick( MenuItem item )
-                    {
-                        DictAndLoc dal = itemData.get( item );
-                        String prevKey = keyForLang( lang );
-                        DBUtils.setStringFor( context, prevKey, dal.name );
-                        DictBrowseDelegate.launch( dlgtor, dal.name,
-                                                   dal.loc );
-                        return true;
-                    }
-                };
-
-            String prevSel = prevSelFor( context, lang );
-            PopupMenu popup = new PopupMenu( context, button );
-            Menu menu = popup.getMenu();
-
-            // Add at top but save until have dal info
-            MenuItem curItem = addItem( menu,
-                                        LocUtils.getString( context,
-                                                            R.string.cur_menu_marker_fmt,
-                                                            curDict ) );
-            DictAndLoc[] dals = DictLangCache.getDALsHaveLang( context, lang );
-            for ( DictAndLoc dal : dals ) {
-                boolean isCur = dal.name.equals(curDict);
-                MenuItem item = isCur ? curItem : addItem( menu, dal.name );
-                item.setOnMenuItemClickListener( listener );
-                itemData.put( item, dal );
-                item.setChecked( dal.name.equals(prevSel) );
-            }
-            menu.setGroupCheckable( FAKE_GROUP, true, true );
-
-            popup.show();
-        }
-
-        private static final int FAKE_GROUP = 101;
-        private MenuItem addItem(Menu menu, String name)
-        {
-            return menu.add( FAKE_GROUP, Menu.NONE, Menu.NONE, name );
-        }
-    }
-
     private static class DictInfo implements Comparable, Serializable {
         public String m_name;
         public String m_lang;
@@ -1110,21 +1054,65 @@ public class DictsDelegate extends ListDelegateBase
         new GetDefaultDictTask( context, lc, lstnr ).execute();
     }
 
+    private static final int FAKE_GROUP = 101;
+    private static MenuItem addItem(Menu menu, String name)
+    {
+        return menu.add( FAKE_GROUP, Menu.NONE, Menu.NONE, name );
+    }
+
+    private static void doPopup( final Delegator dlgtor, View button,
+                                 String curDict, final int lang ) {
+
+        final HashMap<MenuItem, DictAndLoc> itemData
+            = new HashMap<>();
+        final Context context = dlgtor.getActivity();
+
+        MenuItem.OnMenuItemClickListener listener =
+            new MenuItem.OnMenuItemClickListener() {
+                @Override
+                public boolean onMenuItemClick( MenuItem item )
+                {
+                    DictAndLoc dal = itemData.get( item );
+                    String prevKey = keyForLang( lang );
+                    DBUtils.setStringFor( context, prevKey, dal.name );
+                    DictBrowseDelegate.launch( dlgtor, dal.name,
+                                               dal.loc );
+                    return true;
+                }
+            };
+
+        String prevSel = prevSelFor( context, lang );
+        if ( null == prevSel ) {
+            prevSel = curDict;
+        }
+        PopupMenu popup = new PopupMenu( context, button );
+        Menu menu = popup.getMenu();
+
+        // Add at top but save until have dal info
+        MenuItem curItem = addItem( menu,
+                                    LocUtils.getString( context,
+                                                        R.string.cur_menu_marker_fmt,
+                                                        curDict ) );
+        DictAndLoc[] dals = DictLangCache.getDALsHaveLang( context, lang );
+        for ( DictAndLoc dal : dals ) {
+            boolean isCur = dal.name.equals(curDict);
+            MenuItem item = isCur ? curItem : addItem( menu, dal.name );
+            item.setOnMenuItemClickListener( listener );
+            itemData.put( item, dal );
+            item.setChecked( dal.name.equals(prevSel) );
+        }
+        menu.setGroupCheckable( FAKE_GROUP, true, true );
+
+        popup.show();
+    }
+
     public static boolean handleDictsPopup( Delegator delegator, View button,
                                             String curDict, int lang )
     {
-        Context context = delegator.getActivity();
-        int nDicts = DictLangCache.getLangCount( context, lang );
-        if ( null == s_safePopup && 1 < nDicts ) {
-            int sdkVersion = Integer.valueOf( android.os.Build.VERSION.SDK );
-            if ( 11 <= sdkVersion ) {
-                s_safePopup = new SafePopupImpl();
-            }
-        }
-
-        boolean canHandle = null != s_safePopup && 1 < nDicts;
+        int nDicts = DictLangCache.getLangCount( delegator.getActivity(), lang );
+        boolean canHandle = 1 < nDicts;
         if ( canHandle ) {
-            s_safePopup.doPopup( delegator, button, curDict, lang );
+            doPopup( delegator, button, curDict, lang );
         }
         return canHandle;
     }
