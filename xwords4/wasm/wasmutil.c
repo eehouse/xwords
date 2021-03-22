@@ -531,7 +531,7 @@ wasm_util_getDict( XW_UtilCtxt* uc, XWEnv xwe,
         }
 
         if ( !!ptr ) {
-            result = wasm_dictionary_make( globals, xwe, dictName, ptr, len );
+            result = wasm_dictionary_make( globals, dictName, ptr, len );
             XP_FREE( globals->mpool, ptr );
             dmgr_put( globals->dictMgr, xwe, dictName, result );
         }

@@ -167,7 +167,7 @@ wasm_dictionary_make_empty( Globals* globals )
 }
 
 DictionaryCtxt* 
-wasm_dictionary_make( Globals* globals, XWEnv xwe, const char* name,
+wasm_dictionary_make( Globals* globals, const char* name,
                       uint8_t* base, size_t len )
 {
     WasmDictionaryCtxt* result = (WasmDictionaryCtxt*)
@@ -187,7 +187,7 @@ wasm_dictionary_make( Globals* globals, XWEnv xwe, const char* name,
     }
 
     if ( !!result ) {
-        (void)dict_ref( &result->super, xwe );
+        (void)dict_ref( &result->super, NULL_XWE );
 
         /* XP_U16 nf = dict_numTileFaces( &result->super ); */
         /* for ( Tile tile = 0; tile < nf; ++tile ) { */

@@ -332,7 +332,7 @@ sendStreamToDev( XWStreamCtxt* stream, const MQTTDevID* devID )
 
     XP_U16 streamLen = stream_getSize( stream );
     bool success = call_mqttSend( topic, stream_getPtr( stream ), streamLen );
-    stream_destroy( stream, NULL );
+    stream_destroy( stream, NULL_XWE );
 
     XP_LOGFF("(to: %s) => %s", topic, boolToStr(success) );
     return success;
@@ -350,7 +350,7 @@ send_msg( XWEnv xwe, const XP_U8* buf, XP_U16 len,
         // MQTTDevID devID = addr->u.mqtt.devID;
         XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(globals->mpool)
                                                     globals->vtMgr );
-        dvc_makeMQTTMessage( globals->dutil, NULL, stream,
+        dvc_makeMQTTMessage( globals->dutil, NULL_XWE, stream,
                              gameID, buf, len );
         if ( sendStreamToDev( stream, &addr->u.mqtt.devID ) ) {
             nSent = len;
@@ -378,7 +378,7 @@ static void
 makeSelfAddr( Globals* globals, CommsAddrRec* addr )
 {
     addr_setType( addr, COMMS_CONN_MQTT );
-    dvc_getMQTTDevID( globals->dutil, NULL, &addr->u.mqtt.devID );
+    dvc_getMQTTDevID( globals->dutil, NULL_XWE, &addr->u.mqtt.devID );
 }
 
 static void
@@ -394,7 +394,7 @@ sendInviteTo(GameState* gs, const MQTTDevID* remoteDevID)
 
     XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(globals->mpool)
                                                 globals->vtMgr );
-    dvc_makeMQTTInvite( globals->dutil, NULL, stream, &nli );
+    dvc_makeMQTTInvite( globals->dutil, NULL_XWE, stream, &nli );
 
     sendStreamToDev( stream, remoteDevID );
 }
@@ -428,7 +428,7 @@ onKnownSelected( void* closure, const char* name )
                          onGotInviteeID, gs );
     } else {
         CommsAddrRec addr;
-        if ( kplr_getAddr( gs->globals->dutil, NULL, name, &addr, NULL ) ) {
+        if ( kplr_getAddr( gs->globals->dutil, NULL_XWE, name, &addr, NULL ) ) {
             sendInviteTo(gs, &addr.u.mqtt.devID);
         }
     }
@@ -443,14 +443,14 @@ handleInvite( GameState* gs )
     if ( isVisible(gs) ) {
         Globals* globals = gs->globals;
         XW_DUtilCtxt* dutil = globals->dutil;
-        if ( kplr_havePlayers( dutil, NULL ) ) {
+        if ( kplr_havePlayers( dutil, NULL_XWE ) ) {
             KnownSelState* kss = XP_MALLOC( globals->mpool, sizeof(*kss) );
             kss->gs = gs;
             kss->nNames = 0;
-            kplr_getNames( dutil, NULL, NULL, &kss->nNames );
+            kplr_getNames( dutil, NULL_XWE, NULL, &kss->nNames );
             kss->names = XP_CALLOC( globals->mpool,
                                     (kss->nNames + 2) * sizeof(kss->names[0]) );
-            kplr_getNames( dutil, NULL, kss->names, &kss->nNames );
+            kplr_getNames( dutil, NULL_XWE, kss->names, &kss->nNames );
             kss->names[kss->nNames] = BUTTON_CANCEL;
             XP_ASSERT( NULL == kss->names[kss->nNames+1] );
             const char* msg = "Pick an invitee you've played before, "
@@ -475,24 +475,24 @@ onGameButton( void* closure, const char* button )
         XP_Bool redo;
 
         if ( 0 == strcmp(button, BUTTON_HINTDOWN ) ) {
-            draw = board_requestHint( board, NULL, XP_TRUE, &redo );
+            draw = board_requestHint( board, NULL_XWE, XP_TRUE, &redo );
         } else if ( 0 == strcmp(button, BUTTON_HINTUP) ) {
-            draw = board_requestHint( board, NULL, XP_FALSE, &redo );
+            draw = board_requestHint( board, NULL_XWE, XP_FALSE, &redo );
         } else if ( 0 == strcmp(button, BUTTON_TRADE ) ) {
             wasm_draw_setInTrade( globals->draw, true );
             board_invalAll( gs->game.board );
-            draw = board_beginTrade( board, NULL );
+            draw = board_beginTrade( board, NULL_XWE );
         } else if ( 0 == strcmp(button, BUTTON_STOPTRADE ) ) {
             wasm_draw_setInTrade( globals->draw, false );
             board_invalAll( gs->game.board );
             draw = board_endTrade( board );
         } else if ( 0 == strcmp(button, BUTTON_COMMIT) ) {
-            draw = board_commitTurn( board, NULL, XP_FALSE, XP_FALSE, NULL );
+            draw = board_commitTurn( board, NULL_XWE, XP_FALSE, XP_FALSE, NULL );
         } else if ( 0 == strcmp(button, BUTTON_FLIP) ) {
             draw = board_flip( board );
         } else if ( 0 == strcmp(button, BUTTON_REDO) ) {
-            draw = board_redoReplacedTiles( board, NULL )
-                || board_replaceTiles( board, NULL );
+            draw = board_redoReplacedTiles( board, NULL_XWE )
+                || board_replaceTiles( board, NULL_XWE );
         } else if ( 0 == strcmp(button, BUTTON_VALS) ) {
             globals->cp.tvType = (globals->cp.tvType + 1) % TVT_N_ENTRIES;
             draw = board_prefsChanged( board, &globals->cp );
@@ -519,7 +519,7 @@ updateGameButtons( Globals* globals )
             buttons[cur++] = BUTTON_INVITE;
         } else {
             GameStateInfo gsi;
-            game_getState( &gs->game, NULL, &gsi );
+            game_getState( &gs->game, NULL_XWE, &gsi );
 
             if ( gsi.canHint ) {
                 buttons[cur++] = BUTTON_HINTDOWN;
@@ -554,7 +554,7 @@ langNameFor( Globals* globals, XP_LangCode code, char buf[], size_t buflen )
     const char* lc = lcToLocale( code );
     const XP_UCHAR* keys[] = { KEY_DICTS, lc, KEY_LANG_NAME, NULL };
     XP_U32 len = buflen;
-    dutil_loadPtr( globals->dutil, NULL, keys, buf, &len );
+    dutil_loadPtr( globals->dutil, NULL_XWE, keys, buf, &len );
     return 0 < len;
 }
 
@@ -617,7 +617,7 @@ formatForGame(Globals* globals, bool multiLangs, const XP_UCHAR* gameKey )
     const XP_UCHAR* keys[] = {KEY_GAMES, gameKey, KEY_NAME, NULL};
     char gameName[32];
     XP_U32 len = sizeof(gameName);
-    dutil_loadPtr( globals->dutil, NULL, keys, gameName, &len );
+    dutil_loadPtr( globals->dutil, NULL_XWE, keys, gameName, &len );
 
     char buf[256];
     int offset = snprintf( buf, sizeof(buf), "%s", gameName );
@@ -625,7 +625,7 @@ formatForGame(Globals* globals, bool multiLangs, const XP_UCHAR* gameKey )
     GameSummary summary;
     len = sizeof(summary);
     keys[2] = KEY_SUMMARY;
-    dutil_loadPtr( globals->dutil, NULL, keys, &summary, &len );
+    dutil_loadPtr( globals->dutil, NULL_XWE, keys, &summary, &len );
     if ( len == sizeof(summary) ) {
         if ( multiLangs ) {
             char langName[32];
@@ -665,7 +665,7 @@ onOneGameName( void* closure, const XP_UCHAR* keys[] )
         /* Make sure game exists. This may be unnecessary later */
         const XP_UCHAR* dataKeys[] = { keys[0], keys[1], KEY_GAME, NULL };
         XP_U32 dataLen;
-        dutil_loadPtr( globals->dutil, NULL, dataKeys, NULL, &dataLen );
+        dutil_loadPtr( globals->dutil, NULL_XWE, dataKeys, NULL, &dataLen );
         if ( 0 < dataLen ) {
             int cur = nis->count++;
             nis->names = XP_REALLOC( globals->mpool, nis->names,
@@ -687,7 +687,7 @@ pickGame( Globals* globals )
     NameIterState nis = { .globals = globals, };
 
     const XP_UCHAR* keys[] = {KEY_GAMES, KEY_WILDCARD, KEY_NAME, NULL};
-    dutil_forEach( dutil, NULL, keys, onOneGameName, &nis );
+    dutil_forEach( dutil, NULL_XWE, keys, onOneGameName, &nis );
 
     const char* msg = "Choose game to open:";
     call_pickGame(msg, nis.ids, nis.names, nis.count, onGameChosen, globals);
@@ -704,7 +704,7 @@ static void
 cleanupGame( GameState* gs )
 {
     if ( !!gs->util ) {
-        game_dispose( &gs->game, NULL );
+        game_dispose( &gs->game, NULL_XWE );
         gi_disposePlayerInfo( MPPARM(gs->globals->mpool) &gs->gi );
         wasm_util_destroy( gs->util );
         gs->util = NULL;
@@ -770,7 +770,7 @@ getLocalName( Globals* globals, char* playerName, size_t buflen )
 {
     XP_U32 len = buflen;
     const XP_UCHAR* keys[] = {KEY_PLAYER_NAME, NULL};
-    dutil_loadPtr( globals->dutil, NULL, keys, playerName, &len );
+    dutil_loadPtr( globals->dutil, NULL_XWE, keys, playerName, &len );
     bool haveName = 0 != len;
     if ( !haveName ) {        /* not found? */
         strcpy( playerName, "Player 1" );
@@ -784,7 +784,7 @@ onPlayerNamed( void* closure, const char* name )
     CAST_GLOB(Globals*, globals, closure);
     if ( !!name ) {
         const XP_UCHAR* keys[] = {KEY_PLAYER_NAME, NULL};
-        dutil_storePtr( globals->dutil, NULL, keys, (void*)name, 1 + strlen(name) );
+        dutil_storePtr( globals->dutil, NULL_XWE, keys, (void*)name, 1 + strlen(name) );
     }
 }
 
@@ -801,7 +801,7 @@ onOneLang( void* closure, const XP_UCHAR* keys[] )
 
     char langName[32];
     XP_U32 len = sizeof(langName);
-    dutil_loadPtr( ngs->globals->dutil, NULL, keys, langName, &len );
+    dutil_loadPtr( ngs->globals->dutil, NULL_XWE, keys, langName, &len );
 
     replaceStringIfDifferent( ngs->globals->mpool, &ngs->langs[ngs->nLangs], langName );
     XP_LOGFF( "set langs[%d] %s", ngs->nLangs, ngs->langs[ngs->nLangs] );
@@ -823,12 +823,12 @@ callNewGame( Globals* globals )
 {
     NewGameState ngs = {.globals = globals};
     const XP_UCHAR* keys1[] = {KEY_DICTS, KEY_WILDCARD, KEY_LANG_NAME, NULL};
-    dutil_forEach( globals->dutil, NULL, keys1, onOneLang, &ngs );
+    dutil_forEach( globals->dutil, NULL_XWE, keys1, onOneLang, &ngs );
 
     NewGameParams params;
     XP_U32 len = sizeof(params);
     const XP_UCHAR* keys2[] = {KEY_NEWGAME_DFLTS, NULL};
-    dutil_loadPtr( globals->dutil, NULL, keys2, &params, &len );
+    dutil_loadPtr( globals->dutil, NULL_XWE, keys2, &params, &len );
     if ( len != sizeof(params) ) {
         setNewGameDefaults( globals, &params );
     }
@@ -879,7 +879,7 @@ countGames( Globals* globals )
 {
     int nFound = 0;
     const XP_UCHAR* keys[] = {KEY_GAMES, KEY_WILDCARD, KEY_GAME, NULL};
-    dutil_forEach( globals->dutil, NULL, keys, upCounter, &nFound );
+    dutil_forEach( globals->dutil, NULL_XWE, keys, upCounter, &nFound );
     return nFound;
 }
 
@@ -888,7 +888,7 @@ countLangs( Globals* globals )
 {
     int count = 0;
     const XP_UCHAR* keys[] = {KEY_DICTS, KEY_WILDCARD, KEY_DICTS, NULL};
-    dutil_forEach( globals->dutil, NULL, keys, upCounter, &count );
+    dutil_forEach( globals->dutil, NULL_XWE, keys, upCounter, &count );
     LOG_RETURNF( "%d", count );
     return count;
 }
@@ -898,7 +898,7 @@ haveDictFor(Globals* globals, const char* lc)
 {
     int count = 0;
     const XP_UCHAR* keys[] = {KEY_DICTS, lc, KEY_DICTS, KEY_WILDCARD, NULL};
-    dutil_forEach( globals->dutil, NULL, keys, upCounter, &count );
+    dutil_forEach( globals->dutil, NULL_XWE, keys, upCounter, &count );
     return 0 < count;
 }
 
@@ -950,7 +950,7 @@ static void
 onMqttMsg(void* closure, const uint8_t* data, int len )
 {
     CAST_GLOB(Globals*, globals, closure);
-    dvc_parseMQTTPacket( globals->dutil, NULL, data, len );
+    dvc_parseMQTTPacket( globals->dutil, NULL_XWE, data, len );
 }
 
 static bool
@@ -967,15 +967,15 @@ storeAsDict( Globals* globals, GotDictData* gdd )
     /* First make a dict of it. If it doesn't work out, don't store the
        data! */
     DictionaryCtxt* dict =
-        wasm_dictionary_make( globals, NULL, shortName, gdd->data, gdd->len );
+        wasm_dictionary_make( globals, shortName, gdd->data, gdd->len );
     bool success = !!dict;
     if ( success ) {
-        dict_unref( dict, NULL );
+        dict_unref( dict, NULL_XWE );
 
         const XP_UCHAR* keys1[] = {KEY_DICTS, gdd->lc, KEY_DICTS, shortName, NULL};
-        dutil_storePtr( globals->dutil, NULL, keys1, gdd->data, gdd->len );
+        dutil_storePtr( globals->dutil, NULL_XWE, keys1, gdd->data, gdd->len );
         const XP_UCHAR* keys2[] = {KEY_DICTS, gdd->lc, KEY_LANG_NAME, NULL};
-        dutil_storePtr( globals->dutil, NULL, keys2, gdd->langName,
+        dutil_storePtr( globals->dutil, NULL_XWE, keys2, gdd->langName,
                         strlen(gdd->langName) + 1 );
 
         char msg[128];
@@ -1023,11 +1023,11 @@ initDeviceGlobals( Globals* globals )
                                     WINDOW_WIDTH, WINDOW_HEIGHT );
 
     MQTTDevID devID;
-    dvc_getMQTTDevID( globals->dutil, NULL, &devID );
+    dvc_getMQTTDevID( globals->dutil, NULL_XWE, &devID );
     XP_UCHAR buf[32];
     XP_SNPRINTF( buf, VSIZE(buf), MQTTDevID_FMT, devID );
     XP_LOGFF( "got mqtt devID: %s", buf );
-    int now = dutil_getCurSeconds( globals->dutil, NULL );
+    int now = dutil_getCurSeconds( globals->dutil, NULL_XWE );
     bool dbg =
 #ifdef DEBUG
         true
@@ -1042,7 +1042,7 @@ static void
 storeCurOpen( GameState* gs )
 {
     const XP_UCHAR* keys[] = {KEY_LAST_GID, NULL};
-    dutil_storePtr( gs->globals->dutil, NULL, keys,
+    dutil_storePtr( gs->globals->dutil, NULL_XWE, keys,
                     &gs->gi.gameID, sizeof(gs->gi.gameID) );
 }
 
@@ -1056,11 +1056,11 @@ startGame( GameState* gs, const char* name )
     storeCurOpen( gs );
 
     BoardDims dims;
-    board_figureLayout( gs->game.board, NULL, &gs->gi,
+    board_figureLayout( gs->game.board, NULL_XWE, &gs->gi,
                         WASM_BOARD_LEFT, WASM_HOR_SCORE_TOP, BDWIDTH, BDHEIGHT,
                         110, 150, 200, BDWIDTH-25, BDWIDTH/15, BDHEIGHT/15,
                         XP_FALSE, &dims );
-    board_applyLayout( gs->game.board, NULL, &dims );
+    board_applyLayout( gs->game.board, NULL_XWE, &dims );
 
     board_invalAll( gs->game.board ); /* redraw screen on loading new game */
 
@@ -1070,12 +1070,12 @@ startGame( GameState* gs, const char* name )
                                       &gs->gi.players[0].name,
                                       name );
         }
-        server_initClientConnection( gs->game.server, NULL );
+        server_initClientConnection( gs->game.server, NULL_XWE );
     }
     
-    (void)server_do( gs->game.server, NULL ); /* assign tiles, etc. */
+    (void)server_do( gs->game.server, NULL_XWE ); /* assign tiles, etc. */
     if ( !!gs->game.comms ) {
-        comms_resendAll( gs->game.comms, NULL, COMMS_CONN_MQTT, XP_TRUE );
+        comms_resendAll( gs->game.comms, NULL_XWE, COMMS_CONN_MQTT, XP_TRUE );
     }
 
     updateScreen( gs, true );
@@ -1092,7 +1092,7 @@ newFromInvite( Globals* globals, const NetLaunchInfo* invite )
     char playerName[32];
     getLocalName( globals, playerName, sizeof(playerName) );
 
-    game_makeFromInvite( MPPARM(globals->mpool) NULL, invite,
+    game_makeFromInvite( MPPARM(globals->mpool) NULL_XWE, invite,
                          &gs->game, &gs->gi, playerName,
                          gs->util, globals->draw,
                          &globals->cp, &globals->procs );
@@ -1210,14 +1210,14 @@ getSavedGame( Globals* globals, int gameID )
         char gameIDStr[16];
         formatGameID( gameIDStr, sizeof(gameIDStr), gameID );
         const XP_UCHAR* keys[] = {KEY_GAMES, gameIDStr, KEY_GAME, NULL};
-        dutil_loadStream( globals->dutil, NULL, keys, stream );
+        dutil_loadStream( globals->dutil, NULL_XWE, keys, stream );
         if ( 0 < stream_getSize( stream ) ) {
             XP_ASSERT( !gs->util );
             gs->util = wasm_util_make( MPPARM(globals->mpool) &gs->gi,
                                        globals->dutil, gs );
 
             XP_LOGFF( "there's a saved game!!" );
-            loaded = game_makeFromStream( MPPARM(globals->mpool) NULL, stream,
+            loaded = game_makeFromStream( MPPARM(globals->mpool) NULL_XWE, stream,
                                           &gs->game, &gs->gi,
                                           gs->util, globals->draw,
                                           &globals->cp, &globals->procs );
@@ -1237,7 +1237,7 @@ getSavedGame( Globals* globals, int gameID )
             XP_FREE( globals->mpool, gs );
             gs = NULL;
         }
-        stream_destroy( stream, NULL );
+        stream_destroy( stream, NULL_XWE );
     }
     XP_LOGFF( "(%X) => %p", gameID, gs );
     return gs;
@@ -1249,7 +1249,7 @@ saveName( GameState* gs )
     char gameIDStr[32];
     formatGameID( gameIDStr, sizeof(gameIDStr), gs->gi.gameID );
     const XP_UCHAR* keys[] = {KEY_GAMES, gameIDStr, KEY_NAME, NULL};
-    dutil_storePtr( gs->globals->dutil, NULL, keys,
+    dutil_storePtr( gs->globals->dutil, NULL_XWE, keys,
                     (XP_U8*)gs->gameName, 1 + strlen(gs->gameName) );
 }
 
@@ -1261,7 +1261,7 @@ loadName( GameState* gs )
 
     XP_U32 len = sizeof(gs->gameName);
     const XP_UCHAR* keys[] = {KEY_GAMES, gameIDStr, KEY_NAME, NULL};
-    dutil_loadPtr( gs->globals->dutil, NULL, keys, (XP_U8*)gs->gameName, &len );
+    dutil_loadPtr( gs->globals->dutil, NULL_XWE, keys, (XP_U8*)gs->gameName, &len );
 }
 
 static void
@@ -1278,9 +1278,9 @@ getNextGameNo( Globals* globals )
     int val = 0;
     const XP_UCHAR* keys[] = { KEY_NEXT_GAME, NULL };
     XP_U32 len = sizeof(val);
-    dutil_loadPtr( globals->dutil, NULL, keys, (XP_U8*)&val, &len );
+    dutil_loadPtr( globals->dutil, NULL_XWE, keys, (XP_U8*)&val, &len );
     ++val;
-    dutil_storePtr( globals->dutil, NULL, keys, (XP_U8*)&val, sizeof(val) );
+    dutil_storePtr( globals->dutil, NULL_XWE, keys, (XP_U8*)&val, sizeof(val) );
     XP_LOGFF( "getNextGameNo() => %d", val );
     return val;
 }
@@ -1317,7 +1317,7 @@ onOneDict( void* closure, const XP_UCHAR* keysIn[] )
     char langName[32];
     XP_U32 len = sizeof(langName);
     const XP_UCHAR* keys[] = { keysIn[0], keysIn[1], KEY_LANG_NAME, NULL };
-    dutil_loadPtr( dutil, NULL, keys, langName, &len );
+    dutil_loadPtr( dutil, NULL_XWE, keys, langName, &len );
     XP_ASSERT( 0 < len );
     // XP_LOGFF( "langName: %s", langName );
 
@@ -1330,7 +1330,7 @@ onOneDict( void* closure, const XP_UCHAR* keysIn[] )
         XP_U32 len;
         uint8_t* ptr = wasm_dutil_mallocAndLoad( dutil, keysIn, &len );
         if ( !!ptr ) {
-            fos->dict = wasm_dictionary_make( globals, NULL, dictName, ptr, len );
+            fos->dict = wasm_dictionary_make( globals, dictName, ptr, len );
             XP_FREE( globals->mpool, ptr );
         }
     }
@@ -1344,7 +1344,7 @@ loadAnyDict( Globals* globals, const char* langName )
                         .langName = langName,
     };
     const XP_UCHAR* keys[] = {KEY_DICTS, KEY_WILDCARD, KEY_DICTS, KEY_WILDCARD, NULL};
-    dutil_forEach( globals->dutil, NULL, keys, onOneDict, &fos );
+    dutil_forEach( globals->dutil, NULL_XWE, keys, onOneDict, &fos );
     LOG_RETURNF( "%p", fos.dict );
     return fos.dict;
 }
@@ -1363,7 +1363,7 @@ onOneLangName( void* closure, const XP_UCHAR* keys[] )
 
     char langName[32];
     XP_U32 len = sizeof(langName);
-    dutil_loadPtr( lcs->globals->dutil, NULL, keys, langName, &len );
+    dutil_loadPtr( lcs->globals->dutil, NULL_XWE, keys, langName, &len );
 
     if ( 0 == strcmp( lcs->langName, langName ) ) {
         strcpy( lcs->lc, keys[1] );
@@ -1425,7 +1425,7 @@ loadAndDraw( Globals* globals, const NetLaunchInfo* invite,
                                        globals->dutil, gs );
 
             XP_LOGFF( "calling game_makeNewGame()" );
-            game_makeNewGame( MPPARM(globals->mpool) NULL,
+            game_makeNewGame( MPPARM(globals->mpool) NULL_XWE,
                               &gs->game, &gs->gi,
                               gs->util, globals->draw,
                               &globals->cp, &globals->procs );
@@ -1434,9 +1434,9 @@ loadAndDraw( Globals* globals, const NetLaunchInfo* invite,
             if ( !!gs->game.comms ) {
                 CommsAddrRec addr = {0};
                 makeSelfAddr( globals, &addr );
-                comms_augmentHostAddr( gs->game.comms, NULL, &addr );
+                comms_augmentHostAddr( gs->game.comms, NULL_XWE, &addr );
             }
-            dict_unref( dict, NULL );
+            dict_unref( dict, NULL_XWE );
         }
     }
     if ( !!gs ) {
@@ -1473,7 +1473,7 @@ main_onGameMessage( Globals* globals, XP_U32 gameID,
 {
     GameState* gs = getSavedGame( globals, gameID );
     if ( !!gs ) {
-        if ( game_receiveMessage( &gs->game, NULL, stream, from ) ) {
+        if ( game_receiveMessage( &gs->game, NULL_XWE, stream, from ) ) {
             updateScreen( gs, true );
         }
         if ( !globals->focussed && GRANTED == js_getHaveNotifyPerm() ) {
@@ -1488,7 +1488,7 @@ main_onGameMessage( Globals* globals, XP_U32 gameID,
     } else {
         XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(globals->mpool)
                                                     globals->vtMgr );
-        dvc_makeMQTTNoSuchGame( globals->dutil, NULL, stream, gameID );
+        dvc_makeMQTTNoSuchGame( globals->dutil, NULL_XWE, stream, gameID );
         sendStreamToDev( stream, &from->u.mqtt.devID );
 #ifdef DEBUG
         char msg[128];
@@ -1516,7 +1516,7 @@ main_sendOnClose( XWStreamCtxt* stream, XWEnv env, void* closure )
 {
     CAST_GS(GameState*, gs, closure );
     XP_LOGFF( "called with msg of len %d", stream_getSize(stream) );
-    (void)comms_send( gs->game.comms, NULL, stream );
+    (void)comms_send( gs->game.comms, NULL_XWE, stream );
 }
 
 void
@@ -1524,7 +1524,7 @@ main_playerScoreHeld( GameState* gs, XP_U16 player )
 {
     LastMoveInfo lmi;
     XP_UCHAR buf[128];
-    if ( model_getPlayersLastScore( gs->game.model, NULL, player, &lmi ) ) {
+    if ( model_getPlayersLastScore( gs->game.model, NULL_XWE, player, &lmi ) ) {
         switch ( lmi.moveType ) {
         case ASSIGN_TYPE:
             XP_SNPRINTF( buf, sizeof(buf), "Tiles assigned to %s", lmi.names[0] );
@@ -1552,10 +1552,10 @@ main_showRemaining( GameState* gs )
 {
     XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(gs->globals->mpool)
                                                 gs->globals->vtMgr );
-    board_formatRemainingTiles( gs->game.board, NULL, stream );
+    board_formatRemainingTiles( gs->game.board, NULL_XWE, stream );
     stream_putU8( stream, 0 );
     call_alert( (const XP_UCHAR*)stream_getPtr( stream ) );
-    stream_destroy( stream, NULL );
+    stream_destroy( stream, NULL_XWE );
 }
 
 static void
@@ -1624,10 +1624,10 @@ main_showGameOver( GameState* gs )
     if ( isVisible(gs) ) {
         XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(gs->globals->mpool)
                                                     gs->globals->vtMgr );
-        server_writeFinalScores( gs->game.server, NULL, stream );
+        server_writeFinalScores( gs->game.server, NULL_XWE, stream );
         stream_putU8( stream, 0 );
         call_alert( (const XP_UCHAR*)stream_getPtr( stream ) );
-        stream_destroy( stream, NULL );
+        stream_destroy( stream, NULL_XWE );
     }
 }
 
@@ -1766,17 +1766,17 @@ checkForEvent( GameState* gs )
         switch ( event.type ) {
         case SDL_MOUSEBUTTONDOWN:
             draw = event.button.button == SDL_BUTTON_LEFT
-                && board_handlePenDown( board, NULL,
+                && board_handlePenDown( board, NULL_XWE,
                                         event.button.x, event.button.y,
                                         &handled );
             break;
         case SDL_MOUSEBUTTONUP:
             draw = event.button.button == SDL_BUTTON_LEFT
-                && board_handlePenUp( board, NULL,
+                && board_handlePenUp( board, NULL_XWE,
                                       event.button.x, event.button.y );
             break;
         case SDL_MOUSEMOTION:
-            draw = board_handlePenMove( board, NULL,
+            draw = board_handlePenMove( board, NULL_XWE,
                                         event.motion.x, event.motion.y );
             break;
         default:
@@ -1802,7 +1802,7 @@ updateScreen( GameState* gs, bool doSave )
     if ( gs == getCurGame(globals) ) {
         SDL_RenderClear( globals->renderer );
         if ( !!gs->game.board ) {
-            board_draw( gs->game.board, NULL );
+            board_draw( gs->game.board, NULL_XWE );
             wasm_draw_render( globals->draw, globals->renderer );
         }
         SDL_RenderPresent( globals->renderer );
@@ -1817,7 +1817,7 @@ updateScreen( GameState* gs, bool doSave )
     if ( doSave ) {
         XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(globals->mpool)
                                                     globals->vtMgr );
-        game_saveToStream( &gs->game, NULL, &gs->gi,
+        game_saveToStream( &gs->game, NULL_XWE, &gs->gi,
                            stream, ++gs->saveToken );
 
         GameSummary summary;
@@ -1826,12 +1826,12 @@ updateScreen( GameState* gs, bool doSave )
         char gameIDStr[32];
         formatGameID( gameIDStr, sizeof(gameIDStr), gs->gi.gameID );
         const XP_UCHAR* keys[] = { KEY_GAMES, gameIDStr, KEY_GAME, NULL };
-        dutil_storeStream( globals->dutil, NULL, keys, stream );
-        stream_destroy( stream, NULL );
-        game_saveSucceeded( &gs->game, NULL, gs->saveToken );
+        dutil_storeStream( globals->dutil, NULL_XWE, keys, stream );
+        stream_destroy( stream, NULL_XWE );
+        game_saveSucceeded( &gs->game, NULL_XWE, gs->saveToken );
 
         keys[2] = KEY_SUMMARY;
-        dutil_storePtr( globals->dutil, NULL, keys, &summary, sizeof(summary) );
+        dutil_storePtr( globals->dutil, NULL_XWE, keys, &summary, sizeof(summary) );
     }
 }
 
@@ -1956,7 +1956,7 @@ MQTTConnectedChanged( void* closure, bool connected )
         CAST_GLOB(Globals*, globals, closure);
         GameState* gs = getCurGame( globals );
         if ( !!gs && !!gs->game.comms ) {
-            comms_resendAll( gs->game.comms, NULL, COMMS_CONN_MQTT, XP_TRUE );
+            comms_resendAll( gs->game.comms, NULL_XWE, COMMS_CONN_MQTT, XP_TRUE );
         }
     }
 }
@@ -1991,7 +1991,7 @@ onNewGame( void* closure, bool isRobot, const char* langName,
     ngp->isRobot = isRobot;
     strcpy( ngp->langName, langName );
     const XP_UCHAR* keys[] = {KEY_NEWGAME_DFLTS, NULL};
-    dutil_storePtr( globals->dutil, NULL, keys, ngp, sizeof(*ngp) );
+    dutil_storePtr( globals->dutil, NULL_XWE, keys, ngp, sizeof(*ngp) );
     ngp->globals = globals;
 
     if ( !isRobot && UNREQUESTED == js_getHaveNotifyPerm() ) {
@@ -2073,7 +2073,7 @@ onGotInviteDictAtLaunch( void* closure, GotDictData* gdd )
     int gameID = 0;
     XP_U32 len = sizeof(gameID);
     const XP_UCHAR* keys[] = {KEY_LAST_GID, NULL};
-    dutil_loadPtr( globals->dutil, NULL, keys, (XP_U8*)&gameID, &len );
+    dutil_loadPtr( globals->dutil, NULL_XWE, keys, (XP_U8*)&gameID, &len );
     XP_LOGFF( "loaded KEY_LAST_GID: %X", gameID );
     loadAndDraw( globals, nlip, gameID, NULL );
 
