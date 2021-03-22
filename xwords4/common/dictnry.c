@@ -768,6 +768,7 @@ common_destructor( DictionaryCtxt* dict, XWEnv XP_UNUSED(xwe) )
     XP_FREE( dict->mpool, dict );
 } /* common_destructor */
 
+#ifndef XWFEATURE_STANDALONE_ONLY
 void
 dict_loadFromStream( DictionaryCtxt* dict, XWEnv xwe, XWStreamCtxt* stream )
 {
@@ -828,6 +829,7 @@ dict_loadFromStream( DictionaryCtxt* dict, XWEnv xwe, XWStreamCtxt* stream )
     }
     setBlankTile( dict );
 } /* dict_loadFromStream */
+#endif
 
 #ifdef TEXT_MODEL
 /* Return the strlen of the longest face, e.g. 1 for English and Italian;

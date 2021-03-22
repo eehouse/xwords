@@ -121,7 +121,6 @@ public class GameOverAlert extends XWDialogFragment
                 }
             });
 
-        Log.d( TAG, "onCreateDialog() => %s", mDialog );
         return mDialog;
     }
 

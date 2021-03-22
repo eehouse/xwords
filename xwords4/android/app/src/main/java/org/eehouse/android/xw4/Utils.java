@@ -686,7 +686,6 @@ public class Utils {
         return result;
     }
 
-
     static void enableAlertButton( AlertDialog dlg, int which, boolean enable )
     {
         Button button = dlg.getButton(which);
