@@ -45,7 +45,7 @@ typedef struct _WasmDrawCtx {
     SDL_Surface* origin;
 
     int trayOwner;
-    XP_Bool inTrade;
+    bool inTrade;
     TileValueType tvType;
 
     MPSLOT;
@@ -472,6 +472,14 @@ drawCrosshairs( WasmDrawCtx* wdctx, const XP_Rect* rect, CellFlags flags )
     }
 }
 
+static void
+setForTrade( const WasmDrawCtx* wdctx, SDL_Color* color )
+{
+    if ( wdctx->inTrade ) {
+        color->a >>= 2;
+    }
+}
+
 static XP_Bool
 wasm_draw_drawCell( DrawCtx* dctx, XWEnv xwe, const XP_Rect* rect,
                     /* at least one of these two will be
@@ -483,7 +491,6 @@ wasm_draw_drawCell( DrawCtx* dctx, XWEnv xwe, const XP_Rect* rect,
                     CellFlags flags )
 {
     WasmDrawCtx* wdctx = (WasmDrawCtx*)dctx;
-    const SDL_Color* backColor = NULL;
     XP_Bool empty = 0 != (flags & (CELL_DRAGSRC|CELL_ISEMPTY));
     XP_Bool pending = 0 != (flags & CELL_PENDING);
     XP_Bool recent = 0 != (flags & CELL_RECENT);
@@ -496,36 +503,38 @@ wasm_draw_drawCell( DrawCtx* dctx, XWEnv xwe, const XP_Rect* rect,
     if ( owner < 0 ) {
         owner = 0;
     }
-    const SDL_Color* foreColor = &sPlayerColors[owner];
 
+    SDL_Color foreColor = sPlayerColors[owner];
+    SDL_Color backColor;
     if ( 0 != (flags & CELL_ISCURSOR) ) {
-        backColor = &sOtherColors[COLOR_FOCUS];
+        backColor = sOtherColors[COLOR_FOCUS];
     } else if ( empty ) {
         if ( 0 == bonus ) {
-            backColor = &sOtherColors[COLOR_NOTILE];
+            backColor = sOtherColors[COLOR_NOTILE];
         } else {
-            backColor = &sBonusColors[bonus-1];
+            backColor = sBonusColors[bonus-1];
             bonusStr = sBonusSummaries[bonus-1];
         }
     } else if ( pending || recent ) {
-        foreColor = &sOtherColors[WHITE];
-        backColor = &sOtherColors[BLACK];
+        foreColor = sOtherColors[WHITE];
+        backColor = sOtherColors[BLACK];
     } else {
-        backColor = &sOtherColors[COLOR_TILE_BACK];
+        backColor = sOtherColors[COLOR_TILE_BACK];
     }
 
-    fillRect( wdctx, rect, backColor );
+    setForTrade( wdctx, &backColor );
+    fillRect( wdctx, rect, &backColor );
 
     if ( empty ) {
         if ( (CELL_ISSTAR & flags) != 0 ) {
             imgInRect( wdctx, wdctx->origin, rect );
         } else if ( NULL != bonusStr ) {
-            const SDL_Color* color = &sOtherColors[COLOR_BONUSHINT];
+            const SDL_Color color = sOtherColors[COLOR_BONUSHINT];
             /* m_fillPaint.setColor( adjustColor(color) ); */
             /* Rect brect = new Rect( rect ); */
             /* brect.inset( 0, brect.height()/10 ); */
             /* drawCentered( bonusStr, brect, m_fontDims ); */
-            textInRect( wdctx, bonusStr, rect, color );
+            textInRect( wdctx, bonusStr, rect, &color );
         }
     } else {
         XP_UCHAR valBuf[4];
@@ -547,19 +556,20 @@ wasm_draw_drawCell( DrawCtx* dctx, XWEnv xwe, const XP_Rect* rect,
             tmpRect.width = tmpRect.width * 4 / 5;
             tmpRect.height = tmpRect.height * 4 / 5;
         }
-        textInRect( wdctx, text, &tmpRect, foreColor );
+        setForTrade( wdctx, &foreColor );
+        textInRect( wdctx, text, &tmpRect, &foreColor );
         if ( !!valueStr ) {
             XP_Rect tmpRect = *rect;
             tmpRect.left += tmpRect.width * 1 / 2;
             tmpRect.top += tmpRect.height * 1 / 2;
             tmpRect.width /= 2;
             tmpRect.height /= 2;
-            textInRect( wdctx, valueStr, &tmpRect, foreColor );
+            textInRect( wdctx, valueStr, &tmpRect, &foreColor );
         }
     }
 
     if ( (CELL_ISBLANK & flags) != 0 ) {
-        markBlank( wdctx, rect, backColor );
+        markBlank( wdctx, rect, &backColor );
     }
 
     // frame the cell
@@ -672,6 +682,13 @@ wasm_draw_render( DrawCtx* dctx, SDL_Renderer* dest )
     SDL_RenderCopyEx( dest, texture, NULL, NULL, 0,
                       NULL, SDL_FLIP_NONE );
     SDL_DestroyTexture( texture );
+}
+
+void
+wasm_draw_setInTrade( DrawCtx* dctx, bool inTrade )
+{
+    WasmDrawCtx* wdctx = (WasmDrawCtx*)dctx;
+    wdctx->inTrade = inTrade;
 }
 
 DrawCtx*

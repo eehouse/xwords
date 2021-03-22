@@ -468,6 +468,7 @@ onGameButton( void* closure, const char* button )
 {
     if ( !!button ) {
         CAST_GS(GameState*, gs, closure);
+        Globals* globals = gs->globals;
 
         XP_Bool draw = XP_FALSE;
         BoardCtxt* board = gs->game.board;
@@ -478,8 +479,12 @@ onGameButton( void* closure, const char* button )
         } else if ( 0 == strcmp(button, BUTTON_HINTUP) ) {
             draw = board_requestHint( board, NULL, XP_FALSE, &redo );
         } else if ( 0 == strcmp(button, BUTTON_TRADE ) ) {
+            wasm_draw_setInTrade( globals->draw, true );
+            board_invalAll( gs->game.board );
             draw = board_beginTrade( board, NULL );
         } else if ( 0 == strcmp(button, BUTTON_STOPTRADE ) ) {
+            wasm_draw_setInTrade( globals->draw, false );
+            board_invalAll( gs->game.board );
             draw = board_endTrade( board );
         } else if ( 0 == strcmp(button, BUTTON_COMMIT) ) {
             draw = board_commitTurn( board, NULL, XP_FALSE, XP_FALSE, NULL );
@@ -489,7 +494,6 @@ onGameButton( void* closure, const char* button )
             draw = board_redoReplacedTiles( board, NULL )
                 || board_replaceTiles( board, NULL );
         } else if ( 0 == strcmp(button, BUTTON_VALS) ) {
-            Globals* globals = gs->globals;
             globals->cp.tvType = (globals->cp.tvType + 1) % TVT_N_ENTRIES;
             draw = board_prefsChanged( board, &globals->cp );
         } else if ( 0 == strcmp(button, BUTTON_INVITE) ) {

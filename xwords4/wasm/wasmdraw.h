@@ -23,5 +23,6 @@
 
 DrawCtx* wasm_draw_make( MPFORMAL int width, int height );
 void wasm_draw_render( DrawCtx* dctx, SDL_Renderer* dest );
+void wasm_draw_setInTrade( DrawCtx* dctx, bool inTrade );
 
 #endif
