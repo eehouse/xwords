@@ -1457,7 +1457,7 @@ public class BoardDelegate extends DelegateBase
     @Override
     public void tpmCountChanged( final int newCount )
     {
-        Log.d( TAG, "tpmCountChanged(%d)", newCount );
+        Log.d( TAG, "tpmCountChanged(newCount=%d)", newCount );
         ConnStatusHandler.updateMoveCount( m_activity, newCount );
 
         final GameOverAlert goAlert = mGameOverAlert;

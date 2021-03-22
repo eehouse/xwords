@@ -75,8 +75,7 @@ class InvitesNeededAlert {
         {
             Log.d( TAG, "dismiss()" );
             DbgUtils.assertOnUIThread();
-            if ( null != mSelf ) {
-                mSelf.close();
+            if ( null != mSelf && mSelf.close() ) {
                 mSelf = null;
             }
         }
@@ -113,17 +112,19 @@ class InvitesNeededAlert {
         void onInfoClicked();
     }
 
-    private void close()
+    private boolean close()
     {
+        boolean dismissed = false;
         DbgUtils.assertOnUIThread();
         if ( null != mAlert ) {
-            InviteChoicesAlert.dismissAny();
+            dismissed = InviteChoicesAlert.dismissAny();
             try {
                 mAlert.dismiss(); // I've seen this throw a NPE inside
             } catch ( Exception ex ) {
                 Log.ex( TAG, ex );
             }
         }
+        return dismissed;
     }
 
     private InvitesNeededAlert( DelegateBase delegate, State state )

@@ -54,15 +54,18 @@ public class InviteChoicesAlert extends DlgDelegateAlert
         return result;
     }
 
-    public static void dismissAny()
+    public static boolean dismissAny()
     {
+        boolean dismissed = false;
         WeakReference<InviteChoicesAlert> ref = sSelf;
         if ( null != ref ) {
             InviteChoicesAlert self = ref.get();
             if ( null != self ) {
                 self.dismiss();
+                dismissed = true;
             }
         }
+        return dismissed;
     }
     
     public InviteChoicesAlert() {}
