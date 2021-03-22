@@ -209,6 +209,12 @@ function jssetup(closure, dbg, devid, gitrev, now, noTabProc, focusProc, msgProc
 						  onFailure: function() { console.error('mqtt.client.connect.onFailure'); },
 						 });
 
+	function callResize() {
+		ccall('onResize', null, ['number', 'number', 'number'],
+			  [state.closure, window.innerWidth, window.innerHeight]);
+	}
+	window.addEventListener('resize', callResize);
+	callResize();				// so client knows initial size
 }
 
 function mqttSend( topic, ptr ) {

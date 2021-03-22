@@ -2036,6 +2036,13 @@ gotDictBinary( GotDictProc proc, void* closure, const char* xwd,
     (*proc)(closure, &gdd);
 }
 
+void
+onResize(void* closure, int width, int height)
+{
+    CAST_GLOB(Globals*, globals, closure);
+    XP_LOGFF( "width=%d, height=%d)", width, height );
+}
+
 /* On first launch, we may have an invitation. Or not. We want to ask for a
  * local name (but only once), then download any wordlist we need, then open
  * any pre-existing game or else a new one.
