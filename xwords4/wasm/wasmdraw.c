@@ -277,7 +277,6 @@ wasm_draw_beginDraw( DrawCtx* dctx, XWEnv xwe )
 static void
 wasm_draw_destroyCtxt( DrawCtx* dctx, XWEnv xwe )
 {
-    LOG_FUNC();
     WasmDrawCtx* wdctx = (WasmDrawCtx*)dctx;
 
     FontRec* next = NULL;
@@ -286,6 +285,12 @@ wasm_draw_destroyCtxt( DrawCtx* dctx, XWEnv xwe )
         next = rec->next;
         XP_FREE( wdctx->mpool, rec );
     }
+
+    SDL_FreeSurface( wdctx->arrowDown );
+    SDL_FreeSurface( wdctx->arrowRight );
+    SDL_FreeSurface( wdctx->origin );
+    SDL_FreeSurface( wdctx->surface );
+    SDL_DestroyRenderer(wdctx->renderer);
 
     XP_FREEP( wdctx->mpool, &wdctx->vtable );
     XP_FREEP( wdctx->mpool, &wdctx );
@@ -666,6 +671,12 @@ createSurface( WasmDrawCtx* wdctx, int width, int height )
     uint32_t bmask = 0x00ff0000;
     uint32_t amask = 0xff000000;
 #endif
+    if ( !!wdctx->surface ) {
+        SDL_FreeSurface( wdctx->surface );
+    }
+    if ( !!wdctx->renderer ) {
+        SDL_DestroyRenderer(wdctx->renderer);
+    }
     wdctx->surface = SDL_CreateRGBSurface( 0, width, height, 32,
                                            rmask, gmask, bmask, amask );
     wdctx->renderer = SDL_CreateSoftwareRenderer( wdctx->surface );
@@ -694,8 +705,8 @@ wasm_draw_setInTrade( DrawCtx* dctx, bool inTrade )
 DrawCtx*
 wasm_draw_make( MPFORMAL int width, int height )
 {
-    LOG_FUNC();
-    WasmDrawCtx* wdctx = XP_MALLOC( mpool, sizeof(*wdctx) );
+    // XP_LOGFF( "(width: %d, height: %d)", width, height );
+    WasmDrawCtx* wdctx = XP_CALLOC( mpool, sizeof(*wdctx) );
     MPASSIGN( wdctx->mpool, mpool );
 
     wdctx->arrowDown = IMG_Load( "assets_dir/ic_downarrow.png" );
@@ -737,4 +748,11 @@ wasm_draw_make( MPFORMAL int width, int height )
     createSurface( wdctx, width, height );
 
     return (DrawCtx*)wdctx;
+}
+
+void
+wasm_draw_resize( DrawCtx* dctx, int width, int height )
+{
+    WasmDrawCtx* wdctx = (WasmDrawCtx*)dctx;
+    createSurface( wdctx, width, height );
 }

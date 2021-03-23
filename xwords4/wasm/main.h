@@ -67,6 +67,8 @@ typedef struct Globals {
     CommonPrefs cp;
     DictMgrCtxt* dictMgr;
 
+    int useWidth, useHeight;
+
     bool focussed;              /* window is in foreground */
 
     char playerName[32];

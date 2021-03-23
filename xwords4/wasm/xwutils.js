@@ -213,7 +213,15 @@ function jssetup(closure, dbg, devid, gitrev, now, noTabProc, focusProc, msgProc
 		ccall('onResize', null, ['number', 'number', 'number'],
 			  [state.closure, window.innerWidth, window.innerHeight]);
 	}
-	window.addEventListener('resize', callResize);
+	window.addEventListener('resize', function() {
+		const innerWidth = window.innerWidth;
+		const innerHeight = window.innerHeight;
+		window.setTimeout( function() {
+			if ( innerWidth == window.innerWidth && innerHeight == window.innerHeight ) {
+				callResize();
+			}
+		}, 500 );
+	});
 	callResize();				// so client knows initial size
 }
 

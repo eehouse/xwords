@@ -55,11 +55,6 @@
 #define WASM_BOARD_LEFT 0
 #define WASM_HOR_SCORE_TOP 0
 
-#define WINDOW_WIDTH 600
-#define WINDOW_HEIGHT 850
-#define BDWIDTH WINDOW_WIDTH
-#define BDHEIGHT WINDOW_HEIGHT
-
 #define KEY_LAST_GID "cur_game"
 #define KEY_PLAYER_NAME "player_name"
 #define KEY_GAMES "games"
@@ -987,18 +982,80 @@ storeAsDict( Globals* globals, GotDictData* gdd )
     return success;
 }
 
-/* static void */
-/* onGotDict( void* closure, const char* lc, const char* langName, */
-/*            const char* dictName, uint8_t* data, int len) */
-/* { */
-/*     CAST_GLOB(Globals*, globals, closure); */
-/*     if ( storeAsDict( globals, lc, langName, dictName, data, len ) ) { */
-/*         if ( 0 == countGames(globals) ) { */
-/*             loadAndDraw( globals, NULL, NULL, NULL ); */
-/*         } */
-/*         updateDeviceButtons( globals ); */
-/*     } */
-/* } */
+static void
+resizeBoard( Globals* globals, GameState* gs )
+{
+    BoardDims dims;
+    int useWidth = globals->useWidth;
+    int useHeight = globals->useHeight;
+    board_figureLayout( gs->game.board, NULL_XWE, &gs->gi,
+                        WASM_BOARD_LEFT, WASM_HOR_SCORE_TOP,
+                        useWidth, useHeight,
+                        110, 150, 200, useWidth-25, useWidth/15,
+                        useHeight/15, XP_FALSE, &dims );
+    board_applyLayout( gs->game.board, NULL_XWE, &dims );
+
+    board_invalAll( gs->game.board ); /* redraw screen on loading new game */
+}
+
+static void
+resizeBoards( Globals* globals )
+{
+    for ( GameState* cur = globals->games; !!cur; cur = cur->next ) {
+        resizeBoard( globals, cur );
+    }
+}
+
+/* We need window dimensions to draw, but other stuff too. So when we get
+ * dimensions, set them.
+ */
+static void
+initWindow( Globals* globals, int winWidth, int winHeight )
+{
+    // we're ready to go IFF we are inited.
+    if ( !!globals->vtMgr ) {   /* inited? */
+        /* Figure height as twice width, then set to use 3/4 of it */
+        int useWidth = winWidth;
+        int useHeight = useWidth * 2;
+        if ( useHeight > winHeight ) {
+            useHeight = winHeight;
+            useWidth = useHeight / 2;
+        }
+        useHeight = useHeight * 100 / 145;
+
+        globals->useWidth = useWidth;
+        globals->useHeight = useHeight;
+
+        if ( !!globals->window ) {
+            SDL_DestroyRenderer(globals->renderer);
+            globals->renderer = NULL;
+            SDL_DestroyWindow(globals->window);
+            globals->window = NULL;
+        }
+
+        SDL_CreateWindowAndRenderer( useWidth, useHeight, 0,
+                                     &globals->window, &globals->renderer );
+
+        /* wipe the canvas to background */
+        SDL_SetRenderDrawColor( globals->renderer, 155, 155, 155, 255 );
+        SDL_RenderClear( globals->renderer );
+
+        if ( !!globals->draw ) {
+            wasm_draw_resize( globals->draw, useWidth, useHeight );
+            resizeBoards( globals );
+        } else {
+            globals->draw = wasm_draw_make( MPPARM(globals->mpool) useWidth, useHeight );
+        }
+
+        GameState* gs = getCurGame( globals );
+        if ( !!gs ) {
+            board_invalAll( gs->game.board );
+            updateScreen( gs, true );
+        }
+    } else {
+        XP_ASSERT(0);
+    }
+}
 
 static void
 initDeviceGlobals( Globals* globals )
@@ -1012,15 +1069,12 @@ initDeviceGlobals( Globals* globals )
     globals->procs.send = send_msg;
     globals->procs.closure = globals;
 
-#ifdef MEMDEBUG
+#ifdef MEM_DEBUG
     globals->mpool = mpool_make( "wasm" );
 #endif
     globals->vtMgr = make_vtablemgr( MPPARM_NOCOMMA(globals->mpool) );
     globals->dutil = wasm_dutil_make( MPPARM(globals->mpool) globals->vtMgr, globals );
     globals->dictMgr = dmgr_make( MPPARM_NOCOMMA(globals->mpool) );
-
-    globals->draw = wasm_draw_make( MPPARM(globals->mpool)
-                                    WINDOW_WIDTH, WINDOW_HEIGHT );
 
     MQTTDevID devID;
     dvc_getMQTTDevID( globals->dutil, NULL_XWE, &devID );
@@ -1049,24 +1103,18 @@ storeCurOpen( GameState* gs )
 static void
 startGame( GameState* gs, const char* name )
 {
-    gs->globals->curGame = gs;
+    Globals* globals = gs->globals;
+    globals->curGame = gs;
     ensureName( gs );
     XP_LOGFF( "changed curGame to %s", gs->gameName );
     showName( gs );
     storeCurOpen( gs );
 
-    BoardDims dims;
-    board_figureLayout( gs->game.board, NULL_XWE, &gs->gi,
-                        WASM_BOARD_LEFT, WASM_HOR_SCORE_TOP, BDWIDTH, BDHEIGHT,
-                        110, 150, 200, BDWIDTH-25, BDWIDTH/15, BDHEIGHT/15,
-                        XP_FALSE, &dims );
-    board_applyLayout( gs->game.board, NULL_XWE, &dims );
-
-    board_invalAll( gs->game.board ); /* redraw screen on loading new game */
+    resizeBoard( globals, gs );
 
     if ( SERVER_ISCLIENT == gs->gi.serverRole ) {
         if ( !!name ) {
-            replaceStringIfDifferent( gs->globals->mpool,
+            replaceStringIfDifferent( globals->mpool,
                                       &gs->gi.players[0].name,
                                       name );
         }
@@ -2039,8 +2087,9 @@ gotDictBinary( GotDictProc proc, void* closure, const char* xwd,
 void
 onResize(void* closure, int width, int height)
 {
-    CAST_GLOB(Globals*, globals, closure);
+    CAST_GLOB( Globals*, globals, closure );
     XP_LOGFF( "width=%d, height=%d)", width, height );
+    initWindow( globals, width, height );
 }
 
 /* On first launch, we may have an invitation. Or not. We want to ask for a
@@ -2175,6 +2224,7 @@ mainPostSync( int argc, const char** argv )
 #ifdef DEBUG
     globals->_GUARD = GUARD_GLOB;
 #endif
+    initDeviceGlobals( globals ); /* takes care of getting mqtt devid */
 
     NetLaunchInfo nli = {0};
     NetLaunchInfo* nlip = NULL;
@@ -2185,17 +2235,7 @@ mainPostSync( int argc, const char** argv )
     SDL_Init( SDL_INIT_EVENTS );
     TTF_Init();
 
-    SDL_CreateWindowAndRenderer( WINDOW_WIDTH, WINDOW_HEIGHT, 0,
-                                 &globals->window, &globals->renderer );
-
-    /* wipe the canvas to background */
-    SDL_SetRenderDrawColor( globals->renderer, 155, 155, 155, 255 );
-    SDL_RenderClear( globals->renderer );
-
-    initDeviceGlobals( globals ); /* takes care of getting mqtt devid */
-
     startLaunchSequence( globals, nlip );
-
 
 #ifdef GLOBALS_ON_STACK
     emscripten_set_main_loop_arg( looper, globals, -1, 1 );
