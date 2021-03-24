@@ -1014,17 +1014,8 @@ initWindow( Globals* globals, int winWidth, int winHeight )
 {
     // we're ready to go IFF we are inited.
     if ( !!globals->vtMgr ) {   /* inited? */
-        /* Figure height as twice width, then set to use 3/4 of it */
-        int useWidth = winWidth;
-        int useHeight = useWidth * 2;
-        if ( useHeight > winHeight ) {
-            useHeight = winHeight;
-            useWidth = useHeight / 2;
-        }
-        useHeight = useHeight * 100 / 145;
-
-        globals->useWidth = useWidth;
-        globals->useHeight = useHeight;
+        globals->useWidth = winWidth;
+        globals->useHeight = winHeight;
 
         if ( !!globals->window ) {
             SDL_DestroyRenderer(globals->renderer);
@@ -1033,7 +1024,7 @@ initWindow( Globals* globals, int winWidth, int winHeight )
             globals->window = NULL;
         }
 
-        SDL_CreateWindowAndRenderer( useWidth, useHeight, 0,
+        SDL_CreateWindowAndRenderer( winWidth, winHeight, 0,
                                      &globals->window, &globals->renderer );
 
         /* wipe the canvas to background */
@@ -1041,10 +1032,11 @@ initWindow( Globals* globals, int winWidth, int winHeight )
         SDL_RenderClear( globals->renderer );
 
         if ( !!globals->draw ) {
-            wasm_draw_resize( globals->draw, useWidth, useHeight );
+            wasm_draw_resize( globals->draw, winWidth, winHeight );
             resizeBoards( globals );
         } else {
-            globals->draw = wasm_draw_make( MPPARM(globals->mpool) useWidth, useHeight );
+            globals->draw = wasm_draw_make( MPPARM(globals->mpool)
+                                            winWidth, winHeight );
         }
 
         GameState* gs = getCurGame( globals );
@@ -2085,11 +2077,13 @@ gotDictBinary( GotDictProc proc, void* closure, const char* xwd,
 }
 
 void
-onResize(void* closure, int width, int height)
+onResize( void* closure, int width, int height )
 {
     CAST_GLOB( Globals*, globals, closure );
     XP_LOGFF( "width=%d, height=%d)", width, height );
     initWindow( globals, width, height );
+    updateGameButtons( globals );
+    updateDeviceButtons( globals );
 }
 
 /* On first launch, we may have an invitation. Or not. We want to ask for a

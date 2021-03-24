@@ -13,7 +13,7 @@
         margin-right: auto;
       }
       button.xwbutton {
-        font-size: 2.6rem;
+      <!-- nothing right now -->
       }
       div.emscripten { text-align: center; }
       div.emscripten_border { border: 1px solid black; }
@@ -73,13 +73,11 @@
 		  border-color: #000;
 		  vertical-align: top;
 	      padding: 10px;
-          font-size: 2.0rem;
       }
 
       textarea.stringedit {
           height: 1em;
           resize: none;
-          font-size: 2.0rem;
 	  }
 
     </style>
@@ -96,9 +94,9 @@
     <div class="emscripten_border">
       <canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()" tabindex=-1></canvas>
     </div>
-	<div class='buttonRow' id="game_buttons"></div>
+	<div class='buttonRow' id='game_buttons'></div>
     <hr/>
-    <div class='buttonRow' id="device_buttons"></div>
+    <div class='buttonRow' id='device_buttons'></div>
     <hr/>
     <table class='centered'>
         <tr><td>MQTT Dev ID:</td><td id="mqtt_span"></td></tr>

@@ -6,6 +6,10 @@ var state = {client: null,
 			 connChangeStamp: 0,
 			};
 
+function fontSize() {
+	return (state.height / 500) + 'rem';
+}
+
 function ccallString(proc, closure, str) {
 	Module.ccall('cbckString', null, ['number', 'number', 'string'],
 				 [proc, closure, str]);
@@ -210,8 +214,18 @@ function jssetup(closure, dbg, devid, gitrev, now, noTabProc, focusProc, msgProc
 						 });
 
 	function callResize() {
-		ccall('onResize', null, ['number', 'number', 'number'],
-			  [state.closure, window.innerWidth, window.innerHeight]);
+        state.width = window.innerWidth;
+        state.height = state.width * 2;
+        if ( state.height > window.innerHeight ) {
+            state.height = window.innerHeight;
+            state.width = state.height / 2;
+        }
+        state.height = state.height * 100 / 151;
+
+        document.getElementById('nbalert').style['font-size'] = fontSize();
+
+        ccall('onResize', null, ['number', 'number', 'number'],
+            [state.closure, state.width, state.height]);
 	}
 	window.addEventListener('resize', function() {
 		const innerWidth = window.innerWidth;
@@ -270,6 +284,7 @@ function newButtonDiv(buttons, proc, asDivs) {
 		let button = document.createElement('button');
 		button.classList.add('xwbutton');
 		button.textContent = buttonTxt;
+		button.style['font-size'] = fontSize();
 		button.onclick = function() { proc(ii); };
 		if ( asDivs ) {
 			let bdiv = document.createElement('div');
@@ -364,6 +379,7 @@ function nbGetString(msg, dflt, proc, closure) {
 
 	let tarea = document.createElement('textarea');
 	tarea.classList.add('stringedit');
+	tarea.style['font-size'] = fontSize();
 	tarea.value = dflt;
 	div.appendChild( tarea );
 
