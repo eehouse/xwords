@@ -110,6 +110,7 @@ void main_playerScoreHeld( GameState* gs, XP_U16 player );
 void main_showGameOver( GameState* gs );
 void main_showRemaining( GameState* gs );
 void main_turnChanged(GameState* gs, int newTurn);
+void main_chatReceived( GameState* gs, const char* msg );
 void main_pickBlank( GameState* gs, int playerNum, int col, int row,
                      const char** tileFaces, int nTiles );
 void main_updateScreen( GameState* gs );

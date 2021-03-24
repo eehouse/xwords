@@ -589,12 +589,16 @@ wasm_util_getTraySearchLimits( XW_UtilCtxt* uc, XWEnv xwe,
 }
 #endif
 
+#ifdef XWFEATURE_CHAT
 static void
 wasm_util_showChat( XW_UtilCtxt* uc, XWEnv xwe, const XP_UCHAR* const msg, 
                     XP_S16 from, XP_U32 timestamp )
 {
-    LOG_FUNC();
+    WasmUtilCtx* wuctxt = (WasmUtilCtx*)uc;
+    GameState* gs = wuctxt->closure;
+    main_chatReceived( gs, msg );
 }
+#endif
 
 static XW_DUtilCtxt*
 wasm_util_getDevUtilCtxt( XW_UtilCtxt* uc, XWEnv xwe )

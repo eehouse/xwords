@@ -67,6 +67,7 @@
 
 #define BUTTON_OK "OK"
 #define BUTTON_CANCEL "Cancel"
+#define BUTTON_REPLY "Reply"
 
 #define BUTTONS_ID_GAME "game_buttons"
 #define BUTTONS_ID_DEVICE "device_buttons"
@@ -79,6 +80,7 @@
 #define BUTTON_FLIP "Flip"
 #define BUTTON_REDO "Redo"
 #define BUTTON_VALS "Vals"
+#define BUTTON_CHAT "Chat"
 #define BUTTON_INVITE "Invite"
 
 #define BUTTON_GAME_GAMES "Games"
@@ -459,6 +461,15 @@ handleInvite( GameState* gs )
 }
 
 static void
+onChatComposed( void* closure, const char* msg )
+{
+    if ( !!msg ) {
+        CAST_GS(GameState*, gs, closure);
+        board_sendChat( gs->game.board, NULL_XWE, msg );
+    }
+}
+
+static void
 onGameButton( void* closure, const char* button )
 {
     if ( !!button ) {
@@ -473,6 +484,8 @@ onGameButton( void* closure, const char* button )
             draw = board_requestHint( board, NULL_XWE, XP_TRUE, &redo );
         } else if ( 0 == strcmp(button, BUTTON_HINTUP) ) {
             draw = board_requestHint( board, NULL_XWE, XP_FALSE, &redo );
+        } else if ( 0 == strcmp(button, BUTTON_CHAT) ) {
+            call_get_string( "Your message?", "", onChatComposed, gs );
         } else if ( 0 == strcmp(button, BUTTON_TRADE ) ) {
             wasm_draw_setInTrade( globals->draw, true );
             board_invalAll( gs->game.board );
@@ -519,6 +532,10 @@ updateGameButtons( Globals* globals )
             if ( gsi.canHint ) {
                 buttons[cur++] = BUTTON_HINTDOWN;
                 buttons[cur++] = BUTTON_HINTUP;
+            }
+
+            if ( gsi.canChat ) {
+                buttons[cur++] = BUTTON_CHAT;
             }
 
             if ( gsi.inTrade ) {
@@ -1616,6 +1633,25 @@ main_turnChanged( GameState* gs, int newTurn )
                   "It's your turn in game \"%s\". Would you like to open it now?",
                   gs->gameName );
         call_confirm( gs->globals, msg, openConfirmed, gs );
+    }
+}
+
+static void
+onChatReceiptDone( void* closure, const char* button )
+{
+    if ( 0 == strcmp( BUTTON_REPLY, button ) ) {
+        call_get_string( "Your message?", "", onChatComposed, closure );
+    }
+}
+
+void
+main_chatReceived( GameState* gs, const char* msg )
+{
+    char buf[256];
+    size_t len = snprintf( buf, sizeof(buf), "Chat message received:\n%s", msg );
+    if ( len < sizeof(buf)) {
+        const char* buttons[] = { BUTTON_REPLY, BUTTON_OK, NULL };
+        call_dialog( buf, buttons, onChatReceiptDone, gs );
     }
 }
 

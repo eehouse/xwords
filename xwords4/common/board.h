@@ -131,8 +131,9 @@ XP_Bool board_canHideRack( const BoardCtxt* board );
 XP_Bool board_canTrade( BoardCtxt* board, XWEnv xwe );
 XP_Bool board_canTogglePending( const BoardCtxt* board );
 XP_Bool board_canHint( const BoardCtxt* board );
+#ifdef XWFEATURE_CHAT
 void board_sendChat( const BoardCtxt* board, XWEnv xwe, const XP_UCHAR* msg );
-
+#endif
 /* zoomBy: >0: zoom in; < 0: zoom out; 0: query only */
 XP_Bool board_zoom( BoardCtxt* board, XWEnv xwe, XP_S16 zoomBy, XP_Bool* canInOut );
 
