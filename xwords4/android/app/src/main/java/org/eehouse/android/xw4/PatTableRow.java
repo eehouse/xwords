@@ -49,6 +49,11 @@ public class PatTableRow extends TableRow implements OnEditorActionListener {
 
     void setOnEnterPressed( EnterPressed proc ) { mEnterProc = proc; }
 
+    boolean hasState()
+    {
+        return 0 < mEdit.getText().length() || mCheck.isChecked();
+    }
+
     @Override
     protected void onFinishInflate()
     {
