@@ -3259,5 +3259,4 @@ pour la langue</string>
         <item quantity="one">Êtes-vous sûr de vouloir effacer la partie %1$s \? Cette action ne peut pas être annulée.</item>
         <item quantity="other">Êtes-vous sûr de vouloir effacer les parties %1$s \? Cette action ne peut pas être annulée.</item>
     </plurals>
-    <string name="button_clear">Tout effacer</string>
 </resources>
