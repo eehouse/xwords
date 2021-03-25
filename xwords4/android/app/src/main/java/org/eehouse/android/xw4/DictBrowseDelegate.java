@@ -275,7 +275,7 @@ public class DictBrowseDelegate extends DelegateBase
             m_desc = XwJNI.dict_getDesc( m_dict );
 
             int[] ids = { R.id.button_useconfig, R.id.button_addBlank,
-                          R.id.button_reset, };
+                          R.id.button_clear, };
             for ( int id : ids ) {
                 findViewById( id ).setOnClickListener(this);
             }
@@ -430,7 +430,7 @@ public class DictBrowseDelegate extends DelegateBase
         case R.id.button_addBlank:
             addBlankButtonClicked();
             break;
-        case R.id.button_reset:
+        case R.id.button_clear:
             resetClicked();
             break;
         default:
@@ -843,7 +843,7 @@ public class DictBrowseDelegate extends DelegateBase
             mResetChecker = null;
         } else if ( null == mResetChecker ) {
             final Handler handler = new Handler();
-            final Button resetButton = (Button)findViewById(R.id.button_reset);
+            final Button resetButton = (Button)findViewById(R.id.button_clear);
             mResetChecker = new Runnable() {
                     @Override
                     public void run() {

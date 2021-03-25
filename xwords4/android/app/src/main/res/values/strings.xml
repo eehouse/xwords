@@ -1567,6 +1567,8 @@
     <string name="button_useconfig">Apply Filter</string>
     <!-- Button in wordlist filter: keep it short!!!! -->
     <string name="button_addBlank">+Blank</string>
+    <!-- Button to clear wordlist filter config (but not re-apply the filter) -->
+    <string name="button_clear">Clear</string>
     <!-- String showing user what filter is in use. Substitutions are
          1) the filter pattern, 2) minimum and 3) maximum lengths, and
          4) number of words in the filtered list. -->
