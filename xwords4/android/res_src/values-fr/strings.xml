@@ -109,7 +109,7 @@
     <!-- pulls up dialog to reset the selected game, that is to remove
          all moves so that it's the same as a newly created game
          except for any configuration. -->
-    <string name="list_item_reset">Recommencer\u200C</string>
+    <string name="list_item_reset">Recommencer</string>
     <!-- creates a new game with all configuation copied from the
          selected game -->
     <string name="list_item_new_from">Utiliser comme modèle</string>
@@ -3259,4 +3259,5 @@ pour la langue</string>
         <item quantity="one">Êtes-vous sûr de vouloir effacer la partie %1$s \? Cette action ne peut pas être annulée.</item>
         <item quantity="other">Êtes-vous sûr de vouloir effacer les parties %1$s \? Cette action ne peut pas être annulée.</item>
     </plurals>
+    <string name="button_clear">Tout effacer</string>
 </resources>
