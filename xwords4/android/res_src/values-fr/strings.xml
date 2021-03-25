@@ -1855,13 +1855,11 @@ ligne, les mots qui viennent d\'être joués.</string>
     <!--  -->
     <!--<string name="not_again_browse">This button opens the wordlist
       browser on the current player\'s wordlist.</string>-->
-    <string name="not_again_browse">Ce bouton ouvre le navigateur de liste de
-mots en utilisant la liste du joueur courant.</string>
+    <string name="not_again_browse">Ce bouton vous permet de parcourir la liste de mots la plus récemment vue.</string>
     <!--  -->
     <!--<string name="not_again_browseall">This button opens the wordlist
       browser on the wordlist of your choice.</string>-->
-    <string name="not_again_browseall">Ce bouton ouvre le navigateur de liste
-de mots en utilisant la liste de votre choix.</string>
+    <string name="not_again_browseall">Ce bouton vous permet de choisir quelle liste de mots parcourir dans la langue de la partie en cours.</string>
     <!--  -->
     <!--<string name="alert_empty_dict_fmt">The wordlist %1$s contains only
       tile information.  There are no words to browse.</string>-->
