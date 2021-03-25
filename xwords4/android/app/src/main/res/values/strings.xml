@@ -1567,8 +1567,6 @@
     <string name="button_useconfig">Apply Filter</string>
     <!-- Button in wordlist filter: keep it short!!!! -->
     <string name="button_addBlank">+Blank</string>
-    <!-- Button to clear wordlist filter config (but not re-apply the filter) -->
-    <string name="button_clear">Clear</string>
     <!-- String showing user what filter is in use. Substitutions are
          1) the filter pattern, 2) minimum and 3) maximum lengths, and
          4) number of words in the filtered list. -->
@@ -2133,6 +2131,8 @@
     <string name="lang_name_slovak">Slovak</string>
     <string name="lang_name_hungarian">Hungarian</string>
     <!-- for loc item edit menu -->
+    <!-- Button to clear wordlist filter config (but not re-apply the
+         filter). And other uses...-->
     <string name="loc_item_clear">Clear</string>
     <string name="loc_item_check">Check</string>
     <string name="loc_item_copy_eng">Copy English</string>
