@@ -6,8 +6,8 @@ var state = {client: null,
 			 connChangeStamp: 0,
 			};
 
-function fontSize() {
-	return (state.height / 500) + 'rem';
+function fontSize(adj=1.0) {
+	return (adj * state.height / 500) + 'rem';
 }
 
 function ccallString(proc, closure, str) {
@@ -222,7 +222,9 @@ function jssetup(closure, dbg, devid, gitrev, now, noTabProc, focusProc, msgProc
         }
         state.height = state.height * 100 / 151;
 
-        document.getElementById('nbalert').style['font-size'] = fontSize();
+		for ( const id of ['nbalert', 'gamename'] ) {
+			document.getElementById(id).style['font-size'] = fontSize();
+		}
 
         ccall('onResize', null, ['number', 'number', 'number'],
             [state.closure, state.width, state.height]);
@@ -284,7 +286,7 @@ function newButtonDiv(buttons, proc, asDivs) {
 		let button = document.createElement('button');
 		button.classList.add('xwbutton');
 		button.textContent = buttonTxt;
-		button.style['font-size'] = fontSize();
+		button.style['font-size'] = fontSize(1.2);
 		button.onclick = function() { proc(ii); };
 		if ( asDivs ) {
 			let bdiv = document.createElement('div');

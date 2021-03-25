@@ -122,8 +122,8 @@ rectXPToSDL( SDL_Rect* sdlr, const XP_Rect* rect )
 {
     sdlr->x = rect->left;
     sdlr->y = rect->top;
-    sdlr->w = rect->width + 1;
-    sdlr->h = rect->height + 1;
+    sdlr->w = rect->width;
+    sdlr->h = rect->height;
 }
 
 static void
@@ -232,29 +232,31 @@ drawTile( WasmDrawCtx* wdctx, const XP_UCHAR* face, int val,
           int owner, const XP_Rect* rect, CellFlags flags )
 {
     clearRect( wdctx, rect );
-    frameRect( wdctx, rect );
+    if ( 0 == (CELL_ISEMPTY & flags) ) {
+        frameRect( wdctx, rect );
 
-    XP_Rect tmp = *rect;
-    tmp.width = 3 * tmp.width / 4;
-    tmp.height = 3 * tmp.height / 4;
-    textInRect( wdctx, face, &tmp, &sPlayerColors[owner] );
-
-    if ( 0 <= val ) {
         XP_Rect tmp = *rect;
-        tmp.width = tmp.width / 4;
-        tmp.left += tmp.width * 3;
-        tmp.height = tmp.height / 4;
-        tmp.top += tmp.height * 3;
-        XP_UCHAR buf[4];
-        XP_SNPRINTF( buf, VSIZE(buf), "%d", val );
-        textInRect( wdctx, buf, &tmp, &sPlayerColors[owner] );
-    }
+        tmp.width = 3 * tmp.width / 4;
+        tmp.height = 3 * tmp.height / 4;
+        textInRect( wdctx, face, &tmp, &sPlayerColors[owner] );
 
-    if ( 0 != (flags & (CELL_PENDING|CELL_RECENT)) ) {
-        XP_Rect tmp = *rect;
-        for ( int ii = 0; ii < 3; ++ii ) {
-            insetRect( &tmp, 1, 1 );
-            frameRect( wdctx, &tmp );
+        if ( 0 <= val ) {
+            XP_Rect tmp = *rect;
+            tmp.width = tmp.width / 4;
+            tmp.left += tmp.width * 3;
+            tmp.height = tmp.height / 4;
+            tmp.top += tmp.height * 3;
+            XP_UCHAR buf[4];
+            XP_SNPRINTF( buf, VSIZE(buf), "%d", val );
+            textInRect( wdctx, buf, &tmp, &sPlayerColors[owner] );
+        }
+
+        if ( 0 != (flags & (CELL_PENDING|CELL_RECENT)) ) {
+            XP_Rect tmp = *rect;
+            for ( int ii = 0; ii < 3; ++ii ) {
+                insetRect( &tmp, 1, 1 );
+                frameRect( wdctx, &tmp );
+            }
         }
     }
 }
@@ -634,7 +636,10 @@ wasm_draw_drawTrayDivider( DrawCtx* dctx, XWEnv xwe, const XP_Rect* rect,
                            CellFlags flags )
 {
     WasmDrawCtx* wdctx = (WasmDrawCtx*)dctx;
-    fillRect( wdctx, rect, &sPlayerColors[wdctx->trayOwner] );
+    XP_Rect copy = *rect;
+    fillRect( wdctx, &copy, &sOtherColors[WHITE] );
+    insetRect( &copy, copy.width / 4, 1 );
+    fillRect( wdctx, &copy, &sPlayerColors[wdctx->trayOwner] );
 }
 
 static void
