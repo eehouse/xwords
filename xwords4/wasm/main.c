@@ -64,6 +64,8 @@
 #define KEY_NEXT_GAME "next_game"
 #define KEY_LANG_NAME "lang_name"
 #define KEY_NEWGAME_DFLTS "ng_defaults"
+#define KEY_PREFS "prefs"
+#define KEY_COMMON "common"
 
 #define BUTTON_OK "OK"
 #define BUTTON_CANCEL "Cancel"
@@ -77,7 +79,7 @@
 #define BUTTON_TRADE "Trade"
 #define BUTTON_STOPTRADE "Cancel Trade"
 #define BUTTON_COMMIT "Commit"
-#define BUTTON_FLIP "Flip"
+// #define BUTTON_FLIP "Flip"
 #define BUTTON_REDO "Redo"
 #define BUTTON_VALS "Vals"
 #define BUTTON_CHAT "Chat"
@@ -286,6 +288,21 @@ EM_JS( void, js_notify, (const char* msg), {
                          { body: jsmsg, renotify: true, }
                          );
     });
+
+static void
+loadPrefs( Globals* globals )
+{
+    const XP_UCHAR* keys[] = { KEY_PREFS, KEY_COMMON, NULL };
+    XP_U32 len = sizeof(globals->cp);
+    dutil_loadPtr( globals->dutil, NULL_XWE, keys, &globals->cp, &len );
+}
+
+static void
+savePrefs( Globals* globals )
+{
+    const XP_UCHAR* keys[] = { KEY_PREFS, KEY_COMMON, NULL };
+    dutil_storePtr( globals->dutil, NULL_XWE, keys, &globals->cp, sizeof(globals->cp) );
+}
 
 typedef struct _ConfirmState {
     Globals* globals;
@@ -496,13 +513,14 @@ onGameButton( void* closure, const char* button )
             draw = board_endTrade( board );
         } else if ( 0 == strcmp(button, BUTTON_COMMIT) ) {
             draw = board_commitTurn( board, NULL_XWE, XP_FALSE, XP_FALSE, NULL );
-        } else if ( 0 == strcmp(button, BUTTON_FLIP) ) {
-            draw = board_flip( board );
+        /* } else if ( 0 == strcmp(button, BUTTON_FLIP) ) { */
+        /*     draw = board_flip( board ); */
         } else if ( 0 == strcmp(button, BUTTON_REDO) ) {
             draw = board_redoReplacedTiles( board, NULL_XWE )
                 || board_replaceTiles( board, NULL_XWE );
         } else if ( 0 == strcmp(button, BUTTON_VALS) ) {
             globals->cp.tvType = (globals->cp.tvType + 1) % TVT_N_ENTRIES;
+            savePrefs( globals );
             draw = board_prefsChanged( board, &globals->cp );
         } else if ( 0 == strcmp(button, BUTTON_INVITE) ) {
             handleInvite(gs);
@@ -546,7 +564,7 @@ updateGameButtons( Globals* globals )
             if ( gsi.curTurnSelected ) {
                 buttons[cur++] = BUTTON_COMMIT;
             }
-            buttons[cur++] = BUTTON_FLIP;
+            /* buttons[cur++] = BUTTON_FLIP; */
 
             if ( gsi.canRedo ) {
                 buttons[cur++] = BUTTON_REDO;
@@ -1075,8 +1093,8 @@ initDeviceGlobals( Globals* globals )
     globals->cp.sortNewTiles = XP_TRUE;
     globals->cp.showColors = XP_TRUE;
 
-    globals->procs.send = send_msg;
-    globals->procs.closure = globals;
+    globals->transportProcs.send = send_msg;
+    globals->transportProcs.closure = globals;
 
 #ifdef MEM_DEBUG
     globals->mpool = mpool_make( "wasm" );
@@ -1084,6 +1102,8 @@ initDeviceGlobals( Globals* globals )
     globals->vtMgr = make_vtablemgr( MPPARM_NOCOMMA(globals->mpool) );
     globals->dutil = wasm_dutil_make( MPPARM(globals->mpool) globals->vtMgr, globals );
     globals->dictMgr = dmgr_make( MPPARM_NOCOMMA(globals->mpool) );
+
+    loadPrefs( globals );
 
     MQTTDevID devID;
     dvc_getMQTTDevID( globals->dutil, NULL_XWE, &devID );
@@ -1152,7 +1172,7 @@ newFromInvite( Globals* globals, const NetLaunchInfo* invite )
     game_makeFromInvite( MPPARM(globals->mpool) NULL_XWE, invite,
                          &gs->game, &gs->gi, playerName,
                          gs->util, globals->draw,
-                         &globals->cp, &globals->procs );
+                         &globals->cp, &globals->transportProcs );
     if ( invite->gameName[0] ) {
         nameGame( gs, invite->gameName );
     }
@@ -1277,7 +1297,7 @@ getSavedGame( Globals* globals, int gameID )
             loaded = game_makeFromStream( MPPARM(globals->mpool) NULL_XWE, stream,
                                           &gs->game, &gs->gi,
                                           gs->util, globals->draw,
-                                          &globals->cp, &globals->procs );
+                                          &globals->cp, &globals->transportProcs );
 
             if ( loaded ) {
                 loadName( gs );
@@ -1485,7 +1505,7 @@ loadAndDraw( Globals* globals, const NetLaunchInfo* invite,
             game_makeNewGame( MPPARM(globals->mpool) NULL_XWE,
                               &gs->game, &gs->gi,
                               gs->util, globals->draw,
-                              &globals->cp, &globals->procs );
+                              &globals->cp, &globals->transportProcs );
 
             ensureName( gs );
             if ( !!gs->game.comms ) {

@@ -63,7 +63,7 @@ typedef struct Globals {
     VTableMgr* vtMgr;
     XW_DUtilCtxt* dutil;
     DrawCtx* draw;
-    TransportProcs procs;
+    TransportProcs transportProcs;
     CommonPrefs cp;
     DictMgrCtxt* dictMgr;
 
