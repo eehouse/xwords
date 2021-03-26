@@ -34,7 +34,7 @@ while [ "$#" -gt 0 ]; do
 			shift
 			;;
 		--variant)
-			VARIANT=$2
+			VARIANT=${2^}
 			shift
 			;;
 		--help)
