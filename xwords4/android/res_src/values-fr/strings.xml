@@ -503,7 +503,6 @@ fait ?</string>-->
 \nVous verrez ce message jusqu\'à ce que le joueur invité ait répondu. Si vous craignez que l\'invitation que vous avez envoyée ait été perdue, il n\'y a pas de danger à en envoyer une autre.</item>
         <item quantity="other">Cette partie attend que %1$d joueurs distants répondent aux invitations.
 \n
-\n
 \nVous verrez ce message jusqu\'à ce que tous les joueurs attendus aient répondu. Si vous craignez que des invitations que vous avez envoyées aient été perdues, il n\'y a pas de danger à en envoyer d\'autres.</item>
     </plurals>
     <!-- Appended to message above if local device has NFC available -->
@@ -1418,7 +1417,7 @@ l\'Hôte et l\'invité ; l\'Hôte gagne.</string>
          %2$ -->
     <!--<string name="no_dict_fmt">Game \"%1$s\" requires a %2$s wordlist.
     Please download one before opening.</string>-->
-    <string name="no_dict_fmt">La partie « %1$s » nécessite une liste de mots en %2$s. Téléchargez-en une avant de commencer.</string>
+    <string name="no_dict_fmt">La partie « %1$s » nécessite une liste de mots en %2$s. Téléchargez-en une pour la commencer.</string>
     <!-- This is an alternative message presented when there's also
          the option of downloading another wordlist.  Game name,
          wordlist name and language are substituted in. -->
@@ -1856,13 +1855,11 @@ ligne, les mots qui viennent d\'être joués.</string>
     <!--  -->
     <!--<string name="not_again_browse">This button opens the wordlist
       browser on the current player\'s wordlist.</string>-->
-    <string name="not_again_browse">Ce bouton ouvre le navigateur de liste de
-mots en utilisant la liste du joueur courant.</string>
+    <string name="not_again_browse">Ce bouton vous permet de parcourir la liste de mots la plus récemment vue.</string>
     <!--  -->
     <!--<string name="not_again_browseall">This button opens the wordlist
       browser on the wordlist of your choice.</string>-->
-    <string name="not_again_browseall">Ce bouton ouvre le navigateur de liste
-de mots en utilisant la liste de votre choix.</string>
+    <string name="not_again_browseall">Ce bouton vous permet de choisir quelle liste de mots parcourir dans la langue de la partie en cours.</string>
     <!--  -->
     <!--<string name="alert_empty_dict_fmt">The wordlist %1$s contains only
       tile information.  There are no words to browse.</string>-->
@@ -3254,4 +3251,12 @@ pour la langue</string>
     <string name="invites_unsent">Cette partie est configurée pour attendre un joueur distant.
 \n
 \nSouhaitez-vous inviter quelqu\'un \?</string>
+    <string name="confirm_delete">Êtes-vous sûr de vouloir effacer la partie en cours \?
+\n
+\n(Cette action ne peut pas être annulée.)</string>
+    <string name="no_dict_for_move_fmt">Appuyez pour télécharger la liste de mots %1$s et reprendre</string>
+    <plurals name="confirm_nameddeletes_fmt">
+        <item quantity="one">Êtes-vous sûr de vouloir effacer la partie %1$s \? Cette action ne peut pas être annulée.</item>
+        <item quantity="other">Êtes-vous sûr de vouloir effacer les parties %1$s \? Cette action ne peut pas être annulée.</item>
+    </plurals>
 </resources>

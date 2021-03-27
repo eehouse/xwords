@@ -671,7 +671,7 @@ public class BoardCanvas extends Canvas implements DrawCtx {
             final int CLIP_SAVE_FLAG = 0x02;
             try {
                 sSaveMethod.invoke( this, CLIP_SAVE_FLAG );
-                Log.d( TAG, "saveImpl() worked" );
+                // Log.d( TAG, "saveImpl() worked" );
             } catch ( java.lang.reflect.InvocationTargetException
                       | IllegalAccessException ex ) {
                 Log.e( TAG, "%s", ex );

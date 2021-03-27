@@ -52,16 +52,16 @@ public enum DlgID {
     , REVERT_COLORS
     , SET_DEFAULT
     , SHOW_SUBST
-    , WARN_NODICT
-    , WARN_NODICT_NEW
-    , WARN_NODICT_SUBST
+    , WARN_NODICT_GENERIC       // the general trying-to-open case
+    , WARN_NODICT_INVITED       // when responding to invitation
+    , WARN_NODICT_SUBST         // when a substitution will be possible/suggested
     , DLG_BADWORDS
     , NOTIFY_BADWORDS
     , QUERY_MOVE
     , QUERY_TRADE
     , ASK_PASSWORD
     , DLG_RETRY
-    , DLG_SCORES
+    , DLG_SCORES(true)
     , DLG_USEDICT
     , DLG_GETDICT
     , GAMES_LIST_NEWGAME

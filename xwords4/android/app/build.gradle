@@ -19,8 +19,8 @@
  */
 
 def INITIAL_CLIENT_VERS = 10
-def VERSION_CODE_BASE = 170
-def VERSION_NAME = '4.4.174'
+def VERSION_CODE_BASE = 171
+def VERSION_NAME = '4.4.175'
 def BUILD_INFO_NAME = "build-info.txt"
 
 // Not all variants use the same BT_UUID. Those with the same talk to
@@ -110,7 +110,7 @@ android {
             buildConfigField "boolean", "ATTACH_SUPPORTED", "false"
             buildConfigField "boolean", "OFFER_MQTT", "true"
             buildConfigField "boolean", "NON_RELEASE", "DEBUG || !IS_TAGGED_BUILD"
-            buildConfigField "boolean", "HAVE_KNOWN_PLAYERS", "false"
+            buildConfigField "boolean", "HAVE_KNOWN_PLAYERS", "true"
             buildConfigField "boolean", "FOR_FDROID", "false"
             buildConfigField "boolean", "HAVE_PASSWORD", "false"
         }
@@ -164,8 +164,6 @@ android {
             resValue "string", "nfc_aid", "$NFC_AID_XW4d"
             externalNativeBuild.ndkBuild.cFlags += ['-DVARIANT_xw4d']
             externalNativeBuild.ndkBuild.arguments += ['XW_BT_UUID=' + XWD_UUID]
-            externalNativeBuild.ndkBuild.cFlags += ['-DXWFEATURE_KNOWNPLAYERS']
-            buildConfigField "boolean", "HAVE_KNOWN_PLAYERS", "true"
         }
 
         xw4dGPlay {
@@ -184,8 +182,6 @@ android {
             resValue "string", "nfc_aid", "$NFC_AID_XW4d"
             externalNativeBuild.ndkBuild.cFlags += ['-DVARIANT_xw4dGPlay']
             externalNativeBuild.ndkBuild.arguments += ['XW_BT_UUID=' + XWD_UUID]
-            externalNativeBuild.ndkBuild.cFlags += ['-DXWFEATURE_KNOWNPLAYERS']
-            buildConfigField "boolean", "HAVE_KNOWN_PLAYERS", "true"
         }
 
         xw4Foss {

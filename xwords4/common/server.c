@@ -1937,15 +1937,11 @@ client_readInitialMessage( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* stream )
 
         XP_U16 nCols = localGI.boardSize;
 
-        XP_LOGFF( "streamVersion: %d; STREAM_VERS_NOEMPTYDICT: %d",
-                  streamVersion, STREAM_VERS_NOEMPTYDICT );
         if ( streamVersion < STREAM_VERS_NOEMPTYDICT ) {
             XP_LOGFF( "loading and dropping empty dict" );
             DictionaryCtxt* empty = util_makeEmptyDict( server->vol.util, xwe );
             dict_loadFromStream( empty, xwe, stream );
             dict_unref( empty, xwe );
-        } else {
-            XP_LOGFF( "NO empty dict bytes to skip" );
         }
 
 #ifdef STREAM_VERS_BIGBOARD
@@ -2105,8 +2101,6 @@ sendInitialMessage( ServerCtxt* server, XWEnv xwe )
         if ( streamVersion < STREAM_VERS_NOEMPTYDICT ) {
             XP_LOGFF( "writing dict to stream" );
             dict_writeToStream( dict, stream );
-        } else {
-            XP_LOGFF( "SKIPPING write of dict to stream" );
         }
 #ifdef STREAM_VERS_BIGBOARD
         if ( STREAM_VERS_DICTNAME <= streamVersion ) {

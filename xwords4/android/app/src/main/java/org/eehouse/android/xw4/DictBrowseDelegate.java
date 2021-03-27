@@ -25,6 +25,7 @@ import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -141,6 +142,7 @@ public class DictBrowseDelegate extends DelegateBase
     private Spinner m_spinnerMax;
     private boolean m_newAlertShown;
     private String m_desc;
+    private Runnable mResetChecker;
 
     private class DictListAdapter extends BaseAdapter
         implements SectionIndexer {
@@ -273,7 +275,7 @@ public class DictBrowseDelegate extends DelegateBase
             m_desc = XwJNI.dict_getDesc( m_dict );
 
             int[] ids = { R.id.button_useconfig, R.id.button_addBlank,
-                          R.id.button_reset, };
+                          R.id.button_clear, };
             for ( int id : ids ) {
                 findViewById( id ).setOnClickListener(this);
             }
@@ -295,6 +297,7 @@ public class DictBrowseDelegate extends DelegateBase
     {
         scrapeBrowseState();
         storeBrowseState();
+        enableResetChecker( false );
         super.onPause();
     }
 
@@ -427,7 +430,7 @@ public class DictBrowseDelegate extends DelegateBase
         case R.id.button_addBlank:
             addBlankButtonClicked();
             break;
-        case R.id.button_reset:
+        case R.id.button_clear:
             resetClicked();
             break;
         default:
@@ -669,8 +672,9 @@ public class DictBrowseDelegate extends DelegateBase
 
     private void setShowConfig()
     {
-        findViewById(R.id.config).setVisibility( m_browseState.m_expanded
-                                                 ? View.VISIBLE : View.GONE );
+        boolean expanded = m_browseState.m_expanded;
+        findViewById(R.id.config).setVisibility( expanded ? View.VISIBLE : View.GONE );
+        enableResetChecker( expanded );
     }
 
     private void setFindPats( PatDesc[] descs )
@@ -713,7 +717,6 @@ public class DictBrowseDelegate extends DelegateBase
                                          simple_spinner_dropdown_item );
         spinner.setAdapter( adapter );
         spinner.setSelection( curVal - MIN_LEN );
-        // spinner.setOnItemSelectedListener( this );
     }
 
     private void setUpSpinners()
@@ -829,6 +832,35 @@ public class DictBrowseDelegate extends DelegateBase
             InputMethodManager imm = (InputMethodManager)
                 m_activity.getSystemService( Activity.INPUT_METHOD_SERVICE );
             imm.hideSoftInputFromWindow( hasFocus.getWindowToken(), 0 );
+        }
+    }
+
+    final private static int sResetCheckMS = 500;
+    private void enableResetChecker( boolean enable )
+    {
+        DbgUtils.assertOnUIThread();
+        if ( !enable ) {
+            mResetChecker = null;
+        } else if ( null == mResetChecker ) {
+            final Handler handler = new Handler();
+            final Button resetButton = (Button)findViewById(R.id.button_clear);
+            mResetChecker = new Runnable() {
+                    @Override
+                    public void run() {
+                        if ( null != mResetChecker ) {
+                            int curMin = MIN_LEN + m_spinnerMin.getSelectedItemPosition();
+                            int curMax = MIN_LEN + m_spinnerMax.getSelectedItemPosition();
+                            boolean hasState = curMin != MIN_LEN || curMax != MAX_LEN;
+                            for ( int ii = 0; !hasState && ii < m_rows.length; ++ii ) {
+                                hasState = m_rows[ii].hasState();
+                            }
+                            resetButton.setEnabled( hasState );
+
+                            handler.postDelayed( mResetChecker, sResetCheckMS );
+                        }
+                    }
+                };
+            handler.postDelayed( mResetChecker, sResetCheckMS );
         }
     }
 

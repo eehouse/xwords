@@ -637,14 +637,15 @@ public class GamesListDelegate extends ListDelegateBase
 
         DlgID dlgID = alert.getDlgID();
         switch ( dlgID ) {
-        case WARN_NODICT:
-        case WARN_NODICT_NEW:
+        case WARN_NODICT_GENERIC:
+        case WARN_NODICT_INVITED:
         case WARN_NODICT_SUBST: {
             final long rowid = (Long)params[0];
             final String missingDictName = (String)params[1];
             final int missingDictLang = (Integer)params[2];
 
             lstnr = new OnClickListener() {
+                    @Override
                     public void onClick( DialogInterface dlg, int item ) {
                         if ( null == missingDictName ) {
                             DictsDelegate
@@ -666,9 +667,9 @@ public class GamesListDelegate extends ListDelegateBase
                 DictLangCache.getLangName( m_activity, missingDictLang );
             String locLang = xlateLang( langName );
             String gameName = GameUtils.getName( m_activity, rowid );
-            if ( DlgID.WARN_NODICT == dlgID ) {
+            if ( DlgID.WARN_NODICT_GENERIC == dlgID ) {
                 message = getString( R.string.no_dict_fmt, gameName, locLang );
-            } else if ( DlgID.WARN_NODICT_NEW == dlgID ) {
+            } else if ( DlgID.WARN_NODICT_INVITED == dlgID ) {
                 message = getString( R.string.invite_dict_missing_body_noname_fmt,
                                      null, missingDictName, locLang );
             } else {
@@ -684,13 +685,23 @@ public class GamesListDelegate extends ListDelegateBase
                 .setNegativeButton( R.string.button_download, lstnr )
                 ;
             if ( DlgID.WARN_NODICT_SUBST == dlgID ) {
-                lstnr = new OnClickListener() {
+                OnClickListener neuLstnr = new OnClickListener() {
+                        @Override
                         public void onClick( DialogInterface dlg, int item ) {
                             showDialogFragment( DlgID.SHOW_SUBST, rowid,
                                                 missingDictName, missingDictLang );
                         }
                     };
-                ab.setNeutralButton( R.string.button_substdict, lstnr );
+                ab.setNeutralButton( R.string.button_substdict, neuLstnr );
+            } else if ( DlgID.WARN_NODICT_GENERIC == dlgID ) {
+                OnClickListener neuLstnr = new OnClickListener() {
+                        @Override
+                        public void onClick( DialogInterface dlg, int item ) {
+                            long[] rowids = {rowid};
+                            deleteNamedIfConfirmed( rowids, false );
+                        }
+                    };
+                ab.setNeutralButton( R.string.button_delete, neuLstnr );
             }
             dialog = ab.create();
         }
@@ -2255,7 +2266,7 @@ public class GamesListDelegate extends ListDelegateBase
         }
         if ( !haveDict ) {
             m_netLaunchInfo = nli;
-            showDialogFragment( DlgID.WARN_NODICT_NEW, 0L, nli.dict, nli.lang );
+            showDialogFragment( DlgID.WARN_NODICT_INVITED, 0L, nli.dict, nli.lang );
         }
         return haveDict;
     }
@@ -2286,7 +2297,8 @@ public class GamesListDelegate extends ListDelegateBase
             m_missingDictRowId = rowid;
             m_missingDictMenuId = forMenu;
             if ( 0 == DictLangCache.getLangCount( m_activity, missingDictLang ) ) {
-                showDialogFragment( DlgID.WARN_NODICT, rowid, missingDictName, missingDictLang );
+                showDialogFragment( DlgID.WARN_NODICT_GENERIC, rowid,
+                                    missingDictName, missingDictLang );
             } else if ( null != missingDictName ) {
                 showDialogFragment( DlgID.WARN_NODICT_SUBST, rowid, missingDictName,
                                     missingDictLang );
@@ -2457,7 +2469,10 @@ public class GamesListDelegate extends ListDelegateBase
         boolean handled = false;
         long[] rowids = DBUtils.getRowIDsFor( m_activity, gameID );
         if ( 0 < rowids.length ) {
-            launchGame( rowids[0] );
+            long rowid = rowids[0];
+            if ( checkWarnNoDict( rowid ) ) {
+                launchGame( rowid );
+            }
             handled = true;
         }
         return handled;
@@ -2674,14 +2689,32 @@ public class GamesListDelegate extends ListDelegateBase
         }
     }
 
-    private void deleteIfConfirmed( long[] rowids, boolean skipTell )
+    private void mkDeleteAlert( String msg, long[] rowids, boolean skipTell )
     {
-        String msg = getQuantityString( R.plurals.confirm_seldeletes_fmt,
-                                        rowids.length, rowids.length );
         makeConfirmThenBuilder( msg, Action.DELETE_GAMES )
             .setPosButton( R.string.button_delete )
             .setParams( rowids, skipTell )
             .show();
+    }
+
+    private void deleteIfConfirmed( long[] rowids, boolean skipTell )
+    {
+        String msg = getQuantityString( R.plurals.confirm_seldeletes_fmt,
+                                        rowids.length, rowids.length );
+        mkDeleteAlert( msg, rowids, skipTell );
+    }
+
+    private void deleteNamedIfConfirmed( long[] rowids, boolean skipTell )
+    {
+        String[] names = new String[rowids.length];
+        for ( int ii = 0; ii < rowids.length; ++ii ) {
+            names[ii] = DBUtils.getName( m_activity, rowids[ii] );
+        }
+        String namesStr = TextUtils.join( ", ", names );
+
+        String msg = getQuantityString( R.plurals.confirm_nameddeletes_fmt,
+                                        rowids.length, namesStr );
+        mkDeleteAlert( msg, rowids, skipTell );
     }
 
     private void deleteGames( long[] rowids, boolean skipTell )

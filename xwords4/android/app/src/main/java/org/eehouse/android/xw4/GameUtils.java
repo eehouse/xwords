@@ -403,8 +403,8 @@ public class GameUtils {
             String[] dictNames = gi.dictNames();
             DictUtils.DictPairs pairs = DictUtils.openDicts( context, dictNames );
             if ( pairs.anyMissing( dictNames ) ) {
-                Log.w( TAG, "loadMakeGame() failing: dicts %s unavailable",
-                       TextUtils.join( ",", dictNames ) );
+                postMoveDroppedForDictNotification( context, rowid, gi.gameID,
+                                                    gi.dictLang );
             } else {
                 String langName = gi.langName( context );
                 gamePtr = XwJNI.initFromStream( rowid, stream, gi, util, null,
@@ -1241,6 +1241,18 @@ public class GameUtils {
             Log.d( TAG, "postMoveNotification(): posting nothing for lack"
                    + " of brm" );
         }
+    }
+
+    private static void postMoveDroppedForDictNotification( Context context, long rowid,
+                                                            int gameID, int lang )
+    {
+        Intent intent = GamesListDelegate.makeGameIDIntent( context, gameID );
+
+        String langName = DictLangCache.getLangName( context, lang );
+        String body = LocUtils.getString( context, R.string.no_dict_for_move_fmt,
+                                          langName );
+        Utils.postNotification( context, intent, R.string.no_dict_for_move_title,
+                                body, rowid );
     }
 
     public static void postInvitedNotification( Context context, int gameID,
