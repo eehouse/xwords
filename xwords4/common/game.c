@@ -124,7 +124,6 @@ static const DictionaryCtxt*
 getDicts( const CurGameInfo* gi, XW_UtilCtxt* util, XWEnv xwe,
           XP_LangCode langCode, PlayerDicts* playerDicts )
 {
-    XW_DUtilCtxt* dutil = util_getDevUtilCtxt( util, xwe );
     const DictionaryCtxt* result = util_getDict( util, xwe, langCode, gi->dictName );
     XP_MEMSET( playerDicts, 0, sizeof(*playerDicts) );
     if ( !!result ) {

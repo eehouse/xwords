@@ -277,6 +277,17 @@ linux_util_getSquareBonus( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe), XP_U16 nCols,
     return result;
 } /* linux_util_getSquareBonus */
 
+static const DictionaryCtxt*
+linux_util_getDict( XW_UtilCtxt* uc, XWEnv xwe,
+                    XP_LangCode XP_UNUSED(lang), const XP_UCHAR* dictName )
+{
+    CommonGlobals* cGlobals = (CommonGlobals*)uc->closure;
+    LaunchParams* params = cGlobals->params;
+    DictionaryCtxt* result = linux_dictionary_make( MPPARM(uc->mpool) xwe,
+                                                    params, dictName, XP_TRUE );
+    return result;
+}
+
 static XW_DUtilCtxt*
 linux_util_getDevUtilCtxt( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe) )
 {
@@ -294,6 +305,7 @@ linux_util_vt_init( MPFORMAL XW_UtilCtxt* util )
 
     util->vtable->m_util_makeEmptyDict = linux_util_makeEmptyDict;
     util->vtable->m_util_getSquareBonus = linux_util_getSquareBonus;
+    util->vtable->m_util_getDict = linux_util_getDict;
 
     util->vtable->m_util_getDevUtilCtxt = linux_util_getDevUtilCtxt;
 }

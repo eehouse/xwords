@@ -294,6 +294,40 @@ and_util_informNetDict( XW_UtilCtxt* uc, XWEnv xwe, XP_LangCode lang,
     UTIL_CBK_TAIL();
 }
 
+const DictionaryCtxt*
+and_util_getDict( XW_UtilCtxt* uc, XWEnv xwe,
+                  XP_LangCode lang, const XP_UCHAR* dictName )
+{
+    XP_LOGFF( "(lang: %d, name: %s)", lang, dictName );
+    JNIEnv* env = xwe;
+    XW_DUtilCtxt* duc = util_getDevUtilCtxt( uc, xwe );
+
+    DictMgrCtxt* dictMgr = ((AndDUtil*)duc)->dictMgr;
+    DictionaryCtxt* dict = (DictionaryCtxt*)
+        dmgr_get( dictMgr, xwe, dictName );
+    if ( !dict ) {
+        jstring jname = (*env)->NewStringUTF( env, dictName );
+
+        jobjectArray jstrs = makeStringArray( env, 1, NULL );
+        jobjectArray jbytes = makeByteArrayArray( env, 1 );
+
+        DUTIL_CBK_HEADER( "getDictPath", "(ILjava/lang/String;[Ljava/lang/String;[[B)V" );
+        (*env)->CallVoidMethod( env, dutil->jdutil, mid, lang, jname, jstrs, jbytes );
+        DUTIL_CBK_TAIL();
+
+        jstring jpath = (*env)->GetObjectArrayElement( env, jstrs, 0 );
+        jbyteArray jdata = (*env)->GetObjectArrayElement( env, jbytes, 0 );
+
+        dict = makeDict( MPPARM(duc->mpool) xwe,
+                         TI_IF(&globalState->ti)
+                         dictMgr, ((AndDUtil*)duc)->jniutil,
+                         jname, jdata, jpath, NULL, false );
+        deleteLocalRefs( env, jname, jstrs, jbytes, jdata, jpath, DELETE_NO_REF );
+    }
+    LOG_RETURNF( "%p", dict );
+    return dict;
+}
+
 static void
 and_util_notifyGameOver( XW_UtilCtxt* uc, XWEnv xwe, XP_S16 XP_UNUSED(quitter) )
 {
@@ -808,41 +842,6 @@ and_dutil_md5sum( XW_DUtilCtxt* duc, XWEnv xwe, const XP_U8* ptr, XP_U32 len )
 }
 #endif
 
-const DictionaryCtxt*
-and_dutil_getDict( XW_DUtilCtxt* duc, XWEnv xwe,
-                   XP_LangCode lang, const XP_UCHAR* dictName )
-{
-    XP_LOGFF( "(lang: %d, name: %s)", lang, dictName );
-    JNIEnv* env = xwe;
-    AndDUtil* dutil = (AndDUtil*)duc;
-    JNIUtilCtxt* jniutil = dutil->jniutil;
-
-    DictMgrCtxt* dictMgr = dutil->dictMgr;
-    DictionaryCtxt* dict = (DictionaryCtxt*)
-        dmgr_get( dictMgr, xwe, dictName );
-    if ( !dict ) {
-        jstring jname = (*env)->NewStringUTF( env, dictName );
-
-        jobjectArray jstrs = makeStringArray( env, 1, NULL );
-        jobjectArray jbytes = makeByteArrayArray( env, 1 );
-
-        DUTIL_CBK_HEADER( "getDictPath", "(ILjava/lang/String;[Ljava/lang/String;[[B)V" );
-        (*env)->CallVoidMethod( env, dutil->jdutil, mid, lang, jname, jstrs, jbytes );
-        DUTIL_CBK_TAIL();
-
-        jstring jpath = (*env)->GetObjectArrayElement( env, jstrs, 0 );
-        jbyteArray jdata = (*env)->GetObjectArrayElement( env, jbytes, 0 );
-
-        dict = makeDict( MPPARM(duc->mpool) xwe,
-                         TI_IF(&globalState->ti)
-                         dictMgr, jniutil,
-                         jname, jdata, jpath, NULL, false );
-        deleteLocalRefs( env, jname, jstrs, jbytes, jdata, jpath, DELETE_NO_REF );
-    }
-    LOG_RETURNF( "%p", dict );
-    return dict;
-}
-
 static void
 and_dutil_notifyPause( XW_DUtilCtxt* duc, XWEnv xwe, XP_U32 gameID, DupPauseType pauseTyp,
                        XP_U16 pauser, const XP_UCHAR* name,
@@ -962,6 +961,7 @@ makeUtil( MPFORMAL JNIEnv* env,
     SET_PROC(notifyDupStatus);
     SET_PROC(informUndo);
     SET_PROC(informNetDict);
+    SET_PROC(getDict);
     SET_PROC(notifyGameOver);
 #ifdef XWFEATURE_HILITECELL
     SET_PROC(hiliteCell);
@@ -1067,7 +1067,6 @@ makeDUtil( MPFORMAL JNIEnv* env,
 #ifdef COMMS_CHECKSUM
     SET_DPROC(md5sum);
 #endif
-    SET_DPROC(getDict);
     SET_DPROC(notifyPause);
     SET_DPROC(onDupTimerChanged);
 

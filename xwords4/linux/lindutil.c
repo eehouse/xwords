@@ -63,16 +63,6 @@ static XP_UCHAR* linux_dutil_md5sum( XW_DUtilCtxt* duc, XWEnv xwe, const XP_U8* 
                                      XP_U32 len );
 #endif
 
-static const DictionaryCtxt*
-linux_dutil_getDict( XW_DUtilCtxt* duc, XWEnv xwe,
-                     XP_LangCode XP_UNUSED(lang), const XP_UCHAR* dictName )
-{
-    LaunchParams* params = (LaunchParams*)duc->closure;
-    DictionaryCtxt* result = linux_dictionary_make( MPPARM(duc->mpool) xwe,
-                                                    params, dictName, XP_TRUE );
-    return result;
-}
-
 static void
 linux_dutil_notifyPause( XW_DUtilCtxt* XP_UNUSED(duc), XWEnv XP_UNUSED(xwe),
                          XP_U32 XP_UNUSED_DBG(gameID),
@@ -173,7 +163,6 @@ linux_dutils_init( MPFORMAL VTableMgr* vtMgr, void* closure )
 #ifdef COMMS_CHECKSUM
     SET_PROC(md5sum);
 #endif
-    SET_PROC(getDict);
     SET_PROC(notifyPause);
     SET_PROC(onDupTimerChanged);
     SET_PROC(onInviteReceived);
