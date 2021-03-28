@@ -57,7 +57,6 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
     private static final String k_AVERS = "avers";
     private static final String k_VARIANT = "variant";
     private static final String k_GVERS = "gvers";
-    private static final String k_GHASH = "ghash";
     private static final String k_INSTALLER = "installer";
     private static final String k_DEVOK = "devOK";
     private static final String k_APP = "app";
@@ -141,9 +140,7 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
 
                 appParams.put( k_VARIANT, BuildConfig.VARIANT_CODE );
                 appParams.put( k_AVERS, versionCode );
-                // Look at whether server needs these duplicates. PENDING....
                 appParams.put( k_GVERS, BuildConfig.GIT_REV );
-                appParams.put( k_GHASH, BuildConfig.GIT_REV );
                 appParams.put( k_INSTALLER, installer );
                 if ( devOK( context ) ) {
                     appParams.put( k_DEVOK, true );
