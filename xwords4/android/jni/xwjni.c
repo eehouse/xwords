@@ -2245,29 +2245,22 @@ JNIEXPORT void JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_game_1summarize
 ( JNIEnv* env, jclass C, GamePtrType gamePtr, jobject jsummary )
 {
-    XWJNI_START();
-    ModelCtxt* model = state->game.model;
-    ServerCtxt* server = state->game.server;
-    XP_S16 nMoves = model_getNMoves( model );
-    setInt( env, jsummary, "nMoves", nMoves );
-    XP_Bool gameOver = server_getGameIsOver( server );
-    setBool( env, jsummary, "gameOver", gameOver );
-    XP_Bool isLocal = XP_FALSE;
-    setInt( env, jsummary, "turn", 
-            server_getCurrentTurn( server, &isLocal ) );
-    setBool( env, jsummary, "turnIsLocal", isLocal );
-    setInt( env, jsummary, "lastMoveTime", 
-            server_getLastMoveTime(server) );
-    setInt( env, jsummary, "dupTimerExpires",
-            server_getDupTimerExpires(server) );
+    XWJNI_START_GLOBALS();
+    GameSummary summary = {0};
+    game_summarize( &state->game, globals->gi, &summary );
+
+    setInt( env, jsummary, "nMoves", summary.nMoves );
+    setBool( env, jsummary, "gameOver", summary.gameOver );
+    setInt( env, jsummary, "turn", summary.turn );
+    setBool( env, jsummary, "turnIsLocal", summary.turnIsLocal );
+    setInt( env, jsummary, "lastMoveTime", summary.lastMoveTime );
+    setInt( env, jsummary, "dupTimerExpires", summary.dupTimerExpires );
     
     if ( !!state->game.comms ) {
         CommsCtxt* comms = state->game.comms;
         setInt( env, jsummary, "seed", comms_getChannelSeed( comms ) );
-        setInt( env, jsummary, "missingPlayers", 
-                server_getMissingPlayers( server ) );
-        setInt( env, jsummary, "nPacketsPending", 
-                comms_countPendingPackets( state->game.comms ) );
+        setInt( env, jsummary, "missingPlayers", summary.missingPlayers );
+        setInt( env, jsummary, "nPacketsPending", summary.nPacketsPending );
 
         CommsAddrRec addr;
         comms_getAddr( comms, &addr );
@@ -2317,9 +2310,10 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1summarize
         }
     }
 
+    ModelCtxt* model = state->game.model;
     XP_U16 nPlayers = model_getNPlayers( model );
     jint jvals[nPlayers];
-    if ( gameOver ) {
+    if ( summary.gameOver ) {
         ScoresArray scores;
         model_figureFinalScores( model, &scores, NULL );
         for ( int ii = 0; ii < nPlayers; ++ii ) {

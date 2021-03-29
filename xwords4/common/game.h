@@ -56,8 +56,10 @@ typedef struct _GameSummary {
     XP_Bool gameOver;
     XP_S8 turn;
     XP_U32 lastMoveTime;
+    XP_S32 dupTimerExpires;
     XP_U8 missingPlayers;
     XP_U8 nPacketsPending;
+    XP_S16 nMoves;
     XP_LangCode lang;
     XP_UCHAR opponents[64];
 } GameSummary;

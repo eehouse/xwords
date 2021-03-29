@@ -553,6 +553,8 @@ game_summarize( XWGame* game, CurGameInfo* gi, GameSummary* summary )
     summary->lastMoveTime = server_getLastMoveTime(server);
     summary->lang = gi->dictLang;
     summary->gameOver = server_getGameIsOver( server );
+    summary->nMoves = model_getNMoves( game->model );
+    summary->dupTimerExpires = server_getDupTimerExpires( server );
 
     for ( int ii = 0; ii < gi->nPlayers; ++ii ) {
         LocalPlayer* lp  = &gi->players[ii];
@@ -564,9 +566,8 @@ game_summarize( XWGame* game, CurGameInfo* gi, GameSummary* summary )
         }
     }
     if ( !!game->comms ) {
-        CommsCtxt* comms = game->comms;
         summary->missingPlayers = server_getMissingPlayers( server );
-        summary->nPacketsPending = comms_countPendingPackets( comms );
+        summary->nPacketsPending = comms_countPendingPackets( game->comms );
     }
 }
 

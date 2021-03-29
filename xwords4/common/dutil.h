@@ -36,9 +36,6 @@ typedef enum { UNPAUSED,
 
 typedef XP_Bool (*OnOneProc)(void* closure, const XP_UCHAR* keys[]);
 
-typedef void (*OnStoreProc)( void* closure, XP_Bool success );
-typedef void (*OnLoadProc)( void* closure, const char* key, void* data, int len );
-
 #define KEY_WILDCARD "*"
 
 typedef struct _DUtilVtable {
@@ -162,17 +159,5 @@ void dutil_super_init( MPFORMAL XW_DUtilCtxt* dutil );
     (duc)->vtable.m_dutil_onMessageReceived((duc),(xwe),(gameID),(from),(stream))
 #define dutil_onGameGoneReceived(duc, xwe, gameID, from)         \
     (duc)->vtable.m_dutil_onGameGoneReceived((duc),(xwe),(gameID),(from))
-
-/* #define dutil_storePtrAt( duc, xwe, data, len, keys )                   \ */
-/*     (duc)->vtable.m_dutil_storePtrAt((duc), (xwe), (data), (len), (keys)) */
-
-/* #define dutil_storeStreamAt( duc, xwe, stream, keys )                   \ */
-/*     (duc)->vtable.m_dutil_storeStreamAt((duc), (xwe), (stream), (keys)) */
-
-/* #define dutil_loadStreamAt( duc, xwe, inOut, keys, ... )                \ */
-/*     (duc)->vtable.m_dutil_loadStreamAt((duc), (xwe), (inOut), (keys)) */
-
-/* #define dutil_loadPtrAt( duc, xwe, ptr, lenp, keys )                    \ */
-/*     (duc)->vtable.m_dutil_loadPtrAt( (duc), (xwe), (ptr), (lenp), (keys)) */
 
 #endif
