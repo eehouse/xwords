@@ -42,7 +42,6 @@
                  style="@style/new_game_radio"
                  />
     <TextView android:id="@+id/choose_expl_default"
-              android:text="@string/choose_expl_default"
               style="@style/new_game_expl"
               />
 

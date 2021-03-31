@@ -1102,7 +1102,7 @@
     <string name="button_rematch">Revanche</string>
     <string name="filter_sum_pat_fmt">Exibindo: %1$s, de tamanho %2$d-%3$d (%4$d palavras)</string>
     <string name="invite_msg_extra_rematch">Com revanches, todos os convites necessários são enviados automaticamente. Mas você sempre pode enviar novos se um convidado não estiver respondendo.</string>
-    <string name="choose_expl_default">Iniciar uma partida solo utilizando os padrões atuais</string>
+    <string name="choose_expl_default_solo">Iniciar uma partida solo utilizando os padrões atuais</string>
     <string name="knowns_ts_fmt">Partida mais recente: %1$s</string>
     <string name="invite_choice_mqtt">Internet/MQTT</string>
     <string name="dupe_title_fmt">%1$s (dup.)</string>
