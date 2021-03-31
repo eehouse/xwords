@@ -3062,7 +3062,7 @@ pour la langue</string>
     <string name="choose_expl_config">OU commencez une partie après l\'avoir configurée, par ex. pour changer la langue ou le nombre de joueurs</string>
     <string name="choose_expl_known">OU commencez une partie avec quelqu\'un avec qui vous avez déjà joué, pas d\'invitation requise</string>
     <string name="choose_expl_new">Démarrez une partie en envoyant une invitation par e-mail, SMS ou même un code QR</string>
-    <string name="choose_expl_default">Démarrer une partie en solo en utilisant les paramètres par défaut actuels</string>
+    <string name="choose_expl_default_solo">Démarrer une partie en solo en utilisant les paramètres par défaut actuels</string>
     <string name="knowns_dup_name_fmt">Impossible de renommer « %1$s » en « %2$s ». « %2$s » est-il déjà utilisé \?</string>
     <string name="knowns_delete_confirm_fmt">Êtes-vous sûr de vouloir supprimer « %1$s » des Joueurs Connus  \?
 \n

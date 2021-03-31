@@ -104,6 +104,11 @@ public class NewWithKnowns extends LinearLayout
                                 R.id.names,
                                 R.id.expl_known,
             };
+
+            TextView tv = (TextView)findViewById(R.id.choose_expl_default);
+            int id = standalone ? R.string.choose_expl_default_solo
+                : R.string.choose_expl_default_net;
+            tv.setText(LocUtils.getString( context, id ) );
         }
 
         for ( int resID : toHide ) {

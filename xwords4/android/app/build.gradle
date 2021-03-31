@@ -1,6 +1,6 @@
 /* -*- compile-command: "find-and-gradle.sh inXw4dDeb"; -*- */
 /*
- * Copyright 2015 - 2020 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2015 - 2021 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -19,8 +19,8 @@
  */
 
 def INITIAL_CLIENT_VERS = 10
-def VERSION_CODE_BASE = 171
-def VERSION_NAME = '4.4.175'
+def VERSION_CODE_BASE = 172
+def VERSION_NAME = '4.4.176'
 def BUILD_INFO_NAME = "build-info.txt"
 
 // Not all variants use the same BT_UUID. Those with the same talk to
