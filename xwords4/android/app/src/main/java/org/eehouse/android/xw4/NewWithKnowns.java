@@ -98,8 +98,11 @@ public class NewWithKnowns extends LinearLayout
             toHide = new int[]{ R.id.radio_default, R.id.choose_expl_default,
             };
         } else {
-            toHide = new int[]{ R.id.radio_known, R.id.names, R.id.expl_known,
-                                R.id.radio_unknown, R.id.choose_expl_new,
+            toHide = new int[]{ R.id.radio_unknown,
+                                R.id.choose_expl_new,
+                                R.id.radio_known,
+                                R.id.names,
+                                R.id.expl_known,
             };
         }
 
@@ -128,27 +131,29 @@ public class NewWithKnowns extends LinearLayout
 
     void onButtonPressed( ButtonCallbacks procs )
     {
-        Context context = getContext();
-        String gameName = gameName();
-        switch ( mCurRadio ) {
-        case R.id.radio_known:
-            DBUtils.setStringFor( context, KP_NAME_KEY, mCurKnown );
-            procs.onUseKnown( mCurKnown, gameName );
-            break;
-        case R.id.radio_unknown:
-        case R.id.radio_default:
-            procs.onStartGame( gameName, mStandalone, false );
-            break;
-        case R.id.radio_configure:
-            procs.onStartGame( gameName, mStandalone, true );
-            break;
-        default:
-            Assert.failDbg();
-            break;
-        }
+        if ( 0 != mCurRadio ) {
+            Context context = getContext();
+            String gameName = gameName();
+            switch ( mCurRadio ) {
+            case R.id.radio_known:
+                DBUtils.setStringFor( context, KP_NAME_KEY, mCurKnown );
+                procs.onUseKnown( mCurKnown, gameName );
+                break;
+            case R.id.radio_unknown:
+            case R.id.radio_default:
+                procs.onStartGame( gameName, mStandalone, false );
+                break;
+            case R.id.radio_configure:
+                procs.onStartGame( gameName, mStandalone, true );
+                break;
+            default:
+                Assert.failDbg();   // fired
+                break;
+            }
 
-        String key = mStandalone ? KP_PREVSOLO_KEY : KP_PREVNET_KEY;
-        DBUtils.setIntFor( context, key, mCurRadio );
+            String key = mStandalone ? KP_PREVSOLO_KEY : KP_PREVNET_KEY;
+            DBUtils.setIntFor( context, key, mCurRadio );
+        }
     }
 
     private String gameName()
