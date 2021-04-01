@@ -3092,6 +3092,9 @@ public class GamesListDelegate extends ListDelegateBase
             .putExtra( REMATCH_NEWNAME_EXTRA, newName );
 
         if ( null != addrTypes ) {
+            if ( BuildConfig.NO_NEW_RELAY ) {
+                Assert.assertTrueNR( !addrTypes.contains(CommsConnType.COMMS_CONN_RELAY) );
+            }
             intent.putExtra( REMATCH_ADDRS_EXTRA, addrTypes.toInt() );
             if ( null != btAddr ) {
                 Assert.assertTrue( addrTypes.contains( CommsConnType.COMMS_CONN_BT ) );

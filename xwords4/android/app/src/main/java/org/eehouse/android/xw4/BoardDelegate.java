@@ -2956,6 +2956,10 @@ public class BoardDelegate extends DelegateBase
 
         if ( doIt ) {
             CommsConnTypeSet connTypes = summary.conTypes;
+            if ( BuildConfig.NO_NEW_RELAY ) {
+                connTypes.remove(CommsConnType.COMMS_CONN_RELAY);
+                relayID = null;
+            }
             String newName = summary.getRematchName( activity );
             Intent intent = GamesListDelegate
                 .makeRematchIntent( activity, rowid, groupID, gi, connTypes,
