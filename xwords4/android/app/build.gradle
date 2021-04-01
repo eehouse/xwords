@@ -113,6 +113,7 @@ android {
             buildConfigField "boolean", "HAVE_KNOWN_PLAYERS", "true"
             buildConfigField "boolean", "FOR_FDROID", "false"
             buildConfigField "boolean", "HAVE_PASSWORD", "false"
+            buildConfigField "boolean", "NO_NEW_RELAY", "true"
         }
 
         xw4GPlay {

@@ -51,12 +51,12 @@ public class CommsAddrRec implements Serializable {
         _COMMS_CONN_NONE,
         COMMS_CONN_IR,
         COMMS_CONN_IP_DIRECT,
-        COMMS_CONN_RELAY,
+        COMMS_CONN_RELAY(!BuildConfig.NO_NEW_RELAY),
         COMMS_CONN_BT,
         COMMS_CONN_SMS,
         COMMS_CONN_P2P,
         COMMS_CONN_NFC(false),
-        COMMS_CONN_MQTT(false);
+        COMMS_CONN_MQTT(BuildConfig.NO_NEW_RELAY);
 
         private boolean mIsSelectable = true;
 
@@ -137,11 +137,11 @@ public class CommsAddrRec implements Serializable {
                 for ( CommsConnType value : values ) {
                     int ord = value.ordinal();
                     if ( 0 != (bits & (1 << (ord - 1)))) {
-                        addWithCheck( value );
+                        add( value );
                     }
                 }
             } else if ( bits < values.length ) { // don't crash
-                addWithCheck( values[bits] );
+                add( values[bits] );
             } else {
                 Log.e( TAG, "<init>: bad bits value: 0x%x", inBits );
             }
@@ -169,7 +169,9 @@ public class CommsAddrRec implements Serializable {
         public static List<CommsConnType> getSupported( Context context )
         {
             List<CommsConnType> supported = new ArrayList<>();
-            supported.add( CommsConnType.COMMS_CONN_RELAY );
+            if ( !BuildConfig.NO_NEW_RELAY ) {
+                supported.add( CommsConnType.COMMS_CONN_RELAY );
+            }
             if ( BuildConfig.OFFER_MQTT ) {
                 supported.add( CommsConnType.COMMS_CONN_MQTT );
             }
@@ -216,20 +218,6 @@ public class CommsAddrRec implements Serializable {
             boolean result = CommsConnType._COMMS_CONN_NONE == typ ? true
                 : super.add( typ );
             return result;
-        }
-
-        public void addWithCheck( CommsConnType typ ) {
-            add( typ );
-            if ( BuildConfig.OFFER_MQTT && typ == CommsConnType.COMMS_CONN_RELAY ) {
-                add( CommsConnType.COMMS_CONN_MQTT );
-            }
-        }
-
-        public void removeWithCheck( CommsConnType typ ) {
-            remove( typ );
-            if ( typ == CommsConnType.COMMS_CONN_RELAY ) {
-                remove( CommsConnType.COMMS_CONN_MQTT );
-            }
         }
 
         @Override

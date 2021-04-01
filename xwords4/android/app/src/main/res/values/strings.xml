@@ -2372,12 +2372,24 @@
   devices.</string>
     <string name="confirm_drop_relay_sms">Not all carriers support play
   via Data SMS.</string>
-    <string name="button_enable">Enable</string>
-    <string name="not_again_comms_relay">The “relay” is a server on
+  <string name="button_enable">Enable</string>
+    <!-- Won't be shown much longer if at all.... -->
+    <string name="not_again_comms_relay_depr">The “relay” is a server
+    for passing messages between devices running CrossWords. It’s
+    being replaced by a more modern server called
+    “Mosquitto.”</string>
+
+    <!-- Message shown to users as a hint when they enable
+         play-via-internet in the connect-via dialog, e.g. when
+         configuring a new game. -->
+    <string name="not_again_comms_mqtt">There is a server on
   the internet that passes messages between devices that are running
   CrossWords. It works any time you have a fully-functional internet
   connection, but might have problems on restricted WiFi
   networks.</string>
+    <!-- Message shown to users as a hint when they enable
+         play-via-data-sms in the connect-via dialog, e.g. when
+         configuring a new game. -->
     <string name="not_again_comms_sms">Play via Data SMS uses the
   technology on which “texting” is built. Though the messages are
   invisible to you, your carrier bills them as texts, so you want to
@@ -2385,11 +2397,16 @@
   budget.) Note that Android only supports this feature on devices on
   a GSM carrier, i.e. every carrier in the world except Verizon and
   Sprint.</string>
+    <!-- Message shown to users as a hint when they enable
+         play-via-Bluetooth in the connect-via dialog, e.g. when
+         configuring a new game. -->
     <string name="not_again_comms_bt">Use Bluetooth to play against a
   nearby device that’s “paired” with yours.</string>
     <string name="not_again_comms_p2p">Use WiFi Direct to play against a
   nearby WiFi Direct-capable device with CrossWords installed.</string>
     <string name="str_no_hint_found">Cannot find any moves</string>
+  <!-- Shown when user tries to use "Rematch" feature in a three- or
+       four-device game -->
     <string name="not_again_rematch_two_only">Rematch is limited to
   two-person games, at least for now, because it’s harder with more
   devices and I think it’s rare that people play with more than
@@ -2648,10 +2665,8 @@
          relay. Currently I use this only for testing.  -->
     <string name="remote_msg_title">Remote message</string>
     <!-- MQTT stuff. May not see the light of day -->
-    <string name="invite_choice_mqtt">Internet/MQTT</string>
+    <string name="invite_choice_mqtt">Internet</string>
     <string name="mqtt_invite_title">MQTT Invitation</string>
-    <string name="not_again_comms_mqtt">I’m experimenting with this
-    as a replacement for the relay.</string>
     <!-- Title of menuitem that launches Known Players viewer -->
     <string name="gamel_menu_knownplyrs">Known Players…</string>
     <string name="knowns_expl">These are your known remote

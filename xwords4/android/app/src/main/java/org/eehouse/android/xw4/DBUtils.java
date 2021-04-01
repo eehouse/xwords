@@ -370,8 +370,13 @@ public class DBUtils {
         }
     } // saveSummary
 
-    public static void addRematchInfo( Context context, long rowid, CommsAddrRec addr )
+    public static void addRematchInfo( Context context, long rowid,
+                                       CommsAddrRec addr )
     {
+        if ( BuildConfig.NO_NEW_RELAY ) {
+            addr.remove(CommsConnType.COMMS_CONN_RELAY);
+        }
+
         try ( GameLock lock = GameLock.tryLock(rowid) ) {
             if ( null != lock ) {
                 String as64 = Utils.serializableToString64( addr );

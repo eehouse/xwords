@@ -317,8 +317,11 @@ public class GameConfigDelegate extends DelegateBase
 
             DialogInterface.OnClickListener lstnr =
                 new DialogInterface.OnClickListener() {
+                    @Override
                     public void onClick( DialogInterface dlg, int button ) {
                         m_conTypes = items.getTypes();
+                        // Remove it if it's actually possible it's there
+                        Assert.assertTrueNR( !m_conTypes.contains( CommsConnType.COMMS_CONN_RELAY ) );
                         if ( cb.isChecked()) {
                             XWPrefs.setAddrTypes( m_activity, m_conTypes );
                         }

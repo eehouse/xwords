@@ -517,7 +517,7 @@ public class XWPrefs {
         if ( -1 == flags ) {
             result = new CommsConnTypeSet();
             if ( getRelayEnabled( context ) ) {
-                result.addWithCheck( CommsConnType.COMMS_CONN_RELAY );
+                result.add( CommsConnType.COMMS_CONN_RELAY );
             }
             if ( BTUtils.BTEnabled() ) {
                 result.add( CommsConnType.COMMS_CONN_BT );

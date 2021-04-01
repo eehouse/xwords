@@ -102,9 +102,9 @@ public class ConnViaViewLayout extends LinearLayout {
                         if ( isChecked ) {
                             showNotAgainTypeTip( typf );
                             enabledElseWarn( typf );
-                            m_curSet.addWithCheck( typf );
+                            m_curSet.add( typf );
                         } else {
-                            m_curSet.removeWithCheck( typf );
+                            m_curSet.remove( typf );
                             if ( null != m_emptyWarner && 0 == m_curSet.size()) {
                                 m_emptyWarner.typeSetEmpty();
                             }
@@ -151,7 +151,7 @@ public class ConnViaViewLayout extends LinearLayout {
             int msgID = 0;
             switch( typ ) {
             case COMMS_CONN_RELAY:
-                msgID = R.string.not_again_comms_relay;
+                msgID = R.string.not_again_comms_relay_depr;
                 keyID = R.string.key_na_comms_relay;
                 break;
             case COMMS_CONN_SMS:
