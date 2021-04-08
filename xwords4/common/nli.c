@@ -250,9 +250,17 @@ logNLI( const NetLaunchInfo* nli, const char* callerFunc, const int callerLine )
 {
     XP_LOGFF( "called by %s(), line %d", callerFunc, callerLine );
 
-    XP_UCHAR buf[256];
-    XP_SNPRINTF( buf, VSIZE(buf), "{ctyps: %x, nPlayersT: %d; nPlayersH: %d; "
-                 "gameID: %d; inviteID: %s, mqttid: %s}", nli->_conTypes,
+    XP_UCHAR conTypes[128] = {0};
+    int offset = 0;
+    CommsConnType typ;
+    for ( XP_U32 state = 0; types_iter( nli->_conTypes, &typ, &state ); ) {
+        const char* asstr = ConnType2Str( typ );
+        offset += XP_SNPRINTF( &conTypes[offset], sizeof(conTypes)-offset, "%s,", asstr );
+    }
+
+    XP_UCHAR buf[256+128];
+    XP_SNPRINTF( buf, VSIZE(buf), "{ctyps: [%s], nPlayersT: %d; nPlayersH: %d; "
+                 "gameID: %d; inviteID: %s, mqttid: %s}", conTypes,
                  nli->nPlayersT, nli->nPlayersH, nli->gameID, nli->inviteID,
                  nli->mqttDevID );
     XP_LOGF( "%s", buf );
