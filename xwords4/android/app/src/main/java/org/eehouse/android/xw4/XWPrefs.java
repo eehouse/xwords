@@ -517,7 +517,11 @@ public class XWPrefs {
         if ( -1 == flags ) {
             result = new CommsConnTypeSet();
             if ( getRelayEnabled( context ) ) {
-                result.add( CommsConnType.COMMS_CONN_RELAY );
+                if ( BuildConfig.NO_NEW_RELAY ) {
+                    result.add( CommsConnType.COMMS_CONN_MQTT );
+                } else {
+                    result.add( CommsConnType.COMMS_CONN_RELAY );
+                }
             }
             if ( BTUtils.BTEnabled() ) {
                 result.add( CommsConnType.COMMS_CONN_BT );
@@ -527,9 +531,12 @@ public class XWPrefs {
         }
 
         // Save it if changed
-        int siz = result.size();
+        int originalHash = result.hashCode();
         CommsConnTypeSet.removeUnsupported( context, result );
-        if ( result.size() != siz ) {
+        if ( 0 == result.size() ) {
+            result.add( CommsConnType.COMMS_CONN_MQTT );
+        }
+        if ( originalHash != result.hashCode() ) {
             setAddrTypes( context, result );
         }
 
