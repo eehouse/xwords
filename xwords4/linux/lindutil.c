@@ -130,6 +130,19 @@ linux_dutil_onGameGoneReceived( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe),
     }
 }
 
+static void
+linux_dutil_ackMQTTMsg( XW_DUtilCtxt* duc, XWEnv xwe, XP_U32 gameID,
+                        const MQTTDevID* senderID, const XP_U8* msg, XP_U16 len )
+{
+    XP_USE(duc);
+    XP_USE(xwe);
+    XP_USE(gameID);
+    XP_USE(senderID);
+    XP_USE(msg);
+    XP_USE(len);
+    XP_LOGFF( "doing nothing" );
+}
+
 XW_DUtilCtxt*
 linux_dutils_init( MPFORMAL VTableMgr* vtMgr, void* closure )
 {
@@ -168,6 +181,7 @@ linux_dutils_init( MPFORMAL VTableMgr* vtMgr, void* closure )
     SET_PROC(onInviteReceived);
     SET_PROC(onMessageReceived);
     SET_PROC(onGameGoneReceived);
+    SET_PROC(ackMQTTMsg);
 
 # undef SET_PROC
 

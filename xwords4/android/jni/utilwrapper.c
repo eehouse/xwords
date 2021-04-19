@@ -29,6 +29,7 @@
 #include "LocalizedStrIncludes.h"
 #include "dbgutil.h"
 #include "nli.h"
+#include "strutils.h"
 
 #define MAX_QUANTITY_STRS 4
 
@@ -919,6 +920,23 @@ and_dutil_onGameGoneReceived( XW_DUtilCtxt* duc, XWEnv xwe, XP_U32 gameID,
     DUTIL_CBK_TAIL();
 }
 
+static void
+and_dutil_ackMQTTMsg( XW_DUtilCtxt* duc, XWEnv xwe, XP_U32 gameID,
+                      const MQTTDevID* senderID, const XP_U8* msg, XP_U16 len )
+{
+    DUTIL_CBK_HEADER( "ackMQTTMsg", "(ILjava/lang/String;[B)V" );
+
+    XP_UCHAR tmp[32];
+    formatMQTTDevID( senderID, tmp, VSIZE(tmp) );
+    jstring jdevid = (*env)->NewStringUTF( env, tmp );
+    jbyteArray jmsg = makeByteArray( env, len, (const jbyte*)msg );
+
+    (*env)->CallVoidMethod( env, dutil->jdutil, mid, gameID, jdevid, jmsg );
+
+    deleteLocalRefs( env, jdevid, jmsg, DELETE_NO_REF );
+    DUTIL_CBK_TAIL();
+}
+
 XW_UtilCtxt*
 makeUtil( MPFORMAL JNIEnv* env,
 #ifdef MAP_THREAD_TO_ENV
@@ -1073,6 +1091,7 @@ makeDUtil( MPFORMAL JNIEnv* env,
     SET_DPROC(onInviteReceived);
     SET_DPROC(onMessageReceived);
     SET_DPROC(onGameGoneReceived);
+    SET_DPROC(ackMQTTMsg);
 
 #undef SET_DPROC
 

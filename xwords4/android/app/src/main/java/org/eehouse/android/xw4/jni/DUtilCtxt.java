@@ -372,4 +372,9 @@ public class DUtilCtxt {
         Assert.assertTrueNR( from.contains( CommsAddrRec.CommsConnType.COMMS_CONN_MQTT ) );
         MQTTUtils.handleGameGone( m_context, from, gameID );
     }
+
+    public void ackMQTTMsg( int gameID, String senderID, byte[] msg )
+    {
+        MQTTUtils.ackMessage( m_context, gameID, senderID, msg );
+    }
 }

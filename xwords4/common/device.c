@@ -223,15 +223,23 @@ dvc_parseMQTTPacket( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_U8* buf, XP_U16 le
         XP_LOGFF( "read proto %d, expected %d; dropping packet",
                   proto, PROTO_1 );
     } else {
-        MQTTDevID myID;
-        stream_getBytes( stream, &myID, sizeof(myID) );
-        myID = be64toh( myID );
+        MQTTDevID senderID;
+        stream_getBytes( stream, &senderID, sizeof(senderID) );
+        senderID = be64toh( senderID );
+#ifdef DEBUG
+        XP_UCHAR tmp[32];
+        formatMQTTDevID( &senderID, tmp, VSIZE(tmp) );
+        XP_LOGFF( "senderID: %s", tmp );
+#endif
 
         MQTTCmd cmd;
         XP_U32 gameID = 0;
 
         gameID = stream_getU32( stream );
         cmd = stream_getU8( stream );
+
+        /* Need to ack even if discarded/malformed */
+        dutil_ackMQTTMsg( dutil, xwe, gameID, &senderID, buf, len );
 
         switch ( cmd ) {
         case CMD_INVITE: {
@@ -245,7 +253,7 @@ dvc_parseMQTTPacket( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_U8* buf, XP_U16 le
         case CMD_MSG: {
             CommsAddrRec from = {0};
             addr_addType( &from, COMMS_CONN_MQTT );
-            from.u.mqtt.devID = myID;
+            from.u.mqtt.devID = senderID;
             if ( CMD_MSG == cmd ) {
                 dutil_onMessageReceived( dutil, xwe, gameID, &from, stream );
             } else if ( CMD_DEVGONE == cmd ) {

@@ -483,6 +483,27 @@ public class MQTTUtils extends Thread implements IMqttActionListener, MqttCallba
         addToSendQueue( context, topic[0], packet );
     }
 
+    public static void ackMessage( Context context, int gameID,
+                                   String senderDevID, byte[] payload )
+    {
+        String sum = Utils.getMD5SumFor( payload );
+        JSONObject params = new JSONObject();
+        try {
+            params.put( "sum", sum );
+            params.put( "gid", gameID );
+            // params.put( "from", senderDevID );
+            // params.put( "to", XwJNI.dvc_getMQTTDevID( null ) );
+
+            HttpsURLConnection conn
+                = NetUtils.makeHttpsMQTTConn( context, "ack" );
+            String resStr = NetUtils.runConn( conn, params, true );
+            Log.d( TAG, "runConn(ack) => %s", resStr );
+        } catch ( JSONException je ) {
+            Log.e( TAG, "ackMessage() ex: %s", je );
+        }
+    }
+
+    // MqttCallbackExtended
     @Override
     public void connectComplete(boolean reconnect, String serverURI)
     {
@@ -498,7 +519,7 @@ public class MQTTUtils extends Thread implements IMqttActionListener, MqttCallba
     }
 
     @Override
-    public void messageArrived( String topic, MqttMessage message) throws Exception
+    public void messageArrived( String topic, MqttMessage message ) throws Exception
     {
         Log.d( TAG, "%H.messageArrived(topic=%s)", this, topic );
         Assert.assertTrueNR( topic.equals(mTopic) );
@@ -533,6 +554,7 @@ public class MQTTUtils extends Thread implements IMqttActionListener, MqttCallba
         }
     }
 
+    // IMqttActionListener
     @Override
     public void onSuccess( IMqttToken asyncActionToken )
     {
