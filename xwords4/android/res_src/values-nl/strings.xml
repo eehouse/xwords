@@ -675,7 +675,6 @@
     <string name="confirm_drop_relay_bt">Bluetooth werkt alleen voor apparaten in de buurt.</string>
     <string name="confirm_drop_relay_sms">Niet alle providers ondersteunen spelen via SMS.</string>
     <string name="button_enable">Schakel in</string>
-    <string name="not_again_comms_relay">De \"relay\" is een server op het internet die berichten doorstuurt tussen apparaten die CrossWords hebben draaien. Het werkt altijd op een goede internetverbinding, maar kan problemen hebben op WiFi netwerken met restricties.</string>
     <string name="not_again_comms_sms">Spelen via SMS gebruikt dezelfde technologie als gewone SMS. Ook al zie je de berichten niet, je provider zal ze wel als SMS berichten rekenen, dus je wilt deze optie niet aanzetten tenzij je ongelimiteerd gratis SMS kan versturen. Let erop dat Android deze functie alleen ondersteund op apparaten met een GSM provider, dat wil zeggen elke provider ter wereld behalve Verizon en Sprint.</string>
     <string name="not_again_comms_bt">Gebruik Bluetooth om te spelen tegen een dichtbijzijnd apparaat dat \"gepaard\" is met jouw apparaat.</string>
     <string name="str_no_hint_found">Kon geen zetten vinden</string>

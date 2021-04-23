@@ -715,7 +715,6 @@
     <string name="confirm_drop_relay_bt">Bluetooth funktioniert nur für Geräte in Reichweite.</string>
     <string name="confirm_drop_relay_sms">Nicht alle Mobilfunkanbieter unterstützen das Spielen per Daten-SMS.</string>
     <string name="button_enable">Aktivieren</string>
-    <string name="not_again_comms_relay">Die „Zwischenstation“ ist ein Server im Internet, der Nachrichten zwischen Geräten weiterleitet, auf denen CrossWords läuft. Sie funktioniert immer, wenn Sie eine voll funktionsfähige Internetverbindung haben, kann aber Probleme mit eingeschränkten WLAN-Netwerken haben.</string>
     <string name="not_again_comms_sms">Das Spielen per Daten-SMS nutzt die Technologie, auf der das „Texten” aufgebaut ist. Obwohl die Nachrichten für Sie unsichtbar sind, stellt Ihr Netzbetreiber sie als SMS in Rechnung, so dass Sie diese Funktion vermeiden möchten, es sei denn, Sie haben eine SMS-Flat (oder Budget.) Beachten Sie, dass Android diese Funktion nur auf Geräten eines GSM-Netzbetreiber unterstützt, d.h. allen Netzbetreibern der Welt außer Verizon und Sprint.</string>
     <string name="not_again_comms_bt">Benutzen Sie Bluetooth, um gegen ein Gerät in Reichweite zu spielen, das mit Ihrem „gepaart“ ist.</string>
     <string name="not_again_comms_p2p">"Benutzen Sie Wi-Fi-Direct, um gegen ein Gerät mit  Wi-Fi-Direct-Unterstützung in Reichweite zu spielen, auf dem CrossWords installiert ist."</string>

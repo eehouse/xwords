@@ -1037,7 +1037,6 @@
     </plurals>
     <string name="show_fcm_title">Mostrar recebidos FCM</string>
     <string name="show_sms_title">Mostrar dados que SMS envia, recebe</string>
-    <string name="not_again_comms_relay">O “relay” é um servidor na internet que passa mensagens entre dispositivos que rodam o CrossWords. Ele funciona sempre que tiver uma rede de internet totalmente funcional, mas pode ter problemas em redes WiFi restritas.</string>
     <string name="seeking_relay">Conectando ao relay…</string>
     <string name="got_langdict_title">Captar lista de palavras padrão para o idioma</string>
     <string name="expl_mqtt_url">URL para nova API de relay baseada em MQTT</string>

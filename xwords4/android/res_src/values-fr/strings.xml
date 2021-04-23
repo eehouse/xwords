@@ -2873,7 +2873,6 @@ pour la langue</string>
     <string name="notify_chat_title_fmt">Message de discussion dans la partie %1$s</string>
     <string name="notify_chat_body_fmt">%1$s : %2$s</string>
     <string name="button_enable">Activer</string>
-    <string name="not_again_comms_relay">Le « relai» est un serveur sur Internet qui permet l\'échange de messages entre appareils qui font tourner CrossWords. Il fonctionne dès que vous avez une connexion à Internet pleinement fonctionnelle, mais peut avoir des problèmes sur des réseaux Wifi restreints.</string>
     <string name="not_again_comms_sms">Les parties par MMS utilisent la même technologie que l\'envoi de SMS normaux. Bien que les messages soient invisibles pour vous, votre opérateur les considère comme des messages normaux, donc vous pourriez vouloir éviter cette fonctionnalité si vous n\'avez pas un forfait (ou un budget) illimité.</string>
     <string name="not_again_comms_bt">Utilisez le Bluetooth pour jouer contre un appareil à proximité qui est « appairé » au vôtre.</string>
     <string name="str_no_hint_found">Ne peut trouver aucun coup</string>

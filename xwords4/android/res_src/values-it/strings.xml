@@ -160,7 +160,6 @@
     <string name="not_again_comms_p2p">Usa WiFi direct per giocare contro un dispositivo con WiFi Direct attivo che ha installato CrossWords.</string>
     <string name="not_again_comms_bt">Usa Bluetooth per giocare contro un dispositivo nelle vicinanze \"associato\" al tuo.</string>
     <string name="not_again_comms_sms">La partita via dati SMS usa la tecnologia su cui si basano i messaggi di testo. Anche se questi messaggi sono invisibili per te, verranno applicati gli stessi costi dei messaggi, consigliamo di non attivare questa funzione, a meno che non abbia una tariffa per messaggi illimitati (o sufficiente credito). Ti informiamo che solo Android supporta questa funzione tramite operatori GSM, nello specifico è supportato da tutti i gestori tranne Verizon e Sprint.</string>
-    <string name="not_again_comms_relay">Il \"Server\" passa le informazioni via internet tra i dispositivi che hanno installato CrossWords. Funziona ogni volta che hai una connessione internet attiva, ma potrebbe avere dei problemi relativi alle connessioni in WiFi.</string>
     <string name="button_enable">Attiva</string>
     <string name="confirm_drop_relay_sms">Non tutte le versioni supportano la partita via dati SMS.</string>
     <string name="confirm_drop_relay_bt">Il Bluetooth funziona solo su dispositivi vicini.</string>

@@ -685,7 +685,6 @@
     <string name="confirm_drop_relay_bt">Bluetooth は、近くのデバイスとだけ動作します。</string>
     <string name="confirm_drop_relay_sms">データ SMS 経由のプレイは、すべてのキャリアがサポートするわけではありません。</string>
     <string name="button_enable">有効</string>
-    <string name="not_again_comms_relay">\"リレー\" は、クロスワードを実行しているデバイス間でメッセージを渡すインターネット上のサーバーです。いつでも完全に機能するインターネット接続がある場合に動作しますが、制限された WiFi ネットワークで問題がある可能性があります。</string>
     <string name="not_again_comms_sms">データ SMS 経由のプレイは、\"テキスト メッセージ\" が構築されている技術を使用しています。メッセージは表示されませんが、通信事業者はテキストとして請求するので、無制限のテキストメッセージの料金プラン (または予算) の場合を除き、この機能は使用しないようにしてください。Android は GSM キャリアのデバイス、すなわちベライゾンとスプリントを除く世界中のすべてのキャリアでこの機能をサポートしています。</string>
     <string name="not_again_comms_bt">Bluetooth を使用して、あなたと \"ペア\" の近くのデバイスと対戦します。</string>
     <string name="str_no_hint_found">移動は見つかりません</string>
