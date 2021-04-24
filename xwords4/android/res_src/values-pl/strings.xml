@@ -769,7 +769,6 @@
     <string name="confirm_drop_relay_bt">Funkcja Bluetooth działa tylko w przypadku urządzeń znajdujących się w pobliżu.</string>
     <string name="confirm_drop_relay_sms">Nie wszyscy operatorzy obsługują grę za pośrednictwem wiadomości Data SMS.</string>
     <string name="button_enable">Włącz</string>
-    <string name="not_again_comms_relay">„Przekaźnik” to serwer w Internecie, który przekazuje wiadomości między urządzeniami, na których działa CrossWords. Działa za każdym razem, gdy masz w pełni funkcjonalne połączenie internetowe, ale może mieć problemy z ograniczonymi sieciami WiFi.</string>
     <string name="not_again_comms_sms">Gra za pomocą wiadomości Data SMS wykorzystuje tę samą technologię, co „SMS-y”. Chociaż wiadomości są dla Ciebie niewidoczne, Twój operator uważa je za teksty, więc chcesz uniknąć tej funkcji, chyba że masz nieograniczony plan SMS-ów (lub budżet), tj. każdy operator na świecie z wyjątkiem Verizon i Sprint.</string>
     <string name="not_again_comms_bt">Użyj Bluetooth, aby grać przeciwko pobliskiemu urządzeniu, które jest „sparowane” z Twoim.</string>
     <string name="not_again_comms_p2p">Użyj WiFi Direct, aby zagrać z pobliskim urządzeniem obsługującym WiFi Direct z zainstalowanym CrossWords.</string>

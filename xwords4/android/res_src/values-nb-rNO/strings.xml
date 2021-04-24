@@ -830,7 +830,6 @@
     <string name="drop_relay_warning_fmt">(Dette spillet kan også koble til via %1$s, slik at du kan sette opp spillet uten en relétilkobling.)</string>
     <string name="confirm_drop_relay">Er du sikker på at du vil utelate dette spillets mulighet til å kommunisere via relé-et?</string>
     <string name="wifi_warning">" For eksempel, kan det hende du vil være på et forskjellig Wi-Fi-nettverk."</string>
-    <string name="not_again_comms_relay">\"Relé-et\" er en tjener på Internett som sender meldinger mellom enheter som kjører CrossWords. Det fungerer når du har en fungerende internettilknytning, men kan være problematisk på begrensede Wi-Fi-nettverk.</string>
     <string name="not_again_comms_sms">Spill via SMS bruker samme teknologi som \"teksting\". Selv om meldingene er usynlig for deg, vil din tilbyder anse dem som SMS, så du bør unngå denne funksjonen med mindre du har ubegrenset SMS (eller budsjettet). Merk at Android kun støtter denne funksjonen på enheter på en GSM-tilbyder.</string>
     <string name="not_again_comms_bt">Bruk Blåtann for å spille mot enheter i nærheten som er parret med din.</string>
     <string name="not_again_comms_p2p">Bruk Wi-Fi Direct for å spille mot enheter i nærheten som støtter det, og som har CrossWords installert.</string>

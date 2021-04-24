@@ -660,7 +660,6 @@ Introduïu el vostre nom aquí. S\'usarà en crear partides noves. (Podreu
     <string name="wifi_warning">" Per exemple, potser necessitareu estar en una xarxa WiFi diferent."</string>
     <string name="confirm_drop_relay_bt">Bluetooth només per a aparells propers.</string>
     <string name="confirm_drop_relay_sms">No totes les operadores permeten jugar via SMS de dades.</string>
-    <string name="not_again_comms_relay">El «repetidor» és un servidor d\'Internet que passa els missatges entre els aparells que executen el CrossWords. Això funciona bé si teniu una connexió a Internet plenament funcional, però podeu tenir problemes en xarxes WiFi restringides.</string>
     <string name="not_again_comms_sms">Jugar via SMS usa la mateixa tecnologia que els missatges SMS. Els missatges seran invisibles, l\'operadora els considera missatges de text, per tant potser preferiu inhabilitar aquesta característica llevat que tingueu missatges SMS il·limitats (o un bon pressupost). Noteu que l\'Android només permet aquesta característica en els dispositius amb operadora GSM, això és qualsevol operadora mundial, excepte Verizon i Sprint.</string>
     <string name="not_again_comms_bt">Useu Bluetooth per a jugar contra un aparell proper que estigui aparellat amb el vostre.</string>
     <string name="force_tablet_title">Voleu usar la disposició de tauleta (costat per costat)?</string>

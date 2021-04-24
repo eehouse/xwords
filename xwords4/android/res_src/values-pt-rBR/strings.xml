@@ -53,8 +53,12 @@
     <string name="invit_expl_usrsms_fmt">Convite enviado via SMS no %1$s</string>
     <string name="invit_expl_sms_fmt">Convite enviado via Dados de SMS para o número de telefone %1$s no %2$s</string>
     <plurals name="invite_msg_fmt">
-        <item quantity="one">Esta partida está aguardando um jogador remoto responder aos convites.</item>
-        <item quantity="other">Esta partida está aguardando %1$d jogadores remotos responderem aos convites.</item>
+        <item quantity="one">Esta partida está aguardando um jogador remoto responder aos convites.
+\n
+\nVocê verá esta mensagem até que o jogador convidado tenha respondido. Se você suspeita que o convite que enviou foi perdido, não há mal nenhum em enviar outro.</item>
+        <item quantity="other">Esta partida está aguardando os %1$d jogadores remotos responder aos convites.
+\n
+\nVocê verá esta mensagem até que os jogadores convidados tenham respondido. Se você suspeita que os convites que enviou foram perdidos, não há mal nenhum em enviar outro.</item>
     </plurals>
     <string name="no_moves_made">(Sem jogadas ainda)</string>
     <string name="force_expl">Em um partida com muitos dispositivos deve ter pelo menos um jogador desse dispositivo e outro não. Por favor, verifique os jogadores remotos.</string>
@@ -252,7 +256,7 @@
     <string name="green">Verde</string>
     <string name="red">Vermelho</string>
     <string name="cellline">Linhas do quadro</string>
-    <string name="key_bonushint">Dica de bônus no quadrado</string>
+    <string name="key_bonushint">Bônus do texto quadrado</string>
     <string name="empty">Célula vazia/cores de fundo</string>
     <string name="background">Cores de fundo do quadro</string>
     <string name="tile_back">Cores de fundo do quadrado</string>
@@ -262,7 +266,7 @@
     <string name="bonus_l3x">Letra tripla</string>
     <string name="bonus_l2x">Letra dupla</string>
     <string name="prefs_colors_summary">Editar cores usadas no quadro</string>
-    <string name="prefs_colors">Cores individuais</string>
+    <string name="prefs_colors">Cores do tabuleiro</string>
     <string name="board_line_pct">espessura da linha da célula (percentagem, limite de 1 a 25)</string>
     <string name="keep_screenon_summary">Manter a tela do quadro ligada por 10 min</string>
     <string name="keep_screenon">Manter a tela ligada</string>
@@ -293,7 +297,7 @@
     <string name="no_dict_subst_fmt">Não é possível abrir o jogo “%1$s” porque a lista de palavra %2$s não foi encontrada. (Pode ter sido deletada, ou armazenada em um cartão de memória externo que não está mais disponível.)
 \n
 \nVocê pode baixar uma reposição ou substituir outra %3$s lista de palavra.</string>
-    <string name="no_dict_fmt">Jogo “%1$s” requer uma %2$s lista de palavra. Por favor, baixe uma antes de abrir.</string>
+    <string name="no_dict_fmt">Jogo “%1$s” requer uma %2$s lista de palavra. Por favor, baixe uma para abrir.</string>
     <string name="button_close_game">Fechar jogo</string>
     <string name="no_dict_title">Lista de palavras não encontrada</string>
     <string name="downloading_dict_fmt">Baixando %1$s…</string>
@@ -614,13 +618,13 @@
     <string name="invite_dict_missing_body_noname_fmt">Você foi convidado a jogar CrossWords usando a lista de palavras %2$s (para jogar em %3$s), mas ela não está instalada. Gostaria de baixar a lista de palavras\?</string>
     <string name="invite_dict_missing_body_fmt">%1$s te convidou a jogar CrossWords usando a lista de palavras %2$s (para jogar em %3$s), mas ela não está instalada. Gostaria de baixar a lista de palavras ou recusar o convite\?</string>
     <string name="invite_dict_missing_title">Lista de palavras faltando</string>
-    <string name="knowns_dup_name_fmt">Incapaz de mudar o nome de “%1$s” para “%2$s”. “%2$s” já está em uso\?</string>
+    <string name="knowns_dup_name_fmt">Não foi possível mudar o nome de “%1$s” para “%2$s”. “%2$s” já está em uso\?</string>
     <string name="knowns_rename_title">Renomear Jogador</string>
     <string name="knowns_delete_confirm_fmt">Tem certeza que quer deletar o Jogador Conhecido “%1$s”\?
 \n
-\n(Esta ação não pode ser desfeita.)</string>
+\n(Esta ação não pode ser desfeita. mas os jogadores podem reaparecer se você ainda tiver jogos ativos com eles.)</string>
     <string name="player_edit_name">Mudar nome</string>
-    <string name="knowns_expl">Estes são jogadores remotos que o CrossWords viu vezes o bastante para saber como convidá-los rapidamente para jogos novos. Por padrão os nomes são os que o usuário remoto escolheu, mas você pode editá-los se quiser.</string>
+    <string name="knowns_expl">Estes são os seus jogadores remotos conhecidos. Seus nomes são padronizados de acordo com o que o jogador remoto escolheu, mas você pode alterar os nomes se desejar.</string>
     <string name="gamel_menu_knownplyrs">Jogadores Conhecidos…</string>
     <string name="remote_msg_title">Mensagem remota</string>
     <string name="not_again_quicknetgame">Há uma maneira super-rápida de começar um jogo com alguém com qual você já jogou. Se o nome da pessoa estiver na lista, apenas selecione-a e um convite será enviado imediatamente.</string>
@@ -752,8 +756,8 @@
     <string name="prompt_max_len">Palavras não maiores que</string>
     <string name="prompt_min_len">Palavras não menores que</string>
     <string name="alert_empty_dict_fmt">A lista de palavras %1$s contém apenas informações dos quadrados. Não há palavras para navegar.</string>
-    <string name="not_again_browseall">Este botão abre o navegador de lista de palavras na lista de sua escolha.</string>
-    <string name="not_again_browse">Este botão abre o navegador de lista de palavras na lista atual do jogador.</string>
+    <string name="not_again_browseall">Este botão permite que você escolha em qual lista de palavras no idioma do jogo atual navegar.</string>
+    <string name="not_again_browse">Este botão permite navegar na lista de palavras exibidas mais recentemente.</string>
     <string name="show_tiles_button">Mostrar Quadrados</string>
     <string name="button_move">Mover</string>
     <string name="not_again_lookup">Este botão permite você pesquisar online as palavras que você acabou de jogar.</string>
@@ -802,7 +806,7 @@
 \nSegure seu dedo em um nome no placar para obter detalhes sobre a jogada mais recente do jogador.</string>
     <string name="not_again_conndfirst">Você se conectou e começou um jogo em uma outra sala. Quando os dispositivos restantes juntarem-se à sua sala e CrossWords atribuir a eles seus quadrados o jogo pode começar.</string>
     <string name="not_again_unlock">Este jogo está rodando. Algumas configurações, como o número de jogadores, não podem ser mudadas sem resetá-lo. Quando você sair desta página você poderá descartar mudanças para evitar um reinício.</string>
-    <string name="not_again_values">Este botão muda entre o tabuleiro mostrar letras em quadrados colocados ou o valor em pontos deles. Use para se lembrar de quanto cada quadrado vale.</string>
+    <string name="not_again_values">Este botão altera se o tabuleiro mostra valores (além das letras) nas peças do tabuleiro.</string>
     <string name="not_again_chat">Este botão abre a tela para mensagens entre dispositivos neste jogo. Mensagens serão mantidas até você deletar o jogo que as contém.</string>
     <string name="title_invite_history">Convites Enviados</string>
     <string name="list_group_moveup">Mover para cima</string>
@@ -820,7 +824,7 @@
     <string name="checking_title">Checando</string>
     <string name="pref_item_update_summary">Obter builds intermediárias</string>
     <string name="pref_group_sms_summary">Preferências relacionadas a Jogar via SMS</string>
-    <string name="pref_group_sms_title">Coisas de SMS</string>
+    <string name="pref_group_sms_title">Coisas de SMS de dados</string>
     <string name="pref_group_l10n_title">Coisas de Localização</string>
     <string name="pref_item_update_title">Atualização entre lançamentos</string>
     <string name="pref_group_l10n_summary">Preferências relacionadas à localização do app</string>
@@ -1032,8 +1036,7 @@
         <item quantity="other">%1$s jogadas reenviadas</item>
     </plurals>
     <string name="show_fcm_title">Mostrar recebidos FCM</string>
-    <string name="show_sms_title">Mostrar enviados e recebidos SMS</string>
-    <string name="not_again_comms_relay">O “relay” é um servidor na internet que passa mensagens entre dispositivos que rodam o CrossWords. Ele funciona sempre que tiver uma rede de internet totalmente funcional, mas pode ter problemas em redes WiFi restritas.</string>
+    <string name="show_sms_title">Mostrar dados que SMS envia, recebe</string>
     <string name="seeking_relay">Conectando ao relay…</string>
     <string name="got_langdict_title">Captar lista de palavras padrão para o idioma</string>
     <string name="expl_mqtt_url">URL para nova API de relay baseada em MQTT</string>
@@ -1118,4 +1121,21 @@
     <string name="connstat_relay">Internet/retransmissor</string>
     <string name="chat_sender_fmt">%1$s:</string>
     <string name="xlator">[vazio]</string>
+    <string name="values_both">Letras e Valores</string>
+    <string name="values_values">Apenas valores</string>
+    <string name="values_faces">Use apenas letras</string>
+    <string name="choose_expl_default_net">Comece um jogo em rede usando os padrões atuais</string>
+    <string name="confirm_delete">Tem certeza que você deseja deletar o jogo atual\?
+\n
+\n(Essa ação não pode ser desfeita)</string>
+    <string name="no_dict_for_move_fmt">Toque para baixar %1$s lista de palavras e recuperar</string>
+    <string name="no_dict_for_move_title">Movimento perdido</string>
+    <string name="newgame_reinvite">Convide novamente</string>
+    <string name="invites_unsent">Este jogo está configurado para esperar um jogador remoto.
+\n
+\nVocê deseja convidar alguém\?</string>
+    <plurals name="confirm_nameddeletes_fmt">
+        <item quantity="one">Tem certeza de que deseja excluir o jogo %1$s\? Essa ação não pode ser desfeita.</item>
+        <item quantity="other">Tem certeza de que deseja excluir os jogos %1$s\? Essa ação não pode ser desfeita.</item>
+    </plurals>
 </resources>

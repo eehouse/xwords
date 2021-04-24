@@ -109,7 +109,7 @@
     <!-- pulls up dialog to reset the selected game, that is to remove
          all moves so that it's the same as a newly created game
          except for any configuration. -->
-    <string name="list_item_reset">Recommencer\u200C</string>
+    <string name="list_item_reset">Recommencer</string>
     <!-- creates a new game with all configuation copied from the
          selected game -->
     <string name="list_item_new_from">Utiliser comme modèle</string>
@@ -2873,7 +2873,6 @@ pour la langue</string>
     <string name="notify_chat_title_fmt">Message de discussion dans la partie %1$s</string>
     <string name="notify_chat_body_fmt">%1$s : %2$s</string>
     <string name="button_enable">Activer</string>
-    <string name="not_again_comms_relay">Le « relai» est un serveur sur Internet qui permet l\'échange de messages entre appareils qui font tourner CrossWords. Il fonctionne dès que vous avez une connexion à Internet pleinement fonctionnelle, mais peut avoir des problèmes sur des réseaux Wifi restreints.</string>
     <string name="not_again_comms_sms">Les parties par MMS utilisent la même technologie que l\'envoi de SMS normaux. Bien que les messages soient invisibles pour vous, votre opérateur les considère comme des messages normaux, donc vous pourriez vouloir éviter cette fonctionnalité si vous n\'avez pas un forfait (ou un budget) illimité.</string>
     <string name="not_again_comms_bt">Utilisez le Bluetooth pour jouer contre un appareil à proximité qui est « appairé » au vôtre.</string>
     <string name="str_no_hint_found">Ne peut trouver aucun coup</string>
@@ -3072,7 +3071,7 @@ pour la langue</string>
     <string name="knowns_expl">Ce sont vos joueurs distants connus. Leurs noms par défaut correspondent à ce que le joueur distant a choisi, mais vous pouvez modifier les noms si vous le souhaitez.</string>
     <string name="gamel_menu_knownplyrs">Joueurs connus…</string>
     <string name="mqtt_invite_title">Invitation MQTT</string>
-    <string name="invite_choice_mqtt">Internet/MQTT</string>
+    <string name="invite_choice_mqtt">Internet</string>
     <string name="remote_msg_title">Message à distance</string>
     <string name="not_again_quicknetgame">Il existe un nouveau moyen ultra-rapide de démarrer une partie avec quelqu\'un contre qui vous avez déjà joué. Si le nom de la personne est répertorié, sélectionnez-le et une invitation sera envoyée immédiatement.</string>
     <string name="no_tiles_exist">« %1$s » ne peut pas être orthographié avec les jetons %2$s.</string>
@@ -3172,7 +3171,7 @@ pour la langue</string>
     <string name="knowns_bta_fmt">Adresse Bluetooth : %1$s</string>
     <string name="knowns_bt_fmt">Nom Bluetooth : %1$s</string>
     <string name="knowns_ts_fmt">Partie la plus récente : %1$s</string>
-    <string name="not_again_comms_mqtt">J\'expérimente avec ça comme remplacement du relai.</string>
+    <string name="not_again_comms_mqtt">Il y a un serveur sur Internet qui passe des messages entre appareils faisant tourner Crosswords. Il marche dès que vous avez une connexion à Internet pleinement fonctionnelle, mais pourrait avoir des problèmes sur des réseaux wifi restreints.</string>
     <string name="button_faq">Montrer la FAQ</string>
     <string name="new_feature_title">Alerte de nouvelle fonctionnalité</string>
     <string name="gamel_menu_logs">Logs de debug</string>
@@ -3259,4 +3258,7 @@ pour la langue</string>
         <item quantity="one">Êtes-vous sûr de vouloir effacer la partie %1$s \? Cette action ne peut pas être annulée.</item>
         <item quantity="other">Êtes-vous sûr de vouloir effacer les parties %1$s \? Cette action ne peut pas être annulée.</item>
     </plurals>
+    <string name="choose_expl_default_net">Démarrer une partie en réseau en utilisant les paramètres par défaut</string>
+    <string name="not_again_comms_relay_depr">Le « relai » est un serveur pour passer des messages entre appareils faisant tourner Crosswords. Il est en train d\'être remplacé par un serveur plus moderne appelé « Mosquito ».</string>
+    <string name="no_dict_for_move_title">Coup entrant perdu</string>
 </resources>
