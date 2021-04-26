@@ -1,54 +1,38 @@
-(This file is out-of-date and the instructions it contains don't work.)
+This directory contains the desktop Linux port of CrossWords. It
+should build and run on any Debian derivative (e.g. Ubuntu or
+Raspbian).
 
-This directory contains the desktop Linux port of Crosswords.
+You'll need the build tool "make" installed. Once you have that, cd
+into this directory and run
 
-To build, run a shell in this directory and type
+# make debs_install
 
+which will get you all the packages the build depends on. Your user
+will need sudo capability.
+
+Once that's done, build:
+
+# make MEMDEBUG=TRUE
+or
 # make
-or
-# make debug
-or
-# make memdebug
 
-Any will work as long as you have both libncurses and libgtk-1.2 and
-the associated headers installed on your system.  If you don't you can
-play with the Makefile to build with only GTK or ncurses.
+the latter for a release build
 
-Once you've built, go to the linux directory that will be created
-within this one and type, at a minimum
+If the build succeeds (if it doesn't, and it's not because you changed
+something, email me at xwords@eehouse.org), run the debug build thus:
 
-# ./xwords -s -n SomeName
+# ./obj_linux_memdbg/xwords
 
-to get a GTK-based game with the built-in (English) tiles.  (Add the
--u flag to run with ncurses instead of GTK.)  There will be no robot
-player, and the hint feature ('?' button) won't work.  For that you
-need a real dictionary, which you can build in the dawg directory.  If
-you build the BasEnglish2to8.xwd one in dawg/English, this command
-will run a two person game between you and the machine:
+or the release thus:
 
-# ./xwords -s -r robot -n SomeName -d ../../dawg/English/BasEnglish2to8.xwd
+# ./obj_linux_rel/xwords
 
-Here are the commands to launch two copies playing against each other
-over the network.  Do these in separate shells both in the same
-directory as the above commands ran in.  Launch the one with the -s
-flag (the "server") first.
+Add --help to get a list of all the options.
 
- s1# ./xwords -s -r Eric -N -p 4000 -l 4001
- s2# ./xwords -d ../../dawg/English/BasEnglish2to8.xwd -r Kati -p 4001 -l 6002
-
-Both of these have "robot" players.  Turn one or both -r flags to -n
-for human players who make their own moves.
-
-If you want to run them on different machines, just add the -a flag to
-the client telling it on what machine to find the server (since it
-sends the first message, and the server will use the return address
-from that message.)
-
-
-
-*****
-
-Please keep in mind that these Linux desktop clients are meant for
-development only, as testbeds for code in ../common/ that will also be
-used for the "real" products on PalmOS, PocketPC, eBookman, etc.
-They're not supposed to be polished.
+The first time you launch its main window will be tiny and in the
+upper-left corner of your screen. If you resize or move the window the
+app will remember its new size and location. Use the buttons and menus
+to do stuff. Not all will be obvious, and some stuff may not
+work. Always remember that this app exists to develop and test code
+whose main target is Android or other mobile platforms, not desktop
+Linux.
