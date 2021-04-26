@@ -119,6 +119,12 @@ public class LookupAlertView extends LinearLayout
         m_summary = (TextView)findViewById( R.id.summary );
 
         switchState();
+        if ( 1 == m_words.length ) {
+            // imitate onItemClick() on the 0th elem
+            Assert.assertTrueNR( STATE_WORDS == m_state );
+            Assert.assertTrueNR( m_wordIndex == 0 );
+            switchState( true );
+        }
     }
 
     // NOT @Override!!!
@@ -133,10 +139,11 @@ public class LookupAlertView extends LinearLayout
     //////////////////////////////////////////////////////////////////////
     // View.OnClickListener
     //////////////////////////////////////////////////////////////////////
+    @Override
     public void onClick( View view )
     {
         if ( view == m_doneButton ) {
-            switchState( -1 );
+            switchState( false );
         } else if ( view == m_studyButton ) {
             String word = m_words[m_wordIndex];
             DBUtils.addToStudyList( m_context, word, s_lang );
@@ -150,6 +157,7 @@ public class LookupAlertView extends LinearLayout
     //////////////////////////////////////////////////////////////////////
     // AdapterView.OnItemClickListener
     //////////////////////////////////////////////////////////////////////
+    @Override
     public void onItemClick( AdapterView<?> parentView, View view,
                              int position, long id )
     {
@@ -160,11 +168,12 @@ public class LookupAlertView extends LinearLayout
         } else {
             Assert.failDbg();
         }
-        switchState( 1 );
+        switchState( true );
     }
 
-    private void adjustState( int incr )
+    private void adjustState( boolean forward )
     {
+        int incr = forward ? 1 : -1;
         m_state += incr;
         for ( ; ; ) {
             int curState = m_state;
@@ -181,9 +190,9 @@ public class LookupAlertView extends LinearLayout
         }
     }
 
-    private void switchState( int incr )
+    private void switchState( boolean forward )
     {
-        adjustState( incr );
+        adjustState( forward );
         switchState();
     }
 
@@ -216,7 +225,7 @@ public class LookupAlertView extends LinearLayout
         case STATE_LOOKUP:
             lookupWord( m_context, m_words[m_wordIndex],
                         s_lookupUrls[m_urlIndex] );
-            switchState( -1 );
+            switchState( false );
             break;
         default:
             Assert.failDbg();
@@ -290,7 +299,7 @@ public class LookupAlertView extends LinearLayout
         boolean handled = keyCode == KeyEvent.KEYCODE_BACK
             && KeyEvent.ACTION_UP == event.getAction();
         if ( handled ) {
-            switchState( -1 );
+            switchState( false );
         }
         return handled;
     }
