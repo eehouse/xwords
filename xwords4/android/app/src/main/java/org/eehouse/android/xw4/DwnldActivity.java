@@ -31,11 +31,10 @@ public class DwnldActivity extends XWActivity {
         requestWindowFeature( Window.FEATURE_NO_TITLE );
         requestWindowFeature( Window.FEATURE_LEFT_ICON );
         getWindow().setFeatureDrawableResource( Window.FEATURE_LEFT_ICON,
-                                                           R.drawable.icon48x48 );
+                                                R.drawable.icon48x48 );
 
         DwnldDelegate dlgt =
             new DwnldDelegate( this, savedInstanceState );
-
-        super.onCreate( savedInstanceState, dlgt );
+        super.onCreate( savedInstanceState, dlgt, false );
     }
 }

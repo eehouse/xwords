@@ -1,6 +1,6 @@
 /* -*- compile-command: "find-and-gradle.sh inXw4dDeb"; -*- */
 /*
- * Copyright 2014-2016 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2014 - 2021 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -24,6 +24,7 @@ import android.app.Activity;
 import android.app.Dialog;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.ContextMenu;
@@ -48,6 +49,12 @@ public class XWActivity extends FragmentActivity
 
     protected void onCreate( Bundle savedInstanceState, DelegateBase dlgt )
     {
+        onCreate( savedInstanceState, dlgt, true );
+    }
+
+    protected void onCreate( Bundle savedInstanceState, DelegateBase dlgt,
+                             boolean setOrientation )
+    {
         if ( BuildConfig.LOG_LIFECYLE ) {
             Log.i( TAG, "%s.onCreate(this=%H,sis=%s)", getClass().getSimpleName(),
                    this, savedInstanceState );
@@ -57,15 +64,18 @@ public class XWActivity extends FragmentActivity
         m_dlgt = dlgt;
         Assert.assertTrue( getApplicationContext() == XWApp.getContext() );
 
-        int orientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
-        if ( XWPrefs.getIsTablet( this ) ) {
-            orientation = ActivityInfo.SCREEN_ORIENTATION_USER;
-        } else {
-            Assert.assertTrueNR( 9 <= Integer.valueOf( android.os.Build.VERSION.SDK ) );
-            orientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT;
-        }
-        if ( ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED != orientation ) {
-            setRequestedOrientation( orientation );
+        // Looks like there's an Oreo-only bug
+        if ( setOrientation && Build.VERSION_CODES.O != Build.VERSION.SDK_INT ) {
+            int orientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
+            if ( XWPrefs.getIsTablet( this ) ) {
+                orientation = ActivityInfo.SCREEN_ORIENTATION_USER;
+            } else {
+                Assert.assertTrueNR( 9 <= Integer.valueOf( Build.VERSION.SDK ) );
+                orientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT;
+            }
+            if ( ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED != orientation ) {
+                setRequestedOrientation( orientation );
+            }
         }
 
         int layoutID = m_dlgt.getLayoutID();
