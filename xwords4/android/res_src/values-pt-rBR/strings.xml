@@ -172,7 +172,7 @@
     <string name="gamel_menu_checkmoves">Confira por movimentações</string>
     <string name="gamel_menu_dicts">Listas das palavras…</string>
     <string name="button_delete">Excluir</string>
-    <string name="gameOver">Fim da partida sddsf</string>
+    <string name="gameOver">Fim da partida</string>
     <string name="summary_invites_out_fmt">Jogadores convidados para a sala “%1$s”</string>
     <string name="summary_invites_out">Jogadores convidados</string>
     <string name="summary_relay_gameover_fmt">Fim da partida na sala “%1$s”</string>

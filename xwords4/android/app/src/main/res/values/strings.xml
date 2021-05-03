@@ -51,7 +51,7 @@
     <string name="summary_invites_out">Players invited</string>
     <string name="summary_invites_out_fmt">Players invited to room “%1$s”</string>
     <!-- Games that have ended are listed with this string -->
-    <string name="gameOver">Game over sddsf</string>
+    <string name="gameOver">Game over</string>
     <!-- Otherwise they're listed with this to give some indication of
          how far along they are.  I may list "tiles left" someday
          instead... -->
