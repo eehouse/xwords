@@ -1,2 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources></resources>
+<resources>
+    <string name="newgame_configure_game">Agordi ludon</string>
+    <string name="newgame_invite_fmt">Ekludi per %1$s</string>
+    <string name="newgame_open_game">Ekludi</string>
+    <string name="newgame_radio_unknown">Inviti novan ludanton</string>
+    <string name="knowns_rename_title">Ŝanĝi nomon de ludanto</string>
+    <string name="gamel_menu_knownplyrs">Konataj ludantoj…</string>
+    <string name="invite_choice_mqtt">Interreto</string>
+    <string name="player_edit_name">Ŝanĝi nomon de ludanto</string>
+    <string name="values_both">Literoj kaj valoroj</string>
+    <string name="values_values">Nur valoroj</string>
+    <string name="values_faces">Nur literoj</string>
+    <string name="relay_alert">Problemo pri konekto</string>
+    <string name="pts">p-toj</string>
+    <string name="bonus_w3x_summary">3V</string>
+    <string name="bonus_l3x_summary">3L</string>
+    <string name="bonus_w2x_summary">2V</string>
+    <string name="bonus_l2x_summary">2L</string>
+    <string name="password_label">Pasvorto:</string>
+    <string name="play">Ekludi</string>
+    <string name="robot_iq_label">Inteligento de roboto</string>
+    <string name="join_room">Aliĝi al publika ludejo</string>
+    <string name="new_room_hint">Nomo de ludejo</string>
+    <string name="title_game_config_fmt">Agordoj pri %1$s</string>
+    <string name="loc_external">Ekstera</string>
+    <string name="loc_internal">Interna</string>
+    <string name="button_default_both">Ambaŭ</string>
+    <string name="button_default_robot">Roboto</string>
+    <string name="button_default_human">Homo</string>
+    <string name="game_rename_title">Ŝanĝi titolon de ludo</string>
+    <string name="gamel_menu_dicts">Vortaroj…</string>
+    <string name="robot_name_fmt">%1$s (roboto)</string>
+    <string name="str_game_name_fmt">%1$s (%2$s)</string>
+    <string name="loc_downloads">Elŝutoj</string>
+    <string name="list_item_netstats">Konektoj…</string>
+    <string name="list_item_copy">Kopii</string>
+    <string name="list_item_delete">Forviŝi ludon</string>
+    <string name="list_item_move">Movi en grupon…</string>
+    <string name="list_item_rename">Ŝanĝi nomon…</string>
+    <string name="list_item_config">Agordoj pri ludo…</string>
+    <string name="board_menu_file_about">Pri CrossWords…</string>
+</resources>
