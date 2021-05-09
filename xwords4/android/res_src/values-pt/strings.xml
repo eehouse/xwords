@@ -33,14 +33,12 @@
          three. -->
     <!-- First state: is configured to use a room but has not yet
          contacted the relay and been assigned that room. -->
-    <string name="summary_relay_conf_fmt">Configurado para a sala
-      \"%1$s\"</string>
+    <string name="summary_relay_conf_fmt">Configurado para a sala \"%1$s\"</string>
     <!-- Second state: has been assigned to a room on the relay
          (meaning the network is working) but there are not yet as
          many players as expected: the game is not complete and play
          cannot happen. -->
-    <string name="summary_relay_wait_fmt">Esperando por jogadores na sala
-      \"%1$s\"</string>
+    <string name="summary_relay_wait_fmt">À espera de jogadores na sala \"%1$s\"</string>
     <!-- Third state: enough devices have connected in the room to
          form a complete game.  We'll be in this state as long as the
          game exists. -->
@@ -343,10 +341,7 @@
     <!-- title of this dialog -->
     <string name="force_title">Jogador(es) remoto(s)</string>
     <!-- Explanatory text appears in the dialog -->
-    <string name="force_expl">Num jogo com múltiplos dispositivos
-    deve haver pelo menos um jogador desse dispositivo e outro jogador
-    que não seja desse dispositivo. Por favor confira os jogadores
-    remotos.</string>
+    <string name="force_expl">Num jogo com múltiplos aparelhos deve haver pelo menos um jogador desse aparelho e outro jogador que não seja desse aparelho. Por favor, confira os jogadores remotos.</string>
     <!-- Displayed as a "Toast" (mini window briefly displayed) if you
        didn't choose a remote player and I was forced to pick one. I
        always pick the first. -->
@@ -464,8 +459,7 @@
     usando esse nome. Mude o nome da sua ou tente novamente mais
     tarde.</string>
     <!-- (I believe this can no longer occur) -->
-    <string name="msg_lost_other">O servidor perdeu contato com
-    outro dispositivo nesse jogos.</string>
+    <string name="msg_lost_other">O servidor perdeu contacto com outro aparelho neste jogo.</string>
     <!-- When a game has been connected and the relay is notified that
          a device in the game has deleted its part of the game, this
          message is posted when you connect your end of it to the
@@ -686,8 +680,7 @@
     <!-- clarification on hints_allowed, whether new NETWORKED games
          will default to having the hint feature enabled(string
          elsewhere in this file) -->
-    <string name="nethints_allowed_sum">Permitir dicas para jogos
-    de dois dispositivos</string>
+    <string name="nethints_allowed_sum">Permitir dicas para jogos de dois aparelhos</string>
     <!-- Will new games, on default, randomly rearrange the start
          order of players. -->
     <string name="init_autojuggle">Embaralhar jogadores</string>
@@ -1309,26 +1302,17 @@
     <!-- This is shown in the Board screen when you successfully
          connect a game to the relay and are the first device in the
          game to do so. -->
-    <string name="not_again_conndfirst">Você conectou e iniciou um
-    jogo numa sala nova.  Depois que os dispositivos restantes
-    tiverem entrado na sala e o CrossWords tiver distribuído as pedras,
-    o jogo pode começar.</string>
+    <string name="not_again_conndfirst">Conectou e iniciou um jogo numa sala nova. Depois que os aparelhos restantes tiverem entrado na sala e o CrossWords tiver distribuído as pedras, o jogo pode começar.</string>
     <!-- This is shown in the Board screen when you successfully
          connecting a game to the relay and are not the first device
          in the game but not the last either.  So it will only occur
          for games with more than two devices, which are rare. -->
-    <string name="not_again_conndmid">Você conectou e entrou num
-    jogo no servidor. Você será notificado quando o(s)
-    dispositivo(s) restantes(s) tiver(em) entrado na sua sala e
-    o jogo puder começar.</string>
+    <string name="not_again_conndmid">Conectou e entrou num jogo no servidor. Será notificado quando o(s) aparelho(s) restantes(s) tiver(em) entrado na sua sala e o jogo puder começar.</string>
     <!-- This is shown in the Board screen when you successfully
          connecting a game to the relay and are the last device in the
          game to do so, i.e. the game is now complete and you should
          expect play to begin. -->
-    <string name="not_again_conndall">Você conectou e entrou num jogo
-    no servidor, a sala agora está cheia. O dispositivo que criou
-    a sala fará a distribuição inicial de pedras e o jogo pode
-    começar.</string>
+    <string name="not_again_conndall">Conectou e entrou num jogo no servidor, a sala agora está cheia. O aparelho que criou a sala fará a distribuição inicial de pedras e o jogo pode começar.</string>
     <!-- This is not currently shown -->
     <!-- <string name="not_again_dicts">CrossWords wordlists, which are -->
     <!--   just compressed lists of words plus tile information, determine -->
@@ -1480,7 +1464,7 @@
     <string name="summary_conn">Jogo em andamento</string>
     <!--  -->
     <!--  -->
-    <string name="new_bt_body_fmt">Dispositivo pareado %1$s te convidou para jogar</string>
+    <string name="new_bt_body_fmt">Aparelho pareado %1$s convidou-te para jogar</string>
     <!--  -->
     <string name="bt_bad_proto_fmt">CrossWords em %1$s na versão errada para
       jogar por Bluetooth.</string>
@@ -1532,7 +1516,7 @@
     um plano de mensagens ilimitadas?  Clique cancelar se você não
     tem.</string>
     <!--  -->
-    <string name="remote_undone">Dispositivo remoto desfez uma jogada.</string>
+    <string name="remote_undone">Aparelho remoto desfez uma jogada.</string>
     <!--  -->
     <string name="menu_hint_prev">Dica anterior</string>
     <!--  -->
@@ -1640,8 +1624,8 @@
     %3$s), mas ela não está instalada. Você gostaria de baixar a
     lista de palavras?</string>
     <string name="button_decline">Recusar</string>
-    <string name="download_done">Download concluído</string>
-    <string name="download_failed">Download falhou</string>
+    <string name="download_done">Descarrega concluída</string>
+    <string name="download_failed">Descarrega falhou</string>
     <string name="default_loc">Armazenar listas de palavras internamente</string>
     <string name="default_loc_summary">(Não na memória externa/cartão SD)</string>
     <string name="download_path_title">Diretório de downloads</string>
@@ -1661,7 +1645,7 @@
     <string name="button_rematch">Revanche</string>
     <string name="square_tiles">Peças quadradas</string>
     <string name="square_tiles_summary">Mesmo se puderem ser mais altas</string>
-    <string name="rename_label_caveat">Altere o nome deste jogo (apenas neste dispositivo) para:</string>
+    <string name="rename_label_caveat">Altere o nome deste jogo (apenas neste aparelho) para:</string>
     <plurals name="confirm_seldeletes_fmt">
         <item quantity="one">Tem certeza que deseja apagar o 1 jogo selecionado\? Esta ação não poderá ser desfeita.</item>
         <item quantity="other">Tem certeza que deseja apagar os %1$d jogos selecionados\? Esta ação não poderá ser desfeita.</item>
@@ -1688,7 +1672,7 @@
         <item quantity="other">Este jogo está aguardando %1$d jogadores remotos. Gostaria de convidar alguém para se juntar -- supondo que você ainda não o fez\?</item>
     </plurals>
     <string name="list_item_netstats">Conexões…</string>
-    <string name="confirm_deleteonly_dicts_fmt">Deletar %1$s vai deixar você sem nenhuma lista de palavras em %2$s. Um ou mais jogos ficarão injogáveis (até que você faça download de uma lista para substituir.)</string>
+    <string name="confirm_deleteonly_dicts_fmt">Apagar %1$s vai deixá-lo sem nenhuma lista de palavras em %2$s. Um ou mais jogos ficarão não jogáveis (até que descarregue de uma lista para substituir.)</string>
     <string name="use_duptimer">Ativar cronômetro de movimento</string>
     <string name="dup_minutes_label">Minutos por turno</string>
     <string name="robot_iq_label">QI do Robô</string>
@@ -1705,7 +1689,7 @@
     <string name="invit_expl_usrsms_fmt">Convite enviado via SMS em %1$s</string>
     <string name="invit_expl_sms_fmt">Convite enviado via Data SMS para o número de telefone %1$s em %2$s</string>
     <string name="invite_choice_mqtt">Internet</string>
-    <string name="not_again_comms_mqtt">Há um servidor na internet que passa mensagens entre dispositivos que executam CrossWords. Ele funciona sempre que tem uma conexão de internet totalmente funcional, mas pode ter problemas em redes WiFi restritas.</string>
+    <string name="not_again_comms_mqtt">Há um servidor na internet que passa mensagens entre aparelhos que executam CrossWords. Ele funciona sempre que tem uma conexão de internet totalmente funcional, mas pode ter problemas em redes WiFi restritas.</string>
     <string name="not_again_comms_relay_depr">O \"relay\" é um servidor para passar mensagens entre aparelhos que executam CrossWords. Está a ser substituído por um servidor mais moderno chamado \"Mosquitto\".</string>
     <string name="values_both">Letras e Valores</string>
     <string name="values_values">Apenas valores</string>
@@ -1802,16 +1786,16 @@
     <string name="dup_tag">Dup</string>
     <string name="duplicate_check">Modo duplicado</string>
     <string name="servicedesc">Para transmitir jogadas do CrossWords</string>
-    <string name="not_again_longtap_lookup">Pode pesquisar palavras ANTES de serem jogadas–a tocar e a segurar, do mesmo jeito que palavras jogadas.
+    <string name="not_again_longtap_lookup">Pode pesquisar palavras ANTES de serem jogadas – a tocar e a segurar, do mesmo jeito que palavras jogadas.
 \n
-\nUse esta ferramenta para checar a validade de palavras que está a pensar em jogar, ou pesquisar uma palavra não familiar dada como dica.</string>
+\nUse esta ferramenta para verificar a validade de palavras que está a pensar em jogar, ou pesquisar uma palavra não familiar dada como dica.</string>
     <string name="relay_poll_name_both">Padrão: mesclar polling e FCM</string>
     <string name="relay_poll_name_no_polling">Somente FCM: sem polling</string>
     <string name="relay_poll_name_no_fcm">Somente poll: sem mensagens FCM</string>
     <string name="relay_poll_title">Checar movimentos como\?</string>
     <string name="banned_nbs_perms">Este jogo foi configurado para comunicar a usar dados SMS, mas apps do Google Play Store não têm mais permissão para tal (com raras exceções). Ainda poderá abrir o jogo, mas talvez não consiga fazer ou receber jogadas.
 \n
-\nPode remover a opção de comunicação via dados SMS, ou usar o botão \"Ler mais\" para checar o progresso do desenvolvimento de uma alternativa.</string>
+\nPode remover a opção de comunicação via dados SMS, ou usar o botão \"Ler mais\" para verificar o progresso do desenvolvimento de uma alternativa.</string>
     <string name="button_more_info">Ler mais</string>
     <string name="sms_banned_ok_only">A versào da Google Play de CrossWords não suporta mais convites ou jogos por dados SMS.</string>
     <string name="not_again_emptybtscan">Se um escaneamento não achar o aparelho que espera:
@@ -1828,7 +1812,7 @@
     <string name="sms_send_failed">Envio SMS falho</string>
     <string name="button_ask_again">Pedir de novo</string>
     <string name="remove_sms">Remover SMS</string>
-    <string name="move_dict_rationale">Salvar uma lista de palavras na área Downloads requer a permissão de Armazenamento.</string>
+    <string name="move_dict_rationale">Armazenar uma lista de palavras na área Descarregas requer a permissão de Armazenamento.</string>
     <string name="contacts_rationale">CrossWords gostaria de ter acesso aos seus contatos para por nome nos números que te enviarem convites via dados SMS. Ainda poderá receber convites se negar esta permissão, mas apenas o número do remetente será exibido.</string>
     <string name="phone_lookup_rationale_others">Sem esta permissão a revanche continuará mas irá gerar um jogo que não pode ser jogado via dados SMS.</string>
     <string name="phone_lookup_rationale_drop">Jogar revanche com este jogo que usa apenas dados SMS não é possível sem essa permissão.</string>
@@ -1836,7 +1820,7 @@
     <string name="phone_state_rationale">Alguns telefones podem trocar mensagens de dados por SMS. CrossWords gostaria de te oferecer esta opção mas precisa de pedir ao seu telefone sobre os dados dele.
 \n
 \nSe o seu aparelho não pode mandar dados SMS (p. ex. se não for um telefone) ou não quiser jogar via SMS (p. ex. por ter que pagar por cada mensagem), é seguro negar permanentemente esta permissão.</string>
-    <string name="dicts_storage_rationale">CrossWords pode armazenar e ler listas de palavras na área de Downloads do seu aparelho mas precisa de permissão para acessá-los lá.
+    <string name="dicts_storage_rationale">CrossWords pode armazenar e ler listas de palavras na área de descarregas do seu aparelho, mas precisa de permissão para acessá-los lá.
 \n
 \nPode negar esta permissão se nunca descarregar listas de palavras exceto as de dentro do CrossWords e não houver nenhuma salva anteriormente lá.</string>
     <string name="sms_invite_rationale">CrossWords precisa de permissão para enviar um convite via dados SMS.</string>
@@ -1927,7 +1911,7 @@
     <string name="debug_features_summary">Menu, itens etc.</string>
     <string name="debug_features">Ativar ferramentas de debug</string>
     <string name="logging_on">Ativar logs</string>
-    <string name="dict_host">URL de download da lista de palavras</string>
+    <string name="dict_host">URL de descarrega da lista de palavras</string>
     <string name="relay_via_http_first_summary">(ao invés de como fallback para um protocolo customizado)</string>
     <string name="relay_via_http_first">Usar APIs da Web primeiro</string>
     <string name="mqtt_host">Host MQTT</string>
@@ -2047,7 +2031,7 @@
     <string name="not_again_fmt_expl">Esta strinf tem especificadores de formato especiais (p. ex. %1$s). Por favor certifique-se que a sua tradução tenha os mesmos que o original.
 \n
 \n(Não poderá salvá-la a não que ser que tenham.)</string>
-    <string name="loc_fmts_mismatch">Tradução ilegal: uma string traduzida precisa ter os mesmo especificadores de formato (p. ex. %1$s) que o original.</string>
+    <string name="loc_fmts_mismatch">Tradução ilegal: uma cadeia traduzida precisa ter os mesmo especificadores de formato (p. ex. %1$s) que o original.</string>
     <string name="loc_item_copy_bless">Copiar oficial</string>
     <string name="loc_item_copy_eng">Copiar Inglês</string>
     <string name="loc_item_check">Checar</string>
@@ -2100,10 +2084,10 @@
         <item quantity="other">%1$d palavras copiadas</item>
     </plurals>
     <plurals name="confirm_studylist_clear_fmt">
-        <item quantity="one">Tem certeza que quer excluir a palavra selecionada\?
+        <item quantity="one">Tem certeza que quer apagar a palavra selecionada\?
 \n
 \n(Esta ação não pode ser desfeita.)</item>
-        <item quantity="other">Tem certeza que quer excluir as %1$d palavras selecionadas\?)
+        <item quantity="other">Tem certeza que quer apagar as %1$d palavras selecionadas\?)
 \n
 \n(Esta ação não pode ser desfeita.)</item>
     </plurals>
@@ -2156,10 +2140,10 @@
     <plurals name="groups_confirm_del_games_fmt">
         <item quantity="one">"
 \n
-\n(Uma partida também será excluída.)"</item>
+\n(Uma partida também será apagada.)"</item>
         <item quantity="other">"
 \n
-\n(%1$d partidas também serão excluídas.)"</item>
+\n(%1$d partidas também serão apagadas.)"</item>
     </plurals>
     <plurals name="groups_confirm_del_fmt">
         <item quantity="one">Tem certeza que quer deletar o grupo %1$s\?</item>
@@ -2227,7 +2211,7 @@
     </plurals>
     <plurals name="confirm_clear_sms_fmt">
         <item quantity="one">Tem certeza que quer apagar o número de telefone verificado\?</item>
-        <item quantity="other">Tem certeza que quer excluir os %1$d números de telefone verificados\?</item>
+        <item quantity="other">Tem certeza que quer apagar os %1$d números de telefone verificados\?</item>
     </plurals>
     <string name="password_hint">(Opcional)</string>
     <string name="get_sms_name">Nome do contato (opcional):</string>
@@ -2388,7 +2372,7 @@
     <string name="phonies_block">Bloquear palavras falsas</string>
     <string name="phonies_label">Palavras Falsas</string>
     <plurals name="confirm_nameddeletes_fmt">
-        <item quantity="one">Tem certeza de que deseja excluir o jogo %1$s\? Essa ação não pode ser desfeita.</item>
-        <item quantity="other">Tem certeza de que deseja excluir os jogos %1$s\? Essa ação não pode ser desfeita.</item>
+        <item quantity="one">Tem certeza de que deseja apagar o jogo %1$s\? Essa ação não pode ser desfeita.</item>
+        <item quantity="other">Tem certeza de que deseja apagar os jogos %1$s\? Essa ação não pode ser desfeita.</item>
     </plurals>
 </resources>
