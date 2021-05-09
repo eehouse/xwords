@@ -3,9 +3,9 @@
     <string name="str_game_name_fmt">%1$s (%2$s)</string>
     <string name="robot_name_fmt">%1$s (robot)</string>
     <string name="missing_player">(estableciendo conexión…)</string>
-    <string name="summary_relay_conf_fmt">Configurando para entrar en la sala \"%1$s\"</string>
+    <string name="summary_relay_conf_fmt">Configurado para la sala \"%1$s\"</string>
     <string name="summary_relay_wait_fmt">Esperando jugadores en la sala \"%1$s\"</string>
-    <string name="summary_relay_conn_fmt">Partida en curso en la sala \"%1$s\"</string>
+    <string name="summary_relay_conn_fmt">Partida en curso en la sala “%1$s”</string>
     <string name="summary_relay_gameover_fmt">Partida finalizada en la sala \"%1$s\"</string>
     <string name="summary_invites_out">Jugadores invitados</string>
     <string name="summary_invites_out_fmt">Jugadores invitados a la sala \"%1$s\"</string>
@@ -103,10 +103,10 @@
     <string name="player_edit_title">Editar jugador</string>
     <string name="remote_label">Jugador remoto</string>
     <string name="player_label">Nombre:</string>
-    <string name="dict_lang_label_fmt">Lista de palabras (en %1$s)</string>
+    <string name="dict_lang_label_fmt">Lista de palabras ( %1$s)</string>
     <string name="dicts_list_prompt_fmt">Listas de palabras instaladas (en %1$s)</string>
     <string name="robot_label">Jugador robot</string>
-    <string name="password_label">Contraseña</string>
+    <string name="password_label">Contraseña:</string>
     <string name="button_trade_commit">Validar intercambio</string>
     <string name="button_trade_cancel">Cancelar intercambio</string>
     <string name="entering_trade">Pulsa en las fichas para seleccionarlas…</string>
@@ -116,12 +116,16 @@
     <string name="bonus_w3x_summary">3P</string>
     <string name="no_moves_made">(Todavía no hay movimientos)</string>
     <plurals name="invite_msg_fmt">
-        <item quantity="one">"La partida está esperando un jugador remoto.  Si aún no lo has hecho, ¿te gustaría invitar a alguien a unirse\?"</item>
-        <item quantity="other">"La partida está esperando %1$d jugadores remotos.  Si aún no lo has hecho, ¿te gustaría invitar a alguien a unirse\?"</item>
+        <item quantity="one">La partida está esperando a que un jugador remoto reciva y responda una invitación.
+\n
+\nEste mensaje permanecerá hasta que el jugador haya respondido. Si crees que la invitación se ha perdido, no pasa nada por enviar otra.</item>
+        <item quantity="other">La partida está esperando a que %1$d jugadores remotos respondan a las invitaciónes.
+\n
+\nEste mensaje permanecerá hasta que los jugadores haya respondido. Si crees que las invitaciónes se han perdido, no pasa nada por enviar más.</item>
     </plurals>
     <string name="invit_expl_sms_fmt">Invitación enviada por SMS al número de teléfono %1$s a %2$s</string>
     <string name="invit_expl_usrsms_fmt">Invitación enviada por SMS en %1$s</string>
-    <string name="sms_invite_flakey">Esta nueva opción ejecuta tu aplicación SMS por defecto con una invitación preparada para invitar -- cuando funciona. Cada aplicación SMS es diferente, y algunas no funcionarán.</string>
+    <string name="sms_invite_flakey">Esta opción ejecuta tu aplicación SMS por defecto con una invitación preparada para invitar -- cuando funciona. Cada aplicación SMS es diferente, y algunas no funcionarán.</string>
     <string name="sms_invite_fail">No se puede ejecutar la aplicación SMS</string>
     <string name="invit_expl_bt_fmt">Invitación enviada vía Bluetooth al dispositivo conectado \"%1$s\" en %2$s</string>
     <string name="invit_expl_relay_fmt">Invitación enviada a otro dispositivo mediante el repetidor en %1$s</string>
@@ -261,4 +265,19 @@
     <string name="title_sort_tiles">Ordenar nuevas fichas</string>
     <string name="summary_sort_tiles">Ordenar atriles cuando se añadan nuevas fichas</string>
     <string name="peek_other">Ver las fichas descartadas</string>
+    <string name="qrcode_invite_expl">Para invitar vía código QR, deja que tu oponente escanee el código con la cámara en su teléfono Android.</string>
+    <string name="invit_expl_player_fmt">Invitación enviada via MQTT/internet a el jugador conocido\"%1$s\" en %2$s.</string>
+    <string name="invite_msg_extra_rematch">Al jugar una revancha, todas la invitaciones necesarias se enviarán automáticamente. Pero siempre puedes enviar nuevas si algun invitado no responde.</string>
+    <string name="invites_unsent">Este juego esta configurado para que haya un jugador remoto.
+\n
+\nTe gustaría invitar a alguien\?</string>
+    <string name="phonies_block">Bloquear palabras falsas</string>
+    <string name="phonies_label">Palabras falsas</string>
+    <string name="robot_iq_label">Inteligencia del robot</string>
+    <string name="dup_minutes_label">Minutos por turno</string>
+    <string name="use_duptimer">Habilitar temporizador</string>
+    <plurals name="confirm_nameddeletes_fmt">
+        <item quantity="one">¿Seguro que quieres eliminar el juego %1$s\? Esta acción no se puede deshacer.</item>
+        <item quantity="other">¿Seguro que quieres eliminar los juegos %1$s\? Esta acción no se puede deshacer.</item>
+    </plurals>
 </resources>
