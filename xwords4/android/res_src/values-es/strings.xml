@@ -4,7 +4,7 @@
     <string name="robot_name_fmt">%1$s (robot)</string>
     <string name="missing_player">(estableciendo conexión…)</string>
     <string name="summary_relay_conf_fmt">Configurado para la sala \"%1$s\"</string>
-    <string name="summary_relay_wait_fmt">Esperando jugadores en la sala \"%1$s\"</string>
+    <string name="summary_relay_wait_fmt">Esperando a los jugadores en la sala \"%1$s\"</string>
     <string name="summary_relay_conn_fmt">Partida en curso en la sala “%1$s”</string>
     <string name="summary_relay_gameover_fmt">Partida finalizada en la sala \"%1$s\"</string>
     <string name="summary_invites_out">Jugadores invitados</string>
