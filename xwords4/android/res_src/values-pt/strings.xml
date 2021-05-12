@@ -44,7 +44,7 @@
          game exists. -->
     <string name="summary_relay_conn_fmt">Jogo em progresso na sala \"%1$s\"</string>
     <!-- Final state: game is over. -->
-    <string name="summary_relay_gameover_fmt">Jogo encerrado na sala \"%1$s\"</string>
+    <string name="summary_relay_gameover_fmt">Fim da partida na sala “%1$s”</string>
     <!-- Games that have ended are listed with this string -->
     <string name="gameOver">Jogo encerrado</string>
     <!-- Otherwise they're listed with this to give some indication of
