@@ -833,6 +833,8 @@ and_util_getDevUtilCtxt( XW_UtilCtxt* uc, XWEnv xwe )
 static XP_UCHAR*
 and_dutil_md5sum( XW_DUtilCtxt* duc, XWEnv xwe, const XP_U8* ptr, XP_U32 len )
 {
+    /* will be signed in the java world, and negative is bad! */
+    XP_ASSERT( (0x80000000 & len) == 0 );
     AndDUtil* dutil = (AndDUtil*)duc;
     JNIEnv* env = xwe;
     struct JNIUtilCtxt* jniutil = dutil->jniutil;

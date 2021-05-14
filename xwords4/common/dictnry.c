@@ -76,8 +76,8 @@ p_dict_unref( const DictionaryCtxt* dict, XWEnv xwe
         --_dict->refCount;
         XP_ASSERT( 0 <= _dict->refCount );
 #ifdef DEBUG_REF
-        XP_LOGF( "(dict=%p): refCount now %d  (from line %d of %s() in %s)",
-                 dict, dict->refCount, line, func, file );
+        XP_LOGFF( "(dict=%p): refCount now %d  (from line %d of %s() in %s)",
+                  dict, dict->refCount, line, func, file );
 #endif
         pthread_mutex_unlock( &_dict->mutex );
         if ( 0 == _dict->refCount ) {

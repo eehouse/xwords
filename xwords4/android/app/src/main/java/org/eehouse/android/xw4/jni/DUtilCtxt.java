@@ -339,14 +339,14 @@ public class DUtilCtxt {
 
     public void getDictPath( int lang, String name, String[] path, byte[][] bytes )
     {
-        Log.d( TAG, "getDictPath(%d, %s)", lang, name );
+        // Log.d( TAG, "getDictPath(%d, %s)", lang, name );
         String[] names = { name };
         DictUtils.DictPairs pairs = DictUtils.openDicts( m_context, names );
-        Log.d( TAG, "openDicts() => %s", pairs );
+        // Log.d( TAG, "openDicts() => %s", pairs );
         path[0] = pairs.m_paths[0];
         bytes[0] = pairs.m_bytes[0];
-        Log.d( TAG, "getDictPath(%s): have path: %s; bytes: %s", name, path[0], bytes[0] );
-        Assert.assertTrue( path[0] != null || bytes[0] != null );
+        // Log.d( TAG, "getDictPath(%s): have path: %s; bytes: %s", name, path[0], bytes[0] );
+        Assert.assertTrueNR( path[0] != null || bytes[0] != null );
     }
 
     public void onDupTimerChanged( int gameID, int oldVal, int newVal )

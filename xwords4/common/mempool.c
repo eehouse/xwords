@@ -72,8 +72,7 @@ struct MemPoolCtx {
     XP_U16 nFree;
     XP_U16 nUsed;
     XP_U16 nAllocs;
-    XP_U32 maxBytes;
-    XP_U32 curBytes;
+    MPStatsBuf stats;
 
     XP_UCHAR tag[64];
 };
@@ -214,9 +213,9 @@ mpool_alloc( MemPoolCtx* mpool, XP_U32 size, const char* file,
     entry->index = ++mpool->nAllocs;
 
     ++mpool->nUsed;
-    mpool->curBytes += size;
-    if ( mpool->curBytes > mpool->maxBytes ) {
-        mpool->maxBytes = mpool->curBytes;
+    mpool->stats.curBytes += size;
+    if ( mpool->stats.curBytes > mpool->stats.maxBytes ) {
+        mpool->stats.maxBytes = mpool->stats.curBytes;
     }
 
 #ifdef MPOOL_DEBUG
@@ -280,9 +279,9 @@ mpool_realloc( MemPoolCtx* mpool, void* ptr, XP_U32 newsize, const char* file,
             entry->fileName = file;
             entry->func = func;
             entry->lineNo = lineNo;
-            mpool->curBytes += newsize - entry->size;
-            if ( mpool->curBytes > mpool->maxBytes ) {
-                mpool->maxBytes = mpool->curBytes;
+            mpool->stats.curBytes += newsize - entry->size;
+            if ( mpool->stats.curBytes > mpool->stats.maxBytes ) {
+                mpool->stats.maxBytes = mpool->stats.curBytes;
             }
             entry->size = newsize;
         }
@@ -319,7 +318,7 @@ mpool_free( MemPoolCtx* mpool, void* ptr, const char* file,
         } else {
             mpool->usedList = entry->next;
         }
-        mpool->curBytes -= entry->size;
+        mpool->stats.curBytes -= entry->size;
 
         XP_MEMSET( entry->ptr, 0x00, entry->size );
         XP_PLATFREE( entry->ptr );
@@ -354,15 +353,9 @@ mpool_freep( MemPoolCtx* mpool, void** ptr, const char* file,
 XP_Bool
 mpool_getStats( const MemPoolCtx* mpool, MPStatsBuf* io )
 {
-    XP_Bool changed = XP_FALSE;
-
-    if ( io->curBytes != mpool->curBytes ) {
-        changed = XP_TRUE;
-        io->curBytes = mpool->curBytes;
-    }
-    if ( io->maxBytes != mpool->maxBytes ) {
-        changed = XP_TRUE;
-        io->maxBytes = mpool->maxBytes;
+    XP_Bool changed = 0 != XP_MEMCMP( &mpool->stats, io, sizeof(mpool->stats) );
+    if ( changed ) {
+        *io = mpool->stats;
     }
     return changed;
 }
