@@ -39,14 +39,14 @@
     <item android:id="@+id/games_menu_knownplyrs"
           android:title="@string/gamel_menu_knownplyrs"
           />
+    <item android:id="@+id/games_menu_about"
+          android:title="@string/board_menu_file_about"
+          android:icon="@android:drawable/ic_menu_info_details"
+          />
     <item android:id="@+id/games_menu_email"
           android:title="@string/board_menu_file_email"
           android:icon="@drawable/email__gen"
           android:showAsAction="ifRoom"
-          />
-    <item android:id="@+id/games_menu_about"
-          android:title="@string/board_menu_file_about"
-          android:icon="@android:drawable/ic_menu_info_details"
           />
     <item android:id="@+id/games_menu_resend"
           android:title="@string/board_menu_game_resend"
