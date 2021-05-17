@@ -2204,6 +2204,7 @@ public class BoardDelegate extends DelegateBase
     private Handler makeJNIHandler()
     {
         Handler handler = new Handler() {
+                @Override
                 public void handleMessage( final Message msg ) {
                     switch( msg.what ) {
                     case JNIThread.DIALOG:
@@ -2231,6 +2232,7 @@ public class BoardDelegate extends DelegateBase
                             runOnUiThread( new Runnable() {
                                     @Override
                                     public void run() {
+                                        Assert.assertTrue( m_jniGamePtr.isRetained() );
                                         boolean hasPending = 0 < XwJNI.
                                             comms_countPendingPackets( m_jniGamePtr );
                                         mGameOverAlert = GameOverAlert

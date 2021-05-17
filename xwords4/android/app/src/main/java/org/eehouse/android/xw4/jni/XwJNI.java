@@ -69,6 +69,8 @@ public class XwJNI {
 
         public long getRowid() { return m_rowid; }
 
+        public boolean isRetained() { return 0 < m_refCount; }
+
         // Force (via an assert in finalize() below) that this is called. It's
         // better if jni stuff isn't being done on the finalizer thread
         public synchronized void release()
