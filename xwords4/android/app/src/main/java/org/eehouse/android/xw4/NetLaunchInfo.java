@@ -302,7 +302,7 @@ public class NetLaunchInfo implements Serializable {
         this( gi );
 
         for ( CommsConnType typ : summary.conTypes.getTypes() ) {
-            // DbgUtils.logf( "NetLaunchInfo(): got type %s", typ.toString() );
+            // Log.d( TAG, "NetLaunchInfo(): got type %s", typ );
             switch( typ ) {
             case COMMS_CONN_BT:
                 addBTInfo();
@@ -346,7 +346,7 @@ public class NetLaunchInfo implements Serializable {
         String result = inviteID;
         if ( null == result ) {
             result = GameUtils.formatGameID( gameID );
-            // DbgUtils.logf( "inviteID(): m_inviteID null so substituting %s", result );
+            // Log.d( TAG, "inviteID(): m_inviteID null so substituting %s", result );
         }
         return result;
     }
@@ -358,7 +358,7 @@ public class NetLaunchInfo implements Serializable {
             Assert.assertNotNull( inviteID );
             Log.i( TAG, "gameID(): looking at inviteID: %s", inviteID );
             result = Integer.parseInt( inviteID, 16 );
-            // DbgUtils.logf( "gameID(): gameID -1 so substituting %d", result );
+            // Log.d( TAG, "gameID(): gameID -1 so substituting %d", result );
             gameID = result;
         }
         Assert.assertTrue( 0 != result );
@@ -472,7 +472,7 @@ public class NetLaunchInfo implements Serializable {
         } catch ( org.json.JSONException jse ) {
             Log.ex( TAG, jse );
         }
-        // DbgUtils.logf( "makeLaunchJSON() => %s", result );
+        // Log.d( TAG, "makeLaunchJSON() => %s", result );
         return result;
     }
 
