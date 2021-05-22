@@ -49,4 +49,7 @@
     </plurals>
     <string name="rematch_name_fmt">%1$s</string>
     <string name="name_dict_fmt">%1$s／%2$s</string>
+    <string name="gameOver">游戏结束</string>
+    <string name="summary_invites_out_fmt">受邀到房间\"%1$s\"的玩家</string>
+    <string name="summary_invites_out">邀请的玩家</string>
 </resources>
