@@ -1911,6 +1911,8 @@ public class GamesListDelegate extends ListDelegateBase
                 }
                 Utils.setItemVisible( menu, R.id.games_game_invites, enable );
                 Utils.setItemVisible( menu, R.id.games_game_netstats, isMultiGame );
+                Utils.setItemVisible( menu, R.id.games_game_relaypage,
+                                      BuildConfig.NON_RELEASE && isMultiGame );
 
                 enable = BuildConfig.DEBUG || XWPrefs.getDebugEnabled( m_activity );
                 Utils.setItemVisible( menu, R.id.games_game_markbad, enable );
@@ -2121,6 +2123,11 @@ public class GamesListDelegate extends ListDelegateBase
 
         case R.id.games_game_netstats:
             onStatusClicked( selRowIDs[0] );
+            break;
+
+        case R.id.games_game_relaypage:
+            GameSummary summary = GameUtils.getSummary( m_activity, selRowIDs[0] );
+            NetUtils.showGamePage( m_activity, summary.gameID );
             break;
 
             // DEBUG only

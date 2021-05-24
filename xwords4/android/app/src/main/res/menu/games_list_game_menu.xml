@@ -28,6 +28,10 @@
     <item android:id="@+id/games_game_netstats"
           android:title="@string/list_item_netstats"
           />
+    <!-- Debug only -->
+    <item android:id="@+id/games_game_relaypage"
+          android:title="@string/list_item_relaypage"
+          />
     <item android:id="@+id/games_game_select"
           android:title="@string/list_item_select"
           />

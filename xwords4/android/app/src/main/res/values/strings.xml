@@ -126,6 +126,9 @@
          list_item_rename) -->
     <!-- long-tap game list menuitem for showing info about game's connectivity -->
     <string name="list_item_netstats">Connections…</string>
+    <!-- Debug-only menuitem that shows mqtt broker's awareness of
+         devices in game -->
+    <string name="list_item_relaypage">Game traffic…</string>
     <!-- If you try to copy a networked game you get this error
     message. -->
     <string name="no_copy_network">Games that have already connected

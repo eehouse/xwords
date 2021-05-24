@@ -125,6 +125,17 @@ public class NetUtils {
         }
     }
 
+    static void showGamePage( Context context, int gameID )
+    {
+        // Requires a login, so only of use to me right now....
+        String url = String.format( "https://eehouse.org/xw4/ui/games?gameid=%d",
+                                    gameID );
+        Intent intent = new Intent( Intent.ACTION_VIEW, Uri.parse( url ) );
+        if ( null != intent.resolveActivity( context.getPackageManager() ) ) {
+            context.startActivity( intent );
+        }
+    }
+
     public static byte[][][] queryRelay( Context context, String[] ids )
     {
         byte[][][] msgs = null;

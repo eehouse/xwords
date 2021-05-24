@@ -448,22 +448,34 @@ public abstract class DelegateBase implements DlgClickNotify,
             final CommsConnTypeSet conTypes = summary.conTypes;
             ab.setMessage( msg )
                 .setPositiveButton( android.R.string.ok, null );
-            if ( BuildConfig.DEBUG && null != conTypes
-                 && (conTypes.contains( CommsConnType.COMMS_CONN_RELAY )
-                     || conTypes.contains( CommsConnType.COMMS_CONN_P2P )) ) {
-                OnClickListener lstnr = new OnClickListener() {
-                        public void onClick( DialogInterface dlg,
-                                             int whichButton ) {
-                            NetStateCache.reset( m_activity );
-                            if ( conTypes.contains( CommsConnType.COMMS_CONN_RELAY ) ) {
-                                RelayService.reset( getActivity() );
+
+            if ( BuildConfig.NON_RELEASE && null != conTypes ) {
+                if ( conTypes.contains( CommsConnType.COMMS_CONN_RELAY )
+                     || conTypes.contains( CommsConnType.COMMS_CONN_P2P ) ) {
+                    OnClickListener lstnr = new OnClickListener() {
+                            @Override
+                            public void onClick( DialogInterface dlg,
+                                                 int whichButton ) {
+                                NetStateCache.reset( m_activity );
+                                if ( conTypes.contains( CommsConnType.COMMS_CONN_RELAY ) ) {
+                                    RelayService.reset( getActivity() );
+                                }
+                                if ( conTypes.contains( CommsConnType.COMMS_CONN_P2P ) ) {
+                                    WiDirService.reset( getActivity() );
+                                }
                             }
-                            if ( conTypes.contains( CommsConnType.COMMS_CONN_P2P ) ) {
-                                WiDirService.reset( getActivity() );
+                        };
+                    ab.setNegativeButton( R.string.button_reconnect, lstnr );
+                } else if ( conTypes.contains( CommsConnType.COMMS_CONN_MQTT ) ) {
+                    final int gameID = summary.gameID;
+                    OnClickListener lstnr = new OnClickListener() {
+                            @Override
+                            public void onClick( DialogInterface dlg, int whichButton ) {
+                                NetUtils.showGamePage( m_activity, gameID );
                             }
-                        }
-                    };
-                ab.setNegativeButton( R.string.button_reconnect, lstnr );
+                        };
+                    ab.setNegativeButton( R.string.list_item_relaypage, lstnr );
+                }
             }
             dialog = ab.create();
         }
