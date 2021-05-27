@@ -247,6 +247,9 @@ public class DictLangCache {
     {
         ArrayList<DictAndLoc> al = new ArrayList<>();
         DictAndLoc[] dals = DictUtils.dictList( context );
+
+        getLangNames( context ); /* inits s_langNames */
+
         for ( DictAndLoc dal : dals ) {
             DictInfo info = getInfo( context, dal );
             int langCode = info.langCode;
