@@ -2232,16 +2232,19 @@ public class BoardDelegate extends DelegateBase
                             runOnUiThread( new Runnable() {
                                     @Override
                                     public void run() {
-                                        Assert.assertTrue( m_jniGamePtr.isRetained() );
-                                        boolean hasPending = 0 < XwJNI.
-                                            comms_countPendingPackets( m_jniGamePtr );
-                                        mGameOverAlert = GameOverAlert
-                                            .newInstance( m_summary,
-                                                          msg.arg1,
-                                                          (String)msg.obj,
-                                                          hasPending,
-                                                          inArchiveGroup() );
-                                        show( mGameOverAlert );
+                                        Log.d( TAG, "makeJNIHandler(): handling GAME_OVER" );
+                                        Assert.assertTrueNR( m_jniGamePtr.isRetained() );
+                                        if ( m_jniGamePtr.isRetained() ) {
+                                            boolean hasPending = 0 < XwJNI.
+                                                comms_countPendingPackets( m_jniGamePtr );
+                                            mGameOverAlert = GameOverAlert
+                                                .newInstance( m_summary,
+                                                              msg.arg1,
+                                                              (String)msg.obj,
+                                                              hasPending,
+                                                              inArchiveGroup() );
+                                            show( mGameOverAlert );
+                                        }
                                     }
                                 } );
                         }
