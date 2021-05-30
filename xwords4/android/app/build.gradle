@@ -249,7 +249,9 @@ android {
             // proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             resValue "bool", "DEBUG", "false"
             externalNativeBuild {
-                ndkBuild.arguments += ['BUILD_TARGET=release']
+                ndkBuild {
+                    arguments += ['BUILD_TARGET=release']
+                }
             }
             ndk {
                 abiFilters 'armeabi-v7a', 'arm64-v8a'

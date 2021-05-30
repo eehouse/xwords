@@ -2684,7 +2684,7 @@ main( int argc, char** argv )
     mainParams.connInfo.ip.port = DEFAULT_PORT;
     mainParams.connInfo.ip.hostName = "localhost";
 #endif
-    mainParams.connInfo.mqtt.hostName = "localhost";
+    mainParams.connInfo.mqtt.hostName = "eehouse.org";
     mainParams.connInfo.mqtt.port = 1883;
 #ifdef XWFEATURE_SMS
     mainParams.connInfo.sms.port = 1;
