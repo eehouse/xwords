@@ -109,6 +109,13 @@ public class UtilCtxtImpl implements UtilCtxt {
     }
 
     @Override
+    public String getInviteeName( int plyrNum )
+    {
+        subclassOverride( "getInviteeName" );
+        return null;
+    }
+
+    @Override
     public void bonusSquareHeld( int bonus )
     {
     }

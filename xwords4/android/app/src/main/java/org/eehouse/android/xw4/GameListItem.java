@@ -318,7 +318,7 @@ public class GameListItem extends LinearLayout
                 ExpiringLinearLayout tmp = (ExpiringLinearLayout)
                     LocUtils.inflate( m_context, R.layout.player_list_elem );
                 TextView tview = (TextView)tmp.findViewById( R.id.item_name );
-                tview.setText( summary.summarizePlayer( m_context, ii ) );
+                tview.setText( summary.summarizePlayer( m_context, m_rowid, ii ) );
                 tview = (TextView)tmp.findViewById( R.id.item_score );
                 tview.setText( String.format( "%d", summary.scores[ii] ) );
                 boolean thisHasTurn = summary.isNextToPlay( ii, isLocal );

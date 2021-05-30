@@ -62,6 +62,7 @@ public interface UtilCtxt {
     void remSelected();
     void timerSelected( boolean inDuplicateMode, boolean canPause );
     void informWordsBlocked( int nWords, String words, String dict );
+    String getInviteeName( int index );
 
     void bonusSquareHeld( int bonus );
     void playerScoreHeld( int player );

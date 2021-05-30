@@ -267,9 +267,16 @@ drawScoreBoard( BoardCtxt* board, XWEnv xwe )
                     dp->dsi.isRemote = !lp->isLocal;
                     XP_ASSERT( !isMissing || dp->dsi.isRemote );
                     if ( dp->dsi.isRemote && isMissing ) {
-                        dp->dsi.name = dutil_getUserString( board->dutil, xwe, STR_PENDING_PLAYER );
+                        XP_U16 len = VSIZE(dp->dsi.name);
+                        util_getInviteeName( board->util, xwe, ii, dp->dsi.name, &len );
+                        if ( !dp->dsi.name[0] || len == 0 ) {
+                            const XP_UCHAR* tmp = dutil_getUserString( board->dutil, xwe,
+                                                                       STR_PENDING_PLAYER );
+                            XP_STRCAT( dp->dsi.name, tmp );
+                        }
                     } else {
-                        dp->dsi.name = emptyStringIfNull( lp->name );
+                        const XP_UCHAR* tmp = emptyStringIfNull( lp->name );
+                        XP_STRCAT( dp->dsi.name, tmp );
                     }
                     dp->dsi.nTilesLeft = (nTilesInPool > 0)? -1:
                         model_getNumTilesTotal( model, ii );

@@ -742,6 +742,27 @@ and_util_informWordsBlocked( XW_UtilCtxt* uc, XWEnv xwe, XP_U16 nBadWords,
     UTIL_CBK_TAIL();
 }
 
+static void
+and_util_getInviteeName( XW_UtilCtxt* uc, XWEnv xwe, XP_U16 plyrNum,
+                         XP_UCHAR* buf, XP_U16* bufLen )
+{
+    UTIL_CBK_HEADER( "getInviteeName", "(I)Ljava/lang/String;" );
+    jstring jresult = (*env)->CallObjectMethod( env, util->jutil, mid, plyrNum );
+    if ( NULL != jresult ) {
+        jsize len = (*env)->GetStringUTFLength( env, jresult );
+        if ( len < *bufLen ) {
+            const char* jchars = (*env)->GetStringUTFChars( env, jresult, NULL );
+            XP_STRCAT( buf, jchars );
+            (*env)->ReleaseStringUTFChars( env, jresult, jchars );
+            *bufLen = len;
+        } else {
+            *bufLen = 0;
+        }
+        deleteLocalRef( env, jresult );
+    }
+    UTIL_CBK_TAIL();
+}
+
 #ifdef XWFEATURE_DEVID
 static const XP_UCHAR*
 and_dutil_getDevID( XW_DUtilCtxt* duc, XWEnv xwe, DevIDType* typ )
@@ -771,7 +792,7 @@ and_dutil_getDevID( XW_DUtilCtxt* duc, XWEnv xwe, DevIDType* typ )
         *typ = (DevIDType)elems[0];
         (*env)->ReleaseByteArrayElements( env, jbarr, elems, 0 );
     }
-    deleteLocalRef( env, jbarr );
+    deleteLocalRefs( env, jbarr, jresult, DELETE_NO_REF );
     DUTIL_CBK_TAIL();
     return result;
 }
@@ -1023,6 +1044,7 @@ makeUtil( MPFORMAL JNIEnv* env,
 
     SET_PROC(getDevUtilCtxt);
     SET_PROC(informWordsBlocked);
+    SET_PROC(getInviteeName);
 
 #undef SET_PROC
     assertTableFull( vtable, sizeof(*vtable), "util" );

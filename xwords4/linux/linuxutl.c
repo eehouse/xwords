@@ -288,6 +288,18 @@ linux_util_getDict( XW_UtilCtxt* uc, XWEnv xwe,
     return result;
 }
 
+static void
+linux_util_getInviteeName( XW_UtilCtxt* XP_UNUSED(uc), XWEnv XP_UNUSED(xwe),
+                           XP_U16 index, XP_UCHAR* buf, XP_U16* bufLen )
+{
+    int len = XP_SNPRINTF( buf, *bufLen-1, "(%d invited)", index );
+    if ( len < *bufLen ) {
+        *bufLen = len + 1;
+    } else {
+        *bufLen = 0;
+    }
+}
+
 static XW_DUtilCtxt*
 linux_util_getDevUtilCtxt( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe) )
 {
@@ -306,6 +318,7 @@ linux_util_vt_init( MPFORMAL XW_UtilCtxt* util )
     util->vtable->m_util_makeEmptyDict = linux_util_makeEmptyDict;
     util->vtable->m_util_getSquareBonus = linux_util_getSquareBonus;
     util->vtable->m_util_getDict = linux_util_getDict;
+    util->vtable->m_util_getInviteeName = linux_util_getInviteeName;
 
     util->vtable->m_util_getDevUtilCtxt = linux_util_getDevUtilCtxt;
 }

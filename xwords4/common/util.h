@@ -179,6 +179,9 @@ typedef struct UtilVtable {
     void (*m_util_informWordsBlocked)( XW_UtilCtxt* uc, XWEnv xwe, XP_U16 nBadWords,
                                        XWStreamCtxt* words, const XP_UCHAR* dictName );
 
+    void (*m_util_getInviteeName)( XW_UtilCtxt* uc, XWEnv xwe, XP_U16 plyrNum,
+                                   XP_UCHAR* buf, XP_U16* bufLen );
+
 #ifdef XWFEATURE_SEARCHLIMIT
     XP_Bool (*m_util_getTraySearchLimits)(XW_UtilCtxt* uc, XWEnv xwe, 
                                           XP_U16* min, XP_U16* max );
@@ -317,6 +320,8 @@ struct XW_UtilCtxt {
 
 #define util_informWordsBlocked(uc,e, c, w, d)                        \
     (uc)->vtable->m_util_informWordsBlocked( (uc), (e), (c), (w), (d) )
+#define util_getInviteeName(uc, xwe, plyrNum, buf, len )              \
+    (uc)->vtable->m_util_getInviteeName( (uc), (xwe), (plyrNum), (buf), (len) )
 
 #ifdef XWFEATURE_SEARCHLIMIT
 #define util_getTraySearchLimits(uc,e,min,max) \

@@ -1770,6 +1770,12 @@ public class BoardDelegate extends DelegateBase
                 } );
         }
 
+        public String getInviteeName( int plyrNum )
+        {
+            return null == m_summary ? null
+                : m_summary.summarizePlayer( m_activity, m_rowid, plyrNum );
+        }
+
         @Override
         public void playerScoreHeld( int player )
         {

@@ -23,10 +23,16 @@
     <!-- Used to format robot player names in the lists of players
          found in each game listing -->
     <string name="robot_name_fmt">%1$s (robot)</string>
+    <!-- When a "Known" player's been invited but hasn't yet
+         connected, display it's name here so user knows who to
+         expect. Displayed in the lists of players found in each game
+         listing.-->
+    <string name="invitee_fmt">(%1$s invited)</string>
     <!-- Used as a substitute for the names of remote players when
          they aren't available yet because the connection is not
-         complete.  Displayed in the lists of players found in each
-         game listing. -->
+         complete (and when invitee_fmt above can't be used.)
+         Displayed in the lists of players found in each game
+         listing. -->
     <string name="missing_player">(not here yet…)</string>
     <!-- The display of each networked game includes one of three
          states it can be in in the process of connecting to the

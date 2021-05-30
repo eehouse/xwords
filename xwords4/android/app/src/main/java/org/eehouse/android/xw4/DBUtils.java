@@ -633,6 +633,23 @@ public class DBUtils {
             return result;
         }
 
+        public String getKPName( Context context )
+        {
+            String result = null;
+            for ( int ii = 0; ii < m_means.size(); ++ii ) {
+                InviteMeans means = m_means.get(ii);
+                if ( means == InviteMeans.MQTT ) {
+                    String player = XwJNI.kplr_nameForMqttDev( m_targets.get(ii) );
+                    if ( null != player ) {
+                        result = player;
+                        break;  // ordered newest-first, so we're done
+                    }
+                }
+            }
+
+            return result;
+        }
+
         void setRemotesRobots() { m_remotesRobots = true; }
         boolean getRemotesRobots() { return m_remotesRobots; }
     }

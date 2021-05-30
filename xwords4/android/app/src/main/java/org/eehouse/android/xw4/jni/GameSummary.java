@@ -398,14 +398,23 @@ public class GameSummary implements Serializable {
         m_giFlags = new Integer( flags );
     }
 
-    public String summarizePlayer( Context context, int indx )
+    public String summarizePlayer( Context context, long rowid, int indx )
     {
         String player = m_players[indx];
         int formatID = 0;
         if ( !isLocal(indx) ) {
             boolean isMissing = 0 != ((1 << indx) & missingPlayers);
             if ( isMissing ) {
-                player = LocUtils.getString( context, R.string.missing_player );
+                DBUtils.SentInvitesInfo si = DBUtils.getInvitesFor( context, rowid );
+                String kp = null;
+                if ( null != si ) {
+                    kp = si.getKPName( context );
+                }
+                if ( null == kp ) {
+                    player = LocUtils.getString( context, R.string.missing_player );
+                } else {
+                    player = LocUtils.getString( context, R.string.invitee_fmt, kp );
+                }
             } else {
                 formatID = R.string.str_nonlocal_name_fmt;
             }
