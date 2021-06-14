@@ -659,7 +659,7 @@
     <string name="no_relay_conn">Este jogo foi configurado para usar relay (internet) para comunicação mas foi incapaz de se conectar.
 \n
 \nPor favor tente abrir o jogo de novo mais tarde depois das condições terem mudado.</string>
-    <string name="not_again_comms_mqtt">Estou experimentando com isto como substituto do relay.</string>
+    <string name="not_again_comms_mqtt">Há um servidor na internet que passa mensagens entre dispositivos que estão rodando CrossWords. Ele funciona sempre que você tiver uma conexão de internet totalmente funcional, mas pode ter problemas em redes WiFi restritas.</string>
     <string name="mqtt_invite_title">Convite MQTT</string>
     <string name="mqtt_port">Porta MQTT</string>
     <string name="relay_port">Porta do jogo via relay</string>
@@ -1107,7 +1107,7 @@
     <string name="invite_msg_extra_rematch">Com revanches, todos os convites necessários são enviados automaticamente. Mas você sempre pode enviar novos se um convidado não estiver respondendo.</string>
     <string name="choose_expl_default_solo">Iniciar uma partida solo utilizando os padrões atuais</string>
     <string name="knowns_ts_fmt">Partida mais recente: %1$s</string>
-    <string name="invite_choice_mqtt">Internet/MQTT</string>
+    <string name="invite_choice_mqtt">Internet</string>
     <string name="dupe_title_fmt">%1$s (dup.)</string>
     <string name="dup_tag">Dup</string>
     <string name="game_summary_field_gameid">gameid</string>
@@ -1138,4 +1138,5 @@
         <item quantity="one">Tem certeza de que deseja excluir o jogo %1$s\? Essa ação não pode ser desfeita.</item>
         <item quantity="other">Tem certeza de que deseja excluir os jogos %1$s\? Essa ação não pode ser desfeita.</item>
     </plurals>
+    <string name="not_again_comms_relay_depr">O “relay” é um servidor para passar mensagens entre dispositivos rodando CrossWords. Está a ser substituído por um servidor mais moderno chamado “Mosquitto.”</string>
 </resources>

@@ -292,8 +292,7 @@
     <!-- title of popup used to determine how words are handled that
          are not in the wordlist used for the game (or player if using
          different wordlists per player) -->
-    <string name="phonies_spinner_prompt">Como lidar com palavras \"falsas\"
-        (que não estão na lista de palavras)</string>
+    <string name="phonies_spinner_prompt">Como lidar com palavras “falsas“ (que não estão na lista de palavras)</string>
     <!-- These are the three choices in the popup above whose text is
          phonies_spinner_prompt -->
     <!-- Don't care if words played are in the wordlist or not -->
