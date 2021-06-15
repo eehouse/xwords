@@ -1139,4 +1139,6 @@
         <item quantity="other">Tem certeza de que deseja excluir os jogos %1$s\? Essa ação não pode ser desfeita.</item>
     </plurals>
     <string name="not_again_comms_relay_depr">O “relay” é um servidor para passar mensagens entre dispositivos rodando CrossWords. Está a ser substituído por um servidor mais moderno chamado “Mosquitto.”</string>
+    <string name="list_item_relaypage">Tráfego do jogo…</string>
+    <string name="invitee_fmt">(%1$s convidado)</string>
 </resources>
