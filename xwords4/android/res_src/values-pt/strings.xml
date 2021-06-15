@@ -1290,14 +1290,11 @@
          Board screen.  The idea is that you're tapping around
          figuring out how to play and when you tap an empty cell the
          arrow appears.  This explains it. -->
-    <string name="not_again_arrow">Movendo pedras para o tabuleiro:\n
-    Você pode arrastar pedras entre a mão e o tabuleiro, ou você pode
-    selecionar uma casa vazia para posicionar a seta. As pedras da mão
-    selecionadas serão colocadas na posição da seta (empurrando-a uma
-    casa na direção que ela aponta.) Selecione a seta uma vez para
-    mudar sua orientação, e uma segunda vez para escondê-la. Uma
-    caixa de seleção na seção Aparência das Configurações pode ser
-    usada para escondê-la de forma permanente.</string>
+    <string name="not_again_arrow">Há duas maneiras de mover quadrados para o tabuleiro.
+\n
+\n - Pode arrastá-los entre as pedras e o tabuleiro.
+\n
+\n - Ou pode tocar num quadrado vazio no tabuleiro para colocar a \"seta do tabuleiro\". Depois as pedras no tabuleiro substituem a seta quando tocar neles. Toque na seta para mudar a direção dela ou para a esconder.</string>
     <!-- Shown when the board screen is visible and it's just become
          another players turn. The idea is to give a hint about how to
          find out about recent moves. -->
@@ -1323,10 +1320,7 @@
     <!-- Welcome dialog title -->
     <string name="default_name_title">Bem-vindo</string>
     <!-- Welcome dialog text -->
-    <string name="default_name_message">Obrigado por instalar o 
-      CrossWords! Preencha seu nome aqui. Será usado quando novos
-      jogos forem criados.  (Você pode mudá-lo depois na seção
-      \"Padrões para novos jogos\" das Configurações.)</string>
+    <string name="default_name_message">Por favor, preencha o seu nome aqui. Será usado quando novos jogos forem criados. (Pode mudá-lo depois na secção “Padrões para novos jogos“ das Configurações.)</string>
     <!-- 
        ###########################################################
        # :Dialogs:
@@ -1339,18 +1333,14 @@
     <string name="about_copyright">CrossWords para Android
 \nCopyright (C) 1998-2021 por Eric House. Este software livre/de código aberto está disponível sob a Licença Pública GNU.</string>
     <!-- Another paragraph in the about dialog -->
-    <string name="about_web">Para um manual ou código fonte veja:
-    http://xwords.sf.net/android.php.  Para reportar bugs, sugerir
-    recursos, oferecer ajuda, etc., por favor envie um email:
-    xwords@eehouse.org.</string>
+    <string name="about_web">Para um manual ou código-fonte (velho) veja: http://xwords.sf.net/android.php. Para reportar bugs, sugerir recursos, oferecer ajuda, etc., por favor envie um email: xwords@eehouse.org.</string>
     <!-- Empty in English, this should contain the name of the
          translator/creator of the strings.xml file for this
          language-->
     <string name="xlator">Felipe Medved Vieira</string>
     <!-- Another paragraph giving credit for work done other than by
          Eric House and translators -->
-    <string name="about_credits">Ícones da barra de ferramentas por
-    Sarah Chu; outros créditos aguardando permissão.</string>
+    <string name="about_credits">Créditos: ícones da barra de ferramentas da Sarah Chu. Ícones da barra de ferramentas do Projeto Noun: \"arquivo\" por Trendy; \"desforra\" por Becris; e \"troca\" por iconomania. Localização por voluntários via weblate.org.</string>
     <!-- text of dialog showing the set of changes made since the last
          release -->
     <string name="changes_title">Mudanças recentes</string>
@@ -1387,10 +1377,8 @@
     <!--  -->
     <!--  -->
     <!--  -->
-    <string name="not_again_browse">Esse botão abre o navegador de
-    listas de palavras na lista do jogador atual.</string>
-    <string name="not_again_browseall">Esse botão abre o seletor de listas
-    de palavras na lista de sua escolha.</string>
+    <string name="not_again_browse">Este botão permite-lhe navegar na lista de palavras visualizada mais recentemente.</string>
+    <string name="not_again_browseall">Este botão permite-lhe escolher a pesquisar em qual lista de palavras no idioma do jogo atual.</string>
     <!--  -->
     <string name="alert_empty_dict_fmt">A lista de palavras %1$s só contém
     informações de pedras.  Não há palavras para mostrar.</string>
@@ -1412,11 +1400,11 @@
     <string name="email_body_rev_fmt">(Se relevante, por favor inclua a versão (\"%1$s\") do CrossDbg, a marca/modelo (\"%2$s\") e a versão do SO (\"%3$s\") do seu telefone ou tablet, e o seu devID (%4$s\").)</string>
     <!--  -->
     <!--  -->
-    <string name="bt_pick_clear_button">Remover selecionados</string>
+    <string name="bt_pick_clear_button">Remover</string>
     <!--  -->
     <!--  -->
     <!--  -->
-    <string name="summary_wait_host">Esperando por conexão(ões)</string>
+    <string name="summary_wait_host">A esperar por convidado(s)</string>
     <!--  -->
     <string name="summary_wait_guest">Desconectado</string>
     <!--  -->
@@ -1427,8 +1415,7 @@
     <!--  -->
     <string name="new_bt_body_fmt">Aparelho pareado %1$s convidou-te para jogar</string>
     <!--  -->
-    <string name="bt_bad_proto_fmt">CrossWords em %1$s na versão errada para
-      jogar por Bluetooth.</string>
+    <string name="bt_bad_proto_fmt">A versão do CrossWords em \"%1$s\" é incompatível com esta para jogar a usar Bluetooth. Alguém pode precisar de atualizar antes de poder continuar.</string>
     <!--  -->
     <!--  -->
     <!--  -->
@@ -1459,23 +1446,17 @@
     <!--  -->
     <!--  -->
     <!--  -->
-    <string name="warn_nomobile_fmt">O número %1$s para %2$s não é um
-    número \"móvel\". Importar mesmo assim?</string>
+    <string name="warn_nomobile_fmt">O número %1$s para %2$s não é um número “móvel“. Importar mesmo assim\?</string>
     <!--  -->
-    <string name="empty_sms_inviter">Lista telefônica vazia. Use o
-    botão \"Importar contato\" para adicionar pessoas que você
-    deseja convidar, ou o botão + para entrar números
-    diretamente.</string>
+    <string name="empty_sms_inviter">Esta lista telefónica está vazia. Use o botão \"Importar contacto\" para adicionar pessoas que deseja convidar ou o botão + para entrar números diretamente.</string>
     <!--  -->
-    <string name="get_sms_number">Entre o número telefônico:</string>
+    <string name="get_sms_number">Número de telefone do aparelho:</string>
     <!--  -->
     <!--  -->
     <!--  -->
     <string name="summary_conn_sms_fmt">Jogo em andamento com %1$s</string>
     <!--  -->
-    <string name="warn_unlimited">Você tem certeza que este número tem
-    um plano de mensagens ilimitadas?  Clique cancelar se você não
-    tem.</string>
+    <string name="warn_unlimited">Tem certeza que este número tem um plano de mensagens ilimitadas\? Toque em “Cancelar” se não.</string>
     <!--  -->
     <string name="remote_undone">Aparelho remoto desfez uma jogada.</string>
     <!--  -->
@@ -1519,21 +1500,18 @@
     <!--  -->
     <!--  -->
     <!--  -->
-    <string name="enable_sms">Permitir jogos por SMS</string>
+    <string name="enable_sms">Permitir jogos por SMS de dados</string>
     <!--  -->
     <string name="enable_sms_summary">Apenas se você tiver mensagens de
     texto ilimitadas!</string>
     <!--  -->
     <string name="confirm_sms_title">Confirme seu plano de SMS</string>
     <!--  -->
-    <string name="confirm_sms_expl">Aviso: esse recurso é para
-    telefones com planos de mensagens de texto ilimitadas. Quando
-    você habilitá-lo, dúzias de mensagens de texto (SMS) serão enviadas
-    (de forma invisível) para cada partida jogada. Se você não tem
-    um plano ilimitado, sua operadora poderá cobrar cada mensagem.\n\n
-    Permitir jogos por SMS?</string>
+    <string name="confirm_sms_expl">Aviso: esse recurso é para telefones com planos de mensagens de texto ilimitadas. Quando ativá-lo, dúzias de mensagens de SMS de dados serão enviadas (de forma invisível) para cada partida jogada. Se não tem um plano ilimitado, a sua operadora poderá cobrar por cada mensagem.
+\n
+\n Permitir jogos por SMS de dados\?</string>
     <!--  -->
-    <string name="confirm_sms_prompt">Permitir jogos por SMS?</string>
+    <string name="confirm_sms_prompt">Ativar jogos por SMS de dados\?</string>
     <!--  -->
     <string name="confirm_sms_leave">Não: deixar desligado</string>
     <!--  -->
@@ -1588,10 +1566,10 @@
     <string name="download_failed">Descarrega falhou</string>
     <string name="default_loc">Armazenar listas de palavras internamente</string>
     <string name="default_loc_summary">(Não na memória externa/cartão SD)</string>
-    <string name="download_path_title">Diretório de downloads</string>
+    <string name="download_path_title">Diretório público</string>
     <string name="newgroup_label">Nomeie seu novo grupo:</string>
     <string name="list_group_delete">Apagar</string>
-    <string name="list_group_rename">Renomear</string>
+    <string name="list_group_rename">Renomear grupo</string>
     <string name="list_group_default">Colocar novos jogos aqui</string>
     <string name="list_group_moveup">Mover para cima</string>
     <string name="list_group_movedown">Mover para baixo</string>
@@ -2339,4 +2317,6 @@
         <item quantity="one">Tem certeza de que deseja apagar o jogo %1$s\? Essa ação não pode ser desfeita.</item>
         <item quantity="other">Tem certeza de que deseja apagar os jogos %1$s\? Essa ação não pode ser desfeita.</item>
     </plurals>
+    <string name="list_item_relaypage">Tráfego do jogo …</string>
+    <string name="invitee_fmt">(%1$s convidado)</string>
 </resources>
