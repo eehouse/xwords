@@ -3261,4 +3261,6 @@ pour la langue</string>
     <string name="choose_expl_default_net">Démarrer une partie en réseau en utilisant les paramètres par défaut</string>
     <string name="not_again_comms_relay_depr">Le « relai » est un serveur pour passer des messages entre appareils faisant tourner Crosswords. Il est en train d\'être remplacé par un serveur plus moderne appelé « Mosquito ».</string>
     <string name="no_dict_for_move_title">Coup entrant perdu</string>
+    <string name="list_item_relaypage">Trafic de la partie…</string>
+    <string name="invitee_fmt">(%1$s invité)</string>
 </resources>
