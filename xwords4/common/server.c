@@ -1850,7 +1850,7 @@ registerRemotePlayer( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* stream )
         XP_UCHAR name[nameLen + 1];
         stream_getBytes( stream, name, nameLen );
         name[nameLen] = '\0';
-        XP_LOGF( "%s(): read remote name: %s", __func__, name );
+        XP_LOGFF( "read remote name: %s", name );
 
         replaceStringIfDifferent( server->mpool, &lp->name, name );
 
@@ -1860,12 +1860,11 @@ registerRemotePlayer( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* stream )
         --server->nv.pendingRegistrations;
 
         if ( deviceIndex == -1 ) {
-            RemoteAddress* addr; 
-            addr = &server->nv.addresses[server->nv.nDevices];
+            RemoteAddress* addr = &server->nv.addresses[server->nv.nDevices];
 
             XP_ASSERT( channelNo != 0 );
             addr->channelNo = channelNo;
-            XP_LOGF( "%s: set channelNo to %x for device %d", __func__,
+            XP_LOGFF( "set channelNo to %x for device %d",
                      channelNo, server->nv.nDevices );
 
             deviceIndex = server->nv.nDevices++;
