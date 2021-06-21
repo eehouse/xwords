@@ -1,2 +1,71 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources></resources>
+<resources>
+    <string name="robot_smartest">Robot paling cerdas</string>
+    <string name="robot_smarter">Robot lebih cerdas</string>
+    <string name="robot_smart">Robot cerdas</string>
+    <string name="robot_spinner_prompt">Seberapa cerdas pemain robotnya\?</string>
+    <string name="robot_iq_label">IQ Robot</string>
+    <string name="dup_minutes_label">Menit per giliran</string>
+    <string name="minutes_label">Menit per pemain</string>
+    <string name="use_timer">Aktifkan timer permainan</string>
+    <string name="hints_allowed">Izinkan petunjuk</string>
+    <string name="settings_label">Pengaturan lain</string>
+    <string name="no_name_found_fmt">Tidak ada ruangan publik untuk permainan %1$d-oranh di %2$s. Coba memuat ulang atau membuat satu.</string>
+    <string name="public_names_progress_fmt">Mengambil data ruangan publik untuk permainan %1$d-orang di %2$s.</string>
+    <string name="room_public_prompt">Pilih ruangan publik</string>
+    <string name="room_public">Buat ruangan baru publik</string>
+    <string name="new_room_hint">Nama ruangan</string>
+    <string name="connect_label_fmt">Koneksi (melalui %1$s)</string>
+    <string name="langdict_label">Bahasa/daftar kata permainan</string>
+    <string name="lang_label">Bahasa permainan</string>
+    <string name="button_add_player">Tambahkan pemain</string>
+    <string name="game_locked">Kunci pengaturan</string>
+    <string name="title_langs_list">Bahasa-bahasa (berdasarkan daftar kata yang terpasang)</string>
+    <string name="title_game_config_fmt">Pengaturan untuk %1$s</string>
+    <string name="loc_external">Eksternal</string>
+    <string name="loc_internal">Internal</string>
+    <string name="move_dict_fmt">Lokasi untuk daftar kata %1$s</string>
+    <string name="button_default_human">Manusia</string>
+    <string name="join_room">Bergabung ke ruangan publik</string>
+    <string name="players_label_standalone">Pemain-pemain (ketuk untuk menyunting)</string>
+    <string name="button_default_both">Keduanya</string>
+    <string name="button_default_robot">Robot</string>
+    <plurals name="confirm_delete_dict_fmt">
+        <item quantity="other">Apakah Anda yakin ingin menghapus daftar kata %1$s\?</item>
+    </plurals>
+    <string name="dicts_item_select">Buat menjadi default</string>
+    <string name="dicts_item_move">Ubah lokasi penyimpanan</string>
+    <string name="loc_downloads">Unduhan</string>
+    <string name="loc_builtin">Bawaan</string>
+    <string name="download_more">Unduh lebih banyak…</string>
+    <string name="title_dicts_list">Daftar Kata CrossWords</string>
+    <plurals name="confirm_nameddeletes_fmt">
+        <item quantity="other">Apakah Anda yakin ingin menghapus permainan %1$s\? Tindakan ini tidak dapat dibatalkan.</item>
+    </plurals>
+    <plurals name="confirm_seldeletes_fmt">
+        <item quantity="other">Apakah Anda yakin ingin menghapus %1$d permainan yang dipilih\? Tindakan ini tidak dapat dibatalkan.</item>
+    </plurals>
+    <string name="rename_label_caveat">Ubah nama permainan ini (di perangkat ini saja) menjadi:</string>
+    <string name="rename_label">Ubah nama permainan ini menjadi:</string>
+    <string name="game_rename_title">Ubah nama permainan</string>
+    <string name="list_item_copy">Salin</string>
+    <string name="list_item_new_from">Buat dari</string>
+    <string name="list_item_delete">Hapus permainan</string>
+    <string name="list_item_move">Pindahkan ke kelompok…</string>
+    <string name="list_item_rename">Ubah nama…</string>
+    <string name="list_item_config">Pengaturan permainan…</string>
+    <string name="board_menu_file_about">Tentang CrossWords…</string>
+    <string name="menu_prefs">Pengaturan Aplikasi…</string>
+    <string name="gamel_menu_dicts">Daftar kata-kata…</string>
+    <string name="button_delete">Hapus</string>
+    <plurals name="moves_fmt">
+        <item quantity="other">%1$d gerakan dimainkan</item>
+    </plurals>
+    <string name="gameOver">Permainan telah berakhir</string>
+    <string name="summary_relay_gameover_fmt">Permainan telah selesai di ruangan “%1$s”</string>
+    <string name="summary_relay_wait_fmt">Menunggu pemain di ruang “%1$s”</string>
+    <string name="missing_player">(belum ada di sini…)</string>
+    <string name="invitee_fmt">(%1$s telah diundang)</string>
+    <string name="robot_name_fmt">%1$s (robot)</string>
+    <string name="str_game_name_fmt">%1$s (%2$s)</string>
+</resources>
