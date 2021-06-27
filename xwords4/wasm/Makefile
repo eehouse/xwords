@@ -64,7 +64,7 @@ DEFINES += -DROOT_PATH=\"$(ROOT_PATH)\"
 
 OUTPUTS = main.html main.js main.js.mem main.data main.html.mem main.wasm
 
-all: main.js
+all: main.html
 
 # PHONY: install
 
@@ -89,6 +89,7 @@ main.html: ${INPUTS} Makefile shell_minimal.html
 install: main.html
 	if [ -n "${XW_WASM_DEST}" ]; then \
 		for FILE in ${OUTPUTS} paho-mqtt.js xwutils.js; do \
+			mkdir -p ${XW_WASM_DEST}/${WEBDIR}; \
 			[ -f $$FILE ] && scp $$FILE ${XW_WASM_DEST}/${WEBDIR}/; \
 			echo "$$FILE copied"; \
 		done; \

@@ -637,6 +637,7 @@ wasm_util_make( MPFORMAL CurGameInfo* gi, XW_DUtilCtxt* dctxt, GameState* closur
     SET_VTABLE_ENTRY( wuctxt->super.vtable, util_informMove, wasm );
     SET_VTABLE_ENTRY( wuctxt->super.vtable, util_informUndo, wasm );
     SET_VTABLE_ENTRY( wuctxt->super.vtable, util_informNetDict, wasm );
+    SET_VTABLE_ENTRY( wuctxt->super.vtable, util_getDict, wasm );
     SET_VTABLE_ENTRY( wuctxt->super.vtable, util_notifyGameOver, wasm );
     SET_VTABLE_ENTRY( wuctxt->super.vtable, util_engineProgressCallback, wasm );
 #ifdef XWFEATURE_HILITECELL
@@ -654,8 +655,6 @@ wasm_util_make( MPFORMAL CurGameInfo* gi, XW_DUtilCtxt* dctxt, GameState* closur
     SET_VTABLE_ENTRY( wuctxt->super.vtable, util_formatPauseHistory, wasm );
     SET_VTABLE_ENTRY( wuctxt->super.vtable, util_bonusSquareHeld, wasm );
     SET_VTABLE_ENTRY( wuctxt->super.vtable, util_playerScoreHeld, wasm );
-
-    SET_VTABLE_ENTRY( wuctxt->super.vtable, util_getDict, wasm );
 
 #ifdef XWFEATURE_BOARDWORDS
     SET_VTABLE_ENTRY( wuctxt->super.vtable, util_cellSquareHeld, wasm );

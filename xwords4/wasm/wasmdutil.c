@@ -425,6 +425,15 @@ wasm_dutil_onGameGoneReceived( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe),
     main_onGameGone( globals, gameID );
 }
 
+
+static void
+wasm_dutil_ackMQTTMsg( XW_DUtilCtxt* duc, XWEnv xwe, XP_U32 gameID,
+                       const MQTTDevID* senderID, const XP_U8* msg,
+                       XP_U16 len )
+{
+    XP_ASSERT(0);               /* implement me */
+}
+
 static void
 onSynced(void* closure, const char* str)
 {
@@ -487,10 +496,11 @@ wasm_dutil_make( MPFORMAL VTableMgr* vtMgr, void* closure )
     SET_PROC(onInviteReceived);
     SET_PROC(onMessageReceived);
     SET_PROC(onGameGoneReceived);
+    SET_PROC(ackMQTTMsg);
 
 # undef SET_PROC
 
-    assertTableFull( &result->super.vtable, sizeof(result->super.vtable), "wasmutil" );
+    assertTableFull( &result->super.vtable, sizeof(result->super.vtable), "wasmdutil" );
 
     LOG_RETURNF( "%p", &result->super );
     return &result->super;
