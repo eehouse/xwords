@@ -588,9 +588,12 @@ def summarizeTileCounts(devs, endTime, state, changeSecs):
         fmtData[2]['data'].append(txt)
 
     print('')
-    print('devs left: {}; bag tiles left: {} (std: {}, dup: {}); total launches: {}; {}/{}'
-          .format(nDevs, totalTilesStd + totalTilesDup, totalTilesStd, totalTilesDup,
-                  nLaunches, datetime.datetime.now(), endTime ))
+    if totalTilesDup: dupDetails = ' (std: {}, dup: {})'.format(totalTilesStd, totalTilesDup)
+    else: dupDetails = ''
+    # here
+    print('devs left: {nDevs}; bag tiles left: {total}{details}; total launches: {nLaunches}; {now}/{endTime}' \
+          .format(nDevs=nDevs, total=totalTilesStd + totalTilesDup, details=dupDetails, \
+                  nLaunches=nLaunches, now=datetime.datetime.now(), endTime=endTime ))
     fmt = '{head:>%d} {data}' % headWidth
     for datum in fmtData: datum['data'] = ' '.join(datum['data'])
     for datum in fmtData:
