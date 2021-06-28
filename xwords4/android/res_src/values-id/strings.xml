@@ -31,7 +31,7 @@
     <string name="button_default_both">Keduanya</string>
     <string name="button_default_robot">Robot</string>
     <plurals name="confirm_delete_dict_fmt">
-        <item quantity="other">Apakah Anda yakin ingin menghapus daftar kata %1$s\?</item>
+        <item quantity="other">Apakah kamu yakin ingin menghapus daftar kata %1$s\?</item>
     </plurals>
     <string name="dicts_item_select">Buat menjadi default</string>
     <string name="dicts_item_move">Ubah lokasi penyimpanan</string>
@@ -40,10 +40,10 @@
     <string name="download_more">Unduh lebih banyak…</string>
     <string name="title_dicts_list">Daftar Kata CrossWords</string>
     <plurals name="confirm_nameddeletes_fmt">
-        <item quantity="other">Apakah Anda yakin ingin menghapus permainan %1$s\? Tindakan ini tidak dapat dibatalkan.</item>
+        <item quantity="other">Apakah kamu yakin ingin menghapus permainan %1$s\? Tindakan ini tidak dapat dibatalkan.</item>
     </plurals>
     <plurals name="confirm_seldeletes_fmt">
-        <item quantity="other">Apakah Anda yakin ingin menghapus %1$d permainan yang dipilih\? Tindakan ini tidak dapat dibatalkan.</item>
+        <item quantity="other">Apakah kamu yakin ingin menghapus %1$d permainan yang dipilih\? Tindakan ini tidak dapat dibatalkan.</item>
     </plurals>
     <string name="rename_label_caveat">Ubah nama permainan ini (di perangkat ini saja) menjadi:</string>
     <string name="rename_label">Ubah nama permainan ini menjadi:</string>
@@ -159,7 +159,7 @@
     <string name="values_both">Keduanya</string>
     <string name="values_values">Hanya nilai</string>
     <string name="values_faces">Hanya huruf</string>
-    <string name="history_title">Riwayat permainan</string>
+    <string name="history_title">Riwayat Permainan</string>
     <string name="finalscores_title">Skor akhir</string>
     <string name="button_notagain">Jangan tampilkan lagi</string>
     <string name="newbie_title">Ini sebuah tip</string>
@@ -189,4 +189,85 @@
     <string name="invite_chooser_email">surel</string>
     <string name="invite_chooser_fmt">Kirim undangan melalui %1$s</string>
     <string name="invite_sms_fmt">Ketuk untuk menerima undanganku dan bergabung ke permainan CrossWords: %1$s</string>
+    <string name="slmenu_copy_sel">Salin ke papan klip</string>
+    <string name="no_market">Aplikasi Google Play tidak ditemukan</string>
+    <string name="menu_rateme">Nilai CrossWords</string>
+    <string name="button_go_settings">Luncurkan Setelan</string>
+    <string name="enable_nfc">NFC tidak aktif di perangkat ini. Kamu dapat menggunakan aplikasi Setelan Android untuk mengaktifkannya .</string>
+    <string name="board_menu_invite">Undang</string>
+    <string name="thumb_off">Nonaktif</string>
+    <string name="summary_thumbsize">Ukuran thumbnail</string>
+    <plurals name="sel_groups_fmt">
+        <item quantity="other">%1$d kelompok dipilih</item>
+    </plurals>
+    <plurals name="sel_games_fmt">
+        <item quantity="other">%1$d permainan dipilih</item>
+    </plurals>
+    <string name="duplicate_group_name_fmt">Kelompok “%1$s” sudah ada.</string>
+    <string name="confirm_delete">Apakah kamu yakin ingin menghapus permainan ini\?
+\n
+\n(Tindakan ini tidak dapat dibatalkan.)</string>
+    <string name="inform_dict_download">" (Kamu harus mengunduhnya terlebih dahulu.)"</string>
+    <string name="connstat_lastreceipt_fmt">Penerimaan terakhir pada %1$s</string>
+    <string name="connstat_lastother_unsucc_fmt">(Pengiriman berhasil terakhir pada %1$s)</string>
+    <string name="connstat_lastother_succ_fmt">(kegagalan terakhir pada %1$s)</string>
+    <string name="connstat_lastsend_fmt">Pengiriman terakhir pada %1$s (%2$s)</string>
+    <string name="connstat_unsucc">tidak berhasil</string>
+    <string name="connstat_succ">berhasil</string>
+    <string name="connstat_net_fmt">Status jaringan untuk permainan (ID=%2$d) terhubung melalui %1$s:</string>
+    <string name="summary_busy">Rangkuman tidak tersedia</string>
+    <string name="game_list_tmp">Membuat rangkuman permainan…</string>
+    <string name="chat_sender_fmt">%1$s:</string>
+    <string name="menu_chat">Obrolan</string>
+    <string name="confirm_sms_leave">Tidak: biarkan nonaktif</string>
+    <string name="confirm_sms_prompt">Aktifkan bermain melalui SMS Data\?</string>
+    <string name="group_name_archive">Arsip</string>
+    <string name="checkbox_archive">Pindahkan ke Arsip</string>
+    <string name="button_archive">Arsipkan</string>
+    <plurals name="group_name_fmt">
+        <item quantity="other">%1$s (%2$d permainan)</item>
+    </plurals>
+    <string name="cannot_delete_default_group_fmt">Kelompok untuk permainan-permainan baru, %1$s, tidak dapat dihapus.</string>
+    <string name="rename_group_label">Ubah nama kelompok ini menjadi:</string>
+    <plurals name="groups_confirm_del_games_fmt">
+        <item quantity="other">"
+\n
+\n(%1$d permainan juga akan dihapus)"</item>
+    </plurals>
+    <plurals name="groups_confirm_del_fmt">
+        <item quantity="other">Apakah kamu yakin ingin menghapus kelompok %1$s\?</item>
+    </plurals>
+    <string name="group_new_games">Permainan-permainan baru</string>
+    <string name="group_cur_games">Permainan-permainanku</string>
+    <string name="list_group_movedown">Pindahkan ke bawah</string>
+    <string name="list_group_moveup">Pindahkan ke atas</string>
+    <string name="list_group_default">Letakkan permainan-permainan baru di sini</string>
+    <string name="list_group_rename">Ubah nama kelompok</string>
+    <string name="list_group_delete">Hapus kelompok</string>
+    <string name="newgroup_label">Berikan nama untuk kelompok barumu:</string>
+    <string name="download_path_hint">Contoh di mana lampiran surel disimpan</string>
+    <string name="download_failed">Pengunduhan gagal</string>
+    <string name="download_done">Pengunduhan selesai</string>
+    <string name="button_decline">Tolak</string>
+    <string name="str_placer_fmt" formatted="false">[#%1$d] %2$s: %3$d</string>
+    <string name="str_resigned_fmt" formatted="false">[Mengundurkan diri] %1$s: %2$d</string>
+    <string name="str_winner_fmt" formatted="false">[Pemenang] %1$s: %2$d</string>
+    <string name="new_app_avail">Ketuk untuk mengunduh dan memasangnya</string>
+    <string name="new_app_avail_fmt">Versi baru dari %1$s</string>
+    <string name="dict_avail_fmt">Ketuk untuk mengunduh daftar kata “%1$s”</string>
+    <string name="new_dict_avail_fmt">Ketuk untuk memperbarui %1$s</string>
+    <string name="new_dict_avail">Daftar kata baru tersedia</string>
+    <string name="checkupdates_none_found">Semuanya sudah mutakhir.</string>
+    <string name="gamel_menu_checkupdates">Periksa pembaruan</string>
+    <string name="button_later">Nanti</string>
+    <string name="button_disable_bt">Nonaktifkan permainan Bluetooth</string>
+    <string name="button_disable_relay">Nonaktifkan permainan Relay</string>
+    <string name="button_enable_relay">Aktifkan permainan Relay</string>
+    <string name="button_enable_bt">Aktifkan Bluetooth</string>
+    <string name="button_enable_sms">Aktifkan SMS Data</string>
+    <string name="confirm_sms_willpay">Ya: saya akan membayar semua biaya operator</string>
+    <string name="title_enable_p2p">Aktifkan WiFi Direct</string>
+    <string name="enable_sms">Izinkan permainan melalui SMS Data</string>
+    <string name="connstat_relay">Internet/relay</string>
+    <string name="connstat_noreceipt">Tidak ada pesan yang telah diterima.</string>
 </resources>
