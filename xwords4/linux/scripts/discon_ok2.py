@@ -510,7 +510,9 @@ def build_cmds(args):
             if DEV == 1 or usePublic: PARAMS += ['--force-game']
             if DEV == 1:
                 PARAMS += ['--server', '--phonies', phonies ]
-                PARAMS += ['--tray-size', random.randint(7, 9)] # randint() is *inclusive*
+                if 0 == args.TRAYSIZE: traySize = random.randint(7, 9)
+                else: traySize = args.TRAYSIZE
+                PARAMS += ['--tray-size', traySize] # randint() is *inclusive*
                 # IFF there are any non-1 player counts, tell inviter which
                 if sum(LOCALS) > NDEVS:
                     PARAMS += ['--invitee-counts', ":".join(str(n) for n in LOCALS[1:])]
@@ -793,6 +795,8 @@ def mkParser():
     parser.add_argument('--mqtt-host', dest = 'MQTT_HOST', default = 'localhost' )
 
     parser.add_argument('--remove-relay', dest = 'ADD_RELAY', default = True, action = 'store_false')
+    parser.add_argument('--force-tray', dest = 'TRAYSIZE', default = 0, type = int,
+                        help = 'Always this many tiles per tray')
 
     parser.add_argument('--core-pat', dest = 'CORE_PAT', default = os.environ.get('DISCON_COREPAT'),
                         help = "pattern for core files that should stop the script " \
