@@ -468,13 +468,11 @@ public class BoardCanvas extends Canvas implements DrawCtx {
             // frame the cell
             int frameColor = m_otherColors[CommonPrefs.COLOR_CELLLINE];
             m_strokePaint.setColor( adjustColor(frameColor) );
-            if ( false ) {
-                // PENDING: fetch/calculate this a lot less frequently!!
-                int linePct = XWPrefs.getPrefsInt( m_activity, R.string.key_board_line_pct, 1 );
-                linePct = Math.min( 25, linePct );
-                int width = Math.max(1, (rect.width() * linePct) / 100);
-                m_strokePaint.setStrokeWidth( width );
-            }
+
+            // PENDING: fetch/calculate this a lot less frequently!!
+            int width = XWPrefs.getPrefsInt( m_activity, R.string.key_board_line_width, 1 );
+            m_strokePaint.setStrokeWidth( width );
+
             drawRect( rect, m_strokePaint );
 
             drawCrosshairs( rect, flags );
@@ -779,7 +777,7 @@ public class BoardCanvas extends Canvas implements DrawCtx {
             m_fillPaint.setTextAlign( align );
             drawText( text, origin, bottom, m_fillPaint );
         }
-    } // drawCentered
+    } // drawIn
 
     private void drawScaled( String text, final Rect rect,
                              Rect textBounds, int descent )

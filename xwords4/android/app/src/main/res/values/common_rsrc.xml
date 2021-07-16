@@ -35,7 +35,7 @@
   <string name="key_cellline">key_cellline</string>
   <string name="key_clr_crosshairs">key_clr_crosshairs</string>
   <string name="key_clr_bonushint">key_clr_bonushint</string>
-  <string name="key_board_line_pct">key_board_line_pct</string>
+  <string name="key_board_line_width">key_board_line_width</string>
 
   <string name="key_relay_host">key_relay_host</string>
   <string name="key_relay_port">key_relay_port2</string>
@@ -192,6 +192,15 @@
     <item>7</item>
     <item>8</item>
     <item>9</item>
+  </string-array>
+
+  <string-array name="cellline_widths">
+    <item>1</item>
+    <item>2</item>
+    <item>3</item>
+    <item>4</item>
+    <item>6</item>
+    <item>8</item>
   </string-array>
 
   <string-array name="phony_names">

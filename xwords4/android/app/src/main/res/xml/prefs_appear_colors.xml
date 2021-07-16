@@ -81,5 +81,14 @@
         android:title="@string/cellline"
         android:defaultValue="0x101010"
         />
+
+    <org.eehouse.android.xw4.XWListPreference
+        android:key="@string/key_board_line_width"
+        android:title="@string/cellline_width"
+        android:entries="@array/cellline_widths"
+        android:entryValues="@array/cellline_widths"
+        android:defaultValue="2"
+        />
+
   </PreferenceCategory>
 </PreferenceScreen>

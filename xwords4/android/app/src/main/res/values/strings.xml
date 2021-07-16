@@ -881,7 +881,7 @@
        ############################################################
       -->
     <!-- title of this sub-preference -->
-    <string name="prefs_colors">Board colors</string>
+    <string name="prefs_colors">Board colors etc.</string>
     <!-- clarification of the above -->
     <string name="prefs_colors_summary">Edit colors used on the board</string>
     <!-- The remaining strings (down to the color edit dialog below)
@@ -913,7 +913,8 @@
          board -->
     <string name="key_bonushint">Bonus square text</string>
     <!-- The color of the lines delimiting cells on the board -->
-    <string name="cellline">Board lines</string>
+    <string name="cellline">Cell borders</string>
+    <string name="cellline_width">Cell border width</string>
     <!--       
        ############################################################
        # :Dialogs:
