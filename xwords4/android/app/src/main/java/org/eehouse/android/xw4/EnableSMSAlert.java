@@ -51,14 +51,12 @@ public class EnableSMSAlert extends DlgDelegateAlert {
         View layout = LocUtils.inflate( context, R.layout.confirm_sms );
         mSpinner = (Spinner)layout.findViewById( R.id.confirm_sms_reasons );
 
-        OnItemSelectedListener onItemSel = new OnItemSelectedListener() {
+        OnItemSelectedListener onItemSel = new Utils.OnNothingSelDoesNothing() {
                 @Override
                 public void onItemSelected( AdapterView<?> parent, View view,
                                             int position, long id ) {
                     checkEnableButton( (AlertDialog)getDialog() );
                 }
-                @Override
-                public void onNothingSelected( AdapterView<?> parent ) {}
             };
         mSpinner.setOnItemSelectedListener( onItemSel );
 

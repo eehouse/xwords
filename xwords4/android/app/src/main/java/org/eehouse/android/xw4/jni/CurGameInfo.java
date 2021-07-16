@@ -37,6 +37,8 @@ import org.eehouse.android.xw4.DictUtils;
 import org.eehouse.android.xw4.Log;
 import org.eehouse.android.xw4.R;
 import org.eehouse.android.xw4.Utils;
+import org.eehouse.android.xw4.XWApp;
+import org.eehouse.android.xw4.XWPrefs;
 import org.eehouse.android.xw4.loc.LocUtils;
 
 public class CurGameInfo implements Serializable {
@@ -45,6 +47,8 @@ public class CurGameInfo implements Serializable {
     public static final int MAX_NUM_PLAYERS = 4;
 
     private static final String BOARD_SIZE = "BOARD_SIZE";
+    private static final String TRAY_SIZE = "TRAY_SIZE";
+    private static final String BINGO_MIN = "BINGO_MIN";
     private static final String NO_HINTS = "NO_HINTS";
     private static final String TIMER = "TIMER";
     private static final String ALLOW_PICK = "ALLOW_PICK";
@@ -61,6 +65,8 @@ public class CurGameInfo implements Serializable {
     public int gameSeconds;
     public int nPlayers;
     public int boardSize;
+    public int traySize;
+    public int bingoMin;
     public int forceChannel;
     public DeviceRole serverRole;
 
@@ -89,6 +95,8 @@ public class CurGameInfo implements Serializable {
         gameSeconds = inDuplicateMode ? (5 * 60)
             : 60 * nPlayers * CommonPrefs.getDefaultPlayerMinutes( context );
         boardSize = CommonPrefs.getDefaultBoardSize( context );
+        traySize = XWPrefs.getDefaultTraySize( context );
+        bingoMin = XWApp.MIN_TRAY_TILES;
         players = new LocalPlayer[MAX_NUM_PLAYERS];
         serverRole = isNetworked ? DeviceRole.SERVER_ISCLIENT
             : DeviceRole.SERVER_STANDALONE;
@@ -140,6 +148,8 @@ public class CurGameInfo implements Serializable {
         nPlayers = src.nPlayers;
         gameSeconds = src.gameSeconds;
         boardSize = src.boardSize;
+        traySize = src.traySize;
+        bingoMin = src.bingoMin;
         players = new LocalPlayer[MAX_NUM_PLAYERS];
         serverRole = src.serverRole;
         dictName = src.dictName;
@@ -190,6 +200,8 @@ public class CurGameInfo implements Serializable {
         try {
             JSONObject obj = new JSONObject()
                 .put( BOARD_SIZE, boardSize )
+                .put( TRAY_SIZE, traySize )
+                .put( BINGO_MIN, bingoMin )
                 .put( NO_HINTS, hintsNotAllowed )
                 .put( DUP, inDuplicateMode )
                 .put( TIMER, timerEnabled )
@@ -210,6 +222,8 @@ public class CurGameInfo implements Serializable {
             try {
                 JSONObject obj = new JSONObject( jsonData );
                 boardSize = obj.optInt( BOARD_SIZE, boardSize );
+                traySize = obj.optInt( TRAY_SIZE, traySize );
+                bingoMin = obj.optInt( BINGO_MIN, bingoMin );
                 hintsNotAllowed = obj.optBoolean( NO_HINTS, hintsNotAllowed );
                 inDuplicateMode = obj.optBoolean( DUP, inDuplicateMode );
                 timerEnabled = obj.optBoolean( TIMER, timerEnabled );
@@ -287,6 +301,8 @@ public class CurGameInfo implements Serializable {
             || serverRole != other.serverRole
             || dictLang != other.dictLang
             || boardSize != other.boardSize
+            || traySize != other.traySize
+            || bingoMin != other.bingoMin
             || hintsNotAllowed != other.hintsNotAllowed
             || inDuplicateMode != other.inDuplicateMode
             || allowPickTiles != other.allowPickTiles
@@ -320,6 +336,8 @@ public class CurGameInfo implements Serializable {
                     && gameSeconds == other.gameSeconds
                     && nPlayers == other.nPlayers
                     && boardSize == other.boardSize
+                    && traySize == other.traySize
+                    && bingoMin == other.bingoMin
                     && forceChannel == other.forceChannel
                     && hintsNotAllowed == other.hintsNotAllowed
                     && inDuplicateMode == other.inDuplicateMode

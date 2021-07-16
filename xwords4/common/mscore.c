@@ -527,9 +527,9 @@ isLegalMove( ModelCtxt* model, XWEnv xwe, MoveInfo* mInfo, XP_Bool silent )
 } /* isLegalMove */
 
 XP_U16
-figureMoveScore( const ModelCtxt* model, XWEnv xwe, XP_U16 turn, const MoveInfo* moveInfo,
-                 EngineCtxt* engine, XWStreamCtxt* stream, 
-                 WordNotifierInfo* notifyInfo )
+figureMoveScore( const ModelCtxt* model, XWEnv xwe, XP_U16 turn,
+                 const MoveInfo* moveInfo, EngineCtxt* engine,
+                 XWStreamCtxt* stream, WordNotifierInfo* notifyInfo )
 {
     XP_U16 col, row;
     XP_U16* incr;
@@ -584,13 +584,22 @@ figureMoveScore( const ModelCtxt* model, XWEnv xwe, XP_U16 turn, const MoveInfo*
         score += oneScore;
     }
 
+    const CurGameInfo* gi = model->vol.gi;
+
     /* did he use all 7 tiles? */
-    if ( nTiles == MAX_TRAY_TILES ) {
-        score += EMPTIED_TRAY_BONUS;
+    if ( gi->bingoMin <= nTiles ) {
+        score += BINGO_BONUS;
 
         if ( !!stream ) {
-            const XP_UCHAR* bstr = dutil_getUserString( model->vol.dutil,
-                                                        xwe, STR_BONUS_ALL );
+            const XP_UCHAR* bstr;
+            XP_UCHAR buf[128];
+            if ( gi->bingoMin == gi->traySize ) {
+                bstr = dutil_getUserString( model->vol.dutil, xwe, STR_BONUS_ALL );
+            } else {
+                bstr = dutil_getUserString( model->vol.dutil, xwe, STR_BONUS_ALL_SUB );
+                XP_SNPRINTF( buf, VSIZE(buf), bstr, gi->bingoMin );
+                bstr = buf;
+            }
             stream_catString( stream, bstr );
         }
     }

@@ -65,6 +65,13 @@
         android:numeric="decimal"
         />
 
+    <org.eehouse.android.xw4.XWListPreference
+        android:key="@string/key_tray_size"
+        android:title="@string/tray_size"
+        android:entries="@array/tray_sizes"
+        android:entryValues="@array/tray_sizes"
+        android:defaultValue="7"
+        />
     <org.eehouse.android.xw4.XWListPreference 
         android:key="@string/key_board_size"
         android:title="@string/board_size"

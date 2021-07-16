@@ -838,6 +838,7 @@ typedef enum {
     ,CMD_NOCLOSESTDIN
     ,CMD_QUITAFTER
     ,CMD_BOARDSIZE
+    ,CMD_TRAYSIZE
     ,CMD_DUP_MODE
     ,CMD_HIDEVALUES
     ,CMD_SKIPCONFIRM
@@ -985,6 +986,7 @@ static CmdInfoRec CmdInfoRecs[] = {
     ,{ CMD_NOCLOSESTDIN, false, "no-close-stdin", "do not close stdin on start" }
     ,{ CMD_QUITAFTER, true, "quit-after", "exit <n> seconds after game's done" }
     ,{ CMD_BOARDSIZE, true, "board-size", "board is <n> by <n> cells" }
+    ,{ CMD_TRAYSIZE, true, "tray-size", "<n> tiles per tray (7-9 are legal)" }
     ,{ CMD_DUP_MODE, false, "duplicate-mode", "play in duplicate mode" }
     ,{ CMD_HIDEVALUES, false, "hide-values", "show letters, not nums, on tiles" }
     ,{ CMD_SKIPCONFIRM, false, "skip-confirm", "don't confirm before commit" }
@@ -2690,6 +2692,8 @@ main( int argc, char** argv )
     mainParams.connInfo.sms.port = 1;
 #endif
     mainParams.pgi.boardSize = 15;
+    mainParams.pgi.traySize = 7;
+    mainParams.pgi.bingoMin = 7;
     mainParams.quitAfter = -1;
     mainParams.sleepOnAnchor = XP_FALSE;
     mainParams.printHistory = XP_FALSE;
@@ -3043,6 +3047,11 @@ main( int argc, char** argv )
             break;
         case CMD_BOARDSIZE:
             mainParams.pgi.boardSize = atoi(optarg);
+            break;
+        case CMD_TRAYSIZE:
+            mainParams.pgi.traySize = atoi(optarg);
+            XP_ASSERT( MIN_TRAY_TILES <= mainParams.pgi.traySize
+                       && mainParams.pgi.traySize <= MAX_TRAY_TILES );
             break;
         case CMD_DUP_MODE:
             mainParams.pgi.inDuplicateMode = XP_TRUE;

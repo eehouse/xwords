@@ -421,6 +421,8 @@ static const SetInfo gi_ints[] = {
     ARR_MEMBER( CurGameInfo, nPlayers )
     ,ARR_MEMBER( CurGameInfo, gameSeconds )
     ,ARR_MEMBER( CurGameInfo, boardSize )
+    ,ARR_MEMBER( CurGameInfo, traySize )
+    ,ARR_MEMBER( CurGameInfo, bingoMin )
     ,ARR_MEMBER( CurGameInfo, gameID )
     ,ARR_MEMBER( CurGameInfo, dictLang )
     ,ARR_MEMBER( CurGameInfo, forceChannel )
@@ -541,23 +543,23 @@ setJGI( JNIEnv* env, jobject jgi, const CurGameInfo* gi )
 } /* setJGI */
 
 #ifdef COMMON_LAYOUT
-static const SetInfo bd_ints[] = {
-    ARR_MEMBER( BoardDims, left )
-    ,ARR_MEMBER( BoardDims, top )
-    ,ARR_MEMBER( BoardDims, width )
-    ,ARR_MEMBER( BoardDims, height )
-    ,ARR_MEMBER( BoardDims, scoreLeft )
-    ,ARR_MEMBER( BoardDims, scoreHt )
-    ,ARR_MEMBER( BoardDims, scoreWidth )
-    ,ARR_MEMBER( BoardDims, boardWidth )
-    ,ARR_MEMBER( BoardDims, boardHt )
-    ,ARR_MEMBER( BoardDims, trayLeft )
-    ,ARR_MEMBER( BoardDims, trayTop )
-    ,ARR_MEMBER( BoardDims, trayWidth )
-    ,ARR_MEMBER( BoardDims, trayHt )
-    ,ARR_MEMBER( BoardDims, cellSize )
-    ,ARR_MEMBER( BoardDims, maxCellSize )
-    ,ARR_MEMBER( BoardDims, timerWidth )
+static const SetInfo bd_ints[] = { ARR_MEMBER( BoardDims, left ),
+                                   ARR_MEMBER( BoardDims, top ),
+                                   ARR_MEMBER( BoardDims, width ),
+                                   ARR_MEMBER( BoardDims, height ),
+                                   ARR_MEMBER( BoardDims, scoreLeft ),
+                                   ARR_MEMBER( BoardDims, scoreHt ),
+                                   ARR_MEMBER( BoardDims, scoreWidth ),
+                                   ARR_MEMBER( BoardDims, boardWidth ),
+                                   ARR_MEMBER( BoardDims, boardHt ),
+                                   ARR_MEMBER( BoardDims, trayLeft ),
+                                   ARR_MEMBER( BoardDims, trayTop ),
+                                   ARR_MEMBER( BoardDims, trayWidth ),
+                                   ARR_MEMBER( BoardDims, trayHt ),
+                                   ARR_MEMBER( BoardDims, traySize ),
+                                   ARR_MEMBER( BoardDims, cellSize ),
+                                   ARR_MEMBER( BoardDims, maxCellSize ),
+                                   ARR_MEMBER( BoardDims, timerWidth ),
 };
 
 static void

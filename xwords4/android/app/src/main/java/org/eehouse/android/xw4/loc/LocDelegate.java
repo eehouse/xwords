@@ -117,6 +117,7 @@ public class LocDelegate extends ListDelegateBase
     //////////////////////////////////////////////////
     // AdapterView.OnItemSelectedListener interface
     //////////////////////////////////////////////////
+    @Override
     public void onItemSelected( AdapterView<?> parent, View view,
                                 int position, long id )
     {
@@ -124,7 +125,6 @@ public class LocDelegate extends ListDelegateBase
         makeNewAdapter();
     }
 
-    public void onNothingSelected( AdapterView<?> parent )
-    {
-    }
+    @Override
+    public void onNothingSelected( AdapterView<?> parent ) {}
 }

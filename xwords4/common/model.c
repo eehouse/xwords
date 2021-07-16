@@ -123,7 +123,6 @@ model_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
 {
     ModelCtxt* model;
     XP_U16 nCols;
-    XP_U16 nPlayers;
     XP_U16 version = stream_getVersion( stream );
 
     XP_ASSERT( !!dict || !!dicts );
@@ -139,7 +138,7 @@ model_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
     }
     XP_ASSERT( MAX_COLS >= nCols );
 
-    nPlayers = (XP_U16)stream_getBits( stream, NPLAYERS_NBITS );
+    XP_U16 nPlayers = (XP_U16)stream_getBits( stream, NPLAYERS_NBITS );
 
     model = model_make( MPPARM(mpool) xwe, dict, dicts, util, nCols );
     model->nPlayers = nPlayers;
@@ -161,7 +160,6 @@ model_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
     stack_loadFromStream( model->vol.stack, stream );
 
     MovePrintFuncPre pre = NULL;
-    MovePrintFuncPost post = NULL;
     void* closure = NULL;
 #ifdef DEBUG
     pre = assertDiffTurn;
@@ -171,7 +169,7 @@ model_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
 
     buildModelFromStack( model, xwe, model->vol.stack, XP_FALSE, 0,
                          (XWStreamCtxt*)NULL, (WordNotifierInfo*)NULL,
-                         pre, post, closure );
+                         pre, (MovePrintFuncPost)NULL, closure );
 
     for ( int ii = 0; ii < model->nPlayers; ++ii ) {
         loadPlayerCtxt( model, stream, version, &model->players[ii] );
@@ -283,6 +281,12 @@ model_setSize( ModelCtxt* model, XP_U16 nCols )
                                  vol->gi->nPlayers, vol->gi->inDuplicateMode );
     }
 } /* model_setSize */
+
+void
+model_forceStack7Tiles( ModelCtxt* model )
+{
+    stack_set7Tiles( model->vol.stack );
+}
 
 void
 model_destroy( ModelCtxt* model, XWEnv xwe )
@@ -1139,7 +1143,7 @@ model_currentMoveToStream( ModelCtxt* model, XP_S16 turn,
     XP_ASSERT( turn >= 0 );
     XP_S16 numTiles = model->players[turn].nPending;
 
-    stream_putBits( stream, NTILES_NBITS, numTiles );
+    stream_putBits( stream, tilesNBits(stream), numTiles );
 
     while ( numTiles-- ) {
         Tile tile;
@@ -1177,8 +1181,8 @@ model_makeTurnFromStream( ModelCtxt* model, XWEnv xwe, XP_U16 playerNum,
 
     model_resetCurrentTurn( model, xwe, playerNum );
 
-    XP_U16 numTiles = (XP_U16)stream_getBits( stream, NTILES_NBITS );
-    XP_LOGF( "%s: numTiles=%d", __func__, numTiles );
+    XP_U16 numTiles = (XP_U16)stream_getBits( stream, tilesNBits(stream) );
+    XP_LOGFF( "numTiles=%d", numTiles );
 
     Tile tileFaces[numTiles];
     XP_U16 cols[numTiles];
@@ -2141,17 +2145,17 @@ model_getNumTilesInTray( ModelCtxt* model, XP_S16 turn )
     XP_ASSERT( turn >= 0 );
     player = &model->players[turn];
     XP_U16 result = player->trayTiles.nTiles;
-    // XP_LOGF( "%s(turn=%d) => %d", __func__, turn, result );
+    // XP_LOGFF( "(turn=%d) => %d", turn, result );
     return result;
 } /* model_getNumTilesInTray */
 
 XP_U16
 model_getNumTilesTotal( ModelCtxt* model, XP_S16 turn )
 {
-    PlayerCtxt* player;
     XP_ASSERT( turn >= 0 );
-    player = &model->players[turn];
-    return player->trayTiles.nTiles + player->nPending;
+    PlayerCtxt* player = &model->players[turn];
+    XP_U16 result = player->trayTiles.nTiles + player->nPending;
+    return result;
 } /* model_getNumTilesTotal */
 
 XP_U16
@@ -2423,8 +2427,10 @@ copyStack( const ModelCtxt* model, XWEnv xwe, StackCtxt* destStack,
         mem_stream_make_raw( MPPARM(model->vol.mpool)
                              dutil_getVTManager(model->vol.dutil) );
 
-    stack_writeToStream( (StackCtxt*)srcStack, stream );
+    stream_setVersion( stream, stack_getVersion(srcStack) );
+    stack_writeToStream( srcStack, stream );
     stack_loadFromStream( destStack, stream );
+    XP_ASSERT( stack_getVersion(destStack) == stack_getVersion( srcStack ) );
 
     stream_destroy( stream, xwe );
 } /* copyStack */
@@ -2758,8 +2764,6 @@ static void
 loadPlayerCtxt( const ModelCtxt* model, XWStreamCtxt* stream, XP_U16 version, 
                 PlayerCtxt* pc )
 {
-    PendingTile* pt;
-    XP_U16 nTiles;
     XP_U16 nColsNBits;
 #ifdef STREAM_VERS_BIGBOARD
     nColsNBits = 16 <= model_numCols( model ) ? NUMCOLS_NBITS_5
@@ -2772,25 +2776,25 @@ loadPlayerCtxt( const ModelCtxt* model, XWStreamCtxt* stream, XP_U16 version,
     pc->curMoveValid = stream_getBits( stream, 1 );
 
     traySetFromStream( stream, &pc->trayTiles );
-    
-    pc->nPending = (XP_U8)stream_getBits( stream, NTILES_NBITS );
+
+    const XP_U16 nTileBits = tilesNBits(stream);
+    pc->nPending = (XP_U8)stream_getBits( stream, nTileBits );
     if ( STREAM_VERS_NUNDONE <= version ) {
-        pc->nUndone = (XP_U8)stream_getBits( stream, NTILES_NBITS );
+        pc->nUndone = (XP_U8)stream_getBits( stream, nTileBits );
     } else {
         XP_ASSERT( 0 == pc->nUndone );
     }
     XP_ASSERT( 0 == pc->dividerLoc );
     if ( STREAM_VERS_MODELDIVIDER <= version ) {
-        pc->dividerLoc = stream_getBits( stream, NTILES_NBITS );
+        pc->dividerLoc = stream_getBits( stream, nTileBits );
     }
 
-    nTiles = pc->nPending + pc->nUndone;
-    for ( pt = pc->pendingTiles; nTiles-- > 0; ++pt ) {
-        XP_U16 nBits;
+    XP_U16 nTiles = pc->nPending + pc->nUndone;
+    for ( PendingTile* pt = pc->pendingTiles; nTiles-- > 0; ++pt ) {
         pt->col = (XP_U8)stream_getBits( stream, nColsNBits );
         pt->row = (XP_U8)stream_getBits( stream, nColsNBits );
 
-        nBits = (version <= STREAM_VERS_RELAY) ? 6 : 7;
+        XP_U16 nBits = (version <= STREAM_VERS_RELAY) ? 6 : 7;
         pt->tile = (Tile)stream_getBits( stream, nBits );
     }
 
@@ -2814,10 +2818,11 @@ writePlayerCtxt( const ModelCtxt* model, XWStreamCtxt* stream,
     stream_putBits( stream, 1, pc->curMoveValid );
 
     traySetToStream( stream, &pc->trayTiles );
-    
-    stream_putBits( stream, NTILES_NBITS, pc->nPending );
-    stream_putBits( stream, NTILES_NBITS, pc->nUndone );
-    stream_putBits( stream, NTILES_NBITS, pc->dividerLoc );
+
+    XP_U16 nBits = tilesNBits( stream );
+    stream_putBits( stream, nBits, pc->nPending );
+    stream_putBits( stream, nBits, pc->nUndone );
+    stream_putBits( stream, nBits, pc->dividerLoc );
 
     nTiles = pc->nPending + pc->nUndone;
     for ( pt = pc->pendingTiles; nTiles-- > 0; ++pt ) {

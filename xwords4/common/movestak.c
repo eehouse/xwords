@@ -59,6 +59,7 @@ struct StackCtxt {
 };
 
 #define HAVE_FLAGS_MASK ((XP_U16)0x8000)
+#define VERS_7TILES_BIT 0x01
 
 static XP_Bool popEntryImpl( StackCtxt* stack, StackEntry* entry );
 
@@ -73,6 +74,21 @@ stack_init( StackCtxt* stack, XP_U16 nPlayers, XP_Bool inDuplicateMode )
     /* I see little point in freeing or shrinking stack->data.  It'll get
        shrunk to fit as soon as we serialize/deserialize anyway. */
 } /* stack_init */
+
+
+void
+stack_set7Tiles( StackCtxt* stack )
+{
+    XP_ASSERT( !stack->data );
+    stack->flags |= VERS_7TILES_BIT;
+}
+
+XP_U16
+stack_getVersion( const StackCtxt* stack )
+{
+    XP_ASSERT( !!stack->data );
+    return stream_getVersion( stack->data );
+}
 
 #ifdef STREAM_VERS_HASHSTREAM
 XP_U32
@@ -143,12 +159,18 @@ stack_loadFromStream( StackCtxt* stack, XWStreamCtxt* stream )
     nBytes &= ~HAVE_FLAGS_MASK;
 
     if ( nBytes > 0 ) {
+        XP_U8 stackVersion = STREAM_VERS_NINETILES - 1;
+        if ( STREAM_VERS_NINETILES <= stream_getVersion(stream) ) {
+            stackVersion = stream_getU8( stream );
+            XP_LOGFF( "read stackVersion: %d from stream", stackVersion );
+        }
         stack->highWaterMark = stream_getU16( stream );
         stack->nEntries = stream_getU16( stream );
         stack->top = stream_getU32( stream );
         stack->data = mem_stream_make_raw( MPPARM(stack->mpool) stack->vtmgr );
 
         stream_getFromStream( stack->data, stream, nBytes );
+        stream_setVersion( stack->data, stackVersion );
     } else {
         XP_ASSERT( stack->nEntries == 0 );
         XP_ASSERT( stack->top == 0 );
@@ -178,6 +200,9 @@ stack_writeToStream( const StackCtxt* stack, XWStreamCtxt* stream )
     }
 
     if ( nBytes > 0 ) {
+        if ( STREAM_VERS_NINETILES <= stream_getVersion(stream) ) {
+            stream_putU8( stream, stream_getVersion(data) );
+        }
         stream_putU16( stream, stack->highWaterMark );
         stream_putU16( stream, stack->nEntries );
         stream_putU32( stream, stack->top );
@@ -208,16 +233,18 @@ stack_copy( const StackCtxt* stack )
 static void
 pushEntryImpl( StackCtxt* stack, const StackEntry* entry )
 {
-    XWStreamCtxt* stream = stack->data;
-
     XP_LOGFF( "(typ=%s, player=%d)", StackMoveType_2str(entry->moveType),
               entry->playerNum );
 
+    XWStreamCtxt* stream = stack->data;
     if ( !stream ) {
-        stream = mem_stream_make_raw( MPPARM(stack->mpool) stack->vtmgr );
-        stack->data = stream;
+        stream = stack->data =
+            mem_stream_make_raw( MPPARM(stack->mpool) stack->vtmgr );
+        XP_U16 version = 0 == (stack->flags & VERS_7TILES_BIT)
+            ? CUR_STREAM_VERS : STREAM_VERS_NINETILES - 1;
+        stream_setVersion( stream, version );
         stack->typeBits = stack->inDuplicateMode ? 3 : 2;     /* the new size */
-        XP_ASSERT( 0 == stack->flags );
+        XP_ASSERT( 0 == (~VERS_7TILES_BIT & stack->flags) );
     }
 
     XWStreamPos oldLoc = stream_setPos( stream, POS_WRITE, stack->top );

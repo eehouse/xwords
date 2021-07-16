@@ -263,11 +263,18 @@
                  />
       </org.eehouse.android.xw4.LabeledSpinner>
 
-      <CheckBox android:id="@+id/pick_faceup"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/pick_faceup"
-                />
+      <org.eehouse.android.xw4.LabeledSpinner
+          style="@style/config_spinner_container"
+          android:id="@+id/traysize_spinner"
+          >
+        <TextView style="@style/config_spinner_label"
+                  android:text="@string/tray_size"
+                  />
+        <Spinner style="@style/config_spinner_spinner"
+                 android:prompt="@string/tray_size"
+                 android:entries="@array/tray_sizes"
+                 />
+      </org.eehouse.android.xw4.LabeledSpinner>
 
       <org.eehouse.android.xw4.LabeledSpinner
           style="@style/config_spinner_container"
@@ -281,6 +288,12 @@
                  android:entries="@array/board_sizes"
                  />
       </org.eehouse.android.xw4.LabeledSpinner>
+
+      <CheckBox android:id="@+id/pick_faceup"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/pick_faceup"
+                />
 
       <LinearLayout android:layout_width="fill_parent"
                     android:layout_height="fill_parent"

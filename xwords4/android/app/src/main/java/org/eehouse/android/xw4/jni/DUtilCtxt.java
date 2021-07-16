@@ -128,6 +128,7 @@ public class DUtilCtxt {
     private static final int STRD_DUP_TRADED =                   28;
     private static final int STRSD_DUP_ONESCORE =                29;
     private static final int STR_PENDING_PLAYER =                30;
+    private static final int STR_BONUS_ALL_SUB =                 31;
 
     public String getUserString( final int stringCode )
     {
@@ -183,6 +184,9 @@ public class DUtilCtxt {
             break;
         case STR_BONUS_ALL:
             id = R.string.str_bonus_all;
+            break;
+        case STR_BONUS_ALL_SUB:
+            id = R.string.str_bonus_all_fmt;
             break;
         case STRD_TURN_SCORE:
             id = R.string.strd_turn_score_fmt;

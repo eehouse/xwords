@@ -258,10 +258,10 @@ board_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream, ModelCtxt* model
         arrow->visible = (XP_Bool)stream_getBits( stream, 1 );
 
         if ( STREAM_VERS_MODELDIVIDER > version ) {
-            (void)stream_getBits( stream, NTILES_NBITS );
+            (void)stream_getBits( stream, NTILES_NBITS_7 );
         }
-        pti->traySelBits = (TileBit)stream_getBits( stream, 
-                                                    MAX_TRAY_TILES );
+        XP_U16 nBits = STREAM_VERS_NINETILES <= version ? MAX_TRAY_TILES : 7;
+        pti->traySelBits = (TileBit)stream_getBits( stream, nBits );
         pti->tradeInProgress = (XP_Bool)stream_getBits( stream, 1 );
 
         if ( version >= STREAM_VERS_KEYNAV ) {
@@ -287,7 +287,6 @@ board_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream, ModelCtxt* model
             pti->limits.bottom =  stream_getBits( stream, 4 );
         }
 #endif
-
     }
 
     board->selPlayer = (XP_U8)stream_getBits( stream, PLAYERNUM_NBITS );
@@ -351,6 +350,7 @@ board_writeToStream( const BoardCtxt* board, XWStreamCtxt* stream )
         stream_putBits( stream, 1, arrow->vert );
         stream_putBits( stream, 1, arrow->visible );
 
+        XP_ASSERT( CUR_STREAM_VERS == stream_getVersion(stream) );
         stream_putBits( stream, MAX_TRAY_TILES, pti->traySelBits );
         stream_putBits( stream, 1, pti->tradeInProgress );
 
@@ -464,8 +464,7 @@ board_figureLayout( BoardCtxt* board, XWEnv xwe, const CurGameInfo* gi,
                     XP_U16 scoreWidth, XP_U16 fontWidth, XP_U16 fontHt,
                     XP_Bool squareTiles, BoardDims* dimsp )
 {
-    BoardDims ldims;
-    XP_MEMSET( &ldims, 0, sizeof(ldims) );
+    BoardDims ldims = {0};
 
     XP_U16 nCells = gi->boardSize;
     XP_U16 maxCellSize = 8 * fontHt;
@@ -569,6 +568,7 @@ board_figureLayout( BoardCtxt* board, XWEnv xwe, const CurGameInfo* gi,
 
         ldims.boardHt = cellSize * nCells;
         ldims.trayTop = ldims.top + scoreHt + (cellSize * (nCells-nToScroll));
+        ldims.traySize = gi->traySize;
         ldims.height =
 #ifdef FORCE_SQUARE
             ldims.width
@@ -629,7 +629,7 @@ board_applyLayout( BoardCtxt* board, XWEnv xwe, const BoardDims* dims )
                        dims->top, dims->timerWidth, dims->scoreHt );
 
     board_setTrayLoc( board, xwe, dims->trayLeft, dims->trayTop,
-                      dims->trayWidth, dims->trayHt );
+                      dims->trayWidth, dims->trayHt, dims->traySize );
 }
 #endif
 
@@ -1692,7 +1692,7 @@ onBorderCanScroll( const BoardCtxt* board, SDIndex indx,
 
 void
 board_setTrayLoc( BoardCtxt* board, XWEnv xwe, XP_U16 trayLeft, XP_U16 trayTop,
-                  XP_U16 trayWidth, XP_U16 trayHeight )
+                  XP_U16 trayWidth, XP_U16 trayHeight, XP_U16 nTiles )
 {
     /* XP_LOGF( "%s(%d,%d,%d,%d)", __func__, trayLeft, trayTop,  */
              /* trayWidth, trayHeight ); */
@@ -1709,7 +1709,7 @@ board_setTrayLoc( BoardCtxt* board, XWEnv xwe, XP_U16 trayLeft, XP_U16 trayTop,
     dividerWidth = dividerWidth + 
         ((trayWidth - dividerWidth) % MAX_TRAY_TILES);
 
-    board->trayScaleH = (trayWidth - dividerWidth) / MAX_TRAY_TILES;
+    board->trayScaleH = (trayWidth - dividerWidth) / nTiles;
     board->trayScaleV = trayHeight;
 
     board->dividerWidth = dividerWidth;

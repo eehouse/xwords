@@ -58,6 +58,7 @@
   <string name="key_init_nethintsallowed">key_init_nethintsallowed</string>
   <string name="key_init_autojuggle">key_init_autojuggle</string>
   <string name="key_board_size">key_board_size</string>
+  <string name="key_tray_size">key_tray_size</string>
   <string name="key_initial_player_minutes">key_initial_player_minutes</string>
   <string name="key_default_language">key_default_language</string>
   <string name="key_default_dict">key_default_dict</string>
@@ -157,6 +158,7 @@
   <string name="key_na_perms_phonestate">key_na_perms_phonestate</string>
   <string name="key_na_perms_storage_dicts">key_na_perms_storage_dicts</string>
   <string name="key_na_newFeatureFilter">key_na_newFeatureFilter</string>
+  <string name="key_na_traysize">key_na_traysize</string>
 
   <string name="key_na_dupstatus_host">key_na_dupstatus_host</string>
   <string name="key_na_dupstatus_guest">key_na_dupstatus_guest</string>
@@ -184,6 +186,12 @@
     <item>15x15</item>
     <item>13x13</item>
     <item>11x11</item>
+  </string-array>
+
+  <string-array name="tray_sizes">
+    <item>7</item>
+    <item>8</item>
+    <item>9</item>
   </string-array>
 
   <string-array name="phony_names">

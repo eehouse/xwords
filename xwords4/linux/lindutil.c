@@ -222,6 +222,8 @@ linux_dutil_getUserString( XW_DUtilCtxt* XP_UNUSED(uc),
         return (XP_UCHAR*)"Score for turn: %d\n";
     case STR_BONUS_ALL:
         return (XP_UCHAR*)"Bonus for using all tiles: 50\n";
+    case STR_BONUS_ALL_SUB:
+        return (XP_UCHAR*)"Bonus for using at least %d tiles: 50\n";
     case STR_PENDING_PLAYER:
         return (XP_UCHAR*)"(remote)";
     case STRD_TIME_PENALTY_SUB:

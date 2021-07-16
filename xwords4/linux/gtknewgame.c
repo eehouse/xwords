@@ -1,6 +1,6 @@
 /* -*- compile-command: "make MEMDEBUG=TRUE -j3"; -*- */
 /* 
- * Copyright 2001-2013 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2001 - 2021 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -28,8 +28,12 @@
 #include "nwgamest.h"
 #include "gtkconnsdlg.h"
 #include "gtkutils.h"
+#include "gtkask.h"
 
 #define MAX_SIZE_CHOICES 32
+
+#define BINGO_THRESHOLD "Bingo threshold"
+#define TRAY_SIZE "Tray size"
 
 typedef struct GtkNewGameState {
     GtkGameGlobals* globals;
@@ -46,6 +50,8 @@ typedef struct GtkNewGameState {
     XP_Bool fireConnDlg;
     gboolean isNewGame;
     short nCols;                /* for board size */
+    int nTrayTiles;
+    int bingoMin;
     gchar* dict;
 
 #ifndef XWFEATURE_STANDALONE_ONLY
@@ -168,6 +174,26 @@ size_combo_changed( GtkComboBox* combo, gpointer gp )
 } /* size_combo_changed  */
 
 static void
+tray_size_changed( GtkComboBox* combo, gpointer gp )
+{
+    GtkNewGameState* state = (GtkNewGameState*)gp;
+    gint index = gtk_combo_box_get_active( GTK_COMBO_BOX(combo) );
+    if ( index >= 0 ) {
+        state->nTrayTiles = 7 + index;
+    }
+}
+
+static void
+bingo_changed( GtkComboBox* combo, gpointer gp )
+{
+    GtkNewGameState* state = (GtkNewGameState*)gp;
+    gint index = gtk_combo_box_get_active( GTK_COMBO_BOX(combo) );
+    if ( index >= 0 ) {
+        state->bingoMin = 7 + index;
+    }
+}
+
+static void
 dict_combo_changed( GtkComboBox* combo, gpointer gp )
 {
     GtkNewGameState* state = (GtkNewGameState*)gp;
@@ -278,6 +304,103 @@ addDuplicateCheckbox( GtkNewGameState* state, GtkWidget* parent )
     gtk_box_pack_start( GTK_BOX(parent), duplicateCheck, FALSE, TRUE, 0 );
 }
 
+static void
+addSizesRow( GtkNewGameState* state, GtkWidget* parent )
+{
+    LOG_FUNC();
+    GtkWidget* hbox = gtk_box_new( GTK_ORIENTATION_HORIZONTAL, 0 );
+
+    /* Tray size */
+    gtk_box_pack_start( GTK_BOX(hbox), gtk_label_new(TRAY_SIZE ":"), FALSE, TRUE, 0 );
+    GtkWidget* traySizeCombo = gtk_combo_box_text_new();
+    for ( int ii = MIN_TRAY_TILES; ii <= MAX_TRAY_TILES; ++ii ) {
+        char buf[10];
+        snprintf( buf, sizeof(buf), "%d", ii );
+        gtk_combo_box_text_append_text( GTK_COMBO_BOX_TEXT(traySizeCombo), buf );
+    }
+    gtk_combo_box_set_active( GTK_COMBO_BOX(traySizeCombo),
+                              state->nTrayTiles - MIN_TRAY_TILES );
+
+    g_signal_connect( traySizeCombo, "changed", G_CALLBACK(tray_size_changed), state );
+    gtk_widget_show( traySizeCombo );
+    gtk_box_pack_start( GTK_BOX(hbox), traySizeCombo, FALSE, TRUE, 0 );
+
+    /* Bingo threshold */
+    gtk_box_pack_start( GTK_BOX(hbox), gtk_label_new(BINGO_THRESHOLD":"), FALSE, TRUE, 0 );
+    GtkWidget* bingoCombo = gtk_combo_box_text_new();
+    for ( int ii = MIN_TRAY_TILES; ii <= MAX_TRAY_TILES; ++ii ) {
+        char buf[10];
+        snprintf( buf, sizeof(buf), "%d", ii );
+        gtk_combo_box_text_append_text( GTK_COMBO_BOX_TEXT(bingoCombo), buf );
+    }
+    gtk_combo_box_set_active( GTK_COMBO_BOX(bingoCombo), state->bingoMin - MIN_TRAY_TILES );
+
+    g_signal_connect( bingoCombo, "changed", G_CALLBACK(bingo_changed), state );
+    gtk_widget_show( bingoCombo );
+    gtk_box_pack_start( GTK_BOX(hbox), bingoCombo, FALSE, TRUE, 0 );
+
+    /* board size choices */
+    gtk_box_pack_start( GTK_BOX(hbox), gtk_label_new("Board size:"),
+                        FALSE, TRUE, 0 );
+
+    GtkWidget* boardSizeCombo = gtk_combo_box_text_new();
+    if ( !state->isNewGame ) {
+        gtk_widget_set_sensitive( boardSizeCombo, FALSE );
+    }
+
+    for ( int ii = 0; ii < MAX_SIZE_CHOICES; ++ii ) {
+        char buf[10];
+        XP_U16 siz = MAX_COLS - ii;
+        snprintf( buf, sizeof(buf), "%dx%d", siz, siz );
+        gtk_combo_box_text_append_text( GTK_COMBO_BOX_TEXT(boardSizeCombo), buf );
+        if ( siz == state->nCols ) {
+            gtk_combo_box_set_active( GTK_COMBO_BOX(boardSizeCombo), ii );
+        }
+    }
+
+    g_signal_connect( boardSizeCombo, "changed",
+                      G_CALLBACK(size_combo_changed), state );
+
+    gtk_widget_show( boardSizeCombo );
+    gtk_box_pack_start( GTK_BOX(hbox), boardSizeCombo, FALSE, TRUE, 0 );
+
+    gtk_box_pack_start( GTK_BOX(parent), hbox, FALSE, TRUE, 0 );
+} /* addSizesRow */
+
+static void
+addDictsRow( GtkNewGameState* state, GtkWidget* parent )
+{
+    GtkWidget* hbox = gtk_box_new( GTK_ORIENTATION_HORIZONTAL, 0 );
+
+    /* Dictionary combo */
+    gtk_box_pack_start( GTK_BOX(hbox), gtk_label_new("Dictionary: "),
+                        FALSE, TRUE, 0 );
+    GtkWidget* dictCombo = gtk_combo_box_text_new();
+    g_signal_connect( dictCombo, "changed",
+                      G_CALLBACK(dict_combo_changed), state );
+    gtk_widget_show( dictCombo );
+    gtk_box_pack_start( GTK_BOX(hbox), dictCombo, FALSE, TRUE, 0 );
+
+	GSList* dicts = listDicts( state->globals->cGlobals.params );
+    GSList* iter = dicts;
+    for ( int ii = 0; !!iter; iter = iter->next, ++ii ) {
+        const gchar* name = iter->data;
+        gtk_combo_box_text_append_text( GTK_COMBO_BOX_TEXT(dictCombo), name );
+        if ( !!state->gi->dictName ) {
+            if ( !strcmp( name, state->gi->dictName ) ) {
+                gtk_combo_box_set_active( GTK_COMBO_BOX(dictCombo), ii );
+            }
+        } else if ( 0 == ii ) {
+            gtk_combo_box_set_active( GTK_COMBO_BOX(dictCombo), ii );
+        }
+    }
+	g_slist_free( dicts );
+
+    addPhoniesCombo( state, hbox );
+
+    gtk_box_pack_start( GTK_BOX(parent), hbox, FALSE, TRUE, 0 );
+} /* addDictsRow */
+
 static GtkWidget*
 makeNewGameDialog( GtkNewGameState* state )
 {
@@ -288,11 +411,6 @@ makeNewGameDialog( GtkNewGameState* state )
     GtkWidget* roleCombo;
     char* roles[] = { "Standalone", "Host", "Guest" };
 #endif
-    GtkWidget* nPlayersCombo;
-    GtkWidget* boardSizeCombo;
-    GtkWidget* dictCombo;
-    CurGameInfo* gi;
-    short ii;
 
     dialog = gtk_dialog_new();
     gtk_window_set_modal( GTK_WINDOW( dialog ), TRUE );
@@ -306,7 +424,7 @@ makeNewGameDialog( GtkNewGameState* state )
     roleCombo = gtk_combo_box_text_new();
     state->roleCombo = roleCombo;
 
-    for ( ii = 0; ii < VSIZE(roles); ++ii ) {
+    for ( int ii = 0; ii < VSIZE(roles); ++ii ) {
         gtk_combo_box_text_append_text( GTK_COMBO_BOX_TEXT(roleCombo),
                                         roles[ii] );
     }
@@ -327,12 +445,10 @@ makeNewGameDialog( GtkNewGameState* state )
     state->nPlayersLabel = gtk_label_new("");
     gtk_box_pack_start( GTK_BOX(hbox), state->nPlayersLabel, FALSE, TRUE, 0 );
 
-    nPlayersCombo = gtk_combo_box_text_new();
+    GtkWidget* nPlayersCombo = gtk_combo_box_text_new();
     state->nPlayersCombo = nPlayersCombo;
 
-    gi = state->gi;
-
-    for ( ii = 0; ii < MAX_NUM_PLAYERS; ++ii ) {
+    for ( int ii = 0; ii < MAX_NUM_PLAYERS; ++ii ) {
         char buf[2] = { ii + '1', '\0' };
         gtk_combo_box_text_append_text( GTK_COMBO_BOX_TEXT(nPlayersCombo),
                                         buf );
@@ -351,7 +467,7 @@ makeNewGameDialog( GtkNewGameState* state )
 
     gtk_box_pack_start( GTK_BOX(vbox), hbox, FALSE, TRUE, 0 );
 
-    for ( ii = 0; ii < MAX_NUM_PLAYERS; ++ii ) {
+    for ( int ii = 0; ii < MAX_NUM_PLAYERS; ++ii ) {
         GtkWidget* label = gtk_label_new("Name:");
 #ifndef XWFEATURE_STANDALONE_ONLY
         GtkWidget* remoteCheck = gtk_check_button_new_with_label( "Remote" );
@@ -401,58 +517,8 @@ makeNewGameDialog( GtkNewGameState* state )
         gtk_widget_show( hbox );
     }
 
-    /* board size choices */
-    hbox = gtk_box_new( GTK_ORIENTATION_HORIZONTAL, 0 );
-    gtk_box_pack_start( GTK_BOX(hbox), gtk_label_new("Board size"),
-                        FALSE, TRUE, 0 );
-
-    boardSizeCombo = gtk_combo_box_text_new();
-    if ( !state->isNewGame ) {
-        gtk_widget_set_sensitive( boardSizeCombo, FALSE );
-    }
-
-    for ( ii = 0; ii < MAX_SIZE_CHOICES; ++ii ) {
-        char buf[10];
-        XP_U16 siz = MAX_COLS - ii;
-        snprintf( buf, sizeof(buf), "%dx%d", siz, siz );
-        gtk_combo_box_text_append_text( GTK_COMBO_BOX_TEXT(boardSizeCombo), buf );
-        if ( siz == state->nCols ) {
-            gtk_combo_box_set_active( GTK_COMBO_BOX(boardSizeCombo), ii );
-        }
-    }
-
-    g_signal_connect( boardSizeCombo, "changed", 
-                      G_CALLBACK(size_combo_changed), state );
-
-    gtk_widget_show( boardSizeCombo );
-    gtk_box_pack_start( GTK_BOX(hbox), boardSizeCombo, FALSE, TRUE, 0 );
-
-    /* Dictionary combo */
-
-    gtk_box_pack_start( GTK_BOX(hbox), gtk_label_new("Dictionary: "),
-                        FALSE, TRUE, 0 );
-    dictCombo = gtk_combo_box_text_new();
-    g_signal_connect( dictCombo, "changed", 
-                      G_CALLBACK(dict_combo_changed), state );
-    gtk_widget_show( dictCombo );
-    gtk_box_pack_start( GTK_BOX(hbox), dictCombo, FALSE, TRUE, 0 );
-
-	GSList* dicts = listDicts( state->globals->cGlobals.params );
-    GSList* iter;
-    for ( iter = dicts, ii = 0; !!iter; iter = iter->next, ++ii ) {
-        const gchar* name = iter->data;
-        gtk_combo_box_text_append_text( GTK_COMBO_BOX_TEXT(dictCombo), name );
-        if ( !!gi->dictName ) {
-            if ( !strcmp( name, gi->dictName ) ) {
-                gtk_combo_box_set_active( GTK_COMBO_BOX(dictCombo), ii );
-            }
-        } else if ( 0 == ii ) {
-            gtk_combo_box_set_active( GTK_COMBO_BOX(dictCombo), ii );
-        }
-    }
-	g_slist_free( dicts );
-
-    addPhoniesCombo( state, hbox );
+    addSizesRow( state, vbox );
+    addDictsRow( state, vbox );
 
     gtk_widget_show( hbox );
     gtk_box_pack_start( GTK_BOX(vbox), hbox, FALSE, TRUE, 0 );
@@ -664,6 +730,18 @@ setDefaults( CurGameInfo* gi )
     }
 }
 
+static void
+checkAndWarn( GtkNewGameState* state, GtkWidget* dialog )
+{
+    if ( state->nTrayTiles < state->bingoMin ) {
+        gchar buf[128];
+        XP_SNPRINTF( buf, VSIZE(buf),"\"%s\" cannot be greater than \"%s\"",
+                     BINGO_THRESHOLD, TRAY_SIZE );
+        gtktell( dialog, buf );
+        state->revert = XP_TRUE;
+    }
+}
+
 gboolean
 gtkNewGameDialog( GtkGameGlobals* globals, CurGameInfo* gi, CommsAddrRec* addr,
                   XP_Bool isNewGame, XP_Bool fireConnDlg )
@@ -694,6 +772,8 @@ gtkNewGameDialog( GtkGameGlobals* globals, CurGameInfo* gi, CommsAddrRec* addr,
         state.revert = FALSE;
         state.loaded = XP_FALSE;
         state.nCols = gi->boardSize;
+        state.nTrayTiles = gi->traySize;
+        state.bingoMin = gi->bingoMin;
         if ( 0 == state.nCols ) {
             state.nCols = globals->cGlobals.params->pgi.boardSize;
         }
@@ -707,9 +787,13 @@ gtkNewGameDialog( GtkGameGlobals* globals, CurGameInfo* gi, CommsAddrRec* addr,
         state.loaded = XP_TRUE;
 
         gtk_main();
+
+        checkAndWarn( &state, dialog );
         if ( !state.cancelled && !state.revert ) {
             if ( newg_store( state.newGameCtxt, NULL_XWE, gi, XP_TRUE ) ) {
                 gi->boardSize = state.nCols;
+                gi->traySize = state.nTrayTiles;
+                gi->bingoMin = state.bingoMin;
                 replaceStringIfDifferent( globals->cGlobals.util->mpool,
                                           &gi->dictName, state.dict );
                 gi->phoniesAction = state.phoniesAction;

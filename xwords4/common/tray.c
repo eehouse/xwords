@@ -132,8 +132,6 @@ figureTrayTileRect( BoardCtxt* board, XP_U16 index, XP_Rect* rect )
 void 
 drawTray( BoardCtxt* board, XWEnv xwe )
 {
-    XP_Rect tileRect;
-
     if ( (board->trayInvalBits != 0) || board->dividerInvalid ) {
         const XP_S16 turn = board->selPlayer;
         PerTurnInfo* pti = board->selInfo;
@@ -165,9 +163,9 @@ drawTray( BoardCtxt* board, XWEnv xwe )
             if ( dictionary != NULL ) {
                 XP_Bool showFaces = board->trayVisState == TRAY_REVEALED;
                 Tile blank = dict_getBlankTile( dictionary );
+                const XP_U16 nTrayTiles = board->gi->traySize;
 
                 if ( turn >= 0 ) {
-                    XP_S16 ii; /* which tile slot are we drawing in */
                     XP_U16 ddAddedIndx, ddRmvdIndx;
                     XP_U16 numInTray = countTilesToShow( board );
                     XP_Bool isBlank;
@@ -179,7 +177,7 @@ drawTray( BoardCtxt* board, XWEnv xwe )
 
                     /* draw in reverse order so drawing happens after
                        erasing */
-                    for ( ii = MAX_TRAY_TILES - 1; ii >= 0; --ii ) {
+                    for ( int ii = nTrayTiles - 1; ii >= 0; --ii ) {
                         CellFlags flags = baseFlags;
                         XP_U16 mask = 1 << ii;
 
@@ -191,6 +189,7 @@ drawTray( BoardCtxt* board, XWEnv xwe )
                             flags |= CELL_ISCURSOR;
                         }
 #endif
+                        XP_Rect tileRect;
                         figureTrayTileRect( board, ii, &tileRect );
 
                         XP_Bool drew;
@@ -262,7 +261,7 @@ drawTray( BoardCtxt* board, XWEnv xwe )
                     board->dividerInvalid = XP_FALSE;
                 }
                 drawPendingScore( board, xwe, turnScore,
-                                  (cursorBits & (1<<(MAX_TRAY_TILES-1))) != 0);
+                                  (cursorBits & (1<<(nTrayTiles - 1))) != 0);
             }
 
             draw_objFinished( board->draw, xwe, OBJ_TRAY, &board->trayBounds,
@@ -336,12 +335,13 @@ static void
 drawPendingScore( BoardCtxt* board, XWEnv xwe, XP_S16 turnScore, XP_Bool hasCursor )
 {
     /* Draw the pending score down in the last tray's rect */
-    if ( countTilesToShow( board ) < MAX_TRAY_TILES ) {
+    XP_U16 traySize = board->gi->traySize;
+    if ( countTilesToShow( board ) < traySize ) {
         XP_U16 selPlayer = board->selPlayer;
         XP_Bool curTurn = server_isPlayersTurn( board->server, selPlayer );
         XP_Rect lastTileR;
 
-        figureTrayTileRect( board, MAX_TRAY_TILES-1, &lastTileR );
+        figureTrayTileRect( board, traySize - 1, &lastTileR );
         if ( 0 < lastTileR.width && 0 < lastTileR.height ) {
             draw_score_pendingScore( board->draw, xwe, &lastTileR, turnScore,
                                      selPlayer, curTurn,
@@ -368,10 +368,9 @@ invalTilesUnderRect( BoardCtxt* board, const XP_Rect* rect )
        it for now.  If it needs to be faster, invalCellsUnderRect is the model
        to use. */
 
-    XP_U16 ii;
     XP_Rect locRect;
 
-    for ( ii = 0; ii < MAX_TRAY_TILES; ++ii ) {
+    for ( int ii = 0; ii < board->gi->traySize; ++ii ) {
         figureTrayTileRect( board, ii, &locRect );
         if ( rectsIntersect( rect, &locRect ) ) {
             board_invalTrayTiles( board, (TileBit)(1 << ii) );
@@ -458,7 +457,7 @@ handleActionInTray( BoardCtxt* board, XWEnv xwe, XP_S16 index, XP_Bool onDivider
             result = XP_TRUE;
         }
 #endif
-    } else if ( index == -(MAX_TRAY_TILES) ) { /* pending score tile */
+    } else if ( index == -(board->gi->traySize) ) { /* pending score tile */
         result = board_commitTurn( board, xwe, XP_FALSE, XP_FALSE, NULL );
 #if defined XWFEATURE_TRAYUNDO_ALL
     } else if ( index < 0 ) { /* other empty area */
@@ -535,7 +534,8 @@ void
 invalTrayTilesAbove( BoardCtxt* board, XP_U16 tileIndex )
 {
     TileBit bits = 0;
-    while ( tileIndex < MAX_TRAY_TILES ) {
+    const XP_U16 traySize = board->gi->traySize;
+    while ( tileIndex < traySize ) {
         bits |= 1 << tileIndex++;
     }
     board_invalTrayTiles( board, bits );
@@ -626,16 +626,17 @@ tray_moveCursor( BoardCtxt* board, XP_Key cursorKey, XP_Bool preflightOnly,
         PerTurnInfo* pti = board->selInfo;
         XP_S16 trayCursorLoc;
         XP_S16 newLoc;
+        const XP_U16 traySize = board->gi->traySize;
         for ( ; ; ) {
             trayCursorLoc = pti->trayCursorLoc;
             newLoc = trayCursorLoc + delta;
-            if ( newLoc < 0 || newLoc > MAX_TRAY_TILES ) {
+            if ( newLoc < 0 || newLoc > traySize ) {
                 up = XP_TRUE;
             } else if ( !preflightOnly ) {
                 XP_S16 tileLoc = trayCursorLoc;
                 XP_U16 nTiles = board->trayVisState == TRAY_REVEALED
                     ? model_getNumTilesInTray( board->model, selPlayer ) 
-                    : MAX_TRAY_TILES;
+                    : traySize;
                 XP_U16 dividerLoc = getDividerLoc( board );
                 XP_Bool cursorOnDivider = trayCursorLoc == dividerLoc;
                 XP_Bool cursorObjSelected;
@@ -683,7 +684,7 @@ tray_moveCursor( BoardCtxt* board, XP_Key cursorKey, XP_Bool preflightOnly,
 
                 if ( (newTileLoc > nTiles)
                      && (newLoc != dividerLoc)
-                     && (newTileLoc < MAX_TRAY_TILES-1) ) {
+                     && (newTileLoc < traySize-1) ) {
                     continue;
                 }
             }
@@ -730,9 +731,10 @@ board_moveDivider( BoardCtxt* board, XP_Bool right )
     XP_Bool result = board->trayVisState == TRAY_REVEALED;
     if ( result ) {
         XP_U8 loc = getDividerLoc( board );
-        loc += MAX_TRAY_TILES + 1;
+        const XP_U16 traySize = board->gi->traySize;
+        loc += traySize + 1;
         loc += right? 1:-1;
-        loc %= MAX_TRAY_TILES + 1;
+        loc %= traySize + 1;
 
         (void)dividerMoved( board, loc );
     }

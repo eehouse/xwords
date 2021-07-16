@@ -49,7 +49,7 @@ public class XWApp extends Application
     public static final boolean OFFER_DUALPANE = false;
 
     public static final String SMS_PUBLIC_HEADER = "-XW4";
-    public static final int MAX_TRAY_TILES = 7; // comtypes.h
+    public static final int MIN_TRAY_TILES = 7; // comtypes.h
     public static final int SEL_COLOR = Color.argb( 0xFF, 0x09, 0x70, 0x93 );
 
     public static final int GREEN = 0xFF00AF00;

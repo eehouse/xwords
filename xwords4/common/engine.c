@@ -576,8 +576,7 @@ static void
 findMovesOneRow( EngineCtxt* engine, XWEnv xwe )
 {
     XP_U16 lastCol = engine->numCols - 1;
-    XP_U16 col, row = engine->curRow;
-    XP_S16 prevAnchor;
+    XP_U16 row = engine->curRow;
     XP_U16 firstSearchCol, lastSearchCol;
 #ifdef XWFEATURE_SEARCHLIMIT
     const BdHintLimits* searchLimits = engine->searchLimits;
@@ -600,7 +599,7 @@ findMovesOneRow( EngineCtxt* engine, XWEnv xwe )
     }
 
     XP_MEMSET( &engine->rowChecks, 0, sizeof(engine->rowChecks) ); /* clear */
-    for ( col = 0; col <= lastCol; ++col ) {
+    for ( XP_U16 col = 0; col <= lastCol; ++col ) {
         if ( col < firstSearchCol || col > lastSearchCol ) {
             engine->scoreCache[col] = 0;
         } else {
@@ -610,8 +609,8 @@ findMovesOneRow( EngineCtxt* engine, XWEnv xwe )
         }
     }
 
-    prevAnchor = firstSearchCol - 1;
-    for ( col = firstSearchCol; col <= lastSearchCol && !engine->returnNOW; 
+    XP_S16 prevAnchor = firstSearchCol - 1;
+    for ( XP_U16 col = firstSearchCol; col <= lastSearchCol && !engine->returnNOW;
           ++col ) {
         if ( isAnchorSquare( engine, col, row ) ) { 
             findMovesForAnchor( engine, xwe, &prevAnchor, col, row );

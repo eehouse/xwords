@@ -360,7 +360,8 @@ abstract class InviteDelegate extends DelegateBase
             }
             spinner.setAdapter( adapter );
             spinner.setVisibility( View.VISIBLE );
-            spinner.setOnItemSelectedListener( new OnItemSelectedListener() {
+            spinner.setOnItemSelectedListener( new Utils.OnNothingSelDoesNothing() {
+                    @Override
                     public void onItemSelected( AdapterView<?> parent,
                                                 View view, int pos,
                                                 long id )
@@ -368,8 +369,6 @@ abstract class InviteDelegate extends DelegateBase
                         m_counts.put( item, 1 + pos );
                         tryEnable();
                     }
-
-                    public void onNothingSelected( AdapterView<?> parent ) {}
                 } );
         }
 

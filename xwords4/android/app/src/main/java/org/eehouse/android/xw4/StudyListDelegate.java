@@ -226,6 +226,7 @@ public class StudyListDelegate extends ListDelegateBase
     //////////////////////////////////////////////////
     // AdapterView.OnItemSelectedListener interface
     //////////////////////////////////////////////////
+    @Override
     public void onItemSelected( AdapterView<?> parent, View view,
                                 int position, long id )
     {
@@ -234,6 +235,7 @@ public class StudyListDelegate extends ListDelegateBase
         loadList();             // because language has changed
     }
 
+    @Override
     public void onNothingSelected( AdapterView<?> parent )
     {
     }

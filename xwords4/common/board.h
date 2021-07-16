@@ -91,6 +91,7 @@ typedef struct _BoardDims {
 
     /* tray */
     XP_U16 trayLeft, trayTop, trayWidth, trayHt;
+    XP_U16 traySize;
 
     /* other */
     XP_U16 cellSize, maxCellSize;
@@ -116,7 +117,7 @@ void board_setScoreboardLoc( BoardCtxt* board,
                              XP_Bool divideHorizontally );
 void board_setTrayLoc( BoardCtxt* board, XWEnv xwe,
                        XP_U16 trayLeft, XP_U16 trayTop,
-                       XP_U16 trayWidth, XP_U16 trayHeight );
+                       XP_U16 trayWidth, XP_U16 trayHeight, XP_U16 nTiles );
 
 /* Vertical scroll support; offset is in rows, not pixels */
 XP_Bool board_setYOffset( BoardCtxt* board, XWEnv xwe, XP_U16 newOffset );

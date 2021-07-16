@@ -34,7 +34,7 @@ typedef struct PendingTile {
     Tile tile; /* includes face and blank bit */
 } PendingTile;
 
-typedef struct PlayerCtxt {
+typedef struct _PlayerCtxt {
     XP_S16 score;
     XP_S16 curMoveScore; /* negative means illegal */
     XP_Bool curMoveValid;

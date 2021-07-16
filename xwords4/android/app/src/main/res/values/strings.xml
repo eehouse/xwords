@@ -702,6 +702,8 @@
     <string name="vs_join">\u0020vs.\u0020</string>
     <!-- Used in formatting moves and history -->
     <string name="str_bonus_all">Bonus for using all tiles: 50\n</string>
+    <!-- Used instead of above when fewer than a full tray is required for bingo -->
+    <string name="str_bonus_all_fmt">Bonus for using %1$d tiles: 50\n</string>
     <!-- Used in formatting moves and history.  The total score for
          one turn is substituted for %1$d.-->
     <string name="strd_turn_score_fmt">Score for turn: %1$d\n</string>
@@ -811,6 +813,7 @@
     <string name="initial_player_minutes">Timer minutes per player</string>
     <!-- preference for board size (15x15, 13x13 etc.) -->
     <string name="board_size">Board size</string>
+    <string name="tray_size">Tiles in rack</string>
     <!--
        ############################################################
        # :Screens:
@@ -1657,6 +1660,13 @@
     by tapping the Expander Arrow at the upper-right corner of the
     window.\n\nRead more in the FAQ by tapping the button
     below.</string>
+
+    <!-- Shown when user changes the new traysize config -->
+    <string name="not_again_traysize">This new setting changes the
+    number of tiles in the rack.\n\nNote: if anyone in your networked
+    game is using an older version of CrossWords this setting will
+    revert to 7 for everyone in the game.</string>
+
     <string name="board_menu_file_email">Email author…</string>
     <!--  -->
     <string name="email_author_subject">Comment about CrossWords</string>

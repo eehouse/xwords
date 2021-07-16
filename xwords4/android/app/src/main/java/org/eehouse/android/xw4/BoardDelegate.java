@@ -847,7 +847,7 @@ public class BoardDelegate extends DelegateBase
         case R.id.board_menu_done:
             int nTiles = XwJNI.model_getNumTilesInTray( m_jniGamePtr,
                                                         m_view.getCurPlayer() );
-            if ( XWApp.MAX_TRAY_TILES > nTiles ) {
+            if ( m_gi.traySize > nTiles ) {
                 makeNotAgainBuilder( R.string.not_again_done,
                                      R.string.key_notagain_done,
                                      Action.COMMIT_ACTION )

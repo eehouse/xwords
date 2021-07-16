@@ -27,7 +27,7 @@ public class BoardDims {
     public int width, height;       // of the bitmap
     public int scoreLeft, scoreWidth, scoreHt;
     public int boardWidth, boardHt;
-    public int trayLeft, trayTop, trayWidth, trayHt;
+    public int trayLeft, trayTop, trayWidth, trayHt, traySize;
     public int cellSize, maxCellSize;
     public int timerWidth;
 

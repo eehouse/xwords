@@ -649,6 +649,8 @@ gi_copy( MPFORMAL CurGameInfo* destGI, const CurGameInfo* srcGI )
     destGI->nPlayers = (XP_U8)srcGI->nPlayers;
     nPlayers = srcGI->nPlayers;
     destGI->boardSize = (XP_U8)srcGI->boardSize;
+    destGI->traySize = srcGI->traySize;
+    destGI->bingoMin = srcGI->bingoMin;
     destGI->serverRole = srcGI->serverRole;
 
     destGI->hintsNotAllowed = srcGI->hintsNotAllowed;
@@ -748,6 +750,12 @@ gi_readFromStream( MPFORMAL XWStreamCtxt* stream, CurGameInfo* gi )
 
     gi->nPlayers = (XP_U8)stream_getBits( stream, NPLAYERS_NBITS );
     gi->boardSize = (XP_U8)stream_getBits( stream, nColsNBits );
+    if ( STREAM_VERS_NINETILES <= strVersion ) {
+        gi->traySize = (XP_U8)stream_getBits( stream, NTILES_NBITS_9 );
+        gi->bingoMin = (XP_U8)stream_getBits( stream, NTILES_NBITS_9 );
+    } else {
+        gi->traySize = gi->bingoMin = 7;
+    }
     gi->serverRole = (DeviceRole)stream_getBits( stream, 2 );
     /* XP_LOGF( "%s: read serverRole of %d", __func__, gi->serverRole ); */
     gi->hintsNotAllowed = stream_getBits( stream, 1 );
@@ -830,6 +838,14 @@ gi_writeToStream( XWStreamCtxt* stream, const CurGameInfo* gi )
 
     stream_putBits( stream, NPLAYERS_NBITS, gi->nPlayers );
     stream_putBits( stream, nColsNBits, gi->boardSize );
+
+    if ( STREAM_VERS_NINETILES <= strVersion ) {
+        XP_ASSERT( 0 < gi->traySize );
+        stream_putBits( stream, NTILES_NBITS_9, gi->traySize );
+        stream_putBits( stream, NTILES_NBITS_9, gi->bingoMin );
+    } else {
+        XP_LOGFF( "strVersion: %d so not writing traySize", strVersion );
+    }
     stream_putBits( stream, 2, gi->serverRole );
     stream_putBits( stream, 1, gi->hintsNotAllowed );
     stream_putBits( stream, 2, gi->phoniesAction );

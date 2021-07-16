@@ -1,6 +1,6 @@
 /* -*- compile-command: "cd ../linux && make -j3 MEMDEBUG=TRUE"; -*- */
 /* 
- * Copyright 1997 - 2020 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 1997 - 2021 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -912,6 +912,15 @@ setStreamVersion( ServerCtxt* server )
     }
     XP_LOGF( "%s: setting streamVersion: 0x%x", __func__, streamVersion );
     server->nv.streamVersion = streamVersion;
+
+    CurGameInfo* gi = server->vol.gi;
+    if ( STREAM_VERS_NINETILES > streamVersion ) {
+        if ( 7 < gi->traySize ) {
+            XP_LOGFF( "reducing tray size from %d to 7", gi->traySize );
+            gi->traySize = gi->bingoMin = 7;
+        }
+        model_forceStack7Tiles( server->vol.model );
+    }
 }
 
 static void
@@ -1919,6 +1928,9 @@ client_readInitialMessage( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* stream )
         XP_U8 streamVersion = stream_getU8( stream );
         XP_LOGF( "%s: set streamVersion to %d", __func__, streamVersion );
         stream_setVersion( stream, streamVersion );
+        if ( STREAM_VERS_NINETILES > streamVersion ) {
+            model_forceStack7Tiles( server->vol.model );
+        }
         // XP_ASSERT( streamVersion <= CUR_STREAM_VERS ); /* else do what? */
 
         gameID = stream_getU32( stream );
@@ -1933,8 +1945,6 @@ client_readInitialMessage( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* stream )
 
         localGI.dictName = copyString( server->mpool, gi->dictName );
         gi_copy( MPPARM(server->mpool) gi, &localGI );
-
-        XP_U16 nCols = localGI.boardSize;
 
         if ( streamVersion < STREAM_VERS_NOEMPTYDICT ) {
             XP_LOGFF( "loading and dropping empty dict" );
@@ -1957,7 +1967,7 @@ client_readInitialMessage( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* stream )
         server->nv.addresses[0].channelNo = channelNo;
         XP_LOGF( "%s: assigning channelNo %x for 0", __func__, channelNo );
 
-        model_setSize( model, nCols );
+        model_setSize( model, localGI.boardSize );
 
         XP_U16 nPlayers = localGI.nPlayers;
         XP_LOGF( "%s: reading in %d players", __func__, localGI.nPlayers );
@@ -2583,8 +2593,8 @@ assignTilesToAll( ServerCtxt* server, XWEnv xwe )
     model_setNPlayers( model, nPlayers );
 
     numAssigned = pool_getNTilesLeft( server->pool ) / nPlayers;
-    if ( numAssigned > MAX_TRAY_TILES ) {
-        numAssigned = MAX_TRAY_TILES;
+    if ( numAssigned > gi->traySize ) {
+        numAssigned = gi->traySize;
     }
 
     /* Loop through all the players. If picking tiles is on, stop for each

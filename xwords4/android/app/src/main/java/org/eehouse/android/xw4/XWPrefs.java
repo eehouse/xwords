@@ -543,6 +543,11 @@ public class XWPrefs {
         return result;
     }
 
+    public static int getDefaultTraySize( Context context )
+    {
+        return getPrefsInt( context, R.string.key_tray_size, XWApp.MIN_TRAY_TILES );
+    }
+
     public static void setAddrTypes( Context context, CommsConnTypeSet set )
     {
         int flags = set.toInt();

@@ -59,6 +59,8 @@ enum {
     STRD_DUP_TRADED,
     STRSD_DUP_ONESCORE,
 
+    STR_BONUS_ALL_SUB,
+
     /* These three aren't in Android */
     STR_LOCALPLAYERS,
     STR_TOTALPLAYERS,

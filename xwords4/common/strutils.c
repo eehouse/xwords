@@ -53,7 +53,7 @@ void
 traySetToStream( XWStreamCtxt* stream, const TrayTileSet* ts )
 {
     XP_U16 nTiles = ts->nTiles;
-    stream_putBits( stream, NTILES_NBITS, nTiles );
+    stream_putBits( stream, tilesNBits(stream), nTiles );
     tilesToStream( stream, ts->tiles, nTiles );
 } /* traySetFromStream */
 
@@ -99,7 +99,7 @@ scoresFromStream( XWStreamCtxt* stream, XP_U16 nScores, XP_U16* scores )
 void
 traySetFromStream( XWStreamCtxt* stream, TrayTileSet* ts )
 {
-    XP_U16 nTiles = (XP_U16)stream_getBits( stream, NTILES_NBITS );
+    XP_U16 nTiles = (XP_U16)stream_getBits( stream, tilesNBits( stream ) );
     tilesFromStream( stream, ts->tiles, nTiles );
     ts->nTiles = (XP_U8)nTiles;
 } /* traySetFromStream */
@@ -123,7 +123,7 @@ moveInfoToStream( XWStreamCtxt* stream, const MoveInfo* mi, XP_U16 bitsPerTile )
 #endif
     assertSorted( mi );
 
-    stream_putBits( stream, NTILES_NBITS, mi->nTiles );
+    stream_putBits( stream, tilesNBits( stream ), mi->nTiles );
     stream_putBits( stream, NUMCOLS_NBITS_5, mi->commonCoord );
     stream_putBits( stream, 1, mi->isHorizontal );
 
@@ -148,7 +148,7 @@ moveInfoFromStream( XWStreamCtxt* stream, MoveInfo* mi, XP_U16 bitsPerTile )
     /* XP_UCHAR buf[64] = {0}; */
     /* XP_U16 offset = 0; */
 #endif
-    mi->nTiles = stream_getBits( stream, NTILES_NBITS );
+    mi->nTiles = stream_getBits( stream, tilesNBits( stream ) );
     XP_ASSERT( mi->nTiles <= MAX_TRAY_TILES );
     mi->commonCoord = stream_getBits( stream, NUMCOLS_NBITS_5 );
     mi->isHorizontal = stream_getBits( stream, 1 );
@@ -394,6 +394,19 @@ finishHash( XP_U32 hash )
     hash ^= (hash >> 11);
     hash += (hash << 15);
     return hash;
+}
+
+XP_U16
+tilesNBits( const XWStreamCtxt* stream )
+{
+    XP_U16 version = stream_getVersion( stream );
+    XP_ASSERT( 0 < version );
+    if ( 0 == version ) {
+        XP_LOGFF( "version is 0" );
+    }
+    XP_U16 result = STREAM_VERS_NINETILES <= version
+        ? NTILES_NBITS_9 : NTILES_NBITS_7;
+    return result;
 }
 
 const XP_UCHAR*

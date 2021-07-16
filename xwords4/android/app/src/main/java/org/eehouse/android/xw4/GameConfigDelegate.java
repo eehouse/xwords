@@ -100,6 +100,7 @@ public class GameConfigDelegate extends DelegateBase
     // private Spinner m_connectSpinner;
     private Spinner m_phoniesSpinner;
     private Spinner m_boardsizeSpinner;
+    private Spinner m_traysizeSpinner;
     private Spinner m_langSpinner;
     private Spinner m_smartnessSpinner;
     private TextView m_connLabel;
@@ -126,6 +127,7 @@ public class GameConfigDelegate extends DelegateBase
             R.id.duplicate_check,
             R.id.pick_faceup,
             R.id.boardsize_spinner,
+            R.id.traysize_spinner,
             R.id.use_timer,
             R.id.timer_minutes_edit,
             R.id.smart_robot,
@@ -524,6 +526,8 @@ public class GameConfigDelegate extends DelegateBase
             .getSpinner();
         m_boardsizeSpinner = ((LabeledSpinner)findViewById( R.id.boardsize_spinner ))
             .getSpinner();
+        m_traysizeSpinner = ((LabeledSpinner)findViewById( R.id.traysize_spinner ))
+            .getSpinner();
         m_smartnessSpinner = ((LabeledSpinner)findViewById( R.id.smart_robot ))
             .getSpinner();
 
@@ -680,6 +684,31 @@ public class GameConfigDelegate extends DelegateBase
             setChecked( R.id.pick_faceup, m_gi.allowPickTiles );
 
             setBoardsizeSpinner();
+
+            final int[] curSel = {-1};
+            String val = String.format( "%d", m_gi.traySize );
+            SpinnerAdapter adapter = m_traysizeSpinner.getAdapter();
+            for ( int ii = 0; ii < adapter.getCount(); ++ii ) {
+                if ( val.equals( adapter.getItem(ii) ) ) {
+                    m_traysizeSpinner.setSelection( ii );
+                    curSel[0] = ii;
+                    break;
+                }
+            }
+            m_traysizeSpinner
+                .setOnItemSelectedListener( new Utils.OnNothingSelDoesNothing() {
+                    @Override
+                    public void onItemSelected( AdapterView<?> parent, View spinner,
+                                                int position, long id ) {
+                        if ( curSel[0] != position ) {
+                            curSel[0] = position;
+                            makeNotAgainBuilder( R.string.not_again_traysize,
+                                                 R.string.key_na_traysize )
+                                .show();
+                        }
+                    }
+                } );
+
         }
     } // loadGame
 
@@ -1014,8 +1043,7 @@ public class GameConfigDelegate extends DelegateBase
             dictsSpinner.setPrompt( getString( R.string.dicts_list_prompt_fmt,
                                                langName ) );
 
-            OnItemSelectedListener onSel =
-                new OnItemSelectedListener() {
+            OnItemSelectedListener onSel = new Utils.OnNothingSelDoesNothing() {
                     @Override
                     public void onItemSelected( AdapterView<?> parentView,
                                                 View selectedItemView,
@@ -1029,9 +1057,6 @@ public class GameConfigDelegate extends DelegateBase
                                                              m_gi.dictLang );
                         }
                     }
-
-                    @Override
-                    public void onNothingSelected(AdapterView<?> parentView) {}
                 };
 
             ArrayAdapter<String> adapter =
@@ -1048,8 +1073,7 @@ public class GameConfigDelegate extends DelegateBase
 
             final LangsArrayAdapter adapter = DictLangCache.getLangsAdapter( m_activity );
 
-            OnItemSelectedListener onSel =
-                new OnItemSelectedListener() {
+            OnItemSelectedListener onSel = new Utils.OnNothingSelDoesNothing() {
                     @Override
                     public void onItemSelected(AdapterView<?> parentView,
                                                View selectedItemView,
@@ -1067,9 +1091,6 @@ public class GameConfigDelegate extends DelegateBase
                             }
                         }
                     }
-
-                    @Override
-                    public void onNothingSelected(AdapterView<?> parentView) {}
                 };
 
             String lang = DictLangCache.getLangName( m_activity, m_gi.dictLang );
@@ -1306,6 +1327,7 @@ public class GameConfigDelegate extends DelegateBase
 
         position = m_boardsizeSpinner.getSelectedItemPosition();
         m_gi.boardSize = positionToSize( position );
+        m_gi.traySize = Integer.parseInt( m_traysizeSpinner.getSelectedItem().toString() );
 
         if ( m_conTypes.contains( CommsConnType.COMMS_CONN_RELAY ) ) {
             m_car.ip_relay_seeksPublicRoom = m_joinPublicCheck.isChecked();

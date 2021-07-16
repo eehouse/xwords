@@ -47,6 +47,7 @@
 #endif
 #define MAX_COLS MAX_ROWS
 
+#define STREAM_VERS_NINETILES 0x1E
 #define STREAM_VERS_NOEMPTYDICT 0x1D
 #define STREAM_VERS_GICREATED 0x1C /* game struct gets created timestamp */
 #define STREAM_VERS_DUPLICATE 0x1B
@@ -91,7 +92,7 @@
 #define STREAM_VERS_405  0x01
 
 /* search for FIX_NEXT_VERSION_CHANGE next time this is changed */
-#define CUR_STREAM_VERS STREAM_VERS_NOEMPTYDICT
+#define CUR_STREAM_VERS STREAM_VERS_NINETILES
 
 typedef struct XP_Rect {
     XP_S16 left;
@@ -189,15 +190,12 @@ typedef enum {
 } XWTimerReason;
 
 #define MAX_NUM_PLAYERS 4
-#ifdef EIGHT_TILES
-# define MAX_TRAY_TILES 8
-#else
-# define MAX_TRAY_TILES 7
-#endif
+#define MIN_TRAY_TILES 7
+#define MAX_TRAY_TILES 9
 #define PLAYERNUM_NBITS 2
 #define NDEVICES_NBITS 2        /* 1-4, but reduced by 1 fits in 2 bits */
 #define NPLAYERS_NBITS 3
-#define EMPTIED_TRAY_BONUS 50
+#define BINGO_BONUS 50
 
 #if MAX_ROWS <= 16
 typedef XP_U16 RowFlags;
@@ -293,7 +291,7 @@ typedef struct _MoveInfoTile {
     Tile tile;      /* 6 bits will do */
 } MoveInfoTile;
 
-typedef struct MoveInfo {
+typedef struct _MoveInfo {
     XP_U8 nTiles;         /* 4 bits: 0-7 */
     XP_U8 commonCoord;    /* 5 bits: 0-16 if 17x17 possible */
     XP_Bool isHorizontal; /* 1 bit */

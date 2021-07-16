@@ -35,11 +35,8 @@ extern "C" {
 # define NUMCOLS_NBITS_5 5
 #endif
 
-#ifdef EIGHT_TILES
-# define NTILES_NBITS 4
-#else
-# define NTILES_NBITS 3
-#endif
+#define NTILES_NBITS_7 3
+#define NTILES_NBITS_9 4
 
 /* apply to CellTile */
 #define TILE_VALUE_MASK 0x003F 
@@ -63,7 +60,7 @@ typedef struct BlankQueue {
     XP_U8 row[MAX_NUM_BLANKS];
 } BlankQueue;
 
-typedef XP_U8 TileBit;    /* bits indicating selection of tiles in tray */
+typedef XP_U16 TileBit;    /* bits indicating selection of tiles in tray */
 #define ALLTILES ((TileBit)~(0xFF<<(MAX_TRAY_TILES)))
 
 #define ILLEGAL_MOVE_SCORE (-1)
@@ -88,6 +85,7 @@ void model_writeToTextStream( const ModelCtxt* model, XWStreamCtxt* stream );
 #endif
 
 void model_setSize( ModelCtxt* model, XP_U16 boardSize );
+void model_forceStack7Tiles( ModelCtxt* model );
 void model_destroy( ModelCtxt* model, XWEnv xwe );
 XP_U32 model_getHash( const ModelCtxt* model );
 XP_Bool model_hashMatches( const ModelCtxt* model, XP_U32 hash );

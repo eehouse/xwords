@@ -510,6 +510,7 @@ def build_cmds(args):
             if DEV == 1 or usePublic: PARAMS += ['--force-game']
             if DEV == 1:
                 PARAMS += ['--server', '--phonies', phonies ]
+                PARAMS += ['--tray-size', random.randint(7, 9)] # randint() is *inclusive*
                 # IFF there are any non-1 player counts, tell inviter which
                 if sum(LOCALS) > NDEVS:
                     PARAMS += ['--invitee-counts', ":".join(str(n) for n in LOCALS[1:])]

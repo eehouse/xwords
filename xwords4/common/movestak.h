@@ -65,7 +65,7 @@ typedef struct _PauseRec {
     const XP_UCHAR* msg;        /* requires stack_freeEntry() */
 } PauseRec;
 
-typedef union EntryData {
+typedef union _EntryData {
     AssignRec assign;
     TradeRec trade;
     MoveRec move;
@@ -73,7 +73,7 @@ typedef union EntryData {
     PauseRec pause;
 } EntryData;
 
-typedef struct StackEntry {
+typedef struct _StackEntry {
     StackMoveType moveType;
     XP_U8 playerNum;
     XP_U8 moveNum;
@@ -86,6 +86,8 @@ StackCtxt* stack_make( MPFORMAL VTableMgr* vtmgr, XP_U16 nPlayers, XP_Bool inDup
 void stack_destroy( StackCtxt* stack );
 
 void stack_init( StackCtxt* stack, XP_U16 nPlayers, XP_Bool inDuplicateMode );
+void stack_set7Tiles( StackCtxt* stack );
+XP_U16 stack_getVersion( const StackCtxt* stack );
 XP_U32 stack_getHash( const StackCtxt* stack );
 void stack_setBitsPerTile( StackCtxt* stack, XP_U16 bitsPerTile );
 
