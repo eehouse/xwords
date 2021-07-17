@@ -45,3 +45,4 @@ notifications:
     recipients:
     - xwords@eehouse.org
     on_failure: always
+    on_success: always
