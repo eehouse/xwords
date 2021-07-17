@@ -615,7 +615,9 @@ public class BTUtils {
             mLength = 0;
             mTimeoutMS = timeoutMS;
             mAdapter = getAdapterIf();
-            Assert.assertTrueNR( null != mAdapter );
+            if ( null == mAdapter ) {
+                Log.d( TAG, "adapter null; is BT on?" );
+            }
             mHelper = new BTHelper( mName, mAddr );
             mPostOnResponse = true;
 
