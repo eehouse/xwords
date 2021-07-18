@@ -270,4 +270,9 @@
     <string name="enable_sms">Izinkan permainan melalui SMS Data</string>
     <string name="connstat_relay">Internet/relay</string>
     <string name="connstat_noreceipt">Tidak ada pesan yang telah diterima.</string>
+    <string name="notify_title_fmt">Gerakan pada permainan %1$s</string>
+    <string name="how_tab">Bagaimana cara mengirim undangannya\?</string>
+    <string name="invite_choice_nfc">NFC (“Android beaming”)</string>
+    <string name="notify_other_summary">Ketika gerakan musuh tiba</string>
+    <string name="notify_vibrate">Getar</string>
 </resources>
