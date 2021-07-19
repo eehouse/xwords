@@ -52,4 +52,13 @@
     <string name="gameOver">游戏结束</string>
     <string name="summary_invites_out_fmt">受邀到房间\"%1$s\"的玩家</string>
     <string name="summary_invites_out">邀请的玩家</string>
+    <plurals name="confirm_reset_fmt">
+        <item quantity="one"></item>
+        <item quantity="other"></item>
+    </plurals>
+    <plurals name="confirm_nameddeletes_fmt">
+        <item quantity="one">您确定要删除游戏%1$s吗？ 删除后无法恢复。</item>
+        <item quantity="other"></item>
+    </plurals>
+    <string name="invitee_fmt">(%1$s 已邀请)</string>
 </resources>
