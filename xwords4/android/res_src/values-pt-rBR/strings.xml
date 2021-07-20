@@ -255,7 +255,7 @@
     <string name="blue">Azul</string>
     <string name="green">Verde</string>
     <string name="red">Vermelho</string>
-    <string name="cellline">Linhas do quadro</string>
+    <string name="cellline">Bordas da célula</string>
     <string name="key_bonushint">Bônus do texto quadrado</string>
     <string name="empty">Célula vazia/cores de fundo</string>
     <string name="background">Cores de fundo do quadro</string>
@@ -266,7 +266,7 @@
     <string name="bonus_l3x">Letra tripla</string>
     <string name="bonus_l2x">Letra dupla</string>
     <string name="prefs_colors_summary">Editar cores usadas no quadro</string>
-    <string name="prefs_colors">Cores do tabuleiro</string>
+    <string name="prefs_colors">Cores do tabuleiro, etc.</string>
     <string name="board_line_pct">espessura da linha da célula (percentagem, limite de 1 a 25)</string>
     <string name="keep_screenon_summary">Manter a tela do quadro ligada por 10 min</string>
     <string name="keep_screenon">Manter a tela ligada</string>
@@ -1141,4 +1141,11 @@
     <string name="not_again_comms_relay_depr">O “relay” é um servidor para passar mensagens entre dispositivos rodando CrossWords. Está a ser substituído por um servidor mais moderno chamado “Mosquitto.”</string>
     <string name="list_item_relaypage">Tráfego do jogo…</string>
     <string name="invitee_fmt">(%1$s convidado)</string>
+    <string name="not_again_traysize">Esta nova configuração altera a quantidade de quadrados na estante.
+\n
+\nNota: se alguém estiver usando uma versão mais antiga do CrossWords na rede, esta configuração irá reverter para 7 para todos no jogo.</string>
+    <string name="cellline_width">Largura da borda da célula</string>
+    <string name="tray_size">Quadrados na estante</string>
+    <string name="str_bonus_all_fmt">Bônus por usar %1$d quadrados: 50
+\n</string>
 </resources>
