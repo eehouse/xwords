@@ -2043,6 +2043,7 @@
     <string name="confirm_delete">Are you sure you want to delete the
     current game? \n\n(This action cannot be undone.)</string>
     <string name="duplicate_group_name_fmt">The group “%1$s” already exists.</string>
+    <!-- only for debug builds: button to force game to reconnect to legacy relay -->
     <string name="button_reconnect">Reconnect</string>
     <string name="square_tiles">Square rack tiles</string>
     <string name="square_tiles_summary">Even if they can be taller</string>
