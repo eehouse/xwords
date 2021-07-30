@@ -93,10 +93,6 @@
       </intent-filter>
     </activity>
 
-    <activity android:name="HostActivity"
-              android:theme="@android:style/Theme.Translucent.NoTitleBar"
-              />
-
     <activity android:name="BTInviteActivity"
 			  android:label="@string/bt_invite_title"
               />

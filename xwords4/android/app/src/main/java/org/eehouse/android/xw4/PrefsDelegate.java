@@ -302,32 +302,6 @@ public class PrefsDelegate extends DelegateBase
         return handled;
     }
 
-    @Override
-    protected void show( DlgState state )
-    {
-        Assert.assertNotNull( state );
-        switch ( state.m_id ) {
-        case CONFIRM_THEN:
-        case DIALOG_OKONLY:
-        case DIALOG_ENABLESMS:
-        case DIALOG_NOTAGAIN:
-            HostDelegate.showForResult( mActivity, state );
-            break;
-
-        default:
-            Assert.failDbg();
-        }
-    }
-
-    @Override
-    protected void onActivityResult( RequestCode requestCode, int resultCode,
-                                     Intent data )
-    {
-        if ( Activity.RESULT_CANCELED != resultCode ) {
-            HostDelegate.resultReceived( this, requestCode, data );
-        }
-    }
-
     private void relaunch()
     {
         resetPrefs( mActivity, true );
