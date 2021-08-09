@@ -83,6 +83,10 @@
               android:host="@string/invite_host"
               android:pathPrefix="@string/invite_prefix"
               />
+        <data android:scheme="http"
+              android:host="@string/invite_host"
+              android:pathPrefix="@string/conf_prefix"
+              />
       </intent-filter>
 
       <intent-filter>

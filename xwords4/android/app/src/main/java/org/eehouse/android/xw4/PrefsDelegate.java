@@ -21,21 +21,18 @@
 package org.eehouse.android.xw4;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.Resources;
 import android.os.Bundle;
-import androidx.preference.ListPreference;
-import androidx.preference.Preference;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.PopupMenu;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceManager;
-import androidx.preference.PreferenceScreen;
-import androidx.preference.PreferenceCategory;
-import android.view.View;
-import android.widget.Button;
 
 import org.eehouse.android.xw4.DlgDelegate.Action;
 import org.eehouse.android.xw4.gen.PrefsWrappers;
@@ -48,7 +45,7 @@ import java.util.Map;
 
 public class PrefsDelegate extends DelegateBase
     implements SharedPreferences.OnSharedPreferenceChangeListener,
-               View.OnClickListener {
+               View.OnClickListener, PopupMenu.OnMenuItemClickListener {
     private static final String TAG = PrefsDelegate.class.getSimpleName();
 
     private XWActivity mActivity;
@@ -76,12 +73,12 @@ public class PrefsDelegate extends DelegateBase
     public PrefsDelegate( XWActivity activity, Delegator delegator,
                           Bundle savedInstanceState )
     {
-        super( delegator, savedInstanceState, R.layout.prefs_w_buttons );
+        super( delegator, savedInstanceState, R.layout.prefs );
         mActivity = activity;
     }
 
     @Override
-    protected Dialog makeDialog( DBAlert alert, Object[] params )
+    protected Dialog makeDialog( final DBAlert alert, Object[] params )
     {
         final DlgID dlgID = alert.getDlgID();
         DialogInterface.OnClickListener lstnr = null;
@@ -94,26 +91,17 @@ public class PrefsDelegate extends DelegateBase
                     @Override
                     public void onClick( DialogInterface dlg, int item ) {
                         PrefsDelegate self = (PrefsDelegate)curThis();
-                        SharedPreferences sp = self.getSharedPreferences();
-                        SharedPreferences.Editor editor = sp.edit();
-                        int[] colorKeys = {
-                            R.string.key_player0,
-                            R.string.key_player1,
-                            R.string.key_player2,
-                            R.string.key_player3,
-                            R.string.key_bonus_l2x,
-                            R.string.key_bonus_l3x,
-                            R.string.key_bonus_w2x,
-                            R.string.key_bonus_w3x,
-                            R.string.key_tile_back,
-                            R.string.key_clr_crosshairs,
-                            R.string.key_empty,
-                            R.string.key_background,
-                            R.string.key_clr_bonushint,
-                            R.string.key_cellline,
+                        Resources res = alert.getContext().getResources();
+                        SharedPreferences.Editor editor =
+                            self.getSharedPreferences().edit();
+                        int[] themeKeys = { R.array.color_ids_light,
+                                            R.array.color_ids_dark,
                         };
-                        for ( int colorKey : colorKeys ) {
-                            editor.remove( getString(colorKey) );
+                        for ( int themeKey : themeKeys ) {
+                            String[] colorKeys = res.getStringArray( themeKey );
+                            for ( String colorKey : colorKeys ) {
+                                editor.remove( colorKey );
+                            }
                         }
                         editor.commit();
                         self.relaunch();
@@ -174,8 +162,7 @@ public class PrefsDelegate extends DelegateBase
         getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
 
         // It's too early somehow to do this in init() above
-        findViewById( R.id.revert_colors ).setOnClickListener(this);
-        findViewById( R.id.revert_all ).setOnClickListener(this);
+        findViewById( R.id.prefs_menu ).setOnClickListener(this);
     }
 
     @Override
@@ -192,11 +179,11 @@ public class PrefsDelegate extends DelegateBase
         DlgID dlgID = null;
         int id = view.getId();
         switch ( id ) {
-        case R.id.revert_all:
-            dlgID = DlgID.REVERT_ALL;
-            break;
-        case R.id.revert_colors:
-            dlgID = DlgID.REVERT_COLORS;
+        case R.id.prefs_menu:
+            PopupMenu popup = new PopupMenu( mActivity, view );
+            popup.inflate( R.menu.prefs_popup );
+            popup.setOnMenuItemClickListener( this );
+            popup.show();
             break;
         default:
             Assert.failDbg();
@@ -205,6 +192,44 @@ public class PrefsDelegate extends DelegateBase
         if ( null != dlgID ) {
             showDialogFragment( dlgID );
         }
+    }
+
+    @Override
+    public boolean onMenuItemClick( MenuItem item )
+    {
+        boolean handled = true;
+        Log.d( TAG, "item: %s", item );
+        DlgID dlgID = null;
+        CommonPrefs.ColorTheme theme = null;
+        switch ( item.getItemId() ) {
+        case R.id.prefs_revert_colors:
+            dlgID = DlgID.REVERT_COLORS;
+            break;
+        case R.id.prefs_revert_all:
+            dlgID = DlgID.REVERT_ALL;
+            break;
+        case R.id.prefs_copy_light:
+            theme = CommonPrefs.ColorTheme.LIGHT;
+            break;
+        case R.id.prefs_copy_dark:
+            theme = CommonPrefs.ColorTheme.DARK;
+            break;
+        default:
+            Assert.failDbg();
+            handled = false;
+        }
+
+        if ( null != dlgID ) {
+            showDialogFragment( dlgID );
+        } else if ( null != theme ) {
+            makeNotAgainBuilder( R.string.not_again_copytheme,
+                                 R.string.key_na_copytheme,
+                                 Action.EXPORT_THEME )
+                .setParams( theme )
+                .show();
+        }
+
+        return handled;
     }
 
     // interface SharedPreferences.OnSharedPreferenceChangeListener
@@ -295,6 +320,11 @@ public class PrefsDelegate extends DelegateBase
         case DISABLE_BT_DO:
             BTUtils.setEnabled( mActivity, false );
             BTCheckBoxPreference.setChecked();
+            break;
+        case EXPORT_THEME:
+            CommonPrefs.ColorTheme theme = (CommonPrefs.ColorTheme)params[0];
+            CommonPrefs.colorPrefsToClip( mActivity, theme );
+            DbgUtils.showf( mActivity, R.string.theme_data_success );
             break;
         default:
             handled = super.onPosButton( action, params );

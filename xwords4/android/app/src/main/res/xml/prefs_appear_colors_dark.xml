@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+                  xmlns:app="http://schemas.android.com/apk/res-auto"
+                  >
+
+  <PreferenceCategory android:title="@string/prefs_colors"
+                      android:summary="@string/prefs_colors_summary"
+                      >
+    <org.eehouse.android.xw4.EditColorPreference
+        android:key="@string/key_player0_dark"
+        android:title="@string/pref_player1_name"
+        android:defaultValue="0xF0F0F0"
+        />
+    <org.eehouse.android.xw4.EditColorPreference
+        android:key="@string/key_player1_dark"
+        android:title="@string/pref_player2_name"
+        android:defaultValue="0xFFB0B0"
+        />
+    <org.eehouse.android.xw4.EditColorPreference
+        android:key="@string/key_player2_dark"
+        android:title="@string/pref_player3_name"
+        android:defaultValue="0xB0B0FF"
+        />
+    <org.eehouse.android.xw4.EditColorPreference
+        android:key="@string/key_player3_dark"
+        android:title="@string/pref_player4_name"
+        android:defaultValue="0xB0FFB0"
+        />
+    <org.eehouse.android.xw4.EditColorPreference
+        android:key="@string/key_bonus_l2x_dark"
+        android:title="@string/bonus_l2x"
+        android:defaultValue="0x3F3F00"
+        />
+    <org.eehouse.android.xw4.EditColorPreference
+        android:key="@string/key_bonus_l3x_dark"
+        android:title="@string/bonus_l3x"
+        android:defaultValue="0x003F3F"
+        />
+    <org.eehouse.android.xw4.EditColorPreference
+        android:key="@string/key_bonus_w2x_dark"
+        android:title="@string/bonus_w2x"
+        android:defaultValue="0x3F003F"
+        />
+    <org.eehouse.android.xw4.EditColorPreference
+        android:key="@string/key_bonus_w3x_dark"
+        android:title="@string/bonus_w3x"
+        android:defaultValue="0x3F3F3F"
+        />
+
+    <org.eehouse.android.xw4.EditColorPreference
+        android:key="@string/key_clr_bonushint_dark"
+        android:title="@string/key_bonushint"
+        android:defaultValue="0x7F7F7F"
+        />
+
+    <org.eehouse.android.xw4.EditColorPreference
+        android:key="@string/key_clr_crosshairs_dark"
+        android:title="@string/clr_crosshairs"
+        android:defaultValue="0x7070FF"
+        />
+
+    <org.eehouse.android.xw4.EditColorPreference
+        android:key="@string/key_tile_back_dark"
+        android:title="@string/tile_back"
+        android:defaultValue="0x585858"
+        />
+    <org.eehouse.android.xw4.EditColorPreference
+        android:key="@string/key_empty_dark"
+        android:title="@string/empty"
+        android:defaultValue="0x080808"
+        />
+
+    <org.eehouse.android.xw4.EditColorPreference
+        android:key="@string/key_background_dark"
+        android:title="@string/background"
+        android:defaultValue="0x1E2327"
+        />
+
+    <org.eehouse.android.xw4.EditColorPreference
+        android:key="@string/key_cellline_dark"
+        android:title="@string/cellline"
+        android:defaultValue="0x202020"
+        />
+
+    <org.eehouse.android.xw4.XWListPreference
+        android:key="@string/key_board_line_width_dark"
+        android:title="@string/cellline_width"
+        android:entries="@array/cellline_widths"
+        android:entryValues="@array/cellline_widths"
+        android:defaultValue="2"
+        />
+
+  </PreferenceCategory>
+</PreferenceScreen>
+

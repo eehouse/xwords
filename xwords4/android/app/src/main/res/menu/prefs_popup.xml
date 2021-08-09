@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+  <item android:id="@+id/prefs_revert_colors"
+        android:title="@string/button_revert_colors"
+        />
+  <item android:id="@+id/prefs_revert_all"
+        android:title="@string/button_revert_all"
+        />
+  <item android:id="@+id/prefs_copy_light"
+        android:title="@string/prefs_copy_light"
+        />
+  <item android:id="@+id/prefs_copy_dark"
+        android:title="@string/prefs_copy_dark"
+        />
+</menu>

@@ -37,6 +37,22 @@
   <string name="key_clr_bonushint">key_clr_bonushint</string>
   <string name="key_board_line_width">key_board_line_width</string>
 
+  <string name="key_player0_dark">key_clr_player0_dark</string>
+  <string name="key_player1_dark">key_clr_player1_dark</string>
+  <string name="key_player2_dark">key_clr_player2_dark</string>
+  <string name="key_player3_dark">key_clr_player3_dark</string>
+  <string name="key_bonus_l2x_dark">key_clr_bonus_l2x_dark</string>
+  <string name="key_bonus_l3x_dark">key_clr_bonus_l3x_dark</string>
+  <string name="key_bonus_w2x_dark">key_clr_bonus_w2x_dark</string>
+  <string name="key_bonus_w3x_dark">key_clr_bonus_w3x_dark</string>
+  <string name="key_tile_back_dark">key_clr_tile_back_dark</string>
+  <string name="key_empty_dark">key_clr_empty_dark</string>
+  <string name="key_background_dark">key_clr_background_dark</string>
+  <string name="key_cellline_dark">key_cellline_dark</string>
+  <string name="key_clr_crosshairs_dark">key_clr_crosshairs_dark</string>
+  <string name="key_clr_bonushint_dark">key_clr_bonushint_dark</string>
+  <string name="key_board_line_width_dark">key_board_line_width_dark</string>
+
   <string name="key_relay_host">key_relay_host</string>
   <string name="key_relay_port">key_relay_port2</string>
   <string name="key_relay_via_http_first">key_relay_via_http_first</string>
@@ -147,6 +163,7 @@
   <string name="key_na_rematch_two_only">key_notagain_rematch_two_only</string>
   <string name="key_notagain_dfltname">key_notagain_dfltname</string>
   <string name="key_notagain_nbsGamesOnUpgrade">key_notagain_nbsGamesOnUpgrade</string>
+  <string name="key_na_copytheme">key_na_copytheme</string>
   <string name="key_na_comms_bt">key_na_comms_bt</string>
   <string name="key_na_comms_p2p">key_na_comms_p2p</string>
   <string name="key_na_comms_mqtt">key_na_comms_mqtt</string>
@@ -163,6 +180,8 @@
   <string name="key_na_dupstatus_host">key_na_dupstatus_host</string>
   <string name="key_na_dupstatus_guest">key_na_dupstatus_guest</string>
   <string name="key_na_quicknetgame">key_na_quicknetgame</string>
+
+  <string name="key_theme_which">key_theme_which</string>
 
   <!-- Nor is my email address -->
   <string name="email_author_email">xwords@eehouse.org</string>
@@ -362,6 +381,70 @@
       <item>@string/loc_filters_screen</item>
       <item>@string/loc_filters_menu</item>
       <item>@string/loc_filters_modified</item>
+  </string-array>
+
+  <string-array name="color_themes">
+    <item>@string/color_use_theme_light</item>
+    <item>@string/color_use_theme_dark</item>
+    <item>@string/color_use_theme_os</item>
+  </string-array>
+
+  <!-- Keep in sync with the color_ids_{light,dark} below -->
+  <string-array name="color_url_keys">
+    <item>p1</item>
+    <item>p2</item>
+    <item>p3</item>
+    <item>p4</item>
+
+    <item>l2</item>
+    <item>w2</item>
+    <item>l3</item>
+    <item>w3</item>
+
+    <item>tb</item>
+    <item>em</item>
+    <item>xh</item>
+    <item>bk</item>
+    <item>bh</item>
+    <item>cl</item>
+  </string-array>
+
+  <string-array name="color_ids_light">
+    <item>@string/key_player0</item>
+    <item>@string/key_player1</item>
+    <item>@string/key_player2</item>
+    <item>@string/key_player3</item>
+
+    <item>@string/key_bonus_l2x</item>
+    <item>@string/key_bonus_w2x</item>
+    <item>@string/key_bonus_l3x</item>
+    <item>@string/key_bonus_w3x</item>
+
+    <item>@string/key_tile_back</item>
+    <item>@string/key_empty</item>
+    <item>@string/key_clr_crosshairs</item>
+    <item>@string/key_background</item>
+    <item>@string/key_clr_bonushint</item>
+    <item>@string/key_cellline</item>
+  </string-array>
+
+  <string-array name="color_ids_dark">
+    <item>@string/key_player0_dark</item>
+    <item>@string/key_player1_dark</item>
+    <item>@string/key_player2_dark</item>
+    <item>@string/key_player3_dark</item>
+
+    <item>@string/key_bonus_l2x_dark</item>
+    <item>@string/key_bonus_w2x_dark</item>
+    <item>@string/key_bonus_l3x_dark</item>
+    <item>@string/key_bonus_w3x_dark</item>
+
+    <item>@string/key_tile_back_dark</item>
+    <item>@string/key_empty_dark</item>
+    <item>@string/key_clr_crosshairs_dark</item>
+    <item>@string/key_background_dark</item>
+    <item>@string/key_clr_bonushint_dark</item>
+    <item>@string/key_cellline_dark</item>
   </string-array>
 
 </resources>

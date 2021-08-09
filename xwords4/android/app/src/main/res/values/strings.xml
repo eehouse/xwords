@@ -2740,4 +2740,36 @@
     <string name="values_values">Values only</string>
     <string name="values_both">Letters and Values</string>
 
+    <!-- For color "themes", currently light and dark
+         supported. Custom may follow. -->
+    <string name="prefs_themes">Board color themes</string>
+    <string name="theme_which">Board color theme</string>
+    <string name="color_use_theme_light">Use Light theme</string>
+    <string name="color_use_theme_dark">Use Dark theme</string>
+    <string name="color_use_theme_os">Use Theme from Android Settings</string>
+    <string name="color_theme_edit_light">Edit Light theme</string>
+    <string name="color_theme_edit_dark">Edit Dark theme</string>
+
+    <!-- Menus in Prefs for copying color config data to clipboard -->
+    <string name="prefs_copy_light">Copy Light theme</string>
+    <string name="prefs_copy_dark">Copy Dark theme</string>
+
+    <!-- Hint about what copying theme data does -->
+    <string name="not_again_copytheme">Copying a theme puts a URL in
+    your clipboard. The URL encodes your settings for that theme. Send
+    the URL to another CrossWords user to share your settings: when
+    they tap on the URL on a device with the latest version of
+    CrossWords installed they’ll be able to import your
+    settings.</string>
+
+    <!-- Posted when copy data completes -->
+    <string name="theme_data_success">Theme copied to Clipboard</string>
+    <!-- Confirmation query when you launch with a url containing color config changes -->
+    <string name="apply_config">Would you like to import theme
+    settings from the URL you opened? They will replace any local
+    changes you have made.
+
+    \n\nThis action cannot be undone, but you can always restore the
+    default colors for this theme.</string>
+    <string name="button_apply_config">Import</string>
 </resources>

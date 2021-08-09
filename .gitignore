@@ -15,3 +15,5 @@ nohup.out
 /xwords4/android/obj-debug-xw4d
 /xwords4/android/app/build
 /xwords4/android/app/src/main/java/org/eehouse/android/xw4/loc/LocIDsData.java
+/xwords4/android/app/src/main/java/org/eehouse/android/xw4/gen/*
+/xwords4/dawg/*/*.bin*

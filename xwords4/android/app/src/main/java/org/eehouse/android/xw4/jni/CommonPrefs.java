@@ -22,13 +22,18 @@ package org.eehouse.android.xw4.jni;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.net.Uri;
 import android.os.Build;
 import android.preference.PreferenceManager;
 
+import org.eehouse.android.xw4.Assert;
 import org.eehouse.android.xw4.DictUtils;
 import org.eehouse.android.xw4.Log;
+import org.eehouse.android.xw4.NetUtils;
 import org.eehouse.android.xw4.R;
+import org.eehouse.android.xw4.Utils;
 import org.eehouse.android.xw4.XWPrefs;
 import org.eehouse.android.xw4.loc.LocUtils;
 
@@ -100,37 +105,45 @@ public class CommonPrefs extends XWPrefs {
         int ord = getInt(context, sp, R.string.key_tile_valuetype, 0);
         tvType = TileValueType.values()[ord];
 
-        int ids[] = { R.string.key_player0,
-                      R.string.key_player1,
-                      R.string.key_player2,
-                      R.string.key_player3,
-        };
-
-        for ( int ii = 0; ii < ids.length; ++ii ) {
-            playerColors[ii] = prefToColor( context, sp, ids[ii] );
+        Resources res = context.getResources();
+        int strsID = R.array.color_ids_light;
+        String which = LocUtils.getString( context, R.string.key_theme_which );
+        which = sp.getString( which, null );
+        if ( null == which ) {
+            // do nothing
+        } else if ( which.equals( LocUtils.getString( context,
+                                                      R.string.color_use_theme_light ) ) )  {
+            // do nothing
+        } else if ( which.equals( LocUtils.getString( context,
+                                                      R.string.color_use_theme_dark ) ) )  {
+            strsID = R.array.color_ids_dark;
+        } else {
+            int uiMode = res.getConfiguration().uiMode;
+            if ( Configuration.UI_MODE_NIGHT_YES
+                 == (uiMode & Configuration.UI_MODE_NIGHT_MASK) ) {
+                strsID = R.array.color_ids_dark;
+            }
         }
+        String[] colorStrIds = res.getStringArray( strsID );
 
-        int ids2[] = { R.string.key_bonus_l2x,
-                       R.string.key_bonus_w2x,
-                       R.string.key_bonus_l3x,
-                       R.string.key_bonus_w3x,
-        };
-        for ( int ii = 0; ii < ids2.length; ++ii ) {
-            bonusColors[ii+1] = prefToColor( context, sp, ids2[ii] );
-        }
-
-        int idsOther[] = { R.string.key_tile_back,
-                           R.string.key_empty,
-                           R.string.key_clr_crosshairs,
-                           R.string.key_background,
-                           R.string.key_clr_bonushint,
-                           R.string.key_cellline,
-        };
-        for ( int ii = 0; ii < idsOther.length; ++ii ) {
-            otherColors[ii] = prefToColor( context, sp, idsOther[ii] );
-        }
+        int offset = copyColors( sp, colorStrIds, 0, playerColors, 0 );
+        offset += copyColors( sp, colorStrIds, offset, bonusColors, 1 );
+        offset += copyColors( sp, colorStrIds, offset, otherColors, 0 );
 
         return this;
+    }
+
+    private int copyColors( SharedPreferences sp, String[] colorStrIds,
+                            int idsStart, int[] colors, int colorsStart )
+    {
+        int nUsed = 0;
+        while ( colorsStart < colors.length ) {
+            String key = colorStrIds[idsStart + nUsed++];
+            int color = 0xFF000000 | sp.getInt( key, 0 );
+            colors[colorsStart++] = color;
+        }
+
+        return nUsed;
     }
 
     private boolean getBoolean( Context context, SharedPreferences sp,
@@ -145,12 +158,6 @@ public class CommonPrefs extends XWPrefs {
     {
         String key = LocUtils.getString( context, id );
         return sp.getInt( key, dflt );
-    }
-
-    private int prefToColor( Context context, SharedPreferences sp, int id )
-    {
-        String key = LocUtils.getString( context, id );
-        return 0xFF000000 | sp.getInt( key, 0 );
     }
 
     /*
@@ -303,4 +310,74 @@ public class CommonPrefs extends XWPrefs {
         return getPrefsString( context, R.string.key_summary_field );
     }
 
+    public enum ColorTheme {
+        LIGHT(R.array.color_ids_light),
+        DARK(R.array.color_ids_dark);
+
+        private int mArrayID;
+        private ColorTheme(int arrayID) {
+            mArrayID = arrayID;
+        }
+        int getArrayID() { return mArrayID; }
+    };
+    private static final String THEME_KEY = "theme";
+
+    public static void colorPrefsToClip( Context context, ColorTheme theme )
+    {
+        String host = LocUtils.getString( context, R.string.invite_host );
+        Uri.Builder ub = new Uri.Builder()
+            .scheme( "http" )   // PENDING: should be https soon
+            .path( String.format( "//%s%s", NetUtils.forceHost( host ),
+                                  LocUtils.getString(context, R.string.conf_prefix) ) )
+            .appendQueryParameter( THEME_KEY, theme.toString() );
+
+        Resources res = context.getResources();
+        String[] urlKeys = res.getStringArray( R.array.color_url_keys );
+        String[] dataKeys = res.getStringArray( theme.getArrayID() );
+        Assert.assertTrue( urlKeys.length == dataKeys.length );
+        SharedPreferences sp = PreferenceManager
+            .getDefaultSharedPreferences( context );
+
+        for ( int ii = 0; ii < urlKeys.length; ++ii ) {
+            int val = sp.getInt( dataKeys[ii], 0 );
+            ub.appendQueryParameter( urlKeys[ii], String.format("%X", val ) );
+        }
+        String data = ub.build().toString();
+
+        Utils.stringToClip( context, data );
+    }
+
+    public static void loadColorPrefs( Context context, Uri uri )
+    {
+        String themeName = uri.getQueryParameter( THEME_KEY );
+        int arrayID = 0;
+        for ( ColorTheme theme : ColorTheme.values() ) {
+            if ( theme.toString().equals(themeName) ) {
+                arrayID = theme.getArrayID();
+                break;
+            }
+        }
+        Assert.assertTrueNR( 0 != arrayID );
+        if ( 0 != arrayID ) {
+            Resources res = context.getResources();
+            String[] urlKeys = res.getStringArray( R.array.color_url_keys );
+            String[] dataKeys = res.getStringArray( arrayID );
+            SharedPreferences sp = PreferenceManager
+                .getDefaultSharedPreferences( context );
+            SharedPreferences.Editor editor = sp.edit();
+
+            for ( int ii = 0; ii < urlKeys.length; ++ii ) {
+                String urlKey = urlKeys[ii];
+                try {
+                    String val = uri.getQueryParameter( urlKey );
+                    editor.putInt( dataKeys[ii], Integer.parseInt( val, 16 ) );
+                    Log.d( TAG, "set %s => %s", dataKeys[ii], val ); // here
+                } catch ( Exception ex ) {
+                    Log.ex( TAG, ex );
+                    Log.d( TAG, "bad/missing data for url key: %s", urlKey );
+                }
+            }
+            editor.commit();
+        }
+    }
 }

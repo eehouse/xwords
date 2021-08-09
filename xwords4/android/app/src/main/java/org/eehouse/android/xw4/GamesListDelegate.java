@@ -1562,6 +1562,11 @@ public class GamesListDelegate extends ListDelegateBase
             }
             break;
 
+        case APPLY_CONFIG:
+            Uri data = Uri.parse( (String)params[0] );
+            CommonPrefs.loadColorPrefs( m_activity, data );
+            break;
+
         default:
             handled = super.onPosButton( action, params );
         }
@@ -2471,6 +2476,28 @@ public class GamesListDelegate extends ListDelegateBase
         return handled;
     } // startNewNetGame
 
+    private boolean loadConfig( Intent intent )
+    {
+        boolean success = false;
+        try {
+            Uri data = intent.getData();
+            String path = data.getPath();
+            String prefix = LocUtils.getString( m_activity, R.string.conf_prefix );
+            if ( path.startsWith( prefix ) ) {
+                makeConfirmThenBuilder( R.string.apply_config, Action.APPLY_CONFIG )
+                    .setPosButton( R.string.button_apply_config )
+                    .setNegButton( android.R.string.cancel )
+                    .setParams( data.toString() )
+                    .show();
+                success = true;
+            }
+        } catch ( Exception ex ) {
+            Log.ex( TAG, ex );
+        }
+
+        return success;
+    }
+
     private boolean startHasGameID( int gameID )
     {
         boolean handled = false;
@@ -2847,6 +2874,7 @@ public class GamesListDelegate extends ListDelegateBase
         boolean handled = startFirstHasDict( intent )
             || startWithInvitee( intent )
             || postWordlistURL( intent )
+            || loadConfig( intent )
             || startNewNetGame( intent )
             || startHasGameID( intent )
             || startRematch( intent )

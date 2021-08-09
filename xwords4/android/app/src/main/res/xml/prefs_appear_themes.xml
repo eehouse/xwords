@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+                  xmlns:app="http://schemas.android.com/apk/res-auto"
+                  >
+
+  <PreferenceCategory android:title="@string/prefs_themes"
+                      >
+
+    <org.eehouse.android.xw4.XWListPreference
+        android:key="@string/key_theme_which"
+        android:title="@string/theme_which"
+        android:entries="@array/color_themes"
+        android:entryValues="@array/color_themes"
+        android:defaultValue="@string/color_use_theme_os"
+        />
+
+    <Preference app:title="@string/color_theme_edit_light"
+                app:fragment="org.eehouse.android.xw4.gen.PrefsWrappers$prefs_appear_colors_light"
+                />
+    <Preference app:title="@string/color_theme_edit_dark"
+                app:fragment="org.eehouse.android.xw4.gen.PrefsWrappers$prefs_appear_colors_dark"
+                />
+
+  </PreferenceCategory>
+</PreferenceScreen>

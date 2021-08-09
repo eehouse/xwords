@@ -54,6 +54,7 @@ public class DlgDelegate {
         CLEAR_LOG_DB,
         QUARANTINE_CLEAR,
         QUARANTINE_DELETE,
+        APPLY_CONFIG,
 
         // BoardDelegate
         UNDO_LAST_ACTION,
@@ -129,6 +130,7 @@ public class DlgDelegate {
         PERMS_QUERY,
         PERMS_BANNED_INFO,
         SHOW_FAQ,
+        EXPORT_THEME,
     } // Action enum
 
     public static class ActionPair implements Serializable {

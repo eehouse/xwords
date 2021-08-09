@@ -241,7 +241,7 @@ public class Utils {
         }
     }
 
-    static void stringToClip( Context context, String str )
+    public static void stringToClip( Context context, String str )
     {
         ClipboardManager clipboard = (ClipboardManager)
             context.getSystemService(Context.CLIPBOARD_SERVICE);
