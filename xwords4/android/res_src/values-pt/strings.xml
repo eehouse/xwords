@@ -741,7 +741,7 @@
        ############################################################
       -->
     <!-- title of this sub-preference -->
-    <string name="prefs_colors">Cores do tabuleiro</string>
+    <string name="prefs_colors">Cores do tabuleiro, etc.</string>
     <!-- clarification of the above -->
     <string name="prefs_colors_summary">Editar as cores usadas
     no jogo</string>
@@ -1255,9 +1255,7 @@
     <!-- This is shown when you choose the board_menu_done menu item.
          It's to let you know that there's a shortcut that does almost
          the same thing. -->
-    <string name="not_again_done">Selecionar o contador \"ptos\" que
-    aparece à direita da mão é a maneira mais fácil de confirmar uma
-    jogada.</string>
+    <string name="not_again_done">Tocar o contador “ptos” que aparece à direita da mão é a maneira mais fácil de confirmar uma jogada.</string>
     <!-- Shown in the Game configure screen when the game_locked
          checkbox is checked and you uncheck it.  -->
     <string name="not_again_unlock">Esse jogo está em andamento. 
@@ -1518,8 +1516,7 @@
     <string name="confirm_sms_unlimited">Sim: eu tenho mensagens de texto
     ilimitadas</string>
     <!--  -->
-    <string name="confirm_sms_willpay">Sim: vou pagar todas as mensagens
-    para a operadora</string>
+    <string name="confirm_sms_willpay">Sim: vou pagar todas as mensagens para a operadora</string>
     <!--  -->
     <string name="warn_sms_disabled">Jogar via SMS de dados está atualmente desativado. Nenhum movimento será enviado através de SMS de dados.
 \n
@@ -1581,7 +1578,7 @@
          game with the same players and parameters as the one that
          just ended. -->
     <string name="button_rematch">Revanche</string>
-    <string name="square_tiles">Peças quadradas</string>
+    <string name="square_tiles">Pedras em forma de quadrado</string>
     <string name="square_tiles_summary">Mesmo se puderem ser mais altas</string>
     <string name="rename_label_caveat">Altere o nome deste jogo (apenas neste aparelho) para:</string>
     <plurals name="confirm_seldeletes_fmt">
@@ -1609,7 +1606,7 @@
         <item quantity="one">Este jogo está à espera de um jogador remoto receber e responder a um convite.
 \n
 \nVerá esta mensagem até que o jogador convidado tenha respondido. Se suspeitar que o convite que enviou foi perdido, não faz mal nenhum enviar outro.</item>
-        <item quantity="other">Este jogo está à espera de %1d jogadores remotos receber e responder a um convite.
+        <item quantity="other">Este jogo está à espera de %1$d jogadores remotos receber e responder a um convite.
 \n
 \nVerá esta mensagem até que todos os jogadores convidados tenham respondido. Se suspeitar que os convites que enviou foram perdidos, não faz mal nenhum enviar outros.</item>
     </plurals>
@@ -1619,8 +1616,8 @@
     <string name="dup_minutes_label">Minutos por turno</string>
     <string name="robot_iq_label">QI do Robô</string>
     <plurals name="strd_robot_traded_fmt">
-        <item quantity="one">Trocou uma peça.</item>
-        <item quantity="other">Trocaram %1$d peças.</item>
+        <item quantity="one">Trocou uma pedra.</item>
+        <item quantity="other">Trocaram %1$d pedras.</item>
     </plurals>
     <string name="str_robot_moved_fmt">"O robô %1$s fez esta jogada: "</string>
     <string name="msg_dev_deleted_fmt">O jogo chamado “%1$s“ foi apagado num outro aparelho. Já não será possível jogá-lo.</string>
@@ -2281,7 +2278,7 @@
     <string name="disable_bt">Desativar</string>
     <string name="disable_relay_summary">Desativar toda a comunicação da internet</string>
     <string name="disable_relay">Desativar jogo pelo servidor</string>
-    <string name="cellline">Linhas do quadro</string>
+    <string name="cellline">Bordas da célula</string>
     <string name="board_line_pct">espessura da linha da célula (percentagem, limite de 1 a 25)</string>
     <string name="hide_newgames_summary">Esconder os botões do jogo no ecrã principal deixa os jogos mais visíveis</string>
     <string name="hide_newgames_title">Esconder botões do novo jogo</string>
@@ -2319,4 +2316,11 @@
     </plurals>
     <string name="list_item_relaypage">Tráfego do jogo …</string>
     <string name="invitee_fmt">(%1$s convidado)</string>
+    <string name="not_again_traysize">Esta nova configuração altera a quantidade de pedras na estante.
+\n
+\nNota: se alguém no seu jogo pela rede estiver a usar uma versão mais antiga do CrossWords, esta configuração irá reverter a 7 para todos no jogo.</string>
+    <string name="cellline_width">Largura da borda da célula</string>
+    <string name="tray_size">Pedras na estante</string>
+    <string name="str_bonus_all_fmt">Bónus pelo uso de pedras %1$d: 50
+\n</string>
 </resources>
