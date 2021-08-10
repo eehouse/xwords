@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools"
+           tools:ignore="MissingTranslation"
+           >
+  <string-array name="color_themes">
+    <item>@string/color_use_theme_os</item>
+    <item>@string/color_use_theme_light</item>
+    <item>@string/color_use_theme_dark</item>
+  </string-array>
+
+</resources>

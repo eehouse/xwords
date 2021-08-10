@@ -2746,7 +2746,6 @@
     <string name="theme_which">Board color theme</string>
     <string name="color_use_theme_light">Use Light theme</string>
     <string name="color_use_theme_dark">Use Dark theme</string>
-    <string name="color_use_theme_os">Use Theme from Android Settings</string>
     <string name="color_theme_edit_light">Edit Light theme</string>
     <string name="color_theme_edit_dark">Edit Dark theme</string>
 

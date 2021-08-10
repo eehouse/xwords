@@ -386,7 +386,6 @@
   <string-array name="color_themes">
     <item>@string/color_use_theme_light</item>
     <item>@string/color_use_theme_dark</item>
-    <item>@string/color_use_theme_os</item>
   </string-array>
 
   <!-- Keep in sync with the color_ids_{light,dark} below -->

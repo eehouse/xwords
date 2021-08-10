@@ -6,12 +6,12 @@
   <PreferenceCategory android:title="@string/prefs_themes"
                       >
 
+    <!-- color_use_theme_os only defined for v29+... -->
     <org.eehouse.android.xw4.XWListPreference
         android:key="@string/key_theme_which"
         android:title="@string/theme_which"
         android:entries="@array/color_themes"
         android:entryValues="@array/color_themes"
-        android:defaultValue="@string/color_use_theme_os"
         />
 
     <Preference app:title="@string/color_theme_edit_light"
