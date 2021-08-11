@@ -3,9 +3,15 @@
            tools:ignore="MissingTranslation"
            >
   <string-array name="color_themes">
-    <item>@string/color_use_theme_os</item>
     <item>@string/color_use_theme_light</item>
     <item>@string/color_use_theme_dark</item>
+    <item>@string/color_use_theme_os</item>
   </string-array>
+  <string-array name="color_themes_vals">
+    <item>0</item>
+    <item>1</item>
+    <item>2</item>
+  </string-array>
+  <string name="theme_which_default">2</string>
 
 </resources>

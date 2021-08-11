@@ -109,19 +109,28 @@ public class CommonPrefs extends XWPrefs {
         int strsID = R.array.color_ids_light;
         String which = LocUtils.getString( context, R.string.key_theme_which );
         which = sp.getString( which, null );
-        if ( null == which ) {
-            // do nothing
-        } else if ( which.equals( LocUtils.getString( context,
-                                                      R.string.color_use_theme_light ) ) )  {
-            // do nothing
-        } else if ( which.equals( LocUtils.getString( context,
-                                                      R.string.color_use_theme_dark ) ) )  {
-            strsID = R.array.color_ids_dark;
-        } else {
-            int uiMode = res.getConfiguration().uiMode;
-            if ( Configuration.UI_MODE_NIGHT_YES
-                 == (uiMode & Configuration.UI_MODE_NIGHT_MASK) ) {
-                strsID = R.array.color_ids_dark;
+        if ( null != which ) {
+            try {
+                switch ( Integer.parseInt( which ) ) {
+                case 0:
+                    // do nothing
+                    break;
+                case 1:
+                    strsID = R.array.color_ids_dark;
+                    break;
+                case 2:
+                    int uiMode = res.getConfiguration().uiMode;
+                    if ( Configuration.UI_MODE_NIGHT_YES
+                         == (uiMode & Configuration.UI_MODE_NIGHT_MASK) ) {
+                        strsID = R.array.color_ids_dark;
+                    }
+                    break;
+                default:
+                    Assert.failDbg();
+                }
+            } catch ( Exception ex ) {
+                // Will happen with old not-an-int saved value
+                Log.ex( TAG, ex );
             }
         }
         String[] colorStrIds = res.getStringArray( strsID );

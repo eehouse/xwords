@@ -159,18 +159,10 @@ public class PrefsDelegate extends DelegateBase
     protected void onResume()
     {
         super.onResume();
-        SharedPreferences sp = getSharedPreferences();
-        sp.registerOnSharedPreferenceChangeListener( this );
+        getSharedPreferences().registerOnSharedPreferenceChangeListener( this );
 
         // It's too early somehow to do this in init() above
         findViewById( R.id.prefs_menu ).setOnClickListener(this);
-
-        String key = LocUtils.getString( mActivity, R.string.key_theme_which );
-        if ( null == sp.getString( key, null ) ) {
-            Resources res = mActivity.getResources();
-            String[] vals = res.getStringArray( R.array.color_themes );
-            sp.edit().putString( key, vals[0] ).commit();
-        }
     }
 
     @Override

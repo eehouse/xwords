@@ -52,6 +52,13 @@ public class XWListPreference extends ListPreference {
     @Override
     public void setSummary( CharSequence summary )
     {
+        CharSequence[] entries = getEntries();
+        if ( null != entries ) {
+            int indx = findIndexOfValue( summary.toString() );
+            if ( 0 <= indx && indx < entries.length ) {
+                summary = entries[indx];
+            }
+        }
         String xlated = LocUtils.xlateString( getContext(), summary.toString() );
         if ( null != xlated ) {
             summary = xlated;

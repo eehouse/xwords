@@ -11,7 +11,8 @@
         android:key="@string/key_theme_which"
         android:title="@string/theme_which"
         android:entries="@array/color_themes"
-        android:entryValues="@array/color_themes"
+        android:entryValues="@array/color_themes_vals"
+        android:defaultValue="@string/theme_which_default"
         />
 
     <Preference app:title="@string/color_theme_edit_light"

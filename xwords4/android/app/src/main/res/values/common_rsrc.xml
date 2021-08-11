@@ -387,6 +387,11 @@
     <item>@string/color_use_theme_light</item>
     <item>@string/color_use_theme_dark</item>
   </string-array>
+  <string-array name="color_themes_vals">
+    <item>0</item>
+    <item>1</item>
+  </string-array>
+  <string name="theme_which_default">0</string>
 
   <!-- Keep in sync with the color_ids_{light,dark} below -->
   <string-array name="color_url_keys">
