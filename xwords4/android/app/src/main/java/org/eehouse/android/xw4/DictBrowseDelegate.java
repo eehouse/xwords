@@ -140,7 +140,7 @@ public class DictBrowseDelegate extends DelegateBase
     private PatTableRow m_rows[] = { null, null, null };
     private Spinner m_spinnerMin;
     private Spinner m_spinnerMax;
-    private boolean m_newAlertShown;
+    private boolean m_filterAlertShown;
     private String m_desc;
     private Runnable mResetChecker;
 
@@ -779,12 +779,11 @@ public class DictBrowseDelegate extends DelegateBase
 
     private void newFeatureAlert()
     {
-        if ( ! m_newAlertShown ) {
-            m_newAlertShown = true;
+        if ( ! m_filterAlertShown ) {
+            m_filterAlertShown = true;
             makeNotAgainBuilder( R.string.new_feature_filter, R.string.key_na_newFeatureFilter )
                 .setActionPair( Action.SHOW_FAQ, R.string.button_faq )
                 .setParams( (Object)FAQ_PARAMS )
-                .setTitle(R.string.new_feature_title)
                 .show();
         }
     }

@@ -106,7 +106,7 @@ public class CommonPrefs extends XWPrefs {
         tvType = TileValueType.values()[ord];
 
         Resources res = context.getResources();
-        int strsID = R.array.color_ids_light;
+        ColorTheme theme = ColorTheme.LIGHT;
         String which = LocUtils.getString( context, R.string.key_theme_which );
         which = sp.getString( which, null );
         if ( null != which ) {
@@ -116,13 +116,13 @@ public class CommonPrefs extends XWPrefs {
                     // do nothing
                     break;
                 case 1:
-                    strsID = R.array.color_ids_dark;
+                    theme = ColorTheme.DARK;
                     break;
                 case 2:
                     int uiMode = res.getConfiguration().uiMode;
                     if ( Configuration.UI_MODE_NIGHT_YES
                          == (uiMode & Configuration.UI_MODE_NIGHT_MASK) ) {
-                        strsID = R.array.color_ids_dark;
+                        theme = ColorTheme.DARK;
                     }
                     break;
                 default:
@@ -133,7 +133,7 @@ public class CommonPrefs extends XWPrefs {
                 Log.ex( TAG, ex );
             }
         }
-        String[] colorStrIds = res.getStringArray( strsID );
+        String[] colorStrIds = res.getStringArray( theme.getArrayID() );
 
         int offset = copyColors( sp, colorStrIds, 0, playerColors, 0 );
         offset += copyColors( sp, colorStrIds, offset, bonusColors, 1 );
