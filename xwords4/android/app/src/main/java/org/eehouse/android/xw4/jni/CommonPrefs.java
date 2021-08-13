@@ -105,36 +105,8 @@ public class CommonPrefs extends XWPrefs {
         int ord = getInt(context, sp, R.string.key_tile_valuetype, 0);
         tvType = TileValueType.values()[ord];
 
-        Resources res = context.getResources();
-        ColorTheme theme = ColorTheme.LIGHT;
-        String which = LocUtils.getString( context, R.string.key_theme_which );
-        which = sp.getString( which, null );
-        if ( null != which ) {
-            try {
-                switch ( Integer.parseInt( which ) ) {
-                case 0:
-                    // do nothing
-                    break;
-                case 1:
-                    theme = ColorTheme.DARK;
-                    break;
-                case 2:
-                    int uiMode = res.getConfiguration().uiMode;
-                    if ( Configuration.UI_MODE_NIGHT_YES
-                         == (uiMode & Configuration.UI_MODE_NIGHT_MASK) ) {
-                        theme = ColorTheme.DARK;
-                    }
-                    break;
-                default:
-                    Assert.failDbg();
-                }
-            } catch ( Exception ex ) {
-                // Will happen with old not-an-int saved value
-                Log.ex( TAG, ex );
-            }
-        }
-        String[] colorStrIds = res.getStringArray( theme.getArrayID() );
-
+        ColorTheme theme = getTheme( context, null );
+        String[] colorStrIds = context.getResources().getStringArray( theme.getArrayID() );
         int offset = copyColors( sp, colorStrIds, 0, playerColors, 0 );
         offset += copyColors( sp, colorStrIds, offset, bonusColors, 1 );
         offset += copyColors( sp, colorStrIds, offset, otherColors, 0 );
@@ -178,6 +150,54 @@ public class CommonPrefs extends XWPrefs {
             s_cp = new CommonPrefs();
         }
         return s_cp.refresh( context );
+    }
+
+    // Is the OS-level setting on?
+    public static boolean darkThemeEnabled( Context context )
+    {
+        boolean[] fromOS = {false};
+        ColorTheme theme = getTheme( context, fromOS );
+        boolean result = theme == ColorTheme.DARK && fromOS[0];
+        return result;
+    }
+
+    private static ColorTheme getTheme( Context context, boolean[] fromOSOut )
+    {
+        ColorTheme theme = ColorTheme.LIGHT;
+        SharedPreferences sp = PreferenceManager
+            .getDefaultSharedPreferences( context );
+        String which = LocUtils.getString( context, R.string.key_theme_which );
+        which = sp.getString( which, null );
+        if ( null != which ) {
+            try {
+                switch ( Integer.parseInt( which ) ) {
+                case 0:
+                    // do nothing
+                    break;
+                case 1:
+                    theme = ColorTheme.DARK;
+                    break;
+                case 2:
+                    Assert.assertTrueNR( Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q );
+                    Resources res = context.getResources();
+                    int uiMode = res.getConfiguration().uiMode;
+                    if ( Configuration.UI_MODE_NIGHT_YES
+                         == (uiMode & Configuration.UI_MODE_NIGHT_MASK) ) {
+                        theme = ColorTheme.DARK;
+                        if ( null != fromOSOut ) {
+                            fromOSOut[0] = true;
+                        }
+                    }
+                    break;
+                default:
+                    Assert.failDbg();
+                }
+            } catch ( Exception ex ) {
+                // Will happen with old not-an-int saved value
+                Log.ex( TAG, ex );
+            }
+        }
+        return theme;
     }
 
     public static int getDefaultBoardSize( Context context )

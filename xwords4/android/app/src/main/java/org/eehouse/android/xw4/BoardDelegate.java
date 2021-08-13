@@ -55,10 +55,13 @@ import java.util.Set;
 import org.eehouse.android.xw4.DBUtils.SentInvitesInfo;
 import org.eehouse.android.xw4.DlgDelegate.Action;
 import org.eehouse.android.xw4.DlgDelegate.ActionPair;
+import org.eehouse.android.xw4.NFCUtils.Wrapper;
 import org.eehouse.android.xw4.Perms23.Perm;
+import org.eehouse.android.xw4.TilePickAlert.TilePickState;
 import org.eehouse.android.xw4.Toolbar.Buttons;
-import org.eehouse.android.xw4.jni.CommonPrefs;
+import org.eehouse.android.xw4.gen.PrefsWrappers;
 import org.eehouse.android.xw4.jni.CommonPrefs.TileValueType;
+import org.eehouse.android.xw4.jni.CommonPrefs;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;
 import org.eehouse.android.xw4.jni.CommsAddrRec;
@@ -77,8 +80,6 @@ import org.eehouse.android.xw4.jni.UtilCtxtImpl;
 import org.eehouse.android.xw4.jni.XwJNI.GamePtr;
 import org.eehouse.android.xw4.jni.XwJNI;
 import org.eehouse.android.xw4.loc.LocUtils;
-import org.eehouse.android.xw4.TilePickAlert.TilePickState;
-import org.eehouse.android.xw4.NFCUtils.Wrapper;
 
 public class BoardDelegate extends DelegateBase
     implements TransportProcs.TPMsgHandler, View.OnClickListener,
@@ -537,6 +538,25 @@ public class BoardDelegate extends DelegateBase
             doResume( true );
         } else {
             m_startSkipped = true;
+        }
+        newThemeFeatureAlert();
+    }
+
+    private static boolean s_themeNAShown = false;
+    private void newThemeFeatureAlert()
+    {
+        if ( ! s_themeNAShown ) {
+            s_themeNAShown = true;
+            if ( CommonPrefs.darkThemeEnabled( m_activity ) ) {
+                String prefsName = LocUtils.getString( m_activity, R.string.theme_which );
+                String msg = LocUtils
+                    .getString( m_activity, R.string.not_again_boardThemes_fmt,
+                                prefsName );
+                makeNotAgainBuilder( msg, R.string.key_na_boardThemes )
+                    .setTitle( R.string. new_feature_title )
+                    .setActionPair( Action.LAUNCH_THEME_CONFIG, R.string.button_settings )
+                    .show();
+            }
         }
     }
 
@@ -1132,6 +1152,10 @@ public class BoardDelegate extends DelegateBase
                     break;
                 }
             }
+            break;
+
+        case LAUNCH_THEME_CONFIG:
+            PrefsDelegate.launch( m_activity, PrefsWrappers.prefs_appear_themes.class );
             break;
 
         case ENABLE_NBS_DO:

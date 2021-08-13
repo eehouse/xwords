@@ -2771,4 +2771,18 @@
     \n\nThis action cannot be undone, but you can always restore the
     default colors for this theme.</string>
     <string name="button_apply_config">Import</string>
+
+    <!-- hint about new board themes (i.e. dark mode) feature. The
+         name of the preference controlling the theme is substituted in -->
+    <string name="not_again_boardThemes_fmt">The board is now being
+    drawn dark because “Dark theme” is enabled on your device.
+
+    \n\nIf you prefer the old “Light” theme, or to choose a theme
+    independent of Android’s “Dark theme” setting, you can change “%1$s”
+    in App Settings at any time. The “Settings” button below will take
+    you there now.
+    </string>
+    <!-- Button referenced in text above. Should match! -->
+    <string name="button_settings">Settings…</string>
+
 </resources>

@@ -55,6 +55,7 @@ public class DlgDelegate {
         QUARANTINE_CLEAR,
         QUARANTINE_DELETE,
         APPLY_CONFIG,
+        LAUNCH_THEME_CONFIG,
 
         // BoardDelegate
         UNDO_LAST_ACTION,

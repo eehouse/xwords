@@ -338,7 +338,7 @@ public class PrefsDelegate extends DelegateBase
 
         // Now replace this activity with a new copy
         // so the new values get loaded.
-        PrefsDelegate.launch( mActivity );
+        launch( mActivity );
         finish();
     }
 
@@ -349,7 +349,16 @@ public class PrefsDelegate extends DelegateBase
 
     public static void launch( Context context )
     {
+        launch( context, PrefsWrappers.prefs.class );
+    }
+
+    public static void launch( Context context, Class root )
+    {
+        Bundle bundle = null;
         Intent intent = new Intent( context, PrefsActivity.class );
+        if ( null != root ) {
+            PrefsActivity.bundleRoot( root, intent );
+        }
         context.startActivity( intent );
     }
 

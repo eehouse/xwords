@@ -49,6 +49,7 @@ public class PrefsActivity extends XWActivity
                OnPreferenceStartFragmentCallback,
                OnPreferenceDisplayDialogCallback {
     private final static String TAG = PrefsActivity.class.getSimpleName();
+    private static final String CLASS_NAME = "CLASS_NAME";
 
     private PrefsDelegate m_dlgt;
 
@@ -66,7 +67,17 @@ public class PrefsActivity extends XWActivity
         Assert.assertTrue( 0 < layoutID );
         m_dlgt.setContentView( layoutID );
 
-        PreferenceFragmentCompat rootFrag = new PrefsWrappers.prefs();
+        PreferenceFragmentCompat rootFrag;
+        try {
+            String rootName = getIntent().getExtras().getString( CLASS_NAME );
+            Assert.assertTrueNR( null != rootName );
+            Class clazz = Class.forName( rootName );
+            rootFrag = (PreferenceFragmentCompat)clazz.newInstance();
+        } catch ( Exception ex ) {
+            Log.ex( TAG, ex );
+            rootFrag = new PrefsWrappers.prefs();
+            Assert.failDbg();
+        }
         m_dlgt.setRootFragment( rootFrag );
 
         getSupportFragmentManager()
@@ -207,5 +218,13 @@ public class PrefsActivity extends XWActivity
         }
 
         public abstract int getResID();
+    }
+
+    public static void bundleRoot( Class root, Intent intent )
+    {
+        Assert.assertTrueNR( null == intent.getExtras() );
+        Bundle bundle = new Bundle();
+        bundle.putCharSequence( CLASS_NAME, root.getName() );
+        intent.putExtras( bundle );
     }
 }
