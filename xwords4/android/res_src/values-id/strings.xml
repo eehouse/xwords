@@ -289,4 +289,9 @@
     <string name="pause_expl_hint">Mengapa saya melakukan ini</string>
     <string name="pause_forget_msg">Lupakan pesan</string>
     <string name="pause_save_msg">Ingat pesan</string>
+    <string name="unpause_notify_fmt">Pemain %1$s telah membatalkan jeda permainan.</string>
+    <string name="pause_notify_fmt">Pemain %1$s telah menjeda permainan.</string>
+    <string name="remote_msg_title">Pesan remote</string>
+    <string name="knowns_smsphone_fmt">Telepon SMS: %1$s</string>
+    <string name="knowns_bta_fmt">Alamat Bluetooth: %1$s</string>
 </resources>
