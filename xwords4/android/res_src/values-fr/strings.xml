@@ -945,7 +945,7 @@ dernier tour validé ? (Il n\'y a pas d\'option pour le rétablir.)</string>
       -->
     <!-- title of this sub-preference -->
     <!--<string name="prefs_colors">Individual colors</string>-->
-    <string name="prefs_colors">Couleurs du plateau</string>
+    <string name="prefs_colors">Couleurs du plateau, etc.</string>
     <!-- clarification of the above -->
     <!--<string name="prefs_colors_summary">Edit colors used on the board</string>-->
     <string name="prefs_colors_summary">Modifier les couleurs utilisées sur le
@@ -3198,7 +3198,7 @@ pour la langue</string>
     <string name="lang_name_hungarian">Hongrois</string>
     <string name="recovered_group">Partie récupérées</string>
     <string name="password_hint">(Optionnel)</string>
-    <string name="new_feature_filter">Vous pouvez désormais filtrer la liste de mots en précisant le début, la fin, ou ce que contiennent les mots. Filtrez en appuyant sur la flèche en haut à droite de la fenêtre.
+    <string name="new_feature_filter">Vous pouvez filtrer la liste de mots en précisant le début, la fin, ou ce que contiennent les mots. Filtrez en appuyant sur la flèche en haut à droite de la fenêtre.
 \n
 \nLisez-en plus dans la FAQ en appuyant sur le bouton ci-dessous.</string>
     <string name="filter_progress_fmt">Traitement de %1$d mots</string>
@@ -3239,7 +3239,7 @@ pour la langue</string>
     <string name="invite_player_fmt">Inviter %1$s</string>
     <string name="disable_bt_summary">Désactiver toute communication Bluetooth</string>
     <string name="disable_bt">Désactiver le jeu par Bluetooth</string>
-    <string name="cellline">Lignes du plateau</string>
+    <string name="cellline">Bordures des cases</string>
     <string name="qrcode_invite_expl">Pour inviter par code QR, faites scanner le code par l\'appareil photo du téléphone Android de votre adversaire.</string>
     <string name="relay_poll_title">Comment vérifier les coups \?</string>
     <string name="values_values">Valeurs uniquement</string>
@@ -3263,4 +3263,29 @@ pour la langue</string>
     <string name="no_dict_for_move_title">Coup entrant perdu</string>
     <string name="list_item_relaypage">Trafic de la partie…</string>
     <string name="invitee_fmt">(%1$s invité)</string>
+    <string name="prefs_copy_dark">Copier le thème sombre</string>
+    <string name="color_theme_edit_dark">Modifier le thème sombre</string>
+    <string name="color_use_theme_dark">Utiliser le thème sombre</string>
+    <string name="button_settings">Paramètres…</string>
+    <string name="not_again_boardThemes_fmt">Le plateau est maintenant dessiné sombre car le « thème sombre » est activé sur votre périphérique.
+\n
+\nSi vous préférez l\'ancien thème « clair », ou choisir un thème indépendant du paramètre « thème sombre » d\'Android, vous pouvez changer « %1$s » dans Paramètres application à tout moment. Le bouton « Paramètres » ci-dessous vous y emmènera maintenant.</string>
+    <string name="button_apply_config">Importer</string>
+    <string name="apply_config">Voulez-vous importer les paramètres de thème de l\'URL que vous avez ouverte \? Ils remplaceront tous les changements locaux que vous avez faits.
+\n
+\nCette action ne peut pas être annulée, mais vous pouvez toujours restaurer les couleurs par défaut de ce thème.</string>
+    <string name="theme_data_success">Thème copié dans le presse-papier</string>
+    <string name="not_again_copytheme">Copier un thème copie une URL dans votre presse-papier. L\'URL code les paramètres pour ce thème. Envoyez l\'URL à un autre utilisateur de CrossWords pour partager vos paramètres : quand il appuiera sur l\'URL sur un périphérique avec la dernière version de CrossWords installée, il pourra importer vos paramètres.</string>
+    <string name="prefs_copy_light">Copier le thème clair</string>
+    <string name="color_theme_edit_light">Modifier le thème clair</string>
+    <string name="color_use_theme_light">Utiliser le thème clair</string>
+    <string name="theme_which">Thème des couleurs du plateau</string>
+    <string name="prefs_themes">Thèmes des couleurs du plateau</string>
+    <string name="not_again_traysize">Ce nouveau paramètre change le nombre de jetons du chevalet.
+\n
+\nNote : si un joueur de votre partie en réseau utilise une ancienne version de CrossWords, ce paramètre reviendra à 7 pour tout le monde dans la partie.</string>
+    <string name="cellline_width">Épaisseurs de la bordure de case</string>
+    <string name="tray_size">Jetons sur le chevalet</string>
+    <string name="str_bonus_all_fmt">Bonification pour avoir utilisé %1$d jetons : 50
+\n</string>
 </resources>
