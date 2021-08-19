@@ -933,7 +933,7 @@
     <string name="min_len">Tamanho mín.</string>
     <string name="netstats_title">Status da rede do jogo</string>
     <string name="board_menu_game_showInvites">Mostrar convites</string>
-    <string name="new_feature_filter">Você agora pode filtrar listas de palavras por que palavras elas começam, terminam, e/ou contém. Acesse filtros tocando a Seta de Expandir no canto superior direito da janela.
+    <string name="new_feature_filter">Você pode filtrar listas de palavras por que palavras elas começam, terminam, e/ou contém. Acesse filtros tocando a Seta de Expandir no canto superior direito da janela.
 \n
 \nLeia mais no FAQ tocando no botão abaixo.</string>
     <string name="filter_progress_fmt">Processando %1$d palavras</string>
@@ -1148,4 +1148,22 @@
     <string name="tray_size">Quadrados na estante</string>
     <string name="str_bonus_all_fmt">Bônus por usar %1$d quadrados: 50
 \n</string>
+    <string name="prefs_themes">Os temas das cores do tabuleiro</string>
+    <string name="button_settings">Configurações…</string>
+    <string name="not_again_boardThemes_fmt">O quadro escuro está sendo desenhado porque o \"Tema escuro\" está ativado no seu dispositivo.
+\n
+\nCaso prefira o antigo tema \"Claro\" ou caso queira escolher um tema independente da configuração do \"Tema escuro\" do Android, você pode alterar o \"%1$s\" nas configurações dos aplicativos a qualquer momento. O botão \"Configurações\" abaixo o levará agora direto para lá.</string>
+    <string name="button_apply_config">Importe</string>
+    <string name="apply_config">Você gostaria de importar as configurações do tema da URL que você abriu\? Todas as alterações locais serão substituídas.
+\n
+\nEsta ação não pode ser desfeita, porém é possível restaurar as cores predefinidas para este tema.</string>
+    <string name="theme_data_success">O tema foi copiado para a área de transferência</string>
+    <string name="not_again_copytheme">Ao copiar um tema a URL vai para a sua área de transferência. A URL codifica as suas definições para esse tema. Envie a URL para um outro usuário do CrossWords para compartilhar suas configurações: quando ele tocar na URL em um dispositivo com a última versão do CrossWords instalada, ele poderá importar as suas configurações.</string>
+    <string name="prefs_copy_dark">Copie o tema escuro</string>
+    <string name="prefs_copy_light">Copie o tema claro</string>
+    <string name="color_theme_edit_dark">Edite o tema escuro</string>
+    <string name="color_theme_edit_light">Edite o tema claro</string>
+    <string name="color_use_theme_dark">Use o tema escuro</string>
+    <string name="color_use_theme_light">Use o tema claro</string>
+    <string name="theme_which">O tema da cor do tabuleiro</string>
 </resources>
