@@ -2099,8 +2099,9 @@ MIN_TRADE_TILES( const BoardCtxt* board )
 {
     const DictionaryCtxt* dict = model_getDictionary( board->model );
     XP_LangCode langCode = dict_getLangCode( dict );
-    /* 6 is Spanish, but I swear that's not defined anywhere! */
-    return 6 == langCode ? 1 : MAX_TRAY_TILES;
+    /* 6 is Spanish, but I swear that's not defined anywhere! (In Spanish, I'm
+       told, you can trade until there are no tiles left.) */
+    return 6 == langCode ? 1 : MIN_TRAY_TILES;
 }
 
 /* Refuse with error message if any tiles are currently on board in this turn.
