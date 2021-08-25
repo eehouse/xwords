@@ -2136,6 +2136,7 @@ gtk_util_notifyMove( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe), XWStreamCtxt* stream
     XP_U16 len = stream_getSize( stream );
     XP_ASSERT( len <= VSIZE(cGlobals->question) );
     stream_getBytes( stream, cGlobals->question, len );
+    cGlobals->question[len] = '\0';
     (void)g_idle_add( ask_move, globals );
 } /* gtk_util_userQuery */
 
