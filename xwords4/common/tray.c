@@ -200,7 +200,7 @@ drawTray( BoardCtxt* board, XWEnv xwe )
                         } else if ( showFaces ) {
                             XP_Bitmaps bitmaps;
                             const XP_UCHAR* textP = (XP_UCHAR*)NULL;
-                            XP_U8 traySelBits = pti->traySelBits;
+                            TileBit traySelBits = pti->traySelBits;
                             XP_S16 value;
                             Tile tile;
 
@@ -435,7 +435,7 @@ handleActionInTray( BoardCtxt* board, XWEnv xwe, XP_S16 index, XP_Bool onDivider
 #ifndef DISABLE_TILE_SEL
         if ( !result ) {
             TileBit newBits = 1 << index;
-            XP_U8 selBits = pti->traySelBits;
+            TileBit selBits = pti->traySelBits;
             /* Tap on selected tile unselects.  If we don't do this,
                then there's no way to unselect and so no way to turn
                off the placement arrow */
