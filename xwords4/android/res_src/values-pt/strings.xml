@@ -2193,7 +2193,7 @@
     <string name="invite_progress_title">Conectando…</string>
     <string name="button_scan">Re-escanear</string>
     <string name="bt_pair_settings">Emparelhar mais</string>
-    <string name="new_feature_filter">Agora pode filtrar listas de palavras por que palavras elas começam, terminam e/ou contém. Acesse filtros a tocar a Seta de Expandir no canto superior direito da janela.
+    <string name="new_feature_filter">Pode filtrar listas de palavras por que palavras elas começam, terminam e/ou contém. Acesse filtros a tocar a Seta de Expandir no canto superior direito da janela.
 \n
 \nLeia mais no FAQ a tocar no botão abaixo.</string>
     <string name="filter_progress_fmt">Processando %1$d palavras</string>
@@ -2323,4 +2323,22 @@
     <string name="tray_size">Pedras na estante</string>
     <string name="str_bonus_all_fmt">Bónus pelo uso de pedras %1$d: 50
 \n</string>
+    <string name="button_settings">Configurações…</string>
+    <string name="not_again_boardThemes_fmt">O tabulerio escuro está agora a ser desenhado porque o \"Tema escuro\" está ativo no seu aparelho.
+\n
+\nSe preferir o velho tema \"Claro\" ou escolher um tema independente da configuração \"Tema escuro\" do Android, pode mudar \"%1$s\" nas Configurações da app a qualquer momento. O botão \"Configurações\" abaixo irá levá-lo lá agora.</string>
+    <string name="button_apply_config">Importar</string>
+    <string name="apply_config">Gostaria de importar configurações de temas do URL que abriu\? Elas irão substituir quaisquer alterações locais que tenha feito.
+\n
+\nEsta ação não pode ser desfeita, mas pode sempre restaurar as cores padrão para este tema.</string>
+    <string name="theme_data_success">O tema foi copiado para a área de transferência</string>
+    <string name="not_again_copytheme">Copiar um tema põe um URL na sua área de transferência. O URL codifica as suas definições para esse tema. Envie o URL para outro utilizador do CrossWords para compartilhar as suas configurações: quando ele tocar no URL num aparelho com a última versão do CrossWords instalada, poderá importar as suas configurações.</string>
+    <string name="prefs_copy_dark">Copiar o tema escuro</string>
+    <string name="prefs_copy_light">Copiar o tema claro</string>
+    <string name="color_theme_edit_dark">Editar o tema escuro</string>
+    <string name="color_theme_edit_light">Editar o tema claro</string>
+    <string name="color_use_theme_light">Usar o tema claro</string>
+    <string name="color_use_theme_dark">Usar o tema escuro</string>
+    <string name="theme_which">Tema de cores do tabuleiro</string>
+    <string name="prefs_themes">Temas de cores do tabuleiro</string>
 </resources>
