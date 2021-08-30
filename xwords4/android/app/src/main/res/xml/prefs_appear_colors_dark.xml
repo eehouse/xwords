@@ -14,7 +14,7 @@
     <org.eehouse.android.xw4.EditColorPreference
         android:key="@string/key_player1_dark"
         android:title="@string/pref_player2_name"
-        android:defaultValue="0xFFB0B0"
+        android:defaultValue="0xFF7DB0"
         />
     <org.eehouse.android.xw4.EditColorPreference
         android:key="@string/key_player2_dark"
@@ -24,7 +24,7 @@
     <org.eehouse.android.xw4.EditColorPreference
         android:key="@string/key_player3_dark"
         android:title="@string/pref_player4_name"
-        android:defaultValue="0xB0FFB0"
+        android:defaultValue="0x95FFB5"
         />
     <org.eehouse.android.xw4.EditColorPreference
         android:key="@string/key_bonus_l2x_dark"
