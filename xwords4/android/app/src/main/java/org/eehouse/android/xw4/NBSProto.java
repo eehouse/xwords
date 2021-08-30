@@ -307,6 +307,7 @@ public class NBSProto {
             if ( XWServiceHelper.ReceiveResult.GAME_GONE == rslt ) {
                 sendDiedPacket( context, addr.sms_phone, gameID );
             }
+            Log.d( TAG, "feedMessage(): rslt: %s", rslt );
             return rslt == XWServiceHelper.ReceiveResult.OK;
         }
 

@@ -231,7 +231,7 @@ smsproto_prepOutbound( SMSProto* state, XWEnv xwe, SMS_CMD cmd, XP_U32 gameID,
 
     /* First, add the new message (if present) to the array */
     XP_U32 nowSeconds = dutil_getCurSeconds( state->dutil, xwe );
-    if ( cmd != NONE && 0 < buflen ) {
+    if ( cmd != NONE ) {
         addToOutRec( state, rec, cmd, toPort, gameID, buf, buflen, nowSeconds );
     }
 
@@ -435,10 +435,13 @@ logResult( const SMSProto* state, XWEnv xwe, const SMSMsgArray* result,
             default:
                 XP_ASSERT(0);
             }
-            XP_ASSERT( 0 < len );
-            XP_UCHAR* checksum = dutil_md5sum( state->dutil, xwe, data, len );
-            XP_LOGFF( "%s() => datum[%d] sum: %s, len: %d", caller, ii, checksum, len );
-            XP_FREEP( state->mpool, &checksum );
+            if ( 0 == len ) {
+                XP_LOGFF( "%s() => datum[%d] len: 0", caller, ii );
+            } else {
+                XP_UCHAR* checksum = dutil_md5sum( state->dutil, xwe, data, len );
+                XP_LOGFF( "%s() => datum[%d] sum: %s, len: %d", caller, ii, checksum, len );
+                XP_FREEP( state->mpool, &checksum );
+            }
         }
     }
 }
