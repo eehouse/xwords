@@ -198,7 +198,6 @@ public class PrefsDelegate extends DelegateBase
     public boolean onMenuItemClick( MenuItem item )
     {
         boolean handled = true;
-        Log.d( TAG, "item: %s", item );
         DlgID dlgID = null;
         CommonPrefs.ColorTheme theme = null;
         switch ( item.getItemId() ) {
