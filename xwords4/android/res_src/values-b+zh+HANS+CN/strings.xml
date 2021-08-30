@@ -27,8 +27,7 @@
     <string name="group_cur_games">我的游戏</string>
     <string name="group_new_games">新游戏</string>
     <plurals name="group_name_fmt">
-        <item quantity="one">%1$s（%2$d游戏）</item>
-        <item quantity="other"/>
+        <item quantity="other">%1$s（%2$d游戏）</item>
     </plurals>
     <string name="loc_menu_xlate">翻译</string>
     <string name="loc_lang_local">%1$s（你的）</string>
@@ -40,25 +39,18 @@
     <string name="lang_name_italian">意大利语</string>
     <string name="progress_title">正在下载</string>
     <plurals name="nag_minutes_fmt">
-        <item quantity="one">%1$d分钟</item>
-        <item quantity="other"/>
+        <item quantity="other">%1$d分钟</item>
     </plurals>
     <plurals name="nag_hours_fmt">
-        <item quantity="one">%1$d小时</item>
-        <item quantity="other"/>
+        <item quantity="other">%1$d小时</item>
     </plurals>
     <string name="rematch_name_fmt">%1$s</string>
     <string name="name_dict_fmt">%1$s／%2$s</string>
     <string name="gameOver">游戏结束</string>
     <string name="summary_invites_out_fmt">受邀到房间\"%1$s\"的玩家</string>
     <string name="summary_invites_out">邀请的玩家</string>
-    <plurals name="confirm_reset_fmt">
-        <item quantity="one"></item>
-        <item quantity="other"></item>
-    </plurals>
     <plurals name="confirm_nameddeletes_fmt">
-        <item quantity="one">您确定要删除游戏%1$s吗？ 删除后无法恢复。</item>
-        <item quantity="other"></item>
+        <item quantity="other">您确定要删除游戏%1$s吗？ 删除后无法恢复。</item>
     </plurals>
     <string name="invitee_fmt">(%1$s 已邀请)</string>
 </resources>
