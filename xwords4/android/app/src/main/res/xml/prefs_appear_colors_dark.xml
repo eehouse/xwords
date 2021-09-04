@@ -50,7 +50,7 @@
     <org.eehouse.android.xw4.EditColorPreference
         android:key="@string/key_clr_bonushint_dark"
         android:title="@string/key_bonushint"
-        android:defaultValue="0x7F7F7F"
+        android:defaultValue="0xA0A0A0"
         />
 
     <org.eehouse.android.xw4.EditColorPreference
@@ -79,7 +79,7 @@
     <org.eehouse.android.xw4.EditColorPreference
         android:key="@string/key_cellline_dark"
         android:title="@string/cellline"
-        android:defaultValue="0x202020"
+        android:defaultValue="0x303030"
         />
 
     <org.eehouse.android.xw4.XWListPreference

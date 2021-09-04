@@ -428,7 +428,8 @@ public class BoardCanvas extends Canvas implements DrawCtx {
                     int color = m_otherColors[CommonPrefs.COLOR_BONUSHINT];
                     m_fillPaint.setColor( adjustColor(color) );
                     Rect brect = new Rect( rect );
-                    brect.inset( 0, brect.height()/4 );
+                    float inset = (float)(brect.height() / 3.5);
+                    brect.inset( 0, (int)inset );
                     drawCentered( bonusStr, brect, m_fontDims );
                 }
             } else {
