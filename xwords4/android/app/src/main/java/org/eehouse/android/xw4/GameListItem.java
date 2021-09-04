@@ -167,6 +167,7 @@ public class GameListItem extends LinearLayout
     }
 
     // View.OnClickListener interface
+    @Override
     public void onClick( View view )
     {
         int id = view.getId();

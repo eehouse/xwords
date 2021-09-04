@@ -47,6 +47,7 @@ import android.widget.TextView;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -491,6 +492,7 @@ public class BoardDelegate extends DelegateBase
         m_rowid = args.getLong( GameUtils.INTENT_KEY_ROWID, -1 );
         Log.i( TAG, "opening rowid %d", m_rowid );
         m_overNotShown = true;
+        noteOpened( m_rowid );
     } // init
 
     private void getLock()
@@ -600,6 +602,7 @@ public class BoardDelegate extends DelegateBase
         closeIfFinishing( true );
         releaseThreadOnce();
         GamesListDelegate.boardDestroyed( m_rowid );
+        noteClosed( m_rowid );
         super.onDestroy();
     }
 
@@ -3035,6 +3038,30 @@ public class BoardDelegate extends DelegateBase
                 }
             }
         }
+    }
+
+    // This might need to map rowid->openCount so opens can stack
+    static Set<Long> sOpenRows = new HashSet<>();
+
+    private static void noteOpened( long rowid )
+    {
+        Log.d( TAG, "noteOpened(%d)", rowid );
+        Assert.assertTrueNR( !sOpenRows.contains(rowid) );
+        sOpenRows.add( rowid );
+    }
+
+    private static void noteClosed( long rowid )
+    {
+        Log.d( TAG, "noteClosed(%d)", rowid );
+        Assert.assertTrueNR( sOpenRows.contains(rowid) );
+        sOpenRows.remove( rowid );
+    }
+
+    static boolean gameIsOpen( long rowid )
+    {
+        boolean result = sOpenRows.contains( rowid );
+        Log.d( TAG, "gameIsOpen(%d) => %b", rowid, result );
+        return result;
     }
 
     private static void setupRematchFor( Activity activity, GamePtr gamePtr,

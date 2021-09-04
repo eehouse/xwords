@@ -611,7 +611,6 @@ public class GamesListDelegate extends ListDelegateBase
     private int m_missingDictLang;
     private String m_nameField;
     private NetLaunchInfo m_netLaunchInfo;
-    private Set<Long> m_launchedGames; // prevent problems with double-taps
     private boolean m_menuPrepared;
     private String m_origTitle;
     private Button[] m_newGameButtons;
@@ -624,7 +623,6 @@ public class GamesListDelegate extends ListDelegateBase
     {
         super( delegator, sis, R.layout.game_list, R.menu.games_list_menu );
         m_activity = delegator.getActivity();
-        m_launchedGames = new HashSet<>();
         s_self = this;
     }
 
@@ -1120,7 +1118,6 @@ public class GamesListDelegate extends ListDelegateBase
     protected void handleNewIntent( Intent intent )
     {
         Log.d( TAG, "handleNewIntent(extras={%s})", DbgUtils.extrasToString( intent ) );
-        m_launchedGames.clear();
         Assert.assertNotNull( intent );
         tryStartsFromIntent( intent );
     }
@@ -1259,8 +1256,6 @@ public class GamesListDelegate extends ListDelegateBase
     {
         if ( hasFocus ) {
             updateField();
-
-            m_launchedGames.clear(); // This is probably wrong!!!
         }
     }
 
@@ -1294,7 +1289,6 @@ public class GamesListDelegate extends ListDelegateBase
                     switch( change ) {
                     case GAME_DELETED:
                         m_adapter.removeGame( rowid );
-                        m_launchedGames.remove( rowid );
                         m_mySIS.selGames.remove( rowid );
                         invalidateOptionsMenuIf();
                         break;
@@ -1328,7 +1322,7 @@ public class GamesListDelegate extends ListDelegateBase
 
     private void openWithChecks( long rowid, GameSummary summary )
     {
-        if ( ! m_launchedGames.contains( rowid ) ) {
+        if ( ! BoardDelegate.gameIsOpen( rowid ) ) {
             if ( Quarantine.safeToOpen( rowid ) ) {
                 makeNotAgainBuilder( R.string.not_again_newselect,
                                      R.string.key_notagain_newselect,
@@ -1702,7 +1696,7 @@ public class GamesListDelegate extends ListDelegateBase
                 // currently open
                 enable = 0 < nGamesSelected;
                 for ( long row : m_mySIS.selGames ) {
-                    enable = enable && !m_launchedGames.contains( row );
+                    enable = enable && !BoardDelegate.gameIsOpen( row );
                 }
                 Utils.setItemVisible( menu, R.id.games_game_delete, enable );
                 Utils.setItemVisible( menu, R.id.games_game_reset, enable );
@@ -1922,7 +1916,7 @@ public class GamesListDelegate extends ListDelegateBase
                 enable = BuildConfig.DEBUG || XWPrefs.getDebugEnabled( m_activity );
                 Utils.setItemVisible( menu, R.id.games_game_markbad, enable );
 
-                enable = !m_launchedGames.contains( rowID );
+                enable = !BoardDelegate.gameIsOpen( rowID );
                 Utils.setItemVisible( menu, R.id.games_game_delete, enable );
                 Utils.setItemVisible( menu, R.id.games_game_reset, enable );
             } else {
@@ -2847,8 +2841,7 @@ public class GamesListDelegate extends ListDelegateBase
     {
         if ( DBUtils.ROWID_NOTFOUND == rowid ) {
             Log.d( TAG, "launchGame(): dropping bad rowid" );
-        } else if ( ! m_launchedGames.contains( rowid ) ) {
-            m_launchedGames.add( rowid );
+        } else if ( ! BoardDelegate.gameIsOpen( rowid ) ) {
             if ( m_adapter.inExpandedGroup( rowid ) ) {
                 setSelGame( rowid );
             }
@@ -3057,8 +3050,6 @@ public class GamesListDelegate extends ListDelegateBase
     public static void boardDestroyed( long rowid )
     {
         if ( null != s_self ) {
-            // remove likely a no-op: launching clears the set, but shouldn't
-            s_self.m_launchedGames.remove( rowid );
             s_self.invalidateOptionsMenuIf();
         }
     }
