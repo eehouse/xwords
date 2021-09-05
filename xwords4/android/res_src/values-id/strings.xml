@@ -294,4 +294,30 @@
     <string name="remote_msg_title">Pesan remote</string>
     <string name="knowns_smsphone_fmt">Telepon SMS: %1$s</string>
     <string name="knowns_bta_fmt">Alamat Bluetooth: %1$s</string>
+    <string name="board_menu_game_unpause">Lanjut</string>
+    <string name="board_menu_game_pause">Jeda</string>
+    <string name="history_pause_fmt">Dijeda oleh: %1$s.</string>
+    <string name="logstore_clear_confirm">Apakah Anda ingin menghapus log debug Anda\? Tindakan ini tidak dapat dibatalkan.</string>
+    <string name="new_feature_title">Peringatan Fitur Baru</string>
+    <string name="knowns_mqtt_fmt">MQTT DevID: %1$s</string>
+    <string name="knowns_ts_fmt">Permainan terakhir: %1$s</string>
+    <string name="knowns_delete_confirm_fmt">Apakah Anda yakin ingin menghapus “%1$s” dari Orang Yang Dikenal\?
+\n
+\n(Tindakan ini tidak dapat dibatalkan, tetapi pemain dapat muncul kembali jika Anda masih memiliki permainan yang aktif bersamanya.)</string>
+    <string name="newgame_radio_known">Undang Orang Yang Dikenali</string>
+    <string name="choose_expl_config">ATAU mulai sebuah permainan setelah mengkonfigurasinya, contoh untuk mengubah bahasa atau jumlah pemain</string>
+    <string name="choose_expl_known">ATAU mulai sebuah permainan dengan seseorang yang pernah bermain bersama Anda, undangan tidak diperlukan</string>
+    <string name="theme_which">Tema warna papan</string>
+    <string name="button_settings">Pengaturan…</string>
+    <string name="not_again_boardThemes_fmt">Papan sekarang berwarna gelap karena “Tema gelap” diaktifkan pada perangkat Anda.
+\n
+\nJika Anda lebih suka tema “Cerah” yang lama, atau gunakan tema yang tidak tergantung pada pengaturan “Tema gelap” Android, Anda dapat mengubah “%1$s” pada Pengaturan Aplikasi kapan saja. Tombol “Pengaturan” di bawah akan membawa Anda ke sana sekarang.</string>
+    <string name="button_apply_config">Impor</string>
+    <string name="theme_data_success">Tema disalin ke Papan Klip</string>
+    <string name="prefs_copy_dark">Salin tema Gelap</string>
+    <string name="prefs_copy_light">Salin tema Cerah</string>
+    <string name="color_theme_edit_dark">Sunting tema Gelap</string>
+    <string name="color_theme_edit_light">Sunting tema Cerah</string>
+    <string name="color_use_theme_dark">Gunakan tema Gelap</string>
+    <string name="color_use_theme_light">Gunakan tema Cerah</string>
 </resources>
