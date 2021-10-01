@@ -34,8 +34,11 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.lang.ref.WeakReference;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Formatter;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.zip.GZIPOutputStream;
 
 public class Log {
     private static final String TAG = Log.class.getSimpleName();
@@ -43,7 +46,7 @@ public class Log {
     private static final String KEY_USE_DB = TAG + "/useDB";
     private static final boolean LOGGING_ENABLED = BuildConfig.NON_RELEASE;
     private static final boolean ERROR_LOGGING_ENABLED = true;
-    private static final String LOGS_FILE_NAME_FMT = BuildConfig.FLAVOR + "_logsDB_%d.txt";
+    private static final String LOGS_FILE_NAME_FMT = BuildConfig.FLAVOR + "_logsDB_%d.txt.gz";
     private static final String LOGS_DB_NAME = "xwlogs_db";
     private static final String LOGS_TABLE_NAME = "logs";
     private static final String COL_ENTRY = "entry";
@@ -52,8 +55,9 @@ public class Log {
     private static final String COL_ROWID = "rowid";
     private static final String COL_TAG = "tag";
     private static final String COL_LEVEL = "level";
+    private static final String COL_TIMESTAMP = "ts";
 
-    private static final int DB_VERSION = 1;
+    private static final int DB_VERSION = 2;
     private static boolean sEnabled = BuildConfig.DEBUG;
     private static boolean sUseDB;
     private static WeakReference<Context> sContextRef;
@@ -236,6 +240,7 @@ public class Log {
                 + "," + COL_PID + " INTEGER"
                 + "," + COL_TAG + " TEXT"
                 + "," + COL_LEVEL + " INTEGER(2)"
+                + "," + COL_TIMESTAMP + " INTEGER"
                 + ");";
 
             db.execSQL( query );
@@ -245,9 +250,16 @@ public class Log {
         @SuppressWarnings("fallthrough")
         public void onUpgrade( SQLiteDatabase db, int oldVersion, int newVersion )
         {
-            String msg = String.format("onUpgrade(%s): old: %d; new: %d", db, oldVersion, newVersion );
+            String msg = String.format("onUpgrade(%s): old: %d; new: %d", db,
+                                       oldVersion, newVersion );
             android.util.Log.i( TAG, msg );
-            Assert.failDbg();
+            switch ( oldVersion ) {
+            case 1:
+                addColumn( db, COL_TIMESTAMP, "INTEGER DEFAULT 0" );
+                break;
+            default:
+                Assert.failDbg();
+            }
         }
 
         void store( LOG_LEVEL level, String tag, String msg )
@@ -261,6 +273,7 @@ public class Log {
             values.put( COL_PID, pid );
             values.put( COL_TAG, tag );
             values.put( COL_LEVEL, level.ordinal() );
+            values.put( COL_TIMESTAMP, System.currentTimeMillis() );
             enqueue( new Runnable() {
                     @Override
                     public void run() {
@@ -274,6 +287,8 @@ public class Log {
             enqueue( new Runnable() {
                     @Override
                     public void run() {
+                        SimpleDateFormat formatter = new SimpleDateFormat("yy/MM/dd HH:mm:ss.SSS");
+
                         File dir = Environment.getExternalStorageDirectory();
                         dir = new File( dir, Environment.DIRECTORY_DOWNLOADS );
                         File db;
@@ -285,27 +300,31 @@ public class Log {
                         }
 
                         try {
-                            OutputStream os = new FileOutputStream( db );
-                            OutputStreamWriter osw = new OutputStreamWriter(os);
+                            FileOutputStream fos = new FileOutputStream( db );
+                            GZIPOutputStream gzos = new GZIPOutputStream( fos );
+                            OutputStreamWriter osw = new OutputStreamWriter( gzos );
 
-                            String[] columns = { COL_ENTRY, COL_TAG, COL_THREAD, COL_PID };
+                            String[] columns = { COL_ENTRY, COL_TAG, COL_THREAD, COL_PID,
+                                                 COL_TIMESTAMP };
                             String selection = null;
                             String orderBy = COL_ROWID;
                             Cursor cursor = getReadableDatabase().query( LOGS_TABLE_NAME, columns,
                                                                          selection, null, null, null,
                                                                          orderBy );
                             llog( "dumpToFile(): got %d results", cursor.getCount() );
-                            int indx0 = cursor.getColumnIndex( columns[0] );
-                            int indx1 = cursor.getColumnIndex( columns[1] );
-                            int indx2 = cursor.getColumnIndex( columns[2] );
-                            int indx3 = cursor.getColumnIndex( columns[3] );
+                            int[] indices = new int[columns.length];
+                            for ( int ii = 0; ii < indices.length; ++ii ) {
+                                indices[ii] = cursor.getColumnIndex( columns[ii] );
+                            }
                             while ( cursor.moveToNext() ) {
-                                String data = cursor.getString(indx0);
-                                String tag = cursor.getString(indx1);
-                                int tid =  cursor.getInt(indx2);
-                                int pid =  cursor.getInt(indx3);
+                                String data = cursor.getString(indices[0]);
+                                String tag = cursor.getString(indices[1]);
+                                int tid = cursor.getInt(indices[2]);
+                                int pid = cursor.getInt(indices[3]);
+                                long ts = cursor.getLong(indices[4]);
                                 StringBuilder builder = new StringBuilder()
-                                    .append(String.format("% 5d % 5d", pid, tid)).append(":")
+                                    .append(formatter.format( new Date(ts) ))
+                                    .append(String.format(" % 5d % 5d", pid, tid)).append(":")
                                     .append(tag).append(":")
                                     .append(data).append("\n")
                                     ;
@@ -334,6 +353,13 @@ public class Log {
                         procs.onCleared( result );
                     }
                 } );
+        }
+
+        private void addColumn( SQLiteDatabase db, String colName, String colType )
+        {
+            String cmd = String.format( "ALTER TABLE %s ADD COLUMN %s %s;",
+                                        LOGS_TABLE_NAME, colName, colType );
+            db.execSQL( cmd );
         }
 
         private LinkedBlockingQueue<Runnable> mQueue;
