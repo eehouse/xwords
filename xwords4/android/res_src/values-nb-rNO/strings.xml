@@ -930,7 +930,6 @@
 \n</string>
     <string name="logstore_cleared_fmt">%1$d loggenheter sletter</string>
     <string name="logstore_notdumped">Kunne ikke skrive logger</string>
-    <string name="gamel_menu_logstore_dump">Skriv lagrede logger til fil</string>
     <string name="gamel_menu_logstore_clear">Tøm loggføring</string>
     <string name="gamel_menu_logstore_off">Skru av loggføring</string>
     <string name="gamel_menu_logstore_on">Skru på loggføring</string>

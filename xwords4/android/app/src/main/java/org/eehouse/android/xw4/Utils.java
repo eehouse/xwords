@@ -195,14 +195,35 @@ public class Utils {
 
     public static void emailAuthor( Context context, String msg )
     {
+        emailAuthorImpl( context, msg, R.string.email_author_subject,
+                         R.string.email_author_chooser, null );
+    }
+
+    public static void emailLogFile( Context context, File attachment )
+    {
+        String msg = LocUtils.getString( context, R.string.email_logs_msg );
+        emailAuthorImpl( context, msg, R.string.email_logs_subject,
+                         R.string.email_logs_chooser, attachment );
+    }
+
+    private static void emailAuthorImpl( Context context, String msg, int subject,
+                                         int chooser, File attachment )
+    {
         Intent intent = new Intent( Intent.ACTION_SEND );
         intent.setType( "message/rfc822" ); // force email
         intent.putExtra( Intent.EXTRA_SUBJECT,
-                         LocUtils.getString( context,
-                                             R.string.email_author_subject ) );
+                         LocUtils.getString( context, subject ) );
         String[] addrs = { LocUtils.getString( context,
                                                R.string.email_author_email ) };
         intent.putExtra( Intent.EXTRA_EMAIL, addrs );
+
+        if ( null != attachment ) {
+            Uri uri = FileProvider.getUriForFile( context,
+                                                  context.getPackageName() + ".provider",
+                                                  attachment );
+            intent.putExtra( Intent.EXTRA_STREAM, uri );
+        }
+
         String devID = XwJNI.dvc_getMQTTDevID( null );
         String body = LocUtils.getString( context, R.string.email_body_rev_fmt,
                                           BuildConfig.GIT_REV, Build.MODEL,
@@ -211,8 +232,7 @@ public class Utils {
             body += "\n\n" + msg;
         }
         intent.putExtra( Intent.EXTRA_TEXT, body );
-        String chooserMsg = LocUtils.getString( context,
-                                                R.string.email_author_chooser );
+        String chooserMsg = LocUtils.getString( context, chooser );
         context.startActivity( Intent.createChooser( intent, chooserMsg ) );
     }
 

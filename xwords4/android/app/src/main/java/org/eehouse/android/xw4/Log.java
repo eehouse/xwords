@@ -1,6 +1,6 @@
 /* -*- compile-command: "find-and-gradle.sh inXw4dDeb"; -*- */
 /*
- * Copyright 2009 - 2020 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2009 - 2021 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -95,6 +95,7 @@ public class Log {
     }
 
     interface ResultProcs {
+        void onDumping( int nRecords );
         void onDumped( File db );
         void onCleared( int nCleared );
     }
@@ -309,9 +310,11 @@ public class Log {
                             String selection = null;
                             String orderBy = COL_ROWID;
                             Cursor cursor = getReadableDatabase().query( LOGS_TABLE_NAME, columns,
-                                                                         selection, null, null, null,
-                                                                         orderBy );
-                            llog( "dumpToFile(): got %d results", cursor.getCount() );
+                                                                         selection, null, null,
+                                                                         null, orderBy );
+                            procs.onDumping( cursor.getCount() );
+
+                            llog( "dumpToFile(): db=%s; got %d results", db, cursor.getCount() );
                             int[] indices = new int[columns.length];
                             for ( int ii = 0; ii < indices.length; ++ii ) {
                                 indices[ii] = cursor.getColumnIndex( columns[ii] );

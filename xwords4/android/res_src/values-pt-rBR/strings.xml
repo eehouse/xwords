@@ -632,7 +632,6 @@
     <string name="logstore_clear_confirm">Tem certeza que quer apagar seus logs de debug\? Esta ação não pode ser desfeita.</string>
     <string name="logstore_notdumped">Incapaz de escrever logs</string>
     <string name="logstore_dumped_fmt">Logs escritos no arquivo %1$s</string>
-    <string name="gamel_menu_logstore_dump">Escrever logs armazenados no arquivo</string>
     <string name="gamel_menu_logstore_clear">Limpar logs armazenados</string>
     <string name="gamel_menu_logstore_off">Desativar armazenamento de logs</string>
     <string name="gamel_menu_logstore_on">Ativar armazenamento de logs</string>

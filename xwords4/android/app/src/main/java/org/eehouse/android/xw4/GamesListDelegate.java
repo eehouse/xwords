@@ -1,6 +1,6 @@
 /* -*- compile-command: "find-and-gradle.sh inXw4dDeb"; -*- */
 /*
- * Copyright 2009 - 2020 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2009 - 2021 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -1400,6 +1400,17 @@ public class GamesListDelegate extends ListDelegateBase
 
     // Log.ResultProcs interface
     @Override
+    public void onDumping( final int nRecords )
+    {
+        runOnUiThread( new Runnable() {
+                @Override
+                public void run() {
+                    Utils.showToast( m_activity, R.string.logstore_dumping_fmt, nRecords );
+                }
+            } );
+    }
+
+    @Override
     public void onDumped( final File logLoc )
     {
         runOnUiThread( new Runnable() {
@@ -1414,7 +1425,11 @@ public class GamesListDelegate extends ListDelegateBase
                             .getString( m_activity, R.string.logstore_dumped_fmt,
                                         logLoc.getPath() );
                     }
-                    makeOkOnlyBuilder( dumpMsg ).show();
+                    makeOkOnlyBuilder( dumpMsg )
+                        .setParams( logLoc )
+                        .setPosButton( android.R.string.cancel )
+                        .setActionPair( Action.SEND_LOGS, R.string.button_send_logs )
+                        .show();
                 }
             } );
     }
@@ -1559,6 +1574,11 @@ public class GamesListDelegate extends ListDelegateBase
         case APPLY_CONFIG:
             Uri data = Uri.parse( (String)params[0] );
             CommonPrefs.loadColorPrefs( m_activity, data );
+            break;
+
+        case SEND_LOGS:
+            File logLoc = (File)params[0];
+            Utils.emailLogFile( m_activity, logLoc );
             break;
 
         default:
@@ -1725,6 +1745,7 @@ public class GamesListDelegate extends ListDelegateBase
                 enable = Log.getStoreLogs();
                 Utils.setItemVisible( menu, R.id.games_menu_enableLogStorage, !enable );
                 Utils.setItemVisible( menu, R.id.games_menu_disableLogStorage, enable );
+                Utils.setItemVisible( menu, R.id.games_menu_emailLogs, enable );
 
                 Assert.assertTrue( m_menuPrepared );
             }
@@ -1843,7 +1864,7 @@ public class GamesListDelegate extends ListDelegateBase
                 .setPosButton( R.string.loc_item_clear )
                 .show();
             break;
-        case R.id.games_menu_dumpLogStorage:
+        case R.id.games_menu_emailLogs:
             Perms23.tryGetPerms( this, Perm.STORAGE, null,
                                  Action.WRITE_LOG_DB );
             break;

@@ -3080,7 +3080,6 @@ pour la langue</string>
     <string name="logstore_cleared_fmt">%1$d entrées de logs supprimées</string>
     <string name="logstore_notdumped">Impossible d\'écrire les logs</string>
     <string name="logstore_dumped_fmt">Logs écrits dans le fichier %1$s</string>
-    <string name="gamel_menu_logstore_dump">Écrire dans un fichier les logs stockés</string>
     <string name="gamel_menu_logstore_clear">Effacer les logs stockés</string>
     <string name="gamel_menu_logstore_off">Désactiver le stockage des logs</string>
     <string name="gamel_menu_logstore_on">Activer le stockage des logs</string>

@@ -32,7 +32,6 @@
     <string name="logstore_cleared_fmt">%1$d log cancellati</string>
     <string name="logstore_notdumped">Impossibile scrivere i log</string>
     <string name="logstore_dumped_fmt">Log scritti sul file %1$s</string>
-    <string name="gamel_menu_logstore_dump">Scrivi log salvati su file</string>
     <string name="gamel_menu_logstore_clear">Elimina log salvati</string>
     <string name="gamel_menu_logstore_off">Disattivo archivio per i log</string>
     <string name="gamel_menu_logstore_on">Attiva archivio per i Log</string>

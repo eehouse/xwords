@@ -934,7 +934,6 @@ WiFi ダイレクト経由で接続可能なデバイスはありません。</s
     <string name="logstore_cleared_fmt">%1$d ログエントリーを削除しました</string>
     <string name="logstore_notdumped">ログの書き込みができません</string>
     <string name="logstore_dumped_fmt">ログをファイル %1$s に書き込みました</string>
-    <string name="gamel_menu_logstore_dump">保存されたログをファイルに書き込む</string>
     <string name="gamel_menu_logstore_clear">保存されたログを消去する</string>
     <string name="gamel_menu_logstore_off">ログの保存を無効にする</string>
     <string name="gamel_menu_logstore_on">ログの保存を有効にする</string>

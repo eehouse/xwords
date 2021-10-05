@@ -1668,7 +1668,6 @@
     <string name="logstore_cleared_fmt">%1$d entradas de log deletadas</string>
     <string name="logstore_notdumped">Incapaz de escrever logs</string>
     <string name="logstore_dumped_fmt">Logs escritos no ficheiro %1$s</string>
-    <string name="gamel_menu_logstore_dump">Escrever logs armazenados no ficheiro</string>
     <string name="gamel_menu_logstore_clear">Limpar logs armazenados</string>
     <string name="gamel_menu_logstore_off">Desativar armazenamento de logs</string>
     <string name="gamel_menu_logstore_on">Ativar armazenamento de logs</string>
