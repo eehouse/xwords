@@ -2410,6 +2410,11 @@ public class DBUtils {
         }
     }
 
+    public static String getStringFor( Context context, String key )
+    {
+        return getStringFor( context, key, null );
+    }
+
     public static String getStringFor( Context context, String key, String dflt )
     {
         return getStringFor( context, key, null, dflt );

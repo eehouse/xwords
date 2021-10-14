@@ -233,7 +233,7 @@ public class BTUtils {
 
     private static void loadOwnMac( Context context )
     {
-        sMyMacAddr = DBUtils.getStringFor( context, KEY_OWN_MAC, null );
+        sMyMacAddr = DBUtils.getStringFor( context, KEY_OWN_MAC );
     }
 
     private static void storeOwnMac( String macAddr )

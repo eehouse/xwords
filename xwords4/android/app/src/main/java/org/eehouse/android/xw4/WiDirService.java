@@ -189,7 +189,7 @@ public class WiDirService extends XWService {
 
         Assert.assertNull( s_peersSet );
         s_peersSet = new HashSet<>();
-        String peers = DBUtils.getStringFor( context, PEERS_LIST_KEY, null );
+        String peers = DBUtils.getStringFor( context, PEERS_LIST_KEY );
         if ( null != peers ) {
             String[] macs = TextUtils.split( peers, "," );
             for ( String mac : macs ) {
@@ -244,7 +244,7 @@ public class WiDirService extends XWService {
     {
         if ( enabled() ) {
             if ( null == sMacAddress && null != context ) {
-                sMacAddress = DBUtils.getStringFor( context, MAC_ADDR_KEY, null );
+                sMacAddress = DBUtils.getStringFor( context, MAC_ADDR_KEY );
             }
         }
         Log.d( TAG, "getMyMacAddress() => %s", sMacAddress );
@@ -1119,7 +1119,7 @@ public class WiDirService extends XWService {
                     Log.d( TAG, "Got my MAC Address: %s and name: %s", sMacAddress,
                            sDeviceName );
 
-                    String stored = DBUtils.getStringFor( context, MAC_ADDR_KEY, null );
+                    String stored = DBUtils.getStringFor( context, MAC_ADDR_KEY );
                     Assert.assertTrue( null == stored || stored.equals(sMacAddress) );
                     if ( null == stored ) {
                         DBUtils.setStringFor( context, MAC_ADDR_KEY, sMacAddress );

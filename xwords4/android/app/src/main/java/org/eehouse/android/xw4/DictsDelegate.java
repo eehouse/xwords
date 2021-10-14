@@ -1125,7 +1125,7 @@ public class DictsDelegate extends ListDelegateBase
     static String prevSelFor( Context context, int lang )
     {
         String key = keyForLang( lang );
-        return DBUtils.getStringFor( context, key, null );
+        return DBUtils.getStringFor( context, key );
     }
 
     @Override

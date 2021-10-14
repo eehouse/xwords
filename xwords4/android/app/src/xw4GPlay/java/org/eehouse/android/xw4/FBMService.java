@@ -135,7 +135,7 @@ public class FBMService extends FirebaseMessagingService {
     public static String getFCMDevID( Context context )
     {
         Assert.assertTrueNR( null != BuildConfig.KEY_FCMID );
-        String result = DBUtils.getStringFor( context, BuildConfig.KEY_FCMID, null );
+        String result = DBUtils.getStringFor( context, BuildConfig.KEY_FCMID );
 
         if ( null == result ) {
             getTokenAsync( context );
