@@ -51,6 +51,7 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
     private static final long INTERVAL_ONEHOUR = 1000 * 60 * 60;
     private static final long INTERVAL_ONEDAY = INTERVAL_ONEHOUR * 24;
     private static final long INTERVAL_NDAYS = 1;
+    private static final String KEY_PREV_URL = "PREV_URL";
 
     // constants that are also used in info.py
     private static final String k_NAME = "name";
@@ -290,12 +291,12 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
                 if ( LOG_QUERIES ) {
                     Log.d( TAG, "onPostExecute(): received: %s", json );
                 }
-                makeNotificationsIf( json, m_params );
+                makeNotificationsIf( json );
                 XWPrefs.setHaveCheckedUpgrades( m_context, true );
             }
         }
 
-        private void makeNotificationsIf( String jstr, JSONObject params )
+        private void makeNotificationsIf( String jstr )
         {
             boolean gotOne = false;
             try {
@@ -324,30 +325,48 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
                                 useBrowser = !Utils.canInstall( m_context, tmp );
                             }
 
-                            Intent intent;
-                            String url = NetUtils.ensureHttps( app.getString( k_URL ) );
-                            if ( useBrowser ) {
-                                intent = new Intent( Intent.ACTION_VIEW,
-                                                     Uri.parse(url) );
-                            } else {
-                                intent = DwnldDelegate
-                                    .makeAppDownloadIntent( m_context, url );
-                            }
+                            String urlParm = app.getString( k_URL );
 
-                            // title and/or body might be in the reply
-                            String title = app.optString( k_UPGRADE_TITLE, null );
-                            if ( null == title ) {
-                                title = LocUtils
-                                    .getString( m_context, R.string.new_app_avail_fmt, label );
+                            // Debug builds check frequently on a timer and
+                            // when it's something we don't want it's annoying
+                            // to get a lot of offers. So track the URL used,
+                            // and only offer once per URL unless the request
+                            // was manual.
+                            boolean skipIt = false;
+                            if ( BuildConfig.NON_RELEASE && !m_fromUI ) {
+                                String prevURL = DBUtils.getStringFor( m_context, KEY_PREV_URL );
+                                if ( urlParm.equals( prevURL ) ) {
+                                    skipIt = true;
+                                } else {
+                                    DBUtils.setStringFor( m_context, KEY_PREV_URL, urlParm );
+                                }
                             }
-                            String body = app.optString( k_UPGRADE_BODY, null );
-                            if ( null == body ) {
-                                body = LocUtils
-                                    .getString( m_context, R.string.new_app_avail );
+                            if ( !skipIt ) {
+                                String url = NetUtils.ensureHttps( urlParm );
+                                Intent intent;
+                                if ( useBrowser ) {
+                                    intent = new Intent( Intent.ACTION_VIEW,
+                                                         Uri.parse(url) );
+                                } else {
+                                    intent = DwnldDelegate
+                                        .makeAppDownloadIntent( m_context, url );
+                                }
+
+                                // title and/or body might be in the reply
+                                String title = app.optString( k_UPGRADE_TITLE, null );
+                                if ( null == title ) {
+                                    title = LocUtils
+                                        .getString( m_context, R.string.new_app_avail_fmt, label );
+                                }
+                                String body = app.optString( k_UPGRADE_BODY, null );
+                                if ( null == body ) {
+                                    body = LocUtils
+                                        .getString( m_context, R.string.new_app_avail );
+                                }
+                                Utils.postNotification( m_context, intent, title,
+                                                        body, title.hashCode() );
+                                gotOne = true;
                             }
-                            Utils.postNotification( m_context, intent, title,
-                                                    body, title.hashCode() );
-                            gotOne = true;
                         }
                     }
 
@@ -382,7 +401,7 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
                 }
             } catch ( org.json.JSONException jse ) {
                 Log.ex( TAG, jse );
-                Log.w( TAG, "sent: \"%s\"", params.toString() );
+                Log.w( TAG, "sent: \"%s\"", m_params.toString() );
                 Log.w( TAG, "received: \"%s\"", jstr );
             } catch ( PackageManager.NameNotFoundException nnfe ) {
                 Log.ex( TAG, nnfe );
