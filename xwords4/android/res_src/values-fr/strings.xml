@@ -3287,4 +3287,10 @@ pour la langue</string>
     <string name="tray_size">Jetons sur le chevalet</string>
     <string name="str_bonus_all_fmt">Bonification pour avoir utilisé %1$d jetons : 50
 \n</string>
+    <string name="email_logs_msg">Logs attachés</string>
+    <string name="gamel_menu_logstore_email">Logs par mails</string>
+    <string name="email_logs_subject">Logs de CrossWords</string>
+    <string name="email_logs_chooser">Envoyer les logs par</string>
+    <string name="logstore_dumping_fmt">Compression de %1$d entrées de logs</string>
+    <string name="button_send_logs">Envoyer à l\'auteur</string>
 </resources>
