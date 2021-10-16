@@ -1165,4 +1165,10 @@
     <string name="color_use_theme_dark">Use o tema escuro</string>
     <string name="color_use_theme_light">Use o tema claro</string>
     <string name="theme_which">O tema da cor do tabuleiro</string>
+    <string name="email_logs_chooser">Envia os registros via</string>
+    <string name="gamel_menu_logstore_email">Registros de e-mail</string>
+    <string name="button_send_logs">Envia ao autor</string>
+    <string name="logstore_dumping_fmt">Compactando %1$d entradas de registro</string>
+    <string name="email_logs_msg">Registros logs anexados</string>
+    <string name="email_logs_subject">Registos CrossWords</string>
 </resources>
