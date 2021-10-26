@@ -167,6 +167,7 @@ public class XWApp extends Application
     {
         if ( null == s_UUID ) {
             s_UUID = UUID.fromString( XwJNI.comms_getUUID() );
+            Log.d( TAG, "s_UUID (for BT): %s", s_UUID );
         }
         return s_UUID;
     }

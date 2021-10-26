@@ -1135,6 +1135,7 @@ public class BTUtils {
             try {
                 Assert.assertTrueNR( null != sAppName && null != sUUID );
                 mServerSocket = openListener( mAdapter );
+                Log.d( TAG, "openListener(uuid=%s) succeeded", sUUID );
             } catch ( IOException ioe ) {
                 Log.ex( TAG, ioe );
                 mServerSocket = null;
