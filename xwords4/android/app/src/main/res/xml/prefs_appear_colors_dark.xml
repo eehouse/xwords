@@ -79,7 +79,7 @@
     <org.eehouse.android.xw4.EditColorPreference
         android:key="@string/key_cellline_dark"
         android:title="@string/cellline"
-        android:defaultValue="0x303030"
+        android:defaultValue="0x373730"
         />
 
     <org.eehouse.android.xw4.XWListPreference

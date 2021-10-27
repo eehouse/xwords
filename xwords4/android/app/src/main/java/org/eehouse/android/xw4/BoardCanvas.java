@@ -516,6 +516,10 @@ public class BoardCanvas extends Canvas implements DrawCtx {
     {
         m_trayOwner = owner;
         m_pendingScore = score;
+        if ( null != m_tileStrokePaint ) {
+            // force new color just in case it's changed
+            m_tileStrokePaint.setColor( m_otherColors[CommonPrefs.COLOR_CELLLINE] );
+        }
         return true;
     }
 
@@ -990,6 +994,7 @@ public class BoardCanvas extends Canvas implements DrawCtx {
             Paint paint = new Paint();
             paint.setStyle( Paint.Style.STROKE );
             paint.setStrokeWidth( Math.max( 2, rect.width() / 20 ) );
+            paint.setColor( m_otherColors[CommonPrefs.COLOR_CELLLINE] );
             m_tileStrokePaint = paint;
         }
         return m_tileStrokePaint;
