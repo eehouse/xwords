@@ -2340,4 +2340,10 @@
     <string name="color_use_theme_dark">Usar o tema escuro</string>
     <string name="theme_which">Tema de cores do tabuleiro</string>
     <string name="prefs_themes">Temas de cores do tabuleiro</string>
+    <string name="gamel_menu_logstore_email">Logs de e-mail</string>
+    <string name="logstore_dumping_fmt">A compactar %1$d entradas de log</string>
+    <string name="button_send_logs">Enviar ao autor</string>
+    <string name="email_logs_msg">Logs anexados</string>
+    <string name="email_logs_chooser">Enviar logs via</string>
+    <string name="email_logs_subject">Logs do CrossWords</string>
 </resources>
