@@ -739,4 +739,68 @@
     <string name="no_invites">Dit spel heeft geen uitnodigingen verstuurd</string>
     <string name="after_restart">Deze verandering zal geen effect hebben totdat
  je CrossWords herstart.</string>
+    <string name="invitee_fmt">(%1$s uitgenodigd)</string>
+    <string name="list_item_relaypage">Spelverkeer…</string>
+    <string name="robot_iq_label">Robot IQ</string>
+    <string name="sms_invite_flakey">Deze optie opent je standaard SMS app wanneer een uitnodiging klaar is om te versturen. Iedere SMS app is anders, en voor sommige SMS apps werkt dit niet.</string>
+    <string name="invit_expl_player_fmt">Uitnodiging doorgestuurd via MQTT/Internet aan bekende speler \"%1$s\" voor %2$s.</string>
+    <string name="invite_choice_p2p">Wifi Direct</string>
+    <string name="disable_bt">Schakel spelen via Bluetooth uit</string>
+    <string name="title_invite_history">Uitnodigingen verstuurd</string>
+    <string name="invite_choice_qrcode">QR Code</string>
+    <string name="radio_how">Hoe\?</string>
+    <string name="ok_with_robots">OK (robots)</string>
+    <string name="tile_button_txt_fmt">%1$s (%2$d)</string>
+    <string name="invite_sms_fmt">Klik de link om mijn uitnodiging te accepteren en CrossWords te spelen: %1$s</string>
+    <string name="invite_choice_data_sms">Data SMS</string>
+    <string name="phonies_label">Onbekende woorden</string>
+    <string name="game_summary_field_created">Creatiedatum</string>
+    <string name="phonies_block">Blokkeer onbekende woorden</string>
+    <string name="sms_invite_fail">Kon SMS app niet openen</string>
+    <string name="summary_invites_out_fmt">Spelers uitgenodigd voor ruimte \"%1$s\"</string>
+    <string name="download_more">Download meer…</string>
+    <string name="use_duptimer">Schakel per-zet timer in</string>
+    <string name="list_item_netstats">Verbindingen…</string>
+    <plurals name="confirm_nameddeletes_fmt">
+        <item quantity="one">Weet je zeker dat je het spel %1$s wilt verwijderen\? Dit kan niet ongedaan gemaakt worden.</item>
+        <item quantity="other">Weet je zeker dat je de spellen %1$s wilt verwijderen\? Dit kan niet ongedaan gemaakt worden.</item>
+    </plurals>
+    <string name="dup_minutes_label">Minuten per beurt</string>
+    <string name="invit_expl_usrsms_fmt">Uitnodiging via SMS verstuurd voor %1$s</string>
+    <string name="str_bonus_all_fmt">Bonus voor het gebruiken van %1$d tegels: 50
+\n</string>
+    <string name="disable_bt_summary">Schakel alle Bluetooth communicatie uit</string>
+    <string name="newgame_reinvite">Nodig opnieuw uit</string>
+    <string name="invite_msg_extra_rematch">Bij rematches zullen alle benodigde uitnodigingen automatisch verzonden worden. Maar je kan altijd nieuwe uitnodigingen sturen als iemand niet reageert.</string>
+    <string name="qrcode_invite_expl">Om via QR code uit te nodigen, laat de tegenstander de QR code met de camera van hun Android telefoon scannen.</string>
+    <string name="phonies_found_title">Onbekende woorden gevonden</string>
+    <string name="invites_unsent">Dit spel verwacht een speler op afstand.
+\n
+\nWil je iemand uitnodigen\?</string>
+    <string name="msg_dev_deleted_fmt">Het spel genaamd \"%1$s\" is verwijderd op een ander apparaat. Het is niet mogelijk om verder te spelen.</string>
+    <string name="tray_size">Tegels in rek</string>
+    <string name="invite_player_fmt">Nodig %1$s uit</string>
+    <string name="how_tab">Uitnodiging hoe versturen\?</string>
+    <string name="local_invite_summary">Als je tegenstander dichtbij is…</string>
+    <string name="radio_who">Wie\?</string>
+    <string name="about_devid_fmt">Apparaat ID: %1$s</string>
+    <plurals name="too_many_trade_fmt">
+        <item quantity="one">Te veel tegels gekozen. Kies er precies één.</item>
+        <item quantity="other">Te veel tegels gekozen. Kies niet meer dan %1$d.</item>
+    </plurals>
+    <string name="invite_choice_user_sms">SMS</string>
+    <string name="qrcode_invite_summary">QR code die je tegenstander kan scannen</string>
+    <string name="invite_subject">Laten we CrossWords spelen</string>
+    <string name="title_blank_picker">Kies tegel voor blank</string>
+    <string name="tile_pick_summary_fmt">Momenteel gekozen: %1$s</string>
+    <string name="about_vers_fmt2">Versie info:
+\n\tVariant: %1$s
+\n\tVersienaam: %2$s
+\n\tVersiecode: %3$d\t
+\n\tBroncode (Git) revisie: %4$s
+\n\tGebouwd: %5$s</string>
+    <string name="about_btaddr_fmt">BT MAC Addr: %1$s</string>
+    <string name="not_again_archive">Archiveren gebruikt een speciale groep met de naam \"Archief\" om voltooide spellen in op te slaan die je wilt bewaren. Omdat een heel archief verwijderen makkelijk is, is archiveren ook een goede manier om spellen voor verwijderen te markeren.
+\n
+\n(De archiefgroep verwijderen is veilig omdat het opnieuw aangemaakt wordt wanneer nodig.)</string>
 </resources>
