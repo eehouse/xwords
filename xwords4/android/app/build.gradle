@@ -114,7 +114,7 @@ android {
             buildConfigField "boolean", "HAVE_KNOWN_PLAYERS", "true"
             buildConfigField "boolean", "FOR_FDROID", "false"
             buildConfigField "boolean", "HAVE_PASSWORD", "false"
-            buildConfigField "boolean", "NO_NEW_RELAY", "false"
+            buildConfigField "boolean", "NO_NEW_RELAY", "true"
         }
 
         xw4GPlay {
@@ -167,7 +167,6 @@ android {
             resValue "string", "nfc_aid", "$NFC_AID_XW4d"
             externalNativeBuild.ndkBuild.cFlags += ['-DVARIANT_xw4d']
             externalNativeBuild.ndkBuild.arguments += ['XW_BT_UUID=' + XWD_UUID]
-            buildConfigField "boolean", "NO_NEW_RELAY", "true"
         }
 
         xw4dGPlay {
@@ -187,7 +186,6 @@ android {
             resValue "string", "nfc_aid", "$NFC_AID_XW4d"
             externalNativeBuild.ndkBuild.cFlags += ['-DVARIANT_xw4dGPlay']
             externalNativeBuild.ndkBuild.arguments += ['XW_BT_UUID=' + XWD_UUID]
-            buildConfigField "boolean", "NO_NEW_RELAY", "true"
         }
 
         xw4Foss {
