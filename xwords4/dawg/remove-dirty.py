@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 # Invoked with path to bad words list as single parameter, and with a
 # stream of words via stdin, loads the bad words into a map and for
