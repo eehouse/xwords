@@ -1,0 +1,69 @@
+# -*- mode: conf; -*-
+#
+# Copyright 2002 - 2021 by Eric House (xwords@eehouse.org).  All
+# rights reserved.
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+
+LANGCODE:ro
+
+# deal with DOS files
+LANGFILTER: tr -d '\r'
+LANGFILTER: | tr [:lower:] [:upper:]
+LANGFILTER: | grep '^[A-JL-PR-VXZ]*$'
+LANGFILTER: | sort -u
+
+# We can trust sort (above) to do the right thing since there's no
+# high ascii.  dict2dawg.pl is much faster if I can trust that its
+# input is in sorted order.
+D2DARGS: -nosort -term 10
+
+LANGINFO: <p>Romanian dictionaries can contain all of the 26 English
+LANGINFO: letters EXCEPT K, Q, W and Y.
+LANGINFO: Any word in your list containing anything else
+LANGINFO: will be excluded from the dictionary.</p>
+
+# High bit means "official".  Next 7 bits are an enum where
+# Romanian==0x15.  Low byte is padding
+XLOC_HEADER:0x9500
+
+# Number Value 	 	Letter
+<BEGIN_TILES>
+2  		0 	{"_"}
+11 	 	1 	'A|a'
+2 	 	9 	'B|b'
+5 	 	1 	'C|c'
+4 	 	2 	'D|d'
+9 	 	1 	'E|e'
+2 	 	8 	'F|f'
+2 	 	9 	'G|g'
+1 	 	10 	'H|h'
+10 	 	1 	'I|i'
+1 	 	10 	'J|j'
+4 	 	1 	'L|l'
+3 	 	4 	'M|m'
+6 	 	1 	'N|n'
+5 	 	1 	'O|o'
+4 	 	2 	'P|p'
+7 	 	1 	'R|r'
+5 	 	1 	'S|s'
+7 	 	1 	'T|t'
+6 	 	1 	'U|u'
+2 	 	8 	'V|v'
+1 	 	10 	'X|x'
+1 	 	10 	'Z|z'
+<END_TILES>
+
+# should ignore all after the <END> above
