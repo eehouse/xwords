@@ -22,6 +22,7 @@ LANGCODE:ro
 # deal with DOS files
 LANGFILTER: tr -d '\r'
 LANGFILTER: | tr [:lower:] [:upper:]
+LANGFILTER: | tr 'ĂÂÎȘȚ' 'AAIST'
 LANGFILTER: | grep '^[A-JL-PR-VXZ]*$'
 LANGFILTER: | sort -u
 
