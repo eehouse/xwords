@@ -115,6 +115,7 @@ android {
             buildConfigField "boolean", "FOR_FDROID", "false"
             buildConfigField "boolean", "HAVE_PASSWORD", "false"
             buildConfigField "boolean", "NO_NEW_RELAY", "true"
+            buildConfigField "String", "DICT_FLAGS", "null"
         }
 
         xw4GPlay {
@@ -167,6 +168,7 @@ android {
             resValue "string", "nfc_aid", "$NFC_AID_XW4d"
             externalNativeBuild.ndkBuild.cFlags += ['-DVARIANT_xw4d']
             externalNativeBuild.ndkBuild.arguments += ['XW_BT_UUID=' + XWD_UUID]
+            buildConfigField "String", "DICT_FLAGS", "\"roOK\""
         }
 
         xw4dGPlay {

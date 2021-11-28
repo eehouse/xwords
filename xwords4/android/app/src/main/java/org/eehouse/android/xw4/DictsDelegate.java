@@ -1257,6 +1257,9 @@ public class DictsDelegate extends ListDelegateBase
             // parse less data
             String name = null;
             String proc = String.format( "listDicts?lc=%s", m_lc );
+            if ( null != BuildConfig.DICT_FLAGS ) {
+                proc += "&flags=" + BuildConfig.DICT_FLAGS;
+            }
             HttpsURLConnection conn = NetUtils.makeHttpsUpdateConn( m_context,
                                                                     proc );
             if ( null != conn ) {
@@ -1343,8 +1346,12 @@ public class DictsDelegate extends ListDelegateBase
         public Boolean doInBackground( Void... unused )
         {
             boolean success = false;
+            String proc = "listDicts";
+            if ( null != BuildConfig.DICT_FLAGS ) {
+                proc += "?flags=" + BuildConfig.DICT_FLAGS;
+            }
             HttpsURLConnection conn = NetUtils.makeHttpsUpdateConn( m_context,
-                                                                    "listDicts" );
+                                                                    proc );
             if ( null != conn ) {
                 String json = NetUtils.runConn( conn, new JSONObject() );
                 if ( !isCancelled() ) {
