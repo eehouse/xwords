@@ -335,6 +335,21 @@ public class DictLangCache {
         return code;
     }
 
+    public static String userLangForLc( Context context, String lc )
+    {
+        String result = null;
+        Map<Integer, String> namesArray = getLangNames( context );
+
+        getLangCodeStr( context, 0 ); // force load of s_langCodeStrs
+        for ( int code = 0; code < s_langCodeStrs.length; ++code ) {
+            if ( lc.equals(s_langCodeStrs[code]) ) {
+                result = namesArray.get(code);
+                break;
+            }
+        }
+        return result;
+    }
+
     public static String getLangName( Context context, String dict )
     {
         int code = getDictLangCode( context, dict );

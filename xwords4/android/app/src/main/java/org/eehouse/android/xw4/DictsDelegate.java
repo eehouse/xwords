@@ -97,7 +97,6 @@ public class DictsDelegate extends ListDelegateBase
 
     private boolean m_quickFetchMode;
     private String[] m_langs;
-    private ListView m_listView;
     private CheckBox m_checkbox;
     private String[] m_locNames;
     private String m_finishOnName;
@@ -113,19 +112,22 @@ public class DictsDelegate extends ListDelegateBase
 
     private static class DictInfo implements Comparable, Serializable {
         public String m_name;
-        public String m_lang;
+        public String m_localLang;  // what we display to user, i.e. translated
+        public String m_urlLang;    // what needs to be in URL
         public int m_nWords;
         public long m_nBytes;
         public String m_note;
-        public DictInfo( String name, String lang, int nWords,
-                         long nBytes, String note )
+        public DictInfo( String name, String urlLang, String localLang,
+                         int nWords, long nBytes, String note )
         {
             m_name = name;
-            m_lang = lang;
+            m_localLang = localLang;
+            m_urlLang = urlLang;
             m_nWords = nWords;
             m_nBytes = nBytes;
             m_note = note;
         }
+        @Override
         public int compareTo( Object obj ) {
             DictInfo other = (DictInfo)obj;
             return m_name.compareTo( other.m_name );
@@ -169,6 +171,7 @@ public class DictsDelegate extends ListDelegateBase
                 }
 
                 ArrayList<Object> items = makeLangItems( langName );
+                Assert.assertTrueNR( 0 < items.size() );
 
                 alist.add( new LangInfo( ii, items.size() ) );
                 if ( ! m_closedLangs.contains( langName ) ) {
@@ -437,8 +440,7 @@ public class DictsDelegate extends ListDelegateBase
 
         m_locNames = getStringArray( R.array.loc_names );
 
-        m_listView = getListView();
-        m_listView.setOnItemLongClickListener( this );
+        getListView().setOnItemLongClickListener( this );
 
         m_checkbox = (CheckBox)findViewById( R.id.show_remote );
         m_checkbox.setOnClickListener( this );
@@ -601,7 +603,7 @@ public class DictsDelegate extends ListDelegateBase
                 if ( cached instanceof DictInfo ) {
                     DictInfo info = (DictInfo)cached;
                     String name = entry.getKey();
-                    Uri uri = Utils.makeDictUri( m_activity, info.m_lang,
+                    Uri uri = Utils.makeDictUri( m_activity, info.m_urlLang,
                                                  name );
                     uris[count] = uri;
                     names[count] = name;
@@ -855,6 +857,7 @@ public class DictsDelegate extends ListDelegateBase
         // post so other SDCardNotifiee implementations get a chance
         // to process first: avoid race conditions
         post( new Runnable() {
+                @Override
                 public void run() {
                     mkListAdapter();
                 }
@@ -943,7 +946,7 @@ public class DictsDelegate extends ListDelegateBase
             langs.addAll( m_remoteInfo.keySet() );
         }
         m_langs = langs.toArray( new String[langs.size()] );
-        Arrays.sort( m_langs );
+        Arrays.sort( m_langs, java.text.Collator.getInstance() );
     }
 
     private void mkListAdapter()
@@ -1149,7 +1152,7 @@ public class DictsDelegate extends ListDelegateBase
                     @Override
                     public void onClick( View view ) {
                         DwnldDelegate.
-                            downloadDictInBack( m_activity, info.m_lang,
+                            downloadDictInBack( m_activity, info.m_urlLang,
                                                 info.m_name,
                                                 DictsDelegate.this );
                     }
@@ -1426,15 +1429,23 @@ public class DictsDelegate extends ListDelegateBase
                     m_remoteInfo = new HashMap<>();
                     for ( int ii = 0; !isCancelled() && ii < nLangs; ++ii ) {
                         JSONObject langObj = langs.getJSONObject( ii );
-                        String langName = langObj.getString( "lang" );
+                        String lc = langObj.optString( "lc", null );
+                        String urlLangName = langObj.getString( "lang" );
+                        String localLangName = null;
+                        if ( null != lc ) {
+                            localLangName = DictLangCache.userLangForLc( m_activity, lc );
+                        }
+                        if ( null == localLangName ) {
+                            localLangName = urlLangName;
+                        }
 
                         if ( null != m_filterLang &&
-                             ! m_filterLang.equals( langName ) ) {
+                             ! m_filterLang.equals( localLangName ) ) {
                             continue;
                         }
 
-                        if ( ! curLangs.contains( langName ) ) {
-                            closedLangs.add( langName );
+                        if ( ! curLangs.contains( localLangName ) ) {
+                            closedLangs.add( localLangName );
                         }
 
                         JSONArray dicts = langObj.getJSONArray( "dicts" );
@@ -1451,13 +1462,13 @@ public class DictsDelegate extends ListDelegateBase
                             if ( 0 == note.length() ) {
                                 note = null;
                             }
-                            DictInfo info = new DictInfo( name, langName, nWords,
-                                                          nBytes, note );
+                            DictInfo info = new DictInfo( name, urlLangName, localLangName,
+                                                          nWords, nBytes, note );
 
                             if ( !m_quickFetchMode ) {
                                 // Check if we have it and it needs an update
                                 if ( DictLangCache.haveDict( m_activity,
-                                                             langName, name )){
+                                                             localLangName, name )){
                                     boolean matches = true;
                                     String curSum = DictLangCache
                                         .getDictMD5Sum( m_activity, name );
@@ -1477,7 +1488,7 @@ public class DictsDelegate extends ListDelegateBase
                                     if ( !matches ) {
                                         Uri uri =
                                             Utils.makeDictUri( m_activity,
-                                                               langName, name );
+                                                               urlLangName, name );
                                         m_needUpdates.put( name, uri );
                                     }
                                 }
@@ -1485,10 +1496,10 @@ public class DictsDelegate extends ListDelegateBase
                             dictNames.add( info );
                         }
                         if ( 0 < dictNames.size() ) {
-                            DictInfo[] asArray = new DictInfo[dictNames.size()];
-                            asArray = dictNames.toArray( asArray );
+                            DictInfo[] asArray = dictNames
+                                .toArray( new DictInfo[dictNames.size()] );
                             Arrays.sort( asArray );
-                            m_remoteInfo.put( langName, asArray );
+                            m_remoteInfo.put( localLangName, asArray );
                         }
                     }
 
