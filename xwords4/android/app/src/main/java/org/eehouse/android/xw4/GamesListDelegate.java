@@ -2676,7 +2676,7 @@ public class GamesListDelegate extends ListDelegateBase
 
             String lc = LocUtils.getCurLangCode( m_activity );
             if ( !lc.equals("en") ) {
-                int code = LocUtils.codeForLangCode( m_activity, lc );
+                int code = DictLangCache.getLangLangCode( m_activity, lc );
                 if ( 0 < code ) {
                     String[] names = DictLangCache.getHaveLang( m_activity, code );
                     if ( 0 == names.length ) {

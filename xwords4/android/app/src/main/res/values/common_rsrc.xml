@@ -245,55 +245,29 @@
     <item>@string/loc_downloads</item>
   </string-array>
 
-  <!-- These two arrays need to be kept in sync -->
-  <string-array name="language_names">
-    <item>@string/lang_unknown</item> <!-- Unknown -->
-    <item>@string/lang_name_english</item> <!-- 1 -->
-    <item>@string/lang_name_french</item>  <!-- 2 -->
-    <item>@string/lang_name_german</item>  <!-- 3 -->
-    <item>@string/lang_name_turkish</item> <!-- 4 -->
-    <item>@string/lang_name_arabic</item>  <!-- 5 -->
-    <item>@string/lang_name_spanish</item> <!-- 6 -->
-    <item>@string/lang_name_swedish</item> <!-- 7 -->
-    <item>@string/lang_name_polish</item>  <!-- 8 -->
-    <item>@string/lang_name_danish</item>  <!-- 9 -->
-    <item>@string/lang_name_italian</item> <!-- A -->
-    <item>@string/lang_name_dutch</item>   <!-- B -->
-    <item>@string/lang_name_catalan</item> <!-- C -->
-    <item>@string/lang_name_portuguese</item> <!-- D -->
-    <item></item> <!-- E -->
-    <item>@string/lang_name_russian</item> <!--F-->
-    <item></item> <!-- 10 -->
-    <item>@string/lang_name_czech</item> <!--0x11-->
-    <item>@string/lang_name_greek</item> <!--0x12-->
-    <item>@string/lang_name_slovak</item> <!--0x13-->
-    <item>@string/lang_name_hungarian</item> <!--0x14-->
-    <item>@string/lang_name_romanian</item>  <!--0x15-->
-  </string-array>
+  <string-array name="languages_map">
+    <item>0</item><item>@string/lang_unknown</item><item>--</item>
+    <item>1</item><item>@string/lang_name_english</item><item>en</item>
+    <item>2</item><item>@string/lang_name_french</item><item>fr</item>
+    <item>3</item><item>@string/lang_name_german</item><item>de</item>
+    <item>4</item><item>@string/lang_name_turkish</item><item>tr</item>
+    <item>5</item><item>@string/lang_name_arabic</item><item>ar</item>
+    <item>6</item><item>@string/lang_name_spanish</item><item>es</item>
+    <item>7</item><item>@string/lang_name_swedish</item><item>sv</item>
+    <item>8</item><item>@string/lang_name_polish</item><item>pl</item>
+    <item>9</item><item>@string/lang_name_danish</item><item>da</item>
+    <item>10</item><item>@string/lang_name_italian</item><item>it</item>
+    <item>11</item><item>@string/lang_name_dutch</item><item>nl</item>
+    <item>12</item><item>@string/lang_name_catalan</item><item>ca</item>
+    <item>13</item><item>@string/lang_name_portuguese</item><item>pt</item>
+    <item>15</item><item>@string/lang_name_russian</item><item>ru</item>
+    <item>17</item><item>@string/lang_name_czech</item><item>cs</item>
+    <item>18</item><item>@string/lang_name_greek</item><item>el</item>
+    <item>19</item><item>@string/lang_name_slovak</item><item>sk</item>
+    <item>20</item><item>@string/lang_name_hungarian</item><item>hu</item>
+    <item>21</item><item>@string/lang_name_romanian</item><item>ro</item>
 
-  <string-array name="language_codes">
-    <item></item>
-    <item>en</item>
-    <item>fr</item>
-    <item>de</item>
-    <item>tr</item>
-    <item>ar</item>
-    <item>es</item>
-    <item>sv</item>
-    <item>pl</item>
-    <item>da</item>
-    <item>it</item>
-    <item>nl</item>
-    <item>ca</item>
-    <item>pt</item>
-    <item></item>
-    <item>ru</item>
-    <item></item>
-    <item>cs</item>
-    <item>el</item>
-    <item>sk</item>
-    <item>hu</item>
-    <item>ro</item>
+    <item>127</item><item>Hex</item><item>--</item>
   </string-array>
 
   <!-- Triples of Name, supported codes, and URL format string -->

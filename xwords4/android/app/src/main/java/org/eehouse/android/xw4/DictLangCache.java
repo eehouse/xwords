@@ -48,6 +48,7 @@ public class DictLangCache {
     private static final String TAG = DictLangCache.class.getSimpleName();
     private static Map<Integer, String> s_langNames;
     private static Map<String, Integer> s_langCodes;
+    private static Map<Integer, String> s_langCodeStrs;
 
     private static int s_adaptedLang = -1;
     private static LangsArrayAdapter s_langsAdapter;
@@ -152,10 +153,10 @@ public class DictLangCache {
 
     public static String getLangName( Context context, int code )
     {
-        Map<Integer, String> namesArray = getLangNames( context );
-        String name = namesArray.get( code );
+        makeMaps( context );
+        String name = s_langNames.get( code );
         if ( null == name ) {
-            name = namesArray.get( 0 );
+            name = s_langNames.get( 0 );
         }
         return name;
     }
@@ -191,7 +192,7 @@ public class DictLangCache {
     public static boolean haveDict( Context context, String lang, String name )
     {
         boolean result = false;
-        getLangNames( context ); /* inits s_langCodes */
+        makeMaps( context );
         Integer code = s_langCodes.get( lang );
         if ( null != code ) {
             result = haveDict( context, code, name );
@@ -248,7 +249,7 @@ public class DictLangCache {
         ArrayList<DictAndLoc> al = new ArrayList<>();
         DictAndLoc[] dals = DictUtils.dictList( context );
 
-        getLangNames( context ); /* inits s_langNames */
+        makeMaps( context );
 
         for ( DictAndLoc dal : dals ) {
             DictInfo info = getInfo( context, dal );
@@ -293,14 +294,10 @@ public class DictLangCache {
         return getInfo( context, dal ).langCode;
     }
 
-    private static String[] s_langCodeStrs;
-    static String getLangCodeStr( Context context, int code )
+    public static String getLangCodeStr( Context context, int code )
     {
-        if ( null == s_langCodeStrs ) {
-            s_langCodeStrs = context.getResources()
-                .getStringArray( R.array.language_codes );
-        }
-        return s_langCodeStrs[code];
+        makeMaps( context );
+        return s_langCodeStrs.get( code );
     }
 
     public static String getDictMD5Sum( Context context, String dict )
@@ -326,7 +323,7 @@ public class DictLangCache {
 
     public static int getLangLangCode( Context context, String lang )
     {
-        getLangNames( context ); /* inits s_langCodes */
+        makeMaps( context );
 
         Integer code = s_langCodes.get( lang );
         if ( null == code ) {
@@ -337,16 +334,16 @@ public class DictLangCache {
 
     public static String userLangForLc( Context context, String lc )
     {
+        makeMaps( context );
         String result = null;
-        Map<Integer, String> namesArray = getLangNames( context );
 
-        getLangCodeStr( context, 0 ); // force load of s_langCodeStrs
-        for ( int code = 0; code < s_langCodeStrs.length; ++code ) {
-            if ( lc.equals(s_langCodeStrs[code]) ) {
-                result = namesArray.get(code);
+        for ( Integer code : s_langCodeStrs.keySet() ) {
+            if ( s_langCodeStrs.get(code).equals(lc) ) {
+                result = s_langNames.get(code);
                 break;
             }
         }
+
         return result;
     }
 
@@ -464,26 +461,24 @@ public class DictLangCache {
         return s_dictsAdapter;
     }
 
-    private static Map<Integer, String> getLangNames( Context context )
+    private static void makeMaps( Context context )
     {
         if ( null == s_langNames ) {
-            Resources res = context.getResources();
-            String[] names = res.getStringArray( R.array.language_names );
-
             s_langCodes = new HashMap<>();
             s_langNames = new HashMap<>();
-            for ( int ii = 0; ii < names.length; ++ii ) {
-                String name = names[ii];
-                s_langCodes.put( name, ii );
-                s_langNames.put( ii, name );
-            }
+            s_langCodeStrs = new HashMap<>();
 
-            // Hex is out-of-order, so can't be in the res-based array. Hard
-            // code it: it's a hack anyway.
-            s_langCodes.put( "Hex", 127 );
-            s_langNames.put( 127, "Hex" );
+            Resources res = context.getResources();
+            String[] entries  = res.getStringArray( R.array.languages_map );
+            for ( int ii = 0; ii < entries.length; ii += 3 ) {
+                Integer code = Integer.parseInt(entries[ii]);
+                String name = entries[ii+1];
+                String lc = entries[ii+2];
+                s_langCodes.put( name, code );
+                s_langNames.put( code, name );
+                s_langCodeStrs.put( code, lc );
+            }
         }
-        return s_langNames;
     }
 
     public static int getDictCount( Context context, String name )

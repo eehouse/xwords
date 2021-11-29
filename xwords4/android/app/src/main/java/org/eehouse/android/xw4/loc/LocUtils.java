@@ -151,28 +151,6 @@ public class LocUtils {
         return xlated;
     }
 
-    private static Map<String, Integer> s_langCodeMap = null;
-    public static int codeForLangCode( Context context, String lc )
-    {
-        int result = 0;
-        if ( null == s_langCodeMap ) {
-            s_langCodeMap = new HashMap<>();
-            String[] langCodes =
-                context.getResources().getStringArray( R.array.language_codes );
-            for ( int ii = 0; ii < langCodes.length; ++ii ) {
-                String item = langCodes[ii];
-                if ( 0 < item.length() ) {
-                    s_langCodeMap.put( item, ii );
-                }
-            }
-        }
-
-        if ( s_langCodeMap.containsKey( lc ) ) {
-            result = s_langCodeMap.get( lc );
-        }
-        return result;
-    }
-
     public static void xlateView( Activity activity )
     {
         xlateView( activity, Utils.getContentView( activity ) );

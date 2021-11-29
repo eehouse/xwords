@@ -62,7 +62,6 @@ public class LookupAlertView extends LinearLayout
     private static final int STATE_URLS = 2;
     private static final int STATE_LOOKUP = 3;
 
-    private static String[] s_langCodes;
     private static String[] s_lookupNames;
     private static String[] s_lookupUrls;
     private static ArrayAdapter<String> s_urlsAdapter;
@@ -235,7 +234,7 @@ public class LookupAlertView extends LinearLayout
 
     private void lookupWord( Context context, String word, String fmt )
     {
-        String langCode = s_langCodes[s_lang];
+        String langCode = DictLangCache.getLangCodeStr( context, s_lang );
         String dict_url = String.format( fmt, langCode, word );
         Uri uri = Uri.parse( dict_url );
         Intent intent = new Intent( Intent.ACTION_VIEW, uri );
@@ -250,15 +249,12 @@ public class LookupAlertView extends LinearLayout
 
     private void setLang( Context context, int lang )
     {
-        if ( null == s_langCodes ) {
-            s_langCodes = context.getResources().getStringArray( R.array.language_codes );
-        }
-
         if ( s_lang != lang ) {
             String[] urls = context.getResources().getStringArray( R.array.lookup_urls );
             ArrayList<String> tmpUrls = new ArrayList<>();
             ArrayList<String> tmpNames = new ArrayList<>();
-            String langCode = String.format( ":%s:", s_langCodes[lang] );
+            String langCode = String
+                .format( ":%s:", DictLangCache.getLangCodeStr( context, lang ) );
             for ( int ii = 0; ii < urls.length; ii += 3 ) {
                 String codes = urls[ii+1];
                 if ( 0 == codes.length() || codes.contains( langCode ) ) {
