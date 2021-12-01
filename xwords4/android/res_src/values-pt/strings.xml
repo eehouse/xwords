@@ -1950,10 +1950,6 @@
 \nCheque a caixa “Mostrar baixáveis” no topo para ver quais estão disponíveis.</string>
     <string name="lang_unknown">Desconhecido</string>
     <string name="dict_desc_fmt">%1$s (%2$s de %3$d palavras)</string>
-    <plurals name="lang_name_fmt">
-        <item quantity="one">%1$s (uma lista de palavras)</item>
-        <item quantity="other">%1$s (%2$d listas de palavras)</item>
-    </plurals>
     <string name="dict_on_server">Toque para detalhes</string>
     <string name="note_none">(Nenhum)</string>
     <string name="dict_info_note_fmt">Nota: %1$s</string>

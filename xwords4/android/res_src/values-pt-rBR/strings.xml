@@ -538,10 +538,6 @@
 \n
 \nCheque a caixa “Mostrar baixáveis” no topo para ver quais estão disponíveis.</string>
     <string name="lang_unknown">Desconhecido</string>
-    <plurals name="lang_name_fmt">
-        <item quantity="one">%1$s (uma lista de palavras)</item>
-        <item quantity="other">%1$s (%2$d listas de palavras)</item>
-    </plurals>
     <string name="dict_on_server">Toque para detalhes</string>
     <string name="note_none">(Nenhum)</string>
     <string name="dict_info_fmt">Número de palavras: %1$d

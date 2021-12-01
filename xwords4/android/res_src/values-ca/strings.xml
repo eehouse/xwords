@@ -563,10 +563,6 @@ Introduïu el vostre nom aquí. S\'usarà en crear partides noves. (Podreu
     <string name="pref_item_update_summary">Obtén construccions intermèdies</string>
     <string name="checking_title">S\'està comprovant</string>
     <string name="checking_for_fmt">S\'estan comprovant els diccionaris a %1$s…</string>
-    <plurals name="lang_name_fmt">
-        <item quantity="one">%1$s (%2$d diccionari)</item>
-        <item quantity="other">%1$s (%2$d diccionaris)</item>
-    </plurals>
     <plurals name="nag_hours_fmt">
         <item quantity="one">%1$d hora</item>
         <item quantity="other">%1$d hores</item>

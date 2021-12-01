@@ -559,10 +559,6 @@
     <string name="dict_info_note_fmt">Notitie: %1$s</string>
     <string name="note_none">(Geen)</string>
     <string name="dict_on_server">Druk om te downloaden</string>
-    <plurals name="lang_name_fmt">
-        <item quantity="one">%1$s (%2$d woordenlijst)</item>
-        <item quantity="other">%1$s (%2$d woordenlijsten)</item>
-    </plurals>
     <string name="dict_desc_fmt">%1$s (%2$s/%3$d woorden)</string>
     <string name="lang_unknown">Onbekend</string>
     <string name="not_again_dicts">Op dit scherm kun je nieuwe woordenlijsten installeren of woordenlijsten die je al hebt bekijken.\n\nWelke woordenlijsten je geïnstalleerd hebt bepaalt:\n• Welke talen je in kan spelen\n• Hoe slim de robotspeler is\n• Welke woorden je mag gebruiken.\n\nSchakel de \"Toon downloadbaar\" optie bovenaan in om te zien welke woordenlijsten beschikbaar zijn.</string>

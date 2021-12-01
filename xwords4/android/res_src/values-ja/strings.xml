@@ -571,9 +571,6 @@
     <string name="dict_info_note_fmt">注: %1$s</string>
     <string name="note_none">(なし)</string>
     <string name="dict_on_server">詳細はタップしてください</string>
-    <plurals name="lang_name_fmt">
-        <item quantity="other">%1$s (%2$d 単語リスト)</item>
-    </plurals>
     <string name="dict_desc_fmt">%1$s (%2$s/%3$d 語)</string>
     <string name="lang_unknown">不明</string>
     <string name="not_again_dicts">この画面では、新しい単語リストをインストールしたり、既に持っているものを表示できます。

@@ -63,6 +63,7 @@ import java.io.Serializable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -134,12 +135,21 @@ public class DictsDelegate extends ListDelegateBase
         }
     }
     private static class LangInfo {
-        int m_numDicts;
+        int m_numDictsInst;
+        int m_numDictsAvail;
         int m_posn;
-        public LangInfo( int posn, int numDicts )
+        public LangInfo( int posn, Collection<Object> objs )
         {
             m_posn = posn;
-            m_numDicts = numDicts;
+            for ( Object obj : objs ) {
+                if ( obj instanceof DictInfo ) {
+                    ++m_numDictsAvail;
+                } else if ( obj instanceof DictAndLoc ) {
+                    ++m_numDictsInst;
+                } else {
+                    Assert.failDbg();
+                }
+            }
         }
     }
     private HashMap<String, DictInfo[]> m_remoteInfo;
@@ -173,7 +183,7 @@ public class DictsDelegate extends ListDelegateBase
                 ArrayList<Object> items = makeLangItems( langName );
                 Assert.assertTrueNR( 0 < items.size() );
 
-                alist.add( new LangInfo( ii, items.size() ) );
+                alist.add( new LangInfo( ii, items ) );
                 if ( ! m_closedLangs.contains( langName ) ) {
                     alist.addAll( items );
                 }
@@ -194,12 +204,21 @@ public class DictsDelegate extends ListDelegateBase
                                                               langName );
                 boolean expanded = ! m_closedLangs.contains( langName );
                 String locLangName = xlateLang( langName );
-                String name = getQuantityString( R.plurals.lang_name_fmt,
-                                                 info.m_numDicts,
-                                                 locLangName, info.m_numDicts );
-                name = Utils.capitalize( name );
+                String details = null;
+                if ( 0 < info.m_numDictsInst && 0 < info.m_numDictsAvail ) {
+                    details = getString( R.string.dict_lang_inst_and_avail,
+                                         info.m_numDictsInst, info.m_numDictsAvail );
+                } else if ( 0 < info.m_numDictsAvail ) {
+                    details = getString( R.string.dict_lang_avail,
+                                         info.m_numDictsAvail );
+                } else if ( 0 < info.m_numDictsInst ) {
+                    details = getString( R.string.dict_lang_inst, info.m_numDictsInst );
+                } else {
+                    Assert.failDbg();
+                }
+                String title = Utils.capitalize( locLangName ) + " " + details;
                 result = ListGroup.make( m_context, convertView,
-                                         DictsDelegate.this, groupPos, name,
+                                         DictsDelegate.this, groupPos, title,
                                          expanded );
             } else {
                 XWListItem item;

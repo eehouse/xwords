@@ -2454,12 +2454,6 @@ versions de %1$s maintenant ?</string>
     <string name="note_none">(aucune)</string>
     <!--<string name="dict_on_server">Tap to download</string>-->
     <string name="dict_on_server">Appuyer pour les détails</string>
-    <!--<string name="lang_name_fmt">%1$s (%2$d wordlists)</string>    -->
-    <!--<string name="lang_name_fmt">%1$s (%2$d listes de mots)</string>    -->
-    <plurals name="lang_name_fmt">
-        <item quantity="one">%1$s (une liste de mots)</item>
-        <item quantity="other">%1$s (%2$d listes de mots)</item>
-    </plurals>
     <!--<string name="dict_desc_fmt">%1$s (%2$s/%3$d words)</string>-->
     <string name="dict_desc_fmt">%1$s (%2$s/%3$d mots)</string>
     <!--<string name="lang_unknown">Unknown</string>-->
