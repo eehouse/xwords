@@ -1259,10 +1259,7 @@ public class DictsDelegate extends ListDelegateBase
             // FIXME: this should pass up the language code to retrieve and
             // parse less data
             String name = null;
-            String proc = String.format( "listDicts?lc=%s", m_lc );
-            if ( null != BuildConfig.DICT_FLAGS ) {
-                proc += "&flags=" + BuildConfig.DICT_FLAGS;
-            }
+            String proc = listDictsProc( m_lc );
             HttpsURLConnection conn = NetUtils.makeHttpsUpdateConn( m_context,
                                                                     proc );
             if ( null != conn ) {
@@ -1349,10 +1346,7 @@ public class DictsDelegate extends ListDelegateBase
         public Boolean doInBackground( Void... unused )
         {
             boolean success = false;
-            String proc = "listDicts";
-            if ( null != BuildConfig.DICT_FLAGS ) {
-                proc += "?flags=" + BuildConfig.DICT_FLAGS;
-            }
+            String proc = listDictsProc( null );
             HttpsURLConnection conn = NetUtils.makeHttpsUpdateConn( m_context,
                                                                     proc );
             if ( null != conn ) {
@@ -1524,6 +1518,16 @@ public class DictsDelegate extends ListDelegateBase
             cancel( true );
         }
     } // class FetchListTask
+
+    private static String listDictsProc( String lc )
+    {
+        String proc = String.format( "listDicts?vc=%d",
+                                     BuildConfig.VERSION_CODE );
+        if ( null != lc ) {
+            proc += String.format( "&lc=%s", lc );
+        }
+        return proc;
+    }
 
     public static void start( Delegator delegator )
     {
