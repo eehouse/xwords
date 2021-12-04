@@ -62,7 +62,7 @@ android {
     defaultConfig {
         // HostApduService requires 19. But is it a problem?
         minSdkVersion 14
-        targetSdkVersion 29     // must match ../build.gradle
+        targetSdkVersion 30     // must match ../build.gradle
         versionCode VERSION_CODE_BASE
         versionName VERSION_NAME
     }

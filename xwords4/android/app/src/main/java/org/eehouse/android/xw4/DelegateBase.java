@@ -85,6 +85,7 @@ public abstract class DelegateBase implements DlgClickNotify,
         Assert.assertTrue( 0 < menuID );
         m_delegator = delegator;
         m_activity = delegator.getActivity();
+        Assert.assertTrueNR( null != m_activity );
         m_dlgDelegate = new DlgDelegate( m_activity, this, this );
         m_layoutID = layoutID;
         m_optionsMenuID = menuID;

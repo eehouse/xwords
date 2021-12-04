@@ -217,7 +217,9 @@ abstract class XWFragment extends Fragment implements Delegator {
     public void addFragment( XWFragment fragment, Bundle extras )
     {
         MainActivity main = (MainActivity)getActivity();
-        main.addFragment( fragment, extras );
+        if ( null != main ) {   // I've seen this come back null
+            main.addFragment( fragment, extras );
+        }
     }
 
     @Override
