@@ -40,6 +40,8 @@ for APK in $APKS; do
 	rm -f ${OUTNAME}
     zipalign -v 4 $APK_SIGNED ${OUTNAME}
 
+	apksigner sign --ks ~/.keystore ${OUTNAME}
+
 	rm -f $APK_SIGNED
 	echo "saved as $OUTNAME"
 done
