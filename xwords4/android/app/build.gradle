@@ -19,7 +19,7 @@
  */
 
 def INITIAL_CLIENT_VERS = 10
-def VERSION_CODE_BASE = 177
+def VERSION_CODE_BASE = 178
 def VERSION_NAME = '4.4.181'
 def BUILD_INFO_NAME = "build-info.txt"
 
