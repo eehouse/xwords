@@ -2254,10 +2254,8 @@
     <string name="err_dup_invite_fmt">Duplicate invitation rejected:
     device “%1$s” has already accepted an invitation to this
     game.</string>
-    <string name="network_advanced_title">Advanced</string>
-    <string name="network_advanced_summary">For experienced players</string>
     <string name="invite_multi_title">Invite multiple</string>
-    <string name="invite_multi_summary">Invite more than one player per remote device</string>
+    <string name="invite_multi_summary">Enable inviting several players per remote device</string>
     <string name="connection_via_label">Change Communicate via</string>
     <string name="set_pref">Hide buttons</string>
     <string name="not_again_hidenewgamebuttons">The two buttons at the
