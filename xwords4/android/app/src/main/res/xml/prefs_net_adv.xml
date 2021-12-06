@@ -6,11 +6,6 @@
   <PreferenceCategory android:title="@string/network_advanced_title"
                       android:summary="@string/network_advanced_summary"
                       >
-    <CheckBoxPreference android:key="@string/key_enable_pubroom"
-                        android:title="@string/enable_pubroom_title"
-                        android:summary="@string/enable_pubroom_summary"
-                        android:defaultValue="false"
-                        />
     <CheckBoxPreference android:key="@string/key_invite_multi"
                         android:title="@string/invite_multi_title"
                         android:summary="@string/invite_multi_summary"

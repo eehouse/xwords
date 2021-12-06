@@ -295,27 +295,7 @@
     <string name="langdict_label">Game language/wordlist</string>
     <!-- text of separator marking out the connection area of the dialog -->
     <string name="connect_label_fmt">Connection (via %1$s)</string>
-    <!-- text of checkbox asking if user wants to search for open
-    public rooms -->
-    <string name="join_room">Join public room</string>
-    <!-- hint (text shown when field is empty) for room name field -->
-    <string name="new_room_hint">Room name</string>
-    <!-- text of checkbox -->
-    <string name="room_public">Make new room public</string>
-    <!-- title for popup of public rooms found on server -->
-    <string name="room_public_prompt">Select public room</string>
-    <!-- If you check the join_room checkbox CrossWords queries the
-    relay.  This is the text of the progress indicator displayed what
-    that's going on.  (It's often visible for only a very short
-    time.)-->
-    <string name="public_names_progress_fmt">Fetching public rooms for
-      %1$d-player games in %2$s.</string>
-    <!-- If the query returns no rooms, this message is displayed,
-    with the number of players in the game and its language
-    substituted. -->
-    <string name="no_name_found_fmt">No public rooms found for
-      %1$d-player games in %2$s. Try refreshing or creating your
-      own.</string>
+
     <!-- text of separator marking out other-setting area of the dialog -->
     <string name="settings_label">Other settings</string>
     <!-- text of checkbox.  If this checkbox is checked, buttons will
@@ -2278,8 +2258,6 @@
     <string name="network_advanced_summary">For experienced players</string>
     <string name="invite_multi_title">Invite multiple</string>
     <string name="invite_multi_summary">Invite more than one player per remote device</string>
-    <string name="enable_pubroom_title">Enable public rooms</string>
-    <string name="enable_pubroom_summary">Rooms others can see and join</string>
     <string name="connection_via_label">Change Communicate via</string>
     <string name="set_pref">Hide buttons</string>
     <string name="not_again_hidenewgamebuttons">The two buttons at the

@@ -60,9 +60,7 @@ import org.eehouse.android.xw4.jni.LocalPlayer;
 import org.eehouse.android.xw4.jni.XwJNI;
 
 public class GameConfigDelegate extends DelegateBase
-    implements View.OnClickListener
-               ,XWListItem.DeleteCallback
-               ,RefreshNamesTask.NoNameFound {
+    implements View.OnClickListener, XWListItem.DeleteCallback {
     private static final String TAG = GameConfigDelegate.class.getSimpleName();
 
     private static final String INTENT_FORRESULT_NEWGAME = "newgame";
@@ -73,31 +71,22 @@ public class GameConfigDelegate extends DelegateBase
     private static final String DIS_MAP = "DIS_MAP";
 
     private Activity m_activity;
-    private CheckBox m_joinPublicCheck;
     private CheckBox m_gameLockedCheck;
     private boolean m_isLocked;
     private boolean m_haveClosed;
-    private LinearLayout m_publicRoomsSet;
-    private LinearLayout m_privateRoomsSet;
 
     private CommsConnTypeSet m_conTypes;
     private Button m_addPlayerButton;
     private Button m_changeConnButton;
     private Button m_jugglePlayersButton;
-    private ImageButton m_refreshRoomsButton;
-    private View m_connectSetRelay;
     private Spinner m_dictSpinner;
     private Spinner m_playerDictSpinner;
-    private Spinner m_roomChoose;
-    // private Button m_configureButton;
     private long m_rowid;
     private boolean m_isNewGame;
     private CurGameInfo m_gi;
     private CurGameInfo m_giOrig;
     private JNIThread m_jniThread;
     private int m_whichPlayer;
-    // private Spinner m_roleSpinner;
-    // private Spinner m_connectSpinner;
     private Spinner m_phoniesSpinner;
     private Spinner m_boardsizeSpinner;
     private Spinner m_traysizeSpinner;
@@ -118,11 +107,6 @@ public class GameConfigDelegate extends DelegateBase
             R.id.add_player,
             R.id.lang_spinner,
             R.id.dict_spinner,
-            R.id.join_public_room_check,
-            R.id.room_edit,
-            R.id.advertise_new_room_check,
-            R.id.room_spinner,
-            R.id.refresh_button,
             R.id.hints_allowed,
             R.id.duplicate_check,
             R.id.pick_faceup,
@@ -262,18 +246,6 @@ public class GameConfigDelegate extends DelegateBase
                 } );
         }
             break;
-        case NO_NAME_FOUND: {
-            String langName = DictLangCache.getLangName( m_activity,
-                                                         m_gi.dictLang );
-            String msg = getString( R.string.no_name_found_fmt,
-                                    m_gi.nPlayers, xlateLang( langName ) );
-            dialog = makeAlertBuilder()
-                .setPositiveButton( android.R.string.ok, null )
-                // message added below since varies with language etc.
-                .setMessage( msg )
-                .create();
-        }
-            break;
         case CHANGE_CONN: {
             CommsConnTypeSet conTypes = (CommsConnTypeSet)params[0];
             LinearLayout layout = (LinearLayout)inflate( R.layout.conn_types_display );
@@ -331,8 +303,6 @@ public class GameConfigDelegate extends DelegateBase
                         m_car.populate( m_activity, m_conTypes );
 
                         setConnLabel();
-                        setupRelayStuffIf();
-                        showHideRelayStuff();
                         setDisableds();
                     }
                 };
@@ -510,8 +480,6 @@ public class GameConfigDelegate extends DelegateBase
         Assert.assertTrue( DBUtils.ROWID_NOTFOUND != m_rowid );
         m_isNewGame = args.getBoolean( INTENT_FORRESULT_NEWGAME, false );
 
-        m_connectSetRelay = findViewById( R.id.connect_set_relay );
-
         m_addPlayerButton = (Button)findViewById(R.id.add_player);
         m_addPlayerButton.setOnClickListener( this );
         m_changeConnButton = (Button)findViewById( R.id.change_connection );
@@ -670,7 +638,6 @@ public class GameConfigDelegate extends DelegateBase
             }
 
             setConnLabel();
-            setupRelayStuffIf();
             loadPlayersList();
             configLangSpinner();
 
@@ -783,17 +750,12 @@ public class GameConfigDelegate extends DelegateBase
     }
 
     // DeleteCallback interface
+    @Override
     public void deleteCalled( XWListItem item )
     {
         if ( m_gi.delete( item.getPosition() ) ) {
             loadPlayersList();
         }
-    }
-
-    // NoNameFound interface
-    public void NoNameFound()
-    {
-        showDialogFragment( DlgID.NO_NAME_FOUND );
     }
 
     @Override
@@ -859,17 +821,11 @@ public class GameConfigDelegate extends DelegateBase
                 m_gi.juggle();
                 loadPlayersList();
                 break;
-            case R.id.join_public_room_check:
-                adjustConnectStuff();
-                break;
             case R.id.game_locked_check:
                 makeNotAgainBuilder( R.string.not_again_unlock,
                                      R.string.key_notagain_unlock,
                                      Action.LOCKED_CHANGE_ACTION )
                     .show();
-                break;
-            case R.id.refresh_button:
-                refreshNames();
                 break;
             case R.id.change_connection:
                 showConnAfterCheck();
@@ -1023,8 +979,6 @@ public class GameConfigDelegate extends DelegateBase
             m_jugglePlayersButton
                 .setVisibility( names.length <= 1 ?
                                 View.GONE : View.VISIBLE );
-
-            showHideRelayStuff();
 
             if ( ! localOnlyGame()
                  && ((0 == m_gi.remoteCount() )
@@ -1243,20 +1197,6 @@ public class GameConfigDelegate extends DelegateBase
         ((TextView)findViewById( R.id.players_label )).setText( label );
     }
 
-    private void adjustConnectStuff()
-    {
-        if ( XWPrefs.getPublicRoomsEnabled( m_activity ) ) {
-            if ( m_joinPublicCheck.isChecked() ) {
-                refreshNames();
-                m_privateRoomsSet.setVisibility( View.GONE );
-                m_publicRoomsSet.setVisibility( View.VISIBLE );
-            } else {
-                m_privateRoomsSet.setVisibility( View.VISIBLE );
-                m_publicRoomsSet.setVisibility( View.GONE );
-            }
-        }
-    }
-
     // User's toggling whether everything's locked.  That should mean
     // we enable/disable a bunch of widgits.  And if we're going from
     // unlocked to locked we need to confirm that everything can be
@@ -1329,23 +1269,6 @@ public class GameConfigDelegate extends DelegateBase
         m_gi.boardSize = positionToSize( position );
         m_gi.traySize = Integer.parseInt( m_traysizeSpinner.getSelectedItem().toString() );
 
-        if ( m_conTypes.contains( CommsConnType.COMMS_CONN_RELAY ) ) {
-            m_car.ip_relay_seeksPublicRoom = m_joinPublicCheck.isChecked();
-            m_car.ip_relay_advertiseRoom =
-                getChecked( R.id.advertise_new_room_check );
-            if ( m_car.ip_relay_seeksPublicRoom ) {
-                SpinnerAdapter adapter = m_roomChoose.getAdapter();
-                if ( null != adapter ) {
-                    int pos = m_roomChoose.getSelectedItemPosition();
-                    if ( pos >= 0 && pos < adapter.getCount() ) {
-                        m_car.ip_relay_invite = (String)adapter.getItem(pos);
-                    }
-                }
-            } else {
-                m_car.ip_relay_invite = getText( R.id.room_edit ).trim();
-            }
-        }
-
         m_car.conTypes = m_conTypes;
     } // saveChanges
 
@@ -1381,13 +1304,13 @@ public class GameConfigDelegate extends DelegateBase
         }
     }
 
-    private void refreshNames()
-    {
-        if ( !m_isLocked ) {
-            new RefreshNamesTask( m_activity, this, m_gi.dictLang,
-                                  m_gi.nPlayers, m_roomChoose ).execute();
-        }
-    }
+    // private void refreshNames()
+    // {
+    //     if ( !m_isLocked ) {
+    //         new RefreshNamesTask( m_activity, this, m_gi.dictLang,
+    //                               m_gi.nPlayers, m_roomChoose ).execute();
+    //     }
+    // }
 
     @Override
     protected void setTitle()
@@ -1431,49 +1354,5 @@ public class GameConfigDelegate extends DelegateBase
             // hide pick-face-up button for networked games
             findViewById( R.id.pick_faceup ).setVisibility( View.GONE );
         }
-    }
-
-    private void setupRelayStuffIf()
-    {
-        if ( m_conTypes.contains( CommsConnType.COMMS_CONN_RELAY ) ) {
-            boolean publicEnabled = XWPrefs.getPublicRoomsEnabled( m_activity );
-            int vis = publicEnabled ? View.VISIBLE : View.GONE;
-            if ( null == m_joinPublicCheck ) {
-                m_joinPublicCheck =
-                    (CheckBox)findViewById(R.id.join_public_room_check);
-                m_joinPublicCheck.setVisibility( vis );
-
-                CheckBox advertise = (CheckBox)
-                    findViewById( R.id.advertise_new_room_check );
-                advertise.setVisibility( vis );
-                if ( publicEnabled ) {
-                    m_joinPublicCheck.setOnClickListener( this );
-                    m_joinPublicCheck.setChecked( m_car.ip_relay_seeksPublicRoom );
-                   advertise.setChecked( m_car.ip_relay_advertiseRoom );
-                    m_publicRoomsSet =
-                        (LinearLayout)findViewById(R.id.public_rooms_set );
-                    m_privateRoomsSet =
-                        (LinearLayout)findViewById(R.id.private_rooms_set );
-                }
-
-                setText( R.id.room_edit, m_car.ip_relay_invite );
-
-                m_roomChoose = (Spinner)findViewById( R.id.room_spinner );
-                m_roomChoose.setVisibility( vis );
-
-                m_refreshRoomsButton =
-                    (ImageButton)findViewById( R.id.refresh_button );
-                m_refreshRoomsButton.setVisibility( vis );
-                m_refreshRoomsButton.setOnClickListener( this );
-
-                adjustConnectStuff();
-            }
-        }
-    }
-
-    private void showHideRelayStuff()
-    {
-        boolean show = m_conTypes.contains( CommsConnType.COMMS_CONN_RELAY );
-        m_connectSetRelay.setVisibility( show ? View.VISIBLE : View.GONE );
     }
 }

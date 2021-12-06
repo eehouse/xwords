@@ -103,11 +103,6 @@ public class XWPrefs {
                                 false );
     }
 
-    public static boolean getPublicRoomsEnabled( Context context )
-    {
-        return getPrefsBoolean( context, R.string.key_enable_pubroom, false );
-    }
-
     public static void setHideNewgameButtons( Context context, boolean set )
     {
         setPrefsBoolean( context, R.string.key_hide_newgames, set );

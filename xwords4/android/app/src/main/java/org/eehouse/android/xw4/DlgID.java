@@ -42,7 +42,6 @@ public enum DlgID {
     , MOVE_DICT
     , NAME_GAME
     , NEW_GROUP
-    , NO_NAME_FOUND
     , PLAYER_EDIT
     , ENABLE_SMS
     , QUERY_ENDGAME
