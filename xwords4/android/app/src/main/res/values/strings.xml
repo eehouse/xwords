@@ -181,8 +181,6 @@
        # list of installed wordlists (formerly called dictionaries)
        ############################################################ 
       -->
-    <!-- window title -->
-    <string name="title_dicts_list">CrossWords Wordlists</string>
     <!-- text of item at bottom of dicts choice spinner.  It
          launches the browser pointed at the site where additional
          wordlists can be found. -->
@@ -533,11 +531,6 @@
         <item quantity="other">Device %1$d connected to relay in
       room “%2$s”. Waiting for %3$d players.</item>
     </plurals>
-    <!-- Text of "toast" shown when a game is notified by the relay
-         that all expected players have registered.  At this point
-         play can begin. -->
-    <string name="msg_relay_all_here_fmt">All players are here in room
-      “%1$s”.</string>
     <!-- Title of dialog used to alert players to relay-related
          problems with the current game. -->
     <string name="relay_alert">Connection problem</string>
@@ -851,8 +844,6 @@
     <string name="keep_screenon">Keep screen on</string>
     <!-- clarification of above -->
     <string name="keep_screenon_summary">Keep board screen on 10 mins</string>
-    <!-- Preference title: cell line thickness as pct of cell width -->
-    <string name="board_line_pct">Cell line thickness (percent, limit 1 to 25)</string>
     <!--
        ############################################################
        # :Screens:
@@ -1010,8 +1001,6 @@
     <string name="newgame_invite">Invite now</string>
     <string name="newgame_reinvite">Invite again</string>
     <!-- Button offering to invite Known Player to a new game -->
-    <string name="invite_player_fmt">Invite %1$s</string>
-    <string name="newgame_invite_more">History</string>
     <string name="title_invite_history">Invitations Sent</string>
     <string name="newgame_drop_relay">Drop Relay</string>
     <!-- EXPLAIN ME -->
@@ -1409,28 +1398,7 @@
     settings, e.g. the number of players, cannot be changed without
     restarting it.  When you leave this page you will have a chance to
     discard changes to avoid a restart.</string>
-    <!-- This is shown in the Board screen when you successfully
-         connect a game to the relay and are the first device in the
-         game to do so. -->
-    <string name="not_again_conndfirst">You have connected and started
-      a game in a new room.  Once the remaining devices have joined
-      your room and CrossWords has assigned them tiles the game can
-      begin.</string>
-    <!-- This is shown in the Board screen when you successfully
-         connecting a game to the relay and are not the first device
-         in the game but not the last either.  So it will only occur
-         for games with more than two devices, which are rare. -->
-    <string name="not_again_conndmid">You have connected and joined a
-      game on the relay. You will be notified when the remaining
-      device[s] have joined your room and play can begin.</string>
-    <!-- This is shown in the Board screen when you successfully
-         connecting a game to the relay and are the last device in the
-         game to do so, i.e. the game is now complete and you should
-         expect play to begin. -->
-    <string name="not_again_conndall">You have connected and joined a
-      game on the relay; the room is now full. The device that
-      created the room will now assign your initial tiles and play can
-      begin.</string>
+
     <!-- This is not currently shown -->
     <!-- <string name="not_again_dicts">CrossWords wordlists, which are -->
     <!--   just compressed lists of words plus tile information, determine -->
@@ -1611,16 +1579,9 @@
     <string name="not_again_browseall">This button lets you choose
     which wordlist in the current game language to browse.</string>
     <!--  -->
-    <string name="alert_empty_dict_fmt">The wordlist %1$s contains only
-      tile information.  There are no words to browse.</string>
-    <!--  -->
     <string name="min_len">Min length</string>
     <!--  -->
     <string name="max_len">Max length</string>
-    <!--  -->
-    <string name="prompt_min_len">Words no shorter than</string>
-    <!--  -->
-    <string name="prompt_max_len">Words no longer than</string>
     <!--  -->
     <!-- Shown when user tries to make a wordlist filter where max < min -->
     <string name="error_min_gt_max">The minimum length value cannot be
@@ -2243,8 +2204,6 @@
     <string name="new_game">New one-device game</string>
     <string name="new_game_networked">New networked game</string>
     <string name="rematch_name_fmt">%1$s</string>
-    <string name="new_game_message_nodflt">This game must be
-    configured before it can be opened.</string>
     <string name="use_defaults">Use defaults</string>
     <string name="nplayers_prompt">Number on this device</string>
     <plurals name="nplayers_fmt">
@@ -2269,7 +2228,6 @@
         <item quantity="other">Waiting for %1$d players</item>
     </plurals>
     <!-- Button for alert with title above -->
-    <string name="waiting_invite_title">Waiting for response</string>
     <string name="waiting_rematch_title">Rematch in progress</string>
     <!-- Title for when I'm a guest waiting for host to begin game -->
     <string name="waiting_host_title">Waiting for host</string>
@@ -2279,13 +2237,6 @@
     <string name="waiting_host_expl_multi">In this case, because the
     game is expecting more than just this device to connect, it could
     also mean that it hasn’t invited everybody yet.</string>
-    <!-- Button for alert with title above -->
-    <string name="button_close">Close</string>
-    <string name="button_reinvite">Re-invite</string>
-    <string name="invite_stays">(You will see this dialog until all
-    remote players have connected. You can close the game if you
-    expect it to take a while. Remote players will still be able to
-    connect, and you will be notified when they do.)</string>
     <string name="nfc_just_tap">To invite via NFC just touch the back
     of this device against the one you want to invite—any time the
     game is open.</string>
@@ -2299,9 +2250,6 @@
     <string name="button_edit">Edit</string>
     <string name="button_discard_changes">Discard changes</string>
     <string name="rematch_sent_toast">Rematch invitations sent</string>
-    <string name="rematch_msg">This game is hosting a rematch, and has
-    sent an invitation. You will see this message until it has been
-    accepted.</string>
     <string name="disable_nags_title">Turn reminders</string>
     <string name="disable_nag_title">Disable network game reminders</string>
     <string name="disable_nag_summary">Do not notify me no matter
@@ -2363,19 +2311,8 @@
     <string name="checking_title">Checking</string>
     <string name="checking_for_fmt">Checking for wordlists in %1$s…</string>
     <string name="db_store_done">SD card write complete.</string>
-    <string name="seeking_relay">Connecting to relay…</string>
-    <string name="no_relay_conn">This game is configured to use the
-  relay (internet) for communication but has been unable to
-  connect.\n\nPlease try opening the game again later after
-  conditions have changed.</string>
-    <string name="drop_relay_warning_fmt">(This game can also connect
-  via %1$s, so if you’d like to play the game without a relay
-  connection you can.)
-  </string>
     <string name="confirm_drop_relay">Are you sure you want to drop this
   game’s ability to communicate via the relay?</string>
-    <string name="wifi_warning">\u0020For example, you may need to be on
-  a different WiFi network.</string>
     <string name="confirm_drop_relay_bt">Bluetooth only works for nearby
   devices.</string>
     <string name="confirm_drop_relay_sms">Not all carriers support play
@@ -2438,7 +2375,6 @@
     <string name="confirm_clear_chat">Are you sure you want to delete
   all chat history for this game?\n\n(This action cannot be
   undone.)</string>
-    <string name="processing_games">Processing games</string>
     <string name="list_item_select">Select</string>
     <string name="list_item_deselect">De-select</string>
     <!-- Debug-only item for testing corrupt game warnings -->
