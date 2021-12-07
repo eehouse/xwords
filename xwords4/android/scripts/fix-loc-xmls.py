@@ -1,10 +1,11 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 import mk_xml, os, sys, getopt, re
 
 from lxml import etree
 
 g_verbose = False
+STRINGS_FILE = 'app/src/main/res/values/strings.xml'
 
 def getDocNames( doc ):
     stringNames = {}
@@ -19,7 +20,7 @@ def getDocNames( doc ):
          }
 
 def getEnglishNames():
-    doc = etree.parse("res/values/strings.xml")
+    doc = etree.parse(STRINGS_FILE)
     return getDocNames( doc )
 
 def longestCommon( name, pairs ):
@@ -28,7 +29,7 @@ def longestCommon( name, pairs ):
         str = name[:ii]
         for key in pairs.keys():
             if str == key[:ii]:
-                if g_verbose: print str, "matches", key, "so far"
+                if g_verbose: print(str, 'matches', key, "so far")
                 match = key
                 break
     return match
@@ -43,12 +44,12 @@ def checkAgainst( doc, pairs ):
             if not name in pairs:
                 candidate = longestCommon( name, pairs )
                 if not candidate: continue
-                print name, "not found in the English strings"
-                print "closest I can find is", candidate
-                print "here are the two strings, English then the other"
-                print 'English:', pairs[candidate]
-                print 'Other:  ', child.text
-                print 'Replace %s with %s?'  % (name, candidate)
+                print(name, 'not found in the English strings')
+                print('closest I can find is', candidate)
+                print('here are the two strings, English then the other')
+                print('English:', pairs[candidate])
+                print('Other:  ', child.text)
+                print('Replace %s with %s?'  % (name, candidate))
                 while True:
                     response = raw_input( "Yes, No, Remove, Save or Quit?" ).lower()
                     if response == 'n': 
@@ -88,9 +89,10 @@ def makePluralsFrom( src ):
 def insertAfter( locRoot, englishElem, lastMatch, prevComments ):
     name = englishElem.get('name')
     text = englishElem.text
-    if g_verbose: print "insertAfter(", locRoot, englishElem.get('name'), lastMatch.get('name'), prevComments, ")"
+    if g_verbose: print('insertAfter(', locRoot, englishElem.get('name'),\
+                        lastMatch.get('name'), prevComments, ')')
     index = locRoot.getchildren().index(lastMatch)
-    if g_verbose: print 'index:', index
+    if g_verbose: print('index:', index)
 
     for comment in prevComments:
         commentNode = etree.Comment(comment)
@@ -113,10 +115,10 @@ def longFormFor(fmt ):
 def printStats( doc ):
     engNames = getEnglishNames()
     langNames = getDocNames( doc )
-    print "strings: English: %d; lang: %d" % (len(engNames['stringNames']), 
-                                              len(langNames['stringNames']))
-    print "plurals: English: %d; lang: %d" % (len(engNames['pluralsNames']), 
-                                              len(langNames['pluralsNames']))
+    print('strings: English: %d; lang: %d' % (len(engNames['stringNames']),
+                                              len(langNames['stringNames'])))
+    print('plurals: English: %d; lang: %d' % (len(engNames['pluralsNames']),
+                                              len(langNames['pluralsNames'])))
 
 def replacePcts( doc ):
     pat = re.compile( '(%[sd])', re.DOTALL | re.MULTILINE )
@@ -138,70 +140,72 @@ def doAddMissing( doc ):
     locRoot = doc.getroot()
     lastMatch = None
     prevComments = []
-    resources = etree.parse("res/values/strings.xml").getroot()
+    resources = etree.parse(STRINGS_FILE).getroot()
     for elem in resources:
         # if g_verbose: print "got elem:", elem
         tag = elem.tag
-        if not isinstance( tag, basestring ):
+        if not isinstance( tag, str ):
             prevComments.append( elem.text )
             # if g_verbose: print "added comment:", elem.text
         elif 'string' == tag or 'plurals' == tag:
             name = elem.get('name')
             match = findWithName( locRoot, name, tag )
             if None == match:
-                if g_verbose: print 'NO match for', name
+                if g_verbose: print('NO match for', name)
                 insertAfter( locRoot, elem, lastMatch, prevComments )
             else:
                 lastMatch = match
                 lastComments = prevComments
             prevComments = []
         else:
-            print "unexpected tag:", elem.tag
+            print('unexpected tag:', elem.tag)
             sys.exit(1)
                     
 def compare( engPairs, docPath ):
     locStrings = mk_xml.getStrings( docPath, True )
     engOnly = []
     engOnly = [key for key in engPairs.keys() if not key in locStrings]
-    print "%d strings missing from %s: %s" % (len(engOnly), docPath, ", ".join(engOnly))
+    print('%d strings missing from %s: %s' % (len(engOnly), docPath, ", ".join(engOnly)))
     otherOnly = [key for key in locStrings.keys() if not key in engPairs]
-    print "%d strings missing from English: %s" % (len(otherOnly), ", ".join(otherOnly))
+    print('%d strings missing from English: %s' % (len(otherOnly), ", ".join(otherOnly)))
 
 def removeNotInEnglish( doc ):
     locRoot = doc.getroot()
     engNames = getEnglishNames()
     for elem in locRoot:
-        if not isinstance( elem.tag, basestring ):
+        if not isinstance( elem.tag, str ):
             prevComment = elem
         elif elem.tag == 'string':
             name = elem.get('name')
             if not name in engNames['stringNames']:
-                print "removing string", name
+                print('removing string', name)
                 locRoot.remove(elem)
                 if prevComment: locRoot.remove(prevComment)
             prevComment = None
         elif elem.tag == 'plurals':
             name = elem.get('name')
             if not name in engNames['pluralsNames']:
-                print "removing plurals", name
+                print('removing plurals', name)
                 locRoot.remove(elem)
                 if prevComment: locRoot.remove(prevComment)
             prevComment = None
         else: 
-            print "unknown tag", elem.tag
+            print('unknown tag', elem.tag)
             sys.exit(1)
 
 
 def usage():
-    print "usage:", sys.argv[0]
-    print "   -a   # insert missing string elements for translation"
-    print "   -c   # compare each file with the English, listing string not in both"
-    print "   -i   # save any changes made (does not by default)"
-    print "   -f   # work on this strings.xml file (does all if none specified)"
-    print "   -l   # work on the strings.xml file for this language (e.g. ca, nl)"
-    print "   -r   # remove elements not present in English"
-    print "   -s   # print stats"
-    print "   -%   # replace %[sd] with the correct longer form"
+    print("""
+    usage:", sys.argv[0]
+       -a   # insert missing string elements for translation
+       -c   # compare each file with the English, listing string not in both
+       -i   # save any changes made (does not by default)
+       -f   # work on this strings.xml file (does all if none specified)
+       -l   # work on the strings.xml file for this language (e.g. ca, nl)
+       -r   # remove elements not present in English
+       -s   # print stats
+       -%   # replace %[sd] with the correct longer form
+""")
     sys.exit(1)
 
 def langFileFor(code):
@@ -232,7 +236,7 @@ def main():
     except:
         usage()
 
-    pairs = mk_xml.getStrings('res/values/strings.xml', False)
+    pairs = mk_xml.getStrings(STRINGS_FILE, False)
 
     # Build list of files to work on
     if 0 == len(stringsFiles):
@@ -242,7 +246,7 @@ def main():
 
     parser = etree.XMLParser(remove_blank_text=True, encoding="utf-8")
     for path in stringsFiles:
-        print "looking at", path
+        print('looking at', path)
         doc = etree.parse(path, parser)
         # checkAgainst( doc, pairs )
         if doReplace: 
@@ -257,8 +261,11 @@ def main():
         if doStats:
             printStats( doc )
         if doSave:
-            out = open( path, "w" )
-            out.write( etree.tostring( doc, pretty_print=True, encoding="utf-8", xml_declaration=True ) )
+            try: etree.indent(doc, space='    ')
+            except: print('unable to use indent(); check formatting')
+            out = open( path, "wb" )
+            out.write( etree.tostring( doc, pretty_print=True, encoding="utf-8",
+                                       xml_declaration=True ) )
 
 
 ##############################################################################
