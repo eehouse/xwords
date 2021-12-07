@@ -33,7 +33,6 @@
         <item quantity="one">Möchten Sie das ausgewählte Partie wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.</item>
         <item quantity="other">Möchten Sie die %1$d ausgewählten Partien wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.</item>
     </plurals>
-    <string name="title_dicts_list">CrossWords-Wortlisten</string>
     <string name="loc_builtin">Vorinstalliert</string>
     <string name="loc_downloads">Downloads</string>
     <string name="dicts_item_move">Speicherort ändern</string>
@@ -56,9 +55,6 @@
     <string name="lang_label">Sprache der Partie</string>
     <string name="langdict_label">Sprache der Partie/Wortliste</string>
     <string name="connect_label_fmt">Verbindung (über %1$s)</string>
-    <string name="new_room_hint">Raumname</string>
-    <string name="room_public">Neuen Raum öffentlich machen</string>
-    <string name="room_public_prompt">Öffentlichen Raum auswählen</string>
     <string name="settings_label">Sonstige Einstellungen</string>
     <string name="hints_allowed">Tipps erlauben</string>
     <string name="nethints_allowed">Tipps erlauben (im Netzwerk)</string>
@@ -95,9 +91,6 @@
     <string name="set_default_message_fmt">"Für welche Spieler soll die Wortliste %1$s  Standardeinstellung für neue Partien sein? (Die Sprache %2$s wird Standardeinstellung für beide.)"</string>
     <string name="game_locked">Sperreinstellungen</string>
     <string name="players_label_standalone">Spieler (zum Bearbeiten antippen)</string>
-    <string name="join_room">Öffentlichen Raum betreten</string>
-    <string name="public_names_progress_fmt">Öffentliche Räume für %1$d-Spieler-Partien in %2$s werden geholt.</string>
-    <string name="no_name_found_fmt">Keine öffentlichen Räume für %1$d-Spieler-Partien in %2$s gefunden. Versuchen Sie zu aktualisieren oder erzeugen Sie Ihre eigenen.</string>
     <string name="use_timer">Spieluhr aktivieren</string>
     <string name="phonies_spinner_prompt">Wie „falsche Wörter\" behandelt werden (Wörter, die nicht in der Wortliste sind)</string>
     <string name="phonies_ignore">Falsche Wörter ignorieren</string>
@@ -129,7 +122,6 @@
     <string name="invit_expl_bt_fmt">Einladung per Bluetooth an gepaartes Gerät „%1$s“ in „%2$s“ geschickt</string>
     <string name="invit_expl_notarget_fmt">"Einladung über %1$s  in %2$s geschickt. Empfänger unbekannt."</string>
     <string name="pts">Pkt.</string>
-    <string name="msg_relay_all_here_fmt">Alle Spieler sind hier in Raum „%1$s“.</string>
     <string name="relay_alert">Verbindungsproblem</string>
     <string name="msg_too_many">Sie stellen mehr Spieler bereit als der Server erwartet.</string>
     <string name="msg_no_room">Kein Server hat einen Raum mit diesem Namen angelegt.</string>
@@ -253,7 +245,6 @@
     <string name="notify_other_summary">Wenn Züge des Gegners ankommen</string>
     <string name="newgame_configure_first">Zuerst konfigurieren</string>
     <string name="newgame_invite">Jetzt einladen</string>
-    <string name="newgame_invite_more">Weitere Informationen</string>
     <string name="invite_choice_email">E-Mail</string>
     <string name="invite_choice_bt">Bluetooth</string>
     <string name="invite_choice_nfc">NFC („Android-Beaming“)</string>
@@ -331,9 +322,6 @@
     <string name="not_again_juggle">Dieser Button ordnet die Spielsteine in der Ablage zufällig neu an.</string>
     <string name="not_again_flip">Dieser Button dreht das Brett um eine diagonale Achse.</string>
     <string name="not_again_undo">Dieser Button nimmt den gegenwärtigen Zug zurück oder spielt ihn erneut.</string>
-    <string name="not_again_conndfirst">Sie haben eine Verbindung für eine Partie aufgebaut und sie in einem neuen Raum gestartet. Die Partie kann beginnen, sobald die übrigen Geräte dem Raum beigetreten sind und CrossWords die Spielsteine verteilt hat.</string>
-    <string name="not_again_conndmid">Sie haben eine Verbindung aufgebaut und sind einer Partie auf der Zwischenstation beigetreten. Sie werden benachrichtigt, sobald die übrigen Geräte Ihrem Raum beigetreten sind und die Partie beginnen kann.</string>
-    <string name="not_again_conndall">Sie haben eine Verbindung aufgebaut und sind einer Partie auf der Zwischenstation beigetreten; der Raum ist jetzt voll. Das Gerät, das den Raum erzeugt hat, wird nun die Spielsteine verteilen und die Partie kann beginnen.</string>
     <string name="not_again_arrow">Spielsteine auf das Brett setzen:
 \nSie können Spielsteine zwischen Ablage und Brett hin- und herziehen, oder Sie können ein leeres Feld antippen, um den Brett-Pfeil zu positionieren. Angetippte Spielsteine in der Ablage ersetzen den Pfeil (indem er ein Feld in seine gegenwärtige Richtung verschoben wird.) Tippen Sie den Pfeil einmal an, um seine Richtung zu ändern, zweimal, um ihn zu verbergen. Ein Kontrollkästchen im Abschnitt Darstellung in den Einstellungen verbirgt ihn dauerhaft.</string>
     <string name="default_name_title">Standardspielername</string>
@@ -365,11 +353,8 @@
     <string name="dict_browse_title_fmt">%1$s (%2$d Wörter)</string>
     <string name="not_again_browse">Dieser Button öffnet den Wortlisten-Browser mit der Wortliste des gegenwärtigen Spielers.</string>
     <string name="not_again_browseall">Dieser Button öffnet den Wortlisten-Browser mit einer Wortliste Ihrer Wahl.</string>
-    <string name="alert_empty_dict_fmt">Die Wortliste %1$s enthält nur Spielstein-Informationen, keine Wörter zum Browsen.</string>
     <string name="min_len">Min. Länge</string>
     <string name="max_len">Max. Länge</string>
-    <string name="prompt_min_len">Wörter nicht kürzer als</string>
-    <string name="prompt_max_len">Wörter nicht länger als</string>
     <string name="board_menu_file_email">E-Mail an den Autor …</string>
     <string name="email_author_subject">Kommentar zu CrossWords</string>
     <string name="email_author_chooser">Kommentar senden über</string>
@@ -654,7 +639,6 @@
     <string name="title_addrs_pref">Verbindungsart</string>
     <string name="new_game_networked">Neue Netzwerk-Partie</string>
     <string name="rematch_name_fmt">%1$s</string>
-    <string name="new_game_message_nodflt">Diese Partie muss vor dem Öffnen konfiguriert werden.</string>
     <string name="use_defaults">Standardeinstellungen</string>
     <string name="nplayers_prompt">Nummer auf diesem Gerät</string>
     <plurals name="nplayers_fmt">
@@ -662,28 +646,20 @@
         <item quantity="other">%1$d Spieler</item>
     </plurals>
     <string name="err_dup_invite_fmt">Doppelte Einladung abgelehnt: Gerät „%1$s“ hat bereits eine Einladung zu dieser Partie angenommen.</string>
-    <string name="network_advanced_title">Erweitert</string>
-    <string name="network_advanced_summary">Für erfahrene Spieler</string>
     <string name="invite_multi_title">Mehrere einladen</string>
     <string name="invite_multi_summary">Mehr als einen Spieler pro externem Gerät einladen</string>
-    <string name="enable_pubroom_title">Öffentliche Räume ermöglichen</string>
-    <string name="enable_pubroom_summary">Räume, die andere sehen und denen sie beitreten können</string>
     <string name="connection_via_label">Verbindungsart ändern</string>
     <string name="set_pref">Buttons ausblenden</string>
     <string name="not_again_hidenewgamebuttons">Die zwei Buttons am unteren Rand des Bildschirms und die beiden ersten Elemente der Aktionsleiste (oder des Menüs) haben die gleiche Funktion. Wenn Sie wollen, können Sie die Buttons ausblenden, um Platz für mehr Partien zu schaffen.
 \n
 \n(Wenn Sie später die Buttons wieder einblenden wollen, gehen Sie ins Darstellungs-Menü der App-Einstellungen).</string>
-    <string name="waiting_invite_title">Warte auf Antwort</string>
     <string name="waiting_rematch_title">Revanchepartie läuft</string>
-    <string name="button_reinvite">Neu einladen</string>
-    <string name="invite_stays">(Dieser Dialog bleibt sichtbar bis alle externen Spieler eine Verbindung aufgebaut haben. Sie können die Partie schließen, falls Sie erwarten, dass das länger dauert. Externe Spieler können dann immer noch eine Verbindung aufbauen und Sie werden benachrichtigt, sobald das der Fall ist.)</string>
     <string name="nfc_just_tap">Zum Einladen über NFC einfach mit der Rückseite dieses Geräts die des Geräts berühren, das Sie einladen wollen – wann immer die Partie geöffnet ist.</string>
     <string name="warn_no_comms">Jede Netzwerk-Partie benötigt mindestens eine Verbindungsart. Wenn Sie keine Standardeinstellungen zur Verbindungsart haben, muss jede Netzwerk-Partie konfiguriert werden.</string>
     <string name="config_no_connvia">Diese Partie hat keine Möglichkeit eine Verbindung aufzubauen und kann nicht gespeichert werden. Wollen Sie Ihre Änderungen verwerfen, oder sie bearbeiten, um eine Verbindungsart anzugeben?</string>
     <string name="button_edit">Bearbeiten</string>
     <string name="button_discard_changes">Änderungen verwerfen</string>
     <string name="rematch_sent_toast">Revanche-Einladungen verschickt</string>
-    <string name="rematch_msg">Der Server hat zu dieser Partie eine Einladung zu einer Revanche geschickt. Sie werden diese Meldung so lange sehen, bis Sie angenommen wurde.</string>
     <string name="disable_nags_title">Zug-Erinnerungen</string>
     <string name="disable_nag_title">Netzwerk-Partie-Erinnerungen deaktivieren</string>
     <string name="disable_nag_summary">Nicht benachrichtigen, egal wie lange ich schon am Zug bin</string>
@@ -701,13 +677,7 @@
     <string name="pref_item_update_title">Zwischen den einzelnen Versionen aktualisieren</string>
     <string name="checking_for_fmt">Wortlisten werden in %1$s gesucht …</string>
     <string name="db_store_done">Schreiben auf SD-Karte abgeschlossen.</string>
-    <string name="seeking_relay">Verbinde mit Zwischenstation …</string>
-    <string name="no_relay_conn">Diese Partie ist für eine Verbindung über die Zwischenstation (Internet) konfiguriert, konnte aber keine Verbindung aufbauen.
-\n
-\nVersuchen Sie, die Partie später erneut zu öffnen, wenn sich die Gegebenheiten geändert haben.</string>
-    <string name="drop_relay_warning_fmt">(Diese Partie kann auch eine Verbindung über %1$s aufbauen, Sie können also auch ohne Zwischenstation spielen, wenn Sie wollen.)</string>
     <string name="confirm_drop_relay">Sind Sie sicher, dass Sie für diese Partie die Möglichkeit entfernen wollen, über die Zwischenstation zu verbinden?</string>
-    <string name="wifi_warning">" Zum Beispiel ist es nötig, dass Sie in einem anderen WLAN-Netzwerk sind."</string>
     <string name="confirm_drop_relay_bt">Bluetooth funktioniert nur für Geräte in Reichweite.</string>
     <string name="confirm_drop_relay_sms">Nicht alle Mobilfunkanbieter unterstützen das Spielen per Daten-SMS.</string>
     <string name="button_enable">Aktivieren</string>
@@ -727,7 +697,6 @@
     <string name="confirm_clear_chat">Sind Sie sicher, dass Sie das Chat-Protokoll für diese Partie löschen wollen?
 \n
 \n(Diese Aktion kann nicht rückgängig gemacht werden.)</string>
-    <string name="processing_games">Partien werden verarbeitet</string>
     <string name="list_item_select">Auswählen</string>
     <string name="list_item_deselect">Aufheben der Auswahl</string>
     <string name="not_again_dfltname_fmt">"Sie benutzen den Standardspielernamen  „%1$s“. Wollen Sie ihn personalisieren, bevor Sie diese Partie beginnen?"</string>
@@ -879,7 +848,6 @@
     <string name="pct_suffix">" ％"</string>
     <string name="loc_item_copy_bless">Offiziell kopieren</string>
     <string name="bt_scan_age_fmt">Letzter Kontakt von: %1$s</string>
-    <string name="button_close">Schließen</string>
     <string name="gameevent_channel_expl">Ereignisse während der Partie</string>
     <string name="not_again_emptybtscan">Wenn beim Scannen das erwartete Gerät nicht gefunden wird:
 \n • Zuerst: Scannen Sie erneut

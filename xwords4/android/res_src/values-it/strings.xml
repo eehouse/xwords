@@ -141,7 +141,6 @@
     <string name="not_again_dfltname_fmt">Stai usando il nome di base \"%1$s\". Vorresti personalizzarlo prima di creare questa partita\?</string>
     <string name="list_item_markbad">Segna come corrotto</string>
     <string name="list_item_deselect">De-seleziona</string>
-    <string name="processing_games">Processando partite</string>
     <string name="confirm_clear_chat">Sei sicuro di voler cancellare tutto lo storico Chat per questa partita\?
 \n
 \n(Questa azione non può essere annullata.)</string>
@@ -162,13 +161,7 @@
     <string name="button_enable">Attiva</string>
     <string name="confirm_drop_relay_sms">Non tutte le versioni supportano la partita via dati SMS.</string>
     <string name="confirm_drop_relay_bt">Il Bluetooth funziona solo su dispositivi vicini.</string>
-    <string name="wifi_warning">" Per esempio, potresti aver bisogno di una connessione WiFi differente."</string>
     <string name="confirm_drop_relay">Sei sicuro di voler eliminare la possibilità di connettersi al server per questa partita\?</string>
-    <string name="drop_relay_warning_fmt">(Questa partita potrebbe connettersi via %1$s, se vuoi puoi giocare senza connessione al server.)</string>
-    <string name="no_relay_conn">Questa partita è configurata per una connessione via server (internet) ma non è stato possibile connettersi.
-\n
-\nPer favore prova ad aprire la partita più tardi, dopo che le condizioni siano variate.</string>
-    <string name="seeking_relay">Connessione al server…</string>
     <string name="db_store_done">Scrittura su SD completa.</string>
     <string name="checking_for_fmt">Controllando liste parole in %1$s…</string>
     <string name="checking_title">Controllando</string>
@@ -230,7 +223,6 @@
     <string name="button_rematch">Rivincita</string>
     <string name="about_credits">Credits: Icone barre degli strumenti di Sarah Chu. Icone barre di navigazione da The Noun Project: “Archivio” da Trendy; “Rivincita” da Becris; e “Scambia” da iconomania. Localizzazione effettuata da volontari via weblate.org (Luca De Filippo).</string>
     <string name="invite_msg_extra_rematch">Con le rivincite, gli inviti prestabiliti verranno inviati automaticamente. Ma puoi sempre inviarne dei nuovi se un invitato non risponde.</string>
-    <string name="rematch_msg">Questa partita sta ospitando una rivincita e ha inviato gli inviti. Vedrai questo messaggio finchè non saranno tutti accettati.</string>
     <string name="button_discard_changes">Elimina modifiche</string>
     <string name="button_edit">Modifica</string>
     <string name="config_no_connvia">Questa partita non ha modo di collegarsi e non può essere salvata. Vuoi abbandonare le modifiche o modificarla per avere delle opzioni di connessione\?</string>
@@ -562,11 +554,8 @@
     <string name="word_to_clip_fmt">Copiato “%1$s”</string>
     <string name="alrt_bad_filter">Impossibile applicare filtro.</string>
     <string name="error_min_gt_max">Il valore della lunghezza minima non può essere più grande di quella massima.</string>
-    <string name="prompt_max_len">Parole non più lunghe di</string>
-    <string name="prompt_min_len">Parole non più corte di</string>
     <string name="max_len">Lungh max</string>
     <string name="min_len">Lungh min</string>
-    <string name="alert_empty_dict_fmt">La lista parole %1$s contiene solo informazioni sulle tessere. Non ci sono parole da mostrare.</string>
     <string name="not_again_browseall">Questo tasto apre la navigazione della lista parole su quella che sceglierai.</string>
     <string name="not_again_browse">Questo tasto apre la navigazione della lista parole su quella dell\'attuale del giocatore.</string>
     <string name="dict_browse_title_fmt">%1$s (%2$d parole in totale)</string>
@@ -628,9 +617,6 @@
 \n • Puoi trascinarle dalla tua sezione al tavolo.
 \n 
 \n• O puoi toccare un riquadro vuoto sul tavolo da gioco per inserire la \"Freccia\". Le tessere nella tua sezione sostituiscono la freccia quando le tocchi. Tocca la freccia per cambiare la sua direzione o nasconderla.</string>
-    <string name="not_again_conndall">Sei connesso e hai avviato una partita sul server; la stanza è ora completa. Il dispositivo che ha creato la stanza assegnerà le tue tessere e la partita può iniziare.</string>
-    <string name="not_again_conndmid">Sei connesso e hai avviato una partita da server. Riceverai una notifica quando i dispositivi rimanenti sono entrati nella tua stanza e il gioco può iniziare.</string>
-    <string name="not_again_conndfirst">Sei connesso e hai cominciato una partita in una nuova stanza. Finché i dispositivi rimanenti sono presenti nella tua stanza e CrossWords li ha assegnato le tessere da giocare puoi cominciare.</string>
     <string name="not_again_unlock">Questa partita è in atto. Alcune impostazioni, come il numero di giocatori, non possono essere più cambiate senza riavviare la partita. Se lasci questa pagina hai la possibilità di perdere le modifiche per permettere un nuovo avvio di partita.</string>
     <string name="not_again_done">Toccando su \"pts\" che appare sul bordo destro della tua sezione tessere è il miglior modo per confermare una mossa.</string>
     <string name="not_again_values">Questo tasto mostra le lettere sulle tessere posizionate o il loro valore in punti. Usa questo per capire quali tessere possono valere di più.</string>
@@ -737,21 +723,15 @@
     <string name="invite_choice_user_sms">SMS (Messaggio)</string>
     <string name="newgame_drop_relay">Esci dal server</string>
     <string name="title_invite_history">Inviti inviati</string>
-    <string name="newgame_invite_more">Storico</string>
-    <string name="invite_player_fmt">Invita %1$s</string>
     <string name="newgame_invite">Invita ora</string>
     <string name="notify_other_summary">Quando arriva la mossa avversario</string>
     <string name="notify_vibrate">Vibra</string>
     <string name="notify_sound">Suono</string>
     <string name="disable_bt_summary">Disabilita tutti collegamenti Bluetooth</string>
     <string name="nfc_just_tap">Per invitare via NFC tocca il retro di questo dispositivo con quello che vuoi invitare - quando la partita sarà avviata.</string>
-    <string name="invite_stays">(Vedrai questa finestra di dialogo fintanto che tutti i giocatori non sono connessi. Puoi chiudere la partita se pensi che ci voglia del tempo. I giocatori in remoto possono ancora collegarsi e riceverai una notifica quando averrà.)</string>
-    <string name="button_reinvite">Invita di nuovo</string>
-    <string name="button_close">Chiudi</string>
     <string name="waiting_host_expl_multi">In questo caso, siccome la partita sta aspettando la connessione di più di un dispositivo, potrebbe significare che non è stato ancora invitato nessuno.</string>
     <string name="waiting_host_expl">Questa partita sta attendendo altri giocatori per iniziare. Ciò significa che i giocatori ospiti non sono connessi (Temporaneamente offline\?)</string>
     <string name="waiting_host_title">In attesa di altri giocatori</string>
-    <string name="waiting_invite_title">In attesa di risposta</string>
     <plurals name="waiting_title_fmt">
         <item quantity="one">In attesa di un giocatore</item>
         <item quantity="other">In attesa di %1$d giocatori</item>
@@ -761,12 +741,8 @@
 \n(Se vuoi decidere di ripristinarli più tardi vai nella sezione Apparenza delle Impostazioni App).</string>
     <string name="set_pref">Nascondi tasti</string>
     <string name="connection_via_label">Cambia collegamento via</string>
-    <string name="enable_pubroom_summary">Stanze che altri possono vedere ed accedervi</string>
-    <string name="enable_pubroom_title">Attiva stanze pubbliche</string>
     <string name="invite_multi_summary">Invita più di un giocatore per dispositivi remoti</string>
     <string name="invite_multi_title">Invito multiplo</string>
-    <string name="network_advanced_summary">Per giocatori con esperienza</string>
-    <string name="network_advanced_title">Avanzate</string>
     <string name="err_dup_invite_fmt">Duplica invito fallito: il dispositivo “%1$s” ha già accettato l\'invito a giocare.</string>
     <plurals name="nplayers_fmt">
         <item quantity="one">Un giocatore</item>
@@ -774,7 +750,6 @@
     </plurals>
     <string name="nplayers_prompt">Numero su questo dispositivo</string>
     <string name="use_defaults">Usa impostazioni base</string>
-    <string name="new_game_message_nodflt">Questa partita deve essere configurata prima di essere aperta.</string>
     <string name="rematch_name_fmt">%1$s</string>
     <string name="new_game_networked">Nuova partita in linea</string>
     <string name="new_game">Nuova partita su unico dispositivo</string>
@@ -859,7 +834,6 @@
     <string name="bonus_l2x">Lettera Doppia</string>
     <string name="prefs_colors_summary">Edita i colori utilizzati per il tavolo da gioco</string>
     <string name="prefs_colors">Colori individuali</string>
-    <string name="board_line_pct">Grandezza linea celle (percentuale, limite da 1 a 25)</string>
     <string name="keep_screenon_summary">Mantieni lo schermo sul tavolo da gioco per 10 minuti</string>
     <string name="keep_screenon">Tieni schermo attivo</string>
     <string name="show_arrow_summary">La sezione tessere toccata appare su questa freccia quando sarà visibile</string>
@@ -965,7 +939,6 @@
     <string name="msg_no_room">Nessun ospite ha creato una stanza con questo nome.</string>
     <string name="msg_too_many">Stai chiamando più giocatori di quelli richiesti.</string>
     <string name="relay_alert">Problemi di connessione</string>
-    <string name="msg_relay_all_here_fmt">Tutti i giocatori sono nella stanza \"%1$s\".</string>
     <plurals name="msg_relay_waiting_fmt">
         <item quantity="one">Dispositivo %1$d collegato alla stanza \"%2$s\". In attesa di un giocatore.</item>
         <item quantity="other">Dispositivo %1$d collegato alla stanza \"%2$s\". In attesa di %3$d giocatori.</item>
@@ -1025,12 +998,6 @@
     <string name="nethints_allowed">Permetti suggerimenti (collegati)</string>
     <string name="hints_allowed">Permetti suggerimenti</string>
     <string name="settings_label">Altre impostazioni</string>
-    <string name="no_name_found_fmt">Nessuna stanza aperta trovata per %1$d giocatori in %2$s. Prova a cercare nuovamente o crearne una nuova.</string>
-    <string name="public_names_progress_fmt">Ricerca stanze aperte per %1$d giocatori in %2$s.</string>
-    <string name="room_public_prompt">Seleziona stanza aperta</string>
-    <string name="room_public">Crea nuova stanza aperta</string>
-    <string name="new_room_hint">Nome stanza</string>
-    <string name="join_room">Entra in stanza aperta</string>
     <string name="connect_label_fmt">Connesso (Via %1$s)</string>
     <string name="langdict_label">Lingua partita/lista parole</string>
     <string name="lang_label">Lingua partita</string>
@@ -1058,7 +1025,6 @@
     <string name="loc_downloads">Scaricate</string>
     <string name="loc_builtin">Includi</string>
     <string name="download_more">Scarica più definizioni…</string>
-    <string name="title_dicts_list">Lista parole CrossWords</string>
     <plurals name="confirm_reset_fmt">
         <item quantity="one">Sei sicuro di voler resettare la partita selezionata\?
 \n

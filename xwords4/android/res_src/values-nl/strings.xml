@@ -43,7 +43,6 @@
         <item quantity="one">Weet je zeker dat je 1 geselecteerd spel wilt resetten?\n\n(Resetten verwijderd alle zetten en verbindingsinformatie.)</item>
         <item quantity="other">Weet je zeker dat je %1$d geselecteerde spellen wilt resetten?\n\n(Resetten verwijderd alle zetten en verbindingsinformatie.)</item>
     </plurals>
-    <string name="title_dicts_list">CrossWords Woordenlijsten</string>
     <string name="loc_builtin">Ingebouwd</string>
     <string name="loc_downloads">Downloads</string>
     <string name="dicts_item_move">Verander opslaglocatie</string>
@@ -70,12 +69,6 @@
     <string name="lang_label">Speltaal</string>
     <string name="langdict_label">Speltaal/woordenlijst</string>
     <string name="connect_label_fmt">Verbinding (via %1$s)</string>
-    <string name="join_room">Treed publieke kamer toe</string>
-    <string name="new_room_hint">Kamernaam</string>
-    <string name="room_public">Maak nieuwe kamer publiek</string>
-    <string name="room_public_prompt">Kies publieke kamer</string>
-    <string name="public_names_progress_fmt">Publieke kamers ophalen voor %1$d-speler spellen in %2$s.</string>
-    <string name="no_name_found_fmt">Geen publieke kamers gevonden voor %1$d-speler spellen in %2$s. Probeer te vernieuwen of een eigen kamer te maken.</string>
     <string name="settings_label">Andere instellingen</string>
     <string name="hints_allowed">Sta hints toe</string>
     <string name="nethints_allowed">Sta hints toe (netwerk)</string>
@@ -121,7 +114,6 @@
         <item quantity="one">Apparaat 1 verbonden met relay in kamer \"%2$s\". Wachtend op %1$d speler.</item>
         <item quantity="other">Apparaat %1$d verbonden met relay in kamer \"%2$s\". Wachtend op %3$d spelers.</item>
     </plurals>
-    <string name="msg_relay_all_here_fmt">Alle spelers spelers zijn hier in kamer \"%1$s\".</string>
     <string name="relay_alert">Verbindingsprobleem</string>
     <string name="msg_too_many">Je bied meer spelers aan dan de host verwacht.</string>
     <string name="msg_no_room">Geen host heeft een kamer met deze naam geregistreerd.</string>
@@ -318,9 +310,6 @@
     <string name="not_again_values">Deze knop wisselt het bord tussen het tonen van letters of de letterwaardes. Gebruik het om te zien wat een letter ook alweer waard is.</string>
     <string name="not_again_done">Op de \"pntn\" teller die rechts van het rek tevoorschijn komt drukken is de makkelijkste manier om een zet te doen.</string>
     <string name="not_again_unlock">Dit spel is bezig. Sommige instellingen, zoals de hoeveelheid spelers, kunnen niet veranderd worden zonder het spel te herstarten. Als je deze pagina verlaat heb je een kans om wijzigingen te annuleren om herstarten te voorkomen.</string>
-    <string name="not_again_conndfirst">Je hebt verbonden en een spel gestart in een nieuwe kamer. Zodra de andere apparaten de kamer toe zijn getreden en CrossWords letters uitgedeeld heeft kan het spel beginnen.</string>
-    <string name="not_again_conndmid">Je hebt verbonden met een spel op de relay. Je krijgt een bericht als het overige apparaat/de overige apparaten de kamer toegetreden zijn en het spel kan beginnen.</string>
-    <string name="not_again_conndall">Je hebt verbonden met een spel op de relay; de kamer is nu vol. Het apparaat dat de kamer gemaakt heeft zal de letters verdelen zodat het spel kan beginnen.</string>
     <string name="not_again_arrow">Letters naar het bord bewegen:\nJe kan letters van het rek naar het bord slepen, of je kan op een lege cel drukken om een pijl te plaatsen. Letters op het rek waar je op drukt zullen op de pijl geplaatst worden, en de pijl zal een vakje verder gaan in de aangegeven richting. Druk nogmaals op de pijl om de oriëntatie te wijzigen; een tweede keer om de pijl te verbergen. Onder de Uiterlijk optie in instellingen kun je de pijl permanent uitschakelen.</string>
     <string name="not_again_turnchanged">De speler die aan de beurt is wordt groot getoond op het scorebord.\n\nHoud de naam op het scorebord ingedrukt om informatie over de laatste zet van de speler te krijgen.</string>
     <string name="not_again_newfrom">Maak een nieuw spel, klaar om te spelen, met alle instellingen van dit spel. Dat wil zeggen, gebruik dit spel als een template.</string>
@@ -349,11 +338,8 @@
     <string name="dict_browse_title_fmt">%1$s (%2$d woorden)</string>
     <string name="not_again_browse">Deze knop opent de woordenlijst browser voor de woordenlijst van de speler die aan de beurt is.</string>
     <string name="not_again_browseall">Deze knop opent de woordenlijst browser voor de woordenlijst van jouw keuze.</string>
-    <string name="alert_empty_dict_fmt">De woordenlijst %1$s heeft enkel letterinformatie. Er zitten geen woorden in.</string>
     <string name="min_len">Minimum lengte</string>
     <string name="max_len">Maximum lengte</string>
-    <string name="prompt_min_len">Woorden niet korter dan</string>
-    <string name="prompt_max_len">Woorden niet langer dan</string>
     <string name="board_menu_file_email">Email ontwikkelaar</string>
     <string name="email_author_subject">Geef je mening over CrossWords</string>
     <string name="email_author_chooser">Verstuur opmerking via</string>
@@ -596,7 +582,6 @@
     <string name="title_addrs_pref">Communiceer via</string>
     <string name="new_game">Nieuw lokaal spel</string>
     <string name="new_game_networked">Nieuw spel op netwerk</string>
-    <string name="new_game_message_nodflt">Dit spel moet ingesteld zijn voordat het geopend kan worden.</string>
     <string name="use_defaults">Standaard</string>
     <string name="nplayers_prompt">Hoeveelheid op dit apparaat</string>
     <plurals name="nplayers_fmt">
@@ -604,22 +589,16 @@
         <item quantity="other">%1$d spelers</item>
     </plurals>
     <string name="err_dup_invite_fmt">Dubbele uitnodiging geweigerd: apparaat \"%1$s\" heeft al een uitnodiging voor dit spel geaccepteerd.</string>
-    <string name="network_advanced_title">Geavanceerd</string>
-    <string name="network_advanced_summary">Voor ervaren spelers</string>
     <string name="invite_multi_title">Nodig meerderen uit</string>
     <string name="invite_multi_summary">Nodig meer dan een speler per apparaat op afstand uit</string>
-    <string name="enable_pubroom_title">Schakel publieke kamers in</string>
-    <string name="enable_pubroom_summary">Kamers die anderen kunnen zien en toe kunnen treden</string>
     <string name="connection_via_label">Verander communiceren via</string>
     <string name="set_pref">Verberg knoppen</string>
     <string name="not_again_hidenewgamebuttons">"Deze twee knoppen doen hetzelfde als de eerste twee items in de actiebalk (of menu). Indien je wilt kun je deze knoppen verbergen zodat meer spellen getoond worden.\n\n(Als je ze later wilt verbergen, ga naar de Uiterlijk sectie in de Instellingen). "</string>
-    <string name="invite_stays">(Dit scherm blijft getoond tot alle spelers verbonden hebben. Je kan dit spel sluiten als je denk dat dit nog wel een tijdje zal duren. Ze kunnen dan nog steeds verbinden.)</string>
     <string name="nfc_just_tap">Om uit te nodigen via NFC hoef je enkel de achterkant van dit apparaat tegen het apparaat dat je uit wilt nodigen te houden terwijl het spel open staat.</string>
     <string name="warn_no_comms">Elk netwerk spel moet tenminste een manier van communiceren hebben. Als je geen standaard opties hebt zal elk spel via netwerk handmatig ingesteld moeten worden.</string>
     <string name="config_no_connvia">Dit spel heeft geen manier om te verbinden en kan niet opgeslagen worden. Wil je de wijzigingen annuleren, of het spel aanpassen zodat deze wel een manier om te verbinden heeft?</string>
     <string name="button_edit">Bewerk</string>
     <string name="button_discard_changes">Verwijder veranderingen</string>
-    <string name="rematch_msg">Nieuwe uitnodiging verstuurd. Je zult dit bericht zien tot het geaccepteerd is.\n\nJe hoeft het spel niet open te houden terwijl je wacht. Je krijgt een bericht als het spel klaar is om te spelen.</string>
     <string name="disable_nag_title">Schakel beurtherinneringen uit</string>
     <string name="disable_nag_summary">Stuur me geen bericht, ook al is het al heel lang mijn beurt</string>
     <string name="confirm_get_locdict_fmt">Jouw apparaat is ingesteld voor %1$s. Wil je een woordenlijst downloaden zodat je CrossWords in het %1$s kan spelen?</string>
@@ -663,11 +642,7 @@
     <string name="checking_title">Zoeken</string>
     <string name="checking_for_fmt">Zoeken naar woordenlijsten in %1$s…</string>
     <string name="db_store_done">Schrijven naar SD kaart voltooid.</string>
-    <string name="seeking_relay">Verbinden met relay…</string>
-    <string name="no_relay_conn">Dit spel is ingesteld om gebruik te maken van de relay (internet) voor verbindingen maar heeft niet kunnen verbinden.\n\nProbeer het spel later te openen nadat de netwerkcondities veranderd zijn.</string>
-    <string name="drop_relay_warning_fmt">"(Dit spel kan ook verbinden via %1$s, dus als je dit spel zonder relay wilt spelen is dat ook mogelijk.) "</string>
     <string name="confirm_drop_relay">Weet je zeker dat je het onmogelijk voor dit spel wilt maken om via de relay te communiceren?</string>
-    <string name="wifi_warning">" Bijvoorbeeld, je hebt misschien een ander WiFi netwerk nodig."</string>
     <string name="confirm_drop_relay_bt">Bluetooth werkt alleen voor apparaten in de buurt.</string>
     <string name="confirm_drop_relay_sms">Niet alle providers ondersteunen spelen via SMS.</string>
     <string name="button_enable">Schakel in</string>
@@ -691,7 +666,6 @@
     <string name="invit_expl_notarget_fmt">Uitnodiging verstuurd via %1$s op %2$s. Ontvanger onbekend.</string>
     <string name="disable_relay">"Schakel spelen via de relay uit "</string>
     <string name="disable_relay_summary">Schakel alle internetcommunicatie uit</string>
-    <string name="newgame_invite_more">Meer info</string>
     <string name="invite_choice_relay">Internet/Relay</string>
     <string name="chat_hint">Typ hier...</string>
     <string name="notify_title_turn_fmt">Jouw beurt is spel %1$s</string>
@@ -720,15 +694,12 @@
     <string name="button_enable_relay">Schakel Relay spelen in</string>
     <string name="button_disable_relay">Schakel Relay spelen uit</string>
     <string name="rematch_name_fmt">Rematch: %1$s</string>
-    <string name="waiting_invite_title">Wachten op reactie</string>
     <string name="waiting_rematch_title">Rematch is bezig</string>
-    <string name="button_reinvite">Nodig opnieuw uit</string>
     <string name="rematch_sent_toast">Rematch uitnodigingen verstuurd</string>
     <string name="disable_nags_title">Beurt herinneringen</string>
     <string name="disable_nag_solo_title">Schakel solo spel herinneringen uit</string>
     <string name="board_menu_game_showInvites">Toon uitnodigingen</string>
     <string name="not_again_rematch_two_only">Rematch is momenteel enkel beschikbaar voor spellen met twee personen, omdat dit moeilijker is met meer apparaten en ik denk dat het niet vaak gebeurt dat mensen met meer dan twee spelen. Laat het me weten als ik het mis heb, dan hoog ik de prioriteit op.</string>
-    <string name="processing_games">Spellen behandelen</string>
     <string name="list_item_select">Selecteer</string>
     <string name="list_item_deselect">Deselecteer</string>
     <string name="not_again_dfltname_fmt">Je gebruikt de standaard speler naam \"%1$s\". Wil je dit aanpassen met je eigen naam voordat je dit spel aan maakt?</string>
@@ -775,7 +746,6 @@
 \nWil je iemand uitnodigen\?</string>
     <string name="msg_dev_deleted_fmt">Het spel genaamd \"%1$s\" is verwijderd op een ander apparaat. Het is niet mogelijk om verder te spelen.</string>
     <string name="tray_size">Tegels in rek</string>
-    <string name="invite_player_fmt">Nodig %1$s uit</string>
     <string name="how_tab">Uitnodiging hoe versturen\?</string>
     <string name="local_invite_summary">Als je tegenstander dichtbij is…</string>
     <string name="radio_who">Wie\?</string>

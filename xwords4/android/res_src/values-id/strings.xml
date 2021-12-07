@@ -10,11 +10,6 @@
     <string name="use_timer">Aktifkan timer permainan</string>
     <string name="hints_allowed">Izinkan petunjuk</string>
     <string name="settings_label">Pengaturan lain</string>
-    <string name="no_name_found_fmt">Tidak ada ruangan publik untuk permainan %1$d-oranh di %2$s. Coba memuat ulang atau membuat satu.</string>
-    <string name="public_names_progress_fmt">Mengambil data ruangan publik untuk permainan %1$d-orang di %2$s.</string>
-    <string name="room_public_prompt">Pilih ruangan publik</string>
-    <string name="room_public">Buat ruangan baru publik</string>
-    <string name="new_room_hint">Nama ruangan</string>
     <string name="connect_label_fmt">Koneksi (melalui %1$s)</string>
     <string name="langdict_label">Bahasa/daftar kata permainan</string>
     <string name="lang_label">Bahasa permainan</string>
@@ -26,7 +21,6 @@
     <string name="loc_internal">Internal</string>
     <string name="move_dict_fmt">Lokasi untuk daftar kata %1$s</string>
     <string name="button_default_human">Manusia</string>
-    <string name="join_room">Bergabung ke ruangan publik</string>
     <string name="players_label_standalone">Pemain-pemain (ketuk untuk menyunting)</string>
     <string name="button_default_both">Keduanya</string>
     <string name="button_default_robot">Robot</string>
@@ -38,7 +32,6 @@
     <string name="loc_downloads">Unduhan</string>
     <string name="loc_builtin">Bawaan</string>
     <string name="download_more">Unduh lebih banyak…</string>
-    <string name="title_dicts_list">Daftar Kata CrossWords</string>
     <plurals name="confirm_nameddeletes_fmt">
         <item quantity="other">Apakah kamu yakin ingin menghapus permainan %1$s\? Tindakan ini tidak dapat dibatalkan.</item>
     </plurals>
@@ -132,8 +125,6 @@
     <string name="invite_choice_bt">Bluetooth</string>
     <string name="invite_choice_email">Surel</string>
     <string name="title_invite_history">Undangan Dikirim</string>
-    <string name="newgame_invite_more">Riwayat</string>
-    <string name="invite_player_fmt">Undang %1$s</string>
     <string name="newgame_reinvite">Undang lagi</string>
     <string name="newgame_invite">Undang sekarang</string>
     <string name="blue">Biru</string>

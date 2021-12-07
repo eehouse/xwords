@@ -39,7 +39,6 @@
     <string name="msg_no_room">Nenhum host registrou uma sala por este nome.</string>
     <string name="msg_too_many">Você está com mais jogadores do que o host exige.</string>
     <string name="relay_alert">Problema de conexão</string>
-    <string name="msg_relay_all_here_fmt">Todos os jogadores estão na sala “%1$s”.</string>
     <plurals name="msg_relay_waiting_fmt">
         <item quantity="one">Dispositivo %1$d conectado ao servidor na sala “%2$s”. Aguardando por um jogador.</item>
         <item quantity="other">Dispositivo %1$d conectado ao servidor na sala “%2$s”. Aguardando por %3$d jogadores.</item>
@@ -100,12 +99,6 @@
     <string name="nethints_allowed">Permitir dicas (em rede)</string>
     <string name="hints_allowed">Permitir dicas</string>
     <string name="settings_label">Outras configurações</string>
-    <string name="no_name_found_fmt">Não foram encontradas salas públicas para %1$d-jogador na partida %2$s. Tente atualizar ou criar a sua própria sala.</string>
-    <string name="public_names_progress_fmt">Buscando salas públicas para %1$d-jogadores na partida %2$s.</string>
-    <string name="room_public_prompt">Selecionar uma sala pública</string>
-    <string name="room_public">Criar uma nova sala pública</string>
-    <string name="new_room_hint">Nome da sala</string>
-    <string name="join_room">Entrar em uma sala pública</string>
     <string name="connect_label_fmt">Conexão (via %1$s)</string>
     <string name="langdict_label">Idioma do jogo/lista de palavras</string>
     <string name="lang_label">Idioma do jogo</string>
@@ -150,7 +143,6 @@
     <string name="dicts_item_select">Tornar padrão</string>
     <string name="dicts_item_move">Alterar o local de armazenamento</string>
     <string name="loc_builtin">Incluir</string>
-    <string name="title_dicts_list">Lista de palavras do CrossWords</string>
     <plurals name="confirm_reset_fmt">
         <item quantity="one">Você tem certeza que quer reiniciar o jogo selecionado\?
 \n
@@ -267,7 +259,6 @@
     <string name="bonus_l2x">Letra dupla</string>
     <string name="prefs_colors_summary">Editar cores usadas no quadro</string>
     <string name="prefs_colors">Cores do tabuleiro, etc.</string>
-    <string name="board_line_pct">espessura da linha da célula (percentagem, limite de 1 a 25)</string>
     <string name="keep_screenon_summary">Manter a tela do quadro ligada por 10 min</string>
     <string name="keep_screenon">Manter a tela ligada</string>
     <string name="show_arrow_summary">Quadrados tocados ficam nesta seta quando está visível</string>
@@ -344,7 +335,6 @@
     <string name="invite_choice_data_sms">Data do SMS</string>
     <string name="invite_choice_user_sms">SMS (mensagem de texto)</string>
     <string name="newgame_drop_relay">Queda do servidor</string>
-    <string name="newgame_invite_more">Histórico</string>
     <string name="newgame_invite">Convidar agora</string>
     <string name="newgame_configure_first">Configurar primeiro</string>
     <string name="notify_other_summary">Quando a jogada do oponente aparece</string>
@@ -387,7 +377,6 @@
     <string name="invite_who_empty_expl">vazio</string>
     <string name="radio_who">Quem\?</string>
     <string name="how_tab">Enviar um convite como\?</string>
-    <string name="invite_player_fmt">Convidar %1$s</string>
     <string name="disable_bt_summary">Disablitar toda a comunicação via Bluetooth</string>
     <string name="disable_bt">Desabilitar</string>
     <string name="game_summary_field_created">Quando criado</string>
@@ -558,13 +547,9 @@
     <string name="config_no_connvia">Este jogo não tem nenhuma maneira de se conectar e não pode ser salvo. Gostaria de descartar suas mudanças, ou editar para dar a ele uma forma de se conectar\?</string>
     <string name="warn_no_comms">Todo jogo em rede precisa ter pelo menos uma maneira de se comunicar. Se você não tiver opções padrão de conexão todo jogo em rede precisará ser configurado manualmente.</string>
     <string name="nfc_just_tap">Para convidar via NFC apenas encoste a parte traseira deste dispositivo com a parte traseira do que você quer conectar—a qualquer momento enquanto o jogo estiver aberto.</string>
-    <string name="invite_stays">(Você verá esta mensagem até que todos os jogadores remotos tenham conectado. Você pode fechar o jogo se acha que irá demorar um pouco. Jogadores remotos ainda poderão conectar, e você será notificado quando isso acontecer.)</string>
-    <string name="button_reinvite">Re-convidar</string>
-    <string name="button_close">Fechar</string>
     <string name="waiting_host_expl_multi">Neste caso, é porque o jogo está esperando mais que apenas esse dispositivo para conectar, pode também significar que ele não convidou todo mundo ainda.</string>
     <string name="waiting_host_expl">Este jogo está esperando o dispositivo host para começar. Geralmente significa que o host não está comunicando (está temporariamente offline\?)</string>
     <string name="waiting_host_title">Esperando host</string>
-    <string name="waiting_invite_title">Esperando resposta</string>
     <plurals name="waiting_title_fmt">
         <item quantity="one">Esperando o jogador</item>
         <item quantity="other">Esperando os %1$d jogadores</item>
@@ -574,12 +559,8 @@
 \n(Se você depois quiser exibir novamente os botões vá à seção Aparência nas configurações do App).</string>
     <string name="set_pref">Esconder botões</string>
     <string name="connection_via_label">Mudar Comunicar via</string>
-    <string name="enable_pubroom_summary">Salas que outros podem ver e entrar</string>
-    <string name="enable_pubroom_title">Ativar salas públicas</string>
     <string name="invite_multi_summary">Convidar mais de um jogador por dispositivo remoto</string>
     <string name="invite_multi_title">Convidar vários</string>
-    <string name="network_advanced_summary">Para jogadores expert</string>
-    <string name="network_advanced_title">Avançado</string>
     <string name="err_dup_invite_fmt">Convite duplo rejeitado: dispositivo “%1$s” já aceitou um convite para este jogo.</string>
     <plurals name="nplayers_fmt">
         <item quantity="one">Um jogador</item>
@@ -587,7 +568,6 @@
     </plurals>
     <string name="nplayers_prompt">Número neste dispositivo</string>
     <string name="use_defaults">Usar padrão</string>
-    <string name="new_game_message_nodflt">Este jogo precisa ser configurado antes que possa ser aberto.</string>
     <string name="new_game_networked">Novo jogo em rede</string>
     <string name="new_game">Novo jogo de um dispositivo</string>
     <string name="title_addrs_pref">Comunicar via</string>
@@ -651,9 +631,6 @@
     <string name="dup_host_received_fmt">%1$d de %2$d jogadores reportaram suas jogadas. Quando todas as jogadas forem recebidas será sua vez novamente.</string>
     <string name="dup_client_sent">Este dispositivo enviou suas jogadas para o host. Quando todos os dispositivos enviarem suas jogadas será sua vez novamente.</string>
     <string name="dup_paused_expl">Notificação dos jogos serem pausados e despausados</string>
-    <string name="no_relay_conn">Este jogo foi configurado para usar relay (internet) para comunicação mas foi incapaz de se conectar.
-\n
-\nPor favor tente abrir o jogo de novo mais tarde depois das condições terem mudado.</string>
     <string name="not_again_comms_mqtt">Há um servidor na internet que passa mensagens entre dispositivos que estão rodando CrossWords. Ele funciona sempre que você tiver uma conexão de internet totalmente funcional, mas pode ter problemas em redes WiFi restritas.</string>
     <string name="mqtt_invite_title">Convite MQTT</string>
     <string name="mqtt_port">Porta MQTT</string>
@@ -668,8 +645,6 @@
     <string name="advanced_summary">Você deveria nunca precisar destes…</string>
     <string name="advanced">Para debug</string>
     <string name="about_web">Para um (antigo) manual ou código-fonte veja: http://xwords.sf.net/android.php. Para reportar bugs, sugerir funções, oferecer ajuda etc., mande um e-mail: xwords@eehouse.org.</string>
-    <string name="not_again_conndall">Você se conectou e se juntou a um jogo via relay; a sala agora está cheia. O dispositivo que criou a sala poderá agora designar seus quadrados iniciais e o jogo poderá começar.</string>
-    <string name="not_again_conndmid">Você conectou e se juntou a um jogo via relay. Você será notificado quando o(s) dispositivo(s) restante(s) se juntar(em) à sua sala para que o jogo comece.</string>
     <string name="str_submit_confirm">Enviar a jogada atual\?
 \n</string>
     <string name="button_disable_relay">Desativar jogar via relay</string>
@@ -689,7 +664,6 @@
     <string name="warn_relay_later">Você pode ativar jogar via relay agora ou depois.</string>
     <string name="warn_relay_disabled">Jogos via relay estão atualmente desativados neste dispositivo. Nenhuma jogada será enviada ou recebida via relay.</string>
     <string name="confirm_drop_relay">Tem certeza que quer remover a habilidade deste jogo de comunicar via relay\?</string>
-    <string name="drop_relay_warning_fmt">(Este jogo pode também conectar via %1$s, então se gostaria de jogar sem usar uma conexão relay você pode.)</string>
     <string name="p2p_invite_title">Convite do WiFi Direct</string>
     <string name="confirm_clear_bt_postscript">"
 \n
@@ -748,9 +722,6 @@
     <string name="email_author_subject">Comentário sobre CrossWords</string>
     <string name="board_menu_file_email">Autor do e-mail…</string>
     <string name="error_min_gt_max">O valor de tamanho mínimo não pode ser maior que o valor máximo.</string>
-    <string name="prompt_max_len">Palavras não maiores que</string>
-    <string name="prompt_min_len">Palavras não menores que</string>
-    <string name="alert_empty_dict_fmt">A lista de palavras %1$s contém apenas informações dos quadrados. Não há palavras para navegar.</string>
     <string name="not_again_browseall">Este botão permite que você escolha em qual lista de palavras no idioma do jogo atual navegar.</string>
     <string name="not_again_browse">Este botão permite navegar na lista de palavras exibidas mais recentemente.</string>
     <string name="show_tiles_button">Mostrar Quadrados</string>
@@ -791,7 +762,6 @@
 \n(Provavelmente foi criado de um convite que não especificou nenhuma forma de conexão que seu dispositivo suporta, ou você pode ter recentemente removido sua última forma de conexão.)</string>
     <string name="connstat_lastsend_fmt">Último envio foi %1$s (%2$s)</string>
     <string name="confirm_sms_title">Confirme seu plano de SMS</string>
-    <string name="wifi_warning">" Por exemplo, você talvez precise estar em uma rede WiFi diferente."</string>
     <string name="warn_bt_havegames">Tem certeza que quer desativar jogar usando Bluetooth\?
 \n
 \nBluetooth é útil para trocar jogadas e especialmente convites com dispositivos próximos a você. A não ser que você esteja certo de que não irá jogar com alguém por perto não há muito mal em deixar ativado.</string>
@@ -799,13 +769,11 @@
     <string name="not_again_turnchanged">O jogador que for a vez será ampliado no placar.
 \n
 \nSegure seu dedo em um nome no placar para obter detalhes sobre a jogada mais recente do jogador.</string>
-    <string name="not_again_conndfirst">Você se conectou e começou um jogo em uma outra sala. Quando os dispositivos restantes juntarem-se à sua sala e CrossWords atribuir a eles seus quadrados o jogo pode começar.</string>
     <string name="not_again_unlock">Este jogo está rodando. Algumas configurações, como o número de jogadores, não podem ser mudadas sem resetá-lo. Quando você sair desta página você poderá descartar mudanças para evitar um reinício.</string>
     <string name="not_again_values">Este botão altera se o tabuleiro mostra valores (além das letras) nas peças do tabuleiro.</string>
     <string name="not_again_chat">Este botão abre a tela para mensagens entre dispositivos neste jogo. Mensagens serão mantidas até você deletar o jogo que as contém.</string>
     <string name="title_invite_history">Convites Enviados</string>
     <string name="list_group_moveup">Mover para cima</string>
-    <string name="processing_games">Processando jogos</string>
     <string name="confirm_clear_chat">Tem certeza que quer deletar todo o histórico do bate-papo deste jogo\?
 \n
 \n(Esta ação não pode ser desfeita.)</string>
@@ -1032,7 +1000,6 @@
     </plurals>
     <string name="show_fcm_title">Mostrar recebidos FCM</string>
     <string name="show_sms_title">Mostrar dados que SMS envia, recebe</string>
-    <string name="seeking_relay">Conectando ao relay…</string>
     <string name="got_langdict_title">Captar lista de palavras padrão para o idioma</string>
     <string name="expl_mqtt_url">URL para nova API de relay baseada em MQTT</string>
     <string name="expl_relay_url">URL para a API web de relay</string>
@@ -1094,7 +1061,6 @@
     <string name="phone_lookup_rationale_drop">Jogar revanche com este jogo que usa apenas dados SMS não é possível sem essa permissão.</string>
     <string name="phone_lookup_rationale">Para jogar revanche em um jogo que use dados SMS CrossWords precisa de permissão para acessar seu número de telefone.</string>
     <string name="not_again_rematch_two_only">Revanches são limitadas a jogos de dois jogadores, pelo menos por enquanto, porque é mais difícil com mais dispositivos e acho raro que pessoas joguem com mais de dois. Se eu estiver errado me avise e eu aumentarei a prioridade.</string>
-    <string name="rematch_msg">Este jogo está hospedando uma revanche e enviou um convite. Você verá esta mensagem até o convite ser aceito.</string>
     <string name="rematch_sent_toast">Convites da revanche enviados</string>
     <string name="waiting_rematch_title">Revanche em progresso</string>
     <string name="button_rematch">Revanche</string>

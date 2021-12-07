@@ -12,14 +12,14 @@
      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
      See the License for the specific language governing permissions and
      limitations under the License.
---><resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
+-->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
     <string name="list_item_config">Konfigurovat</string>
     <string name="list_item_delete">Vymazat</string>
     <string name="list_item_copy">Kopírovat</string>
     <string name="list_item_reset">Vynulovat</string>
     <string name="list_item_new_from">Nová hra podle vzoru</string>
     <string name="play">Hrát hru</string>
-    <string name="title_dicts_list">Slovníky CrossWords</string>
     <string name="title_game_config_fmt">Konfigurovat %1$s</string>
     <string name="title_prefs">Předvolby CrossWords</string>
     <string name="button_yes">Ano</string>

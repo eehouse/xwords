@@ -18,8 +18,6 @@
     <string name="button_add_player">إضافة لاعب</string>
     <string name="lang_label">لغة اللعبة</string>
     <string name="connect_label_fmt">الإتصال (بواسطة %1$s)</string>
-    <string name="join_room">الإنضمام للغرفة العامة</string>
-    <string name="new_room_hint">اسم الغرفة</string>
     <string name="settings_label">إعدادت أخرى</string>
     <string name="hints_allowed">السماح بالتلميحات</string>
     <string name="use_timer">تفعيل مؤقت اللعبة</string>
@@ -38,7 +36,6 @@
     <string name="blue">أزرق</string>
     <string name="notify_vibrate">اهتزاز</string>
     <string name="newgame_invite">الدعوة الآن</string>
-    <string name="newgame_invite_more">المزيد من المعلومات</string>
     <string name="invite_choice_email">البريد الإلكتروني</string>
     <string name="invite_choice_bt">البلوتوث</string>
     <string name="invite_choice_title">دعوة اللاعبين: كيف؟</string>

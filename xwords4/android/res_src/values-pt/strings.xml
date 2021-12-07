@@ -134,7 +134,6 @@
        ############################################################ 
       -->
     <!-- window title -->
-    <string name="title_dicts_list">Listas de palavras instaladas</string>
     <!-- text of button at the bottom of the screen.  It launches the
          browser pointed at the site where additional wordlists can be
          found. -->
@@ -249,25 +248,16 @@
     <!-- text of separator marking out the connection area of the dialog -->
     <!-- text of checkbox asking if user wants to search for open
     public rooms -->
-    <string name="join_room">Entrar em sala pública</string>
     <!-- hint (text shown when field is empty) for room name field -->
-    <string name="new_room_hint">Nome da sala</string>
     <!-- text of checkbox -->
-    <string name="room_public">Tornar nova sala pública</string>
     <!-- title for popup of public rooms found on server -->
-    <string name="room_public_prompt">Selecionar sala pública</string>
     <!-- If you check the join_room checkbox CrossWords queries the
     relay.  This is the text of the progress indicator displayed what
     that's going on.  (It's often visible for only a very short
     time.)-->
-    <string name="public_names_progress_fmt">Buscando salas públicas para
-    jogos de %1$d- jogadores em %2$s.</string>
     <!-- If the query returns no rooms, this message is displayed,
     with the number of players in the game and its language
     substituted. -->
-    <string name="no_name_found_fmt">Não foram encontradas salas públicas
-    para jogos de %1$d jogadores em %2$s. Tente recarregar ou criar sua
-    própria sala.</string>
     <!-- text of separator marking out other-setting area of the dialog -->
     <string name="settings_label">Outras configurações</string>
     <!-- text of checkbox.  If this checkbox is checked, buttons will
@@ -437,7 +427,6 @@
     <!-- Text of "toast" shown when a game is notified by the relay
          that all expected players have registered.  At this point
          play can begin. -->
-    <string name="msg_relay_all_here_fmt">Todos os jogadores aqui estão na sala “%1$s“.</string>
     <!-- Title of dialog used to alert players to relay-related
          problems with the current game. -->
     <string name="relay_alert">Problema na conexão</string>
@@ -1266,17 +1255,14 @@
     <!-- This is shown in the Board screen when you successfully
          connect a game to the relay and are the first device in the
          game to do so. -->
-    <string name="not_again_conndfirst">Conectou e iniciou um jogo numa sala nova. Depois que os aparelhos restantes tiverem entrado na sala e o CrossWords tiver distribuído as pedras, o jogo pode começar.</string>
     <!-- This is shown in the Board screen when you successfully
          connecting a game to the relay and are not the first device
          in the game but not the last either.  So it will only occur
          for games with more than two devices, which are rare. -->
-    <string name="not_again_conndmid">Conectou e entrou num jogo no servidor. Será notificado quando o(s) aparelho(s) restantes(s) tiver(em) entrado na sua sala e o jogo puder começar.</string>
     <!-- This is shown in the Board screen when you successfully
          connecting a game to the relay and are the last device in the
          game to do so, i.e. the game is now complete and you should
          expect play to begin. -->
-    <string name="not_again_conndall">Conectou e entrou num jogo no servidor, a sala agora está cheia. O aparelho que criou a sala fará a distribuição inicial de pedras e o jogo pode começar.</string>
     <!-- This is not currently shown -->
     <!-- <string name="not_again_dicts">CrossWords wordlists, which are -->
     <!--   just compressed lists of words plus tile information, determine -->
@@ -1378,16 +1364,12 @@
     <string name="not_again_browse">Este botão permite-lhe navegar na lista de palavras visualizada mais recentemente.</string>
     <string name="not_again_browseall">Este botão permite-lhe escolher a pesquisar em qual lista de palavras no idioma do jogo atual.</string>
     <!--  -->
-    <string name="alert_empty_dict_fmt">A lista de palavras %1$s só contém
-    informações de pedras.  Não há palavras para mostrar.</string>
     <!--  -->
     <string name="min_len">Tamanho mínimo</string>
     <!--  -->
     <string name="max_len">Tamanho máximo</string>
     <!--  -->
-    <string name="prompt_min_len">Palavras de no mínimo</string>
     <!--  -->
-    <string name="prompt_max_len">Palavras de no máximo</string>
     <!--  -->
     <string name="board_menu_file_email">Enviar um email ao autor…</string>
     <!--  -->
@@ -1777,7 +1759,6 @@
     <string name="list_item_markbad">Marcar corrompido</string>
     <string name="list_item_deselect">Des-selecionar</string>
     <string name="list_item_select">Selecionar</string>
-    <string name="processing_games">Processando jogos</string>
     <string name="confirm_clear_chat">Tem certeza que quer deletar todo o histórico do bate-papo deste jogo\?
 \n
 \n(Esta ação não pode ser desfeita.)</string>
@@ -1798,13 +1779,7 @@
     <string name="button_enable">Ativar</string>
     <string name="confirm_drop_relay_sms">Nem todas as operadoras suportam jogar via dados SMS.</string>
     <string name="confirm_drop_relay_bt">Bluetooth funciona apenas para aparelhos próximos.</string>
-    <string name="wifi_warning">" Por exemplo, talvez precise estar numa rede WiFi diferente."</string>
     <string name="confirm_drop_relay">Tem certeza que quer remover a habilidade deste jogo de comunicar via relay\?</string>
-    <string name="drop_relay_warning_fmt">(Este jogo pode também conectar via %1$s, então se gostaria de jogar sem usar uma conexão relay pode.)</string>
-    <string name="no_relay_conn">Este jogo foi configurado para usar relay (internet) para comunicação mas foi incapaz de se conectar.
-\n
-\nPor favor tente abrir o jogo de novo mais tarde depois das condições terem mudado.</string>
-    <string name="seeking_relay">Conectando ao relay…</string>
     <string name="db_store_done">Escrita no cartão SD completa.</string>
     <string name="checking_for_fmt">Checando listas de palavras em %1$s…</string>
     <string name="checking_title">Checando</string>
@@ -1861,21 +1836,16 @@
     <string name="disable_nag_summary">Não me notifique não importa há quanto tempo for minha vez</string>
     <string name="disable_nag_title">Desativar lembretes de jogo em rede</string>
     <string name="disable_nags_title">Ativar lembretes</string>
-    <string name="rematch_msg">Este jogo está a hospedar uma revanche e enviou um convite. Verá esta mensagem até o convite ser aceito.</string>
     <string name="rematch_sent_toast">Convites da revanche enviados</string>
     <string name="button_discard_changes">Descartar mudanças</string>
     <string name="button_edit">Editar</string>
     <string name="config_no_connvia">Este jogo não tem nenhuma maneira de se conectar e não pode ser salvo. Gostaria de descartar as suas mudanças ou editar para lhe dar uma forma de se conectar\?</string>
     <string name="warn_no_comms">Todo jogo em rede precisa ter pelo menos uma maneira de se comunicar. Se não tiver opções padrão de conexão todo jogo em rede precisará ser configurado manualmente.</string>
     <string name="nfc_just_tap">Para convidar via NFC apenas encoste a parte traseira deste aparelho com a parte traseira do que quer conectar—a qualquer momento enquanto o jogo estiver aberto.</string>
-    <string name="invite_stays">(Verá esta mensagem até que todos os jogadores remotos tenham conectado. Pode fechar o jogo se acha que irá demorar um pouco. Jogadores remotos ainda poderão conectar e será notificado quando isso acontecer.)</string>
-    <string name="button_reinvite">Re-convidar</string>
-    <string name="button_close">Fechar</string>
     <string name="waiting_host_expl_multi">Neste caso, é porque o jogo está a esperar mais que apenas esse aparelho para conectar, pode também significar que ele não convidou todo mundo ainda.</string>
     <string name="waiting_host_expl">Este jogo está a esperar o aparelho host para começar. Geralmente significa que o host não está a comunicar (está temporariamente offline\?)</string>
     <string name="waiting_host_title">Esperando host</string>
     <string name="waiting_rematch_title">Revanche em progresso</string>
-    <string name="waiting_invite_title">Esperando resposta</string>
     <plurals name="waiting_title_fmt">
         <item quantity="one">Esperando o jogador</item>
         <item quantity="other">Esperando os %1$d jogadores</item>
@@ -1885,12 +1855,8 @@
 \n(Se depois quiser exibir novamente os botões vá à secção Aparência nas configurações do App).</string>
     <string name="set_pref">Esconder botões</string>
     <string name="connection_via_label">Mudar Comunicar via</string>
-    <string name="enable_pubroom_summary">Salas que outros podem ver e entrar</string>
-    <string name="enable_pubroom_title">Ativar salas públicas</string>
     <string name="invite_multi_summary">Convidar mais de um jogador por aparelho remoto</string>
     <string name="invite_multi_title">Convidar vários</string>
-    <string name="network_advanced_summary">Para jogadores expert</string>
-    <string name="network_advanced_title">Avançado</string>
     <string name="err_dup_invite_fmt">Convite duplo rejeitado: aparelho “%1$s” já aceitou um convite para este jogo.</string>
     <plurals name="nplayers_fmt">
         <item quantity="one">Um jogador</item>
@@ -1898,7 +1864,6 @@
     </plurals>
     <string name="nplayers_prompt">Número neste aparelho</string>
     <string name="use_defaults">Usar padrão</string>
-    <string name="new_game_message_nodflt">Este jogo precisa ser configurado antes que possa ser aberto.</string>
     <string name="rematch_name_fmt">%1$s</string>
     <string name="new_game_networked">Novo jogo em rede</string>
     <string name="new_game">Novo jogo de um aparelho</string>
@@ -2266,15 +2231,12 @@
     <string name="invite_choice_user_sms">SMS (mensagem de texto)</string>
     <string name="newgame_drop_relay">Queda do servidor</string>
     <string name="title_invite_history">Convites Enviados</string>
-    <string name="newgame_invite_more">Histórico</string>
-    <string name="invite_player_fmt">Convidar %1$s</string>
     <string name="newgame_reinvite">Convide novamente</string>
     <string name="disable_bt_summary">Disablitar toda a comunicação via Bluetooth</string>
     <string name="disable_bt">Desativar</string>
     <string name="disable_relay_summary">Desativar toda a comunicação da internet</string>
     <string name="disable_relay">Desativar jogo pelo servidor</string>
     <string name="cellline">Bordas da célula</string>
-    <string name="board_line_pct">espessura da linha da célula (percentagem, limite de 1 a 25)</string>
     <string name="hide_newgames_summary">Esconder os botões do jogo no ecrã principal deixa os jogos mais visíveis</string>
     <string name="hide_newgames_title">Esconder botões do novo jogo</string>
     <string name="game_summary_field_created">Quando criado</string>

@@ -44,7 +44,6 @@
 \n
 \n(La opción de reiniciar borrará todos los movimientos y cualquier información de conexión).</item>
     </plurals>
-    <string name="title_dicts_list">Listas de palabras de CrossWords</string>
     <string name="download_more">Descargar más…</string>
     <string name="list_item_netstats">Conexiones…</string>
     <string name="no_copy_network">Las partidas que ya se han conectado al repetidor no se pueden copiar. Utiliza \"Crear nuevo desde\" para jugar con una copia con los mismos ajustes.</string>
@@ -74,12 +73,6 @@
     <string name="lang_label">Idioma de la partida</string>
     <string name="langdict_label">Idioma/lista de palabras de la partida</string>
     <string name="connect_label_fmt">Conexión (vía %1$s)</string>
-    <string name="join_room">Unirse a una sala pública</string>
-    <string name="new_room_hint">Nombre de la sala</string>
-    <string name="room_public">Convertir en sala pública</string>
-    <string name="room_public_prompt">Seleccionar sala pública</string>
-    <string name="public_names_progress_fmt">Buscando salas públicas para %1$d-jugadores en %2$s.</string>
-    <string name="no_name_found_fmt">No se han encontrado salas públicas para %1$d-jugadores en %2$s. Inténtalo de nuevo o crea una propia .</string>
     <string name="settings_label">Otros ajustes</string>
     <string name="hints_allowed">Mostrar pistas</string>
     <string name="nethints_allowed">Mostrar pistas (en red)</string>
@@ -136,7 +129,6 @@
         <item quantity="other">Dispositivo %1$d conectado al repetidor en la sala \"%2$s\". Esperando a %3$d jugadores.</item>
     </plurals>
     <string name="forced_consistent">Primer jugador modificado.</string>
-    <string name="msg_relay_all_here_fmt">Todos los jugadores en la sala \"%1$s\".</string>
     <string name="relay_alert">Problema de conexión</string>
     <string name="msg_too_many">Estás proporcionando más jugadores de los que el anfitrión espera.</string>
     <string name="msg_no_room">Ningún anfitrión ha registrado una sala con ese nombre.</string>

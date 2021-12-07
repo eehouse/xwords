@@ -33,7 +33,6 @@
     <string name="list_item_reset">Vynulovať</string>
     <string name="list_item_new_from">Nová hra podľa vzoru</string>
     <string name="play">Hrať hru</string>
-    <string name="title_dicts_list">Slovníky CrossWords</string>
     <string name="title_game_config_fmt">Konfigurovať %1$s</string>
     <!-- text of checkbox at top of dialog allowing to unlock in-play
     game to make changes -->
@@ -152,24 +151,13 @@
          connecting a game to the relay and are the last device in the
          game to do so, i.e. the game is now complete and you should
          expect play to begin. -->
-    <string name="not_again_conndall">XLATE ME: You have connected and joined a
-      game on the relay; the room is now full. The device that
-      created the room will now assign your initial tiles and play can
-      begin.</string>
     <!-- This is shown in the Board screen when you successfully
          connecting a game to the relay and are not the first device
          in the game but not the last either.  So it will only occur
          for games with more than two devices, which are rare. -->
-    <string name="not_again_conndmid">XLATE ME: You have connected and joined a
-      game on the relay. You will be notified when the remaining
-      device[s] have joined your room and play can begin.</string>
     <!-- This is shown in the Board screen when you successfully
          connect a game to the relay and are the first device in the
          game to do so. -->
-    <string name="not_again_conndfirst">XLATE ME: You have connected and started
-      a game in a new room.  Once the remaining devices have joined
-      your room and CrossWords has assigned them tiles the game can
-      begin.</string>
     <!-- Shown in the Game configure screen when the game_locked
          checkbox is checked and you uncheck it.  -->
     <string name="not_again_unlock">XLATE ME: This game is in play. Some
@@ -370,8 +358,6 @@
     <!-- Text of "toast" shown when a game is notified by the relay
          that all expected players have registered.  At this point
          play can begin. -->
-    <string name="msg_relay_all_here_fmt">XLATE ME: All players are here in room
-      \"%1$s\".</string>
     <!-- Text of "toast" (mini window briefly displayed) shown when a
          game first connects to the relay.  The three substitutions
          are the device's order within the game (e.g. 2), the name of
@@ -424,24 +410,15 @@
     <!-- If the query returns no rooms, this message is displayed,
     with the number of players in the game and its language
     substituted. -->
-    <string name="no_name_found_fmt">XLATE ME: No public rooms found for
-      %1$d-player games in %2$s. Try refreshing or creating your
-      own.</string>
     <!-- If you check the join_room checkbox CrossWords queries the
     relay.  This is the text of the progress indicator displayed what
     that's going on.  (It's often visible for only a very short
     time.)-->
-    <string name="public_names_progress_fmt">XLATE ME: Fetching public rooms for
-      %1$d-player games in %2$s.</string>
     <!-- title for popup of public rooms found on server -->
-    <string name="room_public_prompt">XLATE ME: Select public room</string>
     <!-- text of checkbox -->
-    <string name="room_public">XLATE ME: Make new room public</string>
     <!-- hint (text shown when field is empty) for room name field -->
-    <string name="new_room_hint">XLATE ME: Room name</string>
     <!-- text of checkbox asking if user wants to search for open
     public rooms -->
-    <string name="join_room">XLATE ME: Join public room</string>
     <!-- text of separator marking out the connection area of the dialog -->
     <string name="langdict_label">XLATE ME: Game language/wordlist</string>
     <!-- text of separator marking out the language area of the
@@ -1137,16 +1114,12 @@
     <!--  -->
     <string name="board_menu_file_email">XLATE ME: Email author</string>
     <!--  -->
-    <string name="prompt_max_len">XLATE ME: Words no longer than</string>
     <!--  -->
-    <string name="prompt_min_len">XLATE ME: Words no shorter than</string>
     <!--  -->
     <string name="max_len">XLATE ME: Max length</string>
     <!--  -->
     <string name="min_len">XLATE ME: Min length</string>
     <!--  -->
-    <string name="alert_empty_dict_fmt">XLATE ME: The wordlist %1$s contains only
-      tile information.  There are no words to browse.</string>
     <!--  -->
     <string name="not_again_browseall">XLATE ME: This button opens the wordlist
       browser on the wordlist of your choice.</string>

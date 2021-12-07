@@ -30,7 +30,6 @@
     <string name="game_rename_title">Gi nytt navn</string>
     <string name="rename_label">Endre navnet på dette spillet til:</string>
     <string name="rename_label_caveat">Endre navnet på dette spillet (kun på denne enheten) til:</string>
-    <string name="title_dicts_list">CrossWords-ordlister</string>
     <string name="download_more">Last ned flere…</string>
     <string name="loc_builtin">Innebygd</string>
     <string name="loc_downloads">Nedlastinger</string>
@@ -57,12 +56,6 @@
     <string name="lang_label">Spillspråk</string>
     <string name="langdict_label">Spillspråk/ordliste</string>
     <string name="connect_label_fmt">Tilkobling (via %1$s)</string>
-    <string name="join_room">Ta del i offentlig rom</string>
-    <string name="new_room_hint">Romnavn</string>
-    <string name="room_public">Gjør nytt navn offentlig</string>
-    <string name="room_public_prompt">Sett offentlig rom</string>
-    <string name="public_names_progress_fmt">Henter offentlige rom for %1$d-spillerrom i %2$s.</string>
-    <string name="no_name_found_fmt">Ingen offentlige rom funnet for %1$d-spillerrom i %2$s. Prøv å gjenoppfriske eller å opprette ditt eget.</string>
     <string name="settings_label">Andre innstillinger</string>
     <string name="hints_allowed">Tillat hint</string>
     <string name="nethints_allowed">Tillat hint (nettverksbasert)</string>
@@ -170,7 +163,6 @@
     <string name="notify_vibrate">Vibrer</string>
     <string name="notify_other_summary">Når motstanderens trekk mottas</string>
     <string name="newgame_invite">Inviter nå</string>
-    <string name="newgame_invite_more">Mer info</string>
     <string name="invite_choice_email">E-post</string>
     <string name="invite_choice_bt">Blåtann</string>
     <string name="invite_choice_title">Invitasjon av spillere: Hvordan?</string>
@@ -223,11 +215,8 @@
     <string name="dict_browse_title_fmt">%1$s (%2$d ord)</string>
     <string name="not_again_browse">Denne knappen åpner ordlisteutforskeren i gjeldende spillers ordliste.</string>
     <string name="not_again_browseall">Denne knappen åpner ordlisteutforskeren i ordlisten du ønsker.</string>
-    <string name="alert_empty_dict_fmt">Ordlisten %1$s inneholder kun flisinformasjon. Det er ingen ord å utforske.</string>
     <string name="min_len">Min. lengde</string>
     <string name="max_len">Maks. lengde</string>
-    <string name="prompt_min_len">Ord som ikke er kortere enn</string>
-    <string name="prompt_max_len">Ord som ikke er lengre enn</string>
     <string name="email_author_chooser">Send kommentar via</string>
     <string name="summary_wait_guest">Ikke tilkoblet</string>
     <string name="summary_gameover">Spill over</string>
@@ -379,19 +368,13 @@
     <string name="new_game">Ny én-enhets -spill</string>
     <string name="new_game_networked">Nytt nettverksbasert spill</string>
     <string name="rematch_name_fmt">%1$s</string>
-    <string name="new_game_message_nodflt">Dette spillet må settes opp før det kan åpnes.</string>
     <string name="use_defaults">Bruk forvalg</string>
     <plurals name="nplayers_fmt">
         <item quantity="one">Én spiller</item>
         <item quantity="other">%1$d spillere</item>
     </plurals>
-    <string name="network_advanced_title">Avansert</string>
-    <string name="network_advanced_summary">For erfarne spillere</string>
     <string name="invite_multi_title">Inviter flere</string>
-    <string name="enable_pubroom_title">Skru på offentlige rom</string>
-    <string name="enable_pubroom_summary">Rom andre kan se og ta del i</string>
     <string name="set_pref">Skjul knapper</string>
-    <string name="waiting_invite_title">Venter på svar</string>
     <string name="waiting_rematch_title">Omkamp underveis</string>
     <string name="button_edit">Rediger</string>
     <string name="button_discard_changes">Forkast endringer</string>
@@ -470,7 +453,6 @@
         <item quantity="one">Enheten %1$d koblet til relé i rommet \"%2$s\". Venter på én spiller.</item>
         <item quantity="other">Enheten %1$d koblet til relé i rommet \"%2$s\". Venter på %3$d spillere.</item>
     </plurals>
-    <string name="msg_relay_all_here_fmt">Alle spillere er her i rommet \"%1$s\".</string>
     <string name="msg_too_many">Du kommer med flere spillere enn verten forventer.</string>
     <string name="msg_dup_room">En annen vert har allerede registrert et rom som bruker det navnet. Gi ditt et nytt navn og prøv igjen senere.</string>
     <string name="msg_lost_other">Relé-et har mistet kontakten med en annen enhet i dette spillet.</string>
@@ -623,7 +605,6 @@
     <string name="nplayers_prompt">Nummeret på denne enheten</string>
     <string name="err_dup_invite_fmt">Duplikatinvitasjon avslått: Enheten \"%1$s\" har allerede godtatt en invitasjon til dette spillet.</string>
     <string name="invite_multi_summary">Inviter mer enn én spiller per enhet annensteds fra</string>
-    <string name="button_reinvite">Inviter igjen</string>
     <string name="rematch_sent_toast">Omkampsinvitasjoner sendt</string>
     <string name="relay_host">Relé-vert</string>
     <string name="relay_via_http_first">Bruk vev-API-er først</string>
@@ -643,11 +624,9 @@
     <string name="got_langdict_summary">Ikke prøv igjen</string>
     <string name="pref_group_relay_title">Relé-greier</string>
     <string name="db_store_done">SD-kort-skriving ferdig.</string>
-    <string name="seeking_relay">Kobler til relé…</string>
     <string name="confirm_drop_relay_bt">Blåtann fungerer kun for enheter i nærheten.</string>
     <string name="confirm_drop_relay_sms">Ikke alle tilbydere støtter spill via SMS.</string>
     <string name="invite_copied">Invitasjon klar til innliming</string>
-    <string name="processing_games">Behandler spill</string>
     <string name="no_invites">Dette spillet har ikke sendt noen invitasjoner</string>
     <string name="after_restart">Dette vil tre i effekt etter at du har startet CrossWords på ny.</string>
     <string name="button_skip">Hopp over</string>
@@ -677,7 +656,6 @@
     <string name="not_again_hintnext">Denne knappen viser alle mulige trekk i synkende rekkefølge (ved bruk av flis til høyre for stativdeleren.)</string>
     <string name="not_again_juggle">Denne knappen stokker om flis tilfeldig på stativet.</string>
     <string name="not_again_flip">Denne knappen dreier brettet om en diagonal akse.</string>
-    <string name="not_again_conndall">Du har koblet til og tatt del i et spill på relé-et; rommet er nå fullt. Eneten som opprettet rommet vil nå tildele deg dine første flis, og spillet kan begynne.</string>
     <string name="bt_pair_settings">Parr flere</string>
     <string name="bt_bad_proto_fmt">Versjonen av CrossWords på \"%1$s\" er ukompatibel med den for spill ved bruk av Blåtann. Én av dere må oppgradere før du kan fortsette.</string>
     <string name="sms_bad_proto_fmt">Versjonen av CrossWords på telefonen med nummer \"%1$s\" er ikke kompatibel med den for spill ved bruk av SMS. Én av dere må oppgradere før du kan fortsette.</string>
@@ -721,8 +699,6 @@
     <string name="not_again_values">Denne knappen endrer hvorvidt brettet viser bokstaver på plasserte flis, eller deres poengverdier. Bruk det for å minne deg på hva en flis er verdt.</string>
     <string name="not_again_done">Å trykke på \"p.\"-telleverket som vises på høyresiden av stativet er den enkleste måten å sende inn et trekk.</string>
     <string name="not_again_unlock">Dette spillet er underveis. Noen innstillinger, f.eks. antall spillere, kan ikke endres uten å starte det på ny. Når du forlater denne siden vil du få muligheten til å forkaste endringer for å unngå omstart.</string>
-    <string name="not_again_conndfirst">Du har koblet til og startet et spill i et nytt rom. Når de gjenstående enhetene har tatt del i rommet ditt og CrossWords har tildelt dem flis, kan spillet begynne.</string>
-    <string name="not_again_conndmid">Du har koblet til og tatt del i et spill på relé-et. Du vil få en merknad når gjenstående enhet[er] har tatt del i ditt rom og spillet kan begynne.</string>
     <string name="not_again_arrow">Flytting av flis til brettet:
 \nDu kan dra flis mellom stativet og brettet, eller du kan trykke på en tom rute for å plassere bordpilen. Stativflis du trykker på vil erstatte pilen (noe som flytter den en rute i den retningen den peker). Trykk på pilen én gang for å endre dens retning; én gang til for å skjule den. En avkryssningsboks i utseendedelen av innstillingene skjuler den permanent.</string>
     <string name="not_again_turnchanged">Spilleren hvis tur det er vises i storskala på poengtavlen.
@@ -804,11 +780,9 @@
     <string name="not_again_hidenewgamebuttons">De to knappene på bunnen av denne skjermen og de to første elementene i dens handlingsfelt (eller meny), gjør samme ting. Hvis du ønsker det kan du skjule knappene for å gjøre flere spill synlige.
 \n
 \n(Hvis du senere ønsker å vise knappene igjen, gå til utseendedelen av programinnstillingene.)</string>
-    <string name="invite_stays">(Dette dialogvinduet vil forbli oppe til alle spillere annensteds fra har koblet til. Du kan lukke spillet hvis du forventer at dette tar sin tid. Spillere annensteds fra vil fremdeles kunne koble til, og du vil få beskjed om når så har skjedd.)</string>
     <string name="nfc_just_tap">For å invitere via NFC, trykk baksiden av denne enheten opp mot den du ønsker å invitere, når spillet er åpent.</string>
     <string name="warn_no_comms">Nettverksspill må ha minst én måte å kommunisere på. Hvis du ikke har noen forvalgt tilkoblingsvalg, vil hvert nye nettverksspill måtte settes opp manuelt.</string>
     <string name="config_no_connvia">Dette spillet har ingen måte å koble til på, og kan ikke lagres. Ønsker du å forkaste dine endringer, eller redigere det for å gi det en måte å koble til på?</string>
-    <string name="rematch_msg">Dette spillet er vertskap for en omkamp, og har sendt en invitasjon. Du vil se denne meldingen til det har blitt godtatt.</string>
     <string name="disable_nag_summary">Ikke send meg en merknad, uansett hvor lenge det har vært min tur</string>
     <string name="disable_nag_solo_title">Skru av enspillersmerknader</string>
     <string name="confirm_get_locdict_fmt">Din enhet er satt opp for %1$s. Ønsker du å laste ned en ordliste slik at du kan spille CrossWords i %1$s?</string>
@@ -820,12 +794,7 @@
     <string name="pref_group_l10n_summary">Innstillinger i tilknytning til lokalisering inne i programmet</string>
     <string name="pref_item_update_title">Oppdater mellom utgivelser</string>
     <string name="pref_item_update_summary">Hent mellombygg</string>
-    <string name="no_relay_conn">Dette spillet er satt opp til å bruke relé-et (Internett) for kommunikasjon, men har ikke kunnet koble til.
-\n
-\nPrøv å åpne spillet igjen etter at disse vilkårene har endret seg.</string>
-    <string name="drop_relay_warning_fmt">(Dette spillet kan også koble til via %1$s, slik at du kan sette opp spillet uten en relétilkobling.)</string>
     <string name="confirm_drop_relay">Er du sikker på at du vil utelate dette spillets mulighet til å kommunisere via relé-et?</string>
-    <string name="wifi_warning">" For eksempel, kan det hende du vil være på et forskjellig Wi-Fi-nettverk."</string>
     <string name="not_again_comms_sms">Spill via SMS bruker samme teknologi som \"teksting\". Selv om meldingene er usynlig for deg, vil din tilbyder anse dem som SMS, så du bør unngå denne funksjonen med mindre du har ubegrenset SMS (eller budsjettet). Merk at Android kun støtter denne funksjonen på enheter på en GSM-tilbyder.</string>
     <string name="not_again_comms_bt">Bruk Blåtann for å spille mot enheter i nærheten som er parret med din.</string>
     <string name="not_again_comms_p2p">Bruk Wi-Fi Direct for å spille mot enheter i nærheten som støtter det, og som har CrossWords installert.</string>
@@ -873,7 +842,6 @@
 \n
 \n(Du kan kun legge til enheter som er innen Blåtannsrekkevidde på ny.)"</string>
     <string name="bt_scan_age_fmt">Siste skanningsrespons: %1$s</string>
-    <string name="button_close">Lukk</string>
     <string name="gameevent_channel_expl">Hendelser inne i spillet</string>
     <string name="not_again_emptybtscan">Hvis en skanning ikke finner enheten du forventer:
 \n • Først, skann på ny
@@ -991,7 +959,6 @@
     <string name="phonies_block">Blokker ønskeord</string>
     <string name="disable_bt">Skru av spill via Blåtann</string>
     <string name="disable_bt_summary">Skru av all Blåtannskommunikasjon</string>
-    <string name="invite_player_fmt">Inviter</string>
     <string name="cellline">Brettlinjer</string>
     <string name="invite_msg_extra_rematch">Med omkamper, vil alle nødvendige invitasjoner sendes automatisk. Du kan alltids sende nye hvis motstanderen ikke svarer.</string>
     <string name="use_duptimer">Skru på tidsur for hvert trekk</string>

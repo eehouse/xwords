@@ -39,7 +39,6 @@
     <string name="loc_downloads">İndirilmiş</string>
     <string name="loc_builtin">Yerleşik</string>
     <string name="download_more">Daha fazla indir…</string>
-    <string name="title_dicts_list">CrossWords Kelime Listeleri</string>
     <plurals name="confirm_seldeletes_fmt">
         <item quantity="one">Seçili oyunu silmek istiyor musun\? Bu eylem geri alınamaz.</item>
         <item quantity="other">Seçilen %1$d adet oyunu silmek istiyor musun\? Bu eylem geri alınamaz.</item>

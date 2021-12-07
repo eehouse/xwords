@@ -39,17 +39,12 @@
     <string name="lang_label">Język gry</string>
     <string name="langdict_label">Język gry/lista słów</string>
     <string name="connect_label_fmt">Połączenie (przez %1$s)</string>
-    <string name="join_room">Dołącz do pokoju publicznego</string>
-    <string name="new_room_hint">Nazwa pokoju</string>
-    <string name="room_public">Upublicznij nowy pokój</string>
-    <string name="room_public_prompt">Wybierz pokój publiczny</string>
     <string name="settings_label">Inne ustawienia</string>
     <string name="hints_allowed">Zezwalaj na wskazówki</string>
     <string name="nethints_allowed">Zezwalaj na wskazówki (sieciowe)</string>
     <string name="use_timer">Włącz licznik czasu gry</string>
     <string name="robot_spinner_prompt">Jak inteligentny powinien być robot\?</string>
     <string name="no_moves_made">(Brak ruchów)</string>
-    <string name="title_dicts_list">Lista Słów Krzyżówki</string>
     <string name="loc_builtin">Wbudowany</string>
     <string name="dicts_item_move">Zmień miejsce przechowywania</string>
     <string name="dicts_item_select">Ustaw jako domyślne</string>
@@ -65,7 +60,6 @@
     <string name="password_label">Hasło:</string>
     <string name="invit_expl_sms_fmt">Zaproszenie wysłane za pośrednictwem Data SMS na numer telefonu %1$s na %2$s</string>
     <string name="invit_expl_bt_fmt">Zaproś wysłając przez Bluetooth do urządzenia \"%1$s\" na %2$s</string>
-    <string name="msg_relay_all_here_fmt">Wszyscy gracze są w pokoju \"%1$s\".</string>
     <string name="relay_alert">Problem z połączeniem</string>
     <string name="msg_no_room">Żaden host nie zarejestrował pokoju o tej nazwie.</string>
     <string name="button_revert_all">Przywróć wszystko</string>
@@ -110,7 +104,6 @@
     <string name="notify_vibrate">Wibracje</string>
     <string name="newgame_configure_first">Najpierw skonfiguruj</string>
     <string name="newgame_invite">Zaproś teraz</string>
-    <string name="newgame_invite_more">Więcej informacji</string>
     <string name="invite_choice_email">E-mail</string>
     <string name="invite_choice_title">Zapraszanie graczy: Jak\?</string>
     <string name="invite_chooser_fmt">Wyślij zaproszenie przez %1$s</string>
@@ -235,8 +228,6 @@
     <string name="set_default_message_fmt">Dla jakich graczy lista słów %1$s powinna być domyślna dla nowych gier\? (Język %2$s będzie domyślny dla obu.)</string>
     <string name="button_default_robot">Robot</string>
     <string name="button_default_both">Oba</string>
-    <string name="public_names_progress_fmt">Pobieranie publicznych pokoi dla gier %1$d -graczy w grach %2$s.</string>
-    <string name="no_name_found_fmt">Nie znaleziono pokoi publicznych dla gier %1$d-player w %2$s. Spróbuj odświeżyć lub stworzyć własne.</string>
     <string name="robot_smarter">Inteligentniejszy robot</string>
     <string name="robot_smartest">Najmądrzejszy robot</string>
     <string name="phonies_spinner_prompt">Jak traktować „niepoprawne słowa” (słowa, których nie ma na liście słów)</string>
@@ -413,9 +404,6 @@
     <string name="not_again_values">Ten przycisk zmienia, czy plansza pokazuje litery na umieszczonych kafelkach lub ich wartości punktowe. Użyj go, aby przypomnieć sobie, jaka jest wartość płytki.</string>
     <string name="not_again_done">Naciśnięcie przycisku \"pts\", który pojawia się na prawym końcu szafy jest najprostszym sposobem na wykonanie ruchu.</string>
     <string name="not_again_unlock">Ta gra jest w trakcie rozgrywki. Niektóre ustawienia, np. liczba graczy, nie mogą być zmienione bez ponownego uruchomienia. Kiedy opuścisz tę stronę, będziesz miał możliwość odrzucenia zmian, aby uniknąć ponownego uruchomienia.</string>
-    <string name="not_again_conndfirst">Połączyłeś się i rozpocząłeś grę w nowym pokoju. Gdy pozostałe urządzenia dołączą do twojego pokoju i CrossWords przydzieli im kafelki, gra może się rozpocząć.</string>
-    <string name="not_again_conndmid">Połączyłeś się i dołączyłeś do gry na przekaźniku. Zostaniesz powiadomiony, gdy pozostałe urządzenia dołączą do Twojego pokoju i gra może się rozpocząć.</string>
-    <string name="not_again_conndall">Połączyłeś się i dołączyłeś do gry na przekaźnik; pokój jest teraz pełny. Urządzenie, które stworzyło pomieszczenie, przydzieli teraz Twoje początkowe kafelki i będziesz mógł rozpocząć grę.</string>
     <string name="not_again_arrow">Przenoszenie kafelków na planszę: 
 \nMożesz przeciągnąć kafelki między blatem a planszą, lub możesz stuknąć pusty kwadrat, aby umieścić strzałkę planszy. Kafelki z blatu, które stukniesz zastąpią strzałkę (przesuwając ją o jeden kwadrat w kierunku, w którym wskazuje.) Stuknij strzałkę raz, aby zmienić jej orientację; drugi raz, aby ją ukryć. Pole wyboru w sekcji Wygląd w Ustawieniach ukryje je na stałe.</string>
     <string name="not_again_turnchanged">Gracz, którego kolej jest umieszczany na tablicy wyników.
@@ -446,9 +434,6 @@
     <string name="dict_browse_title_fmt">"%1$s (%2$d słów)"</string>
     <string name="not_again_browse">Ten przycisk otwiera przeglądarkę listy słów na liście słów bieżącego gracza.</string>
     <string name="not_again_browseall">Ten przycisk otwiera przeglądarkę listy słów na wybranej przez Ciebie liście słów.</string>
-    <string name="alert_empty_dict_fmt">Lista słów %1$s zawiera tylko informacje o kafelkach. Nie ma słów do przeglądania.</string>
-    <string name="prompt_min_len">Słowa nie krótsze niż</string>
-    <string name="prompt_max_len">Słowa nie dłuższe niż</string>
     <string name="board_menu_file_email">E-mail do autora</string>
     <string name="email_author_subject">Komentarz o CrossWords</string>
     <string name="email_author_chooser">Wyślij komentarz przez</string>
@@ -685,7 +670,6 @@
     <string name="default_language">Język domyślny</string>
     <string name="title_addrs_pref">Komunikuj się przez</string>
     <string name="rematch_name_fmt">%1$s</string>
-    <string name="new_game_message_nodflt">Ta gra musi zostać skonfigurowana, zanim będzie można ją otworzyć.</string>
     <string name="use_defaults">Użyj ustawień domyślnych</string>
     <string name="nplayers_prompt">Numer na tym urządzeniu</string>
     <plurals name="nplayers_fmt">
@@ -694,24 +678,16 @@
         <item quantity="many">%1$d grających</item>
     </plurals>
     <string name="err_dup_invite_fmt">Odrzucono zduplikowane zaproszenie: urządzenie \"%1$s\" już zaakceptowało zaproszenie do tej gry.</string>
-    <string name="network_advanced_title">Zaawansowane</string>
-    <string name="network_advanced_summary">Dla doświadczonych graczy</string>
     <string name="invite_multi_title">Zaproś wielu</string>
     <string name="invite_multi_summary">Zaproś więcej niż jednego gracza na urządzenie zdalne</string>
-    <string name="enable_pubroom_title">Włącz pomieszczenia publiczne</string>
-    <string name="enable_pubroom_summary">Pokoje, które inni mogą zobaczyć i dołączyć</string>
     <string name="connection_via_label">Zmień komunikację przez</string>
     <string name="set_pref">Ukryj przyciski</string>
-    <string name="waiting_invite_title">Czekam na odpowiedź</string>
     <string name="waiting_rematch_title">Trwa rewanż</string>
-    <string name="button_reinvite">Ponowne zaproszenie</string>
-    <string name="invite_stays">(To okno dialogowe pozostanie aktywne, dopóki nie połączą się wszyscy zdalni gracze. Możesz zamknąć grę, jeśli spodziewasz się, że potrwa to trochę czasu. Zdalni gracze nadal będą mogli się połączyć, będziesz powiadamiany, kiedy to zrobią.)</string>
     <string name="nfc_just_tap">Aby zaprosić przez NFC, wystarczy dotknąć tyłu tego urządzenia, które chcesz zaprosić - za każdym razem, gdy gra jest otwarta.</string>
     <string name="config_no_connvia">Ta gra nie może się połączyć i nie można jej zapisać. Chcesz odrzucić zmiany, czy je edytować, aby umożliwić połączenie\?</string>
     <string name="button_edit">Edycja</string>
     <string name="button_discard_changes">Odrzucać zmiany</string>
     <string name="rematch_sent_toast">Wysłano zaproszenie do rewanżu</string>
-    <string name="rematch_msg">Ta gra jest gospodarzem rewanżu i wysłała zaproszenie. Bedziesz widział ten komunikat, dopóki zaproszenie nie zostanie zaakceptowane.</string>
     <string name="disable_nags_title">Włącz przypomnienie</string>
     <string name="disable_nag_title">Wyłącz przypomnienie o grach sieciowych</string>
     <string name="disable_nag_summary">Nie powiadamiaj mnie bez względu na to, jak długo była moja kolej</string>
@@ -754,13 +730,7 @@
     <string name="checking_title">Sprawdzanie</string>
     <string name="checking_for_fmt">Sprawdzanie listy słów w %1$s…</string>
     <string name="db_store_done">Zapis na karcie SD kompletny.</string>
-    <string name="seeking_relay">Łączenie z przekaźnikiem…</string>
-    <string name="no_relay_conn">Ta gra jest skonfigurowana do korzystania z przekaźnika (Internet) do komunikacji, ale nie mogła się połączyć.
-\n
-\nSpróbuj ponownie otworzyć grę później po zmianie warunków.</string>
-    <string name="drop_relay_warning_fmt">(Ta gra może również łączyć się przez %1$s, więc jeśli chcesz, możesz zagrać w grę bez połączenia przekaźnikowego.)</string>
     <string name="confirm_drop_relay">Czy na pewno chcesz usunąć zdolność tej gry do komunikacji za pośrednictwem przekaźnika\?</string>
-    <string name="wifi_warning">" Na przykład może być konieczne użycie innej sieci WiFi."</string>
     <string name="confirm_drop_relay_bt">Funkcja Bluetooth działa tylko w przypadku urządzeń znajdujących się w pobliżu.</string>
     <string name="confirm_drop_relay_sms">Nie wszyscy operatorzy obsługują grę za pośrednictwem wiadomości Data SMS.</string>
     <string name="button_enable">Włącz</string>
@@ -776,7 +746,6 @@
     <string name="confirm_clear_chat">Czy na pewno chcesz usunąć całą historię czatu dla tej gry\?
 \n
 \n(Tej akcji nie można cofnąć.)</string>
-    <string name="processing_games">Przetwarzanie gier</string>
     <string name="list_item_select">Wybierz</string>
     <string name="list_item_deselect">Odznacz</string>
     <string name="no_invites">Ta gra nie wysłała żadnych zaproszeń</string>
@@ -819,7 +788,6 @@
 \n
 \n(Ponownie można dodać tylko te urządzenia, które są w zasięgu Bluetooth.)"</string>
     <string name="bt_scan_age_fmt">Ostatnio otrzymano od: %1$s</string>
-    <string name="button_close">Zamknij</string>
     <string name="gameevent_channel_expl">Wydarzenia w grze</string>
     <string name="not_again_emptybtscan">Jeśli skanowanie nie znajdzie oczekiwanego urządzenia:
 \n• Ponownie przeskanuj

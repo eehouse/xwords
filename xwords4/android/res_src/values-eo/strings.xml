@@ -20,8 +20,6 @@
     <string name="password_label">Pasvorto:</string>
     <string name="play">Ekludi</string>
     <string name="robot_iq_label">Inteligento de roboto</string>
-    <string name="join_room">Aliĝi al publika ludejo</string>
-    <string name="new_room_hint">Nomo de ludejo</string>
     <string name="title_game_config_fmt">Agordoj pri %1$s</string>
     <string name="loc_external">Ekstera</string>
     <string name="loc_internal">Interna</string>
