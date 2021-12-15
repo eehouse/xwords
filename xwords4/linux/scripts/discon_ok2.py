@@ -260,11 +260,11 @@ class Device():
                         self.relaySeed = int(match.group(1))
                         self.relayID = match.group(2)
 
-                if self.args.ADD_RELAY and not self.inviteeDevID:
+                if self.args.WITH_RELAY and not self.inviteeDevID:
                     match = Device.sDevIDPat.match(line)
                     if match: self.inviteeDevID = int(match.group(1), 16)
 
-                if self.args.ADD_MQTT and not self.inviteeMQTTDevID:
+                if self.args.WITH_MQTT and not self.inviteeMQTTDevID:
                     match = Device.sMQTTDevIDPat.match(line)
                     if match:
                         self.inviteeMQTTDevID = int(match.group(1), 16)
@@ -305,7 +305,7 @@ class Device():
         # the same order so channels will be assigned consistently. So
         # keep them in an array as they're encountered, and use in
         # that order
-        if self.args.ADD_RELAY:
+        if self.args.WITH_RELAY:
             if not self.usePublic and self.order == 1 and self.inviteeDevID and not self.connected:
                 for peer in self.peers:
                     if peer.inviteeDevID and not peer == self:
@@ -317,7 +317,7 @@ class Device():
                     for inviteeDevID in self.inviteeDevIDs:
                         args += ['--invitee-relayid', str(inviteeDevID)]
 
-        if self.args.ADD_MQTT:
+        if self.args.WITH_MQTT:
             if self.order == 1 and not self.connected:
                 for peer in self.peers:
                     if peer.inviteeMQTTDevID and not peer == self:
@@ -373,7 +373,7 @@ class Device():
             shutil.move(fil, self.args.LOGDIR + '/done')
 
     def send_dead(self):
-        if self.args.ADD_RELAY:
+        if self.args.WITH_RELAY:
             JSON = json.dumps([{'relayID': self.relayID, 'seed': self.relaySeed}])
             url = 'http://%s/xw4/relay.py/kill' % (self.args.HOST)
             params = {'params' : JSON}
@@ -441,7 +441,7 @@ def build_cmds(args):
         assert(len(LOCALS) == NDEVS)
         DICT = args.DICTS[GAME % len(args.DICTS)]
         # make one in three games public
-        usePublic = args.ADD_RELAY and random.randint(0, 3) == 0
+        usePublic = args.WITH_RELAY and random.randint(0, 3) == 0
         useDupeMode = random.randint(0, 100) < args.DUP_PCT
         if args.PHONIES == -1: phonies = GAME % 3
         else: phonies = args.PHONIES
@@ -458,11 +458,11 @@ def build_cmds(args):
             if not useDupeMode: PARAMS += ['--trade-pct', args.TRADE_PCT]
 
             # We SHOULD support having both SMS and relay working...
-            if args.ADD_RELAY:
+            if args.WITH_RELAY:
                 PARAMS += [ '--relay-port', args.PORT, '--room', ROOM, '--host', args.HOST]
                 if random.randint(0, 100) < g_UDP_PCT_START:
                     PARAMS += ['--use-udp']
-            if args.ADD_SMS:
+            if args.WITH_SMS:
                 PARAMS += [ '--sms-number', makeSMSPhoneNo(GAME, DEV) ]
                 if args.SMS_FAIL_PCT > 0:
                     PARAMS += [ '--sms-fail-pct', args.SMS_FAIL_PCT ]
@@ -472,7 +472,7 @@ def build_cmds(args):
                         PARAMS += [ '--invitee-sms-number', makeSMSPhoneNo(GAME, dev) ]
 
             PARAMS += [ '--mqtt-port', args.MQTT_PORT, '--mqtt-host', args.MQTT_HOST ]
-            if args.ADD_MQTT:
+            if args.WITH_MQTT:
                 PARAMS += [ '--with-mqtt' ]
                 if DEV == 1:
                     PARAMS += [ '--force-invite' ]
@@ -787,14 +787,17 @@ def mkParser():
     parser.add_argument('--undo-pct', dest = 'UNDO_PCT', default = 0, type = int)
     parser.add_argument('--trade-pct', dest = 'TRADE_PCT', default = 10, type = int)
 
-    parser.add_argument('--add-sms', dest = 'ADD_SMS', default = False, action = 'store_true')
+    parser.add_argument('--with-sms', dest = 'WITH_SMS', action = 'store_true')
+    parser.add_argument('--without-sms', dest = 'WITH_SMS', default = False, action = 'store_false')
     parser.add_argument('--sms-fail-pct', dest = 'SMS_FAIL_PCT', default = 0, type = int)
 
-    parser.add_argument('--add-mqtt', dest = 'ADD_MQTT', default = False, action = 'store_true')
+    parser.add_argument('--with-mqtt', dest = 'WITH_MQTT', action = 'store_true')
+    parser.add_argument('--without-mqtt', dest = 'WITH_MQTT', default = True, action = 'store_false')
     parser.add_argument('--mqtt-port', dest = 'MQTT_PORT', default = 1883 )
     parser.add_argument('--mqtt-host', dest = 'MQTT_HOST', default = 'localhost' )
 
-    parser.add_argument('--remove-relay', dest = 'ADD_RELAY', default = True, action = 'store_false')
+    parser.add_argument('--with-relay', dest = 'WITH_RELAY', action = 'store_true')
+    parser.add_argument('--without-relay', dest = 'WITH_RELAY', default = False, action = 'store_false')
     parser.add_argument('--force-tray', dest = 'TRAYSIZE', default = 0, type = int,
                         help = 'Always this many tiles per tray')
 
@@ -1009,7 +1012,7 @@ def main():
 
     args = parseArgs()
     # Hack: old files confuse things. Remove is simple fix good for now
-    if args.ADD_SMS:
+    if args.WITH_SMS:
         try: rmtree('/tmp/xw_sms')
         except: None
     devs = build_cmds(args)
