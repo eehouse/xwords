@@ -400,7 +400,6 @@ comms_make( MPFORMAL XWEnv xwe, XW_UtilCtxt* util, XP_Bool isServer,
     comms->rcProc = rcp;
     comms->rcClosure = rcClosure;
 
-    comms->dutil = util_getDevUtilCtxt( util, xwe );
     comms->util = util;
     comms->dutil = util_getDevUtilCtxt( util, xwe );
 
