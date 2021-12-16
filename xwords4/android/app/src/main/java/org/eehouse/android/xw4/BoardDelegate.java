@@ -492,7 +492,7 @@ public class BoardDelegate extends DelegateBase
         m_rowid = args.getLong( GameUtils.INTENT_KEY_ROWID, -1 );
         Log.i( TAG, "opening rowid %d", m_rowid );
         m_overNotShown = true;
-        noteOpened( m_rowid );
+        noteOpened( m_activity, m_rowid );
     } // init
 
     private void getLock()
@@ -3043,11 +3043,16 @@ public class BoardDelegate extends DelegateBase
     // This might need to map rowid->openCount so opens can stack
     static Set<Long> sOpenRows = new HashSet<>();
 
-    private static void noteOpened( long rowid )
+    private static void noteOpened( Context context, long rowid )
     {
         Log.d( TAG, "noteOpened(%d)", rowid );
-        Assert.assertTrueNR( !sOpenRows.contains(rowid) );
-        sOpenRows.add( rowid );
+        if ( BuildConfig.NON_RELEASE && sOpenRows.contains(rowid) ) {
+            String msg = String.format( "noteOpened(%d): already open", rowid );
+            Utils.showToast( context, msg );
+            DbgUtils.printStack( TAG );
+        } else {
+            sOpenRows.add( rowid );
+        }
     }
 
     private static void noteClosed( long rowid )
