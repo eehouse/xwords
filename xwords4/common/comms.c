@@ -787,9 +787,6 @@ comms_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
         prevsQueueNext = &msg->next;
     }
 
-    /* FIX_NEXT_VERSION_CHANGE: Fix this next time CUR_STREAM_VERS is
-       changed!! Don't write the 0th enum's case as it means NOTHING, and only
-       write those for which the address type is set. I think. */
     if ( STREAM_VERS_DISABLEDS <= version ) {
         for ( CommsConnType typ = (CommsConnType)0; typ < VSIZE(comms->disableds); ++typ ) {
             if ( typ < COMMS_CONN_NFC || addr_hasType( &comms->addr, typ ) ) {
@@ -1002,7 +999,8 @@ comms_writeToStream( CommsCtxt* comms, XWEnv XP_UNUSED_DBG(xwe),
         stream_putBytes( stream, msg->msg, msg->len );
     }
 
-    /* FIX_NEXT_VERSION_CHANGE: Fix this next time CUR_STREAM_VERS is changed!! */
+    /* This writes 2 bytes instead of 1 if it were smarter. Not worth the work
+     * to fix. */
     for ( CommsConnType typ = (CommsConnType)0; typ < VSIZE(comms->disableds); ++typ ) {
         if ( typ < COMMS_CONN_NFC || addr_hasType( &comms->addr, typ ) ) {
             for ( int ii = 0; ii < VSIZE(comms->disableds[0]); ++ii ) {
