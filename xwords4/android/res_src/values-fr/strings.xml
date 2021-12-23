@@ -2617,7 +2617,7 @@ parties sur l\'écran principal permet de voir plus de parties</string>
     <string name="invite_multi_title">Inviter plusieurs</string>
     <!--XLATE-ME-->
     <!--<string name="invite_multi_summary">Invite more than one player per remote device</string>-->
-    <string name="invite_multi_summary">Inviter plus d\'un joueur par appareil distant</string>
+    <string name="invite_multi_summary">Permettre d\'inviter plusieurs joueurs par appareil distant</string>
     <!--XLATE-ME-->
     <!--<string name="enable_pubroom_title">Enable public rooms</string>-->
     <!--XLATE-ME-->
@@ -3245,4 +3245,8 @@ pour la langue</string>
     <string name="email_logs_chooser">Envoyer les logs par</string>
     <string name="logstore_dumping_fmt">Compression de %1$d entrées de logs</string>
     <string name="button_send_logs">Envoyer à l\'auteur</string>
+    <string name="lang_name_romanian">Roumain</string>
+    <string name="dict_lang_inst">(Installées : %1$d)</string>
+    <string name="dict_lang_inst_and_avail">(Installées : %1$d ; Disponibles : %2$d)</string>
+    <string name="dict_lang_avail">(Disponibles : %1$d)</string>
 </resources>
