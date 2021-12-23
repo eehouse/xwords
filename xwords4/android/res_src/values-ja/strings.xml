@@ -921,5 +921,4 @@ WiFi ダイレクト経由で接続可能なデバイスはありません。</s
     <string name="invite_subject">クロスワードをプレイしましょう</string>
     <string name="phonies_block">フォニーをブロックする</string>
     <string name="cellline">ボードの線</string>
-    <string name="board_line_pct">マスの線の太さ (パーセント、1-25)</string>
 </resources>
