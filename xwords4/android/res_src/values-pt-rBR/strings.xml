@@ -559,7 +559,7 @@
 \n(Se você depois quiser exibir novamente os botões vá à seção Aparência nas configurações do App).</string>
     <string name="set_pref">Esconder botões</string>
     <string name="connection_via_label">Mudar Comunicar via</string>
-    <string name="invite_multi_summary">Convidar mais de um jogador por dispositivo remoto</string>
+    <string name="invite_multi_summary">Permite o convite de vários jogadores por dispositivo remoto</string>
     <string name="invite_multi_title">Convidar vários</string>
     <string name="err_dup_invite_fmt">Convite duplo rejeitado: dispositivo “%1$s” já aceitou um convite para este jogo.</string>
     <plurals name="nplayers_fmt">
@@ -1133,4 +1133,8 @@
     <string name="logstore_dumping_fmt">Compactando %1$d entradas de registro</string>
     <string name="email_logs_msg">Registros logs anexados</string>
     <string name="email_logs_subject">Registos CrossWords</string>
+    <string name="dict_lang_inst">(Instalado: %1$d)</string>
+    <string name="lang_name_romanian">Romeno</string>
+    <string name="dict_lang_avail">(Disponível: %1$d)</string>
+    <string name="dict_lang_inst_and_avail">(Instalado: %1$d; Disponível: %2$d)</string>
 </resources>
