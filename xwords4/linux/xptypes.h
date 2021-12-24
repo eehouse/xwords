@@ -77,10 +77,10 @@ extern void linux_debugf(const char*, ...)
     __attribute__ ((format (printf, 1, 2)));
 # define XP_DEBUGF(...) linux_debugf(__VA_ARGS__)
 
-extern void linux_debugff(const char* func, const char* file, const char* fmt, ...)
-    __attribute__ ((format (printf, 3, 4)));
+extern void linux_debugff(const char* func, const char* file, int line, const char* fmt, ...)
+    __attribute__ ((format (printf, 4, 5)));
 # define XP_LOGFF( FMT, ... ) \
-    linux_debugff( __func__, __FILE__, FMT, ##__VA_ARGS__ )
+    linux_debugff( __func__, __FILE__, __LINE__, FMT, ##__VA_ARGS__ )
 #define XP_LOG(STR) \
     linux_debugff( __func__, __FILE__, "%s", STR )
 
