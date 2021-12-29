@@ -2562,6 +2562,36 @@ initParams( LaunchParams* params )
 }
 
 static void
+testStreams( LaunchParams* params )
+{
+    XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(params->dutil->mpool)
+                                                params->vtMgr );
+
+    XP_U32 nums[] = { 1, 4, 8, 200,
+                      makeRandomInt(),
+                      makeRandomInt(),
+                      makeRandomInt(),
+                      makeRandomInt(),
+                      makeRandomInt(),
+                      makeRandomInt(),
+    };
+
+    for ( int ii = 0; ii < VSIZE(nums); ++ii ) {
+        stream_putU32VL( stream, nums[ii] );
+        XP_LOGFF( "put num[%d]: %d", ii, nums[ii] );
+    }
+
+    for ( int ii = 0; ii < VSIZE(nums); ++ii ) {
+        XP_U32 num = stream_getU32VL( stream );
+        XP_LOGFF( "compariing num[%d]: %d with %d", ii, nums[ii], num );
+        XP_ASSERT( num == nums[ii] );
+    }
+
+    stream_destroy( stream, NULL );
+    XP_LOGFF( "OK!!" );
+}
+
+static void
 freeParams( LaunchParams* params )
 {
     gdb_close( params->pDb );
@@ -2672,6 +2702,7 @@ main( int argc, char** argv )
 #endif
 
     initParams( &mainParams );
+    testStreams( &mainParams );
 
     /* defaults */
     for ( int ii = 0; ii < VSIZE(mainParams.connInfo.inviteeCounts); ++ii ) {

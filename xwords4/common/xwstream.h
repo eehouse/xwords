@@ -65,6 +65,7 @@ typedef struct StreamCtxVTable {
                                XP_U16 count );
     XP_U16 (*m_stream_getU16)( DBG_PROC_FORMAL XWStreamCtxt* dctx );
     XP_U32 (*m_stream_getU32)( DBG_PROC_FORMAL XWStreamCtxt* dctx );
+    XP_U32 (*m_stream_getU32VL)( XWStreamCtxt* dctx );
     XP_U32 (*m_stream_getBits)( XWStreamCtxt* dctx, XP_U16 nBits );
 #if defined DEBUG
     void (*m_stream_copyBits)( const XWStreamCtxt* dctx, XWStreamPos endPos,
@@ -77,6 +78,7 @@ typedef struct StreamCtxVTable {
     void (*m_stream_catString)( XWStreamCtxt* dctx, const char* whence );
     void (*m_stream_putU16)( XWStreamCtxt* dctx, XP_U16 data );
     void (*m_stream_putU32)( XWStreamCtxt* dctx, XP_U32 data );
+    void (*m_stream_putU32VL)( XWStreamCtxt* dctx, XP_U32 data );
     void (*m_stream_putBits)( XWStreamCtxt* dctx, XP_U16 nBits, XP_U32 bits
                               DBG_LINE_FILE_FORMAL );
 
@@ -133,6 +135,9 @@ struct XWStreamCtxt {
 #define stream_getU32(sc) \
          (sc)->vtable->m_stream_getU32(DBG_PROC sc)
 
+#define stream_getU32VL(sc)                             \
+         (sc)->vtable->m_stream_getU32VL(sc)
+
 #define stream_getBits(sc, n) \
          (sc)->vtable->m_stream_getBits((sc), (n))
 
@@ -155,6 +160,9 @@ struct XWStreamCtxt {
 
 #define stream_putU32(sc, d) \
          (sc)->vtable->m_stream_putU32((sc), (d))
+
+#define stream_putU32VL(sc, d)                        \
+         (sc)->vtable->m_stream_putU32VL((sc), (d))
 
 #define stream_putBits(sc, n, b) \
          (sc)->vtable->m_stream_putBits((sc), (n), (b) DBG_LINE_FILE_PARM )

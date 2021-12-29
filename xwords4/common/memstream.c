@@ -212,6 +212,20 @@ mem_stream_getBits( XWStreamCtxt* p_sctx, XP_U16 nBits )
     return result;
 } /* stream_getBits */
 
+static XP_U32
+mem_stream_getU32VL( XWStreamCtxt* p_sctx )
+{
+    XP_U32 result = 0;
+    for ( int ii = 0; ; ++ii ) {
+        XP_U8 byt = mem_stream_getBits( p_sctx, 8 * sizeof(byt) );
+        result |= (byt & 0x7F) << (7 * ii);
+        if ( 0 == (byt & 0x80) ) {
+            break;
+        }
+    }
+    return result;
+} /* mem_stream_getU32VL */
+
 #if defined DEBUG
 static void
 mem_stream_copyBits( const XWStreamCtxt* p_sctx, XWStreamPos endPos,
@@ -235,7 +249,6 @@ mem_stream_putBytes( XWStreamCtxt* p_sctx, const void* whence,
                      XP_U16 count )
 {
     MemStreamCtxt* stream = (MemStreamCtxt*)p_sctx;
-    XP_U32 newSize;
 
     if ( !stream->buf ) {
         XP_ASSERT( stream->nBytesAllocated == 0 );
@@ -255,7 +268,7 @@ mem_stream_putBytes( XWStreamCtxt* p_sctx, const void* whence,
        the new size is bigger than what we have, and if so expand to hold it
        plus something. */
 
-    newSize = stream->nBytesWritten + count;
+    XP_U32 newSize = stream->nBytesWritten + count;
     if ( stream->curWritePos < stream->nBytesWritten ) {
         newSize -= stream->nBytesWritten - stream->curWritePos;
     }
@@ -351,6 +364,25 @@ mem_stream_putBits( XWStreamCtxt* p_sctx, XP_U16 nBits, XP_U32 data
 #endif
     XP_ASSERT( data == 0 );     /* otherwise nBits was too small */
 } /* mem_stream_putBits */
+
+/* Variable-length format: each 7 bits goes in a byte, with the 8th bit
+ * reserved for signaling whether there's another byte to come. */
+static void
+mem_stream_putU32VL( XWStreamCtxt* p_sctx, XP_U32 data )
+{
+    for ( ; ; ) {
+        XP_U8 byt = data & 0x7F;
+        data >>= 7;
+        XP_Bool haveMore = 0 != data;
+        if ( haveMore ) {
+            byt |= 0x80;
+        }
+        stream_putBits( p_sctx, 8 * sizeof(byt), byt );
+        if ( !haveMore ) {
+            break;
+        }
+    }
+} /* mem_stream_putU32VL */
 
 static void
 mem_stream_getFromStream( XWStreamCtxt* p_sctx, XWStreamCtxt* src, 
@@ -544,6 +576,7 @@ make_vtable( MemStreamCtxt* stream )
     SET_VTABLE_ENTRY( vtable, stream_getBytes, mem );
     SET_VTABLE_ENTRY( vtable, stream_getU16, mem );
     SET_VTABLE_ENTRY( vtable, stream_getU32, mem );
+    SET_VTABLE_ENTRY( vtable, stream_getU32VL, mem );
     SET_VTABLE_ENTRY( vtable, stream_getBits, mem );
 #if defined DEBUG
     SET_VTABLE_ENTRY( vtable, stream_copyBits, mem );
@@ -554,6 +587,7 @@ make_vtable( MemStreamCtxt* stream )
     SET_VTABLE_ENTRY( vtable, stream_catString, mem );
     SET_VTABLE_ENTRY( vtable, stream_putU16, mem );
     SET_VTABLE_ENTRY( vtable, stream_putU32, mem );
+    SET_VTABLE_ENTRY( vtable, stream_putU32VL, mem );
     SET_VTABLE_ENTRY( vtable, stream_putBits, mem );
 
     SET_VTABLE_ENTRY( vtable, stream_getFromStream, mem );
