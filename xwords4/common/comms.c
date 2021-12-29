@@ -37,17 +37,14 @@
 #define HEARTBEAT_NONE 0
 
 #define HAS_VERSION_FLAG 0xBEEF
-#ifndef COMMS_VERSION
-# define COMMS_VERSION 0
-#endif
+#define COMMS_VERSION 2
 
-/* Flags: 7 bits of header len, 6 bits of flags (4 used so far), and 3 bits of
+/* Flags: 7 bits of header len, 6 bits of flags (3 used so far), and 3 bits of
    comms version */
-#define VERSION_BITS 0x0007
-#define CAN_SMALLHEADER_BIT  0x0008
+#define VERSION_MASK 0x0007
+#define NO_CONNID_BIT 0x0008
 #define IS_SERVER_BIT 0x0010
 #define NO_MSGID_BIT 0x0020
-#define NO_CONNID_BIT 0x0040
 #define HEADER_LEN_OFFSET 9
 
 #ifndef XWFEATURE_STANDALONE_ONLY
@@ -96,7 +93,7 @@ typedef struct AddressRecord {
     MsgID lastMsgSaved;
     /* only used if COMMS_HEARTBEAT set except for serialization (to_stream) */
     XP_PlayerAddr channelNo;
-    XP_U16 flags;                   /* only using CAN_SMALLHEADER_BIT */
+    XP_U16 flags;                   /* storing only COMMS_VERSION */
     struct {
         XWHostID hostID;            /* used for relay case */
     } rr;
@@ -224,9 +221,7 @@ static void freeElem( const CommsCtxt* comms, MsgQueueElem* elem );
 static XP_U16 countAddrRecs( const CommsCtxt* comms );
 static void sendConnect( CommsCtxt* comms, XWEnv xwe, XP_Bool breakExisting );
 static void notifyQueueChanged( const CommsCtxt* comms, XWEnv xwe );
-#if 0 < COMMS_VERSION
 static XP_U16 makeFlags( const CommsCtxt* comms, XP_U16 headerLen, MsgID msgID );
-#endif
 
 static XP_Bool sendNoConn( CommsCtxt* comms, XWEnv xwe,
                            const MsgQueueElem* elem, XWHostID destID );
@@ -1262,11 +1257,9 @@ makeElemWithID( CommsCtxt* comms, XWEnv xwe, MsgID msgID, AddressRecord* rec,
     newMsgElem->channelNo = channelNo;
     newMsgElem->msgID = msgID;
 
-    XP_Bool useSmallHeader = !!rec && 0 != (rec->flags & CAN_SMALLHEADER_BIT);
+    XP_Bool useSmallHeader = !!rec && (COMMS_VERSION == rec->flags);
     XWStreamCtxt* hdrStream = mem_stream_make_raw( MPPARM(comms->mpool)
                                                    dutil_getVTManager(comms->dutil));
-    XP_ASSERT( 0 < COMMS_VERSION );
-
     XP_ASSERT( 0L == comms->connID || comms->connID == comms->util->gameInfo->gameID );
     if ( !useSmallHeader ) {
         XP_LOGFF( TAGFMT() "putting connID %x", TAGPRMS, comms->connID );
@@ -2356,7 +2349,6 @@ validateInitialMessage( CommsCtxt* comms, XWEnv xwe,
     return rec;
 } /* validateInitialMessage */
 
-#if 0 < COMMS_VERSION
 static XP_U16
 makeFlags( const CommsCtxt* comms, XP_U16 headerLen, MsgID msgID )
 {
@@ -2364,7 +2356,6 @@ makeFlags( const CommsCtxt* comms, XP_U16 headerLen, MsgID msgID )
     if ( comms->isServer ) {
         flags |= IS_SERVER_BIT;
     }
-    flags |= CAN_SMALLHEADER_BIT;
     if ( CONN_ID_NONE == comms->connID ) {
         flags |= NO_CONNID_BIT;
     }
@@ -2377,9 +2368,6 @@ makeFlags( const CommsCtxt* comms, XP_U16 headerLen, MsgID msgID )
 
     return flags;
 }
-#else
-error( "I don't support that case now!!!" ) /* syntax error too :-) */
-#endif
 
 /* Messages with established connIDs are valid only if they have the msgID
  * that's expected on that channel.  Their addresses need to match what we
@@ -2463,7 +2451,6 @@ parseBeefHeader( CommsCtxt* comms, XWStreamCtxt* stream, HeaderStuff* stuff )
     XP_Bool messageValid =
         stream_gotU16( stream, &stuff->flags ) /* flags are the next short */
         && stream_gotU32( stream, &stuff->connID );
-    XP_ASSERT((VERSION_BITS & stuff->flags) == COMMS_VERSION); /* changed? deal with this */
     XP_LOGFF( TAGFMT() "read connID (gameID) of %x", TAGPRMS, stuff->connID );
 
     messageValid = messageValid
@@ -2563,8 +2550,7 @@ comms_checkIncomingStream( CommsCtxt* comms, XWEnv xwe, XWStreamCtxt* stream,
                    ago. */
                 if ( HAS_VERSION_FLAG == stuff.flags ) {
                     messageValid = parseBeefHeader( comms, stream, &stuff );
-                } else {
-                    XP_ASSERT( COMMS_VERSION == (stuff.flags & VERSION_BITS) );
+                } else if ( COMMS_VERSION == (stuff.flags & VERSION_MASK) ) {
                     messageValid = parseSmallHeader( comms, xwe, stream, &stuff );
                 }
             }
@@ -2964,7 +2950,7 @@ rememberChannelAddress( CommsCtxt* comms, XWEnv xwe, XP_PlayerAddr channelNo,
 
         rec->channelNo = channelNo;
         rec->rr.hostID = hostID;
-        rec->flags = flags & CAN_SMALLHEADER_BIT;
+        rec->flags = flags & VERSION_MASK;
 
         rec->next = comms->recs;
         comms->recs = rec;

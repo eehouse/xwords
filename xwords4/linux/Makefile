@@ -35,8 +35,6 @@ CFLAGS += -g $(GPROFFLAG) -Wall -Wunused-parameter -Wcast-align -Werror -O0
 #CFLAGS += -Os -Werror -Wunused
 endif
 
-DEFINES += -DCOMMS_VERSION=1
-
 # Getting ready for gtk 3.x
 CFLAGS += -DGTK_DISABLE_SINGLE_INCLUDES
 CFLAGS += -DGDK_DISABLE_DEPRECATED -DGTK_DISABLE_DEPRECATED
