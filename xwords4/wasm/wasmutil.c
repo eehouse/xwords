@@ -580,6 +580,13 @@ wasm_util_informWordsBlocked( XW_UtilCtxt* uc, XWEnv xwe, XP_U16 nBadWords,
     LOG_FUNC();
 }
 
+static void
+wasm_util_getInviteeName( XW_UtilCtxt* uc, XWEnv xwe, XP_U16 plyrNum,
+                          XP_UCHAR* buf, XP_U16* bufLen )
+{
+    LOG_FUNC();
+}
+
 #ifdef XWFEATURE_SEARCHLIMIT
 static XP_Bool
 wasm_util_getTraySearchLimits( XW_UtilCtxt* uc, XWEnv xwe, 
@@ -662,6 +669,7 @@ wasm_util_make( MPFORMAL CurGameInfo* gi, XW_DUtilCtxt* dctxt, GameState* closur
     SET_VTABLE_ENTRY( wuctxt->super.vtable, util_informMissing, wasm );
     SET_VTABLE_ENTRY( wuctxt->super.vtable, util_addrChange, wasm );
     SET_VTABLE_ENTRY( wuctxt->super.vtable, util_informWordsBlocked, wasm );
+    SET_VTABLE_ENTRY( wuctxt->super.vtable, util_getInviteeName, wasm );
 #ifdef XWFEATURE_CHAT
     SET_VTABLE_ENTRY( wuctxt->super.vtable, util_showChat, wasm );
 #endif

@@ -1487,6 +1487,7 @@ loadAndDraw( Globals* globals, const NetLaunchInfo* invite,
                                       dict_getShortName(dict) );
             gs->gi.nPlayers = 2;
             gs->gi.boardSize = 15;
+            gs->gi.traySize = 7;
             gs->gi.players[0].name = copyString( globals->mpool, playerName );
             gs->gi.players[0].isLocal = XP_TRUE;
             gs->gi.players[0].robotIQ = 0;
@@ -2265,11 +2266,12 @@ mainPostSync( int argc, const char** argv )
     srandom( now );
     XP_LOGFF( "called(srandom( %x )", now );
 
+    Globals* globals;
 #ifdef GLOBALS_ON_STACK
     Globals _globals = {0};
-    Globals* globals = &_globals;
+    globals = &_globals;
 #else
-    Globals* globals = calloc(1, sizeof(*globals));
+    globals = calloc(1, sizeof(*globals));
 #endif
 #ifdef DEBUG
     globals->_GUARD = GUARD_GLOB;

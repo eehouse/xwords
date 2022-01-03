@@ -87,10 +87,10 @@ main.html: ${INPUTS} Makefile shell_minimal.html
 		${INPUTS} -o $@
 
 install: main.html
-	if [ -n "${XW_WASM_DEST}" ]; then \
+	if [ -n "${XW_WASM_DEST}" -a -n "${XW_WASM_HOST}" ]; then \
+		ssh "${XW_WASM_HOST}" mkdir -p ${XW_WASM_DEST}/${WEBDIR}/; \
 		for FILE in ${OUTPUTS} paho-mqtt.js xwutils.js; do \
-			mkdir -p ${XW_WASM_DEST}/${WEBDIR}; \
-			[ -f $$FILE ] && scp $$FILE ${XW_WASM_DEST}/${WEBDIR}/; \
+			[ -f $$FILE ] && scp $$FILE ${XW_WASM_HOST}:${XW_WASM_DEST}/${WEBDIR}/; \
 			echo "$$FILE copied"; \
 		done; \
 	fi
