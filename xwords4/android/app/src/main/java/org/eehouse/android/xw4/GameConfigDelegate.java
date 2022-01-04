@@ -1304,14 +1304,6 @@ public class GameConfigDelegate extends DelegateBase
         }
     }
 
-    // private void refreshNames()
-    // {
-    //     if ( !m_isLocked ) {
-    //         new RefreshNamesTask( m_activity, this, m_gi.dictLang,
-    //                               m_gi.nPlayers, m_roomChoose ).execute();
-    //     }
-    // }
-
     @Override
     protected void setTitle()
     {

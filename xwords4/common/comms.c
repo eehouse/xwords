@@ -737,10 +737,13 @@ comms_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
         addrFromStream( &rec->addr, stream );
         logAddr( comms, xwe, &rec->addr, __func__ );
 
-        rec->nextMsgID = stream_getU16( stream );
-        rec->lastMsgSaved = rec->lastMsgRcd = stream_getU16( stream );
         if ( STREAM_VERS_SMALLCOMMS <= version ) {
+            rec->nextMsgID = stream_getU32VL( stream );
+            rec->lastMsgSaved = rec->lastMsgRcd = stream_getU32VL( stream );
             rec->flags = stream_getU16( stream );
+        } else {
+            rec->nextMsgID = stream_getU16( stream );
+            rec->lastMsgSaved = rec->lastMsgRcd = stream_getU16( stream );
         }
 #ifdef LOG_COMMS_MSGNOS
         XP_LOGF( "%s(): read lastMsgRcd of %d for addr %d", __func__, rec->lastMsgRcd, ii );
@@ -763,14 +766,15 @@ comms_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
 
         msg->channelNo = stream_getU16( stream );
         if ( version >= STREAM_VERS_SMALLCOMMS ) {
-            msg->msgID = stream_getU16( stream );
+            msg->msgID = stream_getU32VL( stream );
+            msg->len = stream_getU32VL( stream );
         } else {
             msg->msgID = stream_getU32( stream );
+            msg->len = stream_getU16( stream );
         }
 #ifdef DEBUG
         msg->sendCount = 0;
 #endif
-        msg->len = stream_getU16( stream );
         msg->msg = (XP_U8*)XP_MALLOC( mpool, msg->len );
         stream_getBytes( stream, msg->msg, msg->len );
 #ifdef COMMS_CHECKSUM
@@ -973,8 +977,8 @@ comms_writeToStream( CommsCtxt* comms, XWEnv XP_UNUSED_DBG(xwe),
         addrToStream( stream, addr );
         logAddr( comms, xwe, addr, __func__ );
 
-        stream_putU16( stream, (XP_U16)rec->nextMsgID );
-        stream_putU16( stream, (XP_U16)rec->lastMsgRcd );
+        stream_putU32VL( stream, rec->nextMsgID );
+        stream_putU32VL( stream, rec->lastMsgRcd );
         stream_putU16( stream, rec->flags );
 #ifdef LOG_COMMS_MSGNOS
         XP_LOGFF( "wrote lastMsgRcd of %d for addr %d", rec->lastMsgRcd, ii++ );
@@ -988,9 +992,9 @@ comms_writeToStream( CommsCtxt* comms, XWEnv XP_UNUSED_DBG(xwe),
 
     for ( msg = comms->msgQueueHead; !!msg; msg = msg->next ) {
         stream_putU16( stream, msg->channelNo );
-        stream_putU16( stream, msg->msgID );
+        stream_putU32VL( stream, msg->msgID );
 
-        stream_putU16( stream, msg->len );
+        stream_putU32VL( stream, msg->len );
         stream_putBytes( stream, msg->msg, msg->len );
     }
 
