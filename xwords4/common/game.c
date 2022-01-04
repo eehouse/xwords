@@ -408,7 +408,7 @@ game_makeFromInvite( MPFORMAL XWEnv xwe, const NetLaunchInfo* nli,
 {
     gi_setNPlayers( gi, nli->nPlayersT, nli->nPlayersH );
     gi->boardSize = 15;
-    gi->traySize = 7;
+    gi->traySize = gi->bingoMin = 7;
     gi->gameID = nli->gameID;
     gi->dictLang = nli->lang;
     gi->forceChannel = nli->forceChannel;

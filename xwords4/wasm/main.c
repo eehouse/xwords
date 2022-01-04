@@ -1487,7 +1487,7 @@ loadAndDraw( Globals* globals, const NetLaunchInfo* invite,
                                       dict_getShortName(dict) );
             gs->gi.nPlayers = 2;
             gs->gi.boardSize = 15;
-            gs->gi.traySize = 7;
+            gs->gi.traySize = gs->gi.bingoMin = 7;
             gs->gi.players[0].name = copyString( globals->mpool, playerName );
             gs->gi.players[0].isLocal = XP_TRUE;
             gs->gi.players[0].robotIQ = 0;
