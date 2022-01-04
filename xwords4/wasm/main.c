@@ -264,7 +264,7 @@ EM_JS(int, js_getHaveNotifyPerm, (), {
         let state = 1; // UNREQUESTED;
         try {
             let asStr = Notification.permission;
-            console.error('permission: ', asStr);
+            // console.error('permission: ', asStr);
             if ( asStr == 'granted' ) {
                 state = 3; // GRANTED;
             } else if ( asStr == 'denied' ) {

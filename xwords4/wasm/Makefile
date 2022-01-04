@@ -73,7 +73,7 @@ all: main.html
 # 		--preload-file assets_dir --memory-init-file 1 \
 # 		-s USE_SDL_TTF=2 -s USE_SDL_IMAGE=2 -s SDL2_IMAGE_FORMATS='["png"]' \
 # 		-s EXPORTED_FUNCTIONS='["_mainf", "_button", "_newgame", "_gotMQTTMsg"]' -s WASM=0 \
-# 		-s "EXTRA_EXPORTED_RUNTIME_METHODS=['ccall']" \
+# 		-s "EXPORTED_RUNTIME_METHODS=['ccall']" \
 # 		${INPUTS} -o $@
 
 # This isn't a thing any more
@@ -81,18 +81,22 @@ main.html: ${INPUTS} Makefile shell_minimal.html
 	emcc $(DEFINES) -I . -I ../common -I ../relay -s USE_SDL=2 \
 		--preload-file assets_dir --shell-file shell_minimal.html \
 		-s USE_SDL_TTF=2 -s USE_SDL_IMAGE=2 -s SDL2_IMAGE_FORMATS='["png"]' -lidbfs.js \
-		-s "EXTRA_EXPORTED_RUNTIME_METHODS=['ccall']" \
+		-s "EXPORTED_RUNTIME_METHODS=['ccall']" \
 		-s EXPORTED_FUNCTIONS='["_main", "_mainPostSync", "_cbckBinary", "_cbckVoid", "_cbckString", "_MQTTConnectedChanged", "_onNewGame", "_gotDictBinary", "_onResize"]' \
 		-s WASM=1 \
 		${INPUTS} -o $@
 
 install: main.html
-	if [ -n "${XW_WASM_DEST}" -a -n "${XW_WASM_HOST}" ]; then \
+	@if [ -n "${XW_WASM_DEST}" -a -n "${XW_WASM_HOST}" ]; then \
 		ssh "${XW_WASM_HOST}" mkdir -p ${XW_WASM_DEST}/${WEBDIR}/; \
 		for FILE in ${OUTPUTS} paho-mqtt.js xwutils.js; do \
-			[ -f $$FILE ] && scp $$FILE ${XW_WASM_HOST}:${XW_WASM_DEST}/${WEBDIR}/; \
-			echo "$$FILE copied"; \
+			if [ -f $$FILE ]; then \
+				scp $$FILE ${XW_WASM_HOST}:${XW_WASM_DEST}/${WEBDIR}/; \
+				echo "$$FILE copied"; \
+			fi; \
 		done; \
+	else \
+		echo "ERROR: XW_WASM_DEST ($$XW_WASM_DEST) or XW_WASM_HOST ($$XW_WASM_HOST) unset"; \
 	fi
 
 clean:
@@ -100,3 +104,8 @@ clean:
 
 debs_install:
 	sudo apt-get install ${DEBS}
+
+help:
+	@echo 'usage: debs_install OR'
+	@echo 'usage: make [MEMDEBUG=TRUE] [clean] install'
+	@echo '(expects XW_WASM_HOST and XW_WASM_DEST to be set in env)'
