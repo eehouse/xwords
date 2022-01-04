@@ -175,7 +175,7 @@ function jssetup(closure, dbg, devid, gitrev, now, noTabProc, focusProc, msgProc
 					  '; total disconn: ', state.disconnTimeMS );
 	}
 
-	state.client = new Paho.MQTT.Client("eehouse.org", 8883, '/wss', devid);
+	state.client = new Paho.MQTT.Client("eehouse.org", 9001, '/wss', devid);
 
 	// set callback handlers
 	state.client.onConnectionLost = function onConnectionLost(responseObject) {

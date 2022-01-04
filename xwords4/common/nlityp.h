@@ -57,8 +57,8 @@ typedef struct _NetLaunchInfo {
 
     XP_U32 gameID;
     XP_UCHAR inviteID[32];
-    /* MQTT */
 
+    /* MQTT */
     XP_UCHAR mqttDevID[17];
 } NetLaunchInfo;
 
