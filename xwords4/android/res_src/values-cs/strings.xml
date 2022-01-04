@@ -133,7 +133,7 @@
     <string name="gameOver">Hra skončena</string>
     <!-- <string name="moves_fmt">Bylo zahráno %1$d tahů</string> -->
     <!-- about dialog stuff -->
-    <string name="about_copyright">Copyright (C) 1998-2021 Eric
+    <string name="about_copyright">Copyright (C) 1998-2022 Eric
     House. Tento software je vydán pod licencí GNU Public License.</string>
     <string name="about_web">Manuál a zdrojové kódy najdete na:
     http://xwords.sf.net.  Hlásit chyby, doporučit vylepšení, nabídnout pomoc, atd.

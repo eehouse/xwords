@@ -1749,11 +1749,8 @@ modèle.</string>
        ########################################################### 
       -->
     <!-- copyright info -->
-    <!--<string name="about_copyright">Copyright (C) 1998-2015 by Eric
-        House. This free/open source software is released under the GNU Public
-        License.</string>-->
     <string name="about_copyright">CrossWords pour Android
-\nCopyright (C) 1998-2021 par Eric House. Ce logiciel libre/open source est sous la Licence Publique GNU.</string>
+\nCopyright (C) 1998-2022 par Eric House. Ce logiciel libre/open source est sous la Licence Publique GNU.</string>
     <!-- Another paragraph in the about dialog -->
     <!--<string name="about_web">For a manual or sourcecode see:
     http://xwords.sf.net/android.php.  To report bugs, suggest
