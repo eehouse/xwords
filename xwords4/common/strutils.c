@@ -621,6 +621,13 @@ formatMQTTTopic( const MQTTDevID* devid, XP_UCHAR* buf, XP_U16 bufLen )
     return buf;
 }
 
+const XP_UCHAR*
+formatMQTTCtrlTopic( const MQTTDevID* devid, XP_UCHAR* buf, XP_U16 bufLen )
+{
+    XP_SNPRINTF( buf, bufLen, MQTTCtrlTopic_FMT, *devid );
+    return buf;
+}
+
 XP_Bool
 strToMQTTCDevID( const XP_UCHAR* str, MQTTDevID* result )
 {

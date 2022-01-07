@@ -115,6 +115,7 @@ XP_Bool smsToBin( XP_U8* out, XP_U16* outlen, const XP_UCHAR* in, XP_U16 inlen )
 #endif
 
 const XP_UCHAR* formatMQTTTopic( const MQTTDevID* devid, XP_UCHAR* buf, XP_U16 bufLen );
+const XP_UCHAR* formatMQTTCtrlTopic( const MQTTDevID* devid, XP_UCHAR* buf, XP_U16 bufLen );
 const XP_UCHAR* formatMQTTDevID( const MQTTDevID* devid, XP_UCHAR* buf, XP_U16 bufLen );
 XP_Bool strToMQTTCDevID( const XP_UCHAR* str, MQTTDevID* result );
 

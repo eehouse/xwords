@@ -150,8 +150,7 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
                 params.put( k_APP, appParams );
                 params.put( k_DEVID, XWPrefs.getDevID( context ) );
 
-                String[] topic = {null};
-                String devID = XwJNI.dvc_getMQTTDevID( topic );
+                String devID = XwJNI.dvc_getMQTTDevID( null );
                 params.put( k_MQTTDEVID, devID );
             } catch ( org.json.JSONException jse ) {
                 Log.ex( TAG, jse );

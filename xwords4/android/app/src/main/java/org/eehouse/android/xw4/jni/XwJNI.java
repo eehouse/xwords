@@ -136,9 +136,10 @@ public class XwJNI {
         cleanGlobals();
     }
 
-    public static String dvc_getMQTTDevID( String[] topic )
+    public static String dvc_getMQTTDevID( String[] topics )
     {
-        return dvc_getMQTTDevID( getJNI().m_ptrGlobals, topic );
+        Assert.assertTrueNR( null == topics || 2 == topics.length );
+        return dvc_getMQTTDevID( getJNI().m_ptrGlobals, topics );
     }
 
     public static void dvc_resetMQTTDevID()

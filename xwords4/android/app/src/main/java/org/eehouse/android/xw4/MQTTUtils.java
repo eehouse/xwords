@@ -21,6 +21,7 @@
 package org.eehouse.android.xw4;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Build;
 
 import org.eclipse.paho.client.mqttv3.IMqttActionListener;
@@ -60,7 +61,7 @@ public class MQTTUtils extends Thread implements IMqttActionListener, MqttCallba
 
     private MqttAsyncClient mClient;
     private String mDevID;
-    private String mTopic;
+    private String[] mTopics = { null, null };
     private Context mContext;
     private MsgThread mMsgThread;
     private LinkedBlockingQueue<MessagePair> mOutboundQueue = new LinkedBlockingQueue<>();
@@ -166,7 +167,7 @@ public class MQTTUtils extends Thread implements IMqttActionListener, MqttCallba
                 me.printStackTrace();
                 break;
             } catch ( InterruptedException ie ) {
-                ie.printStackTrace();
+                // ie.printStackTrace();
                 break;
             }
         }
@@ -225,10 +226,8 @@ public class MQTTUtils extends Thread implements IMqttActionListener, MqttCallba
     {
         Log.d( TAG, "%H.<init>()", this );
         mContext = context;
-        String[] topic = {null};
-        mDevID = XwJNI.dvc_getMQTTDevID( topic );
+        mDevID = XwJNI.dvc_getMQTTDevID( mTopics );
         Assert.assertTrueNR( 16 == mDevID.length() );
-        mTopic = topic[0];
         mMsgThread = new MsgThread();
 
         String host = XWPrefs.getPrefsString( context, R.string.key_mqtt_host );
@@ -522,8 +521,7 @@ public class MQTTUtils extends Thread implements IMqttActionListener, MqttCallba
     public void messageArrived( String topic, MqttMessage message ) throws Exception
     {
         Log.d( TAG, "%H.messageArrived(topic=%s)", this, topic );
-        Assert.assertTrueNR( topic.equals(mTopic) );
-        mMsgThread.add( message.getPayload() );
+        mMsgThread.add( topic, message.getPayload() );
         ConnStatusHandler
             .updateStatusIn( mContext, CommsConnType.COMMS_CONN_MQTT, true );
 
@@ -541,10 +539,13 @@ public class MQTTUtils extends Thread implements IMqttActionListener, MqttCallba
 
     private void subscribe()
     {
+        Assert.assertTrueNR( null != mTopics && 2 == mTopics.length );
         final int qos = XWPrefs.getPrefsInt( mContext, R.string.key_mqtt_qos, 2 );
+        int qoss[] = { qos, qos };
+
         setState( State.SUBSCRIBING );
         try {
-            mClient.subscribe( mTopic, qos, null, this );
+            mClient.subscribe( mTopics, qoss, null, this );
             // Log.d( TAG, "subscribed to %s", mTopic );
         } catch ( MqttException ex ) {
             ex.printStackTrace();
@@ -581,10 +582,10 @@ public class MQTTUtils extends Thread implements IMqttActionListener, MqttCallba
     }
 
     private class MsgThread extends Thread {
-        private LinkedBlockingQueue<byte[]> mQueue = new LinkedBlockingQueue<>();
+        private LinkedBlockingQueue<MessagePair> mQueue = new LinkedBlockingQueue<>();
 
-        void add( byte[] msg ) {
-            mQueue.add( msg );
+        void add( String topic, byte[] msg ) {
+            mQueue.add( new MessagePair( topic, msg ) );
         }
 
         @Override
@@ -594,16 +595,38 @@ public class MQTTUtils extends Thread implements IMqttActionListener, MqttCallba
             Log.d( TAG, "%H.MsgThread.run() starting", MQTTUtils.this );
             for ( ; ; ) {
                 try {
-                    byte[] packet = mQueue.take();
-                    XwJNI.dvc_parseMQTTPacket( packet );
+                    MessagePair pair = mQueue.take();
+                    String topic = pair.mTopic;
+                    if ( topic.equals( mTopics[0] ) ) {
+                        XwJNI.dvc_parseMQTTPacket( pair.mPacket );
+                    } else if ( topic.equals( mTopics[1] ) ) {
+                        postNotification( pair );
+                    }
                 } catch ( InterruptedException ie ) {
                     // Assert.failDbg();
                     break;
+                } catch ( JSONException je ) {
+                    Log.e( TAG, "run() ex: %s", je );
                 }
             }
             long now = Utils.getCurSeconds();
             Log.d( TAG, "%H.MsgThread.run() exiting after %d seconds", MQTTUtils.this,
                    now - startTime );
+        }
+
+        private void postNotification( MessagePair pair ) throws JSONException
+        {
+            JSONObject obj = new JSONObject( new String(pair.mPacket) );
+            String msg = obj.optString( "msg" );
+            if ( null != msg ) {
+                String title = obj.optString( "title" );
+                if ( null == title ) {
+                    title = LocUtils.getString( mContext, R.string.remote_msg_title );
+                }
+                Intent alertIntent = GamesListDelegate.makeAlertIntent( mContext, msg );
+                int code = msg.hashCode() ^ title.hashCode();
+                Utils.postNotification( mContext, alertIntent, title, msg, code );
+            }
         }
     }
 

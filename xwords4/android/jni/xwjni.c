@@ -629,7 +629,7 @@ streamFromJStream( MPFORMAL JNIEnv* env, VTableMgr* vtMgr, jbyteArray jstream )
 
 JNIEXPORT jstring JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_dvc_1getMQTTDevID
-( JNIEnv* env, jclass C, jlong jniGlobalPtr, jobjectArray jTopicOut )
+( JNIEnv* env, jclass C, jlong jniGlobalPtr, jobjectArray jTopicsOut )
 {
     jstring result;
     DVC_HEADER(jniGlobalPtr);
@@ -638,12 +638,18 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dvc_1getMQTTDevID
 
     XP_UCHAR buf[64];
 
-    if ( !!jTopicOut ) {
+    if ( !!jTopicsOut ) {
         formatMQTTTopic( &devID, buf, VSIZE(buf) );
         jstring jtopic = (*env)->NewStringUTF( env, buf );
-        XP_ASSERT( 1 == (*env)->GetArrayLength( env, jTopicOut ) ); /* fired */
-        (*env)->SetObjectArrayElement( env, jTopicOut, 0, jtopic );
+        (*env)->SetObjectArrayElement( env, jTopicsOut, 0, jtopic );
         deleteLocalRef( env, jtopic );
+
+        if ( 1 < (*env)->GetArrayLength( env, jTopicsOut ) ) {
+            formatMQTTCtrlTopic( &devID, buf, VSIZE(buf) );
+            jstring jtopic = (*env)->NewStringUTF( env, buf );
+            (*env)->SetObjectArrayElement( env, jTopicsOut, 1, jtopic );
+            deleteLocalRef( env, jtopic );
+        }
     }
 
     formatMQTTDevID( &devID, buf, VSIZE(buf) );
