@@ -25,6 +25,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.os.Build;
 import android.os.Environment;
 import android.os.Process;
 
@@ -61,6 +62,13 @@ public class Log {
     private static boolean sEnabled = BuildConfig.DEBUG;
     private static boolean sUseDB;
     private static WeakReference<Context> sContextRef;
+
+    private static SimpleDateFormat sTSFormatter;
+    static {
+        if ( Build.VERSION_CODES.LOLLIPOP >= Build.VERSION.SDK_INT ) {
+            sTSFormatter = new SimpleDateFormat(" MM-dd HH:mm:ss.SSS ");
+        }
+    }
 
     private static enum LOG_LEVEL {
         INFO,
@@ -158,6 +166,10 @@ public class Log {
     {
         String str = new Formatter().format( fmt, args ).toString();
         String fullTag = PRE_TAG + tag;
+        if ( null != sTSFormatter ) {
+            fullTag = sTSFormatter.format(new Date()) + fullTag;
+        }
+
         switch ( level ) {
         case DEBUG:
             android.util.Log.d( fullTag, str );
