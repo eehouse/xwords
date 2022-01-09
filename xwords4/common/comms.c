@@ -677,18 +677,17 @@ comms_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
                       RoleChangeProc rcp, void* rcClosure,
                       XP_U16 forceChannel )
 {
-    XP_U16 nPlayersHere, nPlayersTotal;
-    AddressRecord** prevsAddrNext;
-    MsgQueueElem** prevsQueueNext;
     XP_U16 version = stream_getVersion( stream );
-    CommsAddrRec addr = {0};
 
     XP_U8 flags = stream_getU8( stream );
     if ( version < STREAM_VERS_GICREATED ) {
         flags = 0;
     }
+
+    CommsAddrRec addr = {0};
     addrFromStream( &addr, stream );
 
+    XP_U16 nPlayersHere, nPlayersTotal;
     if ( version >= STREAM_VERS_DEVIDS
          || addr_hasType( &addr, COMMS_CONN_RELAY ) ) {
         nPlayersHere = (XP_U16)stream_getBits( stream, 4 );
@@ -730,7 +729,7 @@ comms_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
     comms->queueLen = stream_getU8( stream );
 
     XP_U16 nAddrRecs = stream_getU8( stream );
-    prevsAddrNext = &comms->recs;
+    AddressRecord** prevsAddrNext = &comms->recs;
     for ( int ii = 0; ii < nAddrRecs; ++ii ) {
         AddressRecord* rec = (AddressRecord*)XP_CALLOC( mpool, sizeof(*rec));
 
@@ -760,7 +759,7 @@ comms_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
         prevsAddrNext = &rec->next;
     }
 
-    prevsQueueNext = &comms->msgQueueHead;
+    MsgQueueElem** prevsQueueNext = &comms->msgQueueHead;
     for ( int ii = 0; ii < comms->queueLen; ++ii ) {
         MsgQueueElem* msg = (MsgQueueElem*)XP_CALLOC( mpool, sizeof(*msg) );
 
