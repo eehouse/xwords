@@ -681,7 +681,7 @@ comms_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
     AddressRecord** prevsAddrNext;
     MsgQueueElem** prevsQueueNext;
     XP_U16 version = stream_getVersion( stream );
-    CommsAddrRec addr;
+    CommsAddrRec addr = {0};
 
     XP_U8 flags = stream_getU8( stream );
     if ( version < STREAM_VERS_GICREATED ) {
