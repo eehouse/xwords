@@ -79,4 +79,7 @@
     <string name="clip_label">رابط الدعوة</string>
     <string name="list_item_select">تحديد</string>
     <string name="button_skip">تخطي</string>
+    <string name="invitee_fmt">(%1$s مدعو)</string>
+    <string name="robot_name_fmt">%1$s (روبوت)</string>
+    <string name="missing_player">(ليس هنا بعد…)</string>
 </resources>
