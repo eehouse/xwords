@@ -13,9 +13,10 @@
 	</style>
   </head>
 <body>
-  <h2>CrossWords 4.4.182 release</h2>
+  <h2>CrossWords 4.4.183 release</h2>
 
-  <p>This release improves message formats and adds new translations</p>
+  <p>This release fixes an old bug causing bogus (but harmless) messages to
+  be sent</p>
 
   <div id="survey">
 	<p>Please <a href="https://www.surveymonkey.com/s/GX3XLHR">take
@@ -25,10 +26,9 @@
 
   <h3>New with this release</h3>
   <ul>
-      <li>Shrink the messages devices exchange during games (breaking
-          compatibility with PalmOS and Windows Mobile -- remember them?)</li>
-      <li>New translations in Brazilian Portuguese, Chinese, French
-          and Portuguese, via Weblate.</li>
+      <li>Don't send post-invitation messages to random garbage addresses</li>
+      <li>Connect to MQTT relay in a way that lets it notice disconnects</li>
+      <li>Include new Arabic translation via Weblate</li>
   </ul>
 
   <p>(The full changelog
