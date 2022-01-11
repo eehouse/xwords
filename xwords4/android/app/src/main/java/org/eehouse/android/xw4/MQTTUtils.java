@@ -271,19 +271,17 @@ public class MQTTUtils extends Thread implements IMqttActionListener, MqttCallba
 
     // Last Will and Testimate is the way I can get the server notified of a
     // closed connection.
-    private void addLWTIf( MqttConnectOptions mqttConnectOptions )
+    private void addLWT( MqttConnectOptions mqttConnectOptions )
     {
-        if ( BuildConfig.DEBUG ) {
-            try {
+        try {
             JSONObject payload = new JSONObject();
             payload.put( "devid", mDevID );
             payload.put( "ts", Utils.getCurSeconds() );
             mqttConnectOptions.setWill( "xw4/device/LWT", payload.toString().getBytes(), 2, false );
 
             // mqttConnectOptions.setKeepAliveInterval( 15 ); // seconds; for testing
-            } catch ( JSONException je ) {
-                Log.e( TAG, "addLWTIf() ex: %s", je );
-            }
+        } catch ( JSONException je ) {
+            Log.e( TAG, "addLWT() ex: %s", je );
         }
     }
 
@@ -295,7 +293,7 @@ public class MQTTUtils extends Thread implements IMqttActionListener, MqttCallba
         mqttConnectOptions.setCleanSession(false);
         mqttConnectOptions.setUserName("xwuser");
         mqttConnectOptions.setPassword("xw4r0cks".toCharArray());
-        addLWTIf( mqttConnectOptions );
+        addLWT( mqttConnectOptions );
 
         try {
             setState( State.CONNECTING );
