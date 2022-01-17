@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
-import sys
+import argparse, sys
+from collections import defaultdict
 
 """
 print stats about in input stream that's assumed to be a dictionary.
@@ -16,29 +17,52 @@ letter tuples and triples -- how often letters appear together -- is
 a better indicator than just letter count.
 """
 
+class Letter:
+    def __init__(self, ch):
+        self.ch = ch
+        self.count = 0
 
+    def increment(self): self.count += 1
+    def getChr(self): return self.ch
+    def getCount(self): return self.count
+
+    def format(self, total):
+        count = self.count
+        pct = (100.00 * count) / total
+        return '{: >6s}   {:2d}   {:x}    {:5.2f} ({:d})' \
+            .format(self.ch, ord(self.ch), ord(self.ch), pct, self.count )
+
+
+def mkParser():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--sort-by', dest = 'SORT', type = str, default = 'ASCII',
+                        help = 'sort output by ASCII or COUNT')
+    parser.add_argument('--enc', dest = 'ENC', type = str, default = 'utf8',
+                        help = 'encoding')
+    return parser
 
 def main():
-    wordSizeCounts = {}
-    letterCounts = {}
+    args = mkParser().parse_args()
+
+    letters = {}
+    wordSizeCounts = defaultdict(int)
+    # letterCounts = defaultdict(int)
     wordCount = 0
     letterCount = 0
-    enc = 'utf8'               # this could be a cmdline arg....
 	
     for line in sys.stdin.readlines():
         line = line.strip()
 
         length = len(line)
-        if not length in wordSizeCounts: wordSizeCounts[length] = 0
+        # if not length in wordSizeCounts: wordSizeCounts[length] = 0
         wordSizeCounts[length] += 1
         wordCount += 1
 
         for letter in line:
             ii = ord(letter)
-            # perl did this:  die "$0: this is a letter?: $ii" if $ii <= 32 && $ii >= 4 && $ii != 0; 
             assert ii > 32 or ii < 4 or ii == 0, 'letter {} out of range'.format(ii)
-            if not letter in letterCounts: letterCounts[letter] = 0
-            letterCounts[letter] += 1
+            if not letter in letters: letters[letter] = Letter(letter)
+            letters[letter].increment()
             letterCount += 1
 
     print( 'Number of words: {}'.format(wordCount))
@@ -60,19 +84,21 @@ def main():
     print('     {:6d}  {:.2f}'.format( wordTotal, pctTotal))
     print('')
 
-    lineNo = 1
-    pctTotal = 0.0
     print( '**** Letter counts ****' )
     print( '     ASCII  ORD  HEX     PCT (of {})'.format(letterCount))
-    for letter in sorted(letterCounts):
-        count = letterCounts[letter]
-        pct = (100.00 * count) / letterCount
-        pctTotal += pct
-        print( '{:2d}: {: >6s}   {:2d}   {:x}    {:5.2f} ({:d})' \
-               .format(lineNo, letter, ord(letter), ord(letter), pct, count ) )
+
+    if args.SORT == 'ASCII':
+        key = lambda letter: ord(letter.getChr())
+    elif args.SORT == 'COUNT':
+        key = lambda letter: -letter.getCount()
+    else:
+        print('error: bad sort arg: {}'.format(args.SORT))
+        sys.exit(1)
+    lineNo = 1
+    for letter in sorted(letters.values(), key=key):
+        print('{:2d}: {}'.format(lineNo, letter.format(letterCount)))
         lineNo += 1
 
-    print('percent total {:.2f}'.format( pctTotal))
     print('')
 
 ##############################################################################
