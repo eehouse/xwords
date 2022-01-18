@@ -1479,9 +1479,10 @@ makeRobotMove( ServerCtxt* server, XWEnv xwe )
 
             if ( !!stream ) {
                 XP_UCHAR buf[64];
+                XP_U16 nTrayTiles = gi->traySize;
                 str = dutil_getUserQuantityString( dutil, xwe, STRD_ROBOT_TRADED,
-                                                   MAX_TRAY_TILES );
-                XP_SNPRINTF( buf, sizeof(buf), str, MAX_TRAY_TILES );
+                                                   nTrayTiles );
+                XP_SNPRINTF( buf, sizeof(buf), str, nTrayTiles );
 
                 stream_catString( stream, buf );
                 XP_ASSERT( !server->nv.prevMoveStream );
