@@ -81,7 +81,7 @@ findOpenGame( const GtkAppGlobals* apg, sqlite3_int64 rowid )
     return result;
 }
 
-enum { ROW_ITEM, ROW_THUMB, NAME_ITEM, CREATED_ITEM, ROOM_ITEM, GAMEID_ITEM,
+enum { ROW_ITEM, ROW_THUMB, NAME_ITEM, CREATED_ITEM, GAMEID_ITEM,
        LANG_ITEM, SEED_ITEM, ROLE_ITEM, CONN_ITEM, RELAYID_ITEM, OVER_ITEM, TURN_ITEM,
        LOCAL_ITEM, NMOVES_ITEM, NTOTAL_ITEM, MISSING_ITEM, LASTTURN_ITEM,
        DUPTIMER_ITEM,
@@ -174,7 +174,6 @@ init_games_list( GtkAppGlobals* apg )
     addImageColumn( list, "Snap", ROW_THUMB );
     addTextColumn( list, "Name", NAME_ITEM );
     addTextColumn( list, "Created", CREATED_ITEM );
-    addTextColumn( list, "Room", ROOM_ITEM );
     addTextColumn( list, "GameID", GAMEID_ITEM );
     addTextColumn( list, "Lang", LANG_ITEM );
     addTextColumn( list, "Seed", SEED_ITEM );
@@ -195,7 +194,6 @@ init_games_list( GtkAppGlobals* apg )
                                               GDK_TYPE_PIXBUF,/* ROW_THUMB */
                                               G_TYPE_STRING,  /* NAME_ITEM */
                                               G_TYPE_STRING,  /* CREATED_ITEM */
-                                              G_TYPE_STRING,  /* ROOM_ITEM */
                                               G_TYPE_INT,     /* GAMEID_ITEM */
                                               G_TYPE_STRING,  /* LANG_ITEM */
                                               G_TYPE_INT,     /* SEED_ITEM */
@@ -269,7 +267,6 @@ add_to_list( GtkWidget* list, sqlite3_int64 rowid, XP_Bool isNew,
                         ROW_THUMB, gib->snap,
                         NAME_ITEM, gib->name,
                         CREATED_ITEM, createdStr,
-                        ROOM_ITEM, gib->room,
                         GAMEID_ITEM, gib->gameID,
                         LANG_ITEM, lcToLocale(gib->dictLang),
                         SEED_ITEM, gib->seed,

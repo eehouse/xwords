@@ -164,7 +164,7 @@ createTables( sqlite3* pDb )
         ",game BLOB"
         ",snap BLOB"
         ",inviteInfo BLOB"
-        ",room VARCHAR(32)"
+        ",room VARCHAR(32)"     /* no longer used */
         ",connvia VARCHAR(32)"
         ",relayid VARCHAR(32)"
         ",ended INT(1)"
@@ -333,7 +333,6 @@ gdb_summarize( CommonGlobals* cGlobals )
     XP_LangCode dictLang = gi->dictLang;
     XP_ASSERT( 0 != gameID );
     CommsAddrRec addr = {0};
-    gchar* room = "";
 
     // gchar* connvia = "local";
     gchar connvia[128] = {0};
@@ -367,7 +366,6 @@ gdb_summarize( CommonGlobals* cGlobals )
             }
             switch( typ) {
             case COMMS_CONN_RELAY:
-                room = addr.u.ip_relay.invite;
                 strcat( connvia, "Relay" );
                 break;
             case COMMS_CONN_SMS:
@@ -401,7 +399,6 @@ gdb_summarize( CommonGlobals* cGlobals )
 
     gchar* pairs[40];
     int indx = 0;
-    pairs[indx++] = g_strdup_printf( "room='%s'", room );
     pairs[indx++] = g_strdup_printf( "ended=%d", gameOver?1:0 );
     pairs[indx++] = g_strdup_printf( "turn=%d", turn);
     pairs[indx++] = g_strdup_printf( "local=%d", isLocal?1:0);
@@ -532,7 +529,7 @@ XP_Bool
 gdb_getGameInfo( sqlite3* pDb, sqlite3_int64 rowid, GameInfo* gib )
 {
     XP_Bool success = XP_FALSE;
-    const char* fmt = "SELECT room, ended, turn, local, nmoves, ntotal, nmissing, "
+    const char* fmt = "SELECT ended, turn, local, nmoves, ntotal, nmissing, "
         "dictlang, seed, connvia, gameid, lastMoveTime, dupTimerExpires, relayid, scores, nPending, role, created, snap "
         "FROM games WHERE rowid = %lld";
     XP_UCHAR query[256];
@@ -545,8 +542,6 @@ gdb_getGameInfo( sqlite3* pDb, sqlite3_int64 rowid, GameInfo* gib )
     if ( SQLITE_ROW == result ) {
         success = XP_TRUE;
         int col = 0;
-        int len = sizeof(gib->room);
-        getColumnText( ppStmt, col++, gib->room, &len );
         gib->rowid = rowid;
         gib->gameOver = 1 == sqlite3_column_int( ppStmt, col++ );
         gib->turn = sqlite3_column_int( ppStmt, col++ );
@@ -556,7 +551,7 @@ gdb_getGameInfo( sqlite3* pDb, sqlite3_int64 rowid, GameInfo* gib )
         gib->nMissing = sqlite3_column_int( ppStmt, col++ );
         gib->dictLang = sqlite3_column_int( ppStmt, col++ );
         gib->seed = sqlite3_column_int( ppStmt, col++ );
-        len = sizeof(gib->conn);
+        int len = sizeof(gib->conn);
         getColumnText( ppStmt, col++, gib->conn, &len );
         gib->gameID = sqlite3_column_int( ppStmt, col++ );
         gib->lastMoveTime = sqlite3_column_int( ppStmt, col++ );

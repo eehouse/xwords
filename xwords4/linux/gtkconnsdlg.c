@@ -209,31 +209,17 @@ static GtkWidget*
 makeRelayPage( GtkConnsState* state, PageData* data )
 {
     GtkWidget* vbox = boxWithUseCheck( state, data );
-    const gchar* hint = NULL;
 
-    if ( SERVER_ISSERVER == state->role ) {
-        hint = "As host, you pick the room name for the game, and must "
-            "connect first";
-    } else {
-        XP_ASSERT( SERVER_ISCLIENT == state->role );
-        hint = "As guest, you get the room name from the host.   Be sure to "
-            "let the host connect first to validate the name.";
-    }
-
-    gtk_box_pack_start( GTK_BOX(vbox), gtk_label_new( hint ), FALSE, TRUE, 0 );
-
-    GtkWidget* hbox = makeLabeledField( "Room", &state->invite, NULL );
     XP_Bool hasRelay = addr_hasType( state->addr, COMMS_CONN_RELAY );
     if ( hasRelay ) {
-        gtk_entry_set_text( GTK_ENTRY(state->invite), 
+        gtk_entry_set_text( GTK_ENTRY(state->invite),
                             state->addr->u.ip_relay.invite );
     }
-    gtk_box_pack_start( GTK_BOX(vbox), hbox, FALSE, TRUE, 0 );
     gtk_widget_set_sensitive( state->invite, !state->readOnly );
 
-    hbox = makeLabeledField( "Relay address", &state->hostName, NULL );
+    GtkWidget* hbox = makeLabeledField( "Relay address", &state->hostName, NULL );
     if ( hasRelay ) {
-        gtk_entry_set_text( GTK_ENTRY(state->hostName), 
+        gtk_entry_set_text( GTK_ENTRY(state->hostName),
                             state->addr->u.ip_relay.hostName );
     }
     gtk_box_pack_start( GTK_BOX(vbox), hbox, FALSE, TRUE, 0 );

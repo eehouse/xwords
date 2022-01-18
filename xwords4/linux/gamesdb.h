@@ -30,7 +30,6 @@
 typedef struct _GameInfo {
     sqlite3_int64 rowid;
     XP_UCHAR name[128];
-    XP_UCHAR room[128];
     XP_UCHAR conn[128];
     XP_UCHAR scores[128];
     XP_UCHAR relayID[32];

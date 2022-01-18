@@ -241,7 +241,7 @@ cgl_draw( CursGameList* cgl )
         mvwaddstr( win, 0, cgl->width-1, "+" );
     }
 
-    const char* cols[] = {"#", "RowID", "Lang", "Scores", "GameID", "Role", "Room",
+    const char* cols[] = {"#", "RowID", "Lang", "Scores", "GameID", "Role",
                           "nTot", "nMiss", "Seed", "#Mv", "Turn", "nPend", "DupTimer" };
 
     int nShown = nGames <= cgl->height - 2 ? nGames : cgl->height - 2;
@@ -259,7 +259,6 @@ cgl_draw( CursGameList* cgl )
         data[line][col++] = g_strdup( gi->scores );
         data[line][col++] = g_strdup_printf( "%d", gi->gameID );
         data[line][col++] = g_strdup_printf( "%d", gi->role );
-        data[line][col++] = g_strdup( gi->room );
         data[line][col++] = g_strdup_printf( "%d", gi->nTotal );
         data[line][col++] = g_strdup_printf( "%d", countBits(gi->nMissing) );
         data[line][col++] = g_strdup_printf( "%d", gi->seed );
