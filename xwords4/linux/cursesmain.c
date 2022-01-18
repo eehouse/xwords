@@ -268,6 +268,29 @@ handleOpenGame( void* closure, int XP_UNUSED(key) )
 }
 
 static bool
+canMakeFromGI( const CurGameInfo* gi )
+{
+    LOG_FUNC();
+    bool result = 0 < gi->nPlayers
+        && 0 < gi->dictLang
+        ;
+    bool haveDict = !!gi->dictName;
+    bool allHaveDicts = true;
+    for ( int ii = 0; result && ii < gi->nPlayers; ++ii ) {
+        const LocalPlayer* lp = &gi->players[ii];
+        result = !lp->isLocal || (!!lp->name && '\0' != lp->name[0]);
+        if ( allHaveDicts ) {
+            allHaveDicts = !!lp->dictName;
+        }
+    }
+
+    result = result && (haveDict || allHaveDicts);
+
+    LOG_RETURNF( "%s", boolToStr(result) );
+    return result;
+}
+
+static bool
 handleNewGame( void* closure, int XP_UNUSED(key) )
 {
     LOG_FUNC();
@@ -277,11 +300,12 @@ handleNewGame( void* closure, int XP_UNUSED(key) )
 
     cb_dims dims;
     figureDims( aGlobals, &dims );
-    if ( !cb_new( aGlobals->cbState, &dims ) ) {
-        /* This erases the whole screen. Fix later. PENDING */
-        /* const char* buttons[] = { "Ok", }; */
-        /* (void)cursesask( aGlobals->mainWin, "Unable to create game (check params?)", */
-        /*                  VSIZE(buttons), buttons ); */
+
+    const CurGameInfo* gi = &aGlobals->cag.params->pgi;
+    if ( !canMakeFromGI(gi) ) {
+        ca_inform( aGlobals->mainWin, "Unable to create game (check params?)" );
+    } else if ( !cb_new( aGlobals->cbState, &dims ) ) {
+        XP_ASSERT(0);
     }
     return XP_TRUE;
 }

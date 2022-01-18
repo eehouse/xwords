@@ -146,32 +146,6 @@ ensureLocalPlayerNames( LaunchParams* XP_UNUSED_DBG(params), CurGameInfo* gi )
     }
 }
 
-#if 0
-static bool
-canMakeFromGI( const CurGameInfo* gi )
-{
-    LOG_FUNC();
-    bool result = 0 < gi->nPlayers
-        && 0 < gi->dictLang
-        ;
-    bool haveDict = !!gi->dictName;
-    bool allHaveDicts = true;
-    for ( int ii = 0; result && ii < gi->nPlayers; ++ii ) {
-        const LocalPlayer* lp = &gi->players[ii];
-        result = !lp->isLocal || (!!lp->name && '\0' != lp->name[0]);
-        if ( allHaveDicts ) {
-            allHaveDicts = !!lp->dictName;
-        }
-    }
-
-    result = result && (haveDict || allHaveDicts);
-
-    LOG_RETURNF( "%d", result );
-    XP_ASSERT( result );
-    return result;
-}
-#endif
-
 bool
 linuxOpenGame( CommonGlobals* cGlobals, const TransportProcs* procs,
                const CommsAddrRec* returnAddrP )
