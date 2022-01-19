@@ -914,4 +914,12 @@
     <string name="bonus_w2x_summary">2W</string>
     <string name="bonus_l2x_summary">2L</string>
     <string name="use_duptimer">Włącz licznik na ruch</string>
+    <plurals name="confirm_nameddeletes_fmt">
+        <item quantity="one">Jesteś pewien, że chcesz usunąć grę %1$s\? Tej akcji nie da się cofnąć.</item>
+        <item quantity="few">Jesteś pewien, że chcesz usunąć gry %1$s\? Tej akcji nie da się cofnąć.</item>
+        <item quantity="many">Jesteś pewien, że chcesz usunąć gry %1$s\? Tej akcji nie da się cofnąć.</item>
+        <item quantity="other">Jesteś pewien, że chcesz usunąć gry %1$s\? Tej akcji nie da się cofnąć.</item>
+    </plurals>
+    <string name="invitee_fmt">(zaproszono %1$s)</string>
+    <string name="list_item_relaypage">Ruch w grze…</string>
 </resources>
