@@ -55,7 +55,7 @@ $(XWLANG)Main.dict.gz: $(SOURCEDICT) $(MAKEFILE)
 	| sed 's/L-L/1/g' \
 	| sed 's/NY/2/g' \
 	| sed 's/QU/3/g' \
-	| grep '^[[1-3ÇA-JL-PR-VXZ]*$$' \
+	| grep '^[1-3ÇA-JL-PR-VXZ]*$$' \
 	| tr '123' '\001\002\003' \
 	| gzip - > $@
 
