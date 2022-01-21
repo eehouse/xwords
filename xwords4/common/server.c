@@ -1419,7 +1419,7 @@ makeRobotMove( ServerCtxt* server, XWEnv xwe )
 #ifdef XWFEATURE_SLOW_ROBOT
     if ( 0 != server->nv.robotTradePct ) {
         XP_ASSERT( ! inDuplicateMode( server ) );
-        if ( server_countTilesInPool( server ) >= MAX_TRAY_TILES ) {
+        if ( server_countTilesInPool( server ) >= gi->traySize ) {
             XP_U16 pct = XP_RANDOM() % 100;
             forceTrade = pct < server->nv.robotTradePct ;
         }
@@ -1459,7 +1459,7 @@ makeRobotMove( ServerCtxt* server, XWEnv xwe )
 
         XP_Bool trade = forceTrade || 
             ((newMove.nTiles == 0) && !canMove &&
-             (server_countTilesInPool( server ) >= MAX_TRAY_TILES));
+             (server_countTilesInPool( server ) >= gi->traySize));
 
         server->vol.showPrevMove = XP_TRUE;
         if ( inDuplicateMode(server) || server->nv.showRobotScores ) {
@@ -1640,7 +1640,8 @@ server_tilesPicked( ServerCtxt* server, XWEnv xwe, XP_U16 player,
     TrayTileSet newTiles = *newTilesP;
     pool_removeTiles( server->pool, &newTiles );
 
-    fetchTiles( server, xwe, player, MAX_TRAY_TILES, NULL, &newTiles, XP_FALSE );
+    fetchTiles( server, xwe, player, server->vol.gi->traySize,
+                NULL, &newTiles, XP_FALSE );
     XP_ASSERT( !inDuplicateMode(server) );
     model_assignPlayerTiles( server->vol.model, player, &newTiles );
 
@@ -2476,15 +2477,16 @@ fetchTiles( ServerCtxt* server, XWEnv xwe, XP_U16 playerNum, XP_U16 nToFetch,
     XP_Bool ask;
     XP_U16 nSoFar = resultTiles->nTiles;
     PoolContext* pool = server->pool;
-    const XP_UCHAR* curTray[MAX_TRAY_TILES];
+    const CurGameInfo* gi = server->vol.gi;
+    const XP_UCHAR* curTray[gi->traySize];
 #ifdef FEATURE_TRAY_EDIT
     const DictionaryCtxt* dict = model_getDictionary( server->vol.model );
 #endif
 
     XP_ASSERT( !!pool );
 #ifdef FEATURE_TRAY_EDIT
-    ask = server->vol.gi->allowPickTiles
-        && !LP_IS_ROBOT(&server->vol.gi->players[playerNum]);
+    ask = gi->allowPickTiles
+        && !LP_IS_ROBOT(&gi->players[playerNum]);
 #else
     ask = XP_FALSE;
 #endif
@@ -2609,7 +2611,7 @@ assignTilesToAll( ServerCtxt* server, XWEnv xwe )
         if ( 0 == model_getNumTilesInTray( model, ii ) ) {
             if ( pickingTiles && !LP_IS_ROBOT(&gi->players[ii])
                  && informNeedPickTiles( server, xwe, XP_TRUE, ii,
-                                         MAX_TRAY_TILES ) ) {
+                                         gi->traySize ) ) {
                 allDone = XP_FALSE;
                 break;
             }

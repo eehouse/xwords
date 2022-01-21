@@ -1575,7 +1575,7 @@ ask_blank( gpointer data )
     CommonGlobals* cGlobals = &globals->cGlobals;
 
     XP_UCHAR* name = globals->cGlobals.gi->players[cGlobals->selPlayer].name;
-    XP_S16 result = gtkletterask( NULL, XP_FALSE, name,
+    XP_S16 result = gtkletterask( NULL, XP_FALSE, name, 1,
                                   cGlobals->nTiles, cGlobals->tiles, NULL );
 
     for ( int ii = 0; ii < cGlobals->nTiles; ++ii ) {
@@ -1591,6 +1591,7 @@ ask_blank( gpointer data )
 
     return 0;
 }
+
 static void
 gtk_util_notifyPickTileBlank( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe),
                               XP_U16 playerNum, XP_U16 col,
@@ -1619,8 +1620,8 @@ ask_tiles( gpointer data )
     XP_UCHAR* name = cGlobals->gi->players[cGlobals->selPlayer].name;
     for ( XP_Bool done = XP_FALSE; !done; ) {
         XP_S16 picked = gtkletterask( &newTiles, XP_TRUE, name,
-                                      cGlobals->nTiles, cGlobals->tiles,
-                                      cGlobals->tileCounts );
+                                      cGlobals->nToPick, cGlobals->nTiles,
+                                      cGlobals->tiles, cGlobals->tileCounts );
         switch ( picked ) {
         case PICKER_PICKALL:
             done = XP_TRUE;

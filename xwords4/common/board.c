@@ -1156,8 +1156,8 @@ board_commitTurn( BoardCtxt* board, XWEnv xwe, XP_Bool phoniesConfirmed,
                 }
 
                 if ( board->skipCommitConfirm || turnConfirmed ) {
-                    XP_U16 nToPick = MAX_TRAY_TILES -
-                        model_getNumTilesInTray( model, selPlayer );
+                    XP_U16 nToPick = board->gi->traySize
+                        - model_getNumTilesInTray( model, selPlayer );
                     if ( !server_askPickTiles( board->server, xwe, selPlayer, newTiles,
                                                nToPick ) ) {
                         result = server_commitMove( board->server, xwe, selPlayer,
