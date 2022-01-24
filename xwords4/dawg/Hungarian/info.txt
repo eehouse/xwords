@@ -14,7 +14,7 @@ LANGFILTER: | sed -e 's,NY,4,g'
 LANGFILTER: | sed -e 's,^\(.*\)SZ\(.*\)$,\15\2\n\1SZ\2,g'
 LANGFILTER: | sed -e 's,TY,6,g'
 LANGFILTER: | sed -e 's,^\(.*\)ZS\(.*\)$,\17\2\n\1ZS\2,g'
-LANGFILTER: | grep '^[1-7AÁBCDEÉFGHIÍJKLMNOÓÖŐPRSTUÚÜŰVZ]\{2,15\}$'
+LANGFILTER: | grep -x '[1-7AÁBCDEÉFGHIÍJKLMNOÓÖŐPRSTUÚÜŰVZ]\{2,15\}'
 LANGFILTER: | tr '1234567' '\001\002\003\004\005\006\007'
 
 # High bit means "official".  Next 7 bits are an enum where

@@ -20,7 +20,7 @@ LANGCODE:en_US
 # deal with DOS files
 LANGFILTER: tr -d '\r'
 LANGFILTER: | tr [a-z] [A-Z]
-LANGFILTER: | grep '^[A-Z]*$'
+LANGFILTER: | grep -x '[A-Z]\{2,15\}'
 LANGFILTER: | sort -u
 
 # We can trust sort (above) to do the right thing since there's no

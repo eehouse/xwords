@@ -21,7 +21,7 @@ CHARSET: utf-8
 
 LANGFILTER: tr -d '\r'
 LANGFILTER: | tr 'αβγδεζηθικλμνξοπρστυφχψω' 'ΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩ'
-LANGFILTER: | grep '^[ΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩ]*$'
+LANGFILTER: | grep -x '[ΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩ]\{2,15\}'
 
 LANGINFO: <p>Greek.  Uploaded wordlist must be in utf-8 format.
 LANGINFO: </p>

@@ -20,7 +20,7 @@ LANGCODE:sv_SE
 
 LANGFILTER: tr -d '\r'
 LANGFILTER: | tr [a-zäåæöü] [A-ZÄÅÆÖÜ]
-LANGFILTER: | grep '^[A-ZÄÅÆÖÜ]*$'
+LANGFILTER: | grep -x '[A-ZÄÅÆÖÜ]\{2,15\}'
 
 D2DARGS: -r -term 10
 

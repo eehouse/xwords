@@ -20,7 +20,7 @@ LANGCODE:fr_FR
 LANGFILTER: tr -d '\r'
 
 LANGFILTER: | tr [a-z] [A-Z]
-LANGFILTER: | grep '^[A-Z]*$'
+LANGFILTER: | grep -x '[A-Z]\{2,15\}'
 LANGFILTER: | tr '\n' '\000'
 LANGFILTER: | sort -u -z
 

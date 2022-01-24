@@ -23,7 +23,7 @@ LANGFILTER: tr -d '\r'
 # uppercase all
 LANGFILTER: | tr [a-z] [A-Z]
 # none with illegal chars
-LANGFILTER: | grep '^[A-Z]\+$'
+LANGFILTER: | grep -x '[A-Z]\{2,15\}'
 LANGFILTER: | sort -u
 
 # Until I can figure out how to force sort to use a locale's collation

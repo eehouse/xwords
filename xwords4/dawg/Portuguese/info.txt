@@ -24,7 +24,7 @@ LANGFILTER: | tr [a-zç] [A-ZÇ]
 # no words not containing a vowel
 LANGFILTER: | grep '[AEIOU]' 
 # none with illegal chars
-LANGFILTER: | grep '^[A-JL-VXZÇ]\+$'
+LANGFILTER: | grep -x '[A-JL-VXZÇ]\{2,15\}'
 
 # Until I can figure out how to force sort to use a locale's collation
 # rules we can't trust sort in the filtering rules above and so must

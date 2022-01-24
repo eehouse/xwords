@@ -23,7 +23,7 @@ LANGCODE:ro
 LANGFILTER: tr -d '\r'
 LANGFILTER: | tr [:lower:] [:upper:]
 LANGFILTER: | tr 'ĂÂÎȘȚ' 'AAIST'
-LANGFILTER: | grep '^[A-JL-PR-VXZ]*$'
+LANGFILTER: | grep -x '[A-JL-PR-VXZ]\{2,15\}'
 LANGFILTER: | sort -u
 
 # We can trust sort (above) to do the right thing since there's no

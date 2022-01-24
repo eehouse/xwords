@@ -24,7 +24,7 @@ LANGFILTER: | tr [a-zåæø] [A-ZÅÆØ]
 # no words not containing a vowel
 LANGFILTER: | grep '[AEIOUYÅÆØ]' 
 # none with illegal chars
-LANGFILTER: | grep '^[A-PR-VX-ZÅÆØ]\+$'
+LANGFILTER: | grep -x '[A-PR-VX-ZÅÆØ]\{2,15\}'
 # remove duplicates
 LANGFILTER: | sort -u
 

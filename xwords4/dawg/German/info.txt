@@ -28,7 +28,7 @@ LANGFILTER: | tr [a-zäöü] [A-ZÄÖÜ]
 # no words not containing a vowel
 # LANGFILTER: | grep '[AEIOUÄÖÜ]' 
 # none with illegal chars
-LANGFILTER: | grep '^[A-ZÄÖÜ]\+$'
+LANGFILTER: | grep -x '[A-ZÄÖÜ]\{2,15\}'
 
 # Until I can figure out how to force sort to use a locale's collation
 # rules we can't trust sort in the filtering rules above and so must
