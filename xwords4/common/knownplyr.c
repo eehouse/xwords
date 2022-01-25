@@ -197,7 +197,7 @@ addPlayer( XW_DUtilCtxt* XP_UNUSED_DBG(dutil), KPState* state, const XP_UCHAR* n
             makeUniqueName( state, name, tmpName, VSIZE(tmpName) );
             name = tmpName;
         }
-        XP_LOGFF( "adding new player %s!", name );
+        /* XP_LOGFF( "adding new player %s!", name ); */
         KnownPlayer* newPlayer = XP_CALLOC( dutil->mpool, sizeof(*newPlayer) );
         newPlayer->name = copyString( dutil->mpool, name );
         newPlayer->addr = *addr;

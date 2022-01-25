@@ -32,6 +32,7 @@ import android.os.AsyncTask;
 import android.os.SystemClock;
 
 import java.io.File;
+import java.util.List;
 import javax.net.ssl.HttpsURLConnection;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -430,15 +431,23 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
                                 body, url.hashCode() );
     }
 
-    static boolean postedForDictDownload( Context context, final Uri uri )
+    static boolean postedForDictDownload( Context context, final Uri uri,
+                                          DwnldDelegate.DownloadFinishedListener dfl )
     {
         String durl = uri.getQueryParameter( "durl" );
         boolean isDownloadURI = null != durl;
         if ( isDownloadURI ) {
             String name = uri.getQueryParameter( "name" );
             Assert.assertTrueNR( null != name ); // derive from uri?
-            postDictNotification( context, durl, name,
-                                  DictUtils.DictLoc.INTERNAL, false );
+            Uri dictUri = Uri.parse( durl );
+            List<String> segs = dictUri.getPathSegments();
+            if ( "byod".equals( segs.get(0) ) ) {
+                DwnldDelegate
+                    .downloadDictInBack( context, dictUri, name, dfl );
+            } else {
+                postDictNotification( context, durl, name,
+                                      DictUtils.DictLoc.INTERNAL, false );
+            }
         }
         // Log.d( TAG, "postDictNotification(%s) => %b", uri, isDownloadURI );
         return isDownloadURI;

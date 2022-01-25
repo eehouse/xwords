@@ -2712,4 +2712,13 @@
     <!-- Button referenced in text above. Should match! -->
     <string name="button_settings">Settings…</string>
 
+    <!-- String shown when download of BYOD wordlist succeeds. There's
+         also an "Open" button shown in this case -->
+    <string name="byod_success">Download of %1$s succeeded. Open it now if you like.</string>
+    <!-- Shown when download fails -->
+    <string name="byod_failure">Download of %1$s failed.</string>
+    <!-- String shown when download of BYOD wordlist fails -->
+    <!-- Button giving option of opening just-downloaded wordlist -->
+    <string name="button_open_dict">Open</string>
+
 </resources>

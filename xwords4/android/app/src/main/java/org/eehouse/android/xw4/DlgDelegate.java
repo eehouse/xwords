@@ -57,6 +57,7 @@ public class DlgDelegate {
         APPLY_CONFIG,
         LAUNCH_THEME_CONFIG,
         SEND_LOGS,
+        OPEN_BYOD_DICT,
 
         // BoardDelegate
         UNDO_LAST_ACTION,

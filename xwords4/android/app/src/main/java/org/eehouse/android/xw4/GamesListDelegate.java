@@ -1581,6 +1581,10 @@ public class GamesListDelegate extends ListDelegateBase
             Utils.emailLogFile( m_activity, logLoc );
             break;
 
+        case OPEN_BYOD_DICT:
+            DictBrowseDelegate.launch( getDelegator(), (String)params[0] );
+            break;
+
         default:
             handled = super.onPosButton( action, params );
         }
@@ -2429,8 +2433,30 @@ public class GamesListDelegate extends ListDelegateBase
     private boolean postWordlistURL( Intent intent )
     {
         Uri data = intent.getData();
-        boolean result = null != data
-            && UpdateCheckReceiver.postedForDictDownload( m_activity, data );
+        boolean result = null != data;
+        if ( result ) {
+            // dfl: In case it's a BYOD download
+            DwnldDelegate.DownloadFinishedListener dfl =
+                new DwnldDelegate.DownloadFinishedListener() {
+                    @Override
+                    public void downloadFinished( String ignore,
+                                                  String name,
+                                                  boolean success ) {
+                        int resid = success ? R.string.byod_success
+                            : R.string.byod_failure;
+                        DlgDelegate.Builder builder =
+                            makeOkOnlyBuilder( getString( resid, name ) );
+                        if ( success ) {
+                            builder.setActionPair( Action.OPEN_BYOD_DICT,
+                                                   R.string.button_open_dict )
+                                .setParams( name );
+                        }
+                        builder.show();
+                    }
+                };
+            result = UpdateCheckReceiver.postedForDictDownload( m_activity,
+                                                                data, dfl );
+        }
         return result;
     }
 
