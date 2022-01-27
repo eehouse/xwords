@@ -359,7 +359,7 @@ public class RelayService extends XWJIService
         m_onInactivity = new Runnable() {
                 @Override
                 public void run() {
-                    // Log.d( TAG, "m_onInactivity fired" );
+                    Log.d( TAG, "%H.m_onInactivity fired", this );
                     if ( !shouldMaintainConnection() ) {
                         NetStateCache.unregister( RelayService.this,
                                                   RelayService.this );

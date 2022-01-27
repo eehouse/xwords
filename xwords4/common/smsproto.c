@@ -595,7 +595,7 @@ static void
 addMessage( SMSProto* state, const XP_UCHAR* fromPhone, int msgID, int indx,
             int count, const XP_U8* data, XP_U16 len )
 {
-    XP_LOGFF( "phone=%s, msgID=%d, %d/%d", fromPhone, msgID, indx, count );
+    // XP_LOGFF( "phone=%s, msgID=%d, %d/%d", fromPhone, msgID, indx, count );
     XP_ASSERT( 0 < len );
     MsgIDRec* msgIDRec;
     for ( ; ; ) {
