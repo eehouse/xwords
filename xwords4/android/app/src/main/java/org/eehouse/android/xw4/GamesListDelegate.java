@@ -387,14 +387,10 @@ public class GamesListDelegate extends ListDelegateBase
             }
         }
 
-        boolean setField( String newField )
+        boolean setField( int newID )
         {
             boolean changed = false;
-            int newID = fieldToID( newField );
-            if ( -1 == newID ) {
-                Log.d( TAG, "setField(): unable to match fieldName %s",
-                       newField );
-            } else if ( m_fieldID != newID ) {
+            if ( 0 != newID && m_fieldID != newID ) {
                 m_fieldID = newID;
                 // return true so caller will do onContentChanged.
                 // There's no other way to signal GameListItem instances
@@ -544,29 +540,6 @@ public class GamesListDelegate extends ListDelegateBase
                     if ( rowIDs.contains( rowID ) ) {
                         result.add( tryme );
                     }
-                }
-            }
-            return result;
-        }
-
-        private int fieldToID( String fieldName )
-        {
-            int[] ids = {
-                R.string.game_summary_field_empty,
-                R.string.game_summary_field_language,
-                R.string.game_summary_field_opponents,
-                R.string.game_summary_field_state,
-                R.string.game_summary_field_rowid,
-                R.string.game_summary_field_gameid,
-                R.string.game_summary_field_npackets,
-                R.string.title_addrs_pref,
-                R.string.game_summary_field_created,
-            };
-            int result = ids[0]; // need a default in case set changes
-            for ( int id : ids ) {
-                if ( LocUtils.getString( m_activity, id ).equals( fieldName )){
-                    result = id;
-                    break;
                 }
             }
             return result;
@@ -2738,7 +2711,7 @@ public class GamesListDelegate extends ListDelegateBase
 
     private void updateField()
     {
-        String newField = CommonPrefs.getSummaryField( m_activity );
+        int newField = CommonPrefs.getSummaryFieldId( m_activity );
         if ( m_adapter.setField( newField ) ) {
             // The adapter should be able to decide whether full
             // content change is required.  PENDING

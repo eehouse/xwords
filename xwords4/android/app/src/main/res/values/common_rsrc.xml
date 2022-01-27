@@ -313,13 +313,6 @@
     <item>http://www.google.com/search?nl=%1$s\u0026q=%2$s</item>
   </string-array>
 
-  <string-array name="game_summary_values">
-    <item>@string/game_summary_field_empty</item>
-    <item>@string/game_summary_field_language</item>
-    <item>@string/game_summary_field_opponents</item>
-    <item>@string/game_summary_field_state</item>
-  </string-array>
-
   <string-array name="confirm_sms_reasons">
     <item>@string/confirm_sms_leave</item>
     <item>@string/confirm_sms_unlimited</item>

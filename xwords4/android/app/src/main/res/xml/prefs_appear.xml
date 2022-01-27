@@ -13,11 +13,10 @@
         android:defaultValue="30"
         />
 
+    <!-- Fields are listed/added in XWSumListPreference.java -->
     <org.eehouse.android.xw4.XWSumListPreference
         android:key="@string/key_summary_field"
         android:title="@string/summary_field"
-        android:entries="@array/game_summary_values"
-        android:entryValues="@array/game_summary_values"
         android:defaultValue="@string/game_summary_field_opponents"
         />
 

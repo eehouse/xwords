@@ -1,6 +1,6 @@
 /* -*- compile-command: "find-and-gradle.sh inXw4dDeb"; -*- */
 /*
- * Copyright 2009 - 2011 by Eric House (xwords@eehouse.org).  All
+ * Copyright 2009 - 2022 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -35,6 +35,7 @@ import org.eehouse.android.xw4.NetUtils;
 import org.eehouse.android.xw4.R;
 import org.eehouse.android.xw4.Utils;
 import org.eehouse.android.xw4.XWPrefs;
+import org.eehouse.android.xw4.XWSumListPreference;
 import org.eehouse.android.xw4.loc.LocUtils;
 
 public class CommonPrefs extends XWPrefs {
@@ -337,6 +338,20 @@ public class CommonPrefs extends XWPrefs {
     public static String getSummaryField( Context context )
     {
         return getPrefsString( context, R.string.key_summary_field );
+    }
+
+    public static int getSummaryFieldId( Context context )
+    {
+        int result = 0;
+        String str = getSummaryField( context );
+        int[] ids = XWSumListPreference.getFieldIDs( context );
+        for ( int id : ids ) {
+            if ( LocUtils.getString( context, id ).equals( str )){
+                result = id;
+                break;
+            }
+        }
+        return result;
     }
 
     public enum ColorTheme {

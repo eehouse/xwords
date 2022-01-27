@@ -1,6 +1,6 @@
 /* -*- compile-command: "find-and-gradle.sh inXw4dDeb"; -*- */
 /*
- * Copyright 2010 - 2016 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2010 - 2022 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -27,13 +27,44 @@ import org.eehouse.android.xw4.loc.LocUtils;
 
 public class XWSumListPreference extends XWListPreference {
 
-    private static final int[] s_ADDROWS = {
+    private static int[] _s_game_summary_values = {
+        R.string.game_summary_field_empty,
+        R.string.game_summary_field_language,
+        R.string.game_summary_field_opponents,
+        R.string.game_summary_field_state,
+    };
+
+    private static int[] _s_game_summary_values_dbg = {
         R.string.game_summary_field_npackets,
         R.string.game_summary_field_rowid,
         R.string.game_summary_field_gameid,
         R.string.title_addrs_pref,
         R.string.game_summary_field_created,
     };
+
+    private static int[] s_game_summary_values = null;
+    public static int[] getFieldIDs( Context context )
+    {
+        if ( null == s_game_summary_values ) {
+            int len = _s_game_summary_values.length;
+            boolean addDbg = BuildConfig.NON_RELEASE
+                || XWPrefs.getDebugEnabled( context );
+            if ( addDbg ) {
+                len += _s_game_summary_values_dbg.length;
+            }
+            s_game_summary_values = new int[len];
+            int ii = 0;
+            for ( int id : _s_game_summary_values ) {
+                s_game_summary_values[ii++] = id;
+            }
+            if ( addDbg ) {
+                for ( int id : _s_game_summary_values_dbg ) {
+                    s_game_summary_values[ii++] = id;
+                }
+            }
+        }
+        return s_game_summary_values;
+    }
 
     public XWSumListPreference( Context context, AttributeSet attrs )
     {
@@ -46,36 +77,13 @@ public class XWSumListPreference extends XWListPreference {
     {
         super.onAttached();
 
-        CharSequence[] entries = getEntries();
-        CharSequence[] newEntries = LocUtils.xlateStrings( m_context, entries );
-        if ( ! newEntries.equals( entries ) ) {
-            setEntries( newEntries );
-            setEntryValues( newEntries );
+        int[] ids = getFieldIDs( m_context );
+        CharSequence[] rows = new String[ids.length];
+        for ( int ii = 0; ii < ids.length; ++ii ) {
+            rows[ii] = LocUtils.getString( m_context, ids[ii] );
         }
 
-        if ( BuildConfig.DEBUG || XWPrefs.getDebugEnabled( m_context ) ) {
-            entries = getEntries();
-            CharSequence lastRow = entries[entries.length - 1];
-            boolean done = false;
-
-            String[] addRows = new String[s_ADDROWS.length];
-            for ( int ii = 0; !done && ii < s_ADDROWS.length; ++ii ) {
-                String addRow = LocUtils.getString( m_context, s_ADDROWS[ii] );
-                done = lastRow.equals( addRow );
-                addRows[ii] = addRow;
-            }
-
-            if ( !done ) {
-                newEntries = new CharSequence[entries.length + addRows.length];
-                System.arraycopy( entries, 0, newEntries, 0,
-                                  entries.length );
-                System.arraycopy( addRows, 0, newEntries, entries.length,
-                                  addRows.length );
-                setEntries( newEntries );
-
-                setEntryValues( newEntries );
-            }
-        }
+        setEntries( rows );
+        setEntryValues( rows );
     }
-
 }
