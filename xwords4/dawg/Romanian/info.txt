@@ -21,7 +21,7 @@ LANGCODE:ro
 
 # deal with DOS files
 LANGFILTER: tr -d '\r'
-LANGFILTER: | tr [:lower:] [:upper:]
+LANGFILTER: | sed -e 's/[[:lower:]]*/\U&/'
 LANGFILTER: | tr 'ĂÂÎȘȚ' 'AAIST'
 LANGFILTER: | grep -x '[A-JL-PR-VXZ]\{2,15\}'
 LANGFILTER: | sort -u

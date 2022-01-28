@@ -44,7 +44,7 @@ LANGINFO: <p>The file you upload should be encoded in UTF-8.</p>
 # MSDos LF chars go bye-bye
 LANGFILTER: tr -d '\r'
 
-LANGFILTER: | tr 'a-zç' 'A-ZÇ'
+LANGFILTER: | sed -e 's/[[:lower:]]*/\U&/'
 LANGFILTER: | sed -e 's/L·L/1/g' -e 's/L\.L/1/g' -e 's/L-L/1/g'
 LANGFILTER: | sed -e 's/NY/2/g' -e 's/QU/3/g'
 LANGFILTER: | grep -x '[Ç1-3A-JL-VXZ\.]\{2,15\}'

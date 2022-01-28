@@ -22,7 +22,7 @@ CHARSET:windows-1251
 # deal with DOS files
 LANGFILTER: tr -d '\r'
 # uppercase all
-LANGFILTER: | tr [ŕáâăäĺćçčéęëěíîďđńňóôőö÷řůÚűüýţ˙] [ŔÁÂĂÄĹĆÇČÉĘËĚÍÎĎĐŃŇÓÔŐÖ×ŘŮÚŰÜÝŢß]
+LANGFILTER: | sed -e 's/[[:lower:]]*/\U&/'
 # LANGFILTER: | tr -s '\n' '\000'
 
 # note: don't turn off sorting!  Can't do it with GNU 'sort' without

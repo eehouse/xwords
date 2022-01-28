@@ -25,7 +25,7 @@ TARGET_TYPE ?= WINCE
 include ../Makefile.langcommon
 
 $(XWLANG)Main.dict.gz: $(XWDICTPATH)/Italian/zinga_wordlist
-	cat $< | tr a-z A-Z | grep '^[A-Z]*$$' | gzip >$@
+	cat $< | sed 's/[[:lower:]]*/\U&/' | grep '^[A-Z]*$$' | gzip >$@
 
 # Everything but creating of the Main.dict file is inherited from the
 # "parent" Makefile.langcommon in the parent directory.

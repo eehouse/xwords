@@ -28,7 +28,7 @@ LANGFILTER: tr -d '\r'
 # convert accented vowels
 LANGFILTER: | tr '\207\216\222\227\234\237\226' 'aeiouu\321'
 # uppercase
-LANGFILTER: | tr [a-zÃ±] [A-ZÃ]
+LANGFILTER: | sed -e 's/[[:lower:]]*/\U&/'
 # remove words with illegal letters
 LANGFILTER: | grep -x '[[A-JL-VX-ZÃ]\{2,15\}'
 # substitute pairs (can't figure out how to use octal values)

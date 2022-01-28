@@ -19,7 +19,7 @@ LANGCODE:it_IT
 
 # deal with DOS files
 LANGFILTER: tr -d '\r'
-LANGFILTER: | tr [a-z] [A-Z]
+LANGFILTER: | sed -e 's/[[:lower:]]*/\U&/'
 LANGFILTER: | grep -x '[A-IL-VZ]\{2,15\}'
 LANGFILTER: | sort -u
 

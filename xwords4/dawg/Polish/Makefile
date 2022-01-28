@@ -31,7 +31,7 @@ SOURCEDICT ?= $(XWDICTPATH)/Polish/slowa-utf8.txt.gz
 
 $(XWLANG)Main.dict.gz: $(SOURCEDICT)
 	zcat $< | tr -d '\r' \
-	| tr [aąbcćdeęfghijklłmnńoóprsśtuwyzźż] [AĄBCĆDEĘFGHIJKLŁMNŃOÓPRSŚTUWYZŹŻ] \
+	| sed 's/[[:lower:]]*/\U&/' \
     | grep '^[AĄBCĆDEĘFGHIJKLŁMNŃOÓPRSŚTUWYZŹŻ]*$$' \
     | gzip > $@
 

@@ -5,3 +5,5 @@ for INFO in $(ls */info.txt); do
 	echo "*** processing $(basename $DIR) ***"
 	(cd $DIR && make clean byodbins)
 done
+
+make dict2dawg

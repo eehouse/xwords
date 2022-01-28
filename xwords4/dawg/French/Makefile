@@ -23,7 +23,7 @@ TARGET_TYPE ?= FRANK
 include ../Makefile.langcommon
 
 $(XWLANG)Main.dict.gz: ods3.txt.gz
-	zcat $< | tr a-z A-Z | gzip >$@
+	zcat $< | sed 's/[[:lower:]]*/\U&/' | gzip >$@
 
 # Everything but creating of the Main.dict file is inherited from the
 # "parent" Makefile.langcommon in the parent directory.

@@ -19,7 +19,7 @@
 LANGCODE:HEX
 
 # uppercase all
-LANGFILTER: tr [a-f] [A-F]
+LANGFILTER: | sed -e 's/[[:lower:]]*/\U&/'
 LANGFILTER: | grep -x '[A-F]\{2,15\}'
 LANGFILTER: | sed 's/A/Ä/'
 LANGFILTER: | sed 's/E/Ë/'

@@ -20,7 +20,7 @@ CHARSET: utf-8
 # deal with DOS files
 LANGFILTER: tr -d '\r'
 # uppercase all
-LANGFILTER: | tr [a-zç] [A-ZÇ]
+LANGFILTER: | sed -e 's/[[:lower:]]*/\U&/'
 # no words not containing a vowel
 LANGFILTER: | grep '[AEIOU]' 
 # none with illegal chars

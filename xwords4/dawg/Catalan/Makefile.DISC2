@@ -49,7 +49,7 @@ SOURCEDICT ?= $(XWDICTPATH)/Catalan/DISC2-LP.txt
 $(XWLANG)Main.dict.gz: $(SOURCEDICT) $(MAKEFILE)
 	cat $< \
 	| tr -d '\r' \
-	| tr [a-zç] [A-ZÇ] \
+	| sed 's/[[:lower:]]*/\U&/' \
 	| sed 's/L·L/1/g' \
 	| sed 's/L\.L/1/g' \
 	| sed 's/L-L/1/g' \

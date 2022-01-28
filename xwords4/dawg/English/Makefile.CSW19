@@ -26,7 +26,8 @@ include ../Makefile.langcommon
 SOURCEDICT ?= $(XWDICTPATH)/English/csw19_no_def.txt
 
 $(XWLANG)Main.dict.gz: $(SOURCEDICT) Makefile
-	cat $< | tr -d '\r' | awk '{print $$1}' | tr [a-z] [A-Z] | \
+	cat $< | tr -d '\r' | awk '{print $$1}' | \
+		sed 's/[[:lower:]]*/\U&/' | \
 		grep -e "^[A-Z]\{2,15\}$$" | gzip -c > $@
 
 # Everything but creating of the Main.dict file is inherited from the

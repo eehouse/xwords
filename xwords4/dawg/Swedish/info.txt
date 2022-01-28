@@ -19,7 +19,8 @@ CHARSET: utf-8
 LANGCODE:sv_SE
 
 LANGFILTER: tr -d '\r'
-LANGFILTER: | tr [a-zäåæöü] [A-ZÄÅÆÖÜ]
+# uppercase all
+LANGFILTER: | sed -e 's/[[:lower:]]*/\U&/'
 LANGFILTER: | grep -x '[A-ZÄÅÆÖÜ]\{2,15\}'
 
 D2DARGS: -r -term 10

@@ -29,7 +29,7 @@ SOURCEDICT ?= $(XWDICTPATH)/Portuguese/ptbr4422.txt.gz
 
 $(XWLANG)Main.dict.gz: $(SOURCEDICT) $(MAKEFILE)
 	zcat $< | \
-		tr 'abcçdefghijlmnopqrstuvxz' 'ABCÇDEFGHIJLMNOPQRSTUVXZ' | \
+		sed 's/[[:lower:]]*/\U&/' | \
 		grep '^[ABCÇDEFGHIJLMNOPQRSTUVXZ]\+$$' | \
 		gzip -c > $@
 

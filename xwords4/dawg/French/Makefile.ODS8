@@ -27,7 +27,7 @@ include ../Makefile.langcommon
 # use sed to strip the bogus utf8 identifier. There must be a better
 # way, e.g. with iconv.
 $(XWLANG)Main.dict.gz: $(XWDICTPATH)/French/ods8.txt
-	cat $< | tr -d '\r' | sed 's,\xEF\xBB\xBF,,' | tr a-z A-Z | gzip >$@
+	cat $< | tr -d '\r' | sed 's,\xEF\xBB\xBF,,' | sed 's/[[:lower:]]*/\U&/' | gzip >$@
 
 # Everything but creating of the Main.dict file is inherited from the
 # "parent" Makefile.langcommon in the parent directory.

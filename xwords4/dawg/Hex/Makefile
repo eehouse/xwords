@@ -36,7 +36,9 @@ DICT ?= $(XWDICTPATH)/English/COSD.dict.gz
 # only one is worth publishing.
 $(XWLANG)Main.dict.gz: $(DICT)
 	@echo "building $@ from $<"
-	zcat $< | tr [a-f] [A-F] | grep -e '^[A-F]\{2,15\}$$' | \
+	zcat $< | \
+		sed 's/[[:lower:]]*/\U&/' | \
+		grep -e '^[A-F]\{2,15\}$$' | \
 		echo CAFEBABE DEADBEEF $$(cat -) | \
 		sed 's/A/Ä/g' | \
 		sed 's/E/Ë/g' | \

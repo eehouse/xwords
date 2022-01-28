@@ -111,7 +111,7 @@ $(XWLANG)Main.dict.gz: $(TMP_LIST)
 	cat $< \
 	| tr -d '\r' \
 	| grep -v '[1-7]' \
-	| tr [aábcdeéfghiíjklmnnyoóöőprtuúüűvzs] [AÁBCDEÉFGHIÍJKLMNNYOÓÖŐPRTUÚÜŰVZS] \
+	| sed 's/[[:lower:]]*/\U&/' \
 	| sed -e 's,^\(.*\)CS\(.*\)$$,\11\2\n\1CS\2,g' \
 	| sed -e 's,GY,2,g' \
 	| sed -e 's,LY,3,g' \

@@ -32,8 +32,13 @@ SOURCEDICT ?= $(ENGLISH)/CSW.dict.gz
 # word from CSW that's also in top5000 makes the grade
 
 $(XWLANG)Main.dict.gz: $(SOURCEDICT) $(ENGLISH)/Top_5000.dict.gz
-	zcat $(ENGLISH)/Top_5000.dict.gz | tr [a-z] [A-Z] | sort > /tmp/Top_5000.dict
-	zcat $< | tr -d '\r' | tr [a-z] [A-Z] | grep -e "^[A-Z]\{2,15\}$$" | sort > /tmp/$$(basename $<)
+	zcat $(ENGLISH)/Top_5000.dict.gz | \
+		sed 's/[[:lower:]]*/\U&/' | \
+		sort > /tmp/Top_5000.dict
+	zcat $< | tr -d '\r' | \
+		sed 's/[[:lower:]]*/\U&/' | \
+		grep -e "^[A-Z]\{2,15\}$$" | \
+		sort > /tmp/$$(basename $<)
 	rm -f $@ 
 	comm -12 /tmp/$$(basename $<) /tmp/Top_5000.dict | gzip -c > $@
 

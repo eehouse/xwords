@@ -24,7 +24,7 @@ LANGFILTER: tr -d '\r'
 # grep does not.  So don't use grep, e.g. to eliminate words
 # containing letters not in our alphabet.  Instead, pass the -r flag
 # via D2DARGS so they're dropped.
-LANGFILTER: | tr [aábcčdďeéěfghiíjklmnňoóprřsštťuúůvxyýzž] [AÁBCČDĎEÉĚFGHIÍJKLMNŇOÓPRŘSŠTŤUÚŮVXYÝZŽ]
+LANGFILTER: | sed -e 's/[[:lower:]]*/\U&/'
 LANGFILTER: | sort -u
 
 # presence of high-ascii means we must not pass -nosort

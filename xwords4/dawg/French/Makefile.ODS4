@@ -23,7 +23,7 @@ TARGET_TYPE ?= PALM
 include ../Makefile.langcommon
 
 $(XWLANG)Main.dict.gz: $(XWDICTPATH)/French/ods4c.txt.gz
-	zcat $< | tr a-z A-Z | tr -d '\r' | gzip >$@
+	zcat $< | sed 's/[[:lower:]]*/\U&/' | tr -d '\r' | gzip >$@
 
 # Everything but creating of the Main.dict file is inherited from the
 # "parent" Makefile.langcommon in the parent directory.

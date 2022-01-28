@@ -22,7 +22,7 @@ CHARSET:utf-8
 # deal with DOS files
 LANGFILTER: tr -d '\r'
 
-LANGFILTER: | tr [aáäbcčdďeéfghiíjklĺľmnňoôóprŕsštťuúvxyýzž] [AÁÄBCČDĎEÉFGHIÍJKLĹĽMNŇOÔÓPRŔSŠTŤUÚVXYÝZŽ]
+LANGFILTER: | sed -e 's/[[:lower:]]*/\U&/'
 LANGFILTER: | sort -u
 
 D2DARGS: -r -term 0 -enc UTF-8

@@ -24,7 +24,7 @@ LANGFILTER: tr -d '\r'
 # substitute for sharfes-s
 LANGFILTER: | sed -e 's/ß/SS/g'
 # uppercase all
-LANGFILTER: | tr [a-zäöü] [A-ZÄÖÜ]
+LANGFILTER: | sed -e 's/[[:lower:]]*/\U&/'
 # no words not containing a vowel
 # LANGFILTER: | grep '[AEIOUÄÖÜ]' 
 # none with illegal chars

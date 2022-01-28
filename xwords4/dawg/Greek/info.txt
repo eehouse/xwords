@@ -20,7 +20,7 @@ LANGCODE:el_GK
 CHARSET: utf-8
 
 LANGFILTER: tr -d '\r'
-LANGFILTER: | tr 'αβγδεζηθικλμνξοπρστυφχψω' 'ΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩ'
+LANGFILTER: | sed -e 's/[[:lower:]]*/\U&/'
 LANGFILTER: | grep -x '[ΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩ]\{2,15\}'
 
 LANGINFO: <p>Greek.  Uploaded wordlist must be in utf-8 format.

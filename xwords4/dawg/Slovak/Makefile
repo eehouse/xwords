@@ -28,7 +28,7 @@ SOURCEDICT ?= $(XWDICTPATH)/Slovak/Scrabble_SK.dict
 
 $(XWLANG)Main.dict.gz: $(SOURCEDICT) Makefile
 	cat $< | tr -d '\r' | \
-		tr '[:lower:]' '[:upper:]' | \
+		sed 's/[[:lower:]]*/\U&/' | \
 		sed 's,.,\U\0,g' | \
 		grep '^[AÁÄBCČDĎEÉFGHIÍJKLĹĽMNŇOÔÓPRŔSŠTŤUÚVXYÝZŽ]*$$' | \
 		gzip -c > $@

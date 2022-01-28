@@ -6,7 +6,7 @@ CHARSET: utf-8
 BUILD_FLAGS:ALLOWS_DUPLICATES
 
 LANGFILTER: tr -d '\r'
-LANGFILTER: | tr [aábcdeéfghiíjklmnnyoóöőprtuúüűvzs] [AÁBCDEÉFGHIÍJKLMNNYOÓÖŐPRTUÚÜŰVZS]
+LANGFILTER: | sed -e 's/[[:lower:]]*/\U&/'
 LANGFILTER: | sed -e 's,^\(.*\)CS\(.*\)$,\11\2\n\1CS\2,g'
 LANGFILTER: | sed -e 's,GY,2,g'
 LANGFILTER: | sed -e 's,LY,3,g'

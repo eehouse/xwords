@@ -33,7 +33,7 @@ SOURCEDICT ?= $(XWDICTPATH)/Greek/greek.dict
 
 $(XWLANG)Main.dict.gz: $(SOURCEDICT)
 	cat $< | tr -d '\r' \
-	| tr 'αβγδεζηθικλμνξοπρστυφχψω' 'ΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩ' \
+	| sed 's/[[:lower:]]*/\U&/' \
     | grep '^[ΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩ]*$$' \
     | gzip > $@
 

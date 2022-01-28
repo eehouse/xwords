@@ -47,7 +47,7 @@ SOURCEDICT ?= $(XWDICTPATH)/Spanish/FAA_4.1.txt
 $(XWLANG)Main.dict.gz: $(SOURCEDICT) Makefile
 	cat $< \
 	| tr -d '\r' \
-	| tr [a-zñ] [A-ZÑ] \
+	| sed 's/[[:lower:]]*/\U&/' \
 	| LANG=$(LANGCODE):$(ENC) grep '^[A-JL-VX-ZÑ]*$$' \
 	| sed 's/CH/1/g' \
 	| sed 's/LL/2/g' \

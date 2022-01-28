@@ -21,7 +21,7 @@ CHARSET:utf-8
 
 # deal with DOS files
 LANGFILTER: tr -d '\r'
-LANGFILTER: | tr [a-pr-uwyząćęłńóśźż] [A-PR-UWYZĄĆĘŁŃÓŚŹŻ]
+LANGFILTER: | sed -e 's/[[:lower:]]*/\U&/'
 LANGFILTER: | grep -x '[A-PR-UWYZĄĆĘŁŃÓŚŹŻ]\{2,15\}'
 LANGFILTER: | tr '\n' '\000'
 

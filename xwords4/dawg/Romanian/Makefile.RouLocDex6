@@ -32,7 +32,7 @@ SOURCEDICT ?= $(XWDICTPATH)/Romanian/rou_loc_red_dex_6.0.txt
 
 $(XWLANG)Main.dict.gz: $(SOURCEDICT) Makefile
 	cat $< | tr -d '\r' | \
-		tr [:lower:] [:upper:] | \
+		sed 's/[[:lower:]]*/\U&/' | \
 		grep '^[A-JL-PR-VXZ]*$$' | \
 		sort -u | \
 		gzip -c > $@

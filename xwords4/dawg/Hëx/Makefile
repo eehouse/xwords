@@ -30,7 +30,7 @@ DICT ?= $(XWDICTPATH)/English/CSW.dict.gz
 # tr 'AE' 'ÄË' doesn't work, so use sed.
 $(XWLANG)Main.dict.gz: $(DICT)
 	@echo "building $@ from $<"
-	zcat $< | tr [a-f] [A-F] | grep -e '^[A-F]\{2,8\}$$' | \
+	zcat $< | sed 's/[[:lower:]]*/\U&/' | grep -e '^[A-F]\{2,8\}$$' | \
 		echo CAFEBABE DEADBEEF $$(cat -) | \
 		sed 's/A/Ä/g' | \
 		sed 's/E/Ë/g' | \

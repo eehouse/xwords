@@ -27,7 +27,9 @@ TARGET_TYPE=FRANK
 include ../Makefile.langcommon
 
 $(XWLANG)Main.dict.gz: Enable1.txt.gz
-	zcat $< | tr -d '\r' | tr [a-z] [A-Z] | grep -e "^[A-Z]\{2,15\}$$" | \
+	zcat $< | tr -d '\r' | \
+		sed 's/[[:lower:]]*/\U&/' | \
+		grep -e "^[A-Z]\{2,15\}$$" | \
 		gzip -c > $@
 
 # Everything but creating of the Main.dict file is inherited from the

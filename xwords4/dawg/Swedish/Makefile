@@ -32,7 +32,7 @@ SOURCEDICT ?= $(XWDICTPATH)/Swedish/swedish15.utf8.gz
 # Swedish play of allowing blanks to stand for those letters as well.
 # So we don't exclude words with those letters from the dictionary.
 $(XWLANG)Main.dict.gz: $(SOURCEDICT) Makefile
-	zcat $< | tr [a-zäåæöü] [A-ZÄÅÆÖÜ] | \
+	zcat $< | sed 's/[[:lower:]]*/\U&/' | \
 		LANG=$(LANGCODE):$(ENC) grep '^[A-ZÄÅÆÖÜ]\{2,15\}$$' | \
 		gzip -c > $@
 
