@@ -58,7 +58,7 @@ public class Log {
     private static final String COL_TIMESTAMP = "ts";
 
     private static final int DB_VERSION = 2;
-    private static boolean sEnabled = BuildConfig.DEBUG;
+    private static boolean sEnabled = BuildConfig.NON_RELEASE;
     private static boolean sUseDB;
     private static WeakReference<Context> sContextRef;
 
@@ -78,6 +78,7 @@ public class Log {
     public static void setStoreLogs( boolean enable )
     {
         Context context = sContextRef.get();
+        Assert.assertTrueNR( null != context );
         if ( null != context ) {
             DBUtils.setBoolFor( context, KEY_USE_DB, enable );
         }
