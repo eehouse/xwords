@@ -193,6 +193,9 @@ public class CommonPrefs extends XWPrefs {
                 default:
                     Assert.failDbg();
                 }
+            } catch ( NumberFormatException nfe ) {
+                // This happens on Lollipop. I don't care why.
+                Log.d( TAG, "NumberFormatException: %s", nfe );
             } catch ( Exception ex ) {
                 // Will happen with old not-an-int saved value
                 Log.ex( TAG, ex );
