@@ -1554,6 +1554,10 @@ public class GamesListDelegate extends ListDelegateBase
             Utils.emailLogFile( m_activity, logLoc );
             break;
 
+        case CLEAR_INT_STATS:
+            TimerReceiver.clearStats( m_activity );
+            break;
+
         case OPEN_BYOD_DICT:
             DictBrowseDelegate.launch( getDelegator(), (String)params[0] );
             break;
@@ -1719,6 +1723,9 @@ public class GamesListDelegate extends ListDelegateBase
                     0 < DBUtils.getGamesWithSendsPending( m_activity ).size();
                 Utils.setItemVisible( menu, R.id.games_menu_resend, enable );
 
+                Utils.setItemVisible( menu, R.id.games_menu_timerStats,
+                                      BuildConfig.NON_RELEASE );
+
                 enable = Log.getStoreLogs();
                 Utils.setItemVisible( menu, R.id.games_menu_enableLogStorage, !enable );
                 Utils.setItemVisible( menu, R.id.games_menu_disableLogStorage, enable );
@@ -1778,6 +1785,7 @@ public class GamesListDelegate extends ListDelegateBase
             DictsDelegate.start( getDelegator() );
             break;
 
+            // Get rid of this???
         case R.id.games_menu_checkmoves:
             makeNotAgainBuilder( R.string.not_again_sync,
                                  R.string.key_notagain_sync,
@@ -1827,6 +1835,12 @@ public class GamesListDelegate extends ListDelegateBase
 
         case R.id.games_menu_writegit:
             Utils.gitInfoToClip( m_activity );
+            break;
+
+        case R.id.games_menu_timerStats:
+            makeOkOnlyBuilder( TimerReceiver.statsStr( m_activity ) )
+                .setActionPair( Action.CLEAR_INT_STATS, R.string.button_clear_stats )
+                .show();
             break;
 
         case R.id.games_menu_enableLogStorage:

@@ -58,6 +58,7 @@ public class DlgDelegate {
         LAUNCH_THEME_CONFIG,
         SEND_LOGS,
         OPEN_BYOD_DICT,
+        CLEAR_INT_STATS,        // debug only
 
         // BoardDelegate
         UNDO_LAST_ACTION,
@@ -415,14 +416,14 @@ public class DlgDelegate {
         m_dlgt.show( state );
     }
 
+    // Get rid of this?
     public void doSyncMenuitem()
     {
         Log.d( TAG, "doSyncMenuitem()" );
         if ( null == DBUtils.getRelayIDs( m_activity, null ) ) {
             makeOkOnlyBuilder( R.string.no_games_to_refresh ).show();
         } else {
-            RelayService.timerFired( m_activity );
-            MQTTUtils.timerFired( m_activity );
+            TimerReceiver.allTimersFired( m_activity );
             Utils.showToast( m_activity, R.string.msgs_progress );
         }
     }

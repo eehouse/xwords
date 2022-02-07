@@ -55,6 +55,9 @@ public class MQTTUtils extends Thread implements IMqttActionListener, MqttCallba
     private static enum State { NONE, CONNECTING, CONNECTED, SUBSCRIBING, SUBSCRIBED,
                                 CLOSING };
 
+    private static final long MIN_BACKOFF = 1000 * 60 * 2; // 2 minutes
+    private static final long MAX_BACKOFF = 1000 * 60 * 60 * 4; // 4 hours, to test
+
     private static MQTTUtils[] sInstance = {null};
     private static long sNextReg = 0;
     private static String sLastRev = null;
@@ -67,6 +70,30 @@ public class MQTTUtils extends Thread implements IMqttActionListener, MqttCallba
     private LinkedBlockingQueue<MessagePair> mOutboundQueue = new LinkedBlockingQueue<>();
     private boolean mShouldExit = false;
     private State mState = State.NONE;
+
+    private static TimerReceiver.TimerCallback sTimerCallbacks
+        = new TimerReceiver.TimerCallback() {
+                @Override
+                public void timerFired( Context context )
+                {
+                    Log.d( TAG, "timerFired()" );
+                    MQTTUtils.timerFired( context );
+                }
+
+                @Override
+                public long incrementBackoff( long backoff )
+                {
+                    if ( backoff < MIN_BACKOFF ) {
+                        backoff = MIN_BACKOFF;
+                    } else {
+                        backoff = backoff * 150 / 100;
+                    }
+                    if ( MAX_BACKOFF <= backoff ) {
+                        backoff = MAX_BACKOFF;
+                    }
+                    return backoff;
+                }
+            };
 
     public static void init( Context context )
     {
@@ -87,7 +114,7 @@ public class MQTTUtils extends Thread implements IMqttActionListener, MqttCallba
         getOrStart( context );
     }
 
-    public static void timerFired( Context context )
+    private static void timerFired( Context context )
     {
         MQTTUtils instance;
         synchronized ( sInstance ) {
@@ -542,7 +569,7 @@ public class MQTTUtils extends Thread implements IMqttActionListener, MqttCallba
         ConnStatusHandler
             .updateStatusIn( mContext, CommsConnType.COMMS_CONN_MQTT, true );
 
-        TimerReceiver.restartBackoff( mContext );
+        TimerReceiver.setBackoff( mContext, sTimerCallbacks, MIN_BACKOFF );
     }
 
     @Override
@@ -551,7 +578,7 @@ public class MQTTUtils extends Thread implements IMqttActionListener, MqttCallba
         Log.d( TAG, "%H.deliveryComplete(token=%s)", this, token );
         ConnStatusHandler
             .updateStatusOut( mContext, CommsConnType.COMMS_CONN_MQTT, true );
-        TimerReceiver.restartBackoff( mContext );
+        TimerReceiver.setBackoff( mContext, sTimerCallbacks, MIN_BACKOFF );
     }
 
     private void subscribe()

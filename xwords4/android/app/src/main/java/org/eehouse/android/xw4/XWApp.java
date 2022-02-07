@@ -111,10 +111,6 @@ public class XWApp extends Application
         case ON_RESUME:
             MQTTUtils.onResume( this );
             BTUtils.onResume( this );
-            // Do here what checkForMoves does
-            if ( null != DBUtils.getRelayIDs( this, null ) ) {
-                RelayService.timerFired( this );
-            }
             GameUtils.resendAllIf( this, null );
             break;
         case ON_STOP:

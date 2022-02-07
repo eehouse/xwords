@@ -1,6 +1,6 @@
 /* -*- compile-command: "find-and-gradle.sh inXw4dDeb"; -*- */
 /*
- * Copyright 2010 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2010 - 2022 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -20,9 +20,6 @@
 
 package org.eehouse.android.xw4;
 
-import android.app.AlarmManager;
-import android.app.PendingIntent;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.text.TextUtils;
@@ -36,10 +33,9 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 
-public class NagTurnReceiver extends BroadcastReceiver {
+public class NagTurnReceiver {
     private static final String TAG = NagTurnReceiver.class.getSimpleName();
 
-    private static final long INTERVAL_MILLIS = 1000 * 30; // every half minute for now
     private static final long[] NAG_INTERVAL_SECONDS = {// 2*60, // two minutes (for testing)
                                                         // 5*60,
                                                         // 10*60,
@@ -57,16 +53,31 @@ public class NagTurnReceiver extends BroadcastReceiver {
     private static Boolean s_nagsDisabledNet = null;
     private static Boolean s_nagsDisabledSolo = null;
 
-    @Override
-    public void onReceive( Context context, Intent intent )
+    private static TimerReceiver.TimerCallback sTimerCallbacks
+        = new TimerReceiver.TimerCallback() {
+                @Override
+                public void timerFired( Context context )
+                {
+                    NagTurnReceiver.timerFired( context );
+                }
+
+                @Override
+                public long incrementBackoff( long prevBackoff )
+                {
+                    Assert.failDbg();
+                    return 0;
+                }
+            };
+
+    private static void timerFired( Context context )
     {
         // loop through all games testing who's been sitting on a turn
         if ( !getNagsDisabled( context ) ) {
             NeedsNagInfo[] needNagging = DBUtils.getNeedNagging( context );
             if ( null != needNagging ) {
-                long now = new Date().getTime(); // in milliseconds
+                long now = System.currentTimeMillis();
                 for ( NeedsNagInfo info : needNagging ) {
-                    Assert.assertTrue( info.m_nextNag < now );
+                    Assert.assertTrueNR( info.m_nextNag < now );
 
                     // Skip processing if notifications disabled for this type
                     // of game
@@ -116,17 +127,10 @@ public class NagTurnReceiver extends BroadcastReceiver {
         setNagTimer( context );
     }
 
-    private static void restartTimer( Context context, long atMillis )
+    private static void restartTimer( Context context, long fireTimeMS )
     {
         if ( !getNagsDisabled( context ) ) {
-            AlarmManager am =
-                (AlarmManager)context.getSystemService( Context.ALARM_SERVICE );
-
-            Intent intent = new Intent( context, NagTurnReceiver.class );
-            PendingIntent pi = PendingIntent.getBroadcast( context, 0, intent, 0 );
-
-            long now = new Date().getTime(); // in milliseconds
-            am.set( AlarmManager.RTC, atMillis, pi );
+            TimerReceiver.setTimer( context, sTimerCallbacks, fireTimeMS );
         }
     }
 
@@ -143,7 +147,7 @@ public class NagTurnReceiver extends BroadcastReceiver {
     public static long figureNextNag( Context context, long moveTimeMillis )
     {
         long result = 0;
-        long now = new Date().getTime(); // in milliseconds
+        long now = System.currentTimeMillis();
         if ( now >= moveTimeMillis ) {
             long[] intervals = getIntervals( context );
             for ( long nSecs : intervals ) {

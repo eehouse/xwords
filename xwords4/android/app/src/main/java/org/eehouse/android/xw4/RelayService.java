@@ -72,6 +72,9 @@ public class RelayService extends XWJIService
     private static final int INITIAL_BACKOFF = 5;
     private static final int UDP_FAIL_LIMIT = 5;
 
+    private static final long MIN_BACKOFF = 1000 * 60 * 2; // 2 minutes
+    private static final long MAX_BACKOFF = 1000 * 60 * 60 * 23; // 23 hours
+
     // Must use the same jobID for all work enqueued for the same class. I
     // used to use the class's hashCode(), but that's different each time the
     // app runs. I think I was getting failures when a new instance launched
@@ -147,6 +150,29 @@ public class RelayService extends XWJIService
             ,XWPDEV_PROTO_VERSION_1
             };
 
+    private static TimerReceiver.TimerCallback sTimerCallbacks
+        = new TimerReceiver.TimerCallback() {
+                @Override
+                public void timerFired( Context context )
+                {
+                    Log.d( TAG, "timerFired()" );
+                    RelayService.timerFired( context );
+                }
+
+                @Override
+                public long incrementBackoff( long backoff )
+                {
+                    if ( backoff < MIN_BACKOFF ) {
+                        backoff = MIN_BACKOFF;
+                    } else {
+                        backoff *= 2;
+                    }
+                    if ( MAX_BACKOFF <= backoff ) {
+                        backoff = MAX_BACKOFF;
+                    }
+                    return backoff;
+                }
+            };
 
     // Must be kept in sync with eponymous enum in xwrelay.h
     private enum XWRelayReg { XWPDEV_NONE,
@@ -248,7 +274,7 @@ public class RelayService extends XWJIService
         enqueueWork( context, intent );
     }
 
-    public static void timerFired( Context context )
+    private static void timerFired( Context context )
     {
         Intent intent = getIntentTo( context, MsgCmds.TIMER_FIRED );
         enqueueWork( context, intent );
@@ -702,6 +728,7 @@ public class RelayService extends XWJIService
 
         DatagramSocket udpSocket = s_UDPSocket;
         if ( null != udpSocket && packets.size() > 0 ) {
+            boolean skipBackoffReset = true;
             // Log.d( TAG, "sendViaUDP(): sending %d at once", packets.size() );
             final RelayService service = this;
             service.noteSent( packets, true );
@@ -733,6 +760,7 @@ public class RelayService extends XWJIService
                 } catch ( NullPointerException npe ) {
                     Log.w( TAG, "network problem; dropping packet" );
                 }
+                skipBackoffReset = skipBackoffReset && packet.mSkipBackoffReset;
                 if ( breakNow ) {
                     break;
                 }
@@ -743,6 +771,9 @@ public class RelayService extends XWJIService
                                             sentLen > 0 );
             Log.d( TAG, "%s.sendViaUDP(): sent %d bytes (%d packets)",
                    this, sentLen, packets.size() );
+            if ( ! skipBackoffReset ) {
+                TimerReceiver.setBackoff( this, sTimerCallbacks, MIN_BACKOFF );
+            }
         }
 
         return sentLen;
@@ -764,7 +795,6 @@ public class RelayService extends XWJIService
 
     private boolean startFetchThreadIfNotUDP()
     {
-        // DbgUtils.logf( "startFetchThreadIfNotUDP()" );
         boolean handled = XWPrefs.getRelayEnabled( this ) && !BuildConfig.UDP_ENABLED;
         if ( handled && null == m_fetchThread ) {
             Assert.failDbg(); // NOT using this now!
@@ -779,6 +809,7 @@ public class RelayService extends XWJIService
                 }, getClass().getName() );
             m_fetchThread.start();
         }
+        // Log.d( TAG, "startFetchThreadIfNotUDP() => %b", handled );
         return handled;
     }
 
@@ -981,7 +1012,7 @@ public class RelayService extends XWJIService
     private void gotPacket( DatagramPacket packet )
     {
         ConnStatusHandler.showSuccessIn();
-        TimerReceiver.restartBackoff( this );
+        TimerReceiver.setBackoff( this, sTimerCallbacks, MIN_BACKOFF );
 
         int packetLen = packet.getLength();
         byte[] data = new byte[packetLen];
@@ -1045,7 +1076,7 @@ public class RelayService extends XWJIService
                 writeVLIString( out, Build.VERSION.RELEASE );
                 out.writeShort( BuildConfig.VARIANT_CODE );
 
-                postPacket( bas, XWRelayReg.XWPDEV_REG, timestamp );
+                postPacket( bas, XWRelayReg.XWPDEV_REG, timestamp, true );
                 s_regStartTime = now;
             } catch ( IOException ioe ) {
                 Log.ex( TAG, ioe );
@@ -1070,7 +1101,7 @@ public class RelayService extends XWJIService
                 ByteArrayOutputStream bas = new ByteArrayOutputStream();
                 DataOutputStream out = new DataOutputStream( bas );
                 writeVLIString( out, devid );
-                postPacket( bas, XWRelayReg.XWPDEV_RQSTMSGS, timestamp );
+                postPacket( bas, XWRelayReg.XWPDEV_RQSTMSGS, timestamp, true );
             } else {
                 Log.d(TAG, "requestMessages(): devid is null" );
             }
@@ -1154,7 +1185,7 @@ public class RelayService extends XWJIService
             try {
                 DataOutputStream out = new DataOutputStream( bas );
                 un2vli( header.m_packetID, out );
-                postPacket( bas, XWRelayReg.XWPDEV_ACK, -1 );
+                postPacket( bas, XWRelayReg.XWPDEV_ACK, -1, true );
             } catch ( IOException ioe ) {
                 Log.ex( TAG, ioe );
             }
@@ -1191,7 +1222,13 @@ public class RelayService extends XWJIService
     private void postPacket( ByteArrayOutputStream bas, XWRelayReg cmd,
                              long timestamp )
     {
-        PacketData packet = new PacketData( bas, cmd, timestamp );
+        postPacket( bas, cmd, timestamp, false );
+    }
+
+    private void postPacket( ByteArrayOutputStream bas, XWRelayReg cmd,
+                             long timestamp, boolean skipBackoffReset )
+    {
+        PacketData packet = new PacketData( bas, cmd, timestamp, skipBackoffReset );
         s_queue.add( packet );
         // Log.d( TAG, "postPacket(%s); (now %d in queue)", packet,
         //        s_queue.size() );
@@ -1766,16 +1803,18 @@ public class RelayService extends XWJIService
         private long m_requested; // when the request came into the static API
         private long m_created;   // when this packet was created (to service request)
         private long m_sentUDP;
+        private boolean mSkipBackoffReset;
 
         private PacketData() {}
 
         public PacketData( ByteArrayOutputStream bas, XWRelayReg cmd,
-                           long requestTS )
+                           long requestTS, boolean skipBackoffReset )
         {
             m_bas = bas;
             m_cmd = cmd;
             m_requested = requestTS;
             m_created = System.currentTimeMillis();
+            mSkipBackoffReset = skipBackoffReset;
 
             makeHeader();
         }

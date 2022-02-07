@@ -126,8 +126,6 @@
       </intent-filter>
     </receiver>
     <receiver android:name="TimerReceiver"/>
-    <receiver android:name="NagTurnReceiver"/>
-    <receiver android:name="SMSResendReceiver"/>
     <receiver android:name="DupeModeTimer"/>
 
     <receiver android:name="UpdateCheckReceiver">
@@ -186,6 +184,12 @@
       </intent-filter>
       <meta-data android:name="android.nfc.cardemulation.host_apdu_service"
                  android:resource="@xml/apduservice"/>
+    </service>
+
+    <service android:name=".TimerJobReceiver"
+             android:label="Push service"
+             android:permission="android.permission.BIND_JOB_SERVICE"
+             >
     </service>
 
   </application>

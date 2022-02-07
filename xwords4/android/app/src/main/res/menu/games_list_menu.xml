@@ -129,6 +129,9 @@
           android:title="@string/gamel_menu_logs"
           >
       <menu>
+        <item android:id="@+id/games_menu_timerStats"
+              android:title="@string/gamel_menu_timerStats"
+              />
         <item android:id="@+id/games_menu_enableLogStorage"
               android:title="@string/gamel_menu_logstore_on"
               />

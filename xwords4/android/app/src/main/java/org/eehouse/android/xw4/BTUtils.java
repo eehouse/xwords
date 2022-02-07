@@ -64,6 +64,9 @@ public class BTUtils {
     private static final int MAX_PACKET_LEN = 4 * 1024;
     private static final int CONNECT_SLEEP_MS = 2500;
     private static final String KEY_OWN_MAC = TAG + ":own_mac";
+    private static final long MIN_BACKOFF = 1000 * 60 * 2; // 2 minutes
+    private static final long MAX_BACKOFF = 1000 * 60 * 60 * 4; // 4 hours, to test
+
     private static Set<ScanListener> sListeners = new HashSet<>();
     private static Map<String, PacketAccumulator> sSenders = new HashMap<>();
     private static Map<String, String> s_namesToAddrs;
@@ -102,6 +105,30 @@ public class BTUtils {
     private static AtomicBoolean sBackUser = new AtomicBoolean(false);
     private static String sAppName;
     private static UUID sUUID;
+
+    private static TimerReceiver.TimerCallback sTimerCallbacks
+        = new TimerReceiver.TimerCallback() {
+                @Override
+                public void timerFired( Context context )
+                {
+                    Log.d( TAG, "timerFired()" );
+                    BTUtils.timerFired( context );
+                }
+
+                @Override
+                public long incrementBackoff( long backoff )
+                {
+                    if ( backoff < MIN_BACKOFF ) {
+                        backoff = MIN_BACKOFF;
+                    } else {
+                        backoff = backoff * 150 / 100;
+                    }
+                    if ( MAX_BACKOFF <= backoff ) {
+                        backoff = MAX_BACKOFF;
+                    }
+                    return backoff;
+                }
+            };
 
     public static boolean BTAvailable()
     {
@@ -161,7 +188,7 @@ public class BTUtils {
         onResume( context );
     }
 
-    static void timerFired( Context context )
+    private static void timerFired( Context context )
     {
         onResume( context );
     }
@@ -1310,7 +1337,7 @@ public class BTUtils {
                         BTInviteDelegate.onHeardFromDev( socket.getRemoteDevice() );
                         parsePacket( proto, inStream, socket );
                         updateStatusIn( true );
-                        TimerReceiver.restartBackoff( getContext() );
+                        TimerReceiver.setBackoff( getContext(), sTimerCallbacks, MIN_BACKOFF );
                         // nBadCount = 0;
                     } else {
                         writeBack( socket, BTCmd.BAD_PROTO );

@@ -20,12 +20,7 @@
 
 package org.eehouse.android.xw4;
 
-import android.app.AlarmManager;
-import android.app.PendingIntent;
-import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.Intent;
-import android.os.SystemClock;
 
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 
@@ -35,34 +30,45 @@ import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
  * send SMS, so this class handles doing it on a timer. With backoff.
  */
 
-public class SMSResendReceiver extends BroadcastReceiver {
+public class SMSResendReceiver {
     private static final String TAG = SMSResendReceiver.class.getSimpleName();
 
     private static final String BACKOFF_KEY = TAG + "/backoff";
     private static final int MIN_BACKOFF_SECONDS = 60 * 5;
     private static final int MAX_BACKOFF_SECONDS = 60 * 60 * 12;
 
-    @Override
-    public void onReceive( Context context, Intent intent )
-    {
-        GameUtils.resendAllIf( context, CommsConnType.COMMS_CONN_SMS, true,
-                               new GameUtils.ResendDoneProc() {
-                                   @Override
-                                   public void onResendDone( Context context,
-                                                             int nSent ) {
-                                       int backoff = -1;
-                                       if ( 0 < nSent ) {
-                                           backoff = setTimer( context, true );
-                                       }
-                                       if ( BuildConfig.DEBUG ) {
-                                           DbgUtils.showf( context,
-                                                           "%d SMS msgs resent;"
-                                                           + " backoff: %d",
-                                                           nSent, backoff);
-                                       }
-                                   }
-                               } );
-    }
+    private static TimerReceiver.TimerCallback sTimerCallbacks
+        = new TimerReceiver.TimerCallback() {
+                @Override
+                public void timerFired( Context context )
+                {
+                    GameUtils.resendAllIf( context, CommsConnType.COMMS_CONN_SMS, true,
+                                           new GameUtils.ResendDoneProc() {
+                                               @Override
+                                               public void onResendDone( Context context,
+                                                                         int nSent ) {
+                                                   int backoff = -1;
+                                                   if ( 0 < nSent ) {
+                                                       backoff = setTimer( context, true );
+                                                   }
+                                                   if ( BuildConfig.NON_RELEASE ) {
+                                                       DbgUtils.showf( context,
+                                                                       "%d SMS msgs resent;"
+                                                                       + " backoff: %d",
+                                                                       nSent, backoff);
+                                                   }
+                                               }
+                                           } );
+
+                }
+
+                @Override
+                public long incrementBackoff( long prevBackoff )
+                {
+                    Assert.failDbg();
+                    return 0;
+                }
+            };
 
     static void resetTimer( Context context )
     {
@@ -70,20 +76,13 @@ public class SMSResendReceiver extends BroadcastReceiver {
         setTimer( context );
     }
 
-    static int setTimer( Context context )
+    private static int setTimer( Context context )
     {
         return setTimer( context, false );
     }
     
     private static int setTimer( Context context, boolean advance )
     {
-        AlarmManager am =
-            (AlarmManager)context.getSystemService( Context.ALARM_SERVICE );
-
-        Intent intent = new Intent( context, SMSResendReceiver.class );
-        PendingIntent pi = PendingIntent.getBroadcast( context, 0, intent, 0 );
-        am.cancel( pi );
-
         int backoff = DBUtils.getIntFor( context, BACKOFF_KEY, MIN_BACKOFF_SECONDS );
         if ( advance ) {
             backoff = Math.min( MAX_BACKOFF_SECONDS, backoff * 2 );
@@ -91,9 +90,7 @@ public class SMSResendReceiver extends BroadcastReceiver {
         }
 
         long millis = 1000L * backoff;
-        Log.d( TAG, "set for %d seconds from now", millis / 1000 );
-        millis += SystemClock.elapsedRealtime();
-        am.set( AlarmManager.ELAPSED_REALTIME,  millis, pi );
+        TimerReceiver.setTimerRelative( context, sTimerCallbacks, millis );
         return backoff;
     }
 }

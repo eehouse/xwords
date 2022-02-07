@@ -44,8 +44,7 @@ public class OnBootReceiver extends BroadcastReceiver {
 
     protected static void startTimers( Context context )
     {
+        // should use TimerReceiver too (PENDING)
         NagTurnReceiver.restartTimer( context );
-        TimerReceiver.setTimer( context, true );
-        SMSResendReceiver.setTimer( context );
     }
 }
