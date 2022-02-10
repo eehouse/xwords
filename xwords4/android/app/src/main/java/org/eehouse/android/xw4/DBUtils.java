@@ -373,10 +373,6 @@ public class DBUtils {
     public static void addRematchInfo( Context context, long rowid,
                                        CommsAddrRec addr )
     {
-        if ( BuildConfig.NO_NEW_RELAY ) {
-            addr.remove(CommsConnType.COMMS_CONN_RELAY);
-        }
-
         try ( GameLock lock = GameLock.tryLock(rowid) ) {
             if ( null != lock ) {
                 String as64 = Utils.serializableToString64( addr );
@@ -478,8 +474,10 @@ public class DBUtils {
             cursor.close();
         }
 
-        Log.d( TAG, "countOpenGamesUsing(with: %s, without: %s) => %d",
-               connTypWith, connTypWithout, result );
+        if ( 0 < result ) {
+            Log.d( TAG, "countOpenGamesUsing(with: %s, without: %s) => %d",
+                   connTypWith, connTypWithout, result );
+        }
         return result;
     }
 

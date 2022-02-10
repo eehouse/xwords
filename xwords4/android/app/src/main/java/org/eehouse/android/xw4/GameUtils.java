@@ -626,9 +626,6 @@ public class GameUtils {
         String[] dictArray = {dict};
         if ( null == addrSet ) {
             addrSet = XWPrefs.getAddrTypes( context );
-            if ( BuildConfig.NO_NEW_RELAY ) {
-                addrSet.remove( CommsConnType.COMMS_CONN_RELAY );
-            }
         }
 
         // Silently add this to any networked game if our device supports

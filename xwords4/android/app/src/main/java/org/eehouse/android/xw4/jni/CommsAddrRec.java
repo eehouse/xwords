@@ -169,12 +169,8 @@ public class CommsAddrRec implements Serializable {
         public static List<CommsConnType> getSupported( Context context )
         {
             List<CommsConnType> supported = new ArrayList<>();
-            if ( !BuildConfig.NO_NEW_RELAY ) {
-                supported.add( CommsConnType.COMMS_CONN_RELAY );
-            }
-            if ( BuildConfig.OFFER_MQTT ) {
-                supported.add( CommsConnType.COMMS_CONN_MQTT );
-            }
+            supported.add( CommsConnType.COMMS_CONN_RELAY );
+            supported.add( CommsConnType.COMMS_CONN_MQTT );
             if ( BTUtils.BTAvailable() ) {
                 supported.add( CommsConnType.COMMS_CONN_BT );
             }

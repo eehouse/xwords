@@ -512,10 +512,8 @@ public class XWPrefs {
         if ( -1 == flags ) {
             result = new CommsConnTypeSet();
             if ( getRelayEnabled( context ) ) {
-                CommsConnType typ = BuildConfig.NO_NEW_RELAY
-                    ? CommsConnType.COMMS_CONN_MQTT
-                    : CommsConnType.COMMS_CONN_RELAY;
-                result.add( typ );
+                result.add( CommsConnType.COMMS_CONN_MQTT );
+                result.add( CommsConnType.COMMS_CONN_RELAY );
             }
             if ( BTUtils.BTEnabled() ) {
                 result.add( CommsConnType.COMMS_CONN_BT );

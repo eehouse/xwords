@@ -72,7 +72,7 @@ public class RelayService extends XWJIService
     private static final int INITIAL_BACKOFF = 5;
     private static final int UDP_FAIL_LIMIT = 5;
 
-    private static final long MIN_BACKOFF = 1000 * 60 * 2; // 2 minutes
+    private static final long MIN_BACKOFF = 1000 * 15; // 15 seconds
     private static final long MAX_BACKOFF = 1000 * 60 * 60 * 23; // 23 hours
 
     // Must use the same jobID for all work enqueued for the same class. I
@@ -165,7 +165,7 @@ public class RelayService extends XWJIService
                     if ( backoff < MIN_BACKOFF ) {
                         backoff = MIN_BACKOFF;
                     } else {
-                        backoff *= 2;
+                        backoff = backoff * 12 / 10;
                     }
                     if ( MAX_BACKOFF <= backoff ) {
                         backoff = MAX_BACKOFF;
@@ -278,6 +278,10 @@ public class RelayService extends XWJIService
     {
         Intent intent = getIntentTo( context, MsgCmds.TIMER_FIRED );
         enqueueWork( context, intent );
+
+        // Kinda a hail Mary, but a no-op unless there are RELAY games
+        GameUtils.resendAllIf( context, CommsConnType.COMMS_CONN_RELAY,
+                               true, false );
     }
 
     public static int sendPacket( Context context, long rowid, byte[] msg,
@@ -390,8 +394,6 @@ public class RelayService extends XWJIService
                         NetStateCache.unregister( RelayService.this,
                                                   RelayService.this );
                         stopSelf();
-                    } else {
-                        timerFired( RelayService.this );
                     }
                 }
             };
@@ -1086,10 +1088,12 @@ public class RelayService extends XWJIService
 
     private boolean registerWithRelayIfNot( long timestamp )
     {
-        if ( !s_registered && shouldRegister() ) {
+        boolean haveGames = haveLiveRelayGames();
+        if ( !s_registered && shouldRegister() && haveGames ) {
             registerWithRelay( timestamp );
         }
-        return s_registered;
+        Log.d( TAG, "registerWithRelayIfNot()=>%b", s_registered );
+        return s_registered && haveGames;
     }
 
     private void requestMessages( long timestamp )
@@ -1761,10 +1765,15 @@ public class RelayService extends XWJIService
         }
     }
 
+    private boolean haveLiveRelayGames()
+    {
+        return 0 < DBUtils.countOpenGamesUsingRelay( this );
+    }
+
     private int figureBackoffSeconds() {
         // DbgUtils.printStack();
         int result = 60 * 60;   // default if no games
-        if ( 0 < DBUtils.countOpenGamesUsingRelay( this ) ) {
+        if ( haveLiveRelayGames() ) {
             long diff;
             synchronized ( RelayService.class ) {
                 long now = Utils.getCurSeconds();

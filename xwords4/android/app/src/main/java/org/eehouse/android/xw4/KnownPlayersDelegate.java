@@ -43,6 +43,7 @@ import java.util.Set;
 
 import org.eehouse.android.xw4.DlgDelegate.Action;
 import org.eehouse.android.xw4.ExpandImageButton.ExpandChangeListener;
+import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;
 import org.eehouse.android.xw4.jni.CommsAddrRec;
 import org.eehouse.android.xw4.jni.XwJNI;
@@ -220,22 +221,19 @@ public class KnownPlayersDelegate extends DelegateBase {
                 addListing( list, R.string.knowns_ts_fmt, str );
             }
 
-            if ( conTypes.contains( CommsAddrRec.CommsConnType.COMMS_CONN_BT ) ) {
+            if ( conTypes.contains( CommsConnType.COMMS_CONN_BT ) ) {
                 addListing( list, R.string.knowns_bt_fmt, addr.bt_hostName );
                 if ( BuildConfig.NON_RELEASE ) {
                     addListing( list, R.string.knowns_bta_fmt, addr.bt_btAddr );
                 }
             }
-            if ( conTypes.contains( CommsAddrRec.CommsConnType.COMMS_CONN_SMS ) ) {
+            if ( conTypes.contains( CommsConnType.COMMS_CONN_SMS ) ) {
                 addListing( list, R.string.knowns_smsphone_fmt, addr.sms_phone );
             }
             if ( BuildConfig.NON_RELEASE ) {
-                if ( conTypes.contains( CommsAddrRec.CommsConnType.COMMS_CONN_MQTT ) ) {
+                if ( conTypes.contains( CommsConnType.COMMS_CONN_MQTT ) ) {
                     addListing( list, R.string.knowns_mqtt_fmt, addr.mqtt_devID );
                 }
-                // if ( conTypes.contains( CommsAddrRec.CommsConnType.COMMS_CONN_RELAY ) ) {
-                //     addListing( item, R.string.knowns_relay_fmt, addr.relay_devID );
-                // }
             }
 
             item.findViewById( R.id.player_edit_name )

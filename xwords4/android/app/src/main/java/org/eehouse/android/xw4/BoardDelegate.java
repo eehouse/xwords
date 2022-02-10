@@ -100,7 +100,6 @@ public class BoardDelegate extends DelegateBase
     private GamePtr m_jniGamePtr;
     private CurGameInfo m_gi;
     private GameSummary m_summary;
-    private boolean m_relayMissing;
     private Handler m_handler = null;
     private TimerRunnable[] m_timers;
     private Runnable m_screenTimer;
@@ -1305,9 +1304,6 @@ public class BoardDelegate extends DelegateBase
                 NetLaunchInfo nli = new NetLaunchInfo( m_activity, m_summary, m_gi,
                                                        1, // nPlayers
                                                        1 + m_mySIS.nGuestDevs ); // fc
-                if ( m_relayMissing ) {
-                    nli.removeAddress( CommsConnType.COMMS_CONN_RELAY );
-                }
                 switch ( means ) {
                 case EMAIL:
                     GameUtils.launchEmailInviteActivity( m_activity, nli );
@@ -2693,10 +2689,6 @@ public class BoardDelegate extends DelegateBase
                                                        nPlayers, forceChannel )
                     .setRemotesAreRobots( m_remotesAreRobots );
 
-                if ( m_relayMissing ) {
-                    nli.removeAddress( CommsConnType.COMMS_CONN_RELAY );
-                }
-
                 switch ( m_missingMeans ) {
                 case BLUETOOTH:
                     if ( ! m_progressShown ) {
@@ -2994,15 +2986,11 @@ public class BoardDelegate extends DelegateBase
         }
 
         if ( doIt ) {
-            CommsConnTypeSet connTypes = summary.conTypes;
-            if ( BuildConfig.NO_NEW_RELAY ) {
-                connTypes.remove(CommsConnType.COMMS_CONN_RELAY);
-                relayID = null;
-            }
             String newName = summary.getRematchName( activity );
             Intent intent = GamesListDelegate
-                .makeRematchIntent( activity, rowid, groupID, gi, connTypes,
-                                    btAddr, phone, relayID, p2pMacAddress,
+                .makeRematchIntent( activity, rowid, groupID, gi,
+                                    summary.conTypes, btAddr, phone,
+                                    relayID, p2pMacAddress,
                                     mqttDevID, newName );
             if ( null != intent ) {
                 activity.startActivity( intent );

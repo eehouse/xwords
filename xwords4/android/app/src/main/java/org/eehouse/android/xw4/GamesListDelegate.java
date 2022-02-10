@@ -2914,21 +2914,13 @@ public class GamesListDelegate extends ListDelegateBase
     private void doOpenGame( Object[] params )
     {
         final long rowid = (Long)params[0];
-        GameSummary summary = (GameSummary)params[1];
-
-        if ( null != summary
-             && summary.conTypes.contains( CommsConnType.COMMS_CONN_RELAY )
-             && summary.roomName.length() == 0 ) {
-            Assert.failDbg();
-        } else {
-            try {
-                if ( checkWarnNoDict( rowid ) ) {
-                    launchGame( rowid );
-                }
-            } catch ( GameLock.GameLockedException gle ) {
-                Log.ex( TAG, gle );
-                finish();
+        try {
+            if ( checkWarnNoDict( rowid ) ) {
+                launchGame( rowid );
             }
+        } catch ( GameLock.GameLockedException gle ) {
+            Log.ex( TAG, gle );
+            finish();
         }
     }
 
@@ -3152,9 +3144,6 @@ public class GamesListDelegate extends ListDelegateBase
             .putExtra( REMATCH_NEWNAME_EXTRA, newName );
 
         if ( null != addrTypes ) {
-            if ( BuildConfig.NO_NEW_RELAY ) {
-                Assert.assertTrueNR( !addrTypes.contains(CommsConnType.COMMS_CONN_RELAY) );
-            }
             intent.putExtra( REMATCH_ADDRS_EXTRA, addrTypes.toInt() );
             if ( null != btAddr ) {
                 Assert.assertTrue( addrTypes.contains( CommsConnType.COMMS_CONN_BT ) );

@@ -670,6 +670,27 @@ addrFromStream( CommsAddrRec* addrP, XWStreamCtxt* stream )
     }
 }
 
+/* Return TRUE if there are no addresses left that include relay */
+static XP_Bool
+removeRelayIf( CommsCtxt* comms )
+{
+    XP_Bool allRemoved = XP_TRUE;
+    for ( AddressRecord* rec = comms->recs; !!rec; rec = rec->next ) {
+        CommsAddrRec* addr = &rec->addr;
+        if ( addr_hasType( addr, COMMS_CONN_RELAY ) ) {
+            if ( addr_hasType( addr, COMMS_CONN_MQTT )
+                 && 0 != addr->u.mqtt.devID ) {
+                addr_rmType( addr, COMMS_CONN_RELAY );
+                XP_LOGFF( "we DID remove RELAY" );
+            } else {
+                allRemoved = XP_FALSE;
+            }
+        }
+    }
+    LOG_RETURNF( "%s", boolToStr(allRemoved) );
+    return allRemoved;
+}
+
 CommsCtxt* 
 comms_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
                       XW_UtilCtxt* util, XP_Bool isServer,
@@ -796,6 +817,12 @@ comms_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
     }
 
     notifyQueueChanged( comms, xwe );
+    if ( addr_hasType( &comms->addr, COMMS_CONN_RELAY )
+         && addr_hasType( &comms->addr, COMMS_CONN_MQTT )
+         && 0 != &comms->addr.u.mqtt.devID
+         && removeRelayIf( comms ) ) {
+        addr_rmType( &comms->addr, COMMS_CONN_RELAY );
+    }
 
     return comms;
 } /* comms_makeFromStream */
