@@ -2195,6 +2195,9 @@ public class BoardDelegate extends DelegateBase
 
             return result;
         }
+
+        @Override
+        public long getRowID() { return m_rowid; }
     } // class BoardUtilCtxt
 
     private void doResume( boolean isStart )

@@ -225,6 +225,9 @@ static XP_U16 makeFlags( const CommsCtxt* comms, XP_U16 headerLen, MsgID msgID )
 
 static XP_Bool sendNoConn( CommsCtxt* comms, XWEnv xwe,
                            const MsgQueueElem* elem, XWHostID destID );
+static XP_Bool formatRelayID( const CommsCtxt* comms, XWHostID hostID,
+                              XP_UCHAR* buf, XP_U16* lenp );
+
 #ifdef XWFEATURE_RELAY
 static XP_Bool relayConnect( CommsCtxt* comms, XWEnv xwe );
 static void relayDisconnect( CommsCtxt* comms, XWEnv xwe );
@@ -672,20 +675,30 @@ addrFromStream( CommsAddrRec* addrP, XWStreamCtxt* stream )
 
 /* Return TRUE if there are no addresses left that include relay */
 static XP_Bool
-removeRelayIf( CommsCtxt* comms )
+removeRelayIf( CommsCtxt* comms, XWEnv xwe )
 {
     XP_Bool allRemoved = XP_TRUE;
+    XP_UCHAR bufs[MAX_NUM_PLAYERS+1][64];
+    const XP_UCHAR* ptrs[MAX_NUM_PLAYERS+1];
+    int nIds = 0;
     for ( AddressRecord* rec = comms->recs; !!rec; rec = rec->next ) {
         CommsAddrRec* addr = &rec->addr;
         if ( addr_hasType( addr, COMMS_CONN_RELAY ) ) {
             if ( addr_hasType( addr, COMMS_CONN_MQTT )
                  && 0 != addr->u.mqtt.devID ) {
                 addr_rmType( addr, COMMS_CONN_RELAY );
-                XP_LOGFF( "we DID remove RELAY" );
             } else {
+                XP_U16 len = VSIZE(bufs[nIds]);
+                if ( formatRelayID( comms, rec->rr.hostID, bufs[nIds], &len ) ) {
+                    ptrs[nIds] = &bufs[nIds][0];
+                    ++nIds;
+                }
                 allRemoved = XP_FALSE;
             }
         }
+    }
+    if ( 0 < nIds ) {
+        util_getMQTTIDsFor( comms->util, xwe, nIds, ptrs );
     }
     LOG_RETURNF( "%s", boolToStr(allRemoved) );
     return allRemoved;
@@ -818,9 +831,7 @@ comms_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
 
     notifyQueueChanged( comms, xwe );
     if ( addr_hasType( &comms->addr, COMMS_CONN_RELAY )
-         && addr_hasType( &comms->addr, COMMS_CONN_MQTT )
-         && 0 != &comms->addr.u.mqtt.devID
-         && removeRelayIf( comms ) ) {
+         && removeRelayIf( comms, xwe ) ) {
         addr_rmType( &comms->addr, COMMS_CONN_RELAY );
     }
 
@@ -1105,15 +1116,14 @@ comms_addMQTTDevID( CommsCtxt* comms, XP_PlayerAddr channelNo,
     XP_USE( channelNo );
     XP_USE( devID );
 #else
-    XP_LOGFF( "(devID: " MQTTDevID_FMT ")", *devID );
+    XP_LOGFF( "(channelNo: %d, devID: " MQTTDevID_FMT ")", channelNo, *devID );
     XP_Bool found = XP_FALSE;
     for ( AddressRecord* rec = comms->recs; !!rec && !found; rec = rec->next ) {
-        found = rec->channelNo == channelNo;
+        found = (rec->channelNo & ~CHANNEL_MASK) == (channelNo & ~CHANNEL_MASK);
         if ( found ) {
             if ( addr_hasType( &rec->addr, COMMS_CONN_MQTT ) ) {
                 XP_ASSERT( *devID == rec->addr.u.mqtt.devID );
             }
-
             CommsAddrRec addr = {0};
             addr_setType( &addr, COMMS_CONN_MQTT );
             addr.u.mqtt.devID = *devID;

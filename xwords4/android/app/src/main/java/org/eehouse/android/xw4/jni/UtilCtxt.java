@@ -60,6 +60,7 @@ public interface UtilCtxt {
 
     void requestTime();
     void remSelected();
+    void getMQTTIDsFor(String[] relayID);
     void timerSelected( boolean inDuplicateMode, boolean canPause );
     void informWordsBlocked( int nWords, String words, String dict );
     String getInviteeName( int index );

@@ -1,7 +1,7 @@
 /* -*- compile-command: "find-and-gradle.sh inXw4dDeb"; -*- */
 /*
- * Copyright 2009 - 2012 by Eric House (xwords@eehouse.org).  All
- * rights reserved.
+ * Copyright 2009 - 2022 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -22,9 +22,20 @@ package org.eehouse.android.xw4.jni;
 
 import android.content.Context;
 
+import javax.net.ssl.HttpsURLConnection;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Iterator;
+
 import org.eehouse.android.xw4.Assert;
 import org.eehouse.android.xw4.Log;
+import org.eehouse.android.xw4.NetUtils;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;
+import org.eehouse.android.xw4.jni.JNIThread.JNICmd;
 
 public class UtilCtxtImpl implements UtilCtxt {
     private static final String TAG = UtilCtxtImpl.class.getSimpleName();
@@ -94,6 +105,45 @@ public class UtilCtxtImpl implements UtilCtxt {
     public void remSelected()
     {
         subclassOverride( "remSelected" );
+    }
+
+    public long getRowID() { return 0; } // to be overridden
+
+    @Override
+    public void getMQTTIDsFor( final String[] relayIDs )
+    {
+        final long rowid = getRowID();
+        if ( 0 == rowid ) {
+            Log.d( TAG, "getMQTTIDsFor() no rowid available so dropping" );
+        } else {
+            new Thread( new Runnable() {
+                    @Override
+                    public void run() {
+                        JSONObject params = new JSONObject();
+                        JSONArray array = new JSONArray();
+                        try ( JNIThread thread = JNIThread.getRetained( rowid ) ) {
+                            params.put( "rids", array );
+                            for ( String rid : relayIDs ) {
+                                array.put( rid );
+                            }
+                            HttpsURLConnection conn = NetUtils
+                                .makeHttpsMQTTConn( m_context, "mids4rids" );
+                            String resStr = NetUtils.runConn( conn, params, true );
+                            Log.d( TAG, "mids4rids => %s", resStr );
+
+                            JSONObject obj = new JSONObject( resStr );
+                            for ( Iterator<String> keys = obj.keys(); keys.hasNext(); ) {
+                                String key = keys.next();
+                                int hid = Integer.parseInt(key);
+                                thread.handle( JNICmd.CMD_SETMQTTID, hid, obj.getString(key) );
+                            }
+
+                        } catch ( Exception ex ) {
+                            Log.ex( TAG, ex );
+                        }
+                    }
+                } ).start();
+        }
     }
 
     @Override

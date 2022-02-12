@@ -96,6 +96,7 @@ public class JNIThread extends Thread implements AutoCloseable {
             CMD_NETSTATS,
             CMD_PASS_PASSWD,
             CMD_SET_BLANK,
+            CMD_SETMQTTID,
             CMD_PAUSE,
             CMD_UNPAUSE,
             // CMD_DRAW_CONNS_STATUS,
@@ -713,6 +714,11 @@ public class JNIThread extends Thread implements AutoCloseable {
                                                   ((Integer)args[1]).intValue(),
                                                   ((Integer)args[2]).intValue(),
                                                   ((Integer)args[3]).intValue() );
+                break;
+
+            case CMD_SETMQTTID:
+                draw = false;
+                XwJNI.comms_addMQTTDevID( m_jniGamePtr, (Integer)args[0], (String)args[1] );
                 break;
 
             case CMD_TIMER_FIRED:

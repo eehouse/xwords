@@ -234,8 +234,8 @@ public class NetUtils {
         return makeHttpsConn( context, url, proc );
     }
 
-    protected static HttpsURLConnection makeHttpsMQTTConn( Context context,
-                                                           String proc )
+    public static HttpsURLConnection makeHttpsMQTTConn( Context context,
+                                                        String proc )
     {
         String url = XWPrefs.getDefaultMQTTUrl( context );
         return makeHttpsConn( context, url, proc );
@@ -275,8 +275,8 @@ public class NetUtils {
         return runConn( conn, param.toString(), false );
     }
 
-    protected static String runConn( HttpsURLConnection conn, JSONObject param,
-                                     boolean directJson )
+    public static String runConn( HttpsURLConnection conn, JSONObject param,
+                                  boolean directJson )
     {
         return runConn( conn, param.toString(), directJson );
     }

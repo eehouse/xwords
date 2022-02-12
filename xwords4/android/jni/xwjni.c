@@ -2598,6 +2598,22 @@ Java_org_eehouse_android_xw4_jni_XwJNI_comms_1getStats
 }
 
 JNIEXPORT void JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_comms_1addMQTTDevID
+( JNIEnv* env, jclass C, GamePtrType gamePtr, jint channel, jstring jdevid )
+{
+    XWJNI_START_GLOBALS();
+    if ( NULL != state->game.comms ) {
+        const char* str = (*env)->GetStringUTFChars( env, jdevid, NULL );
+        MQTTDevID devID;
+        if ( strToMQTTCDevID( str, &devID ) ) {
+            comms_addMQTTDevID( state->game.comms, channel, &devID );
+        }
+        (*env)->ReleaseStringUTFChars( env, jdevid, str );
+    }
+    XWJNI_END();
+}
+
+JNIEXPORT void JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_comms_1dropHostAddr
 ( JNIEnv* env, jclass C, GamePtrType gamePtr, jobject jConnTyp )
 {
