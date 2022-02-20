@@ -866,7 +866,6 @@
     <string name="invite_nbs_desc">Eine Datennachricht wird dann an das Gerät mit dieser Telefonnummer gesendet. Wenn CrossWords dort installiert ist und über die notwendigen Berechtigungen verfügt, erhält es die Einladung und das Spiel kann beginnen.</string>
     <string name="empty_bt_inviter">Es wurden noch keine gekoppelten Geräte erkannt.</string>
     <string name="checkbox_archive">Ins Archiv verschieben+</string>
-    <string name="show_fcm_title">FCM-Empfang anzeigen</string>
     <string name="not_again_nbsGamesOnUpgrade">Die Google Play Store Version von CrossWords darf die Play-by-Data-SMS-Funktion nicht mehr unterstützen. 
 \n
 \n Sie haben %1$d offene Spiele, die diese Funktion nutzen. Sie werden nicht in der Lage sein, Züge per Daten-SMS zu senden oder zu empfangen, solange Sie die Google Play-Version von CrossWords verwenden, oder bis ich einen Workaround herausgefunden habe, der den Store Richtlinien entspricht. 

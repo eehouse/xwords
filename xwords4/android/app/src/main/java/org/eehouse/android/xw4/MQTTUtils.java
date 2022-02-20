@@ -364,11 +364,6 @@ public class MQTTUtils extends Thread implements IMqttActionListener, MqttCallba
                 params.put( "frstV", Utils.getFirstVersion( mContext ) );
                 params.put( "relayDID", DevID.getRelayDevID( mContext ) );
 
-                String fcmid = FBMService.getFCMDevID( mContext );
-                if ( null != fcmid ) {
-                    params.put( "fcmid", fcmid );
-                }
-
                 Log.d( TAG, "registerOnce(): sending %s", params );
                 HttpsURLConnection conn
                     = NetUtils.makeHttpsMQTTConn( mContext, "register" );

@@ -998,7 +998,6 @@
         <item quantity="one">Uma jogada reenviada</item>
         <item quantity="other">%1$s jogadas reenviadas</item>
     </plurals>
-    <string name="show_fcm_title">Mostrar recebidos FCM</string>
     <string name="show_sms_title">Mostrar dados que SMS envia, recebe</string>
     <string name="got_langdict_title">Captar lista de palavras padrão para o idioma</string>
     <string name="expl_mqtt_url">URL para nova API de relay baseada em MQTT</string>

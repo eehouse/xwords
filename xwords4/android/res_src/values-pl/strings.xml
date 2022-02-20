@@ -879,7 +879,6 @@
     <string name="invite_nbs_desc">Następnie do urządzenia zostanie dostarczona wiadomość z tym numerem telefonu. Jeśli CrossWords jest tam zainstalowany i posiada niezbędne uprawnienia, otrzyma zaproszenie i gra może się rozpocząć.</string>
     <string name="empty_bt_inviter">Nie wykryto jeszcze sparowanych urządzeń.</string>
     <string name="checkbox_archive">Przenieś do archiwum</string>
-    <string name="show_fcm_title">"Pokaż odbieranie  FCM"</string>
     <string name="missing_sms_perms">Ta gra jest skonfigurowana do komunikowania się za pośrednictwem Data SMS, ale CrossWords nie ma uprawnień do tego. Nadal możesz otworzyć grę, ale może nie być w stanie wysyłać ani odbierać ruchów.
 \n
 \nMożesz ponownie otworzyć go, aby zostać poproszony o pozwolenie ponownie. Możesz też usunąć ustawienia komunikacji Data SMS.</string>

@@ -91,7 +91,6 @@ public class XWApp extends Application
         UpdateCheckReceiver.restartTimer( this );
 
         RelayService.startService( this );
-        FBMService.init( this );
         WiDirWrapper.init( this );
 
         mPort = Short.valueOf( getString( R.string.nbs_port ) );

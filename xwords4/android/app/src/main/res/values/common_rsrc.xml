@@ -152,7 +152,6 @@
   <string name="key_enable_debug">key_enable_debug</string>
   <string name="key_enable_pending_count">key_enable_pending_count</string>
   <string name="key_enable_sms_toself">key_enable_sms_toself</string>
-  <string name="key_show_fcm">key_show_fcm2</string>
   <string name="key_nag_intervals">key_nag_intervals</string>
   <string name="key_download_path">key_download_path</string>
   <string name="key_got_langdict">key_got_langdict</string>

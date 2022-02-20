@@ -1769,7 +1769,6 @@
         <item quantity="one">Uma jogada reenviada</item>
         <item quantity="other">%1$s jogadas reenviadas</item>
     </plurals>
-    <string name="show_fcm_title">Mostrar recebidos FCM</string>
     <string name="show_sms_title">Mostrar dados que SMS envia, recebe</string>
     <string name="not_again_rematch_two_only">Desforras são limitadas a jogos de dois jogadores, pelo menos por enquanto, porque é mais difícil com mais aparelhos e acho raro que pessoas joguem com mais de dois. Se eu estiver errado avise-me e aumentarei a prioridade.</string>
     <string name="str_no_hint_found">Não pôde achar nenhuma jogada</string>

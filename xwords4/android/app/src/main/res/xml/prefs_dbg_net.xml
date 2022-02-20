@@ -13,10 +13,6 @@
         android:defaultValue="@string/relay_poll_name_both"
         />
 
-    <CheckBoxPreference android:key="@string/key_show_fcm"
-                        android:title="@string/show_fcm_title"
-                        android:defaultValue="@bool/DEBUG"
-                        />
     <org.eehouse.android.xw4.XWEditTextPreference 
         android:key="@string/key_relay_host"
         android:title="@string/relay_host"

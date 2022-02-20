@@ -2357,7 +2357,6 @@
   devices and I think it’s rare that people play with more than
   two. Let me know if I’m wrong and I’ll up the priority.</string>
     <string name="show_sms_title">Show Data SMS sends, receives</string>
-    <string name="show_fcm_title">Show FCM receives</string>
     <!-- Shown after "resend messages" menuitem chosen -->
     <plurals name="resent_msgs_fmt">
         <item quantity="one">One move resent</item>

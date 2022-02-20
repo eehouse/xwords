@@ -33,7 +33,6 @@ import org.eehouse.android.xw4.DBUtils;
 import org.eehouse.android.xw4.DevID;
 import org.eehouse.android.xw4.DictUtils;
 import org.eehouse.android.xw4.DupeModeTimer;
-import org.eehouse.android.xw4.FBMService;
 import org.eehouse.android.xw4.GameUtils;
 import org.eehouse.android.xw4.GamesListDelegate;
 import org.eehouse.android.xw4.Log;
@@ -69,15 +68,6 @@ public class DUtilCtxt {
         String result = DevID.getRelayDevID( m_context );
         if ( null != result ) {
             typ = DevIDType.ID_TYPE_RELAY;
-        } else {
-            result = FBMService.getFCMDevID( m_context );
-            if ( null == result ) {
-                // do nothing
-            } else if ( result.equals("") ) {
-                result = null;
-            } else {
-                typ = DevIDType.ID_TYPE_ANDROID_FCM;
-            }
         }
         typa[0] = (byte)typ.ordinal();
         return result;

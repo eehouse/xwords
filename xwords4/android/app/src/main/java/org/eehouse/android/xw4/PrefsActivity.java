@@ -157,10 +157,6 @@ public class PrefsActivity extends XWActivity
                 tmp.add( R.string.key_enable_p2p );
             }
 
-            if ( null == FBMService.getFCMDevID( context ) ) {
-                tmp.add( R.string.key_show_fcm );
-            }
-
             if ( BuildConfig.DEBUG ) {
                 tmp.add( R.string.key_logging_on );
                 tmp.add( R.string.key_enable_debug );

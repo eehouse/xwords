@@ -822,7 +822,6 @@ WiFi ダイレクト経由で接続可能なデバイスはありません。</s
     <string name="invite_nbs_desc">その後、データメッセージがその電話番号のデバイスに配信されます。クロスワードがインストールされていて、必要なアクセス許可がある場合は、招待状を受け取ってプレイを開始できます。</string>
     <string name="empty_bt_inviter">ペアリングされたデバイスはまだ検出されていません。</string>
     <string name="checkbox_archive">アーカイブに移動</string>
-    <string name="show_fcm_title">FCM 受信の表示</string>
     <string name="not_again_nbsGamesOnUpgrade">Google Play ストアバージョンのクロスワードは、データ SMS によるプレイ機能をサポートできなくなりました。
 \n
 \nこの機能を使用する %1$d の開催中のゲームがあります。Google Play バージョンのクロスワードを使用している限り、またはストア ポリシーを満たす回避策を見つけ出すまで、データ SMS 経由で移動を送受信することはできません。

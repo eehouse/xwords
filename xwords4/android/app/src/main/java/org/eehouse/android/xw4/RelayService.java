@@ -1246,13 +1246,8 @@ public class RelayService extends XWJIService
         if ( null != devid && 0 < devid.length() ) {
             typ = DevIDType.ID_TYPE_RELAY;
         } else {
-            devid = FBMService.getFCMDevID( this );
-            if ( null != devid && 0 < devid.length() ) {
-                typ = DevIDType.ID_TYPE_ANDROID_FCM;
-            } else {
-                devid = "";
-                typ = DevIDType.ID_TYPE_ANON;
-            }
+            devid = "";
+            typ = DevIDType.ID_TYPE_ANON;
         }
         if ( null != typp ) {
             typp[0] = typ;
