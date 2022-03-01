@@ -450,7 +450,8 @@ public abstract class DelegateBase implements DlgClickNotify,
             ab.setMessage( msg )
                 .setPositiveButton( android.R.string.ok, null );
 
-            if ( BuildConfig.NON_RELEASE && null != conTypes ) {
+            boolean showDbg = BuildConfig.NON_RELEASE || getDebugEnabled( m_activity );
+            if ( showDbg && null != conTypes ) {
                 OnClickListener lstnr = null;
                 int buttonTxt = 0;
                 if ( conTypes.contains( CommsConnType.COMMS_CONN_MQTT ) ) {

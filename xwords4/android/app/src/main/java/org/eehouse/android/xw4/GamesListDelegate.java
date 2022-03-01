@@ -1723,8 +1723,7 @@ public class GamesListDelegate extends ListDelegateBase
                     0 < DBUtils.getGamesWithSendsPending( m_activity ).size();
                 Utils.setItemVisible( menu, R.id.games_menu_resend, enable );
 
-                Utils.setItemVisible( menu, R.id.games_menu_timerStats,
-                                      BuildConfig.NON_RELEASE );
+                Utils.setItemVisible( menu, R.id.games_menu_timerStats, showDbg );
 
                 enable = Log.getStoreLogs();
                 Utils.setItemVisible( menu, R.id.games_menu_enableLogStorage, !enable );
