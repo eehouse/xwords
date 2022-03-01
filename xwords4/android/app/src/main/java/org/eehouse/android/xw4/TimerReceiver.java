@@ -179,7 +179,7 @@ public class TimerReceiver extends BroadcastReceiver {
         load( context, new WithData() {
                 @Override
                 public void withData( Data data ) {
-                    updateStats( data );
+                    updateStats( context, data );
                     data.setFor( CLIENT_STATS, KEY_NEXT_FIRE, 0 );
                     Set<TimerCallback> fired = fireExpiredTimers( context, data );
                     incrementBackoffs( data, fired );
@@ -192,7 +192,7 @@ public class TimerReceiver extends BroadcastReceiver {
     static String statsStr( Context context )
     {
         final StringBuffer sb = new StringBuffer();
-        if ( BuildConfig.NON_RELEASE ) {
+        if ( BuildConfig.NON_RELEASE || XWPrefs.getDebugEnabled( context ) ) {
             load( context, new WithData() {
                     @Override
                     public void withData( Data data ) {
@@ -435,9 +435,9 @@ public class TimerReceiver extends BroadcastReceiver {
 
     // What to measure? By how much are timer fires delayed? How's that as a
     // percentage of what we wanted?
-    private static void updateStats( Data data )
+    private static void updateStats( Context context, Data data )
     {
-        if ( BuildConfig.NON_RELEASE ) {
+        if ( BuildConfig.NON_RELEASE || XWPrefs.getDebugEnabled( context ) ) {
             final long target = data.getFor( CLIENT_STATS, KEY_NEXT_FIRE, 0 );
             // Ignore for stats purposes if target not yet set
             if ( 0 < target ) {
