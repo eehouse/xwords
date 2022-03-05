@@ -2262,10 +2262,7 @@
        care. -->
     <string name="advanced">For debugging</string>
     <string name="advanced_summary">You should never need these…</string>
-    <string name="relay_host">Relay host</string>
-    <string name="mqtt_host">MQTT host</string>
-    <string name="relay_via_http_first">Use Web APIs first</string>
-    <string name="relay_via_http_first_summary">(instead of as fallback for custom protocol)</string>
+    <string name="mqtt_host">Internet/MQTT host</string>
     <string name="dict_host">Wordlist download URL</string>
     <string name="logging_on">Enable logging</string>
     <string name="debug_features">Enable debug features</string>
@@ -2302,7 +2299,7 @@
     <string name="got_langdict_summary">Don’t try a second time</string>
     <string name="pref_group_sms_title">Data SMS Stuff</string>
     <string name="pref_group_sms_summary">Prefs related to play-via-sms</string>
-    <string name="pref_group_relay_title">Relay Stuff</string>
+    <string name="pref_group_relay_title">Internet Stuff</string>
     <string name="pref_group_relay_summary">Prefs related to play via internet/relay</string>
     <string name="pref_group_l10n_title">Localization Stuff</string>
     <string name="pref_group_l10n_summary">Prefs related to in-app localization</string>

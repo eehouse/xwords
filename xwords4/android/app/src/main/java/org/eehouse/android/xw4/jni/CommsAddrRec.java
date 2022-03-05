@@ -429,7 +429,7 @@ public class CommsAddrRec implements Serializable {
         switch ( typ ) {
         case COMMS_CONN_RELAY:
             String room = GameUtils.makeRandomID();
-            String host = XWPrefs.getDefaultRelayHost( context );
+            String host = XWPrefs.getHostName( context );
             int port = XWPrefs.getDefaultRelayPort( context );
             setRelayParams( host, port, room );
             break;

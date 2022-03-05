@@ -606,8 +606,6 @@
     <string name="err_dup_invite_fmt">Duplikatinvitasjon avslått: Enheten \"%1$s\" har allerede godtatt en invitasjon til dette spillet.</string>
     <string name="invite_multi_summary">Inviter mer enn én spiller per enhet annensteds fra</string>
     <string name="rematch_sent_toast">Omkampsinvitasjoner sendt</string>
-    <string name="relay_host">Relé-vert</string>
-    <string name="relay_via_http_first">Bruk vev-API-er først</string>
     <string name="dict_host">Ordlistenedlastingsnettadresse</string>
     <string name="debug_features_summary">Menyelementer osv. (kun utgivelsesbygg)</string>
     <string name="netstats_title">Spillnettverksstatistikk</string>
@@ -689,7 +687,6 @@
     <string name="force_tablet_phone">Tving telefonvisning</string>
     <string name="connection_via_label">Endre kommunikasjon via</string>
     <string name="disable_nag_title">Skru av nettverksspillpåminnelser</string>
-    <string name="relay_via_http_first_summary">(istedenfor tilbakefall for egendefinert protokoll)</string>
     <string name="show_sms_title">Vis SMS-forsendelser, -mottak</string>
     <string name="phone_lookup_rationale_drop">Omkamp etter dette spillet kun på SMS er ikke mulig uten denne tilgangen.</string>
     <string name="phone_lookup_rationale_others">Uten tilgangen vil omkampen fortsette, men i et spill som ikke kan utspilles via SMS.</string>

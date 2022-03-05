@@ -2687,7 +2687,6 @@ changement, ou l\'éditer pour lui attribuer une façon de se connecter ?</stri
     <string name="advanced_summary">Vous ne devriez jamais en avoir besoin…</string>
     <!--XLATE-ME-->
     <!--<string name="relay_host">Relay host</string>-->
-    <string name="relay_host">Hôte relai</string>
     <!--XLATE-ME-->
     <!--<string name="redir_host">Invite redirect host</string>-->
     <!--XLATE-ME-->
@@ -2943,7 +2942,6 @@ pour la langue</string>
     <string name="phone_lookup_rationale_drop">Jouer cette revanche par MMS uniquement n\'est pas possible sans cette permission.</string>
     <string name="phone_lookup_rationale_others">Sans cette permission, la revanche continuera mais créera une partie qui ne peut pas être jouée par MMS.</string>
     <string name="move_dict_rationale">Enregistrer une liste de mots dans l\'espace de Téléchargements nécessite la permission Stockage.</string>
-    <string name="relay_via_http_first">Utiliser les API web en premier</string>
     <string name="expl_relay_url">URL pour l\'API de relai web</string>
     <string name="list_item_netstats">Connexions…</string>
     <plurals name="too_many_trade_fmt">
@@ -3083,7 +3081,6 @@ pour la langue</string>
     <string name="expl_mqtt_url">Adresse de la nouvelle API de relai basée sur MQTT</string>
     <string name="mqtt_qos">QOS MQTT</string>
     <string name="mqtt_port">Port MQTT</string>
-    <string name="relay_via_http_first_summary">(plutôt que comme solution de repli pour le protocole personnalisé)</string>
     <string name="mqtt_host">Hôte MQTT</string>
     <string name="waiting_host_expl_multi">Dans ce cas, la partie n\'attendant pas seulement que cet appareil se connecte, cela peut aussi signifier qu\'elle n\'a encore invité personne.</string>
     <string name="waiting_host_expl">Cette partie attend que l\'appareil hôte commence la partie. Cela signifie habituellement que l\'hôte ne communique pas (il est temporairement hors ligne \?)</string>

@@ -1824,10 +1824,7 @@
     <string name="debug_features">Ativar ferramentas de debug</string>
     <string name="logging_on">Ativar logs</string>
     <string name="dict_host">URL de descarrega da lista de palavras</string>
-    <string name="relay_via_http_first_summary">(ao invés de como fallback para um protocolo customizado)</string>
-    <string name="relay_via_http_first">Usar APIs da Web primeiro</string>
     <string name="mqtt_host">Host MQTT</string>
-    <string name="relay_host">Host do relay</string>
     <string name="advanced_summary">Deveria nunca precisar destes…</string>
     <string name="advanced">Para debug</string>
     <string name="confirm_get_locdict_fmt">O seu aparelho está configurado para %1$s. Gostaria de descarregar uma lista de palavras para jogar CrossWords em %1$s\?</string>

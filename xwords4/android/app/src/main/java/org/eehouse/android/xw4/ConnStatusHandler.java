@@ -718,7 +718,7 @@ public class ConnStatusHandler {
                     .format( context, RelayService.getLastFCMMillis() );
                 result = String.format( "DevID: %d; host: %s; latest FCM: %s",
                                         DevID.getRelayDevIDInt(context),
-                                        XWPrefs.getDefaultRelayHost(context),
+                                        XWPrefs.getHostName( context ),
                                         fcmMsg );
                 break;
             case COMMS_CONN_MQTT:

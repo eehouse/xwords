@@ -206,10 +206,7 @@
     <string name="debug_features">Attiva impostazioni debug</string>
     <string name="logging_on">Attiva collegamento</string>
     <string name="dict_host">URL per scaricare lista parole</string>
-    <string name="relay_via_http_first_summary">(al posto di tornare su un protocollo personalizzato)</string>
-    <string name="relay_via_http_first">Usa prima le Web API</string>
     <string name="mqtt_host">MQTT ospite</string>
-    <string name="relay_host">Server Ospite</string>
     <string name="advanced_summary">Questo non dovrebbe servirti…</string>
     <string name="advanced">Per debugging</string>
     <string name="confirm_get_locdict_fmt">Il tuo dispositivo è impostato in %1$s. Vorresti scaricare una lista parole così da giocare CrossWords in %1$s\?</string>

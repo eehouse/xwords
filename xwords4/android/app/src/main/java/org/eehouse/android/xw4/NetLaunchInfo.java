@@ -484,7 +484,7 @@ public class NetLaunchInfo implements Serializable {
             result.conTypes.add( typ );
             switch( typ ) {
             case COMMS_CONN_RELAY:
-                String relayName = XWPrefs.getDefaultRelayHost( context );
+                String relayName = XWPrefs.getHostName( context );
                 int relayPort = XWPrefs.getDefaultRelayPort( context );
                 result.setRelayParams( relayName, relayPort, room );
                 break;

@@ -140,7 +140,6 @@ public class RelayService extends XWJIService
     private int m_maxIntervalSeconds = 0;
     private long m_lastGamePacketReceived;
     private static AtomicInteger sNativeFailScore = new AtomicInteger();;
-    private static boolean sSkipUPDSet;
     private RelayServiceHelper mHelper;
     private static DevIDType s_curType = DevIDType.ID_TYPE_NONE;
     private static long s_regStartTime = 0;
@@ -401,7 +400,6 @@ public class RelayService extends XWJIService
         if ( null == mReadThread ) {
             stopSelf();
         }
-        sSkipUPDSet = XWPrefs.getSkipToWebAPI( this );
     }
 
     @Override
@@ -551,7 +549,7 @@ public class RelayService extends XWJIService
             if ( null == s_UDPSocket ) {
                 final RelayService service = this;
                 int port = XWPrefs.getDefaultRelayPort( service );
-                String host = XWPrefs.getDefaultRelayHost( service );
+                String host = XWPrefs.getHostName( service );
 
                 try {
                     DatagramSocket udpSocket = new DatagramSocket();
@@ -864,7 +862,7 @@ public class RelayService extends XWJIService
 
     private static boolean skipNativeSend()
     {
-        boolean skip = sNativeFailScore.get() > UDP_FAIL_LIMIT || sSkipUPDSet;
+        boolean skip = sNativeFailScore.get() > UDP_FAIL_LIMIT;
         // Log.d( TAG, "skipNativeSend(score=%d)) => %b", sNativeFailScore.get(), skip );
         return skip;
     }

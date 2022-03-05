@@ -13,42 +13,12 @@
         android:defaultValue="@string/relay_poll_name_both"
         />
 
-    <org.eehouse.android.xw4.XWEditTextPreference 
-        android:key="@string/key_relay_host"
-        android:title="@string/relay_host"
-        android:defaultValue="@string/default_host"
-        />
-
-    <CheckBoxPreference android:key="@string/key_relay_via_http_first"
-                        android:title="@string/relay_via_http_first"
-                        android:summary="@string/relay_via_http_first_summary"
-                        android:defaultValue="false"
-                        />
-
-    <org.eehouse.android.xw4.XWEditTextPreference
-        android:key="@string/key_relay_url"
-        android:title="@string/expl_relay_url"
-        android:defaultValue="@string/default_relay_url"
-        />
-
-    <org.eehouse.android.xw4.XWEditTextPreference
-        android:key="@string/key_relay_port"
-        android:title="@string/relay_port"
-        android:defaultValue="10997"
-        android:numeric="decimal"
-        />
-    <org.eehouse.android.xw4.XWEditTextPreference
-        android:key="@string/key_proxy_port"
-        android:title="@string/proxy_port"
-        android:defaultValue="10998"
-        android:numeric="decimal"
-        />
-
     <org.eehouse.android.xw4.XWEditTextPreference
         android:key="@string/key_mqtt_host"
         android:title="@string/mqtt_host"
         android:defaultValue="@string/default_host"
         />
+
     <org.eehouse.android.xw4.XWEditTextPreference
         android:key="@string/key_mqtt_port"
         android:title="@string/mqtt_port"
@@ -63,9 +33,28 @@
         android:defaultValue="2"
         />
     <org.eehouse.android.xw4.XWEditTextPreference
-        android:key="@string/key_mqtt_url2"
+        android:key="@string/key_mqtt_url_path"
         android:title="@string/expl_mqtt_url"
-        android:defaultValue="@string/default_mqtt_url2"
+        android:defaultValue="@string/default_mqtt_url_path"
+        />
+
+    <org.eehouse.android.xw4.XWEditTextPreference
+        android:key="@string/key_relay_url_path"
+        android:title="@string/expl_relay_url"
+        android:defaultValue="@string/default_relay_url_path"
+        />
+
+    <org.eehouse.android.xw4.XWEditTextPreference
+        android:key="@string/key_relay_port"
+        android:title="@string/relay_port"
+        android:defaultValue="10997"
+        android:numeric="decimal"
+        />
+    <org.eehouse.android.xw4.XWEditTextPreference
+        android:key="@string/key_proxy_port"
+        android:title="@string/proxy_port"
+        android:defaultValue="10998"
+        android:numeric="decimal"
         />
 
   </PreferenceCategory>

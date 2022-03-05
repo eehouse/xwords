@@ -53,15 +53,15 @@
         />
 
     <org.eehouse.android.xw4.XWEditTextPreference
-        android:key="@string/key_dict_host4"
+        android:key="@string/key_dict_host_path"
         android:title="@string/dict_host"
-        android:defaultValue="@string/dict_url"
+        android:defaultValue="@string/dict_url_path"
         />
 
     <org.eehouse.android.xw4.XWEditTextPreference
-        android:key="@string/key_update_url"
+        android:key="@string/key_update_url_path"
         android:title="@string/expl_update_url"
-        android:defaultValue="@string/default_update_url"
+        android:defaultValue="@string/default_update_url_path"
         />
     <CheckBoxPreference android:key="@string/key_update_prerel"
                         android:title="@string/pref_item_update_title"

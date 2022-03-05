@@ -770,9 +770,6 @@
     <string name="disable_nag_solo_title">Erinnerungen für Solitair-Partien deaktivieren</string>
     <string name="confirm_get_locdict_fmt">Ihr Gerät ist für %1$s eingerichtet. Wollen Sie eine Wortliste herunterladen, um CrossWords in %1$s zu spielen?</string>
     <string name="advanced_summary">Dies sollten Sie nie brauchen …</string>
-    <string name="relay_host">Zwischenstation-Server</string>
-    <string name="relay_via_http_first">Zuerst Web-API verwenden</string>
-    <string name="relay_via_http_first_summary">(statt einer Ausweichlösung für ein spezielles Protokoll)</string>
     <string name="dict_host">Wortlisten-Download-URL</string>
     <string name="debug_features_summary">Menüeinträge usw. (nur Release-Builds)</string>
     <string name="board_menu_game_showInvites">Einladungen zeigen</string>

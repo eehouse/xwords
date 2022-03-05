@@ -640,7 +640,6 @@
     <string name="relay_poll_name_both">Padrão: mesclar polling e FCM</string>
     <string name="relay_invite_title">Convite do relay</string>
     <string name="mqtt_host">Host MQTT</string>
-    <string name="relay_host">Host do relay</string>
     <string name="relay_alert_title">Mensagem do relay</string>
     <string name="advanced_summary">Você deveria nunca precisar destes…</string>
     <string name="advanced">Para debug</string>
@@ -675,8 +674,6 @@
     <string name="not_again_clip_expl_fmt">A opção “%1$s” copia uma URL de convite para a área de transferência. Cole-a no app de sua escolha e compartilhe-a com um amigo.</string>
     <string name="dict_browse_title_fmt">%1$s (total de palavras de %2$d)</string>
     <string name="disableds_title">Tipos de endereço desativados</string>
-    <string name="relay_via_http_first_summary">(ao invés de como fallback para um protocolo customizado)</string>
-    <string name="relay_via_http_first">Usar APIs da Web primeiro</string>
     <string name="relay_poll_title">Checar movimentos como\?</string>
     <plurals name="sel_groups_fmt">
         <item quantity="one">Um grupo selecionado</item>

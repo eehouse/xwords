@@ -52,19 +52,17 @@
   <string name="key_clr_bonushint_dark">key_clr_bonushint_dark</string>
   <string name="key_board_line_width_dark">key_board_line_width_dark</string>
 
-  <string name="key_relay_host">key_relay_host</string>
   <string name="key_relay_port">key_relay_port2</string>
-  <string name="key_relay_via_http_first">key_relay_via_http_first</string>
-  <string name="key_update_url">key_update_url2</string>
-  <string name="key_relay_url">key_relay_url2</string>
-  <string name="key_mqtt_url2">key_mqtt_url2</string>
+  <string name="key_update_url_path">key_update_url_path</string>
+  <string name="key_relay_url_path">key_relay_url_path</string>
+  <string name="key_mqtt_url_path">key_mqtt_url_path</string>
   <string name="key_mqtt_host">key_mqtt_host</string>
   <string name="key_mqtt_port">key_mqtt_port</string>
   <string name="key_mqtt_qos">key_mqtt_qos</string>
   <string name="key_update_prerel">key_update_prerel</string>
   <string name="key_proxy_port">key_proxy_port</string>
   <string name="key_sms_port">key_sms_port</string>
-  <string name="key_dict_host4">key_dict_host4</string>
+  <string name="key_dict_host_path">key_dict_host_path</string>
   <string name="key_logging_on">key_logging_on</string>
   <string name="key_show_sms">key_show_sms</string>
   <string name="key_init_hintsallowed">key_init_hintsallowed</string>
@@ -185,19 +183,20 @@
   <!-- Nor is my email address -->
   <string name="email_author_email">xwords@eehouse.org</string>
 
-  <!-- other -->
-  <string name="default_host">eehouse.org</string>
-  <!-- <string name="default_host">10.0.3.2</string> -->
+  <!-- don't change this: it's a url scheme -->
   <string name="invite_host">eehouse.org</string>
+  <!-- This one can change, or change it via prefs -->
+  <string name="default_host">eehouse.org</string>
   <string name="invite_mime">application/x-xwordsinvite</string>
   <!--string name="invite_mime">text/plain</string-->
 
-  <string name="dict_url">https://eehouse.org/and_wordlists</string>
-  <string name="nbs_ban_url">https://eehouse.org/sms.html</string>
-  <string name="default_update_url">https://eehouse.org/xw4/info.py</string>
-  <string name="default_relay_url">https://eehouse.org/xw4/relay.py</string>
-  <string name="default_mqtt_url2">https://eehouse.org/xw4/api/v1</string>
+  <!-- These will be appended to https://<host>/ -->
+  <string name="dict_url_path">and_wordlists</string>
+  <string name="default_update_url_path">xw4/info</string>
+  <string name="default_relay_url_path">xw4/relay</string>
+  <string name="default_mqtt_url_path">xw4/api/v1</string>
 
+  <string name="nbs_ban_url">https://eehouse.org/sms.html</string>
   <string name="faq_uri_fmt">https://eehouse.org/xw4/faq.html#%1$s</string>
 
   <string-array name="board_sizes">

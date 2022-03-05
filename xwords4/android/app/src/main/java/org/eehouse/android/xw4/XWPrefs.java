@@ -103,12 +103,6 @@ public class XWPrefs {
         setPrefsBoolean( context, R.string.key_hide_newgames, set );
     }
 
-    public static String getDefaultRelayHost( Context context )
-    {
-        String host = getPrefsString( context, R.string.key_relay_host );
-        return NetUtils.forceHost( host );
-    }
-
     public static int getDefaultRelayPort( Context context )
     {
         String val = getPrefsString( context, R.string.key_relay_port );
@@ -122,25 +116,28 @@ public class XWPrefs {
 
     public static String getDefaultUpdateUrl( Context context )
     {
-        return getPrefsString( context, R.string.key_update_url );
+        String result = getWithHost( context, R.string.key_update_url_path );
+        Log.d( TAG, "getDefaultUpdateUrl() => %s", result );
+        return result;
     }
 
     public static String getDefaultRelayUrl( Context context )
     {
-        String result = getPrefsString( context, R.string.key_relay_url );
-        if ( result == null || 0 == result.length() ) {
-            result = context.getString( R.string.default_relay_url );
-        }
+        String result = getWithHost( context, R.string.key_relay_url_path );
+        Log.d( TAG, "getDefaultRelayUrl() => %s", result );
         return result;
     }
 
     public static String getDefaultMQTTUrl( Context context )
     {
-        String result = getPrefsString( context, R.string.key_mqtt_url2 );
-        if ( result == null || 0 == result.length() ) {
-            result = context.getString( R.string.default_mqtt_url2 );
-        }
+        String result = getWithHost( context, R.string.key_mqtt_url_path );
         return result;
+    }
+
+    public static String getHostName( Context context )
+    {
+        String host = getPrefsString( context, R.string.key_mqtt_host );
+        return NetUtils.forceHost( host );
     }
 
     public static boolean getRelayEnabled( Context context )
@@ -163,11 +160,6 @@ public class XWPrefs {
         setPrefsBoolean( context, R.string.key_disable_bt, disabled );
     }
 
-    public static boolean getSkipToWebAPI( Context context )
-    {
-        return getPrefsBoolean( context, R.string.key_relay_via_http_first, false );
-    }
-
     public static int getDefaultProxyPort( Context context )
     {
         String val = getPrefsString( context, R.string.key_proxy_port );
@@ -182,7 +174,8 @@ public class XWPrefs {
 
     public static String getDefaultDictURL( Context context )
     {
-        return getPrefsString( context, R.string.key_dict_host4 );
+        String result = getWithHost( context, R.string.key_dict_host_path );
+        return result;
     }
 
     public static boolean getSquareTiles( Context context )
@@ -553,5 +546,13 @@ public class XWPrefs {
                 new Boolean(Configuration.SCREENLAYOUT_SIZE_LARGE <= size);
         }
         return s_isTablet;
+    }
+
+    private static String getWithHost( Context context, int pathKey )
+    {
+        String host = getHostName( context );
+        String path = getPrefsString( context, pathKey );
+        String result = String.format( "https://%s/%s", host, path );
+        return result;
     }
 }

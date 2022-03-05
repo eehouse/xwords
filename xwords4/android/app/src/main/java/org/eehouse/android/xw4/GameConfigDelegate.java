@@ -606,7 +606,7 @@ public class GameConfigDelegate extends DelegateBase
                 m_carOrig = XwJNI.comms_getAddr( gamePtr );
                 m_remoteAddrs = XwJNI.comms_getAddrs( gamePtr );
             } else if ( !localOnlyGame() ) {
-                String relayName = XWPrefs.getDefaultRelayHost( m_activity );
+                String relayName = XWPrefs.getHostName( m_activity );
                 int relayPort = XWPrefs.getDefaultRelayPort( m_activity );
                 m_carOrig = XwJNI.comms_getInitialAddr( relayName, relayPort );
             } else {

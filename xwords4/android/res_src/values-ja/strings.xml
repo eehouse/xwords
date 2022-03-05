@@ -615,7 +615,6 @@
     <string name="confirm_get_locdict_fmt">お使いのデバイスで %1$s が設定されました。%1$s でクロスワードがプレイできるように、単語リストをダウンロードしますか?</string>
     <string name="advanced">デバッグ用</string>
     <string name="advanced_summary">これは必要ありません…</string>
-    <string name="relay_host">リレーホスト</string>
     <string name="dict_host">単語リストのダウンロード URL</string>
     <string name="logging_on">ログを有効にする</string>
     <string name="debug_features">デバッグ機能を有効にする</string>
@@ -779,8 +778,6 @@ WiFi ダイレクト経由で接続可能なデバイスはありません。</s
     <string name="group_name_archive">アーカイブ</string>
     <string name="duplicate_group_name_fmt">グループ \"%1$s\" は既に存在します。</string>
     <string name="gamel_menu_writegit">Git の情報をクリップボードにコピー</string>
-    <string name="relay_via_http_first">Web API から使用する</string>
-    <string name="relay_via_http_first_summary">(カスタムプロトコルからのフォールバックとして)</string>
     <string name="expl_relay_url">Web API をリレーする URL</string>
     <string name="show_sms_title">SMS 送信、受信を表示する</string>
     <string name="list_item_netstats">接続…</string>

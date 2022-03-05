@@ -66,7 +66,7 @@ public class NetUtils {
         Socket socket = null;
         try {
             int port = XWPrefs.getDefaultProxyPort( context );
-            String host = XWPrefs.getDefaultRelayHost( context );
+            String host = XWPrefs.getHostName( context );
 
             SocketFactory factory = SocketFactory.getDefault();
             InetAddress addr = InetAddress.getByName( host );
@@ -128,8 +128,9 @@ public class NetUtils {
     static void showGamePage( Context context, int gameID )
     {
         // Requires a login, so only of use to me right now....
-        String url = String.format( "https://eehouse.org/xw4/ui/games?gameid=%d",
-                                    gameID );
+        String host = XWPrefs.getPrefsString( context, R.string.key_mqtt_host );
+        String url = String.format( "https://%s/xw4/ui/games?gameid=%d",
+                                    host, gameID );
         Intent intent = new Intent( Intent.ACTION_VIEW, Uri.parse( url ) );
         if ( null != intent.resolveActivity( context.getPackageManager() ) ) {
             context.startActivity( intent );

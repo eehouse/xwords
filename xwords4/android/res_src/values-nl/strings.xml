@@ -604,7 +604,6 @@
     <string name="confirm_get_locdict_fmt">Jouw apparaat is ingesteld voor %1$s. Wil je een woordenlijst downloaden zodat je CrossWords in het %1$s kan spelen?</string>
     <string name="advanced">Voor debuggen</string>
     <string name="advanced_summary">Je zal deze opties nooit nodig hoeven te hebben...</string>
-    <string name="relay_host">Relay host</string>
     <string name="dict_host">Woordenlijst download URL</string>
     <string name="logging_on">Schakel logs in</string>
     <string name="debug_features">Schakel debug functies in</string>

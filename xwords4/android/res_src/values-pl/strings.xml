@@ -695,9 +695,6 @@
     <string name="confirm_get_locdict_fmt">Twoje urządzenie jest skonfigurowane na język %1$s. Chcesz pobrać listę słów, aby móc grać w CrossWords w %1$s\?</string>
     <string name="advanced">Dla debugowania</string>
     <string name="advanced_summary">Nigdy nie powinieneś ich potrzebować...</string>
-    <string name="relay_host">Host przekazywania</string>
-    <string name="relay_via_http_first">Najpierw użyj interfejsów API sieci Web</string>
-    <string name="relay_via_http_first_summary">(zamiast jako powrót do niestandardowego protokołu)</string>
     <string name="dict_host">Adres URL pobierania listy słów kluczowych</string>
     <string name="logging_on">Włącz rejestrowanie</string>
     <string name="debug_features">Włącz funkcje debugowania</string>

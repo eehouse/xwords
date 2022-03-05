@@ -572,7 +572,6 @@ Introduïu el vostre nom aquí. S\'usarà en crear partides noves. (Podreu
     <string name="disable_nag_summary">No m\'avisis, tant se val quan faci del meu torn</string>
     <string name="advanced">Per a depuració</string>
     <string name="advanced_summary">No hauríeu de necessitar això...</string>
-    <string name="relay_host">Amfitrió de repetició</string>
     <string name="debug_features">Habilita les característiques de depuració</string>
     <string name="debug_features_summary">Elements del menú, etc. (només construccions de depuració)</string>
     <string name="name_dict_fmt">%1$s/%2$s</string>
@@ -762,7 +761,6 @@ Introduïu el vostre nom aquí. S\'usarà en crear partides noves. (Podreu
     <string name="button_archive">Arxiva</string>
     <string name="group_name_archive">Arxiva</string>
     <string name="duplicate_group_name_fmt">El grup «%1$s» ja existeix.</string>
-    <string name="relay_via_http_first">Usa primer les API Web</string>
     <plurals name="msg_relay_waiting_fmt">
         <item quantity="one">"L\'aparell %1$d  s\'ha connectat al repetidor en la sala «%2$s». Està esperant un jugador."</item>
         <item quantity="other">"L\'aparell %1$d  s\'ha connectat al repetidor en la sala «%2$s». Està esperant %3$d jugadors."</item>
