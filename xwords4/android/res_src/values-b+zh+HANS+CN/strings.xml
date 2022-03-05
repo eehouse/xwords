@@ -8,8 +8,8 @@
     <string name="button_default_both">都</string>
     <string name="lang_label">游戏语言</string>
     <string name="play">玩游戏</string>
-    <string name="password_label">密码</string>
-    <string name="board_submenu_game">游戏-&gt;</string>
+    <string name="password_label">密码：</string>
+    <string name="board_submenu_game">游戏</string>
     <string name="title_prefs">CrossWords设置</string>
     <string name="game_summary_field_language">游戏语言</string>
     <string name="red">红色</string>
@@ -53,4 +53,5 @@
         <item quantity="other">您确定要删除游戏%1$s吗？ 删除后无法恢复。</item>
     </plurals>
     <string name="invitee_fmt">(%1$s 已邀请)</string>
+    <string name="player_label">名字：</string>
 </resources>
