@@ -625,7 +625,7 @@
     <string name="clip_label">URL do convite</string>
     <string name="invite_copied">Convite pronto para colar</string>
     <string name="invite_choice_qrcode">Código QR</string>
-    <string name="pref_group_relay_title">Coisas de Relay</string>
+    <string name="pref_group_relay_title">Coisas da internet</string>
     <string name="pref_group_relay_summary">Preferências relacionadas a jogar via internet/relay</string>
     <string name="got_langdict_summary">Não tentar uma segunda vez</string>
     <string name="dup_host_received_fmt">%1$d de %2$d jogadores reportaram suas jogadas. Quando todas as jogadas forem recebidas será sua vez novamente.</string>
@@ -639,7 +639,7 @@
     <string name="relay_poll_name_no_fcm">Somente poll: sem mensagens FCM</string>
     <string name="relay_poll_name_both">Padrão: mesclar polling e FCM</string>
     <string name="relay_invite_title">Convite do relay</string>
-    <string name="mqtt_host">Host MQTT</string>
+    <string name="mqtt_host">Internet/Host MQTT</string>
     <string name="relay_alert_title">Mensagem do relay</string>
     <string name="advanced_summary">Você deveria nunca precisar destes…</string>
     <string name="advanced">Para debug</string>
