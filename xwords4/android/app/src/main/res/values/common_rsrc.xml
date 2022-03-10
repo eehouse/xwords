@@ -153,8 +153,6 @@
   <string name="key_nag_intervals">key_nag_intervals</string>
   <string name="key_download_path">key_download_path</string>
   <string name="key_got_langdict">key_got_langdict</string>
-  <string name="key_xlations_locale">key_xlations_locale</string>
-  <string name="key_xlations_enabled">key_xlations_enabled</string>
   <string name="key_invite_multi">key_invite_multi</string>
   <string name="key_na_rematch_two_only">key_notagain_rematch_two_only</string>
   <string name="key_notagain_dfltname">key_notagain_dfltname</string>

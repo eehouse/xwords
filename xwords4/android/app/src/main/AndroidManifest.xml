@@ -156,8 +156,6 @@
               />
     <activity android:name="ChatActivity"
               />
-    <activity android:name=".loc.LocActivity"
-              />
     <activity android:name=".loc.LocItemEditActivity"
               />
 

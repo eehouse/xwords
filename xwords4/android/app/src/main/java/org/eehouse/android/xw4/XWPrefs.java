@@ -452,16 +452,6 @@ public class XWPrefs {
         setPrefsString( context, keyID, TextUtils.join( "\n", value ) );
     }
 
-    public static String getFakeLocale( Context context )
-    {
-        return getPrefsString( context, R.string.key_xlations_locale );
-    }
-
-    public static boolean getXlationEnabled( Context context )
-    {
-        return getPrefsBoolean( context, R.string.key_xlations_enabled, false );
-    }
-
     public static void setHaveCheckedUpgrades( Context context, boolean haveChecked )
     {
         setPrefsBoolean( context, key_checked_upgrades, haveChecked );

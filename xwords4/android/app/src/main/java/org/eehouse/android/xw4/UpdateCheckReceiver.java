@@ -174,14 +174,14 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
         }
 
         // Xlations update
-        JSONArray xlationUpdate = LocUtils.makeForXlationUpdate( context );
-        if ( null != xlationUpdate ) {
-            try {
-                params.put( k_XLATEINFO, xlationUpdate );
-            } catch ( org.json.JSONException jse ) {
-                Log.ex( TAG, jse );
-            }
-        }
+        // JSONArray xlationUpdate = LocUtils.makeForXlationUpdate( context );
+        // if ( null != xlationUpdate ) {
+        //     try {
+        //         params.put( k_XLATEINFO, xlationUpdate );
+        //     } catch ( org.json.JSONException jse ) {
+        //         Log.ex( TAG, jse );
+        //     }
+        // }
 
         if ( 0 < params.length() ) {
             try {
@@ -387,17 +387,17 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
                     }
 
                     // translations info
-                    if ( jobj.has( k_XLATEINFO ) ) {
-                        JSONArray data = jobj.getJSONArray( k_XLATEINFO );
-                        int nAdded = LocUtils.addXlations( m_context, data );
-                        if ( 0 < nAdded ) {
-                            gotOne = true;
-                            String msg = LocUtils
-                                .getQuantityString( m_context, R.plurals.new_xlations_fmt,
-                                                    nAdded, nAdded );
-                            Utils.showToast( m_context, msg );
-                        }
-                    }
+                    // if ( jobj.has( k_XLATEINFO ) ) {
+                    //     JSONArray data = jobj.getJSONArray( k_XLATEINFO );
+                    //     int nAdded = LocUtils.addXlations( m_context, data );
+                    //     if ( 0 < nAdded ) {
+                    //         gotOne = true;
+                    //         String msg = LocUtils
+                    //             .getQuantityString( m_context, R.plurals.new_xlations_fmt,
+                    //                                 nAdded, nAdded );
+                    //         Utils.showToast( m_context, msg );
+                    //     }
+                    // }
                 }
             } catch ( org.json.JSONException jse ) {
                 Log.ex( TAG, jse );

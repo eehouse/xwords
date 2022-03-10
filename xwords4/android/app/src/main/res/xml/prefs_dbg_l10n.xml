@@ -12,15 +12,5 @@
                         android:defaultValue="false"
                         />
 
-    <org.eehouse.android.xw4.XWEditTextPreference
-        android:key="@string/key_xlations_locale"
-        android:title="@string/xlations_locale"
-        />
-
-    <CheckBoxPreference android:key="@string/key_xlations_enabled"
-                        android:title="@string/xlations_enabled_title"
-                        android:summary="@string/xlations_enabled_summary"
-                        android:defaultValue="false"
-                        />
   </PreferenceCategory>
 </PreferenceScreen>

@@ -115,6 +115,7 @@ android {
             buildConfigField "boolean", "FOR_FDROID", "false"
             buildConfigField "boolean", "HAVE_PASSWORD", "false"
             buildConfigField "boolean", "NO_NEW_RELAY", "true"
+            buildConfigField "boolean", "LOCUTILS_ENABLED", "false"
         }
 
         xw4GPlay {
@@ -394,19 +395,11 @@ clean.dependsOn cleanLocStrings, cleanPrefsWrapper
 
 task myPreBuild(dependsOn: ['mkImages',
                             'copyLocStrings',
-                            'mkXml',
                             'mkPrefsWrapper',
                             'copyStringsXw4D',
                             'copyStringsXw4DGPlay']) {
 }
 preBuild.dependsOn myPreBuild
-
-task mkXml(type: Exec) {
-    workingDir '../'
-    commandLine './scripts/mk_xml.py', '-o',
-        "app/src/main/java/org/eehouse/android/xw4/loc/LocIDsData.java",
-        '-t', "debug"
-}
 
 task copyStringsXw4D(type: Exec) {
     workingDir './'

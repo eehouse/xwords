@@ -56,7 +56,6 @@ public class PrefsDelegate extends DelegateBase
         R.string.key_enable_nbs,
         R.string.key_download_path,
         R.string.key_thumbsize,
-        R.string.key_xlations_locale,
         R.string.key_default_language,
         R.string.key_force_radio,
         R.string.key_disable_nag,
@@ -268,9 +267,6 @@ public class PrefsDelegate extends DelegateBase
                 break;
             case R.string.key_thumbsize:
                 DBUtils.clearThumbnails( mActivity );
-                break;
-            case R.string.key_xlations_locale:
-                LocUtils.localeChanged( mActivity, sp.getString( key, null ) );
                 break;
             case R.string.key_default_language:
                 // forceDictsMatch( sp.getString( key, null ) );

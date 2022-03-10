@@ -2073,8 +2073,6 @@
         <item quantity="one">Installed one new translation</item>
         <item quantity="other">Installed %1$d new translations</item>
     </plurals>
-    <string name="xlations_enabled_title">Enable local translating</string>
-    <string name="xlations_enabled_summary">Add option to every screen menu</string>
     <string name="loc_filters_prompt">Filter by:</string>
     <string name="loc_search_prompt">Search for:</string>
     <string name="loc_filters_all">All</string>
@@ -2278,7 +2276,6 @@
     <string name="gamel_menu_storedb">Write games to SD card</string>
     <string name="gamel_menu_loaddb">Load games from SD card</string>
     <string name="gamel_menu_writegit">Copy git info to clipboard</string>
-    <string name="xlations_locale">Fake locale for translation</string>
     <string name="enable_pending_count_title">Show Pending messages</string>
     <string name="enable_pending_count_summary">Show number not yet acknowledged</string>
     <string name="nag_intervals">Reminder intervals (minutes1,minutes2,…)</string>
