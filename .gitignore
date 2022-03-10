@@ -16,5 +16,7 @@ nohup.out
 /xwords4/android/app/build
 /xwords4/android/app/src/main/java/org/eehouse/android/xw4/loc/LocIDsData.java
 /xwords4/android/app/src/main/java/org/eehouse/android/xw4/gen/*
+/xwords4/android/app/src/xw4dGPlay/res/values/
 /xwords4/dawg/*/*.bin*
 /xwords4/android/app/.cxx
+/xwords4/linux/discon_ok2_logs/
