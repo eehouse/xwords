@@ -1996,6 +1996,17 @@ gtk_util_timerSelected( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe), XP_Bool inDuplica
     }
 }
 
+static void
+gtk_util_getMQTTIDsFor( XW_UtilCtxt* uc, XWEnv xwe, XP_U16 nRelayIDs,
+                        const XP_UCHAR* relayIDs[] )
+{
+    XP_ASSERT(0);               /* implement me */
+    XP_USE( uc );
+    XP_USE( xwe );
+    XP_USE( nRelayIDs );
+    XP_USE( relayIDs );
+}
+
 #ifndef XWFEATURE_STANDALONE_ONLY
 static XWStreamCtxt* 
 gtk_util_makeStreamFromAddr(XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe), XP_PlayerAddr channelNo )
@@ -2313,6 +2324,7 @@ setupGtkUtilCallbacks( GtkGameGlobals* globals, XW_UtilCtxt* util )
     SET_PROC(engineProgressCallback);
     SET_PROC(notifyIllegalWords);
     SET_PROC(remSelected);
+    SET_PROC(getMQTTIDsFor);
     SET_PROC(timerSelected);
 #ifndef XWFEATURE_STANDALONE_ONLY
     SET_PROC(makeStreamFromAddr);
