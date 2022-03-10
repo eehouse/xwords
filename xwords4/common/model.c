@@ -391,7 +391,7 @@ model_setSquareBonuses( ModelCtxt* model, XWBonusType* bonuses, XP_U16 nBonuses 
         XP_FREE( model->vol.mpool, model->vol.bonuses );
     }
     model->vol.bonuses = XP_MALLOC( model->vol.mpool, 
-                                nBonuses * sizeof(model->vol.bonuses[0]) );
+                                    nBonuses * sizeof(model->vol.bonuses[0]) );
     XP_MEMCPY( model->vol.bonuses, bonuses, 
                nBonuses * sizeof(model->vol.bonuses[0]) );
     model->vol.nBonuses = nBonuses;

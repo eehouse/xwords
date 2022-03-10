@@ -115,11 +115,13 @@ linux_util_makeEmptyDict( XW_UtilCtxt* XP_UNUSED_DBG(uctx), XWEnv xwe )
 #define DW BONUS_DOUBLE_WORD
 #define TL BONUS_TRIPLE_LETTER
 #define TW BONUS_TRIPLE_WORD
+#define QL BONUS_QUAD_LETTER
+#define QW BONUS_QUAD_WORD
 
 static XWBonusType*
 bonusesFor( XP_U16 boardSize, XP_U16* len )
 {
-    static XWBonusType scrabbleBoard[] = { 
+    static XWBonusType scrabbleBoard[] = {
         TW,//EM,EM,DL,EM,EM,EM,TW,
         EM,DW,//EM,EM,EM,TL,EM,EM,
 
@@ -133,7 +135,7 @@ bonusesFor( XP_U16 boardSize, XP_U16* len )
         TW,EM,EM,DL,EM,EM,EM,DW,
     }; /* scrabbleBoard */
 
-    static XWBonusType seventeen[] = { 
+    static XWBonusType seventeen[] = {
         TW,//EM,EM,DL,EM,EM,EM,TW,
         EM,DW,//EM,EM,EM,TL,EM,EM,
 
@@ -146,17 +148,37 @@ bonusesFor( XP_U16 boardSize, XP_U16* len )
         EM,EM,DL,EM,EM,EM,DL,//EM,
         TW,EM,EM,DL,EM,EM,EM,DW,
         TW,EM,EM,DL,EM,EM,EM,DW,DW,
-    }; /* scrabbleBoard */
+    }; /* seventeen */
+
+    static XWBonusType twentyOne[] = {
+        QW,
+        EM, DW,
+        EM, EM, DW,
+        DL, EM, EM, TW,
+        EM, TL, EM, EM, DW,
+        EM, EM, QL, EM, EM, DW,
+        EM, EM, EM, DL, EM, EM, DW,
+        TW, EM, EM, EM, EM, EM, EM, DW,
+        EM, DW, EM, EM, TL, EM, EM, EM, TL,
+        EM, EM, DW, EM, EM, DL, EM, EM, EM, DL,
+        DL, EM, EM, TW, EM, EM, DL, EM, EM, EM, DW,
+    }; /* twentyOne */
 
     XWBonusType* result = NULL;
-    if ( boardSize == 15 ) {
+    switch ( boardSize ) {
+    case 15:
         result = scrabbleBoard;
         *len = VSIZE(scrabbleBoard);
-    } else if ( boardSize == 17 ) {
+        break;
+    case 17:
         result = seventeen;
         *len = VSIZE(seventeen);
+        break;
+    case 21:
+        result = twentyOne;
+        *len = VSIZE(twentyOne);
+        break;
     }
-
     return result;
 }
 

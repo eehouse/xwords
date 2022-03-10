@@ -620,6 +620,8 @@ word_multiplier( const ModelCtxt* model, XWEnv xwe, XP_U16 col, XP_U16 row )
         return 2;
     case BONUS_TRIPLE_WORD:
         return 3;
+    case BONUS_QUAD_WORD:
+        return 4;
     default:
         return 1;
     }
@@ -634,6 +636,8 @@ tile_multiplier( const ModelCtxt* model, XWEnv xwe, XP_U16 col, XP_U16 row )
         return 2;
     case BONUS_TRIPLE_LETTER:
         return 3;
+    case BONUS_QUAD_LETTER:
+        return 4;
     default:
         return 1;
     }
