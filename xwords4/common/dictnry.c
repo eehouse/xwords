@@ -477,10 +477,25 @@ dict_getNextTileString( const DictionaryCtxt* dict, Tile tile,
 }
 
 XP_U16
-dict_numTiles( const DictionaryCtxt* dict, Tile tile )
+dict_numTilesForSize( const DictionaryCtxt* dict, Tile tile, XP_U16 nCols )
 {
     tile *= 2;
-    return dict->countsAndValues[tile];
+    XP_U16 count = dict->countsAndValues[tile];
+
+    /* Wordlists are built assuming 15x15  boards. Different sized boards need
+       different numbers of tiles. The wordlist  might provide for the size we
+       have. If not, let's adjust the count based on how many squares we have
+       vs. 15x15.
+    */
+    XP_U16 pct = (nCols * nCols * 100) / (15 * 15);
+    XP_U16 newCount = count * pct / 100;
+    if ( 50 < (count * pct) % 100 ) {
+        ++newCount;
+    }
+    XP_LOGFF( "adjusted count %d to %d based on pct of %d", count, newCount, pct );
+    count = newCount;
+
+    return count;
 } /* dict_numTiles */
 
 XP_U16
@@ -631,7 +646,7 @@ dict_tilesAreSame( const DictionaryCtxt* dict1, const DictionaryCtxt* dict2 )
             } else if ( 0 != XP_STRCMP( face1, face2 ) ) {
                 break;
             }
-            if ( dict_numTiles( dict1, ii ) != dict_numTiles( dict2, ii ) ) {
+            if ( dict_numTilesForSize( dict1, ii, 15 ) != dict_numTilesForSize( dict2, ii, 15 ) ) {
                 break;
             }
         }
@@ -662,12 +677,12 @@ ucharsToNarrow( const DictionaryCtxt* dict, XP_UCHAR* buf, XP_U16* bufsizep )
 
 /* Summarize tile info in a way it can be presented to users */
 void
-dict_writeTilesInfo( const DictionaryCtxt* dict, XWStreamCtxt* stream )
+dict_writeTilesInfo( const DictionaryCtxt* dict, XP_U16 boardSize, XWStreamCtxt* stream )
 {
     XP_U16 nFaces = dict_numTileFaces( dict );
     for ( Tile tile = 0; tile < nFaces; ++tile ) {
         XP_U16 val = dict_getTileValue( dict, tile );
-        XP_U16 count = dict_numTiles( dict, tile );
+        XP_U16 count = dict_numTilesForSize( dict, tile, boardSize );
         const XP_UCHAR* face = dict_getTileString( dict, tile );
         XP_UCHAR buf[32];
         XP_SNPRINTF( buf, VSIZE(buf), "%s\t%d\t%d\n", face, count, val );

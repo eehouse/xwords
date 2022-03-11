@@ -39,7 +39,8 @@ XP_U16 pool_getNTilesLeftFor( const PoolContext* pool, Tile tile );
 PoolContext* pool_make( MPFORMAL_NOCOMMA );
 
 void pool_destroy( PoolContext* pool );
-void pool_initFromDict( PoolContext* pool, const DictionaryCtxt* dict );
+void pool_initFromDict( PoolContext* pool, const DictionaryCtxt* dict,
+                        XP_U16 nCols );
 
 void pool_writeToStream( PoolContext* pool, XWStreamCtxt* stream );
 PoolContext* pool_makeFromStream( MPFORMAL XWStreamCtxt* stream );

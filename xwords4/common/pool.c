@@ -242,7 +242,7 @@ pool_getNTilesLeftFor( const PoolContext* pool, Tile tile )
 } /* pool_remainingTileCount */
 
 void 
-pool_initFromDict( PoolContext* pool, const DictionaryCtxt* dict )
+pool_initFromDict( PoolContext* pool, const DictionaryCtxt* dict, XP_U16 nCols )
 {
     const XP_U16 numFaces = dict_numTileFaces( dict );
 
@@ -253,9 +253,9 @@ pool_initFromDict( PoolContext* pool, const DictionaryCtxt* dict )
                              numFaces * sizeof(pool->lettersLeft[0]) );
     pool->numTilesLeft = 0;
 
-    for ( Tile ii = 0; ii < numFaces; ++ii ) {
-        XP_U16 numTiles = dict_numTiles( dict, ii );
-        pool->lettersLeft[ii] = (XP_U8)numTiles;
+    for ( Tile tile = 0; tile < numFaces; ++tile ) {
+        XP_U16 numTiles = dict_numTilesForSize( dict, tile, nCols );
+        pool->lettersLeft[tile] = (XP_U8)numTiles;
         pool->numTilesLeft += numTiles;
     }
 

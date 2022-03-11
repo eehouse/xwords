@@ -1086,7 +1086,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1getTilesInfo
     DictionaryCtxt* dict = (DictionaryCtxt*)dictPtr;
     XWStreamCtxt* stream = mem_stream_make( MPPARM(mpool) globalState->vtMgr,
                                             NULL, 0, NULL );
-    dict_writeTilesInfo( dict, stream );
+    dict_writeTilesInfo( dict, 15, stream );
     result = streamToJString( env, stream );
     stream_destroy( stream, env );
 
