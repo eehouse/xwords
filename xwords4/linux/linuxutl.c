@@ -195,110 +195,6 @@ setSquareBonuses( const CommonGlobals* cGlobals )
 }
 #endif
 
-static XWBonusType*
-parseBonusFile( XP_U16 nCols, const char* bonusFile )
-{
-    XWBonusType* result = NULL;
-    FILE* file = fopen( bonusFile, "r" );
-    if ( !!file ) {
-        XP_U16 row = 0;
-        XP_U16 col;
-        result = malloc( nCols * nCols * sizeof(*result) );
-        char line[1024];
-        while ( line == fgets( line, sizeof(line), file ) && row < nCols ) {
-            bool inComment = false;
-            char* ch;
-            XWBonusType bonus;
-            col = 0;
-            for ( ch = line; '\0' != *ch; ++ch ) {
-                switch( *ch ) {
-                case '#':       /* comment; line is done */
-                    inComment = true;
-                    break;
-                case '+':
-                    bonus = BONUS_DOUBLE_LETTER;
-                    break;
-                case '*': 
-                    bonus = BONUS_DOUBLE_WORD;
-                    break;
-                case '^':
-                    bonus = BONUS_TRIPLE_LETTER;
-                    break;
-                case '!': 
-                    bonus = BONUS_TRIPLE_WORD;
-                    break;
-                case '.': 
-                case ' ': 
-                    bonus = BONUS_NONE;
-                    break;
-                case '\n':
-                case '\a':
-                    break;
-                default:
-                    if ( !inComment ) {
-                        fprintf( stderr, "unexpected char '%c' in %s\n", *ch, bonusFile );
-                        exit( 1 );
-                    }
-                    break;
-                }
-                if ( !inComment && col < nCols ) {
-                    result[(row * nCols) + col] = bonus;
-                    ++col;
-                    /* Let's just allow anything to follow the 15 letters we
-                       care about, e.g. comments */
-                    if ( col >= nCols ) {
-                        inComment = true;
-                    }
-                }
-            }
-            if ( col > 0 && row < nCols - 1) {
-                ++row;
-            }
-        }
-        fclose( file );
-    }
-    return result;
-}
-
-static XWBonusType
-linux_util_getSquareBonus( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe), XP_U16 nCols,
-                           XP_U16 col, XP_U16 row )
-{
-    static XWBonusType* parsedFile = NULL;
-    XWBonusType result = EM;
-
-    CommonGlobals* cGlobals = (CommonGlobals*)uc->closure;
-    if ( NULL == parsedFile && NULL != cGlobals->params->bonusFile ) {
-        if ( !parsedFile ) {
-            parsedFile = parseBonusFile( nCols, cGlobals->params->bonusFile );
-        }
-    }
-    if ( NULL != parsedFile ) {
-        result = parsedFile[(row*nCols) + col];
-    } else {
-        XP_U16 nEntries;
-        XWBonusType* scrabbleBoard = bonusesFor( 15, &nEntries );
-
-        XP_U16 index, ii;
-        if ( col > (nCols/2) ) col = nCols - 1 - col;
-        if ( row > (nCols/2) ) row = nCols - 1 - row;
-        if ( col > row ) {
-            XP_U16 tmp = col;
-            col = row;
-            row = tmp;
-        }
-        index = col;
-        for ( ii = 1; ii <= row; ++ii ) {
-            index += ii;
-        }
-
-        if ( index < nEntries) {
-            result = scrabbleBoard[index];
-        }
-    }
-    return result;
-} /* linux_util_getSquareBonus */
-
 static const DictionaryCtxt*
 linux_util_getDict( XW_UtilCtxt* uc, XWEnv xwe,
                     XP_LangCode XP_UNUSED(lang), const XP_UCHAR* dictName )
@@ -338,7 +234,6 @@ linux_util_vt_init( MPFORMAL XW_UtilCtxt* util )
     util->vtable = XP_MALLOC( mpool, sizeof(UtilVtable) );
 
     util->vtable->m_util_makeEmptyDict = linux_util_makeEmptyDict;
-    util->vtable->m_util_getSquareBonus = linux_util_getSquareBonus;
     util->vtable->m_util_getDict = linux_util_getDict;
     util->vtable->m_util_getInviteeName = linux_util_getInviteeName;
 

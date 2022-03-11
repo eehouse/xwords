@@ -37,6 +37,11 @@
         android:defaultValue="0x003F3F"
         />
     <org.eehouse.android.xw4.EditColorPreference
+        android:key="@string/key_bonus_l4x_dark"
+        android:title="@string/bonus_l4x"
+        android:defaultValue="0x003F3F"
+        />
+    <org.eehouse.android.xw4.EditColorPreference
         android:key="@string/key_bonus_w2x_dark"
         android:title="@string/bonus_w2x"
         android:defaultValue="0x3F003F"
@@ -44,6 +49,11 @@
     <org.eehouse.android.xw4.EditColorPreference
         android:key="@string/key_bonus_w3x_dark"
         android:title="@string/bonus_w3x"
+        android:defaultValue="0x3F3F3F"
+        />
+    <org.eehouse.android.xw4.EditColorPreference
+        android:key="@string/key_bonus_w4x_dark"
+        android:title="@string/bonus_w4x"
         android:defaultValue="0x3F3F3F"
         />
 

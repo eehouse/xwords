@@ -26,8 +26,10 @@
   <string name="key_player3">key_clr_player3</string>
   <string name="key_bonus_l2x">key_clr_bonus_l2x</string>
   <string name="key_bonus_l3x">key_clr_bonus_l3x</string>
+  <string name="key_bonus_l4x">key_clr_bonus_l4x</string>
   <string name="key_bonus_w2x">key_clr_bonus_w2x</string>
   <string name="key_bonus_w3x">key_clr_bonus_w3x</string>
+  <string name="key_bonus_w4x">key_clr_bonus_w4x</string>
   <string name="key_tile_back">key_clr_tile_back</string>
   <string name="key_empty">key_clr_empty</string>
   <string name="key_background">key_clr_background</string>
@@ -42,8 +44,10 @@
   <string name="key_player3_dark">key_clr_player3_dark</string>
   <string name="key_bonus_l2x_dark">key_clr_bonus_l2x_dark</string>
   <string name="key_bonus_l3x_dark">key_clr_bonus_l3x_dark</string>
+  <string name="key_bonus_l4x_dark">key_clr_bonus_l4x_dark</string>
   <string name="key_bonus_w2x_dark">key_clr_bonus_w2x_dark</string>
   <string name="key_bonus_w3x_dark">key_clr_bonus_w3x_dark</string>
+  <string name="key_bonus_w4x_dark">key_clr_bonus_w4x_dark</string>
   <string name="key_tile_back_dark">key_clr_tile_back_dark</string>
   <string name="key_empty_dark">key_clr_empty_dark</string>
   <string name="key_background_dark">key_clr_background_dark</string>
@@ -198,6 +202,9 @@
   <string name="faq_uri_fmt">https://eehouse.org/xw4/faq.html#%1$s</string>
 
   <string-array name="board_sizes">
+    <item>21x21</item>
+    <item>19x19</item>
+    <item>17x17</item>
     <item>15x15</item>
     <item>13x13</item>
     <item>11x11</item>
@@ -389,6 +396,8 @@
     <item>@string/key_bonus_w2x</item>
     <item>@string/key_bonus_l3x</item>
     <item>@string/key_bonus_w3x</item>
+    <item>@string/key_bonus_l4x</item>
+    <item>@string/key_bonus_w4x</item>
 
     <item>@string/key_tile_back</item>
     <item>@string/key_empty</item>
@@ -408,6 +417,8 @@
     <item>@string/key_bonus_w2x_dark</item>
     <item>@string/key_bonus_l3x_dark</item>
     <item>@string/key_bonus_w3x_dark</item>
+    <item>@string/key_bonus_l4x_dark</item>
+    <item>@string/key_bonus_w4x_dark</item>
 
     <item>@string/key_tile_back_dark</item>
     <item>@string/key_empty_dark</item>

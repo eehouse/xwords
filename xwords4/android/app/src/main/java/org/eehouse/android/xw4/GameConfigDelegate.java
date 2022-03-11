@@ -1123,9 +1123,12 @@ public class GameConfigDelegate extends DelegateBase
 
     private int positionToSize( int position ) {
         switch( position ) {
-        case 0: return 15;
-        case 1: return 13;
-        case 2: return 11;
+        case 0: return 21;
+        case 1: return 19;
+        case 2: return 17;
+        case 3: return 15;
+        case 4: return 13;
+        case 5: return 11;
         default:
             Assert.failDbg();
         }
@@ -1137,14 +1140,23 @@ public class GameConfigDelegate extends DelegateBase
         int size = m_gi.boardSize;
         int selection = 0;
         switch( size ) {
-        case 15:
+        case 21:
             selection = 0;
             break;
-        case 13:
+        case 19:
             selection = 1;
             break;
-        case 11:
+        case 17:
             selection = 2;
+            break;
+        case 15:
+            selection = 3;
+            break;
+        case 13:
+            selection = 4;
+            break;
+        case 11:
+            selection = 5;
             break;
         default:
             Assert.failDbg();

@@ -89,9 +89,6 @@ typedef struct UtilVtable {
     XWStreamCtxt* (*m_util_makeStreamFromAddr)(XW_UtilCtxt* uc, XWEnv xwe,
                                                XP_PlayerAddr channelNo );
 #endif
-    
-    XWBonusType (*m_util_getSquareBonus)( XW_UtilCtxt* uc, XWEnv xwe, XP_U16 boardSize,
-                                          XP_U16 col, XP_U16 row );
     void (*m_util_userError)( XW_UtilCtxt* uc, XWEnv xwe, UtilErrID id );
 
     void (*m_util_notifyMove)( XW_UtilCtxt* uc, XWEnv xwe, XWStreamCtxt* stream );
@@ -220,9 +217,6 @@ struct XW_UtilCtxt {
 
 #define util_makeStreamFromAddr(uc,e,a) \
          (uc)->vtable->m_util_makeStreamFromAddr((uc), (e),(a))
-
-#define util_getSquareBonus(uc,e,b,c,r)                           \
-         (uc)->vtable->m_util_getSquareBonus((uc), (e),(b),(c),(r))
 
 #define util_userError(uc,e,err)                    \
          (uc)->vtable->m_util_userError((uc),(e),(err))

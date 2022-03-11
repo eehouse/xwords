@@ -34,8 +34,7 @@ extern "C" {
 /****************************** prototypes ******************************/
 static XP_Bool isLegalMove( ModelCtxt* model, XWEnv xwe, MoveInfo* moves,
                             XP_Bool silent );
-static XP_U16 word_multiplier( const ModelCtxt* model, XWEnv xwe,
-                               XP_U16 col, XP_U16 row );
+static XP_U16 word_multiplier( const ModelCtxt* model, XP_U16 col, XP_U16 row );
 static XP_U16 find_end( const ModelCtxt* model, XP_U16 col, XP_U16 row, 
                         XP_Bool isHorizontal );
 static XP_U16 find_start( const ModelCtxt* model, XP_U16 col, XP_U16 row, 
@@ -43,7 +42,7 @@ static XP_U16 find_start( const ModelCtxt* model, XP_U16 col, XP_U16 row,
 static XP_S16 checkScoreMove( ModelCtxt* model, XWEnv xwe, XP_S16 turn,
                               EngineCtxt* engine, XWStreamCtxt* stream, 
                               XP_Bool silent, WordNotifierInfo* notifyInfo );
-static XP_U16 scoreWord( const ModelCtxt* model, XWEnv xwe, XP_U16 turn,
+static XP_U16 scoreWord( const ModelCtxt* model, XP_U16 turn,
                          const MoveInfo* movei, EngineCtxt* engine, 
                          XWStreamCtxt* stream, WordNotifierInfo* notifyInfo );
 
@@ -555,10 +554,10 @@ figureMoveScore( const ModelCtxt* model, XWEnv xwe, XP_U16 turn,
     for ( ii = 0; ii < nTiles; ++ii ) {
         *incr = moveInfo->tiles[ii].varCoord;
         moveMultiplier *= multipliers[ii] =
-            word_multiplier( model, xwe, col, row );
+            word_multiplier( model, col, row );
     }
 
-    oneScore = scoreWord( model, xwe, turn, moveInfo, (EngineCtxt*)NULL,
+    oneScore = scoreWord( model, turn, moveInfo, (EngineCtxt*)NULL,
                           stream, notifyInfo );
     if ( !!stream ) {
         formatWordScore( stream, oneScore, moveMultiplier );
@@ -576,7 +575,7 @@ figureMoveScore( const ModelCtxt* model, XWEnv xwe, XP_U16 turn,
         tmpMI.commonCoord = tiles->varCoord;
         tmpMI.tiles[0].tile = tiles->tile;
 
-        oneScore = scoreWord( model, xwe, turn, &tmpMI, engine, stream, notifyInfo );
+        oneScore = scoreWord( model, turn, &tmpMI, engine, stream, notifyInfo );
         if ( !!stream ) {
             formatWordScore( stream, oneScore, multipliers[ii] );
         }
@@ -612,9 +611,9 @@ figureMoveScore( const ModelCtxt* model, XWEnv xwe, XP_U16 turn,
 } /* figureMoveScore */
 
 static XP_U16
-word_multiplier( const ModelCtxt* model, XWEnv xwe, XP_U16 col, XP_U16 row )
+word_multiplier( const ModelCtxt* model, XP_U16 col, XP_U16 row )
 {
-    XWBonusType bonus = model_getSquareBonus( model, xwe, col, row );
+    XWBonusType bonus = model_getSquareBonus( model, col, row );
     switch ( bonus ) {
     case BONUS_DOUBLE_WORD:
         return 2;
@@ -628,9 +627,9 @@ word_multiplier( const ModelCtxt* model, XWEnv xwe, XP_U16 col, XP_U16 row )
 } /* word_multiplier */
 
 static XP_U16
-tile_multiplier( const ModelCtxt* model, XWEnv xwe, XP_U16 col, XP_U16 row )
+tile_multiplier( const ModelCtxt* model, XP_U16 col, XP_U16 row )
 {
-    XWBonusType bonus = model_getSquareBonus( model, xwe, col, row );
+    XWBonusType bonus = model_getSquareBonus( model, col, row );
     switch ( bonus ) {
     case BONUS_DOUBLE_LETTER:
         return 2;
@@ -644,7 +643,7 @@ tile_multiplier( const ModelCtxt* model, XWEnv xwe, XP_U16 col, XP_U16 row )
 } /* tile_multiplier */
 
 static XP_U16
-scoreWord( const ModelCtxt* model, XWEnv xwe, XP_U16 turn,
+scoreWord( const ModelCtxt* model, XP_U16 turn,
            const MoveInfo* movei, /* new tiles */
            EngineCtxt* engine,/* for crosswise caching */
            XWStreamCtxt* stream, 
@@ -693,7 +692,7 @@ scoreWord( const ModelCtxt* model, XWEnv xwe, XP_U16 turn,
         thisTileValue = dict_getTileValue( dict, tile );
 
         XP_ASSERT( *incr == tiles[0].varCoord );
-        thisTileValue *= tile_multiplier( model, xwe, col, row );
+        thisTileValue *= tile_multiplier( model, col, row );
 
         XP_ASSERT( engine == NULL || nTiles == 1 );
 
@@ -729,7 +728,7 @@ scoreWord( const ModelCtxt* model, XWEnv xwe, XP_U16 turn,
                      * mode, as the blank won't be known there.  (Assert will
                      * fail.) */
 
-                    tileMultiplier = tile_multiplier( model, xwe, col, row );
+                    tileMultiplier = tile_multiplier( model, col, row );
                     ++tiles;
                     --nTiles;
                 } else { /* placed on the board before this move */

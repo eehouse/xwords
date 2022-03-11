@@ -375,31 +375,65 @@ model_popToHash( ModelCtxt* model, XWEnv xwe, const XP_U32 hash, PoolContext* po
 
 #ifdef STREAM_VERS_BIGBOARD
 void
-model_setSquareBonuses( ModelCtxt* model, XWBonusType* bonuses, XP_U16 nBonuses )
+model_setSquareBonuses( ModelCtxt* XP_UNUSED(model), XWBonusType* XP_UNUSED(bonuses),
+                        XP_U16 XP_UNUSED(nBonuses) )
 {
-#ifdef DEBUG
-    XP_U16 nCols = (1 + model_numCols( model )) / 2;
-    XP_ASSERT( 0 < nCols );
-    XP_U16 wantLen = 0;
-    while ( nCols > 0 ) {
-        wantLen += nCols--;
-    }
-    XP_ASSERT( wantLen == nBonuses );
-#endif
-
-    if ( !!model->vol.bonuses ) {
-        XP_FREE( model->vol.mpool, model->vol.bonuses );
-    }
-    model->vol.bonuses = XP_MALLOC( model->vol.mpool, 
-                                    nBonuses * sizeof(model->vol.bonuses[0]) );
-    XP_MEMCPY( model->vol.bonuses, bonuses, 
-               nBonuses * sizeof(model->vol.bonuses[0]) );
-    model->vol.nBonuses = nBonuses;
+    XP_LOGFF( "doing nothing" );
 }
 #endif
 
+#define EM BONUS_NONE
+#define DL BONUS_DOUBLE_LETTER
+#define DW BONUS_DOUBLE_WORD
+#define TL BONUS_TRIPLE_LETTER
+#define TW BONUS_TRIPLE_WORD
+#define QL BONUS_QUAD_LETTER
+#define QW BONUS_QUAD_WORD
+
+static XWBonusType sTwentyOne[] = {
+    QW,
+    EM, DW,
+    EM, EM, DW,
+    DL, EM, EM, TW,
+    EM, TL, EM, EM, DW,
+    EM, EM, QL, EM, EM, DW,
+    EM, EM, EM, DL, EM, EM, DW,
+    TW, EM, EM, EM, EM, EM, EM, DW,
+    EM, DW, EM, EM, TL, EM, EM, EM, TL,
+    EM, EM, DW, EM, EM, DL, EM, EM, EM, DL,
+    DL, EM, EM, TW, EM, EM, DL, EM, EM, EM, DW,
+}; /* sTwentyOne */
+
+static XWBonusType
+getSquareBonus( XP_U16 nCols, XP_U16 col, XP_U16 row )
+{
+    XWBonusType result = BONUS_NONE;
+
+    if ( col > (nCols/2) ) {
+        col = nCols - 1 - col;
+    }
+    if ( row > (nCols/2) ) {
+        row = nCols - 1 - row;
+    }
+    if ( col > row ) {
+        XP_U16 tmp = col;
+        col = row;
+        row = tmp;
+    }
+
+    XP_U16 index = col;
+    for ( XP_U16 ii = 1; ii <= row; ++ii ) {
+        index += ii;
+    }
+
+    if ( index < VSIZE(sTwentyOne)) {
+        result = sTwentyOne[index];
+    }
+    return result;
+}
+
 XWBonusType
-model_getSquareBonus( const ModelCtxt* model, XWEnv xwe, XP_U16 col, XP_U16 row )
+model_getSquareBonus( const ModelCtxt* model, XP_U16 col, XP_U16 row )
 {
     XWBonusType result = BONUS_NONE;
 #ifdef STREAM_VERS_BIGBOARD
@@ -431,9 +465,7 @@ model_getSquareBonus( const ModelCtxt* model, XWEnv xwe, XP_U16 col, XP_U16 row 
         }
 #endif
     } else {
-        result = util_getSquareBonus( model->vol.util, xwe,
-                                      model_numRows(model),
-                                      col, row );
+        result = getSquareBonus( model_numRows(model), col, row );
     }
     return result;
 }

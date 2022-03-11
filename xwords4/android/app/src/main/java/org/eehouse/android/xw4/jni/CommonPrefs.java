@@ -79,7 +79,7 @@ public class CommonPrefs extends XWPrefs {
     private CommonPrefs()
     {
         playerColors = new int[4];
-        bonusColors = new int[5];
+        bonusColors = new int[7];
         bonusColors[0] = 0xF0F0F0F0; // garbage
         otherColors = new int[COLOR_LAST];
     }
