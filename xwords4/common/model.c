@@ -407,8 +407,6 @@ static XWBonusType sTwentyOne[] = {
 static XWBonusType
 getSquareBonus( XP_U16 nCols, XP_U16 col, XP_U16 row )
 {
-    XWBonusType result = BONUS_NONE;
-
     if ( col > (nCols/2) ) {
         col = nCols - 1 - col;
     }
@@ -421,11 +419,17 @@ getSquareBonus( XP_U16 nCols, XP_U16 col, XP_U16 row )
         row = tmp;
     }
 
+    /* For a smaller board, skip the outer "rings" */
+    XP_U16 adj = (21 - nCols) / 2;
+    col += adj;
+    row += adj;
+
     XP_U16 index = col;
     for ( XP_U16 ii = 1; ii <= row; ++ii ) {
         index += ii;
     }
 
+    XWBonusType result = BONUS_NONE;
     if ( index < VSIZE(sTwentyOne)) {
         result = sTwentyOne[index];
     }
