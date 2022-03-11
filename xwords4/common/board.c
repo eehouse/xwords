@@ -210,7 +210,6 @@ board_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream, ModelCtxt* model
                       XP_U16 nPlayers )
 {
     BoardCtxt* board;
-    XP_U16 ii;
     XP_U16 version = stream_getVersion( stream );
     XP_U16 nColsNBits;
 #ifdef STREAM_VERS_BIGBOARD
@@ -223,11 +222,11 @@ board_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream, ModelCtxt* model
     board_setCallbacks( board, xwe );
 
     if ( version >= STREAM_VERS_4YOFFSET) {
-        board->sd[SCROLL_H].offset = (XP_U16)stream_getBits( stream, 4 );
-        board->zoomCount = (XP_U16)stream_getBits( stream, 4 );
+        board->sd[SCROLL_H].offset = (XP_U16)stream_getBits( stream, nColsNBits );
+        board->zoomCount = (XP_U16)stream_getBits( stream, nColsNBits );
     }
     board->sd[SCROLL_V].offset = (XP_U16)
-        stream_getBits( stream, (version < STREAM_VERS_4YOFFSET) ? 2 : 4 );
+        stream_getBits( stream, (version < STREAM_VERS_4YOFFSET) ? 2 : nColsNBits );
     board->isFlipped = (XP_Bool)stream_getBits( stream, 1 );
     board->gameOver = (XP_Bool)stream_getBits( stream, 1 );
     board->showColors = (XP_Bool)stream_getBits( stream, 1 );
@@ -249,7 +248,7 @@ board_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream, ModelCtxt* model
 
     XP_ASSERT( !!server );
 
-    for ( ii = 0; ii < nPlayers; ++ii ) {
+    for ( int ii = 0; ii < nPlayers; ++ii ) {
         PerTurnInfo* pti = &board->pti[ii];
         BoardArrow* arrow = &pti->boardArrow;
         arrow->col = (XP_U8)stream_getBits( stream, nColsNBits );
@@ -324,10 +323,9 @@ board_writeToStream( const BoardCtxt* board, XWStreamCtxt* stream )
     nColsNBits = NUMCOLS_NBITS_4;
 #endif
 
-    
-    stream_putBits( stream, 4, board->sd[SCROLL_H].offset );
-    stream_putBits( stream, 4, board->zoomCount );
-    stream_putBits( stream, 4, board->sd[SCROLL_V].offset );
+    stream_putBits( stream, nColsNBits, board->sd[SCROLL_H].offset );
+    stream_putBits( stream, nColsNBits, board->zoomCount );
+    stream_putBits( stream, nColsNBits, board->sd[SCROLL_V].offset );
     stream_putBits( stream, 1, board->isFlipped );
     stream_putBits( stream, 1, board->gameOver );
     stream_putBits( stream, 1, board->showColors );
