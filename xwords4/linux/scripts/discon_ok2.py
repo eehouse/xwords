@@ -523,6 +523,8 @@ def build_cmds(args):
             if useDupeMode: PARAMS += ['--duplicate-mode']
             if usePublic: PARAMS += ['--make-public', '--join-public']
 
+            PARAMS += ['--board-size', args.BOARD_SIZE]
+
             # print('PARAMS:', PARAMS)
 
             dev = Device( args, GAME, COUNTER, PARAMS, ROOM, peers,
@@ -800,6 +802,9 @@ def mkParser():
     parser.add_argument('--without-relay', dest = 'WITH_RELAY', default = False, action = 'store_false')
     parser.add_argument('--force-tray', dest = 'TRAYSIZE', default = 0, type = int,
                         help = 'Always this many tiles per tray')
+
+    parser.add_argument('--board-size', dest = 'BOARD_SIZE', type = int, default = 15,
+                        help = 'Use <n>x<n> size board')
 
     parser.add_argument('--core-pat', dest = 'CORE_PAT', default = os.environ.get('DISCON_COREPAT'),
                         help = "pattern for core files that should stop the script " \
