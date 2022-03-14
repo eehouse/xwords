@@ -28,6 +28,8 @@ public interface UtilCtxt {
     static final int BONUS_DOUBLE_WORD = 2;
     static final int BONUS_TRIPLE_LETTER = 3;
     static final int BONUS_TRIPLE_WORD = 4;
+    static final int BONUS_QUAD_LETTER = 5;
+    static final int BONUS_QUAD_WORD = 6;
 
     public static final int TRAY_HIDDEN = 0;
     public static final int TRAY_REVERSED = 1;

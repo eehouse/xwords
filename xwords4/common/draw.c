@@ -1,6 +1,7 @@
-/* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
+/* -*- compile-command: "cd ../linux && make -j5 MEMDEBUG=TRUE"; -*- */
 /* 
- * Copyright 1997 - 2003 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 1997 - 2022 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -296,6 +297,7 @@ default_draw_score_pendingScore( DrawCtx* dctx,
     draw_setClip( dctx, &oldClip, NULL );
 } /* default_draw_score_pendingScore */
 
+#ifdef XWFEATURE_MINIWIN
 static const XP_UCHAR*
 default_draw_getMiniWText( DrawCtx* XP_UNUSED(dctx), XWMiniTextType textHint )
 {
@@ -310,6 +312,10 @@ default_draw_getMiniWText( DrawCtx* XP_UNUSED(dctx), XWMiniTextType textHint )
         str = "Triple letter"; break;
     case BONUS_TRIPLE_WORD:
         str = "Triple word"; break;
+    case BONUS_QUAD_LETTER:
+        str = "Quad letter"; break;
+    case BONUS_QUAD_WORD:
+        str = "Quad word"; break;
     case INTRADE_MW_TEXT:
         str = "Trading tiles;\nclick D when done"; break;
     default:
@@ -343,6 +349,7 @@ default_draw_drawMiniWindow( DrawCtx* dctx, const XP_UCHAR* text,
 
     draw_setClip( dctx, &oldClip, NULL );
 } /* default_draw_drawMiniWindow */
+#endif
 
 void
 InitDrawDefaults( DrawCtxVTable* vtable )
