@@ -45,32 +45,6 @@ wasm_util_makeStreamFromAddr( XW_UtilCtxt* uc, XWEnv xwe, XP_PlayerAddr channelN
     return stream;
 }
 
-static XWBonusType
-wasm_util_getSquareBonus( XW_UtilCtxt* uc, XWEnv xwe, XP_U16 boardSize,
-                          XP_U16 col, XP_U16 row )
-{
-#define BONUS_DIM 8
-    static const int s_buttsBoard[BONUS_DIM][BONUS_DIM] = {
-        { BONUS_TRIPLE_WORD,  BONUS_NONE,         BONUS_NONE,BONUS_DOUBLE_LETTER,BONUS_NONE,BONUS_NONE,BONUS_NONE,BONUS_TRIPLE_WORD },
-        { BONUS_NONE,         BONUS_DOUBLE_WORD,  BONUS_NONE,BONUS_NONE,BONUS_NONE,BONUS_TRIPLE_LETTER,BONUS_NONE,BONUS_NONE },
-
-        { BONUS_NONE,         BONUS_NONE,         BONUS_DOUBLE_WORD,BONUS_NONE,BONUS_NONE,BONUS_NONE,BONUS_DOUBLE_LETTER,BONUS_NONE },
-        { BONUS_DOUBLE_LETTER,BONUS_NONE,         BONUS_NONE,BONUS_DOUBLE_WORD,BONUS_NONE,BONUS_NONE,BONUS_NONE,BONUS_DOUBLE_LETTER },
-                            
-        { BONUS_NONE,         BONUS_NONE,         BONUS_NONE,BONUS_NONE,BONUS_DOUBLE_WORD,BONUS_NONE,BONUS_NONE,BONUS_NONE },
-        { BONUS_NONE,         BONUS_TRIPLE_LETTER,BONUS_NONE,BONUS_NONE,BONUS_NONE,BONUS_TRIPLE_LETTER,BONUS_NONE,BONUS_NONE },
-                            
-        { BONUS_NONE,         BONUS_NONE,         BONUS_DOUBLE_LETTER,BONUS_NONE,BONUS_NONE,BONUS_NONE,BONUS_DOUBLE_LETTER,BONUS_NONE },
-        { BONUS_TRIPLE_WORD,  BONUS_NONE,         BONUS_NONE,BONUS_DOUBLE_LETTER,BONUS_NONE,BONUS_NONE,BONUS_NONE,BONUS_DOUBLE_WORD },
-    }; /* buttsBoard */
-
-    int half = boardSize / 2;
-    if ( col > half ) { col = (half*2) - col; }
-    if ( row > half ) { row = (half*2) - row; }
-    XP_ASSERT( col < BONUS_DIM && row < BONUS_DIM );
-    return s_buttsBoard[row][col];
-}
-
 static const XP_UCHAR*
 wasm_getErrString( UtilErrID id, XP_Bool* silent )
 {
@@ -628,7 +602,6 @@ wasm_util_make( MPFORMAL CurGameInfo* gi, XW_DUtilCtxt* dctxt, GameState* closur
 
     SET_VTABLE_ENTRY( wuctxt->super.vtable, util_userError, wasm );
     SET_VTABLE_ENTRY( wuctxt->super.vtable, util_makeStreamFromAddr, wasm );
-    SET_VTABLE_ENTRY( wuctxt->super.vtable, util_getSquareBonus, wasm );
 
     SET_VTABLE_ENTRY( wuctxt->super.vtable, util_notifyMove, wasm );
     SET_VTABLE_ENTRY( wuctxt->super.vtable, util_notifyTrade, wasm );
