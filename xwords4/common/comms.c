@@ -1158,15 +1158,6 @@ comms_countPendingPackets( const CommsCtxt* comms )
     return comms->queueLen;
 }
 
-#ifdef XWFEATURE_RELAY
-static XP_Bool
-haveRelayID( const CommsCtxt* comms )
-{
-    XP_Bool result = 0 != comms->rr.connName[0]
-        && comms->rr.myHostID != HOST_ID_NONE;
-    return result;
-}
-
 static XP_Bool
 formatRelayID( const CommsCtxt* comms, XWHostID hostID,
                XP_UCHAR* buf, XP_U16* lenp )
@@ -1176,6 +1167,15 @@ formatRelayID( const CommsCtxt* comms, XWHostID hostID,
     XP_ASSERT( *lenp >= strln );
     *lenp = strln;
     return XP_TRUE;
+}
+
+#ifdef XWFEATURE_RELAY
+static XP_Bool
+haveRelayID( const CommsCtxt* comms )
+{
+    XP_Bool result = 0 != comms->rr.connName[0]
+        && comms->rr.myHostID != HOST_ID_NONE;
+    return result;
 }
 
 XP_Bool
