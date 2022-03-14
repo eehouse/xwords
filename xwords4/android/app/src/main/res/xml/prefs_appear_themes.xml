@@ -3,7 +3,8 @@
                   xmlns:app="http://schemas.android.com/apk/res-auto"
                   >
 
-  <PreferenceCategory android:title="@string/prefs_themes"
+  <PreferenceCategory android:title="@string/prefs_colors"
+                      android:summary="@string/prefs_colors_summary"
                       >
 
     <!-- color_use_theme_os only defined for v29+... -->

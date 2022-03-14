@@ -3,8 +3,7 @@
                   xmlns:app="http://schemas.android.com/apk/res-auto"
                   >
 
-  <PreferenceCategory android:title="@string/prefs_colors"
-                      android:summary="@string/prefs_colors_summary"
+  <PreferenceCategory android:title="@string/color_theme_edit_light"
                       >
     <org.eehouse.android.xw4.EditColorPreference
         android:key="@string/key_player0"
@@ -37,6 +36,11 @@
         android:defaultValue="0x00AFAF"
         />
     <org.eehouse.android.xw4.EditColorPreference
+        android:key="@string/key_bonus_l4x"
+        android:title="@string/bonus_l4x"
+        android:defaultValue="0x8080AF"
+        />
+    <org.eehouse.android.xw4.EditColorPreference
         android:key="@string/key_bonus_w2x"
         android:title="@string/bonus_w2x"
         android:defaultValue="0xAF00AF"
@@ -45,6 +49,11 @@
         android:key="@string/key_bonus_w3x"
         android:title="@string/bonus_w3x"
         android:defaultValue="0xAFAFAF"
+        />
+    <org.eehouse.android.xw4.EditColorPreference
+        android:key="@string/key_bonus_w4x"
+        android:title="@string/bonus_w4x"
+        android:defaultValue="0xAF8080"
         />
 
     <org.eehouse.android.xw4.EditColorPreference
