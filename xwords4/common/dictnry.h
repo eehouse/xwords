@@ -88,6 +88,9 @@ struct DictionaryCtxt {
     const XP_UCHAR** facePtrs;  /* elems point into faces, above */
     XP_U8* countsAndValues;
 
+    XP_U8 nBoardSizes;
+    XP_U8 boardSizes[2];        /* will be [15] or [15,21] for now */
+
     SpecialBitmaps* bitmaps;
     XP_UCHAR** chars;
     XP_UCHAR** charEnds;

@@ -54,12 +54,13 @@ def splitFaces( buf ):
 
     return faces
 
-def loadCountsAndValues( fh, numFaces, data ):
-    twoBytesFmt = struct.Struct('BB')
+def loadCountsAndValues( fh, numFaces, nSizes, data ):
     for ii in range(numFaces):
-        pair = twoBytesFmt.unpack(fh.read(twoBytesFmt.size))
-        data[ii]['count'] = int(pair[0])
-        data[ii]['val'] = int(pair[1])
+        counts = []
+        for jj in range(nSizes):
+            counts.append(int.from_bytes(fh.read(1), 'little'))
+        data[ii]['counts'] = counts
+        data[ii]['val'] = int.from_bytes(fh.read(1), 'little')
 
 def eatBitmap( fh ):
     nCols = int(oneByteFmt.unpack(fh.read(oneByteFmt.size))[0])
@@ -142,6 +143,7 @@ def process(args):
 
     with open(args.DAWG, "rb") as dawg:
         nWords = 0
+        boardSizes = [15]
 
         headerFmt = struct.Struct('!HH')
         (flags, headerLen) = headerFmt.unpack(dawg.read(headerFmt.size))
@@ -162,7 +164,21 @@ def process(args):
                     sys.exit(0)
                 md5Sum = getNullTermParam(header)
                 print( 'header: read sum: {}'.format(md5Sum), file=sys.stderr )
-            except:
+
+                # skip header flags
+                header.read(2)
+                print( 'header: skipped flags', file=sys.stderr)
+
+                nBoardSizes = int.from_bytes(header.read(1), 'big')
+                print( 'header: nBoardSizes: {}'.format(nBoardSizes), file=sys.stderr )
+                boardSizes = []
+                for ii in range(nBoardSizes):
+                    siz = int.from_bytes(header.read(1), 'big')
+                    boardSizes.append(siz)
+                print( 'header: read sizes: {}'.format(boardSizes), file=sys.stderr)
+
+            except Exception as ex:
+                print( 'header: exception!! {} '.format(ex) )
                 md5Sum = None
 
             if args.GET_SUM:
@@ -214,7 +230,7 @@ def process(args):
         langCode = 0x7F & oneByteFmt.unpack(dawg.read(oneByteFmt.size))[0]
         dawg.read( oneByteFmt.size ) # skip byte
 
-        loadCountsAndValues( dawg, numFaces, data )
+        loadCountsAndValues( dawg, numFaces, len(boardSizes), data )
         loadSpecialData( dawg, data )
 
         offsetStruct = struct.Struct('!L')

@@ -38,34 +38,40 @@ LANGINFO: will simply be excluded from the dictionary.</p>
 # English==1.  Low byte is padding
 XLOC_HEADER:0x8100
 
+# COUNT_SIZES: Columns 2-n in the BEGIN_TILES section are for boards
+# of what sizes? 15 is the default, and COUNT_SIZES is not needed if
+# there's only one sizes column and it's for a 15x15 board. Having
+# only one column that's for other than 15 is an error.
+COUNT_SIZES: 15 21
+
 <BEGIN_TILES>
-2			0		{"_"}
-9			1		'A|a'
-2			3		'B|b'
-2			3		'C|c'
-4			2		'D|d'
-12			1		'E|e'
-2			4		'F|f'
-3			2		'G|g'
-2			4		'H|h'
-9			1		'I|i'
-1			8		'J|j'
-1			5		'K|k'
-4			1		'L|l'
-2			3		'M|m'
-6			1		'N|n'
-8			1		'O|o'
-2			3		'P|p'
-1			10		'Q|q'
-6			1		'R|r'
-4			1		'S|s'
-6			1		'T|t'
-4			1		'U|u'
-2			4		'V|v'
-2			4		'W|w'
-1			8		'X|x'
-2			4		'Y|y'
-1			10		'Z|z'
+{"_"}		0		 2		4
+'A|a'		1		 9		16
+'B|b'		3		 2		4
+'C|c'		3		 2		6
+'D|d'		2		 4		8
+'E|e'		1		 12		24
+'F|f'		4		 2		4
+'G|g'		2		 3		5
+'H|h'		4		 2		5
+'I|i'		1		 9		13
+'J|j'		8		 1		2
+'K|k'		5		 1		2
+'L|l'		1		 4		7
+'M|m'		3		 2		6
+'N|n'		1		 6		13
+'O|o'		1		 8		15
+'P|p'		3		 2		4
+'Q|q'		10		 1		2
+'R|r'		1		 6		13
+'S|s'		1		 4		10
+'T|t'		1		 6		15
+'U|u'		1		 4		7
+'V|v'		4		 2		3
+'W|w'		4		 2		4
+'X|x'		8		 1		2
+'Y|y'		4		 2		4
+'Z|z'		10		 1		2
 <END_TILES>
 
 # should ignore all after the <END> above

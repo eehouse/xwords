@@ -8,7 +8,10 @@ def errorOut(msg):
 def mkParser():
     parser = argparse.ArgumentParser()
     parser.add_argument('-enc', dest = 'ENCODING', type = str, help = 'use this encoding' )
-    parser.add_argument('-tn', dest = 'DO_TABLE', action = 'store_true', help = 'output table file' )
+    parser.add_argument('-tn', dest = 'DO_TABLE', action = 'store_true',
+                        help = 'output table file' )
+    parser.add_argument('-bs', dest = 'DO_BOARDSIZE', action = 'store_true',
+                        help = 'output boardSizes file' )
 
     # parser.add_argument('-tn', dest = 'UNICODE', default = False,
     #                     action = 'store_true', help = 'assume unicode')
@@ -53,8 +56,10 @@ def parseTileInfo(infoFile, encoding):
                 if sEndTiles.match(line):
                     break
                 else:
-                    (count, val, face) = line.split(None, 2)
-                    result['_TILES'].append((count, val, face))
+                    (face, val, counts) = line.split(None, 2)
+                    result['_TILES'].append({'counts': counts,
+                                             'val': val,
+                                             'face': face})
             elif sBeginTiles.match(line):
                 inTiles = True
             else:
@@ -72,11 +77,11 @@ def printLetters( letters, outfile ):
     outfile.write(letters.encode('utf8'))
 
 def writeMapFile(xlocToken, outfile):
-    print('writeMapFile()')
+    print('writeMapFile(out={})'.format(outfile))
     tiles = xlocToken['_TILES']
     specialCount = 0
     for tile in tiles:
-        face = tile[2]
+        face = tile['face']
         match = sSingleCharMatch.match(face)
         if match:
             printLetters( match.group(1), outfile )
@@ -94,13 +99,25 @@ def writeMapFile(xlocToken, outfile):
 def writeValuesFile(xlocToken, outfile):
     header = xlocToken.get('XLOC_HEADER') or errorOut('no XLOC_HEADER found')
 
-    print('writing header: {}'.format(header))
+    print('writeValuesFile(out={}): writing header: {}'.format(outfile, header))
     outfile.write(struct.pack('!H', int(header, 16)))
 
+    nCounts = 0
     for tile in xlocToken['_TILES']:
-        val = int(tile[0])
-        count = int(tile[1])
-        outfile.write(struct.pack('BB', val, count))
+        counts = tile['counts'].split()
+        assert nCounts == 0 or nCounts == len(counts)
+        nCounts = len(counts)
+        for count in counts:
+            outfile.write(struct.pack('B', int(count)))
+
+        val = int(tile['val'])
+        outfile.write(struct.pack('B', val))
+
+def writeBoardSizesFile(xlocToken, outfile):
+    cs = xlocToken.get('COUNT_SIZES', '15').split()
+    outfile.write(struct.pack('B', len(cs)))
+    for siz in cs:
+        outfile.write(struct.pack('B', int(siz)))
 
 def main():
     print('{}.main {} called'.format(sys.argv[0], sys.argv[1:]))
@@ -126,6 +143,11 @@ def main():
         path = args.VALS_FILE or args.OUTFILE
         with open(path, 'wb') as outfile:
             writeValuesFile( xlocToken, outfile )
+
+    if args.DO_BOARDSIZE and args.OUTFILE:
+        with open(args.OUTFILE, 'wb') as outfile:
+            writeBoardSizesFile( xlocToken, outfile )
+
 
 ##############################################################################
 if __name__ == '__main__':

@@ -220,7 +220,8 @@ endif
 frankspecials.bin: ../frank_mkspecials.py  $(BMPFILES)
 	$< $(BLANK_INFO) $(LANG_SPECIAL_INFO) > $@
 
-$(XWLANG)%.$(FRANK_EXT): dawg$(XWLANG)%.stamp $(XWLANG)%_flags.bin $(XWLANG)%_newheader.bin charcount.bin table.bin values.bin frankspecials.bin 
+$(XWLANG)%.$(FRANK_EXT): dawg$(XWLANG)%.stamp $(XWLANG)%_flags.bin $(XWLANG)%_newheader.bin \
+		charcount.bin table.bin values.bin frankspecials.bin
 	cat $(XWLANG)$*_flags.bin $(XWLANG)$*_newheader.bin charcount.bin table.bin values.bin \
 		frankspecials.bin $(XWLANG)StartLoc.bin  \
 		$$(ls dawg$(XWLANG)$*_*.bin) > $@
@@ -273,6 +274,9 @@ allbins:
 	$(MAKE) TARGET_TYPE=FRANK byodbins
 	rm palmspecials.bin
 
+boardSizes.bin: ../xloc.py info.txt
+	../xloc.py -bs -out $@
+
 table.bin:  ../xloc.py
 ifdef NEWDAWG
 	../xloc.py $(ENCP) -tn -out $@
@@ -308,7 +312,7 @@ $(XWLANG)%_headerFlags.bin:
 	perl -e "print pack(\"n\",$$FLAGS)" > $@
 
 $(XWLANG)%_newheader.bin: $(XWLANG)%_wordcount.bin $(XWLANG)%_note.bin \
-		$(XWLANG)%_md5sum.bin $(XWLANG)%_headerFlags.bin
+		$(XWLANG)%_md5sum.bin $(XWLANG)%_headerFlags.bin boardSizes.bin
 	SIZ=0; \
 	for FILE in $+; do \
 		SIZ=$$(($$SIZ + $$(ls -l $$FILE | awk '{print $$5}'))); \

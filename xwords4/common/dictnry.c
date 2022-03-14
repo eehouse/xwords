@@ -250,12 +250,12 @@ parseCommon( DictionaryCtxt* dctx, XWEnv xwe, const XP_U8** ptrp, const XP_U8* e
             if ( 0 < headerLen ) {
                 dctx->desc = getNullTermParam( dctx, &ptr, &headerLen );
             } else {
-                XP_LOGF( "%s: no note", __func__ );
+                XP_LOGFF( "no note" );
             }
             if ( 0 < headerLen ) {
                 dctx->md5Sum = getNullTermParam( dctx, &ptr, &headerLen );
             } else {
-                XP_LOGF( "%s: no md5Sum", __func__ );
+                XP_LOGFF( "no md5Sum" );
             }
 
             XP_U16 headerFlags = 0;
@@ -269,9 +269,24 @@ parseCommon( DictionaryCtxt* dctx, XWEnv xwe, const XP_U8** ptrp, const XP_U8* e
             dctx->headerFlags = headerFlags;
 
             if ( 0 < headerLen ) {
+                dctx->nBoardSizes = *ptr++;
+                XP_ASSERT( dctx->nBoardSizes <= VSIZE(dctx->boardSizes) );
+                for ( int ii = 0; ii < dctx->nBoardSizes; ++ii ) {
+                    dctx->boardSizes[ii] = *ptr++;
+                }
+                headerLen -= 1 + dctx->nBoardSizes;
+                XP_ASSERT( 0 <= headerLen );
+            }
+
+            if ( 0 < headerLen ) {
                 XP_LOGFF( "skipping %d bytes of header", headerLen );
             }
             ptr += headerLen;
+        }
+
+        if ( 0 == dctx->nBoardSizes ) { /* wasn't provided */
+            dctx->boardSizes[0] = 15;
+            dctx->nBoardSizes = 1;
         }
 
         if ( isUTF8 ) {
@@ -301,7 +316,8 @@ parseCommon( DictionaryCtxt* dctx, XWEnv xwe, const XP_U8** ptrp, const XP_U8* e
 
         dctx->nFaces = numFaces;
 
-        dctx->countsAndValues = XP_MALLOC( dctx->mpool, numFaces * 2 );
+        dctx->countsAndValues = XP_MALLOC( dctx->mpool,
+                                           numFaces * (1 + dctx->nBoardSizes) );
         XP_U16 facesSize = numFaceBytes;
         if ( !isUTF8 ) {
             facesSize /= 2;
@@ -316,8 +332,9 @@ parseCommon( DictionaryCtxt* dctx, XWEnv xwe, const XP_U8** ptrp, const XP_U8* e
         unsigned short xloc;
         XP_MEMCPY( &xloc, ptr, sizeof(xloc) );
         ptr += sizeof(xloc);
-        XP_MEMCPY( dctx->countsAndValues, ptr, numFaces*2 );
-        ptr += numFaces*2;
+        size_t cvSize = numFaces * (1 + dctx->nBoardSizes);
+        XP_MEMCPY( dctx->countsAndValues, ptr, cvSize );
+        ptr += cvSize;
 
         dctx->langCode = xloc & 0x7F;
     }
@@ -413,7 +430,7 @@ dict_getBlankTile( const DictionaryCtxt* dict )
 } /* dict_getBlankTile */
 
 XP_U16
-dict_getTileValue( const DictionaryCtxt* dict, Tile tile )
+dict_getTileValue( const DictionaryCtxt* dict, const Tile tile )
 {
     XP_ASSERT( !!dict );
     if ( (tile & TILE_VALUE_MASK) != tile ) {
@@ -421,9 +438,11 @@ dict_getTileValue( const DictionaryCtxt* dict, Tile tile )
                    tile == dict_getBlankTile( dict ) );
     }
     XP_ASSERT( tile < dict->nFaces );
-    tile *= 2;
+    int offset = tile * (1 + dict->nBoardSizes);
     XP_ASSERT( !!dict->countsAndValues );
-    return dict->countsAndValues[tile+1];    
+    XP_U16 result = dict->countsAndValues[offset + dict->nBoardSizes];
+    /* XP_LOGFF( "(%d) => %d", tile, result ); */
+    return result;
 } /* dict_getTileValue */
 
 static const XP_UCHAR*
@@ -479,22 +498,32 @@ dict_getNextTileString( const DictionaryCtxt* dict, Tile tile,
 XP_U16
 dict_numTilesForSize( const DictionaryCtxt* dict, Tile tile, XP_U16 nCols )
 {
-    tile *= 2;
-    XP_U16 count = dict->countsAndValues[tile];
-
-    /* Wordlists are built assuming 15x15  boards. Different sized boards need
-       different numbers of tiles. The wordlist  might provide for the size we
-       have. If not, let's adjust the count based on how many squares we have
-       vs. 15x15.
-    */
-    XP_U16 pct = (nCols * nCols * 100) / (15 * 15);
-    XP_U16 newCount = count * pct / 100;
-    if ( 50 < (count * pct) % 100 ) {
-        ++newCount;
+    XP_Bool matched = XP_FALSE;
+    int offset = tile * (1 + dict->nBoardSizes);
+    for ( int ii = 0; !matched && ii < dict->nBoardSizes; ++ii ) {
+        if ( nCols == dict->boardSizes[ii] ) { /* perfect match? */
+            offset += ii;
+            matched = XP_TRUE;
+        }
     }
-    XP_LOGFF( "adjusted count %d to %d based on pct of %d", count, newCount, pct );
-    count = newCount;
 
+    XP_U16 count = dict->countsAndValues[offset];
+    if ( !matched ) {
+        /* Older wordlists are built assuming 15x15 boards. Different sized
+           boards need different numbers of tiles. The wordlist might provide
+           for the size we have. If not, let's adjust the count based on how
+           many squares we have vs. 15x15.
+        */
+        XP_U16 pct = (nCols * nCols * 100) / (15 * 15);
+        XP_U16 newCount = count * pct / 100;
+        if ( 50 < (count * pct) % 100 ) {
+            ++newCount;
+        }
+        // XP_LOGFF( "adjusted count %d to %d based on pct of %d", count, newCount, pct );
+        count = newCount;
+    }
+
+    // XP_LOGFF( "(tile=%d, ncols=%d) => %d", tile, nCols, count );
     return count;
 } /* dict_numTiles */
 
@@ -702,6 +731,7 @@ dict_writeToStream( const DictionaryCtxt* dict, XWStreamCtxt* stream )
 
     stream_putBits( stream, 6, dict->nFaces );
 
+    XP_ASSERT(0);       /* if this fires, need to fix for per-boardSize counts */
     for ( ii = 0; ii < dict->nFaces*2; ii+=2 ) {
         XP_U16 count, value;
 
@@ -789,6 +819,7 @@ common_destructor( DictionaryCtxt* dict, XWEnv XP_UNUSED(xwe) )
 void
 dict_loadFromStream( DictionaryCtxt* dict, XWEnv xwe, XWStreamCtxt* stream )
 {
+    XP_ASSERT(0);       /* if this fires, need to fix for per-boardSize counts */
     XP_U8 nFaces, nFaceBytes;
     XP_U16 maxCountBits, maxValueBits;
     XP_U16 ii, nSpecials;
@@ -1043,7 +1074,7 @@ make_stubbed_dict( MPFORMAL_NOCOMMA )
     setBlankTile( dict );
 
     return dict;
-} /* make_subbed_dict */
+} /* make_stubbed_dict */
 
 #endif /* STUBBED_DICT */
 
