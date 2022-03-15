@@ -48,7 +48,6 @@ typedef struct LinuxDictionaryCtxt {
     XP_Bool useMMap;
 } LinuxDictionaryCtxt;
 
-
 /************************ Prototypes ***********************/
 static XP_Bool initFromDictFile( LinuxDictionaryCtxt* dctx, 
                                  const LaunchParams* params,
@@ -279,13 +278,8 @@ linux_dictionary_destroy( DictionaryCtxt* dict, XWEnv XP_UNUSED(xwe) )
         }
     }
 
-    /* super's destructor should do this!!!! */
-    XP_FREEP( dict->mpool, &ctxt->super.desc );
-    XP_FREEP( dict->mpool, &ctxt->super.md5Sum );
-    XP_FREEP( dict->mpool, &ctxt->super.countsAndValues );
-    XP_FREEP( dict->mpool, &ctxt->super.faces );
-    XP_FREEP( dict->mpool, &ctxt->super.facePtrs );
-    XP_FREEP( dict->mpool, &ctxt->super.name );
+    dict_super_destroy( &ctxt->super );
+
     XP_FREE( dict->mpool, ctxt );
 } /* linux_dictionary_destroy */
 

@@ -24,7 +24,7 @@ DICTNOTE = "Words on a list at www.wordfrequency.info"
 include ../Makefile.langcommon
 
 ENGLISH = $(XWDICTPATH)/English
-SOURCEDICT ?= $(ENGLISH)/CSW.dict.gz
+SOURCEDICT ?= $(ENGLISH)/CSW19.dict
 
 # I have permission to download the "top 5000" wordlist but not
 # necessarily to distribute it.  And it contains words, especially
@@ -35,7 +35,7 @@ $(XWLANG)Main.dict.gz: $(SOURCEDICT) $(ENGLISH)/Top_5000.dict.gz
 	zcat $(ENGLISH)/Top_5000.dict.gz | \
 		sed 's/[[:lower:]]*/\U&/' | \
 		sort > /tmp/Top_5000.dict
-	zcat $< | tr -d '\r' | \
+	cat $< | tr -d '\r' | \
 		sed 's/[[:lower:]]*/\U&/' | \
 		grep -e "^[A-Z]\{2,15\}$$" | \
 		sort > /tmp/$$(basename $<)

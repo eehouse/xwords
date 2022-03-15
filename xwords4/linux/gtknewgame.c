@@ -30,9 +30,6 @@
 #include "gtkutils.h"
 #include "gtkask.h"
 
-#define MIN_BOARD_SIZE 11
-#define MAX_BOARD_SIZE 23
-
 #define BINGO_THRESHOLD "Bingo threshold"
 #define TRAY_SIZE "Tray size"
 
@@ -169,7 +166,7 @@ size_combo_changed( GtkComboBox* combo, gpointer gp )
     GtkNewGameState* state = (GtkNewGameState*)gp;
     gint index = gtk_combo_box_get_active( GTK_COMBO_BOX(combo) );
     if ( index >= 0 ) {
-        state->nCols = MIN_BOARD_SIZE + (index * 2);
+        state->nCols = MIN_COLS + (index * 2);
         XP_LOGF( "set nCols = %d", state->nCols );
     }
 } /* size_combo_changed  */
@@ -350,7 +347,7 @@ addSizesRow( GtkNewGameState* state, GtkWidget* parent )
     }
 
     int curEntry = 0;
-    for ( int siz = MIN_BOARD_SIZE; siz <= MAX_BOARD_SIZE; siz += 2 ) {
+    for ( int siz = MIN_COLS; siz <= MAX_COLS; siz += 2 ) {
         char buf[10];
         // XP_U16 siz = MAX_COLS - ii;
         snprintf( buf, sizeof(buf), "%dx%d", siz, siz );

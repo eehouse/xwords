@@ -86,10 +86,11 @@ struct DictionaryCtxt {
     XP_UCHAR* desc;
     XP_UCHAR* md5Sum;
     const XP_UCHAR** facePtrs;  /* elems point into faces, above */
-    XP_U8* countsAndValues;
+    XP_U8* counts[(MAX_COLS>>1) + 1];
+    XP_U8* values;
 
-    XP_U8 nBoardSizes;
-    XP_U8 boardSizes[2];        /* will be [15] or [15,21] for now */
+    XP_U8* otherCounts;
+    XP_U8* otherCountsEnd;
 
     SpecialBitmaps* bitmaps;
     XP_UCHAR** chars;
@@ -236,6 +237,8 @@ XP_Bool checkSanity( DictionaryCtxt* dict, XP_U32 numEdges );
 
 /* To be called only by subclasses!!! */
 void dict_super_init( MPFORMAL DictionaryCtxt* ctxt );
+void dict_super_destroy( DictionaryCtxt* ctxt );
+
 /* Must be implemented by subclasses */
 void dict_splitFaces( DictionaryCtxt* dict, XWEnv xwe, const XP_U8* bytes,
                       XP_U16 nBytes, XP_U16 nFaceos );
