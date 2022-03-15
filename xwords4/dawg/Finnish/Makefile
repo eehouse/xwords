@@ -24,8 +24,11 @@ DICTNOTE = "Built from https://kaino.kotus.fi/sanat/nykysuomi"
 
 include ../Makefile.langcommon
 
-$(XWLANG)Main.dict.gz: $(SOURCEDICT) $(MAKEFILE)
-	(cd $(XWDICTPATH)/Finnish && xmlstarlet sel -t -m "//s" -v . -n kotus-sanalista_v1.xml) \
+SOURCEDICT ?= $(XWDICTPATH)/Finnish/Kotus_2007_0to15.txt
+
+$(XWLANG)Main.dict.gz: $(SOURCEDICT)
+	cat $< \
+	| tr -d '\r' \
 	| sed 's/[[:lower:]]*/\U&/' \
 	| grep '^[AÄBCDEFGHIJKLMNOÖPRSTUVWY]*$$' \
 	| sort -u \
