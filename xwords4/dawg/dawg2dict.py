@@ -54,13 +54,18 @@ def splitFaces( buf ):
 
     return faces
 
-def loadCountsAndValues( fh, numFaces, nSizes, data ):
+def loadCountsAndValues( fh, numFaces, extraData, data ):
     for ii in range(numFaces):
-        counts = []
-        for jj in range(nSizes):
-            counts.append(int.from_bytes(fh.read(1), 'little'))
-        data[ii]['counts'] = counts
+        data[ii]['counts'] = {15: int.from_bytes(fh.read(1), 'little')}
         data[ii]['val'] = int.from_bytes(fh.read(1), 'little')
+    if extraData:
+        buf = io.BytesIO(extraData)
+        while True:
+            siz = int.from_bytes(buf.read(1), 'little')
+            if not siz: break
+            for ii in range(numFaces):
+                count = int.from_bytes(buf.read(1), 'little')
+                data[ii]['counts'][siz] = count
 
 def eatBitmap( fh ):
     nCols = int(oneByteFmt.unpack(fh.read(oneByteFmt.size))[0])
@@ -143,7 +148,7 @@ def process(args):
 
     with open(args.DAWG, "rb") as dawg:
         nWords = 0
-        boardSizes = [15]
+        extraData = None
 
         headerFmt = struct.Struct('!HH')
         (flags, headerLen) = headerFmt.unpack(dawg.read(headerFmt.size))
@@ -169,13 +174,14 @@ def process(args):
                 header.read(2)
                 print( 'header: skipped flags', file=sys.stderr)
 
-                nBoardSizes = int.from_bytes(header.read(1), 'big')
-                print( 'header: nBoardSizes: {}'.format(nBoardSizes), file=sys.stderr )
-                boardSizes = []
-                for ii in range(nBoardSizes):
-                    siz = int.from_bytes(header.read(1), 'big')
-                    boardSizes.append(siz)
-                print( 'header: read sizes: {}'.format(boardSizes), file=sys.stderr)
+                langName = getNullTermParam(header)
+                langCode = getNullTermParam(header)
+                print('header: langName: {}; langCode: {}'.format(langName, langCode),
+                      file=sys.stderr)
+
+                extraSize = int.from_bytes(header.read(1), 'little')
+                print( 'header: extraSize: {}'.format(extraSize), file=sys.stderr )
+                extraData = header.read(extraSize)
 
             except Exception as ex:
                 print( 'header: exception!! {} '.format(ex) )
@@ -230,7 +236,7 @@ def process(args):
         langCode = 0x7F & oneByteFmt.unpack(dawg.read(oneByteFmt.size))[0]
         dawg.read( oneByteFmt.size ) # skip byte
 
-        loadCountsAndValues( dawg, numFaces, len(boardSizes), data )
+        loadCountsAndValues( dawg, numFaces, extraData, data )
         loadSpecialData( dawg, data )
 
         offsetStruct = struct.Struct('!L')

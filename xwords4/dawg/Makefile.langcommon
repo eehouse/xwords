@@ -274,8 +274,8 @@ allbins:
 	$(MAKE) TARGET_TYPE=FRANK byodbins
 	rm palmspecials.bin
 
-boardSizes.bin: ../xloc.py info.txt
-	../xloc.py -bs -out $@
+extraCounts.bin: ../xloc.py info.txt
+	../xloc.py -ec -out $@
 
 table.bin:  ../xloc.py
 ifdef NEWDAWG
@@ -302,6 +302,15 @@ $(XWLANG)%_note.bin:
 	echo -n $(DICTNOTE) > $@
 	perl -e "print pack(\"c\",0)" >> $@
 
+langName.bin: ../xloc.py
+	../xloc.py -info LANGNAME -out $@
+
+langCode.bin: ../xloc.py
+	../xloc.py -info LANGCODE -out $@
+
+otherCounts.bin: ../xloc.py
+	../xloc.py -oc -out otherCounts.bin
+
 $(XWLANG)%_md5sum.bin: 
 	cat table.bin values.bin frankspecials.bin $(XWLANG)StartLoc.bin \
 		dawg$(XWLANG)$*_*.bin | md5sum | awk '{print $$1}' | tr -d '\n' > $@
@@ -312,7 +321,8 @@ $(XWLANG)%_headerFlags.bin:
 	perl -e "print pack(\"n\",$$FLAGS)" > $@
 
 $(XWLANG)%_newheader.bin: $(XWLANG)%_wordcount.bin $(XWLANG)%_note.bin \
-		$(XWLANG)%_md5sum.bin $(XWLANG)%_headerFlags.bin boardSizes.bin
+		$(XWLANG)%_md5sum.bin $(XWLANG)%_headerFlags.bin langName.bin \
+		langCode.bin otherCounts.bin
 	SIZ=0; \
 	for FILE in $+; do \
 		SIZ=$$(($$SIZ + $$(ls -l $$FILE | awk '{print $$5}'))); \
