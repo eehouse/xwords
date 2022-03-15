@@ -261,6 +261,7 @@
     <item>19</item><item>@string/lang_name_slovak</item><item>sk</item>
     <item>20</item><item>@string/lang_name_hungarian</item><item>hu</item>
     <item>21</item><item>@string/lang_name_romanian</item><item>ro</item>
+    <item>25</item><item>@string/lang_name_finnish</item><item>fi</item>
 
     <item>127</item><item>Hex</item><item>--</item>
   </string-array>

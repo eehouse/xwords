@@ -2098,6 +2098,7 @@
     <string name="lang_name_slovak">Slovak</string>
     <string name="lang_name_hungarian">Hungarian</string>
     <string name="lang_name_romanian">Romanian</string>
+    <string name="lang_name_finnish">Finnish</string>
     <!-- for loc item edit menu -->
     <!-- Button to clear wordlist filter config (but not re-apply the
          filter). And other uses...-->

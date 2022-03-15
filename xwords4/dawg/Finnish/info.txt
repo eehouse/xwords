@@ -1,0 +1,61 @@
+# -*- mode: conf; coding: utf-8; -*-
+# Copyright 2002-2009 by Eric House (xwords@eehouse.org).  All rights
+# reserved.
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+
+LANGCODE:fi
+CHARSET: utf-8
+
+LANGFILTER: tr -d '\r'
+LANGFILTER: | sed -e 's/[[:lower:]]*/\U&/'
+LANGFILTER: | grep -x '[AÄBCDEFGHIJKLMNOÖPRSTUVWY]\{2,15\}'
+
+LANGINFO: <p>Finnish. Uploaded wordlist must be in utf-8 format.
+LANGINFO: </p>
+
+D2DARGS: -r -term 0 -enc UTF-8
+
+XLOC_HEADER:0x9900
+
+# From wikipedia
+<BEGIN_TILES>
+2			0		{"_"}
+10			1		'A|a'
+5			2		'Ä|ä'
+1			8		'B|b'
+1			10		'C|c'
+1			7		'D|d'
+8			1		'E|e'
+1			8		'F|f'
+1			8		'G|g'
+2			4		'H|h'
+10			1		'I|i'
+2			4		'J|j'
+5			2		'K|k'
+5			2		'L|l'
+3			3		'M|m'
+9			1		'N|n'
+5			2		'O|o'
+1			7		'Ö|ö'
+2			4		'P|p'
+2			4		'R|r'
+7			1		'S|s'
+9			1		'T|t'
+4			3		'U|u'
+2			4		'V|v'
+1			8		'W|w'
+2			4		'Y|y'
+<END_TILES>
