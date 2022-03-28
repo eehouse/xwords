@@ -1787,7 +1787,7 @@
     <string name="pref_group_l10n_summary">Preferências relacionadas à localização do app</string>
     <string name="pref_group_l10n_title">Coisas de Localização</string>
     <string name="pref_group_relay_summary">Preferências relacionadas a jogar via internet/relay</string>
-    <string name="pref_group_relay_title">Coisas de Relay</string>
+    <string name="pref_group_relay_title">Material da Internet</string>
     <string name="pref_group_sms_summary">Preferências relacionadas a Jogar via SMS</string>
     <string name="pref_group_sms_title">Coisas de SMS de dados</string>
     <string name="got_langdict_summary">Não tentar uma segunda vez</string>
@@ -2304,4 +2304,9 @@
     <string name="dict_lang_avail">(Disponível: %1$d)</string>
     <string name="lang_name_romanian">Romeno</string>
     <string name="dict_lang_inst_and_avail">(Instalado: %1$d; Disponível: %2$d)</string>
+    <string name="button_clear_stats">Limpar estatísticas</string>
+    <string name="gamel_menu_timerStats">Estatísticas do temporizador</string>
+    <string name="byod_success">A descarga de %1$s foi bem sucedida. Abra agora, se quiser.</string>
+    <string name="byod_failure">A descarga de %1$s falhou.</string>
+    <string name="button_open_dict">Abrir</string>
 </resources>
