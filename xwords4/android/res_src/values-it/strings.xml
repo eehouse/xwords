@@ -190,7 +190,6 @@
     <string name="nag_intervals">Promemoria intervallo (minuti1, minuti2,...)</string>
     <string name="enable_pending_count_summary">Mostra numero non ancora riconosciuto</string>
     <string name="enable_pending_count_title">Mostra messaggi in attesa</string>
-    <string name="xlations_locale">Simula lingua per tradurre</string>
     <string name="gamel_menu_writegit">Copia info codice negli appunti</string>
     <string name="gamel_menu_loaddb">Carica partite da scheda SD</string>
     <string name="gamel_menu_storedb">Salva partite su scheda SD</string>
@@ -266,7 +265,6 @@
     <string name="loc_filters_all">Tutte</string>
     <string name="loc_search_prompt">Cerca per:</string>
     <string name="loc_filters_prompt">Fitra per:</string>
-    <string name="xlations_enabled_summary">Aggiungi opzioni ad ogni schermata del menù</string>
     <string name="xlations_enabled_title">Attiva traduzione in locale</string>
     <plurals name="new_xlations_fmt">
         <item quantity="one">Installata una nuova traduzione</item>

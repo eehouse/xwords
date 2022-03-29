@@ -12,8 +12,7 @@
      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
      See the License for the specific language governing permissions and
      limitations under the License.
--->
-<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
+--><resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
     <string name="list_item_config">Configuració de la partida…</string>
     <string name="list_item_delete">Suprimeix</string>
     <string name="list_item_copy">Copia</string>
@@ -475,7 +474,6 @@ Introduïu el vostre nom aquí. S\'usarà en crear partides noves. (Podreu
     <string name="loc_menu_xlate">Tradueix</string>
     <string name="loc_lang_blessed">%1$s (oficial)</string>
     <string name="loc_lang_local">%1$s (vostre)</string>
-    <string name="xlations_enabled_title">Habilita la traducció local</string>
     <string name="xlations_enabled_summary">Afegeix un opció en cada menú de pantalla</string>
     <string name="loc_filters_prompt">Filtra per:</string>
     <string name="loc_search_prompt">Cerca:</string>
@@ -575,7 +573,6 @@ Introduïu el vostre nom aquí. S\'usarà en crear partides noves. (Podreu
     <string name="debug_features">Habilita les característiques de depuració</string>
     <string name="debug_features_summary">Elements del menú, etc. (només construccions de depuració)</string>
     <string name="name_dict_fmt">%1$s/%2$s</string>
-    <string name="xlations_locale">Simula la llengua per a la traducció</string>
     <string name="nag_intervals">Intervals de recordatori (minuts1, minuts2...)</string>
     <string name="got_langdict_summary">No ho intentis una segona vegada</string>
     <string name="pref_group_sms_title">Coses de l\'SMS</string>

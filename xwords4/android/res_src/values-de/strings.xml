@@ -555,7 +555,6 @@
         <item quantity="one">Eine neue Übersetzung installiert</item>
         <item quantity="other">%1$d neue Übersetzungen installiert</item>
     </plurals>
-    <string name="xlations_enabled_title">Lokales Übersetzen aktivieren</string>
     <string name="xlations_enabled_summary">Option zu jedem Bildschirmmenü hinzufügen</string>
     <string name="loc_filters_prompt">Filtern nach:</string>
     <string name="loc_search_prompt">Suchen nach:</string>
@@ -778,7 +777,6 @@
     <string name="proxy_port">Geräte-Port auf Zwischenstation</string>
     <string name="name_dict_fmt">%1$s/%2$s</string>
     <string name="gamel_menu_storedb">Partien auf SD-Kartie speichern</string>
-    <string name="xlations_locale">Pseudo-Locale zum Übersetzen</string>
     <string name="enable_sms_toself_title">SMS-Selbstverbindung aktivieren</string>
     <string name="enable_sms_toself_summary">Mobilfunk weglassen bei gleichen Nummern</string>
     <string name="force_radio_title">Mobilfunk vortäuschen</string>

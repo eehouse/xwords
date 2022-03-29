@@ -601,7 +601,6 @@
     <string name="loc_menu_xlate">Przetłumacz</string>
     <string name="loc_lang_blessed">%1$s (oficjalny)</string>
     <string name="loc_lang_local">%1$s (Twój)</string>
-    <string name="xlations_enabled_title">Włącz tłumaczenie lokalne</string>
     <string name="xlations_enabled_summary">Dodaj opcję do każdego menu ekranu</string>
     <string name="loc_filters_menu">Najnowsze menu</string>
     <string name="loc_item_clear">Wyczyść</string>
@@ -708,7 +707,6 @@
     <string name="gamel_menu_storedb">Zapisz gry na kartę SD</string>
     <string name="gamel_menu_loaddb">Załaduj gry z karty SD</string>
     <string name="gamel_menu_writegit">Skopiuj informacje git do schowka</string>
-    <string name="xlations_locale">Fałszywy język do tłumaczenia</string>
     <string name="nag_intervals">Przypomnienie w odstępach (1 minuty, 2 minut,...)</string>
     <string name="enable_sms_toself_title">Akceptuj SMS do siebie</string>
     <string name="radio_name_gsm">GSM</string>

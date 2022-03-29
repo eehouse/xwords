@@ -2347,7 +2347,6 @@ une liste d\'étude.</string>
         <item quantity="other">%1$d nouvelles traductions installées</item>
     </plurals>
     <!--<string name="xlations_enabled_title">Enable local translating</string>-->
-    <string name="xlations_enabled_title">Activer les traductions locales</string>
     <!--<string name="xlations_enabled_summary">Add option to every screen menu</string>-->
     <string name="xlations_enabled_summary">Ajouter une option au menu de
 chaque écran</string>
@@ -2733,7 +2732,6 @@ changement, ou l\'éditer pour lui attribuer une façon de se connecter ?</stri
     <!--<string name="enable_dupes_title">Accept duplicate invites</string>-->
     <!--XLATE-ME-->
     <!--<string name="xlations_locale">Fake locale for translation</string>-->
-    <string name="xlations_locale">Fausse locale pour les traductions</string>
     <!--XLATE-ME-->
     <!--<string name="enable_dupes_summary">Accept invitations more than once</string>-->
     <!--XLATE-ME-->

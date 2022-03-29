@@ -503,7 +503,6 @@
         <item quantity="one">Een nieuwe vertaling geïnstalleerd</item>
         <item quantity="other">%1$d nieuwe vertalingen geïnstalleerd</item>
     </plurals>
-    <string name="xlations_enabled_title">Lokaal vertalen inschakelen</string>
     <string name="xlations_enabled_summary">Voeg optie toe aan elk schermmenu</string>
     <string name="loc_filters_prompt">Filter op:</string>
     <string name="loc_search_prompt">Zoek naar:</string>
@@ -615,7 +614,6 @@
     <string name="name_dict_fmt">%1$s/%2$s</string>
     <string name="gamel_menu_storedb">Schrijf spellen naar SD kaart</string>
     <string name="gamel_menu_loaddb">Laad spellen van SD kaart</string>
-    <string name="xlations_locale">Neppe taal voor vertalingen</string>
     <string name="nag_intervals">Herinnering intervallen (minuten1,minuten2,...)</string>
     <string name="enable_sms_toself_title">Stuur SMS berichten naar zelf</string>
     <string name="enable_sms_toself_summary">Schakel radio over als telefoonnummers gelijk zijn</string>

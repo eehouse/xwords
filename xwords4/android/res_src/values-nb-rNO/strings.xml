@@ -311,7 +311,6 @@
         <item quantity="one">Installerte én ny oversettelse</item>
         <item quantity="other">Installerte %1$d nye oversettelser</item>
     </plurals>
-    <string name="xlations_enabled_title">Skru på lokal oversetting</string>
     <string name="xlations_enabled_summary">Legg til valget i hver skjermmeny</string>
     <string name="loc_filters_prompt">Filtrer etter:</string>
     <string name="loc_search_prompt">Søk etter:</string>
@@ -612,7 +611,6 @@
     <string name="relay_port">Relé-spillport</string>
     <string name="proxy_port">Relé-enhetsport</string>
     <string name="gamel_menu_writegit">Kopier Git-info til utklippstavle</string>
-    <string name="xlations_locale">Juks til lokale for oversettelse</string>
     <string name="nag_intervals">Påminnelsesintervall (minutt1,minutt2,…)</string>
     <string name="game_summary_field_rowid">rad-ID</string>
     <string name="game_summary_field_gameid">spill-ID</string>
