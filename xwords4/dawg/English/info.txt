@@ -15,7 +15,8 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-LANGCODE:en_US
+LANGCODE:en
+LANGNAME:English
 
 # deal with DOS files
 LANGFILTER: tr -d '\r'
@@ -39,33 +40,33 @@ LANGINFO: will simply be excluded from the dictionary.</p>
 XLOC_HEADER:0x8100
 
 <BEGIN_TILES>
-2			0		{"_"}
-9			1		'A|a'
-2			3		'B|b'
-2			3		'C|c'
-4			2		'D|d'
-12			1		'E|e'
-2			4		'F|f'
-3			2		'G|g'
-2			4		'H|h'
-9			1		'I|i'
-1			8		'J|j'
-1			5		'K|k'
-4			1		'L|l'
-2			3		'M|m'
-6			1		'N|n'
-8			1		'O|o'
-2			3		'P|p'
-1			10		'Q|q'
-6			1		'R|r'
-4			1		'S|s'
-6			1		'T|t'
-4			1		'U|u'
-2			4		'V|v'
-2			4		'W|w'
-1			8		'X|x'
-2			4		'Y|y'
-1			10		'Z|z'
+{"_"}		0		 2
+'A|a'		1		 9
+'B|b'		3		 2
+'C|c'		3		 2
+'D|d'		2		 4
+'E|e'		1		 12
+'F|f'		4		 2
+'G|g'		2		 3
+'H|h'		4		 2
+'I|i'		1		 9
+'J|j'		8		 1
+'K|k'		5		 1
+'L|l'		1		 4
+'M|m'		3		 2
+'N|n'		1		 6
+'O|o'		1		 8
+'P|p'		3		 2
+'Q|q'		10		 1
+'R|r'		1		 6
+'S|s'		1		 4
+'T|t'		1		 6
+'U|u'		1		 4
+'V|v'		4		 2
+'W|w'		4		 2
+'X|x'		8		 1
+'Y|y'		4		 2
+'Z|z'		10		 1
 <END_TILES>
 
 # should ignore all after the <END> above

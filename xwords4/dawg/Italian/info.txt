@@ -15,7 +15,8 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-LANGCODE:it_IT
+LANGCODE:it
+LANGNAME:Italian
 
 # deal with DOS files
 LANGFILTER: tr -d '\r'
@@ -35,31 +36,31 @@ XLOC_HEADER:0x8A00
 
 # tile values taken from http://www.gtoal.com/wordgames/details/italian/
 <BEGIN_TILES>
-2		  0 		{"_"}
-13        1        'A|a'
-3         5        'B|b'
-4         4        'C|c'
-3         5        'D|d'
-13        1        'E|e'
-2         8        'F|f'
-3         5        'G|g'
-2         8        'H|h'
-13        1        'I|i'
-0         1        'J|j'
-0         1        'K|k'
-5         3        'L|l'
-5         3        'M|m'
-6         2        'N|n'
-13        1        'O|o'
-3         5        'P|p'
-1         10       'Q|q'
-6         2        'R|r'
-6         2        'S|s'
-6         2        'T|t'
-5         3        'U|u'
-4         4        'V|v'
-0         1        'W|w'
-0         1        'X|x'
-0         1        'Y|y'
-2         8        'Z|z'
+{"_"}	  0		   2
+'A|a'     1        13
+'B|b'     5        3
+'C|c'     4        4
+'D|d'     5        3
+'E|e'     1        13
+'F|f'     8        2
+'G|g'     5        3
+'H|h'     8        2
+'I|i'     1        13
+'J|j'     1        0
+'K|k'     1        0
+'L|l'     3        5
+'M|m'     3        5
+'N|n'     2        6
+'O|o'     1        13
+'P|p'     5        3
+'Q|q'     10       1
+'R|r'     2        6
+'S|s'     2        6
+'T|t'     2        6
+'U|u'     3        5
+'V|v'     4        4
+'W|w'     1        0
+'X|x'     1        0
+'Y|y'     1        0
+'Z|z'     8        2
 <END_TILES>

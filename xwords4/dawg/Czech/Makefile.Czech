@@ -15,19 +15,15 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-XWLANG=Blex
+XWLANG=Czech
 LANGCODE=cs_CZ
 ENC = UTF-8
-DICTNOTE = "From http://scrabble.hrejsi.cz/pravidla/blex.htm"
 
 TARGET_TYPE ?= WINCE
 
-
 include ../Makefile.langcommon
 
-SOURCEDICT ?= $(XWDICTPATH)/Czech/blex.dict.gz
-
-all: $(XWLANG)2to5.xwd
+SOURCEDICT ?= $(XWDICTPATH)/Czech/Czech.2-1-6.dict.gz
 
 $(XWLANG)Main.dict.gz: $(SOURCEDICT) Makefile
 	zcat $< | tr -d '\r' | \

@@ -16,7 +16,8 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-LANGCODE:de_DE
+LANGCODE:de
+LANGNAME:German
 CHARSET: utf-8
 
 # deal with DOS files
@@ -46,37 +47,36 @@ LANGINFO: contain letters not found on tiles.</p>
 # German==3.  Low byte is padding
 XLOC_HEADER:0x8300
 
-
 <BEGIN_TILES>
-2			0		{"_"}
-5	        1		'A|a'
-1			6		'Ä|ä'
-2			3		'B|b'
-2			4		'C|c'
-4			1		'D|d'
-15			1		'E|e'
-2			4		'F|f'
-3			2		'G|g'
-4			2		'H|h'
-6			1		'I|i'
-1			6		'J|j'
-2			4		'K|k'
-3			2		'L|l'
-4			3		'M|m'
-9			1		'N|n'
-3			2		'O|o'
-1			8		'Ö|ö'
-1			4		'P|p'
-1			10		'Q|q'
-6			1		'R|r'
-7			1		'S|s'
-6			1		'T|t'
-6			1		'U|u'
-1			6		'Ü|ü'
-1			6		'V|v'
-1			3		'W|w'
-1			8		'X|x'
-1			10		'Y|y'
-1			3		'Z|z'
+{"_"}    0		2
+'A|a'    1		5
+'Ä|ä'    6		1
+'B|b'    3		2
+'C|c'    4		2
+'D|d'    1		4
+'E|e'    1		15
+'F|f'    4		2
+'G|g'    2		3
+'H|h'    2		4
+'I|i'    1		6
+'J|j'    6		1
+'K|k'    4		2
+'L|l'    2		3
+'M|m'    3		4
+'N|n'    1		9
+'O|o'    2		3
+'Ö|ö'    8		1
+'P|p'    4		1
+'Q|q'    10		1
+'R|r'    1		6
+'S|s'    1		7
+'T|t'    1		6
+'U|u'    1		6
+'Ü|ü'    6		1
+'V|v'    6		1
+'W|w'    3		1
+'X|x'    8		1
+'Y|y'    10		1
+'Z|z'    3		1
 <END_TILES>
 # should ignore all after the <END_TILES> above

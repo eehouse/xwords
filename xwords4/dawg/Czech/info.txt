@@ -15,7 +15,8 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-LANGCODE:cs_CZ
+LANGCODE:cs
+LANGNAME:Czech
 CHARSET:utf-8
 
 # deal with DOS files
@@ -39,46 +40,46 @@ LANGINFO: Unicode-aware systems. </p>
 # Czech-ISO8859-2==0x11.  Low byte is padding.
 XLOC_HEADER:0x9100
 
-#COUNT     VAL     FACE
+#FACE  VAL     COUNT[15]
 <BEGIN_TILES>
-2			0		{"_"}
-5			1		'A'
-2			2		'Á'
-2			3		'B'
-3			2		'C'
-1           4       'Č'
-3			1		'D'
-1           8       'Ď'
-5			1		'E'
-2           3       'É'
-2           3       'Ě'
-1			5		'F'
-1			5		'G'
-3			2		'H'
-4			1		'I'
-3           2       'Í'
-2			2		'J'
-3			1		'K'
-3			1		'L'
-3			2		'M'
-5			1		'N'
-1           6       'Ň'
-6			1		'O'
-1			7		'Ó'
-3			1		'P'
-3			1		'R'
-2			4		'Ř'
-4			1		'S'
-2           4       'Š'
-4			1		'T'
-1           7       'Ť'
-3			2		'U'
-1			5		'Ú'
-1           4       'Ů'
-4			1		'V'
-1			10		'X'
-2			2		'Y'
-2			4		'Ý'
-2			2		'Z'
-1			4		'Ž'
+{"_"}  0		2
+'A'	   1		5
+'Á'	   2		2
+'B'	   3		2
+'C'	   2		3
+'Č'	   4       	1
+'D'	   1		3
+'Ď'	   8       	1
+'E'	   1		5
+'É'	   3       	2
+'Ě'	   3       	2
+'F'	   5		1
+'G'	   5		1
+'H'	   2		3
+'I'	   1		4
+'Í'	   2       	3
+'J'	   2		2
+'K'	   1		3
+'L'	   1		3
+'M'	   2		3
+'N'	   1		5
+'Ň'	   6       	1
+'O'	   1		6
+'Ó'	   7		1
+'P'	   1		3
+'R'	   1		3
+'Ř'	   4		2
+'S'	   1		4
+'Š'	   4       	2
+'T'	   1		4
+'Ť'	   7       	1
+'U'	   2		3
+'Ú'	   5		1
+'Ů'	   4       	1
+'V'	   1		4
+'X'	   10		1
+'Y'	   2		2
+'Ý'	   4		2
+'Z'	   2		2
+'Ž'    4		1
 <END_TILES>

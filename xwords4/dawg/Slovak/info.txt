@@ -16,7 +16,8 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-LANGCODE:sk_SK
+LANGCODE:sk
+LANGNAME:Slovak
 CHARSET:utf-8
 
 # deal with DOS files
@@ -38,47 +39,47 @@ XLOC_HEADER:0x9300
 #COUNT     VAL     FACE
 # converted from http://www.deskovehry.info/pravidla/scrabble/scrabble-sk.htm
 <BEGIN_TILES>
-9     1     'A'
-1     4     'Á'
-1     10    'Ä'
-2     4     'B'
-1     4     'C'
-1     5     'Č'
-3     2     'D'
-1     8     'Ď'
-8     1     'E'
-1     7     'É'
-1     8     'F'
-1     8     'G'
-1     4     'H'
-5     1     'I'
-1     5     'Í'
-2     3     'J'
-3     2     'K'
-3     2     'L'
-1     10    'Ĺ'
-1     7     'Ľ'
-4     2     'M'
-5     1     'N'
-1     8     'Ň'
-9     1     'O'
-1     8     'Ô'
-1     10    'Ó'
-3     2     'P'
-4     1     'R'
-1     10    'Ŕ'
-4     1     'S'
-1     5     'Š'
-4     1     'T'
-1     7     'Ť'
-2     3     'U'
-1     7     'Ú'
-4     1     'V'
-1     10    'X'
-1     4     'Y'
-1     5     'Ý'
-1     4     'Z'
-1     5     'Ž'
+'A|a'     1     9
+'Á|á'     4     1
+'Ä|ä'     10    1
+'B|b'     4     2
+'C|c'     4     1
+'Č|č'     5     1
+'D|d'     2     3
+'Ď|ď'     8     1
+'E|e'     1     8
+'É|é'     7     1
+'F|f'     8     1
+'G|g'     8     1
+'H|h'     4     1
+'I|i'     1     5
+'Í|í'     5     1
+'J|j'     3     2
+'K|k'     2     3
+'L|l'     2     3
+'Ĺ|ĺ'     10    1
+'Ľ|ľ'     7     1
+'M|m'     2     4
+'N|n'     1     5
+'Ň|ň'     8     1
+'O|o'     1     9
+'Ô|ô'     8     1
+'Ó|ó'     10    1
+'P|p'     2     3
+'R|r'     1     4
+'Ŕ|ŕ'     10    1
+'S|s'     1     4
+'Š|š'     5     1
+'T|t'     1     4
+'Ť|ť'     7     1
+'U|u'     3     2
+'Ú|ú'     7     1
+'V|v'     1     4
+'X|x'     10    1
+'Y|y'     4     1
+'Ý|ý'     5     1
+'Z|z'     4     1
+'Ž|ž'     5     1
 # the blank *must* be last here!!!
-2           0       {"_"}
+{"_"}     0     2
 <END_TILES>

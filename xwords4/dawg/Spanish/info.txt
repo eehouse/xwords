@@ -19,8 +19,11 @@
 # no way can unix sort handle the control chars I'm adding to text
 # below
 
+LANGCODE:es
+LANGNAME:Spanish
 NEEDSSORT:true
 CHARSET: utf-8
+
 
 # MSDos LF chars go bye-bye
 LANGFILTER: tr -d '\r'
@@ -77,34 +80,34 @@ LANGCODE:es_ES
 XLOC_HEADER:0x8600
 
 <BEGIN_TILES>
-2			0	{"_"}
-12			1	'A|a'
-2			3	'B|b'
-4			3	'C|c'
-1			5	{"CH|ch|Ch|cH",true,true}
-5			2	'D|d'
-12			1	'E|e'
-1			4	'F|f'
-2			2	'G|g'
-2			4	'H|h'
-6			1	'I|i'
-1			8	'J|j'
-4			1	'L|l'
-1			8	{"LL|ll|Ll|lL", true, true}
-2			3	'M|m'
-5			1	'N|n'
-1			8	'Ñ|ñ'
-9			1	'O|o'
-2			3	'P|p'
-1			5	'Q|q'
-5			1	'R|r'
-1			8	{"RR|rr|Rr|rR",true,true}
-6			1	'S|s'
-4			1	'T|t'
-5			1	'U|u'
-1			4	'V|v'
-1			8	'X|x'
-1			4	'Y|y'
-1			10	'Z|z'
+{"_"}							0	2
+'A|a'							1	12
+'B|b'							3	2
+'C|c'							3	4
+{"CH|ch|Ch|cH",true,true}		5	1
+'D|d'							2	5
+'E|e'							1	12
+'F|f'							4	1
+'G|g'							2	2
+'H|h'							4	2
+'I|i'							1	6
+'J|j'							8	1
+'L|l'							1	4
+{"LL|ll|Ll|lL",true,true}		8	1
+'M|m'							3	2
+'N|n'							1	5
+'Ñ|ñ'							8	1
+'O|o'							1	9
+'P|p'							3	2
+'Q|q'							5	1
+'R|r'							1	5
+{"RR|rr|Rr|rR",true,true}		8	1
+'S|s'							1	6
+'T|t'							1	4
+'U|u'							1	5
+'V|v'							4	1
+'X|x'							8	1
+'Y|y'							4	1
+'Z|z'                       	10	1
 <END_TILES>
 # should ignore all after the <END> above

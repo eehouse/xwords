@@ -15,8 +15,8 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-LANGCODE:nl_NL
-
+LANGNAME:Danish
+LANGCODE:nl
 
 # deal with DOS files
 LANGFILTER: tr -d '\r'
@@ -41,32 +41,32 @@ XLOC_HEADER:0x8B00
 
 
 <BEGIN_TILES>
-2			0		{"_"}
-6           1       'A|a'
-2           3       'B|b'
-2           5       'C|c'
-5           2       'D|d'
-18          1       'E|e'
-2           4       'F|f'
-3           3       'G|g'
-2           4       'H|h'
-4           1       'I|i'
-2           4       'J|j'
-3           3       'K|k'
-3           3       'L|l'
-3           3       'M|m'
-10          1       'N|n'
-6           1       'O|o'
-2           3       'P|p'
-1           10      'Q|q'
-5           2       'R|r'
-5           2       'S|s'
-5           2       'T|t'
-3           4       'U|u'
-2           4       'V|v'
-2           5       'W|w'
-1           8       'X|x'
-1           8       'Y|y'
-2           4       'Z|z'
+{"_"}      0		2 
+'A|a'      1       	6
+'B|b'      3       	2
+'C|c'      5       	2
+'D|d'      2       	5
+'E|e'      1       	18
+'F|f'      4       	2
+'G|g'      3       	3
+'H|h'      4       	2
+'I|i'      1       	4
+'J|j'      4       	2
+'K|k'      3       	3
+'L|l'      3       	3
+'M|m'      3       	3
+'N|n'      1       	10
+'O|o'      1       	6
+'P|p'      3       	2
+'Q|q'      10      	1
+'R|r'      2       	5
+'S|s'      2       	5
+'T|t'      2       	5
+'U|u'      4       	3
+'V|v'      4       	2
+'W|w'      5       	2
+'X|x'      8       	1
+'Y|y'      8       	1
+'Z|z'      4       	2
 <END_TILES>
 # should ignore all after the <END_TILES> above

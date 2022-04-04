@@ -16,7 +16,8 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-LANGCODE:pl_PL
+LANGCODE:pl
+LANGNAME:Polish
 CHARSET:utf-8
 
 # deal with DOS files
@@ -50,39 +51,39 @@ LANGINFO: other languages it&apos;s the first.</p>
 XLOC_HEADER:0x8800
 
 <BEGIN_TILES>
-9           1       'A|a'
-1           5       'Ą|ą'
-2           3       'B|b'
-3           2       'C|c'
-1           6       'Ć|ć'
-3           2       'D|d'
-7           1       'E|e'
-1           5       'Ę|ę'
-1           5       'F|f'
-2           3       'G|g'
-2           3       'H|h'
-8           1       'I|i'
-2           3       'J|j'
-3           3  	    'K|k'
-3           2       'L|l'
-2           3       'Ł|ł'
-3           2       'M|m'
-5           1       'N|n'
-1           7       'Ń|ń'
-6           1       'O|o'
-1           5       'Ó|ó'
-3           2       'P|p'
-4           1       'R|r'
-4           1       'S|s'
-1           5       'Ś|ś'
-3           2       'T|t'
-2           3       'U|u'
-4           1       'W|w'
-4           2  	    'Y|y'
-5           1       'Z|z'
-1           9       'Ź|ź'
-1           5       'Ż|ż'
+'A|a'      1       9
+'Ą|ą'      5       1
+'B|b'      3       2
+'C|c'      2       3
+'Ć|ć'      6       1
+'D|d'      2       3
+'E|e'      1       7
+'Ę|ę'      5       1
+'F|f'      5       1
+'G|g'      3       2
+'H|h'      3       2
+'I|i'      1       8
+'J|j'      3       2
+'K|k'      3  	   3   
+'L|l'      2       3
+'Ł|ł'      3       2
+'M|m'      2       3
+'N|n'      1       5
+'Ń|ń'      7       1
+'O|o'      1       6
+'Ó|ó'      5       1
+'P|p'      2       3
+'R|r'      1       4
+'S|s'      1       4
+'Ś|ś'      5       1
+'T|t'      2       3
+'U|u'      3       2
+'W|w'      1       4
+'Y|y'      2  	   4   
+'Z|z'      1       5
+'Ź|ź'      9       1
+'Ż|ż'      5       1
 
 # the blank *must* be last here!!!
-2           0       {"_"}
+{"_"}      0       2
 <END_TILES>

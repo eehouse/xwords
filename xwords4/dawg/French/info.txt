@@ -14,7 +14,8 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-LANGCODE:fr_FR
+LANGCODE:fr
+LANGNAME:French
 
 # deal with DOS files
 LANGFILTER: tr -d '\r'
@@ -37,31 +38,31 @@ LANGINFO: dropping those words from the list prior to compression.</p>
 XLOC_HEADER:0x8200
 
 <BEGIN_TILES>
-2			0		{"_"}
-9			1		'A|a'
-2			3		'B|b'
-2			3		'C|c'
-3			2		'D|d'
-15			1		'E|e'
-2			4		'F|f'
-2			2		'G|g'
-2			4		'H|h'
-8			1		'I|i'
-1			8		'J|j'
-1			10		'K|k'
-5			1		'L|l'
-3			2		'M|m'
-6			1		'N|n'
-6			1		'O|o'
-2			3		'P|p'
-1			8		'Q|q'
-6			1		'R|r'
-6			1		'S|s'
-6			1		'T|t'
-6			1		'U|u'
-2			4		'V|v'
-1			10		'W|w'
-1			10		'X|x'
-1			10		'Y|y'
-1			10		'Z|z'
+{"_"}	0		2
+'A|a'	1		9
+'B|b'	3		2
+'C|c'	3		2
+'D|d'	2		3
+'E|e'	1		15
+'F|f'	4		2
+'G|g'	2		2
+'H|h'	4		2
+'I|i'	1		8
+'J|j'	8		1
+'K|k'	10		1
+'L|l'	1		5
+'M|m'	2		3
+'N|n'	1		6
+'O|o'	1		6
+'P|p'	3		2
+'Q|q'	8		1
+'R|r'	1		6
+'S|s'	1		6
+'T|t'	1		6
+'U|u'	1		6
+'V|v'	4		2
+'W|w'	10		1
+'X|x'	10		1
+'Y|y'	10		1
+'Z|z'	10		1
 <END_TILES>

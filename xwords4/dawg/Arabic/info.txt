@@ -15,41 +15,45 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 CHARSET: utf-8
-LANGCODE:ar_AR
+LANGCODE:ar
+LANGNAME:Arabic
 XLOC_HEADER:0x8500
 
+# This looks really weird in most text editors because the mix of
+# right-to-left and left-to-right scripts confuses them
+
 <BEGIN_TILES>
-2           8       'ﺀ'
-2          10       'ﺃ'
-8           1       'ﺍ'
-4           2       'ﺏ'
-4           2       'ﺕ'
-3           2       'ﺙ'
-4           1       'ﺝ'
-3           1       'ﺡ'
-3           1       'ﺥ'
-3           2       'ﺩ'
-3           3       'ﺫ'
-3           2       'ﺭ'
-3           3       'ﺯ'
-3           2       'ﺱ'
-3           3       'ﺵ'
-3           4       'ﺹ' 
-3           4       'ﺽ'
-2           4       'ﻁ'
-2           5       'ﻅ'
-3           4       'ﻉ'
-2           8       'ﻍ'
-3           3       'ﻑ'
-3           3       'ﻕ'
-3           4       'ﻙ'
-4           1       'ﻝ'
-3           1       'ﻡ'
-3           1       'ﻥ'
-3           1       'ﻩ'
-2          10       'ﺅ'
-3           1       'ﻭ'
-3           1       'ﻯ'
-2           6       'ﺉ'
-2           0      {"_"}
+'ﺀ'   8   2
+'ﺃ'   10   2
+'ﺍ'   1   8
+'ﺏ'   2   4
+'ﺕ'   2   4
+'ﺙ'   2   3
+'ﺝ'   1   4
+'ﺡ'   1   3
+'ﺥ'   1   3
+'ﺩ'   2   3
+'ﺫ'   3   3
+'ﺭ'   2   3
+'ﺯ'   3   3
+'ﺱ'   2   3
+'ﺵ'   3   3
+'ﺹ'    4   3
+'ﺽ'   4   3
+'ﻁ'   4   2
+'ﻅ'   5   2
+'ﻉ'   4   3
+'ﻍ'   8   2
+'ﻑ'   3   3
+'ﻕ'   3   3
+'ﻙ'   4   3
+'ﻝ'   1   4
+'ﻡ'   1   3
+'ﻥ'   1   3
+'ﻩ'   1   3
+'ﺅ'   10   2
+'ﻭ'   1   3
+'ﻯ'   1   3
+'ﺉ'   6   2
+{"_"}   0   2
 <END_TILES>

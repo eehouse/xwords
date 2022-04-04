@@ -14,7 +14,8 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-LANGCODE:tr_TR
+LANGCODE:tr
+LANGNAME:Turkish
 CHARSET: utf-8
 
 LANGINFO: <p>Turkish is untested with actual wordlists!</p>
@@ -22,34 +23,34 @@ LANGINFO: <p>Turkish is untested with actual wordlists!</p>
 XLOC_HEADER:0x8400
 
 <BEGIN_TILES>
-2           0      {"_"}
-12          1       'A' 
-2           3       'B'
-2           4       'C'
-2           4       'Ç' 
-2           3       'D'
-8           1       'E'
-1           7       'F'
-1           5       'G'
-1           8       'Ğ'
-1           5       'H'
-4           2       'I'
-7           1       'İ'
-1           10      'J'
-7           1       'K'
-7           1       'L'
-4           2       'M'
-5           1       'N'
-3           2       'O'
-1           7       'Ö'
-1           5       'P'
-6           1       'R'
-3           2       'S'
-2           4       'Ş'
-5           1       'T'
-3           2       'U'
-2           3       'Ü'
-1           7       'V'
-2           3       'Y'
-2           4       'Z'
+{"_"}     0      2
+'A'     1      12
+'B'     3      2
+'C'     4      2
+'Ç'     4      2 
+'D'     3      2
+'E'     1      8
+'F'     7      1
+'G'     5      1
+'Ğ'     8      1
+'H'     5      1
+'I'     2      4
+'İ'     1      7
+'J'     10     1
+'K'     1      7
+'L'     1      7
+'M'     2      4
+'N'     1      5
+'O'     2      3
+'Ö'     7      1
+'P'     5      1
+'R'     1      6
+'S'     2      3
+'Ş'     4      2
+'T'     1      5
+'U'     2      3
+'Ü'     3      2
+'V'     7      1
+'Y'     3      2
+'Z'     4      2
 <END_TILES>

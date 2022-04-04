@@ -16,7 +16,8 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 CHARSET: utf-8
-LANGCODE:sv_SE
+LANGCODE:sv
+LANGNAME:Swedish
 
 LANGFILTER: tr -d '\r'
 # uppercase all
@@ -33,45 +34,44 @@ LANGINFO: and W, and adds Ä, Å, Æ, Ö and Ü.</p>
 XLOC_HEADER:0x8700
 
 
-
 <BEGIN_TILES>
-2			0		{"_"}
-8			1		'A|a'
+{"_"}	   0		2
+'A|a'	   1		8
 # A with two dots
-2			3		'Ä|ä'
+'Ä|ä'	   3        2
 # A with circle
-2			4		'Å|å'
+'Å|å'	   4		2
 # Æ tile only available for blanks
-0			1		'Æ|æ'
-2			4		'B|b'
-1			8		'C|c'
-5			1		'D|d'
-7			1		'E|e'
-2			3		'F|f'
-3			2		'G|g'
-2			2		'H|h'
-5			1		'I|i'
-1			7		'J|j'
-3			2		'K|k'
-5			1		'L|l'
-3			2		'M|m'
-6			1		'N|n'
-5			2		'O|o'
+'Æ|æ'	   1		0
+'B|b'	   4		2
+'C|c'	   8		1
+'D|d'	   1		5
+'E|e'	   1		7
+'F|f'	   3		2
+'G|g'	   2		3
+'H|h'	   2		2
+'I|i'	   1		5
+'J|j'	   7		1
+'K|k'	   2		3
+'L|l'	   1		5
+'M|m'	   2		3
+'N|n'	   1		6
+'O|o'	   2		5
 # O with two dots
-2			4		'Ö|ö'
-2			4		'P|p'
+'Ö|ö'	   4		2
+'P|p'	   4		2
 # Q tile only available for blanks
-0			1		'Q|q'
-8			1		'R|r'
-8			1		'S|s'
-8			1		'T|t'
-3			4		'U|u'
+'Q|q'	   1		0
+'R|r'	   1		8
+'S|s'	   1		8
+'T|t'	   1		8
+'U|u'	   4		3
 # Ü tile only available for blanks
-0			1		'Ü|ü'
-2			3		'V|v'
+'Ü|ü'	   1		0
+'V|v'	   3		2
 # W tile only available for blanks
-0			1		'W|w'
-1			8		'X|x'
-1			7		'Y|y'
-1			10		'Z|z'
+'W|w'	   1		0
+'X|x'	   8		1
+'Y|y'	   7		1
+'Z|z'	   10		1
 <END_TILES>

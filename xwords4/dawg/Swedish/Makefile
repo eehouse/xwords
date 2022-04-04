@@ -26,13 +26,14 @@ TARGET_TYPE ?= WINCE
 
 include ../Makefile.langcommon
 
-SOURCEDICT ?= $(XWDICTPATH)/Swedish/swedish15.utf8.gz
+SOURCEDICT ?= $(XWDICTPATH)/Swedish/swedish15.txt
 
 # Q and W are not available as tiles, but I'm told there's a custom in
 # Swedish play of allowing blanks to stand for those letters as well.
 # So we don't exclude words with those letters from the dictionary.
 $(XWLANG)Main.dict.gz: $(SOURCEDICT) Makefile
-	zcat $< | sed 's/[[:lower:]]*/\U&/' | \
+	cat $< | iconv -f ISO-8859-1 -t $(ENC) | \
+		sed 's/[[:lower:]]*/\U&/' | \
 		LANG=$(LANGCODE):$(ENC) grep '^[A-ZÄÅÆÖÜ]\{2,15\}$$' | \
 		gzip -c > $@
 

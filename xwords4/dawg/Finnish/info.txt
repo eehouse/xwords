@@ -17,6 +17,7 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 LANGCODE:fi
+LANGNAME:Finnish
 CHARSET: utf-8
 
 LANGFILTER: tr -d '\r'
@@ -32,30 +33,30 @@ XLOC_HEADER:0x9900
 
 # From wikipedia
 <BEGIN_TILES>
-2			0		{"_"}
-10			1		'A|a'
-5			2		'Ä|ä'
-1			8		'B|b'
-1			10		'C|c'
-1			7		'D|d'
-8			1		'E|e'
-1			8		'F|f'
-1			8		'G|g'
-2			4		'H|h'
-10			1		'I|i'
-2			4		'J|j'
-5			2		'K|k'
-5			2		'L|l'
-3			3		'M|m'
-9			1		'N|n'
-5			2		'O|o'
-1			7		'Ö|ö'
-2			4		'P|p'
-2			4		'R|r'
-7			1		'S|s'
-9			1		'T|t'
-4			3		'U|u'
-2			4		'V|v'
-1			8		'W|w'
-2			4		'Y|y'
+{"_"}		0		2
+'A|a'		1		10
+'Ä|ä'		2		5
+'B|b'		8		1
+'C|c'		10		1
+'D|d'		7		1
+'E|e'		1		8
+'F|f'		8		1
+'G|g'		8		1
+'H|h'		4		2
+'I|i'		1		10
+'J|j'		4		2
+'K|k'		2		5
+'L|l'		2		5
+'M|m'		3		3
+'N|n'		1		9
+'O|o'		2		5
+'Ö|ö'		7		1
+'P|p'		4		2
+'R|r'		4		2
+'S|s'		1		7
+'T|t'		1		9
+'U|u'		3		4
+'V|v'		4		2
+'W|w'		8		1
+'Y|y'		4		2
 <END_TILES>
