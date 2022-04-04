@@ -527,13 +527,16 @@ setWindowTitle( GtkAppGlobals* apg )
 void
 resizeFromSaved( GtkWidget* window, sqlite3* pDb, const gchar* key )
 {
+    gint xx, yy, width, height;
     gchar buf[64];
     if ( gdb_fetch_safe( pDb, key, NULL, buf, sizeof(buf)) ) {
-        gint xx, yy, width, height;
         sscanf( buf, COORDS_FORMAT, &xx, &yy, &width, &height );
-        gtk_window_resize( GTK_WINDOW(window), width, height );
-        gtk_window_move( GTK_WINDOW(window), xx, yy );
+    } else {
+        xx = yy = 100;
+        width = height = 500;
     }
+    gtk_window_resize( GTK_WINDOW(window), width, height );
+    gtk_window_move( GTK_WINDOW(window), xx, yy );
 }
 
 static void
