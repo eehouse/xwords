@@ -548,17 +548,23 @@ getCountsFor( const DictionaryCtxt* dict, XP_U16 nCols )
 
         /* don't have it in the wordlist? Extrapolate */
         if ( !found ) {
+            const Tile blank = dict_getBlankTile( dict );
+
             XP_U16 pct = (nCols * nCols * 100) / (15 * 15);
             XP_U8* src15 = dict->counts[15>>1];
             XP_ASSERT( !!src15 );
 
-            for ( int ii = 0; ii < dict->nFaces; ++ii ) {
-                XP_U16 count = src15[ii];
+            for ( Tile tile = 0; tile < dict->nFaces; ++tile ) {
+                XP_U16 count = src15[tile];
                 XP_U16 newCount = count * pct / 100;
                 if ( 50 < (count * pct) % 100 ) {
                     ++newCount;
                 }
-                counts[ii] = newCount;
+                XP_ASSERT( tile != blank || newCount <= MAX_NUM_BLANKS );
+                if ( tile == blank && newCount > MAX_NUM_BLANKS ) {
+                    newCount = MAX_NUM_BLANKS;
+                }
+                counts[tile] = newCount;
             }
         }
     }

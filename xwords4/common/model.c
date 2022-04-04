@@ -419,19 +419,24 @@ getSquareBonus( XP_U16 nCols, XP_U16 col, XP_U16 row )
         row = tmp;
     }
 
-    /* For a smaller board, skip the outer "rings" */
-    XP_U16 adj = (21 - nCols) / 2;
-    col += adj;
-    row += adj;
-
-    XP_U16 index = col;
-    for ( XP_U16 ii = 1; ii <= row; ++ii ) {
-        index += ii;
-    }
-
+    /* For a smaller board, skip the outer "rings." For larger,
+       outer rings are empty */
     XWBonusType result = BONUS_NONE;
-    if ( index < VSIZE(sTwentyOne)) {
-        result = sTwentyOne[index];
+    XP_U16 adj = (21 - nCols) / 2;
+    if ( 0 <= adj ) {
+        col += adj;
+        row += adj;
+
+        if ( col <= 21 && row <= 21 ) {
+            XP_U16 index = col;
+            for ( XP_U16 ii = 1; ii <= row; ++ii ) {
+                index += ii;
+            }
+
+            if ( index < VSIZE(sTwentyOne)) {
+                result = sTwentyOne[index];
+            }
+        }
     }
     return result;
 }

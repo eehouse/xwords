@@ -51,8 +51,8 @@ extern "C" {
 #define CELL_OWNER(t) (((t)&CELL_OWNER_MASK) >> CELL_OWNER_OFFSET)
 
 #define MAX_UNIQUE_TILES 64 /* max tile non-blank faces */
-#define MAX_NUM_BLANKS 4
-
+/* Portuguese has 3 for a 15x15 game; can go higer on larger boards */
+#define MAX_NUM_BLANKS 6
 
 typedef struct BlankQueue {
     XP_U16 nBlanks;
