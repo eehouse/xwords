@@ -1,6 +1,6 @@
 /* -*- compile-command: "find-and-gradle.sh inXw4dDeb"; -*- */
 /* 
- * Copyright 2001 - 2020 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2001 - 2022 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -99,34 +99,6 @@ and_util_makeStreamFromAddr( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe),
         jmethodID mid = getMethodID( env, dutil->jdutil, nam, sig )
 
 #define DUTIL_CBK_TAIL() UTIL_CBK_TAIL()
-    
-static XWBonusType and_util_getSquareBonus( XW_UtilCtxt* XP_UNUSED(uc),
-                                            XWEnv XP_UNUSED(xwe),
-                                            XP_U16 boardSize,
-                                            XP_U16 col, XP_U16 row )
-{
-#define BONUS_DIM 8
-    static const int s_buttsBoard[BONUS_DIM][BONUS_DIM] = {
-        { BONUS_TRIPLE_WORD,  BONUS_NONE,         BONUS_NONE,BONUS_DOUBLE_LETTER,BONUS_NONE,BONUS_NONE,BONUS_NONE,BONUS_TRIPLE_WORD },
-        { BONUS_NONE,         BONUS_DOUBLE_WORD,  BONUS_NONE,BONUS_NONE,BONUS_NONE,BONUS_TRIPLE_LETTER,BONUS_NONE,BONUS_NONE },
-
-        { BONUS_NONE,         BONUS_NONE,         BONUS_DOUBLE_WORD,BONUS_NONE,BONUS_NONE,BONUS_NONE,BONUS_DOUBLE_LETTER,BONUS_NONE },
-        { BONUS_DOUBLE_LETTER,BONUS_NONE,         BONUS_NONE,BONUS_DOUBLE_WORD,BONUS_NONE,BONUS_NONE,BONUS_NONE,BONUS_DOUBLE_LETTER },
-                            
-        { BONUS_NONE,         BONUS_NONE,         BONUS_NONE,BONUS_NONE,BONUS_DOUBLE_WORD,BONUS_NONE,BONUS_NONE,BONUS_NONE },
-        { BONUS_NONE,         BONUS_TRIPLE_LETTER,BONUS_NONE,BONUS_NONE,BONUS_NONE,BONUS_TRIPLE_LETTER,BONUS_NONE,BONUS_NONE },
-                            
-        { BONUS_NONE,         BONUS_NONE,         BONUS_DOUBLE_LETTER,BONUS_NONE,BONUS_NONE,BONUS_NONE,BONUS_DOUBLE_LETTER,BONUS_NONE },
-        { BONUS_TRIPLE_WORD,  BONUS_NONE,         BONUS_NONE,BONUS_DOUBLE_LETTER,BONUS_NONE,BONUS_NONE,BONUS_NONE,BONUS_DOUBLE_WORD },
-    }; /* buttsBoard */
-
-    int half = boardSize / 2;
-    if ( col > half ) { col = (half*2) - col; }
-    if ( row > half ) { row = (half*2) - row; }
-    XP_ASSERT( col < BONUS_DIM && row < BONUS_DIM );
-    return s_buttsBoard[row][col];
-#undef BONUS_DIM
-}
 
 static void
 and_util_userError( XW_UtilCtxt* uc, XWEnv xwe, UtilErrID id )
@@ -998,7 +970,6 @@ makeUtil( MPFORMAL JNIEnv* env,
 #ifndef XWFEATURE_STANDALONE_ONLY
     SET_PROC(makeStreamFromAddr);
 #endif
-    SET_PROC(getSquareBonus);
     SET_PROC(userError);
     SET_PROC(notifyMove);
     SET_PROC(notifyTrade);

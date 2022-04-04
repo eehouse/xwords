@@ -445,6 +445,12 @@
     <!-- Bonus value hint that's displayed in gray text in the colored
          bonus square. Triple-word -->
     <string name="bonus_w3x_summary">3W</string>
+    <!-- Bonus value hint that's displayed in gray text in the colored
+         bonus square. Quadruple-letter -->
+    <string name="bonus_l4x_summary">4L</string>
+    <!-- Bonus value hint that's displayed in gray text in the colored
+         bonus square. Quadruple-word -->
+    <string name="bonus_w4x_summary">4W</string>
     <!-- displayed when you long-tap a scoreboard entry and there's no
          most recent score to show -->
     <string name="no_moves_made">(No moves yet)</string>
@@ -863,10 +869,12 @@
     <string name="bonus_l2x">Double letter</string>
     <!-- (color for) triple-letter bonus squares on the board -->
     <string name="bonus_l3x">Triple letter</string>
+    <string name="bonus_l4x">Quadruple letter</string>
     <!-- (color for) double-word squares on the board -->
     <string name="bonus_w2x">Double word</string>
     <!-- (color for) triple-word squares on the board -->
     <string name="bonus_w3x">Triple word</string>
+    <string name="bonus_w4x">Quadruple word</string>
     <!-- color of the "crosshairs", lines drawn vertically and
          horizontally through the square the user is currently
          touching in order to guide the fat-fingered (most of us) in

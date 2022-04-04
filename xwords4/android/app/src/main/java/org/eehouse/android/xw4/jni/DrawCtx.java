@@ -74,13 +74,7 @@ public interface DrawCtx {
     void score_pendingScore( Rect rect, int score, int playerNum,
                              boolean curTurn, int flags );
 
-    public static final int BONUS_NONE = 0;
-    public static final int BONUS_DOUBLE_LETTER = 1;
-    public static final int BONUS_DOUBLE_WORD = 2;
-    public static final int BONUS_TRIPLE_LETTER = 3;
-    public static final int BONUS_TRIPLE_WORD = 4;
-    public static final int INTRADE_MW_TEXT = 5;
-
+    // typ possibilities are defined in UtilCtxt.java
     void objFinished( /*BoardObjectType*/int typ, Rect rect );
 
     void dictChanged( long dictPtr );

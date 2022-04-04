@@ -231,13 +231,7 @@ and_dictionary_destroy( DictionaryCtxt* dict, XWEnv xwe )
         XP_FREE( ctxt->super.mpool, ctxt->super.bitmaps );
     }
 
-    XP_FREEP( ctxt->super.mpool, &ctxt->super.md5Sum );
-    XP_FREEP( ctxt->super.mpool, &ctxt->super.desc );
-    XP_FREEP( ctxt->super.mpool, &ctxt->super.faces );
-    XP_FREEP( ctxt->super.mpool, &ctxt->super.facePtrs );
-    XP_FREEP( ctxt->super.mpool, &ctxt->super.countsAndValues );
-    XP_FREEP( ctxt->super.mpool, &ctxt->super.name );
-    XP_FREEP( ctxt->super.mpool, &ctxt->super.langName );
+    dict_super_destroy( &ctxt->super );
 
     if ( NULL == ctxt->byteArray ) { /* mmap case */
 #ifdef DEBUG

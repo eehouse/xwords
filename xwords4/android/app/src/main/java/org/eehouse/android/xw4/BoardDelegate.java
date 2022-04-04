@@ -1763,6 +1763,12 @@ public class BoardDelegate extends DelegateBase
             case BONUS_TRIPLE_WORD:
                 id = R.string.bonus_w3x;
                 break;
+            case BONUS_QUAD_LETTER:
+                id = R.string.bonus_l4x;
+                break;
+            case BONUS_QUAD_WORD:
+                id = R.string.bonus_w4x;
+                break;
             default:
                 Assert.failDbg();
             }

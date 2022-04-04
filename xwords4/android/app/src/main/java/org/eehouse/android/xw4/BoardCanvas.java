@@ -173,7 +173,9 @@ public class BoardCanvas extends Canvas implements DrawCtx {
         int[] ids = { R.string.bonus_l2x_summary,
                       R.string.bonus_w2x_summary ,
                       R.string.bonus_l3x_summary,
-                      R.string.bonus_w3x_summary };
+                      R.string.bonus_w3x_summary,
+                      R.string.bonus_l4x_summary,
+                      R.string.bonus_w4x_summary };
         m_bonusSummaries = new String[1 + ids.length];
         for ( int ii = 0; ii < ids.length; ++ii ) {
             m_bonusSummaries[ ii+1 ] = res.getString( ids[ii] );

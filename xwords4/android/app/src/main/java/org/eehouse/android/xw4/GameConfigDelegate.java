@@ -1121,36 +1121,30 @@ public class GameConfigDelegate extends DelegateBase
         m_smartnessSpinner.setSelection( setting );
     }
 
-    private int positionToSize( int position ) {
-        switch( position ) {
-        case 0: return 15;
-        case 1: return 13;
-        case 2: return 11;
-        default:
-            Assert.failDbg();
+    private int positionToSize( int position )
+    {
+        int result = 15;
+        String[] sizes = getStringArray( R.array.board_sizes );
+        Assert.assertTrueNR( position < sizes.length );
+        if ( position < sizes.length ) {
+            String sizeStr = sizes[position];
+            result = Integer.parseInt( sizeStr.substring( 0, 2 ) );
         }
-        return -1;
+        return result;
     }
 
     private void setBoardsizeSpinner()
     {
-        int size = m_gi.boardSize;
         int selection = 0;
-        switch( size ) {
-        case 15:
-            selection = 0;
-            break;
-        case 13:
-            selection = 1;
-            break;
-        case 11:
-            selection = 2;
-            break;
-        default:
-            Assert.failDbg();
-            break;
+        String sizeStr = String.format( "%d", m_gi.boardSize );
+        String[] sizes = getStringArray( R.array.board_sizes );
+        for ( int ii = 0; ii < sizes.length; ++ii ) {
+            if ( sizes[ii].startsWith( sizeStr ) ) {
+                selection = ii;
+                break;
+            }
         }
-        Assert.assertTrue( size == positionToSize(selection) );
+        Assert.assertTrue( m_gi.boardSize == positionToSize(selection) );
         m_boardsizeSpinner.setSelection( selection );
     }
 
