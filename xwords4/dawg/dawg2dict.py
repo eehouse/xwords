@@ -184,7 +184,7 @@ def process(args):
                 extraData = header.read(extraSize)
 
             except Exception as ex:
-                print( 'header: exception!! {} '.format(ex) )
+                print( 'header: exception!! {} '.format(ex), file=sys.stderr )
                 md5Sum = None
 
             if args.GET_SUM:
