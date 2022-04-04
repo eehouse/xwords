@@ -1326,7 +1326,6 @@ gtk_draw_getMiniWText( DrawCtx* XP_UNUSED(p_dctx), XWEnv XP_UNUSED(xwe),
 {
 /*     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx; */
     XP_UCHAR* str;
-
     switch( textHint ) {
     case BONUS_DOUBLE_LETTER:
         str = "Double letter"; break;
@@ -1334,6 +1333,10 @@ gtk_draw_getMiniWText( DrawCtx* XP_UNUSED(p_dctx), XWEnv XP_UNUSED(xwe),
         str = "Double word"; break;
     case BONUS_TRIPLE_LETTER:
         str = "Triple letter"; break;
+    case BONUS_QUAD_WORD:
+        str = "Quad word"; break;
+    case BONUS_QUAD_LETTER:
+        str = "Quad letter"; break;
     case BONUS_TRIPLE_WORD:
         str = "Triple word"; break;
     case INTRADE_MW_TEXT:

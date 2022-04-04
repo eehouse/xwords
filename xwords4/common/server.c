@@ -2573,7 +2573,8 @@ makePoolOnce( ServerCtxt* server )
     if ( server->pool == NULL ) {
         server->pool = pool_make( MPPARM_NOCOMMA(server->mpool) );
         XP_STATUSF( "%s(): initing pool", __func__ );
-        pool_initFromDict( server->pool, model_getDictionary(model));
+        pool_initFromDict( server->pool, model_getDictionary(model),
+                           server->vol.gi->boardSize );
     }
 }
 
@@ -4330,12 +4331,12 @@ server_formatDictCounts( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* stream,
     stream_catString( stream, buf );
 
     nChars = dict_numTileFaces( dict );
-
+    XP_U16 boardSize = server->vol.gi->boardSize;
     for ( tile = 0, nPrinted = 0; ; ) {
         XP_UCHAR buf[128];
         XP_U16 count, value;
 
-        count = dict_numTiles( dict, tile );
+        count = dict_numTilesForSize( dict, tile, boardSize );
 
         if ( count > 0 ) {
             const XP_UCHAR* face = NULL;

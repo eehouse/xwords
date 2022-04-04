@@ -16,7 +16,7 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 XWLANG=BasEnglish
-LANGCODE=en_US
+LANGCODE=en
 DICT2DAWGARGS = -r -nosort
 DICTNOTE = "Wordlist created in the 1930s for language learners"
 

@@ -86,7 +86,11 @@ struct DictionaryCtxt {
     XP_UCHAR* desc;
     XP_UCHAR* md5Sum;
     const XP_UCHAR** facePtrs;  /* elems point into faces, above */
-    XP_U8* countsAndValues;
+    XP_U8* counts[(MAX_COLS>>1) + 1];
+    XP_U8* values;
+
+    XP_U8* otherCounts;
+    XP_U8* otherCountsEnd;
 
     SpecialBitmaps* bitmaps;
     XP_UCHAR** chars;
@@ -177,7 +181,7 @@ XP_Bool dict_tilesAreSame( const DictionaryCtxt* dict1,
 XP_Bool dict_hasBlankTile( const DictionaryCtxt* dict );
 Tile dict_getBlankTile( const DictionaryCtxt* dict );
 XP_U16 dict_getTileValue( const DictionaryCtxt* ctxt, Tile tile );
-XP_U16 dict_numTiles( const DictionaryCtxt* ctxt, Tile tile );
+XP_U16 dict_numTilesForSize( const DictionaryCtxt* ctxt, Tile tile, XP_U16 nCols );
 XP_U16 dict_numTileFaces( const DictionaryCtxt* ctxt );
 XP_U16 dict_getMaxTileChars( const DictionaryCtxt* ctxt );
 
@@ -207,7 +211,8 @@ const XP_UCHAR* dict_getDesc( const DictionaryCtxt* dict );
 const XP_UCHAR* dict_getMd5Sum( const DictionaryCtxt* dict );
 XP_Bool dict_hasDuplicates( const DictionaryCtxt* dict );
 
-void dict_writeTilesInfo( const DictionaryCtxt* ctxt, XWStreamCtxt* stream );
+void dict_writeTilesInfo( const DictionaryCtxt* ctxt, XP_U16 boardSize,
+                          XWStreamCtxt* stream );
 
 void dict_writeToStream( const DictionaryCtxt* ctxt, XWStreamCtxt* stream );
 void dict_loadFromStream( DictionaryCtxt* dict, XWEnv xwe, XWStreamCtxt* stream );
@@ -232,6 +237,8 @@ XP_Bool checkSanity( DictionaryCtxt* dict, XP_U32 numEdges );
 
 /* To be called only by subclasses!!! */
 void dict_super_init( MPFORMAL DictionaryCtxt* ctxt );
+void dict_super_destroy( DictionaryCtxt* ctxt );
+
 /* Must be implemented by subclasses */
 void dict_splitFaces( DictionaryCtxt* dict, XWEnv xwe, const XP_U8* bytes,
                       XP_U16 nBytes, XP_U16 nFaceos );

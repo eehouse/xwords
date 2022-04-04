@@ -339,7 +339,7 @@ drawBoard( BoardCtxt* board, XWEnv xwe )
                 XWBonusType bonus;
                 HintAtts hintAtts;
                 CellFlags flags = CELL_NONE;
-                bonus = model_getSquareBonus( model, xwe, col, row );
+                bonus = model_getSquareBonus( model, col, row );
                 hintAtts = figureHintAtts( board, col, row );
 #ifdef KEYBOARD_NAV
                 if ( cellFocused( board, col, row ) ) {
@@ -438,7 +438,7 @@ drawCell( BoardCtxt* board, XWEnv xwe, const XP_U16 col,
                 }
                 textP = dict_getTileString( dict, tile );
             }
-            bonus = model_getSquareBonus( model, xwe, col, row );
+            bonus = model_getSquareBonus( model, col, row );
             hintAtts = figureHintAtts( board, col, row );
 
             if ( (col==board->star_row) && (row==board->star_row) ) {

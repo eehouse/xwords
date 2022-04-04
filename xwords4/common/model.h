@@ -288,7 +288,7 @@ XP_Bool model_listWordsThrough( ModelCtxt* model, XWEnv xwe, XP_U16 col,
 XP_Bool model_recentPassCountOk( ModelCtxt* model );
 
 XWBonusType model_getSquareBonus( const ModelCtxt* model,
-                                  XWEnv xwe, XP_U16 col, XP_U16 row );
+                                  XP_U16 col, XP_U16 row );
 #ifdef STREAM_VERS_BIGBOARD
 void model_setSquareBonuses( ModelCtxt* model, XWBonusType* bonuses, 
                              XP_U16 nBonuses );

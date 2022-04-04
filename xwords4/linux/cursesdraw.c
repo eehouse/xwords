@@ -418,6 +418,10 @@ curses_draw_drawCell( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe), const XP_Rect* rect
             ch = '^'; break;
         case BONUS_TRIPLE_WORD:
             ch = '#'; break;
+        case BONUS_QUAD_LETTER:
+            ch = '%'; break;
+        case BONUS_QUAD_WORD:
+            ch = '&'; break;
         default:
             break;
         } /* switch */

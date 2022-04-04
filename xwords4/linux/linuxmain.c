@@ -249,8 +249,6 @@ linuxOpenGame( CommonGlobals* cGlobals, const TransportProcs* procs,
             }
         }
 
-        setSquareBonuses( cGlobals );
-
         /* Need to save in order to have a valid selRow for the first send */
         linuxSaveGame( cGlobals );
         savedGame = true;

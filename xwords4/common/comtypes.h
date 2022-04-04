@@ -46,6 +46,7 @@
 # define MAX_ROWS 16
 #endif
 #define MAX_COLS MAX_ROWS
+#define MIN_COLS 11
 
 #define STREAM_VERS_SMALLCOMMS 0x1F
 #define STREAM_VERS_NINETILES 0x1E
@@ -212,6 +213,8 @@ typedef enum {
     BONUS_DOUBLE_WORD,
     BONUS_TRIPLE_LETTER,
     BONUS_TRIPLE_WORD,
+    BONUS_QUAD_LETTER,
+    BONUS_QUAD_WORD,
 
     BONUS_LAST
 } XWBonusType;

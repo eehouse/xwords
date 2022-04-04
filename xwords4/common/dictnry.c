@@ -1,6 +1,6 @@
 /* -*- compile-command: "cd ../linux && make MEMDEBUG=TRUE -j3"; -*- */
 /* 
- * Copyright 1997-2011 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 1997 - 2022 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -41,6 +41,7 @@ extern "C" {
  ****************************************************************************/
 
 static XP_Bool makeBitmap( XP_U8 const** ptrp, const XP_U8* end );
+static XP_U8* getCountsFor( const DictionaryCtxt* dict, XP_U16 nCols );
 
 const DictionaryCtxt*
 p_dict_ref( const DictionaryCtxt* dict, XWEnv XP_UNUSED(xwe)
@@ -99,14 +100,12 @@ dict_unref_all( PlayerDicts* pd, XWEnv xwe )
 }
 
 static XP_UCHAR*
-getNullTermParam( DictionaryCtxt* XP_UNUSED_DBG(dctx), const XP_U8** ptr,
-                  XP_U16* headerLen )
+getNullTermParam( DictionaryCtxt* XP_UNUSED_DBG(dctx), const XP_U8** ptr )
 {
     XP_U16 len = 1 + XP_STRLEN( (XP_UCHAR*)*ptr );
     XP_UCHAR* result = XP_MALLOC( dctx->mpool, len );
     XP_MEMCPY( result, *ptr, len );
     *ptr += len;
-    *headerLen -= len;
     return result;
 }
 
@@ -234,44 +233,78 @@ parseCommon( DictionaryCtxt* dctx, XWEnv xwe, const XP_U8** ptrp, const XP_U8* e
         XP_U8 numFaceBytes, numFaces;
 
         if ( hasHeader ) {
-            XP_U16 headerLen;
+            const XP_U8* headerEnd;
+            {
+                XP_U16 headerLen;
+                XP_MEMCPY( &headerLen, ptr, sizeof(headerLen) );
+                ptr += sizeof(headerLen);
+                headerLen = XP_NTOHS( headerLen );
+                headerEnd = ptr + headerLen;
+            }
+
             XP_U32 wordCount;
-
-            XP_MEMCPY( &headerLen, ptr, sizeof(headerLen) );
-            ptr += sizeof(headerLen);
-            headerLen = XP_NTOHS( headerLen );
-
             XP_MEMCPY( &wordCount, ptr, sizeof(wordCount) );
             ptr += sizeof(wordCount);
-            headerLen -= sizeof(wordCount);
             dctx->nWords = XP_NTOHL( wordCount );
             XP_DEBUGF( "dict contains %d words", dctx->nWords );
 
-            if ( 0 < headerLen ) {
-                dctx->desc = getNullTermParam( dctx, &ptr, &headerLen );
-            } else {
-                XP_LOGF( "%s: no note", __func__ );
+            if ( ptr == headerEnd ) {
+                XP_LOGFF( "no note" );
+                goto done;
             }
-            if ( 0 < headerLen ) {
-                dctx->md5Sum = getNullTermParam( dctx, &ptr, &headerLen );
-            } else {
-                XP_LOGF( "%s: no md5Sum", __func__ );
+            XP_ASSERT( ptr < headerEnd );
+            dctx->desc = getNullTermParam( dctx, &ptr );
+
+            if ( ptr == headerEnd ) {
+                XP_LOGFF( "no md5Sum" );
+                goto done;
             }
+            XP_ASSERT( ptr < headerEnd );
+            dctx->md5Sum = getNullTermParam( dctx, &ptr );
 
             XP_U16 headerFlags = 0;
-            if ( sizeof(headerFlags) <= headerLen ) {
-                XP_MEMCPY( &headerFlags, ptr, sizeof(headerFlags) );
-                headerFlags = XP_NTOHS( headerFlags );
-                ptr += sizeof(headerFlags);
-                headerLen -= sizeof(headerFlags);
+            if ( ptr + sizeof(headerFlags) > headerEnd ) {
+                goto done;
             }
+            XP_MEMCPY( &headerFlags, ptr, sizeof(headerFlags) );
+            headerFlags = XP_NTOHS( headerFlags );
+            ptr += sizeof(headerFlags);
+
             XP_LOGFF( "setting headerFlags: 0x%x", headerFlags );
             dctx->headerFlags = headerFlags;
 
-            if ( 0 < headerLen ) {
-                XP_LOGFF( "skipping %d bytes of header", headerLen );
+            if ( ptr == headerEnd ) {
+                goto done;
             }
-            ptr += headerLen;
+            XP_UCHAR* langName = getNullTermParam( dctx, &ptr );
+            if ( ptr == headerEnd ) {
+                goto done;
+            }
+            XP_UCHAR* langCode = getNullTermParam( dctx, &ptr );
+            XP_LOGFF( "got langName: %s; langCode: %s", langName, langCode );
+            XP_FREE( dctx->mpool, langName );
+            XP_FREE( dctx->mpool, langCode );
+
+            if ( ptr == headerEnd ) {
+                goto done;
+            }
+            XP_U8 otherLen = *ptr++;
+            XP_LOGFF( "otherLen: %d", otherLen );
+            if ( 0 < otherLen ) {
+                XP_ASSERT( ptr + otherLen <= headerEnd );
+                if ( ptr + otherLen <= headerEnd ) {
+                    dctx->otherCounts = XP_MALLOC( dctx->mpool, otherLen );
+                    dctx->otherCountsEnd = dctx->otherCounts + otherLen;
+                    XP_MEMCPY( dctx->otherCounts, ptr, otherLen );
+                    ptr += otherLen;
+                }
+            }
+
+        done:
+            if ( ptr < headerEnd ) {
+                XP_LOGFF( "skipping %zu bytes of header", headerEnd - ptr );
+            }
+            ptr = headerEnd;
         }
 
         if ( isUTF8 ) {
@@ -301,7 +334,10 @@ parseCommon( DictionaryCtxt* dctx, XWEnv xwe, const XP_U8** ptrp, const XP_U8* e
 
         dctx->nFaces = numFaces;
 
-        dctx->countsAndValues = XP_MALLOC( dctx->mpool, numFaces * 2 );
+        dctx->values = XP_MALLOC( dctx->mpool, numFaces);
+        XP_U8* counts15 = XP_MALLOC( dctx->mpool, numFaces); /* leaking */
+        dctx->counts[15>>1] = counts15;
+
         XP_U16 facesSize = numFaceBytes;
         if ( !isUTF8 ) {
             facesSize /= 2;
@@ -316,8 +352,11 @@ parseCommon( DictionaryCtxt* dctx, XWEnv xwe, const XP_U8** ptrp, const XP_U8* e
         unsigned short xloc;
         XP_MEMCPY( &xloc, ptr, sizeof(xloc) );
         ptr += sizeof(xloc);
-        XP_MEMCPY( dctx->countsAndValues, ptr, numFaces*2 );
-        ptr += numFaces*2;
+
+        for ( int ii = 0; ii < numFaces; ++ii ) {
+            counts15[ii] = *ptr++;
+            dctx->values[ii] = *ptr++;
+        }
 
         dctx->langCode = xloc & 0x7F;
     }
@@ -413,7 +452,7 @@ dict_getBlankTile( const DictionaryCtxt* dict )
 } /* dict_getBlankTile */
 
 XP_U16
-dict_getTileValue( const DictionaryCtxt* dict, Tile tile )
+dict_getTileValue( const DictionaryCtxt* dict, const Tile tile )
 {
     XP_ASSERT( !!dict );
     if ( (tile & TILE_VALUE_MASK) != tile ) {
@@ -421,9 +460,8 @@ dict_getTileValue( const DictionaryCtxt* dict, Tile tile )
                    tile == dict_getBlankTile( dict ) );
     }
     XP_ASSERT( tile < dict->nFaces );
-    tile *= 2;
-    XP_ASSERT( !!dict->countsAndValues );
-    return dict->countsAndValues[tile+1];    
+    XP_ASSERT( !!dict->values );
+    return dict->values[tile];
 } /* dict_getTileValue */
 
 static const XP_UCHAR*
@@ -477,11 +515,57 @@ dict_getNextTileString( const DictionaryCtxt* dict, Tile tile,
 }
 
 XP_U16
-dict_numTiles( const DictionaryCtxt* dict, Tile tile )
+dict_numTilesForSize( const DictionaryCtxt* dict, Tile tile, XP_U16 nCols )
 {
-    tile *= 2;
-    return dict->countsAndValues[tile];
-} /* dict_numTiles */
+    XP_U8* counts = getCountsFor( dict, nCols );
+    return counts[tile];
+}
+
+/* Older wordlists are built assuming 15x15 boards. Different sized boards
+   need different numbers of tiles. The wordlist might provide for the size we
+   have, in which case we use it. Otherwise we extrapolate.
+*/
+static XP_U8*
+getCountsFor( const DictionaryCtxt* dict, XP_U16 nCols )
+{
+    int offset = nCols >> 1;
+    XP_U8* counts = dict->counts[offset];
+    if ( !counts ) {
+        counts = XP_MALLOC( dict->mpool, dict->nFaces );
+        ((DictionaryCtxt*)dict)->counts[offset] = counts;
+
+        XP_U8* ptr = dict->otherCounts;
+        XP_Bool found = XP_FALSE;
+        while ( !found && !!ptr && ptr < dict->otherCountsEnd ) {
+            XP_U8 siz = *ptr++;
+            found = siz == nCols;
+            if ( found ) {
+                XP_MEMCPY( counts, ptr, dict->nFaces );
+            } else {
+                ptr += dict->nFaces;
+            }
+        }
+
+        /* don't have it in the wordlist? Extrapolate */
+        if ( !found ) {
+            XP_U16 pct = (nCols * nCols * 100) / (15 * 15);
+            XP_U8* src15 = dict->counts[15>>1];
+            XP_ASSERT( !!src15 );
+
+            for ( int ii = 0; ii < dict->nFaces; ++ii ) {
+                XP_U16 count = src15[ii];
+                XP_U16 newCount = count * pct / 100;
+                if ( 50 < (count * pct) % 100 ) {
+                    ++newCount;
+                }
+                counts[ii] = newCount;
+            }
+        }
+    }
+
+    // XP_LOGFF( "(tile=%d, ncols=%d) => %d", tile, nCols, count );
+    return counts;
+} /* getCountsFor */
 
 XP_U16
 dict_numTileFaces( const DictionaryCtxt* dict )
@@ -631,7 +715,7 @@ dict_tilesAreSame( const DictionaryCtxt* dict1, const DictionaryCtxt* dict2 )
             } else if ( 0 != XP_STRCMP( face1, face2 ) ) {
                 break;
             }
-            if ( dict_numTiles( dict1, ii ) != dict_numTiles( dict2, ii ) ) {
+            if ( dict_numTilesForSize( dict1, ii, 15 ) != dict_numTilesForSize( dict2, ii, 15 ) ) {
                 break;
             }
         }
@@ -641,33 +725,14 @@ dict_tilesAreSame( const DictionaryCtxt* dict1, const DictionaryCtxt* dict2 )
 } /* dict_tilesAreSame */
 
 #ifndef XWFEATURE_STANDALONE_ONLY
-static void
-ucharsToNarrow( const DictionaryCtxt* dict, XP_UCHAR* buf, XP_U16* bufsizep )
-{
-    XP_U16 ii;
-    XP_U16 nUsed = 0;
-    XP_U16 bufsize = *bufsizep;
-    for ( ii = 0; ii < dict->nFaces; ++ii ) {
-        const XP_UCHAR* facep = dict_getTileStringRaw( dict, ii );
-        if ( IS_SPECIAL(*facep) ) {
-            buf[nUsed++] = *facep;
-        } else {
-            nUsed += XP_SNPRINTF( &buf[nUsed], bufsize - nUsed, "%s", facep );
-        }
-        XP_ASSERT( nUsed < bufsize );
-    }
-    buf[nUsed] = 0;
-    *bufsizep = nUsed;
-}
-
 /* Summarize tile info in a way it can be presented to users */
 void
-dict_writeTilesInfo( const DictionaryCtxt* dict, XWStreamCtxt* stream )
+dict_writeTilesInfo( const DictionaryCtxt* dict, XP_U16 boardSize, XWStreamCtxt* stream )
 {
     XP_U16 nFaces = dict_numTileFaces( dict );
     for ( Tile tile = 0; tile < nFaces; ++tile ) {
         XP_U16 val = dict_getTileValue( dict, tile );
-        XP_U16 count = dict_numTiles( dict, tile );
+        XP_U16 count = dict_numTilesForSize( dict, tile, boardSize );
         const XP_UCHAR* face = dict_getTileString( dict, tile );
         XP_UCHAR buf[32];
         XP_SNPRINTF( buf, VSIZE(buf), "%s\t%d\t%d\n", face, count, val );
@@ -676,60 +741,63 @@ dict_writeTilesInfo( const DictionaryCtxt* dict, XWStreamCtxt* stream )
 }
 
 void
-dict_writeToStream( const DictionaryCtxt* dict, XWStreamCtxt* stream )
+dict_writeToStream( const DictionaryCtxt* XP_UNUSED(dict),
+                    XWStreamCtxt* XP_UNUSED(stream) )
 {
-    XP_U16 maxCount = 0;
-    XP_U16 maxValue = 0;
-    XP_U16 ii, nSpecials;
-    XP_U16 maxCountBits, maxValueBits;
-    XP_UCHAR buf[64];
-    XP_U16 nBytes;
+    XP_ASSERT(0);
+    /* XP_U16 maxCount = 0; */
+    /* XP_U16 maxValue = 0; */
+    /* XP_U16 ii, nSpecials; */
+    /* XP_U16 maxCountBits, maxValueBits; */
+    /* XP_UCHAR buf[64]; */
+    /* XP_U16 nBytes; */
 
-    stream_putBits( stream, 6, dict->nFaces );
+    /* stream_putBits( stream, 6, dict->nFaces ); */
 
-    for ( ii = 0; ii < dict->nFaces*2; ii+=2 ) {
-        XP_U16 count, value;
+    /* XP_ASSERT(0);       /\* if this fires, need to fix for per-boardSize counts *\/ */
+    /* for ( ii = 0; ii < dict->nFaces*2; ii+=2 ) { */
+    /*     XP_U16 count, value; */
 
-        count = dict->countsAndValues[ii];
-        if ( maxCount < count ) {
-            maxCount = count;
-        }
+    /*     count = dict->countsAndValues[ii]; */
+    /*     if ( maxCount < count ) { */
+    /*         maxCount = count; */
+    /*     } */
 
-        value = dict->countsAndValues[ii+1];
-        if ( maxValue < value ) {
-            maxValue = value;
-        }
-    }
+    /*     value = dict->countsAndValues[ii+1]; */
+    /*     if ( maxValue < value ) { */
+    /*         maxValue = value; */
+    /*     } */
+    /* } */
 
-    maxCountBits = bitsForMax( maxCount );
-    maxValueBits = bitsForMax( maxValue );
+    /* maxCountBits = bitsForMax( maxCount ); */
+    /* maxValueBits = bitsForMax( maxValue ); */
 
-    stream_putBits( stream, 3, maxCountBits ); /* won't be bigger than 5 */
-    stream_putBits( stream, 3, maxValueBits );
+    /* stream_putBits( stream, 3, maxCountBits ); /\* won't be bigger than 5 *\/ */
+    /* stream_putBits( stream, 3, maxValueBits ); */
 
-    for ( ii = 0; ii < dict->nFaces*2; ii+=2 ) {
-        stream_putBits( stream, maxCountBits, dict->countsAndValues[ii] );
-        stream_putBits( stream, maxValueBits, dict->countsAndValues[ii+1] );
-    }
+    /* for ( ii = 0; ii < dict->nFaces; ++ii ) { */
+    /*     stream_putBits( stream, maxCountBits, counts[ii] ); */
+    /*     stream_putBits( stream, maxValueBits, dict->values[ii] ); */
+    /* } */
 
-    /* Stream format of the faces is unchanged: chars run together, which
-     * happens to equal utf-8 for ascii.  But now there may be more than one
-     * byte per face.  Old code assumes that, but compatibility is ensured by
-     * the caller which will not accept an incoming message if the version's
-     * too new.  And utf-8 dicts are flagged as newer by the sender.
-     */
+    /* /\* Stream format of the faces is unchanged: chars run together, which */
+    /*  * happens to equal utf-8 for ascii.  But now there may be more than one */
+    /*  * byte per face.  Old code assumes that, but compatibility is ensured by */
+    /*  * the caller which will not accept an incoming message if the version's */
+    /*  * too new.  And utf-8 dicts are flagged as newer by the sender. */
+    /*  *\/ */
 
-    nBytes = sizeof(buf);
-    ucharsToNarrow( dict, buf, &nBytes );
-    stream_putU8( stream, nBytes );
-    stream_putBytes( stream, buf, nBytes );
+    /* nBytes = sizeof(buf); */
+    /* ucharsToNarrow( dict, buf, &nBytes ); */
+    /* stream_putU8( stream, nBytes ); */
+    /* stream_putBytes( stream, buf, nBytes ); */
 
-    for ( nSpecials = ii = 0; ii < dict->nFaces; ++ii ) {
-        const XP_UCHAR* facep = dict_getTileStringRaw( dict, (Tile)ii );
-        if ( IS_SPECIAL( *facep ) ) {
-            stringToStream( stream, dict->chars[nSpecials++] );
-        }
-    }
+    /* for ( nSpecials = ii = 0; ii < dict->nFaces; ++ii ) { */
+    /*     const XP_UCHAR* facep = dict_getTileStringRaw( dict, (Tile)ii ); */
+    /*     if ( IS_SPECIAL( *facep ) ) { */
+    /*         stringToStream( stream, dict->chars[nSpecials++] ); */
+    /*     } */
+    /* } */
 } /* dict_writeToStream */
 #endif
 
@@ -763,7 +831,11 @@ common_destructor( DictionaryCtxt* dict, XWEnv XP_UNUSED(xwe) )
 {
     freeSpecials( dict );
 
-    XP_FREE( dict->mpool, dict->countsAndValues );
+    XP_FREE( dict->mpool, dict->values );
+    for ( int ii = 0; ii < VSIZE(dict->counts); ++ii ) {
+        XP_FREEP( dict->mpool, &dict->counts[ii] );
+    }
+    XP_FREE( dict->mpool, dict->otherCounts );
     XP_FREE( dict->mpool, dict->faces );
     XP_FREE( dict->mpool, dict->facePtrs );
 
@@ -774,6 +846,7 @@ common_destructor( DictionaryCtxt* dict, XWEnv XP_UNUSED(xwe) )
 void
 dict_loadFromStream( DictionaryCtxt* dict, XWEnv xwe, XWStreamCtxt* stream )
 {
+    XP_ASSERT(0);       /* if this fires, need to fix for per-boardSize counts */
     XP_U8 nFaces, nFaceBytes;
     XP_U16 maxCountBits, maxValueBits;
     XP_U16 ii, nSpecials;
@@ -792,15 +865,14 @@ dict_loadFromStream( DictionaryCtxt* dict, XWEnv xwe, XWStreamCtxt* stream )
 
     dict->nFaces = nFaces;
 
-    dict->countsAndValues =
-        (XP_U8*)XP_MALLOC( dict->mpool, 
-                           sizeof(dict->countsAndValues[0]) * nFaces * 2  );
+    dict->values = (XP_U8*)XP_MALLOC( dict->mpool,
+                                      sizeof(dict->values[0]) * nFaces  );
+    XP_U8* counts = dict->counts[15>>1]
+        = (XP_U8*)XP_MALLOC( dict->mpool, sizeof(dict->values[0]) * nFaces  );
 
-    for ( ii = 0; ii < dict->nFaces*2; ii+=2 ) {
-        dict->countsAndValues[ii] = (XP_U8)stream_getBits( stream, 
-                                                          maxCountBits );
-        dict->countsAndValues[ii+1] = (XP_U8)stream_getBits( stream, 
-                                                            maxValueBits );
+    for ( ii = 0; ii < dict->nFaces; ++ii ) {
+        counts[ii] = (XP_U8)stream_getBits( stream, maxCountBits );
+        dict->values[ii] = (XP_U8)stream_getBits( stream, maxValueBits );
     }
 
     nFaceBytes = (XP_U8)stream_getU8( stream );
@@ -1028,7 +1100,7 @@ make_stubbed_dict( MPFORMAL_NOCOMMA )
     setBlankTile( dict );
 
     return dict;
-} /* make_subbed_dict */
+} /* make_stubbed_dict */
 
 #endif /* STUBBED_DICT */
 
@@ -1122,6 +1194,21 @@ dict_super_init( MPFORMAL DictionaryCtxt* dict )
 
     pthread_mutex_init( &dict->mutex, NULL );
 } /* dict_super_init */
+
+void
+dict_super_destroy( DictionaryCtxt* dict )
+{
+    XP_FREEP( dict->mpool, &dict->desc );
+    XP_FREEP( dict->mpool, &dict->md5Sum );
+    XP_FREEP( dict->mpool, &dict->values );
+    for ( int ii = 0; ii < VSIZE(dict->counts); ++ii ) {
+        XP_FREEP( dict->mpool, &dict->counts[ii] );
+    }
+    XP_FREEP( dict->mpool, &dict->otherCounts );
+    XP_FREEP( dict->mpool, &dict->faces );
+    XP_FREEP( dict->mpool, &dict->facePtrs );
+    XP_FREEP( dict->mpool, &dict->name );
+}
 
 const XP_UCHAR* 
 dict_getLangName( const DictionaryCtxt* ctxt )
