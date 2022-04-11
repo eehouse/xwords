@@ -435,7 +435,6 @@
     <string name="loc_filters_all">Tudo</string>
     <string name="loc_search_prompt">Pesquisar por:</string>
     <string name="loc_filters_prompt">Filtrar por:</string>
-    <string name="xlations_enabled_title">Ativar tradução local</string>
     <plurals name="new_xlations_fmt">
         <item quantity="one">Foi instalada uma nova tradução</item>
         <item quantity="other">Foram instaladas %1$d novas traduções</item>

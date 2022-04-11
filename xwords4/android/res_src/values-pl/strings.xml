@@ -601,7 +601,6 @@
     <string name="loc_menu_xlate">Przetłumacz</string>
     <string name="loc_lang_blessed">%1$s (oficjalny)</string>
     <string name="loc_lang_local">%1$s (Twój)</string>
-    <string name="xlations_enabled_summary">Dodaj opcję do każdego menu ekranu</string>
     <string name="loc_filters_menu">Najnowsze menu</string>
     <string name="loc_item_clear">Wyczyść</string>
     <string name="loc_item_check">Sprawdzić</string>

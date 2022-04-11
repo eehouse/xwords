@@ -311,7 +311,6 @@
         <item quantity="one">Installerte én ny oversettelse</item>
         <item quantity="other">Installerte %1$d nye oversettelser</item>
     </plurals>
-    <string name="xlations_enabled_summary">Legg til valget i hver skjermmeny</string>
     <string name="loc_filters_prompt">Filtrer etter:</string>
     <string name="loc_search_prompt">Søk etter:</string>
     <string name="loc_filters_all">Alle</string>

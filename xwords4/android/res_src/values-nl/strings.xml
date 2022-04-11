@@ -503,7 +503,6 @@
         <item quantity="one">Een nieuwe vertaling geïnstalleerd</item>
         <item quantity="other">%1$d nieuwe vertalingen geïnstalleerd</item>
     </plurals>
-    <string name="xlations_enabled_summary">Voeg optie toe aan elk schermmenu</string>
     <string name="loc_filters_prompt">Filter op:</string>
     <string name="loc_search_prompt">Zoek naar:</string>
     <string name="loc_filters_all">Alles</string>

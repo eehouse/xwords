@@ -512,7 +512,6 @@
     <plurals name="new_xlations_fmt">
         <item quantity="other">新しい翻訳を %1$d インストールしました</item>
     </plurals>
-    <string name="xlations_enabled_summary">各画面のメニューにオプションを追加します</string>
     <string name="loc_filters_prompt">フィルター:</string>
     <string name="loc_search_prompt">検索:</string>
     <string name="loc_filters_all">すべて</string>

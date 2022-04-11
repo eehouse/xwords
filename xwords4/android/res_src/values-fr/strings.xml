@@ -2348,8 +2348,6 @@ une liste d\'étude.</string>
     </plurals>
     <!--<string name="xlations_enabled_title">Enable local translating</string>-->
     <!--<string name="xlations_enabled_summary">Add option to every screen menu</string>-->
-    <string name="xlations_enabled_summary">Ajouter une option au menu de
-chaque écran</string>
     <!--<string name="data_gsm_only">SMS Data is only available on GSM phones.</string>-->
     <!--<string name="loc_filters_prompt">Filter by:</string>-->
     <string name="loc_filters_prompt">Filtrer par :</string>

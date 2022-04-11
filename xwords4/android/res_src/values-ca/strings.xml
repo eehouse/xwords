@@ -474,7 +474,6 @@ Introduïu el vostre nom aquí. S\'usarà en crear partides noves. (Podreu
     <string name="loc_menu_xlate">Tradueix</string>
     <string name="loc_lang_blessed">%1$s (oficial)</string>
     <string name="loc_lang_local">%1$s (vostre)</string>
-    <string name="xlations_enabled_summary">Afegeix un opció en cada menú de pantalla</string>
     <string name="loc_filters_prompt">Filtra per:</string>
     <string name="loc_search_prompt">Cerca:</string>
     <string name="loc_filters_all">Tot</string>
