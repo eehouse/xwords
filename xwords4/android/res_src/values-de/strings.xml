@@ -1111,4 +1111,16 @@
     <string name="waiting_host_expl">Dieses Spiel wartet darauf, dass der Server das Spiel beginnt. Das bedeutet normalerweise, dass der Server nicht kommuniziert (er ist vorübergehend offline\?)</string>
     <string name="unpause_title">Partie nicht pausiert</string>
     <string name="pause_save_msg">Nachricht merken</string>
+    <string name="bonus_l4x">Vierfacher Buchstabenwert</string>
+    <string name="bonus_w4x">Vierfacher Wortwert</string>
+    <string name="bonus_w4x_summary">4W</string>
+    <string name="not_again_boardThemes_fmt">Das Brett wird jetzt dunkel gezeichnet, weil auf Ihrem Gerät das \"Dunkle Design\" aktiviert ist.
+\n
+\nWenn Sie das alte \"Helle\" Design bevorzugen oder ein Design unabhängig von der Android-Einstellung \"Dunkles Design\" wählen möchten, können Sie \"%1$s\" in den App-Einstellungen jederzeit ändern. Der Button \"Einstellungen\" unten führt Sie jetzt dorthin.</string>
+    <string name="lang_name_finnish">Finnisch</string>
+    <string name="list_item_relaypage">Partie-Traffic…</string>
+    <string name="bonus_l4x_summary">4B</string>
+    <string name="dup_paused_expl">Benachrichtigung über pausierte und nicht pausierte Spiele</string>
+    <string name="prefs_themes">Farbdesigns des Bretts</string>
+    <string name="theme_which">Farbdesign des Bretts</string>
 </resources>
