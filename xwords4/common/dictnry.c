@@ -257,18 +257,15 @@ parseCommon( DictionaryCtxt* dctx, XWEnv xwe, const XP_U8** ptrp, const XP_U8* e
             dctx->nWords = XP_NTOHL( wordCount );
             XP_DEBUGF( "dict contains %d words", dctx->nWords );
 
-            if ( ptr == headerEnd ) {
+            XP_ASSERT( ptr <= headerEnd );
+            if ( !getNullTermParam( dctx, &dctx->desc, &ptr, headerEnd ) ) {
                 XP_LOGFF( "no note" );
                 goto done;
             }
             XP_ASSERT( ptr < headerEnd );
-            if ( !getNullTermParam( dctx, &dctx->desc, &ptr, headerEnd ) ) {
-                 XP_LOGFF( "no md5Sum" );
-                 goto done;
-            }
-            XP_ASSERT( ptr < headerEnd );
 
             if ( !getNullTermParam( dctx, &dctx->md5Sum, &ptr, headerEnd ) ) {
+                XP_LOGFF( "no md5Sum" );
                 goto done;
             }
             XP_U16 headerFlags = 0;
