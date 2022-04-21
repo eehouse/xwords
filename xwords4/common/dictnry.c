@@ -99,14 +99,23 @@ dict_unref_all( PlayerDicts* pd, XWEnv xwe )
     }
 }
 
-static XP_UCHAR*
-getNullTermParam( DictionaryCtxt* XP_UNUSED_DBG(dctx), const XP_U8** ptr )
+static XP_Bool
+getNullTermParam( DictionaryCtxt* XP_UNUSED_DBG(dctx), XP_UCHAR** out,
+                  const XP_U8** ptrp, const XP_U8* end )
 {
-    XP_U16 len = 1 + XP_STRLEN( (XP_UCHAR*)*ptr );
-    XP_UCHAR* result = XP_MALLOC( dctx->mpool, len );
-    XP_MEMCPY( result, *ptr, len );
-    *ptr += len;
-    return result;
+    const XP_U8* ptr = *ptrp;
+    XP_Bool success = ptr < end;
+    if ( success ) {
+        XP_U16 len = 1 + XP_STRLEN( (XP_UCHAR*)ptr );
+        success = ptr + len <= end;
+        if ( success ) {
+            *out = XP_MALLOC( dctx->mpool, len );
+            XP_MEMCPY( *out, ptr, len );
+            *ptrp += len;
+        }
+    }
+    XP_ASSERT( success || NULL == *out );
+    return success;
 }
 
 static XP_Bool
@@ -253,15 +262,15 @@ parseCommon( DictionaryCtxt* dctx, XWEnv xwe, const XP_U8** ptrp, const XP_U8* e
                 goto done;
             }
             XP_ASSERT( ptr < headerEnd );
-            dctx->desc = getNullTermParam( dctx, &ptr );
-
-            if ( ptr == headerEnd ) {
-                XP_LOGFF( "no md5Sum" );
-                goto done;
+            if ( !getNullTermParam( dctx, &dctx->desc, &ptr, headerEnd ) ) {
+                 XP_LOGFF( "no md5Sum" );
+                 goto done;
             }
             XP_ASSERT( ptr < headerEnd );
-            dctx->md5Sum = getNullTermParam( dctx, &ptr );
 
+            if ( !getNullTermParam( dctx, &dctx->md5Sum, &ptr, headerEnd ) ) {
+                goto done;
+            }
             XP_U16 headerFlags = 0;
             if ( ptr + sizeof(headerFlags) > headerEnd ) {
                 goto done;
@@ -276,27 +285,24 @@ parseCommon( DictionaryCtxt* dctx, XWEnv xwe, const XP_U8** ptrp, const XP_U8* e
             if ( ptr == headerEnd ) {
                 goto done;
             }
-            XP_UCHAR* langName = getNullTermParam( dctx, &ptr );
-            if ( ptr == headerEnd ) {
+            XP_UCHAR* langName = NULL;
+            XP_UCHAR* langCode = NULL;
+            if ( getNullTermParam( dctx, &langName, &ptr, headerEnd )
+                 && getNullTermParam( dctx, &langCode, &ptr, headerEnd ) ) {
+                XP_LOGFF( "got langName: %s; langCode: %s", langName, langCode );
+                XP_FREEP( dctx->mpool, &langName );
+                XP_FREEP( dctx->mpool, &langCode );
+            } else {
                 goto done;
             }
-            XP_UCHAR* langCode = getNullTermParam( dctx, &ptr );
-            XP_LOGFF( "got langName: %s; langCode: %s", langName, langCode );
-            XP_FREE( dctx->mpool, langName );
-            XP_FREE( dctx->mpool, langCode );
-
-            if ( ptr == headerEnd ) {
-                goto done;
-            }
-            XP_U8 otherLen = *ptr++;
-            XP_LOGFF( "otherLen: %d", otherLen );
-            if ( 0 < otherLen ) {
-                XP_ASSERT( ptr + otherLen <= headerEnd );
-                if ( ptr + otherLen <= headerEnd ) {
-                    dctx->otherCounts = XP_MALLOC( dctx->mpool, otherLen );
-                    dctx->otherCountsEnd = dctx->otherCounts + otherLen;
-                    XP_MEMCPY( dctx->otherCounts, ptr, otherLen );
-                    ptr += otherLen;
+            XP_U8 othersLen = *ptr++;
+            if ( 0 < othersLen ) {
+                XP_ASSERT( ptr + othersLen <= headerEnd );
+                if ( ptr + othersLen <= headerEnd ) {
+                    dctx->otherCounts = XP_MALLOC( dctx->mpool, othersLen );
+                    dctx->otherCountsEnd = dctx->otherCounts + othersLen;
+                    XP_MEMCPY( dctx->otherCounts, ptr, othersLen );
+                    ptr += othersLen;
                 }
             }
 
@@ -372,7 +378,7 @@ parseCommon( DictionaryCtxt* dctx, XWEnv xwe, const XP_U8** ptrp, const XP_U8* e
 
     LOG_RETURNF( "%s", boolToStr(formatOk) );
     return formatOk;
-}
+} /* parseCommon */
 
 static XP_Bool
 makeBitmap( XP_U8 const** ptrp, const XP_U8* end )
