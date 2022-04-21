@@ -56,7 +56,7 @@ public class DBHelper extends SQLiteOpenHelper {
         private int addedVersion() { return mAddedVersion; }
     }
     private static final String DB_NAME = BuildConfig.DB_NAME;
-    private static final int DB_VERSION = 30;
+    private static final int DB_VERSION = 31;
 
     public static final String GAME_NAME = "GAME_NAME";
     public static final String VISID = "VISID";
@@ -97,6 +97,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
     public static final String DICTNAME = "DICTNAME";
     public static final String MD5SUM = "MD5SUM";
+    public static final String FULLSUM = "FULLSUM";
     public static final String WORDCOUNT = "WORDCOUNT";
     public static final String WORDCOUNTS = "WORDCOUNTS";
     public static final String LANGCODE = "LANGCODE";
@@ -179,11 +180,12 @@ public class DBHelper extends SQLiteOpenHelper {
     };
 
     private static final String[][] s_dictInfoColsAndTypes = {
-        { DICTNAME, "TEXT" }
-        ,{ LOC,      "UNSIGNED INTEGER(1)" }
-        ,{ MD5SUM,   "TEXT(32)" }
-        ,{ WORDCOUNT,"INTEGER" }
-        ,{ LANGCODE, "INTEGER" }
+        { DICTNAME,   "TEXT" },
+        { LOC,       "UNSIGNED INTEGER(1)" },
+        { MD5SUM,    "TEXT(32)" },
+        { FULLSUM,   "TEXT(32)" },
+        { WORDCOUNT, "INTEGER" },
+        { LANGCODE,  "INTEGER" },
     };
 
     private static final String[][] s_dictBrowseColsAndTypes = {
@@ -278,6 +280,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
         boolean madeSumTable = false;
         boolean madeChatTable = false;
+        boolean madeDITable = false;
         switch( oldVersion ) {
         case 5:
             createTable( db, TABLE_NAMES.OBITS, s_obitsColsAndTypes );
@@ -298,6 +301,7 @@ public class DBHelper extends SQLiteOpenHelper {
         case 12:
             createTable( db, TABLE_NAMES.DICTINFO, s_dictInfoColsAndTypes );
             createTable( db, TABLE_NAMES.DICTBROWSE, s_dictBrowseColsAndTypes );
+            madeDITable = true;
         case 13:
             addSumColumn( db, LASTMOVE );
         case 14:
@@ -352,6 +356,10 @@ public class DBHelper extends SQLiteOpenHelper {
         case 29:
             if ( !madeSumTable ) {
                 addSumColumn( db, NEXTDUPTIMER );
+            }
+        case 30:
+            if ( !madeDITable ) {
+                addColumn( db, TABLE_NAMES.DICTINFO, s_dictInfoColsAndTypes, FULLSUM );
             }
 
             break;

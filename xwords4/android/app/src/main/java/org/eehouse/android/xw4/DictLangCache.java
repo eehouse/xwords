@@ -310,6 +310,16 @@ public class DictLangCache {
         return result;
     }
 
+    public static String getDictFullSum( Context context, String dict )
+    {
+        String result = null;
+        DictInfo info = getInfo( context, dict );
+        if ( null != info ) {
+            result = info.fullSum;
+        }
+        return result;
+    }
+
     public static long getFileLen( Context context, DictAndLoc dal )
     {
         File path = dal.getPath( context );
@@ -523,6 +533,9 @@ public class DictLangCache {
                                        DictLoc.DOWNLOAD == dal.loc );
             if ( null != info ) {
                 info.name = dal.name;
+                info.fullSum = Utils.getMD5SumFor( context, dal );
+                Assert.assertTrueNR( null != info.fullSum );
+
                 DBUtils.dictsSetInfo( context, dal, info );
             } else {
                 Log.i( TAG, "getInfo(): unable to open dict %s", dal.name );

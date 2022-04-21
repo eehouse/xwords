@@ -20,12 +20,29 @@
 
 package org.eehouse.android.xw4.jni;
 
+import org.eehouse.android.xw4.BuildConfig;
+
 public class DictInfo {
     // set in java code
     public String name;
+    public String fullSum;      // md5sum of the whole file
 
     // set in jni code
     public int langCode;
     public int wordCount;
-    public String md5Sum;
+    public String md5Sum;       // internal (skipping header?)
+
+    @Override
+    public String toString()
+    {
+        if ( BuildConfig.NON_RELEASE ) {
+            return new StringBuilder("{")
+                .append("name: ").append(name)
+                .append(", md5Sum: ").append(md5Sum)
+                .append(", fullSum: ").append(fullSum)
+                .append("}").toString();
+        } else {
+            return super.toString();
+        }
+    }
 };

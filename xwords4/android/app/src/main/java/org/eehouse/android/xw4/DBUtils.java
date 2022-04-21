@@ -2062,6 +2062,7 @@ public class DBUtils {
         String[] columns = { DBHelper.LANGCODE,
                              DBHelper.WORDCOUNT,
                              DBHelper.MD5SUM,
+                             DBHelper.FULLSUM,
                              /*DBHelper.LOC*/ };
         String selection = String.format( NAME_FMT, DBHelper.DICTNAME, name );
         initDB( context );
@@ -2076,12 +2077,19 @@ public class DBUtils {
                     cursor.getInt( cursor.getColumnIndex(DBHelper.WORDCOUNT));
                 result.md5Sum =
                     cursor.getString( cursor.getColumnIndex(DBHelper.MD5SUM));
+                result.fullSum =
+                    cursor.getString( cursor.getColumnIndex(DBHelper.FULLSUM));
                 // int loc = cursor.getInt(cursor.getColumnIndex(DBHelper.LOC));
                 // Log.d( TAG, "dictsGetInfo(): read sum %s/loc %d for %s", result.md5Sum,
                 //        loc, name );
              }
             cursor.close();
         }
+
+        if ( null == result.fullSum ) { // force generation
+            result = null;
+        }
+
         return result;
     }
 
@@ -2095,6 +2103,7 @@ public class DBUtils {
         values.put( DBHelper.LANGCODE, info.langCode );
         values.put( DBHelper.WORDCOUNT, info.wordCount );
         values.put( DBHelper.MD5SUM, info.md5Sum );
+        values.put( DBHelper.FULLSUM, info.fullSum );
         values.put( DBHelper.LOC, dal.loc.ordinal() );
 
         initDB( context );

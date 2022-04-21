@@ -64,6 +64,7 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
@@ -463,6 +464,34 @@ public class Utils {
             str = str.substring( 0, 1 ).toUpperCase() + str.substring( 1 );
         }
         return str;
+    }
+
+    public static String getMD5SumFor( Context context, DictUtils.DictAndLoc dal )
+    {
+        String result = null;
+
+        if ( DictUtils.DictLoc.BUILT_IN == dal.loc ) {
+            result = dal.loc.toString();
+        } else {
+            File file = dal.getPath( context );
+            try {
+                InputStream is = new FileInputStream( file );
+                MessageDigest md = MessageDigest.getInstance( "MD5" );
+                byte[] buf = new byte[1024*8];
+                for ( ; ; ) {
+                    int nRead = is.read( buf );
+                    if ( 0 >= nRead ) {
+                        break;
+                    }
+                    md.update( buf, 0, nRead );
+                }
+                result = Utils.digestToString( md.digest() );
+            } catch ( Exception ex ) {
+                Log.ex( TAG, ex );
+            }
+        }
+        // Log.d( TAG, "getMD5SumFor(%s) => %s", dal.name, result );
+        return result;
     }
 
     public static String getMD5SumFor( byte[] bytes )
