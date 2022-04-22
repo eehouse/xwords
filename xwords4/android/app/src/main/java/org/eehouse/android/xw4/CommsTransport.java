@@ -361,7 +361,7 @@ public class CommsTransport implements TransportProcs,
                conType.toString() );
         int nSent = -1;
         Assert.assertNotNull( addr );
-        Assert.assertTrue( addr.contains( conType ) );
+        Assert.assertTrueNR( addr.contains( conType ) ); // fired per google
 
         if ( !BuildConfig.UDP_ENABLED && conType == CommsConnType.COMMS_CONN_RELAY
              && null == m_relayAddr ) {
