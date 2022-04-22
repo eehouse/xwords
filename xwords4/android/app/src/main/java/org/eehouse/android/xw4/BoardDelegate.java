@@ -222,9 +222,11 @@ public class BoardDelegate extends DelegateBase
         case DLG_RETRY:
         case DLG_OKONLY: {
             int title = (Integer)params[0];
+            if ( 0 != title ) {
+                ab.setTitle( title );
+            }
             String msg = (String)params[1];
-            ab.setTitle( title )
-                .setMessage( msg )
+            ab.setMessage( msg )
                 .setPositiveButton( android.R.string.ok, null );
             if ( DlgID.DLG_RETRY == dlgID ) {
                 lstnr = new OnClickListener() {
