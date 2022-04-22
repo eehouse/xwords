@@ -598,7 +598,6 @@ public class RelayService extends XWJIService
                 }
             }
 
-            sendViaWeb( dataListWeb );
             sendViaUDP( dataListUDP );
 
             resetExitTimer();
@@ -662,64 +661,6 @@ public class RelayService extends XWJIService
                 s_queue.addAll( forResend );
             }
         }
-    }
-
-    private int sendViaWeb( List<PacketData> packets ) throws InterruptedException
-    {
-        int sentLen = 0;
-        if ( packets.size() > 0 ) {
-            Log.d( TAG, "sendViaWeb(): sending %d at once", packets.size() );
-
-            final RelayService service = this;
-            HttpsURLConnection conn = NetUtils
-                .makeHttpsRelayConn( service, "post" );
-            if ( null == conn ) {
-                Log.e( TAG, "sendViaWeb(): null conn for POST" );
-            } else {
-                try {
-                    JSONArray dataArray = new JSONArray();
-                    for ( PacketData packet : packets ) {
-                        Assert.assertFalse( packet == sEOQPacket );
-                        byte[] datum = packet.assemble();
-                        dataArray.put( Utils.base64Encode(datum) );
-                        sentLen += datum.length;
-                    }
-                    JSONObject params = new JSONObject();
-                    params.put( "data", dataArray );
-
-                    String result = NetUtils.runConn( conn, params );
-                    boolean succeeded = null != result;
-                    if ( succeeded ) {
-                        Log.d( TAG, "sendViaWeb(): POST(%s) => %s", params, result );
-                        JSONObject resultObj = new JSONObject( result );
-                        JSONArray resData = resultObj.getJSONArray( "data" );
-                        int nReplies = resData.length();
-                        // Log.d( TAG, "sendViaWeb(): got %d replies", nReplies );
-
-                        service
-                            .noteSent( packets, false ); // before we process the acks below :-)
-
-                        for ( int ii = 0; ii < nReplies; ++ii ) {
-                            byte[] datum = Utils.base64Decode( resData.getString( ii ) );
-                            // PENDING: skip ack or not
-                            service.gotPacket( datum, false, false );
-                        }
-                    } else {
-                        Log.e( TAG, "sendViaWeb(): failed result for POST" );
-
-                    }
-
-                    ConnStatusHandler.updateStatus( service, null,
-                                                    CommsConnType.COMMS_CONN_RELAY,
-                                                    succeeded );
-                } catch ( JSONException ex ) {
-                    // this will happen if e.g. there's no 'data' in the result
-                    Log.ex( TAG, ex );
-                    sentLen = 0;
-                }
-            }
-        }
-        return sentLen;
     }
 
     private int sendViaUDP( List<PacketData> packets ) throws InterruptedException
