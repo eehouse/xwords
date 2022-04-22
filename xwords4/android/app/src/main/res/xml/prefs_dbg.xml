@@ -37,11 +37,6 @@
                 app:fragment="org.eehouse.android.xw4.gen.PrefsWrappers$prefs_dbg_sms"
                 />
 
-    <Preference app:title="@string/pref_group_l10n_title"
-                android:summary="@string/pref_group_l10n_summary"
-                app:fragment="org.eehouse.android.xw4.gen.PrefsWrappers$prefs_dbg_l10n"
-                />
-
     <!-- For broken devices like my Blaze 4G that report a download
          directory that doesn't exist, allow users to set it.  Mine:
          /sdcard/external_sd/download     
@@ -63,6 +58,13 @@
         android:title="@string/expl_update_url"
         android:defaultValue="@string/default_update_url_path"
         />
+
+    <CheckBoxPreference android:key="@string/key_got_langdict"
+                        android:title="@string/got_langdict_title"
+                        android:summary="@string/got_langdict_summary"
+                        android:defaultValue="false"
+                        />
+
     <CheckBoxPreference android:key="@string/key_update_prerel"
                         android:title="@string/pref_item_update_title"
                         android:summary="@string/pref_item_update_summary"

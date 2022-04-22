@@ -117,14 +117,14 @@ public class XWPrefs {
     public static String getDefaultUpdateUrl( Context context )
     {
         String result = getWithHost( context, R.string.key_update_url_path );
-        Log.d( TAG, "getDefaultUpdateUrl() => %s", result );
+        // Log.d( TAG, "getDefaultUpdateUrl() => %s", result );
         return result;
     }
 
     public static String getDefaultRelayUrl( Context context )
     {
         String result = getWithHost( context, R.string.key_relay_url_path );
-        Log.d( TAG, "getDefaultRelayUrl() => %s", result );
+        // Log.d( TAG, "getDefaultRelayUrl() => %s", result );
         return result;
     }
 

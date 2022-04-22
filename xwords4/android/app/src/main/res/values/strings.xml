@@ -2307,8 +2307,6 @@
     <string name="pref_group_sms_summary">Prefs related to play-via-sms</string>
     <string name="pref_group_relay_title">Internet Stuff</string>
     <string name="pref_group_relay_summary">Prefs related to play via internet/relay</string>
-    <string name="pref_group_l10n_title">Localization Stuff</string>
-    <string name="pref_group_l10n_summary">Prefs related to in-app localization</string>
     <string name="pref_item_update_title">Update between releases</string>
     <string name="pref_item_update_summary">Get intermediate builds</string>
     <string name="checking_title">Checking</string>

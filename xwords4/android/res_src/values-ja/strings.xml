@@ -642,8 +642,6 @@
     <string name="pref_group_sms_summary">Sms 経由のプレイに関連する設定</string>
     <string name="pref_group_relay_title">リレー関連</string>
     <string name="pref_group_relay_summary">インターネット/リレー経由のプレイに関連する設定</string>
-    <string name="pref_group_l10n_title">ローカライズ関連</string>
-    <string name="pref_group_l10n_summary">アプリ内ローカライズに関連する設定</string>
     <string name="pref_item_update_title">リリースの間で更新</string>
     <string name="pref_item_update_summary">中間ビルドを取得します</string>
     <string name="checking_title">チェックしています</string>

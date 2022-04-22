@@ -2797,11 +2797,6 @@ pour la langue</string>
     <!--<string name="pref_group_relay_summary">Prefs related to play via internet/relay</string>-->
     <string name="pref_group_relay_summary">Préférences pour le jeu par
   Internet/relai</string>
-    <!--<string name="pref_group_l10n_title">Localization Stuff</string>-->
-    <string name="pref_group_l10n_title">Trucs pour la localisation</string>
-    <!--<string name="pref_group_l10n_summary">Prefs related to in-app localization</string>-->
-    <string name="pref_group_l10n_summary">Préférences pour la
-  localisation interne à l\'application</string>
     <!--<string name="pref_item_update_title">Update between releases</string>-->
     <string name="pref_item_update_title">Mettre à jour entre deux sorties</string>
     <!--<string name="pref_item_update_summary">Get intermediate builds</string>-->

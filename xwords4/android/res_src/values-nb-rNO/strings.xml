@@ -392,7 +392,6 @@
     <string name="radio_name_gsm">GSM</string>
     <string name="radio_name_cdma">CDMA</string>
     <string name="pref_group_sms_title">SMS-ting</string>
-    <string name="pref_group_l10n_title">Lokaliserings-ting</string>
     <string name="checking_title">Sjekker</string>
     <string name="checking_for_fmt">Ser etter ordlister i %1$s…</string>
     <string name="button_enable">Skru på</string>
@@ -785,7 +784,6 @@
     <string name="expl_update_url">Nettadresse for oppgraderingssjekk</string>
     <string name="pref_group_sms_summary">Innstillinger i tilknytning til spill-via-SMS</string>
     <string name="pref_group_relay_summary">Innstillinger i tilknytning til spill via Internett/relé</string>
-    <string name="pref_group_l10n_summary">Innstillinger i tilknytning til lokalisering inne i programmet</string>
     <string name="pref_item_update_title">Oppdater mellom utgivelser</string>
     <string name="pref_item_update_summary">Hent mellombygg</string>
     <string name="confirm_drop_relay">Er du sikker på at du vil utelate dette spillets mulighet til å kommunisere via relé-et?</string>

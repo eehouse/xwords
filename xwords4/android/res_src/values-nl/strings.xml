@@ -631,8 +631,6 @@
     <string name="pref_group_sms_summary">Voorkeuren gerelateerd aan speel-via-sms</string>
     <string name="pref_group_relay_title">Relay spul</string>
     <string name="pref_group_relay_summary">Instellingen gerelateerd aan spellen via internet/relay</string>
-    <string name="pref_group_l10n_title">Lokalisatiespul</string>
-    <string name="pref_group_l10n_summary">Voorkeuren gerelateerd aan in-app lokalisatie</string>
     <string name="pref_item_update_title">Update tussen versies</string>
     <string name="pref_item_update_summary">Download tussenversies</string>
     <string name="checking_title">Zoeken</string>

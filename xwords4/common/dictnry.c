@@ -338,7 +338,7 @@ parseCommon( DictionaryCtxt* dctx, XWEnv xwe, const XP_U8** ptrp, const XP_U8* e
         dctx->nFaces = numFaces;
 
         dctx->values = XP_MALLOC( dctx->mpool, numFaces);
-        XP_U8* counts15 = XP_MALLOC( dctx->mpool, numFaces); /* leaking */
+        XP_U8* counts15 = XP_MALLOC( dctx->mpool, numFaces);
         dctx->counts[15>>1] = counts15;
 
         XP_U16 facesSize = numFaceBytes;
@@ -901,7 +901,7 @@ dict_loadFromStream( DictionaryCtxt* dict, XWEnv xwe, XWStreamCtxt* stream )
         }
     }
     if ( nSpecials > 0 ) {
-        dict->bitmaps = 
+        dict->bitmaps =
             (SpecialBitmaps*)XP_MALLOC( dict->mpool,
                                         nSpecials * sizeof(*dict->bitmaps) );
         XP_MEMSET( dict->bitmaps, 0, nSpecials * sizeof(*dict->bitmaps) );

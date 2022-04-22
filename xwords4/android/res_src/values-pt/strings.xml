@@ -1784,8 +1784,6 @@
     <string name="checking_title">Checando</string>
     <string name="pref_item_update_summary">Obter builds intermediárias</string>
     <string name="pref_item_update_title">Atualização entre lançamentos</string>
-    <string name="pref_group_l10n_summary">Preferências relacionadas à localização do app</string>
-    <string name="pref_group_l10n_title">Coisas de Localização</string>
     <string name="pref_group_relay_summary">Preferências relacionadas a jogar via internet/relay</string>
     <string name="pref_group_relay_title">Material da Internet</string>
     <string name="pref_group_sms_summary">Preferências relacionadas a Jogar via SMS</string>

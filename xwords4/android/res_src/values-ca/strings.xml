@@ -541,7 +541,6 @@ Introduïu el vostre nom aquí. S\'usarà en crear partides noves. (Podreu
     <string name="radio_name_cdma">CDMA</string>
     <string name="game_summary_field_rowid">rowid</string>
     <string name="game_summary_field_gameid">gameid</string>
-    <string name="pref_group_l10n_summary">Preferències relacionades amb la traducció en l\'aplicació</string>
     <string name="pref_item_update_title">Actualitza entre versions</string>
     <string name="pref_item_update_summary">Obtén construccions intermèdies</string>
     <string name="checking_title">S\'està comprovant</string>
@@ -576,7 +575,6 @@ Introduïu el vostre nom aquí. S\'usarà en crear partides noves. (Podreu
     <string name="got_langdict_summary">No ho intentis una segona vegada</string>
     <string name="pref_group_sms_title">Coses de l\'SMS</string>
     <string name="pref_group_relay_title">Coses del repetidor</string>
-    <string name="pref_group_l10n_title">Coses de la traducció</string>
     <string name="button_enable">Habilita</string>
     <string name="warn_nomobile_fmt">El número %1$s de %2$s no sembla un número de mòbil. Voleu importar-lo igualment?</string>
     <string name="get_sms_number">Número de telèfon de l\'aparell:</string>

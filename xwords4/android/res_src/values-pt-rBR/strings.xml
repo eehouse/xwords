@@ -782,9 +782,7 @@
     <string name="pref_item_update_summary">Obter builds intermediárias</string>
     <string name="pref_group_sms_summary">Preferências relacionadas a Jogar via SMS</string>
     <string name="pref_group_sms_title">Coisas de SMS de dados</string>
-    <string name="pref_group_l10n_title">Coisas de Localização</string>
     <string name="pref_item_update_title">Atualização entre lançamentos</string>
-    <string name="pref_group_l10n_summary">Preferências relacionadas à localização do app</string>
     <string name="knowns_smsphone_fmt">Telefone SMS: %1$s</string>
     <string name="knowns_bta_fmt">Endr Bluetooth: %1$s</string>
     <string name="button_done_fmt">Feito com %1$s</string>

@@ -166,8 +166,6 @@
     <string name="checking_title">Controllando</string>
     <string name="pref_item_update_summary">Ottieni immediatamente le versioni</string>
     <string name="pref_item_update_title">Aggiorna tra le versioni</string>
-    <string name="pref_group_l10n_summary">Preferenze su localizzazione in-app</string>
-    <string name="pref_group_l10n_title">Impostazioni Localizzazione</string>
     <string name="pref_group_sms_summary">Preferenze gioco via sms</string>
     <string name="pref_group_relay_summary">Preferenze partita via Server/Internet</string>
     <string name="pref_group_relay_title">Impostazioni server</string>

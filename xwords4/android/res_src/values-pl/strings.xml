@@ -718,8 +718,6 @@
     <string name="pref_group_sms_summary">Preferencje związane z grą za pośrednictwem sms</string>
     <string name="pref_group_relay_title">Wyślij przez przekaźnik</string>
     <string name="pref_group_relay_summary">Preferencje związane grą przez Internet/przekaźnik</string>
-    <string name="pref_group_l10n_title">Lokalizacja rzeczy</string>
-    <string name="pref_group_l10n_summary">Preferencje związane z lokalizacją w aplikacji</string>
     <string name="pref_item_update_summary">Uzyskaj pośrednie kompilacje</string>
     <string name="checking_title">Sprawdzanie</string>
     <string name="checking_for_fmt">Sprawdzanie listy słów w %1$s…</string>

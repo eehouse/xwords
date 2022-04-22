@@ -792,8 +792,6 @@
     <string name="pref_group_sms_summary">Einstellungen zum Spielen über SMS</string>
     <string name="pref_group_relay_title">Zwischenstation-Zeug</string>
     <string name="pref_group_relay_summary">Einstellungen zum Spielen über Internez/Zwischenstation</string>
-    <string name="pref_group_l10n_title">Lokalisierungs-Zeug</string>
-    <string name="pref_group_l10n_summary">Einstellungen zur Lokalisierung aus der App heraus</string>
     <string name="pref_item_update_summary">Builds zwischen Veröffentlichungen holen</string>
     <string name="checking_title">Überprüfung</string>
     <string name="phone_state_rationale">Einige Smartphones können SMS-„Daten“-Nachrichten austauschen. CrossWords will Ihnen diese Option anbieten, braucht dazu aber Informationen über Ihr Gerät (um zu wissen, ob es ein Telefon ist und falls ja, was für eines).
