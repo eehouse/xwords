@@ -2086,7 +2086,7 @@ public class DBUtils {
             cursor.close();
         }
 
-        if ( null == result.fullSum ) { // force generation
+        if ( null != result && null == result.fullSum ) { // force generation
             result = null;
         }
 
