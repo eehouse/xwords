@@ -42,6 +42,7 @@ import java.util.TreeMap;
 
 public class TimerReceiver extends BroadcastReceiver {
     private static final String TAG = TimerReceiver.class.getSimpleName();
+    private static final boolean VERBOSE = false;
     private static final String DATA_KEY = TAG + "/data";
     private static final String KEY_FIREWHEN = "FIREWHEN";
     private static final String KEY_BACKOFF = "BACKOFF";
@@ -394,8 +395,10 @@ public class TimerReceiver extends BroadcastReceiver {
 
                 setJobTimerIf( context, delayMS, timerID );
 
-                Log.d( TAG, "setNextTimer(): SET id %d for %s at %s", timerID,
-                       getSimpleName(firstClient), fmtLong(firstFireTime) );
+                if ( VERBOSE ) {
+                    Log.d( TAG, "setNextTimer(): SET id %d for %s at %s", timerID,
+                           getSimpleName(firstClient), fmtLong(firstFireTime) );
+                }
             // } else {
             //     Assert.assertTrueNR( 0 != curNextFire );
             //     long diff = Math.abs( firstFireTime - curNextFire );
@@ -422,8 +425,10 @@ public class TimerReceiver extends BroadcastReceiver {
             long nextFire = data.getFor( client, KEY_FIREWHEN, 0 );
             force = 0 == nextFire || backoff != curBackoff;
         }
-        Log.d( TAG, "setTimer(clazz=%s, force=%b, curBackoff=%d)",
-               getSimpleName(client), force, backoff );
+        if ( VERBOSE ) {
+            Log.d( TAG, "setTimer(clazz=%s, force=%b, curBackoff=%d)",
+                   getSimpleName(client), force, backoff );
+        }
         if ( force ) {
             long now = System.currentTimeMillis();
             long fireMillis = now + backoff;
@@ -489,7 +494,9 @@ public class TimerReceiver extends BroadcastReceiver {
             if ( null == data ) {
                 try {
                     data = (Data)DBUtils.getSerializableFor( context, DATA_KEY );
-                    Log.d( TAG, "load(): loaded: %s", toString(data) );
+                    if ( VERBOSE ) {
+                        Log.d( TAG, "load(): loaded: %s", toString(data) );
+                    }
                 } catch ( Exception ex ) {
                     data = null;
                 }
@@ -507,6 +514,8 @@ public class TimerReceiver extends BroadcastReceiver {
     private static void store( Context context, Data data )
     {
         DBUtils.setSerializableFor( context, DATA_KEY, data );
-        Log.d( TAG, "store(): saved: %s", toString(data) );
+        if ( VERBOSE ) {
+            Log.d( TAG, "store(): saved: %s", toString(data) );
+        }
     }
 }
