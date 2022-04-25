@@ -19,9 +19,19 @@
  */
 
 def INITIAL_CLIENT_VERS = 10
-def VERSION_CODE_BASE = 182
+def VERSION_CODE_BASE = 182     // <-- increase by 2 each time while using
+                                // HAS_CURRENT_MQTT below
 def VERSION_NAME = '4.4.185'
 def BUILD_INFO_NAME = "build-info.txt"
+
+// Trying to support older devices (pre KitKat) while moving KitKat and beyond
+// to the newer version of the Paho MQTT client library that, with luck, will
+// crash less. I'll add a new branch that differs from android_branch only in
+// whether HAS_CURRENT_MQTT is true or false.
+def HAS_CURRENT_MQTT = true
+if ( HAS_CURRENT_MQTT ) {
+    VERSION_CODE_BASE += 1;
+}
 
 // Not all variants use the same BT_UUID. Those with the same talk to
 // each other
@@ -61,8 +71,11 @@ android {
     ndkVersion '21.4.7075529'
     defaultConfig {
         // HostApduService requires 19. But is it a problem?
-        // minSdkVersion 14
-		minSdkVersion 19 // Required for paho client > 3:1.1.+
+        if ( HAS_CURRENT_MQTT ) {
+            minSdkVersion 19 // Required for paho client > 3:1.1.+
+        } else {
+            minSdkVersion 14
+        }
         targetSdkVersion 30     // must match ../build.gradle
         versionCode VERSION_CODE_BASE
         versionName VERSION_NAME
@@ -366,8 +379,11 @@ dependencies {
 	// 3:1.2.+ crashes on API 18 and below (all Jelly Beans) because
 	// java.nio.charset.StandardCharsets not defined. Does not crash on
 	// 19 (KitKat).
-	implementation "org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.2.+"
-	// implementation "org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.1.+"
+	if ( HAS_CURRENT_MQTT ) {
+        implementation "org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.2.+"
+	} else {
+		implementation "org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.1.+"
+	}
 
     implementation 'com.google.zxing:core:3.3.+'
 }
