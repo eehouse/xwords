@@ -24,6 +24,7 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.util.AttributeSet;
 import android.view.View;
+import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
@@ -44,7 +45,8 @@ import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.loc.LocUtils;
 
 public class InviteView extends ScrollView
-    implements RadioGroup.OnCheckedChangeListener {
+    implements CompoundButton.OnCheckedChangeListener,
+               RadioGroup.OnCheckedChangeListener {
 
     private static final String TAG = InviteView.class.getSimpleName();
     private static final String KEY_EXPANDED = TAG + ":expanded";
@@ -61,7 +63,10 @@ public class InviteView extends ScrollView
     private RadioGroup mGroupTab;
     private LimSelGroup mGroupWho;
     private RadioGroup mGroupHow;
-    private Map<RadioButton, InviteMeans> mHowMeans = new HashMap<>();
+    // mCurChecked: hack to work around old bugs in RadioButtons not being
+    // immediate children of RadioGroup
+    private CompoundButton mCurChecked = null;
+    private Map<Integer, InviteMeans> mHowMeans = new HashMap<>();
     private boolean mExpanded = false;
     private NetLaunchInfo mNli;
 
@@ -93,13 +98,14 @@ public class InviteView extends ScrollView
             Assert.assertNotNull( means );
             RadioButton button = (RadioButton)LocUtils
                 .inflate( context, R.layout.invite_radio );
+            button.setOnCheckedChangeListener( this );
             button.setText( LocUtils.getString( context, means.getUserDescID() ) );
             int where = means.isForLocal()
                 // -1: place before QRcode-wrapper
                 ? mGroupHow.getChildCount() - 1
                 : mGroupHow.indexOfChild( divider );
             mGroupHow.addView( button, where );
-            mHowMeans.put( button, means );
+            mHowMeans.put( button.getId(), means );
         }
 
         if ( haveWho ) {
@@ -148,11 +154,7 @@ public class InviteView extends ScrollView
         if ( mIsWho ) {
             result = mGroupWho.getSelected();
         } else {
-            int curSel = mGroupHow.getCheckedRadioButtonId();
-            if ( 0 <= curSel ) {
-                RadioButton button = (RadioButton)findViewById(curSel);
-                result = mHowMeans.get( button );
-            }
+            result = mHowMeans.get( mGroupHow.getCheckedRadioButtonId() );
         }
         return result;
     }
@@ -167,9 +169,10 @@ public class InviteView extends ScrollView
                 showWhoOrHow();
                 break;
             case R.id.group_how:
-                RadioButton button = (RadioButton)group.findViewById(checkedId);
-                InviteMeans means = mHowMeans.get( button );
-                mProcs.meansClicked( means );
+                InviteMeans means = mHowMeans.get( checkedId );
+                if ( mCurChecked != null && mCurChecked.isChecked() ) {
+                    mProcs.meansClicked( means );
+                }
                 setShowQR( means.equals( InviteMeans.QRCODE ) );
                 break;
             case R.id.group_who:
@@ -177,6 +180,17 @@ public class InviteView extends ScrollView
             }
 
             mProcs.checkButton();
+        }
+    }
+
+    @Override
+    public void onCheckedChanged( CompoundButton buttonView, boolean isChecked )
+    {
+        if ( isChecked ) {
+            if ( null != mCurChecked ) {
+                mCurChecked.setChecked(false);
+            }
+            mCurChecked = buttonView;
         }
     }
 
