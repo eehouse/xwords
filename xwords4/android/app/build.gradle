@@ -19,16 +19,16 @@
  */
 
 def INITIAL_CLIENT_VERS = 10
-def VERSION_CODE_BASE = 182     // <-- increase by 2 each time while using
-                                // HAS_CURRENT_MQTT below
+def VERSION_CODE_BASE = 182
 def VERSION_NAME = '4.4.185'
 def BUILD_INFO_NAME = "build-info.txt"
 
 // Trying to support older devices (pre KitKat) while moving KitKat and beyond
 // to the newer version of the Paho MQTT client library that, with luck, will
-// crash less. I'll add a new branch that differs from android_branch only in
-// whether HAS_CURRENT_MQTT is true or false.
-def HAS_CURRENT_MQTT = true
+// crash less. I expect there will be two tags and two releases per set of
+// changes: first one with HAS_CURRENT_MQTT changed to false, and then
+// immediately after one with it set to true.
+def HAS_CURRENT_MQTT = false
 if ( HAS_CURRENT_MQTT ) {
     VERSION_CODE_BASE += 1;
 }
