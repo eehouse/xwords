@@ -491,7 +491,9 @@ public class XWPrefs {
             result = new CommsConnTypeSet();
             if ( getRelayEnabled( context ) ) {
                 result.add( CommsConnType.COMMS_CONN_MQTT );
-                result.add( CommsConnType.COMMS_CONN_RELAY );
+                if ( !BuildConfig.NO_NEW_RELAY ) {
+                    result.add( CommsConnType.COMMS_CONN_RELAY );
+                }
             }
             if ( BTUtils.BTEnabled() ) {
                 result.add( CommsConnType.COMMS_CONN_BT );
