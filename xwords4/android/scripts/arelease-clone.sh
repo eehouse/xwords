@@ -9,6 +9,10 @@ usage () {
     echo "    [--variant VARIANT] # default value: $VARIANT \\"
     echo "   # (uses current branch as default)"
     echo "   # e.g. $0 --tag android_beta_141 --variant Xw4d"
+	echo "Here are some possible variants:"
+	for VAR in $(./gradlew tasks | grep assembleXw4 | awk '{print $1}' | sed -e 's/assemble//'); do
+		echo "    $VAR"
+	done
     exit 1
 }
 
