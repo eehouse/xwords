@@ -28,7 +28,7 @@ def BUILD_INFO_NAME = "build-info.txt"
 // crash less. I expect there will be two tags and two releases per set of
 // changes: first one with HAS_CURRENT_MQTT changed to false, and then
 // immediately after one with it set to true.
-def HAS_CURRENT_MQTT = false
+def HAS_CURRENT_MQTT = true
 if ( HAS_CURRENT_MQTT ) {
     VERSION_CODE_BASE += 1;
 }
