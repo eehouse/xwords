@@ -56,8 +56,8 @@ public class MultiMsgSink implements TransportProcs {
 
     int sendViaRelay( byte[] buf, String msgID, int gameID )
     {
-        Assert.assertTrue( BuildConfig.UDP_ENABLED );
-        return RelayService.sendPacket( m_context, getRowID(), buf, msgID );
+        RelayService.logGoneFail( TAG, 1 );
+        return -1;
     }
 
     int sendViaBluetooth( byte[] buf, String msgID, int gameID,
@@ -156,14 +156,7 @@ public class MultiMsgSink implements TransportProcs {
     @Override
     public boolean relayNoConnProc( byte[] buf, String msgNo, String relayID )
     {
-        // Assert.fail();
-        int nSent = RelayService.sendNoConnPacket( m_context, getRowID(),
-                                                   relayID, buf, msgNo );
-        boolean success = buf.length == nSent;
-        if ( success ) {
-            Log.d( TAG, "relayNoConnProc: adding %s", msgNo );
-            m_sentSet.add( msgNo );
-        }
-        return success;
+        RelayService.logGoneFail( TAG, 2 );
+        return false;
     }
 }

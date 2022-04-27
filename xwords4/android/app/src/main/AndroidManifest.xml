@@ -159,11 +159,6 @@
     <activity android:name=".loc.LocItemEditActivity"
               />
 
-    <service android:name="RelayService"
-             android:exported="false"
-             android:permission="android.permission.BIND_JOB_SERVICE"
-             />
-
     <receiver android:name=".MountEventReceiver">
         <intent-filter>
             <action android:name="android.intent.action.MEDIA_MOUNTED" />

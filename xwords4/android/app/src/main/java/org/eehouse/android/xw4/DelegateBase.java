@@ -475,7 +475,7 @@ public abstract class DelegateBase implements DlgClickNotify,
                             public void onClick( DialogInterface dlg, int buttn ) {
                                 NetStateCache.reset( m_activity );
                                 if ( conTypes.contains( CommsConnType.COMMS_CONN_RELAY ) ) {
-                                    RelayService.reset( getActivity() );
+                                    RelayService.logGoneFail( TAG, 1 );
                                 }
                                 if ( conTypes.contains( CommsConnType.COMMS_CONN_P2P ) ) {
                                     WiDirService.reset( getActivity() );
@@ -799,7 +799,7 @@ public abstract class DelegateBase implements DlgClickNotify,
             BTUtils.enable( m_activity );
             break;
         case ENABLE_RELAY_DO:
-            RelayService.setEnabled( m_activity, true );
+            RelayService.logGoneFail( TAG, 1 );
             break;
         case PERMS_QUERY:
             Perms23.onGotPermsAction( this, true, params );

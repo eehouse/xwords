@@ -407,13 +407,8 @@ public class CommsTransport implements TransportProcs,
     @Override
     public boolean relayNoConnProc( byte[] buf, String msgID, String relayID )
     {
-        Assert.assertTrue( TRANSPORT_DOES_NOCONN );
-        int nSent = RelayService.sendNoConnPacket( m_context, m_rowid,
-                                                   relayID, buf, msgID );
-        boolean success = buf.length == nSent;
-        Log.d( TAG, "relayNoConnProc(msgID=%s, len=%d) => %b", msgID,
-               buf.length, success );
-        return success;
+        RelayService.logGoneFail( TAG, 1 );
+        return false;
     }
 
     @Override
@@ -429,8 +424,7 @@ public class CommsTransport implements TransportProcs,
         int nSent = -1;
         switch ( conType ) {
         case COMMS_CONN_RELAY:
-            Assert.assertTrue( BuildConfig.UDP_ENABLED );
-            nSent = RelayService.sendPacket( context, rowID, buf, msgID );
+            RelayService.logGoneFail( TAG, 2 );
             break;
         case COMMS_CONN_SMS:
             nSent = NBSProto.sendPacket( context, addr.sms_phone,

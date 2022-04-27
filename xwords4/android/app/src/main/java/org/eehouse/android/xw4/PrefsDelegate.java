@@ -279,7 +279,7 @@ public class PrefsDelegate extends DelegateBase
                 NagTurnReceiver.resetNagsDisabled( mActivity );
                 break;
             case R.string.key_disable_relay:
-                RelayService.enabledChanged( mActivity );
+                RelayService.logGoneFail( TAG, 1 );
                 break;
             case R.string.key_disable_bt:
                 BTUtils.disabledChanged( mActivity );
@@ -309,8 +309,7 @@ public class PrefsDelegate extends DelegateBase
             SMSCheckBoxPreference.setChecked();
             break;
         case DISABLE_RELAY_DO:
-            RelayService.setEnabled( mActivity, false );
-            RelayCheckBoxPreference.setChecked();
+            RelayService.logGoneFail( TAG, 2 );
             break;
         case DISABLE_BT_DO:
             BTUtils.setEnabled( mActivity, false );

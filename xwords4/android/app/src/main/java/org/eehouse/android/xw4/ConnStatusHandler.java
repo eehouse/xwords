@@ -714,12 +714,7 @@ public class ConnStatusHandler {
         if ( BuildConfig.DEBUG ) {
             switch ( typ ) {
             case COMMS_CONN_RELAY:
-                String fcmMsg = SuccessRecord
-                    .format( context, RelayService.getLastFCMMillis() );
-                result = String.format( "DevID: %d; host: %s; latest FCM: %s",
-                                        DevID.getRelayDevIDInt(context),
-                                        XWPrefs.getHostName( context ),
-                                        fcmMsg );
+                RelayService.logGoneFail( TAG, 1 );
                 break;
             case COMMS_CONN_MQTT:
                 if ( null != addr ) {

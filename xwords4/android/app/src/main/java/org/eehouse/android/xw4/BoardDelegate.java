@@ -1009,7 +1009,7 @@ public class BoardDelegate extends DelegateBase
         JNICmd cmd = null;
         switch ( action ) {
         case ENABLE_RELAY_DO_OR:
-            RelayService.setEnabled( m_activity, true );
+            RelayService.logGoneFail( TAG, 1 );
             break;
         case UNDO_LAST_ACTION:
             cmd = JNICmd.CMD_UNDO_LAST;
@@ -2721,13 +2721,7 @@ public class BoardDelegate extends DelegateBase
                     dev = null; // don't record send a second time
                     break;
                 case RELAY:
-                    try {
-                        int destDevID = Integer.parseInt( dev ); // failing
-                        RelayService.inviteRemote( m_activity, m_jniGamePtr, destDevID,
-                                                   null, nli );
-                    } catch (NumberFormatException nfi) {
-                        Log.ex( TAG, nfi );
-                    }
+                    RelayService.logGoneFail( TAG, 2 );
                     break;
                 case WIFIDIRECT:
                     WiDirService.inviteRemote( m_activity, dev, nli );
@@ -3114,8 +3108,7 @@ public class BoardDelegate extends DelegateBase
             }
             value = m_summary.getStringExtra( GameSummary.EXTRA_REMATCH_RELAY );
             if ( null != value ) {
-                RelayService.inviteRemote( m_activity, m_jniGamePtr, 0, value, nli );
-                recordInviteSent( InviteMeans.RELAY, value );
+                RelayService.logGoneFail( TAG, 3 );
             }
             value = m_summary.getStringExtra( GameSummary.EXTRA_REMATCH_P2P );
             if ( null != value ) {

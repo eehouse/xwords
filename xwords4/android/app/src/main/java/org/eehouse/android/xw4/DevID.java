@@ -46,8 +46,7 @@ public class DevID {
     // changed. DevIDs are invalid at that point.
     public static void hostChanged( Context context )
     {
-        clearRelayDevID( context );
-        RelayService.reset( context );
+        RelayService.logGone( TAG, 1 );
     }
 
     public static int getRelayDevIDInt( Context context )
