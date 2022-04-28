@@ -223,19 +223,19 @@ static void sendConnect( CommsCtxt* comms, XWEnv xwe, XP_Bool breakExisting );
 static void notifyQueueChanged( const CommsCtxt* comms, XWEnv xwe );
 static XP_U16 makeFlags( const CommsCtxt* comms, XP_U16 headerLen, MsgID msgID );
 
-static XP_Bool sendNoConn( CommsCtxt* comms, XWEnv xwe,
-                           const MsgQueueElem* elem, XWHostID destID );
 static XP_Bool formatRelayID( const CommsCtxt* comms, XWHostID hostID,
                               XP_UCHAR* buf, XP_U16* lenp );
 
 #ifdef XWFEATURE_RELAY
+static void set_reset_timer( CommsCtxt* comms, XWEnv xwe );
+static XP_Bool sendNoConn( CommsCtxt* comms, XWEnv xwe,
+                           const MsgQueueElem* elem, XWHostID destID );
 static XP_Bool relayConnect( CommsCtxt* comms, XWEnv xwe );
 static void relayDisconnect( CommsCtxt* comms, XWEnv xwe );
 static XP_Bool send_via_relay( CommsCtxt* comms, XWEnv xwe, XWRELAY_Cmd cmd,
                                XWHostID destID, void* data, int dlen,
                                const XP_UCHAR* msgNo );
 static XWHostID getDestID( CommsCtxt* comms, XWEnv xwe, XP_PlayerAddr channelNo );
-static void set_reset_timer( CommsCtxt* comms, XWEnv xwe );
 # ifdef XWFEATURE_DEVID
 static void putDevID( const CommsCtxt* comms, XWEnv xwe, XWStreamCtxt* stream );
 # else
@@ -246,7 +246,9 @@ static void putDevID( const CommsCtxt* comms, XWEnv xwe, XWStreamCtxt* stream );
 #endif
 
 #ifdef DEBUG
+# ifdef XWFEATURE_RELAY
 static const char* relayCmdToStr( XWRELAY_Cmd cmd );
+# endif
 static void printQueue( const CommsCtxt* comms );
 static void logAddr( const CommsCtxt* comms, XWEnv xwe,
                      const CommsAddrRec* addr, const char* caller );
@@ -486,6 +488,8 @@ reset_internal( CommsCtxt* comms, XWEnv xwe, XP_Bool isServer,
     if ( resetRelay ) {
         relayDisconnect( comms, xwe );
     }
+#else
+    XP_USE(xwe);
 #endif
 
     cleanupInternal( comms );
@@ -560,21 +564,23 @@ set_reset_timer( CommsCtxt* comms, XWEnv xwe )
                    p_comms_resetTimer, comms );
     comms->reconTimerPending = XP_TRUE;
 } /* set_reset_timer */
+#endif  /* XWFEATURE_RELAY */
 
 void
-comms_transportFailed( CommsCtxt* comms, XWEnv xwe, CommsConnType failed )
+comms_transportFailed( CommsCtxt* comms, XWEnv XP_UNUSED_RELAY(xwe),
+                       CommsConnType failed )
 {
     XP_LOGF( "%s(%s)", __func__, ConnType2Str(failed) );
     XP_ASSERT( !!comms );
     if ( COMMS_CONN_RELAY == failed && addr_hasType( &comms->addr, COMMS_CONN_RELAY )
          && comms->rr.relayState != COMMS_RELAYSTATE_DENIED ) {
         relayDisconnect( comms, xwe );
-
+#ifdef XWFEATURE_RELAY
         set_reset_timer( comms, xwe );
+#endif  /* XWFEATURE_RELAY */
     }
     LOG_RETURN_VOID();
 }
-#endif  /* XWFEATURE_RELAY */
 
 void
 comms_destroy( CommsCtxt* comms, XWEnv xwe )
@@ -702,7 +708,7 @@ removeRelayIf( CommsCtxt* comms, XWEnv xwe )
     }
     LOG_RETURNF( "%s", boolToStr(allRemoved) );
     return allRemoved;
-}
+} /* removeRelayIf */
 
 CommsCtxt* 
 comms_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
@@ -864,7 +870,7 @@ comms_start( CommsCtxt* comms, XWEnv xwe )
 } /* comms_start */
 
 void
-comms_stop( CommsCtxt* comms, XWEnv xwe )
+comms_stop( CommsCtxt* comms, XWEnv XP_UNUSED_RELAY(xwe) )
 {
     LOG_FUNC();
     if ( addr_hasType( &comms->addr, COMMS_CONN_RELAY ) ) {
@@ -873,7 +879,7 @@ comms_stop( CommsCtxt* comms, XWEnv xwe )
 }
 
 static void
-sendConnect( CommsCtxt* comms, XWEnv xwe, XP_Bool breakExisting )
+sendConnect( CommsCtxt* comms, XWEnv xwe, XP_Bool XP_UNUSED_RELAY(breakExisting) )
 {
     // CommsAddrRec addr = comms->addr;
     CommsConnType typ;
@@ -2139,8 +2145,9 @@ btIpPreProcess( CommsCtxt* comms, XWStreamCtxt* stream )
 #endif
 
 static XP_Bool
-preProcess( CommsCtxt* comms, XWEnv xwe, const CommsAddrRec* useAddr,
-            XWStreamCtxt* stream, 
+preProcess( CommsCtxt* XP_UNUSED_RELAY(comms), XWEnv XP_UNUSED_RELAY(xwe),
+            const CommsAddrRec* useAddr,
+            XWStreamCtxt* XP_UNUSED_RELAY(stream),
             XP_Bool* XP_UNUSED_RELAY(usingRelay), 
             XWHostID* XP_UNUSED_RELAY(senderID) )
 {

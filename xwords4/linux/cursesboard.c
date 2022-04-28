@@ -118,6 +118,7 @@ static bool handleRootKeyHide( void* closure, int key );
 #endif
 static bool handleInvite( void* closure, int key );
 
+#ifdef XWFEATURE_RELAY
 static void relay_connd_curses( XWEnv xwe, void* closure, XP_UCHAR* const room,
                                 XP_Bool reconnect, XP_U16 devOrder,
                                 XP_Bool allHere, XP_U16 nMissing );
@@ -126,6 +127,7 @@ static void relay_error_curses( XWEnv xwe, void* closure, XWREASON relayErr );
 static XP_Bool relay_sendNoConn_curses( XWEnv xwe, const XP_U8* msg, XP_U16 len,
                                         const XP_UCHAR* msgNo,
                                         const XP_UCHAR* relayID, void* closure );
+#endif
 static void curses_countChanged( XWEnv xwe, void* closure, XP_U16 newCount );
 static XP_U32 curses_getFlags( XWEnv xwe, void* closure );
 #ifdef RELAY_VIA_HTTP
@@ -161,8 +163,10 @@ inviteIdle( gpointer data )
 {
     CursesBoardGlobals* bGlobals = (CursesBoardGlobals*)data;
     LaunchParams* params = bGlobals->cGlobals.params;
-    if ( !!params->connInfo.relay.inviteeRelayIDs
-         || !!params->connInfo.sms.inviteePhones
+    if ( !!params->connInfo.sms.inviteePhones
+#ifdef XWFEATURE_RELAY
+         || !!params->connInfo.relay.inviteeRelayIDs
+#endif
          || !!params->connInfo.mqtt.inviteeDevIDs ) {
         handleInvite( bGlobals, 0 );
     }
@@ -426,10 +430,12 @@ commonInit( CursesBoardState* cbState, sqlite3_int64 rowid,
 #ifdef COMMS_HEARTBEAT
     bGlobals->procs.reset = linux_reset;
 #endif
+#ifdef XWFEATURE_RELAY
     bGlobals->procs.rstatus = relay_status_curses;
     bGlobals->procs.rconnd = relay_connd_curses;
     bGlobals->procs.rerror = relay_error_curses;
     bGlobals->procs.sendNoConn = relay_sendNoConn_curses;
+#endif
     bGlobals->procs.countChanged = curses_countChanged;
     bGlobals->procs.getFlags = curses_getFlags;
 # ifdef RELAY_VIA_HTTP
@@ -1288,8 +1294,10 @@ handleInvite( void* closure, int XP_UNUSED(key) )
            the user so desires. */
     } else if ( inviteList( cGlobals, &addr, params->connInfo.sms.inviteePhones, COMMS_CONN_SMS ) ) {
         /* do nothing */
+#ifdef XWFEATURE_RELAY
     } else if ( inviteList( cGlobals, &addr, params->connInfo.relay.inviteeRelayIDs, COMMS_CONN_RELAY ) ) {
         /* do nothing */
+#endif
     } else if ( inviteList( cGlobals, &addr, params->connInfo.mqtt.inviteeDevIDs, COMMS_CONN_MQTT ) ) {
         /* do nothing */
     /* Try sending to self, using the phone number or relayID of this device */
@@ -1519,10 +1527,9 @@ handleShowVals( void* closure, int XP_UNUSED(key) )
 
     return XP_TRUE;
 }
-
-
 #endif
 
+#ifdef XWFEATURE_RELAY
 static void
 relay_connd_curses( XWEnv XP_UNUSED(xwe), void* XP_UNUSED(closure), XP_UCHAR* const XP_UNUSED(room),
                     XP_Bool XP_UNUSED(reconnect), XP_U16 XP_UNUSED(devOrder),
@@ -1558,8 +1565,8 @@ relay_sendNoConn_curses( XWEnv XP_UNUSED(xwe), const XP_U8* msg, XP_U16 len,
         success = nSent == len;
     }
     return success;
-
 } /* relay_sendNoConn_curses */
+#endif
 
 #ifdef RELAY_VIA_HTTP
 static void
@@ -1588,6 +1595,7 @@ curses_getFlags( XWEnv XP_UNUSED(xwe), void* XP_UNUSED(closure) )
 }
 #endif
 
+#ifdef XWFEATURE_RELAY
 static void
 relay_status_curses( XWEnv XP_UNUSED(xwe), void* XP_UNUSED(closure),
                      CommsRelayState XP_UNUSED_DBG(state) )
@@ -1596,3 +1604,4 @@ relay_status_curses( XWEnv XP_UNUSED(xwe), void* XP_UNUSED(closure),
     // bGlobals->commsRelayState = state;
     XP_LOGF( "%s got status: %s", __func__, CommsRelayState2Str(state) );
 }
+#endif

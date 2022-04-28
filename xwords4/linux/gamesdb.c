@@ -336,7 +336,6 @@ gdb_summarize( CommonGlobals* cGlobals )
 
     // gchar* connvia = "local";
     gchar connvia[128] = {0};
-    XP_UCHAR relayID[32] = {0};
 
     ScoresArray scores = {0};
     if ( gameOver ) {
@@ -389,8 +388,11 @@ gdb_summarize( CommonGlobals* cGlobals )
             }
         }
         seed = comms_getChannelSeed( game->comms );
+#ifdef XWFEATURE_RELAY
+        XP_UCHAR relayID[32] = {0};
         XP_U16 len = VSIZE(relayID);
         (void)comms_getRelayID( game->comms, relayID, &len );
+#endif
 
         nPending = comms_countPendingPackets( game->comms );
     } else {
@@ -409,7 +411,9 @@ gdb_summarize( CommonGlobals* cGlobals )
     pairs[indx++] = g_strdup_printf( "dictlang=%d", dictLang);
     pairs[indx++] = g_strdup_printf( "gameid=%d", gameID);
     pairs[indx++] = g_strdup_printf( "connvia='%s'", connvia);
+#ifdef XWFEATURE_RELAY
     pairs[indx++] = g_strdup_printf( "relayid='%s'", relayID);
+#endif
     pairs[indx++] = g_strdup_printf( "lastMoveTime=%d", lastMoveTime );
     pairs[indx++] = g_strdup_printf( "dupTimerExpires=%d", dupTimerExpires);
     pairs[indx++] = g_strdup_printf( "scores='%s'", scoresStr);

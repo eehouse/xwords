@@ -204,7 +204,7 @@ boxWithUseCheck( GtkConnsState* state, PageData* data )
  * Port:   _____
  * Cancel OK
  */
-
+#ifdef XWFEATURE_RELAY
 static GtkWidget*
 makeRelayPage( GtkConnsState* state, PageData* data )
 {
@@ -238,6 +238,7 @@ makeRelayPage( GtkConnsState* state, PageData* data )
     
     return vbox;
 } /* makeRelayPage */
+#endif
 
 static GtkWidget*
 makeBTPage( GtkConnsState* state, PageData* data )

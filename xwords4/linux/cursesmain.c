@@ -1200,6 +1200,7 @@ inviteReceivedCurses( void* closure, const NetLaunchInfo* invite,
     }
 }
 
+#ifdef XWFEATURE_RELAY
 static void
 relayInviteReceivedCurses( void* closure, const NetLaunchInfo* invite )
 {
@@ -1236,6 +1237,7 @@ cursesGotBuf( void* closure, const CommsAddrRec* addr,
     /* } */
     /* LOG_RETURN_VOID(); */
 }
+#endif
 
 static void
 smsInviteReceivedCurses( void* closure, const NetLaunchInfo* nli,
@@ -1268,6 +1270,7 @@ gameGoneCurses( void* XP_UNUSED(closure), const CommsAddrRec* XP_UNUSED(from),
     XP_LOGFF( "(gameID=%d)", gameID );
 }
 
+#ifdef XWFEATURE_RELAY
 static void
 cursesGotForRow( void* XP_UNUSED(closure), const CommsAddrRec* XP_UNUSED(from),
                  sqlite3_int64 XP_UNUSED(rowid), const XP_U8* XP_UNUSED(buf),
@@ -1357,6 +1360,7 @@ cursesErrorMsgRcvd( void* closure, const XP_UCHAR* msg )
         (void)cursesask( globals->mainWin, msg, VSIZE(buttons), buttons );
     }
 }
+#endif
 
 /* static gboolean */
 /* chatsTimerFired( gpointer data ) */
@@ -1517,6 +1521,7 @@ cursesmain( XP_Bool XP_UNUSED(isServer), LaunchParams* params )
     struct sigaction act2 = { .sa_handler = SIGWINCH_handler };
     sigaction( SIGWINCH, &act2, NULL );
 
+#ifdef XWFEATURE_RELAY
     if ( params->useUdp ) {
         RelayConnProcs procs = {
             .inviteReceived = relayInviteReceivedCurses,
@@ -1534,7 +1539,7 @@ cursesmain( XP_Bool XP_UNUSED(isServer), LaunchParams* params )
         XP_Bool idIsNew = linux_setupDevidParams( params );
         linux_doInitialReg( params, idIsNew );
     }
-
+#endif
     mqttc_init( params );
 
 #ifdef XWFEATURE_SMS

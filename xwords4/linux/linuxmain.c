@@ -192,8 +192,9 @@ linuxOpenGame( CommonGlobals* cGlobals, const TransportProcs* procs,
                           , params->gameSeed
 #endif
                           );
-
+#ifdef XWFEATURE_RELAY
         bool savedGame = false;
+#endif
         CommsAddrRec returnAddr = {0};
         if ( !!returnAddrP ) {
             returnAddr = *returnAddrP;
@@ -251,13 +252,16 @@ linuxOpenGame( CommonGlobals* cGlobals, const TransportProcs* procs,
 
         /* Need to save in order to have a valid selRow for the first send */
         linuxSaveGame( cGlobals );
+#ifdef XWFEATURE_RELAY
         savedGame = true;
+#endif
 
 #ifndef XWFEATURE_STANDALONE_ONLY
         /* If this is to be a relay connected game, tell it so. Otherwise
            let the invitation process and receipt of messages populate
            comms' addressbook */
         if ( cGlobals->gi->serverRole != SERVER_STANDALONE ) {
+#ifdef XWFEATURE_RELAY
             if ( addr_hasType( &params->addr, COMMS_CONN_RELAY ) ) {
             
                 if ( ! savedGame ) {
@@ -273,7 +277,7 @@ linuxOpenGame( CommonGlobals* cGlobals, const TransportProcs* procs,
                 addr.u.ip_relay.advertiseRoom = params->connInfo.relay.advertiseRoom;
                 comms_augmentHostAddr( cGlobals->game.comms, NULL_XWE, &addr ); /* sends stuff */
             }
-
+#endif
             if ( addr_hasType( &params->addr, COMMS_CONN_SMS ) ) {
                 CommsAddrRec addr = {0};
                 addr_addType( &addr, COMMS_CONN_SMS );
@@ -855,10 +859,10 @@ typedef enum {
     ,CMD_ROOMNAME
     ,CMD_ADVERTISEROOM
     ,CMD_JOINADVERTISED
-    ,CMD_PHONIES
-    ,CMD_BONUSFILE
     ,CMD_INVITEE_RELAYID
 #endif
+    ,CMD_PHONIES
+    ,CMD_BONUSFILE
 #ifdef XWFEATURE_BLUETOOTH
     ,CMD_BTADDR
 #endif
@@ -1009,12 +1013,12 @@ static CmdInfoRec CmdInfoRecs[] = {
     ,{ CMD_ROOMNAME, true, "room", "name of room on relay" }
     ,{ CMD_ADVERTISEROOM, false, "make-public", "make room public on relay" }
     ,{ CMD_JOINADVERTISED, false, "join-public", "look for a public room" }
+    ,{ CMD_INVITEE_RELAYID, true, "invitee-relayid", "relayID to send any invitation to" }
+#endif
     ,{ CMD_PHONIES, true, "phonies", 
        "ignore (0, default), warn (1), lose turn (2), or refuse to commit (3)" }
     ,{ CMD_BONUSFILE, true, "bonus-file",
        "provides bonus info: . + * ^ and ! are legal" }
-    ,{ CMD_INVITEE_RELAYID, true, "invitee-relayid", "relayID to send any invitation to" }
-#endif
 #ifdef XWFEATURE_BLUETOOTH
     ,{ CMD_BTADDR, true, "btaddr", "bluetooth address of host" }
 #endif
@@ -1587,15 +1591,6 @@ linux_send( XWEnv XP_UNUSED(xwe), const XP_U8* buf, XP_U16 buflen,
     return nSent;
 } /* linux_send */
 
-#ifdef XWFEATURE_RELAY
-void
-linux_close_socket( CommonGlobals* cGlobals )
-{
-    LOG_FUNC();
-    close( cGlobals->relaySocket );
-    cGlobals->relaySocket = -1;
-}
-
 static int
 blocking_read( int fd, unsigned char* buf, const int len )
 {
@@ -1627,6 +1622,15 @@ blocking_read( int fd, unsigned char* buf, const int len )
 
     XP_LOGF( "%s(fd=%d, sought=%d) => %d", __func__, fd, len, nRead );
     return nRead;
+}
+
+#ifdef XWFEATURE_RELAY
+void
+linux_close_socket( CommonGlobals* cGlobals )
+{
+    LOG_FUNC();
+    close( cGlobals->relaySocket );
+    cGlobals->relaySocket = -1;
 }
 
 int
@@ -2968,10 +2972,12 @@ main( int argc, char** argv )
             mainParams.pgi.players[index].isLocal = XP_FALSE;
             ++mainParams.info.serverInfo.nRemotePlayers;
             break;
+#ifdef XWFEATURE_RELAY
         case CMD_RELAY_PORT:
             addr_addType( &mainParams.addr, COMMS_CONN_RELAY );
             mainParams.connInfo.relay.defaultSendPort = atoi( optarg );
             break;
+#endif
         case CMD_ROBOTNAME:
             ++robotCount;
             index = mainParams.pgi.nPlayers++;
@@ -3002,18 +3008,27 @@ main( int argc, char** argv )
             mainParams.noHeartbeat = XP_TRUE;
             XP_ASSERT(0);    /* not implemented!!!  Needs to talk to comms... */
             break;
+#ifdef XWFEATURE_RELAY
         case CMD_HOSTNAME:
             /* mainParams.info.clientInfo.serverName =  */
             addr_addType( &mainParams.addr, COMMS_CONN_RELAY );
             mainParams.connInfo.relay.relayName = optarg;
             break;
-#ifdef XWFEATURE_RELAY
         case CMD_ADVERTISEROOM:
             mainParams.connInfo.relay.advertiseRoom = true;
             break;
         case CMD_JOINADVERTISED:
             mainParams.connInfo.relay.seeksPublicRoom = true;
             break;
+        case CMD_INVITEE_RELAYID: {
+            uint64_t* ptr = g_malloc( sizeof(*ptr) );
+            *ptr = (uint64_t)atoi(optarg);
+            mainParams.connInfo.relay.inviteeRelayIDs =
+                g_slist_append(mainParams.connInfo.relay.inviteeRelayIDs, ptr );
+            addr_addType( &mainParams.addr, COMMS_CONN_RELAY );
+        }
+            break;
+#endif
         case CMD_PHONIES:
             switch( atoi(optarg) ) {
             case 0:
@@ -3035,15 +3050,6 @@ main( int argc, char** argv )
         case CMD_BONUSFILE:
             mainParams.bonusFile = optarg;
             break;
-        case CMD_INVITEE_RELAYID: {
-            uint64_t* ptr = g_malloc( sizeof(*ptr) );
-            *ptr = (uint64_t)atoi(optarg);
-            mainParams.connInfo.relay.inviteeRelayIDs =
-                g_slist_append(mainParams.connInfo.relay.inviteeRelayIDs, ptr );
-            addr_addType( &mainParams.addr, COMMS_CONN_RELAY );
-        }
-            break;
-#endif
         case CMD_CLOSESTDIN:
             mainParams.closeStdin = XP_TRUE;
             break;

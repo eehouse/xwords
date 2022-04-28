@@ -317,6 +317,7 @@ key_release_event( GtkWidget* XP_UNUSED(widget), GdkEventKey* event,
 # define MEMPOOL
 #endif
 
+#ifdef XWFEATURE_RELAY
 static void
 relay_status_gtk( XWEnv XP_UNUSED(xwe), void* closure, CommsRelayState state )
 {
@@ -430,6 +431,7 @@ relay_sendNoConn_gtk( XWEnv XP_UNUSED(xwe), const XP_U8* msg, XP_U16 len,
     }
     return success;
 } /* relay_sendNoConn_gtk */
+#endif
 
 #ifdef RELAY_VIA_HTTP
 static void
@@ -501,8 +503,8 @@ setTransportProcs( TransportProcs* procs, GtkGameGlobals* globals )
 # ifdef RELAY_VIA_HTTP
     procs->requestJoin = relay_requestJoin_gtk;
 # endif
-    procs->countChanged = countChanged_gtk;
 #endif
+    procs->countChanged = countChanged_gtk;
 }
 
 #ifndef XWFEATURE_STANDALONE_ONLY
@@ -861,7 +863,11 @@ new_game_impl( GtkGameGlobals* globals, XP_Bool fireConnDlg )
     if ( !!cGlobals->game.comms ) {
         comms_getAddr( cGlobals->game.comms, &addr );
     } else {
-        comms_getInitialAddr( &addr, RELAY_NAME_DEFAULT, RELAY_PORT_DEFAULT );
+        comms_getInitialAddr( &addr
+#ifdef XWFEATURE_RELAY
+                              , RELAY_NAME_DEFAULT, RELAY_PORT_DEFAULT
+#endif
+                              );
     }
 
     CurGameInfo* gi = cGlobals->gi;
@@ -2718,6 +2724,7 @@ makeNewGame( GtkGameGlobals* globals )
     if ( !!cGlobals->game.comms ) {
         comms_getAddr( cGlobals->game.comms, &cGlobals->addr );
     } else {
+#ifdef XWFEATURE_RELAY
         LaunchParams* params = cGlobals->params;
         const XP_UCHAR* relayName = params->connInfo.relay.relayName;
         if ( !relayName ) {
@@ -2727,7 +2734,10 @@ makeNewGame( GtkGameGlobals* globals )
         if ( 0 == relayPort ) {
             relayPort = RELAY_PORT_DEFAULT;
         }
-        comms_getInitialAddr( &cGlobals->addr, relayName, relayPort );
+        comms_getInitialAddr( &cGlobals->addr , relayName, relayPort );
+#else
+        comms_getInitialAddr( &cGlobals->addr );
+#endif
     }
 
     CurGameInfo* gi = cGlobals->gi;

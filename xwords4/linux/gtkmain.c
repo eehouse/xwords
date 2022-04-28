@@ -82,9 +82,12 @@ findOpenGame( const GtkAppGlobals* apg, sqlite3_int64 rowid )
 }
 
 enum { ROW_ITEM, ROW_THUMB, NAME_ITEM, CREATED_ITEM, GAMEID_ITEM,
-       LANG_ITEM, SEED_ITEM, ROLE_ITEM, CONN_ITEM, RELAYID_ITEM, OVER_ITEM, TURN_ITEM,
-       LOCAL_ITEM, NMOVES_ITEM, NTOTAL_ITEM, MISSING_ITEM, LASTTURN_ITEM,
-       DUPTIMER_ITEM,
+       LANG_ITEM, SEED_ITEM, ROLE_ITEM, CONN_ITEM,
+#ifdef XWFEATURE_RELAY
+       RELAYID_ITEM,
+#endif
+       OVER_ITEM, TURN_ITEM,LOCAL_ITEM, NMOVES_ITEM, NTOTAL_ITEM,
+       MISSING_ITEM, LASTTURN_ITEM, DUPTIMER_ITEM,
 
        N_ITEMS,
 };
@@ -179,7 +182,9 @@ init_games_list( GtkAppGlobals* apg )
     addTextColumn( list, "Seed", SEED_ITEM );
     addTextColumn( list, "Role", ROLE_ITEM );
     addTextColumn( list, "Conn. via", CONN_ITEM );
+#ifdef XWFEATURE_RELAY
     addTextColumn( list, "RelayID", RELAYID_ITEM );
+#endif
     addTextColumn( list, "Ended", OVER_ITEM );
     addTextColumn( list, "Turn", TURN_ITEM );
     addTextColumn( list, "Local", LOCAL_ITEM );
@@ -199,7 +204,9 @@ init_games_list( GtkAppGlobals* apg )
                                               G_TYPE_INT,     /* SEED_ITEM */
                                               G_TYPE_INT,     /* ROLE_ITEM */
                                               G_TYPE_STRING,  /* CONN_ITEM */
+#ifdef XWFEATURE_RELAY
                                               G_TYPE_STRING,  /*RELAYID_ITEM */
+#endif
                                               G_TYPE_BOOLEAN, /* OVER_ITEM */
                                               G_TYPE_INT,     /* TURN_ITEM */
                                               G_TYPE_STRING,  /* LOCAL_ITEM */
@@ -272,7 +279,9 @@ add_to_list( GtkWidget* list, sqlite3_int64 rowid, XP_Bool isNew,
                         SEED_ITEM, gib->seed,
                         ROLE_ITEM, gib->role,
                         CONN_ITEM, gib->conn,
+#ifdef XWFEATURE_RELAY
                         RELAYID_ITEM, gib->relayID,
+#endif
                         TURN_ITEM, gib->turn,
                         OVER_ITEM, gib->gameOver,
                         LOCAL_ITEM, localString,
@@ -381,23 +390,24 @@ make_rematch( GtkAppGlobals* apg, const CommonGlobals* cGlobals )
 
         stream_putU8( stream, nRecs );
         for ( int ii = 0; ii < nRecs; ++ii ) {
-            XP_UCHAR relayID[32];
-            XP_U16 len = sizeof(relayID);
-            comms_formatRelayID( comms, ii, relayID, &len );
-            XP_LOGF( "%s: adding relayID: %s", __func__, relayID );
-            stringToStream( stream, relayID );
-            if ( addr_hasType( &addrs[ii], COMMS_CONN_RELAY ) ) {
-                /* copy over room name */
-                XP_STRCAT( addrs[ii].u.ip_relay.invite, addr.u.ip_relay.invite );
-            }
-            addrToStream( stream, &addrs[ii] );
+            XP_ASSERT(0);       /* REWRITE TO USE MQTT */
+            /* XP_UCHAR relayID[32]; */
+            /* XP_U16 len = sizeof(relayID); */
+            /* comms_formatRelayID( comms, ii, relayID, &len ); */
+            /* XP_LOGF( "%s: adding relayID: %s", __func__, relayID ); */
+            /* stringToStream( stream, relayID ); */
+            /* if ( addr_hasType( &addrs[ii], COMMS_CONN_RELAY ) ) { */
+            /*     /\* copy over room name *\/ */
+            /*     XP_STRCAT( addrs[ii].u.ip_relay.invite, addr.u.ip_relay.invite ); */
+            /* } */
+            /* addrToStream( stream, &addrs[ii] ); */
         }
         gdb_saveInviteAddrs( stream, params->pDb, rowID );
         stream_destroy( stream, NULL_XWE );
     }
 
     open_row( apg, rowID, XP_TRUE );
-}
+} /* make_rematch */
 
 static void
 handle_rematch_button( GtkWidget* XP_UNUSED(widget), void* closure )
@@ -568,6 +578,7 @@ handle_known_players( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* apg )
     gtkkp_show( apg, GTK_WINDOW(apg->window) );
 }
 
+#ifdef XWFEATURE_RELAY
 static void
 handle_relayid_to_clip( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* apg )
 {
@@ -578,6 +589,7 @@ handle_relayid_to_clip( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* apg )
     GtkClipboard* clipboard = gtk_clipboard_get( GDK_SELECTION_CLIPBOARD );
     gtk_clipboard_set_text( clipboard, str, strlen(str) );
 }
+#endif
 
 static void
 handle_mqttid_to_clip( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* apg )
@@ -621,8 +633,10 @@ makeGamesWindow( GtkAppGlobals* apg )
         (void)createAddItem( netMenu, "Check for moves",
                              (GCallback)handle_movescheck, apg );
     }
+#ifdef XWFEATURE_RELAY
     (void)createAddItem( netMenu, "copy relayid",
                          (GCallback)handle_relayid_to_clip, apg );
+#endif
     (void)createAddItem( netMenu, "copy mqtt devid",
                          (GCallback)handle_mqttid_to_clip, apg );
     gtk_widget_show( menubar );
@@ -780,6 +794,7 @@ inviteReceivedGTK( void* closure, const NetLaunchInfo* invite )
     }
 }
 
+#ifdef XWFEATURE_RELAY
 static void
 gtkGotBuf( void* closure, const CommsAddrRec* from, 
            const XP_U8* buf, XP_U16 len )
@@ -833,6 +848,7 @@ gtkNoticeRcvd( void* closure )
     GtkAppGlobals* apg = (GtkAppGlobals*)closure;
     (void)g_idle_add( requestMsgs, apg );
 }
+#endif
 
 static void
 smsInviteReceived( void* closure, const NetLaunchInfo* nli,
@@ -877,6 +893,7 @@ gameGoneGTK( void* closure, const CommsAddrRec* XP_UNUSED(from), XP_U32 gameID )
     gtktell( apg->window, buf );
 }
 
+#ifdef XWFEATURE_RELAY
 static gboolean
 keepalive_timer( gpointer data )
 {
@@ -912,6 +929,7 @@ gtkErrorMsgRcvd( void* closure, const XP_UCHAR* msg )
     GtkAppGlobals* apg = (GtkAppGlobals*)closure;
     (void)gtkask( apg->window, msg, GTK_BUTTONS_OK, NULL );
 }
+#endif
 
 void
 gtkOnGameSaved( void* closure, sqlite3_int64 rowid, XP_Bool firstTime )
@@ -951,6 +969,7 @@ gtkmain( LaunchParams* params )
     if ( !!params->dbName ) {
         /* params->pDb = openGamesDB( params->dbName ); */
 
+#ifdef XWFEATURE_RELAY
         /* Check if we have a local ID already.  If we do and it's
            changed, we care. */
         XP_Bool idIsNew = linux_setupDevidParams( params );
@@ -970,9 +989,10 @@ gtkmain( LaunchParams* params )
                            params->connInfo.relay.defaultSendPort );
 
             linux_doInitialReg( params, idIsNew );
-
-            mqttc_init( params );
         }
+#endif
+
+        mqttc_init( params );
 
 #ifdef XWFEATURE_SMS
         gchar* myPhone;

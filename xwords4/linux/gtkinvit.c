@@ -35,7 +35,9 @@ typedef struct _PageData {
     const char* okButtonTxt;
 } PageData;
 
+#ifdef XWFEATURE_RELAY
 static XP_UCHAR s_devIDBuf[32] = {0};
+#endif
 
 typedef struct _GtkInviteState {
     GtkGameGlobals* globals;
@@ -185,6 +187,7 @@ handle_cancel( GtkWidget* XP_UNUSED(widget), void* closure )
  * Cancel OK
  */
 
+#ifdef XWFEATURE_RELAY
 static GtkWidget*
 makeRelayPage( GtkInviteState* state, PageData* data )
 {
@@ -201,6 +204,7 @@ makeRelayPage( GtkInviteState* state, PageData* data )
     
     return vbox;
 } /* makeRelayPage */
+#endif
 
 static GtkWidget*
 makeBTPage( GtkInviteState* state, PageData* data )
