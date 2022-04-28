@@ -87,15 +87,15 @@ public class XWConnAddrPreference extends DialogPreference
                                       action = Action.ENABLE_BT_DO;
                                       buttonID = R.string.button_enable_bt;
                                       break;
-                                  case COMMS_CONN_RELAY:
+                                  case COMMS_CONN_MQTT:
                                       msg = LocUtils
                                           .getString( activity, R.string
-                                                      .warn_relay_disabled );
+                                                      .warn_mqtt_disabled );
                                       msg += "\n\n" + LocUtils
                                           .getString( activity,
-                                                      R.string.warn_relay_later );
-                                      action = Action.ENABLE_RELAY_DO;
-                                      buttonID = R.string.button_enable_relay;
+                                                      R.string.warn_mqtt_later );
+                                      action = Action.ENABLE_MQTT_DO;
+                                      buttonID = R.string.button_enable_mqtt;
                                       break;
                                   default:
                                       Assert.failDbg();

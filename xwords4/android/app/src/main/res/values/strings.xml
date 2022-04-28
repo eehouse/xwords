@@ -969,8 +969,8 @@
     <!-- explanation of the above -->
     <string name="network_behavior_summary">Settings that apply to
         networked games</string>
-    <string name="disable_relay">Disable play via the relay </string>
-    <string name="disable_relay_summary">Disable all internet communication</string>
+    <string name="disable_mqtt">Disable play via the internet </string>
+    <string name="disable_mqtt_summary">Disable all internet (MQTT) communication</string>
     <string name="disable_bt">Disable play via Bluetooth</string>
     <string name="disable_bt_summary">Disable all Bluetooth communication</string>
     <!--       
@@ -1013,7 +1013,7 @@
     <string name="newgame_reinvite">Invite again</string>
     <!-- Button offering to invite Known Player to a new game -->
     <string name="title_invite_history">Invitations Sent</string>
-    <string name="newgame_drop_relay">Drop Relay</string>
+    <string name="newgame_drop_mqtt">Drop Internet</string>
     <!-- EXPLAIN ME -->
     <!-- <string name="bt_disabled">Bluetooth is not available.  This may -->
     <!--   mean that your device doesn\'t support it, or that it\'s been -->
@@ -1869,17 +1869,17 @@
     disabled, and no moves will be exchanged via Bluetooth until it is
     enabled.\n\nYou can enable Bluetooth now, or later.
     </string>
-    <string name="warn_relay_disabled">Relay play is currently disabled
+    <string name="warn_mqtt_disabled">Internet play is currently disabled
     on this device. No moves will be sent or received via the
-    relay. </string>
-    <string name="warn_relay_later">You can enable relay play now, or
+    internet. </string>
+    <string name="warn_mqtt_later">You can enable internet play now, or
     later.</string>
-    <string name="warn_relay_remove">You can enable relay play now, or
+    <string name="warn_mqtt_remove">You can enable internet play now, or
     remove it from this game.</string>
-    <string name="warn_relay_havegames">Are you sure you want to
-    disable play using the relay (internet)?
+    <string name="warn_mqtt_havegames">Are you sure you want to
+    disable play using the internet?
     \n\n
-    Most networked games exchange moves via the relay, so only do this
+    Most two-device games exchange moves via the internet, so only do this
     if you plan to play ALL games against a robot on this same
     device.</string>
     <string name="warn_bt_havegames">Are you sure you want to
@@ -1889,9 +1889,9 @@
     certain you won’t play against anybody nearby there’s little harm
     in leaving it on.
     </string>
-    <plurals name="warn_relay_games_fmt">
-        <item quantity="one">\n\n(You have one active game using the relay now.)</item>
-        <item quantity="other">\n\n(You have %1$d active games using the relay now.)</item>
+    <plurals name="warn_mqtt_games_fmt">
+        <item quantity="one">\n\n(You have one active game using the internet now.)</item>
+        <item quantity="other">\n\n(You have %1$d active games using the internet now.)</item>
     </plurals>
     <plurals name="warn_bt_games_fmt">
         <item quantity="one">\n\n(You have one active game using Bluetooth.)</item>
@@ -1899,8 +1899,8 @@
     </plurals>
     <string name="button_enable_sms">Enable Data SMS</string>
     <string name="button_enable_bt">Enable Bluetooth</string>
-    <string name="button_enable_relay">Enable Relay play</string>
-    <string name="button_disable_relay">Disable Relay play</string>
+    <string name="button_enable_mqtt">Enable Internet play</string>
+    <string name="button_disable_mqtt">Disable internet play</string>
     <string name="button_disable_bt">Disable Bluetooth play</string>
     <string name="button_later">Later</string>
     <!--  -->
@@ -2319,13 +2319,13 @@
     <string name="checking_title">Checking</string>
     <string name="checking_for_fmt">Checking for wordlists in %1$s…</string>
     <string name="db_store_done">SD card write complete.</string>
-    <string name="confirm_drop_relay">Are you sure you want to drop this
-  game’s ability to communicate via the relay?</string>
+    <string name="confirm_drop_mqtt">Are you sure you want to drop this
+    game’s ability to communicate via the internet?</string>
     <string name="confirm_drop_relay_bt">Bluetooth only works for nearby
-  devices.</string>
+    devices.</string>
     <string name="confirm_drop_relay_sms">Not all carriers support play
-  via Data SMS.</string>
-  <string name="button_enable">Enable</string>
+    via Data SMS.</string>
+    <string name="button_enable">Enable</string>
     <!-- Won't be shown much longer if at all.... -->
     <string name="not_again_comms_relay_depr">The “relay” is a server
     for passing messages between devices running CrossWords. It’s

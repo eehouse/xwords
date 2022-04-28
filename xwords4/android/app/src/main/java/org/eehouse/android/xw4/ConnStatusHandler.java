@@ -680,8 +680,8 @@ public class ConnStatusHandler {
             //!getAirplaneModeOn( context );
             break;
         case COMMS_CONN_RELAY:
-            result = XWPrefs.getRelayEnabled( context )
-                && NetStateCache.netAvail( context );
+            Assert.failDbg();
+            result = false;
             break;
         case COMMS_CONN_P2P:
             result = WiDirService.connecting();
@@ -690,7 +690,8 @@ public class ConnStatusHandler {
             result = NFCUtils.nfcAvail( context )[1];
             break;
         case COMMS_CONN_MQTT:
-            result = BuildConfig.OFFER_MQTT;
+            result = XWPrefs.getMQTTEnabled( context )
+                && NetStateCache.netAvail( context );
             break;
         default:
             Log.w( TAG, "connTypeEnabled: %s not handled", connType.toString() );

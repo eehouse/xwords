@@ -798,8 +798,8 @@ public abstract class DelegateBase implements DlgClickNotify,
         case ENABLE_BT_DO:
             BTUtils.enable( m_activity );
             break;
-        case ENABLE_RELAY_DO:
-            RelayService.logGoneFail( TAG, 1 );
+        case ENABLE_MQTT_DO:
+            MQTTUtils.setEnabled( m_activity, true );
             break;
         case PERMS_QUERY:
             Perms23.onGotPermsAction( this, true, params );

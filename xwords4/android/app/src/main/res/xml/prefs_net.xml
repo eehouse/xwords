@@ -20,16 +20,10 @@
         android:defaultValue="false"
         />
 
-    <CheckBoxPreference android:key="@string/key_enable_p2p"
-                        android:title="@string/title_enable_p2p"
-                        android:summary="@string/summary_enable_p2p"
-                        android:defaultValue="false"
-                        />
-
-    <org.eehouse.android.xw4.RelayCheckBoxPreference
-        android:key="@string/key_disable_relay"
-        android:title="@string/disable_relay"
-        android:summary="@string/disable_relay_summary"
+    <org.eehouse.android.xw4.MQTTCheckBoxPreference
+        android:key="@string/key_disable_mqtt"
+        android:title="@string/disable_mqtt"
+        android:summary="@string/disable_mqtt_summary"
         android:defaultValue="false"
         />
 
@@ -39,6 +33,12 @@
         android:summary="@string/disable_bt_summary"
         android:defaultValue="false"
         />
+
+    <CheckBoxPreference android:key="@string/key_enable_p2p"
+                        android:title="@string/title_enable_p2p"
+                        android:summary="@string/summary_enable_p2p"
+                        android:defaultValue="false"
+                        />
 
     <CheckBoxPreference android:key="@string/key_invite_multi"
                         android:title="@string/invite_multi_title"

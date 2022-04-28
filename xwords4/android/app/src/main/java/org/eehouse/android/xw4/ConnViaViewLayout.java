@@ -126,13 +126,14 @@ public class ConnViaViewLayout extends LinearLayout {
             enabled = BTUtils.BTEnabled();
             break;
         case COMMS_CONN_RELAY:
-            enabled = XWPrefs.getRelayEnabled( context );
+            Assert.failDbg();
+            enabled = false;
             break;
         case COMMS_CONN_P2P:
             enabled = WiDirWrapper.enabled();
             break;
         case COMMS_CONN_MQTT:
-            enabled = BuildConfig.OFFER_MQTT;
+            enabled = XWPrefs.getMQTTEnabled( context );
             break;
         default:
             Assert.failDbg();

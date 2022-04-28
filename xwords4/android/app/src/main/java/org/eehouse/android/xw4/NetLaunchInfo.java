@@ -563,7 +563,7 @@ public class NetLaunchInfo implements Serializable {
                 break;
             case COMMS_CONN_MQTT:
                 mqttDevID = json.optString( MQTT_DEVID_KEY );
-                doAdd = BuildConfig.OFFER_MQTT && null != mqttDevID;
+                doAdd = null != mqttDevID;
                 break;
             default:
                 doAdd = false;

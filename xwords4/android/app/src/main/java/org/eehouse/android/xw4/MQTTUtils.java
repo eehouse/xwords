@@ -97,7 +97,7 @@ public class MQTTUtils extends Thread implements IMqttActionListener, MqttCallba
 
     public static void init( Context context )
     {
-        Log.d( TAG, "init(OFFER_MQTT:%b)", BuildConfig.OFFER_MQTT );
+        Log.d( TAG, "init()" );
         getOrStart( context );
     }
 
@@ -107,11 +107,14 @@ public class MQTTUtils extends Thread implements IMqttActionListener, MqttCallba
         getOrStart( context );
     }
 
-    public static void onFCMReceived( Context context )
+    public static void setEnabled( Context context, boolean enabled )
     {
-        Log.d( TAG, "onFCMReceived()" );
-        onConfigChanged( context );
-        getOrStart( context );
+        Log.d( TAG, "setEnabled( %b )", enabled );
+        if ( enabled ) {
+            getOrStart( context );
+        } else {
+            onConfigChanged( context );
+        }
     }
 
     private static void timerFired( Context context )
@@ -141,7 +144,7 @@ public class MQTTUtils extends Thread implements IMqttActionListener, MqttCallba
     private static MQTTUtils getOrStart( Context context )
     {
         MQTTUtils result = null;
-        if ( BuildConfig.OFFER_MQTT ) {
+        if ( XWPrefs.getMQTTEnabled( context ) ) {
             synchronized( sInstance ) {
                 result = sInstance[0];
             }

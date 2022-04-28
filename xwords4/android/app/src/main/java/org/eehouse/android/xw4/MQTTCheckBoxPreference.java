@@ -29,11 +29,11 @@ import org.eehouse.android.xw4.DlgDelegate.Action;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.loc.LocUtils;
 
-public class RelayCheckBoxPreference extends ConfirmingCheckBoxPreference {
-    private static final String TAG = RelayCheckBoxPreference.class.getSimpleName();
-    private static WeakReference<RelayCheckBoxPreference> s_this = null;
+public class MQTTCheckBoxPreference extends ConfirmingCheckBoxPreference {
+    private static final String TAG = MQTTCheckBoxPreference.class.getSimpleName();
+    private static WeakReference<MQTTCheckBoxPreference> s_this = null;
 
-    public RelayCheckBoxPreference( Context context, AttributeSet attrs )
+    public MQTTCheckBoxPreference( Context context, AttributeSet attrs )
     {
         super( context, attrs );
         s_this = new WeakReference<>( this );
@@ -44,23 +44,23 @@ public class RelayCheckBoxPreference extends ConfirmingCheckBoxPreference {
     {
         PrefsActivity activity = (PrefsActivity)getContext();
         String msg = LocUtils.getString( activity,
-                                         R.string.warn_relay_havegames );
+                                         R.string.warn_mqtt_havegames );
 
         int count = DBUtils
-            .getGameCountUsing( activity, CommsConnType.COMMS_CONN_RELAY );
+            .getGameCountUsing( activity, CommsConnType.COMMS_CONN_MQTT );
         if ( 0 < count ) {
-            msg += LocUtils.getQuantityString( activity, R.plurals.warn_relay_games_fmt,
+            msg += LocUtils.getQuantityString( activity, R.plurals.warn_mqtt_games_fmt,
                                                count, count );
         }
-        activity.makeConfirmThenBuilder( msg, Action.DISABLE_RELAY_DO )
-            .setPosButton( R.string.button_disable_relay )
+        activity.makeConfirmThenBuilder( msg, Action.DISABLE_MQTT_DO )
+            .setPosButton( R.string.button_disable_mqtt )
             .show();
     }
 
     protected static void setChecked()
     {
         if ( null != s_this ) {
-            RelayCheckBoxPreference self = s_this.get();
+            MQTTCheckBoxPreference self = s_this.get();
             if ( null != self ) {
                 self.super_setChecked( true );
             }

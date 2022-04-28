@@ -60,7 +60,7 @@ public class PrefsDelegate extends DelegateBase
         R.string.key_force_radio,
         R.string.key_disable_nag,
         R.string.key_disable_nag_solo,
-        R.string.key_disable_relay,
+        R.string.key_disable_mqtt,
         R.string.key_disable_bt,
         R.string.key_force_tablet,
         R.string.key_mqtt_host,
@@ -278,8 +278,9 @@ public class PrefsDelegate extends DelegateBase
             case R.string.key_disable_nag_solo:
                 NagTurnReceiver.resetNagsDisabled( mActivity );
                 break;
-            case R.string.key_disable_relay:
-                RelayService.logGoneFail( TAG, 1 );
+            case R.string.key_disable_mqtt:
+                boolean enabled = sp.getBoolean( key, true );
+                MQTTUtils.setEnabled( mActivity, enabled );
                 break;
             case R.string.key_disable_bt:
                 BTUtils.disabledChanged( mActivity );
@@ -308,8 +309,9 @@ public class PrefsDelegate extends DelegateBase
             XWPrefs.setNBSEnabled( mActivity, true );
             SMSCheckBoxPreference.setChecked();
             break;
-        case DISABLE_RELAY_DO:
-            RelayService.logGoneFail( TAG, 2 );
+        case DISABLE_MQTT_DO:
+            MQTTUtils.setEnabled( mActivity, false );
+            MQTTCheckBoxPreference.setChecked();
             break;
         case DISABLE_BT_DO:
             BTUtils.setEnabled( mActivity, false );

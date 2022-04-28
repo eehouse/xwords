@@ -130,7 +130,7 @@ public class BoardDelegate extends DelegateBase
 
     private boolean m_showedReInvite;
     private boolean m_overNotShown;
-    private boolean m_dropRelayOnDismiss;
+    private boolean m_dropMQTTOnDismiss;
     private boolean m_haveStartedShowing;
 
     private Wrapper mNFCWrapper;
@@ -1008,8 +1008,8 @@ public class BoardDelegate extends DelegateBase
         boolean handled = true;
         JNICmd cmd = null;
         switch ( action ) {
-        case ENABLE_RELAY_DO_OR:
-            RelayService.logGoneFail( TAG, 1 );
+        case ENABLE_MQTT_DO_OR:
+            MQTTUtils.setEnabled( m_activity, true );
             break;
         case UNDO_LAST_ACTION:
             cmd = JNICmd.CMD_UNDO_LAST;
@@ -1071,8 +1071,8 @@ public class BoardDelegate extends DelegateBase
         case LOOKUP_ACTION:
             launchLookup( m_mySIS.words, m_gi.dictLang );
             break;
-        case DROP_RELAY_ACTION:
-            dropConViaAndRestart( CommsConnType.COMMS_CONN_RELAY );
+        case DROP_MQTT_ACTION:
+            dropConViaAndRestart( CommsConnType.COMMS_CONN_MQTT );
             break;
         case DELETE_AND_EXIT:
             deleteAndClose();
@@ -1187,8 +1187,8 @@ public class BoardDelegate extends DelegateBase
         Log.d( TAG, "onNegButton(%s, %s)", action, DbgUtils.toStr( params ) );
         boolean handled = true;
         switch ( action ) {
-        case ENABLE_RELAY_DO_OR:
-            m_dropRelayOnDismiss = true;
+        case ENABLE_MQTT_DO_OR:
+            m_dropMQTTOnDismiss = true;
             break;
         case DROP_SMS_ACTION:
             dropConViaAndRestart( CommsConnType.COMMS_CONN_SMS );
@@ -1225,12 +1225,12 @@ public class BoardDelegate extends DelegateBase
         Log.d( TAG, "onDismissed(%s, %s)", action, DbgUtils.toStr( params ) );
         boolean handled = true;
         switch ( action ) {
-        case ENABLE_RELAY_DO_OR:
-            if ( m_dropRelayOnDismiss ) {
+        case ENABLE_MQTT_DO_OR:
+            if ( m_dropMQTTOnDismiss ) {
                 postDelayed( new Runnable() {
                         @Override
                         public void run() {
-                            askDropRelay();
+                            askDropMQTT();
                         }
                     }, 10 );
             }
@@ -1651,16 +1651,16 @@ public class BoardDelegate extends DelegateBase
         finish();
     }
 
-    private void askDropRelay()
+    private void askDropMQTT()
     {
-        String msg = getString( R.string.confirm_drop_relay );
+        String msg = getString( R.string.confirm_drop_mqtt );
         if ( m_connTypes.contains(CommsConnType.COMMS_CONN_BT) ) {
             msg += " " + getString( R.string.confirm_drop_relay_bt );
         }
         if ( m_connTypes.contains(CommsConnType.COMMS_CONN_SMS) ) {
             msg += " " + getString( R.string.confirm_drop_relay_sms );
         }
-        makeConfirmThenBuilder( msg, Action.DROP_RELAY_ACTION ).show();
+        makeConfirmThenBuilder( msg, Action.DROP_MQTT_ACTION ).show();
     }
 
     private void dropConViaAndRestart( CommsConnType typ )
@@ -2663,13 +2663,17 @@ public class BoardDelegate extends DelegateBase
                 }
             }
             if ( m_connTypes.contains( CommsConnType.COMMS_CONN_RELAY ) ) {
-                if ( !XWPrefs.getRelayEnabled( m_activity ) ) {
-                    m_dropRelayOnDismiss = false;
-                    String msg = getString( R.string.warn_relay_disabled )
-                        + "\n\n" + getString( R.string.warn_relay_remove );
-                    makeConfirmThenBuilder( msg, Action.ENABLE_RELAY_DO_OR )
-                        .setPosButton( R.string.button_enable_relay )
-                        .setNegButton( R.string.newgame_drop_relay )
+                Assert.failDbg();
+            }
+
+            if ( m_connTypes.contains( CommsConnType.COMMS_CONN_MQTT ) ) {
+                if ( !XWPrefs.getMQTTEnabled( m_activity ) ) {
+                    m_dropMQTTOnDismiss = false;
+                    String msg = getString( R.string.warn_mqtt_disabled )
+                        + "\n\n" + getString( R.string.warn_mqtt_remove );
+                    makeConfirmThenBuilder( msg, Action.ENABLE_MQTT_DO_OR )
+                        .setPosButton( R.string.button_enable_mqtt )
+                        .setNegButton( R.string.newgame_drop_mqtt )
                         .show();
                 }
             }

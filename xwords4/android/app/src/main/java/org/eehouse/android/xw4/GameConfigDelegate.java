@@ -272,10 +272,13 @@ public class GameConfigDelegate extends DelegateBase
                                              .show();
                                          break;
                                      case COMMS_CONN_RELAY:
-                                         String msg = getString( R.string.warn_relay_disabled )
-                                             + "\n\n" + getString( R.string.warn_relay_later );
-                                         makeConfirmThenBuilder( msg, Action.ENABLE_RELAY_DO )
-                                             .setPosButton( R.string.button_enable_relay )
+                                         Assert.failDbg();
+                                         break;
+                                     case COMMS_CONN_MQTT:
+                                         String msg = getString( R.string.warn_mqtt_disabled )
+                                             + "\n\n" + getString( R.string.warn_mqtt_later );
+                                         makeConfirmThenBuilder( msg, Action.ENABLE_MQTT_DO )
+                                             .setPosButton( R.string.button_enable_mqtt )
                                              .setNegButton( R.string.button_later )
                                              .show();
                                          break;

@@ -140,11 +140,11 @@ public class XWPrefs {
         return NetUtils.forceHost( host );
     }
 
-    public static boolean getRelayEnabled( Context context )
+    public static boolean getMQTTEnabled( Context context )
     {
-        boolean enabled = ! getPrefsBoolean( context, R.string.key_disable_relay,
+        boolean enabled = ! getPrefsBoolean( context, R.string.key_disable_mqtt,
                                              false );
-        // Log.d( TAG, "getRelayEnabled() => %b", enabled );
+        Log.d( TAG, "getMQTTEnabled() => %b", enabled );
         return enabled;
     }
 
@@ -489,11 +489,8 @@ public class XWPrefs {
         int flags = getPrefsInt( context, R.string.key_addrs_pref, -1 );
         if ( -1 == flags ) {
             result = new CommsConnTypeSet();
-            if ( getRelayEnabled( context ) ) {
+            if ( getMQTTEnabled( context ) ) {
                 result.add( CommsConnType.COMMS_CONN_MQTT );
-                if ( !BuildConfig.NO_NEW_RELAY ) {
-                    result.add( CommsConnType.COMMS_CONN_RELAY );
-                }
             }
             if ( BTUtils.BTEnabled() ) {
                 result.add( CommsConnType.COMMS_CONN_BT );

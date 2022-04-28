@@ -127,7 +127,6 @@ android {
             buildConfigField "boolean", "LOG_LIFECYLE", "false"
             buildConfigField "String", "KEY_FCMID", "\"FBMService_fcmid\""
             buildConfigField "boolean", "ATTACH_SUPPORTED", "false"
-            buildConfigField "boolean", "OFFER_MQTT", "true"
             buildConfigField "boolean", "NON_RELEASE", "DEBUG || !IS_TAGGED_BUILD"
             buildConfigField "boolean", "HAVE_KNOWN_PLAYERS", "true"
             buildConfigField "boolean", "FOR_FDROID", "false"
