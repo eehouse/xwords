@@ -2623,6 +2623,7 @@ public class GamesListDelegate extends ListDelegateBase
                 String btAddr = extras.getString( REMATCH_BTADDR_EXTRA );
                 String phone = extras.getString( REMATCH_PHONE_EXTRA );
                 String relayID = extras.getString( REMATCH_RELAYID_EXTRA );
+                Assert.assertTrueNR( null == relayID );
                 String p2pMacAddress = extras.getString( REMATCH_P2PADDR_EXTRA );
                 String dict = extras.getString( REMATCH_DICT_EXTRA );
                 int lang = extras.getInt( REMATCH_LANG_EXTRA, -1 );
@@ -3153,6 +3154,7 @@ public class GamesListDelegate extends ListDelegateBase
                 intent.putExtra( REMATCH_PHONE_EXTRA, phone );
             }
             if ( null != relayID ) {
+                Assert.failDbg();
                 Assert.assertTrue( addrTypes.contains( CommsConnType.COMMS_CONN_RELAY ) );
                 intent.putExtra( REMATCH_RELAYID_EXTRA, relayID );
             }

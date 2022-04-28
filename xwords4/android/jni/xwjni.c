@@ -967,10 +967,13 @@ Java_org_eehouse_android_xw4_jni_XwJNI_comms_1getInitialAddr
 ( JNIEnv* env, jclass C, jstring jname, jint port )
 {
     CommsAddrRec addr;
-
+#ifdef XWFEATURE_RELAY
     const char* chars = (*env)->GetStringUTFChars( env, jname, NULL );
     comms_getInitialAddr( &addr, chars, port );
     (*env)->ReleaseStringUTFChars( env, jname, chars );
+#else
+    comms_getInitialAddr( &addr );
+#endif
     jobject jaddr = makeObjectEmptyConst( env, PKG_PATH("jni/CommsAddrRec") );
     setJAddrRec( env, jaddr, &addr );
     return jaddr;
@@ -2248,6 +2251,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1summarize
         for ( XP_U32 st = 0; addr_iter( &addr, &typ, &st ); ) {
             switch( typ ) {
             case COMMS_CONN_RELAY: {
+#ifdef XWFEATURE_RELAY
                 XP_UCHAR buf[128];
                 XP_U16 len = VSIZE(buf);
                 if ( comms_getRelayID( comms, buf, &len ) ) {
@@ -2255,6 +2259,9 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1summarize
                     setString( env, jsummary, "relayID", buf );
                 }
                 setString( env, jsummary, "roomName", addr.u.ip_relay.invite );
+#else
+                XP_ASSERT(0);
+#endif
             }
                 break;
             case COMMS_CONN_NFC:
@@ -2565,6 +2572,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_comms_1formatRelayID
 ( JNIEnv* env, jclass C, GamePtrType gamePtr, jint indx )
 {
     jstring result = NULL;
+#ifdef XWFEATURE_RELAY
     XWJNI_START();
 
     XP_UCHAR buf[64];
@@ -2576,6 +2584,9 @@ Java_org_eehouse_android_xw4_jni_XwJNI_comms_1formatRelayID
     }
 
     XWJNI_END();
+#else
+    XP_ASSERT(0);
+#endif
     return result;
 }
 

@@ -84,6 +84,20 @@ and_xport_send( XWEnv xwe, const XP_U8* buf, XP_U16 len,
 }
 
 static void
+and_xport_countChanged( XWEnv xwe, void* closure, XP_U16 count )
+{
+    AndTransportProcs* aprocs = (AndTransportProcs*)closure;
+    ASSERT_ENV( aprocs->ti, xwe );
+    if ( NULL != aprocs && NULL != aprocs->jxport ) {
+        JNIEnv* env = xwe;
+        const char* sig = "(I)V";
+        jmethodID mid = getMethodID( env, aprocs->jxport, "countChanged", sig );
+        (*env)->CallVoidMethod( env, aprocs->jxport, mid, count );
+    }
+}
+
+#ifdef XWFEATURE_RELAY
+static void
 and_xport_relayStatus( XWEnv XP_UNUSED(xwe), void* XP_UNUSED(closure),
                        CommsRelayState XP_UNUSED(newState) )
 {
@@ -137,19 +151,6 @@ and_xport_sendNoConn( XWEnv xwe, const XP_U8* buf, XP_U16 len,
 }
 
 static void
-and_xport_countChanged( XWEnv xwe, void* closure, XP_U16 count )
-{
-    AndTransportProcs* aprocs = (AndTransportProcs*)closure;
-    ASSERT_ENV( aprocs->ti, xwe );
-    if ( NULL != aprocs && NULL != aprocs->jxport ) {
-        JNIEnv* env = xwe;
-        const char* sig = "(I)V";
-        jmethodID mid = getMethodID( env, aprocs->jxport, "countChanged", sig );
-        (*env)->CallVoidMethod( env, aprocs->jxport, mid, count );
-    }
-}
-
-static void
 and_xport_relayError( XWEnv xwe, void* closure, XWREASON relayErr )
 {
     XP_ASSERT(0);
@@ -169,6 +170,7 @@ and_xport_relayError( XWEnv xwe, void* closure, XWREASON relayErr )
         deleteLocalRef( env, jenum );
     }
 }
+#endif
 
 TransportProcs*
 makeXportProcs( MPFORMAL JNIEnv* env,
@@ -192,10 +194,12 @@ makeXportProcs( MPFORMAL JNIEnv* env,
     aprocs->tp.getFlags = and_xport_getFlags;
 #endif
     aprocs->tp.send = and_xport_send;
+#ifdef XWFEATURE_RELAY
     aprocs->tp.rstatus = and_xport_relayStatus;
     aprocs->tp.rconnd = and_xport_relayConnd;
     aprocs->tp.rerror = and_xport_relayError;
     aprocs->tp.sendNoConn = and_xport_sendNoConn;
+#endif
     aprocs->tp.countChanged = and_xport_countChanged;
     aprocs->tp.closure = aprocs;
 

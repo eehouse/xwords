@@ -2980,6 +2980,7 @@ public class BoardDelegate extends DelegateBase
                     phone = addr.sms_phone;
                 }
                 if ( addr.contains( CommsConnType.COMMS_CONN_RELAY ) ) {
+                    Assert.failDbg();
                     Assert.assertNull( relayID );
                     relayID = XwJNI.comms_formatRelayID( jniGamePtr, ii );
                 }
