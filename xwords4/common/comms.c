@@ -1223,6 +1223,7 @@ comms_getInitialAddr( CommsAddrRec* addr
 #endif
                       )
 {
+    XP_MEMSET( addr, 0, sizeof(*addr) );
 #if defined  XWFEATURE_RELAY
     addr_setType( addr, COMMS_CONN_RELAY ); /* for temporary ease in debugging */
     addr->u.ip_relay.ipAddr = 0L; /* force 'em to set it */
@@ -1239,9 +1240,8 @@ comms_getInitialAddr( CommsAddrRec* addr
     /* default values; default is still IR where there's a choice, at least on
        Palm... */
     addr->conType = COMMS_CONN_IR;
-#else
-    addr_setType( addr, COMMS_CONN_MQTT );
 #endif
+    addr_setType( addr, COMMS_CONN_MQTT );
 } /* comms_getInitialAddr */
 
 XP_Bool
