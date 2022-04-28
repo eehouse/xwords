@@ -87,6 +87,7 @@ static void
 and_xport_relayStatus( XWEnv XP_UNUSED(xwe), void* XP_UNUSED(closure),
                        CommsRelayState XP_UNUSED(newState) )
 {
+    XP_ASSERT(0);
 }
 
 static void
@@ -94,6 +95,7 @@ and_xport_relayConnd( XWEnv xwe, void* closure, XP_UCHAR* const room,
                       XP_Bool reconnect, XP_U16 devOrder, XP_Bool allHere,
                       XP_U16 nMissing )
 {
+    XP_ASSERT(0);
     AndTransportProcs* aprocs = (AndTransportProcs*)closure;
     ASSERT_ENV( aprocs->ti, xwe );
     if ( NULL != aprocs->jxport ) {
@@ -113,6 +115,7 @@ and_xport_sendNoConn( XWEnv xwe, const XP_U8* buf, XP_U16 len,
                       const XP_UCHAR* msgNo, const XP_UCHAR* relayID,
                       void* closure )
 {
+    XP_ASSERT(0);
     jboolean result = false;
     AndTransportProcs* aprocs = (AndTransportProcs*)closure;
     ASSERT_ENV( aprocs->ti, xwe );
@@ -149,6 +152,7 @@ and_xport_countChanged( XWEnv xwe, void* closure, XP_U16 count )
 static void
 and_xport_relayError( XWEnv xwe, void* closure, XWREASON relayErr )
 {
+    XP_ASSERT(0);
     AndTransportProcs* aprocs = (AndTransportProcs*)closure;
     ASSERT_ENV( aprocs->ti, xwe );
     if ( NULL != aprocs->jxport ) {
