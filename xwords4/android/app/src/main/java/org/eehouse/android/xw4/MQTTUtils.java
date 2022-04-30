@@ -357,12 +357,17 @@ public class MQTTUtils extends Thread implements IMqttActionListener, MqttCallba
                 params.put( "versI", Build.VERSION.SDK_INT );
                 params.put( "vrntCode", BuildConfig.VARIANT_CODE );
                 params.put( "vrntName", BuildConfig.VARIANT_NAME );
-                params.put( "dbg", BuildConfig.DEBUG );
+                if ( BuildConfig.DEBUG ) {
+                    params.put( "dbg", true );
+                }
                 params.put( "myNow", now );
                 params.put( "loc", LocUtils.getCurLocale( mContext ) );
                 params.put( "tmpKey", getTmpKey(mContext) );
                 params.put( "frstV", Utils.getFirstVersion( mContext ) );
                 params.put( "relayDID", DevID.getRelayDevID( mContext ) );
+                if ( XWApp.onEmulator() ) {
+                    params.put( "emu", true );
+                }
 
                 Log.d( TAG, "registerOnce(): sending %s", params );
                 HttpsURLConnection conn
