@@ -125,7 +125,7 @@ public class NetUtils {
         }
     }
 
-    static void showGamePage( Context context, int gameID )
+    static void copyAndLaunchGamePage( Context context, int gameID )
     {
         // Requires a login, so only of use to me right now....
         String host = XWPrefs.getPrefsString( context, R.string.key_mqtt_host );
@@ -135,6 +135,9 @@ public class NetUtils {
         if ( null != intent.resolveActivity( context.getPackageManager() ) ) {
             context.startActivity( intent );
         }
+
+        Utils.stringToClip( context, url );
+        Utils.showToast( context, R.string.relaypage_url_copied );
     }
 
     public static byte[][][] queryRelay( Context context, String[] ids )

@@ -461,7 +461,7 @@ public abstract class DelegateBase implements DlgClickNotify,
                     lstnr = new OnClickListener() {
                             @Override
                             public void onClick( DialogInterface dlg, int whichButton ) {
-                                NetUtils.showGamePage( m_activity, gameID );
+                                NetUtils.copyAndLaunchGamePage( m_activity, gameID );
                             }
                         };
                 } else if ( conTypes.contains( CommsConnType.COMMS_CONN_RELAY )

@@ -135,8 +135,11 @@
     <!-- Debug-only menuitem that shows mqtt broker's awareness of
          devices in game -->
     <string name="list_item_relaypage">Game traffic…</string>
+    <!-- Debug only: shown when game-view url copied to clipboard as
+         part of "show traffic" action -->
+    <string name="relaypage_url_copied">Game URL copied to clipboard</string>
     <!-- If you try to copy a networked game you get this error
-    message. -->
+         message. -->
     <string name="no_copy_network">Games that have already connected
       to the relay cannot be copied. Use “New from” for a
       ready-to-play copy with all the same settings.</string>

@@ -2137,7 +2137,7 @@ public class GamesListDelegate extends ListDelegateBase
 
         case R.id.games_game_relaypage:
             GameSummary summary = GameUtils.getSummary( m_activity, selRowIDs[0] );
-            NetUtils.showGamePage( m_activity, summary.gameID );
+            NetUtils.copyAndLaunchGamePage( m_activity, summary.gameID );
             break;
 
             // DEBUG only
