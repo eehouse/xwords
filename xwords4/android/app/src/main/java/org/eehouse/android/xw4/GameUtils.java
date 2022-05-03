@@ -1,6 +1,6 @@
 /* -*- compile-command: "find-and-gradle.sh inXw4dDeb"; -*- */
 /*
- * Copyright 2009-2015 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2009 - 2022 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -21,6 +21,8 @@
 package org.eehouse.android.xw4;
 
 import android.app.Activity;
+import android.content.ClipData;;
+import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -691,29 +693,12 @@ public class GameUtils {
         return rowid;
     }
 
-    // @SuppressLint({ "NewApi", "NewApi", "NewApi", "NewApi" })
-    // @SuppressWarnings("deprecation")
-    // @TargetApi(11)
     public static void inviteURLToClip( Context context, NetLaunchInfo nli )
     {
         Uri gameUri = nli.makeLaunchUri( context );
         String asStr = gameUri.toString();
 
-        int sdk = Build.VERSION.SDK_INT;
-        if ( sdk < Build.VERSION_CODES.HONEYCOMB ) {
-            android.text.ClipboardManager clipboard =
-                (android.text.ClipboardManager)
-                context.getSystemService(Context.CLIPBOARD_SERVICE);
-            clipboard.setText( asStr );
-        } else {
-            android.content.ClipboardManager clipboard =
-                (android.content.ClipboardManager)
-                context.getSystemService(Context.CLIPBOARD_SERVICE);
-            String label = LocUtils.getString( context, R.string.clip_label );
-            android.content.ClipData clip = android.content.ClipData
-                .newPlainText( label, asStr );
-            clipboard.setPrimaryClip( clip );
-        }
+        Utils.stringToClip( context, asStr );
 
         Utils.showToast( context, R.string.invite_copied );
     }

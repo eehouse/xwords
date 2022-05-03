@@ -26,6 +26,8 @@ import android.app.Dialog;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.content.ClipData;;
+import android.content.ClipboardManager;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
@@ -43,7 +45,6 @@ import android.os.Looper;
 import android.provider.ContactsContract.PhoneLookup;
 import android.telephony.PhoneNumberUtils;
 import android.telephony.TelephonyManager;
-import android.text.ClipboardManager;
 import android.util.Base64;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -266,7 +267,9 @@ public class Utils {
     {
         ClipboardManager clipboard = (ClipboardManager)
             context.getSystemService(Context.CLIPBOARD_SERVICE);
-        clipboard.setText( str );
+        String label = LocUtils.getString( context, R.string.clip_label );
+        ClipData clip = ClipData.newPlainText( label, str );
+        clipboard.setPrimaryClip( clip );
     }
 
     public static void postNotification( Context context, Intent intent,
