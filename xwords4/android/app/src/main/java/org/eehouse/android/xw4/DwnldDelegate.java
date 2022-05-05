@@ -112,7 +112,9 @@ public class DwnldDelegate extends ListDelegateBase {
             m_listItem = item;
             m_progressBar = (ProgressBar)item.findViewById( R.id.progress_bar );
 
-            showOldFiles(isApp);
+            if ( isApp ) {
+                nukeOldApks();
+            }
         }
 
         public DownloadFilesTask setLabel( String text )
@@ -124,15 +126,32 @@ public class DwnldDelegate extends ListDelegateBase {
 
         private boolean forApp() { return m_isApp; }
 
-        private void showOldFiles( boolean isApp )
+        // Nuke any .apk we downloaded more than 1 week ago
+        private void nukeOldApks()
         {
-            if ( isApp && BuildConfig.NON_RELEASE ) {
-                File apksDir = new File( m_activity.getFilesDir(), APKS_DIR );
-                if ( apksDir.exists() ) {
-                    File[] files = apksDir.listFiles();
-                    if ( 0 < files.length ) {
-                        String msg = getString( R.string.old_apks_found_fmt,
-                                                files.length );
+            File apksDir = new File( m_activity.getFilesDir(), APKS_DIR );
+            if ( apksDir.exists() ) {
+                File[] files = apksDir.listFiles();
+                if ( 0 < files.length ) {
+                    // 1 week ago
+                    final long LAST_MOD_MIN =
+                        System.currentTimeMillis() - (1000*60*60*24*7);
+                    int nDeleted = 0;
+                    for ( File apk : files ) {
+                        if ( apk.isFile() ) {
+                            long lastMod = apk.lastModified();
+                            if ( lastMod < LAST_MOD_MIN ) {
+                                boolean gone = apk.delete();
+                                Assert.assertTrueNR( gone );
+                                if ( gone ) {
+                                    ++nDeleted;
+                                }
+                            }
+                        }
+                    }
+                    if ( BuildConfig.NON_RELEASE && 0 < nDeleted ) {
+                        String msg = getString( R.string.old_apks_deleted_fmt,
+                                                nDeleted );
                         Log.d( TAG, msg );
                         DbgUtils.showf( msg );
                     }

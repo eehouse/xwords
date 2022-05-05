@@ -1205,9 +1205,10 @@
     <string name="str_server_dict_wins">Conflict between Host and
       Guest wordlists; Host wins.</string>
     <string name="downloading_dict_fmt">Downloading %1$s…</string>
-    <!-- Debug-only: Logged and shown when there are multiple
-         undeleted downloaded .apks -->
-    <string name="old_apks_found_fmt">Found %1$d old apks</string>
+    <!-- Debug-only: Logged and shown when week-or-more-old downloaded
+         .apks are deleted. Assumption for now is non-debug builds
+         don't have enough to worry about -->
+    <string name="old_apks_deleted_fmt">Deleted %1$d old upgrade apks</string>
     <!-- 
        ############################################################
        # :Dialogs:
