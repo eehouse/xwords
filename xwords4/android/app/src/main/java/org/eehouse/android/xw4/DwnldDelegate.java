@@ -126,12 +126,15 @@ public class DwnldDelegate extends ListDelegateBase {
 
         private void showOldFiles( boolean isApp )
         {
-            if ( isApp && BuildConfig.DEBUG ) {
+            if ( isApp && BuildConfig.NON_RELEASE ) {
                 File apksDir = new File( m_activity.getFilesDir(), APKS_DIR );
                 if ( apksDir.exists() ) {
                     File[] files = apksDir.listFiles();
                     if ( 0 < files.length ) {
-                        DbgUtils.showf( "Found %d old apks", files.length );
+                        String msg = getString( R.string.old_apks_found_fmt,
+                                                files.length );
+                        Log.d( TAG, msg );
+                        DbgUtils.showf( msg );
                     }
                 }
             }

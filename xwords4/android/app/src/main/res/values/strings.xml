@@ -1205,6 +1205,9 @@
     <string name="str_server_dict_wins">Conflict between Host and
       Guest wordlists; Host wins.</string>
     <string name="downloading_dict_fmt">Downloading %1$s…</string>
+    <!-- Debug-only: Logged and shown when there are multiple
+         undeleted downloaded .apks -->
+    <string name="old_apks_found_fmt">Found %1$d old apks</string>
     <!-- 
        ############################################################
        # :Dialogs:
