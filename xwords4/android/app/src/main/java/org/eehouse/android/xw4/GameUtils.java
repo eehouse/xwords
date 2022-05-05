@@ -532,7 +532,11 @@ public class GameUtils {
                                  boolean setCreate )
     {
         byte[] stream = XwJNI.game_saveToStream( gamePtr, gi );
-        return saveGame( context, stream, lock, setCreate );
+        long rowid = saveGame( context, stream, lock, setCreate );
+        if ( DBUtils.ROWID_NOTFOUND != rowid ) {
+            XwJNI.game_saveSucceeded( gamePtr );
+        }
+        return rowid;
     }
 
     public static long saveNewGame( Context context, GamePtr gamePtr,
@@ -1000,7 +1004,8 @@ public class GameUtils {
                 if ( null != lock ) {
                     CurGameInfo gi = new CurGameInfo( context );
                     FeedUtilsImpl feedImpl = new FeedUtilsImpl( context, rowid );
-                    try ( GamePtr gamePtr = loadMakeGame( context, gi, feedImpl, sink, lock ) ) {
+                    try ( GamePtr gamePtr = loadMakeGame( context, gi, feedImpl,
+                                                          sink, lock ) ) {
                         if ( null != gamePtr ) {
                             XwJNI.comms_resendAll( gamePtr, false, false );
 
