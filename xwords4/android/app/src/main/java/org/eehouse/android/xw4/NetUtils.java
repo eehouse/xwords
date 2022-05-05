@@ -153,66 +153,6 @@ public class NetUtils {
         }
     }
 
-    public static byte[][][] queryRelay( Context context, String[] ids )
-    {
-        byte[][][] msgs = null;
-        try {
-            Socket socket = makeProxySocket( context, 8000 );
-            if ( null != socket ) {
-                DataOutputStream outStream =
-                    new DataOutputStream( socket.getOutputStream() );
-
-                // total packet size
-                int nBytes = sumStrings( ids );
-                outStream.writeShort( 2 + nBytes + ids.length + 1 );
-
-                outStream.writeByte( NetUtils.PROTOCOL_VERSION );
-                outStream.writeByte( NetUtils.PRX_GET_MSGS );
-
-                // number of ids
-                outStream.writeShort( ids.length );
-
-                for ( String id : ids ) {
-                    outStream.writeBytes( id );
-                    outStream.write( '\n' );
-                }
-                outStream.flush();
-
-                DataInputStream dis =
-                    new DataInputStream(socket.getInputStream());
-                short resLen = dis.readShort();          // total message length
-                short nameCount = dis.readShort();
-
-                if ( nameCount == ids.length ) {
-                    msgs = new byte[nameCount][][];
-                    for ( int ii = 0; ii < nameCount; ++ii ) {
-                        short countsThisGame = dis.readShort();
-                        if ( countsThisGame > 0 ) {
-                            msgs[ii] = new byte[countsThisGame][];
-                            for ( int jj = 0; jj < countsThisGame; ++jj ) {
-                                short len = dis.readShort();
-                                if ( len > 0 ) {
-                                    byte[] packet = new byte[len];
-                                    dis.readFully( packet );
-                                    msgs[ii][jj] = packet;
-                                }
-                            }
-                        }
-                    }
-                }
-                if ( 0 != dis.available() ) {
-                    msgs = null;
-                    Log.e( TAG, "format error: bytes left over in stream" );
-                }
-                socket.close();
-            }
-
-        } catch( Exception npe ) {
-            Log.ex( TAG, npe );
-        }
-        return msgs;
-    } // queryRelay
-
     private static final String FORCE_RELAY_HOST = null;
     // private static final String FORCE_RELAY_HOST = "eehouse.org";
     public static String forceHost( String host )
