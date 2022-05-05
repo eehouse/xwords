@@ -336,6 +336,7 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
                                 }
                             }
                             if ( !skipIt ) {
+                                gotOne = true;
                                 String url = NetUtils.ensureHttps( urlParm );
                                 Intent intent;
                                 if ( useBrowser ) {
@@ -346,20 +347,24 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
                                         .makeAppDownloadIntent( m_context, url );
                                 }
 
-                                // title and/or body might be in the reply
-                                String title = app.optString( k_UPGRADE_TITLE, null );
-                                if ( null == title ) {
-                                    title = LocUtils
-                                        .getString( m_context, R.string.new_app_avail_fmt, label );
+                                // If I asked explicitly, let's download now.
+                                if ( m_fromUI && !useBrowser ) {
+                                    m_context.startActivity( intent );
+                                } else {
+                                    // title and/or body might be in the reply
+                                    String title = app.optString( k_UPGRADE_TITLE, null );
+                                    if ( null == title ) {
+                                        title = LocUtils
+                                            .getString( m_context, R.string.new_app_avail_fmt, label );
+                                    }
+                                    String body = app.optString( k_UPGRADE_BODY, null );
+                                    if ( null == body ) {
+                                        body = LocUtils
+                                            .getString( m_context, R.string.new_app_avail );
+                                    }
+                                    Utils.postNotification( m_context, intent, title,
+                                                            body, title.hashCode() );
                                 }
-                                String body = app.optString( k_UPGRADE_BODY, null );
-                                if ( null == body ) {
-                                    body = LocUtils
-                                        .getString( m_context, R.string.new_app_avail );
-                                }
-                                Utils.postNotification( m_context, intent, title,
-                                                        body, title.hashCode() );
-                                gotOne = true;
                             }
                         }
                     }
