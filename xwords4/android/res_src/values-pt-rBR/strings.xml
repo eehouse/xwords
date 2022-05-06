@@ -1139,4 +1139,5 @@
     <string name="bonus_w4x">Palavra quádrupla</string>
     <string name="lang_name_finnish">Finlandês</string>
     <string name="relaypage_url_copied">A URL do jogo foi copiada para a área de transferência</string>
+    <string name="old_apks_deleted_fmt">Foi apagado %1$d antigas apks de atualização</string>
 </resources>
