@@ -392,26 +392,6 @@ public class CommsTransport implements TransportProcs,
     }
 
     @Override
-    public void relayConnd( String room, int devOrder, boolean allHere,
-                            int nMissing )
-    {
-        // m_tpHandler.tpmRelayConnd( room, devOrder, allHere, nMissing );
-    }
-
-    @Override
-    public void relayErrorProc( XWRELAY_ERROR relayErr )
-    {
-        m_tpHandler.tpmRelayErrorProc( relayErr );
-    }
-
-    @Override
-    public boolean relayNoConnProc( byte[] buf, String msgID, String relayID )
-    {
-        RelayService.logGoneFail( TAG, 1 );
-        return false;
-    }
-
-    @Override
     public void countChanged( int newCount )
     {
         m_tpHandler.tpmCountChanged( newCount );

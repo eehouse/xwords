@@ -137,26 +137,8 @@ public class MultiMsgSink implements TransportProcs {
     }
 
     @Override
-    public void relayErrorProc( XWRELAY_ERROR relayErr )
-    {
-    }
-
-    @Override
-    public void relayConnd( String room, int devOrder, boolean allHere,
-                            int nMissing )
-    {
-    }
-
-    @Override
     public void countChanged( int newCount )
     {
         Log.d( TAG, "countChanged(new=%d); dropping", newCount );
-    }
-
-    @Override
-    public boolean relayNoConnProc( byte[] buf, String msgNo, String relayID )
-    {
-        RelayService.logGoneFail( TAG, 2 );
-        return false;
     }
 }

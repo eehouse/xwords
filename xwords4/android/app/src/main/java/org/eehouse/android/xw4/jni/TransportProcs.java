@@ -31,43 +31,9 @@ public interface TransportProcs {
     int transportSend( byte[] buf, String msgNo, CommsAddrRec addr,
                        CommsConnType conType, int gameID );
 
-    enum CommsRelayState { COMMS_RELAYSTATE_UNCONNECTED
-            , COMMS_RELAYSTATE_DENIED
-            , COMMS_RELAYSTATE_CONNECT_PENDING
-            , COMMS_RELAYSTATE_CONNECTED
-            , COMMS_RELAYSTATE_RECONNECTED
-            , COMMS_RELAYSTATE_ALLCONNECTED
-    };
-
-    void relayConnd( String room, int devOrder, boolean allHere, int nMissing );
-
     void countChanged( int newCount );
 
-    public static enum XWRELAY_ERROR { NONE
-            ,OLDFLAGS
-            ,BADPROTO
-            ,RELAYBUSY
-            ,SHUTDOWN
-            ,TIMEOUT
-            ,HEART_YOU
-            ,HEART_OTHER
-            ,LOST_OTHER
-            ,OTHER_DISCON
-            ,NO_ROOM
-            ,DUP_ROOM
-            ,TOO_MANY
-            ,DELETED
-            ,NORECONN
-            ,DEADGAME
-    };
-    void relayErrorProc( XWRELAY_ERROR relayErr );
-
-    boolean relayNoConnProc( byte[] buf, String msgNo, String relayID );
-
     public interface TPMsgHandler {
-        // public void tpmRelayConnd( String room, int devOrder, boolean allHere,
-        //                            int nMissing );
-        public void tpmRelayErrorProc( XWRELAY_ERROR relayErr );
         public void tpmCountChanged( int newCount );
     }
 }

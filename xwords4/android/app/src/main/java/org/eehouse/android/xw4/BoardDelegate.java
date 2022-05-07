@@ -1420,69 +1420,10 @@ public class BoardDelegate extends DelegateBase
     //////////////////////////////////////////////////
     // TransportProcs.TPMsgHandler interface
     //////////////////////////////////////////////////
-
-    @Override
-    public void tpmRelayErrorProc( TransportProcs.XWRELAY_ERROR relayErr )
-    {
-        int strID = -1;
-        DlgID dlgID = DlgID.NONE;
-        boolean doToast = false;
-        Object[] params = null;
-
-        switch ( relayErr ) {
-        case TOO_MANY:
-            strID = R.string.msg_too_many;
-            dlgID = DlgID.DLG_OKONLY;
-            break;
-        case NO_ROOM:
-            strID = R.string.msg_no_room;
-            dlgID = DlgID.DLG_RETRY;
-            break;
-        case DUP_ROOM:
-            strID = R.string.msg_dup_room;
-            dlgID = DlgID.DLG_OKONLY;
-            break;
-        case LOST_OTHER:
-        case OTHER_DISCON:
-            strID = R.string.msg_lost_other;
-            doToast = true;
-            break;
-
-        case DEADGAME:
-        case DELETED:
-            postDeleteOnce( null );
-            break;
-
-        case OLDFLAGS:
-        case BADPROTO:
-        case RELAYBUSY:
-        case SHUTDOWN:
-        case TIMEOUT:
-        case HEART_YOU:
-        case HEART_OTHER:
-            break;
-        }
-
-        if ( doToast ) {
-            showToast( strID );
-        } else if ( dlgID != DlgID.NONE ) {
-            final DlgID dlgIDf = dlgID;
-            final Object[] paramsF = null == params
-                ? new Object[] {R.string.relay_alert, getString( strID )}
-                : params;
-            post( new Runnable() {
-                    @Override
-                    public void run() {
-                        showDialogFragment( dlgIDf, paramsF );
-                    }
-                });
-        }
-    }
-
     @Override
     public void tpmCountChanged( final int newCount )
     {
-        Log.d( TAG, "tpmCountChanged(newCount=%d)", newCount );
+        // Log.d( TAG, "tpmCountChanged(newCount=%d)", newCount );
         ConnStatusHandler.updateMoveCount( m_activity, newCount );
 
         final GameOverAlert goAlert = mGameOverAlert;
