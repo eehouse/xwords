@@ -51,36 +51,37 @@ public class AboutAlert extends XWDialogFragment {
     {
         Context context = getActivity();
         View view = LocUtils.inflate( context, R.layout.about_dlg );
-        TextView vers = (TextView)view.findViewById( R.id.version_string );
 
         DateFormat df = DateFormat.getDateTimeInstance( DateFormat.DEFAULT,
                                                         DateFormat.DEFAULT );
         String dateString
             = df.format( new Date( BuildConfig.BUILD_STAMP * 1000 ) );
-        String str = getString( R.string.about_vers_fmt2,
-                                BuildConfig.VARIANT_NAME,
-                                BuildConfig.VERSION_NAME,
-                                BuildConfig.VERSION_CODE,
-                                BuildConfig.GITREV_SHORT,
-                                dateString );
+        StringBuilder sb = new StringBuilder( getString( R.string.about_vers_fmt2,
+                                                         BuildConfig.VARIANT_NAME,
+                                                         BuildConfig.VERSION_NAME,
+                                                         BuildConfig.VERSION_CODE,
+                                                         BuildConfig.GITREV_SHORT,
+                                                         dateString ) );
         if ( BuildConfig.NON_RELEASE ) {
-            str += "\n\t" + BuildConfig.GIT_REV;
+            sb.append("\n\t").append( BuildConfig.GIT_REV );
         }
-        vers.setText( str );
+        ((TextView)view.findViewById( R.id.version_string ))
+            .setText( sb.toString() );
 
         TextView xlator = (TextView)view.findViewById( R.id.about_xlator );
-        str = getString( R.string.xlator );
+        String str = getString( R.string.xlator );
         if ( str.length() > 0 && !str.equals("[empty]") ) {
             xlator.setText( str );
         } else {
             xlator.setVisibility( View.GONE );
         }
 
-        str = getString( R.string.about_devid_fmt, XwJNI.dvc_getMQTTDevID(null) );
+        sb = new StringBuilder( getString( R.string.about_devid_fmt,
+                                           XwJNI.dvc_getMQTTDevID(null) ) );
         if ( BuildConfig.NON_RELEASE ) {
             String[] pair = BTUtils.getBTNameAndAddress();
             if ( null != pair && 2 >= pair.length && null != pair[1] ) {
-                str += "\n\n" + getString( R.string.about_btaddr_fmt, pair[1] );
+                sb.append( "\n\n" ).append( getString( R.string.about_btaddr_fmt, pair[1] ) );
             }
 
             AssetManager am = context.getAssets();
@@ -88,13 +89,13 @@ public class AboutAlert extends XWDialogFragment {
                 InputStream is = am.open( BuildConfig.LAST_COMMIT_FILE );
                 byte[] tmp = new byte[2 * 1024];
                 int nRead = is.read( tmp, 0, tmp.length );
-                str += "\n\n" + new String( tmp, 0, nRead );
+                sb.append("\n\n").append(new String( tmp, 0, nRead ) );
             } catch ( Exception ex ) {
                 Log.ex( TAG, ex );
             }
         }
         ((TextView)view.findViewById( R.id.about_build ))
-            .setText( str );
+            .setText( sb.toString() );
 
         AlertDialog.Builder builder = LocUtils.makeAlertBuilder( context )
             .setIcon( R.drawable.icon48x48 )
