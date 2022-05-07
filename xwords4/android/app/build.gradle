@@ -22,6 +22,7 @@ def INITIAL_CLIENT_VERS = 10
 def VERSION_CODE_BASE = 184
 def VERSION_NAME = '4.4.187'
 def BUILD_INFO_NAME = "build-info.txt"
+def LAST_COMMIT_FILE = "last-commit.txt"
 
 // Trying to support older devices (pre KitKat) while moving KitKat and beyond
 // to the newer version of the Paho MQTT client library that, with luck, will
@@ -133,6 +134,7 @@ android {
             buildConfigField "boolean", "HAVE_PASSWORD", "false"
             buildConfigField "boolean", "NO_NEW_RELAY", "true"
             buildConfigField "boolean", "LOCUTILS_ENABLED", "false"
+            buildConfigField "String", "LAST_COMMIT_FILE", "\"$LAST_COMMIT_FILE\""
         }
 
         xw4GPlay {
@@ -454,6 +456,11 @@ task makeBuildAssets() {
     if (diff) {
         out += "\n" + diff
     }
+    new File(path).write(out)
+
+	// Now the latest commit
+    path = new File(assetsDir, LAST_COMMIT_FILE).getAbsolutePath()
+    out = "git log -n 1".execute().text.trim()
     new File(path).write(out)
 }
 

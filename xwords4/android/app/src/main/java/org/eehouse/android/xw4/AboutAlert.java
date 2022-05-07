@@ -25,12 +25,14 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface.OnClickListener;
 import android.content.DialogInterface;
+import android.content.res.AssetManager;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
 
 import org.eehouse.android.xw4.jni.XwJNI;
 
+import java.io.InputStream;
 import java.text.DateFormat;
 import java.util.Date;
 
@@ -79,6 +81,16 @@ public class AboutAlert extends XWDialogFragment {
             String[] pair = BTUtils.getBTNameAndAddress();
             if ( null != pair && 2 >= pair.length && null != pair[1] ) {
                 str += "\n\n" + getString( R.string.about_btaddr_fmt, pair[1] );
+            }
+
+            AssetManager am = context.getAssets();
+            try {
+                InputStream is = am.open( BuildConfig.LAST_COMMIT_FILE );
+                byte[] tmp = new byte[2 * 1024];
+                int nRead = is.read( tmp, 0, tmp.length );
+                str += "\n\n" + new String( tmp, 0, nRead );
+            } catch ( Exception ex ) {
+                Log.ex( TAG, ex );
             }
         }
         ((TextView)view.findViewById( R.id.about_build ))
