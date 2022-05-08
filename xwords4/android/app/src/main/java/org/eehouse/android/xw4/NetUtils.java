@@ -48,6 +48,8 @@ import javax.net.ssl.HttpsURLConnection;
 
 import javax.net.SocketFactory;
 
+import org.eehouse.android.xw4.jni.XwJNI;
+
 public class NetUtils {
     private static final String TAG = NetUtils.class.getSimpleName();
 
@@ -125,19 +127,30 @@ public class NetUtils {
         }
     }
 
+    private static String urlForGameID( Context context, int gameID )
+    {
+        String host = XWPrefs.getPrefsString( context, R.string.key_mqtt_host );
+        String myID = XwJNI.dvc_getMQTTDevID( null );
+        String url = String.format( "https://%s/xw4/ui/games?gameid=%d&d1=%s",
+                                    host, gameID, myID );
+        return url;
+    }
+
+    static void gameURLToClip( Context context, int gameID )
+    {
+        String url = urlForGameID( context, gameID );
+        Utils.stringToClip( context, url );
+        Utils.showToast( context, R.string.relaypage_url_copied );
+    }
+
     static void copyAndLaunchGamePage( Context context, int gameID )
     {
         // Requires a login, so only of use to me right now....
-        String host = XWPrefs.getPrefsString( context, R.string.key_mqtt_host );
-        String url = String.format( "https://%s/xw4/ui/games?gameid=%d",
-                                    host, gameID );
+        String url = urlForGameID( context, gameID );
         Intent intent = new Intent( Intent.ACTION_VIEW, Uri.parse( url ) );
         if ( null != intent.resolveActivity( context.getPackageManager() ) ) {
             context.startActivity( intent );
         }
-
-        Utils.stringToClip( context, url );
-        Utils.showToast( context, R.string.relaypage_url_copied );
     }
 
     public static byte[][][] queryRelay( Context context, String[] ids )

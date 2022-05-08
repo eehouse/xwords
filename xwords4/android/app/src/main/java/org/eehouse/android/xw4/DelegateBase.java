@@ -458,6 +458,9 @@ public abstract class DelegateBase implements DlgClickNotify,
                 if ( conTypes.contains( CommsConnType.COMMS_CONN_MQTT ) ) {
                     buttonTxt = R.string.list_item_relaypage;
                     final int gameID = summary.gameID;
+                    if ( BuildConfig.NON_RELEASE ) {
+                        NetUtils.gameURLToClip( m_activity, gameID );
+                    }
                     lstnr = new OnClickListener() {
                             @Override
                             public void onClick( DialogInterface dlg, int whichButton ) {
