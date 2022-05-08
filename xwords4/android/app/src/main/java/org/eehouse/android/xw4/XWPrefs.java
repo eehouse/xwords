@@ -335,17 +335,6 @@ public class XWPrefs {
         return getPrefsStringArray( context, R.string.key_bt_addrs );
     }
 
-    public static String getDevID( Context context )
-    {
-        String id = getPrefsString( context, R.string.key_dev_id );
-        if ( null == id || 0 == id.length() ) {
-            id = String.format( "%08X-%08X", Utils.nextRandomInt(),
-                                Utils.nextRandomInt() );
-            setPrefsString( context, R.string.key_dev_id, id );
-        }
-        return id;
-    }
-
     public static DictUtils.DictLoc getDefaultLoc( Context context )
     {
         boolean internal = getDefaultLocInternal( context );

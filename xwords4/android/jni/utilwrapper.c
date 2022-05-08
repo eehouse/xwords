@@ -747,7 +747,7 @@ and_util_getInviteeName( XW_UtilCtxt* uc, XWEnv xwe, XP_U16 plyrNum,
     UTIL_CBK_TAIL();
 }
 
-#ifdef XWFEATURE_DEVID
+#if defined XWFEATURE_DEVID && defined XWFEATURE_RELAY
 static const XP_UCHAR*
 and_dutil_getDevID( XW_DUtilCtxt* duc, XWEnv xwe, DevIDType* typ )
 {
@@ -794,7 +794,7 @@ and_dutil_deviceRegistered( XW_DUtilCtxt* duc, XWEnv xwe, DevIDType typ,
     deleteLocalRefs( env, jstr, jtyp, DELETE_NO_REF );
     DUTIL_CBK_TAIL();
 }
-#endif  /* XWFEATURE_DEVID */
+#endif  /* XWFEATURE_DEVID && XWFEATURE_RELAY */
 
 #endif
 
@@ -1083,7 +1083,7 @@ makeDUtil( MPFORMAL JNIEnv* env,
     SET_DPROC(remove);
 # endif
 
-# ifdef XWFEATURE_DEVID
+# if defined XWFEATURE_DEVID && defined XWFEATURE_RELAY
     SET_DPROC(getDevID);
     SET_DPROC(deviceRegistered);
 # endif

@@ -70,7 +70,6 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
     private static final String k_INDEX = "index";
     private static final String k_LEN = "len";
     private static final String k_URL = "url";
-    private static final String k_DEVID = "did";
     private static final String k_MQTTDEVID = "devid";
     private static final String k_DEBUG = "dbg";
     private static final String k_XLATEINFO = "xlatinfo";
@@ -150,7 +149,6 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
                 }
                 appParams.put( k_DEBUG, BuildConfig.DEBUG );
                 params.put( k_APP, appParams );
-                params.put( k_DEVID, XWPrefs.getDevID( context ) );
 
                 String devID = XwJNI.dvc_getMQTTDevID( null );
                 params.put( k_MQTTDEVID, devID );
@@ -168,7 +166,6 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
             }
             try {
                 params.put( k_DICTS, dictParams );
-                params.put( k_DEVID, XWPrefs.getDevID( context ) );
             } catch ( org.json.JSONException jse ) {
                 Log.ex( TAG, jse );
             }

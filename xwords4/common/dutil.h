@@ -69,7 +69,7 @@ typedef struct _DUtilVtable {
                                          const XP_UCHAR* p2 );
 #endif
 
-#ifdef XWFEATURE_DEVID
+#if defined XWFEATURE_DEVID && defined XWFEATURE_RELAY
     const XP_UCHAR* (*m_dutil_getDevID)( XW_DUtilCtxt* duc, XWEnv xwe, DevIDType* typ );
     void (*m_dutil_deviceRegistered)( XW_DUtilCtxt* duc, XWEnv xwe, DevIDType typ,
                                      const XP_UCHAR* idRelay );
@@ -138,7 +138,7 @@ void dutil_super_init( MPFORMAL XW_DUtilCtxt* dutil );
     (duc)->vtable.m_dutil_phoneNumbersSame( (duc), (e), (p1), (p2) )
 #endif
 
-#ifdef XWFEATURE_DEVID
+#if defined XWFEATURE_DEVID && defined XWFEATURE_RELAY
 # define dutil_getDevID( duc, e, t )             \
     (duc)->vtable.m_dutil_getDevID((duc), (e),(t))
 # define dutil_deviceRegistered( duc, e, typ, id )                       \

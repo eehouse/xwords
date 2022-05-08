@@ -52,7 +52,7 @@ static XP_Bool  linux_dutil_phoneNumbersSame( XW_DUtilCtxt* duc, XWEnv xwe,
                                               const XP_UCHAR* p2 );
 #endif
 
-#ifdef XWFEATURE_DEVID
+#if defined XWFEATURE_DEVID && defined XWFEATURE_RELAY
 static const XP_UCHAR* linux_dutil_getDevID( XW_DUtilCtxt* duc, XWEnv xwe, DevIDType* typ );
 static void linux_dutil_deviceRegistered( XW_DUtilCtxt* duc, XWEnv xwe, DevIDType typ,
                                           const XP_UCHAR* idRelay );
@@ -168,7 +168,7 @@ linux_dutils_init( MPFORMAL VTableMgr* vtMgr, void* closure )
     SET_PROC(phoneNumbersSame);
 #endif
 
-#ifdef XWFEATURE_DEVID
+#if defined XWFEATURE_DEVID && defined XWFEATURE_RELAY
     SET_PROC(getDevID);
     SET_PROC(deviceRegistered);
 #endif
@@ -380,7 +380,7 @@ linux_dutil_phoneNumbersSame( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe),
 }
 #endif
 
-#ifdef XWFEATURE_DEVID
+#if defined XWFEATURE_DEVID && defined XWFEATURE_RELAY
 static const XP_UCHAR*
 linux_dutil_getDevID( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe), DevIDType* typ )
 {

@@ -109,7 +109,6 @@
   <string name="key_sms_phones">key_sms_phones</string>
   <string name="key_relay_ids">key_relay_ids</string>
   <string name="key_connstat_data">key_connstat_data</string>
-  <string name="key_dev_id">key_dev_id</string>
 
   <string name="key_gcmvers_regid">key_gcmvers_regid</string>
   <string name="key_relay_regid">key_relay_regid</string>

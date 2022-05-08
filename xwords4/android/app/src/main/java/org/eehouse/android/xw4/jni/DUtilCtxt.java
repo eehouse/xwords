@@ -52,42 +52,6 @@ public class DUtilCtxt {
         m_context = XWApp.getContext();
     }
 
-    // Possible values for typ[0], these must match enum in xwrelay.h
-    public enum DevIDType { ID_TYPE_NONE
-                            , ID_TYPE_RELAY
-                            , ID_TYPE_LINUX
-                            , ID_TYPE_ANDROID_GCM_UNUSED // 3
-                            , ID_TYPE_ANDROID_OTHER
-                            , ID_TYPE_ANON
-                            , ID_TYPE_ANDROID_FCM // 6
-            }
-
-    public String getDevID( /*out*/ byte[] typa )
-    {
-        DevIDType typ = DevIDType.ID_TYPE_NONE;
-        String result = DevID.getRelayDevID( m_context );
-        if ( null != result ) {
-            typ = DevIDType.ID_TYPE_RELAY;
-        }
-        typa[0] = (byte)typ.ordinal();
-        return result;
-    }
-
-    public void deviceRegistered( DevIDType devIDType, String idRelay )
-    {
-        switch ( devIDType ) {
-        case ID_TYPE_RELAY:
-            DevID.setRelayDevID( m_context, idRelay );
-            break;
-        case ID_TYPE_NONE:
-            DevID.clearRelayDevID( m_context );
-            break;
-        default:
-            Assert.failDbg();
-            break;
-        }
-    }
-
     private static final int STRD_ROBOT_TRADED =                  1;
     private static final int STR_ROBOT_MOVED =                    2;
     private static final int STRS_VALUES_HEADER =                 3;
