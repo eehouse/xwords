@@ -86,7 +86,6 @@ public class GamesListDelegate extends ListDelegateBase
     private static final String SAVE_REMATCHEXTRAS = "SAVE_REMATCHEXTRAS";
     private static final String SAVE_MYSIS = TAG + "/MYSIS";
 
-    private static final String RELAYIDS_EXTRA = "relayids";
     private static final String ROWID_EXTRA = "rowid";
     private static final String GAMEID_EXTRA = "gameid";
     private static final String INVITEE_REC_EXTRA = "invitee_rec";
@@ -100,7 +99,6 @@ public class GamesListDelegate extends ListDelegateBase
     private static final String REMATCH_ADDRS_EXTRA = "rm_addrs";
     private static final String REMATCH_BTADDR_EXTRA = "rm_btaddr";
     private static final String REMATCH_PHONE_EXTRA = "rm_phone";
-    private static final String REMATCH_RELAYID_EXTRA = "rm_relayid";
     private static final String REMATCH_P2PADDR_EXTRA = "rm_p2pma";
 
     private static final String INVITE_ACTION = "org.eehouse.action_invite";
@@ -2330,39 +2328,6 @@ public class GamesListDelegate extends ListDelegateBase
         return hasDicts;
     }
 
-    private void invalRelayIDs( String[] relayIDs )
-    {
-        if ( null != relayIDs ) {
-            for ( String relayID : relayIDs ) {
-                long[] rowids = DBUtils.getRowIDsFor( m_activity, relayID );
-                for ( long rowid : rowids ) {
-                    reloadGame( rowid );
-                }
-            }
-        }
-    }
-
-    // Launch the first of these for which there's a dictionary
-    // present.
-    private boolean startFirstHasDict( String[] relayIDs )
-    {
-        boolean launched = false;
-        if ( null != relayIDs ) {
-            outer:
-            for ( String relayID : relayIDs ) {
-                long[] rowids = DBUtils.getRowIDsFor( m_activity, relayID );
-                for ( long rowid : rowids ) {
-                    if ( GameUtils.gameDictsHere( m_activity, rowid ) ) {
-                        launchGame( rowid );
-                        launched = true;
-                        break outer;
-                    }
-                }
-            }
-        }
-        return launched;
-    }
-
     private boolean startFirstHasDict( final long rowid, final Bundle extras )
     {
         boolean handled = -1 != rowid && DBUtils.haveGame( m_activity, rowid );
@@ -2391,11 +2356,8 @@ public class GamesListDelegate extends ListDelegateBase
     {
         boolean result = false;
         if ( null != intent ) {
-            String[] relayIDs = intent.getStringArrayExtra( RELAYIDS_EXTRA );
-            if ( !startFirstHasDict( relayIDs ) ) {
-                long rowid = intent.getLongExtra( ROWID_EXTRA, -1 );
-                result = startFirstHasDict( rowid, intent.getExtras() );
-            }
+            long rowid = intent.getLongExtra( ROWID_EXTRA, -1 );
+            result = startFirstHasDict( rowid, intent.getExtras() );
         }
         return result;
     }
@@ -2622,8 +2584,6 @@ public class GamesListDelegate extends ListDelegateBase
             } else {
                 String btAddr = extras.getString( REMATCH_BTADDR_EXTRA );
                 String phone = extras.getString( REMATCH_PHONE_EXTRA );
-                String relayID = extras.getString( REMATCH_RELAYID_EXTRA );
-                Assert.assertTrueNR( null == relayID );
                 String p2pMacAddress = extras.getString( REMATCH_P2PADDR_EXTRA );
                 String dict = extras.getString( REMATCH_DICT_EXTRA );
                 int lang = extras.getInt( REMATCH_LANG_EXTRA, -1 );
@@ -2633,7 +2593,7 @@ public class GamesListDelegate extends ListDelegateBase
                 newid = GameUtils.makeNewMultiGame( m_activity, groupID, dict,
                                                     lang, json, addrs, gameName );
                 DBUtils.addRematchInfo( m_activity, newid, btAddr, phone,
-                                        relayID, p2pMacAddress, mqttDevID );
+                                        p2pMacAddress, mqttDevID );
             }
             launchGame( newid );
         }
@@ -3129,8 +3089,8 @@ public class GamesListDelegate extends ListDelegateBase
                                             long groupID, CurGameInfo gi,
                                             CommsConnTypeSet addrTypes,
                                             String btAddr, String phone,
-                                            String relayID, String p2pMacAddress,
-                                            String mqttDevID, String newName )
+                                            String p2pMacAddress, String mqttDevID,
+                                            String newName )
     {
         Intent intent = null;
         boolean isSolo = gi.serverRole == CurGameInfo.DeviceRole.SERVER_STANDALONE;
@@ -3152,11 +3112,6 @@ public class GamesListDelegate extends ListDelegateBase
             if ( null != phone ) {
                 Assert.assertTrue( addrTypes.contains( CommsConnType.COMMS_CONN_SMS ) );
                 intent.putExtra( REMATCH_PHONE_EXTRA, phone );
-            }
-            if ( null != relayID ) {
-                Assert.failDbg();
-                Assert.assertTrue( addrTypes.contains( CommsConnType.COMMS_CONN_RELAY ) );
-                intent.putExtra( REMATCH_RELAYID_EXTRA, relayID );
             }
             if ( null != p2pMacAddress ) {
                 Assert.assertTrue( addrTypes.contains( CommsConnType.COMMS_CONN_P2P ) );

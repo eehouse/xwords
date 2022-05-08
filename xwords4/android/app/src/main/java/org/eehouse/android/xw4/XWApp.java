@@ -87,7 +87,6 @@ public class XWApp extends Application
         }
         UpdateCheckReceiver.restartTimer( this );
 
-        RelayService.logGone( TAG, 1 );
         WiDirWrapper.init( this );
 
         mPort = Short.valueOf( getString( R.string.nbs_port ) );

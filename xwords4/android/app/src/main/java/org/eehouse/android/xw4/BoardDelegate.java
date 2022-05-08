@@ -2666,7 +2666,7 @@ public class BoardDelegate extends DelegateBase
                     dev = null; // don't record send a second time
                     break;
                 case RELAY:
-                    RelayService.logGoneFail( TAG, 2 );
+                    Assert.failDbg();
                     break;
                 case WIFIDIRECT:
                     WiDirService.inviteRemote( m_activity, dev, nli );
@@ -2895,7 +2895,6 @@ public class BoardDelegate extends DelegateBase
         boolean doIt = true;
         String phone = null;
         String btAddr = null;
-        String relayID = null;
         String p2pMacAddress = null;
         String mqttDevID = null;
         if ( DeviceRole.SERVER_STANDALONE == gi.serverRole ) {
@@ -2922,8 +2921,6 @@ public class BoardDelegate extends DelegateBase
                 }
                 if ( addr.contains( CommsConnType.COMMS_CONN_RELAY ) ) {
                     Assert.failDbg();
-                    Assert.assertNull( relayID );
-                    relayID = XwJNI.comms_formatRelayID( jniGamePtr, ii );
                 }
                 if ( addr.contains( CommsConnType.COMMS_CONN_P2P ) ) {
                     Assert.assertNull( p2pMacAddress );
@@ -2941,8 +2938,7 @@ public class BoardDelegate extends DelegateBase
             Intent intent = GamesListDelegate
                 .makeRematchIntent( activity, rowid, groupID, gi,
                                     summary.conTypes, btAddr, phone,
-                                    relayID, p2pMacAddress,
-                                    mqttDevID, newName );
+                                    p2pMacAddress, mqttDevID, newName );
             if ( null != intent ) {
                 activity.startActivity( intent );
             }
@@ -3051,10 +3047,6 @@ public class BoardDelegate extends DelegateBase
             if ( null != value ) {
                 BTUtils.inviteRemote( m_activity, value, nli );
                 recordInviteSent( InviteMeans.BLUETOOTH, value );
-            }
-            value = m_summary.getStringExtra( GameSummary.EXTRA_REMATCH_RELAY );
-            if ( null != value ) {
-                RelayService.logGoneFail( TAG, 3 );
             }
             value = m_summary.getStringExtra( GameSummary.EXTRA_REMATCH_P2P );
             if ( null != value ) {

@@ -2568,29 +2568,6 @@ Java_org_eehouse_android_xw4_jni_XwJNI_comms_1isConnected
 }
 
 JNIEXPORT jstring JNICALL
-Java_org_eehouse_android_xw4_jni_XwJNI_comms_1formatRelayID
-( JNIEnv* env, jclass C, GamePtrType gamePtr, jint indx )
-{
-    jstring result = NULL;
-#ifdef XWFEATURE_RELAY
-    XWJNI_START();
-
-    XP_UCHAR buf[64];
-    XP_U16 len = sizeof(buf);
-    if ( comms_formatRelayID( state->game.comms, indx, buf, &len ) ) {
-        XP_ASSERT( len < sizeof(buf) );
-        LOG_RETURNF( "%s", buf );
-        result = (*env)->NewStringUTF( env, buf );
-    }
-
-    XWJNI_END();
-#else
-    XP_ASSERT(0);
-#endif
-    return result;
-}
-
-JNIEXPORT jstring JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_comms_1getStats
 ( JNIEnv* env, jclass C, GamePtrType gamePtr )
 {

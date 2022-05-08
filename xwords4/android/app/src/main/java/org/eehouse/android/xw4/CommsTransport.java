@@ -404,7 +404,7 @@ public class CommsTransport implements TransportProcs,
         int nSent = -1;
         switch ( conType ) {
         case COMMS_CONN_RELAY:
-            RelayService.logGoneFail( TAG, 2 );
+            Assert.failDbg();
             break;
         case COMMS_CONN_SMS:
             nSent = NBSProto.sendPacket( context, addr.sms_phone,

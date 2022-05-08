@@ -475,7 +475,7 @@ public abstract class DelegateBase implements DlgClickNotify,
                             public void onClick( DialogInterface dlg, int buttn ) {
                                 NetStateCache.reset( m_activity );
                                 if ( conTypes.contains( CommsConnType.COMMS_CONN_RELAY ) ) {
-                                    RelayService.logGoneFail( TAG, 1 );
+                                    Assert.failDbg();
                                 }
                                 if ( conTypes.contains( CommsConnType.COMMS_CONN_P2P ) ) {
                                     WiDirService.reset( getActivity() );

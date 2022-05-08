@@ -388,15 +388,13 @@ public class DBUtils {
     }
 
     public static void addRematchInfo( Context context, long rowid, String btAddr,
-                                       String phone, String relayID, String p2pAddr,
-                                       String mqttDevID )
+                                       String phone, String p2pAddr, String mqttDevID )
     {
         try ( GameLock lock = GameLock.tryLock(rowid) ) {
             if ( null != lock ) {
                 GameSummary summary = getSummary( context, lock )
                     .putStringExtra( GameSummary.EXTRA_REMATCH_BTADDR, btAddr )
                     .putStringExtra( GameSummary.EXTRA_REMATCH_PHONE, phone )
-                    .putStringExtra( GameSummary.EXTRA_REMATCH_RELAY, relayID )
                     .putStringExtra( GameSummary.EXTRA_REMATCH_P2P, p2pAddr )
                     .putStringExtra( GameSummary.EXTRA_REMATCH_MQTT, mqttDevID )
                     ;
@@ -864,23 +862,6 @@ public class DBUtils {
                 if ( typs.contains( typ ) ) {
                     ++result;
                 }
-            }
-            cursor.close();
-        }
-        return result;
-    }
-
-    public static long[] getRowIDsFor( Context context, String relayID )
-    {
-        long[] result = {};
-        String[] columns = { ROW_ID };
-        String selection = DBHelper.RELAYID + "='" + relayID + "'";
-        initDB( context );
-        synchronized( s_dbHelper ) {
-            Cursor cursor = query( TABLE_NAMES.SUM, columns, selection );
-            result = new long[cursor.getCount()];
-            for ( int ii = 0; cursor.moveToNext(); ++ii ) {
-                result[ii] = cursor.getLong( cursor.getColumnIndex(ROW_ID) );
             }
             cursor.close();
         }

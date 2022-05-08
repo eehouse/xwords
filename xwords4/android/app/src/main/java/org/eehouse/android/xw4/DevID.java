@@ -42,13 +42,6 @@ public class DevID {
     private static String s_relayDevID;
     private static int s_asInt;
 
-    // Called, likely on DEBUG builds only, when the relay hostname is
-    // changed. DevIDs are invalid at that point.
-    public static void hostChanged( Context context )
-    {
-        RelayService.logGone( TAG, 1 );
-    }
-
     public static int getRelayDevIDInt( Context context )
     {
         if ( 0 == s_asInt ) {

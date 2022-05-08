@@ -715,7 +715,7 @@ public class ConnStatusHandler {
         if ( BuildConfig.DEBUG ) {
             switch ( typ ) {
             case COMMS_CONN_RELAY:
-                RelayService.logGoneFail( TAG, 1 );
+                Assert.failDbg();
                 break;
             case COMMS_CONN_MQTT:
                 if ( null != addr ) {

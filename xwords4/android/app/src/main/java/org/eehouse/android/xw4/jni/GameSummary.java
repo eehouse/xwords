@@ -48,7 +48,6 @@ public class GameSummary implements Serializable {
     private static final String TAG = GameSummary.class.getSimpleName();
     public static final String EXTRA_REMATCH_BTADDR = "rm_btaddr";
     public static final String EXTRA_REMATCH_PHONE = "rm_phone";
-    public static final String EXTRA_REMATCH_RELAY = "rm_relay";
     public static final String EXTRA_REMATCH_P2P = "rm_p2p";
     public static final String EXTRA_REMATCH_MQTT = "rm_mqtt";
     public static final String EXTRA_REMATCH_ADDR = "rm_addr";
@@ -534,7 +533,6 @@ public class GameSummary implements Serializable {
         boolean found = false;
         String[] keys = { EXTRA_REMATCH_BTADDR,
                           EXTRA_REMATCH_PHONE,
-                          EXTRA_REMATCH_RELAY,
                           EXTRA_REMATCH_P2P,
                           EXTRA_REMATCH_MQTT,
         };

@@ -502,7 +502,6 @@ public class XwJNI {
     public static native void comms_transportFailed( GamePtr gamePtr,
                                                      CommsConnType failed );
     public static native boolean comms_isConnected( GamePtr gamePtr );
-    public static native String comms_formatRelayID( GamePtr gamePtr, int indx );
     public static native String comms_getStats( GamePtr gamePtr );
     public static native void comms_addMQTTDevID( GamePtr gamePtr, int channelNo,
                                                   String devID );
