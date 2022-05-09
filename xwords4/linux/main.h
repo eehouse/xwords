@@ -95,6 +95,7 @@ typedef struct _LaunchParams {
     XP_Bool undoWhenDone;
     XP_Bool verticalScore;
     XP_Bool hideValues;
+    XP_Bool skipMQTTAdd;
     XP_Bool showColors;
     XP_Bool allowPeek;
     XP_Bool sortNewTiles;

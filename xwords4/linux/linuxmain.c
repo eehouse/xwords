@@ -754,6 +754,7 @@ typedef enum {
     CMD_HELP
     ,CMD_SKIP_GAMEOVER
     ,CMD_SHOW_OTHERSCORES
+    ,CMD_SKIP_MQTT
     ,CMD_HOSTIP
     ,CMD_HOSTPORT
     ,CMD_MYPORT
@@ -896,6 +897,7 @@ static CmdInfoRec CmdInfoRecs[] = {
     { CMD_HELP, false, "help", "print this message" }
     ,{ CMD_SKIP_GAMEOVER, false, "skip-final", "skip final scores display" }
     ,{ CMD_SHOW_OTHERSCORES, false, "show-other", "show robot/remote scores" }
+    ,{ CMD_SKIP_MQTT, false, "skip-mqtt-add", "Do not add MQTT to games as they connect" }
     ,{ CMD_HOSTIP, true, "host-ip", "remote host ip address (for direct connect)" }
     ,{ CMD_HOSTPORT, true, "host-port", "remote host ip address (for direct connect)" }
     ,{ CMD_MYPORT, true, "my-port", "remote host ip address (for direct connect)" }
@@ -2761,6 +2763,9 @@ main( int argc, char** argv )
             break;
         case CMD_SHOW_OTHERSCORES:
             mainParams.showRobotScores = XP_TRUE;
+            break;
+        case CMD_SKIP_MQTT:
+            mainParams.skipMQTTAdd = XP_TRUE;
             break;
 #ifdef XWFEATURE_RELAY
         case CMD_ROOMNAME:

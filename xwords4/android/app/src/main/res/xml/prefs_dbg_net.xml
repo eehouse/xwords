@@ -57,5 +57,10 @@
         android:numeric="decimal"
         />
 
+    <CheckBoxPreference android:key="@string/key_skip_mqtt_add"
+                        android:title="@string/skip_mqtt_add_title"
+                        android:summary="@string/skip_mqtt_add_summary"
+                        android:defaultValue="false"
+                        />
   </PreferenceCategory>
 </PreferenceScreen>

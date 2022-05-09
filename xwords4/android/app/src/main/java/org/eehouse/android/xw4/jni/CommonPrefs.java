@@ -70,6 +70,7 @@ public class CommonPrefs extends XWPrefs {
     public boolean sortNewTiles;
     public boolean allowPeek;
     public boolean hideCrosshairs;
+    public boolean skipMQTTAdd;
     public TileValueType tvType;
 
     public int[] playerColors;
@@ -101,6 +102,7 @@ public class CommonPrefs extends XWPrefs {
         showColors = getBoolean( context, sp, R.string.key_color_tiles, true );
         sortNewTiles = getBoolean( context, sp, R.string.key_sort_tiles, true );
         allowPeek = getBoolean( context, sp, R.string.key_peek_other, false );
+        skipMQTTAdd = getBoolean( context, sp, R.string.key_skip_mqtt_add, false );
         hideCrosshairs = getBoolean( context, sp, R.string.key_hide_crosshairs, false );
 
         int ord = getInt(context, sp, R.string.key_tile_valuetype, 0);

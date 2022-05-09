@@ -128,6 +128,7 @@ typedef struct ServerNonvolatiles {
     XP_U8 pendingRegistrations; /* server-case only */
     XP_Bool showRobotScores;
     XP_Bool sortNewTiles;
+    XP_Bool skipMQTTAdd;
 #ifdef STREAM_VERS_BIGBOARD
     XP_U8 streamVersion;
 #endif
@@ -697,6 +698,7 @@ server_prefsChanged( ServerCtxt* server, const CommonPrefs* cp )
 {
     server->nv.showRobotScores = cp->showRobotScores;
     server->nv.sortNewTiles = cp->sortNewTiles;
+    server->nv.skipMQTTAdd = cp->skipMQTTAdd;
 #ifdef XWFEATURE_SLOW_ROBOT
     server->nv.robotThinkMin = cp->robotThinkMin;
     server->nv.robotThinkMax = cp->robotThinkMax;
@@ -754,8 +756,12 @@ readMQTTDevID( ServerCtxt* server, XWStreamCtxt* stream )
 
         MQTTDevID devID;
         if ( strToMQTTCDevID( buf, &devID ) ) {
-            XP_PlayerAddr channelNo = stream_getAddress( stream );
-            comms_addMQTTDevID( server->vol.comms, channelNo, &devID );
+            if ( server->nv.skipMQTTAdd ) {
+                XP_LOGFF( "skipMQTTAdd: %s", boolToStr(server->nv.skipMQTTAdd) );
+            } else {
+                XP_PlayerAddr channelNo = stream_getAddress( stream );
+                comms_addMQTTDevID( server->vol.comms, channelNo, &devID );
+            }
         }
     }
 }

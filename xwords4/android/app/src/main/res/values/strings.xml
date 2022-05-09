@@ -2732,4 +2732,7 @@
     <!-- Button giving option of opening just-downloaded wordlist -->
     <string name="button_open_dict">Open</string>
 
+    <!-- Debug option to NOT augment whatever comm-vias are chosen with MQTT when possible -->
+    <string name="skip_mqtt_add_title">Skip adding MQTT</string>
+    <string name="skip_mqtt_add_summary">Do NOT attempt to send all messages by MQTT</string>
 </resources>

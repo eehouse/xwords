@@ -2466,6 +2466,7 @@ initGlobalsNoDraw( GtkGameGlobals* globals, LaunchParams* params,
 
     cGlobals->cp.showBoardArrow = XP_TRUE;
     cGlobals->cp.hideTileValues = params->hideValues;
+    cGlobals->cp.skipMQTTAdd = params->skipMQTTAdd;
     cGlobals->cp.skipCommitConfirm = params->skipCommitConfirm;
     cGlobals->cp.sortNewTiles = params->sortNewTiles;
     cGlobals->cp.showColors = params->showColors;

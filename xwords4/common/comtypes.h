@@ -261,6 +261,7 @@ typedef struct CommonPrefs {
     XP_Bool         hideTileValues; 
     XP_Bool         skipCommitConfirm; /* applies to all games */
     XP_Bool         sortNewTiles;    /* applies to all games */
+    XP_Bool         skipMQTTAdd;     /* Debugging only? Don't add MQTT to all comms in server.c */
 #ifdef XWFEATURE_SLOW_ROBOT
     XP_U16          robotThinkMin, robotThinkMax;
     XP_U16          robotTradePct;
