@@ -30,8 +30,6 @@ import android.content.Context;
 import android.graphics.Color;
 import android.os.Build;
 
-import org.eehouse.android.nbsplib.NBSProxy;
-
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.jni.XwJNI;
 
@@ -40,7 +38,7 @@ import java.util.UUID;
 import static androidx.lifecycle.Lifecycle.Event.ON_ANY;
 
 public class XWApp extends Application
-    implements LifecycleObserver, NBSProxy.Callbacks {
+    implements LifecycleObserver {
     private static final String TAG = XWApp.class.getSimpleName();
 
     public static final boolean DEBUG_EXP_TIMERS = false;
@@ -93,7 +91,6 @@ public class XWApp extends Application
         WiDirWrapper.init( this );
 
         mPort = Short.valueOf( getString( R.string.nbs_port ) );
-        NBSProxy.register( this, mPort, BuildConfig.APPLICATION_ID, this );
 
         DupeModeTimer.init( this );
 
@@ -125,36 +122,6 @@ public class XWApp extends Application
         Log.d( TAG, "onTerminate() called" );
         XwJNI.cleanGlobalsEmu();
         super.onTerminate();
-    }
-
-    // NBSProxy.Callbacks
-    @Override
-    public void onProxyAppLaunched()
-    {
-        Log.d( TAG, "onProxyAppLaunched()" );
-    }
-
-    @Override
-    public void onPermissionsGranted()
-    {
-        Log.d( TAG, "onPermissionsGranted()" );
-        GameUtils.resendAllIf( this, CommsConnType.COMMS_CONN_SMS );
-    }
-
-    @Override
-    public void onDataReceived( short port, String fromPhone, byte[] data )
-    {
-        Assert.assertTrue( port == mPort || !BuildConfig.DEBUG );
-        NBSProto.handleFrom( this, data, fromPhone, port );
-    }
-
-    @Override
-    public void onRegResponse( boolean appReached, boolean needsInitialLaunch )
-    {
-        if ( needsInitialLaunch ) {
-            String channelID = Channels.getChannelID( this, Channels.ID.NBSPROXY );
-            NBSProxy.postLaunchNotification( this, channelID, R.drawable.notify );
-        }
     }
 
     public static UUID getAppUUID()

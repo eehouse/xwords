@@ -34,8 +34,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.eehouse.android.nbsplib.NBSProxy;
-
 import org.eehouse.android.xw4.DlgDelegate.Action;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.loc.LocUtils;
@@ -447,7 +445,7 @@ public class Perms23 {
             switch ( perm ) {
             case SEND_SMS:
             case RECEIVE_SMS:
-                workaroundKnown = workaroundKnown && NBSProxy.isInstalled( context );
+                workaroundKnown = false;
                 break;
             default:
                 Log.e( TAG, "bannedWithWorkaround(): unexpected perm %s", perm );

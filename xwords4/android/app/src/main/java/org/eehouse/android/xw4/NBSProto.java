@@ -34,8 +34,6 @@ import java.util.Set;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
-import org.eehouse.android.nbsplib.NBSProxy;
-
 import org.eehouse.android.xw4.MultiService.DictFetchOwner;
 import org.eehouse.android.xw4.MultiService.MultiEvent;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
@@ -331,7 +329,8 @@ public class NBSProto {
         {
             Context context = XWApp.getContext();
             boolean success = false;
-            if ( XWPrefs.getNBSEnabled( context ) ) {
+            if ( XWPrefs.getNBSEnabled( context )
+                 && !Perms23.Perm.SEND_SMS.isBanned( context ) ) {
 
                 // Try send-to-self
                 if ( XWPrefs.getSMSToSelfEnabled( context ) ) {
@@ -348,19 +347,11 @@ public class NBSProto {
                 if ( !success ) {
                     try {
                         SmsManager mgr = SmsManager.getDefault();
-                        boolean useProxy = Perms23.Perm.SEND_SMS.isBanned( context )
-                            && NBSProxy.isInstalled( context );
-                        PendingIntent sent = useProxy ? null
-                            : makeStatusIntent( context, MSG_SENT );
-                        PendingIntent delivery = useProxy ? null
-                            : makeStatusIntent( context, MSG_DELIVERED );
+                        PendingIntent sent = makeStatusIntent( context, MSG_SENT );
+                        PendingIntent delivery = makeStatusIntent( context, MSG_DELIVERED );
                         for ( byte[] fragment : fragments ) {
-                            if ( useProxy ) {
-                                NBSProxy.send( context, phone, port, fragment );
-                            } else {
-                                mgr.sendDataMessage( phone, null, port, fragment,
-                                                     sent, delivery );
-                            }
+                            mgr.sendDataMessage( phone, null, port, fragment,
+                                                 sent, delivery );
                         }
                         success = true;
                     } catch ( IllegalArgumentException iae ) {
