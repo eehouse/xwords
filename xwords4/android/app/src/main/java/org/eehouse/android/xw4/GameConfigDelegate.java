@@ -609,9 +609,7 @@ public class GameConfigDelegate extends DelegateBase
                 m_carOrig = XwJNI.comms_getAddr( gamePtr );
                 m_remoteAddrs = XwJNI.comms_getAddrs( gamePtr );
             } else if ( !localOnlyGame() ) {
-                String relayName = XWPrefs.getHostName( m_activity );
-                int relayPort = XWPrefs.getDefaultRelayPort( m_activity );
-                m_carOrig = XwJNI.comms_getInitialAddr( relayName, relayPort );
+                m_carOrig = XwJNI.comms_getInitialAddr();
             } else {
                 // Leaving this null breaks stuff: an empty set, rather than a
                 // null one, represents a standalone game

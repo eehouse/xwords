@@ -274,8 +274,7 @@ public class XwJNI {
         return nli_from_stream( getJNI().m_ptrGlobals, stream );
     }
 
-    public static native CommsAddrRec comms_getInitialAddr( String relayHost,
-                                                            int relayPort );
+    public static native CommsAddrRec comms_getInitialAddr();
     public static native String comms_getUUID();
 
     // Game methods

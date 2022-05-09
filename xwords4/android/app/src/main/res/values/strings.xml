@@ -2284,10 +2284,8 @@
     <string name="board_menu_game_netstats">Network stats</string>
     <string name="board_menu_game_showInvites">Show invites</string>
     <string name="netstats_title">Game network stats</string>
-    <string name="relay_port">Relay game port</string>
     <string name="mqtt_port">MQTT port</string>
     <string name="mqtt_qos">MQTT QOS</string>
-    <string name="proxy_port">Relay device port</string>
     <string name="name_dict_fmt">%1$s/%2$s</string>
     <string name="gamel_menu_storedb">Write games to SD card</string>
     <string name="gamel_menu_loaddb">Load games from SD card</string>

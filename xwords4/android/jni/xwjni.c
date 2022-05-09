@@ -964,7 +964,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_nli_1from_1stream
 
 JNIEXPORT jobject JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_comms_1getInitialAddr
-( JNIEnv* env, jclass C, jstring jname, jint port )
+( JNIEnv* env, jclass C )
 {
     CommsAddrRec addr;
 #ifdef XWFEATURE_RELAY

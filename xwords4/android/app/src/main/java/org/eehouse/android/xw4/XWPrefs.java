@@ -103,17 +103,6 @@ public class XWPrefs {
         setPrefsBoolean( context, R.string.key_hide_newgames, set );
     }
 
-    public static int getDefaultRelayPort( Context context )
-    {
-        String val = getPrefsString( context, R.string.key_relay_port );
-        int result = 0;
-        try {
-            result = Integer.parseInt( val );
-        } catch ( Exception ex ) {
-        }
-        return result;
-    }
-
     public static String getDefaultUpdateUrl( Context context )
     {
         String result = getWithHost( context, R.string.key_update_url_path );
