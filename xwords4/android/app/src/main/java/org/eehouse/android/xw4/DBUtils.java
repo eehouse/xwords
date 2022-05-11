@@ -228,7 +228,9 @@ public class DBUtils {
                         CommsConnType typ = iter.next();
                         switch ( typ ) {
                         case COMMS_CONN_RELAY:
-                            Assert.failDbg();
+                            // Can't do this: there are still some relay games
+                            // on my devices anyway
+                            // Assert.failDbg();
                             col = cursor.getColumnIndex( DBHelper.ROOMNAME );
                             if ( col >= 0 ) {
                                 summary.roomName = cursor.getString( col );
