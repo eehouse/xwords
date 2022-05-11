@@ -111,7 +111,6 @@
 \n</string>
     <string name="vs_join">" vs. "</string>
     <string name="msgs_progress">Memeriksa pergerakan dll pada relay…</string>
-    <string name="gamel_menu_checkmoves">Periksa pergerakan</string>
     <string name="board_menu_game_final">Skor akhir</string>
     <string name="dict_lang_label_fmt">Daftar kata (%1$s)</string>
     <string name="invite_subject_fmt">Mari bermain CrossWords (ruangan %1$s)</string>
@@ -252,7 +251,6 @@
     <string name="gamel_menu_checkupdates">Periksa pembaruan</string>
     <string name="button_later">Nanti</string>
     <string name="button_disable_bt">Nonaktifkan permainan Bluetooth</string>
-    <string name="button_disable_relay">Nonaktifkan permainan Relay</string>
     <string name="button_enable_relay">Aktifkan permainan Relay</string>
     <string name="button_enable_bt">Aktifkan Bluetooth</string>
     <string name="button_enable_sms">Aktifkan SMS Data</string>

@@ -81,7 +81,6 @@
          preference, checks the relay immediately for any moves for
          networked games on this device and posts a notification if
          any is downloaded. -->
-    <string name="gamel_menu_checkmoves">Vérifier les coups</string>
     <!-- Text of progress indicator shown while check is being conducted -->
     <string name="msgs_progress">Vérification de coups, etc., sur le relai</string>
     <!-- If you choose the above option and have no networked games
@@ -1163,7 +1162,6 @@ arrivent</string>
          launched to send your invitation. -->
     <!--<string name="newgame_invite">Invite now</string>-->
     <string name="newgame_invite">Inviter maintenant</string>
-    <string name="newgame_drop_relay">Abandonner le relai</string>
     <!-- section separator (white-on-gray bar) for third section:
          bluetooth games -->
     <!--<string name="newgame_bt_header">New Bluetooth game</string>-->
@@ -1563,7 +1561,6 @@ mots)</string>
       with pending moves. When you open a flagged game it will connect
       and sync. (In a later release these moves will be downloaded in
       the background.)</string>-->
-    <string name="not_again_sync">Cette action vérifie si le relai a des messages/coups en suspens pour toutes les parties en réseau.</string>
     <!-- Shown when the user chooses the "board_menu_trade" menu -->
     <!--<string name="not_again_trading">You are entering tile-exchange
       mode.\n\nTap tiles to add/remove them from the set to be
@@ -2713,7 +2710,6 @@ changement, ou l\'éditer pour lui attribuer une façon de se connecter ?</stri
     <!--<string name="git_rev_title">Source version id</string>-->
     <!--XLATE-ME-->
     <!--<string name="relay_port">Relay game port</string>-->
-    <string name="relay_port">Port de partie du relai</string>
     <!--XLATE-ME-->
     <!--<string name="proxy_port">Relay device port</string>-->
     <string name="proxy_port">Port d\'appareil du relai</string>
@@ -2811,9 +2807,6 @@ pour la langue</string>
     <string name="checking_for_fmt">Recherche de listes de mots en %1$s…</string>
     <!-- <string name="db_store_done">SD card write complete.</string> -->
     <string name="db_store_done">Écriture sur la carte SD finie.</string>
-    <string name="confirm_drop_relay">Êtes-vous sûr de vouloir
-  abandonner la possibilité de communiquer via le relai pour cette
-  partie ?</string>
     <string name="confirm_drop_relay_bt">Le Bluetooth ne marche que pour les appareils proches.</string>
     <string name="confirm_drop_relay_sms">Jouer par MMS n\'est pas possible avec tous les opérateurs.</string>
     <string name="notify_chat_title_fmt">Message de discussion dans la partie %1$s</string>
@@ -2865,24 +2858,12 @@ pour la langue</string>
     <string name="chat_hint">Tapez ici…</string>
     <string name="chat_sender_fmt">%1$s :</string>
     <string name="summary_busy">Résumé indisponible</string>
-    <string name="disable_relay">Désactiver le jeu par relai</string>
     <string name="disable_relay_summary">Désactiver toute communication par Internet</string>
-    <string name="warn_relay_disabled">Le jeu par relai est pour l\'instant désactivé sur cet appareil. Aucun coup ne sera envoyé ou reçu par le relai.</string>
     <string name="warn_relay_later">Vous pouvez activer le jeu par relai maintenant, ou plus tard.</string>
-    <string name="warn_relay_remove">Vous pouvez activer le jeu par relai maintenant, ou le retirer de cette partie.</string>
     <string name="warn_relay_havegames">Êtes-vous sûr de vouloir désactiver le jeu par relai (Internet) \?
 \n
 \nLa plupart des parties en réseau échangent les coups via le relai, donc ne faites ça que si vous prévoyez de jouer TOUTES les parties contre un robot sur ce même appareil.</string>
-    <plurals name="warn_relay_games_fmt">
-        <item quantity="one">"
-\n
-\n(Vous avez une partie active utilisant le relai actuellement.)"</item>
-        <item quantity="other">"
-\n
-\n(Vous avez %1$d parties actives utilisant le relai actuellement.)"</item>
-    </plurals>
     <string name="button_enable_relay">Activer le jeu par relai</string>
-    <string name="button_disable_relay">Désactiver le jeu par relai</string>
     <string name="after_restart">Ce changement s\'appliquera après que vous ayez relancé CrossWords.</string>
     <string name="invite_choice_p2p">Wifi Direct</string>
     <string name="bt_pair_settings">En appairer d\'autres</string>
@@ -3177,7 +3158,6 @@ pour la langue</string>
     <string name="disable_bt">Désactiver le jeu par Bluetooth</string>
     <string name="cellline">Bordures des cases</string>
     <string name="qrcode_invite_expl">Pour inviter par code QR, faites scanner le code par l\'appareil photo du téléphone Android de votre adversaire.</string>
-    <string name="relay_poll_title">Comment vérifier les coups \?</string>
     <string name="values_values">Valeurs uniquement</string>
     <string name="title_blank_picker">Choisir un jeton pour la lettre blanche</string>
     <string name="values_both">Lettres et valeurs</string>

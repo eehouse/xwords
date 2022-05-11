@@ -11,7 +11,6 @@
     <string name="board_menu_file_about">क्रॉसवॉर्ड्स बद्दल…</string>
     <string name="no_games_to_refresh">रिलेद्वारे कनेक्ट केलेले कोणतेही गेम आढळले नाहीत.</string>
     <string name="msgs_progress">चाली इत्यादींसाठी रिले तपासत आहे…</string>
-    <string name="gamel_menu_checkmoves">चालीसाठी तपासा</string>
     <string name="menu_prefs">अ‍ॅप सेटिंग्ज…</string>
     <string name="gamel_menu_dicts">शब्द सूची …</string>
     <string name="button_reset">रीसेट करा</string>

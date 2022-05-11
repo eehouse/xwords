@@ -223,11 +223,6 @@
          "not_again") appear in the New user info dialog.
       -->
     <!-- shown when user chooses the gamel_menu_checkmoves menu -->
-    <string name="not_again_sync">XLATE ME: This action checks the relay for
-      pending moves/messages for all networked games and flags those
-      with pending moves. When you open a flagged game it will connect
-      and sync. (In a later release these moves will be downloaded in
-      the background.)</string>
     <!-- Text for button in new-user-info dialog with title just
          above.  -->
     <string name="button_notagain">XLATE ME: Do not show again</string>
@@ -730,7 +725,6 @@
          preference, checks the relay immediately for any moves for
          networked games on this device and posts a notification if
          any is downloaded. -->
-    <string name="gamel_menu_checkmoves">XLATE ME: Check for moves</string>
     <string name="gamel_menu_dicts">Slovníky</string>
     <string name="prefs_defaults">Východzie nastavenie</string>
     <string name="prefs_defaults_summary">Východzie nastavenie pre novú hru</string>

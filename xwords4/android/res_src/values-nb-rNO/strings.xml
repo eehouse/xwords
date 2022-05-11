@@ -18,7 +18,6 @@
     <string name="button_reset">Tilbakestill</string>
     <string name="gamel_menu_dicts">Ordlister…</string>
     <string name="menu_prefs">Programinnstillinger</string>
-    <string name="gamel_menu_checkmoves">Sjekk trekk</string>
     <string name="board_menu_file_about">Om</string>
     <string name="list_item_config">Spillinnstillinger…</string>
     <string name="list_item_rename">Gi nytt navn…</string>
@@ -502,10 +501,8 @@
     <string name="peek_other">Vis flis ute av tur</string>
     <string name="hide_crosshairs">Skru av retikler</string>
     <string name="hide_crosshairs_summary">Ikke vis hvilken bordcelle som berøres</string>
-    <string name="disable_relay">Skru av spill via relé-et</string>
     <string name="disable_relay_summary">Skru av all internettkommunikasjon</string>
     <string name="newgame_configure_first">Sett opp først</string>
-    <string name="newgame_drop_relay">Dropp relé</string>
     <string name="invite_choice_nfc">NFC (\"Android-stråling\")</string>
     <string name="invite_choice_relay">Internett/relé</string>
     <string name="invite_choice_p2p">Wi-Fi Direct</string>
@@ -562,7 +559,6 @@
     <string name="warn_sms_disabled">Spill via SMS er foreløpig avslått. Ingen trekk vil bli sendt via SMS.
 \n
 \nDu kan skru på spill via SMS nå, eller senere.</string>
-    <string name="button_enable_relay">Skru på relé-spill</string>
     <string name="button_disable_relay">Skru av relé-spill</string>
     <string name="str_winner_fmt" formatted="false">[Seierherre] %1$s: %2$d</string>
     <string name="str_resigned_fmt" formatted="false">[Resignert] %1$s: %2$d</string>
@@ -606,7 +602,6 @@
     <string name="dict_host">Ordlistenedlastingsnettadresse</string>
     <string name="debug_features_summary">Menyelementer osv. (kun utgivelsesbygg)</string>
     <string name="netstats_title">Spillnettverksstatistikk</string>
-    <string name="relay_port">Relé-spillport</string>
     <string name="proxy_port">Relé-enhetsport</string>
     <string name="gamel_menu_writegit">Kopier Git-info til utklippstavle</string>
     <string name="nag_intervals">Påminnelsesintervall (minutt1,minutt2,…)</string>
@@ -638,7 +633,6 @@
     <string name="info_title">Til din opplysning…</string>
     <string name="tile_tray_picker">Velg nye flis for stativet</string>
     <string name="counts_values_title">Flisopptellinger og -verdier</string>
-    <string name="not_again_sync">Denne handlingen sjekker relé-et for ventende trekk/meldinger for alle nettverksspill, og flagger dem med ventende trekk. Når du åpner et flagget spill vil det koble til og synkronisere. (I en senere utgave vil disse trekkene bli lastet ned i bakgrunnen.)</string>
     <string name="not_again_trading">Du har gått inn i flisutvekslingsmodus.
 \n
 \nTrykk på flis for å legge til/fjerne dem fra settet for å bli byttet bort.
@@ -668,9 +662,7 @@
     <string name="empty_p2p_inviter">Det er foreløpig ingen enheter som kan nås via Wi-Fi Direct som har CrossWords installert.</string>
     <string name="remote_undone">Enhet annensteds hen opphevet en tur.</string>
     <string name="connstat_lastother_unsucc_fmt">(Siste sending var %1$s)</string>
-    <string name="warn_relay_later">Du kan skru på relé-spill nå, eller senere.</string>
     <string name="warn_relay_remove">Du kan skru på relé-spill nå, eller senere, eller fjerne det fra dette spillet.</string>
-    <string name="warn_relay_havegames">Er du sikker på at du ønsker å skru av spill på relé-et</string>
     <string name="str_placer_fmt" formatted="false">[Nr.%1$d] %2$s: %3$d</string>
     <string name="inform_dict_diffversion_fmt">Du og verten for dette spillet bruker forskjellige versjoner av ordlisten %1$s.</string>
     <string name="square_tiles_summary">Selv om de kan være høyere</string>
@@ -718,7 +710,6 @@
     <string name="warn_bt_disabled">Blåtann er skrudd av på denne enheten. Ingen trekk vil bli sendt via Blåtann.
 \n
 \nDu kan skru på Blåtann nå, eller senere.</string>
-    <string name="warn_relay_disabled">Relé-spill er avskrudd på denne enheten. Ingen trekk vil bli sendt eller mottatt via relé-et.</string>
     <plurals name="warn_relay_games_fmt">
         <item quantity="one">"
 \n
@@ -786,7 +777,6 @@
     <string name="pref_group_relay_summary">Innstillinger i tilknytning til spill via Internett/relé</string>
     <string name="pref_item_update_title">Oppdater mellom utgivelser</string>
     <string name="pref_item_update_summary">Hent mellombygg</string>
-    <string name="confirm_drop_relay">Er du sikker på at du vil utelate dette spillets mulighet til å kommunisere via relé-et?</string>
     <string name="not_again_comms_sms">Spill via SMS bruker samme teknologi som \"teksting\". Selv om meldingene er usynlig for deg, vil din tilbyder anse dem som SMS, så du bør unngå denne funksjonen med mindre du har ubegrenset SMS (eller budsjettet). Merk at Android kun støtter denne funksjonen på enheter på en GSM-tilbyder.</string>
     <string name="not_again_comms_bt">Bruk Blåtann for å spille mot enheter i nærheten som er parret med din.</string>
     <string name="not_again_comms_p2p">Bruk Wi-Fi Direct for å spille mot enheter i nærheten som støtter det, og som har CrossWords installert.</string>
@@ -849,7 +839,6 @@
     <string name="invite_choice_data_sms">Data-SMS</string>
     <string name="empty_bt_inviter">Ingen parrede enheter oppdaget enda.</string>
     <string name="sms_banned_ok_only">Google Play-versjonen av CrossWords støtter ikke lenger invitasjon eller spill via data-SMS.</string>
-    <string name="relay_poll_title">Hvordan skal det sjekkes for nye trekk\?</string>
     <string name="sms_invite_flakey">Dette nye valget starter ditt forvalgte SMS-program med invitasjon klar til forsendelse -- når det virker. Hvert SMS-program er forskjellig, og noen samarbeider ikke.</string>
     <string name="invite_choice_user_sms">SMS (tekstmelding)</string>
     <string name="ok_with_robots">OK (maskinspiller)</string>
@@ -867,9 +856,7 @@
     <string name="banned_nbs_perms">Dette spillet er satt opp til å kommunisere via data-SMS, men programmer fra Google Play-butikken tillates ikke lenger å gjøre dette (dog med noen unntak). Du kan fremdeles åpne spillet, men vil ikke kunne sende eller motta trekk.
 \n
 \nDu kan fjerne innstillingen for kommunikasjon per data-SMS, eller brue \"Les mer\"-knappen for å se hvordan utviklingen med å tilby et alternativ går.</string>
-    <string name="relay_poll_name_no_fcm">Kun prøv: Ingen FCM-meldinger</string>
     <string name="relay_poll_name_no_polling">Kun FCM: Ingen prøving</string>
-    <string name="relay_poll_name_both">Forvalg: Miks prøving og FCM</string>
     <string name="invite_choice_mqtt">Internett/MQTT</string>
     <string name="mqtt_invite_title">MQTT-invitasjon</string>
     <string name="history_msg_fmt">Melding: %1$s.</string>

@@ -7,7 +7,6 @@
     <string name="summary_relay_conf_fmt">“%1$s” odası için yapılandırıldı</string>
     <string name="summary_relay_wait_fmt">“%1$s” odasındaki oyuncuları bekliyor</string>
     <string name="msgs_progress">Hareketler için röle gözden geçiriliyor…</string>
-    <string name="gamel_menu_checkmoves">Hareketleri gözetle</string>
     <string name="menu_prefs">Uygulama ayarları…</string>
     <string name="gamel_menu_dicts">Kelime listeleri…</string>
     <string name="button_reset">Yenile</string>

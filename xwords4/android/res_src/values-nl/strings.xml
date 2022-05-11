@@ -18,7 +18,6 @@
     <string name="button_reset">Reset</string>
     <string name="gamel_menu_dicts">Woordenlijsten…</string>
     <string name="menu_prefs">Instellingen…</string>
-    <string name="gamel_menu_checkmoves">Zoek naar nieuwe zetten</string>
     <string name="msgs_progress">Zoeken naar nieuwe zetten
  etc…</string>
     <string name="no_games_to_refresh">Geen spellen gevonden die via
@@ -240,7 +239,6 @@
     <string name="notify_other_summary">Als de tegenstander een zet doet</string>
     <string name="newgame_configure_first">Configureren</string>
     <string name="newgame_invite">Nu uitnodigen</string>
-    <string name="newgame_drop_relay">Laat relay vallen</string>
     <string name="invite_choice_email">Email</string>
     <string name="invite_choice_bt">Bluetooth</string>
     <string name="invite_choice_nfc">NFC (\"Android Beam\")</string>
@@ -297,7 +295,6 @@
     <string name="query_title">Een vraag…</string>
     <string name="newbie_title">Een tip</string>
     <string name="button_notagain">Niet opnieuw tonen</string>
-    <string name="not_again_sync">Deze actie vraagt de relay of er nog nieuwe zetten of berichten zijn voor spellen via een netwerk en dit aangeven. Als je een afgegeven spel opent zal deze verbinden en synchroniseren. (In een latere versie zullen deze zetten automatisch in de achtergrond gedownload worden.)</string>
     <string name="not_again_trading">Je gaat ruilmodus betreden.\n\nKlik op letters om deze toe te voegen of te verwijderen van de te ruilen zet.\n\n</string>
     <string name="not_again_trading_buttons">Gebruik de knoppen om jouw beurt te beëindigen of ruilmodus te verlaten.</string>
     <string name="not_again_trading_menu">Gebruik het menu of de actiebalk om jouw beurt te beëindigen of ruilmodus te verlaten.</string>
@@ -608,7 +605,6 @@
     <string name="debug_features_summary">Menuitems etc. (enkel uitgegeven versies)</string>
     <string name="board_menu_game_netstats">Netwerkstatistieken</string>
     <string name="netstats_title">Netwerkstatistieken spel</string>
-    <string name="relay_port">Relay spel poort</string>
     <string name="proxy_port">Relay apparaat poort</string>
     <string name="name_dict_fmt">%1$s/%2$s</string>
     <string name="gamel_menu_storedb">Schrijf spellen naar SD kaart</string>
@@ -636,7 +632,6 @@
     <string name="checking_title">Zoeken</string>
     <string name="checking_for_fmt">Zoeken naar woordenlijsten in %1$s…</string>
     <string name="db_store_done">Schrijven naar SD kaart voltooid.</string>
-    <string name="confirm_drop_relay">Weet je zeker dat je het onmogelijk voor dit spel wilt maken om via de relay te communiceren?</string>
     <string name="confirm_drop_relay_bt">Bluetooth werkt alleen voor apparaten in de buurt.</string>
     <string name="confirm_drop_relay_sms">Niet alle providers ondersteunen spelen via SMS.</string>
     <string name="button_enable">Schakel in</string>
@@ -658,7 +653,6 @@
     <string name="invit_expl_bt_fmt">Uitnodiging verstuurd via Bluetooth naar gepaard apparaat \"%1$s\" op %2$s</string>
     <string name="invit_expl_relay_fmt">Uitnodiging doorgestuurd door de relay naar een ander apparaat op %1$s</string>
     <string name="invit_expl_notarget_fmt">Uitnodiging verstuurd via %1$s op %2$s. Ontvanger onbekend.</string>
-    <string name="disable_relay">"Schakel spelen via de relay uit "</string>
     <string name="disable_relay_summary">Schakel alle internetcommunicatie uit</string>
     <string name="invite_choice_relay">Internet/Relay</string>
     <string name="chat_hint">Typ hier...</string>
@@ -677,16 +671,9 @@
     <string name="chat_sender_fmt">%1$s:</string>
     <string name="summary_busy">Samenvatting niet beschikbaar</string>
     <string name="invites_net_fmt">Uitnodigingen verstuurd voor spel verbonden via %1$s:</string>
-    <string name="warn_relay_disabled">"Relay spelen is momenteel uitgeschakeld op dit apparaat. Geen zetten zullen verzonden of ontvangen worden via de relay. "</string>
     <string name="warn_relay_later">Je kan relay spelen nu of later inschakelen.</string>
-    <string name="warn_relay_remove">Je kan relay spelen nu inschakelen, of het van dit spel verwijderen.</string>
     <string name="warn_relay_havegames">Weet je zeker dat je spelen via de relay uit wilt schakelen?</string>
-    <plurals name="warn_relay_games_fmt">
-        <item quantity="one">\n\n(Je hebt een spel dat hier gebruik van maakt.)</item>
-        <item quantity="other">\n\n(You hebt %1$d spellen die hier gebruik van maken.)</item>
-    </plurals>
     <string name="button_enable_relay">Schakel Relay spelen in</string>
-    <string name="button_disable_relay">Schakel Relay spelen uit</string>
     <string name="rematch_name_fmt">Rematch: %1$s</string>
     <string name="waiting_rematch_title">Rematch is bezig</string>
     <string name="rematch_sent_toast">Rematch uitnodigingen verstuurd</string>

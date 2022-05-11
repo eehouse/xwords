@@ -18,7 +18,6 @@
     <string name="button_reset">Reiniciar</string>
     <string name="gamel_menu_dicts">Listas de palabras…</string>
     <string name="menu_prefs">Ajustes de la aplicación…</string>
-    <string name="gamel_menu_checkmoves">Comprobar si hay jugadas</string>
     <string name="msgs_progress">Comprobando movimientos, etc… en el repetidor</string>
     <string name="no_games_to_refresh">No se han encontrado partidas conectadas en el repetidor.</string>
     <string name="board_menu_file_about">Acerca de CrossWords…</string>

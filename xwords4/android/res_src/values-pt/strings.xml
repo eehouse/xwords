@@ -77,7 +77,6 @@
          preference, checks the relay immediately for any moves for
          networked games on this device and posts a notification if
          any is downloaded. -->
-    <string name="gamel_menu_checkmoves">Checar jogadas</string>
     <!-- Text of progress indicator shown while check is being conducted -->
     <string name="msgs_progress">A verificar a relé por movimentos, etc…</string>
     <!-- If you choose the above option and have no networked games
@@ -1197,7 +1196,6 @@
          "not_again") appear in the New user info dialog.
       -->
     <!-- shown when user chooses the gamel_menu_checkmoves menu -->
-    <string name="not_again_sync">Esta ação verifica a relé para movimentos/mensagens pendentes para todos os jogos na rede.</string>
     <!-- Shown when the user chooses the "board_menu_trade" menu -->
     <string name="not_again_trading">Entra no modo de troca de azulejos.
 \n
@@ -1709,9 +1707,7 @@
     <string name="not_again_longtap_lookup">Pode pesquisar palavras ANTES de serem jogadas – a tocar e a segurar, do mesmo jeito que palavras jogadas.
 \n
 \nUse esta ferramenta para verificar a validade de palavras que está a pensar em jogar, ou pesquisar uma palavra não familiar dada como dica.</string>
-    <string name="relay_poll_name_both">Padrão: mesclar polling e FCM</string>
     <string name="relay_poll_name_no_polling">Somente FCM: sem polling</string>
-    <string name="relay_poll_name_no_fcm">Somente poll: sem mensagens FCM</string>
     <string name="relay_poll_title">Checar movimentos como\?</string>
     <string name="banned_nbs_perms">Este jogo foi configurado para comunicar a usar dados SMS, mas apps do Google Play Store não têm mais permissão para tal (com raras exceções). Ainda poderá abrir o jogo, mas talvez não consiga fazer ou receber jogadas.
 \n
@@ -1778,7 +1774,6 @@
     <string name="button_enable">Ativar</string>
     <string name="confirm_drop_relay_sms">Nem todas as operadoras suportam jogar via dados SMS.</string>
     <string name="confirm_drop_relay_bt">Bluetooth funciona apenas para aparelhos próximos.</string>
-    <string name="confirm_drop_relay">Tem certeza que quer remover a habilidade deste jogo de comunicar via relay\?</string>
     <string name="db_store_done">Escrita no cartão SD completa.</string>
     <string name="checking_for_fmt">Checando listas de palavras em %1$s…</string>
     <string name="checking_title">Checando</string>
@@ -1810,10 +1805,8 @@
     <string name="gamel_menu_loaddb">Carregar jogos do cartão SD</string>
     <string name="gamel_menu_storedb">Escrever jogos no cartão SD</string>
     <string name="name_dict_fmt">%1$s/%2$s</string>
-    <string name="proxy_port">Porta do aparelho relay</string>
     <string name="mqtt_qos">QOS do MQTT</string>
     <string name="mqtt_port">Porta MQTT</string>
-    <string name="relay_port">Porta do jogo via relay</string>
     <string name="netstats_title">Status da rede do jogo</string>
     <string name="board_menu_game_showInvites">Mostrar convites</string>
     <string name="board_menu_game_netstats">Status da rede</string>
@@ -2048,7 +2041,6 @@
     <string name="dict_avail_fmt">Toque para descarregar a lista de palavras “%1$s”</string>
     <string name="button_later">Depois</string>
     <string name="button_disable_bt">Desativar jogo Bluetooth</string>
-    <string name="button_disable_relay">Desativar jogar via relay</string>
     <string name="button_enable_relay">Ativar jogar via relay</string>
     <string name="button_enable_bt">Ativar Bluetooth</string>
     <string name="button_enable_sms">Ativar dados SMS</string>
@@ -2060,22 +2052,10 @@
 \n
 \n(Tem %1$d partidas ativas a usar o Bluetooth.)"</item>
     </plurals>
-    <plurals name="warn_relay_games_fmt">
-        <item quantity="one">"
-\n
-\n(Tem um jogo ativo a usar relay no momento.)"</item>
-        <item quantity="other">"
-\n
-\n(Tem %1$d jogos ativos a usar relay no momento.)"</item>
-    </plurals>
     <string name="warn_bt_havegames">Tem certeza que quer desativar jogar a usar Bluetooth\?
 \n
 \nBluetooth é útil para trocar jogadas e especialmente convites com aparelhos próximos a si. A não ser que esteja certo de que não irá jogar com alguém por perto não há muito mal em deixar ativado.</string>
-    <string name="warn_relay_havegames">Tem certeza que quer desativar jogar via relay (internet)\?
-\n
-\n A maioria dos jogos em rede trocam jogadas via relay, então só faça isso se quiser jogar TODOS os jogos contra um robô neste mesmo aparelho.</string>
     <string name="warn_relay_remove">Pode ativar jogar via relay agora ou removê-lo deste jogo.</string>
-    <string name="warn_relay_later">Pode ativar jogar via relay agora ou depois.</string>
     <string name="warn_relay_disabled">Jogos via relay estão atualmente desativados neste aparelho. Nenhuma jogada será enviada ou recebida via relay.</string>
     <string name="warn_bt_disabled">Jogar via Bluetooth está atualmente desativado e nenhuma jogada será trocada via Bluetooth até que for ativado.
 \n
@@ -2220,12 +2200,10 @@
     <string name="invite_choice_email">E-mail</string>
     <string name="invite_choice_data_sms">Data do SMS</string>
     <string name="invite_choice_user_sms">SMS (mensagem de texto)</string>
-    <string name="newgame_drop_relay">Queda do servidor</string>
     <string name="title_invite_history">Convites Enviados</string>
     <string name="newgame_reinvite">Convide novamente</string>
     <string name="disable_bt_summary">Disablitar toda a comunicação via Bluetooth</string>
     <string name="disable_bt">Desativar</string>
-    <string name="disable_relay_summary">Desativar toda a comunicação da internet</string>
     <string name="disable_relay">Desativar jogo pelo servidor</string>
     <string name="cellline">Bordas da célula</string>
     <string name="hide_newgames_summary">Esconder os botões do jogo no ecrã principal deixa os jogos mais visíveis</string>

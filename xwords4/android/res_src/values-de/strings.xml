@@ -17,7 +17,6 @@
     <string name="button_reset">Neustarten</string>
     <string name="gamel_menu_dicts">Wortlisten …</string>
     <string name="menu_prefs">App-Einstellungen …</string>
-    <string name="gamel_menu_checkmoves">Züge prüfen</string>
     <string name="board_menu_file_about">Über CrossWords…</string>
     <string name="list_item_config">Spieleinstellungen …</string>
     <string name="list_item_rename">Umbenennen …</string>
@@ -73,7 +72,6 @@
         <item quantity="other">Gerät %1$d verbunden mit Zwischenstation in Raum „%2$s“. Warte auf %3$d Spieler.</item>
     </plurals>
     <string name="msg_lost_other">Die Zwischenstation hat den Kontakt zu einem anderen Gerät in dieser Partie verloren.</string>
-    <string name="disable_relay">Spielen über Zwischenstation deaktivieren</string>
     <string name="newgame_drop_relay">Zwischenstation löschen</string>
     <string name="invite_choice_relay">Internet/Zwischenstation</string>
     <string name="list_item_new_from">Kopie anlegen</string>
@@ -240,7 +238,6 @@
     <string name="hide_crosshairs">Fadenkreuz deaktivieren</string>
     <string name="network_behavior">Netzwerk-Partie-Einstellungen</string>
     <string name="network_behavior_summary">Einstellungen für Netzwerk-Partien</string>
-    <string name="disable_relay_summary">Alle Internet-Kommunikation deaktivieren</string>
     <string name="notify_sound">Sound abspielen</string>
     <string name="notify_vibrate">Vibrieren</string>
     <string name="notify_other_summary">Wenn Züge des Gegners ankommen</string>
@@ -310,7 +307,6 @@
     <string name="query_title">Eine Frage …</string>
     <string name="newbie_title">Ein Tipp</string>
     <string name="button_notagain">Nicht mehr anzeigen</string>
-    <string name="not_again_sync">Diese Aktion prüft die Zwischenstation auf unerledigte Züge/Nachrichten in allen Netzwerk-Partien und markiert Partien mit unerledigten Zügen. Wenn Sie eine markierte Partie öffnen, wird eine Verbindung aufgebaut und die Partie aktualisiert. (In einer späteren Version werden diese Züge im Hintergrund heruntergeladen. )</string>
     <string name="not_again_trading">Sie sind jetzt im Spielsteinaustauschmodus.
 \n
 \nTippen Sie Spielsteine an, um Sie zur Austauschmenge hinzuzufügen oder sie aus ihr zu entfernen.
@@ -446,13 +442,10 @@
     <string name="warn_bt_disabled">Bluetooth ist gegenwärtig auf diesem Gerät ausgeschaltet. Keine Züge werden über Bluetooth verschickt.
 \n
 \nSie können Bluetooth jetzt oder später aktivieren.</string>
-    <string name="warn_relay_disabled">Spielen über Zwischenstation ist gegenwärtig auf diesem Gerät deaktiviert. Keine Züge werden über die Zwischenstation verschickt oder empfangen.</string>
     <string name="warn_relay_later">Sie können Spielen über Zwischenstation jetzt oder später aktivieren.</string>
-    <string name="warn_relay_remove">Sie können Spielen über Zwischenstation jetzt aktivieren, oder es von dieser Partie entfernen.</string>
     <string name="warn_relay_havegames">Sind Sie sicher, dass Sie Spielen über Zwischenstation deaktivieren wollen?</string>
     <string name="button_enable_sms">Daten-SMS aktivieren</string>
     <string name="button_enable_bt">Bluetooth aktivieren</string>
-    <string name="button_enable_relay">Spielen über Zwischenstation aktivieren</string>
     <string name="button_disable_relay">Spielen über Zwischenstation deaktivieren</string>
     <string name="button_later">Später</string>
     <string name="gamel_menu_checkupdates">Auf Aktualisierungen prüfen</string>
@@ -678,7 +671,6 @@
     <string name="pref_item_update_title">Zwischen den einzelnen Versionen aktualisieren</string>
     <string name="checking_for_fmt">Wortlisten werden in %1$s gesucht …</string>
     <string name="db_store_done">Schreiben auf SD-Karte abgeschlossen.</string>
-    <string name="confirm_drop_relay">Sind Sie sicher, dass Sie für diese Partie die Möglichkeit entfernen wollen, über die Zwischenstation zu verbinden?</string>
     <string name="confirm_drop_relay_bt">Bluetooth funktioniert nur für Geräte in Reichweite.</string>
     <string name="confirm_drop_relay_sms">Nicht alle Mobilfunkanbieter unterstützen das Spielen per Daten-SMS.</string>
     <string name="button_enable">Aktivieren</string>
@@ -746,14 +738,6 @@
     <string name="summary_wait_guest">Nicht verbunden</string>
     <string name="summary_gameover">Partie beendet</string>
     <string name="summary_conn">Partie läuft</string>
-    <plurals name="warn_relay_games_fmt">
-        <item quantity="one">"
-\n
-\n(Wird von einer Partie benutzt.)"</item>
-        <item quantity="other">"
-\n
-\n(Wird von %1$d Partien benutzt.)"</item>
-    </plurals>
     <string name="str_placer_fmt" formatted="false">[Nr. %1$d] %2$s: %3$d</string>
     <string name="inform_dict_download">" (Sie müssen es zuerst herunterladen.)"</string>
     <string name="list_group_default">Neue Partien hier einstellen</string>
@@ -776,7 +760,6 @@
     <string name="debug_features_summary">Menüeinträge usw. (nur Release-Builds)</string>
     <string name="board_menu_game_showInvites">Einladungen zeigen</string>
     <string name="netstats_title">Partie-Netzwerkstatistik</string>
-    <string name="relay_port">Spiel-Port auf Zwischenstation</string>
     <string name="proxy_port">Geräte-Port auf Zwischenstation</string>
     <string name="name_dict_fmt">%1$s/%2$s</string>
     <string name="gamel_menu_storedb">Partien auf SD-Kartie speichern</string>
@@ -873,9 +856,7 @@
     <string name="banned_nbs_perms">Dieses Spiel ist für die Kommunikation per Daten-SMS eingerichtet, aber Apps aus dem Google Play Store dürfen dies (bis auf wenige Ausnahmen) nicht mehr tun. Sie können das Spiel immer noch öffnen, aber es ist mehr möglicherweise, Züge zu senden oder zu empfangen.
 \n
 \nSie können die Einstellung für die Daten-SMS-Kommunikation entfernen oder über die Schaltfläche \"Mehr erfahren\" den Fortschritt bei der Entwicklung einer Alternative überprüfen.</string>
-    <string name="relay_poll_title">Wie wird nach Zügen gesucht\?</string>
     <string name="relay_poll_name_no_fcm">Nur Umfrage: keine FCM-Nachrichten</string>
-    <string name="relay_poll_name_no_polling">Nur FCM: keine Umfragen</string>
     <string name="relay_poll_name_both">Standard: Umfragen und FCM mischen</string>
     <string name="not_again_longtap_lookup">Sie können Wörter nachschlagen, BEVOR sie als Züge übertragen werden - durch langes Antippen, genau wie bei gebundenen Wörtern.
 \n

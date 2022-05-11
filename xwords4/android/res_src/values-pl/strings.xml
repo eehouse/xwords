@@ -11,7 +11,6 @@
     <string name="summary_relay_wait_fmt">Czekam na graczy w pokoju \"%1$s\"</string>
     <string name="summary_relay_conn_fmt">Gra w gry w pokoju \"%1$s\"</string>
     <string name="gamel_menu_dicts">Listy słów…</string>
-    <string name="gamel_menu_checkmoves">Sprawdź ruchy</string>
     <string name="list_item_config">Ustawienia gry…</string>
     <string name="str_game_name_fmt">%1$s (%2$s)</string>
     <string name="summary_relay_conf_fmt">Skonfigurowane dla pokoju \"%1$s\"</string>
@@ -341,10 +340,8 @@
     <string name="title_sort_tiles">Sortuj nowe kafelki</string>
     <string name="summary_sort_tiles">Sortuj stoisko za każdym razem, gdy dodawane są nowe kafelki</string>
     <string name="peek_other_summary">Stuknięcie w nazwę tablicy wyników pokaże kafelek gracza</string>
-    <string name="disable_relay">Wyłącz gracza przez przekaźnik</string>
     <string name="disable_relay_summary">Wyłącz całą komunikację internetową</string>
     <string name="notify_other_summary">Kiedy przeciwnik się rusza</string>
-    <string name="newgame_drop_relay">Upuść przekaźnik</string>
     <string name="invite_choice_bt">Bluetooth</string>
     <string name="invite_choice_nfc">NFC (Android beaming)</string>
     <string name="invite_choice_relay">Internet/Przekaźnik</string>
@@ -387,7 +384,6 @@
     <string name="finalscores_title">Wyniki końcowe‌</string>
     <string name="ids_endnow">Czy na pewno chcesz zrezygnować\?</string>
     <string name="query_title">Pytanie…</string>
-    <string name="not_again_sync">Ta akcja sprawdza przekaźnik dla oczekujących ruchów/wiadomości dla wszystkich gier sieciowych i flag tych z oczekującymi ruchami. Kiedy otworzysz grę z flagą, połączy się i zsynchronizuje. (W późniejszym wydaniu ruchy te zostaną pobrane w tle.)</string>
     <string name="not_again_trading">Wchodzisz w tryb wymiany kafelków.
 \n
 \nDotknij kafelków, aby dodać/usunąć je z zestawu do wymiany.
@@ -504,13 +500,10 @@
     <string name="confirm_sms_leave">Nie: pozostaw wyłączone</string>
     <string name="confirm_sms_unlimited">Tak: Mam nielimitowane SMS-y</string>
     <string name="confirm_sms_willpay">Tak: Zapłacę wszystkie opłaty naliczone przez operatora</string>
-    <string name="warn_relay_disabled">Przekaźnik jest obecnie wyłączony na tym urządzeniu. Żadne ruchy nie będą wysyłane ani odbierane przez przekaźnik.</string>
     <string name="warn_relay_later">Możesz włączyć grę poprzez przekaźnik teraz lub później.</string>
-    <string name="warn_relay_remove">Możesz włączyć grę przekaźnikową teraz, lub usunąć ją z tej gry.</string>
     <string name="warn_relay_havegames">Czy na pewno chcesz wyłączyć grę za pomocą przekaźnika\?</string>
     <string name="button_enable_sms">Włącz Data SMS</string>
     <string name="button_enable_bt">Włącz Bluetooth</string>
-    <string name="button_enable_relay">Aktywuj grę przez przekaźnik</string>
     <string name="button_disable_relay">Wyłącz odtwarzanie przekaźnika</string>
     <string name="button_later">Później</string>
     <string name="gamel_menu_checkupdates">Sprawdź dostępność aktualizacji</string>
@@ -700,7 +693,6 @@
     <string name="board_menu_game_netstats">Statystyki sieci</string>
     <string name="board_menu_game_showInvites">Pokaż zaproszenia</string>
     <string name="netstats_title">Statystyki gry sieciowej</string>
-    <string name="relay_port">Przekaźnik portu gier</string>
     <string name="proxy_port">Przekaźnik portu urządzenia</string>
     <string name="name_dict_fmt">%1$s/%2$s</string>
     <string name="gamel_menu_storedb">Zapisz gry na kartę SD</string>
@@ -722,7 +714,6 @@
     <string name="checking_title">Sprawdzanie</string>
     <string name="checking_for_fmt">Sprawdzanie listy słów w %1$s…</string>
     <string name="db_store_done">Zapis na karcie SD kompletny.</string>
-    <string name="confirm_drop_relay">Czy na pewno chcesz usunąć zdolność tej gry do komunikacji za pośrednictwem przekaźnika\?</string>
     <string name="confirm_drop_relay_bt">Funkcja Bluetooth działa tylko w przypadku urządzeń znajdujących się w pobliżu.</string>
     <string name="confirm_drop_relay_sms">Nie wszyscy operatorzy obsługują grę za pośrednictwem wiadomości Data SMS.</string>
     <string name="button_enable">Włącz</string>
@@ -835,20 +826,6 @@
         <item quantity="few">Czy na pewno chcesz usunąć %1$d zaznaczonych rekordów RelayID\?</item>
         <item quantity="many">Czy na pewno chcesz usunąć %1$d zaznaczone rekordy RelayID\?</item>
     </plurals>
-    <plurals name="warn_relay_games_fmt">
-        <item quantity="one">"
-\n
-\n(Używasz jednej gry.)"</item>
-        <item quantity="few">"
-\n
-\n(Używasz %1$d gier.)"</item>
-        <item quantity="many">"
-\n
-\n(Używasz %1$d gry.)"</item>
-        <item quantity="other">"
-\n
-\n(Używasz %1$d gry.)"</item>
-    </plurals>
     <plurals name="groups_confirm_del_games_fmt">
         <item quantity="one">"
 \n
@@ -885,9 +862,7 @@
     <string name="banned_nbs_perms">Ta gra jest skonfigurowana do komunikacji za pośrednictwem Data SMS, ale aplikacje ze sklepu Google Play Store nie mogą już tego robić (z rzadkimi wyjątkami). Możesz jeszcze otworzyć grę, ale może nie być w stanie wysyłać lub odbierać ruchów.
 \n
 \nMożesz usunąć ustawienie komunikacji przez Data SMS lub użyć przycisku \"Czytaj więcej\", aby sprawdzić moje postępy w rozwoju alternatywy.</string>
-    <string name="relay_poll_title">Jak sprawdzić ruchy\?</string>
     <string name="relay_poll_name_no_fcm">Tylko sondaż: brak komunikatów FCM</string>
-    <string name="relay_poll_name_no_polling">Tylko FCM: brak sondowania</string>
     <string name="relay_poll_name_both">Domyślnie: Mix sondowania i FCM</string>
     <string name="not_again_longtap_lookup">Możesz spojrzeć na słowa PRZED tym, jak są one popełnione jako ruchy - przez długie podsłuchiwanie, tak samo jak słowa popełnione.
 \n

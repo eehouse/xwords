@@ -11,7 +11,6 @@
     <string name="board_menu_file_about">Info CrossWords…</string>
     <string name="no_games_to_refresh">Nessun gioco trovato in connessione.</string>
     <string name="msgs_progress">Controllo risposta per mosse etc…</string>
-    <string name="gamel_menu_checkmoves">Controllo mosse</string>
     <string name="menu_prefs">Impostazioni…</string>
     <string name="gamel_menu_dicts">Lista parole…</string>
     <string name="button_reset">Reset</string>
@@ -91,9 +90,7 @@
     <string name="not_again_longtap_lookup">Puoi vedere le parole PRIMA che l\'hai confermata come mossa - tenendo premuto il dito, stesso per le parole confermate.
 \n
 \nUsa questa funzione per vedere la validità delle parole che pensi di giocare o per guardare una parola non comune come suggerimento.</string>
-    <string name="relay_poll_name_both">Base: tra sondaggio e FCM</string>
     <string name="relay_poll_name_no_polling">Solo FCM: non sondaggio</string>
-    <string name="relay_poll_name_no_fcm">Solo sondaggio: no messaggi FCM</string>
     <string name="relay_poll_title">Controlla le mosse come\?</string>
     <string name="banned_nbs_perms">Questa partita è impostata su una connessione via dati SMS, ma l\'app di Google Play Store non supporta più questa funzione (con rare eccezioni). Puoi continuare ad aprire la partita, ma potresti non inviare o ricevere mosse.
 \n
@@ -160,7 +157,6 @@
     <string name="button_enable">Attiva</string>
     <string name="confirm_drop_relay_sms">Non tutte le versioni supportano la partita via dati SMS.</string>
     <string name="confirm_drop_relay_bt">Il Bluetooth funziona solo su dispositivi vicini.</string>
-    <string name="confirm_drop_relay">Sei sicuro di voler eliminare la possibilità di connettersi al server per questa partita\?</string>
     <string name="db_store_done">Scrittura su SD completa.</string>
     <string name="checking_for_fmt">Controllando liste parole in %1$s…</string>
     <string name="checking_title">Controllando</string>
@@ -192,10 +188,8 @@
     <string name="gamel_menu_loaddb">Carica partite da scheda SD</string>
     <string name="gamel_menu_storedb">Salva partite su scheda SD</string>
     <string name="name_dict_fmt">%1$s/%2$s</string>
-    <string name="proxy_port">Porta Server Dispositivo</string>
     <string name="mqtt_qos">MQTT QOS</string>
     <string name="mqtt_port">Porta per MQTT</string>
-    <string name="relay_port">Porta per Partita sul Server</string>
     <string name="netstats_title">Statistiche partite in linea</string>
     <string name="board_menu_game_showInvites">Mostra inviti</string>
     <string name="board_menu_game_netstats">Statistiche connessioni</string>
@@ -388,7 +382,6 @@
     <string name="gamel_menu_checkupdates">Controlla aggiornamenti</string>
     <string name="button_later">Più tardi</string>
     <string name="button_disable_bt">Disattiva partita Bluetooth</string>
-    <string name="button_disable_relay">Disattiva partita sul Server</string>
     <string name="button_enable_relay">Attiva partita sul Server</string>
     <string name="button_enable_bt">Attiva Bluetooth</string>
     <string name="button_enable_sms">Attiva SMS dati</string>
@@ -400,22 +393,10 @@
 \n
 \n(Hai %1$d partite attive tramite Bluetooth.)"</item>
     </plurals>
-    <plurals name="warn_relay_games_fmt">
-        <item quantity="one">"
-\n
-\n(Hai una partita attiva che utilizza il server.)"</item>
-        <item quantity="other">"
-\n
-\n(Hai %1$d partite attive che utilizzano il server.)"</item>
-    </plurals>
     <string name="warn_bt_havegames">Sei sicuro di voler disabilitare la funzione \"Gioca tramite Bluetooth\?
 \n
 \nBluetooth è utile per scambarsi mosse, specialmente gli inviti, con i dispositivi fisicamente vicini a te. A meno che non sei sicuro non giocherai contro nessuno nelle vicinanze ed è un peccato lasciarlo attivo.</string>
-    <string name="warn_relay_havegames">Sei sicuro di voler disabilitare la partita via Server (Internet)\?
-\n
-\n La maggior parte delle partite viene giocata tramite Server, ti consigliamo di procedere solo se vuoi giocare TUTTE le partite contro i robot su questo dispositivo.</string>
     <string name="warn_relay_remove">Puoi attivare la partita via Server ora o rimuoverla da questa partita.</string>
-    <string name="warn_relay_later">Puoi attivare la partita via Server ora o più tardi.</string>
     <string name="warn_relay_disabled">La funzione \"Gioca tramite Server\" è attualmente disabilitata su questo dispositivo. Nessuna mossa sarà inviata via Server.</string>
     <string name="warn_bt_disabled">La funzione \"Gioca tramite Bluetooth\" è attualmente disabilitata e nessuna mossa sarà inviata via Bluetooth finché non sarà attivato
 \n
@@ -628,7 +609,6 @@
 \nTocca le tessere per aggiungere o rimuoverle dal set per scambiare.
 \n
 \n</string>
-    <string name="not_again_sync">Questa azione controlla il server per mosse/messaggi non ricevuti per tutte le partite connesse.</string>
     <string name="button_notagain">Non mostrare più</string>
     <string name="newbie_title">Ecco un suggerimento</string>
     <string name="query_title">Una domanda…</string>
@@ -712,7 +692,6 @@
     <string name="invite_choice_email">Email</string>
     <string name="invite_choice_data_sms">SMS dati</string>
     <string name="invite_choice_user_sms">SMS (Messaggio)</string>
-    <string name="newgame_drop_relay">Esci dal server</string>
     <string name="title_invite_history">Inviti inviati</string>
     <string name="newgame_invite">Invita ora</string>
     <string name="notify_other_summary">Quando arriva la mossa avversario</string>
@@ -794,7 +773,6 @@
     <string name="lang_unknown">Sconosciuto</string>
     <string name="dict_desc_fmt">%1$s (%2$s/%3$d parole)</string>
     <string name="disable_bt">Disabilita partita via Bluetooth</string>
-    <string name="disable_relay_summary">Disabilita tutte le connessioni ad internet</string>
     <string name="disable_relay">Disabilita gioco via server</string>
     <string name="network_behavior_summary">Impostazioni da applicare per le partite in rete</string>
     <string name="network_behavior">Impostazioni gioco in rete</string>
