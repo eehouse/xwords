@@ -87,11 +87,6 @@
     <string name="gamel_menu_dicts">Wordlists…</string>
     <!-- text of menu that brings up the Settings (preferences) dialog -->
     <string name="menu_prefs">App Settings…</string>
-    <!-- Regardless of the setting of the connect_frequency
-         preference, checks the relay immediately for any moves for
-         networked games on this device and posts a notification if
-         any is downloaded. -->
-    <string name="gamel_menu_checkmoves">Check for moves</string>
     <!-- Text of progress indicator shown while check is being conducted -->
     <string name="msgs_progress">Checking relay for moves
       etc…</string>
@@ -1350,10 +1345,6 @@
     <!-- The following strings (all whose names start with
          "not_again") appear in the New user info dialog.
       -->
-    <!-- shown when user chooses the gamel_menu_checkmoves ("check for
-         moves") menu -->
-    <string name="not_again_sync">This action checks the relay for
-    pending moves/messages for all networked games.</string>
     <!-- Shown when the user chooses the "board_menu_trade" menu -->
     <string name="not_again_trading">You are entering tile-exchange
       mode.\n\nTap tiles to add/remove them from the set to be

@@ -844,7 +844,6 @@ public class BoardDelegate extends DelegateBase
 
         boolean netGame = null != m_gi
             && DeviceRole.SERVER_STANDALONE != m_gi.serverRole;
-        Utils.setItemVisible( menu, R.id.gamel_menu_checkmoves, netGame );
         enable = netGame && null != m_gsi && 0 < m_gsi.nPendingMessages;
         Utils.setItemVisible( menu, R.id.board_menu_game_resend,  enable );
 
@@ -974,13 +973,6 @@ public class BoardDelegate extends DelegateBase
             handleViaThread( JNICmd.CMD_RESEND, true, false, true );
             break;
 
-        case R.id.gamel_menu_checkmoves:
-            makeNotAgainBuilder( R.string.not_again_sync,
-                                 R.string.key_notagain_sync,
-                                 Action.SYNC_ACTION )
-                .show();
-            break;
-
         case R.id.board_menu_file_prefs:
             m_firingPrefs = true;
             PrefsDelegate.launch( m_activity );
@@ -1013,9 +1005,6 @@ public class BoardDelegate extends DelegateBase
             break;
         case UNDO_LAST_ACTION:
             cmd = JNICmd.CMD_UNDO_LAST;
-            break;
-        case SYNC_ACTION:
-            doSyncMenuitem();
             break;
         case SMS_CONFIG_ACTION:
             PrefsDelegate.launch( m_activity );

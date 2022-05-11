@@ -39,7 +39,6 @@ public class DlgDelegate {
 
         // GameListDelegate
         RESET_GAMES,
-        SYNC_MENU,
         NEW_FROM,
         DELETE_GAMES,
         DELETE_GROUPS,
@@ -63,7 +62,6 @@ public class DlgDelegate {
         // BoardDelegate
         UNDO_LAST_ACTION,
         LAUNCH_INVITE_ACTION,
-        SYNC_ACTION,
         COMMIT_ACTION,
         SHOW_EXPL_ACTION,
         PREV_HINT_ACTION,
@@ -414,18 +412,6 @@ public class DlgDelegate {
             .setAction( action )
             .setParams( nli, nMissing );
         m_dlgt.show( state );
-    }
-
-    // Get rid of this?
-    public void doSyncMenuitem()
-    {
-        Log.d( TAG, "doSyncMenuitem()" );
-        if ( null == DBUtils.getRelayIDs( m_activity, null ) ) {
-            makeOkOnlyBuilder( R.string.no_games_to_refresh ).show();
-        } else {
-            TimerReceiver.allTimersFired( m_activity );
-            Utils.showToast( m_activity, R.string.msgs_progress );
-        }
     }
 
     public void launchLookup( String[] words, int lang, boolean noStudy )

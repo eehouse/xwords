@@ -118,7 +118,6 @@
   <string name="key_last_packet">key_last_packet</string>
   <string name="key_udp_interval">key_udp_interval</string>
 
-  <string name="key_notagain_sync">key_notagain_sync</string>
   <string name="key_notagain_newselect">key_notagain_newselect</string>
   <string name="key_notagain_emptybtscan">key_notagain_emptybtscan</string>
   <string name="key_notagain_backclears">key_notagain_backclears</string>

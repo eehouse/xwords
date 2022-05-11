@@ -37,7 +37,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
     public enum TABLE_NAMES {
         SUM( "summaries", 0 ),
-        OBITS( "obits", 5 ),
+        _OBITS( "obits", 5 ),
         DICTBROWSE( "dictbrowse", 12 ),
         DICTINFO( "dictinfo", 12 ),
         GROUPS( "groups", 14 ),
@@ -174,11 +174,6 @@ public class DBHelper extends SQLiteOpenHelper {
         ,{ THUMBNAIL,    "BLOB" }
     };
 
-    private static final String[][] s_obitsColsAndTypes = {
-        { RELAYID, "TEXT" }
-        ,{ SEED,   "INTEGER" }
-    };
-
     private static final String[][] s_dictInfoColsAndTypes = {
         { DICTNAME,   "TEXT" },
         { LOC,       "UNSIGNED INTEGER(1)" },
@@ -259,7 +254,6 @@ public class DBHelper extends SQLiteOpenHelper {
     public void onCreate( SQLiteDatabase db )
     {
         createTable( db, TABLE_NAMES.SUM, s_summaryColsAndTypes );
-        createTable( db, TABLE_NAMES.OBITS, s_obitsColsAndTypes );
         createTable( db, TABLE_NAMES.DICTINFO, s_dictInfoColsAndTypes );
         createTable( db, TABLE_NAMES.DICTBROWSE, s_dictBrowseColsAndTypes );
         forceRowidHigh( db, TABLE_NAMES.SUM );
@@ -282,8 +276,6 @@ public class DBHelper extends SQLiteOpenHelper {
         boolean madeChatTable = false;
         boolean madeDITable = false;
         switch( oldVersion ) {
-        case 5:
-            createTable( db, TABLE_NAMES.OBITS, s_obitsColsAndTypes );
         case 6:
             addSumColumn( db, TURN );
             addSumColumn( db, GIFLAGS );

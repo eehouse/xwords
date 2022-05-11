@@ -105,14 +105,6 @@ public class DBUtils {
     private static SQLiteOpenHelper s_dbHelper = null;
     private static SQLiteDatabase s_db = null;
 
-    public static class Obit {
-        public Obit( String relayID, int seed ) {
-            m_relayID = relayID; m_seed = seed;
-        }
-        String m_relayID;
-        int m_seed;
-    }
-
     public static class HistoryPair {
         private HistoryPair( String p_msg, int p_playerIndx, int p_ts )
         {
@@ -236,6 +228,7 @@ public class DBUtils {
                         CommsConnType typ = iter.next();
                         switch ( typ ) {
                         case COMMS_CONN_RELAY:
+                            Assert.failDbg();
                             col = cursor.getColumnIndex( DBHelper.ROOMNAME );
                             if ( col >= 0 ) {
                                 summary.roomName = cursor.getString( col );
@@ -335,6 +328,7 @@ public class DBUtils {
                       iter.hasNext(); ) {
                     switch ( iter.next() ) {
                     case COMMS_CONN_RELAY:
+                        Assert.failDbg();
                         values.put( DBHelper.ROOMNAME, summary.roomName );
                         String relayID = summary.relayID;
                         values.put( DBHelper.RELAYID, relayID );
@@ -479,13 +473,6 @@ public class DBUtils {
         return result;
     }
 
-    public static int countOpenGamesUsingRelay( Context context )
-    {
-        int result = countOpenGamesUsing( context, CommsConnType.COMMS_CONN_RELAY,
-                                          CommsConnType.COMMS_CONN_MQTT );
-        return result;
-    }
-
     public static int countOpenGamesUsingNBS( Context context )
     {
         int result = countOpenGamesUsing( context, CommsConnType.COMMS_CONN_SMS );
@@ -616,6 +603,7 @@ public class DBUtils {
                                                   devName, timestamp );
                         break;
                     case RELAY:
+                        Assert.failDbg();
                         msg = LocUtils.getString( context, R.string.invit_expl_relay_fmt,
                                                   timestamp );
                         break;
@@ -803,23 +791,6 @@ public class DBUtils {
         }
     }
 
-    public static String getRelayID( Context context, long rowid )
-    {
-        String result = null;
-        String[] columns = { DBHelper.RELAYID };
-        String selection = String.format( ROW_ID_FMT, rowid );
-        initDB( context );
-        synchronized( s_dbHelper ) {
-            Cursor cursor = query( TABLE_NAMES.SUM, columns, selection );
-            if ( 1 == cursor.getCount() && cursor.moveToFirst() ) {
-                result =
-                    cursor.getString( cursor.getColumnIndex(DBHelper.RELAYID) );
-            }
-            cursor.close();
-        }
-        return result;
-    }
-
     public static HashMap<Long,CommsConnTypeSet>
         getGamesWithSendsPending( Context context )
     {
@@ -975,109 +946,6 @@ public class DBUtils {
                 gameIDs[ii] = idIter.next();
             }
             result.put( dev, gameIDs );
-        }
-    }
-
-    public static String[] getRelayIDs( Context context, long[][] rowIDs )
-    {
-        String[] result = null;
-        String[] columns = { ROW_ID, DBHelper.RELAYID };
-        String selection = DBHelper.RELAYID + " NOT null";
-        ArrayList<String> ids = new ArrayList<>();
-
-        initDB( context );
-        synchronized( s_dbHelper ) {
-            Cursor cursor = query( TABLE_NAMES.SUM, columns, selection );
-            int count = cursor.getCount();
-            if ( 0 < count ) {
-                result = new String[count];
-                if ( null != rowIDs ) {
-                    rowIDs[0] = new long[count];
-                }
-
-                int idIndex = cursor.getColumnIndex(DBHelper.RELAYID);
-                int rowIndex = cursor.getColumnIndex(ROW_ID);
-                for ( int ii = 0; cursor.moveToNext(); ++ii ) {
-                    result[ii] = cursor.getString( idIndex );
-                    if ( null != rowIDs ) {
-                        rowIDs[0][ii] = cursor.getLong( rowIndex );
-                    }
-                }
-            }
-            cursor.close();
-        }
-
-        return result;
-    }
-
-    public static boolean haveRelayIDs( Context context )
-    {
-        long[][] rowIDss = new long[1][];
-        String[] relayIDs = getRelayIDs( context, rowIDss );
-        boolean result = null != relayIDs && 0 < relayIDs.length;
-        return result;
-    }
-
-    public static void addDeceased( Context context, String relayID,
-                                    int seed )
-    {
-        ContentValues values = new ContentValues();
-        values.put( DBHelper.RELAYID, relayID );
-        values.put( DBHelper.SEED, seed );
-
-        initDB( context );
-        synchronized( s_dbHelper ) {
-
-            try {
-                long result = s_db.replaceOrThrow( TABLE_NAMES.OBITS.toString(),
-                                                   "", values );
-            } catch ( Exception ex ) {
-                Log.ex( TAG, ex );
-            }
-        }
-    }
-
-    public static Obit[] listObits( Context context )
-    {
-        Obit[] result = null;
-        ArrayList<Obit> al = new ArrayList<>();
-        String[] columns = { DBHelper.RELAYID, DBHelper.SEED };
-
-        initDB( context );
-        synchronized( s_dbHelper ) {
-            Cursor cursor = query( TABLE_NAMES.OBITS, columns, null );
-            if ( 0 < cursor.getCount() ) {
-                int idIndex = cursor.getColumnIndex( DBHelper.RELAYID );
-                int seedIndex = cursor.getColumnIndex( DBHelper.SEED );
-                while ( cursor.moveToNext() ) {
-                    String relayID = cursor.getString( idIndex );
-                    int seed = cursor.getInt( seedIndex );
-                    al.add( new Obit( relayID, seed ) );
-                }
-            }
-            cursor.close();
-        }
-
-        int siz = al.size();
-        if ( siz > 0 ) {
-            result = al.toArray( new Obit[siz] );
-        }
-        return result;
-    }
-
-    public static void clearObits( Context context, Obit[] obits )
-    {
-        String fmt = DBHelper.RELAYID + "= \"%s\" AND + "
-            + DBHelper.SEED + " = %d";
-
-        initDB( context );
-        synchronized( s_dbHelper ) {
-
-            for ( Obit obit: obits ) {
-                String selection = String.format( fmt, obit.m_relayID,
-                                                  obit.m_seed );
-                delete( TABLE_NAMES.OBITS, selection );
-            }
         }
     }
 

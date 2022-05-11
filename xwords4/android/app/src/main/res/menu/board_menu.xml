@@ -68,10 +68,6 @@
           android:title="@string/gamel_menu_study"
           />
 
-    <item android:id="@+id/gamel_menu_checkmoves"
-          android:title="@string/gamel_menu_checkmoves"
-          />
-
     <item android:id="@+id/board_menu_file_prefs"
           android:title="@string/menu_prefs"
           android:alphabeticShortcut="P"

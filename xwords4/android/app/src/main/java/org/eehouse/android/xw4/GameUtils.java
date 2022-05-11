@@ -1295,20 +1295,9 @@ public class GameUtils {
                     // deleting on relay half-games that we created but nobody
                     // joined, special-case this one.
                     if ( summary.inRelayGame() ) {
-                        tellRelayDied( context, summary, informNow );
+                        Assert.failDbg();
                     }
                 }
-            }
-        }
-    }
-
-    private static void tellRelayDied( Context context, GameSummary summary,
-                                       boolean informNow )
-    {
-        if ( null != summary.relayID ) {
-            DBUtils.addDeceased( context, summary.relayID, summary.seed );
-            if ( informNow ) {
-                NetUtils.informOfDeaths( context );
             }
         }
     }

@@ -51,11 +51,6 @@
     <item android:id="@+id/games_menu_resend"
           android:title="@string/board_menu_game_resend"
           />
-    <item android:id="@+id/games_menu_checkmoves"
-          android:title="@string/gamel_menu_checkmoves"
-          android:icon="@drawable/stat_notify_sync"
-          />
-
     <!-- Game items -->
     <item android:id="@+id/games_game_delete"
           android:title="@string/list_item_delete"

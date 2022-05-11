@@ -54,13 +54,6 @@ public class NetUtils {
     private static final String TAG = NetUtils.class.getSimpleName();
 
     public static final String k_PARAMS = "params";
-    public static final byte PROTOCOL_VERSION = 0;
-    // from xwrelay.h
-    public static byte PRX_PUB_ROOMS = 1;
-    public static byte PRX_HAS_MSGS = 2;
-    public static byte PRX_DEVICE_GONE = 3;
-    public static byte PRX_GET_MSGS = 4;
-    public static byte PRX_PUT_MSGS = 5;
 
     public static Socket makeProxySocket( Context context,
                                           int timeoutMillis )
@@ -81,50 +74,6 @@ public class NetUtils {
             Log.ex( TAG, ioe );
         }
         return socket;
-    }
-
-    private static class InformThread extends Thread {
-        Context m_context;
-        DBUtils.Obit[] m_obits;
-        public InformThread( Context context, DBUtils.Obit[] obits )
-        {
-            m_context = context;
-            m_obits = obits;
-        }
-
-        @Override
-        public void run()
-        {
-            try {
-                JSONArray params = new JSONArray();
-                for ( int ii = 0; ii < m_obits.length; ++ii ) {
-                    JSONObject one = new JSONObject();
-                    one.put( "relayID", m_obits[ii].m_relayID );
-                    one.put( "seed", m_obits[ii].m_seed );
-                    params.put( one );
-                }
-                HttpsURLConnection conn = makeHttpsRelayConn( m_context, "kill" );
-                String resStr = runConn( conn, params );
-                Log.d( TAG, "runViaWeb(): kill(%s) => %s", params, resStr );
-
-                if ( null != resStr ) {
-                    JSONObject result = new JSONObject( resStr );
-                    if ( 0 == result.optInt( "err", -1 ) ) {
-                        DBUtils.clearObits( m_context, m_obits );
-                    }
-                }
-            } catch ( JSONException ex ) {
-                Assert.failDbg();
-            }
-        }
-    }
-
-    public static void informOfDeaths( Context context )
-    {
-        DBUtils.Obit[] obits = DBUtils.listObits( context );
-        if ( null != obits && 0 < obits.length ) {
-            new InformThread( context, obits ).start();
-        }
     }
 
     private static String urlForGameID( Context context, int gameID )
@@ -153,12 +102,13 @@ public class NetUtils {
         }
     }
 
-    private static final String FORCE_RELAY_HOST = null;
-    // private static final String FORCE_RELAY_HOST = "eehouse.org";
+    private static final String FORCE_HOST = null
+        // "eehouse.org"
+        ;
     public static String forceHost( String host )
     {
-        if ( null != FORCE_RELAY_HOST ) {
-            host = FORCE_RELAY_HOST;
+        if ( null != FORCE_HOST ) {
+            host = FORCE_HOST;
         }
         return host;
     }
@@ -182,13 +132,6 @@ public class NetUtils {
     {
         Intent intent = new Intent( Intent.ACTION_VIEW, Uri.parse(uri) );
         context.startActivity( intent );
-    }
-
-    protected static HttpsURLConnection makeHttpsRelayConn( Context context,
-                                                            String proc )
-    {
-        String url = XWPrefs.getDefaultRelayUrl( context );
-        return makeHttpsConn( context, url, proc );
     }
 
     public static HttpsURLConnection makeHttpsMQTTConn( Context context,

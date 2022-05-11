@@ -556,7 +556,6 @@ public class GamesListDelegate extends ListDelegateBase
         R.id.games_menu_dicts,
         R.id.games_menu_about,
         R.id.games_menu_email,
-        R.id.games_menu_checkmoves,
     };
     private static final int[] ONEGAME_ITEMS = {
         R.id.games_game_config,
@@ -1041,8 +1040,6 @@ public class GamesListDelegate extends ListDelegateBase
                 }
             } );
 
-        NetUtils.informOfDeaths( m_activity );
-
         post( new Runnable() {
                 @Override
                 public void run() {
@@ -1438,9 +1435,6 @@ public class GamesListDelegate extends ListDelegateBase
                 mkListAdapter(); // required because position may change
             }
             break;
-        case SYNC_MENU:
-            doSyncMenuitem();
-            break;
         case NEW_FROM:
             long curID = (Long)params[0];
             long newid = GameUtils.dupeGame( m_activity, curID );
@@ -1780,14 +1774,6 @@ public class GamesListDelegate extends ListDelegateBase
 
         case R.id.games_menu_dicts:
             DictsDelegate.start( getDelegator() );
-            break;
-
-            // Get rid of this???
-        case R.id.games_menu_checkmoves:
-            makeNotAgainBuilder( R.string.not_again_sync,
-                                 R.string.key_notagain_sync,
-                                 Action.SYNC_MENU )
-                .show();
             break;
 
         case R.id.games_menu_checkupdates:
@@ -2747,8 +2733,6 @@ public class GamesListDelegate extends ListDelegateBase
         }
         invalidateOptionsMenuIf();
         setTitle();
-
-        NetUtils.informOfDeaths( m_activity );
     }
 
     private boolean makeNewNetGameIf()
