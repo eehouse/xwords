@@ -967,13 +967,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_comms_1getInitialAddr
 ( JNIEnv* env, jclass C )
 {
     CommsAddrRec addr;
-#ifdef XWFEATURE_RELAY
-    const char* chars = (*env)->GetStringUTFChars( env, jname, NULL );
-    comms_getInitialAddr( &addr, chars, port );
-    (*env)->ReleaseStringUTFChars( env, jname, chars );
-#else
     comms_getInitialAddr( &addr );
-#endif
     jobject jaddr = makeObjectEmptyConst( env, PKG_PATH("jni/CommsAddrRec") );
     setJAddrRec( env, jaddr, &addr );
     return jaddr;
