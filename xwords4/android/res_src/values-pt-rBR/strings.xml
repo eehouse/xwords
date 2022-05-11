@@ -338,7 +338,6 @@
     <string name="notify_other_summary">Quando a jogada do oponente aparece</string>
     <string name="notify_vibrate">Vibrar</string>
     <string name="notify_sound">Tocar som</string>
-    <string name="disable_relay">Desabilitar jogo pelo servidor</string>
     <string name="network_behavior_summary">Configurações aplicadas para os jogos em rede</string>
     <string name="network_behavior">Configurações do jogo na rede</string>
     <string name="hide_crosshairs_summary">Não mostrar qual célula do quadro é tocada</string>
@@ -628,7 +627,6 @@
     <string name="not_again_comms_mqtt">Há um servidor na internet que passa mensagens entre dispositivos que estão rodando CrossWords. Ele funciona sempre que você tiver uma conexão de internet totalmente funcional, mas pode ter problemas em redes WiFi restritas.</string>
     <string name="mqtt_invite_title">Convite MQTT</string>
     <string name="mqtt_port">Porta MQTT</string>
-    <string name="relay_poll_name_no_polling">Somente FCM: sem polling</string>
     <string name="relay_poll_name_both">Padrão: mesclar polling e FCM</string>
     <string name="relay_invite_title">Convite do relay</string>
     <string name="mqtt_host">Internet/Host MQTT</string>
@@ -638,11 +636,9 @@
     <string name="about_web">Para um (antigo) manual ou código-fonte veja: http://xwords.sf.net/android.php. Para reportar bugs, sugerir funções, oferecer ajuda etc., mande um e-mail: xwords@eehouse.org.</string>
     <string name="str_submit_confirm">Enviar a jogada atual\?
 \n</string>
-    <string name="button_enable_relay">Ativar jogar via relay</string>
     <string name="warn_relay_havegames">Tem certeza que quer desativar jogar via relay (internet)\?
 \n
 \n A maioria dos jogos em rede trocam jogadas via relay, então só faça isso se você quiser jogar TODOS os jogos contra um robô neste mesmo dispositivo.</string>
-    <string name="warn_relay_later">Você pode ativar jogar via relay agora ou depois.</string>
     <string name="confirm_drop_relay">Tem certeza que quer remover a habilidade deste jogo de comunicar via relay\?</string>
     <string name="p2p_invite_title">Convite do WiFi Direct</string>
     <string name="confirm_clear_bt_postscript">"
@@ -1123,4 +1119,24 @@
     <string name="old_apks_deleted_fmt">Foi apagado %1$d antigas apks de atualização</string>
     <string name="skip_mqtt_add_title">Ignore a adição do MQTT</string>
     <string name="skip_mqtt_add_summary">NÃO tente enviar todas as mensagens por MQTT</string>
+    <string name="disable_mqtt">Desativar o jogo pela internet</string>
+    <string name="disable_mqtt_summary">Desativar toda a comunicação da Internet (MQTT)</string>
+    <string name="warn_mqtt_havegames">Tem certeza de que deseja desativar o jogo usando a Internet\?
+\n
+\n A maioria dos jogos com dois dispositivos trocam movimentos pela Internet, portanto, faça isso apenas se você planeja jogar TODOS os jogos contra um robô neste mesmo dispositivo.</string>
+    <plurals name="warn_mqtt_games_fmt">
+        <item quantity="one">"
+\n
+\n(Você tem um jogo ativo usando a internet agora.)"</item>
+        <item quantity="other">"
+\n
+\n(Você tem %1$d jogos ativos usando a internet agora.)"</item>
+    </plurals>
+    <string name="warn_mqtt_disabled">O internet play está atualmente desativado neste dispositivo. Nenhum movimento será enviado ou recebido pela internet.</string>
+    <string name="warn_mqtt_later">Você pode ativar internet play agora ou mais tarde.</string>
+    <string name="button_enable_mqtt">Ativar o internet play</string>
+    <string name="button_disable_mqtt">Desativar o internet play</string>
+    <string name="newgame_drop_mqtt">Derruba a internet</string>
+    <string name="warn_mqtt_remove">Você pode ativar a internet play agora, ou removê-lo deste jogo.</string>
+    <string name="confirm_drop_mqtt">Tem a certeza que deseja remover a capacidade de comunicação deste jogo através da Internet\?</string>
 </resources>
