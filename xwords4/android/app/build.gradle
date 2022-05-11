@@ -125,7 +125,6 @@ android {
             buildConfigField "boolean", "UDP_ENABLED", "true"
             buildConfigField "boolean", "REPORT_LOCKS", "false"
             buildConfigField "boolean", "LOG_LIFECYLE", "false"
-            buildConfigField "String", "KEY_FCMID", "\"FBMService_fcmid\""
             buildConfigField "boolean", "ATTACH_SUPPORTED", "false"
             buildConfigField "boolean", "NON_RELEASE", "DEBUG || !IS_TAGGED_BUILD"
             buildConfigField "boolean", "HAVE_KNOWN_PLAYERS", "true"
@@ -165,7 +164,6 @@ android {
             resValue "string", "nfc_aid", "$NFC_AID_XW4"
             externalNativeBuild.ndkBuild.cFlags += ['-DVARIANT_xw4fdroid']
             externalNativeBuild.ndkBuild.arguments += ['XW_BT_UUID=' + XW_UUID]
-            buildConfigField "String", "KEY_FCMID", "null"
         }
 
         xw4d {
@@ -181,7 +179,6 @@ android {
             buildConfigField "String", "VARIANT_NAME", "\"Dev/Debug\""
             buildConfigField "int", "VARIANT_CODE", "3"
             buildConfigField "boolean", "REPORT_LOCKS", "true"
-            buildConfigField "String", "KEY_FCMID", "null"
             buildConfigField "String", "NFC_AID", "\"${NFC_AID_XW4d}\""
             resValue "string", "nfc_aid", "$NFC_AID_XW4d"
             externalNativeBuild.ndkBuild.cFlags += ['-DVARIANT_xw4d']

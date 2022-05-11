@@ -83,7 +83,6 @@
   <string name="key_robot_name">key_robot_name</string>
   <string name="key_default_robodict">key_default_robodict</string>
   <string name="key_default_phonies">key_default_phonies2</string>
-  <string name="key_relay_poll">key_relay_poll</string>
   <string name="key_default_timerenabled">key_default_timerenabled</string>
   <string name="key_notify_sound">key_notify_sound</string>
   <string name="key_disable_mqtt">key_disable_mqtt</string>
@@ -323,12 +322,6 @@
     <item>@string/radio_name_tablet</item>
     <item>@string/radio_name_gsm</item>
     <item>@string/radio_name_cdma</item>
-  </string-array>
-
-  <string-array name="relay_poll_names">
-    <item>@string/relay_poll_name_no_fcm</item>
-    <item>@string/relay_poll_name_no_polling</item>
-    <item>@string/relay_poll_name_both</item>
   </string-array>
 
   <string-array name="mqtt_qos_values">

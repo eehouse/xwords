@@ -63,30 +63,6 @@ public class XWPrefs {
                                 BuildConfig.DEBUG );
     }
 
-    public static boolean getIgnoreFCM( Context context )
-    {
-        String curValue =
-            XWPrefs.getPrefsString( context, R.string.key_relay_poll );
-        String noFCMString = context.getString(R.string.relay_poll_name_no_fcm);
-        boolean result = noFCMString.equals( curValue );
-        // Log.d( TAG, "getIgnoreFCM() => %b (%s vs %s)", result,
-        //        curValue, noFCMString );
-        return result;
-    }
-
-    // Not used yet
-    public static boolean getFCMOnly( Context context )
-    {
-        String curValue =
-            XWPrefs.getPrefsString( context, R.string.key_relay_poll );
-        String FCMOnlyString = context
-            .getString( R.string.relay_poll_name_no_polling );
-        boolean result = FCMOnlyString.equals( curValue );
-        Log.d( TAG, "getFCMOnly() => %b (%s vs %s)", result,
-               curValue, FCMOnlyString );
-        return result;
-    }
-
     public static boolean getSMSToSelfEnabled( Context context )
     {
         return getPrefsBoolean( context, R.string.key_enable_sms_toself, false );
@@ -107,13 +83,6 @@ public class XWPrefs {
     {
         String result = getWithHost( context, R.string.key_update_url_path );
         // Log.d( TAG, "getDefaultUpdateUrl() => %s", result );
-        return result;
-    }
-
-    public static String getDefaultRelayUrl( Context context )
-    {
-        String result = getWithHost( context, R.string.key_relay_url_path );
-        // Log.d( TAG, "getDefaultRelayUrl() => %s", result );
         return result;
     }
 

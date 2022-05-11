@@ -2465,10 +2465,6 @@
     <string name="banned_nbs_perms">This game is set up to communicate via data SMS, but apps from the Google Play Store are no longer allowed to do so (with rare exceptions). You can still open the game, but it may not be able to send or receive moves.
 \n
 \nYou can remove the data SMS communication setting, or use the “Read more” button to check progress on the development of an alternative.</string>
-    <string name="relay_poll_title">Check for moves how?</string>
-    <string name="relay_poll_name_no_fcm">Poll only: no FCM messages</string>
-    <string name="relay_poll_name_no_polling">FCM only: no polling</string>
-    <string name="relay_poll_name_both">Default: mix polling and FCM</string>
     <string name="not_again_longtap_lookup">You can look up words BEFORE
     they’re committed as moves—by long-tapping, same as committed
     words.\n\nUse this feature to check the validity of words you’re

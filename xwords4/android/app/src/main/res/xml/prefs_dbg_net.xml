@@ -5,14 +5,6 @@
   <PreferenceCategory android:title="@string/pref_group_relay_title"
                       android:summary="@string/pref_group_relay_summary"
                       >
-    <org.eehouse.android.xw4.XWListPreference
-        android:key="@string/key_relay_poll"
-        android:title="@string/relay_poll_title"
-        android:entries="@array/relay_poll_names"
-        android:entryValues="@array/relay_poll_names"
-        android:defaultValue="@string/relay_poll_name_both"
-        />
-
     <org.eehouse.android.xw4.XWEditTextPreference
         android:key="@string/key_mqtt_host"
         android:title="@string/mqtt_host"

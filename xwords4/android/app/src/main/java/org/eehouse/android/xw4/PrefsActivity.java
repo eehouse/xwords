@@ -168,10 +168,6 @@ public class PrefsActivity extends XWActivity
                 tmp.add( R.string.key_init_dupmodeon );
             }
 
-            if ( null == BuildConfig.KEY_FCMID ) {
-                tmp.add( R.string.key_relay_poll );
-            }
-
             sHideSet = new HashSet<>();
             for ( int key : tmp ) {
                 sHideSet.add( context.getString( key ) );
