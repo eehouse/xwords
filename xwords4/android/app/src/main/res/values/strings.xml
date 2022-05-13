@@ -430,7 +430,7 @@
          i.e. after user has picked board_menu_trade menu item -->
     <string name="button_trade_commit">Commit trade</string>
     <string name="button_trade_cancel">Cancel trade</string>
-    <string name="entering_trade">Tap tiles to select…</string>
+    <string name="entering_trade">Trading tiles. Tap tiles to select…</string>
     <!-- Bonus value hint that's displayed in gray text in the colored
          bonus square. Double-letter -->
     <string name="bonus_l2x_summary">2L</string>

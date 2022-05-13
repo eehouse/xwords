@@ -1054,7 +1054,7 @@ public class BoardDelegate extends DelegateBase
             startChatActivity();
             break;
         case START_TRADE_ACTION:
-            showToast( R.string.entering_trade );
+            showTradeToastOnce( true );
             cmd = JNICmd.CMD_TRADE;
             break;
         case LOOKUP_ACTION:
@@ -2171,6 +2171,20 @@ public class BoardDelegate extends DelegateBase
         }
     }
 
+    private boolean mTradeToastShown = false;
+    private void showTradeToastOnce( boolean inTrade )
+    {
+        if ( inTrade ) {
+            if ( !mTradeToastShown ) {
+                mTradeToastShown = true;
+                Utils.showToast( m_activity, R.string.entering_trade );
+            }
+        } else {
+            mTradeToastShown = false;
+        }
+    }
+
+    private static int mCounter = 0;
     private Handler makeJNIHandler()
     {
         Handler handler = new Handler() {
@@ -2193,6 +2207,7 @@ public class BoardDelegate extends DelegateBase
                                 m_mySIS.inTrade = m_gsi.inTrade;
                             }
                             m_view.setInTrade( m_mySIS.inTrade );
+                            showTradeToastOnce( m_mySIS.inTrade );
                             adjustTradeVisibility();
                             invalidateOptionsMenuIf();
                         }
