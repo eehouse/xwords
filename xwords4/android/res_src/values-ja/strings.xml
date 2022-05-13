@@ -616,7 +616,6 @@
     <string name="debug_features_summary">メニュー項目等 (リリース ビルドのみ)</string>
     <string name="board_menu_game_netstats">ネットワーク統計情報</string>
     <string name="netstats_title">ゲーム ネットワーク統計情報</string>
-    <string name="proxy_port">リレー デバイス ポート</string>
     <string name="name_dict_fmt">%1$s/%2$s</string>
     <string name="gamel_menu_storedb">SD カードにゲームを書き込む</string>
     <string name="gamel_menu_loaddb">SD カードからゲームをロード</string>
@@ -688,11 +687,7 @@
     <string name="chat_hint">ここに入力…</string>
     <string name="chat_sender_fmt">%1$s:</string>
     <string name="summary_busy">概要は利用できません</string>
-    <string name="disable_relay_summary">すべてのインターネット通信を無効にします</string>
     <string name="warn_relay_later">今すぐ、または後でリレー プレイを有効にすることができます。</string>
-    <string name="warn_relay_havegames">リレー (インターネット) を使用したプレイを無効にしますか\?
-\n
-\nほとんどのネットワークゲームではリレーを介して移動を交換するので、すべてのゲームをこの同じデバイス上のロボットでプレイする場合にのみ行ってください。</string>
     <string name="button_enable_relay">リレー プレイを有効にする</string>
     <string name="after_restart">クロスワードを再起動するまで、
 この変更は有効になりません。</string>
@@ -811,7 +806,6 @@ WiFi ダイレクト経由で接続可能なデバイスはありません。</s
     <string name="banned_nbs_perms">このゲームは、データSMSを介して通信するように設定されていますが、Google Playストアのアプリは、もはや (まれな例外を除いて) 許可されていません。まだゲームを開くことはできますが、移動を送受信できない場合があります。
 \n
 \nデータSMS通信設定を削除するか、「続きを読む」ボタンを使用して、代替策の開発の進捗状況を確認することができます。</string>
-    <string name="relay_poll_name_no_fcm">ポーリングのみ: FCM メッセージなし</string>
     <string name="relay_poll_name_both">デフォルト: ポーリングと FCM を混在</string>
     <string name="not_again_longtap_lookup">単語を移動としてコミットする前に -- 長押しして、コミットされた単語と同じように単語を調べることができます。
 \n

@@ -340,7 +340,6 @@
     <string name="title_sort_tiles">Sortuj nowe kafelki</string>
     <string name="summary_sort_tiles">Sortuj stoisko za każdym razem, gdy dodawane są nowe kafelki</string>
     <string name="peek_other_summary">Stuknięcie w nazwę tablicy wyników pokaże kafelek gracza</string>
-    <string name="disable_relay_summary">Wyłącz całą komunikację internetową</string>
     <string name="notify_other_summary">Kiedy przeciwnik się rusza</string>
     <string name="invite_choice_bt">Bluetooth</string>
     <string name="invite_choice_nfc">NFC (Android beaming)</string>
@@ -500,11 +499,9 @@
     <string name="confirm_sms_leave">Nie: pozostaw wyłączone</string>
     <string name="confirm_sms_unlimited">Tak: Mam nielimitowane SMS-y</string>
     <string name="confirm_sms_willpay">Tak: Zapłacę wszystkie opłaty naliczone przez operatora</string>
-    <string name="warn_relay_later">Możesz włączyć grę poprzez przekaźnik teraz lub później.</string>
     <string name="warn_relay_havegames">Czy na pewno chcesz wyłączyć grę za pomocą przekaźnika\?</string>
     <string name="button_enable_sms">Włącz Data SMS</string>
     <string name="button_enable_bt">Włącz Bluetooth</string>
-    <string name="button_disable_relay">Wyłącz odtwarzanie przekaźnika</string>
     <string name="button_later">Później</string>
     <string name="gamel_menu_checkupdates">Sprawdź dostępność aktualizacji</string>
     <string name="checkupdates_none_found">Wszystko jest aktualne.</string>
@@ -693,7 +690,6 @@
     <string name="board_menu_game_netstats">Statystyki sieci</string>
     <string name="board_menu_game_showInvites">Pokaż zaproszenia</string>
     <string name="netstats_title">Statystyki gry sieciowej</string>
-    <string name="proxy_port">Przekaźnik portu urządzenia</string>
     <string name="name_dict_fmt">%1$s/%2$s</string>
     <string name="gamel_menu_storedb">Zapisz gry na kartę SD</string>
     <string name="gamel_menu_loaddb">Załaduj gry z karty SD</string>
@@ -862,7 +858,6 @@
     <string name="banned_nbs_perms">Ta gra jest skonfigurowana do komunikacji za pośrednictwem Data SMS, ale aplikacje ze sklepu Google Play Store nie mogą już tego robić (z rzadkimi wyjątkami). Możesz jeszcze otworzyć grę, ale może nie być w stanie wysyłać lub odbierać ruchów.
 \n
 \nMożesz usunąć ustawienie komunikacji przez Data SMS lub użyć przycisku \"Czytaj więcej\", aby sprawdzić moje postępy w rozwoju alternatywy.</string>
-    <string name="relay_poll_name_no_fcm">Tylko sondaż: brak komunikatów FCM</string>
     <string name="relay_poll_name_both">Domyślnie: Mix sondowania i FCM</string>
     <string name="not_again_longtap_lookup">Możesz spojrzeć na słowa PRZED tym, jak są one popełnione jako ruchy - przez długie podsłuchiwanie, tak samo jak słowa popełnione.
 \n

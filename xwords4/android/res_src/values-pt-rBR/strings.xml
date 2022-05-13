@@ -627,7 +627,6 @@
     <string name="not_again_comms_mqtt">Há um servidor na internet que passa mensagens entre dispositivos que estão rodando CrossWords. Ele funciona sempre que você tiver uma conexão de internet totalmente funcional, mas pode ter problemas em redes WiFi restritas.</string>
     <string name="mqtt_invite_title">Convite MQTT</string>
     <string name="mqtt_port">Porta MQTT</string>
-    <string name="relay_poll_name_both">Padrão: mesclar polling e FCM</string>
     <string name="relay_invite_title">Convite do relay</string>
     <string name="mqtt_host">Internet/Host MQTT</string>
     <string name="relay_alert_title">Mensagem do relay</string>
@@ -636,9 +635,6 @@
     <string name="about_web">Para um (antigo) manual ou código-fonte veja: http://xwords.sf.net/android.php. Para reportar bugs, sugerir funções, oferecer ajuda etc., mande um e-mail: xwords@eehouse.org.</string>
     <string name="str_submit_confirm">Enviar a jogada atual\?
 \n</string>
-    <string name="warn_relay_havegames">Tem certeza que quer desativar jogar via relay (internet)\?
-\n
-\n A maioria dos jogos em rede trocam jogadas via relay, então só faça isso se você quiser jogar TODOS os jogos contra um robô neste mesmo dispositivo.</string>
     <string name="confirm_drop_relay">Tem certeza que quer remover a habilidade deste jogo de comunicar via relay\?</string>
     <string name="p2p_invite_title">Convite do WiFi Direct</string>
     <string name="confirm_clear_bt_postscript">"

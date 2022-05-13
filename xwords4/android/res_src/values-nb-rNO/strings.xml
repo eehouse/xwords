@@ -501,7 +501,6 @@
     <string name="peek_other">Vis flis ute av tur</string>
     <string name="hide_crosshairs">Skru av retikler</string>
     <string name="hide_crosshairs_summary">Ikke vis hvilken bordcelle som berøres</string>
-    <string name="disable_relay_summary">Skru av all internettkommunikasjon</string>
     <string name="newgame_configure_first">Sett opp først</string>
     <string name="invite_choice_nfc">NFC (\"Android-stråling\")</string>
     <string name="invite_choice_relay">Internett/relé</string>
@@ -559,7 +558,6 @@
     <string name="warn_sms_disabled">Spill via SMS er foreløpig avslått. Ingen trekk vil bli sendt via SMS.
 \n
 \nDu kan skru på spill via SMS nå, eller senere.</string>
-    <string name="button_disable_relay">Skru av relé-spill</string>
     <string name="str_winner_fmt" formatted="false">[Seierherre] %1$s: %2$d</string>
     <string name="str_resigned_fmt" formatted="false">[Resignert] %1$s: %2$d</string>
     <string name="inform_dict_title">Samsvarte ikke med ordliste</string>
@@ -602,7 +600,6 @@
     <string name="dict_host">Ordlistenedlastingsnettadresse</string>
     <string name="debug_features_summary">Menyelementer osv. (kun utgivelsesbygg)</string>
     <string name="netstats_title">Spillnettverksstatistikk</string>
-    <string name="proxy_port">Relé-enhetsport</string>
     <string name="gamel_menu_writegit">Kopier Git-info til utklippstavle</string>
     <string name="nag_intervals">Påminnelsesintervall (minutt1,minutt2,…)</string>
     <string name="game_summary_field_rowid">rad-ID</string>
@@ -662,7 +659,6 @@
     <string name="empty_p2p_inviter">Det er foreløpig ingen enheter som kan nås via Wi-Fi Direct som har CrossWords installert.</string>
     <string name="remote_undone">Enhet annensteds hen opphevet en tur.</string>
     <string name="connstat_lastother_unsucc_fmt">(Siste sending var %1$s)</string>
-    <string name="warn_relay_remove">Du kan skru på relé-spill nå, eller senere, eller fjerne det fra dette spillet.</string>
     <string name="str_placer_fmt" formatted="false">[Nr.%1$d] %2$s: %3$d</string>
     <string name="inform_dict_diffversion_fmt">Du og verten for dette spillet bruker forskjellige versjoner av ordlisten %1$s.</string>
     <string name="square_tiles_summary">Selv om de kan være høyere</string>
@@ -710,14 +706,6 @@
     <string name="warn_bt_disabled">Blåtann er skrudd av på denne enheten. Ingen trekk vil bli sendt via Blåtann.
 \n
 \nDu kan skru på Blåtann nå, eller senere.</string>
-    <plurals name="warn_relay_games_fmt">
-        <item quantity="one">"
-\n
-\n(Du har ett spill som benytter det.)"</item>
-        <item quantity="other">"
-\n
-\n(Du har %1$d spill som benytter det.)"</item>
-    </plurals>
     <string name="invite_dict_missing_body_fmt">%1$s har inviter deg til å spille CrossWords ved bruk av ordlisten %2$s (for spill i %3$s), men den er ikke installert. Ønsker du å laste ned ordlisten, eller avslå invitasjonen?</string>
     <string name="invite_dict_missing_body_noname_fmt">Du har blitt invitert til å spille CrossWords ved bruk av ordlisten %2$s (for spill i %3$s), men den er ikke installert. Ønsker du å laste ned ordlisten?</string>
     <plurals name="groups_confirm_del_games_fmt">
@@ -856,7 +844,6 @@
     <string name="banned_nbs_perms">Dette spillet er satt opp til å kommunisere via data-SMS, men programmer fra Google Play-butikken tillates ikke lenger å gjøre dette (dog med noen unntak). Du kan fremdeles åpne spillet, men vil ikke kunne sende eller motta trekk.
 \n
 \nDu kan fjerne innstillingen for kommunikasjon per data-SMS, eller brue \"Les mer\"-knappen for å se hvordan utviklingen med å tilby et alternativ går.</string>
-    <string name="relay_poll_name_no_polling">Kun FCM: Ingen prøving</string>
     <string name="invite_choice_mqtt">Internett/MQTT</string>
     <string name="mqtt_invite_title">MQTT-invitasjon</string>
     <string name="history_msg_fmt">Melding: %1$s.</string>

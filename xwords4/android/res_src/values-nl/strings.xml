@@ -605,7 +605,6 @@
     <string name="debug_features_summary">Menuitems etc. (enkel uitgegeven versies)</string>
     <string name="board_menu_game_netstats">Netwerkstatistieken</string>
     <string name="netstats_title">Netwerkstatistieken spel</string>
-    <string name="proxy_port">Relay apparaat poort</string>
     <string name="name_dict_fmt">%1$s/%2$s</string>
     <string name="gamel_menu_storedb">Schrijf spellen naar SD kaart</string>
     <string name="gamel_menu_loaddb">Laad spellen van SD kaart</string>
@@ -653,7 +652,6 @@
     <string name="invit_expl_bt_fmt">Uitnodiging verstuurd via Bluetooth naar gepaard apparaat \"%1$s\" op %2$s</string>
     <string name="invit_expl_relay_fmt">Uitnodiging doorgestuurd door de relay naar een ander apparaat op %1$s</string>
     <string name="invit_expl_notarget_fmt">Uitnodiging verstuurd via %1$s op %2$s. Ontvanger onbekend.</string>
-    <string name="disable_relay_summary">Schakel alle internetcommunicatie uit</string>
     <string name="invite_choice_relay">Internet/Relay</string>
     <string name="chat_hint">Typ hier...</string>
     <string name="notify_title_turn_fmt">Jouw beurt is spel %1$s</string>
@@ -671,9 +669,7 @@
     <string name="chat_sender_fmt">%1$s:</string>
     <string name="summary_busy">Samenvatting niet beschikbaar</string>
     <string name="invites_net_fmt">Uitnodigingen verstuurd voor spel verbonden via %1$s:</string>
-    <string name="warn_relay_later">Je kan relay spelen nu of later inschakelen.</string>
     <string name="warn_relay_havegames">Weet je zeker dat je spelen via de relay uit wilt schakelen?</string>
-    <string name="button_enable_relay">Schakel Relay spelen in</string>
     <string name="rematch_name_fmt">Rematch: %1$s</string>
     <string name="waiting_rematch_title">Rematch is bezig</string>
     <string name="rematch_sent_toast">Rematch uitnodigingen verstuurd</string>

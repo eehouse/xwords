@@ -698,7 +698,6 @@ Introduïu el vostre nom aquí. S\'usarà en crear partides noves. (Podreu
     <string name="confirm_clear_chat">Esteu segur de voler suprimir tot l\'historial de conversa d\'aquesta partida?\n\n(Aquesta acció no és pot desfer.)</string>
     <string name="summary_invites_out">Jugadors convidats</string>
     <string name="invit_expl_sms_fmt">S\'ha enviat la invitació via SMS de dades al telèfon %1$s a %2$s</string>
-    <string name="disable_relay_summary">Inhabilita la comunicació per Internet</string>
     <string name="invite_choice_relay">Internet/repetidor</string>
     <string name="invite_choice_p2p">Directe per Wifi</string>
     <string name="chat_hint">Escriviu aquí…</string>
@@ -714,7 +713,6 @@ Introduïu el vostre nom aquí. S\'usarà en crear partides noves. (Podreu
     <string name="list_item_select">Selecciona</string>
     <string name="list_item_deselect">Treu la selecció</string>
     <string name="no_invites">Aquesta partida no té cap invitació</string>
-    <string name="button_disable_relay">Inhabilitat el joc via repetidor</string>
     <string name="disable_nags_title">Recordatoris de torn</string>
     <string name="disable_nag_solo_title">Inhabilita els recordatoris de partides en solitari</string>
     <string name="move_dict_rationale">Baixar un diccionari en l\'àrea
@@ -759,7 +757,6 @@ Introduïu el vostre nom aquí. S\'usarà en crear partides noves. (Podreu
         <item quantity="other">Esteu segur de voler suprimir els %1$d registres RelayID seleccionats?</item>
     </plurals>
     <string name="invites_net_fmt">S\'han enviat les invitacions per a la partida connectada via %1$s:</string>
-    <string name="warn_relay_later">Podeu activar el joc via repetidor ara, o més tard.</string>
     <string name="warn_relay_havegames">Esteu segur de voler desactivar el joc via repetidor?</string>
     <string name="force_tablet_tablet">Força la disposició de tauleta</string>
     <string name="force_tablet_phone">Força la disposició de telèfon</string>

@@ -1707,7 +1707,6 @@
     <string name="not_again_longtap_lookup">Pode pesquisar palavras ANTES de serem jogadas – a tocar e a segurar, do mesmo jeito que palavras jogadas.
 \n
 \nUse esta ferramenta para verificar a validade de palavras que está a pensar em jogar, ou pesquisar uma palavra não familiar dada como dica.</string>
-    <string name="relay_poll_name_no_polling">Somente FCM: sem polling</string>
     <string name="relay_poll_title">Checar movimentos como\?</string>
     <string name="banned_nbs_perms">Este jogo foi configurado para comunicar a usar dados SMS, mas apps do Google Play Store não têm mais permissão para tal (com raras exceções). Ainda poderá abrir o jogo, mas talvez não consiga fazer ou receber jogadas.
 \n
@@ -2041,7 +2040,6 @@
     <string name="dict_avail_fmt">Toque para descarregar a lista de palavras “%1$s”</string>
     <string name="button_later">Depois</string>
     <string name="button_disable_bt">Desativar jogo Bluetooth</string>
-    <string name="button_enable_relay">Ativar jogar via relay</string>
     <string name="button_enable_bt">Ativar Bluetooth</string>
     <string name="button_enable_sms">Ativar dados SMS</string>
     <plurals name="warn_bt_games_fmt">
@@ -2055,7 +2053,6 @@
     <string name="warn_bt_havegames">Tem certeza que quer desativar jogar a usar Bluetooth\?
 \n
 \nBluetooth é útil para trocar jogadas e especialmente convites com aparelhos próximos a si. A não ser que esteja certo de que não irá jogar com alguém por perto não há muito mal em deixar ativado.</string>
-    <string name="warn_relay_remove">Pode ativar jogar via relay agora ou removê-lo deste jogo.</string>
     <string name="warn_relay_disabled">Jogos via relay estão atualmente desativados neste aparelho. Nenhuma jogada será enviada ou recebida via relay.</string>
     <string name="warn_bt_disabled">Jogar via Bluetooth está atualmente desativado e nenhuma jogada será trocada via Bluetooth até que for ativado.
 \n
@@ -2204,7 +2201,6 @@
     <string name="newgame_reinvite">Convide novamente</string>
     <string name="disable_bt_summary">Disablitar toda a comunicação via Bluetooth</string>
     <string name="disable_bt">Desativar</string>
-    <string name="disable_relay">Desativar jogo pelo servidor</string>
     <string name="cellline">Bordas da célula</string>
     <string name="hide_newgames_summary">Esconder os botões do jogo no ecrã principal deixa os jogos mais visíveis</string>
     <string name="hide_newgames_title">Esconder botões do novo jogo</string>

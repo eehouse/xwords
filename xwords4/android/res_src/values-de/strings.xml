@@ -72,7 +72,6 @@
         <item quantity="other">Gerät %1$d verbunden mit Zwischenstation in Raum „%2$s“. Warte auf %3$d Spieler.</item>
     </plurals>
     <string name="msg_lost_other">Die Zwischenstation hat den Kontakt zu einem anderen Gerät in dieser Partie verloren.</string>
-    <string name="newgame_drop_relay">Zwischenstation löschen</string>
     <string name="invite_choice_relay">Internet/Zwischenstation</string>
     <string name="list_item_new_from">Kopie anlegen</string>
     <plurals name="confirm_reset_fmt">
@@ -442,11 +441,9 @@
     <string name="warn_bt_disabled">Bluetooth ist gegenwärtig auf diesem Gerät ausgeschaltet. Keine Züge werden über Bluetooth verschickt.
 \n
 \nSie können Bluetooth jetzt oder später aktivieren.</string>
-    <string name="warn_relay_later">Sie können Spielen über Zwischenstation jetzt oder später aktivieren.</string>
     <string name="warn_relay_havegames">Sind Sie sicher, dass Sie Spielen über Zwischenstation deaktivieren wollen?</string>
     <string name="button_enable_sms">Daten-SMS aktivieren</string>
     <string name="button_enable_bt">Bluetooth aktivieren</string>
-    <string name="button_disable_relay">Spielen über Zwischenstation deaktivieren</string>
     <string name="button_later">Später</string>
     <string name="gamel_menu_checkupdates">Auf Aktualisierungen prüfen</string>
     <string name="checkupdates_none_found">Alles ist auf dem neuesten Stand.</string>
@@ -760,7 +757,6 @@
     <string name="debug_features_summary">Menüeinträge usw. (nur Release-Builds)</string>
     <string name="board_menu_game_showInvites">Einladungen zeigen</string>
     <string name="netstats_title">Partie-Netzwerkstatistik</string>
-    <string name="proxy_port">Geräte-Port auf Zwischenstation</string>
     <string name="name_dict_fmt">%1$s/%2$s</string>
     <string name="gamel_menu_storedb">Partien auf SD-Kartie speichern</string>
     <string name="enable_sms_toself_title">SMS-Selbstverbindung aktivieren</string>
@@ -856,7 +852,6 @@
     <string name="banned_nbs_perms">Dieses Spiel ist für die Kommunikation per Daten-SMS eingerichtet, aber Apps aus dem Google Play Store dürfen dies (bis auf wenige Ausnahmen) nicht mehr tun. Sie können das Spiel immer noch öffnen, aber es ist mehr möglicherweise, Züge zu senden oder zu empfangen.
 \n
 \nSie können die Einstellung für die Daten-SMS-Kommunikation entfernen oder über die Schaltfläche \"Mehr erfahren\" den Fortschritt bei der Entwicklung einer Alternative überprüfen.</string>
-    <string name="relay_poll_name_no_fcm">Nur Umfrage: keine FCM-Nachrichten</string>
     <string name="relay_poll_name_both">Standard: Umfragen und FCM mischen</string>
     <string name="not_again_longtap_lookup">Sie können Wörter nachschlagen, BEVOR sie als Züge übertragen werden - durch langes Antippen, genau wie bei gebundenen Wörtern.
 \n

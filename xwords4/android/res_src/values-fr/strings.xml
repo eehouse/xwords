@@ -2712,7 +2712,6 @@ changement, ou l\'éditer pour lui attribuer une façon de se connecter ?</stri
     <!--<string name="relay_port">Relay game port</string>-->
     <!--XLATE-ME-->
     <!--<string name="proxy_port">Relay device port</string>-->
-    <string name="proxy_port">Port d\'appareil du relai</string>
     <!--XLATE-ME-->
     <!--<string name="name_dict_fmt">%1$s/%2$s</string>-->
     <string name="name_dict_fmt">%1$s/%2$s</string>
@@ -2858,11 +2857,7 @@ pour la langue</string>
     <string name="chat_hint">Tapez ici…</string>
     <string name="chat_sender_fmt">%1$s :</string>
     <string name="summary_busy">Résumé indisponible</string>
-    <string name="disable_relay_summary">Désactiver toute communication par Internet</string>
     <string name="warn_relay_later">Vous pouvez activer le jeu par relai maintenant, ou plus tard.</string>
-    <string name="warn_relay_havegames">Êtes-vous sûr de vouloir désactiver le jeu par relai (Internet) \?
-\n
-\nLa plupart des parties en réseau échangent les coups via le relai, donc ne faites ça que si vous prévoyez de jouer TOUTES les parties contre un robot sur ce même appareil.</string>
     <string name="button_enable_relay">Activer le jeu par relai</string>
     <string name="after_restart">Ce changement s\'appliquera après que vous ayez relancé CrossWords.</string>
     <string name="invite_choice_p2p">Wifi Direct</string>

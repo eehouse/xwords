@@ -90,7 +90,6 @@
     <string name="not_again_longtap_lookup">Puoi vedere le parole PRIMA che l\'hai confermata come mossa - tenendo premuto il dito, stesso per le parole confermate.
 \n
 \nUsa questa funzione per vedere la validità delle parole che pensi di giocare o per guardare una parola non comune come suggerimento.</string>
-    <string name="relay_poll_name_no_polling">Solo FCM: non sondaggio</string>
     <string name="relay_poll_title">Controlla le mosse come\?</string>
     <string name="banned_nbs_perms">Questa partita è impostata su una connessione via dati SMS, ma l\'app di Google Play Store non supporta più questa funzione (con rare eccezioni). Puoi continuare ad aprire la partita, ma potresti non inviare o ricevere mosse.
 \n
@@ -382,7 +381,6 @@
     <string name="gamel_menu_checkupdates">Controlla aggiornamenti</string>
     <string name="button_later">Più tardi</string>
     <string name="button_disable_bt">Disattiva partita Bluetooth</string>
-    <string name="button_enable_relay">Attiva partita sul Server</string>
     <string name="button_enable_bt">Attiva Bluetooth</string>
     <string name="button_enable_sms">Attiva SMS dati</string>
     <plurals name="warn_bt_games_fmt">
@@ -396,7 +394,6 @@
     <string name="warn_bt_havegames">Sei sicuro di voler disabilitare la funzione \"Gioca tramite Bluetooth\?
 \n
 \nBluetooth è utile per scambarsi mosse, specialmente gli inviti, con i dispositivi fisicamente vicini a te. A meno che non sei sicuro non giocherai contro nessuno nelle vicinanze ed è un peccato lasciarlo attivo.</string>
-    <string name="warn_relay_remove">Puoi attivare la partita via Server ora o rimuoverla da questa partita.</string>
     <string name="warn_relay_disabled">La funzione \"Gioca tramite Server\" è attualmente disabilitata su questo dispositivo. Nessuna mossa sarà inviata via Server.</string>
     <string name="warn_bt_disabled">La funzione \"Gioca tramite Bluetooth\" è attualmente disabilitata e nessuna mossa sarà inviata via Bluetooth finché non sarà attivato
 \n
@@ -773,7 +770,6 @@
     <string name="lang_unknown">Sconosciuto</string>
     <string name="dict_desc_fmt">%1$s (%2$s/%3$d parole)</string>
     <string name="disable_bt">Disabilita partita via Bluetooth</string>
-    <string name="disable_relay">Disabilita gioco via server</string>
     <string name="network_behavior_summary">Impostazioni da applicare per le partite in rete</string>
     <string name="network_behavior">Impostazioni gioco in rete</string>
     <string name="hide_crosshairs_summary">Non mostrare quale cella è stata selezionata</string>

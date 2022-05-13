@@ -251,7 +251,6 @@
     <string name="gamel_menu_checkupdates">Periksa pembaruan</string>
     <string name="button_later">Nanti</string>
     <string name="button_disable_bt">Nonaktifkan permainan Bluetooth</string>
-    <string name="button_enable_relay">Aktifkan permainan Relay</string>
     <string name="button_enable_bt">Aktifkan Bluetooth</string>
     <string name="button_enable_sms">Aktifkan SMS Data</string>
     <string name="confirm_sms_willpay">Ya: saya akan membayar semua biaya operator</string>
