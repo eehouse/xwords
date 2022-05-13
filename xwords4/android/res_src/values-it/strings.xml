@@ -90,7 +90,6 @@
     <string name="not_again_longtap_lookup">Puoi vedere le parole PRIMA che l\'hai confermata come mossa - tenendo premuto il dito, stesso per le parole confermate.
 \n
 \nUsa questa funzione per vedere la validità delle parole che pensi di giocare o per guardare una parola non comune come suggerimento.</string>
-    <string name="relay_poll_title">Controlla le mosse come\?</string>
     <string name="banned_nbs_perms">Questa partita è impostata su una connessione via dati SMS, ma l\'app di Google Play Store non supporta più questa funzione (con rare eccezioni). Puoi continuare ad aprire la partita, ma potresti non inviare o ricevere mosse.
 \n
 \nPuoi rimuovere le impostazioni di comunicazione via SMS o usare il tasto \"Leggi di Più\" per aggiornarti sui progressi sullo sviluppo di un \'alternativa.</string>
@@ -394,7 +393,6 @@
     <string name="warn_bt_havegames">Sei sicuro di voler disabilitare la funzione \"Gioca tramite Bluetooth\?
 \n
 \nBluetooth è utile per scambarsi mosse, specialmente gli inviti, con i dispositivi fisicamente vicini a te. A meno che non sei sicuro non giocherai contro nessuno nelle vicinanze ed è un peccato lasciarlo attivo.</string>
-    <string name="warn_relay_disabled">La funzione \"Gioca tramite Server\" è attualmente disabilitata su questo dispositivo. Nessuna mossa sarà inviata via Server.</string>
     <string name="warn_bt_disabled">La funzione \"Gioca tramite Bluetooth\" è attualmente disabilitata e nessuna mossa sarà inviata via Bluetooth finché non sarà attivato
 \n
 \nPuoi attivare il Bluetooth ora o più tardi.</string>

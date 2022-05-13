@@ -757,7 +757,6 @@ Introduïu el vostre nom aquí. S\'usarà en crear partides noves. (Podreu
         <item quantity="other">Esteu segur de voler suprimir els %1$d registres RelayID seleccionats?</item>
     </plurals>
     <string name="invites_net_fmt">S\'han enviat les invitacions per a la partida connectada via %1$s:</string>
-    <string name="warn_relay_havegames">Esteu segur de voler desactivar el joc via repetidor?</string>
     <string name="force_tablet_tablet">Força la disposició de tauleta</string>
     <string name="force_tablet_phone">Força la disposició de telèfon</string>
     <string name="gamel_menu_writegit">Copia la informació git al porta-retalls</string>

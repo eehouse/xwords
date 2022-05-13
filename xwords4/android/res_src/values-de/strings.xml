@@ -441,7 +441,6 @@
     <string name="warn_bt_disabled">Bluetooth ist gegenwärtig auf diesem Gerät ausgeschaltet. Keine Züge werden über Bluetooth verschickt.
 \n
 \nSie können Bluetooth jetzt oder später aktivieren.</string>
-    <string name="warn_relay_havegames">Sind Sie sicher, dass Sie Spielen über Zwischenstation deaktivieren wollen?</string>
     <string name="button_enable_sms">Daten-SMS aktivieren</string>
     <string name="button_enable_bt">Bluetooth aktivieren</string>
     <string name="button_later">Später</string>
@@ -852,7 +851,6 @@
     <string name="banned_nbs_perms">Dieses Spiel ist für die Kommunikation per Daten-SMS eingerichtet, aber Apps aus dem Google Play Store dürfen dies (bis auf wenige Ausnahmen) nicht mehr tun. Sie können das Spiel immer noch öffnen, aber es ist mehr möglicherweise, Züge zu senden oder zu empfangen.
 \n
 \nSie können die Einstellung für die Daten-SMS-Kommunikation entfernen oder über die Schaltfläche \"Mehr erfahren\" den Fortschritt bei der Entwicklung einer Alternative überprüfen.</string>
-    <string name="relay_poll_name_both">Standard: Umfragen und FCM mischen</string>
     <string name="not_again_longtap_lookup">Sie können Wörter nachschlagen, BEVOR sie als Züge übertragen werden - durch langes Antippen, genau wie bei gebundenen Wörtern.
 \n
 \nVerwenden Sie diese Funktion, um die Gültigkeit von Wörtern zu überprüfen, die Sie spielen möchten, oder um ein unbekanntes Wort als Hinweis nachzuschlagen.</string>

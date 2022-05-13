@@ -635,7 +635,6 @@
     <string name="about_web">Para um (antigo) manual ou código-fonte veja: http://xwords.sf.net/android.php. Para reportar bugs, sugerir funções, oferecer ajuda etc., mande um e-mail: xwords@eehouse.org.</string>
     <string name="str_submit_confirm">Enviar a jogada atual\?
 \n</string>
-    <string name="confirm_drop_relay">Tem certeza que quer remover a habilidade deste jogo de comunicar via relay\?</string>
     <string name="p2p_invite_title">Convite do WiFi Direct</string>
     <string name="confirm_clear_bt_postscript">"
 \n

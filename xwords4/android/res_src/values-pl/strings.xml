@@ -499,7 +499,6 @@
     <string name="confirm_sms_leave">Nie: pozostaw wyłączone</string>
     <string name="confirm_sms_unlimited">Tak: Mam nielimitowane SMS-y</string>
     <string name="confirm_sms_willpay">Tak: Zapłacę wszystkie opłaty naliczone przez operatora</string>
-    <string name="warn_relay_havegames">Czy na pewno chcesz wyłączyć grę za pomocą przekaźnika\?</string>
     <string name="button_enable_sms">Włącz Data SMS</string>
     <string name="button_enable_bt">Włącz Bluetooth</string>
     <string name="button_later">Później</string>
@@ -858,7 +857,6 @@
     <string name="banned_nbs_perms">Ta gra jest skonfigurowana do komunikacji za pośrednictwem Data SMS, ale aplikacje ze sklepu Google Play Store nie mogą już tego robić (z rzadkimi wyjątkami). Możesz jeszcze otworzyć grę, ale może nie być w stanie wysyłać lub odbierać ruchów.
 \n
 \nMożesz usunąć ustawienie komunikacji przez Data SMS lub użyć przycisku \"Czytaj więcej\", aby sprawdzić moje postępy w rozwoju alternatywy.</string>
-    <string name="relay_poll_name_both">Domyślnie: Mix sondowania i FCM</string>
     <string name="not_again_longtap_lookup">Możesz spojrzeć na słowa PRZED tym, jak są one popełnione jako ruchy - przez długie podsłuchiwanie, tak samo jak słowa popełnione.
 \n
 \nUżyj tej funkcji, aby sprawdzić poprawność słów, którymi zamierzasz zagrać, lub poszukaj nieznanego słowa podanego jako wskazówka.</string>

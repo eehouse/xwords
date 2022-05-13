@@ -1707,7 +1707,6 @@
     <string name="not_again_longtap_lookup">Pode pesquisar palavras ANTES de serem jogadas – a tocar e a segurar, do mesmo jeito que palavras jogadas.
 \n
 \nUse esta ferramenta para verificar a validade de palavras que está a pensar em jogar, ou pesquisar uma palavra não familiar dada como dica.</string>
-    <string name="relay_poll_title">Checar movimentos como\?</string>
     <string name="banned_nbs_perms">Este jogo foi configurado para comunicar a usar dados SMS, mas apps do Google Play Store não têm mais permissão para tal (com raras exceções). Ainda poderá abrir o jogo, mas talvez não consiga fazer ou receber jogadas.
 \n
 \nPode remover a opção de comunicação via dados SMS, ou usar o botão \"Ler mais\" para verificar o progresso do desenvolvimento de uma alternativa.</string>
@@ -2053,7 +2052,6 @@
     <string name="warn_bt_havegames">Tem certeza que quer desativar jogar a usar Bluetooth\?
 \n
 \nBluetooth é útil para trocar jogadas e especialmente convites com aparelhos próximos a si. A não ser que esteja certo de que não irá jogar com alguém por perto não há muito mal em deixar ativado.</string>
-    <string name="warn_relay_disabled">Jogos via relay estão atualmente desativados neste aparelho. Nenhuma jogada será enviada ou recebida via relay.</string>
     <string name="warn_bt_disabled">Jogar via Bluetooth está atualmente desativado e nenhuma jogada será trocada via Bluetooth até que for ativado.
 \n
 \nPode ativar o Bluetooth agora ou depois.</string>

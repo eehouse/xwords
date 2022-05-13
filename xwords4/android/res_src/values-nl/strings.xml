@@ -669,7 +669,6 @@
     <string name="chat_sender_fmt">%1$s:</string>
     <string name="summary_busy">Samenvatting niet beschikbaar</string>
     <string name="invites_net_fmt">Uitnodigingen verstuurd voor spel verbonden via %1$s:</string>
-    <string name="warn_relay_havegames">Weet je zeker dat je spelen via de relay uit wilt schakelen?</string>
     <string name="rematch_name_fmt">Rematch: %1$s</string>
     <string name="waiting_rematch_title">Rematch is bezig</string>
     <string name="rematch_sent_toast">Rematch uitnodigingen verstuurd</string>

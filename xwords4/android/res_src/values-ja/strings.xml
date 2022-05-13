@@ -687,7 +687,6 @@
     <string name="chat_hint">ここに入力…</string>
     <string name="chat_sender_fmt">%1$s:</string>
     <string name="summary_busy">概要は利用できません</string>
-    <string name="warn_relay_later">今すぐ、または後でリレー プレイを有効にすることができます。</string>
     <string name="button_enable_relay">リレー プレイを有効にする</string>
     <string name="after_restart">クロスワードを再起動するまで、
 この変更は有効になりません。</string>
@@ -806,7 +805,6 @@ WiFi ダイレクト経由で接続可能なデバイスはありません。</s
     <string name="banned_nbs_perms">このゲームは、データSMSを介して通信するように設定されていますが、Google Playストアのアプリは、もはや (まれな例外を除いて) 許可されていません。まだゲームを開くことはできますが、移動を送受信できない場合があります。
 \n
 \nデータSMS通信設定を削除するか、「続きを読む」ボタンを使用して、代替策の開発の進捗状況を確認することができます。</string>
-    <string name="relay_poll_name_both">デフォルト: ポーリングと FCM を混在</string>
     <string name="not_again_longtap_lookup">単語を移動としてコミットする前に -- 長押しして、コミットされた単語と同じように単語を調べることができます。
 \n
 \nこの機能を使用して、考えている単語の有効性を確認したり、ヒントとして提供される見慣れない単語を調べたりします。</string>
