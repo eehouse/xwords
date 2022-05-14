@@ -368,9 +368,6 @@ public class MQTTUtils extends Thread implements IMqttActionListener, MqttCallba
                 params.put( "tmpKey", getTmpKey(mContext) );
                 params.put( "frstV", Utils.getFirstVersion( mContext ) );
                 params.put( "relayDID", DevID.getRelayDevID( mContext ) );
-                if ( XWApp.onEmulator() ) {
-                    params.put( "emu", true );
-                }
 
                 Log.d( TAG, "registerOnce(): sending %s", params );
                 HttpsURLConnection conn
