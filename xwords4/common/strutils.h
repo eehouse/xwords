@@ -61,7 +61,19 @@ XP_UCHAR* p_stringFromStream( MPFORMAL XWStreamCtxt* stream
 # define stringFromStream( p, in ) p_stringFromStream( in )
 #endif
 
-XP_U16 stringFromStreamHere( XWStreamCtxt* stream, XP_UCHAR* buf, XP_U16 len );
+XP_U16 stringFromStreamHereImpl( XWStreamCtxt* stream, XP_UCHAR* buf, XP_U16 len
+#ifdef DEBUG
+                                 ,const char* func, int line
+#endif
+                                 );
+#ifdef DEBUG
+# define stringFromStreamHere( stream, buf, len )        \
+    stringFromStreamHereImpl( (stream), (buf), (len), __func__, __LINE__ )
+#else
+# define stringFromStreamHere( stream, buf, len )        \
+    stringFromStreamHereImpl( (stream), (buf), (len))
+#endif
+
 void stringToStream( XWStreamCtxt* stream, const XP_UCHAR* str );
 
 XP_Bool stream_gotU8( XWStreamCtxt* stream, XP_U8* ptr );

@@ -249,11 +249,18 @@ p_stringFromStream( MPFORMAL XWStreamCtxt* stream
 } /* makeStringFromStream */
 
 XP_U16
-stringFromStreamHere( XWStreamCtxt* stream, XP_UCHAR* buf, XP_U16 buflen )
+stringFromStreamHereImpl( XWStreamCtxt* stream, XP_UCHAR* buf, XP_U16 buflen
+#ifdef DEBUG
+                          , const char* func, int line
+#endif
+                          )
 {
     XP_U16 len = stream_getU8( stream );
     if ( len > 0 ) {
-        XP_ASSERT( len < buflen );
+        if ( buflen <= len ) {
+            XP_LOGFF( "BAD: buflen %d < len %d (from %s(), line %d)", buflen, len, func, line );
+            XP_ASSERT(0);
+        }
         if ( len >= buflen ) {
             /* better to leave stream in bad state than overwrite stack */
             len = buflen - 1;
@@ -271,6 +278,7 @@ stringToStream( XWStreamCtxt* stream, const XP_UCHAR* str )
     if ( len > 0xFF ) {
         XP_LOGFF( "truncating string '%s', dropping len from %d to %d",
                   str, len, 0xFF );
+        XP_ASSERT(0);
         len = 0xFF;
     }
     stream_putU8( stream, (XP_U8)len );
