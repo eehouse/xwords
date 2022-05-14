@@ -8,7 +8,7 @@
 \n</string>
     <string name="board_menu_tray_show">Mostrar quadrados</string>
     <string name="board_menu_tray_hide">Esconder quadrados</string>
-    <string name="entering_trade">Toque nos quadrados para selecionar…</string>
+    <string name="entering_trade">Trocando quadrados. Toque nos quadrados para selecionar…</string>
     <string name="strs_new_tiles_fmt">Novos quadrados: %1$s</string>
     <plurals name="strd_robot_traded_fmt">
         <item quantity="one">Um quadrado trocado.</item>
