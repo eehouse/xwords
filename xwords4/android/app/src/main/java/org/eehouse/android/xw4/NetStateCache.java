@@ -39,36 +39,38 @@ public class NetStateCache {
     private static final String TAG = NetStateCache.class.getSimpleName();
     private static final long WAIT_STABLE_MILLIS = 2 * 1000;
 
-    public interface StateChangedIf {
-        public void onNetAvail( boolean nowAvailable );
-    }
+    // I'm leaving this stuff commented out because MQTT might want to use it
+    // to try resending when the net comes back.
+    // public interface StateChangedIf {
+    //     public void onNetAvail( boolean nowAvailable );
+    // }
+    // private static HashSet<StateChangedIf> s_ifs;
 
     private static AtomicBoolean s_haveReceiver = new AtomicBoolean( false );
-    private static HashSet<StateChangedIf> s_ifs;
     private static boolean s_netAvail = false;
     private static boolean s_isWifi;
     private static PvtBroadcastReceiver s_receiver;
     private static final boolean s_onSDKSim = Build.PRODUCT.contains("sdk"); // not genymotion
 
-    public static void register( Context context, StateChangedIf proc )
-    {
-        if ( Utils.isOnUIThread() ) {
-            initIfNot( context );
-            synchronized( s_ifs ) {
-                s_ifs.add( proc );
-            }
-        }
-    }
+    // public static void register( Context context, StateChangedIf proc )
+    // {
+    //     if ( Utils.isOnUIThread() ) {
+    //         initIfNot( context );
+    //         synchronized( s_ifs ) {
+    //             s_ifs.add( proc );
+    //         }
+    //     }
+    // }
 
-    public static void unregister( Context context, StateChangedIf proc )
-    {
-        if ( Utils.isOnUIThread() ) {
-            initIfNot( context );
-            synchronized( s_ifs ) {
-                s_ifs.remove( proc );
-            }
-        }
-    }
+    // public static void unregister( Context context, StateChangedIf proc )
+    // {
+    //     if ( Utils.isOnUIThread() ) {
+    //         initIfNot( context );
+    //         synchronized( s_ifs ) {
+    //             s_ifs.remove( proc );
+    //         }
+    //     }
+    // }
 
     static long s_lastNetCheck = 0;
     public static boolean netAvail( Context context )
@@ -152,7 +154,7 @@ public class NetStateCache {
                 context.getApplicationContext()
                     .registerReceiver( s_receiver, filter );
 
-                s_ifs = new HashSet<>();
+                // s_ifs = new HashSet<>();
                 s_haveReceiver.set( true );
             }
         }
@@ -250,12 +252,12 @@ public class NetStateCache {
 
                                     Log.i( TAG, "notifyStateChanged(%b)", s_netAvail );
 
-                                    synchronized( s_ifs ) {
-                                        Iterator<StateChangedIf> iter = s_ifs.iterator();
-                                        while ( iter.hasNext() ) {
-                                            iter.next().onNetAvail( s_netAvail );
-                                        }
-                                    }
+                                    // synchronized( s_ifs ) {
+                                    //     Iterator<StateChangedIf> iter = s_ifs.iterator();
+                                    //     while ( iter.hasNext() ) {
+                                    //         iter.next().onNetAvail( s_netAvail );
+                                    //     }
+                                    // }
 
                                     if ( s_netAvail ) {
                                         CommsConnType typ = CommsConnType

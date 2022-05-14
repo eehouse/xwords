@@ -216,7 +216,6 @@ public class JNIThread extends Thread implements AutoCloseable {
             if ( m_gi.serverRole != DeviceRole.SERVER_STANDALONE ) {
                 m_xport = new CommsTransport( context, xportHandler, m_rowid,
                                               m_gi.serverRole );
-                m_xport.setReceiver( this );
             }
 
             CommonPrefs cp = CommonPrefs.get( context );
