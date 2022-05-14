@@ -435,16 +435,12 @@ public class GamesListDelegate extends ListDelegateBase
         private void removeChildrenOf( long groupID )
         {
             int indx = findGroupItem( makeGroupTestFor( groupID ) );
-            GroupRec rec = (GroupRec)getObjectAt( indx );
-            // rec.m_ggi.m_expanded = false;
             removeChildrenOf( indx );
         }
 
         private void addChildrenOf( long groupID )
         {
             int indx = findGroupItem( makeGroupTestFor( groupID ) );
-            GroupRec rec = (GroupRec)getObjectAt( indx );
-            // rec.m_ggi.m_expanded = false;
             addChildrenOf( indx, makeChildren( groupID ) );
         }
 

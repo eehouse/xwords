@@ -98,11 +98,6 @@ abstract class XWExpListAdapter extends XWListAdapter {
         return m_nGroups;
     }
 
-    protected Object getObjectAt( int indx )
-    {
-        return m_listObjs[indx];
-    }
-
     protected int findGroupItem( GroupTest test )
     {
         int result = -1;
@@ -135,6 +130,7 @@ abstract class XWExpListAdapter extends XWListAdapter {
 
     protected void removeChildrenOf( int groupIndex )
     {
+        Assert.assertTrueNR( 0 <= groupIndex );
         Assert.assertTrue( m_groupClass == m_listObjs[groupIndex].getClass() );
         int end = findGroupEnd( groupIndex );
         int nChildren = end - groupIndex - 1; // 1: don't remove parent
@@ -151,6 +147,7 @@ abstract class XWExpListAdapter extends XWListAdapter {
 
     protected void addChildrenOf( int groupIndex, List<Object> children )
     {
+        Assert.assertTrueNR( 0 <= groupIndex );
         int nToAdd = children.size();
         Object[] newArray = new Object[m_listObjs.length + nToAdd];
         System.arraycopy( m_listObjs, 0, newArray, 0, groupIndex + 1 ); // up to and including parent
