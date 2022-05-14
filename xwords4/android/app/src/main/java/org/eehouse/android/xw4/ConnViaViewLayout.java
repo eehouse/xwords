@@ -152,6 +152,7 @@ public class ConnViaViewLayout extends LinearLayout {
             int msgID = 0;
             switch( typ ) {
             case COMMS_CONN_RELAY:
+                Assert.failDbg();
                 msgID = R.string.not_again_comms_relay_depr;
                 keyID = R.string.key_na_comms_relay;
                 break;
