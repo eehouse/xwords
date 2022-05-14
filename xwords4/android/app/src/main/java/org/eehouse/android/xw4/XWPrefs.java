@@ -106,6 +106,11 @@ public class XWPrefs {
         return enabled;
     }
 
+    public static void setMQTTEnabled( Context context, boolean enabled )
+    {
+        setPrefsBoolean( context, R.string.key_disable_mqtt, !enabled );
+    }
+
     public static boolean getBTDisabled( Context context )
     {
         boolean disabled = getPrefsBoolean( context, R.string.key_disable_bt,

@@ -794,6 +794,7 @@ public abstract class DelegateBase implements DlgClickNotify,
             BTUtils.enable( m_activity );
             break;
         case ENABLE_MQTT_DO:
+            XWPrefs.setMQTTEnabled( m_activity, true );
             MQTTUtils.setEnabled( m_activity, true );
             break;
         case PERMS_QUERY:

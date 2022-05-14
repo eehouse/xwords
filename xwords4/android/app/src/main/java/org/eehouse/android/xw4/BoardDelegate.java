@@ -1001,6 +1001,7 @@ public class BoardDelegate extends DelegateBase
         JNICmd cmd = null;
         switch ( action ) {
         case ENABLE_MQTT_DO_OR:
+            XWPrefs.setMQTTEnabled( m_activity, true );
             MQTTUtils.setEnabled( m_activity, true );
             break;
         case UNDO_LAST_ACTION:
