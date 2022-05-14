@@ -1434,7 +1434,7 @@ public class DictsDelegate extends ListDelegateBase
                 // DictLangCache hits the DB hundreds of times below. Fix!
                 Log.w( TAG, "Fix me I'm stupid" );
                 try {
-                    // Log.d( TAG, "data: %s", jsonData );
+                    // Log.d( TAG, "digestData(%s)", jsonData );
                     JSONObject obj = new JSONObject( jsonData );
                     langs = obj.optJSONArray( "langs" );
 
@@ -1483,15 +1483,12 @@ public class DictsDelegate extends ListDelegateBase
                                 if ( DictLangCache.haveDict( m_activity,
                                                              localLangName, name )){
                                     boolean matches = true;
-                                    String curSum = DictLangCache
-                                        .getDictMD5Sum( m_activity, name );
-                                    if ( null != curSum ) {
-                                        JSONArray sums =
-                                            dict.getJSONArray("md5sums");
-                                        if ( null != sums ) {
-                                            matches = false;
-                                            for ( int kk = 0;
-                                                  !matches && kk < sums.length();
+                                    JSONArray sums = dict.getJSONArray("md5sums");
+                                    if ( null != sums ) {
+                                        matches = false;
+                                        String[] curSums = DictLangCache.getDictMD5Sums( m_activity, name );
+                                        for ( String curSum : curSums ) {
+                                            for ( int kk = 0; !matches && kk < sums.length();
                                                   ++kk ) {
                                                 String sum = sums.getString( kk );
                                                 matches = sum.equals( curSum );

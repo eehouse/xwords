@@ -218,16 +218,15 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
         int lang = DictLangCache.getDictLangCode( context, dal );
         String langCode = DictLangCache.getLangCodeStr( context, lang );
         String langStr = DictLangCache.getLangName( context, lang );
-        String sum = DictLangCache.getDictMD5Sum( context, dal.name );
-        String fullSum = DictLangCache.getDictFullSum( context, dal.name );
-        Assert.assertTrueNR( null != fullSum );
+        String[] sums = DictLangCache.getDictMD5Sums( context, dal.name );
+        Assert.assertTrueNR( null != sums[1] );
         long len = DictLangCache.getFileLen( context, dal );
         try {
             params.put( k_NAME, dal.name );
             params.put( k_LANG, langStr );
             params.put( k_LANGCODE, langCode );
-            params.put( k_MD5SUM, sum );
-            params.put( k_FULLSUM, fullSum );
+            params.put( k_MD5SUM, sums[0] );
+            params.put( k_FULLSUM, sums[1] );
             params.put( k_INDEX, index );
             params.put( k_LEN, len );
         } catch( org.json.JSONException jse ) {

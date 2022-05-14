@@ -2032,8 +2032,8 @@ public class BoardDelegate extends DelegateBase
             // different name, offer to install.
             String msg = null;
             if ( oldName.equals( newName ) ) {
-                String oldSum = DictLangCache.getDictMD5Sum( m_activity,
-                                                             oldName );
+                String oldSum = DictLangCache
+                    .getDictMD5Sums( m_activity, oldName )[0];
                 if ( !oldSum.equals( newSum ) ) {
                     // Same dict, different versions
                     msg = getString( R.string.inform_dict_diffversion_fmt,

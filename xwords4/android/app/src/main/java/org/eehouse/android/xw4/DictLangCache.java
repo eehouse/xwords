@@ -300,22 +300,13 @@ public class DictLangCache {
         return s_langCodeStrs.get( code );
     }
 
-    public static String getDictMD5Sum( Context context, String dict )
+    public static String[] getDictMD5Sums( Context context, String dict )
     {
-        String result = null;
+        String[] result = {null, null};
         DictInfo info = getInfo( context, dict );
         if ( null != info ) {
-            result = info.md5Sum;
-        }
-        return result;
-    }
-
-    public static String getDictFullSum( Context context, String dict )
-    {
-        String result = null;
-        DictInfo info = getInfo( context, dict );
-        if ( null != info ) {
-            result = info.fullSum;
+            result[0] = info.md5Sum;
+            result[1] = info.fullSum;
         }
         return result;
     }

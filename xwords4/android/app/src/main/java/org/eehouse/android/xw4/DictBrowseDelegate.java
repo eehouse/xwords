@@ -283,8 +283,8 @@ public class DictBrowseDelegate extends DelegateBase
             if ( BuildConfig.NON_RELEASE ) {
                 TextView tv = (TextView)findViewById( R.id.md5sum_summary );
                 tv.setVisibility( View.VISIBLE );
-                String sum = DictLangCache.getDictMD5Sum( m_activity, m_name );
-                tv.setText( "md5: " + sum );
+                String[] sums = DictLangCache.getDictMD5Sums( m_activity, m_name );
+                tv.setText( "md5: " + sums[0] );
             }
 
             setShowConfig();
