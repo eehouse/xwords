@@ -687,7 +687,6 @@
     <string name="chat_hint">ここに入力…</string>
     <string name="chat_sender_fmt">%1$s:</string>
     <string name="summary_busy">概要は利用できません</string>
-    <string name="button_enable_relay">リレー プレイを有効にする</string>
     <string name="after_restart">クロスワードを再起動するまで、
 この変更は有効になりません。</string>
     <string name="invite_choice_p2p">Wifi ダイレクト</string>

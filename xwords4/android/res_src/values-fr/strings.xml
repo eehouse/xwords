@@ -2857,7 +2857,6 @@ pour la langue</string>
     <string name="chat_hint">Tapez ici…</string>
     <string name="chat_sender_fmt">%1$s :</string>
     <string name="summary_busy">Résumé indisponible</string>
-    <string name="button_enable_relay">Activer le jeu par relai</string>
     <string name="after_restart">Ce changement s\'appliquera après que vous ayez relancé CrossWords.</string>
     <string name="invite_choice_p2p">Wifi Direct</string>
     <string name="bt_pair_settings">En appairer d\'autres</string>
