@@ -1483,7 +1483,7 @@ public class DictsDelegate extends ListDelegateBase
                                 if ( DictLangCache.haveDict( m_activity,
                                                              localLangName, name )){
                                     boolean matches = true;
-                                    JSONArray sums = dict.getJSONArray("md5sums");
+                                    JSONArray sums = dict.optJSONArray("md5sums");
                                     if ( null != sums ) {
                                         matches = false;
                                         String[] curSums = DictLangCache.getDictMD5Sums( m_activity, name );
