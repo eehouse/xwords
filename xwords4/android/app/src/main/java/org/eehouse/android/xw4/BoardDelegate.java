@@ -2634,7 +2634,7 @@ public class BoardDelegate extends DelegateBase
     private void tryInvites()
     {
         if ( 0 < m_mySIS.nMissing && m_summary.hasRematchInfo() ) {
-            tryRematchInvites( false );
+            tryRematchInvites( null != m_missingMeans );
         } else if ( 0 < m_mySIS.nMissing && m_summary.hasInviteInfo() ) {
             tryOtherInvites();
         } else if ( null != m_missingDevs ) {
