@@ -354,6 +354,9 @@ public class DBHelper extends SQLiteOpenHelper {
                 addColumn( db, TABLE_NAMES.DICTINFO, s_dictInfoColsAndTypes, FULLSUM );
             }
 
+            // case 31:
+            // drop table obits
+
             break;
         default:
             for ( TABLE_NAMES table : TABLE_NAMES.values() ) {

@@ -49,6 +49,7 @@ import android.widget.TextView;
 
 import org.eehouse.android.xw4.DBUtils.GameChangeType;
 import org.eehouse.android.xw4.DBUtils.GameGroupInfo;
+import static org.eehouse.android.xw4.DBUtils.ROWID_NOTFOUND;
 import org.eehouse.android.xw4.DBUtils.SentInvitesInfo;
 import org.eehouse.android.xw4.DlgDelegate.Action;
 import org.eehouse.android.xw4.DlgDelegate.ActionPair;
@@ -572,7 +573,7 @@ public class GamesListDelegate extends ListDelegateBase
     private GameListAdapter m_adapter;
     private Handler m_handler;
     private String m_missingDict;
-    private long m_missingDictRowId = DBUtils.ROWID_NOTFOUND;
+    private long m_missingDictRowId = ROWID_NOTFOUND;
     private int m_missingDictMenuId;
     private int m_missingDictLang;
     private String m_nameField;
@@ -1434,7 +1435,7 @@ public class GamesListDelegate extends ListDelegateBase
         case NEW_FROM:
             long curID = (Long)params[0];
             long newid = GameUtils.dupeGame( m_activity, curID );
-            if ( DBUtils.ROWID_NOTFOUND != newid ) {
+            if ( ROWID_NOTFOUND != newid ) {
                 m_mySIS.selGames.add( newid );
                 reloadGame( newid );
             }
@@ -1593,7 +1594,7 @@ public class GamesListDelegate extends ListDelegateBase
         case CONFIG_GAME:
             if ( !cancelled ) {
                 long rowID = data.getLongExtra( GameUtils.INTENT_KEY_ROWID,
-                                                DBUtils.ROWID_NOTFOUND );
+                                                ROWID_NOTFOUND );
                 launchGame( rowID );
             }
             break;
@@ -2312,7 +2313,8 @@ public class GamesListDelegate extends ListDelegateBase
 
     private boolean startFirstHasDict( final long rowid, final Bundle extras )
     {
-        boolean handled = -1 != rowid && DBUtils.haveGame( m_activity, rowid );
+        Assert.assertTrueNR( ROWID_NOTFOUND != rowid );
+        boolean handled = DBUtils.haveGame( m_activity, rowid );
         if ( handled ) {
             GameLock.getLockThen( rowid, 100L, m_handler,
                                   new GameLock.GotLockProc() {
@@ -2338,8 +2340,10 @@ public class GamesListDelegate extends ListDelegateBase
     {
         boolean result = false;
         if ( null != intent ) {
-            long rowid = intent.getLongExtra( ROWID_EXTRA, -1 );
-            result = startFirstHasDict( rowid, intent.getExtras() );
+            long rowid = intent.getLongExtra( ROWID_EXTRA, ROWID_NOTFOUND );
+            if ( ROWID_NOTFOUND != rowid ) {
+                result = startFirstHasDict( rowid, intent.getExtras() );
+            }
         }
         return result;
     }
@@ -2546,7 +2550,7 @@ public class GamesListDelegate extends ListDelegateBase
         if ( null != gameName && 0 < gameName.length() ) {
             Bundle extras = m_rematchExtras;
             long srcRowID = extras.getLong( REMATCH_ROWID_EXTRA,
-                                            DBUtils.ROWID_NOTFOUND );
+                                            ROWID_NOTFOUND );
             long groupID = extras.getLong( REMATCH_GROUPID_EXTRA,
                                            DBUtils.GROUPID_UNSPEC );
             if ( DBUtils.GROUPID_UNSPEC == groupID ) {
@@ -2561,7 +2565,7 @@ public class GamesListDelegate extends ListDelegateBase
             long newid;
             if ( solo ) {
                 newid = GameUtils.dupeGame( m_activity, srcRowID, groupID );
-                if ( DBUtils.ROWID_NOTFOUND != newid ) {
+                if ( ROWID_NOTFOUND != newid ) {
                     DBUtils.setName( m_activity, newid, gameName );
                 }
             } else {
@@ -2794,12 +2798,12 @@ public class GamesListDelegate extends ListDelegateBase
 
     private boolean launchGameIf()
     {
-        boolean madeGame = DBUtils.ROWID_NOTFOUND != m_missingDictRowId;
+        boolean madeGame = ROWID_NOTFOUND != m_missingDictRowId;
         if ( madeGame ) {
             // save in case checkWarnNoDict needs to set them
             long rowID = m_missingDictRowId;
             int menuID = m_missingDictMenuId;
-            m_missingDictRowId = DBUtils.ROWID_NOTFOUND;
+            m_missingDictRowId = ROWID_NOTFOUND;
             m_missingDictMenuId = -1;
 
             if ( R.id.games_game_reset == menuID ) {
@@ -2814,7 +2818,7 @@ public class GamesListDelegate extends ListDelegateBase
 
     private void launchGame( long rowid, Bundle extras )
     {
-        if ( DBUtils.ROWID_NOTFOUND == rowid ) {
+        if ( ROWID_NOTFOUND == rowid ) {
             Log.d( TAG, "launchGame(): dropping bad rowid" );
         } else if ( ! BoardDelegate.gameIsOpen( rowid ) ) {
             if ( m_adapter.inExpandedGroup( rowid ) ) {
@@ -2831,7 +2835,7 @@ public class GamesListDelegate extends ListDelegateBase
 
     private void makeNewNetGame( NetLaunchInfo nli )
     {
-        long rowid = DBUtils.ROWID_NOTFOUND;
+        long rowid = ROWID_NOTFOUND;
         rowid = GameUtils.makeNewMultiGame( m_activity, nli );
         launchGame( rowid, null );
     }

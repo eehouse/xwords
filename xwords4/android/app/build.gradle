@@ -452,7 +452,7 @@ task makeBuildAssets() {
     }
     new File(path).write(out)
 
-	// Now the latest commit
+    // Now the latest commit
     path = new File(assetsDir, LAST_COMMIT_FILE).getAbsolutePath()
     out = "git log -n 1".execute().text.trim()
     new File(path).write(out)
