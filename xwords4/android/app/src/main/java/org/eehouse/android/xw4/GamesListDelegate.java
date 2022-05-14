@@ -2511,6 +2511,7 @@ public class GamesListDelegate extends ListDelegateBase
     {
         if ( null != gameName && 0 < gameName.length() ) {
             Bundle extras = m_rematchExtras;
+            // should default be 0 not -1, which is all bits set ?? PENDING
             int bits = extras.getInt( REMATCH_ADDRS_EXTRA, -1 );
             final CommsConnTypeSet addrs = new CommsConnTypeSet( bits );
             boolean hasSMS = addrs.contains( CommsConnType.COMMS_CONN_SMS );
@@ -3084,6 +3085,7 @@ public class GamesListDelegate extends ListDelegateBase
             .putExtra( REMATCH_NEWNAME_EXTRA, newName );
 
         if ( null != addrTypes ) {
+            Assert.assertTrueNR( !addrTypes.contains( CommsConnType.COMMS_CONN_RELAY ) );
             intent.putExtra( REMATCH_ADDRS_EXTRA, addrTypes.toInt() );
             if ( null != btAddr ) {
                 Assert.assertTrue( addrTypes.contains( CommsConnType.COMMS_CONN_BT ) );

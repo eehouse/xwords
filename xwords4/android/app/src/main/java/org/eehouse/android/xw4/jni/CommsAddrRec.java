@@ -26,6 +26,7 @@ import android.text.TextUtils;
 import org.eehouse.android.xw4.Assert;
 import org.eehouse.android.xw4.BTUtils;
 import org.eehouse.android.xw4.BuildConfig;
+import org.eehouse.android.xw4.DbgUtils;
 import org.eehouse.android.xw4.GameUtils;
 import org.eehouse.android.xw4.Log;
 import org.eehouse.android.xw4.NFCUtils;
@@ -138,6 +139,12 @@ public class CommsAddrRec implements Serializable {
                     int ord = value.ordinal();
                     if ( 0 != (bits & (1 << (ord - 1)))) {
                         add( value );
+                        if ( BuildConfig.NON_RELEASE
+                             && CommsConnType.COMMS_CONN_RELAY == value ) {
+                            // I've seen this....
+                            Log.e( TAG, "still have RELAY bit" );
+                            DbgUtils.printStack( TAG );
+                        }
                     }
                 }
             } else if ( bits < values.length ) { // don't crash

@@ -187,7 +187,7 @@ public class BoardDelegate extends DelegateBase
 
     private void alertOrderIncrIfAt( StartAlertOrder ord )
     {
-        Log.d( TAG, "alertOrderIncrIfAt(%s)", ord );
+        // Log.d( TAG, "alertOrderIncrIfAt(%s)", ord );
         if ( alertOrderAt( ord ) ) {
             m_mySIS.mAlertOrder = ord.values()[ord.ordinal() + 1];
             doNext();
