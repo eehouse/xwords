@@ -2119,7 +2119,11 @@ Java_org_eehouse_android_xw4_jni_XwJNI_comms_1stop
     XWJNI_START();
     CommsCtxt* comms = state->game.comms;
     if ( !!comms ) {
-        comms_stop( comms, env );
+        comms_stop( comms
+#ifdef XWFEATURE_RELAY
+                    , env
+#endif
+                    );
     }
     XWJNI_END();
 }
@@ -2546,7 +2550,11 @@ Java_org_eehouse_android_xw4_jni_XwJNI_comms_1transportFailed
     XP_ASSERT( !!state->game.comms );
 
     CommsConnType typ = jEnumToInt( env, failedTyp );
-    (void)comms_transportFailed( state->game.comms, env, typ );
+    (void)comms_transportFailed( state->game.comms,
+#ifdef XWFEATURE_RELAY
+                                 env,
+#endif
+                                 typ );
     XWJNI_END();
 }
 

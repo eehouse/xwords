@@ -688,7 +688,11 @@ destroy_board_window( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
 {
     LOG_FUNC();
     if ( !!globals->cGlobals.game.comms ) {
-        comms_stop( globals->cGlobals.game.comms, NULL_XWE );
+        comms_stop( globals->cGlobals.game.comms
+#ifdef XWFEATURE_RELAY
+                    , NULL_XWE
+#endif
+                    );
     }
     linuxSaveGame( &globals->cGlobals );
     saveSizeRowid( globals );

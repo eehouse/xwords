@@ -219,7 +219,11 @@ static XP_Bool elems_same( const MsgQueueElem* e1, const MsgQueueElem* e2 ) ;
 static void freeElem( const CommsCtxt* comms, MsgQueueElem* elem );
 
 static XP_U16 countAddrRecs( const CommsCtxt* comms );
-static void sendConnect( CommsCtxt* comms, XWEnv xwe, XP_Bool breakExisting );
+static void sendConnect( CommsCtxt* comms, XWEnv xwe
+#ifdef XWFEATURE_RELAY
+                         , XP_Bool breakExisting
+#endif
+                         );
 static void notifyQueueChanged( const CommsCtxt* comms, XWEnv xwe );
 static XP_U16 makeFlags( const CommsCtxt* comms, XP_U16 headerLen, MsgID msgID );
 
@@ -375,8 +379,9 @@ init_relay( CommsCtxt* comms, XWEnv xwe, XP_U16 nPlayersHere, XP_U16 nPlayersTot
 
 CommsCtxt* 
 comms_make( MPFORMAL XWEnv xwe, XW_UtilCtxt* util, XP_Bool isServer,
-            XP_U16 XP_UNUSED_RELAY(nPlayersHere), 
-            XP_U16 XP_UNUSED_RELAY(nPlayersTotal),
+#ifdef XWFEATURE_RELAY
+            XP_U16 nPlayersHere, XP_U16 nPlayersTotal,
+#endif
             const TransportProcs* procs,
             RoleChangeProc rcp, void* rcClosure,
             XP_U16 forceChannel
@@ -473,15 +478,20 @@ removeAddrRec( CommsCtxt* comms, XWEnv XP_UNUSED_DBG(xwe), AddressRecord* rec )
 void
 comms_resetSame( CommsCtxt* comms, XWEnv xwe )
 {
-    comms_reset( comms, xwe, comms->isServer,
-                 comms->rr.nPlayersHere, comms->rr.nPlayersTotal );
+    comms_reset( comms, xwe, comms->isServer
+#ifdef XWFEATURE_RELAY
+                 , comms->rr.nPlayersHere, comms->rr.nPlayersTotal
+#endif
+                 );
 }
 
 static void
-reset_internal( CommsCtxt* comms, XWEnv xwe, XP_Bool isServer,
-                XP_U16 XP_UNUSED_RELAY(nPlayersHere), 
-                XP_U16 XP_UNUSED_RELAY(nPlayersTotal),
-                XP_Bool XP_UNUSED_RELAY(resetRelay) )
+reset_internal( CommsCtxt* comms, XWEnv xwe, XP_Bool isServer
+#ifdef XWFEATURE_RELAY
+                , XP_U16 nPlayersHere, XP_U16 nPlayersTotal,
+                XP_Bool resetRelay
+#endif
+                )
 {
     LOG_FUNC();
 #ifdef XWFEATURE_RELAY
@@ -520,11 +530,17 @@ reset_internal( CommsCtxt* comms, XWEnv xwe, XP_Bool isServer,
 } /* reset_internal */
 
 void
-comms_reset( CommsCtxt* comms, XWEnv xwe, XP_Bool isServer,
-             XP_U16 nPlayersHere, 
-             XP_U16 nPlayersTotal )
+comms_reset( CommsCtxt* comms, XWEnv xwe, XP_Bool isServer
+#ifdef XWFEATURE_RELAY
+             , XP_U16 nPlayersHere, XP_U16 nPlayersTotal
+#endif
+             )
 {
-    reset_internal( comms, xwe, isServer, nPlayersHere, nPlayersTotal, XP_TRUE );
+    reset_internal( comms, xwe, isServer
+#ifdef XWFEATURE_RELAY
+                    , nPlayersHere, nPlayersTotal, XP_TRUE
+#endif
+                    );
 }
 
 #ifdef XWFEATURE_RELAY
@@ -567,7 +583,10 @@ set_reset_timer( CommsCtxt* comms, XWEnv xwe )
 #endif  /* XWFEATURE_RELAY */
 
 void
-comms_transportFailed( CommsCtxt* comms, XWEnv XP_UNUSED_RELAY(xwe),
+comms_transportFailed( CommsCtxt* comms,
+#ifdef XWFEATURE_RELAY
+                       XWEnv xwe,
+#endif
                        CommsConnType failed )
 {
     XP_LOGFF( "(%s)", ConnType2Str(failed) );
@@ -737,12 +756,18 @@ comms_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
         nPlayersTotal = 0;
     }
     CommsCtxt* comms = comms_make( MPPARM(mpool) xwe, util, isServer,
-                                   nPlayersHere, nPlayersTotal, procs,
-                                   rcp, rcClosure, forceChannel
+#ifdef XWFEATURE_RELAY
+                                   nPlayersHere, nPlayersTotal,
+#endif
+                                   procs, rcp, rcClosure, forceChannel
 #ifdef SET_GAMESEED
                                    , 0
 #endif
                                    );
+#ifndef XWFEATURE_RELAY
+    XP_USE( nPlayersHere );
+    XP_USE( nPlayersTotal );
+#endif
     XP_MEMCPY( &comms->addr, &addr, sizeof(comms->addr) );
     logAddr( comms, xwe, &addr, __func__ );
     comms->flags = flags;
@@ -866,11 +891,19 @@ comms_start( CommsCtxt* comms, XWEnv xwe )
 {
     XP_ASSERT( !!comms );
     setDoHeartbeat( comms );
-    sendConnect( comms, xwe, XP_FALSE );
+    sendConnect( comms, xwe
+#ifdef XWFEATURE_RELAY
+                 , XP_FALSE
+#endif
+                 );
 } /* comms_start */
 
 void
-comms_stop( CommsCtxt* comms, XWEnv XP_UNUSED_RELAY(xwe) )
+comms_stop( CommsCtxt* comms
+#ifdef XWFEATURE_RELAY
+            , XWEnv xwe
+#endif
+            )
 {
     LOG_FUNC();
     if ( addr_hasType( &comms->addr, COMMS_CONN_RELAY ) ) {
@@ -879,7 +912,11 @@ comms_stop( CommsCtxt* comms, XWEnv XP_UNUSED_RELAY(xwe) )
 }
 
 static void
-sendConnect( CommsCtxt* comms, XWEnv xwe, XP_Bool XP_UNUSED_RELAY(breakExisting) )
+sendConnect( CommsCtxt* comms, XWEnv xwe
+#ifdef XWFEATURE_RELAY
+             , XP_Bool breakExisting
+#endif
+             )
 {
     // CommsAddrRec addr = comms->addr;
     CommsConnType typ;
@@ -1107,7 +1144,11 @@ comms_augmentHostAddr( CommsCtxt* comms, XWEnv xwe, const CommsAddrRec* addr )
     setDoHeartbeat( comms );
 #endif
     if ( addingRelay ) {
-        sendConnect( comms, xwe, XP_TRUE );
+        sendConnect( comms, xwe
+#ifdef XWFEATURE_RELAY
+                     , XP_TRUE
+#endif
+                     );
     }
 } /* comms_setHostAddr */
 
@@ -2140,11 +2181,13 @@ btIpPreProcess( CommsCtxt* comms, XWStreamCtxt* stream )
 #endif
 
 static XP_Bool
-preProcess( CommsCtxt* XP_UNUSED_RELAY(comms), XWEnv XP_UNUSED_RELAY(xwe),
-            const CommsAddrRec* useAddr,
-            XWStreamCtxt* XP_UNUSED_RELAY(stream),
-            XP_Bool* XP_UNUSED_RELAY(usingRelay), 
-            XWHostID* XP_UNUSED_RELAY(senderID) )
+preProcess(
+#ifdef XWFEATURE_RELAY
+           CommsCtxt* comms, XWEnv xwe, XWStreamCtxt* stream,
+           XP_Bool* usingRelay, XWHostID* senderID,
+#endif
+           const CommsAddrRec* useAddr
+           )
 {
     XP_Bool consumed = XP_FALSE;
 
@@ -2564,14 +2607,20 @@ comms_checkIncomingStream( CommsCtxt* comms, XWEnv xwe, XWStreamCtxt* stream,
         }
 #endif
         XWHostID senderID = 0;      /* unset; default for non-relay cases */
+#ifdef XWFEATURE_RELAY
         XP_Bool usingRelay = XP_FALSE;
+#endif
 
 #ifdef COMMS_CHECKSUM
         XP_U16 initialLen = stream_getSize( stream );
 #endif
 
         const CommsAddrRec* useAddr = !!retAddr ? retAddr : &comms->addr;
-        if ( !preProcess( comms, xwe, useAddr, stream, &usingRelay, &senderID ) ) {
+        if ( !preProcess(
+#ifdef XWFEATURE_RELAY
+                         comms, xwe , stream, &usingRelay, &senderID,
+#endif
+                         useAddr ) ) {
 #ifdef COMMS_CHECKSUM
             state->len = stream_getSize( stream );
             // stream_getPtr pts at base, but sum excludes relay header

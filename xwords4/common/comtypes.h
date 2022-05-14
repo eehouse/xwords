@@ -424,12 +424,6 @@ typedef struct _TrayTileSet {
 # define XP_UNUSED_LOG(x) XP_UNUSED(x)
 #endif
 
-#ifdef XWFEATURE_RELAY
-#  define XP_UNUSED_RELAY(x) x
-#else
-#  define XP_UNUSED_RELAY(x) UNUSED__ ## x __attribute__((unused))
-#endif
-
 #ifdef COMMS_HEARTBEAT
 #  define XP_UNUSED_HEARTBEAT(x) x
 #else

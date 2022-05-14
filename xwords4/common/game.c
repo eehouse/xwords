@@ -190,7 +190,9 @@ game_makeNewGame( MPFORMAL XWEnv xwe, XWGame* game, CurGameInfo* gi,
         if ( gi->serverRole != SERVER_STANDALONE ) {
             game->comms = comms_make( MPPARM(mpool) xwe, util,
                                       gi->serverRole != SERVER_ISCLIENT,
+#ifdef XWFEATURE_RELAY
                                       nPlayersHere, nPlayersTotal,
+#endif
                                       procs, onRoleChanged, game,
                                       gi->forceChannel
 #ifdef SET_GAMESEED
@@ -249,14 +251,19 @@ game_reset( MPFORMAL XWGame* game, XWEnv xwe, CurGameInfo* gi, XW_UtilCtxt* util
                 comms_destroy( game->comms, xwe );
                 game->comms = NULL;
             } else {
-                comms_reset( game->comms, xwe, gi->serverRole != SERVER_ISCLIENT,
-                             nPlayersHere, nPlayersTotal );
+                comms_reset( game->comms, xwe, gi->serverRole != SERVER_ISCLIENT
+#ifdef XWFEATURE_RELAY
+                             , nPlayersHere, nPlayersTotal
+#endif
+                             );
             }
         } else if ( gi->serverRole != SERVER_STANDALONE ) {
             game->comms = comms_make( MPPARM(mpool) xwe, util,
-                                      gi->serverRole != SERVER_ISCLIENT, 
-                                      nPlayersHere, nPlayersTotal, procs,
-                                      onRoleChanged, game,
+                                      gi->serverRole != SERVER_ISCLIENT,
+#ifdef XWFEATURE_RELAY
+                                      nPlayersHere, nPlayersTotal,
+#endif
+                                      procs, onRoleChanged, game,
                                       gi->forceChannel
 #ifdef SET_GAMESEED
                                       , 0
@@ -598,7 +605,11 @@ game_dispose( XWGame* game, XWEnv xwe )
 
 #ifndef XWFEATURE_STANDALONE_ONLY
     if ( !!game->comms ) {
-        comms_stop( game->comms, xwe );
+        comms_stop( game->comms
+#ifdef XWFEATURE_RELAY
+                    , xwe
+#endif
+                    );
         comms_destroy( game->comms, xwe );
         game->comms = NULL;
     }
