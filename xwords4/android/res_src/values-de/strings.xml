@@ -115,9 +115,9 @@
         <item quantity="one">Diese Partie wartet auf 1 externen Spieler. Wollen Sie noch jemanden einladen – falls Sie das nicht bereits haben?</item>
         <item quantity="other">Diese Partie wartet auf %1$d externe Spieler. Wollen Sie noch jemanden einladen – falls Sie das nicht bereits haben?</item>
     </plurals>
-    <string name="invit_expl_sms_fmt">"Einladung per SMS an Telefonnummer %1$s  an %2$s gesendet"</string>
+    <string name="invit_expl_sms_fmt">Einladung per SMS an Telefonnummer %1$s auf %2$s gesendet</string>
     <string name="invit_expl_bt_fmt">Einladung per Bluetooth an gepaartes Gerät „%1$s“ in „%2$s“ geschickt</string>
-    <string name="invit_expl_notarget_fmt">"Einladung über %1$s  in %2$s geschickt. Empfänger unbekannt."</string>
+    <string name="invit_expl_notarget_fmt">Einladung über %1$s auf %2$s geschickt. Empfänger unbekannt.</string>
     <string name="pts">Pkt.</string>
     <string name="relay_alert">Verbindungsproblem</string>
     <string name="msg_too_many">Sie stellen mehr Spieler bereit als der Server erwartet.</string>
@@ -398,7 +398,7 @@
         <item quantity="other">Sind Sie sicher, dass Sie die %1$d ausgewählten Zwischenstation-ID-Einträge löschen wollen?</item>
     </plurals>
     <string name="summary_conn_sms_fmt">Partie läuft mit %1$s</string>
-    <string name="warn_unlimited">"Sind Sie sicher, dass diese Nummer in einem  Tarif mit unbegrenztem SMS-Versand ist? Tippen Sie auf „Abbrechen“ falls nicht."</string>
+    <string name="warn_unlimited">Sind Sie sicher, dass diese Nummer in einem Tarif mit unbegrenztem SMS-Versand ist\? Tippen Sie auf „Abbrechen“ falls nicht.</string>
     <string name="remote_undone">Externes Gerät hat einen Zug zurückgenommen.</string>
     <string name="menu_hint_prev">Vorheriger Tipp</string>
     <string name="menu_hint_next">Nächster Tipp</string>
@@ -688,7 +688,7 @@
 \n(Diese Aktion kann nicht rückgängig gemacht werden.)</string>
     <string name="list_item_select">Auswählen</string>
     <string name="list_item_deselect">Aufheben der Auswahl</string>
-    <string name="not_again_dfltname_fmt">"Sie benutzen den Standardspielernamen  „%1$s“. Wollen Sie ihn personalisieren, bevor Sie diese Partie beginnen?"</string>
+    <string name="not_again_dfltname_fmt">Sie benutzen den Standardspielernamen „%1$s“. Wollen Sie ihn anpassen, bevor Sie diese Partie beginnen\?</string>
     <string name="no_invites">Diese Partie hat keine Einladungen geschickt</string>
     <string name="after_restart">Diese Änderung wird aktiv, wenn Sie CrossWords neu starten.</string>
     <string name="missing_sms_perms">Diese Partie ist konfiguriert über SMS zu kommunizieren, aber CrossWords hat keine Berechtigung dazu. Sie können die Partie immer noch öffnen, aber möglicherweise keine Züge senden oder empfangen.
@@ -714,7 +714,7 @@
 \n</item>
     </plurals>
     <string name="peek_other">Spielsteine ansehen wenn nicht am Zug</string>
-    <string name="peek_other_summary">"Antippen von Namen auf der Punktetafel  zeigt die Spielsteine dieses Spielers"</string>
+    <string name="peek_other_summary">Antippen von Namen auf der Punktetafel zeigt die Spielsteine dieses Spielers</string>
     <string name="hide_crosshairs_summary">Angetipptes Spielfeld nicht anzeigen</string>
     <string name="invite_choice_title">Spieler einladen: Wie?</string>
     <string name="title_blank_picker">Spielstein für Joker wählen</string>
@@ -1095,4 +1095,29 @@
     <string name="dup_paused_expl">Benachrichtigung über pausierte und nicht pausierte Spiele</string>
     <string name="prefs_themes">Farbdesigns des Bretts</string>
     <string name="theme_which">Farbdesign des Bretts</string>
+    <string name="warn_mqtt_remove">Sie können das Spielen über Internet jetzt aktivieren oder es aus der Partie entfernen.</string>
+    <string name="warn_mqtt_havegames">Sind Sie sicher, dass Sie das Spielen über das Internet deaktivieren möchten\?
+\n
+\n Die meisten Partien zwischen zwei Geräten tauschen Züge über das Internet aus. Tun Sie dies also nur, wenn Sie vorhaben, ALLE Spiele gegen einen Computer-Spieler auf demselben Gerät zu spielen.</string>
+    <string name="warn_mqtt_later">Sie können das Spielen über Internet jetzt oder später aktivieren.</string>
+    <string name="invite_who_empty_expl">leer</string>
+    <string name="relaypage_url_copied">URL der Partie in die Zwischenablage kopiert</string>
+    <string name="old_apks_deleted_fmt">%1$d alte Upgrade-Apks gelöscht</string>
+    <string name="disable_mqtt">Spielen über das Internet deaktivieren</string>
+    <string name="disable_mqtt_summary">Deaktivieren der gesamten Internetkommunikation (MQTT)</string>
+    <string name="newgame_drop_mqtt">Internet abschalten</string>
+    <string name="warn_mqtt_disabled">Spielen über Internet ist auf diesem Gerät derzeit deaktiviert. Es werden keine Züge über das Internet gesendet oder empfangen.</string>
+    <string name="button_enable_mqtt">Aktivieren Sie das Spielen über Internet</string>
+    <string name="button_disable_mqtt">Spielen über Internet deaktivieren</string>
+    <string name="confirm_drop_mqtt">Sind Sie sicher, dass Sie die Fähigkeit der Partie, über das Internet zu kommunizieren, aufgeben wollen\?</string>
+    <string name="skip_mqtt_add_title">Hinzufügen von MQTT überspringen</string>
+    <string name="skip_mqtt_add_summary">NICHT versuchen, alle Nachrichten per MQTT zu senden</string>
+    <plurals name="warn_mqtt_games_fmt">
+        <item quantity="one">"
+\n
+\n(Sie haben jetzt eine aktive Partie über das Internet.)"</item>
+        <item quantity="other">"
+\n
+\n(Sie haben jetzt %1$d aktive Spiele über das Internet.)"</item>
+    </plurals>
 </resources>
