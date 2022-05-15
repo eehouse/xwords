@@ -62,7 +62,7 @@ public class XWActivity extends FragmentActivity
         super.onCreate( savedInstanceState );
         Assert.assertNotNull( dlgt );
         m_dlgt = dlgt;
-        Assert.assertTrue( getApplicationContext() == XWApp.getContext() );
+        Assert.assertTrueNR( getApplicationContext() == XWApp.getContext() );
 
         // Looks like there's an Oreo-only bug
         if ( setOrientation && Build.VERSION_CODES.O != Build.VERSION.SDK_INT ) {

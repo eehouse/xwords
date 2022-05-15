@@ -140,7 +140,7 @@ public class XWApp extends Application
 
     public static Context getContext()
     {
-        Assert.assertNotNull( s_context );
+        Assert.assertTrueNR( null != s_context );
         return s_context;
     }
 }
