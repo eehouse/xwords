@@ -375,6 +375,8 @@ dependencies {
 	// java.nio.charset.StandardCharsets not defined. Does not crash on
 	// 19 (KitKat).
 	if ( USE_KITKAT_MQTT ) {
+        // Most recent seems to be 1.2.5 tagged July 2020.
+        // https://github.com/eclipse/paho.mqtt.java/tags
         implementation "org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.2.+"
 	} else {
 		implementation "org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.1.+"

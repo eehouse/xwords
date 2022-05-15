@@ -47,7 +47,8 @@ import org.eehouse.android.xw4.jni.CommsAddrRec;
 import org.eehouse.android.xw4.jni.XwJNI;
 import org.eehouse.android.xw4.loc.LocUtils;
 
-public class MQTTUtils extends Thread implements IMqttActionListener, MqttCallbackExtended {
+public class MQTTUtils extends Thread
+    implements IMqttActionListener, MqttCallbackExtended {
     private static final String TAG = MQTTUtils.class.getSimpleName();
     private static final String KEY_NEXT_REG = TAG + "/next_reg";
     private static final String KEY_LAST_WRITE = TAG + "/last_write";
@@ -487,21 +488,24 @@ public class MQTTUtils extends Thread implements IMqttActionListener, MqttCallba
         clearInstance( this );
     }
 
-    public static void inviteRemote( Context context, String invitee, NetLaunchInfo nli )
+    public static void inviteRemote( Context context, String invitee,
+                                     NetLaunchInfo nli )
     {
         String[] topic = {invitee};
         byte[] packet = XwJNI.dvc_makeMQTTInvite( nli, topic );
         addToSendQueue( context, topic[0], packet );
     }
 
-    private static void notifyNotHere( Context context, String addressee, int gameID )
+    private static void notifyNotHere( Context context, String addressee,
+                                       int gameID )
     {
         String[] topic = {addressee};
         byte[] packet = XwJNI.dvc_makeMQTTNoSuchGame( gameID, topic );
         addToSendQueue( context, topic[0], packet );
     }
 
-    public static int send( Context context, String addressee, int gameID, byte[] buf )
+    public static int send( Context context, String addressee, int gameID,
+                            byte[] buf )
     {
         Log.d( TAG, "send(to:%s, len: %d)", addressee, buf.length );
         Assert.assertTrueNR( 16 == addressee.length() );
@@ -511,7 +515,8 @@ public class MQTTUtils extends Thread implements IMqttActionListener, MqttCallba
         return buf.length;
     }
 
-    private static void addToSendQueue( Context context, String topic, byte[] packet )
+    private static void addToSendQueue( Context context, String topic,
+                                        byte[] packet )
     {
         MQTTUtils instance = getOrStart( context );
         if ( null != instance ) {
@@ -562,7 +567,8 @@ public class MQTTUtils extends Thread implements IMqttActionListener, MqttCallba
     }
 
     @Override
-    public void messageArrived( String topic, MqttMessage message ) throws Exception
+    public void messageArrived( String topic, MqttMessage message )
+        throws Exception
     {
         Log.d( TAG, "%H.messageArrived(topic=%s)", this, topic );
         mMsgThread.add( topic, message.getPayload() );
@@ -584,7 +590,8 @@ public class MQTTUtils extends Thread implements IMqttActionListener, MqttCallba
     private void subscribe()
     {
         Assert.assertTrueNR( null != mTopics && 2 == mTopics.length );
-        final int qos = XWPrefs.getPrefsInt( mContext, R.string.key_mqtt_qos, 2 );
+        final int qos = XWPrefs
+            .getPrefsInt( mContext, R.string.key_mqtt_qos, 2 );
         int qoss[] = { qos, qos };
 
         setState( State.SUBSCRIBING );
@@ -603,7 +610,8 @@ public class MQTTUtils extends Thread implements IMqttActionListener, MqttCallba
     @Override
     public void onSuccess( IMqttToken asyncActionToken )
     {
-        Log.d( TAG, "%H.onSuccess(%s); cur state: %s", asyncActionToken, this, mState );
+        Log.d( TAG, "%H.onSuccess(%s); cur state: %s", asyncActionToken,
+               this, mState );
         switch ( mState ) {
         case CONNECTING:
             setState( State.CONNECTED );
@@ -619,14 +627,16 @@ public class MQTTUtils extends Thread implements IMqttActionListener, MqttCallba
     @Override
     public void onFailure(IMqttToken asyncActionToken, Throwable exception)
     {
-        Log.d( TAG, "%H.onFailure(%s, %s); cur state: %s", this, asyncActionToken,
-               exception, mState );
+        Log.d( TAG, "%H.onFailure(%s, %s); cur state: %s", this,
+               asyncActionToken, exception, mState );
         ConnStatusHandler
-            .updateStatus( mContext, null, CommsConnType.COMMS_CONN_MQTT, false );
+            .updateStatus( mContext, null, CommsConnType.COMMS_CONN_MQTT,
+                           false );
     }
 
     private class MsgThread extends Thread {
-        private LinkedBlockingQueue<MessagePair> mQueue = new LinkedBlockingQueue<>();
+        private LinkedBlockingQueue<MessagePair> mQueue
+            = new LinkedBlockingQueue<>();
 
         void add( String topic, byte[] msg ) {
             mQueue.add( new MessagePair( topic, msg ) );
@@ -654,8 +664,8 @@ public class MQTTUtils extends Thread implements IMqttActionListener, MqttCallba
                 }
             }
             long now = Utils.getCurSeconds();
-            Log.d( TAG, "%H.MsgThread.run() exiting after %d seconds", MQTTUtils.this,
-                   now - startTime );
+            Log.d( TAG, "%H.MsgThread.run() exiting after %d seconds",
+                   MQTTUtils.this, now - startTime );
         }
 
         private void postNotification( MessagePair pair ) throws JSONException
