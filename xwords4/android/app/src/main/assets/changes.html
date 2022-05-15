@@ -15,7 +15,8 @@
 <body>
   <h2>CrossWords 4.4.188 release</h2>
 
-  <p>This release fixes a bug falsely offering wordlist upgrades</p>
+  <p>This release fixes a networking crash and improves wordlist
+      upgrading</p>
 
   <div id="survey">
 	<p>Please <a href="https://www.surveymonkey.com/s/GX3XLHR">take
@@ -25,8 +26,9 @@
 
   <h3>New with this release</h3>
   <ul>
-      <li>Stop offering to upgrade certain wordlists when they are
-          already up-to-date -- in the other place</li>
+      <li>Fix misuse of MQTT library that was causing crashes reported
+          by Google (thanks!)</li>
+      <li>Remove bogus wordlist upgrade offers</li>
       <li>Improve transmission of game moves</li>
       <li>Remove all remaining communication with the old relay</li>
       <li>Improve logic around resending invitations</li>
