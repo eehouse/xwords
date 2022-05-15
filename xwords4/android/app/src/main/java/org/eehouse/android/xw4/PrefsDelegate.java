@@ -279,7 +279,7 @@ public class PrefsDelegate extends DelegateBase
                 NagTurnReceiver.resetNagsDisabled( mActivity );
                 break;
             case R.string.key_disable_mqtt:
-                boolean enabled = sp.getBoolean( key, true );
+                boolean enabled = !sp.getBoolean( key, true );
                 MQTTUtils.setEnabled( mActivity, enabled );
                 break;
             case R.string.key_disable_bt:
