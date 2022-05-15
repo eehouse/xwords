@@ -436,32 +436,47 @@ public class MQTTUtils extends Thread
 
         setState( State.CLOSING );
 
+        MqttAsyncClient client;
+        synchronized ( this ) {
+            client = mClient;
+            mClient = null;
+        }
+
         // Hack. Problem is that e.g. unsubscribe will throw an exception if
         // you're not subscribed. That can't prevent us from continuing to
         // disconnect() and close. Rather than wrap each in its own try/catch,
         // run 'em in a loop in a single try/catch.
-        if ( null == mClient ) {
+        if ( null == client ) {
             Log.e( TAG, "disconnect(): null client" );
         } else {
+            // If we're on the UI thread we probably want to spawn a thread
+            // for the blocking waitForCompletion() calls below
+            Assert.assertTrueNR( false == Utils.isOnUIThread() );
+
             outer:
             for ( int ii = 0; ; ++ii ) {
                 String action = null;
+                IMqttToken token = null;
                 try {
                     switch ( ii ) {
                     case 0:
                         action = "unsubscribe";
-                        mClient.unsubscribe( mDevID );
+                        token = client.unsubscribe( mDevID );
                         break;      // not continue, which skips the Log() below
                     case 1:
                         action = "disconnect";
-                        mClient.disconnect();
+                        token = client.disconnect();
                         break;
                     case 2:
                         action = "close";
-                        mClient.close();
+                        client.close();
                         break;
                     default:
                         break outer;
+                    }
+                    if ( null != token ) {
+                        Log.d( TAG, "%H.disconnect(): %s() waiting", this, action );
+                        token.waitForCompletion();
                     }
                     Log.d( TAG, "%H.disconnect(): %s() succeeded", this, action );
                 } catch ( MqttException mex ) {
@@ -472,7 +487,6 @@ public class MQTTUtils extends Thread
                            this, action, ex );
                 }
             }
-            mClient = null;
         }
 
         // Make sure we don't need to call clearInstance(this)
@@ -581,7 +595,7 @@ public class MQTTUtils extends Thread
     @Override
     public void deliveryComplete(IMqttDeliveryToken token)
     {
-        Log.d( TAG, "%H.deliveryComplete(token=%s)", this, token );
+        // Log.d( TAG, "%H.deliveryComplete(token=%s)", this, token );
         ConnStatusHandler
             .updateStatusOut( mContext, CommsConnType.COMMS_CONN_MQTT, true );
         TimerReceiver.setBackoff( mContext, sTimerCallbacks, MIN_BACKOFF );
