@@ -2404,7 +2404,7 @@
   </string>
     <string name="dicts_storage_rationale">
     CrossWords can store and read wordlists in your device’s
-    Downloads area but it needs permission to access them
+    Downloads area but it needs to ask for permission to access them
     there.\n\nYou can safely deny this permission if you will never
     download wordlists except from inside CrossWords and have not
     previously stored any there.
@@ -2441,13 +2441,13 @@
     <string name="remove_sms">Remove SMS</string>
     <!-- In the permissions rationale explanation, means go ahead and
        have the OS ask for permission -->
-    <string name="button_ask_again">Ask again</string>
+    <string name="button_ask">Ask</string>
     <!-- Displayed as a toast -->
     <string name="sms_send_failed">SMS send failed</string>
     <!-- In the permissions rationale explanation, means don't have the
        OS ask for permission: user is denying it implicitly -->
-    <string name="button_skip">Skip</string>
-    <string name="perms_rationale_title">Android Permissions</string>
+    <string name="button_deny">Deny</string>
+    <string name="perms_rationale_title">Android Permission Explained</string>
     <string name="toast_no_permission">Permission not granted</string>
     <!-- Explanation in settings for always-on BT notification -->
     <string name="nbsproxy_channel_expl">Alerts about NBSProxy</string>

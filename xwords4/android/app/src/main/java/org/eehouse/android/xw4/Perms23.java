@@ -55,11 +55,6 @@ public class Perms23 {
         public String getString() { return m_str; }
         public boolean isBanned( Context context )
         {
-            // PENDING...  Once this has been here for a week or so, remove
-            // SMS_BANNED. That way absence of the permission from a variant's
-            // manifest is the only way being banned is expressed. It sucks
-            // keeping two things in sync.
-            // Assert.assertFalse( m_banned == permInManifest( context, this ) );
             return !permInManifest( context, this );
         }
         public static Perm getFor( String str ) {
@@ -159,9 +154,7 @@ public class Perms23 {
                     Assert.assertFalse( perm.isBanned(activity) );
                     askStrings.add( permStr );
 
-                    if ( null != m_onShow && ActivityCompat
-                         .shouldShowRequestPermissionRationale( activity,
-                                                                permStr ) ) {
+                    if ( null != m_onShow ) {
                         needShow.add( perm );
                     }
                 }
@@ -239,7 +232,7 @@ public class Perms23 {
                 doItAsk( validPerms, showRationale );
             }
             if ( 0 < bannedPerms.size() ) {
-                doItFail( bannedPerms );
+                postNeg();
             }
         }
 
@@ -253,8 +246,8 @@ public class Perms23 {
                             m_delegate.makeConfirmThenBuilder( m_rationaleMsg,
                                                                Action.PERMS_QUERY )
                                 .setTitle( R.string.perms_rationale_title )
-                                .setPosButton( R.string.button_ask_again )
-                                .setNegButton( R.string.button_skip )
+                                .setPosButton( R.string.button_ask )
+                                .setNegButton( R.string.button_deny )
                                 .setParams( QueryInfo.this.getParams() )
                                 .setNAKey( mNAKey )
                                 .show();
@@ -276,31 +269,25 @@ public class Perms23 {
                 } );
         }
 
-        // Cons up a call with a "no" answer, and post it.
-        private void doItFail( Set<Perm> bannedPerms )
-        {
-            m_delegate.post( new Runnable() {
-                    @Override
-                    public void run() {
-                        Log.d( TAG, "doItFail(); passing perms to onNegButton(%s)", m_action );
-                        m_delegate.onNegButton( m_action, m_params );
-                    }
-                } );
-        }
-
         // Post this in case we're called from inside dialog dismiss
         // code. Better to unwind the stack...
         private void handleButton( final boolean positive )
         {
-            m_delegate.post( new Runnable() {
-                    public void run() {
-                        if ( positive ) {
+            if ( positive ) {
+                m_delegate.post( new Runnable() {
+                        @Override
+                        public void run() {
                             doIt( false );
-                        } else {
-                            m_delegate.onNegButton( m_action, m_params );
                         }
-                    }
-                } );
+                    } );
+            } else {
+                postNeg();
+            }
+        }
+
+        private void postNeg()
+        {
+            Perms23.postNeg( m_delegate, m_action, m_params );
         }
     }
 
@@ -316,13 +303,31 @@ public class Perms23 {
      * Request permissions, giving rationale once, then call with action and
      * either positive or negative, the former if permission granted.
      */
-    private static void tryGetPermsImpl( DelegateBase delegate, Perm[] perms,
+    private static void tryGetPermsImpl( final DelegateBase delegate, Perm[] perms,
                                          String rationaleMsg, int naKey,
                                          final Action action, Object... params )
     {
         // Log.d( TAG, "tryGetPerms(%s)", perm.toString() );
-        new QueryInfo( delegate, action, perms, rationaleMsg, naKey, params )
-            .doIt( true );
+
+        if ( 0 != naKey &&
+             XWPrefs.getPrefsBoolean( delegate.getActivity(), naKey, false ) ) {
+            postNeg( delegate, action, params );
+        } else {
+            new QueryInfo( delegate, action, perms, rationaleMsg,
+                           naKey, params )
+                .doIt( true );
+        }
+    }
+
+    private static void postNeg( final DelegateBase delegate,
+                                 final Action action, final Object[] params )
+    {
+        delegate.post( new Runnable() {
+                @Override
+                public void run() {
+                    delegate.onNegButton( action, params );
+                }
+            } );
     }
 
     public static void tryGetPerms( DelegateBase delegate, Perm[] perms, int rationaleId,
