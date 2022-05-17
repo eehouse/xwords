@@ -75,6 +75,8 @@ public class XWApp extends Application
 
         OnBootReceiver.startTimers( this );
 
+        Variants.checkUpdate( this );
+
         boolean mustCheck = Utils.firstBootThisVersion( this );
         PrefsDelegate.resetPrefs( this, mustCheck );
         if ( mustCheck ) {
