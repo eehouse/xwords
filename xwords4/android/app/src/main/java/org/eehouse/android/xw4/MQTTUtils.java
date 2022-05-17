@@ -64,7 +64,7 @@ public class MQTTUtils extends Thread
     private static String sLastRev = null;
 
     private MqttAsyncClient mClient;
-    private String mDevID;
+    private final String mDevID;
     private String[] mTopics = { null, null };
     private Context mContext;
     private MsgThread mMsgThread;
@@ -449,44 +449,7 @@ public class MQTTUtils extends Thread
         if ( null == client ) {
             Log.e( TAG, "disconnect(): null client" );
         } else {
-            // If we're on the UI thread we probably want to spawn a thread
-            // for the blocking waitForCompletion() calls below
-            Assert.assertTrueNR( false == Utils.isOnUIThread() );
-
-            outer:
-            for ( int ii = 0; ; ++ii ) {
-                String action = null;
-                IMqttToken token = null;
-                try {
-                    switch ( ii ) {
-                    case 0:
-                        action = "unsubscribe";
-                        token = client.unsubscribe( mDevID );
-                        break;      // not continue, which skips the Log() below
-                    case 1:
-                        action = "disconnect";
-                        token = client.disconnect();
-                        break;
-                    case 2:
-                        action = "close";
-                        client.close();
-                        break;
-                    default:
-                        break outer;
-                    }
-                    if ( null != token ) {
-                        Log.d( TAG, "%H.disconnect(): %s() waiting", this, action );
-                        token.waitForCompletion();
-                    }
-                    Log.d( TAG, "%H.disconnect(): %s() succeeded", this, action );
-                } catch ( MqttException mex ) {
-                    Log.e( TAG, "%H.disconnect(): %s(): got mex %s",
-                           this, action, mex );
-                } catch ( Exception ex ) {
-                    Log.e( TAG, "%H.disconnect(): %s(): got ex %s",
-                           this, action, ex );
-                }
-            }
+            startDisconThread( client );
         }
 
         // Make sure we don't need to call clearInstance(this)
@@ -494,6 +457,49 @@ public class MQTTUtils extends Thread
             Assert.assertTrueNR( sInstance[0] != this );
         }
         Log.d( TAG, "%H.disconnect() DONE", this );
+    }
+
+    private void startDisconThread( final MqttAsyncClient client )
+    {
+        new Thread( new Runnable() {
+                @Override
+                public void run() {
+                    outer:
+                    for ( int ii = 0; ; ++ii ) {
+                        String action = null;
+                        IMqttToken token = null;
+                        try {
+                            switch ( ii ) {
+                            case 0:
+                                action = "unsubscribe";
+                                token = client.unsubscribe( mDevID );
+                                break;      // not continue, which skips the Log() below
+                            case 1:
+                                action = "disconnect";
+                                token = client.disconnect();
+                                break;
+                            case 2:
+                                action = "close";
+                                client.close();
+                                break;
+                            default:
+                                break outer;
+                            }
+                            if ( null != token ) {
+                                Log.d( TAG, "%H.disconnect(): %s() waiting", this, action );
+                                token.waitForCompletion();
+                            }
+                            Log.d( TAG, "%H.disconnect(): %s() succeeded", this, action );
+                        } catch ( MqttException mex ) {
+                            Log.e( TAG, "%H.disconnect(): %s(): got mex %s",
+                                   this, action, mex );
+                        } catch ( Exception ex ) {
+                            Log.e( TAG, "%H.disconnect(): %s(): got ex %s",
+                                   this, action, ex );
+                        }
+                    }
+                }
+            } ).start();
     }
 
     private void clearInstance()
