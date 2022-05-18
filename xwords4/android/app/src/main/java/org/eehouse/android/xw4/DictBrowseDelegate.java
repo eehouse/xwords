@@ -274,19 +274,10 @@ public class DictBrowseDelegate extends DelegateBase
                 } )
                 .setExpanded( m_browseState.m_expanded );
 
-            m_desc = XwJNI.dict_getDesc( m_dict );
-
             int[] ids = { R.id.button_useconfig, R.id.button_addBlank,
                           R.id.button_clear, };
             for ( int id : ids ) {
                 findViewById( id ).setOnClickListener(this);
-            }
-
-            if ( BuildConfig.NON_RELEASE ) {
-                TextView tv = (TextView)findViewById( R.id.md5sum_summary );
-                tv.setVisibility( View.VISIBLE );
-                String[] sums = DictLangCache.getDictMD5Sums( m_activity, m_name );
-                tv.setText( "md5: " + sums[0] );
             }
 
             setShowConfig();
@@ -373,7 +364,7 @@ public class DictBrowseDelegate extends DelegateBase
     public boolean onPrepareOptionsMenu( Menu menu )
     {
         Utils.setItemVisible( menu, R.id.dicts_shownote,
-                              null != m_desc );
+                              null != getDesc() );
         MenuItem item = menu.findItem( R.id.dicts_shownote );
         item.setTitle( mAboutStr );
         return true;
@@ -392,7 +383,7 @@ public class DictBrowseDelegate extends DelegateBase
             showFaq( FAQ_PARAMS );
             break;
         case R.id.dicts_shownote:
-            makeOkOnlyBuilder( m_desc )
+            makeOkOnlyBuilder( getDesc() )
                 .setTitle( mAboutStr )
                 .show();
             break;
@@ -734,6 +725,18 @@ public class DictBrowseDelegate extends DelegateBase
 
         makeSpinnerAdapter( m_spinnerMin, m_browseState.m_chosenMin );
         makeSpinnerAdapter( m_spinnerMax, m_browseState.m_chosenMax );
+    }
+
+    private String getDesc()
+    {
+        if ( null == m_desc ) {
+            m_desc = XwJNI.dict_getDesc( m_dict );
+            if ( BuildConfig.NON_RELEASE ) {
+                String[] sums = DictLangCache.getDictMD5Sums( m_activity, m_name );
+                m_desc += "\n\nmd5s: " + sums[0] + "\n" + sums[1];
+            }
+        }
+        return m_desc;
     }
 
     private FrameLayout removeList()
