@@ -2,7 +2,6 @@
 
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
   <item android:id="@+id/dicts_shownote"
-        android:title="@string/show_note_menu"
         />
   <item android:id="@+id/dicts_showtiles"
         android:title="@string/show_tiles_menu"

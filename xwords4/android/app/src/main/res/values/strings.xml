@@ -1551,7 +1551,7 @@
          when you choose it. The alert shows the note that's part of
          the wordlist, typically telling where it comes from. If
          there's no note in a wordlist the menuitem is disabled. -->
-    <string name="show_note_menu">About Wordlist</string>
+    <string name="show_note_menu_fmt">About %1$s</string>
     <!-- Label for first field in wordlist browser filter -->
     <string name="pat_starts_with">Starts with</string>
     <!-- Label for middle field in wordlist browser filter -->

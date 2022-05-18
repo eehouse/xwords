@@ -129,6 +129,7 @@ public class DictBrowseDelegate extends DelegateBase
     private Activity m_activity;
     private int m_lang;
     private String m_name;
+    private String mAboutStr;
     private DictUtils.DictLoc m_loc;
     private DictBrowseState m_browseState;
     private int m_minAvail;
@@ -237,6 +238,7 @@ public class DictBrowseDelegate extends DelegateBase
         if ( null == name ) {
             finish();
         } else {
+            mAboutStr = getString( R.string.show_note_menu_fmt, name );
             m_name = name;
             m_loc =
                 DictUtils.DictLoc.values()[args.getInt( DICT_LOC, 0 )];
@@ -372,6 +374,8 @@ public class DictBrowseDelegate extends DelegateBase
     {
         Utils.setItemVisible( menu, R.id.dicts_shownote,
                               null != m_desc );
+        MenuItem item = menu.findItem( R.id.dicts_shownote );
+        item.setTitle( mAboutStr );
         return true;
     }
 
@@ -389,7 +393,7 @@ public class DictBrowseDelegate extends DelegateBase
             break;
         case R.id.dicts_shownote:
             makeOkOnlyBuilder( m_desc )
-                .setTitle(R.string.show_note_menu)
+                .setTitle( mAboutStr )
                 .show();
             break;
         default:
