@@ -721,9 +721,7 @@ WiFi ダイレクト経由で接続可能なデバイスはありません。</s
     <string name="move_dict_rationale">ダウンロード エリアに単語リストを保存するには、
 アクセス許可が必要です。</string>
     <string name="remove_sms">SMS を削除</string>
-    <string name="button_ask_again">もう一度尋ねる</string>
     <string name="sms_send_failed">SMS 送信に失敗しました</string>
-    <string name="button_skip">スキップ</string>
     <string name="perms_rationale_title">Android のアクセス許可</string>
     <string name="toast_no_permission">アクセス許可が付与されていません</string>
     <string name="title_enable_p2p">WiFi ダイレクトを有効にする</string>

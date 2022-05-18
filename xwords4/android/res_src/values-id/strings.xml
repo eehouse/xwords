@@ -268,7 +268,6 @@
     <string name="sms_banned_ok_only">Versi Google Play dari CrossWords tidak lagi mendukung undangan dan bermain melalui SMS data.</string>
     <string name="nbsproxy_channel_expl">Peringatan tentang NBSProxy</string>
     <string name="toast_no_permission">Izin tidak diberikan</string>
-    <string name="button_skip">Lewati</string>
     <string name="unhide_dupmode_summary">(Ini sangat eksperimental saat ini)</string>
     <string name="name_concat_dup">" dan "</string>
     <string name="dup_onescore_fmt">%1$s: %2$d poin

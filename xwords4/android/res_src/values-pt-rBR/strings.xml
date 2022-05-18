@@ -791,7 +791,6 @@
     <string name="pat_ends_with">Termina com</string>
     <string name="pat_contains">Contém</string>
     <string name="pat_starts_with">Começa com</string>
-    <string name="show_note_menu">Sobre a Lista de Palavras</string>
     <string name="show_tiles_title_fmt">Quadrados para %1$s</string>
     <string name="show_tiles_menu">Mostrar Quadrados</string>
     <string name="default_name_message">Por favor ponha seu nome aqui. Ele será usado quando criar novos jogos. (Você pode mudá-lo depois na seção “Novo padrão de jogo” nas Configurações.)</string>
@@ -899,9 +898,7 @@
     <string name="gamel_menu_loaddb">Carregar jogos do cartão SD</string>
     <string name="toast_no_permission">Permissão não concedida</string>
     <string name="perms_rationale_title">Permissões Android</string>
-    <string name="button_skip">Pular</string>
     <string name="sms_send_failed">Envio SMS falho</string>
-    <string name="button_ask_again">Pedir de novo</string>
     <string name="remove_sms">Remover SMS</string>
     <string name="move_dict_rationale">Salvar uma lista de palavras na área Downloads requer a permissão de Armazenamento.</string>
     <string name="contacts_rationale">CrossWords gostaria de ter acesso aos seus contatos para por nome nos números que te enviarem convites via dados SMS. Você ainda poderá receber convites se negar esta permissão, mas apenas o número do remetente será exibido.</string>

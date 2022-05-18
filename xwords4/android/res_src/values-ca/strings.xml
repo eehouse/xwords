@@ -766,9 +766,7 @@ Introduïu el vostre nom aquí. S\'usarà en crear partides noves. (Podreu
     <string name="rematch_sent_toast">S\'han enviat les invitacions per a tornar a jugar</string>
     <string name="not_again_dfltname_fmt">Esteu fent servir el nom de jugador predeterminat «%1$s». Voleu personalitzar-lo amb el vostre nom abans de crear aquesta partida\?</string>
     <string name="sms_invite_rationale">CrossWords necessita permís per a enviar una invitació via SMS.</string>
-    <string name="button_ask_again">Torna-ho a demanar</string>
     <string name="sms_send_failed">No s\'ha pogut enviar l\'SMS</string>
-    <string name="button_skip">Omet</string>
     <string name="perms_rationale_title">Permisos d\'Android</string>
     <string name="toast_no_permission">Permís no atorgat</string>
     <string name="force_tablet_default">Usa els valors predeterminats per al meu aparell</string>

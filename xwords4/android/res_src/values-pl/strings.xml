@@ -742,9 +742,7 @@
     <string name="contacts_rationale">CrossWords chce mieć dostęp do Twoich kontaktów, aby umieścić nazwy właścicieli numerów telefonów, które wysyłają zaproszenia przez Data SMS. Nadal będziesz mógł otrzymywać zaproszenia, jeśli nie udzielisz tego pozwolenia, ale wyświetli się tylko numer telefonu nadawcy.</string>
     <string name="move_dict_rationale">Przechowywanie listy słów w obszarze pobierania wymaga zgody.</string>
     <string name="remove_sms">Usuń SMS</string>
-    <string name="button_ask_again">Zapytaj ponownie</string>
     <string name="sms_send_failed">Wysyłanie SMS nie powiodło się</string>
-    <string name="button_skip">Pomiń</string>
     <string name="perms_rationale_title">Uprawnienia w systemie Android</string>
     <string name="toast_no_permission">Pozwolenie nie zostało udzielone</string>
     <string name="list_item_netstats">Połączeń…</string>

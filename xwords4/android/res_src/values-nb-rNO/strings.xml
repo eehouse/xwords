@@ -403,7 +403,6 @@
     <string name="list_item_select">Velg</string>
     <string name="list_item_deselect">Fravelg</string>
     <string name="remove_sms">Fjern SMS</string>
-    <string name="button_ask_again">Spør igjen</string>
     <string name="sms_send_failed">SMS-forsendelse mislyktes</string>
     <string name="perms_rationale_title">Android-tilganger</string>
     <string name="toast_no_permission">Tilgang ikke gitt</string>
@@ -615,7 +614,6 @@
     <string name="invite_copied">Invitasjon klar til innliming</string>
     <string name="no_invites">Dette spillet har ikke sendt noen invitasjoner</string>
     <string name="after_restart">Dette vil tre i effekt etter at du har startet CrossWords på ny.</string>
-    <string name="button_skip">Hopp over</string>
     <string name="key_bonushint">Bonushint i felt</string>
     <string name="invite_htm_fmt">&lt;a href=\"%1$s\"&gt;Trykk her&lt;/a&gt; (eller trykk på hele lenken nedenfor, hvis du allerede har CrossWords installert, åpne vedlegget) for å godta min invitasjon og ta del i dette spillet. &lt;br \\&gt; &lt;br \\&gt; (Hele lenken: %1$s )</string>
     <string name="str_cant_hint_while_disabled">Hintfunksjonen er skrudd av for dette spillet. Skru den på for et nytt spill fra innstillingene.</string>
@@ -903,7 +901,6 @@
     <string name="pat_ends_with">Slutter med</string>
     <string name="pat_contains">Inneholder</string>
     <string name="pat_starts_with">Starter med</string>
-    <string name="show_note_menu">Om ordliste</string>
     <string name="show_tiles_title_fmt">Flis for</string>
     <string name="show_tiles_menu">Vis flis</string>
     <string name="show_tiles_button">Vis flis</string>

@@ -105,9 +105,7 @@
     <string name="nbsproxy_channel_expl">Avviso su NBSProxy</string>
     <string name="toast_no_permission">Permessi non attivati</string>
     <string name="perms_rationale_title">Permessi Android</string>
-    <string name="button_skip">Salta</string>
     <string name="sms_send_failed">Invio SMS fallito</string>
-    <string name="button_ask_again">Chiedi di nuovo</string>
     <string name="remove_sms">Rimuovi SMS</string>
     <string name="move_dict_rationale">Per conservare una lista parole nella cartella Download sono richiesti i permessi per l\'archivio.</string>
     <string name="contacts_rationale">CrossWords vorrebbe accedere ai tuoi contatti per assegnare i nomi ai numeri di telefono ai quali invierai un invito via dati SMS. Potrai ricevere gli inviti se attivi questi permessi, ma solo il numero di telefono di chi invia sarà visualizzato.</string>
@@ -536,7 +534,6 @@
     <string name="pat_ends_with">Finisce con</string>
     <string name="pat_contains">Contiene</string>
     <string name="pat_starts_with">Inizia per</string>
-    <string name="show_note_menu">Info su Lista Parole</string>
     <string name="show_tiles_title_fmt">Tessere in %1$s</string>
     <string name="show_tiles_menu">‌Mostra Tessere</string>
     <string name="show_tiles_button">Mostra tessere</string>

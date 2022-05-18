@@ -2871,9 +2871,7 @@ pour la langue</string>
     <string name="sms_invite_rationale">CrossWords a besoin de la permission d\'envoyer une invitation par MMS.</string>
     <string name="toast_no_permission">Permission non accordée</string>
     <string name="contacts_rationale">CrossWords veut accéder à vos contacts pour pouvoir mettre un nom sur les numéros de téléphones qui vous envoient des invitations par MMS. Vous pourrez toujours recevoir des invitations si vous n\'accordez pas cette permission, mais seul le numéro de téléphone de l\'expéditeur s\'affichera.</string>
-    <string name="button_ask_again">Redemander</string>
     <string name="sms_send_failed">Échec de l\'envoi de SMS</string>
-    <string name="button_skip">Sauter</string>
     <string name="perms_rationale_title">Permissions Android</string>
     <string name="phone_state_rationale">Certains téléphones peuvent échanger des SMS « de données ». CrossWords souhaite vous offrir cette possibilité mais a d\'abord besoin d\'interroger votre appareil sur lui-même (pour savoir si c\'est un téléphone et, le cas échéant, de quel type).
 \n
@@ -3124,7 +3122,6 @@ pour la langue</string>
     <string name="pat_ends_with">Finit par</string>
     <string name="pat_contains">Contient</string>
     <string name="pat_starts_with">Commence par</string>
-    <string name="show_note_menu">À propos de la liste de mots</string>
     <string name="show_tiles_title_fmt">Jetons pour %1$s</string>
     <string name="show_tiles_menu">Montrer les jetons</string>
     <string name="show_tiles_button">Montrer les jetons</string>

@@ -781,9 +781,7 @@
     <string name="contacts_rationale">CrossWords möchte auf Ihre Kontakte zugreifen, um Telefonnummern, die Ihnen Einladungen per Data SMS senden, einen Namen zuzuordnen. Sie können trotzdem Einladungen erhalten, wenn Sie diese Erlaubnis nicht erteilen, aber es wird nur die Telefonnummer des Absenders angezeigt.</string>
     <string name="move_dict_rationale">Das Speichern einer Wortliste im Download-Bereich benötigt eine Berechtigung.</string>
     <string name="remove_sms">SMS entfernen</string>
-    <string name="button_ask_again">Erneut fragen</string>
     <string name="sms_send_failed">SMS-Versand fehlgeschlagen</string>
-    <string name="button_skip">Überspringen</string>
     <string name="perms_rationale_title">Android-Berechtigungen</string>
     <string name="toast_no_permission">Berechtigung nicht erteilt</string>
     <string name="bt_pick_clear_button">Entfernen</string>
@@ -974,7 +972,6 @@
     <string name="qrcode_invite_summary">QR-Code, den Ihr Gegner scannen kann</string>
     <string name="local_invite_summary">Wenn Ihr Gegner in der Nähe ist…</string>
     <string name="radio_how">Wie\?</string>
-    <string name="show_note_menu">Über die Wortliste</string>
     <string name="tiles_header_face">Buchstabe</string>
     <string name="tiles_header_count">Zahl</string>
     <string name="not_again_traysize">Mit dieser neuen Einstellung wird die Anzahl der Spielsteine in der Ablage geändert.
