@@ -897,7 +897,7 @@
     <string name="game_name_label">Nome do jogo:</string>
     <string name="gamel_menu_loaddb">Carregar jogos do cartão SD</string>
     <string name="toast_no_permission">Permissão não concedida</string>
-    <string name="perms_rationale_title">Permissões Android</string>
+    <string name="perms_rationale_title">Permissão do Android explicada</string>
     <string name="sms_send_failed">Envio SMS falho</string>
     <string name="remove_sms">Remover SMS</string>
     <string name="move_dict_rationale">Salvar uma lista de palavras na área Downloads requer a permissão de Armazenamento.</string>
@@ -905,7 +905,7 @@
     <string name="phone_state_rationale">Alguns telefones podem trocar mensagens de dados por SMS. CrossWords gostaria de te oferecer esta opção mas precisa de pedir ao seu telefone sobre os dados dele.
 \n
 \nSe seu dispositivo não pode mandar dados SMS (p. ex. se não for um telefone) ou não quiser jogar via SMS (p. ex. por ter que pagar por cada mensagem), é seguro negar permanentemente esta permissão.</string>
-    <string name="dicts_storage_rationale">CrossWords pode armazenar e ler listas de palavras na área de Downloads do seu dispositivo mas ele precisa de permissão para acessá-los lá.
+    <string name="dicts_storage_rationale">CrossWords pode armazenar e ler listas de palavras na área de Downloads do seu dispositivo mas ele precisa pedir permissão para acessá-los lá.
 \n
 \nVocê pode negar esta permissão se você nunca baixar listas de palavras exceto as de dentro do CrossWords e não houver nenhuma salva anteriormente lá.</string>
     <string name="sms_invite_rationale">CrossWords precisa de permissão para enviar um convite via dados SMS.</string>
@@ -1131,4 +1131,7 @@
     <string name="newgame_drop_mqtt">Derruba a internet</string>
     <string name="warn_mqtt_remove">Você pode ativar a internet play agora, ou removê-lo deste jogo.</string>
     <string name="confirm_drop_mqtt">Tem a certeza que deseja remover a capacidade de comunicação deste jogo através da Internet\?</string>
+    <string name="show_note_menu_fmt">Sobre %1$s</string>
+    <string name="button_deny">Negar</string>
+    <string name="button_ask">Perguntar</string>
 </resources>
