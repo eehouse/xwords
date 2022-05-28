@@ -81,6 +81,7 @@ struct DictionaryCtxt {
                          necessarily the entry point for search!! */
     XP_UCHAR* name;
     XP_UCHAR* langName;
+    XP_UCHAR* isoCode;
     XP_UCHAR* faces;            /* storage for faces */
     XP_UCHAR* facesEnd;
     XP_UCHAR* desc;

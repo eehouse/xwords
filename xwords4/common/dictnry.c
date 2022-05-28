@@ -282,13 +282,10 @@ parseCommon( DictionaryCtxt* dctx, XWEnv xwe, const XP_U8** ptrp, const XP_U8* e
             if ( ptr == headerEnd ) {
                 goto done;
             }
-            XP_UCHAR* langName = NULL;
-            XP_UCHAR* langCode = NULL;
-            if ( getNullTermParam( dctx, &langName, &ptr, headerEnd )
-                 && getNullTermParam( dctx, &langCode, &ptr, headerEnd ) ) {
-                XP_LOGFF( "got langName: %s; langCode: %s", langName, langCode );
-                XP_FREEP( dctx->mpool, &langName );
-                XP_FREEP( dctx->mpool, &langCode );
+            if ( getNullTermParam( dctx, &dctx->isoCode, &ptr, headerEnd )
+                 && getNullTermParam( dctx, &dctx->langName, &ptr, headerEnd ) ) {
+                XP_LOGFF( "got langName: %s; isoCode: %s", dctx->langName,
+                          dctx->isoCode );
             } else {
                 goto done;
             }
@@ -362,6 +359,12 @@ parseCommon( DictionaryCtxt* dctx, XWEnv xwe, const XP_U8** ptrp, const XP_U8* e
         }
 
         dctx->langCode = xloc & 0x7F;
+        if ( NULL == dctx->isoCode ) {
+            const XP_UCHAR* isoCode = lcToLocale( dctx->langCode );
+            XP_ASSERT( !!isoCode );
+            dctx->isoCode = copyString( dctx->mpool, isoCode );
+            XP_LOGFF( "looked up isoCode %s for langCode %d", isoCode, dctx->langCode );
+        }
     }
 
     if ( formatOk ) {
@@ -1062,6 +1065,7 @@ destroy_stubbed_dict( DictionaryCtxt* dict )
     XP_FREE( dict->mpool, dict->chars );
     XP_FREE( dict->mpool, dict->name );
     XP_FREE( dict->mpool, dict->langName );
+    XP_FREE( dict->mpool, dict->isoCode );
     XP_FREE( dict->mpool, dict->bitmaps );
     XP_FREE( dict->mpool, dict );
 } /* destroy_stubbed_dict */
@@ -1217,6 +1221,8 @@ dict_super_destroy( DictionaryCtxt* dict )
     XP_FREEP( dict->mpool, &dict->faces );
     XP_FREEP( dict->mpool, &dict->facePtrs );
     XP_FREEP( dict->mpool, &dict->name );
+    XP_FREEP( dict->mpool, &dict->isoCode );
+    XP_FREEP( dict->mpool, &dict->langName );
 }
 
 const XP_UCHAR* 
