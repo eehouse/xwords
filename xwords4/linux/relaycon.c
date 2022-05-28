@@ -746,7 +746,7 @@ void
 relaycon_cleanup( LaunchParams* params )
 {
     RelayConStorage* storage = (RelayConStorage*)params->relayConStorage;
-    if ( storage->params->useHTTP ) {
+    if ( !!storage && storage->params->useHTTP ) {
         pthread_mutex_lock( &storage->relayMutex );
 #ifdef DEBUG
         int nRelayTasks = g_slist_length( storage->relayTaskList );
