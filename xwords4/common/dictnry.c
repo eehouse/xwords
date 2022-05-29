@@ -363,8 +363,13 @@ parseCommon( DictionaryCtxt* dctx, XWEnv xwe, const XP_U8** ptrp, const XP_U8* e
             const XP_UCHAR* isoCode = lcToLocale( dctx->langCode );
             XP_ASSERT( !!isoCode );
             dctx->isoCode = copyString( dctx->mpool, isoCode );
-            XP_LOGFF( "looked up isoCode %s for langCode %d", isoCode, dctx->langCode );
+            XP_LOGFF( "looked up isoCode %s for langCode %d", isoCode,
+                      dctx->langCode );
         }
+#ifdef DEBUG
+        const XP_UCHAR* locale = lcToLocale( dctx->langCode );
+        XP_ASSERT( !locale || !XP_STRCMP( locale, dctx->isoCode ) );
+#endif
     }
 
     if ( formatOk ) {

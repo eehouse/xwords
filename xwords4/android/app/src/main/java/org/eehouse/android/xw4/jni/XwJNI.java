@@ -276,6 +276,7 @@ public class XwJNI {
 
     public static native CommsAddrRec comms_getInitialAddr();
     public static native String comms_getUUID();
+    public static native String lcToLocale( int lc );
 
     // Game methods
     private static GamePtr initGameJNI( long rowid )

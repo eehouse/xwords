@@ -200,8 +200,6 @@ public class DictsDelegate extends ListDelegateBase
                 LangInfo info = (LangInfo)dataObj;
                 int groupPos = info.m_posn;
                 String langName = m_langs[groupPos];
-                int langCode = DictLangCache.getLangLangCode( m_context,
-                                                              langName );
                 boolean expanded = ! m_closedLangs.contains( langName );
                 String locLangName = xlateLang( langName );
                 String details = null;

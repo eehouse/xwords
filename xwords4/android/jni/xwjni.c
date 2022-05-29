@@ -987,6 +987,20 @@ Java_org_eehouse_android_xw4_jni_XwJNI_comms_1getUUID
     return jstr;
 }
 
+JNIEXPORT jstring JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_lcToLocale
+( JNIEnv* env, jclass C, jint lc )
+{
+    jstring result = NULL;
+    const XP_UCHAR* locale = lcToLocale( lc );
+    if ( !!locale ) {
+        result = (*env)->NewStringUTF( env, locale );
+    } else {
+        XP_LOGFF( "(%d) => NULL", lc );
+    }
+    return result;
+}
+
 JNIEXPORT jlong JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_dict_1make
 ( JNIEnv* env, jclass C, jlong jniGlobalPtr, jbyteArray jDictBytes,

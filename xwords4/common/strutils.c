@@ -422,21 +422,20 @@ lcToLocale( XP_LangCode lc )
 {
     const XP_UCHAR* result = NULL;
     switch ( lc ) {
-    case 0: result = "??"; break;
-    case 1: result = "en"; break;
-    case 2: result = "fr"; break;
-    case 3: result = "de"; break;
-    case 4: result = "tr"; break;
-    case 5: result = "ar"; break;
-    case 6: result = "es"; break;
-    case 7: result = "sv"; break;
-    case 8: result = "pl"; break;
-    case 9: result = "da"; break;
-    case 0xA: result = "it"; break;
-    case 0xB: result = "nl"; break;
-    case 0xC: result = "ca"; break;
-    case 0xD: result = "pt"; break;
-    case 0xF: result = "ru"; break;
+    case 0x01: result = "en"; break;
+    case 0x02: result = "fr"; break;
+    case 0x03: result = "de"; break;
+    case 0x04: result = "tr"; break;
+    case 0x05: result = "ar"; break;
+    case 0x06: result = "es"; break;
+    case 0x07: result = "sv"; break;
+    case 0x08: result = "pl"; break;
+    case 0x09: result = "da"; break;
+    case 0x0A: result = "it"; break;
+    case 0x0B: result = "nl"; break;
+    case 0x0C: result = "ca"; break;
+    case 0x0D: result = "pt"; break;
+    case 0x0F: result = "ru"; break;
     case 0x11: result = "cs"; break;
     case 0x12: result = "el"; break;
     case 0x13: result = "sk"; break;
@@ -444,7 +443,9 @@ lcToLocale( XP_LangCode lc )
     case 0x15: result = "ro"; break;
     case 0x19: result = "fi"; break;
     }
-    XP_ASSERT( !!result );
+    if ( !result ) {
+        XP_LOGFF( "(%d/0x%x) => NULL", lc, lc );
+    }
     return result;
 }
 
