@@ -1962,7 +1962,7 @@ public class DBUtils {
         values.put( DBHelper.WORDCOUNT, info.wordCount );
         values.put( DBHelper.MD5SUM, info.md5Sum );
         values.put( DBHelper.FULLSUM, info.fullSum );
-        values.put( DBHelper.LOC, dal.loc.ordinal() );
+        values.put( DBHelper.LOCATION, dal.loc.ordinal() );
 
         initDB( context );
         synchronized( s_dbHelper ) {
@@ -1980,9 +1980,9 @@ public class DBUtils {
     {
         String selection =
             String.format( NAMELOC_FMT, DBHelper.DICTNAME,
-                           name, DBHelper.LOC, fromLoc.ordinal() );
+                           name, DBHelper.LOCATION, fromLoc.ordinal() );
         ContentValues values = new ContentValues();
-        values.put( DBHelper.LOC, toLoc.ordinal() );
+        values.put( DBHelper.LOCATION, toLoc.ordinal() );
 
         initDB( context );
         synchronized( s_dbHelper ) {

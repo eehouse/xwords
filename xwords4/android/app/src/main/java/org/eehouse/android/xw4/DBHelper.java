@@ -39,26 +39,6 @@ import java.util.Map;
 public class DBHelper extends SQLiteOpenHelper {
     private static final String TAG = DBHelper.class.getSimpleName();
 
-    public enum TABLE_NAMES {
-        SUM( "summaries", 0 ),
-        _OBITS( "obits", 5 ),
-        DICTBROWSE( "dictbrowse", 12 ),
-        DICTINFO( "dictinfo", 12 ),
-        GROUPS( "groups", 14 ),
-        STUDYLIST( "study", 18 ),
-        LOC( "loc", 20 ),
-        PAIRS( "pairs", 21 ),
-        INVITES( "invites", 24 ),
-        CHAT( "chat", 25 ),
-        LOGS( "logs", 26 );
-
-        private String mName;
-        private int mAddedVersion;
-        private TABLE_NAMES(String name, int start) { mName = name; mAddedVersion = start; }
-        @Override
-        public String toString() { return mName; }
-        private int addedVersion() { return mAddedVersion; }
-    }
     private static final String DB_NAME = BuildConfig.DB_NAME;
     private static final int DB_VERSION = 32;
 
@@ -107,7 +87,7 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String WORDCOUNT = "WORDCOUNT";
     public static final String WORDCOUNTS = "WORDCOUNTS";
     private static final String LANGCODE = "LANGCODE";
-    public static final String LOC = "LOC";
+    public static final String LOCATION = "LOC";
     public static final String ITERMIN = "ITERMIN";
     public static final String ITERMAX = "ITERMAX";
     public static final String ITERPOS = "ITERPOS";
@@ -139,111 +119,121 @@ public class DBHelper extends SQLiteOpenHelper {
     // TAG is a thing in Android; don't wear it out
     public static final String TAGG = "TAG";
 
+    public enum TABLE_NAMES {
+        SUM( "summaries", new String[][] {
+                { "rowid",      "INTEGER PRIMARY KEY AUTOINCREMENT" },
+                { VISID,        "INTEGER" }, // user-visible ID
+                { GAME_NAME,    "TEXT" },
+                { NUM_MOVES,   "INTEGER" },
+                { TURN,        "INTEGER" },
+                { TURN_LOCAL,  "INTEGER" },
+                { GIFLAGS,     "INTEGER" },
+                { NUM_PLAYERS, "INTEGER" },
+                { MISSINGPLYRS,"INTEGER" },
+                { PLAYERS,      "TEXT" },
+                { GAME_OVER,    "INTEGER" },
+                { SERVERROLE,   "INTEGER" },
+                { CONTYPE,      "INTEGER" },
+                { ROOMNAME,     "TEXT" },
+                { RELAYID,      "TEXT" },
+                { SEED,         "INTEGER" },
+                { DICTLANG,     "INTEGER" }, // deprecated
+                { ISOCODE,      "TEXT(8)" },
+                { LANGNAME,     "TEXT" },
+                { DICTLIST,     "TEXT" },
+                { SMSPHONE,     "TEXT" },  // unused
+                { SCORES,       "TEXT" },
+                { CHAT_HISTORY, "TEXT" },
+                { GAMEID,       "INTEGER" },
+                { REMOTEDEVS,   "TEXT" },
+                { EXTRAS,       "TEXT" }, // json data, most likely
+                { LASTMOVE,     "INTEGER DEFAULT 0" },
+                { NEXTDUPTIMER, "INTEGER DEFAULT 0" },
+                { NEXTNAG,      "INTEGER DEFAULT 0" },
+                { GROUPID,      "INTEGER" },
+                // HASMSGS: sqlite doesn't have bool; use 0 and 1
+                { HASMSGS,      "INTEGER DEFAULT 0" },
+                { CONTRACTED,   "INTEGER DEFAULT 0" },
+                { CREATE_TIME,  "INTEGER" },
+                { LASTPLAY_TIME,"INTEGER" },
+                { NPACKETSPENDING,"INTEGER" },
+                { SNAPSHOT,     "BLOB" },
+                { THUMBNAIL,    "BLOB" },
+            }, 0 ),
+        _OBITS( "obits", null, 5 ),
+        DICTBROWSE( "dictbrowse", new String[][] {
+                { DICTNAME,   "TEXT" },
+                { LOCATION,   "UNSIGNED INTEGER(1)" },
+                { WORDCOUNTS, "TEXT" },
+                { ITERMIN,    "INTEGER(4)" },
+                { ITERMAX,    "INTEGER(4)" },
+                { ITERPOS,    "INTEGER" },
+                { ITERTOP,    "INTEGER" },
+                { ITERPREFIX, "TEXT" },
+            }, 12 ),
+        DICTINFO( "dictinfo", new String[][] {
+                { LOCATION,  "UNSIGNED INTEGER(1)" },
+                { DICTNAME,  "TEXT" },
+                { MD5SUM,    "TEXT(32)" },
+                { FULLSUM,   "TEXT(32)" },
+                { WORDCOUNT, "INTEGER" },
+                { LANGCODE,  "INTEGER" }, // deprecated
+                { LANGNAME,   "TEXT" },
+                { ISOCODE,   "TEXT(8)" },
+            }, 12 ),
+        GROUPS( "groups", new String[][] {
+                { GROUPNAME,  "TEXT" },
+                { EXPANDED,  "INTEGER(1)" },
+            }, 14 ),
+        STUDYLIST( "study", new String[][] {
+                { WORD,     "TEXT" },
+                { LANGUAGE, "INTEGER(1)" }, // deprecated
+                { ISOCODE,  "TEXT(8)" },
+                { "UNIQUE", "(" + WORD + ", " + ISOCODE + ")" },
+            }, 18 ),
+        LOC( "loc", new String[][] {
+                { KEY,  "TEXT" },
+                { LOCALE,  "TEXT(5)" },
+                { BLESSED,  "INTEGER(1)" },
+                { XLATION,  "TEXT" },
+                { "UNIQUE", "(" + KEY + ", " + LOCALE + "," + BLESSED + ")" },
+            }, 20 ),
+        PAIRS( "pairs", new String[][] {
+                { KEY,  "TEXT" },
+                { VALUE,  "TEXT" },
+                { "UNIQUE", "(" + KEY + ")" },
+            }, 21 ),
+        INVITES( "invites", new String[][] {
+                { ROW, "INTEGER" },
+                { TARGET, "TEXT" },
+                { MEANS, "INTEGER" },
+                { TIMESTAMP, "DATETIME DEFAULT CURRENT_TIMESTAMP" },
+            }, 24 ),
+        CHAT( "chat", new String[][] {
+                { ROW, "INTEGER" },
+                { SENDER, "INTEGER" },
+                { MESSAGE, "TEXT" },
+                { CHATTIME, "INTEGER DEFAULT 0" },
+            }, 25 ),
+        LOGS( "logs", new String[][] {
+                { TIMESTAMP, "DATETIME DEFAULT CURRENT_TIMESTAMP" },
+                { MESSAGE, "TEXT" },
+                { TAGG, "TEXT" },
+            }, 26 );
+
+        private String mName;
+        private int mAddedVersion;
+        private final String[][] mSchema;
+        private TABLE_NAMES(String name, String[][] schema, int start) {
+            mName = name;
+            mSchema = schema;
+            mAddedVersion = start;
+        }
+        @Override
+        public String toString() { return mName; }
+        private int addedVersion() { return mAddedVersion; }
+    }
     private Context m_context;
-
-    private static final String[][] s_summaryColsAndTypes = {
-        { "rowid",      "INTEGER PRIMARY KEY AUTOINCREMENT" }
-        ,{ VISID,        "INTEGER" } // user-visible ID
-        ,{ GAME_NAME,    "TEXT" }
-        ,{ NUM_MOVES,   "INTEGER" }
-        ,{ TURN,        "INTEGER" }
-        ,{ TURN_LOCAL,  "INTEGER" }
-        ,{ GIFLAGS,     "INTEGER" }
-        ,{ NUM_PLAYERS, "INTEGER" }
-        ,{ MISSINGPLYRS,"INTEGER" }
-        ,{ PLAYERS,      "TEXT" }
-        ,{ GAME_OVER,    "INTEGER" }
-        ,{ SERVERROLE,   "INTEGER" }
-        ,{ CONTYPE,      "INTEGER" }
-        ,{ ROOMNAME,     "TEXT" }
-        ,{ RELAYID,      "TEXT" }
-        ,{ SEED,         "INTEGER" }
-        ,{ DICTLANG,     "INTEGER" }
-        ,{ DICTLIST,     "TEXT" }
-        ,{ SMSPHONE,     "TEXT" }  // unused
-        ,{ SCORES,       "TEXT" }
-        ,{ CHAT_HISTORY, "TEXT" }
-        ,{ GAMEID,       "INTEGER" }
-        ,{ REMOTEDEVS,   "TEXT" }
-        ,{ EXTRAS,       "TEXT" } // json data, most likely
-        ,{ LASTMOVE,     "INTEGER DEFAULT 0" }
-        ,{ NEXTDUPTIMER, "INTEGER DEFAULT 0" }
-        ,{ NEXTNAG,      "INTEGER DEFAULT 0" }
-        ,{ GROUPID,      "INTEGER" }
-        // HASMSGS: sqlite doesn't have bool; use 0 and 1
-        ,{ HASMSGS,      "INTEGER DEFAULT 0" }
-        ,{ CONTRACTED,   "INTEGER DEFAULT 0" }
-        ,{ CREATE_TIME,  "INTEGER" }
-        ,{ LASTPLAY_TIME,"INTEGER" }
-        ,{ NPACKETSPENDING,"INTEGER" }
-        ,{ SNAPSHOT,     "BLOB" }
-        ,{ THUMBNAIL,    "BLOB" }
-    };
-
-    private static final String[][] s_dictInfoColsAndTypes = {
-        { DICTNAME,   "TEXT" },
-        { LOC,       "UNSIGNED INTEGER(1)" },
-        { MD5SUM,    "TEXT(32)" },
-        { FULLSUM,   "TEXT(32)" },
-        { WORDCOUNT, "INTEGER" },
-        { LANGCODE,  "INTEGER" },
-    };
-
-    private static final String[][] s_dictBrowseColsAndTypes = {
-        { DICTNAME,    "TEXT" }
-        ,{ LOC,        "UNSIGNED INTEGER(1)" }
-        ,{ WORDCOUNTS, "TEXT" }
-        ,{ ITERMIN,    "INTEGER(4)" }
-        ,{ ITERMAX,    "INTEGER(4)" }
-        ,{ ITERPOS,    "INTEGER" }
-        ,{ ITERTOP,    "INTEGER" }
-        ,{ ITERPREFIX, "TEXT" }
-    };
-
-    private static final String[][] s_groupsSchema = {
-        { GROUPNAME,  "TEXT" }
-        ,{ EXPANDED,  "INTEGER(1)" }
-    };
-
-    private static final String[][] s_studySchema = {
-        { WORD,  "TEXT" }
-        ,{ LANGUAGE,  "INTEGER(1)" }
-        ,{ "UNIQUE", "(" + WORD + ", " + LANGUAGE + ")" }
-    };
-
-    private static final String[][] s_locSchema = {
-        { KEY,  "TEXT" }
-        ,{ LOCALE,  "TEXT(5)" }
-        ,{ BLESSED,  "INTEGER(1)" }
-        ,{ XLATION,  "TEXT" }
-        ,{ "UNIQUE", "(" + KEY + ", " + LOCALE + "," + BLESSED + ")" }
-    };
-
-    private static final String[][] s_pairsSchema = {
-        { KEY,  "TEXT" }
-        ,{ VALUE,  "TEXT" }
-        ,{ "UNIQUE", "(" + KEY + ")" }
-    };
-
-    private static final String[][] s_invitesSchema = {
-        { ROW, "INTEGER" }
-        ,{ TARGET, "TEXT" }
-        ,{ MEANS, "INTEGER" }
-        ,{ TIMESTAMP, "DATETIME DEFAULT CURRENT_TIMESTAMP" }
-    };
-
-    private static final String[][] s_chatsSchema = {
-        { ROW, "INTEGER" }
-        ,{ SENDER, "INTEGER" }
-        ,{ MESSAGE, "TEXT" }
-        ,{ CHATTIME, "INTEGER DEFAULT 0" }
-    };
-
-    private static final String[][] s_logsSchema = {
-        { TIMESTAMP, "DATETIME DEFAULT CURRENT_TIMESTAMP" },
-        { MESSAGE, "TEXT" },
-        { TAGG, "TEXT" },
-    };
 
     public DBHelper( Context context )
     {
@@ -259,9 +249,9 @@ public class DBHelper extends SQLiteOpenHelper {
     @Override
     public void onCreate( SQLiteDatabase db )
     {
-        createTable( db, TABLE_NAMES.SUM, s_summaryColsAndTypes );
-        createTable( db, TABLE_NAMES.DICTINFO, s_dictInfoColsAndTypes );
-        createTable( db, TABLE_NAMES.DICTBROWSE, s_dictBrowseColsAndTypes );
+        createTable( db, TABLE_NAMES.SUM );
+        createTable( db, TABLE_NAMES.DICTINFO );
+        createTable( db, TABLE_NAMES.DICTBROWSE );
         forceRowidHigh( db, TABLE_NAMES.SUM );
         createGroupsTable( db, false );
         createStudyTable( db );
@@ -298,8 +288,8 @@ public class DBHelper extends SQLiteOpenHelper {
         case 11:
             addSumColumn( db, REMOTEDEVS );
         case 12:
-            createTable( db, TABLE_NAMES.DICTINFO, s_dictInfoColsAndTypes );
-            createTable( db, TABLE_NAMES.DICTBROWSE, s_dictBrowseColsAndTypes );
+            createTable( db, TABLE_NAMES.DICTINFO );
+            createTable( db, TABLE_NAMES.DICTBROWSE );
             madeDITable = true;
         case 13:
             addSumColumn( db, LASTMOVE );
@@ -311,7 +301,7 @@ public class DBHelper extends SQLiteOpenHelper {
         case 16:
             addSumColumn( db, VISID );
             setColumnsEqual( db, TABLE_NAMES.SUM, VISID, "rowid" );
-            makeAutoincrement( db, TABLE_NAMES.SUM, s_summaryColsAndTypes );
+            makeAutoincrement( db, TABLE_NAMES.SUM );
             madeSumTable = true;
         case 17:
             if ( !madeSumTable ) {
@@ -351,7 +341,7 @@ public class DBHelper extends SQLiteOpenHelper {
             }
         case 28:
             if ( !madeChatTable ) {
-                addColumn( db, TABLE_NAMES.CHAT, s_chatsSchema, CHATTIME );
+                addColumn( db, TABLE_NAMES.CHAT, CHATTIME );
             }
         case 29:
             if ( !madeSumTable ) {
@@ -359,7 +349,7 @@ public class DBHelper extends SQLiteOpenHelper {
             }
         case 30:
             if ( !madeDITable ) {
-                addColumn( db, TABLE_NAMES.DICTINFO, s_dictInfoColsAndTypes, FULLSUM );
+                addColumn( db, TABLE_NAMES.DICTINFO, FULLSUM );
             }
 
         case 31:
@@ -368,12 +358,12 @@ public class DBHelper extends SQLiteOpenHelper {
             }
             langCodeToISOCode( db, TABLE_NAMES.SUM, DICTLANG, ISOCODE );
             if ( !madeStudyTable ) {
-                addColumn( db, TABLE_NAMES.STUDYLIST, s_studySchema, ISOCODE );
+                addColumn( db, TABLE_NAMES.STUDYLIST, ISOCODE );
             }
             langCodeToISOCode( db, TABLE_NAMES.STUDYLIST, LANGUAGE, ISOCODE );
             if ( !madeDITable ) {
-                addColumn( db, TABLE_NAMES.DICTINFO, s_dictInfoColsAndTypes, ISOCODE );
-                addColumn( db, TABLE_NAMES.DICTINFO, s_dictInfoColsAndTypes, LANGNAME );
+                addColumn( db, TABLE_NAMES.DICTINFO, ISOCODE );
+                addColumn( db, TABLE_NAMES.DICTINFO, LANGNAME );
             }
             langCodeToISOCode( db, TABLE_NAMES.DICTINFO, LANGCODE, ISOCODE );
             try {
@@ -393,44 +383,51 @@ public class DBHelper extends SQLiteOpenHelper {
     }
 
     private void langCodeToISOCode( SQLiteDatabase db, TABLE_NAMES table,
-                                    String oldIntCol, String newIsoStringCol  )
+                                    String oldIntCol, String newIsoStringCol )
     {
-        String[] columns = { oldIntCol };
-        String groupBy = columns[0];
+        try {
+            db.beginTransaction();
+            String[] columns = { oldIntCol };
+            String groupBy = columns[0];
 
-        // First gather all the lang codes
-        Map<Integer, String> map = new HashMap<>();
-        Cursor cursor = db.query( table.toString(),
-                                  columns, null, null, groupBy, null, null );
-        int colIndex = cursor.getColumnIndex( columns[0] );
-        while ( cursor.moveToNext() ) {
-            int code = cursor.getInt( colIndex );
-            String isoCode = XwJNI.lcToLocale( code );
-            map.put( code, isoCode );
-            Log.d( TAG, "added %d => %s", code, isoCode );
-        }
+            // First gather all the lang codes
+            Map<Integer, String> map = new HashMap<>();
+            Cursor cursor = db.query( table.toString(),
+                                      columns, null, null, groupBy, null, null );
+            int colIndex = cursor.getColumnIndex( columns[0] );
+            while ( cursor.moveToNext() ) {
+                int code = cursor.getInt( colIndex );
+                String isoCode = XwJNI.lcToLocale( code );
+                map.put( code, isoCode );
+                Log.d( TAG, "added %d => %s", code, isoCode );
+            }
 
-        // Then update the DB
-        for ( Integer code : map.keySet() ) {
-            StringBuffer sb = new StringBuffer()
-                .append("Update ").append(table)
-                .append(" SET ").append(newIsoStringCol).append(" = '").append(map.get(code)).append("'")
-                .append( " WHERE ").append(oldIntCol).append(" = ").append(code)
-                .append(";");
-            String query = sb.toString();
-            // Log.d( TAG, "langCodeToISOCode() query: %s", query );
-            db.execSQL( query );
+            // Then update the DB
+            for ( Integer code : map.keySet() ) {
+                StringBuffer sb = new StringBuffer()
+                    .append("Update ").append(table)
+                    .append(" SET ").append(newIsoStringCol).append(" = '").append(map.get(code)).append("'")
+                    .append( " WHERE ").append(oldIntCol).append(" = ").append(code)
+                    .append(";");
+                String query = sb.toString();
+                // Log.d( TAG, "langCodeToISOCode() query: %s", query );
+                db.execSQL( query );
+            }
+            db.setTransactionSuccessful();
+        } finally {
+            db.endTransaction();
         }
     }
 
     private void addSumColumn( SQLiteDatabase db, String colName )
     {
-        addColumn( db, TABLE_NAMES.SUM, s_summaryColsAndTypes, colName );
+        addColumn( db, TABLE_NAMES.SUM, colName );
     }
 
     private void addColumn( SQLiteDatabase db, TABLE_NAMES tableName,
-                            String[][] colsAndTypes, String colName )
+                            String colName )
     {
+        String[][] colsAndTypes = tableName.mSchema;
         String colType = null;
         for ( int ii = 0; ii < colsAndTypes.length; ++ii ) {
             if ( colsAndTypes[ii][0].equals( colName ) ) {
@@ -444,8 +441,9 @@ public class DBHelper extends SQLiteOpenHelper {
         db.execSQL( cmd );
     }
 
-    private void createTable( SQLiteDatabase db, TABLE_NAMES name, String[][] data )
+    private void createTable( SQLiteDatabase db, TABLE_NAMES name )
     {
+        String[][] data = name.mSchema;
         StringBuilder query =
             new StringBuilder( String.format("CREATE TABLE %s (", name ) );
 
@@ -466,7 +464,7 @@ public class DBHelper extends SQLiteOpenHelper {
             isUpgrade = 0 < countGames( db );
         }
 
-        createTable( db, TABLE_NAMES.GROUPS, s_groupsSchema );
+        createTable( db, TABLE_NAMES.GROUPS );
 
         // Create an empty group name
         ContentValues values = new ContentValues();
@@ -492,32 +490,32 @@ public class DBHelper extends SQLiteOpenHelper {
 
     private void createStudyTable( SQLiteDatabase db )
     {
-        createTable( db, TABLE_NAMES.STUDYLIST, s_studySchema );
+        createTable( db, TABLE_NAMES.STUDYLIST );
     }
 
     private void createLocTable( SQLiteDatabase db )
     {
-        createTable( db, TABLE_NAMES.LOC, s_locSchema );
+        createTable( db, TABLE_NAMES.LOC );
     }
 
     private void createPairsTable( SQLiteDatabase db )
     {
-        createTable( db, TABLE_NAMES.PAIRS, s_pairsSchema );
+        createTable( db, TABLE_NAMES.PAIRS );
     }
 
     private void createInvitesTable( SQLiteDatabase db )
     {
-        createTable( db, TABLE_NAMES.INVITES, s_invitesSchema );
+        createTable( db, TABLE_NAMES.INVITES );
     }
 
     private void createChatsTable( SQLiteDatabase db )
     {
-        createTable( db, TABLE_NAMES.CHAT, s_chatsSchema );
+        createTable( db, TABLE_NAMES.CHAT );
     }
 
     private void createLogsTable( SQLiteDatabase db )
     {
-        createTable( db, TABLE_NAMES.LOGS, s_logsSchema );
+        createTable( db, TABLE_NAMES.LOGS );
     }
 
     // Move all existing games to the row previously named "cur games'
@@ -538,9 +536,9 @@ public class DBHelper extends SQLiteOpenHelper {
         cursor.close();
     }
 
-    private void makeAutoincrement( SQLiteDatabase db, TABLE_NAMES name,
-                                    String[][] data )
+    private void makeAutoincrement( SQLiteDatabase db, TABLE_NAMES name )
     {
+        String[][] data = name.mSchema;
         db.beginTransaction();
         try {
             String query;
@@ -550,7 +548,7 @@ public class DBHelper extends SQLiteOpenHelper {
                                        name, name );
                 db.execSQL( query );
             }
-            createTable( db, name, data );
+            createTable( db, name );
             forceRowidHigh( db, name );
 
             if ( null != columnNames ) {
