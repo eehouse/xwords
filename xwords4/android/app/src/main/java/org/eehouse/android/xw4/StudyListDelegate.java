@@ -83,7 +83,7 @@ public class StudyListDelegate extends ListDelegateBase
 
         getBundledData( sis );
 
-        initOrFinish( getIntent() );
+        initOrFinish( getArguments() );
     }
 
     @Override
@@ -312,7 +312,7 @@ public class StudyListDelegate extends ListDelegateBase
         setListAdapter( m_adapter );
     }
 
-    private void initOrFinish( Intent startIntent )
+    private void initOrFinish( Bundle args )
     {
         m_langCodes = DBUtils.studyListLangs( m_activity );
         if ( 0 == m_langCodes.length ) {
@@ -324,8 +324,8 @@ public class StudyListDelegate extends ListDelegateBase
         } else {
             int startLang = NO_LANG;
             int startIndex = -1;
-            if ( null != startIntent ) {
-                startLang = startIntent.getIntExtra( START_LANG, NO_LANG );
+            if ( null != args ) {
+                startLang = args.getInt( START_LANG, NO_LANG );
             }
 
             String[] myNames = new String[m_langCodes.length];
