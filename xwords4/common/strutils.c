@@ -441,6 +441,7 @@ lcToLocale( XP_LangCode lc )
     case 0x12: result = "el"; break;
     case 0x13: result = "sk"; break;
     case 0x14: result = "hu"; break;
+    case 0x15: result = "ro"; break;
     case 0x19: result = "fi"; break;
     }
     XP_ASSERT( !!result );

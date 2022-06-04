@@ -30,6 +30,7 @@ public class DictInfo {
     // set in jni code
     public int langCode;
     public int wordCount;
+    public String isoCode;
     public String md5Sum;       // internal (skipping header?)
 
     @Override
@@ -38,6 +39,7 @@ public class DictInfo {
         if ( BuildConfig.NON_RELEASE ) {
             return new StringBuilder("{")
                 .append("name: ").append(name)
+                .append(", isoCode: ").append(isoCode)
                 .append(", md5Sum: ").append(md5Sum)
                 .append(", fullSum: ").append(fullSum)
                 .append("}").toString();

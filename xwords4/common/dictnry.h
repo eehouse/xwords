@@ -209,6 +209,7 @@ XP_LangCode dict_getLangCode( const DictionaryCtxt* dict );
 XP_U32 dict_getWordCount( const DictionaryCtxt* dict, XWEnv xwe );
 
 const XP_UCHAR* dict_getDesc( const DictionaryCtxt* dict );
+const XP_UCHAR* dict_getISOCode( const DictionaryCtxt* dict );
 const XP_UCHAR* dict_getMd5Sum( const DictionaryCtxt* dict );
 XP_Bool dict_hasDuplicates( const DictionaryCtxt* dict );
 

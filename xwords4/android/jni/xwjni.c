@@ -1141,6 +1141,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1getInfo
         setInt( env, jinfo, "langCode", code );
         setInt( env, jinfo, "wordCount", dict_getWordCount( dict, env ) );
         setString( env, jinfo, "md5Sum", dict_getMd5Sum( dict ) );
+        setString( env, jinfo, "isoCode", dict_getISOCode( dict ) );
     }
 
     return jinfo;

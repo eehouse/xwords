@@ -1002,6 +1002,12 @@ dict_getDesc( const DictionaryCtxt* dict )
     return dict->desc;
 }
 
+const XP_UCHAR*
+dict_getISOCode( const DictionaryCtxt* dict )
+{
+    return dict->isoCode;
+}
+
 const XP_UCHAR* 
 dict_getMd5Sum( const DictionaryCtxt* dict )
 {

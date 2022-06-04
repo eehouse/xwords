@@ -528,6 +528,7 @@ public class DictLangCache {
                 Assert.assertTrueNR( null != info.fullSum );
 
                 DBUtils.dictsSetInfo( context, dal, info );
+                Log.d( TAG, "getInfo() => %s", info );
             } else {
                 Log.i( TAG, "getInfo(): unable to open dict %s", dal.name );
             }
