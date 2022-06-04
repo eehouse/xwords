@@ -28,9 +28,9 @@ public class DictInfo {
     public String fullSum;      // md5sum of the whole file
 
     // set in jni code
-    public int langCode;
     public int wordCount;
     public String isoCode;
+    public String langName;
     public String md5Sum;       // internal (skipping header?)
 
     @Override

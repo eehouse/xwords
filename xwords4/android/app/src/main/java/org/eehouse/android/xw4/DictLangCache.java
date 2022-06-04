@@ -41,21 +41,20 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 public class DictLangCache {
     private static final String TAG = DictLangCache.class.getSimpleName();
-    private static Map<Integer, String> s_langNames;
-    private static Map<String, Integer> s_langCodes;
-    private static Map<Integer, String> s_langCodeStrs;
+    private static Map<String, String> s_langNames;
+    private static Map<String, String> s_langCodes;
 
-    private static int s_adaptedLang = -1;
+    private static String s_adaptedLang = null;
     private static LangsArrayAdapter s_langsAdapter;
     private static ArrayAdapter<String> s_dictsAdapter;
     private static String s_last;
     private static Handler s_handler;
-
 
     public static class LangsArrayAdapter extends ArrayAdapter<String> {
         private Context m_context;
@@ -145,43 +144,27 @@ public class DictLangCache {
         return result;
     }
 
-    public static String annotatedDictName( Context context, String name,
-                                            int lang )
-    {
-        return name + " (" + getLangName( context, lang ) + ")";
-    }
-
-    public static String getLangName( Context context, int code )
-    {
-        makeMaps( context );
-        String name = s_langNames.get( code );
-        if ( null == name ) {
-            name = s_langNames.get( 0 );
-        }
-        return name;
-    }
-
-    // This populates the cache and will take significant time if it's
-    // mostly empty and there are a lot of dicts.
-    public static int getLangCount( Context context, int code )
+    // This populates the cache and will take significant time if it's mostly
+    // empty and there are a lot of dicts.
+    public static int getLangCount( Context context, String isoCode )
     {
         int count = 0;
         DictAndLoc[] dals = DictUtils.dictList( context );
         for ( DictAndLoc dal : dals ) {
-            if ( code == getDictLangCode( context, dal ) ) {
+            if ( isoCode.equals( getDictISOCode( context, dal ) ) ) {
                 ++count;
             }
         }
         return count;
     }
 
-    private static DictInfo[] getInfosHaveLang( Context context, int code )
+    private static DictInfo[] getInfosHaveLang( Context context, String isoCode )
     {
-        ArrayList<DictInfo> al = new ArrayList<>();
+        List<DictInfo> al = new ArrayList<>();
         DictAndLoc[] dals = DictUtils.dictList( context );
         for ( DictAndLoc dal : dals ) {
             DictInfo info = getInfo( context, dal );
-            if ( null != info && code == info.langCode ) {
+            if ( null != info && isoCode.equals( info.isoCode ) ) {
                 al.add( info );
             }
         }
@@ -189,21 +172,10 @@ public class DictLangCache {
         return result;
     }
 
-    public static boolean haveDict( Context context, String lang, String name )
-    {
-        boolean result = false;
-        makeMaps( context );
-        Integer code = s_langCodes.get( lang );
-        if ( null != code ) {
-            result = haveDict( context, code, name );
-        }
-        return result;
-    }
-
-    public static boolean haveDict( Context context, int code, String name )
+    public static boolean haveDict( Context context, String isoCode, String name )
     {
         boolean found = false;
-        DictInfo[] infos = getInfosHaveLang( context, code );
+        DictInfo[] infos = getInfosHaveLang( context, isoCode );
         for ( DictInfo info : infos ) {
             if ( info.name.equals( name ) ) {
                 found = true;
@@ -213,17 +185,17 @@ public class DictLangCache {
         return found;
     }
 
-    private static String[] getHaveLang( Context context, int code,
+    private static String[] getHaveLang( Context context, String isoCode,
                                          Comparator<DictInfo> comp,
                                          boolean withCounts )
     {
-        DictInfo[] infos = getInfosHaveLang( context, code );
+        DictInfo[] infos = getInfosHaveLang( context, isoCode );
 
         if ( null != comp ) {
             Arrays.sort( infos, comp );
         }
 
-        ArrayList<String> al = new ArrayList<>();
+        List<String> al = new ArrayList<>();
         String fmt = "%s (%d)"; // must match stripCount below
         for ( DictInfo info : infos ) {
             String name = info.name;
@@ -239,29 +211,30 @@ public class DictLangCache {
         return result;
     }
 
-    public static String[] getHaveLang( Context context, int code )
+    public static String[] getHaveLang( Context context, String isoCode )
     {
-        return getHaveLang( context, code, null, false );
+        return getHaveLang( context, isoCode, null, false );
     }
 
-    public static DictAndLoc[] getDALsHaveLang( Context context, int code )
+    public static DictAndLoc[] getDALsHaveLang( Context context, String isoCode )
     {
-        ArrayList<DictAndLoc> al = new ArrayList<>();
+        Assert.assertNotNull( isoCode );
+        List<DictAndLoc> al = new ArrayList<>();
         DictAndLoc[] dals = DictUtils.dictList( context );
 
         makeMaps( context );
 
         for ( DictAndLoc dal : dals ) {
             DictInfo info = getInfo( context, dal );
-            int langCode = info.langCode;
-            if ( !s_langNames.containsKey( langCode ) ) {
-                langCode = 0;
-            }
-            if ( null != info && code == langCode ) {
-                al.add( dal );
+            if ( null != info ) {
+                Assert.assertTrueNR( s_langNames.containsKey( info.isoCode ) );
+                if ( isoCode.equals( info.isoCode ) ) {
+                    al.add( dal );
+                }
             }
         }
         DictAndLoc[] result = al.toArray( new DictAndLoc[al.size()] );
+        Log.d( TAG, "getDALsHaveLang(%s) => %s", isoCode, result );
         return result;
     }
 
@@ -273,14 +246,14 @@ public class DictLangCache {
             }
         };
 
-    public static String[] getHaveLangByCount( Context context, int code )
+    public static String[] getHaveLangByCount( Context context, String isoCode )
     {
-        return getHaveLang( context, code, s_ByCount, false );
+        return getHaveLang( context, isoCode, s_ByCount, false );
     }
 
-    public static String[] getHaveLangCounts( Context context, int code )
+    public static String[] getHaveLangCounts( Context context, String isoCode )
     {
-        return getHaveLang( context, code, null, true );
+        return getHaveLang( context, isoCode, null, true );
     }
 
     public static String stripCount( String nameWithCount )
@@ -289,15 +262,42 @@ public class DictLangCache {
         return nameWithCount.substring( 0, indx );
     }
 
-    public static int getDictLangCode( Context context, DictAndLoc dal )
+    public static String getDictISOCode( Context context, DictAndLoc dal )
     {
-        return getInfo( context, dal ).langCode;
+        return getInfo( context, dal ).isoCode;
     }
 
-    public static String getLangCodeStr( Context context, int code )
+    public static String getDictISOCode( Context context, String dictName )
+    {
+        DictInfo info = getInfo( context, dictName );
+        return info.isoCode;
+    }
+
+    public static String getLangNameForISOCode( Context context, String isoCode )
     {
         makeMaps( context );
-        return s_langCodeStrs.get( code );
+        return s_langNames.get( isoCode );
+    }
+
+    public static void setLangNameForISOCode( Context context, String isoCode,
+                                              String langName )
+    {
+        makeMaps( context );
+        putTwo( isoCode, langName );
+    }
+
+    public static String getLangIsoCode( Context context, String langName )
+    {
+        makeMaps( context );
+        String result = s_langCodes.get( langName );
+        Log.d( TAG, "getLangIsoCode(%s) => %s", langName, result );
+        return result;
+    }
+
+    public static String getDictLangName( Context context, String dictName )
+    {
+        String isoCode = getDictISOCode( context, dictName );
+        return getLangNameForISOCode( context, isoCode );
     }
 
     public static String[] getDictMD5Sums( Context context, String dict )
@@ -317,41 +317,10 @@ public class DictLangCache {
         return path.length();
     }
 
-    public static int getDictLangCode( Context context, String dict )
+    public static String getLangName( Context context, String dictName )
     {
-        return getInfo( context, dict ).langCode;
-    }
-
-    public static int getLangLangCode( Context context, String lang )
-    {
-        makeMaps( context );
-
-        Integer code = s_langCodes.get( lang );
-        if ( null == code ) {
-            code = 0;
-        }
-        return code;
-    }
-
-    public static String userLangForLc( Context context, String lc )
-    {
-        makeMaps( context );
-        String result = null;
-
-        for ( Integer code : s_langCodeStrs.keySet() ) {
-            if ( s_langCodeStrs.get(code).equals(lc) ) {
-                result = s_langNames.get(code);
-                break;
-            }
-        }
-
-        return result;
-    }
-
-    public static String getLangName( Context context, String dict )
-    {
-        int code = getDictLangCode( context, dict );
-        return getLangName( context, code );
+        String isoCode = getDictISOCode( context, dictName );
+        return getLangNameForISOCode( context, isoCode );
     }
 
     // May be called from background thread
@@ -402,21 +371,21 @@ public class DictLangCache {
         return langs.toArray( result );
     }
 
-    public static String getBestDefault( Context context, int lang,
+    public static String getBestDefault( Context context, String isoCode,
                                          boolean human )
     {
-        String dict = human? CommonPrefs.getDefaultHumanDict( context )
+        String dictName = human? CommonPrefs.getDefaultHumanDict( context )
             : CommonPrefs.getDefaultRobotDict( context );
-        if ( lang != DictLangCache.getDictLangCode( context, dict ) ) {
-            String dicts[] = getHaveLangByCount( context, lang );
+        if ( ! isoCode.equals( getDictISOCode( context, dictName ) ) ) {
+            String dicts[] = getHaveLangByCount( context, isoCode );
             if ( dicts.length > 0 ) {
                 // Human gets biggest; robot gets smallest
-                dict = dicts[ human ? 0 : dicts.length-1 ];
+                dictName = dicts[ human ? 0 : dicts.length-1 ];
             } else {
-                dict = null;
+                dictName = null;
             }
         }
-        return dict;
+        return dictName;
     }
 
     private static void rebuildAdapter( ArrayAdapter<String> adapter,
@@ -451,15 +420,22 @@ public class DictLangCache {
     }
 
     public static ArrayAdapter<String> getDictsAdapter( Context context,
-                                                        int lang )
+                                                        String isoCode )
     {
-        if ( lang != s_adaptedLang ) {
+        if ( ! isoCode.equals( s_adaptedLang ) ) {
             s_dictsAdapter =
                 new ArrayAdapter<>(context, android.R.layout.simple_spinner_item);
-            rebuildAdapter( s_dictsAdapter, getHaveLang( context, lang ) );
-            s_adaptedLang = lang;
+            rebuildAdapter( s_dictsAdapter, getHaveLang( context, isoCode ) );
+            s_adaptedLang = isoCode;
         }
         return s_dictsAdapter;
+    }
+
+    private static void putTwo( String isoCode, String langName )
+    {
+        Log.d( TAG, "putTwo(): adding %s => %s", langName, isoCode );
+        s_langCodes.put( langName, isoCode );
+        s_langNames.put( isoCode, langName );
     }
 
     private static void makeMaps( Context context )
@@ -467,31 +443,30 @@ public class DictLangCache {
         if ( null == s_langNames ) {
             s_langCodes = new HashMap<>();
             s_langNames = new HashMap<>();
-            s_langCodeStrs = new HashMap<>();
 
             Resources res = context.getResources();
-            String[] entries  = res.getStringArray( R.array.languages_map );
-            for ( int ii = 0; ii < entries.length; ii += 3 ) {
-                Integer code = Integer.parseInt(entries[ii]);
-                String name = entries[ii+1];
-                String lc = entries[ii+2];
-                s_langCodes.put( name, code );
-                s_langNames.put( code, name );
-                s_langCodeStrs.put( code, lc );
+            String[] entries  = res.getStringArray( R.array.language_names );
+            for ( int ii = 0; ii < entries.length; ii += 2 ) {
+                String isoCode = entries[ii];
+                String langName = entries[ii+1];
+                putTwo( isoCode, langName );
             }
-        }
-    }
 
-    public static int getDictCount( Context context, String name )
-    {
-        int result = 0;
-        for ( DictAndLoc dal : DictUtils.dictList( context ) ) {
-            if ( name.equals( dal.name ) ) {
-                ++result;
+            // Now deal with any dicts too new for their isoCodes to be in
+            // language_names
+            DictAndLoc[] dals = DictUtils.dictList( context ) ;
+            for ( DictAndLoc dal : dals ) {
+                DictInfo info = getInfo( context, dal );
+                String isoCode = info.isoCode;
+                if ( !s_langNames.containsKey( isoCode ) ) {
+                    Log.d( TAG, "looking at info %s", info );
+                    Assert.assertTrueNR( null != info.langName );
+                    Log.d( TAG, "makeMaps(2): adding %s => %s", info.langName, isoCode );
+                    putTwo( isoCode, info.langName );
+                }
             }
+            Log.d( TAG, "makeMaps() DONE" );
         }
-        Assert.assertTrue( result > 0 );
-        return result;
     }
 
     private static DictInfo getInfo( Context context, String name )
@@ -509,7 +484,7 @@ public class DictLangCache {
         DictInfo info = DBUtils.dictsGetInfo( context, dal.name );
 
         // Tmp test that recovers from problem with new background download code
-        if ( null != info && 0 == info.langCode ) {
+        if ( null != info && null == info.isoCode ) {
             Log.w( TAG, "getInfo: dropping info for %s b/c lang code wrong",
                    dal.name );
             info = null;

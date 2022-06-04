@@ -64,11 +64,11 @@ public class DwnldDelegate extends ListDelegateBase {
     private ArrayList<DownloadFilesTask> m_dfts;
 
     public interface DownloadFinishedListener {
-        void downloadFinished( String lang, String name, boolean success );
+        void downloadFinished( String isoCode, String name, boolean success );
     }
 
     public interface OnGotLcDictListener {
-        void gotDictInfo( boolean success, String lc, String name );
+        void gotDictInfo( boolean success, String isoCode, String name );
     }
 
     public DwnldDelegate( Delegator delegator, Bundle savedInstanceState )
@@ -478,28 +478,20 @@ public class DwnldDelegate extends ListDelegateBase {
         }
     }
 
-    public static void downloadDictInBack( Context context, String langName,
-                                           String name,
+    public static void downloadDictInBack( Context context, String isoCode,
+                                           String dictName,
                                            DownloadFinishedListener lstnr )
     {
-        Uri uri = Utils.makeDictUri( context, langName, name );
-        downloadDictInBack( context, uri, name, lstnr );
-    }
-
-    public static void downloadDictInBack( Context context, int lang,
-                                           String name,
-                                           DownloadFinishedListener lstnr )
-    {
-        Uri uri = Utils.makeDictUri( context, lang, name );
-        downloadDictInBack( context, uri, name, lstnr );
+        Uri uri = Utils.makeDictUriFromCode( context, isoCode, dictName );
+        downloadDictInBack( context, uri, dictName, lstnr );
     }
 
     public static void downloadDictInBack( Context context, Uri uri,
-                                           String name,
+                                           String dictName,
                                            DownloadFinishedListener lstnr )
     {
         Uri[] uris = { uri };
-        String[] names = { name };
+        String[] names = { dictName };
         downloadDictsInBack( context, uris, names, lstnr );
     }
 

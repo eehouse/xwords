@@ -295,9 +295,9 @@ public class DUtilCtxt {
         return msg;
     }
 
-    public void getDictPath( int lang, String name, String[] path, byte[][] bytes )
+    public void getDictPath( String isoCode, String name, String[] path, byte[][] bytes )
     {
-        // Log.d( TAG, "getDictPath(%d, %s)", lang, name );
+        // Log.d( TAG, "getDictPath(%s, %s)", isoCode, name );
         String[] names = { name };
         DictUtils.DictPairs pairs = DictUtils.openDicts( m_context, names );
         // Log.d( TAG, "openDicts() => %s", pairs );

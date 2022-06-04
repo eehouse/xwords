@@ -237,30 +237,31 @@
     <item>@string/loc_downloads</item>
   </string-array>
 
-  <string-array name="languages_map">
-    <item>0</item><item>@string/lang_unknown</item><item>--</item>
-    <item>1</item><item>@string/lang_name_english</item><item>en</item>
-    <item>2</item><item>@string/lang_name_french</item><item>fr</item>
-    <item>3</item><item>@string/lang_name_german</item><item>de</item>
-    <item>4</item><item>@string/lang_name_turkish</item><item>tr</item>
-    <item>5</item><item>@string/lang_name_arabic</item><item>ar</item>
-    <item>6</item><item>@string/lang_name_spanish</item><item>es</item>
-    <item>7</item><item>@string/lang_name_swedish</item><item>sv</item>
-    <item>8</item><item>@string/lang_name_polish</item><item>pl</item>
-    <item>9</item><item>@string/lang_name_danish</item><item>da</item>
-    <item>10</item><item>@string/lang_name_italian</item><item>it</item>
-    <item>11</item><item>@string/lang_name_dutch</item><item>nl</item>
-    <item>12</item><item>@string/lang_name_catalan</item><item>ca</item>
-    <item>13</item><item>@string/lang_name_portuguese</item><item>pt</item>
-    <item>15</item><item>@string/lang_name_russian</item><item>ru</item>
-    <item>17</item><item>@string/lang_name_czech</item><item>cs</item>
-    <item>18</item><item>@string/lang_name_greek</item><item>el</item>
-    <item>19</item><item>@string/lang_name_slovak</item><item>sk</item>
-    <item>20</item><item>@string/lang_name_hungarian</item><item>hu</item>
-    <item>21</item><item>@string/lang_name_romanian</item><item>ro</item>
-    <item>25</item><item>@string/lang_name_finnish</item><item>fi</item>
-
-    <item>127</item><item>Hex</item><item>--</item>
+  <!-- We can function without an entry here for a new language, but
+       only the unlocalized name from the wordlist itself will be
+       displayed. -->
+  <string-array name="language_names">
+    <item>en</item><item>@string/lang_name_english</item>
+    <item>fr</item><item>@string/lang_name_french</item>
+    <item>de</item><item>@string/lang_name_german</item>
+    <item>tr</item><item>@string/lang_name_turkish</item>
+    <item>ar</item><item>@string/lang_name_arabic</item>
+    <item>es</item><item>@string/lang_name_spanish</item>
+    <item>sv</item><item>@string/lang_name_swedish</item>
+    <item>pl</item><item>@string/lang_name_polish</item>
+    <item>da</item><item>@string/lang_name_danish</item>
+    <item>it</item><item>@string/lang_name_italian</item>
+    <item>nl</item><item>@string/lang_name_dutch</item>
+    <item>ca</item><item>@string/lang_name_catalan</item>
+    <item>pt</item><item>@string/lang_name_portuguese</item>
+    <item>ru</item><item>@string/lang_name_russian</item>
+    <item>cs</item><item>@string/lang_name_czech</item>
+    <item>el</item><item>@string/lang_name_greek</item>
+    <item>sk</item><item>@string/lang_name_slovak</item>
+    <item>hu</item><item>@string/lang_name_hungarian</item>
+    <item>ro</item><item>@string/lang_name_romanian</item>
+    <item>fi</item><item>@string/lang_name_finnish</item>
+    <item>hex</item><item>Hex</item>
   </string-array>
 
   <!-- Triples of Name, supported codes, and URL format string -->

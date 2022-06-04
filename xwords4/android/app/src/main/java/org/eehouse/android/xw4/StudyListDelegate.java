@@ -51,8 +51,6 @@ public class StudyListDelegate extends ListDelegateBase
                DBUtils.StudyListListener {
     private static final String TAG = StudyListDelegate.class.getSimpleName();
 
-    protected static final int NO_LANG = -1;
-
     protected static final String START_LANG = "START_LANG";
 
     private static final String CHECKED_KEY = "CHECKED_KEY";
@@ -60,7 +58,7 @@ public class StudyListDelegate extends ListDelegateBase
     private Activity m_activity;
     private Spinner m_spinner;
     private LabeledSpinner m_pickView;
-    private int[] m_langCodes;
+    private String[] m_langCodes;
     private String[] m_words;
     private Set<String> m_checkeds;
     private int m_langPosition;
@@ -183,9 +181,9 @@ public class StudyListDelegate extends ListDelegateBase
     // DBUtils.StudyListListener
     //////////////////////////////////////////////////
     @Override
-    public void onWordAdded( String word, int langCode )
+    public void onWordAdded( String word, String isoCode )
     {
-        if ( langCode == m_langCodes[m_langPosition] ) {
+        if ( isoCode.equals( m_langCodes[m_langPosition] ) ) {
             loadList();
         }
     }
@@ -295,12 +293,12 @@ public class StudyListDelegate extends ListDelegateBase
 
     private void loadList()
     {
-        int lang = m_langCodes[m_langPosition];
-        m_words = DBUtils.studyListWords( m_activity, lang );
+        String isoCode = m_langCodes[m_langPosition];
+        m_words = DBUtils.studyListWords( m_activity, isoCode );
 
         makeAdapter();
 
-        String langName = DictLangCache.getLangName( m_activity, lang );
+        String langName = DictLangCache.getLangNameForISOCode( m_activity, isoCode );
         m_origTitle = getString( R.string.studylist_title_fmt,
                                  xlateLang( langName ) );
         setTitleBar();
@@ -322,18 +320,18 @@ public class StudyListDelegate extends ListDelegateBase
             m_langPosition = 0;
             loadList();
         } else {
-            int startLang = NO_LANG;
+            String startLang = null;
             int startIndex = -1;
             if ( null != args ) {
-                startLang = args.getInt( START_LANG, NO_LANG );
+                startLang = args.getString( START_LANG );
             }
 
             String[] myNames = new String[m_langCodes.length];
             for ( int ii = 0; ii < m_langCodes.length; ++ii ) {
-                int lang = m_langCodes[ii];
-                String name = DictLangCache.getLangName( m_activity, lang );
+                String isoCode = m_langCodes[ii];
+                String name = DictLangCache.getLangNameForISOCode( m_activity, isoCode );
                 myNames[ii] = xlateLang( name, true );
-                if ( lang == startLang ) {
+                if ( isoCode.equals( startLang ) ) {
                     startIndex = ii;
                 }
             }
@@ -385,22 +383,27 @@ public class StudyListDelegate extends ListDelegateBase
         setTitleBar();
     }
 
-    public static void launchOrAlert( Delegator delegator, int lang,
+    public static void launchOrAlert( Delegator delegator, DlgDelegate.HasDlgDelegate dlg )
+    {
+        launchOrAlert( delegator, null, dlg );
+    }
+
+    public static void launchOrAlert( Delegator delegator, String isoCode,
                                       DlgDelegate.HasDlgDelegate dlg )
     {
         String msg = null;
         Activity activity = delegator.getActivity();
         if ( 0 == DBUtils.studyListLangs( activity ).length ) {
             msg = LocUtils.getString( activity, R.string.study_no_lists );
-        } else if ( NO_LANG != lang &&
-                    0 == DBUtils.studyListWords( activity, lang ).length ) {
-            String langname = DictLangCache.getLangName( activity, lang );
+        } else if ( null != isoCode &&
+                    0 == DBUtils.studyListWords( activity, isoCode ).length ) {
+            String langname = DictLangCache.getLangNameForISOCode( activity, isoCode );
             msg = LocUtils.getString( activity, R.string.study_no_lang_fmt,
                                       langname );
         } else {
             Bundle bundle = new Bundle();
-            if ( NO_LANG != lang ) {
-                bundle.putInt( START_LANG, lang );
+            if ( null != isoCode ) {
+                bundle.putString( START_LANG, isoCode );
             }
 
             delegator.addFragment( StudyListFrag.newInstance( delegator ),

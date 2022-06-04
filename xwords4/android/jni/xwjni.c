@@ -424,7 +424,6 @@ static const SetInfo gi_ints[] = {
     ,ARR_MEMBER( CurGameInfo, traySize )
     ,ARR_MEMBER( CurGameInfo, bingoMin )
     ,ARR_MEMBER( CurGameInfo, gameID )
-    ,ARR_MEMBER( CurGameInfo, dictLang )
     ,ARR_MEMBER( CurGameInfo, forceChannel )
 };
 
@@ -469,6 +468,8 @@ makeGI( MPFORMAL JNIEnv* env, jobject jgi )
 
     getString( env, jgi, "dictName", AANDS(buf) );
     gi->dictName = copyString( mpool, buf );
+    getString( env, jgi, "isoCode", AANDS(buf) );
+    XP_STRNCPY( gi->isoCode, buf, VSIZE(gi->isoCode) );
 
     XP_ASSERT( gi->nPlayers <= MAX_NUM_PLAYERS );
 
@@ -511,6 +512,7 @@ setJGI( JNIEnv* env, jobject jgi, const CurGameInfo* gi )
     setBools( env, jgi, (void*)gi, AANDS(gi_bools) );
 
     setString( env, jgi, "dictName", gi->dictName );
+    setString( env, jgi, "isoCode", gi->isoCode );
 
     intToJenumField( env, jgi, gi->phoniesAction, "phoniesAction",
                      PKG_PATH("jni/CurGameInfo$XWPhoniesChoice") );
@@ -995,9 +997,22 @@ Java_org_eehouse_android_xw4_jni_XwJNI_lcToLocale
     const XP_UCHAR* locale = lcToLocale( lc );
     if ( !!locale ) {
         result = (*env)->NewStringUTF( env, locale );
-    } else {
-        XP_LOGFF( "(%d) => NULL", lc );
     }
+    return result;
+}
+
+JNIEXPORT jboolean JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_haveLocaleToLc
+( JNIEnv* env, jclass C, jstring jIsoCode, jintArray jOutArray )
+{
+    XP_ASSERT( !!jIsoCode );
+    XP_LangCode lc;
+    const char* isoCode = (*env)->GetStringUTFChars( env, jIsoCode, NULL );
+    jboolean result = haveLocaleToLc( isoCode, &lc );
+    if ( result ) {
+        setIntInArray( env, jOutArray, 0, lc );
+    }
+    (*env)->ReleaseStringUTFChars( env, jIsoCode, isoCode );
     return result;
 }
 
@@ -1151,11 +1166,10 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1getInfo
     DictionaryCtxt* dict = (DictionaryCtxt*)dictPtr;
     if ( NULL != dict ) {
         jinfo = makeObjectEmptyConst( env, PKG_PATH("jni/DictInfo") );
-        XP_LangCode code = dict_getLangCode( dict );
-        setInt( env, jinfo, "langCode", code );
         setInt( env, jinfo, "wordCount", dict_getWordCount( dict, env ) );
         setString( env, jinfo, "md5Sum", dict_getMd5Sum( dict ) );
         setString( env, jinfo, "isoCode", dict_getISOCode( dict ) );
+        setString( env, jinfo, "langName", dict_getLangName( dict ) );
     }
 
     return jinfo;

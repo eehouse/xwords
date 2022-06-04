@@ -84,7 +84,7 @@ public class LangListPreference extends XWListPreference
         }
 
         if ( !haveDictForLang ) {
-            curLang = DictLangCache.getLangName( mContext, 1 ); // English, unlocalized
+            curLang = DictLangCache.getLangNameForISOCode( mContext, "en" ); // English, unlocalized
             setValue( curLang );
         }
         forceDictsMatch( curLang );
@@ -97,7 +97,7 @@ public class LangListPreference extends XWListPreference
     private void forceDictsMatch( String newLang )
     {
         if ( null != newLang ) {
-            int code = DictLangCache.getLangLangCode( mContext, newLang );
+            String isoCode = DictLangCache.getLangIsoCode( mContext, newLang );
             int[] keyIds = { R.string.key_default_dict,
                              R.string.key_default_robodict };
             for ( int id : keyIds ) {
@@ -111,9 +111,9 @@ public class LangListPreference extends XWListPreference
 
                 String curDict = pref.getValue().toString();
                 if ( ! DictUtils.dictExists( mContext, curDict )
-                     || code != DictLangCache.getDictLangCode( mContext,
-                                                               curDict ) ) {
-                    pref.invalidate();
+                     || ! isoCode.equals( DictLangCache.getDictISOCode( mContext,
+                                                                        curDict ) ) ) {
+                         pref.invalidate();
                 }
             }
         }

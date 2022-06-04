@@ -762,7 +762,6 @@ jEnumToInt( JNIEnv* env, jobject jenum )
 
 static const SetInfo nli_ints[] = {
     ARR_MEMBER( NetLaunchInfo, _conTypes ),
-    ARR_MEMBER( NetLaunchInfo, lang ),
     ARR_MEMBER( NetLaunchInfo, forceChannel ),
     ARR_MEMBER( NetLaunchInfo, nPlayersT ),
     ARR_MEMBER( NetLaunchInfo, nPlayersH ),
@@ -777,6 +776,7 @@ static const SetInfo nli_bools[] = {
 
 static const SetInfo nli_strs[] = {
     ARR_MEMBER( NetLaunchInfo, dict ),
+    ARR_MEMBER( NetLaunchInfo, isoCode ),
     ARR_MEMBER( NetLaunchInfo, gameName ),
     ARR_MEMBER( NetLaunchInfo, room ),
     ARR_MEMBER( NetLaunchInfo, btName ),

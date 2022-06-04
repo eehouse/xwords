@@ -37,6 +37,7 @@ public class MultiService {
 
     public static final String FORCECHANNEL = "FC";
     public static final String LANG = "LANG";
+    public static final String ISO = "ISO";
     public static final String DICT = "DICT";
     public static final String GAMEID = "GAMEID";
     public static final String INVITEID = "INVITEID"; // relay only
@@ -131,7 +132,7 @@ public class MultiService {
     {
         Intent intent = new Intent( context, MainActivity.class ); // PENDING TEST THIS!!!
         intent.setAction( ACTION_FETCH_DICT );
-        intent.putExtra( LANG, nli.lang );
+        intent.putExtra( ISO, nli.isoCode );
         intent.putExtra( DICT, nli.dict );
         intent.putExtra( OWNER, owner.ordinal() );
         intent.putExtra( NLI_DATA, nli.toString() );
@@ -169,7 +170,8 @@ public class MultiService {
                                             OnClickListener onDecline )
     {
         int lang = intent.getIntExtra( LANG, -1 );
-        String langStr = DictLangCache.getLangName( context, lang );
+        String isoCode = intent.getStringExtra( ISO );
+        String langStr = DictLangCache.getLangNameForISOCode( context, isoCode );
         String dict = intent.getStringExtra( DICT );
         String inviter = intent.getStringExtra( INVITER );
         int msgID = (null == inviter) ? R.string.invite_dict_missing_body_noname_fmt
@@ -199,9 +201,9 @@ public class MultiService {
     {
         boolean downloaded = isMissingDictIntent( intent );
         if ( downloaded ) {
-            int lang = intent.getIntExtra( LANG, -1 );
+            String isoCode = intent.getStringExtra( ISO );
             String dict = intent.getStringExtra( DICT );
-            downloaded = DictLangCache.haveDict( context, lang, dict );
+            downloaded = DictLangCache.haveDict( context, isoCode, dict );
             if ( downloaded ) {
                 int ordinal = intent.getIntExtra( OWNER, -1 );
                 if ( -1 == ordinal ) {

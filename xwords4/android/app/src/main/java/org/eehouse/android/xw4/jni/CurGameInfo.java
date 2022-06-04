@@ -60,7 +60,7 @@ public class CurGameInfo implements Serializable {
 
     public String dictName;
     public LocalPlayer[] players;
-    public int dictLang;
+    public String isoCode;
     public int gameID;
     public int gameSeconds;
     public int nPlayers;
@@ -138,7 +138,7 @@ public class CurGameInfo implements Serializable {
             juggle();
         }
 
-        setLang( context, 0 );
+        setLang( context, null );
     }
 
     public CurGameInfo( CurGameInfo src )
@@ -153,7 +153,7 @@ public class CurGameInfo implements Serializable {
         players = new LocalPlayer[MAX_NUM_PLAYERS];
         serverRole = src.serverRole;
         dictName = src.dictName;
-        dictLang = src.dictLang;
+        isoCode = src.isoCode;
         hintsNotAllowed = src.hintsNotAllowed;
         inDuplicateMode = src.inDuplicateMode;
         phoniesAction = src.phoniesAction;
@@ -246,22 +246,24 @@ public class CurGameInfo implements Serializable {
         }
     }
 
-    public void setLang( Context context, int lang, String dict )
+    public void setLang( Context context, String isoCode, String dict )
     {
         if ( null != dict ) {
             dictName = dict;
         }
-        setLang( context, lang );
+        setLang( context, isoCode );
     }
 
-    public void setLang( Context context, int lang )
+    public void setLang( Context context, String isoCodeNew )
     {
-        if ( 0 == lang ) {
+        if ( null == isoCodeNew ) {
             String dictName = CommonPrefs.getDefaultHumanDict( context );
-            lang = DictLangCache.getDictLangCode( context, dictName );
+            isoCodeNew = DictLangCache.getDictISOCode( context, dictName );
         }
-        if ( dictLang != lang ) {
-            dictLang = lang;
+        Assert.assertTrueNR( null != isoCodeNew );
+
+        if ( ! TextUtils.equals( isoCodeNew, this.isoCode ) ) {
+            isoCode = isoCodeNew;
             assignDicts( context );
         }
     }
@@ -299,7 +301,7 @@ public class CurGameInfo implements Serializable {
     {
         boolean matter = nPlayers != other.nPlayers
             || serverRole != other.serverRole
-            || dictLang != other.dictLang
+            || ! TextUtils.equals(isoCode, other.isoCode)
             || boardSize != other.boardSize
             || traySize != other.traySize
             || bingoMin != other.bingoMin
@@ -331,7 +333,7 @@ public class CurGameInfo implements Serializable {
             result = null != obj && obj instanceof CurGameInfo;
             if ( result ) {
                 other = (CurGameInfo)obj;
-                result = dictLang == other.dictLang
+                result = TextUtils.equals( isoCode, other.isoCode)
                     && gameID == other.gameID
                     && gameSeconds == other.gameSeconds
                     && nPlayers == other.nPlayers
@@ -442,7 +444,7 @@ public class CurGameInfo implements Serializable {
     public void replaceDicts( Context context, String newDict )
     {
         String[] dicts =
-            DictLangCache.getHaveLang( context, dictLang );
+            DictLangCache.getHaveLang( context, isoCode );
         HashSet<String> installed = new HashSet<>( Arrays.asList(dicts) );
 
         if ( !installed.contains( dictName ) ) {
@@ -461,7 +463,7 @@ public class CurGameInfo implements Serializable {
 
     public String langName( Context context )
     {
-        return DictLangCache.getLangName( context, dictLang );
+        return DictLangCache.getLangNameForISOCode( context, isoCode );
     }
 
     public String dictName( final LocalPlayer lp )
@@ -586,14 +588,14 @@ public class CurGameInfo implements Serializable {
         // right language.
 
         String humanDict =
-            DictLangCache.getBestDefault( context, dictLang, true );
+            DictLangCache.getBestDefault( context, isoCode, true );
         String robotDict =
-            DictLangCache.getBestDefault( context, dictLang, false );
+            DictLangCache.getBestDefault( context, isoCode, false );
 
         if ( null == dictName
              || ! DictUtils.dictExists( context, dictName )
-             || dictLang != DictLangCache.getDictLangCode( context,
-                                                           dictName ) ) {
+             || ! isoCode.equals( DictLangCache.getDictISOCode( context,
+                                                                dictName ) ) ) {
             dictName = humanDict;
         }
 
@@ -601,8 +603,8 @@ public class CurGameInfo implements Serializable {
             LocalPlayer lp = players[ii];
 
             if ( null != lp.dictName &&
-                 dictLang != DictLangCache.getDictLangCode( context,
-                                                            lp.dictName ) ) {
+                 !isoCode.equals( DictLangCache.getDictISOCode( context,
+                                                                lp.dictName ) ) ) {
                 lp.dictName = null;
             }
 

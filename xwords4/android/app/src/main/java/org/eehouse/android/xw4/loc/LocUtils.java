@@ -202,6 +202,7 @@ public class LocUtils {
             if ( lang.contains( "-" ) ) {
                 lang = TextUtils.split(lang, "-")[0];
             }
+            Assert.assertTrueNR( 2 == lang.length() );
             s_curLang = lang;
         }
         return s_curLang;

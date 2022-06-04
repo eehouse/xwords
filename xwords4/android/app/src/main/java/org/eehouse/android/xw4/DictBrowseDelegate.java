@@ -127,7 +127,7 @@ public class DictBrowseDelegate extends DelegateBase
     }
 
     private Activity m_activity;
-    private int m_lang;
+    private String m_lang;
     private String m_name;
     private String mAboutStr;
     private DictUtils.DictLoc m_loc;
@@ -242,7 +242,7 @@ public class DictBrowseDelegate extends DelegateBase
             m_name = name;
             m_loc =
                 DictUtils.DictLoc.values()[args.getInt( DICT_LOC, 0 )];
-            m_lang = DictLangCache.getDictLangCode( m_activity, name );
+            m_lang = DictLangCache.getDictISOCode( m_activity, name );
 
             findTableRows();
             m_spinnerMin = ((LabeledSpinner)findViewById( R.id.spinner_min ))
@@ -345,7 +345,7 @@ public class DictBrowseDelegate extends DelegateBase
             View tilesView = inflate( R.layout.tiles_table );
             addTileRows( tilesView, info );
 
-            String langName = DictLangCache.getLangName( m_activity, m_lang );
+            String langName = DictLangCache.getLangNameForISOCode( m_activity, m_lang );
             title = getString( R.string.show_tiles_title_fmt, langName );
             dialog = makeAlertBuilder()
                 .setView( tilesView )
@@ -615,7 +615,7 @@ public class DictBrowseDelegate extends DelegateBase
                 if ( null != strPat && 0 < strPat.length() ) {
                     byte[][] choices = XwJNI.dict_strToTiles( m_dict, strPat );
                     if ( null == choices || 0 == choices.length ) {
-                        String langName = DictLangCache.getLangName( m_activity, m_lang );
+                        String langName = DictLangCache.getLangNameForISOCode( m_activity, m_lang );
                         String msg = getString( R.string.no_tiles_exist, strPat, langName );
                         makeOkOnlyBuilder( msg )
                             .setActionPair( Action.SHOW_TILES, R.string.show_tiles_button )

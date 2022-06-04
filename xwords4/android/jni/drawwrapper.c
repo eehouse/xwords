@@ -41,7 +41,7 @@ typedef struct _AndDraw {
     EnvThreadInfo* ti;
 #endif
     jobject jdraw;             /* global ref; free it! */
-    XP_LangCode curLang;
+    XP_UCHAR curISOCode[MAX_ISO_CODE_LEN+1];
     jobject jCache[JCACHE_COUNT];
     jobject jTvType;
     XP_UCHAR miniTextBuf[128];
@@ -600,13 +600,13 @@ and_draw_dictChanged( DrawCtx* dctx, XWEnv xwe, XP_S16 playerNum,
     AndDraw* draw = (AndDraw*)dctx;
     if ( !!dict && !!draw->jdraw ) {
         XP_LOGFF( "(dict=%p/%s); code=%x", dict, dict_getName(dict), andDictID(dict) );
-        XP_LangCode code = 0;   /* A null dict means no-lang */
+        const XP_UCHAR* isoCode = NULL;   /* A null dict means no-lang */
         if ( NULL != dict ) {
-            code = dict_getLangCode( dict );
+            isoCode = dict_getISOCode( dict );
         }
         /* Don't bother sending repeats. */
-        if ( code != draw->curLang ) {
-            draw->curLang = code;
+        if ( 0 != XP_STRCMP( isoCode, draw->curISOCode ) ) {
+            XP_STRNCPY( draw->curISOCode, isoCode, VSIZE(draw->curISOCode) );
 
             DRAW_CBK_HEADER( "dictChanged", "(J)V" );
 

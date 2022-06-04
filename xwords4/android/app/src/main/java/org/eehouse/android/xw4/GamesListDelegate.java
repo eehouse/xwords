@@ -607,7 +607,7 @@ public class GamesListDelegate extends ListDelegateBase
         case WARN_NODICT_SUBST: {
             final long rowid = (Long)params[0];
             final String missingDictName = (String)params[1];
-            final int missingDictLang = (Integer)params[2];
+            final String missingDictLang = (String)params[2];
 
             lstnr = new OnClickListener() {
                     @Override
@@ -629,7 +629,7 @@ public class GamesListDelegate extends ListDelegateBase
                 };
             String message;
             String langName =
-                DictLangCache.getLangName( m_activity, missingDictLang );
+                DictLangCache.getLangNameForISOCode( m_activity, missingDictLang );
             String locLang = xlateLang( langName );
             String gameName = GameUtils.getName( m_activity, rowid );
             if ( DlgID.WARN_NODICT_GENERIC == dlgID ) {
@@ -674,11 +674,12 @@ public class GamesListDelegate extends ListDelegateBase
         case SHOW_SUBST: {
             final long rowid = (Long)params[0];
             final String missingDict = (String)params[1];
-            final int lang = (Integer)params[2];
+            final String isoCode = (String)params[2];
 
             final String[] sameLangDicts =
-                DictLangCache.getHaveLangCounts( m_activity, lang );
+                DictLangCache.getHaveLangCounts( m_activity, isoCode );
             lstnr = new OnClickListener() {
+                    @Override
                     public void onClick( DialogInterface dlg,
                                          int which ) {
                         int pos = ((AlertDialog)dlg).getListView().
@@ -1792,7 +1793,7 @@ public class GamesListDelegate extends ListDelegateBase
             break;
 
         case R.id.games_menu_study:
-            StudyListDelegate.launchOrAlert( getDelegator(), StudyListDelegate.NO_LANG, this );
+            StudyListDelegate.launchOrAlert( getDelegator(), this );
             break;
 
         case R.id.games_menu_knownplyrs:
@@ -2250,7 +2251,8 @@ public class GamesListDelegate extends ListDelegateBase
         // check that we have the dict required
         boolean haveDict;
         if ( null == nli.dict ) { // can only test for language support
-            String[] dicts = DictLangCache.getHaveLang( m_activity, nli.lang );
+
+            String[] dicts = DictLangCache.getHaveLang( m_activity, nli.isoCode );
             haveDict = 0 < dicts.length;
             if ( haveDict ) {
                 // Just pick one -- good enough for the period when
@@ -2260,11 +2262,11 @@ public class GamesListDelegate extends ListDelegateBase
             }
         } else {
             haveDict =
-                DictLangCache.haveDict( m_activity, nli.lang, nli.dict );
+                DictLangCache.haveDict( m_activity, nli.isoCode, nli.dict );
         }
         if ( !haveDict ) {
             m_netLaunchInfo = nli;
-            showDialogFragment( DlgID.WARN_NODICT_INVITED, 0L, nli.dict, nli.lang );
+            showDialogFragment( DlgID.WARN_NODICT_INVITED, 0L, nli.dict, nli.isoCode );
         }
         return haveDict;
     }
@@ -2277,7 +2279,7 @@ public class GamesListDelegate extends ListDelegateBase
     private boolean checkWarnNoDict( long rowid, int forMenu )
     {
         String[][] missingNames = new String[1][];
-        int[] missingLang = new int[1];
+        String[] missingLang = { "en" };
         boolean hasDicts;
         try {
             hasDicts = GameUtils.gameDictsHere( m_activity, rowid, missingNames,
@@ -2288,7 +2290,7 @@ public class GamesListDelegate extends ListDelegateBase
 
         if ( !hasDicts ) {
             String missingDictName = null;
-            int missingDictLang = missingLang[0];
+            String missingDictLang = missingLang[0];
             if ( 0 < missingNames[0].length ) {
                 missingDictName = missingNames[0][0];
             }
@@ -2573,12 +2575,12 @@ public class GamesListDelegate extends ListDelegateBase
                 String phone = extras.getString( REMATCH_PHONE_EXTRA );
                 String p2pMacAddress = extras.getString( REMATCH_P2PADDR_EXTRA );
                 String dict = extras.getString( REMATCH_DICT_EXTRA );
-                int lang = extras.getInt( REMATCH_LANG_EXTRA, -1 );
+                String isoCode = extras.getString( REMATCH_LANG_EXTRA );
                 String mqttDevID = extras.getString( GameSummary.EXTRA_REMATCH_MQTT );
                 String json = extras.getString( REMATCH_PREFS_EXTRA );
 
                 newid = GameUtils.makeNewMultiGame( m_activity, groupID, dict,
-                                                    lang, json, addrs, gameName );
+                                                    isoCode, json, addrs, gameName );
                 DBUtils.addRematchInfo( m_activity, newid, btAddr, phone,
                                         p2pMacAddress, mqttDevID );
             }
@@ -2634,37 +2636,35 @@ public class GamesListDelegate extends ListDelegateBase
                                         false ) ) {
             m_haveShownGetDict = true;
 
-            String lc = LocUtils.getCurLangCode( m_activity );
-            if ( !lc.equals("en") ) {
-                int code = DictLangCache.getLangLangCode( m_activity, lc );
-                if ( 0 < code ) {
-                    String[] names = DictLangCache.getHaveLang( m_activity, code );
-                    if ( 0 == names.length ) {
+            String isoCode = LocUtils.getCurLangCode( m_activity );
+            if ( !isoCode.equals("en") ) {
+                String[] names = DictLangCache.getHaveLang( m_activity, isoCode );
+                if ( 0 == names.length ) {
 
-                        OnGotLcDictListener lstnr = new OnGotLcDictListener() {
-                                public void gotDictInfo( boolean success, String lang,
-                                                         String name ) {
-                                    stopProgress();
-                                    if ( success ) {
-                                        String msg =
-                                            getString( R.string.confirm_get_locdict_fmt,
-                                                       xlateLang( lang ) );
-                                        makeConfirmThenBuilder( msg, Action.DWNLD_LOC_DICT )
-                                            .setPosButton( R.string.button_download )
-                                            .setNegButton( R.string.button_no )
-                                            .setNAKey( R.string.key_got_langdict )
-                                            .setParams( lang, name )
-                                            .show();
-                                    }
+                    OnGotLcDictListener lstnr = new OnGotLcDictListener() {
+                            @Override
+                            public void gotDictInfo( boolean success, String lang,
+                                                     String name ) {
+                                stopProgress();
+                                if ( success ) {
+                                    String msg =
+                                        getString( R.string.confirm_get_locdict_fmt,
+                                                   xlateLang( lang ) );
+                                    makeConfirmThenBuilder( msg, Action.DWNLD_LOC_DICT )
+                                        .setPosButton( R.string.button_download )
+                                        .setNegButton( R.string.button_no )
+                                        .setNAKey( R.string.key_got_langdict )
+                                        .setParams( lang, name )
+                                        .show();
                                 }
-                            };
+                            }
+                        };
 
-                        String langName = DictLangCache.getLangName( m_activity, code );
-                        String locLang = xlateLang( langName );
-                        String msg = getString( R.string.checking_for_fmt, locLang );
-                        startProgress( R.string.checking_title, msg );
-                        DictsDelegate.downloadDefaultDict( m_activity, lc, lstnr );
-                    }
+                    String langName = DictLangCache.getLangNameForISOCode( m_activity, isoCode );
+                    String locLang = xlateLang( langName );
+                    String msg = getString( R.string.checking_for_fmt, locLang );
+                    startProgress( R.string.checking_title, msg );
+                    DictsDelegate.downloadDefaultDict( m_activity, isoCode, lstnr );
                 }
             }
         }
@@ -3084,7 +3084,7 @@ public class GamesListDelegate extends ListDelegateBase
             .putExtra( REMATCH_GROUPID_EXTRA, groupID )
             .putExtra( REMATCH_DICT_EXTRA, gi.dictName )
             .putExtra( REMATCH_IS_SOLO, isSolo )
-            .putExtra( REMATCH_LANG_EXTRA, gi.dictLang )
+            .putExtra( REMATCH_LANG_EXTRA, gi.isoCode )
             .putExtra( REMATCH_PREFS_EXTRA, gi.getJSONData() )
             .putExtra( REMATCH_NEWNAME_EXTRA, newName );
 

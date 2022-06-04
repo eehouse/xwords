@@ -362,12 +362,17 @@ public class XWPrefs {
         return getPrefsBoolean( context, R.string.key_studyon, true );
     }
 
-    protected static String getPrefsString( Context context, int keyID )
+    protected static String getPrefsString( Context context, int keyID, String dflt )
     {
         String key = context.getString( keyID );
         SharedPreferences sp = PreferenceManager
             .getDefaultSharedPreferences( context );
-        return sp.getString( key, "" );
+        return sp.getString( key, dflt );
+    }
+
+    protected static String getPrefsString( Context context, int keyID )
+    {
+        return getPrefsString( context, keyID, "" );
     }
 
     protected static void setPrefsString( Context context, int keyID,

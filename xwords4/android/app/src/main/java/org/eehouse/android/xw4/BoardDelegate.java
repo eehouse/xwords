@@ -254,7 +254,7 @@ public class BoardDelegate extends DelegateBase
                             setGotGameDict( m_mySIS.getDict );
                         } else {
                             DwnldDelegate
-                                .downloadDictInBack( m_activity, m_gi.dictLang,
+                                .downloadDictInBack( m_activity, m_gi.isoCode,
                                                      m_mySIS.getDict,
                                                      BoardDelegate.this );
                         }
@@ -925,7 +925,7 @@ public class BoardDelegate extends DelegateBase
             cmd = JNICmd.CMD_TOGGLE_TRAY;
             break;
         case R.id.board_menu_study:
-            StudyListDelegate.launchOrAlert( getDelegator(), m_gi.dictLang, this );
+            StudyListDelegate.launchOrAlert( getDelegator(), m_gi.isoCode, this );
             break;
         case R.id.board_menu_game_netstats:
             handleViaThread( JNICmd.CMD_NETSTATS, R.string.netstats_title );
@@ -1021,12 +1021,13 @@ public class BoardDelegate extends DelegateBase
         case BUTTON_BROWSE_ACTION:
             String curDict = m_gi.dictName( m_view.getCurPlayer() );
             View button = m_toolbar.getButtonFor( Buttons.BUTTON_BROWSE_DICT );
+            Assert.assertTrueNR( null != m_gi.isoCode );
             if ( Action.BUTTON_BROWSEALL_ACTION == action &&
                  DictsDelegate.handleDictsPopup( getDelegator(), button,
-                                                 curDict, m_gi.dictLang ) ) {
+                                                 curDict, m_gi.isoCode ) ) {
                 // do nothing
             } else {
-                String selDict = DictsDelegate.prevSelFor( m_activity, m_gi.dictLang );
+                String selDict = DictsDelegate.prevSelFor( m_activity, m_gi.isoCode );
                 if ( null == selDict ) {
                     selDict = curDict;
                 }
@@ -1059,7 +1060,7 @@ public class BoardDelegate extends DelegateBase
             cmd = JNICmd.CMD_TRADE;
             break;
         case LOOKUP_ACTION:
-            launchLookup( m_mySIS.words, m_gi.dictLang );
+            launchLookup( m_mySIS.words, m_gi.isoCode );
             break;
         case DROP_MQTT_ACTION:
             dropConViaAndRestart( CommsConnType.COMMS_CONN_MQTT );
@@ -1761,7 +1762,7 @@ public class BoardDelegate extends DelegateBase
             post( new Runnable() {
                     @Override
                     public void run() {
-                        launchLookup( wordsToArray( words ), m_gi.dictLang );
+                        launchLookup( wordsToArray( words ), m_gi.isoCode );
                     }
                 } );
         }
@@ -2023,7 +2024,7 @@ public class BoardDelegate extends DelegateBase
         }
 
         @Override
-        public void informNetDict( int code, String oldName,
+        public void informNetDict( String isoCode, String oldName,
                                    String newName, String newSum,
                                    CurGameInfo.XWPhoniesChoice phonies )
         {
@@ -2046,7 +2047,7 @@ public class BoardDelegate extends DelegateBase
                 DlgID dlgID;
                 msg = getString( R.string.inform_dict_diffdict_fmt,
                                  oldName, newName, newName );
-                if ( DictLangCache.haveDict( m_activity, code,
+                if ( DictLangCache.haveDict( m_activity, isoCode,
                                              newName ) ) {
                     dlgID = DlgID.DLG_USEDICT;
                 } else {

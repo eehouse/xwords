@@ -217,7 +217,7 @@ public class UtilCtxtImpl implements UtilCtxt {
     }
 
     @Override
-    public void informNetDict( int lang, String oldName,
+    public void informNetDict( String isoCode, String oldName,
                                String newName, String newSum,
                                CurGameInfo.XWPhoniesChoice phonies )
     {

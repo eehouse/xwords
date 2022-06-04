@@ -26,11 +26,15 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.text.TextUtils;
+import android.database.sqlite.SQLiteException;
 
+import org.eehouse.android.xw4.jni.XwJNI;
 import org.eehouse.android.xw4.loc.LocUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 public class DBHelper extends SQLiteOpenHelper {
     private static final String TAG = DBHelper.class.getSimpleName();
@@ -56,7 +60,7 @@ public class DBHelper extends SQLiteOpenHelper {
         private int addedVersion() { return mAddedVersion; }
     }
     private static final String DB_NAME = BuildConfig.DB_NAME;
-    private static final int DB_VERSION = 31;
+    private static final int DB_VERSION = 32;
 
     public static final String GAME_NAME = "GAME_NAME";
     public static final String VISID = "VISID";
@@ -75,7 +79,9 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String GAMEID = "GAMEID";
     public static final String REMOTEDEVS = "REMOTEDEVS";
     public static final String EXTRAS = "EXTRAS";
-    public static final String DICTLANG = "DICTLANG";
+    private static final String DICTLANG = "DICTLANG";
+    public static final String ISOCODE = "ISOCODE";
+    public static final String LANGNAME = "LANGNAME";
     public static final String DICTLIST = "DICTLIST";
     public static final String HASMSGS = "HASMSGS";
     public static final String CONTRACTED = "CONTRACTED";
@@ -100,7 +106,7 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String FULLSUM = "FULLSUM";
     public static final String WORDCOUNT = "WORDCOUNT";
     public static final String WORDCOUNTS = "WORDCOUNTS";
-    public static final String LANGCODE = "LANGCODE";
+    private static final String LANGCODE = "LANGCODE";
     public static final String LOC = "LOC";
     public static final String ITERMIN = "ITERMIN";
     public static final String ITERMAX = "ITERMAX";
@@ -115,7 +121,7 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String EXPANDED = "EXPANDED";
 
     public static final String WORD = "WORD";
-    public static final String LANGUAGE = "LANGUAGE";
+    private static final String LANGUAGE = "LANGUAGE";
 
     public static final String KEY = "KEY";
     public static final String VALUE = "VALUE";
@@ -275,6 +281,7 @@ public class DBHelper extends SQLiteOpenHelper {
         boolean madeSumTable = false;
         boolean madeChatTable = false;
         boolean madeDITable = false;
+        boolean madeStudyTable = false;
         switch( oldVersion ) {
         case 6:
             addSumColumn( db, TURN );
@@ -313,6 +320,7 @@ public class DBHelper extends SQLiteOpenHelper {
             }
         case 18:
             createStudyTable( db );
+            madeStudyTable = true;
         case 19:
             if ( !madeSumTable ) {
                 // NPACKETSPENDING also added by makeAutoincrement above
@@ -354,9 +362,25 @@ public class DBHelper extends SQLiteOpenHelper {
                 addColumn( db, TABLE_NAMES.DICTINFO, s_dictInfoColsAndTypes, FULLSUM );
             }
 
-            // case 31:
-            // drop table obits
-
+        case 31:
+            if ( !madeSumTable ) {
+                addSumColumn( db, ISOCODE );
+            }
+            langCodeToISOCode( db, TABLE_NAMES.SUM, DICTLANG, ISOCODE );
+            if ( !madeStudyTable ) {
+                addColumn( db, TABLE_NAMES.STUDYLIST, s_studySchema, ISOCODE );
+            }
+            langCodeToISOCode( db, TABLE_NAMES.STUDYLIST, LANGUAGE, ISOCODE );
+            if ( !madeDITable ) {
+                addColumn( db, TABLE_NAMES.DICTINFO, s_dictInfoColsAndTypes, ISOCODE );
+                addColumn( db, TABLE_NAMES.DICTINFO, s_dictInfoColsAndTypes, LANGNAME );
+            }
+            langCodeToISOCode( db, TABLE_NAMES.DICTINFO, LANGCODE, ISOCODE );
+            try {
+                db.execSQL( "DROP TABLE " + TABLE_NAMES._OBITS + ";" );
+            } catch ( SQLiteException ex ) {
+                Log.ex( TAG, ex );
+            }
             break;
         default:
             for ( TABLE_NAMES table : TABLE_NAMES.values() ) {
@@ -365,6 +389,37 @@ public class DBHelper extends SQLiteOpenHelper {
                 }
             }
             onCreate( db );
+        }
+    }
+
+    private void langCodeToISOCode( SQLiteDatabase db, TABLE_NAMES table,
+                                    String oldIntCol, String newIsoStringCol  )
+    {
+        String[] columns = { oldIntCol };
+        String groupBy = columns[0];
+
+        // First gather all the lang codes
+        Map<Integer, String> map = new HashMap<>();
+        Cursor cursor = db.query( table.toString(),
+                                  columns, null, null, groupBy, null, null );
+        int colIndex = cursor.getColumnIndex( columns[0] );
+        while ( cursor.moveToNext() ) {
+            int code = cursor.getInt( colIndex );
+            String isoCode = XwJNI.lcToLocale( code );
+            map.put( code, isoCode );
+            Log.d( TAG, "added %d => %s", code, isoCode );
+        }
+
+        // Then update the DB
+        for ( Integer code : map.keySet() ) {
+            StringBuffer sb = new StringBuffer()
+                .append("Update ").append(table)
+                .append(" SET ").append(newIsoStringCol).append(" = '").append(map.get(code)).append("'")
+                .append( " WHERE ").append(oldIntCol).append(" = ").append(code)
+                .append(";");
+            String query = sb.toString();
+            // Log.d( TAG, "langCodeToISOCode() query: %s", query );
+            db.execSQL( query );
         }
     }
 

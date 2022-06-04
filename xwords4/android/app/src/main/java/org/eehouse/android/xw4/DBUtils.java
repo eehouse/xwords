@@ -97,7 +97,7 @@ public class DBUtils {
         new HashSet<>();
 
     public static interface StudyListListener {
-        void onWordAdded( String word, int langCode );
+        void onWordAdded( String word, String isoCode );
     }
     private static Set<StudyListListener> s_slListeners
         = new HashSet<>();
@@ -131,7 +131,7 @@ public class DBUtils {
                              DBHelper.CONTYPE, DBHelper.SERVERROLE,
                              DBHelper.ROOMNAME, DBHelper.RELAYID,
                              /*DBHelper.SMSPHONE,*/ DBHelper.SEED,
-                             DBHelper.DICTLANG, DBHelper.GAMEID,
+                             DBHelper.ISOCODE, DBHelper.GAMEID,
                              DBHelper.SCORES,
                              DBHelper.LASTPLAY_TIME, DBHelper.REMOTEDEVS,
                              DBHelper.LASTMOVE, DBHelper.NPACKETSPENDING,
@@ -173,9 +173,11 @@ public class DBUtils {
                     getString(cursor.getColumnIndex( DBHelper.PLAYERS ));
                 summary.readPlayers( context, players );
 
-                summary.dictLang =
-                    cursor.getInt(cursor.
-                                  getColumnIndex(DBHelper.DICTLANG));
+                summary.isoCode = cursor
+                    .getString(cursor.getColumnIndex(DBHelper.ISOCODE));
+                // isoCode will be null when game first created
+                // Assert.assertTrueNR( null != summary.isoCode ); // fired!
+
                 summary.modtime =
                     cursor.getLong(cursor.
                                    getColumnIndex(DBHelper.LASTPLAY_TIME));
@@ -292,7 +294,8 @@ public class DBUtils {
             values.put( DBHelper.GIFLAGS, summary.giflags() );
             values.put( DBHelper.PLAYERS,
                         summary.summarizePlayers() );
-            values.put( DBHelper.DICTLANG, summary.dictLang );
+            Assert.assertTrueNR( null != summary.isoCode );
+            values.put( DBHelper.ISOCODE, summary.isoCode );
             values.put( DBHelper.GAMEID, summary.gameID );
             values.put( DBHelper.GAME_OVER, summary.gameOver? 1 : 0 );
             values.put( DBHelper.LASTMOVE, summary.lastMoveTime );
@@ -402,13 +405,13 @@ public class DBUtils {
         }
     }
 
-    public static int countGamesUsingLang( Context context, int lang )
+    public static int countGamesUsingISOCode( Context context, String isoCode )
     {
         int result = 0;
-        String selection = String.format( "%s = %d", DBHelper.DICTLANG,
-                                          lang );
+        String[] columns = { DBHelper.ISOCODE };
+        String selection = String.format( "%s = '%s'", columns[0],
+                                          isoCode );
         // null for columns will return whole rows: bad
-        String[] columns = { DBHelper.DICTLANG };
         initDB( context );
         synchronized( s_dbHelper ) {
             Cursor cursor = query( TABLE_NAMES.SUM, columns, selection );
@@ -428,7 +431,7 @@ public class DBUtils {
                                           DBHelper.DICTLIST, pattern );
         // null for columns will return whole rows: bad.  But
         // might as well make it an int for speed
-        String[] columns = { DBHelper.DICTLANG };
+        String[] columns = { DBHelper.ISOCODE };
         initDB( context );
         synchronized( s_dbHelper ) {
             Cursor cursor = query( TABLE_NAMES.SUM, columns, selection );
@@ -1910,7 +1913,8 @@ public class DBUtils {
     public static DictInfo dictsGetInfo( Context context, String name )
     {
         DictInfo result = null;
-        String[] columns = { DBHelper.LANGCODE,
+        String[] columns = { DBHelper.ISOCODE,
+                             DBHelper.LANGNAME,
                              DBHelper.WORDCOUNT,
                              DBHelper.MD5SUM,
                              DBHelper.FULLSUM,
@@ -1922,14 +1926,16 @@ public class DBUtils {
             if ( 1 == cursor.getCount() && cursor.moveToFirst() ) {
                 result = new DictInfo();
                 result.name = name;
-                result.langCode =
-                    cursor.getInt( cursor.getColumnIndex(DBHelper.LANGCODE));
+                result.isoCode =
+                    cursor.getString( cursor.getColumnIndex(DBHelper.ISOCODE));
                 result.wordCount =
                     cursor.getInt( cursor.getColumnIndex(DBHelper.WORDCOUNT));
                 result.md5Sum =
                     cursor.getString( cursor.getColumnIndex(DBHelper.MD5SUM));
                 result.fullSum =
                     cursor.getString( cursor.getColumnIndex(DBHelper.FULLSUM));
+                result.langName =
+                    cursor.getString( cursor.getColumnIndex(DBHelper.LANGNAME));
                 // int loc = cursor.getInt(cursor.getColumnIndex(DBHelper.LOC));
                 // Log.d( TAG, "dictsGetInfo(): read sum %s/loc %d for %s", result.md5Sum,
                 //        loc, name );
@@ -1951,7 +1957,8 @@ public class DBUtils {
             String.format( NAME_FMT, DBHelper.DICTNAME, dal.name );
         ContentValues values = new ContentValues();
 
-        values.put( DBHelper.LANGCODE, info.langCode );
+        values.put( DBHelper.ISOCODE, info.isoCode );
+        values.put( DBHelper.LANGNAME, info.langName );
         values.put( DBHelper.WORDCOUNT, info.wordCount );
         values.put( DBHelper.MD5SUM, info.md5Sum );
         values.put( DBHelper.FULLSUM, info.fullSum );
@@ -2012,37 +2019,37 @@ public class DBUtils {
     }
 
     public static void addToStudyList( Context context, String word,
-                                       int lang )
+                                       String isoCode )
     {
         ContentValues values = new ContentValues();
         values.put( DBHelper.WORD, word );
-        values.put( DBHelper.LANGUAGE, lang );
+        values.put( DBHelper.ISOCODE, isoCode );
 
         initDB( context );
         synchronized( s_dbHelper ) {
             insert( TABLE_NAMES.STUDYLIST, values );
         }
-        notifyStudyListListeners( word, lang );
+        notifyStudyListListeners( word, isoCode );
     }
 
-    public static int[] studyListLangs( Context context )
+    public static String[] studyListLangs( Context context )
     {
-        int[] result = null;
-        String groupBy = DBHelper.LANGUAGE;
+        String[] result = null;
         String selection = null;//DBHelper.LANGUAGE;
-        String[] columns = { DBHelper.LANGUAGE };
+        String[] columns = { DBHelper.ISOCODE };
+        String groupBy = columns[0];
 
         initDB( context );
         synchronized( s_dbHelper ) {
             Cursor cursor = s_db.query( TABLE_NAMES.STUDYLIST.toString(), columns,
                                         null, null, groupBy, null, null );
             int count = cursor.getCount();
-            result = new int[count];
+            result = new String[count];
             if ( 0 < count ) {
                 int index = 0;
-                int colIndex = cursor.getColumnIndex( DBHelper.LANGUAGE );
+                int colIndex = cursor.getColumnIndex( columns[0] );
                 while ( cursor.moveToNext() ) {
-                    result[index++] = cursor.getInt(colIndex);
+                    result[index++] = cursor.getString(colIndex);
                 }
             }
             cursor.close();
@@ -2050,12 +2057,12 @@ public class DBUtils {
         return result;
     }
 
-    public static String[] studyListWords( Context context, int lang )
+    public static String[] studyListWords( Context context, String isoCode )
     {
         String[] result = null;
-        String selection = String.format( "%s = %d", DBHelper.LANGUAGE, lang );
+        String selection = String.format( "%s = '%s'", DBHelper.ISOCODE, isoCode );
         String[] columns = { DBHelper.WORD };
-        String orderBy = DBHelper.WORD;
+        String orderBy = columns[0];
 
         initDB( context );
         synchronized( s_dbHelper ) {
@@ -2075,9 +2082,9 @@ public class DBUtils {
         return result;
     }
 
-    public static void studyListClear( Context context, int lang, String[] words )
+    public static void studyListClear( Context context, String isoCode, String[] words )
     {
-        String selection = String.format( "%s = %d", DBHelper.LANGUAGE, lang );
+        String selection = String.format( "%s = '%s'", DBHelper.ISOCODE, isoCode );
         if ( null != words ) {
             selection += String.format( " AND %s in ('%s')", DBHelper.WORD,
                                         TextUtils.join("','", words) );
@@ -2089,9 +2096,9 @@ public class DBUtils {
         }
     }
 
-    public static void studyListClear( Context context, int lang )
+    public static void studyListClear( Context context, String isoCode  )
     {
-        studyListClear( context, lang, null );
+        studyListClear( context, isoCode, null );
     }
 
     public static void saveXlations( Context context, String locale,
@@ -2598,11 +2605,11 @@ public class DBUtils {
         return result;
     }
 
-    private static void notifyStudyListListeners( String word, int lang )
+    private static void notifyStudyListListeners( String word, String isoCode )
     {
         synchronized( s_slListeners ) {
             for ( StudyListListener listener : s_slListeners ) {
-                listener.onWordAdded( word, lang );
+                listener.onWordAdded( word, isoCode );
             }
         }
     }

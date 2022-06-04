@@ -406,7 +406,7 @@ public class GameUtils {
             DictUtils.DictPairs pairs = DictUtils.openDicts( context, dictNames );
             if ( pairs.anyMissing( dictNames ) ) {
                 postMoveDroppedForDictNotification( context, rowid, gi.gameID,
-                                                    gi.dictLang );
+                                                    gi.isoCode );
             } else {
                 String langName = gi.langName( context );
                 gamePtr = XwJNI.initFromStream( rowid, stream, gi, util, null,
@@ -598,7 +598,7 @@ public class GameUtils {
         CommsAddrRec addr = nli.makeAddrRec( context );
 
         return makeNewMultiGame( context, sink, util, DBUtils.GROUPID_UNSPEC,
-                                 addr, new int[] {nli.lang},
+                                 addr, new String[] {nli.isoCode},
                                  new String[] { nli.dict }, null, nli.nPlayersT,
                                  nli.nPlayersH, nli.forceChannel,
                                  nli.inviteID(), nli.gameID(),
@@ -608,27 +608,28 @@ public class GameUtils {
     public static long makeNewMultiGame( Context context, long groupID,
                                          String gameName )
     {
-        return makeNewMultiGame( context, groupID, null, 0, null,
+        return makeNewMultiGame( context, groupID, null, null, null,
                                  (CommsConnTypeSet)null, gameName );
     }
 
     public static long makeNewMultiGame( Context context, long groupID,
-                                         String dict, int lang, String jsonData,
+                                         String dict, String isoCode,
+                                         String jsonData,
                                          CommsConnTypeSet addrSet,
                                          String gameName )
     {
         String inviteID = makeRandomID();
-        return makeNewMultiGame( context, groupID, inviteID, dict, lang,
+        return makeNewMultiGame( context, groupID, inviteID, dict, isoCode,
                                  jsonData, addrSet, gameName );
     }
 
     private static long makeNewMultiGame( Context context, long groupID,
                                           String inviteID, String dict,
-                                          int lang, String jsonData,
+                                          String isoCode, String jsonData,
                                           CommsConnTypeSet addrSet,
                                           String gameName )
     {
-        int[] langArray = {lang};
+        String[] langArray = {isoCode};
         String[] dictArray = {dict};
         if ( null == addrSet ) {
             addrSet = XWPrefs.getAddrTypes( context );
@@ -653,7 +654,7 @@ public class GameUtils {
     private static long makeNewMultiGame( Context context, MultiMsgSink sink,
                                           UtilCtxt util, long groupID,
                                           CommsAddrRec addr,
-                                          int[] lang, String[] dict,
+                                          String[] isoCode, String[] dict,
                                           String jsonData,
                                           int nPlayersT, int nPlayersH,
                                           int forceChannel, String inviteID,
@@ -665,9 +666,9 @@ public class GameUtils {
         Assert.assertNotNull( inviteID );
         CurGameInfo gi = new CurGameInfo( context, inviteID );
         gi.setFrom( jsonData );
-        gi.setLang( context, lang[0], dict[0] );
+        gi.setLang( context, isoCode[0], dict[0] );
         gi.forceChannel = forceChannel;
-        lang[0] = gi.dictLang;
+        isoCode[0] = gi.isoCode;
         dict[0] = gi.dictName;
         gi.setNPlayers( nPlayersT, nPlayersH, localsRobots );
         gi.juggle();
@@ -829,14 +830,14 @@ public class GameUtils {
     }
 
     public static String[] dictNames( Context context, long rowid,
-                                      int[] missingLang )
+                                      String[] missingLang )
     {
         String[] result = null;
         byte[] stream = savedGame( context, rowid );
         CurGameInfo gi = giFromStream( context, stream );
         if ( null != gi ) {
             if ( null != missingLang ) {
-                missingLang[0] = gi.dictLang;
+                missingLang[0] = gi.isoCode;
             }
             result = gi.dictNames();
         }
@@ -863,7 +864,7 @@ public class GameUtils {
     // are not.
     public static boolean gameDictsHere( Context context, long rowid,
                                          String[][] missingNames,
-                                         int[] missingLang )
+                                         String[] missingLang )
     {
         String[] gameDicts = dictNames( context, rowid, missingLang );
         return null != gameDicts
@@ -1234,11 +1235,11 @@ public class GameUtils {
     }
 
     private static void postMoveDroppedForDictNotification( Context context, long rowid,
-                                                            int gameID, int lang )
+                                                            int gameID, String isoCode )
     {
         Intent intent = GamesListDelegate.makeGameIDIntent( context, gameID );
 
-        String langName = DictLangCache.getLangName( context, lang );
+        String langName = DictLangCache.getLangNameForISOCode( context, isoCode );
         String body = LocUtils.getString( context, R.string.no_dict_for_move_fmt,
                                           langName );
         Utils.postNotification( context, intent, R.string.no_dict_for_move_title,

@@ -156,7 +156,7 @@ abstract class XWServiceHelper {
             }
 
             if ( success ) {
-                if ( DictLangCache.haveDict( mContext, nli.lang, nli.dict ) ) {
+                if ( DictLangCache.haveDict( mContext, nli.isoCode, nli.dict ) ) {
                     long rowid = GameUtils.makeNewMultiGame( mContext, nli,
                                                              getSink( 0 ),
                                                              getUtilCtxt() );

@@ -67,7 +67,7 @@ public class LookupAlertView extends LinearLayout
     private static ArrayAdapter<String> s_urlsAdapter;
     private static final int LIST_LAYOUT = android.R.layout.simple_list_item_1;
 
-    private static int s_lang = -1;
+    private static String s_lang = null;
     private static String s_langName;
 
     // These two are probably always the same object
@@ -93,8 +93,8 @@ public class LookupAlertView extends LinearLayout
     {
         m_onDone = lstn;
         m_words = bundle.getStringArray( WORDS );
-        int lang = bundle.getInt( LANG, 0 );
-        setLang( m_context, lang  );
+        String isoCode = bundle.getString( LANG );
+        setLang( m_context, isoCode  );
         m_studyOn = XWPrefs.getStudyEnabled( m_context )
             && bundle.getBoolean( STUDY_ON, true );
 
@@ -234,8 +234,7 @@ public class LookupAlertView extends LinearLayout
 
     private void lookupWord( Context context, String word, String fmt )
     {
-        String langCode = DictLangCache.getLangCodeStr( context, s_lang );
-        String dict_url = String.format( fmt, langCode, word );
+        String dict_url = String.format( fmt, s_lang, word );
         Uri uri = Uri.parse( dict_url );
         Intent intent = new Intent( Intent.ACTION_VIEW, uri );
         intent.setFlags( Intent.FLAG_ACTIVITY_NEW_TASK );
@@ -247,14 +246,13 @@ public class LookupAlertView extends LinearLayout
         }
     } // lookupWord
 
-    private void setLang( Context context, int lang )
+    private void setLang( Context context, String isoCode )
     {
-        if ( s_lang != lang ) {
+        if ( ! isoCode.equals( s_lang ) ) {
             String[] urls = context.getResources().getStringArray( R.array.lookup_urls );
             ArrayList<String> tmpUrls = new ArrayList<>();
             ArrayList<String> tmpNames = new ArrayList<>();
-            String langCode = String
-                .format( ":%s:", DictLangCache.getLangCodeStr( context, lang ) );
+            String langCode = String.format( ":%s:", isoCode );
             for ( int ii = 0; ii < urls.length; ii += 3 ) {
                 String codes = urls[ii+1];
                 if ( 0 == codes.length() || codes.contains( langCode ) ) {
@@ -269,8 +267,8 @@ public class LookupAlertView extends LinearLayout
             s_lookupUrls = tmpUrls.toArray( new String[tmpUrls.size()] );
             s_urlsAdapter = new ArrayAdapter<>( context, LIST_LAYOUT,
                                                 s_lookupNames );
-            s_lang = lang;
-            String langName = DictLangCache.getLangName( context, lang );
+            s_lang = isoCode;
+            String langName = DictLangCache.getLangNameForISOCode( context, isoCode );
             s_langName = LocUtils.xlateLang( context, langName );
         }
     }
@@ -300,19 +298,19 @@ public class LookupAlertView extends LinearLayout
         return handled;
     }
 
-    private static void addParams( Bundle bundle, String[] words, int lang,
+    private static void addParams( Bundle bundle, String[] words, String isoCode,
                                    boolean studyOn )
     {
         bundle.putStringArray( WORDS, words );
-        bundle.putInt( LANG, lang );
+        bundle.putString( LANG, isoCode );
         bundle.putBoolean( STUDY_ON, studyOn );
     }
 
-    protected static Bundle makeParams( String[] words, int lang,
+    protected static Bundle makeParams( String[] words, String isoCode,
                                         boolean noStudyOption )
     {
         Bundle bundle = new Bundle();
-        addParams( bundle, words, lang, !noStudyOption );
+        addParams( bundle, words, isoCode, !noStudyOption );
         return bundle;
     }
 }

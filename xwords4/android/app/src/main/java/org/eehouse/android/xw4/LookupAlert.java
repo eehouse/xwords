@@ -30,10 +30,10 @@ public class LookupAlert extends XWDialogFragment {
     private static final String TAG = LookupAlert.class.getSimpleName();
     private LookupAlertView m_view;
 
-    public static LookupAlert newInstance( String[] words, int lang, boolean noStudy )
+    public static LookupAlert newInstance( String[] words, String isoCode, boolean noStudy )
     {
         LookupAlert result = new LookupAlert();
-        Bundle bundle = LookupAlertView.makeParams( words, lang, noStudy );
+        Bundle bundle = LookupAlertView.makeParams( words, isoCode, noStudy );
         result.setArguments( bundle );
         return result;
     }

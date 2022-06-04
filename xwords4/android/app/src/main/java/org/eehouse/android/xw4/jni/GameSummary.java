@@ -81,7 +81,7 @@ public class GameSummary implements Serializable {
     public int gameID;
     public String[] remoteDevs; // BTAddrs and phone numbers
 
-    public int dictLang;
+    public String isoCode;
     public DeviceRole serverRole;
     public int nPacketsPending;
 
@@ -96,7 +96,7 @@ public class GameSummary implements Serializable {
     public GameSummary( CurGameInfo gi )
     {
         nPlayers = gi.nPlayers;
-        dictLang = gi.dictLang;
+        isoCode = gi.isoCode;
         serverRole = gi.serverRole;
         gameID = gi.gameID;
         m_gi = gi;
@@ -127,7 +127,7 @@ public class GameSummary implements Serializable {
                     && modtime == other.modtime
                     && created == other.created
                     && gameID == other.gameID
-                    && dictLang == other.dictLang
+                    && TextUtils.equals( isoCode, other.isoCode)
                     && nPacketsPending == other.nPacketsPending
                     && Arrays.equals( scores, other.scores )
                     && Arrays.equals( m_players, other.m_players )

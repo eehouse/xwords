@@ -245,33 +245,34 @@ and_util_informUndo( XW_UtilCtxt* uc, XWEnv xwe )
 }
 
 static void
-and_util_informNetDict( XW_UtilCtxt* uc, XWEnv xwe, XP_LangCode lang,
-                        const XP_UCHAR* oldName,
-                        const XP_UCHAR* newName, const XP_UCHAR* newSum,
-                        XWPhoniesChoice phoniesAction )
+and_util_informNetDict( XW_UtilCtxt* uc, XWEnv xwe, const XP_UCHAR* isoCode,
+                        const XP_UCHAR* oldName, const XP_UCHAR* newName,
+                        const XP_UCHAR* newSum, XWPhoniesChoice phoniesAction )
 {
     LOG_FUNC();
     UTIL_CBK_HEADER( "informNetDict", 
-                     "(ILjava/lang/String;Ljava/lang/String;Ljava/lang/String;L"
+                     "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;"
+                     "Ljava/lang/String;L"
                      PKG_PATH("jni/CurGameInfo$XWPhoniesChoice") ";)V" );
+    jstring jIsoCode = (*env)->NewStringUTF( env, isoCode );
     jstring jnew = (*env)->NewStringUTF( env, newName );
     jstring jsum = (*env)->NewStringUTF( env, newSum );
     jstring jold = (*env)->NewStringUTF( env, oldName );
     jobject jphon = intToJEnum( env, phoniesAction, 
                                 PKG_PATH("jni/CurGameInfo$XWPhoniesChoice") );
 
-    (*env)->CallVoidMethod( env, util->jutil, mid, lang, jold, jnew, jsum, 
+    (*env)->CallVoidMethod( env, util->jutil, mid, jIsoCode, jold, jnew, jsum,
                             jphon );
-    deleteLocalRefs( env, jnew, jold, jsum, jphon, DELETE_NO_REF );
+    deleteLocalRefs( env, jnew, jold, jsum, jphon, jIsoCode, DELETE_NO_REF );
 
     UTIL_CBK_TAIL();
 }
 
 const DictionaryCtxt*
 and_util_getDict( XW_UtilCtxt* uc, XWEnv xwe,
-                  XP_LangCode lang, const XP_UCHAR* dictName )
+                  const XP_UCHAR* isoCode, const XP_UCHAR* dictName )
 {
-    XP_LOGFF( "(lang: %d, name: %s)", lang, dictName );
+    XP_LOGFF( "(isoCode: %s, name: %s)", isoCode, dictName );
     JNIEnv* env = xwe;
     XW_DUtilCtxt* duc = util_getDevUtilCtxt( uc, xwe );
 
@@ -280,12 +281,14 @@ and_util_getDict( XW_UtilCtxt* uc, XWEnv xwe,
         dmgr_get( dictMgr, xwe, dictName );
     if ( !dict ) {
         jstring jname = (*env)->NewStringUTF( env, dictName );
+        jstring jISOCode = (*env)->NewStringUTF( env, isoCode );
 
         jobjectArray jstrs = makeStringArray( env, 1, NULL );
         jobjectArray jbytes = makeByteArrayArray( env, 1 );
 
-        DUTIL_CBK_HEADER( "getDictPath", "(ILjava/lang/String;[Ljava/lang/String;[[B)V" );
-        (*env)->CallVoidMethod( env, dutil->jdutil, mid, lang, jname, jstrs, jbytes );
+        DUTIL_CBK_HEADER( "getDictPath",
+                          "(Ljava/lang/String;Ljava/lang/String;[Ljava/lang/String;[[B)V" );
+        (*env)->CallVoidMethod( env, dutil->jdutil, mid, jISOCode, jname, jstrs, jbytes );
         DUTIL_CBK_TAIL();
 
         jstring jpath = (*env)->GetObjectArrayElement( env, jstrs, 0 );
@@ -295,7 +298,7 @@ and_util_getDict( XW_UtilCtxt* uc, XWEnv xwe,
                          TI_IF(&globalState->ti)
                          dictMgr, ((AndDUtil*)duc)->jniutil,
                          jname, jdata, jpath, NULL, false );
-        deleteLocalRefs( env, jname, jstrs, jbytes, jdata, jpath, DELETE_NO_REF );
+        deleteLocalRefs( env, jname, jstrs, jbytes, jdata, jpath, jISOCode, DELETE_NO_REF );
     }
     LOG_RETURNF( "%p", dict );
     return dict;

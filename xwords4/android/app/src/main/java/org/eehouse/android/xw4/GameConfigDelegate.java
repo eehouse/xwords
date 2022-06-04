@@ -353,7 +353,7 @@ public class GameConfigDelegate extends DelegateBase
         TextView dictLabel = (TextView)playerView
             .findViewById( R.id.dict_label );
         if ( localOnlyGame() ) {
-            String langName = DictLangCache.getLangName( m_activity, m_gi.dictLang );
+            String langName = DictLangCache.getLangNameForISOCode( m_activity, m_gi.isoCode );
             String label = getString( R.string.dict_lang_label_fmt, langName );
             dictLabel.setText( label );
         } else {
@@ -363,7 +363,7 @@ public class GameConfigDelegate extends DelegateBase
                                .findViewById( R.id.player_dict_spinner ))
             .getSpinner();
         if ( localOnlyGame() ) {
-            configDictSpinner( m_playerDictSpinner, m_gi.dictLang, m_gi.dictName(lp) );
+            configDictSpinner( m_playerDictSpinner, m_gi.isoCode, m_gi.dictName(lp) );
         } else {
             m_playerDictSpinner.setVisibility( View.GONE );
             m_playerDictSpinner = null;
@@ -544,12 +544,12 @@ public class GameConfigDelegate extends DelegateBase
         case REQUEST_DICT:
             String dictName = cancelled ? m_gi.dictName
                 : data.getStringExtra( DictsDelegate.RESULT_LAST_DICT );
-            configDictSpinner( m_dictSpinner, m_gi.dictLang, dictName );
-            configDictSpinner( m_playerDictSpinner, m_gi.dictLang, dictName );
+            configDictSpinner( m_dictSpinner, m_gi.isoCode, dictName );
+            configDictSpinner( m_playerDictSpinner, m_gi.isoCode, dictName );
             break;
         case REQUEST_LANG_GC:
             String langName = cancelled
-                ? DictLangCache.getLangName( m_activity, m_gi.dictLang )
+                ? DictLangCache.getLangNameForISOCode( m_activity, m_gi.isoCode )
                 : data.getStringExtra( DictsDelegate.RESULT_LAST_LANG );
             selLangChanged( langName );
             setLangSpinnerSelection( langName );
@@ -990,11 +990,11 @@ public class GameConfigDelegate extends DelegateBase
         }
     } // loadPlayersList
 
-    private void configDictSpinner( Spinner dictsSpinner, int lang,
+    private void configDictSpinner( Spinner dictsSpinner, final String isoCode,
                                     String curDict )
     {
         if ( null != dictsSpinner ) {
-            String langName = DictLangCache.getLangName( m_activity, lang );
+            String langName = DictLangCache.getLangNameForISOCode( m_activity, isoCode );
             dictsSpinner.setPrompt( getString( R.string.dicts_list_prompt_fmt,
                                                langName ) );
 
@@ -1009,13 +1009,14 @@ public class GameConfigDelegate extends DelegateBase
                         if ( chosen.equals( m_browseText ) ) {
                             DictsDelegate.downloadForResult( getDelegator(),
                                                              RequestCode.REQUEST_DICT,
-                                                             m_gi.dictLang );
+                                                             m_gi.isoCode );
+                            Assert.assertTrueNR( isoCode.equals(m_gi.isoCode) );
                         }
                     }
                 };
 
             ArrayAdapter<String> adapter =
-                DictLangCache.getDictsAdapter( m_activity, lang );
+                DictLangCache.getDictsAdapter( m_activity, isoCode );
 
             configSpinnerWDownload( dictsSpinner, adapter, onSel, curDict );
         }
@@ -1048,17 +1049,17 @@ public class GameConfigDelegate extends DelegateBase
                     }
                 };
 
-            String lang = DictLangCache.getLangName( m_activity, m_gi.dictLang );
+            String lang = DictLangCache.getLangNameForISOCode( m_activity, m_gi.isoCode );
             configSpinnerWDownload( m_langSpinner, adapter, onSel, lang );
         }
     }
 
     private void selLangChanged( String chosen )
     {
-        m_gi.setLang( m_activity, DictLangCache
-                      .getLangLangCode( m_activity, chosen ) );
+        String isoCode = DictLangCache.getLangIsoCode( m_activity, chosen );
+        m_gi.setLang( m_activity, isoCode );
         loadPlayersList();
-        configDictSpinner( m_dictSpinner, m_gi.dictLang, m_gi.dictName );
+        configDictSpinner( m_dictSpinner, m_gi.isoCode, m_gi.dictName );
     }
 
     private void configSpinnerWDownload( Spinner spinner,

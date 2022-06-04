@@ -599,15 +599,15 @@ public abstract class DelegateBase implements DlgClickNotify,
         return m_dlgDelegate.post( runnable );
     }
 
-    protected void launchLookup( String[] words, int lang, boolean noStudy )
+    protected void launchLookup( String[] words, String isoCode, boolean noStudy )
     {
-        m_dlgDelegate.launchLookup( words, lang, noStudy );
+        m_dlgDelegate.launchLookup( words, isoCode, noStudy );
     }
 
-    protected void launchLookup( String[] words, int lang )
+    protected void launchLookup( String[] words, String isoCode )
     {
         boolean studyOn = XWPrefs.getStudyEnabled( m_activity );
-        m_dlgDelegate.launchLookup( words, lang, !studyOn );
+        m_dlgDelegate.launchLookup( words, isoCode, !studyOn );
     }
 
     protected void showInviteChoicesThen( Action action, NetLaunchInfo nli,

@@ -636,30 +636,27 @@ public class Utils {
         return result;
     }
 
-    public static Uri makeDictUri( Context context, String langName, String name )
+    public static Uri makeDictUriFromName( Context context,
+                                           String langName, String dictName )
+    {
+        String isoCode = DictLangCache.getLangIsoCode( context, langName );
+        return makeDictUriFromCode( context, isoCode, dictName );
+    }
+
+    public static Uri makeDictUriFromCode( Context context, String isoCode, String name )
     {
         String dictUrl = CommonPrefs.getDefaultDictURL( context );
         Uri.Builder builder = Uri.parse( dictUrl ).buildUpon();
-        if ( null != langName ) {
-            builder.appendPath( langName );
+        if ( null != isoCode ) {
+            builder.appendPath( isoCode );
         }
         if ( null != name ) {
-            Assert.assertNotNull( langName );
+            Assert.assertNotNull( isoCode );
             builder.appendPath( DictUtils.addDictExtn( name ) );
         }
         Uri result = builder.build();
-        // Log.d( TAG, "makeDictUri(langName=%s, name=%s) => %s", langName, name, result );
-        return result;
-    }
-
-    public static Uri makeDictUri( Context context, int lang, String name )
-    {
-        String langName = null;
-        if ( 0 < lang ) {
-            langName = DictLangCache.getLangName( context, lang );
-        }
-        Uri result = makeDictUri( context, langName, name );
-        // Log.d( TAG, "makeDictUri(lang=%d, name=%s) => %s", lang, name, result );
+        DbgUtils.printStack( TAG );
+        Log.d( TAG, "makeDictUriFromCode(isoCode=%s, name=%s) => %s", isoCode, name, result );
         return result;
     }
 

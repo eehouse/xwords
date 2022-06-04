@@ -414,9 +414,9 @@ public class DlgDelegate {
         m_dlgt.show( state );
     }
 
-    public void launchLookup( String[] words, int lang, boolean noStudy )
+    public void launchLookup( String[] words, String isoCode, boolean noStudy )
     {
-        m_dlgt.show( LookupAlert.newInstance( words, lang, noStudy ) );
+        m_dlgt.show( LookupAlert.newInstance( words, isoCode, noStudy ) );
     }
 
     public void startProgress( int titleID, int msgID, OnCancelListener lstnr )
