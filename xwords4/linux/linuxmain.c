@@ -2708,7 +2708,6 @@ main( int argc, char** argv )
     mainParams.printHistory = XP_FALSE;
     mainParams.undoWhenDone = XP_FALSE;
     mainParams.pgi.timerEnabled = XP_FALSE;
-    mainParams.pgi.dictLang = -1;
     mainParams.noHeartbeat = XP_FALSE;
     mainParams.nHidden = 0;
     mainParams.needsNewGame = XP_FALSE;
@@ -3258,8 +3257,8 @@ main( int argc, char** argv )
                                        mainParams.pgi.dictName,
                                        mainParams.useMmap );
             XP_ASSERT( !!dict );
-            mainParams.pgi.dictLang = dict_getLangCode( dict );
-            XP_LOGFF( "set lang code: %d", mainParams.pgi.dictLang );
+            XP_STRNCPY( mainParams.pgi.isoCode, dict_getISOCode( dict ),
+                        VSIZE(mainParams.pgi.isoCode) );
             dict_unref( dict, NULL_XWE );
         } else if ( isServer ) {
 #ifdef STUBBED_DICT

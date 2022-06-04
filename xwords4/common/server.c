@@ -1980,8 +1980,6 @@ client_readInitialMessage( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* stream )
         XP_U16 nPlayers = localGI.nPlayers;
         XP_LOGF( "%s: reading in %d players", __func__, localGI.nPlayers );
 
-        gi_disposePlayerInfo( MPPARM(server->mpool) &localGI );
-
         gi->nPlayers = nPlayers;
         model_setNPlayers( model, nPlayers );
 
@@ -1995,12 +1993,14 @@ client_readInitialMessage( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* stream )
             if ( '\0' != rmtDictName[0] ) {
                 const XP_UCHAR* ourName = dict_getShortName( curDict );
                 util_informNetDict( server->vol.util, xwe,
-                                    dict_getLangCode( curDict ),
+                                    dict_getISOCode( curDict ),
                                     ourName, rmtDictName,
                                     rmtDictSum, localGI.phoniesAction );
             }
 #endif
         }
+
+        gi_disposePlayerInfo( MPPARM(server->mpool) &localGI );
 
         XP_ASSERT( !server->pool );
         makePoolOnce( server );

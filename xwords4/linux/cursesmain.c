@@ -272,7 +272,7 @@ canMakeFromGI( const CurGameInfo* gi )
 {
     LOG_FUNC();
     bool result = 0 < gi->nPlayers
-        && 0 < gi->dictLang
+        && !!gi->isoCode
         ;
     bool haveDict = !!gi->dictName;
     bool allHaveDicts = true;

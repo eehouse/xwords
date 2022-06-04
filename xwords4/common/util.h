@@ -119,15 +119,13 @@ typedef struct UtilVtable {
     void (*m_util_informMove)( XW_UtilCtxt* uc, XWEnv xwe, XP_S16 turn, 
                                XWStreamCtxt* expl, XWStreamCtxt* words );
     void (*m_util_informUndo)( XW_UtilCtxt* uc, XWEnv xwe );
-    void (*m_util_informNetDict)( XW_UtilCtxt* uc, XWEnv xwe, XP_LangCode lang,
-                                  const XP_UCHAR* oldName,
-                                  const XP_UCHAR* newName,
+    void (*m_util_informNetDict)( XW_UtilCtxt* uc, XWEnv xwe, const XP_UCHAR* isoCode,
+                                  const XP_UCHAR* oldName, const XP_UCHAR* newName,
                                   const XP_UCHAR* newSum,
                                   XWPhoniesChoice phoniesAction );
-
     const DictionaryCtxt* (*m_util_getDict)( XW_UtilCtxt* uc, XWEnv xwe,
-                                             XP_LangCode lang, const XP_UCHAR* dictName );
-
+                                             const XP_UCHAR* isoCode,
+                                             const XP_UCHAR* dictName );
     void (*m_util_notifyGameOver)( XW_UtilCtxt* uc, XWEnv xwe, XP_S16 quitter );
 #ifdef XWFEATURE_HILITECELL
     XP_Bool (*m_util_hiliteCell)( XW_UtilCtxt* uc, XWEnv xwe, XP_U16 col, XP_U16 row );
@@ -258,8 +256,8 @@ struct XW_UtilCtxt {
 #define util_informNetDict(uc,e, cd, on, nn, ns, pa )                      \
          (uc)->vtable->m_util_informNetDict( (uc), (e), (cd), (on), (nn), (ns), \
                                              (pa) )
-#define util_getDict( uc, xwe, lang, dictName )                     \
-         (uc)->vtable->m_util_getDict((uc), (xwe), (lang), (dictName))
+#define util_getDict( uc, xwe, isoCode, dictName )                     \
+         (uc)->vtable->m_util_getDict((uc), (xwe), (isoCode), (dictName))
 
 #define util_notifyGameOver( uc,e, q )                  \
          (uc)->vtable->m_util_notifyGameOver((uc), (e), (q))

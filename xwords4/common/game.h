@@ -60,8 +60,8 @@ typedef struct _GameSummary {
     XP_U8 missingPlayers;
     XP_U8 nPacketsPending;
     XP_S16 nMoves;
-    XP_LangCode lang;
     XP_UCHAR opponents[64];
+    XP_UCHAR isoCode[MAX_ISO_CODE_LEN+1];
 } GameSummary;
 
 typedef struct _XWGame {

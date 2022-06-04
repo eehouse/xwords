@@ -417,31 +417,56 @@ tilesNBits( const XWStreamCtxt* stream )
     return result;
 }
 
+/* sMap: Exists as a backup until everybody's running code that knows isoCode
+   is in wordlists. */
+static struct {
+    XP_LangCode lc;
+    XP_UCHAR* isoCode;
+} sMap[] = {
+            { .lc = 0x01, .isoCode = "en", },
+            { .lc = 0x02, .isoCode = "fr", },
+            { .lc = 0x03, .isoCode = "de", },
+            { .lc = 0x04, .isoCode = "tr", },
+            { .lc = 0x05, .isoCode = "ar", },
+            { .lc = 0x06, .isoCode = "es", },
+            { .lc = 0x07, .isoCode = "sv", },
+            { .lc = 0x08, .isoCode = "pl", },
+            { .lc = 0x09, .isoCode = "da", },
+            { .lc = 0x0A, .isoCode = "it", },
+            { .lc = 0x0B, .isoCode = "nl", },
+            { .lc = 0x0C, .isoCode = "ca", },
+            { .lc = 0x0D, .isoCode = "pt", },
+            { .lc = 0x0F, .isoCode = "ru", },
+            { .lc = 0x11, .isoCode = "cs", },
+            { .lc = 0x12, .isoCode = "el", },
+            { .lc = 0x13, .isoCode = "sk", },
+            { .lc = 0x14, .isoCode = "hu", },
+            { .lc = 0x15, .isoCode = "ro", },
+            { .lc = 0x19, .isoCode = "fi", },
+            { .lc = 0x7f, .isoCode = "hex", },
+};
+
+XP_Bool
+haveLocaleToLc( const XP_UCHAR* isoCode, XP_LangCode* lc )
+{
+    XP_Bool result = XP_FALSE;
+    for ( int ii = 0; !result && ii < VSIZE(sMap); ++ii ) {
+        if ( 0 == XP_STRCMP( isoCode, sMap[ii].isoCode ) ) {
+            result = XP_TRUE;
+            *lc = sMap[ii].lc;
+        }
+    }
+    return result;
+}
+
 const XP_UCHAR*
 lcToLocale( XP_LangCode lc )
 {
     const XP_UCHAR* result = NULL;
-    switch ( lc ) {
-    case 0x01: result = "en"; break;
-    case 0x02: result = "fr"; break;
-    case 0x03: result = "de"; break;
-    case 0x04: result = "tr"; break;
-    case 0x05: result = "ar"; break;
-    case 0x06: result = "es"; break;
-    case 0x07: result = "sv"; break;
-    case 0x08: result = "pl"; break;
-    case 0x09: result = "da"; break;
-    case 0x0A: result = "it"; break;
-    case 0x0B: result = "nl"; break;
-    case 0x0C: result = "ca"; break;
-    case 0x0D: result = "pt"; break;
-    case 0x0F: result = "ru"; break;
-    case 0x11: result = "cs"; break;
-    case 0x12: result = "el"; break;
-    case 0x13: result = "sk"; break;
-    case 0x14: result = "hu"; break;
-    case 0x15: result = "ro"; break;
-    case 0x19: result = "fi"; break;
+    for ( int ii = 0; NULL == result && ii < VSIZE(sMap); ++ii ) {
+        if ( lc == sMap[ii].lc ) {
+            result = sMap[ii].isoCode;
+        }
     }
     if ( !result ) {
         XP_LOGFF( "(%d/0x%x) => NULL", lc, lc );

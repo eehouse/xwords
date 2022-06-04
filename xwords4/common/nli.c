@@ -25,11 +25,8 @@
 #include "strutils.h"
 #include "dbgutil.h"
 
-/* Don't check in other than 0 for a few releases!!! */
-#ifndef NLI_VERSION
-// # define NLI_VERSION 0
-# define NLI_VERSION 1          /* adds inDuplicateMode */
-#endif
+#define NLI_VERSION_LC 1          /* adds inDuplicateMode */
+#define NLI_VERSION_ISO 2          /* replaces _lang with isoCode -- for later */
 
 void
 nli_init( NetLaunchInfo* nli, const CurGameInfo* gi, const CommsAddrRec* addr,
@@ -38,7 +35,7 @@ nli_init( NetLaunchInfo* nli, const CurGameInfo* gi, const CommsAddrRec* addr,
     XP_MEMSET( nli, 0, sizeof(*nli) );
     nli->gameID = gi->gameID;
     XP_STRCAT( nli->dict, gi->dictName );
-    nli->lang = gi->dictLang;
+    XP_STRCAT( nli->isoCode, gi->isoCode );
     nli->nPlayersT = gi->nPlayers;
     nli->nPlayersH = nPlayersH;
     nli->forceChannel = forceChannel;
@@ -112,10 +109,26 @@ void
 nli_saveToStream( const NetLaunchInfo* nli, XWStreamCtxt* stream )
 {
     LOGNLI( nli );
-    stream_putU8( stream, NLI_VERSION );
+
+    /* We'll use version 1 unless the ISOCODE has no XP_LangCode equivalent,
+       meaning the wordlist is too new and requires NLI_VERSION_2 */
+    XP_LangCode code;
+    XP_U8 version = haveLocaleToLc( nli->isoCode, &code )
+        ? NLI_VERSION_LC : NLI_VERSION_ISO;
+    stream_putU8( stream, version );
 
     stream_putU16( stream, nli->_conTypes );
-    stream_putU16( stream, nli->lang );
+    switch ( version ) {
+    case NLI_VERSION_LC:
+        stream_putU16( stream, code );
+        break;
+    case NLI_VERSION_ISO:
+        stringToStream( stream, nli->isoCode );
+        break;
+    default:
+        XP_ASSERT(0);
+        break;
+    }
     stringToStream( stream, nli->dict );
     stringToStream( stream, nli->gameName );
     stream_putU8( stream, nli->nPlayersT );
@@ -126,9 +139,6 @@ nli_saveToStream( const NetLaunchInfo* nli, XWStreamCtxt* stream )
     if ( types_hasType( nli->_conTypes, COMMS_CONN_RELAY ) ) {
         stringToStream( stream, nli->room );
         stringToStream( stream, nli->inviteID );
-        if ( 0 == NLI_VERSION ) {
-            stream_putU32( stream, nli->devID );
-        }
     }
     if ( types_hasType( nli->_conTypes, COMMS_CONN_BT ) ) {
         stringToStream( stream, nli->btName );
@@ -144,10 +154,8 @@ nli_saveToStream( const NetLaunchInfo* nli, XWStreamCtxt* stream )
         stringToStream( stream, nli->mqttDevID );
     }
 
-    if ( NLI_VERSION > 0 ) {
-        stream_putBits( stream, 1, nli->remotesAreRobots ? 1 : 0 );
-        stream_putBits( stream, 1, nli->inDuplicateMode ? 1 : 0 );
-    }
+    stream_putBits( stream, 1, nli->remotesAreRobots ? 1 : 0 );
+    stream_putBits( stream, 1, nli->inDuplicateMode ? 1 : 0 );
 }
 
 XP_Bool 
@@ -160,48 +168,60 @@ nli_makeFromStream( NetLaunchInfo* nli, XWStreamCtxt* stream )
     XP_LOGF( "%s(): read version: %d", __func__, version );
 
     nli->_conTypes = stream_getU16( stream );
-    nli->lang = stream_getU16( stream );
-    stringFromStreamHere( stream, nli->dict, sizeof(nli->dict) );
-    stringFromStreamHere( stream, nli->gameName, sizeof(nli->gameName) );
-    nli->nPlayersT = stream_getU8( stream );
-    nli->nPlayersH = stream_getU8( stream );
-    nli->gameID = stream_getU32( stream );
-    nli->forceChannel = stream_getU8( stream );
-
-    if ( types_hasType( nli->_conTypes, COMMS_CONN_RELAY ) ) {
-        stringFromStreamHere( stream, nli->room, sizeof(nli->room) );
-        stringFromStreamHere( stream, nli->inviteID, sizeof(nli->inviteID) );
-        if ( version == 0 ) {
-            nli->devID = stream_getU32( stream );
-        }
-    }
-    if ( types_hasType( nli->_conTypes, COMMS_CONN_BT ) ) {
-        stringFromStreamHere( stream, nli->btName, sizeof(nli->btName) );
-        stringFromStreamHere( stream, nli->btAddress, sizeof(nli->btAddress) );
-    }
-    if ( types_hasType( nli->_conTypes, COMMS_CONN_SMS ) ) {
-        stringFromStreamHere( stream, nli->phone, sizeof(nli->phone) );
-        nli->isGSM = stream_getU8( stream );
-        nli->osType= stream_getU8( stream );
-        nli->osVers = stream_getU32( stream );
-    }
-    if ( types_hasType( nli->_conTypes, COMMS_CONN_MQTT ) ) {
-        stringFromStreamHere( stream, nli->mqttDevID, sizeof(nli->mqttDevID) );
-    }
-
-    if ( version > 0 && 0 < stream_getSize( stream ) ) {
-        nli->remotesAreRobots = 0 != stream_getBits( stream, 1 );
-        nli->inDuplicateMode = stream_getBits( stream, 1 );
-        XP_LOGF( "%s(): remotesAreRobots: %d; inDuplicateMode: %d", __func__,
-                 nli->remotesAreRobots, nli->inDuplicateMode );
+    if ( version == NLI_VERSION_LC ) {
+        XP_LangCode lang = stream_getU16( stream );
+        const XP_UCHAR* isoCode = lcToLocale( lang );
+        XP_ASSERT( !!isoCode );
+        XP_STRNCPY( nli->isoCode, isoCode, VSIZE(nli->isoCode) );
+    } else if ( version == NLI_VERSION_ISO ) {
+        stringFromStreamHere( stream, nli->isoCode, sizeof(nli->isoCode) );
     } else {
-        nli->inDuplicateMode = XP_FALSE;
+        success = XP_FALSE;
     }
 
-    XP_ASSERT( 0 == stream_getSize( stream ) );
+    if ( success ) {
+        stringFromStreamHere( stream, nli->dict, sizeof(nli->dict) );
+        stringFromStreamHere( stream, nli->gameName, sizeof(nli->gameName) );
+        nli->nPlayersT = stream_getU8( stream );
+        nli->nPlayersH = stream_getU8( stream );
+        nli->gameID = stream_getU32( stream );
+        nli->forceChannel = stream_getU8( stream );
+
+        if ( types_hasType( nli->_conTypes, COMMS_CONN_RELAY ) ) {
+            stringFromStreamHere( stream, nli->room, sizeof(nli->room) );
+            stringFromStreamHere( stream, nli->inviteID, sizeof(nli->inviteID) );
+            if ( version == 0 ) {
+                nli->devID = stream_getU32( stream );
+            }
+        }
+        if ( types_hasType( nli->_conTypes, COMMS_CONN_BT ) ) {
+            stringFromStreamHere( stream, nli->btName, sizeof(nli->btName) );
+            stringFromStreamHere( stream, nli->btAddress, sizeof(nli->btAddress) );
+        }
+        if ( types_hasType( nli->_conTypes, COMMS_CONN_SMS ) ) {
+            stringFromStreamHere( stream, nli->phone, sizeof(nli->phone) );
+            nli->isGSM = stream_getU8( stream );
+            nli->osType= stream_getU8( stream );
+            nli->osVers = stream_getU32( stream );
+        }
+        if ( types_hasType( nli->_conTypes, COMMS_CONN_MQTT ) ) {
+            stringFromStreamHere( stream, nli->mqttDevID, sizeof(nli->mqttDevID) );
+        }
+
+        if ( version > 0 && 0 < stream_getSize( stream ) ) {
+            nli->remotesAreRobots = 0 != stream_getBits( stream, 1 );
+            nli->inDuplicateMode = stream_getBits( stream, 1 );
+            XP_LOGF( "%s(): remotesAreRobots: %d; inDuplicateMode: %d", __func__,
+                     nli->remotesAreRobots, nli->inDuplicateMode );
+        } else {
+            nli->inDuplicateMode = XP_FALSE;
+        }
+
+        XP_ASSERT( 0 == stream_getSize( stream ) );
+        LOGNLI( nli );
+    }
 
     LOG_RETURNF( "%s", boolToStr(success) );
-    LOGNLI( nli );
     return success;
 }
 

@@ -358,16 +358,16 @@ parseCommon( DictionaryCtxt* dctx, XWEnv xwe, const XP_U8** ptrp, const XP_U8* e
             dctx->values[ii] = *ptr++;
         }
 
-        dctx->langCode = xloc & 0x7F;
         if ( NULL == dctx->isoCode ) {
-            const XP_UCHAR* isoCode = lcToLocale( dctx->langCode );
+            XP_LangCode langCode = xloc & 0x7F;
+            const XP_UCHAR* isoCode = lcToLocale( langCode );
             XP_ASSERT( !!isoCode );
             dctx->isoCode = copyString( dctx->mpool, isoCode );
             XP_LOGFF( "looked up isoCode %s for langCode %d", isoCode,
-                      dctx->langCode );
+                      langCode );
         }
 #ifdef DEBUG
-        const XP_UCHAR* locale = lcToLocale( dctx->langCode );
+        const XP_UCHAR* locale = lcToLocale( xloc & 0x7F );
         XP_ASSERT( !locale || !XP_STRCMP( locale, dctx->isoCode ) );
 #endif
     }
@@ -980,12 +980,6 @@ dict_getFaceBitmaps( const DictionaryCtxt* dict, Tile tile, XP_Bitmaps* bmps )
     bmps->bmps[0] = bitmaps->smallBM;
     bmps->bmps[1] = bitmaps->largeBM;
 } /* dict_getFaceBitmaps */
-
-XP_LangCode
-dict_getLangCode( const DictionaryCtxt* dict )
-{
-    return dict->langCode;
-}
 
 XP_U32
 dict_getWordCount( const DictionaryCtxt* dict, XWEnv xwe )

@@ -193,36 +193,6 @@ countBits( int bits )
     return result;
 }
 
-static const char*
-codeToLang( XP_LangCode langCode )
-{
-    const char* langName = "<\?\?\?>";
-    switch( langCode ) {
-    case 1: langName = "English"; break;
-    case 2: langName = "French"; break;
-    case 3: langName = "German"; break;
-    case 4: langName = "Turkish";break;
-    case 5: langName = "Arabic"; break;
-    case 6: langName = "Spanish"; break;
-    case 7: langName = "Swedish"; break;
-    case 8:langName = "Polish";; break;
-    case 9: langName = "Danish"; break;
-    case 10: langName = "Italian"; break;
-    case 11: langName = "Dutch"; break;
-    case 12: langName = "Catalan"; break;
-    case 13: langName = "Portuguese"; break;
-    case 15: langName = "Russian"; break;
-    case 17: langName = "Czech"; break;
-    case 18: langName = "Greek"; break;
-    case 19: langName = "Slovak"; break;
-    default:
-        XP_LOGF( "%s(): bad code %d", __func__, langCode );
-        break;
-        // XP_ASSERT(0);
-    }
-    return langName;
-}
-
 void
 cgl_draw( CursGameList* cgl )
 {
@@ -255,7 +225,7 @@ cgl_draw( CursGameList* cgl )
         int col = 0;
         data[line][col++] = g_strdup_printf( "%d", ii + cgl->yOffset + 1 ); /* 1-based */
         data[line][col++] = g_strdup_printf( "%05lld", gi->rowid );
-        data[line][col++] = g_strndup( codeToLang(gi->dictLang), 4 );
+        data[line][col++] = g_strdup( gi->isoCode );
         data[line][col++] = g_strdup( gi->scores );
         data[line][col++] = g_strdup_printf( "%d", gi->gameID );
         data[line][col++] = g_strdup_printf( "%d", gi->role );

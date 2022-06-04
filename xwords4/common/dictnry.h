@@ -98,8 +98,6 @@ struct DictionaryCtxt {
     XP_UCHAR** charEnds;
     XP_U32 nWords;
 
-    XP_LangCode langCode;
-
     XP_U16 refCount;
     XP_U16 headerFlags;
     XP_U16 maxChars;
@@ -205,7 +203,6 @@ XP_Bool dict_faceIsBitmap( const DictionaryCtxt* dict, Tile tile );
 void dict_getFaceBitmaps( const DictionaryCtxt* dict, Tile tile, 
                           XP_Bitmaps* bmps );
 
-XP_LangCode dict_getLangCode( const DictionaryCtxt* dict );
 XP_U32 dict_getWordCount( const DictionaryCtxt* dict, XWEnv xwe );
 
 const XP_UCHAR* dict_getDesc( const DictionaryCtxt* dict );

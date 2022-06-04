@@ -122,15 +122,16 @@ setListeners( XWGame* game, const CommonPrefs* cp )
 
 static const DictionaryCtxt*
 getDicts( const CurGameInfo* gi, XW_UtilCtxt* util, XWEnv xwe,
-          XP_LangCode langCode, PlayerDicts* playerDicts )
+          PlayerDicts* playerDicts )
 {
-    const DictionaryCtxt* result = util_getDict( util, xwe, langCode, gi->dictName );
+    const XP_UCHAR* isoCode = gi->isoCode;
+    const DictionaryCtxt* result = util_getDict( util, xwe, isoCode, gi->dictName );
     XP_MEMSET( playerDicts, 0, sizeof(*playerDicts) );
     if ( !!result ) {
         for ( int ii = 0; ii < gi->nPlayers; ++ii ) {
             const LocalPlayer* lp = &gi->players[ii];
             if ( lp->isLocal && !!lp->dictName && lp->dictName[0] ) {
-                playerDicts->dicts[ii] = util_getDict( util, xwe, langCode,
+                playerDicts->dicts[ii] = util_getDict( util, xwe, isoCode,
                                                        lp->dictName );
             }
         }
@@ -175,11 +176,12 @@ game_makeNewGame( MPFORMAL XWEnv xwe, XWGame* game, CurGameInfo* gi,
     game->util = util;
 
     PlayerDicts playerDicts;
-    const DictionaryCtxt* dict = getDicts( gi, util, xwe, gi->dictLang, &playerDicts );
+    const DictionaryCtxt* dict = getDicts( gi, util, xwe, &playerDicts );
     XP_Bool success = !!dict;
 
     if ( success ) {
-        gi->dictLang = dict_getLangCode( dict );
+        XP_STRNCPY( gi->isoCode, dict_getISOCode( dict ), VSIZE(gi->isoCode) );
+        XP_ASSERT( !!gi->isoCode[0] );
         game->model = model_make( MPPARM(mpool) xwe, (DictionaryCtxt*)NULL,
                                   NULL, util, gi->boardSize );
 
@@ -340,12 +342,10 @@ game_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
                 ? 0 : stream_getU32( stream );
 
             PlayerDicts playerDicts;
-            const DictionaryCtxt* dict = getDicts( gi, util, xwe,
-                                                   gi->dictLang, &playerDicts );
+            const DictionaryCtxt* dict = getDicts( gi, util, xwe, &playerDicts );
             if ( !dict ) {
                 break;
             }
-            XP_ASSERT( gi->dictLang == dict_getLangCode(dict) );
 
             /* Previous stream versions didn't save anything if built
              * standalone.  Now we always save something.  But we need to know
@@ -417,7 +417,7 @@ game_makeFromInvite( MPFORMAL XWEnv xwe, const NetLaunchInfo* nli,
     gi->boardSize = 15;
     gi->traySize = gi->bingoMin = 7;
     gi->gameID = nli->gameID;
-    gi->dictLang = nli->lang;
+    XP_STRNCPY( gi->isoCode, nli->isoCode, VSIZE(gi->isoCode) );
     gi->forceChannel = nli->forceChannel;
     gi->inDuplicateMode = nli->inDuplicateMode;
     gi->serverRole = SERVER_ISCLIENT; /* recipient of invitation is client */
@@ -559,7 +559,7 @@ game_summarize( XWGame* game, CurGameInfo* gi, GameSummary* summary )
     ServerCtxt* server = game->server;
     summary->turn = server_getCurrentTurn( server, &summary->turnIsLocal );
     summary->lastMoveTime = server_getLastMoveTime(server);
-    summary->lang = gi->dictLang;
+    XP_STRNCPY( summary->isoCode, gi->isoCode, VSIZE(summary->isoCode)-1 );
     summary->gameOver = server_getGameIsOver( server );
     summary->nMoves = model_getNMoves( game->model );
     summary->dupTimerExpires = server_getDupTimerExpires( server );
@@ -654,8 +654,7 @@ gi_copy( MPFORMAL CurGameInfo* destGI, const CurGameInfo* srcGI )
 
     replaceStringIfDifferent( mpool, &destGI->dictName, 
                               srcGI->dictName );
-
-    destGI->dictLang = srcGI->dictLang;
+    XP_STRNCPY( destGI->isoCode, srcGI->isoCode, VSIZE(destGI->isoCode)-1 );
     destGI->gameID = srcGI->gameID;
     destGI->gameSeconds = srcGI->gameSeconds;
     destGI->nPlayers = (XP_U8)srcGI->nPlayers;
@@ -801,8 +800,18 @@ gi_readFromStream( MPFORMAL XWStreamCtxt* stream, CurGameInfo* gi )
 
     gi->gameID = strVersion < STREAM_VERS_BLUETOOTH2 ? 
         stream_getU16( stream ) : stream_getU32( stream );
-    gi->dictLang =
-        strVersion >= STREAM_VERS_DICTLANG ? stream_getU8( stream ) : 0;
+
+
+    if ( STREAM_VERS_GI_ISO <= strVersion ) {
+        stringFromStreamHere( stream, gi->isoCode, VSIZE(gi->isoCode) );
+    } else if ( STREAM_VERS_DICTLANG <= strVersion ) {
+        XP_LangCode dictLang = stream_getU8( stream );
+        const XP_UCHAR* isoCode = lcToLocale( dictLang );
+        XP_ASSERT( !!isoCode );
+        XP_STRNCPY( gi->isoCode, isoCode, VSIZE(gi->isoCode) );
+        XP_LOGFF( "upgrading; faked isoCode: %s", gi->isoCode );
+    }
+
     if ( gi->timerEnabled || strVersion >= STREAM_VERS_GAMESECONDS ) {
         gi->gameSeconds = stream_getU16( stream );
     }
@@ -833,8 +842,6 @@ gi_readFromStream( MPFORMAL XWStreamCtxt* stream, CurGameInfo* gi )
 void
 gi_writeToStream( XWStreamCtxt* stream, const CurGameInfo* gi )
 {
-    const LocalPlayer* pl;
-    XP_U16 ii;
     XP_U16 nColsNBits;
 #ifdef STREAM_VERS_BIGBOARD
     XP_U16 strVersion = stream_getVersion( stream );
@@ -878,9 +885,20 @@ gi_writeToStream( XWStreamCtxt* stream, const CurGameInfo* gi )
         stream_putU16( stream, gi->gameID );
     }
 
-    stream_putU8( stream, gi->dictLang );
+    if ( STREAM_VERS_GI_ISO <= strVersion ) {
+        stringToStream( stream, gi->isoCode );
+    } else {
+        XP_LangCode code;
+        if ( haveLocaleToLc( gi->isoCode, &code ) ) {
+            stream_putU8( stream, code );
+        } else {
+            XP_ASSERT( 0 );
+        }
+    }
     stream_putU16( stream, gi->gameSeconds );
 
+    int ii;
+    const LocalPlayer* pl;
     for ( pl = gi->players, ii = 0; ii < gi->nPlayers; ++pl, ++ii ) {
         stringToStream( stream, pl->name );
         stringToStream( stream, pl->password );
@@ -953,6 +971,7 @@ game_logGI( const CurGameInfo* gi, const char* msg, const char* func, int line )
         XP_LOGF( "  serverRole: %d", gi->serverRole );
         XP_LOGF( "  gameID: %d", gi->gameID );
         XP_LOGF( "  dictName: %s", gi->dictName );
+        XP_LOGF( "  isoCode: %s", gi->isoCode );
     }
 }
 #endif

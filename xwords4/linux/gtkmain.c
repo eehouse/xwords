@@ -275,7 +275,7 @@ add_to_list( GtkWidget* list, sqlite3_int64 rowid, XP_Bool isNew,
                         NAME_ITEM, gib->name,
                         CREATED_ITEM, createdStr,
                         GAMEID_ITEM, gib->gameID,
-                        LANG_ITEM, lcToLocale(gib->dictLang),
+                        LANG_ITEM, gib->isoCode,
                         SEED_ITEM, gib->seed,
                         ROLE_ITEM, gib->role,
                         CONN_ITEM, gib->conn,
@@ -749,7 +749,7 @@ gameFromInvite( GtkAppGlobals* apg, const NetLaunchInfo* invite,
     ensureLocalPlayerNames( params, &gi );
 
     gi.gameID = invite->gameID;
-    gi.dictLang = invite->lang;
+    XP_STRNCPY( gi.isoCode, invite->isoCode, VSIZE(gi.isoCode)-1 );
     gi.forceChannel = invite->forceChannel;
     gi.inDuplicateMode = invite->inDuplicateMode;
     gi.serverRole = SERVER_ISCLIENT; /* recipient of invitation is client */
@@ -1029,6 +1029,8 @@ gtkmain( LaunchParams* params )
     linux_sms_cleanup( params );
 #endif
     mqttc_cleanup( params );
+    g_array_free( apg.selRows, true );
+
     return 0;
 } /* gtkmain */
 

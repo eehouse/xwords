@@ -213,7 +213,7 @@ cb_newFor( CursesBoardState* cbState, const NetLaunchInfo* nli,
     gi_copy( MPPARM(params->mpool) &gi, &params->pgi );
     gi_setNPlayers( &gi, nli->nPlayersT, nli->nPlayersH );
     gi.gameID = nli->gameID;
-    gi.dictLang = nli->lang;
+    XP_STRNCPY( gi.isoCode, nli->isoCode, VSIZE(gi.isoCode) );
     gi.forceChannel = nli->forceChannel;
     gi.inDuplicateMode = nli->inDuplicateMode;
     gi.serverRole = SERVER_ISCLIENT; /* recipient of invitation is client */
@@ -961,7 +961,7 @@ curses_util_notifyGameOver( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe), XP_S16 quitte
 
 static void
 curses_util_informNetDict( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe),
-                           XP_LangCode XP_UNUSED(lang),
+                           const XP_UCHAR* XP_UNUSED(isoCode),
                            const XP_UCHAR* XP_UNUSED_DBG(oldName),
                            const XP_UCHAR* XP_UNUSED_DBG(newName), 
                            const XP_UCHAR* XP_UNUSED_DBG(newSum),

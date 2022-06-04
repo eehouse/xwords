@@ -1861,7 +1861,7 @@ gtk_util_notifyGameOver( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe), XP_S16 quitter )
 
 static void
 gtk_util_informNetDict( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe),
-                        XP_LangCode XP_UNUSED(lang),
+                        const XP_UCHAR* XP_UNUSED(isoCode),
                         const XP_UCHAR* oldName,
                         const XP_UCHAR* newName, const XP_UCHAR* newSum,
                         XWPhoniesChoice phoniesAction )

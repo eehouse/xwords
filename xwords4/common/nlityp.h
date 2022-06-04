@@ -26,6 +26,7 @@
 
 #define MAX_GAME_NAME_LEN 64
 #define MAX_DICT_NAME_LEN 32
+#define MAX_ISO_CODE_LEN 8
 
 typedef enum {OSType_NONE, OSType_LINUX, OSType_ANDROID, } XP_OSType;
 
@@ -34,7 +35,7 @@ typedef struct _NetLaunchInfo {
 
     XP_UCHAR gameName[MAX_GAME_NAME_LEN];
     XP_UCHAR dict[MAX_DICT_NAME_LEN];
-    XP_LangCode lang;
+    XP_UCHAR isoCode[MAX_ISO_CODE_LEN+1];
     XP_U8 forceChannel;
     XP_U8 nPlayersT;
     XP_U8 nPlayersH;

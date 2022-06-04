@@ -112,7 +112,7 @@ linux_util_makeEmptyDict( XW_UtilCtxt* XP_UNUSED_DBG(uctx), XWEnv xwe )
 
 static const DictionaryCtxt*
 linux_util_getDict( XW_UtilCtxt* uc, XWEnv xwe,
-                    XP_LangCode XP_UNUSED(lang), const XP_UCHAR* dictName )
+                    const XP_UCHAR* XP_UNUSED(isoCode), const XP_UCHAR* dictName )
 {
     CommonGlobals* cGlobals = (CommonGlobals*)uc->closure;
     LaunchParams* params = cGlobals->params;

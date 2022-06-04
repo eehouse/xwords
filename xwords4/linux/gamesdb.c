@@ -38,6 +38,9 @@
 #define VERS_1_TO_2 \
         "created INT" \
 
+#define VERS_2_TO_3   \
+        "isoCode TEXT(8)" \
+
 static XP_Bool getColumnText( sqlite3_stmt *ppStmt, int iCol, XP_UCHAR* buf,
                               int* len );
 static bool fetchInt( sqlite3* pDb, const gchar* key, int32_t* resultP );
@@ -60,7 +63,7 @@ static void assertPrintResult( sqlite3* pDb, int result, int expect );
  * it's adding new fields or whatever.
  */
 
-#define CUR_DB_VERSION 2
+#define CUR_DB_VERSION 3
 
 sqlite3* 
 gdb_open( const char* dbName )
@@ -106,6 +109,10 @@ upgradeTables( sqlite3* pDb, int32_t oldVersion )
     case 1:
         XP_ASSERT( 2 == CUR_DB_VERSION );
         newCols = VERS_1_TO_2;
+        break;
+    case 2:
+        XP_ASSERT( 3 == CUR_DB_VERSION );
+        newCols = VERS_2_TO_3;
         break;
     default:
         XP_ASSERT(0);
@@ -179,6 +186,7 @@ createTables( sqlite3* pDb )
          ",dupTimerExpires INT"
         ","VERS_0_TO_1
         ","VERS_1_TO_2
+        ","VERS_2_TO_3
         // ",dupTimerExpires INT"
         ")";
     (void)sqlite3_exec( pDb, createGamesStr, NULL, NULL, NULL );
@@ -330,7 +338,6 @@ gdb_summarize( CommonGlobals* cGlobals )
     const CurGameInfo* gi = cGlobals->gi;
     XP_U16 nTotal = gi->nPlayers;
     XP_U32 gameID = gi->gameID;
-    XP_LangCode dictLang = gi->dictLang;
     XP_ASSERT( 0 != gameID );
     CommsAddrRec addr = {0};
 
@@ -408,7 +415,7 @@ gdb_summarize( CommonGlobals* cGlobals )
     pairs[indx++] = g_strdup_printf( "nmissing=%d", nMissing);
     pairs[indx++] = g_strdup_printf( "nmoves=%d", nMoves);
     pairs[indx++] = g_strdup_printf( "seed=%d", seed);
-    pairs[indx++] = g_strdup_printf( "dictlang=%d", dictLang);
+    pairs[indx++] = g_strdup_printf( "isoCode='%s'", gi->isoCode);
     pairs[indx++] = g_strdup_printf( "gameid=%d", gameID);
     pairs[indx++] = g_strdup_printf( "connvia='%s'", connvia);
 #ifdef XWFEATURE_RELAY
@@ -534,7 +541,7 @@ gdb_getGameInfo( sqlite3* pDb, sqlite3_int64 rowid, GameInfo* gib )
 {
     XP_Bool success = XP_FALSE;
     const char* fmt = "SELECT ended, turn, local, nmoves, ntotal, nmissing, "
-        "dictlang, seed, connvia, gameid, lastMoveTime, dupTimerExpires, relayid, scores, nPending, role, created, snap "
+        "isoCode, seed, connvia, gameid, lastMoveTime, dupTimerExpires, relayid, scores, nPending, role, created, snap "
         "FROM games WHERE rowid = %lld";
     XP_UCHAR query[256];
     snprintf( query, sizeof(query), fmt, rowid );
@@ -553,9 +560,10 @@ gdb_getGameInfo( sqlite3* pDb, sqlite3_int64 rowid, GameInfo* gib )
         gib->nMoves = sqlite3_column_int( ppStmt, col++ );
         gib->nTotal = sqlite3_column_int( ppStmt, col++ );
         gib->nMissing = sqlite3_column_int( ppStmt, col++ );
-        gib->dictLang = sqlite3_column_int( ppStmt, col++ );
+        int len = sizeof(gib->isoCode);
+        getColumnText( ppStmt, col++, gib->isoCode, &len );
         gib->seed = sqlite3_column_int( ppStmt, col++ );
-        int len = sizeof(gib->conn);
+        len = sizeof(gib->conn);
         getColumnText( ppStmt, col++, gib->conn, &len );
         gib->gameID = sqlite3_column_int( ppStmt, col++ );
         gib->lastMoveTime = sqlite3_column_int( ppStmt, col++ );

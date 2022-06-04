@@ -48,7 +48,7 @@ typedef struct CurGameInfo {
     LocalPlayer players[MAX_NUM_PLAYERS];
     XP_U32 gameID;      /* uniquely identifies game */
     XP_U16 gameSeconds; /* for timer */
-    XP_LangCode dictLang;
+    XP_UCHAR isoCode[MAX_ISO_CODE_LEN+1];
     XP_U8 nPlayers;
     XP_U8 boardSize;
     XP_U8 traySize;
