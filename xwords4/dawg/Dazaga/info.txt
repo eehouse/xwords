@@ -1,0 +1,66 @@
+# -*- mode: conf; -*-
+# Copyright 2002 by Eric House (xwords@eehouse.org).  All rights reserved.
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+
+LANGCODE:dzg
+LANGNAME:Dazaga
+
+# deal with DOS files
+# LANGFILTER: tr -d '\r'
+# LANGFILTER: | tr [a-z] [A-Z]
+# LANGFILTER: | grep '^[A-Z]*$'
+# LANGFILTER: | sort -u
+
+# We can trust sort (above) to do the right thing since there's no
+# high ascii.  dict2dawg.pl is much faster if I can trust that its
+# input is in sorted order.
+# D2DARGS: -nosort -term 10
+
+LANGINFO: something here
+
+# High bit means "official".  Next 7 bits are an enum where
+# Tudaga==0x17.  Low byte is padding
+XLOC_HEADER:0x9700
+
+<BEGIN_TILES>
+{"_"}     0        2
+'A|a'     2        9
+'B|b'     5        2
+'C|c'     4        3
+'D|d'     3        4
+'E|e'     2        5
+'F|f'     5        2
+'G|g'     4        3
+'H|h'    10        1
+'I|i'     1       15
+'J|j'    10        1
+'K|k'     2        5
+'L|l'     3        4
+'M|m'     2        5
+'N|n'     2        7
+'Ŋ|ŋ'     5        2
+'O|o'     2        5
+'P|p'    10        1
+'R|r'     2        8
+'S|s'     3        4
+'T|t'     2        6
+'U|u'     1       13
+'W|w'     5        2
+'Y|y'     5        2
+'Z|z'     5        2
+<END_TILES>
+
+# should ignore all after the <END> above
