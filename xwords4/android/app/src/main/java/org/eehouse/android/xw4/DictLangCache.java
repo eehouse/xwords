@@ -24,7 +24,7 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.os.Handler;
 import android.widget.ArrayAdapter;
-
+import android.text.TextUtils;
 
 import org.eehouse.android.xw4.DictUtils.DictAndLoc;
 import org.eehouse.android.xw4.DictUtils.DictLoc;
@@ -434,6 +434,8 @@ public class DictLangCache {
     private static void putTwo( String isoCode, String langName )
     {
         Log.d( TAG, "putTwo(): adding %s => %s", langName, isoCode );
+        Assert.assertTrueNR( !TextUtils.isEmpty(isoCode)
+                             && !TextUtils.isEmpty(langName) );
         s_langCodes.put( langName, isoCode );
         s_langNames.put( isoCode, langName );
     }
@@ -462,11 +464,9 @@ public class DictLangCache {
                 if ( !s_langNames.containsKey( isoCode ) ) {
                     Log.d( TAG, "looking at info %s", info );
                     Assert.assertTrueNR( null != info.langName );
-                    Log.d( TAG, "makeMaps(2): adding %s => %s", info.langName, isoCode );
                     putTwo( isoCode, info.langName );
                 }
             }
-            Log.d( TAG, "makeMaps() DONE" );
         }
     }
 
