@@ -2456,20 +2456,23 @@ public class GamesListDelegate extends ListDelegateBase
     private boolean loadConfig( Intent intent )
     {
         boolean success = false;
-        try {
-            Uri data = intent.getData();
-            String path = data.getPath();
-            String prefix = LocUtils.getString( m_activity, R.string.conf_prefix );
-            if ( path.startsWith( prefix ) ) {
-                makeConfirmThenBuilder( R.string.apply_config, Action.APPLY_CONFIG )
-                    .setPosButton( R.string.button_apply_config )
-                    .setNegButton( android.R.string.cancel )
-                    .setParams( data.toString() )
-                    .show();
-                success = true;
+        Uri data = intent.getData();
+        if ( null != data ) {
+            try {
+                String path = data.getPath();
+                String prefix = LocUtils.getString( m_activity, R.string.conf_prefix );
+                Log.d( TAG, "loadConfig(): path: %s; prefix: %s", path, prefix );
+                if ( path.startsWith( prefix ) ) {
+                    makeConfirmThenBuilder( R.string.apply_config, Action.APPLY_CONFIG )
+                        .setPosButton( R.string.button_apply_config )
+                        .setNegButton( android.R.string.cancel )
+                        .setParams( data.toString() )
+                        .show();
+                    success = true;
+                }
+            } catch ( Exception ex ) {
+                Log.ex( TAG, ex );
             }
-        } catch ( Exception ex ) {
-            Log.ex( TAG, ex );
         }
 
         return success;
