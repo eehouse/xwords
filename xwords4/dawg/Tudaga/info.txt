@@ -1,0 +1,65 @@
+# -*- mode: conf; -*-
+# Copyright 2002 by Eric House (xwords@eehouse.org).  All rights reserved.
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+
+LANGCODE:tuq
+LANGNAME:Tudaga
+
+# deal with DOS files
+# LANGFILTER: tr -d '\r'
+# LANGFILTER: | tr [a-z] [A-Z]
+# LANGFILTER: | grep '^[A-Z]*$'
+# LANGFILTER: | sort -u
+
+# We can trust sort (above) to do the right thing since there's no
+# high ascii.  dict2dawg.pl is much faster if I can trust that its
+# input is in sorted order.
+# D2DARGS: -nosort -term 10
+
+LANGINFO: something here
+
+# High bit means "official".  Next 7 bits are an enum where
+# Tudaga==0x16.  Low byte is padding
+XLOC_HEADER:0x9600
+
+<BEGIN_TILES>
+{"_"}              0        2
+'A|a'              1       11
+'B|b'              4        3
+'Č|č'              5        2
+'D|d'              2        7
+'E|e'              3        4
+'G|g'              4        3
+'H|h'              4        3
+'I|i'              1       13
+'K|k'              3        4
+'L|l'              4        3
+'M|m'              4        3
+'N|n'              2        8
+{"NJ|nj|Nj|nJ"}   10        1
+'Ŋ|ŋ'             10        1
+'O|o'              2        9
+'P|p'             10        1
+'R|r'              2        6
+'S|s'              4        3
+'T|t'              3        4
+'U|u'              1       15
+'W|w'             10        1
+'Y|y'              3        4
+'Z|z'             10        1
+<END_TILES>
+
+# should ignore all after the <END> above
