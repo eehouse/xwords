@@ -40,6 +40,7 @@ public class DictInfo {
             return new StringBuilder("{")
                 .append("name: ").append(name)
                 .append(", isoCode: ").append(isoCode)
+                .append(", langName: ").append(langName)
                 .append(", md5Sum: ").append(md5Sum)
                 .append(", fullSum: ").append(fullSum)
                 .append("}").toString();

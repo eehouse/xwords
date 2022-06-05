@@ -180,7 +180,7 @@ public class DUtilCtxt {
         }
 
         String result = (0 == id) ? "" : LocUtils.getString( m_context, id );
-        Log.d( TAG, "getUserString(%d) => %s", stringCode, result );
+        // Log.d( TAG, "getUserString(%d) => %s", stringCode, result );
         return result;
     }
 
@@ -247,7 +247,7 @@ public class DUtilCtxt {
                              String pauserName, String expl )
     {
         long[] rowids = DBUtils.getRowIDsFor( m_context, gameID );
-        Log.d( TAG, "got %d games with gameid", rowids.length );
+        // Log.d( TAG, "got %d games with gameid", rowids.length );
 
         final boolean isPause = UNPAUSED != pauseType;
 
@@ -314,13 +314,13 @@ public class DUtilCtxt {
 
     public void onInviteReceived( NetLaunchInfo nli )
     {
-        Log.d( TAG, "onInviteReceived(%s)", nli );
+        // Log.d( TAG, "onInviteReceived(%s)", nli );
         MQTTUtils.makeOrNotify( m_context, nli );
     }
 
     public void onMessageReceived( int gameID, CommsAddrRec from, byte[] msg )
     {
-        Log.d( TAG, "onMessageReceived()" );
+        // Log.d( TAG, "onMessageReceived()" );
         Assert.assertTrueNR( from.contains( CommsAddrRec.CommsConnType.COMMS_CONN_MQTT ) );
         MQTTUtils.handleMessage( m_context, from, gameID, msg );
     }

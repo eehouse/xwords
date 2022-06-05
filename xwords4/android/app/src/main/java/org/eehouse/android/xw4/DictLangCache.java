@@ -458,6 +458,7 @@ public class DictLangCache {
             for ( DictAndLoc dal : dals ) {
                 DictInfo info = getInfo( context, dal );
                 String isoCode = info.isoCode;
+                Assert.assertTrueNR( null != isoCode );
                 if ( !s_langNames.containsKey( isoCode ) ) {
                     Log.d( TAG, "looking at info %s", info );
                     Assert.assertTrueNR( null != info.langName );

@@ -1957,6 +1957,8 @@ public class DBUtils {
             String.format( NAME_FMT, DBHelper.DICTNAME, dal.name );
         ContentValues values = new ContentValues();
 
+        Assert.assertTrueNR( null != info.isoCode && ! info.isoCode.equals("null") );
+
         values.put( DBHelper.ISOCODE, info.isoCode );
         values.put( DBHelper.LANGNAME, info.langName );
         values.put( DBHelper.WORDCOUNT, info.wordCount );
