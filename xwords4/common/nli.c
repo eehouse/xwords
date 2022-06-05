@@ -279,10 +279,10 @@ logNLI( const NetLaunchInfo* nli, const char* callerFunc, const int callerLine )
     }
 
     XP_UCHAR buf[256+128];
-    XP_SNPRINTF( buf, VSIZE(buf), "{ctyps: [%s], nPlayersT: %d; nPlayersH: %d; "
-                 "gameID: %d; inviteID: %s, mqttid: %s}", conTypes,
-                 nli->nPlayersT, nli->nPlayersH, nli->gameID, nli->inviteID,
-                 nli->mqttDevID );
+    XP_SNPRINTF( buf, VSIZE(buf), "{ctyps: [%s], nPlayersT: %d, nPlayersH: %d, "
+                 "isoCode: '%s', gameID: %d, inviteID: %s, mqttid: %s}", conTypes,
+                 nli->nPlayersT, nli->nPlayersH, nli->isoCode, nli->gameID,
+                 nli->inviteID, nli->mqttDevID );
     XP_LOGF( "%s", buf );
 }
 # endif
