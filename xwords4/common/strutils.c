@@ -443,7 +443,6 @@ static struct {
             { .lc = 0x14, .isoCode = "hu", },
             { .lc = 0x15, .isoCode = "ro", },
             { .lc = 0x19, .isoCode = "fi", },
-            { .lc = 0x7f, .isoCode = "hex", },
 };
 
 XP_Bool

@@ -261,7 +261,6 @@
     <item>hu</item><item>@string/lang_name_hungarian</item>
     <item>ro</item><item>@string/lang_name_romanian</item>
     <item>fi</item><item>@string/lang_name_finnish</item>
-    <item>hex</item><item>Hex</item>
   </string-array>
 
   <!-- Triples of Name, supported codes, and URL format string -->

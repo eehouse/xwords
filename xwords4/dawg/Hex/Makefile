@@ -17,10 +17,10 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 XWLANG = Hex
-LANGCODE = hex
+LANGCODE = hx
 ENC = UTF-8
 
-DICTNOTE = "Toy/debugging wordlist comprising words from a large English list using only the letters A-F"
+DICTNOTE = "Toy/debugging wordlist comprising words from a large English list using only the letters A-F, with umlauts thrown in"
 
 TARGET_TYPE = WINCE
 
@@ -40,7 +40,9 @@ $(XWLANG)Main.dict.gz: $(DICT)
 		sed 's/[[:lower:]]*/\U&/' | \
 		grep -e '^[A-F]\{2,15\}$$' | \
 		echo CAFEBABE DEADBEEF $$(cat -) | \
-		tr ' ' '\n' | sort | gzip > $@
+		sed 's/A/Ä/g' | \
+		sed 's/E/Ë/g' | \
+		tr ' ' '\n' | sort -u | gzip > $@
 
 # Everything but creating of the Main.dict file is inherited from the
 # "parent" Makefile.langcommon in the parent directory.

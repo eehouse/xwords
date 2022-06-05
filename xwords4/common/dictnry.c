@@ -571,10 +571,10 @@ getCountsFor( const DictionaryCtxt* dict, XP_U16 nCols )
                 if ( 50 < (count * pct) % 100 ) {
                     ++newCount;
                 }
-                XP_ASSERT( tile != blank || newCount <= MAX_NUM_BLANKS );
                 if ( tile == blank && newCount > MAX_NUM_BLANKS ) {
                     newCount = MAX_NUM_BLANKS;
                 }
+                XP_ASSERT( tile != blank || newCount <= MAX_NUM_BLANKS );
                 counts[tile] = newCount;
             }
         }
