@@ -193,6 +193,9 @@ def process(args):
             elif args.GET_NWORDS:
                 print( '{}'.format(nWords), file=sys.stdout )
                 sys.exit(0)
+            elif args.GET_LNAME:
+                print( '{}'.format(langName), file=sys.stdout )
+                sys.exit(0)
 
         nodeSize = 0
         isUTF8 = False
@@ -274,6 +277,8 @@ def mkParser():
                         action = 'store_true', help = 'write md5sum to stdout')
     parser.add_argument('--get-nwords', dest = 'GET_NWORDS', default = False,
                         action = 'store_true', help = 'write count of words to stdout')
+    parser.add_argument('--get-lname', dest = 'GET_LNAME', default = False,
+                        action = 'store_true', help = 'write language name to stdout (if present)')
     parser.add_argument('--separator', dest = 'DELIM', default = '', help = 'printed between tiles')
 
     # [-raw | -json]  [-get-sum] [-get-desc] -dict <xwdORpdb>
