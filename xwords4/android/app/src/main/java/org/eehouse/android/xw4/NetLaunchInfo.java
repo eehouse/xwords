@@ -547,7 +547,7 @@ public class NetLaunchInfo implements Serializable {
         boolean hasAddrs = -1 != flags;
         _conTypes = hasAddrs ? flags : EMPTY_SET;
 
-        isoCode = json.optString( MultiService.ISO );
+        isoCode = json.optString( MultiService.ISO, null );
         if ( null == isoCode ) {
             int lang = json.optInt( MultiService.LANG, 0 );
             if ( 0 != lang ) {
