@@ -639,6 +639,7 @@ public class DBHelper extends SQLiteOpenHelper {
     public static int update( SQLiteDatabase db, TABLE_NAMES table, ContentValues values,
                               String selection )
     {
+        // returns number of rows impacted
         return db.update( table.toString(), values, selection, null );
     }
 

@@ -1943,8 +1943,11 @@ public class DBUtils {
             cursor.close();
         }
 
-        if ( null != result && null == result.fullSum ) { // force generation
-            result = null;
+        if ( null != result ) {
+            Assert.assertTrueNR( !TextUtils.isEmpty(result.isoCode ) );
+            if ( null == result.fullSum ) { // force generation
+                result = null;
+            }
         }
 
         return result;
@@ -1953,11 +1956,11 @@ public class DBUtils {
     public static void dictsSetInfo( Context context, DictUtils.DictAndLoc dal,
                                      DictInfo info )
     {
+        Assert.assertTrueNR( ! TextUtils.isEmpty( info.isoCode ) );
+
         String selection =
             String.format( NAME_FMT, DBHelper.DICTNAME, dal.name );
         ContentValues values = new ContentValues();
-
-        Assert.assertTrueNR( null != info.isoCode && ! info.isoCode.equals("null") );
 
         values.put( DBHelper.ISOCODE, info.isoCode );
         values.put( DBHelper.LANGNAME, info.langName );
@@ -1972,7 +1975,7 @@ public class DBUtils {
             if ( 0 == result ) {
                 values.put( DBHelper.DICTNAME, dal.name );
                 long rowid = insert( TABLE_NAMES.DICTINFO, values );
-                Assert.assertTrue( rowid > 0 || !BuildConfig.DEBUG );
+                Assert.assertTrueNR( 0 < rowid );
             }
         }
     }
