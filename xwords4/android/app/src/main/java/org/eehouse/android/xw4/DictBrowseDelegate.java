@@ -142,7 +142,6 @@ public class DictBrowseDelegate extends DelegateBase
     private Spinner m_spinnerMin;
     private Spinner m_spinnerMax;
     private boolean m_filterAlertShown;
-    private String m_desc;
     private Runnable mResetChecker;
 
     private class DictListAdapter extends BaseAdapter
@@ -727,16 +726,23 @@ public class DictBrowseDelegate extends DelegateBase
         makeSpinnerAdapter( m_spinnerMax, m_browseState.m_chosenMax );
     }
 
+    private String[] mDescWrap = null;
     private String getDesc()
     {
-        if ( null == m_desc ) {
-            m_desc = XwJNI.dict_getDesc( m_dict );
+        if ( null == mDescWrap ) {
+            String desc = XwJNI.dict_getDesc( m_dict );
             if ( BuildConfig.NON_RELEASE ) {
                 String[] sums = DictLangCache.getDictMD5Sums( m_activity, m_name );
-                m_desc += "\n\nmd5s: " + sums[0] + "\n" + sums[1];
+                if ( null != desc ) {
+                    desc += "\n\n";
+                } else {
+                    desc = "";
+                }
+                desc += "md5s: " + sums[0] + "\n" + sums[1];
             }
+            mDescWrap = new String[] { desc };
         }
-        return m_desc;
+        return mDescWrap[0];
     }
 
     private FrameLayout removeList()
