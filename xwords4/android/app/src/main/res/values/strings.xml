@@ -2307,7 +2307,8 @@
     <string name="pref_item_update_summary">Get intermediate builds</string>
     <string name="checking_title">Checking</string>
     <string name="checking_for_fmt">Checking for wordlists in %1$s…</string>
-    <string name="db_store_done">SD card write complete.</string>
+    <string name="db_store_done">SD card write complete</string>
+    <string name="db_store_failed">SD card write failed</string>
     <string name="confirm_drop_mqtt">Are you sure you want to drop this
     game’s ability to communicate via the internet?</string>
     <string name="confirm_drop_relay_bt">Bluetooth only works for nearby

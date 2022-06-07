@@ -1529,8 +1529,9 @@ public class GamesListDelegate extends ListDelegateBase
                 storeGroupPositions( null );
                 mkListAdapter();
             } else if ( R.id.games_menu_storedb == id ) {
-                DBUtils.saveDB( m_activity );
-                showToast( R.string.db_store_done );
+                int msgID = DBUtils.saveDB( m_activity )
+                    ? R.string.db_store_done : R.string.db_store_failed;
+                showToast( msgID );
             }
             break;
 

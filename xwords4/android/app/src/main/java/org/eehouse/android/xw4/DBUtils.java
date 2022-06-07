@@ -1851,14 +1851,14 @@ public class DBUtils {
         }
     }
 
-    public static void loadDB( Context context )
+    public static boolean loadDB( Context context )
     {
-        copyGameDB( context, false );
+        return copyGameDB( context, false );
     }
 
-    public static void saveDB( Context context )
+    public static boolean saveDB( Context context )
     {
-        copyGameDB( context, true );
+        return copyGameDB( context, true );
     }
 
     public static boolean copyFileStream( FileOutputStream fos,
@@ -2443,8 +2443,9 @@ public class DBUtils {
         }
     }
 
-    private static void copyGameDB( Context context, boolean toSDCard )
+    private static boolean copyGameDB( Context context, boolean toSDCard )
     {
+        boolean success = false;
         String name = DBHelper.getDBName();
         File gamesDB = context.getDatabasePath( name );
 
@@ -2465,10 +2466,12 @@ public class DBUtils {
                     new FileOutputStream( toSDCard? sdcardDB : gamesDB );
                 copyFileStream( dest, src );
                 invalGroupsCache();
+                success = true;
             }
         } catch( java.io.FileNotFoundException fnfe ) {
             Log.ex( TAG, fnfe );
         }
+        return success;
     }
 
     // Copy my .apk to the Downloads directory, from which a user could more
