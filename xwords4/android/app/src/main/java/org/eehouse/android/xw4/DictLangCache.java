@@ -97,8 +97,7 @@ public class DictLangCache {
         {
             int result = -1;
             for ( int ii = 0; ii < getCount(); ++ii ) {
-                String code = getLangAtPosition( ii );
-                if ( code.equals( lang ) ) {
+                if ( lang.equals( getLangAtPosition( ii ) ) ) {
                     result = ii;
                     break;
                 }
@@ -177,7 +176,7 @@ public class DictLangCache {
         boolean found = false;
         DictInfo[] infos = getInfosHaveLang( context, isoCode );
         for ( DictInfo info : infos ) {
-            if ( info.name.equals( name ) ) {
+            if ( name.equals( info.name ) ) {
                 found = true;
                 break;
             }
