@@ -1853,11 +1853,16 @@ public class DBUtils {
 
     public static boolean loadDB( Context context )
     {
-        return copyGameDB( context, false );
+        boolean success = copyGameDB( context, false );
+        if ( success ) {
+            PrefsDelegate.loadPrefs( context );
+        }
+        return success;
     }
 
     public static boolean saveDB( Context context )
     {
+        PrefsDelegate.savePrefs( context );
         return copyGameDB( context, true );
     }
 

@@ -47,6 +47,7 @@ public class PrefsDelegate extends DelegateBase
     implements SharedPreferences.OnSharedPreferenceChangeListener,
                View.OnClickListener, PopupMenu.OnMenuItemClickListener {
     private static final String TAG = PrefsDelegate.class.getSimpleName();
+    private static final String PREFS_KEY = TAG + "/prefs";
 
     private XWActivity mActivity;
     private PreferenceFragmentCompat mFragment;
@@ -363,6 +364,43 @@ public class PrefsDelegate extends DelegateBase
         int[] prefIDs = PrefsWrappers.getPrefsResIDs();
         for ( int id : prefIDs ) {
             PreferenceManager.setDefaultValues( context, id, mustCheck );
+        }
+    }
+
+    static void savePrefs( Context context )
+    {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences( context );
+        Map<String, ?> all = prefs.getAll();
+        HashMap<String, Object> copy = new HashMap<>();
+        for ( String key : all.keySet() ) {
+            copy.put( key, all.get(key) );
+        }
+        DBUtils.setSerializableFor( context, PREFS_KEY, copy );
+    }
+
+    static void loadPrefs( Context context ) {
+        HashMap<String, Object> map = (HashMap<String, Object>)DBUtils
+            .getSerializableFor( context, PREFS_KEY );
+        if ( null != map ) {
+            SharedPreferences.Editor editor =
+                PreferenceManager.getDefaultSharedPreferences( context )
+                .edit();
+            for ( String key : map.keySet() ) {
+                Object value = map.get( key );
+                if ( value instanceof Boolean ) {
+                    editor.putBoolean( key, (Boolean)value );
+                } else if ( value instanceof String ) {
+                    editor.putString( key, (String)value );
+                } else if ( value instanceof Integer ) {
+                    editor.putInt( key, (Integer)value );
+                } else if ( value instanceof Long ) {
+                    editor.putLong( key, (Long)value );
+                } else {
+                    Log.d( TAG, "unexpected class: %s", value.getClass().getName() );
+                    Assert.failDbg();
+                }
+            }
+            editor.commit();
         }
     }
 }
