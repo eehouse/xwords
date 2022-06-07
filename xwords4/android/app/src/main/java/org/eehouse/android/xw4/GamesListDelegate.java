@@ -1532,6 +1532,8 @@ public class GamesListDelegate extends ListDelegateBase
                 int msgID = DBUtils.saveDB( m_activity )
                     ? R.string.db_store_done : R.string.db_store_failed;
                 showToast( msgID );
+            } else {
+                Assert.failDbg();
             }
             break;
 
@@ -1641,7 +1643,7 @@ public class GamesListDelegate extends ListDelegateBase
                     || XWPrefs.getDebugEnabled( m_activity );
                 showItemsIf( DEBUG_ITEMS, menu, nothingSelected && showDbg );
                 Utils.setItemVisible( menu, R.id.games_menu_loaddb,
-                                      showDbg && nothingSelected &&
+                                      nothingSelected &&
                                       DBUtils.gameDBExists( m_activity ) );
 
                 showItemsIf( NOSEL_ITEMS, menu, nothingSelected );
