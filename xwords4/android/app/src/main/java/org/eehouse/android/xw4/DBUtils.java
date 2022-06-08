@@ -32,6 +32,7 @@ import android.database.sqlite.SQLiteStatement;
 import android.graphics.Bitmap.CompressFormat;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Environment;
 import android.text.TextUtils;
 
@@ -52,8 +53,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.Serializable;
-import java.nio.channels.FileChannel;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
@@ -1851,38 +1853,61 @@ public class DBUtils {
         }
     }
 
-    public static boolean loadDB( Context context )
+    public static boolean loadDB( Context context, Uri uri )
     {
-        boolean success = copyGameDB( context, false );
+        boolean success = false;
+        try ( InputStream is = context
+              .getContentResolver().openInputStream(uri) ) {
+            String name = DBHelper.getDBName();
+            File gamesDB = context.getDatabasePath( name );
+            FileOutputStream fos = new FileOutputStream( gamesDB );
+            success = copyStream( fos, is );
+            invalGroupsCache();
+        } catch ( Exception ex ) {
+            Log.ex( TAG, ex );
+        }
+
         if ( success ) {
             PrefsDelegate.loadPrefs( context );
         }
         return success;
     }
 
-    public static boolean saveDB( Context context )
+    public static boolean saveDB( Context context, Uri uri )
     {
         PrefsDelegate.savePrefs( context );
-        return copyGameDB( context, true );
+        boolean success = false;
+        try ( OutputStream os = context.getContentResolver().openOutputStream( uri ) ) {
+            String name = DBHelper.getDBName();
+            File gamesDB = context.getDatabasePath( name );
+            FileInputStream fis = new FileInputStream( gamesDB );
+            success = copyStream( os, fis );
+        } catch ( Exception ex ) {
+            Log.ex( TAG, ex );
+        }
+        return success;
     }
 
-    public static boolean copyFileStream( FileOutputStream fos,
-                                          FileInputStream fis )
+    public static boolean copyStream( OutputStream fos, InputStream fis )
     {
         boolean success = false;
-        FileChannel channelSrc = null;
-        FileChannel channelDest = null;
+        byte[] buf = new byte[1024*8];
         try {
-            channelSrc = fis.getChannel();
-            channelDest = fos.getChannel();
-            channelSrc.transferTo( 0, channelSrc.size(), channelDest );
+            for ( ; ; ) {
+                int nRead = fis.read( buf );
+                if ( 0 >= nRead ) {
+                    break;
+                }
+                fos.write( buf, 0, nRead );
+            }
             success = true;
+            Log.d( TAG, "copyFileStream(): copied %s to %s", fis, fos );
         } catch( java.io.IOException ioe ) {
             Log.ex( TAG, ioe );
         } finally {
             try {
-                channelSrc.close();
-                channelDest.close();
+                fos.close();
+                fis.close();
             } catch( java.io.IOException ioe ) {
                 Log.ex( TAG, ioe );
             }
@@ -2448,37 +2473,6 @@ public class DBUtils {
         }
     }
 
-    private static boolean copyGameDB( Context context, boolean toSDCard )
-    {
-        boolean success = false;
-        String name = DBHelper.getDBName();
-        File gamesDB = context.getDatabasePath( name );
-
-        // Use the variant name EXCEPT where we're copying from sdCard and
-        // only the older name exists.
-        File sdcardDB = new File( Environment.getExternalStorageDirectory(),
-                                  getVariantDBName() );
-        if ( !toSDCard && !sdcardDB.exists() ) {
-            sdcardDB = new File( Environment.getExternalStorageDirectory(),
-                                 name );
-        }
-
-        try {
-            File srcDB = toSDCard? gamesDB : sdcardDB;
-            if ( srcDB.exists() ) {
-                FileInputStream src = new FileInputStream( srcDB );
-                FileOutputStream dest =
-                    new FileOutputStream( toSDCard? sdcardDB : gamesDB );
-                copyFileStream( dest, src );
-                invalGroupsCache();
-                success = true;
-            }
-        } catch( java.io.FileNotFoundException fnfe ) {
-            Log.ex( TAG, fnfe );
-        }
-        return success;
-    }
-
     // Copy my .apk to the Downloads directory, from which a user could more
     // easily share it with somebody else. Should be blocked for apks
     // installed from the Play store since viral distribution isn't allowed,
@@ -2499,7 +2493,7 @@ public class DBUtils {
 
             FileInputStream src = new FileInputStream( srcPath );
             FileOutputStream dest = new FileOutputStream( destPath );
-            copyFileStream( dest, src );
+            copyStream( dest, src );
         } catch ( Exception ex ) {
             Log.e( TAG, "copyApkToDownloads(): got ex: %s", ex );
         }

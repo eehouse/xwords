@@ -42,6 +42,8 @@ public enum RequestCode {
     // Games list
     REQUEST_LANG_GL,
     CONFIG_GAME,
+    STORE_DATA_FILE,
+    LOAD_DATA_FILE,
 
     // SMSInviteDelegate
     GET_CONTACT,

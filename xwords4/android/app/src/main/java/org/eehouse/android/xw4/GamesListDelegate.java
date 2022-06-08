@@ -1522,21 +1522,6 @@ public class GamesListDelegate extends ListDelegateBase
             rematchWithNameAndPerm( true, params );
             break;
 
-        case STORAGE_CONFIRMED:
-            int id = (Integer)params[0];
-            if ( R.id.games_menu_loaddb == id ) {
-                DBUtils.loadDB( m_activity );
-                storeGroupPositions( null );
-                mkListAdapter();
-            } else if ( R.id.games_menu_storedb == id ) {
-                int msgID = DBUtils.saveDB( m_activity )
-                    ? R.string.db_store_done : R.string.db_store_failed;
-                showToast( msgID );
-            } else {
-                Assert.failDbg();
-            }
-            break;
-
         case APPLY_CONFIG:
             Uri data = Uri.parse( (String)params[0] );
             CommonPrefs.loadColorPrefs( m_activity, data );
@@ -1560,6 +1545,43 @@ public class GamesListDelegate extends ListDelegateBase
         }
         return handled;
     }
+
+    private void startLoadOrStore( boolean isStore )
+    {
+        String intentAction = null;
+        RequestCode rq = null;
+        if ( isStore ) {
+            intentAction = Intent.ACTION_CREATE_DOCUMENT;
+            rq = RequestCode.STORE_DATA_FILE;
+        } else {
+            intentAction = Intent.ACTION_OPEN_DOCUMENT;
+            rq = RequestCode.LOAD_DATA_FILE;
+        }
+        Intent intent = new Intent( intentAction );
+        intent.addCategory( Intent.CATEGORY_OPENABLE );
+        intent.setType( "application/octet-stream" );
+        if ( isStore ) {
+            intent.putExtra( Intent.EXTRA_TITLE, DBHelper.getDBName() );
+        }
+        startActivityForResult( intent, rq );
+    }
+
+    private void handleLoadOrStoreResult( Uri uri, boolean isStore )
+    {
+        if ( isStore ) {
+            boolean saved = DBUtils.saveDB( m_activity, uri );
+            int msgID = saved ? R.string.db_store_done
+                : R.string.db_store_failed;
+            showToast( msgID );
+        } else {
+            if ( DBUtils.loadDB( m_activity, uri ) ) {
+                storeGroupPositions( null );
+                mkListAdapter();
+                // We really want to exit the app!!! PENDING
+            }
+        }
+    }
+
 
     @Override
     public boolean onNegButton( Action action, Object[] params )
@@ -1600,6 +1622,14 @@ public class GamesListDelegate extends ListDelegateBase
                 long rowID = data.getLongExtra( GameUtils.INTENT_KEY_ROWID,
                                                 ROWID_NOTFOUND );
                 launchGame( rowID );
+            }
+            break;
+        case STORE_DATA_FILE:
+        case LOAD_DATA_FILE:
+            if ( Activity.RESULT_OK == resultCode && data != null ) {
+                boolean isStore = RequestCode.STORE_DATA_FILE == requestCode;
+                Uri uri = data.getData();
+                handleLoadOrStoreResult( uri, isStore );
             }
             break;
         }
@@ -1813,8 +1843,7 @@ public class GamesListDelegate extends ListDelegateBase
 
         case R.id.games_menu_loaddb:
         case R.id.games_menu_storedb:
-            Perms23.tryGetPerms( this, Perm.STORAGE, null,
-                                 Action.STORAGE_CONFIRMED, itemID );
+            startLoadOrStore( R.id.games_menu_storedb == itemID );
             break;
 
         case R.id.games_menu_writegit:

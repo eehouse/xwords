@@ -2278,8 +2278,8 @@
     <string name="mqtt_port">MQTT port</string>
     <string name="mqtt_qos">MQTT QOS</string>
     <string name="name_dict_fmt">%1$s/%2$s</string>
-    <string name="gamel_menu_storedb">Write games to SD card</string>
-    <string name="gamel_menu_loaddb">Load games from SD card</string>
+    <string name="gamel_menu_storedb">Export app data</string>
+    <string name="gamel_menu_loaddb">Import app data</string>
     <string name="gamel_menu_writegit">Copy git info to clipboard</string>
     <string name="enable_pending_count_title">Show Pending messages</string>
     <string name="enable_pending_count_summary">Show number not yet acknowledged</string>
@@ -2307,8 +2307,8 @@
     <string name="pref_item_update_summary">Get intermediate builds</string>
     <string name="checking_title">Checking</string>
     <string name="checking_for_fmt">Checking for wordlists in %1$s…</string>
-    <string name="db_store_done">SD card write complete</string>
-    <string name="db_store_failed">SD card write failed</string>
+    <string name="db_store_done">Export complete</string>
+    <string name="db_store_failed">Export failed</string>
     <string name="confirm_drop_mqtt">Are you sure you want to drop this
     game’s ability to communicate via the internet?</string>
     <string name="confirm_drop_relay_bt">Bluetooth only works for nearby

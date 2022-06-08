@@ -303,7 +303,7 @@ public class DictUtils {
                 ? context.openFileOutput( name, Context.MODE_PRIVATE )
                 : new FileOutputStream( getDictFile( context, name, to ) );
 
-            success = DBUtils.copyFileStream( fos, fis );
+            success = DBUtils.copyStream( fos, fis );
         } catch ( java.io.FileNotFoundException fnfe ) {
             Log.ex( TAG, fnfe );
         }
@@ -663,7 +663,7 @@ public class DictUtils {
     {
         File result = null;
         outer:
-        for ( int attempt = 0; attempt < 4; ++attempt ) {
+        for ( int attempt = 0; ; ++attempt ) {
             switch ( attempt ) {
             case 0:
                 String myPath = XWPrefs.getMyDownloadDir( context );
@@ -679,7 +679,6 @@ public class DictUtils {
                 result = s_dirGetter.getDownloadDir();
                 break;
             case 2:
-            case 3:
                 if ( !haveWriteableSD() ) {
                     continue;
                 }
@@ -689,6 +688,8 @@ public class DictUtils {
                     result = new File( result, "download/" );
                 }
                 break;
+            default:
+                break outer;
             }
 
             // Exit test for loop
