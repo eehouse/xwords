@@ -542,8 +542,6 @@ public class GamesListDelegate extends ListDelegateBase
     } // class GameListAdapter
 
     private static final int[] DEBUG_ITEMS = {
-        // R.id.games_menu_loaddb,
-        R.id.games_menu_storedb,
         R.id.games_menu_writegit,
         R.id.games_submenu_logs,
     };
@@ -1672,13 +1670,17 @@ public class GamesListDelegate extends ListDelegateBase
                 final boolean showDbg = BuildConfig.NON_RELEASE
                     || XWPrefs.getDebugEnabled( m_activity );
                 showItemsIf( DEBUG_ITEMS, menu, nothingSelected && showDbg );
-                Utils.setItemVisible( menu, R.id.games_menu_loaddb,
-                                      nothingSelected &&
-                                      DBUtils.gameDBExists( m_activity ) );
-
                 showItemsIf( NOSEL_ITEMS, menu, nothingSelected );
                 showItemsIf( ONEGAME_ITEMS, menu, 1 == nGamesSelected );
                 showItemsIf( ONEGROUP_ITEMS, menu, 1 == nGroupsSelected );
+
+                final boolean showDataItems =
+                    Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT
+                    && nothingSelected;
+                for ( int item : new int[] { R.id.games_menu_storedb,
+                                             R.id.games_menu_loaddb } ) {
+                    Utils.setItemVisible( menu, item, showDataItems );
+                }
 
                 boolean enable = showDbg && nothingSelected;
                 Utils.setItemVisible( menu, R.id.games_menu_checkupdates, enable );

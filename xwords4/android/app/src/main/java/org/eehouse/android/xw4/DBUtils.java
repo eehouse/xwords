@@ -2040,19 +2040,6 @@ public class DBUtils {
         }
     }
 
-    public static boolean gameDBExists( Context context )
-    {
-        String varName = getVariantDBName();
-        boolean exists = new File( Environment.getExternalStorageDirectory(),
-                                   varName ).exists();
-        if ( !exists ) {
-            // try the old one
-            exists = new File( Environment.getExternalStorageDirectory(),
-                               DBHelper.getDBName() ).exists();
-        }
-        return exists;
-    }
-
     public static void addToStudyList( Context context, String word,
                                        String isoCode )
     {
