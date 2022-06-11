@@ -3,5 +3,6 @@
 local.properties
 .idea
 app/src/main/assets/build-info.txt
+app/src/main/assets/last-commit.txt
 obj-*
 libs-*
