@@ -1853,41 +1853,6 @@ public class DBUtils {
         }
     }
 
-    public static boolean loadDB( Context context, Uri uri )
-    {
-        boolean success = false;
-        try ( InputStream is = context
-              .getContentResolver().openInputStream(uri) ) {
-            String name = DBHelper.getDBName();
-            File gamesDB = context.getDatabasePath( name );
-            FileOutputStream fos = new FileOutputStream( gamesDB );
-            success = copyStream( fos, is );
-            invalGroupsCache();
-        } catch ( Exception ex ) {
-            Log.ex( TAG, ex );
-        }
-
-        if ( success ) {
-            PrefsDelegate.loadPrefs( context );
-        }
-        return success;
-    }
-
-    public static boolean saveDB( Context context, Uri uri )
-    {
-        PrefsDelegate.savePrefs( context );
-        boolean success = false;
-        try ( OutputStream os = context.getContentResolver().openOutputStream( uri ) ) {
-            String name = DBHelper.getDBName();
-            File gamesDB = context.getDatabasePath( name );
-            FileInputStream fis = new FileInputStream( gamesDB );
-            success = copyStream( os, fis );
-        } catch ( Exception ex ) {
-            Log.ex( TAG, ex );
-        }
-        return success;
-    }
-
     public static boolean copyStream( OutputStream fos, InputStream fis )
     {
         boolean success = false;
@@ -1904,13 +1869,6 @@ public class DBUtils {
             Log.d( TAG, "copyFileStream(): copied %s to %s", fis, fos );
         } catch( java.io.IOException ioe ) {
             Log.ex( TAG, ioe );
-        } finally {
-            try {
-                fos.close();
-                fis.close();
-            } catch( java.io.IOException ioe ) {
-                Log.ex( TAG, ioe );
-            }
         }
         return success;
     }

@@ -40,6 +40,7 @@ import org.eehouse.android.xw4.jni.CommonPrefs;
 import org.eehouse.android.xw4.loc.LocUtils;
 
 import java.io.File;
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -367,21 +368,20 @@ public class PrefsDelegate extends DelegateBase
         }
     }
 
-    static void savePrefs( Context context )
+    static Serializable getPrefs( Context context )
     {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences( context );
         Map<String, ?> all = prefs.getAll();
-        HashMap<String, Object> copy = new HashMap<>();
+        HashMap<String, Object> result = new HashMap<>();
         for ( String key : all.keySet() ) {
-            copy.put( key, all.get(key) );
+            result.put( key, all.get(key) );
         }
-        DBUtils.setSerializableFor( context, PREFS_KEY, copy );
+        return result;
     }
 
-    static void loadPrefs( Context context ) {
-        HashMap<String, Object> map = (HashMap<String, Object>)DBUtils
-            .getSerializableFor( context, PREFS_KEY );
-        if ( null != map ) {
+    static void loadPrefs( Context context, Serializable obj ) {
+        if ( null != obj ) {
+            HashMap<String, Object> map = (HashMap<String, Object>)obj;
             SharedPreferences.Editor editor =
                 PreferenceManager.getDefaultSharedPreferences( context )
                 .edit();

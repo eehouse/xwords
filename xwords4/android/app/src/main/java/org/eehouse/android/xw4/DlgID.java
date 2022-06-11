@@ -21,55 +21,56 @@
 package org.eehouse.android.xw4;
 
 public enum DlgID {
-    NONE
-    , CHANGE_GROUP
-    , CONFIRM_CHANGE
-    , CONFIRM_CHANGE_PLAY
-    , CONFIRM_THEN
-    , DIALOG_NOTAGAIN
-    , DIALOG_OKONLY
-    , DIALOG_ENABLESMS
-    , DICT_OR_DECLINE
-    , DLG_CONNSTAT
-    , DLG_DELETED
-    , DLG_INVITE(true)
-    , DLG_OKONLY
-    , ENABLE_NFC
-    , FORCE_REMOTE
-    , GET_NAME
-    , GET_NUMBER
-    , INVITE_CHOICES_THEN
-    , MOVE_DICT
-    , NAME_GAME
-    , NEW_GROUP
-    , PLAYER_EDIT
-    , ENABLE_SMS
-    , QUERY_ENDGAME
-    , RENAME_GAME
-    , RENAME_GROUP
-    , REVERT_ALL
-    , REVERT_COLORS
-    , SET_DEFAULT
-    , SHOW_SUBST
-    , WARN_NODICT_GENERIC       // the general trying-to-open case
-    , WARN_NODICT_INVITED       // when responding to invitation
-    , WARN_NODICT_SUBST         // when a substitution will be possible/suggested
-    , DLG_BADWORDS
-    , NOTIFY_BADWORDS
-    , QUERY_MOVE
-    , QUERY_TRADE
-    , ASK_PASSWORD
-    , DLG_RETRY
-    , DLG_SCORES(true)
-    , DLG_USEDICT
-    , DLG_GETDICT
-    , GAMES_LIST_NEWGAME
-    , CHANGE_CONN
-    , GAMES_LIST_NAME_REMATCH
-    , ASK_DUP_PAUSE
-    , CHOOSE_TILES
-    , SHOW_TILES
-    , RENAME_PLAYER
+    NONE,
+    CHANGE_GROUP,
+    CONFIRM_CHANGE,
+    CONFIRM_CHANGE_PLAY,
+    CONFIRM_THEN,
+    DIALOG_NOTAGAIN,
+    DIALOG_OKONLY,
+    DIALOG_ENABLESMS,
+    DICT_OR_DECLINE,
+    DLG_CONNSTAT,
+    DLG_DELETED,
+    DLG_INVITE(true),
+    DLG_OKONLY,
+    ENABLE_NFC,
+    FORCE_REMOTE,
+    GET_NAME,
+    GET_NUMBER,
+    INVITE_CHOICES_THEN,
+    MOVE_DICT,
+    NAME_GAME,
+    NEW_GROUP,
+    PLAYER_EDIT,
+    ENABLE_SMS,
+    QUERY_ENDGAME,
+    RENAME_GAME,
+    RENAME_GROUP,
+    REVERT_ALL,
+    REVERT_COLORS,
+    SET_DEFAULT,
+    SHOW_SUBST,
+    WARN_NODICT_GENERIC,       // the general trying-to-open case
+    WARN_NODICT_INVITED,       // when responding to invitation
+    WARN_NODICT_SUBST,         // when a substitution will be possible/suggested
+    DLG_BADWORDS,
+    NOTIFY_BADWORDS,
+    QUERY_MOVE,
+    QUERY_TRADE,
+    ASK_PASSWORD,
+    DLG_RETRY,
+    DLG_SCORES(true),
+    DLG_USEDICT,
+    DLG_GETDICT,
+    GAMES_LIST_NEWGAME,
+    CHANGE_CONN,
+    GAMES_LIST_NAME_REMATCH,
+    ASK_DUP_PAUSE,
+    CHOOSE_TILES,
+    SHOW_TILES,
+    RENAME_PLAYER,
+    BACKUP_LOADSTORE,
     ;
 
     private boolean m_addToStack;

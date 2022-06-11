@@ -47,15 +47,17 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.jakewharton.processphoenix.ProcessPhoenix;
+
 import org.eehouse.android.xw4.DBUtils.GameChangeType;
 import org.eehouse.android.xw4.DBUtils.GameGroupInfo;
-import static org.eehouse.android.xw4.DBUtils.ROWID_NOTFOUND;
 import org.eehouse.android.xw4.DBUtils.SentInvitesInfo;
 import org.eehouse.android.xw4.DlgDelegate.Action;
 import org.eehouse.android.xw4.DlgDelegate.ActionPair;
 import org.eehouse.android.xw4.DwnldDelegate.DownloadFinishedListener;
 import org.eehouse.android.xw4.DwnldDelegate.OnGotLcDictListener;
 import org.eehouse.android.xw4.Perms23.Perm;
+import org.eehouse.android.xw4.ZipUtils.SaveWhat;
 import org.eehouse.android.xw4.jni.CommonPrefs;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;
@@ -65,6 +67,7 @@ import org.eehouse.android.xw4.jni.GameSummary;
 import org.eehouse.android.xw4.jni.LastMoveInfo;
 import org.eehouse.android.xw4.jni.XwJNI;
 import org.eehouse.android.xw4.loc.LocUtils;
+import static org.eehouse.android.xw4.DBUtils.ROWID_NOTFOUND;
 
 import java.io.File;
 import java.io.Serializable;
@@ -737,6 +740,11 @@ public class GamesListDelegate extends ListDelegateBase
             dialog = buildNamerDlg( namer, R.string.game_name_group_title,
                                     lstnr, null, DlgID.RENAME_GROUP );
         }
+            break;
+
+        case BACKUP_LOADSTORE:
+            Uri uri = 0 == params.length ? null : Uri.parse((String)params[0]);
+            dialog = mkLoadStoreDlg( uri );
             break;
 
         case NEW_GROUP: {
@@ -1544,10 +1552,44 @@ public class GamesListDelegate extends ListDelegateBase
         return handled;
     }
 
-    private void startLoadOrStore( boolean isStore )
+    private Dialog mkLoadStoreDlg( final Uri uri )
     {
+        Log.d( TAG, "mkLoadStoreDlg(%s)", uri );
+        final BackupConfigView view = (BackupConfigView)
+            LocUtils.inflate( m_activity, R.layout.backup_config_view );
+        view.init( uri );
+
+        AlertDialog.Builder ab = makeAlertBuilder()
+            .setView( view )
+            .setPositiveButton( view.getPosButtonTxt(), new OnClickListener() {
+                    @Override
+                    public void onClick( DialogInterface dlg, int item ) {
+                        if ( null == uri ) { // store case
+                            startFileChooser( view.getSaveWhat() );
+                        } else {
+                            List<ZipUtils.SaveWhat> what = view.getSaveWhat();
+                            if ( ZipUtils.load( m_activity, uri, what ) ) {
+                                ProcessPhoenix.triggerRebirth( m_activity );
+                            }
+                        }
+                    }
+                } )
+            .setNegativeButton( android.R.string.cancel, null )
+            ;
+        return ab.create();
+    }
+
+    // This is in liu of passing through the startActivityForResult call,
+    // which apparently isn't supported.
+    private List<ZipUtils.SaveWhat> mSaveWhat;
+
+    private void startFileChooser( List<SaveWhat> what )
+    {
+        mSaveWhat = what;       // will be null in load case
+
         String intentAction = null;
         RequestCode rq = null;
+        boolean isStore = null != what;
         if ( isStore ) {
             intentAction = Intent.ACTION_CREATE_DOCUMENT;
             rq = RequestCode.STORE_DATA_FILE;
@@ -1557,29 +1599,12 @@ public class GamesListDelegate extends ListDelegateBase
         }
         Intent intent = new Intent( intentAction );
         intent.addCategory( Intent.CATEGORY_OPENABLE );
-        intent.setType( "application/octet-stream" );
+        intent.setType( ZipUtils.getMimeType() );
         if ( isStore ) {
             intent.putExtra( Intent.EXTRA_TITLE, DBHelper.getDBName() );
         }
         startActivityForResult( intent, rq );
     }
-
-    private void handleLoadOrStoreResult( Uri uri, boolean isStore )
-    {
-        if ( isStore ) {
-            boolean saved = DBUtils.saveDB( m_activity, uri );
-            int msgID = saved ? R.string.db_store_done
-                : R.string.db_store_failed;
-            showToast( msgID );
-        } else {
-            if ( DBUtils.loadDB( m_activity, uri ) ) {
-                storeGroupPositions( null );
-                mkListAdapter();
-                // We really want to exit the app!!! PENDING
-            }
-        }
-    }
-
 
     @Override
     public boolean onNegButton( Action action, Object[] params )
@@ -1625,9 +1650,23 @@ public class GamesListDelegate extends ListDelegateBase
         case STORE_DATA_FILE:
         case LOAD_DATA_FILE:
             if ( Activity.RESULT_OK == resultCode && data != null ) {
-                boolean isStore = RequestCode.STORE_DATA_FILE == requestCode;
                 Uri uri = data.getData();
-                handleLoadOrStoreResult( uri, isStore );
+                boolean isStore = RequestCode.STORE_DATA_FILE == requestCode;
+                if ( isStore ) {
+                    boolean saved =
+                        ZipUtils.save( m_activity, uri, mSaveWhat );
+                    int msgID = saved ? R.string.db_store_done
+                        : R.string.db_store_failed;
+                    showToast( msgID );
+                } else {
+                    final String uriStr = uri.toString();
+                    post( new Runnable() {
+                            @Override
+                            public void run() {
+                                showDialogFragment( DlgID.BACKUP_LOADSTORE, uriStr );
+                            }
+                        } );
+                }
             }
             break;
         }
@@ -1843,9 +1882,18 @@ public class GamesListDelegate extends ListDelegateBase
             Utils.emailAuthor( m_activity );
             break;
 
-        case R.id.games_menu_loaddb:
+            // Load and store both use the same dialog, and both use the
+            // ContentResolver/startActivityForResult grossness, but in
+            // different orders. Store needs to know *what* to store before
+            // asking where, but load needs to know what's being loaded before
+            // asking what subset of that the user wants to use. So we start
+            // with the choose-what alert in the store case, and with the
+            // choose-where (OS) grossness in the load case
         case R.id.games_menu_storedb:
-            startLoadOrStore( R.id.games_menu_storedb == itemID );
+            showDialogFragment( DlgID.BACKUP_LOADSTORE );
+            break;
+        case R.id.games_menu_loaddb:
+            startFileChooser( null );
             break;
 
         case R.id.games_menu_writegit:

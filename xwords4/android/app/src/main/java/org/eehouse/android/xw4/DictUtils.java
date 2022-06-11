@@ -24,14 +24,15 @@ import android.content.Context;
 import android.content.res.AssetManager;
 import android.os.Environment;
 
-
 import org.eehouse.android.xw4.jni.JNIUtilsImpl;
 import org.eehouse.android.xw4.jni.XwJNI;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -233,9 +234,9 @@ public class DictUtils {
                 FileInputStream fis = context.openFileInput( name );
                 fis.close();
                 loc = DictLoc.INTERNAL;
-            } catch ( java.io.FileNotFoundException fnf ) {
+            } catch ( FileNotFoundException fnf ) {
                 // Log.ex( fnf );
-            } catch ( java.io.IOException ioe ) {
+            } catch ( IOException ioe ) {
                 Log.ex( TAG, ioe );
             }
         }
@@ -304,8 +305,10 @@ public class DictUtils {
                 : new FileOutputStream( getDictFile( context, name, to ) );
 
             success = DBUtils.copyStream( fos, fis );
-        } catch ( java.io.FileNotFoundException fnfe ) {
-            Log.ex( TAG, fnfe );
+            fos.close();
+            fis.close();
+        } catch ( IOException ex ) {
+            Log.ex( TAG, ex );
         }
         return success;
     } // copyDict
@@ -368,7 +371,7 @@ public class DictUtils {
 
                 Assert.assertTrue( -1 == dict.read() );
                 bytes = bas.toByteArray();
-            } catch ( java.io.IOException ee ){
+            } catch ( IOException ee ){
             }
         }
 
@@ -403,9 +406,9 @@ public class DictUtils {
                 fis.read( bytes, 0, len );
                 fis.close();
                 Log.i( TAG, "Successfully loaded %s", name );
-            } catch ( java.io.FileNotFoundException fnf ) {
+            } catch ( FileNotFoundException fnf ) {
                 // Log.ex( fnf );
-            } catch ( java.io.IOException ioe ) {
+            } catch ( IOException ioe ) {
                 Log.ex( TAG, ioe );
             }
         }
@@ -518,9 +521,9 @@ public class DictUtils {
                 if ( success ) {
                     invalDictList();
                 }
-            } catch ( java.io.FileNotFoundException fnf ) {
+            } catch ( FileNotFoundException fnf ) {
                 Log.ex( TAG, fnf );
-            } catch ( java.io.IOException ioe ) {
+            } catch ( IOException ioe ) {
                 Log.ex( TAG, ioe );
                 tmpFile.delete();
             }
@@ -607,7 +610,7 @@ public class DictUtils {
         try {
             AssetManager am = context.getAssets();
             return am.list("");
-        } catch( java.io.IOException ioe ) {
+        } catch( IOException ioe ) {
             Log.ex( TAG, ioe );
             return new String[0];
         }

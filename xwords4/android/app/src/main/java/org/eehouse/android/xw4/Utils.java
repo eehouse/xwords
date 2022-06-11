@@ -788,33 +788,46 @@ public class Utils {
         return Base64.decode( in, Base64.NO_WRAP );
     }
 
-    public static Object string64ToSerializable( String str64 )
+    public static Serializable bytesToSerializable( byte[] bytes )
     {
-        Object result = null;
-        byte[] bytes = base64Decode( str64 );
+        Serializable result = null;
         try {
             ObjectInputStream ois =
                 new ObjectInputStream( new ByteArrayInputStream(bytes) );
-            result = ois.readObject();
+            result = (Serializable)ois.readObject();
         } catch ( Exception ex ) {
             Log.d( TAG, "%s", ex.getMessage() );
         }
         return result;
     }
 
-    public static String serializableToString64( Serializable obj )
+    public static Object string64ToSerializable( String str64 )
     {
-        String result = null;
+        byte[] bytes = base64Decode( str64 );
+        Serializable result = bytesToSerializable(bytes);
+        return result;
+    }
+
+    public static byte[] serializableToBytes( Serializable obj )
+    {
+        byte[] result = null;
         ByteArrayOutputStream bas = new ByteArrayOutputStream();
         try {
             ObjectOutputStream out = new ObjectOutputStream( bas );
             out.writeObject( obj );
             out.flush();
-            result = base64Encode( bas.toByteArray() );
+            result = bas.toByteArray();
         } catch ( Exception ex ) {
             Log.ex( TAG, ex );
             Assert.failDbg();
         }
+        return result;
+    }
+
+    public static String serializableToString64( Serializable obj )
+    {
+        byte[] asBytes = serializableToBytes( obj );
+        String result = base64Encode( asBytes );
         return result;
     }
 
