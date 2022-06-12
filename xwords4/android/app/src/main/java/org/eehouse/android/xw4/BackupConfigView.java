@@ -19,24 +19,28 @@
 
 package org.eehouse.android.xw4;
 
-import android.view.ViewGroup;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.net.Uri;
 import android.util.AttributeSet;
-import android.widget.LinearLayout;
+import android.view.ViewGroup;
 import android.widget.CheckBox;
+import android.widget.CompoundButton.OnCheckedChangeListener;
+import android.widget.CompoundButton;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
-
 
 import org.eehouse.android.xw4.loc.LocUtils;
 
 import org.eehouse.android.xw4.ZipUtils.SaveWhat;
 
 public class BackupConfigView extends LinearLayout
+    implements OnCheckedChangeListener
 {
     private static final String TAG = BackupConfigView.class.getSimpleName();
 
@@ -44,6 +48,7 @@ public class BackupConfigView extends LinearLayout
     private Uri mLoadFile;
     private Map<SaveWhat, CheckBox> mCheckBoxes = new HashMap<>();
     private List<SaveWhat> mShowWhats;
+    private AlertDialog mDialog;
 
     public BackupConfigView( Context cx, AttributeSet as )
     {
@@ -60,11 +65,45 @@ public class BackupConfigView extends LinearLayout
         initOnce();
     }
 
+    AlertDialog setDialog( AlertDialog dialog )
+    {
+        mDialog = dialog;
+        dialog.setOnShowListener(new DialogInterface.OnShowListener() {
+                @Override
+                public void onShow( DialogInterface dialog ) {
+                    countChecks();
+                }
+            });
+        return dialog;
+    }
+
     // Usually called before init(), but IIRC wasn't on older Android versions
     @Override
     protected void onFinishInflate()
     {
         initOnce();
+    }
+
+    @Override
+    public void onCheckedChanged( CompoundButton buttonView,
+                                  boolean isChecked )
+    {
+        countChecks();
+    }
+
+    private void countChecks()
+    {
+        if ( null != mDialog ) {
+            boolean haveCheck = false;
+            for ( CheckBox box : mCheckBoxes.values() ) {
+                if ( box.isChecked() ) {
+                    haveCheck = true;
+                    break;
+                }
+            }
+            Utils.enableAlertButton( mDialog, AlertDialog.BUTTON_POSITIVE,
+                                     haveCheck );
+        }
     }
 
     private void initOnce()
@@ -87,11 +126,13 @@ public class BackupConfigView extends LinearLayout
                         box.setText( what.titleID() );
                         mCheckBoxes.put( what, box );
                         box.setChecked( !mIsStore );
+                        box.setOnCheckedChangeListener( this );
                         ((TextView)(item.findViewById(R.id.expl)))
                             .setText( what.explID() );
                     }
                 }
             }
+            countChecks();
         }
     }
 

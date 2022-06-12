@@ -1576,7 +1576,7 @@ public class GamesListDelegate extends ListDelegateBase
                 } )
             .setNegativeButton( android.R.string.cancel, null )
             ;
-        return ab.create();
+        return view.setDialog( ab.create() );
     }
 
     // This is in liu of passing through the startActivityForResult call,

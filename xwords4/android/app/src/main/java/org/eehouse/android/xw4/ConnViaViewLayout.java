@@ -97,6 +97,7 @@ public class ConnViaViewLayout extends LinearLayout {
 
             final CommsConnType typf = typ;
             box.setOnCheckedChangeListener( new OnCheckedChangeListener() {
+                    @Override
                     public void onCheckedChanged( CompoundButton buttonView,
                                                   boolean isChecked ) {
                         if ( isChecked ) {
