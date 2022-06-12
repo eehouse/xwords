@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
+  <!-- This file is for strings that aren't ready for localization
+       yet, probably because I'm not finished designing whatever they're part of -->
+
+  <string name="archive_button_store">Export</string>
+  <string name="archive_button_load">Import</string>
+  <string name="archive_expl_store">Select the types of CrossWords
+  data or settings you want to save.</string>
+  <string name="archive_expl_load">Replace which types of app data in
+  CrossWords with data from this archive file?</string>
+
+  <string name="archive_title_colors">Board colors</string>
+  <string name="archive_expl_colors">Colors on the game board, e.g. of
+  player names and bonus squares</string>
+  <string name="archive_title_settings">Settings</string>
+  <string name="archive_expl_settings">All App settings except colors,
+  e.g. default language and thumbnail size</string>
+  <string name="archive_title_games">Games and data</string>
+  <string name="archive_expl_games">All games and other data to
+  identify your device. Use this to migrate CrossWords to a new
+  device.</string>
+
+  <string name="archive_filename_fmt">CrossWords-backup-%1$s></string>
+</resources>

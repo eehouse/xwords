@@ -42,7 +42,9 @@ import org.eehouse.android.xw4.loc.LocUtils;
 import java.io.File;
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 public class PrefsDelegate extends DelegateBase
     implements SharedPreferences.OnSharedPreferenceChangeListener,
@@ -92,17 +94,10 @@ public class PrefsDelegate extends DelegateBase
                     @Override
                     public void onClick( DialogInterface dlg, int item ) {
                         PrefsDelegate self = (PrefsDelegate)curThis();
-                        Resources res = alert.getContext().getResources();
                         SharedPreferences.Editor editor =
                             self.getSharedPreferences().edit();
-                        int[] themeKeys = { R.array.color_ids_light,
-                                            R.array.color_ids_dark,
-                        };
-                        for ( int themeKey : themeKeys ) {
-                            String[] colorKeys = res.getStringArray( themeKey );
-                            for ( String colorKey : colorKeys ) {
-                                editor.remove( colorKey );
-                            }
+                        for ( String colorKey : getColorKeys( alert.getContext() ) ) {
+                            editor.remove( colorKey );
                         }
                         editor.commit();
                         self.relaunch();
@@ -368,15 +363,29 @@ public class PrefsDelegate extends DelegateBase
         }
     }
 
-    static Serializable getPrefs( Context context )
+    private static Serializable getPrefsWith( Context context, boolean with )
     {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences( context );
+        Set<String> colorKeys = getColorKeys( context );
+        SharedPreferences prefs = PreferenceManager
+            .getDefaultSharedPreferences( context );
         Map<String, ?> all = prefs.getAll();
         HashMap<String, Object> result = new HashMap<>();
         for ( String key : all.keySet() ) {
-            result.put( key, all.get(key) );
+            if ( with == colorKeys.contains( key ) ) {
+                result.put( key, all.get(key) );
+            }
         }
         return result;
+    }
+
+    static Serializable getPrefsColors( Context context )
+    {
+        return getPrefsWith( context, true );
+    }
+
+    static Serializable getPrefsNoColors( Context context )
+    {
+        return getPrefsWith( context, false );
     }
 
     static void loadPrefs( Context context, Serializable obj ) {
@@ -402,5 +411,21 @@ public class PrefsDelegate extends DelegateBase
             }
             editor.commit();
         }
+    }
+
+    private static Set<String> getColorKeys( Context context )
+    {
+        Resources res = context.getResources();
+        Set<String> result = new HashSet<>();
+        int[] themeKeys = { R.array.color_ids_light,
+                            R.array.color_ids_dark,
+        };
+        for ( int themeKey : themeKeys ) {
+            String[] colorKeys = res.getStringArray( themeKey );
+            for ( String colorKey : colorKeys ) {
+                result.add( colorKey );
+            }
+        }
+        return result;
     }
 }

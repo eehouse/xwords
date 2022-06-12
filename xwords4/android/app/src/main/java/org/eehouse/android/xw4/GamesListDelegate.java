@@ -1601,7 +1601,7 @@ public class GamesListDelegate extends ListDelegateBase
         intent.addCategory( Intent.CATEGORY_OPENABLE );
         intent.setType( ZipUtils.getMimeType() );
         if ( isStore ) {
-            intent.putExtra( Intent.EXTRA_TITLE, DBHelper.getDBName() );
+            intent.putExtra( Intent.EXTRA_TITLE, ZipUtils.getFileName(m_activity) );
         }
         startActivityForResult( intent, rq );
     }

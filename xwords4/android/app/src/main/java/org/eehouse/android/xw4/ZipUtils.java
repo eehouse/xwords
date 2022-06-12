@@ -33,27 +33,45 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
+import java.text.DateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
+import org.eehouse.android.xw4.loc.LocUtils;
+
 public class ZipUtils {
     private static final String TAG = ZipUtils.class.getSimpleName();
 
-    public static enum SaveWhat { // COLORS,
-                                  SETTINGS,
-                                  GAMES,
-                                  ;
+    public static enum SaveWhat {
+        COLORS(R.string.archive_title_colors, R.string.archive_expl_colors),
+        SETTINGS(R.string.archive_title_settings, R.string.archive_expl_settings),
+        GAMES(R.string.archive_title_games, R.string.archive_expl_games),
+        ;
 
-                                  String entryName() { return toString(); }
+        private int mTitle;
+        private int mExpl;
+        private SaveWhat(int title, int expl) { mTitle = title; mExpl = expl; }
+        String entryName() { return toString(); }
+        int titleID() { return mTitle; }
+        int explID() { return mExpl; }
     };
 
     static String getMimeType() {
         return "application/x-zip";
         // return "application/octet-stream";
+    }
+
+    static String getFileName( Context context )
+    {
+        DateFormat format = DateFormat.getDateInstance(DateFormat.SHORT);
+        String date = format.format( new Date() );
+        String name = LocUtils.getString( context, R.string.archive_filename_fmt, date );
+        return name;
     }
 
     private interface EntryIter {
@@ -91,6 +109,9 @@ public class ZipUtils {
                     boolean success = false;
                     if ( whats.contains( what ) ) {
                         switch ( what ) {
+                        case COLORS:
+                            success = loadSettings( context, zis );
+                            break;
                         case SETTINGS:
                             success = loadSettings( context, zis );
                             break;
@@ -148,9 +169,9 @@ public class ZipUtils {
             for ( SaveWhat what : whats ) {
                 zos.putNextEntry( new ZipEntry( what.entryName() ) );
                 switch ( what ) {
-                // case SAVE_COLORS:
-                //     success = saveColors( zos, ze );
-                //     break;
+                case COLORS:
+                    success = saveColors( context, zos );
+                    break;
                 case SETTINGS:
                     success = saveSettings( context, zos );
                     break;
@@ -195,14 +216,27 @@ public class ZipUtils {
         return success;
     }
 
-    private static boolean saveSettings( Context context, ZipOutputStream zos )
+    private static boolean saveSerializable( ZipOutputStream zos, Serializable data )
         throws IOException
     {
-        Serializable map = PrefsDelegate.getPrefs( context );
-        byte[] asBytes = Utils.serializableToBytes( map );
+        byte[] asBytes = Utils.serializableToBytes( data );
         ByteArrayInputStream bis = new ByteArrayInputStream( asBytes );
         boolean success = DBUtils.copyStream( zos, bis );
         return success;
+    }
+
+    private static boolean saveColors( Context context, ZipOutputStream zos )
+        throws IOException
+    {
+        Serializable map = PrefsDelegate.getPrefsColors( context );
+        return saveSerializable( zos, map );
+    }
+
+    private static boolean saveSettings( Context context, ZipOutputStream zos )
+        throws IOException
+    {
+        Serializable map = PrefsDelegate.getPrefsNoColors( context );
+        return saveSerializable( zos, map );
     }
 
     private static boolean loadSettings( Context context, ZipInputStream zis )

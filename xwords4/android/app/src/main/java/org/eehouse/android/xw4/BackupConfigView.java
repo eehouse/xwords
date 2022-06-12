@@ -22,23 +22,16 @@ package org.eehouse.android.xw4;
 import android.view.ViewGroup;
 import android.content.Context;
 import android.net.Uri;
-// import android.text.TextUtils;
 import android.util.AttributeSet;
-// import android.view.View;
-// import android.widget.AdapterView.OnItemSelectedListener;
-// import android.widget.AdapterView;
-// import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
-// import android.widget.RadioButton;
-// import android.widget.RadioGroup;
 import android.widget.CheckBox;
-// import android.widget.TextView;
+import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 
-// import org.eehouse.android.xw4.jni.XwJNI;
+
 import org.eehouse.android.xw4.loc.LocUtils;
 
 import org.eehouse.android.xw4.ZipUtils.SaveWhat;
@@ -47,7 +40,7 @@ public class BackupConfigView extends LinearLayout
 {
     private static final String TAG = BackupConfigView.class.getSimpleName();
 
-    private boolean mIsStore;
+    private Boolean mIsStore;
     private Uri mLoadFile;
     private Map<SaveWhat, CheckBox> mCheckBoxes = new HashMap<>();
     private List<SaveWhat> mShowWhats;
@@ -60,31 +53,52 @@ public class BackupConfigView extends LinearLayout
     void init( Uri uri )
     {
         mLoadFile = uri;
-        mIsStore = null == uri;
+        mIsStore = new Boolean(null == uri);
         if ( null != uri ) {
             mShowWhats = ZipUtils.getHasWhats( getContext(), uri );
         }
+        initOnce();
     }
 
+    // Usually called before init(), but IIRC wasn't on older Android versions
     @Override
     protected void onFinishInflate()
     {
-        Context context = getContext();
-        LinearLayout list = (LinearLayout)findViewById( R.id.whats_list );
-        for ( SaveWhat what : SaveWhat.values() ) {
-            if ( null == mShowWhats || mShowWhats.contains(what) ) {
-                CheckBox box = (CheckBox)
-                    LocUtils.inflate( context, R.layout.invite_checkbox );
-                box.setText( what.toString() );
-                mCheckBoxes.put( what, box );
-                list.addView( box );
+        initOnce();
+    }
+
+    private void initOnce()
+    {
+        if ( null != mIsStore ) {
+            TextView tv = ((TextView)findViewById(R.id.explanation));
+            if ( null != tv ) {
+                int explID = mIsStore ?
+                    R.string.archive_expl_store : R.string.archive_expl_load;
+                tv.setText( explID );
+
+                Context context = getContext();
+                LinearLayout list = (LinearLayout)findViewById( R.id.whats_list );
+                for ( SaveWhat what : SaveWhat.values() ) {
+                    if ( null == mShowWhats || mShowWhats.contains(what) ) {
+                        ViewGroup item = (ViewGroup)
+                            LocUtils.inflate( context, R.layout.backup_config_item );
+                        list.addView( item );
+                        CheckBox box = (CheckBox)item.findViewById( R.id.check );
+                        box.setText( what.titleID() );
+                        mCheckBoxes.put( what, box );
+                        box.setChecked( !mIsStore );
+                        ((TextView)(item.findViewById(R.id.expl)))
+                            .setText( what.explID() );
+                    }
+                }
             }
         }
     }
 
-    String getPosButtonTxt()
+    int getPosButtonTxt()
     {
-        return mIsStore ? "Save" : "Load";
+        return mIsStore
+            ? R.string.archive_button_store : R.string.archive_button_load;
     }
 
     public List<SaveWhat> getSaveWhat()

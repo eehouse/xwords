@@ -11,10 +11,10 @@
   <TextView android:id="@+id/explanation"
             android:layout_height="wrap_content"
             android:layout_width="match_parent"
-            android:text="replace me"
+            android:textAppearance="?android:attr/textAppearanceMedium"
             />
 
-  <!-- Checkboxes get added here -->
+  <!-- backup_config_item instances get added here -->
   <LinearLayout android:id="@+id/whats_list"
                 android:orientation="vertical"
                 android:layout_width="fill_parent"
