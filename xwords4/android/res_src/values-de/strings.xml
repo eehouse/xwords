@@ -1117,4 +1117,8 @@
 \n
 \n(Sie haben jetzt %1$d aktive Spiele über das Internet.)"</item>
     </plurals>
+    <string name="show_note_menu_fmt">Über %1$s</string>
+    <string name="button_ask">Fragen</string>
+    <string name="button_deny">Ablehnen</string>
+    <string name="db_store_failed">Fehler beim Schreiben auf die SD-Karte</string>
 </resources>
