@@ -3,6 +3,9 @@
   <!-- This file is for strings that aren't ready for localization
        yet, probably because I'm not finished designing whatever they're part of -->
 
+  <string name="gamel_menu_storedb">Export app data</string>
+  <string name="gamel_menu_loaddb">Import app data</string>
+  
   <string name="archive_button_store">Export</string>
   <string name="archive_button_load">Import</string>
   <string name="archive_expl_store">Select the types of CrossWords
