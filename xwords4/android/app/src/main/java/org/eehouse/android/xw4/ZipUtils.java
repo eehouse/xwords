@@ -61,8 +61,8 @@ public class ZipUtils {
         int explID() { return mExpl; }
     };
 
-    static String getMimeType() {
-        return "application/x-zip";
+    static String getMimeType( boolean isStore ) {
+        return isStore ? "application/x-zip" : "*/*";
         // return "application/octet-stream";
     }
 

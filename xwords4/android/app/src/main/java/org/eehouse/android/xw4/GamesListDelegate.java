@@ -1599,7 +1599,7 @@ public class GamesListDelegate extends ListDelegateBase
         }
         Intent intent = new Intent( intentAction );
         intent.addCategory( Intent.CATEGORY_OPENABLE );
-        intent.setType( ZipUtils.getMimeType() );
+        intent.setType( ZipUtils.getMimeType( isStore ) );
         if ( isStore ) {
             intent.putExtra( Intent.EXTRA_TITLE, ZipUtils.getFileName(m_activity) );
         }

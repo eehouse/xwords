@@ -381,7 +381,7 @@ public class GameSummary implements Serializable {
             // Make sure it's big enough
             Assert.assertTrue( 0 == (~FORCE_CHANNEL_MASK & m_gi.forceChannel) );
             result |= m_gi.forceChannel << FORCE_CHANNEL_OFFSET;
-            Log.d( TAG, "giflags(): adding forceChannel %d", m_gi.forceChannel );
+            // Log.d( TAG, "giflags(): adding forceChannel %d", m_gi.forceChannel );
         }
         return result;
     }
