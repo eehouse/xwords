@@ -606,7 +606,6 @@
     <string name="board_menu_game_netstats">Netwerkstatistieken</string>
     <string name="netstats_title">Netwerkstatistieken spel</string>
     <string name="name_dict_fmt">%1$s/%2$s</string>
-    <string name="gamel_menu_storedb">Schrijf spellen naar SD kaart</string>
     <string name="gamel_menu_loaddb">Laad spellen van SD kaart</string>
     <string name="nag_intervals">Herinnering intervallen (minuten1,minuten2,...)</string>
     <string name="enable_sms_toself_title">Stuur SMS berichten naar zelf</string>

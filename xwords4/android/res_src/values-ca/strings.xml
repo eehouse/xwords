@@ -533,7 +533,6 @@ Introduïu el vostre nom aquí. S\'usarà en crear partides noves. (Podreu
     <string name="dict_host">URL de baixada de diccionari</string>
     <string name="logging_on">Habilita el registre</string>
     <string name="board_menu_game_netstats">Estadístiques de xarxa</string>
-    <string name="gamel_menu_storedb">Escriu les partides a la targeta SD</string>
     <string name="gamel_menu_loaddb">Carrega les partides de la targeta SD</string>
     <string name="radio_name_gsm">GSM</string>
     <string name="radio_name_cdma">CDMA</string>

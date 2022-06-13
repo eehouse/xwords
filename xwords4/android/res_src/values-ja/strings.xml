@@ -617,7 +617,6 @@
     <string name="board_menu_game_netstats">ネットワーク統計情報</string>
     <string name="netstats_title">ゲーム ネットワーク統計情報</string>
     <string name="name_dict_fmt">%1$s/%2$s</string>
-    <string name="gamel_menu_storedb">SD カードにゲームを書き込む</string>
     <string name="gamel_menu_loaddb">SD カードからゲームをロード</string>
     <string name="nag_intervals">リマインダーの間隔 (1分、2分、…)</string>
     <string name="enable_sms_toself_title">自分に SMS を短絡させる</string>

@@ -659,7 +659,6 @@
     <string name="enable_pending_count_title">Mostrar mensagens pendentes</string>
     <string name="enable_pending_count_summary">Mostrar número ainda não contado</string>
     <string name="nag_intervals">Intervalos de lembrete (minutos1,minutos2,…)</string>
-    <string name="gamel_menu_storedb">Escrever jogos no cartão SD</string>
     <string name="game_summary_field_npackets">Contagem de packets pendente</string>
     <string name="dup_moved">Turno duplo completo. Pontuação:
 \n</string>
@@ -895,7 +894,6 @@
     <string name="button_sms_add">Importar contato</string>
     <string name="new_name_body_fmt">%1$s te convidou para jogar</string>
     <string name="game_name_label">Nome do jogo:</string>
-    <string name="gamel_menu_loaddb">Carregar jogos do cartão SD</string>
     <string name="toast_no_permission">Permissão não concedida</string>
     <string name="perms_rationale_title">Permissão do Android explicada</string>
     <string name="sms_send_failed">Envio SMS falho</string>

@@ -657,7 +657,6 @@
     <string name="logging_on">Protokollierung aktivieren</string>
     <string name="debug_features">Fehlersuche aktivieren</string>
     <string name="board_menu_game_netstats">Netzwerk-Statistiken</string>
-    <string name="gamel_menu_loaddb">Partien von SD-Karte laden</string>
     <string name="gamel_menu_writegit">Git-Informationen in die Zwischenablage kopieren</string>
     <string name="nag_intervals">Erinnerungsintervall (Minuten1, Minuten2, …)</string>
     <string name="radio_name_gsm">GSM</string>
@@ -757,7 +756,6 @@
     <string name="board_menu_game_showInvites">Einladungen zeigen</string>
     <string name="netstats_title">Partie-Netzwerkstatistik</string>
     <string name="name_dict_fmt">%1$s/%2$s</string>
-    <string name="gamel_menu_storedb">Partien auf SD-Kartie speichern</string>
     <string name="enable_sms_toself_title">SMS-Selbstverbindung aktivieren</string>
     <string name="enable_sms_toself_summary">Mobilfunk weglassen bei gleichen Nummern</string>
     <string name="force_radio_title">Mobilfunk vortäuschen</string>

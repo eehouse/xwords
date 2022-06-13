@@ -1798,7 +1798,6 @@
     <string name="enable_pending_count_summary">Mostrar quantidade ainda não contada</string>
     <string name="enable_pending_count_title">Mostrar mensagens pendentes</string>
     <string name="gamel_menu_writegit">Copiar informação git para a área de transferência</string>
-    <string name="gamel_menu_loaddb">Carregar jogos do cartão SD</string>
     <string name="gamel_menu_storedb">Escrever jogos no cartão SD</string>
     <string name="name_dict_fmt">%1$s/%2$s</string>
     <string name="mqtt_qos">QOS do MQTT</string>

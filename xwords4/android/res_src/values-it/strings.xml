@@ -181,7 +181,6 @@
     <string name="enable_pending_count_summary">Mostra numero non ancora riconosciuto</string>
     <string name="enable_pending_count_title">Mostra messaggi in attesa</string>
     <string name="gamel_menu_writegit">Copia info codice negli appunti</string>
-    <string name="gamel_menu_loaddb">Carica partite da scheda SD</string>
     <string name="gamel_menu_storedb">Salva partite su scheda SD</string>
     <string name="name_dict_fmt">%1$s/%2$s</string>
     <string name="mqtt_qos">MQTT QOS</string>
