@@ -2719,7 +2719,6 @@ changement, ou l\'éditer pour lui attribuer une façon de se connecter ?</stri
     <!--<string name="gamel_menu_storedb">Write DB to SD card</string>-->
     <!--XLATE-ME-->
     <!--<string name="gamel_menu_loaddb">Load DB from SD card</string>-->
-    <string name="gamel_menu_loaddb">Charger BDD depuis carte SD</string>
     <!--XLATE-ME-->
     <!--<string name="enable_dupes_title">Accept duplicate invites</string>-->
     <!--XLATE-ME-->

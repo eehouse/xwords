@@ -383,7 +383,6 @@
     <string name="board_menu_game_netstats">Nettverksstatistikk</string>
     <string name="board_menu_game_showInvites">Vis invitasjoner</string>
     <string name="name_dict_fmt">%1$s/%2$s</string>
-    <string name="gamel_menu_loaddb">Last spill fra SD-kort</string>
     <string name="enable_sms_toself_title">Kortslutt SMS til deg selv</string>
     <string name="force_radio_title">Lat som du har radio</string>
     <string name="radio_name_real">Ikke lat som</string>
