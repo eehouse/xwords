@@ -136,6 +136,12 @@ public class BackupConfigView extends LinearLayout
         }
     }
 
+    int getAlertTitle()
+    {
+        return mIsStore
+            ? R.string.gamel_menu_storedb : R.string.gamel_menu_loaddb;
+    }
+
     int getPosButtonTxt()
     {
         return mIsStore

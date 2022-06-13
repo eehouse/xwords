@@ -1554,12 +1554,12 @@ public class GamesListDelegate extends ListDelegateBase
 
     private Dialog mkLoadStoreDlg( final Uri uri )
     {
-        Log.d( TAG, "mkLoadStoreDlg(%s)", uri );
         final BackupConfigView view = (BackupConfigView)
             LocUtils.inflate( m_activity, R.layout.backup_config_view );
         view.init( uri );
 
         AlertDialog.Builder ab = makeAlertBuilder()
+            .setTitle( view.getAlertTitle() )
             .setView( view )
             .setPositiveButton( view.getPosButtonTxt(), new OnClickListener() {
                     @Override
