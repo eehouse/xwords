@@ -869,7 +869,7 @@
     <string name="button_more_info">Ler mais</string>
     <string name="sms_banned_ok_only">A versào da Google Play de CrossWords não suporta mais convites ou jogos por dados SMS.</string>
     <string name="slmenu_select_all">Selecionar tudo</string>
-    <string name="db_store_done">Escrita no cartão SD completa</string>
+    <string name="db_store_done">Exportação concluída</string>
     <string name="debug_features">Ativar ferramentas de debug</string>
     <string name="logging_on">Ativar logs</string>
     <string name="sel_items_fmt">Selecionado: %1$d</string>
@@ -1132,5 +1132,5 @@
     <string name="show_note_menu_fmt">Sobre %1$s</string>
     <string name="button_deny">Negar</string>
     <string name="button_ask">Perguntar</string>
-    <string name="db_store_failed">A escrita no cartão SD falhou</string>
+    <string name="db_store_failed">A exportação falhou</string>
 </resources>
