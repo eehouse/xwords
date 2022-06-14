@@ -1474,6 +1474,14 @@ public class GamesListDelegate extends ListDelegateBase
             openWithChecks( rowid, summary );
             break;
 
+        case BACKUP_OVERWRITE:
+            ArrayList<SaveWhat> whats = (ArrayList<SaveWhat>)params[0];
+            Uri uri = Uri.parse((String)params[1]);
+            if ( ZipUtils.load( m_activity, uri, whats ) ) {
+                ProcessPhoenix.triggerRebirth( m_activity );
+            }
+            break;
+
         case QUARANTINE_DELETE:
             deleteIfConfirmed( new long[] {(long)params[0]}, true );
             break;
@@ -1567,10 +1575,11 @@ public class GamesListDelegate extends ListDelegateBase
                         if ( null == uri ) { // store case
                             startFileChooser( view.getSaveWhat() );
                         } else {
-                            List<ZipUtils.SaveWhat> what = view.getSaveWhat();
-                            if ( ZipUtils.load( m_activity, uri, what ) ) {
-                                ProcessPhoenix.triggerRebirth( m_activity );
-                            }
+                            ArrayList<SaveWhat> what = view.getSaveWhat();
+                            makeConfirmThenBuilder( R.string.backup_overwrite_confirm,
+                                                    Action.BACKUP_OVERWRITE )
+                                .setParams(what, uri.toString())
+                                .show();
                         }
                     }
                 } )
@@ -1581,7 +1590,7 @@ public class GamesListDelegate extends ListDelegateBase
 
     // This is in liu of passing through the startActivityForResult call,
     // which apparently isn't supported.
-    private List<ZipUtils.SaveWhat> mSaveWhat;
+    private List<SaveWhat> mSaveWhat;
 
     private void startFileChooser( List<SaveWhat> what )
     {

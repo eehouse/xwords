@@ -58,6 +58,7 @@ public class DlgDelegate {
         SEND_LOGS,
         OPEN_BYOD_DICT,
         CLEAR_INT_STATS,        // debug only
+        BACKUP_OVERWRITE,
 
         // BoardDelegate
         UNDO_LAST_ACTION,

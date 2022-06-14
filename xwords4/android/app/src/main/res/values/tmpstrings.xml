@@ -24,5 +24,11 @@
   identify your device. Use this to migrate CrossWords to a new
   device.</string>
 
+  <string name="backup_overwrite_confirm">Are you sure you want to
+  overwrite CrossWords\'s current games or settings with those from
+  the file you selected?\n\nPlease note that if you are bringing
+  networked games over from another device (migrating, that is), you
+  should not continue to use CrossWords on the old device.</string>
+
   <string name="archive_filename_fmt">CrossWords-backup-%1$s.zip</string>
 </resources>

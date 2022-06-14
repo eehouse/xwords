@@ -148,9 +148,9 @@ public class BackupConfigView extends LinearLayout
             ? R.string.archive_button_store : R.string.archive_button_load;
     }
 
-    public List<SaveWhat> getSaveWhat()
+    public ArrayList<SaveWhat> getSaveWhat()
     {
-        List<SaveWhat> result = new ArrayList<>();
+        ArrayList<SaveWhat> result = new ArrayList<>();
         for ( SaveWhat what : mCheckBoxes.keySet() ) {
             CheckBox box = mCheckBoxes.get( what );
             if ( box.isChecked() ) {
