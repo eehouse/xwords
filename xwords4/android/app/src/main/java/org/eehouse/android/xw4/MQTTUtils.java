@@ -691,9 +691,9 @@ public class MQTTUtils extends Thread
         private void postNotification( MessagePair pair ) throws JSONException
         {
             JSONObject obj = new JSONObject( new String(pair.mPacket) );
-            String msg = obj.optString( "msg" );
+            String msg = obj.optString( "msg", null );
             if ( null != msg ) {
-                String title = obj.optString( "title" );
+                String title = obj.optString( "title", null );
                 if ( null == title ) {
                     title = LocUtils.getString( mContext, R.string.remote_msg_title );
                 }
