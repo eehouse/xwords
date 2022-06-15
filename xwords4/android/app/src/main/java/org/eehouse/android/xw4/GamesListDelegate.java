@@ -1482,6 +1482,10 @@ public class GamesListDelegate extends ListDelegateBase
             }
             break;
 
+        case BACKUP_RETRY:
+            startFileChooser( null );
+            break;
+
         case QUARANTINE_DELETE:
             deleteIfConfirmed( new long[] {(long)params[0]}, true );
             break;
@@ -1576,8 +1580,10 @@ public class GamesListDelegate extends ListDelegateBase
                             startFileChooser( view.getSaveWhat() );
                         } else {
                             ArrayList<SaveWhat> what = view.getSaveWhat();
-                            makeConfirmThenBuilder( R.string.backup_overwrite_confirm,
-                                                    Action.BACKUP_OVERWRITE )
+                            String name = ZipUtils.getFileName( m_activity, uri );
+                            String msg = getString( R.string.backup_overwrite_confirm_fmt,
+                                                    name );
+                            makeConfirmThenBuilder( msg, Action.BACKUP_OVERWRITE )
                                 .setParams(what, uri.toString())
                                 .show();
                         }
@@ -1668,11 +1674,23 @@ public class GamesListDelegate extends ListDelegateBase
                         : R.string.db_store_failed;
                     showToast( msgID );
                 } else {
-                    final String uriStr = uri.toString();
                     post( new Runnable() {
                             @Override
                             public void run() {
-                                showDialogFragment( DlgID.BACKUP_LOADSTORE, uriStr );
+                                if ( ZipUtils.hasWhats( m_activity, uri ) ) {
+                                    String uriStr = uri.toString();
+                                    showDialogFragment( DlgID.BACKUP_LOADSTORE, uriStr );
+                                } else {
+                                    String name = ZipUtils.getFileName( m_activity, uri );
+                                    if ( null != name ) {
+                                        String msg = getString( R.string.backup_bad_file_fmt,
+                                                                name );
+                                        makeOkOnlyBuilder( msg )
+                                            .setActionPair( Action.BACKUP_RETRY,
+                                                            R.string.button_pick_again )
+                                            .show();
+                                    }
+                                }
                             }
                         } );
                 }

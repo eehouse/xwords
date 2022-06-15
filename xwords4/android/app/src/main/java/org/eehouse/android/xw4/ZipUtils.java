@@ -21,7 +21,9 @@ package org.eehouse.android.xw4;
 
 import android.content.ContentResolver;
 import android.content.Context;
+import android.database.Cursor;
 import android.net.Uri;
+import android.provider.OpenableColumns;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -76,6 +78,25 @@ public class ZipUtils {
 
     private interface EntryIter {
         boolean withEntry( ZipInputStream zis, SaveWhat what ) throws FileNotFoundException, IOException;
+    }
+
+    public static String getFileName( Context context, Uri uri )
+    {
+        String result = null;
+        Cursor cursor = context.getContentResolver()
+            .query( uri, null, null, null, null );
+        if ( null != cursor && cursor.moveToNext() ) {
+            int indx = cursor
+                .getColumnIndex( OpenableColumns.DISPLAY_NAME );
+            result = cursor.getString( indx );
+        }
+        return result;
+    }
+
+    public static boolean hasWhats( Context context, Uri uri )
+    {
+        List<SaveWhat> whats = getHasWhats( context, uri );
+        return 0 < whats.size();
     }
 
     public static List<SaveWhat> getHasWhats( Context context, Uri uri )

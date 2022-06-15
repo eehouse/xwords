@@ -111,11 +111,16 @@ public class BackupConfigView extends LinearLayout
         if ( null != mIsStore ) {
             TextView tv = ((TextView)findViewById(R.id.explanation));
             if ( null != tv ) {
-                int explID = mIsStore ?
-                    R.string.archive_expl_store : R.string.archive_expl_load;
-                tv.setText( explID );
-
                 Context context = getContext();
+                if ( mIsStore ) {
+                    tv.setText( R.string.archive_expl_store );
+                } else {
+                    String name = ZipUtils.getFileName( context, mLoadFile );
+                    String msg = LocUtils
+                        .getString( context, R.string.archive_expl_load_fmt, name );
+                    tv.setText( msg );
+                }
+
                 LinearLayout list = (LinearLayout)findViewById( R.id.whats_list );
                 for ( SaveWhat what : SaveWhat.values() ) {
                     if ( null == mShowWhats || mShowWhats.contains(what) ) {
