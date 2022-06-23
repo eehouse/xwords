@@ -373,8 +373,8 @@ public class TimerReceiver extends BroadcastReceiver {
             final long curNextFire = data.getFor( CLIENT_STATS, KEY_NEXT_FIRE, 0 );
             if ( 1000L < Math.abs( firstFireTime - curNextFire ) ) {
                 if ( firstFireTime - now < MIN_FUTURE ) { // Less than a 2 seconds in the future?
-                    Log.d( TAG, "moving firstFireTime to the future: %s -> %s",
-                           fmtLong(firstFireTime), fmtLong(now + MIN_FUTURE) );
+                    Log.d( TAG, "setNextTimer(): moving firstFireTime (for %s) to the future: %s -> %s",
+                           firstClient, fmtLong(firstFireTime), fmtLong(now + MIN_FUTURE) );
                     firstFireTime = now + MIN_FUTURE;
                     data.setFor( firstClient, KEY_FIREWHEN, firstFireTime );
                 }

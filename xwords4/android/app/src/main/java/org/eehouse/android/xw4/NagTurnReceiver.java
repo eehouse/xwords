@@ -79,41 +79,40 @@ public class NagTurnReceiver {
                 for ( NeedsNagInfo info : needNagging ) {
                     Assert.assertTrueNR( info.m_nextNag < now );
 
-                    // Skip processing if notifications disabled for this type
-                    // of game
-                    if ( s_nagsDisabledSolo && info.isSolo() ) {
-                        continue;
-                    } else if ( s_nagsDisabledNet && !info.isSolo() ) {
-                        continue;
-                    }
-
                     info.m_nextNag = figureNextNag( context,
                                                     info.m_lastMoveMillis );
-                    boolean lastWarning = 0 == info.m_nextNag;
 
-                    long rowid = info.m_rowid;
-                    GameSummary summary = GameUtils.getSummary( context, rowid,
-                                                                10 );
-                    String prevPlayer = null == summary
-                        ? LocUtils.getString(context, R.string.prev_player)
-                        : summary.getPrevPlayer();
+                    // Skip display of notifications disabled for this type
+                    // of game
+                    if ( s_nagsDisabledSolo && info.isSolo() ) {
+                        // do nothing
+                    } else if ( s_nagsDisabledNet && !info.isSolo() ) {
+                        // do nothing
+                    } else {
+                        boolean lastWarning = 0 == info.m_nextNag;
+                        long rowid = info.m_rowid;
+                        GameSummary summary = GameUtils.getSummary( context, rowid,
+                                                                    10 );
+                        String prevPlayer = null == summary
+                            ? LocUtils.getString(context, R.string.prev_player)
+                            : summary.getPrevPlayer();
 
-                    Intent msgIntent =
-                        GamesListDelegate.makeRowidIntent( context, rowid );
-                    String millis = formatMillis( context,
-                                                  now - info.m_lastMoveMillis);
-                    String body =
-                        String.format( LocUtils.getString(context,
-                                                          R.string.nag_body_fmt),
-                                       prevPlayer, millis );
-                    if ( lastWarning ) {
-                        body = LocUtils
-                            .getString( context, R.string.nag_warn_last_fmt, body );
+                        Intent msgIntent =
+                            GamesListDelegate.makeRowidIntent( context, rowid );
+                        String millis = formatMillis( context,
+                                                      now - info.m_lastMoveMillis);
+                        String body =
+                            String.format( LocUtils.getString(context,
+                                                              R.string.nag_body_fmt),
+                                           prevPlayer, millis );
+                        if ( lastWarning ) {
+                            body = LocUtils
+                                .getString( context, R.string.nag_warn_last_fmt, body );
+                        }
+                        Utils.postNotification( context, msgIntent,
+                                                R.string.nag_title, body,
+                                                rowid );
                     }
-                    Utils.postNotification( context, msgIntent,
-                                            R.string.nag_title, body,
-                                            rowid );
-
                 }
                 DBUtils.updateNeedNagging( context, needNagging );
 
