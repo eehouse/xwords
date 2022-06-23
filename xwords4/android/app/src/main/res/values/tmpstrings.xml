@@ -29,10 +29,11 @@
   <string name="button_pick_again">Pick again</string>
 
   <string name="backup_overwrite_confirm_fmt">Are you sure you want to
-  overwrite CrossWords\'s current games or settings with those from
-  the file “%1$s”?\n\nPlease note that if you are bringing
-  networked games over from another device (migrating, that is), you
-  should not continue to use CrossWords on the old device.</string>
+  overwrite CrossWords’s current games or settings with those from
+  the file “%1$s”?\n\nPlease note that if you are importing networked
+  games from a file created on another device (migrating, that is),
+  you should not continue to use CrossWords on the old
+  device.</string>
 
   <string name="archive_filename_fmt">CrossWords-backup-%1$s.zip</string>
 </resources>
