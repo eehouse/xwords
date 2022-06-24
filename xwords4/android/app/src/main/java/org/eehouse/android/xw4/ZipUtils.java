@@ -116,18 +116,19 @@ public class ZipUtils {
         Log.d( TAG, "getHasWhats() => %s", result );
         return result;
     }
-    
+
+    // Return true if anything is loaded/changed, as caller will use result to
+    // decide whether to restart process.
     public static boolean load( Context context, Uri uri,
                                 final List<SaveWhat> whats )
     {
-        Log.d( TAG, "load(%s)", whats );
         boolean result = false;
         try {
             result = iterate( context, uri, new EntryIter() {
                 @Override
                 public boolean withEntry( ZipInputStream zis, SaveWhat what )
                     throws FileNotFoundException, IOException {
-                    boolean success = false;
+                    boolean success = true;
                     if ( whats.contains( what ) ) {
                         switch ( what ) {
                         case COLORS:
@@ -151,7 +152,7 @@ public class ZipUtils {
             Log.ex( TAG, ex );
             result = false;
         }
-        
+        Log.d( TAG, "load(%s) => %b", whats, result );
         return result;
     }
 
