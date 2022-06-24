@@ -110,12 +110,6 @@
     <item android:id="@+id/games_menu_checkupdates"
           android:title="@string/gamel_menu_checkupdates"
           />
-    <item android:id="@+id/games_menu_storedb"
-          android:title="@string/gamel_menu_storedb"
-          />
-    <item android:id="@+id/games_menu_loaddb"
-          android:title="@string/gamel_menu_loaddb"
-          />
     <item android:id="@+id/games_menu_writegit"
           android:title="@string/gamel_menu_writegit"
           />
@@ -138,6 +132,19 @@
               />
         <item android:id="@+id/games_menu_clearLogStorage"
               android:title="@string/gamel_menu_logstore_clear"
+              />
+      </menu>
+    </item>
+
+    <item android:id="@+id/games_submenu_backup"
+          android:title="@string/gamel_menu_backup"
+          >
+      <menu>
+        <item android:id="@+id/games_menu_storedb"
+              android:title="@string/gamel_menu_storedb"
+              />
+        <item android:id="@+id/games_menu_loaddb"
+              android:title="@string/gamel_menu_loaddb"
               />
       </menu>
     </item>

@@ -3,7 +3,11 @@
   <!-- This file is for strings that aren't ready for localization
        yet, probably because I'm not finished designing whatever they're part of -->
 
+  <!-- Menu group for backup/restore -->
+  <string name="gamel_menu_backup">Backup/restore</string>
+  <!-- menu for saving/exporting app data -->
   <string name="gamel_menu_storedb">Export app data</string>
+  <!-- menu for loading/importing app data -->
   <string name="gamel_menu_loaddb">Import app data</string>
   
   <string name="archive_button_store">Export</string>
