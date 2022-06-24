@@ -1474,6 +1474,10 @@ public class GamesListDelegate extends ListDelegateBase
             openWithChecks( rowid, summary );
             break;
 
+        case BACKUP_LOADDB:
+            startFileChooser( null );
+            break;
+
         case BACKUP_OVERWRITE:
             ArrayList<SaveWhat> whats = (ArrayList<SaveWhat>)params[0];
             Uri uri = Uri.parse((String)params[1]);
@@ -1920,7 +1924,10 @@ public class GamesListDelegate extends ListDelegateBase
             showDialogFragment( DlgID.BACKUP_LOADSTORE );
             break;
         case R.id.games_menu_loaddb:
-            startFileChooser( null );
+            makeNotAgainBuilder( R.string.not_again_loaddb,
+                                 R.string.key_notagain_loaddb,
+                                 Action.BACKUP_LOADDB )
+                .show();
             break;
 
         case R.id.games_menu_writegit:

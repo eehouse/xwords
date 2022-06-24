@@ -131,6 +131,7 @@
   <string name="key_notagain_arrow">key_notagain_arrow</string>
   <string name="key_notagain_turnchanged">key_notagain_turnchanged</string>
   <string name="key_notagain_newfrom">key_notagain_newfrom</string>
+  <string name="key_notagain_loaddb">key_notagain_loaddb</string>
   <string name="key_notagain_trading">key_notagain_trading</string>
   <string name="key_notagain_hidenewgamebuttons">key_notagain_hidenewgamebuttons</string>
   <string name="key_na_lookup">key_na_lookup</string>

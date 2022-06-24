@@ -57,9 +57,10 @@ public class DlgDelegate {
         LAUNCH_THEME_CONFIG,
         SEND_LOGS,
         OPEN_BYOD_DICT,
-        CLEAR_INT_STATS,        // debug only
+        BACKUP_LOADDB,
         BACKUP_OVERWRITE,
         BACKUP_RETRY,
+        CLEAR_INT_STATS,        // debug only
 
         // BoardDelegate
         UNDO_LAST_ACTION,
