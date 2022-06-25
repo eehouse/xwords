@@ -22,9 +22,9 @@
     <string name="board_menu_game_resend">Reenviar jogadas</string>
     <string name="board_menu_game_resign">Abandonar</string>
     <string name="board_menu_game_final">Pontuação final</string>
-    <string name="board_menu_game_history">Histórico do jogo…</string>
-    <string name="board_menu_game_left">Quadros restantes…</string>
-    <string name="board_menu_game_counts">Contagens e valores…</string>
+    <string name="board_menu_game_history">Histórico do jogo</string>
+    <string name="board_menu_game_left">Quadros restantes</string>
+    <string name="board_menu_game_counts">Contagens e valores</string>
     <string name="board_submenu_game">Jogo</string>
     <string name="board_menu_undo_last">Desfazer último</string>
     <string name="board_menu_trade">Trocar</string>
@@ -124,9 +124,9 @@
         <item quantity="other">%1$d movimentos realizados</item>
     </plurals>
     <string name="button_reset">Redefinir</string>
-    <string name="menu_prefs">Configurações do APP…</string>
+    <string name="menu_prefs">Configurações do APP</string>
     <string name="game_locked">Bloquear configurações</string>
-    <string name="download_more">Baixar mais…</string>
+    <string name="download_more">Baixar mais</string>
     <string name="set_default_message_fmt">Para quais jogadores a lista de palavras %1$s pode ser padrão para novas partidas\? (O idioma %2$s será padrão para ambos.)</string>
     <string name="str_game_name_fmt">%1$s (%2$s)</string>
     <string name="title_langs_list">Idiomas (baseados nas listas de palavras instaladas)</string>
@@ -152,16 +152,16 @@
 \n(Reiniciar apaga todas as jogadas e qualquer informação de conexão.)</item>
     </plurals>
     <string name="game_rename_title">Renomear jogo</string>
-    <string name="list_item_netstats">Conexões…</string>
+    <string name="list_item_netstats">Conexões</string>
     <string name="list_item_copy">Copiar</string>
     <string name="list_item_new_from">Novo jogo a partir de</string>
     <string name="list_item_reset">Restaurar</string>
     <string name="list_item_delete">Excluir o jogo</string>
-    <string name="list_item_move">Mover para grupo…</string>
-    <string name="list_item_rename">Renomear…</string>
-    <string name="list_item_config">Opções da partida…</string>
-    <string name="board_menu_file_about">Sobre o CrossWords…</string>
-    <string name="gamel_menu_dicts">Listas das palavras…</string>
+    <string name="list_item_move">Mover para grupo</string>
+    <string name="list_item_rename">Renomear</string>
+    <string name="list_item_config">Opções da partida</string>
+    <string name="board_menu_file_about">Sobre o CrossWords</string>
+    <string name="gamel_menu_dicts">Listas das palavras</string>
     <string name="button_delete">Excluir</string>
     <string name="gameOver">Fim da partida</string>
     <string name="summary_invites_out_fmt">Jogadores convidados para a sala “%1$s”</string>
@@ -268,7 +268,7 @@
     <string name="title_blank_picker">Escolha de quadrado em branco</string>
     <string name="tile_pick_summary_fmt">Escolha atual: %1$s</string>
     <string name="tile_button_txt_fmt">%1$s (%2$d)</string>
-    <string name="info_title">Para sua informação…</string>
+    <string name="info_title">Para sua informação</string>
     <string name="button_retry">Repetir</string>
     <string name="button_discard">Descartar</string>
     <string name="button_save">Salvar</string>
@@ -361,7 +361,7 @@
 \n</string>
     <string name="button_notagain">Não mostrar novamente</string>
     <string name="newbie_title">Uma dica</string>
-    <string name="query_title">Uma pergunta…</string>
+    <string name="query_title">Uma pergunta</string>
     <string name="ids_endnow">Você tem certeza que quer abandonar\?</string>
     <string name="finalscores_title">Pontuações finais</string>
     <string name="history_title">Histórico do jogo</string>
@@ -594,7 +594,7 @@
 \n(Esta ação não pode ser desfeita. mas os jogadores podem reaparecer se você ainda tiver jogos ativos com eles.)</string>
     <string name="player_edit_name">Mudar nome</string>
     <string name="knowns_expl">Estes são os seus jogadores remotos conhecidos. Seus nomes são padronizados de acordo com o que o jogador remoto escolheu, mas você pode alterar os nomes se desejar.</string>
-    <string name="gamel_menu_knownplyrs">Jogadores Conhecidos…</string>
+    <string name="gamel_menu_knownplyrs">Jogadores Conhecidos</string>
     <string name="remote_msg_title">Mensagem remota</string>
     <string name="not_again_quicknetgame">Há uma maneira super-rápida de começar um jogo com alguém com qual você já jogou. Se o nome da pessoa estiver na lista, apenas selecione-a e um convite será enviado imediatamente.</string>
     <string name="button_faq">Mostrar FAQ</string>
@@ -686,7 +686,7 @@
     <string name="email_body_rev_fmt">(Se relevante, favor inclua a versão (“%1$s”) do CrossDbg, o modelo (“%2$s”) e versão do sistema operacional (%3$s) do seu telefone ou tablet, além do seu devID (%4$s).)</string>
     <string name="email_author_chooser">Enviar comentário via</string>
     <string name="email_author_subject">Comentário sobre CrossWords</string>
-    <string name="board_menu_file_email">Autor do e-mail…</string>
+    <string name="board_menu_file_email">Autor do e-mail</string>
     <string name="error_min_gt_max">O valor de tamanho mínimo não pode ser maior que o valor máximo.</string>
     <string name="not_again_browseall">Este botão permite que você escolha em qual lista de palavras no idioma do jogo atual navegar.</string>
     <string name="not_again_browse">Este botão permite navegar na lista de palavras exibidas mais recentemente.</string>
@@ -875,7 +875,7 @@
     <string name="sel_items_fmt">Selecionado: %1$d</string>
     <string name="slmenu_deselect_all">Des-selecionar tudo</string>
     <string name="slmenu_copy_sel">Copiar para área de transferência</string>
-    <string name="gamel_menu_study">Lista de estudo…</string>
+    <string name="gamel_menu_study">Lista de estudo</string>
     <string name="summary_studyon">Oferecer adicionar e exibir listas de palavras para lembrar</string>
     <string name="title_studyon">Ativar listas de estudo</string>
     <string name="add_to_study_fmt">Adicionar %1$s à lista de estudos</string>
@@ -1058,7 +1058,7 @@
         <item quantity="other">Tem certeza de que deseja excluir os jogos %1$s\? Essa ação não pode ser desfeita.</item>
     </plurals>
     <string name="not_again_comms_relay_depr">O “relay” é um servidor para passar mensagens entre dispositivos rodando CrossWords. Está a ser substituído por um servidor mais moderno chamado “Mosquitto.”</string>
-    <string name="list_item_relaypage">Tráfego do jogo…</string>
+    <string name="list_item_relaypage">Tráfego do jogo</string>
     <string name="invitee_fmt">(%1$s convidado)</string>
     <string name="not_again_traysize">Esta nova configuração altera a quantidade de quadrados na estante.
 \n
@@ -1068,7 +1068,7 @@
     <string name="str_bonus_all_fmt">Bônus por usar %1$d quadrados: 50
 \n</string>
     <string name="prefs_themes">Os temas das cores do tabuleiro</string>
-    <string name="button_settings">Configurações…</string>
+    <string name="button_settings">Configurações</string>
     <string name="not_again_boardThemes_fmt">O quadro escuro está sendo desenhado porque o \"Tema escuro\" está ativado no seu dispositivo.
 \n
 \nCaso prefira o antigo tema \"Claro\" ou caso queira escolher um tema independente da configuração do \"Tema escuro\" do Android, você pode alterar o \"%1$s\" nas configurações dos aplicativos a qualquer momento. O botão \"Configurações\" abaixo o levará agora direto para lá.</string>
@@ -1133,4 +1133,24 @@
     <string name="button_deny">Negar</string>
     <string name="button_ask">Perguntar</string>
     <string name="db_store_failed">A exportação falhou</string>
+    <string name="gamel_menu_backup">Backup/restauração</string>
+    <string name="archive_button_load">Importar</string>
+    <string name="archive_expl_store">Selecione os tipos de dados ou as configurações do CrossWords que deseja salvar.</string>
+    <string name="archive_expl_load_fmt">Substitui quais os tipos de dados dos aplicativos no CrossWords por dados do arquivo “%1$s”\?</string>
+    <string name="archive_expl_colors">Cores no tabuleiro de jogo, por ex. dos nomes dos jogadores e dos quadrados de bônus</string>
+    <string name="archive_title_settings">Configurações</string>
+    <string name="archive_expl_settings">Todas as configurações do App, exceto as cores, por exemplo, idioma padrão e o tamanho da miniatura</string>
+    <string name="archive_title_games">Jogos e dados</string>
+    <string name="archive_expl_games">Todos os jogos e os outros dados que identifique o seu dispositivo.</string>
+    <string name="not_again_loaddb">Importa as configurações ou os dados do jogo a partir de um arquivo previamente exportado do CrossWords neste ou num outro dispositivo.</string>
+    <string name="backup_bad_file_fmt">O arquivo “%1$s” não contém dados de backup do CrossWords.</string>
+    <string name="gamel_menu_storedb">Exportar os dados do aplicativo</string>
+    <string name="archive_filename_fmt">CrossWords-backup-%1$s.zip</string>
+    <string name="gamel_menu_loaddb">Importa os dados do aplicativo</string>
+    <string name="archive_button_store">Exportar</string>
+    <string name="archive_title_colors">Cores do tabuleiro</string>
+    <string name="button_pick_again">Escolha novamente</string>
+    <string name="backup_overwrite_confirm_fmt">Tem certeza de que deseja substituir os jogos ou as configurações atuais do CrossWords com os do arquivo \"%1$s\"\?
+\n
+\nNote que se você está importando jogos em rede a partir de um arquivo criado num outro dispositivo (migrando, ou seja), você não deve continuar a usar o CrossWords no dispositivo antigo.</string>
 </resources>
