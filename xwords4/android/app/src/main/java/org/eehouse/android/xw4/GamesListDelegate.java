@@ -1747,10 +1747,7 @@ public class GamesListDelegate extends ListDelegateBase
                 final boolean showDataItems =
                     Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT
                     && nothingSelected;
-                for ( int item : new int[] { R.id.games_menu_storedb,
-                                             R.id.games_menu_loaddb } ) {
-                    Utils.setItemVisible( menu, item, showDataItems );
-                }
+                Utils.setItemVisible( menu, R.id.games_submenu_backup, showDataItems );
 
                 boolean enable = showDbg && nothingSelected;
                 Utils.setItemVisible( menu, R.id.games_menu_checkupdates, enable );

@@ -28,7 +28,7 @@
   identify your device.</string>
 
   <string name="not_again_loaddb">Import settings or game data from a
-  file you previously saved here, or copied from another
+  file previously exported from CrossWords on this or another
   device.</string>
 
   <string name="backup_bad_file_fmt">The file “%1$s” does not
