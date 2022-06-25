@@ -2719,4 +2719,65 @@
     <!-- Debug option to NOT augment whatever comm-vias are chosen with MQTT when possible -->
     <string name="skip_mqtt_add_title">Skip adding MQTT</string>
     <string name="skip_mqtt_add_summary">Do NOT attempt to send all messages by MQTT</string>
+
+    <!-- Menu group for backup/restore -->
+    <string name="gamel_menu_backup">Backup/restore</string>
+    <!-- menu for saving/exporting app data -->
+    <string name="gamel_menu_storedb">Export app data</string>
+    <!-- menu for loading/importing app data -->
+    <string name="gamel_menu_loaddb">Import app data</string>
+
+    <!-- Button to move forward with exporting after choosing data types -->
+    <string name="archive_button_store">Export</string>
+    <!-- Button to move forward with importing after choosing data types -->
+    <string name="archive_button_load">Import</string>
+    <!-- explanatory text in the Export choices dialog -->
+    <string name="archive_expl_store">Select the types of CrossWords
+    data or settings you want to save.</string>
+    <!-- explanatory text in the Import choices dialog -->
+    <string name="archive_expl_load_fmt">Replace which types of app data in
+    CrossWords with data from the file “%1$s”?</string>
+
+    <!-- When choosing what to include in or load from an archive file
+         user picks from entries that include a checkbox with a short
+         title and a longer explanation below.  These are the title and
+         explanation for the three entries currently available. -->
+    <string name="archive_title_colors">Board colors</string>
+    <string name="archive_expl_colors">Colors on the game board, e.g. of
+    player names and bonus squares</string>
+    <string name="archive_title_settings">Settings</string>
+    <string name="archive_expl_settings">All App settings except colors,
+    e.g. default language and thumbnail size</string>
+    <string name="archive_title_games">Games and data</string>
+    <string name="archive_expl_games">All games and other data to
+    identify your device.</string>
+
+    <!-- A one-time explanatory hint about what "Importing" is shown
+         when the "Import app data" menu is selected -->
+    <string name="not_again_loaddb">Import settings or game data from a
+    file previously exported from CrossWords on this or another
+    device.</string>
+
+    <!-- Alert shown when I'm unable to find archive data in the file
+         the user selected. This will happen when the user chooses some
+         random file CrossWords didn't create, which is pretty easy to
+         do. -->
+    <string name="backup_bad_file_fmt">The file “%1$s” does not
+    contain CrossWords backup data.</string>
+
+    <!-- button shown when user may have chosen the wrong archive file
+         to save having to start the whole process over -->
+    <string name="button_pick_again">Pick again</string>
+
+    <!-- Shown so user will know that restoring data is destructive of
+         local/current data -->
+    <string name="backup_overwrite_confirm_fmt">Are you sure you want to
+    overwrite CrossWords’s current games or settings with those from
+    the file “%1$s”?\n\nPlease note that if you are importing networked
+    games from a file created on another device (migrating, that is),
+    you should not continue to use CrossWords on the old
+    device.</string>
+
+    <!-- Template for the name of the file the archive is saved to -->
+    <string name="archive_filename_fmt">CrossWords-backup-%1$s.zip</string>
 </resources>
