@@ -2,8 +2,8 @@
 <resources>
     <string name="str_game_name_fmt">%1$s（%2$s）</string>
     <string name="robot_name_fmt">%1$s（机器人）</string>
-    <string name="list_item_config">游戏设置……</string>
-    <string name="download_more">下载更……</string>
+    <string name="list_item_config">游戏设置</string>
+    <string name="download_more">下载更多</string>
     <string name="button_default_robot">机器人</string>
     <string name="button_default_both">都</string>
     <string name="lang_label">游戏语言</string>
@@ -47,11 +47,17 @@
     <string name="rematch_name_fmt">%1$s</string>
     <string name="name_dict_fmt">%1$s／%2$s</string>
     <string name="gameOver">游戏结束</string>
-    <string name="summary_invites_out_fmt">受邀到房间\"%1$s\"的玩家</string>
+    <string name="summary_invites_out_fmt">受邀到房间 \"%1$s\" 的玩家</string>
     <string name="summary_invites_out">邀请的玩家</string>
     <plurals name="confirm_nameddeletes_fmt">
         <item quantity="other">您确定要删除游戏%1$s吗？ 删除后无法恢复。</item>
     </plurals>
     <string name="invitee_fmt">(%1$s 已邀请)</string>
     <string name="player_label">名字：</string>
+    <plurals name="confirm_reset_fmt">
+        <item quantity="one">你确定要重置 %1$d 个所选的游戏吗？
+\n
+\n（重置会删除所有所做的操作和任何连接信息。）</item>
+        <item quantity="other"></item>
+    </plurals>
 </resources>
