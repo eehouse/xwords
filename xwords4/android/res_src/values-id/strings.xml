@@ -40,7 +40,6 @@
     </plurals>
     <string name="rename_label_caveat">Ubah nama permainan ini (di perangkat ini saja) menjadi:</string>
     <string name="rename_label">Ubah nama permainan ini menjadi:</string>
-    <string name="game_rename_title">Ubah nama permainan</string>
     <string name="list_item_copy">Salin</string>
     <string name="list_item_new_from">Buat dari</string>
     <string name="list_item_delete">Hapus permainan</string>
@@ -135,7 +134,6 @@
     <string name="no_moves_made">(Belum ada gerakan)</string>
     <string name="choose_expl_new">Mulai permainan dengan mengirim undangan melalui surel, SMS, atau bahkan kode QR</string>
     <string name="knowns_dup_name_fmt">Tidak dapat mengubah nama dari “%1$s” menjadi “%2$s”. Apakah “%2$s” sudah digunakan\?</string>
-    <string name="knowns_rename_title">Ubah Nama Pemain</string>
     <string name="player_edit_name">Ubah nama</string>
     <string name="knowns_bt_fmt">Nama Bluetooth: %1$s</string>
     <string name="mqtt_invite_title">Undangan MQTT</string>

@@ -24,7 +24,6 @@
     <string name="list_item_delete">Partie löschen</string>
     <string name="list_item_reset">Neustarten</string>
     <string name="list_item_copy">Kopieren</string>
-    <string name="game_rename_title">Partie umbenennen</string>
     <string name="rename_label">Name dieser Partie ändern in:</string>
     <string name="rename_label_caveat">Name dieser Partie ändern in
 (nur auf diesem Gerät):</string>
@@ -482,7 +481,6 @@
 \n(%1$d Partien werden auch gelöscht.)"</item>
     </plurals>
     <string name="rename_group_label">Den Namen dieser Gruppe ändern in:</string>
-    <string name="game_name_group_title">Gruppe benennen</string>
     <string name="cannot_delete_default_group_fmt">Die Gruppe für neue Partien, %1$s, kann nicht gelöscht werden.</string>
     <plurals name="group_name_fmt">
         <item quantity="one">%1$s (%2$d Partie)</item>
@@ -852,7 +850,6 @@
 \nVerwenden Sie diese Funktion, um die Gültigkeit von Wörtern zu überprüfen, die Sie spielen möchten, oder um ein unbekanntes Wort als Hinweis nachzuschlagen.</string>
     <string name="download_path_hint">Z.B. wo E-Mail-Anhänge gespeichert werden</string>
     <string name="knowns_dup_name_fmt">Der Name kann nicht von „%1$s“ in „%2$s“ geändert werden. Ist „%2$s“ bereits verwendet\?</string>
-    <string name="knowns_rename_title">Spieler umbenennen</string>
     <string name="player_edit_name">Namen ändern</string>
     <string name="invit_expl_player_fmt">Die Einladung wurde über MQTT/Internet an den bekannten Spieler \"%1$s\" auf %2$s weitergeleitet.</string>
     <string name="confirm_delete">Sind Sie sicher, dass Sie die aktuelle Partie löschen wollen\?

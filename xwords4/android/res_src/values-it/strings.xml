@@ -325,7 +325,6 @@
         <item quantity="other">%1$s (%2$d partite)</item>
     </plurals>
     <string name="cannot_delete_default_group_fmt">Il gruppo per nuove partite, %1$s, non può essere eliminato.</string>
-    <string name="game_name_group_title">Nome gruppo</string>
     <string name="rename_group_label">Modifica nome di questo gruppo in:</string>
     <plurals name="groups_confirm_del_games_fmt">
         <item quantity="one">"
@@ -997,7 +996,6 @@
     </plurals>
     <string name="rename_label_caveat">Cambia il nome di questa partita (solo su questo dispositivo) in:</string>
     <string name="rename_label">Cambia il nome di questa partita in:</string>
-    <string name="game_rename_title">Rinomina Partita</string>
     <string name="no_copy_network">Le partite già connesse non possono essere copiate. Usa \"Nuovo Modulo\" per copiare una partita già pronta con le stesse impostazioni.</string>
     <string name="robot_name_fmt">%1$s (robot)</string>
     <string name="str_game_name_fmt">%1$s (%2$s)</string>

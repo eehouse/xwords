@@ -120,7 +120,6 @@
     message. -->
     <string name="no_copy_network">Jogos que já se conectaram ao servidor não podem ser copiados. Use “Novo de“ para uma cópia pronta para jogar com todas as mesmas configurações.</string>
     <!--  -->
-    <string name="game_rename_title">Renomear jogo</string>
     <!-- text within rename dialog (triggered by selecting
          list_item_rename) -->
     <string name="rename_label">Mudar o nome desse jogo para:</string>
@@ -1553,7 +1552,6 @@
     <string name="group_cur_games">Meus jogos</string>
     <string name="group_new_games">Novos jogos</string>
     <string name="rename_group_label">Mudar o nome desse grupo para:</string>
-    <string name="game_name_group_title">Nomear grupo</string>
     <!-- Button shown in game over dialog triggering creation of new
          game with the same players and parameters as the one that
          just ended. -->
@@ -1625,7 +1623,6 @@
     <string name="choose_expl_default_net">Comece um jogo em rede a usar os padrões atuais</string>
     <string name="choose_expl_default_solo">Iniciar uma partida solo a utilizar os padrões atuais</string>
     <string name="knowns_dup_name_fmt">Não foi possível mudar o nome de “%1$s” para “%2$s”. “%2$s” já está em uso\?</string>
-    <string name="knowns_rename_title">Renomear Jogador</string>
     <string name="knowns_delete_confirm_fmt">Tem certeza que quer deletar o Jogador Conhecido “%1$s”\?
 \n
 \n(Esta ação não pode ser desfeita. mas os jogadores podem reaparecer se ainda tiver jogos ativos com eles.)</string>

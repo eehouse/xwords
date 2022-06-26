@@ -99,7 +99,6 @@
     <string name="list_item_copy">Másolás</string>
     <string name="relaypage_url_copied">Játék URL másolása a vágólapra</string>
     <string name="list_item_new_from">Újonnan</string>
-    <string name="game_rename_title">Játék átnevezése</string>
     <string name="rename_label">Változtasd meg a játék nevét:</string>
     <string name="no_copy_network">A reléhez már csatlakozott játékok nem másolhatók. Használd az \"Újonnan\" opciót a játékra kész másolathoz, ugyanazokkal a beállításokkal.</string>
     <string name="play">Játék játszása</string>

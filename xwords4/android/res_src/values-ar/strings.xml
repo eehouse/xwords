@@ -8,7 +8,6 @@
     <string name="list_item_move">نقل إلى مجموعة…</string>
     <string name="list_item_delete">حذف اللعبة</string>
     <string name="list_item_copy">نسخ</string>
-    <string name="game_rename_title">إعادة تسمية اللعبة</string>
     <string name="rename_label">تغيير اسم هذه اللعبة إلى:</string>
     <string name="download_more">تنزيل المزيد…</string>
     <string name="loc_downloads">التنزيلات</string>

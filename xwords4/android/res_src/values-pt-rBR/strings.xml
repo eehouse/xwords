@@ -151,7 +151,6 @@
 \n
 \n(Reiniciar apaga todas as jogadas e qualquer informação de conexão.)</item>
     </plurals>
-    <string name="game_rename_title">Renomear jogo</string>
     <string name="list_item_netstats">Conexões</string>
     <string name="list_item_copy">Copiar</string>
     <string name="list_item_new_from">Novo jogo a partir de</string>
@@ -473,7 +472,6 @@
     <string name="duplicate_group_name_fmt">O grupo “%1$s” já existe.</string>
     <string name="group_name_archive">Arquivo</string>
     <string name="cannot_delete_default_group_fmt">O grupo para jogos novos, %1$s, não pode ser deletado.</string>
-    <string name="game_name_group_title">Nome do grupo</string>
     <string name="rename_group_label">Mudar nome deste grupo para:</string>
     <plurals name="groups_confirm_del_games_fmt">
         <item quantity="one">"
@@ -588,7 +586,6 @@
     <string name="invite_dict_missing_body_fmt">%1$s te convidou a jogar CrossWords usando a lista de palavras %2$s (para jogar em %3$s), mas ela não está instalada. Gostaria de baixar a lista de palavras ou recusar o convite\?</string>
     <string name="invite_dict_missing_title">Lista de palavras faltando</string>
     <string name="knowns_dup_name_fmt">Não foi possível mudar o nome de “%1$s” para “%2$s”. “%2$s” já está em uso\?</string>
-    <string name="knowns_rename_title">Renomear Jogador</string>
     <string name="knowns_delete_confirm_fmt">Tem certeza que quer deletar o Jogador Conhecido “%1$s”\?
 \n
 \n(Esta ação não pode ser desfeita. mas os jogadores podem reaparecer se você ainda tiver jogos ativos com eles.)</string>

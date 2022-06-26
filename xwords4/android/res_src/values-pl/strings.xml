@@ -22,7 +22,6 @@
     <string name="list_item_new_from">Nowa na podstawie</string>
     <string name="list_item_copy">Kopiuj</string>
     <string name="no_copy_network">Gry, które już zostały połączone z przekaźnikiem, nie mogą być kopiowane. Użyj opcji „Nowy z”, aby uzyskać gotową do odtwarzania kopię ze wszystkimi tymi samymi ustawieniami.</string>
-    <string name="game_rename_title">Zmień nazwę gry</string>
     <string name="rename_label">Zmień nazwę tej gry na:</string>
     <string name="rename_label_caveat">Zmień nazwę tej gry (tylko na tym urządzeniu) na:</string>
     <string name="download_more">Pobierz więcej…</string>
@@ -533,7 +532,6 @@
     <string name="list_group_movedown">Przesuń niżej</string>
     <string name="group_cur_games">Moje gry</string>
     <string name="rename_group_label">Zmień nazwę tej grupy na:</string>
-    <string name="game_name_group_title">Nazwa grupy</string>
     <string name="button_rematch">Rewanż</string>
     <string name="duplicate_group_name_fmt">Grupa \"%1$s\" już istnieje.</string>
     <string name="button_reconnect">Połącz ponownie</string>

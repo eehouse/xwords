@@ -31,7 +31,6 @@
     <string name="list_item_new_from">Nieuw spel gebaseerd op</string>
     <string name="list_item_copy">Kopieer</string>
     <string name="no_copy_network">Spellen die al verbonden zijn kunnen niet gekopieerd worden. Gebruik \"Nieuw spel gebaseerd op\" voor een kopie met dezelfde instellingen, klaar om mee te spelen.</string>
-    <string name="game_rename_title">Hernoem spel</string>
     <string name="rename_label">Verander de naam van dit spel naar:</string>
     <string name="rename_label_caveat">Verander de naam van dit spel (op dit apparaat) naar:</string>
     <plurals name="confirm_seldeletes_fmt">
@@ -439,7 +438,6 @@
         <item quantity="other">\n\n(%1$d spellen zullen ook verwijderd worden.)</item>
     </plurals>
     <string name="rename_group_label">Verander de naam van deze groep in:</string>
-    <string name="game_name_group_title">Benoem groep</string>
     <string name="cannot_delete_default_group_fmt">De groep voor nieuwe spellen, %1$s, kan niet verwijderd worden.</string>
     <plurals name="group_name_fmt">
         <item quantity="one">%1$s (%2$d spel)</item>

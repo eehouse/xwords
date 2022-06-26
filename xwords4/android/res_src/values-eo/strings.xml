@@ -4,7 +4,6 @@
     <string name="newgame_invite_fmt">Ekludi per %1$s</string>
     <string name="newgame_open_game">Ekludi</string>
     <string name="newgame_radio_unknown">Inviti novan ludanton</string>
-    <string name="knowns_rename_title">Ŝanĝi nomon de ludanto</string>
     <string name="gamel_menu_knownplyrs">Konataj ludantoj…</string>
     <string name="invite_choice_mqtt">Interreto</string>
     <string name="player_edit_name">Ŝanĝi nomon de ludanto</string>
@@ -26,7 +25,6 @@
     <string name="button_default_both">Ambaŭ</string>
     <string name="button_default_robot">Roboto</string>
     <string name="button_default_human">Homo</string>
-    <string name="game_rename_title">Ŝanĝi titolon de ludo</string>
     <string name="gamel_menu_dicts">Vortaroj…</string>
     <string name="robot_name_fmt">%1$s (roboto)</string>
     <string name="str_game_name_fmt">%1$s (%2$s)</string>

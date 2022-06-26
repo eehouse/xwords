@@ -28,7 +28,6 @@
     <string name="list_item_reset">Reiniciar</string>
     <string name="list_item_new_from">Crear nuevo desde</string>
     <string name="list_item_copy">Copiar</string>
-    <string name="game_rename_title">Cambiar nombre de la partida</string>
     <string name="rename_label">Cambiar nombre de la partida por:</string>
     <string name="rename_label_caveat">Cambiar el nombre de esta partida (solo en este dispositivo) por:</string>
     <plurals name="confirm_seldeletes_fmt">

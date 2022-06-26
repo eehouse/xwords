@@ -123,7 +123,6 @@
     message. -->
     <string name="no_copy_network">Les parties qui sont déjà connectées au relai ne peuvent pas être copiées. Utilisez « Utiliser comme modèle » pour obtenir une copie avec les mêmes paramètres.</string>
     <!--  -->
-    <string name="game_rename_title">Renommer la partie</string>
     <!-- text within rename dialog (triggered by selecting
          list_item_rename) -->
     <string name="rename_label">Changer le nom de la partie pour :</string>
@@ -2202,7 +2201,6 @@ effacées.)</string>-->
     <!--<string name="rename_group_label">Change the name of this group to:</string>-->
     <string name="rename_group_label">Changer le nom de ce groupe pour :</string>
     <!--<string name="game_name_group_title">Name group</string>-->
-    <string name="game_name_group_title">Nom du groupe</string>
     <!--<string name="cannot_delete_default_group_fmt">The group for new games, %1$s, 
     cannot be deleted.</string>-->
     <string name="cannot_delete_default_group_fmt">Le groupe pour les nouvelles parties, %1$s, ne peut pas être supprimé.</string>
@@ -3073,7 +3071,6 @@ pour la langue</string>
     <string name="newgame_configure_game">Configurer la partie</string>
     <string name="newgame_invite_fmt">Démarrer une partie avec %1$s</string>
     <string name="newgame_open_game">Démarrer une partie</string>
-    <string name="knowns_rename_title">Renommer le joueur</string>
     <string name="player_edit_name">Changer le nom</string>
     <string name="knowns_bta_fmt">Adresse Bluetooth : %1$s</string>
     <string name="knowns_bt_fmt">Nom Bluetooth : %1$s</string>

@@ -22,7 +22,6 @@
          list_item_rename) -->
     <string name="rename_label">XLATE ME: Change the name of this game to:</string>
     <!--  -->
-    <string name="game_rename_title">XLATE ME: Rename game</string>
     <!-- Title of dialog for renaming game (triggered by selecting
          list_item_rename) -->
     <!-- If you try to copy a networked game you get this error
@@ -916,7 +915,6 @@
     <string name="button_rematch">XLATE ME: Rematch</string>
     <string name="cannot_delete_default_group_fmt">XLATE ME: The group for new games, %1$s, 
     cannot be deleted.</string>
-    <string name="game_name_group_title">XLATE ME: Name group</string>
     <string name="rename_group_label">XLATE ME: Change the name of this group to:</string>
     <string name="group_new_games">XLATE ME: New games</string>
     <string name="group_cur_games">XLATE ME: My games</string>

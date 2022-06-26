@@ -26,7 +26,6 @@
     <string name="list_item_new_from">...から新しく作成</string>
     <string name="list_item_copy">コピー</string>
     <string name="no_copy_network">既にリレーに接続されているゲームはコピーできません。すべて同じ設定でプレイする準備ができる、\"...から新しく作成\" のコピーを使用してください。</string>
-    <string name="game_rename_title">ゲームの名前を変更</string>
     <string name="rename_label">このゲームの名前を変更します:</string>
     <string name="rename_label_caveat">(このデバイス上でのみ) このゲームの名前を変更します:</string>
     <plurals name="confirm_seldeletes_fmt">
@@ -450,7 +449,6 @@
 \n(%1$d のゲームも削除されます)"</item>
     </plurals>
     <string name="rename_group_label">このグループの名前を次のように変更します:</string>
-    <string name="game_name_group_title">グループに名前をつける</string>
     <string name="cannot_delete_default_group_fmt">新しいゲームのグループ %1$s は削除できません。</string>
     <plurals name="group_name_fmt">
         <item quantity="other">%1$s (%2$d ゲーム)</item>

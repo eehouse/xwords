@@ -26,7 +26,6 @@
     <string name="list_item_reset">Tilbakestill</string>
     <string name="list_item_new_from">Nytt fra</string>
     <string name="list_item_copy">Kopier</string>
-    <string name="game_rename_title">Gi nytt navn</string>
     <string name="rename_label">Endre navnet på dette spillet til:</string>
     <string name="rename_label_caveat">Endre navnet på dette spillet (kun på denne enheten) til:</string>
     <string name="download_more">Last ned flere…</string>
@@ -273,7 +272,6 @@
     <string name="group_cur_games">Mine spill</string>
     <string name="group_new_games">Nye spill</string>
     <string name="rename_group_label">Endre navnet på denne gruppen til:</string>
-    <string name="game_name_group_title">Navngi gruppe</string>
     <string name="cannot_delete_default_group_fmt">Gruppen for nye spill, %1$s, kan ikke slettes.</string>
     <plurals name="group_name_fmt">
         <item quantity="one">%1$s (%2$d spill)</item>
@@ -879,7 +877,6 @@
     <string name="qrcode_invite_expl">La motstanderen skanne QR-koden med sin Android-telefon for å invitere på den måten.</string>
     <string name="new_feature_title">Varsel om ny funksjon</string>
     <string name="knowns_dup_name_fmt">Kan ikke endre navn fra “%1$s” til “%2$s”. Er “%2$s” allerede i bruk\?</string>
-    <string name="knowns_rename_title">Gi spiller nytt navn</string>
     <string name="player_edit_name">Endre navn</string>
     <string name="knowns_bta_fmt">Blåtannsadresse:</string>
     <string name="knowns_bt_fmt">Blåtannsnavn:</string>

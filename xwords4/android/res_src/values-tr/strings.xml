@@ -52,7 +52,6 @@
     </plurals>
     <string name="rename_label_caveat">Bu oyunun adını (yalnızca bu cihazda) şu şekilde değiştir:</string>
     <string name="rename_label">Bu oyunun adını şu şekilde değiştir:</string>
-    <string name="game_rename_title">Oyunu yeniden adlandır</string>
     <string name="loc_menu_xlate">Çevir</string>
     <string name="lang_name_english">İngilizce</string>
     <string name="lang_name_swedish">İsveççe</string>

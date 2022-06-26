@@ -190,7 +190,6 @@ que connecti via el repetidor.</string>
     <string name="no_copy_network">Les partides que ja estan connectades
  al repetidor no es poden copiar. Useu «Nova des de»
  per a una còpia preparada per a jugar amb la mateixa configuració.</string>
-    <string name="game_rename_title">Canvia de nom la partida</string>
     <string name="rename_label">Canvia el nom d\'aquesta partida a:</string>
     <string name="rename_label_caveat">Canvia el nom d\'aquesta partida
  (només en aquest aparell) a:</string>
@@ -581,7 +580,6 @@ Introduïu el vostre nom aquí. S\'usarà en crear partides noves. (Podreu
     <string name="inform_dict_diffversion_fmt">Vós i l\'amfitrió de la partida useu versions diferents del diccionari %1$s.</string>
     <string name="remote_undone">L\'aparell remot ha desfet un torn.</string>
     <string name="cannot_delete_default_group_fmt">El grup per a les partides noves, %1$s, no es pot suprimir.</string>
-    <string name="game_name_group_title">Anomena el grup</string>
     <plurals name="groups_confirm_del_games_fmt">
         <item quantity="one">"
 \n
