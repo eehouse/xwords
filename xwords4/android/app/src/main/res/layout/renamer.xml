@@ -4,13 +4,13 @@
     xmlns:android="http://schemas.android.com/apk/res/android" 
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:padding="20dip"
+    >
 
   <TextView android:id="@+id/name_label"
             android:layout_height="wrap_content"
             android:layout_width="wrap_content"
-            android:layout_marginLeft="20dip"
-            android:layout_marginRight="20dip"
             android:textAppearance="?android:attr/textAppearanceMedium"
             />
 
@@ -19,8 +19,8 @@
       style="@style/edit_w_clear"
       android:layout_height="wrap_content"
       android:layout_width="fill_parent"
-      android:layout_marginLeft="30dip"
-      android:layout_marginRight="30dip"
+      android:layout_marginLeft="10dip"
+      android:layout_marginRight="10dip"
       android:autoText="false"
       android:maxLines="1"
       android:inputType="text"

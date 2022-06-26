@@ -546,12 +546,10 @@ public abstract class DelegateBase implements DlgClickNotify,
         }
     }
 
-    protected Dialog buildNamerDlg( Renamer namer, int titleID,
-                                    OnClickListener lstnr1, OnClickListener lstnr2,
-                                    DlgID dlgID )
+    protected Dialog buildNamerDlg( Renamer namer, OnClickListener lstnr1,
+                                    OnClickListener lstnr2, DlgID dlgID )
     {
         Dialog dialog = makeAlertBuilder()
-            .setTitle( titleID )
             .setPositiveButton( android.R.string.ok, lstnr1 )
             .setNegativeButton( android.R.string.cancel, lstnr2 )
             .setView( namer )

@@ -109,8 +109,7 @@ public class KnownPlayersDelegate extends DelegateBase {
                         tryRename( oldName, namer.getName() );
                     }
                 };
-            dialog = buildNamerDlg( namer, R.string.knowns_rename_title,
-                                    lstnr, null, dlgID );
+            dialog = buildNamerDlg( namer, lstnr, null, dlgID );
             break;
         }
 

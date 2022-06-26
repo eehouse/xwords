@@ -717,8 +717,7 @@ public class GamesListDelegate extends ListDelegateBase
                         m_adapter.invalName( rowid );
                     }
                 };
-            dialog = buildNamerDlg( namer, R.string.game_rename_title,
-                                    lstnr, null, DlgID.RENAME_GAME );
+            dialog = buildNamerDlg( namer, lstnr, null, DlgID.RENAME_GAME );
         }
             break;
 
@@ -737,8 +736,7 @@ public class GamesListDelegate extends ListDelegateBase
                         self.mkListAdapter();
                     }
                 };
-            dialog = buildNamerDlg( namer, R.string.game_name_group_title,
-                                    lstnr, null, DlgID.RENAME_GROUP );
+            dialog = buildNamerDlg( namer, lstnr, null, DlgID.RENAME_GROUP );
         }
             break;
 
@@ -771,9 +769,7 @@ public class GamesListDelegate extends ListDelegateBase
                         curThis().showNewGroupIf();
                     }
                 };
-            dialog = buildNamerDlg( namer,
-                                    R.string.game_name_group_title,
-                                    lstnr, lstnr2, DlgID.RENAME_GROUP );
+            dialog = buildNamerDlg( namer, lstnr, lstnr2, DlgID.RENAME_GROUP );
         }
             break;
 
