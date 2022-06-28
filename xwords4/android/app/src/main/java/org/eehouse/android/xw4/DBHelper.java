@@ -367,7 +367,7 @@ public class DBHelper extends SQLiteOpenHelper {
             }
             langCodeToISOCode( db, TABLE_NAMES.DICTINFO, LANGCODE, ISOCODE );
             try {
-                db.execSQL( "DROP TABLE " + TABLE_NAMES._OBITS + ";" );
+                db.execSQL( "DROP TABLE IF EXISTS " + TABLE_NAMES._OBITS + ";" );
             } catch ( SQLiteException ex ) {
                 Log.ex( TAG, ex );
             }
