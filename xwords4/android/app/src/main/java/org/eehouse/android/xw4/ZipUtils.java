@@ -72,7 +72,8 @@ public class ZipUtils {
     {
         DateFormat format = DateFormat.getDateInstance(DateFormat.SHORT);
         String date = format.format( new Date() );
-        String name = LocUtils.getString( context, R.string.archive_filename_fmt, date );
+        String name = LocUtils.getString( context, R.string.archive_filename_fmt, date )
+            .replace('/', '-');
         return name;
     }
 
