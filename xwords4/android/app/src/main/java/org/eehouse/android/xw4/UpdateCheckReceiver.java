@@ -141,7 +141,6 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
                 JSONObject appParams = new JSONObject();
 
                 appParams.put( k_VARIANT, BuildConfig.VARIANT_CODE );
-                appParams.put( k_AVERS, versionCode );
                 appParams.put( k_GVERS, BuildConfig.GIT_REV );
                 appParams.put( k_INSTALLER, installer );
                 if ( devOK( context ) ) {
