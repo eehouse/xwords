@@ -152,10 +152,11 @@ public class XwJNI {
         return dvc_makeMQTTInvite( getJNI().m_ptrGlobals, nli, addrToTopic );
     }
 
-    public static byte[] dvc_makeMQTTMessage( int gameID, byte[] buf,
-                                              String[] addrToTopic )
+    public static byte[] dvc_makeMQTTMessage( int gameID, int timestamp,
+                                              byte[] buf, String[] addrToTopic )
     {
-        return dvc_makeMQTTMessage( getJNI().m_ptrGlobals, gameID, buf, addrToTopic );
+        return dvc_makeMQTTMessage( getJNI().m_ptrGlobals, gameID, timestamp,
+                                    buf, addrToTopic );
     }
 
     public static byte[] dvc_makeMQTTNoSuchGame( int gameID, String[] addrToTopic )
@@ -716,8 +717,8 @@ public class XwJNI {
     private static native void dvc_resetMQTTDevID( long jniState );
     private static native byte[] dvc_makeMQTTInvite( long jniState, NetLaunchInfo nli,
                                                      String[] addrToTopic );
-    private static native byte[] dvc_makeMQTTMessage( long jniState, int gameID, byte[] buf,
-                                                      String[] addrToTopic );
+    private static native byte[] dvc_makeMQTTMessage( long jniState, int gameID, int timestamp,
+                                                      byte[] buf, String[] addrToTopic );
     private static native byte[] dvc_makeMQTTNoSuchGame( long jniState, int gameID,
                                                          String[] addrToTopic );
 

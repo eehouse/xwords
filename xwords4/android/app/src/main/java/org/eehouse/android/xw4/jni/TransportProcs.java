@@ -29,7 +29,7 @@ public interface TransportProcs {
     int getFlags();
 
     int transportSend( byte[] buf, String msgNo, CommsAddrRec addr,
-                       CommsConnType conType, int gameID );
+                       CommsConnType conType, int gameID, int timestamp );
 
     void countChanged( int newCount );
 

@@ -525,12 +525,12 @@ public class MQTTUtils extends Thread
     }
 
     public static int send( Context context, String addressee, int gameID,
-                            byte[] buf )
+                            int timestamp, byte[] buf )
     {
         Log.d( TAG, "send(to:%s, len: %d)", addressee, buf.length );
         Assert.assertTrueNR( 16 == addressee.length() );
         String[] topic = {addressee};
-        byte[] packet = XwJNI.dvc_makeMQTTMessage( gameID, buf, topic );
+        byte[] packet = XwJNI.dvc_makeMQTTMessage( gameID, timestamp, buf, topic );
         addToSendQueue( context, topic[0], packet );
         return buf.length;
     }

@@ -102,14 +102,10 @@ linux_dutil_onInviteReceived( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe),
 static void
 linux_dutil_onMessageReceived( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe),
                                XP_U32 gameID, const CommsAddrRec* from,
-                               XWStreamCtxt* stream )
+                               XP_U8* buf, XP_U16 len )
 {
     XP_LOGFF( "(gameID=%d)", gameID );
     LaunchParams* params = (LaunchParams*)duc->closure;
-
-    XP_U16 len = stream_getSize( stream );
-    XP_U8 buf[len];
-    stream_getBytes( stream, buf, len );
 
     if ( params->useCurses ) {
         mqttMsgReceivedCurses( params->appGlobals, from, gameID, buf, len );

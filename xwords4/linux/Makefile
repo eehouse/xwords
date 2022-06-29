@@ -268,6 +268,10 @@ LIBS += `pkg-config --libs glib-2.0`
 CFLAGS += $(POINTER_SUPPORT)
 CFLAGS += -DDROP_BITMAPS
 
+# Turn on for testing. Eventually, just turn on, but sends to old
+# builds will then fail
+# CFLAGS += -DMQTT_USE_PROTO=2
+
 ifneq (,$(findstring DPLATFORM_NCURSES,$(DEFINES)))
 	LIBS += $(OE_LIBDIR) -lncursesw
 endif

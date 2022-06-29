@@ -171,12 +171,16 @@ typedef enum { CMD_INVITE, CMD_MSG, CMD_DEVGONE, } MQTTCmd;
 
 // #define PROTO_0 0
 #define PROTO_1 1        /* moves gameID into "header" relay2 knows about */
+#define PROTO_2 2        /* adds timestamp to header */
+#ifndef MQTT_USE_PROTO
+# define MQTT_USE_PROTO PROTO_1
+#endif
 
 static void
 addHeaderGameIDAndCmd( XW_DUtilCtxt* dutil, XWEnv xwe, MQTTCmd cmd,
-                       XP_U32 gameID, XWStreamCtxt* stream )
+                       XP_U32 gameID, XP_U32 timestamp, XWStreamCtxt* stream )
 {
-    stream_putU8( stream, PROTO_1 );
+    stream_putU8( stream, MQTT_USE_PROTO );
 
     MQTTDevID myID;
     dvc_getMQTTDevID( dutil, xwe, &myID );
@@ -184,45 +188,57 @@ addHeaderGameIDAndCmd( XW_DUtilCtxt* dutil, XWEnv xwe, MQTTCmd cmd,
     stream_putBytes( stream, &myID, sizeof(myID) );
 
     stream_putU32( stream, gameID );
+    if ( PROTO_2 <= MQTT_USE_PROTO ) {
+        if ( 0 == timestamp ) {
+            timestamp = dutil_getCurSeconds( dutil, xwe );
+            XP_LOGFF( "replacing timestamp of 0" );
+        }
+        stream_putU32( stream, timestamp );
+    }
 
     stream_putU8( stream, cmd );
 }
 
 void
 dvc_makeMQTTInvite( XW_DUtilCtxt* dutil, XWEnv xwe, XWStreamCtxt* stream,
-                    const NetLaunchInfo* nli )
+                    const NetLaunchInfo* nli, XP_U32 timestamp )
 {
-    addHeaderGameIDAndCmd( dutil, xwe, CMD_INVITE, nli->gameID, stream );
+    addHeaderGameIDAndCmd( dutil, xwe, CMD_INVITE, nli->gameID,
+                           timestamp, stream );
     nli_saveToStream( nli, stream );
 }
 
 void
 dvc_makeMQTTMessage( XW_DUtilCtxt* dutil, XWEnv xwe, XWStreamCtxt* stream,
-                     XP_U32 gameID, const XP_U8* buf, XP_U16 len )
+                     XP_U32 gameID, XP_U32 timestamp,
+                     const XP_U8* buf, XP_U16 len )
 {
-    addHeaderGameIDAndCmd( dutil, xwe, CMD_MSG, gameID, stream );
+    addHeaderGameIDAndCmd( dutil, xwe, CMD_MSG, gameID, timestamp, stream );
+    if ( PROTO_2 <= MQTT_USE_PROTO ) {
+        stream_putU32VL( stream, len );
+    }
     stream_putBytes( stream, buf, len );
 }
 
 void
 dvc_makeMQTTNoSuchGame( XW_DUtilCtxt* dutil, XWEnv xwe,
-                        XWStreamCtxt* stream, XP_U32 gameID )
+                        XWStreamCtxt* stream, XP_U32 gameID,
+                        XP_U32 timestamp )
 {
-    addHeaderGameIDAndCmd( dutil, xwe, CMD_DEVGONE, gameID, stream );
+    addHeaderGameIDAndCmd( dutil, xwe, CMD_DEVGONE, gameID,
+                           timestamp, stream );
 }
 
 void
-dvc_parseMQTTPacket( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_U8* buf, XP_U16 len )
+dvc_parseMQTTPacket( XW_DUtilCtxt* dutil, XWEnv xwe,
+                     const XP_U8* buf, XP_U16 len )
 {
     LOG_FUNC();
     XWStreamCtxt* stream = mkStream( dutil );
     stream_putBytes( stream, buf, len );
 
     XP_U8 proto = stream_getU8( stream );
-    if ( proto != PROTO_1 ) {
-        XP_LOGFF( "read proto %d, expected %d; dropping packet",
-                  proto, PROTO_1 );
-    } else {
+    if ( proto == PROTO_1 || proto == PROTO_2 ) {
         MQTTDevID senderID;
         stream_getBytes( stream, &senderID, sizeof(senderID) );
         senderID = be64toh( senderID );
@@ -232,11 +248,19 @@ dvc_parseMQTTPacket( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_U8* buf, XP_U16 le
         XP_LOGFF( "senderID: %s", tmp );
 #endif
 
-        MQTTCmd cmd;
-        XP_U32 gameID = 0;
+        XP_U32 gameID = stream_getU32( stream );
 
-        gameID = stream_getU32( stream );
-        cmd = stream_getU8( stream );
+        XP_U32 timestamp = 0;
+        if ( PROTO_2 == proto ) {
+            timestamp = stream_getU32( stream );
+#ifdef DEBUG
+            if ( 0 < timestamp ) {
+                XP_U32 now = dutil_getCurSeconds( dutil, xwe );
+                XP_LOGFF( "delivery took %ds", now - timestamp );
+            }
+#endif
+        }
+        MQTTCmd cmd = stream_getU8( stream );
 
         /* Need to ack even if discarded/malformed */
         dutil_ackMQTTMsg( dutil, xwe, gameID, &senderID, buf, len );
@@ -255,7 +279,22 @@ dvc_parseMQTTPacket( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_U8* buf, XP_U16 le
             addr_addType( &from, COMMS_CONN_MQTT );
             from.u.mqtt.devID = senderID;
             if ( CMD_MSG == cmd ) {
-                dutil_onMessageReceived( dutil, xwe, gameID, &from, stream );
+                XP_U32 msgLen;
+                if ( PROTO_2 == proto ) {
+                    msgLen = stream_getU32VL( stream );
+                    if ( msgLen > stream_getSize( stream ) ) {
+                        XP_LOGFF( "msglen %d too large", msgLen );
+                        msgLen = 0;
+                    }
+                } else {
+                    msgLen = stream_getSize( stream );
+                }
+                if ( 0 < msgLen ) {
+                    XP_U8 msgBuf[msgLen];
+                    stream_getBytes( stream, msgBuf, msgLen );
+                    dutil_onMessageReceived( dutil, xwe, gameID,
+                                             &from, msgBuf, msgLen );
+                }
             } else if ( CMD_DEVGONE == cmd ) {
                 dutil_onGameGoneReceived( dutil, xwe, gameID, &from );
             }
@@ -265,6 +304,8 @@ dvc_parseMQTTPacket( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_U8* buf, XP_U16 le
             XP_LOGFF( "unknown command %d; dropping message", cmd );
             XP_ASSERT(0);
         }
+    } else {
+        XP_LOGFF( "bad proto %d; dropping packet", proto );
     }
     stream_destroy( stream, xwe );
 }

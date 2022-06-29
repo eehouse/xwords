@@ -75,7 +75,7 @@ typedef enum {
 #endif
 
 typedef XP_S16 (*TransportSend)( XWEnv xwe, const XP_U8* buf, XP_U16 len,
-                                 const XP_UCHAR* msgNo,
+                                 const XP_UCHAR* msgNo, XP_U32 createdStamp,
                                  const CommsAddrRec* addr,
                                  CommsConnType conType,
                                  XP_U32 gameID, void* closure );

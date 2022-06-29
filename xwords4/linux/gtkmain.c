@@ -390,6 +390,7 @@ make_rematch( GtkAppGlobals* apg, const CommonGlobals* cGlobals )
 
         stream_putU8( stream, nRecs );
         for ( int ii = 0; ii < nRecs; ++ii ) {
+            XP_LOGFF( "MQTT rematch not implemented" );
             XP_ASSERT(0);       /* REWRITE TO USE MQTT */
             /* XP_UCHAR relayID[32]; */
             /* XP_U16 len = sizeof(relayID); */

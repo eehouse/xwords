@@ -76,6 +76,7 @@ typedef struct MsgQueueElem {
 #ifdef COMMS_CHECKSUM
     XP_UCHAR* checksum;
 #endif
+    XP_U32 createdStamp;
 } MsgQueueElem;
 
 typedef struct AddressRecord {
@@ -836,6 +837,9 @@ comms_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
             msg->msgID = stream_getU32( stream );
             msg->len = stream_getU16( stream );
         }
+        if ( version >= STREAM_VERS_MSGTIMESTAMP ) {
+            msg->createdStamp = stream_getU32( stream );
+        }
 #ifdef DEBUG
         msg->sendCount = 0;
 #endif
@@ -1075,6 +1079,7 @@ comms_writeToStream( CommsCtxt* comms, XWEnv XP_UNUSED_DBG(xwe),
         stream_putU32VL( stream, msg->msgID );
 
         stream_putU32VL( stream, msg->len );
+        stream_putU32( stream, msg->createdStamp );
         stream_putBytes( stream, msg->msg, msg->len );
     }
 
@@ -1342,6 +1347,7 @@ makeElemWithID( CommsCtxt* comms, XWEnv xwe, MsgID msgID, AddressRecord* rec,
                                                          sizeof( *newMsgElem ) );
     newMsgElem->channelNo = channelNo;
     newMsgElem->msgID = msgID;
+    newMsgElem->createdStamp = dutil_getCurSeconds( comms->dutil, xwe );
 
     XP_Bool useSmallHeader = !!rec && (COMMS_VERSION == rec->flags);
     XWStreamCtxt* hdrStream = mem_stream_make_raw( MPPARM(comms->mpool)
@@ -1723,7 +1729,8 @@ sendMsg( CommsCtxt* comms, XWEnv xwe, MsgQueueElem* elem, const CommsConnType fi
                 logAddr( comms, xwe, &addr, __func__ );
                 XP_UCHAR msgNo[16];
                 formatMsgNo( comms, elem, msgNo, sizeof(msgNo) );
-                nSent = (*comms->procs.send)( xwe, elem->msg, elem->len, msgNo, &addr,
+                nSent = (*comms->procs.send)( xwe, elem->msg, elem->len, msgNo,
+                                              elem->createdStamp, &addr,
                                               typ, gameid, comms->procs.closure );
                 break;
             }
@@ -3648,8 +3655,8 @@ send_via_bt_or_ip( CommsCtxt* comms, XWEnv xwe, BTIPMsgType msgTyp, XP_PlayerAdd
             XP_MEMCPY( &buf[1], data, dlen );
         }
 
-        nSent = (*comms->procs.send)( xwe, buf, dlen+1, msgNo, addr, typ, gameID(comms),
-                                      comms->procs.closure );
+        nSent = (*comms->procs.send)( xwe, buf, dlen+1, msgNo, 0,
+                                      addr, typ, gameID(comms), comms->procs.closure );
         XP_FREE( comms->mpool, buf );
 
         setHeartbeatTimer( comms );

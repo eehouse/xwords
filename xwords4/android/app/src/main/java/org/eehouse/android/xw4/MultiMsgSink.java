@@ -82,9 +82,9 @@ public class MultiMsgSink implements TransportProcs {
         return NFCUtils.addMsgFor( buf, gameID );
     }
 
-    int sendViaMQTT( String addressee, byte[] buf, int gameID )
+    int sendViaMQTT( String addressee, byte[] buf, int gameID, int timestamp )
     {
-        return MQTTUtils.send( m_context, addressee, gameID, buf );
+        return MQTTUtils.send( m_context, addressee, gameID, timestamp, buf );
     }
 
     public int numSent()
@@ -98,7 +98,7 @@ public class MultiMsgSink implements TransportProcs {
 
     @Override
     public int transportSend( byte[] buf, String msgID, CommsAddrRec addr,
-                              CommsConnType typ, int gameID )
+                              CommsConnType typ, int gameID, int timestamp )
     {
         int nSent = -1;
         switch ( typ ) {
@@ -118,7 +118,7 @@ public class MultiMsgSink implements TransportProcs {
             nSent = sendViaNFC( buf, gameID );
             break;
         case COMMS_CONN_MQTT:
-            nSent = sendViaMQTT( addr.mqtt_devID, buf, gameID );
+            nSent = sendViaMQTT( addr.mqtt_devID, buf, gameID, timestamp );
             break;
         default:
             Assert.failDbg();

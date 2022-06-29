@@ -261,14 +261,14 @@ mqttc_invite( LaunchParams* params, NetLaunchInfo* nli, const MQTTDevID* invitee
     XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(params->mpool)
                                                 params->vtMgr );
 
-    dvc_makeMQTTInvite( params->dutil, NULL_XWE, stream, nli );
+    dvc_makeMQTTInvite( params->dutil, NULL_XWE, stream, nli, 0 );
 
     postMsg( storage, stream, invitee );
 }
 
 XP_S16
-mqttc_send( LaunchParams* params, XP_U32 gameID, const XP_U8* buf,
-            XP_U16 len, const MQTTDevID* addressee )
+mqttc_send( LaunchParams* params, XP_U32 gameID, XP_U32 timestamp,
+            const XP_U8* buf, XP_U16 len, const MQTTDevID* addressee )
 {
     XP_S16 result = -1;
     MQTTConStorage* storage = getStorage( params );
@@ -276,7 +276,7 @@ mqttc_send( LaunchParams* params, XP_U32 gameID, const XP_U8* buf,
                                                 params->vtMgr );
 
     dvc_makeMQTTMessage( params->dutil, NULL_XWE, stream,
-                         gameID, buf, len );
+                         gameID, timestamp, buf, len );
     if ( postMsg( storage, stream, addressee ) ) {
         result = len;
     }
@@ -289,6 +289,6 @@ mqttc_notifyGameGone( LaunchParams* params, const MQTTDevID* addressee, XP_U32 g
     MQTTConStorage* storage = getStorage( params );
     XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(params->mpool)
                                                 params->vtMgr );
-    dvc_makeMQTTNoSuchGame( params->dutil, NULL_XWE, stream, gameID );
+    dvc_makeMQTTNoSuchGame( params->dutil, NULL_XWE, stream, gameID, 0 );
     postMsg( storage, stream, addressee );
 }

@@ -48,6 +48,8 @@ LOCAL_DEFINES += \
 	-DRELAY_ROOM_DEFAULT=\"\" \
 	-D__LITTLE_ENDIAN \
 
+#	-DMQTT_USE_PROTO=2 \
+
 # XWFEATURE_RAISETILE: first, fix to not use timer
 #   -DXWFEATURE_RAISETILE \
 

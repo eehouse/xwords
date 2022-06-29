@@ -57,10 +57,10 @@ public class CommsTransport implements TransportProcs {
 
     @Override
     public int transportSend( byte[] buf, String msgID, CommsAddrRec addr,
-                              CommsConnType conType, int gameID )
+                              CommsConnType conType, int gameID, int timestamp )
     {
-        Log.d( TAG, "transportSend(len=%d, typ=%s)", buf.length,
-               conType.toString() );
+        Log.d( TAG, "transportSend(len=%d, typ=%s, ts=%d)", buf.length,
+               conType.toString(), timestamp );
         int nSent = -1;
         Assert.assertNotNull( addr );
         Assert.assertTrueNR( addr.contains( conType ) ); // fired per google
@@ -76,7 +76,7 @@ public class CommsTransport implements TransportProcs {
             }
         } else {
             nSent = sendForAddr( m_context, addr, conType, m_rowid, gameID,
-                                 buf, msgID );
+                                 timestamp, buf, msgID );
         }
 
         // Keep this while debugging why the resend_all that gets
@@ -95,7 +95,8 @@ public class CommsTransport implements TransportProcs {
 
     private int sendForAddr( Context context, CommsAddrRec addr,
                              CommsConnType conType, long rowID,
-                             int gameID, byte[] buf, String msgID )
+                             int gameID, int timestamp,
+                             byte[] buf, String msgID )
     {
         int nSent = -1;
         switch ( conType ) {
@@ -117,7 +118,7 @@ public class CommsTransport implements TransportProcs {
             nSent = NFCUtils.addMsgFor( buf, gameID );
             break;
         case COMMS_CONN_MQTT:
-            nSent = MQTTUtils.send( context, addr.mqtt_devID, gameID, buf );
+            nSent = MQTTUtils.send( context, addr.mqtt_devID, gameID, timestamp, buf );
             break;
         default:
             Assert.failDbg();

@@ -895,15 +895,11 @@ and_dutil_onInviteReceived( XW_DUtilCtxt* duc, XWEnv xwe, const NetLaunchInfo* n
 
 static void
 and_dutil_onMessageReceived( XW_DUtilCtxt* duc, XWEnv xwe, XP_U32 gameID,
-                             const CommsAddrRec* from, XWStreamCtxt* stream )
+                             const CommsAddrRec* from, const XP_U8* data, XP_U16 len )
 {
     LOG_FUNC();
     DUTIL_CBK_HEADER( "onMessageReceived",
                       "(IL" PKG_PATH("jni/CommsAddrRec") ";[B)V" );
-
-    XP_U16 len = stream_getSize( stream );
-    XP_U8 data[len];
-    stream_getBytes( stream, data, len );
 
     jbyteArray jmsg = makeByteArray( env, len, (jbyte*)data );
 
