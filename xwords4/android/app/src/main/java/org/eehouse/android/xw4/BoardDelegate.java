@@ -2610,7 +2610,7 @@ public class BoardDelegate extends DelegateBase
                 }
             }
             if ( m_connTypes.contains( CommsConnType.COMMS_CONN_RELAY ) ) {
-                Assert.failDbg();
+                Log.e( TAG, "opened game with RELAY still" );
             }
 
             if ( m_connTypes.contains( CommsConnType.COMMS_CONN_MQTT ) ) {

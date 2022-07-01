@@ -467,16 +467,12 @@ public abstract class DelegateBase implements DlgClickNotify,
                                 NetUtils.copyAndLaunchGamePage( m_activity, gameID );
                             }
                         };
-                } else if ( conTypes.contains( CommsConnType.COMMS_CONN_RELAY )
-                            || conTypes.contains( CommsConnType.COMMS_CONN_P2P ) ) {
+                } else if ( conTypes.contains( CommsConnType.COMMS_CONN_P2P ) ) {
                     buttonTxt = R.string.button_reconnect;
                     lstnr = new OnClickListener() {
                             @Override
                             public void onClick( DialogInterface dlg, int buttn ) {
                                 NetStateCache.reset( m_activity );
-                                if ( conTypes.contains( CommsConnType.COMMS_CONN_RELAY ) ) {
-                                    Assert.failDbg();
-                                }
                                 if ( conTypes.contains( CommsConnType.COMMS_CONN_P2P ) ) {
                                     WiDirService.reset( getActivity() );
                                 }
@@ -750,9 +746,6 @@ public abstract class DelegateBase implements DlgClickNotify,
             break;
         case APP_NOT_FOUND_BT:
             fmtId = R.string.app_not_found_fmt;
-            break;
-        case RELAY_ALERT:
-            m_dlgDelegate.eventOccurred( event, args );
             break;
         default:
             Log.d( TAG, "eventOccurred(event=%s) (DROPPED)", event.toString() );

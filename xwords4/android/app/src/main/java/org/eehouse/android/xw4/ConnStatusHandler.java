@@ -680,7 +680,6 @@ public class ConnStatusHandler {
             //!getAirplaneModeOn( context );
             break;
         case COMMS_CONN_RELAY:
-            Assert.failDbg();
             result = false;
             break;
         case COMMS_CONN_P2P:

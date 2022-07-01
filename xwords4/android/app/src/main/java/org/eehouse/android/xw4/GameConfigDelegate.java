@@ -217,7 +217,7 @@ public class GameConfigDelegate extends DelegateBase
                                          int whichButton ) {
                         applyChanges( true );
                         if ( DlgID.CONFIRM_CHANGE_PLAY == dlgID ) {
-                            launchGame( true );
+                            saveAndClose( true );
                         }
                     }
                 };
@@ -1287,16 +1287,6 @@ public class GameConfigDelegate extends DelegateBase
                     Log.e( TAG, "applyChanges(): failed to get lock" );
                 }
             }
-        }
-    }
-
-    private void launchGame( boolean forceNew )
-    {
-        if ( m_conTypes.contains( CommsConnType.COMMS_CONN_RELAY )
-             && 0 == m_car.ip_relay_invite.length() ) {
-            makeOkOnlyBuilder( R.string.no_empty_rooms ).show();
-        } else {
-            saveAndClose( forceNew );
         }
     }
 

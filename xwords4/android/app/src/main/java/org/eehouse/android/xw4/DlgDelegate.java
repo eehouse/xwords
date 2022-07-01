@@ -479,10 +479,6 @@ public class DlgDelegate {
             msg = getString( R.string.bt_fail_fmt, (String)args[0] );
             asToast = false;
             break;
-        case RELAY_ALERT:
-            msg = (String)args[0];
-            asToast = false;
-            break;
 
         default:
             Log.e( TAG, "eventOccurred: unhandled event %s", event.toString() );

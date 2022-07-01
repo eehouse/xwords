@@ -30,6 +30,7 @@ import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.CompoundButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -160,12 +161,8 @@ public class BackupConfigView extends LinearLayout
             CheckBox box = mCheckBoxes.get( what );
             if ( box.isChecked() ) {
                 result.add( what );
-                Log.d( TAG, "getSaveWhat(): added %s", what );
-            } else {
-                Log.d( TAG, "getSaveWhat(): DID NOT add %s", what );
             }
         }
-        Log.d( TAG, "getSaveWhat() => %s", result );
         return result;
     }
 

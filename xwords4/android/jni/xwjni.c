@@ -2286,8 +2286,6 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1summarize
                     setString( env, jsummary, "relayID", buf );
                 }
                 setString( env, jsummary, "roomName", addr.u.ip_relay.invite );
-#else
-                XP_ASSERT(0);
 #endif
             }
                 break;

@@ -101,7 +101,7 @@ public class CommsTransport implements TransportProcs {
         int nSent = -1;
         switch ( conType ) {
         case COMMS_CONN_RELAY:
-            Assert.failDbg();
+            Log.e( TAG, "sendForAddr();still sending via RELAY" );
             break;
         case COMMS_CONN_SMS:
             nSent = NBSProto.sendPacket( context, addr.sms_phone,

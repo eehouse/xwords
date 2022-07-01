@@ -175,10 +175,9 @@ public class DBUtils {
                     getString(cursor.getColumnIndex( DBHelper.PLAYERS ));
                 summary.readPlayers( context, players );
 
+                // isoCode will be null when game first created
                 summary.isoCode = cursor
                     .getString(cursor.getColumnIndex(DBHelper.ISOCODE));
-                // isoCode will be null when game first created
-                // Assert.assertTrueNR( null != summary.isoCode ); // fired!
 
                 summary.modtime =
                     cursor.getLong(cursor.
@@ -335,7 +334,6 @@ public class DBUtils {
                       iter.hasNext(); ) {
                     switch ( iter.next() ) {
                     case COMMS_CONN_RELAY:
-                        Assert.failDbg();
                         values.put( DBHelper.ROOMNAME, summary.roomName );
                         String relayID = summary.relayID;
                         values.put( DBHelper.RELAYID, relayID );
@@ -2015,7 +2013,6 @@ public class DBUtils {
     public static String[] studyListLangs( Context context )
     {
         String[] result = null;
-        String selection = null;//DBHelper.LANGUAGE;
         String[] columns = { DBHelper.ISOCODE };
         String groupBy = columns[0];
 

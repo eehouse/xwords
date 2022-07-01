@@ -93,8 +93,6 @@ public class MultiService {
                              SMS_SEND_FAILED_NOPERMISSION,
 
                              BT_GAME_CREATED,
-
-                             RELAY_ALERT,
     };
 
     public interface MultiEventListener {

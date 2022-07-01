@@ -264,23 +264,6 @@ public class GameSummary implements Serializable {
                 }
             }
 
-            // If we're using relay to connect, get status from that
-            if ( null == result
-                 && conTypes.contains( CommsConnType.COMMS_CONN_RELAY ) ) {
-                if ( 0 < missing ) {
-                    if ( null == relayID || 0 == relayID.length() ) {
-                        fmtID = R.string.summary_relay_conf_fmt;
-                    } else {
-                        fmtID = R.string.summary_relay_wait_fmt;
-                    }
-                } else if ( gameOver ) {
-                    fmtID = R.string.summary_relay_gameover_fmt;
-                } else {
-                    fmtID = R.string.summary_relay_conn_fmt;
-                }
-                result = LocUtils.getString( context, fmtID, roomName );
-            }
-
             // Otherwise, use BT or SMS
             if ( null == result ) {
                 if ( conTypes.contains( CommsConnType.COMMS_CONN_BT )

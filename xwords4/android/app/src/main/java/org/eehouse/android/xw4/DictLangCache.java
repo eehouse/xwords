@@ -233,7 +233,7 @@ public class DictLangCache {
             }
         }
         DictAndLoc[] result = al.toArray( new DictAndLoc[al.size()] );
-        Log.d( TAG, "getDALsHaveLang(%s) => %s", isoCode, result );
+        // Log.d( TAG, "getDALsHaveLang(%s) => %s", isoCode, result );
         return result;
     }
 
@@ -289,7 +289,7 @@ public class DictLangCache {
     {
         makeMaps( context );
         String result = s_langCodes.get( langName );
-        Log.d( TAG, "getLangIsoCode(%s) => %s", langName, result );
+        // Log.d( TAG, "getLangIsoCode(%s) => %s", langName, result );
         return result;
     }
 
@@ -432,7 +432,7 @@ public class DictLangCache {
 
     private static void putTwo( String isoCode, String langName )
     {
-        Log.d( TAG, "putTwo(): adding %s => %s", langName, isoCode );
+        // Log.d( TAG, "putTwo(): adding %s => %s", langName, isoCode );
         Assert.assertTrueNR( !TextUtils.isEmpty(isoCode)
                              && !TextUtils.isEmpty(langName) );
         s_langCodes.put( langName, isoCode );
@@ -461,7 +461,7 @@ public class DictLangCache {
                 String isoCode = info.isoCode;
                 Assert.assertTrueNR( null != isoCode );
                 if ( !s_langNames.containsKey( isoCode ) ) {
-                    Log.d( TAG, "looking at info %s", info );
+                    // Log.d( TAG, "looking at info %s", info );
                     Assert.assertTrueNR( null != info.langName );
                     putTwo( isoCode, info.langName );
                 }
@@ -503,7 +503,7 @@ public class DictLangCache {
                 Assert.assertTrueNR( null != info.fullSum );
 
                 DBUtils.dictsSetInfo( context, dal, info );
-                Log.d( TAG, "getInfo() => %s", info );
+                // Log.d( TAG, "getInfo() => %s", info );
             } else {
                 Log.i( TAG, "getInfo(): unable to open dict %s", dal.name );
             }
