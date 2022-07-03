@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="board_submenu_game">Игра</string>
-    <string name="relay_alert">Проблема с подключением</string>
     <string name="badwords_accept">" Вы все еще хотите принять этот шаг\?"</string>
     <string name="board_menu_undo_last">Отменить последнее</string>
     <string name="players_label_standalone">Players (tap to edit)</string>

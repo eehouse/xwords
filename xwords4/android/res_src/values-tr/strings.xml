@@ -4,9 +4,7 @@
     <string name="str_game_name_fmt">%1$s (%2$s)</string>
     <string name="robot_name_fmt">%1$s (robot)</string>
     <string name="missing_player">(henüz burada değil...)</string>
-    <string name="summary_relay_conf_fmt">“%1$s” odası için yapılandırıldı</string>
     <string name="summary_relay_wait_fmt">“%1$s” odasındaki oyuncuları bekliyor</string>
-    <string name="msgs_progress">Hareketler için röle gözden geçiriliyor…</string>
     <string name="menu_prefs">Uygulama ayarları…</string>
     <string name="gamel_menu_dicts">Kelime listeleri…</string>
     <string name="button_reset">Yenile</string>
@@ -18,7 +16,6 @@
     <string name="gameOver">Oyun bitti</string>
     <string name="summary_invites_out_fmt">Oyuncular “%1$s” odasına davet edildi</string>
     <string name="summary_invites_out">Oyuncular davet edildi</string>
-    <string name="summary_relay_gameover_fmt">“%1$s” odasında oyun bitti</string>
     <string name="summary_relay_conn_fmt">“%1$s” odasında oyun devam ediyor</string>
     <string name="list_item_netstats">Bağlantılar…</string>
     <string name="list_item_copy">Kopyala</string>
@@ -52,7 +49,6 @@
     </plurals>
     <string name="rename_label_caveat">Bu oyunun adını (yalnızca bu cihazda) şu şekilde değiştir:</string>
     <string name="rename_label">Bu oyunun adını şu şekilde değiştir:</string>
-    <string name="loc_menu_xlate">Çevir</string>
     <string name="lang_name_english">İngilizce</string>
     <string name="lang_name_swedish">İsveççe</string>
     <string name="progress_title">İndiriliyor</string>

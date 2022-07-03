@@ -1,21 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="missing_player">(jeszcze nie tutaj...)</string>
-    <string name="summary_relay_gameover_fmt">Koniec gry w pokoju \"%1$s\"</string>
     <string name="summary_invites_out">Zaproszeni Gracze</string>
     <string name="gameOver">Koniec gry</string>
     <string name="button_delete">Usuń</string>
     <string name="menu_prefs">Ustawienia aplikacji…</string>
     <string name="summary_invites_out_fmt">Gracze zaproszeni do pokoju \"%1$s\"</string>
     <string name="board_menu_file_about">O CrossWords…</string>
-    <string name="summary_relay_wait_fmt">Czekam na graczy w pokoju \"%1$s\"</string>
     <string name="summary_relay_conn_fmt">Gra w gry w pokoju \"%1$s\"</string>
     <string name="gamel_menu_dicts">Listy słów…</string>
     <string name="list_item_config">Ustawienia gry…</string>
     <string name="str_game_name_fmt">%1$s (%2$s)</string>
-    <string name="summary_relay_conf_fmt">Skonfigurowane dla pokoju \"%1$s\"</string>
     <string name="msgs_progress">Sprawdzanie przekaźnika dla ruchów itp.…</string>
-    <string name="no_games_to_refresh">Nie znaleziono gier, które łączą się za pośrednictwem przekaźnika.</string>
     <string name="list_item_rename">Zmień nazwę…</string>
     <string name="list_item_move">Przenieś do grupy…</string>
     <string name="list_item_delete">Usuń grę</string>
@@ -58,7 +54,6 @@
     <string name="password_label">Hasło:</string>
     <string name="invit_expl_sms_fmt">Zaproszenie wysłane za pośrednictwem Data SMS na numer telefonu %1$s na %2$s</string>
     <string name="invit_expl_bt_fmt">Zaproś wysłając przez Bluetooth do urządzenia \"%1$s\" na %2$s</string>
-    <string name="relay_alert">Problem z połączeniem</string>
     <string name="msg_no_room">Żaden host nie zarejestrował pokoju o tej nazwie.</string>
     <string name="button_revert_all">Przywróć wszystko</string>
     <string name="confirm_revert_colors">Czy na pewno chcesz przywrócić wszystkie ustawienia kolorów do ich oryginalnych wartości\?</string>
@@ -110,7 +105,6 @@
     <string name="chat_send">Wyślij</string>
     <string name="chat_hint">Wpisz tutaj...</string>
     <string name="chat_menu_clear">Wyczyść historię</string>
-    <string name="no_empty_rooms">Ta gra nie może się połączyć bez nazwy pokoju.</string>
     <string name="str_not_your_turn">Nie możesz tego zrobić; to nie twoja kolej!</string>
     <string name="str_cant_hint_while_disabled">Funkcja podpowiedzi jest wyłączona w tej grze. Włącz ją dla nowej gry, korzystając z okna dialogowego Ustawienia.</string>
     <string name="str_reg_unexpected_user">Odmówiono próby zarejestrowania nieoczekiwanego użytkownika.</string>
@@ -252,13 +246,7 @@
     <string name="invit_expl_relay_fmt">Zaproszenie przesłane przez przekaźnik do innego urządzenia na %1$s</string>
     <string name="invit_expl_notarget_fmt">Zaproszenie wysłane przez %1$s na %2$s. Odbiorca nieznany.</string>
     <string name="pts">pkt</string>
-    <plurals name="msg_relay_waiting_fmt">
-        <item quantity="one">Urządzenie %1$d podłączone do przekaźnika w pokoju \"%2$s\". Czekam na gracza.</item>
-        <item quantity="few">Urządzenie %1$d podłączone do przekaźnika w pokoju \"%2$s\". Czekam na %3$d graczy.</item>
-        <item quantity="many">Urządzenie %1$d podłączone do przekaźnika w pokoju \"%2$s\". Czekam na %3$d zawodników.</item>
-    </plurals>
     <string name="msg_too_many">Udostępniasz więcej graczy niż oczekuje host.</string>
-    <string name="msg_dup_room">Inny host już zarejestrował pokój używając tej nazwy. Zmień swoją nazwę lub spróbuj później.</string>
     <string name="msg_lost_other">Przekaźnik utracił kontakt z innym urządzeniem w tej grze.</string>
     <string name="ids_badwords_fmt">Słowa[ów] %1$s nie znaleziono na liście słów %2$s.</string>
     <string name="badwords_accept">" Czy chcesz zaakceptować ten ruch\?"</string>
@@ -538,7 +526,6 @@
     <string name="square_tiles">Kwadratowe kafelki</string>
     <string name="square_tiles_summary">Nawet jeśli mogą być wyższe</string>
     <string name="change_group">Przenieś wybrane gry do:</string>
-    <string name="relay_alert_title">Wiadomość z przekaźnika</string>
     <string name="not_again_newselect">Stuknięcie w grę otwiera ją.
 \n
 \nMożesz zamiast tego możesz stuknąć ikony po lewej stronie, aby wybrać lub odznaczyć gry, a następnie wykonać różne działania w wybranych grach, np. aby je usunąć, za pomocą menu lub „Paska zadań”</string>
@@ -585,14 +572,11 @@
     <string name="slmenu_select_all">Wybierz wszystkie</string>
     <string name="slmenu_deselect_all">Usuń zaznaczenie</string>
     <string name="sel_items_fmt">Wybrano: %1$d</string>
-    <string name="loc_menu_xlate">Przetłumacz</string>
     <string name="loc_lang_blessed">%1$s (oficjalny)</string>
-    <string name="loc_lang_local">%1$s (Twój)</string>
     <string name="loc_filters_menu">Najnowsze menu</string>
     <string name="loc_item_clear">Wyczyść</string>
     <string name="loc_item_check">Sprawdzić</string>
     <string name="loc_item_copy_bless">Kopia oficjalna</string>
-    <string name="loc_fmts_mismatch">Nieprawidłowe tłumaczenie: przetłumaczony łańcuch musi mieć ten sam format (np. %1$s) co oryginał.</string>
     <string name="not_again_fmt_expl">Ten łańcuch ma specjalne znaki formatu (np. %1$s). Upewnij się, że Twoje tłumaczenie jest takie samo jak oryginał.
 \n
 \n(Nie będziesz w stanie go zapisać bez niego.)</string>
@@ -608,7 +592,6 @@
     <string name="note_none">(Brak)</string>
     <string name="dict_on_server">Dotknij, aby poznać szczegóły</string>
     <string name="dict_desc_fmt">%1$s (%2$s/%3$d słów)</string>
-    <string name="lang_unknown">Nieznane</string>
     <string name="not_again_dicts">Ten ekran pozwala zainstalować nowe listy słów i wyświetlić już zainstalowane. 
 \n 
 \nTwoje zainstalowane listy słów są zdefiniowane przez: 

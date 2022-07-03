@@ -22,7 +22,6 @@
     <string name="use_timer">تفعيل مؤقت اللعبة</string>
     <string name="player_label">الإسم:</string>
     <string name="password_label">كلمة المرور</string>
-    <string name="relay_alert">مشكلة في الإتصال</string>
     <string name="pref_player1_name">اللاعب الأول</string>
     <string name="pref_player2_name">اللاعب الثاني</string>
     <string name="pref_player3_name">اللاعب الثالث</string>
@@ -53,7 +52,6 @@
     <string name="xlator">[فارغ]</string>
     <string name="button_newgroup">مجموعة جديدة</string>
     <string name="slmenu_select_all">تحديد الكل</string>
-    <string name="loc_menu_xlate">ترجمة</string>
     <string name="loc_filters_prompt">فرز حسب:</string>
     <string name="loc_search_prompt">البحث عن:</string>
     <string name="loc_filters_all">الكل</string>

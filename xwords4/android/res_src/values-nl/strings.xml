@@ -3,11 +3,8 @@
     <string name="str_game_name_fmt">%1$s (%2$s)</string>
     <string name="robot_name_fmt">%1$s (robot)</string>
     <string name="missing_player">(nog niet hier...)</string>
-    <string name="summary_relay_conf_fmt">Ingesteld voor kamer
- \"%1$s\"</string>
     <string name="summary_relay_wait_fmt">Wachtend op spelers in kamer
  \"%1$s\"</string>
-    <string name="summary_relay_conn_fmt">Spel bezig in kamer \"%1$s\"</string>
     <string name="summary_relay_gameover_fmt">Spel voorbij is kamer \"%1$s\"</string>
     <string name="gameOver">Spel voorbij</string>
     <plurals name="moves_fmt">
@@ -18,8 +15,6 @@
     <string name="button_reset">Reset</string>
     <string name="gamel_menu_dicts">Woordenlijsten…</string>
     <string name="menu_prefs">Instellingen…</string>
-    <string name="msgs_progress">Zoeken naar nieuwe zetten
- etc…</string>
     <string name="no_games_to_refresh">Geen spellen gevonden die via
  de relay verbinden.</string>
     <string name="board_menu_file_about">Over CrossWords…</string>
@@ -108,14 +103,8 @@
         <item quantity="other">Dit spel wacht op %1$d spelers op afstand. Wil je iemand uitnodigen om mee te doen, indien je dit nog niet gedaan hebt?</item>
     </plurals>
     <string name="pts">pntn</string>
-    <plurals name="msg_relay_waiting_fmt">
-        <item quantity="one">Apparaat 1 verbonden met relay in kamer \"%2$s\". Wachtend op %1$d speler.</item>
-        <item quantity="other">Apparaat %1$d verbonden met relay in kamer \"%2$s\". Wachtend op %3$d spelers.</item>
-    </plurals>
     <string name="relay_alert">Verbindingsprobleem</string>
-    <string name="msg_too_many">Je bied meer spelers aan dan de host verwacht.</string>
     <string name="msg_no_room">Geen host heeft een kamer met deze naam geregistreerd.</string>
-    <string name="msg_dup_room">Een andere host heeft al een kamer met deze naam geregistreerd. Hernoem jouw kamer of probeer het later opnieuw.</string>
     <string name="msg_lost_other">De relay heeft het contact met een ander apparaat in het spel verloren.</string>
     <string name="ids_badwords_fmt">Woord[en] %1$s niet gevonden in woordenlijst %2$s.</string>
     <string name="badwords_accept">" Wil je deze zet toch goed rekenen?"</string>
@@ -255,7 +244,6 @@
     <string name="chat_other_id">"Medespeler: "</string>
     <string name="chat_send">Verstuur</string>
     <string name="chat_menu_clear">Wis geschiedenis</string>
-    <string name="no_empty_rooms">Dit spel kan niet verbinden zonder kamernaam.</string>
     <string name="str_tiles_not_in_line">Alle letters moeten naast elkaar liggen.</string>
     <string name="str_no_empties_in_turn">Er mogen geen lege cellen tussen gespeelde letters zitten.</string>
     <string name="str_two_tiles_first_move">Je moet twee of meer letters spelen in de eerste zet.</string>
@@ -448,7 +436,6 @@
     <string name="square_tiles">Vierkante letters op rek</string>
     <string name="square_tiles_summary">Zelfs als ze hoger kunnen zijn</string>
     <string name="change_group">Verplaats geselecteerde spellen naar:</string>
-    <string name="relay_alert_title">Bericht van relay</string>
     <string name="not_again_newselect">Als je drukt op een spel open je het.\n\nJe kunt op de iconen aan de linkerkant drukken om spellen te selecteren of deselecteren. Daarna kun je de spellen bewerken, bijvoorbeeld verwijderen, met behulp van het menu of de actiebalk.</string>
     <string name="not_again_backclears">De terug knop maakt de selectie leeg in plaats van af te sluiten. Druk er nogmaals op om de app af te sluiten.</string>
     <plurals name="sel_games_fmt">
@@ -491,9 +478,7 @@
     <string name="slmenu_select_all">Alles selecteren</string>
     <string name="slmenu_deselect_all">Alles deselecteren</string>
     <string name="sel_items_fmt">Geselecteerd: %1$d</string>
-    <string name="loc_menu_xlate">Vertaal</string>
     <string name="loc_lang_blessed">%1$s (officieel)</string>
-    <string name="loc_lang_local">%1$s (van jou)</string>
     <plurals name="new_xlations_fmt">
         <item quantity="one">Een nieuwe vertaling geïnstalleerd</item>
         <item quantity="other">%1$d nieuwe vertalingen geïnstalleerd</item>
@@ -525,7 +510,6 @@
     <string name="loc_item_check">Kijk na</string>
     <string name="loc_item_copy_eng">Kopieer Engels</string>
     <string name="loc_item_copy_bless">Kopieer officieel</string>
-    <string name="loc_fmts_mismatch">Foute vertalen: een vertaalde zin moet dezelfde formaat specificaties (bijv. %1$s) hebben als het origineel.</string>
     <string name="not_again_fmt_expl">Deze zin heeft speciale formaat specificaties (bijv. %1$s). Zorg ervoor dat jouw vertaling dezelfde specificaties heeft als het origineel.\n\n(Je kan niet opslaan tenzij dat het geval is.)</string>
     <string name="remote_empty">Woordenlijstinformatie van server ophalen…</string>
     <string name="remote_digesting">Woordenlijstinformatie verwerken…</string>
@@ -539,7 +523,6 @@
     <string name="note_none">(Geen)</string>
     <string name="dict_on_server">Druk om te downloaden</string>
     <string name="dict_desc_fmt">%1$s (%2$s/%3$d woorden)</string>
-    <string name="lang_unknown">Onbekend</string>
     <string name="not_again_dicts">Op dit scherm kun je nieuwe woordenlijsten installeren of woordenlijsten die je al hebt bekijken.\n\nWelke woordenlijsten je geïnstalleerd hebt bepaalt:\n• Welke talen je in kan spelen\n• Hoe slim de robotspeler is\n• Welke woorden je mag gebruiken.\n\nSchakel de \"Toon downloadbaar\" optie bovenaan in om te zien welke woordenlijsten beschikbaar zijn.</string>
     <string name="force_tablet_title">Forceer tablet layout</string>
     <string name="nag_title">Herinnering: Het is jouw beurt</string>

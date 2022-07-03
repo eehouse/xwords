@@ -33,7 +33,6 @@
          three. -->
     <!-- First state: is configured to use a room but has not yet
          contacted the relay and been assigned that room. -->
-    <string name="summary_relay_conf_fmt">Configurado para a sala \"%1$s\"</string>
     <!-- Second state: has been assigned to a room on the relay
          (meaning the network is working) but there are not yet as
          many players as expected: the game is not complete and play
@@ -42,7 +41,6 @@
     <!-- Third state: enough devices have connected in the room to
          form a complete game.  We'll be in this state as long as the
          game exists. -->
-    <string name="summary_relay_conn_fmt">Jogo em progresso na sala \"%1$s\"</string>
     <!-- Final state: game is over. -->
     <string name="summary_relay_gameover_fmt">Fim da partida na sala “%1$s”</string>
     <!-- Games that have ended are listed with this string -->
@@ -78,7 +76,6 @@
          networked games on this device and posts a notification if
          any is downloaded. -->
     <!-- Text of progress indicator shown while check is being conducted -->
-    <string name="msgs_progress">A verificar a relé por movimentos, etc…</string>
     <!-- If you choose the above option and have no networked games
          you get this error message -->
     <string name="no_games_to_refresh">Nenhum jogo encontrado que conecta
@@ -427,19 +424,15 @@
          play can begin. -->
     <!-- Title of dialog used to alert players to relay-related
          problems with the current game. -->
-    <string name="relay_alert">Problema na conexão</string>
     <!-- (I believe this can no longer occur) -->
     <string name="msg_too_many">Você está fornecendo mais jogadores
     do que o hospedeiro espera.</string>
     <!-- (I believe this can no longer occur) -->
-    <string name="msg_no_room">Nenhum hospedeiro tem uma sala registrada
-    com esse nome.</string>
     <!-- (I believe this can no longer occur) -->
     <string name="msg_dup_room">Outro hospedeiro já registrou uma sala
     usando esse nome. Mude o nome da sua ou tente novamente mais
     tarde.</string>
     <!-- (I believe this can no longer occur) -->
-    <string name="msg_lost_other">O servidor perdeu contacto com outro aparelho neste jogo.</string>
     <!-- When a game has been connected and the relay is notified that
          a device in the game has deleted its part of the game, this
          message is posted when you connect your end of it to the
@@ -982,8 +975,6 @@
     <!-- This button takes you to the normal Game Configure screen -->
     <!-- If you click on the Play button without having entered a room
          name you get an alert with this error message. -->
-    <string name="no_empty_rooms">Esse jogo não pode se conectar sem
-    um nome de sala.</string>
     <!-- 
        error messages
       -->
@@ -1890,7 +1881,6 @@
 \n• Quais palavras são legais
 \n
 \nCheque a caixa “Mostrar baixáveis” no topo para ver quais estão disponíveis.</string>
-    <string name="lang_unknown">Desconhecido</string>
     <string name="dict_desc_fmt">%1$s (%2$s de %3$d palavras)</string>
     <string name="dict_on_server">Toque para detalhes</string>
     <string name="note_none">(Nenhum)</string>
@@ -1904,9 +1894,6 @@
     <string name="remote_no_net">Incapaz de captar informação da lista de palavras do servidor.</string>
     <string name="remote_digesting">Processando informação da lista de palavras…</string>
     <string name="remote_empty">Captando informações da lista de palavras do servidor…</string>
-    <string name="not_again_fmt_expl">Esta strinf tem especificadores de formato especiais (p. ex. %1$s). Por favor certifique-se que a sua tradução tenha os mesmos que o original.
-\n
-\n(Não poderá salvá-la a não que ser que tenham.)</string>
     <string name="loc_fmts_mismatch">Tradução ilegal: uma cadeia traduzida precisa ter os mesmo especificadores de formato (p. ex. %1$s) que o original.</string>
     <string name="loc_item_copy_bless">Copiar oficial</string>
     <string name="loc_item_copy_eng">Copiar Inglês</string>
@@ -1940,9 +1927,7 @@
         <item quantity="one">Foi instalada uma nova tradução</item>
         <item quantity="other">Foram instaladas %1$d novas traduções</item>
     </plurals>
-    <string name="loc_lang_local">%1$s (seu)</string>
     <string name="loc_lang_blessed">%1$s (oficial)</string>
-    <string name="loc_menu_xlate">Traduzir</string>
     <string name="sel_items_fmt">Selecionado: %1$d</string>
     <string name="slmenu_deselect_all">Des-selecionar tudo</string>
     <string name="slmenu_select_all">Selecionar tudo</string>
@@ -1996,7 +1981,6 @@
 \nA não ser que toque os ícones à esquerda. Tocar lá seleciona ou des-seleciona jogos (ou grupos).
 \n
 \nUma vez que tiver um ou mais itens selecionados use o menu ou \"barra de ações\", p. ex. para deletar todos os jogos selecionados.</string>
-    <string name="relay_alert_title">Mensagem do relay</string>
     <string name="change_group">Mover jogos selecionados para:</string>
     <string name="button_reconnect">Reconectar</string>
     <string name="duplicate_group_name_fmt">O grupo “%1$s” já existe.</string>
@@ -2209,10 +2193,6 @@
     </plurals>
     <string name="str_pass">passar
 \n</string>
-    <plurals name="msg_relay_waiting_fmt">
-        <item quantity="one">Aparelho %1$d conectado ao servidor na sala “%2$s”. Aguardando por um jogador.</item>
-        <item quantity="other">Aparelho %1$d conectado ao servidor na sala “%2$s”. Aguardando por %3$d jogadores.</item>
-    </plurals>
     <string name="qrcode_invite_expl">Para convidar via código QR, deixe o seu oponente escanear o código com a câmara do telefone Android dele.</string>
     <string name="invit_expl_player_fmt">Convite encaminhado via MQTT/internet para Jogador Conhecido “%1$s” em %2$s.</string>
     <string name="invit_expl_relay_fmt">Convite enviado pelo servidor para outro aparelho no %1$s</string>
@@ -2252,7 +2232,6 @@
     <string name="color_use_theme_light">Usar o tema claro</string>
     <string name="color_use_theme_dark">Usar o tema escuro</string>
     <string name="theme_which">Tema de cores do tabuleiro</string>
-    <string name="prefs_themes">Temas de cores do tabuleiro</string>
     <string name="gamel_menu_logstore_email">Logs de e-mail</string>
     <string name="logstore_dumping_fmt">A compactar %1$d entradas de log</string>
     <string name="button_send_logs">Enviar ao autor</string>

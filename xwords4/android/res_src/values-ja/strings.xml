@@ -3,9 +3,7 @@
     <string name="str_game_name_fmt">%1$s (%2$s)</string>
     <string name="robot_name_fmt">%1$s (ロボット)</string>
     <string name="missing_player">(まだありません…)</string>
-    <string name="summary_relay_conf_fmt">ルーム \"%1$s\" の設定をしました</string>
     <string name="summary_relay_wait_fmt">ルーム \"%1$s\" でプレイヤーを待っています</string>
-    <string name="summary_relay_conn_fmt">ルーム \"%1$s\" でゲームをプレイ中</string>
     <string name="summary_relay_gameover_fmt">ルーム \"%1$s\" でゲームオーバー</string>
     <string name="gameOver">ゲームオーバー</string>
     <string name="button_delete">削除</string>
@@ -15,7 +13,6 @@
     <plurals name="moves_fmt">
         <item quantity="other">%1$d 移動をプレイしました</item>
     </plurals>
-    <string name="msgs_progress">リレーの動きなどをチェック中…</string>
     <string name="no_games_to_refresh">リレー経由で接続するゲームはありません。</string>
     <string name="board_menu_file_about">クロスワードについて…</string>
     <string name="list_item_config">ゲームの設定…</string>
@@ -101,13 +98,8 @@
         <item quantity="other">このゲームは %1$d リモート プレイヤーを待っています。まだであれば -- 参加するユーザーを招待しますか\?</item>
     </plurals>
     <string name="pts">ﾎﾟｲﾝﾄ</string>
-    <plurals name="msg_relay_waiting_fmt">
-        <item quantity="other">デバイス %1$d はルーム \"%2$s\" のリレーに接続されています。%3$d プレイヤーを待っています。</item>
-    </plurals>
     <string name="relay_alert">接続の問題</string>
-    <string name="msg_too_many">あなたが提供したプレイヤーはホストが期待するよりも多いです。</string>
     <string name="msg_no_room">その名前のルームが登録されたホストはありません。</string>
-    <string name="msg_dup_room">別のホストで、既にその名前を使用してルームが登録されています。名前を変更するか、後でやり直してください。</string>
     <string name="msg_lost_other">リレーが、このゲームで別のデバイスとの接続を失いました。</string>
     <string name="ids_badwords_fmt">単語 %1$s は単語リスト %2$s 内に見つかりません。</string>
     <string name="badwords_accept">" この移動を反映してもよろしいですか?"</string>
@@ -244,8 +236,6 @@
     <string name="chat_other_id">"私以外: "</string>
     <string name="chat_send">送信</string>
     <string name="chat_menu_clear">履歴のクリア</string>
-    <string name="no_empty_rooms">このゲームはルーム名を指定しないと
-接続できません。</string>
     <string name="str_tiles_not_in_line">すべてのプレイしたタイルは一行に入れる必要があります。</string>
     <string name="str_no_empties_in_turn">空のマスは、プレイしたタイルと離すことはできません。</string>
     <string name="str_tiles_must_contact">新しいピースは既に置かれた場所の隣 (または最初に移動したマスの中央) にする必要があります</string>
@@ -458,7 +448,6 @@
     <string name="square_tiles">正方形のラック タイル</string>
     <string name="square_tiles_summary">高くできる場合でも</string>
     <string name="change_group">選択したゲームを移動する先:</string>
-    <string name="relay_alert_title">リレーからのメッセージ</string>
     <string name="not_again_newselect">ゲームをタップすると開きます。\n\n代わりに、左にあるアイコンをタップしてゲームを選択または選択解除し、選択したゲームを操作することができます。例えば、削除する場合は、メニューまたは \"アクションバー\" を使用します</string>
     <string name="not_again_backclears">戻るボタンは、終了ではなくすべての選択がクリアされます。アプリを終了するには、もう一度押してください。</string>
     <plurals name="sel_games_fmt">
@@ -501,9 +490,7 @@
     <string name="slmenu_select_all">すべて選択</string>
     <string name="slmenu_deselect_all">選択をすべて解除</string>
     <string name="sel_items_fmt">選択: %1$d</string>
-    <string name="loc_menu_xlate">翻訳</string>
     <string name="loc_lang_blessed">%1$s (公式)</string>
-    <string name="loc_lang_local">%1$s (あなた)</string>
     <plurals name="new_xlations_fmt">
         <item quantity="other">新しい翻訳を %1$d インストールしました</item>
     </plurals>
@@ -534,7 +521,6 @@
     <string name="loc_item_check">チェック</string>
     <string name="loc_item_copy_eng">英語をコピー</string>
     <string name="loc_item_copy_bless">公式をコピー</string>
-    <string name="loc_fmts_mismatch">正しくない翻訳: 翻訳された文字列は、元と同じ書式指定子 (例 %1$s) を持つ必要があります。</string>
     <string name="not_again_fmt_expl">この文字列は特別な書式指定子 (例 %1$s) があります。あなたの翻訳に、元と同じものがあることを確認してください。
 \n
 \n(そうしない限り保存できません)</string>
@@ -550,7 +536,6 @@
     <string name="note_none">(なし)</string>
     <string name="dict_on_server">詳細はタップしてください</string>
     <string name="dict_desc_fmt">%1$s (%2$s/%3$d 語)</string>
-    <string name="lang_unknown">不明</string>
     <string name="not_again_dicts">この画面では、新しい単語リストをインストールしたり、既に持っているものを表示できます。
 \n
 \nインストールされている単語リストで決まること:

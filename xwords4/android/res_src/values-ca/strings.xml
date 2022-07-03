@@ -137,11 +137,8 @@
     <string name="tile_back">Fons de la fitxa</string>
     <string name="empty">Cel·la buida/fons</string>
     <string name="clr_crosshairs">Creu d\'ubicació</string>
-    <string name="relay_alert">Error en la connexió</string>
     <string name="msg_too_many">Esteu proveint més jugadors dels que espera l\'amfitrió.</string>
-    <string name="msg_no_room">Cap amfitrió no ha registrat una sala amb aquest nom.</string>
     <string name="msg_dup_room">Un altre amfitrió ha registrat una sala amb aquest nom. Canvieu el nom a la vostra o torneu a intentar-ho més tard.</string>
-    <string name="msg_lost_other">El repetidor ha perdut el contacte amb un altre aparell durant la partida.</string>
     <string name="ids_badwords_fmt">Les paraules %1$s no es troben al diccionari %2$s.</string>
     <string name="badwords_accept">  Voleu acceptar aquesta jugada?</string>
     <string name="badwords_lost">  Torn perdut.</string>
@@ -169,11 +166,8 @@
     <string name="initial_player_minutes">Minuts de partida</string>
     <string name="str_game_name_fmt">%1$s (%2$s)</string>
     <string name="missing_player">(encara no és aquí...)</string>
-    <string name="summary_relay_conf_fmt">Configurat per a la sala
-«%1$s»</string>
     <string name="summary_relay_wait_fmt">S\'està esperant els jugadors en la sala
 «%1$s»</string>
-    <string name="summary_relay_conn_fmt">Partida en joc a la sala «%1$s»</string>
     <string name="summary_relay_gameover_fmt">Partida finalitzada en la sala «%1$s»</string>
     <plurals name="moves_fmt">
         <item quantity="one">1 jugada feta</item>
@@ -181,8 +175,6 @@
     </plurals>
     <string name="button_delete">Suprimeix</string>
     <string name="button_reset">Reinicialitza</string>
-    <string name="msgs_progress">S\'està comprovant en el repetidor
-si hi ha jugades, …</string>
     <string name="no_games_to_refresh">No s\'ha trobat cap partida
 que connecti via el repetidor.</string>
     <string name="list_item_rename">Canvia el nom…</string>
@@ -317,7 +309,6 @@ que connecti via el repetidor.</string>
     <string name="chat_other_id">"No jo: "</string>
     <string name="chat_send">Envia</string>
     <string name="chat_menu_clear">Buida l\'historial</string>
-    <string name="no_empty_rooms">Aquesta partida no pot connectar sense un nom de sala.</string>
     <string name="button_close_game">Tanca la partida</string>
     <string name="no_dict_fmt">La partida «%1$s» requereix un diccionari de %2$s. Baixeu-ne un abans d\'obrir-la.</string>
     <string name="button_substdict">Substitueix</string>
@@ -440,7 +431,6 @@ Introduïu el vostre nom aquí. S\'usarà en crear partides noves. (Podreu
     <string name="button_rematch">Torna a jugar-hi</string>
     <string name="button_reconnect">Torna a connectar</string>
     <string name="change_group">Mou les partides seleccionades a:</string>
-    <string name="relay_alert_title">Missatge del dia</string>
     <plurals name="sel_games_fmt">
         <item quantity="other">Partides: %1$d</item>
     </plurals>
@@ -469,9 +459,7 @@ Introduïu el vostre nom aquí. S\'usarà en crear partides noves. (Podreu
     <string name="slmenu_select_all">Selecciona-ho tot</string>
     <string name="slmenu_deselect_all">No seleccionis res</string>
     <string name="sel_items_fmt">Seleccionat: %1$d</string>
-    <string name="loc_menu_xlate">Tradueix</string>
     <string name="loc_lang_blessed">%1$s (oficial)</string>
-    <string name="loc_lang_local">%1$s (vostre)</string>
     <string name="loc_filters_prompt">Filtra per:</string>
     <string name="loc_search_prompt">Cerca:</string>
     <string name="loc_filters_all">Tot</string>
@@ -507,7 +495,6 @@ Introduïu el vostre nom aquí. S\'usarà en crear partides noves. (Podreu
     <string name="note_none">(Cap)</string>
     <string name="dict_on_server">Toqueu per a baixar</string>
     <string name="dict_desc_fmt">%1$s (%2$s/%3$d paraules)</string>
-    <string name="lang_unknown">Desconegut</string>
     <string name="nag_title">Recordatori: és el vostre torn</string>
     <plurals name="nag_minutes_fmt">
         <item quantity="one">%1$d minut</item>
@@ -600,7 +587,6 @@ Introduïu el vostre nom aquí. S\'usarà en crear partides noves. (Podreu
         <item quantity="one">Ha instal·lat una traducció nova</item>
         <item quantity="other">Ha instal·lat %1$d traduccions noves</item>
     </plurals>
-    <string name="loc_fmts_mismatch">Traducció no permesa: les cadenes traduïdes han de tenir els mateixos indicadors de format (p. ex. %1$s) que l\'original.</string>
     <string name="not_again_fmt_expl">Aquesta cadena té indicadors de format especials (p. ex. %1$s). Assegureu-vos que la traducció té els mateixos que l\'original.
 \n
 \n(No podreu desar-la si no ho compleix.)</string>
@@ -733,10 +719,6 @@ Introduïu el vostre nom aquí. S\'usarà en crear partides noves. (Podreu
     <string name="button_archive">Arxiva</string>
     <string name="group_name_archive">Arxiva</string>
     <string name="duplicate_group_name_fmt">El grup «%1$s» ja existeix.</string>
-    <plurals name="msg_relay_waiting_fmt">
-        <item quantity="one">"L\'aparell %1$d  s\'ha connectat al repetidor en la sala «%2$s». Està esperant un jugador."</item>
-        <item quantity="other">"L\'aparell %1$d  s\'ha connectat al repetidor en la sala «%2$s». Està esperant %3$d jugadors."</item>
-    </plurals>
     <string name="bt_pair_settings">Aparella\'n més</string>
     <plurals name="invite_relay_desc_fmt">
         <item quantity="one">Comproveu l\'aparell que voleu convidar a la partida nova, després toqueu «%2$s».</item>

@@ -3,9 +3,7 @@
     <string name="str_game_name_fmt">%1$s (%2$s)</string>
     <string name="invitee_fmt">(%1$s meghívva)</string>
     <string name="missing_player">(még nincs itt...)</string>
-    <string name="summary_relay_conf_fmt">\"%1$s\" a szobához konfigurálva</string>
     <string name="summary_relay_conn_fmt">Játék folyamatban a \"%1$s\" szobában</string>
-    <string name="summary_relay_gameover_fmt">Játék vége a \"%1$s\" szobában</string>
     <string name="summary_invites_out">Játékosok meghívva</string>
     <string name="summary_invites_out_fmt">Játékosok meghívása a \"%1$s\" szobába</string>
     <string name="gameOver">Játék vége</string>
@@ -17,7 +15,6 @@
     <string name="button_reset">Visszaállítás</string>
     <string name="gamel_menu_dicts">Szólisták…</string>
     <string name="menu_prefs">Alkalmazás Beállítások…</string>
-    <string name="msgs_progress">A relé ellenőrzése a mozgások stb…</string>
     <string name="no_games_to_refresh">Nem találtam olyan játékot, amely a relén keresztül csatlakozna.</string>
     <string name="board_menu_file_about">A CrossWords-ről…</string>
     <string name="list_item_move">Csoportba lépni…</string>
@@ -91,7 +88,6 @@
     <string name="force_expl">A több eszközzel játszott játékban legalább egy játékosnak kell lennie, aki erről az eszközről, és egy másiknak, aki nem erről az eszközről származik. Kérjük, ellenőrizd az eszközön kívüli játékosokat.</string>
     <string name="forced_consistent">Módosított első játékos.</string>
     <string name="robot_name_fmt">%1$s (robot)</string>
-    <string name="summary_relay_wait_fmt">Várd a játékosokat a \"%1$s\" szobában</string>
     <string name="list_item_config">Játék beállítások…</string>
     <string name="list_item_rename">Átnevezés…</string>
     <string name="list_item_netstats">Csatlakozások…</string>

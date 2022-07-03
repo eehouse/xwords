@@ -34,11 +34,8 @@
     <string name="badwords_accept">" Você ainda quer aceitar essa jogada\?"</string>
     <string name="ids_badwords_fmt">Palavra[s] %1$s não encontrada na lista de palavras %2$s.</string>
     <string name="msg_dev_deleted_fmt">O jogo de nome “%1$s” foi apagado em outro dispositivo. Você não poderá jogar mais.</string>
-    <string name="msg_lost_other">O servidor perdeu contato com outro dispositivo neste jogo.</string>
     <string name="msg_dup_room">Outro host já registrou uma sala usando este nome. Renomeie o seu ou tente novamente mais tarde.</string>
-    <string name="msg_no_room">Nenhum host registrou uma sala por este nome.</string>
     <string name="msg_too_many">Você está com mais jogadores do que o host exige.</string>
-    <string name="relay_alert">Problema de conexão</string>
     <plurals name="msg_relay_waiting_fmt">
         <item quantity="one">Dispositivo %1$d conectado ao servidor na sala “%2$s”. Aguardando por um jogador.</item>
         <item quantity="other">Dispositivo %1$d conectado ao servidor na sala “%2$s”. Aguardando por %3$d jogadores.</item>
@@ -116,9 +113,7 @@
         <item quantity="one">Você tem certeza que quer apagar o jogo selecionado\? Esta ação não poder ser desfeita.</item>
         <item quantity="other">Você tem certeza que quer apagar %1$d jogos selecionados\? Esta ação não poder ser desfeita.</item>
     </plurals>
-    <string name="no_games_to_refresh">Nenhum jogo foi encontrado que se conecte através servidor.</string>
     <string name="msgs_progress">Conferindo o servidor por movimentações etc…</string>
-    <string name="summary_relay_conn_fmt">A partida foi iniciada na sala “%1$s”</string>
     <plurals name="moves_fmt">
         <item quantity="one">Um movimento realizado</item>
         <item quantity="other">%1$d movimentos realizados</item>
@@ -165,9 +160,7 @@
     <string name="gameOver">Fim da partida</string>
     <string name="summary_invites_out_fmt">Jogadores convidados para a sala “%1$s”</string>
     <string name="summary_invites_out">Jogadores convidados</string>
-    <string name="summary_relay_gameover_fmt">Fim da partida na sala “%1$s”</string>
     <string name="summary_relay_conf_fmt">Configurado para a sala “%1$s”</string>
-    <string name="summary_relay_wait_fmt">Aguardando os jogadores na sala “%1$s”</string>
     <string name="missing_player">(ainda não está aqui…)</string>
     <string name="robot_name_fmt">%1$s (robô)</string>
     <string name="str_phony_rejected">palavra ilegal na jogada; turno perdido!</string>
@@ -306,7 +299,6 @@
     <string name="str_tiles_must_contact">Novas peças podem se conectar a outras já colocadas (ou no meio do quadro na primeira jogada)</string>
     <string name="str_two_tiles_first_move">Pode jogar duas ou mais peças na primeira jogada.</string>
     <string name="str_no_empties_in_turn">Quadrados vazios podem ser separados por quadrados jogados.</string>
-    <string name="no_empty_rooms">Esse jogo não pode ser conectado sem um nome da sala.</string>
     <string name="chat_menu_clear">Limpar histórico</string>
     <string name="chat_hint">Escreva aqui…</string>
     <string name="chat_send">Enviar</string>
@@ -402,7 +394,6 @@
     <string name="bt_bad_proto_fmt">A versão de CrossWords de “%1$s” é incompatível com esta aqui para jogar usando Bluetooth. Um de vocês talvez precisará de atualizar antes de continuar.</string>
     <string name="button_useconfig">Aplicar filtro</string>
     <string name="menu_chat">Bate-papo</string>
-    <string name="loc_menu_xlate">Traduzir</string>
     <string name="max_len">Tamanho máx.</string>
     <string name="loc_item_clear">Limpar</string>
     <string name="lang_name_hungarian">Húngaro</string>
@@ -433,7 +424,6 @@
         <item quantity="one">Foi instalada uma nova tradução</item>
         <item quantity="other">Foram instaladas %1$d novas traduções</item>
     </plurals>
-    <string name="loc_lang_local">%1$s (seu)</string>
     <string name="loc_lang_blessed">%1$s (oficial)</string>
     <string name="menu_hint_prev">Dica ant.</string>
     <string name="board_menu_undo_current">Desfazer/Refazer</string>
@@ -441,9 +431,6 @@
     <string name="remote_undone">Dispositivo remoto desfez uma rodada.</string>
     <string name="remote_digesting">Processando informação da lista de palavras…</string>
     <string name="remote_empty">Captando informações da lista de palavras do servidor…</string>
-    <string name="not_again_fmt_expl">Esta strinf tem especificadores de formato especiais (p. ex. %1$s). Por favor certifique-se que sua tradução tenha os mesmos que o original.
-\n
-\n(Você não poderá salvá-la a não que ser que tenham.)</string>
     <string name="loc_fmts_mismatch">Tradução ilegal: uma string traduzida precisa ter os mesmo especificadores de formato (p. ex. %1$s) que o original.</string>
     <string name="loc_item_copy_bless">Copiar oficial</string>
     <string name="loc_item_copy_eng">Copiar Inglês</string>
@@ -517,7 +504,6 @@
 \n• Quais palavras são legais
 \n
 \nCheque a caixa “Mostrar baixáveis” no topo para ver quais estão disponíveis.</string>
-    <string name="lang_unknown">Desconhecido</string>
     <string name="dict_on_server">Toque para detalhes</string>
     <string name="note_none">(Nenhum)</string>
     <string name="dict_info_fmt">Número de palavras: %1$d
@@ -626,7 +612,6 @@
     <string name="mqtt_port">Porta MQTT</string>
     <string name="relay_invite_title">Convite do relay</string>
     <string name="mqtt_host">Internet/Host MQTT</string>
-    <string name="relay_alert_title">Mensagem do relay</string>
     <string name="advanced_summary">Você deveria nunca precisar destes…</string>
     <string name="advanced">Para debug</string>
     <string name="about_web">Para um (antigo) manual ou código-fonte veja: http://xwords.sf.net/android.php. Para reportar bugs, sugerir funções, oferecer ajuda etc., mande um e-mail: xwords@eehouse.org.</string>
@@ -1064,7 +1049,6 @@
     <string name="tray_size">Quadrados na estante</string>
     <string name="str_bonus_all_fmt">Bônus por usar %1$d quadrados: 50
 \n</string>
-    <string name="prefs_themes">Os temas das cores do tabuleiro</string>
     <string name="button_settings">Configurações</string>
     <string name="not_again_boardThemes_fmt">O quadro escuro está sendo desenhado porque o \"Tema escuro\" está ativado no seu dispositivo.
 \n

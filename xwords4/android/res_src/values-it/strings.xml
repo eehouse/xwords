@@ -9,7 +9,6 @@
     <string name="list_item_rename">Rinomina…</string>
     <string name="list_item_config">Impostazioni…</string>
     <string name="board_menu_file_about">Info CrossWords…</string>
-    <string name="no_games_to_refresh">Nessun gioco trovato in connessione.</string>
     <string name="msgs_progress">Controllo risposta per mosse etc…</string>
     <string name="menu_prefs">Impostazioni…</string>
     <string name="gamel_menu_dicts">Lista parole…</string>
@@ -22,9 +21,7 @@
     <string name="gameOver">Game Over</string>
     <string name="summary_invites_out_fmt">Giocatori invitati alla stanza \"%1$s\"</string>
     <string name="summary_invites_out">Giocatori invitati</string>
-    <string name="summary_relay_gameover_fmt">Gioco finito nella stanza \"%1$s\"</string>
     <string name="summary_relay_conn_fmt">Gioco in corso nella stanza \"%1$s\"</string>
-    <string name="summary_relay_wait_fmt">Aspettando giocatori per la stanza \"%1$s\"</string>
     <string name="summary_relay_conf_fmt">Configurato per la stanza \"%1$s\"</string>
     <string name="missing_player">(Non ancora qui...)</string>
     <string name="logstore_clear_confirm">Sei sicuro di voler eliminare i log debug\? Questa azione non può essere annullata.</string>
@@ -219,9 +216,6 @@
     <string name="remote_no_net">Impossibile trovare informazioni su lista parole dal server.</string>
     <string name="remote_digesting">Processando informazioni su lista parole.…</string>
     <string name="remote_empty">Ricerca informazioni su lista parole dal server…</string>
-    <string name="not_again_fmt_expl">Questa stringa ha un formato speciale (ex. %1$s). Assicurati che la tua traduzione ha lo stesso formato dell\'originale.
-\n
-\n(Non potrai salvare finché non saranno uguali.)</string>
     <string name="loc_fmts_mismatch">Traduzione non consentita: una stringa tradotta deve avere lo stesso formato dell\'originale (e.g. %1$s).</string>
     <string name="loc_item_copy_bless">Copia ufficiale</string>
     <string name="loc_item_copy_eng">Copia Inglese</string>
@@ -255,9 +249,7 @@
         <item quantity="one">Installata una nuova traduzione</item>
         <item quantity="other">Installate %1$d nuove traduzioni</item>
     </plurals>
-    <string name="loc_lang_local">%1$s (tue)</string>
     <string name="loc_lang_blessed">%1$s (ufficiale)</string>
-    <string name="loc_menu_xlate">Traduci</string>
     <string name="sel_items_fmt">Selezionate: %1$d</string>
     <string name="slmenu_deselect_all">Deseleziona tutto</string>
     <string name="slmenu_select_all">Seleziona tutto</string>
@@ -311,7 +303,6 @@
 \nSe tu tocchi le icone a sinistra, puoi selezionare o deselezionare le partite (o i gruppi).
 \n
 \nQuando hai uno o più elementi selezionati usa il menù o la \"Barra di azione\", per esempio per cancellare le partite selezionate.</string>
-    <string name="relay_alert_title">Messaggio dal server</string>
     <string name="change_group">Sposta le partite selezionate in:</string>
     <string name="square_tiles_summary">Anche se potrebbe essere più alto</string>
     <string name="square_tiles">Sezione tessere quadrata</string>
@@ -648,7 +639,6 @@
     <string name="str_two_tiles_first_move">Bisogna giocare due o più pezzi per la prima mossa.</string>
     <string name="str_no_empties_in_turn">I riquadri vuoti non possono seprare le tessere giocate.</string>
     <string name="str_tiles_not_in_line">Tutte le tessere giocate devono essere in linea.</string>
-    <string name="no_empty_rooms">Questa partita non può connettersi senza un nome per la stanza.</string>
     <string name="chat_menu_clear">Pulisci chat</string>
     <string name="chat_hint">Scrivi qui…</string>
     <string name="chat_send">Invia</string>
@@ -759,7 +749,6 @@
 \n• Quali parole sono consentite
 \n
 \nControlla il riquadro \"Mostra scaricabili\" in alto per vedere quali sono disponibili.</string>
-    <string name="lang_unknown">Sconosciuto</string>
     <string name="dict_desc_fmt">%1$s (%2$s/%3$d parole)</string>
     <string name="disable_bt">Disabilita partita via Bluetooth</string>
     <string name="network_behavior_summary">Impostazioni da applicare per le partite in rete</string>
@@ -891,11 +880,8 @@
     <string name="badwords_accept">" Vuoi accettare comunque questa mossa\?"</string>
     <string name="ids_badwords_fmt">Parola[e] %1$s non trovate nella lista parole %2$s.</string>
     <string name="msg_dev_deleted_fmt">La partita \"%1$s\" è stata cancellata su un altro dispositivo. Non puoi continuare a giocare.</string>
-    <string name="msg_lost_other">Il server ha perso il contatto con un dispositivo connesso a questa partita.</string>
     <string name="msg_dup_room">Un altro ospite ha già registrato una stanza a questo nome. Rinomina la tua o riprova più tardi.</string>
-    <string name="msg_no_room">Nessun ospite ha creato una stanza con questo nome.</string>
     <string name="msg_too_many">Stai chiamando più giocatori di quelli richiesti.</string>
-    <string name="relay_alert">Problemi di connessione</string>
     <plurals name="msg_relay_waiting_fmt">
         <item quantity="one">Dispositivo %1$d collegato alla stanza \"%2$s\". In attesa di un giocatore.</item>
         <item quantity="other">Dispositivo %1$d collegato alla stanza \"%2$s\". In attesa di %3$d giocatori.</item>

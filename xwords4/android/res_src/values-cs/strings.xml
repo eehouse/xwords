@@ -12,8 +12,7 @@
      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
      See the License for the specific language governing permissions and
      limitations under the License.
--->
-<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
+--><resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
     <string name="list_item_config">Konfigurovat</string>
     <string name="list_item_delete">Vymazat</string>
     <string name="list_item_copy">Kopírovat</string>
@@ -118,11 +117,8 @@
     <string name="bonus_w3x">Trojitá hodnota slova</string>
     <string name="tile_back">Pozadí kamenů</string>
     <string name="empty">Prázdné pole/pozadí</string>
-    <string name="relay_alert">Chyba připojení</string>
     <string name="msg_too_many">Chcete přihlásit více hráčů než očekává server.</string>
-    <string name="msg_no_room">Žádný server si nezaregistroval místnost s tímto jménem.</string>
     <string name="msg_dup_room">Jiný server si již zaregistroval místnost s tímto jménem. Přejmenujte ji nebo to zkuste později.</string>
-    <string name="msg_lost_other">Relay ztratil kontakt s nějakým zařízením ve hře.</string>
     <string name="badwords_accept">  Chcete přesto přijmout tento tah?</string>
     <string name="badwords_lost">  Tah ztracen.</string>
     <string name="badwords_title">Neplatné slovo[a]</string>
@@ -152,9 +148,6 @@
     <string name="initial_player_minutes">Délka hry v minutách</string>
     <string name="str_game_name_fmt">%1$s (%2$s)</string>
     <string name="missing_player">(není tu ještě…)</string>
-    <string name="summary_relay_conf_fmt">Nastaveno pro místnost
- \"%1$s\"</string>
     <string name="summary_relay_wait_fmt">Čekám na hráče v mistnosti \"%1$s\"</string>
-    <string name="summary_relay_conn_fmt">Rozehraná hra v mistnosti \"%1$s\"</string>
     <string name="summary_relay_gameover_fmt">Konec hry v místnosti \"%1$s\"</string>
 </resources>

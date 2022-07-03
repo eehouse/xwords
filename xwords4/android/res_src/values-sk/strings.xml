@@ -323,7 +323,6 @@
     <string name="robot_label">Hráč robot</string>
     <string name="robot_name_fmt">%1$s (robot)</string>
     <!-- Final state: game is over. -->
-    <string name="summary_relay_gameover_fmt">XLATE ME: Game over in room \"%1$s\"</string>
     <!-- Third state: enough devices have connected in the room to
          form a complete game.  We'll be in this state as long as the
          game exists. -->
@@ -332,8 +331,6 @@
          (meaning the network is working) but there are not yet as
          many players as expected: the game is not complete and play
          cannot happen. -->
-    <string name="summary_relay_wait_fmt">XLATE ME: Waiting for players in room
-      \"%1$s\"</string>
     <!-- The display of each networked game includes one of three
          states it can be in in the process of connecting to the
          relay.  These next three strings are used to create those
@@ -532,8 +529,6 @@
     <string name="title_sort_tiles">XLATE ME: Sort new tiles</string>
     <!-- If you click on the Play button without having entered a room
          name you get an alert with this error message. -->
-    <string name="no_empty_rooms">XLATE ME: This game cannot connect without a
-        room name.</string>
     <!-- This button takes you to the normal Game Configure screen -->
     <!-- This is the "hint" printed in light text in the empty player
          name field -->
@@ -715,8 +710,6 @@
     <string name="menu_prefs">Predvolby</string>
     <!-- If you choose the above option and have no networked games
          you get this error message -->
-    <string name="no_games_to_refresh">XLATE ME: No games found that connect via
-      the relay.</string>
     <!-- Text of progress indicator shown while check is being conducted -->
     <string name="msgs_progress">XLATE ME: Checking relay for moves
       etc…</string>
@@ -821,11 +814,8 @@
     <!-- the background color of the area outside the board,
          e.g. between entries in the scoreboard -->
     <string name="background">XLATE ME: Board background</string>
-    <string name="relay_alert">Chyba pripojenia</string>
     <string name="msg_too_many">Chcete prihlásiť viac hráčov ako očakáva server.</string>
-    <string name="msg_no_room">Žiadny server si nezaregistroval miestnosť s týmto menom.</string>
     <string name="msg_dup_room">Iný server si už zaregistroval miestnosť s týmto menom. Premenujte ju alebo to skúste neskôr.</string>
-    <string name="msg_lost_other">Relay stratil kontakt s niektorým zariadením v hre.</string>
     <!-- When a game has been connected and the relay is notified that
          a device in the game has deleted its part of the game, this
          message is posted when you connect your end of it to the
@@ -862,7 +852,6 @@
     môžete na email: eehouse@eehouse.org.</string>
     <!-- fill this in other than in English -->
     <string name="xlator">Slovenský preklad Tomáš Morkus</string>
-    <string name="loc_menu_xlate">XLATE ME: Translate</string>
     <string name="sel_items_fmt">XLATE ME: Selected: %1$d</string>
     <string name="slmenu_deselect_all">XLATE ME: Unselect all</string>
     <string name="slmenu_select_all">XLATE ME: Select all</string>
@@ -904,7 +893,6 @@
     can instead tap the icons at the left to select or deselect games,
     then act on selected games, e.g. to delete them, using the menu or
     \"Actionbar.\"</string>
-    <string name="relay_alert_title">XLATE ME: Message from relay</string>
     <string name="change_group">XLATE ME: Move selected games to:</string>
     <string name="square_tiles_summary">XLATE ME: Even if they can be taller</string>
     <string name="square_tiles">XLATE ME: Square rack tiles</string>

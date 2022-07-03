@@ -34,7 +34,6 @@
          three. -->
     <!-- First state: is configured to use a room but has not yet
          contacted the relay and been assigned that room. -->
-    <string name="summary_relay_conf_fmt">Configuré pour le salon « %1$s »</string>
     <!-- Second state: has been assigned to a room on the relay
          (meaning the network is working) but there are not yet as
          many players as expected: the game is not complete and play
@@ -43,7 +42,6 @@
     <!-- Third state: enough devices have connected in the room to
          form a complete game.  We'll be in this state as long as the
          game exists. -->
-    <string name="summary_relay_conn_fmt">Partie en cours dans le salon « %1$s »</string>
     <!-- Final state: game is over. -->
     <string name="summary_relay_gameover_fmt">Partie finie dans le salon « %1$s »</string>
     <!-- Games that have ended are listed with this string -->
@@ -82,7 +80,6 @@
          networked games on this device and posts a notification if
          any is downloaded. -->
     <!-- Text of progress indicator shown while check is being conducted -->
-    <string name="msgs_progress">Vérification de coups, etc., sur le relai</string>
     <!-- If you choose the above option and have no networked games
          you get this error message -->
     <string name="no_games_to_refresh">Aucune partie trouvée se connectant par ce relai.</string>
@@ -521,10 +518,6 @@ fait ?</string>-->
       room \"%2$s\". Waiting for %3$d player[s].</string>-->
     <!--<string name="msg_relay_waiting_fmt">Le périphérique %1$d est connecté au
 relai dans le salon \"%2$s\". En attente de %3$d joueur[s].</string>-->
-    <plurals name="msg_relay_waiting_fmt">
-        <item quantity="one">L\'appareil %1$d est connecté au relai dans le salon « %2$s ». En attente d\'un joueur.</item>
-        <item quantity="other">L\'appareil %1$d est connecté au relai dans le salon \"%2$s\". En attente de %3$d joueurs.</item>
-    </plurals>
     <!-- Text of "toast" shown when a game is notified by the relay
          that all expected players have registered.  At this point
          play can begin. -->
@@ -537,16 +530,12 @@ relai dans le salon \"%2$s\". En attente de %3$d joueur[s].</string>-->
     <!-- (I believe this can no longer occur) -->
     <!--<string name="msg_too_many">You are providing more players than
          the host expects.</string>-->
-    <string name="msg_too_many">Vous fournissez plus de joueurs que ce que
-l\'hôte attend.</string>
     <!-- (I believe this can no longer occur) -->
     <!--<string name="msg_no_room">No host has registered a room by that name.</string>-->
     <string name="msg_no_room">Aucun hôte n\'a créé de salon de ce nom.</string>
     <!-- (I believe this can no longer occur) -->
     <!--<string name="msg_dup_room">Another host has already registered a
          room using that name.  Rename yours or retry later.</string>-->
-    <string name="msg_dup_room">Un autre hôte a déjà créé un salon utilisant ce
-nom. Renommer le vôtre ou réessayer plus tard.</string>
     <!-- (I believe this can no longer occur) -->
     <!--<string name="msg_lost_other">The relay has lost contact with
          another device in this game.</string>-->
@@ -1275,8 +1264,6 @@ jetons sélectionnés (%2$s) ?</string>-->
          name you get an alert with this error message. -->
     <!--<string name="no_empty_rooms">This game cannot connect without a
         room name.</string>-->
-    <string name="no_empty_rooms">Cette partie ne peut pas se connecter sans un
-nom de salon.</string>
     <!-- 
        error messages
       -->
@@ -2225,7 +2212,6 @@ effacées.)</string>-->
     <string name="change_group">Déplacer les parties sélectionnées vers :</string>
     <!--<string name="show_wordlist_browser">Wordlist browser</string>-->
     <!--<string name="relay_alert_title">Message from relay</string>-->
-    <string name="relay_alert_title">Message du relai</string>
     <!--<string name="not_again_newselect">Tapping a game opens it.\n\nYou
     can instead tap the icons at the left to select or deselect games,
     then act on selected games, e.g. to delete them, using the menu or
@@ -2330,11 +2316,9 @@ une liste d\'étude.</string>
     <!--<string name="sel_items_fmt">Selected: %1$d</string>-->
     <string name="sel_items_fmt">Sélectionnés : %1$d</string>
     <!--<string name="loc_menu_xlate">Translate</string>-->
-    <string name="loc_menu_xlate">Traduire</string>
     <!--<string name="loc_lang_blessed">%1$s (official)</string>-->
     <string name="loc_lang_blessed">%1$s (officielle)</string>
     <!--<string name="loc_lang_local">%1$s (yours)</string>-->
-    <string name="loc_lang_local">%1$s (la votre)</string>
     <!--<string name="new_xlations_fmt">Installed %1$d new translations</string>-->
     <!--<string name="new_xlations_fmt">%1$d nouvelles traductions installées</string>-->
     <plurals name="new_xlations_fmt">
@@ -2385,9 +2369,6 @@ une liste d\'étude.</string>
     <!--<string name="loc_fmts_mismatch">Illegal translation: a translated
     string must have the same format specifiers (e.g. %1$s) as the
     original.</string>-->
-    <string name="loc_fmts_mismatch">Traduction illégale : une chaîne de
-caractères traduite doit avoir les mêmes indicateurs de format (par ex. %1$s)
-que l\'originale.</string>
     <!--<string name="not_again_fmt_expl">This string has special format
     specifiers (e.g. %1$s). Please be sure that your translation has
     the same ones as the original.\n\n(You will not be able to save it
@@ -2430,7 +2411,6 @@ versions de %1$s maintenant ?</string>
     <!--<string name="dict_desc_fmt">%1$s (%2$s/%3$d words)</string>-->
     <string name="dict_desc_fmt">%1$s (%2$s/%3$d mots)</string>
     <!--<string name="lang_unknown">Unknown</string>-->
-    <string name="lang_unknown">Inconnu</string>
     <!--<string name="not_again_dicts">This screen lets you install new
     wordslists and view the ones you already have.\n\nWhat wordlists
     you have installed determines:\n• What languages you can play
@@ -3181,7 +3161,6 @@ pour la langue</string>
     <string name="color_theme_edit_light">Modifier le thème clair</string>
     <string name="color_use_theme_light">Utiliser le thème clair</string>
     <string name="theme_which">Thème des couleurs du plateau</string>
-    <string name="prefs_themes">Thèmes des couleurs du plateau</string>
     <string name="not_again_traysize">Ce nouveau paramètre change le nombre de jetons du chevalet.
 \n
 \nNote : si un joueur de votre partie en réseau utilise une ancienne version de CrossWords, ce paramètre reviendra à 7 pour tout le monde dans la partie.</string>

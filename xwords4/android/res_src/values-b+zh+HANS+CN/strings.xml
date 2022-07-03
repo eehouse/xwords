@@ -29,7 +29,6 @@
     <plurals name="group_name_fmt">
         <item quantity="other">%1$s（%2$d游戏）</item>
     </plurals>
-    <string name="loc_menu_xlate">翻译</string>
     <string name="loc_lang_local">%1$s（你的）</string>
     <string name="loc_filters_all">都</string>
     <string name="lang_name_english">英语</string>
@@ -58,6 +57,6 @@
         <item quantity="one">你确定要重置 %1$d 个所选的游戏吗？
 \n
 \n（重置会删除所有所做的操作和任何连接信息。）</item>
-        <item quantity="other"></item>
+        <item quantity="other"/>
     </plurals>
 </resources>
