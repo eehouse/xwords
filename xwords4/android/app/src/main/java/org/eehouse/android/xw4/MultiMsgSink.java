@@ -56,7 +56,6 @@ public class MultiMsgSink implements TransportProcs {
 
     int sendViaRelay( byte[] buf, String msgID, int gameID )
     {
-        Assert.failDbg();
         return -1;
     }
 
