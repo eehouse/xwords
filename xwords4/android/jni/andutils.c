@@ -79,17 +79,23 @@ and_htons( XP_U16 ss )
 error error error
 #endif
 
+jfieldID
+getFieldID( JNIEnv* env, jobject obj, const char* fieldName, const char* fieldSig )
+{
+    jclass cls = (*env)->GetObjectClass( env, obj );
+    XP_ASSERT( !!cls );
+    jfieldID fid = (*env)->GetFieldID( env, cls, fieldName, fieldSig );
+    XP_ASSERT( !!fid );
+    deleteLocalRef( env, cls );
+    return fid;
+}
+
 int
 getInt( JNIEnv* env, jobject obj, const char* name )
 {
-    // XP_LOGF( "%s(name=%s)", __func__, name );
-    jclass cls = (*env)->GetObjectClass( env, obj );
-    XP_ASSERT( !!cls );
-    jfieldID fid = (*env)->GetFieldID( env, cls, name, "I");
+    jfieldID fid = getFieldID( env, obj, name, "I");
     XP_ASSERT( !!fid );
     int result = (*env)->GetIntField( env, obj, fid );
-    deleteLocalRef( env, cls );
-    // XP_LOGF( "%s(name=%s) => %d", __func__, name, result );
     return result;
 }
 
@@ -119,14 +125,9 @@ getInts( JNIEnv* env, void* cobj, jobject jobj, const SetInfo* sis, XP_U16 nSis 
 void
 setInt( JNIEnv* env, jobject obj, const char* name, int value )
 {
-    // XP_LOGF( "%s(name=%s, val=%d)", __func__, name, value );
-    jclass cls = (*env)->GetObjectClass( env, obj );
-    XP_ASSERT( !!cls );
-    jfieldID fid = (*env)->GetFieldID( env, cls, name, "I");
+    jfieldID fid = getFieldID( env, obj, name, "I");
     XP_ASSERT( !!fid );
     (*env)->SetIntField( env, obj, fid, value );
-    deleteLocalRef( env, cls );
-    // XP_LOGF( "%s(name=%s) DONE", __func__, name );
 }
 
 void
@@ -160,13 +161,11 @@ bool
 setBool( JNIEnv* env, jobject obj, const char* name, bool value )
 {
     bool success = false;
-    jclass cls = (*env)->GetObjectClass( env, obj );
-    jfieldID fid = (*env)->GetFieldID( env, cls, name, "Z");
+    jfieldID fid = getFieldID( env, obj, name, "Z" );
     if ( 0 != fid ) {
         (*env)->SetBooleanField( env, obj, fid, value );
         success = true;
     }
-    deleteLocalRef( env, cls );
 
     return success;
 }
@@ -184,21 +183,24 @@ setBools( JNIEnv* env, jobject jobj, void* cobj, const SetInfo* sis, XP_U16 nSis
 }
 
 bool
-setString( JNIEnv* env, jobject obj, const char* name, const XP_UCHAR* value )
+setString( JNIEnv* env, jobject container, const char* fieldName, const XP_UCHAR* value )
 {
-    /* XP_LOGFF( "(name=%s, val=%s)", name, value ); */
+    // XP_LOGFF( "(fieldName=%s, val=%s)", fieldName, value );
     bool success = false;
-    jclass cls = (*env)->GetObjectClass( env, obj );
-    jfieldID fid = (*env)->GetFieldID( env, cls, name, "Ljava/lang/String;" );
-    deleteLocalRef( env, cls );
+    /* jfieldID fid = getFieldID( env, obj, name, "Ljava/lang/String;" ); */
 
-    if ( 0 != fid ) {
-        jstring str = (*env)->NewStringUTF( env, value );
-        (*env)->SetObjectField( env, obj, fid, str );
-        success = true;
-        deleteLocalRef( env, str );
-    }
+    jstring str = (*env)->NewStringUTF( env, value );
+    setObjectField( env, container, fieldName, "Ljava/lang/String;", str );
+    success = true;
+    deleteLocalRef( env, str );
 
+#ifdef DEBUG
+    XP_UCHAR buf[1024];
+    getString( env, container, fieldName, buf, VSIZE(buf) );
+    XP_ASSERT( !value || 0 == XP_STRCMP( buf, value ) );
+#endif
+
+    // XP_LOGFF( "(%s, %s) => %s", fieldName, value, boolToStr(success) );
     return success;
 }
 
@@ -224,15 +226,10 @@ setStrings( JNIEnv* env, jobject jobj, void* cobj, const SetInfo* sis, XP_U16 nS
 }
 
 void
-getString( JNIEnv* env, jobject obj, const char* name, XP_UCHAR* buf,
+getString( JNIEnv* env, jobject container, const char* name, XP_UCHAR* buf,
            int bufLen )
 {
-    /* XP_LOGFF( "(name=%s, bufLen=%d)", name, bufLen ); */
-    jclass cls = (*env)->GetObjectClass( env, obj );
-    XP_ASSERT( !!cls );
-    jfieldID fid = (*env)->GetFieldID( env, cls, name, "Ljava/lang/String;" );
-    XP_ASSERT( !!fid );
-    jstring jstr = (*env)->GetObjectField( env, obj, fid );
+    jstring jstr = getObjectField( env, container, name, "Ljava/lang/String;" );
     jsize len = 0;
     if ( !!jstr ) {             /* might be null */
         len = (*env)->GetStringUTFLength( env, jstr );
@@ -243,9 +240,7 @@ getString( JNIEnv* env, jobject obj, const char* name, XP_UCHAR* buf,
         deleteLocalRef( env, jstr );
     }
     buf[len] = '\0';
-
-    deleteLocalRef( env, cls );
-    // XP_LOGF( "%s(%s) DONE", __func__, name );
+    // XP_LOGFF( "(field: %s) => '%s'", name, buf );
 }
 
 XP_UCHAR* 
@@ -260,44 +255,41 @@ getStringCopy( MPFORMAL JNIEnv* env, jstring jstr )
     return result;
 }
 
-bool
-getObject( JNIEnv* env, jobject obj, const char* name, const char* sig,
-           jobject* ret )
+jobject
+getObjectFieldWithFID( JNIEnv* env, jobject obj, const char* name,
+                       const char* sig, jfieldID* fidp )
 {
-    jclass cls = (*env)->GetObjectClass( env, obj );
-    XP_ASSERT( !!cls );
-    jfieldID fid = (*env)->GetFieldID( env, cls, name, sig );
+    jfieldID fid = getFieldID( env, obj, name, sig );
     XP_ASSERT( !!fid );
-    *ret = (*env)->GetObjectField( env, obj, fid );
-    bool result = !!*ret;
-
-    deleteLocalRef( env, cls );
+    if ( !!fidp ) {
+        *fidp = fid;
+    }
+    jobject result = (*env)->GetObjectField( env, obj, fid );
     return result;
 }
 
+jobject
+getObjectField( JNIEnv* env, jobject container, const char* name, const char* sig )
+{
+    return getObjectFieldWithFID( env, container, name, sig, NULL );
+}
+
 void
-setObject( JNIEnv* env, jobject obj, const char* name, const char* sig,
+setObjectField( JNIEnv* env, jobject obj, const char* name, const char* sig,
            jobject val )
 {
-    jclass cls = (*env)->GetObjectClass( env, obj );
-    XP_ASSERT( !!cls );
-    jfieldID fid = (*env)->GetFieldID( env, cls, name, sig );
+    jfieldID fid = getFieldID( env, obj, name, sig );
     XP_ASSERT( !!fid );
     (*env)->SetObjectField( env, obj, fid, val );
-
-    deleteLocalRef( env, cls );
 }
 
 bool
 getBool( JNIEnv* env, jobject obj, const char* name )
 {
     bool result;
-    jclass cls = (*env)->GetObjectClass( env, obj );
-    XP_ASSERT( !!cls );
-    jfieldID fid = (*env)->GetFieldID( env, cls, name, "Z");
+    jfieldID fid = getFieldID( env, obj, name, "Z");
     XP_ASSERT( !!fid );
     result = (*env)->GetBooleanField( env, obj, fid );
-    deleteLocalRef( env, cls );
     return result;
 }
 
@@ -348,7 +340,7 @@ setIntArray( JNIEnv* env, jobject jowner, const char* fieldName,
              int count, const void* vals, size_t elemSize )
 {
     jintArray jarr = makeIntArray( env, count, vals, elemSize );
-    setObject( env, jowner, fieldName, "[I", jarr );
+    setObjectField( env, jowner, fieldName, "[I", jarr );
     deleteLocalRef( env, jarr );
 }
 
@@ -448,7 +440,7 @@ setStringArray( JNIEnv* env, jobject jowner, const char* ownerField,
                 int count, const XP_UCHAR** vals )
 {
     jobjectArray jaddrs = makeStringArray( env, count, vals );
-    setObject( env, jowner, ownerField, "[Ljava/lang/String;", jaddrs );
+    setObjectField( env, jowner, ownerField, "[Ljava/lang/String;", jaddrs );
     deleteLocalRef( env, jaddrs );
 }
 
@@ -501,12 +493,9 @@ setTypeSetFieldIn( JNIEnv* env, const CommsAddrRec* addr, jobject jTarget,
 {
     jobject jtypset = addrTypesToJ( env, addr );
     XP_ASSERT( !!jtypset );
-    jclass cls = (*env)->GetObjectClass( env, jTarget );
-    XP_ASSERT( !!cls );
-    jfieldID fid = (*env)->GetFieldID( env, cls, fieldName, //"conTypes", 
-                                       "L" PKG_PATH("jni/CommsAddrRec$CommsConnTypeSet") ";" );
-    XP_ASSERT( !!fid );
-    (*env)->SetObjectField( env, jTarget, fid, jtypset );
+    setObjectField( env, jTarget, fieldName,
+                    "L" PKG_PATH("jni/CommsAddrRec$CommsConnTypeSet") ";",
+                    jtypset );
     deleteLocalRef( env, jtypset );
 }
 
@@ -619,13 +608,8 @@ getJAddrRec( JNIEnv* env, CommsAddrRec* addr, jobject jaddr )
 {
     /* Iterate over types in the set in jaddr, and for each call
        addr_addType() and then copy in the types. */
-    // LOG_FUNC();
-    jclass cls = (*env)->GetObjectClass( env, jaddr );
-    XP_ASSERT( !!cls );
-    jfieldID fid = (*env)->GetFieldID( env, cls, "conTypes", 
+    jobject jtypeset = getObjectField( env, jaddr, "conTypes",
                                        "L" PKG_PATH("jni/CommsAddrRec$CommsConnTypeSet") ";" );
-    XP_ASSERT( !!fid );         /* failed */
-    jobject jtypeset = (*env)->GetObjectField( env, jaddr, fid );
     XP_ASSERT( !!jtypeset );
     jmethodID mid = getMethodID( env, jtypeset, "getTypes", 
                                  "()[L" PKG_PATH("jni/CommsAddrRec$CommsConnType;") );
@@ -682,24 +666,20 @@ getJAddrRec( JNIEnv* env, CommsAddrRec* addr, jobject jaddr )
             XP_ASSERT(0);
         }
     }
-    deleteLocalRefs( env, cls, jtypeset, jtypesarr, DELETE_NO_REF );
+    deleteLocalRefs( env, jtypeset, jtypesarr, DELETE_NO_REF );
 }
 
 jint
 jenumFieldToInt( JNIEnv* env, jobject j_gi, const char* field, 
                  const char* fieldSig )
 {
-    jclass clazz = (*env)->GetObjectClass( env, j_gi );
-    XP_ASSERT( !!clazz );
     char sig[128];
     snprintf( sig, sizeof(sig), "L%s;", fieldSig );
-    jfieldID fid = (*env)->GetFieldID( env, clazz, field, sig );
-    XP_ASSERT( !!fid );
-    jobject jenum = (*env)->GetObjectField( env, j_gi, fid );
+    jobject jenum = getObjectField( env, j_gi, field, sig );
     XP_ASSERT( !!jenum );
     jint result = jEnumToInt( env, jenum );
 
-    deleteLocalRefs( env, clazz, jenum, DELETE_NO_REF );
+    deleteLocalRef( env, jenum );
     return result;
 }
 
@@ -707,15 +687,11 @@ void
 intToJenumField( JNIEnv* env, jobject jobj, int val, const char* field, 
                  const char* fieldSig )
 {
-    jclass clazz = (*env)->GetObjectClass( env, jobj );
-    XP_ASSERT( !!clazz );
     char buf[128];
     snprintf( buf, sizeof(buf), "L%s;", fieldSig );
-    jfieldID fid = (*env)->GetFieldID( env, clazz, field, buf );
-    XP_ASSERT( !!fid );         /* failed */
-    deleteLocalRef( env, clazz );
 
-    jobject jenum = (*env)->GetObjectField( env, jobj, fid );
+    jfieldID fid;
+    jobject jenum = getObjectFieldWithFID( env, jobj, field, buf, &fid );
     if ( !jenum ) {       /* won't exist in new object */
         jenum = makeObjectEmptyConst( env, fieldSig );
         XP_ASSERT( !!jenum );

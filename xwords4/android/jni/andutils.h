@@ -42,7 +42,8 @@ typedef struct _SetInfo {
             .offset = OFFSET_OF(obj, fld),   \
             .siz = sizeof(((obj *)0)->fld)   \
             }
-
+jfieldID getFieldID( JNIEnv* env, jobject obj, const char* fieldName,
+                     const char* fieldSig );
 int getInt( JNIEnv* env, jobject obj, const char* name );
 void setInt( JNIEnv* env, jobject obj, const char* name, int value );
 void setInts( JNIEnv* env, jobject jobj, void* cobj, 
@@ -63,11 +64,12 @@ void getStrings( JNIEnv* env, void* cobj, jobject jobj,
 void setStrings( JNIEnv* env, jobject jobj, void* cobj, 
                  const SetInfo* sis, XP_U16 nSis );
 XP_UCHAR* getStringCopy( MPFORMAL JNIEnv* env, jstring jname );
-void setObject( JNIEnv* env, jobject obj, const char* name, const char* sig,
-                jobject val );
-bool getObject( JNIEnv* env, jobject obj, const char* name, const char* sig, 
-                jobject* ret );
-
+void setObjectField( JNIEnv* env, jobject container, const char* fieldName,
+                     const char* fieldSig, jobject val );
+jobject getObjectField( JNIEnv* env, jobject obj, const char* fieldName,
+                        const char* fieldClassSig );
+jobject getObjectFieldWithFID( JNIEnv* env, jobject obj, const char* fieldName,
+                               const char* fieldClassSig, jfieldID* fid );
 jintArray makeIntArray( JNIEnv* env, int size, const void* vals, size_t elemSize );
 void setIntArray( JNIEnv* env, jobject jowner, const char* ownerField,
                   int count, const void* vals, size_t elemSize );

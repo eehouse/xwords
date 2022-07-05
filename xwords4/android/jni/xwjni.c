@@ -473,33 +473,29 @@ makeGI( MPFORMAL JNIEnv* env, jobject jgi )
 
     XP_ASSERT( gi->nPlayers <= MAX_NUM_PLAYERS );
 
-    jobject jplayers;
-    if ( getObject( env, jgi, "players", "[L" PKG_PATH("jni/LocalPlayer") ";",
-                    &jplayers ) ) {
-        for ( int ii = 0; ii < gi->nPlayers; ++ii ) {
-            LocalPlayer* lp = &gi->players[ii];
+    jobject jplayers
+        = getObjectField( env, jgi, "players", "[L" PKG_PATH("jni/LocalPlayer") ";" );
+    XP_ASSERT( !!jplayers );
+    for ( int ii = 0; !!jplayers && ii < gi->nPlayers; ++ii ) {
+        LocalPlayer* lp = &gi->players[ii];
 
-            jobject jlp = (*env)->GetObjectArrayElement( env, jplayers, ii );
-            XP_ASSERT( !!jlp );
+        jobject jlp = (*env)->GetObjectArrayElement( env, jplayers, ii );
+        XP_ASSERT( !!jlp );
 
-            getInts( env, (void*)lp, jlp, AANDS(pl_ints) );
+        getInts( env, (void*)lp, jlp, AANDS(pl_ints) );
 
-            lp->isLocal = getBool( env, jlp, "isLocal" );
+        lp->isLocal = getBool( env, jlp, "isLocal" );
 
-            getString( env, jlp, "name", AANDS(buf) );
-            lp->name = copyString( mpool, buf );
-            getString( env, jlp, "password", AANDS(buf) );
-            lp->password = copyString( mpool, buf );
-            getString( env, jlp, "dictName", AANDS(buf) );
-            lp->dictName = copyString( mpool, buf );
+        getString( env, jlp, "name", AANDS(buf) );
+        lp->name = copyString( mpool, buf );
+        getString( env, jlp, "password", AANDS(buf) );
+        lp->password = copyString( mpool, buf );
+        getString( env, jlp, "dictName", AANDS(buf) );
+        lp->dictName = copyString( mpool, buf );
 
-            deleteLocalRef( env, jlp );
-        }
-        deleteLocalRef( env, jplayers );
-    } else {
-        XP_ASSERT(0);
+        deleteLocalRef( env, jlp );
     }
-
+    deleteLocalRef( env, jplayers );
     return gi;
 } /* makeGI */
 
@@ -519,10 +515,9 @@ setJGI( JNIEnv* env, jobject jgi, const CurGameInfo* gi )
     intToJenumField( env, jgi, gi->serverRole, "serverRole",
                      PKG_PATH("jni/CurGameInfo$DeviceRole") );
 
-    jobject jplayers;
-    if ( getObject( env, jgi, "players", 
-                    "[L" PKG_PATH("jni/LocalPlayer") ";",
-                    &jplayers ) ) {
+    jobject jplayers = getObjectField( env, jgi, "players",
+                                       "[L" PKG_PATH("jni/LocalPlayer") ";" );
+    if ( !!jplayers ) {
         for ( int ii = 0; ii < gi->nPlayers; ++ii ) {
             const LocalPlayer* lp = &gi->players[ii];
 
@@ -1250,7 +1245,7 @@ msgArrayToJMsgArray( JNIEnv* env, const SMSMsgArray* arr )
 
         jbyteArray arr = makeByteArray( env, msgsLoc->len,
                                         (const jbyte*)msgsLoc->data );
-        setObject( env, jmsg, "data", "[B", arr );
+        setObjectField( env, jmsg, "data", "[B", arr );
         deleteLocalRef( env, arr );
         
         (*env)->SetObjectArrayElement( env, result, ii, jmsg );
@@ -2780,8 +2775,8 @@ Java_org_eehouse_android_xw4_jni_XwJNI_di_1init
             for ( int ii = 0; formatOK && ii < len ; ++ii ) {
                 jobject jdesc = (*env)->GetObjectArrayElement( env, jPatsArr, ii );
                 if ( !!jdesc ) {
-                    jbyteArray jtiles;
-                    if ( getObject( env, jdesc, "tilePat", "[B", &jtiles ) ) {
+                    jbyteArray jtiles = getObjectField( env, jdesc, "tilePat", "[B" );
+                    if ( !!jtiles ) {
                         int nTiles = (*env)->GetArrayLength( env, jtiles );
                         if ( 0 < nTiles ) {
                             PatDesc* pd = &patDescs[ii];
@@ -2796,9 +2791,8 @@ Java_org_eehouse_android_xw4_jni_XwJNI_di_1init
                                 formatOK = false;
                             }
                         }
-                        deleteLocalRef( env, jtiles );
                     }
-                    deleteLocalRef( env, jdesc );
+                    deleteLocalRefs( env, jtiles, jdesc, DELETE_NO_REF );
                 }
             }
         }
