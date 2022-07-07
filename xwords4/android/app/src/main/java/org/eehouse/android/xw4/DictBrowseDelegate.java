@@ -55,6 +55,7 @@ import org.eehouse.android.xw4.jni.XwJNI.IterWrapper;
 import org.eehouse.android.xw4.jni.XwJNI.PatDesc;
 import org.eehouse.android.xw4.jni.XwJNI;
 import org.eehouse.android.xw4.loc.LocUtils;
+import org.eehouse.android.xw4.Utils.ISOCode;
 
 import java.util.Arrays;
 import java.io.Serializable;
@@ -127,7 +128,7 @@ public class DictBrowseDelegate extends DelegateBase
     }
 
     private Activity m_activity;
-    private String m_lang;
+    private ISOCode m_lang;
     private String m_name;
     private String mAboutStr;
     private DictUtils.DictLoc m_loc;

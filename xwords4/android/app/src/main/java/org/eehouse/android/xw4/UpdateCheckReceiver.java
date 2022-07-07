@@ -37,6 +37,7 @@ import javax.net.ssl.HttpsURLConnection;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import org.eehouse.android.xw4.Utils.ISOCode;
 import org.eehouse.android.xw4.jni.XwJNI;
 import org.eehouse.android.xw4.loc.LocUtils;
 
@@ -214,7 +215,7 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
                                               int index )
     {
         JSONObject params = new JSONObject();
-        String isoCode = DictLangCache.getDictISOCode( context, dal );
+        ISOCode isoCode = DictLangCache.getDictISOCode( context, dal );
         String langStr = DictLangCache.getLangNameForISOCode( context, isoCode );
         String[] sums = DictLangCache.getDictMD5Sums( context, dal.name );
         Assert.assertTrueNR( null != sums[1] );

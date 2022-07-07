@@ -31,6 +31,7 @@ import android.view.View;
 import org.eehouse.android.xw4.Assert;
 import org.eehouse.android.xw4.BuildConfig;
 import org.eehouse.android.xw4.R;
+import org.eehouse.android.xw4.Utils.ISOCode;
 import org.eehouse.android.xw4.Utils;
 import org.eehouse.android.xw4.XWApp;
 import org.eehouse.android.xw4.XWPrefs;
@@ -43,7 +44,7 @@ import java.util.Map;
 public class LocUtils {
     protected static final String RES_FORMAT = "%[\\d]\\$[ds]";
     private static String s_curLocale;
-    private static String s_curLang;
+    private static ISOCode s_curLang;
     private static Map<String, String> s_langMap = null;
 
     public static View inflate( Context context, int resID )
@@ -54,44 +55,6 @@ public class LocUtils {
 
     public static void xlateTitle( Activity activity )
     {
-    }
-
-    public static String xlateLang( Context context, String lang )
-    {
-        return xlateLang( context, lang, false );
-    }
-
-    public static String xlateLang( Context context, String lang, boolean caps )
-    {
-        if ( null == s_langMap ) {
-            s_langMap = new HashMap<>();
-            s_langMap.put( "English", context.getString( R.string.lang_name_english ) );
-            s_langMap.put( "French", context.getString( R.string.lang_name_french ) );
-            s_langMap.put( "German", context.getString( R.string.lang_name_german ) );
-            s_langMap.put( "Turkish", context.getString( R.string.lang_name_turkish ) );
-            s_langMap.put( "Arabic", context.getString( R.string.lang_name_arabic ) );
-            s_langMap.put( "Spanish", context.getString( R.string.lang_name_spanish ) );
-            s_langMap.put( "Swedish", context.getString( R.string.lang_name_swedish ) );
-            s_langMap.put( "Polish", context.getString( R.string.lang_name_polish ) );
-            s_langMap.put( "Danish", context.getString( R.string.lang_name_danish ) );
-            s_langMap.put( "Italian", context.getString( R.string.lang_name_italian ) );
-            s_langMap.put( "Dutch", context.getString( R.string.lang_name_dutch ) );
-            s_langMap.put( "Catalan", context.getString( R.string.lang_name_catalan ) );
-            s_langMap.put( "Portuguese", context.getString( R.string.lang_name_portuguese ) );
-            s_langMap.put( "Russian", context.getString( R.string.lang_name_russian ) );
-            s_langMap.put( "Czech", context.getString( R.string.lang_name_czech ) );
-            s_langMap.put( "Greek", context.getString( R.string.lang_name_greek ) );
-            s_langMap.put( "Slovak", context.getString( R.string.lang_name_slovak ) );
-        }
-
-        String xlated = s_langMap.get( lang );
-        if ( null == xlated ) {
-            xlated = lang;
-        }
-        if ( caps ) {
-            xlated = Utils.capitalize( xlated );
-        }
-        return xlated;
     }
 
     public static void xlateView( Activity activity )
@@ -193,7 +156,7 @@ public class LocUtils {
         return name;
     }
 
-    public static String getCurLangCode( Context context )
+    public static ISOCode getCurLangCode( Context context )
     {
         if ( null == s_curLang ) {
             String lang = Locale.getDefault().getLanguage();
@@ -203,7 +166,7 @@ public class LocUtils {
                 lang = TextUtils.split(lang, "-")[0];
             }
             Assert.assertTrueNR( 2 == lang.length() );
-            s_curLang = lang;
+            s_curLang = new ISOCode( lang );
         }
         return s_curLang;
     }

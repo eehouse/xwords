@@ -49,6 +49,7 @@ import java.util.Set;
 
 import org.eehouse.android.xw4.DlgDelegate.Action;
 import org.eehouse.android.xw4.Perms23.Perm;
+import org.eehouse.android.xw4.Utils.ISOCode;
 
 public class DwnldDelegate extends ListDelegateBase {
     private static final String TAG = DwnldDelegate.class.getSimpleName();
@@ -64,11 +65,11 @@ public class DwnldDelegate extends ListDelegateBase {
     private ArrayList<DownloadFilesTask> m_dfts;
 
     public interface DownloadFinishedListener {
-        void downloadFinished( String isoCode, String name, boolean success );
+        void downloadFinished( ISOCode isoCode, String name, boolean success );
     }
 
     public interface OnGotLcDictListener {
-        void gotDictInfo( boolean success, String isoCode, String name );
+        void gotDictInfo( boolean success, ISOCode isoCode, String name );
     }
 
     public DwnldDelegate( Delegator delegator, Bundle savedInstanceState )
@@ -444,10 +445,10 @@ public class DwnldDelegate extends ListDelegateBase {
         return new File(path).getName();
     }
 
-    private static String langFromUri( Uri uri )
+    private static ISOCode langFromUri( Uri uri )
     {
         List<String> segs = uri.getPathSegments();
-        String result = segs.get( segs.size() - 2 );
+        ISOCode result = new ISOCode(segs.get( segs.size() - 2 ));
         return result;
     }
 
@@ -469,7 +470,7 @@ public class DwnldDelegate extends ListDelegateBase {
             }
             if ( null != ld ) {
                 String name = ld.m_name;
-                String lang = langFromUri( uri );
+                ISOCode lang = langFromUri( uri );
                 if ( null == name ) {
                     name = uri.toString();
                 }
@@ -478,7 +479,7 @@ public class DwnldDelegate extends ListDelegateBase {
         }
     }
 
-    public static void downloadDictInBack( Context context, String isoCode,
+    public static void downloadDictInBack( Context context, ISOCode isoCode,
                                            String dictName,
                                            DownloadFinishedListener lstnr )
     {

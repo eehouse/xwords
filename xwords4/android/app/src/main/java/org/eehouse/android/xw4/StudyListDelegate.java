@@ -38,6 +38,7 @@ import android.widget.Spinner;
 
 
 import org.eehouse.android.xw4.DlgDelegate.Action;
+import org.eehouse.android.xw4.Utils.ISOCode;
 import org.eehouse.android.xw4.jni.GameSummary;
 import org.eehouse.android.xw4.loc.LocUtils;
 
@@ -58,7 +59,7 @@ public class StudyListDelegate extends ListDelegateBase
     private Activity m_activity;
     private Spinner m_spinner;
     private LabeledSpinner m_pickView;
-    private String[] m_langCodes;
+    private ISOCode[] m_langCodes;
     private String[] m_words;
     private Set<String> m_checkeds;
     private int m_langPosition;
@@ -181,7 +182,7 @@ public class StudyListDelegate extends ListDelegateBase
     // DBUtils.StudyListListener
     //////////////////////////////////////////////////
     @Override
-    public void onWordAdded( String word, String isoCode )
+    public void onWordAdded( String word, ISOCode isoCode )
     {
         if ( isoCode.equals( m_langCodes[m_langPosition] ) ) {
             loadList();
@@ -293,14 +294,14 @@ public class StudyListDelegate extends ListDelegateBase
 
     private void loadList()
     {
-        String isoCode = m_langCodes[m_langPosition];
+        ISOCode isoCode = m_langCodes[m_langPosition];
         m_words = DBUtils.studyListWords( m_activity, isoCode );
 
         makeAdapter();
 
         String langName = DictLangCache.getLangNameForISOCode( m_activity, isoCode );
         m_origTitle = getString( R.string.studylist_title_fmt,
-                                 xlateLang( langName ) );
+                                 langName );
         setTitleBar();
     }
 
@@ -328,9 +329,8 @@ public class StudyListDelegate extends ListDelegateBase
 
             String[] myNames = new String[m_langCodes.length];
             for ( int ii = 0; ii < m_langCodes.length; ++ii ) {
-                String isoCode = m_langCodes[ii];
-                String name = DictLangCache.getLangNameForISOCode( m_activity, isoCode );
-                myNames[ii] = xlateLang( name, true );
+                ISOCode isoCode = m_langCodes[ii];
+                myNames[ii] = DictLangCache.getLangNameForISOCode( m_activity, isoCode );
                 if ( isoCode.equals( startLang ) ) {
                     startIndex = ii;
                 }
@@ -388,7 +388,7 @@ public class StudyListDelegate extends ListDelegateBase
         launchOrAlert( delegator, null, dlg );
     }
 
-    public static void launchOrAlert( Delegator delegator, String isoCode,
+    public static void launchOrAlert( Delegator delegator, ISOCode isoCode,
                                       DlgDelegate.HasDlgDelegate dlg )
     {
         String msg = null;
@@ -403,7 +403,7 @@ public class StudyListDelegate extends ListDelegateBase
         } else {
             Bundle bundle = new Bundle();
             if ( null != isoCode ) {
-                bundle.putString( START_LANG, isoCode );
+                bundle.putString( START_LANG, isoCode.toString() );
             }
 
             delegator.addFragment( StudyListFrag.newInstance( delegator ),

@@ -30,6 +30,7 @@ import org.eehouse.android.xw4.BuildConfig;
 import org.eehouse.android.xw4.Log;
 import org.eehouse.android.xw4.NetLaunchInfo;
 import org.eehouse.android.xw4.Quarantine;
+import org.eehouse.android.xw4.Utils.ISOCode;
 import org.eehouse.android.xw4.Utils;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 
@@ -275,10 +276,21 @@ public class XwJNI {
         return nli_from_stream( getJNI().m_ptrGlobals, stream );
     }
 
+    public static ISOCode lcToLocaleJ( int lc )
+    {
+        String code = lcToLocale( lc );
+        return ISOCode.newIf( code );
+    }
+
+    public static boolean haveLocaleToLc( ISOCode isoCode, int[] lc )
+    {
+        return haveLocaleToLc( isoCode.toString(), lc );
+    }
+
     public static native CommsAddrRec comms_getInitialAddr();
     public static native String comms_getUUID();
-    public static native String lcToLocale( int lc );
-    public static native boolean haveLocaleToLc( String isoCode, int[] lc );
+    private static native String lcToLocale( int lc );
+    private static native boolean haveLocaleToLc( String isoCode, int[] lc );
 
     // Game methods
     private static GamePtr initGameJNI( long rowid )

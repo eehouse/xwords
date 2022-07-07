@@ -60,6 +60,7 @@ import org.eehouse.android.xw4.NFCUtils.Wrapper;
 import org.eehouse.android.xw4.Perms23.Perm;
 import org.eehouse.android.xw4.TilePickAlert.TilePickState;
 import org.eehouse.android.xw4.Toolbar.Buttons;
+import org.eehouse.android.xw4.Utils.ISOCode;
 import org.eehouse.android.xw4.gen.PrefsWrappers;
 import org.eehouse.android.xw4.jni.CommonPrefs.TileValueType;
 import org.eehouse.android.xw4.jni.CommonPrefs;
@@ -254,7 +255,7 @@ public class BoardDelegate extends DelegateBase
                             setGotGameDict( m_mySIS.getDict );
                         } else {
                             DwnldDelegate
-                                .downloadDictInBack( m_activity, m_gi.isoCode,
+                                .downloadDictInBack( m_activity, m_gi.isoCode(),
                                                      m_mySIS.getDict,
                                                      BoardDelegate.this );
                         }
@@ -925,7 +926,7 @@ public class BoardDelegate extends DelegateBase
             cmd = JNICmd.CMD_TOGGLE_TRAY;
             break;
         case R.id.board_menu_study:
-            StudyListDelegate.launchOrAlert( getDelegator(), m_gi.isoCode, this );
+            StudyListDelegate.launchOrAlert( getDelegator(), m_gi.isoCode(), this );
             break;
         case R.id.board_menu_game_netstats:
             handleViaThread( JNICmd.CMD_NETSTATS, R.string.netstats_title );
@@ -1021,13 +1022,13 @@ public class BoardDelegate extends DelegateBase
         case BUTTON_BROWSE_ACTION:
             String curDict = m_gi.dictName( m_view.getCurPlayer() );
             View button = m_toolbar.getButtonFor( Buttons.BUTTON_BROWSE_DICT );
-            Assert.assertTrueNR( null != m_gi.isoCode );
+            Assert.assertTrueNR( null != m_gi.isoCode() );
             if ( Action.BUTTON_BROWSEALL_ACTION == action &&
                  DictsDelegate.handleDictsPopup( getDelegator(), button,
-                                                 curDict, m_gi.isoCode ) ) {
+                                                 curDict, m_gi.isoCode() ) ) {
                 // do nothing
             } else {
-                String selDict = DictsDelegate.prevSelFor( m_activity, m_gi.isoCode );
+                String selDict = DictsDelegate.prevSelFor( m_activity, m_gi.isoCode() );
                 if ( null == selDict ) {
                     selDict = curDict;
                 }
@@ -1060,7 +1061,7 @@ public class BoardDelegate extends DelegateBase
             cmd = JNICmd.CMD_TRADE;
             break;
         case LOOKUP_ACTION:
-            launchLookup( m_mySIS.words, m_gi.isoCode );
+            launchLookup( m_mySIS.words, m_gi.isoCode() );
             break;
         case DROP_MQTT_ACTION:
             dropConViaAndRestart( CommsConnType.COMMS_CONN_MQTT );
@@ -1432,7 +1433,7 @@ public class BoardDelegate extends DelegateBase
     // DwnldActivity.DownloadFinishedListener interface
     //////////////////////////////////////////////////
     @Override
-    public void downloadFinished( String lang, final String name,
+    public void downloadFinished( ISOCode isoCode, final String name,
                                   boolean success )
     {
         if ( success ) {
@@ -1762,7 +1763,7 @@ public class BoardDelegate extends DelegateBase
             post( new Runnable() {
                     @Override
                     public void run() {
-                        launchLookup( wordsToArray( words ), m_gi.isoCode );
+                        launchLookup( wordsToArray( words ), m_gi.isoCode() );
                     }
                 } );
         }
@@ -2024,7 +2025,7 @@ public class BoardDelegate extends DelegateBase
         }
 
         @Override
-        public void informNetDict( String isoCode, String oldName,
+        public void informNetDict( ISOCode isoCode, String oldName,
                                    String newName, String newSum,
                                    CurGameInfo.XWPhoniesChoice phonies )
         {

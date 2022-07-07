@@ -30,6 +30,7 @@ import java.io.Serializable;
 
 
 import org.eehouse.android.xw4.DBUtils.SentInvitesInfo;
+import org.eehouse.android.xw4.Utils.ISOCode;
 
 public class DlgDelegate {
     private static final String TAG = DlgDelegate.class.getSimpleName();
@@ -417,7 +418,7 @@ public class DlgDelegate {
         m_dlgt.show( state );
     }
 
-    public void launchLookup( String[] words, String isoCode, boolean noStudy )
+    public void launchLookup( String[] words, ISOCode isoCode, boolean noStudy )
     {
         m_dlgt.show( LookupAlert.newInstance( words, isoCode, noStudy ) );
     }

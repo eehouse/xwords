@@ -30,6 +30,7 @@ import android.database.sqlite.SQLiteException;
 
 import org.eehouse.android.xw4.jni.XwJNI;
 import org.eehouse.android.xw4.loc.LocUtils;
+import org.eehouse.android.xw4.Utils.ISOCode;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -391,13 +392,13 @@ public class DBHelper extends SQLiteOpenHelper {
             String groupBy = columns[0];
 
             // First gather all the lang codes
-            Map<Integer, String> map = new HashMap<>();
+            Map<Integer, ISOCode> map = new HashMap<>();
             Cursor cursor = db.query( table.toString(),
                                       columns, null, null, groupBy, null, null );
             int colIndex = cursor.getColumnIndex( columns[0] );
             while ( cursor.moveToNext() ) {
                 int code = cursor.getInt( colIndex );
-                String isoCode = XwJNI.lcToLocale( code );
+                ISOCode isoCode = XwJNI.lcToLocaleJ( code );
                 map.put( code, isoCode );
                 Log.d( TAG, "added %d => %s", code, isoCode );
             }

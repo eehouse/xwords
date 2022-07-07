@@ -33,12 +33,13 @@ import org.eehouse.android.xw4.BuildConfig;
 import org.eehouse.android.xw4.DBUtils;
 import org.eehouse.android.xw4.Log;
 import org.eehouse.android.xw4.R;
+import org.eehouse.android.xw4.Utils.ISOCode;
 import org.eehouse.android.xw4.Utils;
 import org.eehouse.android.xw4.XWApp;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;
-import org.eehouse.android.xw4.jni.CurGameInfo;
 import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
+import org.eehouse.android.xw4.jni.CurGameInfo;
 import org.eehouse.android.xw4.loc.LocUtils;
 
 /** Info we want to access when the game's closed that's not available
@@ -81,7 +82,7 @@ public class GameSummary implements Serializable {
     public int gameID;
     public String[] remoteDevs; // BTAddrs and phone numbers
 
-    public String isoCode;
+    public ISOCode isoCode;
     public DeviceRole serverRole;
     public int nPacketsPending;
 
@@ -96,7 +97,7 @@ public class GameSummary implements Serializable {
     public GameSummary( CurGameInfo gi )
     {
         nPlayers = gi.nPlayers;
-        isoCode = gi.isoCode;
+        isoCode = gi.isoCode();
         serverRole = gi.serverRole;
         gameID = gi.gameID;
         m_gi = gi;
@@ -127,7 +128,7 @@ public class GameSummary implements Serializable {
                     && modtime == other.modtime
                     && created == other.created
                     && gameID == other.gameID
-                    && TextUtils.equals( isoCode, other.isoCode)
+                    && ISOCode.safeEquals( isoCode, other.isoCode )
                     && nPacketsPending == other.nPacketsPending
                     && Arrays.equals( scores, other.scores )
                     && Arrays.equals( m_players, other.m_players )

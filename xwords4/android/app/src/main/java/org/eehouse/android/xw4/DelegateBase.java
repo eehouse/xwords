@@ -51,6 +51,7 @@ import org.eehouse.android.xw4.jni.GameSummary;
 import org.eehouse.android.xw4.jni.XwJNI.GamePtr;
 import org.eehouse.android.xw4.jni.XwJNI;
 import org.eehouse.android.xw4.loc.LocUtils;
+import org.eehouse.android.xw4.Utils.ISOCode;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -331,16 +332,6 @@ public abstract class DelegateBase implements DlgClickNotify,
         return LocUtils.getString( m_activity, resID, params );
     }
 
-    protected String xlateLang( String langCode )
-    {
-        return LocUtils.xlateLang( m_activity, langCode );
-    }
-
-    protected String xlateLang( String langCode, boolean caps )
-    {
-        return LocUtils.xlateLang( m_activity, langCode, caps );
-    }
-
     protected String getQuantityString( int resID, int quantity,
                                         Object... params )
     {
@@ -593,12 +584,12 @@ public abstract class DelegateBase implements DlgClickNotify,
         return m_dlgDelegate.post( runnable );
     }
 
-    protected void launchLookup( String[] words, String isoCode, boolean noStudy )
+    protected void launchLookup( String[] words, ISOCode isoCode, boolean noStudy )
     {
         m_dlgDelegate.launchLookup( words, isoCode, noStudy );
     }
 
-    protected void launchLookup( String[] words, String isoCode )
+    protected void launchLookup( String[] words, ISOCode isoCode )
     {
         boolean studyOn = XWPrefs.getStudyEnabled( m_activity );
         m_dlgDelegate.launchLookup( words, isoCode, !studyOn );

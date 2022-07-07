@@ -54,6 +54,7 @@ import org.eehouse.android.xw4.DwnldDelegate.OnGotLcDictListener;
 import org.eehouse.android.xw4.Perms23.Perm;
 import org.eehouse.android.xw4.jni.GameSummary;
 import org.eehouse.android.xw4.loc.LocUtils;
+import org.eehouse.android.xw4.Utils.ISOCode;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -82,9 +83,9 @@ public class DictsDelegate extends ListDelegateBase
     private static final String REMOTE_INFO_KEY = "REMOTE_INFO_KEY";
     private static final String SEL_DICTS_KEY = "SEL_DICTS_KEY";
 
-    protected static final String DICT_SHOWREMOTE = "do_launch";
-    protected static final String DICT_LANG_EXTRA = "use_lang";
-    protected static final String DICT_NAME_EXTRA = "use_dict";
+    private static final String DICT_SHOWREMOTE = "do_launch";
+    private static final String DICT_LANG_EXTRA = "use_lang";
+    private static final String DICT_NAME_EXTRA = "use_dict";
     protected static final String RESULT_LAST_LANG = "last_lang";
     protected static final String RESULT_LAST_DICT = "last_dict";
 
@@ -108,17 +109,17 @@ public class DictsDelegate extends ListDelegateBase
     private String m_filterLang;
     private Map<String, Uri> m_needUpdates;
     private String m_onServerStr;
-    private String m_lastLang;
+    private ISOCode m_lastLang;
     private String m_lastDict;
 
     private static class DictInfo implements Comparable, Serializable {
         public String m_name;
         public String m_localLang;  // what we display to user, i.e. translated
-        public String mISOCode;    // what needs to be in URL
+        public ISOCode mISOCode;    // what needs to be in URL
         public int m_nWords;
         public long m_nBytes;
         public String m_note;
-        public DictInfo( String name, String isoCode, String localLang,
+        public DictInfo( String name, ISOCode isoCode, String localLang,
                          int nWords, long nBytes, String note )
         {
             m_name = name;
@@ -201,7 +202,6 @@ public class DictsDelegate extends ListDelegateBase
                 int groupPos = info.m_posn;
                 String langName = m_langs[groupPos];
                 boolean expanded = ! m_closedLangs.contains( langName );
-                String locLangName = xlateLang( langName );
                 String details = null;
                 if ( 0 < info.m_numDictsInst && 0 < info.m_numDictsAvail ) {
                     details = getString( R.string.dict_lang_inst_and_avail,
@@ -214,7 +214,7 @@ public class DictsDelegate extends ListDelegateBase
                 } else {
                     Assert.failDbg();
                 }
-                String title = Utils.capitalize( locLangName ) + " " + details;
+                String title = Utils.capitalize( langName ) + " " + details;
                 result = ListGroup.make( m_context, convertView,
                                          DictsDelegate.this, groupPos, title,
                                          expanded );
@@ -292,7 +292,7 @@ public class DictsDelegate extends ListDelegateBase
             ArrayList<Object> result = new ArrayList<>();
 
             HashSet<String> locals = new HashSet<>();
-            String isoCode = DictLangCache.getLangIsoCode( m_context, langName );
+            ISOCode isoCode = DictLangCache.getLangIsoCode( m_context, langName );
             DictAndLoc[] dals = DictLangCache.getDALsHaveLang( m_context, isoCode );
             if ( null != dals ) {
                 for ( DictAndLoc dal : dals ) {
@@ -399,7 +399,6 @@ public class DictsDelegate extends ListDelegateBase
                 };
             String lang = DictLangCache.getDictLangName( m_activity,
                                                          dictName );
-            lang = xlateLang( lang );
             message = getString( R.string.set_default_message_fmt,
                                  dictName, lang );
             dialog = makeAlertBuilder()
@@ -417,7 +416,8 @@ public class DictsDelegate extends ListDelegateBase
                     @Override
                     public void onClick( DialogInterface dlg, int item ) {
                         Intent intent = getIntent();
-                        String isoCode = intent.getStringExtra( MultiService.ISO );
+                        ISOCode isoCode = ISOCode
+                            .newIf( intent.getStringExtra( MultiService.ISO ) );
                         String name = intent.getStringExtra( MultiService.DICT );
                         m_launchedForMissing = true;
                         DwnldDelegate
@@ -478,7 +478,7 @@ public class DictsDelegate extends ListDelegateBase
                     m_showRemote = true;
                     m_checkbox.setVisibility( View.GONE );
 
-                    String isoCode = args.getString( DICT_LANG_EXTRA );
+                    ISOCode isoCode = ISOCode.newIf( args.getString( DICT_LANG_EXTRA ) );
                     if ( null != isoCode ) {
                         m_filterLang = DictLangCache.getLangNameForISOCode( m_activity, isoCode );
                         m_closedLangs.remove( m_filterLang );
@@ -561,7 +561,7 @@ public class DictsDelegate extends ListDelegateBase
         } else {
             if ( null != m_lastLang && null != m_lastDict ) {
                 Intent intent = new Intent();
-                intent.putExtra( RESULT_LAST_LANG, m_lastLang );
+                intent.putExtra( RESULT_LAST_LANG, m_lastLang.toString() );
                 intent.putExtra( RESULT_LAST_DICT, m_lastDict );
                 setResult( Activity.RESULT_OK, intent );
             } else {
@@ -723,9 +723,9 @@ public class DictsDelegate extends ListDelegateBase
 
     private void setDefault( String name, int keyId, int otherKey )
     {
-        String isoCode = DictLangCache.getDictISOCode( m_activity, name );
+        ISOCode isoCode = DictLangCache.getDictISOCode( m_activity, name );
         String curLangName = XWPrefs.getPrefsString( m_activity, R.string.key_default_language );
-        String curISOCode = DictLangCache.getLangIsoCode( m_activity, curLangName );
+        ISOCode curISOCode = DictLangCache.getLangIsoCode( m_activity, curLangName );
         boolean changeLang = !isoCode.equals( curISOCode );
 
         SharedPreferences sp
@@ -809,7 +809,7 @@ public class DictsDelegate extends ListDelegateBase
         // a different same-lang wordlist to open a game.
 
         class LangDelData {
-            public LangDelData( String isoCode ) {
+            public LangDelData( ISOCode isoCode ) {
                 delDicts = new HashSet<>();
                 langName = DictLangCache.getLangNameForISOCode( m_activity, isoCode );
                 nDicts = DictLangCache.getDALsHaveLang( m_activity, isoCode ).length;
@@ -828,10 +828,10 @@ public class DictsDelegate extends ListDelegateBase
             int nDicts;
         }
 
-        Map<String, LangDelData> dels = new HashMap<>();
-        Set<String> skipLangs = new HashSet<>();
+        Map<ISOCode, LangDelData> dels = new HashMap<>();
+        Set<ISOCode> skipLangs = new HashSet<>();
         for ( String dict : m_selDicts.keySet() ) {
-            String isoCode = DictLangCache.getDictISOCode( m_activity, dict );
+            ISOCode isoCode = DictLangCache.getDictISOCode( m_activity, dict );
             if ( skipLangs.contains( isoCode ) ) {
                 continue;
             }
@@ -854,9 +854,8 @@ public class DictsDelegate extends ListDelegateBase
             int nLeftAfter = data.nDicts - data.delDicts.size();
 
             if ( 0 == nLeftAfter ) { // last in this language?
-                String locName = xlateLang( data.langName );
                 String newMsg = getString( R.string.confirm_deleteonly_dicts_fmt,
-                                           data.dictsStr(), locName );
+                                           data.dictsStr(), data.langName );
                 msg += "\n\n" + newMsg;
             }
         }
@@ -952,7 +951,7 @@ public class DictsDelegate extends ListDelegateBase
         DictLangCache.inval( m_activity, dict, loc, false );
     }
 
-    private void startDownload( String isoCode, String name )
+    private void startDownload( ISOCode isoCode, String name )
     {
         DwnldDelegate.downloadDictInBack( m_activity, isoCode, name, this );
     }
@@ -1060,7 +1059,7 @@ public class DictsDelegate extends ListDelegateBase
     }
 
     public static void downloadForResult( Delegator delegator, RequestCode requestCode,
-                                          String isoCode )
+                                          ISOCode isoCode )
     {
         downloadForResult( delegator, requestCode, isoCode, null );
     }
@@ -1070,7 +1069,7 @@ public class DictsDelegate extends ListDelegateBase
         downloadForResult( delegator, requestCode, null, null );
     }
 
-    public static void downloadDefaultDict( Context context, String isoCode,
+    public static void downloadDefaultDict( Context context, ISOCode isoCode,
                                             OnGotLcDictListener lstnr )
     {
         new GetDefaultDictTask( context, isoCode, lstnr ).execute();
@@ -1083,7 +1082,7 @@ public class DictsDelegate extends ListDelegateBase
     }
 
     private static void doPopup( final Delegator dlgtor, View button,
-                                 String curDict, final String isoCode ) {
+                                 String curDict, final ISOCode isoCode ) {
 
         final HashMap<MenuItem, DictAndLoc> itemData
             = new HashMap<>();
@@ -1129,7 +1128,7 @@ public class DictsDelegate extends ListDelegateBase
     }
 
     public static boolean handleDictsPopup( Delegator delegator, View button,
-                                            String curDict, String isoCode )
+                                            String curDict, ISOCode isoCode )
     {
         int nDicts = DictLangCache.getLangCount( delegator.getActivity(), isoCode );
         boolean canHandle = 1 < nDicts;
@@ -1139,12 +1138,12 @@ public class DictsDelegate extends ListDelegateBase
         return canHandle;
     }
 
-    private static String keyForLang( String isoCode )
+    private static String keyForLang( ISOCode isoCode )
     {
         return String.format( "%s:lang=%s", TAG, isoCode );
     }
 
-    static String prevSelFor( Context context, String isoCode )
+    static String prevSelFor( Context context, ISOCode isoCode )
     {
         String key = keyForLang( isoCode );
         return DBUtils.getStringFor( context, key );
@@ -1197,11 +1196,11 @@ public class DictsDelegate extends ListDelegateBase
     // DwnldActivity.DownloadFinishedListener interface
     //////////////////////////////////////////////////////////////////////
     @Override
-    public void downloadFinished( String lang, final String name,
+    public void downloadFinished( ISOCode isoCode, final String name,
                                   final boolean success )
     {
         if ( success && m_showRemote ) {
-            m_lastLang = lang;
+            m_lastLang = isoCode;
             m_lastDict = name;
         }
 
@@ -1261,14 +1260,14 @@ public class DictsDelegate extends ListDelegateBase
 
     private static class GetDefaultDictTask extends AsyncTask<Void, Void, String> {
         private Context m_context;
-        private String m_lc;
+        private ISOCode m_lc;
         private String m_langName;
         private OnGotLcDictListener m_lstnr;
 
-        public GetDefaultDictTask( Context context, String lc,
+        public GetDefaultDictTask( Context context, ISOCode isoCode,
                                    OnGotLcDictListener lnr ) {
             m_context = context;
-            m_lc = lc;
+            m_lc = isoCode;
             m_lstnr = lnr;
         }
 
@@ -1292,7 +1291,7 @@ public class DictsDelegate extends ListDelegateBase
                         int nLangs = langs.length();
                         for ( int ii = 0; ii < nLangs; ++ii ) {
                             JSONObject langObj = langs.getJSONObject( ii );
-                            String langCode = langObj.getString( "lc" );
+                            ISOCode langCode = ISOCode.newIf( langObj.getString( "lc" ) );
                             if ( ! langCode.equals( m_lc ) ) {
                                 continue;
                             }
@@ -1344,7 +1343,7 @@ public class DictsDelegate extends ListDelegateBase
         @Override
         protected void onPostExecute( String name )
         {
-            m_lstnr.gotDictInfo( null != name, m_langName, name );
+            m_lstnr.gotDictInfo( null != name, m_lc, name );
         }
     }
 
@@ -1442,7 +1441,7 @@ public class DictsDelegate extends ListDelegateBase
                     m_remoteInfo = new HashMap<>();
                     for ( int ii = 0; !isCancelled() && ii < nLangs; ++ii ) {
                         JSONObject langObj = langs.getJSONObject( ii );
-                        String isoCode = langObj.optString( "lc", null );
+                        ISOCode isoCode = ISOCode.newIf( langObj.optString( "lc", null ) );
                         String urlLangName = langObj.getString( "lang" );
                         String localLangName = null;
                         if ( null != isoCode ) {
@@ -1483,8 +1482,7 @@ public class DictsDelegate extends ListDelegateBase
 
                             if ( !m_quickFetchMode ) {
                                 // Check if we have it and it needs an update
-                                if ( DictLangCache.haveDict( m_activity,
-                                                             localLangName, name )){
+                                if ( DictLangCache.haveDict( m_activity, isoCode, name )){
                                     boolean matches = true;
                                     JSONArray sums = dict.optJSONArray("md5sums");
                                     if ( null != sums ) {
@@ -1538,7 +1536,7 @@ public class DictsDelegate extends ListDelegateBase
         }
     } // class FetchListTask
 
-    private static String listDictsProc( String lc )
+    private static String listDictsProc( ISOCode lc )
     {
         String proc = String.format( "listDicts?vc=%d",
                                      BuildConfig.VERSION_CODE );
@@ -1555,12 +1553,12 @@ public class DictsDelegate extends ListDelegateBase
 
     public static void downloadForResult( Delegator delegator,
                                           RequestCode requestCode,
-                                          String isoCode, String name )
+                                          ISOCode isoCode, String name )
     {
         Bundle bundle = new Bundle();
         bundle.putBoolean( DICT_SHOWREMOTE, true );
         if ( null != isoCode ) {
-            bundle.putString( DICT_LANG_EXTRA, isoCode );
+            bundle.putString( DICT_LANG_EXTRA, isoCode.toString() );
         }
         if ( null != name ) {
             Assert.assertTrue( null != isoCode );

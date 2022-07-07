@@ -468,7 +468,7 @@ makeGI( MPFORMAL JNIEnv* env, jobject jgi )
 
     getString( env, jgi, "dictName", AANDS(buf) );
     gi->dictName = copyString( mpool, buf );
-    getString( env, jgi, "isoCode", AANDS(buf) );
+    getString( env, jgi, "isoCodeStr", AANDS(buf) );
     XP_STRNCPY( gi->isoCode, buf, VSIZE(gi->isoCode) );
 
     XP_ASSERT( gi->nPlayers <= MAX_NUM_PLAYERS );
@@ -508,7 +508,7 @@ setJGI( JNIEnv* env, jobject jgi, const CurGameInfo* gi )
     setBools( env, jgi, (void*)gi, AANDS(gi_bools) );
 
     setString( env, jgi, "dictName", gi->dictName );
-    setString( env, jgi, "isoCode", gi->isoCode );
+    setString( env, jgi, "isoCodeStr", gi->isoCode );
 
     intToJenumField( env, jgi, gi->phoniesAction, "phoniesAction",
                      PKG_PATH("jni/CurGameInfo$XWPhoniesChoice") );
@@ -1163,7 +1163,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1getInfo
         jinfo = makeObjectEmptyConst( env, PKG_PATH("jni/DictInfo") );
         setInt( env, jinfo, "wordCount", dict_getWordCount( dict, env ) );
         setString( env, jinfo, "md5Sum", dict_getMd5Sum( dict ) );
-        setString( env, jinfo, "isoCode", dict_getISOCode( dict ) );
+        setString( env, jinfo, "isoCodeStr", dict_getISOCode( dict ) );
         setString( env, jinfo, "langName", dict_getLangName( dict ) );
     }
 

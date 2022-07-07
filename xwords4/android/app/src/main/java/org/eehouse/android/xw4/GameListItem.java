@@ -276,7 +276,6 @@ public class GameListItem extends LinearLayout
             case R.string.game_summary_field_language:
                 value =
                     DictLangCache.getLangNameForISOCode( m_context, m_summary.isoCode );
-                value = LocUtils.xlateLang( m_context, value, true );
                 break;
             case R.string.game_summary_field_opponents:
                 value = m_summary.playerNames( m_context );

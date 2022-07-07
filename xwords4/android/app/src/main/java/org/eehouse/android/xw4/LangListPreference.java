@@ -27,6 +27,7 @@ import androidx.preference.Preference;
 import androidx.preference.PreferenceManager;
 
 import org.eehouse.android.xw4.loc.LocUtils;
+import org.eehouse.android.xw4.Utils.ISOCode;
 
 public class LangListPreference extends XWListPreference
     implements Preference.OnPreferenceChangeListener {
@@ -39,12 +40,6 @@ public class LangListPreference extends XWListPreference
         super( context, attrs );
         mContext = context;
         mKey = context.getString( R.string.key_default_language );
-    }
-
-    @Override
-    public void setSummary( CharSequence summary )
-    {
-        super.setSummary( LocUtils.xlateLang( mContext, summary.toString(), true ) );
     }
 
     @Override
@@ -80,24 +75,24 @@ public class LangListPreference extends XWListPreference
         for ( int ii = 0; ii < langs.length; ++ii ) {
             String lang = langs[ii];
             haveDictForLang = haveDictForLang || lang.equals( curLang );
-            langsLoc[ii] = LocUtils.xlateLang( mContext, lang, true );
+            langsLoc[ii] = lang;
         }
 
         if ( !haveDictForLang ) {
-            curLang = DictLangCache.getLangNameForISOCode( mContext, "en" ); // English, unlocalized
+            curLang = DictLangCache.getLangNameForISOCode( mContext, Utils.ISO_EN );
             setValue( curLang );
         }
         forceDictsMatch( curLang );
 
         setEntries( langsLoc );
-        setDefaultValue( LocUtils.xlateLang( mContext, curLang, true ) );
+        setDefaultValue( curLang );
         setEntryValues( langs );
     }
 
     private void forceDictsMatch( String newLang )
     {
         if ( null != newLang ) {
-            String isoCode = DictLangCache.getLangIsoCode( mContext, newLang );
+            ISOCode isoCode = DictLangCache.getLangIsoCode( mContext, newLang );
             int[] keyIds = { R.string.key_default_dict,
                              R.string.key_default_robodict };
             for ( int id : keyIds ) {

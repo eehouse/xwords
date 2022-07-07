@@ -31,6 +31,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.Set;
 
 import org.eehouse.android.xw4.loc.LocUtils;
+import org.eehouse.android.xw4.Utils.ISOCode;
 
 public class MultiService {
     private static final String TAG = MultiService.class.getSimpleName();
@@ -130,7 +131,7 @@ public class MultiService {
     {
         Intent intent = new Intent( context, MainActivity.class ); // PENDING TEST THIS!!!
         intent.setAction( ACTION_FETCH_DICT );
-        intent.putExtra( ISO, nli.isoCode );
+        intent.putExtra( ISO, nli.isoCode.toString() );
         intent.putExtra( DICT, nli.dict );
         intent.putExtra( OWNER, owner.ordinal() );
         intent.putExtra( NLI_DATA, nli.toString() );
@@ -168,14 +169,13 @@ public class MultiService {
                                             OnClickListener onDecline )
     {
         int lang = intent.getIntExtra( LANG, -1 );
-        String isoCode = intent.getStringExtra( ISO );
-        String langStr = DictLangCache.getLangNameForISOCode( context, isoCode );
+        ISOCode isoCode = ISOCode.newIf( intent.getStringExtra( ISO ) );
+        String langName = DictLangCache.getLangNameForISOCode( context, isoCode );
         String dict = intent.getStringExtra( DICT );
         String inviter = intent.getStringExtra( INVITER );
         int msgID = (null == inviter) ? R.string.invite_dict_missing_body_noname_fmt
             : R.string.invite_dict_missing_body_fmt;
-        String msg = LocUtils.getString( context, msgID, inviter, dict,
-                                         LocUtils.xlateLang( context, langStr));
+        String msg = LocUtils.getString( context, msgID, inviter, dict, langName );
 
         return LocUtils.makeAlertBuilder( context )
             .setTitle( R.string.invite_dict_missing_title )
@@ -199,7 +199,7 @@ public class MultiService {
     {
         boolean downloaded = isMissingDictIntent( intent );
         if ( downloaded ) {
-            String isoCode = intent.getStringExtra( ISO );
+            ISOCode isoCode = ISOCode.newIf( intent.getStringExtra( ISO ) );
             String dict = intent.getStringExtra( DICT );
             downloaded = DictLangCache.haveDict( context, isoCode, dict );
             if ( downloaded ) {

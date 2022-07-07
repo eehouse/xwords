@@ -34,6 +34,7 @@ import java.util.Iterator;
 import org.eehouse.android.xw4.Assert;
 import org.eehouse.android.xw4.Log;
 import org.eehouse.android.xw4.NetUtils;
+import org.eehouse.android.xw4.Utils.ISOCode;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;
 import org.eehouse.android.xw4.jni.JNIThread.JNICmd;
 
@@ -217,7 +218,7 @@ public class UtilCtxtImpl implements UtilCtxt {
     }
 
     @Override
-    public void informNetDict( String isoCode, String oldName,
+    public void informNetDict( ISOCode isoCode, String oldName,
                                String newName, String newSum,
                                CurGameInfo.XWPhoniesChoice phonies )
     {

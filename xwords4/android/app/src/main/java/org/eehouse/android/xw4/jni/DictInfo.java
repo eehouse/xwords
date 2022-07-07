@@ -20,7 +20,9 @@
 
 package org.eehouse.android.xw4.jni;
 
+import org.eehouse.android.xw4.Assert;
 import org.eehouse.android.xw4.BuildConfig;
+import org.eehouse.android.xw4.Utils.ISOCode;
 
 public class DictInfo {
     // set in java code
@@ -29,9 +31,14 @@ public class DictInfo {
 
     // set in jni code
     public int wordCount;
-    public String isoCode;
+    public String isoCodeStr;    // public only for access from JNI; use isoCode() from java
     public String langName;
     public String md5Sum;       // internal (skipping header?)
+
+    public ISOCode isoCode()
+    {
+        return ISOCode.newIf( isoCodeStr );
+    }
 
     @Override
     public String toString()
@@ -39,7 +46,7 @@ public class DictInfo {
         if ( BuildConfig.NON_RELEASE ) {
             return new StringBuilder("{")
                 .append("name: ").append(name)
-                .append(", isoCode: ").append(isoCode)
+                .append(", isoCode: ").append(isoCodeStr)
                 .append(", langName: ").append(langName)
                 .append(", md5Sum: ").append(md5Sum)
                 .append(", fullSum: ").append(fullSum)

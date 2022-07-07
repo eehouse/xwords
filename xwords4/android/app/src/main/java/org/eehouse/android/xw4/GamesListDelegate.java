@@ -50,6 +50,7 @@ import android.widget.TextView;
 import com.jakewharton.processphoenix.ProcessPhoenix;
 
 import org.eehouse.android.xw4.DBUtils.GameChangeType;
+import org.eehouse.android.xw4.Utils.ISOCode;
 import org.eehouse.android.xw4.DBUtils.GameGroupInfo;
 import org.eehouse.android.xw4.DBUtils.SentInvitesInfo;
 import org.eehouse.android.xw4.DlgDelegate.Action;
@@ -576,7 +577,6 @@ public class GamesListDelegate extends ListDelegateBase
     private String m_missingDict;
     private long m_missingDictRowId = ROWID_NOTFOUND;
     private int m_missingDictMenuId;
-    private int m_missingDictLang;
     private String m_nameField;
     private NetLaunchInfo m_netLaunchInfo;
     private boolean m_menuPrepared;
@@ -608,7 +608,7 @@ public class GamesListDelegate extends ListDelegateBase
         case WARN_NODICT_SUBST: {
             final long rowid = (Long)params[0];
             final String missingDictName = (String)params[1];
-            final String missingDictLang = (String)params[2];
+            final ISOCode missingDictLang = (ISOCode)params[2];
 
             lstnr = new OnClickListener() {
                     @Override
@@ -631,7 +631,7 @@ public class GamesListDelegate extends ListDelegateBase
             String message;
             String langName =
                 DictLangCache.getLangNameForISOCode( m_activity, missingDictLang );
-            String locLang = xlateLang( langName );
+            String locLang = langName;
             String gameName = GameUtils.getName( m_activity, rowid );
             if ( DlgID.WARN_NODICT_GENERIC == dlgID ) {
                 message = getString( R.string.no_dict_fmt, gameName, locLang );
@@ -675,7 +675,7 @@ public class GamesListDelegate extends ListDelegateBase
         case SHOW_SUBST: {
             final long rowid = (Long)params[0];
             final String missingDict = (String)params[1];
-            final String isoCode = (String)params[2];
+            final ISOCode isoCode = (ISOCode)params[2];
 
             final String[] sameLangDicts =
                 DictLangCache.getHaveLangCounts( m_activity, isoCode );
@@ -1494,16 +1494,16 @@ public class GamesListDelegate extends ListDelegateBase
             clearSelections();
             break;
         case DWNLD_LOC_DICT:
-            String lang = (String)params[0];
+            ISOCode isoCode = (ISOCode)params[0];
             String name = (String)params[1];
             DownloadFinishedListener lstnr = new DownloadFinishedListener() {
                     @Override
-                    public void downloadFinished( String lang, String name, boolean success )
+                    public void downloadFinished( ISOCode isoCode, String name, boolean success )
                     {
                         if ( success ) {
                             XWPrefs.setPrefsString( m_activity,
                                                     R.string.key_default_language,
-                                                    lang );
+                                                    isoCode.toString() );
                             name = DictUtils.removeDictExtn( name );
                             int[] ids = { R.string.key_default_dict,
                                           R.string.key_default_robodict };
@@ -1517,7 +1517,7 @@ public class GamesListDelegate extends ListDelegateBase
                         }
                     }
                 };
-            DwnldDelegate.downloadDictInBack( m_activity, lang, name, lstnr );
+            DwnldDelegate.downloadDictInBack( m_activity, isoCode, name, lstnr );
             break;
         case NEW_GAME_DFLT_NAME:
             m_newGameParams = params;
@@ -2056,7 +2056,7 @@ public class GamesListDelegate extends ListDelegateBase
     // DwnldActivity.DownloadFinishedListener interface
     //////////////////////////////////////////////////////////////////////
     @Override
-    public void downloadFinished( String lang, String name,
+    public void downloadFinished( ISOCode isoCode, String name,
                                   final boolean success )
     {
         runWhenActive( new Runnable() {
@@ -2388,7 +2388,7 @@ public class GamesListDelegate extends ListDelegateBase
     private boolean checkWarnNoDict( long rowid, int forMenu )
     {
         String[][] missingNames = new String[1][];
-        String[] missingLang = { "en" };
+        ISOCode[] missingLang = { Utils.ISO_EN };
         boolean hasDicts;
         try {
             hasDicts = GameUtils.gameDictsHere( m_activity, rowid, missingNames,
@@ -2399,7 +2399,7 @@ public class GamesListDelegate extends ListDelegateBase
 
         if ( !hasDicts ) {
             String missingDictName = null;
-            String missingDictLang = missingLang[0];
+            ISOCode missingDictLang = missingLang[0];
             if ( 0 < missingNames[0].length ) {
                 missingDictName = missingNames[0][0];
             }
@@ -2484,7 +2484,7 @@ public class GamesListDelegate extends ListDelegateBase
             DwnldDelegate.DownloadFinishedListener dfl =
                 new DwnldDelegate.DownloadFinishedListener() {
                     @Override
-                    public void downloadFinished( String ignore,
+                    public void downloadFinished( ISOCode ignore,
                                                   String name,
                                                   boolean success ) {
                         int resid = success ? R.string.byod_success
@@ -2687,7 +2687,7 @@ public class GamesListDelegate extends ListDelegateBase
                 String phone = extras.getString( REMATCH_PHONE_EXTRA );
                 String p2pMacAddress = extras.getString( REMATCH_P2PADDR_EXTRA );
                 String dict = extras.getString( REMATCH_DICT_EXTRA );
-                String isoCode = extras.getString( REMATCH_LANG_EXTRA );
+                ISOCode isoCode = ISOCode.newIf( extras.getString( REMATCH_LANG_EXTRA ) );
                 String mqttDevID = extras.getString( GameSummary.EXTRA_REMATCH_MQTT );
                 String json = extras.getString( REMATCH_PREFS_EXTRA );
 
@@ -2748,32 +2748,32 @@ public class GamesListDelegate extends ListDelegateBase
                                         false ) ) {
             m_haveShownGetDict = true;
 
-            String isoCode = LocUtils.getCurLangCode( m_activity );
+            ISOCode isoCode = LocUtils.getCurLangCode( m_activity );
             if ( !isoCode.equals("en") ) {
                 String[] names = DictLangCache.getHaveLang( m_activity, isoCode );
                 if ( 0 == names.length ) {
 
                     OnGotLcDictListener lstnr = new OnGotLcDictListener() {
                             @Override
-                            public void gotDictInfo( boolean success, String lang,
+                            public void gotDictInfo( boolean success, ISOCode isoCode,
                                                      String name ) {
                                 stopProgress();
                                 if ( success ) {
+                                    String langName = DictLangCache
+                                        .getLangNameForISOCode( m_activity, isoCode );
                                     String msg =
-                                        getString( R.string.confirm_get_locdict_fmt,
-                                                   xlateLang( lang ) );
+                                        getString( R.string.confirm_get_locdict_fmt, langName );
                                     makeConfirmThenBuilder( msg, Action.DWNLD_LOC_DICT )
                                         .setPosButton( R.string.button_download )
                                         .setNegButton( R.string.button_no )
                                         .setNAKey( R.string.key_got_langdict )
-                                        .setParams( lang, name )
+                                        .setParams( isoCode, name )
                                         .show();
                                 }
                             }
                         };
 
-                    String langName = DictLangCache.getLangNameForISOCode( m_activity, isoCode );
-                    String locLang = xlateLang( langName );
+                    String locLang = DictLangCache.getLangNameForISOCode( m_activity, isoCode );
                     String msg = getString( R.string.checking_for_fmt, locLang );
                     startProgress( R.string.checking_title, msg );
                     DictsDelegate.downloadDefaultDict( m_activity, isoCode, lstnr );
@@ -3196,7 +3196,7 @@ public class GamesListDelegate extends ListDelegateBase
             .putExtra( REMATCH_GROUPID_EXTRA, groupID )
             .putExtra( REMATCH_DICT_EXTRA, gi.dictName )
             .putExtra( REMATCH_IS_SOLO, isSolo )
-            .putExtra( REMATCH_LANG_EXTRA, gi.isoCode )
+            .putExtra( REMATCH_LANG_EXTRA, gi.isoCode().toString() )
             .putExtra( REMATCH_PREFS_EXTRA, gi.getJSONData() )
             .putExtra( REMATCH_NEWNAME_EXTRA, newName );
 

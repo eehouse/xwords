@@ -23,14 +23,14 @@ import android.app.Activity;
 import android.app.Dialog;
 import android.os.Bundle;
 
-
+import org.eehouse.android.xw4.Utils.ISOCode;
 import org.eehouse.android.xw4.loc.LocUtils;
 
 public class LookupAlert extends XWDialogFragment {
     private static final String TAG = LookupAlert.class.getSimpleName();
     private LookupAlertView m_view;
 
-    public static LookupAlert newInstance( String[] words, String isoCode, boolean noStudy )
+    public static LookupAlert newInstance( String[] words, ISOCode isoCode, boolean noStudy )
     {
         LookupAlert result = new LookupAlert();
         Bundle bundle = LookupAlertView.makeParams( words, isoCode, noStudy );

@@ -26,6 +26,7 @@ import android.util.AttributeSet;
 import java.util.ArrayList;
 
 import org.eehouse.android.xw4.loc.LocUtils;
+import org.eehouse.android.xw4.Utils.ISOCode;
 
 public class DictListPreference extends XWListPreference {
 
@@ -50,7 +51,7 @@ public class DictListPreference extends XWListPreference {
         if ( null == curLang ) {
             curLang = LocUtils.getString( context, R.string.lang_name_english );
         }
-        String isoCode = DictLangCache.getLangIsoCode( context, curLang );
+        ISOCode isoCode = DictLangCache.getLangIsoCode( context, curLang );
 
         DictUtils.DictAndLoc[] dals = DictUtils.dictList( context  );
         ArrayList<String> dictEntries = new ArrayList<>();

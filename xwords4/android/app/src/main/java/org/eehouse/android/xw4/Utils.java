@@ -45,6 +45,7 @@ import android.os.Looper;
 import android.provider.ContactsContract.PhoneLookup;
 import android.telephony.PhoneNumberUtils;
 import android.telephony.TelephonyManager;
+import android.text.TextUtils;
 import android.util.Base64;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -639,16 +640,16 @@ public class Utils {
     public static Uri makeDictUriFromName( Context context,
                                            String langName, String dictName )
     {
-        String isoCode = DictLangCache.getLangIsoCode( context, langName );
+        ISOCode isoCode = DictLangCache.getLangIsoCode( context, langName );
         return makeDictUriFromCode( context, isoCode, dictName );
     }
 
-    public static Uri makeDictUriFromCode( Context context, String isoCode, String name )
+    public static Uri makeDictUriFromCode( Context context, ISOCode isoCode, String name )
     {
         String dictUrl = CommonPrefs.getDefaultDictURL( context );
         Uri.Builder builder = Uri.parse( dictUrl ).buildUpon();
         if ( null != isoCode ) {
-            builder.appendPath( isoCode );
+            builder.appendPath( isoCode.toString() );
         }
         if ( null != name ) {
             Assert.assertNotNull( isoCode );
@@ -889,4 +890,55 @@ public class Utils {
         @Override
         public void onNothingSelected(AdapterView<?> parentView) {}
     }
+
+    // Let's get some type safety between language name and iso code.
+    public static class ISOCode implements Serializable {
+        final String mISOCode;
+        public ISOCode( String code )
+        {
+            // Log.d( TAG, "ISOCode(%s)", code );
+            Assert.assertTrueNR( 0 < code.length() );
+            Assert.assertTrueNR( 8 > code.length() );
+            mISOCode = code;
+        }
+
+        public static ISOCode newIf( String code )
+        {
+            ISOCode result = null;
+            if ( !TextUtils.isEmpty( code ) ) {
+                result = new ISOCode( code );
+            }
+            // Log.d( TAG, "newIf(%s) => %s", code, result );
+            return result;
+        }
+
+        public static boolean safeEquals( ISOCode ic1, ISOCode ic2 )
+        {
+            boolean result;
+            if ( ic1 == ic2 ) {
+                result = true;
+            } else if ( null == ic1 || null == ic2 ) {
+                result = false;
+            } else {
+                result = TextUtils.equals( ic1.mISOCode, ic2.mISOCode );
+            }
+            return result;
+        }
+
+        @Override
+        public String toString() { return mISOCode; }
+
+        @Override
+        public boolean equals( Object other )
+        {
+            return null != other
+                && other instanceof ISOCode
+                && ((ISOCode)other).mISOCode.equals(mISOCode);
+        }
+
+        @Override
+        public int hashCode() { return mISOCode.hashCode(); }
+    }
+
+    public static final ISOCode ISO_EN = new ISOCode( "en" );
 }

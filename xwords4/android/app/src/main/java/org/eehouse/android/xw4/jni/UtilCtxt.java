@@ -20,6 +20,7 @@
 
 package org.eehouse.android.xw4.jni;
 
+import org.eehouse.android.xw4.Utils.ISOCode;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;
 
 public interface UtilCtxt {
@@ -104,7 +105,7 @@ public interface UtilCtxt {
     void informMove( int turn, String expl, String words );
     void informUndo();
 
-    void informNetDict( String isoCode, String oldName, String newName,
+    void informNetDict( ISOCode isoCode, String oldName, String newName,
                         String newSum, CurGameInfo.XWPhoniesChoice phonies );
 
     void informMissing( boolean isServer, CommsConnTypeSet connTypes,

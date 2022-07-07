@@ -270,7 +270,8 @@ and_util_informNetDict( XW_UtilCtxt* uc, XWEnv xwe, const XP_UCHAR* isoCode,
 
 const DictionaryCtxt*
 and_util_getDict( XW_UtilCtxt* uc, XWEnv xwe,
-                  const XP_UCHAR* isoCode, const XP_UCHAR* dictName )
+                  const XP_UCHAR* XP_UNUSED_DBG(isoCode),
+                  const XP_UCHAR* dictName )
 {
     XP_LOGFF( "(isoCode: %s, name: %s)", isoCode, dictName );
     JNIEnv* env = xwe;
@@ -281,14 +282,13 @@ and_util_getDict( XW_UtilCtxt* uc, XWEnv xwe,
         dmgr_get( dictMgr, xwe, dictName );
     if ( !dict ) {
         jstring jname = (*env)->NewStringUTF( env, dictName );
-        jstring jISOCode = (*env)->NewStringUTF( env, isoCode );
 
         jobjectArray jstrs = makeStringArray( env, 1, NULL );
         jobjectArray jbytes = makeByteArrayArray( env, 1 );
 
         DUTIL_CBK_HEADER( "getDictPath",
-                          "(Ljava/lang/String;Ljava/lang/String;[Ljava/lang/String;[[B)V" );
-        (*env)->CallVoidMethod( env, dutil->jdutil, mid, jISOCode, jname, jstrs, jbytes );
+                          "(Ljava/lang/String;[Ljava/lang/String;[[B)V" );
+        (*env)->CallVoidMethod( env, dutil->jdutil, mid, jname, jstrs, jbytes );
         DUTIL_CBK_TAIL();
 
         jstring jpath = (*env)->GetObjectArrayElement( env, jstrs, 0 );
@@ -298,9 +298,8 @@ and_util_getDict( XW_UtilCtxt* uc, XWEnv xwe,
                          TI_IF(&globalState->ti)
                          dictMgr, ((AndDUtil*)duc)->jniutil,
                          jname, jdata, jpath, NULL, false );
-        deleteLocalRefs( env, jname, jstrs, jbytes, jdata, jpath, jISOCode, DELETE_NO_REF );
+        deleteLocalRefs( env, jname, jstrs, jbytes, jdata, jpath, DELETE_NO_REF );
     }
-    LOG_RETURNF( "%p", dict );
     return dict;
 }
 
