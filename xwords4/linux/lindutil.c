@@ -102,7 +102,7 @@ linux_dutil_onInviteReceived( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe),
 static void
 linux_dutil_onMessageReceived( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe),
                                XP_U32 gameID, const CommsAddrRec* from,
-                               XP_U8* buf, XP_U16 len )
+                               const XP_U8* buf, XP_U16 len )
 {
     XP_LOGFF( "(gameID=%d)", gameID );
     LaunchParams* params = (LaunchParams*)duc->closure;

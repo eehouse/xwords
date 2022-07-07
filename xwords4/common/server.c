@@ -2430,8 +2430,8 @@ dupe_trayAllowsMoves( ServerCtxt* server, XWEnv xwe, XP_U16 turn,
 {
     ModelCtxt* model = server->vol.model;
     XP_U16 nInTray = model_getNumTilesInTray( model, turn );
-    XP_LOGF( "%s(nTiles=%d): nInTray: %d", __func__, nTiles, nInTray );
-    XP_ASSERT( nInTray + nTiles <= MAX_TRAY_TILES ); /* fired! */
+    XP_LOGFF( "(nTiles=%d): nInTray: %d", nTiles, nInTray );
+    XP_ASSERT( nInTray + nTiles <= MAX_TRAY_TILES ); /* fired again! */
     Tile tmpTiles[MAX_TRAY_TILES];
     const TrayTileSet* tray = model_getPlayerTiles( model, turn );
     XP_MEMCPY( tmpTiles, &tray->tiles[0], nInTray * sizeof(tmpTiles[0]) );
@@ -2457,9 +2457,9 @@ dupe_trayAllowsMoves( ServerCtxt* server, XWEnv xwe, XP_U16 turn,
         && canMove;
 
     if ( result ) {
-        XP_LOGF( "%s(): first move found has score of %d", __func__, score );
+        XP_LOGFF( "first move found has score of %d", score );
     } else {
-        XP_LOGF( "%s(): no moves found for tray!!!", __func__ );
+        XP_LOGFF( "no moves found for tray!!!" );
     }
 
     if ( !!tmpEngine ) {
