@@ -9,7 +9,6 @@
     <string name="list_item_rename">पुनर्नामित करा …</string>
     <string name="list_item_config">गेम सेटिंग्ज…</string>
     <string name="board_menu_file_about">क्रॉसवॉर्ड्स बद्दल…</string>
-    <string name="msgs_progress">चाली इत्यादींसाठी रिले तपासत आहे…</string>
     <string name="menu_prefs">अ‍ॅप सेटिंग्ज…</string>
     <string name="gamel_menu_dicts">शब्द सूची …</string>
     <string name="button_reset">रीसेट करा</string>
@@ -21,7 +20,6 @@
     <string name="gameOver">खेळ संपला एसडीडीएसएफ</string>
     <string name="summary_invites_out_fmt">खेळाडूंना खोली \"%1$s\" मध्ये आमंत्रित केले</string>
     <string name="summary_invites_out">खेळाडूंना आमंत्रित केले</string>
-    <string name="summary_relay_conn_fmt">खोली \"%1$s\" मध्ये खेळला गेलेला गेम</string>
     <string name="summary_relay_conf_fmt">\"%1$s\" खोलीसाठी कॉन्फिगर केलेले</string>
     <string name="missing_player">(अद्याप येथे नाही ...)</string>
     <string name="robot_name_fmt">%1$s(रोबोट)</string>

@@ -37,7 +37,6 @@
          (meaning the network is working) but there are not yet as
          many players as expected: the game is not complete and play
          cannot happen. -->
-    <string name="summary_relay_wait_fmt">À espera de jogadores na sala \"%1$s\"</string>
     <!-- Third state: enough devices have connected in the room to
          form a complete game.  We'll be in this state as long as the
          game exists. -->
@@ -78,8 +77,6 @@
     <!-- Text of progress indicator shown while check is being conducted -->
     <!-- If you choose the above option and have no networked games
          you get this error message -->
-    <string name="no_games_to_refresh">Nenhum jogo encontrado que conecta
-    pelo servidor.</string>
     <!-- Brings up "About CrossWords" dialog -->
     <string name="board_menu_file_about">Sobre CrossWords…</string>
     <!-- 
@@ -425,8 +422,6 @@
     <!-- Title of dialog used to alert players to relay-related
          problems with the current game. -->
     <!-- (I believe this can no longer occur) -->
-    <string name="msg_too_many">Você está fornecendo mais jogadores
-    do que o hospedeiro espera.</string>
     <!-- (I believe this can no longer occur) -->
     <!-- (I believe this can no longer occur) -->
     <string name="msg_dup_room">Outro hospedeiro já registrou uma sala
@@ -1894,7 +1889,6 @@
     <string name="remote_no_net">Incapaz de captar informação da lista de palavras do servidor.</string>
     <string name="remote_digesting">Processando informação da lista de palavras…</string>
     <string name="remote_empty">Captando informações da lista de palavras do servidor…</string>
-    <string name="loc_fmts_mismatch">Tradução ilegal: uma cadeia traduzida precisa ter os mesmo especificadores de formato (p. ex. %1$s) que o original.</string>
     <string name="loc_item_copy_bless">Copiar oficial</string>
     <string name="loc_item_copy_eng">Copiar Inglês</string>
     <string name="loc_item_check">Checar</string>
@@ -1927,7 +1921,6 @@
         <item quantity="one">Foi instalada uma nova tradução</item>
         <item quantity="other">Foram instaladas %1$d novas traduções</item>
     </plurals>
-    <string name="loc_lang_blessed">%1$s (oficial)</string>
     <string name="sel_items_fmt">Selecionado: %1$d</string>
     <string name="slmenu_deselect_all">Des-selecionar tudo</string>
     <string name="slmenu_select_all">Selecionar tudo</string>

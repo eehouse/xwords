@@ -3,7 +3,6 @@
     <string name="str_game_name_fmt">%1$s (%2$s)</string>
     <string name="robot_name_fmt">%1$s (robot)</string>
     <string name="missing_player">(estableciendo conexión…)</string>
-    <string name="summary_relay_wait_fmt">Esperando a los jugadores en la sala \"%1$s\"</string>
     <string name="summary_relay_gameover_fmt">Partida finalizada en la sala \"%1$s\"</string>
     <string name="summary_invites_out">Jugadores invitados</string>
     <string name="summary_invites_out_fmt">Jugadores invitados a la sala \"%1$s\"</string>
@@ -16,7 +15,6 @@
     <string name="button_reset">Reiniciar</string>
     <string name="gamel_menu_dicts">Listas de palabras…</string>
     <string name="menu_prefs">Ajustes de la aplicación…</string>
-    <string name="no_games_to_refresh">No se han encontrado partidas conectadas en el repetidor.</string>
     <string name="board_menu_file_about">Acerca de CrossWords…</string>
     <string name="list_item_config">Ajustes del juego…</string>
     <string name="list_item_rename">Cambiar nombre…</string>
@@ -120,7 +118,6 @@
     <string name="invit_expl_notarget_fmt">Invitación enviada a través de %1$s en %2$s. Destinatario desconocido.</string>
     <string name="pts">pts.</string>
     <string name="forced_consistent">Primer jugador modificado.</string>
-    <string name="msg_too_many">Estás proporcionando más jugadores de los que el anfitrión espera.</string>
     <string name="msg_dup_room">Ya hay otro anfitrión que ha registrado una sala con ese nombre. Prueba con otro o inténtalo más tarde.</string>
     <string name="msg_dev_deleted_fmt">La partida \"%1$s\" ha sido eliminada en otro dispositivo y ya no podrás jugar más.</string>
     <string name="ids_badwords_fmt">Palabra[s] %1$s no encontrada[s] en la lista de palabras %2$s.</string>

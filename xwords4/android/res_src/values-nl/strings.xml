@@ -3,8 +3,6 @@
     <string name="str_game_name_fmt">%1$s (%2$s)</string>
     <string name="robot_name_fmt">%1$s (robot)</string>
     <string name="missing_player">(nog niet hier...)</string>
-    <string name="summary_relay_wait_fmt">Wachtend op spelers in kamer
- \"%1$s\"</string>
     <string name="summary_relay_gameover_fmt">Spel voorbij is kamer \"%1$s\"</string>
     <string name="gameOver">Spel voorbij</string>
     <plurals name="moves_fmt">
@@ -15,8 +13,6 @@
     <string name="button_reset">Reset</string>
     <string name="gamel_menu_dicts">Woordenlijsten…</string>
     <string name="menu_prefs">Instellingen…</string>
-    <string name="no_games_to_refresh">Geen spellen gevonden die via
- de relay verbinden.</string>
     <string name="board_menu_file_about">Over CrossWords…</string>
     <string name="list_item_config">Spelinstellingen…</string>
     <string name="list_item_rename">Hernoem…</string>
@@ -103,9 +99,7 @@
         <item quantity="other">Dit spel wacht op %1$d spelers op afstand. Wil je iemand uitnodigen om mee te doen, indien je dit nog niet gedaan hebt?</item>
     </plurals>
     <string name="pts">pntn</string>
-    <string name="relay_alert">Verbindingsprobleem</string>
     <string name="msg_no_room">Geen host heeft een kamer met deze naam geregistreerd.</string>
-    <string name="msg_lost_other">De relay heeft het contact met een ander apparaat in het spel verloren.</string>
     <string name="ids_badwords_fmt">Woord[en] %1$s niet gevonden in woordenlijst %2$s.</string>
     <string name="badwords_accept">" Wil je deze zet toch goed rekenen?"</string>
     <string name="badwords_lost">" Beurt verloren."</string>
@@ -478,7 +472,6 @@
     <string name="slmenu_select_all">Alles selecteren</string>
     <string name="slmenu_deselect_all">Alles deselecteren</string>
     <string name="sel_items_fmt">Geselecteerd: %1$d</string>
-    <string name="loc_lang_blessed">%1$s (officieel)</string>
     <plurals name="new_xlations_fmt">
         <item quantity="one">Een nieuwe vertaling geïnstalleerd</item>
         <item quantity="other">%1$d nieuwe vertalingen geïnstalleerd</item>
@@ -510,7 +503,6 @@
     <string name="loc_item_check">Kijk na</string>
     <string name="loc_item_copy_eng">Kopieer Engels</string>
     <string name="loc_item_copy_bless">Kopieer officieel</string>
-    <string name="not_again_fmt_expl">Deze zin heeft speciale formaat specificaties (bijv. %1$s). Zorg ervoor dat jouw vertaling dezelfde specificaties heeft als het origineel.\n\n(Je kan niet opslaan tenzij dat het geval is.)</string>
     <string name="remote_empty">Woordenlijstinformatie van server ophalen…</string>
     <string name="remote_digesting">Woordenlijstinformatie verwerken…</string>
     <string name="remote_no_net">Kon woordenlijstinformatie niet van server ophalen.</string>

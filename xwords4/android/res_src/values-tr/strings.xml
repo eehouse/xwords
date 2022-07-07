@@ -4,7 +4,6 @@
     <string name="str_game_name_fmt">%1$s (%2$s)</string>
     <string name="robot_name_fmt">%1$s (robot)</string>
     <string name="missing_player">(henüz burada değil...)</string>
-    <string name="summary_relay_wait_fmt">“%1$s” odasındaki oyuncuları bekliyor</string>
     <string name="menu_prefs">Uygulama ayarları…</string>
     <string name="gamel_menu_dicts">Kelime listeleri…</string>
     <string name="button_reset">Yenile</string>
@@ -16,7 +15,6 @@
     <string name="gameOver">Oyun bitti</string>
     <string name="summary_invites_out_fmt">Oyuncular “%1$s” odasına davet edildi</string>
     <string name="summary_invites_out">Oyuncular davet edildi</string>
-    <string name="summary_relay_conn_fmt">“%1$s” odasında oyun devam ediyor</string>
     <string name="list_item_netstats">Bağlantılar…</string>
     <string name="list_item_copy">Kopyala</string>
     <string name="list_item_new_from">\'den yeni</string>

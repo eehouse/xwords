@@ -4,7 +4,6 @@
     <string name="str_game_name_fmt">%1$s (%2$s)</string>
     <string name="robot_name_fmt">%1$s (ρομπότ)</string>
     <string name="missing_player">(δεν είναι ακόμα εδώ...)</string>
-    <string name="summary_relay_wait_fmt">Αναμονή για παίκτες στο δωμάτιο \"%1$s\"</string>
     <string name="summary_invites_out">Παίκτες προσκλήθηκαν</string>
     <string name="values_both">Γράμματα και αξίες</string>
 </resources>

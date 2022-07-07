@@ -34,12 +34,7 @@
     <string name="badwords_accept">" Você ainda quer aceitar essa jogada\?"</string>
     <string name="ids_badwords_fmt">Palavra[s] %1$s não encontrada na lista de palavras %2$s.</string>
     <string name="msg_dev_deleted_fmt">O jogo de nome “%1$s” foi apagado em outro dispositivo. Você não poderá jogar mais.</string>
-    <string name="msg_dup_room">Outro host já registrou uma sala usando este nome. Renomeie o seu ou tente novamente mais tarde.</string>
     <string name="msg_too_many">Você está com mais jogadores do que o host exige.</string>
-    <plurals name="msg_relay_waiting_fmt">
-        <item quantity="one">Dispositivo %1$d conectado ao servidor na sala “%2$s”. Aguardando por um jogador.</item>
-        <item quantity="other">Dispositivo %1$d conectado ao servidor na sala “%2$s”. Aguardando por %3$d jogadores.</item>
-    </plurals>
     <string name="pts">pontos</string>
     <string name="invit_expl_notarget_fmt">Convite enviado via %1$s no %2$s. Recebedor desconhecido.</string>
     <string name="invit_expl_relay_fmt">Convite enviado pelo servidor para outro dispositivo no %1$s</string>
@@ -113,7 +108,6 @@
         <item quantity="one">Você tem certeza que quer apagar o jogo selecionado\? Esta ação não poder ser desfeita.</item>
         <item quantity="other">Você tem certeza que quer apagar %1$d jogos selecionados\? Esta ação não poder ser desfeita.</item>
     </plurals>
-    <string name="msgs_progress">Conferindo o servidor por movimentações etc…</string>
     <plurals name="moves_fmt">
         <item quantity="one">Um movimento realizado</item>
         <item quantity="other">%1$d movimentos realizados</item>
@@ -160,7 +154,6 @@
     <string name="gameOver">Fim da partida</string>
     <string name="summary_invites_out_fmt">Jogadores convidados para a sala “%1$s”</string>
     <string name="summary_invites_out">Jogadores convidados</string>
-    <string name="summary_relay_conf_fmt">Configurado para a sala “%1$s”</string>
     <string name="missing_player">(ainda não está aqui…)</string>
     <string name="robot_name_fmt">%1$s (robô)</string>
     <string name="str_phony_rejected">palavra ilegal na jogada; turno perdido!</string>
@@ -424,14 +417,12 @@
         <item quantity="one">Foi instalada uma nova tradução</item>
         <item quantity="other">Foram instaladas %1$d novas traduções</item>
     </plurals>
-    <string name="loc_lang_blessed">%1$s (oficial)</string>
     <string name="menu_hint_prev">Dica ant.</string>
     <string name="board_menu_undo_current">Desfazer/Refazer</string>
     <string name="menu_hint_next">Próx. dica</string>
     <string name="remote_undone">Dispositivo remoto desfez uma rodada.</string>
     <string name="remote_digesting">Processando informação da lista de palavras…</string>
     <string name="remote_empty">Captando informações da lista de palavras do servidor…</string>
-    <string name="loc_fmts_mismatch">Tradução ilegal: uma string traduzida precisa ter os mesmo especificadores de formato (p. ex. %1$s) que o original.</string>
     <string name="loc_item_copy_bless">Copiar oficial</string>
     <string name="loc_item_copy_eng">Copiar Inglês</string>
     <string name="loc_item_check">Checar</string>

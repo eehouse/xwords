@@ -3,7 +3,6 @@
     <string name="str_game_name_fmt">%1$s (%2$s)</string>
     <string name="robot_name_fmt">%1$s (ロボット)</string>
     <string name="missing_player">(まだありません…)</string>
-    <string name="summary_relay_wait_fmt">ルーム \"%1$s\" でプレイヤーを待っています</string>
     <string name="summary_relay_gameover_fmt">ルーム \"%1$s\" でゲームオーバー</string>
     <string name="gameOver">ゲームオーバー</string>
     <string name="button_delete">削除</string>
@@ -13,7 +12,6 @@
     <plurals name="moves_fmt">
         <item quantity="other">%1$d 移動をプレイしました</item>
     </plurals>
-    <string name="no_games_to_refresh">リレー経由で接続するゲームはありません。</string>
     <string name="board_menu_file_about">クロスワードについて…</string>
     <string name="list_item_config">ゲームの設定…</string>
     <string name="list_item_rename">名前の変更…</string>
@@ -98,9 +96,7 @@
         <item quantity="other">このゲームは %1$d リモート プレイヤーを待っています。まだであれば -- 参加するユーザーを招待しますか\?</item>
     </plurals>
     <string name="pts">ﾎﾟｲﾝﾄ</string>
-    <string name="relay_alert">接続の問題</string>
     <string name="msg_no_room">その名前のルームが登録されたホストはありません。</string>
-    <string name="msg_lost_other">リレーが、このゲームで別のデバイスとの接続を失いました。</string>
     <string name="ids_badwords_fmt">単語 %1$s は単語リスト %2$s 内に見つかりません。</string>
     <string name="badwords_accept">" この移動を反映してもよろしいですか?"</string>
     <string name="badwords_lost">順番を失いました。</string>
@@ -490,7 +486,6 @@
     <string name="slmenu_select_all">すべて選択</string>
     <string name="slmenu_deselect_all">選択をすべて解除</string>
     <string name="sel_items_fmt">選択: %1$d</string>
-    <string name="loc_lang_blessed">%1$s (公式)</string>
     <plurals name="new_xlations_fmt">
         <item quantity="other">新しい翻訳を %1$d インストールしました</item>
     </plurals>
@@ -521,9 +516,6 @@
     <string name="loc_item_check">チェック</string>
     <string name="loc_item_copy_eng">英語をコピー</string>
     <string name="loc_item_copy_bless">公式をコピー</string>
-    <string name="not_again_fmt_expl">この文字列は特別な書式指定子 (例 %1$s) があります。あなたの翻訳に、元と同じものがあることを確認してください。
-\n
-\n(そうしない限り保存できません)</string>
     <string name="remote_empty">サーバーから単語リストの情報を取得しています…</string>
     <string name="remote_digesting">単語リストの情報を処理しています…</string>
     <string name="remote_no_net">サーバーから単語リストの情報を取得できません。</string>

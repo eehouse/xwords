@@ -3,7 +3,6 @@
     <string name="str_game_name_fmt">%1$s (%2$s)</string>
     <string name="robot_name_fmt">%1$s (maskinspiller)</string>
     <string name="missing_player">(ikke her enda…)</string>
-    <string name="summary_relay_wait_fmt">Venter for spiller i rom \"%1$s\"</string>
     <string name="summary_relay_gameover_fmt">Spill over i rom \"%1$s\"</string>
     <string name="summary_invites_out">Spillere invitert</string>
     <string name="summary_invites_out_fmt">Spillere invitert til rom \"%1$s\"</string>
@@ -74,7 +73,6 @@
     <string name="no_moves_made">(Ingen trekk enda)</string>
     <string name="invit_expl_bt_fmt">Invitasjon sendt via Blåtann til tilknyttet enhet \"%1$s\" på %2$s</string>
     <string name="invit_expl_notarget_fmt">Invitasjon sendt via %1$s på %2$s. Ukjent mottaker.</string>
-    <string name="msg_no_room">Ingen vert har registrert et rom ved det navnet.</string>
     <string name="board_menu_game_history">Spillhistorikk…</string>
     <string name="board_menu_game_resign">Kapituler</string>
     <string name="board_menu_game_resend">Send trekk på nytt</string>
@@ -297,7 +295,6 @@
     <string name="slmenu_select_all">Velg alle</string>
     <string name="slmenu_deselect_all">Fravelt alle</string>
     <string name="sel_items_fmt">Valgt: %1$d</string>
-    <string name="loc_lang_blessed">%1$s (offisiell)</string>
     <plurals name="new_xlations_fmt">
         <item quantity="one">Installerte én ny oversettelse</item>
         <item quantity="other">Installerte %1$d nye oversettelser</item>
@@ -426,13 +423,11 @@
         <item quantity="one">Dette spiller venter på én ekstern spiller. Ønsker du å invitere noen til spill, sett at du ikke har gjort det allerede?</item>
         <item quantity="other">Dette spiller venter på %1$d eksterne spillere. Ønsker du å invitere noen til spill, sett at du ikke har gjort det allerede?</item>
     </plurals>
-    <string name="no_games_to_refresh">"Fant ingen spill som kobler til gjennom relé-et. "</string>
     <string name="no_copy_network">Spill som allerede har koblet til gjennom relé-et kan ikke kopieres. Bruk \"Ny fra\" for kopi klar til spilling med de samme innstillingene.</string>
     <string name="set_default_message_fmt">For hvilke spillere skal ordlisten %1$s være forvalg for nye spill? (Språket %2$s vil være forvalg for begge.)</string>
     <string name="invit_expl_sms_fmt">Invitasjon sendt via SMS til telefonnummer %1$s på %2$s</string>
     <string name="invit_expl_relay_fmt">Invitasjon videresendt av relé-et til en annen enhet på %1$s</string>
     <string name="pts">p.</string>
-    <string name="msg_too_many">Du kommer med flere spillere enn verten forventer.</string>
     <string name="msg_lost_other">Relé-et har mistet kontakten med en annen enhet i dette spillet.</string>
     <string name="ids_badwords_fmt">Ord[ene] %1$s ble ikke funnet i ordlisten %2$s.</string>
     <string name="badwords_lost">Tur tapt.</string>
@@ -712,9 +707,6 @@
 \n(Denne handlingen kan ikke angres.)</item>
     </plurals>
     <string name="not_again_studycopy">De valgte ordene vil kopieres inn i systemutklippstavlen. Du kan lime dem inn i ethvert program som støtter innliming av tekst, f.eks. et e-postprogram.</string>
-    <string name="not_again_fmt_expl">Denne strenger har spesielle formatspesifikatorer (f.eks. %1$s). Forsikre deg om at oversettelsen har de somme som originalen.
-\n
-\n(Du vil ikke kunne lagre den med mindre det er tilfelle.)</string>
     <string name="update_dicts_fmt">Oppdateringer er tilgjengelig for én eller flere installerte ordlister. Ønsker du å laste ned ny[e] versjon[er] av %1$s nå?</string>
     <string name="not_again_dicts">Denne skjermen lar deg installere nye ordlister og vise dem du allerede har. 
 \n 

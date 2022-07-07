@@ -9,7 +9,6 @@
     <string name="list_item_rename">Rinomina…</string>
     <string name="list_item_config">Impostazioni…</string>
     <string name="board_menu_file_about">Info CrossWords…</string>
-    <string name="msgs_progress">Controllo risposta per mosse etc…</string>
     <string name="menu_prefs">Impostazioni…</string>
     <string name="gamel_menu_dicts">Lista parole…</string>
     <string name="button_reset">Reset</string>
@@ -21,7 +20,6 @@
     <string name="gameOver">Game Over</string>
     <string name="summary_invites_out_fmt">Giocatori invitati alla stanza \"%1$s\"</string>
     <string name="summary_invites_out">Giocatori invitati</string>
-    <string name="summary_relay_conn_fmt">Gioco in corso nella stanza \"%1$s\"</string>
     <string name="summary_relay_conf_fmt">Configurato per la stanza \"%1$s\"</string>
     <string name="missing_player">(Non ancora qui...)</string>
     <string name="logstore_clear_confirm">Sei sicuro di voler eliminare i log debug\? Questa azione non può essere annullata.</string>
@@ -216,7 +214,6 @@
     <string name="remote_no_net">Impossibile trovare informazioni su lista parole dal server.</string>
     <string name="remote_digesting">Processando informazioni su lista parole.…</string>
     <string name="remote_empty">Ricerca informazioni su lista parole dal server…</string>
-    <string name="loc_fmts_mismatch">Traduzione non consentita: una stringa tradotta deve avere lo stesso formato dell\'originale (e.g. %1$s).</string>
     <string name="loc_item_copy_bless">Copia ufficiale</string>
     <string name="loc_item_copy_eng">Copia Inglese</string>
     <string name="loc_item_check">Controlla</string>
@@ -249,7 +246,6 @@
         <item quantity="one">Installata una nuova traduzione</item>
         <item quantity="other">Installate %1$d nuove traduzioni</item>
     </plurals>
-    <string name="loc_lang_blessed">%1$s (ufficiale)</string>
     <string name="sel_items_fmt">Selezionate: %1$d</string>
     <string name="slmenu_deselect_all">Deseleziona tutto</string>
     <string name="slmenu_select_all">Seleziona tutto</string>
@@ -880,12 +876,7 @@
     <string name="badwords_accept">" Vuoi accettare comunque questa mossa\?"</string>
     <string name="ids_badwords_fmt">Parola[e] %1$s non trovate nella lista parole %2$s.</string>
     <string name="msg_dev_deleted_fmt">La partita \"%1$s\" è stata cancellata su un altro dispositivo. Non puoi continuare a giocare.</string>
-    <string name="msg_dup_room">Un altro ospite ha già registrato una stanza a questo nome. Rinomina la tua o riprova più tardi.</string>
     <string name="msg_too_many">Stai chiamando più giocatori di quelli richiesti.</string>
-    <plurals name="msg_relay_waiting_fmt">
-        <item quantity="one">Dispositivo %1$d collegato alla stanza \"%2$s\". In attesa di un giocatore.</item>
-        <item quantity="other">Dispositivo %1$d collegato alla stanza \"%2$s\". In attesa di %3$d giocatori.</item>
-    </plurals>
     <string name="pts">pts</string>
     <string name="qrcode_invite_expl">Per invitare tramite QR code, fai scannerizzare il codice al tuo avversario con la fotocamera del suo cellulare Android.</string>
     <string name="invit_expl_player_fmt">Invito inoltrato via MQTT/Internet a giocatore conosciuto \"%1$s\" su %2$s.</string>

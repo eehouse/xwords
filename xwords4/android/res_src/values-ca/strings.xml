@@ -137,7 +137,6 @@
     <string name="tile_back">Fons de la fitxa</string>
     <string name="empty">Cel·la buida/fons</string>
     <string name="clr_crosshairs">Creu d\'ubicació</string>
-    <string name="msg_too_many">Esteu proveint més jugadors dels que espera l\'amfitrió.</string>
     <string name="msg_dup_room">Un altre amfitrió ha registrat una sala amb aquest nom. Canvieu el nom a la vostra o torneu a intentar-ho més tard.</string>
     <string name="ids_badwords_fmt">Les paraules %1$s no es troben al diccionari %2$s.</string>
     <string name="badwords_accept">  Voleu acceptar aquesta jugada?</string>
@@ -166,8 +165,6 @@
     <string name="initial_player_minutes">Minuts de partida</string>
     <string name="str_game_name_fmt">%1$s (%2$s)</string>
     <string name="missing_player">(encara no és aquí...)</string>
-    <string name="summary_relay_wait_fmt">S\'està esperant els jugadors en la sala
-«%1$s»</string>
     <string name="summary_relay_gameover_fmt">Partida finalitzada en la sala «%1$s»</string>
     <plurals name="moves_fmt">
         <item quantity="one">1 jugada feta</item>
@@ -175,8 +172,6 @@
     </plurals>
     <string name="button_delete">Suprimeix</string>
     <string name="button_reset">Reinicialitza</string>
-    <string name="no_games_to_refresh">No s\'ha trobat cap partida
-que connecti via el repetidor.</string>
     <string name="list_item_rename">Canvia el nom…</string>
     <string name="list_item_move">Mou al grup…</string>
     <string name="no_copy_network">Les partides que ja estan connectades
@@ -459,7 +454,6 @@ Introduïu el vostre nom aquí. S\'usarà en crear partides noves. (Podreu
     <string name="slmenu_select_all">Selecciona-ho tot</string>
     <string name="slmenu_deselect_all">No seleccionis res</string>
     <string name="sel_items_fmt">Seleccionat: %1$d</string>
-    <string name="loc_lang_blessed">%1$s (oficial)</string>
     <string name="loc_filters_prompt">Filtra per:</string>
     <string name="loc_search_prompt">Cerca:</string>
     <string name="loc_filters_all">Tot</string>
@@ -587,9 +581,6 @@ Introduïu el vostre nom aquí. S\'usarà en crear partides noves. (Podreu
         <item quantity="one">Ha instal·lat una traducció nova</item>
         <item quantity="other">Ha instal·lat %1$d traduccions noves</item>
     </plurals>
-    <string name="not_again_fmt_expl">Aquesta cadena té indicadors de format especials (p. ex. %1$s). Assegureu-vos que la traducció té els mateixos que l\'original.
-\n
-\n(No podreu desar-la si no ho compleix.)</string>
     <string name="remote_empty">S\'està obtenint la informació del diccionari des del servidor…</string>
     <string name="remote_digesting">S\'està processant la informació del diccionari…</string>
     <string name="remote_no_net">No s\'ha pogut obtenir la informació del diccionari del servidor.</string>

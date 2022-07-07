@@ -3,7 +3,6 @@
     <string name="str_game_name_fmt">%1$s (%2$s)</string>
     <string name="robot_name_fmt">%1$s (Computer)</string>
     <string name="missing_player">(noch nicht hier …)</string>
-    <string name="summary_relay_wait_fmt">Auf Spieler in Raum „%1$s” warten</string>
     <string name="summary_relay_gameover_fmt">Partie beendet in Raum „%1$s“</string>
     <string name="summary_invites_out">Eingeladene Spieler</string>
     <string name="gameOver">Partie beendet</string>
@@ -60,10 +59,8 @@
     <string name="robot_smarter">Schlauerer Computer</string>
     <string name="robot_smartest">Schlauester Computer</string>
     <string name="play">Partie spielen</string>
-    <string name="no_games_to_refresh">Keine Partien gefunden, die über die Zwischenstation verbunden sind.</string>
     <string name="no_copy_network">Partien, die bereits über die Zwischenstation verbunden sind, können nicht kopiert werden. Wählen Sie „Kopie anlegen“ aus, um eine spielbereite Kopie mit identischen Einstellungen zu erhalten.</string>
     <string name="invit_expl_relay_fmt">Die Einladung wurde von der Zwischenstation zu einem anderen Gerät auf %1$s weitergeleitet</string>
-    <string name="msg_lost_other">Die Zwischenstation hat den Kontakt zu einem anderen Gerät in dieser Partie verloren.</string>
     <string name="invite_choice_relay">Internet/Zwischenstation</string>
     <string name="list_item_new_from">Kopie anlegen</string>
     <plurals name="confirm_reset_fmt">
@@ -111,7 +108,6 @@
     <string name="invit_expl_bt_fmt">Einladung per Bluetooth an gepaartes Gerät „%1$s“ in „%2$s“ geschickt</string>
     <string name="invit_expl_notarget_fmt">Einladung über %1$s auf %2$s geschickt. Empfänger unbekannt.</string>
     <string name="pts">Pkt.</string>
-    <string name="msg_too_many">Sie stellen mehr Spieler bereit als der Server erwartet.</string>
     <string name="msg_dup_room">Ein anderer Server hat bereits einen Raum mit diesem Namen angelegt. Benennen Sie Ihren um oder versuchen Sie es später noch einmal.</string>
     <string name="ids_badwords_fmt">Wort/Wörter %1$s nicht in Wortliste %2$s gefunden.</string>
     <string name="badwords_accept">" Wollen Sie diesen Zug trotzdem akzeptieren?"</string>
@@ -528,7 +524,6 @@
     <string name="not_again_studycopy">Die ausgewählten Wörter werden in die Zwischenablage kopiert. Sie können Sie dann in jede Anwendung einfügen, die das Einfügen von Text unterstützt, zum Beispiel in eine E-Mail-Anwendung.</string>
     <string name="lookup_title">Wort nachschlagen</string>
     <string name="sel_items_fmt">Ausgewählt: %1$d</string>
-    <string name="loc_lang_blessed">%1$s (offiziell)</string>
     <plurals name="new_xlations_fmt">
         <item quantity="one">Eine neue Übersetzung installiert</item>
         <item quantity="other">%1$d neue Übersetzungen installiert</item>
@@ -556,9 +551,6 @@
     <string name="loc_item_clear">Löschen</string>
     <string name="loc_item_check">Überprüfen</string>
     <string name="loc_item_copy_eng">Englisch kopieren</string>
-    <string name="not_again_fmt_expl">Diese Zeichenfolge enthält spezielle Formatierungszeichen (z. B. %1$s). Vergewissern Sie sich, das Ihre Übersetzung die gleichen wie das Original enthält.
-\n
-\n(Sie können erst speichern, wenn das der Fall ist.)</string>
     <string name="remote_empty">Wortliste wird vom Server geladen …</string>
     <string name="remote_digesting">Wortlisten-Informationen werden verarbeitet …</string>
     <string name="remote_no_net">Wortlisten-Information konnte nicht vom Server geladen werden.</string>

@@ -54,7 +54,6 @@
         <item quantity="other">%1$d gerakan dimainkan</item>
     </plurals>
     <string name="gameOver">Permainan telah berakhir</string>
-    <string name="summary_relay_wait_fmt">Menunggu pemain di ruang “%1$s”</string>
     <string name="missing_player">(belum ada di sini…)</string>
     <string name="invitee_fmt">(%1$s telah diundang)</string>
     <string name="robot_name_fmt">%1$s (robot)</string>

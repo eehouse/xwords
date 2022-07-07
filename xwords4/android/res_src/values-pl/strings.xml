@@ -7,11 +7,9 @@
     <string name="menu_prefs">Ustawienia aplikacji…</string>
     <string name="summary_invites_out_fmt">Gracze zaproszeni do pokoju \"%1$s\"</string>
     <string name="board_menu_file_about">O CrossWords…</string>
-    <string name="summary_relay_conn_fmt">Gra w gry w pokoju \"%1$s\"</string>
     <string name="gamel_menu_dicts">Listy słów…</string>
     <string name="list_item_config">Ustawienia gry…</string>
     <string name="str_game_name_fmt">%1$s (%2$s)</string>
-    <string name="msgs_progress">Sprawdzanie przekaźnika dla ruchów itp.…</string>
     <string name="list_item_rename">Zmień nazwę…</string>
     <string name="list_item_move">Przenieś do grupy…</string>
     <string name="list_item_delete">Usuń grę</string>
@@ -54,7 +52,6 @@
     <string name="password_label">Hasło:</string>
     <string name="invit_expl_sms_fmt">Zaproszenie wysłane za pośrednictwem Data SMS na numer telefonu %1$s na %2$s</string>
     <string name="invit_expl_bt_fmt">Zaproś wysłając przez Bluetooth do urządzenia \"%1$s\" na %2$s</string>
-    <string name="msg_no_room">Żaden host nie zarejestrował pokoju o tej nazwie.</string>
     <string name="button_revert_all">Przywróć wszystko</string>
     <string name="confirm_revert_colors">Czy na pewno chcesz przywrócić wszystkie ustawienia kolorów do ich oryginalnych wartości\?</string>
     <string name="button_revert_colors">Przywróć kolory</string>
@@ -246,7 +243,6 @@
     <string name="invit_expl_relay_fmt">Zaproszenie przesłane przez przekaźnik do innego urządzenia na %1$s</string>
     <string name="invit_expl_notarget_fmt">Zaproszenie wysłane przez %1$s na %2$s. Odbiorca nieznany.</string>
     <string name="pts">pkt</string>
-    <string name="msg_too_many">Udostępniasz więcej graczy niż oczekuje host.</string>
     <string name="msg_lost_other">Przekaźnik utracił kontakt z innym urządzeniem w tej grze.</string>
     <string name="ids_badwords_fmt">Słowa[ów] %1$s nie znaleziono na liście słów %2$s.</string>
     <string name="badwords_accept">" Czy chcesz zaakceptować ten ruch\?"</string>
@@ -572,14 +568,10 @@
     <string name="slmenu_select_all">Wybierz wszystkie</string>
     <string name="slmenu_deselect_all">Usuń zaznaczenie</string>
     <string name="sel_items_fmt">Wybrano: %1$d</string>
-    <string name="loc_lang_blessed">%1$s (oficjalny)</string>
     <string name="loc_filters_menu">Najnowsze menu</string>
     <string name="loc_item_clear">Wyczyść</string>
     <string name="loc_item_check">Sprawdzić</string>
     <string name="loc_item_copy_bless">Kopia oficjalna</string>
-    <string name="not_again_fmt_expl">Ten łańcuch ma specjalne znaki formatu (np. %1$s). Upewnij się, że Twoje tłumaczenie jest takie samo jak oryginał.
-\n
-\n(Nie będziesz w stanie go zapisać bez niego.)</string>
     <string name="remote_digesting">Przetwarzanie informacji z listy słów…</string>
     <string name="remote_no_net">Nie można pobrać informacji z listy słów z serwera.</string>
     <string name="delete_dicts">Usuń listę słów[s]</string>

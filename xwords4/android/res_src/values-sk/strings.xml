@@ -326,7 +326,6 @@
     <!-- Third state: enough devices have connected in the room to
          form a complete game.  We'll be in this state as long as the
          game exists. -->
-    <string name="summary_relay_conn_fmt">XLATE ME: Game in play in room \"%1$s\"</string>
     <!-- Second state: has been assigned to a room on the relay
          (meaning the network is working) but there are not yet as
          many players as expected: the game is not complete and play
@@ -711,8 +710,6 @@
     <!-- If you choose the above option and have no networked games
          you get this error message -->
     <!-- Text of progress indicator shown while check is being conducted -->
-    <string name="msgs_progress">XLATE ME: Checking relay for moves
-      etc…</string>
     <!-- Regardless of the setting of the connect_frequency
          preference, checks the relay immediately for any moves for
          networked games on this device and posts a notification if
@@ -814,7 +811,6 @@
     <!-- the background color of the area outside the board,
          e.g. between entries in the scoreboard -->
     <string name="background">XLATE ME: Board background</string>
-    <string name="msg_too_many">Chcete prihlásiť viac hráčov ako očakáva server.</string>
     <string name="msg_dup_room">Iný server si už zaregistroval miestnosť s týmto menom. Premenujte ju alebo to skúste neskôr.</string>
     <!-- When a game has been connected and the relay is notified that
          a device in the game has deleted its part of the game, this
