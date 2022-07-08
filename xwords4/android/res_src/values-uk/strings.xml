@@ -4,4 +4,5 @@
     <string name="str_game_name_fmt">%1$s (%2$s)</string>
     <string name="robot_name_fmt">%1$s (робот)</string>
     <string name="missing_player">(ще не тут…)</string>
+    <string name="button_reset">Скинути</string>
 </resources>
