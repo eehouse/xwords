@@ -55,6 +55,9 @@
          This is the text of the first button ("Cancel" is the
          second).  -->
     <string name="button_delete">Delete</string>
+    <!-- Text of button when a game is what's being deleted and it's
+         not clear from context -->
+    <string name="button_delete_game">Delete Game</string>
     <!-- When you select the list_item_reset contextual menu, you are
           asked to confirm.  This is the text of the first button
           ("Cancel" is the second).  -->

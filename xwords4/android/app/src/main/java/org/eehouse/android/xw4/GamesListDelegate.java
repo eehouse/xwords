@@ -667,7 +667,7 @@ public class GamesListDelegate extends ListDelegateBase
                             deleteNamedIfConfirmed( rowids, false );
                         }
                     };
-                ab.setNeutralButton( R.string.button_delete, neuLstnr );
+                ab.setNeutralButton( R.string.button_delete_game, neuLstnr );
             }
             dialog = ab.create();
         }
