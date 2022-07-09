@@ -3258,8 +3258,8 @@ main( int argc, char** argv )
                                        mainParams.pgi.dictName,
                                        mainParams.useMmap );
             XP_ASSERT( !!dict );
-            XP_STRNCPY( mainParams.pgi.isoCode, dict_getISOCode( dict ),
-                        VSIZE(mainParams.pgi.isoCode) );
+            XP_STRNCPY( mainParams.pgi.isoCodeStr, dict_getISOCode( dict ),
+                        VSIZE(mainParams.pgi.isoCodeStr) );
             dict_unref( dict, NULL_XWE );
         } else if ( isServer ) {
 #ifdef STUBBED_DICT

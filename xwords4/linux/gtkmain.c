@@ -750,7 +750,7 @@ gameFromInvite( GtkAppGlobals* apg, const NetLaunchInfo* invite,
     ensureLocalPlayerNames( params, &gi );
 
     gi.gameID = invite->gameID;
-    XP_STRNCPY( gi.isoCode, invite->isoCode, VSIZE(gi.isoCode)-1 );
+    XP_STRNCPY( gi.isoCodeStr, invite->isoCodeStr, VSIZE(gi.isoCodeStr)-1 );
     gi.forceChannel = invite->forceChannel;
     gi.inDuplicateMode = invite->inDuplicateMode;
     gi.serverRole = SERVER_ISCLIENT; /* recipient of invitation is client */

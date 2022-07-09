@@ -213,7 +213,7 @@ cb_newFor( CursesBoardState* cbState, const NetLaunchInfo* nli,
     gi_copy( MPPARM(params->mpool) &gi, &params->pgi );
     gi_setNPlayers( &gi, nli->nPlayersT, nli->nPlayersH );
     gi.gameID = nli->gameID;
-    XP_STRNCPY( gi.isoCode, nli->isoCode, VSIZE(gi.isoCode) );
+    XP_STRNCPY( gi.isoCodeStr, nli->isoCodeStr, VSIZE(gi.isoCodeStr) );
     gi.forceChannel = nli->forceChannel;
     gi.inDuplicateMode = nli->inDuplicateMode;
     gi.serverRole = SERVER_ISCLIENT; /* recipient of invitation is client */

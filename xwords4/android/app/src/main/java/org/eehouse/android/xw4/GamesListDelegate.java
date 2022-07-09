@@ -2361,7 +2361,7 @@ public class GamesListDelegate extends ListDelegateBase
         boolean haveDict;
         if ( null == nli.dict ) { // can only test for language support
 
-            String[] dicts = DictLangCache.getHaveLang( m_activity, nli.isoCode );
+            String[] dicts = DictLangCache.getHaveLang( m_activity, nli.isoCode() );
             haveDict = 0 < dicts.length;
             if ( haveDict ) {
                 // Just pick one -- good enough for the period when
@@ -2371,11 +2371,11 @@ public class GamesListDelegate extends ListDelegateBase
             }
         } else {
             haveDict =
-                DictLangCache.haveDict( m_activity, nli.isoCode, nli.dict );
+                DictLangCache.haveDict( m_activity, nli.isoCode(), nli.dict );
         }
         if ( !haveDict ) {
             m_netLaunchInfo = nli;
-            showDialogFragment( DlgID.WARN_NODICT_INVITED, 0L, nli.dict, nli.isoCode );
+            showDialogFragment( DlgID.WARN_NODICT_INVITED, 0L, nli.dict, nli.isoCode() );
         }
         return haveDict;
     }

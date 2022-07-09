@@ -415,7 +415,7 @@ gdb_summarize( CommonGlobals* cGlobals )
     pairs[indx++] = g_strdup_printf( "nmissing=%d", nMissing);
     pairs[indx++] = g_strdup_printf( "nmoves=%d", nMoves);
     pairs[indx++] = g_strdup_printf( "seed=%d", seed);
-    pairs[indx++] = g_strdup_printf( "isoCode='%s'", gi->isoCode);
+    pairs[indx++] = g_strdup_printf( "isoCode='%s'", gi->isoCodeStr);
     pairs[indx++] = g_strdup_printf( "gameid=%d", gameID);
     pairs[indx++] = g_strdup_printf( "connvia='%s'", connvia);
 #ifdef XWFEATURE_RELAY

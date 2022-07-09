@@ -255,11 +255,11 @@ getStringCopy( MPFORMAL JNIEnv* env, jstring jstr )
     return result;
 }
 
-jobject
-getObjectFieldWithFID( JNIEnv* env, jobject obj, const char* name,
+static jobject
+getObjectFieldWithFID( JNIEnv* env, jobject obj, const char* fieldName,
                        const char* sig, jfieldID* fidp )
 {
-    jfieldID fid = getFieldID( env, obj, name, sig );
+    jfieldID fid = getFieldID( env, obj, fieldName, sig );
     XP_ASSERT( !!fid );
     if ( !!fidp ) {
         *fidp = fid;
@@ -752,7 +752,7 @@ static const SetInfo nli_bools[] = {
 
 static const SetInfo nli_strs[] = {
     ARR_MEMBER( NetLaunchInfo, dict ),
-    ARR_MEMBER( NetLaunchInfo, isoCode ),
+    ARR_MEMBER( NetLaunchInfo, isoCodeStr ),
     ARR_MEMBER( NetLaunchInfo, gameName ),
     ARR_MEMBER( NetLaunchInfo, room ),
     ARR_MEMBER( NetLaunchInfo, btName ),

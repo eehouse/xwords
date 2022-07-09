@@ -131,7 +131,7 @@ public class MultiService {
     {
         Intent intent = new Intent( context, MainActivity.class ); // PENDING TEST THIS!!!
         intent.setAction( ACTION_FETCH_DICT );
-        intent.putExtra( ISO, nli.isoCode.toString() );
+        intent.putExtra( ISO, nli.isoCodeStr );
         intent.putExtra( DICT, nli.dict );
         intent.putExtra( OWNER, owner.ordinal() );
         intent.putExtra( NLI_DATA, nli.toString() );

@@ -124,7 +124,7 @@ static const DictionaryCtxt*
 getDicts( const CurGameInfo* gi, XW_UtilCtxt* util, XWEnv xwe,
           PlayerDicts* playerDicts )
 {
-    const XP_UCHAR* isoCode = gi->isoCode;
+    const XP_UCHAR* isoCode = gi->isoCodeStr;
     const DictionaryCtxt* result = util_getDict( util, xwe, isoCode, gi->dictName );
     XP_MEMSET( playerDicts, 0, sizeof(*playerDicts) );
     if ( !!result ) {
@@ -180,8 +180,8 @@ game_makeNewGame( MPFORMAL XWEnv xwe, XWGame* game, CurGameInfo* gi,
     XP_Bool success = !!dict;
 
     if ( success ) {
-        XP_STRNCPY( gi->isoCode, dict_getISOCode( dict ), VSIZE(gi->isoCode) );
-        XP_ASSERT( !!gi->isoCode[0] );
+        XP_STRNCPY( gi->isoCodeStr, dict_getISOCode( dict ), VSIZE(gi->isoCodeStr) );
+        XP_ASSERT( !!gi->isoCodeStr[0] );
         game->model = model_make( MPPARM(mpool) xwe, (DictionaryCtxt*)NULL,
                                   NULL, util, gi->boardSize );
 
@@ -417,7 +417,7 @@ game_makeFromInvite( MPFORMAL XWEnv xwe, const NetLaunchInfo* nli,
     gi->boardSize = 15;
     gi->traySize = gi->bingoMin = 7;
     gi->gameID = nli->gameID;
-    XP_STRNCPY( gi->isoCode, nli->isoCode, VSIZE(gi->isoCode) );
+    XP_STRNCPY( gi->isoCodeStr, nli->isoCodeStr, VSIZE(gi->isoCodeStr) );
     gi->forceChannel = nli->forceChannel;
     gi->inDuplicateMode = nli->inDuplicateMode;
     gi->serverRole = SERVER_ISCLIENT; /* recipient of invitation is client */
@@ -559,7 +559,7 @@ game_summarize( XWGame* game, CurGameInfo* gi, GameSummary* summary )
     ServerCtxt* server = game->server;
     summary->turn = server_getCurrentTurn( server, &summary->turnIsLocal );
     summary->lastMoveTime = server_getLastMoveTime(server);
-    XP_STRNCPY( summary->isoCode, gi->isoCode, VSIZE(summary->isoCode)-1 );
+    XP_STRNCPY( summary->isoCodeStr, gi->isoCodeStr, VSIZE(summary->isoCodeStr)-1 );
     summary->gameOver = server_getGameIsOver( server );
     summary->nMoves = model_getNMoves( game->model );
     summary->dupTimerExpires = server_getDupTimerExpires( server );
@@ -654,7 +654,7 @@ gi_copy( MPFORMAL CurGameInfo* destGI, const CurGameInfo* srcGI )
 
     replaceStringIfDifferent( mpool, &destGI->dictName, 
                               srcGI->dictName );
-    XP_STRNCPY( destGI->isoCode, srcGI->isoCode, VSIZE(destGI->isoCode)-1 );
+    XP_STRNCPY( destGI->isoCodeStr, srcGI->isoCodeStr, VSIZE(destGI->isoCodeStr)-1 );
     destGI->gameID = srcGI->gameID;
     destGI->gameSeconds = srcGI->gameSeconds;
     destGI->nPlayers = (XP_U8)srcGI->nPlayers;
@@ -803,13 +803,13 @@ gi_readFromStream( MPFORMAL XWStreamCtxt* stream, CurGameInfo* gi )
 
 
     if ( STREAM_VERS_GI_ISO <= strVersion ) {
-        stringFromStreamHere( stream, gi->isoCode, VSIZE(gi->isoCode) );
+        stringFromStreamHere( stream, gi->isoCodeStr, VSIZE(gi->isoCodeStr) );
     } else if ( STREAM_VERS_DICTLANG <= strVersion ) {
         XP_LangCode dictLang = stream_getU8( stream );
         const XP_UCHAR* isoCode = lcToLocale( dictLang );
         XP_ASSERT( !!isoCode );
-        XP_STRNCPY( gi->isoCode, isoCode, VSIZE(gi->isoCode) );
-        XP_LOGFF( "upgrading; faked isoCode: %s", gi->isoCode );
+        XP_STRNCPY( gi->isoCodeStr, isoCode, VSIZE(gi->isoCodeStr) );
+        XP_LOGFF( "upgrading; faked isoCode: %s", gi->isoCodeStr );
     }
 
     if ( gi->timerEnabled || strVersion >= STREAM_VERS_GAMESECONDS ) {
@@ -886,10 +886,10 @@ gi_writeToStream( XWStreamCtxt* stream, const CurGameInfo* gi )
     }
 
     if ( STREAM_VERS_GI_ISO <= strVersion ) {
-        stringToStream( stream, gi->isoCode );
+        stringToStream( stream, gi->isoCodeStr );
     } else {
         XP_LangCode code;
-        if ( haveLocaleToLc( gi->isoCode, &code ) ) {
+        if ( haveLocaleToLc( gi->isoCodeStr, &code ) ) {
             stream_putU8( stream, code );
         } else {
             XP_ASSERT( 0 );
@@ -971,7 +971,7 @@ game_logGI( const CurGameInfo* gi, const char* msg, const char* func, int line )
         XP_LOGF( "  serverRole: %d", gi->serverRole );
         XP_LOGF( "  gameID: %d", gi->gameID );
         XP_LOGF( "  dictName: %s", gi->dictName );
-        XP_LOGF( "  isoCode: %s", gi->isoCode );
+        XP_LOGF( "  isoCode: %s", gi->isoCodeStr );
     }
 }
 #endif

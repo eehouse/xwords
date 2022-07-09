@@ -75,7 +75,7 @@ public class NetLaunchInfo implements Serializable {
 
     protected String gameName;
     protected String dict;
-    protected ISOCode isoCode;   // added in version 2
+    protected String isoCodeStr;   // added in version 2
     protected int forceChannel;
     protected int nPlayersT;
     protected int nPlayersH;
@@ -111,14 +111,14 @@ public class NetLaunchInfo implements Serializable {
 
     private NetLaunchInfo( Bundle bundle )
     {
-        isoCode = ISOCode.newIf( bundle.getString( MultiService.ISO ) );
-        if ( null == isoCode ) {
+        isoCodeStr = bundle.getString( MultiService.ISO );
+        if ( null == isoCodeStr ) {
             int lang = bundle.getInt( MultiService.LANG, 0 );
             if ( 0 != lang ) {
-                isoCode = XwJNI.lcToLocaleJ( lang );
+                isoCodeStr = XwJNI.lcToLocaleJ( lang ).toString();
             }
         }
-        Assert.assertTrueNR( null != isoCode );
+        Assert.assertTrueNR( null != isoCodeStr );
         room = bundle.getString( MultiService.ROOM );
         inviteID = bundle.getString( MultiService.INVITEID );
         forceChannel = bundle.getInt( MultiService.FORCECHANNEL );
@@ -171,7 +171,7 @@ public class NetLaunchInfo implements Serializable {
             DataInputStream dis = new DataInputStream( bais );
             String nliData = dis.readUTF();
             nli = NetLaunchInfo.makeFrom( context, nliData );
-            Assert.assertTrueNR( null != nli.isoCode );
+            Assert.assertTrueNR( null != nli.isoCodeStr );
         } catch ( java.io.IOException ex ) {
             Log.d( TAG, "not an nli" );
         }
@@ -258,15 +258,15 @@ public class NetLaunchInfo implements Serializable {
                     removeUnsupported( supported );
 
                     dict = data.getQueryParameter( WORDLIST_KEY );
-                    isoCode = ISOCode.newIf( data.getQueryParameter( ISO_KEY ) );
-                    if ( null == isoCode ) {
+                    isoCodeStr = data.getQueryParameter( ISO_KEY );
+                    if ( null == isoCodeStr ) {
                         String langStr = data.getQueryParameter( LANG_KEY );
                         if ( null != langStr && !langStr.equals("0") ) {
                             int lang = Integer.decode( langStr );
-                            isoCode = XwJNI.lcToLocaleJ( lang );
+                            isoCodeStr = XwJNI.lcToLocale( lang ).toString();
                         }
                     }
-                    Assert.assertTrueNR( null != isoCode );
+                    Assert.assertTrueNR( null != isoCodeStr );
 
                     String np = data.getQueryParameter( TOTPLAYERS_KEY );
                     nPlayersT = Integer.decode( np );
@@ -296,7 +296,7 @@ public class NetLaunchInfo implements Serializable {
         Assert.assertTrueNR( null != isoCodeIn );
         gameName = gamNam;
         dict = dictName;
-        isoCode = isoCodeIn;
+        isoCodeStr = isoCodeIn.toString();
         nPlayersT = nPlayers;
         nPlayersH = 1;
         gameID = gamID;
@@ -361,6 +361,8 @@ public class NetLaunchInfo implements Serializable {
         _conTypes = addrs.toInt();
     }
 
+    public ISOCode isoCode() { return ISOCode.newIf( isoCodeStr ); }
+
     public String inviteID()
     {
         String result = inviteID;
@@ -390,10 +392,10 @@ public class NetLaunchInfo implements Serializable {
         bundle.putString( MultiService.ROOM, room );
         bundle.putString( MultiService.INVITEID, inviteID );
         int[] lang = {0};
-        if ( XwJNI.haveLocaleToLc( isoCode, lang ) ) {
+        if ( XwJNI.haveLocaleToLc( isoCodeStr, lang ) ) {
             bundle.putInt( MultiService.LANG, lang[0] );
         } else {
-            bundle.putString( MultiService.ISO, isoCode.toString() );
+            bundle.putString( MultiService.ISO, isoCodeStr );
         }
         bundle.putString( MultiService.DICT, dict );
         bundle.putString( MultiService.GAMENAME, gameName );
@@ -424,7 +426,7 @@ public class NetLaunchInfo implements Serializable {
             other = (NetLaunchInfo)obj;
             result = TextUtils.equals( gameName, other.gameName )
                 && TextUtils.equals( dict, other.dict )
-                && ISOCode.safeEquals( isoCode, other.isoCode )
+                && TextUtils.equals( isoCodeStr, other.isoCodeStr )
                 && forceChannel == other.forceChannel
                 && nPlayersT == other.nPlayersT
                 && nPlayersH == other.nPlayersH
@@ -463,10 +465,10 @@ public class NetLaunchInfo implements Serializable {
                 .put( MultiService.FORCECHANNEL, forceChannel )
                 ;
             int[] lang = {0};
-            if ( XwJNI.haveLocaleToLc( isoCode, lang ) ) {
+            if ( XwJNI.haveLocaleToLc( isoCodeStr, lang ) ) {
                 obj.put( MultiService.LANG, lang[0] );
             } else {
-                obj.put( MultiService.ISO, isoCode );
+                obj.put( MultiService.ISO, isoCodeStr );
             }
 
             if ( dupeMode ) {
@@ -548,14 +550,14 @@ public class NetLaunchInfo implements Serializable {
         boolean hasAddrs = -1 != flags;
         _conTypes = hasAddrs ? flags : EMPTY_SET;
 
-        isoCode = ISOCode.newIf( json.optString( MultiService.ISO, null ) );
-        if ( null == isoCode ) {
+        isoCodeStr = json.optString( MultiService.ISO, null );
+        if ( null == isoCodeStr ) {
             int lang = json.optInt( MultiService.LANG, 0 );
             if ( 0 != lang ) {
-                isoCode = XwJNI.lcToLocaleJ( lang );
+                isoCodeStr = XwJNI.lcToLocale( lang );
             }
         }
-        Assert.assertTrueNR( null != isoCode );
+        Assert.assertTrueNR( null != isoCodeStr );
 
         forceChannel = json.optInt( MultiService.FORCECHANNEL, 0 );
         dupeMode = json.optBoolean( MultiService.DUPEMODE, false );
@@ -633,11 +635,11 @@ public class NetLaunchInfo implements Serializable {
 
         // We'll use lang rather than ISO IFF we have it.
         int[] lang = {0};
-        Assert.assertTrueNR( null != isoCode );
-        if ( XwJNI.haveLocaleToLc( isoCode, lang ) ) {
+        Assert.assertTrueNR( null != isoCodeStr );
+        if ( XwJNI.haveLocaleToLc( isoCodeStr, lang ) ) {
             appendInt( ub, LANG_KEY, lang[0] );
         } else {
-            ub.appendQueryParameter( ISO_KEY, isoCode.toString() );
+            ub.appendQueryParameter( ISO_KEY, isoCodeStr );
         }
         appendInt( ub, TOTPLAYERS_KEY, nPlayersT );
         appendInt( ub, HEREPLAYERS_KEY, nPlayersH );
@@ -785,7 +787,7 @@ public class NetLaunchInfo implements Serializable {
     private boolean hasCommon()
     {
         boolean good = null != dict
-            && null != isoCode
+            && null != isoCodeStr
             && 0 < nPlayersT
             && 0 != gameID();
         // Log.d( TAG, "hasCommon() => %b", good );

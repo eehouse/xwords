@@ -599,7 +599,7 @@ public class GameUtils {
         CommsAddrRec addr = nli.makeAddrRec( context );
 
         return makeNewMultiGame( context, sink, util, DBUtils.GROUPID_UNSPEC,
-                                 addr, new ISOCode[] {nli.isoCode},
+                                 addr, new ISOCode[] {nli.isoCode()},
                                  new String[] { nli.dict }, null, nli.nPlayersT,
                                  nli.nPlayersH, nli.forceChannel,
                                  nli.inviteID(), nli.gameID(),

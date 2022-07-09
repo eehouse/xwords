@@ -289,8 +289,8 @@ public class XwJNI {
 
     public static native CommsAddrRec comms_getInitialAddr();
     public static native String comms_getUUID();
-    private static native String lcToLocale( int lc );
-    private static native boolean haveLocaleToLc( String isoCode, int[] lc );
+    public static native String lcToLocale( int lc );
+    public static native boolean haveLocaleToLc( String isoCodeStr, int[] lc );
 
     // Game methods
     private static GamePtr initGameJNI( long rowid )

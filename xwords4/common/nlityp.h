@@ -35,7 +35,7 @@ typedef struct _NetLaunchInfo {
 
     XP_UCHAR gameName[MAX_GAME_NAME_LEN];
     XP_UCHAR dict[MAX_DICT_NAME_LEN];
-    XP_UCHAR isoCode[MAX_ISO_CODE_LEN+1];
+    XP_UCHAR isoCodeStr[MAX_ISO_CODE_LEN+1];
     XP_U8 forceChannel;
     XP_U8 nPlayersT;
     XP_U8 nPlayersH;

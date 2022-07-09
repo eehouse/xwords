@@ -469,7 +469,7 @@ makeGI( MPFORMAL JNIEnv* env, jobject jgi )
     getString( env, jgi, "dictName", AANDS(buf) );
     gi->dictName = copyString( mpool, buf );
     getString( env, jgi, "isoCodeStr", AANDS(buf) );
-    XP_STRNCPY( gi->isoCode, buf, VSIZE(gi->isoCode) );
+    XP_STRNCPY( gi->isoCodeStr, buf, VSIZE(gi->isoCodeStr) );
 
     XP_ASSERT( gi->nPlayers <= MAX_NUM_PLAYERS );
 
@@ -508,7 +508,7 @@ setJGI( JNIEnv* env, jobject jgi, const CurGameInfo* gi )
     setBools( env, jgi, (void*)gi, AANDS(gi_bools) );
 
     setString( env, jgi, "dictName", gi->dictName );
-    setString( env, jgi, "isoCodeStr", gi->isoCode );
+    setString( env, jgi, "isoCodeStr", gi->isoCodeStr );
 
     intToJenumField( env, jgi, gi->phoniesAction, "phoniesAction",
                      PKG_PATH("jni/CurGameInfo$XWPhoniesChoice") );

@@ -35,7 +35,7 @@ nli_init( NetLaunchInfo* nli, const CurGameInfo* gi, const CommsAddrRec* addr,
     XP_MEMSET( nli, 0, sizeof(*nli) );
     nli->gameID = gi->gameID;
     XP_STRCAT( nli->dict, gi->dictName );
-    XP_STRCAT( nli->isoCode, gi->isoCode );
+    XP_STRCAT( nli->isoCodeStr, gi->isoCodeStr );
     nli->nPlayersT = gi->nPlayers;
     nli->nPlayersH = nPlayersH;
     nli->forceChannel = forceChannel;
@@ -113,7 +113,7 @@ nli_saveToStream( const NetLaunchInfo* nli, XWStreamCtxt* stream )
     /* We'll use version 1 unless the ISOCODE has no XP_LangCode equivalent,
        meaning the wordlist is too new and requires NLI_VERSION_2 */
     XP_LangCode code;
-    XP_U8 version = haveLocaleToLc( nli->isoCode, &code )
+    XP_U8 version = haveLocaleToLc( nli->isoCodeStr, &code )
         ? NLI_VERSION_LC : NLI_VERSION_ISO;
     stream_putU8( stream, version );
 
@@ -123,7 +123,7 @@ nli_saveToStream( const NetLaunchInfo* nli, XWStreamCtxt* stream )
         stream_putU16( stream, code );
         break;
     case NLI_VERSION_ISO:
-        stringToStream( stream, nli->isoCode );
+        stringToStream( stream, nli->isoCodeStr );
         break;
     default:
         XP_ASSERT(0);
@@ -172,9 +172,9 @@ nli_makeFromStream( NetLaunchInfo* nli, XWStreamCtxt* stream )
         XP_LangCode lang = stream_getU16( stream );
         const XP_UCHAR* isoCode = lcToLocale( lang );
         XP_ASSERT( !!isoCode );
-        XP_STRNCPY( nli->isoCode, isoCode, VSIZE(nli->isoCode) );
+        XP_STRNCPY( nli->isoCodeStr, isoCode, VSIZE(nli->isoCodeStr) );
     } else if ( version == NLI_VERSION_ISO ) {
-        stringFromStreamHere( stream, nli->isoCode, sizeof(nli->isoCode) );
+        stringFromStreamHere( stream, nli->isoCodeStr, sizeof(nli->isoCodeStr) );
     } else {
         success = XP_FALSE;
     }
@@ -281,7 +281,7 @@ logNLI( const NetLaunchInfo* nli, const char* callerFunc, const int callerLine )
     XP_UCHAR buf[256+128];
     XP_SNPRINTF( buf, VSIZE(buf), "{ctyps: [%s], nPlayersT: %d, nPlayersH: %d, "
                  "isoCode: '%s', gameID: %d, inviteID: %s, mqttid: %s}", conTypes,
-                 nli->nPlayersT, nli->nPlayersH, nli->isoCode, nli->gameID,
+                 nli->nPlayersT, nli->nPlayersH, nli->isoCodeStr, nli->gameID,
                  nli->inviteID, nli->mqttDevID );
     XP_LOGF( "%s", buf );
 }
