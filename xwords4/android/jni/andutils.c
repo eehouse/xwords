@@ -192,7 +192,6 @@ setString( JNIEnv* env, jobject container, const char* fieldName, const XP_UCHAR
     jstring str = (*env)->NewStringUTF( env, value );
     setObjectField( env, container, fieldName, "Ljava/lang/String;", str );
     success = true;
-    deleteLocalRef( env, str );
 
 #ifdef DEBUG
     XP_UCHAR buf[1024];
@@ -276,11 +275,12 @@ getObjectField( JNIEnv* env, jobject container, const char* name, const char* si
 
 void
 setObjectField( JNIEnv* env, jobject obj, const char* name, const char* sig,
-           jobject val )
+                jobject val )
 {
     jfieldID fid = getFieldID( env, obj, name, sig );
     XP_ASSERT( !!fid );
     (*env)->SetObjectField( env, obj, fid, val );
+    deleteLocalRef( env, val );
 }
 
 bool
@@ -341,7 +341,6 @@ setIntArray( JNIEnv* env, jobject jowner, const char* fieldName,
 {
     jintArray jarr = makeIntArray( env, count, vals, elemSize );
     setObjectField( env, jowner, fieldName, "[I", jarr );
-    deleteLocalRef( env, jarr );
 }
 
 jbyteArray
@@ -441,7 +440,6 @@ setStringArray( JNIEnv* env, jobject jowner, const char* ownerField,
 {
     jobjectArray jaddrs = makeStringArray( env, count, vals );
     setObjectField( env, jowner, ownerField, "[Ljava/lang/String;", jaddrs );
-    deleteLocalRef( env, jaddrs );
 }
 
 jobjectArray
@@ -496,7 +494,6 @@ setTypeSetFieldIn( JNIEnv* env, const CommsAddrRec* addr, jobject jTarget,
     setObjectField( env, jTarget, fieldName,
                     "L" PKG_PATH("jni/CommsAddrRec$CommsConnTypeSet") ";",
                     jtypset );
-    deleteLocalRef( env, jtypset );
 }
 
 jobject

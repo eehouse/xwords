@@ -1246,7 +1246,6 @@ msgArrayToJMsgArray( JNIEnv* env, const SMSMsgArray* arr )
         jbyteArray arr = makeByteArray( env, msgsLoc->len,
                                         (const jbyte*)msgsLoc->data );
         setObjectField( env, jmsg, "data", "[B", arr );
-        deleteLocalRef( env, arr );
         
         (*env)->SetObjectArrayElement( env, result, ii, jmsg );
         deleteLocalRef( env, jmsg );
