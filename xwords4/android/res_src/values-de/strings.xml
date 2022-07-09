@@ -3,7 +3,6 @@
     <string name="str_game_name_fmt">%1$s (%2$s)</string>
     <string name="robot_name_fmt">%1$s (Computer)</string>
     <string name="missing_player">(noch nicht hier …)</string>
-    <string name="summary_relay_gameover_fmt">Partie beendet in Raum „%1$s“</string>
     <string name="summary_invites_out">Eingeladene Spieler</string>
     <string name="gameOver">Partie beendet</string>
     <plurals name="moves_fmt">
@@ -108,7 +107,6 @@
     <string name="invit_expl_bt_fmt">Einladung per Bluetooth an gepaartes Gerät „%1$s“ in „%2$s“ geschickt</string>
     <string name="invit_expl_notarget_fmt">Einladung über %1$s auf %2$s geschickt. Empfänger unbekannt.</string>
     <string name="pts">Pkt.</string>
-    <string name="msg_dup_room">Ein anderer Server hat bereits einen Raum mit diesem Namen angelegt. Benennen Sie Ihren um oder versuchen Sie es später noch einmal.</string>
     <string name="ids_badwords_fmt">Wort/Wörter %1$s nicht in Wortliste %2$s gefunden.</string>
     <string name="badwords_accept">" Wollen Sie diesen Zug trotzdem akzeptieren?"</string>
     <string name="badwords_lost">Zug verwirkt.</string>

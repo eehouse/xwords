@@ -336,8 +336,6 @@
          three. -->
     <!-- First state: is configured to use a room but has not yet
          contacted the relay and been assigned that room. -->
-    <string name="summary_relay_conf_fmt">XLATE ME: Configured for room
-      \"%1$s\"</string>
     <!-- Used as a substitute for the names of remote players when
          they aren't available yet because the connection is not
          complete.  Displayed in the lists of players found in each
@@ -811,7 +809,6 @@
     <!-- the background color of the area outside the board,
          e.g. between entries in the scoreboard -->
     <string name="background">XLATE ME: Board background</string>
-    <string name="msg_dup_room">Iný server si už zaregistroval miestnosť s týmto menom. Premenujte ju alebo to skúste neskôr.</string>
     <!-- When a game has been connected and the relay is notified that
          a device in the game has deleted its part of the game, this
          message is posted when you connect your end of it to the

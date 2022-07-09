@@ -3,7 +3,6 @@
     <string name="str_game_name_fmt">%1$s (%2$s)</string>
     <string name="robot_name_fmt">%1$s (maskinspiller)</string>
     <string name="missing_player">(ikke her enda…)</string>
-    <string name="summary_relay_gameover_fmt">Spill over i rom \"%1$s\"</string>
     <string name="summary_invites_out">Spillere invitert</string>
     <string name="summary_invites_out_fmt">Spillere invitert til rom \"%1$s\"</string>
     <string name="gameOver">Spill over</string>
@@ -428,7 +427,6 @@
     <string name="invit_expl_sms_fmt">Invitasjon sendt via SMS til telefonnummer %1$s på %2$s</string>
     <string name="invit_expl_relay_fmt">Invitasjon videresendt av relé-et til en annen enhet på %1$s</string>
     <string name="pts">p.</string>
-    <string name="msg_lost_other">Relé-et har mistet kontakten med en annen enhet i dette spillet.</string>
     <string name="ids_badwords_fmt">Ord[ene] %1$s ble ikke funnet i ordlisten %2$s.</string>
     <string name="badwords_lost">Tur tapt.</string>
     <string name="board_menu_tray_hide">Skjul stativ</string>

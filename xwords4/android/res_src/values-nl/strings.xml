@@ -3,7 +3,6 @@
     <string name="str_game_name_fmt">%1$s (%2$s)</string>
     <string name="robot_name_fmt">%1$s (robot)</string>
     <string name="missing_player">(nog niet hier...)</string>
-    <string name="summary_relay_gameover_fmt">Spel voorbij is kamer \"%1$s\"</string>
     <string name="gameOver">Spel voorbij</string>
     <plurals name="moves_fmt">
         <item quantity="one">1 zet gespeeld</item>
@@ -99,7 +98,6 @@
         <item quantity="other">Dit spel wacht op %1$d spelers op afstand. Wil je iemand uitnodigen om mee te doen, indien je dit nog niet gedaan hebt?</item>
     </plurals>
     <string name="pts">pntn</string>
-    <string name="msg_no_room">Geen host heeft een kamer met deze naam geregistreerd.</string>
     <string name="ids_badwords_fmt">Woord[en] %1$s niet gevonden in woordenlijst %2$s.</string>
     <string name="badwords_accept">" Wil je deze zet toch goed rekenen?"</string>
     <string name="badwords_lost">" Beurt verloren."</string>

@@ -3,7 +3,6 @@
     <string name="str_game_name_fmt">%1$s (%2$s)</string>
     <string name="robot_name_fmt">%1$s (ロボット)</string>
     <string name="missing_player">(まだありません…)</string>
-    <string name="summary_relay_gameover_fmt">ルーム \"%1$s\" でゲームオーバー</string>
     <string name="gameOver">ゲームオーバー</string>
     <string name="button_delete">削除</string>
     <string name="button_reset">リセット</string>
@@ -96,7 +95,6 @@
         <item quantity="other">このゲームは %1$d リモート プレイヤーを待っています。まだであれば -- 参加するユーザーを招待しますか\?</item>
     </plurals>
     <string name="pts">ﾎﾟｲﾝﾄ</string>
-    <string name="msg_no_room">その名前のルームが登録されたホストはありません。</string>
     <string name="ids_badwords_fmt">単語 %1$s は単語リスト %2$s 内に見つかりません。</string>
     <string name="badwords_accept">" この移動を反映してもよろしいですか?"</string>
     <string name="badwords_lost">順番を失いました。</string>

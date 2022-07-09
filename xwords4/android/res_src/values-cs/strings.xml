@@ -117,7 +117,6 @@
     <string name="bonus_w3x">Trojitá hodnota slova</string>
     <string name="tile_back">Pozadí kamenů</string>
     <string name="empty">Prázdné pole/pozadí</string>
-    <string name="msg_dup_room">Jiný server si již zaregistroval místnost s tímto jménem. Přejmenujte ji nebo to zkuste později.</string>
     <string name="badwords_accept">  Chcete přesto přijmout tento tah?</string>
     <string name="badwords_lost">  Tah ztracen.</string>
     <string name="badwords_title">Neplatné slovo[a]</string>
@@ -147,5 +146,4 @@
     <string name="initial_player_minutes">Délka hry v minutách</string>
     <string name="str_game_name_fmt">%1$s (%2$s)</string>
     <string name="missing_player">(není tu ještě…)</string>
-    <string name="summary_relay_gameover_fmt">Konec hry v místnosti \"%1$s\"</string>
 </resources>

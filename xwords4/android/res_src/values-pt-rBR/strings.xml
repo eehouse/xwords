@@ -34,7 +34,6 @@
     <string name="badwords_accept">" Você ainda quer aceitar essa jogada\?"</string>
     <string name="ids_badwords_fmt">Palavra[s] %1$s não encontrada na lista de palavras %2$s.</string>
     <string name="msg_dev_deleted_fmt">O jogo de nome “%1$s” foi apagado em outro dispositivo. Você não poderá jogar mais.</string>
-    <string name="msg_too_many">Você está com mais jogadores do que o host exige.</string>
     <string name="pts">pontos</string>
     <string name="invit_expl_notarget_fmt">Convite enviado via %1$s no %2$s. Recebedor desconhecido.</string>
     <string name="invit_expl_relay_fmt">Convite enviado pelo servidor para outro dispositivo no %1$s</string>

@@ -41,7 +41,6 @@
          form a complete game.  We'll be in this state as long as the
          game exists. -->
     <!-- Final state: game is over. -->
-    <string name="summary_relay_gameover_fmt">Fim da partida na sala “%1$s”</string>
     <!-- Games that have ended are listed with this string -->
     <string name="gameOver">Fim da partida</string>
     <!-- Otherwise they're listed with this to give some indication of
@@ -424,9 +423,6 @@
     <!-- (I believe this can no longer occur) -->
     <!-- (I believe this can no longer occur) -->
     <!-- (I believe this can no longer occur) -->
-    <string name="msg_dup_room">Outro hospedeiro já registrou uma sala
-    usando esse nome. Mude o nome da sua ou tente novamente mais
-    tarde.</string>
     <!-- (I believe this can no longer occur) -->
     <!-- When a game has been connected and the relay is notified that
          a device in the game has deleted its part of the game, this

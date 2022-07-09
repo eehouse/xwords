@@ -20,7 +20,6 @@
     <string name="gameOver">Game Over</string>
     <string name="summary_invites_out_fmt">Giocatori invitati alla stanza \"%1$s\"</string>
     <string name="summary_invites_out">Giocatori invitati</string>
-    <string name="summary_relay_conf_fmt">Configurato per la stanza \"%1$s\"</string>
     <string name="missing_player">(Non ancora qui...)</string>
     <string name="logstore_clear_confirm">Sei sicuro di voler eliminare i log debug\? Questa azione non può essere annullata.</string>
     <string name="logstore_cleared_fmt">%1$d log cancellati</string>
@@ -876,7 +875,6 @@
     <string name="badwords_accept">" Vuoi accettare comunque questa mossa\?"</string>
     <string name="ids_badwords_fmt">Parola[e] %1$s non trovate nella lista parole %2$s.</string>
     <string name="msg_dev_deleted_fmt">La partita \"%1$s\" è stata cancellata su un altro dispositivo. Non puoi continuare a giocare.</string>
-    <string name="msg_too_many">Stai chiamando più giocatori di quelli richiesti.</string>
     <string name="pts">pts</string>
     <string name="qrcode_invite_expl">Per invitare tramite QR code, fai scannerizzare il codice al tuo avversario con la fotocamera del suo cellulare Android.</string>
     <string name="invit_expl_player_fmt">Invito inoltrato via MQTT/Internet a giocatore conosciuto \"%1$s\" su %2$s.</string>

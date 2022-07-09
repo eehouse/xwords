@@ -20,7 +20,6 @@
     <string name="gameOver">खेळ संपला एसडीडीएसएफ</string>
     <string name="summary_invites_out_fmt">खेळाडूंना खोली \"%1$s\" मध्ये आमंत्रित केले</string>
     <string name="summary_invites_out">खेळाडूंना आमंत्रित केले</string>
-    <string name="summary_relay_conf_fmt">\"%1$s\" खोलीसाठी कॉन्फिगर केलेले</string>
     <string name="missing_player">(अद्याप येथे नाही ...)</string>
     <string name="robot_name_fmt">%1$s(रोबोट)</string>
     <string name="str_game_name_fmt">%1$s%2$s</string>

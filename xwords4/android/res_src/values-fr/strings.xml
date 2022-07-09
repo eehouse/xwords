@@ -42,7 +42,6 @@
          form a complete game.  We'll be in this state as long as the
          game exists. -->
     <!-- Final state: game is over. -->
-    <string name="summary_relay_gameover_fmt">Partie finie dans le salon « %1$s »</string>
     <!-- Games that have ended are listed with this string -->
     <string name="gameOver">Partie finie</string>
     <!-- Otherwise they're listed with this to give some indication of
@@ -529,7 +528,6 @@ relai dans le salon \"%2$s\". En attente de %3$d joueur[s].</string>-->
          the host expects.</string>-->
     <!-- (I believe this can no longer occur) -->
     <!--<string name="msg_no_room">No host has registered a room by that name.</string>-->
-    <string name="msg_no_room">Aucun hôte n\'a créé de salon de ce nom.</string>
     <!-- (I believe this can no longer occur) -->
     <!--<string name="msg_dup_room">Another host has already registered a
          room using that name.  Rename yours or retry later.</string>-->

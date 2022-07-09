@@ -137,7 +137,6 @@
     <string name="tile_back">Fons de la fitxa</string>
     <string name="empty">Cel·la buida/fons</string>
     <string name="clr_crosshairs">Creu d\'ubicació</string>
-    <string name="msg_dup_room">Un altre amfitrió ha registrat una sala amb aquest nom. Canvieu el nom a la vostra o torneu a intentar-ho més tard.</string>
     <string name="ids_badwords_fmt">Les paraules %1$s no es troben al diccionari %2$s.</string>
     <string name="badwords_accept">  Voleu acceptar aquesta jugada?</string>
     <string name="badwords_lost">  Torn perdut.</string>
@@ -165,7 +164,6 @@
     <string name="initial_player_minutes">Minuts de partida</string>
     <string name="str_game_name_fmt">%1$s (%2$s)</string>
     <string name="missing_player">(encara no és aquí...)</string>
-    <string name="summary_relay_gameover_fmt">Partida finalitzada en la sala «%1$s»</string>
     <plurals name="moves_fmt">
         <item quantity="one">1 jugada feta</item>
         <item quantity="other">%1$d jugades fetes</item>
