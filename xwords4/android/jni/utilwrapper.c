@@ -245,7 +245,7 @@ and_util_informUndo( XW_UtilCtxt* uc, XWEnv xwe )
 }
 
 static void
-and_util_informNetDict( XW_UtilCtxt* uc, XWEnv xwe, const XP_UCHAR* isoCode,
+and_util_informNetDict( XW_UtilCtxt* uc, XWEnv xwe, const XP_UCHAR* isoCodeStr,
                         const XP_UCHAR* oldName, const XP_UCHAR* newName,
                         const XP_UCHAR* newSum, XWPhoniesChoice phoniesAction )
 {
@@ -254,7 +254,7 @@ and_util_informNetDict( XW_UtilCtxt* uc, XWEnv xwe, const XP_UCHAR* isoCode,
                      "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;"
                      "Ljava/lang/String;L"
                      PKG_PATH("jni/CurGameInfo$XWPhoniesChoice") ";)V" );
-    jstring jIsoCode = (*env)->NewStringUTF( env, isoCode );
+    jstring jIsoCode = (*env)->NewStringUTF( env, isoCodeStr );
     jstring jnew = (*env)->NewStringUTF( env, newName );
     jstring jsum = (*env)->NewStringUTF( env, newSum );
     jstring jold = (*env)->NewStringUTF( env, oldName );

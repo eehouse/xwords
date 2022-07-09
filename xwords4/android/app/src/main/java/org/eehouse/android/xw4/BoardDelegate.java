@@ -2025,7 +2025,7 @@ public class BoardDelegate extends DelegateBase
         }
 
         @Override
-        public void informNetDict( ISOCode isoCode, String oldName,
+        public void informNetDict( String isoCodeStr, String oldName,
                                    String newName, String newSum,
                                    CurGameInfo.XWPhoniesChoice phonies )
         {
@@ -2048,6 +2048,7 @@ public class BoardDelegate extends DelegateBase
                 DlgID dlgID;
                 msg = getString( R.string.inform_dict_diffdict_fmt,
                                  oldName, newName, newName );
+                ISOCode isoCode = ISOCode.newIf( isoCodeStr );
                 if ( DictLangCache.haveDict( m_activity, isoCode,
                                              newName ) ) {
                     dlgID = DlgID.DLG_USEDICT;

@@ -105,7 +105,7 @@ public interface UtilCtxt {
     void informMove( int turn, String expl, String words );
     void informUndo();
 
-    void informNetDict( ISOCode isoCode, String oldName, String newName,
+    void informNetDict( String isoCodeStr, String oldName, String newName,
                         String newSum, CurGameInfo.XWPhoniesChoice phonies );
 
     void informMissing( boolean isServer, CommsConnTypeSet connTypes,
