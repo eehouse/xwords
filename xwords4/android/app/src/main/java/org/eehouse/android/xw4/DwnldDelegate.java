@@ -445,7 +445,7 @@ public class DwnldDelegate extends ListDelegateBase {
         return new File(path).getName();
     }
 
-    private static ISOCode langFromUri( Uri uri )
+    private static ISOCode isoCodeFromUri( Uri uri )
     {
         List<String> segs = uri.getPathSegments();
         ISOCode result = new ISOCode(segs.get( segs.size() - 2 ));
@@ -461,7 +461,7 @@ public class DwnldDelegate extends ListDelegateBase {
         }
     }
 
-    private static void callListener( Uri uri, boolean success )
+    private void callListener( Uri uri, boolean success )
     {
         if ( null != uri ) {
             ListenerData ld;
@@ -470,11 +470,11 @@ public class DwnldDelegate extends ListDelegateBase {
             }
             if ( null != ld ) {
                 String name = ld.m_name;
-                ISOCode lang = langFromUri( uri );
+                ISOCode isoCode = isoCodeFromUri( uri );
                 if ( null == name ) {
                     name = uri.toString();
                 }
-                ld.m_lstnr.downloadFinished( lang, name, success );
+                ld.m_lstnr.downloadFinished( isoCode, name, success );
             }
         }
     }

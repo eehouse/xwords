@@ -274,8 +274,7 @@ public class GameListItem extends LinearLayout
                 value = String.format( "%d", m_summary.nPacketsPending );
                 break;
             case R.string.game_summary_field_language:
-                value =
-                    DictLangCache.getLangNameForISOCode( m_context, m_summary.isoCode );
+                value = getDictLang();
                 break;
             case R.string.game_summary_field_opponents:
                 value = m_summary.playerNames( m_context );
@@ -302,6 +301,17 @@ public class GameListItem extends LinearLayout
             m_name.setText( value );
         }
         return state;
+    }
+
+    private String getDictLang()
+    {
+        String langName = DictLangCache
+            .getLangNameForISOCode( m_context, m_summary.isoCode );
+        if ( null == langName ) {
+            langName = LocUtils.getString( m_context, R.string.langUnknownFmt,
+                                           m_summary.isoCode );
+        }
+        return langName;
     }
 
     private void setData( GameSummary summary, boolean expanded )
@@ -465,8 +475,7 @@ public class GameListItem extends LinearLayout
         synchronized( s_invalRows ) {
             s_invalRows.add( rowid );
         }
-        // DbgUtils.logf( "GameListItem.inval(rowid=%d); inval rows now %s",
-        //                rowid, invalRowsToString() );
+        // Log.d( TAG, "GameListItem.inval(rowid=%d)", rowid );
     }
 
     // private static String invalRowsToString()

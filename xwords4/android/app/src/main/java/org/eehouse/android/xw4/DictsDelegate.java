@@ -1206,6 +1206,7 @@ public class DictsDelegate extends ListDelegateBase
 
         if ( m_launchedForMissing ) {
             post( new Runnable() {
+                    @Override
                     public void run() {
                         if ( success ) {
                             Intent intent = getIntent();

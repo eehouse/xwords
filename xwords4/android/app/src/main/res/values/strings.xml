@@ -269,6 +269,10 @@
     <string name="lang_label">Game language</string>
     <string name="langdict_label">Game language/wordlist</string>
     <!-- text of separator marking out the connection area of the dialog -->
+    <!-- Used as name of missing language, usually when a game's been
+         created and the wordlist then deleted. -->
+    <string name="langUnknownFmt">Unknown (%1$s)</string>
+
     <string name="connect_label_fmt">Connection (via %1$s)</string>
 
     <!-- text of separator marking out other-setting area of the dialog -->

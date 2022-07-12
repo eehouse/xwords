@@ -551,7 +551,7 @@ public class GameConfigDelegate extends DelegateBase
             break;
         case REQUEST_LANG_GC:
             ISOCode isoCode = cancelled ? m_gi.isoCode()
-                : (ISOCode)data.getSerializableExtra( DictsDelegate.RESULT_LAST_LANG );
+                : ISOCode.newIf(data.getStringExtra( DictsDelegate.RESULT_LAST_LANG ) );
             String langName = DictLangCache.getLangNameForISOCode( m_activity, isoCode );
             selLangChanged( langName );
             setLangSpinnerSelection( langName );

@@ -1,6 +1,6 @@
 /* -*- compile-command: "find-and-gradle.sh inXw4dDeb"; -*- */
 /*
- * Copyright 2010 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2010 - 2022 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -36,6 +36,7 @@ import org.eehouse.android.xw4.loc.LocUtils;
 import org.eehouse.android.xw4.Utils.ISOCode;
 
 import java.io.File;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -48,8 +49,6 @@ import java.util.Set;
 
 public class DictLangCache {
     private static final String TAG = DictLangCache.class.getSimpleName();
-    private static Map<ISOCode, String> s_langNames;
-    private static Map<String, ISOCode> s_langCodes;
 
     private static ISOCode s_adaptedLang = null;
     private static LangsArrayAdapter s_langsAdapter;
@@ -213,15 +212,10 @@ public class DictLangCache {
         List<DictAndLoc> al = new ArrayList<>();
         DictAndLoc[] dals = DictUtils.dictList( context );
 
-        makeMaps( context );
-
         for ( DictAndLoc dal : dals ) {
             DictInfo info = getInfo( context, dal );
-            if ( null != info ) {
-                Assert.assertTrueNR( s_langNames.containsKey( info.isoCode() ) );
-                if ( isoCode.equals( info.isoCode() ) ) {
-                    al.add( dal );
-                }
+            if ( null != info && isoCode.equals( info.isoCode() ) ) {
+                al.add( dal );
             }
         }
         DictAndLoc[] result = al.toArray( new DictAndLoc[al.size()] );
@@ -255,33 +249,60 @@ public class DictLangCache {
 
     public static ISOCode getDictISOCode( Context context, DictAndLoc dal )
     {
-        return getInfo( context, dal ).isoCode();
+        ISOCode result = getInfo( context, dal ).isoCode();
+        Assert.assertTrueNR( null != result );
+        return result;
     }
 
     public static ISOCode getDictISOCode( Context context, String dictName )
     {
         DictInfo info = getInfo( context, dictName );
-        return info.isoCode();
+        ISOCode result = info.isoCode();
+        Assert.assertTrueNR( null != result );
+        return result;
     }
 
     public static String getLangNameForISOCode( Context context, ISOCode isoCode )
     {
-        makeMaps( context );
-        return s_langNames.get( isoCode );
+        String langName;
+        try ( DLCache cache = DLCache.get( context ) ) {
+            langName = cache.get( isoCode );
+
+            if ( null == langName ) {
+                // Any chance we have a installed dict providing this? How to
+                // search given we can't read an ISOCode from a dict without
+                // opening it.
+            }
+        }
+        Log.d( TAG, "getLangNameForISOCode(%s) => %s", isoCode, langName );
+        return langName;
     }
 
     public static void setLangNameForISOCode( Context context, ISOCode isoCode,
                                               String langName )
     {
-        makeMaps( context );
-        putTwo( isoCode, langName );
+        Log.d( TAG, "setLangNameForISOCode(%s=>%s)", isoCode, langName );
+        try ( DLCache cache = DLCache.get( context ) ) {
+            cache.put( isoCode, langName );
+        }
     }
 
     public static ISOCode getLangIsoCode( Context context, String langName )
     {
-        makeMaps( context );
-        ISOCode result = s_langCodes.get( langName );
-        // Log.d( TAG, "getLangIsoCode(%s) => %s", langName, result );
+        Log.d( TAG, "getLangIsoCode(%s)", langName );
+        ISOCode result;
+        try ( DLCache cache = DLCache.get( context ) ) {
+            Log.d( TAG, "looking for %s in %H", langName, cache );
+            result = cache.get( langName );
+        }
+
+        if ( null == result ) {
+            Assert.failDbg();
+            // getinfo
+        }
+
+        Log.d( TAG, "getLangIsoCode(%s) => %s", langName, result );
+        // Assert.assertTrueNR( null != result );
         return result;
     }
 
@@ -311,7 +332,8 @@ public class DictLangCache {
     public static String getLangName( Context context, String dictName )
     {
         ISOCode isoCode = getDictISOCode( context, dictName );
-        return getLangNameForISOCode( context, isoCode );
+        String langName = getLangNameForISOCode( context, isoCode );
+        return langName;
     }
 
     // May be called from background thread
@@ -354,9 +376,18 @@ public class DictLangCache {
             String name = getLangName( context, dal.name );
             if ( null == name || 0 == name.length() ) {
                 Log.w( TAG, "bad lang name for dal name %s", dal.name );
-                // Assert.fail();
+
+                DictInfo di = getInfo( context, dal );
+                if ( null != di ) {
+                    name = di.langName;
+                    try ( DLCache cache = DLCache.get( context ) ) {
+                        cache.put( di.isoCode(), name );
+                    }
+                }
             }
-            langs.add( name );
+            if ( null != name && 0 < name.length() ) {
+                langs.add( name );
+            }
         }
         String[] result = new String[langs.size()];
         return langs.toArray( result );
@@ -422,45 +453,6 @@ public class DictLangCache {
         return s_dictsAdapter;
     }
 
-    private static void putTwo( ISOCode isoCode, String langName )
-    {
-        // Log.d( TAG, "putTwo(): adding %s => %s", langName, isoCode );
-        Assert.assertTrueNR( null != isoCode
-                             && !TextUtils.isEmpty(langName) );
-        s_langCodes.put( langName, isoCode );
-        s_langNames.put( isoCode, langName );
-    }
-
-    private static void makeMaps( Context context )
-    {
-        if ( null == s_langNames ) {
-            s_langCodes = new HashMap<>();
-            s_langNames = new HashMap<>();
-
-            Resources res = context.getResources();
-            String[] entries  = res.getStringArray( R.array.language_names );
-            for ( int ii = 0; ii < entries.length; ii += 2 ) {
-                ISOCode isoCode = new ISOCode(entries[ii]);
-                String langName = entries[ii+1];
-                putTwo( isoCode, langName );
-            }
-
-            // Now deal with any dicts too new for their isoCodes to be in
-            // language_names
-            DictAndLoc[] dals = DictUtils.dictList( context ) ;
-            for ( DictAndLoc dal : dals ) {
-                DictInfo info = getInfo( context, dal );
-                ISOCode isoCode = info.isoCode();
-                Assert.assertTrueNR( null != isoCode );
-                if ( !s_langNames.containsKey( isoCode ) ) {
-                    // Log.d( TAG, "looking at info %s", info );
-                    Assert.assertTrueNR( null != info.langName );
-                    putTwo( isoCode, info.langName );
-                }
-            }
-        }
-    }
-
     private static DictInfo getInfo( Context context, String name )
     {
         DictInfo result = DBUtils.dictsGetInfo( context, name );
@@ -501,5 +493,134 @@ public class DictLangCache {
             }
         }
         return info;
+    }
+
+    private static class DLCache implements Serializable, AutoCloseable {
+        private static final String CACHE_KEY = TAG + "/cache";
+        private static DLCache[] sCache = {null};
+
+        private HashMap<ISOCode, String> mLangNames = new HashMap<>();
+        private int mCurRev;
+        private transient boolean mDirty = false;
+        private transient Context mContext;
+
+        static DLCache get( Context context )
+        {
+            DLCache result;
+            synchronized ( sCache ) {
+                result = sCache[0];
+                if ( null == result ) {
+                    result = (DLCache)DBUtils.getSerializableFor( context, CACHE_KEY );
+                    if ( null != result ) {
+                        Log.d( TAG, "loaded cache: %s", result );
+                    }
+                }
+                if ( null == result ) {
+                    result = new DLCache();
+                }
+                result.update( context );
+                sCache[0] = result;
+
+                try {
+                    while ( !result.tryLock( context ) ) {
+                        sCache.wait();
+                    }
+                } catch ( InterruptedException ioe ) {
+                    Log.ex( TAG, ioe );
+                    Assert.failDbg();
+                }
+            }
+
+            // Log.d( TAG, "getCache() => %H", sCache[0] );
+            return sCache[0];
+        }
+
+        ISOCode get( String langName )
+        {
+            ISOCode result = null;
+            for ( ISOCode code : mLangNames.keySet() ) {
+                if ( langName.equals( mLangNames.get(code) ) ) {
+                    result = code;
+                    break;
+                }
+            }
+            if ( null == result ) {
+                Log.d( TAG, "langName '%s' not in %s", langName, this );
+            }
+            return result;
+        }
+
+        String get( ISOCode code )
+        {
+            String result = mLangNames.get(code);
+            if ( null == result ) {
+                Log.d( TAG, "code '%s' not in %s", code, this );
+            }
+            return result;
+        }
+
+        void put( ISOCode code, String langName )
+        {
+            if ( !langName.equals( mLangNames.get( code ) ) ) {
+                mDirty = true;
+                mLangNames.put( code, langName );
+            }
+        }
+
+        // @Override
+        // public String toString()
+        // {
+        //     ArrayList<String> pairs = new ArrayList<>();
+        //     for ( ISOCode code : mLangNames.keySet() ) {
+        //         pairs.add(String.format("%s<=>%s", code, mLangNames.get(code) ) );
+        //     }
+        //     return TextUtils.join( ", ", pairs );
+        // }
+
+        @Override
+        public void close()
+        {
+            if ( mDirty ) {
+                DBUtils.setSerializableFor( mContext, CACHE_KEY, this );
+                Log.d( TAG, "saveCache(%H) stored %s", this, this );
+                mDirty = false;
+            }
+            unlock();
+            synchronized ( sCache ) {
+                sCache.notifyAll();
+            }
+        }
+
+        private void update( Context context )
+        {
+            if ( mCurRev < BuildConfig.VERSION_CODE ) {
+                Resources res = context.getResources();
+                String[] entries  = res.getStringArray( R.array.language_names );
+                for ( int ii = 0; ii < entries.length; ii += 2 ) {
+                    ISOCode isoCode = new ISOCode(entries[ii]);
+                    String langName = entries[ii+1];
+                    put( isoCode, langName );
+                }
+                mCurRev = BuildConfig.VERSION_CODE;
+                if ( mDirty ) {
+                    Log.d( TAG, "updated cache; now %s", this );
+                }
+            }
+        }
+
+        private boolean tryLock( Context context )
+        {
+            boolean canLock = null == mContext;
+            if ( canLock ) {
+                mContext = context;
+            }
+            return canLock;
+        }
+
+        private void unlock()
+        {
+            Assert.assertTrueNR( null != mContext );
+            mContext = null;
+        }
     }
 }
