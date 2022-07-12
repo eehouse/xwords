@@ -444,34 +444,19 @@ public abstract class DelegateBase implements DlgClickNotify,
             boolean showDbg = BuildConfig.NON_RELEASE
                 || XWPrefs.getDebugEnabled( m_activity );
             if ( showDbg && null != conTypes ) {
-                OnClickListener lstnr = null;
-                int buttonTxt = 0;
-                if ( conTypes.contains( CommsConnType.COMMS_CONN_MQTT ) ) {
-                    buttonTxt = R.string.list_item_relaypage;
-                    final int gameID = summary.gameID;
-                    if ( BuildConfig.NON_RELEASE ) {
-                        NetUtils.gameURLToClip( m_activity, gameID );
-                    }
-                    lstnr = new OnClickListener() {
+                if ( conTypes.contains( CommsConnType.COMMS_CONN_P2P ) ) {
+                    OnClickListener lstnr = new OnClickListener() {
                             @Override
-                            public void onClick( DialogInterface dlg, int whichButton ) {
-                                NetUtils.copyAndLaunchGamePage( m_activity, gameID );
-                            }
-                        };
-                } else if ( conTypes.contains( CommsConnType.COMMS_CONN_P2P ) ) {
-                    buttonTxt = R.string.button_reconnect;
-                    lstnr = new OnClickListener() {
-                            @Override
-                            public void onClick( DialogInterface dlg, int buttn ) {
+                            public void onClick( DialogInterface dlg,
+                                                 int buttn ) {
                                 NetStateCache.reset( m_activity );
-                                if ( conTypes.contains( CommsConnType.COMMS_CONN_P2P ) ) {
+                                if ( conTypes.contains( CommsConnType
+                                                        .COMMS_CONN_P2P ) ) {
                                     WiDirService.reset( getActivity() );
                                 }
                             }
                         };
-                }
-                if ( null != lstnr ) {
-                    ab.setNegativeButton( buttonTxt, lstnr );
+                    ab.setNegativeButton( R.string.button_reconnect, lstnr );
                 }
             }
             dialog = ab.create();
@@ -677,7 +662,8 @@ public abstract class DelegateBase implements DlgClickNotify,
         Context context = getActivity();
         CommsAddrRec[] addrs = XwJNI.comms_getAddrs( gamePtr );
         CommsAddrRec addr = null != addrs && 0 < addrs.length ? addrs[0] : null;
-        final GameSummary summary = GameUtils.getSummary( context, gamePtr.getRowid(), 1 );
+        final GameSummary summary = GameUtils
+            .getSummary( context, gamePtr.getRowid(), 1 );
         if ( null != summary ) {
             final String msg = ConnStatusHandler
                 .getStatusText( context, gamePtr, summary.gameID,

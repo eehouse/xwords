@@ -13,18 +13,30 @@
     android:layout_weight="1"
     >
 
-  <org.eehouse.android.xw4.BoardView
-	  android:id="@+id/board_view"
-	  android:layout_width="wrap_content"
-	  android:layout_height="wrap_content"
-	  android:layout_weight="1"
-	  android:focusable="true"
-	  android:clickable="true"
-	  android:longClickable="true"
-	  android:drawSelectorOnTop="false"
-	  android:layout_gravity="center_horizontal"
-	  android:background="@android:color/transparent"
-	  />
+  <RelativeLayout android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  >
+    <org.eehouse.android.xw4.BoardView
+	    android:id="@+id/board_view"
+	    android:layout_width="wrap_content"
+	    android:layout_height="wrap_content"
+	    android:layout_weight="1"
+	    android:focusable="true"
+	    android:clickable="true"
+	    android:longClickable="true"
+	    android:drawSelectorOnTop="false"
+	    android:layout_gravity="center_horizontal"
+	    android:background="@android:color/transparent"
+	    />
+    <!-- No-op view that acts as anchor for PopupMenu in BoardDelegate -->
+    <View android:id="@+id/netstatus_view"
+          android:layout_width="15dp"
+	      android:layout_height="30dp"
+          android:layout_alignParentTop="true"
+          android:layout_alignParentRight="true"
+          android:background="@android:color/transparent"
+          />
+  </RelativeLayout>
 
   <LinearLayout android:id="@+id/exchange_buttons"
                 android:orientation="horizontal"

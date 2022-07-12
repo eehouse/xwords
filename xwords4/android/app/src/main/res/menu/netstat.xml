@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+  <item android:id="@+id/netstat_menu_status"
+        android:title="@string/menu_net_stat"
+        />
+  <item android:id="@+id/netstat_menu_traffic"
+        android:title="@string/list_item_relaypage"
+        />
+  <item android:id="@+id/netstat_copyurl"
+        android:title="@string/menu_net_url"
+        />
+  <item android:id="@+id/netstat_peers"
+        android:title="@string/menu_about_peers"
+        />
+</menu>

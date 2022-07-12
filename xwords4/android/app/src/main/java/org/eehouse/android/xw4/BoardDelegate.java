@@ -1463,7 +1463,40 @@ public class BoardDelegate extends DelegateBase
     @Override
     public void onStatusClicked()
     {
-        onStatusClicked( m_jniGamePtr );
+        if ( BuildConfig.NON_RELEASE ) {
+            View view = findViewById( R.id.netstatus_view );
+            PopupMenu popup = new PopupMenu( m_activity, view );
+            popup.getMenuInflater().inflate( R.menu.netstat, popup.getMenu() );
+
+            popup.setOnMenuItemClickListener( new PopupMenu
+                                              .OnMenuItemClickListener() {
+                    @Override
+                    public boolean onMenuItemClick( MenuItem item ) {
+                        boolean handled = true;
+                        switch( item.getItemId() ) {
+                        case R.id.netstat_menu_status:
+                            onStatusClicked( m_jniGamePtr );
+                            break;
+                        case R.id.netstat_menu_traffic:
+                            NetUtils.copyAndLaunchGamePage( m_activity, m_gi.gameID );
+                            break;
+                        case R.id.netstat_copyurl:
+                            NetUtils.gameURLToClip( m_activity, m_gi.gameID );
+                            break;
+                        case R.id.netstat_peers:
+                            Utils.notImpl( m_activity );
+                            break;
+                        default:
+                            handled = false;
+                        }
+                        return handled;
+                    }
+                } );
+
+            popup.show();
+        } else {
+            onStatusClicked( m_jniGamePtr );
+        }
     }
 
     @Override
