@@ -1124,4 +1124,6 @@
     <string name="backup_overwrite_confirm_fmt">Tem certeza de que deseja substituir os jogos ou as configurações atuais do CrossWords com os do arquivo \"%1$s\"\?
 \n
 \nNote que se você está importando jogos em rede a partir de um arquivo criado num outro dispositivo (migrando, ou seja), você não deve continuar a usar o CrossWords no dispositivo antigo.</string>
+    <string name="button_delete_game">Excluir o jogo</string>
+    <string name="langUnknownFmt">Desconhecido (%1$s)</string>
 </resources>
