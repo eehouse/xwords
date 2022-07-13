@@ -58,4 +58,15 @@
 \n（重置会删除所有所做的操作和任何连接信息。）</item>
         <item quantity="other"/>
     </plurals>
+    <string name="button_reset">恢复默认值</string>
+    <string name="button_delete_game">删除游戏</string>
+    <string name="button_default_human">人</string>
+    <string name="menu_prefs">App 设置</string>
+    <string name="loc_downloads">下载</string>
+    <string name="list_item_copy">复制</string>
+    <string name="list_item_reset">恢复默认值</string>
+    <string name="list_item_rename">重命名</string>
+    <string name="list_item_delete">删除游戏</string>
+    <string name="board_menu_file_about">关于 CrossWords</string>
+    <string name="button_delete">删除</string>
 </resources>
