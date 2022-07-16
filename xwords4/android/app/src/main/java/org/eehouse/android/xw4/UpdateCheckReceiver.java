@@ -219,7 +219,7 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
         String langStr = DictLangCache.getLangNameForISOCode( context, isoCode );
         String[] sums = DictLangCache.getDictMD5Sums( context, dal.name );
         Assert.assertTrueNR( null != sums[1] );
-        long len = DictLangCache.getFileLen( context, dal );
+        long len = DictLangCache.getFileSize( context, dal );
         try {
             params.put( k_NAME, dal.name );
             params.put( k_LANG, langStr );

@@ -77,6 +77,7 @@ import java.util.Formatter;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 import org.eehouse.android.xw4.Perms23.Perm;
@@ -656,8 +657,6 @@ public class Utils {
             builder.appendPath( DictUtils.addDictExtn( name ) );
         }
         Uri result = builder.build();
-        DbgUtils.printStack( TAG );
-        Log.d( TAG, "makeDictUriFromCode(isoCode=%s, name=%s) => %s", isoCode, name, result );
         return result;
     }
 
@@ -893,7 +892,9 @@ public class Utils {
 
     // Let's get some type safety between language name and iso code.
     public static class ISOCode implements Serializable {
+        private static Map<String, ISOCode> sMap = new HashMap<>();
         final String mISOCode;
+
         public ISOCode( String code )
         {
             // Log.d( TAG, "ISOCode(%s)", code );
@@ -906,9 +907,14 @@ public class Utils {
         {
             ISOCode result = null;
             if ( !TextUtils.isEmpty( code ) ) {
-                result = new ISOCode( code );
+                synchronized ( sMap ) {
+                    result = sMap.get( code );
+                    if ( null == result ) {
+                        result = new ISOCode( code );
+                        sMap.put( code, result );
+                    }
+                }
             }
-            // Log.d( TAG, "newIf(%s) => %s", code, result );
             return result;
         }
 
@@ -940,5 +946,5 @@ public class Utils {
         public int hashCode() { return mISOCode.hashCode(); }
     }
 
-    public static final ISOCode ISO_EN = new ISOCode( "en" );
+    public static final ISOCode ISO_EN = ISOCode.newIf( "en" );
 }

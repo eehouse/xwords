@@ -2749,7 +2749,7 @@ public class GamesListDelegate extends ListDelegateBase
             m_haveShownGetDict = true;
 
             ISOCode isoCode = LocUtils.getCurLangCode( m_activity );
-            if ( !isoCode.equals("en") ) {
+            if ( !isoCode.equals( Utils.ISO_EN ) ) {
                 String[] names = DictLangCache.getHaveLang( m_activity, isoCode );
                 if ( 0 == names.length ) {
 

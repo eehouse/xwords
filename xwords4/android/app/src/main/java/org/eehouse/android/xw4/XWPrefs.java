@@ -102,7 +102,7 @@ public class XWPrefs {
     {
         boolean enabled = ! getPrefsBoolean( context, R.string.key_disable_mqtt,
                                              false );
-        Log.d( TAG, "getMQTTEnabled() => %b", enabled );
+        // Log.d( TAG, "getMQTTEnabled() => %b", enabled );
         return enabled;
     }
 

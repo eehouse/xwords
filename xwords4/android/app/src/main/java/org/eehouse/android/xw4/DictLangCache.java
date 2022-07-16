@@ -36,7 +36,6 @@ import org.eehouse.android.xw4.loc.LocUtils;
 import org.eehouse.android.xw4.Utils.ISOCode;
 
 import java.io.File;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -69,7 +68,7 @@ public class DictLangCache {
             Set<String> langsSet = new HashSet<>();
             DictAndLoc[] dals = DictUtils.dictList( m_context );
             for ( DictAndLoc dal : dals ) {
-                String lang = getLangName( m_context, dal.name );
+                String lang = getDictLangName( m_context, dal.name );
                 if ( null != lang && 0 != lang.length() ) {
                     langsSet.add( lang );
                 }
@@ -77,9 +76,8 @@ public class DictLangCache {
 
             // Now build the array data
             clear();
-            for ( Iterator<String> iter = langsSet.iterator();
-                  iter.hasNext(); ) {
-                add( iter.next() );
+            for ( String str: langsSet ) {
+                add( str );
             }
             if ( null != s_last ) {
                 add( s_last );
@@ -126,7 +124,7 @@ public class DictLangCache {
         if ( null != info ) {
             int wordCount = info.wordCount;
 
-            String langName = getLangName( context, dal.name );
+            String langName = getDictLangName( context, dal.name );
             result = LocUtils.getString( context, R.string.dict_desc_fmt,
                                          dal.name, langName,
                                          wordCount );
@@ -274,14 +272,14 @@ public class DictLangCache {
                 // opening it.
             }
         }
-        Log.d( TAG, "getLangNameForISOCode(%s) => %s", isoCode, langName );
+        // Log.d( TAG, "getLangNameForISOCode(%s) => %s", isoCode, langName );
         return langName;
     }
 
     public static void setLangNameForISOCode( Context context, ISOCode isoCode,
                                               String langName )
     {
-        Log.d( TAG, "setLangNameForISOCode(%s=>%s)", isoCode, langName );
+        // Log.d( TAG, "setLangNameForISOCode(%s=>%s)", isoCode, langName );
         try ( DLCache cache = DLCache.get( context ) ) {
             cache.put( isoCode, langName );
         }
@@ -289,10 +287,9 @@ public class DictLangCache {
 
     public static ISOCode getLangIsoCode( Context context, String langName )
     {
-        Log.d( TAG, "getLangIsoCode(%s)", langName );
         ISOCode result;
         try ( DLCache cache = DLCache.get( context ) ) {
-            Log.d( TAG, "looking for %s in %H", langName, cache );
+            // Log.d( TAG, "looking for %s in %H", langName, cache );
             result = cache.get( langName );
         }
 
@@ -301,7 +298,7 @@ public class DictLangCache {
             // getinfo
         }
 
-        Log.d( TAG, "getLangIsoCode(%s) => %s", langName, result );
+        // Log.d( TAG, "getLangIsoCode(%s) => %s", langName, result );
         // Assert.assertTrueNR( null != result );
         return result;
     }
@@ -323,17 +320,10 @@ public class DictLangCache {
         return result;
     }
 
-    public static long getFileLen( Context context, DictAndLoc dal )
+    public static long getFileSize( Context context, DictAndLoc dal )
     {
         File path = dal.getPath( context );
         return path.length();
-    }
-
-    public static String getLangName( Context context, String dictName )
-    {
-        ISOCode isoCode = getDictISOCode( context, dictName );
-        String langName = getLangNameForISOCode( context, isoCode );
-        return langName;
     }
 
     // May be called from background thread
@@ -373,7 +363,7 @@ public class DictLangCache {
     {
         Set<String> langs = new HashSet<>();
         for ( DictAndLoc dal : dals ) {
-            String name = getLangName( context, dal.name );
+            String name = getDictLangName( context, dal.name );
             if ( null == name || 0 == name.length() ) {
                 Log.w( TAG, "bad lang name for dal name %s", dal.name );
 
@@ -495,8 +485,9 @@ public class DictLangCache {
         return info;
     }
 
-    private static class DLCache implements Serializable, AutoCloseable {
-        private static final String CACHE_KEY = TAG + "/cache";
+    private static class DLCache implements AutoCloseable {
+        private static final String CACHE_KEY_DATA = TAG + "/cache_data";
+        private static final String CACHE_KEY_REV = TAG + "/cache_rev";
         private static DLCache[] sCache = {null};
 
         private HashMap<ISOCode, String> mLangNames = new HashMap<>();
@@ -510,8 +501,11 @@ public class DictLangCache {
             synchronized ( sCache ) {
                 result = sCache[0];
                 if ( null == result ) {
-                    result = (DLCache)DBUtils.getSerializableFor( context, CACHE_KEY );
-                    if ( null != result ) {
+                    HashMap<ISOCode, String> data = (HashMap<ISOCode, String>)DBUtils
+                        .getSerializableFor( context, CACHE_KEY_DATA );
+                    if ( null != data ) {
+                        int rev = DBUtils.getIntFor( context, CACHE_KEY_REV, 0 );
+                        result = new DLCache( data, rev );
                         Log.d( TAG, "loaded cache: %s", result );
                     }
                 }
@@ -533,6 +527,14 @@ public class DictLangCache {
 
             // Log.d( TAG, "getCache() => %H", sCache[0] );
             return sCache[0];
+        }
+
+        DLCache() {}
+
+        DLCache( HashMap<ISOCode, String> data, int rev )
+        {
+            mLangNames = data;
+            mCurRev = rev;
         }
 
         ISOCode get( String langName )
@@ -581,7 +583,8 @@ public class DictLangCache {
         public void close()
         {
             if ( mDirty ) {
-                DBUtils.setSerializableFor( mContext, CACHE_KEY, this );
+                DBUtils.setSerializableFor( mContext, CACHE_KEY_DATA, mLangNames );
+                DBUtils.setIntFor( mContext, CACHE_KEY_REV, mCurRev );
                 Log.d( TAG, "saveCache(%H) stored %s", this, this );
                 mDirty = false;
             }

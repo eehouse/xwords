@@ -1857,15 +1857,18 @@ public class DBUtils {
         boolean success = false;
         byte[] buf = new byte[1024*8];
         try {
+            long totalBytes = 0;
             for ( ; ; ) {
                 int nRead = fis.read( buf );
                 if ( 0 >= nRead ) {
                     break;
                 }
                 fos.write( buf, 0, nRead );
+                totalBytes += nRead;
             }
             success = true;
-            Log.d( TAG, "copyFileStream(): copied %s to %s", fis, fos );
+            Log.d( TAG, "copyFileStream(): copied %s to %s (%d bytes)",
+                   fis, fos, totalBytes );
         } catch( java.io.IOException ioe ) {
             Log.ex( TAG, ioe );
         }
@@ -1936,7 +1939,7 @@ public class DBUtils {
             }
         }
 
-        Log.d( TAG, "dictsGetInfo(%s) => %s", name, result );
+        // Log.d( TAG, "dictsGetInfo(%s) => %s", name, result );
         return result;
     }
 

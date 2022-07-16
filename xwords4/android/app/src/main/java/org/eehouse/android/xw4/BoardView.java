@@ -186,8 +186,8 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
             width = minWidth;
         }
         setMeasuredDimension( width, height );
-        Log.d( TAG, "onMeasure: calling setMeasuredDimension( width=%d, height=%d )",
-               width, height );
+        // Log.d( TAG, "onMeasure: calling setMeasuredDimension( width=%d, height=%d )",
+        //        width, height );
     }
 
     // @Override
