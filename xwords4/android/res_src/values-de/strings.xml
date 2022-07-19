@@ -1090,4 +1090,29 @@
     <string name="button_ask">Fragen</string>
     <string name="button_deny">Ablehnen</string>
     <string name="db_store_failed">Fehler beim Schreiben auf die SD-Karte</string>
+    <string name="gamel_menu_backup">Sichern/Wiederherstellen</string>
+    <string name="gamel_menu_storedb">App-Daten exportieren</string>
+    <string name="archive_expl_colors">Farben auf dem Spielbrett, z. B. von Spielernamen und Bonusfeldern</string>
+    <string name="archive_title_games">Spiele und Daten</string>
+    <string name="gamel_menu_loaddb">App-Daten importieren</string>
+    <string name="archive_button_store">Exportieren</string>
+    <string name="not_again_loaddb">Importieren von Einstellungen oder Spieldaten von einer zuvor aus CrossWords exportierten Datei auf diesem oder einem anderen Gerät.</string>
+    <string name="button_delete_game">Spiel löschen</string>
+    <string name="button_pick_again">Erneut auswählen</string>
+    <string name="archive_filename_fmt">CrossWords-backup-%1$s.zip</string>
+    <string name="menu_net_url">URL kopieren</string>
+    <string name="menu_about_peers">Peer-Status</string>
+    <string name="archive_button_load">Importieren</string>
+    <string name="backup_bad_file_fmt">Die Datei \"%1$s\" enthält keine CrossWords-Sicherungsdaten.</string>
+    <string name="backup_overwrite_confirm_fmt">Sind Sie sicher, dass Sie die aktuellen Spiele oder Einstellungen von CrossWords mit denen aus der Datei \"%1$s\" überschreiben wollen\?
+\n
+\nBitte beachten Sie, dass Sie CrossWords auf dem alten Gerät nicht weiter verwenden sollten, wenn Sie vernetzte Partien aus einer Datei importieren, die auf einem anderen Gerät erstellt wurde (d. h. wenn Sie migrieren).</string>
+    <string name="archive_expl_load_fmt">Welche Arten von Anwendungsdaten in CrossWords werden durch Daten aus der Datei \"%1$s\" ersetzt\?</string>
+    <string name="archive_title_colors">Brettfarben</string>
+    <string name="archive_title_settings">Einstellungen</string>
+    <string name="archive_expl_settings">Alle App-Einstellungen außer Farben, z. B. Standardsprache und Größe der Miniaturansichten</string>
+    <string name="archive_expl_games">Alle Spiele und andere Daten zur Identifizierung Ihres Geräts.</string>
+    <string name="langUnknownFmt">Unbekannt (%1$s)</string>
+    <string name="menu_net_stat">Netzwerkstatus</string>
+    <string name="archive_expl_store">Wählen Sie die Arten von CrossWords-Daten oder Einstellungen, die Sie speichern möchten.</string>
 </resources>
