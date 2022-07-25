@@ -88,11 +88,11 @@
          substituted in. -->
     <!--  ############## menu items ############## -->
     <!-- pulls up dialog to configure the selected game -->
-    <string name="list_item_config">Configurações do jogo...</string>
+    <string name="list_item_config">Configurações do jogo</string>
     <!-- pulls up dialog to rename (change name of) the selected game -->
-    <string name="list_item_rename">Renomear...</string>
+    <string name="list_item_rename">Renomear</string>
     <!-- pulls up dialog to change the group of the selected game -->
-    <string name="list_item_move">Mover para grupo...</string>
+    <string name="list_item_move">Mover para grupo</string>
     <!-- pulls up dialog to delete the selected game -->
     <string name="list_item_delete">Apagar o jogo</string>
     <!-- pulls up dialog to reset the selected game, that is to remove
@@ -1570,7 +1570,7 @@
 \n
 \nVerá esta mensagem até que todos os jogadores convidados tenham respondido. Se suspeitar que os convites que enviou foram perdidos, não faz mal nenhum enviar outros.</item>
     </plurals>
-    <string name="list_item_netstats">Conexões…</string>
+    <string name="list_item_netstats">Conexões</string>
     <string name="confirm_deleteonly_dicts_fmt">Apagar %1$s vai deixá-lo sem nenhuma lista de palavras em %2$s. Um ou mais jogos ficarão não jogáveis (até que descarregue de uma lista para substituir.)</string>
     <string name="use_duptimer">Ativar cronômetro de movimento</string>
     <string name="dup_minutes_label">Minutos por turno</string>
@@ -2195,7 +2195,7 @@
         <item quantity="one">Tem certeza de que deseja apagar o jogo %1$s\? Essa ação não pode ser desfeita.</item>
         <item quantity="other">Tem certeza de que deseja apagar os jogos %1$s\? Essa ação não pode ser desfeita.</item>
     </plurals>
-    <string name="list_item_relaypage">Tráfego do jogo …</string>
+    <string name="list_item_relaypage">Tráfego do jogo</string>
     <string name="invitee_fmt">(%1$s convidado)</string>
     <string name="not_again_traysize">Esta nova configuração altera a quantidade de pedras na estante.
 \n
@@ -2242,4 +2242,5 @@
     <string name="bonus_l4x_summary">4L</string>
     <string name="lang_name_finnish">Finlandês</string>
     <string name="relaypage_url_copied">URL do jogo copiada para a área de transferência</string>
+    <string name="button_delete_game">Excluir jogo</string>
 </resources>
