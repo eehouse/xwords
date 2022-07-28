@@ -191,7 +191,7 @@ curses_draw_drawRemText( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe), const XP_Rect* r
     formatRemText( nTilesLeft, rInner, buf, lines );
     int ii;
     for ( ii = 0; ii < VSIZE(lines) && !!lines[ii]; ++ii ) {
-        mvwprintw( dctx->boardWin, rInner->top + ii, rInner->left, lines[ii] );
+        mvwprintw( dctx->boardWin, rInner->top + ii, rInner->left, "%s", lines[ii] );
     }    
     if ( focussed ) {
         cursesHiliteRect( dctx->boardWin, rOuter );
@@ -322,7 +322,7 @@ curses_draw_score_drawPlayer( DrawCtx* p_dctx, XWEnv xwe,
     for ( ii = 0; ii < VSIZE(lines) && !!lines[ii]; ++ii ) {
         char* line = lines[ii];
         int left = rOuter->left + ((rOuter->width - strlen(line)) / 2);
-        mvwprintw( dctx->boardWin, rInner->top + ii, left, line );
+        mvwprintw( dctx->boardWin, rInner->top + ii, left, "%s", line );
     }
 
     if ( (dsi->flags&CELL_ISCURSOR) != 0 ) {
@@ -363,7 +363,7 @@ curses_draw_drawTimer( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe), const XP_Rect* rIn
 
     gchar buf[16];
     formatTimerText( buf, VSIZE(buf), secondsLeft );
-    mvwprintw( dctx->boardWin, rInner->top, rInner->left, buf );
+    mvwprintw( dctx->boardWin, rInner->top, rInner->left, "%s", buf );
     wrefresh( dctx->boardWin );
 }
 
