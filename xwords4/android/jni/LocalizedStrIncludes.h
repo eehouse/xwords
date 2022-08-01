@@ -35,5 +35,6 @@
 # define STRSD_DUP_ONESCORE                29
 # define STR_PENDING_PLAYER                30
 # define STR_BONUS_ALL_SUB                 31
-# define N_AND_USER_STRINGS                31
+# define STRS_DUP_ALLSCORES                32
+# define N_AND_USER_STRINGS                32
 #endif

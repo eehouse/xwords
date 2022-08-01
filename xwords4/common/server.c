@@ -141,7 +141,7 @@ typedef struct ServerNonvolatiles {
 #endif
 
     RemoteAddress addresses[MAX_NUM_PLAYERS];
-    XWStreamCtxt* prevMoveStream;     /* save it to print later */
+    XWStreamCtxt* _prevMoveStream;     /* save it to print later */
     XWStreamCtxt* prevWordsStream;
     XP_Bool dupTurnsMade[MAX_NUM_PLAYERS];
     XP_Bool dupTurnsForced[MAX_NUM_PLAYERS];
@@ -563,7 +563,7 @@ server_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream, ModelCtxt* mode
     }
 
     if ( version >= STREAM_SAVE_PREVMOVE ) {
-        server->nv.prevMoveStream = readStreamIf( server, stream );
+        server->nv._prevMoveStream = readStreamIf( server, stream );
     }
     if ( version >= STREAM_SAVE_PREVWORDS ) {
         server->nv.prevWordsStream = readStreamIf( server, stream );
@@ -608,7 +608,7 @@ server_writeToStream( const ServerCtxt* server, XWStreamCtxt* stream )
 
     stream_putBits( stream, 2, server->lastMoveSource );
 
-    writeStreamIf( stream, server->nv.prevMoveStream );
+    writeStreamIf( stream, server->nv._prevMoveStream );
     writeStreamIf( stream, server->nv.prevWordsStream );
 } /* server_writeToStream */
 
@@ -644,8 +644,8 @@ cleanupServer( ServerCtxt* server, XWEnv xwe )
         server->pool = (PoolContext*)NULL;
     }
 
-    if ( !!server->nv.prevMoveStream ) {
-        stream_destroy( server->nv.prevMoveStream, xwe );
+    if ( !!server->nv._prevMoveStream ) {
+        stream_destroy( server->nv._prevMoveStream, xwe );
     }
     if ( !!server->nv.prevWordsStream ) {
         stream_destroy( server->nv.prevWordsStream, xwe );
@@ -1023,10 +1023,21 @@ bitsPerTile( ServerCtxt* server )
 }
 
 static void
+setPrevMoveStream( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* stream )
+{
+    if ( !server->nv._prevMoveStream ) {
+        server->nv._prevMoveStream = mkServerStream( server );
+    }
+    XP_ASSERT( '\0' != ((XP_UCHAR*)stream_getPtr( stream ))[0] );
+    stream_putBytes( server->nv._prevMoveStream, stream_getPtr( stream ),
+                     stream_getSize( stream ) );
+    stream_destroy( stream, xwe );
+}
+
+static void
 dupe_setupShowTrade( ServerCtxt* server, XWEnv xwe, XP_U16 nTiles )
 {
     XP_ASSERT( inDuplicateMode(server) );
-    XP_ASSERT( !server->nv.prevMoveStream );
 
     XP_UCHAR buf[128];
     const XP_UCHAR* fmt = dutil_getUserString( server->vol.dutil, xwe, STRD_DUP_TRADED );
@@ -1035,7 +1046,7 @@ dupe_setupShowTrade( ServerCtxt* server, XWEnv xwe, XP_U16 nTiles )
     XWStreamCtxt* stream = mkServerStream( server );
     stream_catString( stream, buf );
 
-    server->nv.prevMoveStream = stream;
+    setPrevMoveStream( server, xwe, stream );
     server->vol.showPrevMove = XP_TRUE;
 }
 
@@ -1043,7 +1054,6 @@ static void
 dupe_setupShowMove( ServerCtxt* server, XWEnv xwe, XP_U16* scores )
 {
     XP_ASSERT( inDuplicateMode(server) );
-    XP_ASSERT( !server->nv.prevMoveStream ); /* firing */
 
     const CurGameInfo* gi = server->vol.gi;
     const XP_U16 nPlayers = gi->nPlayers;
@@ -1076,7 +1086,7 @@ dupe_setupShowMove( ServerCtxt* server, XWEnv xwe, XP_U16* scores )
         lastMax = thisMax;
     }
 
-    server->nv.prevMoveStream = stream;
+    setPrevMoveStream( server, xwe, stream );
     server->vol.showPrevMove = XP_TRUE;
 }
 
@@ -1491,8 +1501,7 @@ makeRobotMove( ServerCtxt* server, XWEnv xwe )
                 XP_SNPRINTF( buf, sizeof(buf), str, nTrayTiles );
 
                 stream_catString( stream, buf );
-                XP_ASSERT( !server->nv.prevMoveStream );
-                server->nv.prevMoveStream = stream;
+                setPrevMoveStream( server, xwe, stream );
             }
         } else { 
             /* if canMove is false, this is a fake move, a pass */
@@ -1505,15 +1514,15 @@ makeRobotMove( ServerCtxt* server, XWEnv xwe )
 #endif
                 juggleMoveIfDebug( &newMove );
                 model_makeTurnFromMoveInfo( model, xwe, turn, &newMove );
-                XP_LOGFF( "robot making %d tile move for player %d", newMove.nTiles, turn );
+                XP_LOGFF( "robot making %d tile move for player %d",
+                          newMove.nTiles, turn );
 
                 if ( !!stream ) {
                     XWStreamCtxt* wordsStream = mkServerStream( server );
                     WordNotifierInfo* ni = 
                         model_initWordCounter( model, wordsStream );
                     (void)model_checkMoveLegal( model, xwe, turn, stream, ni );
-                    XP_ASSERT( !server->nv.prevMoveStream );
-                    server->nv.prevMoveStream = stream;
+                    setPrevMoveStream( server, xwe, stream );
                     server->nv.prevWordsStream = wordsStream;
                 }
                 result = server_commitMove( server, xwe, turn, NULL );
@@ -1615,10 +1624,9 @@ showPrevScore( ServerCtxt* server, XWEnv xwe )
         stream = mkServerStream( server );
         stream_catString( stream, str );
 
-        XWStreamCtxt* prevStream = server->nv.prevMoveStream;
+        XWStreamCtxt* prevStream = server->nv._prevMoveStream;
+        server->nv._prevMoveStream = NULL;
         if ( !!prevStream ) {
-            server->nv.prevMoveStream = NULL;
-
             XP_U16 len = stream_getSize( prevStream );
             stream_putBytes( stream, stream_getPtr( prevStream ), len );
             stream_destroy( prevStream, xwe );
@@ -3028,8 +3036,7 @@ reflectMoveAndInform( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* stream )
             }
 
             if ( !!mvStream ) {
-                XP_ASSERT( !server->nv.prevMoveStream );
-                server->nv.prevMoveStream = mvStream;
+                setPrevMoveStream( server, xwe, mvStream );
                 XP_ASSERT( !server->nv.prevWordsStream );
                 server->nv.prevWordsStream = wordsStream;
             }
@@ -3092,8 +3099,7 @@ reflectMove( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* stream )
         }
 
         if ( !!mvStream ) {
-            XP_ASSERT( !server->nv.prevMoveStream );
-            server->nv.prevMoveStream = mvStream;
+            setPrevMoveStream( server, xwe, mvStream );
             XP_ASSERT( !server->nv.prevWordsStream );
             server->nv.prevWordsStream = wordsStream;
         }
@@ -3580,7 +3586,7 @@ dupe_postStatus( const ServerCtxt* server, XWEnv xwe, XP_Bool allDone )
     }
 
     if ( !!buf[0] ) {
-        XP_LOGF( "%s(): msg=%s", __func__, buf );
+        XP_LOGFF( "msg=%s", buf );
         util_notifyDupStatus( server->vol.util, xwe, amHost, buf );
     }
 }

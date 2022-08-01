@@ -1,7 +1,7 @@
 /* -*- compile-command: "find-and-gradle.sh inXw4dDeb"; -*- */
 /*
- * Copyright 2009-2010 by Eric House (xwords@eehouse.org).  All
- * rights reserved.
+ * Copyright 2009 - 2022 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -83,6 +83,7 @@ public class DUtilCtxt {
     private static final int STRSD_DUP_ONESCORE =                29;
     private static final int STR_PENDING_PLAYER =                30;
     private static final int STR_BONUS_ALL_SUB =                 31;
+    private static final int STRS_DUP_ALLSCORES =                32;
 
     public String getUserString( final int stringCode )
     {
@@ -169,6 +170,9 @@ public class DUtilCtxt {
             break;
         case STRSD_DUP_ONESCORE:
             id = R.string.dup_onescore_fmt;
+            break;
+        case STRS_DUP_ALLSCORES:
+            id = R.string.dup_allscores_fmt;
             break;
 
         case STR_PENDING_PLAYER:

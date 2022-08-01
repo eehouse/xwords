@@ -2405,15 +2405,22 @@ printMovePost( ModelCtxt* model, XWEnv xwe, XP_U16 XP_UNUSED(moveN),
         case MOVE_TYPE:
             /* Duplicate case */
             if ( model->vol.gi->inDuplicateMode ) {
-                XP_U16 offset = XP_SNPRINTF( buf, VSIZE(buf), "%s", "All scores: " );
+                XP_U16 offset = 0; // XP_SNPRINTF( buf, VSIZE(buf), "%s", format );
                 for ( XP_U16 ii = 0; ii < entry->u.move.dup.nScores; ++ii ) {
                     offset += XP_SNPRINTF( &buf[offset], VSIZE(buf) - offset, "%d,",
                                            entry->u.move.dup.scores[ii] );
                 }
-                buf[offset-1] = '\n'; /* replace last ',' */
-                printString( stream, buf );
+                buf[offset-1] = '\0'; /* replace last ',' */
+
+                XP_UCHAR buf2[256];
+                format = dutil_getUserString( model->vol.dutil, xwe,
+                                              STRS_DUP_ALLSCORES );
+                XP_SNPRINTF( buf2, sizeof(buf2), format, buf );
+                XP_STRCAT( buf2, "\n" );
+                printString( stream, buf2 );
             }
 
+            /* This is wrong */
             format = dutil_getUserString( model->vol.dutil, xwe, STRD_CUMULATIVE_SCORE );
             XP_SNPRINTF( buf, sizeof(buf), format, totalScore );
             printString( stream, buf );

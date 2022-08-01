@@ -3,4 +3,5 @@
   <!-- This file is for strings that aren't ready for localization
        yet, probably because I'm not finished designing whatever they're part of -->
 
+  <string name="dup_allscores_fmt">All scores: %1$s</string>
 </resources>

@@ -277,7 +277,8 @@ linux_dutil_getUserString( XW_DUtilCtxt* XP_UNUSED(uc),
         return "This device has sent its moves to the host. When all players "
             "have sent their moves it will be your turn again.";
     case STRDD_DUP_HOST_RECEIVED:
-        return "%d of %d players have reported their moves.";
+        return "%d of %d players have reported their moves. When all moves have "
+            "been received it will be your turn again.";
     case STRD_DUP_TRADED:
         return "No moves made; traded %d tiles";
     case STRSD_DUP_ONESCORE:

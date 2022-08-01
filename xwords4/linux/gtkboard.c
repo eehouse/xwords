@@ -1814,8 +1814,11 @@ static void
 gtk_util_notifyDupStatus( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe), XP_Bool XP_UNUSED(amHost),
                           const XP_UCHAR* msg )
 {
+    LOG_FUNC();
     GtkGameGlobals* globals = (GtkGameGlobals*)uc->closure;
-    (void)gtkask( globals->window, msg, GTK_BUTTONS_OK, NULL );
+    XP_UCHAR buf[256];
+    XP_SNPRINTF( buf, VSIZE(buf), "notifyDupStatus(): msg: %s", msg );
+    (void)gtkask( globals->window, buf, GTK_BUTTONS_OK, NULL );
 }
 
 static void
@@ -1823,9 +1826,19 @@ gtk_util_informMove( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe), XP_S16 XP_UNUSED(tur
                      XWStreamCtxt* expl, XWStreamCtxt* words )
 {
     GtkGameGlobals* globals = (GtkGameGlobals*)uc->closure;
-    char* question = strFromStream( !!words? words : expl );
-    (void)gtkask( globals->window, question, GTK_BUTTONS_OK, NULL );
-    free( question );
+    char* explStr = strFromStream( expl );
+    char* wordsStr;
+    if ( NULL == words ) {
+        wordsStr = malloc(1);
+        wordsStr[0] = '\0';
+    } else {
+        wordsStr = strFromStream( words );
+    }
+    gchar* msg = g_strdup_printf( "informMove():\nexpl: %swords: %s", explStr, wordsStr );
+    (void)gtkask( globals->window, msg, GTK_BUTTONS_OK, NULL );
+    free( explStr );
+    free( wordsStr );
+    free( msg );
 }
 
 static void

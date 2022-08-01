@@ -60,6 +60,7 @@ enum {
     STRSD_DUP_ONESCORE,
 
     STR_BONUS_ALL_SUB,
+    STRS_DUP_ALLSCORES,
 
     /* These three aren't in Android */
     STR_LOCALPLAYERS,
