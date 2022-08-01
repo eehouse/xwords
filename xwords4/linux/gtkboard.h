@@ -46,17 +46,11 @@ typedef struct GtkDrawCtx {
 /*     GdkDrawable* pixmap; */
     GtkWidget* drawing_area;
     cairo_surface_t* surface;
-#ifdef GDK_AVAILABLE_IN_3_22
     GdkDrawingContext* dc;
-#endif
 
     struct GtkGameGlobals* globals;
 
-#ifdef USE_CAIRO
     cairo_t* _cairo;
-#else
-    GdkGC* drawGC;
-#endif
 
     GdkRGBA black;
     GdkRGBA white;
@@ -75,7 +69,6 @@ typedef struct GtkDrawCtx {
     } scoreCache[MAX_NUM_PLAYERS];
     
     XP_U16 trayOwner;
-    XP_U16 cellWidth;
     XP_U16 cellHeight;
     TileValueType tvType;
     XP_Bool scoreIsVertical;

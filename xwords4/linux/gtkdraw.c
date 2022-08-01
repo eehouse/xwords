@@ -21,6 +21,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <math.h> // for M_PI
 
 #undef GDK_DISABLE_DEPRECATED
 
@@ -66,17 +67,11 @@ gtkInsetRect( XP_Rect* r, short i )
 
 #define GTKMIN_W_HT 12
 
-#ifdef USE_CAIRO
 # define XP_UNUSED_CAIRO(var) UNUSED__ ## var __attribute__((unused))
 # define GDKDRAWABLE void
 # define GDKGC void
 # define GDKCOLORMAP void
 #define LOG_CAIRO_PENDING() XP_LOGF( "%s(): CAIRO work pending", __func__ )
-
-#else
-# define XP_UNUSED_CAIRO(var) var
-# define GDKCOLORMAP GdkColormap
-#endif
 
 static XP_Bool
 initCairo( GtkDrawCtx* dctx )
@@ -91,14 +86,10 @@ initCairo( GtkDrawCtx* dctx )
         cairo_surface_destroy( dctx->surface );
         // XP_ASSERT( 0 );
     } else if ( !!dctx->drawing_area ) {
-#ifdef GDK_AVAILABLE_IN_3_22
         GdkWindow* window = gtk_widget_get_window( dctx->drawing_area );
         const cairo_region_t* region = gdk_window_get_visible_region( window );
         dctx->dc = gdk_window_begin_draw_frame( window, region );
         cairo = gdk_drawing_context_get_cairo_context( dctx->dc );
-#else
-        cairo = gdk_cairo_create( gtk_widget_get_window(dctx->drawing_area) );
-#endif
     } else {
         XP_ASSERT( 0 );
     }
@@ -123,12 +114,8 @@ destroyCairo( GtkDrawCtx* dctx )
     if ( !!dctx->surface ) {    /* the thumbnail case */
         XP_LOGF( "%s(): have surface; doing nothing", __func__ );
     } else {
-#ifdef GDK_AVAILABLE_IN_3_22
         GdkWindow* window = gtk_widget_get_window( dctx->drawing_area );
         gdk_window_end_draw_frame( window, dctx->dc );
-#else
-        cairo_destroy( dctx->_cairo );
-#endif
     }
     dctx->_cairo = NULL;
 }
@@ -151,7 +138,6 @@ draw_rectangle( const GtkDrawCtx* dctx,
                 gboolean fill, gint left, gint top, gint width, 
                 gint height )
 {
-#ifdef USE_CAIRO
     cairo_t *cr = getCairo( dctx );
 
     cairo_rectangle( cr, left, top, width, height );
@@ -164,20 +150,24 @@ draw_rectangle( const GtkDrawCtx* dctx,
     /* } else { */
     /*     cairo_stroke( dctx->cairo ); */
     /* } */
-#else
-    dctx = dctx;
-    gdk_draw_rectangle( drawable, gc, fill, left, top, width, height );
-#endif
+}
+
+/* Not perfect, but good enough for now. Ideally we'd scale to accomodate
+   width != height. */
+static void
+draw_circle( const GtkDrawCtx* dctx, const XP_Rect* rect )
+{
+    cairo_t* cr = getCairo( dctx );
+    cairo_translate( cr, rect->left + (rect->width/2), rect->top + (rect->height/2));
+    int diameter = XP_MAX(rect->width, rect->height);
+    cairo_arc( cr, 0, 0, diameter/2, 0, 2 * M_PI);
+    cairo_stroke( cr );
 }
 
 static void
 gtkSetForeground( const GtkDrawCtx* dctx, const GdkRGBA* color )
 {
-#ifdef USE_CAIRO
     gdk_cairo_set_source_rgba( getCairo(dctx), color );
-#else
-    gdk_gc_set_foreground( dctx->drawGC, color );
-#endif
 }
 
 static void
@@ -316,12 +306,10 @@ draw_string_at( GtkDrawCtx* dctx, PangoLayout* layout,
                 const GdkRGBA* frground,
                 const GdkRGBA* bkgrnd )
 {
-    // XP_LOGF( "%s(%s, %d, %d)", __func__, str, where->left, where->top );
+    // XP_LOGFF( "(%s, %d, %d)", str, where->left, where->top );
     gint xx = where->left;
     gint yy = where->top;
-#ifdef USE_CAIRO
     cairo_t* cr = getCairo( dctx );
-#endif
 
     gdk_cairo_set_source_rgba( cr, frground );
     if ( !!layout ) {
@@ -352,17 +340,11 @@ draw_string_at( GtkDrawCtx* dctx, PangoLayout* layout,
         }
     }
 
-#ifdef USE_CAIRO
     XP_USE(bkgrnd);
     cairo_save( cr );
     cairo_translate( cr, xx, yy );
     pango_cairo_show_layout( cr, layout );
     cairo_restore( cr );
-#else
-    gdk_draw_layout_with_colors( DRAW_WHAT(dctx), dctx->drawGC,
-                                 xx, yy, layout,
-                                 frground, bkgrnd );
-#endif
     g_object_unref(layout);
 } /* draw_string_at */
 
@@ -381,13 +363,7 @@ drawBitmapFromLBS( GtkDrawCtx* dctx, const XP_Bitmap bm, const XP_Rect* rect )
     bp = (XP_U8*)(lbs + 1);    /* point to the bitmap data */
     nBytes = lbs->nBytes;
 
-#ifdef USE_CAIRO
     draw_rectangle( dctx, TRUE, 0, 0, nCols, nRows );
-#else
-    const GtkStyle* style = gtk_widget_get_style( dctx->drawing_area );
-    GdkPixmap* pm = gdk_pixmap_new( DRAW_WHAT(dctx), nCols, nRows, -1 );
-    draw_rectangle( dctx, pm, style->white_gc, TRUE, 0, 0, nCols, nRows );
-#endif
 
     x = 0;
     y = 0;
@@ -397,11 +373,7 @@ drawBitmapFromLBS( GtkDrawCtx* dctx, const XP_Bitmap bm, const XP_Rect* rect )
         for ( i = 0; i < 8; ++i ) {
             XP_Bool draw = ((byte & 0x80) != 0);
             if ( draw ) {
-#ifdef USE_CAIRO
                 LOG_CAIRO_PENDING();
-#else
-                gdk_draw_point( pm, style->black_gc, x, y );
-#endif
             }
             byte <<= 1;
             if ( ++x == nCols ) {
@@ -415,19 +387,8 @@ drawBitmapFromLBS( GtkDrawCtx* dctx, const XP_Bitmap bm, const XP_Rect* rect )
 
     XP_ASSERT( nBytes == -1 );   /* else we're out of sync */
 
-#ifdef USE_CAIRO
     rect = rect;
     LOG_CAIRO_PENDING();
-#else
-    gdk_draw_drawable( DRAW_WHAT(dctx),
-                       dctx->drawGC,
-                       (GdkDrawable*)pm, 0, 0,
-                       rect->left+2,
-                       rect->top+2,
-                       lbs->nCols,
-                       lbs->nRows );
-    g_object_unref( pm );
-#endif
 } /* drawBitmapFromLBS */
 
 static void
@@ -446,13 +407,7 @@ gtk_draw_destroyCtxt( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe) )
     GtkAllocation alloc;
     gtk_widget_get_allocation( dctx->drawing_area, &alloc );
 
-#ifdef USE_CAIRO
     draw_rectangle( dctx, TRUE, 0, 0, alloc.width, alloc.height );
-#else
-    const GtkStyle* style = gtk_widget_get_style( dctx->drawing_area );
-    draw_rectangle( dctx, DRAW_WHAT(dctx), style->white_gc, TRUE,
-                    0, 0, alloc.width, alloc.height );
-#endif
 
     g_list_foreach( dctx->fontsPerSize, freer, NULL );
     g_list_free( dctx->fontsPerSize );
@@ -470,39 +425,43 @@ gtk_draw_dictChanged( DrawCtx* XP_UNUSED(p_dctx), XWEnv XP_UNUSED(xwe),
 static XP_Bool
 gtk_draw_beginDraw( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe) )
 {
-#ifdef USE_CAIRO
     GtkDrawCtx* dctx = (GtkDrawCtx*)(void*)p_dctx;
     return initCairo( dctx );
-#else
-    fix this
-#endif
 }
 
 static void
 gtk_draw_endDraw( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe) )
 {
-#ifdef USE_CAIRO
     GtkDrawCtx* dctx = (GtkDrawCtx*)(void*)p_dctx;
     destroyCairo( dctx );
-#endif
+
+    /* This fixes the window content not changing until I resize the window,
+       but it also results in board_draw() getting called constantly. This app
+       is for development only, so I don't have to care, but I need to
+       understand gtk/cairo better at some point. */
+    gtk_widget_queue_draw( dctx->drawing_area );
 }
 
 static XP_Bool
-gtk_draw_boardBegin( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe), const XP_Rect* rect,
-                     XP_U16 width, XP_U16 height,
+gtk_draw_boardBegin( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe),
+                     const XP_Rect* XP_UNUSED(rect),
+                     XP_U16 XP_UNUSED(width), XP_U16 height,
                      DrawFocusState XP_UNUSED(dfs), TileValueType tvType )
 {
-    GdkRectangle gdkrect;
+    /* XP_LOGFF( "rect: %d,%d,%d,%d; width: %d; height: %d", */
+    /*           rect->left, rect->top, rect->width, rect->height, */
+    /*           width, height ); */
+
     GtkDrawCtx* dctx = (GtkDrawCtx*)(void*)p_dctx;
-    dctx->cellWidth = width;
     dctx->cellHeight = height;
     dctx->tvType = tvType;
 
     gtkSetForeground( dctx, &dctx->black );
 
-    gdkrect = *(GdkRectangle*)(void*)rect;
-    ++gdkrect.width;
-    ++gdkrect.height;
+    /* WTF is this??? */
+    /* GdkRectangle gdkrect = *(GdkRectangle*)(void*)rect; */
+    /* ++gdkrect.width; */
+    /* ++gdkrect.height; */
 
     return XP_TRUE;
 } /* gtk_draw_boardBegin */
@@ -532,19 +491,7 @@ gtk_draw_vertScrollBoard( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe), XP_Rect* rect,
         ysrc = ydest + dist;
     }
 
-#ifdef USE_CAIRO
     dctx = dctx;
-#else
-    gdk_draw_drawable( DRAW_WHAT(dctx),
-                       dctx->drawGC,
-                       DRAW_WHAT(dctx),
-                       rect->left,
-                       ysrc,
-                       rect->left,
-                       ydest,
-                       rect->width,
-                       rect->height - dist );
-#endif
     if ( !down ) {
         rect->top += rect->height - dist;
     }
@@ -632,16 +579,10 @@ gtk_draw_drawCell( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe), const XP_Rect* rect,
 
     gtkInsetRect( &rectInset, 1 );
 
-#ifdef USE_CAIRO
     cairo_t* cr = getCairo( dctx );
-#endif
 
     if ( showGrid ) {
-#ifdef USE_CAIRO
         cairo_set_source_rgb( cr, 0, 0, 0 );
-#else
-        gdk_gc_set_foreground( dctx->drawGC, &dctx->black );
-#endif
         draw_rectangle( dctx, FALSE, rect->left, rect->top,
                         rect->width, rect->height );
     }
@@ -658,15 +599,8 @@ gtk_draw_drawCell( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe), const XP_Rect* rect,
             /*     foreground = &dctx->white; */
             }
             if ( !!foreground ) {
-#ifdef USE_CAIRO
                 gtkFillRect( dctx, &rectInset, foreground );
                 // gdk_cairo_set_source_rgba( cr, foreground );
-#else
-                gdk_gc_set_foreground( dctx->drawGC, foreground );
-                draw_rectangle( dctx, DRAW_WHAT(dctx), NULL, TRUE,
-                                rectInset.left, rectInset.top,
-                                rectInset.width+1, rectInset.height+1 );
-#endif
             }
         }
         if ( (flags & CELL_ISSTAR) != 0 ) {
@@ -718,20 +652,11 @@ gtk_draw_drawCell( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe), const XP_Rect* rect,
             tmpRect.height = tmpRect.height * 3 / 4;
             fontHt = fontHt * 3 / 4;
         }
+
         draw_string_at( dctx, NULL, letter, fontHt, &tmpRect,
                         XP_GTK_JUST_CENTER, foreground, cursor );
-
         if ( isBlank ) {
-#ifdef USE_CAIRO
-#else
-            gdk_draw_arc( DRAW_WHAT(dctx), dctx->drawGC,
-                          0,	/* filled */
-                          rect->left, /* x */
-                          rect->top, /* y */
-                          rect->width,/*width, */
-                          rect->height,/*width, */
-                          0, 360*64 );
-#endif
+            draw_circle( dctx, &tmpRect );
         }
     }
 
@@ -1407,30 +1332,14 @@ figureColor( int in )
 }
 
 static void
-allocAndSet( GDKCOLORMAP* map, GdkRGBA* color, unsigned short red,
+allocAndSet( GdkRGBA* color, unsigned short red,
              unsigned short green, unsigned short blue )
 
 {
-#ifdef USE_CAIRO
-    XP_USE( map );
     color->red = figureColor(red);
     color->green = figureColor(green);
     color->blue = figureColor(blue);
     color->alpha = 1.0;
-#else
-
-    color->red = red;
-    color->green = green;
-    color->blue = blue;
-#ifdef DEBUG
-    gboolean success = 
-#endif
-        gdk_colormap_alloc_color( map,
-                                  color,
-                                  TRUE, /* writeable */
-                                  TRUE ); /* best-match */
-    XP_ASSERT( success );
-#endif
 } /* allocAndSet */
 
 DrawCtx* 
@@ -1507,38 +1416,24 @@ gtkDrawCtxtMake( GtkWidget* drawing_area, GtkGameGlobals* globals )
     dctx->globals = globals;
 
     XP_ASSERT( !!gtk_widget_get_window(drawing_area) );
-#ifdef USE_CAIRO
-    /* dctx->cairo = gdk_cairo_create( window ); */
-    /* XP_LOGF( "dctx->cairo=%p", dctx->cairo ); */
-    /* cairo_set_line_width( dctx->cairo, 1.0 ); */
-    /* cairo_set_line_cap( dctx->cairo, CAIRO_LINE_CAP_SQUARE ); */
-    /* cairo_set_source_rgb( dctx->cairo, 0, 0, 0 ); */
-#else
-    dctx->drawGC = gdk_gc_new( window );
-#endif
 
-    GDKCOLORMAP* map = NULL;
-#ifndef USE_CAIRO
-    map = gdk_colormap_get_system();
-#endif
+    allocAndSet( &dctx->black, 0x0000, 0x0000, 0x0000 );
+    allocAndSet( &dctx->grey, 0x7FFF, 0x7FFF, 0x7FFF );
+    allocAndSet( &dctx->white, 0xFFFF, 0xFFFF, 0xFFFF );
 
-    allocAndSet( map, &dctx->black, 0x0000, 0x0000, 0x0000 );
-    allocAndSet( map, &dctx->grey, 0x7FFF, 0x7FFF, 0x7FFF );
-    allocAndSet( map, &dctx->white, 0xFFFF, 0xFFFF, 0xFFFF );
+    allocAndSet( &dctx->bonusColors[0], 0xFFFF, 0xAFFF, 0xAFFF );
+    allocAndSet( &dctx->bonusColors[1], 0xAFFF, 0xFFFF, 0xAFFF );
+    allocAndSet( &dctx->bonusColors[2], 0xAFFF, 0xAFFF, 0xFFFF );
+    allocAndSet( &dctx->bonusColors[3], 0xFFFF, 0xAFFF, 0xFFFF );
 
-    allocAndSet( map, &dctx->bonusColors[0], 0xFFFF, 0xAFFF, 0xAFFF );
-    allocAndSet( map, &dctx->bonusColors[1], 0xAFFF, 0xFFFF, 0xAFFF );
-    allocAndSet( map, &dctx->bonusColors[2], 0xAFFF, 0xAFFF, 0xFFFF );
-    allocAndSet( map, &dctx->bonusColors[3], 0xFFFF, 0xAFFF, 0xFFFF );
+    allocAndSet( &dctx->playerColors[0], 0x0000, 0x0000, 0xAFFF );
+    allocAndSet( &dctx->playerColors[1], 0xAFFF, 0x0000, 0x0000 );
+    allocAndSet( &dctx->playerColors[2], 0x0000, 0xAFFF, 0x0000 );
+    allocAndSet( &dctx->playerColors[3], 0xAFFF, 0x0000, 0xAFFF );
 
-    allocAndSet( map, &dctx->playerColors[0], 0x0000, 0x0000, 0xAFFF );
-    allocAndSet( map, &dctx->playerColors[1], 0xAFFF, 0x0000, 0x0000 );
-    allocAndSet( map, &dctx->playerColors[2], 0x0000, 0xAFFF, 0x0000 );
-    allocAndSet( map, &dctx->playerColors[3], 0xAFFF, 0x0000, 0xAFFF );
-
-    allocAndSet( map, &dctx->tileBack, 0xFFFF, 0xFFFF, 0x9999 );
-    allocAndSet( map, &dctx->cursor, 253<<8, 12<<8, 222<<8 ); 
-    allocAndSet( map, &dctx->red, 0xFFFF, 0x0000, 0x0000 );
+    allocAndSet( &dctx->tileBack, 0xFFFF, 0xFFFF, 0x9999 );
+    allocAndSet( &dctx->cursor, 253<<8, 12<<8, 222<<8 );
+    allocAndSet( &dctx->red, 0xFFFF, 0x0000, 0x0000 );
 
     return (DrawCtx*)dctx;
 } /* gtkDrawCtxtMake */
