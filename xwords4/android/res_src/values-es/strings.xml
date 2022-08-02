@@ -255,4 +255,11 @@
         <item quantity="one">¿Seguro que quieres eliminar el juego %1$s\? Esta acción no se puede deshacer.</item>
         <item quantity="other">¿Seguro que quieres eliminar los juegos %1$s\? Esta acción no se puede deshacer.</item>
     </plurals>
+    <string name="button_delete_game">Elimina Juego</string>
+    <string name="cellline">Bordes de las celdas</string>
+    <string name="game_summary_field_created">Cuando se crea</string>
+    <string name="langUnknownFmt">Desconocido (%1$s)</string>
+    <string name="bonus_w4x_summary">4W</string>
+    <string name="tray_size">Azulejos en la estantería</string>
+    <string name="list_item_relaypage">Tráfico del juego</string>
 </resources>
