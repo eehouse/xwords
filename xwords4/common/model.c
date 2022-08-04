@@ -955,12 +955,16 @@ model_rejectPreviousMove( ModelCtxt* model, XWEnv xwe,
 XP_Bool
 model_canUndo( const ModelCtxt* model )
 {
-    const StackCtxt* stack = model->vol.stack;
-    XP_U16 nStackEntries = stack_getNEntries( stack );
+    /* PENDING Turning off undo for duplicate mode for now. */
+    XP_Bool result = !model->vol.gi->inDuplicateMode;
+    if ( result ) {
+        const StackCtxt* stack = model->vol.stack;
+        XP_U16 nStackEntries = stack_getNEntries( stack );
 
-    /* More than just tile assignment? */
-    XP_U16 assignCount = model->vol.gi->inDuplicateMode ? 1 : model->nPlayers;
-    XP_Bool result = nStackEntries > assignCount;
+        /* More than just tile assignment? */
+        XP_U16 assignCount = model->vol.gi->inDuplicateMode ? 1 : model->nPlayers;
+        result = nStackEntries > assignCount;
+    }
     return result;
 }
 

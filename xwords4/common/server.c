@@ -1026,12 +1026,14 @@ static void
 setPrevMoveStream( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* stream )
 {
     if ( !server->nv._prevMoveStream ) {
-        server->nv._prevMoveStream = mkServerStream( server );
+        server->nv._prevMoveStream = stream;
+        // mkServerStream( server );
+    } else {
+        XP_LOGFF( "appending to existing stream" );
+        stream_putBytes( server->nv._prevMoveStream, stream_getPtr( stream ),
+                         stream_getSize( stream ) );
+        stream_destroy( stream, xwe );
     }
-    XP_ASSERT( '\0' != ((XP_UCHAR*)stream_getPtr( stream ))[0] );
-    stream_putBytes( server->nv._prevMoveStream, stream_getPtr( stream ),
-                     stream_getSize( stream ) );
-    stream_destroy( stream, xwe );
 }
 
 static void
