@@ -113,7 +113,6 @@ typedef struct ServerVolatiles {
     GameOverListener gameOverListener;
     void* gameOverData;
     XP_U16 bitsPerTile;
-    XP_Bool showPrevMove;
     XP_Bool pickTilesCalled[MAX_NUM_PLAYERS];
 } ServerVolatiles;
 
@@ -1027,7 +1026,6 @@ setPrevMoveStream( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* stream )
 {
     if ( !server->nv._prevMoveStream ) {
         server->nv._prevMoveStream = stream;
-        // mkServerStream( server );
     } else {
         XP_LOGFF( "appending to existing stream" );
         stream_putBytes( server->nv._prevMoveStream, stream_getPtr( stream ),
@@ -1049,7 +1047,6 @@ dupe_setupShowTrade( ServerCtxt* server, XWEnv xwe, XP_U16 nTiles )
     stream_catString( stream, buf );
 
     setPrevMoveStream( server, xwe, stream );
-    server->vol.showPrevMove = XP_TRUE;
 }
 
 static void
@@ -1089,8 +1086,7 @@ dupe_setupShowMove( ServerCtxt* server, XWEnv xwe, XP_U16* scores )
     }
 
     setPrevMoveStream( server, xwe, stream );
-    server->vol.showPrevMove = XP_TRUE;
-}
+} /* dupe_setupShowMove */
 
 static void
 addDupeStuffMark( XWStreamCtxt* stream, DUPE_STUFF typ )
@@ -1399,8 +1395,6 @@ robotTradeTiles( ServerCtxt* server, MoveInfo* newMove )
             tradeTiles[numToTrade++] = curTiles[ii];
         }
     }
-
-    
 } /* robotTradeTiles */
 #endif
 
@@ -1473,14 +1467,15 @@ makeRobotMove( ServerCtxt* server, XWEnv xwe )
     }
     if ( forceTrade || searchComplete ) {
         const XP_UCHAR* str;
-        XWStreamCtxt* stream = NULL;
 
         XP_Bool trade = forceTrade || 
             ((newMove.nTiles == 0) && !canMove &&
              (server_countTilesInPool( server ) >= gi->traySize));
 
-        server->vol.showPrevMove = XP_TRUE;
-        if ( inDuplicateMode(server) || server->nv.showRobotScores ) {
+        /* I've forgotten why I earlier wanted to explain robot moves in
+           duplicate games. I don't want to now. */
+        XWStreamCtxt* stream = NULL;
+        if ( server->nv.showRobotScores && ! inDuplicateMode(server) ) {
             stream = mkServerStream( server );
         }
 
@@ -1520,14 +1515,15 @@ makeRobotMove( ServerCtxt* server, XWEnv xwe )
                           newMove.nTiles, turn );
 
                 if ( !!stream ) {
+                    setPrevMoveStream( server, xwe, stream );
+
                     XWStreamCtxt* wordsStream = mkServerStream( server );
                     WordNotifierInfo* ni = 
                         model_initWordCounter( model, wordsStream );
                     (void)model_checkMoveLegal( model, xwe, turn, stream, ni );
-                    setPrevMoveStream( server, xwe, stream );
                     server->nv.prevWordsStream = wordsStream;
                 }
-                result = server_commitMove( server, xwe, turn, NULL );
+                result = commitMoveImpl( server, xwe, turn, NULL, XP_FALSE );
             } else {
                 result = XP_FALSE;
             }
@@ -1599,7 +1595,6 @@ showPrevScore( ServerCtxt* server, XWEnv xwe )
 {
     /* showRobotScores can be changed between turns */
     if ( inDuplicateMode( server ) || server->nv.showRobotScores ) {
-        XW_UtilCtxt* util = server->vol.util;
         XW_DUtilCtxt* dutil = server->vol.dutil;
         XWStreamCtxt* stream;
         XP_UCHAR buf[128];
@@ -1634,7 +1629,7 @@ showPrevScore( ServerCtxt* server, XWEnv xwe )
             stream_destroy( prevStream, xwe );
         }
 
-        util_informMove( util, xwe, prevTurn, stream, server->nv.prevWordsStream );
+        util_informMove( server->vol.util, xwe, prevTurn, stream, server->nv.prevWordsStream );
         stream_destroy( stream, xwe );
 
         if ( !!server->nv.prevWordsStream ) {
@@ -2717,12 +2712,14 @@ nextTurn( ServerCtxt* server, XWEnv xwe, XP_S16 nxtTurn )
         }
     }
 
-    if ( server->vol.showPrevMove ) {
-        server->vol.showPrevMove = XP_FALSE;
+    if ( NULL != server->nv._prevMoveStream && XWSTATE_NEED_SHOWSCORE != server->nv.gameState ) {
         if ( inDuplicateMode(server) || server->nv.showRobotScores ) {
             server->nv.stateAfterShow = server->nv.gameState;
-            SETSTATE( server, XWSTATE_NEED_SHOWSCORE );
+            SETSTATE( server, XWSTATE_NEED_SHOWSCORE ); /* here? */
             moreToDo = XP_TRUE;
+        } else {
+            XP_ASSERT( 0 );
+            XP_LOGFF( "ERROR: have move stream I won't display" );
         }
     }
 
@@ -3000,7 +2997,6 @@ reflectMoveAndInform( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* stream )
                                  &tradedTiles, &newTiles );
             pool_replaceTiles( server->pool, &tradedTiles );
 
-            server->vol.showPrevMove = XP_TRUE;
             mvStream = makeTradeReportIf( server, xwe, &tradedTiles );
 
         } else {
@@ -3014,7 +3010,6 @@ reflectMoveAndInform( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* stream )
             sendMoveToClientsExcept( server, xwe, whoMoved, isLegalMove, &newTiles,
                                      (TrayTileSet*)NULL, sourceClientIndex );
 
-            server->vol.showPrevMove = XP_TRUE;
             if ( isLegalMove ) {
                 mvStream = makeMoveReportIf( server, xwe, &wordsStream );
             }
@@ -3092,10 +3087,8 @@ reflectMove( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* stream )
             model_makeTileTrade( model, whoMoved, &tradedTiles, &newTiles );
             pool_replaceTiles( server->pool, &tradedTiles );
 
-            server->vol.showPrevMove = XP_TRUE;
             mvStream = makeTradeReportIf( server, xwe, &tradedTiles );
         } else {
-            server->vol.showPrevMove = XP_TRUE;
             mvStream = makeMoveReportIf( server, xwe, &wordsStream );
             model_commitTurn( model, xwe, whoMoved, &newTiles );
         }
@@ -3471,7 +3464,7 @@ dupe_forceCommits( ServerCtxt* server, XWEnv xwe )
    about everything.  */
 static void
 dupe_checkWhatsDone( const ServerCtxt* server, XP_Bool amServer,
-                XP_Bool* allDoneP, XP_Bool* allLocalsDoneP )
+                     XP_Bool* allDoneP, XP_Bool* allLocalsDoneP )
 {
     XP_Bool allDone = XP_TRUE;
     XP_Bool allLocalsDone = XP_TRUE;

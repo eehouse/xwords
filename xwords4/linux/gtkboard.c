@@ -1827,18 +1827,19 @@ gtk_util_informMove( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe), XP_S16 XP_UNUSED(tur
 {
     GtkGameGlobals* globals = (GtkGameGlobals*)uc->closure;
     char* explStr = strFromStream( expl );
-    char* wordsStr;
-    if ( NULL == words ) {
-        wordsStr = malloc(1);
-        wordsStr[0] = '\0';
-    } else {
-        wordsStr = strFromStream( words );
+    gchar* msg = g_strdup_printf( "informMove():\nexpl: %s", explStr );
+    if ( NULL != words ) {
+        char* wordsStr = strFromStream( words );
+        gchar* prev = msg;
+        gchar* postfix = g_strdup_printf( "words: %s", wordsStr );
+        free( wordsStr );
+        msg = g_strconcat( msg, postfix, NULL );
+        g_free( prev );
+        g_free( postfix );
     }
-    gchar* msg = g_strdup_printf( "informMove():\nexpl: %swords: %s", explStr, wordsStr );
     (void)gtkask( globals->window, msg, GTK_BUTTONS_OK, NULL );
     free( explStr );
-    free( wordsStr );
-    free( msg );
+    g_free( msg );
 }
 
 static void

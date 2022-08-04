@@ -955,14 +955,17 @@ model_rejectPreviousMove( ModelCtxt* model, XWEnv xwe,
 XP_Bool
 model_canUndo( const ModelCtxt* model )
 {
-    /* PENDING Turning off undo for duplicate mode for now. */
-    XP_Bool result = !model->vol.gi->inDuplicateMode;
+    XP_Bool inDuplicateMode = model->vol.gi->inDuplicateMode;
+    /* I'm turning off undo for duplicate mode for now to avoid
+       crashes. Ideally a duplicate mode player could change his mind until
+       the timer fires, so try to fix this. PENDING*/
+    XP_Bool result = !inDuplicateMode;
     if ( result ) {
         const StackCtxt* stack = model->vol.stack;
         XP_U16 nStackEntries = stack_getNEntries( stack );
 
         /* More than just tile assignment? */
-        XP_U16 assignCount = model->vol.gi->inDuplicateMode ? 1 : model->nPlayers;
+        XP_U16 assignCount = inDuplicateMode ? 1 : model->nPlayers;
         result = nStackEntries > assignCount;
     }
     return result;
