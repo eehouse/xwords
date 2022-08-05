@@ -5,26 +5,33 @@
             android:layout_height="fill_parent"
             android:orientation="vertical"
             >
-  <LinearLayout
-      xmlns:android="http://schemas.android.com/apk/res/android"
-      android:orientation="vertical"
-      android:layout_width="fill_parent"
-      android:layout_height="fill_parent"
-      android:padding="10dp"
-      >
+  <LinearLayout android:orientation="vertical"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:padding="10dp"
+                >
     <TextView android:id="@+id/msg"
               android:layout_width="match_parent"
               android:layout_height="wrap_content"
               android:textAppearance="?android:attr/textAppearanceMedium"
               />
-    <!-- spacer -->
-    <View android:layout_height="15dp"
-          android:layout_width="match_parent"
-          />
-    <CheckBox android:id="@+id/archive_check"
-              android:layout_width="wrap_content"
-              android:layout_height="wrap_content"
-              android:text="@string/checkbox_archive"
-              />
+
+    <LinearLayout android:orientation="vertical"
+                  android:layout_width="match_parent"
+                  android:layout_height="wrap_content"
+                  android:layout_marginLeft="12sp"
+                  android:layout_marginTop="12sp"
+                  >
+      <CheckBox android:id="@+id/archive_check"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/checkbox_archive"
+                />
+      <CheckBox android:id="@+id/delete_check"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/button_delete"
+                />
+    </LinearLayout>
   </LinearLayout>
 </ScrollView>

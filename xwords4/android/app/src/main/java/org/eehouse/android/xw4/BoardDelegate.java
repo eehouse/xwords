@@ -83,6 +83,8 @@ import org.eehouse.android.xw4.jni.XwJNI.GamePtr;
 import org.eehouse.android.xw4.jni.XwJNI;
 import org.eehouse.android.xw4.loc.LocUtils;
 
+import static org.eehouse.android.xw4.DBUtils.GROUPID_UNSPEC;
+
 public class BoardDelegate extends DelegateBase
     implements TransportProcs.TPMsgHandler, View.OnClickListener,
                DwnldDelegate.DownloadFinishedListener,
@@ -875,12 +877,12 @@ public class BoardDelegate extends DelegateBase
                                      Action.COMMIT_ACTION, R.string.not_again_done )
                     .show();
             } else {
-                onPosButton( Action.COMMIT_ACTION, null );
+                onPosButton( Action.COMMIT_ACTION );
             }
             break;
 
         case R.id.board_menu_rematch:
-            doRematchIf();
+            doRematchIf( false );
             break;
 
         case R.id.board_menu_archive:
@@ -994,7 +996,7 @@ public class BoardDelegate extends DelegateBase
     //////////////////////////////////////////////////
 
     @Override
-    public boolean onPosButton( Action action, final Object[] params )
+    public boolean onPosButton( Action action, final Object... params )
     {
         Log.d( TAG, "onPosButton(%s, %s)", action, DbgUtils.toStr( params ) );
         boolean handled = true;
@@ -1112,15 +1114,19 @@ public class BoardDelegate extends DelegateBase
             long curGroup = DBUtils.getGroupForGame( m_activity, m_rowid );
             archiveGame( !rematchAfter );
             if ( rematchAfter ) {
-                doRematchIf( curGroup );      // closes game
+                doRematchIf( curGroup, false );      // closes game
             }
             break;
 
         case REMATCH_ACTION:
-            if ( params.length >= 1 && (Boolean)params[0] ) {
+            boolean archiveAfter = params.length >= 1 && (Boolean)params[0];
+            boolean deleteAfter = params.length >= 2 && (Boolean)params[1];
+            Assert.assertTrueNR( false == archiveAfter || false == deleteAfter );
+
+            if ( archiveAfter ) {
                 showArchiveNA( true );
             } else {
-                doRematchIf();      // closes game
+                doRematchIf( deleteAfter );      // closes game
             }
             break;
 
@@ -2248,24 +2254,7 @@ public class BoardDelegate extends DelegateBase
                         break;
                     case JNIThread.GAME_OVER:
                         if ( m_isFirstLaunch ) {
-                            runOnUiThread( new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        Log.d( TAG, "makeJNIHandler(): handling GAME_OVER" );
-                                        Assert.assertTrueNR( m_jniGamePtr.isRetained() );
-                                        if ( m_jniGamePtr.isRetained() ) {
-                                            boolean hasPending = 0 < XwJNI.
-                                                comms_countPendingPackets( m_jniGamePtr );
-                                            mGameOverAlert = GameOverAlert
-                                                .newInstance( m_summary,
-                                                              msg.arg1,
-                                                              (String)msg.obj,
-                                                              hasPending,
-                                                              inArchiveGroup() );
-                                            show( mGameOverAlert );
-                                        }
-                                    }
-                                } );
+                            handleGameOver( msg.arg1, (String)msg.obj );
                         }
                         break;
                     case JNIThread.MSGS_SENT:
@@ -2287,6 +2276,53 @@ public class BoardDelegate extends DelegateBase
                 }
             };
         return handler;
+    }
+
+    private void handleGameOver( int titleID, String msg )
+    {
+        GameOverAlert.OnDoneProc onDone = new GameOverAlert.OnDoneProc() {
+                @Override
+                public void onGameOverDone( boolean rematch,
+                                            boolean archiveAfter,
+                                            boolean deleteAfter )
+                {
+                    final Action[] postAction = { null };
+                    final Object[][] postArgs = { new Object[0] };
+                    if ( rematch ) {
+                        postAction[0] = Action.REMATCH_ACTION;
+                        postArgs[0] = new Boolean[] {archiveAfter, deleteAfter};
+                    } else if ( archiveAfter ) {
+                        showArchiveNA( false );
+                    } else if ( deleteAfter ) {
+                        postAction[0] = Action.DELETE_ACTION;
+                    }
+                    if ( null != postAction[0] ) {
+                        post( new Runnable() {
+                                @Override
+                                public void run() {
+                                    onPosButton( postAction[0], postArgs[0] );
+                                }
+                            } );
+                    }
+                }
+            };
+
+        runOnUiThread( new Runnable() {
+                @Override
+                public void run() {
+                    Log.d( TAG, "makeJNIHandler(): handling GAME_OVER" );
+                    Assert.assertTrueNR( m_jniGamePtr.isRetained() );
+                    if ( m_jniGamePtr.isRetained() ) {
+                        boolean hasPending = 0 < XwJNI.
+                            comms_countPendingPackets( m_jniGamePtr );
+                        mGameOverAlert = GameOverAlert
+                            .newInstance( m_summary, titleID, msg,
+                                          hasPending, inArchiveGroup() )
+                            .configure( onDone, BoardDelegate.this );
+                        show( mGameOverAlert );
+                    }
+                }
+            } );
     }
 
     private void resumeGame( boolean isStart )
@@ -2913,21 +2949,21 @@ public class BoardDelegate extends DelegateBase
         return supported;
     }
 
-    private void doRematchIf()
+    private void doRematchIf( boolean deleteAfter )
     {
-        doRematchIf( DBUtils.GROUPID_UNSPEC );
+        doRematchIf( GROUPID_UNSPEC, deleteAfter );
     }
 
-    private void doRematchIf( long groupID )
+    private void doRematchIf( long groupID, boolean deleteAfter )
     {
         doRematchIf( m_activity, this, m_rowid, groupID, m_summary,
-                     m_gi, m_jniGamePtr );
+                     m_gi, m_jniGamePtr, deleteAfter );
     }
 
     private static void doRematchIf( Activity activity, DelegateBase dlgt,
                                      long rowid, long groupID,
                                      GameSummary summary, CurGameInfo gi,
-                                     GamePtr jniGamePtr )
+                                     GamePtr jniGamePtr, boolean deleteAfter )
     {
         boolean doIt = true;
         String phone = null;
@@ -2975,7 +3011,7 @@ public class BoardDelegate extends DelegateBase
             Intent intent = GamesListDelegate
                 .makeRematchIntent( activity, rowid, groupID, gi,
                                     summary.conTypes, btAddr, phone,
-                                    p2pMacAddress, mqttDevID, newName );
+                                    p2pMacAddress, mqttDevID, newName, deleteAfter );
             if ( null != intent ) {
                 activity.startActivity( intent );
             }
@@ -3046,7 +3082,7 @@ public class BoardDelegate extends DelegateBase
     {
         if ( null != gamePtr ) {
             doRematchIf( activity, null, gamePtr.getRowid(),
-                         DBUtils.GROUPID_UNSPEC, summary, gi, gamePtr );
+                         GROUPID_UNSPEC, summary, gi, gamePtr, false );
         } else {
             Log.w( TAG, "setupRematchFor(): unable to lock game" );
         }
@@ -3196,7 +3232,7 @@ public class BoardDelegate extends DelegateBase
     {
         if ( null == m_jniThread ) {
             Log.w( TAG, "m_jniThread null: not calling m_jniThread.handle(%s)",
-                   cmd.toString() );
+                   cmd );
             DbgUtils.printStack( TAG );
         } else {
             m_jniThread.handle( cmd, args );

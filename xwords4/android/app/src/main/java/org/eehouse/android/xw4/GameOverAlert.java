@@ -33,6 +33,7 @@ import android.widget.CompoundButton;
 import android.widget.TextView;
 
 import org.eehouse.android.xw4.DlgDelegate.Action;
+import org.eehouse.android.xw4.DlgDelegate.HasDlgDelegate;
 import org.eehouse.android.xw4.jni.GameSummary;
 import org.eehouse.android.xw4.loc.LocUtils;
 
@@ -47,17 +48,27 @@ public class GameOverAlert extends XWDialogFragment
     private static final String HAS_PENDING = "HAS_PENDING";
 
     private AlertDialog mDialog;
+    private HasDlgDelegate mDlgDlgt;
     private GameSummary mSummary;
     private int mTitleID;
     private String mMsg;
     private ViewGroup mView;
     private boolean mInArchive;
     private CheckBox mArchiveBox;
+    private CheckBox mDeleteBox;
     private boolean mHasPending;
+
+    interface OnDoneProc {
+        void onGameOverDone( boolean rematch,
+                             boolean archiveAfter,
+                             boolean deleteAfter );
+    }
+    private OnDoneProc mOnDone;
 
     public static GameOverAlert newInstance( GameSummary summary,
                                              int titleID, String msg,
-                                             boolean hasPending, boolean inArchiveGroup )
+                                             boolean hasPending,
+                                             boolean inArchiveGroup )
     {
         Log.d( TAG, "newInstance(msg=%s)", msg );
         GameOverAlert result = new GameOverAlert();
@@ -108,7 +119,6 @@ public class GameOverAlert extends XWDialogFragment
             .setPositiveButton( android.R.string.ok, this )
             .setNeutralButton( R.string.button_rematch, this )
             ;
-        ab.setNegativeButton( R.string.button_delete, this );
 
         mDialog = ab.create();
         mDialog.setOnShowListener( new DialogInterface.OnShowListener() {
@@ -133,38 +143,44 @@ public class GameOverAlert extends XWDialogFragment
     @Override
     public void onClick( DialogInterface dialog, int which )
     {
-        Action action = null;
-        boolean archiveAfter =
-            ((CheckBox)mView.findViewById(R.id.archive_check))
-            .isChecked();
-        switch ( which ) {
-        case AlertDialog.BUTTON_NEUTRAL:
-            action = Action.REMATCH_ACTION;
-            break;
-        case AlertDialog.BUTTON_POSITIVE:
-            if ( archiveAfter ) {
-                action = Action.ARCHIVE_SEL_ACTION;
-            }
-            break;
-        case AlertDialog.BUTTON_NEGATIVE:
-            action = Action.DELETE_ACTION;
-            break;
-        }
+        if ( null != mOnDone ) {
+            boolean rematch = which == AlertDialog.BUTTON_NEUTRAL;
+            boolean archiveAfter = mArchiveBox.isChecked();
+            boolean deleteAfter = mDeleteBox.isChecked();
 
-        if ( null != action ) {
-            Activity activity = getActivity();
-            if ( activity instanceof DlgDelegate.DlgClickNotify ) {
-                DlgDelegate.DlgClickNotify notify
-                    = (DlgDelegate.DlgClickNotify)activity;
-                notify.onPosButton( action, archiveAfter );
-            }
+            mOnDone.onGameOverDone( rematch, archiveAfter, deleteAfter );
         }
     }
 
     @Override
     public void onCheckedChanged( CompoundButton bv, boolean isChecked )
     {
-        Utils.enableAlertButton( mDialog, AlertDialog.BUTTON_NEGATIVE, !isChecked );
+        if ( isChecked ) {
+            DlgDelegate.Builder builder;
+            if ( bv == mArchiveBox ) {
+                mDeleteBox.setChecked( false );
+
+                String archiveName = LocUtils
+                    .getString( getContext(), R.string.group_name_archive );
+                builder = mDlgDlgt.makeNotAgainBuilder( R.string.key_na_archivecheck,
+                                                        R.string.not_again_archivecheck_fmt,
+                                                        archiveName );
+            } else {
+                Assert.assertTrueNR( bv == mDeleteBox );
+                mArchiveBox.setChecked( false );
+                builder = mDlgDlgt.makeNotAgainBuilder( R.string.key_na_deletecheck,
+                                                        R.string.not_again_deletecheck );
+            }
+
+            builder.show();
+        }
+    }
+
+    public GameOverAlert configure( OnDoneProc proc, HasDlgDelegate dlgDlgt )
+    {
+        mOnDone = proc;
+        mDlgDlgt = dlgDlgt;
+        return this;
     }
 
     public void pendingCountChanged( int newCount )
@@ -191,5 +207,8 @@ public class GameOverAlert extends XWDialogFragment
         if ( mInArchive ) {
             mArchiveBox.setVisibility( View.GONE );
         }
+
+        mDeleteBox = (CheckBox)mView.findViewById( R.id.delete_check );
+        mDeleteBox.setOnCheckedChangeListener( this );
     }
 }

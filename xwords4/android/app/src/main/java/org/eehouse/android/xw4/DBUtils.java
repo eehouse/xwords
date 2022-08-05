@@ -1075,7 +1075,7 @@ public class DBUtils {
             deleteCurChatsSync( s_db, rowid );
 
         }
-        notifyListeners( context, lock.getRowid(), GameChangeType.GAME_DELETED );
+        notifyListeners( context, rowid, GameChangeType.GAME_DELETED );
         invalGroupsCache();
     }
 

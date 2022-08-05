@@ -28,7 +28,6 @@ import android.os.Handler;
 
 import java.io.Serializable;
 
-
 import org.eehouse.android.xw4.DBUtils.SentInvitesInfo;
 import org.eehouse.android.xw4.Utils.ISOCode;
 
@@ -61,6 +60,7 @@ public class DlgDelegate {
         BACKUP_LOADDB,
         BACKUP_OVERWRITE,
         BACKUP_RETRY,
+        LAUNCH_AFTER_DEL,
         CLEAR_INT_STATS,        // debug only
 
         // BoardDelegate

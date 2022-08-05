@@ -100,6 +100,7 @@ public class GamesListDelegate extends ListDelegateBase
     private static final String REMATCH_LANG_EXTRA = "rm_lang";
     private static final String REMATCH_PREFS_EXTRA = "rm_prefs";
     private static final String REMATCH_NEWNAME_EXTRA = "rm_nnm";
+    private static final String REMATCH_DELAFTER_EXTRA = "del_after";
     private static final String REMATCH_IS_SOLO = "rm_solo";
     private static final String REMATCH_ADDRS_EXTRA = "rm_addrs";
     private static final String REMATCH_BTADDR_EXTRA = "rm_btaddr";
@@ -1553,10 +1554,27 @@ public class GamesListDelegate extends ListDelegateBase
             DictBrowseDelegate.launch( getDelegator(), (String)params[0] );
             break;
 
+        case LAUNCH_AFTER_DEL:
+            deleteGames( new long[] { (Long)params[1] }, false );
+            break;
+
         default:
             handled = super.onPosButton( action, params );
         }
         return handled;
+    }
+
+    @Override
+    public boolean onDismissed( Action action, Object... params )
+    {
+        boolean handled = false;
+        switch ( action ) {
+        case LAUNCH_AFTER_DEL:
+            launchGame( (Long)params[0] );
+            handled = true;
+            break;
+        }
+        return handled || super.onDismissed( action, params );
     }
 
     private Dialog mkLoadStoreDlg( final Uri uri )
@@ -2685,7 +2703,17 @@ public class GamesListDelegate extends ListDelegateBase
                 DBUtils.addRematchInfo( m_activity, newid, btAddr, phone,
                                         p2pMacAddress, mqttDevID );
             }
-            launchGame( newid );
+
+            if ( extras.getBoolean( REMATCH_DELAFTER_EXTRA, false ) ) {
+                String name = DBUtils.getName( m_activity, srcRowID );
+                makeConfirmThenBuilder( Action.LAUNCH_AFTER_DEL,
+                                        R.string.confirm_del_after_rematch_fmt,
+                                        name )
+                    .setParams( newid, srcRowID )
+                    .show();
+            } else {
+                launchGame( newid );
+            }
         }
         m_rematchExtras = null;
     }
@@ -3171,7 +3199,7 @@ public class GamesListDelegate extends ListDelegateBase
                                             CommsConnTypeSet addrTypes,
                                             String btAddr, String phone,
                                             String p2pMacAddress, String mqttDevID,
-                                            String newName )
+                                            String newName, boolean deleteAfter )
     {
         Intent intent = null;
         boolean isSolo = gi.serverRole == CurGameInfo.DeviceRole.SERVER_STANDALONE;
@@ -3182,7 +3210,8 @@ public class GamesListDelegate extends ListDelegateBase
             .putExtra( REMATCH_IS_SOLO, isSolo )
             .putExtra( REMATCH_LANG_EXTRA, gi.isoCode().toString() )
             .putExtra( REMATCH_PREFS_EXTRA, gi.getJSONData() )
-            .putExtra( REMATCH_NEWNAME_EXTRA, newName );
+            .putExtra( REMATCH_NEWNAME_EXTRA, newName )
+            .putExtra( REMATCH_DELAFTER_EXTRA, deleteAfter );
 
         if ( null != addrTypes ) {
             Assert.assertTrueNR( !addrTypes.contains( CommsConnType.COMMS_CONN_RELAY ) );

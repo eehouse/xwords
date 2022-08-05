@@ -174,6 +174,9 @@
   <string name="key_na_quicknetgame">key_na_quicknetgame</string>
   <string name="key_na_boardThemes">key_na_boardThemes</string>
 
+  <string name="key_na_archivecheck">key_na_archivecheck</string>
+  <string name="key_na_deletecheck">key_na_deletecheck</string>
+
   <string name="key_theme_which">key_theme_which</string>
 
   <!-- Nor is my email address -->

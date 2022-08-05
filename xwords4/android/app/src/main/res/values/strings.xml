@@ -140,6 +140,9 @@
       <item quantity="other">Are you sure you want to delete
       the games %1$s? This action cannot be undone.</item>
     </plurals>
+    <string name="confirm_del_after_rematch_fmt">Rematch
+    successful.\n\nDo you now want to delete the completed game %1$s?
+    \n\n(This action cannot be undone.)</string>
     <!-- Text of confirmation dialog posted when list_item_reset menu
          is selected -->
     <plurals name="confirm_reset_fmt">
