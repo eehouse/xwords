@@ -243,8 +243,8 @@ public class Perms23 {
                 builder.setOnShowRationale( new OnShowRationale() {
                         @Override
                         public void onShouldShowRationale( Set<Perm> perms ) {
-                            m_delegate.makeConfirmThenBuilder( m_rationaleMsg,
-                                                               Action.PERMS_QUERY )
+                            m_delegate.makeConfirmThenBuilder( Action.PERMS_QUERY,
+                                                               m_rationaleMsg )
                                 .setTitle( R.string.perms_rationale_title )
                                 .setPosButton( R.string.button_ask )
                                 .setNegButton( R.string.button_deny )

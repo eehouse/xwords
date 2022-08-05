@@ -180,9 +180,9 @@ public class DlgDelegate {
             return this;
         }
 
-        Builder setMessageID( int msgID )
+        Builder setMessageID( int msgID, Object... params )
         {
-            mState.setMsg( getString( msgID ) );
+            mState.setMsg( getString( msgID, params ) );
             return this;
         }
 
@@ -266,10 +266,10 @@ public class DlgDelegate {
         return builder;
     }
 
-    public Builder makeOkOnlyBuilder( int msgID )
+    public Builder makeOkOnlyBuilder( int msgID, Object... params )
     {
         Builder builder = new Builder( DlgID.DIALOG_OKONLY )
-            .setMessageID( msgID )
+            .setMessageID( msgID, params )
             ;
         return builder;
     }
@@ -282,17 +282,17 @@ public class DlgDelegate {
             ;
     }
     
-    public Builder makeConfirmThenBuilder( String msg, Action action )
+    public Builder makeConfirmThenBuilder( Action action, String msg )
     {
         return makeConfirmThenBuilder( action )
             .setMessage( msg )
             ;
     }
 
-    public Builder makeConfirmThenBuilder( int msgID, Action action )
+    public Builder makeConfirmThenBuilder( Action action, int msgID, Object... params )
     {
         return makeConfirmThenBuilder( action )
-            .setMessageID( msgID )
+            .setMessageID( msgID, params )
             ;
     }
 
@@ -305,7 +305,7 @@ public class DlgDelegate {
             ;
     }
 
-    public Builder makeNotAgainBuilder( String msg, int key, Action action )
+    public Builder makeNotAgainBuilder( int key, Action action, String msg )
     {
         return makeNotAgainBuilder( key )
             .setMessage( msg )
@@ -313,25 +313,26 @@ public class DlgDelegate {
             ;
     }
 
-    public Builder makeNotAgainBuilder( int msgID, int key, Action action )
+    public Builder makeNotAgainBuilder( int key, Action action,
+                                        int msgID, Object... params )
     {
         return makeNotAgainBuilder( key )
-            .setMessageID( msgID )
+            .setMessageID( msgID, params )
             .setAction( action )
             ;
     }
 
-    public Builder makeNotAgainBuilder( String msg, int key )
+    public Builder makeNotAgainBuilder( int key, String msg )
     {
         return makeNotAgainBuilder( key )
             .setMessage( msg )
             ;
     }
 
-    public Builder makeNotAgainBuilder( int msgID, int key )
+    public Builder makeNotAgainBuilder( int key, int msgID, Object... params )
     {
         return makeNotAgainBuilder( key )
-            .setMessageID( msgID )
+            .setMessageID( msgID, params )
             ;
     }
 
@@ -371,10 +372,10 @@ public class DlgDelegate {
         void inviteChoiceMade( Action action, InviteMeans means, Object... params );
     }
     public interface HasDlgDelegate {
-        Builder makeOkOnlyBuilder( int msgID );
+        Builder makeOkOnlyBuilder( int msgID, Object... params );
         Builder makeOkOnlyBuilder( String msg );
-        Builder makeNotAgainBuilder( int msgID, int prefsKey, Action action );
-        Builder makeNotAgainBuilder( int msgID, int prefsKey );
+        Builder makeNotAgainBuilder( int prefsKey, Action action, int msgID, Object... params );
+        Builder makeNotAgainBuilder( int prefsKey, int msgID, Object... params );
     }
 
     private Activity m_activity;

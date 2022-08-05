@@ -52,7 +52,7 @@ public class MQTTCheckBoxPreference extends ConfirmingCheckBoxPreference {
             msg += LocUtils.getQuantityString( activity, R.plurals.warn_mqtt_games_fmt,
                                                count, count );
         }
-        activity.makeConfirmThenBuilder( msg, Action.DISABLE_MQTT_DO )
+        activity.makeConfirmThenBuilder( Action.DISABLE_MQTT_DO, msg )
             .setPosButton( R.string.button_disable_mqtt )
             .show();
     }

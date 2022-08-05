@@ -93,9 +93,9 @@ public class PrefsActivity extends XWActivity
     }
 
     @Override
-    public Builder makeNotAgainBuilder(int msgID, int key, Action action)
+    public Builder makeNotAgainBuilder( int key, Action action, int msgID, Object... params)
     {
-        return m_dlgt.makeNotAgainBuilder( msgID, key, action );
+        return m_dlgt.makeNotAgainBuilder( key, action, msgID, params );
     }
 
     @Override
@@ -131,9 +131,9 @@ public class PrefsActivity extends XWActivity
         return true;
     }
 
-    Builder makeConfirmThenBuilder( String msg, Action action )
+    Builder makeConfirmThenBuilder( Action action, String msg )
     {
-        return m_dlgt.makeConfirmThenBuilder( msg, action );
+        return m_dlgt.makeConfirmThenBuilder( action, msg );
     }
 
     protected void showSMSEnableDialog( Action action )

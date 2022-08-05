@@ -52,7 +52,7 @@ public class BTCheckBoxPreference extends ConfirmingCheckBoxPreference {
             msg += LocUtils.getQuantityString( activity, R.plurals.warn_bt_games_fmt,
                                                count, count );
         }
-        activity.makeConfirmThenBuilder( msg, Action.DISABLE_BT_DO )
+        activity.makeConfirmThenBuilder( Action.DISABLE_BT_DO, msg )
             .setPosButton( R.string.button_disable_bt )
             .show();
     }

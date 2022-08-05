@@ -498,7 +498,7 @@ public class DictsDelegate extends ListDelegateBase
 
         m_origTitle = getTitle();
 
-        makeNotAgainBuilder( R.string.not_again_dicts, R.string.key_na_dicts )
+        makeNotAgainBuilder( R.string.key_na_dicts, R.string.not_again_dicts )
             .show();
 
         Perms23.tryGetPermsNA( this, Perm.STORAGE, R.string.dicts_storage_rationale,
@@ -860,7 +860,7 @@ public class DictsDelegate extends ListDelegateBase
             }
         }
 
-        makeConfirmThenBuilder( msg, Action.DELETE_DICT_ACTION )
+        makeConfirmThenBuilder( Action.DELETE_DICT_ACTION, msg )
             .setPosButton( R.string.button_delete )
             .setParams( (Object)names )
             .show();
@@ -1407,9 +1407,8 @@ public class DictsDelegate extends ListDelegateBase
                     String[] names = m_needUpdates.keySet()
                         .toArray(new String[m_needUpdates.size()]);
                     String joined = TextUtils.join( ", ", names );
-                    makeConfirmThenBuilder( getString( R.string.update_dicts_fmt,
-                                                       joined ),
-                                            Action.UPDATE_DICTS_ACTION )
+                    makeConfirmThenBuilder( Action.UPDATE_DICTS_ACTION,
+                                            R.string.update_dicts_fmt, joined )
                         .setPosButton( R.string.button_download )
                         .show();
                 }

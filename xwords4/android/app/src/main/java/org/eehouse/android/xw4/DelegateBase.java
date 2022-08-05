@@ -535,33 +535,33 @@ public abstract class DelegateBase implements DlgClickNotify,
     }
 
     public Builder
-        makeNotAgainBuilder( String msg, int key, Action action )
+        makeNotAgainBuilder( int key, Action action, String msg )
     {
-        return m_dlgDelegate.makeNotAgainBuilder( msg, key, action );
+        return m_dlgDelegate.makeNotAgainBuilder( key, action, msg );
     }
 
     public Builder
-        makeNotAgainBuilder( int msgId, int key, Action action )
+        makeNotAgainBuilder( int key, Action action, int msgId, Object... params )
     {
-        return m_dlgDelegate.makeNotAgainBuilder( msgId, key, action );
+        return m_dlgDelegate.makeNotAgainBuilder( key, action, msgId, params );
     }
 
-    public Builder makeNotAgainBuilder( String msg, int key )
+    public Builder makeNotAgainBuilder( int key, String msg )
     {
-        return m_dlgDelegate.makeNotAgainBuilder( msg, key );
+        return m_dlgDelegate.makeNotAgainBuilder( key, msg );
     }
 
-    public Builder makeNotAgainBuilder( int msgID, int key )
+    public Builder makeNotAgainBuilder( int key, int msgID, Object... params )
     {
-        return m_dlgDelegate.makeNotAgainBuilder( msgID, key );
+        return m_dlgDelegate.makeNotAgainBuilder( key, msgID, params );
     }
 
-    public Builder makeConfirmThenBuilder( String msg, Action action ) {
-        return m_dlgDelegate.makeConfirmThenBuilder( msg, action );
+    public Builder makeConfirmThenBuilder( Action action, String msg ) {
+        return m_dlgDelegate.makeConfirmThenBuilder( action, msg );
     }
 
-    public Builder makeConfirmThenBuilder( int msgId, Action action ) {
-        return m_dlgDelegate.makeConfirmThenBuilder( msgId, action );
+    public Builder makeConfirmThenBuilder( Action action, int msgId, Object... params  ) {
+        return m_dlgDelegate.makeConfirmThenBuilder( action, msgId, params );
     }
 
     protected boolean post( Runnable runnable )
@@ -586,9 +586,9 @@ public abstract class DelegateBase implements DlgClickNotify,
         m_dlgDelegate.showInviteChoicesThen( action, nli, nMissing );
     }
 
-    public Builder makeOkOnlyBuilder( int msgID )
+    public Builder makeOkOnlyBuilder( int msgID, Object... params )
     {
-        return m_dlgDelegate.makeOkOnlyBuilder( msgID );
+        return m_dlgDelegate.makeOkOnlyBuilder( msgID, params );
     }
 
     public Builder makeOkOnlyBuilder( String msg )
@@ -699,8 +699,8 @@ public abstract class DelegateBase implements DlgClickNotify,
 
     protected void askNoAddrsDelete()
     {
-        makeConfirmThenBuilder( R.string.connstat_net_noaddr,
-                                Action.DELETE_AND_EXIT )
+        makeConfirmThenBuilder( Action.DELETE_AND_EXIT,
+                                R.string.connstat_net_noaddr )
             .setPosButton( R.string.list_item_delete )
             .setNegButton( R.string.button_close_game )
             .show();
@@ -733,10 +733,11 @@ public abstract class DelegateBase implements DlgClickNotify,
             final String msg = getString( fmtId, (String)args[0] );
             final int key = notAgainKey;
             runOnUiThread( new Runnable() {
+                    @Override
                     public void run() {
                         Builder builder = 0 == key
                             ? makeOkOnlyBuilder( msg )
-                            : makeNotAgainBuilder( msg, key )
+                            : makeNotAgainBuilder( key, msg )
                             ;
                         builder.show();
                     }

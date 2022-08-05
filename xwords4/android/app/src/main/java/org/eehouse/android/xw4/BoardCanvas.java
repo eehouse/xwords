@@ -1015,7 +1015,7 @@ public class BoardCanvas extends Canvas implements DrawCtx {
                 activity.runOnUiThread( new Runnable() {
                         @Override
                         public void run() {
-                            activity.makeNotAgainBuilder( msgID, keyID )
+                            activity.makeNotAgainBuilder( keyID, msgID )
                                 .show();
                         }
                     } );

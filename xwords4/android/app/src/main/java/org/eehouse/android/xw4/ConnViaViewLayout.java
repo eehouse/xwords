@@ -186,7 +186,7 @@ public class ConnViaViewLayout extends LinearLayout {
             }
 
             DlgDelegate.Builder builder = 0 != keyID
-                ? m_dlgDlgt.makeNotAgainBuilder( msgID, keyID )
+                ? m_dlgDlgt.makeNotAgainBuilder( keyID, msgID )
                 : m_dlgDlgt.makeOkOnlyBuilder( msgID )
                 .setActionPair( Action.PERMS_BANNED_INFO,
                                 R.string.button_more_info )

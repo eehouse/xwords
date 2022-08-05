@@ -217,9 +217,9 @@ public class PrefsDelegate extends DelegateBase
         if ( null != dlgID ) {
             showDialogFragment( dlgID );
         } else if ( null != theme ) {
-            makeNotAgainBuilder( R.string.not_again_copytheme,
-                                 R.string.key_na_copytheme,
-                                 Action.EXPORT_THEME )
+            makeNotAgainBuilder( R.string.key_na_copytheme,
+                                 Action.EXPORT_THEME,
+                                 R.string.not_again_copytheme )
                 .setParams( theme )
                 .show();
         }

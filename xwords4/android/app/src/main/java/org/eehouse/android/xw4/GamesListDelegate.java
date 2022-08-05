@@ -756,11 +756,8 @@ public class GamesListDelegate extends ListDelegateBase
                             mkListAdapter();
                             showNewGroupIf();
                         } else {
-                            String msg = LocUtils
-                                .getString( m_activity,
-                                            R.string.duplicate_group_name_fmt,
-                                            name );
-                            makeOkOnlyBuilder( msg ).show();
+                            makeOkOnlyBuilder( R.string.duplicate_group_name_fmt,
+                                               name ).show();
                         }
                     }
                 };
@@ -848,8 +845,8 @@ public class GamesListDelegate extends ListDelegateBase
             boolean solo = (Boolean)params[0];
             dialog = mkNewNetGameDialog( solo );
             if ( !solo && XwJNI.hasKnownPlayers() ) {
-                makeNotAgainBuilder( R.string.not_again_quicknetgame,
-                                     R.string.key_na_quicknetgame )
+                makeNotAgainBuilder( R.string.key_na_quicknetgame,
+                                     R.string.not_again_quicknetgame )
                     .setTitle( R.string.new_feature_title )
                     .show();
             }
@@ -1132,8 +1129,8 @@ public class GamesListDelegate extends ListDelegateBase
                 m_offeredHideButtons = true; // don't do expensive check again
             } else {
                 m_offeredHideButtons = true;
-                makeNotAgainBuilder( R.string.not_again_hidenewgamebuttons,
-                                     R.string.key_notagain_hidenewgamebuttons )
+                makeNotAgainBuilder( R.string.key_notagain_hidenewgamebuttons,
+                                     R.string.not_again_hidenewgamebuttons )
                     .setActionPair( Action.SET_HIDE_NEWGAME_BUTTONS,
                                     R.string.set_pref )
                     .show();
@@ -1158,10 +1155,9 @@ public class GamesListDelegate extends ListDelegateBase
              && Perm.SEND_SMS.isBanned(m_activity) ) {
             int smsGameCount = DBUtils.countOpenGamesUsingNBS( m_activity );
             if ( 0 < smsGameCount ) {
-                String msg = LocUtils.getString( m_activity,
-                                                 R.string.not_again_nbsGamesOnUpgrade,
-                                                 smsGameCount );
-                makeNotAgainBuilder( msg, R.string.key_notagain_nbsGamesOnUpgrade )
+                makeNotAgainBuilder( R.string.key_notagain_nbsGamesOnUpgrade,
+                                     R.string.not_again_nbsGamesOnUpgrade,
+                                     smsGameCount )
                     .setActionPair( Action.PERMS_BANNED_INFO,
                                     R.string.button_more_info )
                     .show();
@@ -1292,14 +1288,13 @@ public class GamesListDelegate extends ListDelegateBase
     {
         if ( ! BoardDelegate.gameIsOpen( rowid ) ) {
             if ( Quarantine.safeToOpen( rowid ) ) {
-                makeNotAgainBuilder( R.string.not_again_newselect,
-                                     R.string.key_notagain_newselect,
-                                     Action.OPEN_GAME )
+                makeNotAgainBuilder( R.string.key_notagain_newselect,
+                                     Action.OPEN_GAME, R.string.not_again_newselect )
                     .setParams( rowid, summary )
                     .show();
             } else {
-                makeConfirmThenBuilder( R.string.unsafe_open_warning,
-                                        Action.QUARANTINE_CLEAR )
+                makeConfirmThenBuilder( Action.QUARANTINE_CLEAR,
+                                        R.string.unsafe_open_warning )
                     .setPosButton( R.string.unsafe_open_disregard )
                     .setNegButton( 0 )
                     .setActionPair( Action.QUARANTINE_DELETE,
@@ -1581,9 +1576,9 @@ public class GamesListDelegate extends ListDelegateBase
                         } else {
                             ArrayList<SaveWhat> what = view.getSaveWhat();
                             String name = ZipUtils.getFileName( m_activity, uri );
-                            String msg = getString( R.string.backup_overwrite_confirm_fmt,
-                                                    name );
-                            makeConfirmThenBuilder( msg, Action.BACKUP_OVERWRITE )
+                            makeConfirmThenBuilder( Action.BACKUP_OVERWRITE,
+                                                    R.string.backup_overwrite_confirm_fmt,
+                                                    name )
                                 .setParams(what, uri.toString())
                                 .show();
                         }
@@ -1683,9 +1678,7 @@ public class GamesListDelegate extends ListDelegateBase
                                 } else {
                                     String name = ZipUtils.getFileName( m_activity, uri );
                                     if ( null != name ) {
-                                        String msg = getString( R.string.backup_bad_file_fmt,
-                                                                name );
-                                        makeOkOnlyBuilder( msg )
+                                        makeOkOnlyBuilder( R.string.backup_bad_file_fmt, name )
                                             .setActionPair( Action.BACKUP_RETRY,
                                                             R.string.button_pick_again )
                                             .show();
@@ -1712,9 +1705,8 @@ public class GamesListDelegate extends ListDelegateBase
         boolean handled = 0 < m_mySIS.selGames.size()
             || 0 < m_mySIS.selGroupIDs.size();
         if ( handled ) {
-            makeNotAgainBuilder( R.string.not_again_backclears,
-                                 R.string.key_notagain_backclears,
-                                 Action.CLEAR_SELS )
+            makeNotAgainBuilder( R.string.key_notagain_backclears,
+                                 Action.CLEAR_SELS, R.string.not_again_backclears )
                 .show();
         }
         return handled;
@@ -1917,9 +1909,8 @@ public class GamesListDelegate extends ListDelegateBase
             showDialogFragment( DlgID.BACKUP_LOADSTORE );
             break;
         case R.id.games_menu_loaddb:
-            makeNotAgainBuilder( R.string.not_again_loaddb,
-                                 R.string.key_notagain_loaddb,
-                                 Action.BACKUP_LOADDB )
+            makeNotAgainBuilder( R.string.key_notagain_loaddb,
+                                 Action.BACKUP_LOADDB, R.string.not_again_loaddb )
                 .show();
             break;
 
@@ -1940,8 +1931,8 @@ public class GamesListDelegate extends ListDelegateBase
             Log.setStoreLogs( false );
             break;
         case R.id.games_menu_clearLogStorage:
-            makeConfirmThenBuilder( R.string.logstore_clear_confirm,
-                                    Action.CLEAR_LOG_DB )
+            makeConfirmThenBuilder( Action.CLEAR_LOG_DB,
+                                    R.string.logstore_clear_confirm )
                 .setPosButton( R.string.loc_item_clear )
                 .show();
             break;
@@ -2181,9 +2172,8 @@ public class GamesListDelegate extends ListDelegateBase
             break;
         case R.id.games_game_new_from:
             dropSels = true;    // will select the new game instead
-            makeNotAgainBuilder( R.string.not_again_newfrom,
-                                 R.string.key_notagain_newfrom,
-                                 Action.NEW_FROM )
+            makeNotAgainBuilder( R.string.key_notagain_newfrom,
+                                 Action.NEW_FROM, R.string.not_again_newfrom )
                 .setParams(selRowIDs[0])
                 .show();
             break;
@@ -2265,20 +2255,19 @@ public class GamesListDelegate extends ListDelegateBase
     {
         boolean handled = 0 < groupIDs.length;
         if ( handled ) {
-            String msg;
             long groupID = groupIDs[0];
             switch( itemID ) {
             case R.id.games_group_delete:
                 long dftGroup = XWPrefs.getDefaultNewGameGroup( m_activity );
                 if ( groupID == dftGroup ) {
-                    msg = getString( R.string.cannot_delete_default_group_fmt,
-                                     m_adapter.groupName( dftGroup ) );
-                    makeOkOnlyBuilder( msg ).show();
+                    makeOkOnlyBuilder( R.string.cannot_delete_default_group_fmt,
+                                       m_adapter.groupName( dftGroup ) )
+                        .show();
                 } else {
                     Assert.assertTrue( 0 < groupIDs.length );
                     String names = m_adapter.formatGroupNames( groupIDs );
-                    msg = getQuantityString( R.plurals.groups_confirm_del_fmt,
-                                             groupIDs.length, names );
+                    String msg = getQuantityString( R.plurals.groups_confirm_del_fmt,
+                                                    groupIDs.length, names );
 
                     int nGames = 0;
                     for ( long tmp : groupIDs ) {
@@ -2288,7 +2277,7 @@ public class GamesListDelegate extends ListDelegateBase
                         msg += getQuantityString( R.plurals.groups_confirm_del_games_fmt,
                                                   nGames, nGames );
                     }
-                    makeConfirmThenBuilder( msg, Action.DELETE_GROUPS )
+                    makeConfirmThenBuilder( Action.DELETE_GROUPS, msg )
                         .setParams( groupIDs )
                         .show();
                 }
@@ -2490,7 +2479,7 @@ public class GamesListDelegate extends ListDelegateBase
                         int resid = success ? R.string.byod_success
                             : R.string.byod_failure;
                         DlgDelegate.Builder builder =
-                            makeOkOnlyBuilder( getString( resid, name ) );
+                            makeOkOnlyBuilder( resid, name );
                         if ( success ) {
                             builder.setActionPair( Action.OPEN_BYOD_DICT,
                                                    R.string.button_open_dict )
@@ -2572,7 +2561,7 @@ public class GamesListDelegate extends ListDelegateBase
                 String prefix = LocUtils.getString( m_activity, R.string.conf_prefix );
                 Log.d( TAG, "loadConfig(): path: %s; prefix: %s", path, prefix );
                 if ( path.startsWith( prefix ) ) {
-                    makeConfirmThenBuilder( R.string.apply_config, Action.APPLY_CONFIG )
+                    makeConfirmThenBuilder( Action.APPLY_CONFIG, R.string.apply_config )
                         .setPosButton( R.string.button_apply_config )
                         .setNegButton( android.R.string.cancel )
                         .setParams( data.toString() )
@@ -2761,9 +2750,8 @@ public class GamesListDelegate extends ListDelegateBase
                                 if ( success ) {
                                     String langName = DictLangCache
                                         .getLangNameForISOCode( m_activity, isoCode );
-                                    String msg =
-                                        getString( R.string.confirm_get_locdict_fmt, langName );
-                                    makeConfirmThenBuilder( msg, Action.DWNLD_LOC_DICT )
+                                    makeConfirmThenBuilder( Action.DWNLD_LOC_DICT,
+                                                            R.string.confirm_get_locdict_fmt, langName )
                                         .setPosButton( R.string.button_download )
                                         .setNegButton( R.string.button_no )
                                         .setNAKey( R.string.key_got_langdict )
@@ -2812,7 +2800,7 @@ public class GamesListDelegate extends ListDelegateBase
 
     private void mkDeleteAlert( String msg, long[] rowids, boolean skipTell )
     {
-        makeConfirmThenBuilder( msg, Action.DELETE_GAMES )
+        makeConfirmThenBuilder( Action.DELETE_GAMES, msg )
             .setPosButton( R.string.button_delete )
             .setParams( rowids, skipTell )
             .show();
@@ -3024,7 +3012,7 @@ public class GamesListDelegate extends ListDelegateBase
     {
         String msg = getQuantityString( R.plurals.confirm_reset_fmt,
                                         rowIDs.length, rowIDs.length );
-        makeConfirmThenBuilder( msg, Action.RESET_GAMES )
+        makeConfirmThenBuilder( Action.RESET_GAMES, msg )
             .setPosButton( R.string.button_reset )
             .setParams( rowIDs )
             .show();
@@ -3063,12 +3051,8 @@ public class GamesListDelegate extends ListDelegateBase
             String name2 = CommonPrefs.getDefaultOriginalPlayerName( m_activity, 0 );
             if ( null == name1 || name1.equals( name2 ) ) {
                 asking = true;
-
-                String msg = LocUtils
-                    .getString( m_activity, R.string.not_again_dfltname_fmt,
-                                name2 );
-
-                makeConfirmThenBuilder( msg, Action.NEW_GAME_DFLT_NAME )
+                makeConfirmThenBuilder( Action.NEW_GAME_DFLT_NAME,
+                                        R.string.not_again_dfltname_fmt, name2 )
                     .setNAKey( R.string.key_notagain_dfltname )
                     .setNegButton( R.string.button_later )
                     .setParams( name, doConfigure )

@@ -352,9 +352,9 @@ public class BoardDelegate extends DelegateBase
                             @Override
                             public void onClick( DialogInterface dialog,
                                                  int whichButton ) {
-                                    makeNotAgainBuilder( R.string.not_again_lookup,
-                                                         R.string.key_na_lookup,
-                                                         Action.LOOKUP_ACTION )
+                                    makeNotAgainBuilder( R.string.key_na_lookup,
+                                                         Action.LOOKUP_ACTION,
+                                                         R.string.not_again_lookup )
                                     .show();
                             }
                         };
@@ -553,10 +553,9 @@ public class BoardDelegate extends DelegateBase
             s_themeNAShown = true;
             if ( CommonPrefs.darkThemeEnabled( m_activity ) ) {
                 String prefsName = LocUtils.getString( m_activity, R.string.theme_which );
-                String msg = LocUtils
-                    .getString( m_activity, R.string.not_again_boardThemes_fmt,
-                                prefsName );
-                makeNotAgainBuilder( msg, R.string.key_na_boardThemes )
+                makeNotAgainBuilder( R.string.key_na_boardThemes,
+                                     R.string.not_again_boardThemes_fmt,
+                                     prefsName )
                     .setTitle( R.string. new_feature_title )
                     .setActionPair( Action.LAUNCH_THEME_CONFIG, R.string.button_settings )
                     .show();
@@ -872,9 +871,8 @@ public class BoardDelegate extends DelegateBase
             int nTiles = XwJNI.model_getNumTilesInTray( m_jniGamePtr,
                                                         m_view.getCurPlayer() );
             if ( m_gi.traySize > nTiles ) {
-                makeNotAgainBuilder( R.string.not_again_done,
-                                     R.string.key_notagain_done,
-                                     Action.COMMIT_ACTION )
+                makeNotAgainBuilder( R.string.key_notagain_done,
+                                     Action.COMMIT_ACTION, R.string.not_again_done )
                     .show();
             } else {
                 onPosButton( Action.COMMIT_ACTION, null );
@@ -917,8 +915,8 @@ public class BoardDelegate extends DelegateBase
             int strID = ABUtils.haveActionBar() ? R.string.not_again_trading_menu
                 : R.string.not_again_trading_buttons;
             msg += getString( strID );
-            makeNotAgainBuilder( msg, R.string.key_notagain_trading,
-                                 Action.START_TRADE_ACTION )
+            makeNotAgainBuilder( R.string.key_notagain_trading,
+                                 Action.START_TRADE_ACTION, msg )
                 .show();
             break;
 
@@ -939,7 +937,8 @@ public class BoardDelegate extends DelegateBase
             cmd = JNICmd.CMD_UNDO_CUR;
             break;
         case R.id.board_menu_undo_last:
-            makeConfirmThenBuilder( R.string.confirm_undo_last, Action.UNDO_LAST_ACTION )
+            makeConfirmThenBuilder( Action.UNDO_LAST_ACTION,
+                                    R.string.confirm_undo_last )
                 .show();
             break;
 
@@ -1133,8 +1132,8 @@ public class BoardDelegate extends DelegateBase
             if ( 0 < params.length && (Boolean)params[0] ) {
                 deleteAndClose();
             } else {
-                makeConfirmThenBuilder( R.string.confirm_delete,
-                                        Action.DELETE_ACTION )
+                makeConfirmThenBuilder( Action.DELETE_ACTION,
+                                        R.string.confirm_delete )
                     .setParams(true)
                     .show();
             }
@@ -1371,12 +1370,12 @@ public class BoardDelegate extends DelegateBase
             break;
         case NEWGAME_DUP_REJECTED:
             doStopProgress = true;
-            final String msg =
-                getString( R.string.err_dup_invite_fmt, (String)args[0] );
             post( new Runnable() {
                     @Override
                     public void run() {
-                        makeOkOnlyBuilder( msg ).show();
+                        makeOkOnlyBuilder( R.string.err_dup_invite_fmt,
+                                           (String)args[0] )
+                            .show();
                     }
                 } );
             break;
@@ -1626,7 +1625,7 @@ public class BoardDelegate extends DelegateBase
         if ( m_connTypes.contains(CommsConnType.COMMS_CONN_SMS) ) {
             msg += " " + getString( R.string.confirm_drop_relay_sms );
         }
-        makeConfirmThenBuilder( msg, Action.DROP_MQTT_ACTION ).show();
+        makeConfirmThenBuilder( Action.DROP_MQTT_ACTION, msg ).show();
     }
 
     private void dropConViaAndRestart( CommsConnType typ )
@@ -1759,10 +1758,8 @@ public class BoardDelegate extends DelegateBase
                     @Override
                     public void run() {
                         String fmtd = TextUtils.join( ", ", wordsToArray( words ) );
-                        String msg = LocUtils
-                            .getString( m_activity, R.string.word_blocked_by_phony,
-                                        fmtd, dict );
-                        makeOkOnlyBuilder( msg ).show();
+                        makeOkOnlyBuilder( R.string.word_blocked_by_phony, fmtd, dict )
+                            .show();
                     }
                 } );
         }
@@ -1880,8 +1877,8 @@ public class BoardDelegate extends DelegateBase
                 post( new Runnable() {
                         @Override
                         public void run() {
-                            makeNotAgainBuilder( R.string.not_again_turnchanged,
-                                                 R.string.key_notagain_turnchanged )
+                            makeNotAgainBuilder( R.string.key_notagain_turnchanged,
+                                                 R.string.not_again_turnchanged )
                                 .show();
                         }
                     } );
@@ -1921,7 +1918,7 @@ public class BoardDelegate extends DelegateBase
             runOnUiThread( new Runnable() {
                     @Override
                     public void run() {
-                        makeNotAgainBuilder( msg, key )
+                        makeNotAgainBuilder( key, msg )
                             .show();
                     }
                 } );
@@ -2389,7 +2386,7 @@ public class BoardDelegate extends DelegateBase
                                 int explID = banned
                                     ? R.string.banned_nbs_perms : R.string.missing_sms_perms;
                                 DlgDelegate.Builder builder =
-                                    makeConfirmThenBuilder( explID, Action.DROP_SMS_ACTION );
+                                    makeConfirmThenBuilder( Action.DROP_SMS_ACTION, explID );
                                 if ( banned ) {
                                     builder.setActionPair( Action.PERMS_BANNED_INFO,
                                                            R.string.button_more_info )
@@ -2637,8 +2634,8 @@ public class BoardDelegate extends DelegateBase
         if ( null != m_connTypes && alertOrderAt( StartAlertOrder.NO_MEANS ) ) {
             if ( m_connTypes.contains( CommsConnType.COMMS_CONN_SMS ) ) {
                 if ( !XWPrefs.getNBSEnabled( m_activity ) ) {
-                    makeConfirmThenBuilder( R.string.warn_sms_disabled,
-                                            Action.ENABLE_NBS_ASK )
+                    makeConfirmThenBuilder( Action.ENABLE_NBS_ASK,
+                                            R.string.warn_sms_disabled )
                         .setPosButton( R.string.button_enable_sms )
                         .setNegButton( R.string.button_later )
                         .show();
@@ -2653,7 +2650,7 @@ public class BoardDelegate extends DelegateBase
                     m_dropMQTTOnDismiss = false;
                     String msg = getString( R.string.warn_mqtt_disabled )
                         + "\n\n" + getString( R.string.warn_mqtt_remove );
-                    makeConfirmThenBuilder( msg, Action.ENABLE_MQTT_DO_OR )
+                    makeConfirmThenBuilder( Action.ENABLE_MQTT_DO_OR, msg )
                         .setPosButton( R.string.button_enable_mqtt )
                         .setNegButton( R.string.newgame_drop_mqtt )
                         .show();
@@ -2852,9 +2849,8 @@ public class BoardDelegate extends DelegateBase
 
     private void showArchiveNA( boolean rematchAfter )
     {
-        makeNotAgainBuilder( R.string.not_again_archive,
-                             R.string.key_na_archive,
-                             Action.ARCHIVE_ACTION )
+        makeNotAgainBuilder( R.string.key_na_archive, Action.ARCHIVE_ACTION,
+                             R.string.not_again_archive )
             .setParams( rematchAfter )
             .show();
     }
@@ -2943,8 +2939,8 @@ public class BoardDelegate extends DelegateBase
         } else if ( 2 != gi.nPlayers ) {
             Assert.assertNotNull( dlgt );
             if ( null != dlgt ) {
-                dlgt.makeNotAgainBuilder( R.string.not_again_rematch_two_only,
-                                          R.string.key_na_rematch_two_only )
+                dlgt.makeNotAgainBuilder( R.string.key_na_rematch_two_only,
+                                          R.string.not_again_rematch_two_only )
                     .show();
             }
             doIt = false;
@@ -3158,8 +3154,8 @@ public class BoardDelegate extends DelegateBase
             NBSProto.inviteRemote( m_activity, phone, nli );
             recordInviteSent( InviteMeans.SMS_DATA, phone );
         } else if ( askOk ) {
-            makeConfirmThenBuilder( R.string.warn_sms_disabled,
-                                    Action.ENABLE_NBS_ASK )
+            makeConfirmThenBuilder( Action.ENABLE_NBS_ASK,
+                                    R.string.warn_sms_disabled )
                 .setPosButton( R.string.button_enable_sms )
                 .setNegButton( R.string.button_later )
                 .setParams( nli, phone )

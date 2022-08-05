@@ -204,20 +204,20 @@ public class InviteChoicesAlert extends DlgDelegateAlert
         switch ( means ) {
         case SMS_USER:
             builder = activity
-                .makeNotAgainBuilder( R.string.sms_invite_flakey,
-                                      R.string.key_na_sms_invite_flakey );
+                .makeNotAgainBuilder( R.string.key_na_sms_invite_flakey,
+                                      R.string.sms_invite_flakey );
             break;
         case CLIPBOARD:
             String msg =
                 getString( R.string.not_again_clip_expl_fmt,
                            getString(R.string.slmenu_copy_sel) );
             builder = activity
-                .makeNotAgainBuilder(msg, R.string.key_na_clip_expl);
+                .makeNotAgainBuilder( R.string.key_na_clip_expl, msg );
             break;
         case QRCODE:
             builder = activity
-                .makeNotAgainBuilder( R.string.qrcode_invite_expl,
-                                      R.string.key_na_qrcode_invite );
+                .makeNotAgainBuilder( R.string.key_na_qrcode_invite,
+                                      R.string.qrcode_invite_expl );
             break;
         case SMS_DATA:
             if ( !Perms23.havePermissions( activity, Perm.SEND_SMS, Perm.RECEIVE_SMS )
@@ -229,8 +229,8 @@ public class InviteChoicesAlert extends DlgDelegateAlert
                     ;
             } else if ( ! XWPrefs.getNBSEnabled( getContext() ) ) {
                 builder = activity
-                    .makeConfirmThenBuilder( R.string.warn_sms_disabled,
-                                             Action.ENABLE_NBS_ASK )
+                    .makeConfirmThenBuilder( Action.ENABLE_NBS_ASK,
+                                             R.string.warn_sms_disabled )
                     .setPosButton( R.string.button_enable_sms )
                     .setNegButton( R.string.button_later )
                     ;

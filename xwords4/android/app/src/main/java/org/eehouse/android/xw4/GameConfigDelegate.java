@@ -259,15 +259,15 @@ public class GameConfigDelegate extends DelegateBase
                                  public void warnDisabled( CommsConnType typ ) {
                                      switch( typ ) {
                                      case COMMS_CONN_SMS:
-                                         makeConfirmThenBuilder( R.string.warn_sms_disabled,
-                                                                 Action.ENABLE_NBS_ASK )
+                                         makeConfirmThenBuilder( Action.ENABLE_NBS_ASK,
+                                                                 R.string.warn_sms_disabled )
                                              .setPosButton( R.string.button_enable_sms )
                                              .setNegButton( R.string.button_later )
                                              .show();
                                          break;
                                      case COMMS_CONN_BT:
-                                         makeConfirmThenBuilder( R.string.warn_bt_disabled,
-                                                                 Action.ENABLE_BT_DO )
+                                         makeConfirmThenBuilder( Action.ENABLE_BT_DO,
+                                                                 R.string.warn_bt_disabled )
                                              .setPosButton( R.string.button_enable_bt )
                                              .setNegButton( R.string.button_later )
                                              .show();
@@ -278,7 +278,7 @@ public class GameConfigDelegate extends DelegateBase
                                      case COMMS_CONN_MQTT:
                                          String msg = getString( R.string.warn_mqtt_disabled )
                                              + "\n\n" + getString( R.string.warn_mqtt_later );
-                                         makeConfirmThenBuilder( msg, Action.ENABLE_MQTT_DO )
+                                         makeConfirmThenBuilder( Action.ENABLE_MQTT_DO, msg )
                                              .setPosButton( R.string.button_enable_mqtt )
                                              .setNegButton( R.string.button_later )
                                              .show();
@@ -672,8 +672,8 @@ public class GameConfigDelegate extends DelegateBase
                                                 int position, long id ) {
                         if ( curSel[0] != position ) {
                             curSel[0] = position;
-                            makeNotAgainBuilder( R.string.not_again_traysize,
-                                                 R.string.key_na_traysize )
+                            makeNotAgainBuilder( R.string.key_na_traysize,
+                                                 R.string.not_again_traysize )
                                 .show();
                         }
                     }
@@ -825,9 +825,9 @@ public class GameConfigDelegate extends DelegateBase
                 loadPlayersList();
                 break;
             case R.id.game_locked_check:
-                makeNotAgainBuilder( R.string.not_again_unlock,
-                                     R.string.key_notagain_unlock,
-                                     Action.LOCKED_CHANGE_ACTION )
+                makeNotAgainBuilder( R.string.key_notagain_unlock,
+                                     Action.LOCKED_CHANGE_ACTION,
+                                     R.string.not_again_unlock )
                     .show();
                 break;
             case R.id.change_connection:
@@ -841,8 +841,8 @@ public class GameConfigDelegate extends DelegateBase
                 saveChanges();
 
                 if ( !localOnlyGame() && 0 == m_conTypes.size() ) {
-                    makeConfirmThenBuilder( R.string.config_no_connvia,
-                                            Action.DELETE_AND_EXIT )
+                    makeConfirmThenBuilder( Action.DELETE_AND_EXIT,
+                                            R.string.config_no_connvia )
                         .setPosButton( R.string.button_discard )
                         .setNegButton( R.string.button_edit )
                         .show();

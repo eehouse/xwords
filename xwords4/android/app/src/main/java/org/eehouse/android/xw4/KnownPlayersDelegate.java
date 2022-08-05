@@ -125,10 +125,9 @@ public class KnownPlayersDelegate extends DelegateBase {
             if ( XwJNI.kplr_renamePlayer( oldName, newName ) ) {
                 renameInPlace( oldName, newName );
             } else {
-                String msg = LocUtils.getString( mActivity,
-                                                 R.string.knowns_dup_name_fmt,
-                                                 oldName, newName );
-                makeOkOnlyBuilder( msg ).show();
+                makeOkOnlyBuilder( R.string.knowns_dup_name_fmt,
+                                   oldName, newName )
+                    .show();
             }
         }
     }
@@ -293,10 +292,8 @@ public class KnownPlayersDelegate extends DelegateBase {
 
     private void confirmAndDelete( String name )
     {
-        String msg = LocUtils.getString( mActivity,
-                                         R.string.knowns_delete_confirm_fmt,
-                                         name );
-        makeConfirmThenBuilder( msg, Action.KNOWN_PLAYER_DELETE )
+        makeConfirmThenBuilder( Action.KNOWN_PLAYER_DELETE,
+                                R.string.knowns_delete_confirm_fmt, name )
             .setParams( name )
             .show();
     }

@@ -107,7 +107,7 @@ public class XWConnAddrPreference extends DialogPreference
                                       msg = LocUtils.getString( activity, msgID );
                                   }
                                   if ( null != msg ) {
-                                      activity.makeConfirmThenBuilder( msg, action )
+                                      activity.makeConfirmThenBuilder( action, msg )
                                           .setPosButton( buttonID )
                                           .setNegButton( R.string.button_later )
                                           .show();

@@ -134,15 +134,15 @@ public class StudyListDelegate extends ListDelegateBase
         boolean handled = true;
         switch ( item.getItemId() ) {
         case R.id.slmenu_copy_sel:
-            makeNotAgainBuilder( R.string.not_again_studycopy,
-                                 R.string.key_na_studycopy,
-                                 Action.SL_COPY_ACTION )
+            makeNotAgainBuilder( R.string.key_na_studycopy,
+                                 Action.SL_COPY_ACTION,
+                                 R.string.not_again_studycopy )
                 .show();
             break;
         case R.id.slmenu_clear_sel:
             String msg = getQuantityString( R.plurals.confirm_studylist_clear_fmt,
                                             m_checkeds.size(), m_checkeds.size() );
-            makeConfirmThenBuilder( msg, Action.SL_CLEAR_ACTION ).show();
+            makeConfirmThenBuilder( Action.SL_CLEAR_ACTION, msg ).show();
             break;
 
         case R.id.slmenu_select_all:

@@ -218,7 +218,7 @@ public class BTInviteDelegate extends InviteDelegate
             String msg = getQuantityString( R.plurals.confirm_clear_bt_fmt,
                                             count, count )
                 + getString( R.string.confirm_clear_bt_postscript );
-            makeConfirmThenBuilder( msg, Action.CLEAR_ACTION ).show();
+            makeConfirmThenBuilder( Action.CLEAR_ACTION, msg ).show();
             break;
         }
     }
@@ -272,8 +272,8 @@ public class BTInviteDelegate extends InviteDelegate
                     hideProgress();
 
                     if ( sPersistedRef[0].empty() || 0 == mNDevsThisScan ) {
-                        makeNotAgainBuilder( R.string.not_again_emptybtscan,
-                                             R.string.key_notagain_emptybtscan )
+                        makeNotAgainBuilder( R.string.key_notagain_emptybtscan,
+                                             R.string.not_again_emptybtscan )
                             .show();
                     }
                 }
@@ -291,8 +291,8 @@ public class BTInviteDelegate extends InviteDelegate
             mNDevsThisScan = 0;
             showProgress( count, 2 * SCAN_SECONDS );
         } else {
-            makeConfirmThenBuilder( R.string.bt_no_devs,
-                                    Action.OPEN_BT_PREFS_ACTION )
+            makeConfirmThenBuilder( Action.OPEN_BT_PREFS_ACTION,
+                                    R.string.bt_no_devs )
                 .setPosButton( R.string.button_go_settings )
                 .show();
         }

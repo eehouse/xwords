@@ -616,8 +616,7 @@ public class DictBrowseDelegate extends DelegateBase
                     byte[][] choices = XwJNI.dict_strToTiles( m_dict, strPat );
                     if ( null == choices || 0 == choices.length ) {
                         String langName = DictLangCache.getLangNameForISOCode( m_activity, m_lang );
-                        String msg = getString( R.string.no_tiles_exist, strPat, langName );
-                        makeOkOnlyBuilder( msg )
+                        makeOkOnlyBuilder( R.string.no_tiles_exist, strPat, langName )
                             .setActionPair( Action.SHOW_TILES, R.string.show_tiles_button )
                             .show();
                         pending = true;
@@ -781,7 +780,7 @@ public class DictBrowseDelegate extends DelegateBase
                                                initList( wrapper );
                                                setFindPats( m_browseState.m_pats );
                                            } else {
-                                               makeOkOnlyBuilder(R.string.alrt_bad_filter )
+                                               makeOkOnlyBuilder( R.string.alrt_bad_filter )
                                                    .show();
                                            }
                                            newFeatureAlert();
@@ -795,7 +794,7 @@ public class DictBrowseDelegate extends DelegateBase
     {
         if ( ! m_filterAlertShown ) {
             m_filterAlertShown = true;
-            makeNotAgainBuilder( R.string.new_feature_filter, R.string.key_na_newFeatureFilter )
+            makeNotAgainBuilder( R.string.key_na_newFeatureFilter, R.string.new_feature_filter )
                 .setActionPair( Action.SHOW_FAQ, R.string.button_faq )
                 .setParams( (Object)FAQ_PARAMS )
                 .show();

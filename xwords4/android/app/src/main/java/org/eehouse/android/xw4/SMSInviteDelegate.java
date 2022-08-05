@@ -119,7 +119,7 @@ public class SMSInviteDelegate extends InviteDelegate {
             int count = getChecked().size();
             String msg = getQuantityString( R.plurals.confirm_clear_sms_fmt,
                                             count, count );
-            makeConfirmThenBuilder( msg, Action.CLEAR_ACTION ).show();
+            makeConfirmThenBuilder( Action.CLEAR_ACTION, msg ).show();
             break;
         }
     }
@@ -259,8 +259,8 @@ public class SMSInviteDelegate extends InviteDelegate {
 
     private void postSMSCostWarning( String number, String name )
     {
-        makeConfirmThenBuilder( R.string.warn_unlimited,
-                                Action.POST_WARNING_ACTION )
+        makeConfirmThenBuilder( Action.POST_WARNING_ACTION,
+                                R.string.warn_unlimited )
             .setPosButton( R.string.button_yes )
             .setParams( number, name )
             .show();
@@ -268,9 +268,8 @@ public class SMSInviteDelegate extends InviteDelegate {
 
     private void postConfirmMobile( String number, String name )
     {
-        String msg = getString( R.string.warn_nomobile_fmt,
-                                number, name );
-        makeConfirmThenBuilder( msg, Action.USE_IMMOBILE_ACTION )
+        makeConfirmThenBuilder( Action.USE_IMMOBILE_ACTION,
+                                R.string.warn_nomobile_fmt, number, name )
             .setPosButton( R.string.button_yes )
             .setParams( number, name )
             .show();

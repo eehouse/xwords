@@ -95,7 +95,7 @@ public class Toolbar implements BoardContainer.SizeChangeListener {
                 public void onClick( View view ) {
                     Log.i( TAG, "setListener(): click on %s with action %s",
                            view.toString(), action.toString() );
-                    m_dlgDlgt.makeNotAgainBuilder( msgID, prefsKey, action )
+                    m_dlgDlgt.makeNotAgainBuilder( prefsKey, action, msgID )
                         .show();
                 }
             } );
@@ -107,7 +107,7 @@ public class Toolbar implements BoardContainer.SizeChangeListener {
     {
         m_onLongClickListeners.put( index, new View.OnLongClickListener() {
                 public boolean onLongClick( View view ) {
-                    m_dlgDlgt.makeNotAgainBuilder( msgID, prefsKey, action )
+                    m_dlgDlgt.makeNotAgainBuilder( prefsKey, action, msgID )
                         .show();
                     return true;
                 }
