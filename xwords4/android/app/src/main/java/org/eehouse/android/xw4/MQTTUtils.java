@@ -297,6 +297,7 @@ public class MQTTUtils extends Thread
 
         if ( !stateOk ) {
             Log.e( TAG, "%H.setState(): bad state for %s: %s", this, newState, mState );
+            Assert.failDbg();
         }
     }
 
@@ -434,6 +435,7 @@ public class MQTTUtils extends Thread
 
         mShouldExit = true;
 
+        State prevState = mState;
         setState( State.CLOSING );
 
         MqttAsyncClient client;
@@ -449,7 +451,7 @@ public class MQTTUtils extends Thread
         if ( null == client ) {
             Log.e( TAG, "disconnect(): null client" );
         } else {
-            startDisconThread( client );
+            startDisconThread( client, prevState );
         }
 
         // Make sure we don't need to call clearInstance(this)
@@ -459,7 +461,7 @@ public class MQTTUtils extends Thread
         Log.d( TAG, "%H.disconnect() DONE", this );
     }
 
-    private void startDisconThread( final MqttAsyncClient client )
+    private void startDisconThread( final MqttAsyncClient client, State maxState )
     {
         new Thread( new Runnable() {
                 @Override
@@ -471,12 +473,16 @@ public class MQTTUtils extends Thread
                         try {
                             switch ( ii ) {
                             case 0:
-                                action = "unsubscribe";
-                                token = client.unsubscribe( mDevID );
+                                if ( State.SUBSCRIBED == maxState ) {
+                                    action = "unsubscribe";
+                                    token = client.unsubscribe( mDevID );
+                                }
                                 break;      // not continue, which skips the Log() below
                             case 1:
-                                action = "disconnect";
-                                token = client.disconnect();
+                                if ( client.isConnected() ) {
+                                    action = "disconnect";
+                                    token = client.disconnect();
+                                }
                                 break;
                             case 2:
                                 action = "close";
