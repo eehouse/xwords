@@ -90,7 +90,7 @@ public class KnownPlayersDelegate extends DelegateBase {
     }
 
     @Override
-    protected Dialog makeDialog( DBAlert alert, Object[] params )
+    protected Dialog makeDialog( DBAlert alert, Object... params )
     {
         Dialog dialog = null;
 

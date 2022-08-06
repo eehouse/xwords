@@ -47,7 +47,7 @@ public class DualpaneDelegate extends DelegateBase {
     }
 
     @Override
-    protected Dialog makeDialog( DBAlert alert, Object[] params )
+    protected Dialog makeDialog( DBAlert alert, Object... params )
     {
         Dialog dialog = null;
         MainActivity main = (MainActivity)m_activity;
@@ -147,7 +147,7 @@ public class DualpaneDelegate extends DelegateBase {
 
     @Override
     public void inviteChoiceMade( Action action, InviteMeans means,
-                                  Object[] params )
+                                  Object... params )
     {
         MainActivity main = (MainActivity)m_activity;
         XWFragment[] frags = main.getVisibleFragments();

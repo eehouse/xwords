@@ -315,7 +315,7 @@ public class XWActivity extends FragmentActivity
         }
     }
 
-    protected Dialog makeDialog( DBAlert alert, Object[] params )
+    protected Dialog makeDialog( DBAlert alert, Object... params )
     {
         return m_dlgt.makeDialog( alert, params );
     }

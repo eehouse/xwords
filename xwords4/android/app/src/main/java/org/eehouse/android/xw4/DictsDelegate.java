@@ -330,7 +330,7 @@ public class DictsDelegate extends ListDelegateBase
     }
 
     @Override
-    protected Dialog makeDialog( DBAlert alert, Object[] params )
+    protected Dialog makeDialog( DBAlert alert, Object... params )
     {
         OnClickListener lstnr, lstnr2;
         Dialog dialog;

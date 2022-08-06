@@ -213,7 +213,7 @@ public class BoardDelegate extends DelegateBase
     }
 
     @Override
-    protected Dialog makeDialog( DBAlert alert, Object[] params )
+    protected Dialog makeDialog( DBAlert alert, Object... params )
     {
         final DlgID dlgID = alert.getDlgID();
         Log.d( TAG, "makeDialog(%s)", dlgID.toString() );

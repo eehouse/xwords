@@ -81,7 +81,7 @@ public class PrefsDelegate extends DelegateBase
     }
 
     @Override
-    protected Dialog makeDialog( final DBAlert alert, Object[] params )
+    protected Dialog makeDialog( final DBAlert alert, Object... params )
     {
         final DlgID dlgID = alert.getDlgID();
         DialogInterface.OnClickListener lstnr = null;

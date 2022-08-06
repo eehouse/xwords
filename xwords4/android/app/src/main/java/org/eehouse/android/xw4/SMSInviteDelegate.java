@@ -143,7 +143,7 @@ public class SMSInviteDelegate extends InviteDelegate {
     }
 
     @Override
-    protected Dialog makeDialog( DBAlert alert, Object[] params )
+    protected Dialog makeDialog( DBAlert alert, Object... params )
     {
         Dialog dialog;
         DialogInterface.OnClickListener lstnr;

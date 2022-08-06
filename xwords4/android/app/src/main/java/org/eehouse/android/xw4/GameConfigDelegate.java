@@ -151,7 +151,7 @@ public class GameConfigDelegate extends DelegateBase
     }
 
     @Override
-    protected Dialog makeDialog( DBAlert alert, Object[] params )
+    protected Dialog makeDialog( DBAlert alert, Object... params )
     {
         Dialog dialog = null;
         final DlgID dlgID = alert.getDlgID();

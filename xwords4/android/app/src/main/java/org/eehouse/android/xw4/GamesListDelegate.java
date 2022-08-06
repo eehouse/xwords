@@ -596,7 +596,7 @@ public class GamesListDelegate extends ListDelegateBase
     }
 
     @Override
-    protected Dialog makeDialog( DBAlert alert, Object[] params )
+    protected Dialog makeDialog( DBAlert alert, Object... params )
     {
         Dialog dialog = null;
         OnClickListener lstnr, lstnr2;

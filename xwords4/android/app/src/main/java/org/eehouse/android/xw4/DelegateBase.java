@@ -428,7 +428,7 @@ public abstract class DelegateBase implements DlgClickNotify,
         return cbx.isChecked();
     }
 
-    protected Dialog makeDialog( DBAlert alert, Object[] params )
+    protected Dialog makeDialog( DBAlert alert, Object... params )
     {
         Dialog dialog = null;
         DlgID dlgID = alert.getDlgID();
