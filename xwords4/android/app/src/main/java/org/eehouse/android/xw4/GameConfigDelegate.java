@@ -762,7 +762,7 @@ public class GameConfigDelegate extends DelegateBase
     }
 
     @Override
-    public boolean onPosButton( Action action, Object[] params )
+    public boolean onPosButton( Action action, Object... params )
     {
         boolean handled = true;
         Assert.assertTrue( curThis() == this );
@@ -790,7 +790,7 @@ public class GameConfigDelegate extends DelegateBase
     }
 
     @Override
-    public boolean onNegButton( Action action, Object[] params )
+    public boolean onNegButton( Action action, Object... params )
     {
         boolean handled = true;
         switch ( action ) {

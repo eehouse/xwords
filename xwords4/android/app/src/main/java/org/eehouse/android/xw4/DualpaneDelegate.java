@@ -101,7 +101,7 @@ public class DualpaneDelegate extends DelegateBase {
     }
 
     @Override
-    public boolean onPosButton( Action action, Object[] params )
+    public boolean onPosButton( Action action, Object... params )
     {
         boolean handled = false;
         MainActivity main = (MainActivity)m_activity;
@@ -116,7 +116,7 @@ public class DualpaneDelegate extends DelegateBase {
     }
 
     @Override
-    public boolean onNegButton( Action action, Object[] params )
+    public boolean onNegButton( Action action, Object... params )
     {
         boolean handled = false;
         MainActivity main = (MainActivity)m_activity;
@@ -131,7 +131,7 @@ public class DualpaneDelegate extends DelegateBase {
     }
 
     @Override
-    public boolean onDismissed( Action action, Object[] params )
+    public boolean onDismissed( Action action, Object... params )
     {
         boolean handled = false;
         MainActivity main = (MainActivity)m_activity;

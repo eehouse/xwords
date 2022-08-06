@@ -748,7 +748,7 @@ public abstract class DelegateBase implements DlgClickNotify,
     //////////////////////////////////////////////////////////////////////
     // DlgDelegate.DlgClickNotify interface
     //////////////////////////////////////////////////////////////////////
-    public boolean onPosButton( Action action, Object[] params )
+    public boolean onPosButton( Action action, Object... params )
     {
         boolean handled = true;
         // Log.d( TAG, "%s.onPosButton(%s)", getClass().getSimpleName(), action );
@@ -784,7 +784,7 @@ public abstract class DelegateBase implements DlgClickNotify,
         return handled;
     }
 
-    public boolean onNegButton( Action action, Object[] params )
+    public boolean onNegButton( Action action, Object... params )
     {
         boolean handled = true;
         // Log.d( TAG, "%s.negButtonClicked(%s)", getClass().getSimpleName(),
@@ -801,7 +801,7 @@ public abstract class DelegateBase implements DlgClickNotify,
         return handled;
     }
 
-    public boolean onDismissed( Action action, Object[] params )
+    public boolean onDismissed( Action action, Object... params )
     {
         boolean handled = false;
         Log.d( TAG, "%s.onDismissed(%s)", getClass().getSimpleName(),

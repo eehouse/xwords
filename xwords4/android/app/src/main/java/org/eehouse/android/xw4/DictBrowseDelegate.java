@@ -444,7 +444,7 @@ public class DictBrowseDelegate extends DelegateBase
     // DlgDelegate.DlgClickNotify interface
     //////////////////////////////////////////////////
     @Override
-    public boolean onPosButton( Action action, Object[] params )
+    public boolean onPosButton( Action action, Object... params )
     {
         boolean handled = false;
         switch( action ) {

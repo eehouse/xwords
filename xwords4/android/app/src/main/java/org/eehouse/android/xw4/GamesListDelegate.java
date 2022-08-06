@@ -1411,7 +1411,7 @@ public class GamesListDelegate extends ListDelegateBase
 
     // DlgDelegate.DlgClickNotify interface
     @Override
-    public boolean onPosButton( Action action, Object[] params )
+    public boolean onPosButton( Action action, Object... params )
     {
         boolean handled = true;
         switch( action ) {
@@ -1635,7 +1635,7 @@ public class GamesListDelegate extends ListDelegateBase
     }
 
     @Override
-    public boolean onNegButton( Action action, Object[] params )
+    public boolean onNegButton( Action action, Object... params )
     {
         boolean handled = true;
         switch ( action ) {

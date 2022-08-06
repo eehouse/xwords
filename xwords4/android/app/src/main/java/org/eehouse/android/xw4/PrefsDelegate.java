@@ -298,7 +298,7 @@ public class PrefsDelegate extends DelegateBase
     }
 
     @Override
-    public boolean onPosButton( Action action, Object[] params )
+    public boolean onPosButton( Action action, Object... params )
     {
         boolean handled = true;
         switch ( action ) {

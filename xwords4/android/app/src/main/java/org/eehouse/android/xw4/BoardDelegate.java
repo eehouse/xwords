@@ -1179,7 +1179,7 @@ public class BoardDelegate extends DelegateBase
     }
 
     @Override
-    public boolean onNegButton( Action action, Object[] params )
+    public boolean onNegButton( Action action, Object... params )
     {
         Log.d( TAG, "onNegButton(%s, %s)", action, DbgUtils.toStr( params ) );
         boolean handled = true;
@@ -1217,7 +1217,7 @@ public class BoardDelegate extends DelegateBase
     }
 
     @Override
-    public boolean onDismissed( Action action, Object[] params )
+    public boolean onDismissed( Action action, Object... params )
     {
         Log.d( TAG, "onDismissed(%s, %s)", action, DbgUtils.toStr( params ) );
         boolean handled = true;

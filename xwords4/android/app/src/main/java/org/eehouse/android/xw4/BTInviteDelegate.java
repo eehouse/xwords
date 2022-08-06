@@ -416,7 +416,7 @@ public class BTInviteDelegate extends InviteDelegate
 
     // DlgDelegate.DlgClickNotify interface
     @Override
-    public boolean onPosButton( Action action, Object[] params )
+    public boolean onPosButton( Action action, Object... params )
     {
         boolean handled = true;
         switch( action ) {
