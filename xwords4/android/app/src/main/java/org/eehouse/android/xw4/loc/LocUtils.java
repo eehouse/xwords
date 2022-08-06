@@ -160,12 +160,16 @@ public class LocUtils {
     {
         if ( null == s_curLang ) {
             String lang = Locale.getDefault().getLanguage();
-            // sometimes I get "en-us" in this case, i.e. the locale's there
-            // too. Strip it.
+
+            // sometimes I get "en-us", i.e. the locale's there too. Strip it.
             if ( lang.contains( "-" ) ) {
                 lang = TextUtils.split(lang, "-")[0];
             }
-            Assert.assertTrueNR( 2 == lang.length() );
+            // Sometimes getLanguage() returns "". Let's just fall back to
+            // English for now.
+            if ( TextUtils.isEmpty( lang ) ) {
+                lang = "en";
+            }
             s_curLang = new ISOCode( lang );
         }
         return s_curLang;

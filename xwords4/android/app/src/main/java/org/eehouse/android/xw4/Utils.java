@@ -898,7 +898,6 @@ public class Utils {
         public ISOCode( String code )
         {
             // Log.d( TAG, "ISOCode(%s)", code );
-            Assert.assertTrueNR( 0 < code.length() );
             Assert.assertTrueNR( 8 > code.length() );
             mISOCode = code;
         }

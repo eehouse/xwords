@@ -21,6 +21,7 @@
 package org.eehouse.android.xw4;
 
 import android.content.Context;
+import android.text.TextUtils;
 import android.util.AttributeSet;
 
 import java.util.ArrayList;
@@ -29,6 +30,7 @@ import org.eehouse.android.xw4.loc.LocUtils;
 import org.eehouse.android.xw4.Utils.ISOCode;
 
 public class DictListPreference extends XWListPreference {
+    private static final String TAG = DictListPreference.class.getSimpleName();
 
     public DictListPreference( Context context, AttributeSet attrs )
     {
@@ -48,7 +50,7 @@ public class DictListPreference extends XWListPreference {
         Context context = getContext();
         String curLang = XWPrefs
             .getPrefsString( context, R.string.key_default_language, null );
-        if ( null == curLang ) {
+        if ( TextUtils.isEmpty( curLang ) ) {
             curLang = LocUtils.getString( context, R.string.lang_name_english );
         }
         ISOCode isoCode = DictLangCache.getLangIsoCode( context, curLang );
