@@ -157,6 +157,7 @@ public class GameOverAlert extends XWDialogFragment
     {
         if ( isChecked ) {
             DlgDelegate.Builder builder;
+            CharSequence buttonText = bv.getText();
             if ( bv == mArchiveBox ) {
                 mDeleteBox.setChecked( false );
 
@@ -164,12 +165,14 @@ public class GameOverAlert extends XWDialogFragment
                     .getString( getContext(), R.string.group_name_archive );
                 builder = mDlgDlgt.makeNotAgainBuilder( R.string.key_na_archivecheck,
                                                         R.string.not_again_archivecheck_fmt,
-                                                        archiveName );
+                                                        buttonText, archiveName );
             } else {
                 Assert.assertTrueNR( bv == mDeleteBox );
                 mArchiveBox.setChecked( false );
+
                 builder = mDlgDlgt.makeNotAgainBuilder( R.string.key_na_deletecheck,
-                                                        R.string.not_again_deletecheck );
+                                                        R.string.not_again_deletecheck_fmt,
+                                                        buttonText );
             }
 
             builder.show();

@@ -5,8 +5,4 @@
 
   <string name="dup_allscores_fmt">All scores: %1$s</string>
 
-  <string name="not_again_archivecheck_fmt">Check this box to move
-  this game to the “%1$s” group.</string>
-  <string name="not_again_deletecheck">Check this box to delete this
-  game.</string>
 </resources>

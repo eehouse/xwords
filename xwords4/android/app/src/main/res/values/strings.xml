@@ -1947,12 +1947,22 @@
         <item quantity="one">%1$s (%2$d game)</item>
         <item quantity="other">%1$s (%2$d games)</item>
     </plurals>
-    <!-- Button shown in game over dialog triggering creation of new
+    <!-- Button shown in game-over dialog triggering creation of new
          game with the same players and parameters as the one that
          just ended. -->
     <string name="button_rematch">Rematch</string>
+    <!-- Menu to move selected game to archive group -->
     <string name="button_archive">Archive\u200C</string>
+
+    <!-- Move-to-archive-after checkbox text in game-over dialog -->
     <string name="checkbox_archive">Move to Archive</string>
+    <!-- Explanation of move-to-archive-after checkbox -->
+    <string name="not_again_archivecheck_fmt">Check the “%1$s” box to
+    move this game to the %2$s group.</string>
+    <!-- Explanation of delete-after button -->
+    <string name="not_again_deletecheck_fmt">Check the “%1$s” box to
+    delete this game.</string>
+    <!-- Name of the group where games are moved when "archived" -->
     <string name="group_name_archive">Archive</string>
     <!-- When you choose "delete" from the game-over dialog, you see
          this string in a comfirmation dialog -->
