@@ -1129,4 +1129,11 @@
     <string name="menu_net_stat">Condição da rede</string>
     <string name="menu_about_peers">Condição dos pares</string>
     <string name="menu_net_url">Copia a URL</string>
+    <string name="confirm_del_after_rematch_fmt">Revanche bem sucedida.
+\n
+\nDeseja excluir o jogo completo %1$s\?
+\n
+\n(Esta ação não pode ser desfeita.)</string>
+    <string name="not_again_deletecheck_fmt">marque a caixa \"%1$s\" para excluir este jogo.</string>
+    <string name="not_again_archivecheck_fmt">Verifique a caixa \"%1$s\" para mover este jogo para o grupo %2$s.</string>
 </resources>
