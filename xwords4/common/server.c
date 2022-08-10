@@ -3409,6 +3409,8 @@ dupe_commitAndReportMove( ServerCtxt* server, XWEnv xwe, XP_U16 winner,
         XWStreamCtxt* tmpStream =
             mem_stream_make_raw( MPPARM(server->mpool)
                                  dutil_getVTManager(server->vol.dutil) );
+        /* tilesNBits, in moveInfoToStream(), needs version */
+        stream_setVersion( tmpStream, server->nv.streamVersion );
 
         addDupeStuffMark( tmpStream, DUPE_STUFF_MOVES_SERVER );
 
