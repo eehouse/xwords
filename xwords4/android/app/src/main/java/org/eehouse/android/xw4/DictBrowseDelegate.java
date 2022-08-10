@@ -794,7 +794,8 @@ public class DictBrowseDelegate extends DelegateBase
     {
         if ( ! m_filterAlertShown ) {
             m_filterAlertShown = true;
-            makeNotAgainBuilder( R.string.key_na_newFeatureFilter, R.string.new_feature_filter )
+            makeNotAgainBuilder( R.string.key_na_newFeatureFilter,
+                                 R.string.new_feature_filter )
                 .setActionPair( Action.SHOW_FAQ, R.string.button_faq )
                 .setParams( (Object)FAQ_PARAMS )
                 .show();

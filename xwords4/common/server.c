@@ -2715,7 +2715,7 @@ nextTurn( ServerCtxt* server, XWEnv xwe, XP_S16 nxtTurn )
     if ( NULL != server->nv._prevMoveStream && XWSTATE_NEED_SHOWSCORE != server->nv.gameState ) {
         if ( inDuplicateMode(server) || server->nv.showRobotScores ) {
             server->nv.stateAfterShow = server->nv.gameState;
-            SETSTATE( server, XWSTATE_NEED_SHOWSCORE ); /* here? */
+            SETSTATE( server, XWSTATE_NEED_SHOWSCORE );
             moreToDo = XP_TRUE;
         } else {
             XP_ASSERT( 0 );

@@ -2779,7 +2779,8 @@ public class GamesListDelegate extends ListDelegateBase
                                     String langName = DictLangCache
                                         .getLangNameForISOCode( m_activity, isoCode );
                                     makeConfirmThenBuilder( Action.DWNLD_LOC_DICT,
-                                                            R.string.confirm_get_locdict_fmt, langName )
+                                                            R.string.confirm_get_locdict_fmt,
+                                                            langName )
                                         .setPosButton( R.string.button_download )
                                         .setNegButton( R.string.button_no )
                                         .setNAKey( R.string.key_got_langdict )

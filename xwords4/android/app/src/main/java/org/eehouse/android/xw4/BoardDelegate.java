@@ -2310,7 +2310,6 @@ public class BoardDelegate extends DelegateBase
         runOnUiThread( new Runnable() {
                 @Override
                 public void run() {
-                    Log.d( TAG, "makeJNIHandler(): handling GAME_OVER" );
                     Assert.assertTrueNR( m_jniGamePtr.isRetained() );
                     if ( m_jniGamePtr.isRetained() ) {
                         boolean hasPending = 0 < XwJNI.
