@@ -113,6 +113,7 @@ typedef struct ServerVolatiles {
     GameOverListener gameOverListener;
     void* gameOverData;
     XP_U16 bitsPerTile;
+    XP_Bool showPrevMove;
     XP_Bool pickTilesCalled[MAX_NUM_PLAYERS];
 } ServerVolatiles;
 
@@ -140,7 +141,7 @@ typedef struct ServerNonvolatiles {
 #endif
 
     RemoteAddress addresses[MAX_NUM_PLAYERS];
-    XWStreamCtxt* _prevMoveStream;     /* save it to print later */
+    XWStreamCtxt* prevMoveStream;     /* save it to print later */
     XWStreamCtxt* prevWordsStream;
     XP_Bool dupTurnsMade[MAX_NUM_PLAYERS];
     XP_Bool dupTurnsForced[MAX_NUM_PLAYERS];
@@ -562,7 +563,7 @@ server_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream, ModelCtxt* mode
     }
 
     if ( version >= STREAM_SAVE_PREVMOVE ) {
-        server->nv._prevMoveStream = readStreamIf( server, stream );
+        server->nv.prevMoveStream = readStreamIf( server, stream );
     }
     if ( version >= STREAM_SAVE_PREVWORDS ) {
         server->nv.prevWordsStream = readStreamIf( server, stream );
@@ -607,7 +608,7 @@ server_writeToStream( const ServerCtxt* server, XWStreamCtxt* stream )
 
     stream_putBits( stream, 2, server->lastMoveSource );
 
-    writeStreamIf( stream, server->nv._prevMoveStream );
+    writeStreamIf( stream, server->nv.prevMoveStream );
     writeStreamIf( stream, server->nv.prevWordsStream );
 } /* server_writeToStream */
 
@@ -643,8 +644,8 @@ cleanupServer( ServerCtxt* server, XWEnv xwe )
         server->pool = (PoolContext*)NULL;
     }
 
-    if ( !!server->nv._prevMoveStream ) {
-        stream_destroy( server->nv._prevMoveStream, xwe );
+    if ( !!server->nv.prevMoveStream ) {
+        stream_destroy( server->nv.prevMoveStream, xwe );
     }
     if ( !!server->nv.prevWordsStream ) {
         stream_destroy( server->nv.prevWordsStream, xwe );
@@ -1022,22 +1023,10 @@ bitsPerTile( ServerCtxt* server )
 }
 
 static void
-setPrevMoveStream( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* stream )
-{
-    if ( !server->nv._prevMoveStream ) {
-        server->nv._prevMoveStream = stream;
-    } else {
-        XP_LOGFF( "appending to existing stream" );
-        stream_putBytes( server->nv._prevMoveStream, stream_getPtr( stream ),
-                         stream_getSize( stream ) );
-        stream_destroy( stream, xwe );
-    }
-}
-
-static void
 dupe_setupShowTrade( ServerCtxt* server, XWEnv xwe, XP_U16 nTiles )
 {
     XP_ASSERT( inDuplicateMode(server) );
+    XP_ASSERT( !server->nv.prevMoveStream );
 
     XP_UCHAR buf[128];
     const XP_UCHAR* fmt = dutil_getUserString( server->vol.dutil, xwe, STRD_DUP_TRADED );
@@ -1046,13 +1035,15 @@ dupe_setupShowTrade( ServerCtxt* server, XWEnv xwe, XP_U16 nTiles )
     XWStreamCtxt* stream = mkServerStream( server );
     stream_catString( stream, buf );
 
-    setPrevMoveStream( server, xwe, stream );
+    server->nv.prevMoveStream = stream;
+    server->vol.showPrevMove = XP_TRUE;
 }
 
 static void
 dupe_setupShowMove( ServerCtxt* server, XWEnv xwe, XP_U16* scores )
 {
     XP_ASSERT( inDuplicateMode(server) );
+    // XP_ASSERT( !server->nv.prevMoveStream ); /* firing */
 
     const CurGameInfo* gi = server->vol.gi;
     const XP_U16 nPlayers = gi->nPlayers;
@@ -1085,8 +1076,9 @@ dupe_setupShowMove( ServerCtxt* server, XWEnv xwe, XP_U16* scores )
         lastMax = thisMax;
     }
 
-    setPrevMoveStream( server, xwe, stream );
-} /* dupe_setupShowMove */
+    server->nv.prevMoveStream = stream;
+    server->vol.showPrevMove = XP_TRUE;
+}
 
 static void
 addDupeStuffMark( XWStreamCtxt* stream, DUPE_STUFF typ )
@@ -1467,15 +1459,14 @@ makeRobotMove( ServerCtxt* server, XWEnv xwe )
     }
     if ( forceTrade || searchComplete ) {
         const XP_UCHAR* str;
+        XWStreamCtxt* stream = NULL;
 
         XP_Bool trade = forceTrade || 
             ((newMove.nTiles == 0) && !canMove &&
              (server_countTilesInPool( server ) >= gi->traySize));
 
-        /* I've forgotten why I earlier wanted to explain robot moves in
-           duplicate games. I don't want to now. */
-        XWStreamCtxt* stream = NULL;
-        if ( server->nv.showRobotScores && ! inDuplicateMode(server) ) {
+        server->vol.showPrevMove = XP_TRUE;
+        if ( inDuplicateMode(server) || server->nv.showRobotScores ) {
             stream = mkServerStream( server );
         }
 
@@ -1498,7 +1489,8 @@ makeRobotMove( ServerCtxt* server, XWEnv xwe )
                 XP_SNPRINTF( buf, sizeof(buf), str, nTrayTiles );
 
                 stream_catString( stream, buf );
-                setPrevMoveStream( server, xwe, stream );
+                // XP_ASSERT( !server->nv.prevMoveStream );
+                server->nv.prevMoveStream = stream;
             }
         } else { 
             /* if canMove is false, this is a fake move, a pass */
@@ -1515,15 +1507,15 @@ makeRobotMove( ServerCtxt* server, XWEnv xwe )
                           newMove.nTiles, turn );
 
                 if ( !!stream ) {
-                    setPrevMoveStream( server, xwe, stream );
-
                     XWStreamCtxt* wordsStream = mkServerStream( server );
                     WordNotifierInfo* ni = 
                         model_initWordCounter( model, wordsStream );
                     (void)model_checkMoveLegal( model, xwe, turn, stream, ni );
+                    // XP_ASSERT( !server->nv.prevMoveStream );
+                    server->nv.prevMoveStream = stream;
                     server->nv.prevWordsStream = wordsStream;
                 }
-                result = commitMoveImpl( server, xwe, turn, NULL, XP_FALSE );
+                result = server_commitMove( server, xwe, turn, NULL );
             } else {
                 result = XP_FALSE;
             }
@@ -1621,9 +1613,10 @@ showPrevScore( ServerCtxt* server, XWEnv xwe )
         stream = mkServerStream( server );
         stream_catString( stream, str );
 
-        XWStreamCtxt* prevStream = server->nv._prevMoveStream;
-        server->nv._prevMoveStream = NULL;
+        XWStreamCtxt* prevStream = server->nv.prevMoveStream;
         if ( !!prevStream ) {
+            server->nv.prevMoveStream = NULL;
+
             XP_U16 len = stream_getSize( prevStream );
             stream_putBytes( stream, stream_getPtr( prevStream ), len );
             stream_destroy( prevStream, xwe );
@@ -2712,14 +2705,12 @@ nextTurn( ServerCtxt* server, XWEnv xwe, XP_S16 nxtTurn )
         }
     }
 
-    if ( NULL != server->nv._prevMoveStream && XWSTATE_NEED_SHOWSCORE != server->nv.gameState ) {
+    if ( server->vol.showPrevMove ) {
+        server->vol.showPrevMove = XP_FALSE;
         if ( inDuplicateMode(server) || server->nv.showRobotScores ) {
             server->nv.stateAfterShow = server->nv.gameState;
             SETSTATE( server, XWSTATE_NEED_SHOWSCORE );
             moreToDo = XP_TRUE;
-        } else {
-            XP_ASSERT( 0 );
-            XP_LOGFF( "ERROR: have move stream I won't display" );
         }
     }
 
@@ -2997,6 +2988,7 @@ reflectMoveAndInform( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* stream )
                                  &tradedTiles, &newTiles );
             pool_replaceTiles( server->pool, &tradedTiles );
 
+            server->vol.showPrevMove = XP_TRUE;
             mvStream = makeTradeReportIf( server, xwe, &tradedTiles );
 
         } else {
@@ -3010,6 +3002,7 @@ reflectMoveAndInform( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* stream )
             sendMoveToClientsExcept( server, xwe, whoMoved, isLegalMove, &newTiles,
                                      (TrayTileSet*)NULL, sourceClientIndex );
 
+            server->vol.showPrevMove = XP_TRUE;
             if ( isLegalMove ) {
                 mvStream = makeMoveReportIf( server, xwe, &wordsStream );
             }
@@ -3033,8 +3026,9 @@ reflectMoveAndInform( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* stream )
             }
 
             if ( !!mvStream ) {
-                setPrevMoveStream( server, xwe, mvStream );
-                XP_ASSERT( !server->nv.prevWordsStream );
+                // XP_ASSERT( !server->nv.prevMoveStream );
+                server->nv.prevMoveStream = mvStream;
+                // XP_ASSERT( !server->nv.prevWordsStream );
                 server->nv.prevWordsStream = wordsStream;
             }
         } else {
@@ -3087,15 +3081,18 @@ reflectMove( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* stream )
             model_makeTileTrade( model, whoMoved, &tradedTiles, &newTiles );
             pool_replaceTiles( server->pool, &tradedTiles );
 
+            server->vol.showPrevMove = XP_TRUE;
             mvStream = makeTradeReportIf( server, xwe, &tradedTiles );
         } else {
+            server->vol.showPrevMove = XP_TRUE;
             mvStream = makeMoveReportIf( server, xwe, &wordsStream );
             model_commitTurn( model, xwe, whoMoved, &newTiles );
         }
 
         if ( !!mvStream ) {
-            setPrevMoveStream( server, xwe, mvStream );
-            XP_ASSERT( !server->nv.prevWordsStream );
+            // XP_ASSERT( !server->nv.prevMoveStream );
+            server->nv.prevMoveStream = mvStream;
+            // XP_ASSERT( !server->nv.prevWordsStream );
             server->nv.prevWordsStream = wordsStream;
         }
 
@@ -3412,8 +3409,6 @@ dupe_commitAndReportMove( ServerCtxt* server, XWEnv xwe, XP_U16 winner,
         XWStreamCtxt* tmpStream =
             mem_stream_make_raw( MPPARM(server->mpool)
                                  dutil_getVTManager(server->vol.dutil) );
-        /* tilesNBits, in moveInfoToStream(), needs version */
-        stream_setVersion( tmpStream, server->nv.streamVersion );
 
         addDupeStuffMark( tmpStream, DUPE_STUFF_MOVES_SERVER );
 
