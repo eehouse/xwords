@@ -32,7 +32,7 @@ subprojects {
     afterEvaluate {project ->
         if (project.hasProperty("android")) {
             android {
-                compileSdkVersion 30 // must match app/build.gradle
+                compileSdkVersion 31 // must match app/build.gradle
             }
         }
     }
