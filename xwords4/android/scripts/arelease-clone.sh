@@ -2,11 +2,10 @@
 
 set -e -u
 
-VARIANT=Xw4Foss
-
 usage () {
-    echo "usage: $(basename $0) [--tag tagname | --branch branchname] \\"
-    echo "    [--variant VARIANT] # default value: $VARIANT \\"
+	[ "$#" -gt 1 ] && echo "ERROR: $1"
+    echo "usage: $(basename $0)  --variant VARIANT \\"
+    echo "   [--tag tagname | --branch branchname] \\"
     echo "   # (uses current branch as default)"
     echo "   # e.g. $0 --tag android_beta_141 --variant Xw4d"
 	echo "Here are some possible variants:"
@@ -40,7 +39,9 @@ while [ 0 -lt $# ] ; do
     shift
 done
 
-if [ -n "$TAG" ]; then
+if [ -z "${VARIANT-}" ]; then
+	usage "param --variant is not optional"
+elif [ -n "$TAG" ]; then
     if ! git tag | grep -w "$TAG"; then
         echo "tag $TAG not found"
         usage

@@ -2,7 +2,6 @@
 
 set -u -e
 
-VARIANT=Xw4Foss
 TAGNAME=""
 FILES=""
 LIST_FILE=''
@@ -12,7 +11,7 @@ XW_RELEASE_SCP_DEST=${XW_RELEASE_SCP_DEST:-""}
 usage() {
     echo "Error: $*" >&2
     echo "usage: $0 [--tag <name>] [--apk-list path/to/out.txt] \\"
-    echo "    [--variant VARIANT] # default value: $VARIANT \\"
+    echo "    --variant <VARIANT> "
     echo "    [<package-unsigned.apk>]" >&2
     exit 1
 }
