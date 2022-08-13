@@ -23,6 +23,7 @@ package org.eehouse.android.xw4;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
+import android.text.TextUtils;
 
 import org.eclipse.paho.client.mqttv3.IMqttActionListener;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
@@ -469,16 +470,22 @@ public class MQTTUtils extends Thread
                         String action = null;
                         IMqttToken token = null;
                         try {
+                            boolean isConnected = client.isConnected();
                             switch ( ii ) {
                             case 0:
-                                action = "unsubscribe";
-                                token = client.unsubscribe( mDevID );
+                                if ( isConnected ) {
+                                    action = "unsubscribe";
+                                    token = client.unsubscribe( mTopics );
+                                }
                                 break;      // not continue, which skips the Log() below
                             case 1:
-                                action = "disconnect";
-                                token = client.disconnect();
+                                if ( isConnected ) {
+                                    action = "disconnect";
+                                    token = client.disconnect();
+                                }
                                 break;
                             case 2:
+                                Assert.assertTrueNR( !isConnected );
                                 action = "close";
                                 client.close();
                                 break;
@@ -489,13 +496,17 @@ public class MQTTUtils extends Thread
                                 Log.d( TAG, "%H.disconnect(): %s() waiting", this, action );
                                 token.waitForCompletion();
                             }
-                            Log.d( TAG, "%H.disconnect(): %s() succeeded", this, action );
+                            if ( null != action ) {
+                                Log.d( TAG, "%H.run(): client.%s() succeeded", this, action );
+                            }
                         } catch ( MqttException mex ) {
-                            Log.e( TAG, "%H.disconnect(): %s(): got mex %s",
+                            Log.e( TAG, "%H.run(): client.%s(): got mex: %s",
                                    this, action, mex );
+                            Assert.failDbg(); // is this happening?
                         } catch ( Exception ex ) {
-                            Log.e( TAG, "%H.disconnect(): %s(): got ex %s",
+                            Log.e( TAG, "%H.run(): client.%s(): got ex %s",
                                    this, action, ex );
+                            Assert.failDbg(); // is this happening?
                         }
                     }
                 }
@@ -617,7 +628,7 @@ public class MQTTUtils extends Thread
         setState( State.SUBSCRIBING );
         try {
             mClient.subscribe( mTopics, qoss, null, this );
-            // Log.d( TAG, "subscribed to %s", mTopic );
+            // Log.d( TAG, "subscribed to %s", TextUtils.join( ", ", mTopics ) );
         } catch ( MqttException ex ) {
             ex.printStackTrace();
         } catch ( Exception ex ) {
