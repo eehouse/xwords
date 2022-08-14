@@ -1,7 +1,7 @@
 /* -*- compile-command: "find-and-gradle.sh inXw4dDeb"; -*- */
 /*
- * Copyright 2009 - 2020 by Eric House (xwords@eehouse.org).  All
- * rights reserved.
+ * Copyright 2009 - 2022 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -97,9 +97,22 @@ public class MQTTUtils extends Thread
                 }
             };
 
+    private static NetStateCache.StateChangedIf sStateChangedIf =
+        new NetStateCache.StateChangedIf() {
+            @Override
+            public void onNetAvail( Context context, boolean nowAvailable ) {
+                Log.d( TAG, "onNetAvail(avail=%b)", nowAvailable );
+                DbgUtils.assertOnUIThread();
+                if ( nowAvailable ) {
+                    GameUtils.resendAllIf( context, CommsConnType.COMMS_CONN_MQTT );
+                }
+            }
+        };
+
     public static void init( Context context )
     {
         Log.d( TAG, "init()" );
+        NetStateCache.register( context, sStateChangedIf );
         getOrStart( context );
     }
 
@@ -107,6 +120,12 @@ public class MQTTUtils extends Thread
     {
         Log.d( TAG, "onResume()" );
         getOrStart( context );
+        NetStateCache.register( context, sStateChangedIf );
+    }
+
+    public static void onDestroy( Context context )
+    {
+        NetStateCache.unregister( context, sStateChangedIf );
     }
 
     public static void setEnabled( Context context, boolean enabled )

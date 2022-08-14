@@ -112,6 +112,9 @@ public class XWApp extends Application
         case ON_STOP:
             BTUtils.onStop( this );
             break;
+        case ON_DESTROY:
+            MQTTUtils.onDestroy( this );
+            break;
         }
     }
 

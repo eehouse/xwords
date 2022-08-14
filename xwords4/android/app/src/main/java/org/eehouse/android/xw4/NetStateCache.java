@@ -1,6 +1,6 @@
 /* -*- compile-command: "find-and-gradle.sh inXw4dDeb"; -*- */
 /*
- * Copyright 2010 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2010 - 2022 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -33,6 +33,7 @@ import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class NetStateCache {
@@ -41,10 +42,10 @@ public class NetStateCache {
 
     // I'm leaving this stuff commented out because MQTT might want to use it
     // to try resending when the net comes back.
-    // public interface StateChangedIf {
-    //     public void onNetAvail( boolean nowAvailable );
-    // }
-    // private static HashSet<StateChangedIf> s_ifs;
+    public interface StateChangedIf {
+        public void onNetAvail( Context context, boolean nowAvailable );
+    }
+    private static Set<StateChangedIf> s_ifs = new HashSet<>();
 
     private static AtomicBoolean s_haveReceiver = new AtomicBoolean( false );
     private static boolean s_netAvail = false;
@@ -52,25 +53,26 @@ public class NetStateCache {
     private static PvtBroadcastReceiver s_receiver;
     private static final boolean s_onSDKSim = Build.PRODUCT.contains("sdk"); // not genymotion
 
-    // public static void register( Context context, StateChangedIf proc )
-    // {
-    //     if ( Utils.isOnUIThread() ) {
-    //         initIfNot( context );
-    //         synchronized( s_ifs ) {
-    //             s_ifs.add( proc );
-    //         }
-    //     }
-    // }
+    public static void register( Context context, StateChangedIf proc )
+    {
+        DbgUtils.assertOnUIThread();
+        if ( Utils.isOnUIThread() ) {
+            initIfNot( context );
+            synchronized( s_ifs ) {
+                s_ifs.add( proc );
+            }
+        }
+    }
 
-    // public static void unregister( Context context, StateChangedIf proc )
-    // {
-    //     if ( Utils.isOnUIThread() ) {
-    //         initIfNot( context );
-    //         synchronized( s_ifs ) {
-    //             s_ifs.remove( proc );
-    //         }
-    //     }
-    // }
+    public static void unregister( Context context, StateChangedIf proc )
+    {
+        DbgUtils.assertOnUIThread();
+        if ( Utils.isOnUIThread() ) {
+            synchronized( s_ifs ) {
+                s_ifs.remove( proc );
+            }
+        }
+    }
 
     static long s_lastNetCheck = 0;
     public static boolean netAvail( Context context )
@@ -144,8 +146,7 @@ public class NetStateCache {
                 NetworkInfo ni = connMgr.getActiveNetworkInfo();
 
                 s_netAvail = ni != null && ni.isAvailable() && ni.isConnected();
-                // DbgUtils.logf( "NetStateCache.initIfNot(): set s_netAvail = %b",
-                //                s_netAvail );
+                // Log.d( TAG, "set s_netAvail = %b", s_netAvail );
 
                 s_receiver = new PvtBroadcastReceiver();
                 IntentFilter filter = new IntentFilter();
@@ -252,12 +253,12 @@ public class NetStateCache {
 
                                     Log.i( TAG, "notifyStateChanged(%b)", s_netAvail );
 
-                                    // synchronized( s_ifs ) {
-                                    //     Iterator<StateChangedIf> iter = s_ifs.iterator();
-                                    //     while ( iter.hasNext() ) {
-                                    //         iter.next().onNetAvail( s_netAvail );
-                                    //     }
-                                    // }
+                                    synchronized( s_ifs ) {
+                                        Iterator<StateChangedIf> iter = s_ifs.iterator();
+                                        while ( iter.hasNext() ) {
+                                            iter.next().onNetAvail( context, s_netAvail );
+                                        }
+                                    }
 
                                     if ( s_netAvail ) {
                                         CommsConnType typ = CommsConnType
