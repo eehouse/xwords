@@ -502,7 +502,7 @@ public class MQTTUtils extends Thread
                         } catch ( MqttException mex ) {
                             Log.e( TAG, "%H.run(): client.%s(): got mex: %s",
                                    this, action, mex );
-                            Assert.failDbg(); // is this happening?
+                            // Assert.failDbg(); // fired, so remove for now
                         } catch ( Exception ex ) {
                             Log.e( TAG, "%H.run(): client.%s(): got ex %s",
                                    this, action, ex );
