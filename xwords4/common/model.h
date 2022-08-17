@@ -166,7 +166,7 @@ XP_U16 model_getCurrentMoveCount( const ModelCtxt* model, XP_S16 turn );
 XP_Bool model_getCurrentMoveIsVertical( const ModelCtxt* model, XP_S16 turn,
                                         XP_Bool* isHorizontal );
 
-void model_getCurrentMoveTile( ModelCtxt* model, XP_S16 turn, XP_S16* index,
+void model_getCurrentMoveTile( const ModelCtxt* model, XP_S16 turn, XP_S16* index,
                                Tile* tile, XP_U16* col, XP_U16* row, 
                                XP_Bool* isBlank );
 
@@ -193,11 +193,11 @@ XP_Bool model_undoLatestMoves( ModelCtxt* model, XWEnv xwe, PoolContext* pool,
 void model_rejectPreviousMove( ModelCtxt* model, XWEnv xwe,
                                PoolContext* pool, XP_U16* turn );
 
-void model_trayToStream( ModelCtxt* model, XP_S16 turn, 
+void model_trayToStream( const ModelCtxt* model, XP_S16 turn,
                          XWStreamCtxt* stream );
-void model_currentMoveToStream( ModelCtxt* model, XP_S16 turn, 
+void model_currentMoveToStream( const ModelCtxt* model, XP_S16 turn,
                                 XWStreamCtxt* stream );
-void model_currentMoveToMoveInfo( ModelCtxt* model, XP_S16 turn,
+void model_currentMoveToMoveInfo( const ModelCtxt* model, XP_S16 turn,
                                   MoveInfo* moveInfo );
 XP_Bool model_makeTurnFromStream( ModelCtxt* model, XWEnv xwe, XP_U16 playerNum,
                                   XWStreamCtxt* stream );

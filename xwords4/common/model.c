@@ -1,6 +1,6 @@
 /* -*- compile-command: "cd ../linux && make -j3 MEMDEBUG=TRUE"; -*- */
 /* 
- * Copyright 2000 - 2017 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2000 - 2022 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -1124,17 +1124,16 @@ model_undoLatestMoves( ModelCtxt* model, XWEnv xwe, PoolContext* pool,
 } /* model_undoLatestMoves */
 
 void
-model_trayToStream( ModelCtxt* model, XP_S16 turn, XWStreamCtxt* stream )
+model_trayToStream( const ModelCtxt* model, XP_S16 turn, XWStreamCtxt* stream )
 {
-    PlayerCtxt* player;
     XP_ASSERT( turn >= 0 );
-    player = &model->players[turn];
+    const PlayerCtxt* player = &model->players[turn];
 
     traySetToStream( stream, &player->trayTiles );
 } /* model_trayToStream */
 
 void
-model_currentMoveToMoveInfo( ModelCtxt* model, XP_S16 turn,
+model_currentMoveToMoveInfo( const ModelCtxt* model, XP_S16 turn,
                              MoveInfo* moveInfo )
 {
     XP_ASSERT( turn >= 0 );
@@ -1178,7 +1177,7 @@ model_currentMoveToMoveInfo( ModelCtxt* model, XP_S16 turn,
 }
 
 void
-model_currentMoveToStream( ModelCtxt* model, XP_S16 turn, 
+model_currentMoveToStream( const ModelCtxt* model, XP_S16 turn,
                            XWStreamCtxt* stream )
 {
 #ifdef STREAM_VERS_BIGBOARD
@@ -1431,22 +1430,20 @@ model_getCurrentMoveIsVertical( const ModelCtxt* model, XP_S16 turn,
 }
 
 void
-model_getCurrentMoveTile( ModelCtxt* model, XP_S16 turn, XP_S16* index,
+model_getCurrentMoveTile( const ModelCtxt* model, XP_S16 turn, XP_S16* index,
                           Tile* tile, XP_U16* col, XP_U16* row, 
                           XP_Bool* isBlank )
 {
-    PlayerCtxt* player;
-    PendingTile* pt;
     XP_ASSERT( turn >= 0 );
 
-    player = &model->players[turn];
+    const PlayerCtxt* player = &model->players[turn];
     XP_ASSERT( *index < player->nPending );
     
     if ( *index < 0 ) {
         *index = player->nPending - 1;
     }
 
-    pt = &player->pendingTiles[*index];
+    const PendingTile* pt = &player->pendingTiles[*index];
 
     *col = pt->col;
     *row = pt->row;
