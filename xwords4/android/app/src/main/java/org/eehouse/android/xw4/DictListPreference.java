@@ -54,6 +54,9 @@ public class DictListPreference extends XWListPreference {
             curLang = LocUtils.getString( context, R.string.lang_name_english );
         }
         ISOCode isoCode = DictLangCache.getLangIsoCode( context, curLang );
+        if ( null == isoCode ) { // work around crash reported via Play Store
+            isoCode = Utils.ISO_EN;
+        }
 
         DictUtils.DictAndLoc[] dals = DictUtils.dictList( context  );
         ArrayList<String> dictEntries = new ArrayList<>();
