@@ -96,7 +96,8 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
             (AlarmManager)context.getSystemService( Context.ALARM_SERVICE );
 
         Intent intent = new Intent( context, UpdateCheckReceiver.class );
-        PendingIntent pi = PendingIntent.getBroadcast( context, 0, intent, 0 );
+        PendingIntent pi = PendingIntent.getBroadcast( context, 0, intent,
+                                                       PendingIntent.FLAG_IMMUTABLE );
         am.cancel( pi );
 
         long interval_millis;
