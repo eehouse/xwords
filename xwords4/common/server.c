@@ -423,7 +423,7 @@ getNV( XWStreamCtxt* stream, ServerNonvolatiles* nv, XP_U16 nPlayers )
     if ( version >= STREAM_VERS_DUPLICATE ) {
         for ( ii = 0; ii < nPlayers; ++ii ) {
             nv->dupTurnsMade[ii] = stream_getBits( stream, 1 );
-            XP_LOGF( "%s(): dupTurnsMade[%d]: %d", __func__, ii, nv->dupTurnsMade[ii] );
+            XP_LOGFF( "dupTurnsMade[%d]: %d", ii, nv->dupTurnsMade[ii] );
             nv->dupTurnsForced[ii] = stream_getBits( stream, 1 );
         }
         nv->dupTurnsSent = stream_getBits( stream, 1 );
@@ -813,7 +813,7 @@ server_initClientConnection( ServerCtxt* server, XWEnv xwe )
             }
             stream_putBits( stream, NAME_LEN_NBITS, len );
             stream_putBytes( stream, name, len );
-            XP_LOGF( "%s(): wrote local name %s", __func__, name );
+            XP_LOGFF( "wrote local name %s", name );
         }
 #ifdef STREAM_VERS_BIGBOARD
         stream_putU8( stream, CUR_STREAM_VERS );
@@ -840,7 +840,7 @@ sendChatTo( ServerCtxt* server, XWEnv xwe, XP_U16 devIndex, const XP_UCHAR* msg,
         stream_putU32( stream, timestamp );
         stream_destroy( stream, xwe );
     } else {
-        XP_LOGF( "%s: dropping chat %s; queue too full?", __func__, msg );
+        XP_LOGFF( "dropping chat %s; queue too full?", msg );
     }
 }
 
@@ -900,7 +900,7 @@ callDupTimerListener( const ServerCtxt* server, XWEnv xwe, XP_S32 oldVal, XP_S32
         (*server->vol.timerChangeListener)( xwe, server->vol.timerChangeData,
                                             server->vol.gi->gameID, oldVal, newVal );
     } else {
-        XP_LOGF( "%s(): no listener!!", __func__ );
+        XP_LOGFF( "no listener!!" );
     }
 }
 
@@ -916,7 +916,7 @@ setStreamVersion( ServerCtxt* server )
             streamVersion = devVersion;
         }
     }
-    XP_LOGF( "%s: setting streamVersion: 0x%x", __func__, streamVersion );
+    XP_LOGFF( "setting streamVersion: 0x%x", streamVersion );
     server->nv.streamVersion = streamVersion;
 
     CurGameInfo* gi = server->vol.gi;
@@ -934,7 +934,7 @@ checkResizeBoard( ServerCtxt* server )
 {
     CurGameInfo* gi = server->vol.gi;
     if ( STREAM_VERS_BIGBOARD > server->nv.streamVersion && gi->boardSize > 15) {
-        XP_LOGF( "%s: dropping board size from %d to 15", __func__, gi->boardSize );
+        XP_LOGFF( "dropping board size from %d to 15", gi->boardSize );
         gi->boardSize = 15;
         model_setSize( server->vol.model, 15 );
     }
@@ -958,8 +958,8 @@ handleRegistrationMsg( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* stream )
     XP_ASSERT( playersInMsg > 0 );
 
     if ( server->nv.pendingRegistrations < playersInMsg ) {
-        XP_LOGF( "%s: got %d players but missing only %d", __func__, 
-                 playersInMsg, server->nv.pendingRegistrations );
+        XP_LOGFF( "got %d players but missing only %d",
+                  playersInMsg, server->nv.pendingRegistrations );
         util_userError( server->vol.util, xwe, ERR_REG_UNEXPECTED_USER );
         success = XP_FALSE;
     } else {
@@ -991,8 +991,8 @@ handleRegistrationMsg( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* stream )
         if ( 0 < stream_getSize(stream) ) {
             XP_U8 streamVersion = stream_getU8( stream );
             if ( streamVersion >= STREAM_VERS_BIGBOARD ) {
-                XP_LOGF( "%s: upping device %d streamVersion to %d",
-                         __func__, clientIndex, streamVersion );
+                XP_LOGFF( "upping device %d streamVersion to %d",
+                          clientIndex, streamVersion );
                 server->nv.addresses[clientIndex].streamVersion = streamVersion;
             }
         }
@@ -1102,7 +1102,7 @@ dupe_handleClientMoves( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* stream )
     XP_Bool success = XP_TRUE;
 
     XP_U16 movesInMsg = (XP_U16)stream_getBits( stream, NPLAYERS_NBITS );
-    XP_LOGF( "%s(): reading %d moves", __func__, movesInMsg );
+    XP_LOGFF( "reading %d moves", movesInMsg );
     for ( XP_U16 ii = 0; success && ii < movesInMsg; ++ii ) {
         XP_U16 turn = (XP_U16)stream_getBits( stream, PLAYERNUM_NBITS );
         XP_Bool forced = (XP_Bool)stream_getBits( stream, 1 );
@@ -1163,7 +1163,7 @@ setDupCheckTimer( ServerCtxt* server, XWEnv xwe )
 static void
 setDupTimerExpires( ServerCtxt* server, XWEnv xwe, XP_S32 newVal )
 {
-    XP_LOGF( "%s(%d)", __func__, newVal );
+    XP_LOGFF( "(%d)", newVal );
     if ( newVal != server->nv.dupTimerExpires ) {
         XP_S32 oldVal = server->nv.dupTimerExpires;
         server->nv.dupTimerExpires = newVal;
@@ -1179,7 +1179,7 @@ dupe_resetTimer( ServerCtxt* server, XWEnv xwe )
         XP_U32 now = dutil_getCurSeconds( server->vol.dutil, xwe );
         newVal = now + server->vol.gi->gameSeconds;
     } else {
-        XP_LOGF( "%s(): doing nothing because timers disabled", __func__ );
+        XP_LOGFF( "doing nothing because timers disabled" );
     }
 
     if ( server_canUnpause( server ) ) {
@@ -1255,7 +1255,7 @@ pauseImpl( ServerCtxt* server, XWEnv xwe )
 void
 server_pause( ServerCtxt* server, XWEnv xwe, XP_S16 turn, const XP_UCHAR* msg )
 {
-    XP_LOGF( "%s(turn=%d)", __func__, turn );
+    XP_LOGFF( "(turn=%d)", turn );
     pauseImpl( server, xwe );
     /* Figure out how many seconds are left on the timer, and set timer to the
        negative of that (since negative is the flag) */
@@ -1267,8 +1267,6 @@ server_pause( ServerCtxt* server, XWEnv xwe, XP_S16 turn, const XP_UCHAR* msg )
 static void
 dupe_autoPause( ServerCtxt* server, XWEnv xwe )
 {
-    XP_LOGF( "%s()", __func__ );
-
     /* Reset timer: we're starting turn over */
     dupe_resetTimer( server, xwe );
     dupe_clearState( server );
@@ -1284,7 +1282,7 @@ dupe_autoPause( ServerCtxt* server, XWEnv xwe )
 void
 server_unpause( ServerCtxt* server, XWEnv xwe, XP_S16 turn, const XP_UCHAR* msg )
 {
-    XP_LOGF( "%s(turn=%d)", __func__, turn );
+    XP_LOGFF( "(turn=%d)", turn );
     XP_ASSERT( server_canUnpause( server ) );
     XP_U32 now = dutil_getCurSeconds( server->vol.dutil, xwe );
     /* subtract because it's negative */
@@ -1672,7 +1670,7 @@ informNeedPickTiles( ServerCtxt* server, XWEnv xwe, XP_Bool initial,
         /* We need to make sure we only call util_informNeedPickTiles once
            without it returning. Even if server_do() is called a lot. */
         if ( server->vol.pickTilesCalled[turn] ) {
-            XP_LOGF( "%s(): already asking for %d", __func__, turn );
+            XP_LOGFF( "already asking for %d", turn );
         } else {
             server->vol.pickTilesCalled[turn] = XP_TRUE;
             for ( Tile tile = 0; tile < nFaces; ++tile ) {
@@ -1810,7 +1808,7 @@ getIndexForDevice( const ServerCtxt* server, XP_PlayerAddr channelNo )
         }
     }
 
-    XP_LOGF( "%s(%x)=>%d", __func__, channelNo, result );
+    XP_LOGFF( "(%x)=>%d", channelNo, result );
     return result;
 } /* getIndexForDevice */
 
@@ -1834,7 +1832,7 @@ findFirstPending( ServerCtxt* server, ServerPlayer** playerP )
         }
     }
     if ( lp < gi->players ) { /* did we find a slot? */
-        XP_LOGF( "%s: no slot found for player; duplicate packet?", __func__ );
+        XP_LOGFF( "no slot found for player; duplicate packet?" );
         lp = NULL;
     } else {
         *playerP = server->players + nPlayers;
@@ -1887,7 +1885,7 @@ registerRemotePlayer( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* stream )
             addr->streamVersion = STREAM_SAVE_PREVWORDS;
 #endif
         } else {
-            XP_LOGF( "%s: deviceIndex already set", __func__ );
+            XP_LOGFF( "deviceIndex already set" );
         }
 
         player->deviceIndex = deviceIndex;
@@ -1932,7 +1930,7 @@ client_readInitialMessage( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* stream )
 
         /* version; any dependencies here? */
         XP_U8 streamVersion = stream_getU8( stream );
-        XP_LOGF( "%s: set streamVersion to %d", __func__, streamVersion );
+        XP_LOGFF( "set streamVersion to %d", streamVersion );
         stream_setVersion( stream, streamVersion );
         if ( STREAM_VERS_NINETILES > streamVersion ) {
             model_forceStack7Tiles( server->vol.model );
@@ -1971,12 +1969,12 @@ client_readInitialMessage( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* stream )
         XP_PlayerAddr channelNo = stream_getAddress( stream );
         XP_ASSERT( channelNo != 0 );
         server->nv.addresses[0].channelNo = channelNo;
-        XP_LOGF( "%s: assigning channelNo %x for 0", __func__, channelNo );
+        XP_LOGFF( "assigning channelNo %x for 0", channelNo );
 
         model_setSize( model, localGI.boardSize );
 
         XP_U16 nPlayers = localGI.nPlayers;
-        XP_LOGF( "%s: reading in %d players", __func__, localGI.nPlayers );
+        XP_LOGFF( "reading in %d players", localGI.nPlayers );
 
         gi->nPlayers = nPlayers;
         model_setNPlayers( model, nPlayers );
@@ -2017,7 +2015,7 @@ client_readInitialMessage( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* stream )
                    later. */
                 pool_removeTiles( pool, &tiles );
             }
-            XP_LOGF( "%s: got %d tiles for player %d", __func__, tiles.nTiles, ii );
+            XP_LOGFF( "got %d tiles for player %d", tiles.nTiles, ii );
 
             if ( inDuplicateMode(server ) ) {
                 model_assignDupeTiles( model, xwe, &tiles );
@@ -2041,8 +2039,7 @@ client_readInitialMessage( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* stream )
         setTurn( server, xwe, 0 );
         dupe_resetTimer( server, xwe );
     } else {
-        XP_LOGF( "%s: wanted 0; got %d", __func__, 
-                 server->nv.addresses[0].channelNo );
+        XP_LOGFF( "wanted 0; got %d", server->nv.addresses[0].channelNo );
     }
     return accepted;
 } /* client_readInitialMessage */
@@ -2075,8 +2072,8 @@ makeSendableGICopy( ServerCtxt* server, CurGameInfo* giCopy,
     }
 
     giCopy->forceChannel = deviceIndex;
-    XP_LOGF( "%s: assigning forceChannel from deviceIndex: %d", __func__, 
-             giCopy->forceChannel );
+    XP_LOGFF( "assigning forceChannel from deviceIndex: %d",
+              giCopy->forceChannel );
 
     giCopy->dictName = (XP_UCHAR*)NULL; /* so we don't sent the bytes */
 } /* makeSendableGICopy */
@@ -2105,7 +2102,7 @@ sendInitialMessage( ServerCtxt* server, XWEnv xwe )
         stream_putU8( stream, CUR_STREAM_VERS );
 #endif
 
-        XP_LOGF( "putting gameID %x into msg", gameID );
+        XP_LOGFF( "putting gameID %x into msg", gameID );
         stream_putU32( stream, gameID );
 
         CurGameInfo localGI;
@@ -2764,7 +2761,7 @@ storeBadWords( const WNParams* wnp, void* closure )
         ServerCtxt* server = (ServerCtxt*)closure;
         const XP_UCHAR* name = dict_getShortName( wnp->dict );
 
-        XP_LOGF( "storeBadWords called with \"%s\" (name=%s)", wnp->word, name );
+        XP_LOGFF( "storeBadWords called with \"%s\" (name=%s)", wnp->word, name );
         if ( NULL == server->illegalWordInfo.dictName ) {
             server->illegalWordInfo.dictName = copyString( server->mpool, name );
         }
@@ -2830,8 +2827,8 @@ sendMoveTo( ServerCtxt* server, XWEnv xwe, XP_U16 devIndex, XP_U16 turn,
 
         if ( gi->timerEnabled ) {
             stream_putU16( stream, gi->players[turn].secondsUsed );
-            XP_LOGF("%s: wrote secondsUsed for player %d: %d", __func__,
-                       turn, gi->players[turn].secondsUsed );
+            XP_LOGFF( "wrote secondsUsed for player %d: %d",
+                      turn, gi->players[turn].secondsUsed );
         } else {
             XP_ASSERT( gi->players[turn].secondsUsed == 0 );
         }
@@ -2868,7 +2865,7 @@ readMoveInfo( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* stream,
             *badStackP = XP_TRUE;
 #ifdef DEBUG_HASHING
         } else {
-            XP_LOGF( "%s: hash match: %X",__func__, hashReceived );
+            XP_LOGFF( "hash match: %X", hashReceived );
 #endif
         }
     }
@@ -2883,8 +2880,7 @@ readMoveInfo( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* stream,
 
             if ( isTrade ) {
                 traySetFromStream( stream, tradedTiles );
-                XP_LOGF( "%s: got trade of %d tiles", __func__, 
-                         tradedTiles->nTiles );
+                XP_LOGFF( "got trade of %d tiles", tradedTiles->nTiles );
             } else {
                 legalMove = stream_getBits( stream, 1 );
                 success = model_makeTurnFromStream( server->vol.model, 
@@ -3164,10 +3160,9 @@ dupe_chooseMove( const ServerCtxt* server, XWEnv xwe, XP_U16 nPlayers,
     *winningNTiles = moveData[winnerIndx].nTiles;
     /* This fires: I need the reassign-no-moves thing */
     if ( *winningNTiles == 0 ) {
-        XP_LOGF( "%s(): no scoring move found", __func__ );
+        XP_LOGFF( "no scoring move found" );
     } else {
-        XP_LOGF( "%s(): %d wins with %d points", __func__, *winner,
-                 scores[*winner] );
+        XP_LOGFF( "%d wins with %d points", *winner, scores[*winner] );
     }
 }
 
@@ -3275,7 +3270,7 @@ static void
 dupe_transmitPause( ServerCtxt* server, XWEnv xwe, DupPauseType typ, XP_U16 turn,
                     const XP_UCHAR* msg, XP_S16 skipDev )
 {
-    XP_LOGF( "%s(type=%d, msg=%s)", __func__, typ, msg );
+    XP_LOGFF( "(type=%d, msg=%s)", typ, msg );
     CurGameInfo* gi = server->vol.gi;
     if ( gi->serverRole != SERVER_STANDALONE ) {
         XP_Bool amClient = SERVER_ISCLIENT == gi->serverRole;
@@ -3330,8 +3325,8 @@ dupe_receivePause( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* stream )
         XP_UCHAR* msg = NULL;
         if ( AUTOPAUSED != pauseType ) {
             msg = stringFromStream( server->mpool, stream );
-            XP_LOGF( "%s(): pauseType: %d; guiltyParty: %d; msg: %s", __func__,
-                     pauseType, turn, msg );
+            XP_LOGFF( "pauseType: %d; guiltyParty: %d; msg: %s",
+                      pauseType, turn, msg );
         }
 
         if ( amServer( server ) ) {
@@ -3501,7 +3496,7 @@ dupe_checkTurns( ServerCtxt* server, XWEnv xwe )
         || server->vol.gi->serverRole == SERVER_STANDALONE;
     dupe_checkWhatsDone( server, amServer, &allDone, &allLocalsDone );
 
-    XP_LOGF( "%s(): allDone: %d", __func__, allDone );
+    XP_LOGFF( "allDone: %d", allDone );
 
     if ( allDone ) {            /* Yep: commit time */
         if ( amServer ) {       /* I now have everything I need to move the
@@ -3519,14 +3514,14 @@ dupe_checkTurns( ServerCtxt* server, XWEnv xwe )
             /* stream_putU32( stream, hash ); */
 
             XP_U16 localCount = gi_countLocalPlayers( server->vol.gi, XP_FALSE );
-            XP_LOGF( "%s(): writing %d moves", __func__, localCount );
+            XP_LOGFF( "writing %d moves", localCount );
             stream_putBits( stream, NPLAYERS_NBITS, localCount );
             for ( XP_U16 ii = 0; ii < server->vol.gi->nPlayers; ++ii ) {
                 if ( server->vol.gi->players[ii].isLocal ) {
                     stream_putBits( stream, PLAYERNUM_NBITS, ii );
                     stream_putBits( stream, 1, server->nv.dupTurnsForced[ii] );
                     model_currentMoveToStream( server->vol.model, ii, stream );
-                    XP_LOGF( "%s(): wrote move %d ", __func__, ii );
+                    XP_LOGFF( "wrote move %d ", ii );
                 }
             }
 
@@ -3596,8 +3591,8 @@ dupe_storeTurn( ServerCtxt* server, XWEnv xwe, XP_U16 turn, XP_Bool forced )
     dupe_postStatus( server, xwe, allDone );
     nextTurn( server, xwe, PICK_NEXT );
 
-    XP_LOGF( "%s(): player %d now has %d tiles", __func__, turn,
-             model_getNumTilesInTray( server->vol.model, turn ) );
+    XP_LOGFF( "player %d now has %d tiles", turn,
+              model_getNumTilesInTray( server->vol.model, turn ) );
 }
 
 static void
@@ -4225,7 +4220,7 @@ server_receiveMessage( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* incoming )
         /* This message is special: doesn't have the header that's possible
            once the game's in progress and communication's been
            established. */
-            XP_LOGF( "%s: somebody's registering!!!", __func__ );
+            XP_LOGFF( "somebody's registering!!!" );
             accepted = handleRegistrationMsg( server, xwe, incoming );
         } else {
             XP_LOGFF( "WTF: I'm not a server!!" );
@@ -4254,7 +4249,7 @@ server_receiveMessage( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* incoming )
 
     case XWPROTO_MOVEMADE_INFO_SERVER: /* server telling me about a move */
         if ( isServer ) {
-            XP_LOGF( "%s(): %s received by server!", __func__, codeToStr(code) );
+            XP_LOGFF( "%s received by server!", codeToStr(code) );
             accepted = XP_FALSE;
         } else {
             accepted = reflectMove( server, xwe, incoming );

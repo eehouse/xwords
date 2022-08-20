@@ -355,8 +355,8 @@ model_popToHash( ModelCtxt* model, XWEnv xwe, const XP_U32 hash, PoolContext* po
     XP_Bool found = -1 != foundAt;
     if ( found ) {
         if ( 0 < foundAt ) {    /* if 0, nothing to do */
-            XP_LOGF( "%s: undoing %d turns to match hash %X", __func__,
-                     foundAt, hash );
+            XP_LOGFF( "undoing %d turns to match hash %X",
+                      foundAt, hash );
 #ifdef DEBUG
             XP_Bool success =
 #endif
@@ -1266,7 +1266,7 @@ model_makeTurnFromStream( ModelCtxt* model, XWEnv xwe, XP_U16 playerNum,
                 XP_ASSERT( EMPTY_TILE == model_getPlayerTile(model, playerNum,
                                                              0));
                 /* Does this ever happen? */
-                XP_LOGF( "%s: found empty tile and it's ok", __func__ );
+                XP_LOGFF( "found empty tile and it's ok" );
 
                 (void)model_removePlayerTile( model, playerNum, -1 );
                 model_addPlayerTile( model, playerNum, -1, moveTiles[ii] );
@@ -2923,15 +2923,15 @@ model_printTrays( const ModelCtxt* model )
     for ( XP_U16 ii = 0; ii < model->nPlayers; ++ii ) {
         const PlayerCtxt* player = &model->players[ii];
         XP_UCHAR buf[128];
-        XP_LOGF( "%s(): player %d: %s", __func__, ii,
-                 formatTileSet( &player->trayTiles, buf, VSIZE(buf) ) );
+        XP_LOGFF( "player %d: %s", ii,
+                  formatTileSet( &player->trayTiles, buf, VSIZE(buf) ) );
     }
 }
 
 void
 model_dumpSelf( const ModelCtxt* model, const XP_UCHAR* msg )
 {
-    XP_LOGF( "%s(msg=%s)", __func__, msg );
+    XP_LOGFF( "(msg=%s)", msg );
 
     XP_UCHAR buf[256];
     XP_U16 offset = 0;
