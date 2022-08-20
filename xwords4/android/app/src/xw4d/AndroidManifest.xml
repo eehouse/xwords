@@ -25,7 +25,9 @@
 
     <service android:name="WiDirService"/>
 
-    <receiver android:name="SMSReceiver" >
+    <receiver android:name="SMSReceiver"
+              android:exported="true"
+              >
       <intent-filter>
         <action android:name="android.intent.action.DATA_SMS_RECEIVED" />
         <data android:scheme="sms" />

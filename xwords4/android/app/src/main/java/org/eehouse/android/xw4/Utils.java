@@ -379,7 +379,7 @@ public class Utils {
     {
         PendingIntent pi = PendingIntent
             .getActivity( context, Utils.nextRandomInt(), intent,
-                          PendingIntent.FLAG_ONE_SHOT );
+                          PendingIntent.FLAG_ONE_SHOT | PendingIntent.FLAG_IMMUTABLE );
         return pi;
     }
 

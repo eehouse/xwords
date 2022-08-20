@@ -379,7 +379,8 @@ public class NBSProto {
         private PendingIntent makeStatusIntent( Context context, String msg )
         {
             Intent intent = new Intent( msg );
-            return PendingIntent.getBroadcast( context, 0, intent, 0 );
+            return PendingIntent.getBroadcast( context, 0, intent,
+                                               PendingIntent.FLAG_IMMUTABLE );
         }
 
         private void cacheForRetry( QueueElem elem )

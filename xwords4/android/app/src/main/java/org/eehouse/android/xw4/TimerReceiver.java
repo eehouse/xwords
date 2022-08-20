@@ -389,8 +389,9 @@ public class TimerReceiver extends BroadcastReceiver {
                     (AlarmManager)context.getSystemService( Context.ALARM_SERVICE );
                 Intent intent = new Intent( context, TimerReceiver.class );
                 intent.putExtra( KEY_TIMER_ID, timerID );
-                PendingIntent pi = PendingIntent.getBroadcast( context, 0, intent,
-                                                               PendingIntent.FLAG_CANCEL_CURRENT );
+                PendingIntent pi = PendingIntent
+                    .getBroadcast( context, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT
+                                   | PendingIntent.FLAG_IMMUTABLE );
                 am.set( AlarmManager.RTC_WAKEUP, firstFireTime, pi );
 
                 setJobTimerIf( context, delayMS, timerID );
