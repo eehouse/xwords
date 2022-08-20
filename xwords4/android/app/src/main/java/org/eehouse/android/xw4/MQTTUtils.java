@@ -489,22 +489,16 @@ public class MQTTUtils extends Thread
                         String action = null;
                         IMqttToken token = null;
                         try {
-                            boolean isConnected = client.isConnected();
                             switch ( ii ) {
                             case 0:
-                                if ( isConnected ) {
-                                    action = "unsubscribe";
-                                    token = client.unsubscribe( mTopics );
-                                }
+                                action = "unsubscribe";
+                                token = client.unsubscribe( mTopics );
                                 break;      // not continue, which skips the Log() below
                             case 1:
-                                if ( isConnected ) {
-                                    action = "disconnect";
-                                    token = client.disconnect();
-                                }
+                                action = "disconnect";
+                                token = client.disconnect();
                                 break;
                             case 2:
-                                Assert.assertTrueNR( !isConnected );
                                 action = "close";
                                 client.close();
                                 break;
