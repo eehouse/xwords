@@ -26,7 +26,7 @@ import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.net.Uri;
 import android.os.Build;
-import android.preference.PreferenceManager;
+import androidx.preference.PreferenceManager;
 
 import org.eehouse.android.xw4.Assert;
 import org.eehouse.android.xw4.DictUtils;

@@ -1,7 +1,7 @@
 /* -*- compile-command: "find-and-gradle.sh inXw4dDeb"; -*- */
 /*
- * Copyright 2009 - 2020 by Eric House (xwords@eehouse.org).  All
- * rights reserved.
+ * Copyright 2009 - 2022 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -23,6 +23,7 @@ package org.eehouse.android.xw4;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
+import android.text.TextUtils;
 
 import org.eclipse.paho.client.mqttv3.IMqttActionListener;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
@@ -472,7 +473,7 @@ public class MQTTUtils extends Thread
                             switch ( ii ) {
                             case 0:
                                 action = "unsubscribe";
-                                token = client.unsubscribe( mDevID );
+                                token = client.unsubscribe( mTopics );
                                 break;      // not continue, which skips the Log() below
                             case 1:
                                 action = "disconnect";
@@ -617,7 +618,7 @@ public class MQTTUtils extends Thread
         setState( State.SUBSCRIBING );
         try {
             mClient.subscribe( mTopics, qoss, null, this );
-            // Log.d( TAG, "subscribed to %s", mTopic );
+            // Log.d( TAG, "subscribed to %s", TextUtils.join( ", ", mTopics ) );
         } catch ( MqttException ex ) {
             ex.printStackTrace();
         } catch ( Exception ex ) {
