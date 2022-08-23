@@ -80,7 +80,7 @@ android {
         } else {
             minSdkVersion 14
         }
-        targetSdkVersion 31     // must match ../build.gradle
+        targetSdkVersion 30     // must match ../build.gradle
         versionCode VERSION_CODE_BASE
         versionName VERSION_NAME
     }
