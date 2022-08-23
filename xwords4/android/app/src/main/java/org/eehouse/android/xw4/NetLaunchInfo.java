@@ -394,9 +394,8 @@ public class NetLaunchInfo implements Serializable {
         int[] lang = {0};
         if ( XwJNI.haveLocaleToLc( isoCodeStr, lang ) ) {
             bundle.putInt( MultiService.LANG, lang[0] );
-        } else {
-            bundle.putString( MultiService.ISO, isoCodeStr );
         }
+        bundle.putString( MultiService.ISO, isoCodeStr );
         bundle.putString( MultiService.DICT, dict );
         bundle.putString( MultiService.GAMENAME, gameName );
         bundle.putInt( MultiService.NPLAYERST, nPlayersT );
@@ -467,9 +466,8 @@ public class NetLaunchInfo implements Serializable {
             int[] lang = {0};
             if ( XwJNI.haveLocaleToLc( isoCodeStr, lang ) ) {
                 obj.put( MultiService.LANG, lang[0] );
-            } else {
-                obj.put( MultiService.ISO, isoCodeStr );
             }
+            obj.put( MultiService.ISO, isoCodeStr );
 
             if ( dupeMode ) {
                 obj.put( MultiService.DUPEMODE, dupeMode );
@@ -638,9 +636,8 @@ public class NetLaunchInfo implements Serializable {
         Assert.assertTrueNR( null != isoCodeStr );
         if ( XwJNI.haveLocaleToLc( isoCodeStr, lang ) ) {
             appendInt( ub, LANG_KEY, lang[0] );
-        } else {
-            ub.appendQueryParameter( ISO_KEY, isoCodeStr );
         }
+        ub.appendQueryParameter( ISO_KEY, isoCodeStr );
         appendInt( ub, TOTPLAYERS_KEY, nPlayersT );
         appendInt( ub, HEREPLAYERS_KEY, nPlayersH );
         appendInt( ub, GID_KEY, gameID() );
