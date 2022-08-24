@@ -69,4 +69,15 @@
     <string name="list_item_delete">删除游戏</string>
     <string name="board_menu_file_about">关于 CrossWords</string>
     <string name="button_delete">删除</string>
+    <string name="list_item_relaypage">游戏流量</string>
+    <string name="connect_label_fmt">连接（通过 %1$s）</string>
+    <string name="loc_internal">内部的</string>
+    <string name="list_item_netstats">连接</string>
+    <string name="settings_label">其他设置</string>
+    <string name="game_locked">锁定设置</string>
+    <string name="robot_smart">智能机器人</string>
+    <string name="dicts_item_move">更改存储的位置</string>
+    <string name="hints_allowed">允许提示</string>
+    <string name="loc_external">外部的</string>
+    <string name="langUnknownFmt">未知（%1$s）</string>
 </resources>
