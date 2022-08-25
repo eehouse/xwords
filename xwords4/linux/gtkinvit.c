@@ -44,12 +44,12 @@ typedef struct _GtkInviteState {
     XW_DUtilCtxt* dutil;        /* hang onto as optimization */
     CommsAddrRec* addr;
     gint* nPlayersP;
-    XP_U32* relayDevIDp;
     gint maxPlayers;
 
     GtkWidget* nPlayersCombo;
-    /* relay */
+#ifdef XWFEATURE_RELAY
     GtkWidget* devID;
+#endif
     /* BT */
     GtkWidget* bthost;
     /* SMS */
@@ -349,14 +349,12 @@ onPageChanged( GtkNotebook* XP_UNUSED(notebook), gpointer XP_UNUSED(arg1),
 }
 
 XP_Bool
-gtkInviteDlg( GtkGameGlobals* globals, CommsAddrRec* addr, 
-              gint* nPlayersP, XP_U32* relayDevIDp )
+gtkInviteDlg( GtkGameGlobals* globals, CommsAddrRec* addr, gint* nPlayersP )
 {
     GtkInviteState state = {
         .globals = globals,
         .addr = addr,
         .nPlayersP = nPlayersP,
-        .relayDevIDp = relayDevIDp,
         .maxPlayers = *nPlayersP,
         .dutil = globals->cGlobals.params->dutil,
     };

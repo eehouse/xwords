@@ -86,7 +86,6 @@ static void handle_invite_button( GtkWidget* widget, GtkGameGlobals* globals );
 static void gtkShowFinalScores( const GtkGameGlobals* globals, 
                                 XP_Bool ignoreTimeout );
 static void send_invites( CommonGlobals* cGlobals, XP_U16 nPlayers,
-                          XP_U32 relayDevID, const XP_UCHAR* relayID,
                           const CommsAddrRec* addrs );
 
 #define GTK_TRAY_HT_ROWS 3
@@ -729,7 +728,7 @@ on_board_window_shown( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
                 CommsAddrRec addr = {0};
                 addrFromStream( &addr, stream );
 
-                send_invites( cGlobals, 1, 0, relayID, &addr );
+                send_invites( cGlobals, 1, &addr );
             }
         }
         stream_destroy( stream, NULL_XWE );
@@ -1460,19 +1459,16 @@ handle_invite_button( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
 
     CommsAddrRec inviteAddr = {0};
     gint nPlayers = nMissing;
-    XP_U32 relayDevID = 0;
-    XP_Bool confirmed = gtkInviteDlg( globals, &inviteAddr, &nPlayers,
-                                      &relayDevID );
+    XP_Bool confirmed = gtkInviteDlg( globals, &inviteAddr, &nPlayers );
     XP_LOGFF( "gtkInviteDlg() => %s", boolToStr(confirmed) );
 
     if ( confirmed ) {
-        send_invites( cGlobals, nPlayers, relayDevID, NULL, &inviteAddr );
+        send_invites( cGlobals, nPlayers, &inviteAddr );
     }
 } /* handle_invite_button */
 
 static void
 send_invites( CommonGlobals* cGlobals, XP_U16 nPlayers,
-              XP_U32 relayDevID, const XP_UCHAR* relayID,
               const CommsAddrRec* destAddr )
 {
     CommsAddrRec myAddr = {0};
@@ -1515,11 +1511,12 @@ send_invites( CommonGlobals* cGlobals, XP_U16 nPlayers,
         linux_sms_invite( cGlobals->params, &nli,
                           destAddr->u.sms.phone, destAddr->u.sms.port );
     }
-
+#ifdef XWFEATURE_RELAY
     if ( 0 != relayDevID || !!relayID ) {
         XP_ASSERT( 0 != relayDevID || (!!relayID && !!relayID[0]) );
         relaycon_invite( cGlobals->params, relayDevID, relayID, &nli );
     }
+#endif
 
     if ( addr_hasType( destAddr, COMMS_CONN_MQTT ) ) {
         mqttc_invite( cGlobals->params, &nli, &destAddr->u.mqtt.devID );
