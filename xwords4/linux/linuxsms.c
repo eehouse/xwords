@@ -306,7 +306,7 @@ void
 linux_sms_invite( LaunchParams* params, const NetLaunchInfo* nli,
                   const gchar* toPhone, int toPort )
 {
-    LOG_FUNC();
+    XP_LOGFF( "(toPhone: %s, toPort: %d)", toPhone, toPort );
     LinSMSData* storage = getStorage( params );
 
     XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(params->mpool)
