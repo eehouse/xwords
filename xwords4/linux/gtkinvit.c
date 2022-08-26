@@ -129,6 +129,9 @@ handle_ok( GtkWidget* XP_UNUSED(widget), gpointer closure )
         case COMMS_CONN_SMS:
             txt = gtk_entry_get_text( GTK_ENTRY(state->smsport) );
             state->addr->u.sms.port = atoi( txt );
+            txt = gtk_entry_get_text( GTK_ENTRY(state->smsphone) );
+            XP_STRNCPY( state->addr->u.sms.phone, txt,
+                        sizeof(state->addr->u.sms.phone) );
             break;
         case COMMS_CONN_MQTT:
             txt = gtk_entry_get_text( GTK_ENTRY(state->mqttDevID) );
