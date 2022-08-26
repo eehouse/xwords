@@ -1188,6 +1188,7 @@ handleReplace( void* closure, int XP_UNUSED(key) )
     return XP_TRUE;
 } /* handleReplace */
 
+#ifndef XWFEATURE_COMMS_INVITE
 static bool
 inviteList( CommonGlobals* cGlobals, CommsAddrRec* addr, GSList* invitees,
             CommsConnType typ )
@@ -1231,6 +1232,7 @@ inviteList( CommonGlobals* cGlobals, CommsAddrRec* addr, GSList* invitees,
     }
     return haveAddressees;
 }
+#endif
 
 static bool
 handleInvite( void* closure, int XP_UNUSED(key) )
@@ -1251,6 +1253,11 @@ handleInvite( void* closure, int XP_UNUSED(key) )
     if ( SERVER_ISSERVER != cGlobals->gi->serverRole ) {
         ca_inform( bGlobals->boardWin, "Only hosts can invite" );
 
+
+#ifdef XWFEATURE_COMMS_INVITE
+    } else if ( XP_TRUE ) {
+        comms_invite( cGlobals->game.comms, NULL_XWE, &nli, &addr );
+#else
         /* Invite first based on an invitee provided. Otherwise, fall back to
            doing a send-to-self. Let the recipient code reject a duplicate if
            the user so desires. */
@@ -1281,6 +1288,7 @@ handleInvite( void* closure, int XP_UNUSED(key) )
         if ( 0 != relayID ) {
             relaycon_invite( params, relayID, NULL, &nli );
         }
+#endif
     } else {
         ca_inform( bGlobals->boardWin, "Cannot invite via relayID, MQTT or by \"sms phone\"." );
     }

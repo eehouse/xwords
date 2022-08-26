@@ -1494,6 +1494,7 @@ linux_send( XWEnv XP_UNUSED(xwe), const XP_U8* buf, XP_U16 buflen,
     return nSent;
 } /* linux_send */
 
+#ifdef XWFEATURE_COMMS_INVITE
 XP_S16
 linux_send_invt( XWEnv XP_UNUSED(xwe), const NetLaunchInfo* nli,
                  XP_U32 createdStamp,
@@ -1509,12 +1510,17 @@ linux_send_invt( XWEnv XP_UNUSED(xwe), const NetLaunchInfo* nli,
             mqttc_invite( cGlobals->params, createdStamp, nli,
                           &destAddr->u.mqtt.devID );
             break;
+        case COMMS_CONN_SMS:
+            linux_sms_invite( cGlobals->params, nli,
+                              destAddr->u.sms.phone, destAddr->u.sms.port );
+            break;
         default:
             XP_ASSERT(0);
         }
     }
     return nSent;
 }
+#endif
 
 static int
 blocking_read( int fd, unsigned char* buf, const int len )
