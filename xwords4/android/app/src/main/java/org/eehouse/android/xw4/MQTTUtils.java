@@ -45,6 +45,7 @@ import org.json.JSONObject;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.jni.CommsAddrRec.ConnExpl;
 import org.eehouse.android.xw4.jni.CommsAddrRec;
+import org.eehouse.android.xw4.jni.XwJNI.GamePtr;
 import org.eehouse.android.xw4.jni.XwJNI;
 import org.eehouse.android.xw4.loc.LocUtils;
 
@@ -532,12 +533,19 @@ public class MQTTUtils extends Thread
         clearInstance( this );
     }
 
-    public static void inviteRemote( Context context, String invitee,
-                                     NetLaunchInfo nli )
+    // public static void inviteRemote( Context context, String invitee,
+    //                                  NetLaunchInfo nli )
+    // {
+    //     String[] topic = {invitee};
+    //     byte[] packet = XwJNI.dvc_makeMQTTInvite( nli, topic );
+    //     addToSendQueue( context, topic[0], packet );
+    // }
+
+    public static void inviteRemote( GamePtr game, String devID, NetLaunchInfo nli )
     {
-        String[] topic = {invitee};
-        byte[] packet = XwJNI.dvc_makeMQTTInvite( nli, topic );
-        addToSendQueue( context, topic[0], packet );
+        CommsAddrRec destAddr = new CommsAddrRec(CommsConnType.COMMS_CONN_MQTT)
+            .setMQTTParams( devID );
+        XwJNI.comms_invite( game, nli, destAddr );
     }
 
     private static void notifyNotHere( Context context, String addressee,

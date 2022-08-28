@@ -2622,6 +2622,13 @@ Java_org_eehouse_android_xw4_jni_XwJNI_comms_1addMQTTDevID
 }
 
 JNIEXPORT void JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_comms_1invite
+( JNIEnv* env, jclass C, GamePtrType gamePtr, jobject jnli, jobject jaddr )
+{
+    LOG_FUNC();
+}
+
+JNIEXPORT void JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_comms_1dropHostAddr
 ( JNIEnv* env, jclass C, GamePtrType gamePtr, jobject jConnTyp )
 {

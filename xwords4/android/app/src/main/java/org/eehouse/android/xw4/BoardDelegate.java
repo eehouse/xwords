@@ -2745,7 +2745,8 @@ public class BoardDelegate extends DelegateBase
                     WiDirService.inviteRemote( m_activity, dev, nli );
                     break;
                 case MQTT:
-                    MQTTUtils.inviteRemote( m_activity, dev, nli );
+                    // MQTTUtils.inviteRemote( m_activity, dev, nli );
+                    MQTTUtils.inviteRemote( m_jniGamePtr, dev, nli );
                     break;
                 default:
                     Assert.failDbg();
@@ -3127,8 +3128,8 @@ public class BoardDelegate extends DelegateBase
             }
             value = m_summary.getStringExtra( GameSummary.EXTRA_REMATCH_MQTT );
             if ( null != value ) {
-                MQTTUtils.inviteRemote( m_activity, value, nli );
-                recordInviteSent( InviteMeans.MQTT, value );
+                MQTTUtils.inviteRemote( m_jniGamePtr, value, nli );
+                // recordInviteSent( InviteMeans.MQTT, value );
             }
 
             showToast( R.string.rematch_sent_toast );
@@ -3159,8 +3160,8 @@ public class BoardDelegate extends DelegateBase
         for ( CommsConnType typ : conTypes ) {
             switch ( typ ) {
             case COMMS_CONN_MQTT:
-                MQTTUtils.inviteRemote( m_activity, addr.mqtt_devID, nli );
-                recordInviteSent( InviteMeans.MQTT, addr.mqtt_devID );
+                MQTTUtils.inviteRemote( m_jniGamePtr, addr.mqtt_devID, nli );
+                // recordInviteSent( InviteMeans.MQTT, addr.mqtt_devID );
                 break;
             case COMMS_CONN_BT:
                 BTUtils.inviteRemote( m_activity, addr.bt_btAddr, nli );

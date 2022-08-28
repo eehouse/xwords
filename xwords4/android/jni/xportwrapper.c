@@ -48,6 +48,22 @@ and_xport_getFlags( XWEnv xwe, void* closure )
     return result;
 }
 
+#ifdef XWFEATURE_COMMS_INVITE
+static XP_S16
+and_xport_sendInvite( XWEnv xwe, const NetLaunchInfo* nli,
+                      XP_U32 createdStamp,
+                      const CommsAddrRec* addr, void* closure )
+{
+    XP_USE( xwe );
+    XP_USE( nli );
+    XP_USE( createdStamp );
+    XP_USE( addr );
+    XP_USE( closure );
+    XP_ASSERT(0);
+    return -1;
+}
+#endif
+
 static XP_S16
 and_xport_send( XWEnv xwe, const XP_U8* buf, XP_U16 len,
                 const XP_UCHAR* msgNo, XP_U32 timestamp,
@@ -195,7 +211,10 @@ makeXportProcs( MPFORMAL JNIEnv* env,
 #ifdef COMMS_XPORT_FLAGSPROC
     aprocs->tp.getFlags = and_xport_getFlags;
 #endif
-    aprocs->tp.send = and_xport_send;
+    aprocs->tp.sendMsg = and_xport_send;
+#ifdef XWFEATURE_COMMS_INVITE
+    aprocs->tp.sendInvt = and_xport_sendInvite;
+#endif
 #ifdef XWFEATURE_RELAY
     aprocs->tp.rstatus = and_xport_relayStatus;
     aprocs->tp.rconnd = and_xport_relayConnd;
