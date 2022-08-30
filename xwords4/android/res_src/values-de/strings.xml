@@ -11,12 +11,12 @@
     </plurals>
     <string name="button_delete">Löschen</string>
     <string name="button_reset">Neustarten</string>
-    <string name="gamel_menu_dicts">Wortlisten …</string>
-    <string name="menu_prefs">App-Einstellungen …</string>
-    <string name="board_menu_file_about">Über CrossWords…</string>
-    <string name="list_item_config">Spieleinstellungen …</string>
-    <string name="list_item_rename">Umbenennen …</string>
-    <string name="list_item_move">In Gruppe verschieben …</string>
+    <string name="gamel_menu_dicts">Wortlisten</string>
+    <string name="menu_prefs">App-Einstellungen</string>
+    <string name="board_menu_file_about">Über CrossWords</string>
+    <string name="list_item_config">Spieleinstellungen</string>
+    <string name="list_item_rename">Umbenennen</string>
+    <string name="list_item_move">In Gruppe verschieben</string>
     <string name="list_item_delete">Partie löschen</string>
     <string name="list_item_reset">Neustarten</string>
     <string name="list_item_copy">Kopieren</string>
@@ -71,7 +71,7 @@
 \n(Dabei gehen alle Züge und alle Verbindungsinformationen verloren.)</item>
     </plurals>
     <string name="summary_invites_out_fmt">Spieler in Raum „%1$s“ eingeladen</string>
-    <string name="download_more">Weitere herunterladen …</string>
+    <string name="download_more">Mehr herunterladen</string>
     <string name="confirm_deleteonly_dicts_fmt">Nach Löschen von %1$s sind keine Wortlisten in %2$s mehr übrig. Mindestens eine Partie kann dann nicht mehr geöffnet werden (bis Sie eine neue Wortliste laden.)</string>
     <string name="set_default_message_fmt">Für welche Spieler soll die Wortliste %1$s die Standardeinstellung für neue Partien sein\? (Die Sprache %2$s wird Standardeinstellung für beide.)</string>
     <string name="game_locked">Sperreinstellungen</string>
@@ -91,20 +91,24 @@
     <string name="player_edit_title">Spieler bearbeiten</string>
     <string name="remote_label">Externer Spieler</string>
     <string name="player_label">Name:</string>
-    <string name="dict_lang_label_fmt">Wortliste (in %1$s)</string>
+    <string name="dict_lang_label_fmt">Wortliste (%1$s)</string>
     <string name="dicts_list_prompt_fmt">Installierte Wortlisten (in %1$s)</string>
     <string name="robot_label">Computer-Gegner</string>
-    <string name="password_label">Passwort</string>
+    <string name="password_label">Passwort:</string>
     <string name="button_trade_commit">Handel abschließen</string>
     <string name="button_trade_cancel">Handel abbrechen</string>
-    <string name="entering_trade">Spielsteine durch Antippen auswählen …</string>
+    <string name="entering_trade">Spielsteine tauschen. Tippen Sie auf Spielsteine zum Auswählen…</string>
     <string name="no_moves_made">(Noch keine Züge)</string>
     <plurals name="invite_msg_fmt">
-        <item quantity="one">Diese Partie wartet auf 1 externen Spieler. Wollen Sie noch jemanden einladen – falls Sie das nicht bereits haben?</item>
-        <item quantity="other">Diese Partie wartet auf %1$d externe Spieler. Wollen Sie noch jemanden einladen – falls Sie das nicht bereits haben?</item>
+        <item quantity="one">Dieses Spiel wartet darauf, dass ein entfernter Spieler eine Einladung erhält und darauf antwortet.
+\n
+\nSie werden diese Nachricht sehen, bis der eingeladene Spieler geantwortet hat. Wenn Sie den Verdacht haben, dass die von Ihnen gesendete Einladung verloren gegangen ist, kann es nicht schaden, eine weitere zu senden.</item>
+        <item quantity="other">Dieses Spiel wartet darauf, dass %1$d entfernte Spieler eine Einladung erhalten und darauf antworten.
+\n
+\nSie werden diese Nachricht sehen, bis alle eingeladene Spieler geantwortet haben. Wenn Sie den Verdacht haben, dass von Ihnen gesendete Einladungen verloren gegangen sind, kann es nicht schaden, weitere zu senden.</item>
     </plurals>
     <string name="invit_expl_sms_fmt">Einladung per SMS an Telefonnummer %1$s auf %2$s gesendet</string>
-    <string name="invit_expl_bt_fmt">Einladung per Bluetooth an gepaartes Gerät „%1$s“ in „%2$s“ geschickt</string>
+    <string name="invit_expl_bt_fmt">Einladung per Bluetooth an gepaartes Gerät „%1$s“ in %2$s geschickt</string>
     <string name="invit_expl_notarget_fmt">Einladung über %1$s auf %2$s geschickt. Empfänger unbekannt.</string>
     <string name="pts">Pkt.</string>
     <string name="ids_badwords_fmt">Wort/Wörter %1$s nicht in Wortliste %2$s gefunden.</string>
@@ -116,9 +120,9 @@
     <string name="board_menu_tray_hide">Ablage verbergen</string>
     <string name="board_menu_tray_show">Ablage zeigen</string>
     <string name="board_menu_undo_last">Zug zurücknehmen</string>
-    <string name="board_submenu_game">Partie →</string>
-    <string name="board_menu_game_counts">Anzahl und Werte …</string>
-    <string name="board_menu_game_left">Verbleibende Spielsteine …</string>
+    <string name="board_submenu_game">Partie</string>
+    <string name="board_menu_game_counts">Anzahl und Werte</string>
+    <string name="board_menu_game_left">Verbleibende Spielsteine</string>
     <string name="board_menu_game_history">Zugliste …</string>
     <string name="board_menu_game_final">Endgültiger Punktestand</string>
     <string name="board_menu_game_resign">Aufgeben</string>
@@ -157,9 +161,9 @@
     <string name="confirm_undo_last">Sind Sie sicher, dass Sie den letzten Zug rückgängig machen wollen? (Es gibst keine Wiederherstellen-Option.)</string>
     <string name="title_prefs">CrossWords-Einstellungen</string>
     <string name="button_revert_all">Alles zurücksetzen</string>
-    <string name="confirm_revert_colors">Sind Sie sicher, dass Sie alle Farbeinstellungen auf ihre ursprünglichen Werte zurücksetzen wollen?</string>
+    <string name="confirm_revert_colors">Sind Sie sicher, dass Sie alle Farbeinstellungen auf ihre Standardwerte zurücksetzen wollen\?</string>
     <string name="button_revert_colors">Farben wiederherstellen</string>
-    <string name="confirm_revert_all">Sind Sie sicher, dass Sie alle Einstellungen auf ihre ursprünglichen Werte zurücksetzen wollen?</string>
+    <string name="confirm_revert_all">Sind Sie sicher, dass Sie alle Einstellungen auf ihre Standardwerte zurücksetzen wollen\?</string>
     <string name="prefs_defaults">Standard für neue Partien</string>
     <string name="prefs_defaults_summary">Standardeinstellungen für neue Partien</string>
     <string name="prefs_names">Spielernamen</string>
@@ -169,7 +173,7 @@
     <string name="pref_player3_name">Dritter Spieler</string>
     <string name="pref_player4_name">Vierter Spieler</string>
     <string name="pref_human_name">Menschlicher Spieler (Ihr Name)</string>
-    <string name="prefs_dicts">Wortlisten</string>
+    <string name="prefs_dicts">Sprache und Wortlisten</string>
     <string name="prefs_dicts_summary">Standardwortlisten</string>
     <string name="default_dict">Wortliste für menschliche Spieler</string>
     <string name="default_robodict">Wortliste für Computer-Gegner</string>
@@ -196,7 +200,7 @@
     <string name="show_arrow_summary">Angetippte Spielsteine der Ablage werden auf diesem Pfeil platziert, wenn er sichtbar ist</string>
     <string name="keep_screenon">Bildschirm eingeschaltet lassen</string>
     <string name="keep_screenon_summary">Bildschirm 10 Min. eingeschaltet lassen</string>
-    <string name="prefs_colors">Individuelle Farben</string>
+    <string name="prefs_colors">Brettfarben, etc.</string>
     <string name="prefs_colors_summary">Farben bearbeiten, die auf dem Brett benutzt werden</string>
     <string name="bonus_l2x">Doppelter Buchstabenwert</string>
     <string name="bonus_l3x">Dreifacher Buchstabenwert</string>
@@ -231,7 +235,7 @@
     <string name="invite_choice_nfc">NFC („Android-Beaming“)</string>
     <string name="invite_choice_p2p">Wi-Fi Direct</string>
     <string name="invite_subject_fmt">Lass\' uns CrossWords spielen (Raum %1$s)</string>
-    <string name="invite_htm_fmt">&lt;a href=\"%1$s\"&gt;Hier tippen&lt;/a&gt; (oder den vollständigen Link unten, um an diesem Spiel teilzunehmen. Wenn Sie bereits CrossWords installiert haben, können Sie den Anhang öffnen,). &lt;br \\&gt; &lt;br \\&gt; (Vollständiger Link: %1$s)</string>
+    <string name="invite_htm_fmt">Tippen Sie auf die vollständige Verknüpfung unten, um an dieser Partie teilzunehmen. &lt;br \\&gt; &lt;br \\&gt; (Vollständige Verknüpfung: %1$s )</string>
     <string name="invite_chooser_fmt">Einladung senden über %1$s</string>
     <string name="invite_chooser_email">E-Mail</string>
     <plurals name="query_trade_fmt">
@@ -242,7 +246,7 @@
     <string name="chat_local_id">"Ich: "</string>
     <string name="chat_other_id">"Nicht ich: "</string>
     <string name="chat_send">Senden</string>
-    <string name="chat_hint">Hier tippen …</string>
+    <string name="chat_hint">Hier eingeben …</string>
     <string name="chat_menu_clear">Verlauf löschen</string>
     <string name="str_tiles_not_in_line">Alle Spielsteine müssen in einer Linie sein.</string>
     <string name="str_no_empties_in_turn">Leere Felder zwischen gespielten Steinen.</string>
@@ -259,10 +263,10 @@
     <string name="downloading_dict_fmt">%1$s wird heruntergeladen …</string>
     <string name="no_dict_title">Wortliste nicht gefunden</string>
     <string name="button_close_game">Partie schließen</string>
-    <string name="no_dict_fmt">Partie „%1$s“ benötigt eine Wortliste in „%2$s“. Bitte laden Sie eine vor dem Öffnen herunter.</string>
-    <string name="no_dict_subst_fmt">Partie „%1$s“ kann nicht geöffnet werden, da Wortliste %2$s nicht gefunden wurde. (Sie wurde möglicherweise gelöscht oder auf einer externen Speicherkarte gespeichert, die nicht mehr vorhanden ist.)
+    <string name="no_dict_fmt">Die Partie „%1$s“ benötigt eine %2$s Wortliste. Bitte laden Sie eine zum Öffnen herunter.</string>
+    <string name="no_dict_subst_fmt">Die Partie „%1$s“ kann nicht geöffnet werden, da die Wortliste %2$s nicht gefunden wurde. (Sie wurde möglicherweise gelöscht oder auf einer externen Speicherkarte gespeichert, die nicht mehr vorhanden ist.)
 \n
-\nSie können eine neue Wortliste herunterladen oder sie durch eine andere Wortliste in %3$s ersetzen.</string>
+\nSie können eine neue Wortliste herunterladen oder sie durch eine andere %3$s Wortliste ersetzen.</string>
     <string name="button_download">Herunterladen</string>
     <string name="button_substdict">Ersetzen</string>
     <string name="subst_dict_title">Wortliste ersetzen (Wortanzahl)</string>
@@ -278,7 +282,7 @@
     <string name="button_save">Speichern</string>
     <string name="button_discard">Verwerfen</string>
     <string name="button_retry">Erneut versuchen</string>
-    <string name="info_title">Zur Information …</string>
+    <string name="info_title">Zur Information</string>
     <string name="tile_button_txt_fmt">%1$s (%2$d)</string>
     <string name="tile_pick_summary_fmt">Aktuelle Auswahl: %1$s</string>
     <string name="tiles_left_title">Verbleibende Spielsteine</string>
@@ -286,7 +290,7 @@
     <string name="history_title">Zugliste</string>
     <string name="finalscores_title">Endgültiger Punktestand</string>
     <string name="ids_endnow">Sind Sie sicher, dass Sie aufgeben wollen?</string>
-    <string name="query_title">Eine Frage …</string>
+    <string name="query_title">Eine Frage</string>
     <string name="newbie_title">Ein Tipp</string>
     <string name="button_notagain">Nicht mehr anzeigen</string>
     <string name="not_again_trading">Sie sind jetzt im Spielsteinaustauschmodus.
@@ -296,8 +300,12 @@
 \n</string>
     <string name="not_again_trading_buttons">Benutzen Sie die Buttons, um Ihren Zug abzuschließen, oder verlassen Sie den Austauschmodus.</string>
     <string name="not_again_trading_menu">Benutzen Sie das Menü oder die Aktionsleiste, um Ihren Zug abzuschließen oder den Austauschmodus zu verlassen.</string>
-    <string name="not_again_hintprev">Dieser Button zeigt alle möglichen Züge in aufsteigender Reihenfolge an (unter Verwendung der Spielsteine rechts des Ablagenteilers.)</string>
-    <string name="not_again_hintnext">Dieser Button zeigt alle möglichen Züge in absteigender Reihenfolge an (unter Verwendung der Spielsteine rechts des Ablagenteilers.)</string>
+    <string name="not_again_hintprev">Dieser Button zeigt alle möglichen Züge in aufsteigender Reihenfolge nach Punkten an.
+\n
+\n(Es werden nur die Spielsteine rechts von der verschiebbaren Ablagenteilung verwendet).</string>
+    <string name="not_again_hintnext">Dieser Button zeigt alle möglichen Züge in absteigender Reihenfolge nach Punkten an.
+\n
+\n(Es werden nur die Spielsteine rechts von der verschiebbaren Ablagenteilung verwendet).</string>
     <string name="not_again_juggle">Dieser Button ordnet die Spielsteine in der Ablage zufällig neu an.</string>
     <string name="not_again_flip">Dieser Button dreht das Brett um eine diagonale Achse.</string>
     <string name="not_again_undo">Dieser Button nimmt den gegenwärtigen Zug zurück oder spielt ihn erneut.</string>
@@ -334,7 +342,7 @@
     <string name="not_again_browseall">Dieser Button öffnet den Wortlisten-Browser mit einer Wortliste Ihrer Wahl.</string>
     <string name="min_len">Min. Länge</string>
     <string name="max_len">Max. Länge</string>
-    <string name="board_menu_file_email">E-Mail an den Autor …</string>
+    <string name="board_menu_file_email">E-Mail an den Autor</string>
     <string name="email_author_subject">Kommentar zu CrossWords</string>
     <string name="email_author_chooser">Kommentar senden über</string>
     <string name="email_body_rev_fmt">(Falls relevant, geben Sie bitte die Version: „%1$s“; und das Fabrikat/Modell Ihres Smartphones oder Tablets an: %2$s/%3$s.)</string>
@@ -677,8 +685,8 @@
     <string name="bonus_l3x_summary">3B</string>
     <string name="bonus_w3x_summary">3W</string>
     <plurals name="strd_remains_header_fmt">
-        <item quantity="one">Noch %1$d Spielsteine im Säckchen.</item>
-        <item quantity="other"/>
+        <item quantity="one">Noch ein Spielstein im Säckchen.</item>
+        <item quantity="other">Noch %1$d Spielsteine im Säckchen.</item>
     </plurals>
     <plurals name="strd_remains_expl_fmt">
         <item quantity="one">Noch 1 Spielstein in den nicht gezeigten Ablagen:
@@ -689,7 +697,7 @@
     <string name="peek_other">Spielsteine ansehen wenn nicht am Zug</string>
     <string name="peek_other_summary">Antippen von Namen auf der Punktetafel zeigt die Spielsteine dieses Spielers</string>
     <string name="hide_crosshairs_summary">Angetipptes Spielfeld nicht anzeigen</string>
-    <string name="invite_choice_title">Spieler einladen: Wie?</string>
+    <string name="invite_choice_title">Einen Spieler einladen</string>
     <string name="title_blank_picker">Spielstein für Joker wählen</string>
     <string name="tile_tray_picker">Neue Spielsteine für Ablage wählen</string>
     <string name="not_again_chat">Dieser Button öffnet den Bildschirm für Nachrichten zwischen Geräten in dieser Partie. Die Nachrichten werden behalten, bis Sie die Partie löschen, zu der sie gehören.</string>
@@ -764,7 +772,7 @@
     <string name="loc_filters_menu">Aktuelles Menü</string>
     <string name="game_summary_field_rowid">rowid</string>
     <string name="game_summary_field_gameid">gameid</string>
-    <string name="list_item_netstats">Verbindungen …</string>
+    <string name="list_item_netstats">Verbindungen</string>
     <plurals name="too_many_trade_fmt">
         <item quantity="one">Zu viele Spielsteine ausgewählt. Bitte nur einen auswählen.</item>
         <item quantity="other">Zu viele Spielsteine ausgewählt. Bitte maximal %1$d auswählen.</item>
@@ -799,7 +807,7 @@
 \n • Wenn alles nichts hilft, booten Sie dieses Gerät
 \n</string>
     <string name="invit_expl_usrsms_fmt">"Einladung per SMS an %1$s gesendet"</string>
-    <string name="sms_invite_flakey">Diese neue Option startet Ihre Standard-SMS-App mit einer versandfertigen Einladung - wenn es funktioniert. Jede SMS-App ist anders, und mit einigen funktioniert es nicht.</string>
+    <string name="sms_invite_flakey">Diese Option startet Ihre Standard-SMS-App mit einer versandfertigen Einladung — wenn es funktioniert. Jede SMS-App ist anders und mit einigen funktioniert es nicht.</string>
     <string name="sms_invite_fail">SMS-App konnte nicht gestartet werden</string>
     <string name="msg_dev_deleted_fmt">Das Spiel mit dem Namen „%1$s” wurde auf einem anderen Gerät gelöscht. Sie werden es nicht mehr spielen können.</string>
     <string name="invite_choice_user_sms">SMS (Textnachrichten)</string>
@@ -833,7 +841,7 @@
     <string name="values_both">Buchstaben und Werte</string>
     <string name="about_btaddr_fmt">BT MAC Addr: %1$s</string>
     <string name="word_to_clip_fmt">\"%1$s\" kopiert</string>
-    <string name="gamel_menu_knownplyrs">Bekannte Spieler…</string>
+    <string name="gamel_menu_knownplyrs">Bekannte Spieler</string>
     <string name="button_faq">FAQ anzeigen</string>
     <string name="values_values">Nur Werte</string>
     <string name="invite_msg_extra_rematch">Bei Rückspielen werden alle notwendigen Einladungen automatisch verschickt. Sie können aber jederzeit neue Einladungen versenden, wenn ein Eingeladener nicht antwortet.</string>
@@ -1046,7 +1054,7 @@
 \n
 \nDiese Aktion kann nicht rückgängig gemacht werden, aber Sie können jederzeit die Standardfarben für dieses Design wiederherstellen.</string>
     <string name="button_apply_config">Importieren</string>
-    <string name="button_settings">Einstellungen…</string>
+    <string name="button_settings">Einstellungen</string>
     <string name="waiting_host_expl">Dieses Spiel wartet darauf, dass der Server das Spiel beginnt. Das bedeutet normalerweise, dass der Server nicht kommuniziert (er ist vorübergehend offline\?)</string>
     <string name="unpause_title">Partie nicht pausiert</string>
     <string name="pause_save_msg">Nachricht merken</string>
@@ -1057,7 +1065,7 @@
 \n
 \nWenn Sie das alte \"Helle\" Design bevorzugen oder ein Design unabhängig von der Android-Einstellung \"Dunkles Design\" wählen möchten, können Sie \"%1$s\" in den App-Einstellungen jederzeit ändern. Der Button \"Einstellungen\" unten führt Sie jetzt dorthin.</string>
     <string name="lang_name_finnish">Finnisch</string>
-    <string name="list_item_relaypage">Partie-Traffic…</string>
+    <string name="list_item_relaypage">Partie-Traffic</string>
     <string name="bonus_l4x_summary">4B</string>
     <string name="dup_paused_expl">Benachrichtigung über pausierte und nicht pausierte Spiele</string>
     <string name="theme_which">Farbdesign des Bretts</string>
@@ -1115,4 +1123,11 @@
     <string name="langUnknownFmt">Unbekannt (%1$s)</string>
     <string name="menu_net_stat">Netzwerkstatus</string>
     <string name="archive_expl_store">Wählen Sie die Arten von CrossWords-Daten oder Einstellungen, die Sie speichern möchten.</string>
+    <string name="confirm_del_after_rematch_fmt">Revanche erfolgreich.
+\n
+\nMöchten Sie nun die abgeschlossene Partie %1$s löschen\?
+\n
+\n(Diese Aktion kann nicht rückgängig gemacht werden.)</string>
+    <string name="not_again_archivecheck_fmt">Aktivieren Sie das Kontrollkästchen „%1$s“, um diese Partie in die Gruppe %2$s zu verschieben.</string>
+    <string name="not_again_deletecheck_fmt">Aktivieren Sie das Kontrollkästchen \"%1$s\", um diese Partie zu löschen.</string>
 </resources>
