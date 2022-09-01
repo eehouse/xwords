@@ -66,7 +66,7 @@
        ############################################################ 
       -->
     <!-- Brings up the Wordlists (formerly Dictionaries) screen -->
-    <string name="gamel_menu_dicts">Listas de palavras…</string>
+    <string name="gamel_menu_dicts">Listas de palavras</string>
     <!-- text of menu that brings up the Settings (preferences) dialog -->
     <string name="menu_prefs">Configurações da app…</string>
     <!-- Regardless of the setting of the connect_frequency
@@ -77,7 +77,7 @@
     <!-- If you choose the above option and have no networked games
          you get this error message -->
     <!-- Brings up "About CrossWords" dialog -->
-    <string name="board_menu_file_about">Sobre CrossWords…</string>
+    <string name="board_menu_file_about">Sobre o CrossWords</string>
     <!-- 
        ############################################################
        # :Menus:
@@ -373,8 +373,7 @@
          i.e. after user has picked board_menu_trade menu item -->
     <string name="button_trade_commit">Efetuar troca</string>
     <string name="button_trade_cancel">Cancelar troca</string>
-    <string name="entering_trade">Toque nas pedras para
-    selecionar...</string>
+    <string name="entering_trade">Troca de pedras. Toque nas pedras para selecionar…</string>
     <!-- Bonus value hint that's displayed in gray text in the colored
          bonus square. Double-letter -->
     <string name="bonus_l2x_summary">L2</string>
@@ -474,15 +473,15 @@
          the language of the game along with how many of each there
          are and how many points each is worth.  This display is the
          same throughout the game. -->
-    <string name="board_menu_game_counts">Contagens e valores…</string>
+    <string name="board_menu_game_counts">Contagens e valores</string>
     <!-- menu on Game submenu: brings up dialog listing all tiles not
          yet played and not in the rack of the player whose rack is
          visible (whose turn it is, generally).  This display will
          change as tiles are used and depending on what player is
          asking. -->
-    <string name="board_menu_game_left">Pedras restantes…</string>
+    <string name="board_menu_game_left">Pedras restantes</string>
     <!-- Brings up listing of all moves played so far this game.  -->
-    <string name="board_menu_game_history">Histórico do jogo…</string>
+    <string name="board_menu_game_history">Histórico do jogo</string>
     <!-- Brings up explanation of the game's final score.  If the game
          is not yet over, gives you a choice whether to end it now,
          and if you decline does nothing. -->
@@ -1125,7 +1124,7 @@
          the same room name over and over so they'll get this warning
          and it's harmless to ignore it. -->
     <!-- Title of generic dialog used to display information -->
-    <string name="info_title">Para a sua informação…</string>
+    <string name="info_title">Para a sua informação</string>
     <!-- title of dialog allowing user to pick tiles "face up".  (This
          feature is not yet supported on Android.) -->
     <!-- title of dialog brought up in response to the
@@ -1157,7 +1156,7 @@
     desistir?</string>
     <!-- Title for generic dialog asking a question, usually in the
          middle of a game, like "do you want to commit this move?"-->
-    <string name="query_title">Uma pergunta…</string>
+    <string name="query_title">Uma pergunta</string>
     <!--
        ###########################################################
        # :Dialogs:
@@ -1350,7 +1349,7 @@
     <!--  -->
     <!--  -->
     <!--  -->
-    <string name="board_menu_file_email">Enviar um email ao autor…</string>
+    <string name="board_menu_file_email">Enviar um email ao autor</string>
     <!--  -->
     <string name="email_author_subject">Comentário sobre CrossWords</string>
     <!--  -->
@@ -1559,7 +1558,7 @@
         <item quantity="one">Você tem certeza que deseja apagar a lista de palavra %1$s?</item>
         <item quantity="other">Você tem certeza que deseja apagar as listas de palavras %1$s?</item>
     </plurals>
-    <string name="download_more">Descarregar mais…</string>
+    <string name="download_more">Descarregar mais</string>
     <string name="set_default_message_fmt">Para quais jogadores deve a list de palavras %1$s ser o predefinição para os jogos novos\? (O idioma de %2$s será a predefinição para ambos.)</string>
     <string name="connect_label_fmt">Conexão (através de %1$s)</string>
     <plurals name="invite_msg_fmt">
@@ -1615,7 +1614,7 @@
     <string name="knowns_mqtt_fmt">DevID do MQTT: %1$s</string>
     <string name="knowns_ts_fmt">Partida mais recente: %1$s</string>
     <string name="knowns_expl">Estes são os seus jogadores remotos conhecidos. Os seus nomes são padronizados de acordo com o que o jogador remoto escolheu, mas pode alterar os nomes se desejar.</string>
-    <string name="gamel_menu_knownplyrs">Jogadores Conhecidos…</string>
+    <string name="gamel_menu_knownplyrs">Jogadores Conhecidos</string>
     <string name="mqtt_invite_title">Convite MQTT</string>
     <string name="remote_msg_title">Mensagem remota</string>
     <string name="not_again_quicknetgame">Há uma maneira super-rápida de começar um jogo com alguém com qual já jogou. Se o nome da pessoa estiver na lista, apenas selecione-a e um convite será enviado imediatamente.</string>
@@ -1700,7 +1699,7 @@
     <string name="gameevent_channel_expl">Eventos do jogo</string>
     <string name="nbsproxy_channel_expl">Alertas sobre NBSProxy</string>
     <string name="toast_no_permission">Permissão não concedida</string>
-    <string name="perms_rationale_title">Permissões Android</string>
+    <string name="perms_rationale_title">Permissão do Android explicada</string>
     <string name="sms_send_failed">Envio SMS falho</string>
     <string name="remove_sms">Remover SMS</string>
     <string name="move_dict_rationale">Armazenar uma lista de palavras na área Descarregas requer a permissão de Armazenamento.</string>
@@ -1711,9 +1710,9 @@
     <string name="phone_state_rationale">Alguns telefones podem trocar mensagens de dados por SMS. CrossWords gostaria de te oferecer esta opção mas precisa de pedir ao seu telefone sobre os dados dele.
 \n
 \nSe o seu aparelho não pode mandar dados SMS (p. ex. se não for um telefone) ou não quiser jogar via SMS (p. ex. por ter que pagar por cada mensagem), é seguro negar permanentemente esta permissão.</string>
-    <string name="dicts_storage_rationale">CrossWords pode armazenar e ler listas de palavras na área de descarregas do seu aparelho, mas precisa de permissão para acessá-los lá.
+    <string name="dicts_storage_rationale">CrossWords pode armazenar e ler listas de palavras na área de descarregas do seu aparelho, mas precisa pedir permissão para acessá-los lá.
 \n
-\nPode negar esta permissão se nunca descarregar listas de palavras exceto as de dentro do CrossWords e não houver nenhuma salva anteriormente lá.</string>
+\nPode negar esta permissão se nunca descarregar listas de palavras, exceto as de dentro do CrossWords e não houver nenhuma salva anteriormente lá.</string>
     <string name="sms_invite_rationale">CrossWords precisa de permissão para enviar um convite via dados SMS.</string>
     <string name="download_rationale">CrossWords precisa de acesso a armazenamento temporário para manter o que está prestes a descarregar.</string>
     <string name="not_again_nbsGamesOnUpgrade">A versão do Google Play Store de CrossWords não é permitida mais de suportar a função Jogar por Dados SMS.
@@ -1749,7 +1748,7 @@
     <string name="button_enable">Ativar</string>
     <string name="confirm_drop_relay_sms">Nem todas as operadoras suportam jogar via dados SMS.</string>
     <string name="confirm_drop_relay_bt">Bluetooth funciona apenas para aparelhos próximos.</string>
-    <string name="db_store_done">Escrita no cartão SD completa.</string>
+    <string name="db_store_done">Exportação concluída</string>
     <string name="checking_for_fmt">Checando listas de palavras em %1$s…</string>
     <string name="checking_title">Checando</string>
     <string name="pref_item_update_summary">Obter builds intermediárias</string>
@@ -1941,7 +1940,7 @@
     </plurals>
     <string name="slmenu_clear_sel">Deletar selecionados</string>
     <string name="slmenu_copy_sel">Copiar para área de transferência</string>
-    <string name="gamel_menu_study">Lista de estudo…</string>
+    <string name="gamel_menu_study">Lista de estudo</string>
     <string name="summary_studyon">Oferecer adicionar e exibir listas de palavras para se lembrar</string>
     <string name="title_studyon">Ativar listas de estudo</string>
     <string name="add_to_study_fmt">Adicionar %1$s à lista de estudos</string>
@@ -2204,7 +2203,7 @@
     <string name="tray_size">Pedras na estante</string>
     <string name="str_bonus_all_fmt">Bónus pelo uso de pedras %1$d: 50
 \n</string>
-    <string name="button_settings">Configurações…</string>
+    <string name="button_settings">Configurações</string>
     <string name="not_again_boardThemes_fmt">O tabulerio escuro está agora a ser desenhado porque o \"Tema escuro\" está ativo no seu aparelho.
 \n
 \nSe preferir o velho tema \"Claro\" ou escolher um tema independente da configuração \"Tema escuro\" do Android, pode mudar \"%1$s\" nas Configurações da app a qualquer momento. O botão \"Configurações\" abaixo irá levá-lo lá agora.</string>
@@ -2243,4 +2242,44 @@
     <string name="lang_name_finnish">Finlandês</string>
     <string name="relaypage_url_copied">URL do jogo copiada para a área de transferência</string>
     <string name="button_delete_game">Excluir jogo</string>
+    <string name="not_again_deletecheck_fmt">Ative a caixa \"%1$s\" para apagar este jogo.</string>
+    <string name="not_again_archivecheck_fmt">Ative a caixa \"%1$s\" para mover este jogo ao grupo %2$s.</string>
+    <string name="show_note_menu_fmt">Sobre %1$s</string>
+    <string name="newgame_drop_mqtt">Largar a internet</string>
+    <string name="warn_mqtt_remove">Pode ativar o jogo pela Internet agora ou removê-lo deste jogo.</string>
+    <string name="button_enable_mqtt">Ativar jogar pela Internet</string>
+    <string name="langUnknownFmt">Desconhecido (%1$s)</string>
+    <string name="button_disable_mqtt">Desativar jogar pela Internet</string>
+    <string name="gamel_menu_backup">Backup/restauração</string>
+    <string name="button_ask">Perguntar</string>
+    <string name="button_deny">Negar</string>
+    <string name="db_store_failed">A exportação falhou</string>
+    <string name="skip_mqtt_add_title">Ignorar a adição do MQTT</string>
+    <string name="skip_mqtt_add_summary">NÃO tente enviar todas as mensagens por MQTT</string>
+    <string name="confirm_del_after_rematch_fmt">Remate bem-sucedido.
+\n
+\nQuer agora apagar o jogo %1$s completo\?
+\n
+\n(Esta ação não pode ser desfeita.)</string>
+    <string name="disable_mqtt">Desativar jogar pela internet</string>
+    <string name="disable_mqtt_summary">Desativar toda a comunicação pela internet (MQTT)</string>
+    <string name="menu_net_stat">Estado da rede</string>
+    <string name="menu_net_url">Copiar a URL</string>
+    <string name="menu_about_peers">Estado dos pares</string>
+    <string name="warn_mqtt_havegames">Tem a certeza de que quer desativar o jogo pela Internet\?
+\n
+\n A maioria dos jogos de dois aparelhos trocam movimentos através da Internet, por isso só o faça se planear jogar TODOS os jogos contra um robô neste mesmo aparelho.</string>
+    <string name="old_apks_deleted_fmt">%1$d apkgs de atualização antigas apagadas</string>
+    <string name="confirm_drop_mqtt">Tem a certeza que deseja remover a capacidade de comunicação deste jogo através da Internet\?</string>
+    <string name="warn_mqtt_disabled">O jogo na Internet está atualmente desativado neste aparelho. Nenhum movimento será enviado ou recebido através da Internet.</string>
+    <string name="warn_mqtt_later">Pode ativar o jogo pela Internet agora ou mais tarde.</string>
+    <plurals name="warn_mqtt_games_fmt">
+        <item quantity="one">"
+\n
+\n(Agora tem um jogo ativo usando a Internet.)"</item>
+        <item quantity="many">"
+\n
+\n(Agora tem %1$d jogos ativos usando a Internet.)"</item>
+        <item quantity="other"></item>
+    </plurals>
 </resources>
