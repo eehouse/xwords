@@ -476,6 +476,8 @@ def build_cmds(args):
                 PARAMS += [ '--with-mqtt' ]
                 if DEV == 1:
                     PARAMS += [ '--force-invite' ]
+            else:
+                PARAMS += [ '--without-mqtt' ]
 
             if args.UNDO_PCT > 0:
                 PARAMS += ['--undo-pct', args.UNDO_PCT]

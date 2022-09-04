@@ -287,7 +287,7 @@ static XP_Bool
 inDuplicateMode( const ServerCtxt* server )
 {
     XP_Bool result = server->vol.gi->inDuplicateMode;
-    // LOG_RETURNF( "%d", result );
+    // LOG_RETURNF( "%s", boolToStr(result) );
     return result;
 }
 
@@ -423,7 +423,7 @@ getNV( XWStreamCtxt* stream, ServerNonvolatiles* nv, XP_U16 nPlayers )
     if ( version >= STREAM_VERS_DUPLICATE ) {
         for ( ii = 0; ii < nPlayers; ++ii ) {
             nv->dupTurnsMade[ii] = stream_getBits( stream, 1 );
-            XP_LOGFF( "dupTurnsMade[%d]: %d", ii, nv->dupTurnsMade[ii] );
+            // XP_LOGFF( "dupTurnsMade[%d]: %d", ii, nv->dupTurnsMade[ii] );
             nv->dupTurnsForced[ii] = stream_getBits( stream, 1 );
         }
         nv->dupTurnsSent = stream_getBits( stream, 1 );
@@ -2413,14 +2413,14 @@ server_askPickTiles( ServerCtxt* server, XWEnv xwe, XP_U16 turn,
     return asked;
 }
 
-/* dupe_trayAllowsMoves()
+/* trayAllowsMoves()
  *
  * Assuming a model with a turn loaded (but maybe not committed), build the
  * tile set containing the current model tray tiles PLUS the new set we're
  * considering, and see if the engine can find moves.
  */
 static XP_Bool
-dupe_trayAllowsMoves( ServerCtxt* server, XWEnv xwe, XP_U16 turn,
+trayAllowsMoves( ServerCtxt* server, XWEnv xwe, XP_U16 turn,
                       const Tile* tiles, XP_U16 nTiles )
 {
     ModelCtxt* model = server->vol.model;
@@ -2552,8 +2552,8 @@ fetchTiles( ServerCtxt* server, XWEnv xwe, XP_U16 playerNum, XP_U16 nToFetch,
 
         if ( !inDuplicateMode( server ) && !forceCanPlay ) {
             break;
-        } else if ( dupe_trayAllowsMoves( server, xwe, playerNum, &resultTiles->tiles[0],
-                                          nSoFar + nLeft )
+        } else if ( trayAllowsMoves( server, xwe, playerNum, &resultTiles->tiles[0],
+                                     nSoFar + nLeft )
                     || ++nBadTrays >= 5 ) {
             break;
         }

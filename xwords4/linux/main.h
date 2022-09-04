@@ -153,7 +153,7 @@ typedef struct _LaunchParams {
     const XP_UCHAR* iterTestPatStr;
 #endif
 
-    CommsAddrRec  addr;
+    XP_U16 conTypes;
     struct {
         XP_U16 inviteeCounts[MAX_NUM_PLAYERS];
 #ifdef XWFEATURE_RELAY
@@ -169,6 +169,7 @@ typedef struct _LaunchParams {
 #ifdef XWFEATURE_BLUETOOTH
         struct {
             bdaddr_t hostAddr;      /* unused if a host */
+            const char* btaddr;
         } bt;
 #endif
 #if defined XWFEATURE_IP_DIRECT || defined XWFEATURE_DIRECTIP
@@ -229,7 +230,8 @@ struct CommonGlobals {
     XWGame game;
     DrawCtx* draw;
     CurGameInfo* gi;
-    CommsAddrRec addr;
+    CommsAddrRec selfAddr;      /* set e.g. by new game dialog */
+    CommsAddrRec hostAddr;      /* used by client only: addr of invite sender */
     XP_U16 lastNTilesToUse;
     XP_U16 lastStreamSize;
     XP_U16 nMissing;

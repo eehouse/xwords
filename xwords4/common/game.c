@@ -155,8 +155,10 @@ unrefDicts( XWEnv xwe, const DictionaryCtxt* dict, PlayerDicts* playerDicts )
 
 XP_Bool
 game_makeNewGame( MPFORMAL XWEnv xwe, XWGame* game, CurGameInfo* gi,
-                  XW_UtilCtxt* util, DrawCtx* draw, 
-                  const CommonPrefs* cp, const TransportProcs* procs
+                  const CommsAddrRec* selfAddr, const CommsAddrRec* hostAddr,
+                  XW_UtilCtxt* util,
+                  DrawCtx* draw, const CommonPrefs* cp,
+                  const TransportProcs* procs
 #ifdef SET_GAMESEED
                   ,XP_U16 gameSeed 
 #endif
@@ -192,6 +194,7 @@ game_makeNewGame( MPFORMAL XWEnv xwe, XWGame* game, CurGameInfo* gi,
         if ( gi->serverRole != SERVER_STANDALONE ) {
             game->comms = comms_make( MPPARM(mpool) xwe, util,
                                       gi->serverRole != SERVER_ISCLIENT,
+                                      selfAddr, hostAddr,
 #ifdef XWFEATURE_RELAY
                                       nPlayersHere, nPlayersTotal,
 #endif
@@ -228,7 +231,9 @@ game_makeNewGame( MPFORMAL XWEnv xwe, XWGame* game, CurGameInfo* gi,
 } /* game_makeNewGame */
 
 XP_Bool
-game_reset( MPFORMAL XWGame* game, XWEnv xwe, CurGameInfo* gi, XW_UtilCtxt* util,
+game_reset( MPFORMAL XWGame* game, XWEnv xwe, CurGameInfo* gi,
+            const CommsAddrRec* selfAddr, const CommsAddrRec* hostAddr,
+            XW_UtilCtxt* util,
             CommonPrefs* cp, const TransportProcs* procs )
 {
     XP_ASSERT( util == game->util );
@@ -262,6 +267,7 @@ game_reset( MPFORMAL XWGame* game, XWEnv xwe, CurGameInfo* gi, XW_UtilCtxt* util
         } else if ( gi->serverRole != SERVER_STANDALONE ) {
             game->comms = comms_make( MPPARM(mpool) xwe, util,
                                       gi->serverRole != SERVER_ISCLIENT,
+                                      selfAddr, hostAddr,
 #ifdef XWFEATURE_RELAY
                                       nPlayersHere, nPlayersTotal,
 #endif
@@ -409,8 +415,8 @@ game_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
 
 XP_Bool
 game_makeFromInvite( MPFORMAL XWEnv xwe, const NetLaunchInfo* nli,
-                     XWGame* game, CurGameInfo* gi, const XP_UCHAR* plyrName,
-                     XW_UtilCtxt* util, DrawCtx* draw,
+                     XWGame* game, CurGameInfo* gi, const CommsAddrRec* selfAddr,
+                     const XP_UCHAR* plyrName, XW_UtilCtxt* util, DrawCtx* draw,
                      CommonPrefs* cp, const TransportProcs* procs )
 {
     gi_setNPlayers( gi, nli->nPlayersT, nli->nPlayersH );
@@ -425,35 +431,16 @@ game_makeFromInvite( MPFORMAL XWEnv xwe, const NetLaunchInfo* nli,
     replaceStringIfDifferent( mpool, &gi->players[0].name, plyrName );
     replaceStringIfDifferent( mpool, &gi->dictName, nli->dict );
 
-    XP_Bool success = game_makeNewGame( MPPARM(mpool) xwe, game, gi, util, draw, cp, procs );
+    CommsAddrRec hostAddr;
+    nli_makeAddrRec( nli, &hostAddr );
+    XP_Bool success = game_makeNewGame( MPPARM(mpool) xwe, game, gi, selfAddr,
+                                        &hostAddr, util, draw, cp, procs );
     if ( success ) {
         CommsAddrRec returnAddr;
         nli_makeAddrRec( nli, &returnAddr );
         comms_augmentHostAddr( game->comms, NULL, &returnAddr );
     }
     return success;
-}
-
-void
-game_saveNewGame( MPFORMAL XWEnv xwe, const CurGameInfo* gi, XW_UtilCtxt* util,
-                  const CommonPrefs* cp, XWStreamCtxt* out )
-{
-    XWGame newGame = {0};
-    CurGameInfo newGI = {0};
-    gi_copy( MPPARM(mpool) &newGI, gi );
-
-    game_makeNewGame( MPPARM(mpool) xwe, &newGame, &newGI, util,
-                      NULL, /* DrawCtx*,  */
-                      cp, NULL /* TransportProcs* procs */
-#ifdef SET_GAMESEED
-                      ,0 
-#endif
-                      );
-
-    game_saveToStream( &newGame, xwe, &newGI, out, 1 );
-    game_saveSucceeded( &newGame, xwe, 1 );
-    game_dispose( &newGame, xwe );
-    gi_disposePlayerInfo( MPPARM(mpool) &newGI );
 }
 
 void

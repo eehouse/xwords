@@ -351,63 +351,10 @@ handle_open_button( GtkWidget* XP_UNUSED(widget), void* closure )
 }
 
 void
-make_rematch( GtkAppGlobals* apg, const CommonGlobals* cGlobals )
+make_rematch( GtkAppGlobals* XP_UNUSED(apg),
+              const CommonGlobals* XP_UNUSED(cGlobals) )
 {
-    LaunchParams* params = apg->cag.params;
-    XP_ASSERT( params == cGlobals->params );
-    XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(cGlobals->util->mpool)
-                                                params->vtMgr );
-
-    /* Create new game. But has no addressing info, so need to set that
-       aside for later. */
-    const CommsCtxt* comms = cGlobals->game.comms;
-    CurGameInfo gi = {0};
-    gi_copy( MPPARM(cGlobals->util->mpool) &gi, cGlobals->gi );
-    gi.gameID = 0;          /* clear so will get generated */
-    if ( !!comms ) {
-        gi.serverRole = SERVER_ISSERVER;
-        gi.forceChannel = 0;
-    }
-    game_saveNewGame( MPPARM(cGlobals->util->mpool) NULL_XWE, &gi,
-                      cGlobals->util, &cGlobals->cp, stream );
-
-    sqlite3_int64 rowID = gdb_writeNewGame( stream, params->pDb );
-    stream_destroy( stream, NULL_XWE );
-    gi_disposePlayerInfo( MPPARM(cGlobals->util->mpool) &gi );
-
-    /* If it's a multi-device game, save enough information with it than when
-       opened it can invite the other device[s] join the rematch. */
-    if ( !!comms ) {
-        XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(cGlobals->util->mpool)
-                                                    params->vtMgr );
-        CommsAddrRec addr;
-        comms_getAddr( comms, &addr );
-        addrToStream( stream, &addr );
-
-        CommsAddrRec addrs[4];
-        XP_U16 nRecs = VSIZE(addrs);
-        comms_getAddrs( comms, NULL_XWE, addrs, &nRecs );
-
-        stream_putU8( stream, nRecs );
-        for ( int ii = 0; ii < nRecs; ++ii ) {
-            XP_LOGFF( "MQTT rematch not implemented" );
-            XP_ASSERT(0);       /* REWRITE TO USE MQTT */
-            /* XP_UCHAR relayID[32]; */
-            /* XP_U16 len = sizeof(relayID); */
-            /* comms_formatRelayID( comms, ii, relayID, &len ); */
-            /* XP_LOGF( "%s: adding relayID: %s", __func__, relayID ); */
-            /* stringToStream( stream, relayID ); */
-            /* if ( addr_hasType( &addrs[ii], COMMS_CONN_RELAY ) ) { */
-            /*     /\* copy over room name *\/ */
-            /*     XP_STRCAT( addrs[ii].u.ip_relay.invite, addr.u.ip_relay.invite ); */
-            /* } */
-            /* addrToStream( stream, &addrs[ii] ); */
-        }
-        gdb_saveInviteAddrs( stream, params->pDb, rowID );
-        stream_destroy( stream, NULL_XWE );
-    }
-
-    open_row( apg, rowID, XP_TRUE );
+    XP_ASSERT(0);
 } /* make_rematch */
 
 static void
@@ -740,7 +687,7 @@ feedBufferGTK( GtkAppGlobals* apg, sqlite3_int64 rowid,
 /* Stuff common to receiving invitations */
 static void
 gameFromInvite( GtkAppGlobals* apg, const NetLaunchInfo* invite,
-                const CommsAddrRec* returnAddr )
+                const CommsAddrRec* XP_UNUSED(returnAddr) )
 {
     LaunchParams* params = apg->cag.params;
     CurGameInfo gi = {0};
@@ -757,17 +704,13 @@ gameFromInvite( GtkAppGlobals* apg, const NetLaunchInfo* invite,
     replaceStringIfDifferent( params->mpool, &gi.dictName, invite->dict );
 
     GtkGameGlobals* globals = malloc( sizeof(*globals) );
+    CommonGlobals* cGlobals = &globals->cGlobals;
     params->needsNewGame = XP_FALSE;
     initBoardGlobalsGtk( globals, params, &gi );
-
-    if ( !!returnAddr ) {
-        globals->cGlobals.addr = *returnAddr;
-    } else {
-        nli_makeAddrRec( invite, &globals->cGlobals.addr );
-    }
+    nli_makeAddrRec( invite, &cGlobals->hostAddr );
 
     GtkWidget* gameWindow = globals->window;
-    globals->cGlobals.rowid = -1;
+    cGlobals->rowid = -1;
     recordOpened( apg, globals );
     gtk_widget_show( gameWindow );
 

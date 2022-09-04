@@ -618,8 +618,7 @@ createOrLoadObjects( GtkGameGlobals* globals )
     TransportProcs procs;
     setTransportProcs( &procs, globals );
 
-    if ( linuxOpenGame( cGlobals, &procs, &cGlobals->addr ) ) {
-
+    if ( linuxOpenGame( cGlobals, &procs ) ) {
         if ( !params->fileName && !!params->dbName ) {
             XP_UCHAR buf[64];
             snprintf( buf, sizeof(buf), "%s / %lld", params->dbName,
@@ -861,23 +860,14 @@ new_game_impl( GtkGameGlobals* globals, XP_Bool fireConnDlg )
 {
     XP_Bool success = XP_FALSE;
     CommonGlobals* cGlobals = &globals->cGlobals;
-    CommsAddrRec addr;
-
-    if ( !!cGlobals->game.comms ) {
-        comms_getAddr( cGlobals->game.comms, &addr );
-    } else {
-        comms_getInitialAddr( &addr
-#ifdef XWFEATURE_RELAY
-                              , RELAY_NAME_DEFAULT, RELAY_PORT_DEFAULT
-#endif
-                              );
-    }
 
     CurGameInfo* gi = cGlobals->gi;
+    CommsAddrRec addr;
     success = gtkNewGameDialog( globals, gi, &addr, XP_TRUE, fireConnDlg );
     if ( success ) {
 #ifndef XWFEATURE_STANDALONE_ONLY
         XP_Bool isClient = gi->serverRole == SERVER_ISCLIENT;
+        XP_ASSERT( !isClient ); /* Doesn't make sense! Send invitation. */
 #endif
         TransportProcs procs = {
             .closure = globals,
@@ -887,20 +877,10 @@ new_game_impl( GtkGameGlobals* globals, XP_Bool fireConnDlg )
 #endif
         };
 
-        (void)game_reset( MEMPOOL &cGlobals->game, NULL_XWE, gi, cGlobals->util,
+        (void)game_reset( MEMPOOL &cGlobals->game, NULL_XWE, gi,
+                          &cGlobals->selfAddr, NULL, cGlobals->util,
                           &cGlobals->cp, &procs );
 
-#ifndef XWFEATURE_STANDALONE_ONLY
-        if ( !!cGlobals->game.comms ) {
-            comms_augmentHostAddr( cGlobals->game.comms, NULL_XWE, &addr );
-        } else if ( gi->serverRole != SERVER_STANDALONE ) {
-            XP_ASSERT(0);
-        }
-
-        if ( isClient ) {
-            tryConnectToServer( cGlobals );
-        }
-#endif
         (void)server_do( cGlobals->game.server, NULL_XWE ); /* assign tiles, etc. */
         board_invalAll( cGlobals->game.board );
         board_draw( cGlobals->game.board, NULL_XWE );
@@ -2507,6 +2487,8 @@ initGlobalsNoDraw( GtkGameGlobals* globals, LaunchParams* params,
 
     setupUtil( cGlobals );
     setupGtkUtilCallbacks( globals, cGlobals->util );
+
+    makeSelfAddress( &cGlobals->selfAddr, params );
 }
 
 /* This gets called all the time, e.g. when the mouse moves across
@@ -2736,27 +2718,8 @@ XP_Bool
 makeNewGame( GtkGameGlobals* globals )
 {
     CommonGlobals* cGlobals = &globals->cGlobals;
-    if ( !!cGlobals->game.comms ) {
-        comms_getAddr( cGlobals->game.comms, &cGlobals->addr );
-    } else {
-#ifdef XWFEATURE_RELAY
-        LaunchParams* params = cGlobals->params;
-        const XP_UCHAR* relayName = params->connInfo.relay.relayName;
-        if ( !relayName ) {
-            relayName = RELAY_NAME_DEFAULT;
-        }
-        XP_U16 relayPort = params->connInfo.relay.defaultSendPort;
-        if ( 0 == relayPort ) {
-            relayPort = RELAY_PORT_DEFAULT;
-        }
-        comms_getInitialAddr( &cGlobals->addr , relayName, relayPort );
-#else
-        comms_getInitialAddr( &cGlobals->addr );
-#endif
-    }
-
-    CurGameInfo* gi = cGlobals->gi;
-    XP_Bool success = gtkNewGameDialog( globals, gi, &cGlobals->addr,
+    XP_Bool success = gtkNewGameDialog( globals, cGlobals->gi,
+                                        &cGlobals->selfAddr,
                                         XP_TRUE, XP_FALSE );
     LOG_RETURNF( "%s", boolToStr(success) );
     return success;

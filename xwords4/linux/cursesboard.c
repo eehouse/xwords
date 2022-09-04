@@ -357,51 +357,6 @@ curses_socket_acceptor( int listener, Acceptor func, CommonGlobals* cGlobals,
     }
 }
 
-static void
-copyParmsAddr( CommonGlobals* cGlobals )
-{
-    LaunchParams* params = cGlobals->params;
-    CommsAddrRec* addr = &cGlobals->addr;
-
-    CommsConnType typ;
-    for ( XP_U32 st = 0; addr_iter( &params->addr, &typ, &st ); ) {
-        addr_addType( addr, typ );
-        switch( typ ) {
-#ifdef XWFEATURE_RELAY
-        case COMMS_CONN_RELAY:
-            addr->u.ip_relay.ipAddr = 0;       /* ??? */
-            addr->u.ip_relay.port = params->connInfo.relay.defaultSendPort;
-            addr->u.ip_relay.seeksPublicRoom =
-                params->connInfo.relay.seeksPublicRoom;
-            addr->u.ip_relay.advertiseRoom = params->connInfo.relay.advertiseRoom;
-            XP_STRNCPY( addr->u.ip_relay.hostName,
-                        params->connInfo.relay.relayName,
-                        sizeof(addr->u.ip_relay.hostName) - 1 );
-            XP_STRNCPY( addr->u.ip_relay.invite, params->connInfo.relay.invite,
-                        sizeof(addr->u.ip_relay.invite) - 1 );
-            break;
-#endif
-#ifdef XWFEATURE_SMS
-        case COMMS_CONN_SMS:
-            XP_STRNCPY( addr->u.sms.phone, params->connInfo.sms.myPhone,
-                        sizeof(addr->u.sms.phone) - 1 );
-            addr->u.sms.port = params->connInfo.sms.port;
-            break;
-#endif
-#ifdef XWFEATURE_BLUETOOTH
-        case COMMS_CONN_BT:
-            XP_ASSERT( sizeof(addr->u.bt.btAddr)
-                       >= sizeof(params->connInfo.bt.hostAddr));
-            XP_MEMCPY( &addr->u.bt.btAddr, &params->connInfo.bt.hostAddr,
-                       sizeof(params->connInfo.bt.hostAddr) );
-            break;
-#endif
-        default:
-            break;
-        }
-    }
-}
-
 static CursesBoardGlobals*
 commonInit( CursesBoardState* cbState, sqlite3_int64 rowid,
             const CurGameInfo* gip )
@@ -442,7 +397,7 @@ commonInit( CursesBoardState* cbState, sqlite3_int64 rowid,
     bGlobals->procs.requestJoin = relay_requestJoin_curses;
 #endif
 
-    copyParmsAddr( cGlobals );
+    makeSelfAddress( &cGlobals->selfAddr, params );
 
     setOneSecondTimer( cGlobals );
     return bGlobals;
@@ -575,6 +530,10 @@ initNoDraw( CursesBoardState* cbState, sqlite3_int64 rowid,
     CommonGlobals* cGlobals = &result->cGlobals;
     LaunchParams* params = cGlobals->params;
 
+    if ( !!returnAddr ) {
+        cGlobals->hostAddr = *returnAddr;
+    }
+
     cGlobals->cp.showBoardArrow = XP_TRUE;
     cGlobals->cp.showRobotScores = params->showRobotScores;
     cGlobals->cp.hideTileValues = params->hideValues;
@@ -592,7 +551,7 @@ initNoDraw( CursesBoardState* cbState, sqlite3_int64 rowid,
     cGlobals->cp.makePhonyPct = params->makePhonyPct;
 #endif
 
-    if ( linuxOpenGame( cGlobals, &result->procs, returnAddr ) ) {
+    if ( linuxOpenGame( cGlobals, &result->procs ) ) {
          result = ref( result );
     } else {
         disposeBoard( result );

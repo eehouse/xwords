@@ -47,7 +47,6 @@ static void getPlayersImpl( const KPState* state, const XP_UCHAR** players,
 static void
 loadFromStream( XW_DUtilCtxt* dutil, KPState* state, XWStreamCtxt* stream )
 {
-    LOG_FUNC();
     while ( 0 < stream_getSize( stream ) ) {
         XP_U32 newestMod = stream_getU32( stream );
         XP_UCHAR buf[64];

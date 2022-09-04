@@ -50,6 +50,7 @@ nli_init( NetLaunchInfo* nli, const CurGameInfo* gi, const CommsAddrRec* addr,
             break;
         case COMMS_CONN_SMS:
             XP_STRCAT( nli->phone, addr->u.sms.phone );
+            XP_ASSERT( 1 == addr->u.sms.port );
             // nli->port = addr->u.sms.port; <-- I wish
             break;
         case COMMS_CONN_MQTT:
@@ -278,11 +279,23 @@ logNLI( const NetLaunchInfo* nli, const char* callerFunc, const int callerLine )
         offset += XP_SNPRINTF( &conTypes[offset], sizeof(conTypes)-offset, "%s,", asstr );
     }
 
-    XP_UCHAR buf[256+128];
+    XP_UCHAR buf[1024];
     XP_SNPRINTF( buf, VSIZE(buf), "{ctyps: [%s], nPlayersT: %d, nPlayersH: %d, "
-                 "isoCode: '%s', gameID: %d, inviteID: %s, mqttid: %s}", conTypes,
-                 nli->nPlayersT, nli->nPlayersH, nli->isoCodeStr, nli->gameID,
-                 nli->inviteID, nli->mqttDevID );
+                 "isoCode: '%s', gameID: %d",
+                 conTypes, nli->nPlayersT, nli->nPlayersH, nli->isoCodeStr,
+                 nli->gameID );
+    if ( types_hasType( nli->_conTypes, COMMS_CONN_MQTT ) ) {
+        XP_UCHAR smallBuf[128];
+        XP_SNPRINTF( smallBuf, VSIZE(smallBuf), ", mqttid: %s", nli->mqttDevID );
+        XP_STRCAT( buf, smallBuf );
+    }
+    if ( types_hasType( nli->_conTypes, COMMS_CONN_SMS ) ) {
+        XP_UCHAR smallBuf[128];
+        XP_SNPRINTF( smallBuf, VSIZE(smallBuf), ", phone: %s",
+                     nli->phone );
+        XP_STRCAT( buf, smallBuf );
+    }
+    XP_STRCAT( buf, "}" );
     XP_LOGF( "%s", buf );
 }
 # endif

@@ -1,6 +1,6 @@
 /* -*- compile-command: "cd ../linux && make MEMDEBUG=TRUE -j3"; -*- */
 /* 
- * Copyright 2001 - 2021 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2001 - 2022 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -251,6 +251,9 @@ static void putDevID( const CommsCtxt* comms, XWEnv xwe, XWStreamCtxt* stream );
 #endif
 
 #ifdef DEBUG
+static void assertAddrOk( const CommsAddrRec* addr );
+#define ASSERT_ADDR_OK(addr) assertAddrOk( addr )
+
 # ifdef XWFEATURE_RELAY
 static const char* relayCmdToStr( XWRELAY_Cmd cmd );
 # endif
@@ -261,6 +264,7 @@ static void logAddrs( const CommsCtxt* comms, XWEnv xwe,
                       const char* caller );
 
 #else
+#define ASSERT_ADDR_OK(addr)
 #define printQueue( comms )
 #define logAddr( comms, xwe, addr, caller)
 #define logAddrs( comms, caller )
@@ -380,6 +384,7 @@ init_relay( CommsCtxt* comms, XWEnv xwe, XP_U16 nPlayersHere, XP_U16 nPlayersTot
 
 CommsCtxt* 
 comms_make( MPFORMAL XWEnv xwe, XW_UtilCtxt* util, XP_Bool isServer,
+            const CommsAddrRec* selfAddr, const CommsAddrRec* hostAddr,
 #ifdef XWFEATURE_RELAY
             XP_U16 nPlayersHere, XP_U16 nPlayersTotal,
 #endif
@@ -422,6 +427,22 @@ comms_make( MPFORMAL XWEnv xwe, XW_UtilCtxt* util, XP_Bool isServer,
     comms->channelSeed = gameSeed;
 # endif
 #endif
+
+    if ( !!selfAddr ) {
+        logAddr( comms, xwe, selfAddr, __func__ );
+        comms_augmentHostAddr( comms, xwe, selfAddr );
+    }
+    if ( !!hostAddr ) {
+        XP_ASSERT( !isServer );
+        logAddr( comms, xwe, hostAddr, __func__ );
+        XP_PlayerAddr channelNo = comms_getChannelSeed( comms );
+#ifdef DEBUG
+        AddressRecord* rec = 
+#endif
+            rememberChannelAddress( comms, xwe, channelNo, 0, hostAddr,0 );
+        XP_ASSERT( rec == getRecordFor( comms, xwe, hostAddr, channelNo, XP_TRUE ) );
+    }
+
     return comms;
 } /* comms_make */
 
@@ -697,6 +718,7 @@ addrFromStream( CommsAddrRec* addrP, XWStreamCtxt* stream )
     for ( XP_U32 st = 0; addr_iter( addrP, &typ, &st ); ) {
         addrFromStreamOne( addrP, stream, typ );
     }
+    ASSERT_ADDR_OK( addrP );
 }
 
 /* Return TRUE if there are no addresses left that include relay */
@@ -756,7 +778,7 @@ comms_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
         nPlayersHere = 0;
         nPlayersTotal = 0;
     }
-    CommsCtxt* comms = comms_make( MPPARM(mpool) xwe, util, isServer,
+    CommsCtxt* comms = comms_make( MPPARM(mpool) xwe, util, isServer, NULL, NULL,
 #ifdef XWFEATURE_RELAY
                                    nPlayersHere, nPlayersTotal,
 #endif
@@ -961,7 +983,8 @@ sendConnect( CommsCtxt* comms, XWEnv xwe
 } /* sendConnect */
 
 static void
-addrToStreamOne( XWStreamCtxt* stream, CommsConnType typ, const CommsAddrRec* addrP )
+addrToStreamOne( XWStreamCtxt* stream, CommsConnType typ,
+                 const CommsAddrRec* addrP )
 {
     switch( typ ) {
     case COMMS_CONN_NONE:
@@ -998,6 +1021,7 @@ addrToStreamOne( XWStreamCtxt* stream, CommsConnType typ, const CommsAddrRec* ad
     case COMMS_CONN_NFC:
         break;
     case COMMS_CONN_MQTT:
+        XP_ASSERT( 0 != addrP->u.mqtt.devID );
         stream_putBytes( stream, &addrP->u.mqtt.devID, sizeof(addrP->u.mqtt.devID) );
         break;
     default:
@@ -1057,9 +1081,9 @@ comms_writeToStream( CommsCtxt* comms, XWEnv XP_UNUSED_DBG(xwe),
 #endif
     for ( rec = comms->recs; !!rec; rec = rec->next ) {
 
-        CommsAddrRec* addr = &rec->addr;
-        addrToStream( stream, addr );
+        const CommsAddrRec* addr = &rec->addr;
         logAddr( comms, xwe, addr, __func__ );
+        addrToStream( stream, addr );
 
         stream_putU32VL( stream, rec->nextMsgID );
         stream_putU32VL( stream, rec->lastMsgRcd );
@@ -1069,7 +1093,7 @@ comms_writeToStream( CommsCtxt* comms, XWEnv XP_UNUSED_DBG(xwe),
 #endif
         stream_putU16( stream, (XP_U16)rec->lastMsgAckd );
         stream_putU16( stream, rec->channelNo );
-        if ( addr_hasType( &rec->addr, COMMS_CONN_RELAY ) ) {
+        if ( addr_hasType( addr, COMMS_CONN_RELAY ) ) {
             stream_putU8( stream, rec->rr.hostID ); /* unneeded unless RELAY */
         }
     }
@@ -1174,15 +1198,20 @@ comms_addMQTTDevID( CommsCtxt* comms, XP_PlayerAddr channelNo,
         if ( found ) {
             if ( addr_hasType( &rec->addr, COMMS_CONN_MQTT ) ) {
                 XP_ASSERT( *devID == rec->addr.u.mqtt.devID );
+            } else {
+                CommsAddrRec tmp = {0};
+                addr_setType( &tmp, COMMS_CONN_MQTT );
+                tmp.u.mqtt.devID = *devID;
+                ASSERT_ADDR_OK( &tmp );
+
+                augmentAddrIntrnl( comms, &rec->addr, &tmp, XP_TRUE );
+                ASSERT_ADDR_OK( &rec->addr );
             }
-            CommsAddrRec addr = {0};
-            addr_setType( &addr, COMMS_CONN_MQTT );
-            addr.u.mqtt.devID = *devID;
-            augmentAddrIntrnl( comms, &rec->addr, &addr, XP_TRUE );
         }
     }
     if ( !found ) {
         XP_LOGFF( "unable to augment address!!" );
+        XP_ASSERT(0);
     }
 #endif
 }
@@ -1260,55 +1289,6 @@ formatMsgNo( const CommsCtxt* comms, const MsgQueueElem* elem,
     XP_SNPRINTF( buf, len, "%d:%d", comms->rr.myHostID, elem->msgID );
 }
 
-void
-comms_getInitialAddr( CommsAddrRec* addr
-#ifdef XWFEATURE_RELAY
-                      , const XP_UCHAR* relayName
-                      , XP_U16 relayPort
-#endif
-                      )
-{
-    XP_MEMSET( addr, 0, sizeof(*addr) );
-#if defined  XWFEATURE_RELAY
-    addr_setType( addr, COMMS_CONN_RELAY ); /* for temporary ease in debugging */
-    addr->u.ip_relay.ipAddr = 0L; /* force 'em to set it */
-    addr->u.ip_relay.port = relayPort;
-    {
-        const char* name = relayName;
-        char* room = RELAY_ROOM_DEFAULT;
-        XP_MEMCPY( addr->u.ip_relay.hostName, name, XP_STRLEN(name)+1 );
-        XP_MEMCPY( addr->u.ip_relay.invite, room, XP_STRLEN(room)+1 );
-    }
-    addr->u.ip_relay.seeksPublicRoom = XP_FALSE;
-    addr->u.ip_relay.advertiseRoom = XP_FALSE;
-#elif defined PLATFORM_PALM
-    /* default values; default is still IR where there's a choice, at least on
-       Palm... */
-    addr->conType = COMMS_CONN_IR;
-#endif
-    addr_setType( addr, COMMS_CONN_MQTT );
-} /* comms_getInitialAddr */
-
-XP_Bool
-comms_checkAddr( XWEnv xwe, DeviceRole role, const CommsAddrRec* addr,
-                 XW_UtilCtxt* util )
-{
-    XP_Bool ok = XP_TRUE;
-    /* make sure the user's given us enough information to make a connection */
-    if ( role == SERVER_ISCLIENT ) {
-        if ( addr_hasType( addr, COMMS_CONN_BT ) ) {
-            XP_U32 empty = 0L;      /* check four bytes to save some code */
-            if ( !XP_MEMCMP( &empty, &addr->u.bt.btAddr, sizeof(empty) ) ) {
-                ok = XP_FALSE;
-                if ( !!util ) {
-                    util_userError( util, xwe, STR_NEED_BT_HOST_ADDR );
-                }
-            }
-        }
-    }
-    return ok;
-} /* comms_checkAddr */
-
 CommsConnTypes
 comms_getConTypes( const CommsCtxt* comms )
 {
@@ -1326,6 +1306,7 @@ void
 comms_dropHostAddr( CommsCtxt* comms, CommsConnType typ )
 {
     addr_rmType( &comms->addr, typ );
+    ASSERT_ADDR_OK( &comms->addr );
 }
 
 XP_Bool
@@ -1540,6 +1521,25 @@ assertQueueOk( const CommsCtxt* comms )
         XP_LOGFF( "queueLen unexpectedly high: %d", count );
     }
 }
+
+static void
+assertAddrOk( const CommsAddrRec* addr )
+{
+    CommsConnType typ;
+    for ( XP_U32 st = 0; addr_iter( addr, &typ, &st ); ) {
+        switch ( typ ) {
+        case COMMS_CONN_MQTT:
+            XP_ASSERT( 0 != addr->u.mqtt.devID );
+            break;
+        case COMMS_CONN_SMS:
+            XP_ASSERT( 0 != addr->u.sms.phone[0] );
+            break;
+        default:
+            XP_ASSERT(0);
+            break;
+        }
+    }
+}
 #endif
 
 static XP_Bool
@@ -1654,105 +1654,112 @@ sendMsg( CommsCtxt* comms, XWEnv xwe, MsgQueueElem* elem, const CommsConnType fi
               cbuf, elem->msgID, elem->len, elem->checksum );
 #endif
 
-    CommsAddrRec addr;
     const CommsAddrRec* addrP;
-    (void)channelToAddress( comms, xwe, channelNo, &addrP );
-    if ( NULL == addrP ) {
-        XP_LOGFF( TAGFMT() "no addr for channel so using comms'", TAGPRMS );
-        comms_getAddr( comms, &addr );
-        logAddr( comms, xwe, &addr, "default case" );
+    if ( comms->isServer ) {
+        (void)channelToAddress( comms, xwe, channelNo, &addrP );
     } else {
-        addr = *addrP;
+        /* guest has only one peer, but old code might save several */
+        XP_ASSERT( !!comms->recs && !comms->recs->next );
+        if ( !!comms->recs ) {
+            addrP = &comms->recs->addr;
+        }
+    }
+    if ( NULL == addrP ) {
+        XP_LOGFF( TAGFMT() "no addr for channel %x; dropping!'", TAGPRMS, channelNo );
+        XP_ASSERT(0);
+    } else {
+        CommsAddrRec addr = *addrP;
         if ( addr_hasType( &comms->addr, COMMS_CONN_NFC ) ) {
             addr_addType( &addr, COMMS_CONN_NFC );
         }
-    }
 
-    CommsConnType typ;
-    for ( XP_U32 st = 0; addr_iter( &addr, &typ, &st ); ) {
-        XP_S16 nSent = -1;
-        if ( comms_getAddrDisabled( comms, typ, XP_TRUE ) ) {
-            XP_LOGFF( "dropping message because %s disabled",
-                     ConnType2Str( typ ) );
-        } else if ( COMMS_CONN_NONE != filter && filter != typ ) {
-            XP_LOGFF( "dropping message because not of type %s",
-                     ConnType2Str( filter ) );
-        } else {
+        CommsConnType typ;
+        for ( XP_U32 st = 0; addr_iter( &addr, &typ, &st ); ) {
+            XP_S16 nSent = -1;
+            if ( comms_getAddrDisabled( comms, typ, XP_TRUE ) ) {
+                XP_LOGFF( "dropping message because %s disabled",
+                          ConnType2Str( typ ) );
+            } else if ( COMMS_CONN_NONE != filter && filter != typ ) {
+                XP_LOGFF( "dropping message because not of type %s",
+                          ConnType2Str( filter ) );
+            } else {
 #ifdef COMMS_CHECKSUM
-            XP_LOGFF( TAGFMT() "sending msg with sum %s using typ %s", TAGPRMS,
-                      elem->checksum, ConnType2Str(typ) );
+                XP_LOGFF( TAGFMT() "sending msg with sum %s using typ %s", TAGPRMS,
+                          elem->checksum, ConnType2Str(typ) );
 #endif
-            switch ( typ ) {
+                switch ( typ ) {
 #ifdef XWFEATURE_RELAY
-            case COMMS_CONN_RELAY: {
-                XWHostID destID = getDestID( comms, xwe, channelNo );
-                if ( HOST_ID_NONE == destID ) {
-                    XP_LOGFF( TAGFMT() "skipping message via relay: no destID yet", TAGPRMS );
-                } else if ( haveRelayID( comms ) && sendNoConn( comms, xwe, elem, destID ) ) {
-                    /* do nothing */
-                    nSent = elem->len;
-                } else if ( comms->rr.relayState >= COMMS_RELAYSTATE_CONNECTED ) {
-                    XP_UCHAR msgNo[16];
-                    formatMsgNo( comms, elem, msgNo, sizeof(msgNo) );
-                    if ( send_via_relay( comms, xwe, XWRELAY_MSG_TORELAY, destID,
-                                         elem->msg, elem->len, msgNo ) ) {
+                case COMMS_CONN_RELAY: {
+                    XWHostID destID = getDestID( comms, xwe, channelNo );
+                    if ( HOST_ID_NONE == destID ) {
+                        XP_LOGFF( TAGFMT() "skipping message via relay: no destID yet", TAGPRMS );
+                    } else if ( haveRelayID( comms ) && sendNoConn( comms, xwe, elem, destID ) ) {
+                        /* do nothing */
                         nSent = elem->len;
+                    } else if ( comms->rr.relayState >= COMMS_RELAYSTATE_CONNECTED ) {
+                        XP_UCHAR msgNo[16];
+                        formatMsgNo( comms, elem, msgNo, sizeof(msgNo) );
+                        if ( send_via_relay( comms, xwe, XWRELAY_MSG_TORELAY, destID,
+                                             elem->msg, elem->len, msgNo ) ) {
+                            nSent = elem->len;
+                        }
+                    } else {
+                        XP_LOGFF( "skipping message: not connected to relay" );
                     }
-                } else {
-                    XP_LOGFF( "skipping message: not connected to relay" );
-                }
-                break;
-            }
-#endif
-#if defined XWFEATURE_IP_DIRECT
-            case COMMS_CONN_BT:
-            case COMMS_CONN_IP_DIRECT:
-                nSent = send_via_ip( comms, BTIPMSG_DATA, channelNo, 
-                                     elem->msg, elem->len );
-#ifdef COMMS_HEARTBEAT
-                setHeartbeatTimer( comms );
-#endif
-                break;
-#endif
-            default: {
-                XP_ASSERT( addr_hasType( &addr, typ ) );
-
-                /* A more general check that the address type has the settings
-                   it needs would be better here.... */
-                if ( typ == COMMS_CONN_MQTT && 0 == addr.u.mqtt.devID ) {
-                    XP_LOGFF( "not sending: MQTT address NULL" );
                     break;
                 }
-
-                XP_ASSERT( !!comms->procs.send );
-                XP_U32 gameid = gameID( comms );
-                logAddr( comms, xwe, &addr, __func__ );
-                XP_UCHAR msgNo[16];
-                formatMsgNo( comms, elem, msgNo, sizeof(msgNo) );
-                nSent = (*comms->procs.send)( xwe, elem->msg, elem->len, msgNo,
-                                              elem->createdStamp, &addr,
-                                              typ, gameid, comms->procs.closure );
-                break;
-            }
-            } /* switch */
-        }
-        XP_LOGFF( TAGFMT() "sent %d bytes using typ %s", TAGPRMS, nSent,
-                  ConnType2Str(typ) );
-        if ( nSent > result ) {
-            result = nSent;
-        }
-    }
-    
-    if ( result == elem->len ) {
-#ifdef DEBUG
-        ++elem->sendCount;
 #endif
-        XP_LOGFF( "elem's sendCount since load: %d",
-                  elem->sendCount );
+#if defined XWFEATURE_IP_DIRECT
+                case COMMS_CONN_BT:
+                case COMMS_CONN_IP_DIRECT:
+                    nSent = send_via_ip( comms, BTIPMSG_DATA, channelNo, 
+                                         elem->msg, elem->len );
+#ifdef COMMS_HEARTBEAT
+                    setHeartbeatTimer( comms );
+#endif
+                    break;
+#endif
+                default: {
+                    XP_ASSERT( addr_hasType( &addr, typ ) );
+
+                    /* A more general check that the address type has the settings
+                       it needs would be better here.... */
+                    if ( typ == COMMS_CONN_MQTT && 0 == addr.u.mqtt.devID ) {
+                        XP_LOGFF( "not sending: MQTT address NULL" );
+                        XP_ASSERT(0);
+                        break;
+                    }
+
+                    XP_ASSERT( !!comms->procs.send );
+                    XP_U32 gameid = gameID( comms );
+                    logAddr( comms, xwe, &addr, __func__ );
+                    XP_UCHAR msgNo[16];
+                    formatMsgNo( comms, elem, msgNo, sizeof(msgNo) );
+                    nSent = (*comms->procs.send)( xwe, elem->msg, elem->len, msgNo,
+                                                  elem->createdStamp, &addr,
+                                                  typ, gameid, comms->procs.closure );
+                    break;
+                }
+                } /* switch */
+            }
+            XP_LOGFF( TAGFMT() "sent %d bytes using typ %s", TAGPRMS, nSent,
+                      ConnType2Str(typ) );
+            if ( nSent > result ) {
+                result = nSent;
+            }
+        }
+    
+        if ( result == elem->len ) {
+#ifdef DEBUG
+            ++elem->sendCount;
+#endif
+            XP_LOGFF( "elem's sendCount since load: %d",
+                      elem->sendCount );
+        }
+        CNO_FMT( cbuf1, elem->channelNo );
+        XP_LOGFF( "(%s; msgID=" XP_LD ", len=%d)=>%d", cbuf1, elem->msgID,
+                  elem->len, result );
     }
-    CNO_FMT( cbuf1, elem->channelNo );
-    XP_LOGFF( "(%s; msgID=" XP_LD ", len=%d)=>%d", cbuf1, elem->msgID,
-              elem->len, result );
     XP_ASSERT( result < 0 || elem->len == result );
     return result;
 } /* sendMsg */
@@ -2318,8 +2325,7 @@ getRecordFor( CommsCtxt* comms, XWEnv xwe, const CommsAddrRec* addr,
         }
     }
 
-    XP_LOGFF( "(%s, maskChannel=%s) => %p", cbuf,
-              maskChannel? "true":"false", rec );
+    XP_LOGFF( "(%s, maskChannel=%s) => %p", cbuf, boolToStr(maskChannel), rec );
     return rec;
 } /* getRecordFor */
 
@@ -2402,7 +2408,8 @@ validateInitialMessage( CommsCtxt* comms, XWEnv xwe,
                 XP_LOGFF( TAGFMT() "ORd channel onto channelNo: now %s", TAGPRMS, cbuf1 );
                 XP_ASSERT( comms->nextChannelNo <= CHANNEL_MASK );
             }
-            rec = rememberChannelAddress( comms, xwe, *channelNo, senderID, addr, flags );
+            rec = rememberChannelAddress( comms, xwe, *channelNo, senderID, addr,
+                                          flags );
             if ( hasPayload ) {
                 rec->initialSeen = XP_TRUE;
             } else {
@@ -2416,9 +2423,18 @@ validateInitialMessage( CommsCtxt* comms, XWEnv xwe,
         rec = getRecordFor( comms, xwe, addr, *channelNo, XP_TRUE );
         if ( !!rec ) {
             augmentChannelAddr( comms, rec, addr, senderID );
+
+            /* Used to be that the initial message was where the channel
+               record got created, but now the client creates an address for
+               the host on startup (comms_make()) */
+            if ( comms->isServer ) {
+                XP_LOGFF( TAGFMT() "rejecting duplicate INIT message", TAGPRMS );
+                rec = NULL;
+            } else {
+                XP_LOGFF( "accepting duplicate (?) msg" );
+            }
             /* reject: we've already seen init message on channel */
-            XP_LOGFF( TAGFMT() "rejecting duplicate INIT message", TAGPRMS );
-            rec = NULL;
+            // XP_ASSERT(0);
         } else {
             if ( comms->isServer ) {
                 if ( checkChannelNo( comms, channelNo ) ) {
@@ -3172,7 +3188,6 @@ augmentChannelAddr( CommsCtxt* comms, AddressRecord* const rec,
     for ( XP_U32 st = 0; addr_iter( addr, &typ, &st ); ) {
         if ( !addr_hasType( &comms->addr, typ ) ) {
             XP_LOGFF( "main addr missing type %s", ConnType2Str(typ) );
-            XP_ASSERT(0);       /* firing */
         }
     }
 #endif
@@ -3182,6 +3197,7 @@ static XP_Bool
 augmentAddrIntrnl( CommsCtxt* comms, CommsAddrRec* destAddr,
                    const CommsAddrRec* srcAddr, XP_Bool isNewer )
 {
+    ASSERT_ADDR_OK( srcAddr );
     XP_Bool changed = XP_FALSE;
     const CommsAddrRec empty = {0};
     if ( !!srcAddr ) {
@@ -3194,12 +3210,14 @@ augmentAddrIntrnl( CommsCtxt* comms, CommsAddrRec* destAddr,
 
                 /* If an address is getting added to a channel, the top-level
                    address should also include the type. The specifics of the
-                   address don't make sense to copy, however. */
+                   address don't make sense to copy, however.
+                   NO -- not any more. I have the addresses my user gives me
+                */
                 if ( !!comms && ! addr_hasType( &comms->addr, typ ) ) {
                     /* we just added it, so can't be comms->addr */
                     XP_ASSERT( destAddr != &comms->addr );
-                    XP_LOGFF( "adding %s to comms->addr", ConnType2Str(typ) );
-                    addr_addType( &comms->addr, typ );
+                    XP_LOGFF( "NOT adding %s to comms->addr", ConnType2Str(typ) );
+                    // addr_addType( &comms->addr, typ );
                 }
             }
 
@@ -3236,6 +3254,7 @@ augmentAddrIntrnl( CommsCtxt* comms, CommsAddrRec* destAddr,
             case COMMS_CONN_NFC:
                 break;
             case COMMS_CONN_MQTT:
+                XP_ASSERT( 0 != srcAddr->u.mqtt.devID );
                 dest = &destAddr->u.mqtt;
                 src = &srcAddr->u.mqtt;
                 siz = sizeof(destAddr->u.mqtt);
@@ -3361,6 +3380,13 @@ types_addType( XP_U16* conTypes, CommsConnType type )
 }
 
 void
+types_rmType( XP_U16* conTypes, CommsConnType type )
+{
+    XP_ASSERT( COMMS_CONN_NONE != type );
+    *conTypes &= ~(1 << (type - 1));
+}
+
+void
 addr_addType( CommsAddrRec* addr, CommsConnType type )
 {
     types_addType( &addr->_conTypes, type );
@@ -3371,7 +3397,7 @@ addr_rmType( CommsAddrRec* addr, CommsConnType type )
 {
     XP_ASSERT( COMMS_CONN_NONE != type );
     // XP_LOGF( "%s(%s)", __func__, ConnType2Str(type) );
-    addr->_conTypes &= ~(1 << (type - 1));
+    types_rmType( &addr->_conTypes, type );
 }
 
 /* Overwrites anything that might already be there. Use addr_addType() to add

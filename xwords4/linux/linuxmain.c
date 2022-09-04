@@ -61,6 +61,7 @@
 #include "relaycon.h"
 #include "mqttcon.h"
 #include "smsproto.h"
+#include "device.h"
 #ifdef PLATFORM_NCURSES
 # include "cursesmain.h"
 #endif
@@ -147,10 +148,8 @@ ensureLocalPlayerNames( LaunchParams* XP_UNUSED_DBG(params), CurGameInfo* gi )
 }
 
 bool
-linuxOpenGame( CommonGlobals* cGlobals, const TransportProcs* procs,
-               const CommsAddrRec* returnAddrP )
+linuxOpenGame( CommonGlobals* cGlobals, const TransportProcs* procs )
 {
-    LOG_FUNC();
     XWStreamCtxt* stream = NULL;
     XP_Bool opened = XP_FALSE;
 
@@ -163,6 +162,7 @@ linuxOpenGame( CommonGlobals* cGlobals, const TransportProcs* procs,
         XP_SNPRINTF( buf, sizeof(buf), "%d", params->dbFileID );
         mpool_setTag( MEMPOOL buf );
         stream = streamFromDB( cGlobals );
+        XP_ASSERT(0);
 #endif
     } else if ( !!params->pDb && 0 <= cGlobals->rowid ) {
         stream = mem_stream_make_raw( MPPARM(cGlobals->util->mpool)
@@ -184,10 +184,13 @@ linuxOpenGame( CommonGlobals* cGlobals, const TransportProcs* procs,
 
     if ( !opened /* && canMakeFromGI( cGlobals->gi )*/ ) {
         opened = XP_TRUE;
-
+        CommsAddrRec* hostAddr = NULL;
+        if ( cGlobals->gi->serverRole == SERVER_ISCLIENT ) {
+            hostAddr = &cGlobals->hostAddr;
+        }
         game_makeNewGame( MEMPOOL NULL_XWE, &cGlobals->game, cGlobals->gi,
-                          cGlobals->util, cGlobals->draw,
-                          &cGlobals->cp, procs
+                          &cGlobals->selfAddr, hostAddr, cGlobals->util,
+                          cGlobals->draw, &cGlobals->cp, procs
 #ifdef SET_GAMESEED
                           , params->gameSeed
 #endif
@@ -195,60 +198,6 @@ linuxOpenGame( CommonGlobals* cGlobals, const TransportProcs* procs,
 #ifdef XWFEATURE_RELAY
         bool savedGame = false;
 #endif
-        CommsAddrRec returnAddr = {0};
-        if ( !!returnAddrP ) {
-            returnAddr = *returnAddrP;
-            CommsConnType typ;
-            for ( XP_U32 st = 0; addr_iter( &returnAddr, &typ, &st ); ) {
-                if ( params->commsDisableds[typ][0] ) {
-                    comms_setAddrDisabled( cGlobals->game.comms, typ, XP_FALSE, XP_TRUE );
-                }
-                if ( params->commsDisableds[typ][1] ) {
-                    comms_setAddrDisabled( cGlobals->game.comms, typ, XP_TRUE, XP_TRUE );
-                }
-                switch( typ ) {
-#ifdef XWFEATURE_RELAY
-                case COMMS_CONN_RELAY:
-                    /* addr.u.ip_relay.ipAddr = 0; */
-                    /* addr.u.ip_relay.port = params->connInfo.relay.defaultSendPort; */
-                    /* addr.u.ip_relay.seeksPublicRoom = params->connInfo.relay.seeksPublicRoom; */
-                    /* addr.u.ip_relay.advertiseRoom = params->connInfo.relay.advertiseRoom; */
-                    /* XP_STRNCPY( addr.u.ip_relay.hostName, params->connInfo.relay.relayName, */
-                    /*             sizeof(addr.u.ip_relay.hostName) - 1 ); */
-                    /* XP_STRNCPY( addr.u.ip_relay.invite, params->connInfo.relay.invite, */
-                    /*             sizeof(addr.u.ip_relay.invite) - 1 ); */
-                    break;
-#endif
-#ifdef XWFEATURE_BLUETOOTH
-                case COMMS_CONN_BT:
-                    XP_ASSERT( sizeof(returnAddr.u.bt.btAddr)
-                               >= sizeof(params->connInfo.bt.hostAddr));
-                    XP_MEMCPY( &returnAddr.u.bt.btAddr, &params->connInfo.bt.hostAddr,
-                               sizeof(params->connInfo.bt.hostAddr) );
-                    break;
-#endif
-#ifdef XWFEATURE_IP_DIRECT
-                case COMMS_CONN_IP_DIRECT:
-                    XP_STRNCPY( returnAddr.u.ip.hostName_ip, params->connInfo.ip.hostName,
-                                sizeof(addr.u.ip.hostName_ip) - 1 );
-                    returnAddr.u.ip.port_ip = params->connInfo.ip.port;
-                    break;
-#endif
-#ifdef XWFEATURE_SMS
-                case COMMS_CONN_SMS:
-                    XP_LOGF( "%s(): SMS is on at least", __func__ );
-                    /* No! Don't overwrite what may be a return address with local
-                       stuff */
-                    /* XP_STRNCPY( addr.u.sms.phone, params->connInfo.sms.phone, */
-                    /*             sizeof(addr.u.sms.phone) - 1 ); */
-                    /* addr.u.sms.port = params->connInfo.sms.port; */
-                    break;
-#endif
-                default:
-                    break;
-                }
-            }
-        }
 
         /* Need to save in order to have a valid selRow for the first send */
         linuxSaveGame( cGlobals );
@@ -256,57 +205,9 @@ linuxOpenGame( CommonGlobals* cGlobals, const TransportProcs* procs,
         savedGame = true;
 #endif
 
-#ifndef XWFEATURE_STANDALONE_ONLY
-        /* If this is to be a relay connected game, tell it so. Otherwise
-           let the invitation process and receipt of messages populate
-           comms' addressbook */
-        if ( cGlobals->gi->serverRole != SERVER_STANDALONE ) {
-#ifdef XWFEATURE_RELAY
-            if ( addr_hasType( &params->addr, COMMS_CONN_RELAY ) ) {
-            
-                if ( ! savedGame ) {
-                    linuxSaveGame( cGlobals );
-                    savedGame = true;
-                }
-                CommsAddrRec addr = {0};
-                comms_getInitialAddr( &addr, params->connInfo.relay.relayName,
-                                      params->connInfo.relay.defaultSendPort );
-                XP_MEMCPY( addr.u.ip_relay.invite, params->connInfo.relay.invite,
-                           1 + XP_STRLEN(params->connInfo.relay.invite) );
-                addr.u.ip_relay.seeksPublicRoom = params->connInfo.relay.seeksPublicRoom;
-                addr.u.ip_relay.advertiseRoom = params->connInfo.relay.advertiseRoom;
-                comms_augmentHostAddr( cGlobals->game.comms, NULL_XWE, &addr ); /* sends stuff */
-            }
-#endif
-            if ( addr_hasType( &params->addr, COMMS_CONN_SMS ) ) {
-                CommsAddrRec addr = {0};
-                addr_addType( &addr, COMMS_CONN_SMS );
-                XP_STRCAT( addr.u.sms.phone, params->connInfo.sms.myPhone );
-                addr.u.sms.port = params->connInfo.sms.port;
-                comms_augmentHostAddr( cGlobals->game.comms, NULL_XWE, &addr );
-            }
-
-            if ( addr_hasType( &params->addr, COMMS_CONN_MQTT ) ) {
-                CommsAddrRec addr = {0};
-                addr_addType( &addr, COMMS_CONN_MQTT );
-                addr.u.mqtt.devID = *mqttc_getDevID( params );
-                comms_augmentHostAddr( cGlobals->game.comms, NULL_XWE, &addr );
-            }
-        }
-
-        if ( !!returnAddrP ) {
-            /* This may trigger network activity */
-            CommsCtxt* comms = cGlobals->game.comms;
-            if ( !!comms ) {
-                comms_augmentHostAddr( cGlobals->game.comms, NULL_XWE, &returnAddr );
-            }
-        }
-#endif
-
 #ifdef XWFEATURE_SEARCHLIMIT
         cGlobals->gi->allowHintRect = params->allowHintRect;
 #endif
-
         if ( params->needsNewGame && !opened ) {
             XP_ASSERT(0);
             // new_game_impl( globals, XP_FALSE );
@@ -330,6 +231,7 @@ linuxOpenGame( CommonGlobals* cGlobals, const TransportProcs* procs,
         server_do( cGlobals->game.server, NULL_XWE );
         linuxSaveGame( cGlobals );   /* again, to include address etc. */
     }
+    LOG_RETURNF( "%s", boolToStr(opened) );
     return opened;
 } /* linuxOpenGame */
 
@@ -849,7 +751,7 @@ typedef enum {
     ,CMD_INVITEE_SMSNUMBER
     ,CMD_SMSPORT
 #endif
-    ,CMD_WITHMQTT
+    ,CMD_WITHOUT_MQTT
     ,CMD_MQTTHOST
     ,CMD_MQTTPORT
 
@@ -1002,7 +904,7 @@ static CmdInfoRec CmdInfoRecs[] = {
     ,{ CMD_INVITEE_SMSNUMBER, true, "invitee-sms-number", "number to send any invitation to" }
     ,{ CMD_SMSPORT, true, "sms-port", "this devices's sms port" }
 #endif
-    ,{ CMD_WITHMQTT, false, "with-mqtt", "enable connecting via mqtt" }
+    ,{ CMD_WITHOUT_MQTT, false, "without-mqtt", "disable connecting via mqtt (which is on by default)" }
     ,{ CMD_MQTTHOST, true, "mqtt-host", "server mosquitto is running on" }
     ,{ CMD_MQTTPORT, true, "mqtt-port", "port mosquitto is listening on" }
     ,{ CMD_INVITEE_MQTTDEVID, true, "invitee-mqtt-devid", "upper-case hex devID to send any invitation to" }
@@ -2626,6 +2528,32 @@ testOneString( const LaunchParams* params, GSList* testDicts )
 }
 #endif
 
+void
+makeSelfAddress( CommsAddrRec* selfAddr, const LaunchParams* params )
+{
+    XP_MEMSET( selfAddr, 0, sizeof(*selfAddr) );
+
+    CommsConnType typ;
+    for ( XP_U32 state = 0; types_iter( params->conTypes, &typ, &state ); ) {
+        XP_LOGFF( "got type: %s", ConnType2Str(typ) );
+        addr_addType( selfAddr, typ );
+        switch ( typ ) {
+        case COMMS_CONN_MQTT:
+            dvc_getMQTTDevID( params->dutil, NULL_XWE, &selfAddr->u.mqtt.devID );
+            XP_ASSERT( 0 != selfAddr->u.mqtt.devID );
+            break;
+        case COMMS_CONN_SMS:
+            XP_ASSERT( !!params->connInfo.sms.myPhone[0] );
+            XP_STRCAT( selfAddr->u.sms.phone, params->connInfo.sms.myPhone );
+            XP_ASSERT( 1 == params->connInfo.sms.port ); /* It's ignored, but keep it 1 */
+            selfAddr->u.sms.port = params->connInfo.sms.port;
+            break;
+        default:
+            XP_ASSERT(0);
+        }
+    }
+}
+
 int
 main( int argc, char** argv )
 {
@@ -2659,9 +2587,6 @@ main( int argc, char** argv )
     // CommsConnType conType = COMMS_CONN_NONE;
 #ifdef XWFEATURE_SMS
     // char* phone = NULL;
-#endif
-#ifdef XWFEATURE_BLUETOOTH
-    const char* btaddr = NULL;
 #endif
 
     setlocale(LC_ALL, "");
@@ -2724,6 +2649,7 @@ main( int argc, char** argv )
     mainParams.useUdp = true;
     mainParams.dbName = "xwgames.sqldb";
     mainParams.cursesListWinHt = 5;
+    types_addType( &mainParams.conTypes, COMMS_CONN_MQTT );
 
     if ( file_exists( "./dict.xwd" ) )  {
         trimDictPath( "./dict.xwd", dictbuf, VSIZE(dictbuf), &path, &dict );
@@ -2780,15 +2706,15 @@ main( int argc, char** argv )
 #endif
         case CMD_HOSTIP:
             mainParams.connInfo.ip.hostName = optarg;
-            addr_addType( &mainParams.addr, COMMS_CONN_IP_DIRECT );
+            types_addType( &mainParams.conTypes, COMMS_CONN_IP_DIRECT );
             break;
         case CMD_HOSTPORT:
             mainParams.connInfo.ip.hostPort = atoi(optarg);
-            addr_addType( &mainParams.addr, COMMS_CONN_IP_DIRECT );
+            types_addType( &mainParams.conTypes, COMMS_CONN_IP_DIRECT );
             break;
         case CMD_MYPORT:
             mainParams.connInfo.ip.myPort = atoi(optarg);
-            addr_addType( &mainParams.addr, COMMS_CONN_IP_DIRECT );
+            types_addType( &mainParams.conTypes, COMMS_CONN_IP_DIRECT );
             break;
         case CMD_DICT:
             trimDictPath( optarg, dictbuf, VSIZE(dictbuf), &path, &dict );
@@ -2909,12 +2835,12 @@ main( int argc, char** argv )
 #ifdef XWFEATURE_SMS
         case CMD_SMSNUMBER:		/* SMS phone number */
             mainParams.connInfo.sms.myPhone = optarg;
-            addr_addType( &mainParams.addr, COMMS_CONN_SMS );
+            types_addType( &mainParams.conTypes, COMMS_CONN_SMS );
             break;
         case CMD_INVITEE_SMSNUMBER:
             mainParams.connInfo.sms.inviteePhones =
                 g_slist_append( mainParams.connInfo.sms.inviteePhones, optarg );
-            addr_addType( &mainParams.addr, COMMS_CONN_SMS );
+            types_addType( &mainParams.conTypes, COMMS_CONN_SMS );
             break;
         case CMD_INVITEE_COUNTS: {
             gchar** strs = g_strsplit( optarg, ":", -1 );
@@ -2928,11 +2854,11 @@ main( int argc, char** argv )
             break;
         case CMD_SMSPORT:
             mainParams.connInfo.sms.port = atoi(optarg);
-            addr_addType( &mainParams.addr, COMMS_CONN_SMS );
+            types_addType( &mainParams.conTypes, COMMS_CONN_SMS );
             break;
 #endif
-        case CMD_WITHMQTT:
-            addr_addType( &mainParams.addr, COMMS_CONN_MQTT );
+        case CMD_WITHOUT_MQTT:
+            types_rmType( &mainParams.conTypes, COMMS_CONN_MQTT );
             break;
         case CMD_MQTTHOST:
             mainParams.connInfo.mqtt.hostName = optarg;
@@ -2943,7 +2869,7 @@ main( int argc, char** argv )
         case CMD_INVITEE_MQTTDEVID:
             mainParams.connInfo.mqtt.inviteeDevIDs =
                 g_slist_append( mainParams.connInfo.mqtt.inviteeDevIDs, optarg );
-            addr_addType( &mainParams.addr, COMMS_CONN_MQTT );
+            types_addType( &mainParams.conTypes, COMMS_CONN_MQTT );
             break;
         case CMD_DUPPACKETS:
             mainParams.duplicatePackets = XP_TRUE;
@@ -3072,8 +2998,8 @@ main( int argc, char** argv )
             break;
 #ifdef XWFEATURE_BLUETOOTH
         case CMD_BTADDR:
-            addr_addType( &mainParams.addr, COMMS_CONN_BT );
-            btaddr = optarg;
+            types_addType( &mainParams.conTypes, COMMS_CONN_BT );
+            mainParams.connInfo.bt.btaddr = optarg;
             break;
 #endif
         case CMD_HIDEVALUES:
@@ -3286,6 +3212,7 @@ main( int argc, char** argv )
            given.  It's an error to give too many, or not to give enough if
            there's no game-dict */
         if ( 0 < nPlayerDicts ) {
+            XP_ASSERT(0);       /* fix me */
             /* XP_U16 nextDict = 0; */
             /* for ( ii = 0; ii < mainParams.gi.nPlayers; ++ii ) { */
             /*     if ( mainParams.gi.players[ii].isLocal ) { */
@@ -3302,71 +3229,14 @@ main( int argc, char** argv )
             /* } */
         }
 
-        /* if ( !isServer ) { */
-        /*     if ( mainParams.info.serverInfo.nRemotePlayers > 0 ) { */
-        /*         mainParams.needsNewGame = XP_TRUE; */
-        /*     }	     */
-        /* } */
 #ifdef XWFEATURE_WALKDICT
         if ( !!testDicts ) {
             walk_dict_test_all( MPPARM(mainParams.mpool) &mainParams, testDicts, testPrefixes );
             exit( 0 );
         }
 #endif
-        CommsConnType typ;
-        for ( XP_U32 st = 0; addr_iter( &mainParams.addr, &typ, &st ); ) {
-            switch ( typ ) {
-#ifdef XWFEATURE_BLUETOOTH
-            case COMMS_CONN_BT: {
-                bdaddr_t ba;
-                XP_Bool success;
-                XP_ASSERT( btaddr );
-                if ( isServer ) {
-                    success = XP_TRUE;
-                    /* any format is ok */
-                } else if ( btaddr[1] == ':' ) {
-                    success = XP_FALSE;
-                    if ( btaddr[0] == 'n' ) {
-                        if ( !nameToBtAddr( btaddr+2, &ba ) ) {
-                            fprintf( stderr, "fatal error: unable to find device %s\n",
-                                     btaddr + 2 );
-                            exit(0);
-                        }
-                        success = XP_TRUE;
-                    } else if ( btaddr[0] == 'a' ) {
-                        success = 0 == str2ba( &btaddr[2], &ba );
-                        XP_ASSERT( success );
-                    }
-                }
-                if ( !success ) {
-                    usage( argv[0], "bad format for -B param" );
-                }
-                XP_MEMCPY( &mainParams.connInfo.bt.hostAddr, &ba, 
-                           sizeof(mainParams.connInfo.bt.hostAddr) );
-            }
-                break;
-#endif
-/* #ifdef XWFEATURE_SMS */
-/*             case COMMS_CONN_SMS: */
-/*                 XP_MEMCPY( &mainParams.connInfo.sms.myPhone, sms-phone */
-/*                 const char* serverPhone; */
-/*                 int port; */
 
 
-/*                 break; */
-/* #endif */
-            default:
-                break;
-            }
-        }
-        // addr_setType( &mainParams.addr, conType );
-
-        /*     mainParams.pipe = linuxCommPipeCtxtMake( isServer ); */
-
-        /*     mainParams.util->vtable->m_util_makeStreamFromAddr =  */
-        /* 	linux_util_makeStreamFromAddr; */
-
-        // mainParams.util->gameInfo = &mainParams.pgi;
 
         srandom( seed );	/* init linux random number generator */
         XP_LOGFF( "seeded srandom with %d", seed );

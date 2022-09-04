@@ -76,13 +76,15 @@ typedef struct _XWGame {
 } XWGame;
 
 XP_Bool game_makeNewGame( MPFORMAL XWEnv xwe, XWGame* game, CurGameInfo* gi,
-                          XW_UtilCtxt* util, DrawCtx* draw,
-                          const CommonPrefs* cp, const TransportProcs* procs
+                          const CommsAddrRec* selfAddr, const CommsAddrRec* hostAddr,
+                          XW_UtilCtxt* util, DrawCtx* draw, const CommonPrefs* cp,
+                          const TransportProcs* procs
 #ifdef SET_GAMESEED
                           ,XP_U16 gameSeed
 #endif
                           );
 XP_Bool game_reset( MPFORMAL XWGame* game, XWEnv xwe, CurGameInfo* gi,
+                    const CommsAddrRec* selfAddr, const CommsAddrRec* hostAddr,
                     XW_UtilCtxt* util, CommonPrefs* cp,
                     const TransportProcs* procs );
 void game_changeDict( MPFORMAL XWGame* game, XWEnv xwe, CurGameInfo* gi,
@@ -94,8 +96,8 @@ XP_Bool game_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
                              CommonPrefs* cp, const TransportProcs* procs );
 
 XP_Bool game_makeFromInvite( MPFORMAL XWEnv xwe, const NetLaunchInfo* nli,
-                             XWGame* game, CurGameInfo* gi, const XP_UCHAR* plyrName,
-                             XW_UtilCtxt* util, DrawCtx* draw,
+                             XWGame* game, CurGameInfo* gi, const CommsAddrRec* selfAddr,
+                             const XP_UCHAR* plyrName, XW_UtilCtxt* util, DrawCtx* draw,
                              CommonPrefs* cp, const TransportProcs* procs );
 
 void game_saveNewGame( MPFORMAL XWEnv xwe, const CurGameInfo* gi, XW_UtilCtxt* util,

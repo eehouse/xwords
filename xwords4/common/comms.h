@@ -1,6 +1,6 @@
 /* -*- compile-command: "cd ../linux && make MEMDEBUG=TRUE -j3"; -*- */
 /* 
- * Copyright 2001 - 2014 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2001 - 2022 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -138,6 +138,8 @@ typedef struct _TransportProcs {
 
 CommsCtxt* comms_make( MPFORMAL XWEnv xwe, XW_UtilCtxt* util,
                        XP_Bool isServer,
+                       const CommsAddrRec* selfAddr,
+                       const CommsAddrRec* hostAddr,
 #ifdef XWFEATURE_RELAY
                        XP_U16 nPlayersHere, XP_U16 nPlayersTotal,
 #endif
@@ -164,16 +166,6 @@ void comms_transportFailed( CommsCtxt* comms,
 void comms_destroy( CommsCtxt* comms, XWEnv xwe );
 
 void comms_setConnID( CommsCtxt* comms, XP_U32 connID );
-
-/* "static" methods work when no comms present */
-void comms_getInitialAddr( CommsAddrRec* addr
-#ifdef XWFEATURE_RELAY
-                           , const XP_UCHAR* relayName
-                           , XP_U16 relayPort
-#endif
- );
-XP_Bool comms_checkAddr( XWEnv xwe, DeviceRole role, const CommsAddrRec* addr,
-                         XW_UtilCtxt* util );
 
 void comms_getAddr( const CommsCtxt* comms, CommsAddrRec* addr );
 void comms_augmentHostAddr( CommsCtxt* comms, XWEnv xwe, const CommsAddrRec* addr );
@@ -261,12 +253,13 @@ XP_Bool augmentAddr( CommsAddrRec* addr, const CommsAddrRec* newer,
 CommsConnType addr_getType( const CommsAddrRec* addr );
 void addr_setType( CommsAddrRec* addr, CommsConnType type );
 void addr_addType( CommsAddrRec* addr, CommsConnType type );
-void types_addType( XP_U16* conTypes, CommsConnType type );
 void addr_rmType( CommsAddrRec* addr, CommsConnType type );
 XP_Bool addr_hasType( const CommsAddrRec* addr, CommsConnType type );
-XP_Bool types_hasType( XP_U16 conTypes, CommsConnType type );
 XP_Bool addr_iter( const CommsAddrRec* addr, CommsConnType* typp, 
                    XP_U32* state );
+void types_addType( XP_U16* conTypes, CommsConnType type );
+void types_rmType( XP_U16* conTypes, CommsConnType type );
+XP_Bool types_hasType( XP_U16 conTypes, CommsConnType type );
 XP_Bool types_iter( XP_U32 conTypes, CommsConnType* typp, XP_U32* state );
 
 #ifdef XWFEATURE_KNOWNPLAYERS
