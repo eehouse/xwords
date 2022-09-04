@@ -33,6 +33,7 @@
 #include "strutils.h"
 #include "dbgutil.h"
 #include "knownplyr.h"
+#include "device.h"
 
 #define HEARTBEAT_NONE 0
 
@@ -718,7 +719,7 @@ addrFromStream( CommsAddrRec* addrP, XWStreamCtxt* stream )
     for ( XP_U32 st = 0; addr_iter( addrP, &typ, &st ); ) {
         addrFromStreamOne( addrP, stream, typ );
     }
-    ASSERT_ADDR_OK( addrP );
+    // ASSERT_ADDR_OK( addrP );
 }
 
 /* Return TRUE if there are no addresses left that include relay */
@@ -768,6 +769,11 @@ comms_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
 
     CommsAddrRec addr = {0};
     addrFromStream( &addr, stream );
+    if ( addr_hasType( &addr, COMMS_CONN_MQTT ) && 0 == addr.u.mqtt.devID ) {
+        XW_DUtilCtxt* dutil = util_getDevUtilCtxt( util, xwe );
+        dvc_getMQTTDevID( dutil, xwe, &addr.u.mqtt.devID );
+    }
+    ASSERT_ADDR_OK( &addr );
 
     XP_U16 nPlayersHere, nPlayersTotal;
     if ( version >= STREAM_VERS_DEVIDS
@@ -1534,7 +1540,11 @@ assertAddrOk( const CommsAddrRec* addr )
         case COMMS_CONN_SMS:
             XP_ASSERT( 0 != addr->u.sms.phone[0] );
             break;
+        case COMMS_CONN_P2P:
+            XP_ASSERT( 0 != addr->u.p2p.mac_addr[0] );
+            break;
         default:
+            XP_LOGFF( "no case for %s", ConnType2Str(typ) );
             XP_ASSERT(0);
             break;
         }
@@ -1654,7 +1664,7 @@ sendMsg( CommsCtxt* comms, XWEnv xwe, MsgQueueElem* elem, const CommsConnType fi
               cbuf, elem->msgID, elem->len, elem->checksum );
 #endif
 
-    const CommsAddrRec* addrP;
+    const CommsAddrRec* addrP = NULL;
     if ( comms->isServer ) {
         (void)channelToAddress( comms, xwe, channelNo, &addrP );
     } else {
