@@ -148,7 +148,7 @@ struct CommsCtxt {
     /* The following fields, down to isServer, are only used if
        XWFEATURE_RELAY is defined, but I'm leaving them in here so apps built
        both ways can open each other's saved games files.*/
-    CommsAddrRec addr;
+    CommsAddrRec selfAddr;
 
     /* Stuff for relays */
     struct {
@@ -613,7 +613,7 @@ comms_transportFailed( CommsCtxt* comms,
 {
     XP_LOGFF( "(%s)", ConnType2Str(failed) );
     XP_ASSERT( !!comms );
-    if ( COMMS_CONN_RELAY == failed && addr_hasType( &comms->addr, COMMS_CONN_RELAY )
+    if ( COMMS_CONN_RELAY == failed && addr_hasType( &comms->selfAddr, COMMS_CONN_RELAY )
          && comms->rr.relayState != COMMS_RELAYSTATE_DENIED ) {
         relayDisconnect( comms, xwe );
 #ifdef XWFEATURE_RELAY
@@ -627,11 +627,11 @@ void
 comms_destroy( CommsCtxt* comms, XWEnv xwe )
 {
     /* did I call comms_stop()? */
-    XP_ASSERT( ! addr_hasType( &comms->addr, COMMS_CONN_RELAY )
+    XP_ASSERT( ! addr_hasType( &comms->selfAddr, COMMS_CONN_RELAY )
                || COMMS_RELAYSTATE_UNCONNECTED == comms->rr.relayState );
 
     CommsAddrRec aNew = {0};
-    util_addrChange( comms->util, xwe, &comms->addr, &aNew );
+    util_addrChange( comms->util, xwe, &comms->selfAddr, &aNew );
 
     cleanupInternal( comms );
     cleanupAddrRecs( comms );
@@ -791,7 +791,7 @@ comms_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
     XP_USE( nPlayersHere );
     XP_USE( nPlayersTotal );
 #endif
-    XP_MEMCPY( &comms->addr, &addr, sizeof(comms->addr) );
+    XP_MEMCPY( &comms->selfAddr, &addr, sizeof(comms->selfAddr) );
     logAddr( comms, xwe, &addr, __func__ );
     comms->flags = flags;
 
@@ -878,7 +878,7 @@ comms_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
 
     if ( STREAM_VERS_DISABLEDS <= version ) {
         for ( CommsConnType typ = (CommsConnType)0; typ < VSIZE(comms->disableds); ++typ ) {
-            if ( typ < COMMS_CONN_NFC || addr_hasType( &comms->addr, typ ) ) {
+            if ( typ < COMMS_CONN_NFC || addr_hasType( &comms->selfAddr, typ ) ) {
                 for ( int ii = 0; ii < VSIZE(comms->disableds[0]); ++ii ) {
                     comms->disableds[typ][ii] = 0 != stream_getBits( stream, 1 );
                 }
@@ -887,9 +887,9 @@ comms_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
     }
 
     notifyQueueChanged( comms, xwe );
-    if ( addr_hasType( &comms->addr, COMMS_CONN_RELAY )
+    if ( addr_hasType( &comms->selfAddr, COMMS_CONN_RELAY )
          && removeRelayIf( comms, xwe ) ) {
-        addr_rmType( &comms->addr, COMMS_CONN_RELAY );
+        addr_rmType( &comms->selfAddr, COMMS_CONN_RELAY );
     }
 
     return comms;
@@ -899,7 +899,7 @@ comms_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
 static void
 setDoHeartbeat( CommsCtxt* comms )
 {
-    CommsConnType conType = comms->addr.conType;
+    CommsConnType conType = comms->selfAddr.conType;
     comms->doHeartbeat = XP_FALSE
         || COMMS_CONN_IP_DIRECT == conType
         || COMMS_CONN_BT == conType
@@ -932,7 +932,7 @@ comms_stop( CommsCtxt* comms
             )
 {
     LOG_FUNC();
-    if ( addr_hasType( &comms->addr, COMMS_CONN_RELAY ) ) {
+    if ( addr_hasType( &comms->selfAddr, COMMS_CONN_RELAY ) ) {
         relayDisconnect( comms, xwe );
     }
 }
@@ -944,9 +944,9 @@ sendConnect( CommsCtxt* comms, XWEnv xwe
 #endif
              )
 {
-    // CommsAddrRec addr = comms->addr;
+    // CommsAddrRec addr = comms->selfAddr;
     CommsConnType typ;
-    for ( XP_U32 st = 0; addr_iter( &comms->addr, &typ, &st ); ) {
+    for ( XP_U32 st = 0; addr_iter( &comms->selfAddr, &typ, &st ); ) {
         // addr._conTypes = typ;
         switch( typ ) {
 #ifdef XWFEATURE_RELAY
@@ -1053,8 +1053,8 @@ comms_writeToStream( CommsCtxt* comms, XWEnv XP_UNUSED_DBG(xwe),
     stream_setVersion( stream, CUR_STREAM_VERS );
 
     stream_putU8( stream, comms->flags );
-    logAddr( comms, xwe, &comms->addr, __func__ );
-    addrToStream( stream, &comms->addr );
+    logAddr( comms, xwe, &comms->selfAddr, __func__ );
+    addrToStream( stream, &comms->selfAddr );
     stream_putBits( stream, 4, comms->rr.nPlayersHere );
     stream_putBits( stream, 4, comms->rr.nPlayersTotal );
 
@@ -1064,7 +1064,7 @@ comms_writeToStream( CommsCtxt* comms, XWEnv XP_UNUSED_DBG(xwe),
     stream_putU16( stream, channelSeed );
     stream_putU16( stream, comms->resendBackoff );
     stream_putU32( stream, comms->nextResend );
-    if ( addr_hasType( &comms->addr, COMMS_CONN_RELAY ) ) {
+    if ( addr_hasType( &comms->selfAddr, COMMS_CONN_RELAY ) ) {
         stream_putU8( stream, comms->rr.myHostID );
         XP_LOGFF( "stored myHostID: %d", comms->rr.myHostID );
         stringToStream( stream, comms->rr.connName );
@@ -1110,7 +1110,7 @@ comms_writeToStream( CommsCtxt* comms, XWEnv XP_UNUSED_DBG(xwe),
     /* This writes 2 bytes instead of 1 if it were smarter. Not worth the work
      * to fix. */
     for ( CommsConnType typ = (CommsConnType)0; typ < VSIZE(comms->disableds); ++typ ) {
-        if ( typ < COMMS_CONN_NFC || addr_hasType( &comms->addr, typ ) ) {
+        if ( typ < COMMS_CONN_NFC || addr_hasType( &comms->selfAddr, typ ) ) {
             for ( int ii = 0; ii < VSIZE(comms->disableds[0]); ++ii ) {
                 stream_putBits( stream, 1, comms->disableds[typ][ii] ? 1 : 0 );
             }
@@ -1147,10 +1147,10 @@ comms_saveSucceeded( CommsCtxt* comms, XWEnv xwe, XP_U16 saveToken )
 }
 
 void
-comms_getAddr( const CommsCtxt* comms, CommsAddrRec* addr )
+comms_getSelfAddr( const CommsCtxt* comms, CommsAddrRec* addr )
 {
     XP_ASSERT( !!comms );
-    XP_MEMCPY( addr, &comms->addr, sizeof(*addr) );
+    XP_MEMCPY( addr, &comms->selfAddr, sizeof(*addr) );
 } /* comms_getAddr */
 
 void
@@ -1160,14 +1160,14 @@ comms_augmentHostAddr( CommsCtxt* comms, XWEnv xwe, const CommsAddrRec* addr )
     XP_ASSERT( comms != NULL );
 
     XP_Bool addingRelay = addr_hasType( addr, COMMS_CONN_RELAY )
-        && ! addr_hasType( &comms->addr, COMMS_CONN_RELAY );
+        && ! addr_hasType( &comms->selfAddr, COMMS_CONN_RELAY );
 
-    CommsAddrRec tmp = comms->addr;
+    CommsAddrRec tmp = comms->selfAddr;
     augmentAddrIntrnl( comms, &tmp, addr, XP_TRUE );
-    util_addrChange( comms->util, xwe, &comms->addr, &tmp );
-    comms->addr = tmp;
+    util_addrChange( comms->util, xwe, &comms->selfAddr, &tmp );
+    comms->selfAddr = tmp;
 
-    logAddr( comms, xwe, &comms->addr, "after" );
+    logAddr( comms, xwe, &comms->selfAddr, "after" );
 
 #ifdef COMMS_HEARTBEAT
     setDoHeartbeat( comms );
@@ -1294,7 +1294,7 @@ comms_getConTypes( const CommsCtxt* comms )
 {
     CommsConnType typ;
     if ( !!comms ) {
-        typ = comms->addr._conTypes;
+        typ = comms->selfAddr._conTypes;
     } else {
         typ = COMMS_CONN_NONE;
         XP_LOGFF( "returning COMMS_CONN_NONE for null comms" );
@@ -1305,8 +1305,8 @@ comms_getConTypes( const CommsCtxt* comms )
 void
 comms_dropHostAddr( CommsCtxt* comms, CommsConnType typ )
 {
-    addr_rmType( &comms->addr, typ );
-    ASSERT_ADDR_OK( &comms->addr );
+    addr_rmType( &comms->selfAddr, typ );
+    ASSERT_ADDR_OK( &comms->selfAddr );
 }
 
 XP_Bool
@@ -1669,7 +1669,7 @@ sendMsg( CommsCtxt* comms, XWEnv xwe, MsgQueueElem* elem, const CommsConnType fi
         XP_ASSERT(0);
     } else {
         CommsAddrRec addr = *addrP;
-        if ( addr_hasType( &comms->addr, COMMS_CONN_NFC ) ) {
+        if ( addr_hasType( &comms->selfAddr, COMMS_CONN_NFC ) ) {
             addr_addType( &addr, COMMS_CONN_NFC );
         }
 
@@ -1993,7 +1993,7 @@ got_connect_cmd( CommsCtxt* comms, XWEnv xwe, XWStreamCtxt* stream,
     if ( CONN_ID_NONE == comms->connID ) {
         if ( !!comms->procs.rconnd ) {
             (*comms->procs.rconnd)( xwe, comms->procs.closure,
-                                    comms->addr.u.ip_relay.invite, reconnected,
+                                    comms->selfAddr.u.ip_relay.invite, reconnected,
                                     comms->rr.myHostID, XP_FALSE, nSought - nHere );
             XP_LOGFF( "have %d of %d players", nHere, nSought );
         }
@@ -2069,7 +2069,7 @@ relayPreProcess( CommsCtxt* comms, XWEnv xwe, XWStreamCtxt* stream, XWHostID* se
         /* } */
         if ( XWRELAY_ALLHERE == cmd ) { /* initial connect? */
             (*comms->procs.rconnd)( xwe, comms->procs.closure,
-                                    comms->addr.u.ip_relay.invite, XP_FALSE,
+                                    comms->selfAddr.u.ip_relay.invite, XP_FALSE,
                                     comms->rr.myHostID, XP_TRUE, 0 );
         }
         set_relay_state( comms, xwe, COMMS_RELAYSTATE_ALLCONNECTED );
@@ -2618,13 +2618,13 @@ comms_checkIncomingStream( CommsCtxt* comms, XWEnv xwe, XWStreamCtxt* stream,
     if ( comms_getAddrDisabled( comms, addrType, XP_FALSE ) ) {
         XP_LOGFF( "dropping message because %s disabled",
                  ConnType2Str( addrType ) );
-    /* } else if (0 == (comms->addr._conTypes & retAddr->_conTypes)) { */
+    /* } else if (0 == (comms->selfAddr._conTypes & retAddr->_conTypes)) { */
     /*     /\* we don't expect messages with that address type; drop it *\/ */
     /*     XP_LOGF( "%s: not expecting %s messages", __func__,  */
     /*              ConnType2Str( addrType ) ); */
     } else {
 #ifdef DEBUG
-        if (0 == (comms->addr._conTypes & retAddr->_conTypes)) {
+        if (0 == (comms->selfAddr._conTypes & retAddr->_conTypes)) {
             XP_LOGFF( "not expecting %s messages (but proceeding)",
                       ConnType2Str( addrType ) );
         }
@@ -2638,7 +2638,7 @@ comms_checkIncomingStream( CommsCtxt* comms, XWEnv xwe, XWStreamCtxt* stream,
         XP_U16 initialLen = stream_getSize( stream );
 #endif
 
-        const CommsAddrRec* useAddr = !!retAddr ? retAddr : &comms->addr;
+        const CommsAddrRec* useAddr = !!retAddr ? retAddr : &comms->selfAddr;
         if ( !preProcess(
 #ifdef XWFEATURE_RELAY
                          comms, xwe , stream, &usingRelay, &senderID,
@@ -2786,7 +2786,7 @@ comms_isConnected( const CommsCtxt* const comms )
 {
     XP_Bool result = XP_FALSE;
     CommsConnType typ;
-    for ( XP_U32 st = 0; !result && addr_iter( &comms->addr, &typ, &st ); ) {
+    for ( XP_U32 st = 0; !result && addr_iter( &comms->selfAddr, &typ, &st ); ) {
         XP_Bool expected = XP_FALSE;
         switch ( typ ) {
         case COMMS_CONN_RELAY:
@@ -2920,7 +2920,7 @@ p_comms_timerFired( void* closure, XWEnv xwe, XWTimerReason XP_UNUSED_DBG(why) )
     comms->hbTimerPending = XP_FALSE;
     if (0 ) {
 #if defined XWFEATURE_RELAY && defined RELAY_HEARTBEAT
-    } else  if ( (comms->addr.conType == COMMS_CONN_RELAY ) 
+    } else  if ( (comms->selfAddr.conType == COMMS_CONN_RELAY )
          && (comms->rr.heartbeat != HEARTBEAT_NONE) ) {
         (void)send_via_relay( comms, xwe, XWRELAY_HEARTBEAT, HOST_ID_NONE,
                               NULL, 0, NULL );
@@ -2947,7 +2947,7 @@ setHeartbeatTimer( CommsCtxt* comms )
     } else {
         XP_U16 when = 0;
 #ifdef XWFEATURE_RELAY
-        if ( comms->addr.conType == COMMS_CONN_RELAY ) {
+        if ( comms->selfAddr.conType == COMMS_CONN_RELAY ) {
             when = comms->rr.heartbeat;
         }
 #endif
@@ -3084,8 +3084,8 @@ rememberChannelAddress( CommsCtxt* comms, XWEnv xwe, XP_PlayerAddr channelNo,
             XP_LOGFF( "storing addr with _conTypes %x",
                      addr->_conTypes );
             XP_MEMSET( &rec->addr, 0, sizeof(rec->addr) );
-            rec->addr._conTypes = comms->addr._conTypes;
-            // addr_setTypes( &recs->addr, addr_getTypes( &comms->addr ) );
+            rec->addr._conTypes = comms->selfAddr._conTypes;
+            // addr_setTypes( &recs->addr, addr_getTypes( &comms->selfAddr ) );
         }
     }
     return rec;
@@ -3186,7 +3186,7 @@ augmentChannelAddr( CommsCtxt* comms, AddressRecord* const rec,
 #ifdef DEBUG
     CommsConnType typ;
     for ( XP_U32 st = 0; addr_iter( addr, &typ, &st ); ) {
-        if ( !addr_hasType( &comms->addr, typ ) ) {
+        if ( !addr_hasType( &comms->selfAddr, typ ) ) {
             XP_LOGFF( "main addr missing type %s", ConnType2Str(typ) );
         }
     }
@@ -3213,11 +3213,11 @@ augmentAddrIntrnl( CommsCtxt* comms, CommsAddrRec* destAddr,
                    address don't make sense to copy, however.
                    NO -- not any more. I have the addresses my user gives me
                 */
-                if ( !!comms && ! addr_hasType( &comms->addr, typ ) ) {
-                    /* we just added it, so can't be comms->addr */
-                    XP_ASSERT( destAddr != &comms->addr );
-                    XP_LOGFF( "NOT adding %s to comms->addr", ConnType2Str(typ) );
-                    // addr_addType( &comms->addr, typ );
+                if ( !!comms && ! addr_hasType( &comms->selfAddr, typ ) ) {
+                    /* we just added it, so can't be comms->selfAddr */
+                    XP_ASSERT( destAddr != &comms->selfAddr );
+                    XP_LOGFF( "NOT adding %s to comms->selfAddr", ConnType2Str(typ) );
+                    // addr_addType( &comms->selfAddr, typ );
                 }
             }
 
@@ -3631,7 +3631,7 @@ relayConnect( CommsCtxt* comms, XWEnv xwe )
 {
     LOG_FUNC();
     XP_Bool success = XP_TRUE;
-    if ( addr_hasType( &comms->addr, COMMS_CONN_RELAY ) ) {
+    if ( addr_hasType( &comms->selfAddr, COMMS_CONN_RELAY ) ) {
         if ( 0 ) {
 #ifdef RELAY_VIA_HTTP
         } else if ( comms->rr.connName[0] ) {
@@ -3698,7 +3698,7 @@ static void
 relayDisconnect( CommsCtxt* comms, XWEnv xwe )
 {
     LOG_FUNC();
-    if ( addr_hasType( &comms->addr, COMMS_CONN_RELAY ) ) {
+    if ( addr_hasType( &comms->selfAddr, COMMS_CONN_RELAY ) ) {
         if ( comms->rr.relayState > COMMS_RELAYSTATE_CONNECT_PENDING ) {
             (void)send_via_relay( comms, xwe, XWRELAY_GAME_DISCONNECT, HOST_ID_NONE,
                                   NULL, 0, NULL );

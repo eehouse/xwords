@@ -339,7 +339,6 @@ gdb_summarize( CommonGlobals* cGlobals )
     XP_U16 nTotal = gi->nPlayers;
     XP_U32 gameID = gi->gameID;
     XP_ASSERT( 0 != gameID );
-    CommsAddrRec addr = {0};
 
     // gchar* connvia = "local";
     gchar connvia[128] = {0};
@@ -364,9 +363,10 @@ gdb_summarize( CommonGlobals* cGlobals )
 
     if ( !!game->comms ) {
         nMissing = server_getMissingPlayers( game->server );
-        comms_getAddr( game->comms, &addr );
+        CommsAddrRec selfAddr;
+        comms_getSelfAddr( game->comms, &selfAddr );
         CommsConnType typ;
-        for ( XP_U32 st = 0; addr_iter( &addr, &typ, &st ); ) {
+        for ( XP_U32 st = 0; addr_iter( &selfAddr, &typ, &st ); ) {
             if ( !!connvia[0] ) {
                 strcat( connvia, "+" );
             }

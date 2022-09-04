@@ -505,7 +505,7 @@ informMissing( const ServerCtxt* server, XWEnv xwe )
         addrP = NULL;
     } else {
         addrP = &addr;
-        comms_getAddr( comms, addrP );
+        comms_getSelfAddr( comms, addrP );
     }
 
     XP_U16 nDevs = 0;

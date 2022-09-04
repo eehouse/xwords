@@ -524,10 +524,10 @@ addDropChecks( GtkGameGlobals* globals )
 {
     CommsCtxt* comms = globals->cGlobals.game.comms;
     if ( !!comms ) {
-        CommsAddrRec addr;
-        comms_getAddr( comms, &addr );
+        CommsAddrRec selfAddr;
+        comms_getSelfAddr( comms, &selfAddr );
         CommsConnType typ;
-        for ( XP_U32 st = 0; addr_iter( &addr, &typ, &st ); ) {
+        for ( XP_U32 st = 0; addr_iter( &selfAddr, &typ, &st ); ) {
             DropTypeData* datum = &globals->dropData[typ];
             datum->typ = typ;
             datum->comms = comms;
@@ -897,13 +897,13 @@ new_game( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
 static void
 game_info( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
 {
-    CommsAddrRec addr;
-    comms_getAddr( globals->cGlobals.game.comms, &addr );
+    CommsAddrRec selfAddr;
+    comms_getSelfAddr( globals->cGlobals.game.comms, &selfAddr );
 
     /* Anything to do if OK is clicked?  Changed names etc. already saved.  Try
        server_do in case one's become a robot. */
     CurGameInfo* gi = globals->cGlobals.gi;
-    if ( gtkNewGameDialog( globals, gi, &addr, XP_FALSE, XP_FALSE ) ) {
+    if ( gtkNewGameDialog( globals, gi, &selfAddr, XP_FALSE, XP_FALSE ) ) {
         if ( server_do( globals->cGlobals.game.server, NULL_XWE ) ) {
             board_draw( globals->cGlobals.game.board, NULL_XWE );
         }
@@ -1454,7 +1454,7 @@ send_invites( CommonGlobals* cGlobals, XP_U16 nPlayers,
     CommsAddrRec myAddr = {0};
     CommsCtxt* comms = cGlobals->game.comms;
     XP_ASSERT( comms );
-    comms_getAddr( comms, &myAddr );
+    comms_getSelfAddr( comms, &myAddr );
 
     gint forceChannel = 1;  /* 1 is what Android does. Limits to two-device games */
 

@@ -1235,15 +1235,15 @@ handleInvite( void* closure, int XP_UNUSED(key) )
     CursesBoardGlobals* bGlobals = (CursesBoardGlobals*)closure;
     CommonGlobals* cGlobals = &bGlobals->cGlobals;
     LaunchParams* params = cGlobals->params;
-    CommsAddrRec addr = {0};
+    CommsAddrRec selfAddr;
     CommsCtxt* comms = cGlobals->game.comms;
     XP_ASSERT( comms );
-    comms_getAddr( comms, &addr );
+    comms_getSelfAddr( comms, &selfAddr );
 
     gint forceChannel = 1;
     const XP_U16 nPlayers = params->connInfo.inviteeCounts[forceChannel-1];
     NetLaunchInfo nli = {0};
-    nli_init( &nli, cGlobals->gi, &addr, nPlayers, forceChannel );
+    nli_init( &nli, cGlobals->gi, &selfAddr, nPlayers, forceChannel );
 
     if ( SERVER_ISSERVER != cGlobals->gi->serverRole ) {
         ca_inform( bGlobals->boardWin, "Only hosts can invite" );
@@ -1251,20 +1251,21 @@ handleInvite( void* closure, int XP_UNUSED(key) )
         /* Invite first based on an invitee provided. Otherwise, fall back to
            doing a send-to-self. Let the recipient code reject a duplicate if
            the user so desires. */
-    } else if ( inviteList( cGlobals, &addr, params->connInfo.sms.inviteePhones, COMMS_CONN_SMS ) ) {
+    } else if ( inviteList( cGlobals, &selfAddr, params->connInfo.sms.inviteePhones,
+                            COMMS_CONN_SMS ) ) {
         /* do nothing */
 #ifdef XWFEATURE_RELAY
-    } else if ( inviteList( cGlobals, &addr, params->connInfo.relay.inviteeRelayIDs, COMMS_CONN_RELAY ) ) {
+    } else if ( inviteList( cGlobals, &selfAddr, params->connInfo.relay.inviteeRelayIDs, COMMS_CONN_RELAY ) ) {
         /* do nothing */
 #endif
-    } else if ( inviteList( cGlobals, &addr, params->connInfo.mqtt.inviteeDevIDs, COMMS_CONN_MQTT ) ) {
+    } else if ( inviteList( cGlobals, &selfAddr, params->connInfo.mqtt.inviteeDevIDs, COMMS_CONN_MQTT ) ) {
         /* do nothing */
     /* Try sending to self, using the phone number or relayID of this device */
-    } else if ( addr_hasType( &addr, COMMS_CONN_SMS ) ) {
-        linux_sms_invite( params, &nli, addr.u.sms.phone, addr.u.sms.port );
-    } else if ( addr_hasType( &addr, COMMS_CONN_MQTT ) ) {
+    } else if ( addr_hasType( &selfAddr, COMMS_CONN_SMS ) ) {
+        linux_sms_invite( params, &nli, selfAddr.u.sms.phone, selfAddr.u.sms.port );
+    } else if ( addr_hasType( &selfAddr, COMMS_CONN_MQTT ) ) {
         mqttc_invite( params, &nli, mqttc_getDevID( params ) );
-    } else if ( addr_hasType( &addr, COMMS_CONN_RELAY ) ) {
+    } else if ( addr_hasType( &selfAddr, COMMS_CONN_RELAY ) ) {
         XP_U32 relayID = linux_getDevIDRelay( params );
         if ( 0 != relayID ) {
             relaycon_invite( params, relayID, NULL, &nli );

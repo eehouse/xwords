@@ -1454,7 +1454,7 @@ linux_send( XWEnv XP_UNUSED(xwe), const XP_U8* buf, XP_U16 buflen,
 #if defined XWFEATURE_IP_DIRECT || defined XWFEATURE_DIRECTIP
     case COMMS_CONN_IP_DIRECT: {
         CommsAddrRec addr;
-        comms_getAddr( cGlobals->game.comms, &addr );
+        comms_getSelfAddr( cGlobals->game.comms, &addr );
         XP_LOGF( "%s: given %d bytes to send via IP_DIRECT -- which isn't implemented", 
                  __func__, buflen );
         // linux_udp_open( cGlobals, &addr );
@@ -1466,7 +1466,7 @@ linux_send( XWEnv XP_UNUSED(xwe), const XP_U8* buf, XP_U16 buflen,
     case COMMS_CONN_SMS: {
         CommsAddrRec addr;
         if ( !addrRec ) {
-            comms_getAddr( cGlobals->game.comms, &addr );
+            comms_getSelfAddr( cGlobals->game.comms, &addr );
             addrRec = &addr;
         }
 

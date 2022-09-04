@@ -167,7 +167,8 @@ void comms_destroy( CommsCtxt* comms, XWEnv xwe );
 
 void comms_setConnID( CommsCtxt* comms, XP_U32 connID );
 
-void comms_getAddr( const CommsCtxt* comms, CommsAddrRec* addr );
+void comms_getSelfAddr( const CommsCtxt* comms, CommsAddrRec* selfAddr );
+void comms_getHostAddr( const CommsCtxt* comms, CommsAddrRec* hostAddr );
 void comms_augmentHostAddr( CommsCtxt* comms, XWEnv xwe, const CommsAddrRec* addr );
 void comms_addMQTTDevID( CommsCtxt* comms, XP_PlayerAddr channelNo,
                          const MQTTDevID* devID );
