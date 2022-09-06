@@ -1469,9 +1469,6 @@ send_invites( CommonGlobals* cGlobals, XP_U16 nPlayers,
     comms_invite( comms, NULL_XWE, &nli, destAddr );
 #else
     if ( !!destAddr && '\0' != destAddr->u.sms.phone[0] && 0 < destAddr->u.sms.port ) {
-        gchar gameName[64];
-        snprintf( gameName, VSIZE(gameName), "Game %d", cGlobals->gi->gameID );
-
         linux_sms_invite( cGlobals->params, &nli,
                           destAddr->u.sms.phone, destAddr->u.sms.port );
     }

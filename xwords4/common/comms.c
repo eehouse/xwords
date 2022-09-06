@@ -1490,14 +1490,33 @@ comms_getChannelSeed( CommsCtxt* comms )
 #ifdef XWFEATURE_COMMS_INVITE
 /* PENDING: this needs to handle more than MQTT!!!! */
 static XP_Bool
-isSameAddr( const CommsAddrRec* rec1, const CommsAddrRec* rec2 )
+isSameAddr( CommsCtxt* comms, XWEnv xwe,
+            const CommsAddrRec* rec1, const CommsAddrRec* rec2 )
 {
-    XP_Bool result =
-        addr_hasType( rec1, COMMS_CONN_MQTT )
-        && addr_hasType( rec2, COMMS_CONN_MQTT )
-        && rec1->u.mqtt.devID == rec2->u.mqtt.devID;
-    LOG_RETURNF( "%s", boolToStr(result) );
-    return result;
+    XP_Bool matched = XP_FALSE;
+    CommsConnType typ;
+    for ( XP_U32 st = 0; !matched && addr_iter( rec1, &typ, &st ); ) {
+        if ( addr_hasType( rec2, typ ) ) {
+            switch ( typ ) {
+            case COMMS_CONN_MQTT:
+                matched = rec1->u.mqtt.devID == rec2->u.mqtt.devID;
+                break;
+            case COMMS_CONN_SMS: {
+                XW_DUtilCtxt* duc = util_getDevUtilCtxt( comms->util, xwe );
+                matched = dutil_phoneNumbersSame( duc, xwe, rec2->u.sms.phone,
+                                                  rec1->u.sms.phone )
+                    && rec1->u.sms.port == rec2->u.sms.port;
+            }
+                break;
+            default:
+                XP_ASSERT(0);
+                break;
+            }
+        }
+    }
+
+    LOG_RETURNF( "%s", boolToStr(matched) );
+    return matched;
 }
 
 /* We're adding invites to comms so they'll be persisted and resent etc. can
@@ -1530,7 +1549,7 @@ comms_invite( CommsCtxt* comms, XWEnv xwe, const NetLaunchInfo* nli,
 
     for ( AddressRecord* rec = comms->recs; !!rec; rec = rec->next ) {
         const CommsAddrRec* addr = &rec->addr;
-        if ( isSameAddr( addr, destAddr ) ) {
+        if ( isSameAddr( comms, xwe, addr, destAddr ) ) {
             channelNo = rec->channelNo;
             // found = XP_TRUE;
             break;
