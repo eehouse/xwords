@@ -1,7 +1,7 @@
 /* -*- compile-command: "find-and-gradle.sh inXw4dDeb"; -*- */
 /*
- * Copyright 2009-2020 by Eric House (xwords@eehouse.org).  All
- * rights reserved.
+ * Copyright 2009 - 2022 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -429,6 +429,10 @@ public class CommsAddrRec implements Serializable {
 
         sms_phone = src.sms_phone;
         sms_port = src.sms_port;
+
+        p2p_addr = src.p2p_addr;
+
+        mqtt_devID = src.mqtt_devID;
     }
 
     private void addTypeDefaults( Context context, CommsConnType typ )
