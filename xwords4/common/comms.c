@@ -1558,10 +1558,10 @@ comms_invite( CommsCtxt* comms, XWEnv xwe, const NetLaunchInfo* nli,
 
     for ( MsgQueueElem* elem = comms->msgQueueHead; !!elem; elem = elem-> next ) {
         if ( channelNo == elem->channelNo ) {
-            XP_ASSERT( 0 == elem->msgID );
-            XP_ASSERT( 0 != channelNo );
-            freeElem( comms, elem );
-            XP_LOGFF( "nuked old invite" );
+            if ( 0 == elem->msgID && 0 != channelNo ) {
+                freeElem( comms, elem );
+                XP_LOGFF( "nuked old invite" );
+            }
         }
     }
 
@@ -1914,48 +1914,34 @@ sendMsg( CommsCtxt* comms, XWEnv xwe, MsgQueueElem* elem, const CommsConnType fi
                         break;
                     }
 
-                    XP_ASSERT( !!comms->procs.send );
-                    XP_U32 gameid = gameID( comms );
-                    logAddr( comms, xwe, &addr, __func__ );
-                    XP_UCHAR msgNo[16];
-                    formatMsgNo( comms, elem, msgNo, sizeof(msgNo) );
-                    nSent = (*comms->procs.send)( xwe, elem->msg, elem->len, msgNo,
-                                                  elem->createdStamp, &addr,
-                                                  typ, gameid, comms->procs.closure );
-                    break;
+                    if ( 0 ) {
+#ifdef XWFEATURE_COMMS_INVITE
+                    } else if ( isInvite ) {
+                        XP_ASSERT( !!comms->procs.sendInvt );
+                        NetLaunchInfo* nli = (NetLaunchInfo*)elem->msg;
+                        nSent = (*comms->procs.sendInvt)( xwe, nli, elem->createdStamp,
+                                                          &addr, comms->procs.closure );
+#endif
+                    } else {
+                        XP_ASSERT( !!comms->procs.sendMsg );
+                        XP_U32 gameid = gameID( comms );
+                        logAddr( comms, xwe, &addr, __func__ );
+                        XP_UCHAR msgNo[16];
+                        formatMsgNo( comms, elem, msgNo, sizeof(msgNo) );
+                        nSent = (*comms->procs.sendMsg)( xwe, elem->msg, elem->len, msgNo,
+                                                         elem->createdStamp, &addr,
+                                                         typ, gameid,
+                                                         comms->procs.closure );
+                    }
                 }
-/* <<<<<<< HEAD */
-/*                 } /\* switch *\/ */
-/*             } */
-/*             XP_LOGFF( TAGFMT() "sent %d bytes using typ %s", TAGPRMS, nSent, */
-/*                       ConnType2Str(typ) ); */
-/*             if ( nSent > result ) { */
-/*                 result = nSent; */
-/* ======= */
+                break;
 
-/*                 if ( 0 ) { */
-/* #ifdef XWFEATURE_COMMS_INVITE */
-/*                 } else if ( isInvite ) { */
-/*                     XP_ASSERT( !!comms->procs.sendInvt ); */
-/*                     NetLaunchInfo* nli = (NetLaunchInfo*)elem->msg; */
-/*                     nSent = (*comms->procs.sendInvt)( xwe, nli, elem->createdStamp, */
-/*                                                       &addr, comms->procs.closure ); */
-/* #endif */
-/*                 } else { */
-/*                     XP_ASSERT( !!comms->procs.sendMsg ); */
-/*                     XP_U32 gameid = gameID( comms ); */
-/*                     logAddr( comms, xwe, &addr, __func__ ); */
-/*                     XP_UCHAR msgNo[16]; */
-/*                     formatMsgNo( comms, elem, msgNo, sizeof(msgNo) ); */
-/*                     nSent = (*comms->procs.sendMsg)( xwe, elem->msg, elem->len, msgNo, */
-/*                                                      elem->createdStamp, &addr, */
-/*                                                      typ, gameid, */
-/*                                                      comms->procs.closure ); */
-/*                 } */
-/*                 break; */
-/* >>>>>>> d9781d21e (snapshot: mqtt invites for gtk work via comms) */
+                } /* switch */
+                }
+            if ( nSent > result ) {
+                result = nSent;
             }
-        }
+        } /* for */
     
         if ( result == elem->len ) {
 #ifdef DEBUG

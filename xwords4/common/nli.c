@@ -281,27 +281,21 @@ logNLI( const NetLaunchInfo* nli, const char* callerFunc, const int callerLine )
 
     XP_UCHAR buf[1024];
     XP_SNPRINTF( buf, VSIZE(buf), "{ctyps: [%s], nPlayersT: %d, nPlayersH: %d, "
-/* <<<<<<< HEAD */
-/*                  "isoCode: '%s', gameID: %d", */
-/*                  conTypes, nli->nPlayersT, nli->nPlayersH, nli->isoCodeStr, */
-/*                  nli->gameID ); */
-/*     if ( types_hasType( nli->_conTypes, COMMS_CONN_MQTT ) ) { */
-/*         XP_UCHAR smallBuf[128]; */
-/*         XP_SNPRINTF( smallBuf, VSIZE(smallBuf), ", mqttid: %s", nli->mqttDevID ); */
-/*         XP_STRCAT( buf, smallBuf ); */
-/*     } */
-/*     if ( types_hasType( nli->_conTypes, COMMS_CONN_SMS ) ) { */
-/*         XP_UCHAR smallBuf[128]; */
-/*         XP_SNPRINTF( smallBuf, VSIZE(smallBuf), ", phone: %s", */
-/*                      nli->phone ); */
-/*         XP_STRCAT( buf, smallBuf ); */
-/*     } */
-/*     XP_STRCAT( buf, "}" ); */
-/* ======= */
-/*                  "isoCode: '%s', gameID: %d, inviteID: %s, mqttid: %s, phone: %s}", conTypes, */
-/*                  nli->nPlayersT, nli->nPlayersH, nli->isoCodeStr, nli->gameID, */
-/*                  nli->inviteID, nli->mqttDevID, nli->phone ); */
-/* >>>>>>> cd0f0d95b (support comparing SMS addresses too) */
+                 "isoCode: '%s', gameID: %d",
+                 conTypes, nli->nPlayersT, nli->nPlayersH, nli->isoCodeStr,
+                 nli->gameID );
+    if ( types_hasType( nli->_conTypes, COMMS_CONN_MQTT ) ) {
+        XP_UCHAR smallBuf[128];
+        XP_SNPRINTF( smallBuf, VSIZE(smallBuf), ", mqttid: %s", nli->mqttDevID );
+        XP_STRCAT( buf, smallBuf );
+    }
+    if ( types_hasType( nli->_conTypes, COMMS_CONN_SMS ) ) {
+        XP_UCHAR smallBuf[128];
+        XP_SNPRINTF( smallBuf, VSIZE(smallBuf), ", phone: %s",
+                     nli->phone );
+        XP_STRCAT( buf, smallBuf );
+    }
+    XP_STRCAT( buf, "}" );
     XP_LOGF( "%s", buf );
 }
 # endif

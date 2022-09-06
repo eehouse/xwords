@@ -116,7 +116,7 @@ static bool handleReplace( void* closure, int key );
 static bool handleRootKeyShow( void* closure, int key );
 static bool handleRootKeyHide( void* closure, int key );
 #endif
-static bool handleInvite( void* closure, int key );
+static bool sendInvite( void* closure, int key );
 
 #ifdef XWFEATURE_RELAY
 static void relay_connd_curses( XWEnv xwe, void* closure, XP_UCHAR* const room,
@@ -168,7 +168,7 @@ inviteIdle( gpointer data )
          || !!params->connInfo.relay.inviteeRelayIDs
 #endif
          || !!params->connInfo.mqtt.inviteeDevIDs ) {
-        handleInvite( bGlobals, 0 );
+        sendInvite( bGlobals, 0 );
     }
     return FALSE;
 }
@@ -255,7 +255,7 @@ const MenuList g_boardMenuList[] = {
     { handleUndo, "Undo prev", "U", 'U' },
     { handleReplace, "uNdo cur", "N", 'N' },
 
-    { handleInvite, "invitE", "E", 'E' },
+    { sendInvite, "invitE", "E", 'E' },
 
     { NULL, NULL, NULL, '\0'}
 };
@@ -1247,11 +1247,14 @@ inviteList( CommonGlobals* cGlobals, CommsAddrRec* myAddr, GSList* invitees,
 #endif
         }
     }
+    if ( haveAddressees ) {
+        XP_LOGFF( "worked for %s", ConnType2Str( typ ) );
+    }
     return haveAddressees;
 }
 
 static bool
-handleInvite( void* closure, int XP_UNUSED(key) )
+sendInvite( void* closure, int XP_UNUSED(key) )
 {
     CursesBoardGlobals* bGlobals = (CursesBoardGlobals*)closure;
     CommonGlobals* cGlobals = &bGlobals->cGlobals;
@@ -1286,7 +1289,7 @@ handleInvite( void* closure, int XP_UNUSED(key) )
     } else if ( addr_hasType( &selfAddr, COMMS_CONN_SMS ) ) {
         linux_sms_invite( params, &nli, selfAddr.u.sms.phone, selfAddr.u.sms.port );
     } else if ( addr_hasType( &selfAddr, COMMS_CONN_MQTT ) ) {
-        mqttc_invite( params, &nli, mqttc_getDevID( params ) );
+        mqttc_invite( params, 0, &nli, mqttc_getDevID( params ) );
     } else if ( addr_hasType( &selfAddr, COMMS_CONN_RELAY ) ) {
 /* ======= */
 /*     } else if ( addr_hasType( &addr, COMMS_CONN_SMS ) ) { */
