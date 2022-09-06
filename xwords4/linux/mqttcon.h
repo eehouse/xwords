@@ -28,7 +28,8 @@ void mqttc_cleanup( LaunchParams* params );
 
 const MQTTDevID* mqttc_getDevID( LaunchParams* params );
 const gchar* mqttc_getDevIDStr( LaunchParams* params );
-void mqttc_invite( LaunchParams* params, NetLaunchInfo*  nli, const MQTTDevID* mqttInvitee );
+void mqttc_invite( LaunchParams* params, XP_U32 timestamp,
+                   const NetLaunchInfo* nli, const MQTTDevID* mqttInvitee );
 XP_S16 mqttc_send( LaunchParams* params, XP_U32 gameID, XP_U32 timestamp,
                    const XP_U8* buf, XP_U16 len, const MQTTDevID* addressee );
 void mqttc_notifyGameGone( LaunchParams* params, const MQTTDevID* addressee, XP_U32 gameID );

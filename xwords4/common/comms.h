@@ -74,11 +74,17 @@ typedef enum {
 # define IF_CH(a)
 #endif
 
-typedef XP_S16 (*TransportSend)( XWEnv xwe, const XP_U8* buf, XP_U16 len,
-                                 const XP_UCHAR* msgNo, XP_U32 createdStamp,
-                                 const CommsAddrRec* addr,
-                                 CommsConnType conType,
-                                 XP_U32 gameID, void* closure );
+#ifdef XWFEATURE_COMMS_INVITE
+typedef XP_S16 (*TransportSendInvt)( XWEnv xwe, const NetLaunchInfo* nli,
+                                     XP_U32 createdStamp,
+                                     const CommsAddrRec* addr, void* closure );
+#endif
+typedef XP_S16 (*TransportSendMsg)( XWEnv xwe, const XP_U8* buf, XP_U16 len,
+                                    const XP_UCHAR* msgNo, XP_U32 createdStamp,
+                                    const CommsAddrRec* addr,
+                                    CommsConnType conType, XP_U32 gameID,
+                                    void* closure );
+
 #ifdef COMMS_HEARTBEAT
 typedef void (*TransportReset)( XWEnv xwe, void* closure );
 #endif
@@ -119,7 +125,10 @@ typedef struct _TransportProcs {
 #else
     XP_U32 flags;
 #endif
-    TransportSend send;
+    TransportSendMsg sendMsg;
+#ifdef XWFEATURE_COMMS_INVITE
+    TransportSendInvt sendInvt;
+#endif
     MsgCountChange countChanged;
 #ifdef COMMS_HEARTBEAT
     TransportReset reset;
@@ -205,7 +214,10 @@ void comms_saveSucceeded( CommsCtxt* comms, XWEnv xwe, XP_U16 saveToken );
 
 void addrFromStream( CommsAddrRec* addr, XWStreamCtxt* stream );
 void addrToStream( XWStreamCtxt* stream, const CommsAddrRec* addr );
-
+#ifdef XWFEATURE_COMMS_INVITE
+void comms_invite( CommsCtxt* comms, XWEnv xwe, const NetLaunchInfo* nli,
+                   const CommsAddrRec* destAddr );
+#endif
 XP_S16 comms_send( CommsCtxt* comms, XWEnv xwe, XWStreamCtxt* stream );
 XP_S16 comms_resendAll( CommsCtxt* comms, XWEnv xwe, CommsConnType filter,
                         XP_Bool force );

@@ -175,9 +175,7 @@ typedef struct PoolContext PoolContext;
 typedef struct XW_UtilCtxt XW_UtilCtxt;
 typedef struct XW_DUtilCtxt XW_DUtilCtxt;
 
-/* Low two bits treated as channel, third as short-term flag indicating
- * sender's role; rest can be random to aid detection of duplicate packets. */
-#define CHANNEL_MASK 0x0003
+/* Opaque bitfield type meant to be parsed only inside comms.c  */
 typedef XP_U16 XP_PlayerAddr;
 
 typedef enum {

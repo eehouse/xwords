@@ -487,7 +487,10 @@ static void
 setTransportProcs( TransportProcs* procs, GtkGameGlobals* globals ) 
 {
     procs->closure = globals;
-    procs->send = LINUX_SEND;
+    procs->sendMsg = linux_send;
+#ifdef XWFEATURE_COMMS_INVITE
+    procs->sendInvt = linux_send_invt;
+#endif
 #ifdef COMMS_XPORT_FLAGSPROC
     procs->getFlags = gtk_getFlags;
 #endif
@@ -844,7 +847,10 @@ new_game_impl( GtkGameGlobals* globals, XP_Bool fireConnDlg )
 #endif
         TransportProcs procs = {
             .closure = globals,
-            .send = LINUX_SEND,
+            .sendMsg = linux_send,
+#ifdef XWFEATURE_COMMS_INVITE
+            .sendInvt = linux_send_invt,
+#endif
 #ifdef COMMS_HEARTBEAT
             .reset = linux_reset,
 #endif
@@ -1424,8 +1430,8 @@ static void
 send_invites( CommonGlobals* cGlobals, XP_U16 nPlayers,
               const CommsAddrRec* destAddr )
 {
-    CommsAddrRec myAddr = {0};
     CommsCtxt* comms = cGlobals->game.comms;
+    CommsAddrRec myAddr = {0};
     XP_ASSERT( comms );
     comms_getSelfAddr( comms, &myAddr );
 
@@ -1433,11 +1439,13 @@ send_invites( CommonGlobals* cGlobals, XP_U16 nPlayers,
 
     NetLaunchInfo nli = {0};    /* include everything!!! */
     nli_init( &nli, cGlobals->gi, &myAddr, nPlayers, forceChannel );
+#ifdef XWFEATURE_RELAY
     if ( addr_hasType( &myAddr, COMMS_CONN_RELAY ) ) {
         XP_UCHAR buf[32];
         snprintf( buf, sizeof(buf), "%X", makeRandomInt() );
         nli_setInviteID( &nli, buf ); /* PENDING: should not be relay only!!! */
     }
+#endif
     // nli_setDevID( &nli, linux_getDevIDRelay( cGlobals->params ) );
 
     if ( addr_hasType( &myAddr, COMMS_CONN_MQTT ) ) {
@@ -1457,6 +1465,9 @@ send_invites( CommonGlobals* cGlobals, XP_U16 nPlayers,
     }
 #endif
 
+#ifdef XWFEATURE_COMMS_INVITE
+    comms_invite( comms, NULL_XWE, &nli, destAddr );
+#else
     if ( !!destAddr && '\0' != destAddr->u.sms.phone[0] && 0 < destAddr->u.sms.port ) {
         gchar gameName[64];
         snprintf( gameName, VSIZE(gameName), "Game %d", cGlobals->gi->gameID );
@@ -1464,16 +1475,17 @@ send_invites( CommonGlobals* cGlobals, XP_U16 nPlayers,
         linux_sms_invite( cGlobals->params, &nli,
                           destAddr->u.sms.phone, destAddr->u.sms.port );
     }
-#ifdef XWFEATURE_RELAY
+# ifdef XWFEATURE_RELAY
     if ( 0 != relayDevID || !!relayID ) {
         XP_ASSERT( 0 != relayDevID || (!!relayID && !!relayID[0]) );
         relaycon_invite( cGlobals->params, relayDevID, relayID, &nli );
     }
-#endif
+# endif
 
     if ( addr_hasType( destAddr, COMMS_CONN_MQTT ) ) {
-        mqttc_invite( cGlobals->params, &nli, &destAddr->u.mqtt.devID );
+        mqttc_invite( cGlobals->params, 0, &nli, &destAddr->u.mqtt.devID );
     }
+#endif
 
     /* while ( gtkaskm( "Invite how many and how?", infos, VSIZE(infos) ) ) {  */
     /*     int nPlayers = atoi( countStr ); */

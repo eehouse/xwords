@@ -249,7 +249,8 @@ mqttc_getDevIDStr( LaunchParams* params )
 }
 
 void
-mqttc_invite( LaunchParams* params, NetLaunchInfo* nli, const MQTTDevID* invitee )
+mqttc_invite( LaunchParams* params, XP_U32 timestamp, const NetLaunchInfo* nli,
+              const MQTTDevID* invitee )
 {
     MQTTConStorage* storage = getStorage( params );
 #ifdef DEBUG
@@ -257,6 +258,7 @@ mqttc_invite( LaunchParams* params, NetLaunchInfo* nli, const MQTTDevID* invitee
     XP_LOGFF( "need to send to %s", formatMQTTDevID(invitee, buf, sizeof(buf) ) );
     XP_ASSERT( 16 == strlen(buf) );
 #endif
+    XP_USE( timestamp );
 
     XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(params->mpool)
                                                 params->vtMgr );

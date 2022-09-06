@@ -34,6 +34,7 @@
 #include "dbgutil.h"
 #include "knownplyr.h"
 #include "device.h"
+#include "nli.h"
 
 #define HEARTBEAT_NONE 0
 
@@ -47,6 +48,10 @@
 #define IS_SERVER_BIT 0x0010
 #define NO_MSGID_BIT 0x0020
 #define HEADER_LEN_OFFSET 9
+
+/* Low two bits treated as channel, third as short-term flag indicating
+ * sender's role; rest can be random to aid detection of duplicate packets. */
+#define CHANNEL_MASK 0x0003
 
 #ifndef XWFEATURE_STANDALONE_ONLY
 
@@ -67,8 +72,8 @@ EXTERN_C_START
 
 typedef struct MsgQueueElem {
     struct MsgQueueElem* next;
-    XP_U8* msg;
-    XP_U16 len;
+    XP_U8* msg;                 /* ptr to NetLaunchInfo if isInvite is true */
+    XP_U16 len;                 /* stored as 0 if msg is a nli */
     XP_PlayerAddr channelNo;
 #ifdef DEBUG
     XP_U16 sendCount;           /* how many times sent? */
@@ -202,8 +207,7 @@ typedef enum {
  *                               prototypes 
  ****************************************************************************/
 static AddressRecord* rememberChannelAddress( CommsCtxt* comms, XWEnv xwe,
-                                              XP_PlayerAddr channelNo, 
-                                              XWHostID id,
+                                              XP_PlayerAddr channelNo, XWHostID id,
                                               const CommsAddrRec* addr, XP_U16 flags );
 static void augmentChannelAddr( CommsCtxt* comms, AddressRecord* rec,
                                 const CommsAddrRec* addr, XWHostID hostID );
@@ -217,7 +221,7 @@ static AddressRecord* getRecordFor( CommsCtxt* comms, XWEnv xwe,
 static void augmentSelfAddr( CommsCtxt* comms, XWEnv xwe, const CommsAddrRec* addr );
 static XP_S16 sendMsg( CommsCtxt* comms, XWEnv xwe, MsgQueueElem* elem,
                        CommsConnType filter );
-static MsgQueueElem* addToQueue( CommsCtxt* comms, XWEnv xwe, MsgQueueElem* newMsgElem );
+static MsgQueueElem* addToQueue( CommsCtxt* comms, XWEnv xwe, MsgQueueElem* newElem );
 static XP_Bool elems_same( const MsgQueueElem* e1, const MsgQueueElem* e2 ) ;
 static void freeElem( const CommsCtxt* comms, MsgQueueElem* elem );
 
@@ -228,7 +232,8 @@ static void sendConnect( CommsCtxt* comms, XWEnv xwe
 #endif
                          );
 static void notifyQueueChanged( const CommsCtxt* comms, XWEnv xwe );
-static XP_U16 makeFlags( const CommsCtxt* comms, XP_U16 headerLen, MsgID msgID );
+static XP_U16 makeFlags( const CommsCtxt* comms, XP_U16 headerLen,
+                         MsgID msgID );
 
 static XP_Bool formatRelayID( const CommsCtxt* comms, XWHostID hostID,
                               XP_UCHAR* buf, XP_U16* lenp );
@@ -872,10 +877,27 @@ comms_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
 #ifdef DEBUG
         msg->sendCount = 0;
 #endif
-        msg->msg = (XP_U8*)XP_MALLOC( mpool, msg->len );
-        stream_getBytes( stream, msg->msg, msg->len );
+        XP_U16 len = msg->len;
+        if ( 0 == len ) {
+            XP_U32 nliLen = stream_getU32VL( stream );
+            XWStreamCtxt* nliStream = mem_stream_make_raw( MPPARM(comms->mpool)
+                                                           dutil_getVTManager(comms->dutil));
+            stream_getFromStream( nliStream, stream, nliLen );
+            NetLaunchInfo nli;
+            if ( nli_makeFromStream( &nli, nliStream ) ) {
+                msg->msg = (XP_U8*)XP_MALLOC( mpool, sizeof(nli) );
+                XP_MEMCPY( msg->msg, &nli, sizeof(nli) );
+                len = sizeof(nli); /* needed for checksum calc */
+            } else {
+                XP_ASSERT(0);
+            }
+            stream_destroy( nliStream, xwe );
+        } else {
+            msg->msg = (XP_U8*)XP_MALLOC( mpool, len );
+            stream_getBytes( stream, msg->msg, len );
+        }
 #ifdef COMMS_CHECKSUM
-        msg->checksum = dutil_md5sum( comms->dutil, xwe, msg->msg, msg->len );
+        msg->checksum = dutil_md5sum( comms->dutil, xwe, msg->msg, len );
 #endif
         msg->next = (MsgQueueElem*)NULL;
         *prevsQueueNext = comms->msgQueueTail = msg;
@@ -1110,7 +1132,18 @@ comms_writeToStream( CommsCtxt* comms, XWEnv XP_UNUSED_DBG(xwe),
 
         stream_putU32VL( stream, msg->len );
         stream_putU32( stream, msg->createdStamp );
-        stream_putBytes( stream, msg->msg, msg->len );
+        if ( 0 == msg->len ) {
+            XWStreamCtxt* nliStream = mem_stream_make_raw( MPPARM(comms->mpool)
+                                                           dutil_getVTManager(comms->dutil));
+            NetLaunchInfo* nli = (NetLaunchInfo*)msg->msg;
+            nli_saveToStream( nli, nliStream );
+            XP_U16 nliLen = stream_getSize( nliStream );
+            stream_putU32VL( stream, nliLen );
+            stream_getFromStream( stream, nliStream, nliLen );
+            stream_destroy( nliStream, xwe );
+        } else {
+            stream_putBytes( stream, msg->msg, msg->len );
+        }
     }
 
     /* This writes 2 bytes instead of 1 if it were smarter. Not worth the work
@@ -1337,6 +1370,18 @@ comms_getIsServer( const CommsCtxt* comms )
 }
 
 static MsgQueueElem*
+makeNewElem( const CommsCtxt* comms, XWEnv xwe, MsgID msgID,
+             XP_PlayerAddr channelNo )
+{
+    MsgQueueElem* newElem = (MsgQueueElem*)XP_CALLOC( comms->mpool,
+                                                      sizeof( *newElem ) );
+    newElem->createdStamp = dutil_getCurSeconds( comms->dutil, xwe );
+    newElem->channelNo = channelNo;
+    newElem->msgID = msgID;
+    return newElem;
+}
+
+static MsgQueueElem*
 makeElemWithID( CommsCtxt* comms, XWEnv xwe, MsgID msgID, AddressRecord* rec,
                 XP_PlayerAddr channelNo, XWStreamCtxt* stream )
 {
@@ -1344,11 +1389,7 @@ makeElemWithID( CommsCtxt* comms, XWEnv xwe, MsgID msgID, AddressRecord* rec,
     XP_LOGFF( TAGFMT(%s), TAGPRMS, cbuf );
     XP_U16 streamSize = NULL == stream? 0 : stream_getSize( stream );
     MsgID lastMsgSaved = (!!rec)? rec->lastMsgSaved : 0;
-    MsgQueueElem* newMsgElem = (MsgQueueElem*)XP_CALLOC( comms->mpool,
-                                                         sizeof( *newMsgElem ) );
-    newMsgElem->channelNo = channelNo;
-    newMsgElem->msgID = msgID;
-    newMsgElem->createdStamp = dutil_getCurSeconds( comms->dutil, xwe );
+    MsgQueueElem* newElem = makeNewElem( comms, xwe, msgID, channelNo );
 
     XP_Bool useSmallHeader = !!rec && (COMMS_VERSION == rec->flags);
     XWStreamCtxt* hdrStream = mem_stream_make_raw( MPPARM(comms->mpool)
@@ -1400,17 +1441,37 @@ makeElemWithID( CommsCtxt* comms, XWEnv xwe, MsgID msgID, AddressRecord* rec,
         stream_getFromStream( msgStream, stream, streamSize );
     }
 
-    newMsgElem->len = stream_getSize( msgStream );
-    newMsgElem->msg = (XP_U8*)XP_MALLOC( comms->mpool, newMsgElem->len );
-    stream_getBytes( msgStream, newMsgElem->msg, newMsgElem->len );
+    newElem->len = stream_getSize( msgStream );
+    XP_ASSERT( 0 < newElem->len );
+    newElem->msg = (XP_U8*)XP_MALLOC( comms->mpool, newElem->len );
+    stream_getBytes( msgStream, newElem->msg, newElem->len );
     stream_destroy( msgStream, xwe );
 
 #ifdef COMMS_CHECKSUM
-    newMsgElem->checksum = dutil_md5sum( comms->dutil, xwe, newMsgElem->msg,
-                                         newMsgElem->len );
+    newElem->checksum = dutil_md5sum( comms->dutil, xwe, newElem->msg,
+                                      newElem->len );
 #endif
-    return newMsgElem;
+    XP_ASSERT( 0 < newElem->len ); /* else NLI assumptions fail */
+    return newElem;
 } /* makeElemWithID */
+
+#ifdef XWFEATURE_COMMS_INVITE
+static MsgQueueElem*
+makeInviteElem( CommsCtxt* comms, XWEnv xwe,
+                XP_PlayerAddr channelNo, const NetLaunchInfo* nli )
+{
+    MsgQueueElem* newElem = makeNewElem( comms, xwe, 0, channelNo );
+
+    XP_ASSERT( 0 == newElem->len );           /* len == 0 signals is NLI */
+    newElem->msg = XP_MALLOC( comms->mpool, sizeof(*nli) );
+    XP_MEMCPY( newElem->msg, nli, sizeof(*nli) );
+# ifdef COMMS_CHECKSUM
+    newElem->checksum = dutil_md5sum( comms->dutil, xwe, newElem->msg,
+                                      sizeof(*nli) );
+# endif
+    return newElem;
+}
+#endif
 
 XP_U16
 comms_getChannelSeed( CommsCtxt* comms )
@@ -1425,6 +1486,78 @@ comms_getChannelSeed( CommsCtxt* comms )
     }
     return result;
 }
+
+#ifdef XWFEATURE_COMMS_INVITE
+/* PENDING: this needs to handle more than MQTT!!!! */
+static XP_Bool
+isSameAddr( const CommsAddrRec* rec1, const CommsAddrRec* rec2 )
+{
+    XP_Bool result =
+        addr_hasType( rec1, COMMS_CONN_MQTT )
+        && addr_hasType( rec2, COMMS_CONN_MQTT )
+        && rec1->u.mqtt.devID == rec2->u.mqtt.devID;
+    LOG_RETURNF( "%s", boolToStr(result) );
+    return result;
+}
+
+/* We're adding invites to comms so they'll be persisted and resent etc. can
+   work in common code. Rule will be there's only one invitation present per
+   channel (remote device.) We'll add a channel if necessary. Then if there is
+   an invitation already there we'll replace it.
+
+   Interesting case is where I send two invitations only one of which can be
+   accepted (as e.g. when I invite one friend, then on not receiving a
+   response decide to invite a different friend instead. In the two-player
+   game case I can detect that there are too many invitations and delete/reuse
+   the previous channel when the new invitation is received. But what about
+   the two-remotes game? Would I delete the oldest that hadn't been responded
+   to? Or maybe keep them all, and when an invitation is responded to, meaning
+   that there's incoming traffic on that channel, I promote it somehow, and
+   when a game is complete (all players present) delete channels that have
+   only outgoing invitations pending.
+ */
+void
+comms_invite( CommsCtxt* comms, XWEnv xwe, const NetLaunchInfo* nli,
+              const CommsAddrRec* destAddr )
+{
+    LOG_FUNC();
+    /* See if we have a channel for this address. Then see if we have an
+       invite matching this one, and if not add one. Then trigger a send of
+       it. */
+
+    MsgQueueElem* elem = NULL;
+    XP_PlayerAddr channelNo = 0; /* = findOrMakeChannel( comms, destAddr ); */
+
+    for ( AddressRecord* rec = comms->recs; !!rec; rec = rec->next ) {
+        const CommsAddrRec* addr = &rec->addr;
+        if ( isSameAddr( addr, destAddr ) ) {
+            channelNo = rec->channelNo;
+            // found = XP_TRUE;
+            break;
+        }
+    }
+
+    for ( MsgQueueElem* elem = comms->msgQueueHead; !!elem; elem = elem-> next ) {
+        if ( channelNo == elem->channelNo ) {
+            XP_ASSERT( 0 == elem->msgID );
+            XP_ASSERT( 0 != channelNo );
+            freeElem( comms, elem );
+            XP_LOGFF( "nuked old invite" );
+        }
+    }
+
+    if ( 0 == channelNo ) {
+        channelNo = comms_getChannelSeed(comms) & ~CHANNEL_MASK;
+    }
+
+    /*AddressRecord* rec = */rememberChannelAddress( comms, xwe, channelNo,
+                                                     0, destAddr, 0 );
+    elem = makeInviteElem( comms, xwe, channelNo, nli );
+
+    elem = addToQueue( comms, xwe, elem );
+    sendMsg( comms, xwe, elem, COMMS_CONN_NONE );
+}
+#endif
 
 /* Send a message using the sequentially next MsgID.  Save the message so
  * resend can work. */
@@ -1680,9 +1813,10 @@ sendMsg( CommsCtxt* comms, XWEnv xwe, MsgQueueElem* elem, const CommsConnType fi
     XP_PlayerAddr channelNo = elem->channelNo;
     CNO_FMT( cbuf, channelNo );
 
+    XP_Bool isInvite = 0 == elem->len;
 #ifdef COMMS_CHECKSUM
-    XP_LOGFF( TAGFMT() "sending message on %s: id: %d; len: %d; sum: %s", TAGPRMS,
-              cbuf, elem->msgID, elem->len, elem->checksum );
+    XP_LOGFF( TAGFMT() "sending message on %s: id: %d; len: %d; sum: %s; isInvite: %s",
+              TAGPRMS, cbuf, elem->msgID, elem->len, elem->checksum, boolToStr(isInvite) );
 #endif
 
     const CommsAddrRec* addrP = NULL;
@@ -1771,12 +1905,36 @@ sendMsg( CommsCtxt* comms, XWEnv xwe, MsgQueueElem* elem, const CommsConnType fi
                                                   typ, gameid, comms->procs.closure );
                     break;
                 }
-                } /* switch */
-            }
-            XP_LOGFF( TAGFMT() "sent %d bytes using typ %s", TAGPRMS, nSent,
-                      ConnType2Str(typ) );
-            if ( nSent > result ) {
-                result = nSent;
+/* <<<<<<< HEAD */
+/*                 } /\* switch *\/ */
+/*             } */
+/*             XP_LOGFF( TAGFMT() "sent %d bytes using typ %s", TAGPRMS, nSent, */
+/*                       ConnType2Str(typ) ); */
+/*             if ( nSent > result ) { */
+/*                 result = nSent; */
+/* ======= */
+
+/*                 if ( 0 ) { */
+/* #ifdef XWFEATURE_COMMS_INVITE */
+/*                 } else if ( isInvite ) { */
+/*                     XP_ASSERT( !!comms->procs.sendInvt ); */
+/*                     NetLaunchInfo* nli = (NetLaunchInfo*)elem->msg; */
+/*                     nSent = (*comms->procs.sendInvt)( xwe, nli, elem->createdStamp, */
+/*                                                       &addr, comms->procs.closure ); */
+/* #endif */
+/*                 } else { */
+/*                     XP_ASSERT( !!comms->procs.sendMsg ); */
+/*                     XP_U32 gameid = gameID( comms ); */
+/*                     logAddr( comms, xwe, &addr, __func__ ); */
+/*                     XP_UCHAR msgNo[16]; */
+/*                     formatMsgNo( comms, elem, msgNo, sizeof(msgNo) ); */
+/*                     nSent = (*comms->procs.sendMsg)( xwe, elem->msg, elem->len, msgNo, */
+/*                                                      elem->createdStamp, &addr, */
+/*                                                      typ, gameid, */
+/*                                                      comms->procs.closure ); */
+/*                 } */
+/*                 break; */
+/* >>>>>>> d9781d21e (snapshot: mqtt invites for gtk work via comms) */
             }
         }
     
@@ -1823,9 +1981,7 @@ resendImpl( CommsCtxt* comms, XWEnv xwe, CommsConnType filter, XP_Bool force,
         success = XP_FALSE;
 
     } else if ( !!comms->msgQueueHead ) {
-        MsgQueueElem* msg;
-
-        for ( msg = comms->msgQueueHead; !!msg; msg = msg->next ) {
+        for ( MsgQueueElem* msg = comms->msgQueueHead; !!msg; msg = msg->next ) {
             XP_S16 len = (*proc)( comms, xwe, msg, filter, closure );
             if ( 0 > len ) {
                 success = XP_FALSE;
@@ -2436,8 +2592,9 @@ validateInitialMessage( CommsCtxt* comms, XWEnv xwe,
                 XP_ASSERT( (*channelNo & CHANNEL_MASK) == 0 );
                 *channelNo |= ++comms->nextChannelNo;
                 CNO_FMT( cbuf1, *channelNo );
-                XP_LOGFF( TAGFMT() "ORd channel onto channelNo: now %s", TAGPRMS, cbuf1 );
-                XP_ASSERT( comms->nextChannelNo <= CHANNEL_MASK );
+                XP_LOGFF( TAGFMT() "ORd channel onto channelNo: now %s", TAGPRMS,
+                          cbuf1 );
+                XP_ASSERT( comms->nextChannelNo <= CHANNEL_ID_MASK );
             }
             rec = rememberChannelAddress( comms, xwe, *channelNo, senderID, addr,
                                           flags );
@@ -2480,7 +2637,8 @@ validateInitialMessage( CommsCtxt* comms, XWEnv xwe,
                     goto errExit;
                 }
             }
-            rec = rememberChannelAddress( comms, xwe, *channelNo, senderID, addr, flags );
+            rec = rememberChannelAddress( comms, xwe, *channelNo, senderID,
+                                          addr, flags );
         }
     }
  errExit:
@@ -2575,8 +2733,10 @@ getCheckChannelSeed( CommsCtxt* comms, XWStreamCtxt* stream, HeaderStuff* stuff 
         } else if ( 0 == stuff->channelNo || 0 == channelSeed ) {
             XP_LOGFF( TAGFMT() "one of channelNos still 0", TAGPRMS );
             XP_ASSERT(0);
-        } else if ( (stuff->channelNo & ~CHANNEL_MASK) != (channelSeed & ~CHANNEL_MASK) ) {
-            XP_LOGFF( "channelNos test fails: %x vs %x", stuff->channelNo, channelSeed );
+        } else if ( (stuff->channelNo & ~CHANNEL_MASK)
+                    != (channelSeed & ~CHANNEL_MASK) ) {
+            XP_LOGFF( "channelNos test fails: %x vs %x", stuff->channelNo,
+                      channelSeed );
             messageValid = XP_FALSE;
         }
     }
@@ -2610,8 +2770,9 @@ parseSmallHeader( CommsCtxt* comms, XWEnv xwe, XWStreamCtxt* msgStream,
     XP_ASSERT( 0 < headerLen );
     XP_ASSERT( headerLen <= stream_getSize( msgStream ) );
     if ( headerLen <= stream_getSize( msgStream ) ) {
-        XWStreamCtxt* hdrStream = mem_stream_make_raw( MPPARM(comms->mpool)
-                                                       dutil_getVTManager(comms->dutil));
+        XWStreamCtxt* hdrStream =
+            mem_stream_make_raw( MPPARM(comms->mpool)
+                                 dutil_getVTManager(comms->dutil));
         stream_getFromStream( hdrStream, msgStream, headerLen );
         stuff->connID = 0 == (stuff->flags & NO_CONNID_BIT)
             ? comms->util->gameInfo->gameID : CONN_ID_NONE;
@@ -2714,14 +2875,17 @@ comms_checkIncomingStream( CommsCtxt* comms, XWEnv xwe, XWStreamCtxt* stream,
                 if ( stuff.connID == CONN_ID_NONE ) {
                     /* special case: initial message from client or server */
                     rec = validateInitialMessage( comms, xwe, streamSize > 0, retAddr,
-                                                  senderID, &stuff.channelNo, stuff.flags );
+                                                  senderID, &stuff.channelNo,
+                                                  stuff.flags );
                     state->rec = rec;
                 } else if ( comms->connID == stuff.connID ) {
-                    rec = validateChannelMessage( comms, xwe, retAddr, stuff.channelNo,
-                                                  senderID, stuff.msgID, stuff.lastMsgRcd );
+                    rec = validateChannelMessage( comms, xwe, retAddr,
+                                                  stuff.channelNo, senderID,
+                                                  stuff.msgID, stuff.lastMsgRcd );
                 } else {
                     XP_LOGFF( TAGFMT() "unexpected connID (%x vs %x) ; "
-                              "dropping message", TAGPRMS, comms->connID, stuff.connID );
+                              "dropping message", TAGPRMS, comms->connID,
+                              stuff.connID );
                 }
             }
 
@@ -2881,9 +3045,8 @@ comms_gameJoined( CommsCtxt* comms, XWEnv xwe, const XP_UCHAR* connname, XWHostI
 static void
 sendEmptyMsg( CommsCtxt* comms, XWEnv xwe, AddressRecord* rec )
 {
-    MsgQueueElem* elem = makeElemWithID( comms, xwe, 0, // msgID
-                                         rec, rec? rec->channelNo : 0,
-                                         NULL );
+    MsgQueueElem* elem = makeElemWithID( comms, xwe, 0 /* msgID */, 
+                                         rec, rec? rec->channelNo : 0, NULL );
     (void)sendMsg( comms, xwe, elem, COMMS_CONN_NONE );
     freeElem( comms, elem );
 } /* sendEmptyMsg */
@@ -3712,8 +3875,8 @@ send_via_bt_or_ip( CommsCtxt* comms, XWEnv xwe, BTIPMsgType msgTyp, XP_PlayerAdd
             XP_MEMCPY( &buf[1], data, dlen );
         }
 
-        nSent = (*comms->procs.send)( xwe, buf, dlen+1, msgNo, 0,
-                                      addr, typ, gameID(comms), comms->procs.closure );
+        nSent = (*comms->procs.sendMsg)( xwe, buf, dlen+1, msgNo, 0, addr, typ,
+                                         gameID(comms), comms->procs.closure );
         XP_FREE( comms->mpool, buf );
 
         setHeartbeatTimer( comms );

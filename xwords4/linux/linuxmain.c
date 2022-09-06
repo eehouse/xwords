@@ -1494,6 +1494,28 @@ linux_send( XWEnv XP_UNUSED(xwe), const XP_U8* buf, XP_U16 buflen,
     return nSent;
 } /* linux_send */
 
+XP_S16
+linux_send_invt( XWEnv XP_UNUSED(xwe), const NetLaunchInfo* nli,
+                 XP_U32 createdStamp,
+                 const CommsAddrRec* destAddr, void* closure )
+{
+    XP_S16 nSent = -1;
+    CommonGlobals* cGlobals = (CommonGlobals*)closure;
+
+    CommsConnType typ;
+    for ( XP_U32 st = 0; addr_iter( destAddr, &typ, &st ); ) {
+        switch ( typ ) {
+        case COMMS_CONN_MQTT:
+            mqttc_invite( cGlobals->params, createdStamp, nli,
+                          &destAddr->u.mqtt.devID );
+            break;
+        default:
+            XP_ASSERT(0);
+        }
+    }
+    return nSent;
+}
+
 static int
 blocking_read( int fd, unsigned char* buf, const int len )
 {

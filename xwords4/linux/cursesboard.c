@@ -381,7 +381,10 @@ commonInit( CursesBoardState* cbState, sqlite3_int64 rowid,
     cGlobals->addAcceptor = curses_socket_acceptor;
 
     bGlobals->procs.closure = cGlobals;
-    bGlobals->procs.send = LINUX_SEND;
+    bGlobals->procs.sendMsg = linux_send;
+#ifdef XWFEATURE_COMMS_INVITE
+    bGlobals->procs.sendInvt = linux_send_invt;
+#endif
 #ifdef COMMS_HEARTBEAT
     bGlobals->procs.reset = linux_reset;
 #endif
@@ -1215,7 +1218,7 @@ inviteList( CommonGlobals* cGlobals, CommsAddrRec* addr, GSList* invitees,
                 MQTTDevID devID;
                 const gchar* str = g_slist_nth_data( invitees, ii );
                 if ( strToMQTTCDevID( str, &devID ) ) {
-                    mqttc_invite( params, &nli, &devID );
+                    mqttc_invite( params, 0, &nli, &devID );
                 } else {
                     XP_LOGFF( "unable to convert devid %s", str );
                 }
@@ -1261,11 +1264,19 @@ handleInvite( void* closure, int XP_UNUSED(key) )
     } else if ( inviteList( cGlobals, &selfAddr, params->connInfo.mqtt.inviteeDevIDs, COMMS_CONN_MQTT ) ) {
         /* do nothing */
     /* Try sending to self, using the phone number or relayID of this device */
+/* <<<<<<< HEAD */
     } else if ( addr_hasType( &selfAddr, COMMS_CONN_SMS ) ) {
         linux_sms_invite( params, &nli, selfAddr.u.sms.phone, selfAddr.u.sms.port );
     } else if ( addr_hasType( &selfAddr, COMMS_CONN_MQTT ) ) {
         mqttc_invite( params, &nli, mqttc_getDevID( params ) );
     } else if ( addr_hasType( &selfAddr, COMMS_CONN_RELAY ) ) {
+/* ======= */
+/*     } else if ( addr_hasType( &addr, COMMS_CONN_SMS ) ) { */
+/*         linux_sms_invite( params, &nli, addr.u.sms.phone, addr.u.sms.port ); */
+/*     } else if ( addr_hasType( &addr, COMMS_CONN_MQTT ) ) { */
+/*         mqttc_invite( params, 0, &nli, mqttc_getDevID( params ) ); */
+/*     } else if ( addr_hasType( &addr, COMMS_CONN_RELAY ) ) { */
+/* >>>>>>> d9781d21e (snapshot: mqtt invites for gtk work via comms) */
         XP_U32 relayID = linux_getDevIDRelay( params );
         if ( 0 != relayID ) {
             relaycon_invite( params, relayID, NULL, &nli );
