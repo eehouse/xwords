@@ -1843,8 +1843,9 @@ sendMsg( CommsCtxt* comms, XWEnv xwe, MsgQueueElem* elem, const CommsConnType fi
         (void)channelToAddress( comms, xwe, channelNo, &addrP );
     } else {
         /* guest has only one peer, but old code might save several */
-        XP_ASSERT( !!comms->recs && !comms->recs->next );
+        XP_ASSERT( !!comms->recs ); /* firing in upgrade test. WHY??? */
         if ( !!comms->recs ) {
+            XP_ASSERT( !comms->recs->next ); // firing during upgrade test
             addrP = &comms->recs->addr;
         }
     }
