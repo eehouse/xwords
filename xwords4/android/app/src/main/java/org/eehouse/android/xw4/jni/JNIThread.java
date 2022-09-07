@@ -233,7 +233,19 @@ public class JNIThread extends Thread implements AutoCloseable {
                                                          utils, null, cp, m_xport );
                 }
                 if ( null == m_jniGamePtr ) {
-                    m_jniGamePtr = XwJNI.initNew( m_gi, utils, null, cp, m_xport );
+                    // I don't think games get created here. If they do, I
+                    // need to get the selfAddr from somewhere other than
+                    // generic defaults, as the user should have configured an
+                    // address for the game.
+                    Assert.assertTrueNR( m_gi.serverRole != DeviceRole.SERVER_ISCLIENT );
+                    Assert.failDbg();
+                    CommsAddrRec selfAddr = null;
+                    CommsAddrRec hostAddr = null;
+                    if ( m_gi.serverRole == DeviceRole.SERVER_ISSERVER ) {
+                        selfAddr = CommsAddrRec.getSelfAddr( context );
+                    }
+                    m_jniGamePtr = XwJNI.initNew( m_gi, selfAddr, hostAddr,
+                                                  utils, null, cp, m_xport );
                 }
                 Assert.assertNotNull( m_jniGamePtr );
                 notifyAll();

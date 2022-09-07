@@ -64,12 +64,15 @@ public class GameConfigDelegate extends DelegateBase
     implements View.OnClickListener, XWListItem.DeleteCallback {
     private static final String TAG = GameConfigDelegate.class.getSimpleName();
 
-    private static final String INTENT_FORRESULT_NEWGAME = "newgame";
-
+    private static final String INTENT_FORRESULT_SOLO = "solo";
     private static final String WHICH_PLAYER = "WHICH_PLAYER";
     private static final String LOCAL_GI = "LOCAL_GI";
     private static final String LOCAL_TYPES = "LOCAL_TYPES";
     private static final String DIS_MAP = "DIS_MAP";
+
+    static final String INTENT_KEY_GI = "key_gi";
+    static final String INTENT_KEY_CAR = "key_car";
+    static final String INTENT_KEY_NAME = "key_name";
 
     private Activity m_activity;
     private CheckBox m_gameLockedCheck;
@@ -84,6 +87,7 @@ public class GameConfigDelegate extends DelegateBase
     private Spinner m_playerDictSpinner;
     private long m_rowid;
     private boolean m_isNewGame;
+    private boolean m_newGameIsSolo; // only used if m_isNewGame is true
     private CurGameInfo m_gi;
     private CurGameInfo m_giOrig;
     private JNIThread m_jniThread;
@@ -97,7 +101,6 @@ public class GameConfigDelegate extends DelegateBase
     private String m_browseText;
     private LinearLayout m_playerLayout;
     private CommsAddrRec m_carOrig;
-    private CommsAddrRec[] m_remoteAddrs;
     private CommsAddrRec m_car;
     private CommonPrefs m_cp;
     private boolean m_gameStarted = false;
@@ -482,8 +485,8 @@ public class GameConfigDelegate extends DelegateBase
 
         Bundle args = getArguments();
         m_rowid = args.getLong( GameUtils.INTENT_KEY_ROWID, DBUtils.ROWID_NOTFOUND );
-        Assert.assertTrue( DBUtils.ROWID_NOTFOUND != m_rowid );
-        m_isNewGame = args.getBoolean( INTENT_FORRESULT_NEWGAME, false );
+        m_newGameIsSolo = args.getBoolean( INTENT_FORRESULT_SOLO, false );
+        m_isNewGame = DBUtils.ROWID_NOTFOUND == m_rowid;
 
         m_addPlayerButton = (Button)findViewById(R.id.add_player);
         m_addPlayerButton.setOnClickListener( this );
@@ -510,7 +513,9 @@ public class GameConfigDelegate extends DelegateBase
     @Override
     protected void onResume()
     {
-        m_jniThread = JNIThread.getRetained( m_rowid );
+        if ( !m_isNewGame ) {
+            m_jniThread = JNIThread.getRetained( m_rowid );
+        }
         super.onResume();
         loadGame();
     }
@@ -565,8 +570,13 @@ public class GameConfigDelegate extends DelegateBase
     {
         if ( null == m_giOrig ) {
             m_giOrig = new CurGameInfo( m_activity );
+            if ( m_isNewGame ) {
+                m_giOrig.addDefaults( m_activity, m_newGameIsSolo );
+            }
 
-            if ( null != m_jniThread ) {
+            if ( m_isNewGame ) {
+                loadGame( null );
+            } else if ( null != m_jniThread ) {
                 try ( XwJNI.GamePtr gamePtr = m_jniThread
                       .getGamePtr().retain() ) {
                     loadGame( gamePtr );
@@ -587,11 +597,14 @@ public class GameConfigDelegate extends DelegateBase
     // Exists only to be called from inside two try-with-resource blocks above
     private void loadGame( XwJNI.GamePtr gamePtr )
     {
-        if ( null == gamePtr ) {
+        if ( null == gamePtr && !m_isNewGame ) {
             Assert.failDbg();
         } else {
-            m_gameStarted = XwJNI.model_getNMoves( gamePtr ) > 0
-                || XwJNI.comms_isConnected( gamePtr );
+            m_gameStarted = !m_isNewGame;
+            if ( m_gameStarted ) {
+                m_gameStarted = XwJNI.model_getNMoves( gamePtr ) > 0
+                    || XwJNI.comms_isConnected( gamePtr );
+            }
 
             if ( m_gameStarted ) {
                 if ( null == m_gameLockedCheck ) {
@@ -607,11 +620,16 @@ public class GameConfigDelegate extends DelegateBase
                 m_gi = new CurGameInfo( m_giOrig );
             }
 
-            if ( XwJNI.game_hasComms( gamePtr ) ) {
-                m_carOrig = XwJNI.comms_getAddr( gamePtr );
-                m_remoteAddrs = XwJNI.comms_getAddrs( gamePtr );
+            if ( m_isNewGame ) {
+                if ( m_newGameIsSolo ) {
+                    m_carOrig = new CommsAddrRec(); // empty
+                } else {
+                    m_carOrig = CommsAddrRec.getSelfAddr( m_activity );
+                }
+            } else if ( XwJNI.game_hasComms( gamePtr ) ) {
+                m_carOrig = XwJNI.comms_getSelfAddr( gamePtr );
             } else if ( !localOnlyGame() ) {
-                m_carOrig = XwJNI.comms_getInitialAddr();
+                m_carOrig = CommsAddrRec.getSelfAddr( m_activity );
             } else {
                 // Leaving this null breaks stuff: an empty set, rather than a
                 // null one, represents a standalone game
@@ -623,8 +641,10 @@ public class GameConfigDelegate extends DelegateBase
                 m_conTypes = (CommsConnTypeSet)m_carOrig.conTypes.clone();
             }
 
-            buildDisabledsMap( gamePtr );
-            setDisableds();
+            if ( !m_isNewGame ) {
+                buildDisabledsMap( gamePtr );
+                setDisableds();
+            }
 
             m_car = new CommsAddrRec( m_carOrig );
 
@@ -667,17 +687,17 @@ public class GameConfigDelegate extends DelegateBase
             }
             m_traysizeSpinner
                 .setOnItemSelectedListener( new Utils.OnNothingSelDoesNothing() {
-                    @Override
-                    public void onItemSelected( AdapterView<?> parent, View spinner,
-                                                int position, long id ) {
-                        if ( curSel[0] != position ) {
-                            curSel[0] = position;
-                            makeNotAgainBuilder( R.string.key_na_traysize,
-                                                 R.string.not_again_traysize )
-                                .show();
+                        @Override
+                        public void onItemSelected( AdapterView<?> parent, View spinner,
+                                                    int position, long id ) {
+                            if ( curSel[0] != position ) {
+                                curSel[0] = position;
+                                makeNotAgainBuilder( R.string.key_na_traysize,
+                                                     R.string.not_again_traysize )
+                                    .show();
+                            }
                         }
-                    }
-                } );
+                    } );
 
         }
     } // loadGame
@@ -774,9 +794,6 @@ public class GameConfigDelegate extends DelegateBase
             PrefsDelegate.launch( m_activity );
             break;
         case DELETE_AND_EXIT:
-            if ( m_isNewGame ) {
-                deleteGame();
-            }
             closeNoSave();
             break;
         case ASKED_PHONE_STATE:
@@ -887,7 +904,14 @@ public class GameConfigDelegate extends DelegateBase
         if ( !m_haveClosed ) {
             m_haveClosed = true;
             Intent intent = new Intent();
-            intent.putExtra( GameUtils.INTENT_KEY_ROWID, m_rowid );
+            if ( m_isNewGame ) {
+                intent.putExtra( INTENT_KEY_GI, m_gi );
+                intent.putExtra( INTENT_KEY_CAR, m_car );
+                // Game name should be a field in this layout
+                intent.putExtra( INTENT_KEY_NAME, "Config Me" );
+            } else {
+                intent.putExtra( GameUtils.INTENT_KEY_ROWID, m_rowid );
+            }
             setResult( Activity.RESULT_OK, intent );
             finish();
         }
@@ -907,9 +931,7 @@ public class GameConfigDelegate extends DelegateBase
     {
         boolean consumed = false;
         if ( ! isFinishing() && null != m_gi ) {
-            if ( m_isNewGame ) {
-                deleteGame();
-            } else {
+            if ( !m_isNewGame ) {
                 saveChanges();
                 if ( !m_gameStarted ) { // no confirm needed
                     applyChanges( true );
@@ -930,11 +952,6 @@ public class GameConfigDelegate extends DelegateBase
     protected GameConfigDelegate curThis()
     {
         return (GameConfigDelegate)super.curThis();
-    }
-
-    private void deleteGame()
-    {
-        GameUtils.deleteGame( m_activity, m_rowid, false, false );
     }
 
     private void loadPlayersList()
@@ -1170,7 +1187,7 @@ public class GameConfigDelegate extends DelegateBase
 
     private void setDisableds()
     {
-        if ( BuildConfig.DEBUG && !localOnlyGame() ) {
+        if ( BuildConfig.DEBUG && null != m_disabMap && !localOnlyGame() ) {
             LinearLayout disableds = (LinearLayout)findViewById( R.id.disableds );
             disableds.setVisibility( View.VISIBLE );
 
@@ -1272,14 +1289,16 @@ public class GameConfigDelegate extends DelegateBase
 
     private void applyChanges( GameLock lock, boolean forceNew )
     {
-        GameUtils.applyChanges( m_activity, m_gi, m_car, m_disabMap,
-                                lock, forceNew );
-        DBUtils.saveThumbnail( m_activity, lock, null ); // clear it
+        if ( !m_isNewGame ) {
+            GameUtils.applyChanges( m_activity, m_gi, m_car, m_disabMap,
+                                    lock, forceNew );
+            DBUtils.saveThumbnail( m_activity, lock, null ); // clear it
+        }
     }
 
     private void applyChanges( boolean forceNew )
     {
-        if ( !isFinishing() ) {
+        if ( !m_isNewGame && !isFinishing() ) {
             if ( null != m_jniThread ) {
                 applyChanges( m_jniThread.getLock(), forceNew );
             } else {
@@ -1295,28 +1314,50 @@ public class GameConfigDelegate extends DelegateBase
     @Override
     protected void setTitle()
     {
-        int strID;
-        if ( null != m_conTypes && 0 < m_conTypes.size() ) {
-            strID = R.string.title_gamenet_config_fmt;
+        String title;
+        if ( m_isNewGame ) {
+            int strID = m_newGameIsSolo
+                ? R.string.new_game
+                : R.string.new_game_networked;
+            title = getString( strID );
         } else {
-            strID = R.string.title_game_config_fmt;
+            int strID;
+            if ( null != m_conTypes && 0 < m_conTypes.size() ) {
+                strID = R.string.title_gamenet_config_fmt;
+            } else {
+                strID = R.string.title_game_config_fmt;
+            }
+            String name = GameUtils.getName( m_activity, m_rowid );
+            title = getString( strID, name );
         }
-        String name = GameUtils.getName( m_activity, m_rowid );
-        setTitle( getString( strID, name ) );
+        setTitle( title );
     }
 
     private boolean localOnlyGame()
     {
-        return DeviceRole.SERVER_STANDALONE == m_gi.serverRole; // m_giOrig is null...
+        boolean result = DeviceRole.SERVER_STANDALONE == m_gi.serverRole;
+        // Log.d( TAG, "localOnlyGame() => %b", result );
+        return result;
     }
 
     public static void editForResult( Delegator delegator,
                                       RequestCode requestCode,
-                                      long rowID, boolean newGame )
+                                      long rowID )
     {
         Bundle bundle = new Bundle();
         bundle.putLong( GameUtils.INTENT_KEY_ROWID, rowID );
-        bundle.putBoolean( INTENT_FORRESULT_NEWGAME, newGame );
+
+        delegator
+            .addFragmentForResult( GameConfigFrag.newInstance( delegator ),
+                                   bundle, requestCode );
+    }
+
+    public static void configNewForResult( Delegator delegator,
+                                           RequestCode requestCode,
+                                           boolean solo )
+    {
+        Bundle bundle = new Bundle();
+        bundle.putBoolean( INTENT_FORRESULT_SOLO, solo );
 
         delegator
             .addFragmentForResult( GameConfigFrag.newInstance( delegator ),

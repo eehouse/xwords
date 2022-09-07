@@ -603,6 +603,7 @@ addrTypesToJ( JNIEnv* env, const CommsAddrRec* addr )
 void
 getJAddrRec( JNIEnv* env, CommsAddrRec* addr, jobject jaddr )
 {
+    XP_MEMSET( addr, 0, sizeof(*addr) );
     /* Iterate over types in the set in jaddr, and for each call
        addr_addType() and then copy in the types. */
     jobject jtypeset = getObjectField( env, jaddr, "conTypes",

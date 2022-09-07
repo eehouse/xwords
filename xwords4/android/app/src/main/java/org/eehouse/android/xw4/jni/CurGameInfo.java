@@ -187,6 +187,7 @@ public class CurGameInfo implements Serializable {
                     .append( ", " );
             }
             sb.append( "], gameID: ").append( gameID )
+                .append( ", role: ").append( serverRole )
                 .append( ", hashCode: ").append( hashCode() )
                 .append( ", timerEnabled: ").append( timerEnabled )
                 .append( ", gameSeconds: ").append( gameSeconds )
@@ -295,6 +296,22 @@ public class CurGameInfo implements Serializable {
                 players[ii].robotIQ = smartness;
             }
         }
+    }
+
+    public CurGameInfo addDefaults( Context context, boolean standalone )
+    {
+        setLang( context, null );
+        nPlayers = 2;
+        players[0] = new LocalPlayer( context, 0 );
+        players[1] = new LocalPlayer( context, 1 );
+        if ( standalone ) {
+            players[1].setIsRobot( true );
+        } else {
+            players[1].isLocal = false;
+        }
+        setServerRole( standalone ?
+                       DeviceRole.SERVER_STANDALONE : DeviceRole.SERVER_ISSERVER );
+        return this;
     }
 
     /** return true if any of the changes made would invalide a game

@@ -33,6 +33,7 @@ import org.eehouse.android.xw4.Quarantine;
 import org.eehouse.android.xw4.Utils.ISOCode;
 import org.eehouse.android.xw4.Utils;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
+import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
 
 // Collection of native methods and a bit of state
 public class XwJNI {
@@ -287,7 +288,6 @@ public class XwJNI {
         return haveLocaleToLc( isoCode.toString(), lc );
     }
 
-    public static native CommsAddrRec comms_getInitialAddr();
     public static native String comms_getUUID();
     public static native String lcToLocale( int lc );
     public static native boolean haveLocaleToLc( String isoCodeStr, int[] lc );
@@ -317,11 +317,12 @@ public class XwJNI {
     }
 
     public static synchronized GamePtr
-        initNew( CurGameInfo gi, UtilCtxt util, DrawCtx draw,
-                 CommonPrefs cp, TransportProcs procs )
+        initNew( CurGameInfo gi, CommsAddrRec selfAddr, CommsAddrRec hostAddr,
+                 UtilCtxt util, DrawCtx draw, CommonPrefs cp, TransportProcs procs )
     {
+        Assert.assertTrueNR( null != selfAddr || gi.serverRole == DeviceRole.SERVER_STANDALONE );
         GamePtr gamePtr = initGameJNI( 0 );
-        game_makeNewGame( gamePtr, gi, util, draw, cp, procs );
+        game_makeNewGame( gamePtr, gi, selfAddr, hostAddr, util, draw, cp, procs );
         return gamePtr;
     }
 
@@ -333,6 +334,8 @@ public class XwJNI {
 
     private static native void game_makeNewGame( GamePtr gamePtr,
                                                  CurGameInfo gi,
+                                                 CommsAddrRec selfAddr,
+                                                 CommsAddrRec hostAddr,
                                                  UtilCtxt util,
                                                  DrawCtx draw, CommonPrefs cp,
                                                  TransportProcs procs );
@@ -498,9 +501,9 @@ public class XwJNI {
     public static native void comms_start( GamePtr gamePtr );
     public static native void comms_stop( GamePtr gamePtr );
     public static native void comms_resetSame( GamePtr gamePtr );
-    public static native CommsAddrRec comms_getAddr( GamePtr gamePtr );
+    public static native CommsAddrRec comms_getSelfAddr( GamePtr gamePtr );
+    public static native CommsAddrRec comms_getHostAddr( GamePtr gamePtr );
     public static native CommsAddrRec[] comms_getAddrs( GamePtr gamePtr );
-    public static native void comms_augmentHostAddr( GamePtr gamePtr, CommsAddrRec addr );
     public static native void comms_dropHostAddr( GamePtr gamePtr, CommsConnType typ );
     public static native int comms_resendAll( GamePtr gamePtr, boolean force,
                                               CommsConnType filter,

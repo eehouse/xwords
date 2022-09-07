@@ -133,24 +133,22 @@ public class GameUtils {
                                       boolean juggle )
     {
         CurGameInfo gi = new CurGameInfo( context );
-        CommsAddrRec addr = null;
+        CommsAddrRec selfAddr = null;
+        CommsAddrRec hostAddr = null;
 
         try ( GamePtr gamePtr = loadMakeGame( context, gi, lockSrc ) ) {
             if ( XwJNI.game_hasComms( gamePtr ) ) {
-                addr = XwJNI.comms_getAddr( gamePtr );
+                selfAddr = XwJNI.comms_getSelfAddr( gamePtr );
+                hostAddr = XwJNI.comms_getHostAddr( gamePtr );
             }
         }
 
         try ( GamePtr gamePtr = XwJNI
-              .initNew( gi, (UtilCtxt)null, (DrawCtx)null,
+              .initNew( gi, selfAddr, hostAddr, (UtilCtxt)null, (DrawCtx)null,
                         CommonPrefs.get( context ), (TransportProcs)null ) ) {
 
             if ( juggle ) {
                 gi.juggle();
-            }
-
-            if ( null != addr ) {
-                XwJNI.comms_augmentHostAddr( gamePtr, addr );
             }
 
             if ( null == lockDest ) {
@@ -414,7 +412,11 @@ public class GameUtils {
                                                 CommonPrefs.get(context),
                                                 tp );
                 if ( null == gamePtr ) {
-                    gamePtr = XwJNI.initNew( gi, (UtilCtxt)null, null,
+                    Assert.assertTrueNR( gi.serverRole != DeviceRole.SERVER_ISCLIENT );
+                    CommsAddrRec selfAddr = CommsAddrRec.getSelfAddr( context );
+                    CommsAddrRec hostAddr = null;
+                    gamePtr = XwJNI.initNew( gi, selfAddr, hostAddr,
+                                             (UtilCtxt)null, (DrawCtx)null,
                                              CommonPrefs.get(context), null );
                 }
             }
@@ -682,7 +684,23 @@ public class GameUtils {
         // Will need to add a setNPlayers() method to gi to make this
         // work
         Assert.assertTrue( gi.nPlayers == nPlayersT );
-        rowid = saveNew( context, gi, groupID, gameName );
+        return makeNewMultiGame( context, sink, gi, util, groupID, gameName, addr );
+    }
+
+    public static long makeNewMultiGame( Context context, CurGameInfo gi,
+                                         long groupID, String gameName,
+                                         CommsAddrRec selfAddr )
+    {
+        return makeNewMultiGame( context, (MultiMsgSink)null, gi, (UtilCtxt)null,
+                                 groupID, gameName, selfAddr );
+    }
+
+    private static long makeNewMultiGame( Context context, MultiMsgSink sink,
+                                          CurGameInfo gi, UtilCtxt util,
+                                          long groupID, String gameName,
+                                          CommsAddrRec selfAddr )
+    {
+        long rowid = saveNew( context, gi, groupID, gameName );
         if ( null != sink ) {
             sink.setRowID( rowid );
         }
@@ -692,7 +710,9 @@ public class GameUtils {
             // succeed because we just created the rowid.
             try ( GameLock lock = GameLock.tryLock( rowid ) ) {
                 Assert.assertNotNull( lock );
-                applyChanges( context, sink, gi, util, addr, null, lock, false );
+                applyChanges( context, sink, gi, util, selfAddr,
+                              (Map<CommsConnType, boolean[]>)null,
+                              lock, false /*forceNew*/ );
             }
         }
 
@@ -1138,7 +1158,7 @@ public class GameUtils {
         }
 
         if ( forceNew || !madeGame ) {
-            try ( GamePtr gamePtr = XwJNI.initNew( gi, util, (DrawCtx)null,
+            try ( GamePtr gamePtr = XwJNI.initNew( gi, car, null, util, (DrawCtx)null,
                                                    cp, sink ) ) {
                 if ( null != gamePtr ) {
                     applyChanges( context, sink, gi, car, disab, lock, gamePtr );
@@ -1152,10 +1172,6 @@ public class GameUtils {
                                       Map<CommsConnType, boolean[]> disab,
                                       GameLock lock, GamePtr gamePtr )
     {
-        if ( null != car ) {
-            XwJNI.comms_augmentHostAddr( gamePtr, car );
-        }
-
         if ( BuildConfig.DEBUG && null != disab ) {
             for ( CommsConnType typ : disab.keySet() ) {
                 boolean[] bools = disab.get( typ );

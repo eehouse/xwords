@@ -1159,6 +1159,20 @@ comms_getSelfAddr( const CommsCtxt* comms, CommsAddrRec* addr )
     XP_MEMCPY( addr, &comms->selfAddr, sizeof(*addr) );
 } /* comms_getAddr */
 
+XP_Bool
+comms_getHostAddr( const CommsCtxt* comms, CommsAddrRec* addr )
+{
+    XP_ASSERT( !!comms );
+    XP_Bool haveAddr = !comms->isServer
+        && !!comms->recs
+        && !comms->recs->next
+        ;
+    if ( haveAddr ) {
+        XP_MEMCPY( addr, &comms->recs->addr, sizeof(*addr) );
+    }
+    return haveAddr;
+} /* comms_getAddr */
+
 void
 comms_augmentHostAddr( CommsCtxt* comms, XWEnv xwe, const CommsAddrRec* addr )
 {

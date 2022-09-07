@@ -415,6 +415,42 @@ public class CommsAddrRec implements Serializable {
         return matter;
     }
 
+    @Override
+    public String toString()
+    {
+        if ( BuildConfig.NON_RELEASE ) {
+            ArrayList<String> list = new ArrayList<>();
+            for ( CommsConnType typ : conTypes ) {
+                String elem;
+                switch ( typ ) {
+                case COMMS_CONN_MQTT:
+                    elem = String.format( "%s: %s", typ, mqtt_devID );
+                    break;
+                case COMMS_CONN_SMS:
+                    elem = String.format( "%s: {phone: %s, port: %d}",
+                                          typ, sms_phone, sms_port );
+                    break;
+                default:
+                    elem = typ.toString();
+                    break;
+                }
+                list.add( elem );
+            }
+            return "{" + TextUtils.join(", ", list) + "}";
+        } else {
+            return super.toString();
+        }
+    }
+
+    public static CommsAddrRec getSelfAddr( Context context )
+    {
+        CommsAddrRec result = new CommsAddrRec();
+        CommsConnTypeSet types = XWPrefs.getAddrTypes( context );
+        result.populate( context, types );
+        Log.d( TAG, "getSelfAddr() => %s", result );
+        return result;
+    }
+
     private void copyFrom( CommsAddrRec src )
     {
         conTypes = src.conTypes;

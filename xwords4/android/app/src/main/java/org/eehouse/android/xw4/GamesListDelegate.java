@@ -1672,7 +1672,18 @@ public class GamesListDelegate extends ListDelegateBase
             if ( !cancelled ) {
                 long rowID = data.getLongExtra( GameUtils.INTENT_KEY_ROWID,
                                                 ROWID_NOTFOUND );
-                launchGame( rowID );
+                if ( ROWID_NOTFOUND != rowID ) {
+                    launchGame( rowID );
+                } else {        // new game case?
+                    CurGameInfo gi = (CurGameInfo)
+                        data.getSerializableExtra( GameConfigDelegate.INTENT_KEY_GI );
+                    CommsAddrRec selfAddr = (CommsAddrRec)
+                        data.getSerializableExtra( GameConfigDelegate.INTENT_KEY_CAR );
+                    String name = data.getStringExtra( GameConfigDelegate.INTENT_KEY_NAME );
+                    long rowid = GameUtils.makeNewMultiGame( m_activity, gi, DBUtils.GROUPID_UNSPEC,
+                                                             name, selfAddr );
+                    launchGame( rowid );
+                }
             }
             break;
         case STORE_DATA_FILE:
@@ -2181,7 +2192,7 @@ public class GamesListDelegate extends ListDelegateBase
         case R.id.games_game_config:
             GameConfigDelegate.editForResult( getDelegator(),
                                               RequestCode.CONFIG_GAME,
-                                              selRowIDs[0], false );
+                                              selRowIDs[0] );
             break;
 
         case R.id.games_game_move:
@@ -3113,31 +3124,25 @@ public class GamesListDelegate extends ListDelegateBase
                                             boolean skipAsk, CommsAddrRec addr )
     {
         if ( skipAsk || !askingChangeName( name, doConfigure ) ) {
-            long rowID;
-            long groupID = 1 == m_mySIS.selGroupIDs.size()
-                ? m_mySIS.selGroupIDs.iterator().next() : DBUtils.GROUPID_UNSPEC;
 
-            // Ideally we'd check here whether user has set player name.
-
-            if ( m_mySIS.nextIsSolo ) {
-                rowID = GameUtils.saveNew( m_activity,
-                                           new CurGameInfo( m_activity ),
-                                           groupID, name );
-            } else {
-                rowID = GameUtils.makeNewMultiGame( m_activity, groupID, name );
-            }
-
-            if ( null != addr ) {
-                DBUtils.addRematchInfo( m_activity, rowID, addr );
-            }
-
+            // If we're configuring, we don't create a game yet.
             if ( doConfigure ) {
-                // configure it
-                GameConfigDelegate.editForResult( getDelegator(),
-                                                  RequestCode.CONFIG_GAME,
-                                                  rowID, true );
+                GameConfigDelegate.configNewForResult( getDelegator(),
+                                                       RequestCode.CONFIG_GAME,
+                                                       m_mySIS.nextIsSolo );
             } else {
-                // launch it
+                long rowID;
+                long groupID = 1 == m_mySIS.selGroupIDs.size()
+                    ? m_mySIS.selGroupIDs.iterator().next()
+                    : DBUtils.GROUPID_UNSPEC;
+
+                if ( m_mySIS.nextIsSolo ) {
+                    rowID = GameUtils.saveNew( m_activity,
+                                               new CurGameInfo( m_activity ),
+                                               groupID, name );
+                } else {
+                    rowID = GameUtils.makeNewMultiGame( m_activity, groupID, name );
+                }
                 GameUtils.launchGame( getDelegator(), rowID );
             }
         }

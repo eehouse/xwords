@@ -105,7 +105,8 @@ public class LocalPlayer implements Serializable {
     {
         String result;
         if ( BuildConfig.DEBUG ) {
-            result = String.format( "{name: %s, isLocal: %b}", name, isLocal );
+            result = String.format( "{name: %s, isLocal: %b, robotIQ: %d}",
+                                    name, isLocal, robotIQ );
         } else {
             result = super.toString();
         }

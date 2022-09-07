@@ -959,17 +959,6 @@ Java_org_eehouse_android_xw4_jni_XwJNI_nli_1from_1stream
     return jnli;
 }
 
-JNIEXPORT jobject JNICALL
-Java_org_eehouse_android_xw4_jni_XwJNI_comms_1getInitialAddr
-( JNIEnv* env, jclass C )
-{
-    CommsAddrRec addr;
-    comms_getInitialAddr( &addr );
-    jobject jaddr = makeObjectEmptyConst( env, PKG_PATH("jni/CommsAddrRec") );
-    setJAddrRec( env, jaddr, &addr );
-    return jaddr;
-}
-
 JNIEXPORT jstring JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_comms_1getUUID
 ( JNIEnv* env, jclass C )
@@ -1388,8 +1377,8 @@ Java_org_eehouse_android_xw4_jni_XwJNI_envDone
 JNIEXPORT void JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeNewGame
 ( JNIEnv* env, jclass C, GamePtrType gamePtr, jobject j_gi,
-  jobject j_util, jobject j_draw, jobject j_cp,
-  jobject j_procs )
+  jobject j_selfAddr, jobject j_hostAddr, jobject j_util, jobject j_draw,
+  jobject j_cp, jobject j_procs )
 {
     XWJNI_START_GLOBALS();
     CurGameInfo* gi = makeGI( MPPARM(mpool) env, j_gi );
@@ -1410,8 +1399,25 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeNewGame
     CommonPrefs cp = {0};
     loadCommonPrefs( env, &cp, j_cp );
 
-    game_makeNewGame( MPPARM(mpool) env, &state->game, gi,
-                      globals->util, dctx, &cp, globals->xportProcs );
+    CommsAddrRec selfAddr;
+    CommsAddrRec* selfAddrP = NULL;
+    if ( !!j_selfAddr ) {
+        getJAddrRec( env, &selfAddr, j_selfAddr );
+        selfAddrP = &selfAddr;
+    }
+
+    CommsAddrRec hostAddr;
+    CommsAddrRec* hostAddrP = NULL;
+    if ( !!j_hostAddr ) {
+        XP_ASSERT( gi->serverRole == SERVER_ISCLIENT );
+        getJAddrRec( env, &hostAddr, j_hostAddr );
+        hostAddrP = &hostAddr;
+    } else {
+        XP_ASSERT( gi->serverRole != SERVER_ISCLIENT );
+    }
+
+    game_makeNewGame( MPPARM(mpool) env, &state->game, gi, selfAddrP,
+                      hostAddrP, globals->util, dctx, &cp, globals->xportProcs );
     XWJNI_END();
 } /* makeNewGame */
 
@@ -2163,16 +2169,33 @@ Java_org_eehouse_android_xw4_jni_XwJNI_comms_1resetSame
 }
 
 JNIEXPORT jobject JNICALL
-Java_org_eehouse_android_xw4_jni_XwJNI_comms_1getAddr
+Java_org_eehouse_android_xw4_jni_XwJNI_comms_1getSelfAddr
 (JNIEnv* env, jclass C, GamePtrType gamePtr )
 {
     jobject jaddr;
     XWJNI_START();
     XP_ASSERT( state->game.comms );
     CommsAddrRec addr;
-    comms_getAddr( state->game.comms, &addr );
+    comms_getSelfAddr( state->game.comms, &addr );
     jaddr = makeObjectEmptyConst( env, PKG_PATH("jni/CommsAddrRec") );
     setJAddrRec( env, jaddr, &addr );
+    XWJNI_END();
+    return jaddr;
+}
+
+JNIEXPORT jobject JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_comms_1getHostAddr
+(JNIEnv* env, jclass C, GamePtrType gamePtr )
+{
+    LOG_FUNC();
+    jobject jaddr = NULL;
+    XWJNI_START();
+    XP_ASSERT( state->game.comms );
+    CommsAddrRec addr;
+    if ( comms_getHostAddr( state->game.comms, &addr ) ) {
+        jaddr = makeObjectEmptyConst( env, PKG_PATH("jni/CommsAddrRec") );
+        setJAddrRec( env, jaddr, &addr );
+    }
     XWJNI_END();
     return jaddr;
 }
@@ -2265,7 +2288,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1summarize
         setInt( env, jsummary, "nPacketsPending", summary.nPacketsPending );
 
         CommsAddrRec addr;
-        comms_getAddr( comms, &addr );
+        comms_getSelfAddr( comms, &addr );
         setTypeSetFieldIn( env, &addr, jsummary, "conTypes" );
 
         CommsConnType typ;
