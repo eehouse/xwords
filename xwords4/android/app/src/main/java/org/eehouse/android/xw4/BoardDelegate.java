@@ -3154,17 +3154,21 @@ public class BoardDelegate extends DelegateBase
 
     private boolean tryOtherInvites( CommsAddrRec addr )
     {
-        boolean result = true;
+        Log.d( TAG, "tryOtherInvites(%s)", addr );
         NetLaunchInfo nli = nliForMe();
+        XwJNI.comms_invite( m_jniGamePtr, nli, addr );
+        boolean result = true;
+
+        // Not sure what to do about this recordInviteSent stuff
         CommsConnTypeSet conTypes = addr.conTypes;
         for ( CommsConnType typ : conTypes ) {
             switch ( typ ) {
             case COMMS_CONN_MQTT:
-                MQTTUtils.inviteRemote( m_jniGamePtr, addr.mqtt_devID, nli );
+                // MQTTUtils.inviteRemote( m_jniGamePtr, addr.mqtt_devID, nli );
                 // recordInviteSent( InviteMeans.MQTT, addr.mqtt_devID );
                 break;
             case COMMS_CONN_BT:
-                BTUtils.inviteRemote( m_activity, addr.bt_btAddr, nli );
+                // BTUtils.inviteRemote( m_activity, addr.bt_btAddr, nli );
                 recordInviteSent( InviteMeans.BLUETOOTH, addr.bt_btAddr );
                 break;
                 // case COMMS_CONN_RELAY:
@@ -3172,7 +3176,7 @@ public class BoardDelegate extends DelegateBase
                 //     recordInviteSent( InviteMeans.RELAY );
                 //     break;
             case COMMS_CONN_SMS:
-                sendNBSInviteIf( addr.sms_phone, nli, true );
+                // sendNBSInviteIf( addr.sms_phone, nli, true );
                 recordInviteSent( InviteMeans.SMS_DATA, addr.sms_phone );
                 break;
 

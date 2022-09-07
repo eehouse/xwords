@@ -695,7 +695,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dvc_1makeMQTTInvite
 {
     jbyteArray result;
     DVC_HEADER(jniGlobalPtr);
-    NetLaunchInfo nli = {0};
+    NetLaunchInfo nli;
     loadNLI( env, &nli, jnli );
     LOGNLI( &nli );
 
@@ -898,7 +898,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_nli_1to_1stream
 #endif
 
     jbyteArray result;
-    NetLaunchInfo nli = {0};
+    NetLaunchInfo nli;
     loadNLI( env, &nli, jnli );
     XWStreamCtxt* stream = mem_stream_make( MPPARM(mpool) globalState->vtMgr,
                                             NULL, 0, NULL );
@@ -2625,7 +2625,16 @@ JNIEXPORT void JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_comms_1invite
 ( JNIEnv* env, jclass C, GamePtrType gamePtr, jobject jnli, jobject jaddr )
 {
-    LOG_FUNC();
+    XWJNI_START_GLOBALS();
+    CommsCtxt* comms = state->game.comms;
+    if ( NULL != comms ) {
+        CommsAddrRec destAddr;
+        getJAddrRec( env, &destAddr, jaddr );
+        NetLaunchInfo nli;
+        loadNLI( env, &nli, jnli );
+
+        comms_invite( comms, env, &nli, &destAddr );
+    }
 }
 
 JNIEXPORT void JNICALL

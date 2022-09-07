@@ -20,6 +20,7 @@
 
 package org.eehouse.android.xw4.jni;
 
+import org.eehouse.android.xw4.NetLaunchInfo;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 
 public interface TransportProcs {
@@ -30,6 +31,7 @@ public interface TransportProcs {
 
     int transportSend( byte[] buf, String msgNo, CommsAddrRec addr,
                        CommsConnType conType, int gameID, int timestamp );
+    boolean transportSendInvt( CommsAddrRec addr, NetLaunchInfo nli, int timestamp );
 
     void countChanged( int newCount );
 

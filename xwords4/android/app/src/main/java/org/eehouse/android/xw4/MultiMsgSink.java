@@ -96,6 +96,13 @@ public class MultiMsgSink implements TransportProcs {
     public int getFlags() { return COMMS_XPORT_FLAGS_HASNOCONN; }
 
     @Override
+    public boolean transportSendInvt( CommsAddrRec addr, NetLaunchInfo nli,
+                                      int timestamp )
+    {
+        return sendInvite( m_context, addr, nli, timestamp );
+    }
+
+    @Override
     public int transportSend( byte[] buf, String msgID, CommsAddrRec addr,
                               CommsConnType typ, int gameID, int timestamp )
     {
@@ -139,5 +146,35 @@ public class MultiMsgSink implements TransportProcs {
     public void countChanged( int newCount )
     {
         Log.d( TAG, "countChanged(new=%d); dropping", newCount );
+    }
+
+    public static boolean sendInvite(Context context, CommsAddrRec addr,
+                                     NetLaunchInfo nli, int timestamp )
+    {
+        boolean success = false;
+        for ( CommsConnType typ : addr.conTypes ) {
+            switch ( typ ) {
+            case COMMS_CONN_MQTT:
+                MQTTUtils.sendInvite( context, addr.mqtt_devID, nli );
+                success = true;
+                break;
+            case COMMS_CONN_SMS:
+                if ( XWPrefs.getNBSEnabled( context ) ) {
+                    NBSProto.inviteRemote( context, addr.sms_phone, nli );
+                    success = true;
+                }
+                break;
+            case COMMS_CONN_BT:
+                BTUtils.inviteRemote( context, addr.bt_btAddr, nli );
+                success = true;
+                break;
+            default:
+                Log.d( TAG, "sendInvite(); not handling %s", typ );
+                // Assert.failDbg();
+                break;
+            }
+        }
+        Log.d( TAG, "sendInvite(%s) => %b", addr, success );
+        return success;
     }
 }

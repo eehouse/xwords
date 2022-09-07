@@ -763,6 +763,7 @@ static const SetInfo nli_strs[] = {
 void
 loadNLI( JNIEnv* env, NetLaunchInfo* nli, jobject jnli )
 {
+    XP_MEMSET( nli, 0, sizeof(*nli) );
     getInts( env, (void*)nli, jnli, AANDS(nli_ints) );
     getBools( env, (void*)nli, jnli, AANDS(nli_bools) );
     getStrings( env, (void*)nli, jnli, AANDS(nli_strs) );

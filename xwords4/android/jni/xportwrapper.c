@@ -54,13 +54,29 @@ and_xport_sendInvite( XWEnv xwe, const NetLaunchInfo* nli,
                       XP_U32 createdStamp,
                       const CommsAddrRec* addr, void* closure )
 {
-    XP_USE( xwe );
-    XP_USE( nli );
-    XP_USE( createdStamp );
-    XP_USE( addr );
-    XP_USE( closure );
-    XP_ASSERT(0);
-    return -1;
+    /* jint result = -1; */
+    LOG_FUNC();
+    AndTransportProcs* aprocs = (AndTransportProcs*)closure;
+    ASSERT_ENV( aprocs->ti, xwe );
+    if ( NULL != aprocs->jxport ) {
+        JNIEnv* env = xwe;
+        const char* sig = "(L" PKG_PATH("jni/CommsAddrRec")
+            ";L" PKG_PATH("NetLaunchInfo") ";I)Z";
+
+        jmethodID mid = getMethodID( env, aprocs->jxport, "transportSendInvt", sig );
+
+        jobject jaddr = makeJAddr( env, addr );
+        jobject jnli = makeObjectEmptyConst( env, PKG_PATH("NetLaunchInfo") );
+        XP_ASSERT( !!jnli );
+        setNLI( env, jnli, nli );
+
+        /*jboolean success = */(*env)->CallBooleanMethod( env, aprocs->jxport, mid,
+                                                          jaddr, jnli, createdStamp );
+        deleteLocalRefs( env, jaddr, jnli, DELETE_NO_REF );
+    }
+
+    LOG_RETURN_VOID();
+    return -1;                  /* asserts otherwise */
 }
 #endif
 

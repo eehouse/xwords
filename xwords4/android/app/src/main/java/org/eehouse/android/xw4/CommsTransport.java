@@ -52,7 +52,15 @@ public class CommsTransport implements TransportProcs {
     private static final boolean TRANSPORT_DOES_NOCONN = true;
     @Override
     public int getFlags() {
-        return TRANSPORT_DOES_NOCONN ? COMMS_XPORT_FLAGS_HASNOCONN : COMMS_XPORT_FLAGS_NONE;
+        return TRANSPORT_DOES_NOCONN ? COMMS_XPORT_FLAGS_HASNOCONN
+            : COMMS_XPORT_FLAGS_NONE;
+    }
+
+    @Override
+    public boolean transportSendInvt( CommsAddrRec addr, NetLaunchInfo nli,
+                                      int timestamp )
+    {
+        return MultiMsgSink.sendInvite( m_context, addr, nli, timestamp );
     }
 
     @Override

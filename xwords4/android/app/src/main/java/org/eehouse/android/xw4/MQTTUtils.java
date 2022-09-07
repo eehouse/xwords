@@ -533,13 +533,14 @@ public class MQTTUtils extends Thread
         clearInstance( this );
     }
 
-    // public static void inviteRemote( Context context, String invitee,
-    //                                  NetLaunchInfo nli )
-    // {
-    //     String[] topic = {invitee};
-    //     byte[] packet = XwJNI.dvc_makeMQTTInvite( nli, topic );
-    //     addToSendQueue( context, topic[0], packet );
-    // }
+    public static void sendInvite( Context context, String invitee,
+                                   NetLaunchInfo nli )
+    {
+        Log.d( TAG, "sendInvite(invitee: %s, nli: %s)", invitee, nli );
+        String[] topic = {invitee};
+        byte[] packet = XwJNI.dvc_makeMQTTInvite( nli, topic );
+        addToSendQueue( context, topic[0], packet );
+    }
 
     public static void inviteRemote( GamePtr game, String devID, NetLaunchInfo nli )
     {
