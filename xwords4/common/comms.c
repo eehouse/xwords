@@ -1557,6 +1557,13 @@ assertAddrOk( const CommsAddrRec* addr )
         case COMMS_CONN_P2P:
             XP_ASSERT( 0 != addr->u.p2p.mac_addr[0] );
             break;
+        case COMMS_CONN_BT:
+            /* XP_ASSERT( 0 != addr->u.bt.btAddr.chars[0] */
+            /*            || 0 != addr->u.bt.hostName[0] ); */
+            break;
+        case COMMS_CONN_RELAY:
+        case COMMS_CONN_NFC:
+            break;
         default:
             XP_LOGFF( "no case for %s", ConnType2Str(typ) );
             XP_ASSERT(0);
