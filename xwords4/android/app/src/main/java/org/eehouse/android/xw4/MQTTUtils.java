@@ -542,7 +542,7 @@ public class MQTTUtils extends Thread
         addToSendQueue( context, topic[0], packet );
     }
 
-    public static void inviteRemote( GamePtr game, String devID, NetLaunchInfo nli )
+    public static void addInvite( GamePtr game, String devID, NetLaunchInfo nli )
     {
         CommsAddrRec destAddr = new CommsAddrRec(CommsConnType.COMMS_CONN_MQTT)
             .setMQTTParams( devID );

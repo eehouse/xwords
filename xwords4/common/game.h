@@ -83,6 +83,9 @@ XP_Bool game_makeNewGame( MPFORMAL XWEnv xwe, XWGame* game, CurGameInfo* gi,
                           ,XP_U16 gameSeed
 #endif
                           );
+void game_makeRematch( const XWGame* game, XWEnv xwe, XW_UtilCtxt* util,
+                       const CommonPrefs* cp, XWStreamCtxt* stream );
+
 XP_Bool game_reset( MPFORMAL XWGame* game, XWEnv xwe, CurGameInfo* gi,
                     const CommsAddrRec* selfAddr, const CommsAddrRec* hostAddr,
                     XW_UtilCtxt* util, CommonPrefs* cp,

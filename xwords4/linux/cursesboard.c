@@ -1206,11 +1206,13 @@ inviteList( CommonGlobals* cGlobals, CommsAddrRec* myAddr, GSList* invitees,
             NetLaunchInfo nli = {0};
             nli_init( &nli, cGlobals->gi, myAddr, nPlayersH, forceChannel );
             switch ( typ ) {
+#ifdef XWFEATURE_RELAY
             case COMMS_CONN_RELAY: {
                 uint64_t inviteeRelayID = *(uint64_t*)g_slist_nth_data( invitees, ii );
                 relaycon_invite( params, (XP_U32)inviteeRelayID, NULL, &nli );
             }
                 break;
+#endif
             case COMMS_CONN_SMS: {
                 const gchar* inviteePhone = (const gchar*)g_slist_nth_data( invitees, ii );
 #ifdef XWFEATURE_COMMS_INVITE
@@ -1279,10 +1281,12 @@ sendInvite( void* closure, int XP_UNUSED(key) )
                             COMMS_CONN_SMS ) ) {
         /* do nothing */
 #ifdef XWFEATURE_RELAY
-    } else if ( inviteList( cGlobals, &selfAddr, params->connInfo.relay.inviteeRelayIDs, COMMS_CONN_RELAY ) ) {
+    } else if ( inviteList( cGlobals, &selfAddr, params->connInfo.relay.inviteeRelayIDs,
+                            COMMS_CONN_RELAY ) ) {
         /* do nothing */
 #endif
-    } else if ( inviteList( cGlobals, &selfAddr, params->connInfo.mqtt.inviteeDevIDs, COMMS_CONN_MQTT ) ) {
+    } else if ( inviteList( cGlobals, &selfAddr, params->connInfo.mqtt.inviteeDevIDs,
+                            COMMS_CONN_MQTT ) ) {
         /* do nothing */
     /* Try sending to self, using the phone number or relayID of this device */
 /* <<<<<<< HEAD */
@@ -1290,6 +1294,7 @@ sendInvite( void* closure, int XP_UNUSED(key) )
         linux_sms_invite( params, &nli, selfAddr.u.sms.phone, selfAddr.u.sms.port );
     } else if ( addr_hasType( &selfAddr, COMMS_CONN_MQTT ) ) {
         mqttc_invite( params, 0, &nli, mqttc_getDevID( params ) );
+#ifdef XWFEATURE_RELAY
     } else if ( addr_hasType( &selfAddr, COMMS_CONN_RELAY ) ) {
 /* ======= */
 /*     } else if ( addr_hasType( &addr, COMMS_CONN_SMS ) ) { */
@@ -1302,6 +1307,7 @@ sendInvite( void* closure, int XP_UNUSED(key) )
         if ( 0 != relayID ) {
             relaycon_invite( params, relayID, NULL, &nli );
         }
+#endif
     } else {
         ca_inform( bGlobals->boardWin, "Cannot invite via relayID, MQTT or by \"sms phone\"." );
     }

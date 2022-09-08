@@ -230,6 +230,49 @@ game_makeNewGame( MPFORMAL XWEnv xwe, XWGame* game, CurGameInfo* gi,
     return success;
 } /* game_makeNewGame */
 
+void
+game_makeRematch( const XWGame* oldGame, XWEnv xwe, XW_UtilCtxt* util,
+                  const CommonPrefs* cp, XWStreamCtxt* stream )
+{
+    const CurGameInfo* gi = util->gameInfo;
+    CurGameInfo newGI = {0};
+    gi_copy( MPPARM(util->mpool) &newGI, gi );
+    newGI.gameID = 0;          /* clear so will get generated */
+    newGI.serverRole = SERVER_ISSERVER;
+
+    XWGame newGame;
+    CommsAddrRec* selfAddrP = NULL;
+    /* CommsAddrRec* hostAddrP = NULL; */
+    CommsAddrRec selfAddr;
+    if ( !!oldGame->comms ) {
+        comms_getSelfAddr( oldGame->comms, &selfAddr );
+        selfAddrP = &selfAddr;
+        /* if ( SERVER_ISCLIENT == gi->serverRole ) { */
+        /*     comms_getHostAddr( oldGame->comms, &hostAddr ); */
+        /*     hostAddrP = &hostAddr; */
+        /* } */
+    }
+
+    if ( game_makeNewGame( MPPARM(util->mpool) xwe, &newGame, &newGI,
+                           selfAddrP, NULL, util,
+                           (DrawCtx*)NULL, cp, (TransportProcs*)NULL ) ) {
+        if ( !!newGame.comms ) {
+            CommsAddrRec hostAddr;
+            comms_getHostAddr( oldGame->comms, &hostAddr );
+
+            NetLaunchInfo nli = {0};
+            nli_init( &nli, &newGI, selfAddrP, 1, 1 );
+            LOGNLI( &nli );
+            comms_invite( newGame.comms, xwe, &nli, &hostAddr );
+        }
+
+        game_saveToStream( &newGame, xwe, &newGI, stream, 1 );
+        game_dispose( &newGame, xwe );
+    }
+
+    gi_disposePlayerInfo( MPPARM(util->mpool) &newGI );
+}
+
 XP_Bool
 game_reset( MPFORMAL XWGame* game, XWEnv xwe, CurGameInfo* gi,
             const CommsAddrRec* selfAddr, const CommsAddrRec* hostAddr,
@@ -634,9 +677,7 @@ gi_disposePlayerInfo( MPFORMAL CurGameInfo* gi )
 void
 gi_copy( MPFORMAL CurGameInfo* destGI, const CurGameInfo* srcGI )
 {
-    XP_U16 nPlayers, ii;
-    const LocalPlayer* srcPl;
-    LocalPlayer* destPl;
+    XP_MEMSET( destGI, 0, sizeof(*destGI) );
 
     replaceStringIfDifferent( mpool, &destGI->dictName, 
                               srcGI->dictName );
@@ -644,7 +685,7 @@ gi_copy( MPFORMAL CurGameInfo* destGI, const CurGameInfo* srcGI )
     destGI->gameID = srcGI->gameID;
     destGI->gameSeconds = srcGI->gameSeconds;
     destGI->nPlayers = (XP_U8)srcGI->nPlayers;
-    nPlayers = srcGI->nPlayers;
+    XP_U16 nPlayers = srcGI->nPlayers;
     destGI->boardSize = (XP_U8)srcGI->boardSize;
     destGI->traySize = srcGI->traySize;
     destGI->bingoMin = srcGI->bingoMin;
@@ -659,6 +700,9 @@ gi_copy( MPFORMAL CurGameInfo* destGI, const CurGameInfo* srcGI )
     XP_LOGF( "%s: copied forceChannel: %d; inDuplicateMode: %d", __func__,
              destGI->forceChannel, destGI->inDuplicateMode );
 
+    const LocalPlayer* srcPl;
+    LocalPlayer* destPl;
+    int ii;
     for ( srcPl = srcGI->players, destPl = destGI->players, ii = 0; 
           ii < nPlayers; ++srcPl, ++destPl, ++ii ) {
 

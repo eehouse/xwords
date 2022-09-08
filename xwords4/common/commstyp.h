@@ -33,6 +33,15 @@
 typedef struct XP_BtAddr { XP_U8 bits[6]; } XP_BtAddr;
 typedef struct XP_BtAddrStr { XP_UCHAR chars[18]; } XP_BtAddrStr;
 
+typedef struct _IpRelay {
+    XP_UCHAR invite[MAX_INVITE_LEN + 1]; /* room!!!! */
+    XP_UCHAR hostName[MAX_HOSTNAME_LEN + 1];
+    XP_U32 ipAddr;      /* looked up from above */
+    XP_U16 port;
+    XP_Bool seeksPublicRoom;
+    XP_Bool advertiseRoom;
+} IpRelay;
+
 typedef struct _CommsAddrRec {
     XP_U16 _conTypes;
 
@@ -42,14 +51,9 @@ typedef struct _CommsAddrRec {
             XP_U32 ipAddr_ip;      /* looked up from above */
             XP_U16 port_ip;
         } ip;
-        struct {
-            XP_UCHAR invite[MAX_INVITE_LEN + 1]; /* room!!!! */
-            XP_UCHAR hostName[MAX_HOSTNAME_LEN + 1];
-            XP_U32 ipAddr;      /* looked up from above */
-            XP_U16 port;
-            XP_Bool seeksPublicRoom;
-            XP_Bool advertiseRoom;
-        } ip_relay;
+#ifdef XWFEATURE_RELAY
+        IpRelay ip_relay;
+#endif
         struct {
             /* nothing? */
             XP_UCHAR foo;       /* wince doesn't like nothing here */

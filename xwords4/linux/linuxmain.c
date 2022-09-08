@@ -306,6 +306,7 @@ gameGotBuf( CommonGlobals* cGlobals, XP_Bool hasDraw, const XP_U8* buf,
     }
 }
 
+#ifdef XWFEATURE_RELAY
 gint
 requestMsgsIdle( gpointer data )
 {
@@ -320,6 +321,7 @@ requestMsgsIdle( gpointer data )
     }
     return 0;                   /* don't run again */
 }
+#endif
 
 void
 writeToFile( XWStreamCtxt* stream, XWEnv XP_UNUSED(xwe), void* closure )
@@ -1086,6 +1088,7 @@ linux_getDevID( LaunchParams* params, DevIDType* typ )
     return result;
 }
 
+#ifdef XWFEATURE_RELAY
 void
 linux_doInitialReg( LaunchParams* params, XP_Bool idIsNew )
 {
@@ -1101,6 +1104,7 @@ linux_doInitialReg( LaunchParams* params, XP_Bool idIsNew )
     }
     relaycon_reg( params, rDevIDBuf, typ, devID );
 }
+#endif
 
 XP_Bool
 linux_setupDevidParams( LaunchParams* params )

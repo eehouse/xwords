@@ -35,6 +35,7 @@
 #include "knownplyr.h"
 #include "device.h"
 #include "nli.h"
+#include "device.h"
 
 #define HEARTBEAT_NONE 0
 
@@ -224,7 +225,8 @@ static XP_S16 sendMsg( CommsCtxt* comms, XWEnv xwe, MsgQueueElem* elem,
 static MsgQueueElem* addToQueue( CommsCtxt* comms, XWEnv xwe, MsgQueueElem* newElem );
 static XP_Bool elems_same( const MsgQueueElem* e1, const MsgQueueElem* e2 ) ;
 static void freeElem( const CommsCtxt* comms, MsgQueueElem* elem );
-
+static void removeFromQueue( CommsCtxt* comms, XWEnv xwe, XP_PlayerAddr channelNo,
+                             MsgID msgID );
 static XP_U16 countAddrRecs( const CommsCtxt* comms );
 static void sendConnect( CommsCtxt* comms, XWEnv xwe
 #ifdef XWFEATURE_RELAY
@@ -250,6 +252,8 @@ static XP_Bool send_via_relay( CommsCtxt* comms, XWEnv xwe, XWRELAY_Cmd cmd,
 static XWHostID getDestID( CommsCtxt* comms, XWEnv xwe, XP_PlayerAddr channelNo );
 # ifdef XWFEATURE_DEVID
 static void putDevID( const CommsCtxt* comms, XWEnv xwe, XWStreamCtxt* stream );
+
+
 # else
 #  define putDevID( comms, xwe, stream )
 # endif
@@ -292,6 +296,10 @@ static XP_S16 send_via_bt_or_ip( CommsCtxt* comms, XWEnv xwe, BTIPMsgType msgTyp
 #if defined COMMS_HEARTBEAT || defined XWFEATURE_COMMSACK
 static void sendEmptyMsg( CommsCtxt* comms, XWEnv xwe, AddressRecord* rec );
 #endif
+static inline XP_Bool IS_INVITE(const MsgQueueElem* elem)
+{
+    return 0 == elem->len;
+}
 
 /****************************************************************************
  *                               implementation 
@@ -679,17 +687,23 @@ addrFromStreamOne( CommsAddrRec* addrP, XWStreamCtxt* stream, CommsConnType typ 
         addrP->u.ip.ipAddr_ip = stream_getU32( stream );
         addrP->u.ip.port_ip = stream_getU16( stream );
         break;
-    case COMMS_CONN_RELAY:
-        stringFromStreamHere( stream, addrP->u.ip_relay.invite,
-                              sizeof(addrP->u.ip_relay.invite) );
-        stringFromStreamHere( stream, addrP->u.ip_relay.hostName,
-                              sizeof(addrP->u.ip_relay.hostName) );
-        addrP->u.ip_relay.ipAddr = stream_getU32( stream );
-        addrP->u.ip_relay.port = stream_getU16( stream );
+    case COMMS_CONN_RELAY: {
+        IpRelay ip_relay = {{0}};
+
+        stringFromStreamHere( stream, ip_relay.invite,
+                              sizeof(ip_relay.invite) );
+        stringFromStreamHere( stream, ip_relay.hostName,
+                              sizeof(ip_relay.hostName) );
+        ip_relay.ipAddr = stream_getU32( stream );
+        ip_relay.port = stream_getU16( stream );
         if ( version >= STREAM_VERS_DICTLANG ) {
-            addrP->u.ip_relay.seeksPublicRoom = stream_getBits( stream, 1 );
-            addrP->u.ip_relay.advertiseRoom = stream_getBits( stream, 1 );
+            ip_relay.seeksPublicRoom = stream_getBits( stream, 1 );
+            ip_relay.advertiseRoom = stream_getBits( stream, 1 );
         }
+#ifdef XWFEATURE_RELAY
+        XP_MEMCPY( &addrP->u.ip_relay, &ip_relay, sizeof(ip_relay) );
+#endif
+    }
         break;
     case COMMS_CONN_SMS:
         stringFromStreamHere( stream, addrP->u.sms.phone, 
@@ -1031,6 +1045,7 @@ addrToStreamOne( XWStreamCtxt* stream, CommsConnType typ,
         stream_putU32( stream, addrP->u.ip.ipAddr_ip );
         stream_putU16( stream, addrP->u.ip.port_ip );
         break;
+#ifdef XWFEATURE_RELAY
     case COMMS_CONN_RELAY:
         stringToStream( stream, addrP->u.ip_relay.invite );
         stringToStream( stream, addrP->u.ip_relay.hostName );
@@ -1039,6 +1054,7 @@ addrToStreamOne( XWStreamCtxt* stream, CommsConnType typ,
         stream_putBits( stream, 1, addrP->u.ip_relay.seeksPublicRoom );
         stream_putBits( stream, 1, addrP->u.ip_relay.advertiseRoom );
         break;
+#endif
     case COMMS_CONN_SMS:
         stringToStream( stream, addrP->u.sms.phone );
         stream_putU16( stream, addrP->u.sms.port );
@@ -1488,37 +1504,6 @@ comms_getChannelSeed( CommsCtxt* comms )
 }
 
 #ifdef XWFEATURE_COMMS_INVITE
-/* PENDING: this needs to handle more than MQTT!!!! */
-static XP_Bool
-isSameAddr( CommsCtxt* comms, XWEnv xwe,
-            const CommsAddrRec* rec1, const CommsAddrRec* rec2 )
-{
-    XP_Bool matched = XP_FALSE;
-    CommsConnType typ;
-    for ( XP_U32 st = 0; !matched && addr_iter( rec1, &typ, &st ); ) {
-        if ( addr_hasType( rec2, typ ) ) {
-            switch ( typ ) {
-            case COMMS_CONN_MQTT:
-                matched = rec1->u.mqtt.devID == rec2->u.mqtt.devID;
-                break;
-            case COMMS_CONN_SMS: {
-                XW_DUtilCtxt* duc = util_getDevUtilCtxt( comms->util, xwe );
-                matched = dutil_phoneNumbersSame( duc, xwe, rec2->u.sms.phone,
-                                                  rec1->u.sms.phone )
-                    && rec1->u.sms.port == rec2->u.sms.port;
-            }
-                break;
-            default:
-                XP_ASSERT(0);
-                break;
-            }
-        }
-    }
-
-    LOG_RETURNF( "%s", boolToStr(matched) );
-    return matched;
-}
-
 /* We're adding invites to comms so they'll be persisted and resent etc. can
    work in common code. Rule will be there's only one invitation present per
    channel (remote device.) We'll add a channel if necessary. Then if there is
@@ -1534,44 +1519,67 @@ isSameAddr( CommsCtxt* comms, XWEnv xwe,
    that there's incoming traffic on that channel, I promote it somehow, and
    when a game is complete (all players present) delete channels that have
    only outgoing invitations pending.
+
+   Let's use channel 1 for invites. And be prepared to nuke their records once
+   real traffic develops on that channel.
  */
+
+/* Remove any AddressRecord created for invitations, and any MsgQueueElems for it */
+static void
+nukeInvites( CommsCtxt* comms, XWEnv xwe, XP_PlayerAddr channelNo )
+{
+    channelNo &= CHANNEL_MASK;
+    XP_LOGFF( "(channelNo=0x%X)", channelNo );
+
+    AddressRecord* deadRec;
+
+    AddressRecord* prevRec = NULL;
+    for ( deadRec = comms->recs; !!deadRec; deadRec = deadRec->next ) {
+        if ( channelNo == deadRec->channelNo ) {
+            // XP_ASSERT( forceChannel == rec->channelNo ); /* should not have high bits */
+            if ( NULL == prevRec ) {
+                comms->recs = deadRec->next;
+            } else {
+                prevRec->next = deadRec->next;
+            }
+            break;
+        }
+        prevRec = deadRec;
+    }
+
+    if ( !!deadRec ) {
+        removeFromQueue( comms, xwe, channelNo, 0 );
+        XP_LOGFF( "removing rec" );
+        XP_FREEP( comms->mpool, &deadRec );
+    }
+} /* nukeInvites */
+
 void
 comms_invite( CommsCtxt* comms, XWEnv xwe, const NetLaunchInfo* nli,
               const CommsAddrRec* destAddr )
 {
     LOG_FUNC();
+    XP_PlayerAddr forceChannel = nli->forceChannel;
     /* See if we have a channel for this address. Then see if we have an
        invite matching this one, and if not add one. Then trigger a send of
        it. */
 
-    MsgQueueElem* elem = NULL;
-    XP_PlayerAddr channelNo = 0; /* = findOrMakeChannel( comms, destAddr ); */
+    /* remove the old rec, if found */
+    nukeInvites( comms, xwe, forceChannel );
 
-    for ( AddressRecord* rec = comms->recs; !!rec; rec = rec->next ) {
-        const CommsAddrRec* addr = &rec->addr;
-        if ( isSameAddr( comms, xwe, addr, destAddr ) ) {
-            channelNo = rec->channelNo;
-            // found = XP_TRUE;
-            break;
-        }
-    }
-
+    // const XP_PlayerAddr channelNo = 1;
     for ( MsgQueueElem* elem = comms->msgQueueHead; !!elem; elem = elem-> next ) {
-        if ( channelNo == elem->channelNo ) {
-            if ( 0 == elem->msgID && 0 != channelNo ) {
+        if ( forceChannel == elem->channelNo ) {
+            if ( 0 == elem->msgID && 0 != forceChannel ) {
                 freeElem( comms, elem );
                 XP_LOGFF( "nuked old invite" );
             }
         }
     }
 
-    if ( 0 == channelNo ) {
-        channelNo = comms_getChannelSeed(comms) & ~CHANNEL_MASK;
-    }
-
-    /*AddressRecord* rec = */rememberChannelAddress( comms, xwe, channelNo,
+    /*AddressRecord* rec = */rememberChannelAddress( comms, xwe, forceChannel,
                                                      0, destAddr, 0 );
-    elem = makeInviteElem( comms, xwe, channelNo, nli );
+    MsgQueueElem* elem = makeInviteElem( comms, xwe, forceChannel, nli );
 
     elem = addToQueue( comms, xwe, elem );
     sendMsg( comms, xwe, elem, COMMS_CONN_NONE );
@@ -1780,7 +1788,7 @@ removeFromQueue( CommsCtxt* comms, XWEnv xwe, XP_PlayerAddr channelNo, MsgID msg
 
             XP_PlayerAddr maskedElemChannelNo = ~CHANNEL_MASK & elem->channelNo;
             if ( (maskedElemChannelNo == 0) && (channelNo != 0) ) {
-                XP_ASSERT( !comms->isServer );
+                XP_ASSERT( !comms->isServer || IS_INVITE(elem) );
                 XP_ASSERT( elem->msgID == 0 );
             } else if ( maskedElemChannelNo != maskedChannelNo ) {
                 knownGood = XP_TRUE;
@@ -1832,7 +1840,7 @@ sendMsg( CommsCtxt* comms, XWEnv xwe, MsgQueueElem* elem, const CommsConnType fi
     XP_PlayerAddr channelNo = elem->channelNo;
     CNO_FMT( cbuf, channelNo );
 
-    XP_Bool isInvite = 0 == elem->len;
+    XP_Bool isInvite = IS_INVITE(elem);
 #ifdef COMMS_CHECKSUM
     XP_LOGFF( TAGFMT() "sending message on %s: id: %d; len: %d; sum: %s; isInvite: %s",
               TAGPRMS, cbuf, elem->msgID, elem->len, elem->checksum, boolToStr(isInvite) );
@@ -1917,11 +1925,12 @@ sendMsg( CommsCtxt* comms, XWEnv xwe, MsgQueueElem* elem, const CommsConnType fi
 
                     if ( 0 ) {
 #ifdef XWFEATURE_COMMS_INVITE
-                    } else if ( isInvite ) {
-                        XP_ASSERT( !!comms->procs.sendInvt );
+                } else if ( isInvite ) {
+                    if ( !!comms->procs.sendInvt ) {
                         NetLaunchInfo* nli = (NetLaunchInfo*)elem->msg;
                         nSent = (*comms->procs.sendInvt)( xwe, nli, elem->createdStamp,
                                                           &addr, comms->procs.closure );
+                    }
 #endif
                     } else {
                         XP_ASSERT( !!comms->procs.sendMsg );
@@ -2471,12 +2480,14 @@ getRecordFor( CommsCtxt* comms, XWEnv xwe, const CommsAddrRec* addr,
             CommsConnType conType = !!addr ?
                 addr_getType( addr ) : COMMS_CONN_NONE;
             switch( conType ) {
+#ifdef XWFEATURE_RELAY
             case COMMS_CONN_RELAY:
                 if ( (addr->u.ip_relay.ipAddr == rec->addr.u.ip_relay.ipAddr)
                      && (addr->u.ip_relay.port == rec->addr.u.ip_relay.port ) ) {
                     matched = XP_TRUE;
                 }
                 break;
+#endif
             case COMMS_CONN_BT:
                 if ( 0 == XP_MEMCMP( &addr->u.bt.btAddr, &rec->addr.u.bt.btAddr,
                                      sizeof(addr->u.bt.btAddr) ) ) {
@@ -2948,6 +2959,7 @@ comms_msgProcessed( CommsCtxt* comms, XWEnv xwe,
 #endif
             rec->lastMsgRcd = state->msgID;
         }
+        nukeInvites( comms, xwe, state->channelNo );
     }
 
 #ifdef DEBUG
@@ -2961,11 +2973,13 @@ comms_checkComplete( const CommsAddrRec* addr )
     XP_Bool result;
 
     switch ( addr_getType( addr ) ) {
+#ifdef XWFEATURE_RELAY
     case COMMS_CONN_RELAY:
         result = !!addr->u.ip_relay.invite[0]
             && !!addr->u.ip_relay.hostName[0]
             && !!addr->u.ip_relay.port > 0;
         break;
+#endif
     default:
         result = XP_TRUE;
     }
@@ -3315,12 +3329,14 @@ logAddr( const CommsCtxt* comms, XWEnv xwe,
             stream_catString( stream, buf );
 
             switch( typ ) {
+#ifdef XWFEATURE_RELAY
             case COMMS_CONN_RELAY:
                 stream_catString( stream, "room: " );
                 stream_catString( stream, addr->u.ip_relay.invite );
                 stream_catString( stream, "; host: " );
                 stream_catString( stream, addr->u.ip_relay.hostName );
                 break;
+#endif
             case COMMS_CONN_SMS:
                 stream_catString( stream, "phone: " );
                 stream_catString( stream, addr->u.sms.phone );
@@ -3426,11 +3442,13 @@ augmentAddrIntrnl( CommsCtxt* comms, CommsAddrRec* destAddr,
             size_t siz;
 
             switch( typ ) {
+#ifdef XWFEATURE_RELAY
             case COMMS_CONN_RELAY:
                 dest = &destAddr->u.ip_relay;
                 src = &srcAddr->u.ip_relay;
                 siz = sizeof( destAddr->u.ip_relay );
                 break;
+#endif
             case COMMS_CONN_SMS:
                 XP_ASSERT( 0 != srcAddr->u.sms.port );
                 XP_ASSERT( '\0' != srcAddr->u.sms.phone[0] );

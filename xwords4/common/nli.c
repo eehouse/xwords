@@ -45,9 +45,11 @@ nli_init( NetLaunchInfo* nli, const CurGameInfo* gi, const CommsAddrRec* addr,
     for ( XP_U32 st = 0; addr_iter( addr, &typ, &st ); ) {
         types_addType( &nli->_conTypes, typ );
         switch ( typ ) {
+#ifdef XWFEATURE_RELAY
         case COMMS_CONN_RELAY:
             XP_STRCAT( nli->room, addr->u.ip_relay.invite );
             break;
+#endif
         case COMMS_CONN_SMS:
             XP_STRCAT( nli->phone, addr->u.sms.phone );
             XP_ASSERT( 1 == addr->u.sms.port );
@@ -234,12 +236,14 @@ nli_makeAddrRec( const NetLaunchInfo* nli, CommsAddrRec* addr )
     for ( XP_U32 state = 0; types_iter( nli->_conTypes, &type, &state ); ) {
         addr_addType( addr, type );
         switch( type ) {
+#ifdef XWFEATURE_RELAY
         case COMMS_CONN_RELAY:
             XP_STRCAT( addr->u.ip_relay.invite, nli->room );
             /* String relayName = XWPrefs.getDefaultRelayHost( context ); */
             /* int relayPort = XWPrefs.getDefaultRelayPort( context ); */
             /* result.setRelayParams( relayName, relayPort, room ); */
             break;
+#endif
         case COMMS_CONN_BT:
             XP_STRCAT( addr->u.bt.btAddr.chars, nli->btAddress );
             XP_STRCAT( addr->u.bt.hostName, nli->btName );

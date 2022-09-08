@@ -50,11 +50,9 @@ and_xport_getFlags( XWEnv xwe, void* closure )
 
 #ifdef XWFEATURE_COMMS_INVITE
 static XP_S16
-and_xport_sendInvite( XWEnv xwe, const NetLaunchInfo* nli,
-                      XP_U32 createdStamp,
+and_xport_sendInvite( XWEnv xwe, const NetLaunchInfo* nli, XP_U32 createdStamp,
                       const CommsAddrRec* addr, void* closure )
 {
-    /* jint result = -1; */
     LOG_FUNC();
     AndTransportProcs* aprocs = (AndTransportProcs*)closure;
     ASSERT_ENV( aprocs->ti, xwe );
@@ -95,7 +93,7 @@ and_xport_send( XWEnv xwe, const XP_U8* buf, XP_U16 len,
         const char* sig = "([BLjava/lang/String;L" PKG_PATH("jni/CommsAddrRec")
             ";L" PKG_PATH("jni/CommsAddrRec$CommsConnType") ";II)I";
 
-        jmethodID mid = getMethodID( env, aprocs->jxport, "transportSend", sig );
+        jmethodID mid = getMethodID( env, aprocs->jxport, "transportSendMsg", sig );
 
         jbyteArray jbytes = makeByteArray( env, len, (jbyte*)buf );
         jobject jaddr = makeJAddr( env, addr );

@@ -542,6 +542,7 @@ setJAddrRec( JNIEnv* env, jobject jaddr, const CommsAddrRec* addr )
         switch ( typ ) {
         case COMMS_CONN_NONE:
             break;
+#ifdef XWFEATURE_RELAY
         case COMMS_CONN_RELAY:
             setInt( env, jaddr, "ip_relay_port", addr->u.ip_relay.port );
             setString( env, jaddr, "ip_relay_hostName", addr->u.ip_relay.hostName );
@@ -551,6 +552,7 @@ setJAddrRec( JNIEnv* env, jobject jaddr, const CommsAddrRec* addr )
             setBool( env, jaddr, "ip_relay_advertiseRoom",
                      addr->u.ip_relay.advertiseRoom );
             break;
+#endif
         case COMMS_CONN_SMS:
             setString( env, jaddr, "sms_phone", addr->u.sms.phone );
             setInt( env, jaddr, "sms_port", addr->u.sms.port );
@@ -625,6 +627,7 @@ getJAddrRec( JNIEnv* env, CommsAddrRec* addr, jobject jaddr )
 
         switch ( typ ) {
         case COMMS_CONN_RELAY:
+#ifdef XWFEATURE_RELAY
             addr->u.ip_relay.port = getInt( env, jaddr, "ip_relay_port" );
             getString( env, jaddr, "ip_relay_hostName", addr->u.ip_relay.hostName,
                        VSIZE(addr->u.ip_relay.hostName) );
@@ -635,6 +638,7 @@ getJAddrRec( JNIEnv* env, CommsAddrRec* addr, jobject jaddr )
             addr->u.ip_relay.advertiseRoom =
                 getBool( env, jaddr, "ip_relay_advertiseRoom" );
 
+#endif
             break;
         case COMMS_CONN_SMS:
             getString( env, jaddr, "sms_phone", addr->u.sms.phone,

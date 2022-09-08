@@ -837,14 +837,13 @@ new_game_impl( GtkGameGlobals* globals, XP_Bool fireConnDlg )
     XP_Bool success = XP_FALSE;
     CommonGlobals* cGlobals = &globals->cGlobals;
 
+
     CurGameInfo* gi = cGlobals->gi;
-    CommsAddrRec addr;
-    success = gtkNewGameDialog( globals, gi, &addr, XP_TRUE, fireConnDlg );
+    success = gtkNewGameDialog( globals, gi, &cGlobals->selfAddr,
+                                XP_TRUE, fireConnDlg );
     if ( success ) {
-#ifndef XWFEATURE_STANDALONE_ONLY
         XP_Bool isClient = gi->serverRole == SERVER_ISCLIENT;
         XP_ASSERT( !isClient ); /* Doesn't make sense! Send invitation. */
-#endif
         TransportProcs procs = {
             .closure = globals,
             .sendMsg = linux_send,
@@ -2423,7 +2422,7 @@ gtk_socket_acceptor( int listener, Acceptor func, CommonGlobals* globals,
 
 static void
 initGlobalsNoDraw( GtkGameGlobals* globals, LaunchParams* params, 
-                   CurGameInfo* gi )
+                   const CurGameInfo* gi )
 {
     memset( globals, 0, sizeof(*globals) );
 
@@ -2501,7 +2500,7 @@ on_draw_event( GtkWidget* widget, cairo_t* cr, gpointer user_data )
 
 void
 initBoardGlobalsGtk( GtkGameGlobals* globals, LaunchParams* params,
-                     CurGameInfo* gi )
+                     const CurGameInfo* gi )
 {
     CommonGlobals* cGlobals = &globals->cGlobals;
     short width, height;

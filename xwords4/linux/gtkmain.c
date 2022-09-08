@@ -351,10 +351,80 @@ handle_open_button( GtkWidget* XP_UNUSED(widget), void* closure )
 }
 
 void
-make_rematch( GtkAppGlobals* XP_UNUSED(apg),
-              const CommonGlobals* XP_UNUSED(cGlobals) )
+make_rematch( GtkAppGlobals* apg, const CommonGlobals* cGlobals )
 {
-    XP_ASSERT(0);
+#if 1
+    LaunchParams* params = apg->cag.params;
+    GtkGameGlobals* newGlobals = calloc( 1, sizeof(*newGlobals) );
+    initBoardGlobalsGtk( newGlobals, params, cGlobals->util->gameInfo );
+
+    XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(cGlobals->util->mpool)
+                                                params->vtMgr );
+
+    XW_UtilCtxt* util = newGlobals->cGlobals.util;
+    const CommonPrefs* cp = &newGlobals->cGlobals.cp;
+    game_makeRematch( &cGlobals->game, NULL_XWE, util, cp, stream );
+    sqlite3_int64 rowID = gdb_writeNewGame( stream, params->pDb );
+    stream_destroy( stream, NULL_XWE );
+    freeGlobals( newGlobals );
+    open_row( apg, rowID, XP_TRUE );
+#else
+    LaunchParams* params = apg->cag.params;
+    XP_ASSERT( params == cGlobals->params );
+    XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(cGlobals->util->mpool)
+                                                params->vtMgr );
+
+    /* Create new game. But has no addressing info, so need to set that
+       aside for later. */
+    const CommsCtxt* comms = cGlobals->game.comms;
+    CurGameInfo gi = {0};
+    gi_copy( MPPARM(cGlobals->util->mpool) &gi, cGlobals->gi );
+    gi.gameID = 0;          /* clear so will get generated */
+    if ( !!comms ) {
+        gi.serverRole = SERVER_ISSERVER;
+        gi.forceChannel = 0;
+    }
+    game_saveNewGame( MPPARM(cGlobals->util->mpool) NULL_XWE, &gi,
+                      cGlobals->util, &cGlobals->cp, stream );
+
+    sqlite3_int64 rowID = gdb_writeNewGame( stream, params->pDb );
+    stream_destroy( stream, NULL_XWE );
+    gi_disposePlayerInfo( MPPARM(cGlobals->util->mpool) &gi );
+
+    /* If it's a multi-device game, save enough information with it than when
+       opened it can invite the other device[s] join the rematch. */
+    if ( !!comms ) {
+        XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(cGlobals->util->mpool)
+                                                    params->vtMgr );
+        CommsAddrRec addr;
+        comms_getAddr( comms, &addr );
+        addrToStream( stream, &addr );
+
+        CommsAddrRec addrs[4];
+        XP_U16 nRecs = VSIZE(addrs);
+        comms_getAddrs( comms, NULL_XWE, addrs, &nRecs );
+
+        stream_putU8( stream, nRecs );
+        for ( int ii = 0; ii < nRecs; ++ii ) {
+            XP_LOGFF( "MQTT rematch not implemented" );
+            XP_ASSERT(0);       /* REWRITE TO USE MQTT */
+            /* XP_UCHAR relayID[32]; */
+            /* XP_U16 len = sizeof(relayID); */
+            /* comms_formatRelayID( comms, ii, relayID, &len ); */
+            /* XP_LOGF( "%s: adding relayID: %s", __func__, relayID ); */
+            /* stringToStream( stream, relayID ); */
+            /* if ( addr_hasType( &addrs[ii], COMMS_CONN_RELAY ) ) { */
+            /*     /\* copy over room name *\/ */
+            /*     XP_STRCAT( addrs[ii].u.ip_relay.invite, addr.u.ip_relay.invite ); */
+            /* } */
+            /* addrToStream( stream, &addrs[ii] ); */
+        }
+        gdb_saveInviteAddrs( stream, params->pDb, rowID );
+        stream_destroy( stream, NULL_XWE );
+    }
+
+    open_row( apg, rowID, XP_TRUE );
+#endif
 } /* make_rematch */
 
 static void
@@ -387,10 +457,13 @@ handle_delete_button( GtkWidget* XP_UNUSED(widget), void* closure )
 #endif
             gdb_getGameInfo( params->pDb, rowid, &gib );
         XP_ASSERT( success );
+#ifdef XWFEATURE_RELAY
         XP_U32 clientToken = makeClientToken( rowid, gib.seed );
+#endif
         removeRow( apg, rowid );
         gdb_deleteGame( params->pDb, rowid );
 
+#ifdef XWFEATURE_RELAY
         XP_UCHAR devIDBuf[64] = {0};
         gdb_fetch_safe( params->pDb, KEY_RDEVID, NULL, devIDBuf, sizeof(devIDBuf) );
         if ( '\0' != devIDBuf[0] ) {
@@ -398,6 +471,7 @@ handle_delete_button( GtkWidget* XP_UNUSED(widget), void* closure )
         } else {
             XP_LOGF( "%s: not calling relaycon_deleted: no relayID", __func__ );
         }
+#endif
         g_object_unref( gib.snap );
     }
     apg->selRows = g_array_set_size( apg->selRows, 0 );
@@ -514,19 +588,19 @@ saveSize( const GdkEventConfigure* lastSize, sqlite3* pDb, const gchar* key )
 #undef COORDS_FORMAT
 
 static void
-handle_movescheck( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* apg )
-{
-    LaunchParams* params = apg->cag.params;
-    relaycon_checkMsgs( params );
-}
-
-static void
 handle_known_players( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* apg )
 {
     gtkkp_show( apg, GTK_WINDOW(apg->window) );
 }
 
 #ifdef XWFEATURE_RELAY
+static void
+handle_movescheck( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* apg )
+{
+    LaunchParams* params = apg->cag.params;
+    relaycon_checkMsgs( params );
+}
+
 static void
 handle_relayid_to_clip( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* apg )
 {
@@ -577,11 +651,11 @@ makeGamesWindow( GtkAppGlobals* apg )
     GtkWidget* netMenu = makeAddSubmenu( menubar, "Menu" );
     (void)createAddItem( netMenu, "Known Players",
                          (GCallback)handle_known_players, apg );
+#ifdef XWFEATURE_RELAY
     if ( params->useHTTP ) {
         (void)createAddItem( netMenu, "Check for moves",
                              (GCallback)handle_movescheck, apg );
     }
-#ifdef XWFEATURE_RELAY
     (void)createAddItem( netMenu, "copy relayid",
                          (GCallback)handle_relayid_to_clip, apg );
 #endif
@@ -968,7 +1042,9 @@ gtkmain( LaunchParams* params )
     dvc_store( params->dutil, NULL_XWE );
     /* closeGamesDB( params->pDb ); */
     /* params->pDb = NULL; */
+#ifdef XWFEATURE_RELAY
     relaycon_cleanup( params );
+#endif
 #ifdef XWFEATURE_SMS
     linux_sms_cleanup( params );
 #endif

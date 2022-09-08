@@ -18,6 +18,8 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#ifdef XWFEATURE_RELAY
+
 #include <netdb.h>
 #include <errno.h>
 #include <stdbool.h>
@@ -1338,3 +1340,5 @@ msgToStr( XWRelayReg msg )
     return str;
 }
 #endif
+
+#endif  /* #ifdef XWFEATURE_RELAY */

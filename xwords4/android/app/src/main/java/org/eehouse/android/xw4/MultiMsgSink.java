@@ -103,8 +103,8 @@ public class MultiMsgSink implements TransportProcs {
     }
 
     @Override
-    public int transportSend( byte[] buf, String msgID, CommsAddrRec addr,
-                              CommsConnType typ, int gameID, int timestamp )
+    public int transportSendMsg( byte[] buf, String msgID, CommsAddrRec addr,
+                                 CommsConnType typ, int gameID, int timestamp )
     {
         int nSent = -1;
         switch ( typ ) {
@@ -130,14 +130,14 @@ public class MultiMsgSink implements TransportProcs {
             Assert.failDbg();
             break;
         }
-        Log.i( TAG, "transportSend(): sent %d bytes for game %d/%x via %s",
+        Log.i( TAG, "transportSendMsg(): sent %d bytes for game %d/%x via %s",
                nSent, gameID, gameID, typ.toString() );
         if ( 0 < nSent ) {
-            Log.d( TAG, "transportSend: adding %s", msgID );
+            Log.d( TAG, "transportSendMsg: adding %s", msgID );
             m_sentSet.add( msgID );
         }
 
-        Log.d( TAG, "transportSend(len=%d, typ=%s) => %d", buf.length,
+        Log.d( TAG, "transportSendMsg(len=%d, typ=%s) => %d", buf.length,
                typ, nSent );
         return nSent;
     }
@@ -148,9 +148,10 @@ public class MultiMsgSink implements TransportProcs {
         Log.d( TAG, "countChanged(new=%d); dropping", newCount );
     }
 
-    public static boolean sendInvite(Context context, CommsAddrRec addr,
-                                     NetLaunchInfo nli, int timestamp )
+    public static boolean sendInvite( Context context, CommsAddrRec addr,
+                                      NetLaunchInfo nli, int timestamp )
     {
+        Log.d( TAG, "sendInvite(%s, %s)", addr, nli );
         boolean success = false;
         for ( CommsConnType typ : addr.conTypes ) {
             switch ( typ ) {

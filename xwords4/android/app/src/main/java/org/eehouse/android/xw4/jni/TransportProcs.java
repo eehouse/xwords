@@ -22,6 +22,7 @@ package org.eehouse.android.xw4.jni;
 
 import org.eehouse.android.xw4.NetLaunchInfo;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
+import org.eehouse.android.xw4.NetLaunchInfo;
 
 public interface TransportProcs {
 
@@ -29,9 +30,10 @@ public interface TransportProcs {
     public static final int COMMS_XPORT_FLAGS_HASNOCONN = 1;
     int getFlags();
 
-    int transportSend( byte[] buf, String msgNo, CommsAddrRec addr,
-                       CommsConnType conType, int gameID, int timestamp );
-    boolean transportSendInvt( CommsAddrRec addr, NetLaunchInfo nli, int timestamp );
+    int transportSendMsg( byte[] buf, String msgNo, CommsAddrRec addr,
+                          CommsConnType conType, int gameID, int timestamp );
+    boolean transportSendInvt( CommsAddrRec addr, NetLaunchInfo nli,
+                               int timestamp );
 
     void countChanged( int newCount );
 

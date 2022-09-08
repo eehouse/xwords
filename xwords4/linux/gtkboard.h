@@ -173,7 +173,7 @@ typedef struct GtkGameGlobals {
 #define GTK_RIGHT_MARGIN GTK_BOARD_LEFT_MARGIN
 
 void initBoardGlobalsGtk( GtkGameGlobals* globals, LaunchParams* params,
-                          CurGameInfo* gi );
+                          const CurGameInfo* gi );
 void freeGlobals( GtkGameGlobals* globals );
 XP_Bool makeNewGame( GtkGameGlobals* globals );
 XP_Bool loadGameNoDraw( GtkGameGlobals* globals, LaunchParams* params, 

@@ -64,10 +64,10 @@ public class CommsTransport implements TransportProcs {
     }
 
     @Override
-    public int transportSend( byte[] buf, String msgID, CommsAddrRec addr,
-                              CommsConnType conType, int gameID, int timestamp )
+    public int transportSendMsg( byte[] buf, String msgID, CommsAddrRec addr,
+                                 CommsConnType conType, int gameID, int timestamp )
     {
-        Log.d( TAG, "transportSend(len=%d, typ=%s, ts=%d)", buf.length,
+        Log.d( TAG, "transportSendMsg(len=%d, typ=%s, ts=%d)", buf.length,
                conType.toString(), timestamp );
         int nSent = -1;
         Assert.assertNotNull( addr );
@@ -90,7 +90,7 @@ public class CommsTransport implements TransportProcs {
         // Keep this while debugging why the resend_all that gets
         // fired on reconnect doesn't unstall a game but a manual
         // resend does.
-        Log.d( TAG, "transportSend(len=%d, typ=%s) => %d", buf.length,
+        Log.d( TAG, "transportSendMsg(len=%d, typ=%s) => %d", buf.length,
                conType, nSent );
         return nSent;
     }

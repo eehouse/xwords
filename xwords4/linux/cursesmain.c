@@ -1585,9 +1585,11 @@ cursesmain( XP_Bool XP_UNUSED(isServer), LaunchParams* params )
 
     dvc_store( params->dutil, NULL_XWE );
 
+#ifdef XWFEATURE_RELAY
     if ( params->useUdp ) {
         relaycon_cleanup( params );
     }
+#endif
 
     linux_sms_cleanup( params );
     mqttc_cleanup( params );

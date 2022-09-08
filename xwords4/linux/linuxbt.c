@@ -373,13 +373,10 @@ linux_bt_open( CommonGlobals* globals, XP_Bool amMaster )
             lbt_listenerSetup( globals );
         } else {
             if ( btStuff->socket < 0 ) {
-                XP_ASSERT(0);
-                /* Check whether selfAddr or hostAddr is right? Am I a client
-                   connecting? Doesn't matter while BT's broken on linux for
-                   me. */
-                CommsAddrRec selfAddr;
-                comms_getSelfAddr( globals->game.comms, &selfAddr );
-                lbt_connectSocket( btStuff, &selfAddr );
+                XP_ASSERT(0);   /* don't know if this works */
+                CommsAddrRec addr;
+                comms_getSelfAddr( globals->game.comms, &addr );
+                lbt_connectSocket( btStuff, &addr );
             }
         }
     }
@@ -432,7 +429,11 @@ linux_bt_send( const XP_U8* buf, XP_U16 buflen,
 
     btStuff = globals->btStuff;
     if ( !!btStuff ) {
-        XP_ASSERT( !!addrP );
+        CommsAddrRec addr;
+        if ( !addrP ) {
+            comms_getSelfAddr( globals->game.comms, &addr );
+            addrP = &addr;
+        }
 
         if ( btStuff->socket < 0  && !btStuff->amMaster ) {
             lbt_connectSocket( btStuff, addrP );

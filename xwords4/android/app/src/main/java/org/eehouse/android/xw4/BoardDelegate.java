@@ -2746,7 +2746,7 @@ public class BoardDelegate extends DelegateBase
                     break;
                 case MQTT:
                     // MQTTUtils.inviteRemote( m_activity, dev, nli );
-                    MQTTUtils.inviteRemote( m_jniGamePtr, dev, nli );
+                    MQTTUtils.addInvite( m_jniGamePtr, dev, nli );
                     break;
                 default:
                     Assert.failDbg();
@@ -2982,8 +2982,7 @@ public class BoardDelegate extends DelegateBase
             doIt = false;
         } else {
             CommsAddrRec[] addrs = XwJNI.comms_getAddrs( jniGamePtr );
-            for ( int ii = 0; ii < addrs.length; ++ii ) {
-                CommsAddrRec addr = addrs[ii];
+            for ( CommsAddrRec addr : addrs ) {
                 if ( addr.contains( CommsConnType.COMMS_CONN_BT ) ) {
                     Assert.assertNull( btAddr );
                     btAddr = addr.bt_btAddr;
@@ -3128,7 +3127,7 @@ public class BoardDelegate extends DelegateBase
             }
             value = m_summary.getStringExtra( GameSummary.EXTRA_REMATCH_MQTT );
             if ( null != value ) {
-                MQTTUtils.inviteRemote( m_jniGamePtr, value, nli );
+                MQTTUtils.addInvite( m_jniGamePtr, value, nli );
                 // recordInviteSent( InviteMeans.MQTT, value );
             }
 

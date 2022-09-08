@@ -21,6 +21,8 @@
 #ifndef _RELAYCON_H_
 #define _RELAYCON_H_
 
+#ifdef XWFEATURE_RELAY
+
 #include "main.h"
 #include "nli.h"
 
@@ -66,5 +68,7 @@ void relaycon_join( LaunchParams* params, const XP_UCHAR* devID, const XP_UCHAR*
                     XP_U16 nPlayersHere, XP_U16 nPlayersTotal, XP_U16 seed,
                     XP_U16 lang, OnJoinedProc proc, void* closure );
 # endif
+
+#endif
 
 #endif
