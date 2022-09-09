@@ -147,6 +147,17 @@ ensureLocalPlayerNames( LaunchParams* XP_UNUSED_DBG(params), CurGameInfo* gi )
     }
 }
 
+static gint
+send_msgs_idle( gpointer data )
+{
+    CommonGlobals* cGlobals = (CommonGlobals*)data;
+    CommsCtxt* comms = cGlobals->game.comms;
+    if ( !!comms ) {
+        comms_resendAll( comms, NULL_XWE, COMMS_CONN_NONE, XP_FALSE );
+    }
+    return FALSE;
+}
+
 bool
 linuxOpenGame( CommonGlobals* cGlobals, const TransportProcs* procs )
 {
@@ -230,6 +241,8 @@ linuxOpenGame( CommonGlobals* cGlobals, const TransportProcs* procs )
 #endif
         server_do( cGlobals->game.server, NULL_XWE );
         linuxSaveGame( cGlobals );   /* again, to include address etc. */
+
+        (void)g_idle_add( send_msgs_idle, cGlobals );
     }
     LOG_RETURNF( "%s", boolToStr(opened) );
     return opened;

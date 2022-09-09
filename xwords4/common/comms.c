@@ -2817,6 +2817,10 @@ comms_checkIncomingStream( CommsCtxt* comms, XWEnv xwe, XWStreamCtxt* stream,
     XP_MEMSET( state, 0, sizeof(*state) );
 #ifdef DEBUG
     state->comms = comms;
+    if ( comms->processingMsg ) {
+        XP_LOGFF( "processingMsg SET, so dropping message" );
+        return XP_FALSE;
+    }
     XP_ASSERT( !comms->processingMsg );
     comms->processingMsg = XP_TRUE;
     CommsConnType addrType = addr_getType( retAddr );

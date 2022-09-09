@@ -238,29 +238,34 @@ game_makeRematch( const XWGame* oldGame, XWEnv xwe, XW_UtilCtxt* util,
     CurGameInfo newGI = {0};
     gi_copy( MPPARM(util->mpool) &newGI, gi );
     newGI.gameID = 0;          /* clear so will get generated */
-    newGI.serverRole = SERVER_ISSERVER;
+    if ( SERVER_ISCLIENT == newGI.serverRole ) {
+        newGI.serverRole = SERVER_ISSERVER; /* we'll be inviting */
+    }
 
     XWGame newGame;
     CommsAddrRec* selfAddrP = NULL;
-    /* CommsAddrRec* hostAddrP = NULL; */
     CommsAddrRec selfAddr;
     if ( !!oldGame->comms ) {
         comms_getSelfAddr( oldGame->comms, &selfAddr );
         selfAddrP = &selfAddr;
-        /* if ( SERVER_ISCLIENT == gi->serverRole ) { */
-        /*     comms_getHostAddr( oldGame->comms, &hostAddr ); */
-        /*     hostAddrP = &hostAddr; */
-        /* } */
     }
 
-    if ( game_makeNewGame( MPPARM(util->mpool) xwe, &newGame, &newGI,
-                           selfAddrP, NULL, util,
+    CommsAddrRec hostAddr;
+    XP_Bool haveRemote = !oldGame->comms
+        || comms_getHostAddr( oldGame->comms, &hostAddr );
+    if ( !haveRemote ) {
+        XP_U16 nRecs = 1;
+        comms_getAddrs( oldGame->comms, xwe, &hostAddr, &nRecs );
+        haveRemote = 0 < nRecs;
+    }
+    XP_ASSERT( haveRemote );
+
+    if ( haveRemote &&
+         game_makeNewGame( MPPARM(util->mpool) xwe, &newGame, &newGI,
+                           selfAddrP, (CommsAddrRec*)NULL, util,
                            (DrawCtx*)NULL, cp, (TransportProcs*)NULL ) ) {
         if ( !!newGame.comms ) {
-            CommsAddrRec hostAddr;
-            comms_getHostAddr( oldGame->comms, &hostAddr );
-
-            NetLaunchInfo nli = {0};
+            NetLaunchInfo nli;
             nli_init( &nli, &newGI, selfAddrP, 1, 1 );
             LOGNLI( &nli );
             comms_invite( newGame.comms, xwe, &nli, &hostAddr );
