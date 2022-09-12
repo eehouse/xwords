@@ -1,6 +1,6 @@
 /* -*- compile-command: "find-and-gradle.sh inXw4dDeb"; -*- */
 /*
- * Copyright 2012 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2012 - 2022 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -30,6 +30,7 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.SystemClock;
+import android.text.TextUtils;
 
 import java.io.File;
 import java.util.List;
@@ -411,6 +412,19 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
         Utils.postNotification( context, intent,
                                 R.string.new_dict_avail,
                                 body, url.hashCode() );
+    }
+
+    static boolean downloadPerNotification( Context context, Intent intent )
+    {
+        String dictUri = intent.getStringExtra( NEW_DICT_URL );
+        String name = intent.getStringExtra( NEW_DICT_NAME );
+        boolean handled = !TextUtils.isEmpty( dictUri )
+            && !TextUtils.isEmpty( name );
+        if ( handled ) {
+            Uri uri = Uri.parse( dictUri );
+            DwnldDelegate.downloadDictInBack( context, uri, name, null );
+        }
+        return handled;
     }
 
     static boolean postedForDictDownload( Context context, final Uri uri,
