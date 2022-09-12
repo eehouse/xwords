@@ -2512,6 +2512,11 @@ public class GamesListDelegate extends ListDelegateBase
         return result;
     }
 
+    private boolean downloadDictUpgrade( Intent intent )
+    {
+        return UpdateCheckReceiver.downloadPerNotification( m_activity, intent );
+    }
+
     private boolean startNewNetGame( NetLaunchInfo nli )
     {
         boolean handled = false;
@@ -2975,6 +2980,7 @@ public class GamesListDelegate extends ListDelegateBase
         boolean handled = startFirstHasDict( intent )
             || startWithInvitee( intent )
             || postWordlistURL( intent )
+            || downloadDictUpgrade( intent )
             || loadConfig( intent )
             || startNewNetGame( intent )
             || startHasGameID( intent )
