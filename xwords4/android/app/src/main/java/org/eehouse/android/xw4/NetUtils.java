@@ -97,9 +97,7 @@ public class NetUtils {
         // Requires a login, so only of use to me right now....
         String url = urlForGameID( context, gameID );
         Intent intent = new Intent( Intent.ACTION_VIEW, Uri.parse( url ) );
-        if ( null != intent.resolveActivity( context.getPackageManager() ) ) {
-            context.startActivity( intent );
-        }
+        context.startActivity( intent );
     }
 
     private static final String FORCE_HOST = null
