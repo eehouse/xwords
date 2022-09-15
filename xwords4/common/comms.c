@@ -214,6 +214,7 @@ static XP_Bool channelToAddress( CommsCtxt* comms, XWEnv xwe, XP_PlayerAddr chan
 static AddressRecord* getRecordFor( CommsCtxt* comms, XWEnv xwe,
                                     const CommsAddrRec* addr, XP_PlayerAddr channelNo,
                                     XP_Bool maskChnl );
+static void augmentSelfAddr( CommsCtxt* comms, XWEnv xwe, const CommsAddrRec* addr );
 static XP_S16 sendMsg( CommsCtxt* comms, XWEnv xwe, MsgQueueElem* elem,
                        CommsConnType filter );
 static MsgQueueElem* addToQueue( CommsCtxt* comms, XWEnv xwe, MsgQueueElem* newMsgElem );
@@ -431,7 +432,7 @@ comms_make( MPFORMAL XWEnv xwe, XW_UtilCtxt* util, XP_Bool isServer,
 
     if ( !!selfAddr ) {
         logAddr( comms, xwe, selfAddr, __func__ );
-        comms_augmentHostAddr( comms, xwe, selfAddr );
+        augmentSelfAddr( comms, xwe, selfAddr );
     }
     if ( !!hostAddr ) {
         XP_ASSERT( !isServer );
@@ -1173,8 +1174,8 @@ comms_getHostAddr( const CommsCtxt* comms, CommsAddrRec* addr )
     return haveAddr;
 } /* comms_getAddr */
 
-void
-comms_augmentHostAddr( CommsCtxt* comms, XWEnv xwe, const CommsAddrRec* addr )
+static void
+augmentSelfAddr( CommsCtxt* comms, XWEnv xwe, const CommsAddrRec* addr )
 {
     logAddr( comms, xwe, addr, __func__ );
     XP_ASSERT( comms != NULL );

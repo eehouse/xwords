@@ -71,7 +71,7 @@ public class GameConfigDelegate extends DelegateBase
     private static final String DIS_MAP = "DIS_MAP";
 
     static final String INTENT_KEY_GI = "key_gi";
-    static final String INTENT_KEY_CAR = "key_car";
+    static final String INTENT_KEY_SADDR = "key_saddr";
     static final String INTENT_KEY_NAME = "key_name";
 
     private Activity m_activity;
@@ -906,7 +906,9 @@ public class GameConfigDelegate extends DelegateBase
             Intent intent = new Intent();
             if ( m_isNewGame ) {
                 intent.putExtra( INTENT_KEY_GI, m_gi );
-                intent.putExtra( INTENT_KEY_CAR, m_car );
+                // PENDING pass only types, not full addr. Types are defaults
+                // we can insert later.
+                intent.putExtra( INTENT_KEY_SADDR, m_car );
                 // Game name should be a field in this layout
                 intent.putExtra( INTENT_KEY_NAME, "Config Me" );
             } else {
@@ -1284,13 +1286,14 @@ public class GameConfigDelegate extends DelegateBase
         m_gi.boardSize = positionToSize( position );
         m_gi.traySize = Integer.parseInt( m_traysizeSpinner.getSelectedItem().toString() );
 
-        m_car.conTypes = m_conTypes;
+        m_car = new CommsAddrRec( m_conTypes )
+            .populate( m_activity );
     } // saveChanges
 
     private void applyChanges( GameLock lock, boolean forceNew )
     {
         if ( !m_isNewGame ) {
-            GameUtils.applyChanges( m_activity, m_gi, m_car, m_disabMap,
+            GameUtils.applyChanges1( m_activity, m_gi, m_car, m_disabMap,
                                     lock, forceNew );
             DBUtils.saveThumbnail( m_activity, lock, null ); // clear it
         }

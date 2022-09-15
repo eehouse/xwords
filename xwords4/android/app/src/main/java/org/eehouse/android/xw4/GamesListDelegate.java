@@ -1677,11 +1677,13 @@ public class GamesListDelegate extends ListDelegateBase
                 } else {        // new game case?
                     CurGameInfo gi = (CurGameInfo)
                         data.getSerializableExtra( GameConfigDelegate.INTENT_KEY_GI );
-                    CommsAddrRec selfAddr = (CommsAddrRec)
-                        data.getSerializableExtra( GameConfigDelegate.INTENT_KEY_CAR );
-                    String name = data.getStringExtra( GameConfigDelegate.INTENT_KEY_NAME );
-                    long rowid = GameUtils.makeNewMultiGame( m_activity, gi, DBUtils.GROUPID_UNSPEC,
-                                                             name, selfAddr );
+                    CommsAddrRec selfAddr = (CommsAddrRec)data
+                        .getSerializableExtra( GameConfigDelegate.INTENT_KEY_SADDR );
+                    CommsConnTypeSet selfTypes = selfAddr.conTypes;
+                    String name = data
+                        .getStringExtra( GameConfigDelegate.INTENT_KEY_NAME );
+                    long rowid = GameUtils.makeNewMultiGame7( m_activity, gi,
+                                                              selfTypes, name );
                     launchGame( rowid );
                 }
             }
@@ -2481,10 +2483,12 @@ public class GamesListDelegate extends ListDelegateBase
     {
         boolean result = false;
         try {
-            CommsAddrRec addr = (CommsAddrRec)intent.getSerializableExtra( INVITEE_REC_EXTRA );
-            if ( null != addr ) {
+            CommsAddrRec hostAddr = (CommsAddrRec)intent
+                .getSerializableExtra( INVITEE_REC_EXTRA );
+            if ( null != hostAddr ) {
+                Assert.failDbg();       // make sure I'm called
                 String name = intent.getStringExtra( REMATCH_NEWNAME_EXTRA );
-                makeThenLaunchOrConfigure( name, false, false, addr );
+                makeThenLaunchOrConfigure( name, false, false, hostAddr );
             }
         } catch ( Exception ex ) {
             Log.ex( TAG, ex );
@@ -2714,8 +2718,8 @@ public class GamesListDelegate extends ListDelegateBase
                 String mqttDevID = extras.getString( GameSummary.EXTRA_REMATCH_MQTT );
                 String json = extras.getString( REMATCH_PREFS_EXTRA );
 
-                newid = GameUtils.makeNewMultiGame( m_activity, groupID, dict,
-                                                    isoCode, json, addrs, gameName );
+                newid = GameUtils.makeNewMultiGame4( m_activity, groupID, dict,
+                                                     isoCode, json, addrs, gameName );
                 DBUtils.addRematchInfo( m_activity, newid, btAddr, phone,
                                         p2pMacAddress, mqttDevID );
             }
@@ -2981,7 +2985,7 @@ public class GamesListDelegate extends ListDelegateBase
     private void makeNewNetGame( NetLaunchInfo nli )
     {
         long rowid = ROWID_NOTFOUND;
-        rowid = GameUtils.makeNewMultiGame( m_activity, nli );
+        rowid = GameUtils.makeNewMultiGame1( m_activity, nli );
         launchGame( rowid, null );
     }
 
@@ -3127,7 +3131,7 @@ public class GamesListDelegate extends ListDelegateBase
     }
 
     private void makeThenLaunchOrConfigure( String name, boolean doConfigure,
-                                            boolean skipAsk, CommsAddrRec addr )
+                                            boolean skipAsk, CommsAddrRec hostAddr )
     {
         if ( skipAsk || !askingChangeName( name, doConfigure ) ) {
 
@@ -3143,11 +3147,15 @@ public class GamesListDelegate extends ListDelegateBase
                     : DBUtils.GROUPID_UNSPEC;
 
                 if ( m_mySIS.nextIsSolo ) {
+                    Assert.assertTrueNR( null == hostAddr );
                     rowID = GameUtils.saveNew( m_activity,
                                                new CurGameInfo( m_activity ),
                                                groupID, name );
                 } else {
-                    rowID = GameUtils.makeNewMultiGame( m_activity, groupID, name );
+                    Assert.assertTrueNR( null != hostAddr );
+                    Assert.failDbg();       // make sure I'm called
+                    rowID = GameUtils
+                        .makeNewMultiGame3( m_activity, groupID, name );
                 }
                 GameUtils.launchGame( getDelegator(), rowID );
             }
@@ -3197,10 +3205,10 @@ public class GamesListDelegate extends ListDelegateBase
         return intent;
     }
 
-    private void launchLikeRematch( CommsAddrRec addr, String name )
+    private void launchLikeRematch( CommsAddrRec hostAddr, String name )
     {
         Intent intent = makeSelfIntent( m_activity )
-            .putExtra( INVITEE_REC_EXTRA, (Serializable)addr )
+            .putExtra( INVITEE_REC_EXTRA, (Serializable)hostAddr )
             .putExtra( REMATCH_NEWNAME_EXTRA, name )
             ;
         startActivity( intent );

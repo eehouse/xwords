@@ -238,12 +238,9 @@ public class JNIThread extends Thread implements AutoCloseable {
                     // generic defaults, as the user should have configured an
                     // address for the game.
                     Assert.assertTrueNR( m_gi.serverRole != DeviceRole.SERVER_ISCLIENT );
-                    Assert.failDbg();
-                    CommsAddrRec selfAddr = null;
+                    Assert.failDbg(); // Do I ever get here????
+                    CommsAddrRec selfAddr = CommsAddrRec.getSelfAddr( context, m_gi );
                     CommsAddrRec hostAddr = null;
-                    if ( m_gi.serverRole == DeviceRole.SERVER_ISSERVER ) {
-                        selfAddr = CommsAddrRec.getSelfAddr( context );
-                    }
                     m_jniGamePtr = XwJNI.initNew( m_gi, selfAddr, hostAddr,
                                                   utils, null, cp, m_xport );
                 }

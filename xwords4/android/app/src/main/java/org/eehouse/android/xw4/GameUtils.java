@@ -413,9 +413,8 @@ public class GameUtils {
                                                 tp );
                 if ( null == gamePtr ) {
                     Assert.assertTrueNR( gi.serverRole != DeviceRole.SERVER_ISCLIENT );
-                    CommsAddrRec selfAddr = CommsAddrRec.getSelfAddr( context );
-                    CommsAddrRec hostAddr = null;
-                    gamePtr = XwJNI.initNew( gi, selfAddr, hostAddr,
+                    CommsAddrRec selfAddr = CommsAddrRec.getSelfAddr( context, gi );
+                    gamePtr = XwJNI.initNew( gi, selfAddr, (CommsAddrRec)null,
                                              (UtilCtxt)null, (DrawCtx)null,
                                              CommonPrefs.get(context), null );
                 }
@@ -570,15 +569,27 @@ public class GameUtils {
         return DBUtils.saveNewGame( context, bytes, groupID, null );
     }
 
-    public static long saveNew( Context context, CurGameInfo gi, long groupID,
-                                String gameName )
+    public static long saveNew( Context context, CurGameInfo gi,
+                                long groupID, String gameName )
+    {
+        Assert.assertTrueNR( DeviceRole.SERVER_STANDALONE == gi.serverRole );
+        return saveNew( context, gi, null, null, groupID, gameName );
+    }
+
+    public static long saveNew( Context context, CurGameInfo gi,
+                                CommsAddrRec selfAddr, CommsAddrRec hostAddr,
+                                long groupID, String gameName )
     {
         if ( DBUtils.GROUPID_UNSPEC == groupID ) {
             groupID = XWPrefs.getDefaultNewGameGroup( context );
         }
+        GamePtr gamePtr = XwJNI.
+            initNew( gi, selfAddr, hostAddr,
+                     (UtilCtxt)null, (DrawCtx)null,
+                     CommonPrefs.get(context), (TransportProcs)null );
 
         long rowid = DBUtils.ROWID_NOTFOUND;
-        byte[] bytes = XwJNI.gi_to_stream( gi );
+        byte[] bytes = XwJNI.game_saveToStream( gamePtr, gi );
         if ( null != bytes ) {
             try ( GameLock lock = DBUtils.saveNewGame( context, bytes, groupID,
                                                        gameName ) ) {
@@ -588,81 +599,90 @@ public class GameUtils {
         return rowid;
     }
 
-    public static long makeNewMultiGame( Context context, NetLaunchInfo nli )
+    public static long makeNewMultiGame1( Context context, NetLaunchInfo nli )
     {
-        return makeNewMultiGame( context, nli, (MultiMsgSink)null,
-                                 (UtilCtxt)null );
+        return makeNewMultiGame2( context, nli, (MultiMsgSink)null,
+                                  (UtilCtxt)null );
     }
 
-    public static long makeNewMultiGame( Context context, NetLaunchInfo nli,
-                                         MultiMsgSink sink, UtilCtxt util )
+    public static long makeNewMultiGame2( Context context, NetLaunchInfo nli,
+                                          MultiMsgSink sink, UtilCtxt util )
     {
-        Log.d( TAG, "makeNewMultiGame(nli=%s)", nli.toString() );
-        CommsAddrRec addr = nli.makeAddrRec( context );
+        // Log.d( TAG, "makeNewMultiGame(nli=%s)", nli.toString() );
+        // Called to create a client in response to invitation from host. As
+        // client, it can be created knowing host's address, and with its own
+        // address based on the connection types the host is using.
+        CommsAddrRec hostAddr = nli.makeAddrRec( context );
+        CommsAddrRec selfAddr = CommsAddrRec
+            .getSelfAddr( context, hostAddr.conTypes );
+        boolean isHost = false;
 
-        return makeNewMultiGame( context, sink, util, DBUtils.GROUPID_UNSPEC,
-                                 addr, new ISOCode[] {nli.isoCode()},
-                                 new String[] { nli.dict }, null, nli.nPlayersT,
-                                 nli.nPlayersH, nli.forceChannel,
-                                 nli.inviteID(), nli.gameID(),
-                                 nli.gameName, false, nli.remotesAreRobots );
+        return makeNewMultiGame6( context, sink, util, DBUtils.GROUPID_UNSPEC,
+                                  selfAddr, hostAddr,
+                                  new ISOCode[] {nli.isoCode()},
+                                  new String[] { nli.dict }, null, nli.nPlayersT,
+                                  nli.nPlayersH, nli.forceChannel,
+                                  nli.inviteID(), nli.gameID(),
+                                  nli.gameName, isHost, nli.remotesAreRobots );
     }
 
-    public static long makeNewMultiGame( Context context, long groupID,
-                                         String gameName )
+    public static long makeNewMultiGame3( Context context, long groupID,
+                                          String gameName )
     {
-        return makeNewMultiGame( context, groupID, null, null, null,
-                                 (CommsConnTypeSet)null, gameName );
+        return makeNewMultiGame4( context, groupID, (String)null,
+                                  (ISOCode)null, (String)null,
+                                  (CommsConnTypeSet)null, gameName );
     }
 
-    public static long makeNewMultiGame( Context context, long groupID,
-                                         String dict, ISOCode isoCode,
-                                         String jsonData,
-                                         CommsConnTypeSet addrSet,
-                                         String gameName )
+    public static long makeNewMultiGame4( Context context, long groupID,
+                                          String dict, ISOCode isoCode,
+                                          String jsonData,
+                                          CommsConnTypeSet selfSet,
+                                          String gameName )
     {
         String inviteID = makeRandomID();
-        return makeNewMultiGame( context, groupID, inviteID, dict, isoCode,
-                                 jsonData, addrSet, gameName );
+        return makeNewMultiGame5( context, groupID, inviteID, dict, isoCode,
+                                  jsonData, selfSet, gameName );
     }
 
-    private static long makeNewMultiGame( Context context, long groupID,
-                                          String inviteID, String dict,
-                                          ISOCode isoCode, String jsonData,
-                                          CommsConnTypeSet addrSet,
-                                          String gameName )
+    private static long makeNewMultiGame5( Context context, long groupID,
+                                           String inviteID, String dict,
+                                           ISOCode isoCode, String jsonData,
+                                           CommsConnTypeSet selfSet,
+                                           String gameName )
     {
         ISOCode[] langArray = {isoCode};
         String[] dictArray = {dict};
-        if ( null == addrSet ) {
-            addrSet = XWPrefs.getAddrTypes( context );
+        if ( null == selfSet ) {
+            selfSet = XWPrefs.getAddrTypes( context );
         }
 
         // Silently add this to any networked game if our device supports
         // it. comms is unhappy if we later pass in a message using an address
         // type the game doesn't have in its set.
         if ( NFCUtils.nfcAvail( context )[0] ) {
-            addrSet.add( CommsConnType.COMMS_CONN_NFC );
+            selfSet.add( CommsConnType.COMMS_CONN_NFC );
         }
 
-        CommsAddrRec addr = new CommsAddrRec( addrSet );
-        addr.populate( context );
+        CommsAddrRec selfAddr = new CommsAddrRec( selfSet )
+            .populate( context );
         int forceChannel = 0;
-        return makeNewMultiGame( context, (MultiMsgSink)null, (UtilCtxt)null,
-                                 groupID, addr, langArray, dictArray, jsonData,
-                                 2, 1, forceChannel, inviteID, 0, gameName,
-                                 true, false );
+        return makeNewMultiGame6( context, (MultiMsgSink)null, (UtilCtxt)null,
+                                  groupID, selfAddr, (CommsAddrRec)null,
+                                  langArray, dictArray, jsonData, 2, 1,
+                                  forceChannel, inviteID, 0, gameName,
+                                  true, false );
     }
 
-    private static long makeNewMultiGame( Context context, MultiMsgSink sink,
-                                          UtilCtxt util, long groupID,
-                                          CommsAddrRec addr,
-                                          ISOCode[] isoCode, String[] dict,
-                                          String jsonData,
-                                          int nPlayersT, int nPlayersH,
-                                          int forceChannel, String inviteID,
-                                          int gameID, String gameName,
-                                          boolean isHost, boolean localsRobots )
+    private static long makeNewMultiGame6( Context context, MultiMsgSink sink,
+                                           UtilCtxt util, long groupID,
+                                           CommsAddrRec selfAddr, CommsAddrRec hostAddr,
+                                           ISOCode[] isoCode, String[] dict,
+                                           String jsonData,
+                                           int nPlayersT, int nPlayersH,
+                                           int forceChannel, String inviteID,
+                                           int gameID, String gameName,
+                                           boolean isHost, boolean localsRobots )
     {
         long rowid = DBUtils.ROWID_NOTFOUND;
 
@@ -684,23 +704,30 @@ public class GameUtils {
         // Will need to add a setNPlayers() method to gi to make this
         // work
         Assert.assertTrue( gi.nPlayers == nPlayersT );
-        return makeNewMultiGame( context, sink, gi, util, groupID, gameName, addr );
+        return makeNewMultiGame8( context, sink, gi, selfAddr, hostAddr,
+                                  util, groupID, gameName );
     }
 
-    public static long makeNewMultiGame( Context context, CurGameInfo gi,
-                                         long groupID, String gameName,
-                                         CommsAddrRec selfAddr )
+    public static long makeNewMultiGame7( Context context, CurGameInfo gi,
+                                          CommsConnTypeSet selfSet, String gameName )
     {
-        return makeNewMultiGame( context, (MultiMsgSink)null, gi, (UtilCtxt)null,
-                                 groupID, gameName, selfAddr );
+        CommsAddrRec selfAddr = new CommsAddrRec( selfSet )
+            .populate( context );
+        return makeNewMultiGame8( context, (MultiMsgSink)null,
+                                  gi, selfAddr, (CommsAddrRec)null,
+                                  (UtilCtxt)null,
+                                  DBUtils.GROUPID_UNSPEC, gameName );
     }
 
-    private static long makeNewMultiGame( Context context, MultiMsgSink sink,
-                                          CurGameInfo gi, UtilCtxt util,
-                                          long groupID, String gameName,
-                                          CommsAddrRec selfAddr )
+    private static long makeNewMultiGame8( Context context, MultiMsgSink sink,
+                                           CurGameInfo gi, CommsAddrRec selfAddr,
+                                           CommsAddrRec hostAddr, UtilCtxt util,
+                                           long groupID, String gameName )
     {
-        long rowid = saveNew( context, gi, groupID, gameName );
+        if ( null == selfAddr ) {
+            selfAddr = CommsAddrRec.getSelfAddr( context, gi );
+        }
+        long rowid = saveNew( context, gi, selfAddr, hostAddr, groupID, gameName );
         if ( null != sink ) {
             sink.setRowID( rowid );
         }
@@ -710,9 +737,9 @@ public class GameUtils {
             // succeed because we just created the rowid.
             try ( GameLock lock = GameLock.tryLock( rowid ) ) {
                 Assert.assertNotNull( lock );
-                applyChanges( context, sink, gi, util, selfAddr,
-                              (Map<CommsConnType, boolean[]>)null,
-                              lock, false /*forceNew*/ );
+                applyChanges2( context, sink, gi, util, hostAddr,
+                               (Map<CommsConnType, boolean[]>)null,
+                               lock, false /*forceNew*/ );
             }
         }
 
@@ -1118,20 +1145,20 @@ public class GameUtils {
         return success;
     } // replaceDicts
 
-    public static void applyChanges( Context context, CurGameInfo gi,
-                                     CommsAddrRec car,
-                                     Map<CommsConnType, boolean[]> disab,
-                                     GameLock lock, boolean forceNew )
+    public static void applyChanges1( Context context, CurGameInfo gi,
+                                      CommsAddrRec selfAddr,
+                                      Map<CommsConnType, boolean[]> disab,
+                                      GameLock lock, boolean forceNew )
     {
-        applyChanges( context, (MultiMsgSink)null, gi, (UtilCtxt)null, car,
-                      disab, lock, forceNew );
+        applyChanges2( context, (MultiMsgSink)null, gi, (UtilCtxt)null,
+                       selfAddr, disab, lock, forceNew );
     }
 
-    public static void applyChanges( Context context, MultiMsgSink sink,
-                                     CurGameInfo gi, UtilCtxt util,
-                                     CommsAddrRec car,
-                                     Map<CommsConnType, boolean[]> disab,
-                                     GameLock lock, boolean forceNew )
+    private static void applyChanges2( Context context, MultiMsgSink sink,
+                                       CurGameInfo gi, UtilCtxt util,
+                                       CommsAddrRec selfAddr,
+                                       Map<CommsConnType, boolean[]> disab,
+                                       GameLock lock, boolean forceNew )
     {
         // This should be a separate function, commitChanges() or
         // somesuch.  But: do we have a way to save changes to a gi
@@ -1150,27 +1177,28 @@ public class GameUtils {
                                    new CurGameInfo(context),
                                    null, null, cp, null ) ) {
                 if ( null != gamePtr ) {
-                    applyChanges( context, sink, gi, car, disab,
-                                  lock, gamePtr );
+                    applyChangesImpl( context, sink, gi, disab, lock, gamePtr );
                     madeGame = true;
                 }
             }
         }
 
         if ( forceNew || !madeGame ) {
-            try ( GamePtr gamePtr = XwJNI.initNew( gi, car, null, util, (DrawCtx)null,
-                                                   cp, sink ) ) {
+            Assert.failDbg();   // Is this happening? selfAddr is sometimes
+                                // hostAddr so it can't work.
+            try ( GamePtr gamePtr = XwJNI.initNew( gi, selfAddr, (CommsAddrRec)null,
+                                                   util, (DrawCtx)null, cp, sink ) ) {
                 if ( null != gamePtr ) {
-                    applyChanges( context, sink, gi, car, disab, lock, gamePtr );
+                    applyChangesImpl( context, sink, gi, disab, lock, gamePtr );
                 }
             }
         }
     }
 
-    private static void applyChanges( Context context, MultiMsgSink sink,
-                                      CurGameInfo gi, CommsAddrRec car,
-                                      Map<CommsConnType, boolean[]> disab,
-                                      GameLock lock, GamePtr gamePtr )
+    private static void applyChangesImpl( Context context, MultiMsgSink sink,
+                                          CurGameInfo gi,
+                                          Map<CommsConnType, boolean[]> disab,
+                                          GameLock lock, GamePtr gamePtr )
     {
         if ( BuildConfig.DEBUG && null != disab ) {
             for ( CommsConnType typ : disab.keySet() ) {

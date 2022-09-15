@@ -72,10 +72,6 @@ XP_Bool gdb_getGameInfo( sqlite3* pDb, sqlite3_int64 rowid, GameInfo* gib );
 void gdb_getRowsForGameID( sqlite3* pDb, XP_U32 gameID, sqlite3_int64* rowids,
                            int* nRowIDs );
 XP_Bool gdb_loadGame( XWStreamCtxt* stream, sqlite3* pDb, sqlite3_int64 rowid );
-void gdb_saveInviteAddrs( XWStreamCtxt* stream, sqlite3* pDb,
-                          sqlite3_int64 rowid );
-XP_Bool gdb_loadInviteAddrs( XWStreamCtxt* stream, sqlite3* pDb,
-                         sqlite3_int64 rowid );
 void gdb_deleteGame( sqlite3* pDb, sqlite3_int64 rowid );
 
 #define KEY_RDEVID "RDEVID"

@@ -706,33 +706,6 @@ on_board_window_shown( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
         gtkShowFinalScores( globals, XP_TRUE );
     }
 
-    CommsCtxt* comms = cGlobals->game.comms;
-    if ( !!comms /*&& COMMS_CONN_NONE == comms_getConTypes( comms )*/ ) {
-        /* If it has pending invite info, send the invitation! */
-        XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(cGlobals->util->mpool)
-                                                    cGlobals->params->vtMgr );
-        if ( gdb_loadInviteAddrs( stream, cGlobals->params->pDb,
-                                  cGlobals->rowid ) ) {
-            CommsAddrRec addr = {0};
-            addrFromStream( &addr, stream );
-            comms_augmentHostAddr( cGlobals->game.comms, NULL_XWE, &addr );
-
-            XP_U16 nRecs = stream_getU8( stream );
-            XP_LOGF( "%s: got invite info: %d records", __func__, nRecs );
-            for ( int ii = 0; ii < nRecs; ++ii ) {
-                XP_UCHAR relayID[32];
-                stringFromStreamHere( stream, relayID, sizeof(relayID) );
-                XP_LOGF( "%s: loaded relayID %s", __func__, relayID );
-
-                CommsAddrRec addr = {0};
-                addrFromStream( &addr, stream );
-
-                send_invites( cGlobals, 1, &addr );
-            }
-        }
-        stream_destroy( stream, NULL_XWE );
-    }
-
     resizeFromRowid( globals );
 } /* on_board_window_shown */
 

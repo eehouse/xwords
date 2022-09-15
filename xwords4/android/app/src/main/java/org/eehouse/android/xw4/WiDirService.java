@@ -781,9 +781,9 @@ public class WiDirService extends XWService {
         long[] rowids = DBUtils.getRowIDsFor( this, nli.gameID() );
         if ( 0 == rowids.length ) {
             CommsAddrRec addr = nli.makeAddrRec( this );
-            long rowid = GameUtils.makeNewMultiGame( this, nli,
-                                                     m_sink,
-                                                     mHelper.getUtilCtxt() );
+            long rowid = GameUtils.makeNewMultiGame2( this, nli,
+                                                      m_sink,
+                                                      mHelper.getUtilCtxt() );
             if ( DBUtils.ROWID_NOTFOUND != rowid ) {
                 if ( null != nli.gameName && 0 < nli.gameName.length() ) {
                     DBUtils.setName( this, rowid, nli.gameName );

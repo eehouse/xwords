@@ -371,7 +371,7 @@ public class CommsAddrRec implements Serializable {
         return this;
     }
 
-    public void populate( Context context, CommsConnTypeSet newTypes )
+    public CommsAddrRec populate( Context context, CommsConnTypeSet newTypes )
     {
         for ( CommsConnType typ : newTypes.getTypes() ) {
             if ( ! conTypes.contains( typ ) ) {
@@ -379,13 +379,15 @@ public class CommsAddrRec implements Serializable {
                 addTypeDefaults( context, typ );
             }
         }
+        return this;
     }
 
-    public void populate( Context context )
+    public CommsAddrRec populate( Context context )
     {
         for ( CommsConnType typ : conTypes.getTypes() ) {
             addTypeDefaults( context, typ );
         }
+        return this;
     }
 
     public void remove( CommsConnType typ )
@@ -442,13 +444,24 @@ public class CommsAddrRec implements Serializable {
         }
     }
 
+    public static CommsAddrRec getSelfAddr( Context context, CommsConnTypeSet types )
+    {
+        return new CommsAddrRec()
+            .populate( context, types );
+    }
+
     public static CommsAddrRec getSelfAddr( Context context )
     {
-        CommsAddrRec result = new CommsAddrRec();
         CommsConnTypeSet types = XWPrefs.getAddrTypes( context );
-        result.populate( context, types );
+        CommsAddrRec result = getSelfAddr( context, types );
         Log.d( TAG, "getSelfAddr() => %s", result );
         return result;
+    }
+
+    public static CommsAddrRec getSelfAddr( Context context, CurGameInfo gi )
+    {
+        return CurGameInfo.DeviceRole.SERVER_STANDALONE == gi.serverRole
+            ? null : getSelfAddr( context );
     }
 
     private void copyFrom( CommsAddrRec src )

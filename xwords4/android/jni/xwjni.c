@@ -861,28 +861,6 @@ Java_org_eehouse_android_xw4_jni_XwJNI_kplr_1nameForMqttDev
 }
 #endif
 
-JNIEXPORT jbyteArray JNICALL
-Java_org_eehouse_android_xw4_jni_XwJNI_gi_1to_1stream
-( JNIEnv* env, jclass C, jlong jniGlobalPtr, jobject jgi )
-{
-    jbyteArray result;
-    JNIGlobalState* globalState = (JNIGlobalState*)jniGlobalPtr;
-#ifdef MEM_DEBUG
-    MemPoolCtx* mpool = GETMPOOL( globalState );
-#endif
-    CurGameInfo* gi = makeGI( MPPARM(mpool) env, jgi );
-    XWStreamCtxt* stream = mem_stream_make( MPPARM(mpool) globalState->vtMgr,
-                                            NULL, 0, NULL );
-
-    game_saveToStream( NULL, env, gi, stream, 0 );
-    destroyGI( MPPARM(mpool) &gi );
-
-    result = streamToBArray( env, stream );
-    stream_destroy( stream, env );
-    releaseMPool( globalState );
-    return result;
-}
-
 JNIEXPORT void JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_gi_1from_1stream
 ( JNIEnv* env, jclass C, jlong jniGlobalPtr, jobject jgi, jbyteArray jstream )
@@ -2224,21 +2202,6 @@ Java_org_eehouse_android_xw4_jni_XwJNI_comms_1getAddrs
     }
     XWJNI_END();
     return result;
-}
-
-JNIEXPORT void JNICALL
-Java_org_eehouse_android_xw4_jni_XwJNI_comms_1augmentHostAddr
-( JNIEnv* env, jclass C, GamePtrType gamePtr, jobject jaddr )
-{
-    XWJNI_START();
-    if ( state->game.comms ) {
-        CommsAddrRec addr = {0};
-        getJAddrRec( env, &addr, jaddr );
-        comms_augmentHostAddr( state->game.comms, env, &addr );
-    } else {
-        XP_LOGFF( "no comms this game" );
-    }
-    XWJNI_END();
 }
 
 JNIEXPORT jboolean JNICALL

@@ -419,9 +419,12 @@ game_makeFromInvite( MPFORMAL XWEnv xwe, const NetLaunchInfo* nli,
                      const XP_UCHAR* plyrName, XW_UtilCtxt* util, DrawCtx* draw,
                      CommonPrefs* cp, const TransportProcs* procs )
 {
+    XP_MEMSET( gi, 0, sizeof(*gi) );
     gi_setNPlayers( gi, nli->nPlayersT, nli->nPlayersH );
+    /* These will be set by host in respose to registration message */
     gi->boardSize = 15;
     gi->traySize = gi->bingoMin = 7;
+
     gi->gameID = nli->gameID;
     XP_STRNCPY( gi->isoCodeStr, nli->isoCodeStr, VSIZE(gi->isoCodeStr) );
     gi->forceChannel = nli->forceChannel;
@@ -435,11 +438,6 @@ game_makeFromInvite( MPFORMAL XWEnv xwe, const NetLaunchInfo* nli,
     nli_makeAddrRec( nli, &hostAddr );
     XP_Bool success = game_makeNewGame( MPPARM(mpool) xwe, game, gi, selfAddr,
                                         &hostAddr, util, draw, cp, procs );
-    if ( success ) {
-        CommsAddrRec returnAddr;
-        nli_makeAddrRec( nli, &returnAddr );
-        comms_augmentHostAddr( game->comms, NULL, &returnAddr );
-    }
     return success;
 }
 

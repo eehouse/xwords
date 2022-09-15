@@ -660,20 +660,6 @@ gdb_loadGame( XWStreamCtxt* stream, sqlite3* pDb, sqlite3_int64 rowid )
     return loadBlobColumn( stream, pDb, rowid, "game" );
 }
 
-/* Used for rematch only. But do I need it? */
-void
-gdb_saveInviteAddrs( XWStreamCtxt* stream, sqlite3* pDb, sqlite3_int64 rowid )
-{
-    sqlite3_int64 row = writeBlobColumnStream( stream, pDb, rowid, "inviteInfo" );
-    assert( row == rowid );
-}
-
-XP_Bool
-gdb_loadInviteAddrs( XWStreamCtxt* stream, sqlite3* pDb, sqlite3_int64 rowid )
-{
-    return loadBlobColumn( stream, pDb, rowid, "inviteInfo" );
-}
-
 void
 gdb_deleteGame( sqlite3* pDb, sqlite3_int64 rowid )
 {

@@ -256,11 +256,6 @@ public class XwJNI {
     public static native boolean timerFired( GamePtr gamePtr, int why,
                                              int when, int handle );
 
-    public static byte[] gi_to_stream( CurGameInfo gi )
-    {
-        return gi_to_stream( getJNI().m_ptrGlobals, gi );
-    }
-
     public static void gi_from_stream( CurGameInfo gi, byte[] stream )
     {
         Assert.assertNotNull( stream );
@@ -320,7 +315,11 @@ public class XwJNI {
         initNew( CurGameInfo gi, CommsAddrRec selfAddr, CommsAddrRec hostAddr,
                  UtilCtxt util, DrawCtx draw, CommonPrefs cp, TransportProcs procs )
     {
+        Log.d( TAG, "initNew(self: %s; host: %s)", selfAddr, hostAddr );
+        // Only standalone doesn't provide self address
         Assert.assertTrueNR( null != selfAddr || gi.serverRole == DeviceRole.SERVER_STANDALONE );
+        // Only client should be providing host addr
+        Assert.assertTrueNR( null == hostAddr || gi.serverRole == DeviceRole.SERVER_ISCLIENT );
         GamePtr gamePtr = initGameJNI( 0 );
         game_makeNewGame( gamePtr, gi, selfAddr, hostAddr, util, draw, cp, procs );
         return gamePtr;
@@ -748,7 +747,6 @@ public class XwJNI {
     public static native String kplr_nameForMqttDev( long jniState, String mqttID );
 
     private static native void cleanGlobals( long jniState );
-    private static native byte[] gi_to_stream( long jniState, CurGameInfo gi );
     private static native void gi_from_stream( long jniState, CurGameInfo gi,
                                                byte[] stream );
     private static native byte[] nli_to_stream( long jniState, NetLaunchInfo nli );
