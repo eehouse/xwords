@@ -378,6 +378,7 @@ game_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
                                                     procs, onRoleChanged, game,
                                                     gi->forceChannel );
             } else {
+                XP_ASSERT( NULL == game->comms );
                 game->comms = NULL;
             }
 

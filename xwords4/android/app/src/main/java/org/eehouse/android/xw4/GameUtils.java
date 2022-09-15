@@ -407,16 +407,19 @@ public class GameUtils {
                 postMoveDroppedForDictNotification( context, rowid, gi.gameID,
                                                     gi.isoCode() );
             } else {
-                String langName = gi.langName( context );
                 gamePtr = XwJNI.initFromStream( rowid, stream, gi, util, null,
-                                                CommonPrefs.get(context),
-                                                tp );
+                                                CommonPrefs.get(context), tp );
                 if ( null == gamePtr ) {
-                    Assert.assertTrueNR( gi.serverRole != DeviceRole.SERVER_ISCLIENT );
-                    CommsAddrRec selfAddr = CommsAddrRec.getSelfAddr( context, gi );
-                    gamePtr = XwJNI.initNew( gi, selfAddr, (CommsAddrRec)null,
-                                             (UtilCtxt)null, (DrawCtx)null,
-                                             CommonPrefs.get(context), null );
+                    // Assert.assertTrueNR( gi.serverRole != DeviceRole.SERVER_ISCLIENT ); // firing
+                    if ( DeviceRole.SERVER_ISCLIENT == gi.serverRole ) {
+                        Log.e( TAG, "bad game? ISCLIENT, but has no host address"
+                               + " and won't open" );
+                    } else {
+                        CommsAddrRec selfAddr = CommsAddrRec.getSelfAddr( context, gi );
+                        gamePtr = XwJNI.initNew( gi, selfAddr, (CommsAddrRec)null,
+                                                 (UtilCtxt)null, (DrawCtx)null,
+                                                 CommonPrefs.get(context), null );
+                    }
                 }
             }
         }
