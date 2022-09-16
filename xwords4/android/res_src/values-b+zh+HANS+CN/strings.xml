@@ -80,4 +80,21 @@
     <string name="hints_allowed">允许提示</string>
     <string name="loc_external">外部的</string>
     <string name="langUnknownFmt">未知（%1$s）</string>
+    <string name="expl_mqtt_url">新的基于 MQTT 的中继 API 的 URL</string>
+    <string name="invite_subject_fmt">让我们玩 CrossWords（房间 %1$s）</string>
+    <string name="banned_nbs_perms">这个游戏被设置为通过数据短信通信，但 Play Store 不再允许应用这样做（有极少数的例外）。你仍然可以打开游戏，但它可能无法发送或接收移动。
+\n
+\n你可以删除数据短信通信设置，或使用“阅读更多”按钮，检查替代方案的开发进度。</string>
+    <string name="sms_banned_ok_only">CrossWords 的 Google Play 版本不再支持通过数据 SMS 进行邀请或游戏。</string>
+    <string name="qrcode_invite_expl">要通过二维码邀请，让你的对手用 Android 手机上的摄像头扫描代码。</string>
+    <string name="qrcode_invite_summary">你的对手可以扫描的二维码</string>
+    <string name="invite_htm_fmt">轻按下方完整链接加入游戏。&lt;br \\&gt; &lt;br \\&gt;（完整链接：%1$s）</string>
+    <string name="about_btaddr_fmt">BT MAC 地址：%1$s</string>
+    <string name="about_vers_fmt2">构建信息：
+\n\tVariant: %1$s
+\n\tVersion name: %2$s
+\n\tVersion code: %3$d
+\n\tSource (Git) rev: %4$s
+\n\tBuilt: %5$s</string>
+    <string name="invit_expl_player_fmt">通过 MQTT/internet 将邀请转发给了 %2$s 上的已知玩家 \"%1$s\"。</string>
 </resources>
