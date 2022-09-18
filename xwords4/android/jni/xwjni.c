@@ -2628,6 +2628,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_comms_1invite
 {
     XWJNI_START_GLOBALS();
     CommsCtxt* comms = state->game.comms;
+    XP_ASSERT( NULL != comms );
     if ( NULL != comms ) {
         CommsAddrRec destAddr;
         getJAddrRec( env, &destAddr, jaddr );

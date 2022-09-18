@@ -34,6 +34,7 @@
 #include "gtkask.h"
 #include "device.h"
 #include "gtkkpdlg.h"
+#include "gtknewgame.h"
 
 static void onNewData( GtkAppGlobals* apg, sqlite3_int64 rowid, 
                        XP_Bool isNew );
@@ -311,13 +312,16 @@ handle_newgame_button( GtkWidget* XP_UNUSED(widget), void* closure )
     GtkGameGlobals* globals = calloc( 1, sizeof(*globals) );
     apg->cag.params->needsNewGame = XP_FALSE;
     initBoardGlobalsGtk( globals, apg->cag.params, NULL );
-    if ( !makeNewGame( globals ) ) {
-        freeGlobals( globals );
-    } else {
+
+    if ( gtkNewGameDialog( globals, globals->cGlobals.gi,
+                           &globals->cGlobals.selfAddr,
+                           XP_TRUE, XP_FALSE ) ) {
         GtkWidget* gameWindow = globals->window;
         globals->cGlobals.rowid = -1;
         recordOpened( apg, globals );
         gtk_widget_show( gameWindow );
+    } else {
+        freeGlobals( globals );
     }
 }
 

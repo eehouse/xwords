@@ -689,7 +689,6 @@ addrFromStreamOne( CommsAddrRec* addrP, XWStreamCtxt* stream, CommsConnType typ 
         break;
     case COMMS_CONN_RELAY: {
         IpRelay ip_relay = {{0}};
-
         stringFromStreamHere( stream, ip_relay.invite,
                               sizeof(ip_relay.invite) );
         stringFromStreamHere( stream, ip_relay.hostName,
@@ -2881,13 +2880,14 @@ comms_checkIncomingStream( CommsCtxt* comms, XWEnv xwe, XWStreamCtxt* stream,
                     messageValid = parseSmallHeader( comms, xwe, stream, &stuff );
                 }
             }
+
             if ( messageValid ) {
                 state->msgID = stuff.msgID;
                 CNO_FMT( cbuf, stuff.channelNo );
                 XP_LOGFF( TAGFMT() "rcd on %s: msgID=%d, lastMsgRcd=%d ",
                           TAGPRMS, cbuf, stuff.msgID, stuff.lastMsgRcd );
             } else {
-                XP_LOGFF( TAGFMT() "got message to self?", TAGPRMS );
+                XP_LOGFF( TAGFMT() "got message to self?", TAGPRMS ); /* firing */
             }
 
             AddressRecord* rec = NULL;

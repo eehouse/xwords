@@ -837,7 +837,6 @@ new_game_impl( GtkGameGlobals* globals, XP_Bool fireConnDlg )
     XP_Bool success = XP_FALSE;
     CommonGlobals* cGlobals = &globals->cGlobals;
 
-
     CurGameInfo* gi = cGlobals->gi;
     success = gtkNewGameDialog( globals, gi, &cGlobals->selfAddr,
                                 XP_TRUE, fireConnDlg );
@@ -2694,16 +2693,4 @@ loadGameNoDraw( GtkGameGlobals* globals, LaunchParams* params,
     stream_destroy( stream, NULL_XWE );
     return loaded;
 }
-
-XP_Bool
-makeNewGame( GtkGameGlobals* globals )
-{
-    CommonGlobals* cGlobals = &globals->cGlobals;
-    XP_Bool success = gtkNewGameDialog( globals, cGlobals->gi,
-                                        &cGlobals->selfAddr,
-                                        XP_TRUE, XP_FALSE );
-    LOG_RETURNF( "%s", boolToStr(success) );
-    return success;
-}
-
 #endif /* PLATFORM_GTK */

@@ -542,6 +542,7 @@ public class MQTTUtils extends Thread
         addToSendQueue( context, topic[0], packet );
     }
 
+    // This goes away? comms_invite() is already getting called. PENDING
     public static void addInvite( GamePtr game, String devID, NetLaunchInfo nli )
     {
         CommsAddrRec destAddr = new CommsAddrRec(CommsConnType.COMMS_CONN_MQTT)
