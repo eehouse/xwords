@@ -2966,10 +2966,6 @@ public class BoardDelegate extends DelegateBase
                                      GamePtr jniGamePtr, boolean deleteAfter )
     {
         boolean doIt = true;
-        String phone = null;
-        String btAddr = null;
-        String p2pMacAddress = null;
-        String mqttDevID = null;
         if ( DeviceRole.SERVER_STANDALONE == gi.serverRole ) {
             // nothing to do??
         } else if ( 2 != gi.nPlayers ) {
@@ -2980,37 +2976,13 @@ public class BoardDelegate extends DelegateBase
                     .show();
             }
             doIt = false;
-        } else {
-            CommsAddrRec[] addrs = XwJNI.comms_getAddrs( jniGamePtr );
-            for ( CommsAddrRec addr : addrs ) {
-                if ( addr.contains( CommsConnType.COMMS_CONN_BT ) ) {
-                    Assert.assertNull( btAddr );
-                    btAddr = addr.bt_btAddr;
-                }
-                if ( addr.contains( CommsConnType.COMMS_CONN_SMS ) ) {
-                    Assert.assertNull( phone );
-                    phone = addr.sms_phone;
-                }
-                if ( addr.contains( CommsConnType.COMMS_CONN_RELAY ) ) {
-                    Assert.failDbg();
-                }
-                if ( addr.contains( CommsConnType.COMMS_CONN_P2P ) ) {
-                    Assert.assertNull( p2pMacAddress );
-                    p2pMacAddress = addr.p2p_addr;
-                }
-                if ( addr.contains( CommsConnType.COMMS_CONN_MQTT ) ) {
-                    Assert.assertNull( mqttDevID );
-                    mqttDevID = addr.mqtt_devID;
-                }
-            }
         }
 
         if ( doIt ) {
             String newName = summary.getRematchName( activity );
             Intent intent = GamesListDelegate
                 .makeRematchIntent( activity, rowid, groupID, gi,
-                                    summary.conTypes, btAddr, phone,
-                                    p2pMacAddress, mqttDevID, newName, deleteAfter );
+                                    summary.conTypes, newName, deleteAfter );
             if ( null != intent ) {
                 activity.startActivity( intent );
             }

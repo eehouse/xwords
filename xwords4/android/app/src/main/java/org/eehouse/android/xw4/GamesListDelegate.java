@@ -96,16 +96,10 @@ public class GamesListDelegate extends ListDelegateBase
     private static final String INVITEE_REC_EXTRA = "invitee_rec";
     private static final String REMATCH_ROWID_EXTRA = "rm_rowid";
     private static final String REMATCH_GROUPID_EXTRA = "rm_groupid";
-    private static final String REMATCH_DICT_EXTRA = "rm_dict";
-    private static final String REMATCH_LANG_EXTRA = "rm_lang";
-    private static final String REMATCH_PREFS_EXTRA = "rm_prefs";
     private static final String REMATCH_NEWNAME_EXTRA = "rm_nnm";
     private static final String REMATCH_DELAFTER_EXTRA = "del_after";
     private static final String REMATCH_IS_SOLO = "rm_solo";
     private static final String REMATCH_ADDRS_EXTRA = "rm_addrs";
-    private static final String REMATCH_BTADDR_EXTRA = "rm_btaddr";
-    private static final String REMATCH_PHONE_EXTRA = "rm_phone";
-    private static final String REMATCH_P2PADDR_EXTRA = "rm_p2pma";
 
     private static final String INVITE_ACTION = "org.eehouse.action_invite";
     private static final String INVITE_DATA = "data_invite";
@@ -2678,7 +2672,6 @@ public class GamesListDelegate extends ListDelegateBase
         CommsConnTypeSet addrs = (CommsConnTypeSet)params[1];
         if ( !granted ) {
             addrs.remove( CommsConnType.COMMS_CONN_SMS );
-            m_rematchExtras.remove( REMATCH_PHONE_EXTRA );
         }
         if ( 0 < addrs.size() ) {
             rematchWithNameAndPerm( (String)params[0], addrs );
@@ -3232,8 +3225,6 @@ public class GamesListDelegate extends ListDelegateBase
     public static Intent makeRematchIntent( Context context, long rowid,
                                             long groupID, CurGameInfo gi,
                                             CommsConnTypeSet addrTypes,
-                                            String btAddr, String phone,
-                                            String p2pMacAddress, String mqttDevID,
                                             String newName, boolean deleteAfter )
     {
         Intent intent = null;
@@ -3241,31 +3232,13 @@ public class GamesListDelegate extends ListDelegateBase
         intent = makeSelfIntent( context )
             .putExtra( REMATCH_ROWID_EXTRA, rowid )
             .putExtra( REMATCH_GROUPID_EXTRA, groupID )
-            .putExtra( REMATCH_DICT_EXTRA, gi.dictName )
             .putExtra( REMATCH_IS_SOLO, isSolo )
-            .putExtra( REMATCH_LANG_EXTRA, gi.isoCode().toString() )
-            .putExtra( REMATCH_PREFS_EXTRA, gi.getJSONData() )
             .putExtra( REMATCH_NEWNAME_EXTRA, newName )
             .putExtra( REMATCH_DELAFTER_EXTRA, deleteAfter );
 
         if ( null != addrTypes ) {
             Assert.assertTrueNR( !addrTypes.contains( CommsConnType.COMMS_CONN_RELAY ) );
             intent.putExtra( REMATCH_ADDRS_EXTRA, addrTypes.toInt() );
-            if ( null != btAddr ) {
-                Assert.assertTrue( addrTypes.contains( CommsConnType.COMMS_CONN_BT ) );
-                intent.putExtra( REMATCH_BTADDR_EXTRA, btAddr );
-            }
-            if ( null != phone ) {
-                Assert.assertTrue( addrTypes.contains( CommsConnType.COMMS_CONN_SMS ) );
-                intent.putExtra( REMATCH_PHONE_EXTRA, phone );
-            }
-            if ( null != p2pMacAddress ) {
-                Assert.assertTrue( addrTypes.contains( CommsConnType.COMMS_CONN_P2P ) );
-                intent.putExtra( REMATCH_P2PADDR_EXTRA, p2pMacAddress );
-            }
-            if ( null != mqttDevID ) {
-                intent.putExtra( GameSummary.EXTRA_REMATCH_MQTT, mqttDevID );
-            }
         }
         return intent;
     }
