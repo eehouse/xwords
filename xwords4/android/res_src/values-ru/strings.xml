@@ -4,4 +4,33 @@
     <string name="badwords_accept">" Вы все еще хотите принять этот шаг\?"</string>
     <string name="board_menu_undo_last">Отменить последнее</string>
     <string name="players_label_standalone">Players (tap to edit)</string>
+    <string name="robot_name_fmt">%1$s (робот)</string>
+    <string name="list_item_copy">Копировать</string>
+    <string name="list_item_new_from">Новая из</string>
+    <string name="rename_label">Изменить имя этой игры на:</string>
+    <string name="list_item_move">Перенести в группу</string>
+    <string name="loc_builtin">Встроенный</string>
+    <string name="button_delete_game">Удалить Игру</string>
+    <string name="invitee_fmt">(%1$s приглашен)</string>
+    <string name="summary_invites_out">Игроки приглашены</string>
+    <string name="summary_invites_out_fmt">Игроки приглашены в комнату “%1$s”</string>
+    <string name="gameOver">Игра закончена</string>
+    <string name="menu_prefs">Настройки Приложения</string>
+    <string name="list_item_rename">Переименовать</string>
+    <plurals name="moves_fmt">
+        <item quantity="one">Сделан %1$d ход</item>
+        <item quantity="few">Сделано %1$d хода</item>
+        <item quantity="many">Сделано %1$d ходов</item>
+        <item quantity="other">Сделано %1$d ходов</item>
+    </plurals>
+    <string name="list_item_config">Настройки игры</string>
+    <string name="button_reset">Перезагрузить</string>
+    <string name="list_item_delete">Удалить игру</string>
+    <string name="download_more">Загрузить больше</string>
+    <string name="loc_downloads">Загрузки</string>
+    <string name="dicts_item_select">Сделать по умолчанию</string>
+    <string name="button_delete">Удалить</string>
+    <string name="list_item_reset">Перезапустить</string>
+    <string name="relaypage_url_copied">URL игры скопирован в буфер</string>
+    <string name="rename_label_caveat">Изменить имя этой игры (только на этом устройстве) на:</string>
 </resources>
