@@ -42,7 +42,7 @@ void cb_resized( CursesBoardState* cbState, const cb_dims* dims );
 void cb_open( CursesBoardState* cbState, sqlite3_int64 rowid, const cb_dims* dims );
 bool cb_new( CursesBoardState* cbState, const cb_dims* dims );
 void cb_newFor( CursesBoardState* cbState, const NetLaunchInfo* nli,
-                const CommsAddrRec* returnAddr, const cb_dims* dims );
+                const cb_dims* dims );
 
 bool cb_feedRow( CursesBoardState* cbState, sqlite3_int64 rowid,
                  XP_U16 expectSeed, const XP_U8* buf, XP_U16 len,

@@ -263,7 +263,7 @@ parseAndDispatch( LaunchParams* params, uint8_t* buf, int len,
                 NetLaunchInfo nli = {0};
                 nliFromData( params, msg, &nli );
                 (*storage->procs->inviteReceived)( storage->procClosure,
-                                                   &nli, addr );
+                                                   &nli );
             }
                 break;
             default:

@@ -1177,8 +1177,7 @@ onJoined( void* closure, const XP_UCHAR* connname, XWHostID hid )
 #endif
 
 void
-inviteReceivedCurses( void* closure, const NetLaunchInfo* invite,
-                      const CommsAddrRec* returnAddr )
+inviteReceivedCurses( void* closure, const NetLaunchInfo* invite )
 {
     CursesAppGlobals* aGlobals = (CursesAppGlobals*)closure;
     sqlite3_int64 rowids[1];
@@ -1193,7 +1192,7 @@ inviteReceivedCurses( void* closure, const NetLaunchInfo* invite,
     if ( doIt ) {
         cb_dims dims;
         figureDims( aGlobals, &dims );
-        cb_newFor( aGlobals->cbState, invite, returnAddr, &dims );
+        cb_newFor( aGlobals->cbState, invite, &dims );
     } else {
         XP_LOGFF( "Not accepting duplicate invitation (nRowIDs(gameID=%d) was %d",
                   invite->gameID, nRowIDs );
@@ -1205,9 +1204,7 @@ static void
 relayInviteReceivedCurses( void* closure, const NetLaunchInfo* invite )
 {
     CursesAppGlobals* aGlobals = (CursesAppGlobals*)closure;
-    CommsAddrRec addr = {0};
-    nli_makeAddrRec( invite, &addr );
-    inviteReceivedCurses( aGlobals, invite, &addr );
+    inviteReceivedCurses( aGlobals, invite );
 }
 
 static void
@@ -1240,11 +1237,10 @@ cursesGotBuf( void* closure, const CommsAddrRec* addr,
 #endif
 
 static void
-smsInviteReceivedCurses( void* closure, const NetLaunchInfo* nli,
-                         const CommsAddrRec* returnAddr )
+smsInviteReceivedCurses( void* closure, const NetLaunchInfo* nli )
 {
     CursesAppGlobals* aGlobals = (CursesAppGlobals*)closure;
-    inviteReceivedCurses( aGlobals, nli, returnAddr );
+    inviteReceivedCurses( aGlobals, nli );
 }
 
 static void

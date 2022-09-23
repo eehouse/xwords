@@ -1917,7 +1917,6 @@ client_readInitialMessage( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* stream )
     if ( accepted ) {
         ModelCtxt* model = server->vol.model;
         CurGameInfo* gi = server->vol.gi;
-        CurGameInfo localGI;
         XP_U32 gameID;
         PoolContext* pool;
 #ifdef STREAM_VERS_BIGBOARD
@@ -1940,10 +1939,11 @@ client_readInitialMessage( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* stream )
         server->vol.gi->gameID = gameID;
         comms_setConnID( server->vol.comms, gameID );
 
-        XP_MEMSET( &localGI, 0, sizeof(localGI) );
+        CurGameInfo localGI = {0};
         gi_readFromStream( MPPARM(server->mpool) stream, &localGI );
         localGI.serverRole = SERVER_ISCLIENT;
 
+        XP_ASSERT( !localGI.dictName );
         localGI.dictName = copyString( server->mpool, gi->dictName );
         gi_copy( MPPARM(server->mpool) gi, &localGI );
 

@@ -136,6 +136,12 @@ static void relay_requestJoin_curses( void* closure, const XP_UCHAR* devID,
                                       XP_U16 nPlayersTotal, XP_U16 seed, XP_U16 lang );
 #endif
 
+static void disposeBoard( CursesBoardGlobals* bGlobals );
+static void initCP( CommonGlobals* cGlobals );
+static CursesBoardGlobals* commonInit( CursesBoardState* cbState,
+                                       sqlite3_int64 rowid,
+                                       const CurGameInfo* gip );
+
 CursesBoardState*
 cb_init( CursesAppGlobals* aGlobals, LaunchParams* params,
          CursesMenuState* menuState, OnGameSaved onGameSaved )
@@ -204,29 +210,28 @@ cb_new( CursesBoardState* cbState, const cb_dims* dims )
 }
 
 void
-cb_newFor( CursesBoardState* XP_UNUSED(cbState), const NetLaunchInfo* XP_UNUSED(nli),
-           const CommsAddrRec* XP_UNUSED(returnAddr),
+cb_newFor( CursesBoardState* cbState, const NetLaunchInfo* nli,
            const cb_dims* XP_UNUSED(dims) )
 {
-    /* FIX ME soon */
-    XP_ASSERT(0);
-    /* LaunchParams* params = cbState->params; */
-    /* CurGameInfo gi = {0}; */
-    /* gi_copy( MPPARM(params->mpool) &gi, &params->pgi ); */
-    /* gi_setNPlayers( &gi, nli->nPlayersT, nli->nPlayersH ); */
-    /* gi.gameID = nli->gameID; */
-    /* XP_STRNCPY( gi.isoCodeStr, nli->isoCodeStr, VSIZE(gi.isoCodeStr) ); */
-    /* gi.forceChannel = nli->forceChannel; */
-    /* gi.inDuplicateMode = nli->inDuplicateMode; */
-    /* gi.serverRole = SERVER_ISCLIENT; /\* recipient of invitation is client *\/ */
-    /* replaceStringIfDifferent( params->mpool, &gi.dictName, nli->dict ); */
+    LaunchParams* params = cbState->params;
 
-    /* CursesBoardGlobals* bGlobals = findOrOpen( cbState, -1, &gi, returnAddr ); */
+    CommsAddrRec selfAddr;
+    makeSelfAddress( &selfAddr, params );
 
-    /* gi_disposePlayerInfo( MPPARM(params->mpool) &gi ); */
+    CursesBoardGlobals* bGlobals =
+        commonInit( cbState, -1, NULL );
+    CommonGlobals* cGlobals = &bGlobals->cGlobals;
+    initCP( cGlobals );
 
-    /* enableDraw( bGlobals, dims ); */
-    /* setupBoard( bGlobals ); */
+    if ( game_makeFromInvite( &cGlobals->game, NULL_XWE, nli, &selfAddr,
+                              cGlobals->util, (DrawCtx*)NULL,
+                              &cGlobals->cp, (TransportProcs*)NULL ) ) {
+        linuxSaveGame( cGlobals );
+    } else {
+        XP_ASSERT( 0 );
+    }
+
+    disposeBoard( bGlobals );
 }
 
 const MenuList g_allMenuList[] = {
@@ -526,19 +531,10 @@ setupBoard( CursesBoardGlobals* bGlobals )
     board_draw( board, NULL_XWE );
 }
 
-static CursesBoardGlobals*
-initNoDraw( CursesBoardState* cbState, sqlite3_int64 rowid,
-            const CurGameInfo* gi, const CommsAddrRec* returnAddr )
+static void
+initCP( CommonGlobals* cGlobals )
 {
-    LOG_FUNC();
-    CursesBoardGlobals* result = commonInit( cbState, rowid, gi );
-    CommonGlobals* cGlobals = &result->cGlobals;
-    LaunchParams* params = cGlobals->params;
-
-    if ( !!returnAddr ) {
-        cGlobals->hostAddr = *returnAddr;
-    }
-
+    const LaunchParams* params = cGlobals->params;
     cGlobals->cp.showBoardArrow = XP_TRUE;
     cGlobals->cp.showRobotScores = params->showRobotScores;
     cGlobals->cp.hideTileValues = params->hideValues;
@@ -555,6 +551,21 @@ initNoDraw( CursesBoardState* cbState, sqlite3_int64 rowid,
 #ifdef XWFEATURE_ROBOTPHONIES
     cGlobals->cp.makePhonyPct = params->makePhonyPct;
 #endif
+}
+
+static CursesBoardGlobals*
+initNoDraw( CursesBoardState* cbState, sqlite3_int64 rowid,
+            const CurGameInfo* gi, const CommsAddrRec* returnAddr )
+{
+    LOG_FUNC();
+    CursesBoardGlobals* result = commonInit( cbState, rowid, gi );
+    CommonGlobals* cGlobals = &result->cGlobals;
+
+    if ( !!returnAddr ) {
+        cGlobals->hostAddr = *returnAddr;
+    }
+
+    initCP( cGlobals );
 
     if ( linuxOpenGame( cGlobals, &result->procs ) ) {
          result = ref( result );

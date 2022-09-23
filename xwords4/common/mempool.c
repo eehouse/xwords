@@ -159,7 +159,7 @@ mpool_destroy( MemPoolCtx* mpool )
         MemPoolEntry* entry;
         for ( entry = mpool->usedList; !!entry; entry = entry->next ) {
 #ifndef FOR_GREMLINS /* I don't want to hear about this right now */
-            XP_LOGF( "%s: " XP_P " index=%d, in %s, ln %d of %s\n", __func__, 
+            XP_LOGFF( "ptr: " XP_P "; index=%d, allocated %s, ln %d of %s\n",
                      entry->ptr, entry->index, 
                      entry->func, entry->lineNo, entry->fileName );
 #ifdef DEBUG
@@ -299,12 +299,11 @@ void
 mpool_free( MemPoolCtx* mpool, void* ptr, const char* file, 
             const char* func, XP_U32 lineNo )
 {
-    MemPoolEntry* entry;
     MemPoolEntry* prev;
 
     MEMPOOL_SYNC_START(mpool);
 
-    entry = findEntryFor( mpool, ptr, &prev );
+    MemPoolEntry* entry = findEntryFor( mpool, ptr, &prev );
 
     if ( !entry ) {
         XP_LOGFF( "findEntryFor failed; pool %p, line %d in %s", mpool, lineNo, file );

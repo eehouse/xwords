@@ -370,6 +370,8 @@ game_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
                      XW_UtilCtxt* util, DrawCtx* draw, CommonPrefs* cp,
                      const TransportProcs* procs )
 {
+    LOG_FUNC();
+    XP_ASSERT( gi == util->gameInfo );
     XP_Bool success = XP_FALSE;
     XP_U8 strVersion;
 #ifndef XWFEATURE_STANDALONE_ONLY
@@ -655,10 +657,8 @@ game_dispose( XWGame* game, XWEnv xwe )
 static void
 disposePlayerInfoInt( MPFORMAL CurGameInfo* gi )
 {
-    XP_U16 ii;
-    LocalPlayer* lp;
-
-    for ( lp = gi->players, ii = 0; ii < MAX_NUM_PLAYERS; ++lp, ++ii ) {
+    for ( int ii = 0; ii < gi->nPlayers; ++ii ) {
+        LocalPlayer* lp = &gi->players[ii];
         XP_FREEP( mpool, &lp->name );
         XP_FREEP( mpool, &lp->password );
         XP_FREEP( mpool, &lp->dictName );
@@ -676,8 +676,6 @@ gi_disposePlayerInfo( MPFORMAL CurGameInfo* gi )
 void
 gi_copy( MPFORMAL CurGameInfo* destGI, const CurGameInfo* srcGI )
 {
-    XP_MEMSET( destGI, 0, sizeof(*destGI) );
-
     replaceStringIfDifferent( mpool, &destGI->dictName, 
                               srcGI->dictName );
     XP_STRNCPY( destGI->isoCodeStr, srcGI->isoCodeStr, VSIZE(destGI->isoCodeStr)-1 );

@@ -26,8 +26,7 @@
 #include "nli.h"
 
 typedef struct _SMSProcs {
-    void (*inviteReceived)( void* closure, const NetLaunchInfo* nli,
-                            const CommsAddrRec* returnAddr );
+    void (*inviteReceived)( void* closure, const NetLaunchInfo* nli );
     void (*msgReceived)( void* closure, const CommsAddrRec* from, XP_U32 gameID,
                          const XP_U8* buf, XP_U16 len );
     void (*msgNoticeReceived)( void* closure );

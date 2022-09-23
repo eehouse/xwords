@@ -359,7 +359,7 @@ make_rematch( GtkAppGlobals* apg, const CommonGlobals* cGlobals )
 {
     LaunchParams* params = apg->cag.params;
     GtkGameGlobals* newGlobals = calloc( 1, sizeof(*newGlobals) );
-    initBoardGlobalsGtk( newGlobals, params, cGlobals->util->gameInfo );
+    initBoardGlobalsGtk( newGlobals, params, NULL );
 
     XW_UtilCtxt* util = newGlobals->cGlobals.util;
     const CommonPrefs* cp = &newGlobals->cGlobals.cp;
@@ -705,8 +705,7 @@ feedBufferGTK( GtkAppGlobals* apg, sqlite3_int64 rowid,
 
 /* Stuff common to receiving invitations */
 static void
-gameFromInvite( GtkAppGlobals* apg, const NetLaunchInfo* nli,
-                const CommsAddrRec* XP_UNUSED(returnAddr) )
+gameFromInvite( GtkAppGlobals* apg, const NetLaunchInfo* nli )
 {
     LOG_FUNC();
 
@@ -751,7 +750,7 @@ inviteReceivedGTK( void* closure, const NetLaunchInfo* invite )
                                            GTK_BUTTONS_YES_NO, NULL );
     }
     if ( doIt ) {
-        gameFromInvite( apg, invite, NULL );
+        gameFromInvite( apg, invite );
     }
 }
 
@@ -812,8 +811,7 @@ gtkNoticeRcvd( void* closure )
 #endif
 
 static void
-smsInviteReceived( void* closure, const NetLaunchInfo* nli,
-                   const CommsAddrRec* returnAddr )
+smsInviteReceived( void* closure, const NetLaunchInfo* nli )
 {
     GtkAppGlobals* apg = (GtkAppGlobals*)closure;
     XP_LOGF( "%s(gameName=%s, gameID=%d, dictName=%s, nPlayers=%d, "
@@ -821,7 +819,7 @@ smsInviteReceived( void* closure, const NetLaunchInfo* nli,
              nli->gameID, nli->dict, nli->nPlayersT,
              nli->nPlayersH, nli->forceChannel );
 
-    gameFromInvite( apg, nli, returnAddr );
+    gameFromInvite( apg, nli );
 }
 
 void

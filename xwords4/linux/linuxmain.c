@@ -141,6 +141,7 @@ ensureLocalPlayerNames( LaunchParams* XP_UNUSED_DBG(params), CurGameInfo* gi )
     for ( int ii = 0; ii < gi->nPlayers; ++ii ) {
         LocalPlayer* lp = &gi->players[ii];
         if ( lp->isLocal && !lp->name ) {
+            XP_ASSERT(0);
             replaceStringIfDifferent( params->mpool,
                                       &lp->name, "LPlayer" );
         }
@@ -189,7 +190,7 @@ linuxOpenGame( CommonGlobals* cGlobals, const TransportProcs* procs )
                                       cGlobals->gi,
                                       cGlobals->util, cGlobals->draw,
                                       &cGlobals->cp, procs );
-        XP_LOGF( "%s: loaded gi at %p", __func__, &cGlobals->gi );
+        XP_LOGFF( "loaded gi at %p", &cGlobals->gi );
         stream_destroy( stream, NULL_XWE );
     }
 
@@ -2945,6 +2946,7 @@ main( int argc, char** argv )
             ++mainParams.nLocalPlayers;
             mainParams.pgi.players[index].robotIQ = 0; /* means human */
             mainParams.pgi.players[index].isLocal = XP_TRUE;
+            XP_ASSERT( !mainParams.pgi.players[index].name );
             mainParams.pgi.players[index].name = 
                 copyString( mainParams.mpool, (XP_UCHAR*)optarg);
             break;
@@ -2967,6 +2969,7 @@ main( int argc, char** argv )
             ++mainParams.nLocalPlayers;
             mainParams.pgi.players[index].robotIQ = 1; /* real smart by default */
             mainParams.pgi.players[index].isLocal = XP_TRUE;
+            XP_ASSERT( !mainParams.pgi.players[index].name );
             mainParams.pgi.players[index].name = 
                 copyString( mainParams.mpool, (XP_UCHAR*)optarg);
             break;
