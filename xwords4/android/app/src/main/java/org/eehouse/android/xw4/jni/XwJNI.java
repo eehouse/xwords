@@ -370,7 +370,8 @@ public class XwJNI {
                                                  UtilCtxt util,
                                                  CommonPrefs cp );
 
-    private static native void game_makeFromInvite( GamePtr gamePtr, NetLaunchInfo nli, UtilCtxt util,
+    private static native void game_makeFromInvite( GamePtr gamePtr, NetLaunchInfo nli,
+                                                    UtilCtxt util,
                                                     CommsAddrRec selfAddr,
                                                     CommonPrefs cp );
 

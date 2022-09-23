@@ -263,6 +263,7 @@ ifneq (,$(findstring DPLATFORM_GTK,$(DEFINES)))
 endif
 
 CFLAGS += `pkg-config --cflags glib-2.0`
+CFLAGS += -fstack-protector
 LIBS += `pkg-config --libs glib-2.0`
 
 CFLAGS += $(POINTER_SUPPORT)

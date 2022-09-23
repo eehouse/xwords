@@ -370,8 +370,7 @@ game_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
                      XW_UtilCtxt* util, DrawCtx* draw, CommonPrefs* cp,
                      const TransportProcs* procs )
 {
-    LOG_FUNC();
-    XP_ASSERT( gi == util->gameInfo );
+    XP_ASSERT( NULL == util || gi == util->gameInfo );
     XP_Bool success = XP_FALSE;
     XP_U8 strVersion;
 #ifndef XWFEATURE_STANDALONE_ONLY

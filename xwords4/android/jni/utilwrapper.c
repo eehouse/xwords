@@ -313,7 +313,7 @@ and_util_getUsername( XW_UtilCtxt* uc, XWEnv xwe, XP_Bool isLocal,
     XP_USE( xwe );
     XP_USE( isRobot );
     XP_USE( isLocal );
-    XP_SNPRINTF( buf, *len-1, "Player #%d", num + 1 );
+    *len = XP_SNPRINTF( buf, *len-1, "Player #%d", num + 1 );
     buf[*len] = '\0';
 }
 
