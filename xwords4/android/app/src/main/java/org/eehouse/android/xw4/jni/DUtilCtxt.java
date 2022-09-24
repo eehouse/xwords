@@ -275,6 +275,15 @@ public class DUtilCtxt {
         }
     }
 
+    // PENDING: channel is ignored here, meaning there can't be two ends of a
+    // game in the same app.
+    public boolean haveGame( int gameID, int channel )
+    {
+        boolean result = DBUtils.haveGame( m_context, gameID );
+        Log.d( TAG, "haveGame(%d, %d) => %b", gameID, channel, result );
+        return result;
+    }
+
     private String msgForPause( long rowid, int pauseType, String pauserName, String expl )
     {
         String msg;

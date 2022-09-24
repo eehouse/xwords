@@ -82,6 +82,7 @@ typedef struct _DUtilVtable {
     void (*m_dutil_notifyPause)( XW_DUtilCtxt* duc, XWEnv xwe, XP_U32 gameID,
                                  DupPauseType pauseTyp, XP_U16 pauser,
                                  const XP_UCHAR* name, const XP_UCHAR* msg );
+    XP_Bool (*m_dutil_haveGame)( XW_DUtilCtxt* duc, XWEnv xwe, XP_U32 gameID,XP_U8 channel );
     void (*m_dutil_onDupTimerChanged)( XW_DUtilCtxt* duc, XWEnv xwe, XP_U32 gameID,
                                        XP_U32 oldVal, XP_U32 newVal );
 
@@ -152,6 +153,9 @@ void dutil_super_init( MPFORMAL XW_DUtilCtxt* dutil );
 
 #define dutil_notifyPause( duc, e, id, ip, p, n, m )                     \
     (duc)->vtable.m_dutil_notifyPause( (duc), (e), (id), (ip), (p), (n), (m) )
+
+#define dutil_haveGame( duc, xwe, gameID,channel )                      \
+    (duc)->vtable.m_dutil_haveGame( (duc), (xwe), (gameID), (channel) )
 
 #define dutil_onDupTimerChanged(duc, e, id, ov, nv)                      \
     (duc)->vtable.m_dutil_onDupTimerChanged( (duc), (e), (id), (ov), (nv))

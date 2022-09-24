@@ -75,6 +75,21 @@ linux_dutil_notifyPause( XW_DUtilCtxt* XP_UNUSED(duc), XWEnv XP_UNUSED(xwe),
              name, pauseTyp, msg );
 }
 
+static XP_Bool
+linux_dutil_haveGame( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe),
+                      XP_U32 gameID, XP_U8 XP_UNUSED(channel) )
+{
+    LaunchParams* params = (LaunchParams*)duc->closure;
+    sqlite3* pDb = params->pDb;
+
+    sqlite3_int64 rowids[2];
+    int nRowIDs = VSIZE(rowids);
+    gdb_getRowsForGameID( pDb, gameID, rowids, &nRowIDs );
+    XP_Bool result = 0 < nRowIDs;
+    LOG_RETURNF( "%s", boolToStr(result) );
+    return result;
+}
+
 static void
 linux_dutil_onDupTimerChanged( XW_DUtilCtxt* XP_UNUSED(duc), XWEnv XP_UNUSED(xwe),
                                XP_U32 XP_UNUSED_DBG(gameID),
@@ -171,6 +186,7 @@ linux_dutils_init( MPFORMAL VTableMgr* vtMgr, void* closure )
     SET_PROC(md5sum);
 #endif
     SET_PROC(notifyPause);
+    SET_PROC(haveGame);
     SET_PROC(onDupTimerChanged);
     SET_PROC(onInviteReceived);
     SET_PROC(onMessageReceived);

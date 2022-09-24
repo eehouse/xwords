@@ -471,16 +471,22 @@ game_makeFromInvite( XWGame* newGame, XWEnv xwe, const NetLaunchInfo* nli,
                      DrawCtx* draw, CommonPrefs* cp, const TransportProcs* procs )
 {
     LOG_FUNC();
-    CurGameInfo* gi = util->gameInfo;
-    XP_ASSERT( !!gi );
-    nliToGI( nli, xwe, util, gi );
-    LOGGI( gi, "copied from nli" );
+    XP_U32 gameID = nli->gameID;
+    XP_U8 forceChannel = nli->forceChannel;
+    XW_DUtilCtxt* duc = util_getDevUtilCtxt( util, xwe );
+    XP_Bool success = !dutil_haveGame( duc, xwe, gameID, forceChannel );
+    if ( success ) {
+        CurGameInfo* gi = util->gameInfo;
+        XP_ASSERT( !!gi );
+        nliToGI( nli, xwe, util, gi );
 
-    CommsAddrRec hostAddr;
-    nli_makeAddrRec( nli, &hostAddr );
-    XP_Bool success = game_makeNewGame( MPPARM(util->mpool) xwe, newGame,
-                                        gi, selfAddr, &hostAddr, util,
-                                        draw, cp, procs );
+        CommsAddrRec hostAddr;
+        nli_makeAddrRec( nli, &hostAddr );
+
+        success = game_makeNewGame( MPPARM(util->mpool) xwe, newGame,
+                                    gi, selfAddr, &hostAddr, util,
+                                    draw, cp, procs );
+    }
     LOG_RETURNF( "%s", boolToStr(success) );
     return success;
 }

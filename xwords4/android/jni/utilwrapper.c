@@ -313,8 +313,8 @@ and_util_getUsername( XW_UtilCtxt* uc, XWEnv xwe, XP_Bool isLocal,
     XP_USE( xwe );
     XP_USE( isRobot );
     XP_USE( isLocal );
-    *len = XP_SNPRINTF( buf, *len-1, "Player #%d", num + 1 );
-    buf[*len] = '\0';
+    *len = XP_SNPRINTF( buf, *len-1, "Plyr #%d", num + 1 );
+    XP_ASSERT( '\0' == buf[*len] );
 }
 
 static void
@@ -880,6 +880,16 @@ and_dutil_notifyPause( XW_DUtilCtxt* duc, XWEnv xwe, XP_U32 gameID, DupPauseType
     DUTIL_CBK_TAIL();
 }
 
+static XP_Bool
+and_dutil_haveGame( XW_DUtilCtxt* duc, XWEnv xwe, XP_U32 gameID, XP_U8 channel )
+{
+    XP_Bool result;
+    DUTIL_CBK_HEADER( "haveGame", "(II)Z" );
+    result = (*env)->CallBooleanMethod( env, dutil->jdutil, mid, gameID, channel );
+    DUTIL_CBK_TAIL();
+    return result;
+}
+
 static void
 and_dutil_onDupTimerChanged( XW_DUtilCtxt* duc, XWEnv xwe, XP_U32 gameID,
                              XP_U32 oldVal, XP_U32 newVal )
@@ -1107,6 +1117,7 @@ makeDUtil( MPFORMAL JNIEnv* env,
     SET_DPROC(md5sum);
 #endif
     SET_DPROC(notifyPause);
+    SET_DPROC(haveGame);
     SET_DPROC(onDupTimerChanged);
 
     SET_DPROC(onInviteReceived);
