@@ -336,10 +336,13 @@ public class XwJNI {
 
     public static GamePtr game_makeFromInvite( NetLaunchInfo nli, UtilCtxt util,
                                                CommsAddrRec selfAddr,
-                                               CommonPrefs cp )
+                                               CommonPrefs cp, TransportProcs procs )
     {
         GamePtr gamePtrNew = initGameJNI( 0 );
-        game_makeFromInvite( gamePtrNew, nli, util, selfAddr, cp );
+        if ( !game_makeFromInvite( gamePtrNew, nli, util, selfAddr, cp, procs ) ) {
+            gamePtrNew.release();
+            gamePtrNew = null;
+        }
         return gamePtrNew;
     }
 
@@ -370,10 +373,11 @@ public class XwJNI {
                                                  UtilCtxt util,
                                                  CommonPrefs cp );
 
-    private static native void game_makeFromInvite( GamePtr gamePtr, NetLaunchInfo nli,
-                                                    UtilCtxt util,
-                                                    CommsAddrRec selfAddr,
-                                                    CommonPrefs cp );
+    private static native boolean game_makeFromInvite( GamePtr gamePtr, NetLaunchInfo nli,
+                                                       UtilCtxt util,
+                                                       CommsAddrRec selfAddr,
+                                                       CommonPrefs cp,
+                                                       TransportProcs procs );
 
     public static native boolean game_receiveMessage( GamePtr gamePtr,
                                                       byte[] stream,

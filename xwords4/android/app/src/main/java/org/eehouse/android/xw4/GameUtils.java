@@ -587,7 +587,8 @@ public class GameUtils {
         return rowid;
     }
 
-    static void handleInvitation( Context context, NetLaunchInfo nli )
+    static void handleInvitation( Context context, NetLaunchInfo nli,
+                                  TransportProcs procs )
     {
         Log.d( TAG, "handleInvitation(%s)", nli );
 
@@ -595,7 +596,7 @@ public class GameUtils {
         CommonPrefs cp = CommonPrefs.get( context );
         CommsAddrRec selfAddr = CommsAddrRec.getSelfAddr( context );
         try ( GamePtr gamePtr = XwJNI
-              .game_makeFromInvite( nli, util, selfAddr, cp ) ) {
+              .game_makeFromInvite( nli, util, selfAddr, cp, procs ) ) {
             if ( null != gamePtr ) {
                 long rowid = saveNewGame1( context, gamePtr, -1, "name" );
             } else {

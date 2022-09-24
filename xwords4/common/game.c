@@ -465,6 +465,15 @@ game_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
     return success;
 } /* game_makeFromStream */
 
+/* This is a gross hack. Fix it someday. */
+static void
+runServer( ServerCtxt* server, XWEnv xwe )
+{
+    for ( int ii = 0; ii < 5; ++ii ) {
+        (void)server_do( server, xwe );
+    }
+}
+
 XP_Bool
 game_makeFromInvite( XWGame* newGame, XWEnv xwe, const NetLaunchInfo* nli,
                      const CommsAddrRec* selfAddr, XW_UtilCtxt* util,
@@ -486,6 +495,9 @@ game_makeFromInvite( XWGame* newGame, XWEnv xwe, const NetLaunchInfo* nli,
         success = game_makeNewGame( MPPARM(util->mpool) xwe, newGame,
                                     gi, selfAddr, &hostAddr, util,
                                     draw, cp, procs );
+        if ( success && server_initClientConnection( newGame->server, xwe ) ) {
+            runServer( newGame->server, xwe );
+        }
     }
     LOG_RETURNF( "%s", boolToStr(success) );
     return success;
@@ -554,9 +566,7 @@ game_receiveMessage( XWGame* game, XWEnv xwe, XWStreamCtxt* stream,
            I'm a robot.  Only one server_do and I'll never make that first
            robot move.  That's because comms can't detect a duplicate initial
            packet (in validateInitialMessage()). */
-        for ( int ii = 0; ii < 5; ++ii ) {
-            (void)server_do( server, xwe );
-        }
+        runServer( server, xwe );
     }
 
     return result;

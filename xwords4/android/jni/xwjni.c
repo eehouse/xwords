@@ -1412,7 +1412,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeNewGame
 } /* makeNewGame */
 
 static void
-initGameGlobals( JNIEnv* env, JNIState* state, jobject jutil )
+initGameGlobals( JNIEnv* env, JNIState* state, jobject jutil, jobject jprocs )
 {
     AndGameGlobals* globals = &state->globals;
     globals->gi = (CurGameInfo*)XP_CALLOC( state->mpool, sizeof(*globals->gi) );
@@ -1422,6 +1422,11 @@ initGameGlobals( JNIEnv* env, JNIState* state, jobject jutil )
         globals->util = makeUtil( MPPARM(state->mpool) env,
                                   TI_IF(&state->globalJNI->ti)
                                   jutil, globals->gi, globals );
+    }
+    if ( !!jprocs ) {
+        globals->xportProcs = makeXportProcs( MPPARM(state->mpool) env,
+                                              TI_IF(&state->globalJNI->ti)
+                                              jprocs );
     }
     globals->jniutil = state->globalJNI->jniutil;
 }
@@ -1437,7 +1442,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeRematch
     JNIState* oldState = state; /* state about to go out-of-scope */
     XWJNI_START_GLOBALS(gamePtrNew);
 
-    initGameGlobals( env, state, jutil );
+    initGameGlobals( env, state, jutil, NULL );
 
     CommonPrefs cp;
     loadCommonPrefs( env, &cp, jcp );
@@ -1449,14 +1454,15 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeRematch
     LOG_RETURN_VOID();
 }
 
-JNIEXPORT void JNICALL
+JNIEXPORT jboolean JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeFromInvite
 ( JNIEnv* env, jclass C, GamePtrType gamePtr, jobject jnli, jobject jutil,
-  jobject jSelfAddr, jobject jcp )
+  jobject jSelfAddr, jobject jcp, jobject jprocs )
 {
+    jboolean result;
     XWJNI_START_GLOBALS(gamePtr);
 
-    initGameGlobals( env, state, jutil );
+    initGameGlobals( env, state, jutil, jprocs );
 
     NetLaunchInfo nli;
     loadNLI( env, &nli, jnli );
@@ -1472,12 +1478,10 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeFromInvite
     CommonPrefs cp;
     loadCommonPrefs( env, &cp, jcp );
 
-    if ( game_makeFromInvite( &state->game, env, &nli, selfAddrP, globals->util,
-                              globals->dctx, &cp, globals->xportProcs ) ) {
-    } else {
-        XP_ASSERT(0);
-    }
+    result = game_makeFromInvite( &state->game, env, &nli, selfAddrP, globals->util,
+                                  globals->dctx, &cp, globals->xportProcs );
     XWJNI_END();
+    return result;
 }
 
 JNIEXPORT void JNICALL Java_org_eehouse_android_xw4_jni_XwJNI_game_1dispose

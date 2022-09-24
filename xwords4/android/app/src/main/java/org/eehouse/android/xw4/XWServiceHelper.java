@@ -133,8 +133,8 @@ abstract class XWServiceHelper {
     protected boolean handleInvitation( NetLaunchInfo nli,
                                         String device, DictFetchOwner dfo )
     {
-        // PENDING: get the test for dicts and duplicate invites back in
-        GameUtils.handleInvitation( mContext, nli );
+        // PENDING: get the test for dicts back in
+        GameUtils.handleInvitation( mContext, nli, getSink(0) );
         return true;
 
         // boolean success = false;
