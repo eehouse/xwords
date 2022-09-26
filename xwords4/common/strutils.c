@@ -248,6 +248,8 @@ p_stringFromStream( MPFORMAL XWStreamCtxt* stream
     return str;
 } /* makeStringFromStream */
 
+/* FIX_NEXT_VERSION_CHANGE: use stream_getU32VL() for length so string can be
+ * larger than 256 bytes */
 XP_U16
 stringFromStreamHereImpl( XWStreamCtxt* stream, XP_UCHAR* buf, XP_U16 buflen
 #ifdef DEBUG
