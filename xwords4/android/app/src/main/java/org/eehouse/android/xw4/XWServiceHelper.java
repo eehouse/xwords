@@ -134,7 +134,14 @@ abstract class XWServiceHelper {
                                         String device, DictFetchOwner dfo )
     {
         // PENDING: get the test for dicts back in
-        GameUtils.handleInvitation( mContext, nli, getSink(0) );
+        if ( DictLangCache.haveDict( mContext, nli.isoCode(), nli.dict ) ) {
+            GameUtils.handleInvitation( mContext, nli, getSink(0) );
+        } else {
+            Intent intent = MultiService
+                .makeMissingDictIntent( mContext, nli, dfo );
+            MultiService.postMissingDictNotification( mContext, intent,
+                                                      nli.gameID() );
+        }
         return true;
 
         // boolean success = false;

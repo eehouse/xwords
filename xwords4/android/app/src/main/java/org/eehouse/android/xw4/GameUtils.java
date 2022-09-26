@@ -600,7 +600,7 @@ public class GameUtils {
             if ( null != gamePtr ) {
                 long rowid = saveNewGame1( context, gamePtr, -1, "name" );
             } else {
-                Assert.failDbg();
+                Log.d( TAG, "handleInvitation(): unable to create" );
             }
         }
     }
