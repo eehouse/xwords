@@ -598,7 +598,7 @@ public class GameUtils {
         try ( GamePtr gamePtr = XwJNI
               .game_makeFromInvite( nli, util, selfAddr, cp, procs ) ) {
             if ( null != gamePtr ) {
-                long rowid = saveNewGame1( context, gamePtr, -1, "name" );
+                long rowid = saveNewGame1( context, gamePtr, -1, nli.gameName );
             } else {
                 Log.d( TAG, "handleInvitation(): unable to create" );
             }
