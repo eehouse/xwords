@@ -3139,7 +3139,7 @@ public class GamesListDelegate extends ListDelegateBase
             if ( doConfigure ) {
                 GameConfigDelegate.configNewForResult( getDelegator(),
                                                        RequestCode.CONFIG_GAME,
-                                                       m_mySIS.nextIsSolo );
+                                                       name, m_mySIS.nextIsSolo );
             } else {
                 long rowID;
                 long groupID = 1 == m_mySIS.selGroupIDs.size()

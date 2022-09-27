@@ -1,6 +1,6 @@
 /* -*- compile-command: "find-and-gradle.sh inXw4dDeb"; -*- */
 /*
- * Copyright 2009 - 2020 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2009 - 2022 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -36,6 +36,7 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.CompoundButton;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -65,6 +66,7 @@ public class GameConfigDelegate extends DelegateBase
     private static final String TAG = GameConfigDelegate.class.getSimpleName();
 
     private static final String INTENT_FORRESULT_SOLO = "solo";
+    private static final String INTENT_FORRESULT_NAME = "name";
     private static final String WHICH_PLAYER = "WHICH_PLAYER";
     private static final String LOCAL_GI = "LOCAL_GI";
     private static final String LOCAL_TYPES = "LOCAL_TYPES";
@@ -88,6 +90,7 @@ public class GameConfigDelegate extends DelegateBase
     private long m_rowid;
     private boolean m_isNewGame;
     private boolean m_newGameIsSolo; // only used if m_isNewGame is true
+    private String m_newGameName;
     private CurGameInfo m_gi;
     private CurGameInfo m_giOrig;
     private JNIThread m_jniThread;
@@ -486,6 +489,7 @@ public class GameConfigDelegate extends DelegateBase
         Bundle args = getArguments();
         m_rowid = args.getLong( GameUtils.INTENT_KEY_ROWID, DBUtils.ROWID_NOTFOUND );
         m_newGameIsSolo = args.getBoolean( INTENT_FORRESULT_SOLO, false );
+        m_newGameName = args.getString( INTENT_FORRESULT_NAME );
         m_isNewGame = DBUtils.ROWID_NOTFOUND == m_rowid;
 
         m_addPlayerButton = (Button)findViewById(R.id.add_player);
@@ -663,6 +667,8 @@ public class GameConfigDelegate extends DelegateBase
             setConnLabel();
             loadPlayersList();
             configLangSpinner();
+            EditText et = (EditText)findViewById( R.id.name_edit );
+            et.setText( m_newGameName );
 
             m_phoniesSpinner.setSelection( m_gi.phoniesAction.ordinal() );
 
@@ -910,7 +916,8 @@ public class GameConfigDelegate extends DelegateBase
                 // we can insert later.
                 intent.putExtra( INTENT_KEY_SADDR, m_car );
                 // Game name should be a field in this layout
-                intent.putExtra( INTENT_KEY_NAME, "Config Me" );
+                EditText et = (EditText)findViewById( R.id.name_edit );
+                intent.putExtra( INTENT_KEY_NAME, et.getText().toString() );
             } else {
                 intent.putExtra( GameUtils.INTENT_KEY_ROWID, m_rowid );
             }
@@ -1357,9 +1364,10 @@ public class GameConfigDelegate extends DelegateBase
 
     public static void configNewForResult( Delegator delegator,
                                            RequestCode requestCode,
-                                           boolean solo )
+                                           String name, boolean solo )
     {
         Bundle bundle = new Bundle();
+        bundle.putSerializable( INTENT_FORRESULT_NAME, name );
         bundle.putBoolean( INTENT_FORRESULT_SOLO, solo );
 
         delegator
