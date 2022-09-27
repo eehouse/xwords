@@ -52,7 +52,8 @@
                   android:layout_margin="4dp"
                   >
 
-      <LinearLayout android:orientation="horizontal"
+      <LinearLayout android:id="@+id/game_name_edit_row"
+                    android:orientation="horizontal"
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
                     >
@@ -62,7 +63,7 @@
                   />
         <EditText android:layout_width="wrap_content"
                   android:layout_height="wrap_content"
-                  android:id="@+id/name_edit"
+                  android:id="@+id/game_name_edit"
                   />
       </LinearLayout>
 

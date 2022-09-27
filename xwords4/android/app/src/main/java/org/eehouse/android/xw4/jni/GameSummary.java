@@ -74,7 +74,7 @@ public class GameSummary implements Serializable {
     private String[] m_players;
     public CommsConnTypeSet conTypes;
     // relay-related fields
-    public String roomName;
+    public String roomName;     // PENDING remove me
     public String relayID;
     public int seed;
     public long modtime;
@@ -134,7 +134,7 @@ public class GameSummary implements Serializable {
                     && Arrays.equals( m_players, other.m_players )
                     && ((null == conTypes) ? (null == other.conTypes)
                         : conTypes.equals(other.conTypes))
-                    && TextUtils.equals( roomName, other.roomName )
+                    // && TextUtils.equals( roomName, other.roomName )
                     && TextUtils.equals( relayID, other.relayID )
                     && Arrays.equals( remoteDevs, other.remoteDevs )
                     && ((null == serverRole) ? (null == other.serverRole)

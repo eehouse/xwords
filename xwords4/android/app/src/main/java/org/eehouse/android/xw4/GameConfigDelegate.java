@@ -667,8 +667,12 @@ public class GameConfigDelegate extends DelegateBase
             setConnLabel();
             loadPlayersList();
             configLangSpinner();
-            EditText et = (EditText)findViewById( R.id.name_edit );
-            et.setText( m_newGameName );
+            if ( m_isNewGame ) {
+                EditText et = (EditText)findViewById( R.id.game_name_edit );
+                et.setText( m_newGameName );
+            } else {
+                findViewById( R.id.game_name_edit_row ).setVisibility( View.GONE );
+            }
 
             m_phoniesSpinner.setSelection( m_gi.phoniesAction.ordinal() );
 
