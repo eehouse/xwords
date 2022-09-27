@@ -67,4 +67,5 @@
     <string name="robot_spinner_prompt">Насколько умным должен быть робот\?</string>
     <string name="player_label">Имя:</string>
     <string name="title_game_config_fmt">Настройки для %1$s</string>
+    <string name="badwords_title">Незаконное слово[s]</string>
 </resources>
