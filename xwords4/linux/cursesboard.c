@@ -222,10 +222,9 @@ cb_newFor( CursesBoardState* cbState, const NetLaunchInfo* nli,
         commonInit( cbState, -1, NULL );
     CommonGlobals* cGlobals = &bGlobals->cGlobals;
     initCP( cGlobals );
-
     if ( game_makeFromInvite( &cGlobals->game, NULL_XWE, nli, &selfAddr,
                               cGlobals->util, (DrawCtx*)NULL,
-                              &cGlobals->cp, (TransportProcs*)NULL ) ) {
+                              &cGlobals->cp, &bGlobals->procs ) ) {
         linuxSaveGame( cGlobals );
     } else {
         XP_ASSERT( 0 );
