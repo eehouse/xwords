@@ -84,7 +84,7 @@ XP_Bool game_makeNewGame( MPFORMAL XWEnv xwe, XWGame* game, CurGameInfo* gi,
 #endif
                           );
 void game_makeRematch( const XWGame* game, XWEnv xwe, XW_UtilCtxt* util,
-                       const CommonPrefs* cp, XWStreamCtxt* stream );
+                       const CommonPrefs* cp, XWGame* newGame );
 
 XP_Bool game_reset( MPFORMAL XWGame* game, XWEnv xwe, CurGameInfo* gi,
                     const CommsAddrRec* selfAddr, const CommsAddrRec* hostAddr,
@@ -98,9 +98,9 @@ XP_Bool game_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
                              XW_UtilCtxt* util, DrawCtx* draw,
                              CommonPrefs* cp, const TransportProcs* procs );
 
-XP_Bool game_makeFromInvite( MPFORMAL XWEnv xwe, const NetLaunchInfo* nli,
-                             XWGame* game, CurGameInfo* gi, const CommsAddrRec* selfAddr,
-                             const XP_UCHAR* plyrName, XW_UtilCtxt* util, DrawCtx* draw,
+XP_Bool game_makeFromInvite( XWGame* newGame, XWEnv xwe, const NetLaunchInfo* nli,
+                             const CommsAddrRec* selfAddr,
+                             XW_UtilCtxt* util, DrawCtx* draw,
                              CommonPrefs* cp, const TransportProcs* procs );
 
 void game_saveNewGame( MPFORMAL XWEnv xwe, const CurGameInfo* gi, XW_UtilCtxt* util,
@@ -118,8 +118,8 @@ void game_dispose( XWGame* game, XWEnv xwe );
 void game_summarize( XWGame* game, CurGameInfo* gi, GameSummary* summary );
 void game_getState( const XWGame* game, XWEnv xwe, GameStateInfo* gsi );
 XP_Bool game_getIsServer( const XWGame* game );
-
-void gi_setNPlayers( CurGameInfo* gi, XP_U16 nTotal, XP_U16 nHere );
+void gi_setNPlayers( CurGameInfo* gi, XWEnv xwe, XW_UtilCtxt* util,
+                     XP_U16 nTotal, XP_U16 nHere );
 void gi_disposePlayerInfo( MPFORMAL CurGameInfo* gi );
 void gi_writeToStream( XWStreamCtxt* stream, const CurGameInfo* gi );
 void gi_readFromStream( MPFORMAL XWStreamCtxt* stream, CurGameInfo* gi );

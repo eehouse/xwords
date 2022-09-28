@@ -241,10 +241,12 @@ mpool_calloc( MemPoolCtx* mpool, XP_U32 size, const char* file,
 static MemPoolEntry*
 findEntryFor( MemPoolCtx* mpool, void* ptr, MemPoolEntry** prevP )
 {
+    MemPoolEntry* result = NULL;
     MemPoolEntry* entry;
     MemPoolEntry* prev;
 
-    for ( prev = (MemPoolEntry*)NULL, entry = mpool->usedList; !!entry; 
+    for ( prev = (MemPoolEntry*)NULL, entry = mpool->usedList;
+          !!entry && !result;
           prev = entry, entry = prev->next ) {
 
         if ( entry->ptr == ptr ) {
@@ -253,10 +255,13 @@ findEntryFor( MemPoolCtx* mpool, void* ptr, MemPoolEntry** prevP )
                 *prevP = prev;
             }
 
-            return entry;
+            result = entry;
         }
     }
-    return (MemPoolEntry*)NULL;
+    if ( !result ) {
+        XP_LOGFF( "(mpool=%p, ptr=%p): NOT FOUND", mpool, ptr );
+    }
+    return result;
 } /* findEntryFor */
 
 void* 
@@ -271,8 +276,8 @@ mpool_realloc( MemPoolCtx* mpool, void* ptr, XP_U32 newsize, const char* file,
         MemPoolEntry* entry = findEntryFor( mpool, ptr, (MemPoolEntry**)NULL );
 
         if ( !entry ) {
-            XP_LOGF( "findEntryFor failed; called from %s, line %d",
-                     file, lineNo );
+            XP_LOGFF( "findEntryFor(ptr: %p) failed; called from %s in %s, line %d",
+                      ptr, func, file, lineNo );
         } else {
             entry->ptr = XP_PLATREALLOC( entry->ptr, newsize );
             XP_ASSERT( !!entry->ptr );
@@ -302,15 +307,16 @@ mpool_free( MemPoolCtx* mpool, void* ptr, const char* file,
     entry = findEntryFor( mpool, ptr, &prev );
 
     if ( !entry ) {
-        XP_LOGF( "findEntryFor failed; called from %s, line %d in %s",
-                 func, lineNo, file );
+        XP_LOGFF( "findEntryFor failed; pool %p, line %d in %s", mpool, lineNo, file );
         XP_ASSERT( 0 );
     } else {
 
 #ifdef MPOOL_DEBUG
-    XP_LOGF( "%s(ptr=%p):size=%ld,index=%d,func=%s,file=%s,lineNo=%ld)", __func__, 
-             entry->ptr, entry->size, entry->index, entry->func, entry->fileName, 
-             entry->lineNo );
+    XP_LOGFF( "(ptr=%p):size=%ld,index=%d,func=%s,file=%s,lineNo=%ld); called from %s",
+              entry->ptr, entry->size, entry->index, entry->func, entry->fileName,
+              entry->lineNo, func );
+#else
+    XP_USE(func);               /* shut up, compiler */
 #endif
 
         if ( !!prev ) {

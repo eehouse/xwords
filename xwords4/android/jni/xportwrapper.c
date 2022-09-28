@@ -244,11 +244,13 @@ makeXportProcs( MPFORMAL JNIEnv* env,
 void
 destroyXportProcs( TransportProcs** xport, JNIEnv* env )
 {
-    AndTransportProcs* aprocs = (AndTransportProcs*)*xport;
-    if ( NULL != aprocs->jxport ) {
-        (*env)->DeleteGlobalRef( env, aprocs->jxport );
-    }
+    if ( !!*xport ) {
+        AndTransportProcs* aprocs = (AndTransportProcs*)*xport;
+        if ( NULL != aprocs->jxport ) {
+            (*env)->DeleteGlobalRef( env, aprocs->jxport );
+        }
 
-    XP_FREE( aprocs->mpool, aprocs );
-    *xport = NULL;
+        XP_FREE( aprocs->mpool, aprocs );
+        *xport = NULL;
+    }
 }

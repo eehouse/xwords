@@ -31,6 +31,7 @@ import org.json.JSONObject;
 import org.eehouse.android.xw4.Assert;
 import org.eehouse.android.xw4.BuildConfig;
 import org.eehouse.android.xw4.DBUtils;
+import org.eehouse.android.xw4.DbgUtils;
 import org.eehouse.android.xw4.Log;
 import org.eehouse.android.xw4.R;
 import org.eehouse.android.xw4.Utils.ISOCode;
@@ -199,7 +200,7 @@ public class GameSummary implements Serializable {
         }
     }
 
-    public void readPlayers( Context context , String playersStr )
+    public void readPlayers( Context context, String playersStr )
     {
         if ( null != playersStr ) {
             m_players = new String[nPlayers];
@@ -551,4 +552,18 @@ public class GameSummary implements Serializable {
         return result;
     }
 
+    @Override
+    public String toString()
+    {
+        String result;
+        if ( BuildConfig.NON_RELEASE ) {
+            StringBuffer sb = new StringBuffer("{")
+                .append("nPlayers: ").append(nPlayers).append(',')
+                .append("}");
+            result = sb.toString();
+        } else {
+            result = super.toString();
+        }
+        return result;
+    }
 }

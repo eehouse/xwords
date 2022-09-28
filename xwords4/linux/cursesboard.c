@@ -204,27 +204,29 @@ cb_new( CursesBoardState* cbState, const cb_dims* dims )
 }
 
 void
-cb_newFor( CursesBoardState* cbState, const NetLaunchInfo* nli,
-           const CommsAddrRec* returnAddr,
-           const cb_dims* dims )
+cb_newFor( CursesBoardState* XP_UNUSED(cbState), const NetLaunchInfo* XP_UNUSED(nli),
+           const CommsAddrRec* XP_UNUSED(returnAddr),
+           const cb_dims* XP_UNUSED(dims) )
 {
-    LaunchParams* params = cbState->params;
-    CurGameInfo gi = {0};
-    gi_copy( MPPARM(params->mpool) &gi, &params->pgi );
-    gi_setNPlayers( &gi, nli->nPlayersT, nli->nPlayersH );
-    gi.gameID = nli->gameID;
-    XP_STRNCPY( gi.isoCodeStr, nli->isoCodeStr, VSIZE(gi.isoCodeStr) );
-    gi.forceChannel = nli->forceChannel;
-    gi.inDuplicateMode = nli->inDuplicateMode;
-    gi.serverRole = SERVER_ISCLIENT; /* recipient of invitation is client */
-    replaceStringIfDifferent( params->mpool, &gi.dictName, nli->dict );
+    /* FIX ME soon */
+    XP_ASSERT(0);
+    /* LaunchParams* params = cbState->params; */
+    /* CurGameInfo gi = {0}; */
+    /* gi_copy( MPPARM(params->mpool) &gi, &params->pgi ); */
+    /* gi_setNPlayers( &gi, nli->nPlayersT, nli->nPlayersH ); */
+    /* gi.gameID = nli->gameID; */
+    /* XP_STRNCPY( gi.isoCodeStr, nli->isoCodeStr, VSIZE(gi.isoCodeStr) ); */
+    /* gi.forceChannel = nli->forceChannel; */
+    /* gi.inDuplicateMode = nli->inDuplicateMode; */
+    /* gi.serverRole = SERVER_ISCLIENT; /\* recipient of invitation is client *\/ */
+    /* replaceStringIfDifferent( params->mpool, &gi.dictName, nli->dict ); */
 
-    CursesBoardGlobals* bGlobals = findOrOpen( cbState, -1, &gi, returnAddr );
+    /* CursesBoardGlobals* bGlobals = findOrOpen( cbState, -1, &gi, returnAddr ); */
 
-    gi_disposePlayerInfo( MPPARM(params->mpool) &gi );
+    /* gi_disposePlayerInfo( MPPARM(params->mpool) &gi ); */
 
-    enableDraw( bGlobals, dims );
-    setupBoard( bGlobals );
+    /* enableDraw( bGlobals, dims ); */
+    /* setupBoard( bGlobals ); */
 }
 
 const MenuList g_allMenuList[] = {

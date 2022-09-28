@@ -71,6 +71,23 @@ nli_init( NetLaunchInfo* nli, const CurGameInfo* gi, const CommsAddrRec* addr,
     }
 }
 
+void
+nliToGI( const NetLaunchInfo* nli, XWEnv xwe, XW_UtilCtxt* util, CurGameInfo* gi )
+{
+    gi_setNPlayers( gi, xwe, util, nli->nPlayersT, nli->nPlayersH );
+    gi->gameID = nli->gameID;
+    /* These defaults can be overwritten when host starts game after all
+       register */
+    gi->boardSize = 15;
+    gi->traySize = gi->bingoMin = 7;
+
+    XP_STRNCPY( gi->isoCodeStr, nli->isoCodeStr, VSIZE(gi->isoCodeStr) );
+    gi->forceChannel = nli->forceChannel;
+    gi->inDuplicateMode = nli->inDuplicateMode;
+    gi->serverRole = SERVER_ISCLIENT; /* recipient of invitation is client */
+    replaceStringIfDifferent( util->mpool, &gi->dictName, nli->dict );
+}
+
 static XP_U32 
 gameID( const NetLaunchInfo* nli )
 {

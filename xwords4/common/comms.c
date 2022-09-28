@@ -224,7 +224,7 @@ static XP_S16 sendMsg( CommsCtxt* comms, XWEnv xwe, MsgQueueElem* elem,
                        CommsConnType filter );
 static MsgQueueElem* addToQueue( CommsCtxt* comms, XWEnv xwe, MsgQueueElem* newElem );
 static XP_Bool elems_same( const MsgQueueElem* e1, const MsgQueueElem* e2 ) ;
-static void freeElem( const CommsCtxt* comms, MsgQueueElem* elem );
+static void freeElem( MPFORMAL MsgQueueElem* elem );
 static void removeFromQueue( CommsCtxt* comms, XWEnv xwe, XP_PlayerAddr channelNo,
                              MsgID msgID );
 static XP_U16 countAddrRecs( const CommsCtxt* comms );
@@ -469,7 +469,7 @@ cleanupInternal( CommsCtxt* comms )
 
     for ( msg = comms->msgQueueHead; !!msg; msg = next ) {
         next = msg->next;
-        freeElem( comms, msg );
+        freeElem( MPPARM(comms->mpool) msg );
     }
     comms->queueLen = 0;
     comms->msgQueueHead = comms->msgQueueTail = (MsgQueueElem*)NULL;
@@ -1044,16 +1044,16 @@ addrToStreamOne( XWStreamCtxt* stream, CommsConnType typ,
         stream_putU32( stream, addrP->u.ip.ipAddr_ip );
         stream_putU16( stream, addrP->u.ip.port_ip );
         break;
-#ifdef XWFEATURE_RELAY
     case COMMS_CONN_RELAY:
+#ifdef XWFEATURE_RELAY
         stringToStream( stream, addrP->u.ip_relay.invite );
         stringToStream( stream, addrP->u.ip_relay.hostName );
         stream_putU32( stream, addrP->u.ip_relay.ipAddr );
         stream_putU16( stream, addrP->u.ip_relay.port );
         stream_putBits( stream, 1, addrP->u.ip_relay.seeksPublicRoom );
         stream_putBits( stream, 1, addrP->u.ip_relay.advertiseRoom );
-        break;
 #endif
+        break;
     case COMMS_CONN_SMS:
         stringToStream( stream, addrP->u.sms.phone );
         stream_putU16( stream, addrP->u.sms.port );
@@ -1068,7 +1068,8 @@ addrToStreamOne( XWStreamCtxt* stream, CommsConnType typ,
         stream_putBytes( stream, &addrP->u.mqtt.devID, sizeof(addrP->u.mqtt.devID) );
         break;
     default:
-        XP_ASSERT(0);
+        XP_LOGFF( "unexpected typ: %s", ConnType2Str(typ) );
+        XP_ASSERT(0);           /* firing */
         break;
     }
 } /* addrToStreamOne */
@@ -1086,7 +1087,7 @@ addrToStream( XWStreamCtxt* stream, const CommsAddrRec* addrP )
 }
 
 void
-comms_writeToStream( CommsCtxt* comms, XWEnv XP_UNUSED_DBG(xwe),
+comms_writeToStream( CommsCtxt* comms, XWEnv xwe,
                      XWStreamCtxt* stream, XP_U16 saveToken )
 {
     XP_U16 nAddrRecs;
@@ -1566,15 +1567,17 @@ comms_invite( CommsCtxt* comms, XWEnv xwe, const NetLaunchInfo* nli,
     /* remove the old rec, if found */
     nukeInvites( comms, xwe, forceChannel );
 
+    /* WTF is this doing? It's leaving msgQueueHead pointing at garbage */
     // const XP_PlayerAddr channelNo = 1;
-    for ( MsgQueueElem* elem = comms->msgQueueHead; !!elem; elem = elem-> next ) {
-        if ( forceChannel == elem->channelNo ) {
-            if ( 0 == elem->msgID && 0 != forceChannel ) {
-                freeElem( comms, elem );
-                XP_LOGFF( "nuked old invite" );
-            }
-        }
-    }
+    /* for ( MsgQueueElem* elem = comms->msgQueueHead; !!elem; elem = elem-> next ) { */
+    /*     if ( forceChannel == elem->channelNo ) { */
+    /*         if ( 0 == elem->msgID && 0 != forceChannel ) { */
+    /*             freeElem( comms->mpool, elem ); */
+    /*             XP_LOGFF( "nuked old invite" ); */
+    /*             fix me */
+    /*         } */
+    /*     } */
+    /* } */
 
     /*AddressRecord* rec = */rememberChannelAddress( comms, xwe, forceChannel,
                                                      0, destAddr, 0 );
@@ -1642,7 +1645,7 @@ addToQueue( CommsCtxt* comms, XWEnv xwe, MsgQueueElem* newElem )
         XP_ASSERT( !!comms->msgQueueTail );
         XP_ASSERT( !comms->msgQueueTail->next );
         if ( elems_same( comms->msgQueueTail, newElem ) ) {
-            freeElem( comms, newElem );
+            freeElem( MPPARM(comms->mpool) newElem );
             asAdded = comms->msgQueueTail;
         } else {
             comms->msgQueueTail->next = newElem;
@@ -1743,14 +1746,14 @@ elems_same( const MsgQueueElem* elem1, const MsgQueueElem* elem2 )
 }
 
 static void
-freeElem( const CommsCtxt* XP_UNUSED_DBG(comms), MsgQueueElem* elem )
+freeElem( MPFORMAL MsgQueueElem* elem )
 {
-    XP_FREE( comms->mpool, elem->msg );
+    XP_FREE( mpool, elem->msg );
 #ifdef COMMS_CHECKSUM
     XP_LOGFF( "freeing msg with sum %s", elem->checksum );
-    XP_FREE( comms->mpool, elem->checksum );
+    XP_FREE( mpool, elem->checksum );
 #endif
-    XP_FREE( comms->mpool, elem );
+    XP_FREE( mpool, elem );
 }
 
 /* We've received on some channel a message with a certain ID.  This means
@@ -1794,7 +1797,7 @@ removeFromQueue( CommsCtxt* comms, XWEnv xwe, XP_PlayerAddr channelNo, MsgID msg
             }
 
             if ( !knownGood && (elem->msgID <= msgID) ) {
-                freeElem( comms, elem );
+                freeElem( MPPARM(comms->mpool) elem );
             } else {
                 MsgQueueElem* asAdded = addToQueue( comms, xwe, elem );
                 XP_ASSERT( asAdded == elem );
@@ -1858,7 +1861,7 @@ sendMsg( CommsCtxt* comms, XWEnv xwe, MsgQueueElem* elem, const CommsConnType fi
     }
     if ( NULL == addrP ) {
         XP_LOGFF( TAGFMT() "no addr for channel %x; dropping!'", TAGPRMS, channelNo );
-        XP_ASSERT(0);
+        // XP_ASSERT(0);           /* firing */
     } else {
         CommsAddrRec addr = *addrP;
         if ( addr_hasType( &comms->selfAddr, COMMS_CONN_NFC ) ) {
@@ -3072,7 +3075,7 @@ sendEmptyMsg( CommsCtxt* comms, XWEnv xwe, AddressRecord* rec )
     MsgQueueElem* elem = makeElemWithID( comms, xwe, 0 /* msgID */, 
                                          rec, rec? rec->channelNo : 0, NULL );
     (void)sendMsg( comms, xwe, elem, COMMS_CONN_NONE );
-    freeElem( comms, elem );
+    freeElem( MPPARM(comms->mpool) elem );
 } /* sendEmptyMsg */
 #endif
 

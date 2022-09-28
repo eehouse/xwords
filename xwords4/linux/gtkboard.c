@@ -2434,6 +2434,7 @@ initGlobalsNoDraw( GtkGameGlobals* globals, LaunchParams* params,
 
     cGlobals->params = params;
     cGlobals->lastNTilesToUse = MAX_TRAY_TILES;
+    cGlobals->rowid = -1;
 #ifndef XWFEATURE_STANDALONE_ONLY
 # ifdef XWFEATURE_RELAY
     cGlobals->relaySocket = -1;
@@ -2501,7 +2502,6 @@ void
 initBoardGlobalsGtk( GtkGameGlobals* globals, LaunchParams* params,
                      const CurGameInfo* gi )
 {
-    CommonGlobals* cGlobals = &globals->cGlobals;
     short width, height;
     GtkWidget* window;
     GtkWidget* drawing_area;
@@ -2577,6 +2577,7 @@ initBoardGlobalsGtk( GtkGameGlobals* globals, LaunchParams* params,
     /* install scrollbar even if not needed -- since zooming can make it
        needed later */
     GtkWidget* vscrollbar;
+    CommonGlobals* cGlobals = &globals->cGlobals;
     gint nRows = cGlobals->gi->boardSize;
     globals->adjustment = (GtkAdjustment*)
         gtk_adjustment_new( 0, 0, nRows, 1, 2, 

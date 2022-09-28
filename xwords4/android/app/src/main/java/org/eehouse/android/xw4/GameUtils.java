@@ -532,6 +532,78 @@ public class GameUtils {
         }
     }
 
+    private static long saveNewGame1( Context context, GamePtr gamePtr,
+                                     long groupID, String gameName )
+    {
+        long rowid = DBUtils.ROWID_NOTFOUND;
+        if ( DBUtils.GROUPID_UNSPEC == groupID ) {
+            groupID = XWPrefs.getDefaultNewGameGroup( context );
+        }
+        CurGameInfo gi = new CurGameInfo( context );
+        XwJNI.game_getGi( gamePtr, gi );
+        Log.d( TAG, "saveNewGame1() (post-rematch): gi: %s", gi );
+        byte[] stream = XwJNI.game_saveToStream( gamePtr, gi );
+
+        try ( GameLock lock = DBUtils.saveNewGame( context, stream, groupID, gameName ) ) {
+            if ( null != lock ) {
+                summarize( context, lock, gamePtr, gi );
+                rowid = lock.getRowid();
+            } else {
+                Assert.failDbg();
+            }
+        }
+
+        Log.d( TAG, "saveNewGame1() => %d", rowid );
+        return rowid;
+    }
+
+    public static long makeRematch( Context context, long srcRowid,
+                                    long groupID, String gameName )
+    {
+        long rowid = DBUtils.ROWID_NOTFOUND;
+        try ( GameLock lock = GameLock.tryLockRO( srcRowid ) ) {
+            if ( null != lock ) {
+                CurGameInfo gi = new CurGameInfo( context );
+                try ( GamePtr gamePtr = loadMakeGame( context, gi, lock ) ) {
+                    if ( null != gamePtr ) {
+                        UtilCtxt util = new UtilCtxtImpl( context );
+                        CommonPrefs cp = CommonPrefs.get(context);
+                        try ( GamePtr gamePtrNew = XwJNI
+                              .game_makeRematch( gamePtr, util, cp ) ) {
+                            if ( null != gamePtrNew ) {
+                                rowid = saveNewGame1( context, gamePtrNew,
+                                                      groupID, gameName );
+                            } else {
+                                Assert.failDbg();
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        Log.d( TAG, "makeRematch() => %d", rowid );
+        Assert.assertTrueNR( DBUtils.ROWID_NOTFOUND != rowid );
+        return rowid;
+    }
+
+    static void handleInvitation( Context context, NetLaunchInfo nli )
+    {
+        Log.d( TAG, "handleInvitation(%s)", nli );
+
+        UtilCtxt util = new UtilCtxtImpl( context );
+        CommonPrefs cp = CommonPrefs.get( context );
+        CommsAddrRec selfAddr = CommsAddrRec.getSelfAddr( context );
+        try ( GamePtr gamePtr = XwJNI
+              .game_makeFromInvite( nli, util, selfAddr, cp ) ) {
+            if ( null != gamePtr ) {
+                long rowid = saveNewGame1( context, gamePtr, -1, "name" );
+            } else {
+                Assert.failDbg();
+            }
+        }
+    }
+
     public static long saveGame( Context context, GamePtr gamePtr,
                                  CurGameInfo gi, GameLock lock,
                                  boolean setCreate )
@@ -572,16 +644,16 @@ public class GameUtils {
         return DBUtils.saveNewGame( context, bytes, groupID, null );
     }
 
-    public static long saveNew( Context context, CurGameInfo gi,
-                                long groupID, String gameName )
+    public static long makeSaveNew( Context context, CurGameInfo gi,
+                                    long groupID, String gameName )
     {
         Assert.assertTrueNR( DeviceRole.SERVER_STANDALONE == gi.serverRole );
-        return saveNew( context, gi, null, null, groupID, gameName );
+        return makeSaveNew( context, gi, null, null, groupID, gameName );
     }
 
-    public static long saveNew( Context context, CurGameInfo gi,
-                                CommsAddrRec selfAddr, CommsAddrRec hostAddr,
-                                long groupID, String gameName )
+    public static long makeSaveNew( Context context, CurGameInfo gi,
+                                    CommsAddrRec selfAddr, CommsAddrRec hostAddr,
+                                    long groupID, String gameName )
     {
         if ( DBUtils.GROUPID_UNSPEC == groupID ) {
             groupID = XWPrefs.getDefaultNewGameGroup( context );
@@ -730,7 +802,7 @@ public class GameUtils {
         if ( null == selfAddr ) {
             selfAddr = CommsAddrRec.getSelfAddr( context, gi );
         }
-        long rowid = saveNew( context, gi, selfAddr, hostAddr, groupID, gameName );
+        long rowid = makeSaveNew( context, gi, selfAddr, hostAddr, groupID, gameName );
         if ( null != sink ) {
             sink.setRowID( rowid );
         }

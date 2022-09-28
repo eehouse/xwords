@@ -22,6 +22,7 @@
 #include "dictnry.h"
 #include "strutils.h"
 #include "nli.h"
+#include "dbgutil.h"
 
 #ifdef CPLUS
 extern "C" {
@@ -231,18 +232,21 @@ game_makeNewGame( MPFORMAL XWEnv xwe, XWGame* game, CurGameInfo* gi,
 } /* game_makeNewGame */
 
 void
-game_makeRematch( const XWGame* oldGame, XWEnv xwe, XW_UtilCtxt* util,
-                  const CommonPrefs* cp, XWStreamCtxt* stream )
+game_makeRematch( const XWGame* oldGame, XWEnv xwe, XW_UtilCtxt* newUtil,
+                  const CommonPrefs* newCp, XWGame* newGame )
 {
-    const CurGameInfo* gi = util->gameInfo;
-    CurGameInfo newGI = {0};
-    gi_copy( MPPARM(util->mpool) &newGI, gi );
-    newGI.gameID = 0;          /* clear so will get generated */
-    if ( SERVER_ISCLIENT == newGI.serverRole ) {
-        newGI.serverRole = SERVER_ISSERVER; /* we'll be inviting */
+    LOG_FUNC();
+    CurGameInfo* newGI = newUtil->gameInfo;
+    XP_ASSERT( !!newGI );
+    XP_ASSERT( newGI != oldGame->util->gameInfo );
+    const CurGameInfo* gi = oldGame->util->gameInfo;
+    XP_ASSERT( 0 < gi->nPlayers );
+    gi_copy( MPPARM(newUtil->mpool) newGI, gi );
+    newGI->gameID = makeGameID( newUtil );
+    if ( SERVER_ISCLIENT == newGI->serverRole ) {
+        newGI->serverRole = SERVER_ISSERVER; /* we'll be inviting */
     }
 
-    XWGame newGame;
     CommsAddrRec* selfAddrP = NULL;
     CommsAddrRec selfAddr;
     if ( !!oldGame->comms ) {
@@ -261,21 +265,19 @@ game_makeRematch( const XWGame* oldGame, XWEnv xwe, XW_UtilCtxt* util,
     XP_ASSERT( haveRemote );
 
     if ( haveRemote &&
-         game_makeNewGame( MPPARM(util->mpool) xwe, &newGame, &newGI,
-                           selfAddrP, (CommsAddrRec*)NULL, util,
-                           (DrawCtx*)NULL, cp, (TransportProcs*)NULL ) ) {
-        if ( !!newGame.comms ) {
+         game_makeNewGame( MPPARM(newUtil->mpool) xwe, newGame, newGI,
+                           selfAddrP, (CommsAddrRec*)NULL, newUtil,
+                           (DrawCtx*)NULL, newCp, (TransportProcs*)NULL ) ) {
+        LOGGI(newGI, "made game" );
+        XP_ASSERT( 0 < newGI->nPlayers );
+        if ( !!newGame->comms ) {
             NetLaunchInfo nli;
-            nli_init( &nli, &newGI, selfAddrP, 1, 1 );
+            nli_init( &nli, newGI, selfAddrP, 1, 1 );
             LOGNLI( &nli );
-            comms_invite( newGame.comms, xwe, &nli, &hostAddr );
+            comms_invite( newGame->comms, xwe, &nli, &hostAddr );
         }
-
-        game_saveToStream( &newGame, xwe, &newGI, stream, 1 );
-        game_dispose( &newGame, xwe );
     }
-
-    gi_disposePlayerInfo( MPPARM(util->mpool) &newGI );
+    LOG_RETURN_VOID();
 }
 
 XP_Bool
@@ -463,30 +465,22 @@ game_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
 } /* game_makeFromStream */
 
 XP_Bool
-game_makeFromInvite( MPFORMAL XWEnv xwe, const NetLaunchInfo* nli,
-                     XWGame* game, CurGameInfo* gi, const CommsAddrRec* selfAddr,
-                     const XP_UCHAR* plyrName, XW_UtilCtxt* util, DrawCtx* draw,
-                     CommonPrefs* cp, const TransportProcs* procs )
+game_makeFromInvite( XWGame* newGame, XWEnv xwe, const NetLaunchInfo* nli,
+                     const CommsAddrRec* selfAddr, XW_UtilCtxt* util,
+                     DrawCtx* draw, CommonPrefs* cp, const TransportProcs* procs )
 {
-    XP_MEMSET( gi, 0, sizeof(*gi) );
-    gi_setNPlayers( gi, nli->nPlayersT, nli->nPlayersH );
-    /* These will be set by host in respose to registration message */
-    gi->boardSize = 15;
-    gi->traySize = gi->bingoMin = 7;
-
-    gi->gameID = nli->gameID;
-    XP_STRNCPY( gi->isoCodeStr, nli->isoCodeStr, VSIZE(gi->isoCodeStr) );
-    gi->forceChannel = nli->forceChannel;
-    gi->inDuplicateMode = nli->inDuplicateMode;
-    gi->serverRole = SERVER_ISCLIENT; /* recipient of invitation is client */
-    XP_ASSERT( gi->players[0].isLocal );
-    replaceStringIfDifferent( mpool, &gi->players[0].name, plyrName );
-    replaceStringIfDifferent( mpool, &gi->dictName, nli->dict );
+    LOG_FUNC();
+    CurGameInfo* gi = util->gameInfo;
+    XP_ASSERT( !!gi );
+    nliToGI( nli, xwe, util, gi );
+    LOGGI( gi, "copied from nli" );
 
     CommsAddrRec hostAddr;
     nli_makeAddrRec( nli, &hostAddr );
-    XP_Bool success = game_makeNewGame( MPPARM(mpool) xwe, game, gi, selfAddr,
-                                        &hostAddr, util, draw, cp, procs );
+    XP_Bool success = game_makeNewGame( MPPARM(util->mpool) xwe, newGame,
+                                        gi, selfAddr, &hostAddr, util,
+                                        draw, cp, procs );
+    LOG_RETURNF( "%s", boolToStr(success) );
     return success;
 }
 
@@ -721,7 +715,8 @@ gi_copy( MPFORMAL CurGameInfo* destGI, const CurGameInfo* srcGI )
 } /* gi_copy */
 
 void
-gi_setNPlayers( CurGameInfo* gi, XP_U16 nTotal, XP_U16 nHere )
+gi_setNPlayers( CurGameInfo* gi, XWEnv xwe, XW_UtilCtxt* util,
+                XP_U16 nTotal, XP_U16 nHere )
 {
     LOGGI( gi, "before" );
     XP_ASSERT( nTotal <= MAX_NUM_PLAYERS );
@@ -752,6 +747,18 @@ gi_setNPlayers( CurGameInfo* gi, XP_U16 nTotal, XP_U16 nHere )
             }
         }
     }
+
+    for ( XP_U16 ii = 0; ii < nTotal; ++ii ) {
+        LocalPlayer* lp = &gi->players[ii];
+        if ( !lp->name || !lp->name[0] ) {
+            XP_UCHAR name[32];
+            XP_U16 len = VSIZE(name);
+            util_getUsername( util, xwe, LP_IS_LOCAL(lp),
+                              LP_IS_ROBOT(lp), ii, name, &len );
+            replaceStringIfDifferent( util->mpool, &lp->name, name );
+        }
+    }
+
     LOGGI( gi, "after" );
 }
 

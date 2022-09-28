@@ -258,6 +258,8 @@ dvc_parseMQTTPacket( XW_DUtilCtxt* dutil, XWEnv xwe,
                 XP_U32 now = dutil_getCurSeconds( dutil, xwe );
                 XP_LOGFF( "delivery took %ds", now - timestamp );
             }
+#else
+            XW_USE( timestamp );
 #endif
         }
         MQTTCmd cmd = stream_getU8( stream );

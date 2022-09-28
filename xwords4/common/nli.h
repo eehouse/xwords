@@ -40,6 +40,9 @@ nli_init( NetLaunchInfo* nli, const CurGameInfo* gi, const CommsAddrRec* addr,
 XP_Bool nli_makeFromStream( NetLaunchInfo* nli, XWStreamCtxt* stream );
 void nli_saveToStream( const NetLaunchInfo* nli, XWStreamCtxt* stream );
 
+/* Populate a CurGameInfo from a NetLaunchInfo */
+void nliToGI( const NetLaunchInfo* nli, XWEnv xwe, XW_UtilCtxt* util, CurGameInfo* gi );
+/* Populate a CommsAddrRec */
 void nli_makeAddrRec( const NetLaunchInfo* nli, CommsAddrRec* addr );
 
 void nli_setDevID( NetLaunchInfo* nli, XP_U32 devID );

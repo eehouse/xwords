@@ -304,6 +304,20 @@ and_util_getDict( XW_UtilCtxt* uc, XWEnv xwe,
 }
 
 static void
+and_util_getUsername( XW_UtilCtxt* uc, XWEnv xwe, XP_Bool isLocal,
+                      XP_Bool isRobot, XP_U16 num,
+                      XP_UCHAR* buf, XP_U16* len )
+{
+    /* PENDING: this needs to go through to java */
+    XP_USE( uc );
+    XP_USE( xwe );
+    XP_USE( isRobot );
+    XP_USE( isLocal );
+    XP_SNPRINTF( buf, *len-1, "Player #%d", num + 1 );
+    buf[*len] = '\0';
+}
+
+static void
 and_util_notifyGameOver( XW_UtilCtxt* uc, XWEnv xwe, XP_S16 XP_UNUSED(quitter) )
 {
     UTIL_CBK_HEADER( "notifyGameOver", "()V" );
@@ -984,6 +998,7 @@ makeUtil( MPFORMAL JNIEnv* env,
     SET_PROC(informUndo);
     SET_PROC(informNetDict);
     SET_PROC(getDict);
+    SET_PROC(getUsername);
     SET_PROC(notifyGameOver);
 #ifdef XWFEATURE_HILITECELL
     SET_PROC(hiliteCell);

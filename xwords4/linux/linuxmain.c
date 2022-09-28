@@ -468,7 +468,7 @@ linuxSaveGame( CommonGlobals* cGlobals )
                                        cGlobals->params->vtMgr, 
                                        cGlobals->lastStreamSize,
                                        cGlobals, 0, onClose );
-            stream_open( outStream );
+            stream_open( outStream ); /* needed??? */
 
             game_saveToStream( &cGlobals->game, NULL_XWE, cGlobals->gi,
                                outStream, ++cGlobals->curSaveToken );
@@ -2415,6 +2415,16 @@ linux_util_requestTime( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe) )
     cGlobals->idleID = g_idle_add( idle_func, cGlobals );
 } /* gtk_util_requestTime */
 
+
+static void
+linux_util_getUsername( XW_UtilCtxt* XP_UNUSED(uc), XWEnv XP_UNUSED(xwe),
+                        XP_Bool XP_UNUSED(isLocal), XP_Bool isRobot, XP_U16 num,
+                        XP_UCHAR* buf, XP_U16* len )
+{
+    const char* fmt = isRobot ? "Robot %d" : "Player %d";
+    *len = XP_SNPRINTF( buf, *len, fmt, num );
+}
+
 void
 setupLinuxUtilCallbacks( XW_UtilCtxt* util )
 {
@@ -2427,6 +2437,7 @@ setupLinuxUtilCallbacks( XW_UtilCtxt* util )
     SET_PROC(setTimer);
     SET_PROC(clearTimer);
     SET_PROC(requestTime);
+    SET_PROC(getUsername);
 #undef SET_PROC
 }
 

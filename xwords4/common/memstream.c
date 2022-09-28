@@ -132,11 +132,11 @@ mem_stream_getBytes( DBG_PROC_FORMAL XWStreamCtxt* p_sctx, void* where, XP_U16 c
 
 #ifdef MEM_DEBUG
     if( stream->curReadPos + count > stream->nBytesAllocated ) {
-        XP_LOGF( "%s(): caller: %s()", __func__, DBG_PROC_VAL_NOCOMMA );
+        XP_LOGFF( "caller: %s()", DBG_PROC_VAL_NOCOMMA );
         XP_ASSERT(0);
     }
     if ( stream->curReadPos + count > stream->nBytesWritten ) {
-        XP_LOGF( "%s(): caller: %s()", __func__, DBG_PROC_VAL_NOCOMMA );
+        XP_LOGFF( "caller: %s()", DBG_PROC_VAL_NOCOMMA );
         XP_ASSERT(0);
     }
 #else

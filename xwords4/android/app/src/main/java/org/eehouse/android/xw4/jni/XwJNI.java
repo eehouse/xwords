@@ -325,6 +325,24 @@ public class XwJNI {
         return gamePtr;
     }
 
+    public static GamePtr game_makeRematch( GamePtr gamePtr,
+                                            UtilCtxt util,
+                                            CommonPrefs cp )
+    {
+        GamePtr gamePtrNew = initGameJNI( 0 );
+        game_makeRematch( gamePtr, gamePtrNew, util, cp );
+        return gamePtrNew;
+    }
+
+    public static GamePtr game_makeFromInvite( NetLaunchInfo nli, UtilCtxt util,
+                                               CommsAddrRec selfAddr,
+                                               CommonPrefs cp )
+    {
+        GamePtr gamePtrNew = initGameJNI( 0 );
+        game_makeFromInvite( gamePtrNew, nli, util, selfAddr, cp );
+        return gamePtrNew;
+    }
+
     // hack to allow cleanup of env owned by thread that doesn't open game
     public static void threadDone()
     {
@@ -346,6 +364,15 @@ public class XwJNI {
                                                        DrawCtx draw,
                                                        CommonPrefs cp,
                                                        TransportProcs procs );
+
+    private static native void game_makeRematch( GamePtr gamePtr,
+                                                 GamePtr gamePtrNew,
+                                                 UtilCtxt util,
+                                                 CommonPrefs cp );
+
+    private static native void game_makeFromInvite( GamePtr gamePtr, NetLaunchInfo nli, UtilCtxt util,
+                                                    CommsAddrRec selfAddr,
+                                                    CommonPrefs cp );
 
     public static native boolean game_receiveMessage( GamePtr gamePtr,
                                                       byte[] stream,

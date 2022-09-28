@@ -433,8 +433,6 @@ getNV( XWStreamCtxt* stream, ServerNonvolatiles* nv, XP_U16 nPlayers )
 static void
 putNV( XWStreamCtxt* stream, const ServerNonvolatiles* nv, XP_U16 nPlayers )
 {
-    XP_U16 ii;
-
     stream_putU32( stream, nv->lastMoveTime );
     stream_putU32( stream, nv->dupTimerExpires );
 
@@ -451,7 +449,7 @@ putNV( XWStreamCtxt* stream, const ServerNonvolatiles* nv, XP_U16 nPlayers )
     stream_putBits( stream, NPLAYERS_NBITS, nv->quitter+1 );
     stream_putBits( stream, NPLAYERS_NBITS, nv->pendingRegistrations );
 
-    for ( ii = 0; ii < nPlayers; ++ii ) {
+    for ( int ii = 0; ii < nPlayers; ++ii ) {
         stream_putBits( stream, 16, nv->addresses[ii].channelNo );
 #ifdef STREAM_VERS_BIGBOARD
         stream_putBits( stream, 8, nv->addresses[ii].streamVersion );
@@ -462,7 +460,7 @@ putNV( XWStreamCtxt* stream, const ServerNonvolatiles* nv, XP_U16 nPlayers )
     /* XP_LOGF( "%s: wrote streamVersion: 0x%x", __func__, nv->streamVersion ); */
 #endif
 
-    for ( ii = 0; ii < nPlayers; ++ii ) {
+    for ( int ii = 0; ii < nPlayers; ++ii ) {
         stream_putBits( stream, 1, nv->dupTurnsMade[ii] );
         stream_putBits( stream, 1, nv->dupTurnsForced[ii] );
     }
@@ -585,7 +583,6 @@ server_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream, ModelCtxt* mode
 void
 server_writeToStream( const ServerCtxt* server, XWStreamCtxt* stream )
 {
-    XP_U16 ii;
     XP_U16 nPlayers = server->vol.gi->nPlayers;
 
     putNV( stream, &server->nv, nPlayers );
@@ -595,7 +592,7 @@ server_writeToStream( const ServerCtxt* server, XWStreamCtxt* stream )
         pool_writeToStream( server->pool, stream );
     }
 
-    for ( ii = 0; ii < nPlayers; ++ii ) {
+    for ( int ii = 0; ii < nPlayers; ++ii ) {
         const ServerPlayer* player = &server->players[ii];
 
         stream_putU8( stream, player->deviceIndex );
