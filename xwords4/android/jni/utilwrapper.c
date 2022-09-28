@@ -883,8 +883,9 @@ and_dutil_notifyPause( XW_DUtilCtxt* duc, XWEnv xwe, XP_U32 gameID, DupPauseType
 static XP_Bool
 and_dutil_haveGame( XW_DUtilCtxt* duc, XWEnv xwe, XP_U32 gameID, XP_U8 channel )
 {
-    XP_Bool result;
+    XP_Bool result = XP_FALSE;
     DUTIL_CBK_HEADER( "haveGame", "(II)Z" );
+    XP_ASSERT( !!dutil->jdutil ); /* returning false by default a problem */
     result = (*env)->CallBooleanMethod( env, dutil->jdutil, mid, gameID, channel );
     DUTIL_CBK_TAIL();
     return result;
