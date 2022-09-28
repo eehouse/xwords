@@ -163,6 +163,7 @@ stack_loadFromStream( StackCtxt* stack, XWStreamCtxt* stream )
         if ( STREAM_VERS_NINETILES <= stream_getVersion(stream) ) {
             stackVersion = stream_getU8( stream );
             XP_LOGFF( "read stackVersion: %d from stream", stackVersion );
+            XP_ASSERT( stackVersion <= CUR_STREAM_VERS );
         }
         stack->highWaterMark = stream_getU16( stream );
         stack->nEntries = stream_getU16( stream );

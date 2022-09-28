@@ -929,7 +929,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_nli_1from_1stream
         jnli = makeObjectEmptyConst( env, PKG_PATH("NetLaunchInfo") );
         setNLI( env, jnli, &nli );
     } else {
-        XP_LOGFF( "game_makeFromStream failed" );
+        XP_LOGFF( "nli_makeFromStream failed" );
     }
 
     stream_destroy( stream, env );
@@ -1303,8 +1303,17 @@ struct _JNIState {
 };
 
 #define GAME_GUARD 0x453627
+#if 0
+# define LOG_FUNC_IF() LOG_FUNC()
+# define LOG_RETURN_VOID_IF() LOG_RETURN_VOID()
+#else
+# define LOG_FUNC_IF()
+# define LOG_RETURN_VOID_IF()
+#endif
+
 #define XWJNI_START() {                                     \
     JNIState* state = getState( env, gamePtr, __func__ );   \
+    LOG_FUNC_IF();                                          \
     XP_ASSERT( state->guard == GAME_GUARD );          \
     MPSLOT;                                                 \
     MPASSIGN( mpool, state->mpool );                        \
@@ -1316,8 +1325,9 @@ struct _JNIState {
     AndGameGlobals* globals = &state->globals;          \
     XP_USE(globals); /*no warnings */                   \
 
-#define XWJNI_END()                                   \
-    }                                                 \
+#define XWJNI_END()                                          \
+    LOG_RETURN_VOID_IF();                                    \
+    }                                                        \
 
 JNIEXPORT jlong JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_gameJNIInit

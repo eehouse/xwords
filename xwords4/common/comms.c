@@ -938,7 +938,6 @@ comms_stop( CommsCtxt* comms
 #endif
             )
 {
-    LOG_FUNC();
     if ( addr_hasType( &comms->selfAddr, COMMS_CONN_RELAY ) ) {
         relayDisconnect( comms, xwe );
     }
