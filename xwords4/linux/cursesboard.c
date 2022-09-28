@@ -52,8 +52,6 @@ struct CursesBoardGlobals {
     CursesMenuState* menuState; /* null if we're not using menus */
     int refCount;
 
-    TransportProcs procs;
-
     union {
         struct {
             XWStreamCtxt* stream; /* how we can reach the server */
@@ -224,7 +222,7 @@ cb_newFor( CursesBoardState* cbState, const NetLaunchInfo* nli,
     initCP( cGlobals );
     if ( game_makeFromInvite( &cGlobals->game, NULL_XWE, nli, &selfAddr,
                               cGlobals->util, (DrawCtx*)NULL,
-                              &cGlobals->cp, &bGlobals->procs ) ) {
+                              &cGlobals->cp, &cGlobals->procs ) ) {
         linuxSaveGame( cGlobals );
     } else {
         XP_ASSERT( 0 );
@@ -363,6 +361,30 @@ curses_socket_acceptor( int listener, Acceptor func, CommonGlobals* cGlobals,
     }
 }
 
+static void
+initTProcsCurses( CommonGlobals* cGlobals )
+{
+    cGlobals->procs.closure = cGlobals;
+    cGlobals->procs.sendMsg = linux_send;
+#ifdef XWFEATURE_COMMS_INVITE
+    cGlobals->procs.sendInvt = linux_send_invt;
+#endif
+#ifdef COMMS_HEARTBEAT
+    cGlobals->procs.reset = linux_reset;
+#endif
+#ifdef XWFEATURE_RELAY
+    cGlobals->procs.rstatus = relay_status_curses;
+    cGlobals->procs.rconnd = relay_connd_curses;
+    cGlobals->procs.rerror = relay_error_curses;
+    cGlobals->procs.sendNoConn = relay_sendNoConn_curses;
+#endif
+    cGlobals->procs.countChanged = curses_countChanged;
+    cGlobals->procs.getFlags = curses_getFlags;
+# ifdef RELAY_VIA_HTTP
+    cGlobals->procs.requestJoin = relay_requestJoin_curses;
+#endif
+}
+
 static CursesBoardGlobals*
 commonInit( CursesBoardState* cbState, sqlite3_int64 rowid,
             const CurGameInfo* gip )
@@ -386,26 +408,7 @@ commonInit( CursesBoardState* cbState, sqlite3_int64 rowid,
     cGlobals->onSaveClosure = bGlobals;
     cGlobals->addAcceptor = curses_socket_acceptor;
 
-    bGlobals->procs.closure = cGlobals;
-    bGlobals->procs.sendMsg = linux_send;
-#ifdef XWFEATURE_COMMS_INVITE
-    bGlobals->procs.sendInvt = linux_send_invt;
-#endif
-#ifdef COMMS_HEARTBEAT
-    bGlobals->procs.reset = linux_reset;
-#endif
-#ifdef XWFEATURE_RELAY
-    bGlobals->procs.rstatus = relay_status_curses;
-    bGlobals->procs.rconnd = relay_connd_curses;
-    bGlobals->procs.rerror = relay_error_curses;
-    bGlobals->procs.sendNoConn = relay_sendNoConn_curses;
-#endif
-    bGlobals->procs.countChanged = curses_countChanged;
-    bGlobals->procs.getFlags = curses_getFlags;
-# ifdef RELAY_VIA_HTTP
-    bGlobals->procs.requestJoin = relay_requestJoin_curses;
-#endif
-
+    initTProcsCurses( cGlobals );
     makeSelfAddress( &cGlobals->selfAddr, params );
 
     setOneSecondTimer( cGlobals );
@@ -566,7 +569,7 @@ initNoDraw( CursesBoardState* cbState, sqlite3_int64 rowid,
 
     initCP( cGlobals );
 
-    if ( linuxOpenGame( cGlobals, &result->procs ) ) {
+    if ( linuxOpenGame( cGlobals ) ) {
          result = ref( result );
     } else {
         disposeBoard( result );

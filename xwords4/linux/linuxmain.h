@@ -114,7 +114,7 @@ XP_Bool parseSMSParams( LaunchParams* params, gchar** myPhone, XP_U16* myPort );
 void makeSelfAddress( CommsAddrRec* selfAddr, const LaunchParams* params );
 
 unsigned int makeRandomInt();
-bool linuxOpenGame( CommonGlobals* cGlobals, const TransportProcs* procs );
+bool linuxOpenGame( CommonGlobals* cGlobals );
 void tryConnectToServer( CommonGlobals* cGlobals );
 void ensureLocalPlayerNames( LaunchParams* params, CurGameInfo* gi );
 void cancelTimers( CommonGlobals* cGlobals );

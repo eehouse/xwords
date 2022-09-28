@@ -224,6 +224,7 @@ typedef void (*OnSaveFunc)( void* closure, sqlite3_int64 rowid,
 struct CommonGlobals {
     CurGameInfo _gi;
     LaunchParams* params;
+    TransportProcs procs;
     CommonPrefs cp;
     XW_UtilCtxt* util;
 

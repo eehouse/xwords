@@ -160,7 +160,7 @@ send_msgs_idle( gpointer data )
 }
 
 bool
-linuxOpenGame( CommonGlobals* cGlobals, const TransportProcs* procs )
+linuxOpenGame( CommonGlobals* cGlobals )
 {
     XWStreamCtxt* stream = NULL;
     XP_Bool opened = XP_FALSE;
@@ -189,7 +189,7 @@ linuxOpenGame( CommonGlobals* cGlobals, const TransportProcs* procs )
         opened = game_makeFromStream( MEMPOOL NULL_XWE, stream, &cGlobals->game,
                                       cGlobals->gi,
                                       cGlobals->util, cGlobals->draw,
-                                      &cGlobals->cp, procs );
+                                      &cGlobals->cp, &cGlobals->procs );
         XP_LOGFF( "loaded gi at %p", &cGlobals->gi );
         stream_destroy( stream, NULL_XWE );
     }
@@ -202,7 +202,7 @@ linuxOpenGame( CommonGlobals* cGlobals, const TransportProcs* procs )
         }
         game_makeNewGame( MEMPOOL NULL_XWE, &cGlobals->game, cGlobals->gi,
                           &cGlobals->selfAddr, hostAddr, cGlobals->util,
-                          cGlobals->draw, &cGlobals->cp, procs
+                          cGlobals->draw, &cGlobals->cp, &cGlobals->procs
 #ifdef SET_GAMESEED
                           , params->gameSeed
 #endif

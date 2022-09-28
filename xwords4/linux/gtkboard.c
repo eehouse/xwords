@@ -486,6 +486,7 @@ countChanged_gtk( XWEnv XP_UNUSED(xwe), void* closure, XP_U16 newCount )
 static void
 setTransportProcs( TransportProcs* procs, GtkGameGlobals* globals ) 
 {
+    XP_ASSERT( !procs->closure );
     procs->closure = globals;
     procs->sendMsg = linux_send;
 #ifdef XWFEATURE_COMMS_INVITE
@@ -618,10 +619,7 @@ createOrLoadObjects( GtkGameGlobals* globals )
     cGlobals->draw = gtkDrawCtxtMake( globals->drawing_area,
                                       globals );
 
-    TransportProcs procs;
-    setTransportProcs( &procs, globals );
-
-    if ( linuxOpenGame( cGlobals, &procs ) ) {
+    if ( linuxOpenGame( cGlobals ) ) {
         if ( !params->fileName && !!params->dbName ) {
             XP_UCHAR buf[64];
             snprintf( buf, sizeof(buf), "%s / %lld", params->dbName,
@@ -843,20 +841,10 @@ new_game_impl( GtkGameGlobals* globals, XP_Bool fireConnDlg )
     if ( success ) {
         XP_Bool isClient = gi->serverRole == SERVER_ISCLIENT;
         XP_ASSERT( !isClient ); /* Doesn't make sense! Send invitation. */
-        TransportProcs procs = {
-            .closure = globals,
-            .sendMsg = linux_send,
-#ifdef XWFEATURE_COMMS_INVITE
-            .sendInvt = linux_send_invt,
-#endif
-#ifdef COMMS_HEARTBEAT
-            .reset = linux_reset,
-#endif
-        };
 
         (void)game_reset( MEMPOOL &cGlobals->game, NULL_XWE, gi,
                           &cGlobals->selfAddr, NULL, cGlobals->util,
-                          &cGlobals->cp, &procs );
+                          &cGlobals->cp, &cGlobals->procs );
 
         (void)server_do( cGlobals->game.server, NULL_XWE ); /* assign tiles, etc. */
         board_invalAll( cGlobals->game.board );
@@ -2426,6 +2414,8 @@ initGlobalsNoDraw( GtkGameGlobals* globals, LaunchParams* params,
     memset( globals, 0, sizeof(*globals) );
 
     CommonGlobals* cGlobals = &globals->cGlobals;
+    setTransportProcs( &cGlobals->procs, globals );
+
     cGlobals->gi = &cGlobals->_gi;
     if ( !gi ) {
         gi = &params->pgi;
@@ -2667,9 +2657,6 @@ loadGameNoDraw( GtkGameGlobals* globals, LaunchParams* params,
     sqlite3* pDb = params->pDb;
     initGlobalsNoDraw( globals, params, NULL );
 
-    TransportProcs procs;
-    setTransportProcs( &procs, globals );
-
     CommonGlobals* cGlobals = &globals->cGlobals;
     cGlobals->rowid = rowid;
     XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(cGlobals->util->mpool)
@@ -2678,7 +2665,8 @@ loadGameNoDraw( GtkGameGlobals* globals, LaunchParams* params,
     if ( loaded ) {
         loaded = game_makeFromStream( MEMPOOL NULL_XWE, stream, &cGlobals->game,
                                       cGlobals->gi,
-                                      cGlobals->util, (DrawCtx*)NULL, &cGlobals->cp, &procs );
+                                      cGlobals->util, (DrawCtx*)NULL,
+                                      &cGlobals->cp, &cGlobals->procs );
         if ( loaded ) {
             XP_LOGF( "%s: game loaded", __func__ );
 #ifndef XWFEATURE_STANDALONE_ONLY

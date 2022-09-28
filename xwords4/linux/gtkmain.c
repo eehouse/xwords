@@ -719,10 +719,9 @@ gameFromInvite( GtkAppGlobals* apg, const NetLaunchInfo* nli )
     makeSelfAddress( &selfAddr, params );
 
     CommonPrefs* cp = &cGlobals->cp;
-    TransportProcs* procs = NULL;
     game_makeFromInvite( &cGlobals->game, NULL_XWE, nli,
                          &selfAddr, cGlobals->util, cGlobals->draw,
-                         cp, procs );
+                         cp, &cGlobals->procs );
 
     linuxSaveGame( cGlobals );
     sqlite3_int64 rowid = cGlobals->rowid;
