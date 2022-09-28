@@ -1570,7 +1570,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1saveToStream
     XWStreamCtxt* stream = mem_stream_make_sized( MPPARM(mpool) globals->vtMgr,
                                                   state->lastSavedSize,
                                                   NULL, 0, NULL );
-
+    XP_ASSERT( gi_equal( gi, globals->util->gameInfo ) );
     game_saveToStream( &state->game, env, gi, stream, ++state->curSaveCount );
 
     if ( NULL != jgi ) {

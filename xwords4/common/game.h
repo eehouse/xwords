@@ -103,9 +103,6 @@ XP_Bool game_makeFromInvite( XWGame* newGame, XWEnv xwe, const NetLaunchInfo* nl
                              XW_UtilCtxt* util, DrawCtx* draw,
                              CommonPrefs* cp, const TransportProcs* procs );
 
-void game_saveNewGame( MPFORMAL XWEnv xwe, const CurGameInfo* gi, XW_UtilCtxt* util,
-                       const CommonPrefs* cp, XWStreamCtxt* out );
-
 void game_saveToStream( const XWGame* game, XWEnv xwe, const CurGameInfo* gi,
                         XWStreamCtxt* stream, XP_U16 saveToken );
 void game_saveSucceeded( const XWGame* game, XWEnv xwe, XP_U16 saveToken );
@@ -124,6 +121,9 @@ void gi_disposePlayerInfo( MPFORMAL CurGameInfo* gi );
 void gi_writeToStream( XWStreamCtxt* stream, const CurGameInfo* gi );
 void gi_readFromStream( MPFORMAL XWStreamCtxt* stream, CurGameInfo* gi );
 void gi_copy( MPFORMAL CurGameInfo* destGI, const CurGameInfo* srcGi );
+#ifdef DEBUG
+XP_Bool gi_equal( const CurGameInfo* gi1, const CurGameInfo* gi2 );
+#endif
 XP_U16 gi_countLocalPlayers( const CurGameInfo* gi, XP_Bool humanOnly );
 
 XP_Bool player_hasPasswd( const LocalPlayer* player );

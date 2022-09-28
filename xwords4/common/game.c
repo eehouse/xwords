@@ -507,6 +507,7 @@ void
 game_saveToStream( const XWGame* game, XWEnv xwe, const CurGameInfo* gi,
                    XWStreamCtxt* stream, XP_U16 saveToken )
 {
+    XP_ASSERT( gi_equal( gi, game->util->gameInfo ) );
     stream_putU8( stream, CUR_STREAM_VERS );
     stream_setVersion( stream, CUR_STREAM_VERS );
 
@@ -726,6 +727,110 @@ gi_copy( MPFORMAL CurGameInfo* destGI, const CurGameInfo* srcGI )
         destPl->isLocal = srcPl->isLocal;
     }
 } /* gi_copy */
+
+#ifdef DEBUG
+static XP_Bool
+strEq( const XP_UCHAR* str1, const XP_UCHAR* str2 )
+{
+    if ( NULL == str1 ) {
+        str1 = "";
+    }
+    if ( NULL == str2 ) {
+        str2 = "";
+    }
+    return 0 == XP_STRCMP(str1, str2);
+}
+
+XP_Bool
+gi_equal( const CurGameInfo* gi1, const CurGameInfo* gi2 )
+{
+    XP_Bool equal = XP_FALSE;
+    int ii;
+    for ( ii = 0; ; ++ii ) {
+        switch ( ii ) {
+        case 0:
+            equal = gi1->gameID == gi2->gameID;
+            break;
+        case 1:
+            equal = gi1->gameSeconds == gi2->gameSeconds;
+            break;
+        case 2:
+            equal = gi1->nPlayers == gi2->nPlayers;
+            break;
+        case 3:
+            equal = gi1->boardSize == gi2->boardSize;
+            break;
+        case 4:
+            equal = gi1->traySize == gi2->traySize;
+            break;
+        case 5:
+            equal = gi1->bingoMin == gi2->bingoMin;
+            break;
+        case 6:
+            equal = gi1->forceChannel == gi2->forceChannel;
+            break;
+        case 7:
+            equal = gi1->serverRole == gi2->serverRole;
+            break;
+        case 8:
+            equal = gi1->hintsNotAllowed == gi2->hintsNotAllowed;
+            break;
+        case 9:
+            equal = gi1->timerEnabled == gi2->timerEnabled;
+            break;
+        case 10:
+            equal = gi1->allowPickTiles == gi2->allowPickTiles;
+            break;
+        case 11:
+            equal = gi1->allowHintRect == gi2->allowHintRect;
+            break;
+        case 12:
+            equal = gi1->inDuplicateMode == gi2->inDuplicateMode;
+            break;
+        case 13:
+            equal = gi1->phoniesAction == gi2->phoniesAction;
+            break;
+        case 14:
+            equal = gi1->confirmBTConnect == gi2->confirmBTConnect;
+            break;
+        case 15:
+            equal = strEq( gi1->dictName, gi2->dictName );
+            break;
+        case 16:
+            equal = strEq( gi1->isoCodeStr, gi2->isoCodeStr );
+            break;
+        case 17:
+            for ( int jj = 0; equal && jj < gi1->nPlayers; ++jj ) {
+                const LocalPlayer* lp1 = &gi1->players[jj];
+                const LocalPlayer* lp2 = &gi2->players[jj];
+                equal = strEq( lp1->name, lp2->name )
+                    && strEq( lp1->password, lp2->password )
+                    && strEq( lp1->dictName, lp2->dictName )
+                    && lp1->secondsUsed == lp2->secondsUsed
+                    && lp1->isLocal == lp2->isLocal
+                    && lp1->robotIQ == lp2->robotIQ
+                    ;
+            }
+            break;
+        default:
+            goto done;
+            break;
+        }
+        if ( !equal ) {
+            break;
+        }
+    }
+ done:
+    if ( !equal ) {
+        XP_LOGFF( "exited when ii = %d", ii );
+        LOGGI( gi1, "gi1" );
+        LOGGI( gi2, "gi2" );
+    }
+
+    return equal;
+}
+#endif
+
 
 void
 gi_setNPlayers( CurGameInfo* gi, XWEnv xwe, XW_UtilCtxt* util,
@@ -1019,8 +1124,8 @@ game_logGI( const CurGameInfo* gi, const char* msg, const char* func, int line )
         XP_LOGF( "  nPlayers: %d", gi->nPlayers );
         for ( XP_U16 ii = 0; ii < gi->nPlayers; ++ii ) {
             const LocalPlayer* lp = &gi->players[ii];
-            XP_LOGF( "  player[%d]: local: %d; robotIQ: %d; name: %s", ii,
-                     lp->isLocal, lp->robotIQ, lp->name );
+            XP_LOGF( "  player[%d]: local: %d; robotIQ: %d; name: %s; dict: %s; pwd: %s", ii,
+                     lp->isLocal, lp->robotIQ, lp->name, lp->dictName, lp->password );
         }
         XP_LOGF( "  forceChannel: %d", gi->forceChannel );
         XP_LOGF( "  serverRole: %d", gi->serverRole );
