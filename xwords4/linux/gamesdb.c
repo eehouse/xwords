@@ -207,20 +207,18 @@ writeBlobColumnData( const XP_U8* data, gsize len, XP_U16 strVersion, sqlite3* p
 {
     XP_LOGFF( "(col=%s)", column );
     int result;
-    char buf[256];
-    char* query;
+    char query[256];
 
     sqlite3_stmt* stmt = NULL;
     XP_Bool newGame = -1 == curRow;
     if ( newGame ) {         /* new row; need to insert blob first */
         const char* fmt = "INSERT INTO games (%s) VALUES (?)";
-        snprintf( buf, sizeof(buf), fmt, column );
-        query = buf;
+        snprintf( query, sizeof(query), fmt, column );
     } else {
         const char* fmt = "UPDATE games SET %s=? where rowid=%lld";
-        snprintf( buf, sizeof(buf), fmt, column, curRow );
-        query = buf;
+        snprintf( query, sizeof(query), fmt, column, curRow );
     }
+    XP_LOGFF( "query: %s", query );
 
     result = sqlite3_prepare_v2( pDb, query, -1, &stmt, NULL );
     assertPrintResult( pDb, result, SQLITE_OK );
@@ -287,7 +285,9 @@ gdb_write( XWStreamCtxt* stream, XWEnv XP_UNUSED(xwe), void* closure )
 
     if ( newGame ) {         /* new row; need to insert blob first */
         cGlobals->rowid = selRow;
-        XP_LOGFF( "new game at row %lld", selRow );
+        const CurGameInfo* gi = cGlobals->gi;
+        XP_U32 gameID = gi->gameID;
+        XP_LOGFF( "new game for id %d at row %lld", gameID, selRow );
     } else {
         assert( selRow == cGlobals->rowid );
     }
@@ -434,6 +434,7 @@ gdb_summarize( CommonGlobals* cGlobals )
     for ( int ii = 0; !!pairs[ii]; ++ii ) {
         g_free( pairs[ii] );
     }
+    XP_ASSERT( -1 != cGlobals->rowid );
     gchar* query = g_strdup_printf( "UPDATE games SET %s WHERE rowid=%lld",
                                     vals, cGlobals->rowid );
     g_free( vals );

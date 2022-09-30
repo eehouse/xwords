@@ -458,13 +458,8 @@ linuxSaveGame( CommonGlobals* cGlobals )
         }
 
         if ( doSave ) {
-            if ( !!pDb ) {
-                gdb_summarize( cGlobals );
-            }
-
-            XWStreamCtxt* outStream;
             MemStreamCloseCallback onClose = !!pDb? gdb_write : writeToFile;
-            outStream = 
+            XWStreamCtxt* outStream =
                 mem_stream_make_sized( MPPARM(cGlobals->util->mpool)
                                        cGlobals->params->vtMgr, 
                                        cGlobals->lastStreamSize,
@@ -477,8 +472,11 @@ linuxSaveGame( CommonGlobals* cGlobals )
             stream_destroy( outStream, NULL_XWE );
 
             game_saveSucceeded( &cGlobals->game, NULL_XWE, cGlobals->curSaveToken );
-            XP_LOGF( "%s: saved", __func__ );
 
+            if ( !!pDb ) {
+                gdb_summarize( cGlobals );
+            }
+            XP_LOGF( "%s: saved", __func__ );
         } else {
             XP_LOGF( "%s: simulating save failure", __func__ );
         }
