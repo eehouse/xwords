@@ -259,7 +259,7 @@ dvc_parseMQTTPacket( XW_DUtilCtxt* dutil, XWEnv xwe,
                 XP_LOGFF( "delivery took %ds", now - timestamp );
             }
 #else
-            XW_USE( timestamp );
+            XP_USE( timestamp );
 #endif
         }
         MQTTCmd cmd = stream_getU8( stream );

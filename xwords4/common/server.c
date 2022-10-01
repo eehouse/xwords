@@ -1911,6 +1911,7 @@ client_readInitialMessage( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* stream )
 {
     LOG_FUNC();
     XP_Bool accepted = 0 == server->nv.addresses[0].channelNo;
+    XP_ASSERT( accepted );
 
     /* We should never get this message a second time, but very rarely we do.
        Drop it in that case. */
@@ -2035,8 +2036,6 @@ client_readInitialMessage( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* stream )
         informMissing( server, xwe );
         setTurn( server, xwe, 0 );
         dupe_resetTimer( server, xwe );
-    } else {
-        XP_LOGFF( "wanted 0; got %d", server->nv.addresses[0].channelNo );
     }
     return accepted;
 } /* client_readInitialMessage */
@@ -2048,8 +2047,6 @@ client_readInitialMessage( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* stream )
  * that all must use for the game.  Then for each player on the device give
  * the starting tray.
  */
-#ifndef XWFEATURE_STANDALONE_ONLY
-
 static void
 makeSendableGICopy( ServerCtxt* server, CurGameInfo* giCopy, 
                     XP_U16 deviceIndex )
@@ -2136,7 +2133,6 @@ sendInitialMessage( ServerCtxt* server, XWEnv xwe )
 
     dupe_resetTimer( server, xwe );
 } /* sendInitialMessage */
-#endif
 
 static void
 freeBWI( MPFORMAL BadWordInfo* bwi )
@@ -4208,7 +4204,7 @@ server_receiveMessage( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* incoming )
     XP_Bool accepted = XP_FALSE;
     XP_Bool isServer = amServer( server );
     const XW_Proto code = readProto( server, incoming );
-    XP_LOGFF( "(code=%s)", codeToStr(code) );
+    XP_LOGFF( "code=%s", codeToStr(code) );
 
     switch ( code ) {
     case XWPROTO_DEVICE_REGISTRATION:
@@ -4224,9 +4220,8 @@ server_receiveMessage( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* incoming )
         }
         break;
     case XWPROTO_CLIENT_SETUP:
-        accepted = !isServer;
+        accepted = XWSTATE_NONE == server->nv.gameState && !isServer;
         if ( accepted ) {
-            XP_STATUSF( "client got XWPROTO_CLIENT_SETUP" );
             accepted = client_readInitialMessage( server, xwe, incoming );
         }
         break;
@@ -4303,7 +4298,7 @@ server_receiveMessage( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* incoming )
     XP_ASSERT( isServer == amServer( server ) ); /* caching value is ok? */
     stream_close( incoming, xwe );
 
-    XP_LOGFF( "=> %d (code=%s)", accepted, codeToStr(code) );
+    XP_LOGFF( "=> %s (code=%s)", boolToStr(accepted), codeToStr(code) );
     // XP_ASSERT( accepted );      /* do not commit!!! */
     return accepted;
 } /* server_receiveMessage */

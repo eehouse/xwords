@@ -639,12 +639,11 @@ void
 cb_feedGame( CursesBoardState* cbState, XP_U32 gameID,
              const XP_U8* buf, XP_U16 len, const CommsAddrRec* from )
 {
-    LOG_FUNC();
     sqlite3_int64 rowids[4];
     int nRows = VSIZE( rowids );
     LaunchParams* params = cbState->params;
     gdb_getRowsForGameID( params->pDb, gameID, rowids, &nRows );
-    XP_LOGF( "%s(): found %d rows for gameID %d", __func__, nRows, gameID );
+    XP_LOGFF( "found %d rows for gameID %d", nRows, gameID );
     for ( int ii = 0; ii < nRows; ++ii ) {
 #ifdef DEBUG
         bool success =
@@ -1273,6 +1272,7 @@ inviteList( CommonGlobals* cGlobals, CommsAddrRec* myAddr, GSList* invitees,
 static bool
 sendInvite( void* closure, int XP_UNUSED(key) )
 {
+    LOG_FUNC();
     CursesBoardGlobals* bGlobals = (CursesBoardGlobals*)closure;
     CommonGlobals* cGlobals = &bGlobals->cGlobals;
     LaunchParams* params = cGlobals->params;
