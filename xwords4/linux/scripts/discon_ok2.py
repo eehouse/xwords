@@ -734,13 +734,13 @@ def mkParser():
 
     parser.add_argument('--num-games', dest = 'NGAMES', type = int, default = 1, help = 'number of games')
     parser.add_argument('--num-rooms', dest = 'NROOMS', type = int, default = 0,
-                        help = 'number of roooms (default to --num-games)')
+                        help = 'number of rooms (default to --num-games)')
     parser.add_argument('--timeout-mins', dest = 'TIMEOUT_MINS', default = 10000, type = int,
                         help = 'minutes after which to timeout')
     parser.add_argument('--nochange-secs', dest = 'NO_CHANGE_SECS', default = 30, type = int,
                         help = 'seconds without change after which to timeout')
     parser.add_argument('--log-root', dest='LOGROOT', default = '.', help = 'where logfiles go')
-    parser.add_argument('--dup-packets', dest = 'DUP_PACKETS', default = False,
+    parser.add_argument('--dup-packets', dest = 'DUP_PACKETS', default = False, action = 'store_true',
                         help = 'send all packet twice')
     parser.add_argument('--phonies', dest = 'PHONIES', default = -1, type = int,
                         help = '0 (ignore), 1 (warn)) or 2 (lose turn); default is pick at random')
