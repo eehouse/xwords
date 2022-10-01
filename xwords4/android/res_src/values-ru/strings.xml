@@ -68,4 +68,11 @@
     <string name="player_label">Имя:</string>
     <string name="title_game_config_fmt">Настройки для %1$s</string>
     <string name="badwords_title">Незаконное слово[s]</string>
+    <string name="board_menu_game_final">Финальный счет</string>
+    <string name="str_robot_moved_fmt">"Робот %1$s сделал этот ход: "</string>
+    <string name="strd_cumulative_score_fmt">Общий счет: %1$d
+\n</string>
+    <string name="board_menu_game_history">История игры</string>
+    <string name="sms_invite_fail">Невозможно запустить СМС приложение</string>
+    <string name="button_trade_cancel">Отменить обмен</string>
 </resources>
