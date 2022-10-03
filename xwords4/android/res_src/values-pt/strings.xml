@@ -68,7 +68,7 @@
     <!-- Brings up the Wordlists (formerly Dictionaries) screen -->
     <string name="gamel_menu_dicts">Listas de palavras</string>
     <!-- text of menu that brings up the Settings (preferences) dialog -->
-    <string name="menu_prefs">Configurações da app…</string>
+    <string name="menu_prefs">Configurações da app</string>
     <!-- Regardless of the setting of the connect_frequency
          preference, checks the relay immediately for any moves for
          networked games on this device and posts a notification if
@@ -2280,6 +2280,25 @@
         <item quantity="many">"
 \n
 \n(Agora tem %1$d jogos ativos usando a Internet.)"</item>
-        <item quantity="other"></item>
+        <item quantity="other"/>
     </plurals>
+    <string name="archive_button_store">Exportar</string>
+    <string name="archive_expl_colors">Cores no tabuleiro de jogo, por exemplo dos nomes de jogadores e quadrados de bónus</string>
+    <string name="archive_expl_games">Todos os jogos e outros dados para identificar o seu aparelho.</string>
+    <string name="archive_filename_fmt">CrossWords-backup-%1$s.zip</string>
+    <string name="gamel_menu_storedb">Exportar dados da app</string>
+    <string name="archive_expl_settings">Todas as configurações da app, exceto cores, por exemplo, a linguagem padrão e o tamanho da miniatura</string>
+    <string name="archive_title_games">Jogos e dados</string>
+    <string name="not_again_loaddb">Importar configurações ou dados de jogo de um ficheiro previamente exportado do CrossWords neste ou noutro aparelho.</string>
+    <string name="backup_bad_file_fmt">O ficheiro \"%1$s\" não contém dados de backup do CrossWords.</string>
+    <string name="gamel_menu_loaddb">Importar dados da app</string>
+    <string name="archive_expl_load_fmt">Substituir quais tipos de dados de app no CrossWords por dados do ficheiro “%1$s”\?</string>
+    <string name="archive_title_colors">Cores do tabuleiro</string>
+    <string name="archive_title_settings">Configurações</string>
+    <string name="backup_overwrite_confirm_fmt">Tem certeza que deseja substituir os jogos ou as configurações atuais do CrossWords com os do ficheiro \"%1$s\"\?
+\n
+\nNote que se está a importar jogos em rede de um ficheiro criado noutro aparelho (ou seja, a migrar), não deve continuar a usar o CrossWords no aparelho antigo.</string>
+    <string name="archive_button_load">Importar</string>
+    <string name="archive_expl_store">Selecione os tipos de dados ou as configurações do CrossWords que deseja gravar.</string>
+    <string name="button_pick_again">Escolha novamente</string>
 </resources>
