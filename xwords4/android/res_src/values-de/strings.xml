@@ -123,7 +123,7 @@
     <string name="board_submenu_game">Partie</string>
     <string name="board_menu_game_counts">Anzahl und Werte</string>
     <string name="board_menu_game_left">Verbleibende Spielsteine</string>
-    <string name="board_menu_game_history">Zugliste …</string>
+    <string name="board_menu_game_history">Spielverlauf</string>
     <string name="board_menu_game_final">Endgültiger Punktestand</string>
     <string name="board_menu_game_resign">Aufgeben</string>
     <string name="board_menu_game_resend">Züge erneut senden</string>
@@ -141,7 +141,8 @@
 \n</string>
     <string name="str_remote_moved_fmt">"Externer Spieler %1$s spielte diesen Zug: "</string>
     <string name="strd_time_penalty_sub_fmt">- %1$d [Zeit]</string>
-    <string name="str_pass">Gepasst</string>
+    <string name="str_pass">Gepasst
+\n</string>
     <string name="strs_move_across_fmt">Zug (von %1$s quer)
 \n</string>
     <string name="strs_move_down_fmt">Zug (von %1$s nach unten)
@@ -302,21 +303,25 @@
     <string name="not_again_trading_menu">Benutzen Sie das Menü oder die Aktionsleiste, um Ihren Zug abzuschließen oder den Austauschmodus zu verlassen.</string>
     <string name="not_again_hintprev">Dieser Button zeigt alle möglichen Züge in aufsteigender Reihenfolge nach Punkten an.
 \n
-\n(Es werden nur die Spielsteine rechts von der verschiebbaren Ablagenteilung verwendet).</string>
+\n(Es werden nur die Spielsteine rechts von der verschiebbaren Ablagenteilung verwendet.)</string>
     <string name="not_again_hintnext">Dieser Button zeigt alle möglichen Züge in absteigender Reihenfolge nach Punkten an.
 \n
-\n(Es werden nur die Spielsteine rechts von der verschiebbaren Ablagenteilung verwendet).</string>
+\n(Es werden nur die Spielsteine rechts von der verschiebbaren Ablagenteilung verwendet.)</string>
     <string name="not_again_juggle">Dieser Button ordnet die Spielsteine in der Ablage zufällig neu an.</string>
     <string name="not_again_flip">Dieser Button dreht das Brett um eine diagonale Achse.</string>
     <string name="not_again_undo">Dieser Button nimmt den gegenwärtigen Zug zurück oder spielt ihn erneut.</string>
-    <string name="not_again_arrow">Spielsteine auf das Brett setzen:
-\nSie können Spielsteine zwischen Ablage und Brett hin- und herziehen, oder Sie können ein leeres Feld antippen, um den Brett-Pfeil zu positionieren. Angetippte Spielsteine in der Ablage ersetzen den Pfeil (indem er ein Feld in seine gegenwärtige Richtung verschoben wird.) Tippen Sie den Pfeil einmal an, um seine Richtung zu ändern, zweimal, um ihn zu verbergen. Ein Kontrollkästchen im Abschnitt Darstellung in den Einstellungen verbirgt ihn dauerhaft.</string>
+    <string name="not_again_arrow">Es gibt zwei Möglichkeiten, Spielsteine auf das Brett zu bewegen.
+\n
+\n - Sie können sie zwischen der Ablage und dem Brett hin- und herschieben.
+\n
+\n - Oder Sie tippen auf ein leeres Feld auf dem Brett, um den \"Brett-Pfeil\" zu platzieren. Die Spielsteine in der Ablage ersetzen dann den Pfeil, wenn Sie sie antippen. Tippen Sie auf den Pfeil, um seine Richtung zu ändern oder ihn auszublenden.</string>
     <string name="default_name_title">Standardspielername</string>
     <string name="default_name_message">Bitte geben Sie hier Ihren Namen ein. Er wird beim Erzeugen neuer Partien benutzt. (Sie können ihn später im Abschnitt „Standard für neue Partien“ in den Einstellungen ändern.)</string>
-    <string name="about_copyright">Copyright © 1998-2022 Eric House. Dies ist Freie/Open-Source-Software verfügbar unter der GNU Public License.</string>
+    <string name="about_copyright">CrossWords für Android 
+\nCopyright © 1998-2022 Eric House. Dies ist Freie/Open-Source-Software verfügbar unter der GNU Public License.</string>
     <string name="about_web">Ein Handbuch und den Quelltext finden Sie unter: http://xwords.sf.net/android.php. Für Fehlerberichte, Funktionswünsche, Mitarbeit usw. bitten eine E-Mail an xwords@eehouse.org.</string>
     <string name="xlator">[leer]</string>
-    <string name="about_credits">Icons der Werkzeugleiste von Sarah Chu. Icons der Navigationsleiste vom Noun Project: „Archive“ von Trendy; „Rematch“ von Becris; und „Swap“ von iconomania.</string>
+    <string name="about_credits">Danksagungen: Icons der Werkzeugleiste von Sarah Chu. Icons der Navigationsleiste vom Noun Project: „Archive“ von Trendy; „Rematch“ von Becris; und „Swap“ von iconomania. Lokalisierung durch Freiwillige über weblate.org.</string>
     <string name="changes_title">Letzte Änderungen</string>
     <string name="changes_button">Letzte Änderungen</string>
     <string name="button_lookup">Wörter nachschlagen</string>
@@ -338,14 +343,14 @@
     <string name="pick_faceup">Spielsteine aufgedeckt auswählen</string>
     <string name="disableds_title">Deaktivierte Adresstypen</string>
     <string name="dict_browse_title_fmt">%1$s (%2$d Wörter)</string>
-    <string name="not_again_browse">Dieser Button öffnet den Wortlisten-Browser mit der Wortliste des gegenwärtigen Spielers.</string>
-    <string name="not_again_browseall">Dieser Button öffnet den Wortlisten-Browser mit einer Wortliste Ihrer Wahl.</string>
+    <string name="not_again_browse">Mit diesem Button können Sie die zuletzt angezeigte Wortliste durchsuchen.</string>
+    <string name="not_again_browseall">Mit diesem Button können Sie auswählen, welche Wortliste in der aktuellen Spielsprache durchsucht werden soll.</string>
     <string name="min_len">Min. Länge</string>
     <string name="max_len">Max. Länge</string>
     <string name="board_menu_file_email">E-Mail an den Autor</string>
     <string name="email_author_subject">Kommentar zu CrossWords</string>
     <string name="email_author_chooser">Kommentar senden über</string>
-    <string name="email_body_rev_fmt">(Falls relevant, geben Sie bitte die Version: „%1$s“; und das Fabrikat/Modell Ihres Smartphones oder Tablets an: %2$s/%3$s.)</string>
+    <string name="email_body_rev_fmt">(Falls zutreffend, geben Sie bitte die Version (\"%1$s\") von CrossDbg, die Marke/das Modell (\"%2$s\") und die Betriebssystemversion (%3$s) Ihres Telefons oder Tablets sowie Ihre devID (%4$s) an.)</string>
     <string name="invite_notice_title">Neue Partie per Einladung</string>
     <string name="new_bt_body_fmt">Ein Spieler auf dem Gerät %1$s will eine Partie starten</string>
     <string name="new_game_body">Zum Öffnen der neuen Partie antippen</string>
@@ -358,24 +363,24 @@
     <string name="sms_invite_title">SMS-Einladung</string>
     <string name="relay_invite_title">Zwischenstation-Einladung</string>
     <string name="p2p_invite_title">Wi-Fi-Direct-Einladung</string>
-    <string name="game_name_label">Name der neuen Partie:</string>
+    <string name="game_name_label">Name der Partie:</string>
     <string name="new_name_body_fmt">%1$s hat Sie zum Spielen eingeladen</string>
     <string name="button_sms_add">Kontakt importieren</string>
     <plurals name="invite_sms_desc_fmt">
-        <item quantity="one">Bitte überprüfen Sie die Telefonnummer, die Sie zu Ihrer neuen Partie einladen wollen, tippen Sie dann „%2$s” an.</item>
-        <item quantity="other">Bitte überprüfen Sie die %1$d Telefonnummern, die Sie zu Ihrer neuen Partie einladen wollen, tippen Sie dann „%2$s” an.</item>
+        <item quantity="one">Bitte überprüfen Sie die Telefonnummer, die Sie zu Ihrer neuen Partie einladen wollen und tippen dann auf „%2$s”.</item>
+        <item quantity="other">Bitte überprüfen Sie die %1$d Telefonnummern, die Sie zu Ihrer neuen Partie einladen wollen und tippen dann auf „%2$s”.</item>
     </plurals>
     <plurals name="invite_relay_desc_fmt">
-        <item quantity="one">Bitte überprüfen Sie das Gerät, das Sie zu Ihrer neuen Partie einladen wollen, tippen Sie dann „%2$s” an.</item>
-        <item quantity="other">Bitte überprüfen Sie die %1$d Geräte, die Sie zu Ihrer neuen Partie einladen wollen, tippen Sie dann „%2$s” an.</item>
+        <item quantity="one">Bitte überprüfen Sie das Gerät, das Sie zu Ihrer neuen Partie einladen wollen und tippen dann auf „%2$s”.</item>
+        <item quantity="other">Bitte überprüfen Sie die %1$d Geräte, die Sie zu Ihrer neuen Partie einladen wollen und tippen dann auf „%2$s”.</item>
     </plurals>
     <plurals name="invite_p2p_desc_fmt">
-        <item quantity="one">Bitte überprüfen Sie das Wi-Fi-Direct-Gerät, das Sie zu Ihrer neuen Partie einladen wollen, tippen Sie dann „%2$s“ an.</item>
-        <item quantity="other">Bitte überprüfen Sie die %1$d Wi-Fi-Direct-Geräte, die Sie zu Ihrer neuen Partie einladen wollen, tippen Sie dann „%2$s“ an.</item>
+        <item quantity="one">Bitte überprüfen Sie das Wi-Fi-Direct-Gerät, das Sie zu Ihrer neuen Partie einladen wollen und tippen dann auf „%2$s“.</item>
+        <item quantity="other">Bitte überprüfen Sie die %1$d Wi-Fi-Direct-Geräte, die Sie zu Ihrer neuen Partie einladen wollen und tippen dann auf „%2$s“.</item>
     </plurals>
     <string name="invite_p2p_desc_extra">Nur gegenwärtig verfügbare Geräte werden angezeigt. Wenn ein Gerät in der Nähe nicht angezeigt wird, versichern Sie sich bitte, dass WLAN eingeschaltet, CrossWords installiert und Spielen über Wi-Fi-Direct aktiviert ist.</string>
-    <string name="warn_nomobile_fmt">Die Nummer %1$s für %2$s ist keine „Mobiltelefonnummer“. Trotzdem importieren?</string>
-    <string name="empty_sms_inviter">Die Telefonliste ist leer. Benutzen Sie den Button „Kontakt importieren“, um Personen hinzuzufügen, die Sie einladen wollen, den + Button, um direkt Nummern einzugeben.</string>
+    <string name="warn_nomobile_fmt">Die Nummer %1$s für %2$s ist keine „Mobiltelefonnummer“. Trotzdem importieren\?</string>
+    <string name="empty_sms_inviter">Diese Telefonliste ist leer. Benutzen Sie den Button „Kontakt importieren“, um Personen hinzuzufügen, die Sie einladen wollen und den + Button, um direkt Nummern einzugeben.</string>
     <string name="empty_p2p_inviter">Derzeit sind keine Geräte per Wi-Fi-Direct erreichbar, auf denen CrossWords installiert ist.</string>
     <string name="get_sms_title">Manuelle Eingabe</string>
     <string name="get_sms_number">Geräte-Telefonnummer:</string>
@@ -403,7 +408,7 @@
     <string name="summary_busy">Zusammenfassung nicht verfügbar</string>
     <string name="connstat_net_noaddr">Diese Netzwerk-Partie hat keine Verbindungsmöglichkeit und kann nicht gespielt werden.
 \n
-\n(Sie wurde wahrscheinlich durch eine Einladung angelegt, die keine von Ihrem Gerät unterstützte Verbindungsart angegeben hat, oder hat vor Kurzem ihre letzte Verbindungsart entfernt.)</string>
+\n(Sie wurde wahrscheinlich durch eine Einladung angelegt, die keine von Ihrem Gerät unterstützte Verbindungsart angegeben hat oder hat vor Kurzem ihre letzte Verbindungsart entfernt.)</string>
     <string name="connstat_net_fmt">"Netwerk-Status für über %1$s (ID=%2$d) verbundene Partie:"</string>
     <string name="invites_net_fmt">Einladungen geschickt für die Partie verbunden über %1$s:</string>
     <string name="connstat_succ">erfolgreich</string>
@@ -419,17 +424,17 @@
     <string name="title_enable_p2p">Wi-Fi-Direct aktivieren</string>
     <string name="summary_enable_p2p">Experimentell, belastet den Akku sehr</string>
     <string name="confirm_sms_title">Bestätigen Sie Ihren SMS-Tarif</string>
-    <string name="confirm_sms_expl">Warnhinweis: Diese Funktion ist für Telefone mit unbegrenzten SMS-Flat gedacht. Sobald Sie es aktiviert haben, werden Dutzende unsichtbare Daten-SMS-Nachrichten für jedes gespielte Spiel gesendet. Wenn Sie über keine Flat verfügen, kann Ihr Mobilfunkanbieter Ihnen für jede einzelne Nachricht eine Gebühr berechnen!
+    <string name="confirm_sms_expl">Warnhinweis: Diese Funktion ist für Telefone mit unbegrenzter SMS-Flat gedacht. Sobald Sie sie aktiviert haben, werden Dutzende unsichtbarer Daten-SMS-Nachrichten für jedes gespielte Spiel gesendet. Wenn Sie über keine Flat verfügen, kann Ihr Mobilfunkanbieter Ihnen für jede einzelne Nachricht eine Gebühr berechnen!
 \n
 \nMöchten Sie das Spielen per Daten-SMS wirklich aktivieren\?</string>
     <string name="confirm_sms_prompt">Spielen über Daten-SMS aktivieren\?</string>
     <string name="confirm_sms_leave">Nein: deaktiviert lassen</string>
     <string name="confirm_sms_unlimited">Ja: ich habe einen unbegrenzten Tarif</string>
-    <string name="confirm_sms_willpay">Ja: ich werde alle Gebühren bezahlen</string>
+    <string name="confirm_sms_willpay">Ja: ich werde alle Provider-Gebühren bezahlen</string>
     <string name="warn_sms_disabled">Das Spielen per Daten-SMS ist derzeit deaktiviert. Es werden keine Züge per Daten-SMS gesendet.
 \n
 \nSie können das Spielen per Daten-SMS jetzt oder später aktivieren.</string>
-    <string name="warn_bt_disabled">Bluetooth ist gegenwärtig auf diesem Gerät ausgeschaltet. Keine Züge werden über Bluetooth verschickt.
+    <string name="warn_bt_disabled">Das Spielen per Bluetooth ist derzeit deaktiviert und es werden keine Züge über Bluetooth ausgetauscht, bis es aktiviert wird.
 \n
 \nSie können Bluetooth jetzt oder später aktivieren.</string>
     <string name="button_enable_sms">Daten-SMS aktivieren</string>
@@ -457,7 +462,7 @@
     <string name="download_failed">Download fehlgeschlagen</string>
     <string name="default_loc">Wortlisten intern speichern</string>
     <string name="default_loc_summary">(Nicht in externem/SD-Karten-Speicher)</string>
-    <string name="download_path_title">Download-Verzeichnis</string>
+    <string name="download_path_title">Öffentliches Verzeichnis</string>
     <string name="newgroup_label">Benennen Sie Ihre neue Gruppe:</string>
     <string name="list_group_delete">Gruppe löschen</string>
     <string name="list_group_rename">Gruppe umbenennen</string>
@@ -467,7 +472,7 @@
     <plurals name="groups_confirm_del_games_fmt">
         <item quantity="one">"
 \n
-\n(eine Partie wird auch gelöscht.)"</item>
+\n(Eine Partie wird auch gelöscht.)"</item>
         <item quantity="other">"
 \n
 \n(%1$d Partien werden auch gelöscht.)"</item>
@@ -485,9 +490,11 @@
     <string name="button_reconnect">Erneut verbinden</string>
     <string name="square_tiles">Quadratische Spielsteine in der Ablage</string>
     <string name="change_group">Ausgewählte Partien verschieben nach:</string>
-    <string name="not_again_newselect">Tippen Sie eine Partie an, wird sie geöffnet.
+    <string name="not_again_newselect">Durch Tippen auf die Liste eines Spiels wird das Spiel geöffnet.
 \n
-\nSie können stattdessen die Icons links antippen, um Partien aus- oder abzuwählen, und dann mit den ausgewählten Partien etwas tun, z. B. sie löschen, indem Sie das Menü oder die „Aktionsleiste“ benutzen.</string>
+\nEs sei denn, Sie tippen auf die Symbole auf der linken Seite. Durch Antippen dieser Symbole können Sie Spiele (oder Gruppen) auswählen oder die Auswahl aufheben.
+\n
+\nSobald Sie ein oder mehrere Elemente ausgewählt haben, verwenden Sie das Menü oder die \"Aktionsleiste\", um z. B. jedes ausgewählte Spiel zu löschen.</string>
     <string name="not_again_backclears">Der Zurück-Button löscht die Auswahl anstatt die App zu beenden. Drücken Sie ihn erneut, um die App zu beenden.</string>
     <plurals name="sel_games_fmt">
         <item quantity="one">Eine Partie ausgewählt</item>
@@ -499,7 +506,7 @@
     </plurals>
     <string name="summary_thumbsize">Vorschaubildgröße</string>
     <string name="thumb_off">Deaktiviert</string>
-    <string name="dropped_dupe">Einladung erhalten, aber ignoriert: Sie wurde bereits verwendet, um eine Partie zu erzeugen.</string>
+    <string name="dropped_dupe">Diese Einladung wurde bereits für die Erstellung eines Spiels verwendet.</string>
     <string name="cur_menu_marker_fmt">%1$s (in Benutzung)</string>
     <string name="board_menu_invite">Einladen</string>
     <string name="enable_nfc">NFC ist auf diesem Gerät ausgeschaltet. Sie können es in den Android-Einstellungen einschalten .</string>
@@ -603,9 +610,9 @@
     </plurals>
     <string name="lmi_phony_fmt">%1$s hat einen Zug verwirkt</string>
     <string name="lmi_tiles_fmt">Spielsteine verteilt an %1$s</string>
-    <string name="bt_no_devs">Sie haben gegenwärtig kein gepaartes Bluetooth-Gerät (oder Bluetooth ist ausgeschaltet). Wollen Sie die Android-Einstellungen öffnen, um eines oder mehrere hinzuzufügen?
+    <string name="bt_no_devs">Sie haben gegenwärtig kein gepaartes Bluetooth-Gerät (oder Bluetooth ist ausgeschaltet). Wollen Sie die Android-Einstellungen öffnen, um eines oder mehrere hinzuzufügen\?
 \n
-\n(Sie müssen sie eventuell auch auf dem Gerät öffnen, das gepaart werden soll.)</string>
+\n(Sie müssen die Einstellungen eventuell auch auf dem Gerät öffnen, das gepaart werden soll.)</string>
     <string name="app_not_found_fmt">Verbindung über Bluetooth zu CrossWords auf Gerät %1$s kann nicht aufgebaut werden. Bitte überprüfen Sie, das sich das Gerät in Bluetooth-Reichweite befindet und CrossWords darauf installiert ist.</string>
     <string name="default_language">Standardsprache</string>
     <string name="title_addrs_pref">Verbindungsart</string>
@@ -617,9 +624,9 @@
         <item quantity="one">Ein Spieler</item>
         <item quantity="other">%1$d Spieler</item>
     </plurals>
-    <string name="err_dup_invite_fmt">Doppelte Einladung abgelehnt: Gerät „%1$s“ hat bereits eine Einladung zu dieser Partie angenommen.</string>
+    <string name="err_dup_invite_fmt">Doppelte Einladung abgelehnt: das Gerät „%1$s“ hat bereits eine Einladung zu dieser Partie angenommen.</string>
     <string name="invite_multi_title">Mehrere einladen</string>
-    <string name="invite_multi_summary">Mehr als einen Spieler pro externem Gerät einladen</string>
+    <string name="invite_multi_summary">Aktivieren des Einladens mehrerer Spieler pro externem Gerät</string>
     <string name="connection_via_label">Verbindungsart ändern</string>
     <string name="set_pref">Buttons ausblenden</string>
     <string name="not_again_hidenewgamebuttons">Die zwei Buttons am unteren Rand des Bildschirms und die beiden ersten Elemente der Aktionsleiste (oder des Menüs) haben die gleiche Funktion. Wenn Sie wollen, können Sie die Buttons ausblenden, um Platz für mehr Partien zu schaffen.
@@ -634,7 +641,7 @@
     <string name="rematch_sent_toast">Revanche-Einladungen verschickt</string>
     <string name="disable_nags_title">Zug-Erinnerungen</string>
     <string name="disable_nag_title">Netzwerk-Partie-Erinnerungen deaktivieren</string>
-    <string name="disable_nag_summary">Nicht benachrichtigen, egal wie lange ich schon am Zug bin</string>
+    <string name="disable_nag_summary">Mich nicht benachrichtigen, egal wie lange ich schon am Zug bin</string>
     <string name="advanced">Zur Fehlersuche</string>
     <string name="logging_on">Protokollierung aktivieren</string>
     <string name="debug_features">Fehlersuche aktivieren</string>
@@ -647,16 +654,16 @@
     <string name="got_langdict_summary">Kein zweites Mal versuchen</string>
     <string name="pref_item_update_title">Zwischen den einzelnen Versionen aktualisieren</string>
     <string name="checking_for_fmt">Wortlisten werden in %1$s gesucht …</string>
-    <string name="db_store_done">Schreiben auf SD-Karte abgeschlossen.</string>
+    <string name="db_store_done">Export abgeschlossen</string>
     <string name="confirm_drop_relay_bt">Bluetooth funktioniert nur für Geräte in Reichweite.</string>
     <string name="confirm_drop_relay_sms">Nicht alle Mobilfunkanbieter unterstützen das Spielen per Daten-SMS.</string>
     <string name="button_enable">Aktivieren</string>
-    <string name="not_again_comms_sms">Das Spielen per Daten-SMS nutzt die Technologie, auf der das „Texten” aufgebaut ist. Obwohl die Nachrichten für Sie unsichtbar sind, stellt Ihr Netzbetreiber sie als SMS in Rechnung, so dass Sie diese Funktion vermeiden möchten, es sei denn, Sie haben eine SMS-Flat (oder Budget.) Beachten Sie, dass Android diese Funktion nur auf Geräten eines GSM-Netzbetreiber unterstützt, d.h. allen Netzbetreibern der Welt außer Verizon und Sprint.</string>
+    <string name="not_again_comms_sms">Das Spielen per Daten-SMS nutzt die Technologie, auf der das „SMSen” aufgebaut ist. Obwohl die Nachrichten für Sie unsichtbar sind, stellt Ihr Netzbetreiber sie als SMS in Rechnung, so dass Sie diese Funktion meiden sollten, es sei denn, Sie haben eine SMS-Flat (oder Budget.) Beachten Sie, dass Android diese Funktion nur auf Geräten mit GSM-Netzbetreibern unterstützt, d.h. allen Netzbetreibern der Welt außer Verizon und Sprint.</string>
     <string name="not_again_comms_bt">Benutzen Sie Bluetooth, um gegen ein Gerät in Reichweite zu spielen, das mit Ihrem „gepaart“ ist.</string>
     <string name="not_again_comms_p2p">Benutzen Sie Wi-Fi Direct, um gegen ein Gerät mit Wi-Fi-Direct-Unterstützung in Reichweite zu spielen, auf dem CrossWords installiert ist.</string>
     <string name="str_no_hint_found">Keine Züge gefunden</string>
     <string name="not_again_rematch_two_only">Revanchepartien sind, zumindest im Moment, nur bei Zweispielerpartien möglich, weil es mit mehr Geräten schwieriger ist und meiner Meinung nach mehr als zwei Spieler selten sind. Kontaktieren Sie mich, falls ich Unrecht habe, und ich werde die Priorität für diese Funktion erhöhen.</string>
-    <string name="show_sms_title">SMS-Versand/Empfang anzeigen</string>
+    <string name="show_sms_title">Daten-SMS-Versand/Empfang anzeigen</string>
     <plurals name="resent_msgs_fmt">
         <item quantity="one">Ein Zug neu gesendet</item>
         <item quantity="other">%1$s Züge neu gesendet</item>
@@ -675,9 +682,9 @@
     <string name="missing_sms_perms">Diese Partie ist konfiguriert über SMS zu kommunizieren, aber CrossWords hat keine Berechtigung dazu. Sie können die Partie immer noch öffnen, aber möglicherweise keine Züge senden oder empfangen.
 \n
 \nSie können sie neu öffnen, um wieder nach der Berechtigung gefragt zu werden. Oder Sie können die SMS-Verbindung aus den Einstellungen entfernen.</string>
-    <string name="download_rationale">CrossWords benötigt Zugriff auf einen temporären Speicher, um abzuspeichern, was Sie gerade herunterladen wollen.</string>
+    <string name="download_rationale">CrossWords benötigt Zugriff auf temporären Speicher, um abzuspeichern, was Sie gerade herunterladen wollen.</string>
     <string name="sms_invite_rationale">CrossWords benötigt die Berechtigung, eine Einladung per Daten-SMS senden zu dürfen.</string>
-    <string name="dicts_storage_rationale">CrossWords kann Wortlisten im Download-Bereich speichern, aber es benötigt die Berechtigung, auf die Daten dort zuzugreifen.
+    <string name="dicts_storage_rationale">CrossWords kann Wortlisten im Download-Bereich speichern, aber es muss nach der Berechtigung fragen, um auf die Daten dort zuzugreifen.
 \n
 \nWenn Sie nie Wortlisten außerhalb von CrossWords herunterladen werden und keine bereits dort gespeichert haben, können Sie diese Berechtigung einfach ablehnen.</string>
     <string name="bonus_l2x_summary">2B</string>
@@ -701,7 +708,7 @@
     <string name="title_blank_picker">Spielstein für Joker wählen</string>
     <string name="tile_tray_picker">Neue Spielsteine für Ablage wählen</string>
     <string name="not_again_chat">Dieser Button öffnet den Bildschirm für Nachrichten zwischen Geräten in dieser Partie. Die Nachrichten werden behalten, bis Sie die Partie löschen, zu der sie gehören.</string>
-    <string name="not_again_values">Dieser Button ändert, ob Buchstaben oder deren Punktwerte auf gespielten Spielsteinen auf dem Brett angezeigt werden. Benutzen Sie ihn zur Erinnerung an die Spielsteinwerte.</string>
+    <string name="not_again_values">Mit diesem Button können Sie festlegen, ob auf dem Brett Werte (zusätzlich zu den Buchstaben) auf den Spielsteinen angezeigt werden sollen.</string>
     <string name="not_again_done">Antippen des „Pkt.“-Zählers am rechten Ende der Ablage ist der einfachste Weg, einen Zug abzuschließen.</string>
     <string name="not_again_unlock">Diese Partie wird gerade gespielt. Einige Einstellungen, z. B. die Anzahl der Spieler, können nicht geändert werden, ohne sie neu zu starten. Wenn Sie diese Seite verlassen, haben Sie die Möglichkeit, die Änderungen zu verwerfen, um einen Neustart zu vermeiden.</string>
     <string name="not_again_turnchanged">Der Spieler am Zug wird groß auf der Punktetafel dargestellt.
@@ -711,7 +718,7 @@
     <string name="bt_pair_settings">Weitere paaren</string>
     <string name="invite_progress_title">Verbinde …</string>
     <string name="invite_progress_bt_fmt">Sende Einladung an CrossWords auf %1$s</string>
-    <string name="summary_wait_host">Warte auf Verbindung[en]</string>
+    <string name="summary_wait_host">Warten auf Gast[Gäste]</string>
     <string name="summary_wait_guest">Nicht verbunden</string>
     <string name="summary_gameover">Partie beendet</string>
     <string name="summary_conn">Partie läuft</string>
@@ -731,13 +738,13 @@
     <string name="new_game">Neue Ein-Geräte-Partie</string>
     <string name="disable_nag_solo_title">Erinnerungen für Solitair-Partien deaktivieren</string>
     <string name="confirm_get_locdict_fmt">Ihr Gerät ist für %1$s eingerichtet. Wollen Sie eine Wortliste herunterladen, um CrossWords in %1$s zu spielen?</string>
-    <string name="advanced_summary">Dies sollten Sie nie brauchen …</string>
+    <string name="advanced_summary">Dies sollten Sie nie brauchen…</string>
     <string name="dict_host">Wortlisten-Download-URL</string>
-    <string name="debug_features_summary">Menüeinträge usw. (nur Release-Builds)</string>
+    <string name="debug_features_summary">Menüpunkte, etc.</string>
     <string name="board_menu_game_showInvites">Einladungen zeigen</string>
     <string name="netstats_title">Partie-Netzwerkstatistik</string>
     <string name="name_dict_fmt">%1$s/%2$s</string>
-    <string name="enable_sms_toself_title">SMS-Selbstverbindung aktivieren</string>
+    <string name="enable_sms_toself_title">Daten-SMS-Selbstverbindung aktivieren</string>
     <string name="enable_sms_toself_summary">Mobilfunk weglassen bei gleichen Nummern</string>
     <string name="force_radio_title">Mobilfunk vortäuschen</string>
     <string name="radio_name_real">Nicht vortäuschen</string>
@@ -745,23 +752,23 @@
     <string name="game_summary_field_npackets">Ausstehende Paketanzahl</string>
     <string name="expl_update_url">Aktualisierung prüft URL</string>
     <string name="expl_relay_url">URL für Zwischenstation-Web-API</string>
-    <string name="pref_group_sms_title">SMS-Zeug</string>
+    <string name="pref_group_sms_title">Daten-SMS-Zeug</string>
     <string name="pref_group_sms_summary">Einstellungen zum Spielen über SMS</string>
-    <string name="pref_group_relay_title">Zwischenstation-Zeug</string>
+    <string name="pref_group_relay_title">Internet-Zeug</string>
     <string name="pref_group_relay_summary">Einstellungen zum Spielen über Internez/Zwischenstation</string>
     <string name="pref_item_update_summary">Builds zwischen Veröffentlichungen holen</string>
     <string name="checking_title">Überprüfung</string>
-    <string name="phone_state_rationale">Einige Smartphones können SMS-„Daten“-Nachrichten austauschen. CrossWords will Ihnen diese Option anbieten, braucht dazu aber Informationen über Ihr Gerät (um zu wissen, ob es ein Telefon ist und falls ja, was für eines).
+    <string name="phone_state_rationale">Einige Smartphones können „Daten“-SMS-Nachrichten austauschen. CrossWords will Ihnen diese Option anbieten, braucht dazu aber Informationen über Ihr Gerät (um zu wissen, ob es ein Telefon ist und falls ja, was für eines).
 \n
 \nWenn Ihr Gerät keine Daten-SMS senden kann (z. B. weil es kein Telefon ist) oder Sie nie über SMS spielen wollen (z. B. weil für jede Nachricht eine Gebühr anfällt), können Sie diese Berechtigung dauerhaft ablehnen.</string>
     <string name="phone_lookup_rationale">Um ein Spiel, welches Daten-SMS verwendet, wieder zusammenzuführen, benötigt CrossWords die Berechtigung, auf Ihre Telefonnummer zugreifen zu dürfen.</string>
     <string name="phone_lookup_rationale_drop">Das Wiederherstellen dieses reinen Daten-SMS-Spiels ist ohne diese Erlaubnis nicht möglich.</string>
     <string name="phone_lookup_rationale_others">Ohne diese Berechtigung wird das Rückspiel fortgesetzt, erzeugt aber ein Spiel, das nicht per Daten-SMS gespielt werden kann.</string>
-    <string name="contacts_rationale">CrossWords möchte auf Ihre Kontakte zugreifen, um Telefonnummern, die Ihnen Einladungen per Data SMS senden, einen Namen zuzuordnen. Sie können trotzdem Einladungen erhalten, wenn Sie diese Erlaubnis nicht erteilen, aber es wird nur die Telefonnummer des Absenders angezeigt.</string>
-    <string name="move_dict_rationale">Das Speichern einer Wortliste im Download-Bereich benötigt eine Berechtigung.</string>
+    <string name="contacts_rationale">CrossWords möchte auf Ihre Kontakte zugreifen, um Telefonnummern, die Ihnen Einladungen per Daten-SMS senden, einen Namen zuzuordnen. Sie können trotzdem Einladungen erhalten, wenn Sie diese Erlaubnis nicht erteilen, aber es wird nur die Telefonnummer des Absenders angezeigt.</string>
+    <string name="move_dict_rationale">Das Speichern einer Wortliste im Download-Bereich benötigt die Speicherberechtigung.</string>
     <string name="remove_sms">SMS entfernen</string>
     <string name="sms_send_failed">SMS-Versand fehlgeschlagen</string>
-    <string name="perms_rationale_title">Android-Berechtigungen</string>
+    <string name="perms_rationale_title">Erläuterung der Android-Berechtigung</string>
     <string name="toast_no_permission">Berechtigung nicht erteilt</string>
     <string name="bt_pick_clear_button">Entfernen</string>
     <string name="slmenu_clear_sel">Ausgewählte löschen</string>
@@ -804,7 +811,7 @@
 \n • Zuerst: Scannen Sie erneut
 \n • Stellen Sie sicher, dass Bluetooth auf dem anderen Gerät eingeschaltet ist
 \n • Starten Sie CrossWords auf dem anderen Gerät
-\n • Wenn alles nichts hilft, booten Sie dieses Gerät
+\n • Wenn alles nichts hilft, starten Sie dieses Gerät neu
 \n</string>
     <string name="invit_expl_usrsms_fmt">"Einladung per SMS an %1$s gesendet"</string>
     <string name="sms_invite_flakey">Diese Option startet Ihre Standard-SMS-App mit einer versandfertigen Einladung — wenn es funktioniert. Jede SMS-App ist anders und mit einigen funktioniert es nicht.</string>
@@ -825,12 +832,12 @@
     <string name="nbsproxy_channel_expl">Benachrichtigungen über NBSProxy</string>
     <string name="sms_banned_ok_only">Die Google Play-Version von CrossWords unterstützt keine Einladungen mehr oder das Spielen per Daten-SMS.</string>
     <string name="button_more_info">Mehr erfahren</string>
-    <string name="banned_nbs_perms">Dieses Spiel ist für die Kommunikation per Daten-SMS eingerichtet, aber Apps aus dem Google Play Store dürfen dies (bis auf wenige Ausnahmen) nicht mehr tun. Sie können das Spiel immer noch öffnen, aber es ist mehr möglicherweise, Züge zu senden oder zu empfangen.
+    <string name="banned_nbs_perms">Dieses Spiel ist für die Kommunikation per Daten-SMS eingerichtet, aber Apps aus dem Google Play Store dürfen dies (bis auf wenige Ausnahmen) nicht mehr tun. Sie können das Spiel immer noch öffnen, aber es ist vielleicht nicht mehr möglich, Züge zu senden oder zu empfangen.
 \n
 \nSie können die Einstellung für die Daten-SMS-Kommunikation entfernen oder über die Schaltfläche \"Mehr erfahren\" den Fortschritt bei der Entwicklung einer Alternative überprüfen.</string>
-    <string name="not_again_longtap_lookup">Sie können Wörter nachschlagen, BEVOR sie als Züge übertragen werden - durch langes Antippen, genau wie bei gebundenen Wörtern.
+    <string name="not_again_longtap_lookup">Sie können Wörter nachschlagen, BEVOR sie als Züge übertragen werden — durch langes Antippen, genau wie bei abgeschlossenen Wörtern.
 \n
-\nVerwenden Sie diese Funktion, um die Gültigkeit von Wörtern zu überprüfen, die Sie spielen möchten, oder um ein unbekanntes Wort als Hinweis nachzuschlagen.</string>
+\nVerwenden Sie diese Funktion, um die Gültigkeit von Wörtern zu überprüfen, die Sie spielen möchten oder um ein unbekanntes Wort als Tipp nachzuschlagen.</string>
     <string name="download_path_hint">Z.B. wo E-Mail-Anhänge gespeichert werden</string>
     <string name="knowns_dup_name_fmt">Der Name kann nicht von „%1$s“ in „%2$s“ geändert werden. Ist „%2$s“ bereits verwendet\?</string>
     <string name="player_edit_name">Namen ändern</string>
@@ -1000,7 +1007,7 @@
     <string name="lmi_tiles_dup">Allen Spielern werden die gleichen Spielsteine zugewiesen</string>
     <string name="lmi_pass_dup">Kein Spieler hat einen Zug gefunden (alle haben gepasst)</string>
     <string name="lmi_trade_dup_fmt">%1$d Spielsteine für alle Spieler ausgetauscht</string>
-    <string name="lmi_move_one_dup_fmt">%1$s hat diese Runde mit %2$s für %3$d Punkte gewonnen.</string>
+    <string name="lmi_move_one_dup_fmt">%1$s hat diese Runde mit %2$s für %3$d Punkte gewonnen</string>
     <string name="lmi_move_tie_dup_fmt">Die Spieler %1$s haben jeweils %2$d Punkte. %3$s wurde gespielt.</string>
     <string name="name_concat_dup">" und "</string>
     <string name="dup_timer_expl">Zeitgeber im Duplikatmodus laufen</string>
@@ -1097,7 +1104,7 @@
     <string name="show_note_menu_fmt">Über %1$s</string>
     <string name="button_ask">Fragen</string>
     <string name="button_deny">Ablehnen</string>
-    <string name="db_store_failed">Fehler beim Schreiben auf die SD-Karte</string>
+    <string name="db_store_failed">Export fehlgeschlagen</string>
     <string name="gamel_menu_backup">Sichern/Wiederherstellen</string>
     <string name="gamel_menu_storedb">App-Daten exportieren</string>
     <string name="archive_expl_colors">Farben auf dem Spielbrett, z. B. von Spielernamen und Bonusfeldern</string>
