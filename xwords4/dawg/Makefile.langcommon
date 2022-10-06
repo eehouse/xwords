@@ -195,7 +195,7 @@ else
 ifeq ($(TARGET_TYPE),WINCE)
 
 ### WINCE section here ###
-all: $(XWLANG)2to8.xwd $(XWLANG)2to9.xwd $(XWLANG)2to15.xwd
+all: $(XWLANG)2to15.xwd
 	../mkxwdcab.pl -f $<
 empty: $(XWLANG)0to0.xwd
 
