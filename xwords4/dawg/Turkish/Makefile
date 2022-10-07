@@ -20,18 +20,21 @@ XWLANG=Turkish
 LANGCODE=tr_TR
 ENC = UTF-8
 
-DICT2DAWGARGS = -r -nosort
+# DICT2DAWGARGS = -r -nosort
 
 TARGET_TYPE ?= WINCE
 
 include ../Makefile.langcommon
 
 # Empty dict
-$(XWLANG)Main.dict:
-	> $@
-
-$(XWLANG)Main.dict.gz: $(XWLANG)Main.dict
-	gzip $<
+$(XWLANG)Main.dict.gz: $(XWDICTPATH)/Turkish/wordlist-tr.txt
+	cat	$< \
+		| tr -d '\r' \
+		| sed 's/ //g' \
+		| sed 's/./\u&/g' \
+		| sed 'y/ÂÎÛ/AIU/' \
+		| grep '^[ABCÇDEFGĞHIİJKLMNOÖPRSŞTUÜVYZ]\{2,15\}$$' \
+		| gzip >$@
 
 # Everything but creating of the Main.dict file is inherited from the
 # "parent" Makefile.langcommon in the parent directory.
