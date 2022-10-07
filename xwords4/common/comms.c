@@ -1271,7 +1271,8 @@ comms_addMQTTDevID( CommsCtxt* comms, XP_PlayerAddr channelNo,
     XP_USE( channelNo );
     XP_USE( devID );
 #else
-    XP_LOGFF( "(channelNo: %d, devID: " MQTTDevID_FMT ")", channelNo, *devID );
+    CNO_FMT( cbuf, channelNo );
+    XP_LOGFF( "(channelNo: %s, devID: " MQTTDevID_FMT ")", cbuf, *devID );
     XP_Bool found = XP_FALSE;
     for ( AddressRecord* rec = comms->recs; !!rec && !found; rec = rec->next ) {
         found = (rec->channelNo & ~CHANNEL_MASK) == (channelNo & ~CHANNEL_MASK);
@@ -1286,6 +1287,8 @@ comms_addMQTTDevID( CommsCtxt* comms, XP_PlayerAddr channelNo,
 
                 augmentAddrIntrnl( comms, &rec->addr, &tmp, XP_TRUE );
                 ASSERT_ADDR_OK( &rec->addr );
+                CNO_FMT( cbuf, channelNo );
+                XP_LOGFF( "added for channel %s", cbuf );
             }
         }
     }
