@@ -217,8 +217,7 @@ static XP_Bool augmentAddrIntrnl( CommsCtxt* comms, CommsAddrRec* dest,
 static XP_Bool channelToAddress( CommsCtxt* comms, XWEnv xwe, XP_PlayerAddr channelNo,
                                  const CommsAddrRec** addr );
 static AddressRecord* getRecordFor( CommsCtxt* comms, XWEnv xwe,
-                                    const CommsAddrRec* addr, XP_PlayerAddr channelNo,
-                                    XP_Bool maskChnl );
+                                    const CommsAddrRec* addr, XP_PlayerAddr channelNo );
 static void augmentSelfAddr( CommsCtxt* comms, XWEnv xwe, const CommsAddrRec* addr );
 static XP_S16 sendMsg( CommsCtxt* comms, XWEnv xwe, MsgQueueElem* elem,
                        CommsConnType filter );
@@ -263,6 +262,7 @@ static void putDevID( const CommsCtxt* comms, XWEnv xwe, XWStreamCtxt* stream );
 
 #ifdef DEBUG
 static void assertAddrOk( const CommsAddrRec* addr );
+static void listRecs( const CommsCtxt* comms, const char* msg );
 #define ASSERT_ADDR_OK(addr) assertAddrOk( addr )
 
 # ifdef XWFEATURE_RELAY
@@ -455,7 +455,7 @@ comms_make( MPFORMAL XWEnv xwe, XW_UtilCtxt* util, XP_Bool isServer,
         AddressRecord* rec = 
 #endif
             rememberChannelAddress( comms, xwe, channelNo, 0, hostAddr,0 );
-        XP_ASSERT( rec == getRecordFor( comms, xwe, hostAddr, channelNo, XP_TRUE ) );
+        XP_ASSERT( rec == getRecordFor( comms, xwe, hostAddr, channelNo ) );
     }
 
     return comms;
@@ -779,6 +779,7 @@ comms_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
                       RoleChangeProc rcp, void* rcClosure,
                       XP_U16 forceChannel )
 {
+    LOG_FUNC();
     XP_U16 version = stream_getVersion( stream );
 
     XP_U8 flags = stream_getU8( stream );
@@ -842,6 +843,7 @@ comms_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
     comms->queueLen = stream_getU8( stream );
 
     XP_U16 nAddrRecs = stream_getU8( stream );
+    XP_LOGFF( "nAddrRecs: %d", nAddrRecs );
     AddressRecord** prevsAddrNext = &comms->recs;
     for ( int ii = 0; ii < nAddrRecs; ++ii ) {
         AddressRecord* rec = (AddressRecord*)XP_CALLOC( mpool, sizeof(*rec));
@@ -867,6 +869,9 @@ comms_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
         if ( addr_hasType( &rec->addr, COMMS_CONN_RELAY ) ) {
             rec->rr.hostID = stream_getU8( stream );
         }
+
+        CNO_FMT( cbuf, rec->channelNo );
+        XP_LOGFF( "loaded rec %d: %s", ii, cbuf );
 
         *prevsAddrNext = rec;
         prevsAddrNext = &rec->next;
@@ -934,6 +939,9 @@ comms_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
         addr_rmType( &comms->selfAddr, COMMS_CONN_RELAY );
     }
 
+    listRecs( comms, __func__ );
+
+    LOG_RETURNF( "%p", comms );
     return comms;
 } /* comms_makeFromStream */
 
@@ -1093,6 +1101,8 @@ comms_writeToStream( CommsCtxt* comms, XWEnv xwe,
     XP_U16 nAddrRecs;
     AddressRecord* rec;
     MsgQueueElem* msg;
+
+    listRecs( comms, __func__ );
 
     stream_setVersion( stream, CUR_STREAM_VERS );
 
@@ -1532,6 +1542,8 @@ nukeInvites( CommsCtxt* comms, XWEnv xwe, XP_PlayerAddr channelNo )
     channelNo &= CHANNEL_MASK;
     XP_LOGFF( "(channelNo=0x%X)", channelNo );
 
+    listRecs( comms, __func__ );
+
     AddressRecord* deadRec;
 
     AddressRecord* prevRec = NULL;
@@ -1550,9 +1562,12 @@ nukeInvites( CommsCtxt* comms, XWEnv xwe, XP_PlayerAddr channelNo )
 
     if ( !!deadRec ) {
         removeFromQueue( comms, xwe, channelNo, 0 );
-        XP_LOGFF( "removing rec" );
+        CNO_FMT( cbuf, deadRec->channelNo );
+        XP_LOGFF( "removing rec for %s", cbuf );
         XP_FREEP( comms->mpool, &deadRec );
     }
+
+    listRecs( comms, "end of nukeInvites" );
 } /* nukeInvites */
 
 static XP_Bool
@@ -1608,7 +1623,7 @@ comms_send( CommsCtxt* comms, XWEnv xwe, XWStreamCtxt* stream )
         XP_PlayerAddr channelNo = stream_getAddress( stream );
         CNO_FMT( cbuf, channelNo );
         XP_LOGFF( "%s", cbuf );
-        AddressRecord* rec = getRecordFor( comms, xwe, NULL, channelNo, XP_FALSE );
+        AddressRecord* rec = getRecordFor( comms, xwe, NULL, channelNo );
         MsgID msgID = (!!rec)? ++rec->nextMsgID : 0;
         MsgQueueElem* elem;
 
@@ -1777,7 +1792,7 @@ removeFromQueue( CommsCtxt* comms, XWEnv xwe, XP_PlayerAddr channelNo, MsgID msg
     XP_LOGFF( "(channelNo=%d): remove msgs <= " XP_LD " for %s (queueLen: %d)",
              channelNo, msgID, cbuf, comms->queueLen );
 
-    if ((channelNo == 0) || !!getRecordFor( comms, xwe, NULL, channelNo, XP_FALSE)) {
+    if ((channelNo == 0) || !!getRecordFor( comms, xwe, NULL, channelNo)) {
 
         MsgQueueElem* elem = comms->msgQueueHead;
         MsgQueueElem* next;
@@ -2471,11 +2486,10 @@ preProcess(
 
 static AddressRecord* 
 getRecordFor( CommsCtxt* comms, XWEnv xwe, const CommsAddrRec* addr,
-              const XP_PlayerAddr channelNo, XP_Bool maskChannel )
+              const XP_PlayerAddr channelNo )
 {
     AddressRecord* rec;
     XP_Bool matched = XP_FALSE;
-    XP_U16 mask = maskChannel? ~CHANNEL_MASK : ~0;
 
     /* Use addr if we have it.  Otherwise use channelNo if non-0 */
     CNO_FMT( cbuf, channelNo );
@@ -2488,7 +2502,7 @@ getRecordFor( CommsCtxt* comms, XWEnv xwe, const CommsAddrRec* addr,
         XP_LOGFF( "comparing rec channel %s with addr channel %s",
                  cbuf1, cbuf );
 
-        if ( (rec->channelNo & mask) == (channelNo & mask) ) {
+        if ( (rec->channelNo & ~CHANNEL_MASK) == (channelNo & ~CHANNEL_MASK) ) {
             XP_LOGFF( "match based on channels!!!" );
             matched = XP_TRUE;
         } else {
@@ -2537,7 +2551,7 @@ getRecordFor( CommsCtxt* comms, XWEnv xwe, const CommsAddrRec* addr,
                 matched = addr->u.mqtt.devID == rec->addr.u.mqtt.devID;
                 break;
             case COMMS_CONN_NONE:
-                matched = channelNo == (rec->channelNo & mask);
+                matched = channelNo == (rec->channelNo & ~CHANNEL_MASK);
                 break;
             default:
                 XP_ASSERT(0);
@@ -2549,7 +2563,7 @@ getRecordFor( CommsCtxt* comms, XWEnv xwe, const CommsAddrRec* addr,
         }
     }
 
-    XP_LOGFF( "(%s, maskChannel=%s) => %p", cbuf, boolToStr(maskChannel), rec );
+    XP_LOGFF( "(%s) => %p", cbuf, rec );
     return rec;
 } /* getRecordFor */
 
@@ -2605,7 +2619,7 @@ validateInitialMessage( CommsCtxt* comms, XWEnv xwe,
     } else if ( comms->doHeartbeat ) {
         XP_Bool addRec = XP_FALSE;
         /* This (with mask) is untested!!! */
-        rec = getRecordFor( comms, xwe, addr, *channelNo, XP_TRUE );
+        rec = getRecordFor( comms, xwe, addr, *channelNo );
 
         if ( hasPayload ) {
             if ( rec ) {
@@ -2645,7 +2659,7 @@ validateInitialMessage( CommsCtxt* comms, XWEnv xwe,
     } else {
         CNO_FMT( cbuf, *channelNo );
         XP_LOGFF( TAGFMT() "looking at %s", TAGPRMS, cbuf );
-        rec = getRecordFor( comms, xwe, addr, *channelNo, XP_TRUE );
+        rec = getRecordFor( comms, xwe, addr, *channelNo );
         if ( !!rec ) {
             augmentChannelAddr( comms, rec, addr, senderID );
 
@@ -2672,7 +2686,7 @@ validateInitialMessage( CommsCtxt* comms, XWEnv xwe,
                     goto errExit;
                 }
             }
-            rec = rememberChannelAddress( comms, xwe, *channelNo, senderID,
+            rec = rememberChannelAddress( comms, xwe, *channelNo, senderID, /* here */
                                           addr, flags );
         }
     }
@@ -2716,7 +2730,7 @@ validateChannelMessage( CommsCtxt* comms, XWEnv xwe, const CommsAddrRec* addr,
     AddressRecord* rec;
     LOG_FUNC();
 
-    rec = getRecordFor( comms, xwe, NULL, channelNo, XP_FALSE );
+    rec = getRecordFor( comms, xwe, NULL, channelNo );
     if ( !!rec ) {
         removeFromQueue( comms, xwe, channelNo, lastMsgRcd );
 
@@ -2977,7 +2991,7 @@ comms_msgProcessed( CommsCtxt* comms, XWEnv xwe,
         XP_LOGFF( "msg rejected; NOT upping lastMsgRcd to %d", state->msgID );
 #endif
     } else {
-        AddressRecord* rec = getRecordFor( comms, xwe, NULL, state->channelNo, XP_TRUE );
+        AddressRecord* rec = getRecordFor( comms, xwe, NULL, state->channelNo );
         XP_ASSERT( !!rec );
         if ( !!rec && rec->lastMsgRcd < state->msgID ) {
 #ifdef LOG_COMMS_MSGNOS
@@ -2985,6 +2999,7 @@ comms_msgProcessed( CommsCtxt* comms, XWEnv xwe,
 #endif
             rec->lastMsgRcd = state->msgID;
         }
+        // XP_LOGFF( "CALLING nukeInvites(); might be wrong" );
         nukeInvites( comms, xwe, state->channelNo );
     }
 
@@ -3294,10 +3309,11 @@ rememberChannelAddress( CommsCtxt* comms, XWEnv xwe, XP_PlayerAddr channelNo,
 {
     CNO_FMT( cbuf, channelNo );
     XP_LOGFF( "(%s)", cbuf );
+    listRecs( comms, "entering rememberChannelAddress" );
 
     logAddr( comms, xwe, addr, __func__ );
     AddressRecord* rec = NULL;
-    rec = getRecordFor( comms, xwe, NULL, channelNo, XP_FALSE );
+    rec = getRecordFor( comms, xwe, NULL, channelNo );
     if ( !rec ) {
         /* not found; add a new entry */
         rec = (AddressRecord*)XP_CALLOC( comms->mpool, sizeof(*rec) );
@@ -3328,6 +3344,7 @@ rememberChannelAddress( CommsCtxt* comms, XWEnv xwe, XP_PlayerAddr channelNo,
             // addr_setTypes( &recs->addr, addr_getTypes( &comms->selfAddr ) );
         }
     }
+    listRecs( comms, "leaving rememberChannelAddress" );
     return rec;
 } /* rememberChannelAddress */
 
@@ -3540,7 +3557,7 @@ static XP_Bool
 channelToAddress( CommsCtxt* comms, XWEnv xwe, XP_PlayerAddr channelNo,
                   const CommsAddrRec** addr )
 {
-    AddressRecord* recs = getRecordFor( comms, xwe, NULL, channelNo, XP_FALSE );
+    AddressRecord* recs = getRecordFor( comms, xwe, NULL, channelNo );
     XP_Bool found = !!recs;
     *addr = found? &recs->addr : NULL;
     return found;
@@ -3549,9 +3566,8 @@ channelToAddress( CommsCtxt* comms, XWEnv xwe, XP_PlayerAddr channelNo,
 static XP_U16
 countAddrRecs( const CommsCtxt* comms )
 {
-    short count = 0;
-    AddressRecord* recs;
-    for ( recs = comms->recs; !!recs; recs = recs->next ) {
+    XP_U16 count = 0;
+    for ( AddressRecord* recs = comms->recs; !!recs; recs = recs->next ) {
         ++count;
     } 
     return count;
@@ -3904,6 +3920,20 @@ relayConnect( CommsCtxt* comms, XWEnv xwe )
     }
     return success;
 } /* relayConnect */
+#endif
+
+#ifdef DEBUG
+static void
+listRecs( const CommsCtxt* comms, const char* msg )
+{
+    XP_LOGFF( "nrecs: %d", countAddrRecs( comms ) );
+    int ii = 0;
+    for ( AddressRecord* rec = comms->recs; !!rec; rec = rec->next ) {
+        CNO_FMT( cbuf, rec->channelNo );
+        XP_LOGFF( "%s: rec[%d]: %s", msg, ii, cbuf );
+        ++ii;
+    }
+}
 #endif
 
 #if defined XWFEATURE_IP_DIRECT || defined XWFEATURE_DIRECTIP
