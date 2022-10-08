@@ -772,6 +772,22 @@ removeRelayIf( CommsCtxt* comms, XWEnv xwe )
     return allRemoved;
 } /* removeRelayIf */
 
+/* Looking toward a time when we store only the first couple of bits of
+   channelNo. Not possible yet, though. */
+static XP_U16
+readChannelNo( XWStreamCtxt* stream )
+{
+    XP_U16 tmp = stream_getU16( stream );
+    return tmp; //  & CHANNEL_MASK;
+}
+
+static void
+writeChannelNo( XWStreamCtxt* stream, XP_PlayerAddr channelNo )
+{
+    // stream_putU16( stream, channelNo & CHANNEL_MASK );
+    stream_putU16( stream, channelNo );
+}
+
 CommsCtxt* 
 comms_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
                       XW_UtilCtxt* util, XP_Bool isServer,
@@ -822,7 +838,7 @@ comms_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
     comms->flags = flags;
 
     comms->connID = stream_getU32( stream );
-    comms->nextChannelNo = stream_getU16( stream );
+    comms->nextChannelNo = readChannelNo( stream );
     if ( version < STREAM_VERS_CHANNELSEED ) {
         comms->channelSeed = 0;
     } else {
@@ -865,7 +881,7 @@ comms_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
         if ( version >= STREAM_VERS_BLUETOOTH2 ) {
             rec->lastMsgAckd = stream_getU16( stream );
         }
-        rec->channelNo = stream_getU16( stream );
+        rec->channelNo = readChannelNo( stream );
         if ( addr_hasType( &rec->addr, COMMS_CONN_RELAY ) ) {
             rec->rr.hostID = stream_getU8( stream );
         }
@@ -881,7 +897,7 @@ comms_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
     for ( int ii = 0; ii < comms->queueLen; ++ii ) {
         MsgQueueElem* msg = (MsgQueueElem*)XP_CALLOC( mpool, sizeof(*msg) );
 
-        msg->channelNo = stream_getU16( stream );
+        msg->channelNo = readChannelNo( stream );
         if ( version >= STREAM_VERS_SMALLCOMMS ) {
             msg->msgID = stream_getU32VL( stream );
             msg->len = stream_getU32VL( stream );
@@ -1113,7 +1129,7 @@ comms_writeToStream( CommsCtxt* comms, XWEnv xwe,
     stream_putBits( stream, 4, comms->rr.nPlayersTotal );
 
     stream_putU32( stream, comms->connID );
-    stream_putU16( stream, comms->nextChannelNo );
+    writeChannelNo( stream, comms->nextChannelNo );
     XP_U16 channelSeed = comms_getChannelSeed( comms ); /* force creation */
     stream_putU16( stream, channelSeed );
     stream_putU16( stream, comms->resendBackoff );
@@ -1146,7 +1162,7 @@ comms_writeToStream( CommsCtxt* comms, XWEnv xwe,
         XP_LOGFF( "wrote lastMsgRcd of %d for addr %d", rec->lastMsgRcd, ii++ );
 #endif
         stream_putU16( stream, (XP_U16)rec->lastMsgAckd );
-        stream_putU16( stream, rec->channelNo );
+        writeChannelNo( stream, rec->channelNo );
         if ( addr_hasType( addr, COMMS_CONN_RELAY ) ) {
             XP_ASSERT(0);
             stream_putU8( stream, rec->rr.hostID ); /* unneeded unless RELAY */
@@ -1154,7 +1170,7 @@ comms_writeToStream( CommsCtxt* comms, XWEnv xwe,
     }
 
     for ( msg = comms->msgQueueHead; !!msg; msg = msg->next ) {
-        stream_putU16( stream, msg->channelNo );
+        writeChannelNo( stream, msg->channelNo );
         stream_putU32VL( stream, msg->msgID );
 
         stream_putU32VL( stream, msg->len );
@@ -2570,6 +2586,39 @@ getRecordFor( CommsCtxt* comms, XWEnv xwe, const CommsAddrRec* addr,
     return rec;
 } /* getRecordFor */
 
+/* It should be possible to find the next channel from what's already in use,
+   and so to get rid of nextChannelNo, but this doesn't work yet. Saving the
+   code for later... */
+static XP_PlayerAddr
+getNextChannelNo( CommsCtxt* comms )
+{
+    XP_PlayerAddr result = ++comms->nextChannelNo;
+#if 0
+    XP_U16 mask = 0;
+    for ( AddressRecord* rec = comms->recs; !!rec; rec = rec->next ) {
+        XP_U16 forceChannel = rec->channelNo & CHANNEL_MASK;
+        XP_ASSERT( forceChannel <= CHANNEL_MASK );
+        XP_LOGFF( "forceChannel: %d", forceChannel );
+        mask |= 1 << forceChannel;
+        XP_LOGFF( "mask now: %x", mask );
+    }
+
+    XP_PlayerAddr candidate;
+    for ( candidate = 1; ; ++candidate ) {
+        XP_ASSERT( candidate <= CHANNEL_MASK );
+        if ( 0 == ((1 << candidate) & mask) ) {
+            break;
+        }
+    }
+    if ( candidate != result ) {
+        XP_LOGFF( "ERROR: candidate: %d; result: %d", candidate, result );
+    }
+    // XP_ASSERT( candidate == result );
+#endif
+    LOG_RETURNF( "%d", result );
+    return result;
+}
+
 static XP_Bool
 checkChannelNo( CommsCtxt* comms, XP_PlayerAddr* channelNoP )
 {
@@ -2578,13 +2627,14 @@ checkChannelNo( CommsCtxt* comms, XP_PlayerAddr* channelNoP )
     if ( 0 == (channelNo & CHANNEL_MASK) ) {
         success = comms->nextChannelNo < CHANNEL_MASK;
         if ( success ) {
-            channelNo |= ++comms->nextChannelNo;
+            channelNo |= getNextChannelNo( comms );
             CNO_FMT( cbuf, channelNo );
             XP_LOGFF( "assigned channelNo: %s", cbuf );
         }
         // XP_ASSERT( comms->nextChannelNo <= CHANNEL_MASK );
     } else {
         /* Let's make sure we don't assign it later */
+        XP_ASSERT( 0 );         /* does this happen */
         comms->nextChannelNo = channelNo;
     }
     *channelNoP = channelNo;
@@ -2613,9 +2663,9 @@ static AddressRecord*
 validateInitialMessage( CommsCtxt* comms, XWEnv xwe,
                         XP_Bool XP_UNUSED_HEARTBEAT(hasPayload),
                         const CommsAddrRec* addr, XWHostID senderID, 
-                        XP_PlayerAddr* channelNo, XP_U16 flags, MsgID msgID )
+                        XP_PlayerAddr* channelNoP, XP_U16 flags, MsgID msgID )
 {
-    CNO_FMT( cbuf, *channelNo );
+    CNO_FMT( cbuf, *channelNoP );
     XP_LOGFF( TAGFMT(%s), TAGPRMS, cbuf );
 
     AddressRecord* rec = NULL;
@@ -2624,7 +2674,7 @@ validateInitialMessage( CommsCtxt* comms, XWEnv xwe,
     } else if ( comms->doHeartbeat ) {
         XP_Bool addRec = XP_FALSE;
         /* This (with mask) is untested!!! */
-        rec = getRecordFor( comms, xwe, addr, *channelNo );
+        rec = getRecordFor( comms, xwe, addr, *channelNoP );
 
         if ( hasPayload ) {
             if ( rec ) {
@@ -2643,10 +2693,10 @@ validateInitialMessage( CommsCtxt* comms, XWEnv xwe,
 
         if ( addRec ) {
             if ( comms->isServer ) {
-                CNO_FMT( cbuf, *channelNo );
+                CNO_FMT( cbuf, *channelNoP );
                 XP_LOGFF( TAGFMT() "looking at %s", TAGPRMS, cbuf );
-                XP_ASSERT( (*channelNo & CHANNEL_MASK) == 0 );
-                *channelNo |= ++comms->nextChannelNo;
+                XP_ASSERT( (*channelNoP & CHANNEL_MASK) == 0 );
+                *channelNoP |= getNextChannelNo( comms );
                 CNO_FMT( cbuf1, *channelNo );
                 XP_LOGFF( TAGFMT() "ORd channel onto channelNo: now %s", TAGPRMS,
                           cbuf1 );
@@ -2662,9 +2712,9 @@ validateInitialMessage( CommsCtxt* comms, XWEnv xwe,
         }
 #endif
     } else {
-        CNO_FMT( cbuf, *channelNo );
+        CNO_FMT( cbuf, *channelNoP );
         XP_LOGFF( TAGFMT() "looking at %s", TAGPRMS, cbuf );
-        rec = getRecordFor( comms, xwe, addr, *channelNo );
+        rec = getRecordFor( comms, xwe, addr, *channelNoP );
         if ( !!rec ) {
             augmentChannelAddr( comms, rec, addr, senderID );
 
@@ -2679,8 +2729,8 @@ validateInitialMessage( CommsCtxt* comms, XWEnv xwe,
             }
         } else {
             if ( comms->isServer ) {
-                if ( checkChannelNo( comms, channelNo ) ) {
-                    CNO_FMT( cbuf, *channelNo );
+                if ( checkChannelNo( comms, channelNoP ) ) {
+                    CNO_FMT( cbuf, *channelNoP );
                     XP_LOGFF( TAGFMT() "augmented channel: %s", TAGPRMS, cbuf );
                 } else {
                     /* Why do I sometimes see these in the middle of a game
@@ -2691,7 +2741,7 @@ validateInitialMessage( CommsCtxt* comms, XWEnv xwe,
                     goto errExit;
                 }
             }
-            rec = rememberChannelAddress( comms, xwe, *channelNo, senderID, /* here */
+            rec = rememberChannelAddress( comms, xwe, *channelNoP, senderID,
                                           addr, flags );
         }
     }
