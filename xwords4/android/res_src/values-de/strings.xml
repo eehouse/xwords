@@ -211,7 +211,7 @@
     <string name="tile_back">Spielsteine-Hintergrund</string>
     <string name="empty">Leeres Feld/Hintergrund</string>
     <string name="background">Brett-Hintergrund</string>
-    <string name="key_bonushint">Bonus-Tipp im Feld</string>
+    <string name="key_bonushint">Bonusquadrat-Text</string>
     <string name="red">Rot</string>
     <string name="green">Grün</string>
     <string name="blue">Blau</string>
@@ -515,7 +515,7 @@
     <string name="no_market">Google-Play-App nicht gefunden</string>
     <string name="add_to_study_fmt">%1$s zur Lernliste hinzufügen</string>
     <string name="title_studyon">Lernliste aktivieren</string>
-    <string name="gamel_menu_study">Lernliste …</string>
+    <string name="gamel_menu_study">Lernliste</string>
     <string name="slmenu_copy_sel">In Zwischenablage kopieren</string>
     <plurals name="confirm_studylist_clear_fmt">
         <item quantity="one">Sind Sie sicher, dass Sie das ausgewählte Wort löschen wollen?
