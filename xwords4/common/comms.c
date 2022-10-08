@@ -2579,6 +2579,8 @@ checkChannelNo( CommsCtxt* comms, XP_PlayerAddr* channelNoP )
         success = comms->nextChannelNo < CHANNEL_MASK;
         if ( success ) {
             channelNo |= ++comms->nextChannelNo;
+            CNO_FMT( cbuf, channelNo );
+            XP_LOGFF( "assigned channelNo: %s", cbuf );
         }
         // XP_ASSERT( comms->nextChannelNo <= CHANNEL_MASK );
     } else {

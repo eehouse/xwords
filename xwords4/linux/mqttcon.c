@@ -169,51 +169,56 @@ postMsg( MQTTConStorage* storage, XWStreamCtxt* stream, const MQTTDevID* invitee
 void
 mqttc_init( LaunchParams* params )
 {
+    LOG_FUNC();
+    if ( types_hasType( params->conTypes, COMMS_CONN_MQTT ) ) {
+        XP_ASSERT( !params->mqttConStorage );
+        MQTTConStorage* storage = getStorage( params );
+        storage->params = params;
 
-    XP_ASSERT( !params->mqttConStorage );
-    MQTTConStorage* storage = getStorage( params );
-    storage->params = params;
-
-    loadClientID( params, storage );
+        loadClientID( params, storage );
 #ifdef DEBUG
-    int res =
+        int res =
 #endif
-        pipe( storage->msgPipe );
-    XP_ASSERT( !res );
-    ADD_SOCKET( storage, storage->msgPipe[0], handle_gotmsg );
+            pipe( storage->msgPipe );
+        XP_ASSERT( !res );
+        ADD_SOCKET( storage, storage->msgPipe[0], handle_gotmsg );
     
-    int err = mosquitto_lib_init();
-    XP_LOGFF( "mosquitto_lib_init() => %d", err );
-    XP_ASSERT( 0 == err );
+        int err = mosquitto_lib_init();
+        XP_LOGFF( "mosquitto_lib_init() => %d", err );
+        XP_ASSERT( 0 == err );
 
-    bool cleanSession = false;
-    struct mosquitto* mosq = storage->mosq =
-        mosquitto_new( storage->clientIDStr, cleanSession, storage );
+        bool cleanSession = false;
+        struct mosquitto* mosq = storage->mosq =
+            mosquitto_new( storage->clientIDStr, cleanSession, storage );
 
-    err = mosquitto_username_pw_set( mosq, "xwuser", "xw4r0cks" );
-    XP_LOGFF( "mosquitto_username_pw_set() => %s", mosquitto_strerror(err) );
+        err = mosquitto_username_pw_set( mosq, "xwuser", "xw4r0cks" );
+        XP_LOGFF( "mosquitto_username_pw_set() => %s", mosquitto_strerror(err) );
 
-    mosquitto_log_callback_set( mosq, log_callback );
-	mosquitto_connect_callback_set( mosq, connect_callback );
-	mosquitto_message_callback_set( mosq, onMessageReceived );
-	mosquitto_subscribe_callback_set( mosq, subscribe_callback );
+        mosquitto_log_callback_set( mosq, log_callback );
+        mosquitto_connect_callback_set( mosq, connect_callback );
+        mosquitto_message_callback_set( mosq, onMessageReceived );
+        mosquitto_subscribe_callback_set( mosq, subscribe_callback );
 
-	int keepalive = 60;
-	err = mosquitto_connect( mosq, params->connInfo.mqtt.hostName,
-                             params->connInfo.mqtt.port, keepalive );
-    XP_LOGFF( "mosquitto_connect(host=%s) => %s", params->connInfo.mqtt.hostName,
-              mosquitto_strerror(err) );
-    if ( MOSQ_ERR_SUCCESS == err ) {
-        int mid;
-        err = mosquitto_subscribe( mosq, &mid, storage->topic, DEFAULT_QOS );
-        XP_LOGFF( "mosquitto_subscribe(topic=%s) => %s, mid=%d", storage->topic,
-                  mosquitto_strerror(err), mid );
+        int keepalive = 60;
+        err = mosquitto_connect( mosq, params->connInfo.mqtt.hostName,
+                                 params->connInfo.mqtt.port, keepalive );
+        XP_LOGFF( "mosquitto_connect(host=%s) => %s", params->connInfo.mqtt.hostName,
+                  mosquitto_strerror(err) );
+        if ( MOSQ_ERR_SUCCESS == err ) {
+            int mid;
+            err = mosquitto_subscribe( mosq, &mid, storage->topic, DEFAULT_QOS );
+            XP_LOGFF( "mosquitto_subscribe(topic=%s) => %s, mid=%d", storage->topic,
+                      mosquitto_strerror(err), mid );
 
-        err = mosquitto_loop_start( mosq );
-        XP_ASSERT( !err );
+            err = mosquitto_loop_start( mosq );
+            XP_ASSERT( !err );
+        } else {
+            XP_LOGFF( "failed to connect so not proceeding" );
+        }
     } else {
-        XP_LOGFF( "failed to connect so not proceeding" );
+        XP_LOGFF( "MQTT disabled; doing nothing" );
     }
+    LOG_RETURN_VOID();
 }
 
 void
