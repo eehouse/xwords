@@ -19,6 +19,7 @@
 XWLANG=Turkish
 LANGCODE=tr_TR
 ENC = UTF-8
+DICTNOTE = "Built from the GitHub project \"bip39tr\""
 
 # DICT2DAWGARGS = -r -nosort
 
