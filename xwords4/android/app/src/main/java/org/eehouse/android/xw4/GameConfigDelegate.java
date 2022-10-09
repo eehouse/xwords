@@ -919,8 +919,7 @@ public class GameConfigDelegate extends DelegateBase
                 // PENDING pass only types, not full addr. Types are defaults
                 // we can insert later.
                 intent.putExtra( INTENT_KEY_SADDR, m_car );
-                // Game name should be a field in this layout
-                EditText et = (EditText)findViewById( R.id.name_edit );
+                EditText et = (EditText)findViewById( R.id.game_name_edit );
                 intent.putExtra( INTENT_KEY_NAME, et.getText().toString() );
             } else {
                 intent.putExtra( GameUtils.INTENT_KEY_ROWID, m_rowid );
