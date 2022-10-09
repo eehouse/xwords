@@ -26,13 +26,15 @@ TARGET_TYPE ?= WINCE
 
 include ../Makefile.langcommon
 
-# Empty dict
+# Turkish and my Linux distros don't get along re: case
+# transformations. Even sed gets it wrong, turning i into I rather
+# than İ. So I'm providing an explicit map instead.
 $(XWLANG)Main.dict.gz: $(XWDICTPATH)/Turkish/wordlist-tr.txt
 	cat	$< \
 		| tr -d '\r' \
 		| sed 's/ //g' \
-		| sed 's/./\u&/g' \
-		| sed 'y/ÂÎÛ/AIU/' \
+		| sed 'y/âîûÂÎÛ/AIUAIU/' \
+		| sed 'y/abcçdefgğhıijklmnoöprsştuüvyz/ABCÇDEFGĞHIİJKLMNOÖPRSŞTUÜVYZ/' \
 		| grep '^[ABCÇDEFGĞHIİJKLMNOÖPRSŞTUÜVYZ]\{2,15\}$$' \
 		| gzip >$@
 

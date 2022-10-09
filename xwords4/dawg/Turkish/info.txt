@@ -18,7 +18,6 @@ LANGCODE:tr
 LANGNAME:Turkish
 CHARSET: utf-8
 
-LANGINFO: <p>Turkish is untested with actual wordlists!</p>
 
 XLOC_HEADER:0x8400
 
