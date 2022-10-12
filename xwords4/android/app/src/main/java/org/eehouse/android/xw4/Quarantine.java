@@ -32,7 +32,6 @@ import java.util.Map;
 public class Quarantine {
     private static final String TAG = Quarantine.class.getSimpleName();
     private static final String DATA_KEY = TAG + "/key";
-    private static final int BAD_COUNT = 2;
     private static QData[] sDataRef = {null};
 
     public static int getCount( long rowid )
@@ -47,7 +46,7 @@ public class Quarantine {
     public synchronized static boolean safeToOpen( long rowid )
     {
         int count = getCount( rowid );
-        boolean result = count < BAD_COUNT;
+        boolean result = count < BuildConfig.BAD_COUNT;
         if ( !result ) {
             Log.d( TAG, "safeToOpen(%d) => %b (count=%d)", rowid, result, count );
             if ( BuildConfig.NON_RELEASE ) {
@@ -96,7 +95,7 @@ public class Quarantine {
     public static void markBad( long rowid )
     {
         synchronized ( sDataRef ) {
-            for ( int ii = 0; ii < BAD_COUNT; ++ii ) {
+            for ( int ii = 0; ii < BuildConfig.BAD_COUNT; ++ii ) {
                 get().increment( rowid );
             }
             store();
