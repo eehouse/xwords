@@ -64,6 +64,15 @@ static XP_UCHAR* linux_dutil_md5sum( XW_DUtilCtxt* duc, XWEnv xwe, const XP_U8* 
 #endif
 
 static void
+linux_dutil_getUsername( XW_DUtilCtxt* XP_UNUSED(duc), XWEnv XP_UNUSED(xwe),
+                         XP_U16 num, XP_Bool XP_UNUSED(isLocal), XP_Bool isRobot,
+                         XP_UCHAR* buf, XP_U16* len )
+{
+    const char* fmt = isRobot ? "Robot %d" : "Player %d";
+    *len = XP_SNPRINTF( buf, *len, fmt, num );
+}
+
+static void
 linux_dutil_notifyPause( XW_DUtilCtxt* XP_UNUSED(duc), XWEnv XP_UNUSED(xwe),
                          XP_U32 XP_UNUSED_DBG(gameID),
                          DupPauseType XP_UNUSED_DBG(pauseTyp),
@@ -185,6 +194,7 @@ linux_dutils_init( MPFORMAL VTableMgr* vtMgr, void* closure )
 #ifdef COMMS_CHECKSUM
     SET_PROC(md5sum);
 #endif
+    SET_PROC(getUsername);
     SET_PROC(notifyPause);
     SET_PROC(haveGame);
     SET_PROC(onDupTimerChanged);

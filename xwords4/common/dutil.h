@@ -1,6 +1,6 @@
 /* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
 /* 
- * Copyright 2018 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2018 - 2022 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -79,6 +79,9 @@ typedef struct _DUtilVtable {
     XP_UCHAR* (*m_dutil_md5sum)( XW_DUtilCtxt* duc, XWEnv xwe, const XP_U8* ptr, XP_U32 len );
 #endif
 
+    void (*m_dutil_getUsername)( XW_DUtilCtxt* duc, XWEnv xwe, XP_U16 num,
+                                 XP_Bool isLocal, XP_Bool isRobot,
+                                 XP_UCHAR* buf, XP_U16* len );
     void (*m_dutil_notifyPause)( XW_DUtilCtxt* duc, XWEnv xwe, XP_U32 gameID,
                                  DupPauseType pauseTyp, XP_U16 pauser,
                                  const XP_UCHAR* name, const XP_UCHAR* msg );
@@ -150,6 +153,10 @@ void dutil_super_init( MPFORMAL XW_DUtilCtxt* dutil );
 # define dutil_md5sum( duc, e, p, l )                   \
     (duc)->vtable.m_dutil_md5sum((duc), (e), (p), (l))
 #endif
+
+#define dutil_getUsername(duc, xwe, num, isLocal, isRobot, buf, lenp)   \
+    (duc)->vtable.m_dutil_getUsername((duc), (xwe), (num), (isLocal),    \
+                                      (isRobot), (buf), (lenp))
 
 #define dutil_notifyPause( duc, e, id, ip, p, n, m )                     \
     (duc)->vtable.m_dutil_notifyPause( (duc), (e), (id), (ip), (p), (n), (m) )

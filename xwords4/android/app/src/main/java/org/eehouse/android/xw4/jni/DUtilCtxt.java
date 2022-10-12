@@ -243,6 +243,17 @@ public class DUtilCtxt {
     public static final int PAUSED = 1;
     public static final int AUTOPAUSED = 2;
 
+    // PENDING use prefs for this
+    public String getUsername( int posn, boolean isLocal, boolean isRobot )
+    {
+        Log.d( TAG, "getUsername(posn=%d; isLocal=%b, isRobot=%b)",
+               posn, isLocal, isRobot );
+        String fmt = isLocal ? "Lcl" : "Rmt";
+        fmt += isRobot ? "Rbt" : "Hum";
+        fmt += " %d";
+        return String.format( fmt, posn + 1 );
+    }
+
     // A pause can come in when a game's open or when it's not. If it's open,
     // we want to post an alert. If it's not, we want to post a notification,
     // or at least kick off DupeModeTimer to cancel or start the timer-running

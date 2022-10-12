@@ -304,20 +304,6 @@ and_util_getDict( XW_UtilCtxt* uc, XWEnv xwe,
 }
 
 static void
-and_util_getUsername( XW_UtilCtxt* uc, XWEnv xwe, XP_Bool isLocal,
-                      XP_Bool isRobot, XP_U16 num,
-                      XP_UCHAR* buf, XP_U16* len )
-{
-    /* PENDING: this needs to go through to java */
-    XP_USE( uc );
-    XP_USE( xwe );
-    XP_USE( isRobot );
-    XP_USE( isLocal );
-    *len = XP_SNPRINTF( buf, *len-1, "Plyr #%d", num + 1 );
-    XP_ASSERT( '\0' == buf[*len] );
-}
-
-static void
 and_util_notifyGameOver( XW_UtilCtxt* uc, XWEnv xwe, XP_S16 XP_UNUSED(quitter) )
 {
     UTIL_CBK_HEADER( "notifyGameOver", "()V" );
@@ -867,6 +853,30 @@ and_dutil_md5sum( XW_DUtilCtxt* duc, XWEnv xwe, const XP_U8* ptr, XP_U32 len )
 #endif
 
 static void
+and_dutil_getUsername( XW_DUtilCtxt* duc, XWEnv xwe, XP_U16 num,
+                       XP_Bool isLocal, XP_Bool isRobot,
+                       XP_UCHAR* buf, XP_U16* lenp )
+{
+    LOG_FUNC();
+    DUTIL_CBK_HEADER( "getUsername", "(IZZ)Ljava/lang/String;" );
+
+    jstring jresult = (*env)->CallObjectMethod( env, dutil->jdutil, mid,
+                                                num, isLocal, isRobot );
+    jsize len = (*env)->GetStringUTFLength( env, jresult );
+    if ( len < *lenp ) {
+        const char* jchars = (*env)->GetStringUTFChars( env, jresult, NULL );
+        XP_LOGFF( "len(\"%s\"): %d", jchars, len );
+        *lenp = XP_SNPRINTF( buf, len+1, "%s", jchars );
+        XP_LOGFF( "snprintf wrote: '%s'", buf );
+        // *lenp = len;
+        (*env)->ReleaseStringUTFChars( env, jresult, jchars );
+        deleteLocalRef( env, jresult );
+    }
+    DUTIL_CBK_TAIL();
+    LOG_RETURNF( "%s", buf );
+}
+
+static void
 and_dutil_notifyPause( XW_DUtilCtxt* duc, XWEnv xwe, XP_U32 gameID, DupPauseType pauseTyp,
                        XP_U16 pauser, const XP_UCHAR* name,
                        const XP_UCHAR* msg )
@@ -1009,7 +1019,6 @@ makeUtil( MPFORMAL JNIEnv* env,
     SET_PROC(informUndo);
     SET_PROC(informNetDict);
     SET_PROC(getDict);
-    SET_PROC(getUsername);
     SET_PROC(notifyGameOver);
 #ifdef XWFEATURE_HILITECELL
     SET_PROC(hiliteCell);
@@ -1117,6 +1126,7 @@ makeDUtil( MPFORMAL JNIEnv* env,
 #ifdef COMMS_CHECKSUM
     SET_DPROC(md5sum);
 #endif
+    SET_DPROC(getUsername);
     SET_DPROC(notifyPause);
     SET_DPROC(haveGame);
     SET_DPROC(onDupTimerChanged);

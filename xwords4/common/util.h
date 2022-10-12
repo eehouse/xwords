@@ -126,9 +126,6 @@ typedef struct UtilVtable {
     const DictionaryCtxt* (*m_util_getDict)( XW_UtilCtxt* uc, XWEnv xwe,
                                              const XP_UCHAR* isoCode,
                                              const XP_UCHAR* dictName );
-    void (*m_util_getUsername)( XW_UtilCtxt* uc, XWEnv xwe, XP_Bool isLocal,
-                                XP_Bool isRobot, XP_U16 num,
-                                XP_UCHAR* buf, XP_U16* len );
     void (*m_util_notifyGameOver)( XW_UtilCtxt* uc, XWEnv xwe, XP_S16 quitter );
 #ifdef XWFEATURE_HILITECELL
     XP_Bool (*m_util_hiliteCell)( XW_UtilCtxt* uc, XWEnv xwe, XP_U16 col, XP_U16 row );
@@ -261,10 +258,6 @@ struct XW_UtilCtxt {
                                              (pa) )
 #define util_getDict( uc, xwe, isoCode, dictName )                     \
          (uc)->vtable->m_util_getDict((uc), (xwe), (isoCode), (dictName))
-
-#define util_getUsername(uc, xwe, isLocal, isRobot, num, buf, lenp)     \
-    (uc)->vtable->m_util_getUsername((uc), (xwe), (isLocal), (isRobot), (num), \
-                                     (buf), (lenp))
 
 #define util_notifyGameOver( uc,e, q )                  \
          (uc)->vtable->m_util_notifyGameOver((uc), (e), (q))

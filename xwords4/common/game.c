@@ -871,8 +871,9 @@ gi_setNPlayers( CurGameInfo* gi, XWEnv xwe, XW_UtilCtxt* util,
         if ( !lp->name || !lp->name[0] ) {
             XP_UCHAR name[32];
             XP_U16 len = VSIZE(name);
-            util_getUsername( util, xwe, LP_IS_LOCAL(lp),
-                              LP_IS_ROBOT(lp), ii, name, &len );
+            dutil_getUsername( util_getDevUtilCtxt( util, xwe ),
+                               xwe, ii, LP_IS_LOCAL(lp),
+                               LP_IS_ROBOT(lp), name, &len );
             replaceStringIfDifferent( util->mpool, &lp->name, name );
         }
     }
