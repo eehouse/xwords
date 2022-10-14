@@ -649,20 +649,30 @@ public class GameUtils {
                                     long groupID, String gameName )
     {
         Assert.assertTrueNR( DeviceRole.SERVER_STANDALONE == gi.serverRole );
-        return makeSaveNew( context, gi, null, null, groupID, gameName );
+        return makeSaveNew( context, gi, null, null, groupID, gameName, null );
     }
 
-    public static long makeSaveNew( Context context, CurGameInfo gi,
-                                    CommsAddrRec selfAddr, CommsAddrRec hostAddr,
-                                    long groupID, String gameName )
+    private static long makeSaveNew( Context context, CurGameInfo gi,
+                                     CommsAddrRec selfAddr, CommsAddrRec hostAddr,
+                                     long groupID, String gameName,
+                                     CommsAddrRec invitee )
     {
         if ( DBUtils.GROUPID_UNSPEC == groupID ) {
             groupID = XWPrefs.getDefaultNewGameGroup( context );
         }
+
         GamePtr gamePtr = XwJNI.
             initNew( gi, selfAddr, hostAddr,
                      (UtilCtxt)null, (DrawCtx)null,
                      CommonPrefs.get(context), (TransportProcs)null );
+
+        if ( null != invitee ) {
+            GameSummary summary = new GameSummary( gi );
+            XwJNI.game_summarize( gamePtr, summary );
+            NetLaunchInfo nli = new NetLaunchInfo( context, summary, gi );
+            Log.d( TAG, "passing %s to comms_invite()", nli );
+            XwJNI.comms_invite( gamePtr, nli, invitee );
+        }
 
         long rowid = DBUtils.ROWID_NOTFOUND;
         byte[] bytes = XwJNI.game_saveToStream( gamePtr, gi );
@@ -699,33 +709,35 @@ public class GameUtils {
                                   new String[] { nli.dict }, null, nli.nPlayersT,
                                   nli.nPlayersH, nli.forceChannel,
                                   nli.inviteID(), nli.gameID(),
-                                  nli.gameName, isHost, nli.remotesAreRobots );
+                                  nli.gameName, isHost, nli.remotesAreRobots,
+                                  null );
     }
 
     public static long makeNewMultiGame3( Context context, long groupID,
-                                          String gameName )
+                                          String gameName, CommsAddrRec invitee )
     {
         return makeNewMultiGame4( context, groupID, (String)null,
                                   (ISOCode)null, (String)null,
-                                  (CommsConnTypeSet)null, gameName );
+                                  (CommsConnTypeSet)null, gameName,
+                                  invitee );
     }
 
     public static long makeNewMultiGame4( Context context, long groupID,
                                           String dict, ISOCode isoCode,
                                           String jsonData,
                                           CommsConnTypeSet selfSet,
-                                          String gameName )
+                                          String gameName, CommsAddrRec invitee )
     {
         String inviteID = makeRandomID();
         return makeNewMultiGame5( context, groupID, inviteID, dict, isoCode,
-                                  jsonData, selfSet, gameName );
+                                  jsonData, selfSet, gameName, invitee );
     }
 
     private static long makeNewMultiGame5( Context context, long groupID,
                                            String inviteID, String dict,
                                            ISOCode isoCode, String jsonData,
                                            CommsConnTypeSet selfSet,
-                                           String gameName )
+                                           String gameName, CommsAddrRec invitee )
     {
         ISOCode[] langArray = {isoCode};
         String[] dictArray = {dict};
@@ -747,7 +759,7 @@ public class GameUtils {
                                   groupID, selfAddr, (CommsAddrRec)null,
                                   langArray, dictArray, jsonData, 2, 1,
                                   forceChannel, inviteID, 0, gameName,
-                                  true, false );
+                                  true, false, invitee );
     }
 
     private static long makeNewMultiGame6( Context context, MultiMsgSink sink,
@@ -758,7 +770,8 @@ public class GameUtils {
                                            int nPlayersT, int nPlayersH,
                                            int forceChannel, String inviteID,
                                            int gameID, String gameName,
-                                           boolean isHost, boolean localsRobots )
+                                           boolean isHost, boolean localsRobots,
+                                           CommsAddrRec invitee )
     {
         long rowid = DBUtils.ROWID_NOTFOUND;
 
@@ -781,7 +794,7 @@ public class GameUtils {
         // work
         Assert.assertTrue( gi.nPlayers == nPlayersT );
         return makeNewMultiGame8( context, sink, gi, selfAddr, hostAddr,
-                                  util, groupID, gameName );
+                                  util, groupID, gameName, invitee );
     }
 
     public static long makeNewMultiGame7( Context context, CurGameInfo gi,
@@ -792,18 +805,20 @@ public class GameUtils {
         return makeNewMultiGame8( context, (MultiMsgSink)null,
                                   gi, selfAddr, (CommsAddrRec)null,
                                   (UtilCtxt)null,
-                                  DBUtils.GROUPID_UNSPEC, gameName );
+                                  DBUtils.GROUPID_UNSPEC, gameName, null );
     }
 
     private static long makeNewMultiGame8( Context context, MultiMsgSink sink,
                                            CurGameInfo gi, CommsAddrRec selfAddr,
                                            CommsAddrRec hostAddr, UtilCtxt util,
-                                           long groupID, String gameName )
+                                           long groupID, String gameName,
+                                           CommsAddrRec invitee )
     {
         if ( null == selfAddr ) {
             selfAddr = CommsAddrRec.getSelfAddr( context, gi );
         }
-        long rowid = makeSaveNew( context, gi, selfAddr, hostAddr, groupID, gameName );
+        long rowid = makeSaveNew( context, gi, selfAddr, hostAddr, groupID,
+                                  gameName, invitee );
         if ( null != sink ) {
             sink.setRowID( rowid );
         }

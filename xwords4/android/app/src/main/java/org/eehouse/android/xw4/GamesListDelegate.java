@@ -2477,11 +2477,11 @@ public class GamesListDelegate extends ListDelegateBase
     {
         boolean result = false;
         try {
-            CommsAddrRec hostAddr = (CommsAddrRec)intent
+            CommsAddrRec invitee = (CommsAddrRec)intent
                 .getSerializableExtra( INVITEE_REC_EXTRA );
-            if ( null != hostAddr ) {
+            if ( null != invitee ) {
                 String name = intent.getStringExtra( REMATCH_NEWNAME_EXTRA );
-                makeThenLaunchOrConfigure( name, false, false, hostAddr );
+                makeThenLaunchOrConfigure( name, false, false, invitee );
             }
         } catch ( Exception ex ) {
             Log.ex( TAG, ex );
@@ -3138,7 +3138,7 @@ public class GamesListDelegate extends ListDelegateBase
     }
 
     private void makeThenLaunchOrConfigure( String name, boolean doConfigure,
-                                            boolean skipAsk, CommsAddrRec hostAddr )
+                                            boolean skipAsk, CommsAddrRec invitee )
     {
         if ( skipAsk || !askingChangeName( name, doConfigure ) ) {
 
@@ -3154,16 +3154,15 @@ public class GamesListDelegate extends ListDelegateBase
                     : DBUtils.GROUPID_UNSPEC;
 
                 if ( m_mySIS.nextIsSolo ) {
-                    Assert.assertTrueNR( null == hostAddr );
+                    Assert.assertTrueNR( null == invitee );
                     rowID = GameUtils.makeSaveNew( m_activity,
                                                    // PENDING: leave this out
                                                    new CurGameInfo( m_activity ),
                                                    groupID, name );
                 } else {
-                    // Assert.assertTrueNR( null != hostAddr ); // fired
-                    // Assert.failDbg();       // make sure I'm called
                     rowID = GameUtils
-                        .makeNewMultiGame3( m_activity, groupID, name );
+                        .makeNewMultiGame3( m_activity, groupID, name,
+                                            invitee );
                 }
                 GameUtils.launchGame( getDelegator(), rowID );
             }
