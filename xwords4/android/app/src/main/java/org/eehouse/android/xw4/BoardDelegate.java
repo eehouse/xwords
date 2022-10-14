@@ -3105,6 +3105,7 @@ public class BoardDelegate extends DelegateBase
 
             showToast( R.string.rematch_sent_toast );
         }
+        Assert.assertTrueNR( !force );
         return force;
     }
 

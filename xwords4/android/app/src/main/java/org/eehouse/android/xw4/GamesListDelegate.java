@@ -2700,47 +2700,6 @@ public class GamesListDelegate extends ListDelegateBase
             } else {
                 launchGame( newid );
             }
-            // long groupID = extras.getLong( REMATCH_GROUPID_EXTRA,
-            //                                DBUtils.GROUPID_UNSPEC );
-            // if ( DBUtils.GROUPID_UNSPEC == groupID ) {
-            //     groupID = DBUtils.getGroupForGame( m_activity, srcRowID );
-            // }
-            // // Don't save rematch in Archive group
-            // if ( groupID == DBUtils.getArchiveGroup( m_activity ) ) {
-            //     groupID = XWPrefs.getDefaultNewGameGroup( m_activity );
-            // }
-            // boolean solo = extras.getBoolean( REMATCH_IS_SOLO, true );
-
-            // if ( solo ) {
-            //     newid = GameUtils.dupeGame( m_activity, srcRowID, groupID );
-            //     if ( ROWID_NOTFOUND != newid ) {
-            //         DBUtils.setName( m_activity, newid, gameName );
-            //     }
-            // } else {
-            //     String btAddr = extras.getString( REMATCH_BTADDR_EXTRA );
-            //     String phone = extras.getString( REMATCH_PHONE_EXTRA );
-            //     String p2pMacAddress = extras.getString( REMATCH_P2PADDR_EXTRA );
-            //     String dict = extras.getString( REMATCH_DICT_EXTRA );
-            //     ISOCode isoCode = ISOCode.newIf( extras.getString( REMATCH_LANG_EXTRA ) );
-            //     String mqttDevID = extras.getString( GameSummary.EXTRA_REMATCH_MQTT );
-            //     String json = extras.getString( REMATCH_PREFS_EXTRA );
-
-            //     newid = GameUtils.makeNewMultiGame4( m_activity, groupID, dict,
-            //                                          isoCode, json, addrs, gameName );
-            //     DBUtils.addRematchInfo( m_activity, newid, btAddr, phone,
-            //                             p2pMacAddress, mqttDevID );
-            // }
-
-            // if ( extras.getBoolean( REMATCH_DELAFTER_EXTRA, false ) ) {
-            //     String name = DBUtils.getName( m_activity, srcRowID );
-            //     makeConfirmThenBuilder( Action.LAUNCH_AFTER_DEL,
-            //                             R.string.confirm_del_after_rematch_fmt,
-            //                             name )
-            //         .setParams( newid, srcRowID )
-            //         .show();
-            // } else {
-            //     launchGame( newid );
-            // }
         }
         m_rematchExtras = null;
     }

@@ -527,7 +527,8 @@ public class GameSummary implements Serializable {
                 break;
             }
         }
-        // Log.d( TAG, "hasRematchInfo() => %b", found );
+        Log.d( TAG, "hasRematchInfo() => %b", found );
+        Assert.assertTrueNR( !found );
         return found;
     }
 

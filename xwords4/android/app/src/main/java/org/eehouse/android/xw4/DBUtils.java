@@ -370,42 +370,6 @@ public class DBUtils {
         }
     } // saveSummary
 
-    public static void addRematchInfo( Context context, long rowid,
-                                       CommsAddrRec addr )
-    {
-        try ( GameLock lock = GameLock.tryLock(rowid) ) {
-            if ( null != lock ) {
-                String as64 = Utils.serializableToString64( addr );
-                GameSummary summary = getSummary( context, lock )
-                    .putStringExtra( GameSummary.EXTRA_REMATCH_ADDR, as64 )
-                    ;
-                saveSummary( context, lock, summary );
-            } else {
-                Assert.failDbg();
-                Log.e( TAG, "addRematchInfo(%d): unable to lock game" );
-            }
-        }
-    }
-
-    public static void addRematchInfo( Context context, long rowid, String btAddr,
-                                       String phone, String p2pAddr, String mqttDevID )
-    {
-        try ( GameLock lock = GameLock.tryLock(rowid) ) {
-            if ( null != lock ) {
-                GameSummary summary = getSummary( context, lock )
-                    .putStringExtra( GameSummary.EXTRA_REMATCH_BTADDR, btAddr )
-                    .putStringExtra( GameSummary.EXTRA_REMATCH_PHONE, phone )
-                    .putStringExtra( GameSummary.EXTRA_REMATCH_P2P, p2pAddr )
-                    .putStringExtra( GameSummary.EXTRA_REMATCH_MQTT, mqttDevID )
-                    ;
-                saveSummary( context, lock, summary );
-            } else {
-                Assert.failDbg();
-                Log.e( TAG, "addRematchInfo(%d): unable to lock game" );
-            }
-        }
-    }
-
     public static int countGamesUsingISOCode( Context context, ISOCode isoCode )
     {
         int result = 0;
