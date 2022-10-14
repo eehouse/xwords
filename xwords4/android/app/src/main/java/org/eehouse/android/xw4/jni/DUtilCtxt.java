@@ -246,12 +246,12 @@ public class DUtilCtxt {
     // PENDING use prefs for this
     public String getUsername( int posn, boolean isLocal, boolean isRobot )
     {
-        Log.d( TAG, "getUsername(posn=%d; isLocal=%b, isRobot=%b)",
-               posn, isLocal, isRobot );
-        String fmt = isLocal ? "Lcl" : "Rmt";
-        fmt += isRobot ? "Rbt" : "Hum";
-        fmt += " %d";
-        return String.format( fmt, posn + 1 );
+        String result = isRobot
+            ? CommonPrefs.getDefaultRobotName( m_context )
+            : CommonPrefs.getDefaultPlayerName( m_context, posn );
+        Log.d( TAG, "getUsername(posn=%d; isLocal=%b, isRobot=%b) => %s",
+               posn, isLocal, isRobot, result );
+        return result;
     }
 
     // A pause can come in when a game's open or when it's not. If it's open,

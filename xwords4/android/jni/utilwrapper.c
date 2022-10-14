@@ -857,7 +857,6 @@ and_dutil_getUsername( XW_DUtilCtxt* duc, XWEnv xwe, XP_U16 num,
                        XP_Bool isLocal, XP_Bool isRobot,
                        XP_UCHAR* buf, XP_U16* lenp )
 {
-    LOG_FUNC();
     DUTIL_CBK_HEADER( "getUsername", "(IZZ)Ljava/lang/String;" );
 
     jstring jresult = (*env)->CallObjectMethod( env, dutil->jdutil, mid,
@@ -865,15 +864,11 @@ and_dutil_getUsername( XW_DUtilCtxt* duc, XWEnv xwe, XP_U16 num,
     jsize len = (*env)->GetStringUTFLength( env, jresult );
     if ( len < *lenp ) {
         const char* jchars = (*env)->GetStringUTFChars( env, jresult, NULL );
-        XP_LOGFF( "len(\"%s\"): %d", jchars, len );
         *lenp = XP_SNPRINTF( buf, len+1, "%s", jchars );
-        XP_LOGFF( "snprintf wrote: '%s'", buf );
-        // *lenp = len;
         (*env)->ReleaseStringUTFChars( env, jresult, jchars );
         deleteLocalRef( env, jresult );
     }
     DUTIL_CBK_TAIL();
-    LOG_RETURNF( "%s", buf );
 }
 
 static void
