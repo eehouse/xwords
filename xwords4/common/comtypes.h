@@ -48,6 +48,7 @@
 #define MAX_COLS MAX_ROWS
 #define MIN_COLS 11
 
+#define STREAM_VERS_NORELAY 0x22
 #define STREAM_VERS_MSGTIMESTAMP 0x21
 #define STREAM_VERS_GI_ISO 0x20
 #define STREAM_VERS_SMALLCOMMS 0x1F
@@ -96,7 +97,7 @@
 #define STREAM_VERS_405  0x01
 
 /* search for FIX_NEXT_VERSION_CHANGE next time this is changed */
-#define CUR_STREAM_VERS STREAM_VERS_MSGTIMESTAMP
+#define CUR_STREAM_VERS STREAM_VERS_NORELAY
 
 typedef struct XP_Rect {
     XP_S16 left;

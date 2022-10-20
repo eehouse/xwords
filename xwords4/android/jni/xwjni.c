@@ -2634,22 +2634,6 @@ Java_org_eehouse_android_xw4_jni_XwJNI_comms_1ackAny
 }
 #endif
 
-JNIEXPORT void JNICALL
-Java_org_eehouse_android_xw4_jni_XwJNI_comms_1transportFailed
-( JNIEnv* env, jclass C, GamePtrType gamePtr, jobject failedTyp )
-{
-    XWJNI_START(gamePtr);
-    XP_ASSERT( !!state->game.comms );
-
-    CommsConnType typ = jEnumToInt( env, failedTyp );
-    (void)comms_transportFailed( state->game.comms,
-#ifdef XWFEATURE_RELAY
-                                 env,
-#endif
-                                 typ );
-    XWJNI_END();
-}
-
 JNIEXPORT jboolean JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_comms_1isConnected
 ( JNIEnv* env, jclass C, GamePtrType gamePtr )

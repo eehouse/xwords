@@ -248,8 +248,6 @@ p_stringFromStream( MPFORMAL XWStreamCtxt* stream
     return str;
 } /* makeStringFromStream */
 
-/* FIX_NEXT_VERSION_CHANGE: use stream_getU32VL() for length so string can be
- * larger than 256 bytes */
 XP_U16
 stringFromStreamHereImpl( XWStreamCtxt* stream, XP_UCHAR* buf, XP_U16 buflen
 #ifdef DEBUG
@@ -257,7 +255,10 @@ stringFromStreamHereImpl( XWStreamCtxt* stream, XP_UCHAR* buf, XP_U16 buflen
 #endif
                           )
 {
-    XP_U16 len = stream_getU8( stream );
+    XP_U16 version = stream_getVersion( stream );
+
+    XP_U32 len = version < STREAM_VERS_NORELAY ? stream_getU8( stream )
+        : stream_getU32VL( stream );
     if ( len > 0 ) {
         if ( buflen <= len ) {
             XP_LOGFF( "BAD: buflen %d < len %d (from %s(), line %d)", buflen, len, func, line );
@@ -276,14 +277,20 @@ stringFromStreamHereImpl( XWStreamCtxt* stream, XP_UCHAR* buf, XP_U16 buflen
 void
 stringToStream( XWStreamCtxt* stream, const XP_UCHAR* str )
 {
-    XP_U16 len = str == NULL? 0: XP_STRLEN( str );
-    if ( len > 0xFF ) {
-        XP_LOGFF( "truncating string '%s', dropping len from %d to %d",
-                  str, len, 0xFF );
-        XP_ASSERT(0);
-        len = 0xFF;
+    XP_U16 version = stream_getVersion( stream );
+
+    XP_U32 len = str == NULL? 0: XP_STRLEN( str );
+    if ( version < STREAM_VERS_NORELAY ) {
+        if ( len > 0xFF ) {
+            XP_LOGFF( "truncating string '%s', dropping len from %d to %d",
+                      str, len, 0xFF );
+            XP_ASSERT(0);
+            len = 0xFF;
+        }
+        stream_putU8( stream, (XP_U8)len );
+    } else {
+        stream_putU32VL( stream, len );
     }
-    stream_putU8( stream, (XP_U8)len );
     stream_putBytes( stream, str, len );
 } /* putStringToStream */
 

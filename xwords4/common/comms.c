@@ -620,25 +620,6 @@ set_reset_timer( CommsCtxt* comms, XWEnv xwe )
 #endif  /* XWFEATURE_RELAY */
 
 void
-comms_transportFailed( CommsCtxt* comms,
-#ifdef XWFEATURE_RELAY
-                       XWEnv xwe,
-#endif
-                       CommsConnType failed )
-{
-    XP_LOGFF( "(%s)", ConnType2Str(failed) );
-    XP_ASSERT( !!comms );
-    if ( COMMS_CONN_RELAY == failed && addr_hasType( &comms->selfAddr, COMMS_CONN_RELAY )
-         && comms->rr.relayState != COMMS_RELAYSTATE_DENIED ) {
-        relayDisconnect( comms, xwe );
-#ifdef XWFEATURE_RELAY
-        set_reset_timer( comms, xwe );
-#endif  /* XWFEATURE_RELAY */
-    }
-    LOG_RETURN_VOID();
-}
-
-void
 comms_destroy( CommsCtxt* comms, XWEnv xwe )
 {
     /* did I call comms_stop()? */
@@ -689,19 +670,21 @@ addrFromStreamOne( CommsAddrRec* addrP, XWStreamCtxt* stream, CommsConnType typ 
         break;
     case COMMS_CONN_RELAY: {
         IpRelay ip_relay = {{0}};
-        stringFromStreamHere( stream, ip_relay.invite,
-                              sizeof(ip_relay.invite) );
-        stringFromStreamHere( stream, ip_relay.hostName,
-                              sizeof(ip_relay.hostName) );
-        ip_relay.ipAddr = stream_getU32( stream );
-        ip_relay.port = stream_getU16( stream );
-        if ( version >= STREAM_VERS_DICTLANG ) {
-            ip_relay.seeksPublicRoom = stream_getBits( stream, 1 );
-            ip_relay.advertiseRoom = stream_getBits( stream, 1 );
-        }
+        if ( version < STREAM_VERS_NORELAY ) {
+            stringFromStreamHere( stream, ip_relay.invite,
+                                  sizeof(ip_relay.invite) );
+            stringFromStreamHere( stream, ip_relay.hostName,
+                                  sizeof(ip_relay.hostName) );
+            ip_relay.ipAddr = stream_getU32( stream );
+            ip_relay.port = stream_getU16( stream );
+            if ( version >= STREAM_VERS_DICTLANG ) {
+                ip_relay.seeksPublicRoom = stream_getBits( stream, 1 );
+                ip_relay.advertiseRoom = stream_getBits( stream, 1 );
+            }
 #ifdef XWFEATURE_RELAY
-        XP_MEMCPY( &addrP->u.ip_relay, &ip_relay, sizeof(ip_relay) );
+            XP_MEMCPY( &addrP->u.ip_relay, &ip_relay, sizeof(ip_relay) );
 #endif
+        }
     }
         break;
     case COMMS_CONN_SMS:
@@ -1069,14 +1052,18 @@ addrToStreamOne( XWStreamCtxt* stream, CommsConnType typ,
         stream_putU16( stream, addrP->u.ip.port_ip );
         break;
     case COMMS_CONN_RELAY:
+        if ( stream_getVersion( stream ) < STREAM_VERS_NORELAY ) {
+            IpRelay ip_relay = {{0}};
 #ifdef XWFEATURE_RELAY
-        stringToStream( stream, addrP->u.ip_relay.invite );
-        stringToStream( stream, addrP->u.ip_relay.hostName );
-        stream_putU32( stream, addrP->u.ip_relay.ipAddr );
-        stream_putU16( stream, addrP->u.ip_relay.port );
-        stream_putBits( stream, 1, addrP->u.ip_relay.seeksPublicRoom );
-        stream_putBits( stream, 1, addrP->u.ip_relay.advertiseRoom );
+            ip_relay = addrP->u.ip_relay;
 #endif
+            stringToStream( stream, ip_relay.invite );
+            stringToStream( stream, ip_relay.hostName );
+            stream_putU32( stream, ip_relay.ipAddr );
+            stream_putU16( stream, ip_relay.port );
+            stream_putBits( stream, 1, ip_relay.seeksPublicRoom );
+            stream_putBits( stream, 1, ip_relay.advertiseRoom );
+        }
         break;
     case COMMS_CONN_SMS:
         stringToStream( stream, addrP->u.sms.phone );
@@ -1102,10 +1089,13 @@ void
 addrToStream( XWStreamCtxt* stream, const CommsAddrRec* addrP )
 {
     stream_setVersion( stream, CUR_STREAM_VERS );
-    stream_putU8( stream, addrP->_conTypes );
+    XP_ASSERT( CUR_STREAM_VERS >= STREAM_VERS_NORELAY );
+    XP_U16 conTypes = addrP->_conTypes;
+    types_rmType( &conTypes, COMMS_CONN_RELAY );
+    stream_putU8( stream, conTypes );
 
     CommsConnType typ;
-    for ( XP_U32 st = 0; addr_iter( addrP, &typ, &st ); ) {
+    for ( XP_U32 st = 0; types_iter( conTypes, &typ, &st ); ) {
         addrToStreamOne( stream, typ, addrP );
     }
 }
@@ -1269,6 +1259,7 @@ augmentSelfAddr( CommsCtxt* comms, XWEnv xwe, const CommsAddrRec* addr )
     setDoHeartbeat( comms );
 #endif
     if ( addingRelay ) {
+        XP_ASSERT(0);
         sendConnect( comms, xwe
 #ifdef XWFEATURE_RELAY
                      , XP_TRUE
@@ -3490,12 +3481,16 @@ augmentChannelAddr( CommsCtxt* comms, AddressRecord* const rec,
                     const CommsAddrRec* addr, XWHostID hostID )
 {
     augmentAddrIntrnl( comms, &rec->addr, addr, XP_TRUE );
+#ifdef XWFEATURE_RELAY
     if ( addr_hasType( &rec->addr, COMMS_CONN_RELAY ) ) {
         if ( 0 != hostID ) {
             rec->rr.hostID = hostID;
             XP_LOGFF( "set hostID for rec %p to %d", rec, hostID );
         }
     }
+#else
+    XP_USE(hostID);
+#endif
 
 #ifdef DEBUG
     CommsConnType typ;

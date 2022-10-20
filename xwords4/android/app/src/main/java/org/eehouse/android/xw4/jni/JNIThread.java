@@ -64,7 +64,8 @@ public class JNIThread extends Thread implements AutoCloseable {
             CMD_SAVE,
             CMD_DO,
             CMD_RECEIVE,
-            CMD_TRANSFAIL,
+            // can I remove this? What if ordinal of enum's being saved somewhere
+            _CMD_TRANSFAIL,
             CMD_PREFS_CHANGE,
             CMD_PEN_DOWN,
             CMD_PEN_MOVE,
@@ -541,11 +542,6 @@ public class JNIThread extends Thread implements AutoCloseable {
                 if ( draw ) {
                     handle( JNICmd.CMD_SAVE );
                 }
-                break;
-
-            case CMD_TRANSFAIL:
-                CommsConnType typ = (CommsConnType)args[0];
-                XwJNI.comms_transportFailed( m_jniGamePtr, typ );
                 break;
 
             case CMD_PREFS_CHANGE:

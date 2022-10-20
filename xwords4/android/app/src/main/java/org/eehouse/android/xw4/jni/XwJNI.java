@@ -547,8 +547,6 @@ public class XwJNI {
     public static native int comms_countPendingPackets( GamePtr gamePtr );
 
     public static native void comms_ackAny( GamePtr gamePtr );
-    public static native void comms_transportFailed( GamePtr gamePtr,
-                                                     CommsConnType failed );
     public static native boolean comms_isConnected( GamePtr gamePtr );
     public static native String comms_getStats( GamePtr gamePtr );
     public static native void comms_addMQTTDevID( GamePtr gamePtr, int channelNo,

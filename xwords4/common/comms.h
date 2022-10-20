@@ -166,11 +166,6 @@ void comms_reset( CommsCtxt* comms, XWEnv xwe, XP_Bool isServer
 #endif
                   );
 void comms_resetSame( CommsCtxt* comms, XWEnv xwe );
-void comms_transportFailed( CommsCtxt* comms,
-#ifdef XWFEATURE_RELAY
-                            XWEnv xwe,
-#endif
-                            CommsConnType failed );
 
 void comms_destroy( CommsCtxt* comms, XWEnv xwe );
 
