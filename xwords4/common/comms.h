@@ -212,6 +212,7 @@ void addrToStream( XWStreamCtxt* stream, const CommsAddrRec* addr );
 #ifdef XWFEATURE_COMMS_INVITE
 void comms_invite( CommsCtxt* comms, XWEnv xwe, const NetLaunchInfo* nli,
                    const CommsAddrRec* destAddr );
+XP_U16 comms_getInvited( const CommsCtxt* comms );
 #endif
 XP_S16 comms_send( CommsCtxt* comms, XWEnv xwe, XWStreamCtxt* stream );
 XP_S16 comms_resendAll( CommsCtxt* comms, XWEnv xwe, CommsConnType filter,

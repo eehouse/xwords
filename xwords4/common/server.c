@@ -497,6 +497,7 @@ informMissing( const ServerCtxt* server, XWEnv xwe )
     const XP_Bool isServer = amServer( server );
     const CommsCtxt* comms = server->vol.comms;
     const CurGameInfo* gi = server->vol.gi;
+    XP_U16 nInvited = 0;
     CommsAddrRec addr;
     CommsAddrRec* addrP;
     if ( !comms ) {
@@ -513,10 +514,14 @@ informMissing( const ServerCtxt* server, XWEnv xwe )
     } else if ( isServer ) {
         nPending = server->nv.pendingRegistrations;
         nDevs = server->nv.nDevices - 1;
+        if ( 0 < nPending ) {
+            nInvited = comms_getInvited( comms );
+        }
     } else if ( SERVER_ISCLIENT == gi->serverRole ) {
         nPending = gi->nPlayers - gi_countLocalPlayers( gi, XP_FALSE);
     }
-    util_informMissing( server->vol.util, xwe, isServer, addrP, nDevs, nPending );
+    util_informMissing( server->vol.util, xwe, isServer, addrP, nDevs,
+                        nPending, nInvited );
 }
 
 XP_U16

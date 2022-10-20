@@ -1601,6 +1601,7 @@ comms_invite( CommsCtxt* comms, XWEnv xwe, const NetLaunchInfo* nli,
               const CommsAddrRec* destAddr )
 {
     LOG_FUNC();
+    LOGNLI(nli);
     XP_PlayerAddr forceChannel = nli->forceChannel;
     if ( !haveRealChannel( comms, forceChannel ) ) {
         /* See if we have a channel for this address. Then see if we have an
@@ -1615,9 +1616,35 @@ comms_invite( CommsCtxt* comms, XWEnv xwe, const NetLaunchInfo* nli,
         MsgQueueElem* elem = makeInviteElem( comms, xwe, forceChannel, nli );
 
         elem = addToQueue( comms, xwe, elem );
+        XP_LOGFF( "added invite on channel %d", elem->channelNo & CHANNEL_MASK );
         sendMsg( comms, xwe, elem, COMMS_CONN_NONE );
     }
     LOG_RETURN_VOID();
+}
+
+XP_U16
+comms_getInvited( const CommsCtxt* comms )
+{
+    LOG_FUNC();
+    XP_U16 result = 0;
+
+    XP_U16 allBits = 0;
+    for ( const MsgQueueElem* elem = comms->msgQueueHead; !!elem;
+              elem = elem->next ) {
+        if ( IS_INVITE( elem ) ) {
+            XP_PlayerAddr channelNo = elem->channelNo & CHANNEL_MASK;
+            XP_LOGFF( "got invite on channel %d", channelNo );
+            XP_U16 thisBit = 1 << channelNo;
+            XP_ASSERT( 0 == (thisBit & allBits) ); /* should be no dupes */
+            if ( 0 == (thisBit & allBits) ) {
+                ++result;
+            }
+            allBits |= thisBit;
+        }
+    }
+
+    LOG_RETURNF( "%d", result );
+    return result;
 }
 #endif
 

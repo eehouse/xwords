@@ -2015,7 +2015,7 @@ public class BoardDelegate extends DelegateBase
         // missing or not.
         @Override
         public void informMissing( boolean isServer, CommsConnTypeSet connTypes,
-                                   int nDevs, int nMissing )
+                                   int nDevs, int nMissing, int nInvited )
         {
             // Log.d( TAG, "informMissing(isServer: %b, nDevs: %d; nMissing: %d",
             //        isServer, nDevs, nMissing );

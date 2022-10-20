@@ -1723,10 +1723,11 @@ linux_util_informMissing( XW_UtilCtxt* XP_UNUSED(uc), XWEnv XP_UNUSED(xwe),
                           XP_Bool XP_UNUSED_DBG(isServer), 
                           const CommsAddrRec* XP_UNUSED_DBG(addr),
                           XP_U16 XP_UNUSED_DBG(nDevs),
-                          XP_U16 XP_UNUSED_DBG(nMissing) )
+                          XP_U16 XP_UNUSED_DBG(nMissing),
+                          XP_U16 XP_UNUSED_DBG(nInvited) )
 {
-    XP_LOGF( "%s(isServer=%d, addr=%p, nDevs=%d, nMissing=%d)", 
-             __func__, isServer, addr, nDevs, nMissing );
+    XP_LOGFF( "(isServer=%d, addr=%p, nDevs=%d, nMissing=%d, nInvited=%d)",
+              isServer, addr, nDevs, nMissing, nInvited );
 }
 
 static void
