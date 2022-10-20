@@ -189,7 +189,6 @@ android {
             resValue "string", "nfc_aid", "$NFC_AID_XW4d"
             externalNativeBuild.ndkBuild.cFlags += ['-DVARIANT_xw4d']
             externalNativeBuild.ndkBuild.arguments += ['XW_BT_UUID=' + XWD_UUID]
-            buildConfigField "int", "BAD_COUNT", "1"
         }
 
         xw4dGPlay {
