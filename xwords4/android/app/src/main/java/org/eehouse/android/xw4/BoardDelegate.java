@@ -2931,9 +2931,9 @@ public class BoardDelegate extends DelegateBase
             if ( 2 == summary.nPlayers ) {
                 if ( !summary.anyMissing() ) {
                     CommsConnTypeSet connTypes = summary.conTypes;
-                    supported = connTypes.contains( CommsConnType.COMMS_CONN_BT )
+                    supported = connTypes.contains( CommsConnType.COMMS_CONN_MQTT )
+                        || connTypes.contains( CommsConnType.COMMS_CONN_BT )
                         || connTypes.contains( CommsConnType.COMMS_CONN_SMS  )
-                        || connTypes.contains( CommsConnType.COMMS_CONN_MQTT )
                         || connTypes.contains( CommsConnType.COMMS_CONN_P2P );
                 }
             } else if ( null != context ) {
