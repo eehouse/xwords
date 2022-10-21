@@ -516,6 +516,9 @@ informMissing( const ServerCtxt* server, XWEnv xwe )
         nDevs = server->nv.nDevices - 1;
         if ( 0 < nPending ) {
             nInvited = comms_getInvited( comms );
+            if ( nPending < nInvited ) {
+                nInvited = nPending;
+            }
         }
     } else if ( SERVER_ISCLIENT == gi->serverRole ) {
         nPending = gi->nPlayers - gi_countLocalPlayers( gi, XP_FALSE);

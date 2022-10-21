@@ -411,11 +411,12 @@ public class DlgDelegate {
     }
 
     public void showInviteChoicesThen( final Action action,
-                                       NetLaunchInfo nli, int nMissing )
+                                       NetLaunchInfo nli, int nMissing,
+                                       int nInvited )
     {
         DlgState state = new DlgState( DlgID.INVITE_CHOICES_THEN )
             .setAction( action )
-            .setParams( nli, nMissing );
+            .setParams( nli, nMissing, nInvited );
         m_dlgt.show( state );
     }
 

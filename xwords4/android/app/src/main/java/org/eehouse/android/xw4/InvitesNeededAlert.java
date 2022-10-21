@@ -44,7 +44,8 @@ class InvitesNeededAlert {
 
         Wrapper( Callbacks callbacks ) { mCallbacks = callbacks; }
 
-        void showOrHide( boolean isServer, int nPlayersMissing, boolean isRematch )
+        void showOrHide( boolean isServer, int nPlayersMissing, int nInvited,
+                         boolean isRematch )
         {
             DbgUtils.assertOnUIThread();
             Log.d( TAG, "showOnceIf(nPlayersMissing=%d); self: %s", nPlayersMissing, mSelf );
@@ -52,12 +53,12 @@ class InvitesNeededAlert {
             if ( null == mSelf && 0 == nPlayersMissing ) {
                 // cool: need and have nothing, so do nothing
             } else if ( 0 < nPlayersMissing && null == mSelf ) { // Need but don't have
-                makeNew( isServer, nPlayersMissing, isRematch );
+                makeNew( isServer, nPlayersMissing, nInvited, isRematch );
             } else if ( 0 == nPlayersMissing && null != mSelf ) { // Have and need to close
                 mSelf.close();
             } else if ( null != mSelf && nPlayersMissing != mSelf.mState.mNPlayersMissing ) {
                 mSelf.close();
-                makeNew( isServer, nPlayersMissing, isRematch );
+                makeNew( isServer, nPlayersMissing, nInvited, isRematch );
             } else if ( null != mSelf && nPlayersMissing == mSelf.mState.mNPlayersMissing ) {
                 // nothing to do
             } else {
@@ -80,10 +81,12 @@ class InvitesNeededAlert {
             }
         }
 
-        private void makeNew( boolean isServer, int nPlayersMissing, boolean isRematch )
+        private void makeNew( boolean isServer, int nPlayersMissing,
+                              int nInvited, boolean isRematch )
         {
-            Log.d( TAG, "makeNew(nPlayersMissing=%d)", nPlayersMissing );
-            State state = new State( isServer, nPlayersMissing, isRematch );
+            Log.d( TAG, "makeNew(nPlayersMissing=%d, nInvited=%d)",
+                   nPlayersMissing, nInvited );
+            State state = new State( isServer, nPlayersMissing, nInvited, isRematch );
             mSelf = new InvitesNeededAlert( mCallbacks.getDelegate(), state );
             mCallbacks.getDelegate().showDialogFragment( DlgID.DLG_INVITE, state );
         }
@@ -93,12 +96,14 @@ class InvitesNeededAlert {
     // showDialogFragment()
     private static class State implements Serializable {
         private int mNPlayersMissing;
+        private int mNInvited;
         private boolean mIsRematch;
         private boolean mIsServer;
 
-        State( boolean isServer, int nPlayers, boolean rematch )
+        State( boolean isServer, int nMissing, int nInvited, boolean rematch )
         {
-            mNPlayersMissing = nPlayers;
+            mNPlayersMissing = nMissing;
+            mNInvited = nInvited;
             mIsRematch = rematch;
             mIsServer = isServer;
         }
@@ -202,7 +207,7 @@ class InvitesNeededAlert {
 
         long rowid = callbacks.getRowID();
         SentInvitesInfo sentInfo = DBUtils.getInvitesFor( context, rowid );
-        int nSent = sentInfo.getMinPlayerCount();
+        int nSent = state.mNInvited + sentInfo.getMinPlayerCount();
         boolean invitesNeeded = nPlayersMissing > nSent;
 
         String title;

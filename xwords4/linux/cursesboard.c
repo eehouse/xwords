@@ -1217,7 +1217,7 @@ inviteList( CommonGlobals* cGlobals, CommsAddrRec* myAddr, GSList* invitees,
             const gint forceChannel = ii + 1;
             XP_LOGFF( "using nPlayersH of %d, forceChannel of %d for guest device %d",
                       nPlayersH, forceChannel, ii );
-            NetLaunchInfo nli = {0};
+            NetLaunchInfo nli;
             nli_init( &nli, cGlobals->gi, myAddr, nPlayersH, forceChannel );
             switch ( typ ) {
 #ifdef XWFEATURE_RELAY
@@ -1283,7 +1283,7 @@ sendInvite( void* closure, int XP_UNUSED(key) )
 
     gint forceChannel = 1;
     const XP_U16 nPlayers = params->connInfo.inviteeCounts[forceChannel-1];
-    NetLaunchInfo nli = {0};
+    NetLaunchInfo nli;
     nli_init( &nli, cGlobals->gi, &selfAddr, nPlayers, forceChannel );
 
     if ( SERVER_ISSERVER != cGlobals->gi->serverRole ) {

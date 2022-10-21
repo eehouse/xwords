@@ -102,6 +102,7 @@ public class NetLaunchInfo implements Serializable {
     {
         _conTypes = EMPTY_SET;
         inviteID = GameUtils.formatGameID( Utils.nextRandomInt() );
+        forceChannel = 1;
     }
 
     private NetLaunchInfo( Context context, String data ) throws JSONException

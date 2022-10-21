@@ -1603,6 +1603,7 @@ comms_invite( CommsCtxt* comms, XWEnv xwe, const NetLaunchInfo* nli,
     LOG_FUNC();
     LOGNLI(nli);
     XP_PlayerAddr forceChannel = nli->forceChannel;
+    XP_ASSERT( 0 < forceChannel );
     if ( !haveRealChannel( comms, forceChannel ) ) {
         /* See if we have a channel for this address. Then see if we have an
            invite matching this one, and if not add one. Then trigger a send of

@@ -75,7 +75,8 @@ public class InviteView extends ScrollView
     }
 
     public InviteView setChoices( List<InviteMeans> meansList, int sel,
-                                  String[] players, int maxPlayers )
+                                  String[] players, int maxPlayers,
+                                  int nInvited )
     {
         final Context context = getContext();
 
@@ -110,7 +111,7 @@ public class InviteView extends ScrollView
 
         if ( haveWho ) {
             mGroupWho = ((LimSelGroup)findViewById( R.id.group_who ))
-                .setLimit( maxPlayers )
+                .setLimit( maxPlayers - nInvited )
                 .addPlayers( players )
                 ;
         }

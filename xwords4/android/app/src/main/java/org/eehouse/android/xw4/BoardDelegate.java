@@ -173,6 +173,7 @@ public class BoardDelegate extends DelegateBase
         String[] words;
         String getDict;
         int nMissing = -1;
+        int nInvited;
         int nGuestDevs;
         boolean isServer;
         boolean inTrade;
@@ -720,7 +721,7 @@ public class BoardDelegate extends DelegateBase
     {
         NetLaunchInfo nli = nliForMe();
         showInviteChoicesThen( Action.LAUNCH_INVITE_ACTION, nli,
-                               m_mySIS.nMissing );
+                               m_mySIS.nMissing, m_mySIS.nInvited );
     }
 
     @Override
@@ -2017,9 +2018,11 @@ public class BoardDelegate extends DelegateBase
         public void informMissing( boolean isServer, CommsConnTypeSet connTypes,
                                    int nDevs, int nMissing, int nInvited )
         {
-            // Log.d( TAG, "informMissing(isServer: %b, nDevs: %d; nMissing: %d",
-            //        isServer, nDevs, nMissing );
+            // Log.d( TAG, "informMissing(isServer: %b, nDevs: %d; nMissing: %d, "
+            //        + " nInvited: %d", isServer, nDevs, nMissing, nInvited );
+            Assert.assertTrueNR( nInvited <= nMissing );
             m_mySIS.nMissing = nMissing; // will be 0 unless isServer is true
+            m_mySIS.nInvited = nInvited;
             m_mySIS.nGuestDevs = nDevs;
             m_mySIS.isServer = isServer;
             m_connTypes = connTypes;
@@ -2559,7 +2562,8 @@ public class BoardDelegate extends DelegateBase
     private void showOrHide( InvitesNeededAlert.Wrapper wrapper )
     {
         boolean isRematch = null != m_summary && m_summary.hasRematchInfo();
-        wrapper.showOrHide( m_mySIS.isServer, m_mySIS.nMissing, isRematch );
+        wrapper.showOrHide( m_mySIS.isServer, m_mySIS.nMissing,
+                            m_mySIS.nInvited, isRematch );
     }
 
     private InvitesNeededAlert.Wrapper mINAWrapper;
@@ -3062,9 +3066,11 @@ public class BoardDelegate extends DelegateBase
     private NetLaunchInfo nliForMe()
     {
         int numHere = 1;
+        // This is too simple. Need to know if it's a replacement
         int forceChannel = 1 + m_mySIS.nGuestDevs;
         NetLaunchInfo nli = new NetLaunchInfo( m_activity, m_summary, m_gi,
                                                numHere, forceChannel );
+        // Log.d( TAG, "nliForMe() => %s", nli );
         return nli;
     }
 
@@ -3135,11 +3141,11 @@ public class BoardDelegate extends DelegateBase
             switch ( typ ) {
             case COMMS_CONN_MQTT:
                 // MQTTUtils.inviteRemote( m_jniGamePtr, addr.mqtt_devID, nli );
-                recordInviteSent( InviteMeans.MQTT, addr.mqtt_devID );
+                // recordInviteSent( InviteMeans.MQTT, addr.mqtt_devID ); // here
                 break;
             case COMMS_CONN_BT:
                 // BTUtils.inviteRemote( m_activity, addr.bt_btAddr, nli );
-                recordInviteSent( InviteMeans.BLUETOOTH, addr.bt_btAddr );
+                // recordInviteSent( InviteMeans.BLUETOOTH, addr.bt_btAddr );
                 break;
                 // case COMMS_CONN_RELAY:
                 //     RelayService.inviteRemote( m_activity, m_jniGamePtr, 0, value, nli );
@@ -3147,18 +3153,18 @@ public class BoardDelegate extends DelegateBase
                 //     break;
             case COMMS_CONN_SMS:
                 // sendNBSInviteIf( addr.sms_phone, nli, true );
-                recordInviteSent( InviteMeans.SMS_DATA, addr.sms_phone );
+                // recordInviteSent( InviteMeans.SMS_DATA, addr.sms_phone );
                 break;
 
             default:
                 Log.d( TAG, "not inviting using addr type %s", typ );
+                Assert.failDbg();
             }
         }
         return true;
     }
 
-    private void sendNBSInviteIf( String phone, NetLaunchInfo nli,
-                                  boolean askOk )
+    private void sendNBSInviteIf( String phone, NetLaunchInfo nli, boolean askOk )
     {
         if ( XWPrefs.getNBSEnabled( m_activity ) ) {
             NBSProto.inviteRemote( m_activity, phone, nli );

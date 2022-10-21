@@ -511,7 +511,8 @@ public class DBUtils {
         // if means and target are the same it's definitely a dup. So count
         // them all and return the largest number we have. 99% of the time we
         // care only that it's non-0.
-        public int getMinPlayerCount() {
+        public int getMinPlayerCount()
+        {
             if ( -1 == m_cachedCount ) {
                 int count = m_timestamps.size();
                 Map<InviteMeans, Set<String>> hashes
@@ -658,6 +659,23 @@ public class DBUtils {
     public static void recordInviteSent( Context context, long rowid,
                                          InviteMeans means, String target )
     {
+        if ( BuildConfig.NON_RELEASE ) {
+            switch ( means ) {
+            case EMAIL:
+            case NFC:
+            case CLIPBOARD:
+            case WIFIDIRECT:
+            case SMS_USER:
+            case QRCODE:
+                break;
+            case SMS_DATA:
+            case BLUETOOTH:
+            case MQTT:
+            case RELAY:
+            default:
+                Assert.failDbg();
+            }
+        }
         ContentValues values = new ContentValues();
         values.put( DBHelper.ROW, rowid );
         values.put( DBHelper.MEANS, means.ordinal() );

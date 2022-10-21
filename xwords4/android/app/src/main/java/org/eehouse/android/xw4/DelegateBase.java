@@ -581,9 +581,9 @@ public abstract class DelegateBase implements DlgClickNotify,
     }
 
     protected void showInviteChoicesThen( Action action, NetLaunchInfo nli,
-                                          int nMissing )
+                                          int nMissing, int nInvited )
     {
-        m_dlgDelegate.showInviteChoicesThen( action, nli, nMissing );
+        m_dlgDelegate.showInviteChoicesThen( action, nli, nMissing, nInvited );
     }
 
     public Builder makeOkOnlyBuilder( int msgID, Object... params )
