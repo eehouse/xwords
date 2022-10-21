@@ -2561,9 +2561,8 @@ public class BoardDelegate extends DelegateBase
 
     private void showOrHide( InvitesNeededAlert.Wrapper wrapper )
     {
-        boolean isRematch = null != m_summary && m_summary.hasRematchInfo();
         wrapper.showOrHide( m_mySIS.isServer, m_mySIS.nMissing,
-                            m_mySIS.nInvited, isRematch );
+                            m_mySIS.nInvited, false );
     }
 
     private InvitesNeededAlert.Wrapper mINAWrapper;
@@ -2706,11 +2705,7 @@ public class BoardDelegate extends DelegateBase
 
     private void tryInvites()
     {
-        if ( 0 < m_mySIS.nMissing && m_summary.hasRematchInfo() ) {
-            tryRematchInvites( null != m_missingMeans );
-        } else if ( 0 < m_mySIS.nMissing && m_summary.hasInviteInfo() ) {
-            tryOtherInvites();
-        } else if ( null != m_missingDevs ) {
+        if ( null != m_missingDevs ) {
             Assert.assertNotNull( m_missingMeans );
             String gameName = GameUtils.getName( m_activity, m_rowid );
             for ( int ii = 0; ii < m_missingDevs.length; ++ii ) {
@@ -2938,7 +2933,6 @@ public class BoardDelegate extends DelegateBase
                     CommsConnTypeSet connTypes = summary.conTypes;
                     supported = connTypes.contains( CommsConnType.COMMS_CONN_BT )
                         || connTypes.contains( CommsConnType.COMMS_CONN_SMS  )
-                        || connTypes.contains( CommsConnType.COMMS_CONN_RELAY )
                         || connTypes.contains( CommsConnType.COMMS_CONN_MQTT )
                         || connTypes.contains( CommsConnType.COMMS_CONN_P2P );
                 }
@@ -3072,62 +3066,6 @@ public class BoardDelegate extends DelegateBase
                                                numHere, forceChannel );
         // Log.d( TAG, "nliForMe() => %s", nli );
         return nli;
-    }
-
-    // Return true if anything sent
-    private boolean tryRematchInvites( boolean force )
-    {
-        if ( !force ) {
-            SentInvitesInfo info = DBUtils.getInvitesFor( m_activity, m_rowid );
-            force = 0 == info.getMinPlayerCount();
-        }
-
-        if ( force ) {
-            Assert.assertNotNull( m_summary );
-            Assert.assertNotNull( m_gi );
-            // only supports a single invite for now!
-            NetLaunchInfo nli = nliForMe();
-
-            String value;
-            value = m_summary.getStringExtra( GameSummary.EXTRA_REMATCH_PHONE );
-            if ( null != value ) {
-                sendNBSInviteIf( value, nli, true );
-            }
-            value = m_summary.getStringExtra( GameSummary.EXTRA_REMATCH_BTADDR );
-            if ( null != value ) {
-                BTUtils.inviteRemote( m_activity, value, nli );
-                recordInviteSent( InviteMeans.BLUETOOTH, value );
-            }
-            value = m_summary.getStringExtra( GameSummary.EXTRA_REMATCH_P2P );
-            if ( null != value ) {
-                WiDirService.inviteRemote( m_activity, value, nli );
-                recordInviteSent( InviteMeans.WIFIDIRECT, value );
-            }
-            value = m_summary.getStringExtra( GameSummary.EXTRA_REMATCH_MQTT );
-            if ( null != value ) {
-                MQTTUtils.addInvite( m_jniGamePtr, value, nli );
-                // recordInviteSent( InviteMeans.MQTT, value );
-            }
-
-            showToast( R.string.rematch_sent_toast );
-        }
-        Assert.assertTrueNR( !force );
-        return force;
-    }
-
-    private boolean tryOtherInvites()
-    {
-        boolean result = false;
-        Assert.assertNotNull( m_summary );
-        String str64 = m_summary.getStringExtra( GameSummary.EXTRA_REMATCH_ADDR );
-        try {
-            CommsAddrRec addr = (CommsAddrRec)Utils.string64ToSerializable( str64 );
-            result = tryOtherInvites( addr );
-        } catch ( Exception ex ) {
-            Log.ex( TAG, ex );
-            Assert.failDbg();
-        }
-        return result;
     }
 
     private boolean tryOtherInvites( CommsAddrRec addr )

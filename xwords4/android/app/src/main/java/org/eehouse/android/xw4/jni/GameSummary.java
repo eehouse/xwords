@@ -48,11 +48,6 @@ import org.eehouse.android.xw4.loc.LocUtils;
  */
 public class GameSummary implements Serializable {
     private static final String TAG = GameSummary.class.getSimpleName();
-    public static final String EXTRA_REMATCH_BTADDR = "rm_btaddr";
-    public static final String EXTRA_REMATCH_PHONE = "rm_phone";
-    public static final String EXTRA_REMATCH_P2P = "rm_p2p";
-    public static final String EXTRA_REMATCH_MQTT = "rm_mqtt";
-    public static final String EXTRA_REMATCH_ADDR = "rm_addr";
 
     public static final int MSG_FLAGS_NONE = 0;
     public static final int MSG_FLAGS_TURN = 1;
@@ -511,31 +506,6 @@ public class GameSummary implements Serializable {
         }
         // Log.i( TAG, "getStringExtra(%s) => %s", key, result );
         return result;
-    }
-
-    public boolean hasRematchInfo()
-    {
-        boolean found = false;
-        String[] keys = { EXTRA_REMATCH_BTADDR,
-                          EXTRA_REMATCH_PHONE,
-                          EXTRA_REMATCH_P2P,
-                          EXTRA_REMATCH_MQTT,
-        };
-        for ( String key : keys ) {
-            found = null != getStringExtra( key );
-            if ( found ) {
-                break;
-            }
-        }
-        Log.d( TAG, "hasRematchInfo() => %b", found );
-        Assert.assertTrueNR( !found );
-        return found;
-    }
-
-    public boolean hasInviteInfo()
-    {
-        boolean found = null != getStringExtra( EXTRA_REMATCH_ADDR );
-        return found;
     }
 
     private static boolean localTurnNextImpl( int flags, int turn )
