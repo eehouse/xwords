@@ -3446,14 +3446,14 @@ logAddr( const CommsCtxt* comms, XWEnv xwe,
             stream_catString( stream, buf );
 
             switch( typ ) {
-#ifdef XWFEATURE_RELAY
             case COMMS_CONN_RELAY:
+#ifdef XWFEATURE_RELAY
                 stream_catString( stream, "room: " );
                 stream_catString( stream, addr->u.ip_relay.invite );
                 stream_catString( stream, "; host: " );
                 stream_catString( stream, addr->u.ip_relay.hostName );
-                break;
 #endif
+                break;
             case COMMS_CONN_SMS:
                 stream_catString( stream, "phone: " );
                 stream_catString( stream, addr->u.sms.phone );
