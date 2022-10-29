@@ -21,7 +21,7 @@
     <string name="loc_internal">Internal</string>
     <string name="move_dict_fmt">Lokasi untuk daftar kata %1$s</string>
     <string name="button_default_human">Manusia</string>
-    <string name="players_label_standalone">Pemain-pemain (ketuk untuk menyunting)</string>
+    <string name="players_label_standalone">Pemain (ketuk untuk menyunting)</string>
     <string name="button_default_both">Keduanya</string>
     <string name="button_default_robot">Robot</string>
     <plurals name="confirm_delete_dict_fmt">
@@ -31,7 +31,7 @@
     <string name="dicts_item_move">Ubah lokasi penyimpanan</string>
     <string name="loc_downloads">Unduhan</string>
     <string name="loc_builtin">Bawaan</string>
-    <string name="download_more">Unduh lebih banyak…</string>
+    <string name="download_more">Unduh lebih banyak</string>
     <plurals name="confirm_nameddeletes_fmt">
         <item quantity="other">Apakah kamu yakin ingin menghapus permainan %1$s\? Tindakan ini tidak dapat dibatalkan.</item>
     </plurals>
@@ -43,12 +43,12 @@
     <string name="list_item_copy">Salin</string>
     <string name="list_item_new_from">Buat dari</string>
     <string name="list_item_delete">Hapus permainan</string>
-    <string name="list_item_move">Pindahkan ke kelompok…</string>
-    <string name="list_item_rename">Ubah nama…</string>
-    <string name="list_item_config">Pengaturan permainan…</string>
-    <string name="board_menu_file_about">Tentang CrossWords…</string>
-    <string name="menu_prefs">Pengaturan Aplikasi…</string>
-    <string name="gamel_menu_dicts">Daftar kata-kata…</string>
+    <string name="list_item_move">Pindahkan ke kelompok</string>
+    <string name="list_item_rename">Ubah nama</string>
+    <string name="list_item_config">Pengaturan permainan</string>
+    <string name="board_menu_file_about">Tentang CrossWords</string>
+    <string name="menu_prefs">Pengaturan Aplikasi</string>
+    <string name="gamel_menu_dicts">Daftar Kata</string>
     <string name="button_delete">Hapus</string>
     <plurals name="moves_fmt">
         <item quantity="other">%1$d gerakan dimainkan</item>
@@ -58,11 +58,11 @@
     <string name="invitee_fmt">(%1$s telah diundang)</string>
     <string name="robot_name_fmt">%1$s (robot)</string>
     <string name="str_game_name_fmt">%1$s (%2$s)</string>
-    <string name="str_phony_rejected">Kata ilegal pada gerakan; giliran hilang!</string>
+    <string name="str_phony_rejected">Kata tidak baku pada gerakan; giliran hilang!</string>
     <string name="str_robot_moved_fmt">"Robot %1$s melakukan gerakan ini: "</string>
     <string name="board_menu_game_resend">Kirim ulang gerakan</string>
     <string name="board_menu_game_resign">Undurkan diri</string>
-    <string name="board_menu_game_history">Riwayat permainan…</string>
+    <string name="board_menu_game_history">Riwayat permainan</string>
     <string name="board_submenu_game">Permainan</string>
     <string name="board_menu_trade">Tukar</string>
     <string name="board_menu_done">Giliran selesai</string>
@@ -81,26 +81,26 @@
     <string name="password_label">Kata sandi:</string>
     <string name="robot_label">Pemain robot</string>
     <string name="player_label">Nama:</string>
-    <string name="remote_label">Pemain di luar perangkat</string>
+    <string name="remote_label">Pemain di perangkat lain</string>
     <string name="player_edit_title">Sunting pemain</string>
-    <string name="force_title">Pemain[-pemain] di luar perangkat</string>
+    <string name="force_title">Pemain di perangkat lain</string>
     <string name="play">Mulai permainan</string>
     <string name="game_summary_field_state">Status permainan</string>
-    <string name="game_summary_field_opponents">Nama musuh[-musuh]</string>
+    <string name="game_summary_field_opponents">Nama musuh</string>
     <string name="game_summary_field_language">Bahasa Permainan</string>
     <string name="game_summary_field_empty">&lt;Kosong&gt;</string>
     <string name="prefs_appearance">Tampilan</string>
     <string name="board_size">Ukuran papan</string>
     <string name="default_robodict">Daftar kata untuk robot</string>
     <string name="default_dict">Daftar kata untuk manusia</string>
-    <string name="prefs_dicts_summary">Daftar kata default</string>
+    <string name="prefs_dicts_summary">Daftar kata bawaan</string>
     <string name="prefs_dicts">Bahasa dan Daftar Kata</string>
     <string name="pref_human_name">Pemain manusia (namamu)</string>
     <string name="pref_player4_name">Pemain keempat</string>
     <string name="pref_player3_name">Pemain ketiga</string>
     <string name="pref_player2_name">Pemain kedua</string>
     <string name="pref_player1_name">Pemain pertama</string>
-    <string name="prefs_names_summary">Nama-nama pemain default</string>
+    <string name="prefs_names_summary">Nama-nama pemain bawaan</string>
     <string name="prefs_names">Nama-nama pemain</string>
     <string name="title_prefs">Pengaturan CrossWords</string>
     <string name="strd_turn_score_fmt">Skor untuk giliran: %1$d
@@ -127,7 +127,7 @@
     <string name="background">Latar belakang papan</string>
     <string name="str_commit_confirm">Lakukan gerakan ini\?
 \n</string>
-    <string name="no_moves_made">(Belum ada gerakan)</string>
+    <string name="no_moves_made">(Belum ada giliran)</string>
     <string name="choose_expl_new">Mulai permainan dengan mengirim undangan melalui surel, SMS, atau bahkan kode QR</string>
     <string name="knowns_dup_name_fmt">Tidak dapat mengubah nama dari “%1$s” menjadi “%2$s”. Apakah “%2$s” sudah digunakan\?</string>
     <string name="player_edit_name">Ubah nama</string>
@@ -146,7 +146,7 @@
     <string name="history_title">Riwayat Permainan</string>
     <string name="finalscores_title">Skor akhir</string>
     <string name="button_notagain">Jangan tampilkan lagi</string>
-    <string name="newbie_title">Ini sebuah tip</string>
+    <string name="newbie_title">Ini sebuah kiat</string>
     <string name="query_title">Sebuah pertanyaan…</string>
     <string name="button_retry">Coba lagi</string>
     <string name="button_save">Simpan</string>
@@ -278,21 +278,21 @@
     <string name="board_menu_game_unpause">Lanjut</string>
     <string name="board_menu_game_pause">Jeda</string>
     <string name="history_pause_fmt">Dijeda oleh: %1$s.</string>
-    <string name="logstore_clear_confirm">Apakah Anda ingin menghapus log debug Anda\? Tindakan ini tidak dapat dibatalkan.</string>
+    <string name="logstore_clear_confirm">Apakah kamu ingin menghapus log debug kamu\? Tindakan ini tidak dapat dibatalkan.</string>
     <string name="new_feature_title">Peringatan Fitur Baru</string>
     <string name="knowns_mqtt_fmt">MQTT DevID: %1$s</string>
     <string name="knowns_ts_fmt">Permainan terakhir: %1$s</string>
-    <string name="knowns_delete_confirm_fmt">Apakah Anda yakin ingin menghapus “%1$s” dari Orang Yang Dikenal\?
+    <string name="knowns_delete_confirm_fmt">Apakah kamu yakin ingin menghapus “%1$s” dari Pemain Yang Dikenal\?
 \n
-\n(Tindakan ini tidak dapat dibatalkan, tetapi pemain dapat muncul kembali jika Anda masih memiliki permainan yang aktif bersamanya.)</string>
+\n(Tindakan ini tidak dapat dibatalkan, tetapi pemain dapat muncul kembali jika kamu masih memiliki permainan yang aktif bersamanya.)</string>
     <string name="newgame_radio_known">Undang Orang Yang Dikenali</string>
     <string name="choose_expl_config">ATAU mulai sebuah permainan setelah mengkonfigurasinya, contoh untuk mengubah bahasa atau jumlah pemain</string>
-    <string name="choose_expl_known">ATAU mulai sebuah permainan dengan seseorang yang pernah bermain bersama Anda, undangan tidak diperlukan</string>
+    <string name="choose_expl_known">ATAU mulai sebuah permainan dengan seseorang yang pernah bermain bersama kamu, tanpa memerlukan undangan</string>
     <string name="theme_which">Tema warna papan</string>
     <string name="button_settings">Pengaturan…</string>
-    <string name="not_again_boardThemes_fmt">Papan sekarang berwarna gelap karena “Tema gelap” diaktifkan pada perangkat Anda.
+    <string name="not_again_boardThemes_fmt">Papan sekarang berwarna gelap karena “Tema gelap” diaktifkan pada perangkatmu.
 \n
-\nJika Anda lebih suka tema “Cerah” yang lama, atau gunakan tema yang tidak tergantung pada pengaturan “Tema gelap” Android, Anda dapat mengubah “%1$s” pada Pengaturan Aplikasi kapan saja. Tombol “Pengaturan” di bawah akan membawa Anda ke sana sekarang.</string>
+\nJika kamu lebih suka tema “Cerah” yang lama, atau ingin menggunakan tema yang tidak tergantung pada pengaturan “Tema gelap” Android, kamu dapat mengubah “%1$s” pada Pengaturan Aplikasi kapan saja. Tombol “Pengaturan” di bawah akan membawamu ke sana sekarang.</string>
     <string name="button_apply_config">Impor</string>
     <string name="theme_data_success">Tema disalin ke Papan Klip</string>
     <string name="prefs_copy_dark">Salin tema Gelap</string>
@@ -301,4 +301,67 @@
     <string name="color_theme_edit_light">Sunting tema Cerah</string>
     <string name="color_use_theme_dark">Gunakan tema Gelap</string>
     <string name="color_use_theme_light">Gunakan tema Cerah</string>
+    <string name="summary_invites_out">Pemain diundang</string>
+    <string name="summary_invites_out_fmt">Pemain diundang ke ruang “%1$s”</string>
+    <string name="nethints_allowed_sum">Aktifkan petunjuk untuk permainan dua perangkat</string>
+    <string name="init_autojuggle">Acak urutan pemain</string>
+    <string name="phonies_found_title">Kata tidak baku ditemukan</string>
+    <string name="str_tiles_not_in_line">Semua ubin yang dimainkan harus segaris.</string>
+    <string name="str_two_tiles_first_move">Harus memainkan dua atau lebih ubin pada giliran pertama.</string>
+    <string name="str_no_peek_remote_tiles">Dilarang mengintip ubin pemain pada perangkat lain!</string>
+    <string name="str_too_few_tiles_left_to_trade">Terlalu sedikit ubin yang ditukarkan.</string>
+    <string name="info_title">Informasi</string>
+    <string name="relaypage_url_copied">URL Permainan disalin ke papan klip</string>
+    <string name="langUnknownFmt">Tidak Dikenal (%1$s)</string>
+    <string name="phonies_label">Kata Tidak Baku</string>
+    <string name="phonies_ignore">Abaikan kata tidak baku</string>
+    <string name="phonies_spinner_prompt">Cara menangani kata tidak baku (kata yang tidak ada pada daftar kata)</string>
+    <string name="guest_name">(Pemain di perangkat lain)</string>
+    <string name="force_expl">Dalam permainan multi-perangkat, harus ada setidaknya satu pemain dari perangkat ini dan satu lagi di perangkat lain. Harap periksa pemain di perangkat lain.</string>
+    <string name="tray_size">Ubin pada baki</string>
+    <string name="bonus_l4x_summary">4H</string>
+    <string name="bonus_w4x_summary">4K</string>
+    <string name="board_menu_tray_show">Tampilkan baki</string>
+    <string name="confirm_undo_last">Apa kamu yakin ingin membatalkan giliran terakhir yang dilakukan\?</string>
+    <string name="initial_player_minutes">Menit timer per pemain</string>
+    <string name="confirm_save_title">Konfirmasi penyimpanan</string>
+    <string name="badwords_accept">" Apa kamu tetap ingin meneruskan giliran ini\?"</string>
+    <string name="use_duptimer">Aktifkan timer per giliran</string>
+    <string name="phonies_warn">Peringati jika kata tidak baku</string>
+    <string name="phonies_disallow">Larang kata tidak baku</string>
+    <string name="phonies_block">Blokir kata tidak baku</string>
+    <string name="confirm_save">Permainan ini sedang dimainkan. Jika kamu menyimpan perubahan ini, permainan harus diulang. Apa kamu ingin menyimpan perubahan ini\?</string>
+    <string name="dicts_list_prompt_fmt">Daftar kata yang terpasang (dalam %1$s)</string>
+    <plurals name="invite_msg_fmt">
+        <item quantity="other">Permainan ini sedang menunggu %1$d pemain di perangkat lain untuk menjawab undangan.
+\n
+\nKamu akan melihat pesan ini sampai semua pemain yang ditunggu telah menjawab. Jika kamu pikir ada undangan yang tidak sampai, tidak ada salahnya untuk mengirim lagi.</item>
+    </plurals>
+    <string name="board_menu_tray_hide">Sembunyikan baki</string>
+    <string name="board_menu_game_counts">Jumlah dan nilai</string>
+    <string name="board_menu_game_left">Ubin tersisa</string>
+    <string name="hints_allowed_sum">Aktifkan fitur petunjuk</string>
+    <string name="prefs_behavior">Perilaku</string>
+    <string name="disable_mqtt">Nonaktifkan bermain melalui internet</string>
+    <string name="disable_mqtt_summary">Nonaktifkan seluruh komunikasi internet (MQTT)</string>
+    <string name="disable_bt">Nonaktifkan bermain melalui Bluetooth</string>
+    <string name="disable_bt_summary">Nonaktifkan seluruh komunikasi Bluetooth</string>
+    <string name="qrcode_invite_summary">Kode QR yang musuh kamu bisa pindai</string>
+    <string name="str_no_empties_in_turn">Kotak kosong tidak boleh memisahkan ubin yang dimainkan.</string>
+    <string name="str_tiles_must_contact">Ubin yang baru terpasang harus menyentuh ubin lain yang sudah terpasang (atau kotak tengah pada giliran pertama)</string>
+    <plurals name="strd_robot_traded_fmt">
+        <item quantity="other">menukar %1$d ubin.</item>
+    </plurals>
+    <string name="str_no_peek_robot_tiles">Dilarang mengintip ubin robot!</string>
+    <string name="button_delete_game">Hapus Permainan</string>
+    <string name="invit_expl_sms_fmt">Undangan dikirim melalui SMS Data ke nomor telepon %1$s pada %2$s</string>
+    <string name="msg_dev_deleted_fmt">Permainan bernama “%1$s” telah dihapus pada perangkat lain. Kamu tidak bisa lanjut bermain.</string>
+    <string name="strd_cumulative_score_fmt">Skor kumulatif: %1$d
+\n</string>
+    <string name="ids_badwords_fmt">Kata %1$s tidak ditemukan di daftar kata %2$s.</string>
+    <plurals name="too_many_trade_fmt">
+        <item quantity="other">Terlalu banyak ubin dipilih. Harap pilih tidak lebih dari %1$d.</item>
+    </plurals>
+    <string name="invite_htm_fmt">Ketuk tautan lengkap di bawah untuk bergabung ke permainan ini. &lt;br \\&gt; &lt;br \\&gt; (Tautan lengkap: %1$s)</string>
+    <string name="no_copy_network">Permainan yang telah terhubung ke relay tidak bisa disalin. Gunakan “Buat dari” untuk salinan yang siap dimainkan dengan pengaturan yang sama.</string>
 </resources>
