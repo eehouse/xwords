@@ -2477,7 +2477,8 @@ public class BoardDelegate extends DelegateBase
              && !XWPrefs.getBTDisabled( m_activity ) ) {
             CommsAddrRec[] addrs = XwJNI.comms_getAddrs( m_jniGamePtr );
             for ( CommsAddrRec addr : addrs ) {
-                if ( addr.contains( CommsConnType.COMMS_CONN_BT ) ) {
+                if ( addr.contains( CommsConnType.COMMS_CONN_BT )
+                     && !TextUtils.isEmpty(addr.bt_btAddr) ) {
                     BTUtils.pingHost( m_activity, addr.bt_btAddr, m_gi.gameID );
                 }
             }

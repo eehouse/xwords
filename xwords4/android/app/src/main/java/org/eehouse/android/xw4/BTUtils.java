@@ -286,7 +286,9 @@ public class BTUtils {
 
     public static void gameDied( Context context, String btAddr, int gameID )
     {
-        getPA( btAddr ).addDied( gameID );
+        if ( !TextUtils.isEmpty( btAddr ) ) {
+            getPA( btAddr ).addDied( gameID );
+        }
     }
 
     public static void pingHost( Context context, String btAddr, int gameID )

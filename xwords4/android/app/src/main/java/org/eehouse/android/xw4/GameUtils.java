@@ -1275,9 +1275,8 @@ public class GameUtils {
         }
 
         if ( forceNew || !madeGame ) {
-            Assert.failDbg();   // Is this happening? selfAddr is sometimes
-                                // hostAddr so it can't work.
-            try ( GamePtr gamePtr = XwJNI.initNew( gi, selfAddr, (CommsAddrRec)null,
+            final CommsAddrRec hostAddr = null;
+            try ( GamePtr gamePtr = XwJNI.initNew( gi, selfAddr, hostAddr,
                                                    util, (DrawCtx)null, cp, sink ) ) {
                 if ( null != gamePtr ) {
                     applyChangesImpl( context, sink, gi, disab, lock, gamePtr );
