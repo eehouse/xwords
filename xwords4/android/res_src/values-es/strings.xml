@@ -13,11 +13,11 @@
     <string name="button_delete">Borrar</string>
     <string name="button_reset">Reiniciar</string>
     <string name="gamel_menu_dicts">Listas de palabras…</string>
-    <string name="menu_prefs">Ajustes de la aplicación…</string>
-    <string name="board_menu_file_about">Acerca de CrossWords…</string>
-    <string name="list_item_config">Ajustes del juego…</string>
-    <string name="list_item_rename">Cambiar nombre…</string>
-    <string name="list_item_move">Mover al grupo…</string>
+    <string name="menu_prefs">Ajustes de la aplicación</string>
+    <string name="board_menu_file_about">Acerca de CrossWords</string>
+    <string name="list_item_config">Ajustes del juego</string>
+    <string name="list_item_rename">Cambiar nombre</string>
+    <string name="list_item_move">Mover al grupo</string>
     <string name="list_item_delete">Borrar partida</string>
     <string name="list_item_reset">Reiniciar</string>
     <string name="list_item_new_from">Crear nuevo desde</string>
@@ -36,8 +36,8 @@
 \n
 \n(La opción de reiniciar borrará todos los movimientos y cualquier información de conexión).</item>
     </plurals>
-    <string name="download_more">Descargar más…</string>
-    <string name="list_item_netstats">Conexiones…</string>
+    <string name="download_more">Descargar más</string>
+    <string name="list_item_netstats">Conexiones</string>
     <string name="no_copy_network">Las partidas que ya se han conectado al repetidor no se pueden copiar. Utiliza \"Crear nuevo desde\" para jugar con una copia con los mismos ajustes.</string>
     <string name="loc_builtin">Listas predefinidas</string>
     <string name="loc_downloads">Descargas</string>
@@ -117,7 +117,7 @@
     <string name="invit_expl_notarget_fmt">Invitación enviada a través de %1$s en %2$s. Destinatario desconocido.</string>
     <string name="pts">pts.</string>
     <string name="forced_consistent">Primer jugador modificado.</string>
-    <string name="msg_dev_deleted_fmt">La partida \"%1$s\" ha sido eliminada en otro dispositivo y ya no podrás jugar más.</string>
+    <string name="msg_dev_deleted_fmt">La partida “%1$s” ha sido eliminada en otro dispositivo. Ya no podrás jugar más.</string>
     <string name="ids_badwords_fmt">Palabra[s] %1$s no encontrada[s] en la lista de palabras %2$s.</string>
     <string name="badwords_accept">" ¿Todavía quieres aceptar esta jugada\?"</string>
     <string name="badwords_lost">Turno perdido.</string>
@@ -126,11 +126,11 @@
     <string name="board_menu_trade">Intercambio</string>
     <string name="board_menu_tray_hide">Ocultar atril</string>
     <string name="board_menu_tray_show">Mostrar atril</string>
-    <string name="board_menu_undo_last">Deshacer último movimiento</string>
-    <string name="board_submenu_game">Partida -&gt;</string>
-    <string name="board_menu_game_counts">Cantidad y valores…</string>
-    <string name="board_menu_game_left">Fichas restantes…</string>
-    <string name="board_menu_game_history">Historial de la partida…</string>
+    <string name="board_menu_undo_last">Deshacer el último movimiento</string>
+    <string name="board_submenu_game">Partida</string>
+    <string name="board_menu_game_counts">Cantidad y valores</string>
+    <string name="board_menu_game_left">Fichas restantes</string>
+    <string name="board_menu_game_history">Historial de la partida</string>
     <string name="board_menu_game_final">Resultados finales</string>
     <string name="board_menu_game_resign">Abandonar</string>
     <string name="board_menu_game_resend">Volver a enviar movimientos</string>
@@ -139,7 +139,7 @@
         <item quantity="one">ficha intercambiada.</item>
         <item quantity="other">%1$d fichas intercambiadas.</item>
     </plurals>
-    <string name="strs_values_header_fmt">%1$s counts/values:
+    <string name="strs_values_header_fmt">%1$s cantidad/valores:
 \n</string>
     <string name="strd_remaining_tiles_add_fmt">+ %1$d [todas las fichas restantes]</string>
     <string name="strd_unused_tiles_sub_fmt">- %1$d [fichas no utilizadas]</string>
@@ -167,14 +167,16 @@
     <string name="strd_turn_score_fmt">Puntuación en el turno: %1$d
 \n</string>
     <plurals name="strd_remains_header_fmt">
-        <item quantity="one">%1$d fichas restantes en la bolsa.</item>
-        <item quantity="other"/>
+        <item quantity="one">One ficha restantes en la bolsa.</item>
+        <item quantity="many">%1$d fichas restantes en la bolsa.</item>
+        <item quantity="other"></item>
     </plurals>
     <plurals name="strd_remains_expl_fmt">
-        <item quantity="one">Una ficha restante en la bandeja oculta:
+        <item quantity="one">Una ficha restante en las bandejas ocultas:
 \n</item>
-        <item quantity="other">%1$d fichas restantes en la bolsa y las bandejas ocultas:
+        <item quantity="many">%1$d fichas restantes en la bolsa y las bandejas ocultas:
 \n</item>
+        <item quantity="other"></item>
     </plurals>
     <string name="confirm_undo_last">¿Seguro que quieres deshacer la última jugada realizada\? (No podrás deshacer esta opción)</string>
     <string name="title_prefs">Ajustes de CrossWords</string>
@@ -186,14 +188,14 @@
     <string name="prefs_defaults_summary">Valores predeterminados para nuevas partidas</string>
     <string name="prefs_names">Nombre de los jugadores</string>
     <string name="prefs_names_summary">Nombre de los jugadores por defecto</string>
-    <string name="pref_player1_name">Jugador 1</string>
-    <string name="pref_player2_name">Jugador 2</string>
-    <string name="pref_player3_name">Jugador 3</string>
-    <string name="pref_player4_name">Jugador 4</string>
-    <string name="pref_human_name">Jugador (tu nombre)</string>
-    <string name="prefs_dicts">Listas de palabras</string>
-    <string name="prefs_dicts_summary">Listas de palabras predefinidas</string>
-    <string name="default_dict">Listas de palabras para jugadores</string>
+    <string name="pref_player1_name">Primer jugador</string>
+    <string name="pref_player2_name">Segundo jugador</string>
+    <string name="pref_player3_name">Tercer jugador</string>
+    <string name="pref_player4_name">Cuarto jugador</string>
+    <string name="pref_human_name">Jugador humano (tu nombre)</string>
+    <string name="prefs_dicts">Idioma y Listas de palabras</string>
+    <string name="prefs_dicts_summary">Listas de palabras predeterminadas</string>
+    <string name="default_dict">Listas de palabras para humanos</string>
     <string name="default_robodict">Listas de palabras para robots</string>
     <string name="hints_allowed_sum">Activar pistas</string>
     <string name="nethints_allowed_sum">Activar pistas para partidas con dos dispositivos</string>
@@ -208,7 +210,7 @@
     <string name="summary_field">Incluir en la lista de partidas</string>
     <string name="game_summary_field_empty">&lt;Vacío&gt;</string>
     <string name="game_summary_field_language">Idioma de la partida</string>
-    <string name="game_summary_field_opponents">Oponente[s]</string>
+    <string name="game_summary_field_opponents">Nombre de los oponentes</string>
     <string name="game_summary_field_state">Estado del juego</string>
     <string name="hide_title">Ocultar barra de título</string>
     <string name="hide_title_summary">Ocultar el nombre del juego permite que el tablero sea un poco más grande</string>
@@ -216,18 +218,18 @@
     <string name="hide_newgames_summary">Ocultar los botones de nueva partida permite que la pantalla sea más visible</string>
     <string name="show_arrow">Mostrar flecha del tablero</string>
     <string name="show_arrow_summary">Las fichas del atril se colocarán sobre la flecha cuando sea visible</string>
-    <string name="keep_screenon">Mantener pantalla encendida</string>
-    <string name="keep_screenon_summary">Mantener pantalla encendida durante 10 min</string>
-    <string name="prefs_colors">Colores</string>
+    <string name="keep_screenon">Mantener la pantalla encendida</string>
+    <string name="keep_screenon_summary">Mantener la pantalla encendida durante 10 min</string>
+    <string name="prefs_colors">Colores del tablero etc.</string>
     <string name="prefs_colors_summary">Editar color del tablero</string>
     <string name="bonus_l2x">Letra doble</string>
     <string name="bonus_l3x">Letra triple</string>
-    <string name="bonus_w2x">Palabra x2</string>
-    <string name="bonus_w3x">Palabra x3</string>
-    <string name="clr_crosshairs">Color de las líneas</string>
+    <string name="bonus_w2x">Palabra doble</string>
+    <string name="bonus_w3x">Palabra triple</string>
+    <string name="clr_crosshairs">Color de la retícula</string>
     <string name="tile_back">Color de fondo de las fichas</string>
     <string name="empty">Color de fondo de las fichas vacías</string>
-    <string name="background">Fondo del tablero</string>
+    <string name="background">Color de fondo del tablero</string>
     <string name="red">Rojo</string>
     <string name="green">Verde</string>
     <string name="blue">Azul</string>
@@ -239,7 +241,7 @@
     <string name="skip_confirm_turn_summary">NO mostrar resumen de puntuación después de cada turno de jugador</string>
     <string name="title_sort_tiles">Ordenar nuevas fichas</string>
     <string name="summary_sort_tiles">Ordenar atriles cuando se añadan nuevas fichas</string>
-    <string name="peek_other">Ver las fichas descartadas</string>
+    <string name="peek_other">Ver las fichas fuera de turno</string>
     <string name="qrcode_invite_expl">Para invitar vía código QR, deja que tu oponente escanee el código con la cámara en su teléfono Android.</string>
     <string name="invit_expl_player_fmt">Invitación enviada via MQTT/internet a el jugador conocido\"%1$s\" en %2$s.</string>
     <string name="invite_msg_extra_rematch">Al jugar una revancha, todas la invitaciones necesarias se enviarán automáticamente. Pero siempre puedes enviar nuevas si algun invitado no responde.</string>
@@ -262,4 +264,109 @@
     <string name="bonus_w4x_summary">4W</string>
     <string name="tray_size">Azulejos en la estantería</string>
     <string name="list_item_relaypage">Tráfico del juego</string>
+    <string name="chat_title_fmt">Chat con %1$s</string>
+    <string name="button_substdict">Sustituto</string>
+    <string name="subst_dict_title">Sustituir Lista de palabras (contador de palabras)</string>
+    <string name="button_notagain">No volver a mostrar</string>
+    <string name="invitee_fmt">(%1$s invitado)</string>
+    <string name="invite_choice_bt">Bluetooth</string>
+    <string name="str_bonus_all_fmt">Bonificación por usar %1$d fichas: 50
+\n</string>
+    <string name="notify_title_fmt">Movimiento en partida %1$s</string>
+    <string name="button_retry">Reintentar</string>
+    <string name="notify_chat_title_fmt">Mensaje de chat en la partida %1$s</string>
+    <string name="notify_chat_body_fmt">%1$s: %2$s</string>
+    <string name="button_no">No</string>
+    <string name="game_fmt">Partida %1$d</string>
+    <string name="notify_title_turn_fmt">Tu turno en la partida %1$s</string>
+    <string name="button_download">Descargar</string>
+    <string name="downloading_dict_fmt">Descargando %1$s…</string>
+    <string name="no_dict_title">Lista de palabras no encontrada</string>
+    <string name="str_reg_unexpected_user">Rechazado intento de registrar un usuario inesperado.</string>
+    <string name="str_not_your_turn">No puedes hacer eso; ¡no es tu turno!</string>
+    <string name="str_tiles_must_contact">Las nuevas piezas deben tocar a otras ya colocadas (o el cuadrado central si es la primera jugada)</string>
+    <string name="chat_send">Enviar</string>
+    <string name="chat_hint">Escribir aqui…</string>
+    <string name="chat_other_id">"Yo no: "</string>
+    <string name="chat_local_id">"Yo: "</string>
+    <string name="invite_chooser_email">email</string>
+    <string name="invite_chooser_fmt">Enviar invitación via %1$s</string>
+    <string name="invite_choice_title">Invitando a un Jugador</string>
+    <string name="invite_sms_fmt">Pulsa el enlace para aceptar mi invitación y unirte a una partida de Palabras Cruzadas: %1$s</string>
+    <string name="invite_subject_fmt">Juguemos a Palabras Cruzadas (sala %1$s)</string>
+    <string name="ok_with_robots">OK (robots)</string>
+    <string name="invite_choice_nfc">NFC (“Android beaming”)</string>
+    <string name="invite_choice_relay">Internet/Relay</string>
+    <string name="invite_choice_p2p">Wifi Direct</string>
+    <string name="invite_choice_data_sms">Datos SMS</string>
+    <string name="invite_choice_email">Email</string>
+    <string name="notify_sound">Reproducir sonido</string>
+    <string name="hide_crosshairs_summary">No mostrar la celda del tablero que se toca</string>
+    <string name="network_behavior">Configuraciones del juego en red</string>
+    <string name="hide_crosshairs">Deshabilitar retícula</string>
+    <string name="not_again_trading">Estás accediendo al modo de intercambio de fichas.
+\n
+\nToca las fichas para añadirlas/eliminarlas del conjunto a intercambiar.
+\n
+\n</string>
+    <string name="newbie_title">Aqui tienes un consejo</string>
+    <string name="query_title">Una pregunta</string>
+    <string name="history_title">Historial de la partida</string>
+    <string name="finalscores_title">Puntuaciones finales</string>
+    <string name="tiles_left_title">Fichas restantes</string>
+    <string name="tile_tray_picker">Elige nuevas fichas para el atril</string>
+    <string name="tile_button_txt_fmt">%1$s (%2$d)</string>
+    <string name="tile_pick_summary_fmt">Selección actual: %1$s</string>
+    <string name="info_title">Para tu información</string>
+    <string name="bonus_w4x">Palabra cuadruple</string>
+    <string name="bonus_l4x_summary">4L</string>
+    <string name="notify_other_summary">Cuando llegan movimientos del oponente</string>
+    <string name="radio_who">¿Quien\?</string>
+    <string name="str_no_peek_remote_tiles">¡No puedes espiar las fichas de los jugadores remotos!</string>
+    <string name="button_yes">Si</string>
+    <string name="not_again_trading_buttons">Utiliza los botones para remitir tu turno o salir del modo de intercambio.</string>
+    <string name="msg_ask_password_fmt">Contraseña para “%1$s”:</string>
+    <string name="radio_how">¿Cómo\?</string>
+    <string name="network_behavior_summary">Configuraciones que aplican a los juegos en red</string>
+    <string name="disable_bt">Deshabilitar el juevo via Bluetooth</string>
+    <string name="disable_bt_summary">Deshabilitar toda comunicación Bluetooth</string>
+    <string name="newgame_reinvite">Invitar de nuevo</string>
+    <string name="newgame_invite">Invitar ahora</string>
+    <string name="title_invite_history">Invitaciones Enviadas</string>
+    <string name="invite_choice_user_sms">SMS (texto)</string>
+    <string name="invite_choice_qrcode">Código QR</string>
+    <string name="how_tab">¿Cómo enviar invitación\?</string>
+    <string name="invite_who_empty_expl">vacío</string>
+    <string name="qrcode_invite_summary">Código QR que tu oponente puede escanear</string>
+    <string name="local_invite_summary">Si tu oponente está cerca…</string>
+    <string name="invite_subject">Jugemos a Palabras Cruzadas</string>
+    <string name="invite_htm_fmt">Pulsa el enlace completo inferior para unirte a esta partida. &lt;br \\&gt; &lt;br \\&gt; (Enlace completo: %1$s )</string>
+    <string name="bonus_l4x">Letra cuadruple</string>
+    <string name="key_bonushint">Texto del cuadrado de bonificación</string>
+    <string name="cellline_width">Anchura del borde de la celda</string>
+    <string name="peek_other_summary">Tocar su nombre en el tablero muestra las fichas de ese jugador</string>
+    <string name="disable_mqtt">Deshabilitar el juego a través de internet</string>
+    <string name="disable_mqtt_summary">Deshabilitar toda la comunicación por internet (MQTT)</string>
+    <string name="notify_vibrate">Vibrar</string>
+    <string name="chat_menu_clear">Limpiar historial</string>
+    <string name="str_two_tiles_first_move">Debes usar dos o mas fichas en el primer movimiento.</string>
+    <string name="str_cant_undo_tileassign">La asignación de la ficha no se puede deshacer.</string>
+    <string name="str_cant_hint_while_disabled">La funcionalidad de pistas está deshabilitada para esta partida. Habilitala para una nueva partida en el diálogo de Configuraciones.</string>
+    <string name="str_server_dict_wins">Conflicto entre las listas de palabras del Anfitrión y el Invitado; el Anfitrión gana.</string>
+    <string name="player_fmt">Jugador %1$d</string>
+    <string name="button_save">Guardar</string>
+    <string name="counts_values_title">Contadores de fichas y Valores</string>
+    <string name="ids_endnow">¿Estas seguro de que deseas abandonar\?</string>
+    <string name="old_apks_deleted_fmt">Eliminadas %1$d apks de actualizaciones antiguas</string>
+    <plurals name="too_many_trade_fmt">
+        <item quantity="one">Demasiadas fichas seleccionadas. Por favor selecciona solo una.</item>
+        <item quantity="many">Demasiadas fichas seleccionadas. Por favor no selecciones mas de %1$d.</item>
+        <item quantity="other"></item>
+    </plurals>
+    <string name="button_close_game">Cerrar juego</string>
+    <string name="str_too_few_tiles_left_to_trade">No quedan fichas suficientes para intercambiar.</string>
+    <string name="str_no_peek_robot_tiles">¡No puedes espiar las fichas de un robot!</string>
+    <string name="button_discard">Descartar</string>
+    <string name="no_dict_fmt">Partida “%1$s” requiere una Lista de Palabras en %2$s. Por favor descarga una para poder comenzar.</string>
+    <string name="relaypage_url_copied">URL del juego copiada al portapapeles</string>
 </resources>
