@@ -101,6 +101,7 @@ public class Quarantine {
             store();
             Log.d( TAG, "markBad(%d): %s", rowid, sDataRef[0].toString() );
         }
+        GameListItem.inval( rowid );
     }
 
     private static class QData implements Serializable {

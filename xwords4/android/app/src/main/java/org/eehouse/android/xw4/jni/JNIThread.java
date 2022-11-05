@@ -37,6 +37,7 @@ import org.eehouse.android.xw4.DupeModeTimer;
 import org.eehouse.android.xw4.GameLock;
 import org.eehouse.android.xw4.GameUtils;
 import org.eehouse.android.xw4.Log;
+import org.eehouse.android.xw4.Quarantine;
 import org.eehouse.android.xw4.R;
 import org.eehouse.android.xw4.Utils;
 import org.eehouse.android.xw4.XWPrefs;
@@ -234,24 +235,15 @@ public class JNIThread extends Thread implements AutoCloseable {
                                                          utils, null, cp, m_xport );
                 }
                 if ( null == m_jniGamePtr ) {
-                    // I don't think games get created here. If they do, I
-                    // need to get the selfAddr from somewhere other than
-                    // generic defaults, as the user should have configured an
-                    // address for the game.
-                    Assert.assertTrueNR( m_gi.serverRole != DeviceRole.SERVER_ISCLIENT );
-                    Assert.failDbg(); // Do I ever get here????
-                    CommsAddrRec selfAddr = CommsAddrRec.getSelfAddr( context, m_gi );
-                    CommsAddrRec hostAddr = null;
-                    m_jniGamePtr = XwJNI.initNew( m_gi, selfAddr, hostAddr,
-                                                  utils, null, cp, m_xport );
+                    Quarantine.markBad( m_rowid );
+                    success = false;
+                } else {
+                    notifyAll();
+
+                    m_lastSavedState = Arrays.hashCode( stream );
+                    DupeModeTimer.gameOpened( m_context, m_rowid );
                 }
-                Assert.assertNotNull( m_jniGamePtr );
-                notifyAll();
             }
-
-            m_lastSavedState = Arrays.hashCode( stream );
-
-            DupeModeTimer.gameOpened( m_context, m_rowid );
         }
         Log.d( TAG, "configure() => %b", success );
         return success;
@@ -274,6 +266,7 @@ public class JNIThread extends Thread implements AutoCloseable {
             // this thread unless it's doing something interruptable
             // (like blocking on a socket) so might as well let it
             // take however log it takes.  If that's too long, fix it.
+            interrupt();
             join();
             // Assert.assertFalse( isAlive() );
         } catch ( java.lang.InterruptedException ie ) {
