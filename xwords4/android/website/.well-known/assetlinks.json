@@ -1,0 +1,17 @@
+[{
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+	"namespace": "android_app",
+	"package_name": "org.eehouse.android.xw4",
+	"sha256_cert_fingerprints": ["6E:38:CA:96:04:DB:81:D2:65:D5:F1:A7:92:27:B0:AC:84:20:3C:AF:3D:A8:52:17:AC:70:E9:F5:9F:49:14:C1"]
+    }
+},
+ {
+     "relation": ["delegate_permission/common.handle_all_urls"],
+     "target": {
+	 "namespace": "android_app",
+	 "package_name": "org.eehouse.android.xw4dbg",
+	 "sha256_cert_fingerprints": ["5E:79:13:8C:4E:DD:D8:51:EB:B0:E2:7C:3E:29:77:F3:18:7D:D1:05:E6:6E:39:94:1F:7E:FB:F0:82:D0:07:B2"]
+     }
+ }
+]
