@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+          xmlns:tools="http://schemas.android.com/tools"
           package="org.eehouse.android.xw4"
           >
 
@@ -71,7 +72,7 @@
         <data android:scheme="@string/newgame_scheme"/>
       </intent-filter>
 
-      <intent-filter>
+      <intent-filter android:autoVerify="true" tools:targetApi="m">
         <action android:name="android.intent.action.VIEW" />
         <category android:name="android.intent.category.DEFAULT" />
         <category android:name="android.intent.category.BROWSABLE" />
@@ -79,15 +80,6 @@
         <data android:scheme="https"
               android:host="@string/invite_host"
               android:pathPrefix="@string/invite_prefix"
-              />
-        <!-- Remove http once enough people have the https above -->
-        <data android:scheme="http"
-              android:host="@string/invite_host"
-              android:pathPrefix="@string/invite_prefix"
-              />
-        <data android:scheme="http"
-              android:host="@string/invite_host"
-              android:pathPrefix="@string/conf_prefix"
               />
       </intent-filter>
 

@@ -626,7 +626,7 @@ public class NetLaunchInfo implements Serializable {
         String host = LocUtils.getString( context, R.string.invite_host );
         host = NetUtils.forceHost( host );
         Uri.Builder ub = new Uri.Builder()
-            .scheme( "http" )   // PENDING: should be https soon
+            .scheme( "https" )
             .path( String.format( "//%s%s", host,
                                   LocUtils.getString(context,
                                                      R.string.invite_prefix) ) );

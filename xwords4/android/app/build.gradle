@@ -19,8 +19,8 @@
  */
 
 def INITIAL_CLIENT_VERS = 10
-def VERSION_CODE_BASE = 188
-def VERSION_NAME = '4.4.191'
+def VERSION_CODE_BASE = 189
+def VERSION_NAME = '4.4.192'
 def BUILD_INFO_NAME = "build-info.txt"
 def LAST_COMMIT_FILE = "last-commit.txt"
 
@@ -80,7 +80,7 @@ android {
         } else {
             minSdkVersion 14
         }
-        targetSdkVersion 30     // must match ../build.gradle
+        targetSdkVersion 31     // must match ../build.gradle
         versionCode VERSION_CODE_BASE
         versionName VERSION_NAME
     }
