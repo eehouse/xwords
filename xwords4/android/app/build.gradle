@@ -19,8 +19,8 @@
  */
 
 def INITIAL_CLIENT_VERS = 10
-def VERSION_CODE_BASE = 189
-def VERSION_NAME = '4.4.192'
+def VERSION_CODE_BASE = 190
+def VERSION_NAME = '4.4.193'
 def BUILD_INFO_NAME = "build-info.txt"
 def LAST_COMMIT_FILE = "last-commit.txt"
 
@@ -80,7 +80,6 @@ android {
         } else {
             minSdkVersion 14
         }
-        targetSdkVersion 31     // must match ../build.gradle
         versionCode VERSION_CODE_BASE
         versionName VERSION_NAME
     }
@@ -152,6 +151,9 @@ android {
 
         xw4fdroid {
             dimension "variant"
+            targetSdkVersion 30
+            compileSdkVersion 30
+            buildConfigField "int", "FLAG_IMMUTABLE", "0"
             applicationId "org.eehouse.android.xw4"
             manifestPlaceholders = [ APP_ID: applicationId ]
             resValue "string", "app_name", "CrossWords"
@@ -168,6 +170,9 @@ android {
 
         xw4d {
             dimension "variant"
+            targetSdkVersion 30
+            compileSdkVersion 30
+            buildConfigField "int", "FLAG_IMMUTABLE", "0"
             buildConfigField "String", "DB_NAME", "\"xwddb\""
             applicationId "org.eehouse.android.xw4dbg"
             resValue "string", "app_name", "CrossDbg"
@@ -206,6 +211,9 @@ android {
 
         xw4Foss {
             dimension "variant"
+            targetSdkVersion 30
+            compileSdkVersion 30
+            buildConfigField "int", "FLAG_IMMUTABLE", "0"
             applicationId "org.eehouse.android.xw4"
             manifestPlaceholders = [ APP_ID: applicationId ]
             resValue "string", "app_name", "CrossWords"
