@@ -27,13 +27,3 @@ allprojects {
 task clean(type: Delete) {
     delete rootProject.buildDir
 }
-
-subprojects {
-    afterEvaluate {project ->
-        if (project.hasProperty("android")) {
-            android {
-                compileSdkVersion 31 // must match app/build.gradle
-            }
-        }
-    }
-}
