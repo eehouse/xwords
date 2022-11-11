@@ -2,25 +2,26 @@
 <resources>
     <string name="str_game_name_fmt">%1$s (%2$s)</string>
     <string name="robot_name_fmt">%1$s (robot)</string>
-    <string name="missing_player">(estableciendo conexión…)</string>
+    <string name="missing_player">(todavía no ha llegado…)</string>
     <string name="summary_invites_out">Jugadores invitados</string>
     <string name="summary_invites_out_fmt">Jugadores invitados a la sala \"%1$s\"</string>
     <string name="gameOver">Fin de la partida</string>
     <plurals name="moves_fmt">
-        <item quantity="one">1 movimiento realizado</item>
-        <item quantity="other">%1$d movimientos realizados</item>
+        <item quantity="one">Un movimiento realizado</item>
+        <item quantity="many">%1$d movimientos realizados</item>
+        <item quantity="other"></item>
     </plurals>
     <string name="button_delete">Borrar</string>
     <string name="button_reset">Reiniciar</string>
-    <string name="gamel_menu_dicts">Listas de palabras…</string>
-    <string name="menu_prefs">Ajustes de la aplicación</string>
+    <string name="gamel_menu_dicts">Listas de palabras</string>
+    <string name="menu_prefs">Ajustes de la App</string>
     <string name="board_menu_file_about">Acerca de CrossWords</string>
-    <string name="list_item_config">Ajustes del juego</string>
-    <string name="list_item_rename">Cambiar nombre</string>
+    <string name="list_item_config">Ajustes de la Partida</string>
+    <string name="list_item_rename">Renombrar</string>
     <string name="list_item_move">Mover al grupo</string>
-    <string name="list_item_delete">Borrar partida</string>
+    <string name="list_item_delete">Eliminar partida</string>
     <string name="list_item_reset">Reiniciar</string>
-    <string name="list_item_new_from">Crear nuevo desde</string>
+    <string name="list_item_new_from">Crear nuevo a partir de</string>
     <string name="list_item_copy">Copiar</string>
     <string name="rename_label">Cambiar nombre de la partida por:</string>
     <string name="rename_label_caveat">Cambiar el nombre de esta partida (solo en este dispositivo) por:</string>
@@ -31,10 +32,11 @@
     <plurals name="confirm_reset_fmt">
         <item quantity="one">¿Seguro que quieres reiniciar esta partida\?
 \n
-\n(La opción de reiniciar borrará todos los movimientos y cualquier información de conexión).</item>
-        <item quantity="other">¿Seguro que quieres reiniciar las %1$d siguientes partidas\?
+\n(La opción de reiniciar borrará todos los movimientos y cualquier información de conexión.)</item>
+        <item quantity="many">¿Seguro que quieres reiniciar las %1$d siguientes partidas\?
 \n
-\n(La opción de reiniciar borrará todos los movimientos y cualquier información de conexión).</item>
+\n(La opción de reiniciar borrará todos los movimientos y cualquier información de conexión.)</item>
+        <item quantity="other"></item>
     </plurals>
     <string name="download_more">Descargar más</string>
     <string name="list_item_netstats">Conexiones</string>
@@ -94,7 +96,7 @@
     <string name="password_label">Contraseña:</string>
     <string name="button_trade_commit">Validar intercambio</string>
     <string name="button_trade_cancel">Cancelar intercambio</string>
-    <string name="entering_trade">Pulsa en las fichas para seleccionarlas…</string>
+    <string name="entering_trade">Intercambio de fichas. Pulsa las fichas para seleccionarlas…</string>
     <string name="bonus_l2x_summary">2L</string>
     <string name="bonus_w2x_summary">2P</string>
     <string name="bonus_l3x_summary">3L</string>
@@ -133,7 +135,7 @@
     <string name="board_menu_game_history">Historial de la partida</string>
     <string name="board_menu_game_final">Resultados finales</string>
     <string name="board_menu_game_resign">Abandonar</string>
-    <string name="board_menu_game_resend">Volver a enviar movimientos</string>
+    <string name="board_menu_game_resend">Reenviar movimientos</string>
     <string name="str_robot_moved_fmt">"El robot %1$s ha realizado un movimiento: "</string>
     <plurals name="strd_robot_traded_fmt">
         <item quantity="one">ficha intercambiada.</item>
@@ -169,19 +171,19 @@
     <plurals name="strd_remains_header_fmt">
         <item quantity="one">One ficha restantes en la bolsa.</item>
         <item quantity="many">%1$d fichas restantes en la bolsa.</item>
-        <item quantity="other"></item>
+        <item quantity="other"/>
     </plurals>
     <plurals name="strd_remains_expl_fmt">
         <item quantity="one">Una ficha restante en las bandejas ocultas:
 \n</item>
         <item quantity="many">%1$d fichas restantes en la bolsa y las bandejas ocultas:
 \n</item>
-        <item quantity="other"></item>
+        <item quantity="other"/>
     </plurals>
     <string name="confirm_undo_last">¿Seguro que quieres deshacer la última jugada realizada\? (No podrás deshacer esta opción)</string>
     <string name="title_prefs">Ajustes de CrossWords</string>
     <string name="button_revert_all">Restaurar todo</string>
-    <string name="confirm_revert_colors">¿Seguro que quieres restaurar todos los parámetros de color a sus valores predeterminados\?</string>
+    <string name="confirm_revert_colors">¿Seguro que quieres restaurar todos los ajustes de color a sus valores predeterminados\?</string>
     <string name="button_revert_colors">Restablecer colores</string>
     <string name="confirm_revert_all">¿Estás seguro de que quieres restablecer todos los parámetros a sus valores predeterminados\?</string>
     <string name="prefs_defaults">Nuevas partidas</string>
@@ -201,7 +203,7 @@
     <string name="nethints_allowed_sum">Activar pistas para partidas con dos dispositivos</string>
     <string name="init_autojuggle">Barajar jugadores</string>
     <string name="init_autojuggle_sum">Modo aleatorio, para nuevas partidas</string>
-    <string name="default_phonies">Gestionar las palabras falsas</string>
+    <string name="default_phonies">Gestionar las palabras erróneas</string>
     <string name="phonies_found_title">Palabras falsas encontradas</string>
     <string name="initial_player_minutes">Minutos por jugador</string>
     <string name="board_size">Tamaño del tablero</string>
@@ -257,7 +259,7 @@
         <item quantity="one">¿Seguro que quieres eliminar el juego %1$s\? Esta acción no se puede deshacer.</item>
         <item quantity="other">¿Seguro que quieres eliminar los juegos %1$s\? Esta acción no se puede deshacer.</item>
     </plurals>
-    <string name="button_delete_game">Elimina Juego</string>
+    <string name="button_delete_game">Borrar Partida</string>
     <string name="cellline">Bordes de las celdas</string>
     <string name="game_summary_field_created">Cuando se crea</string>
     <string name="langUnknownFmt">Desconocido (%1$s)</string>
@@ -361,7 +363,7 @@
     <plurals name="too_many_trade_fmt">
         <item quantity="one">Demasiadas fichas seleccionadas. Por favor selecciona solo una.</item>
         <item quantity="many">Demasiadas fichas seleccionadas. Por favor no selecciones mas de %1$d.</item>
-        <item quantity="other"></item>
+        <item quantity="other"/>
     </plurals>
     <string name="button_close_game">Cerrar juego</string>
     <string name="str_too_few_tiles_left_to_trade">No quedan fichas suficientes para intercambiar.</string>
@@ -369,4 +371,22 @@
     <string name="button_discard">Descartar</string>
     <string name="no_dict_fmt">Partida “%1$s” requiere una Lista de Palabras en %2$s. Por favor descarga una para poder comenzar.</string>
     <string name="relaypage_url_copied">URL del juego copiada al portapapeles</string>
+    <string name="about_btaddr_fmt">Dirección MAC BT: %1$s</string>
+    <string name="not_again_chat">Este botón abre la pantalla de mensajería entre dispositivos de esta partida. Los mensajes se mantendrán hasta que elimines la partida que los contiene.</string>
+    <string name="not_again_juggle">Este botón recoloca aleatoriamente las fichas en el atril.</string>
+    <string name="not_again_hintprev">Este botón muestra todos los posible movimientos en orden de puntuación ascendente.
+\n
+\n(Solo utiliza las fichas situadas a la derecha del divisor arrastrable del atril.)</string>
+    <string name="not_again_trading_menu">Utiliza el menú o la barra de acciones para remitir tu turno o salir del modo de intercambio.</string>
+    <string name="not_again_undo">Este botón deshace o rehace el turno actual.</string>
+    <string name="not_again_hintnext">Este botón muestra todos los posible movimientos en orden de puntuación descendente.
+\n
+\n(Solo utiliza las fichas situadas a la derecha del separador arrastrable del atril.)</string>
+    <string name="not_again_flip">Este botón gira el tablero a lo largo de un eje diagonal.</string>
+    <string name="about_vers_fmt2">Información de compilación:
+\n\tVariante: %1$s
+\n\tNombre de versión: %2$s
+\n\tCódigo de versión: %3$d
+\n\tFuente (Git) rev: %4$s
+\n\tCompilado: %5$s</string>
 </resources>
