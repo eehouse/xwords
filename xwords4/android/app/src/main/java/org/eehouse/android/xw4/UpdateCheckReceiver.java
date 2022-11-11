@@ -98,7 +98,7 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
 
         Intent intent = new Intent( context, UpdateCheckReceiver.class );
         PendingIntent pi = PendingIntent.getBroadcast( context, 0, intent,
-                                                       PendingIntent.FLAG_IMMUTABLE );
+                                                       BuildConfig.FLAG_IMMUTABLE );
         am.cancel( pi );
 
         long interval_millis;
