@@ -4,9 +4,6 @@
           package="org.eehouse.android.xw4"
           >
 
-  <!-- BE SURE TO MODIFY project.properties AND the variable TARGET in
-       ../scripts/setup_local_props.sh if targetSdkVersion changes!!!
-       -->
   <supports-screens android:resizeable="true"
                     android:smallScreens="true"
                     android:normalScreens="true"

@@ -275,11 +275,12 @@ static void logAddr( const CommsCtxt* comms, XWEnv xwe,
 /*                       const char* caller ); */
 
 #else
-#define ASSERT_ADDR_OK(addr)
-#define printQueue( comms )
-#define logAddr( comms, xwe, addr, caller)
-#define logAddrs( comms, caller )
-#endif
+# define ASSERT_ADDR_OK(addr)
+# define printQueue( comms )
+# define logAddr( comms, xwe, addr, caller)
+# define logAddrs( comms, caller )
+#endif  /* def DEBUG */
+
 #if defined RELAY_HEARTBEAT || defined COMMS_HEARTBEAT
 static void setHeartbeatTimer( CommsCtxt* comms );
 

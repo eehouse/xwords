@@ -872,6 +872,8 @@ debugf( const char* format, va_list ap )
                                "x4bg"
 # elif defined VARIANT_xw4dup || defined VARIANT_xw4dupGPlay
                                "x4du"
+# else
+      ERROR
 # endif
         ;
 
