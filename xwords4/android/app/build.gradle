@@ -169,9 +169,9 @@ android {
 
         xw4d {
             dimension "variant"
-            targetSdkVersion 30
-            compileSdkVersion 30
-            buildConfigField "int", "FLAG_IMMUTABLE", "0"
+            targetSdkVersion 31
+            compileSdkVersion 31
+            buildConfigField "int", "FLAG_IMMUTABLE", "android.app.PendingIntent.FLAG_IMMUTABLE"
             buildConfigField "String", "DB_NAME", "\"xwddb\""
             applicationId "org.eehouse.android.xw4dbg"
             resValue "string", "app_name", "CrossDbg"
