@@ -294,7 +294,9 @@ public class BTUtils {
                targetAddr.bt_hostName, targetAddr.bt_btAddr );
         int nSent = -1;
         String name = targetAddr.bt_hostName;
-        if ( isActivePeer( name ) ) {
+        if ( !havePermissions( context ) ) {
+            Log.d( TAG, "sendPacket(): no BT permissions available" );
+        } else if ( isActivePeer( name ) ) {
             getPA( getSafeAddr(targetAddr) ).addMsg( gameID, buf, msgID );
         } else {
             Log.d( TAG, "sendPacket(): addressee %s unknown so dropping", name );
