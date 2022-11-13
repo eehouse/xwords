@@ -165,6 +165,11 @@ public class BTUtils {
         }
     }
 
+    public static boolean havePermissions()
+    {
+        return havePermissions( getContext() );
+    }
+
     public static boolean havePermissions( Context context )
     {
         boolean result = Perms23.havePermissions( context, BTPerms );
@@ -370,7 +375,7 @@ public class BTUtils {
     {
         Set<BluetoothDevice> result = new HashSet<>();
         BluetoothAdapter adapter = getAdapterIf();
-        if ( null != adapter ) {
+        if ( null != adapter && havePermissions() ) {
             for ( BluetoothDevice dev : adapter.getBondedDevices() ) {
                 int clazz = dev.getBluetoothClass().getMajorDeviceClass();
                 switch ( clazz ) {
