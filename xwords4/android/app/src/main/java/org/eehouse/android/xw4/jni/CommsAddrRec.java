@@ -491,7 +491,7 @@ public class CommsAddrRec implements Serializable {
             Assert.failDbg();
             break;
         case COMMS_CONN_BT:
-            String[] strs = BTUtils.getBTNameAndAddress();
+            String[] strs = BTUtils.getBTNameAndAddress( context );
             if ( null != strs ) {
                 bt_hostName = strs[0];
                 bt_btAddr = strs[1];

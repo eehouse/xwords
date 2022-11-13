@@ -326,7 +326,7 @@ public class NetLaunchInfo implements Serializable {
             // Log.d( TAG, "NetLaunchInfo(): got type %s", typ );
             switch( typ ) {
             case COMMS_CONN_BT:
-                addBTInfo();
+                addBTInfo( context );
                 break;
             case COMMS_CONN_RELAY:
                 addRelayInfo( summary.roomName, summary.relayID );
@@ -700,9 +700,9 @@ public class NetLaunchInfo implements Serializable {
         add( CommsConnType.COMMS_CONN_RELAY );
     }
 
-    public void addBTInfo()
+    public void addBTInfo( Context context )
     {
-        String[] got = BTUtils.getBTNameAndAddress();
+        String[] got = BTUtils.getBTNameAndAddress( context );
         if ( null != got ) {
             btName = got[0];
             btAddress = got[1];

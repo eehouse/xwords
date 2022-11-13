@@ -1582,7 +1582,7 @@ public class BoardDelegate extends DelegateBase
                     nli.addRelayInfo( room, inviteID );
                     break;
                 case COMMS_CONN_BT:
-                    nli.addBTInfo();
+                    nli.addBTInfo( m_activity );
                     break;
                 case COMMS_CONN_SMS:
                     nli.addSMSInfo( m_activity );

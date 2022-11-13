@@ -130,6 +130,10 @@ public class BTUtils {
                 }
             };
 
+    public static final Perms23.Perm[] BTPerms = { Perms23.Perm.BLUETOOTH_CONNECT,
+        Perms23.Perm.BLUETOOTH_SCAN,
+    };
+
     public static boolean BTAvailable()
     {
         BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
@@ -159,6 +163,13 @@ public class BTUtils {
         } else {
             stopThreads();
         }
+    }
+
+    public static boolean havePermissions( Context context )
+    {
+        boolean result = Perms23.havePermissions( context, BTPerms );
+        Log.d( TAG, "havePermissions() => %b", result );
+        return result;
     }
 
     public static void disabledChanged( Context context )
@@ -221,12 +232,14 @@ public class BTUtils {
         return result;
     }
 
-    public static String[] getBTNameAndAddress()
+    public static String[] getBTNameAndAddress( Context context )
     {
         String[] result = null;
-        BluetoothAdapter adapter = getAdapterIf();
-        if ( null != adapter ) {
-            result = new String[] { adapter.getName(), sMyMacAddr };
+        if ( havePermissions( context ) ) {
+            BluetoothAdapter adapter = getAdapterIf();
+            if ( null != adapter ) {
+                result = new String[] { adapter.getName(), sMyMacAddr };
+            }
         }
         return result;
     }
