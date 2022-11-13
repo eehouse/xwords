@@ -112,6 +112,9 @@ android {
     flavorDimensions "variant"//, "abi"
     productFlavors {
         all {
+            buildConfigField "int", "FLAG_IMMUTABLE", "0"
+            buildConfigField "boolean", "BLUETOOTH_CONNECT", "true"
+            buildConfigField "boolean", "BLUETOOTH_SCAN", "true"
             buildConfigField "String", "JNI_LIB_NAME", "\"xwjni\""
             buildConfigField "String", "DB_NAME", "\"xwdb\""
             buildConfigField "String", "BUILD_INFO_NAME", "\"${BUILD_INFO_NAME}\""
@@ -150,9 +153,6 @@ android {
 
         xw4fdroid {
             dimension "variant"
-            targetSdkVersion 30
-            compileSdkVersion 30
-            buildConfigField "int", "FLAG_IMMUTABLE", "0"
             applicationId "org.eehouse.android.xw4"
             manifestPlaceholders = [ APP_ID: applicationId ]
             resValue "string", "app_name", "CrossWords"
@@ -169,9 +169,15 @@ android {
 
         xw4d {
             dimension "variant"
-            targetSdkVersion 31
-            compileSdkVersion 31
+
+            android {
+                targetSdkVersion 31
+                compileSdkVersion 31
+            }
+            buildConfigField "String", "BLUETOOTH_CONNECT", "android.Manifest.permission.BLUETOOTH_CONNECT"
+            buildConfigField "String", "BLUETOOTH_SCAN", "android.Manifest.permission.BLUETOOTH_SCAN"
             buildConfigField "int", "FLAG_IMMUTABLE", "android.app.PendingIntent.FLAG_IMMUTABLE"
+
             buildConfigField "String", "DB_NAME", "\"xwddb\""
             applicationId "org.eehouse.android.xw4dbg"
             resValue "string", "app_name", "CrossDbg"
@@ -210,9 +216,6 @@ android {
 
         xw4Foss {
             dimension "variant"
-            targetSdkVersion 30
-            compileSdkVersion 30
-            buildConfigField "int", "FLAG_IMMUTABLE", "0"
             applicationId "org.eehouse.android.xw4"
             manifestPlaceholders = [ APP_ID: applicationId ]
             resValue "string", "app_name", "CrossWords"
@@ -244,6 +247,9 @@ android {
         //     dimension "abi"
         //     versionCode 3 + VERSION_CODE_BASE
         // }
+        all {
+            buildConfigField "String", "compileSdkVersion", "\"$compileSdkVersion\""
+        }
     }
 
     signingConfigs {

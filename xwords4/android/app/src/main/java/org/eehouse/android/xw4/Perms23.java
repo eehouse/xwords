@@ -47,10 +47,14 @@ public class Perms23 {
         STORAGE(Manifest.permission.WRITE_EXTERNAL_STORAGE),
         SEND_SMS(Manifest.permission.SEND_SMS),
         RECEIVE_SMS(Manifest.permission.RECEIVE_SMS),
-        READ_CONTACTS(Manifest.permission.READ_CONTACTS);
+        READ_CONTACTS(Manifest.permission.READ_CONTACTS),
+        BLUETOOTH_CONNECT(BuildConfig.BLUETOOTH_CONNECT),
+        BLUETOOTH_SCAN(BuildConfig.BLUETOOTH_SCAN);
 
         private String m_str;
+        private boolean m_granted;
         private Perm(String str) { m_str = str; }
+        private Perm(boolean granted) { m_granted = granted; }
 
         public String getString() { return m_str; }
         public boolean isBanned( Context context )
