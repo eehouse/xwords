@@ -112,9 +112,10 @@ android {
     flavorDimensions "variant"//, "abi"
     productFlavors {
         all {
-            buildConfigField "int", "FLAG_IMMUTABLE", "0"
-            buildConfigField "boolean", "BLUETOOTH_CONNECT", "true"
-            buildConfigField "boolean", "BLUETOOTH_SCAN", "true"
+            android {
+                targetSdkVersion 31
+                compileSdkVersion 31
+            }
             buildConfigField "String", "JNI_LIB_NAME", "\"xwjni\""
             buildConfigField "String", "DB_NAME", "\"xwdb\""
             buildConfigField "String", "BUILD_INFO_NAME", "\"${BUILD_INFO_NAME}\""
@@ -169,14 +170,6 @@ android {
 
         xw4d {
             dimension "variant"
-
-            android {
-                targetSdkVersion 31
-                compileSdkVersion 31
-            }
-            buildConfigField "String", "BLUETOOTH_CONNECT", "android.Manifest.permission.BLUETOOTH_CONNECT"
-            buildConfigField "String", "BLUETOOTH_SCAN", "android.Manifest.permission.BLUETOOTH_SCAN"
-            buildConfigField "int", "FLAG_IMMUTABLE", "android.app.PendingIntent.FLAG_IMMUTABLE"
 
             buildConfigField "String", "DB_NAME", "\"xwddb\""
             applicationId "org.eehouse.android.xw4dbg"

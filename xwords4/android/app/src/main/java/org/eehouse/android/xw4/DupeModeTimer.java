@@ -173,7 +173,7 @@ public class DupeModeTimer extends BroadcastReceiver {
             sCurTimer = whenSeconds;
             Intent intent = new Intent( context, DupeModeTimer.class );
             PendingIntent pi = PendingIntent.getBroadcast( context, 0, intent,
-                                                           BuildConfig.FLAG_IMMUTABLE );
+                                                           PendingIntent.FLAG_IMMUTABLE );
 
             long now = Utils.getCurSeconds();
             long fire_millis = SystemClock.elapsedRealtime()

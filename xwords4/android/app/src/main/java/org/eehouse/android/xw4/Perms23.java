@@ -48,8 +48,8 @@ public class Perms23 {
         SEND_SMS(Manifest.permission.SEND_SMS),
         RECEIVE_SMS(Manifest.permission.RECEIVE_SMS),
         READ_CONTACTS(Manifest.permission.READ_CONTACTS),
-        BLUETOOTH_CONNECT(BuildConfig.BLUETOOTH_CONNECT),
-        BLUETOOTH_SCAN(BuildConfig.BLUETOOTH_SCAN);
+        BLUETOOTH_CONNECT(Manifest.permission.BLUETOOTH_CONNECT),
+        BLUETOOTH_SCAN(Manifest.permission.BLUETOOTH_SCAN);
 
         private String m_str = null;
         private Perm(String str) { m_str = str; }
@@ -59,7 +59,6 @@ public class Perms23 {
         {
             return !permInManifest( context, this );
         }
-        public boolean notNeeded() { return null == m_str; }
         public static Perm getFor( String str ) {
             Perm result = null;
             for ( Perm one : Perm.values() ) {
@@ -422,9 +421,7 @@ public class Perms23 {
         for ( int ii = 0; result && ii < perms.length; ++ii ) {
             Perm perm = perms[ii];
             boolean thisResult;
-            if ( perm.notNeeded() ) {
-                thisResult = true;
-            } else if ( perm.isBanned(context) ) {
+            if ( perm.isBanned(context) ) {
                 thisResult = bannedWithWorkaround( context, perm );
             } else {
                 thisResult = PackageManager.PERMISSION_GRANTED
