@@ -68,7 +68,7 @@ public class XWConnAddrPreference extends DialogPreference
             View view = LocUtils.inflate( activity, R.layout.conn_types_display );
 
             final ConnViaViewLayout cvl = (ConnViaViewLayout)view.findViewById( R.id.conn_types );
-            cvl.configure( XWPrefs.getAddrTypes( activity ),
+            cvl.configure( activity.getDelegate(), XWPrefs.getAddrTypes( activity ),
                           new ConnViaViewLayout.CheckEnabledWarner() {
                               @Override
                               public void warnDisabled( CommsConnType typ ) {

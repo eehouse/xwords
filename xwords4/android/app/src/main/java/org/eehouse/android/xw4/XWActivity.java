@@ -320,6 +320,8 @@ public class XWActivity extends FragmentActivity
         return m_dlgt.makeDialog( alert, params );
     }
 
+    protected DelegateBase getDelegate() { return m_dlgt; }
+
     ////////////////////////////////////////////////////////////
     // DlgClickNotify interface
     ////////////////////////////////////////////////////////////

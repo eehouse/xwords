@@ -258,9 +258,8 @@ public class GameConfigDelegate extends DelegateBase
             LinearLayout layout = (LinearLayout)inflate( R.layout.conn_types_display );
             final ConnViaViewLayout items = (ConnViaViewLayout)
                 layout.findViewById( R.id.conn_types );
-            items.setActivity( m_activity );
 
-            items.configure( conTypes,
+            items.configure( this, conTypes,
                              new ConnViaViewLayout.CheckEnabledWarner() {
                                  public void warnDisabled( CommsConnType typ ) {
                                      switch( typ ) {

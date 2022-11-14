@@ -462,6 +462,9 @@ public class XWPrefs {
         if ( 0 == result.size() ) {
             result.add( CommsConnType.COMMS_CONN_MQTT );
         }
+        if ( !BTUtils.havePermissions( context ) ) {
+            result.remove( CommsConnType.COMMS_CONN_BT );
+        }
         if ( originalHash != result.hashCode() ) {
             setAddrTypes( context, result );
         }

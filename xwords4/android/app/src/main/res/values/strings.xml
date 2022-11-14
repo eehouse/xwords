@@ -2395,6 +2395,8 @@
     permission, but only the phone number of the sender will be
     displayed.
     </string>
+    <string name="nearbydev_rationale">CrossWords needs permission to
+    discover nearby devices in order to use Bluetooth.</string>
     <string name="move_dict_rationale">Storing a wordlist in the
     Downloads area requires Storage permission.</string>
     <string name="remove_sms">Remove SMS</string>

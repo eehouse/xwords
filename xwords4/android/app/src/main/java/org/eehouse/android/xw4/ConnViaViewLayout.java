@@ -41,7 +41,7 @@ public class ConnViaViewLayout extends LinearLayout {
     private static final String TAG = ConnViaViewLayout.class.getSimpleName();
     private CommsConnTypeSet m_curSet;
     private DlgDelegate.HasDlgDelegate m_dlgDlgt;
-    private Activity m_activity;
+    private DelegateBase mParent;
 
     public interface CheckEnabledWarner {
         public void warnDisabled( CommsConnType typ );
@@ -57,9 +57,7 @@ public class ConnViaViewLayout extends LinearLayout {
         super( context, as );
     }
 
-    public void setActivity( Activity activity ) { m_activity = activity; }
-
-    protected void configure( CommsConnTypeSet types,
+    protected void configure( DelegateBase parent, CommsConnTypeSet types,
                               CheckEnabledWarner cew,
                               SetEmptyWarner sew,
                               DlgDelegate.HasDlgDelegate dlgDlgt )
@@ -71,6 +69,7 @@ public class ConnViaViewLayout extends LinearLayout {
         m_disabledWarner = cew;
         m_emptyWarner = sew;
         m_dlgDlgt = dlgDlgt;
+        mParent = parent;
     }
 
     protected CommsConnTypeSet getTypes()
@@ -83,7 +82,7 @@ public class ConnViaViewLayout extends LinearLayout {
         LinearLayout list = (LinearLayout)findViewById( R.id.conn_types );
         list.removeAllViews();  // in case being reused
 
-        Context context = getContext();
+        final Context context = getContext();
         List<CommsConnType> supported = CommsConnTypeSet.getSupported( context );
 
         for ( CommsConnType typ : supported ) {
@@ -101,9 +100,13 @@ public class ConnViaViewLayout extends LinearLayout {
                     public void onCheckedChanged( CompoundButton buttonView,
                                                   boolean isChecked ) {
                         if ( isChecked ) {
-                            showNotAgainTypeTip( typf );
-                            enabledElseWarn( typf );
-                            m_curSet.add( typf );
+                            if ( disableUntil( context, typ ) ) {
+                                buttonView.setChecked( false );
+                            } else {
+                                showNotAgainTypeTip( typf );
+                                enabledElseWarn( typf );
+                                m_curSet.add( typf );
+                            }
                         } else {
                             m_curSet.remove( typf );
                             if ( null != m_emptyWarner && 0 == m_curSet.size()) {
@@ -113,6 +116,21 @@ public class ConnViaViewLayout extends LinearLayout {
                     }
                 } );
         }
+    }
+
+    private boolean disableUntil( Context context, CommsConnType typ )
+    {
+        boolean disable = false;
+        if ( typ == CommsConnType.COMMS_CONN_BT
+             && ! BTUtils.havePermissions( context ) ) {
+            if ( null != mParent ) {
+                Perms23.tryGetPerms( mParent, BTUtils.BTPerms,
+                                     R.string.nearbydev_rationale,
+                                     Action.SKIP_CALLBACK );
+            }
+            disable = true;
+        }
+        return disable;
     }
 
     private void enabledElseWarn( CommsConnType typ )
