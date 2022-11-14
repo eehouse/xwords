@@ -9,7 +9,7 @@
     <plurals name="moves_fmt">
         <item quantity="one">Un movimiento realizado</item>
         <item quantity="many">%1$d movimientos realizados</item>
-        <item quantity="other"></item>
+        <item quantity="other"/>
     </plurals>
     <string name="button_delete">Borrar</string>
     <string name="button_reset">Reiniciar</string>
@@ -36,7 +36,7 @@
         <item quantity="many">¿Seguro que quieres reiniciar las %1$d siguientes partidas\?
 \n
 \n(La opción de reiniciar borrará todos los movimientos y cualquier información de conexión.)</item>
-        <item quantity="other"></item>
+        <item quantity="other"/>
     </plurals>
     <string name="download_more">Descargar más</string>
     <string name="list_item_netstats">Conexiones</string>
@@ -389,4 +389,5 @@
 \n\tCódigo de versión: %3$d
 \n\tFuente (Git) rev: %4$s
 \n\tCompilado: %5$s</string>
+    <string name="str_tiles_not_in_line">Todas las fichas deben estar en una línea.</string>
 </resources>
