@@ -51,16 +51,15 @@ public class Perms23 {
         BLUETOOTH_CONNECT(BuildConfig.BLUETOOTH_CONNECT),
         BLUETOOTH_SCAN(BuildConfig.BLUETOOTH_SCAN);
 
-        private String m_str;
-        private boolean m_granted;
+        private String m_str = null;
         private Perm(String str) { m_str = str; }
-        private Perm(boolean granted) { m_granted = granted; }
 
         public String getString() { return m_str; }
         public boolean isBanned( Context context )
         {
             return !permInManifest( context, this );
         }
+        public boolean notNeeded() { return null == m_str; }
         public static Perm getFor( String str ) {
             Perm result = null;
             for ( Perm one : Perm.values() ) {
@@ -423,7 +422,9 @@ public class Perms23 {
         for ( int ii = 0; result && ii < perms.length; ++ii ) {
             Perm perm = perms[ii];
             boolean thisResult;
-            if ( perm.isBanned(context) ) {
+            if ( perm.notNeeded() ) {
+                thisResult = true;
+            } else if ( perm.isBanned(context) ) {
                 thisResult = bannedWithWorkaround( context, perm );
             } else {
                 thisResult = PackageManager.PERMISSION_GRANTED
