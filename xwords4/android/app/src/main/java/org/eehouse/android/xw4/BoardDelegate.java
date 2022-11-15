@@ -119,7 +119,6 @@ public class BoardDelegate extends DelegateBase
     private int[] m_missingCounts;
     private boolean m_remotesAreRobots;
     private InviteMeans m_missingMeans = null;
-    private boolean m_progressShown = false;
     private boolean m_isFirstLaunch;
     private boolean m_firingPrefs;
     private BoardUtilCtxt m_utils;
@@ -1346,14 +1345,12 @@ public class BoardDelegate extends DelegateBase
     @SuppressWarnings("fallthrough")
     public void eventOccurred( MultiService.MultiEvent event, final Object ... args )
     {
-        boolean doStopProgress = false;
         switch( event ) {
         case MESSAGE_ACCEPTED:
         case MESSAGE_REFUSED:
             ConnStatusHandler.
                 updateStatusIn( m_activity, this, CommsConnType.COMMS_CONN_BT,
                                 MultiService.MultiEvent.MESSAGE_ACCEPTED == event);
-            doStopProgress = true;
             break;
         case MESSAGE_NOGAME:
             final int gameID = (Integer)args[0];
@@ -1376,7 +1373,7 @@ public class BoardDelegate extends DelegateBase
             Log.w( TAG, "failed to create game" );
             break;
         case NEWGAME_DUP_REJECTED:
-            doStopProgress = true;
+
             post( new Runnable() {
                     @Override
                     public void run() {
@@ -1404,14 +1401,8 @@ public class BoardDelegate extends DelegateBase
             break;
 
         default:
-            doStopProgress = true; // in case it's a BT invite
             super.eventOccurred( event, args );
             break;
-        }
-
-        if ( doStopProgress && m_progressShown ) {
-            m_progressShown = false;
-            stopProgress();
         }
     }
 
@@ -1614,9 +1605,7 @@ public class BoardDelegate extends DelegateBase
 
     private void deleteAndClose()
     {
-        if ( null == m_jniThread ) { // test probably no longer necessary
-            Assert.failDbg();
-        } else {
+        if ( null != m_jniThread ) { // this does still happen
             GameUtils.deleteGame( m_activity, m_jniThread.getLock(), false, false );
         }
         waitCloseGame( false );
@@ -2720,19 +2709,10 @@ public class BoardDelegate extends DelegateBase
 
                 switch ( m_missingMeans ) {
                 case BLUETOOTH:
-                    if ( ! m_progressShown ) {
-                        m_progressShown = true;
-                        String progMsg = BTUtils.nameForAddr( dev );
-                        progMsg = getString( R.string.invite_progress_bt_fmt, progMsg );
-                        startProgress( R.string.invite_progress_title, progMsg,
-                                       new OnCancelListener() {
-                                           public void onCancel( DialogInterface dlg )
-                                           {
-                                               m_progressShown = false;
-                                           }
-                                       });
-                    }
-                    BTUtils.inviteRemote( m_activity, dev, nli );
+                    CommsAddrRec destAddr = new CommsAddrRec(CommsConnType.COMMS_CONN_BT)
+                        .setBTParams( dev, null );
+                    XwJNI.comms_invite( m_jniGamePtr, nli, destAddr );
+                    dev = null; // don't record
                     break;
                 case SMS_DATA:
                     sendNBSInviteIf( dev, nli, true );
@@ -2747,6 +2727,7 @@ public class BoardDelegate extends DelegateBase
                 case MQTT:
                     // MQTTUtils.inviteRemote( m_activity, dev, nli );
                     MQTTUtils.addInvite( m_jniGamePtr, dev, nli );
+                    Assert.failDbg(); // not getting here, right?
                     break;
                 default:
                     Assert.failDbg();

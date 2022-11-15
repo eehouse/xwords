@@ -345,12 +345,13 @@ public class CommsAddrRec implements Serializable {
         ip_relay_advertiseRoom = false;
     }
 
-    public void setBTParams( String btAddr, String btName )
+    public CommsAddrRec setBTParams( String btAddr, String btName )
     {
         bt_hostName = btName;
         if ( ! BTUtils.isBogusAddr( btAddr ) ) {
             bt_btAddr = btAddr;
         }
+        return this;
     }
 
     public void setSMSParams( String phone )

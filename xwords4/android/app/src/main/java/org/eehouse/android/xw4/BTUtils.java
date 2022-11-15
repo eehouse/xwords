@@ -20,14 +20,15 @@
 
 package org.eehouse.android.xw4;
 
-import android.bluetooth.BluetoothServerSocket;
-import android.bluetooth.BluetoothSocket;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothClass.Device.Major;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothServerSocket;
+import android.bluetooth.BluetoothSocket;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.provider.Settings;
 import android.text.TextUtils;
 
@@ -170,10 +171,16 @@ public class BTUtils {
         return havePermissions( getContext() );
     }
 
+    // If I build for 31 but run on an older phone, these permissions don't
+    // show up in settings->app->permissions, but I get back false from
+    // havePermissions(). There seems to be no way to grant them, so let's see
+    // if on older phones we can proceed without crashing. Test well....
     public static boolean havePermissions( Context context )
     {
-        boolean result = Perms23.havePermissions( context, BTPerms );
-        Log.d( TAG, "havePermissions() => %b", result );
+        final int sdk = Build.VERSION.SDK_INT;
+        boolean result = sdk < Build.VERSION_CODES.Q
+            || Perms23.havePermissions( context, BTPerms );
+        Log.d( TAG, "havePermissions(sdk=%d) => %b", sdk, result );
         return result;
     }
 
@@ -316,9 +323,10 @@ public class BTUtils {
         getPA( btAddr ).addPing( gameID );
     }
 
-    public static void inviteRemote( Context context, String btAddr,
-                                     NetLaunchInfo nli )
+    public static void sendInvite( Context context, String btAddr,
+                                   NetLaunchInfo nli )
     {
+        Log.d( TAG, "sendInvite(addr=%s, nli=%s)", btAddr, nli );
         getPA( btAddr ).addInvite( nli );
     }
 
@@ -856,7 +864,7 @@ public class BTUtils {
             // appropriate based on backoff logic, and be awakened when
             // something new comes in or there's reason to hope a send try
             // will succeed.
-            while ( BTEnabled() ) {
+            while ( BTEnabled() && havePermissions() ) {
                 synchronized ( this ) {
                     if ( mExitWhenEmpty && 0 == mElems.size() ) {
                         break;

@@ -166,7 +166,7 @@ public class MultiMsgSink implements TransportProcs {
                 }
                 break;
             case COMMS_CONN_BT:
-                BTUtils.inviteRemote( context, addr.bt_btAddr, nli );
+                BTUtils.sendInvite( context, addr.bt_btAddr, nli );
                 success = true;
                 break;
             default:

@@ -1597,10 +1597,6 @@
          nearby devices -->
     <string name="button_scan">Rescan</string>
     <!--  -->
-    <string name="invite_progress_title">Connecting…</string>
-    <string name="invite_progress_bt_fmt">Sending Bluetooth invitation
-    to CrossWords on %1$s</string>
-    <!--  -->
     <string name="summary_wait_host">Waiting for guest[s]</string>
     <!--  -->
     <string name="summary_wait_guest">Unconnected</string>
@@ -2396,7 +2392,7 @@
     displayed.
     </string>
     <string name="nearbydev_rationale">CrossWords needs permission to
-    discover nearby devices in order to use Bluetooth.</string>
+    interact with nearby devices in order to use Bluetooth.</string>
     <string name="move_dict_rationale">Storing a wordlist in the
     Downloads area requires Storage permission.</string>
     <string name="remove_sms">Remove SMS</string>
