@@ -375,7 +375,7 @@ public class CommonPrefs extends XWPrefs {
     {
         String host = LocUtils.getString( context, R.string.invite_host );
         Uri.Builder ub = new Uri.Builder()
-            .scheme( "http" )   // PENDING: should be https soon
+            .scheme( "https" )
             .path( String.format( "//%s%s", NetUtils.forceHost( host ),
                                   LocUtils.getString(context, R.string.conf_prefix) ) )
             .appendQueryParameter( THEME_KEY, theme.toString() );
@@ -383,7 +383,7 @@ public class CommonPrefs extends XWPrefs {
         Resources res = context.getResources();
         String[] urlKeys = res.getStringArray( R.array.color_url_keys );
         String[] dataKeys = res.getStringArray( theme.getArrayID() );
-        Assert.assertTrue( urlKeys.length == dataKeys.length );
+        Assert.assertTrueNR( urlKeys.length == dataKeys.length );
         SharedPreferences sp = PreferenceManager
             .getDefaultSharedPreferences( context );
 
