@@ -47,6 +47,7 @@ public class LimSelGroup extends LinearLayout
 
     LimSelGroup setLimit( int limit )
     {
+        Log.d( TAG, "setLimit(limit=%d)", limit );
         Assert.assertTrueNR( 0 < limit );
         mLimit = limit;
         return this;

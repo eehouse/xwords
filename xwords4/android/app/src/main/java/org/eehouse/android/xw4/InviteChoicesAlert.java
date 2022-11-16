@@ -98,6 +98,8 @@ public class InviteChoicesAlert extends DlgDelegateAlert
                 nInvited = (Integer)params[2];
             }
         }
+        Log.d( TAG, "populateBuilder(): nMissing=%d, nInvited=%d",
+               nMissing, nInvited );
         means.add( InviteMeans.EMAIL );
         means.add( InviteMeans.SMS_USER );
 
@@ -164,7 +166,8 @@ public class InviteChoicesAlert extends DlgDelegateAlert
             ;
 
         String[] players = XwJNI.kplr_getPlayers();
-        mInviteView.setChoices( means, lastSelMeans, players, nMissing, nInvited )
+        mInviteView.setChoices( means, lastSelMeans, players, nMissing,
+                                nInvited )
             .setNli( nli )
             .setCallbacks( this )
             ;
