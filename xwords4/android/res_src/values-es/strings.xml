@@ -390,4 +390,5 @@
 \n\tFuente (Git) rev: %4$s
 \n\tCompilado: %5$s</string>
     <string name="str_tiles_not_in_line">Todas las fichas deben estar en una línea.</string>
+    <string name="expl_mqtt_url">URL para la nueva API del relay basada en MQTT</string>
 </resources>
