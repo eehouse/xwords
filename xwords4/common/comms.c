@@ -279,6 +279,7 @@ static void logAddr( const CommsCtxt* comms, XWEnv xwe,
 # define printQueue( comms )
 # define logAddr( comms, xwe, addr, caller)
 # define logAddrs( comms, caller )
+# define listRecs( comms, caller )
 #endif  /* def DEBUG */
 
 #if defined RELAY_HEARTBEAT || defined COMMS_HEARTBEAT
