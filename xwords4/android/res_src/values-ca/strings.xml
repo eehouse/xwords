@@ -352,7 +352,6 @@ Introduïu el vostre nom aquí. S\'usarà en crear partides noves. (Podreu
     <string name="email_author_chooser">Envia el comentari via</string>
     <string name="email_body_rev_fmt">(Si és rellevant, incloeu la versió: «%1$s»; i el fabricant i model del telèfon o tauleta: %2$s/%3$s.)</string>
     <string name="bt_pick_clear_button">Suprimeix</string>
-    <string name="invite_progress_bt_fmt">S\'està enviant la invitació al CrossWords a %1$s</string>
     <string name="summary_wait_host">S\'estan esperant les connexions...</string>
     <string name="summary_wait_guest">Sense connexió</string>
     <string name="summary_gameover">Partida finalitzada</string>

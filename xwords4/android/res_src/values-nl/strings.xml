@@ -321,7 +321,6 @@
     <string name="email_author_chooser">Verstuur opmerking via</string>
     <string name="email_body_rev_fmt">(Indien relevant, geef alsjeblieft het versienummer mee: \"%1$s\"; en fabrikant/model van je telefoon of tablet: %2$s/%3$s)</string>
     <string name="bt_pick_clear_button">Verwijder geselecteerde[n]</string>
-    <string name="invite_progress_bt_fmt">Uitnodiging om CrossWords te spelen versturen op %1$s</string>
     <string name="summary_wait_host">Wachten op verbinding[en]</string>
     <string name="summary_wait_guest">Niet verbonden</string>
     <string name="summary_gameover">Spel voorbij</string>

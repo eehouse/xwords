@@ -788,7 +788,6 @@
     <string name="summary_gameover">Fim de jogo</string>
     <string name="summary_wait_guest">Não conectado</string>
     <string name="summary_wait_host">Esperando convidado(s)</string>
-    <string name="invite_progress_title">Conectando…</string>
     <string name="missing_dict_title">Convite do jogo pendente</string>
     <string name="reload_new_dict_fmt">Recarregando jogo com %1$s</string>
     <string name="inform_dict_download">" (Você terá que baixá-la primeiro.)"</string>

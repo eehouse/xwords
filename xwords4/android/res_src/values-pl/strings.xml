@@ -417,7 +417,6 @@
     <string name="email_body_rev_fmt">(Jeśli dotyczy, proszę podać wersję: \"%1$s\"; oraz markę/model telefonu lub tabletu: %2$s/%3$s.)</string>
     <string name="bt_pick_clear_button">Usuń</string>
     <string name="bt_pair_settings">Paruj więcej</string>
-    <string name="invite_progress_bt_fmt">Wysyłanie zaproszenia do CrossWords na %1$s</string>
     <string name="summary_wait_host">Oczekiwanie na połączenie[a]</string>
     <string name="summary_wait_guest">Nieodłączony</string>
     <string name="summary_gameover">Koniec gry</string>

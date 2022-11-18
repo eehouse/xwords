@@ -322,7 +322,6 @@
     <string name="email_author_chooser">コメントを次で送信</string>
     <string name="email_body_rev_fmt">(該当する場合、バージョン: \"%1$s\" と、お使いの電話またはタブレットのメーカー/モデル[%2$s/%3$s]を含めるようにしてください)</string>
     <string name="bt_pick_clear_button">削除</string>
-    <string name="invite_progress_bt_fmt">%1$s でクロスワードへの招待を送信しています</string>
     <string name="summary_wait_host">ゲストを待っています</string>
     <string name="summary_wait_guest">未接続</string>
     <string name="summary_gameover">ゲームオーバー</string>

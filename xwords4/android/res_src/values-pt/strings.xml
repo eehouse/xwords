@@ -2080,7 +2080,6 @@
     </plurals>
     <string name="sms_bad_proto_fmt">A versão de CrossWords no telefone com o número “%1$s” é incompatível com esta aqui para jogar a usar dados de SMS. Um de vocês talvez precisará de atualizar antes de continuar.</string>
     <string name="new_game_body">Toque para abrir o jogo novo</string>
-    <string name="invite_progress_title">Conectando…</string>
     <string name="button_scan">Re-escanear</string>
     <string name="bt_pair_settings">Emparelhar mais</string>
     <string name="new_feature_filter">Pode filtrar listas de palavras por que palavras elas começam, terminam e/ou contém. Acesse filtros a tocar a Seta de Expandir no canto superior direito da janela.

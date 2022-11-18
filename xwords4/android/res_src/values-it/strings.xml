@@ -485,7 +485,6 @@
     <string name="summary_gameover">Game over‌</string>
     <string name="summary_wait_guest">Non connesso</string>
     <string name="summary_wait_host">Aspettando i giocatori</string>
-    <string name="invite_progress_title">In connessione…</string>
     <string name="button_scan">Scannerizza nuovamente</string>
     <string name="bt_pair_settings">Collega altri dispositivi</string>
     <string name="bt_pick_clear_button">Rimuovi</string>
