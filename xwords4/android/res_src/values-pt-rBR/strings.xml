@@ -109,6 +109,7 @@
     </plurals>
     <plurals name="moves_fmt">
         <item quantity="one">Um movimento realizado</item>
+        <item quantity="many">%1$d movimentos realizados</item>
         <item quantity="other">%1$d movimentos realizados</item>
     </plurals>
     <string name="button_reset">Redefinir</string>
@@ -1134,4 +1135,5 @@
 \n(Esta ação não pode ser desfeita.)</string>
     <string name="not_again_deletecheck_fmt">marque a caixa \"%1$s\" para excluir este jogo.</string>
     <string name="not_again_archivecheck_fmt">Verifique a caixa \"%1$s\" para mover este jogo para o grupo %2$s.</string>
+    <string name="nearbydev_rationale">Para usar o Bluetooth, o CrossWords precisa de permissão para interagir com os dispositivos próximos.</string>
 </resources>
