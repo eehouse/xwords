@@ -104,7 +104,6 @@
     <string name="button_save">Kaydet</string>
     <string name="history_title">Oyun Geçmişi</string>
     <string name="bt_pick_clear_button">Kaldır</string>
-    <string name="invite_progress_title">Bağlanıyor</string>
     <string name="summary_gameover">Oyun bitti</string>
     <string name="menu_chat">Sohbet</string>
     <string name="chat_sender_fmt">%1$s:</string>

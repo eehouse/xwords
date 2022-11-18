@@ -1854,7 +1854,6 @@ ligne, les mots qui viennent d\'être joués.</string>
     <string name="bt_pick_clear_button">Retirer</string>
     <!--  -->
     <!--<string name="invite_progress_title">Connecting...</string>-->
-    <string name="invite_progress_title">Connexion…</string>
     <string name="invite_progress_bt_fmt">Envoi d\'une invitation à CrossWords sur %1$s</string>
     <!--  -->
     <!--<string name="summary_wait_host">Waiting for connection[s]</string>-->

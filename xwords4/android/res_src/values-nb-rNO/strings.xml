@@ -506,7 +506,6 @@
     <string name="email_author_subject">Kommentar om CrossWords</string>
     <string name="email_body_rev_fmt">(Hvis relevant, inkluder versjonen: \"%1$s\", og fabrikatet/modellen av din telefon eller nettbrett: %2$s/%3$s.)</string>
     <string name="bt_pick_clear_button">Fjern valgte</string>
-    <string name="invite_progress_title">Kobler til…</string>
     <string name="invite_progress_bt_fmt">Sender invitasjon til CrossWords på %1$s</string>
     <string name="summary_wait_host">Venter på tilkobling[er]</string>
     <string name="p2p_invite_title">Wi-Fi Direct-invitasjon</string>
