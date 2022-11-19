@@ -233,7 +233,8 @@ game_makeNewGame( MPFORMAL XWEnv xwe, XWGame* game, CurGameInfo* gi,
 
 void
 game_makeRematch( const XWGame* oldGame, XWEnv xwe, XW_UtilCtxt* newUtil,
-                  const CommonPrefs* newCp, XWGame* newGame )
+                  const CommonPrefs* newCp, XWGame* newGame,
+                  const XP_UCHAR* newName )
 {
     LOG_FUNC();
     CurGameInfo* newGI = newUtil->gameInfo;
@@ -273,6 +274,9 @@ game_makeRematch( const XWGame* oldGame, XWEnv xwe, XW_UtilCtxt* newUtil,
         if ( !!newGame->comms ) {
             NetLaunchInfo nli;
             nli_init( &nli, newGI, selfAddrP, 1, 1 );
+            if ( !!newName ) {
+                nli_setGameName( &nli, newName );
+            }
             LOGNLI( &nli );
             comms_invite( newGame->comms, xwe, &nli, &hostAddr );
         }

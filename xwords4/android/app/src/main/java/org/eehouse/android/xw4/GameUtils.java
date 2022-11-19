@@ -569,7 +569,7 @@ public class GameUtils {
                         UtilCtxt util = new UtilCtxtImpl( context );
                         CommonPrefs cp = CommonPrefs.get(context);
                         try ( GamePtr gamePtrNew = XwJNI
-                              .game_makeRematch( gamePtr, util, cp ) ) {
+                              .game_makeRematch( gamePtr, util, cp, gameName ) ) {
                             if ( null != gamePtrNew ) {
                                 rowid = saveNewGame1( context, gamePtrNew,
                                                       groupID, gameName );

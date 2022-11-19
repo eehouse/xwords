@@ -325,12 +325,11 @@ public class XwJNI {
         return gamePtr;
     }
 
-    public static GamePtr game_makeRematch( GamePtr gamePtr,
-                                            UtilCtxt util,
-                                            CommonPrefs cp )
+    public static GamePtr game_makeRematch( GamePtr gamePtr, UtilCtxt util,
+                                            CommonPrefs cp, String gameName )
     {
         GamePtr gamePtrNew = initGameJNI( 0 );
-        game_makeRematch( gamePtr, gamePtrNew, util, cp );
+        game_makeRematch( gamePtr, gamePtrNew, util, cp, gameName );
         return gamePtrNew;
     }
 
@@ -370,8 +369,8 @@ public class XwJNI {
 
     private static native void game_makeRematch( GamePtr gamePtr,
                                                  GamePtr gamePtrNew,
-                                                 UtilCtxt util,
-                                                 CommonPrefs cp );
+                                                 UtilCtxt util, CommonPrefs cp,
+                                                 String gameName );
 
     private static native boolean game_makeFromInvite( GamePtr gamePtr, NetLaunchInfo nli,
                                                        UtilCtxt util,

@@ -1434,7 +1434,7 @@ initGameGlobals( JNIEnv* env, JNIState* state, jobject jutil, jobject jprocs )
 JNIEXPORT void JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeRematch
 ( JNIEnv* env, jclass C, GamePtrType gamePtr, GamePtrType gamePtrNew,
-  jobject jutil, jobject jcp )
+  jobject jutil, jobject jcp, jstring jGameName )
 {
     LOG_FUNC();
     XWJNI_START_GLOBALS(gamePtr);
@@ -1447,7 +1447,10 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeRematch
     CommonPrefs cp;
     loadCommonPrefs( env, &cp, jcp );
 
-    game_makeRematch( &oldState->game, env, globals->util, &cp, &state->game );
+    const char* gameName = (*env)->GetStringUTFChars( env, jGameName, NULL );
+    game_makeRematch( &oldState->game, env, globals->util, &cp,
+                      &state->game, gameName );
+    (*env)->ReleaseStringUTFChars( env, jGameName, gameName );
 
     XWJNI_END();
     XWJNI_END();
