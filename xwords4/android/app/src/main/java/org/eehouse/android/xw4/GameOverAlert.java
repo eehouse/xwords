@@ -199,7 +199,7 @@ public class GameOverAlert extends XWDialogFragment
     {
         mArchiveBox.setVisibility( mHasPending || mInArchive ? View.GONE : View.VISIBLE );
         Utils.enableAlertButton( mDialog, AlertDialog.BUTTON_NEGATIVE, !mHasPending );
-        mDeleteBox.setVisibility( mHasPending || mInArchive ? View.GONE : View.VISIBLE );
+        mDeleteBox.setVisibility( mHasPending ? View.GONE : View.VISIBLE );
     }
 
     private void initView()
