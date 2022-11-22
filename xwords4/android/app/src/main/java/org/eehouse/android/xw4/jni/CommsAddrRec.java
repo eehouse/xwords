@@ -354,10 +354,11 @@ public class CommsAddrRec implements Serializable {
         return this;
     }
 
-    public void setSMSParams( String phone )
+    public CommsAddrRec setSMSParams( String phone )
     {
         sms_phone = phone;
         sms_port = 1;           // so don't assert in comms....
+        return this;
     }
 
     public CommsAddrRec setP2PParams( String macAddress )

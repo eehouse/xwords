@@ -2707,34 +2707,29 @@ public class BoardDelegate extends DelegateBase
                                                        nPlayers, forceChannel )
                     .setRemotesAreRobots( m_remotesAreRobots );
 
+                CommsAddrRec destAddr = null;
                 switch ( m_missingMeans ) {
                 case BLUETOOTH:
-                    CommsAddrRec destAddr = new CommsAddrRec(CommsConnType.COMMS_CONN_BT)
+                    destAddr = new CommsAddrRec(CommsConnType.COMMS_CONN_BT)
                         .setBTParams( dev, null );
-                    XwJNI.comms_invite( m_jniGamePtr, nli, destAddr );
-                    dev = null; // don't record
                     break;
                 case SMS_DATA:
-                    sendNBSInviteIf( dev, nli, true );
-                    dev = null; // don't record send a second time
-                    break;
-                case RELAY:
-                    Assert.failDbg();
+                    destAddr = new CommsAddrRec(CommsConnType.COMMS_CONN_SMS)
+                        .setSMSParams( dev );
                     break;
                 case WIFIDIRECT:
                     WiDirService.inviteRemote( m_activity, dev, nli );
                     break;
+                case RELAY:
                 case MQTT:
-                    // MQTTUtils.inviteRemote( m_activity, dev, nli );
-                    MQTTUtils.addInvite( m_jniGamePtr, dev, nli );
-                    Assert.failDbg(); // not getting here, right?
-                    break;
                 default:
-                    Assert.failDbg();
+                    Assert.failDbg(); // not getting here, right?
                     break;
                 }
 
-                if ( null != dev ) {
+                if ( null != destAddr ) {
+                    XwJNI.comms_invite( m_jniGamePtr, nli, destAddr );
+                } else if ( null != dev ) {
                     recordInviteSent( m_missingMeans, dev );
                 }
             }
