@@ -1135,4 +1135,5 @@
 \n(Diese Aktion kann nicht rückgängig gemacht werden.)</string>
     <string name="not_again_archivecheck_fmt">Aktivieren Sie das Kontrollkästchen „%1$s“, um diese Partie in die Gruppe %2$s zu verschieben.</string>
     <string name="not_again_deletecheck_fmt">Aktivieren Sie das Kontrollkästchen \"%1$s\", um diese Partie zu löschen.</string>
+    <string name="nearbydev_rationale">CrossWords benötigt die Berechtigung, mit Geräten in der Nähe zu interagieren, um Bluetooth verwenden zu können.</string>
 </resources>
