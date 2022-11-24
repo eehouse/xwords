@@ -39,10 +39,11 @@ typedef struct BlankTuple {
     Tile tile;
 } BlankTuple;
 
-typedef struct PossibleMove {
+typedef struct _PossibleMove {
     XP_U16 score; /* Because I'm doing a memcmp to sort these things, the
                      comparison must be done differently on little-endian
                      platforms. */
+    XP_U16 nBlanks;
     MoveInfo moveInfo;
     Tile blankVals[MAX_COLS]; /* the faces for which we've substituted
                                  blanks */
@@ -158,14 +159,7 @@ static PossibleMove* next_from_cache( EngineCtxt* engine );
 static void set_search_limits( EngineCtxt* engine );
 
 
-#if defined __LITTLE_ENDIAN
 static XP_S16 cmpMoves( PossibleMove* m1, PossibleMove* m2 );
-# define CMPMOVES( m1, m2 )     cmpMoves( m1, m2 )
-#elif defined __BIG_ENDIAN
-# define CMPMOVES( m1, m2 )    XP_MEMCMP( m1, m2, sizeof(*(m1)))
-#else
-    error: need to pick one!!!
-#endif
 
 /* #define CROSSCHECK_CONTAINS(chk,tile) (((chk) & (1L<<(tile))) != 0) */
 #define CROSSCHECK_CONTAINS(chk,tile) checkIsSet( (chk), (tile) )
@@ -259,20 +253,24 @@ initTray( EngineCtxt* engine, const Tile* tiles, XP_U16 numTiles )
     return result;
 } /* initTray */
 
-#if defined __LITTLE_ENDIAN
 static XP_S16
 cmpMoves( PossibleMove* m1, PossibleMove* m2 )
 {
     XP_S16 result;
-    if ( m1->score == m2->score ) {
-        result = XP_MEMCMP( &m1->moveInfo, &m2->moveInfo,
-                            sizeof(*m1) - sizeof( m1->score ) );
+    if ( m1->score != m2->score ) {
+        result = m1->score > m2->score ? 1 : -1;
+    } else if ( m1->nBlanks != m2->nBlanks ) {
+        result = m1->nBlanks > m2->nBlanks ? -1 : 1;
     } else {
-        result = m1->score < m2->score ?  -1 : 1;
+        result = XP_MEMCMP( &m1->moveInfo, &m2->moveInfo,
+                            sizeof(m1->moveInfo) );
+        if ( 0 == result ) {
+            result = XP_MEMCMP( &m1->blankVals, &m2->blankVals,
+                                sizeof(m1->blankVals) );
+        }
     }
     return result;
 } /* cmpMoves */
-#endif
 
 #if 0
 static void
@@ -314,7 +312,7 @@ chooseMove( EngineCtxt* engine, PossibleMove** move )
         PossibleMove* cur = engine->miData.savedMoves;
         for ( ii = 0; ii < engine->nMovesToSave-1; ++ii ) {
             PossibleMove* next = cur + 1;
-            if ( CMPMOVES( cur, next ) > 0 ) {
+            if ( cmpMoves( cur, next ) > 0 ) {
                 PossibleMove tmp;
                 XP_MEMCPY( &tmp, cur, sizeof(tmp) );
                 XP_MEMCPY( cur, next, sizeof(*cur) );
@@ -1116,7 +1114,7 @@ static void
 considerScoreWordHasBlanks( EngineCtxt* engine, XWEnv xwe, XP_U16 blanksLeft,
                             PossibleMove* posmove,
                             XP_U16 lastRow, BlankTuple* usedBlanks,
-                            XP_U16 usedBlanksCount )
+                            const XP_U16 usedBlanksCount )
 {
     XP_U16 ii;
 
@@ -1153,6 +1151,7 @@ considerScoreWordHasBlanks( EngineCtxt* engine, XWEnv xwe, XP_U16 blanksLeft,
             }
 #endif
             posmove->score = score;
+            posmove->nBlanks = usedBlanksCount;
             XP_MEMSET( &posmove->blankVals, 0, sizeof(posmove->blankVals) );
             for ( ii = 0; ii < usedBlanksCount; ++ii ) {
                 short col = usedBlanks[ii].col;
@@ -1170,7 +1169,7 @@ considerScoreWordHasBlanks( EngineCtxt* engine, XWEnv xwe, XP_U16 blanksLeft,
         --blanksLeft;
         XP_ASSERT( engine->blankValues[blanksLeft] < 128 );
         bTile = (Tile)engine->blankValues[blanksLeft];
-        bt = &usedBlanks[usedBlanksCount++];
+        bt = &usedBlanks[usedBlanksCount];
 
         /* for each letter for which the blank might be standing in... */
         for ( ii = 0; ii < posmove->moveInfo.nTiles; ++ii ) {
@@ -1182,7 +1181,7 @@ considerScoreWordHasBlanks( EngineCtxt* engine, XWEnv xwe, XP_U16 blanksLeft,
                 considerScoreWordHasBlanks( engine, xwe, blanksLeft,
                                             posmove, lastRow,
                                             usedBlanks,
-                                            usedBlanksCount );
+                                            usedBlanksCount + 1 );
                 /* now put things back */
                 posmove->moveInfo.tiles[ii].tile &= ~TILE_BLANK_BIT;
             }
@@ -1204,7 +1203,7 @@ saveMoveIfQualifies( EngineCtxt* engine, PossibleMove* posmove )
     } else {
         mostest = -1;
         /* we're not interested if we've seen this */
-        cmpVal = CMPMOVES( posmove, &miData->lastSeenMove );
+        cmpVal = cmpMoves( posmove, &miData->lastSeenMove );
         if ( !usePrev && cmpVal >= 0 ) {
             /* XP_LOGF( "%s: dropping %d: >= %d", __func__, */
             /*          posmove->score, miData->lastSeenMove.score ); */
@@ -1237,7 +1236,7 @@ saveMoveIfQualifies( EngineCtxt* engine, PossibleMove* posmove )
                 } else if ( -1 == mostest ) {
                     mostest = ii;
                 } else {
-                    cmpVal = CMPMOVES( &miData->savedMoves[mostest], 
+                    cmpVal = cmpMoves( &miData->savedMoves[mostest],
                                        &miData->savedMoves[ii] );
                     if ( !usePrev && cmpVal > 0 ) {
                         mostest = ii;
@@ -1259,7 +1258,7 @@ saveMoveIfQualifies( EngineCtxt* engine, PossibleMove* posmove )
         if ( foundEmpty ) {
             /* we're good */
         } else {
-            cmpVal = CMPMOVES( posmove, &miData->savedMoves[mostest]);
+            cmpVal = cmpMoves( posmove, &miData->savedMoves[mostest]);
             if ( !usePrev && cmpVal <= 0 ) {
                 break;
             } else if ( usePrev && cmpVal >= 0 ) {
