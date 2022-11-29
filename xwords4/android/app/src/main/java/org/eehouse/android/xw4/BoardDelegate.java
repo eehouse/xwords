@@ -1197,17 +1197,11 @@ public class BoardDelegate extends DelegateBase
             showInviteChoicesThen();
             break;
         case INVITE_SMS_DATA:
-            Perms23.Perm[] perms = (Perms23.Perm[])params[2];
-            if ( Perms23.bannedWithWorkaround( m_activity, perms ) ) {
+            if ( Perms23.haveNBSPerms( m_activity ) ) {
                 int nMissing = (Integer)params[0];
                 SentInvitesInfo info = (SentInvitesInfo)params[1];
                 launchPhoneNumberInvite( nMissing, info,
                                          RequestCode.SMS_DATA_INVITE_RESULT );
-            } else if ( Perms23.anyBanned( m_activity, perms ) ) {
-                makeOkOnlyBuilder( R.string.sms_banned_ok_only )
-                    .setActionPair(Action.PERMS_BANNED_INFO,
-                                   R.string.button_more_info )
-                    .show();
             }
             break;
         default:
@@ -1282,10 +1276,8 @@ public class BoardDelegate extends DelegateBase
                                                   RequestCode.BT_INVITE_RESULT );
                 break;
             case SMS_DATA:
-                Perm[] perms = { Perm.SEND_SMS, Perm.RECEIVE_SMS };
-                Perms23.tryGetPerms( this, perms, R.string.sms_invite_rationale,
-                                     Action.INVITE_SMS_DATA, m_mySIS.nMissing,
-                                     info, perms );
+                Perms23.tryGetPerms( this, Perms23.NBS_PERMS, R.string.sms_invite_rationale,
+                                     Action.INVITE_SMS_DATA, m_mySIS.nMissing, info );
                 break;
             case RELAY:
             case MQTT:
@@ -2390,42 +2382,28 @@ public class BoardDelegate extends DelegateBase
         final StartAlertOrder thisOrder = StartAlertOrder.NBS_PERMS;
         if ( alertOrderAt( thisOrder ) // already asked?
              && m_summary.conTypes.contains( CommsConnType.COMMS_CONN_SMS ) ) {
-            Perm[] nbsPerms = { Perm.SEND_SMS, Perm.RECEIVE_SMS };
-            if ( Perms23.havePermissions( m_activity, nbsPerms ) ) {
+            if ( Perms23.haveNBSPerms( m_activity ) ) {
                 // We have them or a workaround; cool! proceed
                 alertOrderIncrIfAt( thisOrder );
             } else {
-                // Make sure these can be treated the same!!!
-                Assert.assertTrue( nbsPerms.length == 2 &&
-                                   nbsPerms[0].isBanned(m_activity)
-                                   == nbsPerms[1].isBanned(m_activity) );
-
                 m_permCbck = new Perms23.PermCbck() {
                         @Override
-                        public void onPermissionResult( boolean allGood,
-                                                        Map<Perm, Boolean> perms )
+                        public void onPermissionResult( boolean allGood )
                         {
                             if ( allGood ) {
                                 // Yay! nothing to do
                                 alertOrderIncrIfAt( thisOrder );
                             } else {
-                                boolean banned = Perm.SEND_SMS.isBanned(m_activity);
-                                int explID = banned
-                                    ? R.string.banned_nbs_perms : R.string.missing_sms_perms;
-                                DlgDelegate.Builder builder =
-                                    makeConfirmThenBuilder( Action.DROP_SMS_ACTION, explID );
-                                if ( banned ) {
-                                    builder.setActionPair( Action.PERMS_BANNED_INFO,
-                                                           R.string.button_more_info )
-                                        .setNAKey( R.string.key_na_sms_banned )
-                                        ;
-                                }
-                                builder.setNegButton( R.string.remove_sms )
+                                int explID = Perms23.NBSPermsInManifest( m_activity )
+                                    ? R.string.missing_sms_perms
+                                    : R.string.variant_missing_nbs;
+                                makeConfirmThenBuilder( Action.DROP_SMS_ACTION, explID )
+                                    .setNegButton( R.string.remove_sms )
                                     .show();
                             }
                         }
                     };
-                new Perms23.Builder( nbsPerms )
+                new Perms23.Builder( Perms23.NBS_PERMS )
                     .asyncQuery( m_activity, m_permCbck );
             }
         } else {

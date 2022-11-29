@@ -227,14 +227,8 @@ public class InviteChoicesAlert extends DlgDelegateAlert
                                       R.string.qrcode_invite_expl );
             break;
         case SMS_DATA:
-            if ( !Perms23.havePermissions( activity, Perm.SEND_SMS, Perm.RECEIVE_SMS )
-                 && Perm.SEND_SMS.isBanned(activity) ) {
-                builder = activity
-                    .makeOkOnlyBuilder( R.string.sms_banned_ok_only )
-                    .setActionPair( Action.PERMS_BANNED_INFO,
-                                    R.string.button_more_info )
-                    ;
-            } else if ( ! XWPrefs.getNBSEnabled( getContext() ) ) {
+            if ( Perms23.NBSPermsInManifest( activity )
+                 && ! XWPrefs.getNBSEnabled( getContext() ) ) {
                 builder = activity
                     .makeConfirmThenBuilder( Action.ENABLE_NBS_ASK,
                                              R.string.warn_sms_disabled )

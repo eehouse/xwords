@@ -330,7 +330,7 @@ public class NBSProto {
             Context context = XWApp.getContext();
             boolean success = false;
             if ( XWPrefs.getNBSEnabled( context )
-                 && !Perms23.Perm.SEND_SMS.isBanned( context ) ) {
+                 && Perms23.haveNBSPerms( context ) ) {
 
                 // Try send-to-self
                 if ( XWPrefs.getSMSToSelfEnabled( context ) ) {

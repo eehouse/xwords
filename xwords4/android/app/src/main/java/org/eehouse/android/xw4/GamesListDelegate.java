@@ -1042,20 +1042,6 @@ public class GamesListDelegate extends ListDelegateBase
 
         updateField();
 
-        // RECEIVE_SMS is required now (Oreo/SDK_26) but wasn't
-        // before. There's logic elsewhere to ask for it AND SEND_SMS, but if
-        // the user's already granted SEND_SMS we can get RECEIVE_SMS just by
-        // asking (OS will grant without user interaction) since they're in
-        // the same group. So just do it now.  This code can be removed
-        // later...
-        if ( !Perm.RECEIVE_SMS.isBanned(m_activity) ) {
-            if ( Perms23.havePermissions( m_activity, Perm.SEND_SMS ) ) {
-                Perms23.tryGetPerms( this, Perm.RECEIVE_SMS, 0, Action.SKIP_CALLBACK );
-            }
-        } else if ( isFirstLaunch ) {
-            warnSMSBannedIf();
-        }
-
         if ( false ) {
             Set<Long> dupModeGames = DBUtils.getDupModeGames( m_activity ).keySet();
             long[] asArray = new long[dupModeGames.size()];
@@ -1141,22 +1127,6 @@ public class GamesListDelegate extends ListDelegateBase
             m_mySIS = (MySIS)bundle.getSerializable( SAVE_MYSIS );
         } else {
             m_mySIS = new MySIS();
-        }
-    }
-
-    private void warnSMSBannedIf()
-    {
-        if ( !Perms23.havePermissions( m_activity, Perm.SEND_SMS, Perm.RECEIVE_SMS )
-             && Perm.SEND_SMS.isBanned(m_activity) ) {
-            int smsGameCount = DBUtils.countOpenGamesUsingNBS( m_activity );
-            if ( 0 < smsGameCount ) {
-                makeNotAgainBuilder( R.string.key_notagain_nbsGamesOnUpgrade,
-                                     R.string.not_again_nbsGamesOnUpgrade,
-                                     smsGameCount )
-                    .setActionPair( Action.PERMS_BANNED_INFO,
-                                    R.string.button_more_info )
-                    .show();
-            }
         }
     }
 

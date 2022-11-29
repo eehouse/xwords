@@ -2340,18 +2340,15 @@
   via Data SMS but CrossWords does not have permission to do so. You
   can still open the game, but it may not be able to send or receive
   moves.\n\nYou can re-open it to be asked for permission again. Or
-  you can remove the Data SMS communication setting.</string>
-    <string name="not_again_nbsGamesOnUpgrade">The Google Play Store
-  version of CrossWords is no longer allowed to support the
-  Play-by-Data-SMS feature.
-  \n\n
-  You have %1$d open games that use this feature. They will not be
-  able to send or receive moves via Data SMS as long as you are using
-  the Google Play version of CrossWords, or until I can figure out a
-  workaround that meets Store policies.
-  \n\n
-  You can read more using the button below.</string>
-    <string name="download_rationale">CrossWords needs access to
+    you can remove the Data SMS communication setting.</string>
+
+    <string name="variant_missing_nbs">This game is configured to
+    communicate via Data SMS, but the Google Play Store version of
+    CrossWords is no longer allowed to support the Play-by-Data-SMS
+    feature.  \n\n You can still open the game, but it may not be able
+    to send or receive moves.</string>
+
+  <string name="download_rationale">CrossWords needs access to
   temporary storage to keep what you’re about to download.
   </string>
     <string name="sms_invite_rationale">
@@ -2416,12 +2413,6 @@
   • Launch CrossWords on the other device\n
   • If all else fails, reboot this device\n
     </string>
-
-    <string name="sms_banned_ok_only">The Google Play version of CrossWords no longer supports invitations or play via data SMS.</string>
-    <string name="button_more_info">Read more</string>
-    <string name="banned_nbs_perms">This game is set up to communicate via data SMS, but apps from the Google Play Store are no longer allowed to do so (with rare exceptions). You can still open the game, but it may not be able to send or receive moves.
-\n
-\nYou can remove the data SMS communication setting, or use the “Read more” button to check progress on the development of an alternative.</string>
     <string name="not_again_longtap_lookup">You can look up words BEFORE
     they’re committed as moves—by long-tapping, same as committed
     words.\n\nUse this feature to check the validity of words you’re

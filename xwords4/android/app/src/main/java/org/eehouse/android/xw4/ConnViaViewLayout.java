@@ -176,14 +176,9 @@ public class ConnViaViewLayout extends LinearLayout {
                 keyID = R.string.key_na_comms_relay;
                 break;
             case COMMS_CONN_SMS:
-                if ( Perms23.havePermissions( getContext(),
-                                              Perms23.Perm.SEND_SMS,
-                                              Perms23.Perm.RECEIVE_SMS )
-                     || !Perms23.Perm.SEND_SMS.isBanned(getContext()) ) {
+                if ( Perms23.haveNBSPerms( getContext() ) ) {
                     msgID = R.string.not_again_comms_sms;
                     keyID = R.string.key_na_comms_sms;
-                } else {
-                    msgID = R.string.sms_banned_ok_only;
                 }
                 break;
             case COMMS_CONN_BT:
@@ -203,13 +198,13 @@ public class ConnViaViewLayout extends LinearLayout {
                 break;
             }
 
-            DlgDelegate.Builder builder = 0 != keyID
-                ? m_dlgDlgt.makeNotAgainBuilder( keyID, msgID )
-                : m_dlgDlgt.makeOkOnlyBuilder( msgID )
-                .setActionPair( Action.PERMS_BANNED_INFO,
-                                R.string.button_more_info )
-                ;
-            builder.show();
+            if ( 0 != msgID ) {
+                DlgDelegate.Builder builder = 0 != keyID
+                    ? m_dlgDlgt.makeNotAgainBuilder( keyID, msgID )
+                    : m_dlgDlgt.makeOkOnlyBuilder( msgID )
+                    ;
+                builder.show();
+            }
         }
     }
 }
