@@ -150,7 +150,7 @@ public class BTUtils {
     public static void enable( Context context )
     {
         BluetoothAdapter adapter = getAdapterIf();
-        if ( null != adapter ) {
+        if ( null != adapter && havePermissions( context ) ) {
             // Only do this after explicit action from user -- Android guidelines
             adapter.enable();
         }

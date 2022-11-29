@@ -140,7 +140,7 @@ android {
 
         xw4GPlay {
             dimension "variant"
-            applicationId "org.eehouse.android.xw4"
+            applicationId "org.eehouse.android.xw4GPTest"
             manifestPlaceholders = [ APP_ID: applicationId ]
             resValue "string", "app_name", "DoNotRelease"
             buildConfigField "boolean", "WIDIR_ENABLED", "false"
