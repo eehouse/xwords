@@ -710,10 +710,15 @@ public class BoardDelegate extends DelegateBase
     // straight to asking for the permission.
     private void callInviteChoices()
     {
-        Perms23.tryGetPermsNA( this, Perm.READ_PHONE_STATE,
-                               R.string.phone_state_rationale,
-                               R.string.key_na_perms_phonestate,
-                               Action.ASKED_PHONE_STATE );
+        Log.d( TAG, "callInviteChoices()" );
+        if ( !Perms23.NBSPermsInManifest( m_activity ) ) {
+            showInviteChoicesThen();
+        } else {
+            Perms23.tryGetPermsNA( this, Perm.READ_PHONE_STATE,
+                                   R.string.phone_state_rationale,
+                                   R.string.key_na_perms_phonestate,
+                                   Action.ASKED_PHONE_STATE );
+        }
     }
 
     private void showInviteChoicesThen()

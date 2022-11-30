@@ -426,7 +426,9 @@ public class Perms23 {
 
     static boolean haveNBSPerms( Context context )
     {
-        return havePermissions( context, NBS_PERMS );
+        boolean result = havePermissions( context, NBS_PERMS );
+        Log.d( TAG, "haveNBSPerms() => %b", result );
+        return result;
     }
 
     static boolean NBSPermsInManifest( Context context )

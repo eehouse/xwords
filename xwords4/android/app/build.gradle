@@ -143,6 +143,7 @@ android {
             applicationId "org.eehouse.android.xw4GPTest"
             manifestPlaceholders = [ APP_ID: applicationId ]
             resValue "string", "app_name", "DoNotRelease"
+            buildConfigField "boolean", "NON_RELEASE", "true"
             buildConfigField "boolean", "WIDIR_ENABLED", "false"
             buildConfigField "String", "VARIANT_NAME", "\"Google Play Store\""
             buildConfigField "int", "VARIANT_CODE", "1"
