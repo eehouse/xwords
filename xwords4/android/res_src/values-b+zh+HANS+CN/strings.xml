@@ -53,10 +53,9 @@
     <string name="invitee_fmt">(%1$s 已邀请)</string>
     <string name="player_label">名字：</string>
     <plurals name="confirm_reset_fmt">
-        <item quantity="one">你确定要重置 %1$d 个所选的游戏吗？
+        <item quantity="other">你确定那个要重置选中的 %1$d 个游戏吗？
 \n
 \n（重置会删除所有所做的操作和任何连接信息。）</item>
-        <item quantity="other"/>
     </plurals>
     <string name="button_reset">恢复默认值</string>
     <string name="button_delete_game">删除游戏</string>
