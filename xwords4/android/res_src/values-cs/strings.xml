@@ -14,7 +14,7 @@
      limitations under the License.
 --><resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
     <string name="list_item_config">Konfigurovat</string>
-    <string name="list_item_delete">Vymazat</string>
+    <string name="list_item_delete">Vymazat hru</string>
     <string name="list_item_copy">Kopírovat</string>
     <string name="list_item_reset">Vynulovat</string>
     <string name="list_item_new_from">Nová hra podle vzoru</string>
@@ -27,7 +27,7 @@
     <string name="button_discard">Zrušit</string>
     <string name="player_label">Jméno:</string>
     <string name="info_title">Pro vaši informaci...</string>
-    <string name="query_title">Dotaz...</string>
+    <string name="query_title">Dotaz</string>
     <string name="tiles_left_title">Zbývající kameny</string>
     <string name="counts_values_title">Počty a hodnoty kamenů</string>
     <string name="history_title">Historie hry</string>
@@ -36,7 +36,7 @@
     <string name="board_menu_done">Ukončit tah</string>
     <string name="board_menu_trade">Vyměnit</string>
     <string name="board_submenu_game">Hra</string>
-    <string name="board_menu_game_counts">Počty a hodnoty</string>
+    <string name="board_menu_game_counts">Počty a hodnoty...</string>
     <string name="board_menu_game_left">Zbývající kameny</string>
     <string name="board_menu_game_history">Historie hry</string>
     <string name="board_menu_game_final">Celkové skóre</string>
@@ -48,12 +48,16 @@
     <string name="strd_remaining_tiles_add_fmt">+ %1$d [všechny zbývající kameny]</string>
     <string name="strd_unused_tiles_sub_fmt">- %1$d [nepoužité kameny]</string>
     <string name="strd_time_penalty_sub_fmt"> - %1$d [čas]</string>
-    <string name="strs_move_across_fmt">tah (od %1$s napříč)</string>
-    <string name="strs_move_down_fmt">tah (od %1$s dolů)</string>
-    <string name="strs_tray_at_start_fmt">Zásobník při startu: %1$s</string>
+    <string name="strs_move_across_fmt">tah (od %1$s napříč)
+\n</string>
+    <string name="strs_move_down_fmt">tah (od %1$s dolů)
+\n</string>
+    <string name="strs_tray_at_start_fmt">Zásobník při startu: %1$s
+\n</string>
     <string name="strss_traded_for_fmt">Vyměnil %1$s za %2$s.</string>
     <string name="str_phony_rejected">Nepovolené slovo; tah ztracen!</string>
-    <string name="strd_cumulative_score_fmt">Souhrnné skóre: %1$d</string>
+    <string name="strd_cumulative_score_fmt">Souhrnné skóre: %1$d
+\n</string>
     <string name="strs_new_tiles_fmt">Nové kameny: %1$s</string>
     <string name="str_commit_confirm">Potvrdit tento tah?\n</string>
     <string name="str_bonus_all">Bonus za využití všech kamenů: 50\n</string>
@@ -62,21 +66,21 @@
     <string name="str_tiles_not_in_line">Kameny musí ležet v jedné řadě.</string>
     <string name="str_no_empties_in_turn">Mezi kameny nesmí být žádná prázdná políčka.</string>
     <string name="str_two_tiles_first_move">V prvním tahu musíte umístit dva nebo více kamenů.</string>
-    <string name="str_tiles_must_contact">Nové kameny musí navazovat na již položené kameny (nebo se s nimi křížit).</string>
-    <string name="str_not_your_turn">To nemůžete udělat; není to váš tah!</string>
+    <string name="str_tiles_must_contact">Nové kameny musí navazovat na již položené kameny (nebo se s nimi křížit)</string>
+    <string name="str_not_your_turn">To nemůžete udělat; nejste na tahu!</string>
     <string name="str_no_peek_robot_tiles">Nenakukujte na kameny robota!</string>
     <string name="str_too_few_tiles_left_to_trade">Zbývá příliš málo kamenů pro výměnu.</string>
     <string name="str_cant_undo_tileassign">Přiřazení kamene nemůže být vráceno zpět.</string>
     <string name="str_cant_hint_while_disabled">Pro tuto hru je zakázána nápověda. Pro novou hru ji můžete povolit v Předvolbách.</string>
     <string name="str_no_peek_remote_tiles">Nenakukujte na kameny vzdáleného hráče!</string>
-    <string name="str_reg_unexpected_user">Odmítnut pokus o registraci neočekávaného hráče(ů)</string>
+    <string name="str_reg_unexpected_user">Odmítnut pokus o registraci neočekávaného hráče(ů).</string>
     <string name="str_server_dict_wins">Konflikt mezi slovníky Serveru a Klienta; Platí vždy slovník Serveru.</string>
-    <string name="str_reg_server_sans_remote">Alespoň jeden hráč musí být označen jako \"Vzdálený\" abyste mohli hru spustit jako Server.</string>
+    <string name="str_reg_server_sans_remote">Alespoň jeden hráč musí být označen jako \"Vzdálený\", abyste mohli hru spustit jako Server.</string>
     <string name="remote_label">Hráč klient</string>
     <string name="robot_label">Hráč robot</string>
     <string name="robot_name_fmt">%1$s (robot)</string>
     <string name="guest_name">(hráč klient)</string>
-    <string name="password_label">Heslo</string>
+    <string name="password_label">Heslo:</string>
     <string name="player_edit_title">Hráč</string>
     <string name="players_label_standalone">Hráči</string>
     <string name="button_add_player">Přidat hráče</string>
@@ -105,7 +109,7 @@
     <string name="default_dict">Slovník pro hru</string>
     <string name="default_phonies">Předvolby slovníku</string>
     <string name="board_size">Velikost hrací plochy</string>
-    <string name="prefs_colors">Barvy</string>
+    <string name="prefs_colors">Barvy desky apod.</string>
     <string name="prefs_colors_summary">Upravit barvy hráčů a hrací plochy</string>
     <string name="pref_player1_name">První hráč</string>
     <string name="pref_player2_name">Druhý hráč</string>
@@ -117,7 +121,7 @@
     <string name="bonus_w3x">Trojitá hodnota slova</string>
     <string name="tile_back">Pozadí kamenů</string>
     <string name="empty">Prázdné pole/pozadí</string>
-    <string name="badwords_accept">  Chcete přesto přijmout tento tah?</string>
+    <string name="badwords_accept">" Chcete přesto přijmout tento tah\?"</string>
     <string name="badwords_lost">  Tah ztracen.</string>
     <string name="badwords_title">Neplatné slovo[a]</string>
     <string name="ids_endnow">Chcete určitě ihned ukončit hru?</string>
@@ -127,14 +131,12 @@
     <string name="gameOver">Hra skončena</string>
     <!-- <string name="moves_fmt">Bylo zahráno %1$d tahů</string> -->
     <!-- about dialog stuff -->
-    <string name="about_copyright">Copyright (C) 1998-2022 Eric
-    House. Tento software je vydán pod licencí GNU Public License.</string>
-    <string name="about_web">Manuál a zdrojové kódy najdete na:
-    http://xwords.sf.net.  Hlásit chyby, doporučit vylepšení, nabídnout pomoc, atd.
-    můžete na email: eehouse@eehouse.org.</string>
+    <string name="about_copyright">CrossWords pro Android.
+\nCopyright (C) 1998-2022 Eric House. Tento software je vydán pod licencí GNU Public License.</string>
+    <string name="about_web">(Starý) manuál a zdrojové kódy najdete na: http://xwords.sf.net. Hlásit chyby, doporučit vylepšení, nabídnout pomoc, atd. můžete na email: eehouse@eehouse.org.</string>
     <!-- fill this in other than in English -->
-    <string name="xlator">Český překlad Tomáš Morkus</string>
-    <string name="downloading_dict_fmt">Nahrávám slovník CrossWords %1$s...</string>
+    <string name="xlator">Český překlad Tomáš Morkus, Lucie Vávrová</string>
+    <string name="downloading_dict_fmt">Stahuji %1$s…</string>
     <string name="no_dict_title">Slovník nebyl nalezen</string>
     <string name="button_download">Nahrát</string>
     <string name="msg_ask_password_fmt">Heslo pro \"%1$s\":</string>
@@ -146,4 +148,87 @@
     <string name="initial_player_minutes">Délka hry v minutách</string>
     <string name="str_game_name_fmt">%1$s (%2$s)</string>
     <string name="missing_player">(není tu ještě…)</string>
+    <string name="loc_external">Externí</string>
+    <string name="button_rematch">Hrát znovu</string>
+    <string name="loc_downloads">Stažené</string>
+    <string name="download_more">Stáhnout další</string>
+    <string name="button_default_human">Člověk</string>
+    <string name="lang_label">Jazyk hry</string>
+    <string name="qrcode_invite_expl">Pro pozvání přes QR kód, dejte svému protihráči naskenovat kód skrze kameru v jeho telefonu.</string>
+    <string name="invit_expl_player_fmt">Pozvánka přeposlána skrze MWTT/internet hráči \"%1$s\" na %2$s.</string>
+    <string name="pts">bodů</string>
+    <string name="board_menu_game_resign">Vzdát se</string>
+    <string name="prefs_appearance">Vzhled</string>
+    <string name="invite_choice_email">Email</string>
+    <string name="bt_pick_clear_button">Odstranit</string>
+    <string name="confirm_clear_bt_postscript">"
+\n
+\n(Smíte přidat pouze zařízení v dosahu Bluetooth signálu.)"</string>
+    <string name="chat_sender_fmt">%1$s:</string>
+    <string name="button_move">Posun</string>
+    <string name="button_delete">Smazat</string>
+    <string name="list_item_move">Přesun do skupiny</string>
+    <string name="button_reset">Resetovat</string>
+    <string name="list_item_rename">Přejmenovat</string>
+    <string name="qrcode_invite_summary">QR kód pro naskenování protihráčem</string>
+    <string name="invit_expl_usrsms_fmt">Pozvánka poslána přes SMS na %1$s</string>
+    <string name="bonus_w3x_summary">3S</string>
+    <string name="connstat_unsucc">neúspěšný</string>
+    <string name="connstat_succ">úspěšný</string>
+    <string name="rename_label">Změnit název této hry na:</string>
+    <string name="notify_vibrate">Vibrace</string>
+    <string name="chat_local_id">"Já: "</string>
+    <string name="invite_htm_fmt">Klikněte na tento odkaz pro připojení ke hře. &lt;br \\&gt; &lt;br \\&gt; (Odkaz: %1$s )</string>
+    <string name="game_locked">Nastavení zámku</string>
+    <string name="bonus_w2x_summary">2S</string>
+    <string name="bonus_l3x_summary">3P</string>
+    <string name="vs_join">" vs. "</string>
+    <string name="invite_choice_bt">Bluetooth</string>
+    <string name="invite_chooser_email">email</string>
+    <string name="button_substdict">Nahradit</string>
+    <string name="button_done">Hotovo</string>
+    <string name="about_btaddr_fmt">BT MAC Adresa: %1$s</string>
+    <string name="board_menu_invite">Pozvánka</string>
+    <string name="sms_banned_ok_only">The Google Play verze CrossWords už nepodporuje pozvánky nebo hru skrze data SMS.</string>
+    <string name="summary_invites_out">Hráči byli pozváni</string>
+    <string name="summary_invites_out_fmt">Hráči byli pozváni do místnosti \"%1$s\"</string>
+    <plurals name="moves_fmt">
+        <item quantity="one">%1$d hráč odehrál</item>
+        <item quantity="few">%1$d hráči odehráli</item>
+        <item quantity="other"></item>
+    </plurals>
+    <string name="loc_builtin">Vestavěné</string>
+    <string name="rename_label_caveat">Změnit název této hry (pouze na tomto zařízení) na:</string>
+    <string name="button_default_both">Oba</string>
+    <string name="loc_internal">Vnitřní</string>
+    <string name="bonus_l2x_summary">2P</string>
+    <plurals name="confirm_seldeletes_fmt">
+        <item quantity="one">Jste si jistý, že chcete smazat označenou hru\? Tento krok je nevratný.</item>
+        <item quantity="few">Jste si jistí, že chcete smazat označené hry (%1$d)\? Tento krok je nevratný.</item>
+        <item quantity="other"></item>
+    </plurals>
+    <string name="game_summary_field_empty">&lt;Nic&gt;</string>
+    <string name="chat_send">Odeslat</string>
+    <string name="button_retry">Zkusit znovu</string>
+    <string name="board_menu_pass">Přeskočit</string>
+    <string name="button_reconnect">Obnovit připojení</string>
+    <string name="button_later">Později</string>
+    <string name="summary_wait_guest">Nepřipojeno</string>
+    <plurals name="confirm_reset_fmt">
+        <item quantity="one">Jste si jistý, že chcete vynulovat označenou hru\?
+\n
+\n(Vynulování smaže všechny tahy i informace o připojení.)</item>
+        <item quantity="few">Jste si jistý, že chcete vynulovat označené hry (%1$d)\?
+\n
+\n(Vynulování smaže všechny tahy i informace o připojení.)</item>
+        <item quantity="other"></item>
+    </plurals>
+    <string name="dicts_item_move">Změnit uložiště</string>
+    <string name="invite_subject_fmt">Pojďme hrát CrossWords (místnost %1$s)</string>
+    <string name="newbie_title">Tip pro vás</string>
+    <string name="button_default_robot">Robot</string>
+    <string name="no_copy_network">Hry, které již byly připojeny k relaci, nelze kopírovat. Pro kopii připravenou k přehrávání použijte funkci \"Nová hra podle vzoru\" se všemi stejnými nastaveními.</string>
+    <string name="board_menu_undo_current">Zpět/Znovu</string>
+    <string name="menu_chat">Konverzace</string>
+    <string name="button_decline">Odmítnout</string>
 </resources>
