@@ -11,7 +11,8 @@
     <string name="entering_trade">Trocando quadrados. Toque nos quadrados para selecionar…</string>
     <string name="strs_new_tiles_fmt">Novos quadrados: %1$s</string>
     <plurals name="strd_robot_traded_fmt">
-        <item quantity="one">Um quadrado trocado.</item>
+        <item quantity="one">%1$d quadrado foi trocado.</item>
+        <item quantity="many">%1$d quadrados foram trocados.</item>
         <item quantity="other">%1$d quadrados trocados.</item>
     </plurals>
     <string name="strd_unused_tiles_sub_fmt">- %1$d [quadrados não usados]</string>
@@ -43,10 +44,13 @@
     <string name="invit_expl_usrsms_fmt">Convite enviado via SMS no %1$s</string>
     <string name="invit_expl_sms_fmt">Convite enviado via Dados de SMS para o número de telefone %1$s no %2$s</string>
     <plurals name="invite_msg_fmt">
-        <item quantity="one">Esta partida está aguardando um jogador remoto responder aos convites.
+        <item quantity="one">Esta partida está aguardando %1$d jogador remoto responder aos convites.
 \n
 \nVocê verá esta mensagem até que o jogador convidado tenha respondido. Se você suspeita que o convite que enviou foi perdido, não há mal nenhum em enviar outro.</item>
-        <item quantity="other">Esta partida está aguardando os %1$d jogadores remotos responder aos convites.
+        <item quantity="many">Esta partida está aguardando %1$d jogadores remotos respondam aos convites.
+\n
+\nVocê verá esta mensagem até que os jogadores convidados tenham respondido. Se você suspeita que o convite que enviou foi perdido, não há mal nenhum em enviar outro.</item>
+        <item quantity="other">Esta partida está aguardando %1$d jogadores remotos responder aos convites.
 \n
 \nVocê verá esta mensagem até que os jogadores convidados tenham respondido. Se você suspeita que os convites que enviou foram perdidos, não há mal nenhum em enviar outro.</item>
     </plurals>
@@ -104,8 +108,9 @@
     <string name="rename_label">Mude o nome desse jogo para:</string>
     <string name="no_copy_network">As partidas que já foram conectadas no servidor não podem ser copiadas. Use \"Novo jogo a partir de\" para criar uma cópia usando as mesmas configurações.</string>
     <plurals name="confirm_seldeletes_fmt">
-        <item quantity="one">Você tem certeza que quer apagar o jogo selecionado\? Esta ação não poder ser desfeita.</item>
-        <item quantity="other">Você tem certeza que quer apagar %1$d jogos selecionados\? Esta ação não poder ser desfeita.</item>
+        <item quantity="one">Você tem certeza que deseja excluir o jogo %1$d selecionado\? Esta ação não poder ser desfeita.</item>
+        <item quantity="many">Você tem certeza que deseja excluir os jogos %1$d selecionados\? Esta ação não poder ser desfeita.</item>
+        <item quantity="other">Você tem certeza que deseja excluir %1$d jogos selecionados\? Esta ação não poder ser desfeita.</item>
     </plurals>
     <plurals name="moves_fmt">
         <item quantity="one">Um movimento realizado</item>
@@ -126,17 +131,21 @@
     <string name="button_default_robot">Robô</string>
     <string name="button_default_human">Humano</string>
     <plurals name="confirm_delete_dict_fmt">
-        <item quantity="one">Você tem certeza que quer apagar a lista de palavra %1$s\?</item>
+        <item quantity="one">Você tem certeza que deseja apagar a lista de palavra %1$s\?</item>
+        <item quantity="many">Você tem certeza que deseja apagar as listas das palavras %1$s\?</item>
         <item quantity="other">Você tem certeza que quer deletar as listas de palavras %1$s\?</item>
     </plurals>
     <string name="dicts_item_select">Tornar padrão</string>
     <string name="dicts_item_move">Alterar o local de armazenamento</string>
     <string name="loc_builtin">Incluir</string>
     <plurals name="confirm_reset_fmt">
-        <item quantity="one">Você tem certeza que quer reiniciar o jogo selecionado\?
+        <item quantity="one">Você tem certeza que deseja reiniciar o jogo %1$d selecionado\?
 \n
 \n(Reiniciar apaga todas as jogadas e qualquer informação de conexão.)</item>
-        <item quantity="other">Você tem certeza que quer reiniciar %1$d jogos selecionados\?
+        <item quantity="many">Você tem certeza que deseja reiniciar os jogos %1$d selecionados\?
+\n
+\n(Reiniciar apaga todas as jogadas e quaisquer informações de conexão.)</item>
+        <item quantity="other">Você tem certeza que deseja reiniciar %1$d jogos selecionados\?
 \n
 \n(Reiniciar apaga todas as jogadas e qualquer informação de conexão.)</item>
     </plurals>
@@ -201,11 +210,14 @@
     <string name="title_prefs">Configurações do CrossWords</string>
     <string name="confirm_undo_last">Você tem certeza que quer desfazer o último turno executado\? (Não há opção de refazer.)</string>
     <plurals name="strd_remains_header_fmt">
-        <item quantity="one">Falta um quadrado no agrupamento.</item>
+        <item quantity="one">Falta %1$d quadrado no agrupamento.</item>
+        <item quantity="many">Faltam %1$d quadrados no agrupamento.</item>
         <item quantity="other">Faltam %1$d quadrados no agrupamento .</item>
     </plurals>
     <plurals name="strd_remains_expl_fmt">
-        <item quantity="one">Falta um quadrado no quadro escondido:
+        <item quantity="one">Falta %1$d quadrado no agrupamento e no quadro escondido:
+\n</item>
+        <item quantity="many">Faltam %1$d quadrados no agrupamento e nos quadros escondidos:
 \n</item>
         <item quantity="other">Faltam %1$d quadrados no agrupamento e no quadro escondido:
 \n</item>
@@ -283,7 +295,8 @@
     <string name="str_tiles_not_in_line">Todos os quadrados jogados podem ficar em uma fileira.</string>
     <plurals name="too_many_trade_fmt">
         <item quantity="one">Muitos quadrados selecionados. Por favor selecione apenas um.</item>
-        <item quantity="other">Muitos quadrados selecionados. Por favor selecione mais do que %1$d.</item>
+        <item quantity="many">Quadrados demais foram selecionados. Por favor selecione não mais que %1$d.</item>
+        <item quantity="other">Muitos quadrados selecionados. Por favor selecione não mais que %1$d.</item>
     </plurals>
     <string name="str_too_few_tiles_left_to_trade">Poucos quadrados deixados para trocar.</string>
     <string name="str_no_peek_remote_tiles">Não olhar os quadrados dos jogadores remotos!</string>
@@ -299,7 +312,8 @@
     <string name="chat_local_id">"Eu: "</string>
     <string name="chat_title_fmt">Bate-papo por %1$s</string>
     <plurals name="query_trade_fmt">
-        <item quantity="one">Você tem certeza que quer mudar o quadrado selecionado (%2$s)\?</item>
+        <item quantity="one">Você tem certeza que deseja alterar o quadrado selecionado (%2$s)\?</item>
+        <item quantity="many">Você tem certeza que deseja alterar os %1$d quadrados selecionados (%2$s)\?</item>
         <item quantity="other">Você tem certeza que quer mudar os %1$d quadrados selecionados (%2$s)\?</item>
     </plurals>
     <string name="invite_chooser_email">e-mail</string>
@@ -374,13 +388,15 @@
     <string name="bt_resend_fmt">Envio Bluetooth para %1$s falhou; tente %3$d novamente em %2$d segundos.</string>
     <plurals name="bt_scan_progress_fmt">
         <item quantity="one">Fazendo a varredura por CrossWords</item>
+        <item quantity="many">Fazendo varreduras pelo CrossWords nos %1$d dispositivos emparelhados</item>
         <item quantity="other">Fazendo a varredura por CrossWords nos %1$d dispositivos emparelhados</item>
     </plurals>
     <string name="invite_bt_desc_postscript">"
 \n
 \n(A lista é de dispositivos emparelhados onde CrossWords foi detectado via um escaneamento.)"</string>
     <plurals name="invite_bt_desc_fmt_2">
-        <item quantity="one">Por favor cheque o dispositivo que quer incluir neste jogo.</item>
+        <item quantity="one">Verifique o dispositivo que deseja incluir neste jogo.</item>
+        <item quantity="many">Verifique os %1$d dispositivos que deseja incluir neste jogo.</item>
         <item quantity="other">Por favor cheque os %1$d dispositivos que quer incluir neste jogo.</item>
     </plurals>
     <string name="sms_bad_proto_fmt">A versão de CrossWords no telefone com número “%1$s” é incompatível com esta aqui para jogar usando dados de SMS. Um de vocês talvez precisará de atualizar antes de continuar.</string>
@@ -415,6 +431,7 @@
     <string name="loc_filters_prompt">Filtrar por:</string>
     <plurals name="new_xlations_fmt">
         <item quantity="one">Foi instalada uma nova tradução</item>
+        <item quantity="many">Foram instaladas %1$d novas traduções</item>
         <item quantity="other">Foram instaladas %1$d novas traduções</item>
     </plurals>
     <string name="menu_hint_prev">Dica ant.</string>
@@ -435,13 +452,17 @@
     <string name="add_done_fmt">%1$s adicionado à lista de estudos %2$s</string>
     <plurals name="paste_done_fmt">
         <item quantity="one">Uma palavra copiada</item>
+        <item quantity="many">%1$d palavras copiadas</item>
         <item quantity="other">%1$d palavras copiadas</item>
     </plurals>
     <plurals name="confirm_studylist_clear_fmt">
-        <item quantity="one">Tem certeza que quer excluir a palavra selecionada\?
+        <item quantity="one">Tem certeza que deseja excluir a palavra selecionada\?
 \n
 \n(Esta ação não pode ser desfeita.)</item>
-        <item quantity="other">Tem certeza que quer excluir as %1$d palavras selecionadas\?)
+        <item quantity="many">Tem certeza que deseja excluir as %1$d palavras selecionadas\?)
+\n
+\n(Esta ação não pode ser desfeita.)</item>
+        <item quantity="other">Tem certeza que deseja excluir as %1$d palavras selecionadas\?)
 \n
 \n(Esta ação não pode ser desfeita.)</item>
     </plurals>
@@ -455,13 +476,17 @@
         <item quantity="one">"
 \n
 \n(Uma partida também será excluída.)"</item>
+        <item quantity="many">"
+\n
+\n(%1$d partidas também serão excluídas.)"</item>
         <item quantity="other">"
 \n
 \n(%1$d partidas também serão excluídas.)"</item>
     </plurals>
     <plurals name="groups_confirm_del_fmt">
-        <item quantity="one">Tem certeza que quer deletar o grupo %1$s\?</item>
-        <item quantity="other">Tem certeza que quer deletar os grupos %1$s\?</item>
+        <item quantity="one">Tem certeza que deseja excluir o grupo %1$s\?</item>
+        <item quantity="many">Tem certeza que deseja excluir os grupos %1$s\?</item>
+        <item quantity="other">Tem certeza que deseja excluir os grupos %1$s\?</item>
     </plurals>
     <string name="group_new_games">Novos jogos</string>
     <string name="group_cur_games">Meus jogos</string>
@@ -472,14 +497,17 @@
     <string name="nag_body_fmt">%1$s moveu mais de %2$s atrás.</string>
     <plurals name="nag_days_fmt">
         <item quantity="one">%1$d dia</item>
+        <item quantity="many">%1$d dias</item>
         <item quantity="other">%1$d dias</item>
     </plurals>
     <plurals name="nag_hours_fmt">
         <item quantity="one">%1$d hora</item>
+        <item quantity="many">%1$d horas</item>
         <item quantity="other">%1$d horas</item>
     </plurals>
     <plurals name="nag_minutes_fmt">
         <item quantity="one">%1$d minuto</item>
+        <item quantity="many">%1$d minutos</item>
         <item quantity="other">%1$d minutos</item>
     </plurals>
     <string name="nag_title">Lembrete: É a sua vez</string>
@@ -520,6 +548,7 @@
     <string name="waiting_host_title">Esperando host</string>
     <plurals name="waiting_title_fmt">
         <item quantity="one">Esperando o jogador</item>
+        <item quantity="many">Esperando os %1$d jogadores</item>
         <item quantity="other">Esperando os %1$d jogadores</item>
     </plurals>
     <string name="not_again_hidenewgamebuttons">Os dois botões no fim desta tela e os dois primeiros itens na sua Barra de Ação (ou menu) fazem a mesma coisa.
@@ -532,6 +561,7 @@
     <string name="err_dup_invite_fmt">Convite duplo rejeitado: dispositivo “%1$s” já aceitou um convite para este jogo.</string>
     <plurals name="nplayers_fmt">
         <item quantity="one">Um jogador</item>
+        <item quantity="many">%1$d jogadores</item>
         <item quantity="other">%1$d jogadores</item>
     </plurals>
     <string name="nplayers_prompt">Número neste dispositivo</string>
@@ -544,6 +574,7 @@
     <string name="lmi_phony_fmt">%1$s perdeu uma rodada</string>
     <plurals name="lmi_move_fmt">
         <item quantity="one">%1$s jogou %2$s por um ponto</item>
+        <item quantity="many">%1$s jogaram %2$s por %3$d pontos</item>
         <item quantity="other">%1$s jogaram %2$s por %3$d pontos</item>
     </plurals>
     <string name="list_item_deselect">Des-selecionar</string>
@@ -613,18 +644,21 @@
 \n
 \n(Você só pode readicionar dispositivos que estiverem no alcance do Bluetooth.)"</string>
     <plurals name="confirm_clear_bt_fmt">
-        <item quantity="one">Tem certeza que quer esquecer o dispositivo checado\?</item>
-        <item quantity="other">Tem certeza que quer esquecer os %1$d dispositivos checados\?</item>
+        <item quantity="one">Tem certeza que deseja esquecer o dispositivo já verificado\?</item>
+        <item quantity="many">Tem certeza que deseja esquecer os %1$d dispositivos já verificados\?</item>
+        <item quantity="other">Tem certeza que deseja esquecer os %1$d dispositivos já verificados\?</item>
     </plurals>
     <string name="not_again_clip_expl_fmt">A opção “%1$s” copia uma URL de convite para a área de transferência. Cole-a no app de sua escolha e compartilhe-a com um amigo.</string>
     <string name="dict_browse_title_fmt">%1$s (total de palavras de %2$d)</string>
     <string name="disableds_title">Tipos de endereço desativados</string>
     <plurals name="sel_groups_fmt">
         <item quantity="one">Um grupo selecionado</item>
+        <item quantity="many">%1$d grupos selecionados</item>
         <item quantity="other">%1$d grupos selecionados</item>
     </plurals>
     <plurals name="sel_games_fmt">
         <item quantity="one">Um jogo selecionado</item>
+        <item quantity="many">%1$d jogos selecionados</item>
         <item quantity="other">%1$d jogos selecionados</item>
     </plurals>
     <string name="not_again_backclears">O botão Voltar limpa qualquer seleção ao invés de sair. Toque novamente para sair do app.</string>
@@ -738,6 +772,9 @@
         <item quantity="one">"
 \n
 \n(Você tem uma partida ativa usando o Bluetooth.)"</item>
+        <item quantity="many">"
+\n
+\n(Você tem %1$d partidas ativas usando o Bluetooth.)"</item>
         <item quantity="other">"
 \n
 \n(Você tem %1$d partidas ativas usando o Bluetooth.)"</item>
@@ -778,12 +815,14 @@
     <string name="warn_nomobile_fmt">O número %1$s para %2$s não é um número “móvel”. Importar mesmo assim\?</string>
     <string name="invite_p2p_desc_extra">Apenas dispositivos que estão atualmente disponíveis são exibidos. Se um dispositivo próximo não estiver aparecendo por favor certifique-se que o WiFi está ativado, que o CrossWords esteja instalado e que jogar via WiFiDirect esteja ativo.</string>
     <plurals name="invite_p2p_desc_fmt">
-        <item quantity="one">Selecione o nome do dispositivo WiFiDirect que você quer convidar para um novo jogo, então toque no “%2$s”.</item>
-        <item quantity="other">Selecione os nomes dos %1$d dispositivos WiFiDirect que você quer convidar para um novo jogo, então toque no “%2$s”.</item>
+        <item quantity="one">Selecione o nome do dispositivo WiFiDirect que você deseja convidar para um novo jogo, então toque no “%2$s”.</item>
+        <item quantity="many">Selecione os nomes dos %1$d dispositivos WiFiDirect que você deseja convidar para um novo jogo, então toque no “%2$s”.</item>
+        <item quantity="other">Selecione os nomes dos %1$d dispositivos WiFiDirect que você deseja convidar para um novo jogo, então toque no “%2$s”.</item>
     </plurals>
     <plurals name="invite_relay_desc_fmt">
-        <item quantity="one">Por favor cheque o dispositivo que você quer convidar para seu novo jogo, então toque em “%2$s”.</item>
-        <item quantity="other">Por favor cheque os %1$d dispositivos que você quer convidar para seu novo jogo, então toque em “%2$s”.</item>
+        <item quantity="one">Verifique o dispositivo que você deseja convidar para seu novo jogo, então toque em “%2$s”.</item>
+        <item quantity="many">Verifique os %1$d dispositivos que você deseja convidar para seu novo jogo, então toque em “%2$s”.</item>
+        <item quantity="other">Verifique os %1$d dispositivos que você deseja convidar para seu novo jogo, então toque em “%2$s”.</item>
     </plurals>
     <string name="summary_conn">Jogo rodando</string>
     <string name="summary_gameover">Fim de jogo</string>
@@ -804,8 +843,9 @@
     <string name="new_dict_avail">Nova lista de palavras</string>
     <string name="checkupdates_none_found">Tudo está atualizado.</string>
     <plurals name="confirm_clear_sms_fmt">
-        <item quantity="one">Tem certeza que quer excluir o número de telefone verificado\?</item>
-        <item quantity="other">Tem certeza que quer excluir os %1$d números de telefone verificados\?</item>
+        <item quantity="one">Tem certeza que deseja excluir o número de telefone verificado\?</item>
+        <item quantity="many">Tem certeza que deseja excluir os números dos %1$d telefones verificados\?</item>
+        <item quantity="other">Tem certeza que deseja excluir os números dos %1$d telefones verificados\?</item>
     </plurals>
     <string name="password_hint">(Opcional)</string>
     <string name="get_sms_name">Nome do contato (opcional):</string>
@@ -859,8 +899,9 @@
     <string name="connstat_succ">bem-sucedido</string>
     <string name="invites_net_fmt">Convites enviados para o jogo conectado via %1$s:</string>
     <plurals name="invite_sms_desc_fmt">
-        <item quantity="one">Por favor cheque o número de telefone que você quer convidar para o seu novo jogo, então clique em “%2$s”.</item>
-        <item quantity="other">Por favor cheque os %1$d números de telefone que você quer convidar para o seu novo jogo, então clique em “%2$s”.</item>
+        <item quantity="one">Verifique o número de telefone que você deseja convidar para o seu novo jogo, então clique em “%2$s”.</item>
+        <item quantity="many">Verifique os %1$d números de telefones que você deseja convidar para o seu novo jogo, então clique em “%2$s”.</item>
+        <item quantity="other">Verifique os %1$d números de telefone que você deseja convidar para o seu novo jogo, então clique em “%2$s”.</item>
     </plurals>
     <string name="button_sms_add">Importar contato</string>
     <string name="new_name_body_fmt">%1$s te convidou para jogar</string>
@@ -926,8 +967,9 @@
     <string name="debug_features_summary">Menu, itens etc.</string>
     <string name="list_item_markbad">Marcar corrompido</string>
     <plurals name="resent_msgs_fmt">
-        <item quantity="one">Uma jogada reenviada</item>
-        <item quantity="other">%1$s jogadas reenviadas</item>
+        <item quantity="one">Uma jogada foi reenviada</item>
+        <item quantity="many">%1$s jogadas foram reenviadas</item>
+        <item quantity="other">%1$s jogadas foram reenviadas</item>
     </plurals>
     <string name="show_sms_title">Mostrar dados que SMS envia, recebe</string>
     <string name="got_langdict_title">Captar lista de palavras padrão para o idioma</string>
@@ -946,6 +988,7 @@
     <string name="lmi_tiles_fmt">Quadrados designados a %1$s</string>
     <plurals name="lmi_trade_fmt">
         <item quantity="one">%1$s trocou um quadrado</item>
+        <item quantity="many">%1$s trocou %2$d quadrados</item>
         <item quantity="other">%1$s trocou %2$d quadrados</item>
     </plurals>
     <string name="dict_desc_fmt">%1$s (%2$s de %3$d palavras)</string>
@@ -961,12 +1004,14 @@
     <string name="summary_thumbsize">Tamanho da miniatura</string>
     <plurals name="group_name_fmt">
         <item quantity="one">%1$s (%2$d jogo)</item>
+        <item quantity="many">%1$s (%2$d jogos)</item>
         <item quantity="other">%1$s (%2$d jogos)</item>
     </plurals>
     <string name="menu_flip">Virar tabuleiro</string>
     <plurals name="confirm_clear_relay_fmt">
-        <item quantity="one">Tem certeza que quer deletar o registro RelayID checado\?</item>
-        <item quantity="other">Tem certeza que quer deletar os %1$d registros RelayID checados\?</item>
+        <item quantity="one">Tem certeza que deseja excluir o registro RelayID verificado\?</item>
+        <item quantity="many">Tem certeza que deseja excluir os %1$d registros RelayID verificados\?</item>
+        <item quantity="other">Tem certeza que deseja excluir os %1$d registros RelayID verificados\?</item>
     </plurals>
     <string name="button_addBlank">+Vazio</string>
     <string name="not_again_arrow">Há duas maneiras de mover quadrados para o tabuleiro.
@@ -1026,6 +1071,7 @@
 \nVocê deseja convidar alguém\?</string>
     <plurals name="confirm_nameddeletes_fmt">
         <item quantity="one">Tem certeza de que deseja excluir o jogo %1$s\? Essa ação não pode ser desfeita.</item>
+        <item quantity="many">Tem certeza de que deseja excluir os jogos %1$s\? Essa ação não pode ser desfeita.</item>
         <item quantity="other">Tem certeza de que deseja excluir os jogos %1$s\? Essa ação não pode ser desfeita.</item>
     </plurals>
     <string name="not_again_comms_relay_depr">O “relay” é um servidor para passar mensagens entre dispositivos rodando CrossWords. Está a ser substituído por um servidor mais moderno chamado “Mosquitto.”</string>
@@ -1088,6 +1134,9 @@
         <item quantity="one">"
 \n
 \n(Você tem um jogo ativo usando a internet agora.)"</item>
+        <item quantity="many">"
+\n
+\n(Você tem %1$d jogos ativos usando a internet agora.)"</item>
         <item quantity="other">"
 \n
 \n(Você tem %1$d jogos ativos usando a internet agora.)"</item>
