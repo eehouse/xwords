@@ -49,7 +49,8 @@ public class Perms23 {
         RECEIVE_SMS(Manifest.permission.RECEIVE_SMS),
         READ_CONTACTS(Manifest.permission.READ_CONTACTS),
         BLUETOOTH_CONNECT(Manifest.permission.BLUETOOTH_CONNECT),
-        BLUETOOTH_SCAN(Manifest.permission.BLUETOOTH_SCAN);
+        BLUETOOTH_SCAN(Manifest.permission.BLUETOOTH_SCAN),
+        REQUEST_INSTALL_PACKAGES(Manifest.permission.REQUEST_INSTALL_PACKAGES);
 
         private String m_str = null;
         private Perm(String str) { m_str = str; }
@@ -72,7 +73,7 @@ public class Perms23 {
     }
 
     private static Map<Perm, Boolean> sManifestMap = new HashMap<>();
-    private static boolean permInManifest( Context context, Perm perm )
+    static boolean permInManifest( Context context, Perm perm )
     {
         boolean result = false;
         if ( sManifestMap.containsKey( perm ) ) {

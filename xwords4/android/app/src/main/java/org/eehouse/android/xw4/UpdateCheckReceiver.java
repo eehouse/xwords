@@ -297,72 +297,78 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
 
                     // Add upgrade
                     if ( jobj.has( k_APP ) ) {
-                        JSONObject app = jobj.getJSONObject( k_APP );
-                        if ( app.has( k_URL ) ) {
-                            ApplicationInfo ai =
-                                m_pm.getApplicationInfo( m_packageName, 0);
-                            String label = m_pm.getApplicationLabel( ai ).toString();
+                        if ( Perms23.permInManifest( m_context,
+                                                     Perms23.Perm
+                                                     .REQUEST_INSTALL_PACKAGES ) ) {
+                            JSONObject app = jobj.getJSONObject( k_APP );
+                            if ( app.has( k_URL ) ) {
+                                ApplicationInfo ai =
+                                    m_pm.getApplicationInfo( m_packageName, 0);
+                                String label = m_pm.getApplicationLabel( ai ).toString();
 
-                            // If there's a download dir AND an installer
-                            // app, handle this ourselves.  Otherwise just
-                            // launch the browser
-                            boolean useBrowser;
-                            File downloads = DictUtils.getDownloadDir( m_context );
-                            if ( null == downloads ) {
-                                useBrowser = true;
-                            } else {
-                                File tmp = new File( downloads,
-                                                     "xx" + XWConstants.APK_EXTN );
-                                useBrowser = !Utils.canInstall( m_context, tmp );
-                            }
-
-                            String urlParm = app.getString( k_URL );
-
-                            // Debug builds check frequently on a timer and
-                            // when it's something we don't want it's annoying
-                            // to get a lot of offers. So track the URL used,
-                            // and only offer once per URL unless the request
-                            // was manual.
-                            boolean skipIt = false;
-                            if ( BuildConfig.NON_RELEASE && !m_fromUI ) {
-                                String prevURL = DBUtils.getStringFor( m_context, KEY_PREV_URL );
-                                if ( urlParm.equals( prevURL ) ) {
-                                    skipIt = true;
+                                // If there's a download dir AND an installer
+                                // app, handle this ourselves.  Otherwise just
+                                // launch the browser
+                                boolean useBrowser;
+                                File downloads = DictUtils.getDownloadDir( m_context );
+                                if ( null == downloads ) {
+                                    useBrowser = true;
                                 } else {
-                                    DBUtils.setStringFor( m_context, KEY_PREV_URL, urlParm );
-                                }
-                            }
-                            if ( !skipIt ) {
-                                gotOne = true;
-                                String url = NetUtils.ensureHttps( urlParm );
-                                Intent intent;
-                                if ( useBrowser ) {
-                                    intent = new Intent( Intent.ACTION_VIEW,
-                                                         Uri.parse(url) );
-                                } else {
-                                    intent = DwnldDelegate
-                                        .makeAppDownloadIntent( m_context, url );
+                                    File tmp = new File( downloads,
+                                                         "xx" + XWConstants.APK_EXTN );
+                                    useBrowser = !Utils.canInstall( m_context, tmp );
                                 }
 
-                                // If I asked explicitly, let's download now.
-                                if ( m_fromUI && !useBrowser ) {
-                                    m_context.startActivity( intent );
-                                } else {
-                                    // title and/or body might be in the reply
-                                    String title = app.optString( k_UPGRADE_TITLE, null );
-                                    if ( null == title ) {
-                                        title = LocUtils
-                                            .getString( m_context, R.string.new_app_avail_fmt, label );
+                                String urlParm = app.getString( k_URL );
+
+                                // Debug builds check frequently on a timer and
+                                // when it's something we don't want it's annoying
+                                // to get a lot of offers. So track the URL used,
+                                // and only offer once per URL unless the request
+                                // was manual.
+                                boolean skipIt = false;
+                                if ( BuildConfig.NON_RELEASE && !m_fromUI ) {
+                                    String prevURL = DBUtils.getStringFor( m_context, KEY_PREV_URL );
+                                    if ( urlParm.equals( prevURL ) ) {
+                                        skipIt = true;
+                                    } else {
+                                        DBUtils.setStringFor( m_context, KEY_PREV_URL, urlParm );
                                     }
-                                    String body = app.optString( k_UPGRADE_BODY, null );
-                                    if ( null == body ) {
-                                        body = LocUtils
-                                            .getString( m_context, R.string.new_app_avail );
+                                }
+                                if ( !skipIt ) {
+                                    gotOne = true;
+                                    String url = NetUtils.ensureHttps( urlParm );
+                                    Intent intent;
+                                    if ( useBrowser ) {
+                                        intent = new Intent( Intent.ACTION_VIEW,
+                                                             Uri.parse(url) );
+                                    } else {
+                                        intent = DwnldDelegate
+                                            .makeAppDownloadIntent( m_context, url );
                                     }
-                                    Utils.postNotification( m_context, intent, title,
-                                                            body, title.hashCode() );
+
+                                    // If I asked explicitly, let's download now.
+                                    if ( m_fromUI && !useBrowser ) {
+                                        m_context.startActivity( intent );
+                                    } else {
+                                        // title and/or body might be in the reply
+                                        String title = app.optString( k_UPGRADE_TITLE, null );
+                                        if ( null == title ) {
+                                            title = LocUtils
+                                                .getString( m_context, R.string.new_app_avail_fmt, label );
+                                        }
+                                        String body = app.optString( k_UPGRADE_BODY, null );
+                                        if ( null == body ) {
+                                            body = LocUtils
+                                                .getString( m_context, R.string.new_app_avail );
+                                        }
+                                        Utils.postNotification( m_context, intent, title,
+                                                                body, title.hashCode() );
+                                    }
                                 }
                             }
+                        } else {
+                            Log.d( TAG, "need to notify upgrade available" );
                         }
                     }
 

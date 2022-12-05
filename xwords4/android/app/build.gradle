@@ -141,8 +141,7 @@ android {
             dimension "variant"
             applicationId "org.eehouse.android.xw4"
             manifestPlaceholders = [ APP_ID: applicationId ]
-            resValue "string", "app_name", "CrossWords"
-            resValue "string", "nbs_port", "3344"
+            resValue "string", "app_name", "DoNotRelease"
             buildConfigField "boolean", "WIDIR_ENABLED", "false"
             buildConfigField "String", "VARIANT_NAME", "\"Google Play Store\""
             buildConfigField "int", "VARIANT_CODE", "1"
