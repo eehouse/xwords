@@ -135,6 +135,7 @@ android {
             buildConfigField "boolean", "LOCUTILS_ENABLED", "false"
             buildConfigField "String", "LAST_COMMIT_FILE", "\"$LAST_COMMIT_FILE\""
             buildConfigField "int", "BAD_COUNT", "2"
+            resValue "string", "nbs_port", "0"
         }
 
         xw4GPlay {
@@ -192,7 +193,6 @@ android {
             applicationId "org.eehouse.android.xw4dbg"
             buildConfigField "String", "DB_NAME", "\"xwddb\""
             resValue "string", "app_name", "CrossDbg"
-            resValue "string", "nbs_port", "3345"
             resValue "string", "invite_prefix", "/andd/"
             resValue "string", "conf_prefix", "/cnfd/"
             resValue "string", "newgame_scheme", "newxwgamed"

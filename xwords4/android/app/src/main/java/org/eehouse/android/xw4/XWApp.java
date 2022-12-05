@@ -56,8 +56,6 @@ public class XWApp extends Application
     private static Boolean s_onEmulator = null;
     private static Context s_context = null;
 
-    private short mPort;
-
     @Override
     public void onCreate()
     {
@@ -90,8 +88,6 @@ public class XWApp extends Application
         UpdateCheckReceiver.restartTimer( this );
 
         WiDirWrapper.init( this );
-
-        mPort = Short.valueOf( getString( R.string.nbs_port ) );
 
         DupeModeTimer.init( this );
 
