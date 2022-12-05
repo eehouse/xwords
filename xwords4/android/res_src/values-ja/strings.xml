@@ -760,17 +760,8 @@ WiFi ダイレクト経由で接続可能なデバイスはありません。</s
     <string name="invite_nbs_desc">その後、データメッセージがその電話番号のデバイスに配信されます。クロスワードがインストールされていて、必要なアクセス許可がある場合は、招待状を受け取ってプレイを開始できます。</string>
     <string name="empty_bt_inviter">ペアリングされたデバイスはまだ検出されていません。</string>
     <string name="checkbox_archive">アーカイブに移動</string>
-    <string name="not_again_nbsGamesOnUpgrade">Google Play ストアバージョンのクロスワードは、データ SMS によるプレイ機能をサポートできなくなりました。
-\n
-\nこの機能を使用する %1$d の開催中のゲームがあります。Google Play バージョンのクロスワードを使用している限り、またはストア ポリシーを満たす回避策を見つけ出すまで、データ SMS 経由で移動を送受信することはできません。
-\n
-\n下のボタンを使用すると、詳細を参照することができます。</string>
     <string name="nbsproxy_channel_expl">NBSProxy に関するアラート</string>
-    <string name="sms_banned_ok_only">Google Play バージョンのクロスワードは、データ SMS 経由で招待やプレイできなくなりました。</string>
     <string name="button_more_info">続きを読む</string>
-    <string name="banned_nbs_perms">このゲームは、データSMSを介して通信するように設定されていますが、Google Playストアのアプリは、もはや (まれな例外を除いて) 許可されていません。まだゲームを開くことはできますが、移動を送受信できない場合があります。
-\n
-\nデータSMS通信設定を削除するか、「続きを読む」ボタンを使用して、代替策の開発の進捗状況を確認することができます。</string>
     <string name="not_again_longtap_lookup">単語を移動としてコミットする前に -- 長押しして、コミットされた単語と同じように単語を調べることができます。
 \n
 \nこの機能を使用して、考えている単語の有効性を確認したり、ヒントとして提供される見慣れない単語を調べたりします。</string>

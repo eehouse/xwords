@@ -788,12 +788,10 @@
 \n</string>
     <string name="sms_invite_fail">Kunne ikke starte SMS-program</string>
     <string name="checkbox_archive">Flytt til arkiv</string>
-    <string name="button_more_info">Les mer</string>
     <string name="invit_expl_usrsms_fmt">Invitasjon sendt via SMS-melding på %1$s</string>
     <string name="msg_dev_deleted_fmt">Spillet ved navn \"%1$s\" har blitt slettet på en annen enhet. Du vil ikke kunne spille videre.</string>
     <string name="invite_choice_data_sms">Data-SMS</string>
     <string name="empty_bt_inviter">Ingen parrede enheter oppdaget enda.</string>
-    <string name="sms_banned_ok_only">Google Play-versjonen av CrossWords støtter ikke lenger invitasjon eller spill via data-SMS.</string>
     <string name="sms_invite_flakey">Dette nye valget starter ditt forvalgte SMS-program med invitasjon klar til forsendelse -- når det virker. Hvert SMS-program er forskjellig, og noen samarbeider ikke.</string>
     <string name="invite_choice_user_sms">SMS (tekstmelding)</string>
     <string name="ok_with_robots">OK (maskinspiller)</string>
@@ -803,11 +801,6 @@
     <string name="not_again_longtap_lookup">Du kan slå opp ord FØR de innsendes som trekk -- ved langtrykk, samme som innsendelse.
 \n
 \nDu kan bruke denne funksjonen for å sjekke gyldigheten av ord du tenker å bruke, eller å slå opp et ord du ikker er sikker på.</string>
-    <string name="not_again_nbsGamesOnUpgrade">Google Play-versjonen av CrossWords tillates ikke lenger å bruke funksjonen for spill via Data-SMS.
-\n
-\nDu har %1$d åpne spill som bruker denne funksjonen. De vil ikke lenger unne sende eller motta trekk via data-SMS, så lenge du bruker Google Play-versjonen av CrossWrods, eller til det finnes en løsning for å omgå denne praksisen.
-\n
-\nDu kan lese mer ved å bruke knappen nedenfor.</string>
     <string name="banned_nbs_perms">Dette spillet er satt opp til å kommunisere via data-SMS, men programmer fra Google Play-butikken tillates ikke lenger å gjøre dette (dog med noen unntak). Du kan fremdeles åpne spillet, men vil ikke kunne sende eller motta trekk.
 \n
 \nDu kan fjerne innstillingen for kommunikasjon per data-SMS, eller brue \"Les mer\"-knappen for å se hvordan utviklingen med å tilby et alternativ går.</string>

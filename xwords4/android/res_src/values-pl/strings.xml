@@ -812,17 +812,8 @@
     <string name="missing_sms_perms">Ta gra jest skonfigurowana do komunikowania się za pośrednictwem Data SMS, ale CrossWords nie ma uprawnień do tego. Nadal możesz otworzyć grę, ale może nie być w stanie wysyłać ani odbierać ruchów.
 \n
 \nMożesz ponownie otworzyć go, aby zostać poproszony o pozwolenie ponownie. Możesz też usunąć ustawienia komunikacji Data SMS.</string>
-    <string name="not_again_nbsGamesOnUpgrade">Wersja CrossWords w Google Play Store nie może już obsługiwać funkcji Play-by-Data-SMS.
-\n
-\n Masz %1$d otwartych gier, które korzystają z tej funkcji. Nie będą w stanie wysyłać ani odbierać ruchów za pośrednictwem wiadomości Data SMS z danymi, o ile korzystasz z wersji Google Play firmy CrossWords lub dopóki nie dowiem się, jakie działania są zgodne z polityką sklepu.
-\n
-\n Więcej na ten temat można przeczytać za pomocą poniższego przycisku.</string>
     <string name="nbsproxy_channel_expl">Alerty o NBSProxy</string>
-    <string name="sms_banned_ok_only">Wersja CrossWords w sklepie Google Play nie obsługuje już zapraszania lub grania za pomocą Data SMS.</string>
     <string name="button_more_info">Czytaj więcej</string>
-    <string name="banned_nbs_perms">Ta gra jest skonfigurowana do komunikacji za pośrednictwem Data SMS, ale aplikacje ze sklepu Google Play Store nie mogą już tego robić (z rzadkimi wyjątkami). Możesz jeszcze otworzyć grę, ale może nie być w stanie wysyłać lub odbierać ruchów.
-\n
-\nMożesz usunąć ustawienie komunikacji przez Data SMS lub użyć przycisku \"Czytaj więcej\", aby sprawdzić moje postępy w rozwoju alternatywy.</string>
     <string name="not_again_longtap_lookup">Możesz spojrzeć na słowa PRZED tym, jak są one popełnione jako ruchy - przez długie podsłuchiwanie, tak samo jak słowa popełnione.
 \n
 \nUżyj tej funkcji, aby sprawdzić poprawność słów, którymi zamierzasz zagrać, lub poszukaj nieznanego słowa podanego jako wskazówka.</string>

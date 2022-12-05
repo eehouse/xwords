@@ -1685,11 +1685,7 @@
     <string name="not_again_longtap_lookup">Pode pesquisar palavras ANTES de serem jogadas – a tocar e a segurar, do mesmo jeito que palavras jogadas.
 \n
 \nUse esta ferramenta para verificar a validade de palavras que está a pensar em jogar, ou pesquisar uma palavra não familiar dada como dica.</string>
-    <string name="banned_nbs_perms">Este jogo foi configurado para comunicar a usar dados SMS, mas apps do Google Play Store não têm mais permissão para tal (com raras exceções). Ainda poderá abrir o jogo, mas talvez não consiga fazer ou receber jogadas.
-\n
-\nPode remover a opção de comunicação via dados SMS, ou usar o botão \"Ler mais\" para verificar o progresso do desenvolvimento de uma alternativa.</string>
     <string name="button_more_info">Ler mais</string>
-    <string name="sms_banned_ok_only">A versào da Google Play de CrossWords não suporta mais convites ou jogos por dados SMS.</string>
     <string name="not_again_emptybtscan">Se um escaneamento não achar o aparelho que espera:
 \n • Primeiramente apenas reescaneie
 \n • Certifique-se que o Bluetooth esteja ativo no outro aparelho
@@ -1715,11 +1711,6 @@
 \nPode negar esta permissão se nunca descarregar listas de palavras, exceto as de dentro do CrossWords e não houver nenhuma salva anteriormente lá.</string>
     <string name="sms_invite_rationale">CrossWords precisa de permissão para enviar um convite via dados SMS.</string>
     <string name="download_rationale">CrossWords precisa de acesso a armazenamento temporário para manter o que está prestes a descarregar.</string>
-    <string name="not_again_nbsGamesOnUpgrade">A versão do Google Play Store de CrossWords não é permitida mais de suportar a função Jogar por Dados SMS.
-\n
-\nTem %1$d jogos abertos que usam essa função. Eles não poderão fazer ou receber jogadas por dados SMS desde que esteja a usar a versão da Google Play Store de CrossWords, ou até descobrir uma alternativa que se adeque às políticas da Store.
-\n
-\nPode ler mais a usar o botão abaixo.</string>
     <string name="missing_sms_perms">Este jogo foi configurado para comunicar a usar dados SMS mas CrossWords não tem permissão para tal. Ainda poderá abrir o jogo, mas talvez não consiga fazer ou receber jogadas.
 \n
 \nPode reabri-lo para pedir permissão de novo. Ou pode remover a configuração de comunicação por dados SMS.</string>

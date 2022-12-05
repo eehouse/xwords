@@ -822,17 +822,8 @@
     <string name="invite_nbs_desc">Eine Datennachricht wird dann an das Gerät mit dieser Telefonnummer gesendet. Wenn CrossWords dort installiert ist und über die notwendigen Berechtigungen verfügt, erhält es die Einladung und das Spiel kann beginnen.</string>
     <string name="empty_bt_inviter">Es wurden noch keine gekoppelten Geräte erkannt.</string>
     <string name="checkbox_archive">Ins Archiv verschieben+</string>
-    <string name="not_again_nbsGamesOnUpgrade">Die Google Play Store Version von CrossWords darf die Play-by-Data-SMS-Funktion nicht mehr unterstützen. 
-\n
-\n Sie haben %1$d offene Spiele, die diese Funktion nutzen. Sie werden nicht in der Lage sein, Züge per Daten-SMS zu senden oder zu empfangen, solange Sie die Google Play-Version von CrossWords verwenden, oder bis ich einen Workaround herausgefunden habe, der den Store Richtlinien entspricht. 
-\n
-\nSie können mehr darüber erfahren, indem Sie auf die Schaltfläche unten klicken.</string>
     <string name="nbsproxy_channel_expl">Benachrichtigungen über NBSProxy</string>
-    <string name="sms_banned_ok_only">Die Google Play-Version von CrossWords unterstützt keine Einladungen mehr oder das Spielen per Daten-SMS.</string>
     <string name="button_more_info">Mehr erfahren</string>
-    <string name="banned_nbs_perms">Dieses Spiel ist für die Kommunikation per Daten-SMS eingerichtet, aber Apps aus dem Google Play Store dürfen dies (bis auf wenige Ausnahmen) nicht mehr tun. Sie können das Spiel immer noch öffnen, aber es ist vielleicht nicht mehr möglich, Züge zu senden oder zu empfangen.
-\n
-\nSie können die Einstellung für die Daten-SMS-Kommunikation entfernen oder über die Schaltfläche \"Mehr erfahren\" den Fortschritt bei der Entwicklung einer Alternative überprüfen.</string>
     <string name="not_again_longtap_lookup">Sie können Wörter nachschlagen, BEVOR sie als Züge übertragen werden — durch langes Antippen, genau wie bei abgeschlossenen Wörtern.
 \n
 \nVerwenden Sie diese Funktion, um die Gültigkeit von Wörtern zu überprüfen, die Sie spielen möchten oder um ein unbekanntes Wort als Tipp nachzuschlagen.</string>

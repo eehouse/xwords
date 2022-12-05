@@ -877,7 +877,6 @@
     <string name="filter_title_fmt">Carregando %1$s…</string>
     <string name="word_to_clip_fmt">Copiou “%1$s”</string>
     <string name="alrt_bad_filter">Incapaz de aplicar filtro.</string>
-    <string name="button_more_info">Ler mais</string>
     <string name="sms_banned_ok_only">A versào da Google Play de CrossWords não suporta mais convites ou jogos por dados SMS.</string>
     <string name="slmenu_select_all">Selecionar tudo</string>
     <string name="db_store_done">Exportação concluída</string>
@@ -920,11 +919,6 @@
 \nVocê pode negar esta permissão se você nunca baixar listas de palavras exceto as de dentro do CrossWords e não houver nenhuma salva anteriormente lá.</string>
     <string name="sms_invite_rationale">CrossWords precisa de permissão para enviar um convite via dados SMS.</string>
     <string name="download_rationale">CrossWords precisa de acesso a armazenamento temporário para manter o que você está prestes a baixar.</string>
-    <string name="not_again_nbsGamesOnUpgrade">A versão do Google Play Store de CrossWords não é permitida mais de suportar a função Jogar por Dados SMS.
-\n
-\nVocê tem %1$d jogos abertos que usam essa função. Eles não poderão fazer ou receber jogadas por dados SMS desde que você esteja usando a versão da Google Play Store de CrossWords, ou até eu descobrir uma alternativa que se adeque às políticas da Store.
-\n
-\nVocê pode ler mais usando o botão abaixo.</string>
     <string name="missing_sms_perms">Este jogo foi configurado para comunicar usando dados SMS mas CrossWords não tem permissão para tal. Você ainda poderá abrir o jogo, mas talvez não consiga fazer ou receber jogadas.
 \n
 \nVocê pode reabri-lo para pedir permissão de novo. Ou pode remover a configuração de comunicação por dados SMS.</string>
@@ -952,9 +946,6 @@
     <string name="not_again_longtap_lookup">Você pode pesquisar palavras ANTES de serem jogadas–tocando e segurando, do mesmo jeito que palavras jogadas.
 \n
 \nUse esta ferramenta para checar a validade de palavras que está pensando em jogar, ou pesquisar uma palavra não familiar dada como dica.</string>
-    <string name="banned_nbs_perms">Este jogo foi configurado para comunicar usando dados SMS, mas apps do Google Play Store não têm mais permissão para tal (com raras exceções). Você ainda poderá abrir o jogo, mas talvez não consiga fazer ou receber jogadas.
-\n
-\nVocê pode remover a opção de comunicação via dados SMS, ou usar o botão \"Ler mais\" para checar o progresso do desenvolvimento de uma alternativa.</string>
     <string name="not_again_emptybtscan">Se um escaneamento não achar o dispositivo que espera:
 \n • Primeiramente apenas reescaneie
 \n • Certifique-se que o Bluetooth esteja ativo no outro dispositivo

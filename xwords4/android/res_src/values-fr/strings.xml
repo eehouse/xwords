@@ -2915,7 +2915,6 @@ pour la langue</string>
     <string name="invite_sms_fmt">Suivez le lien pour accepter mon invitation et rejoindre une partie de CrossWords : %1$s</string>
     <string name="empty_bt_inviter">Aucun périphérique appairé détecté pour le moment.</string>
     <string name="checkbox_archive">Archiver</string>
-    <string name="button_more_info">Lire davantage</string>
     <string name="dup_minutes_label">Minutes par tour</string>
     <string name="robot_iq_label">QI du robot</string>
     <string name="enable_pending_count_title">Montrer les messages en attente</string>
@@ -2994,16 +2993,8 @@ pour la langue</string>
     <string name="not_again_longtap_lookup">Vous pouvez rechercher des mots AVANT qu\'ils ne soient validés comme coups – par un appui long, comme pour les mots déjà validés.
 \n
 \nUtilisez cette fonctionnalité pour vérifier la validité de mots que vous envisagez de jouer, ou pour rechercher un mot peu familier fourni comme indice.</string>
-    <string name="banned_nbs_perms">Cette partie est configurée pour communiquer par MMS, mais les applications du Google Play Store ne sont plus autorisées à le faire (à de rares exceptions près). Vous pouvez toujours ouvrir la partie, mais il se peut qu\'elle ne puisse pas envoyer ni recevoir de coups.
-\n
-\nVous pouvez supprimer le réglage de communication par MMS ou utiliser le bouton « Lire la suite » pour vérifier la progression du développement d\'une alternative.</string>
     <string name="gameevent_channel_expl">Événements dans la partie</string>
     <string name="nbsproxy_channel_expl">Alertes sur NBSProxy</string>
-    <string name="not_again_nbsGamesOnUpgrade">La version Google Play Store de CrossWords n\'est plus autorisée à prendre en charge la fonctionnalité de jeu par MMS.
-\n
-\n Vous avez %1$d parties commencées qui utilisent cette fonction. Elles ne pourront pas envoyer ou recevoir de coups par MMS tant que vous utiliserez la version Google Play de CrossWords, ou jusqu\'à ce que je puisse trouver une solution de contournement conforme aux politiques du Store.
-\n
-\n Vous pouvez en savoir plus en utilisant le bouton ci-dessous.</string>
     <string name="expl_mqtt_url">Adresse de la nouvelle API de relai basée sur MQTT</string>
     <string name="mqtt_qos">QOS MQTT</string>
     <string name="mqtt_port">Port MQTT</string>
@@ -3064,7 +3055,6 @@ pour la langue</string>
     <string name="dupe_title_fmt">%1$s (dup.)</string>
     <string name="dup_tag">Dup</string>
     <string name="duplicate_check">Mode duplicate</string>
-    <string name="sms_banned_ok_only">La version Google Plat de CrossWords ne permet plus les invitations ou les parties par MMS.</string>
     <string name="list_item_markbad">Marquer comme corrompu</string>
     <string name="lang_name_hungarian">Hongrois</string>
     <string name="recovered_group">Partie récupérées</string>

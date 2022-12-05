@@ -84,11 +84,7 @@
     <string name="not_again_longtap_lookup">Puoi vedere le parole PRIMA che l\'hai confermata come mossa - tenendo premuto il dito, stesso per le parole confermate.
 \n
 \nUsa questa funzione per vedere la validità delle parole che pensi di giocare o per guardare una parola non comune come suggerimento.</string>
-    <string name="banned_nbs_perms">Questa partita è impostata su una connessione via dati SMS, ma l\'app di Google Play Store non supporta più questa funzione (con rare eccezioni). Puoi continuare ad aprire la partita, ma potresti non inviare o ricevere mosse.
-\n
-\nPuoi rimuovere le impostazioni di comunicazione via SMS o usare il tasto \"Leggi di Più\" per aggiornarti sui progressi sullo sviluppo di un \'alternativa.</string>
     <string name="button_more_info">Leggi di più</string>
-    <string name="sms_banned_ok_only">La versione Google Play di CrossWords non supporta più gli inviti e le partite via dati SMS.</string>
     <string name="not_again_emptybtscan">Se lo scanner non trova il dispositivo dovresti:
 \n • Primo, provare di nuovo a scannerizzare
 \n • Assicurarsi che il Bluetooth sia attivo sull\'altro dispositivo
@@ -114,11 +110,6 @@
 \nPuoi tranquillamente negare questo permesso se non scaricherai una lista parole ad eccezione di quelle all\'interno di CrossWords e non ne hai conservata una precedentemente.</string>
     <string name="sms_invite_rationale">CrossWords ha bisogno dei permessi per inviare un invito via dati SMS.</string>
     <string name="download_rationale">CrossWord ha bisogno di accedere ad un archivio temporaneo per salvare ciò che stai scaricando.</string>
-    <string name="not_again_nbsGamesOnUpgrade">La versione Google Play Store di CrossWords non è più abilitata a supportare le partite via dati SMS.
-\n
-\nHai %1$d partite aperte che usano questa funzione. Non sarà possibile inviare o ricevere mosse via SMS finchè usi la versione di Google Play o finché non trovo una soluzione che non contraddica le direttive dell\'applicazione.
-\n
-\nPuoi leggere di più usando il tasto qui in basso.</string>
     <string name="missing_sms_perms">Questa partita è configurata per una connessione via dati SMS ma CrossWrods non ha i permessi per procedere. Puoi ancora aprire la partita, ma potresti non inviare o ricevere mosse.
 \n
 \nPuoi riaprire per ricevere una richiesta di attivazione permessi o puoi rimuovere le impostazioni per la connessione SMS dati.</string>

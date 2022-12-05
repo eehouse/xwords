@@ -189,13 +189,12 @@
     <string name="button_done">Hotovo</string>
     <string name="about_btaddr_fmt">BT MAC Adresa: %1$s</string>
     <string name="board_menu_invite">Pozvánka</string>
-    <string name="sms_banned_ok_only">The Google Play verze CrossWords už nepodporuje pozvánky nebo hru skrze data SMS.</string>
     <string name="summary_invites_out">Hráči byli pozváni</string>
     <string name="summary_invites_out_fmt">Hráči byli pozváni do místnosti \"%1$s\"</string>
     <plurals name="moves_fmt">
         <item quantity="one">%1$d hráč odehrál</item>
         <item quantity="few">%1$d hráči odehráli</item>
-        <item quantity="other"></item>
+        <item quantity="other"/>
     </plurals>
     <string name="loc_builtin">Vestavěné</string>
     <string name="rename_label_caveat">Změnit název této hry (pouze na tomto zařízení) na:</string>
@@ -205,7 +204,7 @@
     <plurals name="confirm_seldeletes_fmt">
         <item quantity="one">Jste si jistý, že chcete smazat označenou hru\? Tento krok je nevratný.</item>
         <item quantity="few">Jste si jistí, že chcete smazat označené hry (%1$d)\? Tento krok je nevratný.</item>
-        <item quantity="other"></item>
+        <item quantity="other"/>
     </plurals>
     <string name="game_summary_field_empty">&lt;Nic&gt;</string>
     <string name="chat_send">Odeslat</string>
@@ -221,7 +220,7 @@
         <item quantity="few">Jste si jistý, že chcete vynulovat označené hry (%1$d)\?
 \n
 \n(Vynulování smaže všechny tahy i informace o připojení.)</item>
-        <item quantity="other"></item>
+        <item quantity="other"/>
     </plurals>
     <string name="dicts_item_move">Změnit uložiště</string>
     <string name="invite_subject_fmt">Pojďme hrát CrossWords (místnost %1$s)</string>
