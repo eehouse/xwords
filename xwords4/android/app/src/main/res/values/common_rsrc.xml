@@ -154,7 +154,6 @@
   <string name="key_invite_multi">key_invite_multi</string>
   <string name="key_na_rematch_two_only">key_notagain_rematch_two_only</string>
   <string name="key_notagain_dfltname">key_notagain_dfltname</string>
-  <string name="key_notagain_nbsGamesOnUpgrade">key_notagain_nbsGamesOnUpgrade</string>
   <string name="key_na_copytheme">key_na_copytheme</string>
   <string name="key_na_comms_bt">key_na_comms_bt</string>
   <string name="key_na_comms_p2p">key_na_comms_p2p</string>
@@ -162,7 +161,6 @@
   <string name="key_na_comms_sms">key_na_comms_sms</string>
   <string name="key_na_comms_relay">key_na_comms_relay</string>
   <string name="key_na_bt_badproto">key_na_bt_badproto</string>
-  <string name="key_na_sms_banned">key_na_sms_banned</string>
   <string name="key_na_longtap_lookup">key_na_longtap_lookup</string>
   <string name="key_na_perms_phonestate">key_na_perms_phonestate</string>
   <string name="key_na_perms_storage_dicts">key_na_perms_storage_dicts</string>
@@ -195,7 +193,6 @@
   <string name="default_relay_url_path">xw4/relay</string>
   <string name="default_mqtt_url_path">xw4/api/v1</string>
 
-  <string name="nbs_ban_url">https://eehouse.org/sms.html</string>
   <string name="faq_uri_fmt">https://eehouse.org/xw4/faq.html#%1$s</string>
 
   <string-array name="board_sizes">

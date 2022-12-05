@@ -1,6 +1,7 @@
 /* -*- compile-command: "find-and-gradle.sh inXw4dDeb"; -*- */
 /*
- * Copyright 2016 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2016 - 2022 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -29,6 +30,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -68,6 +70,8 @@ public class Perms23 {
             return result;
         }
     }
+
+    static final Perm[] NBS_PERMS = { Perm.SEND_SMS, Perm.RECEIVE_SMS, };
 
     private static Map<Perm, Boolean> sManifestMap = new HashMap<>();
     static boolean permInManifest( Context context, Perm perm )
@@ -388,7 +392,7 @@ public class Perms23 {
             // Hack. If SMS has been granted, resend all moves. This should be
             // replaced with an api allowing listeners to register
             // Perm-by-Perm, but I'm in a hurry.
-            if ( granted && (perm == Perm.SEND_SMS || perm == Perm.RECEIVE_SMS) ) {
+            if ( granted && Arrays.asList(Perms23.NBS_PERMS).contains(perm) ) {
                 shouldResend = true;
             }
 
@@ -422,8 +426,6 @@ public class Perms23 {
         return result;
     }
 
-    static final Perm[] NBS_PERMS = { Perm.SEND_SMS, Perm.RECEIVE_SMS, };
-
     static boolean haveNBSPerms( Context context )
     {
         boolean result = havePermissions( context, NBS_PERMS );
@@ -435,39 +437,6 @@ public class Perms23 {
     {
         return permsInManifest( context, NBS_PERMS );
     }
-
-    // static boolean anyBanned( Context context, Perms23.Perm... perms )
-    // {
-    //     boolean anyBanned = false;
-    //     for ( int ii = 0; !anyBanned && ii < perms.length; ++ii ) {
-    //         anyBanned = perms[ii].isBanned( context );
-    //     }
-    //     return anyBanned;
-    // }
-
-    // static boolean bannedWithWorkaround( Context context, Perms23.Perm... perms )
-    // {
-    //     boolean allBanned = true;
-    //     boolean workaroundKnown = true;
-    //     for ( Perms23.Perm perm : perms ) {
-    //         allBanned = allBanned && perm.isBanned(context);
-
-    //         switch ( perm ) {
-    //         case SEND_SMS:
-    //         case RECEIVE_SMS:
-    //             workaroundKnown = false;
-    //             break;
-    //         default:
-    //             Log.e( TAG, "bannedWithWorkaround(): unexpected perm %s", perm );
-    //             Assert.failDbg();
-    //             break;
-    //         }
-    //     }
-
-    //     boolean result = allBanned && workaroundKnown;
-    //     Log.d( TAG, "bannedWithWorkaround() => %b", result );
-    //     return result;
-    // }
 
     // If two permission requests are made in a row the map may contain more
     // than one entry.

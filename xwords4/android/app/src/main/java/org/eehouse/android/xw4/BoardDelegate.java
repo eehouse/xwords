@@ -1391,8 +1391,7 @@ public class BoardDelegate extends DelegateBase
         case SMS_SEND_FAILED_NORADIO:
         case SMS_SEND_FAILED_NOPERMISSION:
             // Don't bother warning if they're banned. Too frequent
-            if ( Perms23.havePermissions( m_activity, Perm.SEND_SMS,
-                                          Perm.RECEIVE_SMS ) ) {
+            if ( Perms23.haveNBSPerms( m_activity ) ) {
                 DbgUtils.showf( m_activity, R.string.sms_send_failed );
             }
             break;

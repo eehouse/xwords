@@ -769,9 +769,6 @@ public abstract class DelegateBase implements DlgClickNotify,
         case PERMS_QUERY:
             Perms23.onGotPermsAction( this, true, params );
             break;
-        case PERMS_BANNED_INFO:
-            NetUtils.launchWebBrowserWith( m_activity, R.string.nbs_ban_url );
-            break;
         case SHOW_FAQ:
             showFaq( (String[])params[0] );
             break;

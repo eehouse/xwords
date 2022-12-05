@@ -134,7 +134,6 @@ public class DlgDelegate {
         DISABLE_BT_DO,
         ASKED_PHONE_STATE,
         PERMS_QUERY,
-        PERMS_BANNED_INFO,
         SHOW_FAQ,
         EXPORT_THEME,
     } // Action enum
