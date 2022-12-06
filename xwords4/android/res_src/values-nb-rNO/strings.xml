@@ -801,9 +801,6 @@
     <string name="not_again_longtap_lookup">Du kan slå opp ord FØR de innsendes som trekk -- ved langtrykk, samme som innsendelse.
 \n
 \nDu kan bruke denne funksjonen for å sjekke gyldigheten av ord du tenker å bruke, eller å slå opp et ord du ikker er sikker på.</string>
-    <string name="banned_nbs_perms">Dette spillet er satt opp til å kommunisere via data-SMS, men programmer fra Google Play-butikken tillates ikke lenger å gjøre dette (dog med noen unntak). Du kan fremdeles åpne spillet, men vil ikke kunne sende eller motta trekk.
-\n
-\nDu kan fjerne innstillingen for kommunikasjon per data-SMS, eller brue \"Les mer\"-knappen for å se hvordan utviklingen med å tilby et alternativ går.</string>
     <string name="invite_choice_mqtt">Internett/MQTT</string>
     <string name="mqtt_invite_title">MQTT-invitasjon</string>
     <string name="history_msg_fmt">Melding: %1$s.</string>

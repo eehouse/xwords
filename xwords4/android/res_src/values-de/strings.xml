@@ -823,7 +823,6 @@
     <string name="empty_bt_inviter">Es wurden noch keine gekoppelten Geräte erkannt.</string>
     <string name="checkbox_archive">Ins Archiv verschieben+</string>
     <string name="nbsproxy_channel_expl">Benachrichtigungen über NBSProxy</string>
-    <string name="button_more_info">Mehr erfahren</string>
     <string name="not_again_longtap_lookup">Sie können Wörter nachschlagen, BEVOR sie als Züge übertragen werden — durch langes Antippen, genau wie bei abgeschlossenen Wörtern.
 \n
 \nVerwenden Sie diese Funktion, um die Gültigkeit von Wörtern zu überprüfen, die Sie spielen möchten oder um ein unbekanntes Wort als Tipp nachzuschlagen.</string>

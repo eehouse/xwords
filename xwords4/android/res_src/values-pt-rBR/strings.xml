@@ -877,7 +877,6 @@
     <string name="filter_title_fmt">Carregando %1$s…</string>
     <string name="word_to_clip_fmt">Copiou “%1$s”</string>
     <string name="alrt_bad_filter">Incapaz de aplicar filtro.</string>
-    <string name="sms_banned_ok_only">A versào da Google Play de CrossWords não suporta mais convites ou jogos por dados SMS.</string>
     <string name="slmenu_select_all">Selecionar tudo</string>
     <string name="db_store_done">Exportação concluída</string>
     <string name="debug_features">Ativar ferramentas de debug</string>

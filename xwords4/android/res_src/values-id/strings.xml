@@ -258,7 +258,6 @@
     <string name="notify_other_summary">Ketika gerakan musuh tiba</string>
     <string name="notify_vibrate">Getar</string>
     <string name="invite_choice_data_sms">SMS Data</string>
-    <string name="sms_banned_ok_only">Versi Google Play dari CrossWords tidak lagi mendukung undangan dan bermain melalui SMS data.</string>
     <string name="nbsproxy_channel_expl">Peringatan tentang NBSProxy</string>
     <string name="toast_no_permission">Izin tidak diberikan</string>
     <string name="unhide_dupmode_summary">(Ini sangat eksperimental saat ini)</string>
