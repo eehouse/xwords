@@ -498,13 +498,16 @@ informMissing( const ServerCtxt* server, XWEnv xwe )
     const CommsCtxt* comms = server->vol.comms;
     const CurGameInfo* gi = server->vol.gi;
     XP_U16 nInvited = 0;
-    CommsAddrRec addr;
-    CommsAddrRec* addrP;
-    if ( !comms ) {
-        addrP = NULL;
-    } else {
-        addrP = &addr;
-        comms_getSelfAddr( comms, addrP );
+    CommsAddrRec selfAddr;
+    CommsAddrRec* selfAddrP = NULL;
+    CommsAddrRec hostAddr;
+    CommsAddrRec* hostAddrP = NULL;
+    if ( !!comms ) {
+        selfAddrP = &selfAddr;
+        comms_getSelfAddr( comms, selfAddrP );
+        if ( comms_getHostAddr( comms, &hostAddr ) ) {
+            hostAddrP = &hostAddr;
+        }
     }
 
     XP_U16 nDevs = 0;
@@ -523,8 +526,8 @@ informMissing( const ServerCtxt* server, XWEnv xwe )
     } else if ( SERVER_ISCLIENT == gi->serverRole ) {
         nPending = gi->nPlayers - gi_countLocalPlayers( gi, XP_FALSE);
     }
-    util_informMissing( server->vol.util, xwe, isServer, addrP, nDevs,
-                        nPending, nInvited );
+    util_informMissing( server->vol.util, xwe, isServer,
+                        hostAddrP, selfAddrP, nDevs, nPending, nInvited );
 }
 
 XP_U16

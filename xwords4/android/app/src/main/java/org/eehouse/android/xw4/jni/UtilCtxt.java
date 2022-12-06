@@ -108,8 +108,9 @@ public interface UtilCtxt {
     void informNetDict( String isoCodeStr, String oldName, String newName,
                         String newSum, CurGameInfo.XWPhoniesChoice phonies );
 
-    void informMissing( boolean isServer, CommsConnTypeSet connTypes,
-                        int nDevs, int nMissingPlayers, int nInvited );
+    void informMissing( boolean isServer, CommsAddrRec hostAddr,
+                        CommsConnTypeSet connTypes, int nDevs,
+                        int nMissingPlayers, int nInvited );
 
     void notifyGameOver();
     // Don't need this unless we have a scroll thumb to indicate position

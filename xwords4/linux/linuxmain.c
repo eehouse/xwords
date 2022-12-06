@@ -1720,14 +1720,15 @@ linuxFireTimer( CommonGlobals* cGlobals, XWTimerReason why )
 #ifndef XWFEATURE_STANDALONE_ONLY
 static void
 linux_util_informMissing( XW_UtilCtxt* XP_UNUSED(uc), XWEnv XP_UNUSED(xwe),
-                          XP_Bool XP_UNUSED_DBG(isServer), 
-                          const CommsAddrRec* XP_UNUSED_DBG(addr),
+                          XP_Bool XP_UNUSED_DBG(isServer),
+                          const CommsAddrRec* XP_UNUSED(hostAddr),
+                          const CommsAddrRec* XP_UNUSED_DBG(selfAddr),
                           XP_U16 XP_UNUSED_DBG(nDevs),
                           XP_U16 XP_UNUSED_DBG(nMissing),
                           XP_U16 XP_UNUSED_DBG(nInvited) )
 {
     XP_LOGFF( "(isServer=%d, addr=%p, nDevs=%d, nMissing=%d, nInvited=%d)",
-              isServer, addr, nDevs, nMissing, nInvited );
+              isServer, selfAddr, nDevs, nMissing, nInvited );
 }
 
 static void

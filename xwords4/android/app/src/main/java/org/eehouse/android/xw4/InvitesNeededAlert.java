@@ -29,6 +29,9 @@ import java.io.Serializable;
 
 import org.eehouse.android.xw4.DBUtils.SentInvitesInfo;
 import org.eehouse.android.xw4.Perms23.Perm;
+import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
+import org.eehouse.android.xw4.jni.CommsAddrRec;
+import org.eehouse.android.xw4.jni.XwJNI;
 import org.eehouse.android.xw4.loc.LocUtils;
 
 class InvitesNeededAlert {
@@ -41,12 +44,15 @@ class InvitesNeededAlert {
     static class Wrapper {
         private Callbacks mCallbacks;
         private InvitesNeededAlert mSelf;
+        private CommsAddrRec mHostAddr;
 
         Wrapper( Callbacks callbacks ) { mCallbacks = callbacks; }
 
-        void showOrHide( boolean isServer, int nPlayersMissing, int nInvited,
+        void showOrHide( CommsAddrRec hostAddr, int nPlayersMissing, int nInvited,
                          boolean isRematch )
         {
+            mHostAddr = hostAddr;
+            boolean isServer = null == hostAddr;
             DbgUtils.assertOnUIThread();
             Log.d( TAG, "showOnceIf(nPlayersMissing=%d); self: %s", nPlayersMissing, mSelf );
 
@@ -69,7 +75,7 @@ class InvitesNeededAlert {
         AlertDialog make( DBAlert alert, Object[] params )
         {
             DbgUtils.assertOnUIThread();
-            return mSelf.makeImpl( mCallbacks, alert, params );
+            return mSelf.makeImpl( mCallbacks, alert, mHostAddr, params );
         }
 
         void dismiss()
@@ -139,8 +145,8 @@ class InvitesNeededAlert {
         mState = state;
     }
 
-    private AlertDialog makeImpl( final Callbacks callbacks,
-                                  DBAlert alert, Object[] params )
+    private AlertDialog makeImpl( final Callbacks callbacks, DBAlert alert,
+                                  CommsAddrRec hostAddr, Object[] params )
     {
         State state = (State)params[0];
         AlertDialog.Builder ab = mDelegate.makeAlertBuilder();
@@ -150,7 +156,7 @@ class InvitesNeededAlert {
         if ( state.mIsServer ) {
             makeImplHost( ab, callbacks, alert, state, closeLoc );
         } else {
-            makeImplGuest( ab, state );
+            makeImplGuest( ab, state, hostAddr );
         }
 
         alert.setOnCancelListener( new XWDialogFragment.OnCancelListener() {
@@ -184,7 +190,8 @@ class InvitesNeededAlert {
         return result;
     }
 
-    private void makeImplGuest( AlertDialog.Builder ab, State state )
+    private void makeImplGuest( AlertDialog.Builder ab, State state,
+                                CommsAddrRec hostAddr )
     {
         Context context = mDelegate.getActivity();
         String message = LocUtils.getString( context, R.string.waiting_host_expl );
@@ -192,6 +199,16 @@ class InvitesNeededAlert {
         if ( 1 < state.mNPlayersMissing ) {
             message += "\n\n" +
                 LocUtils.getString( context, R.string.waiting_host_expl_multi );
+        }
+
+        if ( BuildConfig.NON_RELEASE
+             && null != hostAddr
+             && hostAddr.contains( CommsConnType.COMMS_CONN_MQTT ) ) {
+            String name =  XwJNI.kplr_nameForMqttDev( hostAddr.mqtt_devID );
+            if ( null != name ) {
+                message += "\n\n" + LocUtils
+                    .getString( context, R.string.missing_host_fmt, name );
+            }
         }
 
         ab.setTitle( R.string.waiting_host_title )

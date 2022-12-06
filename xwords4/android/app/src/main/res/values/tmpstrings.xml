@@ -5,4 +5,8 @@
 
   <string name="dup_allscores_fmt">All scores: %1$s</string>
 
+  <!-- Shown as additional info when client has sent a registration
+       message but not heard back -->
+  <string name="missing_host_fmt">FYI, the host is a Known Player called “%1$s”.</string>
+
 </resources>

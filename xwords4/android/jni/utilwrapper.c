@@ -694,18 +694,25 @@ and_util_cellSquareHeld( XW_UtilCtxt* uc, XWEnv xwe, XWStreamCtxt* words )
 
 static void
 and_util_informMissing( XW_UtilCtxt* uc, XWEnv xwe, XP_Bool isServer,
-                        const CommsAddrRec* addr, XP_U16 nDevs,
+                        const CommsAddrRec* hostAddr,
+                        const CommsAddrRec* selfAddr, XP_U16 nDevs,
                         XP_U16 nMissing, XP_U16 nInvited )
 {
     UTIL_CBK_HEADER( "informMissing", 
-                     "(ZL" PKG_PATH("jni/CommsAddrRec$CommsConnTypeSet") ";III)V" );
-    jobject jtypset = NULL;
-    if ( !!addr ) {
-        jtypset = addrTypesToJ( env, addr );
+                     "(ZL" PKG_PATH("jni/CommsAddrRec") ";"
+                     "L" PKG_PATH("jni/CommsAddrRec$CommsConnTypeSet") ";III)V" );
+    jobject jHostAddr = NULL;
+    if ( !!hostAddr ) {
+        jHostAddr = makeJAddr( env, hostAddr );
     }
-    (*env)->CallVoidMethod( env, util->jutil, mid, isServer, jtypset, nDevs,
-                            nMissing, nInvited );
-    deleteLocalRef( env, jtypset );
+
+    jobject jtypset = NULL;
+    if ( !!selfAddr ) {
+        jtypset = addrTypesToJ( env, selfAddr );
+    }
+    (*env)->CallVoidMethod( env, util->jutil, mid, isServer, jHostAddr,
+                            jtypset, nDevs, nMissing, nInvited );
+    deleteLocalRefs( env, jHostAddr, jtypset, DELETE_NO_REF );
     UTIL_CBK_TAIL();
 }
 

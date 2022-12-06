@@ -174,7 +174,7 @@ public class BoardDelegate extends DelegateBase
         int nMissing = -1;
         int nInvited;
         int nGuestDevs;
-        boolean isServer;
+        CommsAddrRec hostAddr;
         boolean inTrade;
         StartAlertOrder mAlertOrder = StartAlertOrder.values()[0];
     }
@@ -2000,16 +2000,18 @@ public class BoardDelegate extends DelegateBase
         // Called from server_makeFromStream, whether there's something
         // missing or not.
         @Override
-        public void informMissing( boolean isServer, CommsConnTypeSet connTypes,
-                                   int nDevs, int nMissing, int nInvited )
+        public void informMissing( boolean isServer, CommsAddrRec hostAddr,
+                                   CommsConnTypeSet connTypes, int nDevs,
+                                   int nMissing, int nInvited )
         {
             // Log.d( TAG, "informMissing(isServer: %b, nDevs: %d; nMissing: %d, "
             //        + " nInvited: %d", isServer, nDevs, nMissing, nInvited );
             Assert.assertTrueNR( nInvited <= nMissing );
+            Assert.assertTrueNR( isServer == (hostAddr==null) );
             m_mySIS.nMissing = nMissing; // will be 0 unless isServer is true
             m_mySIS.nInvited = nInvited;
             m_mySIS.nGuestDevs = nDevs;
-            m_mySIS.isServer = isServer;
+            m_mySIS.hostAddr = hostAddr;
             m_connTypes = connTypes;
 
             runOnUiThread( new Runnable() {
@@ -2533,7 +2535,7 @@ public class BoardDelegate extends DelegateBase
 
     private void showOrHide( InvitesNeededAlert.Wrapper wrapper )
     {
-        wrapper.showOrHide( m_mySIS.isServer, m_mySIS.nMissing,
+        wrapper.showOrHide( m_mySIS.hostAddr, m_mySIS.nMissing,
                             m_mySIS.nInvited, false );
     }
 
