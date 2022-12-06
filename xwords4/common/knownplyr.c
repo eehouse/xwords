@@ -1,6 +1,7 @@
 /* -*- compile-command: "cd ../linux && make MEMDEBUG=TRUE -j3"; -*- */
 /* 
- * Copyright 2020 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2020-2022 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -188,6 +189,7 @@ addPlayer( XW_DUtilCtxt* XP_UNUSED_DBG(dutil), KPState* state, const XP_UCHAR* n
         XP_Bool changed = augmentAddr( &withSameDevID->addr, addr, isNewer );
         if ( isNewer ) {
             withSameDevID->newestMod = newestMod;
+            changed = XP_TRUE;
         }
         state->dirty = changed || state->dirty;
     } else {
