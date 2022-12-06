@@ -1175,4 +1175,7 @@
     <string name="not_again_deletecheck_fmt">marque a caixa \"%1$s\" para excluir este jogo.</string>
     <string name="not_again_archivecheck_fmt">Verifique a caixa \"%1$s\" para mover este jogo para o grupo %2$s.</string>
     <string name="nearbydev_rationale">Para usar o Bluetooth, o CrossWords precisa de permissão para interagir com os dispositivos próximos.</string>
+    <string name="variant_missing_nbs">Este jogo está configurado para se comunicar via SMS de dados, mas a versão do Google Play Store do CrossWords não tem mais permissão para oferecer suporte ao recurso Play-by-Data-SMS.
+\n
+\n Você ainda pode abrir uma partida, mas pode não conseguir enviar ou receber jogadas.</string>
 </resources>
