@@ -1126,4 +1126,7 @@
     <string name="not_again_archivecheck_fmt">Aktivieren Sie das Kontrollkästchen „%1$s“, um diese Partie in die Gruppe %2$s zu verschieben.</string>
     <string name="not_again_deletecheck_fmt">Aktivieren Sie das Kontrollkästchen \"%1$s\", um diese Partie zu löschen.</string>
     <string name="nearbydev_rationale">CrossWords benötigt die Berechtigung, mit Geräten in der Nähe zu interagieren, um Bluetooth verwenden zu können.</string>
+    <string name="variant_missing_nbs">Diese Partie ist so konfiguriert, dass sie über Daten-SMS kommuniziert, aber die Google Play Store-Version von CrossWords darf die Play-by-Data-SMS-Funktion nicht mehr unterstützen.
+\n
+\n Sie können die Partie immer noch öffnen, aber es ist möglicherweise nicht in der Lage, Züge zu senden oder zu empfangen.</string>
 </resources>
