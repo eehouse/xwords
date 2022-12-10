@@ -557,7 +557,7 @@ public class DBUtils {
                     InviteMeans means = m_means.get(ii);
                     String target = m_targets.get(ii);
                     String timestamp = m_timestamps.get(ii).toString();
-                    String msg;
+                    String msg = null;
 
                     switch ( means ) {
                     case SMS_DATA:
@@ -575,8 +575,6 @@ public class DBUtils {
                         break;
                     case RELAY:
                         Assert.failDbg();
-                        msg = LocUtils.getString( context, R.string.invit_expl_relay_fmt,
-                                                  timestamp );
                         break;
                     case MQTT:
                         String player = XwJNI.kplr_nameForMqttDev( target );
