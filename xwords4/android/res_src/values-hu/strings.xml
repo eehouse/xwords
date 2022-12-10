@@ -76,10 +76,10 @@
     <string name="robot_smartest">Legokosabb robot</string>
     <string name="phonies_label">Hamis</string>
     <string name="phonies_spinner_prompt">Hogyan kezeljük a \"hamis\" szavakat (a szólistában nem szereplő szavak)</string>
-    <string name="phonies_ignore">Hamis letiltva</string>
+    <string name="phonies_ignore">Csalók letiltása</string>
     <string name="phonies_warn">Figyelmeztetés, ha hamisak</string>
-    <string name="phonies_disallow">Tiltsd le a hamisakat</string>
-    <string name="phonies_block">Blokkold a hamisakat</string>
+    <string name="phonies_disallow">Tiltsd le a csalókat</string>
+    <string name="phonies_block">Blokkold a csalókat</string>
     <string name="guest_name">(Eszközön kívüli játékos)</string>
     <string name="confirm_save">Ez a játék folyamatban van. Ha elmented ezeket a változtatásokat, újra kell indítani. Szeretnéd elmenteni ezeket a változtatásokat\?</string>
     <string name="confirm_save_title">Mentés elfogadása</string>
@@ -98,4 +98,40 @@
     <string name="play">Játék játszása</string>
     <string name="str_reg_server_sans_remote">A házigazdaként indított játékban legalább egy játékosnak \"Távoli\" jelöléssel kell rendelkeznie.</string>
     <string name="force_title">Eszközön kívüli játékos[ok]</string>
+    <string name="password_label">Jelszó:</string>
+    <string name="button_trade_commit">Kötelezettségvállalás a kereskedelemre</string>
+    <string name="bonus_w3x_summary">3W</string>
+    <string name="invites_unsent">Ez a játék úgy van beállítva, hogy távoli játékost várjon.
+\n
+\nSzeretnél meghívni valakit\?</string>
+    <string name="confirm_del_after_rematch_fmt">A visszavágó sikeres.
+\n
+\nSzeretnéd törölni a befejezett játékot %1$s\?
+\n
+\n(Ez a művelet nem vonható vissza.)</string>
+    <string name="bonus_w4x_summary">4W</string>
+    <plurals name="invite_msg_fmt">
+        <item quantity="one">Ez a játék arra vár, hogy egy távoli játékos meghívást kapjon és válaszoljon rá.
+\n
+\nEzt az üzenetet addig látod, amíg a meghívott játékos nem válaszol. Ha azt gyanítod, hogy az általad küldött meghívó elveszett, nem árt, ha küldesz egy másikat.</item>
+        <item quantity="other">Ez a játék arra vár, hogy %1$d távoli játékos válaszoljon a meghívásokra.
+\n
+\nEzt az üzenetet mindaddig látni fogod, amíg az összes várt játékos nem válaszol. Ha azt gyanítod, hogy az általad küldött meghívók elvesztek, nem árt, ha küldesz még egyet.</item>
+    </plurals>
+    <string name="button_delete_game">Játék Törlése</string>
+    <string name="dicts_list_prompt_fmt">Telepített szólisták (%1$s-ban)</string>
+    <string name="robot_label">Robot játékos</string>
+    <string name="bonus_l4x_summary">4L</string>
+    <string name="langUnknownFmt">Ismeretlen (%1$s)</string>
+    <string name="dict_lang_label_fmt">Szólista (%1$s)</string>
+    <string name="bonus_w2x_summary">2W</string>
+    <string name="bonus_l3x_summary">3L</string>
+    <string name="no_moves_made">(Még nincsenek mozgások)</string>
+    <string name="invite_msg_extra_rematch">A visszavágók esetében minden szükséges meghívó automatikusan elküldésre kerül. De bármikor küldhetsz új meghívókat, ha egy meghívott nem válaszol.</string>
+    <string name="remote_label">Távoli játékos</string>
+    <string name="player_edit_title">Játékos szerkesztése</string>
+    <string name="player_label">Név:</string>
+    <string name="button_trade_cancel">Kereskedés lemondása</string>
+    <string name="entering_trade">Kereskedelmi lapok. Koppints a lapokra a…</string>
+    <string name="bonus_l2x_summary">2L</string>
 </resources>
