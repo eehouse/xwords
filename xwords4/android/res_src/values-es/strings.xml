@@ -115,7 +115,6 @@
     <string name="sms_invite_flakey">Esta opción ejecuta tu aplicación SMS por defecto con una invitación preparada para invitar -- cuando funciona. Cada aplicación SMS es diferente, y algunas no funcionarán.</string>
     <string name="sms_invite_fail">No se puede ejecutar la aplicación SMS</string>
     <string name="invit_expl_bt_fmt">Invitación enviada vía Bluetooth al dispositivo conectado \"%1$s\" en %2$s</string>
-    <string name="invit_expl_relay_fmt">Invitación enviada a otro dispositivo mediante el repetidor en %1$s</string>
     <string name="invit_expl_notarget_fmt">Invitación enviada a través de %1$s en %2$s. Destinatario desconocido.</string>
     <string name="pts">pts.</string>
     <string name="forced_consistent">Primer jugador modificado.</string>

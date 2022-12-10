@@ -425,7 +425,6 @@
     <string name="no_copy_network">Spill som allerede har koblet til gjennom relé-et kan ikke kopieres. Bruk \"Ny fra\" for kopi klar til spilling med de samme innstillingene.</string>
     <string name="set_default_message_fmt">For hvilke spillere skal ordlisten %1$s være forvalg for nye spill? (Språket %2$s vil være forvalg for begge.)</string>
     <string name="invit_expl_sms_fmt">Invitasjon sendt via SMS til telefonnummer %1$s på %2$s</string>
-    <string name="invit_expl_relay_fmt">Invitasjon videresendt av relé-et til en annen enhet på %1$s</string>
     <string name="pts">p.</string>
     <string name="ids_badwords_fmt">Ord[ene] %1$s ble ikke funnet i ordlisten %2$s.</string>
     <string name="badwords_lost">Tur tapt.</string>

@@ -867,7 +867,6 @@
     <string name="qrcode_invite_expl">Per invitare tramite QR code, fai scannerizzare il codice al tuo avversario con la fotocamera del suo cellulare Android.</string>
     <string name="invit_expl_player_fmt">Invito inoltrato via MQTT/Internet a giocatore conosciuto \"%1$s\" su %2$s.</string>
     <string name="invit_expl_notarget_fmt">Invito inviato via %1$s su %2$s. Contenitore sconosciuto.</string>
-    <string name="invit_expl_relay_fmt">Invito inoltrato al server di un altro dispositivo su %1$s</string>
     <string name="invit_expl_bt_fmt">Invito inviato via Bluetooth a dispositivo collegato \"%1$s\" su %2$s</string>
     <string name="sms_invite_fail">Impossibile avviare app SMS</string>
     <string name="sms_invite_flakey">Questa opzione avvia l\'applicazione SMS con un invito preimpostato - se funzionante. Ogni App SMS è differente e non tutte sono compatibili.</string>

@@ -37,7 +37,6 @@
     <string name="msg_dev_deleted_fmt">O jogo de nome “%1$s” foi apagado em outro dispositivo. Você não poderá jogar mais.</string>
     <string name="pts">pontos</string>
     <string name="invit_expl_notarget_fmt">Convite enviado via %1$s no %2$s. Recebedor desconhecido.</string>
-    <string name="invit_expl_relay_fmt">Convite enviado pelo servidor para outro dispositivo no %1$s</string>
     <string name="invit_expl_bt_fmt">Convite enviado via Bluetooth para dispositivos emparelhados “%1$s” no %2$s</string>
     <string name="sms_invite_flakey">Esta opção envia seu SMS padrão do app com um convite pronto para envio—Quando funciona. Cada SMS do aplicativo é diferente, e algum deles não cooperam.</string>
     <string name="sms_invite_fail">Impossibilitado de mandar SMS do aplicativo</string>

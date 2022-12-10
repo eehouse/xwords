@@ -617,7 +617,6 @@
     <string name="summary_invites_out">Spelers uitgenodigd</string>
     <string name="invit_expl_sms_fmt">Uitnodiging verstuurd via SMS naar telefoonnummer %1$s op %2$s</string>
     <string name="invit_expl_bt_fmt">Uitnodiging verstuurd via Bluetooth naar gepaard apparaat \"%1$s\" op %2$s</string>
-    <string name="invit_expl_relay_fmt">Uitnodiging doorgestuurd door de relay naar een ander apparaat op %1$s</string>
     <string name="invit_expl_notarget_fmt">Uitnodiging verstuurd via %1$s op %2$s. Ontvanger onbekend.</string>
     <string name="invite_choice_relay">Internet/Relay</string>
     <string name="chat_hint">Typ hier...</string>

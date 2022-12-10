@@ -690,7 +690,6 @@ Introduïu el vostre nom aquí. S\'usarà en crear partides noves. (Podreu
     <string name="summary_invites_out_fmt">Jugadors convidats a la sala «%1$s»</string>
     <string name="download_more">Baixa\'n més…</string>
     <string name="invit_expl_bt_fmt">S\'ha enviat la invitació via Bluetooth a l\'aparell emparellat «%1$s» a %2$s</string>
-    <string name="invit_expl_relay_fmt">S\'ha enviat la invitació via el repetidor d\'un altre aparell a %1$s</string>
     <string name="invit_expl_notarget_fmt">S\'ha enviat la invitació via %1$s a %2$s. Destinatari desconegut.</string>
     <string name="phonies_found_title">S\'ha trobat llufes</string>
     <string name="title_blank_picker">Trieu una fitxa per a l\'escarràs</string>

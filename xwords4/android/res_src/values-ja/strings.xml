@@ -645,7 +645,6 @@
     <string name="summary_invites_out">プレイヤーを招待しました</string>
     <string name="invit_expl_sms_fmt">データ SMS 経由で %2$s の電話番号 %1$s に招待を送信しました</string>
     <string name="invit_expl_bt_fmt">%2$s で、ペアのデバイス \"%1$s\" に Bluetooth 経由で招待を送信しました</string>
-    <string name="invit_expl_relay_fmt">%1$s で他のデバイスにリレーによって招待を転送しました</string>
     <string name="invit_expl_notarget_fmt">%2$s で %1$s 経由で招待を送信しました。不明な受信者。</string>
     <string name="notify_title_turn_fmt">ゲーム %1$s で自分の順番</string>
     <string name="invites_net_fmt">%1$s を経由して接続されているゲームに招待状を送信しました:</string>

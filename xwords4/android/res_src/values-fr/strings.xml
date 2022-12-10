@@ -2815,7 +2815,6 @@ pour la langue</string>
     <string name="rematch_sent_toast">Invitations à la revanche envoyées</string>
     <string name="invit_expl_sms_fmt">Invitation envoyée par MMS au numéro de téléphone %1$s sur %2$s</string>
     <string name="invit_expl_bt_fmt">Invitation envoyée par Bluetooth à l\'appareil appairé « %1$s » sur %2$s</string>
-    <string name="invit_expl_relay_fmt">Invitation transmise par le relai à un autre appareil sur %1$s</string>
     <string name="invit_expl_notarget_fmt">Invitation envoyée par %1$s sur %2$s. Destinataire inconnu.</string>
     <string name="chat_hint">Tapez ici…</string>
     <string name="chat_sender_fmt">%1$s :</string>

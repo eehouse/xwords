@@ -59,7 +59,6 @@
     <string name="robot_smartest">Schlauester Computer</string>
     <string name="play">Partie spielen</string>
     <string name="no_copy_network">Partien, die bereits über die Zwischenstation verbunden sind, können nicht kopiert werden. Wählen Sie „Kopie anlegen“ aus, um eine spielbereite Kopie mit identischen Einstellungen zu erhalten.</string>
-    <string name="invit_expl_relay_fmt">Die Einladung wurde von der Zwischenstation zu einem anderen Gerät auf %1$s weitergeleitet</string>
     <string name="invite_choice_relay">Internet/Zwischenstation</string>
     <string name="list_item_new_from">Kopie anlegen</string>
     <plurals name="confirm_reset_fmt">

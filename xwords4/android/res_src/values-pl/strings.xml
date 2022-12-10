@@ -240,7 +240,6 @@
         <item quantity="few">Ta gra czeka na %1$d zdalnych zawodników. Czy chciałbyś zaprosić kogoś do przyłączenia się -- zakładając, że już tego nie zrobiłeś\?</item>
         <item quantity="many">Ta gra czeka na %1$d zdalnych graczy. Czy chciałbyś zaprosić kogoś do przyłączenia się -- zakładając, że już tego nie zrobiłeś\?</item>
     </plurals>
-    <string name="invit_expl_relay_fmt">Zaproszenie przesłane przez przekaźnik do innego urządzenia na %1$s</string>
     <string name="invit_expl_notarget_fmt">Zaproszenie wysłane przez %1$s na %2$s. Odbiorca nieznany.</string>
     <string name="pts">pkt</string>
     <string name="ids_badwords_fmt">Słowa[ów] %1$s nie znaleziono na liście słów %2$s.</string>
