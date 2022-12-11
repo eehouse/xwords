@@ -450,12 +450,36 @@ public class DBUtils {
         return result;
     }
 
+    public static class SentInvite implements Serializable {
+        InviteMeans mMeans;
+        String mTarget;
+        Date mTimestamp;
+
+        public SentInvite( InviteMeans means, String target, Date ts )
+        {
+            mMeans = means;
+            mTarget = target;
+            mTimestamp = ts;
+        }
+
+        @Override
+        public boolean equals(Object otherObj)
+        {
+            boolean result = false;
+            if ( otherObj instanceof SentInvite ) {
+                SentInvite other = (SentInvite)otherObj;
+                result = mMeans == other.mMeans
+                    && mTarget.equals(other.mTarget)
+                    && mTimestamp.equals(other.mTimestamp);
+            }
+            return result;
+        }
+    }
+
     public static class SentInvitesInfo
         implements Serializable /* Serializable b/c passed as param to alerts */ {
         public long m_rowid;
-        private ArrayList<InviteMeans> m_means;
-        private ArrayList<String> m_targets;
-        private ArrayList<Date> m_timestamps;
+        private ArrayList<SentInvite> mSents;
         private int m_cachedCount = 0;
         private boolean m_remotesRobots = false;
 
@@ -465,11 +489,13 @@ public class DBUtils {
             boolean result = null != other && other instanceof SentInvitesInfo;
             if ( result ) {
                 SentInvitesInfo it = (SentInvitesInfo)other;
-                result = it.m_rowid == m_rowid
-                    && it.m_means.equals(m_means)
-                    && it.m_targets.equals(m_targets)
-                    && it.m_timestamps.equals(m_timestamps)
-                    && it.m_cachedCount == m_cachedCount;
+                if ( m_rowid == it.m_rowid
+                     && it.mSents.size() == mSents.size()
+                     && it.m_cachedCount == m_cachedCount ) {
+                    for ( int ii = 0; result && ii < mSents.size(); ++ii ) {
+                        result = it.mSents.get(ii).equals(mSents.get(ii));
+                    }
+                }
             }
             // Log.d( TAG, "equals() => %b", result );
             return result;
@@ -478,30 +504,22 @@ public class DBUtils {
         private SentInvitesInfo( long rowID )
         {
             m_rowid = rowID;
-            m_means = new ArrayList<>();
-            m_targets = new ArrayList<>();
-            m_timestamps = new ArrayList<>();
+            mSents = new ArrayList<>();
         }
 
         private void addEntry( InviteMeans means, String target, Date ts )
         {
-            m_means.add( means );
-            m_targets.add( target );
-            m_timestamps.add( ts );
+            mSents.add( new SentInvite( means, target, ts ) );
             m_cachedCount = -1;
-        }
-
-        public InviteMeans getLastMeans()
-        {
-            return 0 < m_means.size() ? m_means.get(0) : null;
         }
 
         public String getLastDev( InviteMeans means )
         {
             String result = null;
-            for ( int ii = 0; null == result && ii < m_means.size(); ++ii ) {
-                if ( means == m_means.get( ii ) ) {
-                    result = m_targets.get( ii );
+            for ( SentInvite si : mSents ) {
+                if ( means == si.mMeans ) {
+                    result = si.mTarget;
+                    break;
                 }
             }
             return result;
@@ -514,19 +532,20 @@ public class DBUtils {
         public int getMinPlayerCount()
         {
             if ( -1 == m_cachedCount ) {
-                int count = m_timestamps.size();
+                int count = mSents.size();
                 Map<InviteMeans, Set<String>> hashes
                     = new HashMap<InviteMeans, Set<String>>();
                 int fakeCount = 0; // make all null-targets count for one
                 for ( int ii = 0; ii < count; ++ii ) {
-                    InviteMeans means = m_means.get(ii);
+                    SentInvite si = mSents.get(ii);
+                    InviteMeans means = si.mMeans;
                     Set<String> devs;
                     if ( ! hashes.containsKey( means ) ) {
                         devs = new HashSet<>();
                         hashes.put( means, devs );
                     }
                     devs = hashes.get( means );
-                    String target = m_targets.get( ii );
+                    String target = si.mTarget;
                     if ( null == target ) {
                         target = String.format( "%d", ++fakeCount );
                     }
@@ -548,15 +567,15 @@ public class DBUtils {
         public String getAsText( Context context )
         {
             String result;
-            int count = m_timestamps.size();
+            int count = mSents.size();
             if ( 0 == count ) {
                 result = LocUtils.getString( context, R.string.no_invites );
             } else {
-                String[] strs = new String[count];
-                for ( int ii = 0; ii < count; ++ii ) {
-                    InviteMeans means = m_means.get(ii);
-                    String target = m_targets.get(ii);
-                    String timestamp = m_timestamps.get(ii).toString();
+                List<String> strs = new ArrayList<>();
+                for ( SentInvite si: mSents ) {
+                    InviteMeans means = si.mMeans;
+                    String target = si.mTarget;
+                    String timestamp = si.mTimestamp.toString();
                     String msg = null;
 
                     switch ( means ) {
@@ -590,8 +609,9 @@ public class DBUtils {
                                                   means.toString(), timestamp );
 
                     }
-                    strs[ii] = msg;
+                    strs.add( msg );
                 }
+
                 result = TextUtils.join( "\n\n", strs );
             }
             return result;
@@ -599,18 +619,20 @@ public class DBUtils {
 
         public String getKPName( Context context )
         {
-            String result = null;
-            for ( int ii = 0; ii < m_means.size(); ++ii ) {
-                InviteMeans means = m_means.get(ii);
+            String mqttID = null;
+            for ( SentInvite si : mSents ) {
+                InviteMeans means = si.mMeans;
                 if ( means == InviteMeans.MQTT ) {
-                    String player = XwJNI.kplr_nameForMqttDev( m_targets.get(ii) );
-                    if ( null != player ) {
-                        result = player;
-                        break;  // ordered newest-first, so we're done
-                    }
+                    mqttID = si.mTarget;
+                    break;
                 }
             }
 
+            String result = null;
+            if ( null != mqttID ) {
+                result = XwJNI.kplr_nameForMqttDev( mqttID );
+            }
+            Log.d( TAG, "getKPName() => %s", result );
             return result;
         }
 
@@ -655,7 +677,8 @@ public class DBUtils {
     }
 
     public static void recordInviteSent( Context context, long rowid,
-                                         InviteMeans means, String target )
+                                         InviteMeans means, String target,
+                                         boolean dropDupes )
     {
         if ( BuildConfig.NON_RELEASE ) {
             switch ( means ) {
@@ -665,15 +688,31 @@ public class DBUtils {
             case WIFIDIRECT:
             case SMS_USER:
             case QRCODE:
-                break;
+            case MQTT:
             case SMS_DATA:
             case BLUETOOTH:
-            case MQTT:
+                break;
             case RELAY:
             default:
                 Assert.failDbg();
             }
         }
+
+        String dropTest = null;
+        if ( dropDupes ) {
+            dropTest = String.format( "%s = %d AND %s = %d",
+                                      DBHelper.ROW, rowid,
+                                      DBHelper.MEANS, means.ordinal() );
+            if ( null != target ) {
+                dropTest += String.format( " AND %s = '%s'",
+                                           DBHelper.TARGET, target );
+            } else {
+                // If I'm seeing this, need to check above if a "target is
+                // null" test is needed to avoid nuking unintentinally.
+                Assert.failDbg();
+            }
+        }
+
         ContentValues values = new ContentValues();
         values.put( DBHelper.ROW, rowid );
         values.put( DBHelper.MEANS, means.ordinal() );
@@ -683,6 +722,9 @@ public class DBUtils {
 
         initDB( context );
         synchronized( s_dbHelper ) {
+            if ( null != dropTest ) {
+                delete( TABLE_NAMES.INVITES, dropTest );
+            }
             insert( TABLE_NAMES.INVITES, values );
         }
     }

@@ -2277,16 +2277,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_comms_1getAddrs
         CommsAddrRec addrs[MAX_NUM_PLAYERS];
         XP_U16 count = VSIZE(addrs);
         comms_getAddrs( state->game.comms, env, addrs, &count );
-
-        jclass clas = (*env)->FindClass( env, PKG_PATH("jni/CommsAddrRec") );
-        result = (*env)->NewObjectArray( env, count, clas, NULL );
-
-        for ( int ii = 0; ii < count; ++ii ) {
-            jobject jaddr = makeJAddr( env, &addrs[ii] );
-            (*env)->SetObjectArrayElement( env, result, ii, jaddr );
-            deleteLocalRef( env, jaddr );
-        }
-        deleteLocalRef( env, clas );
+        result = makeAddrArray( env, count, addrs );
     }
     XWJNI_END();
     return result;
@@ -2701,6 +2692,26 @@ Java_org_eehouse_android_xw4_jni_XwJNI_comms_1invite
     }
     XWJNI_END();
 }
+
+# if 0
+JNIEXPORT jobjectArray JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_comms_1getInvites
+( JNIEnv* env, jclass C, GamePtrType gamePtr )
+{
+    jobjectArray result = NULL;
+    XWJNI_START_GLOBALS(gamePtr);
+    CommsCtxt* comms = state->game.comms;
+    XP_ASSERT( NULL != comms );
+    if ( NULL != comms ) {
+        CommsAddrRec inviteRecs[4];
+        XP_U16 nInvites = VSIZE(inviteRecs);
+        comms_getInvited( comms, env, &nInvites, inviteRecs );
+        result = makeAddrArray( env, nInvites, inviteRecs );
+    }
+    XWJNI_END();
+    return result;
+}
+# endif
 #endif
 
 JNIEXPORT void JNICALL

@@ -22,9 +22,9 @@ package org.eehouse.android.xw4;
 
 import android.content.Context;
 
-
-import org.eehouse.android.xw4.jni.CommsAddrRec;
+import org.eehouse.android.xw4.DlgDelegate.DlgClickNotify.InviteMeans;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
+import org.eehouse.android.xw4.jni.CommsAddrRec;
 import org.eehouse.android.xw4.jni.TransportProcs;
 
 import java.util.HashSet;
@@ -99,7 +99,7 @@ public class MultiMsgSink implements TransportProcs {
     public boolean transportSendInvt( CommsAddrRec addr, NetLaunchInfo nli,
                                       int timestamp )
     {
-        return sendInvite( m_context, addr, nli, timestamp );
+        return sendInvite( m_context, m_rowid, addr, nli, timestamp );
     }
 
     @Override
@@ -148,33 +148,49 @@ public class MultiMsgSink implements TransportProcs {
         Log.d( TAG, "countChanged(new=%d); dropping", newCount );
     }
 
-    public static boolean sendInvite( Context context, CommsAddrRec addr,
-                                      NetLaunchInfo nli, int timestamp )
+    public static boolean sendInvite( Context context, long rowid,
+                                      CommsAddrRec addr, NetLaunchInfo nli,
+                                      int timestamp )
     {
         Log.d( TAG, "sendInvite(%s, %s)", addr, nli );
         boolean success = false;
         for ( CommsConnType typ : addr.conTypes ) {
+            InviteMeans means = null;
+            String target = null;
             switch ( typ ) {
             case COMMS_CONN_MQTT:
+                target = addr.mqtt_devID;
+                means = InviteMeans.MQTT;
                 MQTTUtils.sendInvite( context, addr.mqtt_devID, nli );
                 success = true;
                 break;
             case COMMS_CONN_SMS:
                 if ( XWPrefs.getNBSEnabled( context ) ) {
                     NBSProto.inviteRemote( context, addr.sms_phone, nli );
+                    target = addr.sms_phone;
+                    means = InviteMeans.SMS_DATA;
                     success = true;
                 }
                 break;
             case COMMS_CONN_BT:
                 BTUtils.sendInvite( context, addr.bt_btAddr, nli );
+                target = addr.bt_btAddr;
+                means = InviteMeans.BLUETOOTH;
                 success = true;
+                break;
+            case COMMS_CONN_NFC: // nothing to do
                 break;
             default:
                 Log.d( TAG, "sendInvite(); not handling %s", typ );
-                // Assert.failDbg();
+                Assert.failDbg();
                 break;
             }
+
+            if ( null != means ) {
+                DBUtils.recordInviteSent( context, rowid, means, target, true );
+            }
         }
+
         Log.d( TAG, "sendInvite(%s) => %b", addr, success );
         return success;
     }

@@ -32,6 +32,7 @@ import org.eehouse.android.xw4.Perms23.Perm;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.jni.CommsAddrRec;
 import org.eehouse.android.xw4.jni.XwJNI;
+import org.eehouse.android.xw4.jni.XwJNI.GamePtr;
 import org.eehouse.android.xw4.loc.LocUtils;
 
 class InvitesNeededAlert {
@@ -45,8 +46,13 @@ class InvitesNeededAlert {
         private Callbacks mCallbacks;
         private InvitesNeededAlert mSelf;
         private CommsAddrRec mHostAddr;
+        private GamePtr mGamePtr;
 
-        Wrapper( Callbacks callbacks ) { mCallbacks = callbacks; }
+        Wrapper( Callbacks callbacks, GamePtr gamePtr )
+        {
+            mCallbacks = callbacks;
+            mGamePtr = gamePtr;
+        }
 
         void showOrHide( CommsAddrRec hostAddr, int nPlayersMissing, int nInvited,
                          boolean isRematch )
@@ -75,7 +81,7 @@ class InvitesNeededAlert {
         AlertDialog make( DBAlert alert, Object[] params )
         {
             DbgUtils.assertOnUIThread();
-            return mSelf.makeImpl( mCallbacks, alert, mHostAddr, params );
+            return mSelf.makeImpl( mCallbacks, alert, mHostAddr, mGamePtr, params );
         }
 
         void dismiss()
@@ -120,7 +126,7 @@ class InvitesNeededAlert {
         long getRowID();
         void onCloseClicked();
         void onInviteClicked();
-        void onInfoClicked();
+        void onInfoClicked( SentInvitesInfo sentInfo );
     }
 
     private boolean close()
@@ -146,7 +152,8 @@ class InvitesNeededAlert {
     }
 
     private AlertDialog makeImpl( final Callbacks callbacks, DBAlert alert,
-                                  CommsAddrRec hostAddr, Object[] params )
+                                  CommsAddrRec hostAddr, GamePtr gamePtr,
+                                  Object[] params )
     {
         State state = (State)params[0];
         AlertDialog.Builder ab = mDelegate.makeAlertBuilder();
@@ -154,7 +161,7 @@ class InvitesNeededAlert {
         int[] closeLoc = { AlertDialog.BUTTON_NEGATIVE };
 
         if ( state.mIsServer ) {
-            makeImplHost( ab, callbacks, alert, state, closeLoc );
+            makeImplHost( ab, callbacks, alert, state, gamePtr, closeLoc );
         } else {
             makeImplGuest( ab, state, hostAddr );
         }
@@ -217,13 +224,15 @@ class InvitesNeededAlert {
     }
 
     private void makeImplHost( AlertDialog.Builder ab, final Callbacks callbacks,
-                               DBAlert alert, State state, int[] closeLoc )
+                               DBAlert alert, State state, GamePtr gamePtr,
+                               int[] closeLoc )
     {
         Context context = mDelegate.getActivity();
         final int nPlayersMissing = state.mNPlayersMissing;
 
         long rowid = callbacks.getRowID();
         SentInvitesInfo sentInfo = DBUtils.getInvitesFor( context, rowid );
+
         int nSent = state.mNInvited + sentInfo.getMinPlayerCount();
         boolean invitesNeeded = nPlayersMissing > nSent;
 
@@ -270,6 +279,16 @@ class InvitesNeededAlert {
         } else {
             alert.setNoDismissListenerNeg( ab, inviteButtonTxt, onInvite );
             closeLoc[0] = DialogInterface.BUTTON_POSITIVE;
+        }
+
+        if ( BuildConfig.NON_RELEASE && 0 < nSent ) {
+            alert.setNoDismissListenerNeut( ab, R.string.button_invite_history,
+                                            new OnClickListener() {
+                                                @Override
+                                                public void onClick( DialogInterface dlg, int item ) {
+                                                    callbacks.onInfoClicked( sentInfo );
+                                                }
+                                            } );
         }
     }
 }

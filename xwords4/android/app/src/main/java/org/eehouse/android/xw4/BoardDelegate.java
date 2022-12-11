@@ -1533,9 +1533,8 @@ public class BoardDelegate extends DelegateBase
     }
 
     @Override
-    public void onInfoClicked()
+    public void onInfoClicked( SentInvitesInfo sentInfo )
     {
-        SentInvitesInfo sentInfo = DBUtils.getInvitesFor( m_activity, m_rowid );
         String msg = sentInfo.getAsText( m_activity );
         makeOkOnlyBuilder( msg )
             .setTitle( R.string.title_invite_history )
@@ -2543,7 +2542,7 @@ public class BoardDelegate extends DelegateBase
     private InvitesNeededAlert.Wrapper getINAWrapper()
     {
         if ( null == mINAWrapper ) {
-            mINAWrapper = new InvitesNeededAlert.Wrapper( this );
+            mINAWrapper = new InvitesNeededAlert.Wrapper( this, m_jniGamePtr );
             showOrHide( mINAWrapper );
         }
         return mINAWrapper;
@@ -3055,6 +3054,9 @@ public class BoardDelegate extends DelegateBase
                 // recordInviteSent( InviteMeans.SMS_DATA, addr.sms_phone );
                 break;
 
+            case COMMS_CONN_NFC: // don't assert about this one
+                break;
+
             default:
                 Log.d( TAG, "not inviting using addr type %s", typ );
                 Assert.failDbg();
@@ -3099,7 +3101,7 @@ public class BoardDelegate extends DelegateBase
             invitesSent = nSent >= m_mySIS.nMissing;
         }
 
-        DBUtils.recordInviteSent( m_activity, m_rowid, means, dev );
+        DBUtils.recordInviteSent( m_activity, m_rowid, means, dev, false );
 
         if ( !invitesSent ) {
             Log.d( TAG, "recordInviteSent(): redoing invite alert" );

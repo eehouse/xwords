@@ -60,7 +60,7 @@ public class CommsTransport implements TransportProcs {
     public boolean transportSendInvt( CommsAddrRec addr, NetLaunchInfo nli,
                                       int timestamp )
     {
-        return MultiMsgSink.sendInvite( m_context, addr, nli, timestamp );
+        return MultiMsgSink.sendInvite( m_context, m_rowid, addr, nli, timestamp );
     }
 
     @Override

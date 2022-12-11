@@ -9,4 +9,7 @@
        message but not heard back -->
   <string name="missing_host_fmt">FYI, the host is a Known Player called “%1$s”.</string>
 
+  <!-- Button offering to show info about invites already sent -->
+  <string name="button_invite_history">History</string>
+
 </resources>

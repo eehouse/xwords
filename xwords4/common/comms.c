@@ -214,9 +214,9 @@ static void augmentChannelAddr( CommsCtxt* comms, AddressRecord* rec,
                                 const CommsAddrRec* addr, XWHostID hostID );
 static XP_Bool augmentAddrIntrnl( CommsCtxt* comms, CommsAddrRec* dest,
                                   const CommsAddrRec* src, XP_Bool isNewer );
-static XP_Bool channelToAddress( CommsCtxt* comms, XWEnv xwe, XP_PlayerAddr channelNo,
-                                 const CommsAddrRec** addr );
-static AddressRecord* getRecordFor( CommsCtxt* comms, XWEnv xwe,
+static XP_Bool channelToAddress( const CommsCtxt* comms, XWEnv xwe,
+                                 XP_PlayerAddr channelNo, const CommsAddrRec** addr );
+static AddressRecord* getRecordFor( const CommsCtxt* comms, XWEnv xwe,
                                     const CommsAddrRec* addr, XP_PlayerAddr channelNo );
 static void augmentSelfAddr( CommsCtxt* comms, XWEnv xwe, const CommsAddrRec* addr );
 static XP_S16 sendMsg( CommsCtxt* comms, XWEnv xwe, MsgQueueElem* elem,
@@ -1625,11 +1625,11 @@ comms_invite( CommsCtxt* comms, XWEnv xwe, const NetLaunchInfo* nli,
     LOG_RETURN_VOID();
 }
 
-XP_U16
-comms_getInvited( const CommsCtxt* comms )
+void
+comms_getInvited( const CommsCtxt* comms, /*XWEnv xwe, */
+                  XP_U16* nInvites, CommsAddrRec* inviteRecs )
 {
-    LOG_FUNC();
-    XP_U16 result = 0;
+    XP_U16 count = 0;
 
     XP_U16 allBits = 0;
     for ( const MsgQueueElem* elem = comms->msgQueueHead; !!elem;
@@ -1640,14 +1640,23 @@ comms_getInvited( const CommsCtxt* comms )
             XP_U16 thisBit = 1 << channelNo;
             XP_ASSERT( 0 == (thisBit & allBits) ); /* should be no dupes */
             if ( 0 == (thisBit & allBits) ) {
-                ++result;
+                XP_ASSERT( !inviteRecs );
+                /* if ( !!inviteRecs && count < *nInvites ) { */
+                /*     const CommsAddrRec* rec; */
+                /*     if ( channelToAddress( comms, xwe, channelNo, &rec ) ) { */
+                /*         inviteRecs[count] = *rec; */
+                /*     } else { */
+                /*         XP_ASSERT(0); /\* what to do? Fail the whole thing? *\/ */
+                /*     } */
+                /* } */
+                ++count;
             }
             allBits |= thisBit;
         }
     }
 
-    LOG_RETURNF( "%d", result );
-    return result;
+    *nInvites = count;
+    // LOG_RETURNF( "%d", *nInvites );
 }
 #endif
 
@@ -2525,7 +2534,7 @@ preProcess(
 } /* preProcess */
 
 static AddressRecord* 
-getRecordFor( CommsCtxt* comms, XWEnv xwe, const CommsAddrRec* addr,
+getRecordFor( const CommsCtxt* comms, XWEnv xwe, const CommsAddrRec* addr,
               const XP_PlayerAddr channelNo )
 {
     AddressRecord* rec;
@@ -3634,7 +3643,7 @@ augmentAddr( CommsAddrRec* addr, const CommsAddrRec* newer, XP_Bool isNewer )
 }
 
 static XP_Bool
-channelToAddress( CommsCtxt* comms, XWEnv xwe, XP_PlayerAddr channelNo,
+channelToAddress( const CommsCtxt* comms, XWEnv xwe, XP_PlayerAddr channelNo,
                   const CommsAddrRec** addr )
 {
     AddressRecord* recs = getRecordFor( comms, xwe, NULL, channelNo );

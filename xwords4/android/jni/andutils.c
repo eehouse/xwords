@@ -601,6 +601,20 @@ addrTypesToJ( JNIEnv* env, const CommsAddrRec* addr )
     return result;
 }
 
+jobjectArray
+makeAddrArray( JNIEnv* env, XP_U16 count, const CommsAddrRec* addrs )
+{
+    jclass clas = (*env)->FindClass( env, PKG_PATH("jni/CommsAddrRec") );
+    jobjectArray result = (*env)->NewObjectArray( env, count, clas, NULL );
+    for ( int ii = 0; ii < count; ++ii ) {
+        jobject jaddr = makeJAddr( env, &addrs[ii] );
+        (*env)->SetObjectArrayElement( env, result, ii, jaddr );
+        deleteLocalRef( env, jaddr );
+    }
+    deleteLocalRef( env, clas );
+    return result;
+}
+
 /* Writes a java version of CommsAddrRec into a C one */
 void
 getJAddrRec( JNIEnv* env, CommsAddrRec* addr, jobject jaddr )

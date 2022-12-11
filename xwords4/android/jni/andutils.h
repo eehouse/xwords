@@ -101,6 +101,8 @@ void getJAddrRec( JNIEnv* env, CommsAddrRec* addr, jobject jaddr );
 void setTypeSetFieldIn( JNIEnv* env, const CommsAddrRec* addr, jobject jTarget, 
                         const char* fldName );
 jobject addrTypesToJ( JNIEnv* env, const CommsAddrRec* addr );
+jobjectArray makeAddrArray( JNIEnv* env, XP_U16 count,
+                            const CommsAddrRec* addrs );
 jint jenumFieldToInt( JNIEnv* env, jobject jobj, const char* field, 
                       const char* fieldSig );
 void intToJenumField( JNIEnv* env, jobject jobj, int val, const char* field, 

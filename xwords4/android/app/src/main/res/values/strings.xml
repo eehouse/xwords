@@ -964,7 +964,7 @@
          launched to send your invitation. -->
     <string name="newgame_invite">Invite now</string>
     <string name="newgame_reinvite">Invite again</string>
-    <!-- Button offering to invite Known Player to a new game -->
+    <!-- Title of alert showing previous invitation sent  -->
     <string name="title_invite_history">Invitations Sent</string>
     <string name="newgame_drop_mqtt">Drop Internet</string>
     <!-- EXPLAIN ME -->
