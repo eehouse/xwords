@@ -2006,7 +2006,6 @@ public class BoardDelegate extends DelegateBase
             // Log.d( TAG, "informMissing(isServer: %b, nDevs: %d; nMissing: %d, "
             //        + " nInvited: %d", isServer, nDevs, nMissing, nInvited );
             Assert.assertTrueNR( nInvited <= nMissing );
-            Assert.assertTrueNR( isServer == (hostAddr==null) );
             m_mySIS.nMissing = nMissing; // will be 0 unless isServer is true
             m_mySIS.nInvited = nInvited;
             m_mySIS.nGuestDevs = nDevs;
