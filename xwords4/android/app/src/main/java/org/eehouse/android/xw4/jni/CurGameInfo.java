@@ -306,6 +306,7 @@ public class CurGameInfo implements Serializable {
         players[1] = new LocalPlayer( context, 1 );
         if ( standalone ) {
             players[1].setIsRobot( true );
+            players[1].name = CommonPrefs.getDefaultRobotName( context );
         } else {
             players[1].isLocal = false;
         }

@@ -103,13 +103,10 @@ public class LocalPlayer implements Serializable {
     @Override
     public String toString()
     {
-        String result;
-        if ( BuildConfig.DEBUG ) {
-            result = String.format( "{name: %s, isLocal: %b, robotIQ: %d}",
-                                    name, isLocal, robotIQ );
-        } else {
-            result = super.toString();
-        }
+        String result = BuildConfig.DEBUG
+            ? String.format( "{name: %s, isLocal: %b, robotIQ: %d}",
+                             name, isLocal, robotIQ )
+            : super.toString();
         return result;
     }
 }
