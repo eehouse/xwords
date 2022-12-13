@@ -388,7 +388,7 @@
     <string name="bonus_w3x_summary">P3</string>
     <!-- displayed when you long-tap a scoreboard entry and there's no
          most recent score to show -->
-    <string name="no_moves_made">(Nenhuma jogada)</string>
+    <string name="no_moves_made">(Ainda nenhuns movimentos)</string>
     <!-- If a networked game is opened and is not complete, i.e. if it
          is listed as expecting remote players who have not yet shown
          up, then the most likely explanation is that none has been
@@ -437,8 +437,7 @@
     lista de palavras %2$s.</string>
     <!-- Appended to the above in the phonies_warn case.  User may
          ignore the warning -->
-    <string name="badwords_accept">\u0020Você ainda quer aceitar essa
-    jogada?</string>
+    <string name="badwords_accept">" Ainda quer aceitar esse movimento\?"</string>
     <!-- Appended to the above in the phonies_disallow case.  User has
          lost his turn. -->
     <string name="badwords_lost">  Jogada perdida.</string>
@@ -492,7 +491,7 @@
          device in the game to be resent.  Eventually I hope to be
          able to remove this from non-debug versions of the game
          because users should not have to do do this EVER. -->
-    <string name="board_menu_game_resend">Reenviar mensagens</string>
+    <string name="board_menu_game_resend">Reenviar movimentos</string>
     <!--       
        ############################################################
        # Board info/error dialog messages
@@ -517,8 +516,7 @@
          information about the current rack is hidden then) -->
     <string name="strd_cumulative_score_fmt">Pontuação cumulativa: %1$d\n</string>
     <!-- Used in formatting remote player move summaries -->
-    <string name="str_remote_moved_fmt">Jogador remoto %1$s fez esta
-    jogada:\u0020</string>
+    <string name="str_remote_moved_fmt">"O jogador remoto %1$s fez este movimento: "</string>
     <!-- I don't know how this is used. :-) -->
     <string name="strd_time_penalty_sub_fmt"> - %1$d [tempo]</string>
     <!-- Used in formatting game history and move summaries -->
@@ -1545,8 +1543,13 @@
         <item quantity="other">Tem certeza que deseja apagar os %1$d jogos selecionados\? Esta ação não poderá ser desfeita.</item>
     </plurals>
     <plurals name="confirm_reset_fmt">
-        <item quantity="one">Você tem certeza de que deseja redefinir o 1 jogo selecionado?\n\n(Redefinir apaga todos os movimentos e as informações de conexão.)</item>
-        <item quantity="other">Você tem certeza de que deseja redefinir os %1$d jogos selecionados?\n\n(Redefinir apaga todos os movimentos e as informações de conexão.)</item>
+        <item quantity="one">Tem certeza de que deseja redefinir o 1 jogo selecionado\?
+\n
+\n(Redefinir apaga todos os movimentos e as informações de conexão.)</item>
+        <item quantity="many"></item>
+        <item quantity="other">Tem certeza de que deseja redefinir os %1$d jogos selecionados\?
+\n
+\n(Redefinir apaga todos os movimentos e as informações de conexão.)</item>
     </plurals>
     <string name="summary_invites_out">Jogadores convidados</string>
     <string name="summary_invites_out_fmt">Jogadores convidados à sala “%1$s”</string>
@@ -1571,14 +1574,14 @@
     </plurals>
     <string name="list_item_netstats">Conexões</string>
     <string name="confirm_deleteonly_dicts_fmt">Apagar %1$s vai deixá-lo sem nenhuma lista de palavras em %2$s. Um ou mais jogos ficarão não jogáveis (até que descarregue de uma lista para substituir.)</string>
-    <string name="use_duptimer">Ativar cronômetro de movimento</string>
+    <string name="use_duptimer">Ativar cronómetro de movimento</string>
     <string name="dup_minutes_label">Minutos por turno</string>
     <string name="robot_iq_label">QI do Robô</string>
     <plurals name="strd_robot_traded_fmt">
         <item quantity="one">Trocou uma pedra.</item>
         <item quantity="other">Trocaram %1$d pedras.</item>
     </plurals>
-    <string name="str_robot_moved_fmt">"O robô %1$s fez esta jogada: "</string>
+    <string name="str_robot_moved_fmt">"O robô %1$s fez este movimento: "</string>
     <string name="msg_dev_deleted_fmt">O jogo chamado “%1$s“ foi apagado num outro aparelho. Já não será possível jogá-lo.</string>
     <string name="invit_expl_notarget_fmt">Convite enviado via %1$s em %2$s. Destinatário desconhecido.</string>
     <string name="invit_expl_bt_fmt">Convite enviado via Bluetooth para o aparelho pareado “%1$s“ em %2$s</string>
@@ -2289,4 +2292,7 @@
     <string name="archive_expl_store">Selecione os tipos de dados ou as configurações do CrossWords que deseja gravar.</string>
     <string name="button_pick_again">Escolha novamente</string>
     <string name="nearbydev_rationale">O CrossWords precisa de permissão para interagir com aparelhos próximos para usar o Bluetooth.</string>
+    <string name="variant_missing_nbs">Este jogo está configurado para comunicar via SMS de dados, mas a versão do CrossWords da Google Play Store já não tem permissão para oferecer suporte ao recurso Play-by-Data-SMS.
+\n
+\n Ainda pode abrir o jogo, mas pode não conseguir enviar ou receber movimentos.</string>
 </resources>
