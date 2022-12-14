@@ -214,6 +214,7 @@ public class MQTTUtils extends Thread
                 totalSlept = 0;
                 MessagePair pair = mOutboundQueue.take();
                 MqttMessage message = new MqttMessage( pair.mPacket );
+                message.setRetained( true );
                 mClient.publish( pair.mTopic, message );
             } catch ( MqttException me ) {
                 me.printStackTrace();
