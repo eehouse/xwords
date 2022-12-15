@@ -1546,7 +1546,7 @@
         <item quantity="one">Tem certeza de que deseja redefinir o 1 jogo selecionado\?
 \n
 \n(Redefinir apaga todos os movimentos e as informações de conexão.)</item>
-        <item quantity="many"></item>
+        <item quantity="many"/>
         <item quantity="other">Tem certeza de que deseja redefinir os %1$d jogos selecionados\?
 \n
 \n(Redefinir apaga todos os movimentos e as informações de conexão.)</item>
