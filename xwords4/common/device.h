@@ -32,11 +32,19 @@ void dvc_store( XW_DUtilCtxt* dctxt, XWEnv xwe );
 
 void dvc_getMQTTDevID( XW_DUtilCtxt* dutil, XWEnv xwe, MQTTDevID* devID );
 void dvc_resetMQTTDevID( XW_DUtilCtxt* dutil, XWEnv xwe );
+void dvc_getMQTTSubTopics( XW_DUtilCtxt* dutil, XWEnv xwe,
+                           XP_UCHAR* storage, XP_U16 storageLen,
+                           XP_U16* nTopics, XP_UCHAR* topics[] );
+void dvc_getMQTTPubTopics( XW_DUtilCtxt* dutil, XWEnv xwe,
+                           const MQTTDevID* devid, XP_U32 gameID,
+                           XP_UCHAR* storage, XP_U16 storageLen,
+                           XP_U16* nTopics, XP_UCHAR* topics[] );
 void dvc_makeMQTTInvite( XW_DUtilCtxt* dutil, XWEnv xwe, XWStreamCtxt* stream,
                          const NetLaunchInfo* nli, XP_U32 timestamp );
 void dvc_makeMQTTMessage( XW_DUtilCtxt* dutil, XWEnv xwe, XWStreamCtxt* stream,
                           XP_U32 gameID, XP_U32 timestamp, const XP_U8* buf, XP_U16 len );
 void dvc_makeMQTTNoSuchGame( XW_DUtilCtxt* dutil, XWEnv xwe,
                              XWStreamCtxt* stream, XP_U32 gameID, XP_U32 timestamp );
-void dvc_parseMQTTPacket( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_U8* buf, XP_U16 len );
+void dvc_parseMQTTPacket( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* topic,
+                          const XP_U8* buf, XP_U16 len );
 #endif

@@ -627,7 +627,7 @@ streamFromJStream( MPFORMAL JNIEnv* env, VTableMgr* vtMgr, jbyteArray jstream )
 
 JNIEXPORT jstring JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_dvc_1getMQTTDevID
-( JNIEnv* env, jclass C, jlong jniGlobalPtr, jobjectArray jTopicsOut )
+( JNIEnv* env, jclass C, jlong jniGlobalPtr )
 {
     jstring result;
     DVC_HEADER(jniGlobalPtr);
@@ -635,23 +635,9 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dvc_1getMQTTDevID
     dvc_getMQTTDevID( globalState->dutil, env, &devID );
 
     XP_UCHAR buf[64];
-
-    if ( !!jTopicsOut ) {
-        formatMQTTTopic( &devID, buf, VSIZE(buf) );
-        jstring jtopic = (*env)->NewStringUTF( env, buf );
-        (*env)->SetObjectArrayElement( env, jTopicsOut, 0, jtopic );
-        deleteLocalRef( env, jtopic );
-
-        if ( 1 < (*env)->GetArrayLength( env, jTopicsOut ) ) {
-            formatMQTTCtrlTopic( &devID, buf, VSIZE(buf) );
-            jstring jtopic = (*env)->NewStringUTF( env, buf );
-            (*env)->SetObjectArrayElement( env, jTopicsOut, 1, jtopic );
-            deleteLocalRef( env, jtopic );
-        }
-    }
-
     formatMQTTDevID( &devID, buf, VSIZE(buf) );
     result = (*env)->NewStringUTF( env, buf );
+
     DVC_HEADER_END();
     return result;
 }
@@ -666,32 +652,68 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dvc_1resetMQTTDevID
 }
 
 static void
-addrToTopic( JNIEnv* env, jobjectArray jAddrToTopic )
+jstrToDevID( JNIEnv* env, jstring jstr, MQTTDevID* outDevID )
 {
-    XP_ASSERT( 1 == (*env)->GetArrayLength( env, jAddrToTopic ) );
-    jstring jaddr = (*env)->GetObjectArrayElement( env, jAddrToTopic, 0 );
-    const char* addr = (*env)->GetStringUTFChars( env, jaddr, NULL );
-
-    MQTTDevID devID;
+    const char* str = (*env)->GetStringUTFChars( env, jstr, NULL );
 #ifdef DEBUG
     XP_Bool success =
 #endif
-        strToMQTTCDevID( addr, &devID );
+        strToMQTTCDevID( str, outDevID );
     XP_ASSERT( success );
+    (*env)->ReleaseStringUTFChars( env, jstr, str );
+}
 
-    XP_UCHAR buf[64];
-    formatMQTTTopic( &devID, buf, VSIZE(buf) );
-    jstring jTopic = (*env)->NewStringUTF( env, buf );
-    (*env)->SetObjectArrayElement( env, jAddrToTopic, 0, jTopic );
+JNIEXPORT jobjectArray JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_dvc_1getMQTTSubTopics
+( JNIEnv* env, jclass C, jlong jniGlobalPtr )
+{
+    LOG_FUNC();
+    jobjectArray result = NULL;
+    DVC_HEADER(jniGlobalPtr);
 
-    (*env)->ReleaseStringUTFChars( env, jaddr, addr );
-    deleteLocalRefs( env, jaddr, jTopic, DELETE_NO_REF );
+
+    XP_UCHAR storage[256];
+    XP_UCHAR* topics[4];
+    XP_U16 nTopics = VSIZE(topics);
+    dvc_getMQTTSubTopics( globalState->dutil, env,
+                          storage, VSIZE(storage),
+                          &nTopics, topics );
+
+    result = makeStringArray( env, nTopics, (const XP_UCHAR* const*)topics );
+
+    DVC_HEADER_END();
+    LOG_RETURNF( "%p", result );
+    return result;
+}
+
+JNIEXPORT jobjectArray JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_dvc_1getMQTTPubTopics
+( JNIEnv* env, jclass C, jlong jniGlobalPtr, jstring jinvitee, jint jgameid )
+{
+    LOG_FUNC();
+    jobjectArray result = NULL;
+    DVC_HEADER(jniGlobalPtr);
+
+    MQTTDevID toDevid;
+    jstrToDevID( env, jinvitee, &toDevid );
+
+    XP_UCHAR storage[256];
+    XP_UCHAR* topics[4];
+    XP_U16 nTopics = VSIZE(topics);
+    dvc_getMQTTPubTopics( globalState->dutil, env,
+                          &toDevid, jgameid, storage, VSIZE(storage),
+                          &nTopics, topics );
+
+    result = makeStringArray( env, nTopics,
+                              (const XP_UCHAR* const*)topics );
+
+    DVC_HEADER_END();
+    return result;
 }
 
 JNIEXPORT jbyteArray JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_dvc_1makeMQTTInvite
-( JNIEnv* env, jclass C, jlong jniGlobalPtr, jobject jnli,
-  jobjectArray jAddrToTopic )
+( JNIEnv* env, jclass C, jlong jniGlobalPtr, jobject jnli )
 {
     jbyteArray result;
     DVC_HEADER(jniGlobalPtr);
@@ -707,8 +729,6 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dvc_1makeMQTTInvite
     result = streamToBArray( env, stream );
     stream_destroy( stream, env );
 
-    addrToTopic( env, jAddrToTopic );
-
     DVC_HEADER_END();
     return result;
 }
@@ -716,7 +736,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dvc_1makeMQTTInvite
 JNIEXPORT jbyteArray JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_dvc_1makeMQTTMessage
 ( JNIEnv* env, jclass C, jlong jniGlobalPtr, jint jGameID,
-  jint jTimestamp, jbyteArray jmsg, jobjectArray jAddrToTopic )
+  jint jTimestamp, jbyteArray jmsg )
 {
     jbyteArray result;
     LOG_FUNC();
@@ -735,15 +755,13 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dvc_1makeMQTTMessage
     result = streamToBArray( env, stream );
     stream_destroy( stream, env );
 
-    addrToTopic( env, jAddrToTopic );
-
     DVC_HEADER_END();
     return result;
 }
 
 JNIEXPORT jbyteArray JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_dvc_1makeMQTTNoSuchGame
-( JNIEnv* env, jclass C, jlong jniGlobalPtr, jint jgameid, jobjectArray jAddrToTopic )
+( JNIEnv* env, jclass C, jlong jniGlobalPtr, jint jgameid )
 {
     jbyteArray result;
     DVC_HEADER(jniGlobalPtr);
@@ -756,8 +774,6 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dvc_1makeMQTTNoSuchGame
     result = streamToBArray( env, stream );
     stream_destroy( stream, env );
 
-    addrToTopic( env, jAddrToTopic );
-
     DVC_HEADER_END();
     LOG_RETURN_VOID();
     return result;
@@ -765,15 +781,17 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dvc_1makeMQTTNoSuchGame
 
 JNIEXPORT void JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_dvc_1parseMQTTPacket
-( JNIEnv* env, jclass C, jlong jniGlobalPtr, jbyteArray jmsg )
+( JNIEnv* env, jclass C, jlong jniGlobalPtr, jstring jtopic, jbyteArray jmsg )
 {
     DVC_HEADER(jniGlobalPtr);
 
     XP_U16 len = (*env)->GetArrayLength( env, jmsg );
     jbyte* buf = (*env)->GetByteArrayElements( env, jmsg, NULL );
+    const char* topic = (*env)->GetStringUTFChars( env, jtopic, NULL );
 
-    dvc_parseMQTTPacket( globalState->dutil, env, (XP_U8*)buf, len );
+    dvc_parseMQTTPacket( globalState->dutil, env, topic, (XP_U8*)buf, len );
 
+    (*env)->ReleaseStringUTFChars( env, jtopic, topic );
     (*env)->ReleaseByteArrayElements( env, jmsg, buf, 0 );
     DVC_HEADER_END();
 }

@@ -67,9 +67,9 @@ public class MQTTUtils extends Thread
 
     private MqttAsyncClient mClient;
     private final String mDevID;
-    private String[] mTopics = { null, null };
+    private String[] mSubTopics;
     private Context mContext;
-    private MsgThread mMsgThread;
+    private RxMsgThread mRxMsgThread;
     private LinkedBlockingQueue<MessagePair> mOutboundQueue = new LinkedBlockingQueue<>();
     private boolean mShouldExit = false;
     private State mState = State.NONE;
@@ -185,10 +185,15 @@ public class MQTTUtils extends Thread
 
     private static class MessagePair {
         byte[] mPacket;
-        String mTopic;
-        MessagePair( String topic, byte[] packet ) {
+        String[] mTopics;
+        // outgoing
+        MessagePair( String[] topics, byte[] packet ) {
             mPacket = packet;
-            mTopic = topic;
+            mTopics = topics;
+        }
+        // incoming: only one topic
+        MessagePair( String topic, byte[] packet ) {
+            this( new String[] {topic}, packet );
         }
     }
 
@@ -215,7 +220,9 @@ public class MQTTUtils extends Thread
                 MessagePair pair = mOutboundQueue.take();
                 MqttMessage message = new MqttMessage( pair.mPacket );
                 message.setRetained( true );
-                mClient.publish( pair.mTopic, message );
+                for ( String topic : pair.mTopics ) {
+                    mClient.publish( topic, message );
+                }
             } catch ( MqttException me ) {
                 me.printStackTrace();
                 break;
@@ -241,9 +248,9 @@ public class MQTTUtils extends Thread
         return result;
     }
 
-    private void enqueue( String topic, byte[] packet )
+    private void enqueue( String[] topics, byte[] packet )
     {
-        mOutboundQueue.add( new MessagePair( topic, packet ) );
+        mOutboundQueue.add( new MessagePair( topics, packet ) );
     }
 
     private static void setInstance( MQTTUtils newInstance )
@@ -279,9 +286,10 @@ public class MQTTUtils extends Thread
     {
         Log.d( TAG, "%H.<init>()", this );
         mContext = context;
-        mDevID = XwJNI.dvc_getMQTTDevID( mTopics );
+        mDevID = XwJNI.dvc_getMQTTDevID();
+        mSubTopics = XwJNI.dvc_getMQTTSubTopics();
         Assert.assertTrueNR( 16 == mDevID.length() );
-        mMsgThread = new MsgThread();
+        mRxMsgThread = new RxMsgThread();
 
         String host = XWPrefs.getPrefsString( context, R.string.key_mqtt_host );
         int port = XWPrefs.getPrefsInt( context, R.string.key_mqtt_port, 1883 );
@@ -307,7 +315,7 @@ public class MQTTUtils extends Thread
             stateOk = mState == State.SUBSCRIBING;
             if ( stateOk ) {
                 mState = newState;
-                mMsgThread.start();
+                mRxMsgThread.start();
             }
             break;
         default:
@@ -446,9 +454,9 @@ public class MQTTUtils extends Thread
         Log.d( TAG, "%H.disconnect()", this );
 
         interrupt();
-        mMsgThread.interrupt();
+        mRxMsgThread.interrupt();
         try {
-            mMsgThread.join();
+            mRxMsgThread.join();
             Log.d( TAG, "%H.disconnect(); JOINED thread", this );
         } catch ( InterruptedException ie ) {
             Log.e( TAG, "%H.disconnect(); got ie from join: %s", this, ie );
@@ -494,7 +502,7 @@ public class MQTTUtils extends Thread
                             switch ( ii ) {
                             case 0:
                                 action = "unsubscribe";
-                                token = client.unsubscribe( mTopics );
+                                token = client.unsubscribe( mSubTopics );
                                 break;      // not continue, which skips the Log() below
                             case 1:
                                 action = "disconnect";
@@ -538,9 +546,8 @@ public class MQTTUtils extends Thread
                                    NetLaunchInfo nli )
     {
         Log.d( TAG, "sendInvite(invitee: %s, nli: %s)", invitee, nli );
-        String[] topic = {invitee};
-        byte[] packet = XwJNI.dvc_makeMQTTInvite( nli, topic );
-        addToSendQueue( context, topic[0], packet );
+        byte[] packet = XwJNI.dvc_makeMQTTInvite( nli, invitee );
+        addToSendQueue( context, invitee, nli.gameID(), packet );
     }
 
     // This goes away? comms_invite() is already getting called. PENDING
@@ -554,9 +561,8 @@ public class MQTTUtils extends Thread
     private static void notifyNotHere( Context context, String addressee,
                                        int gameID )
     {
-        String[] topic = {addressee};
-        byte[] packet = XwJNI.dvc_makeMQTTNoSuchGame( gameID, topic );
-        addToSendQueue( context, topic[0], packet );
+        byte[] packet = XwJNI.dvc_makeMQTTNoSuchGame( gameID );
+        addToSendQueue( context, addressee, gameID, packet );
     }
 
     public static int send( Context context, String addressee, int gameID,
@@ -564,26 +570,25 @@ public class MQTTUtils extends Thread
     {
         Log.d( TAG, "send(to:%s, len: %d)", addressee, buf.length );
         Assert.assertTrueNR( 16 == addressee.length() );
-        String[] topic = {addressee};
-        byte[] packet = XwJNI.dvc_makeMQTTMessage( gameID, timestamp, buf, topic );
-        addToSendQueue( context, topic[0], packet );
+        byte[] packet = XwJNI.dvc_makeMQTTMessage( gameID, timestamp, buf );
+        addToSendQueue( context, addressee, gameID, packet );
         return buf.length;
     }
 
-    private static void addToSendQueue( Context context, String topic,
-                                        byte[] packet )
+    private static void addToSendQueue( Context context, String addressee,
+                                        int gameID, byte[] packet )
     {
         MQTTUtils instance = getOrStart( context );
         if ( null != instance ) {
-            instance.enqueue( topic, packet );
+            String[] topics = XwJNI.dvc_getMQTTPubTopics( addressee, gameID );
+            instance.enqueue( topics, packet );
         }
     }
 
     public static void gameDied( Context context, String devID, int gameID )
     {
-        String[] topic = { devID };
-        byte[] packet = XwJNI.dvc_makeMQTTNoSuchGame( gameID, topic );
-        addToSendQueue( context, topic[0], packet );
+        byte[] packet = XwJNI.dvc_makeMQTTNoSuchGame( gameID );
+        addToSendQueue( context, devID, gameID, packet );
     }
 
     public static void ackMessage( Context context, int gameID,
@@ -626,7 +631,7 @@ public class MQTTUtils extends Thread
         throws Exception
     {
         Log.d( TAG, "%H.messageArrived(topic=%s)", this, topic );
-        mMsgThread.add( topic, message.getPayload() );
+        mRxMsgThread.add( topic, message.getPayload() );
         ConnStatusHandler
             .updateStatusIn( mContext, CommsConnType.COMMS_CONN_MQTT, true );
 
@@ -644,15 +649,17 @@ public class MQTTUtils extends Thread
 
     private void subscribe()
     {
-        Assert.assertTrueNR( null != mTopics && 2 == mTopics.length );
         final int qos = XWPrefs
             .getPrefsInt( mContext, R.string.key_mqtt_qos, 2 );
-        int qoss[] = { qos, qos };
+        int qoss[] = new int[mSubTopics.length];
+        for ( int ii = 0; ii < qoss.length; ++ii ) {
+            qoss[ii] = qos;
+        }
 
         setState( State.SUBSCRIBING );
         try {
-            mClient.subscribe( mTopics, qoss, null, this );
-            // Log.d( TAG, "subscribed to %s", TextUtils.join( ", ", mTopics ) );
+            // Log.d( TAG, "subscribing to %s", TextUtils.join( ", ", mSubTopics ) );
+            mClient.subscribe( mSubTopics, qoss, null, this );
         } catch ( MqttException ex ) {
             ex.printStackTrace();
         } catch ( Exception ex ) {
@@ -689,7 +696,7 @@ public class MQTTUtils extends Thread
                            false );
     }
 
-    private class MsgThread extends Thread {
+    private class RxMsgThread extends Thread {
         private LinkedBlockingQueue<MessagePair> mQueue
             = new LinkedBlockingQueue<>();
 
@@ -701,41 +708,19 @@ public class MQTTUtils extends Thread
         public void run()
         {
             long startTime = Utils.getCurSeconds();
-            Log.d( TAG, "%H.MsgThread.run() starting", MQTTUtils.this );
+            Log.d( TAG, "%H.RxMsgThread.run() starting", MQTTUtils.this );
             for ( ; ; ) {
                 try {
                     MessagePair pair = mQueue.take();
-                    String topic = pair.mTopic;
-                    if ( topic.equals( mTopics[0] ) ) {
-                        XwJNI.dvc_parseMQTTPacket( pair.mPacket );
-                    } else if ( topic.equals( mTopics[1] ) ) {
-                        postNotification( pair );
-                    }
+                    Assert.assertTrueNR( 1 == pair.mTopics.length );
+                    XwJNI.dvc_parseMQTTPacket( pair.mTopics[0], pair.mPacket );
                 } catch ( InterruptedException ie ) {
-                    // Assert.failDbg();
                     break;
-                } catch ( JSONException je ) {
-                    Log.e( TAG, "run() ex: %s", je );
                 }
             }
             long now = Utils.getCurSeconds();
-            Log.d( TAG, "%H.MsgThread.run() exiting after %d seconds",
+            Log.d( TAG, "%H.RxMsgThread.run() exiting after %d seconds",
                    MQTTUtils.this, now - startTime );
-        }
-
-        private void postNotification( MessagePair pair ) throws JSONException
-        {
-            JSONObject obj = new JSONObject( new String(pair.mPacket) );
-            String msg = obj.optString( "msg", null );
-            if ( null != msg ) {
-                String title = obj.optString( "title", null );
-                if ( null == title ) {
-                    title = LocUtils.getString( mContext, R.string.remote_msg_title );
-                }
-                Intent alertIntent = GamesListDelegate.makeAlertIntent( mContext, msg );
-                int code = msg.hashCode() ^ title.hashCode();
-                Utils.postNotification( mContext, alertIntent, title, msg, code );
-            }
         }
     }
 
@@ -752,6 +737,25 @@ public class MQTTUtils extends Thread
                 MultiMsgSink sink = new MultiMsgSink( context, rowid );
                 helper.receiveMessage( rowid, sink, data );
             }
+        }
+    }
+
+    public static void handleCtrlReceived( Context context, byte[] buf )
+    {
+        try {
+        JSONObject obj = new JSONObject( new String(buf) );
+        String msg = obj.optString( "msg", null );
+        if ( null != msg ) {
+            String title = obj.optString( "title", null );
+            if ( null == title ) {
+                title = LocUtils.getString( context, R.string.remote_msg_title );
+            }
+            Intent alertIntent = GamesListDelegate.makeAlertIntent( context, msg );
+            int code = msg.hashCode() ^ title.hashCode();
+            Utils.postNotification( context, alertIntent, title, msg, code );
+        }
+        } catch ( JSONException je ) {
+            Log.e( TAG, "handleCtrlReceived() ex: %s", je );
         }
     }
 

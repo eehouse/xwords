@@ -137,6 +137,15 @@ linux_dutil_onMessageReceived( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe),
 }
 
 static void
+linux_dutil_onCtrlReceived( XW_DUtilCtxt* duc, XWEnv xwe, const XP_U8* buf, XP_U16 len )
+{
+    XP_USE(duc);
+    XP_USE(xwe);
+    XP_USE(buf);
+    XP_LOGFF( "got msg len %d", len );
+}
+
+static void
 linux_dutil_onGameGoneReceived( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe),
                                 XP_U32 gameID, const CommsAddrRec* from )
 {
@@ -200,6 +209,7 @@ linux_dutils_init( MPFORMAL VTableMgr* vtMgr, void* closure )
     SET_PROC(onDupTimerChanged);
     SET_PROC(onInviteReceived);
     SET_PROC(onMessageReceived);
+    SET_PROC(onCtrlReceived);
     SET_PROC(onGameGoneReceived);
     SET_PROC(ackMQTTMsg);
 

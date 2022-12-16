@@ -511,7 +511,7 @@ public class CommsAddrRec implements Serializable {
             p2p_addr = WiDirService.getMyMacAddress( context );
             break;
         case COMMS_CONN_MQTT:
-            mqtt_devID = XwJNI.dvc_getMQTTDevID( null );
+            mqtt_devID = XwJNI.dvc_getMQTTDevID();
             break;
         case COMMS_CONN_NFC:
             break;

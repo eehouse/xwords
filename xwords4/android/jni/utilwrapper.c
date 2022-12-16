@@ -951,6 +951,16 @@ and_dutil_onMessageReceived( XW_DUtilCtxt* duc, XWEnv xwe, XP_U32 gameID,
 }
 
 static void
+and_dutil_onCtrlReceived( XW_DUtilCtxt* duc, XWEnv xwe, const XP_U8* buf, XP_U16 len )
+{
+    DUTIL_CBK_HEADER( "onCtrlReceived", "([B)V" );
+    jbyteArray jmsg = makeByteArray( env, len, (jbyte*)buf );
+    (*env)->CallVoidMethod( env, dutil->jdutil, mid, jmsg );
+    deleteLocalRef( env, jmsg );
+    DUTIL_CBK_TAIL();
+}
+
+static void
 and_dutil_onGameGoneReceived( XW_DUtilCtxt* duc, XWEnv xwe, XP_U32 gameID,
                               const CommsAddrRec* from )
 {
@@ -1136,6 +1146,8 @@ makeDUtil( MPFORMAL JNIEnv* env,
 
     SET_DPROC(onInviteReceived);
     SET_DPROC(onMessageReceived);
+    SET_DPROC(onCtrlReceived);
+
     SET_DPROC(onGameGoneReceived);
     SET_DPROC(ackMQTTMsg);
 

@@ -739,7 +739,7 @@ public class NetLaunchInfo implements Serializable {
     public void addMQTTInfo()
     {
         add( CommsConnType.COMMS_CONN_MQTT );
-        mqttDevID = XwJNI.dvc_getMQTTDevID( null );
+        mqttDevID = XwJNI.dvc_getMQTTDevID();
     }
 
     public boolean isValid()

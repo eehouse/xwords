@@ -93,6 +93,7 @@ typedef struct _DUtilVtable {
                                       const NetLaunchInfo* nli );
     void (*m_dutil_onMessageReceived)( XW_DUtilCtxt* duc, XWEnv xwe, XP_U32 gameID,
                                        const CommsAddrRec* from, const XP_U8* buf, XP_U16 len );
+    void (*m_dutil_onCtrlReceived)( XW_DUtilCtxt* duc, XWEnv xwe, const XP_U8* buf, XP_U16 len );
     void (*m_dutil_onGameGoneReceived)( XW_DUtilCtxt* duc, XWEnv xwe, XP_U32 gameID,
                                        const CommsAddrRec* from );
 
@@ -171,6 +172,8 @@ void dutil_super_init( MPFORMAL XW_DUtilCtxt* dutil );
     (duc)->vtable.m_dutil_onInviteReceived( (duc), (xwe), (nli) )
 #define dutil_onMessageReceived(duc, xwe, gameID, from, buf, len)           \
     (duc)->vtable.m_dutil_onMessageReceived((duc),(xwe),(gameID),(from),(buf),(len))
+#define dutil_onCtrlReceived(duc, xwe, buf, len )             \
+    (duc)->vtable.m_dutil_onCtrlReceived((duc),(xwe),(buf),(len))
 #define dutil_onGameGoneReceived(duc, xwe, gameID, from)         \
     (duc)->vtable.m_dutil_onGameGoneReceived((duc),(xwe),(gameID),(from))
 

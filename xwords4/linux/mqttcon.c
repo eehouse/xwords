@@ -29,7 +29,6 @@ typedef struct _MQTTConStorage {
     struct mosquitto* mosq;
     MQTTDevID clientID;
     gchar clientIDStr[32];
-    gchar topic[64];
     int msgPipe[2];
 } MQTTConStorage;
 
@@ -53,24 +52,29 @@ loadClientID( LaunchParams* params, MQTTConStorage* storage )
     formatMQTTDevID( &storage->clientID, storage->clientIDStr,
                      VSIZE(storage->clientIDStr) );
     XP_ASSERT( 16 == strlen(storage->clientIDStr) );
-    formatMQTTTopic( &storage->clientID, storage->topic, VSIZE(storage->topic) );
 }
 
 static void
 onMessageReceived( struct mosquitto* XP_UNUSED_DBG(mosq), void *userdata,
-                  const struct mosquitto_message* message )
+                   const struct mosquitto_message* message )
 {
     XP_LOGFF( "(len=%d)", message->payloadlen );
     MQTTConStorage* storage = (MQTTConStorage*)userdata;
     XP_ASSERT( storage->mosq == mosq );
-    // XP_ASSERT( 0 == XP_STRCMP( message->topic, storage->clientID ) );
 
     XP_ASSERT( message->payloadlen < 0x7FFF );
+
+    const int msgPipe = storage->msgPipe[1];
+    /* write topic, then message */
+    const char* topic = message->topic;
+    short msgLen = htons(1 + strlen(topic));
+    write( msgPipe, &msgLen, sizeof(msgLen) );
+    write( msgPipe, topic, 1 + strlen(topic) );
+
     short len = (short)message->payloadlen;
     len = htons( len );
-
-    write( storage->msgPipe[1], &len, sizeof(len) );
-    write( storage->msgPipe[1], message->payload, message->payloadlen );
+    write( msgPipe, &len, sizeof(len) );
+    write( msgPipe, message->payload, message->payloadlen );
 }
 
 static void
@@ -123,27 +127,45 @@ handle_gotmsg( GIOChannel* source, GIOCondition XP_UNUSED(condition), gpointer d
 
     int pipe = g_io_channel_unix_get_fd( source );
     XP_ASSERT( pipe == storage->msgPipe[0] );
-    short len;
+
+    short topicLen;
 #ifdef DEBUG
     ssize_t nRead =
 #endif
-        read( pipe, &len, sizeof(len) );
-    XP_ASSERT( nRead == sizeof(len) );
-    len = ntohs(len);
-    XP_U8 buf[len];
+        read( pipe, &topicLen, sizeof(topicLen) );
+    XP_ASSERT( nRead == sizeof(topicLen) );
+    topicLen = ntohs(topicLen);
+    XP_U8 topicBuf[topicLen];
 #ifdef DEBUG
     nRead =
 #endif
-        read( pipe, buf, len );
-    XP_ASSERT( nRead == len );
+        read( pipe, topicBuf, topicLen );
+    XP_ASSERT( nRead == topicLen);
+    XP_ASSERT( '\0' == topicBuf[topicLen-1] );
 
-    dvc_parseMQTTPacket( storage->params->dutil, NULL_XWE, buf, len );
+    short msgLen;
+#ifdef DEBUG
+    nRead =
+#endif
+        read( pipe, &msgLen, sizeof(msgLen) );
+    XP_ASSERT( nRead == sizeof(msgLen) );
+    msgLen = ntohs(msgLen);
+    XP_U8 msgBuf[msgLen];
+#ifdef DEBUG
+    nRead =
+#endif
+        read( pipe, msgBuf, msgLen );
+    XP_ASSERT( nRead == msgLen );
+
+    dvc_parseMQTTPacket( storage->params->dutil, NULL_XWE,
+                         (XP_UCHAR*)topicBuf, msgBuf, msgLen );
 
     return TRUE;
 } /* handle_gotmsg */
 
 static bool
-postMsg( MQTTConStorage* storage, XWStreamCtxt* stream, const MQTTDevID* invitee )
+postMsg( MQTTConStorage* storage, XWStreamCtxt* stream, XP_U32 gameID,
+         const MQTTDevID* invitee )
 {
     const XP_U8* bytes = stream_getPtr( stream );
     XP_U16 len = stream_getSize( stream );
@@ -156,14 +178,24 @@ postMsg( MQTTConStorage* storage, XWStreamCtxt* stream, const MQTTDevID* invitee
     XP_FREEP( storage->params->mpool, &sum );
 #endif
 
-    gchar buf[32];
-    int err = mosquitto_publish( storage->mosq, &mid,
-                                 formatMQTTTopic( invitee, buf, sizeof(buf) ),
-                                 len, bytes, DEFAULT_QOS, false );
-    XP_LOGFF( "mosquitto_publish(topic=%s) => %s; mid=%d", buf, mosquitto_strerror(err), mid );
+    XP_UCHAR topicStorage[128];
+    XP_UCHAR* topics[4];
+    XP_U16 nTopics = VSIZE(topics);
+    dvc_getMQTTPubTopics( storage->params->dutil, NULL_XWE,
+                          invitee, gameID, topicStorage, VSIZE(topicStorage),
+                          &nTopics, topics );
+
+    bool success = XP_TRUE;
+    for ( int ii = 0; success && ii < nTopics; ++ii ) {
+        int err = mosquitto_publish( storage->mosq, &mid, topics[ii],
+                                     len, bytes, DEFAULT_QOS, true );
+        XP_LOGFF( "mosquitto_publish(topic=%s) => %s; mid=%d", topics[ii],
+                  mosquitto_strerror(err), mid );
+        success = 0 == err;
+    }
 
     stream_destroy( stream, NULL_XWE );
-    return err == 0;
+    return success;
 }
 
 void
@@ -205,9 +237,16 @@ mqttc_init( LaunchParams* params )
         XP_LOGFF( "mosquitto_connect(host=%s) => %s", params->connInfo.mqtt.hostName,
                   mosquitto_strerror(err) );
         if ( MOSQ_ERR_SUCCESS == err ) {
+            XP_UCHAR topicStorage[256];
+            XP_UCHAR* topics[4];
+            XP_U16 nTopics = VSIZE(topics);
+            dvc_getMQTTSubTopics( storage->params->dutil, NULL_XWE,
+                                  topicStorage, VSIZE(topicStorage),
+                                  &nTopics, topics );
+
             int mid;
-            err = mosquitto_subscribe( mosq, &mid, storage->topic, DEFAULT_QOS );
-            XP_LOGFF( "mosquitto_subscribe(topic=%s) => %s, mid=%d", storage->topic,
+            err = mosquitto_subscribe_multiple( mosq, &mid, nTopics, topics, DEFAULT_QOS, 0, NULL );
+            XP_LOGFF( "mosquitto_subscribe(topics[0]=%s, etc) => %s, mid=%d", topics[0],
                       mosquitto_strerror(err), mid );
 
             err = mosquitto_loop_start( mosq );
@@ -270,7 +309,7 @@ mqttc_invite( LaunchParams* params, XP_U32 timestamp, const NetLaunchInfo* nli,
 
     dvc_makeMQTTInvite( params->dutil, NULL_XWE, stream, nli, 0 );
 
-    postMsg( storage, stream, invitee );
+    postMsg( storage, stream, nli->gameID, invitee );
 }
 
 XP_S16
@@ -284,7 +323,7 @@ mqttc_send( LaunchParams* params, XP_U32 gameID, XP_U32 timestamp,
 
     dvc_makeMQTTMessage( params->dutil, NULL_XWE, stream,
                          gameID, timestamp, buf, len );
-    if ( postMsg( storage, stream, addressee ) ) {
+    if ( postMsg( storage, stream, gameID, addressee ) ) {
         result = len;
     }
     return result;
@@ -297,5 +336,5 @@ mqttc_notifyGameGone( LaunchParams* params, const MQTTDevID* addressee, XP_U32 g
     XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(params->mpool)
                                                 params->vtMgr );
     dvc_makeMQTTNoSuchGame( params->dutil, NULL_XWE, stream, gameID, 0 );
-    postMsg( storage, stream, addressee );
+    postMsg( storage, stream, gameID, addressee );
 }

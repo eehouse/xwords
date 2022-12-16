@@ -355,6 +355,11 @@ public class DUtilCtxt {
         MQTTUtils.handleGameGone( m_context, from, gameID );
     }
 
+    public void onCtrlReceived( byte[] msg )
+    {
+        MQTTUtils.handleCtrlReceived( m_context, msg );
+    }
+
     public void ackMQTTMsg( int gameID, String senderID, byte[] msg )
     {
         MQTTUtils.ackMessage( m_context, gameID, senderID, msg );

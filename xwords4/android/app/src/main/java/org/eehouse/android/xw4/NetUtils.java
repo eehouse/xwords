@@ -79,7 +79,7 @@ public class NetUtils {
     private static String urlForGameID( Context context, int gameID )
     {
         String host = XWPrefs.getPrefsString( context, R.string.key_mqtt_host );
-        String myID = XwJNI.dvc_getMQTTDevID( null );
+        String myID = XwJNI.dvc_getMQTTDevID();
         String url = String.format( "https://%s/xw4/ui/games?gameid=%d&d1=%s",
                                     host, gameID, myID );
         return url;

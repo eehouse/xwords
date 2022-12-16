@@ -415,7 +415,7 @@ setIntInArray( JNIEnv* env, jintArray arr, int index, int val )
 }
 
 jobjectArray
-makeStringArray( JNIEnv* env, const int count, const XP_UCHAR** vals )
+makeStringArray( JNIEnv* env, const int count, const XP_UCHAR* const* vals )
 {
     jobjectArray jarray;
     {

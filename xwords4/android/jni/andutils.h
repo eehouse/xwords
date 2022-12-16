@@ -81,7 +81,7 @@ jbooleanArray makeBooleanArray( JNIEnv* env, int size, const jboolean* vals );
 void setBoolArray( JNIEnv* env, jbooleanArray jarr, int count, 
                    const jboolean* vals );
 
-jobjectArray makeStringArray( JNIEnv* env, int size, const XP_UCHAR** vals );
+jobjectArray makeStringArray( JNIEnv* env, int size, const XP_UCHAR* const* vals );
 void setStringArray( JNIEnv* env, jobject jowner, const char* ownerField,
                      int count, const XP_UCHAR** vals );
 

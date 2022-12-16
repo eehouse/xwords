@@ -650,22 +650,22 @@ smsToBin( XP_U8* out, XP_U16* outlenp, const XP_UCHAR* sms, XP_U16 smslen )
 
 #endif
 
-const XP_UCHAR*
+XP_UCHAR*
 formatMQTTDevID( const MQTTDevID* devid, XP_UCHAR* buf, XP_U16 bufLen )
 {
     XP_SNPRINTF( buf, bufLen, MQTTDevID_FMT, *devid );
     return buf;
 }
 
-const XP_UCHAR*
-formatMQTTTopic( const MQTTDevID* devid, XP_UCHAR* buf, XP_U16 bufLen )
+XP_UCHAR*
+formatMQTTDevTopic( const MQTTDevID* devid, XP_UCHAR* buf, XP_U16 bufLen )
 {
     XP_SNPRINTF( buf, bufLen, MQTTTopic_FMT, *devid );
     // LOG_RETURNF( "%s", buf );
     return buf;
 }
 
-const XP_UCHAR*
+XP_UCHAR*
 formatMQTTCtrlTopic( const MQTTDevID* devid, XP_UCHAR* buf, XP_U16 bufLen )
 {
     XP_SNPRINTF( buf, bufLen, MQTTCtrlTopic_FMT, *devid );

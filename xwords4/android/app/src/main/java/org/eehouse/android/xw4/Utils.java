@@ -228,7 +228,7 @@ public class Utils {
             intent.putExtra( Intent.EXTRA_STREAM, uri );
         }
 
-        String devID = XwJNI.dvc_getMQTTDevID( null );
+        String devID = XwJNI.dvc_getMQTTDevID();
         String body = LocUtils.getString( context, R.string.email_body_rev_fmt,
                                           BuildConfig.GIT_REV, Build.MODEL,
                                           Build.VERSION.RELEASE, devID );
