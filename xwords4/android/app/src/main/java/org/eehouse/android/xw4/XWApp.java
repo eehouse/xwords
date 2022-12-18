@@ -67,7 +67,7 @@ public class XWApp extends Application
 
         ProcessLifecycleOwner.get().getLifecycle().addObserver(this);
 
-        android.util.Log.i( TAG, "onCreate(); git_rev="
+        android.util.Log.i( TAG, "now here; onCreate(); git_rev="
                             + BuildConfig.GIT_REV );
         Log.enable( this );
 
