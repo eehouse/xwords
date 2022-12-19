@@ -167,6 +167,8 @@ DEFINES += -DXWFEATURE_SLOW_ROBOT -DXWFEATURE_ROBOTPHONIES
 DEFINES += -DXWFEATURE_DEVICE
 DEFINES += -DXWFEATURE_KNOWNPLAYERS
 
+# DEFINES += -DMQTT_GAMEID_TOPICS
+
 # Support device-to-device connection via UDP, e.g. using wifi on a
 # LAN or where the host/server isn't behind a firewall.
 # DEFINES += -DXWFEATURE_IP_DIRECT

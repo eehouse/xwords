@@ -209,9 +209,11 @@ dvc_getMQTTSubTopics( XW_DUtilCtxt* dutil, XWEnv xwe,
     formatMQTTDevTopic( &devid, buf, VSIZE(buf) );
     topics[count++] = appendToStorage( storage, &offset, buf );
 
+#ifdef MQTT_GAMEID_TOPICS
     /* Then the pattern that includes gameIDs */
     XP_SNPRINTF( buf, VSIZE(buf), "%s/+", topics[0] );
     topics[count++] = appendToStorage( storage, &offset, buf );
+#endif
 
     /* Finally, the control pattern */
     formatMQTTCtrlTopic( &devid, buf, VSIZE(buf) );
@@ -242,7 +244,6 @@ dvc_getMQTTPubTopics( XW_DUtilCtxt* dutil, XWEnv xwe,
 
     int offset = 0;
     int count = 0;
-    XP_UCHAR buf[128];
 
     XP_UCHAR devTopic[64];      /* used by two below */
     formatMQTTDevTopic( devid, devTopic, VSIZE(devTopic) );
@@ -250,9 +251,14 @@ dvc_getMQTTPubTopics( XW_DUtilCtxt* dutil, XWEnv xwe,
     /* device topic; eventually goes away; but invites? */
     topics[count++] = appendToStorage( storage, &offset, devTopic );
 
+#ifdef MQTT_GAMEID_TOPICS
+    XP_UCHAR buf[128];
     /* gameid topic */
     XP_SNPRINTF( buf, VSIZE(buf), "%s/%X", devTopic, gameID );
     topics[count++] = appendToStorage( storage, &offset, buf );
+#else
+    XP_USE(gameID);
+#endif
 
     XP_ASSERT( offset < storageLen );
     XP_ASSERT( count <= *nTopics );

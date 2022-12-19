@@ -583,6 +583,14 @@ public class MQTTUtils extends Thread
         MQTTUtils instance = getOrStart( context );
         if ( null != instance ) {
             String[] topics = XwJNI.dvc_getMQTTPubTopics( addressee, gameID );
+            if ( BuildConfig.NON_RELEASE ) {
+                for ( String topic : topics ) {
+                    if ( !topic.startsWith("xw4/device/") ) {
+                        Log.d( TAG, "bad topic: %s", topic );
+                        Assert.failDbg();
+                    }
+                }
+            }
             instance.enqueue( topics, packet );
         }
     }
