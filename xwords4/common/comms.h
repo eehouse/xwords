@@ -219,9 +219,6 @@ XP_S16 comms_send( CommsCtxt* comms, XWEnv xwe, XWStreamCtxt* stream );
 XP_S16 comms_resendAll( CommsCtxt* comms, XWEnv xwe, CommsConnType filter,
                         XP_Bool force );
 
-typedef void (*PendingMsgProc)( void* closure, XWEnv xwe, XP_U8* msg,
-                                XP_U16 len, MsgID msgID );
-void comms_getPending( CommsCtxt* comms, XWEnv xwe, PendingMsgProc proc, void* closure );
 XP_U16 comms_getChannelSeed( CommsCtxt* comms );
 
 #ifdef XWFEATURE_COMMSACK

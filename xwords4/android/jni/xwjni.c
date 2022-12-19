@@ -2581,45 +2581,6 @@ Java_org_eehouse_android_xw4_jni_XwJNI_comms_1resendAll
     return result;
 }
 
-typedef struct _GotOneClosure {
-    JNIEnv* env;
-    jbyteArray msgs[16];
-    int count;
-} GotOneClosure;
-
-static void
-onGotOne( void* closure, XWEnv xwe, XP_U8* msg, XP_U16 len, MsgID XP_UNUSED(msgID) )
-{
-    GotOneClosure* goc = (GotOneClosure*)closure;
-    XP_ASSERT( goc->env == xwe );
-    if ( goc->count < VSIZE(goc->msgs) ) {
-        jbyteArray arr = makeByteArray( xwe, len, (const jbyte*)msg );
-        goc->msgs[goc->count++] = arr;
-    } else {
-        XP_ASSERT( 0 );
-    }
-}
-
-JNIEXPORT jobjectArray JNICALL
-Java_org_eehouse_android_xw4_jni_XwJNI_comms_1getPending
-( JNIEnv* env, jclass C, GamePtrType gamePtr )
-{
-    jobjectArray result = NULL;
-    XWJNI_START(gamePtr);
-    GotOneClosure goc = { .env = env, .count = 0 };
-    XP_ASSERT( !!state->game.comms );
-    comms_getPending( state->game.comms, env, onGotOne, &goc );
-
-    result = makeByteArrayArray( env, goc.count );
-    for ( int ii = 0; ii < goc.count; ++ii ) {
-        (*env)->SetObjectArrayElement( env, result, ii, goc.msgs[ii] );
-        deleteLocalRef( env, goc.msgs[ii] );
-    }
-
-    XWJNI_END();
-    return result;
-}
-
 JNIEXPORT jint JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_comms_1countPendingPackets
 ( JNIEnv* env, jclass C, GamePtrType gamePtr )

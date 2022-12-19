@@ -2107,27 +2107,6 @@ comms_resendAll( CommsCtxt* comms, XWEnv xwe, CommsConnType filter, XP_Bool forc
     return result;
 }
 
-typedef struct _GetAllClosure{
-    PendingMsgProc proc;
-    void* closure;
-} GetAllClosure;
-
-static XP_S16
-gatherMsgs( CommsCtxt* XP_UNUSED(comms), XWEnv xwe, MsgQueueElem* msg,
-            CommsConnType XP_UNUSED(filter), void* closure )
-{
-    GetAllClosure* gac = (GetAllClosure*)closure;
-    (*gac->proc)( gac->closure, xwe, msg->msg, msg->len, msg->msgID );
-    return 1;                   /* 0 gets an assert */
-}
-
-void
-comms_getPending( CommsCtxt* comms, XWEnv xwe, PendingMsgProc proc, void* closure )
-{
-    GetAllClosure gac = { .proc = proc, .closure = closure };
-    (void)resendImpl( comms, xwe, COMMS_CONN_NONE, XP_TRUE, gatherMsgs, &gac );
-}
-
 #ifdef XWFEATURE_COMMSACK
 static void
 ackAnyImpl( CommsCtxt* comms, XWEnv xwe, XP_Bool force )

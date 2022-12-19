@@ -550,7 +550,6 @@ public class XwJNI {
                                        boolean andAck ) {
         return comms_resendAll( gamePtr, force, null, andAck );
     }
-    public static native byte[][] comms_getPending( GamePtr gamePtr );
     public static native int comms_countPendingPackets( GamePtr gamePtr );
 
     public static native void comms_ackAny( GamePtr gamePtr );
