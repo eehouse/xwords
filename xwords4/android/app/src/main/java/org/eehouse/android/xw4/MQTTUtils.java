@@ -561,8 +561,6 @@ public class MQTTUtils extends Thread
     private static void notifyNotHere( Context context, String addressee,
                                        int gameID )
     {
-        Log.d( TAG, "notifyNotHere(devID=%s, gameID=%d)", addressee, gameID );
-        DbgUtils.printStack( TAG );
         byte[] packet = XwJNI.dvc_makeMQTTNoSuchGame( gameID );
         addToSendQueue( context, addressee, gameID, packet );
     }
@@ -597,8 +595,6 @@ public class MQTTUtils extends Thread
 
     public static void gameDied( Context context, String devID, int gameID )
     {
-        Log.d( TAG, "gameDied(devID=%s, gameID=%d)", devID, gameID );
-        DbgUtils.printStack( TAG );
         byte[] packet = XwJNI.dvc_makeMQTTNoSuchGame( gameID );
         addToSendQueue( context, devID, gameID, packet );
     }

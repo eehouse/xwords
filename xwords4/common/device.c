@@ -325,7 +325,6 @@ dvc_makeMQTTNoSuchGame( XW_DUtilCtxt* dutil, XWEnv xwe,
                         XWStreamCtxt* stream, XP_U32 gameID,
                         XP_U32 timestamp )
 {
-    LOG_FUNC();
     addHeaderGameIDAndCmd( dutil, xwe, CMD_DEVGONE, gameID,
                            timestamp, stream );
 }
