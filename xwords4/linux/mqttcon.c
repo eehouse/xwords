@@ -308,6 +308,14 @@ mqttc_getDevIDStr( LaunchParams* params )
     return storage->clientIDStr;
 }
 
+
+static void
+msgAndTopicProc( void* closure, const XP_UCHAR* topic, XWStreamCtxt* stream )
+{
+    MQTTConStorage* storage = (MQTTConStorage*)closure;
+    (void)postOne( storage, topic, stream );
+}
+
 void
 mqttc_invite( LaunchParams* params, XP_U32 timestamp, const NetLaunchInfo* nli,
               const MQTTDevID* invitee )
@@ -320,19 +328,8 @@ mqttc_invite( LaunchParams* params, XP_U32 timestamp, const NetLaunchInfo* nli,
 #endif
     XP_USE( timestamp );
 
-    XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(params->mpool)
-                                                params->vtMgr );
-
-    dvc_makeMQTTInvite( params->dutil, NULL_XWE, stream, nli, 0 );
-
-    postMsg( storage, stream, nli->gameID, invitee );
-}
-
-static void
-msgAndTopicProc( void* closure, const XP_UCHAR* topic, XWStreamCtxt* stream )
-{
-    MQTTConStorage* storage = (MQTTConStorage*)closure;
-    (void)postOne( storage, topic, stream );
+    dvc_makeMQTTInvites( params->dutil, NULL_XWE, msgAndTopicProc, storage,
+                         invitee, nli, 0 );
 }
 
 XP_S16

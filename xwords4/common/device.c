@@ -330,12 +330,33 @@ addProto3HeaderCmd( XW_DUtilCtxt* dutil, XWEnv xwe, MQTTCmd cmd,
 #endif
 
 void
-dvc_makeMQTTInvite( XW_DUtilCtxt* dutil, XWEnv xwe, XWStreamCtxt* stream,
-                    const NetLaunchInfo* nli, XP_U32 timestamp )
+dvc_makeMQTTInvites( XW_DUtilCtxt* dutil, XWEnv xwe,
+                     MsgAndTopicProc proc, void* closure,
+                     const MQTTDevID* addressee,
+                     const NetLaunchInfo* nli,
+                     XP_U32 timestamp )
 {
+    XP_UCHAR devTopic[64];      /* used by two below */
+    formatMQTTDevTopic( addressee, devTopic, VSIZE(devTopic) );
+    /* Stream format is identical for both topics */
+    XWStreamCtxt* stream = mkStream( dutil );
     addHeaderGameIDAndCmd( dutil, xwe, CMD_INVITE, nli->gameID,
                            timestamp, stream );
     nli_saveToStream( nli, stream );
+
+#ifdef MQTT_DEV_TOPICS
+    (*proc)( closure, devTopic, stream );
+#endif
+
+#ifdef MQTT_GAMEID_TOPICS
+    XP_UCHAR gameTopic[64];
+    size_t siz = XP_SNPRINTF( gameTopic, VSIZE(gameTopic),
+                              "%s/%X", devTopic, nli->gameID );
+    XP_ASSERT( siz < VSIZE(gameTopic) );
+    (*proc)(closure, gameTopic, stream );
+#endif
+
+    stream_destroy( stream, xwe );
 }
 
 /* Ship with == 1, but increase to test */
