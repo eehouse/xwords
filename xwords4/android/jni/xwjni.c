@@ -686,31 +686,6 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dvc_1getMQTTSubTopics
     return result;
 }
 
-JNIEXPORT jobjectArray JNICALL
-Java_org_eehouse_android_xw4_jni_XwJNI_dvc_1getMQTTPubTopics
-( JNIEnv* env, jclass C, jlong jniGlobalPtr, jstring jinvitee, jint jgameid )
-{
-    LOG_FUNC();
-    jobjectArray result = NULL;
-    DVC_HEADER(jniGlobalPtr);
-
-    MQTTDevID toDevid;
-    jstrToDevID( env, jinvitee, &toDevid );
-
-    XP_UCHAR storage[256];
-    XP_UCHAR* topics[4];
-    XP_U16 nTopics = VSIZE(topics);
-    dvc_getMQTTPubTopics( globalState->dutil, env,
-                          &toDevid, jgameid, storage, VSIZE(storage),
-                          &nTopics, topics );
-
-    result = makeStringArray( env, nTopics,
-                              (const XP_UCHAR* const*)topics );
-
-    DVC_HEADER_END();
-    return result;
-}
-
 JNIEXPORT jbyteArray JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_dvc_1makeMQTTInvite
 ( JNIEnv* env, jclass C, jlong jniGlobalPtr, jobject jnli )
@@ -733,30 +708,77 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dvc_1makeMQTTInvite
     return result;
 }
 
-JNIEXPORT jbyteArray JNICALL
-Java_org_eehouse_android_xw4_jni_XwJNI_dvc_1makeMQTTMessage
-( JNIEnv* env, jclass C, jlong jniGlobalPtr, jint jGameID,
-  jint jTimestamp, jbyteArray jmsg )
+
+typedef struct _MTPData {
+    JNIEnv* env;
+    int count;
+    const XP_UCHAR* topics[4];
+    jbyteArray jPackets[4];
+    XP_UCHAR storage[256];
+    int offset;
+} MTPData;
+
+static void
+msgAndTopicProc( void* closure, const XP_UCHAR* topic,
+                 XWStreamCtxt* msg )
 {
-    jbyteArray result;
+    MTPData* mtp = (MTPData*)closure;
+    XP_LOGFF( "(topic=%s); count=%d", topic, mtp->count );
+    JNIEnv* env = mtp->env;
+
+    const XP_UCHAR* ptr = mtp->topics[mtp->count] = &mtp->storage[mtp->offset];
+    size_t siz = XP_SNPRINTF( (char*)ptr, VSIZE(mtp->storage) - mtp->offset,
+                              "%s", topic );
+    XP_ASSERT( siz < VSIZE(mtp->storage) - mtp->offset );
+    XP_LOGFF( "topic %s looks good", mtp->topics[mtp->count] );
+    mtp->offset += 1 + XP_STRLEN(ptr);
+
+    mtp->jPackets[mtp->count] = streamToBArray( env, msg );
+
+    ++mtp->count;
+    XP_ASSERT( mtp->count < VSIZE(mtp->topics) );
+}
+
+JNIEXPORT void JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_dvc_1makeMQTTMessages
+( JNIEnv* env, jclass C, jlong jniGlobalPtr, jstring jAddressee,
+  jint jGameID, jint jTimestamp, jbyteArray jmsg,
+  jobjectArray jTopicsOut, jobjectArray jPacketsOut )
+{
     LOG_FUNC();
     DVC_HEADER(jniGlobalPtr);
 
-    XWStreamCtxt* stream = mem_stream_make( MPPARM(globalState->mpool)
-                                            globalState->vtMgr,
-                                            NULL, 0, NULL );
+    XP_ASSERT( 1 == (*env)->GetArrayLength( env, jTopicsOut ) );
+    XP_ASSERT( 1 == (*env)->GetArrayLength( env, jPacketsOut ) );
+
+    MTPData mtp = { .env = env, };
+
+    MQTTDevID addressee;
+    jstrToDevID( env, jAddressee, &addressee );
 
     XP_U16 len = (*env)->GetArrayLength( env, jmsg );
     jbyte* buf = (*env)->GetByteArrayElements( env, jmsg, NULL );
-    dvc_makeMQTTMessage( globalState->dutil, env, stream, jGameID,
-                         jTimestamp, (const XP_U8*)buf, len );
+    dvc_makeMQTTMessages( globalState->dutil, env, msgAndTopicProc, &mtp,
+                          &addressee, jGameID, jTimestamp,
+                          (const XP_U8*)buf, len );
     (*env)->ReleaseByteArrayElements( env, jmsg, buf, 0 );
 
-    result = streamToBArray( env, stream );
-    stream_destroy( stream, env );
+    XP_LOGFF( "making array of %d strings, e.g. %s", mtp.count, mtp.topics[0] );
+    jobjectArray jTopics = makeStringArray( env, mtp.count, mtp.topics );
+    (*env)->SetObjectArrayElement( env, jTopicsOut, 0, jTopics );
+    deleteLocalRef( env, jTopics );
+
+    XP_LOGFF( "making array of %d msgs", mtp.count );
+    jobjectArray jPackets = makeByteArrayArray( env, mtp.count );
+    for ( int ii = 0; ii < mtp.count; ++ii ) {
+        (*env)->SetObjectArrayElement( env, jPackets, ii, mtp.jPackets[ii] );
+        deleteLocalRef( env, mtp.jPackets[ii] );
+    }
+    (*env)->SetObjectArrayElement( env, jPacketsOut, 0, jPackets );
+    deleteLocalRef( env, jPackets );
 
     DVC_HEADER_END();
-    return result;
+    LOG_RETURN_VOID();
 }
 
 JNIEXPORT jbyteArray JNICALL

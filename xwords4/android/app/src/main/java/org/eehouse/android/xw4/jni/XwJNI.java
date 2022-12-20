@@ -153,25 +153,25 @@ public class XwJNI {
         return dvc_getMQTTSubTopics( getJNI().m_ptrGlobals );
     }
 
-    public static String[] dvc_getMQTTPubTopics( String invitee, int gameID )
+    public static void dvc_makeMQTTInvite( NetLaunchInfo nli, String invitee,
+                                           String[][] topics, byte[][][] packets )
     {
-        return dvc_getMQTTPubTopics( getJNI().m_ptrGlobals, invitee, gameID );
+        dvc_makeMQTTInvite( getJNI().m_ptrGlobals, nli, invitee, topics, packets );
     }
 
-    public static byte[] dvc_makeMQTTInvite( NetLaunchInfo nli, String invitee )
+    public static void dvc_makeMQTTMessages( String addressee, int gameID,
+                                             int timestamp, byte[] buf,
+                                             String[][] topics, byte[][][] packets )
     {
-        return dvc_makeMQTTInvite( getJNI().m_ptrGlobals, nli, invitee );
+        dvc_makeMQTTMessages( getJNI().m_ptrGlobals, addressee, gameID,
+                              timestamp, buf, topics, packets );
     }
 
-    public static byte[] dvc_makeMQTTMessage( int gameID, int timestamp,
-                                              byte[] buf )
+    public static void dvc_makeMQTTNoSuchGame( String addressee, int gameID,
+                                               String[][] topics, byte[][][] packets )
     {
-        return dvc_makeMQTTMessage( getJNI().m_ptrGlobals, gameID, timestamp, buf );
-    }
-
-    public static byte[] dvc_makeMQTTNoSuchGame( int gameID )
-    {
-        return dvc_makeMQTTNoSuchGame( getJNI().m_ptrGlobals, gameID );
+        dvc_makeMQTTNoSuchGame( getJNI().m_ptrGlobals, addressee, gameID,
+                                topics, packets );
     }
 
     public static void dvc_parseMQTTPacket( String topic, byte[] buf )
@@ -768,15 +768,21 @@ public class XwJNI {
     private static native String dvc_getMQTTDevID( long jniState );
     private static native void dvc_resetMQTTDevID( long jniState );
     private static native String[] dvc_getMQTTSubTopics( long jniState );
-    private static native String[] dvc_getMQTTPubTopics( long jniState,
-                                                         String invitee,
-                                                         int gameID );
-    private static native byte[] dvc_makeMQTTInvite( long jniState,
-                                                     NetLaunchInfo nli,
-                                                     String invitee );
-    private static native byte[] dvc_makeMQTTMessage( long jniState, int gameID,
-                                                      int timestamp, byte[] buf );
-    private static native byte[] dvc_makeMQTTNoSuchGame( long jniState, int gameID );
+    private static native void dvc_makeMQTTInvite( long jniState,
+                                                   NetLaunchInfo nli,
+                                                   String invitee,
+                                                   String[][] topics,
+                                                   byte[][][] packets );
+    private static native void dvc_makeMQTTMessages( long jniState,
+                                                     String addressee,
+                                                     int gameID,
+                                                     int timestamp, byte[] buf,
+                                                     String[][] topics,
+                                                     byte[][][] packets );
+
+    private static native void dvc_makeMQTTNoSuchGame( long jniState, String addressee,
+                                                       int gameID, String[][] topics,
+                                                       byte[][][] packets );
     private static native void dvc_parseMQTTPacket( long jniState, String topic,
                                                     byte[] buf );
     private static native String[] kplr_getPlayers( long jniState );

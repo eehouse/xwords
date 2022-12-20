@@ -184,16 +184,16 @@ public class MQTTUtils extends Thread
     }
 
     private static class MessagePair {
-        byte[] mPacket;
+        byte[][] mPackets;
         String[] mTopics;
         // outgoing
-        MessagePair( String[] topics, byte[] packet ) {
-            mPacket = packet;
+        MessagePair( String[] topics, byte[][] packets ) {
+            mPackets = packets;
             mTopics = topics;
         }
         // incoming: only one topic
         MessagePair( String topic, byte[] packet ) {
-            this( new String[] {topic}, packet );
+            this( new String[] {topic}, new byte[][] {packet} );
         }
     }
 
@@ -218,10 +218,10 @@ public class MQTTUtils extends Thread
                 }
                 totalSlept = 0;
                 MessagePair pair = mOutboundQueue.take();
-                MqttMessage message = new MqttMessage( pair.mPacket );
-                message.setRetained( true );
-                for ( String topic : pair.mTopics ) {
-                    mClient.publish( topic, message );
+                for ( int ii = 0; ii < pair.mPackets.length; ++ii ) {
+                    MqttMessage message = new MqttMessage( pair.mPackets[ii] );
+                    message.setRetained( true );
+                    mClient.publish( pair.mTopics[ii], message );
                 }
             } catch ( MqttException me ) {
                 me.printStackTrace();
@@ -248,9 +248,9 @@ public class MQTTUtils extends Thread
         return result;
     }
 
-    private void enqueue( String[] topics, byte[] packet )
+    private void enqueue( String[] topics, byte[][] packets )
     {
-        mOutboundQueue.add( new MessagePair( topics, packet ) );
+        mOutboundQueue.add( new MessagePair( topics, packets ) );
     }
 
     private static void setInstance( MQTTUtils newInstance )
@@ -546,8 +546,10 @@ public class MQTTUtils extends Thread
                                    NetLaunchInfo nli )
     {
         Log.d( TAG, "sendInvite(invitee: %s, nli: %s)", invitee, nli );
-        byte[] packet = XwJNI.dvc_makeMQTTInvite( nli, invitee );
-        addToSendQueue( context, invitee, nli.gameID(), packet );
+        byte[][][] packets = {null};
+        String[][] topics = {null};
+        XwJNI.dvc_makeMQTTInvite( nli, invitee, topics, packets );
+        addToSendQueue( context, topics[0], packets[0] );
     }
 
     // This goes away? comms_invite() is already getting called. PENDING
@@ -561,8 +563,10 @@ public class MQTTUtils extends Thread
     private static void notifyNotHere( Context context, String addressee,
                                        int gameID )
     {
-        byte[] packet = XwJNI.dvc_makeMQTTNoSuchGame( gameID );
-        addToSendQueue( context, addressee, gameID, packet );
+        String[][] topics = {null};
+        byte[][][] packets = {null};
+        XwJNI.dvc_makeMQTTNoSuchGame( addressee, gameID, topics, packets );
+        addToSendQueue( context, topics[0], packets[0] );
     }
 
     public static int send( Context context, String addressee, int gameID,
@@ -570,33 +574,27 @@ public class MQTTUtils extends Thread
     {
         Log.d( TAG, "send(to:%s, len: %d)", addressee, buf.length );
         Assert.assertTrueNR( 16 == addressee.length() );
-        byte[] packet = XwJNI.dvc_makeMQTTMessage( gameID, timestamp, buf );
-        addToSendQueue( context, addressee, gameID, packet );
+        String[][] topics = {null};
+        byte[][][] packets = {null};
+        XwJNI.dvc_makeMQTTMessages( addressee, gameID, timestamp, buf, topics, packets );
+        addToSendQueue( context, topics[0], packets[0] );
         return buf.length;
     }
 
-    private static void addToSendQueue( Context context, String addressee,
-                                        int gameID, byte[] packet )
+    private static void addToSendQueue( Context context, String[] topics, byte[][] packets )
     {
         MQTTUtils instance = getOrStart( context );
         if ( null != instance ) {
-            String[] topics = XwJNI.dvc_getMQTTPubTopics( addressee, gameID );
-            if ( BuildConfig.NON_RELEASE ) {
-                for ( String topic : topics ) {
-                    if ( !topic.startsWith("xw4/device/") ) {
-                        Log.d( TAG, "bad topic: %s", topic );
-                        Assert.failDbg();
-                    }
-                }
-            }
-            instance.enqueue( topics, packet );
+            instance.enqueue( topics, packets );
         }
     }
 
     public static void gameDied( Context context, String devID, int gameID )
     {
-        byte[] packet = XwJNI.dvc_makeMQTTNoSuchGame( gameID );
-        addToSendQueue( context, devID, gameID, packet );
+        String[][] topics = {null};
+        byte[][][] packets = {null};
+        XwJNI.dvc_makeMQTTNoSuchGame( devID, gameID, topics, packets );
+        addToSendQueue( context, topics[0], packets[0] );
     }
 
     public static void ackMessage( Context context, int gameID,
@@ -721,7 +719,7 @@ public class MQTTUtils extends Thread
                 try {
                     MessagePair pair = mQueue.take();
                     Assert.assertTrueNR( 1 == pair.mTopics.length );
-                    XwJNI.dvc_parseMQTTPacket( pair.mTopics[0], pair.mPacket );
+                    XwJNI.dvc_parseMQTTPacket( pair.mTopics[0], pair.mPackets[0] );
                 } catch ( InterruptedException ie ) {
                     break;
                 }
