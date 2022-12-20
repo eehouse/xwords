@@ -41,8 +41,14 @@ void dvc_getMQTTPubTopics( XW_DUtilCtxt* dutil, XWEnv xwe,
                            XP_U16* nTopics, XP_UCHAR* topics[] );
 void dvc_makeMQTTInvite( XW_DUtilCtxt* dutil, XWEnv xwe, XWStreamCtxt* stream,
                          const NetLaunchInfo* nli, XP_U32 timestamp );
-void dvc_makeMQTTMessage( XW_DUtilCtxt* dutil, XWEnv xwe, XWStreamCtxt* stream,
-                          XP_U32 gameID, XP_U32 timestamp, const XP_U8* buf, XP_U16 len );
+
+typedef void (*MsgAndTopicProc)( void* closure, const XP_UCHAR* topic,
+                                 XWStreamCtxt* msg );
+void dvc_makeMQTTMessages( XW_DUtilCtxt* dutil, XWEnv xwe,
+                           MsgAndTopicProc proc, void* closure,
+                           const MQTTDevID* addressee,
+                           XP_U32 gameID, XP_U32 timestamp,
+                           const XP_U8* buf, XP_U16 len );
 void dvc_makeMQTTNoSuchGame( XW_DUtilCtxt* dutil, XWEnv xwe,
                              XWStreamCtxt* stream, XP_U32 gameID, XP_U32 timestamp );
 void dvc_parseMQTTPacket( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* topic,

@@ -1,6 +1,7 @@
 /* -*- compile-command: "make MEMDEBUG=TRUE -j3"; -*- */
 /* 
- * Copyright 2020 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2020 - 2022 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -167,6 +168,7 @@ static bool
 postMsg( MQTTConStorage* storage, XWStreamCtxt* stream, XP_U32 gameID,
          const MQTTDevID* invitee )
 {
+    XP_ASSERT(0);               /* I need to go away! */
     const XP_U8* bytes = stream_getPtr( stream );
     XP_U16 len = stream_getSize( stream );
 
@@ -196,6 +198,20 @@ postMsg( MQTTConStorage* storage, XWStreamCtxt* stream, XP_U32 gameID,
 
     stream_destroy( stream, NULL_XWE );
     return success;
+}
+
+static bool
+postOne( MQTTConStorage* storage, const XP_UCHAR* topic, XWStreamCtxt* stream )
+{
+    const XP_U8* bytes = stream_getPtr( stream );
+    XP_U16 len = stream_getSize( stream );
+    int mid;
+    int err = mosquitto_publish( storage->mosq, &mid, topic,
+                                 len, bytes, DEFAULT_QOS, true );
+    XP_LOGFF( "mosquitto_publish(topic=%s) => %s; mid=%d", topic,
+              mosquitto_strerror(err), mid );
+    XP_ASSERT( 0 == err );
+    return 0 == err;
 }
 
 void
@@ -312,21 +328,23 @@ mqttc_invite( LaunchParams* params, XP_U32 timestamp, const NetLaunchInfo* nli,
     postMsg( storage, stream, nli->gameID, invitee );
 }
 
+static void
+msgAndTopicProc( void* closure, const XP_UCHAR* topic, XWStreamCtxt* stream )
+{
+    MQTTConStorage* storage = (MQTTConStorage*)closure;
+    (void)postOne( storage, topic, stream );
+}
+
 XP_S16
 mqttc_send( LaunchParams* params, XP_U32 gameID, XP_U32 timestamp,
             const XP_U8* buf, XP_U16 len, const MQTTDevID* addressee )
 {
-    XP_S16 result = -1;
     MQTTConStorage* storage = getStorage( params );
-    XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(params->mpool)
-                                                params->vtMgr );
 
-    dvc_makeMQTTMessage( params->dutil, NULL_XWE, stream,
-                         gameID, timestamp, buf, len );
-    if ( postMsg( storage, stream, gameID, addressee ) ) {
-        result = len;
-    }
-    return result;
+    dvc_makeMQTTMessages( params->dutil, NULL_XWE,
+                          msgAndTopicProc, storage,
+                          addressee, gameID, timestamp, buf, len );
+    return len;
 }
 
 void
