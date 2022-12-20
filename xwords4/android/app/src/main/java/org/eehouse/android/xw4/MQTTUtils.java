@@ -548,7 +548,7 @@ public class MQTTUtils extends Thread
         Log.d( TAG, "sendInvite(invitee: %s, nli: %s)", invitee, nli );
         byte[][][] packets = {null};
         String[][] topics = {null};
-        XwJNI.dvc_makeMQTTInvite( nli, invitee, topics, packets );
+        XwJNI.dvc_makeMQTTInvites( invitee, nli, topics, packets );
         addToSendQueue( context, topics[0], packets[0] );
     }
 
@@ -565,7 +565,7 @@ public class MQTTUtils extends Thread
     {
         String[][] topics = {null};
         byte[][][] packets = {null};
-        XwJNI.dvc_makeMQTTNoSuchGame( addressee, gameID, topics, packets );
+        XwJNI.dvc_makeMQTTNoSuchGames( addressee, gameID, topics, packets );
         addToSendQueue( context, topics[0], packets[0] );
     }
 
@@ -593,7 +593,7 @@ public class MQTTUtils extends Thread
     {
         String[][] topics = {null};
         byte[][][] packets = {null};
-        XwJNI.dvc_makeMQTTNoSuchGame( devID, gameID, topics, packets );
+        XwJNI.dvc_makeMQTTNoSuchGames( devID, gameID, topics, packets );
         addToSendQueue( context, topics[0], packets[0] );
     }
 

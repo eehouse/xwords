@@ -236,43 +236,6 @@ dvc_getMQTTSubTopics( XW_DUtilCtxt* dutil, XWEnv xwe,
     LOG_RETURN_VOID();
 }
 
-void
-dvc_getMQTTPubTopics( XW_DUtilCtxt* dutil, XWEnv xwe,
-                      const MQTTDevID* devid, XP_U32 gameID,
-                      XP_UCHAR* storage, XP_U16 storageLen,
-                      XP_U16* nTopics, XP_UCHAR* topics[] )
-{
-    /* Keep these in API in case we do cacheing or such later */
-    XP_USE( dutil );
-    XP_USE( xwe );
-
-    int offset = 0;
-    int count = 0;
-
-    XP_UCHAR devTopic[64];      /* used by two below */
-    formatMQTTDevTopic( devid, devTopic, VSIZE(devTopic) );
-
-#ifdef MQTT_DEV_TOPICS
-    /* device topic; eventually goes away; but invites? */
-    topics[count++] = appendToStorage( storage, &offset, devTopic );
-#endif
-
-#ifdef MQTT_GAMEID_TOPICS
-    XP_UCHAR buf[128];
-    /* gameid topic */
-    XP_SNPRINTF( buf, VSIZE(buf), "%s/%X", devTopic, gameID );
-    topics[count++] = appendToStorage( storage, &offset, buf );
-#else
-    XP_USE(gameID);
-#endif
-
-    XP_ASSERT( offset < storageLen );
-    XP_ASSERT( count <= *nTopics );
-    *nTopics = count;
-    logPtrs( __func__, *nTopics, topics );
-    LOG_RETURN_VOID();
-}
-
 typedef enum { CMD_INVITE, CMD_MSG, CMD_DEVGONE, } MQTTCmd;
 
 // #define PROTO_0 0
@@ -329,6 +292,12 @@ addProto3HeaderCmd( XW_DUtilCtxt* dutil, XWEnv xwe, MQTTCmd cmd,
 }
 #endif
 
+static void
+callProc( MsgAndTopicProc proc, void* closure, const XP_UCHAR* topic, XWStreamCtxt* stream )
+{
+    (*proc)( closure, topic, stream_getPtr(stream), stream_getSize(stream) );
+}
+
 void
 dvc_makeMQTTInvites( XW_DUtilCtxt* dutil, XWEnv xwe,
                      MsgAndTopicProc proc, void* closure,
@@ -345,7 +314,7 @@ dvc_makeMQTTInvites( XW_DUtilCtxt* dutil, XWEnv xwe,
     nli_saveToStream( nli, stream );
 
 #ifdef MQTT_DEV_TOPICS
-    (*proc)( closure, devTopic, stream );
+    callProc( proc, closure, devTopic, stream );
 #endif
 
 #ifdef MQTT_GAMEID_TOPICS
@@ -353,7 +322,7 @@ dvc_makeMQTTInvites( XW_DUtilCtxt* dutil, XWEnv xwe,
     size_t siz = XP_SNPRINTF( gameTopic, VSIZE(gameTopic),
                               "%s/%X", devTopic, nli->gameID );
     XP_ASSERT( siz < VSIZE(gameTopic) );
-    (*proc)(closure, gameTopic, stream );
+    callProc( proc, closure, devTopic, stream );
 #endif
 
     stream_destroy( stream, xwe );
@@ -380,7 +349,7 @@ dvc_makeMQTTMessages( XW_DUtilCtxt* dutil, XWEnv xwe,
             stream_putU32VL( stream, len );
         }
         stream_putBytes( stream, buf, len );
-        (*proc)(closure, devTopic, stream );
+        callProc( proc, closure, devTopic, stream );
         stream_destroy( stream, xwe );
     }
 #endif
@@ -403,19 +372,37 @@ dvc_makeMQTTMessages( XW_DUtilCtxt* dutil, XWEnv xwe,
                                   "%s/%X", devTopic, gameID );
         XP_ASSERT( siz < VSIZE(gameTopic) );
 
-        (*proc)( closure, gameTopic, stream );
+        callProc( proc, closure, gameTopic, stream );
         stream_destroy( stream, xwe );
     }
 #endif
 }
 
 void
-dvc_makeMQTTNoSuchGame( XW_DUtilCtxt* dutil, XWEnv xwe,
-                        XWStreamCtxt* stream, XP_U32 gameID,
-                        XP_U32 timestamp )
+dvc_makeMQTTNoSuchGames( XW_DUtilCtxt* dutil, XWEnv xwe,
+                         MsgAndTopicProc proc, void* closure,
+                         const MQTTDevID* addressee,
+                         XP_U32 gameID, XP_U32 timestamp )
 {
+    XP_UCHAR devTopic[64];      /* used by two below */
+    formatMQTTDevTopic( addressee, devTopic, VSIZE(devTopic) );
+
+    XWStreamCtxt* stream = mkStream( dutil );
     addHeaderGameIDAndCmd( dutil, xwe, CMD_DEVGONE, gameID,
                            timestamp, stream );
+#ifdef MQTT_DEV_TOPICS
+    callProc( proc, closure, devTopic, stream );
+#endif
+
+#ifdef MQTT_GAMEID_TOPICS
+    XP_UCHAR gameTopic[64];
+    size_t siz = XP_SNPRINTF( gameTopic, VSIZE(gameTopic),
+                              "%s/%X", devTopic, gameID );
+    XP_ASSERT( siz < VSIZE(gameTopic) );
+    callProc( proc, closure, gameTopic, stream );
+#endif
+
+    stream_destroy( stream, xwe );
 }
 
 static XP_Bool
