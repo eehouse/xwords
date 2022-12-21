@@ -327,7 +327,9 @@ public class BTUtils {
                                    NetLaunchInfo nli )
     {
         Log.d( TAG, "sendInvite(addr=%s, nli=%s)", btAddr, nli );
-        getPA( btAddr ).addInvite( nli );
+        if ( !TextUtils.isEmpty(btAddr) ) {
+            getPA( btAddr ).addInvite( nli );
+        }
     }
 
     public static void addScanListener( ScanListener listener )
