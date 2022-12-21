@@ -137,11 +137,13 @@ linux_dutil_onMessageReceived( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe),
 }
 
 static void
-linux_dutil_onCtrlReceived( XW_DUtilCtxt* duc, XWEnv xwe, const XP_U8* buf, XP_U16 len )
+linux_dutil_onCtrlReceived( XW_DUtilCtxt* duc, XWEnv xwe,
+                            const XP_U8* buf, XP_U16 len )
 {
     XP_USE(duc);
     XP_USE(xwe);
     XP_USE(buf);
+    XP_USE(len);
     XP_LOGFF( "got msg len %d", len );
 }
 

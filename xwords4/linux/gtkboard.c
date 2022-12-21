@@ -839,8 +839,8 @@ new_game_impl( GtkGameGlobals* globals, XP_Bool fireConnDlg )
     success = gtkNewGameDialog( globals, gi, &cGlobals->selfAddr,
                                 XP_TRUE, fireConnDlg );
     if ( success ) {
-        XP_Bool isClient = gi->serverRole == SERVER_ISCLIENT;
-        XP_ASSERT( !isClient ); /* Doesn't make sense! Send invitation. */
+        /* Doesn't make sense! Send invitation. */
+        XP_ASSERT( gi->serverRole != SERVER_ISCLIENT );
 
         (void)game_reset( MEMPOOL &cGlobals->game, NULL_XWE, gi,
                           &cGlobals->selfAddr, NULL, cGlobals->util,

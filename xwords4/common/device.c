@@ -193,7 +193,7 @@ logPtrs( const char* func, int nTopics, char* topics[] )
 
 void
 dvc_getMQTTSubTopics( XW_DUtilCtxt* dutil, XWEnv xwe,
-                      XP_UCHAR* storage, XP_U16 storageLen,
+                      XP_UCHAR* storage, XP_U16 XP_UNUSED_DBG(storageLen),
                       XP_U16* nTopics, XP_UCHAR* topics[] )
 {
     LOG_FUNC();
@@ -216,6 +216,7 @@ dvc_getMQTTSubTopics( XW_DUtilCtxt* dutil, XWEnv xwe,
     XP_UCHAR buf2[64];
     size_t siz = XP_SNPRINTF( buf2, VSIZE(buf2), "%s/+", buf );
     XP_ASSERT( siz < VSIZE(buf) );
+    XP_USE(siz);
     topics[count++] = appendToStorage( storage, &offset, buf2 );
 #endif
 
@@ -322,6 +323,7 @@ dvc_makeMQTTInvites( XW_DUtilCtxt* dutil, XWEnv xwe,
     size_t siz = XP_SNPRINTF( gameTopic, VSIZE(gameTopic),
                               "%s/%X", devTopic, nli->gameID );
     XP_ASSERT( siz < VSIZE(gameTopic) );
+    XP_USE(siz);
     callProc( proc, closure, devTopic, stream );
 #endif
 
@@ -371,6 +373,7 @@ dvc_makeMQTTMessages( XW_DUtilCtxt* dutil, XWEnv xwe,
         size_t siz = XP_SNPRINTF( gameTopic, VSIZE(gameTopic),
                                   "%s/%X", devTopic, gameID );
         XP_ASSERT( siz < VSIZE(gameTopic) );
+        XP_USE(siz);
 
         callProc( proc, closure, gameTopic, stream );
         stream_destroy( stream, xwe );
@@ -399,6 +402,7 @@ dvc_makeMQTTNoSuchGames( XW_DUtilCtxt* dutil, XWEnv xwe,
     size_t siz = XP_SNPRINTF( gameTopic, VSIZE(gameTopic),
                               "%s/%X", devTopic, gameID );
     XP_ASSERT( siz < VSIZE(gameTopic) );
+    XP_USE(siz);
     callProc( proc, closure, gameTopic, stream );
 #endif
 

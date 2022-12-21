@@ -708,6 +708,7 @@ msgAndTopicProc( void* closure, const XP_UCHAR* topic,
     size_t siz = XP_SNPRINTF( (char*)ptr, VSIZE(mtp->storage) - mtp->offset,
                               "%s", topic );
     XP_ASSERT( siz < VSIZE(mtp->storage) - mtp->offset );
+    XP_USE( siz );
     mtp->offset += 1 + XP_STRLEN(ptr);
 
     mtp->jPackets[mtp->count] = makeByteArray( env, msgLen, (const jbyte*)msgBuf );

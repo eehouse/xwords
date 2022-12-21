@@ -1627,7 +1627,7 @@ comms_invite( CommsCtxt* comms, XWEnv xwe, const NetLaunchInfo* nli,
 
 void
 comms_getInvited( const CommsCtxt* comms, /*XWEnv xwe, */
-                  XP_U16* nInvites, CommsAddrRec* inviteRecs )
+                  XP_U16* nInvites, CommsAddrRec* XP_UNUSED(inviteRecs) )
 {
     XP_U16 count = 0;
 

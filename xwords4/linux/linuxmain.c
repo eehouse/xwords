@@ -2510,6 +2510,7 @@ testStreams( LaunchParams* params )
 
     for ( int ii = 0; ii < VSIZE(nums); ++ii ) {
         XP_U32 num = stream_getU32VL( stream );
+        XP_USE(num);
         XP_LOGFF( "compariing num[%d]: %d with %d", ii, nums[ii], num );
         XP_ASSERT( num == nums[ii] );
     }
