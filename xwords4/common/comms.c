@@ -2072,9 +2072,6 @@ resendImpl( CommsCtxt* comms, XWEnv xwe, CommsConnType filter, XP_Bool force,
             XP_S16 len = (*proc)( comms, xwe, msg, filter, closure );
             if ( 0 > len ) {
                 success = XP_FALSE;
-                /* might want to remove break! Otherwise one bad channel (old
-                   invite?) spoils all */
-                break;
             } else {
                 XP_ASSERT( 0 < len );
                 ++count;
