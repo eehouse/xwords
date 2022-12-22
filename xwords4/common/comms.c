@@ -456,7 +456,8 @@ comms_make( MPFORMAL XWEnv xwe, XW_UtilCtxt* util, XP_Bool isServer,
 #ifdef DEBUG
         AddressRecord* rec = 
 #endif
-            rememberChannelAddress( comms, xwe, channelNo, 0, hostAddr,0 );
+            rememberChannelAddress( comms, xwe, channelNo, 0, hostAddr,
+                                    COMMS_VERSION );
         XP_ASSERT( rec == getRecordFor( comms, xwe, hostAddr, channelNo ) );
     }
 
@@ -1614,8 +1615,9 @@ comms_invite( CommsCtxt* comms, XWEnv xwe, const NetLaunchInfo* nli,
         /* remove the old rec, if found */
         nukeInvites( comms, xwe, forceChannel );
 
+        XP_U16 flags = COMMS_VERSION;
         /*AddressRecord* rec = */rememberChannelAddress( comms, xwe, forceChannel,
-                                                         0, destAddr, 0 );
+                                                         0, destAddr, flags );
         MsgQueueElem* elem = makeInviteElem( comms, xwe, forceChannel, nli );
 
         elem = addToQueue( comms, xwe, elem );
