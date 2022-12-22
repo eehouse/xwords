@@ -1023,7 +1023,12 @@ model_undoLatestMoves( ModelCtxt* model, XWEnv xwe, PoolContext* pool,
                 model_sortTiles( model, turn );
 
                 if ( model->vol.gi->inDuplicateMode ) {
-                    XP_ASSERT( DUP_PLAYER == turn );
+#ifdef DEBUG
+                    if ( DUP_PLAYER != turn ) {
+                        XP_LOGFF( "turn: %d", turn );
+                        XP_ASSERT( 0 );
+                    }
+#endif
                     model_cloneDupeTrays( model, xwe );
                 }
             } else if ( entry.moveType == TRADE_TYPE ) {
