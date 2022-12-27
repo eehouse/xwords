@@ -717,7 +717,6 @@ typedef enum {
     ,CMD_PICKTILESFACEUP
     ,CMD_PLAYERNAME
     ,CMD_REMOTEPLAYER
-    ,CMD_RELAY_PORT
     ,CMD_ROBOTNAME
     ,CMD_LOCALSMARTS
     ,CMD_SORTNEW
@@ -737,14 +736,17 @@ typedef enum {
     ,CMD_SKIPCONFIRM
     ,CMD_VERTICALSCORE
     ,CMD_NOPEEK
-    ,CMD_SPLITPACKETS
     ,CMD_CHAT
+#ifdef XWFEATURE_RELAY
+    ,CMD_SPLITPACKETS
+    ,CMD_RELAY_PORT
     ,CMD_USEUDP
     ,CMD_NOUDP
     ,CMD_USEHTTP
     ,CMD_NOHTTPAUTO
     ,CMD_DROPSENDRELAY
     ,CMD_DROPRCVRELAY
+#endif
     ,CMD_DROPSENDSMS
     ,CMD_SMSFAILPCT
     ,CMD_DROPRCVSMS
@@ -866,7 +868,6 @@ static CmdInfoRec CmdInfoRecs[] = {
     ,{ CMD_PICKTILESFACEUP, false, "pick-face-up", "allow to pick tiles" }
     ,{ CMD_PLAYERNAME, true, "name", "name of local, non-robot player" }
     ,{ CMD_REMOTEPLAYER, false, "remote-player", "add an expected player" }
-    ,{ CMD_RELAY_PORT, true, "relay-port", "port to connect to on relay" }
     ,{ CMD_ROBOTNAME, true, "robot", "name of local, robot player" }
     ,{ CMD_LOCALSMARTS, true, "robot-iq", "smarts for robot (in sequence)" }
     ,{ CMD_SORTNEW, false, "sort-tiles", "sort tiles each time assigned" }
@@ -886,16 +887,18 @@ static CmdInfoRec CmdInfoRecs[] = {
     ,{ CMD_SKIPCONFIRM, false, "skip-confirm", "don't confirm before commit" }
     ,{ CMD_VERTICALSCORE, false, "vertical", "scoreboard is vertical" }
     ,{ CMD_NOPEEK, false, "no-peek", "disallow scoreboard tap changing player" }
+    ,{ CMD_CHAT, true, "send-chat", "send a chat every <n> seconds" }
+#ifdef XWFEATURE_RELAY
     ,{ CMD_SPLITPACKETS, true, "split-packets", "send tcp packets in "
        "sections every random MOD <n> seconds to test relay reassembly" }
-    ,{ CMD_CHAT, true, "send-chat", "send a chat every <n> seconds" }
+    ,{ CMD_RELAY_PORT, true, "relay-port", "port to connect to on relay" }
     ,{ CMD_USEUDP, false, "use-udp", "connect to relay new-style, via udp not tcp (on by default)" }
     ,{ CMD_NOUDP, false, "no-use-udp", "connect to relay old-style, via tcp not udp" }
     ,{ CMD_USEHTTP, false, "use-http", "use relay's new http interfaces rather than sockets" }
     ,{ CMD_NOHTTPAUTO, false, "no-http-auto", "When http's on, don't periodically connect to relay (manual only)" }
-
     ,{ CMD_DROPSENDRELAY, false, "drop-send-relay", "start new games with relay send disabled" }
     ,{ CMD_DROPRCVRELAY, false, "drop-receive-relay", "start new games with relay receive disabled" }
+#endif
     ,{ CMD_DROPSENDSMS, false, "drop-send-sms", "start new games with sms send disabled" }
     ,{ CMD_SMSFAILPCT, true, "sms-fail-pct", "percent of sms sends, randomly chosen, never arrive" }
     ,{ CMD_DROPRCVSMS, false, "drop-receive-sms", "start new games with sms receive disabled" }
@@ -2946,12 +2949,6 @@ main( int argc, char** argv )
             mainParams.pgi.players[index].isLocal = XP_FALSE;
             ++mainParams.info.serverInfo.nRemotePlayers;
             break;
-#ifdef XWFEATURE_RELAY
-        case CMD_RELAY_PORT:
-            addr_addType( &mainParams.addr, COMMS_CONN_RELAY );
-            mainParams.connInfo.relay.defaultSendPort = atoi( optarg );
-            break;
-#endif
         case CMD_ROBOTNAME:
             ++robotCount;
             index = mainParams.pgi.nPlayers++;
@@ -2984,6 +2981,11 @@ main( int argc, char** argv )
             XP_ASSERT(0);    /* not implemented!!!  Needs to talk to comms... */
             break;
 #ifdef XWFEATURE_RELAY
+        case CMD_RELAY_PORT:
+            addr_addType( &mainParams.addr, COMMS_CONN_RELAY );
+            mainParams.connInfo.relay.defaultSendPort = atoi( optarg );
+            break;
+
         case CMD_HOSTNAME:
             /* mainParams.info.clientInfo.serverName =  */
             addr_addType( &mainParams.addr, COMMS_CONN_RELAY );
@@ -3063,11 +3065,12 @@ main( int argc, char** argv )
         case CMD_NOPEEK:
             mainParams.allowPeek = XP_FALSE;
             break;
-        case CMD_SPLITPACKETS:
-            mainParams.splitPackets = atoi( optarg );
-            break;
         case CMD_CHAT:
             mainParams.chatsInterval = atoi(optarg);
+            break;
+#ifdef XWFEATURE_RELAY
+        case CMD_SPLITPACKETS:
+            mainParams.splitPackets = atoi( optarg );
             break;
         case CMD_USEUDP:
             mainParams.useUdp = true;
@@ -3081,13 +3084,13 @@ main( int argc, char** argv )
         case CMD_NOHTTPAUTO:
             mainParams.noHTTPAuto = true;
             break;
-
         case CMD_DROPSENDRELAY:
             mainParams.commsDisableds[COMMS_CONN_RELAY][1] = XP_TRUE;
             break;
         case CMD_DROPRCVRELAY:
             mainParams.commsDisableds[COMMS_CONN_RELAY][0] = XP_TRUE;
             break;
+#endif
         case CMD_DROPSENDSMS:
             mainParams.commsDisableds[COMMS_CONN_SMS][1] = XP_TRUE;
             break;
