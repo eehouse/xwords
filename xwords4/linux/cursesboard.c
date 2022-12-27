@@ -1597,7 +1597,8 @@ static void
 curses_countChanged( XWEnv XP_UNUSED(xwe), void* XP_UNUSED(closure),
                      XP_U16 XP_UNUSED_DBG(newCount) )
 {
-    XP_LOGF( "%s(newCount=%d)", __func__, newCount );
+    /* discon_ok2.py depends on this log entry */
+    XP_LOGFF( "(newCount=%d)", newCount );
 }
 
 #ifdef COMMS_XPORT_FLAGSPROC

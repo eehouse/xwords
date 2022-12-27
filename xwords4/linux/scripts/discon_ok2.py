@@ -160,7 +160,8 @@ def logReaderStub(dev): dev.logReaderMain()
 class Device():
     sHasLDevIDMap = {}
     # sConnNamePat = re.compile('.*got_connect_cmd: connName: "([^"]+)".*$')
-    sGameOverPat = re.compile('^\[(\#\d|Winner)\] (.*): (\d+)')
+    sWinnerPat = re.compile('^\[(\#\d|Winner)\] (.*): (\d+)')
+    sMsgCountPat = re.compile('.*curses_countChanged.*\(newCount=(\d+)\).*')
     sTilesLeftPoolPat = re.compile('.*pool_r.*Tiles: (\d+) tiles left in pool')
     sTilesLeftTrayPat = re.compile('.*player \d+ now has (\d+) tiles')
     sRelayIDPat = re.compile('.*UPDATE games.*seed=(\d+),.*relayid=\'([^\']+)\'.*')
@@ -177,6 +178,7 @@ class Device():
         self.indx = indx
         self.args = args
         self.pid = 0
+        self.winnerFound = False
         self.gameOver = False
         self.params = params
         self.room = room
@@ -204,6 +206,7 @@ class Device():
         self.connected = False
         self.relaySeed = 0
         self.locked = False
+        self.msgCount = -1
 
         self.setApp(args.START_PCT)
 
@@ -235,16 +238,23 @@ class Device():
 
                 self.locked = True
 
+                match = Device.sMsgCountPat.match(line)
+                if match:
+                    self.msgCount = int(match.group(1))
+
                 # check for game over
-                if not self.gameOver:
-                    match = Device.sGameOverPat.match(line)
+                if not self.winnerFound:
+                    match = Device.sWinnerPat.match(line)
                     if match:
-                        self.gameOver = True
+                        self.winnerFound = True
                         score = int(match.group(3))
                         if self.inDupMode:
                             Device.sScoresDup.append(score)
                         else:
                             Device.sScoresReg.append(score)
+
+                if not self.gameOver and self.winnerFound and 0 == self.msgCount:
+                    self.gameOver = True
 
                 # Check every line for tiles left in pool
                 match = Device.sTilesLeftPoolPat.match(line)
