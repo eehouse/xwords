@@ -173,7 +173,7 @@ class Device():
     sScoresReg = []
     
     def __init__(self, args, game, indx, params, room, peers, order,
-                 db, log, script, nInGame, inDupMode, usePublic):
+                 db, log, script, nInGame, inDupMode):
         self.game = game
         self.indx = indx
         self.args = args
@@ -188,7 +188,6 @@ class Device():
         self.script = script
         self.nInGame = nInGame
         self.inDupMode = inDupMode
-        self.usePublic = usePublic
         # runtime stuff; init now
         self.app = args.APP_OLD
         self.proc = None
@@ -270,10 +269,6 @@ class Device():
                         self.relaySeed = int(match.group(1))
                         self.relayID = match.group(2)
 
-                if self.args.WITH_RELAY and not self.inviteeDevID:
-                    match = Device.sDevIDPat.match(line)
-                    if match: self.inviteeDevID = int(match.group(1), 16)
-
                 if self.args.WITH_MQTT and not self.inviteeMQTTDevID:
                     match = Device.sMQTTDevIDPat.match(line)
                     if match:
@@ -315,18 +310,6 @@ class Device():
         # the same order so channels will be assigned consistently. So
         # keep them in an array as they're encountered, and use in
         # that order
-        if self.args.WITH_RELAY:
-            if not self.usePublic and self.order == 1 and self.inviteeDevID and not self.connected:
-                for peer in self.peers:
-                    if peer.inviteeDevID and not peer == self:
-                        if not peer.inviteeDevID in self.inviteeDevIDs:
-                            self.inviteeDevIDs.append(peer.inviteeDevID)
-
-                if self.inviteeDevIDs:
-                    args += [ '--force-invite' ]
-                    for inviteeDevID in self.inviteeDevIDs:
-                        args += ['--invitee-relayid', str(inviteeDevID)]
-
         if self.args.WITH_MQTT:
             if self.order == 1 and not self.connected:
                 for peer in self.peers:
@@ -373,7 +356,6 @@ class Device():
         global gDeadLaunches
         if self.allDone:
             self.moveFiles()
-            self.send_dead()
             gDeadLaunches += self.launchCount
         return self.allDone
 
@@ -381,16 +363,6 @@ class Device():
         assert not self.running()
         for fil in [ self.logPath, self.db, self.script ]:
             shutil.move(fil, self.args.LOGDIR + '/done')
-
-    def send_dead(self):
-        if self.args.WITH_RELAY:
-            JSON = json.dumps([{'relayID': self.relayID, 'seed': self.relaySeed}])
-            url = 'http://%s/xw4/relay.py/kill' % (self.args.HOST)
-            params = {'params' : JSON}
-            try:
-                req = requests.get(url, params = params) # failing
-            except requests.exceptions.ConnectionError:
-                print('got exception sending to', url, params, '; is relay.py running as apache module?')
 
     def getTilesCount(self):
         assert not self.locked
@@ -451,7 +423,6 @@ def build_cmds(args):
         assert(len(LOCALS) == NDEVS)
         DICT = args.DICTS[GAME % len(args.DICTS)]
         # make one in three games public
-        usePublic = args.WITH_RELAY and random.randint(0, 3) == 0
         useDupeMode = random.randint(0, 100) < args.DUP_PCT
         if args.PHONIES == -1: phonies = GAME % 3
         else: phonies = args.PHONIES
@@ -468,10 +439,6 @@ def build_cmds(args):
             if not useDupeMode: PARAMS += ['--trade-pct', args.TRADE_PCT]
 
             # We SHOULD support having both SMS and relay working...
-            if args.WITH_RELAY:
-                PARAMS += [ '--relay-port', args.PORT, '--room', ROOM, '--host', args.HOST]
-                if random.randint(0, 100) < g_UDP_PCT_START:
-                    PARAMS += ['--use-udp']
             if args.WITH_SMS:
                 PARAMS += [ '--sms-number', makeSMSPhoneNo(GAME, DEV) ]
                 if args.SMS_FAIL_PCT > 0:
@@ -501,9 +468,6 @@ def build_cmds(args):
             PARAMS += ['--db', DB]
 
             PARAMS += ['--drop-nth-packet', g_DROP_N]
-            if random.randint(0, 100) < args.HTTP_PCT:
-                PARAMS += ['--use-http']
-
             PARAMS += ['--split-packets', '2']
             if args.SEND_CHAT:
                 PARAMS += ['--send-chat', args.SEND_CHAT]
@@ -519,8 +483,8 @@ def build_cmds(args):
             # it isn't a priority.
             # PARAMS += ['--seed', args.SEED]
 
-            if DEV == 1 or usePublic: PARAMS += ['--force-game']
             if DEV == 1:
+                PARAMS += ['--force-game']
                 PARAMS += ['--server', '--phonies', phonies ]
                 if 0 == args.TRAYSIZE: traySize = random.randint(7, 9)
                 else: traySize = args.TRAYSIZE
@@ -533,14 +497,13 @@ def build_cmds(args):
             if args.PHONY_PCT and phonies == 2: PARAMS += [ '--make-phony-pct', args.PHONY_PCT ]
 
             if useDupeMode: PARAMS += ['--duplicate-mode']
-            if usePublic: PARAMS += ['--make-public', '--join-public']
 
             PARAMS += ['--board-size', args.BOARD_SIZE]
 
             # print('PARAMS:', PARAMS)
 
             dev = Device( args, GAME, COUNTER, PARAMS, ROOM, peers,
-                          DEV, DB, LOG, SCRIPT, len(LOCALS), useDupeMode, usePublic )
+                          DEV, DB, LOG, SCRIPT, len(LOCALS), useDupeMode )
             peers.add(dev)
             dev.update_ldevid()
             devs.append(dev)
@@ -766,8 +729,6 @@ def mkParser():
     # #     echo "    [--clean-start]                                         \\" >&2
     parser.add_argument('--game-dict', dest = 'DICTS', action = 'append', default = [])
     # #     echo "    [--help]                                                \\" >&2
-    parser.add_argument('--host',  dest = 'HOST', default = 'localhost',
-                        help = 'relay hostname')
     # #     echo "    [--max-devs <int>]                                      \\" >&2
     parser.add_argument('--min-devs', dest = 'MINDEVS', type = int, default = 2,
                         help = 'No game will have fewer devices than this')
@@ -785,8 +746,6 @@ def mkParser():
     # #     echo "    [--old-app <path/to/app]*                               \\" >&2
     parser.add_argument('--one-per', dest = 'ONEPER', default = False,
                         action = 'store_true', help = 'force one player per device')
-    parser.add_argument('--port', dest = 'PORT', default = 10997, type = int, \
-                        help = 'Port relay\'s on')
     parser.add_argument('--resign-pct', dest = 'RESIGN_PCT', default = 0, type = int, \
                         help = 'Odds of resigning [0..100]')
     parser.add_argument('--seed', type = int, dest = 'SEED',
@@ -795,8 +754,6 @@ def mkParser():
     # #     echo "    [--udp-incr <pct>]                                      \\" >&2
     # #     echo "    [--udp-start <pct>]      # default: $UDP_PCT_START                 \\" >&2
     # #     echo "    [--undo-pct <int>]                                      \\" >&2
-    parser.add_argument('--http-pct', dest = 'HTTP_PCT', default = 0, type = int,
-                        help = 'pct of games to be using web api')
 
     parser.add_argument('--undo-pct', dest = 'UNDO_PCT', default = 0, type = int)
     parser.add_argument('--trade-pct', dest = 'TRADE_PCT', default = 10, type = int)
@@ -810,8 +767,6 @@ def mkParser():
     parser.add_argument('--mqtt-port', dest = 'MQTT_PORT', default = 1883 )
     parser.add_argument('--mqtt-host', dest = 'MQTT_HOST', default = 'localhost' )
 
-    parser.add_argument('--with-relay', dest = 'WITH_RELAY', action = 'store_true')
-    parser.add_argument('--without-relay', dest = 'WITH_RELAY', default = False, action = 'store_false')
     parser.add_argument('--force-tray', dest = 'TRAYSIZE', default = 0, type = int,
                         help = 'Always this many tiles per tray')
 
