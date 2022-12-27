@@ -275,7 +275,7 @@ void comms_gatherPlayers( CommsCtxt* comms, XWEnv xwe, XP_U32 created );
 const char* ConnType2Str( CommsConnType typ );
 
 # ifdef DEBUG
-void comms_getStats( CommsCtxt* comms, XWStreamCtxt* stream );
+void comms_getStats( const CommsCtxt* comms, XWStreamCtxt* stream );
 const char* CommsRelayState2Str( CommsRelayState state );
 const char* XWREASON2Str( XWREASON reason );
 

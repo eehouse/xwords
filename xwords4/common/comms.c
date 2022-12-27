@@ -1824,8 +1824,10 @@ freeElem( MPFORMAL MsgQueueElem* elem )
 {
     XP_FREE( mpool, elem->msg );
 #ifdef COMMS_CHECKSUM
-    XP_LOGFF( "freeing msg with sum %s", elem->checksum );
+    XP_LOGFF( "freeing msg with len %d, sum %s", elem->len, elem->checksum );
     XP_FREE( mpool, elem->checksum );
+#else
+    XP_LOGFF( "freeing msg with len %d", elem->len );
 #endif
     XP_FREE( mpool, elem );
 }
@@ -1842,6 +1844,8 @@ removeFromQueue( CommsCtxt* comms, XWEnv xwe, XP_PlayerAddr channelNo, MsgID msg
     CNO_FMT( cbuf, channelNo );
     XP_LOGFF( "(channelNo=%d): remove msgs <= " XP_LD " for %s (queueLen: %d)",
              channelNo, msgID, cbuf, comms->queueLen );
+
+    XP_U16 prevLen = comms->queueLen;
 
     if ((channelNo == 0) || !!getRecordFor( comms, xwe, NULL, channelNo)) {
 
@@ -1881,7 +1885,8 @@ removeFromQueue( CommsCtxt* comms, XWEnv xwe, XP_PlayerAddr channelNo, MsgID msg
         notifyQueueChanged( comms, xwe );
     }
 
-    XP_LOGFF( "queueLen now %d", comms->queueLen );
+    XP_ASSERT( comms->queueLen <= prevLen );
+    XP_LOGFF( "queueLen now %d (was %d)", comms->queueLen, prevLen );
 
 #ifdef DEBUG
     assertQueueOk( comms );
@@ -2521,9 +2526,8 @@ getRecordFor( const CommsCtxt* comms, XWEnv xwe, const CommsAddrRec* addr,
     /* Use addr if we have it.  Otherwise use channelNo if non-0 */
     CNO_FMT( cbuf, channelNo );
     for ( rec = comms->recs; !!rec; rec = rec->next ) {
-        /* server should have only one rec max -- but relay has bugs right now
-           that send to the wrong device randomly. */
-        // XP_ASSERT( comms->isServer || !rec->next );
+        /* guest should have only one rec max */
+        XP_ASSERT( comms->isServer || !rec->next );
 
         CNO_FMT( cbuf1, rec->channelNo );
         XP_LOGFF( "comparing rec channel %s with addr channel %s",
@@ -3306,7 +3310,7 @@ ConnType2Str( CommsConnType typ )
 
 #ifdef DEBUG
 void
-comms_getStats( CommsCtxt* comms, XWStreamCtxt* stream )
+comms_getStats( const CommsCtxt* comms, XWStreamCtxt* stream )
 {
     XP_UCHAR buf[100];
 
