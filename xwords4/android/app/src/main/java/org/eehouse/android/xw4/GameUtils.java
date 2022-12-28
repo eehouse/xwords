@@ -1312,8 +1312,9 @@ public class GameUtils {
     public static String formatGameID( int gameID )
     {
         Assert.assertTrue( 0 != gameID );
-        // substring: Keep it short so fits in SMS better
-        return String.format( "%X", gameID ).substring( 0, 5 );
+        // I used to truncate this for smaller SMS messages, but gameID has
+        // become important enough that we want to use all 32 bits.
+        return String.format( "%X", gameID );
     }
 
     public static String makeRandomID()
@@ -1322,7 +1323,7 @@ public class GameUtils {
         return formatGameID( rint );
     }
 
-    public static int newGameID()
+    private static int newGameID()
     {
         int rint;
         do {
