@@ -899,6 +899,7 @@ comms_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
 #endif
         XP_U16 len = msg->len;
         if ( 0 == len ) {
+            XP_ASSERT( isServer );
             XP_U32 nliLen = stream_getU32VL( stream );
             XWStreamCtxt* nliStream = mem_stream_make_raw( MPPARM(comms->mpool)
                                                            dutil_getVTManager(comms->dutil));
@@ -919,9 +920,8 @@ comms_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
 #ifdef COMMS_CHECKSUM
         msg->checksum = dutil_md5sum( comms->dutil, xwe, msg->msg, len );
 #endif
-        msg->next = (MsgQueueElem*)NULL;
+        XP_ASSERT( NULL == msg->next );
         *prevsQueueNext = comms->msgQueueTail = msg;
-        comms->msgQueueTail = msg;
         prevsQueueNext = &msg->next;
     }
 
@@ -1552,8 +1552,8 @@ comms_getChannelSeed( CommsCtxt* comms )
 static void
 nukeInvites( CommsCtxt* comms, XWEnv xwe, XP_PlayerAddr channelNo )
 {
-    channelNo &= CHANNEL_MASK;
     XP_LOGFF( "(channelNo=0x%X)", channelNo );
+    channelNo &= CHANNEL_MASK;
 
     listRecs( comms, __func__ );
 
@@ -1606,7 +1606,7 @@ comms_invite( CommsCtxt* comms, XWEnv xwe, const NetLaunchInfo* nli,
     LOG_FUNC();
     LOGNLI(nli);
     XP_PlayerAddr forceChannel = nli->forceChannel;
-    XP_ASSERT( 0 < forceChannel );
+    XP_ASSERT( 0 < forceChannel && (forceChannel & CHANNEL_MASK) == forceChannel );
     if ( !haveRealChannel( comms, forceChannel ) ) {
         /* See if we have a channel for this address. Then see if we have an
            invite matching this one, and if not add one. Then trigger a send of
@@ -1680,6 +1680,7 @@ comms_send( CommsCtxt* comms, XWEnv xwe, XWStreamCtxt* stream )
 
         if ( 0 == channelNo ) {
             channelNo = comms_getChannelSeed(comms) & ~CHANNEL_MASK;
+            XP_LOGFF( "new channelNo: %X", channelNo );
         }
 
         XP_LOGFF( TAGFMT() "assigning msgID=" XP_LD " on %s", TAGPRMS, msgID, cbuf );
@@ -2722,7 +2723,7 @@ validateInitialMessage( CommsCtxt* comms, XWEnv xwe,
                 rec = NULL;
             }
         }
-#endif
+#endif  /* ifdef COMMS_HEARTBEAT */
     } else {
         CNO_FMT( cbuf, *channelNoP );
         XP_LOGFF( TAGFMT() "looking at %s", TAGPRMS, cbuf );
@@ -3314,38 +3315,32 @@ comms_getStats( const CommsCtxt* comms, XWStreamCtxt* stream )
 {
     XP_UCHAR buf[100];
 
-    int nChannels = 0;
-    for ( AddressRecord* rec = comms->recs; !!rec; rec = rec->next ) {
-        ++nChannels;
-    }
-
     XP_SNPRINTF( (XP_UCHAR*)buf, sizeof(buf), 
-                 (XP_UCHAR*)"role: %s; msg queue len: %d; have %d channels\n",
+                 (XP_UCHAR*)"role: %s; msg queue len: %d\n",
                  comms->isServer ? "host" : "guest",
-                 comms->queueLen, nChannels );
+                 comms->queueLen );
     stream_catString( stream, buf );
 
-    XP_U16 indx = 0;
     for ( MsgQueueElem* elem = comms->msgQueueHead; !!elem; elem = elem->next ) {
         XP_SNPRINTF( buf, sizeof(buf), 
-                     "%d: - channelNo=%.4X; msgID=" XP_LD "; len=%d\n",
-                     indx++, elem->channelNo, elem->msgID, elem->len );
+                     "msgID: " XP_LD ": channelNo=%.4X; len=%d\n",
+                     elem->msgID, elem->channelNo, elem->len );
         stream_catString( stream, buf );
     }
 
     for ( AddressRecord* rec = comms->recs; !!rec; rec = rec->next ) {
         XP_SNPRINTF( (XP_UCHAR*)buf, sizeof(buf),
-                     (XP_UCHAR*)"Stats for channel %.4X\n",
+                     (XP_UCHAR*)"Stats for channel %.4X msgs\n",
                      rec->channelNo );
         stream_catString( stream, buf );
 
         XP_SNPRINTF( (XP_UCHAR*)buf, sizeof(buf),
-                     (XP_UCHAR*)"  Last msg sent: " XP_LD "; ",
+                     (XP_UCHAR*)"  Last sent: " XP_LD "; ",
                      rec->nextMsgID );
         stream_catString( stream, buf );
 
         XP_SNPRINTF( (XP_UCHAR*)buf, sizeof(buf),
-                     (XP_UCHAR*)"last msg received: %d\n",
+                     (XP_UCHAR*)"last rcvd: %d\n",
                      rec->lastMsgRcd );
         stream_catString( stream, buf );
     }

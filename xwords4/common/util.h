@@ -84,11 +84,8 @@ typedef XP_Bool (*XWTimerProc)( void* closure, XWEnv xwe, XWTimerReason why );
 /* Platform-specific utility functions that need to be
  */
 typedef struct UtilVtable {
-    
-#ifndef XWFEATURE_STANDALONE_ONLY
-    XWStreamCtxt* (*m_util_makeStreamFromAddr)(XW_UtilCtxt* uc, XWEnv xwe,
-                                               XP_PlayerAddr channelNo );
-#endif
+    XWStreamCtxt* (*m_util_makeStreamFromAddr)( XW_UtilCtxt* uc, XWEnv xwe,
+                                                XP_PlayerAddr channelNo );
     void (*m_util_userError)( XW_UtilCtxt* uc, XWEnv xwe, UtilErrID id );
 
     void (*m_util_notifyMove)( XW_UtilCtxt* uc, XWEnv xwe, XWStreamCtxt* stream );

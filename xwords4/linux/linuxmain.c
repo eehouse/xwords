@@ -390,7 +390,7 @@ void
 sendOnClose( XWStreamCtxt* stream, XWEnv XP_UNUSED(xwe), void* closure )
 {
     CommonGlobals* cGlobals = (CommonGlobals*)closure;
-    XP_LOGF( "%s called with msg of len %d", __func__, stream_getSize(stream) );
+    XP_LOGFF( "msg len: %d", stream_getSize(stream) );
     (void)comms_send( cGlobals->game.comms, NULL_XWE, stream );
 }
 
@@ -1670,37 +1670,6 @@ stream_from_msgbuf( CommonGlobals* globals, const unsigned char* bufPtr,
 
     return result;
 } /* stream_from_msgbuf */
-
-#if 0
-static void
-streamClosed( XWStreamCtxt* stream, XP_PlayerAddr addr, void* closure )
-{
-    fprintf( stderr, "streamClosed called\n" );
-} /* streamClosed */
-
-static XWStreamCtxt*
-linux_util_makeStreamFromAddr( XW_UtilCtxt* uctx, XWEnv XP_UNUSED(xwe), XP_U16 channelNo )
-{
-#if 1
-/*     XWStreamCtxt* stream = linux_mem_stream_make( uctx->closure, channelNo,  */
-/* 						  sendOnClose, NULL ); */
-#else
-    struct sockaddr* returnAddr = (struct sockaddr*)addr;
-    int newSocket;
-    int result;
-
-    newSocket = socket( AF_INET, DGRAM_TYPE, 0 );
-    fprintf( stderr, "linux_util_makeStreamFromAddr: made socket %d\n",
-	     newSocket );
-    /* #define	EADDRINUSE 98 */
-    result = bind( newSocket, (struct sockaddr*)returnAddr, addrLen );
-    fprintf( stderr, "bind returned %d; errno=%d (\"%s\")\n", result, errno,
-             strerror(errno) );
-
-    return linux_make_socketStream( newSocket );
-#endif
-} /* linux_util_makeStreamFromAddr */
-#endif
 
 XP_Bool
 linuxFireTimer( CommonGlobals* cGlobals, XWTimerReason why )
