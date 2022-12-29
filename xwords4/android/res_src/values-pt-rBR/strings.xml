@@ -728,7 +728,7 @@
     <string name="game_list_tmp">Criando sumário do jogo…</string>
     <string name="board_menu_dict">Explorar lista de palavras</string>
     <string name="dict_host">URL de download da lista de palavras</string>
-    <string name="connstat_net_fmt">Status de rede para o jogo (ID=%2$d) conectado via %1$s:</string>
+    <string name="connstat_net_fmt">Status de rede para o jogo (ID=%2$X) conectado via %1$s:</string>
     <string name="connstat_net_noaddr">Este jogo em rede não tem forma nenhuma de se conectar e não pode ser jogado.
 \n
 \n(Provavelmente foi criado de um convite que não especificou nenhuma forma de conexão que seu dispositivo suporta, ou você pode ter recentemente removido sua última forma de conexão.)</string>
