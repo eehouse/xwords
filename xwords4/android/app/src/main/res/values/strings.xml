@@ -1756,7 +1756,7 @@
     device supports, or you may have recently removed its last way of
     connecting.)</string>
     <!--  -->
-    <string name="connstat_net_fmt">Network status for game (ID=%2$d) connected via
+    <string name="connstat_net_fmt">Network status for game (ID=%2$X) connected via
     %1$s:</string>
 
     <!-- Debug-only menuitem to launch net status info -->

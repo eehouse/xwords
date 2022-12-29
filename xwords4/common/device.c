@@ -464,7 +464,7 @@ void
 dvc_parseMQTTPacket( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* topic,
                      const XP_U8* buf, XP_U16 len )
 {
-    XP_LOGFF( "(topic=%s)", topic );
+    XP_LOGFF( "(topic=%s, len=%d)", topic, len );
 
     MQTTDevID myID;
     dvc_getMQTTDevID( dutil, xwe, &myID );
@@ -474,8 +474,9 @@ dvc_parseMQTTPacket( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* topic,
         XWStreamCtxt* stream = mkStream( dutil );
         stream_putBytes( stream, buf, len );
 
-        XP_U8 proto = stream_getU8( stream );
-        if ( proto == PROTO_1 || proto == PROTO_2 || proto == PROTO_3 ) {
+        XP_U8 proto = 0;
+        if ( stream_gotU8( stream, &proto )
+             && (proto == PROTO_1 || proto == PROTO_2 || proto == PROTO_3 ) ) {
             MQTTDevID senderID;
             stream_getBytes( stream, &senderID, sizeof(senderID) );
             senderID = be64toh( senderID );
