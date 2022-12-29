@@ -457,7 +457,7 @@
     <string name="connstat_net_noaddr">Ta gra w sieciowa nie ma możliwości nawiązania połączenia i nie może być odtwarzana. 
 \n 
 \n(Prawdopodobnie została utworzona na podstawie zaproszenia, które nie zawierało żadnego sposobu połączenia obsługiwanego przez urządzenie, lub może ostatnio usunięto ostatni sposób połączenia.)</string>
-    <string name="connstat_net_fmt">Stan sieci (ID=%2$d) dla gry podłączonej przez %1$s:</string>
+    <string name="connstat_net_fmt">Stan sieci (ID=%2$X) dla gry podłączonej przez %1$s:</string>
     <string name="invites_net_fmt">Wysłano zaproszenia do gry połączone za pośrednictwem %1$s:</string>
     <string name="connstat_succ">pomyślnie</string>
     <string name="connstat_unsucc">niepowodzenie</string>

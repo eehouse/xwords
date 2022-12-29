@@ -606,7 +606,7 @@ Introduïu el vostre nom aquí. S\'usarà en crear partides noves. (Podreu
 \nPodeu arrossegar les fitxes entre el faristol i el tauler, o podeu tocar una casella buida per a col·locar la fletxa del tauler. Les fitxes del faristol que toqueu substituiran la fletxa (es mourà una casella en la direcció que assenyali.) Toqueu la fletxa un cop per a canviar-ne l\'orientació, una segon cop per a amagar-la. Un casella de verificació a la secció Aparença de la Configuració permet amagar-la permanentment.</string>
     <string name="empty_sms_inviter">Aquest llistat telefònic és buit. Useu el botó «Importa un contacte» per a afegir persones que voleu convidar, el botó + per a introduir números directament.</string>
     <string name="connstat_net_noaddr">Aquesta partida en xarxa no té forma de connectar i no es podrà jugar mai.\n\n(probablement fou creada amb una invitació que no especifica cap via de connexió suportada pel vostre aparell.)</string>
-    <string name="connstat_net_fmt">Estat de xarxa (ID=%2$d) per a la partida connectada via %1$s:</string>
+    <string name="connstat_net_fmt">Estat de xarxa (ID=%2$X) per a la partida connectada via %1$s:</string>
     <string name="connstat_lastsend_fmt">Últim enviament fou %1$s (%2$s)</string>
     <string name="connstat_lastother_succ_fmt">(últim error fou %1$s)</string>
     <string name="connstat_lastother_unsucc_fmt">(últim enviament correcte fou %1$s)</string>

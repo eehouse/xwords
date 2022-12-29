@@ -408,7 +408,7 @@
     <string name="connstat_net_noaddr">Diese Netzwerk-Partie hat keine Verbindungsmöglichkeit und kann nicht gespielt werden.
 \n
 \n(Sie wurde wahrscheinlich durch eine Einladung angelegt, die keine von Ihrem Gerät unterstützte Verbindungsart angegeben hat oder hat vor Kurzem ihre letzte Verbindungsart entfernt.)</string>
-    <string name="connstat_net_fmt">"Netwerk-Status für über %1$s (ID=%2$d) verbundene Partie:"</string>
+    <string name="connstat_net_fmt">"Netwerk-Status für über %1$s (ID=%2$X) verbundene Partie:"</string>
     <string name="invites_net_fmt">Einladungen geschickt für die Partie verbunden über %1$s:</string>
     <string name="connstat_succ">erfolgreich</string>
     <string name="connstat_unsucc">nicht erfolgreich</string>

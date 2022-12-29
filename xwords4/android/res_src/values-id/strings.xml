@@ -198,7 +198,7 @@
     <string name="connstat_lastsend_fmt">Pengiriman terakhir pada %1$s (%2$s)</string>
     <string name="connstat_unsucc">tidak berhasil</string>
     <string name="connstat_succ">berhasil</string>
-    <string name="connstat_net_fmt">Status jaringan untuk permainan (ID=%2$d) terhubung melalui %1$s:</string>
+    <string name="connstat_net_fmt">Status jaringan untuk permainan (ID=%2$X) terhubung melalui %1$s:</string>
     <string name="summary_busy">Rangkuman tidak tersedia</string>
     <string name="game_list_tmp">Membuat rangkuman permainan…</string>
     <string name="chat_sender_fmt">%1$s:</string>

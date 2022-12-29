@@ -391,7 +391,7 @@
     <string name="connstat_succ">effettuata</string>
     <string name="connstat_unsucc">Non effettuata</string>
     <string name="invites_net_fmt">Inviati inviti per la partita connessa via %1$s:</string>
-    <string name="connstat_net_fmt">Stato connessione per la partita (ID=%2$d) Connesso via %1$s:</string>
+    <string name="connstat_net_fmt">Stato connessione per la partita (ID=%2$X) Connesso via %1$s:</string>
     <string name="connstat_net_noaddr">Questa partita in linea non riesce a connettersi e non può essere giocata.
 \n
 \n(Probabilmente è stata creata da un invito che non ha specificato in nessun modo il tipo di connessione supportato dal tuo dispositivo oppure di recente lo hai rimosso dalle tue impostazioni di connessione.)</string>

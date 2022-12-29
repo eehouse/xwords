@@ -515,7 +515,7 @@
     <string name="menu_juggle">Sjongler stativ</string>
     <string name="game_list_tmp">Bygger spillsammendrag…</string>
     <string name="summary_busy">Sammendrag utilgjengelig</string>
-    <string name="connstat_net_fmt">Nettverksstatus for spill (ID=%2$d) tilkoblet via %1$s:</string>
+    <string name="connstat_net_fmt">Nettverksstatus for spill (ID=%2$X) tilkoblet via %1$s:</string>
     <string name="invites_net_fmt">Invitasjoner sendt for spill tilkoblet via %1$s:</string>
     <string name="connstat_succ">vellykket</string>
     <string name="connstat_unsucc">mislyktes</string>
