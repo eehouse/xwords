@@ -383,6 +383,11 @@ dvc_makeMQTTNoSuchGames( XW_DUtilCtxt* dutil, XWEnv xwe,
     XP_UCHAR devTopic[64];      /* used by two below */
     formatMQTTDevTopic( addressee, devTopic, VSIZE(devTopic) );
 
+    if ( 0 == timestamp ) {
+        timestamp = dutil_getCurSeconds( dutil, xwe );
+        XP_LOGFF( "replacing timestamp of 0" );
+    }
+
     XWStreamCtxt* stream = mkStream( dutil );
     addHeaderGameIDAndCmd( dutil, xwe, CMD_DEVGONE, gameID,
                            timestamp, stream );

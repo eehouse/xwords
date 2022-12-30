@@ -737,7 +737,8 @@ wrapResults( jobjectArray jTopicsOut, jobjectArray jPacketsOut, MTPData* mtp )
 JNIEXPORT void JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_dvc_1makeMQTTInvites
 ( JNIEnv* env, jclass C, jlong jniGlobalPtr, jstring jAddressee,
-  jobject jnli, jobjectArray jTopicsOut, jobjectArray jPacketsOut )
+  jint jTimestamp, jobject jnli, jobjectArray jTopicsOut,
+  jobjectArray jPacketsOut )
 {
     DVC_HEADER(jniGlobalPtr);
 
@@ -751,7 +752,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dvc_1makeMQTTInvites
     jstrToDevID( env, jAddressee, &addressee );
 
     dvc_makeMQTTInvites( globalState->dutil, env, msgAndTopicProc, &mtp,
-                         &addressee, &nli, 0 );
+                         &addressee, &nli, jTimestamp );
     wrapResults( jTopicsOut, jPacketsOut, &mtp );
 
     DVC_HEADER_END();

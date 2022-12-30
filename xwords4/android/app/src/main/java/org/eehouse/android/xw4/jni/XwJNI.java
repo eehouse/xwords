@@ -153,10 +153,12 @@ public class XwJNI {
         return dvc_getMQTTSubTopics( getJNI().m_ptrGlobals );
     }
 
-    public static void dvc_makeMQTTInvites( String invitee, NetLaunchInfo nli,
-                                            String[][] topics, byte[][][] packets )
+    public static void dvc_makeMQTTInvites( String invitee, int timestamp,
+                                            NetLaunchInfo nli, String[][] topics,
+                                            byte[][][] packets )
     {
-        dvc_makeMQTTInvites( getJNI().m_ptrGlobals, invitee, nli, topics, packets );
+        dvc_makeMQTTInvites( getJNI().m_ptrGlobals, invitee, timestamp,
+                             nli, topics, packets );
     }
 
     public static void dvc_makeMQTTMessages( String addressee, int gameID,
@@ -770,6 +772,7 @@ public class XwJNI {
     private static native String[] dvc_getMQTTSubTopics( long jniState );
     private static native void dvc_makeMQTTInvites( long jniState,
                                                     String invitee,
+                                                    int timestamp,
                                                     NetLaunchInfo nli,
                                                     String[][] topics,
                                                     byte[][][] packets );

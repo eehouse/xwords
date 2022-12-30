@@ -894,6 +894,10 @@ comms_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
         if ( version >= STREAM_VERS_MSGTIMESTAMP ) {
             msg->createdStamp = stream_getU32( stream );
         }
+        if ( 0 == msg->createdStamp ) {
+            msg->createdStamp = dutil_getCurSeconds( comms->dutil, xwe );
+            XP_LOGFF( "added missing timestamp" );
+        }
 #ifdef DEBUG
         msg->sendCount = 0;
 #endif
@@ -2009,6 +2013,7 @@ sendMsg( CommsCtxt* comms, XWEnv xwe, MsgQueueElem* elem, const CommsConnType fi
                     } else if ( isInvite ) {
                         if ( !!comms->procs.sendInvt ) {
                             NetLaunchInfo* nli = (NetLaunchInfo*)elem->msg;
+                            XP_ASSERT( 0 != elem->createdStamp );
                             nSent = (*comms->procs.sendInvt)( xwe, nli, elem->createdStamp,
                                                               &addr, comms->procs.closure );
                         }
@@ -2019,6 +2024,7 @@ sendMsg( CommsCtxt* comms, XWEnv xwe, MsgQueueElem* elem, const CommsConnType fi
                         logAddr( comms, xwe, &addr, __func__ );
                         XP_UCHAR msgNo[16];
                         formatMsgNo( comms, elem, msgNo, sizeof(msgNo) );
+                        XP_ASSERT( 0 != elem->createdStamp );
                         nSent = (*comms->procs.sendMsg)( xwe, elem->msg, elem->len, msgNo,
                                                          elem->createdStamp, &addr,
                                                          typ, gameid,

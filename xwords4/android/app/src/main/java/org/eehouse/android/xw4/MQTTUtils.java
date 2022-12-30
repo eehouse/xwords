@@ -543,12 +543,12 @@ public class MQTTUtils extends Thread
     }
 
     public static void sendInvite( Context context, String invitee,
-                                   NetLaunchInfo nli )
+                                   int timestamp, NetLaunchInfo nli )
     {
         Log.d( TAG, "sendInvite(invitee: %s, nli: %s)", invitee, nli );
         byte[][][] packets = {null};
         String[][] topics = {null};
-        XwJNI.dvc_makeMQTTInvites( invitee, nli, topics, packets );
+        XwJNI.dvc_makeMQTTInvites( invitee, timestamp, nli, topics, packets );
         addToSendQueue( context, topics[0], packets[0] );
     }
 

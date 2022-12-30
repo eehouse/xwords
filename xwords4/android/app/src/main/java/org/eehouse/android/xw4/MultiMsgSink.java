@@ -161,7 +161,7 @@ public class MultiMsgSink implements TransportProcs {
             case COMMS_CONN_MQTT:
                 target = addr.mqtt_devID;
                 means = InviteMeans.MQTT;
-                MQTTUtils.sendInvite( context, addr.mqtt_devID, nli );
+                MQTTUtils.sendInvite( context, addr.mqtt_devID, timestamp, nli );
                 success = true;
                 break;
             case COMMS_CONN_SMS:
