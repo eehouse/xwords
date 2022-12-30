@@ -260,22 +260,19 @@ addHeaderGameIDAndCmd( XW_DUtilCtxt* dutil, XWEnv xwe, MQTTCmd cmd,
 
     stream_putU32( stream, gameID );
     if ( PROTO_2 <= MQTT_USE_PROTO ) {
-        if ( 0 == timestamp ) {
-            timestamp = dutil_getCurSeconds( dutil, xwe );
-            XP_LOGFF( "replacing timestamp of 0" );
-        }
+        XP_ASSERT(0 != timestamp);
         stream_putU32( stream, timestamp );
     }
 
     stream_putU8( stream, cmd );
 }
 
-
 #ifdef MQTT_GAMEID_TOPICS
 static void
 addProto3HeaderCmd( XW_DUtilCtxt* dutil, XWEnv xwe, MQTTCmd cmd,
                     XP_U32 timestamp, XWStreamCtxt* stream )
 {
+    XP_ASSERT( 0 != timestamp );
     stream_putU8( stream, PROTO_3 );
 
     MQTTDevID myID;
@@ -283,10 +280,6 @@ addProto3HeaderCmd( XW_DUtilCtxt* dutil, XWEnv xwe, MQTTCmd cmd,
     myID = htobe64( myID );
     stream_putBytes( stream, &myID, sizeof(myID) );
 
-    if ( 0 == timestamp ) {
-        timestamp = dutil_getCurSeconds( dutil, xwe );
-        XP_LOGFF( "replacing timestamp of 0" );
-    }
     stream_putU32( stream, timestamp );
 
     stream_putU8( stream, cmd );
