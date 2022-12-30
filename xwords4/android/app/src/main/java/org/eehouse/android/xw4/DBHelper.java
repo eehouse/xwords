@@ -136,7 +136,7 @@ public class DBHelper extends SQLiteOpenHelper {
                 { SERVERROLE,   "INTEGER" },
                 { CONTYPE,      "INTEGER" },
                 { ROOMNAME,     "TEXT" },
-                { RELAYID,      "TEXT" },
+                { RELAYID,      "TEXT" }, // remove me
                 { SEED,         "INTEGER" },
                 { DICTLANG,     "INTEGER" }, // deprecated
                 { ISOCODE,      "TEXT(8)" },
