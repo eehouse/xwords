@@ -528,7 +528,7 @@ dvc_parseMQTTPacket( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* topic,
                 break;
             default:
                 XP_LOGFF( "unknown command %d; dropping message", cmd );
-                XP_ASSERT(0);
+                // XP_ASSERT(0);
             }
         } else {
             XP_LOGFF( "bad proto %d; dropping packet", proto );
