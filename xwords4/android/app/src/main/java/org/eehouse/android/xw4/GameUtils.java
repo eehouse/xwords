@@ -253,6 +253,25 @@ public class GameUtils {
         return getSummary( context, rowid, 0L );
     }
 
+    public static boolean haveGame( Context context, int gameID, int channel )
+    {
+        long[] rows = DBUtils.getRowIDsFor( context, gameID );
+        boolean found = false;
+        for ( long rowid : rows ) {
+            GameSummary summary = getSummary( context, rowid );
+            // Most of the time if we can't open it we assume it matches. A
+            // non-matching game is a same-device thing I'm probably the only
+            // one doing.
+            if ( null == summary || channel == summary.getChannel() ) {
+                found = true;
+                break;
+            }
+        }
+        // Log.d( TAG, "haveGame(gameID=%X, channel=%d) => %b",
+        //        gameID, channel, found );
+        return found;
+    }
+
     public static long dupeGame( Context context, long rowidIn )
     {
         return dupeGame( context, rowidIn, DBUtils.GROUPID_UNSPEC );

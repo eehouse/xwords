@@ -246,6 +246,7 @@ game_makeRematch( const XWGame* oldGame, XWEnv xwe, XW_UtilCtxt* newUtil,
     newGI->gameID = makeGameID( newUtil );
     if ( SERVER_ISCLIENT == newGI->serverRole ) {
         newGI->serverRole = SERVER_ISSERVER; /* we'll be inviting */
+        newGI->forceChannel = 0;
     }
 
     CommsAddrRec* selfAddrP = NULL;
@@ -960,12 +961,10 @@ gi_readFromStream( MPFORMAL XWStreamCtxt* stream, CurGameInfo* gi )
 
     if ( STREAM_VERS_MULTIADDR <= strVersion ) {
         gi->forceChannel = stream_getBits( stream, 2 );
-        /* XP_LOGF( "%s: loaded forceChannel: %d", __func__, gi->forceChannel ); */
     }
-
     gi->gameID = strVersion < STREAM_VERS_BLUETOOTH2 ? 
         stream_getU16( stream ) : stream_getU32( stream );
-
+    // XP_LOGFF( "read forceChannel: %d for gid %X", gi->forceChannel, gi->gameID );
 
     if ( STREAM_VERS_GI_ISO <= strVersion ) {
         stringFromStreamHere( stream, gi->isoCodeStr, VSIZE(gi->isoCodeStr) );
@@ -1039,7 +1038,7 @@ gi_writeToStream( XWStreamCtxt* stream, const CurGameInfo* gi )
     stream_putBits( stream, 1, gi->allowHintRect );
     stream_putBits( stream, 1, gi->confirmBTConnect );
     stream_putBits( stream, 2, gi->forceChannel );
-    /* XP_LOGF( "%s: wrote forceChannel: %d", __func__, gi->forceChannel ); */
+    // XP_LOGFF( "wrote forceChannel: %d for gid %X", gi->forceChannel, gi->gameID );
 
     if ( 0 ) {
 #ifdef STREAM_VERS_BIGBOARD

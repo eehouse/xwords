@@ -290,7 +290,7 @@ public class DUtilCtxt {
     // game in the same app.
     public boolean haveGame( int gameID, int channel )
     {
-        boolean result = DBUtils.haveGame( m_context, gameID );
+        boolean result = GameUtils.haveGame( m_context, gameID, channel );
         Log.d( TAG, "haveGame(%d, %d) => %b", gameID, channel, result );
         return result;
     }

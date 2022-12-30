@@ -45,6 +45,8 @@ import org.eehouse.android.xw4.loc.LocUtils;
 
 /** Info we want to access when the game's closed that's not available
  * in CurGameInfo
+ *
+ * I assume it's Serializable so it can be passed as a parameter.
  */
 public class GameSummary implements Serializable {
     private static final String TAG = GameSummary.class.getSimpleName();
@@ -375,6 +377,14 @@ public class GameSummary implements Serializable {
     public void setGiFlags( int flags )
     {
         m_giFlags = new Integer( flags );
+    }
+
+    public int getChannel()
+    {
+        int flags = giflags();
+        int channel = (flags >> FORCE_CHANNEL_OFFSET) & FORCE_CHANNEL_MASK;
+        // Log.d( TAG, "getChannel(id: %X) => %d", gameID, channel );
+        return channel;
     }
 
     public String summarizePlayer( Context context, long rowid, int indx )
