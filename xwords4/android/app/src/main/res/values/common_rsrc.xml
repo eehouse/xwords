@@ -159,7 +159,6 @@
   <string name="key_na_comms_p2p">key_na_comms_p2p</string>
   <string name="key_na_comms_mqtt">key_na_comms_mqtt</string>
   <string name="key_na_comms_sms">key_na_comms_sms</string>
-  <string name="key_na_comms_relay">key_na_comms_relay</string>
   <string name="key_na_bt_badproto">key_na_bt_badproto</string>
   <string name="key_na_longtap_lookup">key_na_longtap_lookup</string>
   <string name="key_na_perms_phonestate">key_na_perms_phonestate</string>

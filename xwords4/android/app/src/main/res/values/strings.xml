@@ -1643,7 +1643,6 @@
     <string name="bt_invite_title">Bluetooth Invitation</string>
     <!-- Title of phone number picker during invitation to a game via SMS -->
     <string name="sms_invite_title">SMS Invitation</string>
-    <string name="relay_invite_title">Relay Invitation</string>
     <string name="p2p_invite_title">WiFi Direct Invitation</string>
     <!--  -->
     <string name="game_name_label">Game name:</string>
@@ -1667,13 +1666,6 @@
     delivered to the device with that phone number. If CrossWords is
     installed there and has the necessary permissions it will receive
     the invitation and play can begin.</string>
-    <!--  -->
-    <plurals name="invite_relay_desc_fmt">
-        <item quantity="one">Please check the device you want to invite
-      to your new game, then tap “%2$s”.</item>
-        <item quantity="other">Please check the %1$d devices you want to invite
-      to your new game, then tap “%2$s”.</item>
-    </plurals>
     <!--  -->
     <plurals name="invite_p2p_desc_fmt">
         <item quantity="one">Please select the name of the
@@ -1709,12 +1701,6 @@
       phone number?</item>
         <item quantity="other">Are you sure you want to delete the
        %1$d checked phone numbers?</item>
-    </plurals>
-    <plurals name="confirm_clear_relay_fmt">
-        <item quantity="one">Are you sure you want to delete the checked
-      RelayID record?</item>
-        <item quantity="other">Are you sure you want to delete the
-       %1$d checked RelayID records?</item>
     </plurals>
     <plurals name="confirm_clear_bt_fmt">
         <item quantity="one">Are you sure you want to forget the checked
@@ -2268,11 +2254,6 @@
     <string name="confirm_drop_relay_sms">Not all carriers support play
     via Data SMS.</string>
     <string name="button_enable">Enable</string>
-    <!-- Won't be shown much longer if at all.... -->
-    <string name="not_again_comms_relay_depr">The “relay” is a server
-    for passing messages between devices running CrossWords. It’s
-    being replaced by a more modern server called
-    “Mosquitto.”</string>
 
     <!-- Message shown to users as a hint when they enable
          play-via-internet in the connect-via dialog, e.g. when
@@ -2724,4 +2705,11 @@
 
     <!-- Template for the name of the file the archive is saved to -->
     <string name="archive_filename_fmt">CrossWords-backup-%1$s.zip</string>
+
+    <!-- Shown as additional info when client has sent a registration
+         message but not heard back -->
+    <string name="missing_host_fmt">(The host is a Known Player called “%1$s”.)</string>
+
+    <!-- Button offering to show info about invites already sent -->
+    <string name="button_invite_history">History</string>
 </resources>

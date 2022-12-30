@@ -172,8 +172,6 @@ public class ConnViaViewLayout extends LinearLayout {
             switch( typ ) {
             case COMMS_CONN_RELAY:
                 Assert.failDbg();
-                msgID = R.string.not_again_comms_relay_depr;
-                keyID = R.string.key_na_comms_relay;
                 break;
             case COMMS_CONN_SMS:
                 if ( Perms23.haveNBSPerms( getContext() ) ) {

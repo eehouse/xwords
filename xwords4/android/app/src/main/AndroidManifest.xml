@@ -96,14 +96,9 @@
 			  android:label="@string/sms_invite_title"
               android:screenOrientation="sensor"
               />
-    <activity android:name="RelayInviteActivity"
-			  android:label="@string/relay_invite_title"
-              />
     <activity android:name="MQTTInviteActivity"
 			  android:label="@string/mqtt_invite_title"
               />
-
-
     <activity android:name="PrefsActivity"
               android:label="@string/title_prefs"
               android:screenOrientation="sensor"
