@@ -241,15 +241,15 @@ typedef enum { CMD_INVITE, CMD_MSG, CMD_DEVGONE, } MQTTCmd;
 
 // #define PROTO_0 0
 #define PROTO_1 1        /* moves gameID into "header" relay2 knows about */
-#define PROTO_2 2        /* adds timestamp to header */
-#define PROTO_3 3        /* adds multi-message, removes gameID */
+#define _PROTO_2 2       /* never used, and now deprecated (value 2 is) */
+#define PROTO_3 3        /* adds multi-message, removes gameID and timestamp */
 #ifndef MQTT_USE_PROTO
 # define MQTT_USE_PROTO PROTO_1
 #endif
 
 static void
 addHeaderGameIDAndCmd( XW_DUtilCtxt* dutil, XWEnv xwe, MQTTCmd cmd,
-                       XP_U32 gameID, XP_U32 timestamp, XWStreamCtxt* stream )
+                       XP_U32 gameID, XWStreamCtxt* stream )
 {
     stream_putU8( stream, MQTT_USE_PROTO );
 
@@ -259,10 +259,6 @@ addHeaderGameIDAndCmd( XW_DUtilCtxt* dutil, XWEnv xwe, MQTTCmd cmd,
     stream_putBytes( stream, &myID, sizeof(myID) );
 
     stream_putU32( stream, gameID );
-    if ( PROTO_2 <= MQTT_USE_PROTO ) {
-        XP_ASSERT(0 != timestamp);
-        stream_putU32( stream, timestamp );
-    }
 
     stream_putU8( stream, cmd );
 }
@@ -270,17 +266,14 @@ addHeaderGameIDAndCmd( XW_DUtilCtxt* dutil, XWEnv xwe, MQTTCmd cmd,
 #ifdef MQTT_GAMEID_TOPICS
 static void
 addProto3HeaderCmd( XW_DUtilCtxt* dutil, XWEnv xwe, MQTTCmd cmd,
-                    XP_U32 timestamp, XWStreamCtxt* stream )
+                    XWStreamCtxt* stream )
 {
-    XP_ASSERT( 0 != timestamp );
     stream_putU8( stream, PROTO_3 );
 
     MQTTDevID myID;
     dvc_getMQTTDevID( dutil, xwe, &myID );
     myID = htobe64( myID );
     stream_putBytes( stream, &myID, sizeof(myID) );
-
-    stream_putU32( stream, timestamp );
 
     stream_putU8( stream, cmd );
 }
@@ -296,15 +289,13 @@ void
 dvc_makeMQTTInvites( XW_DUtilCtxt* dutil, XWEnv xwe,
                      MsgAndTopicProc proc, void* closure,
                      const MQTTDevID* addressee,
-                     const NetLaunchInfo* nli,
-                     XP_U32 timestamp )
+                     const NetLaunchInfo* nli )
 {
     XP_UCHAR devTopic[64];      /* used by two below */
     formatMQTTDevTopic( addressee, devTopic, VSIZE(devTopic) );
     /* Stream format is identical for both topics */
     XWStreamCtxt* stream = mkStream( dutil );
-    addHeaderGameIDAndCmd( dutil, xwe, CMD_INVITE, nli->gameID,
-                           timestamp, stream );
+    addHeaderGameIDAndCmd( dutil, xwe, CMD_INVITE, nli->gameID, stream );
     nli_saveToStream( nli, stream );
 
 #ifdef MQTT_DEV_TOPICS
@@ -330,8 +321,7 @@ void
 dvc_makeMQTTMessages( XW_DUtilCtxt* dutil, XWEnv xwe,
                       MsgAndTopicProc proc, void* closure,
                       const MQTTDevID* addressee,
-                      XP_U32 gameID, XP_U32 timestamp,
-                      const XP_U8* buf, XP_U16 len )
+                      XP_U32 gameID, const XP_U8* buf, XP_U16 len )
 {
     XP_UCHAR devTopic[64];      /* used by two below */
     formatMQTTDevTopic( addressee, devTopic, VSIZE(devTopic) );
@@ -339,10 +329,7 @@ dvc_makeMQTTMessages( XW_DUtilCtxt* dutil, XWEnv xwe,
 #ifdef MQTT_DEV_TOPICS
     {
         XWStreamCtxt* stream = mkStream( dutil );
-        addHeaderGameIDAndCmd( dutil, xwe, CMD_MSG, gameID, timestamp, stream );
-        if ( PROTO_2 <= MQTT_USE_PROTO ) {
-            stream_putU32VL( stream, len );
-        }
+        addHeaderGameIDAndCmd( dutil, xwe, CMD_MSG, gameID, stream );
         stream_putBytes( stream, buf, len );
         callProc( proc, closure, devTopic, stream );
         stream_destroy( stream, xwe );
@@ -352,7 +339,7 @@ dvc_makeMQTTMessages( XW_DUtilCtxt* dutil, XWEnv xwe,
 #ifdef MQTT_GAMEID_TOPICS
     {
         XWStreamCtxt* stream = mkStream( dutil );
-        addProto3HeaderCmd( dutil, xwe, CMD_MSG, timestamp, stream );
+        addProto3HeaderCmd( dutil, xwe, CMD_MSG, stream );
 
         /* For now, we ship one message per packet. But the receiving code
            should be ready */
@@ -378,19 +365,13 @@ void
 dvc_makeMQTTNoSuchGames( XW_DUtilCtxt* dutil, XWEnv xwe,
                          MsgAndTopicProc proc, void* closure,
                          const MQTTDevID* addressee,
-                         XP_U32 gameID, XP_U32 timestamp )
+                         XP_U32 gameID )
 {
     XP_UCHAR devTopic[64];      /* used by two below */
     formatMQTTDevTopic( addressee, devTopic, VSIZE(devTopic) );
 
-    if ( 0 == timestamp ) {
-        timestamp = dutil_getCurSeconds( dutil, xwe );
-        XP_LOGFF( "replacing timestamp of 0" );
-    }
-
     XWStreamCtxt* stream = mkStream( dutil );
-    addHeaderGameIDAndCmd( dutil, xwe, CMD_DEVGONE, gameID,
-                           timestamp, stream );
+    addHeaderGameIDAndCmd( dutil, xwe, CMD_DEVGONE, gameID, stream );
 #ifdef MQTT_DEV_TOPICS
     callProc( proc, closure, devTopic, stream );
 #endif
@@ -474,7 +455,7 @@ dvc_parseMQTTPacket( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* topic,
 
         XP_U8 proto = 0;
         if ( stream_gotU8( stream, &proto )
-             && (proto == PROTO_1 || proto == PROTO_2 || proto == PROTO_3 ) ) {
+             && (proto == PROTO_1 || proto == PROTO_3 ) ) {
             MQTTDevID senderID;
             stream_getBytes( stream, &senderID, sizeof(senderID) );
             senderID = be64toh( senderID );
@@ -489,18 +470,6 @@ dvc_parseMQTTPacket( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* topic,
                 XP_ASSERT( 0 != gameID );
             }
 
-            XP_U32 timestamp = 0;
-            if ( PROTO_2 <= proto ) {
-                timestamp = stream_getU32( stream );
-#ifdef DEBUG
-                if ( 0 < timestamp ) {
-                    XP_U32 now = dutil_getCurSeconds( dutil, xwe );
-                    XP_LOGFF( "delivery took %ds", now - timestamp );
-                }
-#else
-                XP_USE( timestamp );
-#endif
-            }
             MQTTCmd cmd = stream_getU8( stream );
 
             /* Need to ack even if discarded/malformed */

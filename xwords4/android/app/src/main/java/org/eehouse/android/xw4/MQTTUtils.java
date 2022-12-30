@@ -543,12 +543,12 @@ public class MQTTUtils extends Thread
     }
 
     public static void sendInvite( Context context, String invitee,
-                                   int timestamp, NetLaunchInfo nli )
+                                   NetLaunchInfo nli )
     {
         Log.d( TAG, "sendInvite(invitee: %s, nli: %s)", invitee, nli );
         byte[][][] packets = {null};
         String[][] topics = {null};
-        XwJNI.dvc_makeMQTTInvites( invitee, timestamp, nli, topics, packets );
+        XwJNI.dvc_makeMQTTInvites( invitee, nli, topics, packets );
         addToSendQueue( context, topics[0], packets[0] );
     }
 
@@ -570,13 +570,13 @@ public class MQTTUtils extends Thread
     }
 
     public static int send( Context context, String addressee, int gameID,
-                            int timestamp, byte[] buf )
+                            byte[] buf )
     {
         Log.d( TAG, "send(to:%s, len: %d)", addressee, buf.length );
         Assert.assertTrueNR( 16 == addressee.length() );
         String[][] topics = {null};
         byte[][][] packets = {null};
-        XwJNI.dvc_makeMQTTMessages( addressee, gameID, timestamp, buf, topics, packets );
+        XwJNI.dvc_makeMQTTMessages( addressee, gameID, buf, topics, packets );
         addToSendQueue( context, topics[0], packets[0] );
         return buf.length;
     }

@@ -737,7 +737,7 @@ wrapResults( jobjectArray jTopicsOut, jobjectArray jPacketsOut, MTPData* mtp )
 JNIEXPORT void JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_dvc_1makeMQTTInvites
 ( JNIEnv* env, jclass C, jlong jniGlobalPtr, jstring jAddressee,
-  jint jTimestamp, jobject jnli, jobjectArray jTopicsOut,
+  jobject jnli, jobjectArray jTopicsOut,
   jobjectArray jPacketsOut )
 {
     DVC_HEADER(jniGlobalPtr);
@@ -752,7 +752,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dvc_1makeMQTTInvites
     jstrToDevID( env, jAddressee, &addressee );
 
     dvc_makeMQTTInvites( globalState->dutil, env, msgAndTopicProc, &mtp,
-                         &addressee, &nli, jTimestamp );
+                         &addressee, &nli );
     wrapResults( jTopicsOut, jPacketsOut, &mtp );
 
     DVC_HEADER_END();
@@ -761,7 +761,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dvc_1makeMQTTInvites
 JNIEXPORT void JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_dvc_1makeMQTTMessages
 ( JNIEnv* env, jclass C, jlong jniGlobalPtr, jstring jAddressee,
-  jint jGameID, jint jTimestamp, jbyteArray jmsg,
+  jint jGameID, jbyteArray jmsg,
   jobjectArray jTopicsOut, jobjectArray jPacketsOut )
 {
     LOG_FUNC();
@@ -778,8 +778,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dvc_1makeMQTTMessages
     XP_U16 len = (*env)->GetArrayLength( env, jmsg );
     jbyte* buf = (*env)->GetByteArrayElements( env, jmsg, NULL );
     dvc_makeMQTTMessages( globalState->dutil, env, msgAndTopicProc, &mtp,
-                          &addressee, jGameID, jTimestamp,
-                          (const XP_U8*)buf, len );
+                          &addressee, jGameID, (const XP_U8*)buf, len );
     (*env)->ReleaseByteArrayElements( env, jmsg, buf, 0 );
 
     wrapResults( jTopicsOut, jPacketsOut, &mtp );
@@ -800,7 +799,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dvc_1makeMQTTNoSuchGames
     jstrToDevID( env, jAddressee, &addressee );
 
     dvc_makeMQTTNoSuchGames( globalState->dutil, env, msgAndTopicProc, &mtp,
-                             &addressee, jgameid, 0 );
+                             &addressee, jgameid );
 
     wrapResults( jTopicsOut, jPacketsOut, &mtp );
 
