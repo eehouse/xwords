@@ -643,7 +643,7 @@ cb_feedGame( CursesBoardState* cbState, XP_U32 gameID,
     int nRows = VSIZE( rowids );
     LaunchParams* params = cbState->params;
     gdb_getRowsForGameID( params->pDb, gameID, rowids, &nRows );
-    XP_LOGFF( "found %d rows for gameID %d", nRows, gameID );
+    XP_LOGFF( "found %d rows for gameID %X", nRows, gameID );
     for ( int ii = 0; ii < nRows; ++ii ) {
 #ifdef DEBUG
         bool success =
@@ -1308,7 +1308,7 @@ sendInvite( void* closure, int XP_UNUSED(key) )
     } else if ( addr_hasType( &selfAddr, COMMS_CONN_SMS ) ) {
         linux_sms_invite( params, &nli, selfAddr.u.sms.phone, selfAddr.u.sms.port );
     } else if ( addr_hasType( &selfAddr, COMMS_CONN_MQTT ) ) {
-        mqttc_invite( params, 0, &nli, mqttc_getDevID( params ) );
+        mqttc_invite( params, &nli, mqttc_getDevID( params ) );
 #ifdef XWFEATURE_RELAY
     } else if ( addr_hasType( &selfAddr, COMMS_CONN_RELAY ) ) {
 /* ======= */

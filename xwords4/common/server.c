@@ -237,7 +237,7 @@ static void writeProto( const ServerCtxt* server, XWStreamCtxt* stream,
 #define PICK_NEXT -1
 #define PICK_CUR -2
 
-#define LOG_GAMEID()     XP_LOGFF("gameID: %d", server->vol.gi->gameID )
+#define LOG_GAMEID()     XP_LOGFF("gameID: %X", server->vol.gi->gameID )
 
 #if defined DEBUG && ! defined XWFEATURE_STANDALONE_ONLY
 static char*
@@ -778,7 +778,7 @@ XP_Bool
 server_initClientConnection( ServerCtxt* server, XWEnv xwe )
 {
     XP_Bool result;
-    XP_LOGFF( "gameState: %s; gameID: %d", getStateStr(server->nv.gameState),
+    XP_LOGFF( "gameState: %s; gameID: %X", getStateStr(server->nv.gameState),
               server->vol.gi->gameID );
     CurGameInfo* gi = server->vol.gi;
     XP_U16 nPlayers;
@@ -1702,7 +1702,7 @@ server_do( ServerCtxt* server, XWEnv xwe )
     } else {
         XP_Bool moreToDo = XP_FALSE;
         server->serverDoing = XP_TRUE;
-        XP_LOGFF( "gameState: %s; gameID: %d", getStateStr(server->nv.gameState),
+        XP_LOGFF( "gameState: %s; gameID: %X", getStateStr(server->nv.gameState),
                   server->vol.gi->gameID );
         switch( server->nv.gameState ) {
         case XWSTATE_BEGIN:

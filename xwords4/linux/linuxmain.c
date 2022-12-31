@@ -1436,7 +1436,7 @@ linux_reset( XWEnv xwe, void* closure )
 
 XP_S16
 linux_send( XWEnv XP_UNUSED(xwe), const XP_U8* buf, XP_U16 buflen,
-            const XP_UCHAR* msgNo, XP_U32 createdStamp,
+            const XP_UCHAR* msgNo, XP_U32 XP_UNUSED(createdStamp),
             const CommsAddrRec* addrRec, CommsConnType conType,
             XP_U32 gameID, void* closure )
 {
@@ -1499,7 +1499,7 @@ linux_send( XWEnv XP_UNUSED(xwe), const XP_U8* buf, XP_U16 buflen,
 #endif
 
     case COMMS_CONN_MQTT:
-        nSent = mqttc_send( cGlobals->params, gameID, createdStamp, buf, buflen,
+        nSent = mqttc_send( cGlobals->params, gameID, buf, buflen,
                             &addrRec->u.mqtt.devID );
         break;
 
@@ -1516,7 +1516,7 @@ linux_send( XWEnv XP_UNUSED(xwe), const XP_U8* buf, XP_U16 buflen,
 #ifdef XWFEATURE_COMMS_INVITE
 XP_S16
 linux_send_invt( XWEnv XP_UNUSED(xwe), const NetLaunchInfo* nli,
-                 XP_U32 createdStamp,
+                 XP_U32 XP_UNUSED(createdStamp),
                  const CommsAddrRec* destAddr, void* closure )
 {
     XP_S16 nSent = -1;
@@ -1526,8 +1526,7 @@ linux_send_invt( XWEnv XP_UNUSED(xwe), const NetLaunchInfo* nli,
     for ( XP_U32 st = 0; addr_iter( destAddr, &typ, &st ); ) {
         switch ( typ ) {
         case COMMS_CONN_MQTT:
-            mqttc_invite( cGlobals->params, createdStamp, nli,
-                          &destAddr->u.mqtt.devID );
+            mqttc_invite( cGlobals->params, nli, &destAddr->u.mqtt.devID );
             break;
         case COMMS_CONN_SMS:
             linux_sms_invite( cGlobals->params, nli,

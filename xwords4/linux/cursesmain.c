@@ -1194,7 +1194,7 @@ inviteReceivedCurses( void* closure, const NetLaunchInfo* invite )
         figureDims( aGlobals, &dims );
         cb_newFor( aGlobals->cbState, invite, &dims );
     } else {
-        XP_LOGFF( "Not accepting duplicate invitation (nRowIDs(gameID=%d) was %d",
+        XP_LOGFF( "Not accepting duplicate invitation (nRowIDs(gameID=%X) was %d",
                   invite->gameID, nRowIDs );
     }
 }

@@ -1849,8 +1849,9 @@ removeFromQueue( CommsCtxt* comms, XWEnv xwe, XP_PlayerAddr channelNo, MsgID msg
     CNO_FMT( cbuf, channelNo );
     XP_LOGFF( "(channelNo=%d): remove msgs <= " XP_LD " for %s (queueLen: %d)",
              channelNo, msgID, cbuf, comms->queueLen );
-
+#ifdef DEBUG
     XP_U16 prevLen = comms->queueLen;
+#endif
 
     if ((channelNo == 0) || !!getRecordFor( comms, xwe, NULL, channelNo)) {
 

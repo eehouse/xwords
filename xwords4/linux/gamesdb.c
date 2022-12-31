@@ -285,7 +285,7 @@ gdb_write( XWStreamCtxt* stream, XWEnv XP_UNUSED(xwe), void* closure )
 
     if ( newGame ) {         /* new row; need to insert blob first */
         cGlobals->rowid = selRow;
-        XP_LOGFF( "new game for id %d at row %lld", cGlobals->gi->gameID, selRow );
+        XP_LOGFF( "new game for id %X at row %lld", cGlobals->gi->gameID, selRow );
     } else {
         assert( selRow == cGlobals->rowid );
     }

@@ -302,7 +302,7 @@ logNLI( const NetLaunchInfo* nli, const char* callerFunc, const int callerLine )
 
     XP_UCHAR buf[1024];
     XP_SNPRINTF( buf, VSIZE(buf), "{ctyps: [%s], nPlayersT: %d, nPlayersH: %d, "
-                 "channel: %d, isoCode: '%s', gameID: %d, gameName: %s",
+                 "channel: %d, isoCode: '%s', gameID: %X, gameName: %s",
                  conTypes, nli->nPlayersT, nli->nPlayersH, nli->forceChannel,
                  nli->isoCodeStr, nli->gameID, nli->gameName );
     if ( types_hasType( nli->_conTypes, COMMS_CONN_MQTT ) ) {

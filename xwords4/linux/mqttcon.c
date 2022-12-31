@@ -315,7 +315,7 @@ msgAndTopicProc( void* closure, const XP_UCHAR* topic, const XP_U8* buf, XP_U16 
 }
 
 void
-mqttc_invite( LaunchParams* params, XP_U32 timestamp, const NetLaunchInfo* nli,
+mqttc_invite( LaunchParams* params, const NetLaunchInfo* nli,
               const MQTTDevID* invitee )
 {
     MQTTConStorage* storage = getStorage( params );
@@ -324,21 +324,20 @@ mqttc_invite( LaunchParams* params, XP_U32 timestamp, const NetLaunchInfo* nli,
     XP_LOGFF( "need to send to %s", formatMQTTDevID(invitee, buf, sizeof(buf) ) );
     XP_ASSERT( 16 == strlen(buf) );
 #endif
-    XP_USE( timestamp );
 
     dvc_makeMQTTInvites( params->dutil, NULL_XWE, msgAndTopicProc, storage,
-                         invitee, nli, 0 );
+                         invitee, nli );
 }
 
 XP_S16
-mqttc_send( LaunchParams* params, XP_U32 gameID, XP_U32 timestamp,
+mqttc_send( LaunchParams* params, XP_U32 gameID,
             const XP_U8* buf, XP_U16 len, const MQTTDevID* addressee )
 {
     MQTTConStorage* storage = getStorage( params );
 
     dvc_makeMQTTMessages( params->dutil, NULL_XWE,
                           msgAndTopicProc, storage,
-                          addressee, gameID, timestamp, buf, len );
+                          addressee, gameID, buf, len );
     return len;
 }
 
@@ -348,5 +347,5 @@ mqttc_notifyGameGone( LaunchParams* params, const MQTTDevID* addressee, XP_U32 g
     MQTTConStorage* storage = getStorage( params );
     dvc_makeMQTTNoSuchGames( params->dutil, NULL_XWE,
                              msgAndTopicProc, storage,
-                             addressee, gameID, 0 );
+                             addressee, gameID );
 }

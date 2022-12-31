@@ -90,7 +90,7 @@ makeGameID( XW_UtilCtxt* XP_UNUSED_DBG(util) )
            postgres DB where INTEGER is apparently a signed 32-bit */
         gameID &= 0x7FFFFFFF;
     }
-    LOG_RETURNF( "%x/%d", gameID, gameID );
+    LOG_RETURNF( "%X/%d", gameID, gameID );
     return gameID;
 }
 
