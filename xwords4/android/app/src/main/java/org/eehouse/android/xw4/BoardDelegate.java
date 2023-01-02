@@ -2298,7 +2298,6 @@ public class BoardDelegate extends DelegateBase
         runOnUiThread( new Runnable() {
                 @Override
                 public void run() {
-                    Assert.assertTrueNR( m_jniGamePtr.isRetained() );
                     if ( m_jniGamePtr.isRetained() ) {
                         boolean hasPending = 0 < XwJNI.
                             comms_countPendingPackets( m_jniGamePtr );
@@ -2307,6 +2306,8 @@ public class BoardDelegate extends DelegateBase
                                           hasPending, inArchiveGroup() )
                             .configure( onDone, BoardDelegate.this );
                         show( mGameOverAlert );
+                    } else {
+                        Log.e( TAG, "gamePtr not retained" );
                     }
                 }
             } );
