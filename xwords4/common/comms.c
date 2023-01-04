@@ -35,7 +35,6 @@
 #include "knownplyr.h"
 #include "device.h"
 #include "nli.h"
-#include "device.h"
 
 #define HEARTBEAT_NONE 0
 
@@ -271,14 +270,10 @@ static const char* relayCmdToStr( XWRELAY_Cmd cmd );
 static void printQueue( const CommsCtxt* comms );
 static void logAddr( const CommsCtxt* comms, XWEnv xwe,
                      const CommsAddrRec* addr, const char* caller );
-/* static void logAddrs( const CommsCtxt* comms, XWEnv xwe, */
-/*                       const char* caller ); */
-
 #else
 # define ASSERT_ADDR_OK(addr)
 # define printQueue( comms )
 # define logAddr( comms, xwe, addr, caller)
-# define logAddrs( comms, caller )
 # define listRecs( comms, caller )
 #endif  /* def DEBUG */
 
@@ -446,7 +441,6 @@ comms_make( MPFORMAL XWEnv xwe, XW_UtilCtxt* util, XP_Bool isServer,
 #endif
 
     if ( !!selfAddr ) {
-        logAddr( comms, xwe, selfAddr, __func__ );
         augmentSelfAddr( comms, xwe, selfAddr );
     }
     if ( !!hostAddr ) {
@@ -490,30 +484,6 @@ cleanupAddrRecs( CommsCtxt* comms )
     }
     comms->recs = (AddressRecord*)NULL;
 } /* cleanupAddrRecs */
-
-/* static void */
-/* removeAddrRec( CommsCtxt* comms, XWEnv XP_UNUSED_DBG(xwe), AddressRecord* rec ) */
-/* { */
-/*     XP_LOGFF( TAGFMT(%p), TAGPRMS, rec ); */
-/* #ifdef DEBUG */
-/*     logAddrs( comms, xwe, "BEFORE" ); */
-/*     XP_U16 nBefore = countAddrRecs( comms ); */
-/* #endif */
-/*     AddressRecord** curp = &comms->recs; */
-/*     while ( NULL != *curp ) { */
-/*         if ( rec == *curp ) { */
-/*             *curp = rec->next; */
-/*             XP_FREE( comms->mpool, rec ); */
-/*             break; */
-/*         } */
-/*         curp = &(*curp)->next; */
-/*     } */
-/* #ifdef DEBUG */
-/*     XP_U16 nAfter = countAddrRecs( comms ); */
-/*     XP_ASSERT( (nAfter + 1) == nBefore ); */
-/*     logAddrs( comms, xwe, "AFTER" ); */
-/* #endif */
-/* } */
 
 void
 comms_resetSame( CommsCtxt* comms, XWEnv xwe )
@@ -829,7 +799,6 @@ comms_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
         comms->channelSeed = 0;
     } else {
         comms->channelSeed = stream_getU16( stream );
-        // CNO_FMT( cbuf, comms->channelSeed );
     }
     if ( STREAM_VERS_COMMSBACKOFF <= version ) {
         comms->resendBackoff = stream_getU16( stream );
@@ -999,10 +968,8 @@ sendConnect( CommsCtxt* comms, XWEnv xwe
 #endif
              )
 {
-    // CommsAddrRec addr = comms->selfAddr;
     CommsConnType typ;
     for ( XP_U32 st = 0; addr_iter( &comms->selfAddr, &typ, &st ); ) {
-        // addr._conTypes = typ;
         switch( typ ) {
 #ifdef XWFEATURE_RELAY
         case COMMS_CONN_RELAY:
@@ -1087,7 +1054,7 @@ addrToStreamOne( XWStreamCtxt* stream, CommsConnType typ,
         break;
     default:
         XP_LOGFF( "unexpected typ: %s", ConnType2Str(typ) );
-        XP_ASSERT(0);           /* firing */
+        XP_ASSERT(0);
         break;
     }
 } /* addrToStreamOne */
@@ -1252,8 +1219,10 @@ augmentSelfAddr( CommsCtxt* comms, XWEnv xwe, const CommsAddrRec* addr )
     logAddr( comms, xwe, addr, __func__ );
     XP_ASSERT( comms != NULL );
 
+#ifdef XWFEATURE_RELAY
     XP_Bool addingRelay = addr_hasType( addr, COMMS_CONN_RELAY )
         && ! addr_hasType( &comms->selfAddr, COMMS_CONN_RELAY );
+#endif
 
     CommsAddrRec tmp = comms->selfAddr;
     augmentAddrIntrnl( comms, &tmp, addr, XP_TRUE );
@@ -1265,14 +1234,13 @@ augmentSelfAddr( CommsCtxt* comms, XWEnv xwe, const CommsAddrRec* addr )
 #ifdef COMMS_HEARTBEAT
     setDoHeartbeat( comms );
 #endif
+#ifdef XWFEATURE_RELAY
     if ( addingRelay ) {
         XP_ASSERT(0);
-        sendConnect( comms, xwe
-#ifdef XWFEATURE_RELAY
-                     , XP_TRUE
-#endif
+        sendConnect( comms, xwe , XP_TRUE
                      );
     }
+#endif
 } /* comms_setHostAddr */
 
 void
@@ -3485,18 +3453,6 @@ logAddr( const CommsCtxt* comms, XWEnv xwe,
         stream_destroy( stream, xwe );
     }
 }
-
-/* static void  */
-/* logAddrs( const CommsCtxt* comms, XWEnv xwe, const char* caller ) */
-/* { */
-/*     const AddressRecord* rec = comms->recs; */
-/*     while ( !!rec ) { */
-/*         CNO_FMT( cbuf, rec->channelNo ); */
-/*         XP_LOGFF( TAGFMT() "%s", TAGPRMS, cbuf ); */
-/*         logAddr( comms, xwe, &rec->addr, caller ); */
-/*         rec = rec->next; */
-/*     } */
-/* } */
 #endif
 
 static void

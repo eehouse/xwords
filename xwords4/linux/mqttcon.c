@@ -164,42 +164,6 @@ handle_gotmsg( GIOChannel* source, GIOCondition XP_UNUSED(condition), gpointer d
     return TRUE;
 } /* handle_gotmsg */
 
-/* static bool */
-/* postMsg( MQTTConStorage* storage, XWStreamCtxt* stream, XP_U32 gameID, */
-/*          const MQTTDevID* invitee ) */
-/* { */
-/*     XP_ASSERT(0);               /\* I need to go away! *\/ */
-/*     const XP_U8* bytes = stream_getPtr( stream ); */
-/*     XP_U16 len = stream_getSize( stream ); */
-
-/*     int mid; */
-
-/* #ifdef DEBUG */
-/*     XP_UCHAR* sum = dutil_md5sum( storage->params->dutil, NULL_XWE, bytes, len ); */
-/*     XP_LOGFF( "sending %d bytes with sum %s", len, sum ); */
-/*     XP_FREEP( storage->params->mpool, &sum ); */
-/* #endif */
-
-/*     XP_UCHAR topicStorage[128]; */
-/*     XP_UCHAR* topics[4]; */
-/*     XP_U16 nTopics = VSIZE(topics); */
-/*     dvc_getMQTTPubTopics( storage->params->dutil, NULL_XWE, */
-/*                           invitee, gameID, topicStorage, VSIZE(topicStorage), */
-/*                           &nTopics, topics ); */
-
-/*     bool success = XP_TRUE; */
-/*     for ( int ii = 0; success && ii < nTopics; ++ii ) { */
-/*         int err = mosquitto_publish( storage->mosq, &mid, topics[ii], */
-/*                                      len, bytes, DEFAULT_QOS, true ); */
-/*         XP_LOGFF( "mosquitto_publish(topic=%s) => %s; mid=%d", topics[ii], */
-/*                   mosquitto_strerror(err), mid ); */
-/*         success = 0 == err; */
-/*     } */
-
-/*     stream_destroy( stream, NULL_XWE ); */
-/*     return success; */
-/* } */
-
 static bool
 postOne( MQTTConStorage* storage, const XP_UCHAR* topic, const XP_U8* buf, XP_U16 len )
 {

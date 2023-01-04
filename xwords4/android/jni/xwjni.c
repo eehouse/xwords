@@ -667,7 +667,6 @@ JNIEXPORT jobjectArray JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_dvc_1getMQTTSubTopics
 ( JNIEnv* env, jclass C, jlong jniGlobalPtr )
 {
-    LOG_FUNC();
     jobjectArray result = NULL;
     DVC_HEADER(jniGlobalPtr);
 
@@ -682,11 +681,8 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dvc_1getMQTTSubTopics
     result = makeStringArray( env, nTopics, (const XP_UCHAR* const*)topics );
 
     DVC_HEADER_END();
-    LOG_RETURNF( "%p", result );
     return result;
 }
-
-
 
 typedef struct _MTPData {
     JNIEnv* env;
@@ -1461,7 +1457,6 @@ initGameGlobals( JNIEnv* env, JNIState* state, jobject jutil, jobject jprocs )
 {
     AndGameGlobals* globals = &state->globals;
     globals->gi = (CurGameInfo*)XP_CALLOC( state->mpool, sizeof(*globals->gi) );
-    // gi_copy( MPPARM(state->mpool) globals->gi, globals.util->gameInfo );
     if ( !!jutil ) {
         XP_ASSERT( !globals->util );
         globals->util = makeUtil( MPPARM(state->mpool) env,
@@ -1481,7 +1476,6 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeRematch
 ( JNIEnv* env, jclass C, GamePtrType gamePtr, GamePtrType gamePtrNew,
   jobject jutil, jobject jcp, jstring jGameName )
 {
-    LOG_FUNC();
     XWJNI_START_GLOBALS(gamePtr);
 
     JNIState* oldState = state; /* state about to go out-of-scope */
@@ -1497,9 +1491,8 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeRematch
                       &state->game, gameName );
     (*env)->ReleaseStringUTFChars( env, jGameName, gameName );
 
+    XWJNI_END();                /* matches second XWJNI_START_GLOBALS! */
     XWJNI_END();
-    XWJNI_END();
-    LOG_RETURN_VOID();
 }
 
 JNIEXPORT jboolean JNICALL
@@ -2298,7 +2291,6 @@ JNIEXPORT jobject JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_comms_1getHostAddr
 (JNIEnv* env, jclass C, GamePtrType gamePtr )
 {
-    LOG_FUNC();
     jobject jaddr = NULL;
     XWJNI_START(gamePtr);
     XP_ASSERT( state->game.comms );
@@ -2698,26 +2690,6 @@ Java_org_eehouse_android_xw4_jni_XwJNI_comms_1invite
     }
     XWJNI_END();
 }
-
-# if 0
-JNIEXPORT jobjectArray JNICALL
-Java_org_eehouse_android_xw4_jni_XwJNI_comms_1getInvites
-( JNIEnv* env, jclass C, GamePtrType gamePtr )
-{
-    jobjectArray result = NULL;
-    XWJNI_START_GLOBALS(gamePtr);
-    CommsCtxt* comms = state->game.comms;
-    XP_ASSERT( NULL != comms );
-    if ( NULL != comms ) {
-        CommsAddrRec inviteRecs[4];
-        XP_U16 nInvites = VSIZE(inviteRecs);
-        comms_getInvited( comms, env, &nInvites, inviteRecs );
-        result = makeAddrArray( env, nInvites, inviteRecs );
-    }
-    XWJNI_END();
-    return result;
-}
-# endif
 #endif
 
 JNIEXPORT void JNICALL

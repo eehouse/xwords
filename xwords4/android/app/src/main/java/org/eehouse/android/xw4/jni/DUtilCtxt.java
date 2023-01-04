@@ -249,8 +249,6 @@ public class DUtilCtxt {
         String result = isRobot
             ? CommonPrefs.getDefaultRobotName( m_context )
             : CommonPrefs.getDefaultPlayerName( m_context, posn );
-        Log.d( TAG, "getUsername(posn=%d; isLocal=%b, isRobot=%b) => %s",
-               posn, isLocal, isRobot, result );
         return result;
     }
 
@@ -291,7 +289,6 @@ public class DUtilCtxt {
     public boolean haveGame( int gameID, int channel )
     {
         boolean result = GameUtils.haveGame( m_context, gameID, channel );
-        Log.d( TAG, "haveGame(%d, %d) => %b", gameID, channel, result );
         return result;
     }
 

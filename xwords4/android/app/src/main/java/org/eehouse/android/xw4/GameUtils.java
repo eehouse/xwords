@@ -437,7 +437,8 @@ public class GameUtils {
                         CommsAddrRec selfAddr = CommsAddrRec.getSelfAddr( context, gi );
                         gamePtr = XwJNI.initNew( gi, selfAddr, (CommsAddrRec)null,
                                                  (UtilCtxt)null, (DrawCtx)null,
-                                                 CommonPrefs.get(context), null );
+                                                 CommonPrefs.get(context),
+                                                 (TransportProcs)null );
                     }
                 }
             }

@@ -143,50 +143,6 @@ abstract class XWServiceHelper {
                                                       nli.gameID() );
         }
         return true;
-
-        // boolean success = false;
-        // if ( !nli.isValid() ) {
-        //     Log.d( TAG, "invalid nli" );
-        // } else if ( ! checkNotInFlight( nli ) ) {
-        //     Log.e( TAG, "checkNotInFlight() => false" );
-        // } else {
-        //     success = true;
-        // }
-
-        // if ( success ) {
-        //     Map<Long, Integer> rowids = DBUtils.getRowIDsAndChannels( mContext, nli.gameID() );
-        //     // Accept only if there isn't already a game with the channel
-        //     for ( long rowid : rowids.keySet() ) {
-        //         if ( rowids.get( rowid ) == nli.forceChannel ) {
-        //             if ( BuildConfig.DEBUG ) {
-        //                 DbgUtils.showf( mContext, "Dropping duplicate invite" );
-        //             }
-        //             success = false;
-        //             break;
-        //         }
-        //     }
-
-        //     if ( success ) {
-        //         if ( DictLangCache.haveDict( mContext, nli.isoCode(), nli.dict ) ) {
-        //             long rowid = GameUtils.makeNewMultiGame2( mContext, nli,
-        //                                                       getSink( 0 ),
-        //                                                       getUtilCtxt() );
-
-        //             if ( null != nli.gameName && 0 < nli.gameName.length() ) {
-        //                 DBUtils.setName( mContext, rowid, nli.gameName );
-        //             }
-
-        //             postNotification( device, nli.gameID(), rowid );
-        //         } else {
-        //             Intent intent = MultiService
-        //                 .makeMissingDictIntent( mContext, nli, dfo );
-        //             MultiService.postMissingDictNotification( mContext, intent,
-        //                                                       nli.gameID() );
-        //         }
-        //     }
-        // }
-        // Log.d( TAG, "handleInvitation() => %b", success );
-        // return success;
     }
 
     private UtilCtxt m_utilCtxt;

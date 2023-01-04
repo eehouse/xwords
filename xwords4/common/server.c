@@ -4231,10 +4231,9 @@ server_receiveMessage( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* incoming )
         }
         break;
     case XWPROTO_CLIENT_SETUP:
-        accepted = XWSTATE_NONE == server->nv.gameState && !isServer;
-        if ( accepted ) {
-            accepted = client_readInitialMessage( server, xwe, incoming );
-        }
+        accepted = !isServer
+            && XWSTATE_NONE == server->nv.gameState
+            && client_readInitialMessage( server, xwe, incoming );
         break;
 #ifdef XWFEATURE_CHAT
     case XWPROTO_CHAT:

@@ -27,6 +27,7 @@ import java.util.Arrays;
 
 import org.eehouse.android.xw4.Assert;
 import org.eehouse.android.xw4.BuildConfig;
+import org.eehouse.android.xw4.DbgUtils;
 import org.eehouse.android.xw4.Log;
 import org.eehouse.android.xw4.NetLaunchInfo;
 import org.eehouse.android.xw4.Quarantine;
@@ -170,6 +171,8 @@ public class XwJNI {
     public static void dvc_makeMQTTNoSuchGames( String addressee, int gameID,
                                                 String[][] topics, byte[][][] packets )
     {
+        Log.d( TAG, "dvc_makeMQTTNoSuchGames(to: %s, gameID: %X)", addressee, gameID );
+        DbgUtils.printStack( TAG );
         dvc_makeMQTTNoSuchGames( getJNI().m_ptrGlobals, addressee, gameID,
                                  topics, packets );
     }
@@ -323,7 +326,6 @@ public class XwJNI {
         initNew( CurGameInfo gi, CommsAddrRec selfAddr, CommsAddrRec hostAddr,
                  UtilCtxt util, DrawCtx draw, CommonPrefs cp, TransportProcs procs )
     {
-        Log.d( TAG, "initNew(self: %s; host: %s)", selfAddr, hostAddr );
         // Only standalone doesn't provide self address
         Assert.assertTrueNR( null != selfAddr || gi.serverRole == DeviceRole.SERVER_STANDALONE );
         // Only client should be providing host addr

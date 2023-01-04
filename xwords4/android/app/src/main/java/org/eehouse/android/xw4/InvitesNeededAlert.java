@@ -51,6 +51,8 @@ class InvitesNeededAlert {
         Wrapper( Callbacks callbacks, GamePtr gamePtr )
         {
             mCallbacks = callbacks;
+            // PENGING should be calling gamePtr.retain()? Would need to
+            // release then somewhere
             mGamePtr = gamePtr;
         }
 

@@ -749,17 +749,17 @@ public class MQTTUtils extends Thread
     public static void handleCtrlReceived( Context context, byte[] buf )
     {
         try {
-        JSONObject obj = new JSONObject( new String(buf) );
-        String msg = obj.optString( "msg", null );
-        if ( null != msg ) {
-            String title = obj.optString( "title", null );
-            if ( null == title ) {
-                title = LocUtils.getString( context, R.string.remote_msg_title );
+            JSONObject obj = new JSONObject( new String(buf) );
+            String msg = obj.optString( "msg", null );
+            if ( null != msg ) {
+                String title = obj.optString( "title", null );
+                if ( null == title ) {
+                    title = LocUtils.getString( context, R.string.remote_msg_title );
+                }
+                Intent alertIntent = GamesListDelegate.makeAlertIntent( context, msg );
+                int code = msg.hashCode() ^ title.hashCode();
+                Utils.postNotification( context, alertIntent, title, msg, code );
             }
-            Intent alertIntent = GamesListDelegate.makeAlertIntent( context, msg );
-            int code = msg.hashCode() ^ title.hashCode();
-            Utils.postNotification( context, alertIntent, title, msg, code );
-        }
         } catch ( JSONException je ) {
             Log.e( TAG, "handleCtrlReceived() ex: %s", je );
         }

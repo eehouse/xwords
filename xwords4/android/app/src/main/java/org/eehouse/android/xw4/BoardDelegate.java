@@ -710,7 +710,6 @@ public class BoardDelegate extends DelegateBase
     // straight to asking for the permission.
     private void callInviteChoices()
     {
-        Log.d( TAG, "callInviteChoices()" );
         if ( !Perms23.NBSPermsInManifest( m_activity ) ) {
             showInviteChoicesThen();
         } else {

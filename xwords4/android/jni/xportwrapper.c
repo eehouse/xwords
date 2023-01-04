@@ -211,9 +211,8 @@ makeXportProcs( MPFORMAL JNIEnv* env,
 #endif
                 jobject jxport )
 {
-    AndTransportProcs* aprocs = NULL;
-
-    aprocs = (AndTransportProcs*)XP_CALLOC( mpool, sizeof(*aprocs) );
+    AndTransportProcs* aprocs = (AndTransportProcs*)
+        XP_CALLOC( mpool, sizeof(*aprocs) );
 #ifdef MAP_THREAD_TO_ENV
     aprocs->ti = ti;
 #endif

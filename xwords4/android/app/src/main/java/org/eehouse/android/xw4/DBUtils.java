@@ -881,8 +881,8 @@ public class DBUtils {
             }
             cursor.close();
         }
-        if ( 1 < result.length ) {
-            Log.i( TAG, "getRowIDsFor(%x)=>length %d array", gameID,
+        if ( 1 != result.length ) {
+            Log.d( TAG, "getRowIDsFor(gameID=%X)=>length %d array", gameID,
                    result.length );
         }
         return result;
