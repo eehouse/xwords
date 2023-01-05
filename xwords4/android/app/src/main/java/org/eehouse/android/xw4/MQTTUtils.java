@@ -46,6 +46,7 @@ import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.jni.CommsAddrRec.ConnExpl;
 import org.eehouse.android.xw4.jni.CommsAddrRec;
 import org.eehouse.android.xw4.jni.XwJNI.GamePtr;
+import org.eehouse.android.xw4.jni.XwJNI.TopicsAndPackets;
 import org.eehouse.android.xw4.jni.XwJNI;
 import org.eehouse.android.xw4.loc.LocUtils;
 
@@ -546,10 +547,8 @@ public class MQTTUtils extends Thread
                                    NetLaunchInfo nli )
     {
         Log.d( TAG, "sendInvite(invitee: %s, nli: %s)", invitee, nli );
-        byte[][][] packets = {null};
-        String[][] topics = {null};
-        XwJNI.dvc_makeMQTTInvites( invitee, nli, topics, packets );
-        addToSendQueue( context, topics[0], packets[0] );
+        TopicsAndPackets tap = XwJNI.dvc_makeMQTTInvites( invitee, nli );
+        addToSendQueue( context, tap );
     }
 
     // This goes away? comms_invite() is already getting called. PENDING
@@ -563,10 +562,8 @@ public class MQTTUtils extends Thread
     private static void notifyNotHere( Context context, String addressee,
                                        int gameID )
     {
-        String[][] topics = {null};
-        byte[][][] packets = {null};
-        XwJNI.dvc_makeMQTTNoSuchGames( addressee, gameID, topics, packets );
-        addToSendQueue( context, topics[0], packets[0] );
+        TopicsAndPackets tap = XwJNI.dvc_makeMQTTNoSuchGames( addressee, gameID );
+        addToSendQueue( context, tap );
     }
 
     public static int send( Context context, String addressee, int gameID,
@@ -574,27 +571,23 @@ public class MQTTUtils extends Thread
     {
         Log.d( TAG, "send(to:%s, len: %d)", addressee, buf.length );
         Assert.assertTrueNR( 16 == addressee.length() );
-        String[][] topics = {null};
-        byte[][][] packets = {null};
-        XwJNI.dvc_makeMQTTMessages( addressee, gameID, buf, topics, packets );
-        addToSendQueue( context, topics[0], packets[0] );
+        TopicsAndPackets tap = XwJNI.dvc_makeMQTTMessages( addressee, gameID, buf );
+        addToSendQueue( context, tap );
         return buf.length;
     }
 
-    private static void addToSendQueue( Context context, String[] topics, byte[][] packets )
+    private static void addToSendQueue( Context context, TopicsAndPackets tap )
     {
         MQTTUtils instance = getOrStart( context );
         if ( null != instance ) {
-            instance.enqueue( topics, packets );
+            instance.enqueue( tap.topics, tap.packets );
         }
     }
 
     public static void gameDied( Context context, String devID, int gameID )
     {
-        String[][] topics = {null};
-        byte[][][] packets = {null};
-        XwJNI.dvc_makeMQTTNoSuchGames( devID, gameID, topics, packets );
-        addToSendQueue( context, topics[0], packets[0] );
+        TopicsAndPackets tap = XwJNI.dvc_makeMQTTNoSuchGames( devID, gameID );
+        addToSendQueue( context, tap );
     }
 
     public static void ackMessage( Context context, int gameID,
