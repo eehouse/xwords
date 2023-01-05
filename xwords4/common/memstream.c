@@ -407,8 +407,11 @@ mem_stream_open( XWStreamCtxt* p_sctx )
 {
     MemStreamCtxt* stream = (MemStreamCtxt*)p_sctx;
 
+    XP_ASSERT( stream->nBytesWritten == 0);
     stream->nBytesWritten = 0;
+    XP_ASSERT( stream->curReadPos == START_OF_STREAM );
     stream->curReadPos = START_OF_STREAM;
+    XP_ASSERT( stream->curWritePos == START_OF_STREAM );
     stream->curWritePos = START_OF_STREAM;
 } /* mem_stream_open */
 
