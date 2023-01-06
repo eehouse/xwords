@@ -308,7 +308,7 @@ dvc_makeMQTTInvites( XW_DUtilCtxt* dutil, XWEnv xwe,
                               "%s/%X", devTopic, nli->gameID );
     XP_ASSERT( siz < VSIZE(gameTopic) );
     XP_USE(siz);
-    callProc( proc, closure, devTopic, stream );
+    callProc( proc, closure, gameTopic, stream );
 #endif
 
     stream_destroy( stream, xwe );
