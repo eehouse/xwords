@@ -2722,6 +2722,7 @@ main( int argc, char** argv )
             // isServer = XP_TRUE; /* implicit */
             break;
 #endif
+#ifdef XWFEATURE_DIRECTIP
         case CMD_HOSTIP:
             mainParams.connInfo.ip.hostName = optarg;
             types_addType( &mainParams.conTypes, COMMS_CONN_IP_DIRECT );
@@ -2734,6 +2735,7 @@ main( int argc, char** argv )
             mainParams.connInfo.ip.myPort = atoi(optarg);
             types_addType( &mainParams.conTypes, COMMS_CONN_IP_DIRECT );
             break;
+#endif
         case CMD_DICT:
             trimDictPath( optarg, dictbuf, VSIZE(dictbuf), &path, &dict );
             replaceStringIfDifferent( mainParams.mpool, &mainParams.pgi.dictName,
