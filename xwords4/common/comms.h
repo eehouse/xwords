@@ -160,11 +160,6 @@ CommsCtxt* comms_make( MPFORMAL XWEnv xwe, XW_UtilCtxt* util,
 #endif
                        );
 
-void comms_reset( CommsCtxt* comms, XWEnv xwe, XP_Bool isServer
-#ifdef XWFEATURE_RELAY
-                  , XP_U16 nPlayersHere, XP_U16 nPlayersTotal
-#endif
-                  );
 void comms_resetSame( CommsCtxt* comms, XWEnv xwe );
 
 void comms_destroy( CommsCtxt* comms, XWEnv xwe );

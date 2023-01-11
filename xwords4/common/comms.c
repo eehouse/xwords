@@ -536,76 +536,7 @@ cleanupAddrRecs( CommsCtxt* comms )
     comms->recs = (AddressRecord*)NULL;
 } /* cleanupAddrRecs */
 
-void
-comms_resetSame( CommsCtxt* comms, XWEnv xwe )
-{
-    comms_reset( comms, xwe, comms->isServer
 #ifdef XWFEATURE_RELAY
-                 , comms->rr.nPlayersHere, comms->rr.nPlayersTotal
-#endif
-                 );
-}
-
-static void
-reset_internal( CommsCtxt* comms, XWEnv xwe, XP_Bool isServer
-#ifdef XWFEATURE_RELAY
-                , XP_U16 nPlayersHere, XP_U16 nPlayersTotal,
-                XP_Bool resetRelay
-#endif
-                )
-{
-    LOG_FUNC();
-#ifdef XWFEATURE_RELAY
-    if ( resetRelay ) {
-        relayDisconnect( comms, xwe );
-    }
-#else
-    XP_USE(xwe);
-#endif
-
-    cleanupInternal( comms );
-    comms->isServer = isServer;
-
-    cleanupAddrRecs( comms );
-
-    if ( 0 != comms->nextChannelNo ) {
-        XP_LOGFF( "comms->nextChannelNo: %d", comms->nextChannelNo );
-    }
-    /* This tends to fire when games reconnect to the relay after the DB's
-       been wiped and connect in a different order from that in which they did
-       originally. So comment it out. */
-    // XP_ASSERT( 0 == comms->nextChannelNo );
-    // comms->nextChannelNo = 0;
-#ifdef XWFEATURE_RELAY
-    if ( resetRelay ) {
-        comms->channelSeed = 0;
-    }
-#endif
-    comms->connID = CONN_ID_NONE;
-#ifdef XWFEATURE_RELAY
-    if ( resetRelay ) {
-        init_relay( comms, xwe, nPlayersHere, nPlayersTotal );
-    }
-#endif
-    LOG_RETURN_VOID();
-} /* reset_internal */
-
-void
-comms_reset( CommsCtxt* comms, XWEnv xwe, XP_Bool isServer
-#ifdef XWFEATURE_RELAY
-             , XP_U16 nPlayersHere, XP_U16 nPlayersTotal
-#endif
-             )
-{
-    reset_internal( comms, xwe, isServer
-#ifdef XWFEATURE_RELAY
-                    , nPlayersHere, nPlayersTotal, XP_TRUE
-#endif
-                    );
-}
-
-#ifdef XWFEATURE_RELAY
-
 static XP_Bool
 p_comms_resetTimer( void* closure, XWEnv xwe, XWTimerReason XP_UNUSED_DBG(why) )
 {

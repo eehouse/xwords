@@ -544,7 +544,6 @@ public class XwJNI {
     // Comms
     public static native void comms_start( GamePtr gamePtr );
     public static native void comms_stop( GamePtr gamePtr );
-    public static native void comms_resetSame( GamePtr gamePtr );
     public static native CommsAddrRec comms_getSelfAddr( GamePtr gamePtr );
     public static native CommsAddrRec comms_getHostAddr( GamePtr gamePtr );
     public static native CommsAddrRec[] comms_getAddrs( GamePtr gamePtr );

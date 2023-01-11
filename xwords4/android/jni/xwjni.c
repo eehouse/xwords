@@ -2265,17 +2265,6 @@ Java_org_eehouse_android_xw4_jni_XwJNI_comms_1stop
     XWJNI_END();
 }
 
-JNIEXPORT void JNICALL
-Java_org_eehouse_android_xw4_jni_XwJNI_comms_1resetSame
-( JNIEnv* env, jclass C, GamePtrType gamePtr )
-{
-    XWJNI_START(gamePtr);
-    if ( !!state->game.comms ) {
-        comms_resetSame( state->game.comms, env );
-    }
-    XWJNI_END();
-}
-
 JNIEXPORT jobject JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_comms_1getSelfAddr
 (JNIEnv* env, jclass C, GamePtrType gamePtr )

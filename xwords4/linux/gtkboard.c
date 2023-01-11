@@ -76,8 +76,6 @@
 
 /* static guint gtkSetupClientSocket( GtkGameGlobals* globals, int sock ); */
 static void setCtrlsForTray( GtkGameGlobals* globals );
-static void new_game( GtkWidget* widget, GtkGameGlobals* globals );
-static XP_Bool new_game_impl( GtkGameGlobals* globals, XP_Bool fireConnDlg );
 static void setZoomButtons( GtkGameGlobals* globals, XP_Bool* inOut );
 static void disenable_buttons( GtkGameGlobals* globals );
 static GtkWidget* addButton( GtkWidget* hbox, gchar* label, GCallback func, 
@@ -829,36 +827,6 @@ final_scores( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
     /* the end game listener will take care of printing the final scores */
 } /* final_scores */
 
-static XP_Bool
-new_game_impl( GtkGameGlobals* globals, XP_Bool fireConnDlg )
-{
-    XP_Bool success = XP_FALSE;
-    CommonGlobals* cGlobals = &globals->cGlobals;
-
-    CurGameInfo* gi = cGlobals->gi;
-    success = gtkNewGameDialog( globals, gi, &cGlobals->selfAddr,
-                                XP_TRUE, fireConnDlg );
-    if ( success ) {
-        /* Doesn't make sense! Send invitation. */
-        XP_ASSERT( gi->serverRole != SERVER_ISCLIENT );
-
-        (void)game_reset( MEMPOOL &cGlobals->game, NULL_XWE, gi,
-                          &cGlobals->selfAddr, NULL, cGlobals->util,
-                          &cGlobals->cp, &cGlobals->procs );
-
-        (void)server_do( cGlobals->game.server, NULL_XWE ); /* assign tiles, etc. */
-        board_invalAll( cGlobals->game.board );
-        board_draw( cGlobals->game.board, NULL_XWE );
-    }
-    return success;
-} /* new_game_impl */
-
-static void
-new_game( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
-{
-    new_game_impl( globals, XP_FALSE );
-} /* new_game */
-
 static void
 game_info( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
 {
@@ -1062,8 +1030,6 @@ makeMenus( GtkGameGlobals* globals )
     (void)createAddItem( fileMenu, "Final scores", 
                          (GCallback)final_scores, globals );
 
-    (void)createAddItem( fileMenu, "New game", 
-                         (GCallback)new_game, globals );
     (void)createAddItem( fileMenu, "Game info", 
                          (GCallback)game_info, globals );
 

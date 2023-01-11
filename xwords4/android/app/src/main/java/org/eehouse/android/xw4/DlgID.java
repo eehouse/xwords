@@ -59,7 +59,6 @@ public enum DlgID {
     QUERY_MOVE,
     QUERY_TRADE,
     ASK_PASSWORD,
-    DLG_RETRY,
     DLG_SCORES(true),
     DLG_USEDICT,
     DLG_GETDICT,

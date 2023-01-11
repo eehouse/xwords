@@ -222,7 +222,6 @@ public class BoardDelegate extends DelegateBase
 
         Dialog dialog;
         switch ( dlgID ) {
-        case DLG_RETRY:
         case DLG_OKONLY: {
             int title = (Integer)params[0];
             if ( 0 != title ) {
@@ -231,16 +230,6 @@ public class BoardDelegate extends DelegateBase
             String msg = (String)params[1];
             ab.setMessage( msg )
                 .setPositiveButton( android.R.string.ok, null );
-            if ( DlgID.DLG_RETRY == dlgID ) {
-                lstnr = new OnClickListener() {
-                        @Override
-                        public void onClick( DialogInterface dlg,
-                                             int whichButton ) {
-                            handleViaThread( JNICmd.CMD_RESET );
-                        }
-                    };
-                ab.setNegativeButton( R.string.button_retry, lstnr );
-            }
             dialog = ab.create();
         }
             break;
