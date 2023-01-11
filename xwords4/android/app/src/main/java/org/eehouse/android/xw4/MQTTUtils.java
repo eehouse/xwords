@@ -292,12 +292,18 @@ public class MQTTUtils extends Thread
         Assert.assertTrueNR( 16 == mDevID.length() );
         mRxMsgThread = new RxMsgThread();
 
-        String host = XWPrefs.getPrefsString( context, R.string.key_mqtt_host );
+        String host = XWPrefs.getPrefsString( context, R.string.key_mqtt_host )
+            .trim();           // in case some idiot adds whitespace. Ahem.
         int port = XWPrefs.getPrefsInt( context, R.string.key_mqtt_port, 1883 );
         String url = String.format( java.util.Locale.US, "tcp://%s:%d", host, port );
         Log.d( TAG, "Using url: %s", url );
-        mClient = new MqttAsyncClient( url, mDevID, new MemoryPersistence() );
-        mClient.setCallback( this );
+        try {
+            mClient = new MqttAsyncClient( url, mDevID, new MemoryPersistence() );
+            mClient.setCallback( this );
+        } catch ( Exception ex ) {
+            Log.ex( TAG, ex );
+            mClient = null;
+        }
     }
 
     private void setState( State newState )
