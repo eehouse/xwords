@@ -291,7 +291,7 @@
     <string name="not_again_newfrom">Maak een nieuw spel, klaar om te spelen, met alle instellingen van dit spel. Dat wil zeggen, gebruik dit spel als een template.</string>
     <string name="default_name_title">Welkom</string>
     <string name="default_name_message">Bedankt voor het installeren van CrossWords!\n\nVul je naam hieronder in. Het wordt gebruikt als je een nieuw spel maakt. (Je kan dit later wijzigen onder \"Standaardinstellingen nieuw spel\" in Instellingen.)</string>
-    <string name="about_copyright">Copyright (C) 1998-2022 Eric House. Dit is vrije/open source software uitgebracht onder de GNU Public License.</string>
+    <string name="about_copyright">Copyright (C) 1998-2023 Eric House. Dit is vrije/open source software uitgebracht onder de GNU Public License.</string>
     <string name="about_web">Voor een handleiding of de broncode kijk op http://xwords.sf.net/android.php. Om bugs te rapporteren, functies aan te vragen, hulp aan te bieden, etc., stuur een mail naar xwords@eehouse.org.</string>
     <string name="xlator">[leeg]</string>
     <string name="about_credits">Toolbar iconen door Sarah Chu.</string>

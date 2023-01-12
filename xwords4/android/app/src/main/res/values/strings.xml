@@ -1430,7 +1430,7 @@
     <string name="about_btaddr_fmt">BT MAC Addr: %1$s</string>
     <!-- copyright info -->
     <string name="about_copyright">CrossWords for Android \nCopyright
-    (C) 1998-2022 by Eric House. This free/open source software is
+    (C) 1998-2023 by Eric House. This free/open source software is
     released under the GNU Public License.</string>
     <!-- Another paragraph in the about dialog -->
     <string name="about_web">For an (old) manual or sourcecode see:
