@@ -253,11 +253,18 @@ public class GameUtils {
         return getSummary( context, rowid, 0L );
     }
 
+    public static boolean haveGame( Context context, int gameID )
+    {
+        return haveGame( context, gameID, -1 );
+    }
+
     public static boolean haveGame( Context context, int gameID, int channel )
     {
         long[] rows = DBUtils.getRowIDsFor( context, gameID );
         boolean found = false;
-        for ( long rowid : rows ) {
+        if ( -1 == channel ) {
+            found = 1 <= rows.length;
+        } else for ( long rowid : rows ) {
             GameSummary summary = getSummary( context, rowid );
             // Most of the time if we can't open it we assume it matches. A
             // non-matching game is a same-device thing I'm probably the only

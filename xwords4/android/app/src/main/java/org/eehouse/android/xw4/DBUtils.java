@@ -163,8 +163,8 @@ public class DBUtils {
                 summary.turn =
                     cursor.getInt(cursor.
                                   getColumnIndex(DBHelper.TURN));
-                summary.turnIsLocal = 0 != cursor.getInt(cursor.
-                                                         getColumnIndex(DBHelper.TURN_LOCAL));
+                summary.turnIsLocal =
+                    0 != cursor.getInt(cursor. getColumnIndex(DBHelper.TURN_LOCAL));
                 summary.
                     setGiFlags( cursor.getInt(cursor.
                                               getColumnIndex(DBHelper.GIFLAGS))
@@ -869,7 +869,7 @@ public class DBUtils {
 
     public static long[] getRowIDsFor( Context context, int gameID )
     {
-        long[] result = {};
+        long[] result;
         String[] columns = { ROW_ID };
         String selection = String.format( DBHelper.GAMEID + "=%d", gameID );
         initDB( context );
@@ -910,16 +910,10 @@ public class DBUtils {
         return result;
     }
 
-    public static boolean haveGame( Context context, int gameID )
-    {
-        long[] rows = getRowIDsFor( context, gameID );
-        boolean result = 1 <= rows.length;
-        // Log.d( TAG, "haveGame(%X) => %b", gameID, result );
-        return result;
-    }
-
     public static boolean haveGame( Context context, long rowid )
     {
+        // Let's catch any ints passed in
+        Assert.assertTrue( rowid > Integer.MAX_VALUE );
         boolean result = false;
         String[] columns = { ROW_ID };
         String selection = String.format( ROW_ID + "=%d", rowid );

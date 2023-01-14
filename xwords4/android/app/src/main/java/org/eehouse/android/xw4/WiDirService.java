@@ -829,7 +829,7 @@ public class WiDirService extends XWService {
             if ( ! forwardedPacket( packet, bytes ) ) {
                 int gameID = packet.getInt( KEY_GAMEID, 0 );
                 if ( 0 != gameID ) {
-                    if ( DBUtils.haveGame( context, gameID ) ) {
+                    if ( GameUtils.haveGame( context, gameID ) ) {
                         intent = getIntentTo( P2PAction.GOT_MSG );
                         intent.putExtra( KEY_GAMEID, gameID );
                         intent.putExtra( KEY_DATA, packet.getString( KEY_DATA ) );

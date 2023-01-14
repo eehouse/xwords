@@ -1485,7 +1485,7 @@ public class BTUtils {
         {
             Log.d( TAG, "receivePing()" );
             boolean deleted = 0 != gameID
-                && !DBUtils.haveGame( getContext(), gameID );
+                && !GameUtils.haveGame( getContext(), gameID );
 
             DataOutputStream os = new DataOutputStream( socket.getOutputStream() );
             os.writeByte( BTCmd.PONG.ordinal() );
