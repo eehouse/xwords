@@ -910,6 +910,14 @@ public class DBUtils {
         return result;
     }
 
+    public static boolean haveGame( Context context, int gameID )
+    {
+        long[] rows = getRowIDsFor( context, gameID );
+        boolean result = 1 <= rows.length;
+        // Log.d( TAG, "haveGame(%X) => %b", gameID, result );
+        return result;
+    }
+
     public static boolean haveGame( Context context, long rowid )
     {
         boolean result = false;
