@@ -912,8 +912,6 @@ public class DBUtils {
 
     public static boolean haveWithRowID( Context context, long rowid )
     {
-        // Let's catch any ints passed in
-        Assert.assertTrue( rowid > Integer.MAX_VALUE );
         boolean result = false;
         String[] columns = { ROW_ID };
         String selection = String.format( ROW_ID + "=%d", rowid );
