@@ -2409,7 +2409,7 @@ public class GamesListDelegate extends ListDelegateBase
     private boolean startFirstHasDict( final long rowid, final Bundle extras )
     {
         Assert.assertTrueNR( ROWID_NOTFOUND != rowid );
-        boolean handled = DBUtils.haveGame( m_activity, rowid );
+        boolean handled = DBUtils.haveWithRowID( m_activity, rowid );
         if ( handled ) {
             GameLock.getLockThen( rowid, 100L, m_handler,
                                   new GameLock.GotLockProc() {

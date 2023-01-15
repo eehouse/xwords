@@ -910,7 +910,7 @@ public class DBUtils {
         return result;
     }
 
-    public static boolean haveGame( Context context, long rowid )
+    public static boolean haveWithRowID( Context context, long rowid )
     {
         // Let's catch any ints passed in
         Assert.assertTrue( rowid > Integer.MAX_VALUE );

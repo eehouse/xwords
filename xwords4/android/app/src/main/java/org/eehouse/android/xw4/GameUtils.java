@@ -253,12 +253,12 @@ public class GameUtils {
         return getSummary( context, rowid, 0L );
     }
 
-    public static boolean haveGame( Context context, int gameID )
+    public static boolean haveWithGameID( Context context, int gameID )
     {
-        return haveGame( context, gameID, -1 );
+        return haveWithGameID( context, gameID, -1 );
     }
 
-    public static boolean haveGame( Context context, int gameID, int channel )
+    public static boolean haveWithGameID( Context context, int gameID, int channel )
     {
         long[] rows = DBUtils.getRowIDsFor( context, gameID );
         boolean found = false;

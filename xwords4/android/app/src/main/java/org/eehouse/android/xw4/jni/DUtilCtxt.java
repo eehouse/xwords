@@ -288,7 +288,7 @@ public class DUtilCtxt {
     // game in the same app.
     public boolean haveGame( int gameID, int channel )
     {
-        boolean result = GameUtils.haveGame( m_context, gameID, channel );
+        boolean result = GameUtils.haveWithGameID( m_context, gameID, channel );
         return result;
     }
 
