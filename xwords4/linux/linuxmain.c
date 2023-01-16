@@ -1688,7 +1688,6 @@ linuxFireTimer( CommonGlobals* cGlobals, XWTimerReason why )
     return draw;
 } /* linuxFireTimer */
 
-#ifndef XWFEATURE_STANDALONE_ONLY
 static void
 linux_util_informMissing( XW_UtilCtxt* XP_UNUSED(uc), XWEnv XP_UNUSED(xwe),
                           XP_Bool XP_UNUSED_DBG(isServer),
@@ -1701,43 +1700,6 @@ linux_util_informMissing( XW_UtilCtxt* XP_UNUSED(uc), XWEnv XP_UNUSED(xwe),
     XP_LOGFF( "(isServer=%d, addr=%p, nDevs=%d, nMissing=%d, nInvited=%d)",
               isServer, selfAddr, nDevs, nMissing, nInvited );
 }
-
-static void
-linux_util_addrChange( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe),
-                       const CommsAddrRec* XP_UNUSED(oldAddr),
-                       const CommsAddrRec* newAddr )
-{
-    CommonGlobals* cGlobals = (CommonGlobals*)uc->closure;
-    CommsConnType typ;
-    for ( XP_U32 st = 0; addr_iter( newAddr, &typ, &st ); ) {
-        switch ( typ ) {
-#ifdef XWFEATURE_BLUETOOTH
-        case COMMS_CONN_BT: {
-            XP_Bool isServer = game_getIsServer( &cGlobals->game );
-            linux_bt_open( cGlobals, isServer );
-        }
-            break;
-#endif
-#ifdef XWFEATURE_IP_DIRECT
-        case COMMS_CONN_IP_DIRECT:
-            linux_udp_open( cGlobals, newAddr );
-            break;
-#endif
-#ifdef XWFEATURE_SMS
-        case COMMS_CONN_SMS:
-            /* nothing to do??? */
-            // XP_ASSERT(0);
-            // linux_sms_init( cGlobals, newAddr );
-            break;
-#endif
-        default:
-            // XP_ASSERT(0);
-            break;
-        }
-    }
-}
-
-#endif
 
 unsigned int
 makeRandomInt()
@@ -2391,10 +2353,7 @@ void
 setupLinuxUtilCallbacks( XW_UtilCtxt* util )
 {
 #define SET_PROC(NAM) util->vtable->m_util_##NAM = linux_util_##NAM
-#ifndef XWFEATURE_STANDALONE_ONLY
     SET_PROC(informMissing);
-    SET_PROC(addrChange);
-#endif
     SET_PROC(formatPauseHistory);
     SET_PROC(setTimer);
     SET_PROC(clearTimer);

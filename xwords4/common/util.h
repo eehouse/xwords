@@ -167,14 +167,10 @@ typedef struct UtilVtable {
     void (*m_util_cellSquareHeld)( XW_UtilCtxt* uc, XWEnv xwe, XWStreamCtxt* words );
 #endif
 
-#ifndef XWFEATURE_STANDALONE_ONLY
     void (*m_util_informMissing)( XW_UtilCtxt* uc, XWEnv xwe, XP_Bool isServer,
                                   const CommsAddrRec* hostAddr,
                                   const CommsAddrRec* selfAddr, XP_U16 nDevs,
                                   XP_U16 nMissing, XP_U16 nInvited );
-    void (*m_util_addrChange)( XW_UtilCtxt* uc, XWEnv xwe, const CommsAddrRec* oldAddr,
-                               const CommsAddrRec* newAddr );
-#endif
 
     void (*m_util_informWordsBlocked)( XW_UtilCtxt* uc, XWEnv xwe, XP_U16 nBadWords,
                                        XWStreamCtxt* words, const XP_UCHAR* dictName );
@@ -309,14 +305,8 @@ struct XW_UtilCtxt {
     (uc)->vtable->m_util_cellSquareHeld( (uc), (e), (s) )
 #endif
 
-#ifndef XWFEATURE_STANDALONE_ONLY
-# define util_informMissing( uc, e, is, ha, sa, nd, nm, ni )             \
+#define util_informMissing( uc, e, is, ha, sa, nd, nm, ni )             \
     (uc)->vtable->m_util_informMissing((uc), (e), (is), (ha), (sa), (nd), (nm), (ni) )
-# define util_addrChange( uc,e, addro, addrn ) \
-         (uc)->vtable->m_util_addrChange((uc), (e), (addro), (addrn))
-# else
-# define util_addrChange( uc,e, addro, addrn )
-#endif
 
 #define util_informWordsBlocked(uc,e, c, w, d)                        \
     (uc)->vtable->m_util_informWordsBlocked( (uc), (e), (c), (w), (d) )

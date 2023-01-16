@@ -690,8 +690,6 @@ and_util_cellSquareHeld( XW_UtilCtxt* uc, XWEnv xwe, XWStreamCtxt* words )
 }
 #endif
 
-#ifndef XWFEATURE_STANDALONE_ONLY
-
 static void
 and_util_informMissing( XW_UtilCtxt* uc, XWEnv xwe, XP_Bool isServer,
                         const CommsAddrRec* hostAddr,
@@ -714,14 +712,6 @@ and_util_informMissing( XW_UtilCtxt* uc, XWEnv xwe, XP_Bool isServer,
                             jtypset, nDevs, nMissing, nInvited );
     deleteLocalRefs( env, jHostAddr, jtypset, DELETE_NO_REF );
     UTIL_CBK_TAIL();
-}
-
-static void
-and_util_addrChange( XW_UtilCtxt* uc, XWEnv xwe,
-                     const CommsAddrRec* oldAddr,
-                     const CommsAddrRec* newAddr )
-{
-    // LOG_FUNC();
 }
 
 static void
@@ -805,8 +795,6 @@ and_dutil_deviceRegistered( XW_DUtilCtxt* duc, XWEnv xwe, DevIDType typ,
     DUTIL_CBK_TAIL();
 }
 #endif  /* XWFEATURE_DEVID && XWFEATURE_RELAY */
-
-#endif
 
 #ifdef XWFEATURE_SEARCHLIMIT
 static XP_Bool
@@ -1060,10 +1048,7 @@ makeUtil( MPFORMAL JNIEnv* env,
     SET_PROC(cellSquareHeld);
 #endif
 
-#ifndef XWFEATURE_STANDALONE_ONLY
     SET_PROC(informMissing);
-    SET_PROC(addrChange);
-#endif
 #ifdef XWFEATURE_SEARCHLIMIT
     SET_PROC(getTraySearchLimits);
 #endif

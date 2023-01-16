@@ -588,9 +588,6 @@ comms_destroy( CommsCtxt* comms, XWEnv xwe )
     XP_ASSERT( ! addr_hasType( &comms->selfAddr, COMMS_CONN_RELAY )
                || COMMS_RELAYSTATE_UNCONNECTED == comms->rr.relayState );
 
-    CommsAddrRec aNew = {0};
-    util_addrChange( comms->util, xwe, &comms->selfAddr, &aNew );
-
     cleanupInternal( comms );
     cleanupAddrRecs( comms );
 
