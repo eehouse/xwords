@@ -745,14 +745,18 @@ server_countTilesInPool( ServerCtxt* server )
    the host.
 */
 static void
-addMQTTDevID( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* stream )
+addMQTTDevIDIf( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* stream )
 {
-    MQTTDevID devID;
-    dvc_getMQTTDevID( server->vol.dutil, xwe, &devID );
+    CommsAddrRec selfAddr = {0};
+    comms_getSelfAddr( server->vol.comms, &selfAddr );
+    if ( addr_hasType( &selfAddr, COMMS_CONN_MQTT ) ) {
+        MQTTDevID devID;
+        dvc_getMQTTDevID( server->vol.dutil, xwe, &devID );
 
-    XP_UCHAR buf[32];
-    formatMQTTDevID( &devID, buf, VSIZE(buf) );
-    stringToStream( stream, buf );
+        XP_UCHAR buf[32];
+        formatMQTTDevID( &devID, buf, VSIZE(buf) );
+        stringToStream( stream, buf );
+    }
 }
 
 static void
@@ -2133,7 +2137,7 @@ sendInitialMessage( ServerCtxt* server, XWEnv xwe )
             }
         }
 
-        addMQTTDevID( server, xwe, stream );
+        addMQTTDevIDIf( server, xwe, stream );
 
         stream_destroy( stream, xwe );
     }

@@ -268,7 +268,6 @@ static XP_Bool channelToAddress( const CommsCtxt* comms, XWEnv xwe,
                                  XP_PlayerAddr channelNo, const CommsAddrRec** addr );
 static AddressRecord* getRecordFor( const CommsCtxt* comms, XWEnv xwe,
                                     const CommsAddrRec* addr, XP_PlayerAddr channelNo );
-static void augmentSelfAddr( CommsCtxt* comms, XWEnv xwe, const CommsAddrRec* addr );
 static XP_S16 sendMsg( const CommsCtxt* comms, XWEnv xwe, MsgQueueElem* elem,
                        CommsConnType filter );
 static MsgQueueElem* addToQueue( CommsCtxt* comms, XWEnv xwe, MsgQueueElem* newElem );
@@ -492,7 +491,8 @@ comms_make( MPFORMAL XWEnv xwe, XW_UtilCtxt* util, XP_Bool isServer,
 #endif
 
     if ( !!selfAddr ) {
-        augmentSelfAddr( comms, xwe, selfAddr );
+        ASSERT_ADDR_OK(selfAddr);
+        comms->selfAddr = *selfAddr;
     }
     if ( !!hostAddr ) {
         XP_ASSERT( !isServer );
@@ -504,6 +504,13 @@ comms_make( MPFORMAL XWEnv xwe, XW_UtilCtxt* util, XP_Bool isServer,
             rememberChannelAddress( comms, xwe, channelNo, 0, hostAddr,
                                     COMMS_VERSION );
         XP_ASSERT( rec == getRecordFor( comms, xwe, hostAddr, channelNo ) );
+#ifdef DEBUG
+        /* Anything in hostAddr should be supported -- in selfAddr */
+        CommsConnType typ;
+        for ( XP_U32 st = 0; addr_iter( hostAddr, &typ, &st ); ) {
+            XP_ASSERT( addr_hasType( &comms->selfAddr, typ ) );
+        }
+#endif
     }
 
     return comms;
@@ -1199,36 +1206,6 @@ comms_getHostAddr( const CommsCtxt* comms, CommsAddrRec* addr )
     return haveAddr;
 } /* comms_getAddr */
 
-static void
-augmentSelfAddr( CommsCtxt* comms, XWEnv xwe, const CommsAddrRec* addr )
-{
-    logAddr( comms, xwe, addr, __func__ );
-    XP_ASSERT( comms != NULL );
-
-#ifdef XWFEATURE_RELAY
-    XP_Bool addingRelay = addr_hasType( addr, COMMS_CONN_RELAY )
-        && ! addr_hasType( &comms->selfAddr, COMMS_CONN_RELAY );
-#endif
-
-    CommsAddrRec tmp = comms->selfAddr;
-    augmentAddrIntrnl( comms, &tmp, addr, XP_TRUE );
-    util_addrChange( comms->util, xwe, &comms->selfAddr, &tmp );
-    comms->selfAddr = tmp;
-
-    logAddr( comms, xwe, &comms->selfAddr, "after" );
-
-#ifdef COMMS_HEARTBEAT
-    setDoHeartbeat( comms );
-#endif
-#ifdef XWFEATURE_RELAY
-    if ( addingRelay ) {
-        XP_ASSERT(0);
-        sendConnect( comms, xwe , XP_TRUE
-                     );
-    }
-#endif
-} /* comms_setHostAddr */
-
 void
 comms_addMQTTDevID( CommsCtxt* comms, XP_PlayerAddr channelNo,
                     const MQTTDevID* devID )
@@ -1246,7 +1223,9 @@ comms_addMQTTDevID( CommsCtxt* comms, XP_PlayerAddr channelNo,
     for ( AddressRecord* rec = comms->recs; !!rec && !found; rec = rec->next ) {
         found = (rec->channelNo & ~CHANNEL_MASK) == (channelNo & ~CHANNEL_MASK);
         if ( found ) {
-            if ( addr_hasType( &rec->addr, COMMS_CONN_MQTT ) ) {
+            if ( !addr_hasType( &comms->selfAddr, COMMS_CONN_MQTT ) ) {
+                XP_LOGFF( "not adding mqtt because game doesn't allow it" );
+            } else if ( addr_hasType( &rec->addr, COMMS_CONN_MQTT ) ) {
                 XP_ASSERT( *devID == rec->addr.u.mqtt.devID );
             } else {
                 CommsAddrRec tmp = {0};
@@ -1927,6 +1906,7 @@ sendMsg( const CommsCtxt* comms, XWEnv xwe, MsgQueueElem* elem,
                 XP_LOGFF( "dropping message because not of type %s",
                           ConnType2Str( filter ) );
             } else {
+                XP_ASSERT( addr_hasType( &comms->selfAddr, typ ) );
 #ifdef COMMS_CHECKSUM
                 XP_LOGFF( TAGFMT() "sending msg with sum %s using typ %s", TAGPRMS,
                           elem->checksum, ConnType2Str(typ) );
