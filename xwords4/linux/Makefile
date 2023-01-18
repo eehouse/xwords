@@ -159,6 +159,8 @@ endif
 DEFINES += ${BLUETOOTH}
 # DEFINES += -DXWFEATURE_RELAY
 DEFINES += -DXWFEATURE_SMS -DXWFEATURE_BASE64
+# force smsproto code to reassemble more
+DEFINES += -DMAX_LEN_BINARY=60
 # DEFINES += -DXWFEATURE_DIRECTIP
 
 # Robot can be made to think, to simulate for relay mostly

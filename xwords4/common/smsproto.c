@@ -27,7 +27,9 @@
 
 #define MAX_WAIT 3
 // # define MAX_MSG_LEN 50         /* for testing */
-#define MAX_LEN_BINARY 115
+#ifndef MAX_LEN_BINARY
+# define MAX_LEN_BINARY 115
+#endif
 /* PENDING: Might want to make SEND_NOW_SIZE smaller; might as well send now
    if even the smallest new message is likely to put us over. */
 #define SEND_NOW_SIZE MAX_LEN_BINARY

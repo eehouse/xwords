@@ -50,6 +50,7 @@ typedef struct _GameInfo {
     XP_U32 dupTimerExpires;
     XP_U32 created;
     XP_U16 role;
+    XP_U8 channelNo;
 } GameInfo;
 
 sqlite3* gdb_open( const char* dbName );

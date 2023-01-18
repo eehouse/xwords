@@ -59,9 +59,10 @@ typedef struct _GameSummary {
     XP_S32 dupTimerExpires;
     XP_U8 missingPlayers;
     XP_U8 nPacketsPending;
+    XP_U8 channelNo;            /* 0..4 */
     XP_S16 nMoves;
-    XP_UCHAR opponents[64];
     XP_UCHAR isoCodeStr[MAX_ISO_CODE_LEN+1];
+    XP_UCHAR opponents[64];
 } GameSummary;
 
 typedef struct _XWGame {
@@ -109,7 +110,7 @@ XP_Bool game_receiveMessage( XWGame* game, XWEnv xwe, XWStreamCtxt* stream,
 
 void game_dispose( XWGame* game, XWEnv xwe );
 
-void game_summarize( XWGame* game, CurGameInfo* gi, GameSummary* summary );
+void game_summarize( const XWGame* game, const CurGameInfo* gi, GameSummary* summary );
 void game_getState( const XWGame* game, XWEnv xwe, GameStateInfo* gsi );
 XP_Bool game_getIsServer( const XWGame* game );
 void gi_setNPlayers( CurGameInfo* gi, XWEnv xwe, XW_UtilCtxt* util,

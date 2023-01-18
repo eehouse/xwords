@@ -175,12 +175,11 @@ write_fake_sms( LaunchParams* params, const void* buf, XP_U16 buflen,
 } /* write_fake_sms */
 
 static XP_S16
-decodeAndDelete( LinSMSData* storage, const gchar* name, 
-                 XP_U8* buf, XP_U16 buflen, CommsAddrRec* addr )
+decodeAndDelete( const gchar* path, XP_U8* buf, XP_U16 buflen,
+                 CommsAddrRec* addr )
 {
     LOG_FUNC();
     XP_S16 nRead = -1;
-    gchar* path = g_strdup_printf( "%s/%s", storage->myQueue, name );
 
     gchar* contents;
     gsize length;
@@ -190,7 +189,6 @@ decodeAndDelete( LinSMSData* storage, const gchar* name,
         g_file_get_contents( path, &contents, &length, NULL );
     XP_ASSERT( success );
     unlink( path );
-    g_free( path );
 
     char phone[32];
     int port;
@@ -205,7 +203,7 @@ decodeAndDelete( LinSMSData* storage, const gchar* name,
         *strstr(eol, "\n" ) = '\0';
 
         XP_U16 inlen = strlen(eol);      /* skip \n */
-        XP_LOGFF( "decoding message from file %s", name );
+        XP_LOGFF( "decoding message from file %s", path );
         XP_U8 out[inlen];
         XP_U16 outlen = sizeof(out);
         XP_Bool valid = smsToBin( out, &outlen, eol, inlen );
@@ -400,6 +398,86 @@ retrySend( gpointer data )
     return FALSE;
 }
 
+static XP_Bool
+pickFile( LinSMSData* storage, XP_Bool pickAtRandom,
+          XP_UCHAR outpath[], XP_U16 outlen )
+{
+    XP_Bool found = XP_FALSE;
+    struct timespec oldestModTime;
+    const char* foundPath = NULL;
+    char fullPath[500];
+
+    GDir* dir = g_dir_open( storage->myQueue, 0, NULL );
+
+    /* First, count files */
+    int count = 0;
+    for ( ; ; ) {
+        const gchar* name = g_dir_read_name( dir );
+        if ( NULL == name ) {
+            break;
+        } else if ( 0 == strcmp( name, LOCK_FILE ) ) {
+            continue;
+        } else {
+            ++count;
+        }
+    }
+    found = 1 <= count;
+
+    if ( found ) {
+        g_dir_rewind( dir );
+
+        int targetIndx = XP_RANDOM() % count;
+        XP_UCHAR oldestFile[512] = {0};
+        int cur = 0;
+        for ( ; ; ) {
+            const gchar* name = g_dir_read_name( dir );
+            if ( NULL == name ) {
+                break;
+            } else if ( 0 == strcmp( name, LOCK_FILE ) ) {
+                continue;
+            }
+
+            snprintf( fullPath, sizeof(fullPath), "%s/%s", storage->myQueue, name );
+            if ( pickAtRandom ) {
+                if ( cur++ == targetIndx ) {
+                    XP_LOGFF( "picking file %d of %d", targetIndx, count );
+                    foundPath = fullPath;
+                    break;
+                }
+            } else {
+                struct stat statbuf;
+                int err = stat( fullPath, &statbuf );
+                if ( err != 0 ) {
+                    XP_LOGFF( "%d from stat (error: %s)", err, strerror(errno) );
+                    XP_ASSERT( 0 );
+                } else {
+                    XP_Bool replace = !oldestFile[0]; /* always replace empty/unset :-) */
+                    if ( !replace ) {
+                        if (statbuf.st_mtim.tv_sec == oldestModTime.tv_sec ) {
+                            replace = statbuf.st_mtim.tv_nsec < oldestModTime.tv_nsec;
+                        } else {
+                            replace = statbuf.st_mtim.tv_sec < oldestModTime.tv_sec;
+                        }
+                    }
+
+                    if ( replace ) {
+                        oldestModTime = statbuf.st_mtim;
+                        if ( !!oldestFile[0] ) {
+                            XP_LOGFF( "replacing %s with older %s", oldestFile, name );
+                        }
+                        snprintf( oldestFile, sizeof(oldestFile), "%s", name );
+                        foundPath = oldestFile;
+                    }
+                }
+            }
+        }
+
+        XP_SNPRINTF( outpath, outlen, "%s", foundPath );
+    }
+    g_dir_close( dir );
+    return found;
+}
+
 static gint
 check_for_files( gpointer data )
 {
@@ -417,56 +495,15 @@ check_for_files_once( gpointer data )
     for ( ; ; ) {
         lock_queue( storage );
 
-        char oldestFile[256] = { '\0' };
-        struct timespec oldestModTime;
-
-        GDir* dir = g_dir_open( storage->myQueue, 0, NULL );
-        // XP_LOGF( "%s: opening queue %s", __func__, storage->myQueue );
-        for ( ; ; ) {
-            const gchar* name = g_dir_read_name( dir );
-            if ( NULL == name ) {
-                break;
-            } else if ( 0 == strcmp( name, LOCK_FILE ) ) {
-                continue;
-            }
-
-            /* We want the oldest file first. Timestamp comes from stat(). */
-            struct stat statbuf;
-            char fullPath[500];
-            snprintf( fullPath, sizeof(fullPath), "%s/%s", storage->myQueue, name );
-            int err = stat( fullPath, &statbuf );
-            if ( err != 0 ) {
-                XP_LOGF( "%d from stat (error: %s)", err, strerror(errno) );
-                XP_ASSERT( 0 );
-            } else {
-                XP_Bool replace = !oldestFile[0]; /* always replace empty/unset :-) */
-                if ( !replace ) {
-                    if (statbuf.st_mtim.tv_sec == oldestModTime.tv_sec ) {
-                        replace = statbuf.st_mtim.tv_nsec < oldestModTime.tv_nsec;
-                    } else {
-                        replace = statbuf.st_mtim.tv_sec < oldestModTime.tv_sec;
-                    }
-                }
-
-                if ( replace ) {
-                    oldestModTime = statbuf.st_mtim;
-                    if ( !!oldestFile[0] ) {
-                        XP_LOGFF( "replacing %s with older %s", oldestFile, name );
-                    }
-                    snprintf( oldestFile, sizeof(oldestFile), "%s", name );
-                }
-            }
-        }
-        g_dir_close( dir );
 
         uint8_t buf[256];
         CommsAddrRec fromAddr = {0};
         XP_S16 nRead = -1;
-        if ( !!oldestFile[0] ) {
-            nRead = decodeAndDelete( storage, oldestFile, buf,
-                                     sizeof(buf), &fromAddr );
+        XP_UCHAR path[1024];
+        if ( pickFile( storage, XP_TRUE, path, VSIZE(path) ) ) {
+            nRead = decodeAndDelete( path, buf, sizeof(buf), &fromAddr );
         } else {
-            // XP_LOGF( "%s: no file found", __func__ );
+            // XP_LOGFF( "no file found" );
         }
 
         unlock_queue( storage );

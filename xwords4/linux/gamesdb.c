@@ -41,6 +41,9 @@
 #define VERS_2_TO_3   \
         "isoCode TEXT(8)" \
 
+#define VERS_3_TO_4   \
+        "channel INT(4)" \
+
 static XP_Bool getColumnText( sqlite3_stmt *ppStmt, int iCol, XP_UCHAR* buf,
                               int* len );
 static bool fetchInt( sqlite3* pDb, const gchar* key, int32_t* resultP );
@@ -63,7 +66,7 @@ static void assertPrintResult( sqlite3* pDb, int result, int expect );
  * it's adding new fields or whatever.
  */
 
-#define CUR_DB_VERSION 3
+#define CUR_DB_VERSION 4
 
 sqlite3* 
 gdb_open( const char* dbName )
@@ -113,6 +116,10 @@ upgradeTables( sqlite3* pDb, int32_t oldVersion )
     case 2:
         XP_ASSERT( 3 == CUR_DB_VERSION );
         newCols = VERS_2_TO_3;
+        break;
+    case 3:
+        XP_ASSERT( 4 == CUR_DB_VERSION );
+        newCols = VERS_3_TO_4;
         break;
     default:
         XP_ASSERT(0);
@@ -187,6 +194,7 @@ createTables( sqlite3* pDb )
         ","VERS_0_TO_1
         ","VERS_1_TO_2
         ","VERS_2_TO_3
+        ","VERS_3_TO_4
         // ",dupTimerExpires INT"
         ")";
     (void)sqlite3_exec( pDb, createGamesStr, NULL, NULL, NULL );
@@ -338,7 +346,6 @@ gdb_summarize( CommonGlobals* cGlobals )
     XP_U32 gameID = gi->gameID;
     XP_ASSERT( 0 != gameID );
 
-    // gchar* connvia = "local";
     gchar connvia[128] = {0};
 
     ScoresArray scores = {0};
@@ -425,6 +432,7 @@ gdb_summarize( CommonGlobals* cGlobals )
     pairs[indx++] = g_strdup_printf( "nPending=%d", nPending );
     pairs[indx++] = g_strdup_printf( "role=%d", gi->serverRole);
     pairs[indx++] = g_strdup_printf( "created=%d", game->created );
+    pairs[indx++] = g_strdup_printf( "channel=%d", gi->forceChannel );
     pairs[indx++] = NULL;
     XP_ASSERT( indx < VSIZE(pairs) );
 
@@ -540,7 +548,8 @@ gdb_getGameInfo( sqlite3* pDb, sqlite3_int64 rowid, GameInfo* gib )
 {
     XP_Bool success = XP_FALSE;
     const char* fmt = "SELECT ended, turn, local, nmoves, ntotal, nmissing, "
-        "isoCode, seed, connvia, gameid, lastMoveTime, dupTimerExpires, relayid, scores, nPending, role, created, snap "
+        "isoCode, seed, connvia, gameid, lastMoveTime, dupTimerExpires, "
+        "relayid, scores, nPending, role, channel, created, snap "
         "FROM games WHERE rowid = %lld";
     XP_UCHAR query[256];
     snprintf( query, sizeof(query), fmt, rowid );
@@ -573,6 +582,7 @@ gdb_getGameInfo( sqlite3* pDb, sqlite3_int64 rowid, GameInfo* gib )
         getColumnText( ppStmt, col++, gib->scores, &len );
         gib->nPending = sqlite3_column_int( ppStmt, col++ );
         gib->role = sqlite3_column_int( ppStmt, col++ );
+        gib->channelNo = sqlite3_column_int( ppStmt, col++ );
         gib->created = sqlite3_column_int( ppStmt, col++ );
         snprintf( gib->name, sizeof(gib->name), "Game %lld", rowid );
 

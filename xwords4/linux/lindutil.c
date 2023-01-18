@@ -86,16 +86,26 @@ linux_dutil_notifyPause( XW_DUtilCtxt* XP_UNUSED(duc), XWEnv XP_UNUSED(xwe),
 
 static XP_Bool
 linux_dutil_haveGame( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe),
-                      XP_U32 gameID, XP_U8 XP_UNUSED(channel) )
+                      XP_U32 gameID, XP_U8 channel )
 {
     LaunchParams* params = (LaunchParams*)duc->closure;
     sqlite3* pDb = params->pDb;
 
-    sqlite3_int64 rowids[2];
+    sqlite3_int64 rowids[MAX_NUM_PLAYERS];
     int nRowIDs = VSIZE(rowids);
     gdb_getRowsForGameID( pDb, gameID, rowids, &nRowIDs );
-    XP_Bool result = 0 < nRowIDs;
-    LOG_RETURNF( "%s", boolToStr(result) );
+    XP_Bool result = XP_FALSE;
+    for ( int ii = 0; ii < nRowIDs; ++ii ) {
+        GameInfo gib;
+        if ( ! gdb_getGameInfo( pDb, rowids[ii], &gib ) ) {
+            XP_ASSERT(0);
+        }
+        if ( gib.channelNo == channel ) {
+            result = XP_TRUE;
+        }
+    }
+    XP_LOGFF( "(gameID=%X, channel=%d) => %s",
+              gameID, channel, boolToStr(result) );
     return result;
 }
 

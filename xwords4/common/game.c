@@ -530,7 +530,7 @@ game_getState( const XWGame* game, XWEnv xwe, GameStateInfo* gsi )
 }
 
 void
-game_summarize( XWGame* game, CurGameInfo* gi, GameSummary* summary )
+game_summarize( const XWGame* game, const CurGameInfo* gi, GameSummary* summary )
 {
     XP_MEMSET( summary, 0, sizeof(*summary) );
     ServerCtxt* server = game->server;
@@ -542,7 +542,7 @@ game_summarize( XWGame* game, CurGameInfo* gi, GameSummary* summary )
     summary->dupTimerExpires = server_getDupTimerExpires( server );
 
     for ( int ii = 0; ii < gi->nPlayers; ++ii ) {
-        LocalPlayer* lp  = &gi->players[ii];
+        const LocalPlayer* lp  = &gi->players[ii];
         if ( LP_IS_ROBOT(lp) || !LP_IS_LOCAL(lp) ) {
             if ( '\0' != summary->opponents[0] ) {
                 XP_STRCAT( summary->opponents, ", " );
@@ -553,6 +553,7 @@ game_summarize( XWGame* game, CurGameInfo* gi, GameSummary* summary )
     if ( !!game->comms ) {
         summary->missingPlayers = server_getMissingPlayers( server );
         summary->nPacketsPending = comms_countPendingPackets( game->comms );
+        summary->channelNo = gi->forceChannel;
     }
 }
 

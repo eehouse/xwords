@@ -83,7 +83,7 @@ findOpenGame( const GtkAppGlobals* apg, sqlite3_int64 rowid )
 }
 
 enum { ROW_ITEM, ROW_THUMB, NAME_ITEM, CREATED_ITEM, GAMEID_ITEM,
-       LANG_ITEM, SEED_ITEM, ROLE_ITEM, CONN_ITEM,
+       LANG_ITEM, SEED_ITEM, ROLE_ITEM, CHANNEL_ITEM, CONN_ITEM,
 #ifdef XWFEATURE_RELAY
        RELAYID_ITEM,
 #endif
@@ -182,6 +182,7 @@ init_games_list( GtkAppGlobals* apg )
     addTextColumn( list, "Lang", LANG_ITEM );
     addTextColumn( list, "Seed", SEED_ITEM );
     addTextColumn( list, "Role", ROLE_ITEM );
+    addTextColumn( list, "Channel", CHANNEL_ITEM );
     addTextColumn( list, "Conn. via", CONN_ITEM );
 #ifdef XWFEATURE_RELAY
     addTextColumn( list, "RelayID", RELAYID_ITEM );
@@ -204,6 +205,7 @@ init_games_list( GtkAppGlobals* apg )
                                               G_TYPE_STRING,  /* LANG_ITEM */
                                               G_TYPE_INT,     /* SEED_ITEM */
                                               G_TYPE_INT,     /* ROLE_ITEM */
+                                              G_TYPE_INT,     /* CHANNEL_ITEM */
                                               G_TYPE_STRING,  /* CONN_ITEM */
 #ifdef XWFEATURE_RELAY
                                               G_TYPE_STRING,  /*RELAYID_ITEM */
@@ -279,6 +281,7 @@ add_to_list( GtkWidget* list, sqlite3_int64 rowid, XP_Bool isNew,
                         LANG_ITEM, gib->isoCode,
                         SEED_ITEM, gib->seed,
                         ROLE_ITEM, gib->role,
+                        CHANNEL_ITEM, gib->channelNo,
                         CONN_ITEM, gib->conn,
 #ifdef XWFEATURE_RELAY
                         RELAYID_ITEM, gib->relayID,

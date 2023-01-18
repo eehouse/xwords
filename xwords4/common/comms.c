@@ -508,7 +508,10 @@ comms_make( MPFORMAL XWEnv xwe, XW_UtilCtxt* util, XP_Bool isServer,
         /* Anything in hostAddr should be supported -- in selfAddr */
         CommsConnType typ;
         for ( XP_U32 st = 0; addr_iter( hostAddr, &typ, &st ); ) {
-            XP_ASSERT( addr_hasType( &comms->selfAddr, typ ) );
+            if ( !addr_hasType( &comms->selfAddr, typ ) ) {
+                XP_LOGFF( "%s not in selfAddr", ConnType2Str(typ) );
+                XP_ASSERT(0);
+            }
         }
 #endif
     }
@@ -747,17 +750,18 @@ comms_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
         flags = 0;
     }
 
-    CommsAddrRec addr = {0};
-    addrFromStream( &addr, stream );
-    if ( addr_hasType( &addr, COMMS_CONN_MQTT ) && 0 == addr.u.mqtt.devID ) {
+    CommsAddrRec selfAddr = {0};
+    addrFromStream( &selfAddr, stream );
+    if ( addr_hasType( &selfAddr, COMMS_CONN_MQTT )
+         && 0 == selfAddr.u.mqtt.devID ) {
         XW_DUtilCtxt* dutil = util_getDevUtilCtxt( util, xwe );
-        dvc_getMQTTDevID( dutil, xwe, &addr.u.mqtt.devID );
+        dvc_getMQTTDevID( dutil, xwe, &selfAddr.u.mqtt.devID );
     }
-    ASSERT_ADDR_OK( &addr );
+    ASSERT_ADDR_OK( &selfAddr );
 
     XP_U16 nPlayersHere, nPlayersTotal;
     if ( version >= STREAM_VERS_DEVIDS
-         || addr_hasType( &addr, COMMS_CONN_RELAY ) ) {
+         || addr_hasType( &selfAddr, COMMS_CONN_RELAY ) ) {
         nPlayersHere = (XP_U16)stream_getBits( stream, 4 );
         nPlayersTotal = (XP_U16)stream_getBits( stream, 4 );
     } else {
@@ -777,8 +781,8 @@ comms_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
     XP_USE( nPlayersHere );
     XP_USE( nPlayersTotal );
 #endif
-    XP_MEMCPY( &comms->selfAddr, &addr, sizeof(comms->selfAddr) );
-    logAddr( comms, xwe, &addr, __func__ );
+    XP_MEMCPY( &comms->selfAddr, &selfAddr, sizeof(comms->selfAddr) );
+    logAddr( comms, xwe, &selfAddr, __func__ );
     comms->flags = flags;
 
     comms->connID = stream_getU32( stream );
@@ -792,7 +796,7 @@ comms_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
         comms->resendBackoff = stream_getU16( stream );
         comms->nextResend = stream_getU32( stream );
     }
-    if ( addr_hasType(&addr, COMMS_CONN_RELAY ) ) {
+    if ( addr_hasType( &selfAddr, COMMS_CONN_RELAY ) ) {
         comms->rr.myHostID = stream_getU8( stream );
         XP_LOGFF( "loaded myHostID: %d", comms->rr.myHostID );
         stringFromStreamHere( stream, comms->rr.connName, 
@@ -2910,12 +2914,11 @@ comms_checkIncomingStream( CommsCtxt* comms, XWEnv xwe, XWStreamCtxt* stream,
         XP_U16 initialLen = stream_getSize( stream );
 #endif
 
-        const CommsAddrRec* useAddr = !!retAddr ? retAddr : &comms->selfAddr;
         if ( !preProcess(
 #ifdef XWFEATURE_RELAY
                          comms, xwe , stream, &usingRelay, &senderID,
 #endif
-                         useAddr ) ) {
+                         retAddr ) ) {
 #ifdef COMMS_CHECKSUM
             state->len = stream_getSize( stream );
             // stream_getPtr pts at base, but sum excludes relay header
