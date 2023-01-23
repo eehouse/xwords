@@ -501,6 +501,7 @@ game_receiveMessage( XWGame* game, XWEnv xwe, XWStreamCtxt* stream,
         runServer( server, xwe );
     }
 
+    LOG_RETURNF( "%s", boolToStr(result) );
     return result;
 }
 

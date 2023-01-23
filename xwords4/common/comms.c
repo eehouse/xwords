@@ -492,7 +492,9 @@ comms_make( MPFORMAL XWEnv xwe, XW_UtilCtxt* util, XP_Bool isServer,
 
     if ( !!selfAddr ) {
         ASSERT_ADDR_OK(selfAddr);
+        logAddr( comms, xwe, &comms->selfAddr, "before selfAddr" );
         comms->selfAddr = *selfAddr;
+        logAddr( comms, xwe, &comms->selfAddr, "after selfAddr" );
     }
     if ( !!hostAddr ) {
         XP_ASSERT( !isServer );
@@ -1907,7 +1909,10 @@ sendMsg( const CommsCtxt* comms, XWEnv xwe, MsgQueueElem* elem,
                 XP_LOGFF( "dropping message because not of type %s",
                           ConnType2Str( filter ) );
             } else {
-                XP_ASSERT( addr_hasType( &comms->selfAddr, typ ) );
+                if ( !isInvite && !addr_hasType( &comms->selfAddr, typ ) ) {
+                    XP_LOGFF( "self addr doesn't have msg type %s", ConnType2Str(typ) );
+                    XP_ASSERT( 0 );
+                }
 #ifdef COMMS_CHECKSUM
                 XP_LOGFF( TAGFMT() "sending msg with sum %s using typ %s", TAGPRMS,
                           elem->checksum, ConnType2Str(typ) );
