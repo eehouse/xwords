@@ -1,6 +1,6 @@
 /* -*- compile-command: "find-and-gradle.sh inXw4dDeb"; -*- */
 /*
- * Copyright 2009 - 2022 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2009 - 2023 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -170,14 +170,14 @@ public class MQTTUtils extends Thread
         if ( XWPrefs.getMQTTEnabled( context ) ) {
             synchronized( sInstance ) {
                 result = sInstance[0];
-            }
-            if ( null == result ) {
-                try {
-                    result = new MQTTUtils(context);
-                    setInstance( result );
-                    result.start();
-                } catch ( MqttException me ) {
-                    result = null;
+                if ( null == result ) {
+                    try {
+                        result = new MQTTUtils( context );
+                        setInstance( result );
+                        result.start();
+                    } catch ( MqttException me ) {
+                        result = null;
+                    }
                 }
             }
         }
