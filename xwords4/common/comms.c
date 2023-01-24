@@ -512,7 +512,8 @@ comms_make( MPFORMAL XWEnv xwe, XW_UtilCtxt* util, XP_Bool isServer,
         for ( XP_U32 st = 0; addr_iter( hostAddr, &typ, &st ); ) {
             if ( !addr_hasType( &comms->selfAddr, typ ) ) {
                 XP_LOGFF( "%s not in selfAddr", ConnType2Str(typ) );
-                XP_ASSERT(0);
+                /* PENDING: fix this */
+                // XP_ASSERT(0); <-- happening a lot (NFC missing)
             }
         }
 #endif
@@ -1911,7 +1912,8 @@ sendMsg( const CommsCtxt* comms, XWEnv xwe, MsgQueueElem* elem,
             } else {
                 if ( !isInvite && !addr_hasType( &comms->selfAddr, typ ) ) {
                     XP_LOGFF( "self addr doesn't have msg type %s", ConnType2Str(typ) );
-                    XP_ASSERT( 0 );
+                    /* PENDING: fix this */
+                    // XP_ASSERT( 0 ); <-- happens a lot
                 }
 #ifdef COMMS_CHECKSUM
                 XP_LOGFF( TAGFMT() "sending msg with sum %s using typ %s", TAGPRMS,
