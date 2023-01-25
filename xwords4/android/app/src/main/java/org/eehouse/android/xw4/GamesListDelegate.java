@@ -2631,7 +2631,7 @@ public class GamesListDelegate extends ListDelegateBase
                     : R.string.phone_lookup_rationale_others;
                 String msg = getString( R.string.phone_lookup_rationale )
                     + "\n\n" + getString( id );
-                Perms23.tryGetPerms( this, Perm.READ_PHONE_STATE, msg,
+                Perms23.tryGetPerms( this, Perms23.NBS_PERMS, msg,
                                      Action.ASKED_PHONE_STATE, gameName, addrs );
             }
         }

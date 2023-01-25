@@ -895,8 +895,7 @@ public class GameConfigDelegate extends DelegateBase
     {
         if ( Perms23.NBSPermsInManifest( m_activity )
              && null == SMSPhoneInfo.get( m_activity ) ) {
-            Perms23.tryGetPermsNA( this, Perms23.Perm.READ_PHONE_STATE,
-                                   R.string.phone_state_rationale,
+            Perms23.tryGetNBSPerms( this, R.string.phone_state_rationale,
                                    R.string.key_na_perms_phonestate,
                                    Action.ASKED_PHONE_STATE );
         } else {

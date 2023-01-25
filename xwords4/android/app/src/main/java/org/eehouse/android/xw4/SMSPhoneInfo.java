@@ -1,6 +1,6 @@
-/* -*- compile-command: "find-and-gradle.sh inXw4Deb"; -*- */
+/* -*- compile-command: "find-and-gradle.sh inXw4dDeb"; -*- */
 /*
- * Copyright 2010 - 2018 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2010 - 2023 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -90,7 +90,7 @@ public class SMSPhoneInfo {
 
                 s_phoneInfo = new SMSPhoneInfo( isPhone, number, isGSM );
             } catch ( SecurityException se ) {
-                Log.e( TAG, "got SecurityException" );
+                Log.e( TAG, "got SecurityException: %s", se );
             }
         }
         return s_phoneInfo;

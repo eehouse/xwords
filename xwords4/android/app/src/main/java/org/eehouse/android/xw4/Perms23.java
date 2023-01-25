@@ -47,9 +47,11 @@ public class Perms23 {
     
     public static enum Perm {
         READ_PHONE_STATE(Manifest.permission.READ_PHONE_STATE),
+        READ_SMS(Manifest.permission.READ_SMS),
         STORAGE(Manifest.permission.WRITE_EXTERNAL_STORAGE),
         SEND_SMS(Manifest.permission.SEND_SMS),
         RECEIVE_SMS(Manifest.permission.RECEIVE_SMS),
+        READ_PHONE_NUMBERS(Manifest.permission.READ_PHONE_NUMBERS),
         READ_CONTACTS(Manifest.permission.READ_CONTACTS),
         BLUETOOTH_CONNECT(Manifest.permission.BLUETOOTH_CONNECT),
         BLUETOOTH_SCAN(Manifest.permission.BLUETOOTH_SCAN),
@@ -71,7 +73,17 @@ public class Perms23 {
         }
     }
 
-    static final Perm[] NBS_PERMS = { Perm.SEND_SMS, Perm.RECEIVE_SMS, };
+    static final Perm[] NBS_PERMS = {
+        Perm.SEND_SMS,
+        Perm.READ_SMS,
+        Perm.RECEIVE_SMS,
+        Perm.READ_PHONE_NUMBERS,
+        Perm.READ_PHONE_STATE,
+    };
+
+    // Neither user 10074 nor current process has
+    // android.permission.READ_PHONE_STATE, android.permission.READ_SMS, or
+    // android.permission.READ_PHONE_NUMBERS
 
     private static Map<Perm, Boolean> sManifestMap = new HashMap<>();
     static boolean permInManifest( Context context, Perm perm )
@@ -308,8 +320,7 @@ public class Perms23 {
                                          String rationaleMsg, int naKey,
                                          final Action action, Object... params )
     {
-        // Log.d( TAG, "tryGetPerms(%s)", perm.toString() );
-
+        // Log.d( TAG, "tryGetPermsImpl(%s)", (Object)perms );
         if ( 0 != naKey &&
              XWPrefs.getPrefsBoolean( delegate.getActivity(), naKey, false ) ) {
             postNeg( delegate, action, params );
@@ -415,12 +426,12 @@ public class Perms23 {
     public static boolean havePermissions( Context context, Perm... perms )
     {
         boolean result = true;
-        for ( int ii = 0; result && ii < perms.length; ++ii ) {
-            Perm perm = perms[ii];
+        for ( Perm perm: perms ) {
             boolean thisResult = permInManifest( context, perm )
                 && PERMISSION_GRANTED
                 == ContextCompat.checkSelfPermission( XWApp.getContext(),
                                                       perm.getString() );
+            // Log.d( TAG, "havePermissions(): %s: %b", perm, thisResult );
             result = result && thisResult;
         }
         return result;
@@ -436,6 +447,14 @@ public class Perms23 {
     static boolean NBSPermsInManifest( Context context )
     {
         return permsInManifest( context, NBS_PERMS );
+    }
+
+    static void tryGetNBSPerms(DelegateBase delegate, int rationaleId, int naKey,
+                               Action action, Object... params)
+    {
+        tryGetPermsImpl( delegate, NBS_PERMS,
+                         LocUtils.getStringOrNull( rationaleId ), naKey,
+                         action, params );
     }
 
     // If two permission requests are made in a row the map may contain more
