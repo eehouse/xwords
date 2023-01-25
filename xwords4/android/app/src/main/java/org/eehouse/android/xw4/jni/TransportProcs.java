@@ -32,8 +32,8 @@ public interface TransportProcs {
 
     int transportSendMsg( byte[] buf, String msgNo, CommsAddrRec addr,
                           CommsConnType conType, int gameID, int timestamp );
-    boolean transportSendInvt( CommsAddrRec addr, NetLaunchInfo nli,
-                               int timestamp );
+    boolean transportSendInvt( CommsAddrRec addr, CommsConnType conType,
+                               NetLaunchInfo nli, int timestamp );
 
     void countChanged( int newCount );
 

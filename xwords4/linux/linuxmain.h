@@ -44,8 +44,8 @@ XP_S16 linux_send( XWEnv xwe, const XP_U8* buf, XP_U16 buflen,
                    CommsConnType conType, XP_U32 gameID,
                    void* closure );
 XP_S16 linux_send_invt( XWEnv xwe, const NetLaunchInfo* nli,
-                        XP_U32 createdStamp,
-                        const CommsAddrRec* addr, void* closure );
+                        XP_U32 createdStamp, const CommsAddrRec* addr,
+                        CommsConnType conType, void* closure );
 
 #ifdef COMMS_HEARTBEAT
 void linux_reset( void* closure );

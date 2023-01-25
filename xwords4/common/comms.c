@@ -1969,7 +1969,7 @@ sendMsg( const CommsCtxt* comms, XWEnv xwe, MsgQueueElem* elem,
                             NetLaunchInfo* nli = (NetLaunchInfo*)elem->msg;
                             XP_ASSERT( 0 != elem->createdStamp );
                             nSent = (*comms->procs.sendInvt)( xwe, nli, elem->createdStamp,
-                                                              &addr, comms->procs.closure );
+                                                              &addr, typ, comms->procs.closure );
                         }
 #endif
                     } else {

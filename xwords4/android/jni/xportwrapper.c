@@ -51,7 +51,7 @@ and_xport_getFlags( XWEnv xwe, void* closure )
 #ifdef XWFEATURE_COMMS_INVITE
 static XP_S16
 and_xport_sendInvite( XWEnv xwe, const NetLaunchInfo* nli, XP_U32 createdStamp,
-                      const CommsAddrRec* addr, void* closure )
+                      const CommsAddrRec* addr, CommsConnType conType, void* closure )
 {
     LOG_FUNC();
     AndTransportProcs* aprocs = (AndTransportProcs*)closure;
@@ -59,6 +59,7 @@ and_xport_sendInvite( XWEnv xwe, const NetLaunchInfo* nli, XP_U32 createdStamp,
     if ( NULL != aprocs->jxport ) {
         JNIEnv* env = xwe;
         const char* sig = "(L" PKG_PATH("jni/CommsAddrRec")
+            ";L" PKG_PATH("jni/CommsAddrRec$CommsConnType")
             ";L" PKG_PATH("NetLaunchInfo") ";I)Z";
 
         jmethodID mid = getMethodID( env, aprocs->jxport, "transportSendInvt", sig );
@@ -67,10 +68,13 @@ and_xport_sendInvite( XWEnv xwe, const NetLaunchInfo* nli, XP_U32 createdStamp,
         jobject jnli = makeObjectEmptyConst( env, PKG_PATH("NetLaunchInfo") );
         XP_ASSERT( !!jnli );
         setNLI( env, jnli, nli );
+        jobject jConType =
+            intToJEnum( env, conType, PKG_PATH("jni/CommsAddrRec$CommsConnType"));
 
         /*jboolean success = */(*env)->CallBooleanMethod( env, aprocs->jxport, mid,
-                                                          jaddr, jnli, createdStamp );
-        deleteLocalRefs( env, jaddr, jnli, DELETE_NO_REF );
+                                                          jaddr, jConType, jnli,
+                                                          createdStamp );
+        deleteLocalRefs( env, jaddr, jnli, jConType, DELETE_NO_REF );
     }
 
     LOG_RETURN_VOID();

@@ -76,8 +76,8 @@ typedef enum {
 
 #ifdef XWFEATURE_COMMS_INVITE
 typedef XP_S16 (*TransportSendInvt)( XWEnv xwe, const NetLaunchInfo* nli,
-                                     XP_U32 createdStamp,
-                                     const CommsAddrRec* addr, void* closure );
+                                     XP_U32 createdStamp, const CommsAddrRec* addr,
+                                     CommsConnType conType, void* closure );
 #endif
 typedef XP_S16 (*TransportSendMsg)( XWEnv xwe, const XP_U8* buf, XP_U16 len,
                                     const XP_UCHAR* msgNo, XP_U32 createdStamp,

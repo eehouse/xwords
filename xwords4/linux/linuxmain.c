@@ -1517,24 +1517,21 @@ linux_send( XWEnv XP_UNUSED(xwe), const XP_U8* buf, XP_U16 buflen,
 XP_S16
 linux_send_invt( XWEnv XP_UNUSED(xwe), const NetLaunchInfo* nli,
                  XP_U32 XP_UNUSED(createdStamp),
-                 const CommsAddrRec* destAddr, void* closure )
+                 const CommsAddrRec* destAddr, CommsConnType conType, void* closure )
 {
     XP_S16 nSent = -1;
     CommonGlobals* cGlobals = (CommonGlobals*)closure;
 
-    CommsConnType typ;
-    for ( XP_U32 st = 0; addr_iter( destAddr, &typ, &st ); ) {
-        switch ( typ ) {
-        case COMMS_CONN_MQTT:
-            mqttc_invite( cGlobals->params, nli, &destAddr->u.mqtt.devID );
-            break;
-        case COMMS_CONN_SMS:
-            linux_sms_invite( cGlobals->params, nli,
-                              destAddr->u.sms.phone, destAddr->u.sms.port );
-            break;
-        default:
-            XP_ASSERT(0);
-        }
+    switch ( conType ) {
+    case COMMS_CONN_MQTT:
+        mqttc_invite( cGlobals->params, nli, &destAddr->u.mqtt.devID );
+        break;
+    case COMMS_CONN_SMS:
+        linux_sms_invite( cGlobals->params, nli,
+                          destAddr->u.sms.phone, destAddr->u.sms.port );
+        break;
+    default:
+        XP_ASSERT(0);
     }
     return nSent;
 }
