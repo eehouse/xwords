@@ -78,7 +78,7 @@ public class NBSProto {
     public static int sendPacket( Context context, String phone,
                                   int gameID, byte[] binmsg, String msgID )
     {
-        Log.d( TAG, "sendPacket(phone=%s, gameID=%d, len=%d, msgID=%s)",
+        Log.d( TAG, "sendPacket(phone=%s, gameID=%X, len=%d, msgID=%s)",
                phone, gameID, binmsg.length, msgID );
         addPacketTo( context, phone, gameID, binmsg );
         return binmsg.length;
