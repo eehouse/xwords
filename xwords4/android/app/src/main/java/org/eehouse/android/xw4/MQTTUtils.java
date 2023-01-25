@@ -223,6 +223,8 @@ public class MQTTUtils extends Thread
                     MqttMessage message = new MqttMessage( pair.mPackets[ii] );
                     message.setRetained( true );
                     mClient.publish( pair.mTopics[ii], message );
+                    Log.d( TAG, "%H: published msg of len %d to topic %s", MQTTUtils.this,
+                           pair.mPackets[ii].length, pair.mTopics[ii] );
                 }
             } catch ( MqttException me ) {
                 me.printStackTrace();
@@ -635,8 +637,12 @@ public class MQTTUtils extends Thread
     public void messageArrived( String topic, MqttMessage message )
         throws Exception
     {
-        Log.d( TAG, "%H.messageArrived(topic=%s)", this, topic );
-        mRxMsgThread.add( topic, message.getPayload() );
+        byte[] payload = message.getPayload();
+        Log.d( TAG, "%H.messageArrived(topic=%s, len=%d)", this, topic,
+               payload.length );
+        if ( 0 < payload.length ) {
+            mRxMsgThread.add( topic, payload );
+        }
         ConnStatusHandler
             .updateStatusIn( mContext, CommsConnType.COMMS_CONN_MQTT, true );
 
@@ -706,6 +712,8 @@ public class MQTTUtils extends Thread
             = new LinkedBlockingQueue<>();
 
         void add( String topic, byte[] msg ) {
+            Log.d( TAG, "%H.RxMsgThread.add(topic: %s, len: %d)", MQTTUtils.this,
+                   topic, msg.length );
             mQueue.add( new MessagePair( topic, msg ) );
         }
 
@@ -803,11 +811,15 @@ public class MQTTUtils extends Thread
         private void handleInvitation( NetLaunchInfo nli )
         {
             handleInvitation( nli, null, MultiService.DictFetchOwner.OWNER_MQTT );
+            // Now nuke the invitation so we don't keep getting it, e.g. if
+            // the sender deletes the game
+            TopicsAndPackets tap = XwJNI.dvc_makeMQTTNukeInvite( nli );
+            addToSendQueue( getContext(), tap );
         }
 
         private void receiveMessage( long rowid, MultiMsgSink sink, byte[] msg )
         {
-            Log.d( TAG, "receiveMessage(rowid=%d, len=%d)", rowid, msg.length );
+            // Log.d( TAG, "receiveMessage(rowid=%d, len=%d)", rowid, msg.length );
             receiveMessage( rowid, sink, msg, mReturnAddr );
         }
     }

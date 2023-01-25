@@ -282,7 +282,9 @@ addProto3HeaderCmd( XW_DUtilCtxt* dutil, XWEnv xwe, MQTTCmd cmd,
 static void
 callProc( MsgAndTopicProc proc, void* closure, const XP_UCHAR* topic, XWStreamCtxt* stream )
 {
-    (*proc)( closure, topic, stream_getPtr(stream), stream_getSize(stream) );
+    const XP_U8* msgBuf = !!stream ? stream_getPtr(stream) : NULL;
+    XP_U16 msgLen = !!stream ? stream_getSize(stream) : 0;
+    (*proc)( closure, topic, msgBuf, msgLen );
 }
 
 void
@@ -312,6 +314,26 @@ dvc_makeMQTTInvites( XW_DUtilCtxt* dutil, XWEnv xwe,
 #endif
 
     stream_destroy( stream, xwe );
+}
+
+void
+dvc_makeMQTTNukeInvite( XW_DUtilCtxt* dutil, XWEnv xwe,
+                        MsgAndTopicProc proc, void* closure,
+                        const NetLaunchInfo* nli )
+{
+    LOG_FUNC();
+#ifdef MQTT_GAMEID_TOPICS
+    MQTTDevID myID;
+    dvc_getMQTTDevID( dutil, xwe, &myID );
+    XP_UCHAR devTopic[32];
+    formatMQTTDevTopic( &myID, devTopic, VSIZE(devTopic) );
+    XP_UCHAR gameTopic[64];
+    size_t siz = XP_SNPRINTF( gameTopic, VSIZE(gameTopic),
+                              "%s/%X", devTopic, nli->gameID );
+    XP_ASSERT( siz < VSIZE(gameTopic) );
+    XP_USE(siz);
+    callProc( proc, closure, gameTopic, NULL );
+#endif
 }
 
 /* Ship with == 1, but increase to test */

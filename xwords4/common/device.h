@@ -42,6 +42,9 @@ void dvc_makeMQTTInvites( XW_DUtilCtxt* dutil, XWEnv xwe,
                           MsgAndTopicProc proc, void* closure,
                           const MQTTDevID* addressee,
                           const NetLaunchInfo* nli );
+void dvc_makeMQTTNukeInvite( XW_DUtilCtxt* dutil, XWEnv xwe,
+                             MsgAndTopicProc proc, void* closure,
+                             const NetLaunchInfo* nli );
 
 void dvc_makeMQTTMessages( XW_DUtilCtxt* dutil, XWEnv xwe,
                            MsgAndTopicProc proc, void* closure,

@@ -759,6 +759,25 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dvc_1makeMQTTInvites
 }
 
 JNIEXPORT jobject JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_dvc_1makeMQTTNukeInvite
+( JNIEnv* env, jclass C, jlong jniGlobalPtr, jobject jnli )
+{
+    jobject result;
+    DVC_HEADER(jniGlobalPtr);
+
+    NetLaunchInfo nli;
+    loadNLI( env, &nli, jnli );
+
+    MTPData mtp = { .env = env, };
+
+    dvc_makeMQTTNukeInvite( globalState->dutil, env,
+                            msgAndTopicProc, &mtp, &nli );
+    result = wrapResults( &mtp );
+    DVC_HEADER_END();
+    return result;
+}
+
+JNIEXPORT jobject JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_dvc_1makeMQTTMessages
 ( JNIEnv* env, jclass C, jlong jniGlobalPtr, jstring jAddressee,
   jint jGameID, jbyteArray jmsg )

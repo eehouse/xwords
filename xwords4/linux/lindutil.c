@@ -31,6 +31,7 @@
 #include "linuxdict.h"
 #include "cursesmain.h"
 #include "gtkmain.h"
+#include "mqttcon.h"
 
 static XP_U32 linux_dutil_getCurSeconds( XW_DUtilCtxt* duc, XWEnv xwe );
 static const XP_UCHAR* linux_dutil_getUserString( XW_DUtilCtxt* duc, XWEnv xwe, XP_U16 code );
@@ -129,6 +130,7 @@ linux_dutil_onInviteReceived( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe),
     } else {
         inviteReceivedGTK( params->appGlobals, nli );
     }
+    mqttc_onInviteHandled( params, nli );
 }
 
 static void
