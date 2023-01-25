@@ -152,7 +152,7 @@ public class MultiMsgSink implements TransportProcs {
                                       CommsAddrRec addr, CommsConnType typ,
                                       NetLaunchInfo nli, int timestamp )
     {
-        Log.d( TAG, "sendInvite(%s, %s, %s)", addr, typ, nli );
+        Log.d( TAG, "sendInvite(to=%s, typ=%s, nli=%s)", addr, typ, nli );
         boolean success = false;
         InviteMeans means = null;
         String target = null;

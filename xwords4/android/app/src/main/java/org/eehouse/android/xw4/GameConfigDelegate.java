@@ -642,6 +642,9 @@ public class GameConfigDelegate extends DelegateBase
             // load if the first time through....
             if ( null == m_conTypes ) {
                 m_conTypes = (CommsConnTypeSet)m_carOrig.conTypes.clone();
+                if ( NFCUtils.nfcAvail( m_activity )[0] ) {
+                    m_conTypes.add( CommsConnType.COMMS_CONN_NFC );
+                }
             }
 
             if ( !m_isNewGame ) {
