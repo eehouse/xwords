@@ -375,8 +375,9 @@ public class CommsAddrRec implements Serializable {
 
     public CommsAddrRec populate( Context context, CommsConnTypeSet newTypes )
     {
+        List<CommsConnType> supported = CommsConnTypeSet.getSupported( context );
         for ( CommsConnType typ : newTypes.getTypes() ) {
-            if ( ! conTypes.contains( typ ) ) {
+            if ( supported.contains( typ ) && ! conTypes.contains( typ ) ) {
                 conTypes.add( typ );
                 addTypeDefaults( context, typ );
             }

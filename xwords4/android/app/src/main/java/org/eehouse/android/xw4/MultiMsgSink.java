@@ -189,7 +189,7 @@ public class MultiMsgSink implements TransportProcs {
             DBUtils.recordInviteSent( context, rowid, means, target, true );
         }
 
-        Log.d( TAG, "sendInvite(%s) => %b", addr, success );
+        Log.d( TAG, "sendInvite(%s, %s) => %b", typ, addr, success );
         return success;
     }
 }

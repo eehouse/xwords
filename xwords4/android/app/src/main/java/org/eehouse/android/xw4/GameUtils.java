@@ -621,7 +621,8 @@ public class GameUtils {
 
         UtilCtxt util = new UtilCtxtImpl( context );
         CommonPrefs cp = CommonPrefs.get( context );
-        CommsAddrRec selfAddr = CommsAddrRec.getSelfAddr( context );
+        CommsAddrRec selfAddr = CommsAddrRec
+            .getSelfAddr( context, nli.getTypes() );
         try ( GamePtr gamePtr = XwJNI
               .game_makeFromInvite( nli, util, selfAddr, cp, procs ) ) {
             if ( null != gamePtr ) {

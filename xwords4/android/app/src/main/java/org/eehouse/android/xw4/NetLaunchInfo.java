@@ -350,6 +350,11 @@ public class NetLaunchInfo implements Serializable {
         }
     }
 
+    public CommsConnTypeSet getTypes()
+    {
+        return new CommsConnTypeSet( _conTypes );
+    }
+
     public boolean contains( CommsConnType typ )
     {
         return new CommsConnTypeSet( _conTypes ).contains( typ );
