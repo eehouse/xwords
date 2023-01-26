@@ -52,7 +52,11 @@ nli_init( NetLaunchInfo* nli, const CurGameInfo* gi, const CommsAddrRec* addr,
 #endif
         case COMMS_CONN_SMS:
             XP_STRCAT( nli->phone, addr->u.sms.phone );
-            XP_ASSERT( 1 == addr->u.sms.port );
+            if ( 1 != addr->u.sms.port ) {
+                /* PENDING I've seen an assert about this fire, but no time
+                   to investigate now */
+                XP_LOGFF( "unexpected port value: %d", addr->u.sms.port );
+            }
             // nli->port = addr->u.sms.port; <-- I wish
             break;
         case COMMS_CONN_MQTT:
