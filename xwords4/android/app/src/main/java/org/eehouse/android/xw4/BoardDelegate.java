@@ -2983,7 +2983,7 @@ public class BoardDelegate extends DelegateBase
     private static void noteClosed( long rowid )
     {
         Log.d( TAG, "noteClosed(%d)", rowid );
-        Assert.assertTrueNR( sOpenRows.contains(rowid) );
+        Assert.assertTrueNR( sOpenRows.contains(rowid) ); // fired!!
         sOpenRows.remove( rowid );
     }
 

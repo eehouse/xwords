@@ -81,10 +81,6 @@ public class Perms23 {
         Perm.READ_PHONE_STATE,
     };
 
-    // Neither user 10074 nor current process has
-    // android.permission.READ_PHONE_STATE, android.permission.READ_SMS, or
-    // android.permission.READ_PHONE_NUMBERS
-
     private static Map<Perm, Boolean> sManifestMap = new HashMap<>();
     static boolean permInManifest( Context context, Perm perm )
     {
@@ -449,8 +445,8 @@ public class Perms23 {
         return permsInManifest( context, NBS_PERMS );
     }
 
-    static void tryGetNBSPerms(DelegateBase delegate, int rationaleId, int naKey,
-                               Action action, Object... params)
+    static void tryGetNBSPermsNA( DelegateBase delegate, int rationaleId,
+                                  int naKey, Action action, Object... params )
     {
         tryGetPermsImpl( delegate, NBS_PERMS,
                          LocUtils.getStringOrNull( rationaleId ), naKey,

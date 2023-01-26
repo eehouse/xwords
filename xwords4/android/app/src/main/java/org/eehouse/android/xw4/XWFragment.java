@@ -78,13 +78,6 @@ abstract class XWFragment extends Fragment implements Delegator {
     public void setCommitID( int id ) { m_commitID = id; }
     public int getCommitID() { return m_commitID; }
 
-    protected void onCreate( DelegateBase dlgt, Bundle sis, boolean hasOptionsMenu )
-    {
-        Log.d( TAG, "%H/%s.onCreate() called", this, getClass().getSimpleName() );
-        m_hasOptionsMenu = hasOptionsMenu;
-        this.onCreate( dlgt, sis );
-    }
-
     @Override
     public void onSaveInstanceState( Bundle outState )
     {
@@ -94,6 +87,13 @@ abstract class XWFragment extends Fragment implements Delegator {
         outState.putInt( COMMIT_ID, m_commitID );
         m_dlgt.onSaveInstanceState( outState );
         super.onSaveInstanceState( outState );
+    }
+
+    protected void onCreate( DelegateBase dlgt, Bundle sis, boolean hasOptionsMenu )
+    {
+        Log.d( TAG, "%H/%s.onCreate() called", this, getClass().getSimpleName() );
+        m_hasOptionsMenu = hasOptionsMenu;
+        this.onCreate( dlgt, sis );
     }
 
     protected void onCreate( DelegateBase dlgt, Bundle sis )
