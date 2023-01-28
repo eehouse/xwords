@@ -1567,7 +1567,11 @@ comms_invite( CommsCtxt* comms, XWEnv xwe, const NetLaunchInfo* nli,
 
         elem = addToQueue( comms, xwe, elem );
         XP_LOGFF( "added invite on channel %d", elem->channelNo & CHANNEL_MASK );
-        sendMsg( comms, xwe, elem, COMMS_CONN_NONE );
+        /* Let's not call sendMsg(). On Android creating a game with an
+           invitation in its queue is always followed by opening the game,
+           which results in comms_resendAll() getting called leading to a
+           second send immediately after this. So drop this. */
+        // sendMsg( comms, xwe, elem, COMMS_CONN_NONE );
     }
     LOG_RETURN_VOID();
 }
