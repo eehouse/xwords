@@ -1,6 +1,6 @@
 /* -*- compile-command: "find-and-gradle.sh inXw4dDeb"; -*- */
 /*
- * Copyright © 2009 - 2022 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright © 2009 - 2023 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -1511,7 +1511,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeRematch
 
     const char* gameName = (*env)->GetStringUTFChars( env, jGameName, NULL );
     game_makeRematch( &oldState->game, env, globals->util, &cp,
-                      &state->game, gameName );
+                      &state->game, gameName, XP_FALSE );
     (*env)->ReleaseStringUTFChars( env, jGameName, gameName );
 
     XWJNI_END();                /* matches second XWJNI_START_GLOBALS! */
@@ -2698,7 +2698,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_comms_1invite
         NetLaunchInfo nli;
         loadNLI( env, &nli, jnli );
 
-        comms_invite( comms, env, &nli, &destAddr );
+        comms_invite( comms, env, &nli, &destAddr, XP_FALSE );
     }
     XWJNI_END();
 }

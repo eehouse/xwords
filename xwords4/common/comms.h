@@ -206,7 +206,7 @@ void addrFromStream( CommsAddrRec* addr, XWStreamCtxt* stream );
 void addrToStream( XWStreamCtxt* stream, const CommsAddrRec* addr );
 #ifdef XWFEATURE_COMMS_INVITE
 void comms_invite( CommsCtxt* comms, XWEnv xwe, const NetLaunchInfo* nli,
-                   const CommsAddrRec* destAddr );
+                   const CommsAddrRec* destAddr, XP_Bool sendNow );
 void comms_getInvited( const CommsCtxt* comms, /*XWEnv xwe, */
                        XP_U16* nInvites, CommsAddrRec* inviteRecs );
 #endif

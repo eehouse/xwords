@@ -367,7 +367,7 @@ make_rematch( GtkAppGlobals* apg, const CommonGlobals* cGlobals )
     XW_UtilCtxt* util = newGlobals->cGlobals.util;
     const CommonPrefs* cp = &newGlobals->cGlobals.cp;
     game_makeRematch( &cGlobals->game, NULL_XWE, util, cp,
-                      &newGlobals->cGlobals.game, NULL );
+                      &newGlobals->cGlobals.game, NULL, XP_TRUE );
 
     linuxSaveGame( &newGlobals->cGlobals );
     sqlite3_int64 rowid = newGlobals->cGlobals.rowid;

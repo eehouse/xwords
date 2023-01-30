@@ -1418,7 +1418,7 @@ send_invites( CommonGlobals* cGlobals, XP_U16 nPlayers,
 #endif
 
 #ifdef XWFEATURE_COMMS_INVITE
-    comms_invite( comms, NULL_XWE, &nli, destAddr );
+    comms_invite( comms, NULL_XWE, &nli, destAddr, XP_TRUE );
 #else
     if ( !!destAddr && '\0' != destAddr->u.sms.phone[0] && 0 < destAddr->u.sms.port ) {
         linux_sms_invite( cGlobals->params, &nli,
