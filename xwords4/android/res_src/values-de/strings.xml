@@ -1118,4 +1118,6 @@
     <string name="variant_missing_nbs">Diese Partie ist so konfiguriert, dass sie über Daten-SMS kommuniziert, aber die Google Play Store-Version von CrossWords darf die Play-by-Data-SMS-Funktion nicht mehr unterstützen.
 \n
 \n Sie können die Partie immer noch öffnen, aber es ist möglicherweise nicht in der Lage, Züge zu senden oder zu empfangen.</string>
+    <string name="missing_host_fmt">(Der Server ist ein bekannter Spieler namens \"%1$s\".)</string>
+    <string name="button_invite_history">Geschichte</string>
 </resources>
