@@ -157,11 +157,7 @@ public class XwJNI {
     public static class TopicsAndPackets {
         public String[] topics;
         public byte[][] packets;
-        TopicsAndPackets( String[] topics, byte[][] packets )
-        {
-            this.topics = topics;
-            this.packets = packets;
-        }
+        // default constructor is called from JNI world, so don't add another!
     }
 
     public static TopicsAndPackets dvc_makeMQTTInvites( String invitee, NetLaunchInfo nli )
