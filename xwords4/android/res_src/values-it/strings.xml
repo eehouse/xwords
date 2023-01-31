@@ -9,7 +9,7 @@
     <string name="list_item_rename">Rinomina…</string>
     <string name="list_item_config">Impostazioni…</string>
     <string name="board_menu_file_about">Info CrossWords…</string>
-    <string name="menu_prefs">Impostazioni…</string>
+    <string name="menu_prefs">Impostazioni</string>
     <string name="gamel_menu_dicts">Lista parole…</string>
     <string name="button_reset">Reset</string>
     <string name="button_delete">Cancella</string>
@@ -952,4 +952,14 @@
     <string name="no_copy_network">Le partite già connesse non possono essere copiate. Usa \"Nuovo Modulo\" per copiare una partita già pronta con le stesse impostazioni.</string>
     <string name="robot_name_fmt">%1$s (robot)</string>
     <string name="str_game_name_fmt">%1$s (%2$s)</string>
+    <string name="button_delete_game">Cancella partita</string>
+    <string name="relaypage_url_copied">URL partita copiato negli appunti</string>
+    <plurals name="confirm_nameddeletes_fmt">
+        <item quantity="one">Sei sicuro di voler cancellare la partita %1$s\? Questa operazione è irreversibile.</item>
+        <item quantity="many">Sei sicuro di voler cancellare le partite %1$s\? Questa operazione è irreversibile.</item>
+        <item quantity="other"></item>
+    </plurals>
+    <string name="invites_unsent">Questa partita prevede un giocatore remoto.
+\n
+\nDesideri invitare qualcuno\?</string>
 </resources>
