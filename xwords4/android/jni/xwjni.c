@@ -718,7 +718,7 @@ wrapResults( MTPData* mtp )
 {
     JNIEnv* env = mtp->env;
     jobject result =
-        makeObjectEmptyConst( env, PKG_PATH("jni/XwJNI$TopicsAndPackets"));
+        makeObjectEmptyConstr( env, PKG_PATH("jni/XwJNI$TopicsAndPackets"));
 
     jobjectArray jTopics = makeStringArray( env, mtp->count, mtp->topics );
     setObjectField( env, result, "topics", "[Ljava/lang/String;", jTopics );
@@ -899,7 +899,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_kplr_1getAddr
     XP_U32 lastMod;
     kplr_getAddr( globalState->dutil, env, name, &addr, &lastMod );
     (*env)->ReleaseStringUTFChars( env, jName, name );
-    jaddr = makeObjectEmptyConst( env, PKG_PATH("jni/CommsAddrRec") );
+    jaddr = makeObjectEmptyConstr( env, PKG_PATH("jni/CommsAddrRec") );
     setJAddrRec( env, jaddr, &addr );
 
     if ( !!jLastMod ) {
@@ -990,7 +990,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_nli_1from_1stream
 
     NetLaunchInfo nli = {0};
     if ( nli_makeFromStream( &nli, stream ) ) {
-        jnli = makeObjectEmptyConst( env, PKG_PATH("NetLaunchInfo") );
+        jnli = makeObjectEmptyConstr( env, PKG_PATH("NetLaunchInfo") );
         setNLI( env, jnli, &nli );
     } else {
         XP_LOGFF( "nli_makeFromStream failed" );
@@ -1191,7 +1191,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1getInfo
 #endif
     DictionaryCtxt* dict = (DictionaryCtxt*)dictPtr;
     if ( NULL != dict ) {
-        jinfo = makeObjectEmptyConst( env, PKG_PATH("jni/DictInfo") );
+        jinfo = makeObjectEmptyConstr( env, PKG_PATH("jni/DictInfo") );
         setInt( env, jinfo, "wordCount", dict_getWordCount( dict, env ) );
         setString( env, jinfo, "md5Sum", dict_getMd5Sum( dict ) );
         setString( env, jinfo, "isoCodeStr", dict_getISOCode( dict ) );
@@ -2205,7 +2205,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_model_1getPlayersLastScore
     XP_Bool valid = model_getPlayersLastScore( state->game.model, env,
                                                player, &lmi );
 
-    jlmi = makeObjectEmptyConst( env, PKG_PATH("jni/LastMoveInfo") );
+    jlmi = makeObjectEmptyConstr( env, PKG_PATH("jni/LastMoveInfo") );
     setBool( env, jlmi, "isValid", valid );
     if ( valid ) {
         setBool( env, jlmi, "inDuplicateMode", lmi.inDuplicateMode );
@@ -2293,7 +2293,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_comms_1getSelfAddr
     XP_ASSERT( state->game.comms );
     CommsAddrRec addr;
     comms_getSelfAddr( state->game.comms, &addr );
-    jaddr = makeObjectEmptyConst( env, PKG_PATH("jni/CommsAddrRec") );
+    jaddr = makeObjectEmptyConstr( env, PKG_PATH("jni/CommsAddrRec") );
     setJAddrRec( env, jaddr, &addr );
     XWJNI_END();
     return jaddr;
@@ -2308,7 +2308,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_comms_1getHostAddr
     XP_ASSERT( state->game.comms );
     CommsAddrRec addr;
     if ( comms_getHostAddr( state->game.comms, &addr ) ) {
-        jaddr = makeObjectEmptyConst( env, PKG_PATH("jni/CommsAddrRec") );
+        jaddr = makeObjectEmptyConstr( env, PKG_PATH("jni/CommsAddrRec") );
         setJAddrRec( env, jaddr, &addr );
     }
     XWJNI_END();

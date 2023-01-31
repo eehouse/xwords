@@ -1,7 +1,7 @@
 /* -*- compile-command: "find-and-gradle.sh inXw4dDeb"; -*- */
 /*
- * Copyright © 2009-2020 by Eric House (xwords@eehouse.org).  All
- * rights reserved.
+ * Copyright © 2009 - 2023 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -514,7 +514,7 @@ makeObject( JNIEnv* env, const char* className, const char* initSig, ... )
 }
 
 jobject
-makeObjectEmptyConst( JNIEnv* env, const char* className )
+makeObjectEmptyConstr( JNIEnv* env, const char* className )
 {
     return makeObject( env, className, "()V" );
 }
@@ -524,7 +524,7 @@ makeJAddr( JNIEnv* env, const CommsAddrRec* addr )
 {
     jobject jaddr = NULL;
     if ( NULL != addr ) {
-        jaddr = makeObjectEmptyConst( env, PKG_PATH("jni/CommsAddrRec") );
+        jaddr = makeObjectEmptyConstr( env, PKG_PATH("jni/CommsAddrRec") );
         setJAddrRec( env, jaddr, addr );
     }
     return jaddr;
@@ -584,7 +584,7 @@ addrTypesToJ( JNIEnv* env, const CommsAddrRec* addr )
 {
     XP_ASSERT( !!addr );
     jobject result =
-        makeObjectEmptyConst( env, PKG_PATH("jni/CommsAddrRec$CommsConnTypeSet") );
+        makeObjectEmptyConstr( env, PKG_PATH("jni/CommsAddrRec$CommsConnTypeSet") );
     XP_ASSERT( !!result );
 
     jmethodID mid2 = getMethodID( env, result, "add", 
@@ -709,7 +709,7 @@ intToJenumField( JNIEnv* env, jobject jobj, int val, const char* field,
     jfieldID fid;
     jobject jenum = getObjectFieldWithFID( env, jobj, field, buf, &fid );
     if ( !jenum ) {       /* won't exist in new object */
-        jenum = makeObjectEmptyConst( env, fieldSig );
+        jenum = makeObjectEmptyConstr( env, fieldSig );
         XP_ASSERT( !!jenum );
         (*env)->SetObjectField( env, jobj, fid, jenum );
     }

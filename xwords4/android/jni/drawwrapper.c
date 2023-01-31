@@ -1,6 +1,6 @@
 /* -*- compile-command: "find-and-gradle.sh inXw4dDeb"; -*- */
 /* 
- * Copyright 2001-2021 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2001-2023 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -187,7 +187,7 @@ makeDSI( AndDraw* draw, XWEnv xwe, int indx, const DrawScoreInfo* dsi )
     jobject dsiobj = draw->jCache[indx];
 
     if ( !dsiobj ) {
-        dsiobj = makeObjectEmptyConst( env, PKG_PATH("jni/DrawScoreInfo") );
+        dsiobj = makeObjectEmptyConstr( env, PKG_PATH("jni/DrawScoreInfo") );
 
         draw->jCache[indx] = (*env)->NewGlobalRef( env, dsiobj );
         deleteLocalRef( env, dsiobj );

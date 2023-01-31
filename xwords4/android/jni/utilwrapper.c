@@ -1,6 +1,6 @@
 /* -*- compile-command: "find-and-gradle.sh inXw4dDeb"; -*- */
 /* 
- * Copyright 2001 - 2022 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2001 - 2023 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -908,7 +908,7 @@ and_dutil_onInviteReceived( XW_DUtilCtxt* duc, XWEnv xwe, const NetLaunchInfo* n
     DUTIL_CBK_HEADER( "onInviteReceived", "(L" PKG_PATH("NetLaunchInfo") ";)V" );
 
     /* Allocate a new NetLaunchInfo */
-    jobject jnli = makeObjectEmptyConst( env, PKG_PATH("NetLaunchInfo") );
+    jobject jnli = makeObjectEmptyConstr( env, PKG_PATH("NetLaunchInfo") );
     XP_ASSERT( !!jnli );
     setNLI( env, jnli, nli );
 

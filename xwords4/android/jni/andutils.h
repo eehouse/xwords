@@ -1,6 +1,6 @@
 /*
- * Copyright © 2009-2010 by Eric House (xwords@eehouse.org).  All
- * rights reserved.
+ * Copyright © 2009 - 2023 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -93,7 +93,7 @@ jmethodID getMethodID( JNIEnv* env, jobject obj, const char* proc,
                        const char* sig );
 
 jobject makeObject( JNIEnv* env, const char* className, const char* initSig, ... );
-jobject makeObjectEmptyConst( JNIEnv* env, const char* className );
+jobject makeObjectEmptyConstr( JNIEnv* env, const char* className );
 
 jobject makeJAddr( JNIEnv* env, const CommsAddrRec* addr );
 jobject setJAddrRec( JNIEnv* env, jobject jaddr, const CommsAddrRec* addr );

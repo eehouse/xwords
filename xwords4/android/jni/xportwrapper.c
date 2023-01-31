@@ -1,6 +1,6 @@
 /* -*-mode: C; compile-command: "find-and-gradle.sh inXw4dDeb"; -*- */
 /* 
- * Copyright 2001 - 2020 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2001 - 2023 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -65,7 +65,7 @@ and_xport_sendInvite( XWEnv xwe, const NetLaunchInfo* nli, XP_U32 createdStamp,
         jmethodID mid = getMethodID( env, aprocs->jxport, "transportSendInvt", sig );
 
         jobject jaddr = makeJAddr( env, addr );
-        jobject jnli = makeObjectEmptyConst( env, PKG_PATH("NetLaunchInfo") );
+        jobject jnli = makeObjectEmptyConstr( env, PKG_PATH("NetLaunchInfo") );
         XP_ASSERT( !!jnli );
         setNLI( env, jnli, nli );
         jobject jConType =
