@@ -2790,10 +2790,6 @@ pour la langue</string>
     <string name="invite_choice_relay">Internet/Relai</string>
     <string name="invite_notice_title">Nouvelle partie via une invitation</string>
     <string name="new_game_body">Appuyer pour commencer la nouvelle partie</string>
-    <plurals name="invite_relay_desc_fmt">
-        <item quantity="one">Cochez l\'appareil que vous voulez inviter à votre nouvelle partie, puis appuyez sur « %2$s ».</item>
-        <item quantity="other">Cochez les %1$d appareils que vous voulez inviter à votre nouvelle partie, puis appuyez sur « %2$s ».</item>
-    </plurals>
     <plurals name="confirm_clear_sms_fmt">
         <item quantity="one">Êtes-vous sûr de vouloir effacer le numéro de téléphone coché ?</item>
         <item quantity="other">Êtes-vous sûr de vouloir supprimer les %1$d numéros de téléphone cochés ?</item>

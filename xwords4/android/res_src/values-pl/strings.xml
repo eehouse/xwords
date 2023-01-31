@@ -775,11 +775,6 @@
         <item quantity="few">Sprawdź %1$d numerów telefonów, które chcesz zaprosić do nowej gry, a następnie stuknij \"%2$s\".</item>
         <item quantity="many">Sprawdź %1$d numery telefonów, które chcesz zaprosić do nowej gry, a następnie stuknij \"%2$s\".</item>
     </plurals>
-    <plurals name="confirm_clear_relay_fmt">
-        <item quantity="one">Czy na pewno chcesz usunąć zaznaczony rekord RelayID\?</item>
-        <item quantity="few">Czy na pewno chcesz usunąć %1$d zaznaczonych rekordów RelayID\?</item>
-        <item quantity="many">Czy na pewno chcesz usunąć %1$d zaznaczone rekordy RelayID\?</item>
-    </plurals>
     <plurals name="groups_confirm_del_games_fmt">
         <item quantity="one">"
 \n

@@ -627,10 +627,6 @@
     <string name="invite_choice_relay">インターネット/リレー</string>
     <string name="invite_notice_title">招待状を介した新しいゲーム</string>
     <string name="new_game_body">タップすると、新しいゲームを開きます</string>
-    <plurals name="invite_relay_desc_fmt">
-        <item quantity="one">あなたの新しいゲームに招待するデバイスをチェックして、\"%2$s\" をタップしてください。</item>
-        <item quantity="other">あなたの新しいゲームに招待する%1$dのデバイスをチェックして、\"%2$s\" をタップしてください。</item>
-    </plurals>
     <plurals name="confirm_clear_sms_fmt">
         <item quantity="other">%1$d のチェックした電話番号を削除してもよろしいですか\?</item>
     </plurals>
