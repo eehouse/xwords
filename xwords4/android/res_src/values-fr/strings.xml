@@ -2790,7 +2790,6 @@ pour la langue</string>
     <string name="invite_choice_relay">Internet/Relai</string>
     <string name="invite_notice_title">Nouvelle partie via une invitation</string>
     <string name="new_game_body">Appuyer pour commencer la nouvelle partie</string>
-    <string name="relay_invite_title">Invitation par relai</string>
     <plurals name="invite_relay_desc_fmt">
         <item quantity="one">Cochez l\'appareil que vous voulez inviter à votre nouvelle partie, puis appuyez sur « %2$s ».</item>
         <item quantity="other">Cochez les %1$d appareils que vous voulez inviter à votre nouvelle partie, puis appuyez sur « %2$s ».</item>
@@ -2849,10 +2848,6 @@ pour la langue</string>
     <string name="download_more">Autres téléchargements…</string>
     <string name="disableds_title">Types d\'adresses désactivées</string>
     <string name="get_sms_name">Nom de contact (optionnel) :</string>
-    <plurals name="confirm_clear_relay_fmt">
-        <item quantity="one">Êtes-vous sûr de vouloir effacer l\'enregistrement RelayID sélectionné ?</item>
-        <item quantity="other">Êtes-vous sûr de vouloir effacer les %1$d enregistrements RelayID sélectionnés ?</item>
-    </plurals>
     <string name="not_again_archive">L\'archivage utilise un groupe spécial nommé « Archive » pour enregistrer les parties finies que vous souhaitez garder. Et, vu qu\'effacer une archive entière est facile, l\'archivage est aussi une bonne manière de sélectionner des parties à effacer – si c\'est ce que vous préférez faire.
 \n
 \n(Effacer le groupe Archive ne cause pas de problème car il sera recréé de zéro si nécessaire.)</string>
@@ -3116,7 +3111,6 @@ pour la langue</string>
         <item quantity="other">Êtes-vous sûr de vouloir effacer les parties %1$s \? Cette action ne peut pas être annulée.</item>
     </plurals>
     <string name="choose_expl_default_net">Démarrer une partie en réseau en utilisant les paramètres par défaut</string>
-    <string name="not_again_comms_relay_depr">Le « relai » est un serveur pour passer des messages entre appareils faisant tourner Crosswords. Il est en train d\'être remplacé par un serveur plus moderne appelé « Mosquito ».</string>
     <string name="no_dict_for_move_title">Coup entrant perdu</string>
     <string name="list_item_relaypage">Trafic de la partie…</string>
     <string name="invitee_fmt">(%1$s invité)</string>

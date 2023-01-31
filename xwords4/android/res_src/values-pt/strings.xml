@@ -1590,7 +1590,6 @@
     <string name="invit_expl_sms_fmt">Convite enviado via Data SMS para o número de telefone %1$s em %2$s</string>
     <string name="invite_choice_mqtt">Internet</string>
     <string name="not_again_comms_mqtt">Há um servidor na internet que passa mensagens entre aparelhos que executam CrossWords. Ele funciona sempre que tem uma conexão de internet totalmente funcional, mas pode ter problemas em redes WiFi restritas.</string>
-    <string name="not_again_comms_relay_depr">O \"relay\" é um servidor para passar mensagens entre aparelhos que executam CrossWords. Está a ser substituído por um servidor mais moderno chamado \"Mosquitto\".</string>
     <string name="values_both">Letras e Valores</string>
     <string name="values_values">Apenas valores</string>
     <string name="values_faces">Use apenas letras</string>
@@ -2027,10 +2026,6 @@
         <item quantity="one">Tem certeza que quer esquecer o aparelho checado\?</item>
         <item quantity="other">Tem certeza que quer esquecer os %1$d aparelhos checados\?</item>
     </plurals>
-    <plurals name="confirm_clear_relay_fmt">
-        <item quantity="one">Tem certeza que quer apagar o registo RelayID checado\?</item>
-        <item quantity="other">Tem certeza que quer deletar os %1$d registos RelayID checados\?</item>
-    </plurals>
     <plurals name="confirm_clear_sms_fmt">
         <item quantity="one">Tem certeza que quer apagar o número de telefone verificado\?</item>
         <item quantity="other">Tem certeza que quer apagar os %1$d números de telefone verificados\?</item>
@@ -2045,10 +2040,6 @@
         <item quantity="one">Selecione o nome do aparelho WiFiDirect que quer convidar para um novo jogo, depois toque no “%2$s”.</item>
         <item quantity="other">Selecione os nomes dos %1$d aparelhos WiFiDirect que quer convidar para um novo jogo, depois toque no “%2$s”.</item>
     </plurals>
-    <plurals name="invite_relay_desc_fmt">
-        <item quantity="one">Por favor cheque o aparelho que quer convidar para o seu novo jogo, depois toque em “%2$s”.</item>
-        <item quantity="other">Por favor cheque os %1$d aparelhos que quer convidar para seu novo jogo, depois toque em “%2$s”.</item>
-    </plurals>
     <string name="invite_nbs_desc">Uma mensagem de dados será então entregue ao aparelho com aquele número de telefone. Se CrossWords estiver instalado e tiver as permissões necessárias ele receberá o convite e poderá então jogar.</string>
     <plurals name="invite_sms_desc_fmt">
         <item quantity="one">Por favor cheque o número de telefone que quer convidar para o seu novo jogo, depois clique em “%2$s”.</item>
@@ -2056,7 +2047,6 @@
     </plurals>
     <string name="game_name_label">Nome do jogo:</string>
     <string name="p2p_invite_title">Convite do WiFi Direct</string>
-    <string name="relay_invite_title">Convite do relay</string>
     <string name="sms_invite_title">Convite SMS</string>
     <string name="bt_invite_title">Convite Bluetooth</string>
     <plurals name="bt_scan_progress_fmt">

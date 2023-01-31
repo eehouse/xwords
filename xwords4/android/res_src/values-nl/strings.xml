@@ -623,7 +623,6 @@
     <string name="notify_title_turn_fmt">Jouw beurt is spel %1$s</string>
     <string name="invite_notice_title">Nieuw spel via Uitnodiging</string>
     <string name="new_game_body">Raak aan om het nieuwe spel te openen</string>
-    <string name="relay_invite_title">Relay Uitnodiging</string>
     <plurals name="invite_relay_desc_fmt">
         <item quantity="one">Selecteer het apparaat dat je uit wilt nodigen voor jouw nieuwe spel en druk op \"%2$s\".</item>
         <item quantity="other">Selecteer de %1$d apparaten die je uit wilt nodigen voor jouw nieuwe spel en druk op \"%2$s\".</item>

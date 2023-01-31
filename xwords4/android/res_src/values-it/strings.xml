@@ -415,10 +415,6 @@
         <item quantity="one">Sei sicuro di voler dimenticare il dispositivo segnato\?</item>
         <item quantity="other">Sei sicuro di voler dimenticare i %1$d dispositivi segnati\?</item>
     </plurals>
-    <plurals name="confirm_clear_relay_fmt">
-        <item quantity="one">Sei sicuro di voler cancellare la voce RelayID segnata\?</item>
-        <item quantity="other">Sei sicuro di voler cancellare le %1$d voci RelayID segnate\?</item>
-    </plurals>
     <plurals name="confirm_clear_sms_fmt">
         <item quantity="one">Sei sicuro di voler cancellare il numero di telefono segnato\?</item>
         <item quantity="other">Sei sicuro di voler cancellare i %1$d numeri di telefono segnati\?</item>
@@ -436,10 +432,6 @@
         <item quantity="one">Per favore, scegli il nome del dispositivo in WiFiDirect che vuoi invitare alla partita, poi tocca “%2$s”.</item>
         <item quantity="other">Per favore, scegli il nome dei %1$d dispositivi in WiFiDirect che vuoi invitare alla partita, poi tocca “%2$s”.</item>
     </plurals>
-    <plurals name="invite_relay_desc_fmt">
-        <item quantity="one">Per favore, controlla il dispositivo che vuoi invitare alla partita, poi tocca “%2$s”.</item>
-        <item quantity="other">Per favore, controlla i %1$d dispositivi che vuoi invitare alla partita, poi tocca “%2$s”.</item>
-    </plurals>
     <string name="invite_nbs_desc">Un messaggio sarà inviato al dispositivo con questo numero di telefono. Se CrossWords è installato e ha i permessi attivi riceverà direttamente l\'invito e la partita può iniziare.</string>
     <plurals name="invite_sms_desc_fmt">
         <item quantity="one">Per favore, controlla il numero di telefono che vuoi invitare alla partita, poi tocca “%2$s”.</item>
@@ -449,7 +441,6 @@
     <string name="new_name_body_fmt">%1$s ti ha invitato a giocare</string>
     <string name="game_name_label">Nome Partita:</string>
     <string name="p2p_invite_title">Invito WiFi Direct</string>
-    <string name="relay_invite_title">Rispondi invito</string>
     <string name="sms_invite_title">Invito via SMS</string>
     <string name="bt_invite_title">Invito Bluetooth</string>
     <string name="button_invite">Invito controllato</string>

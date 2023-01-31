@@ -615,14 +615,9 @@
     <string name="bt_bad_proto_fmt">Versjonen av CrossWords på \"%1$s\" er ukompatibel med den for spill ved bruk av Blåtann. Én av dere må oppgradere før du kan fortsette.</string>
     <string name="sms_bad_proto_fmt">Versjonen av CrossWords på telefonen med nummer \"%1$s\" er ikke kompatibel med den for spill ved bruk av SMS. Én av dere må oppgradere før du kan fortsette.</string>
     <string name="button_invite">Invitasjon sjekket</string>
-    <string name="relay_invite_title">Relé-invitasjon</string>
     <plurals name="invite_sms_desc_fmt">
         <item quantity="one">Velg telefonnummeret du ønsker å invitere til ditt nye spill, trykk så \"%2$s\".</item>
         <item quantity="other">Velg de %1$d telefonnummerne du ønsker å invitere til ditt nye spill, trykk så \"%2$s\".</item>
-    </plurals>
-    <plurals name="invite_relay_desc_fmt">
-        <item quantity="one">Velg enheten du ønsker å invitere til ditt nye spill, trykk så \"%2$s\".</item>
-        <item quantity="other">Velg de %1$d enhetene du ønsker å invitere til ditt nye spill, trykk så \"%2$s\".</item>
     </plurals>
     <string name="warn_nomobile_fmt">Nummeret %1$s for %2$s er ikke et \"mobil\"-nummer. Importer uansett?</string>
     <string name="empty_sms_inviter">Denne telefonlisten er tom. Bruk \"Importer kontakt\"-knappen for å legge til folk du ønsker å invitere, bruk +knappen for å skrive inn nummer direkte.</string>
@@ -661,10 +656,6 @@
 \n(Sletting av arkivgruppen er trygt fordi den vil bli gjenopprettet igjen når det trengs.)</string>
     <string name="pick_faceup">Plukk flis med bokstavene avdekt</string>
     <string name="invite_p2p_desc_extra">Kun spillere som er tilgjengelig vises. Hvis en enhet i nærheten ikke vises, forsikre deg om at Wi-Fi er slått på, og at CrossWords er installert, og at spill via Wi-Fi Direct er påslått.</string>
-    <plurals name="confirm_clear_relay_fmt">
-        <item quantity="one">Er du sikker på at du ønsker å slette valgt relé-ID-opptak?</item>
-        <item quantity="other">Er du sikker på at du ønsker å slette %1$d valgte relé-ID-opptak?</item>
-    </plurals>
     <string name="warn_unlimited">Er du sikker på at dette nummeret er på en konto med ubegrenset SMS? Trykk \"Avbryt\" hvis du ikke er sikker.</string>
     <string name="menu_flip">Flipp brettet</string>
     <string name="connstat_net_noaddr">Dette nettverksspillet mangler en måte å koble til på, og kan derfor ikke spilles.

@@ -673,7 +673,6 @@ Introduïu el vostre nom aquí. S\'usarà en crear partides noves. (Podreu
     <string name="notify_title_turn_fmt">Teniu el torn en la partida %1$s</string>
     <string name="invite_notice_title">Partida nova via invitació</string>
     <string name="new_game_body">Toqueu per a obrir una partida nova</string>
-    <string name="relay_invite_title">Invitació via repetidor</string>
     <string name="p2p_invite_title">Invitació via mode directe per WiFi</string>
     <string name="chat_sender_fmt">%1$s:</string>
     <string name="summary_busy">Resum no disponible</string>
@@ -706,19 +705,11 @@ Introduïu el vostre nom aquí. S\'usarà en crear partides noves. (Podreu
     <string name="group_name_archive">Arxiva</string>
     <string name="duplicate_group_name_fmt">El grup «%1$s» ja existeix.</string>
     <string name="bt_pair_settings">Aparella\'n més</string>
-    <plurals name="invite_relay_desc_fmt">
-        <item quantity="one">Comproveu l\'aparell que voleu convidar a la partida nova, després toqueu «%2$s».</item>
-        <item quantity="other">Comproveu els %1$d aparells que voleu convidar a la partida nova, després toqueu «%2$s».</item>
-    </plurals>
     <string name="invite_p2p_desc_extra">Només es mostren els aparells que són disponibles actualment. Si un aparell proper no es mostra, assegureu-vos que la WiFi és habilitada, que té el CrossWords instal·lat i que el joc via «WiFi Direct» és habilitat.</string>
     <string name="empty_p2p_inviter">Ara mateix no hi ha cap aparell accessible via WiFiDirect que tingui el CrossWords instal·lat.</string>
     <plurals name="confirm_clear_sms_fmt">
         <item quantity="one">Esteu segur de voler suprimir el número de telèfon seleccionat?</item>
         <item quantity="other">Esteu segur de voler suprimir els %1$d números de telèfon seleccionats?</item>
-    </plurals>
-    <plurals name="confirm_clear_relay_fmt">
-        <item quantity="one">Esteu segur de voler suprimir el registre RelayID seleccionat?</item>
-        <item quantity="other">Esteu segur de voler suprimir els %1$d registres RelayID seleccionats?</item>
     </plurals>
     <string name="invites_net_fmt">S\'han enviat les invitacions per a la partida connectada via %1$s:</string>
     <string name="force_tablet_tablet">Força la disposició de tauleta</string>

@@ -430,7 +430,6 @@
     <string name="button_invite">Weryfikacja zaproszenia</string>
     <string name="bt_invite_title">Zaproszenie Bluetooth</string>
     <string name="sms_invite_title">Zaproszenie SMS</string>
-    <string name="relay_invite_title">Zaproszenie na przekaźnik</string>
     <string name="p2p_invite_title">Zaproszenie bezpośrednie WiFi</string>
     <string name="game_name_label">Nazwa nowej gry:</string>
     <string name="new_name_body_fmt">%1$s zaprosił cię do gry</string>
@@ -775,11 +774,6 @@
         <item quantity="one">Sprawdź numer telefonu, który chcesz zaprosić do nowej gry, a następnie stuknij \"%2$s\".</item>
         <item quantity="few">Sprawdź %1$d numerów telefonów, które chcesz zaprosić do nowej gry, a następnie stuknij \"%2$s\".</item>
         <item quantity="many">Sprawdź %1$d numery telefonów, które chcesz zaprosić do nowej gry, a następnie stuknij \"%2$s\".</item>
-    </plurals>
-    <plurals name="invite_relay_desc_fmt">
-        <item quantity="one">Sprawdź urządzenie, które chcesz zaprosić do swojej nowej gry, a następnie stuknij \"%2$s\".</item>
-        <item quantity="few">Sprawdź urządzenia, które chcesz zaprosić do swojej nowej gry, a następnie stuknij \"%2$s\".</item>
-        <item quantity="many">Sprawdź urządzeń, które chcesz zaprosić do swojej nowej gry, a następnie stuknij \"%2$s\".</item>
     </plurals>
     <plurals name="confirm_clear_relay_fmt">
         <item quantity="one">Czy na pewno chcesz usunąć zaznaczony rekord RelayID\?</item>

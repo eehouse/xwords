@@ -631,7 +631,6 @@
     <string name="not_again_comms_mqtt">Há um servidor na internet que passa mensagens entre dispositivos que estão rodando CrossWords. Ele funciona sempre que você tiver uma conexão de internet totalmente funcional, mas pode ter problemas em redes WiFi restritas.</string>
     <string name="mqtt_invite_title">Convite MQTT</string>
     <string name="mqtt_port">Porta MQTT</string>
-    <string name="relay_invite_title">Convite do relay</string>
     <string name="mqtt_host">Internet/Host MQTT</string>
     <string name="advanced_summary">Você deveria nunca precisar destes…</string>
     <string name="advanced">Para debug</string>
@@ -818,11 +817,6 @@
         <item quantity="many">Selecione os nomes dos %1$d dispositivos WiFiDirect que você deseja convidar para um novo jogo, então toque no “%2$s”.</item>
         <item quantity="other">Selecione os nomes dos %1$d dispositivos WiFiDirect que você deseja convidar para um novo jogo, então toque no “%2$s”.</item>
     </plurals>
-    <plurals name="invite_relay_desc_fmt">
-        <item quantity="one">Verifique o dispositivo que você deseja convidar para seu novo jogo, então toque em “%2$s”.</item>
-        <item quantity="many">Verifique os %1$d dispositivos que você deseja convidar para seu novo jogo, então toque em “%2$s”.</item>
-        <item quantity="other">Verifique os %1$d dispositivos que você deseja convidar para seu novo jogo, então toque em “%2$s”.</item>
-    </plurals>
     <string name="summary_conn">Jogo rodando</string>
     <string name="summary_gameover">Fim de jogo</string>
     <string name="summary_wait_guest">Não conectado</string>
@@ -997,11 +991,6 @@
         <item quantity="other">%1$s (%2$d jogos)</item>
     </plurals>
     <string name="menu_flip">Virar tabuleiro</string>
-    <plurals name="confirm_clear_relay_fmt">
-        <item quantity="one">Tem certeza que deseja excluir o registro RelayID verificado\?</item>
-        <item quantity="many">Tem certeza que deseja excluir os %1$d registros RelayID verificados\?</item>
-        <item quantity="other">Tem certeza que deseja excluir os %1$d registros RelayID verificados\?</item>
-    </plurals>
     <string name="button_addBlank">+Vazio</string>
     <string name="not_again_arrow">Há duas maneiras de mover quadrados para o tabuleiro.
 \n
@@ -1063,7 +1052,6 @@
         <item quantity="many">Tem certeza de que deseja excluir os jogos %1$s\? Essa ação não pode ser desfeita.</item>
         <item quantity="other">Tem certeza de que deseja excluir os jogos %1$s\? Essa ação não pode ser desfeita.</item>
     </plurals>
-    <string name="not_again_comms_relay_depr">O “relay” é um servidor para passar mensagens entre dispositivos rodando CrossWords. Está a ser substituído por um servidor mais moderno chamado “Mosquitto.”</string>
     <string name="list_item_relaypage">Tráfego do jogo</string>
     <string name="invitee_fmt">(%1$s convidado)</string>
     <string name="not_again_traysize">Esta nova configuração altera a quantidade de quadrados na estante.

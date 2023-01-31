@@ -360,7 +360,6 @@
     <string name="button_invite">Einladung überprüft</string>
     <string name="bt_invite_title">Bluetooth-Einladung</string>
     <string name="sms_invite_title">SMS-Einladung</string>
-    <string name="relay_invite_title">Zwischenstation-Einladung</string>
     <string name="p2p_invite_title">Wi-Fi-Direct-Einladung</string>
     <string name="game_name_label">Name der Partie:</string>
     <string name="new_name_body_fmt">%1$s hat Sie zum Spielen eingeladen</string>
@@ -368,10 +367,6 @@
     <plurals name="invite_sms_desc_fmt">
         <item quantity="one">Bitte überprüfen Sie die Telefonnummer, die Sie zu Ihrer neuen Partie einladen wollen und tippen dann auf „%2$s”.</item>
         <item quantity="other">Bitte überprüfen Sie die %1$d Telefonnummern, die Sie zu Ihrer neuen Partie einladen wollen und tippen dann auf „%2$s”.</item>
-    </plurals>
-    <plurals name="invite_relay_desc_fmt">
-        <item quantity="one">Bitte überprüfen Sie das Gerät, das Sie zu Ihrer neuen Partie einladen wollen und tippen dann auf „%2$s”.</item>
-        <item quantity="other">Bitte überprüfen Sie die %1$d Geräte, die Sie zu Ihrer neuen Partie einladen wollen und tippen dann auf „%2$s”.</item>
     </plurals>
     <plurals name="invite_p2p_desc_fmt">
         <item quantity="one">Bitte überprüfen Sie das Wi-Fi-Direct-Gerät, das Sie zu Ihrer neuen Partie einladen wollen und tippen dann auf „%2$s“.</item>
@@ -387,10 +382,6 @@
     <plurals name="confirm_clear_sms_fmt">
         <item quantity="one">Sind Sie sicher, dass Sie die ausgewählte Telefonnummer löschen wollen?</item>
         <item quantity="other">Sind Sie sicher, dass Sie die %1$d ausgewählten Telefonnummer löschen wollen?</item>
-    </plurals>
-    <plurals name="confirm_clear_relay_fmt">
-        <item quantity="one">Sind Sie sicher, dass Sie den ausgewählten Zwischenstation-ID-Eintrag löschen wollen?</item>
-        <item quantity="other">Sind Sie sicher, dass Sie die %1$d ausgewählten Zwischenstation-ID-Einträge löschen wollen?</item>
     </plurals>
     <string name="summary_conn_sms_fmt">Partie läuft mit %1$s</string>
     <string name="warn_unlimited">Sind Sie sicher, dass diese Nummer in einem Tarif mit unbegrenztem SMS-Versand ist\? Tippen Sie auf „Abbrechen“ falls nicht.</string>
@@ -983,7 +974,6 @@
     <string name="mqtt_qos">MQTT-QOS</string>
     <string name="enable_pending_count_title">Ausstehende Nachrichten anzeigen</string>
     <string name="expl_mqtt_url">URL für neue MQTT-basierte Zwischenstations-API</string>
-    <string name="not_again_comms_relay_depr">Die \"Zwischenstation\" ist ein Server zur Weiterleitung von Nachrichten zwischen Geräten, auf denen CrossWords läuft. Er wird durch einen moderneren Server namens \"Mosquitto\" ersetzt.</string>
     <string name="list_item_markbad">Als beschädigt markieren</string>
     <string name="servicedesc">Zur Übertragung von CrossWords-Zügen</string>
     <string name="dupe_title_fmt">%1$s (dup.)</string>
