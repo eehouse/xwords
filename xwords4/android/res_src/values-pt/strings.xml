@@ -2284,4 +2284,6 @@
     <string name="variant_missing_nbs">Este jogo está configurado para comunicar via SMS de dados, mas a versão do CrossWords da Google Play Store já não tem permissão para oferecer suporte ao recurso Play-by-Data-SMS.
 \n
 \n Ainda pode abrir o jogo, mas pode não conseguir enviar ou receber movimentos.</string>
+    <string name="missing_host_fmt">(O host é um jogador conhecido chamado “%1$s”.)</string>
+    <string name="button_invite_history">Histórico</string>
 </resources>
