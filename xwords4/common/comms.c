@@ -1580,8 +1580,7 @@ comms_invite( CommsCtxt* comms, XWEnv xwe, const NetLaunchInfo* nli,
 }
 
 void
-comms_getInvited( const CommsCtxt* comms, /*XWEnv xwe, */
-                  XP_U16* nInvites, CommsAddrRec* XP_UNUSED_DBG(inviteRecs) )
+comms_getInvited( const CommsCtxt* comms, XP_U16* nInvites )
 {
     XP_U16 count = 0;
 
@@ -1594,15 +1593,6 @@ comms_getInvited( const CommsCtxt* comms, /*XWEnv xwe, */
             XP_U16 thisBit = 1 << channelNo;
             XP_ASSERT( 0 == (thisBit & allBits) ); /* should be no dupes */
             if ( 0 == (thisBit & allBits) ) {
-                XP_ASSERT( !inviteRecs );
-                /* if ( !!inviteRecs && count < *nInvites ) { */
-                /*     const CommsAddrRec* rec; */
-                /*     if ( channelToAddress( comms, xwe, channelNo, &rec ) ) { */
-                /*         inviteRecs[count] = *rec; */
-                /*     } else { */
-                /*         XP_ASSERT(0); /\* what to do? Fail the whole thing? *\/ */
-                /*     } */
-                /* } */
                 ++count;
             }
             allBits |= thisBit;

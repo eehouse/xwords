@@ -518,7 +518,7 @@ informMissing( const ServerCtxt* server, XWEnv xwe )
         nPending = server->nv.pendingRegistrations;
         nDevs = server->nv.nDevices - 1;
         if ( 0 < nPending ) {
-            comms_getInvited( comms, &nInvited, NULL );
+            comms_getInvited( comms, &nInvited );
             if ( nPending < nInvited ) {
                 nInvited = nPending;
             }
