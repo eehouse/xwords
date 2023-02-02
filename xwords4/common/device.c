@@ -528,4 +528,5 @@ dvc_parseMQTTPacket( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* topic,
     } else if ( isCtrlMsg( &myID, topic ) ) {
         dutil_onCtrlReceived( dutil, xwe, buf, len );
     }
+    LOG_RETURN_VOID();
 }

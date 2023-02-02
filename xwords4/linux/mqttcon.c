@@ -98,6 +98,7 @@ connect_callback( struct mosquitto* mosq, void* userdata,
                                             DEFAULT_QOS, 0, NULL );
     XP_LOGFF( "mosquitto_subscribe(topics[0]=%s, etc) => %s, mid=%d", topics[0],
               mosquitto_strerror(err), mid );
+    XP_USE(err);
 }
 
 static void
@@ -167,7 +168,7 @@ handle_gotmsg( GIOChannel* source, GIOCondition XP_UNUSED(condition), gpointer d
 
     dvc_parseMQTTPacket( storage->params->dutil, NULL_XWE,
                          (XP_UCHAR*)topicBuf, msgBuf, msgLen );
-
+    LOG_RETURN_VOID();
     return TRUE;
 } /* handle_gotmsg */
 
