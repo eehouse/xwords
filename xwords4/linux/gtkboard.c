@@ -69,7 +69,6 @@
 /* #include "undo.h" */
 #include "gtkdraw.h"
 #include "memstream.h"
-#include "filestream.h"
 #include "gamesdb.h"
 #include "relaycon.h"
 #include "mqttcon.h"

@@ -233,7 +233,6 @@ MAIN_OBJS = $(BUILD_PLAT_DIR)/linuxmain.o \
 endif
 
 OBJ = \
-	$(BUILD_PLAT_DIR)/filestream.o \
 	$(BUILD_PLAT_DIR)/linuxbt.o \
 	$(BUILD_PLAT_DIR)/uuidhack.o \
 	$(BUILD_PLAT_DIR)/linuxudp.o \
