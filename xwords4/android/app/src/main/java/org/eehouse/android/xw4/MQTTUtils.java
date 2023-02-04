@@ -74,6 +74,7 @@ public class MQTTUtils extends Thread
     private LinkedBlockingQueue<MessagePair> mOutboundQueue = new LinkedBlockingQueue<>();
     private boolean mShouldExit = false;
     private State mState = State.NONE;
+    private boolean mNeedsResend;
 
     private static TimerReceiver.TimerCallback sTimerCallbacks
         = new TimerReceiver.TimerCallback() {
@@ -106,10 +107,15 @@ public class MQTTUtils extends Thread
                 Log.d( TAG, "onNetAvail(avail=%b)", nowAvailable );
                 DbgUtils.assertOnUIThread();
                 if ( nowAvailable ) {
-                    GameUtils.resendAllIf( context, CommsConnType.COMMS_CONN_MQTT );
+                    resendAllIf( context );
                 }
             }
         };
+
+    private static void resendAllIf( Context context )
+    {
+        GameUtils.resendAllIf( context, CommsConnType.COMMS_CONN_MQTT );
+    }
 
     public static void init( Context context )
     {
@@ -155,16 +161,20 @@ public class MQTTUtils extends Thread
 
     static void onConfigChanged( Context context )
     {
-        MQTTUtils instance;
         synchronized ( sInstance ) {
-            instance = sInstance[0];
+            if ( null != sInstance[0] ) {
+                clearInstance( sInstance[0] );
+            }
         }
-        if ( null != instance ) {
-            clearInstance( instance );
-        }
+        getOrStart( context, true );
     }
 
     private static MQTTUtils getOrStart( Context context )
+    {
+        return getOrStart( context, false );
+    }
+
+    private static MQTTUtils getOrStart( Context context, boolean resendOnConnect  )
     {
         MQTTUtils result = null;
         if ( XWPrefs.getMQTTEnabled( context ) ) {
@@ -172,7 +182,7 @@ public class MQTTUtils extends Thread
                 result = sInstance[0];
                 if ( null == result ) {
                     try {
-                        result = new MQTTUtils( context );
+                        result = new MQTTUtils( context, resendOnConnect );
                         setInstance( result );
                         result.start();
                     } catch ( MqttException me ) {
@@ -285,10 +295,11 @@ public class MQTTUtils extends Thread
         curInstance.disconnect();
     }
 
-    private MQTTUtils( Context context ) throws MqttException
+    private MQTTUtils( Context context, boolean resendOnConnect ) throws MqttException
     {
         Log.d( TAG, "%H.<init>()", this );
         mContext = context;
+        mNeedsResend = resendOnConnect;
         mDevID = XwJNI.dvc_getMQTTDevID();
         mSubTopics = XwJNI.dvc_getMQTTSubTopics();
         Assert.assertTrueNR( 16 == mDevID.length() );
@@ -620,10 +631,14 @@ public class MQTTUtils extends Thread
 
     // MqttCallbackExtended
     @Override
-    public void connectComplete(boolean reconnect, String serverURI)
+    public void connectComplete( boolean reconnect, String serverURI )
     {
         Log.d( TAG, "%H.connectComplete(reconnect=%b, serverURI=%s)", this,
                reconnect, serverURI );
+        if ( mNeedsResend ) {
+            mNeedsResend = false;
+            resendAllIf( mContext );
+        }
     }
 
     @Override
