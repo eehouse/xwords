@@ -235,7 +235,7 @@ nliFromData( LaunchParams* params, const SMSMsgLoc* msg, NetLaunchInfo* nliOut )
 #endif
         nli_makeFromStream( nliOut, stream );
     XP_ASSERT( success );
-    stream_destroy( stream, NULL_XWE );
+    stream_destroy( stream );
 }
 
 static void
@@ -321,7 +321,7 @@ linux_sms_invite( LaunchParams* params, const NetLaunchInfo* nli,
     XP_ASSERT( !!arr || !forceOld );
     sendOrRetry( params, arr, INVITE, waitSecs, toPhone, toPort,
                  nli->gameID, "invite" );
-    stream_destroy( stream, NULL_XWE );
+    stream_destroy( stream );
 }
 
 XP_S16

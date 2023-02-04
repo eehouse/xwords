@@ -79,7 +79,7 @@ loadState( XW_DUtilCtxt* dutil, XWEnv xwe )
             loadFromStream( dutil, state, stream );
         }
 
-        stream_destroy( stream, xwe );
+        stream_destroy( stream );
     }
     XP_ASSERT( !state->inUse );
     state->inUse = XP_TRUE;
@@ -100,7 +100,7 @@ saveState( XW_DUtilCtxt* dutil, XWEnv xwe, KPState* state )
         }
         const XP_UCHAR* keys[] = { KNOWN_PLAYERS_KEY, NULL };
         dutil_storeStream( dutil, xwe, keys, stream );
-        stream_destroy( stream, xwe );
+        stream_destroy( stream );
         state->dirty = XP_FALSE;
     }
 }

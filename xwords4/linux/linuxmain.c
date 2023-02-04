@@ -180,7 +180,7 @@ linuxOpenGame( CommonGlobals* cGlobals )
         stream = mem_stream_make_raw( MPPARM(cGlobals->util->mpool)
                                       params->vtMgr );
         if ( !gdb_loadGame( stream, params->pDb, cGlobals->rowid ) ) {
-            stream_destroy( stream, NULL_XWE);
+            stream_destroy( stream );
             stream = NULL;
         }
     }
@@ -191,7 +191,7 @@ linuxOpenGame( CommonGlobals* cGlobals )
                                       cGlobals->util, cGlobals->draw,
                                       &cGlobals->cp, &cGlobals->procs );
         XP_LOGFF( "loaded gi at %p", &cGlobals->gi );
-        stream_destroy( stream, NULL_XWE );
+        stream_destroy( stream );
     }
 
     if ( !opened /* && canMakeFromGI( cGlobals->gi )*/ ) {
@@ -301,7 +301,7 @@ gameGotBuf( CommonGlobals* cGlobals, XP_Bool hasDraw, const XP_U8* buf,
         if ( redraw ) {
             linuxSaveGame( cGlobals );
         }
-        stream_destroy( stream, NULL_XWE );
+        stream_destroy( stream );
 
         /* if there's something to draw resulting from the message, we
            need to give the main loop time to reflect that on the screen
@@ -402,11 +402,11 @@ catGameHistory( CommonGlobals* cGlobals )
         XWStreamCtxt* stream = 
             mem_stream_make( MPPARM(cGlobals->util->mpool)
                              cGlobals->params->vtMgr,
-                             NULL, CHANNEL_NONE, catOnClose );
+                             NULL, CHANNEL_NONE, catOnClose, NULL_XWE );
         model_writeGameHistory( cGlobals->game.model, NULL_XWE, stream,
                                 cGlobals->game.server, gameOver );
         stream_putU8( stream, '\n' );
-        stream_destroy( stream, NULL_XWE );
+        stream_destroy( stream );
     }
 } /* catGameHistory */
 
@@ -418,7 +418,7 @@ catFinalScores( const CommonGlobals* cGlobals, XP_S16 quitter )
 
     stream = mem_stream_make( MPPARM(cGlobals->util->mpool)
                               cGlobals->params->vtMgr,
-                              NULL, CHANNEL_NONE, catOnClose );
+                              NULL, CHANNEL_NONE, catOnClose, NULL_XWE );
     if ( -1 != quitter ) {
         XP_UCHAR buf[128];
         XP_SNPRINTF( buf, VSIZE(buf), "Player %s resigned\n",
@@ -427,7 +427,7 @@ catFinalScores( const CommonGlobals* cGlobals, XP_S16 quitter )
     }
     server_writeFinalScores( cGlobals->game.server, NULL_XWE, stream );
     stream_putU8( stream, '\n' );
-    stream_destroy( stream, NULL_XWE );
+    stream_destroy( stream );
 } /* printFinalScores */
 
 XP_UCHAR*
@@ -463,13 +463,13 @@ linuxSaveGame( CommonGlobals* cGlobals )
                 mem_stream_make_sized( MPPARM(cGlobals->util->mpool)
                                        cGlobals->params->vtMgr, 
                                        cGlobals->lastStreamSize,
-                                       cGlobals, 0, onClose );
+                                       cGlobals, 0, onClose, NULL_XWE );
             stream_open( outStream ); /* needed??? */
 
-            game_saveToStream( &cGlobals->game, NULL_XWE, cGlobals->gi,
-                               outStream, ++cGlobals->curSaveToken );
+            game_saveToStream( &cGlobals->game, cGlobals->gi, outStream,
+                               ++cGlobals->curSaveToken );
             cGlobals->lastStreamSize = stream_getSize( outStream );
-            stream_destroy( outStream, NULL_XWE );
+            stream_destroy( outStream );
 
             game_saveSucceeded( &cGlobals->game, NULL_XWE, cGlobals->curSaveToken );
 
@@ -499,7 +499,7 @@ handle_messages_from( CommonGlobals* cGlobals, const TransportProcs* procs,
                              cGlobals->util, NULL /*draw*/,
                              &cGlobals->cp, procs );
     XP_ASSERT( opened );
-    stream_destroy( stream, NULL_XWE );
+    stream_destroy( stream );
 
     unsigned short len;
     for ( ; ; ) {
@@ -523,7 +523,7 @@ handle_messages_from( CommonGlobals* cGlobals, const TransportProcs* procs,
                                       params->vtMgr );
         stream_putBytes( stream, buf, len );
         (void)game_receiveMessage( &cGlobals->game, NULL_XWE, stream, NULL );
-        stream_destroy( stream, NULL_XWE );
+        stream_destroy( stream );
     }
 
     LOG_RETURN_VOID();
@@ -545,7 +545,7 @@ read_pipe_then_close( CommonGlobals* cGlobals, const TransportProcs* procs )
                              cGlobals->util, NULL /*draw*/,
                              &cGlobals->cp, procs );
     XP_ASSERT( opened );
-    stream_destroy( stream, NULL_XWE );
+    stream_destroy( stream );
 
     int fd = open( params->pipe, O_RDWR );
     XP_ASSERT( fd >= 0 );
@@ -572,7 +572,7 @@ read_pipe_then_close( CommonGlobals* cGlobals, const TransportProcs* procs )
                                           params->vtMgr );
             stream_putBytes( stream, buf, len );
             (void)game_receiveMessage( &cGlobals->game, NULL_XWE, stream, NULL );
-            stream_destroy( stream, NULL_XWE );
+            stream_destroy( stream );
         }
 
         /* 0-length packet closes it off */
@@ -1345,7 +1345,7 @@ linux_relay_ioproc( GIOChannel* source, GIOCondition condition, gpointer data )
                 addr_addType( &addr, COMMS_CONN_RELAY );
                 redraw = game_receiveMessage( &cGlobals->game, NULL_XWE, inboundS, &addr );
 
-                stream_destroy( inboundS, NULL_XWE );
+                stream_destroy( inboundS );
             }
                 
             /* if there's something to draw resulting from the
@@ -2442,7 +2442,7 @@ testStreams( LaunchParams* params )
         XP_ASSERT( num == nums[ii] );
     }
 
-    stream_destroy( stream, NULL );
+    stream_destroy( stream );
     XP_LOGFF( "OK!!" );
 }
 

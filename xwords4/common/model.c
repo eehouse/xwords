@@ -2477,7 +2477,7 @@ printMovePost( ModelCtxt* model, XWEnv xwe, XP_U16 XP_UNUSED(moveN),
 } /* printMovePost */
 
 static void
-copyStack( const ModelCtxt* model, XWEnv xwe, StackCtxt* destStack,
+copyStack( const ModelCtxt* model, StackCtxt* destStack,
            const StackCtxt* srcStack )
 {
     XWStreamCtxt* stream =
@@ -2489,7 +2489,7 @@ copyStack( const ModelCtxt* model, XWEnv xwe, StackCtxt* destStack,
     stack_loadFromStream( destStack, stream );
     XP_ASSERT( stack_getVersion(destStack) == stack_getVersion( srcStack ) );
 
-    stream_destroy( stream, xwe );
+    stream_destroy( stream );
 } /* copyStack */
 
 static ModelCtxt*
@@ -2556,7 +2556,7 @@ scoreLastMove( ModelCtxt* model, XWEnv xwe, MoveInfo* moveInfo, XP_U16 howMany,
     XP_U16 turn;
     XP_S16 moveNum = -1;
 
-    copyStack( model, xwe, tmpModel->vol.stack, model->vol.stack );
+    copyStack( model, tmpModel->vol.stack, model->vol.stack );
 
     if ( !model_undoLatestMoves( tmpModel, xwe, NULL, howMany, &turn,
                                  &moveNum ) ) {
@@ -2675,7 +2675,7 @@ model_listWordsThrough( ModelCtxt* model, XWEnv xwe, XP_U16 col, XP_U16 row,
 {
     XP_Bool found = XP_FALSE;
     ModelCtxt* tmpModel = makeTmpModel( model, xwe, NULL, NULL, NULL, NULL );
-    copyStack( model, xwe, tmpModel->vol.stack, model->vol.stack );
+    copyStack( model, tmpModel->vol.stack, model->vol.stack );
 
     XP_Bool isHorizontal;
     if ( tilesInLine( model, turn, &isHorizontal ) ) {

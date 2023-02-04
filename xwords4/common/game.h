@@ -101,7 +101,7 @@ XP_Bool game_makeFromInvite( XWGame* newGame, XWEnv xwe, const NetLaunchInfo* nl
                              XW_UtilCtxt* util, DrawCtx* draw,
                              CommonPrefs* cp, const TransportProcs* procs );
 
-void game_saveToStream( const XWGame* game, XWEnv xwe, const CurGameInfo* gi,
+void game_saveToStream( const XWGame* game, const CurGameInfo* gi,
                         XWStreamCtxt* stream, XP_U16 saveToken );
 void game_saveSucceeded( const XWGame* game, XWEnv xwe, XP_U16 saveToken );
 

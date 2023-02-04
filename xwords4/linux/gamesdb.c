@@ -319,7 +319,7 @@ addSnapshot( CommonGlobals* cGlobals )
         removeSurface( dctx );
         cGlobals->rowid = writeBlobColumnStream( stream, cGlobals->params->pDb,
                                                  cGlobals->rowid, "snap" );
-        stream_destroy( stream, NULL_XWE );
+        stream_destroy( stream );
     }
 
     LOG_RETURN_VOID();

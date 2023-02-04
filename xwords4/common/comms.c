@@ -327,8 +327,8 @@ static void assertQueueOk( const CommsCtxt* comms );
 static const char* relayCmdToStr( XWRELAY_Cmd cmd );
 # endif
 static void printQueue( const CommsCtxt* comms );
-static void logAddr( const CommsCtxt* comms, XWEnv xwe,
-                     const CommsAddrRec* addr, const char* caller );
+static void logAddr( const CommsCtxt* comms, const CommsAddrRec* addr,
+                     const char* caller );
 #else
 # define ASSERT_ADDR_OK(addr)
 # define assertQueueOk(comms)
@@ -554,13 +554,13 @@ comms_make( MPFORMAL XWEnv xwe, XW_UtilCtxt* util, XP_Bool isServer,
 
     if ( !!selfAddr ) {
         ASSERT_ADDR_OK(selfAddr);
-        logAddr( comms, xwe, &comms->selfAddr, "before selfAddr" );
+        logAddr( comms, &comms->selfAddr, "before selfAddr" );
         comms->selfAddr = *selfAddr;
-        logAddr( comms, xwe, &comms->selfAddr, "after selfAddr" );
+        logAddr( comms, &comms->selfAddr, "after selfAddr" );
     }
     if ( !!hostAddr ) {
         XP_ASSERT( !isServer );
-        logAddr( comms, xwe, hostAddr, __func__ );
+        logAddr( comms, hostAddr, __func__ );
         XP_PlayerAddr channelNo = comms_getChannelSeed( comms );
 #ifdef DEBUG
         AddressRecord* rec = 
@@ -873,7 +873,7 @@ comms_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
     XP_USE( nPlayersTotal );
 #endif
     XP_MEMCPY( &comms->selfAddr, &selfAddr, sizeof(comms->selfAddr) );
-    logAddr( comms, xwe, &selfAddr, __func__ );
+    logAddr( comms, &selfAddr, __func__ );
     comms->flags = flags;
 
     comms->connID = stream_getU32( stream );
@@ -903,7 +903,7 @@ comms_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
         AddressRecord* rec = (AddressRecord*)XP_CALLOC( mpool, sizeof(*rec));
 
         addrFromStream( &rec->addr, stream );
-        logAddr( comms, xwe, &rec->addr, __func__ );
+        logAddr( comms, &rec->addr, __func__ );
 
         if ( STREAM_VERS_SMALLCOMMS <= version ) {
             rec->nextMsgID = stream_getU32VL( stream );
@@ -967,7 +967,7 @@ comms_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
             } else {
                 XP_ASSERT(0);
             }
-            stream_destroy( nliStream, xwe );
+            stream_destroy( nliStream );
         } else {
             msg->msg = (XP_U8*)XP_MALLOC( mpool, len );
             stream_getBytes( stream, msg->msg, len );
@@ -1159,7 +1159,6 @@ addrToStream( XWStreamCtxt* stream, const CommsAddrRec* addrP )
 typedef struct _E2SData {
     CommsCtxt* comms;
     XWStreamCtxt* stream;
-    XWEnv xwe;
 } E2SData;
 
 static ForEachAct
@@ -1181,7 +1180,7 @@ elemToStream( MsgQueueElem* elem, void* closure )
         XP_U16 nliLen = stream_getSize( nliStream );
         stream_putU32VL( stream, nliLen );
         stream_getFromStream( stream, nliStream, nliLen );
-        stream_destroy( nliStream, e2sp->xwe );
+        stream_destroy( nliStream );
     } else {
         stream_putBytes( stream, elem->msg, elem->len );
     }
@@ -1189,8 +1188,7 @@ elemToStream( MsgQueueElem* elem, void* closure )
 }
 
 void
-comms_writeToStream( CommsCtxt* comms, XWEnv xwe,
-                     XWStreamCtxt* stream, XP_U16 saveToken )
+comms_writeToStream( CommsCtxt* comms, XWStreamCtxt* stream, XP_U16 saveToken )
 {
     XP_U16 nAddrRecs;
     AddressRecord* rec;
@@ -1200,7 +1198,7 @@ comms_writeToStream( CommsCtxt* comms, XWEnv xwe,
     stream_setVersion( stream, CUR_STREAM_VERS );
 
     stream_putU8( stream, comms->flags );
-    logAddr( comms, xwe, &comms->selfAddr, __func__ );
+    logAddr( comms, &comms->selfAddr, __func__ );
     addrToStream( stream, &comms->selfAddr );
     stream_putBits( stream, 4, comms->rr.nPlayersHere );
     stream_putBits( stream, 4, comms->rr.nPlayersTotal );
@@ -1229,7 +1227,7 @@ comms_writeToStream( CommsCtxt* comms, XWEnv xwe,
     for ( rec = comms->recs; !!rec; rec = rec->next ) {
 
         const CommsAddrRec* addr = &rec->addr;
-        logAddr( comms, xwe, addr, __func__ );
+        logAddr( comms, addr, __func__ );
         addrToStream( stream, addr );
 
         stream_putU32VL( stream, rec->nextMsgID );
@@ -1246,7 +1244,7 @@ comms_writeToStream( CommsCtxt* comms, XWEnv xwe,
         }
     }
 
-    E2SData e2sd = { .comms = comms, .stream = stream, .xwe = xwe, };
+    E2SData e2sd = { .comms = comms, .stream = stream, };
     forEachElem( comms, elemToStream, &e2sd );
 
     /* This writes 2 bytes instead of 1 if it were smarter. Not worth the work
@@ -1354,8 +1352,8 @@ comms_addMQTTDevID( CommsCtxt* comms, XP_PlayerAddr channelNo,
 }
 
 void
-comms_getAddrs( const CommsCtxt* comms, XWEnv XP_UNUSED_DBG(xwe),
-                CommsAddrRec addr[], XP_U16* nRecs )
+comms_getAddrs( const CommsCtxt* comms, CommsAddrRec addr[],
+                XP_U16* nRecs )
 {
     AddressRecord* recs;
     XP_U16 count;
@@ -1363,7 +1361,7 @@ comms_getAddrs( const CommsCtxt* comms, XWEnv XP_UNUSED_DBG(xwe),
           count < *nRecs && !!recs;
           ++count, recs = recs->next ) {
         XP_MEMCPY( &addr[count], &recs->addr, sizeof(addr[count]) );
-        logAddr( comms, xwe, &addr[count], __func__ );
+        logAddr( comms, &addr[count], __func__ );
     }
     *nRecs = count;
 }
@@ -1521,7 +1519,7 @@ makeElemWithID( const CommsCtxt* comms, XWEnv xwe, MsgID msgID, AddressRecord* r
     stream_putU16( msgStream, flags );
 
     stream_getFromStream( msgStream, hdrStream, stream_getSize(hdrStream) );
-    stream_destroy( hdrStream, xwe );
+    stream_destroy( hdrStream );
 
     if ( 0 < streamSize ) {
         stream_getFromStream( msgStream, stream, streamSize );
@@ -1531,7 +1529,7 @@ makeElemWithID( const CommsCtxt* comms, XWEnv xwe, MsgID msgID, AddressRecord* r
     XP_ASSERT( 0 < newElem->len );
     newElem->msg = (XP_U8*)XP_MALLOC( comms->mpool, newElem->len );
     stream_getBytes( msgStream, newElem->msg, newElem->len );
-    stream_destroy( msgStream, xwe );
+    stream_destroy( msgStream );
 
 #ifdef COMMS_CHECKSUM
     newElem->checksum = dutil_md5sum( comms->dutil, xwe, newElem->msg,
@@ -2091,7 +2089,7 @@ sendMsg( const CommsCtxt* comms, XWEnv xwe, MsgQueueElem* elem,
                     } else {
                         XP_ASSERT( !!comms->procs.sendMsg );
                         XP_U32 gameid = gameID( comms );
-                        logAddr( comms, xwe, &addr, __func__ );
+                        logAddr( comms, &addr, __func__ );
                         XP_UCHAR msgNo[16];
                         formatMsgNo( comms, elem, msgNo, sizeof(msgNo) );
                         XP_ASSERT( 0 != elem->createdStamp );
@@ -2984,7 +2982,7 @@ parseBeefHeader( CommsCtxt* comms, XWStreamCtxt* stream, HeaderStuff* stuff )
 }
 
 static XP_Bool
-parseSmallHeader( CommsCtxt* comms, XWEnv xwe, XWStreamCtxt* msgStream,
+parseSmallHeader( CommsCtxt* comms, XWEnv XP_UNUSED(xwe), XWStreamCtxt* msgStream,
                   HeaderStuff* stuff )
 {
     XP_Bool messageValid = XP_FALSE;
@@ -3008,7 +3006,7 @@ parseSmallHeader( CommsCtxt* comms, XWEnv xwe, XWStreamCtxt* msgStream,
             stuff->lastMsgRcd = stream_getU32VL( hdrStream );
             messageValid = XP_TRUE;
         }
-        stream_destroy( hdrStream, xwe );
+        stream_destroy( hdrStream );
     }
 
     LOG_RETURNF( "%s", boolToStr(messageValid) );
@@ -3252,7 +3250,7 @@ comms_gatherPlayers( CommsCtxt* comms, XWEnv xwe, XP_U32 created )
     if ( 0 == (comms->flags & FLAG_HARVEST_DONE) ) {
         CommsAddrRec addrs[4] = {{0}};
         XP_U16 nRecs = VSIZE(addrs);
-        comms_getAddrs( comms, NULL, addrs, &nRecs );
+        comms_getAddrs( comms, addrs, &nRecs );
 
         const CurGameInfo* gi = comms->util->gameInfo;
         XP_ASSERT( 0 < gi->nPlayers );
@@ -3497,7 +3495,7 @@ rememberChannelAddress( CommsCtxt* comms, XWEnv xwe, XP_PlayerAddr channelNo,
     XP_LOGFF( "(%s)", cbuf );
     listRecs( comms, "entering rememberChannelAddress" );
 
-    logAddr( comms, xwe, addr, __func__ );
+    logAddr( comms, addr, __func__ );
     rec = getRecordFor( comms, xwe, NULL, channelNo );
     if ( !rec ) {
         /* not found; add a new entry */
@@ -3536,8 +3534,8 @@ rememberChannelAddress( CommsCtxt* comms, XWEnv xwe, XP_PlayerAddr channelNo,
 
 #ifdef DEBUG
 static void 
-logAddr( const CommsCtxt* comms, XWEnv xwe,
-         const CommsAddrRec* addr, const char* caller )
+logAddr( const CommsCtxt* comms, const CommsAddrRec* addr,
+         const char* caller )
 {
     if ( !!addr ) {
         char buf[128];
@@ -3599,7 +3597,7 @@ logAddr( const CommsCtxt* comms, XWEnv xwe,
         }
         stream_putU8( stream, '\0' );
         XP_LOGFF( "%s", stream_getPtr( stream ) );
-        stream_destroy( stream, xwe );
+        stream_destroy( stream );
     }
 }
 #endif
@@ -3870,10 +3868,10 @@ getDestID( CommsCtxt* comms, XWEnv XP_UNUSED_DBG(xwe), XP_PlayerAddr channelNo )
                      cbuf, recs->rr.hostID );
             if ( (recs->channelNo & ~CHANNEL_MASK) != masked ) {
                 XP_LOGFF( "rejecting record %p; channelNo doesn't match", recs );
-                logAddr( comms, xwe, &recs->addr, __func__ );
+                logAddr( comms, &recs->addr, __func__ );
             } else if ( !addr_hasType( &recs->addr, COMMS_CONN_RELAY ) ) {
                 XP_LOGFF( "rejecting record %p; no relay address", recs );
-                logAddr( comms, xwe, &recs->addr, __func__ );
+                logAddr( comms, &recs->addr, __func__ );
                 missingRelay = XP_TRUE;
             } else {
                 XP_ASSERT( HOST_ID_NONE == id ); /* no duplicates */
@@ -4024,7 +4022,7 @@ send_via_relay( CommsCtxt* comms, XWEnv xwe, XWRELAY_Cmd cmd, XWHostID destID,
                     setHeartbeatTimer( comms );
                 }
             }
-            stream_destroy( tmpStream, xwe );
+            stream_destroy( tmpStream );
         }
     }
     return success;
@@ -4054,7 +4052,7 @@ sendNoConn( CommsCtxt* comms, XWEnv xwe, const MsgQueueElem* elem, XWHostID dest
                                                       len, msgNo, relayID,
                                                       comms->procs.closure );
             }
-            stream_destroy( stream, xwe);
+            stream_destroy( stream );
         }
     }
 

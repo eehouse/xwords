@@ -64,7 +64,7 @@ typedef struct _AndUtil {
 
 #ifndef XWFEATURE_STANDALONE_ONLY
 static XWStreamCtxt*
-and_util_makeStreamFromAddr( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe),
+and_util_makeStreamFromAddr( XW_UtilCtxt* uc, XWEnv xwe,
                              XP_PlayerAddr channelNo )
 {
 #ifdef DEBUG
@@ -74,7 +74,7 @@ and_util_makeStreamFromAddr( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe),
     XWStreamCtxt* stream = and_empty_stream( MPPARM(util->util.mpool)
                                              globals );
     stream_setAddress( stream, channelNo );
-    stream_setOnCloseProc( stream, and_send_on_close );
+    stream_setOnCloseProc( stream, and_send_on_close, xwe );
     return stream;
 }
 #endif

@@ -171,8 +171,8 @@ XP_Bool comms_getHostAddr( const CommsCtxt* comms, CommsAddrRec* hostAddr );
 void comms_addMQTTDevID( CommsCtxt* comms, XP_PlayerAddr channelNo,
                          const MQTTDevID* devID );
 
-void comms_getAddrs( const CommsCtxt* comms, XWEnv xwe,
-                     CommsAddrRec addr[], XP_U16* nRecs );
+void comms_getAddrs( const CommsCtxt* comms, CommsAddrRec addr[],
+                     XP_U16* nRecs );
 XP_Bool comms_formatRelayID( const CommsCtxt* comms, XP_U16 indx,
                              XP_UCHAR* buf, XP_U16* lenp );
 
@@ -198,7 +198,7 @@ void comms_stop( CommsCtxt* comms
                  , XWEnv xwe
 #endif
                  );
-void comms_writeToStream( CommsCtxt* comms, XWEnv xwe, XWStreamCtxt* stream,
+void comms_writeToStream( CommsCtxt* comms, XWStreamCtxt* stream,
                           XP_U16 saveToken );
 void comms_saveSucceeded( CommsCtxt* comms, XWEnv xwe, XP_U16 saveToken );
 

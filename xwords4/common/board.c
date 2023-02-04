@@ -1175,7 +1175,7 @@ board_commitTurn( BoardCtxt* board, XWEnv xwe, XP_Bool phoniesConfirmed,
             }
 
             if ( NULL != stream ) {
-                stream_destroy( stream, xwe );
+                stream_destroy( stream );
             }
 
             if ( result ) {
@@ -1364,7 +1364,7 @@ timerFiredForPen( BoardCtxt* board, XWEnv xwe )
                         dragDropEnd( board, xwe, board->penDownX, board->penDownY, NULL );
                     }
                 }
-                stream_destroy( stream, xwe );
+                stream_destroy( stream );
             }
 #endif
             if ( !listWords ) {

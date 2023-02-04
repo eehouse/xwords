@@ -899,7 +899,7 @@ mkStream( SMSProto* state )
 static void
 destroyStream( XWStreamCtxt* stream )
 {
-    stream_destroy( stream, NULL );
+    stream_destroy( stream );
 }
 
 #ifdef DEBUG

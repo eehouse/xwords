@@ -636,7 +636,7 @@ server_onRoleChanged( ServerCtxt* server, XWEnv xwe, XP_Bool amNowGuest )
 }
 
 static void
-cleanupServer( ServerCtxt* server, XWEnv xwe )
+cleanupServer( ServerCtxt* server )
 {
     XP_U16 ii;
     for ( ii = 0; ii < VSIZE(server->players); ++ii ){
@@ -653,10 +653,10 @@ cleanupServer( ServerCtxt* server, XWEnv xwe )
     }
 
     if ( !!server->nv.prevMoveStream ) {
-        stream_destroy( server->nv.prevMoveStream, xwe );
+        stream_destroy( server->nv.prevMoveStream );
     }
     if ( !!server->nv.prevWordsStream ) {
-        stream_destroy( server->nv.prevWordsStream, xwe );
+        stream_destroy( server->nv.prevWordsStream );
     }
 
     XP_MEMSET( &server->nv, 0, sizeof(server->nv) );
@@ -668,7 +668,7 @@ server_reset( ServerCtxt* server, XWEnv xwe, CommsCtxt* comms )
     LOG_GAMEID();
     ServerVolatiles vol = server->vol;
 
-    cleanupServer( server, xwe );
+    cleanupServer( server );
 
     vol.comms = comms;
     server->vol = vol;
@@ -677,9 +677,9 @@ server_reset( ServerCtxt* server, XWEnv xwe, CommsCtxt* comms )
 } /* server_reset */
 
 void
-server_destroy( ServerCtxt* server, XWEnv xwe )
+server_destroy( ServerCtxt* server )
 {
-    cleanupServer( server, xwe );
+    cleanupServer( server );
 
     XP_FREE( server->mpool, server );
 } /* server_destroy */
@@ -830,7 +830,7 @@ server_initClientConnection( ServerCtxt* server, XWEnv xwe )
 #ifdef STREAM_VERS_BIGBOARD
         stream_putU8( stream, CUR_STREAM_VERS );
 #endif
-        stream_destroy( stream, xwe );
+        stream_destroy( stream );
     } else {
         XP_LOGFF( "wierd state: %s (expected XWSTATE_NONE); dropping message",
                   getStateStr(server->nv.gameState) );
@@ -850,7 +850,7 @@ sendChatTo( ServerCtxt* server, XWEnv xwe, XP_U16 devIndex, const XP_UCHAR* msg,
         stringToStream( stream, msg );
         stream_putU8( stream, from );
         stream_putU32( stream, timestamp );
-        stream_destroy( stream, xwe );
+        stream_destroy( stream );
     } else {
         XP_LOGFF( "dropping chat %s; queue too full?", msg );
     }
@@ -1629,14 +1629,14 @@ showPrevScore( ServerCtxt* server, XWEnv xwe )
 
             XP_U16 len = stream_getSize( prevStream );
             stream_putBytes( stream, stream_getPtr( prevStream ), len );
-            stream_destroy( prevStream, xwe );
+            stream_destroy( prevStream );
         }
 
         util_informMove( server->vol.util, xwe, prevTurn, stream, server->nv.prevWordsStream );
-        stream_destroy( stream, xwe );
+        stream_destroy( stream );
 
         if ( !!server->nv.prevWordsStream ) {
-            stream_destroy( server->nv.prevWordsStream, xwe );
+            stream_destroy( server->nv.prevWordsStream );
             server->nv.prevWordsStream = NULL;
         }
     }
@@ -2139,7 +2139,7 @@ sendInitialMessage( ServerCtxt* server, XWEnv xwe )
 
         addMQTTDevIDIf( server, xwe, stream );
 
-        stream_destroy( stream, xwe );
+        stream_destroy( stream );
     }
 
     /* Set after messages are built so their connID will be 0, but all
@@ -2260,7 +2260,7 @@ sendBadWordMsgs( ServerCtxt* server, XWEnv xwe )
         /* stream_putU32( stream, hash ); */
         /* XP_LOGFF( "wrote hash: %X", hash ); */
 
-        stream_destroy( stream, xwe );
+        stream_destroy( stream );
 
         freeBWI( MPPARM(server->mpool) &server->illegalWordInfo );
     }
@@ -2848,7 +2848,7 @@ sendMoveTo( ServerCtxt* server, XWEnv xwe, XP_U16 devIndex, XP_U16 turn,
         }
     }
 
-    stream_destroy( stream, xwe );
+    stream_destroy( stream );
 } /* sendMoveTo */
 
 static XP_Bool
@@ -3221,7 +3221,7 @@ sendStreamToDev( ServerCtxt* server, XWEnv xwe, XP_U16 dev, XW_Proto code,
     const XP_U16 dataLen = stream_getSize( data );
     const XP_U8* dataPtr = stream_getPtr( data );
     stream_putBytes( stream, dataPtr, dataLen );
-    stream_destroy( stream, xwe );
+    stream_destroy( stream );
 }
 
 /* Called in the case where nobody was able to move, does a trade. The goal is
@@ -3265,7 +3265,7 @@ dupe_makeAndReportTrade( ServerCtxt* server, XWEnv xwe )
             sendStreamToDev( server, xwe, dev, XWPROTO_DUPE_STUFF, tmpStream );
         }
 
-        stream_destroy( tmpStream, xwe );
+        stream_destroy( tmpStream );
     }
 
     dupe_resetTimer( server, xwe );
@@ -3307,7 +3307,7 @@ dupe_transmitPause( ServerCtxt* server, XWEnv xwe, DupPauseType typ, XP_U16 turn
                 }
             }
         }
-        stream_destroy( tmpStream, xwe );
+        stream_destroy( tmpStream );
     }
 }
 
@@ -3429,7 +3429,7 @@ dupe_commitAndReportMove( ServerCtxt* server, XWEnv xwe, XP_U16 winner,
             sendStreamToDev( server, xwe, dev, XWPROTO_DUPE_STUFF, tmpStream );
         }
 
-        stream_destroy( tmpStream, xwe );
+        stream_destroy( tmpStream );
     }
 
     dupe_resetTimer( server, xwe );
@@ -3533,7 +3533,7 @@ dupe_checkTurns( ServerCtxt* server, XWEnv xwe )
                 }
             }
 
-            stream_destroy( stream, xwe ); /* sends it */
+            stream_destroy( stream ); /* sends it */
             server->nv.dupTurnsSent = XP_TRUE;
         }
     }
@@ -3918,7 +3918,7 @@ endGameInternal( ServerCtxt* server, XWEnv xwe, GameEndReason XP_UNUSED(why),
             stream = messageStreamWithHeader( server, xwe, devIndex,
                                               XWPROTO_END_GAME );
             putQuitter( server, stream, quitter );
-            stream_destroy( stream, xwe );
+            stream_destroy( stream );
         }
 #endif
         doEndGame( server, xwe, quitter );
@@ -3929,7 +3929,7 @@ endGameInternal( ServerCtxt* server, XWEnv xwe, GameEndReason XP_UNUSED(why),
         stream = messageStreamWithHeader( server, xwe, SERVER_DEVICE,
                                           XWPROTO_CLIENT_REQ_END_GAME );
         putQuitter( server, stream, quitter );
-        stream_destroy( stream, xwe );
+        stream_destroy( stream );
 
         /* Do I want to change the state I'm in?  I don't think so.... */
 #endif
@@ -4003,7 +4003,7 @@ tellMoveWasLegal( ServerCtxt* server, XWEnv xwe )
         messageStreamWithHeader( server, xwe, server->lastMoveSource,
                                  XWPROTO_MOVE_CONFIRM );
 
-    stream_destroy( stream, xwe );
+    stream_destroy( stream );
 
     SETSTATE( server, XWSTATE_INTURN );
 } /* tellMoveWasLegal */
@@ -4051,7 +4051,7 @@ sendUndoTo( ServerCtxt* server, XWEnv xwe, XP_U16 devIndex, XP_U16 nUndone,
     stream_putU16( stream, lastUndone );
     stream_putU32( stream, newHash );
 
-    stream_destroy( stream, xwe );
+    stream_destroy( stream );
 } /* sendUndoTo */
 
 static void
@@ -4310,7 +4310,7 @@ server_receiveMessage( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* incoming )
     } /* switch */
 
     XP_ASSERT( isServer == amServer( server ) ); /* caching value is ok? */
-    stream_close( incoming, xwe );
+    stream_close( incoming );
 
     XP_LOGFF( "=> %s (code=%s)", boolToStr(accepted), codeToStr(code) );
     // XP_ASSERT( accepted );      /* do not commit!!! */

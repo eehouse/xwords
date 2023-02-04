@@ -1,6 +1,7 @@
-/* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
+/* -*- compile-command: "cd ../linux && make MEMDEBUG=TRUE -j3"; -*- */
 /* 
- * Copyright 2001 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2001 - 2023 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -52,6 +53,7 @@ extern "C" {
     XP_PlayerAddr channelNo; \
     XP_U8* buf; \
     MemStreamCloseCallback onClose; \
+    XWEnv xwe; \
     XP_U16 nBytesWritten; \
     XP_U16 nBytesAllocated; \
     XP_U16 version; \
@@ -76,12 +78,13 @@ static StreamCtxVTable* make_vtable( MemStreamCtxt* stream );
 XWStreamCtxt* 
 mem_stream_make_raw( MPFORMAL VTableMgr* vtmgr )
 {
-    return mem_stream_make( MPPARM(mpool) vtmgr, NULL, 0, NULL );
+    return mem_stream_make( MPPARM(mpool) vtmgr, NULL, 0, NULL, NULL );
 }
 
 XWStreamCtxt*
-mem_stream_make( MPFORMAL VTableMgr* vtmgr, void* closure, 
-                 XP_PlayerAddr channelNo, MemStreamCloseCallback onClose )
+mem_stream_make( MPFORMAL VTableMgr* vtmgr, void* closure,
+                 XP_PlayerAddr channelNo, MemStreamCloseCallback onClose,
+                 XWEnv xwe )
 {
     StreamCtxVTable* vtable;
     MemStreamCtxt* result = (MemStreamCtxt*)XP_CALLOC( mpool, 
@@ -98,6 +101,7 @@ mem_stream_make( MPFORMAL VTableMgr* vtmgr, void* closure,
     result->closure = closure;
     result->channelNo = channelNo;
     result->onClose = onClose;
+    result->xwe = xwe;
 
     result->isOpen = XP_TRUE;
 #ifdef XWFEATURE_STREAMREF
@@ -109,11 +113,11 @@ mem_stream_make( MPFORMAL VTableMgr* vtmgr, void* closure,
 XWStreamCtxt* 
 mem_stream_make_sized( MPFORMAL VTableMgr* vtmgr, XP_U16 startSize, 
                        void* closure, XP_PlayerAddr channelNo, 
-                       MemStreamCloseCallback onClose )
+                       MemStreamCloseCallback onClose, XWEnv xwe )
 {
     MemStreamCtxt* result =
         (MemStreamCtxt*)mem_stream_make( MPPARM(mpool) vtmgr, closure, 
-                                         channelNo, onClose );
+                                         channelNo, onClose, xwe );
     if ( 0 < startSize ) {
         result->buf = (XP_U8*)XP_CALLOC( mpool, startSize );
         result->nBytesAllocated = startSize;
@@ -416,14 +420,14 @@ mem_stream_open( XWStreamCtxt* p_sctx )
 } /* mem_stream_open */
 
 static void
-mem_stream_close( XWStreamCtxt* p_sctx, XWEnv xwe )
+mem_stream_close( XWStreamCtxt* p_sctx )
 {
     MemStreamCtxt* stream = (MemStreamCtxt*)p_sctx;
 
     XP_ASSERT( stream->isOpen );
 
     if ( !!stream->onClose ) {
-        (*stream->onClose)( p_sctx, xwe, stream->closure );
+        (*stream->onClose)( p_sctx, stream->xwe, stream->closure );
     }
     stream->isOpen = XP_FALSE;
 } /* mem_stream_close */
@@ -499,10 +503,12 @@ mem_stream_getVersion( const XWStreamCtxt* p_sctx )
 } /* mem_stream_getVersion */
 
 static void
-mem_stream_setOnCloseProc( XWStreamCtxt* p_sctx, MemStreamCloseCallback proc )
+mem_stream_setOnCloseProc( XWStreamCtxt* p_sctx, MemStreamCloseCallback proc,
+                           XWEnv xwe )
 {
     MemStreamCtxt* stream = (MemStreamCtxt*)p_sctx;
     stream->onClose = proc;
+    stream->xwe = xwe;
 }
 
 static XWStreamPos
@@ -549,7 +555,7 @@ mem_stream_ref( XWStreamCtxt* p_sctx )
 #endif
 
 static void
-mem_stream_destroy( XWStreamCtxt* p_sctx, XWEnv xwe )
+mem_stream_destroy( XWStreamCtxt* p_sctx )
 {
     MemStreamCtxt* stream = (MemStreamCtxt*)p_sctx;
     if ( 0 ) {
@@ -559,7 +565,7 @@ mem_stream_destroy( XWStreamCtxt* p_sctx, XWEnv xwe )
     } else {
 #endif
         if ( stream->isOpen ) {
-            stream_close( p_sctx, xwe );
+            stream_close( p_sctx );
         }
 
         XP_FREEP( stream->mpool, &stream->buf );

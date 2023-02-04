@@ -58,7 +58,7 @@ typedef struct StreamCtxVTable {
 #ifdef XWFEATURE_STREAMREF
     XWStreamCtxt* (*m_stream_ref)( XWStreamCtxt* dctx );
 #endif
-    void (*m_stream_destroy)( XWStreamCtxt* dctx, XWEnv xwe );
+    void (*m_stream_destroy)( XWStreamCtxt* dctx );
 
     XP_U8 (*m_stream_getU8)( DBG_PROC_FORMAL XWStreamCtxt* dctx );
     void (*m_stream_getBytes)( DBG_PROC_FORMAL XWStreamCtxt* dctx, void* where,
@@ -90,7 +90,7 @@ typedef struct StreamCtxVTable {
                                     XWStreamPos newpos );
 
     void (*m_stream_open)( XWStreamCtxt* dctx );
-    void (*m_stream_close)( XWStreamCtxt* dctx, XWEnv xwe );
+    void (*m_stream_close)( XWStreamCtxt* dctx );
 
     XP_U16 (*m_stream_getSize)( const XWStreamCtxt* dctx );
     XP_U32 (*m_stream_getHash)( const XWStreamCtxt* dctx, XWStreamPos pos );
@@ -106,8 +106,8 @@ typedef struct StreamCtxVTable {
     void (*m_stream_setVersion)( XWStreamCtxt* dctx, XP_U16 vers );
     XP_U16  (*m_stream_getVersion)( const XWStreamCtxt* dctx );
 
-    void  (*m_stream_setOnCloseProc)( XWStreamCtxt* dctx, 
-                                      MemStreamCloseCallback proc );
+    void  (*m_stream_setOnCloseProc)( XWStreamCtxt* dctx, MemStreamCloseCallback proc,
+                                      XWEnv xwe );
 } StreamCtxVTable;
 
 
@@ -120,8 +120,8 @@ struct XWStreamCtxt {
     (sc)->vtable->m_stream_ref((sc))
 #endif
 
-#define stream_destroy(sc,e)                    \
-         (sc)->vtable->m_stream_destroy(sc,(e))
+#define stream_destroy(sc)                      \
+         (sc)->vtable->m_stream_destroy(sc)
 
 #define stream_getU8(sc) \
          (sc)->vtable->m_stream_getU8(DBG_PROC (sc))
@@ -179,8 +179,8 @@ struct XWStreamCtxt {
 #define stream_open(sc) \
          (sc)->vtable->m_stream_open((sc))
 
-#define stream_close(sc, e)                       \
-         (sc)->vtable->m_stream_close((sc), (e))
+#define stream_close(sc)                        \
+         (sc)->vtable->m_stream_close((sc))
 
 #define stream_getSize(sc) \
          (sc)->vtable->m_stream_getSize((sc))
@@ -206,7 +206,7 @@ struct XWStreamCtxt {
 #define stream_getVersion(sc) \
          (sc)->vtable->m_stream_getVersion((sc))
 
-#define stream_setOnCloseProc(sc, p) \
-         (sc)->vtable->m_stream_setOnCloseProc((sc), (p))
+#define stream_setOnCloseProc(sc, p, xwe)                   \
+    (sc)->vtable->m_stream_setOnCloseProc((sc), (p), (xwe))
 
 #endif /* _XWSTREAM_H_ */

@@ -765,11 +765,11 @@ tile_values_impl( GtkGameGlobals* globals, bool full )
                              cGlobals->params->vtMgr,
                              globals, 
                              CHANNEL_NONE, 
-                             catOnClose );
+                             catOnClose, NULL_XWE );
         server_formatDictCounts( cGlobals->game.server, NULL_XWE,
                                  stream, 5, full );
         stream_putU8( stream, '\n' );
-        stream_destroy( stream, NULL_XWE );
+        stream_destroy( stream );
     }
     
 } /* tile_values */
@@ -802,9 +802,9 @@ dump_board( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
                              globals->cGlobals.params->vtMgr,
                              globals, 
                              CHANNEL_NONE, 
-                             catOnClose );
+                             catOnClose, NULL_XWE );
         model_writeToTextStream( globals->cGlobals.game.model, stream );
-        stream_destroy( stream, NULL_XWE );
+        stream_destroy( stream );
     }
 }
 #endif
@@ -947,9 +947,9 @@ handle_commstats( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
             mem_stream_make( MEMPOOL 
                              globals->cGlobals.params->vtMgr,
                              globals, 
-                             CHANNEL_NONE, catOnClose );
+                             CHANNEL_NONE, catOnClose, NULL_XWE );
         comms_getStats( comms, stream );
-        stream_destroy( stream, NULL_XWE );
+        stream_destroy( stream );
     }
 } /* handle_commstats */
 #endif
@@ -962,9 +962,9 @@ handle_memstats( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
     XWStreamCtxt* stream = mem_stream_make( MEMPOOL 
 					    globals->cGlobals.params->vtMgr,
 					    globals, 
-					    CHANNEL_NONE, catOnClose );
+					    CHANNEL_NONE, catOnClose, NULL_XWE );
     mpool_stats( MEMPOOL stream );
-    stream_destroy( stream, NULL_XWE );
+    stream_destroy( stream );
     
 } /* handle_memstats */
 
@@ -1412,7 +1412,7 @@ send_invites( CommonGlobals* cGlobals, XP_U16 nPlayers,
         nli_saveToStream( &nli, stream );
         NetLaunchInfo tmp;
         nli_makeFromStream( &tmp, stream );
-        stream_destroy( stream, NULL_XWE );
+        stream_destroy( stream );
         XP_ASSERT( 0 == memcmp( &nli, &tmp, sizeof(nli) ) );
     }
 #endif
@@ -1703,7 +1703,7 @@ gtkShowFinalScores( const GtkGameGlobals* globals, XP_Bool ignoreTimeout )
     server_writeFinalScores( cGlobals->game.server, NULL_XWE, stream );
 
     text = strFromStream( stream );
-    stream_destroy( stream, NULL_XWE );
+    stream_destroy( stream );
 
     XP_U16 timeout = (ignoreTimeout || cGlobals->manualFinal)
         ? 0 : cGlobals->params->askTimeout;
@@ -1911,7 +1911,7 @@ gtk_util_remSelected( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe) )
                                   globals->cGlobals.params->vtMgr );
     board_formatRemainingTiles( globals->cGlobals.game.board, NULL_XWE, stream );
     text = strFromStream( stream );
-    stream_destroy( stream, NULL_XWE );
+    stream_destroy( stream );
 
     (void)gtkask( globals->window, text, GTK_BUTTONS_OK, NULL );
     free( text );
@@ -1951,7 +1951,7 @@ gtk_util_makeStreamFromAddr(XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe), XP_PlayerAddr
     XWStreamCtxt* stream = mem_stream_make( MEMPOOL 
                                             globals->cGlobals.params->vtMgr,
                                             &globals->cGlobals, channelNo, 
-                                            sendOnClose );
+                                            sendOnClose, NULL_XWE );
     return stream;
 } /* gtk_util_makeStreamFromAddr */
 
@@ -2645,7 +2645,7 @@ loadGameNoDraw( GtkGameGlobals* globals, LaunchParams* params,
             game_dispose( &cGlobals->game, NULL_XWE );
         }
     }
-    stream_destroy( stream, NULL_XWE );
+    stream_destroy( stream );
     return loaded;
 }
 #endif /* PLATFORM_GTK */

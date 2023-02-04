@@ -873,7 +873,7 @@ cursesShowFinalScores( CursesBoardGlobals* bGlobals )
     (void)ca_inform( bGlobals->boardWin, text );
 
     free( text );
-    stream_destroy( stream, NULL_XWE );
+    stream_destroy( stream );
 } /* cursesShowFinalScores */
 
 static void
@@ -1067,7 +1067,7 @@ curses_util_informWordsBlocked( XW_UtilCtxt* XP_UNUSED(uc), XWEnv XP_UNUSED(xwe)
 
 #ifndef XWFEATURE_STANDALONE_ONLY
 static XWStreamCtxt*
-curses_util_makeStreamFromAddr(XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe),
+curses_util_makeStreamFromAddr(XW_UtilCtxt* uc, XWEnv xwe,
                                XP_PlayerAddr channelNo )
 {
     CursesBoardGlobals* globals = (CursesBoardGlobals*)uc->closure;
@@ -1075,7 +1075,7 @@ curses_util_makeStreamFromAddr(XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe),
 
     XWStreamCtxt* stream = mem_stream_make( MPPARM(uc->mpool) params->vtMgr,
                                             &globals->cGlobals, channelNo,
-                                            sendOnClose );
+                                            sendOnClose, xwe );
     return stream;
 } /* curses_util_makeStreamFromAddr */
 #endif
@@ -1536,7 +1536,7 @@ handleShowVals( void* closure, int XP_UNUSED(key) )
     buf[len] = '\0';
 
     (void)ca_inform( bGlobals->boardWin, buf );
-    stream_destroy( stream, NULL_XWE );
+    stream_destroy( stream );
 
     return XP_TRUE;
 }

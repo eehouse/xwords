@@ -40,7 +40,7 @@ ServerCtxt* server_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
 void server_writeToStream( const ServerCtxt* server, XWStreamCtxt* stream );
 
 void server_reset( ServerCtxt* server, XWEnv xwe, CommsCtxt* comms );
-void server_destroy( ServerCtxt* server, XWEnv xwe );
+void server_destroy( ServerCtxt* server );
 
 void server_prefsChanged( ServerCtxt* server, const CommonPrefs* cp );
 void server_onRoleChanged( ServerCtxt* server, XWEnv xwe, XP_Bool amNowGuest );

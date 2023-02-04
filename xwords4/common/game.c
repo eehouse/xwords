@@ -261,7 +261,7 @@ game_makeRematch( const XWGame* oldGame, XWEnv xwe, XW_UtilCtxt* newUtil,
         || comms_getHostAddr( oldGame->comms, &hostAddr );
     if ( !haveRemote ) {
         XP_U16 nRecs = 1;
-        comms_getAddrs( oldGame->comms, xwe, &hostAddr, &nRecs );
+        comms_getAddrs( oldGame->comms, &hostAddr, &nRecs );
         haveRemote = 0 < nRecs;
     }
     XP_ASSERT( haveRemote );
@@ -435,7 +435,7 @@ game_makeFromInvite( XWGame* newGame, XWEnv xwe, const NetLaunchInfo* nli,
 }
 
 void
-game_saveToStream( const XWGame* game, XWEnv xwe, const CurGameInfo* gi,
+game_saveToStream( const XWGame* game, const CurGameInfo* gi,
                    XWStreamCtxt* stream, XP_U16 saveToken )
 {
     XP_ASSERT( gi_equal( gi, game->util->gameInfo ) );
@@ -455,7 +455,7 @@ game_saveToStream( const XWGame* game, XWEnv xwe, const CurGameInfo* gi,
         XP_ASSERT( !game->comms );
 #endif
         if ( NULL != game->comms ) {
-            comms_writeToStream( game->comms, xwe, stream, saveToken );
+            comms_writeToStream( game->comms, stream, saveToken );
         }
 
         model_writeToStream( game->model, stream );
@@ -598,7 +598,7 @@ game_dispose( XWGame* game, XWEnv xwe )
         game->model = NULL;
     }
     if ( !!game->server ) {
-        server_destroy( game->server, xwe );
+        server_destroy( game->server );
         game->server = NULL;
     }
 } /* game_dispose */

@@ -61,7 +61,7 @@ load( XW_DUtilCtxt* dutil, XWEnv xwe )
         } else {
             XP_LOGF( "%s(): empty stream!!", __func__ );
         }
-        stream_destroy( stream, NULL );
+        stream_destroy( stream );
     }
 
     return state;
@@ -75,7 +75,7 @@ dvc_store( XW_DUtilCtxt* dutil, XWEnv xwe )
     stream_putU16( stream, state->devCount );
     const XP_UCHAR* keys[] = { KEY_DEVSTATE, NULL };
     dutil_storeStream( dutil, xwe, keys, stream );
-    stream_destroy( stream, NULL );
+    stream_destroy( stream );
 
     XP_FREEP( dutil->mpool, &dutil->devCtxt );
 }
@@ -313,7 +313,7 @@ dvc_makeMQTTInvites( XW_DUtilCtxt* dutil, XWEnv xwe,
     callProc( proc, closure, gameTopic, stream );
 #endif
 
-    stream_destroy( stream, xwe );
+    stream_destroy( stream );
 }
 
 void
@@ -354,7 +354,7 @@ dvc_makeMQTTMessages( XW_DUtilCtxt* dutil, XWEnv xwe,
         addHeaderGameIDAndCmd( dutil, xwe, CMD_MSG, gameID, stream );
         stream_putBytes( stream, buf, len );
         callProc( proc, closure, devTopic, stream );
-        stream_destroy( stream, xwe );
+        stream_destroy( stream );
     }
 #endif
 
@@ -378,7 +378,7 @@ dvc_makeMQTTMessages( XW_DUtilCtxt* dutil, XWEnv xwe,
         XP_USE(siz);
 
         callProc( proc, closure, gameTopic, stream );
-        stream_destroy( stream, xwe );
+        stream_destroy( stream );
     }
 #endif
 }
@@ -407,7 +407,7 @@ dvc_makeMQTTNoSuchGames( XW_DUtilCtxt* dutil, XWEnv xwe,
     callProc( proc, closure, gameTopic, stream );
 #endif
 
-    stream_destroy( stream, xwe );
+    stream_destroy( stream );
 }
 
 static XP_Bool
@@ -524,7 +524,7 @@ dvc_parseMQTTPacket( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* topic,
         } else {
             XP_LOGFF( "bad proto %d; dropping packet", proto );
         }
-        stream_destroy( stream, xwe );
+        stream_destroy( stream );
     } else if ( isCtrlMsg( &myID, topic ) ) {
         dutil_onCtrlReceived( dutil, xwe, buf, len );
     }

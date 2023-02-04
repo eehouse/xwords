@@ -799,7 +799,7 @@ XWStreamCtxt*
 and_empty_stream( MPFORMAL AndGameGlobals* globals )
 {
     XWStreamCtxt* stream = mem_stream_make( MPPARM(mpool) globals->vtMgr,
-                                            globals, 0, NULL );
+                                            globals, 0, NULL, NULL );
     return stream;
 }
 

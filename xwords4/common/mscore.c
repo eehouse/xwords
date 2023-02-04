@@ -300,7 +300,7 @@ checkScoreMove( ModelCtxt* model, XWEnv xwe, XP_S16 turn, EngineCtxt* engine,
                     const DictionaryCtxt* dict = model_getPlayerDict( model, turn );
                     util_informWordsBlocked( model->vol.util, xwe, bcs.nBadWords,
                                              bcs.stream, dict_getName( dict ) );
-                    stream_destroy( bcs.stream, xwe );
+                    stream_destroy( bcs.stream );
                 }
             } else {
                 score = tmpScore;

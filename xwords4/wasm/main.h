@@ -87,7 +87,7 @@ typedef struct Globals {
 
 #define KEY_DICTS "dicts"
 
-#define NULL_XWE ((XWEnv)NULL)
+#define NULL_XWE ((XWEnv)-1)
 
 void main_set_timer( GameState* gs, XWTimerReason why, XP_U16 when,
                      XWTimerProc proc, void* closure );

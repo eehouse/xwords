@@ -608,7 +608,7 @@ streamFromJStream( MPFORMAL JNIEnv* env, VTableMgr* vtMgr, jbyteArray jstream )
     XP_ASSERT( !!jstream );
     int len = (*env)->GetArrayLength( env, jstream );
     XWStreamCtxt* stream = mem_stream_make_sized( MPPARM(mpool) vtMgr,
-                                                  len, NULL, 0, NULL );
+                                                  len, NULL, 0, NULL, NULL );
     jbyte* jelems = (*env)->GetByteArrayElements( env, jstream, NULL );
     stream_putBytes( stream, jelems, len );
     (*env)->ReleaseByteArrayElements( env, jstream, jelems, 0 );
@@ -947,7 +947,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_gi_1from_1stream
 
     gi_disposePlayerInfo( MPPARM(mpool) &gi );
 
-    stream_destroy( stream, env );
+    stream_destroy( stream );
     releaseMPool( globalState );
 }
 
@@ -965,12 +965,12 @@ Java_org_eehouse_android_xw4_jni_XwJNI_nli_1to_1stream
     NetLaunchInfo nli;
     loadNLI( env, &nli, jnli );
     XWStreamCtxt* stream = mem_stream_make( MPPARM(mpool) globalState->vtMgr,
-                                            NULL, 0, NULL );
+                                            NULL, 0, NULL, NULL);
 
     nli_saveToStream( &nli, stream );
 
     result = streamToBArray( env, stream );
-    stream_destroy( stream, env );
+    stream_destroy( stream );
     releaseMPool( globalState );
     return result;
 }
@@ -996,7 +996,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_nli_1from_1stream
         XP_LOGFF( "nli_makeFromStream failed" );
     }
 
-    stream_destroy( stream, env );
+    stream_destroy( stream );
     releaseMPool( globalState );
     return jnli;
 }
@@ -1138,10 +1138,10 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1getTilesInfo
 #endif
     DictionaryCtxt* dict = (DictionaryCtxt*)dictPtr;
     XWStreamCtxt* stream = mem_stream_make( MPPARM(mpool) globalState->vtMgr,
-                                            NULL, 0, NULL );
+                                            NULL, 0, NULL, NULL );
     dict_writeTilesInfo( dict, 15, stream );
     result = streamToJString( env, stream );
-    stream_destroy( stream, env );
+    stream_destroy( stream );
 
     return result;
 }
@@ -1606,7 +1606,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeFromStream
     result = game_makeFromStream( MPPARM(mpool) env, stream, &state->game,
                                   globals->gi, globals->util, globals->dctx,
                                   &cp, globals->xportProcs );
-    stream_destroy( stream, env );
+    stream_destroy( stream );
 
     if ( result ) {
         XP_ASSERT( 0 != globals->gi->gameID );
@@ -1633,9 +1633,9 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1saveToStream
         (NULL == jgi) ? globals->gi : makeGI( MPPARM(mpool) env, jgi );
     XWStreamCtxt* stream = mem_stream_make_sized( MPPARM(mpool) globals->vtMgr,
                                                   state->lastSavedSize,
-                                                  NULL, 0, NULL );
+                                                  NULL, 0, NULL, NULL );
     XP_ASSERT( gi_equal( gi, globals->util->gameInfo ) );
-    game_saveToStream( &state->game, env, gi, stream, ++state->curSaveCount );
+    game_saveToStream( &state->game, gi, stream, ++state->curSaveCount );
 
     if ( NULL != jgi ) {
         destroyGI( MPPARM(mpool) &gi );
@@ -1643,7 +1643,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1saveToStream
 
     state->lastSavedSize = stream_getSize( stream );
     result = streamToBArray( env, stream );
-    stream_destroy( stream, env );
+    stream_destroy( stream );
 
     XWJNI_END();
     return result;
@@ -2120,10 +2120,10 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1formatRemainingTiles
     jstring result;
     XWJNI_START_GLOBALS(gamePtr);
     XWStreamCtxt* stream = mem_stream_make( MPPARM(mpool) globals->vtMgr,
-                                            NULL, 0, NULL );
+                                            NULL, 0, NULL, NULL );
     board_formatRemainingTiles( state->game.board, env, stream );
     result = streamToJString( env, stream );
-    stream_destroy( stream, env );
+    stream_destroy( stream );
 
     XWJNI_END();
     return result;
@@ -2138,7 +2138,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_server_1formatDictCounts
     XWStreamCtxt* stream = and_empty_stream( MPPARM(mpool) globals );
     server_formatDictCounts( state->game.server, env, stream, nCols, XP_FALSE );
     result = streamToJString( env, stream );
-    stream_destroy( stream, env );
+    stream_destroy( stream );
     XWJNI_END();
     return result;
 }
@@ -2164,7 +2164,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_model_1writeGameHistory
     model_writeGameHistory( state->game.model, env, stream,
                             state->game.server, gameOver );
     result = streamToJString( env, stream );
-    stream_destroy( stream, env );
+    stream_destroy( stream );
     XWJNI_END();
     return result;
 }
@@ -2228,7 +2228,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_server_1writeFinalScores
     XWStreamCtxt* stream = and_empty_stream( MPPARM(mpool) globals );
     server_writeFinalScores( state->game.server, env, stream );
     result = streamToJString( env, stream );
-    stream_destroy( stream, env );
+    stream_destroy( stream );
     XWJNI_END();
     return result;
 }
@@ -2325,7 +2325,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_comms_1getAddrs
     if ( !!state->game.comms ) {
         CommsAddrRec addrs[MAX_NUM_PLAYERS];
         XP_U16 count = VSIZE(addrs);
-        comms_getAddrs( state->game.comms, env, addrs, &count );
+        comms_getAddrs( state->game.comms, addrs, &count );
         result = makeAddrArray( env, count, addrs );
     }
     XWJNI_END();
@@ -2351,7 +2351,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1receiveMessage
 
     result = game_receiveMessage( &state->game, env, stream, addrp );
 
-    stream_destroy( stream, env );
+    stream_destroy( stream );
 
     XWJNI_END();
     return result;
@@ -2406,7 +2406,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1summarize
             case COMMS_CONN_SMS: {
                 CommsAddrRec addrs[MAX_NUM_PLAYERS];
                 XP_U16 count = VSIZE(addrs);
-                comms_getAddrs( comms, env, addrs, &count );
+                comms_getAddrs( comms, addrs, &count );
             
                 const XP_UCHAR* addrps[count];
                 for ( int ii = 0; ii < count; ++ii ) {
@@ -2658,10 +2658,10 @@ Java_org_eehouse_android_xw4_jni_XwJNI_comms_1getStats
     XWJNI_START_GLOBALS(gamePtr);
     if ( NULL != state->game.comms ) {
         XWStreamCtxt* stream = mem_stream_make( MPPARM(mpool) globals->vtMgr,
-                                                NULL, 0, NULL );
+                                                NULL, 0, NULL, NULL );
         comms_getStats( state->game.comms, stream );
         result = streamToJString( env, stream );
-        stream_destroy( stream, env );
+        stream_destroy( stream );
     }
     XWJNI_END();
 #endif
