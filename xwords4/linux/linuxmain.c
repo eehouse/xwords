@@ -464,7 +464,6 @@ linuxSaveGame( CommonGlobals* cGlobals )
                                        cGlobals->params->vtMgr, 
                                        cGlobals->lastStreamSize,
                                        cGlobals, 0, onClose, NULL_XWE );
-            stream_open( outStream ); /* needed??? */
 
             game_saveToStream( &cGlobals->game, cGlobals->gi, outStream,
                                ++cGlobals->curSaveToken );

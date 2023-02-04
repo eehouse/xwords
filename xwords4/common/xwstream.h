@@ -89,7 +89,6 @@ typedef struct StreamCtxVTable {
     XWStreamPos (*m_stream_setPos)( XWStreamCtxt* dctx, PosWhich which, 
                                     XWStreamPos newpos );
 
-    void (*m_stream_open)( XWStreamCtxt* dctx );
     void (*m_stream_close)( XWStreamCtxt* dctx );
 
     XP_U16 (*m_stream_getSize)( const XWStreamCtxt* dctx );
@@ -175,9 +174,6 @@ struct XWStreamCtxt {
 
 #define stream_setPos(sc, p, w) \
          (sc)->vtable->m_stream_setPos((sc), (p), (w))
-
-#define stream_open(sc) \
-         (sc)->vtable->m_stream_open((sc))
 
 #define stream_close(sc)                        \
          (sc)->vtable->m_stream_close((sc))

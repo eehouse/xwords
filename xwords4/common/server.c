@@ -2237,7 +2237,6 @@ messageStreamWithHeader( ServerCtxt* server, XWEnv xwe, XP_U16 devIndex, XW_Prot
     PRINTCODE( "making", code );
 
     stream = util_makeStreamFromAddr( server->vol.util, xwe, channelNo );
-    stream_open( stream );
     writeProto( server, stream, code );
 
     return stream;

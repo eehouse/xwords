@@ -3904,7 +3904,6 @@ relay_msg_to_stream( CommsCtxt* comms, XWEnv xwe, XWRELAY_Cmd cmd, XWHostID dest
                                   dutil_getVTManager(comms->dutil) );
     if ( stream != NULL ) {
         CommsAddrRec addr;
-        stream_open( stream );
         stream_putU8( stream, cmd );
 
         comms_getAddr( comms, &addr );

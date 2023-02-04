@@ -407,19 +407,6 @@ mem_stream_getFromStream( XWStreamCtxt* p_sctx, XWStreamCtxt* src,
 } /* mem_stream_getFromStream */
 
 static void
-mem_stream_open( XWStreamCtxt* p_sctx )
-{
-    MemStreamCtxt* stream = (MemStreamCtxt*)p_sctx;
-
-    XP_ASSERT( stream->nBytesWritten == 0);
-    stream->nBytesWritten = 0;
-    XP_ASSERT( stream->curReadPos == START_OF_STREAM );
-    stream->curReadPos = START_OF_STREAM;
-    XP_ASSERT( stream->curWritePos == START_OF_STREAM );
-    stream->curWritePos = START_OF_STREAM;
-} /* mem_stream_open */
-
-static void
 mem_stream_close( XWStreamCtxt* p_sctx )
 {
     MemStreamCtxt* stream = (MemStreamCtxt*)p_sctx;
@@ -609,7 +596,6 @@ make_vtable( MemStreamCtxt* stream )
     SET_VTABLE_ENTRY( vtable, stream_ref, mem );
 #endif
     SET_VTABLE_ENTRY( vtable, stream_destroy, mem );
-    SET_VTABLE_ENTRY( vtable, stream_open, mem );
     SET_VTABLE_ENTRY( vtable, stream_close, mem );
 
     SET_VTABLE_ENTRY( vtable, stream_getSize, mem );
