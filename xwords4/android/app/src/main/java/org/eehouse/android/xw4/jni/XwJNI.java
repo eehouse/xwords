@@ -170,9 +170,11 @@ public class XwJNI {
         return dvc_makeMQTTNukeInvite( getJNI().m_ptrGlobals, nli );
     }
 
-    public static TopicsAndPackets dvc_makeMQTTMessages( String addressee, int gameID, byte[] buf )
+    public static TopicsAndPackets dvc_makeMQTTMessages( String addressee, int gameID,
+                                                         byte[] buf, int streamVers )
     {
-        return dvc_makeMQTTMessages( getJNI().m_ptrGlobals, addressee, gameID, buf );
+        return dvc_makeMQTTMessages( getJNI().m_ptrGlobals, addressee, gameID,
+                                     buf, streamVers );
     }
 
     public static TopicsAndPackets dvc_makeMQTTNoSuchGames( String addressee, int gameID )
@@ -781,9 +783,8 @@ public class XwJNI {
     private static native TopicsAndPackets dvc_makeMQTTNukeInvite( long jniState,
                                                                    NetLaunchInfo nli );
     private static native TopicsAndPackets
-        dvc_makeMQTTMessages( long jniState,
-                              String addressee,
-                              int gameID, byte[] buf );
+        dvc_makeMQTTMessages( long jniState, String addressee,
+                              int gameID, byte[] buf, int streamVers );
     private static native TopicsAndPackets
         dvc_makeMQTTNoSuchGames( long jniState, String addressee, int gameID );
     private static native void dvc_parseMQTTPacket( long jniState, String topic,

@@ -1435,10 +1435,12 @@ linux_reset( XWEnv xwe, void* closure )
 
 XP_S16
 linux_send( XWEnv XP_UNUSED(xwe), const XP_U8* buf, XP_U16 buflen,
-            const XP_UCHAR* msgNo, XP_U32 XP_UNUSED(createdStamp),
+            XP_U16 streamVersion, const XP_UCHAR* msgNo,
+            XP_U32 XP_UNUSED(createdStamp),
             const CommsAddrRec* addrRec, CommsConnType conType,
             XP_U32 gameID, void* closure )
 {
+    XP_LOGFF( "(streamVersion: %X, len: %d)", streamVersion, buflen );
     XP_S16 nSent = -1;
     CommonGlobals* cGlobals = (CommonGlobals*)closure;   
 
@@ -1499,7 +1501,7 @@ linux_send( XWEnv XP_UNUSED(xwe), const XP_U8* buf, XP_U16 buflen,
 
     case COMMS_CONN_MQTT:
         nSent = mqttc_send( cGlobals->params, gameID, buf, buflen,
-                            &addrRec->u.mqtt.devID );
+                            streamVersion, &addrRec->u.mqtt.devID );
         break;
 
     case COMMS_CONN_NFC:

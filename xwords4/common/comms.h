@@ -80,8 +80,8 @@ typedef XP_S16 (*TransportSendInvt)( XWEnv xwe, const NetLaunchInfo* nli,
                                      CommsConnType conType, void* closure );
 #endif
 typedef XP_S16 (*TransportSendMsg)( XWEnv xwe, const XP_U8* buf, XP_U16 len,
-                                    const XP_UCHAR* msgNo, XP_U32 createdStamp,
-                                    const CommsAddrRec* addr,
+                                    XP_U16 streamVersion, const XP_UCHAR* msgNo,
+                                    XP_U32 createdStamp, const CommsAddrRec* addr,
                                     CommsConnType conType, XP_U32 gameID,
                                     void* closure );
 
@@ -164,7 +164,7 @@ void comms_resetSame( CommsCtxt* comms, XWEnv xwe );
 
 void comms_destroy( CommsCtxt* comms, XWEnv xwe );
 
-void comms_setConnID( CommsCtxt* comms, XP_U32 connID );
+void comms_setConnID( CommsCtxt* comms, XP_U32 connID, XP_U16 streamVersion );
 
 void comms_getSelfAddr( const CommsCtxt* comms, CommsAddrRec* selfAddr );
 XP_Bool comms_getHostAddr( const CommsCtxt* comms, CommsAddrRec* hostAddr );

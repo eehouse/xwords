@@ -30,8 +30,9 @@ public interface TransportProcs {
     public static final int COMMS_XPORT_FLAGS_HASNOCONN = 1;
     int getFlags();
 
-    int transportSendMsg( byte[] buf, String msgNo, CommsAddrRec addr,
-                          CommsConnType conType, int gameID, int timestamp );
+    int transportSendMsg( byte[] buf, int streamVers, String msgNo,
+                          CommsAddrRec addr, CommsConnType conType,
+                          int gameID, int timestamp );
     boolean transportSendInvt( CommsAddrRec addr, CommsConnType conType,
                                NetLaunchInfo nli, int timestamp );
 

@@ -168,6 +168,7 @@ struct CommsCtxt {
 
     XP_U32 connID;             /* set from gameID: 0 means ignore; otherwise
                                   must match.  Set by server. */
+    XP_U16 streamVersion;       /* negotiated by server  */
     XP_PlayerAddr nextChannelNo;
 
     AddressRecord* recs;        /* return addresses */
@@ -333,7 +334,7 @@ static void logAddr( const CommsCtxt* comms, const CommsAddrRec* addr,
 # define ASSERT_ADDR_OK(addr)
 # define assertQueueOk(comms)
 # define printQueue( comms )
-# define logAddr( comms, xwe, addr, caller)
+# define logAddr( comms, addr, caller)
 # define listRecs( comms, caller )
 #endif  /* def DEBUG */
 
@@ -691,12 +692,15 @@ comms_destroy( CommsCtxt* comms, XWEnv xwe )
 } /* comms_destroy */
 
 void
-comms_setConnID( CommsCtxt* comms, XP_U32 connID )
+comms_setConnID( CommsCtxt* comms, XP_U32 connID, XP_U16 streamVersion )
 {
     THREAD_CHECK_START(comms);
     XP_ASSERT( CONN_ID_NONE != connID );
     XP_ASSERT( 0 == comms->connID || connID == comms->connID );
     comms->connID = connID;
+    XP_ASSERT( 0 == comms->streamVersion
+               || streamVersion == comms->streamVersion );
+    comms->streamVersion = streamVersion;
     XP_LOGFF( "set connID (gameID) to %x", connID );
     THREAD_CHECK_END();
 } /* comms_setConnID */
@@ -877,6 +881,11 @@ comms_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
     comms->flags = flags;
 
     comms->connID = stream_getU32( stream );
+    XP_ASSERT( comms->streamVersion == 0 );
+    if ( version >= STREAM_VERS_MSGSTREAMVERS ) {
+        comms->streamVersion = stream_getU16( stream );
+    }
+
     comms->nextChannelNo = readChannelNo( stream );
     if ( version < STREAM_VERS_CHANNELSEED ) {
         comms->channelSeed = 0;
@@ -1204,6 +1213,7 @@ comms_writeToStream( CommsCtxt* comms, XWStreamCtxt* stream, XP_U16 saveToken )
     stream_putBits( stream, 4, comms->rr.nPlayersTotal );
 
     stream_putU32( stream, comms->connID );
+    stream_putU16( stream, comms->streamVersion );
     writeChannelNo( stream, comms->nextChannelNo );
     XP_U16 channelSeed = comms_getChannelSeed( comms ); /* force creation */
     stream_putU16( stream, channelSeed );
@@ -2093,7 +2103,8 @@ sendMsg( const CommsCtxt* comms, XWEnv xwe, MsgQueueElem* elem,
                         XP_UCHAR msgNo[16];
                         formatMsgNo( comms, elem, msgNo, sizeof(msgNo) );
                         XP_ASSERT( 0 != elem->createdStamp );
-                        nSent = (*comms->procs.sendMsg)( xwe, elem->msg, elem->len, msgNo,
+                        nSent = (*comms->procs.sendMsg)( xwe, elem->msg, elem->len,
+                                                         comms->streamVersion, msgNo,
                                                          elem->createdStamp, &addr,
                                                          typ, gameid,
                                                          comms->procs.closure );

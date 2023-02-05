@@ -1932,6 +1932,7 @@ client_readInitialMessage( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* stream )
        Drop it in that case. */
     if ( accepted ) {
         ModelCtxt* model = server->vol.model;
+        CommsCtxt* comms = server->vol.comms;
         CurGameInfo* gi = server->vol.gi;
         XP_U32 gameID;
         PoolContext* pool;
@@ -1953,7 +1954,7 @@ client_readInitialMessage( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* stream )
         XP_LOGFF( "read gameID of %x/%d; calling comms_setConnID (replacing %d)",
                   gameID, gameID, server->vol.gi->gameID );
         server->vol.gi->gameID = gameID;
-        comms_setConnID( server->vol.comms, gameID );
+        comms_setConnID( comms, gameID, streamVersion );
 
         CurGameInfo localGI = {0};
         gi_readFromStream( MPPARM(server->mpool) stream, &localGI );
@@ -2144,7 +2145,7 @@ sendInitialMessage( ServerCtxt* server, XWEnv xwe )
 
     /* Set after messages are built so their connID will be 0, but all
        non-initial messages will have a non-0 connID. */
-    comms_setConnID( server->vol.comms, gameID );
+    comms_setConnID( server->vol.comms, gameID, streamVersion );
 
     dupe_resetTimer( server, xwe );
 } /* sendInitialMessage */

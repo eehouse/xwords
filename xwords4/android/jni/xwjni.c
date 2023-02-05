@@ -780,7 +780,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dvc_1makeMQTTNukeInvite
 JNIEXPORT jobject JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_dvc_1makeMQTTMessages
 ( JNIEnv* env, jclass C, jlong jniGlobalPtr, jstring jAddressee,
-  jint jGameID, jbyteArray jmsg )
+  jint jGameID, jbyteArray jmsg, jint jStreamVersion )
 {
     jobject result;
     LOG_FUNC();
@@ -794,7 +794,8 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dvc_1makeMQTTMessages
     XP_U16 len = (*env)->GetArrayLength( env, jmsg );
     jbyte* buf = (*env)->GetByteArrayElements( env, jmsg, NULL );
     dvc_makeMQTTMessages( globalState->dutil, env, msgAndTopicProc, &mtp,
-                          &addressee, jGameID, (const XP_U8*)buf, len );
+                          &addressee, jGameID, (const XP_U8*)buf, len,
+                          jStreamVersion );
     (*env)->ReleaseByteArrayElements( env, jmsg, buf, 0 );
 
     result = wrapResults( &mtp );

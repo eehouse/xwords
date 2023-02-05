@@ -586,11 +586,12 @@ public class MQTTUtils extends Thread
     }
 
     public static int send( Context context, String addressee, int gameID,
-                            byte[] buf )
+                            byte[] buf, int streamVers )
     {
         Log.d( TAG, "send(to:%s, len: %d)", addressee, buf.length );
         Assert.assertTrueNR( 16 == addressee.length() );
-        TopicsAndPackets tap = XwJNI.dvc_makeMQTTMessages( addressee, gameID, buf );
+        TopicsAndPackets tap = XwJNI.dvc_makeMQTTMessages( addressee, gameID,
+                                                           buf, streamVers );
         addToSendQueue( context, tap );
         return buf.length;
     }

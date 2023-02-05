@@ -65,8 +65,9 @@ public class CommsTransport implements TransportProcs {
     }
 
     @Override
-    public int transportSendMsg( byte[] buf, String msgID, CommsAddrRec addr,
-                                 CommsConnType conType, int gameID, int timestamp )
+    public int transportSendMsg( byte[] buf, int streamVers, String msgID,
+                                 CommsAddrRec addr, CommsConnType conType,
+                                 int gameID, int timestamp )
     {
         Log.d( TAG, "transportSendMsg(len=%d, typ=%s, ts=%d)", buf.length,
                conType.toString(), timestamp );
@@ -85,7 +86,7 @@ public class CommsTransport implements TransportProcs {
             }
         } else {
             nSent = sendForAddr( m_context, addr, conType, m_rowid, gameID,
-                                 timestamp, buf, msgID );
+                                 timestamp, buf, streamVers, msgID );
         }
 
         // Keep this while debugging why the resend_all that gets
@@ -105,7 +106,7 @@ public class CommsTransport implements TransportProcs {
     private int sendForAddr( Context context, CommsAddrRec addr,
                              CommsConnType conType, long rowID,
                              int gameID, int timestamp,
-                             byte[] buf, String msgID )
+                             byte[] buf, int streamVers, String msgID )
     {
         int nSent = -1;
         switch ( conType ) {
@@ -127,7 +128,7 @@ public class CommsTransport implements TransportProcs {
             nSent = NFCUtils.addMsgFor( buf, gameID );
             break;
         case COMMS_CONN_MQTT:
-            nSent = MQTTUtils.send( context, addr.mqtt_devID, gameID, buf );
+            nSent = MQTTUtils.send( context, addr.mqtt_devID, gameID, buf, streamVers );
             break;
         default:
             Assert.failDbg();

@@ -343,23 +343,27 @@ void
 dvc_makeMQTTMessages( XW_DUtilCtxt* dutil, XWEnv xwe,
                       MsgAndTopicProc proc, void* closure,
                       const MQTTDevID* addressee,
-                      XP_U32 gameID, const XP_U8* buf, XP_U16 len )
+                      XP_U32 gameID, const XP_U8* buf, XP_U16 len,
+                      XP_U16 streamVersion )
 {
+    XP_LOGFF( "(len: %d; streamVersion: %X)", len, streamVersion );
     XP_UCHAR devTopic[64];      /* used by two below */
     formatMQTTDevTopic( addressee, devTopic, VSIZE(devTopic) );
 
-#ifdef MQTT_DEV_TOPICS
-    {
+    /* If streamVersion is >= STREAM_VERS_NORELAY then we know that the remote
+       supports PROTO_3. If it's 0, it *might*, and as people upgrade it'll be
+       more likely we just aren't in that point in the game, but send both. If
+       it's > 0 but < STREAM_VERS_NORELAY, no point sending PROTO_3 */
+
+    if ( 0 == streamVersion || STREAM_VERS_NORELAY > streamVersion ) {
         XWStreamCtxt* stream = mkStream( dutil );
         addHeaderGameIDAndCmd( dutil, xwe, CMD_MSG, gameID, stream );
         stream_putBytes( stream, buf, len );
         callProc( proc, closure, devTopic, stream );
         stream_destroy( stream );
     }
-#endif
 
-#ifdef MQTT_GAMEID_TOPICS
-    {
+    if ( 0 == streamVersion || STREAM_VERS_NORELAY <= streamVersion ) {
         XWStreamCtxt* stream = mkStream( dutil );
         addProto3HeaderCmd( dutil, xwe, CMD_MSG, stream );
 
@@ -380,7 +384,6 @@ dvc_makeMQTTMessages( XW_DUtilCtxt* dutil, XWEnv xwe,
         callProc( proc, closure, gameTopic, stream );
         stream_destroy( stream );
     }
-#endif
 }
 
 void

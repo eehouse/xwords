@@ -84,7 +84,7 @@ and_xport_sendInvite( XWEnv xwe, const NetLaunchInfo* nli, XP_U32 createdStamp,
 
 static XP_S16
 and_xport_send( XWEnv xwe, const XP_U8* buf, XP_U16 len,
-                const XP_UCHAR* msgNo, XP_U32 timestamp,
+                XP_U16 streamVersion, const XP_UCHAR* msgNo, XP_U32 timestamp,
                 const CommsAddrRec* addr, CommsConnType conType,
                 XP_U32 gameID, void* closure )
 {
@@ -94,7 +94,7 @@ and_xport_send( XWEnv xwe, const XP_U8* buf, XP_U16 len,
     ASSERT_ENV( aprocs->ti, xwe );
     if ( NULL != aprocs->jxport ) {
         JNIEnv* env = xwe;
-        const char* sig = "([BLjava/lang/String;L" PKG_PATH("jni/CommsAddrRec")
+        const char* sig = "([BILjava/lang/String;L" PKG_PATH("jni/CommsAddrRec")
             ";L" PKG_PATH("jni/CommsAddrRec$CommsConnType") ";II)I";
 
         jmethodID mid = getMethodID( env, aprocs->jxport, "transportSendMsg", sig );
@@ -105,8 +105,8 @@ and_xport_send( XWEnv xwe, const XP_U8* buf, XP_U16 len,
             intToJEnum(env, conType, PKG_PATH("jni/CommsAddrRec$CommsConnType"));
         jstring jMsgNo = !!msgNo ? (*env)->NewStringUTF( env, msgNo ) : NULL;
         result = (*env)->CallIntMethod( env, aprocs->jxport, mid, 
-                                        jbytes, jMsgNo, jaddr, jConType,
-                                        gameID, timestamp );
+                                        jbytes, streamVersion, jMsgNo,
+                                        jaddr, jConType, gameID, timestamp );
         deleteLocalRefs( env, jaddr, jbytes, jMsgNo, jConType, DELETE_NO_REF );
     }
 

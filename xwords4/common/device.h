@@ -49,7 +49,8 @@ void dvc_makeMQTTNukeInvite( XW_DUtilCtxt* dutil, XWEnv xwe,
 void dvc_makeMQTTMessages( XW_DUtilCtxt* dutil, XWEnv xwe,
                            MsgAndTopicProc proc, void* closure,
                            const MQTTDevID* addressee,
-                           XP_U32 gameID, const XP_U8* buf, XP_U16 len );
+                           XP_U32 gameID, const XP_U8* buf, XP_U16 len,
+                           XP_U16 streamVersion );
 void dvc_makeMQTTNoSuchGames( XW_DUtilCtxt* dutil, XWEnv xwe,
                              MsgAndTopicProc proc, void* closure,
                               const MQTTDevID* addressee,
