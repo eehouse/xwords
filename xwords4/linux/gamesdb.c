@@ -54,9 +54,6 @@ static void upgradeTables( sqlite3* pDb, int32_t oldVersion );
 static void execNoResult( sqlite3* pDb, const gchar* query, bool errOK );
 
 
-#ifdef DEBUG
-static char* sqliteErr2str( int err );
-#endif
 static void assertPrintResult( sqlite3* pDb, int result, int expect );
 
 /* Versioning:
@@ -234,7 +231,7 @@ writeBlobColumnData( const XP_U8* data, gsize len, XP_U16 strVersion, sqlite3* p
     assertPrintResult( pDb, result, SQLITE_OK );
     result = sqlite3_step( stmt );
     if ( SQLITE_DONE != result ) {
-        XP_LOGFF( "sqlite3_step => %s", sqliteErr2str( result ) );
+        XP_LOGFF( "sqlite3_step => %s", sqlite3_errstr( result ) );
         XP_ASSERT(0);
     }
     XP_USE( result );
@@ -450,7 +447,7 @@ gdb_summarize( CommonGlobals* cGlobals )
     assertPrintResult( cGlobals->params->pDb, result, SQLITE_OK );
     result = sqlite3_step( stmt );
     if ( SQLITE_DONE != result ) {
-        XP_LOGFF( "sqlite3_step=>%s", sqliteErr2str( result ) );
+        XP_LOGFF( "sqlite3_step=>%s", sqlite3_errstr( result ) );
         XP_ASSERT( 0 );
     }
     sqlite3_finalize( stmt );
@@ -826,55 +823,17 @@ execNoResult( sqlite3* pDb, const gchar* query, bool errOk )
     sqlite3_finalize( ppStmt );
 }
 
-#ifdef DEBUG
-# define CASESTR(c) case c: return #c
-static char*
-sqliteErr2str( int err )
-{
-    switch( err ) {
-        CASESTR( SQLITE_OK );
-        CASESTR( SQLITE_ERROR );
-        CASESTR( SQLITE_INTERNAL );
-        CASESTR( SQLITE_PERM );
-        CASESTR( SQLITE_ABORT );
-        CASESTR( SQLITE_BUSY );
-        CASESTR( SQLITE_LOCKED );
-        CASESTR( SQLITE_NOMEM );
-        CASESTR( SQLITE_READONLY );
-        CASESTR( SQLITE_INTERRUPT );
-        CASESTR( SQLITE_IOERR );
-        CASESTR( SQLITE_CORRUPT );
-        CASESTR( SQLITE_NOTFOUND );
-        CASESTR( SQLITE_FULL );
-        CASESTR( SQLITE_CANTOPEN );
-        CASESTR( SQLITE_PROTOCOL );
-        CASESTR( SQLITE_EMPTY );
-        CASESTR( SQLITE_SCHEMA );
-        CASESTR( SQLITE_TOOBIG );
-        CASESTR( SQLITE_CONSTRAINT );
-        CASESTR( SQLITE_MISMATCH );
-        CASESTR( SQLITE_MISUSE );
-        CASESTR( SQLITE_NOLFS );
-        CASESTR( SQLITE_AUTH );
-        CASESTR( SQLITE_FORMAT );
-        CASESTR( SQLITE_RANGE );
-        CASESTR( SQLITE_NOTADB );
-        CASESTR( SQLITE_NOTICE );
-        CASESTR( SQLITE_WARNING );
-        CASESTR( SQLITE_ROW );
-        CASESTR( SQLITE_DONE );
-    }
-        return "<unknown>";
-}
-#endif
-
 static void
-assertPrintResult( sqlite3* pDb, int XP_UNUSED_DBG(result), int expect )
+assertPrintResult( sqlite3* pDb, int result, int expect )
 {
     int code = sqlite3_errcode( pDb );
-    XP_ASSERT( code == result ); /* do I need to pass it? */
-    if ( code != expect ) {
-        XP_LOGFF( "sqlite3 error: %d (%s)", code, sqlite3_errmsg( pDb ) );
+    if ( code != result ) {
+        XP_LOGFF( "ERROR??? code %d (%s) != result %d (%s)", code, sqlite3_errstr(code),
+                  result, sqlite3_errstr(result) );
+    }
+    if ( result != expect ) {
+        XP_LOGFF( "sqlite3 error: %d (%s)", result, sqlite3_errstr(result) );
+        XP_LOGFF( "Err msg (which could be out-of-sync): %s", sqlite3_errmsg( pDb ) );
         XP_ASSERT(0);
     }
 }
