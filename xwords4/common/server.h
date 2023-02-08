@@ -90,6 +90,7 @@ void server_unpause( ServerCtxt* server, XWEnv xwe, XP_S16 turn, const XP_UCHAR*
 
 /* return bitvector marking players still not arrived in networked game */
 XP_U16 server_getMissingPlayers( const ServerCtxt* server );
+XP_Bool server_getOpenChannel( const ServerCtxt* server, XP_U16* channel );
 XP_U32 server_getLastMoveTime( const ServerCtxt* server );
 /* Signed in case no dictionary available */
 XP_S16 server_countTilesInPool( ServerCtxt* server );

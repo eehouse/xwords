@@ -83,13 +83,13 @@ typedef enum {
 
 #define XWPROTO_NBITS 4
 
+#define UNKNOWN_DEVICE -1
+#define SERVER_DEVICE 0
+
 typedef struct ServerPlayer {
     EngineCtxt* engine; /* each needs his own so don't interfere each other */
     XP_S8 deviceIndex;  /* 0 means local, -1 means unknown */
 } ServerPlayer;
-
-#define UNKNOWN_DEVICE -1
-#define SERVER_DEVICE 0
 
 typedef struct RemoteAddress {
     XP_PlayerAddr channelNo;
@@ -3859,6 +3859,26 @@ server_getMissingPlayers( const ServerCtxt* server )
         break;
     }
 
+    return result;
+}
+
+XP_Bool
+server_getOpenChannel( const ServerCtxt* server, XP_U16* channel )
+{
+    XP_Bool result = XP_FALSE;
+    XP_ASSERT( amServer( server ) );
+    if ( amServer( server ) && 0 < server->nv.pendingRegistrations ) {
+        const XP_U16 nPlayers = server->vol.gi->nPlayers;
+        const ServerPlayer* players = server->players;
+        for ( int ii = 0; ii < nPlayers && !result; ++ii ) {
+            result = UNKNOWN_DEVICE == players->deviceIndex;
+            if ( result ) {
+                *channel = ii;
+            }
+            ++players;
+        }
+    }
+    XP_LOGFF( "channel= %d, found: %s", *channel, boolToStr(result) );
     return result;
 }
 

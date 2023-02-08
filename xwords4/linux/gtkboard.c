@@ -1386,55 +1386,57 @@ send_invites( CommonGlobals* cGlobals, XP_U16 nPlayers,
     XP_ASSERT( comms );
     comms_getSelfAddr( comms, &myAddr );
 
-    gint forceChannel = 1;  /* 1 is what Android does. Limits to two-device games */
+    XP_U16 channel;
+    if ( server_getOpenChannel( cGlobals->game.server, &channel ) ) {
+        gint forceChannel = channel;
 
-    NetLaunchInfo nli = {0};    /* include everything!!! */
-    nli_init( &nli, cGlobals->gi, &myAddr, nPlayers, forceChannel );
+        NetLaunchInfo nli = {0};    /* include everything!!! */
+        nli_init( &nli, cGlobals->gi, &myAddr, nPlayers, forceChannel );
 #ifdef XWFEATURE_RELAY
-    if ( addr_hasType( &myAddr, COMMS_CONN_RELAY ) ) {
-        XP_UCHAR buf[32];
-        snprintf( buf, sizeof(buf), "%X", makeRandomInt() );
-        nli_setInviteID( &nli, buf ); /* PENDING: should not be relay only!!! */
-    }
+        if ( addr_hasType( &myAddr, COMMS_CONN_RELAY ) ) {
+            XP_UCHAR buf[32];
+            snprintf( buf, sizeof(buf), "%X", makeRandomInt() );
+            nli_setInviteID( &nli, buf ); /* PENDING: should not be relay only!!! */
+        }
 #endif
-    // nli_setDevID( &nli, linux_getDevIDRelay( cGlobals->params ) );
+        // nli_setDevID( &nli, linux_getDevIDRelay( cGlobals->params ) );
 
-    if ( addr_hasType( &myAddr, COMMS_CONN_MQTT ) ) {
-        const MQTTDevID* devid = mqttc_getDevID( cGlobals->params );
-        nli_setMQTTDevID( &nli, devid );
-    }
+        if ( addr_hasType( &myAddr, COMMS_CONN_MQTT ) ) {
+            const MQTTDevID* devid = mqttc_getDevID( cGlobals->params );
+            nli_setMQTTDevID( &nli, devid );
+        }
 
 #ifdef DEBUG
-    {
-        XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(cGlobals->util->mpool)
-                                                    cGlobals->params->vtMgr );
-        nli_saveToStream( &nli, stream );
-        NetLaunchInfo tmp;
-        nli_makeFromStream( &tmp, stream );
-        stream_destroy( stream );
-        XP_ASSERT( 0 == memcmp( &nli, &tmp, sizeof(nli) ) );
-    }
+        {
+            XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(cGlobals->util->mpool)
+                                                        cGlobals->params->vtMgr );
+            nli_saveToStream( &nli, stream );
+            NetLaunchInfo tmp;
+            nli_makeFromStream( &tmp, stream );
+            stream_destroy( stream );
+            XP_ASSERT( 0 == memcmp( &nli, &tmp, sizeof(nli) ) );
+        }
 #endif
 
 #ifdef XWFEATURE_COMMS_INVITE
-    comms_invite( comms, NULL_XWE, &nli, destAddr, XP_TRUE );
+        comms_invite( comms, NULL_XWE, &nli, destAddr, XP_TRUE );
 #else
-    if ( !!destAddr && '\0' != destAddr->u.sms.phone[0] && 0 < destAddr->u.sms.port ) {
-        linux_sms_invite( cGlobals->params, &nli,
-                          destAddr->u.sms.phone, destAddr->u.sms.port );
-    }
+        if ( !!destAddr && '\0' != destAddr->u.sms.phone[0] && 0 < destAddr->u.sms.port ) {
+            linux_sms_invite( cGlobals->params, &nli,
+                              destAddr->u.sms.phone, destAddr->u.sms.port );
+        }
 # ifdef XWFEATURE_RELAY
-    if ( 0 != relayDevID || !!relayID ) {
-        XP_ASSERT( 0 != relayDevID || (!!relayID && !!relayID[0]) );
-        relaycon_invite( cGlobals->params, relayDevID, relayID, &nli );
-    }
+        if ( 0 != relayDevID || !!relayID ) {
+            XP_ASSERT( 0 != relayDevID || (!!relayID && !!relayID[0]) );
+            relaycon_invite( cGlobals->params, relayDevID, relayID, &nli );
+        }
 # endif
 
-    if ( addr_hasType( destAddr, COMMS_CONN_MQTT ) ) {
-        mqttc_invite( cGlobals->params, 0, &nli, &destAddr->u.mqtt.devID );
-    }
+        if ( addr_hasType( destAddr, COMMS_CONN_MQTT ) ) {
+            mqttc_invite( cGlobals->params, 0, &nli, &destAddr->u.mqtt.devID );
+        }
 #endif
-
+    }
     /* while ( gtkaskm( "Invite how many and how?", infos, VSIZE(infos) ) ) {  */
     /*     int nPlayers = atoi( countStr ); */
     /*     if ( 0 >= nPlayers || nPlayers > nMissing ) { */
