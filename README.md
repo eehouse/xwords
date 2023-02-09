@@ -1,15 +1,15 @@
 # CrossWords
-An open source implementation of rules of Scrabble(tm) for handhelds
+An open source implementation of the rules of Scrabble(tm) for handhelds
 
 # What I'm working on (updated 9 Feb 2023)
 
-Next release: reduce the number of mqtt messages when both sender and receiver are up-to-date. 
-Status: in testing
+## *Next release*: reduce the number of mqtt messages when both sender and receiver are up-to-date. 
+## *Status*: in testing
 
 After that:
-	* Get back on the Google Play Store
-	* Finish support of Duplicate-mode play
-    * Enable rematch of three- and four-device games
+* Get back on the Google Play Store
+* Finish support of Duplicate-mode play
+* Enable rematch of three- and four-device games
 
 # CrossDbg
 CrossDbg is a separate Android app built from the same source as
