@@ -701,7 +701,8 @@ comms_setConnID( CommsCtxt* comms, XP_U32 connID, XP_U16 streamVersion )
     XP_ASSERT( 0 == comms->streamVersion
                || streamVersion == comms->streamVersion );
     comms->streamVersion = streamVersion;
-    XP_LOGFF( "set connID (gameID) to %x", connID );
+    XP_LOGFF( "set connID (gameID) to %x, streamVersion to 0x%X",
+              connID, streamVersion );
     THREAD_CHECK_END();
 } /* comms_setConnID */
 
@@ -2993,7 +2994,7 @@ parseBeefHeader( CommsCtxt* comms, XWStreamCtxt* stream, HeaderStuff* stuff )
 }
 
 static XP_Bool
-parseSmallHeader( CommsCtxt* comms, XWEnv XP_UNUSED(xwe), XWStreamCtxt* msgStream,
+parseSmallHeader( CommsCtxt* comms, XWStreamCtxt* msgStream,
                   HeaderStuff* stuff )
 {
     XP_Bool messageValid = XP_FALSE;
@@ -3094,7 +3095,7 @@ comms_checkIncomingStream( CommsCtxt* comms, XWEnv xwe, XWStreamCtxt* stream,
                 if ( HAS_VERSION_FLAG == stuff.flags ) {
                     messageValid = parseBeefHeader( comms, stream, &stuff );
                 } else if ( COMMS_VERSION == (stuff.flags & VERSION_MASK) ) {
-                    messageValid = parseSmallHeader( comms, xwe, stream, &stuff );
+                    messageValid = parseSmallHeader( comms, stream, &stuff );
                 }
             }
 
