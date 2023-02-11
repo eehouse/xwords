@@ -13,10 +13,10 @@
 	</style>
   </head>
 <body>
-  <h2>CrossWords 4.4.195 release</h2>
+  <h2>CrossWords 4.4.196 release</h2>
 
-  <p>This release improves inviting/rematching and move transmission,
-      and fixes false remote-game-deleted reports</p>
+  <p>This release removes redundant messages sent during "Internet"
+      play.</p>
 
   <div id="survey">
 	<p>Please <a href="https://www.surveymonkey.com/s/GX3XLHR">take
@@ -26,25 +26,14 @@
 
   <h3>New with this release</h3>
   <ul>
-      <li>Improve move transmission when devices aren't online at the
-          same time</li>
-      <li>Make invitations more reliable for Known Players and rematches</li>
-      <li>Fix Bluetooth-connected devices lying about games being deleted</li>
-      <li>Improve Game Configuration dialog</li>
-      <li>Improve Game Over dialog</li>
-      <li>Improve permissions for latest Android OS version</li>
-      <li>Fix sharing of color themes</li>
-      <li>Fix Robot to not play a blank for 0 points (duh)</li>
-      <li>Fix accepting invitations on Android 12</li>
-      <li>Fix wordlist upgrading</li>
-      <li>Include translations in Brazilian Portuguese, Chinese,
-          Czech, German, Hungarian, Indonesian, Portuguese, Russian,
-          Simplified Chinese and Spanish (via Weblate)</li>
+      <li>Send fewer MQTT messages</li>
+      <li>Include translations in Brazilian Portuguese, German,
+          Italian, and Portuguese (via Weblate)</li>
   </ul>
 
   <h3>Coming soon</h3>
   <ul>
-      <li>Improve invitation process</li>
+      <li>Support rematch for 3- and 4-device games</li>
       <li>Support duplicate-style play (popular in France)</li>
       <li>Copy Tutanota's push-notification technique</li>
       <li>Improve move-via-NFC</li>
