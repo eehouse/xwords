@@ -1167,4 +1167,5 @@
 \n Você ainda pode abrir uma partida, mas pode não conseguir enviar ou receber jogadas.</string>
     <string name="button_invite_history">Histórico</string>
     <string name="missing_host_fmt">(O anfitrião é um jogador conhecido chamado “%1$s”.)</string>
+    <string name="games_menu_copyDevid">Copiar o MQTT devID</string>
 </resources>
