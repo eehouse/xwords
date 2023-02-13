@@ -379,6 +379,32 @@ public class BoardDelegate extends DelegateBase
         }
             break;
 
+        case GET_DEVID:
+            final EditText et = (EditText)inflate( R.layout.edittext );
+            dialog = ab
+                .setTitle("paste mqtt dev id")
+                .setView( et )
+                .setNegativeButton( android.R.string.cancel, null )
+                .setPositiveButton( android.R.string.ok,
+                                    new OnClickListener() {
+                                        @Override
+                                        public void
+                                            onClick( DialogInterface dlg, int bttn ) {
+                                            final String msg = et.getText().toString();
+                                            post( new Runnable() {
+                                                    @Override
+                                                    public void run() {
+                                                        m_missingDevs = new String[] {msg};
+                                                        m_missingCounts = new int[] {1};
+                                                        m_missingMeans = InviteMeans.MQTT;
+                                                        tryInvites();
+                                                    }
+                                                } );
+                                        }
+                                    } )
+                .create();
+            break;
+
         case ASK_DUP_PAUSE: {
             final boolean isPause = (Boolean)params[0];
             final ConfirmPauseView pauseView =
@@ -1272,8 +1298,10 @@ public class BoardDelegate extends DelegateBase
                 Perms23.tryGetPerms( this, Perms23.NBS_PERMS, R.string.sms_invite_rationale,
                                      Action.INVITE_SMS_DATA, m_mySIS.nMissing, info );
                 break;
-            case RELAY:
             case MQTT:
+                showDialogFragment( DlgID.GET_DEVID );
+                break;
+            case RELAY:
                 // These have been removed as options
                 Assert.failDbg();
                 break;
@@ -2691,15 +2719,18 @@ public class BoardDelegate extends DelegateBase
                 case WIFIDIRECT:
                     WiDirService.inviteRemote( m_activity, dev, nli );
                     break;
-                case RELAY:
                 case MQTT:
+                    destAddr = new CommsAddrRec(CommsConnType.COMMS_CONN_MQTT)
+                        .setMQTTParams( m_missingDevs[ii] );
+                    break;
+                case RELAY:
                 default:
                     Assert.failDbg(); // not getting here, right?
                     break;
                 }
 
                 if ( null != destAddr ) {
-                    XwJNI.comms_invite( m_jniGamePtr, nli, destAddr );
+                    XwJNI.comms_invite( m_jniGamePtr, nli, destAddr, true );
                 } else if ( null != dev ) {
                     recordInviteSent( m_missingMeans, dev );
                 }
@@ -3019,7 +3050,7 @@ public class BoardDelegate extends DelegateBase
     private boolean tryOtherInvites( CommsAddrRec addr )
     {
         Log.d( TAG, "tryOtherInvites(%s)", addr );
-        XwJNI.comms_invite( m_jniGamePtr, nliForMe(), addr );
+        XwJNI.comms_invite( m_jniGamePtr, nliForMe(), addr, true );
 
         // Not sure what to do about this recordInviteSent stuff
         CommsConnTypeSet conTypes = addr.conTypes;

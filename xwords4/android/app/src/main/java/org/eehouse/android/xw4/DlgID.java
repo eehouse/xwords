@@ -70,6 +70,7 @@ public enum DlgID {
     SHOW_TILES,
     RENAME_PLAYER,
     BACKUP_LOADSTORE,
+    GET_DEVID,
     ;
 
     private boolean m_addToStack;

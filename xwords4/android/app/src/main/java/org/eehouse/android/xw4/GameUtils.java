@@ -688,7 +688,7 @@ public class GameUtils {
             XwJNI.game_summarize( gamePtr, summary );
             NetLaunchInfo nli = new NetLaunchInfo( context, summary, gi );
             Log.d( TAG, "passing %s to comms_invite()", nli );
-            XwJNI.comms_invite( gamePtr, nli, invitee );
+            XwJNI.comms_invite( gamePtr, nli, invitee, false );
         }
 
         long rowid = DBUtils.ROWID_NOTFOUND;

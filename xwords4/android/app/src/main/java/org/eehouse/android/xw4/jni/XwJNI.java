@@ -566,7 +566,7 @@ public class XwJNI {
     public static native void comms_addMQTTDevID( GamePtr gamePtr, int channelNo,
                                                   String devID );
     public static native void comms_invite( GamePtr gamePtr, NetLaunchInfo nli,
-                                            CommsAddrRec destAddr );
+                                            CommsAddrRec destAddr, boolean sendNow );
 
     // Used/defined (in C) for DEBUG only
     public static native void comms_setAddrDisabled( GamePtr gamePtr, CommsConnType typ,

@@ -106,6 +106,10 @@ public class InviteChoicesAlert extends DlgDelegateAlert
         if ( Utils.deviceSupportsNBS(context) ) {
             means.add( InviteMeans.SMS_DATA );
         }
+        if ( BuildConfig.NON_RELEASE ) {
+            means.add( InviteMeans.MQTT );
+        }
+
         means.add( InviteMeans.QRCODE );
         if ( BTUtils.BTAvailable() ) {
             means.add( InviteMeans.BLUETOOTH );

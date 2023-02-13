@@ -575,7 +575,7 @@ public class MQTTUtils extends Thread
     {
         CommsAddrRec destAddr = new CommsAddrRec(CommsConnType.COMMS_CONN_MQTT)
             .setMQTTParams( devID );
-        XwJNI.comms_invite( game, nli, destAddr );
+        XwJNI.comms_invite( game, nli, destAddr, false );
     }
 
     private static void notifyNotHere( Context context, String addressee,

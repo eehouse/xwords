@@ -543,6 +543,7 @@ public class GamesListDelegate extends ListDelegateBase
     private static final int[] DEBUG_ITEMS = {
         R.id.games_menu_writegit,
         R.id.games_submenu_logs,
+        R.id.games_menu_copyDevid,
     };
     private static final int[] NOSEL_ITEMS = {
         R.id.games_menu_newgroup,
@@ -1911,6 +1912,12 @@ public class GamesListDelegate extends ListDelegateBase
 
         case R.id.games_menu_writegit:
             Utils.gitInfoToClip( m_activity );
+            break;
+
+        case R.id.games_menu_copyDevid:
+            String devid = XwJNI.dvc_getMQTTDevID();
+            Utils.stringToClip( m_activity, devid );
+            showToast( devid );
             break;
 
         case R.id.games_menu_timerStats:

@@ -2688,7 +2688,8 @@ Java_org_eehouse_android_xw4_jni_XwJNI_comms_1addMQTTDevID
 #ifdef XWFEATURE_COMMS_INVITE
 JNIEXPORT void JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_comms_1invite
-( JNIEnv* env, jclass C, GamePtrType gamePtr, jobject jnli, jobject jaddr )
+( JNIEnv* env, jclass C, GamePtrType gamePtr, jobject jnli, jobject jaddr,
+  jboolean jSendNow )
 {
     XWJNI_START_GLOBALS(gamePtr);
     CommsCtxt* comms = state->game.comms;
@@ -2699,7 +2700,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_comms_1invite
         NetLaunchInfo nli;
         loadNLI( env, &nli, jnli );
 
-        comms_invite( comms, env, &nli, &destAddr, XP_FALSE );
+        comms_invite( comms, env, &nli, &destAddr, jSendNow );
     }
     XWJNI_END();
 }

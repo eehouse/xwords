@@ -113,6 +113,9 @@
     <item android:id="@+id/games_menu_writegit"
           android:title="@string/gamel_menu_writegit"
           />
+    <item android:id="@+id/games_menu_copyDevid"
+          android:title="@string/games_menu_copyDevid"
+          />
 
     <item android:id="@+id/games_submenu_logs"
           android:title="@string/gamel_menu_logs"
