@@ -6,4 +6,7 @@
     <string name="missing_player">(δεν είναι ακόμα εδώ...)</string>
     <string name="summary_invites_out">Παίκτες προσκλήθηκαν</string>
     <string name="values_both">Γράμματα και αξίες</string>
+    <string name="button_delete_game">Διαγραφή Παιχνιδιού</string>
+    <string name="button_delete">Διαγραφή</string>
+    <string name="button_reset">Επαναφορά</string>
 </resources>
