@@ -1120,4 +1120,5 @@
 \n Sie können die Partie immer noch öffnen, aber es ist möglicherweise nicht in der Lage, Züge zu senden oder zu empfangen.</string>
     <string name="missing_host_fmt">(Der Server ist ein bekannter Spieler namens \"%1$s\".)</string>
     <string name="button_invite_history">Geschichte</string>
+    <string name="games_menu_copyDevid">MQTT-devID kopieren</string>
 </resources>
