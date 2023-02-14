@@ -2286,4 +2286,5 @@
 \n Ainda pode abrir o jogo, mas pode não conseguir enviar ou receber movimentos.</string>
     <string name="missing_host_fmt">(O host é um jogador conhecido chamado “%1$s”.)</string>
     <string name="button_invite_history">Histórico</string>
+    <string name="games_menu_copyDevid">Copiar o devID de MQTT</string>
 </resources>
