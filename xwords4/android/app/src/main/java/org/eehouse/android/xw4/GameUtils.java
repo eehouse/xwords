@@ -589,8 +589,6 @@ public class GameUtils {
                             if ( null != gamePtrNew ) {
                                 rowid = saveNewGame1( context, gamePtrNew,
                                                       groupID, gameName );
-                            } else {
-                                Assert.failDbg();
                             }
                         }
                     }
@@ -599,7 +597,6 @@ public class GameUtils {
         }
 
         Log.d( TAG, "makeRematch() => %d", rowid );
-        Assert.assertTrueNR( DBUtils.ROWID_NOTFOUND != rowid );
         return rowid;
     }
 

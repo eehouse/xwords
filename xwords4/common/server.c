@@ -1,6 +1,6 @@
 /* -*- compile-command: "cd ../linux && make -j3 MEMDEBUG=TRUE"; -*- */
 /* 
- * Copyright 1997 - 2021 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 1997 - 2023 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -86,12 +86,12 @@ typedef enum {
 #define UNKNOWN_DEVICE -1
 #define SERVER_DEVICE 0
 
-typedef struct ServerPlayer {
+typedef struct _ServerPlayer {
     EngineCtxt* engine; /* each needs his own so don't interfere each other */
     XP_S8 deviceIndex;  /* 0 means local, -1 means unknown */
 } ServerPlayer;
 
-typedef struct RemoteAddress {
+typedef struct _RemoteAddress {
     XP_PlayerAddr channelNo;
 #ifdef STREAM_VERS_BIGBOARD
     XP_U8 streamVersion;
@@ -143,9 +143,15 @@ typedef struct ServerNonvolatiles {
     RemoteAddress addresses[MAX_NUM_PLAYERS];
     XWStreamCtxt* prevMoveStream;     /* save it to print later */
     XWStreamCtxt* prevWordsStream;
+
+    /* On guests only, stores addresses of other clients for rematch use*/
+    XP_U16 rematchAddrsLen;
+    XP_U8* rematchAddrs;
+
     XP_Bool dupTurnsMade[MAX_NUM_PLAYERS];
     XP_Bool dupTurnsForced[MAX_NUM_PLAYERS];
-    XP_Bool dupTurnsSent;       /* used on client only */
+    XP_Bool dupTurnsSent;       /* used on guest only */
+
 } ServerNonvolatiles;
 
 struct ServerCtxt {
@@ -157,7 +163,7 @@ struct ServerCtxt {
     BadWordInfo illegalWordInfo;
     XP_U16 lastMoveSource;
 
-    ServerPlayer players[MAX_NUM_PLAYERS];
+    ServerPlayer srvPlyrs[MAX_NUM_PLAYERS];
     XP_Bool serverDoing;
 #ifdef XWFEATURE_SLOW_ROBOT
     XP_Bool robotWaiting;
@@ -194,7 +200,7 @@ static void badWordMoveUndoAndTellUser( ServerCtxt* server, XWEnv xwe,
                                         BadWordInfo* bwi );
 static XP_Bool tileCountsOk( const ServerCtxt* server );
 static void setTurn( ServerCtxt* server, XWEnv xwe, XP_S16 turn );
-static XWStreamCtxt* mkServerStream( ServerCtxt* server );
+static XWStreamCtxt* mkServerStream( const ServerCtxt* server );
 static void fetchTiles( ServerCtxt* server, XWEnv xwe, XP_U16 playerNum,
                         XP_U16 nToFetch, const TrayTileSet* tradedTiles,
                         TrayTileSet* resultTiles, XP_Bool forceCanPlay );
@@ -232,6 +238,8 @@ static XP_Bool handleIllegalWord( ServerCtxt* server, XWEnv xwe,
 static void tellMoveWasLegal( ServerCtxt* server, XWEnv xwe );
 static void writeProto( const ServerCtxt* server, XWStreamCtxt* stream, 
                         XW_Proto proto );
+static void readGuestAddrs( ServerCtxt* server, XWStreamCtxt* stream );
+
 #endif
 
 #define PICK_NEXT -1
@@ -301,7 +309,7 @@ syncPlayers( ServerCtxt* server )
     XP_U16 ii;
     CurGameInfo* gi = server->vol.gi;
     LocalPlayer* lp = gi->players;
-    ServerPlayer* player = server->players;
+    ServerPlayer* player = server->srvPlyrs;
     for ( ii = 0; ii < gi->nPlayers; ++ii, ++lp, ++player ) {
         if ( !lp->isLocal/*  && !lp->name */ ) {
             ++server->nv.pendingRegistrations;
@@ -553,7 +561,7 @@ server_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream, ModelCtxt* mode
     }
 
     for ( ii = 0; ii < nPlayers; ++ii ) {
-        ServerPlayer* player = &server->players[ii];
+        ServerPlayer* player = &server->srvPlyrs[ii];
 
         player->deviceIndex = stream_getU8( stream );
 
@@ -578,12 +586,17 @@ server_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream, ModelCtxt* mode
         server->nv.prevWordsStream = readStreamIf( server, stream );
     }
 
+    if ( server->vol.gi->serverRole == SERVER_ISCLIENT
+         && 2 < nPlayers ) {
+        readGuestAddrs( server, stream );
+    }
+
     /* Hack alert: recovering from an apparent bug that leaves the game
        thinking it's a client but being in the host-only XWSTATE_BEGIN
        state. */
     if ( server->nv.gameState == XWSTATE_BEGIN &&
          server->vol.gi->serverRole == SERVER_ISCLIENT ) {
-        XP_LOGFF( "server_makeFromStream(): fixing state" );
+        XP_LOGFF( "fixing state" );
         SETSTATE( server, XWSTATE_NONE );
     }
 
@@ -594,7 +607,7 @@ server_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream, ModelCtxt* mode
 void
 server_writeToStream( const ServerCtxt* server, XWStreamCtxt* stream )
 {
-    XP_U16 nPlayers = server->vol.gi->nPlayers;
+    const XP_U16 nPlayers = server->vol.gi->nPlayers;
 
     putNV( stream, &server->nv, nPlayers );
 
@@ -604,7 +617,7 @@ server_writeToStream( const ServerCtxt* server, XWStreamCtxt* stream )
     }
 
     for ( int ii = 0; ii < nPlayers; ++ii ) {
-        const ServerPlayer* player = &server->players[ii];
+        const ServerPlayer* player = &server->srvPlyrs[ii];
 
         stream_putU8( stream, player->deviceIndex );
 
@@ -618,6 +631,13 @@ server_writeToStream( const ServerCtxt* server, XWStreamCtxt* stream )
 
     writeStreamIf( stream, server->nv.prevMoveStream );
     writeStreamIf( stream, server->nv.prevWordsStream );
+
+    if ( server->vol.gi->serverRole == SERVER_ISCLIENT
+         && 2 < nPlayers ) {
+        XP_U16 len = server->nv.rematchAddrsLen;
+        stream_putU32VL( stream, len );
+        stream_putBytes( stream, server->nv.rematchAddrs, len );
+    }
 } /* server_writeToStream */
 
 void
@@ -638,14 +658,13 @@ server_onRoleChanged( ServerCtxt* server, XWEnv xwe, XP_Bool amNowGuest )
 static void
 cleanupServer( ServerCtxt* server )
 {
-    XP_U16 ii;
-    for ( ii = 0; ii < VSIZE(server->players); ++ii ){
-        ServerPlayer* player = &server->players[ii];
+    for ( XP_U16 ii = 0; ii < VSIZE(server->srvPlyrs); ++ii ){
+        ServerPlayer* player = &server->srvPlyrs[ii];
         if ( player->engine != NULL ) {
             engine_destroy( player->engine );
         }
     }
-    XP_MEMSET( server->players, 0, sizeof(server->players) );
+    XP_MEMSET( server->srvPlyrs, 0, sizeof(server->srvPlyrs) );
 
     if ( server->pool != NULL ) {
         pool_destroy( server->pool );
@@ -658,6 +677,8 @@ cleanupServer( ServerCtxt* server )
     if ( !!server->nv.prevWordsStream ) {
         stream_destroy( server->nv.prevWordsStream );
     }
+
+    XP_FREEP( server->mpool, &server->nv.rematchAddrs );
 
     XP_MEMSET( &server->nv, 0, sizeof(server->nv) );
 } /* cleanupServer */
@@ -776,6 +797,66 @@ readMQTTDevID( ServerCtxt* server, XWStreamCtxt* stream )
             }
         }
     }
+}
+
+static void
+addGuestAddrsIf( const ServerCtxt* server, XP_U16 sendee, XWStreamCtxt* stream )
+{
+    XP_LOGFF("(sendee: %d)", sendee );
+    if ( amServer( server )
+         /* Not needed for two-device games */
+         && 2 < server->nv.nDevices
+         /* no two-player devices?  */
+         && server->nv.nDevices == server->vol.gi->nPlayers
+         && STREAM_VERS_REMATCHADDRS <= stream_getVersion(stream) ) {
+        XWStreamCtxt* tmpStream = mkServerStream( server );
+        stream_setVersion( tmpStream, stream_getVersion( stream ) );
+
+        for ( XP_U16 devIndex = 1; devIndex < server->nv.nDevices; ++devIndex ) {
+            if ( devIndex == sendee ) {
+                continue;
+            }
+            XP_PlayerAddr channelNo
+                = server->nv.addresses[devIndex].channelNo;
+            CommsAddrRec addr;
+            comms_getChannelAddr( server->vol.comms, channelNo, &addr );
+            addrToStream( tmpStream, &addr );
+        }
+        XP_U16 len = stream_getSize( tmpStream );
+        stream_putU32VL( stream, len );
+        stream_putBytes( stream, stream_getPtr(tmpStream), len );
+        stream_destroy( tmpStream );
+    }
+}
+
+static void
+readGuestAddrs( ServerCtxt* server, XWStreamCtxt* stream )
+{
+    XP_U16 version = stream_getVersion( stream );
+    XP_LOGFF( "version: %X", version );
+    if ( STREAM_VERS_REMATCHADDRS <= version && 0 < stream_getSize(stream) ) {
+        XP_U16 len = server->nv.rematchAddrsLen = stream_getU32VL( stream );
+        XP_LOGFF( "rematchAddrsLen: %d", server->nv.rematchAddrsLen );
+        if ( 0 < len ) {
+            XP_ASSERT( !server->nv.rematchAddrs );
+            server->nv.rematchAddrs = XP_MALLOC( server->mpool, len );
+            stream_getBytes( stream, server->nv.rematchAddrs, len );
+            XP_LOGFF( "loaded %d bytes of rematchAddrs", len );
+        }
+#ifdef DEBUG
+        XWStreamCtxt* tmpStream = mkServerStream( server );
+        stream_setVersion( tmpStream, stream_getVersion( stream ) );
+        stream_putBytes( tmpStream, server->nv.rematchAddrs, server->nv.rematchAddrsLen );
+        while ( 0 < stream_getSize(tmpStream) ) {
+            CommsAddrRec addr = {0};
+            addrFromStream( &addr, tmpStream );
+            XP_LOGFF( "got an address" );
+            logAddr( MPPARM(server->mpool) server->vol.dutil, &addr, __func__ );
+        }
+        stream_destroy( tmpStream );
+#endif
+    }
+    LOG_RETURN_VOID();
 }
 
 XP_Bool
@@ -1401,11 +1482,11 @@ robotTradeTiles( ServerCtxt* server, MoveInfo* newMove )
 #endif
 
 static XWStreamCtxt*
-mkServerStream( ServerCtxt* server )
+mkServerStream( const ServerCtxt* server )
 {
-    XWStreamCtxt* stream;
-    stream = mem_stream_make_raw( MPPARM(server->mpool)
-                                  dutil_getVTManager(server->vol.dutil) );
+    XWStreamCtxt* stream =
+        mem_stream_make_raw( MPPARM(server->mpool)
+                             dutil_getVTManager(server->vol.dutil) );
     XP_ASSERT( !!stream );
     return stream;
 } /* mkServerStream */
@@ -1847,7 +1928,7 @@ findFirstPending( ServerCtxt* server, ServerPlayer** playerP )
         XP_LOGFF( "no slot found for player; duplicate packet?" );
         lp = NULL;
     } else {
-        *playerP = server->players + nPlayers;
+        *playerP = server->srvPlyrs + nPlayers;
     }
     return lp;
 } /* findFirstPending */
@@ -2042,6 +2123,7 @@ client_readInitialMessage( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* stream )
         }
 
         readMQTTDevID( server, stream );
+        readGuestAddrs( server, stream );
 
         syncPlayers( server );
 
@@ -2078,7 +2160,7 @@ makeSendableGICopy( ServerCtxt* server, CurGameInfo* giCopy,
     for ( clientPl = giCopy->players, ii = 0;
           ii < nPlayers; ++clientPl, ++ii ) {
         /* adjust isLocal to client's perspective */
-        clientPl->isLocal = server->players[ii].deviceIndex == deviceIndex;
+        clientPl->isLocal = server->srvPlyrs[ii].deviceIndex == deviceIndex;
     }
 
     giCopy->forceChannel = deviceIndex;
@@ -2139,6 +2221,7 @@ sendInitialMessage( ServerCtxt* server, XWEnv xwe )
         }
 
         addMQTTDevIDIf( server, xwe, stream );
+        addGuestAddrsIf( server, deviceIndex, stream );
 
         stream_destroy( stream );
     }
@@ -2288,7 +2371,7 @@ server_getEngineFor( ServerCtxt* server, XP_U16 playerNum )
     const CurGameInfo* gi = server->vol.gi;
     XP_ASSERT( playerNum < gi->nPlayers );
 
-    ServerPlayer* player = &server->players[playerNum];
+    ServerPlayer* player = &server->srvPlyrs[playerNum];
     EngineCtxt* engine = player->engine;
     if ( !engine &&
          (inDuplicateMode(server) || gi->players[playerNum].isLocal) ) {
@@ -2303,7 +2386,7 @@ server_getEngineFor( ServerCtxt* server, XP_U16 playerNum )
 void
 server_resetEngine( ServerCtxt* server, XP_U16 playerNum )
 {
-    ServerPlayer* player = &server->players[playerNum];
+    ServerPlayer* player = &server->srvPlyrs[playerNum];
     if ( !!player->engine ) {
         XP_ASSERT( player->deviceIndex == 0 || inDuplicateMode(server) );
         engine_reset( player->engine );
@@ -3816,6 +3899,7 @@ server_getGameIsOver( const ServerCtxt* server )
     return server->nv.gameState == XWSTATE_GAMEOVER;
 } /* server_getGameIsOver */
 
+/* This is completely wrong */
 XP_Bool
 server_getGameIsConnected( const ServerCtxt* server )
 {
@@ -3849,7 +3933,7 @@ server_getMissingPlayers( const ServerCtxt* server )
     case SERVER_ISSERVER:
         if ( 0 < server->nv.pendingRegistrations ) {
             XP_U16 nPlayers = server->vol.gi->nPlayers;
-            const ServerPlayer* players = server->players;
+            const ServerPlayer* players = server->srvPlyrs;
             for ( ii = 0; ii < nPlayers; ++ii ) {
                 if ( players->deviceIndex == UNKNOWN_DEVICE ) {
                     result |= 1 << ii;
@@ -3870,7 +3954,7 @@ server_getOpenChannel( const ServerCtxt* server, XP_U16* channel )
     XP_ASSERT( amServer( server ) );
     if ( amServer( server ) && 0 < server->nv.pendingRegistrations ) {
         const XP_U16 nPlayers = server->vol.gi->nPlayers;
-        const ServerPlayer* players = server->players;
+        const ServerPlayer* players = server->srvPlyrs;
         for ( int ii = 0; ii < nPlayers && !result; ++ii ) {
             result = UNKNOWN_DEVICE == players->deviceIndex;
             if ( result ) {
@@ -3881,6 +3965,91 @@ server_getOpenChannel( const ServerCtxt* server, XP_U16* channel )
     }
     XP_LOGFF( "channel= %d, found: %s", *channel, boolToStr(result) );
     return result;
+}
+
+XP_Bool
+server_canRematch( const ServerCtxt* server )
+{
+    /* XP_LOGFF( "nDevices: %d; nPlayers: %d", */
+    /*           server->nv.nDevices, server->vol.gi->nPlayers ); */
+    const CurGameInfo* gi = server->vol.gi;
+    XP_Bool result;
+    switch ( gi->serverRole ) {
+    case SERVER_STANDALONE:
+        result = XP_TRUE;       /* can always rematch a local game */
+        break;
+    case SERVER_ISSERVER:
+        /* have all expected clients connected? */
+        result = XWSTATE_RECEIVED_ALL_REG <= server->nv.gameState;
+        break;
+    case SERVER_ISCLIENT:
+        result = 2 == gi->nPlayers
+            ? XP_TRUE           /* We always have server address */
+            : 0 < server->nv.rematchAddrsLen;
+        break;
+    }
+    LOG_RETURNF( "%s", boolToStr(result) );
+    return result;
+}
+
+XP_Bool
+server_getRematchInfo( const ServerCtxt* server, XW_UtilCtxt* newUtil,
+                       XP_U32 gameID, RematchAddrs* ra )
+{
+    LOG_FUNC();
+    XP_Bool success = server_canRematch( server );
+    if ( success ) {
+        XP_MEMSET( ra, 0, sizeof(*ra) );
+        CurGameInfo* newGI = newUtil->gameInfo;
+        gi_disposePlayerInfo( MPPARM(newUtil->mpool) newGI );
+
+        gi_copy( MPPARM(newUtil->mpool) newGI, server->vol.gi );
+        newGI->gameID = gameID;
+        if ( SERVER_ISCLIENT == newGI->serverRole ) {
+            newGI->serverRole = SERVER_ISSERVER; /* we'll be inviting */
+            newGI->forceChannel = 0;
+        }
+        LOGGI( newUtil->gameInfo, "ready to invite" );
+
+        /* Now build the address list */
+        const CommsCtxt* comms = server->vol.comms;
+        if ( amServer( server ) ) {
+            /* skip 0; it's me */
+            for ( int ii = 1; ii < server->nv.nDevices; ++ii ) {
+                XP_PlayerAddr channelNo = server->nv.addresses[ii].channelNo;
+                comms_getChannelAddr( comms, channelNo, &ra->addrs[ra->nAddrs] );
+                ++ra->nAddrs;
+            }
+        } else {
+            /* first, server's address */
+            comms_getHostAddr( comms, &ra->addrs[ra->nAddrs++] );
+            /* then, any other guests we've been told about */
+            if ( !!server->nv.rematchAddrs ) {
+                XWStreamCtxt* stream = mkServerStream( server );
+                stream_setVersion( stream, server->nv.streamVersion );
+                stream_putBytes( stream, server->nv.rematchAddrs,
+                                 server->nv.rematchAddrsLen );
+                while ( 0 < stream_getSize( stream )
+                        && ra->nAddrs < VSIZE(ra->addrs) ) {
+                    addrFromStream( &ra->addrs[ra->nAddrs++], stream );
+                }
+            }
+        }
+    }
+
+#ifdef DEBUG
+    if ( success ) {
+        for ( int ii = 0; ii < ra->nAddrs; ++ii ) {
+            XP_LOGFF( "addr %d of %d: ", ii, ra->nAddrs );
+            logAddr( MPPARM(server->mpool) server->vol.dutil,
+                     &ra->addrs[ii], NULL );
+        }
+    }
+#endif
+
+    XP_ASSERT( !success || server->vol.gi->nPlayers == ra->nAddrs + 1 );
+    LOG_RETURNF( "%s", boolToStr(success) );
+    return success;
 }
 
 XP_U32

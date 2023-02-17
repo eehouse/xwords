@@ -1,6 +1,6 @@
  /* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
 /* 
- * Copyright 1997 - 2000 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 1997 - 2023 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -25,6 +25,7 @@
 
 #include "commmgr.h"
 #include "model.h"
+#include "gameinfo.h"
 
 #ifdef CPLUS
 extern "C" {
@@ -85,6 +86,7 @@ XP_S16 server_getTimerSeconds( const ServerCtxt* server, XWEnv xwe, XP_U16 turn 
 XP_Bool server_dupTurnDone( const ServerCtxt* server, XP_U16 turn );
 XP_Bool server_canPause( const ServerCtxt* server );
 XP_Bool server_canUnpause( const ServerCtxt* server );
+XP_Bool server_canRematch( const ServerCtxt* server );
 void server_pause( ServerCtxt* server, XWEnv xwe, XP_S16 turn, const XP_UCHAR* msg );
 void server_unpause( ServerCtxt* server, XWEnv xwe, XP_S16 turn, const XP_UCHAR* msg );
 
@@ -141,6 +143,19 @@ XP_U16 server_figureFinishBonus( const ServerCtxt* server, XP_U16 turn );
 #ifdef DEBUG
 XP_Bool server_getIsServer( const ServerCtxt* server );
 #endif
+
+typedef struct _RematchAddrs {
+    CommsAddrRec addrs[MAX_NUM_PLAYERS];
+    XP_U16 nAddrs;
+} RematchAddrs;
+
+/* Sets up newUtil->gameInfo correctly, and returns with a set of
+   addresses to which invitation should be sent. But: meant to be called
+   only from game.c anyway.
+*/
+XP_Bool server_getRematchInfo( const ServerCtxt* server, XW_UtilCtxt* newUtil,
+                               XP_U32 gameID, RematchAddrs* ra );
+
 
 #ifdef CPLUS
 }

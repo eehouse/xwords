@@ -214,6 +214,8 @@ XP_S16 comms_resendAll( CommsCtxt* comms, XWEnv xwe, CommsConnType filter,
                         XP_Bool force );
 
 XP_U16 comms_getChannelSeed( CommsCtxt* comms );
+void comms_getChannelAddr( const CommsCtxt* comms, XP_PlayerAddr channelNo,
+                           CommsAddrRec* addr );
 
 #ifdef XWFEATURE_COMMSACK
 void comms_ackAny( CommsCtxt* comms, XWEnv xwe );
@@ -277,6 +279,8 @@ void comms_setAddrDisabled( CommsCtxt* comms, CommsConnType typ,
                             XP_Bool send, XP_Bool enabled );
 XP_Bool comms_getAddrDisabled( const CommsCtxt* comms, CommsConnType typ, 
                                XP_Bool send );
+void logAddr( MPFORMAL XW_DUtilCtxt* dutil, const CommsAddrRec* addr,
+              const char* caller );
 
 # else
 #  define comms_setAddrDisabled( comms, typ, send, enabled )

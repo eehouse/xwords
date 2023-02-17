@@ -857,7 +857,7 @@ public class BoardDelegate extends DelegateBase
             }
         }
 
-        enable = m_gameOver && rematchSupported( false );
+        enable = null != m_gsi && m_gsi.canRematch;
         Utils.setItemVisible( menu, R.id.board_menu_rematch, enable );
 
         enable = m_gameOver && !inArchiveGroup();
@@ -2879,53 +2879,6 @@ public class BoardDelegate extends DelegateBase
         }
     }
 
-    // For now, supported if standalone or either BT or SMS used for transport
-    private boolean rematchSupported( boolean showMulti )
-    {
-        return null != m_summary
-            && rematchSupported( showMulti ? m_activity : null,
-                                 m_summary );
-    }
-
-    public static boolean rematchSupported( Context context, long rowID )
-    {
-        GameSummary summary = GameUtils.getSummary( context, rowID, 1 );
-        return null != summary && rematchSupported( null, summary );
-    }
-
-    private static boolean rematchSupported( Context context,
-                                             GameSummary summary )
-
-    {
-        return rematchSupported( context, false, summary );
-    }
-
-    private static boolean rematchSupported( Context context, boolean supported,
-                                             GameSummary summary )
-    {
-        // standalone games are easy to rematch
-        supported = summary.serverRole == DeviceRole.SERVER_STANDALONE;
-
-        if ( !supported ) {
-            if ( 2 == summary.nPlayers ) {
-                if ( !summary.anyMissing() ) {
-                    CommsConnTypeSet connTypes = summary.conTypes;
-                    supported = connTypes.contains( CommsConnType.COMMS_CONN_MQTT )
-                        || connTypes.contains( CommsConnType.COMMS_CONN_BT )
-                        || connTypes.contains( CommsConnType.COMMS_CONN_SMS  )
-                        || connTypes.contains( CommsConnType.COMMS_CONN_P2P );
-                }
-            } else if ( null != context ) {
-                // show the button if people haven't dismissed the hint yet
-                supported = ! XWPrefs
-                    .getPrefsBoolean( context,
-                                      R.string.key_na_rematch_two_only,
-                                      false );
-            }
-        }
-        return supported;
-    }
-
     private void doRematchIf( boolean deleteAfter )
     {
         doRematchIf( GROUPID_UNSPEC, deleteAfter );
@@ -2942,27 +2895,12 @@ public class BoardDelegate extends DelegateBase
                                      GameSummary summary, CurGameInfo gi,
                                      GamePtr jniGamePtr, boolean deleteAfter )
     {
-        boolean doIt = true;
-        if ( DeviceRole.SERVER_STANDALONE == gi.serverRole ) {
-            // nothing to do??
-        } else if ( 2 != gi.nPlayers ) {
-            Assert.assertNotNull( dlgt );
-            if ( null != dlgt ) {
-                dlgt.makeNotAgainBuilder( R.string.key_na_rematch_two_only,
-                                          R.string.not_again_rematch_two_only )
-                    .show();
-            }
-            doIt = false;
-        }
-
-        if ( doIt ) {
-            String newName = summary.getRematchName( activity );
-            Intent intent = GamesListDelegate
-                .makeRematchIntent( activity, rowid, groupID, gi,
-                                    summary.conTypes, newName, deleteAfter );
-            if ( null != intent ) {
-                activity.startActivity( intent );
-            }
+        String newName = summary.getRematchName( activity );
+        Intent intent = GamesListDelegate
+            .makeRematchIntent( activity, rowid, groupID, gi,
+                                summary.conTypes, newName, deleteAfter );
+        if ( null != intent ) {
+            activity.startActivity( intent );
         }
     }
 

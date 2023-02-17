@@ -1259,7 +1259,8 @@ inviteList( CommonGlobals* cGlobals, CommsAddrRec* myAddr, GSList* invitees,
                 XP_ASSERT(0);
             }
 #ifdef XWFEATURE_COMMS_INVITE
-            comms_invite( cGlobals->game.comms, NULL_XWE, &nli, &destAddr, XP_TRUE );
+            comms_invite( cGlobals->game.comms, NULL_XWE, &nli,
+                          &destAddr, XP_TRUE );
 #endif
         }
     }

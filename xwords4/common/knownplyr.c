@@ -92,6 +92,7 @@ saveState( XW_DUtilCtxt* dutil, XWEnv xwe, KPState* state )
     if ( state->dirty ) {
         XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(dutil->mpool)
                                                     dutil_getVTManager(dutil) );
+        stream_setVersion( stream, CUR_STREAM_VERS );
         stream_putU8( stream, CUR_STREAM_VERS );
         for ( KnownPlayer* kp = state->players; !!kp; kp = kp->next ) {
             stream_putU32( stream, kp->newestMod );

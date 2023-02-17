@@ -21,7 +21,7 @@
 #ifndef _GAMEINFO_H_
 #define _GAMEINFO_H_
 
-#include "server.h"
+#include "nlityp.h"
 
 #ifdef CPLUS
 extern "C" {

@@ -329,8 +329,8 @@ static void assertQueueOk( const CommsCtxt* comms );
 static const char* relayCmdToStr( XWRELAY_Cmd cmd );
 # endif
 static void printQueue( const CommsCtxt* comms );
-static void logAddr( const CommsCtxt* comms, const CommsAddrRec* addr,
-                     const char* caller );
+static void logAddrComms( const CommsCtxt* comms, const CommsAddrRec* addr,
+                          const char* caller );
 #else
 # define ASSERT_ADDR_OK(addr)
 # define assertQueueOk(comms)
@@ -556,13 +556,13 @@ comms_make( MPFORMAL XWEnv xwe, XW_UtilCtxt* util, XP_Bool isServer,
 
     if ( !!selfAddr ) {
         ASSERT_ADDR_OK(selfAddr);
-        logAddr( comms, &comms->selfAddr, "before selfAddr" );
+        logAddrComms( comms, &comms->selfAddr, "before selfAddr" );
         comms->selfAddr = *selfAddr;
-        logAddr( comms, &comms->selfAddr, "after selfAddr" );
+        logAddrComms( comms, &comms->selfAddr, "after selfAddr" );
     }
     if ( !!hostAddr ) {
         XP_ASSERT( !isServer );
-        logAddr( comms, hostAddr, __func__ );
+        logAddrComms( comms, hostAddr, __func__ );
         XP_PlayerAddr channelNo = comms_getChannelSeed( comms );
 #ifdef DEBUG
         AddressRecord* rec = 
@@ -772,8 +772,9 @@ void
 addrFromStream( CommsAddrRec* addrP, XWStreamCtxt* stream )
 {
     XP_U8 tmp = stream_getU8( stream );
-    if ( (STREAM_VERS_MULTIADDR > stream_getVersion( stream )) 
-         && (COMMS_CONN_NONE != tmp) ) {
+    XP_U16 version = stream_getVersion( stream );
+    XP_ASSERT( 0 < version );
+    if ( STREAM_VERS_MULTIADDR > version && (COMMS_CONN_NONE != tmp) ) {
         tmp = 1 << (tmp - 1);
     }
     addrP->_conTypes = tmp;
@@ -879,7 +880,7 @@ comms_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
     XP_USE( nPlayersTotal );
 #endif
     XP_MEMCPY( &comms->selfAddr, &selfAddr, sizeof(comms->selfAddr) );
-    logAddr( comms, &selfAddr, __func__ );
+    logAddrComms( comms, &selfAddr, __func__ );
     comms->flags = flags;
 
     comms->connID = stream_getU32( stream );
@@ -914,7 +915,7 @@ comms_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
         AddressRecord* rec = (AddressRecord*)XP_CALLOC( mpool, sizeof(*rec));
 
         addrFromStream( &rec->addr, stream );
-        logAddr( comms, &rec->addr, __func__ );
+        logAddrComms( comms, &rec->addr, __func__ );
 
         if ( STREAM_VERS_SMALLCOMMS <= version ) {
             rec->nextMsgID = stream_getU32VL( stream );
@@ -1155,8 +1156,7 @@ addrToStreamOne( XWStreamCtxt* stream, CommsConnType typ,
 void
 addrToStream( XWStreamCtxt* stream, const CommsAddrRec* addrP )
 {
-    stream_setVersion( stream, CUR_STREAM_VERS );
-    XP_ASSERT( CUR_STREAM_VERS >= STREAM_VERS_NORELAY );
+    XP_ASSERT( 0 < stream_getVersion(stream) ); /* must be set already */
     XP_U16 conTypes = addrP->_conTypes;
     types_rmType( &conTypes, COMMS_CONN_RELAY );
     stream_putU8( stream, conTypes );
@@ -1209,7 +1209,7 @@ comms_writeToStream( CommsCtxt* comms, XWStreamCtxt* stream, XP_U16 saveToken )
     stream_setVersion( stream, CUR_STREAM_VERS );
 
     stream_putU8( stream, comms->flags );
-    logAddr( comms, &comms->selfAddr, __func__ );
+    logAddrComms( comms, &comms->selfAddr, __func__ );
     addrToStream( stream, &comms->selfAddr );
     stream_putBits( stream, 4, comms->rr.nPlayersHere );
     stream_putBits( stream, 4, comms->rr.nPlayersTotal );
@@ -1239,7 +1239,7 @@ comms_writeToStream( CommsCtxt* comms, XWStreamCtxt* stream, XP_U16 saveToken )
     for ( rec = comms->recs; !!rec; rec = rec->next ) {
 
         const CommsAddrRec* addr = &rec->addr;
-        logAddr( comms, addr, __func__ );
+        logAddrComms( comms, addr, __func__ );
         addrToStream( stream, addr );
 
         stream_putU32VL( stream, rec->nextMsgID );
@@ -1364,18 +1364,36 @@ comms_addMQTTDevID( CommsCtxt* comms, XP_PlayerAddr channelNo,
 }
 
 void
-comms_getAddrs( const CommsCtxt* comms, CommsAddrRec addr[],
-                XP_U16* nRecs )
+comms_getAddrs( const CommsCtxt* comms, CommsAddrRec addrs[],
+                XP_U16* nAddrs )
 {
-    AddressRecord* recs;
-    XP_U16 count;
-    for ( count = 0, recs = comms->recs;
-          count < *nRecs && !!recs;
-          ++count, recs = recs->next ) {
-        XP_MEMCPY( &addr[count], &recs->addr, sizeof(addr[count]) );
-        logAddr( comms, &addr[count], __func__ );
+    XP_U16 count = 0;
+    for ( AddressRecord* recs = comms->recs; !!recs; recs = recs->next ) {
+        if ( count < *nAddrs ) {
+            XP_MEMCPY( &addrs[count], &recs->addr, sizeof(addrs[count]) );
+            logAddrComms( comms, &addrs[count], __func__ );
+        }
+        ++count;
     }
-    *nRecs = count;
+    *nAddrs = count;
+}
+
+void
+comms_getChannelAddr( const CommsCtxt* comms, XP_PlayerAddr channelNo,
+                      CommsAddrRec* addr )
+{
+    XP_U16 masked = channelNo & CHANNEL_MASK;
+    XP_Bool found = XP_FALSE;
+    for ( const AddressRecord* rec = comms->recs;
+          !found && !!rec; rec = rec->next ) {
+        found = (rec->channelNo & CHANNEL_MASK) == masked;
+        if ( found ) {
+            XP_LOGFF( "writing addr for channel %X", channelNo );
+            *addr = rec->addr;
+            logAddrComms( comms, addr, __func__ );
+        }
+    }
+    XP_ASSERT( found );
 }
 
 XP_U16
@@ -1683,7 +1701,7 @@ comms_invite( CommsCtxt* comms, XWEnv xwe, const NetLaunchInfo* nli,
            followed by opening the game, which results in comms_resendAll()
            getting called leading to a second send immediately after this. So
            let Android drop it. Linux, though, needs it for now. */
-        if ( sendNow ) {
+        if ( sendNow && !!comms->procs.sendInvt ) {
             sendMsg( comms, xwe, elem, COMMS_CONN_NONE );
         }
     }
@@ -2101,7 +2119,7 @@ sendMsg( const CommsCtxt* comms, XWEnv xwe, MsgQueueElem* elem,
                     } else {
                         XP_ASSERT( !!comms->procs.sendMsg );
                         XP_U32 gameid = gameID( comms );
-                        logAddr( comms, &addr, __func__ );
+                        logAddrComms( comms, &addr, __func__ );
                         XP_UCHAR msgNo[16];
                         formatMsgNo( comms, elem, msgNo, sizeof(msgNo) );
                         XP_ASSERT( 0 != elem->createdStamp );
@@ -2643,7 +2661,15 @@ getRecordFor( const CommsCtxt* comms, const XP_PlayerAddr channelNo )
         XP_LOGFF( "comparing rec channel %s with addr channel %s",
                  cbuf1, cbuf );
 
-        if ( (rec->channelNo & ~CHANNEL_MASK) == (channelNo & ~CHANNEL_MASK) ) {
+        /* Invite case: base on channelNo bits if the rest is 0 */
+        if ( (0 == (rec->channelNo & ~CHANNEL_MASK)) && (0 == (channelNo & ~CHANNEL_MASK)) ) {
+            if ( rec->channelNo == channelNo ) {
+                break;
+            }
+        } else if ( (rec->channelNo & ~CHANNEL_MASK) == (channelNo & ~CHANNEL_MASK) ) {
+            XP_LOGFF( "match based on channels!!!" );
+            /* This is so wrong for addresses coming from invites. Why works
+               with GTK? */
             break;
         }
     }
@@ -3449,7 +3475,7 @@ rememberChannelAddress( CommsCtxt* comms, XP_PlayerAddr channelNo,
     XP_LOGFF( "(%s)", cbuf );
     listRecs( comms, "entering rememberChannelAddress" );
 
-    logAddr( comms, addr, __func__ );
+    logAddrComms( comms, addr, __func__ );
     rec = getRecordFor( comms, channelNo );
     if ( !rec ) {
         /* not found; add a new entry */
@@ -3487,17 +3513,27 @@ rememberChannelAddress( CommsCtxt* comms, XP_PlayerAddr channelNo,
 } /* rememberChannelAddress */
 
 #ifdef DEBUG
-static void 
-logAddr( const CommsCtxt* comms, const CommsAddrRec* addr,
+
+static void
+logAddrComms( const CommsCtxt* comms, const CommsAddrRec* addr,
+              const char* caller )
+{
+    logAddr( MPPARM(comms->mpool) comms->dutil, addr, caller );
+}
+
+void
+logAddr( MPFORMAL XW_DUtilCtxt* dutil, const CommsAddrRec* addr,
          const char* caller )
 {
     if ( !!addr ) {
         char buf[128];
-        XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(comms->mpool)
-                                                    dutil_getVTManager(comms->dutil));
-        snprintf( buf, sizeof(buf), TAGFMT() "called on %p from %s:\n", TAGPRMS,
-                  addr, caller );
-        stream_catString( stream, buf );
+        XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(mpool)
+                                                    dutil_getVTManager(dutil));
+        if ( !!caller ) {
+            snprintf( buf, sizeof(buf), "called on %p from %s:\n",
+                      addr, caller );
+            stream_catString( stream, buf );
+        }
 
         CommsConnType typ;
         XP_Bool first = XP_TRUE;

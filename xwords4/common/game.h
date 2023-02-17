@@ -47,6 +47,7 @@ typedef struct _GameStateInfo {
     XP_Bool curTurnSelected;
     XP_Bool canHideRack;
     XP_Bool canTrade;
+    XP_Bool canRematch;
     XP_Bool canPause;           /* duplicate-mode only */
     XP_Bool canUnpause;         /* duplicate-mode only */
 } GameStateInfo;
@@ -84,9 +85,9 @@ XP_Bool game_makeNewGame( MPFORMAL XWEnv xwe, XWGame* game, CurGameInfo* gi,
                           ,XP_U16 gameSeed
 #endif
                           );
-void game_makeRematch( const XWGame* game, XWEnv xwe, XW_UtilCtxt* util,
-                       const CommonPrefs* cp, XWGame* newGame,
-                       const XP_UCHAR* newName, XP_Bool sendNow );
+XP_Bool game_makeRematch( const XWGame* game, XWEnv xwe, XW_UtilCtxt* util,
+                          const CommonPrefs* cp, const TransportProcs* procs,
+                          XWGame* newGame, const XP_UCHAR* newName );
 
 void game_changeDict( MPFORMAL XWGame* game, XWEnv xwe, CurGameInfo* gi,
                       DictionaryCtxt* dict );

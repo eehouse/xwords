@@ -1750,14 +1750,6 @@ public class GamesListDelegate extends ListDelegateBase
                     .contains( XWPrefs.getDefaultNewGameGroup( m_activity ) );
                 Utils.setItemVisible( menu, R.id.games_group_default, enable );
 
-                // Rematch supported if there's one game selected
-                enable = 1 == nGamesSelected;
-                if ( enable ) {
-                    enable = BoardDelegate.rematchSupported( m_activity,
-                                                             getSelRowIDs()[0] );
-                }
-                Utils.setItemVisible( menu, R.id.games_game_rematch, enable );
-
                 // Move up/down enabled for groups if not the top-most or bottommost
                 // selected
                 enable = 1 == nGroupsSelected;
@@ -1991,8 +1983,6 @@ public class GamesListDelegate extends ListDelegateBase
 
             if ( null != gameItem ) {
                 long rowID = gameItem.getRowID();
-                enable = BoardDelegate.rematchSupported( m_activity, rowID );
-                Utils.setItemVisible( menu, R.id.games_game_rematch, enable );
 
                 // Deal with possibility summary's temporarily null....
                 GameSummary summary = gameItem.getSummary();

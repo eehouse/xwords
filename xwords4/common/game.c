@@ -165,6 +165,7 @@ game_makeNewGame( MPFORMAL XWEnv xwe, XWGame* game, CurGameInfo* gi,
 #endif
                   )
 {
+    XP_ASSERT( gi == util->gameInfo ); /* if holds, remove gi param */
 #ifndef XWFEATURE_STANDALONE_ONLY
     XP_U16 nPlayersHere = 0;
     XP_U16 nPlayersTotal = 0;
@@ -231,58 +232,44 @@ game_makeNewGame( MPFORMAL XWEnv xwe, XWGame* game, CurGameInfo* gi,
     return success;
 } /* game_makeNewGame */
 
-void
+XP_Bool
 game_makeRematch( const XWGame* oldGame, XWEnv xwe, XW_UtilCtxt* newUtil,
-                  const CommonPrefs* newCp, XWGame* newGame,
-                  const XP_UCHAR* newName, XP_Bool sendNow )
+                  const CommonPrefs* newCp, const TransportProcs* procs,
+                  XWGame* newGame, const XP_UCHAR* newName )
 {
-    LOG_FUNC();
-    CurGameInfo* newGI = newUtil->gameInfo;
-    XP_ASSERT( !!newGI );
-    XP_ASSERT( newGI != oldGame->util->gameInfo );
-    const CurGameInfo* gi = oldGame->util->gameInfo;
-    XP_ASSERT( 0 < gi->nPlayers );
-    gi_copy( MPPARM(newUtil->mpool) newGI, gi );
-    newGI->gameID = makeGameID( newUtil );
-    if ( SERVER_ISCLIENT == newGI->serverRole ) {
-        newGI->serverRole = SERVER_ISSERVER; /* we'll be inviting */
-        newGI->forceChannel = 0;
-    }
+    XP_Bool success = XP_FALSE;
+    XP_LOGFF( "(newName=%s)", newName );
 
-    CommsAddrRec* selfAddrP = NULL;
-    CommsAddrRec selfAddr;
-    if ( !!oldGame->comms ) {
-        comms_getSelfAddr( oldGame->comms, &selfAddr );
-        selfAddrP = &selfAddr;
-    }
+    RematchAddrs ra;
+    if ( server_getRematchInfo( oldGame->server, newUtil,
+                                makeGameID( newUtil ), &ra ) ) {
+        CommsAddrRec* selfAddrP = NULL;
+        CommsAddrRec selfAddr;
+        if ( !!oldGame->comms ) {
+            comms_getSelfAddr( oldGame->comms, &selfAddr );
+            selfAddrP = &selfAddr;
+        }
 
-    CommsAddrRec hostAddr;
-    XP_Bool haveRemote = !oldGame->comms
-        || comms_getHostAddr( oldGame->comms, &hostAddr );
-    if ( !haveRemote ) {
-        XP_U16 nRecs = 1;
-        comms_getAddrs( oldGame->comms, &hostAddr, &nRecs );
-        haveRemote = 0 < nRecs;
-    }
-    XP_ASSERT( haveRemote );
+        if ( game_makeNewGame( MPPARM(newUtil->mpool) xwe, newGame, newUtil->gameInfo,
+                               selfAddrP, (CommsAddrRec*)NULL, newUtil,
+                               (DrawCtx*)NULL, newCp, procs ) ) {
 
-    if ( haveRemote &&
-         game_makeNewGame( MPPARM(newUtil->mpool) xwe, newGame, newGI,
-                           selfAddrP, (CommsAddrRec*)NULL, newUtil,
-                           (DrawCtx*)NULL, newCp, (TransportProcs*)NULL ) ) {
-        LOGGI(newGI, "made game" );
-        XP_ASSERT( 0 < newGI->nPlayers );
-        if ( !!newGame->comms ) {
-            NetLaunchInfo nli;
-            nli_init( &nli, newGI, selfAddrP, 1, 1 );
-            if ( !!newName ) {
-                nli_setGameName( &nli, newName );
+            const CurGameInfo* newGI = newUtil->gameInfo;
+            for ( int ii = 0; ii < ra.nAddrs; ++ii ) {
+                NetLaunchInfo nli;
+                /* hard-code one player per device -- for now */
+                nli_init( &nli, newGI, selfAddrP, 1, ii + 1 );
+                if ( !!newName ) {
+                    nli_setGameName( &nli, newName );
+                }
+                LOGNLI( &nli );
+                comms_invite( newGame->comms, xwe, &nli, &ra.addrs[ii], XP_TRUE );
             }
-            LOGNLI( &nli );
-            comms_invite( newGame->comms, xwe, &nli, &hostAddr, sendNow );
+            success = XP_TRUE;
         }
     }
-    LOG_RETURN_VOID();
+    LOG_RETURNF( "%s", boolToStr(success) );
+    return success;
 }
 
 #ifdef XWFEATURE_CHANGEDICT
@@ -526,6 +513,7 @@ game_getState( const XWGame* game, XWEnv xwe, GameStateInfo* gsi )
     gsi->nPendingMessages = !!game->comms ? 
         comms_countPendingPackets(game->comms) : 0;
 
+    gsi->canRematch = server_canRematch( server );
     gsi->canPause = server_canPause( server );
     gsi->canUnpause = server_canUnpause( server );
 }
