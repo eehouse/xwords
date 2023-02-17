@@ -411,12 +411,12 @@ wasm_dutil_onInviteReceived( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe),
 }
 
 static void
-wasm_dutil_onMessageReceived( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe),
-                              XP_U32 gameID, const CommsAddrRec* from,
-                              XWStreamCtxt* stream )
+wasm_dutil_onMessageReceived( XW_DUtilCtxt* duc, XWEnv xwe, XP_U32 gameID,
+                              const CommsAddrRec* from, const XP_U8* buf,
+                              XP_U16 len )
 {
     Globals* globals = (Globals*)duc->closure;
-    main_onGameMessage( globals, gameID, from, stream );
+    main_onGameMessage( globals, gameID, from, buf, len );
 }
 
 static void

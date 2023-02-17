@@ -37,6 +37,8 @@ typedef XP_Bool (*IdleProc)(void* closure);
 typedef void (*BinProc)(void* closure, const uint8_t* data, int len);
 typedef void (*BoolProc)(void* closure, bool result);
 typedef void (*StringProc)(void* closure, const char* str);
+typedef void (*MsgProc)(void* closure, const char* topic,
+                        const uint8_t* data, int len);
 
 typedef struct GameState {
 #ifdef DEBUG
@@ -103,7 +105,8 @@ void main_alert( GameState* gs, const XP_UCHAR* msg );
 
 void main_gameFromInvite( Globals* globals, const NetLaunchInfo* invite );
 void main_onGameMessage( Globals* globals, XP_U32 gameID,
-                         const CommsAddrRec* from, XWStreamCtxt* stream );
+                         const CommsAddrRec* from, const XP_U8* buf,
+                         XP_U16 len );
 void main_onGameGone( Globals* globals, XP_U32 gameID );
 void main_sendOnClose( XWStreamCtxt* stream, XWEnv env, void* closure );
 void main_playerScoreHeld( GameState* gs, XP_U16 player );
@@ -114,6 +117,6 @@ void main_chatReceived( GameState* gs, const char* msg );
 void main_pickBlank( GameState* gs, int playerNum, int col, int row,
                      const char** tileFaces, int nTiles );
 void main_updateScreen( GameState* gs );
-void main_needDictForGame(GameState* gs, XP_LangCode lang, const XP_UCHAR* dictName);
+void main_needDictForGame(GameState* gs, const char* lc, const XP_UCHAR* dictName);
 
 #endif

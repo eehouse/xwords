@@ -41,7 +41,7 @@ wasm_util_makeStreamFromAddr( XW_UtilCtxt* uc, XWEnv xwe, XP_PlayerAddr channelN
     GameState* gs = wuctxt->closure;
     XWStreamCtxt* stream = mem_stream_make( MPPARM(uc->mpool)
                                             gs->globals->vtMgr, gs,
-                                            channelNo, main_sendOnClose );
+                                            channelNo, main_sendOnClose, NULL_XWE );
     return stream;
 }
 
@@ -316,11 +316,12 @@ wasm_util_informUndo( XW_UtilCtxt* uc, XWEnv xwe )
 }
 
 static void
-wasm_util_informNetDict( XW_UtilCtxt* uc, XWEnv xwe, XP_LangCode lang,
-                                  const XP_UCHAR* oldName,
-                                  const XP_UCHAR* newName,
-                                  const XP_UCHAR* newSum,
-                                  XWPhoniesChoice phoniesAction )
+wasm_util_informNetDict( XW_UtilCtxt* uc, XWEnv xwe,
+                         const XP_UCHAR* isoCode,
+                         const XP_UCHAR* oldName,
+                         const XP_UCHAR* newName,
+                         const XP_UCHAR* newSum,
+                         XWPhoniesChoice phoniesAction )
 {
     LOG_FUNC();
 }
@@ -474,8 +475,8 @@ gotForLang( void* closure, const XP_UCHAR* keys[] )
 }
 
 static const DictionaryCtxt*
-wasm_util_getDict( XW_UtilCtxt* uc, XWEnv xwe,
-                   XP_LangCode lang, const XP_UCHAR* dictName )
+wasm_util_getDict( XW_UtilCtxt* uc, XWEnv xwe, const XP_UCHAR* isoCode,
+                   const XP_UCHAR* dictName )
 {
     XP_LOGFF( "(dictName: %s)", dictName );
     WasmUtilCtx* wuctxt = (WasmUtilCtx*)uc;
@@ -483,7 +484,7 @@ wasm_util_getDict( XW_UtilCtxt* uc, XWEnv xwe,
     Globals* globals = gs->globals;
     XW_DUtilCtxt* duc = util_getDevUtilCtxt(uc, xwe);
 
-    const char* lc = lcToLocale( lang );
+    const char* lc = isoCode;
 
     const DictionaryCtxt* result = dmgr_get( globals->dictMgr, xwe, dictName );
     if ( !result ) {
@@ -512,7 +513,7 @@ wasm_util_getDict( XW_UtilCtxt* uc, XWEnv xwe,
     }
 
     if ( !result ) {
-        main_needDictForGame( gs, lang, dictName );
+        main_needDictForGame( gs, isoCode, dictName );
     }
 
     XP_LOGFF("(%s, %s)=>%p", lc, dictName, result );
@@ -533,16 +534,10 @@ wasm_util_cellSquareHeld( XW_UtilCtxt* uc, XWEnv xwe, XWStreamCtxt* words )
 #endif
 
 static void
-wasm_util_informMissing(XW_UtilCtxt* uc, XWEnv xwe, XP_Bool isServer, 
-                        const CommsAddrRec* addr, XP_U16 nDevs,
-                        XP_U16 nMissing )
-{
-    LOG_FUNC();
-}
-
-static void
-wasm_util_addrChange( XW_UtilCtxt* uc, XWEnv xwe, const CommsAddrRec* oldAddr,
-                      const CommsAddrRec* newAddr )
+wasm_util_informMissing( XW_UtilCtxt* uc, XWEnv xwe, XP_Bool isServer,
+                         const CommsAddrRec* hostAddr,
+                         const CommsAddrRec* selfAddr, XP_U16 nDevs,
+                         XP_U16 nMissing, XP_U16 nInvited )
 {
     LOG_FUNC();
 }
@@ -640,7 +635,6 @@ wasm_util_make( MPFORMAL CurGameInfo* gi, XW_DUtilCtxt* dctxt, GameState* closur
     SET_VTABLE_ENTRY( wuctxt->super.vtable, util_cellSquareHeld, wasm );
 #endif
     SET_VTABLE_ENTRY( wuctxt->super.vtable, util_informMissing, wasm );
-    SET_VTABLE_ENTRY( wuctxt->super.vtable, util_addrChange, wasm );
     SET_VTABLE_ENTRY( wuctxt->super.vtable, util_informWordsBlocked, wasm );
     SET_VTABLE_ENTRY( wuctxt->super.vtable, util_getInviteeName, wasm );
 #ifdef XWFEATURE_CHAT

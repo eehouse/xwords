@@ -202,7 +202,7 @@ EM_JS(void, call_setup, (void* closure, bool dbg, const char* devid,
                          const char* gitrev, int now,
                          StringProc conflictProc,
                          StringProc focussedProc,
-                         BinProc msgProc), {
+                         MsgProc msgProc), {
           let jsgr = UTF8ToString(gitrev);
           jssetup(closure, dbg, UTF8ToString(devid), jsgr, now,
                   conflictProc, focussedProc, msgProc);
@@ -338,41 +338,45 @@ call_alert( const char* msg )
     call_dialog( msg, buttons, NULL, NULL );
 }
 
-static bool
-sendStreamToDev( XWStreamCtxt* stream, const MQTTDevID* devID )
+static void
+onMsgAndTopic( void* closure, const XP_UCHAR* topic,
+               const XP_U8* msgBuf, XP_U16 msgLen )
 {
-    XP_UCHAR topic[64];
-    formatMQTTTopic( devID, topic, sizeof(topic) );
-
-    XP_U16 streamLen = stream_getSize( stream );
-    bool success = call_mqttSend( topic, stream_getPtr( stream ), streamLen );
-    stream_destroy( stream, NULL_XWE );
-
-    XP_LOGFF("(to: %s) => %s", topic, boolToStr(success) );
-    return success;
+    /*bool success = */
+    call_mqttSend( topic, msgBuf, msgLen );
 }
 
 static XP_S16
 send_msg( XWEnv xwe, const XP_U8* buf, XP_U16 len,
-          const XP_UCHAR* msgNo, const CommsAddrRec* addr,
-          CommsConnType conType, XP_U32 gameID, void* closure )
+          XP_U16 streamVersion, const XP_UCHAR* msgNo,
+          XP_U32 createdStamp, const CommsAddrRec* addr,
+          CommsConnType conType, XP_U32 gameID,
+          void* closure )
 {
     XP_S16 nSent = -1;
     Globals* globals = (Globals*)closure;
 
     if ( addr_hasType( addr, COMMS_CONN_MQTT ) ) {
-        // MQTTDevID devID = addr->u.mqtt.devID;
-        XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(globals->mpool)
-                                                    globals->vtMgr );
-        dvc_makeMQTTMessage( globals->dutil, NULL_XWE, stream,
-                             gameID, buf, len );
-        if ( sendStreamToDev( stream, &addr->u.mqtt.devID ) ) {
-            nSent = len;
-        }
+        dvc_makeMQTTMessages( globals->dutil, NULL_XWE,
+                              onMsgAndTopic, NULL,
+                              &addr->u.mqtt.devID,
+                              gameID, buf, len,
+                              streamVersion );
     }
-
     LOG_RETURNF( "%d", nSent );
     return nSent;
+}
+
+static XP_S16
+send_invite( XWEnv xwe, const NetLaunchInfo* nli,
+             XP_U32 createdStamp, const CommsAddrRec* addr,
+             CommsConnType conType, void* closure )
+{
+    Globals* globals = (Globals*)closure;
+    dvc_makeMQTTInvites( globals->dutil, NULL_XWE,
+                         onMsgAndTopic, NULL,
+                         &addr->u.mqtt.devID, nli );
+    return -1;
 }
 
 static void
@@ -406,11 +410,9 @@ sendInviteTo(GameState* gs, const MQTTDevID* remoteDevID)
     nli_init( &nli, &gs->gi, &myAddr, 1, 1 );
     nli_setGameName( &nli, gs->gameName );
 
-    XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(globals->mpool)
-                                                globals->vtMgr );
-    dvc_makeMQTTInvite( globals->dutil, NULL_XWE, stream, &nli );
-
-    sendStreamToDev( stream, remoteDevID );
+    dvc_makeMQTTInvites( globals->dutil, NULL_XWE,
+                         onMsgAndTopic, NULL,
+                         remoteDevID, &nli );
 }
 
 static void
@@ -579,9 +581,9 @@ updateGameButtons( Globals* globals )
 }
 
 static bool
-langNameFor( Globals* globals, XP_LangCode code, char buf[], size_t buflen )
+langNameFor( Globals* globals, const char* lc, char buf[], size_t buflen )
 {
-    const char* lc = lcToLocale( code );
+    /* const char* lc = lcToLocale( code ); */
     const XP_UCHAR* keys[] = { KEY_DICTS, lc, KEY_LANG_NAME, NULL };
     XP_U32 len = buflen;
     dutil_loadPtr( globals->dutil, NULL_XWE, keys, buf, &len );
@@ -598,7 +600,7 @@ showName( GameState* gs )
         char buf[64];
         if ( 1 < countLangs( globals ) ) {
             char langName[32];
-            if ( !langNameFor( globals, gs->gi.dictLang, langName, sizeof(langName) ) ) {
+            if ( !langNameFor( globals, gs->gi.isoCodeStr, langName, sizeof(langName) ) ) {
                 strcpy( langName, "??" );
             }
             sprintf( buf, "%s (%s)", title, langName );
@@ -659,7 +661,7 @@ formatForGame(Globals* globals, bool multiLangs, const XP_UCHAR* gameKey )
     if ( len == sizeof(summary) ) {
         if ( multiLangs ) {
             char langName[32];
-            if ( langNameFor( globals, summary.lang, langName, sizeof(langName) ) ) {
+            if ( langNameFor( globals, summary.isoCodeStr, langName, sizeof(langName) ) ) {
                 offset += snprintf( buf+offset, sizeof(buf)-offset, " (in %s)", langName );
             }
         }
@@ -977,10 +979,10 @@ onFocussed( void* closure, const char* newState )
 }
 
 static void
-onMqttMsg(void* closure, const uint8_t* data, int len )
+onMqttMsg(void* closure, const char* topic, const uint8_t* data, int len )
 {
     CAST_GLOB(Globals*, globals, closure);
-    dvc_parseMQTTPacket( globals->dutil, NULL_XWE, data, len );
+    dvc_parseMQTTPacket( globals->dutil, NULL_XWE, topic, data, len );
 }
 
 static bool
@@ -1093,7 +1095,8 @@ initDeviceGlobals( Globals* globals )
     globals->cp.sortNewTiles = XP_TRUE;
     globals->cp.showColors = XP_TRUE;
 
-    globals->transportProcs.send = send_msg;
+    globals->transportProcs.sendMsg = send_msg;
+    globals->transportProcs.sendInvt = send_invite;
     globals->transportProcs.closure = globals;
 
 #ifdef MEM_DEBUG
@@ -1118,7 +1121,8 @@ initDeviceGlobals( Globals* globals )
         false
 #endif
         ;
-    call_setup( globals, dbg, buf, GITREV, now, onConflict, onFocussed, onMqttMsg );
+    call_setup( globals, dbg, buf, GITREV, now, onConflict,
+                onFocussed, onMqttMsg );
 }
 
 static void
@@ -1160,7 +1164,7 @@ startGame( GameState* gs, const char* name )
 }
 
 static GameState*
-newFromInvite( Globals* globals, const NetLaunchInfo* invite )
+newFromInvite( Globals* globals, const NetLaunchInfo* nli )
 {
     GameState* gs = newGameState(globals);
     gs->util = wasm_util_make( MPPARM(globals->mpool) &gs->gi,
@@ -1169,12 +1173,13 @@ newFromInvite( Globals* globals, const NetLaunchInfo* invite )
     char playerName[32];
     getLocalName( globals, playerName, sizeof(playerName) );
 
-    game_makeFromInvite( MPPARM(globals->mpool) NULL_XWE, invite,
-                         &gs->game, &gs->gi, playerName,
+    const CommsAddrRec* selfAddr = NULL;
+    game_makeFromInvite( &gs->game, NULL_XWE, nli,
+                         selfAddr,
                          gs->util, globals->draw,
                          &globals->cp, &globals->transportProcs );
-    if ( invite->gameName[0] ) {
-        nameGame( gs, invite->gameName );
+    if ( nli->gameName[0] ) {
+        nameGame( gs, nli->gameName );
     }
     ensureName( gs );
     return gs;
@@ -1222,22 +1227,22 @@ onDictConfirmed( void* closure, bool confirmed )
  * host.
  */
 static GameState*
-gameFromInvite( Globals* globals, const NetLaunchInfo* invite )
+gameFromInvite( Globals* globals, const NetLaunchInfo* nli )
 {
     bool needsLoad = true;
-    GameState* gs = getSavedGame( globals, invite->gameID );
+    GameState* gs = getSavedGame( globals, nli->gameID );
     if ( !gs ) {
-        const char* lc = lcToLocale( invite->lang );
+        const char* lc = nli->isoCodeStr;
         if ( haveDictFor(globals, lc) ) {
-            gs = newFromInvite( globals, invite );
+            gs = newFromInvite( globals, nli );
         } else {
             char msg[128];
             sprintf( msg, "Invitation requires a wordlist %s for "
-                     "locale %s; download now?", invite->dict, lc );
+                     "locale %s; download now?", nli->dict, lc );
 
             DictDownState* dds = XP_MALLOC( globals->mpool, sizeof(*dds) );
             dds->globals = globals;
-            dds->invite = *invite;
+            dds->invite = *nli;
             dds->lc = lc;
             call_confirm(globals, msg, onDictConfirmed, dds);
         }
@@ -1314,7 +1319,7 @@ getSavedGame( Globals* globals, int gameID )
             XP_FREE( globals->mpool, gs );
             gs = NULL;
         }
-        stream_destroy( stream, NULL_XWE );
+        stream_destroy( stream );
     }
     XP_LOGFF( "(%X) => %p", gameID, gs );
     return gs;
@@ -1482,7 +1487,7 @@ loadAndDraw( Globals* globals, const NetLaunchInfo* invite,
             gs->gi.phoniesAction = PHONIES_WARN;
             gs->gi.hintsNotAllowed = !!params && !params->allowHints || false;
             gs->gi.gameID = 0;
-            gs->gi.dictLang = dict_getLangCode(dict);
+            XP_STRNCPY( gs->gi.isoCodeStr, dict_getISOCode(dict), VSIZE(gs->gi.isoCodeStr) );
             replaceStringIfDifferent( globals->mpool, &gs->gi.dictName,
                                       dict_getShortName(dict) );
             gs->gi.nPlayers = 2;
@@ -1503,17 +1508,21 @@ loadAndDraw( Globals* globals, const NetLaunchInfo* invite,
                                        globals->dutil, gs );
 
             XP_LOGFF( "calling game_makeNewGame()" );
+            const CommsAddrRec* selfAddr = NULL;
+            CommsAddrRec _selfAddr;
+            if ( SERVER_STANDALONE != gs->gi.serverRole ) {
+                makeSelfAddr( globals, &_selfAddr );
+                selfAddr = &_selfAddr;
+            }
+
+            const CommsAddrRec* hostAddr = NULL;
             game_makeNewGame( MPPARM(globals->mpool) NULL_XWE,
                               &gs->game, &gs->gi,
+                              selfAddr, hostAddr,
                               gs->util, globals->draw,
                               &globals->cp, &globals->transportProcs );
 
             ensureName( gs );
-            if ( !!gs->game.comms ) {
-                CommsAddrRec addr = {0};
-                makeSelfAddr( globals, &addr );
-                comms_augmentHostAddr( gs->game.comms, NULL_XWE, &addr );
-            }
             dict_unref( dict, NULL_XWE );
         }
     }
@@ -1547,13 +1556,18 @@ typedef struct _OpenForMessageState {
 
 void
 main_onGameMessage( Globals* globals, XP_U32 gameID,
-                    const CommsAddrRec* from, XWStreamCtxt* stream )
+                    const CommsAddrRec* from, const XP_U8* buf,
+                    XP_U16 len )
 {
     GameState* gs = getSavedGame( globals, gameID );
     if ( !!gs ) {
+        XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(gs->globals->mpool)
+                                                    gs->globals->vtMgr );
+        stream_putBytes( stream, buf, len );
         if ( game_receiveMessage( &gs->game, NULL_XWE, stream, from ) ) {
             updateScreen( gs, true );
         }
+        stream_destroy( stream );
         if ( !globals->focussed && GRANTED == js_getHaveNotifyPerm() ) {
             GameSummary summary;
             game_summarize( &gs->game, &gs->gi, &summary );
@@ -1564,10 +1578,9 @@ main_onGameMessage( Globals* globals, XP_U32 gameID,
             }
         }
     } else {
-        XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(globals->mpool)
-                                                    globals->vtMgr );
-        dvc_makeMQTTNoSuchGame( globals->dutil, NULL_XWE, stream, gameID );
-        sendStreamToDev( stream, &from->u.mqtt.devID );
+        dvc_makeMQTTNoSuchGames( globals->dutil, NULL_XWE,
+                                 onMsgAndTopic, NULL,
+                                 &from->u.mqtt.devID, gameID );
 #ifdef DEBUG
         char msg[128];
         snprintf( msg, sizeof(msg), "Dropping move for deleted game (id: %X/%d)",
@@ -1633,7 +1646,7 @@ main_showRemaining( GameState* gs )
     board_formatRemainingTiles( gs->game.board, NULL_XWE, stream );
     stream_putU8( stream, 0 );
     call_alert( (const XP_UCHAR*)stream_getPtr( stream ) );
-    stream_destroy( stream, NULL_XWE );
+    stream_destroy( stream );
 }
 
 static void
@@ -1724,7 +1737,7 @@ main_showGameOver( GameState* gs )
         server_writeFinalScores( gs->game.server, NULL_XWE, stream );
         stream_putU8( stream, 0 );
         call_alert( (const XP_UCHAR*)stream_getPtr( stream ) );
-        stream_destroy( stream, NULL_XWE );
+        stream_destroy( stream );
     }
 }
 
@@ -1914,8 +1927,7 @@ updateScreen( GameState* gs, bool doSave )
     if ( doSave ) {
         XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(globals->mpool)
                                                     globals->vtMgr );
-        game_saveToStream( &gs->game, NULL_XWE, &gs->gi,
-                           stream, ++gs->saveToken );
+        game_saveToStream( &gs->game, &gs->gi, stream, ++gs->saveToken );
 
         GameSummary summary;
         game_summarize( &gs->game, &gs->gi, &summary );
@@ -1924,7 +1936,7 @@ updateScreen( GameState* gs, bool doSave )
         formatGameID( gameIDStr, sizeof(gameIDStr), gs->gi.gameID );
         const XP_UCHAR* keys[] = { KEY_GAMES, gameIDStr, KEY_GAME, NULL };
         dutil_storeStream( globals->dutil, NULL_XWE, keys, stream );
-        stream_destroy( stream, NULL_XWE );
+        stream_destroy( stream );
         game_saveSucceeded( &gs->game, NULL_XWE, gs->saveToken );
 
         keys[2] = KEY_SUMMARY;
@@ -1949,9 +1961,9 @@ onGotMissingDict( void* closure, GotDictData* gdd )
 }
 
 void
-main_needDictForGame(GameState* gs, XP_LangCode lang, const XP_UCHAR* dictName)
+main_needDictForGame( GameState* gs, const char* lc,
+                      const XP_UCHAR* dictName )
 {
-    const char* lc = lcToLocale(lang);
     call_get_dict( lc, onGotMissingDict, gs->globals );
 }
 
@@ -2002,7 +2014,7 @@ inviteFromArgv( Globals* globals, NetLaunchInfo* nlip,
         ++param;                /* skip the '=' */
 
         if ( 0 == strcmp( "lang", arg ) ) {
-            gi.dictLang = atoi(param);
+            XP_STRNCPY( gi.isoCodeStr, param, VSIZE(gi.isoCodeStr) );
         } else if ( 0 == strcmp( "np", arg ) ) {
             gi.nPlayers = atoi(param);
         } else if ( 0 == strcmp( "nh", arg ) ) {
@@ -2150,7 +2162,7 @@ onResize( void* closure, int width, int height )
 
 typedef struct _LaunchState {
     Globals* globals;
-    NetLaunchInfo invite;
+    NetLaunchInfo nli;
     char playerName[32];
     bool hadName;
 } LaunchState;
@@ -2176,7 +2188,7 @@ onGotInviteDictAtLaunch( void* closure, GotDictData* gdd )
 
     /* We're ready to start. If we had an invitation, launch for it. Otherwise
        launch the last game that was open */
-    NetLaunchInfo* nlip = ls->invite.lang == 0 ? NULL : &ls->invite;
+    NetLaunchInfo* nlip = '\0' == ls->nli.isoCodeStr[0] ? NULL : &ls->nli;
     int gameID = 0;
     XP_U32 len = sizeof(gameID);
     const XP_UCHAR* keys[] = {KEY_LAST_GID, NULL};
@@ -2199,10 +2211,9 @@ onGotNativeDictAtLaunch( void* closure, GotDictData* gdd )
 
     /* Now download a wordlist if we need one */
     const char* neededLC = NULL;
-    if ( 0 != ls->invite.lang ) {   /* 0 means unset: no invite */
-        const char* lc = lcToLocale( ls->invite.lang );
-        if ( !haveDictFor(ls->globals, lc) ) {
-            neededLC = lc;
+    if ( '\0' != ls->nli.isoCodeStr[0] ) {   /* 0 means unset: no invite */
+        if ( !haveDictFor(ls->globals, ls->nli.isoCodeStr) ) {
+            neededLC = ls->nli.isoCodeStr;
         }
     }
     if ( !!neededLC ) {
@@ -2244,7 +2255,7 @@ startLaunchSequence( Globals* globals, NetLaunchInfo* nli )
     LaunchState* ls = XP_CALLOC( globals->mpool, sizeof(*ls) );
     ls->globals = globals;
     if ( NULL != nli ) {
-        ls->invite = *nli;
+        ls->nli = *nli;
     }
 
     /* No saved name? Ask. Politely */

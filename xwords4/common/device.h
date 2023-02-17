@@ -52,9 +52,9 @@ void dvc_makeMQTTMessages( XW_DUtilCtxt* dutil, XWEnv xwe,
                            XP_U32 gameID, const XP_U8* buf, XP_U16 len,
                            XP_U16 streamVersion );
 void dvc_makeMQTTNoSuchGames( XW_DUtilCtxt* dutil, XWEnv xwe,
-                             MsgAndTopicProc proc, void* closure,
+                              MsgAndTopicProc proc, void* closure,
                               const MQTTDevID* addressee,
-                             XP_U32 gameID );
+                              XP_U32 gameID );
 void dvc_parseMQTTPacket( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* topic,
                           const XP_U8* buf, XP_U16 len );
 #endif

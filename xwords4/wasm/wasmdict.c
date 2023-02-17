@@ -146,14 +146,7 @@ wasm_dictionary_destroy( DictionaryCtxt* dict, XWEnv xwe )
         XP_FREE( dict->mpool, ctxt->dictBase );
     }
 
-    /* super's destructor should do this!!!! */
-    XP_FREEP( dict->mpool, &ctxt->super.desc );
-    XP_FREEP( dict->mpool, &ctxt->super.md5Sum );
-    XP_FREEP( dict->mpool, &ctxt->super.countsAndValues );
-    XP_FREEP( dict->mpool, &ctxt->super.faces );
-    XP_FREEP( dict->mpool, &ctxt->super.facePtrs );
-    XP_FREEP( dict->mpool, &ctxt->super.name );
-    XP_FREE( dict->mpool, ctxt );
+    dict_super_destroy( &ctxt->super );
 }
 
 DictionaryCtxt*
