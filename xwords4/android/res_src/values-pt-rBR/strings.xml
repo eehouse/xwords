@@ -1168,4 +1168,5 @@
     <string name="button_invite_history">Histórico</string>
     <string name="missing_host_fmt">(O anfitrião é um jogador conhecido chamado “%1$s”.)</string>
     <string name="games_menu_copyDevid">Copiar o MQTT devID</string>
+    <string name="title_pasteDevid">O DevID MQTT do convidado</string>
 </resources>
