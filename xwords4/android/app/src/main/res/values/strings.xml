@@ -2219,7 +2219,8 @@
     <string name="mqtt_qos">MQTT QOS</string>
     <string name="name_dict_fmt">%1$s/%2$s</string>
     <string name="gamel_menu_writegit">Copy git info to clipboard</string>
-        <!-- Debug builds only -->
+    <!-- Debug builds only -->
+    <string name="title_pasteDevid">Invitee’s MQTT devID</string>
     <string name="games_menu_copyDevid">Copy MQTT devID</string>
     <string name="enable_pending_count_title">Show Pending messages</string>
     <string name="enable_pending_count_summary">Show number not yet acknowledged</string>

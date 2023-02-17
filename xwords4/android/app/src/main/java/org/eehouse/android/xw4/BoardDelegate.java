@@ -382,7 +382,7 @@ public class BoardDelegate extends DelegateBase
         case GET_DEVID:
             final EditText et = (EditText)inflate( R.layout.edittext );
             dialog = ab
-                .setTitle("paste mqtt dev id")
+                .setTitle( R.string.title_pasteDevid )
                 .setView( et )
                 .setNegativeButton( android.R.string.cancel, null )
                 .setPositiveButton( android.R.string.ok,
