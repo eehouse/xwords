@@ -555,6 +555,7 @@ public class GamesListDelegate extends ListDelegateBase
     private static final int[] ONEGAME_ITEMS = {
         R.id.games_game_config,
         R.id.games_game_rename,
+        R.id.games_game_rematch,
         R.id.games_game_new_from,
         R.id.games_game_copy,
     };
@@ -2148,7 +2149,6 @@ public class GamesListDelegate extends ListDelegateBase
             break;
 
         case R.id.games_game_rematch:
-            Assert.assertTrue( 1 == selRowIDs.length );
             BoardDelegate.setupRematchFor( m_activity, selRowIDs[0] );
             break;
 
