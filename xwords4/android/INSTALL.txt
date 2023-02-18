@@ -1,23 +1,46 @@
-(Updated Dec 2017)
+(Updated Feb 2023)
 
 Here's how I'm building CrossWords for Android.
 
 First, cd into the directory xwords4/android. Everything
 happens there.
 
-To build and install the debug version of CrossWords:
-
-# ./gradlew clean insXw4Deb
-
 To build and install the debug version of CrossDbg (a variant meant
 for development that can co-exist with CrossWords):
 
-# ./gradlew -PuseCrashlytics insXw4dDeb
+# ./gradlew clean insXw4dDeb
+
+(The clean target can be omitted if you're not switching branches,
+adding to strings.xml, or making API changes that require that
+everything be recompiled)
+
+To make a release build:
+# ./scripts/arelease-clone.sh
+
+You'll get prompted to re-run with the --variant flag that will tell
+which version to build.  There are currently three release variants
+
+* Xw4Foss: shipped through GitHub, SourceForge and the author's
+  website, this variant does everything, including (potentially but
+  not now) using libraries the F-Droid communitity doesn't trust, and
+  supporting features that Google no longer wants third-party
+  developers to use (e.g. sending and receiving SMS messages, if the
+  user so chooses.)
+
+* Xw4fdroid: This variant follows the F-droid community requirements
+  to avoid unfree libraries (like Google Pay, which I used to use for
+  the offline Push feature).
+
+* Xw4GPlay: This variant omits features that Google no longer wants
+  third party apps to include, such as play-over-SMS and updating from
+  third party sites.
+
 
 I do all development on Debian and Ubuntu Linux systems. I have built
-on MacOS, where once you get all the necessary tools installed via
-homebrew there's only one problem I'm aware of: the parameter 'white'
-that's passed to convert by android/scripts/images.mk on Linux systems
-needs to be 'black' on MacOS. I have no clue why. If you don't make
-this change the subset of actionbar icons that are generated from .svg
-files will be black-on-black.
+on MacOS (prior to 2017), where once you got all the necessary tools
+installed via homebrew there was only one problem I'm aware of: the
+parameter 'white' that's passed to convert by
+android/scripts/images.mk on Linux systems needs to be 'black' on
+MacOS. I have no clue why. If you don't make this change the subset of
+actionbar icons that are generated from .svg files will be
+black-on-black.
