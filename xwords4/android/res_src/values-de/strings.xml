@@ -1121,4 +1121,5 @@
     <string name="missing_host_fmt">(Der Server ist ein bekannter Spieler namens \"%1$s\".)</string>
     <string name="button_invite_history">Geschichte</string>
     <string name="games_menu_copyDevid">MQTT-devID kopieren</string>
+    <string name="title_pasteDevid">MQTT-DevID des Eingeladenen</string>
 </resources>
