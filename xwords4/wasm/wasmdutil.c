@@ -221,6 +221,55 @@ ensurePath(const char* keys[], char buf[], bool mkDirs)
 }
 
 static void
+wasm_dutil_storeStream( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* keys[],
+                        XWStreamCtxt* stream )
+{
+    LOG_FUNC();
+
+    char path[128];
+    ensurePath(keys, path, true);
+
+    // XP_LOGFF( "opening %s", path );
+    int fd = open(path, O_RDWR | O_CREAT, 0666);
+    if ( -1 == fd ) {
+        XP_LOGFF( "error from open(%s): %s", path, strerror(errno));
+    }
+    XP_ASSERT( fd != -1 );      /* firing */
+    const XP_U8* data = stream_getPtr( stream );
+    const XP_U16 len = stream_getSize( stream );
+    ssize_t nWritten = write( fd, data, len );
+    XP_LOGFF( "wrote %d bytes to path %s", nWritten, path );
+    XP_ASSERT( nWritten == len );
+
+    ++((WasmDUtilCtxt*)duc)->dirtyCount;
+}
+
+static void
+wasm_dutil_loadStream( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* keys[],
+                       XWStreamCtxt* inOut )
+{
+    LOG_FUNC();
+    char path[128];
+    ensurePath(keys, path, false);
+    XP_LOGFF( "(path: %s [retry: %s])", path, path );
+
+    struct stat statbuf;
+    int err = stat(path, &statbuf);
+    if ( 0 == err ) {
+        XP_U8 buf[statbuf.st_size];
+        int fd = open(path, O_RDONLY);
+        ssize_t nRead = read(fd, buf, statbuf.st_size);
+        close( fd );
+        stream_putBytes( inOut, buf, statbuf.st_size );
+    } else {
+        XP_LOGFF( "no file at %s", path );
+    }
+    XP_LOGFF( "from %s", path );
+    XP_LOGFF( "read %zu bytes", statbuf.st_size );
+    XP_LOGFF( "read %zu bytes from path %s", statbuf.st_size, path );
+}
+
+static void
 wasm_dutil_storePtr( XW_DUtilCtxt* duc, XWEnv xwe,
                      const char* keys[],
                      const void* data, XP_U32 len )
@@ -313,6 +362,7 @@ callWithKeys( XW_DUtilCtxt* duc, char path[], int depth,
     return goOn;
 }
 
+# ifdef XWFEATURE_DEVICE
 static void
 wasm_dutil_forEach( XW_DUtilCtxt* duc, XWEnv xwe,
                     const char* keysIn[],
@@ -357,6 +407,7 @@ wasm_dutil_remove( XW_DUtilCtxt* duc, const XP_UCHAR* keys[] )
     deleteAll(path);
     ++((WasmDUtilCtxt*)duc)->dirtyCount;
 }
+#endif
 
 #ifdef XWFEATURE_DEVID
 static const XP_UCHAR*
@@ -383,6 +434,15 @@ wasm_dutil_md5sum( XW_DUtilCtxt* duc, XWEnv xwe, const XP_U8* ptr,
 }
 
 static void
+wasm_dutil_getUsername( XW_DUtilCtxt* duc, XWEnv xwe, XP_U16 num,
+                        XP_Bool isLocal, XP_Bool isRobot,
+                        XP_UCHAR* buf, XP_U16* len )
+{
+    LOG_FUNC();
+    XP_ASSERT(0);
+}
+
+static void
 wasm_dutil_notifyPause( XW_DUtilCtxt* XP_UNUSED(duc), XWEnv XP_UNUSED(xwe),
                          XP_U32 XP_UNUSED_DBG(gameID),
                          DupPauseType XP_UNUSED_DBG(pauseTyp),
@@ -391,6 +451,13 @@ wasm_dutil_notifyPause( XW_DUtilCtxt* XP_UNUSED(duc), XWEnv XP_UNUSED(xwe),
                          const XP_UCHAR* XP_UNUSED_DBG(msg) )
 {
     LOG_FUNC();
+}
+
+static XP_Bool
+wasm_dutil_haveGame( XW_DUtilCtxt* duc, XWEnv xwe, XP_U32 gameID,XP_U8 channel )
+{
+    XP_ASSERT(0);
+    return XP_TRUE;
 }
 
 static void
@@ -417,6 +484,13 @@ wasm_dutil_onMessageReceived( XW_DUtilCtxt* duc, XWEnv xwe, XP_U32 gameID,
 {
     Globals* globals = (Globals*)duc->closure;
     main_onGameMessage( globals, gameID, from, buf, len );
+}
+
+static void
+wasm_dutil_onCtrlReceived( XW_DUtilCtxt* duc, XWEnv xwe, const XP_U8* buf, XP_U16 len )
+{
+    Globals* globals = (Globals*)duc->closure;
+    main_onCtrlReceived( globals, buf, len );
 }
 
 static void
@@ -477,10 +551,14 @@ wasm_dutil_make( MPFORMAL VTableMgr* vtMgr, void* closure )
     SET_PROC(getUserString);
     SET_PROC(getUserQuantityString);
 
+    SET_PROC(storeStream);
+    SET_PROC(loadStream);
     SET_PROC(storePtr);
     SET_PROC(loadPtr);
+#ifdef XWFEATURE_DEVICE
     SET_PROC(forEach);
     SET_PROC(remove);
+#endif
 
 #ifdef XWFEATURE_SMS
     SET_PROC(phoneNumbersSame);
@@ -494,11 +572,13 @@ wasm_dutil_make( MPFORMAL VTableMgr* vtMgr, void* closure )
 #ifdef COMMS_CHECKSUM
     SET_PROC(md5sum);
 #endif
-
+    SET_PROC(getUsername);
     SET_PROC(notifyPause);
+    SET_PROC(haveGame);
     SET_PROC(onDupTimerChanged);
     SET_PROC(onInviteReceived);
     SET_PROC(onMessageReceived);
+    SET_PROC(onCtrlReceived);
     SET_PROC(onGameGoneReceived);
     SET_PROC(ackMQTTMsg);
 

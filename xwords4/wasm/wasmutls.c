@@ -23,6 +23,8 @@
 #include <stdarg.h>
 
 #include "wasmutls.h"
+#include "xptypes.h"
+#include "comtypes.h"
 
 EM_JS(void, console_log, (const char* msg), {
         let jsmsg = UTF8ToString(msg);
@@ -44,17 +46,21 @@ wasm_debugf( const char* format, ... )
 void
 wasm_debugff( const char* func, const char* file, const char* fmt, ...)
 {
-    char buf[1024];
-    snprintf( buf, sizeof(buf), "%s:%s(): %s", file, func, fmt );
-    buf[sizeof(buf)-1] = '\0';  /* to be safe */
+    char buf1[512];
+    int required = snprintf( buf1, sizeof(buf1), "%s:%s()", file, func );
+    XP_ASSERT( required < sizeof(buf1) );
 
+    char buf2[1024];
     va_list ap;
     va_start( ap, fmt );
-    char buf2[1024];
-    vsnprintf( buf2, sizeof(buf2), buf, ap );
+    required = vsnprintf( buf2, sizeof(buf2), fmt, ap );
+    XP_ASSERT( required < sizeof(buf2) );
     va_end( ap );
-    buf2[sizeof(buf2)-1] = '\0';  /* to be safe */
-    console_log( buf2 );
+
+    char buf3[VSIZE(buf1) + VSIZE(buf2)];
+    required = snprintf( buf3, sizeof(buf3), "%s: %s", buf1, buf2 );
+    XP_ASSERT( required < sizeof(buf3) );
+    console_log( buf3 );
 }
 
 #ifndef MEM_DEBUG

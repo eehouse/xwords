@@ -1,6 +1,7 @@
 /* -*- compile-command: "cd ../wasm && make MEMDEBUG=TRUE install -j3"; -*- */
 /*
- * Copyright 2021 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2021 - 2023 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -1588,6 +1589,13 @@ main_onGameMessage( Globals* globals, XP_U32 gameID,
         call_alert( msg );
 #endif
     }
+}
+
+void
+main_onCtrlReceived( Globals* globals, const XP_U8* buf, XP_U16 len )
+{
+    XP_LOGFF("(len=%d)", len );
+    XP_ASSERT(0);
 }
 
 void

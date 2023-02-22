@@ -425,6 +425,14 @@ wasm_util_remSelected( XW_UtilCtxt* uc, XWEnv xwe )
     main_showRemaining( gs );
 }
 
+
+static void
+wasm_util_getMQTTIDsFor( XW_UtilCtxt* uc, XWEnv xwe, XP_U16 nRelayIDs,
+                         const XP_UCHAR* relayIDs[] )
+{
+    LOG_FUNC();
+}
+
 static void
 wasm_util_timerSelected( XW_UtilCtxt* uc, XWEnv xwe, XP_Bool inDuplicateMode,
                          XP_Bool canPause )
@@ -595,9 +603,8 @@ wasm_util_make( MPFORMAL CurGameInfo* gi, XW_DUtilCtxt* dctxt, GameState* closur
     wuctxt->dctxt = dctxt;
     wuctxt->closure = closure;
 
-    SET_VTABLE_ENTRY( wuctxt->super.vtable, util_userError, wasm );
     SET_VTABLE_ENTRY( wuctxt->super.vtable, util_makeStreamFromAddr, wasm );
-
+    SET_VTABLE_ENTRY( wuctxt->super.vtable, util_userError, wasm );
     SET_VTABLE_ENTRY( wuctxt->super.vtable, util_notifyMove, wasm );
     SET_VTABLE_ENTRY( wuctxt->super.vtable, util_notifyTrade, wasm );
     SET_VTABLE_ENTRY( wuctxt->super.vtable, util_notifyPickTileBlank, wasm );
@@ -626,6 +633,7 @@ wasm_util_make( MPFORMAL CurGameInfo* gi, XW_DUtilCtxt* dctxt, GameState* closur
     SET_VTABLE_ENTRY( wuctxt->super.vtable, util_makeEmptyDict, wasm );
     SET_VTABLE_ENTRY( wuctxt->super.vtable, util_notifyIllegalWords, wasm );
     SET_VTABLE_ENTRY( wuctxt->super.vtable, util_remSelected, wasm );
+    SET_VTABLE_ENTRY( wuctxt->super.vtable, util_getMQTTIDsFor, wasm );
     SET_VTABLE_ENTRY( wuctxt->super.vtable, util_timerSelected, wasm );
     SET_VTABLE_ENTRY( wuctxt->super.vtable, util_formatPauseHistory, wasm );
     SET_VTABLE_ENTRY( wuctxt->super.vtable, util_bonusSquareHeld, wasm );

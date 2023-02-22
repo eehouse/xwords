@@ -107,6 +107,7 @@ void main_gameFromInvite( Globals* globals, const NetLaunchInfo* invite );
 void main_onGameMessage( Globals* globals, XP_U32 gameID,
                          const CommsAddrRec* from, const XP_U8* buf,
                          XP_U16 len );
+void main_onCtrlReceived( Globals* globals, const XP_U8* buf, XP_U16 len );
 void main_onGameGone( Globals* globals, XP_U32 gameID );
 void main_sendOnClose( XWStreamCtxt* stream, XWEnv env, void* closure );
 void main_playerScoreHeld( GameState* gs, XP_U16 player );
