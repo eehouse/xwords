@@ -566,8 +566,8 @@ public class BoardCanvas extends Canvas implements DrawCtx {
     public void score_pendingScore( Rect rect, int score, int playerNum,
                                     boolean curTurn, int flags )
     {
-        Log.d( TAG, "pendingScore(playerNum=%d, curTurn=%b)",
-               playerNum, curTurn );
+        // Log.d( TAG, "score_pendingScore(playerNum=%d, curTurn=%b)",
+        //        playerNum, curTurn );
 
         int otherIndx = (0 == (flags & CELL_ISCURSOR))
             ? CommonPrefs.COLOR_BACKGRND : CommonPrefs.COLOR_FOCUS;

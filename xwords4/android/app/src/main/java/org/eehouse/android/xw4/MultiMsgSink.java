@@ -146,7 +146,7 @@ public class MultiMsgSink implements TransportProcs {
     @Override
     public void countChanged( int newCount )
     {
-        Log.d( TAG, "countChanged(new=%d); dropping", newCount );
+        // Log.d( TAG, "countChanged(new=%d); dropping", newCount );
     }
 
     public static boolean sendInvite( Context context, long rowid,

@@ -104,10 +104,10 @@ public class XwJNI {
             release();
         }
 
-        // @Override
+        @Override
         public void finalize() throws java.lang.Throwable
         {
-            if ( BuildConfig.DEBUG && (0 != m_refCount || 0 != m_ptrGame) ) {
+            if ( BuildConfig.NON_RELEASE && (0 != m_refCount || 0 != m_ptrGame) ) {
                 Log.e( TAG, "finalize(): called prematurely: refCount: %d"
                        + "; ptr: %d; creator: %s", m_refCount, m_ptrGame, mStack );
             }
@@ -309,6 +309,7 @@ public class XwJNI {
     private static GamePtr initGameJNI( long rowid )
     {
         long ptr = gameJNIInit( getJNI().m_ptrGlobals );
+        Assert.assertTrueNR( 0 != ptr ); // should be impossible
         GamePtr result = 0 == ptr ? null : new GamePtr( ptr, rowid );
         return result;
     }

@@ -699,8 +699,8 @@ public class MQTTUtils extends Thread
     @Override
     public void onSuccess( IMqttToken asyncActionToken )
     {
-        Log.d( TAG, "%H.onSuccess(%s); cur state: %s", asyncActionToken,
-               this, mState );
+        Log.d( TAG, "%H.onSuccess(%s); cur state: %s", this, asyncActionToken,
+               mState );
         switch ( mState ) {
         case CONNECTING:
             setState( State.CONNECTED );
@@ -709,7 +709,7 @@ public class MQTTUtils extends Thread
             setState( State.SUBSCRIBED );
             break;
         default:
-            Log.e( TAG, "%H.onSuccess(): unexpected state %s", mState );
+            Log.e( TAG, "%H.onSuccess(): unexpected state %s", this, mState );
         }
     }
 

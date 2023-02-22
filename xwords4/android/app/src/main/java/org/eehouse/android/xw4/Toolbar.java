@@ -93,8 +93,8 @@ public class Toolbar implements BoardContainer.SizeChangeListener {
         m_onClickListeners.put( index, new View.OnClickListener() {
                 @Override
                 public void onClick( View view ) {
-                    Log.i( TAG, "setListener(): click on %s with action %s",
-                           view.toString(), action.toString() );
+                    // Log.i( TAG, "setListener(): click on %s with action %s",
+                    //        view.toString(), action.toString() );
                     m_dlgDlgt.makeNotAgainBuilder( prefsKey, action, msgID )
                         .show();
                 }
