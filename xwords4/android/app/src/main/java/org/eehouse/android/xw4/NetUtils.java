@@ -80,7 +80,8 @@ public class NetUtils {
     {
         String host = XWPrefs.getPrefsString( context, R.string.key_mqtt_host );
         String myID = XwJNI.dvc_getMQTTDevID();
-        String url = String.format( "https://%s/xw4/ui/games?gameid=%d&d1=%s",
+        // Use the route that doesn't require login
+        String url = String.format( "https://%s/xw4/ui/gameinfo?gameid=%d&devid=%s",
                                     host, gameID, myID );
         return url;
     }
