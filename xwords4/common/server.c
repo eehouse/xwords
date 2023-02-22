@@ -3997,6 +3997,7 @@ server_getRematchInfo( const ServerCtxt* server, XW_UtilCtxt* newUtil,
                        XP_U32 gameID, RematchAddrs* ra )
 {
     LOG_FUNC();
+    const CommsCtxt* comms = server->vol.comms;
     XP_Bool success = server_canRematch( server );
     if ( success ) {
         XP_MEMSET( ra, 0, sizeof(*ra) );
@@ -4012,8 +4013,9 @@ server_getRematchInfo( const ServerCtxt* server, XW_UtilCtxt* newUtil,
         LOGGI( newUtil->gameInfo, "ready to invite" );
 
         /* Now build the address list */
-        const CommsCtxt* comms = server->vol.comms;
-        if ( amServer( server ) ) {
+        if ( !comms ) {
+            /* no addressing to do!! */
+        } else if ( amServer( server ) ) {
             /* skip 0; it's me */
             for ( int ii = 1; ii < server->nv.nDevices; ++ii ) {
                 XP_PlayerAddr channelNo = server->nv.addresses[ii].channelNo;
@@ -4047,7 +4049,7 @@ server_getRematchInfo( const ServerCtxt* server, XW_UtilCtxt* newUtil,
     }
 #endif
 
-    XP_ASSERT( !success || server->vol.gi->nPlayers == ra->nAddrs + 1 );
+    XP_ASSERT( !success || !comms || server->vol.gi->nPlayers == ra->nAddrs + 1 );
     LOG_RETURNF( "%s", boolToStr(success) );
     return success;
 }
