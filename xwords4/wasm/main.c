@@ -201,12 +201,17 @@ EM_JS(void, call_get_string, (const char* msg, const char* dflt,
 
 EM_JS(void, call_setup, (void* closure, bool dbg, const char* devid,
                          const char* gitrev, int now,
-                         StringProc conflictProc,
-                         StringProc focussedProc,
-                         MsgProc msgProc), {
+                         StringProc conflictProc, StringProc focussedProc,
+                         MsgProc msgProc,
+                         XP_U16 nTopics, XP_UCHAR** topics), {
           let jsgr = UTF8ToString(gitrev);
+          let subTopics = [];
+          for (let ii = 0; ii < nTopics; ++ii ) {
+              const topicMem = HEAP32[(topics + (ii * 4)) >> 2];
+              subTopics[ii] = UTF8ToString(topicMem);
+          }
           jssetup(closure, dbg, UTF8ToString(devid), jsgr, now,
-                  conflictProc, focussedProc, msgProc);
+                  conflictProc, focussedProc, msgProc, subTopics);
       });
 
 EM_JS(bool, call_mqttSend, (const char* topic, const uint8_t* ptr, int len), {
@@ -1122,8 +1127,19 @@ initDeviceGlobals( Globals* globals )
         false
 #endif
         ;
+
+    XP_UCHAR storage[256];
+    XP_UCHAR* topics[4];
+    XP_U16 nTopics = VSIZE(topics);
+    dvc_getMQTTSubTopics( globals->dutil, NULL_XWE,
+                          storage, VSIZE(storage),
+                          &nTopics, topics );
+    for ( int ii = 0; ii < nTopics; ++ii ) {
+        XP_LOGFF( "got topic %d: %s", ii, topics[ii] );
+    }
+
     call_setup( globals, dbg, buf, GITREV, now, onConflict,
-                onFocussed, onMqttMsg );
+                onFocussed, onMqttMsg, nTopics, topics );
 }
 
 static void
@@ -2081,7 +2097,14 @@ MQTTConnectedChanged( void* closure, bool connected )
 void
 cbckBinary( BinProc proc, void* closure, int len, const uint8_t* msg )
 {
-    (*proc)(closure, msg, len );
+    (*proc)( closure, msg, len );
+}
+
+void
+cbckMsg( MsgProc proc, void* closure, const char* topic,
+         int len, const uint8_t* msg )
+{
+    (*proc)( closure, topic, msg, len );
 }
 
 static void

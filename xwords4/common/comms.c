@@ -1910,10 +1910,10 @@ freeElem( MPFORMAL MsgQueueElem* elem )
 {
     XP_FREEP( mpool, &elem->msg );
 #ifdef COMMS_CHECKSUM
-    XP_LOGFF( "freeing msg with len %d, sum %s", elem->len, elem->checksum );
+    /* XP_LOGFF( "freeing msg with len %d, sum %s", elem->len, elem->checksum ); */
     XP_FREEP( mpool, &elem->checksum );
 #else
-    XP_LOGFF( "freeing msg with len %d", elem->len );
+    /* XP_LOGFF( "freeing msg with len %d", elem->len ); */
 #endif
     XP_FREE( mpool, elem );
 }

@@ -122,7 +122,8 @@ function getDict(langs, proc, closure) {
 }
 
 // Called from main() asap after things are initialized etc.
-function jssetup(closure, dbg, devid, gitrev, now, noTabProc, focusProc, msgProc) {
+function jssetup(closure, dbg, devid, gitrev, now, noTabProc,
+				 focusProc, msgProc, subTopics) {
 	// Set a unique tag so we know if somebody comes along later
 	let tabID = Math.random();
 	let item = 'tabID/' + dbg;
@@ -146,6 +147,7 @@ function jssetup(closure, dbg, devid, gitrev, now, noTabProc, focusProc, msgProc
 
 	state.closure = closure;
 	state.msgProc = msgProc;
+	state.subTopics = subTopics;
 
 	registerOnce(devid, gitrev, now, dbg);
 
@@ -185,10 +187,11 @@ function jssetup(closure, dbg, devid, gitrev, now, noTabProc, focusProc, msgProc
 		}
 	};
 	state.client.onMessageArrived = function onMessageArrived(message) {
+		let topic = message.topic;
 		let payload = message.payloadBytes;
 		let length = payload.length;
-		Module.ccall('cbckBinary', null, ['number', 'number', 'number', 'array'],
-					 [state.msgProc, state.closure, length, payload]);
+		Module.ccall('cbckMsg', null, ['number', 'number', 'string', 'number', 'array'],
+					 [state.msgProc, state.closure, topic, length, payload]);
 	};
 
 	function onConnect() {
@@ -201,7 +204,11 @@ function jssetup(closure, dbg, devid, gitrev, now, noTabProc, focusProc, msgProc
 			onFailure: function() { alert('subscribe failed'); },
 			timeout: 10,
 		};
-		state.client.subscribe('xw4/device/' + devid, subscribeOptions);
+
+		for ( topic of state.subTopics ) {
+			// console.log('calling subscribe('+topic+')');
+			state.client.subscribe(topic, subscribeOptions);
+		}
 	}
 
 	state.client.connect({mqttVersion: 3,
@@ -247,6 +254,7 @@ function mqttSend( topic, ptr ) {
 		message = new Paho.MQTT.Message(ptr);
 		message.destinationName = topic;
 		message.qos = 2;
+		message.retained = true;
 		state.client.send(message);
 	} else {
 		console.error('mqttSend: not connected');
