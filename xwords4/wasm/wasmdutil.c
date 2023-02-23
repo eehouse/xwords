@@ -439,7 +439,15 @@ wasm_dutil_getUsername( XW_DUtilCtxt* duc, XWEnv xwe, XP_U16 num,
                         XP_UCHAR* buf, XP_U16* len )
 {
     LOG_FUNC();
-    XP_ASSERT(0);
+    if ( isRobot ) {
+        *len = snprintf( buf, *len, "Robot %d", num );
+    } else if ( isLocal ) {
+        Globals* globals = (Globals*)duc->closure;
+        main_getLocalName( globals, buf, *len );
+        *len = strlen( buf );
+    } else {
+        *len = snprintf( buf, *len, "Remote %d", num );
+    }
 }
 
 static void
@@ -454,10 +462,10 @@ wasm_dutil_notifyPause( XW_DUtilCtxt* XP_UNUSED(duc), XWEnv XP_UNUSED(xwe),
 }
 
 static XP_Bool
-wasm_dutil_haveGame( XW_DUtilCtxt* duc, XWEnv xwe, XP_U32 gameID,XP_U8 channel )
+wasm_dutil_haveGame( XW_DUtilCtxt* duc, XWEnv xwe, XP_U32 gameID, XP_U8 channel )
 {
-    XP_ASSERT(0);
-    return XP_TRUE;
+    Globals* globals = (Globals*)duc->closure;
+    return main_haveGame( globals, gameID, channel );
 }
 
 static void

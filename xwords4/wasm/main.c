@@ -803,8 +803,8 @@ onDeleteConfirmed( void* closure, bool confirmed )
     }
 }
 
-static bool
-getLocalName( Globals* globals, char* playerName, size_t buflen )
+bool
+main_getLocalName( Globals* globals, char* playerName, size_t buflen )
 {
     XP_U32 len = buflen;
     const XP_UCHAR* keys[] = {KEY_PLAYER_NAME, NULL};
@@ -898,7 +898,7 @@ onDeviceButton( void* closure, const char* button )
         call_confirm( globals, msg, onDeleteConfirmed, curGS );
     } else if ( 0 == strcmp(button, BUTTON_NAME ) ) {
         char playerName[32];
-        getLocalName( globals, playerName, sizeof(playerName)-1 );
+        main_getLocalName( globals, playerName, sizeof(playerName)-1 );
         call_get_string( "Set your (local) player name", playerName,
                          onPlayerNamed, globals );
     }
@@ -1188,7 +1188,7 @@ newFromInvite( Globals* globals, const NetLaunchInfo* nli )
                                globals->dutil, gs );
 
     char playerName[32];
-    getLocalName( globals, playerName, sizeof(playerName) );
+    main_getLocalName( globals, playerName, sizeof(playerName) );
 
     const CommsAddrRec* selfAddr = NULL;
     game_makeFromInvite( &gs->game, NULL_XWE, nli,
@@ -1495,7 +1495,7 @@ loadAndDraw( Globals* globals, const NetLaunchInfo* invite,
         DictionaryCtxt* dict = loadAnyDict( globals, langName );
         if ( !!dict ) {
             char playerName[32];
-            getLocalName( globals, playerName, sizeof(playerName) );
+            main_getLocalName( globals, playerName, sizeof(playerName) );
 
             gs = newGameState( globals );
             gs->gi.serverRole = !!params && !params->isRobot
@@ -1991,6 +1991,27 @@ main_needDictForGame( GameState* gs, const char* lc,
     call_get_dict( lc, onGotMissingDict, gs->globals );
 }
 
+
+static XP_Bool
+checkForChannel( void* closure, const XP_UCHAR* keysIn[] )
+{
+    XP_Bool* foundp = (XP_Bool*)closure;
+    *foundp = XP_TRUE;
+    return XP_TRUE;
+}
+
+XP_Bool
+main_haveGame( Globals* globals, XP_U32 gameID, XP_U8 channel )
+{
+    char gameIDStr[32];
+    formatGameID( gameIDStr, sizeof(gameIDStr), gameID );
+    const XP_UCHAR* keys[] = {KEY_GAMES, gameIDStr, KEY_GAME, NULL};
+    XP_Bool found = XP_FALSE;
+    dutil_forEach( globals->dutil, NULL_XWE, keys,
+                   checkForChannel, &found );
+    return found;
+}
+
 static void
 looper( void* closure )
 {
@@ -2290,7 +2311,7 @@ startLaunchSequence( Globals* globals, NetLaunchInfo* nli )
     }
 
     /* No saved name? Ask. Politely */
-    if ( getLocalName( globals, ls->playerName, sizeof(ls->playerName) ) ) {
+    if ( main_getLocalName( globals, ls->playerName, sizeof(ls->playerName) ) ) {
         ls->hadName = true;
         onPlayerNamedAtLaunch( ls, NULL );
     } else {

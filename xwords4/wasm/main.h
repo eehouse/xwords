@@ -109,6 +109,7 @@ void main_onGameMessage( Globals* globals, XP_U32 gameID,
                          XP_U16 len );
 void main_onCtrlReceived( Globals* globals, const XP_U8* buf, XP_U16 len );
 void main_onGameGone( Globals* globals, XP_U32 gameID );
+XP_Bool main_haveGame( Globals* globals, XP_U32 gameID, XP_U8 channel );
 void main_sendOnClose( XWStreamCtxt* stream, XWEnv env, void* closure );
 void main_playerScoreHeld( GameState* gs, XP_U16 player );
 void main_showGameOver( GameState* gs );
@@ -119,5 +120,6 @@ void main_pickBlank( GameState* gs, int playerNum, int col, int row,
                      const char** tileFaces, int nTiles );
 void main_updateScreen( GameState* gs );
 void main_needDictForGame(GameState* gs, const char* lc, const XP_UCHAR* dictName);
+bool main_getLocalName( Globals* globals, char* playerName, size_t buflen );
 
 #endif
