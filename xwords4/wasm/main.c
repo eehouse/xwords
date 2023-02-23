@@ -85,6 +85,7 @@
 #define BUTTON_VALS "Vals"
 #define BUTTON_CHAT "Chat"
 #define BUTTON_INVITE "Invite"
+#define BUTTON_REMATCH "Rematch"
 
 #define BUTTON_GAME_GAMES "Games"
 #define BUTTON_GAME_NEW "New Game"
@@ -103,7 +104,10 @@ typedef struct _NewGameParams {
     char langName[32];
 } NewGameParams;
 
+static void removeGameState( GameState* gs );
 static void updateScreen( GameState* gs, bool doSave );
+static void cleanupGame( GameState* gs );
+static void saveGame( GameState* gs );
 static void updateDeviceButtons( Globals* globals );
 static void clearScreen( Globals* globals );
 static GameState* newGameState( Globals* globals );
@@ -148,7 +152,7 @@ EM_JS(void, show_name, (const char* name), {
     });
 
 EM_JS(void, show_msgcount, (int count), {
-        let str = "";
+        let str = "\u200C";     /* space that takes up vertial space in layout */
         if ( 0 < count ) {
             str = "Pending msgs: " + count;
         }
@@ -501,6 +505,31 @@ handleInvite( GameState* gs )
 }
 
 static void
+handleRematch( GameState* curGS )
+{
+    LOG_FUNC();
+    Globals* globals = curGS->globals;
+    GameState* newGS = newGameState( globals );
+    newGS->util = wasm_util_make( MPPARM(globals->mpool) &newGS->gi,
+                                  globals->dutil, newGS );
+
+    if ( game_makeRematch( &curGS->game, NULL_XWE, newGS->util,
+                           &globals->cp, (TransportProcs*)NULL,
+                           &newGS->game, "newName" ) ) {
+        int gameID = newGS->gi.gameID;
+
+        saveGame( newGS );
+        removeGameState( newGS ); /* force reload with drawCtxt etc. */
+
+        loadAndDraw( globals, (NetLaunchInfo*)NULL, gameID, (NewGameParams*)NULL );
+    } else {
+        XP_LOGFF( "failed" );
+        cleanupGame( newGS );
+    }
+    LOG_RETURN_VOID();
+}
+
+static void
 onChatComposed( void* closure, const char* msg )
 {
     if ( !!msg ) {
@@ -547,6 +576,8 @@ onGameButton( void* closure, const char* button )
             draw = board_prefsChanged( board, &globals->cp );
         } else if ( 0 == strcmp(button, BUTTON_INVITE) ) {
             handleInvite(gs);
+        } else if ( 0 == strcmp(button, BUTTON_REMATCH) ) {
+            handleRematch(gs);
         }
 
         if ( draw ) {
@@ -594,6 +625,10 @@ updateGameButtons( Globals* globals )
             }
 
             buttons[cur++] = BUTTON_VALS;
+
+            if ( gsi.canRematch ) {
+                buttons[cur++] = BUTTON_REMATCH;
+            }
         }
     }
 
@@ -1175,7 +1210,7 @@ storeCurOpen( GameState* gs )
 }
 
 static void
-startGame( GameState* gs, const char* name )
+startGame( GameState* gs )
 {
     Globals* globals = gs->globals;
     globals->curGame = gs;
@@ -1187,11 +1222,6 @@ startGame( GameState* gs, const char* name )
     resizeBoard( globals, gs );
 
     if ( SERVER_ISCLIENT == gs->gi.serverRole ) {
-        if ( !!name ) {
-            replaceStringIfDifferent( globals->mpool,
-                                      &gs->gi.players[0].name,
-                                      name );
-        }
         server_initClientConnection( gs->game.server, NULL_XWE );
     }
     
@@ -1210,9 +1240,6 @@ newFromInvite( Globals* globals, const NetLaunchInfo* nli )
     GameState* gs = newGameState(globals);
     gs->util = wasm_util_make( MPPARM(globals->mpool) &gs->gi,
                                globals->dutil, gs );
-
-    char playerName[32];
-    main_getLocalName( globals, playerName, sizeof(playerName) );
 
     CommsAddrRec selfAddr = {0};
     makeSelfAddr( globals, &selfAddr );
@@ -1502,12 +1529,12 @@ loadAndDraw( Globals* globals, const NetLaunchInfo* invite,
     XP_LOGFF( "(gameID: %X)", gameID );
     GameState* gs = NULL;
 
-    bool haveGame;
     if ( !params ) {
         /* First, load any saved game. We need it e.g. to confirm that an incoming
            invite is a dup and should be dropped. */
         if ( 0 != gameID ) {
             gs = getSavedGame( globals, gameID );
+            XP_LOGFF( "got game id %X", gameID );
         }
         if ( !!invite ) {   /* overwrite gs is ok: we'll likely want both games  */
             gs = gameFromInvite( globals, invite );
@@ -1568,7 +1595,7 @@ loadAndDraw( Globals* globals, const NetLaunchInfo* invite,
         }
     }
     if ( !!gs ) {
-        startGame( gs, NULL );
+        startGame( gs );
     }
     LOG_RETURN_VOID();
 }
@@ -1584,7 +1611,7 @@ main_gameFromInvite( Globals* globals, const NetLaunchInfo* invite )
 {
     GameState* gs = gameFromInvite( globals, invite );
     if ( gs ) {
-        startGame( gs, NULL );
+        startGame( gs );
     }
 }
 
@@ -1951,6 +1978,28 @@ clearScreen( Globals* globals )
 }
 
 static void
+saveGame( GameState* gs )
+{
+    Globals* globals = gs->globals;
+    XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(globals->mpool)
+                                                     globals->vtMgr );
+    game_saveToStream( &gs->game, &gs->gi, stream, ++gs->saveToken );
+
+    GameSummary summary;
+    game_summarize( &gs->game, &gs->gi, &summary );
+
+    char gameIDStr[32];
+    formatGameID( gameIDStr, sizeof(gameIDStr), gs->gi.gameID );
+    const XP_UCHAR* keys[] = { KEY_GAMES, gameIDStr, KEY_GAME, NULL };
+    dutil_storeStream( globals->dutil, NULL_XWE, keys, stream );
+    stream_destroy( stream );
+    game_saveSucceeded( &gs->game, NULL_XWE, gs->saveToken );
+
+    keys[2] = KEY_SUMMARY;
+    dutil_storePtr( globals->dutil, NULL_XWE, keys, &summary, sizeof(summary) );
+}
+
+static void
 updateScreen( GameState* gs, bool doSave )
 {
     Globals* globals = gs->globals;
@@ -1959,34 +2008,22 @@ updateScreen( GameState* gs, bool doSave )
         if ( !!gs->game.board ) {
             board_draw( gs->game.board, NULL_XWE );
             wasm_draw_render( globals->draw, globals->renderer );
+        } else {
+            XP_LOGFF( "no board for gid %X", gs->gi.gameID );
         }
         SDL_RenderPresent( globals->renderer );
-
+        XP_LOGFF( "SDL_RenderPresent returned" );
     } else {
-        XP_LOGFF( "not drawing %s; not visible", gs->gameName );
+        XP_LOGFF( "not drawing %s/%X; not visible", gs->gameName, gs->gi.gameID );
     }
 
     updateGameButtons( globals );
 
     /* Let's save state here too, though likely too often */
     if ( doSave ) {
-        XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(globals->mpool)
-                                                    globals->vtMgr );
-        game_saveToStream( &gs->game, &gs->gi, stream, ++gs->saveToken );
-
-        GameSummary summary;
-        game_summarize( &gs->game, &gs->gi, &summary );
-
-        char gameIDStr[32];
-        formatGameID( gameIDStr, sizeof(gameIDStr), gs->gi.gameID );
-        const XP_UCHAR* keys[] = { KEY_GAMES, gameIDStr, KEY_GAME, NULL };
-        dutil_storeStream( globals->dutil, NULL_XWE, keys, stream );
-        stream_destroy( stream );
-        game_saveSucceeded( &gs->game, NULL_XWE, gs->saveToken );
-
-        keys[2] = KEY_SUMMARY;
-        dutil_storePtr( globals->dutil, NULL_XWE, keys, &summary, sizeof(summary) );
+        saveGame( gs );
     }
+    LOG_RETURN_VOID();
 }
 
 void

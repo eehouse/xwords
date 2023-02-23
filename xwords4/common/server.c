@@ -3988,7 +3988,7 @@ server_canRematch( const ServerCtxt* server )
             : 0 < server->nv.rematchAddrsLen;
         break;
     }
-    LOG_RETURNF( "%s", boolToStr(result) );
+    /* LOG_RETURNF( "%s", boolToStr(result) ); */
     return result;
 }
 

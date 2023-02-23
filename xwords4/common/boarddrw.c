@@ -629,15 +629,16 @@ drawTradeWindowIf( BoardCtxt* board )
 XP_Bool
 board_draw( BoardCtxt* board, XWEnv xwe )
 {
-    if ( !!board->draw && board->boardBounds.width > 0 ) {
-        if ( draw_beginDraw( board->draw, xwe ) ) {
+    if ( !board->draw ) {
+        XP_LOGFF( "drawCtxt not set" );
+    } else if ( 0 >= board->boardBounds.width ) {
+        XP_LOGFF( "boardBounds.width not set" );
+    } else if ( draw_beginDraw( board->draw, xwe ) ) {
+        drawScoreBoard( board, xwe );
+        drawTray( board, xwe );
+        drawBoard( board, xwe );
 
-            drawScoreBoard( board, xwe );
-            drawTray( board, xwe );
-            drawBoard( board, xwe );
-
-            draw_endDraw( board->draw, xwe );
-        }
+        draw_endDraw( board->draw, xwe );
     }
     return !board->needsDrawing && 0 == board->trayInvalBits;
 } /* board_draw */
