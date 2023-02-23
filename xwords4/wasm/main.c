@@ -147,6 +147,14 @@ EM_JS(void, show_name, (const char* name), {
         document.getElementById('gamename').textContent = jsname;
     });
 
+EM_JS(void, show_msgcount, (int count), {
+        let str = "";
+        if ( 0 < count ) {
+            str = "Pending msgs: " + count;
+        }
+        document.getElementById('msgcount').textContent = str;
+    });
+
 EM_JS(void, show_pool, (int cur, int max), {
         const msg = 'cur: ' + cur + 'b; max: ' + max + 'b';
         const div = document.getElementById('mempool');
@@ -369,7 +377,8 @@ send_msg( XWEnv xwe, const XP_U8* buf, XP_U16 len,
                               gameID, buf, len,
                               streamVersion );
     }
-    LOG_RETURNF( "%d", nSent );
+    XP_LOGFF("(len=%d, msgNo=%s, gameID=%X)=>%d",
+             len, msgNo, gameID, nSent );
     return nSent;
 }
 
@@ -383,6 +392,12 @@ send_invite( XWEnv xwe, const NetLaunchInfo* nli,
                          onMsgAndTopic, NULL,
                          &addr->u.mqtt.devID, nli );
     return -1;
+}
+
+static void
+count_changed( XWEnv xwe, void* closure, XP_U16 msgCount )
+{
+    show_msgcount( msgCount );
 }
 
 static void
@@ -1111,6 +1126,7 @@ initDeviceGlobals( Globals* globals )
 
     globals->transportProcs.sendMsg = send_msg;
     globals->transportProcs.sendInvt = send_invite;
+    globals->transportProcs.countChanged = count_changed;
     globals->transportProcs.closure = globals;
 
 #ifdef MEM_DEBUG
