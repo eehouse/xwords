@@ -600,10 +600,10 @@ static void
 showName( GameState* gs )
 {
     const char* title = NULL;
+    char buf[64];
     if ( !!gs ) {
         Globals* globals = gs->globals;
         title = gs->gameName;
-        char buf[64];
         if ( 1 < countLangs( globals ) ) {
             char langName[32];
             if ( !langNameFor( globals, gs->gi.isoCodeStr, langName, sizeof(langName) ) ) {
@@ -611,6 +611,11 @@ showName( GameState* gs )
             }
             sprintf( buf, "%s (%s)", title, langName );
             title = buf;
+#ifdef DEBUG
+        } else {
+            sprintf( buf, "%s (gid=%d/%X)", title, gs->gi.gameID, gs->gi.gameID );
+            title = buf;
+#endif
         }
     }
     show_name( title );
@@ -630,7 +635,7 @@ typedef struct _NameIterState {
     Globals* globals;
     int count;
     char** names;
-    char** ids;
+    char** gids;
 } NameIterState;
 
 static void
@@ -650,7 +655,7 @@ onGameChosen( void* closure, const char* key )
 }
 
 static char*
-formatForGame(Globals* globals, bool multiLangs, const XP_UCHAR* gameKey )
+formatForGame( Globals* globals, bool multiLangs, const XP_UCHAR* gameKey )
 {
     const XP_UCHAR* keys[] = {KEY_GAMES, gameKey, KEY_NAME, NULL};
     char gameName[32];
@@ -685,6 +690,9 @@ formatForGame(Globals* globals, bool multiLangs, const XP_UCHAR* gameKey )
             offset += snprintf( buf+offset, sizeof(buf)-offset, " My turn: %s",
                                 0 <= summary.turn && summary.turnIsLocal ? "YES" : "NO" );
         }
+#ifdef DEBUG
+        offset += snprintf( buf+offset, sizeof(buf)-offset, " GID: %s", gameKey );
+#endif
     }
     char* result = NULL;
     replaceStringIfDifferent( globals->mpool, &result, buf );
@@ -709,10 +717,10 @@ onOneGameName( void* closure, const XP_UCHAR* keys[] )
             nis->names = XP_REALLOC( globals->mpool, nis->names,
                                      nis->count * sizeof(nis->names[0]) );
             nis->names[cur] = formatForGame( globals, multiLangs, keys[1] );
-            nis->ids = XP_REALLOC( globals->mpool, nis->ids,
-                                   nis->count * sizeof(nis->ids[0]) );
-            nis->ids[cur] = XP_MALLOC( globals->mpool, 1 + strlen(gameIDStr) );
-            strcpy( nis->ids[cur], gameIDStr );
+            nis->gids = XP_REALLOC( globals->mpool, nis->gids,
+                                   nis->count * sizeof(nis->gids[0]) );
+            nis->gids[cur] = XP_MALLOC( globals->mpool, 1 + strlen(gameIDStr) );
+            strcpy( nis->gids[cur], gameIDStr );
         }
     }
     return true;                /* keep going */
@@ -728,14 +736,14 @@ pickGame( Globals* globals )
     dutil_forEach( dutil, NULL_XWE, keys, onOneGameName, &nis );
 
     const char* msg = "Choose game to open:";
-    call_pickGame(msg, nis.ids, nis.names, nis.count, onGameChosen, globals);
+    call_pickGame(msg, nis.gids, nis.names, nis.count, onGameChosen, globals);
 
     for ( int ii = 0; ii < nis.count; ++ii ) {
         XP_FREE( globals->mpool, nis.names[ii] );
-        XP_FREE( globals->mpool, nis.ids[ii] );
+        XP_FREE( globals->mpool, nis.gids[ii] );
     }
     XP_FREE( globals->mpool, nis.names );
-    XP_FREE( globals->mpool, nis.ids );
+    XP_FREE( globals->mpool, nis.gids );
 }
 
 static void
@@ -1598,12 +1606,9 @@ main_onGameMessage( Globals* globals, XP_U32 gameID,
         dvc_makeMQTTNoSuchGames( globals->dutil, NULL_XWE,
                                  onMsgAndTopic, NULL,
                                  &from->u.mqtt.devID, gameID );
-#ifdef DEBUG
-        char msg[128];
-        snprintf( msg, sizeof(msg), "Dropping move for deleted game (id: %X/%d)",
+
+        XP_LOGFF( "Dropping move for deleted game (id: %X/%d)",
                   gameID, gameID );
-        call_alert( msg );
-#endif
     }
 }
 
@@ -1620,8 +1625,8 @@ main_onGameGone( Globals* globals, XP_U32 gameID )
     GameState* gs = getSavedGame( globals, gameID );
     if ( !!gs ) {
         char msg[128];
-        sprintf( msg, "The game %s has been deleted on the remote "
-                 "device. Delete here too?", gs->gameName );
+        sprintf( msg, "The game %s (id=%X) has been deleted on the remote "
+                 "device. Delete here too?", gs->gameName, gameID );
         call_confirm( globals, msg, onDeleteConfirmed, gs );
     }
 }
