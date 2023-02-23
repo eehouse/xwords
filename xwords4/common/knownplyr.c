@@ -215,7 +215,7 @@ XP_Bool
 kplr_addAddrs( XW_DUtilCtxt* dutil, XWEnv xwe, const CurGameInfo* gi,
                CommsAddrRec addrs[], XP_U16 nAddrs, XP_U32 modTime )
 {
-    LOG_FUNC();
+    XP_LOGFF( "(nAddrs=%d)", nAddrs );
     XP_Bool canUse = XP_TRUE;
     for ( int ii = 0; ii < nAddrs && canUse; ++ii ) {
         canUse = addr_hasType( &addrs[ii], COMMS_CONN_MQTT );
@@ -237,6 +237,7 @@ kplr_addAddrs( XW_DUtilCtxt* dutil, XWEnv xwe, const CurGameInfo* gi,
         releaseState( dutil, xwe, state );
     }
 
+    LOG_RETURNF( "%s", boolToStr(canUse) );
     return canUse;
 }
 

@@ -2042,7 +2042,7 @@ static bool
 inviteFromArgv( Globals* globals, NetLaunchInfo* nlip,
                 int argc, const char** argv )
 {
-    LOG_FUNC();
+    XP_LOGFF( "(argc=%d)", argc );
     CurGameInfo gi = {0};
     CommsAddrRec addr = {0};
     MQTTDevID mqttDevID = 0;
@@ -2104,7 +2104,7 @@ inviteFromArgv( Globals* globals, NetLaunchInfo* nlip,
         LOGNLI( nlip );
     }
     gi_disposePlayerInfo( MPPARM(globals->mpool) &gi );
-    LOG_RETURNF( "%d", success );
+    LOG_RETURNF( "%s", boolToStr(success) );
     return success;
 }
 
@@ -2118,12 +2118,6 @@ MQTTConnectedChanged( void* closure, bool connected )
             comms_resendAll( gs->game.comms, NULL_XWE, COMMS_CONN_MQTT, XP_TRUE );
         }
     }
-}
-
-void
-cbckBinary( BinProc proc, void* closure, int len, const uint8_t* msg )
-{
-    (*proc)( closure, msg, len );
 }
 
 void
@@ -2237,7 +2231,6 @@ storeOrAlert( Globals* globals, GotDictData* gdd )
 static void
 onGotInviteDictAtLaunch( void* closure, GotDictData* gdd )
 {
-    // XP_LOGFF("(gdd: %p)", gdd );
     LaunchState* ls = (LaunchState*)closure;
     Globals* globals = ls->globals;
 

@@ -3226,7 +3226,6 @@ void
 comms_gatherPlayers( CommsCtxt* comms, XWEnv xwe, XP_U32 created )
 {
     THREAD_CHECK_START(comms);
-    LOG_FUNC();
     if ( 0 == (comms->flags & FLAG_HARVEST_DONE) ) {
         CommsAddrRec addrs[4] = {{0}};
         XP_U16 nRecs = VSIZE(addrs);
