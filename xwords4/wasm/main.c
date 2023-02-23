@@ -1190,10 +1190,10 @@ newFromInvite( Globals* globals, const NetLaunchInfo* nli )
     char playerName[32];
     main_getLocalName( globals, playerName, sizeof(playerName) );
 
-    const CommsAddrRec* selfAddr = NULL;
+    CommsAddrRec selfAddr = {0};
+    makeSelfAddr( globals, &selfAddr );
     game_makeFromInvite( &gs->game, NULL_XWE, nli,
-                         selfAddr,
-                         gs->util, globals->draw,
+                         &selfAddr, gs->util, globals->draw,
                          &globals->cp, &globals->transportProcs );
     if ( nli->gameName[0] ) {
         nameGame( gs, nli->gameName );
