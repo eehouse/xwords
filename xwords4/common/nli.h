@@ -50,6 +50,10 @@ void nli_setInviteID( NetLaunchInfo* nli, const XP_UCHAR* inviteID );
 void nli_setGameName( NetLaunchInfo* nli, const XP_UCHAR* gameName );
 void nli_setMQTTDevID( NetLaunchInfo* nli, const MQTTDevID* mqttDevID );
 
+#ifdef XWFEATURE_NLI_FROM_ARGV
+XP_Bool nli_fromArgv( MPFORMAL NetLaunchInfo* nlip, int argc, const char** argv );
+#endif
+
 # ifdef DEBUG
 void logNLI( const NetLaunchInfo* nli, const char* callerFunc, const int callerLine );
 # define LOGNLI(nli) \

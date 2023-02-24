@@ -648,24 +648,22 @@ langNameFor( Globals* globals, const char* lc, char buf[], size_t buflen )
 static void
 showName( GameState* gs )
 {
-    const char* title = NULL;
-    char buf[64];
+    char title[128] = {0};
     if ( !!gs ) {
         Globals* globals = gs->globals;
-        title = gs->gameName;
+        sprintf( title, "%s", gs->gameName );
         if ( 1 < countLangs( globals ) ) {
             char langName[32];
             if ( !langNameFor( globals, gs->gi.isoCodeStr, langName, sizeof(langName) ) ) {
                 strcpy( langName, "??" );
             }
-            sprintf( buf, "%s (%s)", title, langName );
-            title = buf;
-#ifdef DEBUG
-        } else {
-            sprintf( buf, "%s (gid=%d/%X)", title, gs->gi.gameID, gs->gi.gameID );
-            title = buf;
-#endif
+            char* start = title + strlen(title);
+            sprintf( start, " (%s)", langName );
         }
+#ifdef DEBUG
+        char* start = title + strlen(title);
+        sprintf( start, " (gid=%d/%X)", gs->gi.gameID, gs->gi.gameID );
+#endif
     }
     show_name( title );
 }
@@ -1001,7 +999,9 @@ haveDictFor(Globals* globals, const char* lc)
     int count = 0;
     const XP_UCHAR* keys[] = {KEY_DICTS, lc, KEY_DICTS, KEY_WILDCARD, NULL};
     dutil_forEach( globals->dutil, NULL_XWE, keys, upCounter, &count );
-    return 0 < count;
+    bool result = 0 < count;
+    // XP_LOGFF("(lc=%s)=>%s", lc, boolToStr(result) );
+    return result;
 }
 
 static void
@@ -1085,7 +1085,7 @@ storeAsDict( Globals* globals, GotDictData* gdd )
                  gdd->langName );
         call_alert( msg );
     }
-    LOG_RETURNF( "%d", success );
+    LOG_RETURNF( "%s", boolToStr(success) );
     return success;
 }
 
@@ -1269,6 +1269,7 @@ typedef struct _DictDownState {
 static void
 onDictForInvite( void* closure, GotDictData* gdd )
 {
+    XP_LOGFF( "(lc=%s)", gdd->lc );
     DictDownState* dds = (DictDownState*)closure;
     if ( !!gdd->data
          && 0 < gdd->len
@@ -1529,7 +1530,7 @@ onOneLangName( void* closure, const XP_UCHAR* keys[] )
 }
 
 static void
-loadAndDraw( Globals* globals, const NetLaunchInfo* invite,
+loadAndDraw( Globals* globals, const NetLaunchInfo* nli,
              int gameID, NewGameParams* params )
 {
     XP_LOGFF( "(gameID: %X)", gameID );
@@ -1542,8 +1543,8 @@ loadAndDraw( Globals* globals, const NetLaunchInfo* invite,
             gs = getSavedGame( globals, gameID );
             XP_LOGFF( "got game id %X", gameID );
         }
-        if ( !!invite ) {   /* overwrite gs is ok: we'll likely want both games  */
-            gs = gameFromInvite( globals, invite );
+        if ( !!nli ) {   /* overwrite gs is ok: we'll likely want both games  */
+            gs = gameFromInvite( globals, nli );
         }
     }
 
@@ -2097,76 +2098,6 @@ looper( void* closure )
 #endif
 }
 
-static bool
-inviteFromArgv( Globals* globals, NetLaunchInfo* nlip,
-                int argc, const char** argv )
-{
-    XP_LOGFF( "(argc=%d)", argc );
-    CurGameInfo gi = {0};
-    CommsAddrRec addr = {0};
-    MQTTDevID mqttDevID = 0;
-    XP_U16 nPlayersH = 0;
-    XP_U16 forceChannel = 0;
-    const XP_UCHAR* gameName = NULL;
-    const XP_UCHAR* inviteID = NULL;
-
-    for ( int ii = 0; ii < argc; ++ii ) {
-        const char* argp = argv[ii];
-        char* param = strchr(argp, '=');
-        if ( !param ) {         /* no '='? */
-            continue;
-        }
-        char arg[8];
-        int argLen = param - argp;
-        XP_MEMCPY( arg, argp, argLen );
-        arg[argLen] = '\0';
-        ++param;                /* skip the '=' */
-
-        if ( 0 == strcmp( "lang", arg ) ) {
-            XP_STRNCPY( gi.isoCodeStr, param, VSIZE(gi.isoCodeStr) );
-        } else if ( 0 == strcmp( "np", arg ) ) {
-            gi.nPlayers = atoi(param);
-        } else if ( 0 == strcmp( "nh", arg ) ) {
-            nPlayersH = atoi(param);
-        } else if ( 0 == strcmp( "gid", arg ) ) {
-            gi.gameID = atoi(param);
-        } else if ( 0 == strcmp( "fc", arg ) ) {
-            gi.forceChannel = atoi(param);
-        } else if ( 0 == strcmp( "nm", arg ) ) {
-            gameName = param;
-        } else if ( 0 == strcmp( "id", arg ) ) {
-            inviteID = param;
-        } else if ( 0 == strcmp( "wl", arg ) ) {
-            replaceStringIfDifferent( globals->mpool, &gi.dictName, param );
-        } else if ( 0 == strcmp( "r2id", arg ) ) {
-            if ( strToMQTTCDevID( param, &addr.u.mqtt.devID ) ) {
-                addr_addType( &addr, COMMS_CONN_MQTT );
-            } else {
-                XP_LOGFF( "bad devid %s", param );
-            }
-        } else {
-            XP_LOGFF( "dropping arg %s, param %s", arg, param );
-        }
-    }
-
-    bool success = 0 < nPlayersH &&
-        addr_hasType( &addr, COMMS_CONN_MQTT );
-
-    if ( success ) {
-        nli_init( nlip, &gi, &addr, nPlayersH, forceChannel );
-        if ( !!gameName ) {
-            nli_setGameName( nlip, gameName );
-        }
-        if ( !!inviteID ) {
-            nli_setInviteID( nlip, inviteID );
-        }
-        LOGNLI( nlip );
-    }
-    gi_disposePlayerInfo( MPPARM(globals->mpool) &gi );
-    LOG_RETURNF( "%s", boolToStr(success) );
-    return success;
-}
-
 void
 MQTTConnectedChanged( void* closure, bool connected )
 {
@@ -2400,7 +2331,7 @@ mainPostSync( int argc, const char** argv )
 
     NetLaunchInfo nli = {0};
     NetLaunchInfo* nlip = NULL;
-    if ( inviteFromArgv( globals, &nli, argc, argv ) ) {
+    if ( nli_fromArgv( MPPARM(globals->mpool) &nli, argc, argv ) ) {
         nlip = &nli;
     }
 

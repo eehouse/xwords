@@ -290,6 +290,79 @@ nli_makeAddrRec( const NetLaunchInfo* nli, CommsAddrRec* addr )
     }
 }
 
+#ifdef XWFEATURE_NLI_FROM_ARGV
+XP_Bool
+nli_fromArgv( MPFORMAL NetLaunchInfo* nlip, int argc, const char** argv )
+{
+    XP_LOGFF( "(argc=%d)", argc );
+    CurGameInfo gi = {0};
+    CommsAddrRec addr = {0};
+    MQTTDevID mqttDevID = 0;
+    XP_U16 nPlayersH = 0;
+    XP_U16 forceChannel = 0;
+    const XP_UCHAR* gameName = NULL;
+    const XP_UCHAR* inviteID = NULL;
+
+    XP_LOGFF("foo");
+    for ( int ii = 0; ii < argc; ++ii ) {
+        const char* argp = argv[ii];
+        char* param = strchr(argp, '=');
+        if ( !param ) {         /* no '='? */
+            XP_LOGFF( "arg bad?: %s", argp );
+            continue;
+        }
+        char arg[8];
+        int argLen = param - argp;
+        XP_MEMCPY( arg, argp, argLen );
+        arg[argLen] = '\0';
+        ++param;                /* skip the '=' */
+
+        if ( 0 == strcmp( "iso", arg ) ) {
+            XP_STRNCPY( gi.isoCodeStr, param, VSIZE(gi.isoCodeStr) );
+        } else if ( 0 == strcmp( "np", arg ) ) {
+            gi.nPlayers = atoi(param);
+        } else if ( 0 == strcmp( "nh", arg ) ) {
+            nPlayersH = atoi(param);
+        } else if ( 0 == strcmp( "gid", arg ) ) {
+            gi.gameID = atoi(param);
+        } else if ( 0 == strcmp( "fc", arg ) ) {
+            gi.forceChannel = atoi(param);
+        } else if ( 0 == strcmp( "nm", arg ) ) {
+            gameName = param;
+        } else if ( 0 == strcmp( "id", arg ) ) {
+            inviteID = param;
+        } else if ( 0 == strcmp( "wl", arg ) ) {
+            replaceStringIfDifferent( mpool, &gi.dictName, param );
+        } else if ( 0 == strcmp( "r2id", arg ) ) {
+            if ( strToMQTTCDevID( param, &addr.u.mqtt.devID ) ) {
+                addr_addType( &addr, COMMS_CONN_MQTT );
+            } else {
+                XP_LOGFF( "bad devid %s", param );
+            }
+        } else {
+            XP_LOGFF( "dropping arg %s, param %s", arg, param );
+        }
+    }
+
+    bool success = 0 < nPlayersH &&
+        addr_hasType( &addr, COMMS_CONN_MQTT );
+
+    if ( success ) {
+        nli_init( nlip, &gi, &addr, nPlayersH, forceChannel );
+        if ( !!gameName ) {
+            nli_setGameName( nlip, gameName );
+        }
+        if ( !!inviteID ) {
+            nli_setInviteID( nlip, inviteID );
+        }
+        LOGNLI( nlip );
+    }
+    gi_disposePlayerInfo( MPPARM(mpool) &gi );
+    LOG_RETURNF( "%s", boolToStr(success) );
+    return success;
+}
+#endif
+
 # ifdef DEBUG
 void
 logNLI( const NetLaunchInfo* nli, const char* callerFunc, const int callerLine )

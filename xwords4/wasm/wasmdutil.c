@@ -224,8 +224,6 @@ static void
 wasm_dutil_storeStream( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* keys[],
                         XWStreamCtxt* stream )
 {
-    LOG_FUNC();
-
     char path[128];
     ensurePath(keys, path, true);
 
@@ -238,7 +236,7 @@ wasm_dutil_storeStream( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* keys[],
     const XP_U8* data = stream_getPtr( stream );
     const XP_U16 len = stream_getSize( stream );
     ssize_t nWritten = write( fd, data, len );
-    XP_LOGFF( "wrote %d bytes to path %s", nWritten, path );
+    // XP_LOGFF( "wrote %d bytes to path %s", nWritten, path );
     XP_ASSERT( nWritten == len );
 
     ++((WasmDUtilCtxt*)duc)->dirtyCount;
@@ -248,10 +246,9 @@ static void
 wasm_dutil_loadStream( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* keys[],
                        XWStreamCtxt* inOut )
 {
-    LOG_FUNC();
     char path[128];
     ensurePath(keys, path, false);
-    XP_LOGFF( "(path: %s [retry: %s])", path, path );
+    // XP_LOGFF( "(path: %s [retry: %s])", path, path );
 
     struct stat statbuf;
     int err = stat(path, &statbuf);
@@ -264,9 +261,6 @@ wasm_dutil_loadStream( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* keys[],
     } else {
         XP_LOGFF( "no file at %s", path );
     }
-    XP_LOGFF( "from %s", path );
-    XP_LOGFF( "read %zu bytes", statbuf.st_size );
-    XP_LOGFF( "read %zu bytes from path %s", statbuf.st_size, path );
 }
 
 static void
