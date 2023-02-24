@@ -639,7 +639,6 @@ updateGameButtons( Globals* globals )
 static bool
 langNameFor( Globals* globals, const char* lc, char buf[], size_t buflen )
 {
-    /* const char* lc = lcToLocale( code ); */
     const XP_UCHAR* keys[] = { KEY_DICTS, lc, KEY_LANG_NAME, NULL };
     XP_U32 len = buflen;
     dutil_loadPtr( globals->dutil, NULL_XWE, keys, buf, &len );

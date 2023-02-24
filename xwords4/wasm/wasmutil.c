@@ -425,7 +425,6 @@ wasm_util_remSelected( XW_UtilCtxt* uc, XWEnv xwe )
     main_showRemaining( gs );
 }
 
-
 static void
 wasm_util_getMQTTIDsFor( XW_UtilCtxt* uc, XWEnv xwe, XP_U16 nRelayIDs,
                          const XP_UCHAR* relayIDs[] )
