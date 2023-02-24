@@ -87,7 +87,7 @@
 #define BUTTON_INVITE "Invite"
 #define BUTTON_REMATCH "Rematch"
 
-#define BUTTON_GAME_GAMES "Games"
+#define BUTTON_GAME_GAMES "Open Game"
 #define BUTTON_GAME_NEW "New Game"
 #define BUTTON_GAME_RENAME "Rename Game"
 #define BUTTON_GAME_DELETE "Delete Game"
@@ -683,6 +683,7 @@ onGameRanamed( void* closure, const char* newName )
 
 typedef struct _NameIterState {
     Globals* globals;
+    char curGameID[16];
     int count;
     char** names;
     char** gids;
@@ -713,7 +714,7 @@ formatForGame( Globals* globals, bool multiLangs, const XP_UCHAR* gameKey )
     dutil_loadPtr( globals->dutil, NULL_XWE, keys, gameName, &len );
 
     char buf[256];
-    int offset = snprintf( buf, sizeof(buf), "%s", gameName );
+    int offset = snprintf( buf, sizeof(buf), "%s;", gameName );
 
     GameSummary summary;
     len = sizeof(summary);
@@ -728,7 +729,7 @@ formatForGame( Globals* globals, bool multiLangs, const XP_UCHAR* gameKey )
         }
         bool inPlay = 0 <= summary.turn;
         if ( inPlay ) {
-            offset += snprintf( buf+offset, sizeof(buf)-offset, " Opponent: %s",
+            offset += snprintf( buf+offset, sizeof(buf)-offset, " Opponent: %s;",
                                 summary.opponents );
         }
 
@@ -741,7 +742,7 @@ formatForGame( Globals* globals, bool multiLangs, const XP_UCHAR* gameKey )
                                 0 <= summary.turn && summary.turnIsLocal ? "YES" : "NO" );
         }
 #ifdef DEBUG
-        offset += snprintf( buf+offset, sizeof(buf)-offset, " GID: %s", gameKey );
+        offset += snprintf( buf+offset, sizeof(buf)-offset, "; GID: %s", gameKey );
 #endif
     }
     char* result = NULL;
@@ -755,22 +756,25 @@ onOneGameName( void* closure, const XP_UCHAR* keys[] )
     const char* gameIDStr = keys[1];
     if ( 0 != strcmp( gameIDStr, "0" ) ) { /* temporary */
         NameIterState* nis = (NameIterState*)closure;
-        Globals* globals = nis->globals;
-        bool multiLangs = 1 < countLangs(globals);
+        /* we don't display the current open game as a choice */
+        if ( 0 != strcmp( gameIDStr, nis->curGameID ) ) {
+            Globals* globals = nis->globals;
+            bool multiLangs = 1 < countLangs(globals);
 
-        /* Make sure game exists. This may be unnecessary later */
-        const XP_UCHAR* dataKeys[] = { keys[0], keys[1], KEY_GAME, NULL };
-        XP_U32 dataLen;
-        dutil_loadPtr( globals->dutil, NULL_XWE, dataKeys, NULL, &dataLen );
-        if ( 0 < dataLen ) {
-            int cur = nis->count++;
-            nis->names = XP_REALLOC( globals->mpool, nis->names,
-                                     nis->count * sizeof(nis->names[0]) );
-            nis->names[cur] = formatForGame( globals, multiLangs, keys[1] );
-            nis->gids = XP_REALLOC( globals->mpool, nis->gids,
-                                   nis->count * sizeof(nis->gids[0]) );
-            nis->gids[cur] = XP_MALLOC( globals->mpool, 1 + strlen(gameIDStr) );
-            strcpy( nis->gids[cur], gameIDStr );
+            /* Make sure game exists. This may be unnecessary later */
+            const XP_UCHAR* dataKeys[] = { keys[0], keys[1], KEY_GAME, NULL };
+            XP_U32 dataLen;
+            dutil_loadPtr( globals->dutil, NULL_XWE, dataKeys, NULL, &dataLen );
+            if ( 0 < dataLen ) {
+                int cur = nis->count++;
+                nis->names = XP_REALLOC( globals->mpool, nis->names,
+                                         nis->count * sizeof(nis->names[0]) );
+                nis->names[cur] = formatForGame( globals, multiLangs, keys[1] );
+                nis->gids = XP_REALLOC( globals->mpool, nis->gids,
+                                        nis->count * sizeof(nis->gids[0]) );
+                nis->gids[cur] = XP_MALLOC( globals->mpool, 1 + strlen(gameIDStr) );
+                strcpy( nis->gids[cur], gameIDStr );
+            }
         }
     }
     return true;                /* keep going */
@@ -781,6 +785,8 @@ pickGame( Globals* globals )
 {
     XW_DUtilCtxt* dutil = globals->dutil;
     NameIterState nis = { .globals = globals, };
+    formatGameID( nis.curGameID, VSIZE(nis.curGameID),
+                  globals->curGame->gi.gameID );
 
     const XP_UCHAR* keys[] = {KEY_GAMES, KEY_WILDCARD, KEY_NAME, NULL};
     dutil_forEach( dutil, NULL_XWE, keys, onOneGameName, &nis );
@@ -858,6 +864,7 @@ onDeleteConfirmed( void* closure, bool confirmed )
             clearScreen( globals );
         }
         updateDeviceButtons( globals );
+        pickGame( globals );
     }
 }
 
@@ -1003,11 +1010,11 @@ updateDeviceButtons( Globals* globals )
 {
     const char* buttons[MAX_BUTTONS];
     int cur = 0;
-    if ( 0 < countGames(globals) ) {
-        buttons[cur++] = BUTTON_GAME_GAMES;
-    }
     if ( 0 < countLangs( globals ) ) {
         buttons[cur++] = BUTTON_GAME_NEW;
+    }
+    if ( 1 < countGames(globals) ) {
+        buttons[cur++] = BUTTON_GAME_GAMES;
     }
     if ( !!getCurGame( globals ) ) {
         buttons[cur++] = BUTTON_GAME_RENAME;
