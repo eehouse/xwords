@@ -48,8 +48,9 @@
          how far along they are.  I may list "tiles left" someday
          instead... -->
     <plurals name="moves_fmt">
-        <item quantity="one">1 coup joué</item>
-        <item quantity="other">%1$d coups joués</item>
+        <item quantity="one">Un coup joué</item>
+        <item quantity="many">%1$d coups joués</item>
+        <item quantity="other"></item>
     </plurals>
     <!-- When you select the gamel_menu_delete_all menuitem or
          list_item_delete contextual menu, you are asked to confirm.
@@ -124,7 +125,8 @@
 %1$d parties sélectionnées ? Cette action ne peut pas être annulée.</string>-->
     <plurals name="confirm_seldeletes_fmt">
         <item quantity="one">Êtes-vous sûr·e de vouloir effacer la partie sélectionnée \? Cette action ne peut pas être annulée.</item>
-        <item quantity="other">Êtes-vous sûr·e de vouloir supprimer les %1$d parties sélectionnées \? Cette action ne peut pas être annulée.</item>
+        <item quantity="many">Êtes-vous sûr·e de vouloir supprimer les %1$d parties sélectionnées \? Cette action ne peut pas être annulée.</item>
+        <item quantity="other"></item>
     </plurals>
     <!-- Text of confirmation dialog posted when list_item_reset menu
          is selected -->
@@ -2768,7 +2770,7 @@ pour la langue</string>
     <!--<string name="checking_for_fmt">Checking for wordlists in %1$s…</string>-->
     <string name="checking_for_fmt">Recherche de listes de mots en %1$s…</string>
     <!-- <string name="db_store_done">SD card write complete.</string> -->
-    <string name="db_store_done">Écriture sur la carte SD finie.</string>
+    <string name="db_store_done">Écriture sur la carte SD terminée</string>
     <string name="confirm_drop_relay_bt">Le Bluetooth ne marche que pour les appareils proches.</string>
     <string name="confirm_drop_relay_sms">Jouer par MMS n\'est pas possible avec tous les opérateurs.</string>
     <string name="notify_chat_title_fmt">Message de discussion dans la partie %1$s</string>
@@ -3104,7 +3106,8 @@ pour la langue</string>
     <string name="no_dict_for_move_fmt">Appuyez pour télécharger la liste de mots %1$s et reprendre</string>
     <plurals name="confirm_nameddeletes_fmt">
         <item quantity="one">Êtes-vous sûr de vouloir effacer la partie %1$s \? Cette action ne peut pas être annulée.</item>
-        <item quantity="other">Êtes-vous sûr de vouloir effacer les parties %1$s \? Cette action ne peut pas être annulée.</item>
+        <item quantity="many">Êtes-vous sûr de vouloir effacer les parties %1$s \? Cette action ne peut pas être annulée.</item>
+        <item quantity="other"></item>
     </plurals>
     <string name="choose_expl_default_net">Démarrer une partie en réseau en utilisant les paramètres par défaut</string>
     <string name="no_dict_for_move_title">Coup entrant perdu</string>
@@ -3144,4 +3147,23 @@ pour la langue</string>
     <string name="dict_lang_inst">(Installées : %1$d)</string>
     <string name="dict_lang_inst_and_avail">(Installées : %1$d ; Disponibles : %2$d)</string>
     <string name="dict_lang_avail">(Disponibles : %1$d)</string>
+    <string name="button_disable_mqtt">Désactiver le jeu internet</string>
+    <string name="langUnknownFmt">Inconnu (%1$s)</string>
+    <plurals name="warn_mqtt_games_fmt">
+        <item quantity="one">"
+\n
+\n(Vous avez une partie active utilisant internet actuellement.)"</item>
+        <item quantity="many">"
+\n
+\n(Vous avez %1$d parties actives utilisant internet actuellement.)"</item>
+        <item quantity="other"></item>
+    </plurals>
+    <string name="menu_net_stat">Etat du réseau</string>
+    <string name="button_enable_mqtt">Activer le jeu internet</string>
+    <string name="button_delete_game">Supprimer le jeu</string>
+    <string name="relaypage_url_copied">URL du jeu copié dans le presse-papier</string>
+    <string name="show_note_menu_fmt">A propos de %1$s</string>
+    <string name="warn_mqtt_later">Vous pouvez activer le jeu internet maintenant, ou plus tard.</string>
+    <string name="db_store_failed">L\'exportation a échoué</string>
+    <string name="warn_mqtt_remove">Vous pouvez activer le jeu internet maintenant, ou le retirer de ce jeu.</string>
 </resources>
