@@ -2461,6 +2461,7 @@
     <!-- Title for notification that another player un-paused a duplicate-mode game -->
     <string name="game_unpaused_title">Game un-paused</string>
     <string name="dup_moved">Duplicate turn complete. Scores:\n</string>
+    <!-- Description shown after a move was used to swap tiles -->
     <string name="dup_traded_fmt">No moves made; traded %1$d tiles</string>
     <string name="dup_onescore_fmt">%1$s: %2$d points\n</string>
     <!-- Title of pause confirm/message edit dialog -->
