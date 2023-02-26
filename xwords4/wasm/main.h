@@ -67,6 +67,7 @@ typedef struct Globals {
     TransportProcs transportProcs;
     CommonPrefs cp;
     DictMgrCtxt* dictMgr;
+    char myDevIDStr[32];
 
     int useWidth, useHeight;
 

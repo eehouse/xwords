@@ -148,7 +148,7 @@ EM_JS(void, call_get_dict, (const char* lc, GotDictProc proc,
 
 EM_JS(void, show_name, (const char* name), {
         let jsname = name ? UTF8ToString(name) : "";
-        document.getElementById('gamename').textContent = jsname;
+        document.getElementById('gamename').innerHTML = jsname;
     });
 
 EM_JS(void, show_msgcount, (int count), {
@@ -648,7 +648,7 @@ langNameFor( Globals* globals, const char* lc, char buf[], size_t buflen )
 static void
 showName( GameState* gs )
 {
-    char title[128] = {0};
+    char title[256] = {0};
     if ( !!gs ) {
         Globals* globals = gs->globals;
         sprintf( title, "%s", gs->gameName );
@@ -662,7 +662,9 @@ showName( GameState* gs )
         }
 #ifdef DEBUG
         char* start = title + strlen(title);
-        sprintf( start, " (gid=%d/%X)", gs->gi.gameID, gs->gi.gameID );
+        sprintf( start, " (gid=<a href=\"https://eehouse.org/xw4/ui/gameinfo"
+                 "?devid=%s&gameid=%d\">%d/%X</a>)",
+                 globals->myDevIDStr, gs->gi.gameID, gs->gi.gameID, gs->gi.gameID );
 #endif
     }
     show_name( title );
@@ -1181,9 +1183,9 @@ initDeviceGlobals( Globals* globals )
 
     MQTTDevID devID;
     dvc_getMQTTDevID( globals->dutil, NULL_XWE, &devID );
-    XP_UCHAR buf[32];
-    XP_SNPRINTF( buf, VSIZE(buf), MQTTDevID_FMT, devID );
-    XP_LOGFF( "got mqtt devID: %s", buf );
+    XP_SNPRINTF( globals->myDevIDStr, VSIZE(globals->myDevIDStr),
+                 MQTTDevID_FMT, devID );
+    XP_LOGFF( "got mqtt devID: %s", globals->myDevIDStr );
     int now = dutil_getCurSeconds( globals->dutil, NULL_XWE );
     bool dbg =
 #ifdef DEBUG
@@ -1203,7 +1205,7 @@ initDeviceGlobals( Globals* globals )
         XP_LOGFF( "got topic %d: %s", ii, topics[ii] );
     }
 
-    call_setup( globals, dbg, buf, GITREV, now, onConflict,
+    call_setup( globals, dbg, globals->myDevIDStr, GITREV, now, onConflict,
                 onFocussed, onMqttMsg, nTopics, topics );
 }
 

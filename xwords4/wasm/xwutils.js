@@ -151,7 +151,7 @@ function jssetup(closure, dbg, devid, gitrev, now, noTabProc,
 
 	registerOnce(devid, gitrev, now, dbg);
 
-	document.getElementById("mqtt_span").textContent=devid;
+	document.getElementById("mqtt_span").textContent = devid;
 
 	function onConnChange(isConn) {
 		state.connected = isConn;
