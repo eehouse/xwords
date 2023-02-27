@@ -42,6 +42,7 @@
 #include "movestak.h"
 #include "knownplyr.h"
 #include "dbgutil.h"
+#include "md5.h"
 
 #include "main.h"
 #include "wasmdraw.h"
@@ -306,6 +307,11 @@ EM_JS( void, js_notify, (const char* msg), {
                          { body: jsmsg, renotify: true, }
                          );
     });
+
+EM_JS( void, js_ackMsg, (const char* sum, int gameID), {
+        const jsum = UTF8ToString(sum);
+        postAck(jsum, gameID);
+    })
 
 static void
 loadPrefs( Globals* globals )
@@ -878,6 +884,14 @@ main_getLocalName( Globals* globals, char* playerName, size_t buflen )
         strcpy( playerName, "Player 1" );
     }
     return haveName;
+}
+
+void
+main_ackMQTTMsg( Globals* globals, const XP_U8* msg, XP_U16 len, int gameID )
+{
+    MD5Result out;
+    calcMD5Sum( &out, (uint8_t*)msg, len );
+    js_ackMsg( out.output, gameID );
 }
 
 static void

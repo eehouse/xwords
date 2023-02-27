@@ -121,5 +121,5 @@ void main_pickBlank( GameState* gs, int playerNum, int col, int row,
 void main_updateScreen( GameState* gs );
 void main_needDictForGame(GameState* gs, const char* lc, const XP_UCHAR* dictName);
 bool main_getLocalName( Globals* globals, char* playerName, size_t buflen );
-
+void main_ackMQTTMsg( Globals* globals, const XP_U8* msg, XP_U16 len, int gameID );
 #endif

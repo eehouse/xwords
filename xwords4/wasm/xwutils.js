@@ -59,6 +59,24 @@ function registerOnce(devid, gitrev, now, dbg) {
 	}
 }
 
+function postAck(sum, gameID) {
+	fetch('/xw4/api/v1/ack', {
+		method: 'post',
+		body: JSON.stringify({ "sum": sum, "gid": gameID, }),
+		headers: {
+			'Content-Type': 'application/json'
+		},
+	})
+		.then(handleFetchErrors)
+		.then(res => {
+			return res.json();
+		}).then(data => {
+			console.log('data from ack: ' + JSON.stringify(data));
+		}).catch(ex => {
+			console.error('postAck(): fetch()=>' + ex);
+		});
+}
+
 function handleFetchErrors(response) {
 	if ( response.ok ) {
 		return response;

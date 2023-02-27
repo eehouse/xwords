@@ -509,9 +509,8 @@ wasm_dutil_ackMQTTMsg( XW_DUtilCtxt* duc, XWEnv xwe, XP_U32 gameID,
                        const MQTTDevID* senderID, const XP_U8* msg,
                        XP_U16 len )
 {
-    /* There's no native md5 hash in js, so not using this right now. Messages
-     * will go unack'd. */
-    XP_LOGFF("unimplemented");
+    Globals* globals = (Globals*)duc->closure;
+    main_ackMQTTMsg( globals, msg, len, gameID );
 }
 
 static void
