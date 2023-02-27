@@ -102,6 +102,7 @@ typedef struct _NewGameParams {
     Globals* globals;
     bool isRobot;
     bool allowHints;
+    bool dupMode;
     char langName[32];
 } NewGameParams;
 
@@ -932,6 +933,7 @@ setNewGameDefaults( Globals* globals, NewGameParams* params )
     XP_MEMSET( params, 0, sizeof(*params) );
     params->allowHints = true;
     params->isRobot = true;
+    strcat( params->langName, "English" );
 }
 
 static void
@@ -1577,6 +1579,7 @@ loadAndDraw( Globals* globals, const NetLaunchInfo* nli,
 
             gs->gi.phoniesAction = PHONIES_WARN;
             gs->gi.hintsNotAllowed = !!params && !params->allowHints || false;
+            gs->gi.inDuplicateMode = !!params && params->dupMode;
             gs->gi.gameID = 0;
             XP_STRNCPY( gs->gi.isoCodeStr, dict_getISOCode(dict), VSIZE(gs->gi.isoCodeStr) );
             replaceStringIfDifferent( globals->mpool, &gs->gi.dictName,
@@ -2148,13 +2151,14 @@ onAllowNotify(void* closure, bool confirmed)
 
 void
 onNewGame( void* closure, bool isRobot, const char* langName,
-           bool allowHints)
+           bool allowHints, bool dupMode )
 {
     CAST_GLOB(Globals*, globals, closure);
 
     NewGameParams* ngp = XP_CALLOC( globals->mpool, sizeof(*ngp) );
     ngp->allowHints = allowHints;
     ngp->isRobot = isRobot;
+    ngp->dupMode = dupMode;
     strcpy( ngp->langName, langName );
     const XP_UCHAR* keys[] = {KEY_NEWGAME_DFLTS, NULL};
     dutil_storePtr( globals->dutil, NULL_XWE, keys, ngp, sizeof(*ngp) );

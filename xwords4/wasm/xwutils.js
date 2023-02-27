@@ -442,8 +442,8 @@ function newRadio(txt, id, isSet, proc) {
 	var description = document.createTextNode(txt);
 	label.appendChild(description);
 
-	span.appendChild(label);
 	span.appendChild(radio);
+	span.appendChild(label);
 
 	return span;
 }
@@ -459,8 +459,8 @@ function newCheckbox(txt, id, val) {
 	var description = document.createTextNode(txt);
 	label.appendChild(description);
 
-	span.appendChild(label);
 	span.appendChild(checkbox);
+	span.appendChild(label);
 
 	return span;
 }
@@ -499,12 +499,17 @@ function nbGetNewGame(closure, msg, allowHints, isRobot, langs, langName) {
 		}
 	}
 
+	let dupModeDiv = document.createElement('div');
+	dlg.appendChild(dupModeDiv);
+	dupModeDiv.appendChild(newCheckbox("Play in Duplicate Mode", 'dupMode', false));
+
 	const buttons = ['Cancel', 'OK'];
 	const butProc = function(indx) {
 		if ( buttons[indx] == 'OK' ) {
 			let allowHints = document.getElementById('allowHints').checked;
-			const types = ['number', 'boolean', 'string', 'boolean'];
-			const params = [closure, robotSet, chosenLang, allowHints];
+			let dupMode = document.getElementById('dupMode').checked;
+			const types = ['number', 'boolean', 'string', 'boolean', 'boolean'];
+			const params = [closure, robotSet, chosenLang, allowHints, dupMode];
 			Module.ccall('onNewGame', null, types, params);
 		}
 		dlg.parentNode.removeChild(dlg);
