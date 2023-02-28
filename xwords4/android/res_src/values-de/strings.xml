@@ -94,9 +94,9 @@
     <string name="dicts_list_prompt_fmt">Installierte Wortlisten (in %1$s)</string>
     <string name="robot_label">Computer-Gegner</string>
     <string name="password_label">Passwort:</string>
-    <string name="button_trade_commit">Handel abschließen</string>
-    <string name="button_trade_cancel">Handel abbrechen</string>
-    <string name="entering_trade">Spielsteine tauschen. Tippen Sie auf Spielsteine zum Auswählen…</string>
+    <string name="button_trade_commit">Tausch abschließen</string>
+    <string name="button_trade_cancel">Tausch abbrechen</string>
+    <string name="entering_trade">Buchstaben tauschen. Tippen Sie auf Buchstaben zum Auswählen…</string>
     <string name="no_moves_made">(Noch keine Züge)</string>
     <plurals name="invite_msg_fmt">
         <item quantity="one">Dieses Spiel wartet darauf, dass ein entfernter Spieler eine Einladung erhält und darauf antwortet.
@@ -115,27 +115,27 @@
     <string name="badwords_lost">Zug verwirkt.</string>
     <string name="badwords_title">Illegale Wörter</string>
     <string name="board_menu_done">Zug abgeschlossen</string>
-    <string name="board_menu_trade">Handel</string>
+    <string name="board_menu_trade">Tausch</string>
     <string name="board_menu_tray_hide">Ablage verbergen</string>
     <string name="board_menu_tray_show">Ablage zeigen</string>
     <string name="board_menu_undo_last">Zug zurücknehmen</string>
     <string name="board_submenu_game">Partie</string>
     <string name="board_menu_game_counts">Anzahl und Werte</string>
-    <string name="board_menu_game_left">Verbleibende Spielsteine</string>
+    <string name="board_menu_game_left">Verbleibende Buchstaben</string>
     <string name="board_menu_game_history">Spielverlauf</string>
     <string name="board_menu_game_final">Endgültiger Punktestand</string>
     <string name="board_menu_game_resign">Aufgeben</string>
     <string name="board_menu_game_resend">Züge erneut senden</string>
     <string name="str_robot_moved_fmt">"Der Computer %1$s hat diesen Zug gespielt: "</string>
     <plurals name="strd_robot_traded_fmt">
-        <item quantity="one">Ein Spielstein getauscht.</item>
-        <item quantity="other">%1$d Spielsteine getauscht.</item>
+        <item quantity="one">Einen Buchstaben getauscht.</item>
+        <item quantity="other">%1$d Buchstaben getauscht.</item>
     </plurals>
     <string name="strs_values_header_fmt">%1$s Anzahl/Werte:
 \n</string>
-    <string name="strd_remaining_tiles_add_fmt">+ %1$d [alle verbleibenden Spielsteine]</string>
-    <string name="strd_unused_tiles_sub_fmt">- %1$d [unbenutzte Spielsteine]</string>
-    <string name="strs_new_tiles_fmt">Neue Spielsteine: %1$s</string>
+    <string name="strd_remaining_tiles_add_fmt">+ %1$d [alle verbleibenden Buchstaben]</string>
+    <string name="strd_unused_tiles_sub_fmt">- %1$d [unbenutzte Buchstaben]</string>
+    <string name="strs_new_tiles_fmt">Neue Buchstaben: %1$s</string>
     <string name="strd_cumulative_score_fmt">Gesamtpunktzahl: %1$d
 \n</string>
     <string name="str_remote_moved_fmt">"Externer Spieler %1$s spielte diesen Zug: "</string>
@@ -154,7 +154,7 @@
 \n</string>
     <string name="str_nonlocal_name_fmt">%1$s (extern)</string>
     <string name="vs_join">" vs. "</string>
-    <string name="str_bonus_all">Bonus für Verwendung aller Spielsteine: 50
+    <string name="str_bonus_all">Bonus für Verwendung aller Buchstaben: 50
 \n</string>
     <string name="strd_turn_score_fmt">Punkte für Zug: %1$d
 \n</string>
@@ -197,7 +197,7 @@
     <string name="hide_newgames_title">Neue-Partie-Buttons ausblenden</string>
     <string name="hide_newgames_summary">Durch Ausblenden der Neue-Partie-Buttons können mehr Partien angezeigt werden</string>
     <string name="show_arrow">Brett-Pfeil anzeigen</string>
-    <string name="show_arrow_summary">Angetippte Spielsteine der Ablage werden auf diesem Pfeil platziert, wenn er sichtbar ist</string>
+    <string name="show_arrow_summary">Angetippte Buchstaben der Ablage werden auf diesem Pfeil platziert, wenn er sichtbar ist</string>
     <string name="keep_screenon">Bildschirm eingeschaltet lassen</string>
     <string name="keep_screenon_summary">Bildschirm 10 Min. eingeschaltet lassen</string>
     <string name="prefs_colors">Brettfarben, etc.</string>
@@ -207,7 +207,7 @@
     <string name="bonus_w2x">Doppelter Wortwert</string>
     <string name="bonus_w3x">Dreifacher Wortwert</string>
     <string name="clr_crosshairs">Fadenkreuz-Farbe</string>
-    <string name="tile_back">Spielsteine-Hintergrund</string>
+    <string name="tile_back">Buchstaben-Hintergrund</string>
     <string name="empty">Leeres Feld/Hintergrund</string>
     <string name="background">Brett-Hintergrund</string>
     <string name="key_bonushint">Bonusquadrat-Text</string>
@@ -220,8 +220,8 @@
     <string name="explain_robot_summary">Punktestand-Zusammenfassung nach jedem Computer-Zug oder externen Zug anzeigen</string>
     <string name="skip_confirm_turn">Bestätigung der Züge weglassen</string>
     <string name="skip_confirm_turn_summary">NICHT die Punktestand-Zusammenfassung nach jedem menschlichen Zug anzeigen</string>
-    <string name="title_sort_tiles">Neue Spielsteine sortieren</string>
-    <string name="summary_sort_tiles">Ablage sortieren, wenn neue Spielsteine hinzugefügt werden</string>
+    <string name="title_sort_tiles">Neue Buchstaben sortieren</string>
+    <string name="summary_sort_tiles">Ablage sortieren, wenn neue Buchstaben hinzugefügt werden</string>
     <string name="hide_crosshairs">Fadenkreuz deaktivieren</string>
     <string name="network_behavior">Netzwerk-Partie-Einstellungen</string>
     <string name="network_behavior_summary">Einstellungen für Netzwerk-Partien</string>
@@ -239,8 +239,8 @@
     <string name="invite_chooser_fmt">Einladung senden über %1$s</string>
     <string name="invite_chooser_email">E-Mail</string>
     <plurals name="query_trade_fmt">
-        <item quantity="one">Sind Sie sicher, dass Sie den ausgewählten Spielstein austauschen wollen (%2$s)?</item>
-        <item quantity="other">Sind Sie sicher, dass Sie die %1$d ausgewählten Spielsteine austauschen wollen (%2$s)?</item>
+        <item quantity="one">Sind Sie sicher, dass Sie den ausgewählten Buchstaben austauschen wollen (%2$s)\?</item>
+        <item quantity="other">Sind Sie sicher, dass Sie die %1$d ausgewählten Buchstaben austauschen wollen (%2$s)\?</item>
     </plurals>
     <string name="chat_title_fmt">Chat-Nachricht für %1$s</string>
     <string name="chat_local_id">"Ich: "</string>
@@ -248,15 +248,15 @@
     <string name="chat_send">Senden</string>
     <string name="chat_hint">Hier eingeben …</string>
     <string name="chat_menu_clear">Verlauf löschen</string>
-    <string name="str_tiles_not_in_line">Alle Spielsteine müssen in einer Linie sein.</string>
-    <string name="str_no_empties_in_turn">Leere Felder zwischen gespielten Steinen.</string>
+    <string name="str_tiles_not_in_line">Alle Buchstaben müssen in einer Linie sein.</string>
+    <string name="str_no_empties_in_turn">Leere Felder können keine gespielten Buchstaben trennen.</string>
     <string name="str_two_tiles_first_move">Im ersten Zug müssen mindestens zwei Spielsteine gespielt werden.</string>
     <string name="str_tiles_must_contact">Neue Spielsteine müssen an existierende angrenzen (oder beim ersten Zug an das Feld in der Mitte)</string>
     <string name="str_not_your_turn">Sie können das nicht tun; Sie sind nicht am Zug!</string>
-    <string name="str_no_peek_robot_tiles">Nicht dem Computer in die Spielsteine sehen!</string>
-    <string name="str_no_peek_remote_tiles">Nicht dem externen Spieler in die Spielsteine sehen!</string>
-    <string name="str_too_few_tiles_left_to_trade">Zu wenige Spielsteine übrig, um auszutauschen.</string>
-    <string name="str_cant_undo_tileassign">Zuweisung der Spielsteine kann nicht rückgängig gemacht werden.</string>
+    <string name="str_no_peek_robot_tiles">Nicht dem Computer in die Buchstaben sehen!</string>
+    <string name="str_no_peek_remote_tiles">Nicht dem externen Spieler in die Buchstaben sehen!</string>
+    <string name="str_too_few_tiles_left_to_trade">Zu wenige Buchstaben übrig, um auszutauschen.</string>
+    <string name="str_cant_undo_tileassign">Zuweisung der Buchstaben kann nicht rückgängig gemacht werden.</string>
     <string name="str_cant_hint_while_disabled">Die Tipp-Funktion ist in dieser Partie deaktiviert. Aktivieren Sie sie für eine neue Partie im Einstellungen-Dialog.</string>
     <string name="str_reg_unexpected_user">Anmeldung eines unerwarteten Benutzers abgelehnt.</string>
     <string name="str_server_dict_wins">Konflikt zwischen Wortlisten von Server und Gast; Server gewinnt.</string>
@@ -285,35 +285,35 @@
     <string name="info_title">Zur Information</string>
     <string name="tile_button_txt_fmt">%1$s (%2$d)</string>
     <string name="tile_pick_summary_fmt">Aktuelle Auswahl: %1$s</string>
-    <string name="tiles_left_title">Verbleibende Spielsteine</string>
-    <string name="counts_values_title">Spielstein-Anzahl und -Werte</string>
+    <string name="tiles_left_title">Verbleibende Buchstaben</string>
+    <string name="counts_values_title">Anzahl und Werte der Buchstaben</string>
     <string name="history_title">Zugliste</string>
     <string name="finalscores_title">Endgültiger Punktestand</string>
     <string name="ids_endnow">Sind Sie sicher, dass Sie aufgeben wollen?</string>
     <string name="query_title">Eine Frage</string>
     <string name="newbie_title">Ein Tipp</string>
     <string name="button_notagain">Nicht mehr anzeigen</string>
-    <string name="not_again_trading">Sie sind jetzt im Spielsteinaustauschmodus.
+    <string name="not_again_trading">Sie sind jetzt im Buchstabenaustauschmodus.
 \n
-\nTippen Sie Spielsteine an, um Sie zur Austauschmenge hinzuzufügen oder sie aus ihr zu entfernen.
+\nTippen Sie Buchstaben an, um sie zur Austauschmenge hinzuzufügen oder sie aus ihr zu entfernen.
 \n
 \n</string>
     <string name="not_again_trading_buttons">Benutzen Sie die Buttons, um Ihren Zug abzuschließen, oder verlassen Sie den Austauschmodus.</string>
     <string name="not_again_trading_menu">Benutzen Sie das Menü oder die Aktionsleiste, um Ihren Zug abzuschließen oder den Austauschmodus zu verlassen.</string>
     <string name="not_again_hintprev">Dieser Button zeigt alle möglichen Züge in aufsteigender Reihenfolge nach Punkten an.
 \n
-\n(Es werden nur die Spielsteine rechts von der verschiebbaren Ablagenteilung verwendet.)</string>
+\n(Es werden nur die Buchstaben rechts von der verschiebbaren Ablagenteilung verwendet.)</string>
     <string name="not_again_hintnext">Dieser Button zeigt alle möglichen Züge in absteigender Reihenfolge nach Punkten an.
 \n
-\n(Es werden nur die Spielsteine rechts von der verschiebbaren Ablagenteilung verwendet.)</string>
-    <string name="not_again_juggle">Dieser Button ordnet die Spielsteine in der Ablage zufällig neu an.</string>
+\n(Es werden nur die Buchstaben rechts von der verschiebbaren Ablagenteilung verwendet.)</string>
+    <string name="not_again_juggle">Dieser Button ordnet die Buchstaben in der Ablage zufällig neu an.</string>
     <string name="not_again_flip">Dieser Button dreht das Brett um eine diagonale Achse.</string>
     <string name="not_again_undo">Dieser Button nimmt den gegenwärtigen Zug zurück oder spielt ihn erneut.</string>
-    <string name="not_again_arrow">Es gibt zwei Möglichkeiten, Spielsteine auf das Brett zu bewegen.
+    <string name="not_again_arrow">Es gibt zwei Möglichkeiten, Buchstaben auf das Brett zu bewegen.
 \n
 \n - Sie können sie zwischen der Ablage und dem Brett hin- und herschieben.
 \n
-\n - Oder Sie tippen auf ein leeres Feld auf dem Brett, um den \"Brett-Pfeil\" zu platzieren. Die Spielsteine in der Ablage ersetzen dann den Pfeil, wenn Sie sie antippen. Tippen Sie auf den Pfeil, um seine Richtung zu ändern oder ihn auszublenden.</string>
+\n - Oder Sie tippen auf ein leeres Feld auf dem Brett, um den \"Brett-Pfeil\" zu platzieren. Die Buchstaben in der Ablage ersetzen dann den Pfeil, wenn Sie sie antippen. Tippen Sie auf den Pfeil, um seine Richtung zu ändern oder ihn auszublenden.</string>
     <string name="default_name_title">Standardspielername</string>
     <string name="default_name_message">Bitte geben Sie hier Ihren Namen ein. Er wird beim Erzeugen neuer Partien benutzt. (Sie können ihn später im Abschnitt „Standard für neue Partien“ in den Einstellungen ändern.)</string>
     <string name="about_copyright">CrossWords für Android 
@@ -339,7 +339,7 @@
 \n(Die Gruppe „Archiv“ kann sicher gelöscht werden, sie wird bei Bedarf neu erzeugt.)</string>
     <string name="button_newgroup">Neue Gruppe</string>
     <string name="tilepick_all_fmt">%1$d für mich auswählen</string>
-    <string name="pick_faceup">Spielsteine aufgedeckt auswählen</string>
+    <string name="pick_faceup">Buchstaben aufgedeckt auswählen</string>
     <string name="disableds_title">Deaktivierte Adresstypen</string>
     <string name="dict_browse_title_fmt">%1$s (%2$d Wörter)</string>
     <string name="not_again_browse">Mit diesem Button können Sie die zuletzt angezeigte Wortliste durchsuchen.</string>
@@ -478,7 +478,7 @@
     <string name="group_name_archive">Archiv</string>
     <string name="duplicate_group_name_fmt">Die Gruppe „%1$s“ existiert bereits.</string>
     <string name="button_reconnect">Erneut verbinden</string>
-    <string name="square_tiles">Quadratische Spielsteine in der Ablage</string>
+    <string name="square_tiles">Quadratische Buchstaben in der Ablage</string>
     <string name="change_group">Ausgewählte Partien verschieben nach:</string>
     <string name="not_again_newselect">Durch Tippen auf die Liste eines Spiels wird das Spiel geöffnet.
 \n
@@ -596,10 +596,10 @@
     </plurals>
     <plurals name="lmi_trade_fmt">
         <item quantity="one">%1$s hat einen Spielstein getauscht</item>
-        <item quantity="other">%1$s hat %2$d Spielsteine getauscht</item>
+        <item quantity="other">%1$s hat %2$d Buchstaben getauscht</item>
     </plurals>
     <string name="lmi_phony_fmt">%1$s hat einen Zug verwirkt</string>
-    <string name="lmi_tiles_fmt">Spielsteine verteilt an %1$s</string>
+    <string name="lmi_tiles_fmt">Buchstaben verteilt an %1$s</string>
     <string name="bt_no_devs">Sie haben gegenwärtig kein gepaartes Bluetooth-Gerät (oder Bluetooth ist ausgeschaltet). Wollen Sie die Android-Einstellungen öffnen, um eines oder mehrere hinzuzufügen\?
 \n
 \n(Sie müssen die Einstellungen eventuell auch auf dem Gerät öffnen, das gepaart werden soll.)</string>
@@ -682,21 +682,21 @@
     <string name="bonus_l3x_summary">3B</string>
     <string name="bonus_w3x_summary">3W</string>
     <plurals name="strd_remains_header_fmt">
-        <item quantity="one">Noch ein Spielstein im Säckchen.</item>
-        <item quantity="other">Noch %1$d Spielsteine im Säckchen.</item>
+        <item quantity="one">Noch einen Buchstaben im Säckchen.</item>
+        <item quantity="other">Noch %1$d Buchstaben im Säckchen.</item>
     </plurals>
     <plurals name="strd_remains_expl_fmt">
-        <item quantity="one">Noch 1 Spielstein in den nicht gezeigten Ablagen:
+        <item quantity="one">Noch 1 Buchstabe in den nicht gezeigten Ablagen:
 \n</item>
-        <item quantity="other">Noch %1$d Spielsteine im Säckchen und den nicht gezeigten Ablagen:
+        <item quantity="other">Noch %1$d Buchstaben im Säckchen und den nicht gezeigten Ablagen:
 \n</item>
     </plurals>
-    <string name="peek_other">Spielsteine ansehen wenn nicht am Zug</string>
-    <string name="peek_other_summary">Antippen von Namen auf der Punktetafel zeigt die Spielsteine dieses Spielers</string>
+    <string name="peek_other">Buchstaben ansehen, wenn nicht am Zug</string>
+    <string name="peek_other_summary">Antippen von Namen auf der Punktetafel zeigt die Buchstaben dieses Spielers</string>
     <string name="hide_crosshairs_summary">Angetipptes Spielfeld nicht anzeigen</string>
     <string name="invite_choice_title">Einen Spieler einladen</string>
-    <string name="title_blank_picker">Spielstein für Joker wählen</string>
-    <string name="tile_tray_picker">Neue Spielsteine für Ablage wählen</string>
+    <string name="title_blank_picker">Buchstabe für Joker wählen</string>
+    <string name="tile_tray_picker">Neue Buchstaben für Ablage wählen</string>
     <string name="not_again_chat">Dieser Button öffnet den Bildschirm für Nachrichten zwischen Geräten in dieser Partie. Die Nachrichten werden behalten, bis Sie die Partie löschen, zu der sie gehören.</string>
     <string name="not_again_values">Mit diesem Button können Sie festlegen, ob auf dem Brett Werte (zusätzlich zu den Buchstaben) auf den Spielsteinen angezeigt werden sollen.</string>
     <string name="not_again_done">Antippen des „Pkt.“-Zählers am rechten Ende der Ablage ist der einfachste Weg, einen Zug abzuschließen.</string>
@@ -769,8 +769,8 @@
     <string name="game_summary_field_gameid">gameid</string>
     <string name="list_item_netstats">Verbindungen</string>
     <plurals name="too_many_trade_fmt">
-        <item quantity="one">Zu viele Spielsteine ausgewählt. Bitte nur einen auswählen.</item>
-        <item quantity="other">Zu viele Spielsteine ausgewählt. Bitte maximal %1$d auswählen.</item>
+        <item quantity="one">Zu viele Buchstaben ausgewählt. Bitte nur einen auswählen.</item>
+        <item quantity="other">Zu viele Buchstaben ausgewählt. Bitte maximal %1$d auswählen.</item>
     </plurals>
     <string name="button_scan">Erneut scannen</string>
     <plurals name="invite_bt_desc_fmt_2">
@@ -836,9 +836,9 @@
     <string name="radio_who">Wer\?</string>
     <string name="about_devid_fmt">Geräte-ID: %1$s</string>
     <string name="invitee_fmt">(%1$s eingeladen)</string>
-    <string name="str_bonus_all_fmt">Bonus für die Verwendung von %1$d Kacheln: 50
+    <string name="str_bonus_all_fmt">Bonus für die Verwendung von %1$d Buchstaben: 50
 \n</string>
-    <string name="show_tiles_menu">Spielsteine anzeigen</string>
+    <string name="show_tiles_menu">Buchstaben anzeigen</string>
     <plurals name="confirm_nameddeletes_fmt">
         <item quantity="one">Sind Sie sicher, dass Sie die Partie %1$s löschen wollen\? Diese Aktion kann nicht rückgängig gemacht werden.</item>
         <item quantity="other">Sind Sie sicher, dass Sie die Partien %1$s löschen wollen\? Diese Aktion kann nicht rückgängig gemacht werden.</item>
@@ -855,8 +855,8 @@
 \n
 \nLesen Sie mehr in den FAQ, indem Sie auf den Button unten tippen.</string>
     <string name="dup_notif_title_fmt">Sie haben bis %1$s Zeit, sich zu bewegen.</string>
-    <string name="show_tiles_title_fmt">Spielsteine für %1$s</string>
-    <string name="show_tiles_button">Spielsteine anzeigen</string>
+    <string name="show_tiles_title_fmt">Buchstaben für %1$s</string>
+    <string name="show_tiles_button">Buchstaben anzeigen</string>
     <string name="filter_sum_pat_fmt">Angezeigt: %1$s, Längen %2$d-%3$d (%4$d Wörter)</string>
     <string name="button_useconfig">Filter anwenden</string>
     <string name="button_addBlank">+Leer</string>
@@ -874,7 +874,7 @@
     <string name="password_hint">(Optional)</string>
     <string name="no_dict_for_move_title">Eingehender Zug verloren</string>
     <string name="not_again_comms_mqtt">Es gibt einen Server im Internet, der Nachrichten zwischen Geräten weiterleitet, auf denen CrossWords läuft. Es funktioniert immer, wenn Sie eine voll funktionsfähige Internetverbindung haben, kann aber in eingeschränkten WiFi-Netzwerken Probleme verursachen.</string>
-    <string name="offerdupmode_sum">(Experimentell!!!) Spielstil, bei dem alle Spieler die gleichen Spielsteine haben</string>
+    <string name="offerdupmode_sum">(Experimentell!!!) Spielstil, bei dem alle Spieler die gleichen Buchstaben haben</string>
     <string name="no_dict_for_move_fmt">Tippen Sie, um die %1$s-Wortliste herunterzuladen und wiederherzustellen</string>
     <string name="dict_lang_avail">(Verfügbar: %1$d)</string>
     <string name="unhide_dupmode_title">Optionen für den Duplikatmodus einblenden</string>
@@ -926,7 +926,7 @@
 \n
 \nMöchten Sie jemanden einladen\?</string>
     <string name="qrcode_invite_expl">Um per QR-Code einzuladen, lassen Sie Ihren Gegner den Code mit der Kamera seines Android-Handys scannen.</string>
-    <string name="tray_size">Spielsteine in der Ablage</string>
+    <string name="tray_size">Buchstaben in der Ablage</string>
     <string name="cellline_width">Breite der Zellenränder</string>
     <string name="disable_bt">Spielen über Bluetooth deaktivieren</string>
     <string name="disable_bt_summary">Deaktivieren der gesamten Bluetooth-Kommunikation</string>
@@ -937,7 +937,7 @@
     <string name="radio_how">Wie\?</string>
     <string name="tiles_header_face">Buchstabe</string>
     <string name="tiles_header_count">Zahl</string>
-    <string name="not_again_traysize">Mit dieser neuen Einstellung wird die Anzahl der Spielsteine in der Ablage geändert.
+    <string name="not_again_traysize">Mit dieser neuen Einstellung wird die Anzahl der Buchstaben in der Ablage geändert.
 \n
 \nHinweis: Wenn jemand in Ihrer Netzwerk-Partie eine ältere Version von CrossWords verwendet, wird diese Einstellung für alle in der Partie auf 7 zurückgesetzt.</string>
     <string name="email_logs_chooser">Protokolle senden über</string>
@@ -981,9 +981,9 @@
 \n</string>
     <string name="duplicate_check">Duplikatmodus</string>
     <string name="offerdupmode_title">Spielen im \"Duplikat-Modus\"</string>
-    <string name="lmi_tiles_dup">Allen Spielern werden die gleichen Spielsteine zugewiesen</string>
+    <string name="lmi_tiles_dup">Allen Spielern werden die gleichen Buchstaben zugewiesen</string>
     <string name="lmi_pass_dup">Kein Spieler hat einen Zug gefunden (alle haben gepasst)</string>
-    <string name="lmi_trade_dup_fmt">%1$d Spielsteine für alle Spieler ausgetauscht</string>
+    <string name="lmi_trade_dup_fmt">%1$d Buchstaben für alle Spieler ausgetauscht</string>
     <string name="lmi_move_one_dup_fmt">%1$s hat diese Runde mit %2$s für %3$d Punkte gewonnen</string>
     <string name="lmi_move_tie_dup_fmt">Die Spieler %1$s haben jeweils %2$d Punkte. %3$s wurde gespielt.</string>
     <string name="name_concat_dup">" und "</string>
@@ -996,7 +996,7 @@
     <string name="game_unpaused_title">Partie nicht pausiert</string>
     <string name="dup_moved">Doppelte Runde abgeschlossen. Ergebnisse:
 \n</string>
-    <string name="dup_traded_fmt">Keine Züge gemacht; %1$d Spielsteine gehandelt</string>
+    <string name="dup_traded_fmt">Keine Züge gemacht; %1$d Buchstaben getauscht</string>
     <string name="dup_onescore_fmt">%1$s: %2$d Punkte
 \n</string>
     <string name="pause_title">Partiepause</string>
@@ -1016,8 +1016,8 @@
     <string name="button_send_logs">An den Autor senden</string>
     <string name="logstore_cleared_fmt">%1$d Protokolleinträge gelöscht</string>
     <string name="logstore_clear_confirm">Sind Sie sicher, dass Sie Ihre Debug-Protokolle löschen wollen\? Diese Aktion kann nicht rückgängig gemacht werden.</string>
-    <string name="pick_tiles_title_fmt">Wählen Sie einen Spielstein „Rechtschreibung“ für „%1$s“</string>
-    <string name="no_tiles_exist">\"%1$s\" kann nicht mit %2$s Spielsteinen geschrieben werden.</string>
+    <string name="pick_tiles_title_fmt">Wählen Sie einen Buchstaben „Rechtschreibung“ für „%1$s“</string>
+    <string name="no_tiles_exist">\"%1$s\" kann nicht mit %2$s Buchstaben geschrieben werden.</string>
     <string name="remote_msg_title">Externe Meldung</string>
     <string name="mqtt_invite_title">MQTT-Einladung</string>
     <string name="choose_expl_new">Starten Sie eine Partie, indem Sie eine Einladung per E-Mail, SMS oder sogar über einen QR-Code versenden</string>
