@@ -591,8 +591,8 @@
     <string name="prev_player">Ihr Gegner</string>
     <string name="lmi_pass_fmt">%1$s hat gepasst (0 Punkte)</string>
     <plurals name="lmi_move_fmt">
-        <item quantity="one">%1$s spielte %2$s um einen Punkt</item>
-        <item quantity="other">%1$s spielte %2$s um %3$d Punkte</item>
+        <item quantity="one">%1$s spielte %2$s für einen Punkt</item>
+        <item quantity="other">%1$s spielte %2$s für %3$d Punkte</item>
     </plurals>
     <plurals name="lmi_trade_fmt">
         <item quantity="one">%1$s hat einen Spielstein getauscht</item>
