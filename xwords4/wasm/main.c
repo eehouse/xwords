@@ -512,28 +512,29 @@ handleInvite( GameState* gs )
 }
 
 static void
-handleRematch( GameState* curGS )
+onRematchOkd( void* closure, const char* msg )
 {
-    LOG_FUNC();
-    Globals* globals = curGS->globals;
-    GameState* newGS = newGameState( globals );
-    newGS->util = wasm_util_make( MPPARM(globals->mpool) &newGS->gi,
-                                  globals->dutil, newGS );
+    if ( !!msg && msg[0] ) {   /* cancel button gives null */
+        GameState* curGS = (GameState*)closure;
+        Globals* globals = curGS->globals;
+        GameState* newGS = newGameState( globals );
+        newGS->util = wasm_util_make( MPPARM(globals->mpool) &newGS->gi,
+                                      globals->dutil, newGS );
 
-    if ( game_makeRematch( &curGS->game, NULL_XWE, newGS->util,
-                           &globals->cp, (TransportProcs*)NULL,
-                           &newGS->game, "newName" ) ) {
-        int gameID = newGS->gi.gameID;
+        if ( game_makeRematch( &curGS->game, NULL_XWE, newGS->util,
+                               &globals->cp, (TransportProcs*)NULL,
+                               &newGS->game, msg ) ) {
+            int gameID = newGS->gi.gameID;
 
-        saveGame( newGS );
-        removeGameState( newGS ); /* force reload with drawCtxt etc. */
+            saveGame( newGS );
+            removeGameState( newGS ); /* force reload with drawCtxt etc. */
 
-        loadAndDraw( globals, (NetLaunchInfo*)NULL, gameID, (NewGameParams*)NULL );
-    } else {
-        XP_LOGFF( "failed" );
-        cleanupGame( newGS );
+            loadAndDraw( globals, (NetLaunchInfo*)NULL, gameID, (NewGameParams*)NULL );
+        } else {
+            XP_LOGFF( "failed" );
+            cleanupGame( newGS );
+        }
     }
-    LOG_RETURN_VOID();
 }
 
 static void
@@ -542,6 +543,21 @@ onChatComposed( void* closure, const char* msg )
     if ( !!msg ) {
         CAST_GS(GameState*, gs, closure);
         board_sendChat( gs->game.board, NULL_XWE, msg );
+    }
+}
+
+static void
+formatNames( GameState* gs, char buf[] )
+{
+    const CurGameInfo* gi = &gs->gi;
+    buf[0] = '\0';
+    for ( int ii = 0; ii < gi->nPlayers; ++ii ) {
+        const LocalPlayer* lp = &gi->players[ii];
+        const XP_UCHAR* name = lp->name;
+        if ( 0 < ii ) {
+            strcat( buf, " vs. " );
+        }
+        strcat( buf, name );
     }
 }
 
@@ -584,7 +600,9 @@ onGameButton( void* closure, const char* button )
         } else if ( 0 == strcmp(button, BUTTON_INVITE) ) {
             handleInvite(gs);
         } else if ( 0 == strcmp(button, BUTTON_REMATCH) ) {
-            handleRematch(gs);
+            char buf[128];
+            formatNames( gs, buf );
+            call_get_string( "Rematch game name?", buf, onRematchOkd, gs );
         }
 
         if ( draw ) {
