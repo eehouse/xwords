@@ -803,12 +803,12 @@ static void
 addGuestAddrsIf( const ServerCtxt* server, XP_U16 sendee, XWStreamCtxt* stream )
 {
     XP_LOGFF("(sendee: %d)", sendee );
-    if ( amServer( server )
+    XP_ASSERT( amServer( server ) );
+    if ( STREAM_VERS_REMATCHADDRS <= stream_getVersion(stream)
          /* Not needed for two-device games */
          && 2 < server->nv.nDevices
          /* no two-player devices?  */
-         && server->nv.nDevices == server->vol.gi->nPlayers
-         && STREAM_VERS_REMATCHADDRS <= stream_getVersion(stream) ) {
+         && server->nv.nDevices == server->vol.gi->nPlayers ) {
         XWStreamCtxt* tmpStream = mkServerStream( server );
         stream_setVersion( tmpStream, stream_getVersion( stream ) );
 
@@ -4035,6 +4035,7 @@ server_getRematchInfo( const ServerCtxt* server, XW_UtilCtxt* newUtil,
                         && ra->nAddrs < VSIZE(ra->addrs) ) {
                     addrFromStream( &ra->addrs[ra->nAddrs++], stream );
                 }
+                stream_destroy( stream );
             }
         }
     }
