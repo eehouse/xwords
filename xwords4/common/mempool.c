@@ -159,7 +159,7 @@ mpool_destroy( MemPoolCtx* mpool )
         MemPoolEntry* entry;
         for ( entry = mpool->usedList; !!entry; entry = entry->next ) {
 #ifndef FOR_GREMLINS /* I don't want to hear about this right now */
-            XP_LOGFF( "ptr: " XP_P "; index=%d, allocated %s, ln %d of %s\n",
+            XP_LOGFF( "ptr: " XP_P "; index=%d, allocated %s(), ln %d of %s\n",
                      entry->ptr, entry->index, 
                      entry->func, entry->lineNo, entry->fileName );
 #ifdef DEBUG
@@ -219,8 +219,8 @@ mpool_alloc( MemPoolCtx* mpool, XP_U32 size, const char* file,
     }
 
 #ifdef MPOOL_DEBUG
-    XP_LOGF( "%s(size=%ld,index=%d,file=%s,lineNo=%ld)=>%p",
-             __func__, size, entry->index, file, lineNo, entry->ptr );
+    XP_LOGFF( "(size=%d,index=%d,file=%s,lineNo=%d)=>%p",
+             size, entry->index, file, lineNo, entry->ptr );
 #endif
 
     result = entry->ptr;
@@ -311,7 +311,7 @@ mpool_free( MemPoolCtx* mpool, void* ptr, const char* file,
     } else {
 
 #ifdef MPOOL_DEBUG
-    XP_LOGFF( "(ptr=%p):size=%ld,index=%d,func=%s,file=%s,lineNo=%ld); called from %s",
+    XP_LOGFF( "(ptr=%p):size=%d,index=%d,func=%s,file=%s,lineNo=%d); called from %s",
               entry->ptr, entry->size, entry->index, entry->func, entry->fileName,
               entry->lineNo, func );
 #else

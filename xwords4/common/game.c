@@ -594,7 +594,7 @@ game_dispose( XWGame* game, XWEnv xwe )
 static void
 disposePlayerInfoInt( MPFORMAL CurGameInfo* gi )
 {
-    for ( int ii = 0; ii < gi->nPlayers; ++ii ) {
+    for ( int ii = 0; ii < VSIZE(gi->players); ++ii ) {
         LocalPlayer* lp = &gi->players[ii];
         XP_FREEP( mpool, &lp->name );
         XP_FREEP( mpool, &lp->password );
