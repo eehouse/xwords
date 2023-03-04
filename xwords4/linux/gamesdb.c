@@ -46,8 +46,6 @@
 
 static XP_Bool getColumnText( sqlite3_stmt *ppStmt, int iCol, XP_UCHAR* buf,
                               int* len );
-static bool fetchInt( sqlite3* pDb, const gchar* key, int32_t* resultP );
-static void storeInt( sqlite3* pDb, const gchar* key, int32_t val );
 static void createTables( sqlite3* pDb );
 static bool gamesTableExists( sqlite3* pDb );
 static void upgradeTables( sqlite3* pDb, int32_t oldVersion );
@@ -83,7 +81,7 @@ gdb_open( const char* dbName )
 
     if ( gamesTableExists( pDb ) ) {
         int32_t oldVersion;
-        if ( !fetchInt( pDb, KEY_DB_VERSION, &oldVersion ) ) {
+        if ( !gdb_fetchInt( pDb, KEY_DB_VERSION, &oldVersion ) ) {
             oldVersion = 0;
             XP_LOGFF( "no version found; assuming %d", oldVersion );
         }
@@ -136,7 +134,7 @@ upgradeTables( sqlite3* pDb, int32_t oldVersion )
         }
         g_strfreev( strs );
 
-        storeInt( pDb, KEY_DB_VERSION, CUR_DB_VERSION );
+        gdb_storeInt( pDb, KEY_DB_VERSION, CUR_DB_VERSION );
     }
 }
 
@@ -196,7 +194,7 @@ createTables( sqlite3* pDb )
         ")";
     (void)sqlite3_exec( pDb, createGamesStr, NULL, NULL, NULL );
 
-    storeInt( pDb, KEY_DB_VERSION, CUR_DB_VERSION );
+    gdb_storeInt( pDb, KEY_DB_VERSION, CUR_DB_VERSION );
 }
 
 void
@@ -675,6 +673,25 @@ gdb_deleteGame( sqlite3* pDb, sqlite3_int64 rowid )
     execNoResult( pDb, query, false );
 }
 
+XP_Bool
+gdb_allGamesDone( sqlite3* pDb )
+{
+    const char* query = "SELECT count(rowid) FROM games WHERE "
+        /* This doesn't work. I don't know what's increasing the number of
+           pending messages after a game finishes. PENDING */
+        // "nPending > 0 OR "
+        "ended = 0";
+    sqlite3_stmt* ppStmt;
+    int result = sqlite3_prepare_v2( pDb, query, -1, &ppStmt, NULL );
+    assertPrintResult( pDb, result, SQLITE_OK );
+    result = sqlite3_step( ppStmt );
+    XP_ASSERT( SQLITE_ROW == result );
+    bool allDone = 0 == sqlite3_column_int( ppStmt, 0 );
+    sqlite3_finalize( ppStmt );
+    LOG_RETURNF( "%s", boolToStr(allDone) );
+    return allDone;
+}
+
 void
 gdb_store( sqlite3* pDb, const gchar* key, const gchar* value )
 {
@@ -686,8 +703,8 @@ gdb_store( sqlite3* pDb, const gchar* key, const gchar* value )
     g_free( query );
 }
 
-static bool
-fetchInt( sqlite3* pDb, const gchar* key, int32_t* resultP )
+bool
+gdb_fetchInt( sqlite3* pDb, const gchar* key, int32_t* resultP )
 {
     gint buflen = 16;
     gchar buf[buflen];
@@ -700,8 +717,8 @@ fetchInt( sqlite3* pDb, const gchar* key, int32_t* resultP )
     return gotIt;
 }
 
-static void
-storeInt( sqlite3* pDb, const gchar* key, int32_t val )
+void
+gdb_storeInt( sqlite3* pDb, const gchar* key, int32_t val )
 {
     gchar buf[32];
     snprintf( buf, VSIZE(buf), "%x", val );
@@ -709,7 +726,7 @@ storeInt( sqlite3* pDb, const gchar* key, int32_t val )
 
 #ifdef DEBUG
     int32_t tmp;
-    bool worked = fetchInt( pDb, key, &tmp );
+    bool worked = gdb_fetchInt( pDb, key, &tmp );
     XP_ASSERT( worked && tmp == val );
 #endif
 }

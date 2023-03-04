@@ -116,6 +116,7 @@ typedef struct _LaunchParams {
     XP_Bool useUdp;
     XP_Bool useHTTP;
     XP_Bool runSMSTest;
+    XP_Bool rematchOnDone;
     XP_Bool noHTTPAuto;
     bool forceNewGame;
     bool forceInvite;

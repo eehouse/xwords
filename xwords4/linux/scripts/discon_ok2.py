@@ -4,105 +4,10 @@ import re, os, sys, shutil, threading, requests, json, glob
 import argparse, datetime, random, signal, subprocess, time
 from shutil import rmtree
 
-# LOGDIR=./$(basename $0)_logs
-# APP_NEW=""
-# DO_CLEAN=""
-# APP_NEW_PARAMS=""
-# NGAMES = 1
 g_UDP_PCT_START = 100
 gDeadLaunches = 0
-# UDP_PCT_INCR=10
-# UPGRADE_ODDS=""
-# NROOMS=""
-# HOST=""
-# PORT=""
-# TIMEOUT=""
-# SAVE_GOOD=""
-# MINDEVS=""
-# MAXDEVS=""
-# ONEPER=""
-# RESIGN_PCT=0
 g_DROP_N=0
-# MINRUN=2		                # seconds
-# ONE_PER_ROOM=""                 # don't run more than one device at a time per room
-# USE_GTK=""
-# UNDO_PCT=0
-# ALL_VIA_RQ=${ALL_VIA_RQ:-FALSE}
-# SEED=""
-# BOARD_SIZES_OLD=(15)
-# BOARD_SIZES_NEW=(15)
 g_NAMES = [None, 'Brynn', 'Ariela', 'Kati', 'Eric']
-# SEND_CHAT=''
-# CORE_COUNT=$(ls core.* 2>/dev/null | wc -l)
-# DUP_PACKETS=''
-# HTTP_PCT=0
-
-# declare -A PIDS
-# declare -A APPS
-# declare -A NEW_ARGS
-# declare -a ARGS
-# declare -A ARGS_DEVID
-# declare -A ROOMS
-# declare -A FILES
-# declare -A LOGS
-# declare -A MINEND
-# ROOM_PIDS = {}
-# declare -a APPS_OLD=()
-# declare -a DICTS=				# wants to be =() too?
-# declare -A CHECKED_ROOMS
-
-# function cleanup() {
-#     APP="$(basename $APP_NEW)"
-#     while pidof $APP; do
-#         echo "killing existing $APP instances..."
-#         killall -9 $APP
-#         sleep 1
-#     done
-#     echo "cleaning everything up...."
-#     if [ -d $LOGDIR ]; then
-#         mv $LOGDIR /tmp/${LOGDIR}_$$
-#     fi
-#     if [ -e $(dirname $0)/../../relay/xwrelay.log ]; then
-#         mkdir -p /tmp/${LOGDIR}_$$
-#         mv $(dirname $0)/../../relay/xwrelay.log /tmp/${LOGDIR}_$$
-#     fi
-
-#     echo "DELETE FROM games WHERE room LIKE 'ROOM_%';" | psql -q -t xwgames
-#     echo "DELETE FROM msgs WHERE NOT devid in (SELECT unnest(devids) from games);" | psql -q -t xwgames
-# }
-
-# function connName() {
-#     LOG=$1
-#     grep -a 'got_connect_cmd: connName' $LOG | \
-#         tail -n 1 | \
-#         sed 's,^.*connName: \"\(.*\)\" (reconnect=.)$,\1,'
-# }
-
-# function check_room() {
-#     ROOM=$1
-#     if [ -z ${CHECKED_ROOMS[$ROOM]:-""} ]; then
-#         NUM=$(echo "SELECT COUNT(*) FROM games "\
-#             "WHERE NOT dead "\
-#             "AND ntotal!=sum_array(nperdevice) "\
-#             "AND ntotal != -sum_array(nperdevice) "\
-#             "AND room='$ROOM'" |
-#             psql -q -t xwgames)
-#         NUM=$((NUM+0))
-#         if [ "$NUM" -gt 0 ]; then
-#             echo "$ROOM in the DB has unconsummated games.  Remove them."
-#             exit 1
-#         else
-#             CHECKED_ROOMS[$ROOM]=1
-#         fi
-#     fi
-# }
-
-# print_cmdline() {
-#     local COUNTER=$1
-#     local LOG=${LOGS[$COUNTER]}
-#     echo -n "New cmdline: " >> $LOG
-#     echo "${APPS[$COUNTER]} ${NEW_ARGS[$COUNTER]} ${ARGS[$COUNTER]}" >> $LOG
-# }
 
 def pick_ndevs(args):
     RNUM = random.randint(0, 99)
@@ -159,9 +64,6 @@ def logReaderStub(dev): dev.logReaderMain()
 
 class Device():
     sHasLDevIDMap = {}
-    # sConnNamePat = re.compile('.*got_connect_cmd: connName: "([^"]+)".*$')
-    sWinnerPat = re.compile('^\[(\#\d|Winner)\] (.*): (\d+)')
-    sMsgCountPat = re.compile('.*curses_countChanged.*\(newCount=(\d+)\).*')
     sTilesLeftPoolPat = re.compile('.*pool_r.*Tiles: (\d+) tiles left in pool')
     sTilesLeftTrayPat = re.compile('.*player \d+ now has (\d+) tiles')
     sRelayIDPat = re.compile('.*UPDATE games.*seed=(\d+),.*relayid=\'([^\']+)\'.*')
@@ -178,8 +80,7 @@ class Device():
         self.indx = indx
         self.args = args
         self.pid = 0
-        self.winnerFound = False
-        self.gameOver = False
+        self.gamesOver = False
         self.params = params
         self.room = room
         self.order = order
@@ -237,24 +138,6 @@ class Device():
 
                 self.locked = True
 
-                match = Device.sMsgCountPat.match(line)
-                if match:
-                    self.msgCount = int(match.group(1))
-
-                # check for game over
-                if not self.winnerFound:
-                    match = Device.sWinnerPat.match(line)
-                    if match:
-                        self.winnerFound = True
-                        score = int(match.group(3))
-                        if self.inDupMode:
-                            Device.sScoresDup.append(score)
-                        else:
-                            Device.sScoresReg.append(score)
-
-                if not self.gameOver and self.winnerFound and 0 == self.msgCount:
-                    self.gameOver = True
-
                 # Check every line for tiles left in pool
                 match = Device.sTilesLeftPoolPat.match(line)
                 if match: self.nTilesLeftPool = int(match.group(1))
@@ -298,11 +181,14 @@ class Device():
                 fil.write( ' '.join(args) + '\n' )
             os.chmod(self.script, 0o755)
 
-    def launch(self):
+    def launch(self, canRematch):
         self.setApp(self.args.UPGRADE_PCT)
         self.checkScript()
         self.launchCount += 1
         args = [ self.script, '--close-stdin' ]
+        if canRematch:
+            args.append('--rematch-when-done')
+
 
         # If I'm an unconnected server and I know a client's relayid,
         # append it so invitation can happen. When more than one
@@ -350,7 +236,7 @@ class Device():
         else:
             print('NOT killing')
         self.proc = None
-        self.check_game_over()
+        self.check_games_over()
 
     def handleAllDone(self):
         global gDeadLaunches
@@ -393,12 +279,15 @@ class Device():
             elif RNUM < 10:
                 self.devID += 'x'
 
-    def check_game_over(self):
-        if self.gameOver and not self.allDone:
+    def check_games_over(self):
+        args = [self.app, '--query-games-over'] + [str(p) for p in self.params]
+        proc = subprocess.run(args, capture_output=True)
+        self.gamesOver = 0 == proc.returncode
+        if self.gamesOver and not self.allDone:
             allDone = True
             for dev in self.peers:
                 if dev == self: continue
-                if not dev.gameOver:
+                if not dev.gamesOver:
                     allDone = False
                     break
 
@@ -599,9 +488,10 @@ def countCores(args):
 
 gDone = False
 
-def run_cmds(args, devs):
+def run_cmds(args, devs, startTime):
     nCores = countCores(args)
-    endTime = datetime.datetime.now() + datetime.timedelta(minutes = args.TIMEOUT_MINS)
+    endTime = startTime + datetime.timedelta(minutes = args.TIMEOUT_MINS)
+    endRematchTime = startTime + datetime.timedelta(seconds = args.REMATCH_SECS)
     printState = {}
     lastPrint = datetime.datetime.now()
 
@@ -626,7 +516,8 @@ def run_cmds(args, devs):
             if dev.handleAllDone():
                 devs.remove(dev)
             else:
-                dev.launch()
+                canRematch = now < endRematchTime
+                dev.launch(canRematch)
         elif dev.minTimeExpired():
             dev.kill()
             if dev.handleAllDone():
@@ -640,48 +531,6 @@ def run_cmds(args, devs):
         print('stopping {} remaining games'.format(len(devs)))
         for dev in devs:
             if dev.running(): dev.kill()
-
-# run_via_rq() {
-#     # launch then kill all games to give chance to hook up
-#     for KEY in ${!ARGS[*]}; do
-#         echo "launching $KEY"
-#         launch $KEY &
-#         PID=$!
-#         sleep 1
-#         kill $PID
-#         wait $PID
-#         # add_pipe $KEY
-#     done
-
-#     echo "now running via rq"
-#     # then run them
-#     while :; do
-#         COUNT=${#ARGS[*]}
-#         [ 0 -ge $COUNT ] && break
-
-#         INDX=$(($RANDOM%COUNT))
-#         KEYS=( ${!ARGS[*]} )
-#         KEY=${KEYS[$INDX]}
-#         CMD=${ARGS[$KEY]}
-            
-#         RELAYID=$(./scripts/relayID.sh --short ${LOGS[$KEY]})
-#         MSG_COUNT=$(../relay/rq -a $HOST -m $RELAYID 2>/dev/null | sed 's,^.*-- ,,')
-#         if [ $MSG_COUNT -gt 0 ]; then
-#             launch $KEY &
-#             PID=$!
-#             sleep 2
-#             kill $PID || /bin/true
-#             wait $PID
-#         fi
-#         [ "$DROP_N" -ge 0 ] && increment_drop $KEY
-#         check_game $KEY
-#     done
-# } # run_via_rq
-
-# function getArg() {
-#     [ 1 -lt "$#" ] || usage "$1 requires an argument"
-#     echo $2
-# }
 
 def log_scores( devs ):
     if len(Device.sScoresReg) > 0:
@@ -772,6 +621,8 @@ def mkParser():
 
     parser.add_argument('--board-size', dest = 'BOARD_SIZE', type = int, default = 15,
                         help = 'Use <n>x<n> size board')
+    parser.add_argument('--rematch-limit-secs', dest = 'REMATCH_SECS', type = int, default = 0,
+                        help = 'rematch games that end within this many seconds of script launch')
 
     parser.add_argument('--core-pat', dest = 'CORE_PAT', default = os.environ.get('DISCON_COREPAT'),
                         help = "pattern for core files that should stop the script " \
@@ -782,120 +633,12 @@ def mkParser():
 
     return parser
 
-# #######################################################
-# ##################### MAIN begins #####################
-# #######################################################
-
 def parseArgs():
     args = mkParser().parse_args()
     assignDefaults(args)
     print(args)
     return args
     # print(options)
-
-# while [ "$#" -gt 0 ]; do
-#     case $1 in
-#         --udp-start)
-#             UDP_PCT_START=$(getArg $*)
-#             shift
-#             ;;
-#         --udp-incr)
-#             UDP_PCT_INCR=$(getArg $*)
-#             shift
-#             ;;
-#         --clean-start)
-#             DO_CLEAN=1
-#             ;;
-#         --num-games)
-#             NGAMES=$(getArg $*)
-#             shift
-#             ;;
-#         --num-rooms)
-#             NROOMS=$(getArg $*)
-#             shift
-#             ;;
-#         --old-app)
-#             APPS_OLD[${#APPS_OLD[@]}]=$(getArg $*)
-#             shift
-#             ;;
-# 		--log-root)
-# 			[ -d $2 ] || usage "$1: no such directory $2"
-# 			LOGDIR=$2/$(basename $0)_logs
-# 			shift
-# 			;;
-#         --dup-packets)
-                  #             DUP_PACKETS=1
-#             ;;
-#         --new-app)
-#             APP_NEW=$(getArg $*)
-#             shift
-#             ;;
-#         --new-app-args)
-#             APP_NEW_PARAMS="${2}"
-#             echo "got $APP_NEW_PARAMS"
-#             shift
-#             ;;
-#         --game-dict)
-#             DICTS[${#DICTS[@]}]=$(getArg $*)
-#             shift
-#             ;;
-#         --min-devs)
-#             MINDEVS=$(getArg $*)
-#             shift
-#             ;;
-#         --max-devs)
-#             MAXDEVS=$(getArg $*)
-#             shift
-#             ;;
-# 		--min-run)
-# 			MINRUN=$(getArg $*)
-# 			[ $MINRUN -ge 2 -a $MINRUN -le 60 ] || usage "$1: n must be 2 <= n <= 60"
-# 			shift
-# 			;;
-#         --one-per)
-#             ONEPER=TRUE
-#             ;;
-#         --host)
-#             HOST=$(getArg $*)
-#             shift
-#             ;;
-#         --port)
-#             PORT=$(getArg $*)
-#             shift
-#             ;;
-#         --seed)
-#             SEED=$(getArg $*)
-#             shift
-#             ;;
-#         --undo-pct)
-#             UNDO_PCT=$(getArg $*)
-#             shift
-#             ;;
-#         --http-pct)
-#             HTTP_PCT=$(getArg $*)
-#             [ $HTTP_PCT -ge 0 -a $HTTP_PCT -le 100 ] || usage "$1: n must be 0 <= n <= 100"
-#             shift
-#             ;;
-#         --send-chat)
-#             SEND_CHAT=$(getArg $*)
-#             shift
-#             ;;
-#         --resign-pct)
-#             RESIGN_PCT=$(getArg $*)
-# 			[ $RESIGN_PCT -ge 0 -a $RESIGN_PCT -le 100 ] || usage "$1: n must be 0 <= n <= 100"
-#             shift
-#             ;;
-# 		--no-timeout)
-# 			TIMEOUT=0x7FFFFFFF
-# 			;;
-#         --help)
-#             usage
-#             ;;
-#         *) usage "unrecognized option $1"
-#             ;;
-#     esac
-#     shift
-# done
 
 def assignDefaults(args):
     if not args.NROOMS: args.NROOMS = args.NGAMES
@@ -906,72 +649,6 @@ def assignDefaults(args):
         shutil.move(args.LOGDIR, '/tmp/' + args.LOGDIR + '_' + str(random.randint(0, 100000)))
     for d in ['', 'done', 'dead',]:
         os.mkdir(args.LOGDIR + '/' + d)
-# [ -z "$SAVE_GOOD" ] && SAVE_GOOD=YES
-# # [ -z "$RESIGN_PCT" -a "$NGAMES" -gt 1 ] && RESIGN_RATIO=1000 || RESIGN_RATIO=0
-# [ -z "$DROP_N" ] && DROP_N=0
-# [ -z "$USE_GTK" ] && USE_GTK=FALSE
-# [ -z "$UPGRADE_ODDS" ] && UPGRADE_ODDS=10
-# #$((NGAMES/50))
-# [ 0 -eq $UPGRADE_ODDS ] && UPGRADE_ODDS=1
-# [ -n "$SEED" ] && RANDOM=$SEED
-# [ -z "$ONEPER" -a $NROOMS -lt $NGAMES ] && usage "use --one-per if --num-rooms < --num-games"
-
-# [ -n "$DO_CLEAN" ] && cleanup
-
-# RESUME=""
-# for FILE in $(ls $LOGDIR/*.{xwg,txt} 2>/dev/null); do
-#     if [ -e $FILE ]; then
-#         echo "Unfinished games found in $LOGDIR; continue with them (or discard)?"
-#         read -p "<yes/no> " ANSWER
-#         case "$ANSWER" in
-#             y|yes|Y|YES)
-#                 RESUME=1
-#                 ;;
-#             *)
-#                 ;;
-#         esac
-#     fi
-#     break
-# done
-
-# if [ -z "$RESUME" -a -d $LOGDIR ]; then
-# 	NEWNAME="$(basename $LOGDIR)_$$"
-#     (cd $(dirname $LOGDIR) && mv $(basename $LOGDIR) /tmp/${NEWNAME})
-# fi
-# mkdir -p $LOGDIR
-
-# if [ "$SAVE_GOOD" = YES ]; then
-#     DONEDIR=$LOGDIR/done
-#     mkdir -p $DONEDIR
-# fi
-# DEADDIR=$LOGDIR/dead
-# mkdir -p $DEADDIR
-
-# for VAR in NGAMES NROOMS USE_GTK TIMEOUT HOST PORT SAVE_GOOD \
-#     MINDEVS MAXDEVS ONEPER RESIGN_PCT DROP_N ALL_VIA_RQ SEED \
-#     APP_NEW; do
-#     echo "$VAR:" $(eval "echo \$${VAR}") 1>&2
-# done
-# echo "DICTS: ${DICTS[*]}"
-# echo -n "APPS_OLD: "; [ xx = "${APPS_OLD[*]+xx}" ] && echo "${APPS_OLD[*]}" || echo ""
-
-# echo "*********$0 starting: $(date)**************"
-# STARTTIME=$(date +%s)
-# [ -z "$RESUME" ] && build_cmds || read_resume_cmds
-# if [ TRUE = "$ALL_VIA_RQ" ]; then
-#     run_via_rq
-# else
-#     run_cmds
-# fi
-
-# wait
-
-# SECONDS=$(($(date +%s)-$STARTTIME))
-# HOURS=$((SECONDS/3600))
-# SECONDS=$((SECONDS%3600))
-# MINUTES=$((SECONDS/60))
-# SECONDS=$((SECONDS%60))
-# echo "*********$0 finished: $(date) (took $HOURS:$MINUTES:$SECONDS)**************"
 
 def termHandler(signum, frame):
     global gDone
@@ -989,7 +666,7 @@ def main():
         except: None
     devs = build_cmds(args)
     nDevs = len(devs)
-    run_cmds(args, devs)
+    run_cmds(args, devs, startTime)
     print('{} finished; took {} for {} devices'.format(sys.argv[0], datetime.datetime.now() - startTime, nDevs))
     log_scores( devs )
 

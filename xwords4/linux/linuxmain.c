@@ -804,6 +804,8 @@ typedef enum {
 #endif
     ,CMD_ASKTIME
     ,CMD_SMSTEST
+    ,CMD_REMATCH_ON_OVER
+    ,CMD_QUERY_GAMES_OVER
     ,N_CMDS
 } XwLinuxCmd;
 
@@ -964,6 +966,10 @@ static CmdInfoRec CmdInfoRecs[] = {
        "Wait this many ms before cancelling dialog (default 500 ms; 0 means forever)" }
 #endif
     ,{ CMD_SMSTEST, false, "run-sms-test", "Run smsproto_runTests() on startup"}
+
+    ,{ CMD_REMATCH_ON_OVER, false, "rematch-when-done", "Rematch games if they end" }
+    ,{ CMD_QUERY_GAMES_OVER, false, "query-games-over", "exit returning 0 if all games are finished" }
+
 };
 
 static struct option* 
@@ -2529,6 +2535,16 @@ makeSelfAddress( CommsAddrRec* selfAddr, const LaunchParams* params )
     }
 }
 
+static int
+queryAndExit( int opt, LaunchParams* params )
+{
+    XP_ASSERT( opt == CMD_QUERY_GAMES_OVER );
+    sqlite3* pDb = gdb_open( params->dbName );
+    int result = gdb_allGamesDone( pDb ) ? 0 : 1;
+    gdb_close( pDb );
+    return result;
+}
+
 int
 main( int argc, char** argv )
 {
@@ -2656,6 +2672,7 @@ main( int argc, char** argv )
     struct option* longopts = make_longopts();
 
     bool done = false;
+    int query = 0;
     while ( !done ) {
         short index;
         opt = getopt_long_only( argc, argv, "", longopts, NULL );
@@ -3109,6 +3126,15 @@ main( int argc, char** argv )
             mainParams.runSMSTest = XP_TRUE;
             break;
 
+        case CMD_REMATCH_ON_OVER:
+            mainParams.rematchOnDone = XP_TRUE;
+            break;
+
+        case CMD_QUERY_GAMES_OVER:
+            XP_ASSERT( 0 == query );
+            query = CMD_QUERY_GAMES_OVER;
+            break;
+
         default:
             done = true;
             break;
@@ -3127,6 +3153,8 @@ main( int argc, char** argv )
     } else if ( !!mainParams.iterTestPatStr ) {
         result = testOneString( &mainParams, testDicts );
 #endif
+    } else if ( 0 != query ) {
+        result = queryAndExit( query, &mainParams );
     } else {
         XP_ASSERT( mainParams.pgi.nPlayers == mainParams.nLocalPlayers
                    + mainParams.info.serverInfo.nRemotePlayers );

@@ -75,6 +75,8 @@ void gdb_getRowsForGameID( sqlite3* pDb, XP_U32 gameID, sqlite3_int64* rowids,
 XP_Bool gdb_loadGame( XWStreamCtxt* stream, sqlite3* pDb, sqlite3_int64 rowid );
 void gdb_deleteGame( sqlite3* pDb, sqlite3_int64 rowid );
 
+XP_Bool gdb_allGamesDone( sqlite3* pDb );
+
 #define KEY_RDEVID "RDEVID"
 #define KEY_LDEVID "LDEVID"
 #define KEY_SMSPHONE "SMSPHONE"
@@ -83,6 +85,8 @@ void gdb_deleteGame( sqlite3* pDb, sqlite3_int64 rowid );
 
 void gdb_store( sqlite3* pDb, const gchar* key, const gchar* value );
 void gdb_remove( sqlite3* pDb, const gchar* key );
+bool gdb_fetchInt( sqlite3* pDb, const gchar* key, int32_t* resultP );
+void gdb_storeInt( sqlite3* pDb, const gchar* key, int32_t val );
 
 typedef enum { NOT_THERE, BUFFER_TOO_SMALL, SUCCESS } FetchResult;
 FetchResult gdb_fetch( sqlite3* pDb, const gchar* key, const gchar* keySuffix,

@@ -910,8 +910,38 @@ curses_util_informUndo( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe) )
 }
 
 static void
+rematch_and_save_once( CursesBoardGlobals* bGlobals )
+{
+    LOG_FUNC();
+    CommonGlobals* cGlobals = &bGlobals->cGlobals;
+    CursesBoardState* cbState = bGlobals->cbState;
+
+    int32_t alreadyDone;
+    gchar key[128];
+    snprintf( key, sizeof(key), "%X/rematch_done", cGlobals->gi->gameID );
+    if ( gdb_fetchInt( cGlobals->params->pDb, key, &alreadyDone )
+         && 0 != alreadyDone ) {
+        XP_LOGFF( "already rematched game %X", cGlobals->gi->gameID );
+    } else {
+        CursesBoardGlobals* bGlobalsNew = commonInit( cbState, -1, NULL );
+
+        XP_Bool success = game_makeRematch( &bGlobals->cGlobals.game, NULL_XWE,
+                                            bGlobalsNew->cGlobals.util,
+                                            &cGlobals->cp, &bGlobalsNew->cGlobals.procs,
+                                            &bGlobalsNew->cGlobals.game, "newName" );
+        if ( success ) {
+            linuxSaveGame( &bGlobalsNew->cGlobals );
+            gdb_storeInt( cGlobals->params->pDb, key, 1 );
+        }
+        disposeBoard( bGlobalsNew );
+    }
+    LOG_RETURN_VOID();
+}
+
+static void
 curses_util_notifyGameOver( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe), XP_S16 quitter )
 {
+    LOG_FUNC();
     CursesBoardGlobals* bGlobals = (CursesBoardGlobals*)uc->closure;
     CommonGlobals* cGlobals = &bGlobals->cGlobals;
     LaunchParams* params = cGlobals->params;
@@ -932,6 +962,10 @@ curses_util_notifyGameOver( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe), XP_S16 quitte
     } else if ( !params->skipGameOver && !!bGlobals->boardWin ) {
         /* This is modal.  Don't show if quitting */
         cursesShowFinalScores( bGlobals );
+    }
+
+    if ( params->rematchOnDone ) {
+        rematch_and_save_once( bGlobals );
     }
 } /* curses_util_notifyGameOver */
 
