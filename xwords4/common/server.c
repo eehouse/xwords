@@ -3980,7 +3980,8 @@ server_canRematch( const ServerCtxt* server )
         break;
     case SERVER_ISSERVER:
         /* have all expected clients connected? */
-        result = XWSTATE_RECEIVED_ALL_REG <= server->nv.gameState;
+        result = XWSTATE_RECEIVED_ALL_REG <= server->nv.gameState
+            && server->nv.nDevices == server->vol.gi->nPlayers;
         break;
     case SERVER_ISCLIENT:
         result = 2 == gi->nPlayers

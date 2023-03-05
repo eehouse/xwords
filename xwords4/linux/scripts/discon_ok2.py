@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import re, os, sys, shutil, threading, requests, json, glob
+import glob, json, os, re, requests, shutil, socket, sys, threading
 import argparse, datetime, random, signal, subprocess, time
 from shutil import rmtree
 
@@ -62,6 +62,8 @@ def player_params(args, NLOCALS, NPLAYERS, NAME_INDX):
 
 def logReaderStub(dev): dev.logReaderMain()
 
+def statusReaderStub(dev): dev.statusReaderMain()
+
 class Device():
     sHasLDevIDMap = {}
     sTilesLeftPoolPat = re.compile('.*pool_r.*Tiles: (\d+) tiles left in pool')
@@ -74,7 +76,7 @@ class Device():
     sScoresDup = []
     sScoresReg = []
     
-    def __init__(self, args, game, indx, params, room, peers, order,
+    def __init__(self, args, game, indx, params, peers, order,
                  db, log, script, nInGame, inDupMode):
         self.game = game
         self.indx = indx
@@ -82,7 +84,6 @@ class Device():
         self.pid = 0
         self.gamesOver = False
         self.params = params
-        self.room = room
         self.order = order
         self.db = db
         self.logPath = log
@@ -107,6 +108,7 @@ class Device():
         self.relaySeed = 0
         self.locked = False
         self.msgCount = -1
+        self.statusSocketPath = self.logPath.replace('.txt', '.sock')
 
         self.setApp(args.START_PCT)
 
@@ -125,6 +127,10 @@ class Device():
 
     def devName(self):
         return 'dev_' + str(self.indx)
+
+    def statusReaderMain(self):
+        self.statusData = self.statusSocket.recv(1024)
+        self.statusSocket.close()
 
     def logReaderMain(self):
         assert self and self.proc
@@ -189,6 +195,13 @@ class Device():
         if canRematch:
             args.append('--rematch-when-done')
 
+        if self.statusSocketPath:
+            args += ['--status-socket-name', self.statusSocketPath]
+            self.statusSocket = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
+            self.statusSocket.bind(self.statusSocketPath)
+            self.statusReader = threading.Thread(target = statusReaderStub, args=(self,))
+            self.statusReader.isDaemon = True
+            self.statusReader.start()
 
         # If I'm an unconnected server and I know a client's relayid,
         # append it so invitation can happen. When more than one
@@ -233,6 +246,10 @@ class Device():
 
             self.reader.join()
             self.reader = None
+
+            if self.statusSocketPath:
+                self.statusReader.join()
+                os.unlink(self.statusSocketPath)
         else:
             print('NOT killing')
         self.proc = None
@@ -280,9 +297,8 @@ class Device():
                 self.devID += 'x'
 
     def check_games_over(self):
-        args = [self.app, '--query-games-over'] + [str(p) for p in self.params]
-        proc = subprocess.run(args, capture_output=True)
-        self.gamesOver = 0 == proc.returncode
+        data = json.loads(self.statusData)
+        self.gamesOver = data.get('allDone', False)
         if self.gamesOver and not self.allDone:
             allDone = True
             for dev in self.peers:
@@ -305,7 +321,6 @@ def build_cmds(args):
 
     for GAME in range(1, args.NGAMES + 1):
         peers = set()
-        ROOM = 'ROOM_%.3d' % (GAME % args.NROOMS)
         NDEVS = pick_ndevs(args)
         LOCALS = figure_locals(args, NDEVS) # as array
         NPLAYERS = sum(LOCALS)
@@ -391,7 +406,7 @@ def build_cmds(args):
 
             # print('PARAMS:', PARAMS)
 
-            dev = Device( args, GAME, COUNTER, PARAMS, ROOM, peers,
+            dev = Device( args, GAME, COUNTER, PARAMS, peers,
                           DEV, DB, LOG, SCRIPT, len(LOCALS), useDupeMode )
             peers.add(dev)
             dev.update_ldevid()
@@ -555,8 +570,6 @@ def mkParser():
                         help = 'odds of upgrading at any launch, 0 <= n < 100')
 
     parser.add_argument('--num-games', dest = 'NGAMES', type = int, default = 1, help = 'number of games')
-    parser.add_argument('--num-rooms', dest = 'NROOMS', type = int, default = 0,
-                        help = 'number of rooms (default to --num-games)')
     parser.add_argument('--timeout-mins', dest = 'TIMEOUT_MINS', default = 10000, type = int,
                         help = 'minutes after which to timeout')
     parser.add_argument('--nochange-secs', dest = 'NO_CHANGE_SECS', default = 30, type = int,
@@ -641,7 +654,6 @@ def parseArgs():
     # print(options)
 
 def assignDefaults(args):
-    if not args.NROOMS: args.NROOMS = args.NGAMES
     if len(args.DICTS) == 0: args.DICTS.append('CollegeEng_2to8.xwd')
     args.LOGDIR = os.path.splitext(os.path.basename(sys.argv[0]))[0] + '_logs'
     # Move an existing logdir aside

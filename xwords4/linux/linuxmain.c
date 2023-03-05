@@ -805,7 +805,7 @@ typedef enum {
     ,CMD_ASKTIME
     ,CMD_SMSTEST
     ,CMD_REMATCH_ON_OVER
-    ,CMD_QUERY_GAMES_OVER
+    ,CMD_STATUS_SOCKET_NAME
     ,N_CMDS
 } XwLinuxCmd;
 
@@ -968,7 +968,8 @@ static CmdInfoRec CmdInfoRecs[] = {
     ,{ CMD_SMSTEST, false, "run-sms-test", "Run smsproto_runTests() on startup"}
 
     ,{ CMD_REMATCH_ON_OVER, false, "rematch-when-done", "Rematch games if they end" }
-    ,{ CMD_QUERY_GAMES_OVER, false, "query-games-over", "exit returning 0 if all games are finished" }
+    ,{ CMD_STATUS_SOCKET_NAME, true, "status-socket-name",
+        "Unix domain socket to which to write status" }
 
 };
 
@@ -2535,14 +2536,25 @@ makeSelfAddress( CommsAddrRec* selfAddr, const LaunchParams* params )
     }
 }
 
-static int
-queryAndExit( int opt, LaunchParams* params )
+static void
+writeStatus( const char* statusSocket, const char* dbName )
 {
-    XP_ASSERT( opt == CMD_QUERY_GAMES_OVER );
-    sqlite3* pDb = gdb_open( params->dbName );
-    int result = gdb_allGamesDone( pDb ) ? 0 : 1;
+    int sock = socket( AF_UNIX, SOCK_DGRAM, 0 );
+
+    sqlite3* pDb = gdb_open( dbName );
+    const char* result = gdb_allGamesDone( pDb ) ? "true" : "false";
     gdb_close( pDb );
-    return result;
+
+    struct sockaddr_un addr = {0};
+    addr.sun_family = AF_UNIX;
+    strncpy( addr.sun_path, statusSocket, sizeof(addr.sun_path) - 1);
+    int err = connect( sock, (const struct sockaddr *) &addr, sizeof(addr));
+    if ( !err ) {
+        dprintf( sock, "{\"allDone\":%s, \"foo\":\"bar\"}", result );
+        close( sock );
+    } else {
+        XP_LOGFF( "error connecting: %d/%s", errno, strerror(errno) );
+    }
 }
 
 int
@@ -2672,7 +2684,7 @@ main( int argc, char** argv )
     struct option* longopts = make_longopts();
 
     bool done = false;
-    int query = 0;
+    const char* statusSocket = NULL;
     while ( !done ) {
         short index;
         opt = getopt_long_only( argc, argv, "", longopts, NULL );
@@ -3130,9 +3142,8 @@ main( int argc, char** argv )
             mainParams.rematchOnDone = XP_TRUE;
             break;
 
-        case CMD_QUERY_GAMES_OVER:
-            XP_ASSERT( 0 == query );
-            query = CMD_QUERY_GAMES_OVER;
+        case CMD_STATUS_SOCKET_NAME:
+            statusSocket = optarg;
             break;
 
         default:
@@ -3153,8 +3164,6 @@ main( int argc, char** argv )
     } else if ( !!mainParams.iterTestPatStr ) {
         result = testOneString( &mainParams, testDicts );
 #endif
-    } else if ( 0 != query ) {
-        result = queryAndExit( query, &mainParams );
     } else {
         XP_ASSERT( mainParams.pgi.nPlayers == mainParams.nLocalPlayers
                    + mainParams.info.serverInfo.nRemotePlayers );
@@ -3292,6 +3301,10 @@ main( int argc, char** argv )
     g_slist_free( mainParams.dictDirs );
 
     gsw_logIdles();
+
+    if ( !!statusSocket ) {
+        writeStatus( statusSocket, mainParams.dbName );
+    }
 
     XP_LOGFF( "%s exiting, returning %d", argv[0], result );
     return result;
