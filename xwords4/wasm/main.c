@@ -88,7 +88,7 @@
 #define BUTTON_INVITE "Invite"
 #define BUTTON_REMATCH "Rematch"
 
-#define BUTTON_GAME_GAMES "Open Game"
+#define BUTTON_GAME_GAMES "Switch Games"
 #define BUTTON_GAME_NEW "New Game"
 #define BUTTON_GAME_RENAME "Rename Game"
 #define BUTTON_GAME_DELETE "Delete Game"
@@ -990,9 +990,16 @@ onDeviceButton( void* closure, const char* button )
     } else if ( 0 == strcmp(button, BUTTON_GAME_DELETE) ) {
         GameState* curGS = getCurGame( globals );
         char msg[256];
-        snprintf( msg, sizeof(msg), "Are you sure you want to delete the game \"%s\"?"
-                  "\nThis action cannot be undone.",
-                  curGS->gameName );
+        snprintf( msg, sizeof(msg), "Are you sure you want to delete the game \"%s\""
+#ifdef DEBUG
+                  " (gid %d/%X)"
+#endif
+                  "?\nThis action cannot be undone.",
+                  curGS->gameName
+#ifdef DEBUG
+                  , curGS->gi.gameID, curGS->gi.gameID
+#endif
+                  );
         call_confirm( globals, msg, onDeleteConfirmed, curGS );
     } else if ( 0 == strcmp(button, BUTTON_NAME ) ) {
         char playerName[32];
