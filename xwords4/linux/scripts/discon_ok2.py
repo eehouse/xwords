@@ -46,18 +46,21 @@ def figure_locals(args, NDEVS):
 
 def player_params(args, NLOCALS, NPLAYERS, NAME_INDX):
     assert 0 < NPLAYERS <= 4
-    NREMOTES = NPLAYERS - NLOCALS
     PARAMS = []
-    while NLOCALS > 0 or NREMOTES > 0:
-        if 0 == random.randint(0, 2) and 0 < NLOCALS:
-            PARAMS += ['--robot',  g_NAMES[NAME_INDX]]
-            if not args.IQS_SAME:
-                PARAMS += ['--robot-iq', str(random.randint(1,100))]
-            NLOCALS -= 1
-            NAME_INDX += 1
-        elif 0 < NREMOTES:
-            PARAMS += ['--remote-player']
-            NREMOTES -= 1
+    if 1 == NAME_INDX:
+        NREMOTES = NPLAYERS - NLOCALS
+        while NLOCALS > 0 or NREMOTES > 0:
+            if 0 == random.randint(0, 2) and 0 < NLOCALS:
+                PARAMS += ['--robot',  g_NAMES[NAME_INDX]]
+                if not args.IQS_SAME:
+                    PARAMS += ['--robot-iq', str(random.randint(1,100))]
+                    NLOCALS -= 1
+                    NAME_INDX += 1
+            elif 0 < NREMOTES:
+                PARAMS += ['--remote-player']
+                NREMOTES -= 1
+    else:
+        PARAMS += ['--robot',  g_NAMES[NAME_INDX]]
     return PARAMS
 
 def logReaderStub(dev): dev.logReaderMain()
@@ -66,10 +69,7 @@ def statusReaderStub(dev): dev.statusReaderMain()
 
 class Device():
     sHasLDevIDMap = {}
-    sTilesLeftPoolPat = re.compile('.*pool_r.*Tiles: (\d+) tiles left in pool')
-    sTilesLeftTrayPat = re.compile('.*player \d+ now has (\d+) tiles')
-    sRelayIDPat = re.compile('.*UPDATE games.*seed=(\d+),.*relayid=\'([^\']+)\'.*')
-    sDevIDPat = re.compile('.*storing new devid: ([\da-fA-F]+).*')
+    sTilesLeftTrayPat = re.compile('.*player \d+ now has (\d+) tiles') # not used
     sMQTTDevIDPat = re.compile('.*getMQTTDevID.*: generated id: ([\d[A-F]+).*')
     sConnPat = re.compile('.*linux_util_informMissing\(isServer.*nMissing=0\).*')
 
@@ -83,6 +83,7 @@ class Device():
         self.args = args
         self.pid = 0
         self.gamesOver = False
+        self.nGames = 1
         self.params = params
         self.order = order
         self.db = db
@@ -99,13 +100,11 @@ class Device():
         self.allDone = False    # when true, can be killed
         self.nTilesLeftPool = None
         self.nTilesLeftTray = None
-        self.relayID = None
         self.inviteeDevID = None
         self.inviteeDevIDs = [] # only servers use this
         self.inviteeMQTTDevID = None
         self.inviteeMQTTDevIDs = []
         self.connected = False
-        self.relaySeed = 0
         self.locked = False
         self.msgCount = -1
         self.statusSocketPath = self.logPath.replace('.txt', '.sock')
@@ -129,8 +128,10 @@ class Device():
         return 'dev_' + str(self.indx)
 
     def statusReaderMain(self):
-        self.statusData = self.statusSocket.recv(1024)
-        self.statusSocket.close()
+        statusSocket = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
+        statusSocket.bind(self.statusSocketPath)
+        self.statusData = statusSocket.recv(1024)
+        statusSocket.close()
 
     def logReaderMain(self):
         assert self and self.proc
@@ -144,19 +145,9 @@ class Device():
 
                 self.locked = True
 
-                # Check every line for tiles left in pool
-                match = Device.sTilesLeftPoolPat.match(line)
-                if match: self.nTilesLeftPool = int(match.group(1))
-
                 # Check every line for tiles left in tray
                 match = Device.sTilesLeftTrayPat.match(line)
                 if match: self.nTilesLeftTray = int(match.group(1))
-
-                if not self.relayID:
-                    match = Device.sRelayIDPat.match(line)
-                    if match:
-                        self.relaySeed = int(match.group(1))
-                        self.relayID = match.group(2)
 
                 if self.args.WITH_MQTT and not self.inviteeMQTTDevID:
                     match = Device.sMQTTDevIDPat.match(line)
@@ -197,8 +188,6 @@ class Device():
 
         if self.statusSocketPath:
             args += ['--status-socket-name', self.statusSocketPath]
-            self.statusSocket = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
-            self.statusSocket.bind(self.statusSocketPath)
             self.statusReader = threading.Thread(target = statusReaderStub, args=(self,))
             self.statusReader.isDaemon = True
             self.statusReader.start()
@@ -248,7 +237,9 @@ class Device():
             self.reader = None
 
             if self.statusSocketPath:
-                self.statusReader.join()
+                self.statusReader.join(timeout=2)
+                if self.statusReader.is_alive():
+                    print('join() for {} failed; everything ok?'.format(self.statusSocketPath))
                 os.unlink(self.statusSocketPath)
         else:
             print('NOT killing')
@@ -273,6 +264,7 @@ class Device():
                 'nTilesLeftPool': self.nTilesLeftPool,
                 'nTilesLeftTray': self.nTilesLeftTray,
                 'launchCount': self.launchCount,
+                'nGames': self.nGames,
                 'game': self.game,
         }
 
@@ -299,6 +291,9 @@ class Device():
     def check_games_over(self):
         data = json.loads(self.statusData)
         self.gamesOver = data.get('allDone', False)
+        self.nTilesLeftPool = data.get('nTiles')
+        self.nGames = data.get('nGames', 0)
+
         if self.gamesOver and not self.allDone:
             allDone = True
             for dev in self.peers:
@@ -415,9 +410,10 @@ def build_cmds(args):
             COUNTER += 1
     return devs
 
-def summarizeTileCounts(devs, endTime, state, changeSecs):
+def summarizeTileCounts(devs, endTime, state, changeSecs, endRematchTime):
     global gDeadLaunches
     shouldGoOn = True
+    now = datetime.datetime.now()
     data = [dev.getTilesCount() for dev in devs]
     dupModeFlags = [dev.inDupMode for dev in devs]
     nDevs = len(data)
@@ -427,6 +423,7 @@ def summarizeTileCounts(devs, endTime, state, changeSecs):
     headWidth = 0
     fmtData = [{'head' : 'dev', },
                {'head' : 'launches', },
+               {'head' : 'nGames', },
                {'head' : 'tls left', },
     ]
     for datum in fmtData:
@@ -456,6 +453,9 @@ def summarizeTileCounts(devs, endTime, state, changeSecs):
         nLaunches += launchCount
         fmtData[1]['data'].append('{:{width}d}'.format(launchCount, width=colWidth))
 
+        nGames = datum['nGames']
+        fmtData[2]['data'].append('{:{width}d}'.format(nGames, width=colWidth))
+
         # Format tiles left. It's the number in the bag/pool until
         # that drops to 0, then the number in the tray preceeded by
         # '+'. Only the pool number is included in the totalTiles sum.
@@ -469,15 +469,24 @@ def summarizeTileCounts(devs, endTime, state, changeSecs):
             txt = '{:{width}d}'.format(nTilesPool, width=colWidth)
             if inDupMode: totalTilesDup += int(nTilesPool)
             else: totalTilesStd += int(nTilesPool)
-        fmtData[2]['data'].append(txt)
+        fmtData[3]['data'].append(txt)
 
     print('')
     if totalTilesDup: dupDetails = ' (std: {}, dup: {})'.format(totalTilesStd, totalTilesDup)
     else: dupDetails = ''
     # here
-    print('devs left: {nDevs}; bag tiles left: {total}{details}; total launches: {nLaunches}; {now}/{endTime}' \
-          .format(nDevs=nDevs, total=totalTilesStd + totalTilesDup, details=dupDetails, \
-                  nLaunches=nLaunches, now=datetime.datetime.now(), endTime=endTime ))
+    rematchTime = 'Rematch: '
+    if endRematchTime < now:
+        rematchTime += 'off'
+    else:
+        secs = int((endRematchTime - now).total_seconds())
+        rematchTime += '{} secs left'.format(secs)
+
+    fmt = 'devs left: {nDevs}; bag tiles left: {total}{details}; total launches: ' \
+          + '{nLaunches}; {now}/{endTime}; {rematchTime}'
+    print( fmt.format(nDevs=nDevs, total=totalTilesStd + totalTilesDup, details=dupDetails, \
+                      nLaunches=nLaunches, now=datetime.datetime.now(), endTime=endTime,
+                      rematchTime=rematchTime))
     fmt = '{head:>%d} {data}' % headWidth
     for datum in fmtData: datum['data'] = ' '.join(datum['data'])
     for datum in fmtData:
@@ -522,7 +531,8 @@ def run_cmds(args, devs, startTime):
         # print stats every 5 seconds
         if now - lastPrint > datetime.timedelta(seconds = 5):
             lastPrint = now
-            if not summarizeTileCounts(devs, endTime, printState, args.NO_CHANGE_SECS):
+            if not summarizeTileCounts(devs, endTime, printState,
+                                       args.NO_CHANGE_SECS, endRematchTime):
                 print('no change in too long; exiting')
                 break
 
@@ -637,9 +647,10 @@ def mkParser():
     parser.add_argument('--rematch-limit-secs', dest = 'REMATCH_SECS', type = int, default = 0,
                         help = 'rematch games that end within this many seconds of script launch')
 
-    parser.add_argument('--core-pat', dest = 'CORE_PAT', default = os.environ.get('DISCON_COREPAT'),
+    envpat = 'DISCON_COREPAT'
+    parser.add_argument('--core-pat', dest = 'CORE_PAT', default = os.environ.get(envpat),
                         help = "pattern for core files that should stop the script " \
-                        + "(default from env $DISCON_COREPAT)" )
+                        + "(default from env {})".format(envpat) )
 
     parser.add_argument('--with-valgrind', dest = 'VALGRIND', default = False,
                         action = 'store_true')

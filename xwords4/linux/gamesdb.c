@@ -44,6 +44,9 @@
 #define VERS_3_TO_4   \
         "channel INT(4)" \
 
+#define VERS_4_TO_5  \
+        "nTiles INT" \
+
 static XP_Bool getColumnText( sqlite3_stmt *ppStmt, int iCol, XP_UCHAR* buf,
                               int* len );
 static void createTables( sqlite3* pDb );
@@ -61,7 +64,7 @@ static void assertPrintResult( sqlite3* pDb, int result, int expect );
  * it's adding new fields or whatever.
  */
 
-#define CUR_DB_VERSION 4
+#define CUR_DB_VERSION 5
 
 sqlite3* 
 gdb_open( const char* dbName )
@@ -115,6 +118,10 @@ upgradeTables( sqlite3* pDb, int32_t oldVersion )
     case 3:
         XP_ASSERT( 4 == CUR_DB_VERSION );
         newCols = VERS_3_TO_4;
+        break;
+    case 4:
+        XP_ASSERT( 5 == CUR_DB_VERSION );
+        newCols = VERS_4_TO_5;
         break;
     default:
         XP_ASSERT(0);
@@ -190,6 +197,7 @@ createTables( sqlite3* pDb )
         ","VERS_1_TO_2
         ","VERS_2_TO_3
         ","VERS_3_TO_4
+        ","VERS_4_TO_5
         // ",dupTimerExpires INT"
         ")";
     (void)sqlite3_exec( pDb, createGamesStr, NULL, NULL, NULL );
@@ -406,6 +414,8 @@ gdb_summarize( CommonGlobals* cGlobals )
         strcat( connvia, "local" );
     }
 
+    XP_S16 nTiles = server_countTilesInPool( game->server );
+
     gchar* pairs[40];
     int indx = 0;
     pairs[indx++] = g_strdup_printf( "ended=%d", gameOver?1:0 );
@@ -428,6 +438,7 @@ gdb_summarize( CommonGlobals* cGlobals )
     pairs[indx++] = g_strdup_printf( "role=%d", gi->serverRole);
     pairs[indx++] = g_strdup_printf( "created=%d", game->created );
     pairs[indx++] = g_strdup_printf( "channel=%d", gi->forceChannel );
+    pairs[indx++] = g_strdup_printf( "nTiles=%d", nTiles );
     pairs[indx++] = NULL;
     XP_ASSERT( indx < VSIZE(pairs) );
 
@@ -673,23 +684,52 @@ gdb_deleteGame( sqlite3* pDb, sqlite3_int64 rowid )
     execNoResult( pDb, query, false );
 }
 
-XP_Bool
-gdb_allGamesDone( sqlite3* pDb )
+void
+gdb_getSummary( sqlite3* pDb, DevSummary* ds )
 {
-    const char* query = "SELECT count(rowid) FROM games WHERE "
-        /* This doesn't work. I don't know what's increasing the number of
-           pending messages after a game finishes. PENDING */
-        // "nPending > 0 OR "
-        "ended = 0";
-    sqlite3_stmt* ppStmt;
-    int result = sqlite3_prepare_v2( pDb, query, -1, &ppStmt, NULL );
-    assertPrintResult( pDb, result, SQLITE_OK );
-    result = sqlite3_step( ppStmt );
-    XP_ASSERT( SQLITE_ROW == result );
-    bool allDone = 0 == sqlite3_column_int( ppStmt, 0 );
-    sqlite3_finalize( ppStmt );
-    LOG_RETURNF( "%s", boolToStr(allDone) );
-    return allDone;
+    {
+        const char* query = "SELECT count(rowid) FROM games WHERE "
+            /* This doesn't work. I don't know what's increasing the number of
+               pending messages after a game finishes. PENDING */
+            // "nPending > 0 OR "
+            "ended = 0";
+        sqlite3_stmt* ppStmt;
+        int err = sqlite3_prepare_v2( pDb, query, -1, &ppStmt, NULL );
+        assertPrintResult( pDb, err, SQLITE_OK );
+        err = sqlite3_step( ppStmt );
+        XP_ASSERT( SQLITE_ROW == err );
+        ds->allDone = 0 == sqlite3_column_int( ppStmt, 0 );
+        sqlite3_finalize( ppStmt );
+    }
+
+    {
+        const char* query = "SELECT nTiles FROM games";
+        sqlite3_stmt* ppStmt;
+        int err = sqlite3_prepare_v2( pDb, query, -1, &ppStmt, NULL );
+        assertPrintResult( pDb, err, SQLITE_OK );
+        for ( ; ; ) {
+            err = sqlite3_step( ppStmt );
+            if ( SQLITE_ROW != err ) {
+                break;
+            }
+            int nTiles = sqlite3_column_int( ppStmt, 0 );
+            if ( 0 < nTiles ) {
+                ds->nTiles += nTiles;
+            }
+        }
+        sqlite3_finalize( ppStmt );
+    }
+
+    {
+        const char* query = "SELECT count(rowid) FROM games";
+        sqlite3_stmt* ppStmt;
+        int err = sqlite3_prepare_v2( pDb, query, -1, &ppStmt, NULL );
+        assertPrintResult( pDb, err, SQLITE_OK );
+        err = sqlite3_step( ppStmt );
+        XP_ASSERT( SQLITE_ROW == err );
+        ds->nGames = sqlite3_column_int( ppStmt, 0 );
+        sqlite3_finalize( ppStmt );
+    }
 }
 
 void

@@ -169,7 +169,7 @@ pool_requestTiles( PoolContext* pool, Tile* tiles, XP_U16* maxNum )
     pool->lettersLeft[pool->blankIndex] = oldCount - 1;
 #endif
 
-    XP_LOGF( "%s: %d tiles left in pool", __func__, pool->numTilesLeft );
+    XP_LOGFF( "%d tiles left in pool", pool->numTilesLeft );
 } /* pool_requestTiles */
 
 void

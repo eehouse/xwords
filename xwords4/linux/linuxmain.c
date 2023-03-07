@@ -2426,6 +2426,8 @@ initParams( LaunchParams* params )
 static void
 testStreams( LaunchParams* params )
 {
+    XP_USE(params);
+#if 0
     XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(params->dutil->mpool)
                                                 params->vtMgr );
 
@@ -2452,6 +2454,7 @@ testStreams( LaunchParams* params )
 
     stream_destroy( stream );
     XP_LOGFF( "OK!!" );
+#endif
 }
 
 static void
@@ -2541,8 +2544,9 @@ writeStatus( const char* statusSocket, const char* dbName )
 {
     int sock = socket( AF_UNIX, SOCK_DGRAM, 0 );
 
+    DevSummary ds = {0};
     sqlite3* pDb = gdb_open( dbName );
-    const char* result = gdb_allGamesDone( pDb ) ? "true" : "false";
+    gdb_getSummary( pDb, &ds );
     gdb_close( pDb );
 
     struct sockaddr_un addr = {0};
@@ -2550,7 +2554,8 @@ writeStatus( const char* statusSocket, const char* dbName )
     strncpy( addr.sun_path, statusSocket, sizeof(addr.sun_path) - 1);
     int err = connect( sock, (const struct sockaddr *) &addr, sizeof(addr));
     if ( !err ) {
-        dprintf( sock, "{\"allDone\":%s, \"foo\":\"bar\"}", result );
+        dprintf( sock, "{\"allDone\":%s, \"nTiles\":%d, \"nGames\":%d}",
+                 boolToStr(ds.allDone), ds.nTiles, ds.nGames );
         close( sock );
     } else {
         XP_LOGFF( "error connecting: %d/%s", errno, strerror(errno) );

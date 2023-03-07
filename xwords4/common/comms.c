@@ -3234,15 +3234,16 @@ comms_gatherPlayers( CommsCtxt* comms, XWEnv xwe, XP_U32 created )
         const CurGameInfo* gi = comms->util->gameInfo;
         XP_ASSERT( 0 < gi->nPlayers );
         if ( kplr_addAddrs( comms->dutil, xwe, gi, addrs, nRecs, created ) ) {
-            if ( 1 ) {
-                XP_LOGFF( "not setting flag :-)" );
-            } else {
-                /* Need a way to force/override this manually? */
-                comms->flags |= FLAG_HARVEST_DONE;
-            }
+            /* if ( 1 ) { */
+            /*     XP_LOGFF( "not setting flag :-)" ); */
+            /* } else { */
+            /*     /\* Need a way to force/override this manually? *\/ */
+            /*     comms->flags |= FLAG_HARVEST_DONE; */
+            /* } */
         }
     }
     THREAD_CHECK_END();
+    LOG_RETURN_VOID();
 }
 #endif
 

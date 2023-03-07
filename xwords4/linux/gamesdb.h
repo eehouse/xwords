@@ -75,7 +75,13 @@ void gdb_getRowsForGameID( sqlite3* pDb, XP_U32 gameID, sqlite3_int64* rowids,
 XP_Bool gdb_loadGame( XWStreamCtxt* stream, sqlite3* pDb, sqlite3_int64 rowid );
 void gdb_deleteGame( sqlite3* pDb, sqlite3_int64 rowid );
 
-XP_Bool gdb_allGamesDone( sqlite3* pDb );
+typedef struct _DevSummary {
+    XP_Bool allDone;
+    XP_U32 nTiles;
+    XP_U32 nGames;
+} DevSummary;
+
+void gdb_getSummary( sqlite3* pDb, DevSummary* ds );
 
 #define KEY_RDEVID "RDEVID"
 #define KEY_LDEVID "LDEVID"

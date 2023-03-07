@@ -56,8 +56,12 @@ cgl_init( LaunchParams* params, int width, int height )
 void
 cgl_destroy( CursGameList* cgl )
 {
-    g_slist_free_full( cgl->games, g_free );
-    delwin( cgl->window );
+    if ( !!cgl->window ) {
+        g_slist_free_full( cgl->games, g_free );
+        delwin( cgl->window );
+    } else {
+        XP_LOGFF( "no window??" );
+    }
     g_free( cgl );
 }
 
