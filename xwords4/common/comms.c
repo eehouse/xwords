@@ -2169,9 +2169,7 @@ typedef XP_S16 (*MsgProc)( CommsCtxt* comms, XWEnv xwe, MsgQueueElem* msg,
 typedef struct _SendElemData {
     CommsCtxt* comms;
     XWEnv xwe;
-    MsgProc msgProc;
     CommsConnType filter;
-    void* msgClosure;
     XP_U16 count;
     XP_Bool success;
 } SendElemData;
@@ -2180,8 +2178,7 @@ static ForEachAct
 sendElemProc( MsgQueueElem* elem, void* closure )
 {
     SendElemData* sedp = (SendElemData*)closure;
-    XP_S16 len = (*sedp->msgProc)( sedp->comms, sedp->xwe, elem,
-                                   sedp->filter, sedp->msgClosure );
+    XP_S16 len = sendMsg( sedp->comms, sedp->xwe, elem, sedp->filter );
     if ( 0 > len ) {
         sedp->success = XP_FALSE;
     } else {
@@ -2191,9 +2188,8 @@ sendElemProc( MsgQueueElem* elem, void* closure )
     return FEA_OK;
 }
 
-static XP_S16
-resendImpl( CommsCtxt* comms, XWEnv xwe, CommsConnType filter, XP_Bool force,
-            MsgProc proc, void* closure )
+XP_S16
+comms_resendAll( CommsCtxt* comms, XWEnv xwe, CommsConnType filter, XP_Bool force )
 {
     XP_S16 count = 0;
     XP_ASSERT( !!comms );
@@ -2207,8 +2203,6 @@ resendImpl( CommsCtxt* comms, XWEnv xwe, CommsConnType filter, XP_Bool force,
             .success = XP_TRUE,
             .comms = comms,
             .xwe = xwe,
-            .msgProc = proc,
-            .msgClosure = closure,
             .filter = filter,
         };
         forEachElem( comms, sendElemProc, &sed );
@@ -2222,21 +2216,6 @@ resendImpl( CommsCtxt* comms, XWEnv xwe, CommsConnType filter, XP_Bool force,
     }
     XP_LOGFF( TAGFMT() "=> %d", TAGPRMS, count );
     return count;
-} /* resendImpl */
-
-static XP_S16
-sendMsgWrapper( CommsCtxt* comms, XWEnv xwe, MsgQueueElem* msg, CommsConnType filter,
-                void* XP_UNUSED(closure) )
-{
-    return sendMsg( comms, xwe, msg, filter );
-}
-
-XP_S16
-comms_resendAll( CommsCtxt* comms, XWEnv xwe, CommsConnType filter, XP_Bool force )
-{
-    XP_S16 result = resendImpl( comms, xwe, filter, force, sendMsgWrapper, NULL );
-    // LOG_RETURNF( "%d", result );
-    return result;
 }
 
 #ifdef XWFEATURE_COMMSACK
