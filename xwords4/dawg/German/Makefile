@@ -1,1 +1,1 @@
-Makefile.sf
+Makefile.Deutsch2022

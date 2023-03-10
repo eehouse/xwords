@@ -47,36 +47,38 @@ LANGINFO: contain letters not found on tiles.</p>
 # German==3.  Low byte is padding
 XLOC_HEADER:0x8300
 
+COUNT_SIZES: 15 21
+
 <BEGIN_TILES>
-{"_"}    0		2
-'A|a'    1		5
-'Ä|ä'    6		1
-'B|b'    3		2
-'C|c'    4		2
-'D|d'    1		4
-'E|e'    1		15
-'F|f'    4		2
-'G|g'    2		3
-'H|h'    2		4
-'I|i'    1		6
-'J|j'    6		1
-'K|k'    4		2
-'L|l'    2		3
-'M|m'    3		4
-'N|n'    1		9
-'O|o'    2		3
-'Ö|ö'    8		1
-'P|p'    4		1
-'Q|q'    10		1
-'R|r'    1		6
-'S|s'    1		7
-'T|t'    1		6
-'U|u'    1		6
-'Ü|ü'    6		1
-'V|v'    6		1
-'W|w'    3		1
-'X|x'    8		1
-'Y|y'    10		1
-'Z|z'    3		1
+{"_"}    0    2   4
+'A|a'    1    5  10
+'Ä|ä'    6    1   2
+'B|b'    3    2   4
+'C|c'    4    2   4
+'D|d'    1    4   8
+'E|e'    1   15  29
+'F|f'    4    2   4
+'G|g'    2    3   6
+'H|h'    2    4   8
+'I|i'    1    6   11
+'J|j'    6    1   2
+'K|k'    4    2   4
+'L|l'    2    3   6
+'M|m'    3    4   8
+'N|n'    1    9  17
+'O|o'    2    3   6
+'Ö|ö'    8    1   2
+'P|p'    4    1   2
+'Q|q'   10    1   2
+'R|r'    1    6  11
+'S|s'    1    7  14
+'T|t'    1    6  12
+'U|u'    1    6  12
+'Ü|ü'    6    1   2
+'V|v'    6    1   2
+'W|w'    3    1   2
+'X|x'    8    1   2
+'Y|y'   10    1   2
+'Z|z'    3    1   2
 <END_TILES>
 # should ignore all after the <END_TILES> above

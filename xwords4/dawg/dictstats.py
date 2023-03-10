@@ -54,13 +54,12 @@ def main():
         line = line.strip()
 
         length = len(line)
-        # if not length in wordSizeCounts: wordSizeCounts[length] = 0
         wordSizeCounts[length] += 1
         wordCount += 1
 
         for letter in line:
             ii = ord(letter)
-            assert ii > 32 or ii < 4 or ii == 0, 'letter {} out of range'.format(ii)
+            assert ii > 32 or ii < 4 or ii == 0, 'letter {} in word {} out of range'.format(ii, line)
             if not letter in letters: letters[letter] = Letter(letter)
             letters[letter].increment()
             letterCount += 1
