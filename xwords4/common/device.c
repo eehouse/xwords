@@ -280,7 +280,8 @@ addProto3HeaderCmd( XW_DUtilCtxt* dutil, XWEnv xwe, MQTTCmd cmd,
 #endif
 
 static void
-callProc( MsgAndTopicProc proc, void* closure, const XP_UCHAR* topic, XWStreamCtxt* stream )
+callProc( MsgAndTopicProc proc, void* closure, const XP_UCHAR* topic,
+          XWStreamCtxt* stream )
 {
     const XP_U8* msgBuf = !!stream ? stream_getPtr(stream) : NULL;
     XP_U16 msgLen = !!stream ? stream_getSize(stream) : 0;

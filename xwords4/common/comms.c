@@ -2011,6 +2011,42 @@ gameID( const CommsCtxt* comms )
     return gameID;
 }
 
+#ifdef DEBUG
+typedef struct _CheckPrevState {
+    const CommsCtxt* comms;
+    const MsgQueueElem* elem;
+    int count;
+} CheckPrevState;
+
+static ForEachAct
+checkPrevProc( MsgQueueElem* elem, void* closure )
+{
+    CheckPrevState* cpsp = (CheckPrevState*)closure;
+    if ( elem != cpsp->elem
+         && (cpsp->elem->channelNo & CHANNEL_MASK) == (elem->channelNo & CHANNEL_MASK) ) {
+        if ( 0 == cpsp->elem->msgID || elem->msgID < cpsp->elem->msgID ) {
+            ++cpsp->count;
+            XP_LOGFF( "found one! their id: %d; my id: %d", elem->msgID,
+                      cpsp->elem->msgID );
+        }
+    }
+    return FEA_OK;
+}
+
+static void
+checkForPrev( const CommsCtxt* comms, MsgQueueElem* elem, CommsConnType typ )
+{
+    if ( COMMS_CONN_MQTT == typ ) {
+        CheckPrevState cps = { .comms = comms,
+            .elem = elem,
+        };
+        forEachElem( (CommsCtxt*)comms, checkPrevProc, &cps );
+    }
+}
+#else
+# define checkForPrev( comms, elem, typ )
+#endif
+
 static XP_S16
 sendMsg( const CommsCtxt* comms, XWEnv xwe, MsgQueueElem* elem,
          const CommsConnType filter )
@@ -2128,6 +2164,7 @@ sendMsg( const CommsCtxt* comms, XWEnv xwe, MsgQueueElem* elem,
                                                          elem->createdStamp, &addr,
                                                          typ, gameid,
                                                          comms->procs.closure );
+                        checkForPrev( comms, elem, typ );
                     }
                     break;
 
@@ -2230,8 +2267,7 @@ ackAnyImpl( CommsCtxt* comms, XWEnv xwe, XP_Bool force )
         int nSent = 0;
         int nSeen = 0;
 #endif
-        AddressRecord* rec;
-        for ( rec = comms->recs; !!rec; rec = rec->next ) {
+        for ( AddressRecord* rec = comms->recs; !!rec; rec = rec->next ) {
 #ifdef DEBUG
             ++nSeen;
 #endif
