@@ -9,4 +9,40 @@
     <string name="button_delete_game">Διαγραφή Παιχνιδιού</string>
     <string name="button_delete">Διαγραφή</string>
     <string name="button_reset">Επαναφορά</string>
+    <string name="gameOver">Τέλος παιχνιδιού</string>
+    <string name="menu_prefs">Ρυθμίσεις εφαρμογής</string>
+    <string name="invitee_fmt">(%1$s προσκλήθηκε)</string>
+    <string name="summary_invites_out_fmt">Προσκεκλημένοι παίκτες στο δωμάτιο \"%1$s\"</string>
+    <string name="list_item_rename">Μετονομασία</string>
+    <string name="board_menu_file_about">Σχετικά με το CrossWords</string>
+    <string name="relaypage_url_copied">Η διεύθυνση URL του παιχνιδιού αντιγράφηκε στο πρόχειρο</string>
+    <plurals name="moves_fmt">
+        <item quantity="one">Εγινε 1 κίνηση</item>
+        <item quantity="other">Εγιναν %1$d κινήσεις</item>
+    </plurals>
+    <string name="list_item_config">Ρυθμίσεις παιχνιδιού</string>
+    <string name="list_item_move">Μετακίνηση στην ομάδα</string>
+    <string name="list_item_delete">Διαγραφή παιχνιδιού</string>
+    <string name="list_item_reset">Επαναφορά</string>
+    <string name="list_item_new_from">Νέο από</string>
+    <string name="list_item_copy">Αντιγραφή</string>
+    <string name="list_item_relaypage">Κίνηση παιχνιδιού</string>
+    <string name="no_copy_network">Τα παιχνίδια που έχουν ήδη συνδεθεί στην ομάδα δεν μπορούν να αντιγραφούν. Χρησιμοποιήστε το \"Νέα φόρμα\" για ένα αντίγραφο έτοιμο για να παίξετε με όλες τις ρυθμίσεις ίδιες.</string>
+    <string name="rename_label">Αλλαγή του ονόματος αυτού του παιχνιδιού σε:</string>
+    <string name="gamel_menu_dicts">Λίστες λέξεων</string>
+    <string name="list_item_netstats">Συνδέσεις</string>
+    <string name="rename_label_caveat">Αλλαγή του ονόματος αυτού του παιχνιδιού (μόνο σε αυτήν τη συσκευή) σε:</string>
+    <plurals name="confirm_seldeletes_fmt">
+        <item quantity="one">Είστε βέβαιοι ότι θέλετε να διαγράψετε το επιλεγμένο παιχνίδι; Αυτή η ενέργεια δε μπορεί να αναιρεθεί.</item>
+        <item quantity="other">Είστε βέβαιοι ότι θέλετε να διαγράψετε τα %1$d επιλεγμένα παιχνίδια; Αυτή η ενέργεια δε μπορεί να αναιρεθεί.</item>
+    </plurals>
+    <plurals name="confirm_nameddeletes_fmt">
+        <item quantity="one">Είστε βέβαιοι ότι θέλετε να διαγράψετε το παιχνίδι; Αυτή η ενέργεια δε μπορεί να αναιρεθεί.</item>
+        <item quantity="other">Είστε βέβαιοι ότι θέλετε να διαγράψετε τα παιχνίδια %1$s; Αυτή η ενέργεια δε μπορεί να αναιρεθεί.</item>
+    </plurals>
+    <string name="confirm_del_after_rematch_fmt">Επιτυχής ρεβάνς.
+\n
+\nΘέλετε τώρα να διαγράψετε το ολοκληρωμένο παιχνίδι %1$s;
+\n
+\n(Αυτή η ενέργεια δε μπορεί να αναιρεθεί.)</string>
 </resources>
