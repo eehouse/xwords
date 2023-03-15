@@ -321,7 +321,8 @@ static void putDevID( const CommsCtxt* comms, XWEnv xwe, XWStreamCtxt* stream );
 #ifdef DEBUG
 static void assertAddrOk( const CommsAddrRec* addr );
 static void listRecs( const CommsCtxt* comms, const char* msg );
-static void assertQueueOk( const CommsCtxt* comms );
+static void _assertQueueOk( const CommsCtxt* comms, const char* func );
+# define assertQueueOk(COM) _assertQueueOk((COM), __func__)
 
 #define ASSERT_ADDR_OK(addr) assertAddrOk( addr )
 
@@ -1851,8 +1852,9 @@ printQueue( const CommsCtxt* comms )
 }
 
 static void
-assertQueueOk( const CommsCtxt* comms )
+_assertQueueOk( const CommsCtxt* comms, const char* func )
 {
+    XP_LOGFF( "(func=%s)", func );
     XP_U16 count = 0;
     for ( MsgQueueElem* elem = comms->_msgQueueHead;
           !!elem; elem = elem->next ) {
