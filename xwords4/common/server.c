@@ -3953,17 +3953,22 @@ server_getOpenChannel( const ServerCtxt* server, XP_U16* channel )
     XP_Bool result = XP_FALSE;
     XP_ASSERT( amServer( server ) );
     if ( amServer( server ) && 0 < server->nv.pendingRegistrations ) {
+        XP_PlayerAddr channelNo = 1;
         const XP_U16 nPlayers = server->vol.gi->nPlayers;
         const ServerPlayer* players = server->srvPlyrs;
         for ( int ii = 0; ii < nPlayers && !result; ++ii ) {
-            result = UNKNOWN_DEVICE == players->deviceIndex;
-            if ( result ) {
-                *channel = ii;
+            XP_S8 deviceIndex = players->deviceIndex;
+            if ( UNKNOWN_DEVICE == deviceIndex ) {
+                *channel = channelNo;
+                result = XP_TRUE;
+            } else if ( SERVER_DEVICE < deviceIndex ) {
+                /* a slot's been taken */
+                ++channelNo;
             }
             ++players;
         }
     }
-    XP_LOGFF( "channel= %d, found: %s", *channel, boolToStr(result) );
+    XP_LOGFF( "channel = %d, found: %s", *channel, boolToStr(result) );
     return result;
 }
 

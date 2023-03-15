@@ -820,10 +820,10 @@ static void
 smsInviteReceived( void* closure, const NetLaunchInfo* nli )
 {
     GtkAppGlobals* apg = (GtkAppGlobals*)closure;
-    XP_LOGF( "%s(gameName=%s, gameID=%d, dictName=%s, nPlayers=%d, "
-             "nHere=%d, forceChannel=%d)", __func__, nli->gameName,
-             nli->gameID, nli->dict, nli->nPlayersT,
-             nli->nPlayersH, nli->forceChannel );
+    XP_LOGFF( "(gameName=%s, gameID=%d, dictName=%s, nPlayers=%d, "
+              "nHere=%d, forceChannel=%d)", nli->gameName,
+              nli->gameID, nli->dict, nli->nPlayersT,
+              nli->nPlayersH, nli->forceChannel );
 
     gameFromInvite( apg, nli );
 }
@@ -839,7 +839,7 @@ msgReceivedGTK( void* closure, const CommsAddrRec* from, XP_U32 gameID,
     sqlite3_int64 rowids[4];
     int nRowIDs = VSIZE(rowids);
     gdb_getRowsForGameID( params->pDb, gameID, rowids, &nRowIDs );
-    XP_LOGF( "%s: found %d rows for gameID %d", __func__, nRowIDs, gameID );
+    XP_LOGFF( "found %d rows for gameID %d", nRowIDs, gameID );
     if ( 0 == nRowIDs ) {
         mqttc_notifyGameGone( params, &from->u.mqtt.devID, gameID );
     } else {
@@ -853,9 +853,19 @@ void
 gameGoneGTK( void* closure, const CommsAddrRec* XP_UNUSED(from), XP_U32 gameID )
 {
     GtkAppGlobals* apg = (GtkAppGlobals*)closure;
-    gchar buf[64];
-    snprintf( buf, VSIZE(buf), "game %d has been deleted on a remote device", gameID );
-    gtktell( apg->window, buf );
+    LaunchParams* params =  apg->cag.params;
+
+    /* Do we have this game locally still? If not, ignore message */
+    sqlite3_int64 rowids[4];
+    int nRowIDs = VSIZE(rowids);
+    gdb_getRowsForGameID( params->pDb, gameID, rowids, &nRowIDs );
+    if ( 0 == nRowIDs ) {
+        XP_LOGFF( "Old msg? Game %X no longer here", gameID );
+    } else {
+        gchar buf[64];
+        snprintf( buf, VSIZE(buf), "game %d has been deleted on a remote device", gameID );
+        gtktell( apg->window, buf );
+    }
 }
 
 #ifdef XWFEATURE_RELAY
