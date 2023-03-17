@@ -703,6 +703,7 @@ gdb_getSummary( sqlite3* pDb, DevSummary* ds )
     }
 
     {
+        XP_Bool allSet = XP_TRUE;
         const char* query = "SELECT nTiles FROM games";
         sqlite3_stmt* ppStmt;
         int err = sqlite3_prepare_v2( pDb, query, -1, &ppStmt, NULL );
@@ -713,11 +714,14 @@ gdb_getSummary( sqlite3* pDb, DevSummary* ds )
                 break;
             }
             int nTiles = sqlite3_column_int( ppStmt, 0 );
-            if ( 0 < nTiles ) {
-                ds->nTiles += nTiles;
-            }
+            allSet = allSet && 0 <= nTiles;
+            ds->nTiles += nTiles;
         }
         sqlite3_finalize( ppStmt );
+
+        if ( !allSet ) {
+            ds->nTiles += -1;
+        }
     }
 
     {

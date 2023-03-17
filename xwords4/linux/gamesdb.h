@@ -77,7 +77,7 @@ void gdb_deleteGame( sqlite3* pDb, sqlite3_int64 rowid );
 
 typedef struct _DevSummary {
     XP_Bool allDone;
-    XP_U32 nTiles;
+    XP_S32 nTiles;
     XP_U32 nGames;
 } DevSummary;
 
