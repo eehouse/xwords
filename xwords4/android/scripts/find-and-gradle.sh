@@ -45,10 +45,14 @@ while [ $# -gt 0 ]; do
     shift
 done
 
-while [ ! -e ./gradlew ]; do
+# So this can work from anywhere in the tree, go up to the .git
+# directory, then back down
+while [ ! -d ./.git ]; do
     [ '/' = $(pwd) ] && usage "reached root without finding gradlew"
     cd ..
 done
+
+cd xwords4/android/
 
 NOW_FILE=/tmp/NOW_$$
 touch $NOW_FILE
