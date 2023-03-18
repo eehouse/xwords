@@ -28,7 +28,7 @@ void linux_bt_open( CommonGlobals* globals, XP_Bool amMaster );
 void linux_bt_reset( CommonGlobals* globals );
 void linux_bt_close( CommonGlobals* globals );
 
-XP_S16 linux_bt_send( const XP_U8* buf, XP_U16 buflen, 
+XP_S16 linux_bt_send( XP_U16 count, SendMsgsPacket msgs[],
                       const CommsAddrRec* addrRec, 
                       CommonGlobals* globals );
 XP_S16 linux_bt_receive( int sock, XP_U8* buf, XP_U16 buflen );

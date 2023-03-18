@@ -1441,21 +1441,13 @@ linux_reset( XWEnv xwe, void* closure )
 #endif
 
 XP_S16
-linux_send( XWEnv XP_UNUSED(xwe), const XP_U8* buf, XP_U16 buflen,
-            XP_U16 streamVersion, const XP_UCHAR* msgNo,
-            XP_U32 XP_UNUSED(createdStamp),
-            const CommsAddrRec* addrRec, CommsConnType conType,
-            XP_U32 gameID, void* closure )
+linux_send( XWEnv XP_UNUSED(xwe), XP_U16 count, SendMsgsPacket msgs[],
+            XP_U16 streamVersion, const CommsAddrRec* addrRec,
+            CommsConnType conType, XP_U32 gameID, void* closure )
 {
-    XP_LOGFF( "(streamVersion: %X, len: %d)", streamVersion, buflen );
+    XP_LOGFF( "(streamVersion: %X)", streamVersion );
     XP_S16 nSent = -1;
     CommonGlobals* cGlobals = (CommonGlobals*)closure;   
-
-    /* if ( !!addrRec ) { */
-    /*     conType = addr_getType( addrRec ); */
-    /* } else { */
-    /*     conType = addr_getType( &cGlobals->params->addr ); */
-    /* } */
 
     switch ( conType ) {
 #ifdef XWFEATURE_RELAY
@@ -1474,7 +1466,7 @@ linux_send( XWEnv XP_UNUSED(xwe), const XP_U8* buf, XP_U16 buflen,
     case COMMS_CONN_BT: {
         XP_Bool isServer = game_getIsServer( &cGlobals->game );
         linux_bt_open( cGlobals, isServer );
-        nSent = linux_bt_send( buf, buflen, addrRec, cGlobals );
+        nSent = linux_bt_send( count, msgs, addrRec, cGlobals );
     }
         break;
 #endif
@@ -1499,15 +1491,14 @@ linux_send( XWEnv XP_UNUSED(xwe), const XP_U8* buf, XP_U16 buflen,
 
         // use serverphone if I'm a client, else hope one's provided (this is
         // a reply)
-        nSent = linux_sms_send( cGlobals->params, buf, buflen, msgNo,
-                                addrRec->u.sms.phone, addrRec->u.sms.port,
-                                gameID );
+        nSent = linux_sms_send( cGlobals->params, count, msgs, addrRec->u.sms.phone,
+                                addrRec->u.sms.port, gameID );
     }
         break;
 #endif
 
     case COMMS_CONN_MQTT:
-        nSent = mqttc_send( cGlobals->params, gameID, buf, buflen,
+        nSent = mqttc_send( cGlobals->params, gameID, count, msgs,
                             streamVersion, &addrRec->u.mqtt.devID );
         break;
 

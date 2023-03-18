@@ -416,10 +416,10 @@ linux_bt_close( CommonGlobals* globals )
     }
 } /* linux_bt_close */
 
-XP_S16
-linux_bt_send( const XP_U8* buf, XP_U16 buflen, 
-               const CommsAddrRec* addrP, 
-               CommonGlobals* globals )
+static XP_S16
+linux_bt_send_impl( const XP_U8* buf, XP_U16 buflen,
+                    const CommsAddrRec* addrP,
+                    CommonGlobals* globals )
 {
     XP_S16 nSent = -1;
     LinBtStuff* btStuff;
@@ -460,7 +460,26 @@ linux_bt_send( const XP_U8* buf, XP_U16 buflen,
     }
     LOG_RETURNF( "%d", nSent );
     return nSent;
-} /* linux_bt_send */
+} /* linux_bt_send_impl */
+
+XP_S16
+linux_bt_send( XP_U16 count, SendMsgsPacket msgs[],
+               const CommsAddrRec* addrRec, CommonGlobals* globals )
+{
+    XP_S16 result = 0;
+    for ( int ii = 0; ii < count; ++ii ) {
+        const SendMsgsPacket* packet = &msgs[ii];
+        XP_S16 tmp = linux_bt_send_impl( packet->buf, packet->len,
+                                         addrRec, globals );
+        if ( tmp > 0 ) {
+            result += tmp;
+        } else {
+            result = -1;
+            break;
+        }
+    }
+    return result;
+}
 
 #if defined BT_USE_RFCOMM
 static void

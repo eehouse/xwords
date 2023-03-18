@@ -1655,6 +1655,7 @@ comms_invite( CommsCtxt* comms, XWEnv xwe, const NetLaunchInfo* nli,
 
         elem = addToQueue( comms, xwe, elem, XP_TRUE );
         if ( !!elem ) {
+            XP_ASSERT( !elem->next );
             XP_LOGFF( "added invite on channel %d", elem->channelNo & CHANNEL_MASK );
             /* Let's let platform code decide whether to call sendMsg() . On
                Android creating a game with an invitation in its queue is always
@@ -2134,17 +2135,22 @@ sendMsg( const CommsCtxt* comms, XWEnv xwe, MsgQueueElem* elem,
                         }
 #endif
                     } else {
-                        XP_ASSERT( !!comms->procs.sendMsg );
+                        XP_ASSERT( !!comms->procs.sendMsgs );
                         XP_U32 gameid = gameID( comms );
                         logAddrComms( comms, &addr, __func__ );
                         XP_UCHAR msgNo[16];
                         formatMsgNo( comms, elem, msgNo, sizeof(msgNo) );
                         XP_ASSERT( 0 != elem->createdStamp );
-                        nSent = (*comms->procs.sendMsg)( xwe, elem->msg, elem->len,
-                                                         comms->streamVersion, msgNo,
-                                                         elem->createdStamp, &addr,
-                                                         typ, gameid,
-                                                         comms->procs.closure );
+                        SendMsgsPacket packet = {
+                            .msgNo = msgNo,
+                            .createdStamp = elem->createdStamp,
+                            .buf = elem->msg,
+                            .len = elem->len,
+                        };
+                        nSent = (*comms->procs.sendMsgs)( xwe, 1, &packet,
+                                                          comms->streamVersion, &addr,
+                                                          typ, gameid,
+                                                          comms->procs.closure );
                         checkForPrev( comms, elem, typ );
                     }
                     break;

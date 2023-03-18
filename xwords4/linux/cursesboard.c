@@ -365,7 +365,7 @@ static void
 initTProcsCurses( CommonGlobals* cGlobals )
 {
     cGlobals->procs.closure = cGlobals;
-    cGlobals->procs.sendMsg = linux_send;
+    cGlobals->procs.sendMsgs = linux_send;
 #ifdef XWFEATURE_COMMS_INVITE
     cGlobals->procs.sendInvt = linux_send_invt;
 #endif

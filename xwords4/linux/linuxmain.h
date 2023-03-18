@@ -38,11 +38,9 @@ typedef struct LinuxBMStruct {
 } LinuxBMStruct;
 
 int initListenerSocket( int port );
-XP_S16 linux_send( XWEnv xwe, const XP_U8* buf, XP_U16 buflen,
-                   XP_U16 streamVersion, const XP_UCHAR* msgNo,
-                   XP_U32 createdStamp, const CommsAddrRec* addrRec,
-                   CommsConnType conType, XP_U32 gameID,
-                   void* closure );
+XP_S16 linux_send( XWEnv xwe, XP_U16 count, SendMsgsPacket msgs[],
+                   XP_U16 streamVersion, const CommsAddrRec* addrRec,
+                   CommsConnType conType, XP_U32 gameID, void* closure );
 XP_S16 linux_send_invt( XWEnv xwe, const NetLaunchInfo* nli,
                         XP_U32 createdStamp, const CommsAddrRec* addr,
                         CommsConnType conType, void* closure );

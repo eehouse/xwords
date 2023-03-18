@@ -38,8 +38,8 @@ typedef struct _SMSProcs {
 
 void linux_sms_init( LaunchParams* params, const gchar* phone, 
                      XP_U16 port, const SMSProcs* procs, void* procClosure );
-XP_S16 linux_sms_send( LaunchParams* params, const XP_U8* buf, XP_U16 buflen,
-                       const XP_UCHAR* msgNo, const XP_UCHAR* phone, XP_U16 port,
+XP_S16 linux_sms_send( LaunchParams* params, XP_U16 count, SendMsgsPacket msgs[],
+                       const XP_UCHAR* phone, XP_U16 port,
                        XP_U32 gameID );
 void linux_sms_invite( LaunchParams* params, const NetLaunchInfo* nli,
                        const gchar* phone, int port );

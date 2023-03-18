@@ -79,11 +79,12 @@ typedef XP_S16 (*TransportSendInvt)( XWEnv xwe, const NetLaunchInfo* nli,
                                      XP_U32 createdStamp, const CommsAddrRec* addr,
                                      CommsConnType conType, void* closure );
 #endif
-typedef XP_S16 (*TransportSendMsg)( XWEnv xwe, const XP_U8* buf, XP_U16 len,
-                                    XP_U16 streamVersion, const XP_UCHAR* msgNo,
-                                    XP_U32 createdStamp, const CommsAddrRec* addr,
-                                    CommsConnType conType, XP_U32 gameID,
-                                    void* closure );
+
+typedef XP_S16 (*TransportSendMsgs)( XWEnv xwe, XP_U16 count, SendMsgsPacket msgs[],
+                                     XP_U16 streamVersion,
+                                     const CommsAddrRec* addr,
+                                     CommsConnType conType, XP_U32 gameID,
+                                     void* closure );
 
 #ifdef COMMS_HEARTBEAT
 typedef void (*TransportReset)( XWEnv xwe, void* closure );
@@ -125,7 +126,7 @@ typedef struct _TransportProcs {
 #else
     XP_U32 flags;
 #endif
-    TransportSendMsg sendMsg;
+    TransportSendMsgs sendMsgs;
 #ifdef XWFEATURE_COMMS_INVITE
     TransportSendInvt sendInvt;
 #endif

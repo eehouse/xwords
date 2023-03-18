@@ -324,10 +324,10 @@ linux_sms_invite( LaunchParams* params, const NetLaunchInfo* nli,
     stream_destroy( stream );
 }
 
-XP_S16
-linux_sms_send( LaunchParams* params, const XP_U8* buf,
-                XP_U16 buflen, const XP_UCHAR* msgNo, const XP_UCHAR* phone,
-                XP_U16 port, XP_U32 gameID )
+static XP_S16
+linux_sms_send_impl( LaunchParams* params, const XP_U8* buf,
+                     XP_U16 buflen, const XP_UCHAR* msgNo, const XP_UCHAR* phone,
+                     XP_U16 port, XP_U32 gameID )
 {
     XP_S16 nSent = -1;
     LinSMSData* storage = getStorage( params );
@@ -342,6 +342,25 @@ linux_sms_send( LaunchParams* params, const XP_U8* buf,
         XP_LOGFF( "dropping: sms not configured" );
     }
     return nSent;
+}
+
+XP_S16
+linux_sms_send( LaunchParams* params, XP_U16 count, SendMsgsPacket msgs[],
+                const XP_UCHAR* phone, XP_U16 port, XP_U32 gameID )
+{
+    XP_S16 result = 0;
+    for ( int ii = 0; ii < count; ++ii ) {
+        const SendMsgsPacket* packet = &msgs[ii];
+        XP_S16 tmp = linux_sms_send_impl( params, packet->buf,
+                     packet->len, packet->msgNo, phone, port, gameID );
+        if ( tmp > 0 ) {
+            result += tmp;
+        } else {
+            result = -1;
+            break;
+        }
+    }
+    return result;
 }
 
 typedef struct _RetryClosure {

@@ -1,6 +1,7 @@
 /* -*- compile-command: "make MEMDEBUG=TRUE -j3"; -*- */
 /* 
- * Copyright 2020 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2020 - 2023 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -32,7 +33,7 @@ void mqttc_invite( LaunchParams* params, const NetLaunchInfo* nli,
                    const MQTTDevID* mqttInvitee );
 void mqttc_onInviteHandled( LaunchParams* params, const NetLaunchInfo* nli );
 XP_S16 mqttc_send( LaunchParams* params, XP_U32 gameID,
-                   const XP_U8* buf, XP_U16 len, XP_U16 streamVersion,
+                   XP_U16 count, SendMsgsPacket msgs[], XP_U16 streamVersion,
                    const MQTTDevID* addressee );
 void mqttc_notifyGameGone( LaunchParams* params, const MQTTDevID* addressee, XP_U32 gameID );
 

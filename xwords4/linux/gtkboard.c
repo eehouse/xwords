@@ -485,7 +485,7 @@ setTransportProcs( TransportProcs* procs, GtkGameGlobals* globals )
 {
     XP_ASSERT( !procs->closure );
     procs->closure = globals;
-    procs->sendMsg = linux_send;
+    procs->sendMsgs = linux_send;
 #ifdef XWFEATURE_COMMS_INVITE
     procs->sendInvt = linux_send_invt;
 #endif

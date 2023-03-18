@@ -161,6 +161,13 @@ typedef XP_U8 XWPhoniesChoice;
 
 typedef XP_U8 XP_LangCode;
 
+typedef struct _SendMsgsPacket {
+    const XP_UCHAR* msgNo;
+    XP_U32 createdStamp;
+    const XP_U8* buf;
+    XP_U16 len;
+} SendMsgsPacket;
+
 /* I'm going to try putting all forward "class" decls in the same file */
 typedef struct BoardCtxt BoardCtxt;
 typedef struct CommMgrCtxt CommMgrCtxt;

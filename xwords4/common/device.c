@@ -337,17 +337,16 @@ dvc_makeMQTTNukeInvite( XW_DUtilCtxt* dutil, XWEnv xwe,
 #endif
 }
 
-/* Ship with == 1, but increase to test */
-#define MULTI_MSG_COUNT 1
-
-void
+XP_S16
 dvc_makeMQTTMessages( XW_DUtilCtxt* dutil, XWEnv xwe,
                       MsgAndTopicProc proc, void* closure,
+                      XP_U16 nBufs, SendMsgsPacket bufs[],
                       const MQTTDevID* addressee,
-                      XP_U32 gameID, const XP_U8* buf, XP_U16 len,
-                      XP_U16 streamVersion )
+                      XP_U32 gameID, XP_U16 streamVersion )
 {
-    XP_LOGFF( "(len: %d; streamVersion: %X)", len, streamVersion );
+    XP_S16 nSent0 = 0;
+    XP_S16 nSent1 = 0;
+    XP_LOGFF( "(nBufs: %d; streamVersion: %X)", nBufs, streamVersion );
     XP_UCHAR devTopic[64];      /* used by two below */
     formatMQTTDevTopic( addressee, devTopic, VSIZE(devTopic) );
 
@@ -357,11 +356,14 @@ dvc_makeMQTTMessages( XW_DUtilCtxt* dutil, XWEnv xwe,
        it's > 0 but < STREAM_VERS_NORELAY, no point sending PROTO_3 */
 
     if ( 0 == streamVersion || STREAM_VERS_NORELAY > streamVersion ) {
-        XWStreamCtxt* stream = mkStream( dutil );
-        addHeaderGameIDAndCmd( dutil, xwe, CMD_MSG, gameID, stream );
-        stream_putBytes( stream, buf, len );
-        callProc( proc, closure, devTopic, stream );
-        stream_destroy( stream );
+        for ( int ii = 0; ii < nBufs; ++ii ) {
+            XWStreamCtxt* stream = mkStream( dutil );
+            addHeaderGameIDAndCmd( dutil, xwe, CMD_MSG, gameID, stream );
+            stream_putBytes( stream, bufs[ii].buf, bufs[ii].len );
+            callProc( proc, closure, devTopic, stream );
+            stream_destroy( stream );
+            nSent0 += bufs[ii].len;
+        }
     }
 
     if ( 0 == streamVersion || STREAM_VERS_NORELAY <= streamVersion ) {
@@ -370,11 +372,15 @@ dvc_makeMQTTMessages( XW_DUtilCtxt* dutil, XWEnv xwe,
 
         /* For now, we ship one message per packet. But the receiving code
            should be ready */
-        stream_putU8( stream, MULTI_MSG_COUNT );
-        for ( int ii = 0; ii < MULTI_MSG_COUNT; ++ii ) {
+        stream_putU8( stream, nBufs );
+        for ( int ii = 0; ii < nBufs; ++ii ) {
+            XP_U32 len = bufs[ii].len;
             stream_putU32VL( stream, len );
-            stream_putBytes( stream, buf, len );
+            stream_putBytes( stream, bufs[ii].buf, len );
+            nSent1 += len;
         }
+
+        XP_ASSERT( nSent0 == nSent1 || nSent0 == 0 || nSent1 == 0 );
 
         XP_UCHAR gameTopic[64];
         size_t siz = XP_SNPRINTF( gameTopic, VSIZE(gameTopic),
@@ -385,6 +391,7 @@ dvc_makeMQTTMessages( XW_DUtilCtxt* dutil, XWEnv xwe,
         callProc( proc, closure, gameTopic, stream );
         stream_destroy( stream );
     }
+    return XP_MAX( nSent0, nSent1 );
 }
 
 void
