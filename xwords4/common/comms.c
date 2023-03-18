@@ -122,9 +122,7 @@ typedef struct _SD {
 EXTERN_C_START
 
 typedef struct MsgQueueElem {
-    struct MsgQueueElem* next;
-    XP_U8* msg;                 /* ptr to NetLaunchInfo if isInvite is true */
-    XP_U16 len;                 /* stored as 0 if msg is a nli */
+    SendMsgsPacket smp;
     XP_PlayerAddr channelNo;
 #ifdef DEBUG
     XP_U16 sendCount;           /* how many times sent? */
@@ -133,7 +131,6 @@ typedef struct MsgQueueElem {
 #ifdef COMMS_CHECKSUM
     XP_UCHAR* checksum;
 #endif
-    XP_U32 createdStamp;
 } MsgQueueElem;
 
 typedef struct AddressRecord {
@@ -358,7 +355,7 @@ static void sendEmptyMsg( const CommsCtxt* comms, XWEnv xwe, AddressRecord* rec 
 #endif
 static inline XP_Bool IS_INVITE(const MsgQueueElem* elem)
 {
-    return 0 == elem->len;
+    return 0 == elem->smp.len;
 }
 
 /****************************************************************************
@@ -545,15 +542,15 @@ forEachElem( CommsCtxt* comms, EachMsgProc proc, void* closure )
             MsgQueueElem* elem = *home;
             ForEachAct fea = (*proc)( elem, closure );
             if ( 0 != (FEA_REMOVE & fea) ) {
-                *home = elem->next;
+                *home = (MsgQueueElem*)elem->smp.next;
 #ifdef DEBUG
-                elem->next = NULL;
+                elem->smp.next = NULL;
 #endif
                 freeElem( MPPARM(comms->mpool) elem );
                 XP_ASSERT( 1 <= comms->queueLen );
                 --comms->queueLen;
             } else {
-                home = &elem->next;
+                home = (MsgQueueElem**)&elem->smp.next;
             }
             if ( 0 != (FEA_EXIT & fea) ) {
                 goto done;
@@ -902,22 +899,22 @@ comms_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
         msg->channelNo = readChannelNo( stream );
         if ( version >= STREAM_VERS_SMALLCOMMS ) {
             msg->msgID = stream_getU32VL( stream );
-            msg->len = stream_getU32VL( stream );
+            msg->smp.len = stream_getU32VL( stream );
         } else {
             msg->msgID = stream_getU32( stream );
-            msg->len = stream_getU16( stream );
+            msg->smp.len = stream_getU16( stream );
         }
         if ( version >= STREAM_VERS_MSGTIMESTAMP ) {
-            msg->createdStamp = stream_getU32( stream );
+            msg->smp.createdStamp = stream_getU32( stream );
         }
-        if ( 0 == msg->createdStamp ) {
-            msg->createdStamp = dutil_getCurSeconds( comms->dutil, xwe );
+        if ( 0 == msg->smp.createdStamp ) {
+            msg->smp.createdStamp = dutil_getCurSeconds( comms->dutil, xwe );
             XP_LOGFF( "added missing timestamp" );
         }
 #ifdef DEBUG
         msg->sendCount = 0;
 #endif
-        XP_U16 len = msg->len;
+        XP_U16 len = msg->smp.len;
         if ( 0 == len ) {
             XP_ASSERT( isServer );
             XP_U32 nliLen = stream_getU32VL( stream );
@@ -926,21 +923,21 @@ comms_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
             stream_getFromStream( nliStream, stream, nliLen );
             NetLaunchInfo nli;
             if ( nli_makeFromStream( &nli, nliStream ) ) {
-                msg->msg = (XP_U8*)XP_MALLOC( mpool, sizeof(nli) );
-                XP_MEMCPY( msg->msg, &nli, sizeof(nli) );
+                msg->smp.buf = (XP_U8*)XP_MALLOC( mpool, sizeof(nli) );
+                XP_MEMCPY( (void*)msg->smp.buf, &nli, sizeof(nli) );
                 len = sizeof(nli); /* needed for checksum calc */
             } else {
                 XP_ASSERT(0);
             }
             stream_destroy( nliStream );
         } else {
-            msg->msg = (XP_U8*)XP_MALLOC( mpool, len );
-            stream_getBytes( stream, msg->msg, len );
+            msg->smp.buf = (XP_U8*)XP_MALLOC( mpool, len );
+            stream_getBytes( stream, (XP_U8*)msg->smp.buf, len );
         }
 #ifdef COMMS_CHECKSUM
-        msg->checksum = dutil_md5sum( comms->dutil, xwe, msg->msg, len );
+        msg->checksum = dutil_md5sum( comms->dutil, xwe, msg->smp.buf, len );
 #endif
-        XP_ASSERT( NULL == msg->next );
+        XP_ASSERT( NULL == msg->smp.next );
         (void)addToQueue( comms, xwe, msg, XP_FALSE );
     }
     XP_ASSERT( queueLen == comms->queueLen );
@@ -1134,19 +1131,19 @@ elemToStream( MsgQueueElem* elem, void* closure )
     writeChannelNo( stream, elem->channelNo );
     stream_putU32VL( stream, elem->msgID );
 
-    stream_putU32VL( stream, elem->len );
-    stream_putU32( stream, elem->createdStamp );
-    if ( 0 == elem->len ) {
+    stream_putU32VL( stream, elem->smp.len );
+    stream_putU32( stream, elem->smp.createdStamp );
+    if ( 0 == elem->smp.len ) {
         XWStreamCtxt* nliStream = mem_stream_make_raw( MPPARM(comms->mpool)
                                                        dutil_getVTManager(comms->dutil));
-        NetLaunchInfo* nli = (NetLaunchInfo*)elem->msg;
+        NetLaunchInfo* nli = (NetLaunchInfo*)elem->smp.buf;
         nli_saveToStream( nli, nliStream );
         XP_U16 nliLen = stream_getSize( nliStream );
         stream_putU32VL( stream, nliLen );
         stream_getFromStream( stream, nliStream, nliLen );
         stream_destroy( nliStream );
     } else {
-        stream_putBytes( stream, elem->msg, elem->len );
+        stream_putBytes( stream, elem->smp.buf, elem->smp.len );
     }
     return FEA_OK;
 }
@@ -1442,7 +1439,7 @@ makeNewElem( const CommsCtxt* comms, XWEnv xwe, MsgID msgID,
 {
     MsgQueueElem* newElem = (MsgQueueElem*)XP_CALLOC( comms->mpool,
                                                       sizeof( *newElem ) );
-    newElem->createdStamp = dutil_getCurSeconds( comms->dutil, xwe );
+    newElem->smp.createdStamp = dutil_getCurSeconds( comms->dutil, xwe );
     newElem->channelNo = channelNo;
     newElem->msgID = msgID;
     return newElem;
@@ -1508,17 +1505,17 @@ makeElemWithID( const CommsCtxt* comms, XWEnv xwe, MsgID msgID, AddressRecord* r
         stream_getFromStream( msgStream, stream, streamSize );
     }
 
-    newElem->len = stream_getSize( msgStream );
-    XP_ASSERT( 0 < newElem->len );
-    newElem->msg = (XP_U8*)XP_MALLOC( comms->mpool, newElem->len );
-    stream_getBytes( msgStream, newElem->msg, newElem->len );
+    newElem->smp.len = stream_getSize( msgStream );
+    XP_ASSERT( 0 < newElem->smp.len );
+    newElem->smp.buf = (XP_U8*)XP_MALLOC( comms->mpool, newElem->smp.len );
+    stream_getBytes( msgStream, (XP_U8*)newElem->smp.buf, newElem->smp.len );
     stream_destroy( msgStream );
 
 #ifdef COMMS_CHECKSUM
-    newElem->checksum = dutil_md5sum( comms->dutil, xwe, newElem->msg,
-                                      newElem->len );
+    newElem->checksum = dutil_md5sum( comms->dutil, xwe, newElem->smp.buf,
+                                      newElem->smp.len );
 #endif
-    XP_ASSERT( 0 < newElem->len ); /* else NLI assumptions fail */
+    XP_ASSERT( 0 < newElem->smp.len ); /* else NLI assumptions fail */
     return newElem;
 } /* makeElemWithID */
 
@@ -1529,11 +1526,11 @@ makeInviteElem( CommsCtxt* comms, XWEnv xwe,
 {
     MsgQueueElem* newElem = makeNewElem( comms, xwe, 0, channelNo );
 
-    XP_ASSERT( 0 == newElem->len );           /* len == 0 signals is NLI */
-    newElem->msg = XP_MALLOC( comms->mpool, sizeof(*nli) );
-    XP_MEMCPY( newElem->msg, nli, sizeof(*nli) );
+    XP_ASSERT( 0 == newElem->smp.len );           /* len == 0 signals is NLI */
+    newElem->smp.buf = XP_MALLOC( comms->mpool, sizeof(*nli) );
+    XP_MEMCPY( (XP_U8*)newElem->smp.buf, nli, sizeof(*nli) );
 # ifdef COMMS_CHECKSUM
-    newElem->checksum = dutil_md5sum( comms->dutil, xwe, newElem->msg,
+    newElem->checksum = dutil_md5sum( comms->dutil, xwe, newElem->smp.buf,
                                       sizeof(*nli) );
 # endif
     return newElem;
@@ -1655,7 +1652,7 @@ comms_invite( CommsCtxt* comms, XWEnv xwe, const NetLaunchInfo* nli,
 
         elem = addToQueue( comms, xwe, elem, XP_TRUE );
         if ( !!elem ) {
-            XP_ASSERT( !elem->next );
+            XP_ASSERT( !elem->smp.next );
             XP_LOGFF( "added invite on channel %d", elem->channelNo & CHANNEL_MASK );
             /* Let's let platform code decide whether to call sendMsg() . On
                Android creating a game with an invitation in its queue is always
@@ -1757,7 +1754,7 @@ addToQueue( CommsCtxt* comms, XWEnv xwe, MsgQueueElem* newElem, XP_Bool notify )
 {
     MsgQueueElem* asAdded = newElem;
     THREAD_CHECK_START( comms );
-    newElem->next = (MsgQueueElem*)NULL;
+    newElem->smp.next = NULL;
 
     MsgQueueElem** head;
     AddressRecord* rec = getRecordFor( comms, newElem->channelNo );
@@ -1772,15 +1769,15 @@ addToQueue( CommsCtxt* comms, XWEnv xwe, MsgQueueElem* newElem, XP_Bool notify )
     if ( !*head ) {
         *head = newElem;
     } else {
-        while ( !!(*head)->next ) {
-            head = &(*head)->next;
+        while ( !!(*head)->smp.next ) {
+            head = (MsgQueueElem**)&(*head)->smp.next;
         }
         if ( elems_same( *head, newElem ) ) {
             /* This does still happen! Not sure why. */
             freeElem( MPPARM(comms->mpool) newElem );
             asAdded = *head;
         } else {
-            (*head)->next = newElem;
+            (*head)->smp.next = &newElem->smp;
         }
 
         XP_ASSERT( comms->queueLen > 0 );
@@ -1831,7 +1828,8 @@ _assertQueueOk( const CommsCtxt* comms, const char* func )
     XP_U16 count = 0;
 
     for ( AddressRecord* recs = comms->recs; !!recs; recs = recs->next ) {
-        for ( MsgQueueElem* elem = recs->_msgQueueHead; !!elem; elem = elem->next ) {
+        for ( MsgQueueElem* elem = recs->_msgQueueHead; !!elem;
+              elem = (MsgQueueElem*)elem->smp.next ) {
             ++count;
         }
     }
@@ -1880,21 +1878,21 @@ elems_same( const MsgQueueElem* elem1, const MsgQueueElem* elem2 )
 {
     XP_Bool same = elem1->msgID == elem2->msgID
         && elem1->channelNo == elem2->channelNo
-        && elem1->len == elem2->len
-        && 0 == XP_MEMCMP( elem1->msg, elem2->msg, elem1->len );
+        && elem1->smp.len == elem2->smp.len
+        && 0 == XP_MEMCMP( elem1->smp.buf, elem2->smp.buf, elem1->smp.len );
     return same;
 }
 
 static void
 freeElem( MPFORMAL MsgQueueElem* elem )
 {
-    XP_ASSERT( !elem->next );
-    XP_FREEP( mpool, &elem->msg );
+    XP_ASSERT( !elem->smp.next );
+    XP_FREEP( mpool, &elem->smp.buf );
 #ifdef COMMS_CHECKSUM
-    /* XP_LOGFF( "freeing msg with len %d, sum %s", elem->len, elem->checksum ); */
+    /* XP_LOGFF( "freeing msg with len %d, sum %s", elem->smp.len, elem->checksum ); */
     XP_FREEP( mpool, &elem->checksum );
 #else
-    /* XP_LOGFF( "freeing msg with len %d", elem->len ); */
+    /* XP_LOGFF( "freeing msg with len %d", elem->smp.len ); */
 #endif
     XP_FREE( mpool, elem );
 }
@@ -2040,7 +2038,7 @@ sendMsg( const CommsCtxt* comms, XWEnv xwe, MsgQueueElem* elem,
     XP_Bool isInvite = IS_INVITE(elem);
 #ifdef COMMS_CHECKSUM
     XP_LOGFF( TAGFMT() "sending message on %s: id: %d; len: %d; sum: %s; isInvite: %s",
-              TAGPRMS, cbuf, elem->msgID, elem->len, elem->checksum, boolToStr(isInvite) );
+              TAGPRMS, cbuf, elem->msgID, elem->smp.len, elem->checksum, boolToStr(isInvite) );
 #endif
 
     const CommsAddrRec* addrP = NULL;
@@ -2089,13 +2087,13 @@ sendMsg( const CommsCtxt* comms, XWEnv xwe, MsgQueueElem* elem,
                         XP_LOGFF( TAGFMT() "skipping message via relay: no destID yet", TAGPRMS );
                     } else if ( haveRelayID( comms ) && sendNoConn( comms, xwe, elem, destID ) ) {
                         /* do nothing */
-                        nSent = elem->len;
+                        nSent = elem->smp.len;
                     } else if ( comms->rr.relayState >= COMMS_RELAYSTATE_CONNECTED ) {
                         XP_UCHAR msgNo[16];
                         formatMsgNo( comms, elem, msgNo, sizeof(msgNo) );
                         if ( send_via_relay( comms, xwe, XWRELAY_MSG_TORELAY, destID,
-                                             elem->msg, elem->len, msgNo ) ) {
-                            nSent = elem->len;
+                                             elem->smp.buf, elem->smp.len, msgNo ) ) {
+                            nSent = elem->smp.len;
                         }
                     } else {
                         XP_LOGFF( "skipping message: not connected to relay" );
@@ -2107,7 +2105,7 @@ sendMsg( const CommsCtxt* comms, XWEnv xwe, MsgQueueElem* elem,
                 case COMMS_CONN_BT:
                 case COMMS_CONN_IP_DIRECT:
                     nSent = send_via_ip( comms, BTIPMSG_DATA, channelNo, 
-                                         elem->msg, elem->len );
+                                         elem->smp.buf, elem->smp.len );
 #ifdef COMMS_HEARTBEAT
                     setHeartbeatTimer( comms );
 #endif
@@ -2128,25 +2126,22 @@ sendMsg( const CommsCtxt* comms, XWEnv xwe, MsgQueueElem* elem,
 #ifdef XWFEATURE_COMMS_INVITE
                     } else if ( isInvite ) {
                         if ( !!comms->procs.sendInvt ) {
-                            NetLaunchInfo* nli = (NetLaunchInfo*)elem->msg;
-                            XP_ASSERT( 0 != elem->createdStamp );
-                            nSent = (*comms->procs.sendInvt)( xwe, nli, elem->createdStamp,
-                                                              &addr, typ, comms->procs.closure );
+                            NetLaunchInfo* nli = (NetLaunchInfo*)elem->smp.buf;
+                            XP_ASSERT( 0 != elem->smp.createdStamp );
+                            nSent = (*comms->procs.sendInvt)( xwe, nli,
+                                                              elem->smp.createdStamp,
+                                                              &addr, typ,
+                                                              comms->procs.closure );
                         }
 #endif
                     } else {
                         XP_ASSERT( !!comms->procs.sendMsgs );
                         XP_U32 gameid = gameID( comms );
                         logAddrComms( comms, &addr, __func__ );
-                        XP_UCHAR msgNo[16];
-                        formatMsgNo( comms, elem, msgNo, sizeof(msgNo) );
-                        XP_ASSERT( 0 != elem->createdStamp );
-                        SendMsgsPacket packet = {
-                            .msgNo = msgNo,
-                            .createdStamp = elem->createdStamp,
-                            .buf = elem->msg,
-                            .len = elem->len,
-                        };
+                        XP_ASSERT( 0 != elem->smp.createdStamp );
+                        SendMsgsPacket packet = elem->smp;
+                        packet.next = NULL;
+                        formatMsgNo( comms, elem, (XP_UCHAR*) packet.msgNo, sizeof(packet.msgNo) );
                         nSent = (*comms->procs.sendMsgs)( xwe, 1, &packet,
                                                           comms->streamVersion, &addr,
                                                           typ, gameid,
@@ -2162,7 +2157,7 @@ sendMsg( const CommsCtxt* comms, XWEnv xwe, MsgQueueElem* elem,
             }
         } /* for */
     
-        if ( result == elem->len ) {
+        if ( result == elem->smp.len ) {
 #ifdef DEBUG
             ++elem->sendCount;
 #endif
@@ -2171,9 +2166,9 @@ sendMsg( const CommsCtxt* comms, XWEnv xwe, MsgQueueElem* elem,
         }
         CNO_FMT( cbuf1, elem->channelNo );
         XP_LOGFF( "(%s; msgID=" XP_LD ", len=%d)=>%d", cbuf1, elem->msgID,
-                  elem->len, result );
+                  elem->smp.len, result );
     }
-    XP_ASSERT( result < 0 || elem->len == result );
+    XP_ASSERT( result < 0 || elem->smp.len == result );
     return result;
 } /* sendMsg */
 
@@ -3413,7 +3408,7 @@ statsProc( MsgQueueElem* elem, void* closure )
     XP_UCHAR buf[100];
     XP_SNPRINTF( buf, sizeof(buf),
                  "msgID: " XP_LD ": channelNo=%.4X; len=%d\n",
-                 elem->msgID, elem->channelNo, elem->len );
+                 elem->msgID, elem->channelNo, elem->smp.len );
     stream_catString( stream, buf );
     return FEA_OK;
 }
@@ -4034,7 +4029,7 @@ sendNoConn( CommsCtxt* comms, XWEnv xwe, const MsgQueueElem* elem, XWHostID dest
     if ( success ) {
         XWStreamCtxt* stream = 
             relay_msg_to_stream( comms, xwe, XWRELAY_MSG_TORELAY_NOCONN,
-                                 destID, elem->msg, elem->len );
+                                 destID, elem->smp.buf, elem->smp.len );
         if ( NULL != stream ) {
             XP_U16 len = stream_getSize( stream );
             if ( 0 < len ) {
