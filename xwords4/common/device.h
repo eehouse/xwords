@@ -48,7 +48,7 @@ void dvc_makeMQTTNukeInvite( XW_DUtilCtxt* dutil, XWEnv xwe,
 
 XP_S16 dvc_makeMQTTMessages( XW_DUtilCtxt* dutil, XWEnv xwe,
                              MsgAndTopicProc proc, void* closure,
-                             XP_U16 nBufs, SendMsgsPacket bufs[],
+                             const SendMsgsPacket* const msgs,
                              const MQTTDevID* addressee, XP_U32 gameID,
                              XP_U16 streamVersion );
 

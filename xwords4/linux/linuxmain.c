@@ -1441,7 +1441,7 @@ linux_reset( XWEnv xwe, void* closure )
 #endif
 
 XP_S16
-linux_send( XWEnv XP_UNUSED(xwe), XP_U16 count, SendMsgsPacket msgs[],
+linux_send( XWEnv XP_UNUSED(xwe), const SendMsgsPacket* const msgs,
             XP_U16 streamVersion, const CommsAddrRec* addrRec,
             CommsConnType conType, XP_U32 gameID, void* closure )
 {
@@ -1466,7 +1466,7 @@ linux_send( XWEnv XP_UNUSED(xwe), XP_U16 count, SendMsgsPacket msgs[],
     case COMMS_CONN_BT: {
         XP_Bool isServer = game_getIsServer( &cGlobals->game );
         linux_bt_open( cGlobals, isServer );
-        nSent = linux_bt_send( count, msgs, addrRec, cGlobals );
+        nSent = linux_bt_send( msgs, addrRec, cGlobals );
     }
         break;
 #endif
@@ -1491,14 +1491,14 @@ linux_send( XWEnv XP_UNUSED(xwe), XP_U16 count, SendMsgsPacket msgs[],
 
         // use serverphone if I'm a client, else hope one's provided (this is
         // a reply)
-        nSent = linux_sms_send( cGlobals->params, count, msgs, addrRec->u.sms.phone,
+        nSent = linux_sms_send( cGlobals->params, msgs, addrRec->u.sms.phone,
                                 addrRec->u.sms.port, gameID );
     }
         break;
 #endif
 
     case COMMS_CONN_MQTT:
-        nSent = mqttc_send( cGlobals->params, gameID, count, msgs,
+        nSent = mqttc_send( cGlobals->params, gameID, msgs,
                             streamVersion, &addrRec->u.mqtt.devID );
         break;
 

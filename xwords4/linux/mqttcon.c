@@ -293,13 +293,13 @@ mqttc_invite( LaunchParams* params, const NetLaunchInfo* nli,
 
 XP_S16
 mqttc_send( LaunchParams* params, XP_U32 gameID,
-            XP_U16 nMsgs, SendMsgsPacket msgs[],
+            const SendMsgsPacket* const msgs,
             XP_U16 streamVersion, const MQTTDevID* addressee  )
 {
     MQTTConStorage* storage = getStorage( params );
     XP_S16 nSent = dvc_makeMQTTMessages( params->dutil, NULL_XWE,
                                          msgAndTopicProc, storage,
-                                         nMsgs, msgs, addressee,
+                                         msgs, addressee,
                                          gameID, streamVersion );
     return nSent;
 }

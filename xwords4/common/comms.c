@@ -2142,7 +2142,7 @@ sendMsg( const CommsCtxt* comms, XWEnv xwe, MsgQueueElem* elem,
                         SendMsgsPacket packet = elem->smp;
                         packet.next = NULL;
                         formatMsgNo( comms, elem, (XP_UCHAR*) packet.msgNo, sizeof(packet.msgNo) );
-                        nSent = (*comms->procs.sendMsgs)( xwe, 1, &packet,
+                        nSent = (*comms->procs.sendMsgs)( xwe, &packet,
                                                           comms->streamVersion, &addr,
                                                           typ, gameid,
                                                           comms->procs.closure );

@@ -463,12 +463,12 @@ linux_bt_send_impl( const XP_U8* buf, XP_U16 buflen,
 } /* linux_bt_send_impl */
 
 XP_S16
-linux_bt_send( XP_U16 count, SendMsgsPacket msgs[],
+linux_bt_send( const SendMsgsPacket* const msgs,
                const CommsAddrRec* addrRec, CommonGlobals* globals )
 {
     XP_S16 result = 0;
-    for ( int ii = 0; ii < count; ++ii ) {
-        const SendMsgsPacket* packet = &msgs[ii];
+    for ( SendMsgsPacket* packet = (SendMsgsPacket*)msgs;
+          !!packet; packet = (SendMsgsPacket* const)packet->next ) {
         XP_S16 tmp = linux_bt_send_impl( packet->buf, packet->len,
                                          addrRec, globals );
         if ( tmp > 0 ) {

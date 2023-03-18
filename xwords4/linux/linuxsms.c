@@ -345,12 +345,12 @@ linux_sms_send_impl( LaunchParams* params, const XP_U8* buf,
 }
 
 XP_S16
-linux_sms_send( LaunchParams* params, XP_U16 count, SendMsgsPacket msgs[],
+linux_sms_send( LaunchParams* params, const SendMsgsPacket* const msgs,
                 const XP_UCHAR* phone, XP_U16 port, XP_U32 gameID )
 {
     XP_S16 result = 0;
-    for ( int ii = 0; ii < count; ++ii ) {
-        const SendMsgsPacket* packet = &msgs[ii];
+    for ( SendMsgsPacket* packet = (SendMsgsPacket*)msgs;
+          !!packet; packet = (SendMsgsPacket* const)packet->next ) {
         XP_S16 tmp = linux_sms_send_impl( params, packet->buf,
                      packet->len, packet->msgNo, phone, port, gameID );
         if ( tmp > 0 ) {

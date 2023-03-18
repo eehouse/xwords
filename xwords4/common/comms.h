@@ -80,9 +80,8 @@ typedef XP_S16 (*TransportSendInvt)( XWEnv xwe, const NetLaunchInfo* nli,
                                      CommsConnType conType, void* closure );
 #endif
 
-typedef XP_S16 (*TransportSendMsgs)( XWEnv xwe, XP_U16 count, SendMsgsPacket msgs[],
-                                     XP_U16 streamVersion,
-                                     const CommsAddrRec* addr,
+typedef XP_S16 (*TransportSendMsgs)( XWEnv xwe, const SendMsgsPacket* const msgs,
+                                     XP_U16 streamVersion, const CommsAddrRec* addr,
                                      CommsConnType conType, XP_U32 gameID,
                                      void* closure );
 

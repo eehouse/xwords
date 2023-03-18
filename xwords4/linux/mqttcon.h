@@ -33,7 +33,7 @@ void mqttc_invite( LaunchParams* params, const NetLaunchInfo* nli,
                    const MQTTDevID* mqttInvitee );
 void mqttc_onInviteHandled( LaunchParams* params, const NetLaunchInfo* nli );
 XP_S16 mqttc_send( LaunchParams* params, XP_U32 gameID,
-                   XP_U16 count, SendMsgsPacket msgs[], XP_U16 streamVersion,
+                   const SendMsgsPacket* const msgs, XP_U16 streamVersion,
                    const MQTTDevID* addressee );
 void mqttc_notifyGameGone( LaunchParams* params, const MQTTDevID* addressee, XP_U32 gameID );
 
