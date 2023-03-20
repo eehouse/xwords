@@ -684,80 +684,6 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dvc_1getMQTTSubTopics
     return result;
 }
 
-typedef struct _MTPData {
-    JNIEnv* env;
-    int count;
-    const XP_UCHAR* topics[4];
-    jbyteArray jPackets[4];
-    XP_UCHAR storage[256];
-    int offset;
-} MTPData;
-
-static void
-msgAndTopicProc( void* closure, const XP_UCHAR* topic,
-                 const XP_U8* msgBuf, XP_U16 msgLen )
-{
-    MTPData* mtp = (MTPData*)closure;
-    JNIEnv* env = mtp->env;
-
-    const XP_UCHAR* ptr = mtp->topics[mtp->count] = &mtp->storage[mtp->offset];
-    size_t siz = XP_SNPRINTF( (char*)ptr, VSIZE(mtp->storage) - mtp->offset,
-                              "%s", topic );
-    XP_ASSERT( siz < VSIZE(mtp->storage) - mtp->offset );
-    XP_USE( siz );
-    mtp->offset += 1 + XP_STRLEN(ptr);
-
-    mtp->jPackets[mtp->count] = makeByteArray( env, msgLen, (const jbyte*)msgBuf );
-
-    ++mtp->count;
-    XP_ASSERT( mtp->count < VSIZE(mtp->topics) );
-}
-
-static jobject
-wrapResults( MTPData* mtp )
-{
-    JNIEnv* env = mtp->env;
-    jobject result =
-        makeObjectEmptyConstr( env, PKG_PATH("jni/XwJNI$TopicsAndPackets"));
-
-    jobjectArray jTopics = makeStringArray( env, mtp->count, mtp->topics );
-    setObjectField( env, result, "topics", "[Ljava/lang/String;", jTopics );
-
-    jobjectArray jPackets = makeByteArrayArray( env, mtp->count );
-    for ( int ii = 0; ii < mtp->count; ++ii ) {
-        (*env)->SetObjectArrayElement( env, jPackets, ii, mtp->jPackets[ii] );
-        deleteLocalRef( env, mtp->jPackets[ii] );
-    }
-    setObjectField( env, result, "packets", "[[B", jPackets );
-
-    return result;
-}
-
-JNIEXPORT jobject JNICALL
-Java_org_eehouse_android_xw4_jni_XwJNI_dvc_1makeMQTTInvites
-( JNIEnv* env, jclass C, jlong jniGlobalPtr, jstring jAddressee,
-  jobject jnli )
-{
-    jobject result;
-    DVC_HEADER(jniGlobalPtr);
-
-    NetLaunchInfo nli;
-    loadNLI( env, &nli, jnli );
-    LOGNLI( &nli );
-
-    MTPData mtp = { .env = env, };
-
-    MQTTDevID addressee;
-    jstrToDevID( env, jAddressee, &addressee );
-
-    dvc_makeMQTTInvites( globalState->dutil, env, msgAndTopicProc, &mtp,
-                         &addressee, &nli );
-    result = wrapResults( &mtp );
-
-    DVC_HEADER_END();
-    return result;
-}
-
 JNIEXPORT jobject JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_dvc_1makeMQTTNukeInvite
 ( JNIEnv* env, jclass C, jlong jniGlobalPtr, jobject jnli )
@@ -774,34 +700,6 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dvc_1makeMQTTNukeInvite
                             msgAndTopicProc, &mtp, &nli );
     result = wrapResults( &mtp );
     DVC_HEADER_END();
-    return result;
-}
-
-JNIEXPORT jobject JNICALL
-Java_org_eehouse_android_xw4_jni_XwJNI_dvc_1makeMQTTMessages
-( JNIEnv* env, jclass C, jlong jniGlobalPtr, jstring jAddressee,
-  jint jGameID, jbyteArray jmsg, jint jStreamVersion )
-{
-    jobject result;
-    LOG_FUNC();
-    DVC_HEADER(jniGlobalPtr);
-
-    MTPData mtp = { .env = env, };
-
-    MQTTDevID addressee;
-    jstrToDevID( env, jAddressee, &addressee );
-
-    XP_U16 len = (*env)->GetArrayLength( env, jmsg );
-    jbyte* buf = (*env)->GetByteArrayElements( env, jmsg, NULL );
-    dvc_makeMQTTMessages( globalState->dutil, env, msgAndTopicProc, &mtp,
-                          &addressee, jGameID, (const XP_U8*)buf, len,
-                          jStreamVersion );
-    (*env)->ReleaseByteArrayElements( env, jmsg, buf, 0 );
-
-    result = wrapResults( &mtp );
-
-    DVC_HEADER_END();
-    LOG_RETURN_VOID();
     return result;
 }
 
@@ -1447,7 +1345,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeNewGame
     }
     globals->dctx = dctx;
     if ( !!j_procs ) {
-        globals->xportProcs = makeXportProcs( MPPARM(mpool) env,
+        globals->xportProcs = makeXportProcs( MPPARM(mpool) env, globals->util,
                                               TI_IF(&state->globalJNI->ti)
                                               j_procs );
     }
@@ -1488,7 +1386,7 @@ initGameGlobals( JNIEnv* env, JNIState* state, jobject jutil, jobject jprocs )
                                   jutil, globals->gi, globals );
     }
     if ( !!jprocs ) {
-        globals->xportProcs = makeXportProcs( MPPARM(state->mpool) env,
+        globals->xportProcs = makeXportProcs( MPPARM(state->mpool) env, globals->util,
                                               TI_IF(&state->globalJNI->ti)
                                               jprocs );
     }
@@ -1597,7 +1495,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeFromStream
                                   TI_IF(&state->globalJNI->ti)
                                   jdraw );
     }
-    globals->xportProcs = makeXportProcs( MPPARM(mpool) env,
+    globals->xportProcs = makeXportProcs( MPPARM(mpool) env, globals->util,
                                           TI_IF(&state->globalJNI->ti)
                                           jprocs );
 

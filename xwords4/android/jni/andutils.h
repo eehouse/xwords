@@ -122,6 +122,20 @@ void deleteLocalRefs( JNIEnv* env, ... );
 JNIEnv* waitEnvFromGlobals();
 void releaseEnvFromGlobals( JNIEnv* env );
 
+
+typedef struct _MTPData {
+    JNIEnv* env;
+    int count;
+    const XP_UCHAR* topics[4];
+    jbyteArray jPackets[4];
+    XP_UCHAR storage[256];
+    int offset;
+} MTPData;
+
+void msgAndTopicProc( void* closure, const XP_UCHAR* topic,
+                      const XP_U8* msgBuf, XP_U16 msgLen );
+jobject wrapResults( MTPData* mtp );
+
 void raw_log( const char* func, const char* fmt, ... );
 #ifdef DEBUG
 # define RAW_LOG(...) raw_log(  __func__, __VA_ARGS__ )

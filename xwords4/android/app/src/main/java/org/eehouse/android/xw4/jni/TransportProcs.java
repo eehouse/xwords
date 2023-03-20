@@ -21,8 +21,9 @@
 package org.eehouse.android.xw4.jni;
 
 import org.eehouse.android.xw4.NetLaunchInfo;
-import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.NetLaunchInfo;
+import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
+import org.eehouse.android.xw4.jni.XwJNI.TopicsAndPackets;
 
 public interface TransportProcs {
 
@@ -33,6 +34,7 @@ public interface TransportProcs {
     int transportSendMsg( byte[] buf, int streamVers, String msgNo,
                           CommsAddrRec addr, CommsConnType conType,
                           int gameID, int timestamp );
+    int transportSendMQTT( TopicsAndPackets tap );
     boolean transportSendInvt( CommsAddrRec addr, CommsConnType conType,
                                NetLaunchInfo nli, int timestamp );
 

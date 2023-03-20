@@ -26,6 +26,7 @@ import org.eehouse.android.xw4.DlgDelegate.DlgClickNotify.InviteMeans;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.jni.CommsAddrRec;
 import org.eehouse.android.xw4.jni.TransportProcs;
+import org.eehouse.android.xw4.jni.XwJNI.TopicsAndPackets;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -81,11 +82,6 @@ public class MultiMsgSink implements TransportProcs {
         return NFCUtils.addMsgFor( buf, gameID );
     }
 
-    int sendViaMQTT( String addressee, byte[] buf, int streamVers, int gameID )
-    {
-        return MQTTUtils.send( m_context, addressee, gameID, buf, streamVers );
-    }
-
     public int numSent()
     {
         return m_sentSet.size();
@@ -125,7 +121,7 @@ public class MultiMsgSink implements TransportProcs {
             nSent = sendViaNFC( buf, gameID );
             break;
         case COMMS_CONN_MQTT:
-            nSent = sendViaMQTT( addr.mqtt_devID, buf, streamVers, gameID );
+            Assert.failDbg();   // shouldn't come this way
             break;
         default:
             Assert.failDbg();
@@ -144,6 +140,12 @@ public class MultiMsgSink implements TransportProcs {
     }
 
     @Override
+    public int transportSendMQTT( TopicsAndPackets tap )
+    {
+        return MQTTUtils.send( m_context, tap );
+    }
+
+    @Override
     public void countChanged( int newCount )
     {
         // Log.d( TAG, "countChanged(new=%d); dropping", newCount );
@@ -159,10 +161,7 @@ public class MultiMsgSink implements TransportProcs {
         String target = null;
         switch ( typ ) {
         case COMMS_CONN_MQTT:
-            target = addr.mqtt_devID;
-            means = InviteMeans.MQTT;
-            MQTTUtils.sendInvite( context, addr.mqtt_devID, nli );
-            success = true;
+            Assert.failDbg();
             break;
         case COMMS_CONN_SMS:
             if ( XWPrefs.getNBSEnabled( context ) ) {

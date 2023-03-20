@@ -562,22 +562,6 @@ public class MQTTUtils extends Thread
         clearInstance( this );
     }
 
-    public static void sendInvite( Context context, String invitee,
-                                   NetLaunchInfo nli )
-    {
-        Log.d( TAG, "sendInvite(invitee: %s, nli: %s)", invitee, nli );
-        TopicsAndPackets tap = XwJNI.dvc_makeMQTTInvites( invitee, nli );
-        addToSendQueue( context, tap );
-    }
-
-    // This goes away? comms_invite() is already getting called. PENDING
-    public static void addInvite( GamePtr game, String devID, NetLaunchInfo nli )
-    {
-        CommsAddrRec destAddr = new CommsAddrRec(CommsConnType.COMMS_CONN_MQTT)
-            .setMQTTParams( devID );
-        XwJNI.comms_invite( game, nli, destAddr, false );
-    }
-
     private static void notifyNotHere( Context context, String addressee,
                                        int gameID )
     {
@@ -585,15 +569,10 @@ public class MQTTUtils extends Thread
         addToSendQueue( context, tap );
     }
 
-    public static int send( Context context, String addressee, int gameID,
-                            byte[] buf, int streamVers )
+    public static int send( Context context, TopicsAndPackets tap )
     {
-        Log.d( TAG, "send(to:%s, len: %d)", addressee, buf.length );
-        Assert.assertTrueNR( 16 == addressee.length() );
-        TopicsAndPackets tap = XwJNI.dvc_makeMQTTMessages( addressee, gameID,
-                                                           buf, streamVers );
         addToSendQueue( context, tap );
-        return buf.length;
+        return -1;
     }
 
     private static void addToSendQueue( Context context, TopicsAndPackets tap )

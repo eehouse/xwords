@@ -23,10 +23,11 @@ package org.eehouse.android.xw4;
 import android.content.Context;
 
 
-import org.eehouse.android.xw4.jni.CommsAddrRec;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
+import org.eehouse.android.xw4.jni.CommsAddrRec;
 import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
 import org.eehouse.android.xw4.jni.TransportProcs;
+import org.eehouse.android.xw4.jni.XwJNI.TopicsAndPackets;
 
 public class CommsTransport implements TransportProcs {
     private static final String TAG = CommsTransport.class.getSimpleName();
@@ -89,12 +90,18 @@ public class CommsTransport implements TransportProcs {
                                  timestamp, buf, streamVers, msgID );
         }
 
-        // Keep this while debugging why the resend_all that gets
-        // fired on reconnect doesn't unstall a game but a manual
-        // resend does.
+        // Keep this while debugging why the resend_all that gets fired on
+        // reconnect doesn't install a game but a manual resend does.
         Log.d( TAG, "transportSendMsg(len=%d, typ=%s) => %d", buf.length,
                conType, nSent );
         return nSent;
+    }
+
+    @Override
+    public int transportSendMQTT( TopicsAndPackets tap )
+    {
+        Log.d( TAG, "transportSendMQTT()" );
+        return MQTTUtils.send( m_context, tap );
     }
 
     @Override
@@ -128,7 +135,7 @@ public class CommsTransport implements TransportProcs {
             nSent = NFCUtils.addMsgFor( buf, gameID );
             break;
         case COMMS_CONN_MQTT:
-            nSent = MQTTUtils.send( context, addr.mqtt_devID, gameID, buf, streamVers );
+            Assert.failDbg();   // comes into transportSendMQTT() now
             break;
         default:
             Assert.failDbg();

@@ -28,6 +28,7 @@
 #include "comms.h"
 
 TransportProcs* makeXportProcs( MPFORMAL JNIEnv* env,
+                                XW_UtilCtxt* util,
 #ifdef MAP_THREAD_TO_ENV
                                 EnvThreadInfo* ti,
 #endif

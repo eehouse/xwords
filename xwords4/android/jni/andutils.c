@@ -838,6 +838,47 @@ deleteLocalRefs( JNIEnv* env, ... )
     va_end( ap );
 }
 
+/* Passed to device methods related to MQTT messages */
+void
+msgAndTopicProc( void* closure, const XP_UCHAR* topic,
+                 const XP_U8* msgBuf, XP_U16 msgLen )
+{
+    MTPData* mtp = (MTPData*)closure;
+    JNIEnv* env = mtp->env;
+
+    const XP_UCHAR* ptr = mtp->topics[mtp->count] = &mtp->storage[mtp->offset];
+    size_t siz = XP_SNPRINTF( (char*)ptr, VSIZE(mtp->storage) - mtp->offset,
+                              "%s", topic );
+    XP_ASSERT( siz < VSIZE(mtp->storage) - mtp->offset );
+    XP_USE( siz );
+    mtp->offset += 1 + XP_STRLEN(ptr);
+
+    mtp->jPackets[mtp->count] = makeByteArray( env, msgLen, (const jbyte*)msgBuf );
+
+    ++mtp->count;
+    XP_ASSERT( mtp->count < VSIZE(mtp->topics) );
+}
+
+jobject
+wrapResults( MTPData* mtp )
+{
+    JNIEnv* env = mtp->env;
+    jobject result =
+        makeObjectEmptyConstr( env, PKG_PATH("jni/XwJNI$TopicsAndPackets"));
+
+    jobjectArray jTopics = makeStringArray( env, mtp->count, mtp->topics );
+    setObjectField( env, result, "topics", "[Ljava/lang/String;", jTopics );
+
+    jobjectArray jPackets = makeByteArrayArray( env, mtp->count );
+    for ( int ii = 0; ii < mtp->count; ++ii ) {
+        (*env)->SetObjectArrayElement( env, jPackets, ii, mtp->jPackets[ii] );
+        deleteLocalRef( env, mtp->jPackets[ii] );
+    }
+    setObjectField( env, result, "packets", "[[B", jPackets );
+
+    return result;
+}
+
 #ifdef DEBUG
 
 /* A bunch of threads are generating log statements. */
