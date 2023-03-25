@@ -346,6 +346,7 @@ dvc_makeMQTTMessages( XW_DUtilCtxt* dutil, XWEnv xwe,
 {
     XP_S16 nSent0 = 0;
     XP_S16 nSent1 = 0;
+    XP_U8 nBufs = 0;
     XP_LOGFF( "(streamVersion: %X)", streamVersion );
     XP_UCHAR devTopic[64];      /* used by two below */
     formatMQTTDevTopic( addressee, devTopic, VSIZE(devTopic) );
@@ -355,9 +356,10 @@ dvc_makeMQTTMessages( XW_DUtilCtxt* dutil, XWEnv xwe,
        more likely we just aren't in that point in the game, but send both. If
        it's > 0 but < STREAM_VERS_NORELAY, no point sending PROTO_3 */
 
-    if ( 0 == streamVersion || STREAM_VERS_NORELAY > streamVersion ) {
-        for ( SendMsgsPacket* packet = (SendMsgsPacket*)msgs;
-              !!packet; packet = (SendMsgsPacket* const)packet->next ) {
+    for ( SendMsgsPacket* packet = (SendMsgsPacket*)msgs;
+          !!packet; packet = (SendMsgsPacket* const)packet->next ) {
+        ++nBufs;
+        if ( 0 == streamVersion || STREAM_VERS_NORELAY > streamVersion ) {
             XWStreamCtxt* stream = mkStream( dutil );
             addHeaderGameIDAndCmd( dutil, xwe, CMD_MSG, gameID, stream );
             stream_putBytes( stream, packet->buf, packet->len );
@@ -371,15 +373,12 @@ dvc_makeMQTTMessages( XW_DUtilCtxt* dutil, XWEnv xwe,
         XWStreamCtxt* stream = mkStream( dutil );
         addProto3HeaderCmd( dutil, xwe, CMD_MSG, stream );
 
-        XP_U8 nBufs = 0;
-        for ( SendMsgsPacket* packet = (SendMsgsPacket*)msgs;
-              !!packet; packet = (SendMsgsPacket* const)packet->next ) {
-            ++nBufs;
-        }
-
         /* For now, we ship one message per packet. But the receiving code
            should be ready */
         stream_putU8( stream, nBufs );
+        if ( 1 < nBufs ) {
+            XP_LOGFF( "nBufs > 1: %d", nBufs );
+        }
         for ( SendMsgsPacket* packet = (SendMsgsPacket*)msgs;
               !!packet; packet = (SendMsgsPacket* const)packet->next ) {
             XP_U32 len = packet->len;
@@ -459,6 +458,9 @@ dispatchMsgs( XW_DUtilCtxt* dutil, XWEnv xwe, XP_U8 proto, XWStreamCtxt* stream,
               XP_U32 gameID, const CommsAddrRec* from )
 {
     int msgCount = proto >= PROTO_3 ? stream_getU8( stream ) : 1;
+    if ( 1 < msgCount ) {
+        XP_LOGFF( "nBufs > 1: %d", msgCount );
+    }
     for ( int ii = 0; ii < msgCount; ++ii ) {
         XP_U32 msgLen;
         if ( PROTO_1 == proto ) {
