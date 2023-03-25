@@ -489,8 +489,7 @@ testQueues( CommsCtxt* comms, XWEnv xwe )
     for ( int ii = 0; ii < VSIZE(elems); ++ii ) {
         XP_PlayerAddr channelNo = 0;
         MsgQueueElem* elem = makeNewElem( comms, xwe, ii + 1, channelNo );
-        addToQueue( comms, xwe, elem, XP_FALSE );
-        elems[ii] = elem;
+        elems[ii] = addToQueue( comms, xwe, elem, XP_FALSE );
     }
 
     XP_ASSERT( comms->queueLen == startLen + VSIZE(elems) );
@@ -1023,7 +1022,7 @@ comms_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
         msg->checksum = dutil_md5sum( comms->dutil, xwe, msg->msg, len );
 #endif
         XP_ASSERT( NULL == msg->next );
-        addToQueue( comms, xwe, msg, XP_FALSE );
+        (void)addToQueue( comms, xwe, msg, XP_FALSE );
     }
     XP_ASSERT( queueLen == comms->queueLen );
 
@@ -1740,14 +1739,16 @@ comms_invite( CommsCtxt* comms, XWEnv xwe, const NetLaunchInfo* nli,
         MsgQueueElem* elem = makeInviteElem( comms, xwe, forceChannel, nli );
 
         elem = addToQueue( comms, xwe, elem, XP_TRUE );
-        XP_LOGFF( "added invite on channel %d", elem->channelNo & CHANNEL_MASK );
-        /* Let's let platform code decide whether to call sendMsg() . On
-           Android creating a game with an invitation in its queue is always
-           followed by opening the game, which results in comms_resendAll()
-           getting called leading to a second send immediately after this. So
-           let Android drop it. Linux, though, needs it for now. */
-        if ( sendNow && !!comms->procs.sendInvt ) {
-            sendMsg( comms, xwe, elem, COMMS_CONN_NONE );
+        if ( !!elem ) {
+            XP_LOGFF( "added invite on channel %d", elem->channelNo & CHANNEL_MASK );
+            /* Let's let platform code decide whether to call sendMsg() . On
+               Android creating a game with an invitation in its queue is always
+               followed by opening the game, which results in comms_resendAll()
+               getting called leading to a second send immediately after this. So
+               let Android drop it. Linux, though, needs it for now. */
+            if ( sendNow && !!elem && !!comms->procs.sendInvt ) {
+                sendMsg( comms, xwe, elem, COMMS_CONN_NONE );
+            }
         }
     }
     LOG_RETURN_VOID();
@@ -1812,8 +1813,10 @@ comms_send( CommsCtxt* comms, XWEnv xwe, XWStreamCtxt* stream )
         elem = makeElemWithID( comms, xwe, msgID, rec, channelNo, stream );
         if ( NULL != elem ) {
             elem = addToQueue( comms, xwe, elem, XP_TRUE );
-            printQueue( comms );
-            result = sendMsg( comms, xwe, elem, COMMS_CONN_NONE );
+            if ( !!elem ) {
+                printQueue( comms );
+                result = sendMsg( comms, xwe, elem, COMMS_CONN_NONE );
+            }
         }
     }
     THREAD_CHECK_END();
@@ -1843,6 +1846,12 @@ addToQueue( CommsCtxt* comms, XWEnv xwe, MsgQueueElem* newElem, XP_Bool notify )
     MsgQueueElem** head;
 #ifdef MSGS_IN_CHANNEL
     AddressRecord* rec = getRecordFor( comms, newElem->channelNo );
+    XP_ASSERT( !!rec );     /* I've seen this once on an old game */
+    if ( !rec ) {
+        freeElem( MPPARM(comms->mpool) newElem );
+        asAdded = NULL;
+        goto dropPacket;
+    }
     head = &rec->_msgQueueHead;
 #else
     head = &comms->_msgQueueHead;
@@ -1874,6 +1883,9 @@ addToQueue( CommsCtxt* comms, XWEnv xwe, MsgQueueElem* newElem, XP_Bool notify )
             notifyQueueChanged( comms, xwe );
         }
     }
+#ifdef MSGS_IN_CHANNEL
+ dropPacket:
+#endif
     XP_ASSERT( comms->queueLen <= 128 ); /* reasonable limit in testing */
     THREAD_CHECK_END();
     return asAdded;
@@ -1911,7 +1923,6 @@ _assertQueueOk( const CommsCtxt* comms, const char* func )
     XP_LOGFF( "(func=%s)", func );
     XP_U16 count = 0;
 
-
 #ifdef MSGS_IN_CHANNEL
     for ( AddressRecord* recs = comms->recs; !!recs; recs = recs->next ) {
         for ( MsgQueueElem* elem = recs->_msgQueueHead; !!elem; elem = elem->next ) {
@@ -1924,7 +1935,10 @@ _assertQueueOk( const CommsCtxt* comms, const char* func )
         ++count;
     }
 #endif
-    XP_ASSERT( count == comms->queueLen );
+    if ( count != comms->queueLen ) {
+        XP_LOGFF( "count(%d) != comms->queueLen(%d)", count, comms->queueLen );
+        XP_ASSERT(0);
+    }
     if ( count >= 10 ) {
         XP_LOGFF( "queueLen unexpectedly high: %d", count );
     }
