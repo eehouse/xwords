@@ -163,7 +163,7 @@ typedef XP_U8 XP_LangCode;
 
 typedef struct SendMsgsPacket {
     struct SendMsgsPacket* next;
-    const XP_UCHAR msgNo[16];
+    const XP_UCHAR msgNo[16];        /* Do I need this? PENDING */
     XP_U32 createdStamp;
     const XP_U8* buf;
     XP_U16 len;

@@ -1785,6 +1785,9 @@ addToQueue( CommsCtxt* comms, XWEnv xwe, MsgQueueElem* newElem, XP_Bool notify )
 
     if ( newElem == asAdded ) {
         ++comms->queueLen;
+        /* Do I need this? PENDING */
+        formatMsgNo( comms, newElem, (XP_UCHAR*)newElem->smp.msgNo,
+                     sizeof(newElem->smp.msgNo) );
         if ( notify ) {
             notifyQueueChanged( comms, xwe );
         }
@@ -2135,16 +2138,20 @@ sendMsg( const CommsCtxt* comms, XWEnv xwe, MsgQueueElem* elem,
                         }
 #endif
                     } else {
+                        SendMsgsPacket* head;
+                        if ( COMMS_CONN_MQTT == typ ) {
+                            AddressRecord* rec = getRecordFor( comms, channelNo);
+                            head = &rec->_msgQueueHead->smp;
+                        } else {
+                            head = &elem->smp;
+                            XP_ASSERT( !head->next );
+                        }
                         XP_ASSERT( !!comms->procs.sendMsgs );
                         XP_U32 gameid = gameID( comms );
                         logAddrComms( comms, &addr, __func__ );
                         XP_ASSERT( 0 != elem->smp.createdStamp );
-                        SendMsgsPacket packet = elem->smp;
-                        packet.next = NULL;
-                        formatMsgNo( comms, elem, (XP_UCHAR*) packet.msgNo, sizeof(packet.msgNo) );
-                        nSent = (*comms->procs.sendMsgs)( xwe, &packet,
-                                                          comms->streamVersion, &addr,
-                                                          typ, gameid,
+                        nSent = (*comms->procs.sendMsgs)( xwe, head, comms->streamVersion,
+                                                          &addr, typ, gameid,
                                                           comms->procs.closure );
                         checkForPrev( comms, elem, typ );
                     }
@@ -2168,7 +2175,6 @@ sendMsg( const CommsCtxt* comms, XWEnv xwe, MsgQueueElem* elem,
         XP_LOGFF( "(%s; msgID=" XP_LD ", len=%d)=>%d", cbuf1, elem->msgID,
                   elem->smp.len, result );
     }
-    XP_ASSERT( result < 0 || elem->smp.len == result );
     return result;
 } /* sendMsg */
 
@@ -2182,31 +2188,6 @@ send_relay_ack( CommsCtxt* comms, XWEnv xwe )
 }
 #endif
 
-typedef XP_S16 (*MsgProc)( CommsCtxt* comms, XWEnv xwe, MsgQueueElem* msg,
-                           CommsConnType filter, void* closure );
-
-typedef struct _SendElemData {
-    CommsCtxt* comms;
-    XWEnv xwe;
-    CommsConnType filter;
-    XP_U16 count;
-    XP_Bool success;
-} SendElemData;
-
-static ForEachAct
-sendElemProc( MsgQueueElem* elem, void* closure )
-{
-    SendElemData* sedp = (SendElemData*)closure;
-    XP_S16 len = sendMsg( sedp->comms, sedp->xwe, elem, sedp->filter );
-    if ( 0 > len ) {
-        sedp->success = XP_FALSE;
-    } else {
-        XP_ASSERT( 0 < len );
-        ++sedp->count;
-    }
-    return FEA_OK;
-}
-
 XP_S16
 comms_resendAll( CommsCtxt* comms, XWEnv xwe, CommsConnType filter, XP_Bool force )
 {
@@ -2218,20 +2199,23 @@ comms_resendAll( CommsCtxt* comms, XWEnv xwe, CommsConnType filter, XP_Bool forc
         XP_LOGFF( "aborting: %d seconds left in backoff",
                  comms->nextResend - now );
     } else {
-        SendElemData sed = {
-            .success = XP_TRUE,
-            .comms = comms,
-            .xwe = xwe,
-            .filter = filter,
-        };
-        forEachElem( comms, sendElemProc, &sed );
+        XP_U32 gameid = gameID( comms );
+        for ( AddressRecord* rec = comms->recs; !!rec; rec = rec->next ) {
+            CommsConnType typ;
+            for ( XP_U32 st = 0; addr_iter( &rec->addr, &typ, &st ); ) {
+                if ( COMMS_CONN_NONE == filter || typ == filter ) {
+                    count += (*comms->procs.sendMsgs)( xwe, &rec->_msgQueueHead->smp,
+                                                       comms->streamVersion,
+                                                       &rec->addr, typ, gameid,
+                                                       comms->procs.closure );
+                }
+            }
+        }
 
         /* Now set resend values */
-        if ( 0 < sed.count && sed.success && !force ) {
-            comms->resendBackoff = 2 * (1 + comms->resendBackoff);
-            XP_LOGFF( "backoff now %d", comms->resendBackoff );
-            comms->nextResend = now + comms->resendBackoff;
-        }
+        comms->resendBackoff = 2 * (1 + comms->resendBackoff);
+        XP_LOGFF( "backoff now %d", comms->resendBackoff );
+        comms->nextResend = now + comms->resendBackoff;
     }
     XP_LOGFF( TAGFMT() "=> %d", TAGPRMS, count );
     return count;
@@ -2264,7 +2248,7 @@ ackAnyImpl( CommsCtxt* comms, XWEnv xwe, XP_Bool force )
                 sendEmptyMsg( comms, xwe, rec );
             }
         }
-        XP_LOGFF( "sent for %d channels (of %d)", nSent, nSent );
+        XP_LOGFF( "sent for %d channels (of %d)", nSent, nSeen );
     }
     THREAD_CHECK_END();
 }
