@@ -19,8 +19,8 @@
  */
 
 def INITIAL_CLIENT_VERS = 10
-def VERSION_CODE_BASE = 192
-def VERSION_NAME = '4.4.196'
+def VERSION_CODE_BASE = 193
+def VERSION_NAME = '4.4.197'
 def BUILD_INFO_NAME = "build-info.txt"
 def LAST_COMMIT_FILE = "last-commit.txt"
 
