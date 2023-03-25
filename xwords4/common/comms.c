@@ -2146,6 +2146,7 @@ sendMsg( const CommsCtxt* comms, XWEnv xwe, MsgQueueElem* elem,
                             head = &elem->smp;
                             XP_ASSERT( !head->next );
                         }
+                        XP_ASSERT( !!head );
                         XP_ASSERT( !!comms->procs.sendMsgs );
                         XP_U32 gameid = gameID( comms );
                         logAddrComms( comms, &addr, __func__ );
@@ -2201,13 +2202,15 @@ comms_resendAll( CommsCtxt* comms, XWEnv xwe, CommsConnType filter, XP_Bool forc
     } else {
         XP_U32 gameid = gameID( comms );
         for ( AddressRecord* rec = comms->recs; !!rec; rec = rec->next ) {
-            CommsConnType typ;
-            for ( XP_U32 st = 0; addr_iter( &rec->addr, &typ, &st ); ) {
-                if ( COMMS_CONN_NONE == filter || typ == filter ) {
-                    count += (*comms->procs.sendMsgs)( xwe, &rec->_msgQueueHead->smp,
-                                                       comms->streamVersion,
-                                                       &rec->addr, typ, gameid,
-                                                       comms->procs.closure );
+            const SendMsgsPacket* const head = &rec->_msgQueueHead->smp;
+            if ( !!head ) {
+                CommsConnType typ;
+                for ( XP_U32 st = 0; addr_iter( &rec->addr, &typ, &st ); ) {
+                    if ( COMMS_CONN_NONE == filter || typ == filter ) {
+                        count += (*comms->procs.sendMsgs)( xwe, head, comms->streamVersion,
+                                                           &rec->addr, typ, gameid,
+                                                           comms->procs.closure );
+                    }
                 }
             }
         }
