@@ -372,24 +372,21 @@ onMsgAndTopic( void* closure, const XP_UCHAR* topic,
 }
 
 static XP_S16
-send_msg( XWEnv xwe, const XP_U8* buf, XP_U16 len,
-          XP_U16 streamVersion, const XP_UCHAR* msgNo,
-          XP_U32 createdStamp, const CommsAddrRec* addr,
-          CommsConnType conType, XP_U32 gameID,
-          void* closure )
+send_msgs( XWEnv xwe, const SendMsgsPacket* const msgs,
+           XP_U16 streamVersion, const CommsAddrRec* addr,
+           CommsConnType conType, XP_U32 gameID,
+           void* closure )
 {
     XP_S16 nSent = -1;
     Globals* globals = (Globals*)closure;
 
     if ( addr_hasType( addr, COMMS_CONN_MQTT ) ) {
-        dvc_makeMQTTMessages( globals->dutil, NULL_XWE,
-                              onMsgAndTopic, NULL,
-                              &addr->u.mqtt.devID,
-                              gameID, buf, len,
-                              streamVersion );
+        nSent = dvc_makeMQTTMessages( globals->dutil, NULL_XWE,
+                                      onMsgAndTopic, NULL,
+                                      msgs, &addr->u.mqtt.devID,
+                                      gameID, streamVersion );
     }
-    XP_LOGFF("(len=%d, msgNo=%s, gameID=%X)=>%d",
-             len, msgNo, gameID, nSent );
+    XP_LOGFF("(gameID=%X)=>%d", gameID, nSent );
     return nSent;
 }
 
@@ -1208,7 +1205,7 @@ initDeviceGlobals( Globals* globals )
     globals->cp.sortNewTiles = XP_TRUE;
     globals->cp.showColors = XP_TRUE;
 
-    globals->transportProcs.sendMsg = send_msg;
+    globals->transportProcs.sendMsgs = send_msgs;
     globals->transportProcs.sendInvt = send_invite;
     globals->transportProcs.countChanged = count_changed;
     globals->transportProcs.closure = globals;
