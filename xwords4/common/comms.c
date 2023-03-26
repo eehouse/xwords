@@ -1827,7 +1827,6 @@ printQueue( const CommsCtxt* comms )
 static void
 _assertQueueOk( const CommsCtxt* comms, const char* func )
 {
-    XP_LOGFF( "(func=%s)", func );
     XP_U16 count = 0;
 
     for ( AddressRecord* recs = comms->recs; !!recs; recs = recs->next ) {
@@ -2138,15 +2137,17 @@ sendMsg( const CommsCtxt* comms, XWEnv xwe, MsgQueueElem* elem,
                         }
 #endif
                     } else {
-                        SendMsgsPacket* head;
+                        SendMsgsPacket* head = NULL;
                         if ( COMMS_CONN_MQTT == typ ) {
                             AddressRecord* rec = getRecordFor( comms, channelNo);
                             head = &rec->_msgQueueHead->smp;
                         } else {
-                            head = &elem->smp;
-                            XP_ASSERT( !head->next );
+                            XP_ASSERT( !elem->smp.next );
                         }
-                        XP_ASSERT( !!head );
+                        if ( !head ) {
+                            head = &elem->smp;
+                        }
+                        XP_ASSERT( !!head ); /* here */
                         XP_ASSERT( !!comms->procs.sendMsgs );
                         XP_U32 gameid = gameID( comms );
                         logAddrComms( comms, &addr, __func__ );
