@@ -2147,7 +2147,7 @@ sendMsg( const CommsCtxt* comms, XWEnv xwe, MsgQueueElem* elem,
                         if ( !head ) {
                             head = &elem->smp;
                         }
-                        XP_ASSERT( !!head ); /* here */
+                        XP_ASSERT( !!head );
                         XP_ASSERT( !!comms->procs.sendMsgs );
                         XP_U32 gameid = gameID( comms );
                         logAddrComms( comms, &addr, __func__ );
