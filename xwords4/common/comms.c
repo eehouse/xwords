@@ -1,6 +1,6 @@
 /* -*- compile-command: "cd ../linux && make MEMDEBUG=TRUE -j3"; -*- */
 /* 
- * Copyright 2001 - 2022 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2001 - 2023 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -1825,7 +1825,7 @@ printQueue( const CommsCtxt* comms )
 }
 
 static void
-_assertQueueOk( const CommsCtxt* comms, const char* func )
+_assertQueueOk( const CommsCtxt* comms, const char* XP_UNUSED(func) )
 {
     XP_U16 count = 0;
 
@@ -2203,14 +2203,25 @@ comms_resendAll( CommsCtxt* comms, XWEnv xwe, CommsConnType filter, XP_Bool forc
     } else {
         XP_U32 gameid = gameID( comms );
         for ( AddressRecord* rec = comms->recs; !!rec; rec = rec->next ) {
-            const SendMsgsPacket* const head = &rec->_msgQueueHead->smp;
+            const MsgQueueElem* const elem = rec->_msgQueueHead;
+            const SendMsgsPacket* const head = &elem->smp;
             if ( !!head ) {
                 CommsConnType typ;
                 for ( XP_U32 st = 0; addr_iter( &rec->addr, &typ, &st ); ) {
                     if ( COMMS_CONN_NONE == filter || typ == filter ) {
-                        count += (*comms->procs.sendMsgs)( xwe, head, comms->streamVersion,
-                                                           &rec->addr, typ, gameid,
-                                                           comms->procs.closure );
+                        if ( IS_INVITE(elem) ) {
+                            NetLaunchInfo* nli = (NetLaunchInfo*)head->buf;
+                            (void)(*comms->procs.sendInvt)( xwe, nli,
+                                                            head->createdStamp,
+                                                            &rec->addr, typ,
+                                                            comms->procs.closure );
+                            ++count;
+                            XP_ASSERT( !head->next );
+                        } else {
+                            count += (*comms->procs.sendMsgs)( xwe, head, comms->streamVersion,
+                                                               &rec->addr, typ, gameid,
+                                                               comms->procs.closure );
+                        }
                     }
                 }
             }
