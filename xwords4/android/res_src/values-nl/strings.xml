@@ -3,16 +3,16 @@
     <string name="str_game_name_fmt">%1$s (%2$s)</string>
     <string name="robot_name_fmt">%1$s (robot)</string>
     <string name="missing_player">(nog niet hier...)</string>
-    <string name="gameOver">Spel voorbij</string>
+    <string name="gameOver">Spel afgelopen</string>
     <plurals name="moves_fmt">
         <item quantity="one">1 zet gespeeld</item>
         <item quantity="other">%1$d zetten gespeeld</item>
     </plurals>
     <string name="button_delete">Verwijder</string>
     <string name="button_reset">Reset</string>
-    <string name="gamel_menu_dicts">Woordenlijsten…</string>
-    <string name="menu_prefs">Instellingen…</string>
-    <string name="board_menu_file_about">Over CrossWords…</string>
+    <string name="gamel_menu_dicts">Woordenlijsten</string>
+    <string name="menu_prefs">App Instellingen</string>
+    <string name="board_menu_file_about">Over CrossWords</string>
     <string name="list_item_config">Spelinstellingen…</string>
     <string name="list_item_rename">Hernoem…</string>
     <string name="list_item_move">Verplaats naar groep…</string>
@@ -20,16 +20,20 @@
     <string name="list_item_reset">Reset</string>
     <string name="list_item_new_from">Nieuw spel gebaseerd op</string>
     <string name="list_item_copy">Kopieer</string>
-    <string name="no_copy_network">Spellen die al verbonden zijn kunnen niet gekopieerd worden. Gebruik \"Nieuw spel gebaseerd op\" voor een kopie met dezelfde instellingen, klaar om mee te spelen.</string>
+    <string name="no_copy_network">Spellen die al met het relais zijn verbonden, kunnen niet worden gekopieerd. Gebruik \"Nieuw uit\" voor een speelklare kopie met dezelfde instellingen.</string>
     <string name="rename_label">Verander de naam van dit spel naar:</string>
-    <string name="rename_label_caveat">Verander de naam van dit spel (op dit apparaat) naar:</string>
+    <string name="rename_label_caveat">Verander de naam van dit spel (alleen op dit apparaat) naar:</string>
     <plurals name="confirm_seldeletes_fmt">
-        <item quantity="one">Weet je zeker dat je 1 geselecteerd spel wilt verwijderen? Deze actie kan niet ongedaan gemaakt worden.</item>
-        <item quantity="other">Weet je zeker dat je %1$d geselecteerde spellen wilt verwijderen? Deze actie kan niet ongedaan gemaakt worden.</item>
+        <item quantity="one">Weet je zeker dat je het geselecteerde spel wilt verwijderen\? Deze actie kan niet ongedaan worden gemaakt.</item>
+        <item quantity="other">Weet u zeker dat u de %1$d geselecteerde spellen wilt verwijderen\? Deze actie kan niet ongedaan worden gemaakt.</item>
     </plurals>
     <plurals name="confirm_reset_fmt">
-        <item quantity="one">Weet je zeker dat je 1 geselecteerd spel wilt resetten?\n\n(Resetten verwijderd alle zetten en verbindingsinformatie.)</item>
-        <item quantity="other">Weet je zeker dat je %1$d geselecteerde spellen wilt resetten?\n\n(Resetten verwijderd alle zetten en verbindingsinformatie.)</item>
+        <item quantity="one">Weet je zeker dat je het geselecteerd spel wilt resetten\?
+\n
+\n(Resetten verwijderd alle zetten en verbindingsinformatie.)</item>
+        <item quantity="other">Weet je zeker dat je %1$d geselecteerde spellen wilt resetten\?
+\n
+\n(Resetten verwijderd alle zetten en verbindingsinformatie.)</item>
     </plurals>
     <string name="loc_builtin">Ingebouwd</string>
     <string name="loc_downloads">Downloads</string>
@@ -706,4 +710,85 @@
     <string name="not_again_archive">Archiveren gebruikt een speciale groep met de naam \"Archief\" om voltooide spellen in op te slaan die je wilt bewaren. Omdat een heel archief verwijderen makkelijk is, is archiveren ook een goede manier om spellen voor verwijderen te markeren.
 \n
 \n(De archiefgroep verwijderen is veilig omdat het opnieuw aangemaakt wordt wanneer nodig.)</string>
+    <string name="filter_progress_fmt">Verwerking %1$d woorden</string>
+    <string name="cellline">Celranden</string>
+    <string name="invite_p2p_desc_extra">Alleen apparaten die momenteel beschikbaar zijn worden getoond. Als een apparaat in de buurt niet wordt weergegeven, controleer dan of WiFi is ingeschakeld, of CrossWords is geïnstalleerd en of spelen via WiFi Direct is ingeschakeld.</string>
+    <string name="invite_nbs_desc">Er wordt dan een databericht gestuurd naar het toestel met dat telefoonnummer. Als CrossWords daar geïnstalleerd is en de nodige rechten heeft, zal het de uitnodiging ontvangen en kan het spelen beginnen.</string>
+    <string name="get_sms_name">Contactnaam ( optioneel):</string>
+    <string name="show_tiles_button">Toon Tegels</string>
+    <string name="pat_starts_with">Begint met</string>
+    <string name="pat_contains">Bevat</string>
+    <string name="tilepick_all_fmt">Kies %1$d voor mij</string>
+    <string name="error_min_gt_max">De minimale waarde van de lengte kan niet groter zijn dan de maximale waarde.</string>
+    <string name="alrt_bad_filter">Kan filter niet toepassen.</string>
+    <string name="not_again_traysize">Deze nieuwe instelling verandert het aantal tegels in het rek.
+\n
+\nOpmerking: als iemand in uw netwerkspel een oudere versie van CrossWords gebruikt, wordt deze instelling teruggezet naar 7 voor iedereen in het spel.</string>
+    <string name="email_logs_msg">Logs bijgevoegd</string>
+    <string name="bt_pair_settings">Koppel Meer</string>
+    <string name="button_scan">Herscan</string>
+    <string name="p2p_invite_title">Uitnodiging WiFi Direct</string>
+    <string name="get_sms_title">Handmatige invoer</string>
+    <string name="newgame_drop_mqtt">Zet internet uit</string>
+    <string name="password_hint">(Optioneel)</string>
+    <string name="button_delete_game">Spel Verwijderen</string>
+    <string name="relaypage_url_copied">Spel URL gekopieerd naar klembord</string>
+    <string name="langUnknownFmt">Onbekend (%1$s)</string>
+    <string name="disable_mqtt">Spelen via internet uitschakelen</string>
+    <string name="invite_who_empty_expl">leeg expl</string>
+    <string name="tiles_header_count">Nummer</string>
+    <plurals name="bt_scan_progress_fmt">
+        <item quantity="one">Scannen naar CrossWords</item>
+        <item quantity="other">Scannen naar CrossWords op %1$d gekoppelde apparaten</item>
+    </plurals>
+    <string name="cellline_width">Breedte celrand</string>
+    <string name="show_tiles_title_fmt">Tegels voor %1$s</string>
+    <string name="filter_sum_pat_fmt">Tonen: %1$s, lengtes %2$d-%3$d (%4$d woorden)</string>
+    <string name="disableds_title">Uitgeschakelde adrestypes</string>
+    <string name="show_note_menu_fmt">Over %1$s</string>
+    <string name="bonus_l4x">Viervoudige letter</string>
+    <string name="bonus_w4x">Viervoudig woord</string>
+    <string name="tiles_header_value">Waarde</string>
+    <string name="email_logs_chooser">Stuur logs via</string>
+    <string name="email_logs_subject">CrossWords Logs</string>
+    <string name="empty_bt_inviter">Nog geen gekoppelde apparaten gedetecteerd.</string>
+    <string name="confirm_del_after_rematch_fmt">Herkansing geslaagd.
+\n
+\nWilt u nu het voltooide spel %1$s verwijderen\?
+\n
+\n(Deze actie kan niet ongedaan worden gemaakt.)</string>
+    <string name="word_to_clip_fmt">Gekopieerd \"%1$s\"</string>
+    <string name="filter_title_fmt">Laden van %1$s…</string>
+    <string name="pat_ends_with">Eindigt met</string>
+    <string name="old_apks_deleted_fmt">Verwijderde %1$d oude upgrade apks</string>
+    <string name="tile_tray_picker">Kies nieuwe tegels voor tray</string>
+    <string name="button_addBlank">+Blanco</string>
+    <string name="show_tiles_menu">Toon Tegels</string>
+    <string name="button_useconfig">Pas Filter toe</string>
+    <string name="bonus_w4x_summary">4W</string>
+    <string name="bonus_l4x_summary">4L</string>
+    <string name="disable_mqtt_summary">Alle internetcommunicatie (MQTT) uitschakelen</string>
+    <plurals name="invite_bt_desc_fmt_2">
+        <item quantity="one">Controleer het apparaat dat u in dit spel wilt opnemen.</item>
+        <item quantity="other">Controleer tot %1$d apparaten die u in dit spel wilt opnemen.</item>
+    </plurals>
+    <plurals name="invite_p2p_desc_fmt">
+        <item quantity="one">Selecteer de naam van het WiFiDirect-apparaat dat u wilt uitnodigen voor uw nieuwe spel en tik vervolgens op \"%2$s\".</item>
+        <item quantity="other">Selecteer de %1$d WiFiDirect apparaatnamen die u wilt uitnodigen voor uw nieuwe spel en tik vervolgens op \"%2$s\".</item>
+    </plurals>
+    <string name="tiles_header_face">Letter</string>
+    <string name="new_feature_filter">Je kunt woordenlijsten filteren op woorden die beginnen met, eindigen op en/of bevatten. U kunt filteren door te tikken op de Uitbreidingspijl in de rechterbovenhoek van het venster.
+\n
+\nLees meer in de FAQ door op de onderstaande knop te tikken.</string>
+    <plurals name="confirm_clear_bt_fmt">
+        <item quantity="one">Zeker weten dat je het gecontroleerde apparaat wilt vergeten\?</item>
+        <item quantity="other">Zeker weten dat u %1$d gecontroleerde apparaten wilt vergeten\?</item>
+    </plurals>
+    <string name="invite_bt_desc_postscript">"
+\n
+\n(De lijst is van gekoppelde apparaten waar CrossWords via een scan is gedetecteerd.)"</string>
+    <string name="empty_p2p_inviter">Er zijn momenteel geen apparaten bereikbaar via WiFiDirect waarop CrossWords is geïnstalleerd.</string>
+    <string name="confirm_clear_bt_postscript">"
+\n
+\n(Je kunt alleen apparaten opnieuw toevoegen die zich binnen Bluetooth-bereik bevinden.)"</string>
 </resources>
