@@ -132,7 +132,6 @@ justSend( XWEnv env, AndTransportProcs* aprocs, const SendMsgsPacket* const msg,
           XP_U16 streamVersion )
 {
     LOG_FUNC();
-    XP_ASSERT( !msg->next );
     const char* sig = "([BILjava/lang/String;L" PKG_PATH("jni/CommsAddrRec")
         ";L" PKG_PATH("jni/CommsAddrRec$CommsConnType") ";II)I";
 
@@ -158,7 +157,7 @@ and_xport_send( XWEnv xwe, const SendMsgsPacket* const msgs,
                 void* closure )
 {
     jint result = -1;
-    LOG_FUNC();
+    XP_LOGFF( "(conType=%s)", ConnType2Str( conType ) );
     AndTransportProcs* aprocs = (AndTransportProcs*)closure;
     ASSERT_ENV( aprocs->ti, xwe );
     if ( NULL != aprocs->jxport ) {
