@@ -528,6 +528,7 @@ public class XwJNI {
 
     public static native String server_formatDictCounts( GamePtr gamePtr, int nCols );
     public static native boolean server_getGameIsOver( GamePtr gamePtr );
+    public static native boolean server_getGameIsConnected( GamePtr gamePtr );
     public static native String server_writeFinalScores( GamePtr gamePtr );
     public static native boolean server_initClientConnection( GamePtr gamePtr );
     public static native void server_endGame( GamePtr gamePtr );

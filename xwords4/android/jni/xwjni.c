@@ -2055,6 +2055,17 @@ Java_org_eehouse_android_xw4_jni_XwJNI_server_1getGameIsOver
     return result;
 }
 
+JNIEXPORT jboolean JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_server_1getGameIsConnected
+( JNIEnv* env, jclass C, GamePtrType gamePtr )
+{
+    jboolean result;
+    XWJNI_START(gamePtr);
+    result = server_getGameIsConnected( state->game.server );
+    XWJNI_END();
+    return result;
+}
+
 JNIEXPORT jstring JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_model_1writeGameHistory
 ( JNIEnv* env, jclass C, GamePtrType gamePtr, jboolean gameOver )

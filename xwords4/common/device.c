@@ -407,6 +407,7 @@ dvc_makeMQTTNoSuchGames( XW_DUtilCtxt* dutil, XWEnv xwe,
                          const MQTTDevID* addressee,
                          XP_U32 gameID )
 {
+    XP_LOGFF( "(gameID: %X)", gameID );
     XP_UCHAR devTopic[64];      /* used by two below */
     formatMQTTDevTopic( addressee, devTopic, VSIZE(devTopic) );
 

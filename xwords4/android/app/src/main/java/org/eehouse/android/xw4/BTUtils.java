@@ -320,6 +320,7 @@ public class BTUtils {
 
     public static void pingHost( Context context, String btAddr, int gameID )
     {
+        // Log.d( TAG, "pingHost(host=%s, gameID=%X)", btAddr, gameID );
         getPA( btAddr ).addPing( gameID );
     }
 
@@ -1483,9 +1484,9 @@ public class BTUtils {
         private void receivePing( int gameID, BluetoothSocket socket )
             throws IOException
         {
-            Log.d( TAG, "receivePing()" );
             boolean deleted = 0 != gameID
                 && !GameUtils.haveWithGameID( getContext(), gameID );
+            Log.d( TAG, "receivePing(gameID=%X); deleted: %b", gameID, deleted );
 
             DataOutputStream os = new DataOutputStream( socket.getOutputStream() );
             os.writeByte( BTCmd.PONG.ordinal() );

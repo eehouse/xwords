@@ -736,7 +736,7 @@ public class MQTTUtils extends Thread
                                       int gameID, byte[] data )
     {
         long[] rowids = DBUtils.getRowIDsFor( context, gameID );
-        Log.d( TAG, "handleMessage(): got %d rows for gameID %d", rowids.length, gameID );
+        Log.d( TAG, "handleMessage(): got %d rows for gameID %X", rowids.length, gameID );
         if ( 0 == rowids.length ) {
             notifyNotHere( context, from.mqtt_devID, gameID );
         } else {

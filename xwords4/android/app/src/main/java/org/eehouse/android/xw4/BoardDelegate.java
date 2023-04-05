@@ -2462,7 +2462,8 @@ public class BoardDelegate extends DelegateBase
     {
         if ( null != m_connTypes
              && m_connTypes.contains( CommsConnType.COMMS_CONN_BT )
-             && !XWPrefs.getBTDisabled( m_activity ) ) {
+             && !XWPrefs.getBTDisabled( m_activity )
+             && XwJNI.server_getGameIsConnected( m_jniGamePtr ) ) {
             CommsAddrRec[] addrs = XwJNI.comms_getAddrs( m_jniGamePtr );
             for ( CommsAddrRec addr : addrs ) {
                 if ( addr.contains( CommsConnType.COMMS_CONN_BT )
