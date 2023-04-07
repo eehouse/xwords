@@ -265,7 +265,6 @@
     <string name="tile_pick_summary_fmt">Escolha atual: %1$s</string>
     <string name="tile_button_txt_fmt">%1$s (%2$d)</string>
     <string name="info_title">Para sua informação</string>
-    <string name="button_retry">Repetir</string>
     <string name="button_discard">Descartar</string>
     <string name="button_save">Salvar</string>
     <string name="button_no">Não</string>
@@ -1012,7 +1011,6 @@
     <string name="phone_lookup_rationale_others">Sem esta permissão a revanche continuará mas irá gerar um jogo que não pode ser jogado via dados SMS.</string>
     <string name="phone_lookup_rationale_drop">Jogar revanche com este jogo que usa apenas dados SMS não é possível sem essa permissão.</string>
     <string name="phone_lookup_rationale">Para jogar revanche em um jogo que use dados SMS CrossWords precisa de permissão para acessar seu número de telefone.</string>
-    <string name="not_again_rematch_two_only">Revanches são limitadas a jogos de dois jogadores, pelo menos por enquanto, porque é mais difícil com mais dispositivos e acho raro que pessoas joguem com mais de dois. Se eu estiver errado me avise e eu aumentarei a prioridade.</string>
     <string name="rematch_sent_toast">Convites da revanche enviados</string>
     <string name="waiting_rematch_title">Revanche em progresso</string>
     <string name="button_rematch">Revanche</string>

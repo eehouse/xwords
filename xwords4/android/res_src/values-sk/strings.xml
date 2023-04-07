@@ -77,7 +77,6 @@
     <!-- Used for a button when informing user that his attempt to
          connect to the relay failed because the room named does not
          exist.  (I believe this no longer occurs.) -->
-    <string name="button_retry">XLATE ME: Retry</string>
     <string name="player_label">Meno:</string>
     <!-- If the dropdown is selected, this is the title displayed
          above the list of selectable items.  The language the game

@@ -208,7 +208,6 @@
     </plurals>
     <string name="game_summary_field_empty">&lt;Nic&gt;</string>
     <string name="chat_send">Odeslat</string>
-    <string name="button_retry">Zkusit znovu</string>
     <string name="board_menu_pass">Přeskočit</string>
     <string name="button_reconnect">Obnovit připojení</string>
     <string name="button_later">Později</string>

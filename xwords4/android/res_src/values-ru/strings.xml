@@ -108,7 +108,6 @@
     <string name="msg_ask_password_fmt">Пароль для “%1$s”:</string>
     <string name="newbie_title">Подсказка</string>
     <string name="newgame_invite">Пригласить</string>
-    <string name="button_retry">Повторить</string>
     <string name="button_decline">Отклонить</string>
     <string name="button_substdict">Заменить</string>
     <string name="button_save">Сохранить</string>

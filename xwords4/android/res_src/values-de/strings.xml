@@ -281,7 +281,6 @@
     <string name="button_no">Nein</string>
     <string name="button_save">Speichern</string>
     <string name="button_discard">Verwerfen</string>
-    <string name="button_retry">Erneut versuchen</string>
     <string name="info_title">Zur Information</string>
     <string name="tile_button_txt_fmt">%1$s (%2$d)</string>
     <string name="tile_pick_summary_fmt">Aktuelle Auswahl: %1$s</string>
@@ -628,7 +627,6 @@
     <string name="config_no_connvia">Diese Partie hat keine Möglichkeit eine Verbindung aufzubauen und kann nicht gespeichert werden. Wollen Sie Ihre Änderungen verwerfen, oder sie bearbeiten, um eine Verbindungsart anzugeben?</string>
     <string name="button_edit">Bearbeiten</string>
     <string name="button_discard_changes">Änderungen verwerfen</string>
-    <string name="rematch_sent_toast">Revanche-Einladungen verschickt</string>
     <string name="disable_nags_title">Zug-Erinnerungen</string>
     <string name="disable_nag_title">Netzwerk-Partie-Erinnerungen deaktivieren</string>
     <string name="disable_nag_summary">Mich nicht benachrichtigen, egal wie lange ich schon am Zug bin</string>
@@ -652,7 +650,6 @@
     <string name="not_again_comms_bt">Benutzen Sie Bluetooth, um gegen ein Gerät in Reichweite zu spielen, das mit Ihrem „gepaart“ ist.</string>
     <string name="not_again_comms_p2p">Benutzen Sie Wi-Fi Direct, um gegen ein Gerät mit Wi-Fi-Direct-Unterstützung in Reichweite zu spielen, auf dem CrossWords installiert ist.</string>
     <string name="str_no_hint_found">Keine Züge gefunden</string>
-    <string name="not_again_rematch_two_only">Revanchepartien sind, zumindest im Moment, nur bei Zweispielerpartien möglich, weil es mit mehr Geräten schwieriger ist und meiner Meinung nach mehr als zwei Spieler selten sind. Kontaktieren Sie mich, falls ich Unrecht habe, und ich werde die Priorität für diese Funktion erhöhen.</string>
     <string name="show_sms_title">Daten-SMS-Versand/Empfang anzeigen</string>
     <plurals name="resent_msgs_fmt">
         <item quantity="one">Ein Zug neu gesendet</item>

@@ -25,7 +25,6 @@
     <string name="button_no">No</string>
     <string name="button_save">Desa</string>
     <string name="button_discard">Descarta</string>
-    <string name="button_retry">Reintenta</string>
     <string name="player_label">Nom:</string>
     <string name="info_title">Per a la vostra informació…</string>
     <string name="query_title">Una pregunta…</string>
@@ -718,7 +717,6 @@ Introduïu el vostre nom aquí. S\'usarà en crear partides noves. (Podreu
     <string name="expl_relay_url">URL per a l\'API web del repetidor</string>
     <string name="not_again_comms_p2p">Usa WiFi Direct per a jugar contra aparells propers amb WiFi Direct i el CrossWords instal·lat.</string>
     <string name="show_sms_title">Mostra els missatges SMS enviats i rebuts</string>
-    <string name="rematch_sent_toast">S\'han enviat les invitacions per a tornar a jugar</string>
     <string name="not_again_dfltname_fmt">Esteu fent servir el nom de jugador predeterminat «%1$s». Voleu personalitzar-lo amb el vostre nom abans de crear aquesta partida\?</string>
     <string name="sms_invite_rationale">CrossWords necessita permís per a enviar una invitació via SMS.</string>
     <string name="sms_send_failed">No s\'ha pogut enviar l\'SMS</string>

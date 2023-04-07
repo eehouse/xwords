@@ -50,7 +50,7 @@
     <plurals name="moves_fmt">
         <item quantity="one">Un coup joué</item>
         <item quantity="many">%1$d coups joués</item>
-        <item quantity="other"></item>
+        <item quantity="other"/>
     </plurals>
     <!-- When you select the gamel_menu_delete_all menuitem or
          list_item_delete contextual menu, you are asked to confirm.
@@ -126,7 +126,7 @@
     <plurals name="confirm_seldeletes_fmt">
         <item quantity="one">Êtes-vous sûr·e de vouloir effacer la partie sélectionnée \? Cette action ne peut pas être annulée.</item>
         <item quantity="many">Êtes-vous sûr·e de vouloir supprimer les %1$d parties sélectionnées \? Cette action ne peut pas être annulée.</item>
-        <item quantity="other"></item>
+        <item quantity="other"/>
     </plurals>
     <!-- Text of confirmation dialog posted when list_item_reset menu
          is selected -->
@@ -1466,7 +1466,6 @@ mots)</string>
          connect to the relay failed because the room named does not
          exist.  (I believe this no longer occurs.) -->
     <!--<string name="button_retry">Retry</string>  -->
-    <string name="button_retry">Réessayer</string>
     <!-- Shown in the main screen when you launch CrossWords from an
          invitation (received in email or messaging app, say) and
          there's already a game running that matches that invitation.
@@ -2800,7 +2799,6 @@ pour la langue</string>
     <string name="list_item_select">Sélectionner</string>
     <string name="list_item_deselect">Déselectionner</string>
     <string name="not_again_dfltname_fmt">Vous utilisez le nom par défaut de joueur « %1$s ». Souhaitez-vous le personnaliser avec votre propre nom avant de créer cette partie \?</string>
-    <string name="not_again_rematch_two_only">Les revanches sont limitées aux parties à deux joueurs, au moins pour l\'instant, parce que c\'est plus difficile avec plus d\'appareils et je pense qu\'il est rare que les gens jouent à plus que deux. Faites-le moi savoir si j\'ai tort et je remonterai la priorité.</string>
     <string name="summary_invites_out">Joueurs invités</string>
     <string name="notify_title_turn_fmt">Votre tour dans la partie %1$s</string>
     <string name="invites_net_fmt">Invitations envoyées pour la partie connectée via %1$s :</string>
@@ -2809,7 +2807,6 @@ pour la langue</string>
     <string name="no_invites">Cette partie n\'a envoyé aucune invitation</string>
     <string name="rematch_name_fmt">Revanche : %1$s</string>
     <string name="waiting_rematch_title">Revanche en cours</string>
-    <string name="rematch_sent_toast">Invitations à la revanche envoyées</string>
     <string name="invit_expl_sms_fmt">Invitation envoyée par MMS au numéro de téléphone %1$s sur %2$s</string>
     <string name="invit_expl_bt_fmt">Invitation envoyée par Bluetooth à l\'appareil appairé « %1$s » sur %2$s</string>
     <string name="invit_expl_notarget_fmt">Invitation envoyée par %1$s sur %2$s. Destinataire inconnu.</string>
@@ -3107,7 +3104,7 @@ pour la langue</string>
     <plurals name="confirm_nameddeletes_fmt">
         <item quantity="one">Êtes-vous sûr de vouloir effacer la partie %1$s \? Cette action ne peut pas être annulée.</item>
         <item quantity="many">Êtes-vous sûr de vouloir effacer les parties %1$s \? Cette action ne peut pas être annulée.</item>
-        <item quantity="other"></item>
+        <item quantity="other"/>
     </plurals>
     <string name="choose_expl_default_net">Démarrer une partie en réseau en utilisant les paramètres par défaut</string>
     <string name="no_dict_for_move_title">Coup entrant perdu</string>
@@ -3156,7 +3153,7 @@ pour la langue</string>
         <item quantity="many">"
 \n
 \n(Vous avez %1$d parties actives utilisant internet actuellement.)"</item>
-        <item quantity="other"></item>
+        <item quantity="other"/>
     </plurals>
     <string name="menu_net_stat">Etat du réseau</string>
     <string name="button_enable_mqtt">Activer le jeu internet</string>

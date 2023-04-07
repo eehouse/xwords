@@ -46,7 +46,6 @@
     <string name="button_no">لا</string>
     <string name="button_save">حفظ</string>
     <string name="button_discard">تجاهل</string>
-    <string name="button_retry">إعادة المحاولة</string>
     <string name="query_title">سؤال…</string>
     <string name="button_notagain">لا تعرض مجدداً</string>
     <string name="xlator">[فارغ]</string>

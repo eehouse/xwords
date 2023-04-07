@@ -274,7 +274,6 @@
     <string name="str_bonus_all_fmt">Bonificación por usar %1$d fichas: 50
 \n</string>
     <string name="notify_title_fmt">Movimiento en partida %1$s</string>
-    <string name="button_retry">Reintentar</string>
     <string name="notify_chat_title_fmt">Mensaje de chat en la partida %1$s</string>
     <string name="notify_chat_body_fmt">%1$s: %2$s</string>
     <string name="button_no">No</string>

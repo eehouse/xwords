@@ -1113,7 +1113,6 @@
     <!-- Used for a button when informing user that his attempt to
          connect to the relay failed because the room named does not
          exist.  (I believe this no longer occurs.) -->
-    <string name="button_retry">Tentar novamente</string>
     <!-- Shown in the main screen when you launch CrossWords from an
          invitation (received in email or messaging app, say) and
          there's already a game running that matches that invitation.
@@ -1731,7 +1730,6 @@
         <item quantity="other">%1$s jogadas reenviadas</item>
     </plurals>
     <string name="show_sms_title">Mostrar dados que SMS envia, recebe</string>
-    <string name="not_again_rematch_two_only">Desforras são limitadas a jogos de dois jogadores, pelo menos por enquanto, porque é mais difícil com mais aparelhos e acho raro que pessoas joguem com mais de dois. Se eu estiver errado avise-me e aumentarei a prioridade.</string>
     <string name="str_no_hint_found">Não pôde achar nenhuma jogada</string>
     <string name="not_again_comms_p2p">Usar WiFi Direct para jogar contra um aparelho próximo compatível com WiFi Direct e que tenha o CrossWords instalado.</string>
     <string name="not_again_comms_bt">Usar Bluetooth para jogar contra um aparelho próximo que estiver “emparelhado” com o seu.</string>
@@ -1785,7 +1783,6 @@
     <string name="disable_nag_summary">Não me notifique não importa há quanto tempo for minha vez</string>
     <string name="disable_nag_title">Desativar lembretes de jogo em rede</string>
     <string name="disable_nags_title">Ativar lembretes</string>
-    <string name="rematch_sent_toast">Convites da revanche enviados</string>
     <string name="button_discard_changes">Descartar mudanças</string>
     <string name="button_edit">Editar</string>
     <string name="config_no_connvia">Este jogo não tem nenhuma maneira de se conectar e não pode ser salvo. Gostaria de descartar as suas mudanças ou editar para lhe dar uma forma de se conectar\?</string>

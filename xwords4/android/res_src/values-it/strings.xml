@@ -129,7 +129,6 @@
         <item quantity="other">%1$s mosse inviate di nuovo</item>
     </plurals>
     <string name="show_sms_title">Mostra SMS inviati e ricevuti</string>
-    <string name="not_again_rematch_two_only">la Rivincita è limitata alle partite con due giocatori, almeno per adesso, perché è difficile applicarla per più dispositivi ed è raro che giochino più di due persone. Fammi sapere se sono in errore e aggiornerò le funzioni.</string>
     <string name="str_no_hint_found">Impossibile trovare mosse</string>
     <string name="not_again_comms_p2p">Usa WiFi direct per giocare contro un dispositivo con WiFi Direct attivo che ha installato CrossWords.</string>
     <string name="not_again_comms_bt">Usa Bluetooth per giocare contro un dispositivo nelle vicinanze \"associato\" al tuo.</string>
@@ -183,7 +182,6 @@
     <string name="disable_nag_summary">Non inviarmi una notifica, non importa quanto lungo sia il mio turno</string>
     <string name="disable_nag_title">Disabilita promemoria partite in linea</string>
     <string name="disable_nags_title">Promemoria turni</string>
-    <string name="rematch_sent_toast">Inviti inviati per rivincita</string>
     <string name="waiting_rematch_title">Rivincita in corso</string>
     <string name="button_rematch">Rivincita</string>
     <string name="about_credits">Credits: Icone barre degli strumenti di Sarah Chu. Icone barre di navigazione da The Noun Project: “Archivio” da Trendy; “Rivincita” da Becris; e “Scambia” da iconomania. Localizzazione effettuata da volontari via weblate.org (Luca De Filippo).</string>
@@ -575,7 +573,6 @@
     <string name="tile_button_txt_fmt">%1$s (%2$d)</string>
     <string name="tile_tray_picker">Scegli nuove tessere dalle disponibili</string>
     <string name="info_title">FYI…</string>
-    <string name="button_retry">Riprova</string>
     <string name="button_discard">Scarta</string>
     <string name="button_save">Salva</string>
     <string name="button_no">No</string>
@@ -957,7 +954,7 @@
     <plurals name="confirm_nameddeletes_fmt">
         <item quantity="one">Sei sicuro di voler cancellare la partita %1$s\? Questa operazione è irreversibile.</item>
         <item quantity="many">Sei sicuro di voler cancellare le partite %1$s\? Questa operazione è irreversibile.</item>
-        <item quantity="other"></item>
+        <item quantity="other"/>
     </plurals>
     <string name="invites_unsent">Questa partita prevede un giocatore remoto.
 \n

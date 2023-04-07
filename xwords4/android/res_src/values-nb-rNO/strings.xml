@@ -180,7 +180,6 @@
     <string name="button_no">Nei</string>
     <string name="button_save">Lagre</string>
     <string name="button_discard">Forkast</string>
-    <string name="button_retry">Prøv igjen</string>
     <string name="tile_button_txt_fmt">%1$s (%2$d)</string>
     <string name="tile_pick_summary_fmt">Nåværende valg: %1$s</string>
     <string name="tiles_left_title">Gjenstående flis</string>
@@ -567,7 +566,6 @@
     <string name="nplayers_prompt">Nummeret på denne enheten</string>
     <string name="err_dup_invite_fmt">Duplikatinvitasjon avslått: Enheten \"%1$s\" har allerede godtatt en invitasjon til dette spillet.</string>
     <string name="invite_multi_summary">Inviter mer enn én spiller per enhet annensteds fra</string>
-    <string name="rematch_sent_toast">Omkampsinvitasjoner sendt</string>
     <string name="dict_host">Ordlistenedlastingsnettadresse</string>
     <string name="debug_features_summary">Menyelementer osv. (kun utgivelsesbygg)</string>
     <string name="netstats_title">Spillnettverksstatistikk</string>
@@ -725,7 +723,6 @@
     <string name="not_again_comms_sms">Spill via SMS bruker samme teknologi som \"teksting\". Selv om meldingene er usynlig for deg, vil din tilbyder anse dem som SMS, så du bør unngå denne funksjonen med mindre du har ubegrenset SMS (eller budsjettet). Merk at Android kun støtter denne funksjonen på enheter på en GSM-tilbyder.</string>
     <string name="not_again_comms_bt">Bruk Blåtann for å spille mot enheter i nærheten som er parret med din.</string>
     <string name="not_again_comms_p2p">Bruk Wi-Fi Direct for å spille mot enheter i nærheten som støtter det, og som har CrossWords installert.</string>
-    <string name="not_again_rematch_two_only">Omkamp er begrenset til to-personersspill nå, fordi det er vanskeligere med flere enheter, og fordi spill med mer en to spillere er sjeldent. La det komme til kjenne hvis dette er en feilaktig begrensning.</string>
     <string name="not_again_clip_expl_fmt">Valget \"%1$s\" kopierer en invitasjonsnettadresse til utklippstavlen. Lim det inn i ønsket program og send det til din venn.</string>
     <string name="confirm_clear_chat">Er du sikker på at du ønsker å slette all sludrehistorikk for dette spillet?
 \n

@@ -268,7 +268,6 @@
     <string name="button_no">Nee</string>
     <string name="button_save">Opslaan</string>
     <string name="button_discard">Annuleren</string>
-    <string name="button_retry">Opnieuw proberen</string>
     <string name="info_title">Ter informatie…</string>
     <string name="tiles_left_title">Letters in zak</string>
     <string name="counts_values_title">Letter hoeveelheid en waardes</string>
@@ -636,11 +635,9 @@
     <string name="invites_net_fmt">Uitnodigingen verstuurd voor spel verbonden via %1$s:</string>
     <string name="rematch_name_fmt">Rematch: %1$s</string>
     <string name="waiting_rematch_title">Rematch is bezig</string>
-    <string name="rematch_sent_toast">Rematch uitnodigingen verstuurd</string>
     <string name="disable_nags_title">Beurt herinneringen</string>
     <string name="disable_nag_solo_title">Schakel solo spel herinneringen uit</string>
     <string name="board_menu_game_showInvites">Toon uitnodigingen</string>
-    <string name="not_again_rematch_two_only">Rematch is momenteel enkel beschikbaar voor spellen met twee personen, omdat dit moeilijker is met meer apparaten en ik denk dat het niet vaak gebeurt dat mensen met meer dan twee spelen. Laat het me weten als ik het mis heb, dan hoog ik de prioriteit op.</string>
     <string name="list_item_select">Selecteer</string>
     <string name="list_item_deselect">Deselecteer</string>
     <string name="not_again_dfltname_fmt">Je gebruikt de standaard speler naam \"%1$s\". Wil je dit aanpassen met je eigen naam voordat je dit spel aan maakt?</string>

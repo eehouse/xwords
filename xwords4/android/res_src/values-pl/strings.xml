@@ -116,7 +116,6 @@
     <string name="button_no">Nie</string>
     <string name="button_save">Zapisz</string>
     <string name="button_discard">Odrzucić</string>
-    <string name="button_retry">Ponów próbę</string>
     <string name="history_title">Historia gry</string>
     <string name="newbie_title">Wskazówka</string>
     <string name="button_notagain">Nie pokazuj ponownie</string>
@@ -642,7 +641,6 @@
     <string name="config_no_connvia">Ta gra nie może się połączyć i nie można jej zapisać. Chcesz odrzucić zmiany, czy je edytować, aby umożliwić połączenie\?</string>
     <string name="button_edit">Edycja</string>
     <string name="button_discard_changes">Odrzucać zmiany</string>
-    <string name="rematch_sent_toast">Wysłano zaproszenie do rewanżu</string>
     <string name="disable_nags_title">Włącz przypomnienie</string>
     <string name="disable_nag_title">Wyłącz przypomnienie o grach sieciowych</string>
     <string name="disable_nag_summary">Nie powiadamiaj mnie bez względu na to, jak długo była moja kolej</string>
@@ -682,7 +680,6 @@
     <string name="not_again_comms_bt">Użyj Bluetooth, aby grać przeciwko pobliskiemu urządzeniu, które jest „sparowane” z Twoim.</string>
     <string name="not_again_comms_p2p">Użyj WiFi Direct, aby zagrać z pobliskim urządzeniem obsługującym WiFi Direct z zainstalowanym CrossWords.</string>
     <string name="str_no_hint_found">Nie można znaleźć żadnych ruchów</string>
-    <string name="not_again_rematch_two_only">Rewanż jest ograniczony do gier dwuosobowych, przynajmniej na razie, ponieważ jest trudniejszy w przypadku większej liczby urządzeń i myślę, że rzadko zdarza się, aby ludzie bawili się więcej niż dwoma. Daj mi znać, jeśli się mylę, wtedy wezmę to za priorytet.</string>
     <string name="show_sms_title">Pokaż wysyłanie/odbieranie SMS-ów</string>
     <string name="invite_copied">Zaproszenie gotowe do wklejenia</string>
     <string name="clip_label">Adres URL zaproszenia</string>
