@@ -1011,7 +1011,6 @@
     <string name="phone_lookup_rationale_others">Sem esta permissão a revanche continuará mas irá gerar um jogo que não pode ser jogado via dados SMS.</string>
     <string name="phone_lookup_rationale_drop">Jogar revanche com este jogo que usa apenas dados SMS não é possível sem essa permissão.</string>
     <string name="phone_lookup_rationale">Para jogar revanche em um jogo que use dados SMS CrossWords precisa de permissão para acessar seu número de telefone.</string>
-    <string name="rematch_sent_toast">Convites da revanche enviados</string>
     <string name="waiting_rematch_title">Revanche em progresso</string>
     <string name="button_rematch">Revanche</string>
     <string name="filter_sum_pat_fmt">Exibindo: %1$s, de tamanho %2$d-%3$d (%4$d palavras)</string>
