@@ -981,7 +981,7 @@ public class GamesListDelegate extends ListDelegateBase
         boolean isUpgrade = Utils.firstBootThisVersion( m_activity );
         if ( isUpgrade ) {
             if ( !s_firstShown ) {
-                if ( LocUtils.getCurLangCode( m_activity ).equals( "en" ) ) {
+                if ( LocUtils.getCurLangCode( m_activity ).equals( Utils.ISO_EN ) ) {
                     show( FirstRunDialog.newInstance() );
                 }
                 s_firstShown = true;
