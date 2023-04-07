@@ -1241,10 +1241,6 @@
          the other option, for discarding changes that would otherwise
          reset a game. -->
     <string name="button_discard">Discard</string>
-    <!-- Used for a button when informing user that his attempt to
-         connect to the relay failed because the room named does not
-         exist.  (I believe this no longer occurs.) -->
-    <string name="button_retry">Retry</string>
     <!-- Title of generic dialog used to display information -->
     <string name="info_title">FYI</string>
     <!-- title of dialog allowing user to pick tiles "face up".  (This
@@ -2194,7 +2190,6 @@
     edit to give it a way to connect?</string>
     <string name="button_edit">Edit</string>
     <string name="button_discard_changes">Discard changes</string>
-    <string name="rematch_sent_toast">Rematch invitations sent</string>
     <string name="disable_nags_title">Turn reminders</string>
     <string name="disable_nag_title">Disable network game reminders</string>
     <string name="disable_nag_summary">Do not notify me no matter
@@ -2284,12 +2279,6 @@
     <string name="not_again_comms_p2p">Use WiFi Direct to play against a
   nearby WiFi Direct-capable device with CrossWords installed.</string>
     <string name="str_no_hint_found">Cannot find any moves</string>
-  <!-- Shown when user tries to use "Rematch" feature in a three- or
-       four-device game -->
-    <string name="not_again_rematch_two_only">Rematch is limited to
-  two-person games, at least for now, because it’s harder with more
-  devices and I think it’s rare that people play with more than
-  two. Let me know if I’m wrong and I’ll up the priority.</string>
     <string name="show_sms_title">Show Data SMS sends, receives</string>
     <!-- Shown after "resend messages" menuitem chosen -->
     <plurals name="resent_msgs_fmt">
