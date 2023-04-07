@@ -155,15 +155,30 @@ removeWithMid( gpointer data, gpointer user_data )
     }
 }
 
-static void
-dequeue( MQTTConStorage* storage, int mid )
+static gint
+dequeueIdle( gpointer data )
 {
-    XP_LOGFF("(mid: %d)", mid );
-    RemoveState rs = { .mid = mid, .storage = storage, };
-    g_slist_foreach( storage->queue, removeWithMid, &rs );
-    if ( !rs.found ) {
-        XP_LOGFF( "failed to find mid %d", mid );
+    LOG_FUNC();
+    RemoveState* rsp = (RemoveState*)data;
+    XP_ASSERT( !rsp->found );
+
+    g_slist_foreach( rsp->storage->queue, removeWithMid, rsp );
+    if ( !rsp->found ) {
+        XP_LOGFF( "failed to find mid %d", rsp->mid );
     }
+    g_free( rsp );
+    return FALSE;
+}
+
+static void
+dequeue_on_idle( MQTTConStorage* storage, int mid )
+{
+    RemoveState* rsp = g_malloc0( sizeof(*rsp) );
+    rsp->storage = storage;
+    rsp->mid = mid;
+    // ADD_ONETIME_IDLE() has trouble with multiple instance with same idle
+    // proc, so:
+    /*guint res = */g_idle_add( dequeueIdle, rsp );
 }
 
 static MQTTConStorage* 
@@ -253,7 +268,7 @@ publish_callback( struct mosquitto* XP_UNUSED(mosq), void* userdata, int mid )
 {
     XP_LOGFF( "publish of mid %d successful", mid );
     MQTTConStorage* storage = (MQTTConStorage*)userdata;
-    dequeue( storage, mid );
+    dequeue_on_idle( storage, mid );
 }
 
 static void
