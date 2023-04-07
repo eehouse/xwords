@@ -52,8 +52,11 @@ sendQueueHead( MQTTConStorage* storage )
         for ( GSList* iter = storage->queue; !!iter; iter = iter->next ) {
             QElem* elem = (QElem*)iter->data;
             if ( 0 == elem->mid ) {
-                int err = mosquitto_publish( storage->mosq, &elem->mid, elem->topic,
-                                             elem->len, elem->buf, DEFAULT_QOS, true );
+#ifdef DEBUG
+                int err =
+#endif
+                    mosquitto_publish( storage->mosq, &elem->mid, elem->topic,
+                                       elem->len, elem->buf, DEFAULT_QOS, true );
                 XP_LOGFF( "mosquitto_publish(topic=%s, len=%d) => %s; mid=%d", elem->topic,
                           elem->len, mosquitto_strerror(err), elem->mid );
                 break;

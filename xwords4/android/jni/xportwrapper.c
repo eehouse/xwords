@@ -55,7 +55,10 @@ passTAPToAndroid( AndTransportProcs* aprocs, JNIEnv* env, jobject jtap )
 {
     const char* sig = "(L" PKG_PATH("jni/XwJNI$TopicsAndPackets")  ";)I";
     jmethodID mid = getMethodID( env, aprocs->jxport, "transportSendMQTT", sig );
-    XP_S16 tmp = (*env)->CallIntMethod( env, aprocs->jxport, mid, jtap );
+#ifdef DEBUG
+    XP_S16 tmp =
+#endif
+        (*env)->CallIntMethod( env, aprocs->jxport, mid, jtap );
     XP_LOGFF( "%s() => %d", sig, tmp );
     deleteLocalRef( env, jtap );
     LOG_RETURN_VOID();

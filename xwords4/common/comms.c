@@ -335,6 +335,7 @@ static void logAddrComms( const CommsCtxt* comms, const CommsAddrRec* addr,
 # define printQueue( comms )
 # define logAddr( comms, addr, caller)
 # define listRecs( comms, caller )
+# define logAddrComms(comms, addr, caller)
 #endif  /* def DEBUG */
 
 #if defined RELAY_HEARTBEAT || defined COMMS_HEARTBEAT
