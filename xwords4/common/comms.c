@@ -939,7 +939,9 @@ comms_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
         msg->checksum = dutil_md5sum( comms->dutil, xwe, msg->smp.buf, len );
 #endif
         XP_ASSERT( NULL == msg->smp.next );
-        (void)addToQueue( comms, xwe, msg, XP_FALSE );
+        if ( !addToQueue( comms, xwe, msg, XP_FALSE ) ) {
+            --queueLen;         /* was dropped */
+        }
     }
     XP_ASSERT( queueLen == comms->queueLen );
 
@@ -1759,7 +1761,6 @@ addToQueue( CommsCtxt* comms, XWEnv xwe, MsgQueueElem* newElem, XP_Bool notify )
 
     MsgQueueElem** head;
     AddressRecord* rec = getRecordFor( comms, newElem->channelNo );
-    XP_ASSERT( !!rec );     /* I've seen this once on an old game */
     if ( !rec ) {
         freeElem( MPPARM(comms->mpool) newElem );
         asAdded = NULL;
