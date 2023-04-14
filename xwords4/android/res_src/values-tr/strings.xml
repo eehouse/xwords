@@ -125,4 +125,5 @@
         <item quantity="one">%1$d saat</item>
         <item quantity="other">%1$d saat</item>
     </plurals>
+    <string name="button_delete_game">Oyunu Sil</string>
 </resources>
