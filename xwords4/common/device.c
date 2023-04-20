@@ -382,7 +382,11 @@ dvc_makeMQTTMessages( XW_DUtilCtxt* dutil, XWEnv xwe,
         for ( SendMsgsPacket* packet = (SendMsgsPacket*)msgs;
               !!packet; packet = (SendMsgsPacket* const)packet->next ) {
             XP_U32 len = packet->len;
-            XP_ASSERT( 0 < len ); /* will confuse server */
+#ifdef DEBUG
+            if ( 0 == len ) {
+                XP_LOGFF( "ERROR: msg len 0" );
+            }
+#endif
             stream_putU32VL( stream, len );
             stream_putBytes( stream, packet->buf, len );
             nSent1 += len;

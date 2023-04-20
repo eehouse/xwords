@@ -943,7 +943,12 @@ comms_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
             --queueLen;         /* was dropped */
         }
     }
-    XP_ASSERT( queueLen == comms->queueLen );
+#ifdef DEBUG
+    if ( queueLen != comms->queueLen ) {
+        XP_LOGFF( "Error: queueLen %d != comms->queueLen %d",
+                  queueLen, comms->queueLen );
+    }
+#endif
 
     if ( STREAM_VERS_DISABLEDS <= version ) {
         for ( CommsConnType typ = (CommsConnType)0; typ < VSIZE(comms->disableds); ++typ ) {
