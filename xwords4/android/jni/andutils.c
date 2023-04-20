@@ -36,6 +36,14 @@ and_assert( const char* test, int line, const char* file, const char* func )
              test, line, func, file );
     XP_LOGF( "assertion \"%s\" failed: line %d in %s() in %s",
              test, line, func, file );
+
+    /* give log a chance to write before __android_log_assert() kills the
+       process */
+    struct timespec req = {
+        .tv_nsec = 400000000, /* 4/10 second */
+    };
+    nanosleep( &req, NULL );
+
     __android_log_assert( test, "ASSERT", "line %d in %s() in %s",
                           line, func, file  );
 }
