@@ -233,7 +233,10 @@ p_stringFromStream( MPFORMAL XWStreamCtxt* stream
 #endif
                     )
 {
-    XP_UCHAR buf[0xFF];
+    /* PENDING: Hard-coded max buffer size is wrong!!!  stringFromStreamHere()
+       needs to "peek" and return the size required. Or better, call XP_MALLOC
+       itself (with mpool passed in?) */
+    XP_UCHAR buf[1024];
     XP_UCHAR* str = (XP_UCHAR*)NULL;
     XP_U16 len = stringFromStreamHere( stream, buf, sizeof(buf) );
 
