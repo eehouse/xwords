@@ -34,7 +34,6 @@
               android:layout_weight="1"
               android:scrollHorizontally="false"
               android:hint="@string/chat_hint"
-              android:maxLength="255"
               />
     <Button android:id="@+id/chat_send"
             android:layout_width="wrap_content"
