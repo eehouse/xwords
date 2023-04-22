@@ -233,20 +233,19 @@ p_stringFromStream( MPFORMAL XWStreamCtxt* stream
 #endif
                     )
 {
-    /* PENDING: Hard-coded max buffer size is wrong!!!  stringFromStreamHere()
-       needs to "peek" and return the size required. Or better, call XP_MALLOC
-       itself (with mpool passed in?) */
-    XP_UCHAR buf[1024];
-    XP_UCHAR* str = (XP_UCHAR*)NULL;
-    XP_U16 len = stringFromStreamHere( stream, buf, sizeof(buf) );
+    XP_U16 version = stream_getVersion( stream );
+    XP_U32 len = version < STREAM_VERS_NORELAY ? stream_getU8( stream )
+        : stream_getU32VL( stream );
 
-    if ( len > 0 ) {
+    XP_UCHAR* str = NULL;
+    if ( 0 < len ) {
 #ifdef MEM_DEBUG
         str = mpool_alloc( mpool, len + 1, file, func, lineNo );
 #else
-        str = (XP_UCHAR*)XP_MALLOC( mpool, len + 1 ); /* leaked */
+        str = (XP_UCHAR*)XP_MALLOC( mpool, len + 1 );
 #endif
-        XP_MEMCPY( str, buf, len + 1 );
+        stream_getBytes( stream, str, len );
+        str[len] = '\0';
     }
     return str;
 } /* makeStringFromStream */
