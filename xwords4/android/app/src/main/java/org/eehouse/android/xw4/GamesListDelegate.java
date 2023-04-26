@@ -544,6 +544,7 @@ public class GamesListDelegate extends ListDelegateBase
         R.id.games_menu_writegit,
         R.id.games_submenu_logs,
         R.id.games_menu_copyDevid,
+        R.id.games_menu_setDevid,
     };
     private static final int[] NOSEL_ITEMS = {
         R.id.games_menu_newgroup,
@@ -596,7 +597,6 @@ public class GamesListDelegate extends ListDelegateBase
     {
         Dialog dialog = null;
         OnClickListener lstnr, lstnr2;
-        AlertDialog.Builder ab;
 
         DlgID dlgID = alert.getDlgID();
         switch ( dlgID ) {
@@ -641,7 +641,7 @@ public class GamesListDelegate extends ListDelegateBase
                                      missingDictName, locLang );
             }
 
-            ab = makeAlertBuilder()
+            AlertDialog.Builder ab = makeAlertBuilder()
                 .setTitle( R.string.no_dict_title )
                 .setMessage( message )
                 .setPositiveButton( android.R.string.cancel, null )
@@ -715,6 +715,29 @@ public class GamesListDelegate extends ListDelegateBase
                     }
                 };
             dialog = buildNamerDlg( namer, lstnr, null, DlgID.RENAME_GAME );
+        }
+            break;
+
+        case SET_MQTTID: {
+            final Renamer view = buildRenamer( null, R.string.set_devid_title );
+            dialog = makeAlertBuilder()
+                .setView( view )
+                .setNegativeButton( android.R.string.cancel, null )
+                .setPositiveButton( android.R.string.ok, new OnClickListener() {
+                        @Override
+                        public void onClick( DialogInterface dlg, int item ) {
+                            String newID = view.getName();
+                            if ( XwJNI.dvc_setMQTTDevID( newID ) ) {
+                                makeOkOnlyBuilder( R.string.reboot_after_setFmt, newID )
+                                    .setAction( Action.RESTART )
+                                    .show();
+                            } else {
+                                makeOkOnlyBuilder( R.string.badMQTTDevIDFmt, newID )
+                                    .show();
+                            }
+                        }
+                    } )
+                .create();
         }
             break;
 
@@ -1533,11 +1556,16 @@ public class GamesListDelegate extends ListDelegateBase
     @Override
     public boolean onDismissed( Action action, Object... params )
     {
-        boolean handled = false;
+        boolean handled = true;
         switch ( action ) {
         case LAUNCH_AFTER_DEL:
             launchGame( (Long)params[0] );
-            handled = true;
+            break;
+        case RESTART:
+            ProcessPhoenix.triggerRebirth( m_activity );
+            break;
+        default:
+            handled = false;
             break;
         }
         return handled || super.onDismissed( action, params );
@@ -1911,6 +1939,10 @@ public class GamesListDelegate extends ListDelegateBase
             String devid = XwJNI.dvc_getMQTTDevID();
             Utils.stringToClip( m_activity, devid );
             showToast( devid );
+            break;
+
+        case R.id.games_menu_setDevid:
+            showDialogFragment( DlgID.SET_MQTTID );
             break;
 
         case R.id.games_menu_timerStats:

@@ -62,6 +62,7 @@ public class DlgDelegate {
         BACKUP_RETRY,
         LAUNCH_AFTER_DEL,
         CLEAR_INT_STATS,        // debug only
+        RESTART,
 
         // BoardDelegate
         UNDO_LAST_ACTION,

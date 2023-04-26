@@ -34,6 +34,7 @@ typedef void (*MsgAndTopicProc)( void* closure, const XP_UCHAR* topic,
                                  const XP_U8* msgBuf, XP_U16 msgLen );
 
 void dvc_getMQTTDevID( XW_DUtilCtxt* dutil, XWEnv xwe, MQTTDevID* devID );
+void dvc_setMQTTDevID( XW_DUtilCtxt* dutil, XWEnv xwe, const MQTTDevID* devID );
 void dvc_resetMQTTDevID( XW_DUtilCtxt* dutil, XWEnv xwe );
 void dvc_getMQTTSubTopics( XW_DUtilCtxt* dutil, XWEnv xwe,
                            XP_UCHAR* storage, XP_U16 storageLen,

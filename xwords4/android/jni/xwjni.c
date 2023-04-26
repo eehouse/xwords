@@ -642,6 +642,34 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dvc_1getMQTTDevID
     return result;
 }
 
+static XP_Bool
+jstrToDevID( JNIEnv* env, jstring jstr, MQTTDevID* outDevID )
+{
+    const char* str = (*env)->GetStringUTFChars( env, jstr, NULL );
+    XP_Bool success =
+        strToMQTTCDevID( str, outDevID );
+    // XP_ASSERT( success );
+    (*env)->ReleaseStringUTFChars( env, jstr, str );
+    return success;
+}
+
+JNIEXPORT jboolean JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_dvc_1setMQTTDevID
+( JNIEnv* env, jclass C, jlong jniGlobalPtr, jstring jNewid )
+{
+    jboolean result = false;
+
+    DVC_HEADER(jniGlobalPtr);
+    MQTTDevID devID;
+    if ( jstrToDevID( env, jNewid, &devID ) ) {
+        dvc_setMQTTDevID( globalState->dutil, env, &devID );
+        result = true;
+    }
+
+    DVC_HEADER_END();
+    return result;
+}
+
 JNIEXPORT void JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_dvc_1resetMQTTDevID
 ( JNIEnv* env, jclass C, jlong jniGlobalPtr )
@@ -649,18 +677,6 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dvc_1resetMQTTDevID
     DVC_HEADER(jniGlobalPtr);
     dvc_resetMQTTDevID( globalState->dutil, env );
     DVC_HEADER_END();
-}
-
-static void
-jstrToDevID( JNIEnv* env, jstring jstr, MQTTDevID* outDevID )
-{
-    const char* str = (*env)->GetStringUTFChars( env, jstr, NULL );
-#ifdef DEBUG
-    XP_Bool success =
-#endif
-        strToMQTTCDevID( str, outDevID );
-    XP_ASSERT( success );
-    (*env)->ReleaseStringUTFChars( env, jstr, str );
 }
 
 JNIEXPORT jobjectArray JNICALL

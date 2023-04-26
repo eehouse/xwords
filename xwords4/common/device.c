@@ -156,6 +156,13 @@ dvc_getMQTTDevID( XW_DUtilCtxt* dutil, XWEnv xwe, MQTTDevID* devID )
 }
 
 void
+dvc_setMQTTDevID( XW_DUtilCtxt* dutil, XWEnv xwe, const MQTTDevID* devID )
+{
+    const XP_UCHAR* keys[] = { MQTT_DEVID_KEY, NULL };
+    dutil_storePtr( dutil, xwe, keys, devID, sizeof(*devID) );
+}
+
+void
 dvc_resetMQTTDevID( XW_DUtilCtxt* dutil, XWEnv xwe )
 {
 #ifdef BOGUS_ALL_SAME_DEVID

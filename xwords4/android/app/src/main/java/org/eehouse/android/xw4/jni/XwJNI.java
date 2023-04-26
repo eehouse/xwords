@@ -144,6 +144,11 @@ public class XwJNI {
         return dvc_getMQTTDevID( getJNI().m_ptrGlobals );
     }
 
+    public static boolean dvc_setMQTTDevID( String newID )
+    {
+        return dvc_setMQTTDevID( getJNI().m_ptrGlobals, newID );
+    }
+
     public static void dvc_resetMQTTDevID()
     {
         dvc_resetMQTTDevID( getJNI().m_ptrGlobals );
@@ -767,6 +772,7 @@ public class XwJNI {
     // Private methods -- called only here
     private static native long globalsInit( DUtilCtxt dutil, JNIUtils jniu, long seed );
     private static native String dvc_getMQTTDevID( long jniState );
+    private static native boolean dvc_setMQTTDevID( long jniState, String newid );
     private static native void dvc_resetMQTTDevID( long jniState );
     private static native String[] dvc_getMQTTSubTopics( long jniState );
     private static native TopicsAndPackets dvc_makeMQTTNukeInvite( long jniState,

@@ -71,6 +71,7 @@ public enum DlgID {
     RENAME_PLAYER,
     BACKUP_LOADSTORE,
     GET_DEVID,
+    SET_MQTTID,
     ;
 
     private boolean m_addToStack;
