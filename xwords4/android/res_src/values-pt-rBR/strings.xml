@@ -1166,4 +1166,10 @@
     <string name="missing_host_fmt">(O anfitrião é um jogador conhecido chamado “%1$s”.)</string>
     <string name="games_menu_copyDevid">Copiar o MQTT devID</string>
     <string name="title_pasteDevid">O DevID MQTT do convidado</string>
+    <string name="set_devid_title">Novo devID MQTT</string>
+    <string name="badMQTTDevIDFmt">Falso MQTT devID \"%1$s\". Tente novamente.</string>
+    <string name="reboot_after_setFmt">MQTT devID alterado para \"%1$s\".
+\n
+\nReiniciando para garantir o uso.</string>
+    <string name="games_menu_setDevid">Definir o MQTT devID</string>
 </resources>
