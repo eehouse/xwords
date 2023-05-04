@@ -57,6 +57,7 @@ public class DlgDelegate {
         LAUNCH_THEME_CONFIG,
         SEND_LOGS,
         OPEN_BYOD_DICT,
+        BACKUP_DO,
         BACKUP_LOADDB,
         BACKUP_OVERWRITE,
         BACKUP_RETRY,

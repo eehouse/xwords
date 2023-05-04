@@ -5,4 +5,11 @@
 
   <string name="dup_allscores_fmt">All scores: %1$s</string>
 
+  <string name="backup_only_on_9">Export works on Android 9 (and all
+  other versions), but Import does not. So you can do an export on
+  this device in order to migrate to a newer phone, but you will not
+  be able to import the resulting file on this device.</string>
+
+  <string name="no_restore_on_9">Import does not work on Android 9.</string>
+
 </resources>

@@ -1455,6 +1455,10 @@ public class GamesListDelegate extends ListDelegateBase
             openWithChecks( rowid, summary );
             break;
 
+        case BACKUP_DO:
+            showDialogFragment( DlgID.BACKUP_LOADSTORE );
+            break;
+
         case BACKUP_LOADDB:
             startFileChooser( null );
             break;
@@ -1923,12 +1927,23 @@ public class GamesListDelegate extends ListDelegateBase
             // with the choose-what alert in the store case, and with the
             // choose-where (OS) grossness in the load case
         case R.id.games_menu_storedb:
-            showDialogFragment( DlgID.BACKUP_LOADSTORE );
+            if ( Build.VERSION.SDK_INT == Build.VERSION_CODES.P ) {
+                makeConfirmThenBuilder( Action.BACKUP_DO,
+                                        R.string.backup_only_on_9 )
+                .show();
+            } else {
+                onPosButton( Action.BACKUP_DO );
+            }
             break;
         case R.id.games_menu_loaddb:
-            makeNotAgainBuilder( R.string.key_notagain_loaddb,
-                                 Action.BACKUP_LOADDB, R.string.not_again_loaddb )
-                .show();
+            if ( Build.VERSION.SDK_INT == Build.VERSION_CODES.P ) {
+                makeOkOnlyBuilder( R.string.no_restore_on_9 )
+                    .show();
+            } else {
+                makeNotAgainBuilder( R.string.key_notagain_loaddb,
+                                     Action.BACKUP_LOADDB, R.string.not_again_loaddb )
+                    .show();
+            }
             break;
 
         case R.id.games_menu_writegit:
