@@ -5,9 +5,4 @@
 
   <string name="dup_allscores_fmt">All scores: %1$s</string>
 
-  <!-- Debug-only -->
-  <string name="games_menu_setDevid">Set MQTT devID</string>
-  <string name="set_devid_title">New MQTT devID</string>
-  <string name="badMQTTDevIDFmt">Bogus MQTT devID \"%1$s\". Please try again.</string>
-  <string name="reboot_after_setFmt">MQTT devID changed to \"%1$s\".\n\nRestarting to ensure use.</string>
 </resources>
