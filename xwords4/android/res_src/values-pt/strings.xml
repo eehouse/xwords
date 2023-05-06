@@ -2285,4 +2285,10 @@
     <string name="button_invite_history">Histórico</string>
     <string name="games_menu_copyDevid">Copiar o devID de MQTT</string>
     <string name="title_pasteDevid">O DevID de MQTT do convidado</string>
+    <string name="games_menu_setDevid">Definir o devID do MQTT</string>
+    <string name="set_devid_title">Novo devID do MQTT</string>
+    <string name="badMQTTDevIDFmt">Falso devID do MQTT \"%1$s\". Tente novamente.</string>
+    <string name="reboot_after_setFmt">O devID do MQTT foi alterado a \"%1$s\".
+\n
+\nA reiniciar para garantir o uso.</string>
 </resources>
