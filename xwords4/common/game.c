@@ -643,6 +643,8 @@ gi_copy( MPFORMAL CurGameInfo* destGI, const CurGameInfo* srcGI )
         replaceStringIfDifferent( mpool, &destPl->name, srcPl->name );
         replaceStringIfDifferent( mpool, &destPl->password, 
                                   srcPl->password );
+        replaceStringIfDifferent( mpool, &destPl->dictName,
+                                  srcPl->dictName );
         destPl->secondsUsed = srcPl->secondsUsed;
         destPl->robotIQ = srcPl->robotIQ;
         destPl->isLocal = srcPl->isLocal;
