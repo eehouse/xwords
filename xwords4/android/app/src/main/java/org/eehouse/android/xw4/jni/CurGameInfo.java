@@ -160,6 +160,7 @@ public class CurGameInfo implements Serializable {
         timerEnabled = src.timerEnabled;
         allowPickTiles = src.allowPickTiles;
         allowHintRect = src.allowHintRect;
+        forceChannel = src.forceChannel;
 
         int ii;
         for ( ii = 0; ii < MAX_NUM_PLAYERS; ++ii ) {
