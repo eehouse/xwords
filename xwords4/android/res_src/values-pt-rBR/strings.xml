@@ -1172,4 +1172,6 @@
 \n
 \nReiniciando para garantir o uso.</string>
     <string name="games_menu_setDevid">Definir o MQTT devID</string>
+    <string name="backup_only_on_9">A exportação funciona no Android 9 (e em todas as outras versões), mas a importação não. Portanto, você pode fazer uma exportação deste dispositivo para migrar para um telefone mais recente, mas não poderá importar o arquivo resultante neste dispositivo.</string>
+    <string name="no_restore_on_9">A importação não funciona no Android 9.</string>
 </resources>
