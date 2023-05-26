@@ -38,6 +38,7 @@ import android.text.TextUtils;
 
 import org.eehouse.android.xw4.DBHelper.TABLE_NAMES;
 import org.eehouse.android.xw4.DictUtils.DictLoc;
+import org.eehouse.android.xw4.DictUtils.ON_SERVER;
 import org.eehouse.android.xw4.DlgDelegate.DlgClickNotify.InviteMeans;
 import org.eehouse.android.xw4.Utils.ISOCode;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
@@ -83,7 +84,6 @@ public class DBUtils {
     private static final String ROW_ID = "rowid";
     private static final String ROW_ID_FMT = "rowid=%d";
     private static final String NAME_FMT = "%s='%s'";
-    private static final String NAMELOC_FMT = "%s='%s' AND %s=%d";
 
     private static long s_cachedRowID = ROWID_NOTFOUND;
     private static byte[] s_cachedBytes = null;
@@ -1924,6 +1924,7 @@ public class DBUtils {
                              DBHelper.WORDCOUNT,
                              DBHelper.MD5SUM,
                              DBHelper.FULLSUM,
+                             DBHelper.ON_SERVER,
                              /*DBHelper.LOC*/ };
         String selection = String.format( NAME_FMT, DBHelper.DICTNAME, name );
         initDB( context );
@@ -1942,6 +1943,11 @@ public class DBUtils {
                     cursor.getString( cursor.getColumnIndex(DBHelper.FULLSUM));
                 result.langName =
                     cursor.getString( cursor.getColumnIndex(DBHelper.LANGNAME));
+
+                int onServer = cursor.getInt( cursor.getColumnIndex(DBHelper.ON_SERVER) );
+                Log.d( TAG, "for %s, read onServer: %d", name, onServer );
+                result.onServer = ON_SERVER.values()[onServer];
+
                 // int loc = cursor.getInt(cursor.getColumnIndex(DBHelper.LOC));
                 // Log.d( TAG, "dictsGetInfo(): read sum %s/loc %d for %s", result.md5Sum,
                 //        loc, name );
@@ -1990,8 +1996,8 @@ public class DBUtils {
                                       DictLoc fromLoc, DictLoc toLoc )
     {
         String selection =
-            String.format( NAMELOC_FMT, DBHelper.DICTNAME,
-                           name, DBHelper.LOCATION, fromLoc.ordinal() );
+            String.format( DBHelper.DICTNAME + "='%s' AND " + DBHelper.LOCATION + "=%d",
+                           name, toLoc.ordinal() );
         ContentValues values = new ContentValues();
         values.put( DBHelper.LOCATION, toLoc.ordinal() );
 
@@ -2013,6 +2019,25 @@ public class DBUtils {
             // Log.d( TAG, "removed %d rows from %s", removed, DBHelper.TABLE_NAME_DICTINFO );
             removed = delete( TABLE_NAMES.DICTBROWSE, selection, args );
             // Log.d( TAG, "removed %d rows from %s", removed, DBHelper.TABLE_NAME_DICTBROWSE );
+        }
+    }
+
+    public static void updateServed( Context context, DictUtils.DictAndLoc dal,
+                                     boolean served )
+    {
+        // For some reason, loc is sometimes wrong. So just flag the thing
+        // wherever it is.
+        String selection =
+            String.format( DBHelper.DICTNAME + "='%s' ", dal.name );
+        ContentValues values = new ContentValues();
+        ON_SERVER onServer = served ? ON_SERVER.YES : ON_SERVER.NO;
+        values.put( DBHelper.ON_SERVER, onServer.ordinal() );
+
+        initDB( context );
+        synchronized( s_dbHelper ) {
+            int count = update( TABLE_NAMES.DICTINFO, values, selection );
+            Log.d( TAG, "update(%s) => %d rows affected", selection, count );
+            Assert.assertTrueNR( count > 0 );
         }
     }
 

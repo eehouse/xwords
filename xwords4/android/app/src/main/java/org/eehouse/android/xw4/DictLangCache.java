@@ -28,6 +28,7 @@ import android.text.TextUtils;
 
 import org.eehouse.android.xw4.DictUtils.DictAndLoc;
 import org.eehouse.android.xw4.DictUtils.DictLoc;
+import org.eehouse.android.xw4.DictUtils.ON_SERVER;
 import org.eehouse.android.xw4.jni.CommonPrefs;
 import org.eehouse.android.xw4.jni.DictInfo;
 import org.eehouse.android.xw4.jni.JNIUtilsImpl;
@@ -243,6 +244,18 @@ public class DictLangCache {
     {
         int indx = nameWithCount.lastIndexOf( " (" );
         return nameWithCount.substring( 0, indx );
+    }
+
+    public static ON_SERVER getOnServer( Context context, DictAndLoc dal )
+    {
+        DictInfo info = getInfo( context, dal );
+        return info.onServer;
+    }
+
+    public static ON_SERVER getOnServer( Context context, String dictName )
+    {
+        DictInfo info = getInfo( context, dictName );
+        return info.onServer;
     }
 
     public static ISOCode getDictISOCode( Context context, DictAndLoc dal )

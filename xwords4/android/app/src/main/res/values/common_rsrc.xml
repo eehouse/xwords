@@ -163,6 +163,7 @@
   <string name="key_na_perms_phonestate">key_na_perms_phonestate</string>
   <string name="key_na_perms_storage_dicts">key_na_perms_storage_dicts</string>
   <string name="key_na_newFeatureFilter">key_na_newFeatureFilter</string>
+  <string name="key_na_customXWD">key_na_customXWD</string>
   <string name="key_na_traysize">key_na_traysize</string>
 
   <string name="key_na_dupstatus_host">key_na_dupstatus_host</string>

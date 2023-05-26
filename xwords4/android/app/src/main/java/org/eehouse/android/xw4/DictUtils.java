@@ -62,6 +62,12 @@ public class DictUtils {
         }
     }
 
+    public static enum ON_SERVER {
+        UNKNOWN,
+        YES,
+        NO,
+    };
+
     // keep in sync with loc_names string-array
     public enum DictLoc {
         UNKNOWN,
@@ -117,6 +123,7 @@ public class DictUtils {
         }
         public String name;
         public DictLoc loc;
+        public ON_SERVER onServer;
 
         public File getPath( Context context )
         {

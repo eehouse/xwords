@@ -101,6 +101,7 @@ public class GamesListDelegate extends ListDelegateBase
     private static final String REMATCH_IS_SOLO = "rm_solo";
     private static final String REMATCH_ADDRS_EXTRA = "rm_addrs";
 
+    private static final String CONFIG_ROWID_EXTRA = "conf_rowid";
     private static final String INVITE_ACTION = "org.eehouse.action_invite";
     private static final String INVITE_DATA = "data_invite";
 
@@ -2645,6 +2646,18 @@ public class GamesListDelegate extends ListDelegateBase
         return handled;
     }
 
+    private boolean startConfig( Intent intent )
+    {
+        long rowid = intent.getLongExtra( CONFIG_ROWID_EXTRA, -1 );
+        boolean handled = -1 != rowid;
+        if ( handled ) {
+            GameConfigDelegate.editForResult( getDelegator(),
+                                              RequestCode.CONFIG_GAME,
+                                              rowid );
+        }
+        return handled;
+    }
+
     // Create a new game that's a copy, sending invitations via the means it
     // used to connect.
     private boolean startRematch( Intent intent )
@@ -2980,6 +2993,7 @@ public class GamesListDelegate extends ListDelegateBase
             || startNewNetGame( intent )
             || startHasGameID( intent )
             || startRematch( intent )
+            || startConfig( intent )
             || tryAlert( intent )
             || tryInviteIntent( intent )
             ;
@@ -3267,6 +3281,13 @@ public class GamesListDelegate extends ListDelegateBase
     {
         Intent intent = makeSelfIntent( context )
             .setData( data );
+        context.startActivity( intent );
+    }
+
+    public static void launchGameConfig( Context context, long rowid )
+    {
+        Intent intent = makeSelfIntent( context )
+            .putExtra( CONFIG_ROWID_EXTRA, rowid );
         context.startActivity( intent );
     }
 }

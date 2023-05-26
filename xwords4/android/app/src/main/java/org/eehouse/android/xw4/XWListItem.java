@@ -44,6 +44,10 @@ public class XWListItem extends LinearLayout
     private boolean m_expanded = false;
     private View m_expandedView;
 
+    // For mCustom is for dists browser only. Maybe that case needs a
+    // subclass??? PENDING
+    private boolean mCustom = false;
+
     public interface DeleteCallback {
         void deleteCalled( XWListItem item );
     }
@@ -119,6 +123,23 @@ public class XWListItem extends LinearLayout
             view.setText( text );
         }
     }
+
+    public void setIsCustom( boolean custom )
+    {
+        mCustom = custom;
+        TextView view = (TextView)findViewById( R.id.text_item_custom );
+        if ( custom ) {
+            view.setVisibility( View.VISIBLE );
+            Context context = getContext();
+            String text = LocUtils.getString( context,
+                                              R.string.wordlist_custom_note );
+            view.setText( text );
+        } else {
+            view.setVisibility( View.GONE );
+        }
+    }
+
+    public boolean getIsCustom() { return mCustom; }
 
     public void setDeleteCallback( DeleteCallback cb )
     {

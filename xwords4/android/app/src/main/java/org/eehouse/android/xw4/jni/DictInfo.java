@@ -22,12 +22,14 @@ package org.eehouse.android.xw4.jni;
 
 import org.eehouse.android.xw4.Assert;
 import org.eehouse.android.xw4.BuildConfig;
+import org.eehouse.android.xw4.DictUtils.ON_SERVER;
 import org.eehouse.android.xw4.Utils.ISOCode;
 
 public class DictInfo {
     // set in java code
     public String name;
     public String fullSum;      // md5sum of the whole file
+    public ON_SERVER onServer;  // is it currently downloadable?
 
     // set in jni code
     public int wordCount;
@@ -50,6 +52,7 @@ public class DictInfo {
                 .append(", langName: ").append(langName)
                 .append(", md5Sum: ").append(md5Sum)
                 .append(", fullSum: ").append(fullSum)
+                .append(", onServer: ").append(onServer)
                 .append("}").toString();
         } else {
             return super.toString();

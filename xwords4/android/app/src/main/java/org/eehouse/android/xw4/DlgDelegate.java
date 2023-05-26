@@ -93,6 +93,7 @@ public class DlgDelegate {
         ARCHIVE_ACTION,
         REMATCH_ACTION,
         DELETE_ACTION,
+        CUSTOM_DICT_CONFIRMED,
 
         // Dict Browser
         FINISH_ACTION,

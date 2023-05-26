@@ -54,6 +54,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.eehouse.android.xw4.DBUtils.SentInvitesInfo;
+import org.eehouse.android.xw4.DictUtils.ON_SERVER;
 import org.eehouse.android.xw4.DlgDelegate.Action;
 import org.eehouse.android.xw4.DlgDelegate.ActionPair;
 import org.eehouse.android.xw4.NFCUtils.Wrapper;
@@ -738,8 +739,19 @@ public class BoardDelegate extends DelegateBase
     private void showInviteChoicesThen()
     {
         NetLaunchInfo nli = nliForMe();
-        showInviteChoicesThen( Action.LAUNCH_INVITE_ACTION, nli,
-                               m_mySIS.nMissing, m_mySIS.nInvited );
+
+        if ( ON_SERVER.NO != DictLangCache.getOnServer( m_activity, nli.dict ) ) {
+            onPosButton( Action.CUSTOM_DICT_CONFIRMED, nli );
+        } else {
+            String txt = LocUtils
+                .getString(m_activity, R.string.invite_custom_warning_fmt,
+                           nli.dict );
+            makeConfirmThenBuilder( Action.CUSTOM_DICT_CONFIRMED, txt )
+                .setNegButton( R.string.list_item_config )
+                .setActionPair( Action.DELETE_AND_EXIT, R.string.button_delete )
+                .setParams( nli )
+                .show();
+        }
     }
 
     @Override
@@ -1164,6 +1176,12 @@ public class BoardDelegate extends DelegateBase
             }
             break;
 
+        case CUSTOM_DICT_CONFIRMED:
+            NetLaunchInfo nli = (NetLaunchInfo)params[0];
+            showInviteChoicesThen( Action.LAUNCH_INVITE_ACTION, nli,
+                                   m_mySIS.nMissing, m_mySIS.nInvited );
+            break;
+
         case LAUNCH_INVITE_ACTION:
             for ( Object obj : params ) {
                 if ( obj instanceof CommsAddrRec ) {
@@ -1214,6 +1232,10 @@ public class BoardDelegate extends DelegateBase
             break;
         case ASKED_PHONE_STATE:
             showInviteChoicesThen();
+            break;
+        case CUSTOM_DICT_CONFIRMED:
+            GamesListDelegate.launchGameConfig( m_activity, m_rowid );
+            finish();
             break;
         case INVITE_SMS_DATA:
             if ( Perms23.haveNBSPerms( m_activity ) ) {

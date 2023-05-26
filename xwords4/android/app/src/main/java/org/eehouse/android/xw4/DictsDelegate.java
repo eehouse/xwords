@@ -48,6 +48,7 @@ import android.widget.TextView;
 
 import org.eehouse.android.xw4.DictUtils.DictAndLoc;
 import org.eehouse.android.xw4.DictUtils.DictLoc;
+import org.eehouse.android.xw4.DictUtils.ON_SERVER;
 import org.eehouse.android.xw4.DlgDelegate.Action;
 import org.eehouse.android.xw4.DwnldDelegate.DownloadFinishedListener;
 import org.eehouse.android.xw4.DwnldDelegate.OnGotLcDictListener;
@@ -94,7 +95,7 @@ public class DictsDelegate extends ListDelegateBase
 
     private Activity m_activity;
     private Set<String> m_closedLangs;
-    private Set<DictInfo> m_expandedItems;
+    private Set<AvailDictInfo> m_expandedItems;
     private DictListAdapter m_adapter;
 
     private boolean m_quickFetchMode;
@@ -112,15 +113,15 @@ public class DictsDelegate extends ListDelegateBase
     private ISOCode m_lastLang;
     private String m_lastDict;
 
-    private static class DictInfo implements Comparable, Serializable {
+    private static class AvailDictInfo implements Comparable, Serializable {
         public String m_name;
         public String m_localLang;  // what we display to user, i.e. translated
         public ISOCode mISOCode;    // what needs to be in URL
         public int m_nWords;
         public long m_nBytes;
         public String m_note;
-        public DictInfo( String name, ISOCode isoCode, String localLang,
-                         int nWords, long nBytes, String note )
+        public AvailDictInfo( String name, ISOCode isoCode, String localLang,
+                              int nWords, long nBytes, String note )
         {
             m_name = name;
             m_localLang = localLang;
@@ -131,7 +132,7 @@ public class DictsDelegate extends ListDelegateBase
         }
         @Override
         public int compareTo( Object obj ) {
-            DictInfo other = (DictInfo)obj;
+            AvailDictInfo other = (AvailDictInfo)obj;
             return m_name.compareTo( other.m_name );
         }
     }
@@ -143,7 +144,7 @@ public class DictsDelegate extends ListDelegateBase
         {
             m_posn = posn;
             for ( Object obj : objs ) {
-                if ( obj instanceof DictInfo ) {
+                if ( obj instanceof AvailDictInfo ) {
                     ++m_numDictsAvail;
                 } else if ( obj instanceof DictAndLoc ) {
                     ++m_numDictsInst;
@@ -153,7 +154,7 @@ public class DictsDelegate extends ListDelegateBase
             }
         }
     }
-    private HashMap<String, DictInfo[]> m_remoteInfo;
+    private HashMap<String, AvailDictInfo[]> m_remoteInfo;
 
     private boolean m_launchedForMissing = false;
 
@@ -164,7 +165,7 @@ public class DictsDelegate extends ListDelegateBase
         {
             super( new Class[] { LangInfo.class,
                                  DictAndLoc.class,
-                                 DictInfo.class
+                                 AvailDictInfo.class
                 } );
             m_context = context;
         }
@@ -232,6 +233,9 @@ public class DictsDelegate extends ListDelegateBase
                     DictAndLoc dal = (DictAndLoc)dataObj;
 
                     name = dal.name;
+                    if ( ON_SERVER.NO == DictLangCache.getOnServer( m_context, dal ) ) {
+                        item.setIsCustom( true );
+                    }
 
                     DictLoc loc = dal.loc;
                     item.setComment( m_locNames[loc.ordinal()] );
@@ -240,8 +244,8 @@ public class DictsDelegate extends ListDelegateBase
                     item.setOnClickListener( DictsDelegate.this );
                     item.setExpandedListener( null ); // item might be reused
 
-                } else if ( dataObj instanceof DictInfo ) {
-                    DictInfo info = (DictInfo)dataObj;
+                } else if ( dataObj instanceof AvailDictInfo ) {
+                    AvailDictInfo info = (AvailDictInfo)dataObj;
                     name = info.m_name;
 
                     item.setCached( info );
@@ -301,9 +305,9 @@ public class DictsDelegate extends ListDelegateBase
             }
 
             if ( m_showRemote && null != m_remoteInfo ) {
-                DictInfo[] infos = m_remoteInfo.get( langName );
+                AvailDictInfo[] infos = m_remoteInfo.get( langName );
                 if ( null != infos ) {
-                    for ( DictInfo info : infos ) {
+                    for ( AvailDictInfo info : infos ) {
                         if ( ! locals.contains( info.m_name ) ) {
                             result.add( info );
                         }
@@ -548,7 +552,8 @@ public class DictsDelegate extends ListDelegateBase
         } else {
             XWListItem item = (XWListItem)view;
             DictBrowseDelegate.launch( getDelegator(), item.getText(),
-                                       (DictLoc)item.getCached() );
+                                       (DictLoc)item.getCached(),
+                                       item.getIsCustom() );
         }
     }
 
@@ -619,8 +624,8 @@ public class DictsDelegate extends ListDelegateBase
 
             for ( Map.Entry<String, Object> entry : m_selDicts.entrySet() ) {
                 Object cached = entry.getValue();
-                if ( cached instanceof DictInfo ) {
-                    DictInfo info = (DictInfo)cached;
+                if ( cached instanceof AvailDictInfo ) {
+                    AvailDictInfo info = (AvailDictInfo)cached;
                     String name = entry.getKey();
                     Uri uri = Utils.makeDictUriFromCode( m_activity,
                                                          info.mISOCode, name );
@@ -700,7 +705,7 @@ public class DictsDelegate extends ListDelegateBase
         for ( Iterator<Object> iter = m_selDicts.values().iterator();
               iter.hasNext(); ) {
             Object obj = iter.next();
-            if ( obj instanceof DictInfo ) {
+            if ( obj instanceof AvailDictInfo ) {
                 ++result;
             }
         }
@@ -1020,7 +1025,7 @@ public class DictsDelegate extends ListDelegateBase
         for ( Object obj : m_selDicts.values() ) {
             if ( obj instanceof DictLoc ) {
                 ++results[SEL_LOCAL];
-            } else if ( obj instanceof DictInfo ) {
+            } else if ( obj instanceof AvailDictInfo ) {
                 ++results[SEL_REMOTE];
             } else {
                 Log.d( TAG, "obj is a: " + obj );
@@ -1160,7 +1165,7 @@ public class DictsDelegate extends ListDelegateBase
     //////////////////////////////////////////////////////////////////////
     public void expanded( XWListItem me, boolean expanded )
     {
-        final DictInfo info = (DictInfo)me.getCached();
+        final AvailDictInfo info = (AvailDictInfo)me.getCached();
         if ( expanded ) {
             m_expandedItems.add( info ); // may already be there
             LinearLayout view =
@@ -1465,7 +1470,7 @@ public class DictsDelegate extends ListDelegateBase
 
                         JSONArray dicts = langObj.getJSONArray( "dicts" );
                         int nDicts = dicts.length();
-                        ArrayList<DictInfo> dictNames = new ArrayList<>();
+                        ArrayList<AvailDictInfo> dictNames = new ArrayList<>();
                         for ( int jj = 0; !isCancelled() && jj < nDicts;
                               ++jj ) {
                             JSONObject dict = dicts.getJSONObject( jj );
@@ -1477,8 +1482,9 @@ public class DictsDelegate extends ListDelegateBase
                             if ( 0 == note.length() ) {
                                 note = null;
                             }
-                            DictInfo info = new DictInfo( name, isoCode, localLangName,
-                                                          nWords, nBytes, note );
+                            AvailDictInfo info =
+                                new AvailDictInfo( name, isoCode, localLangName,
+                                                   nWords, nBytes, note );
 
                             if ( !m_quickFetchMode ) {
                                 // Check if we have it and it needs an update
@@ -1507,8 +1513,8 @@ public class DictsDelegate extends ListDelegateBase
                             dictNames.add( info );
                         }
                         if ( 0 < dictNames.size() ) {
-                            DictInfo[] asArray = dictNames
-                                .toArray( new DictInfo[dictNames.size()] );
+                            AvailDictInfo[] asArray = dictNames
+                                .toArray( new AvailDictInfo[dictNames.size()] );
                             Arrays.sort( asArray );
                             m_remoteInfo.put( localLangName, asArray );
                         }

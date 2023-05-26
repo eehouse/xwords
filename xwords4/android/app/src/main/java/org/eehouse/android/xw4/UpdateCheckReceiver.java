@@ -38,6 +38,7 @@ import javax.net.ssl.HttpsURLConnection;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import org.eehouse.android.xw4.DictUtils.ON_SERVER;
 import org.eehouse.android.xw4.Utils.ISOCode;
 import org.eehouse.android.xw4.jni.XwJNI;
 import org.eehouse.android.xw4.loc.LocUtils;
@@ -70,6 +71,7 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
     private static final String k_MD5SUM = "md5sum";
     private static final String k_FULLSUM = "fullsum";
     private static final String k_INDEX = "index";
+    private static final String k_SERVED_FLAG = "served";
     private static final String k_LEN = "len";
     private static final String k_URL = "url";
     private static final String k_MQTTDEVID = "devid";
@@ -197,7 +199,7 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
         for ( int ii = 0; ii < dals.length; ++ii ) {
             DictUtils.DictAndLoc dal = dals[ii];
             switch ( dal.loc ) {
-                // case DOWNLOAD:
+            case DOWNLOAD:      // why was this commented out?
             case EXTERNAL:
             case INTERNAL:
                 tmp[indx++] = dal;
@@ -220,6 +222,7 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
         ISOCode isoCode = DictLangCache.getDictISOCode( context, dal );
         String langStr = DictLangCache.getLangNameForISOCode( context, isoCode );
         String[] sums = DictLangCache.getDictMD5Sums( context, dal.name );
+        ON_SERVER served = DictLangCache.getOnServer( context, dal );
         Assert.assertTrueNR( null != sums[1] );
         long len = DictLangCache.getFileSize( context, dal );
         try {
@@ -230,6 +233,9 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
             params.put( k_FULLSUM, sums[1] );
             params.put( k_INDEX, index );
             params.put( k_LEN, len );
+            if ( served != ON_SERVER.UNKNOWN ) {
+                params.put( k_SERVED_FLAG, served == ON_SERVER.YES );
+            }
         } catch( org.json.JSONException jse ) {
             Log.ex( TAG, jse );
         }
@@ -377,13 +383,19 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
                         JSONArray dicts = jobj.getJSONArray( k_DICTS );
                         for ( int ii = 0; ii < dicts.length(); ++ii ) {
                             JSONObject dict = dicts.getJSONObject( ii );
-                            if ( dict.has( k_URL ) && dict.has( k_INDEX ) ) {
-                                String url = dict.getString( k_URL );
+                            if ( dict.has( k_INDEX ) ) {
                                 int index = dict.getInt( k_INDEX );
                                 DictUtils.DictAndLoc dal = m_dals[index];
-                                postDictNotification( m_context, url,
-                                                      dal.name, dal.loc, true );
-                                gotOne = true;
+                                if ( dict.has( k_URL ) ) {
+                                    String url = dict.getString( k_URL );
+                                    postDictNotification( m_context, url,
+                                                          dal.name, dal.loc, true );
+                                    gotOne = true;
+                                }
+                                if ( dict.has( k_SERVED_FLAG ) ) {
+                                    boolean served = dict.getBoolean( k_SERVED_FLAG );
+                                    DBUtils.updateServed( m_context, dal, served );
+                                }
                             }
                         }
                     }

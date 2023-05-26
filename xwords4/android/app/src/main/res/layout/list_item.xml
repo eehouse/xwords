@@ -34,6 +34,15 @@
                   android:maxLines="1"
                   />
 
+        <TextView android:id="@+id/text_item_custom"
+	              android:layout_width="wrap_content"
+	              android:layout_height="wrap_content"
+                  android:layout_weight="1"
+   	              android:textAppearance="?android:attr/textAppearanceSmall"
+                  android:maxLines="1"
+                  android:visibility="gone"
+                  />
+
         <TextView android:id="@+id/text_item2"
 	              android:layout_width="wrap_content" 
 	              android:layout_height="wrap_content"

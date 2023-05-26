@@ -70,6 +70,7 @@ public class DictBrowseDelegate extends DelegateBase
 
     private static final String DICT_NAME = "DICT_NAME";
     private static final String DICT_LOC = "DICT_LOC";
+    private static final String DICT_CUSTOM = "DICT_CUSTOM";
 
     private static final int MIN_LEN = 2;
     private static final int MAX_LEN = 15;
@@ -234,6 +235,8 @@ public class DictBrowseDelegate extends DelegateBase
     {
         Bundle args = getArguments();
         String name = null == args? null : args.getString( DICT_NAME );
+        boolean isCustom = null == args ? false
+            : args.getBoolean( DICT_CUSTOM, false );
         Assert.assertNotNull( name );
         if ( null == name ) {
             finish();
@@ -282,6 +285,12 @@ public class DictBrowseDelegate extends DelegateBase
 
             setShowConfig();
             replaceIter( true );
+
+            if ( isCustom ) {
+                makeNotAgainBuilder( R.string.key_na_customXWD,
+                                     R.string.notagain_custom_xwd )
+                    .show();
+            }
         }
     } // init
 
@@ -886,9 +895,18 @@ public class DictBrowseDelegate extends DelegateBase
     public static void launch( Delegator delegator, String name,
                                DictUtils.DictLoc loc )
     {
+        launch( delegator, name, loc, false );
+    }
+
+    public static void launch( Delegator delegator, String name,
+                               DictUtils.DictLoc loc, boolean isCustom )
+    {
         Bundle bundle = new Bundle();
         bundle.putString( DICT_NAME, name );
         bundle.putInt( DICT_LOC, loc.ordinal() );
+        if ( isCustom ) {
+            bundle.putBoolean( DICT_CUSTOM, true );
+        }
         launch( delegator, bundle );
     }
 
