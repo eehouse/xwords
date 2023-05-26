@@ -41,7 +41,7 @@ public class DBHelper extends SQLiteOpenHelper {
     private static final String TAG = DBHelper.class.getSimpleName();
 
     private static final String DB_NAME = BuildConfig.DB_NAME;
-    private static final int DB_VERSION = 32;
+    private static final int DB_VERSION = 33;
 
     public static final String GAME_NAME = "GAME_NAME";
     public static final String VISID = "VISID";
@@ -62,6 +62,7 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String EXTRAS = "EXTRAS";
     private static final String DICTLANG = "DICTLANG";
     public static final String ISOCODE = "ISOCODE";
+    public static final String ON_SERVER = "ON_SERVER";
     public static final String LANGNAME = "LANGNAME";
     public static final String DICTLIST = "DICTLIST";
     public static final String HASMSGS = "HASMSGS";
@@ -179,8 +180,9 @@ public class DBHelper extends SQLiteOpenHelper {
                 { FULLSUM,   "TEXT(32)" },
                 { WORDCOUNT, "INTEGER" },
                 { LANGCODE,  "INTEGER" }, // deprecated
-                { LANGNAME,   "TEXT" },
+                { LANGNAME,  "TEXT" },
                 { ISOCODE,   "TEXT(8)" },
+                { ON_SERVER, "INTEGER DEFAULT 0" },
             }, 12 ),
         GROUPS( "groups", new String[][] {
                 { GROUPNAME,  "TEXT" },
@@ -372,6 +374,14 @@ public class DBHelper extends SQLiteOpenHelper {
             } catch ( SQLiteException ex ) {
                 Log.ex( TAG, ex );
             }
+
+        case 32:
+            if ( !madeDITable ) {
+                addColumn( db, TABLE_NAMES.DICTINFO, ON_SERVER );
+            }
+
+
+
             break;
         default:
             for ( TABLE_NAMES table : TABLE_NAMES.values() ) {
