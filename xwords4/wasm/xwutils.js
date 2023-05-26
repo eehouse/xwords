@@ -169,6 +169,7 @@ function jssetup(closure, dbg, devid, gitrev, now, noTabProc,
 
 	registerOnce(devid, gitrev, now, dbg);
 
+	document.getElementById("git_rev").textContent = gitrev;
 	document.getElementById("mqtt_span").textContent = devid;
 
 	function onConnChange(isConn) {
