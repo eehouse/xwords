@@ -170,22 +170,22 @@ def process(args):
                 md5Sum = getNullTermParam(header)
                 print( 'header: read sum: {}'.format(md5Sum), file=sys.stderr )
 
-                # skip header flags
-                header.read(2)
-                print( 'header: skipped flags', file=sys.stderr)
+                hdrFlags = int.from_bytes(header.read(2), 'little')
+                print( 'header: flags: {:X}'.format(hdrFlags), file=sys.stderr)
 
                 langCode = getNullTermParam(header)
+                print('header: langCode: {}; '.format(langCode), file=sys.stderr, end = '')
                 langName = getNullTermParam(header)
-                print('header: langCode: {}; langName: {}'.format(langCode, langName),
-                      file=sys.stderr)
+                print('langName: {}'.format(langName), file=sys.stderr)
 
                 extraSize = int.from_bytes(header.read(1), 'little')
                 print( 'header: extraSize: {}'.format(extraSize), file=sys.stderr )
                 extraData = header.read(extraSize)
 
             except Exception as ex:
-                print( 'header: exception!! {} '.format(ex), file=sys.stderr )
-                md5Sum = None
+                # This will fire when header ends before langCode,
+                # i.e. for older wordlists
+                print( 'old/small header? exception!! {} '.format(ex), file=sys.stderr )
 
             if args.GET_SUM:
                 print( '{}'.format(md5Sum), file=sys.stdout )
@@ -236,7 +236,10 @@ def process(args):
         else:
             error('I don\'t handle obsolete ascii case')
 
-        langCode = 0x7F & oneByteFmt.unpack(dawg.read(oneByteFmt.size))[0]
+        langCode = oneByteFmt.unpack(dawg.read(oneByteFmt.size))[0]
+        official = 0 != langCode & 0x80
+        langCode = 0x7F & langCode
+        print( 'langCode: {:02X}; official: {}'.format(langCode, official), file=sys.stderr )
         dawg.read( oneByteFmt.size ) # skip byte
 
         loadCountsAndValues( dawg, numFaces, extraData, data )
