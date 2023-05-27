@@ -1073,7 +1073,7 @@
 \n(Sie haben jetzt eine aktive Partie über das Internet.)"</item>
         <item quantity="other">"
 \n
-\n(Sie haben jetzt %1$d aktive Spiele über das Internet.)"</item>
+\n(Sie haben jetzt %1$d aktive Partien über das Internet.)"</item>
     </plurals>
     <string name="show_note_menu_fmt">Über %1$s</string>
     <string name="button_ask">Fragen</string>
@@ -1125,4 +1125,6 @@
     <string name="reboot_after_setFmt">MQTT-devID wurde in \"%1$s\" geändert.
 \n
 \nNeustart, um die Verwendung sicherzustellen.</string>
+    <string name="backup_only_on_9">Der Export funktioniert unter Android 9 (und allen anderen Versionen), der Import jedoch nicht. Sie können also einen Export auf diesem Gerät durchführen, um auf ein neueres Telefon zu migrieren, aber Sie können die entstandene Datei nicht auf dieses Gerät importieren.</string>
+    <string name="no_restore_on_9">Der Import funktioniert nicht unter Android 9.</string>
 </resources>
