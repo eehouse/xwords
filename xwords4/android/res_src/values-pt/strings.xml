@@ -1975,9 +1975,10 @@
         <item quantity="one">"
 \n
 \n(Uma partida também será apagada.)"</item>
-        <item quantity="other">"
+        <item quantity="many">"
 \n
 \n(%1$d partidas também serão apagadas.)"</item>
+        <item quantity="other"></item>
     </plurals>
     <plurals name="groups_confirm_del_fmt">
         <item quantity="one">Tem certeza que quer deletar o grupo %1$s\?</item>
@@ -1998,9 +1999,10 @@
         <item quantity="one">"
 \n
 \n(Tem uma partida ativa a usar o Bluetooth.)"</item>
-        <item quantity="other">"
+        <item quantity="many">"
 \n
 \n(Tem %1$d partidas ativas a usar o Bluetooth.)"</item>
+        <item quantity="other"></item>
     </plurals>
     <string name="warn_bt_havegames">Tem certeza que quer desativar jogar a usar Bluetooth\?
 \n
@@ -2052,7 +2054,7 @@
     </plurals>
     <string name="invite_bt_desc_postscript">"
 \n
-\n(A lista é de aparelhos emparelhados onde CrossWords foi detectado via um escaneamento.)"</string>
+\n(A lista é de aparelhos emparelhados onde CrossWords foi detetado via uma varredura.)"</string>
     <plurals name="invite_bt_desc_fmt_2">
         <item quantity="one">Por favor cheque o aparelho que quer incluir neste jogo.</item>
         <item quantity="other">Por favor cheque os %1$d aparelhos que quer incluir neste jogo.</item>
@@ -2256,7 +2258,7 @@
         <item quantity="many">"
 \n
 \n(Agora tem %1$d jogos ativos usando a Internet.)"</item>
-        <item quantity="other"/>
+        <item quantity="other"></item>
     </plurals>
     <string name="archive_button_store">Exportar</string>
     <string name="archive_expl_colors">Cores no tabuleiro de jogo, por exemplo dos nomes de jogadores e quadrados de bónus</string>
@@ -2291,4 +2293,6 @@
     <string name="reboot_after_setFmt">O devID do MQTT foi alterado a \"%1$s\".
 \n
 \nA reiniciar para garantir o uso.</string>
+    <string name="backup_only_on_9">A exportação funciona no Android 9 (e em todas as outras versões), mas a importação não. Portanto, pode fazer uma exportação neste aparelho para migrar para um telefone mais novo, mas não poderá importar o ficheiro resultante neste aparelho.</string>
+    <string name="no_restore_on_9">A importação não funciona no Android 9.</string>
 </resources>
