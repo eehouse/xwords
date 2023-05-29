@@ -287,8 +287,9 @@ public class DictBrowseDelegate extends DelegateBase
             replaceIter( true );
 
             if ( isCustom ) {
-                makeNotAgainBuilder( R.string.key_na_customXWD,
-                                     R.string.notagain_custom_xwd )
+                String msg = LocUtils
+                    .getString( m_activity, R.string.notagain_custom_xwd_fmt, name );
+                makeNotAgainBuilder( R.string.key_na_customXWD, msg )
                     .show();
             }
         }

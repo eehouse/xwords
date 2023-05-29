@@ -748,7 +748,8 @@ public class BoardDelegate extends DelegateBase
                            nli.dict );
             makeConfirmThenBuilder( Action.CUSTOM_DICT_CONFIRMED, txt )
                 .setNegButton( R.string.list_item_config )
-                .setActionPair( Action.DELETE_AND_EXIT, R.string.button_delete )
+                .setActionPair( Action.DELETE_AND_EXIT,
+                                R.string.button_delete_game )
                 .setParams( nli )
                 .show();
         }
