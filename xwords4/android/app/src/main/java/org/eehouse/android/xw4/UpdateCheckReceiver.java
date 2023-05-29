@@ -122,6 +122,17 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
 
     public static void checkVersions( Context context, boolean fromUI )
     {
+        checkVersions( context, fromUI, false );
+    }
+
+    public static void checkDictVersions( Context context )
+    {
+        checkVersions( context, false, true );
+    }
+
+    private static void checkVersions( Context context, boolean fromUI,
+                                       boolean dictsOnly )
+    {
         JSONObject params = new JSONObject();
         PackageManager pm = context.getPackageManager();
         String packageName = BuildConfig.APPLICATION_ID;
@@ -134,7 +145,7 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
         }
 
         // App update
-        if ( BuildConfig.FOR_FDROID ) {
+        if ( BuildConfig.FOR_FDROID || dictsOnly ) {
             // Do nothing; can't upgrade app
         } else {
             String installer = pm.getInstallerPackageName( packageName );

@@ -185,6 +185,8 @@ public class DwnldDelegate extends ListDelegateBase {
                     m_appFile = saveToPrivate( is, name, this );
                 } else {
                     m_savedDict = saveDict( is, name, this );
+                    // force a check so BYOD lists will show as custom
+                    UpdateCheckReceiver.checkDictVersions( m_activity );
                 }
                 is.close();
             } catch ( java.net.URISyntaxException use ) {
