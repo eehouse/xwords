@@ -182,7 +182,7 @@
 \n</string>
     <string name="prefs_appearance">Aparência</string>
     <string name="board_size">Tamanho do quadro</string>
-    <string name="initial_player_minutes">Minutos por jogador</string>
+    <string name="initial_player_minutes">Temporizador de minutos por jogador</string>
     <string name="phonies_found_title">Palavras falsas encontradas</string>
     <string name="default_phonies">Lidar com palavras falsas</string>
     <string name="init_autojuggle_sum">Aleatoriamente, para novos jogos</string>
@@ -694,7 +694,7 @@
     <string name="error_min_gt_max">O valor de tamanho mínimo não pode ser maior que o valor máximo.</string>
     <string name="not_again_browseall">Este botão permite que você escolha em qual lista de palavras no idioma do jogo atual navegar.</string>
     <string name="not_again_browse">Este botão permite navegar na lista de palavras exibidas mais recentemente.</string>
-    <string name="show_tiles_button">Mostrar Quadrados</string>
+    <string name="show_tiles_button">Mostrar os quadrados</string>
     <string name="button_move">Mover</string>
     <string name="not_again_lookup">Este botão permite você pesquisar online as palavras que você acabou de jogar.</string>
     <string name="pick_url_title_fmt">Pesquisar %1$s em</string>
@@ -702,14 +702,14 @@
     <string name="button_lookup_fmt">Pesquisar %1$s</string>
     <string name="button_lookup_study">Pesquisar/estudar palavras</string>
     <string name="button_lookup">Pesquisar palavras</string>
-    <string name="changes_title">Mudanças recentes</string>
+    <string name="changes_title">Alterações recentes</string>
     <string name="gamel_menu_checkupdates">Checar por atualizações</string>
     <string name="button_later">Depois</string>
     <string name="button_disable_bt">Desativar jogo Bluetooth</string>
     <string name="title_lookup_study">Toque para pesquisar ou estudar</string>
     <string name="title_lookup">Toque para pesquisar</string>
     <string name="offerdupmode_sum">(Experimental!!!) Estilo de jogo onde todos os jogadores têm os mesmos quadrados</string>
-    <string name="changes_button">Mudanças recentes</string>
+    <string name="changes_button">Alterações recentes</string>
     <string name="change_group">Mover jogos selecionados para:</string>
     <string name="button_newgroup">Novo grupo</string>
     <string name="button_scan">Re-escanear</string>
@@ -798,7 +798,7 @@
     <string name="pat_contains">Contém</string>
     <string name="pat_starts_with">Começa com</string>
     <string name="show_tiles_title_fmt">Quadrados para %1$s</string>
-    <string name="show_tiles_menu">Mostrar Quadrados</string>
+    <string name="show_tiles_menu">Mostrar os quadrados</string>
     <string name="default_name_message">Por favor ponha seu nome aqui. Ele será usado quando criar novos jogos. (Você pode mudá-lo depois na seção “Novo padrão de jogo” nas Configurações.)</string>
     <string name="default_name_title">Nome de jogador padrão</string>
     <string name="not_again_newfrom">Criar um novo jogo pronto usando os mesmos ajustes deste. Isto é, tratar este jogo como template.</string>
