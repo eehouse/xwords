@@ -7,12 +7,17 @@ FILES=""
 LIST_FILE=''
 XW_WWW_PATH=${XW_WWW_PATH:-""}
 XW_RELEASE_SCP_DEST=${XW_RELEASE_SCP_DEST:-""}
+VARIANT=""
 
 usage() {
     echo "Error: $*" >&2
     echo "usage: $0 [--tag <name>] [--apk-list path/to/out.txt] \\"
     echo "    --variant <VARIANT> "
     echo "    [<package-unsigned.apk>]" >&2
+	echo "Here are some possible variants:"
+	for VAR in $(./gradlew tasks | grep assembleXw4 | awk '{print $1}' | sed -e 's/assemble//'); do
+		echo "    $VAR"
+	done
     exit 1
 }
 
@@ -58,7 +63,9 @@ if [ -n "$TAGNAME" ]; then
     git stash
 fi
 
-if [ -z "$FILES" ]; then
+if [ -z "$VARIANT" ]; then
+    usage "--variant not optional"
+elif [ -z "$FILES" ]; then
     do_build
 	for f in $(ls $(dirname $0)/../app/build/outputs/apk/*/release/*-release-unsigned-*.apk); do
 		$(dirname $0)/sign-align.sh --apk $f
