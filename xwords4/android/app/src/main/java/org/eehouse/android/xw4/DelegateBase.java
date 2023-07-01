@@ -809,6 +809,8 @@ public abstract class DelegateBase implements DlgClickNotify,
             handled = true;
             Perms23.onGotPermsAction( this, false, params );
             break;
+        case SKIP_CALLBACK:
+            break;              // don't log this one
         default:
             Log.e( TAG, "onDismissed(): not handling action %s", action );
         }
