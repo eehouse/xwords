@@ -903,8 +903,6 @@ passToJava( const char* tag, const char* msg )
                                                    "(Ljava/lang/String;Ljava/lang/String;)V" );
         (*env)->CallStaticVoidMethod( env, clazz, mid, jtag, jbuf );
         deleteLocalRefs( env, clazz, jtag, jbuf, DELETE_NO_REF );
-
-        releaseEnvFromGlobals( env );
     } else {
         // RAW_LOG( "env is NULL; dropping" );
     }

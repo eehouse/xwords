@@ -27,7 +27,7 @@
 typedef struct _JNIState JNIState;
 
 #ifdef DEBUG
-// # define MAP_THREAD_TO_ENV
+# define MAP_THREAD_TO_ENV
 #endif
 
 typedef struct _AndGameGlobals {

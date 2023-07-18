@@ -120,8 +120,6 @@ void deleteLocalRef( JNIEnv* env, jobject jobj );
 void deleteLocalRefs( JNIEnv* env, ... );
 
 JNIEnv* waitEnvFromGlobals();
-void releaseEnvFromGlobals( JNIEnv* env );
-
 
 typedef struct _MTPData {
     JNIEnv* env;

@@ -312,23 +312,9 @@ waitEnvFromGlobals()            /* hanging */
     if ( !!state ) {
         result = prvEnvForMe( &state->ti );
     }
-    if ( !result ) {
-        pthread_mutex_unlock( &g_globalStateLock );
-    }
-#endif
-    return result;
-}
-
-void
-releaseEnvFromGlobals( JNIEnv* env )
-{
-#ifdef MAP_THREAD_TO_ENV
-    XP_ASSERT( !!env );
-    JNIGlobalState* state = g_globalState;
-    XP_ASSERT( !!state );
-    XP_ASSERT( env == prvEnvForMe( &state->ti ) );
     pthread_mutex_unlock( &g_globalStateLock );
 #endif
+    return result;
 }
 
 static void
@@ -621,6 +607,7 @@ streamFromJStream( MPFORMAL JNIEnv* env, VTableMgr* vtMgr, jbyteArray jstream )
 
 #define DVC_HEADER(PTR) {                                              \
     JNIGlobalState* globalState = (JNIGlobalState*)(PTR);              \
+    MAP_THREAD( &globalState->ti, env );                               \
 
 #define DVC_HEADER_END() }                      \
 

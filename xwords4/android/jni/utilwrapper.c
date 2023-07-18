@@ -295,7 +295,7 @@ and_util_getDict( XW_UtilCtxt* uc, XWEnv xwe,
         jbyteArray jdata = (*env)->GetObjectArrayElement( env, jbytes, 0 );
 
         dict = makeDict( MPPARM(duc->mpool) xwe,
-                         TI_IF(&globalState->ti)
+                         TI_IF( ((AndDUtil*)duc)->ti )
                          dictMgr, ((AndDUtil*)duc)->jniutil,
                          jname, jdata, jpath, NULL, false );
         deleteLocalRefs( env, jname, jstrs, jbytes, jdata, jpath, DELETE_NO_REF );

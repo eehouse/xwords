@@ -177,7 +177,7 @@ stack_loadFromStream( StackCtxt* stack, XWStreamCtxt* stream )
         XP_ASSERT( stack->top == 0 );
     }
     CLEAR_DIRTY( stack );
-} /* stack_makeFromStream */
+} /* stack_loadFromStream */
 
 void
 stack_writeToStream( const StackCtxt* stack, XWStreamCtxt* stream )
