@@ -207,7 +207,7 @@ class Device():
                 if self.inviteeMQTTDevIDs:
                     args += [ '--force-invite' ]
                     for idid in self.inviteeMQTTDevIDs:
-                        asHexStr = '{:16X}'.format(idid)
+                        asHexStr = '{:016X}'.format(idid)
                         args += ['--invitee-mqtt-devid', asHexStr]
 
         self.proc = subprocess.Popen(args, stdout = subprocess.DEVNULL,

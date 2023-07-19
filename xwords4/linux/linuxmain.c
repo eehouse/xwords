@@ -2869,6 +2869,7 @@ main( int argc, char** argv )
             mainParams.connInfo.mqtt.port = atoi(optarg);
             break;
         case CMD_INVITEE_MQTTDEVID:
+            XP_ASSERT( 16 == strlen(optarg) );
             mainParams.connInfo.mqtt.inviteeDevIDs =
                 g_slist_append( mainParams.connInfo.mqtt.inviteeDevIDs, optarg );
             types_addType( &mainParams.conTypes, COMMS_CONN_MQTT );
