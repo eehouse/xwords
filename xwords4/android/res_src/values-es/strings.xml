@@ -389,4 +389,26 @@
 \n\tCompilado: %5$s</string>
     <string name="str_tiles_not_in_line">Todas las fichas deben estar en una línea.</string>
     <string name="expl_mqtt_url">URL para la nueva API del relay basada en MQTT</string>
+    <string name="default_name_message">Por favor ingrese su nombre aquí. Se utilizará al crear nuevos juegos. (Puede cambiarlo más tarde en la sección \"Nuevo juego predeterminado\" de Configuración.)</string>
+    <string name="no_dict_subst_fmt">No se puede abrir el juego “%1$s” no se encuentra la lista de palabras %2$s. (Es posible que se haya eliminado o almacenado en una tarjeta externa no disponible ahora).
+\n
+\nPuede descargar un reemplazo o sustituir otra lista de palabras de %3$s.</string>
+    <string name="about_devid_fmt">Dispositivo ID: %1$s</string>
+    <string name="not_again_newfrom">Cree un nuevo juego listo para jugar usando todas las configuraciones de este. Es decir, trata este juego como una plantilla.</string>
+    <string name="confirm_del_after_rematch_fmt">Revancha con éxito.
+\n
+\n¿Desea eliminar ahora el juego completado %1$s\?
+\n
+\n(Esta acción no se puede deshacer.)</string>
+    <string name="newgame_drop_mqtt">Cae Internet</string>
+    <plurals name="query_trade_fmt">
+        <item quantity="one">¿Estás seguro de que quieres cambiar la ficha seleccionada\? (%2$s)\?</item>
+        <item quantity="many">¿Están seguros de que quieres cambian las %1$d fichas seleccionadas (%2$s)\?</item>
+        <item quantity="other">¿Seguro de cambiar la %1$d ficha seleccionada (%2$s)\?</item>
+    </plurals>
+    <string name="str_no_empties_in_turn">Los recuadros vacíos no pueden separar las fichas jugadas.</string>
+    <string name="not_again_turnchanged">El jugador al que le toca se muestra grande en el marcador.
+\n
+\nMantenga el dedo sobre un nombre en el marcador para obtener detalles sobre el movimiento más reciente de ese jugador.</string>
+    <string name="default_name_title">Nombre de jugador predeterminado</string>
 </resources>
