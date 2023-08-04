@@ -53,7 +53,7 @@ askNTiles( XP_U16 max, XP_U16 deflt )
 
     hbox = gtk_box_new( GTK_ORIENTATION_HORIZONTAL, 0 );
     for ( i = 0; i < max; ++i ) {
-        XP_UCHAR buf[3];
+        XP_UCHAR buf[8];
 
         sprintf( buf, "%d", i+1 );
         button = gtk_button_new_with_label( buf );

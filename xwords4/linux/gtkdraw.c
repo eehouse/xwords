@@ -571,7 +571,7 @@ gtk_draw_drawCell( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe), const XP_Rect* rect,
         ((flags & CELL_ISCURSOR) != 0) ? &dctx->cursor : NULL;
     GdkRGBA* foreground = &dctx->white;
 
-    XP_UCHAR valBuf[4];
+    XP_UCHAR valBuf[8];
     XP_SNPRINTF( valBuf, sizeof(valBuf), "%d", tileValue );
     const XP_UCHAR* value = valBuf;
 
@@ -717,7 +717,7 @@ gtkDrawTileImpl( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe), const XP_Rect* rect, con
                  XP_Bool clearBack )
 {
     GtkDrawCtx* dctx = (GtkDrawCtx*)(void*)p_dctx;
-    XP_UCHAR numbuf[3];
+    XP_UCHAR numbuf[8];
     XP_Rect insetR = *rect;
     XP_Bool isCursor = (flags & CELL_ISCURSOR) != 0;
     XP_Bool valHidden = (flags & CELL_VALHIDDEN) != 0;
@@ -925,7 +925,7 @@ gtkDrawDrawRemText( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe), const XP_Rect* rect,
                     XP_S16 nTilesLeft, XP_U16* widthP, XP_U16* heightP, XP_Bool focussed )
 {
     GtkDrawCtx* dctx = (GtkDrawCtx*)(void*)p_dctx;
-    XP_UCHAR buf[10];
+    XP_UCHAR buf[16];
     XP_SNPRINTF( buf, sizeof(buf), "rem:%d", nTilesLeft );
     PangoLayout* layout = getLayoutToFitRect( dctx, buf, rect, NULL );
 
@@ -1175,7 +1175,7 @@ gtk_draw_score_pendingScore( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe), const XP_Rec
                              XP_Bool curTurn, CellFlags flags )
 {
     GtkDrawCtx* dctx = (GtkDrawCtx*)(void*)p_dctx;
-    XP_UCHAR buf[5];
+    XP_UCHAR buf[8];
     XP_U16 ht;
     XP_Rect localR;
     GdkRGBA* cursor = ((flags & CELL_ISCURSOR) != 0) 

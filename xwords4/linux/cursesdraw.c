@@ -338,7 +338,7 @@ curses_draw_score_pendingScore( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe), const XP_
                                 CellFlags XP_UNUSED(flags) )
 {
     CursesDrawCtx* dctx = (CursesDrawCtx*)p_dctx;
-    char buf[4];
+    char buf[8];
 
     if ( score >= 0 ) {
         sprintf( buf, "%.3d", score );
@@ -500,7 +500,7 @@ curses_draw_drawTile( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe), const XP_Rect* rect
                       const XP_UCHAR* textP, const XP_Bitmaps* XP_UNUSED(bitmaps),
                       XP_S16 val, CellFlags flags )
 {
-    char numbuf[5];
+    char numbuf[8];
     XP_UCHAR letterbuf[5];
     char* nump = NULL;
     XP_UCHAR* letterp = NULL;

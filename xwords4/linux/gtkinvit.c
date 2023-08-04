@@ -372,7 +372,7 @@ gtkInviteDlg( GtkGameGlobals* globals, CommsAddrRec* addr, gint* nPlayersP )
 
     state.nPlayersCombo = gtk_combo_box_text_new();
     for ( int ii = 1; ii <= state.maxPlayers; ++ii ) {
-        gchar buf[8];
+        gchar buf[16];
         sprintf( buf, "%d", ii );
         gtk_combo_box_text_append_text( GTK_COMBO_BOX_TEXT(state.nPlayersCombo), buf );
     }
