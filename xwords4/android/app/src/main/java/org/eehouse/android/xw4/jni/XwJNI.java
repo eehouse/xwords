@@ -89,7 +89,7 @@ public class XwJNI {
                     } else {
                         Log.d( TAG, "release(): no ENV!!! (this=%H, rowid=%d)",
                                this, m_rowid );
-                        Assert.failDbg(); // seen on Play Store console
+                        Assert.failDbg(); // seen on Play Store console; and now!!
                     }
                     m_ptrGame = 0;
                 }

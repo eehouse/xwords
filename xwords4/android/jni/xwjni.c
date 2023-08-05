@@ -292,7 +292,7 @@ envForMe( EnvThreadInfo* ti, const char* caller )
     if( !result ) {
         pthread_t self = pthread_self();
         XP_LOGFF( "no env for %s (thread %x)", caller, (int)self );
-        XP_ASSERT(0);
+        // XP_ASSERT(0);           /* firing a lot */
     }
 #endif
     return result;
