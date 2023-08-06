@@ -411,4 +411,21 @@
 \n
 \nMantenga el dedo sobre un nombre en el marcador para obtener detalles sobre el movimiento más reciente de ese jugador.</string>
     <string name="default_name_title">Nombre de jugador predeterminado</string>
+    <string name="show_note_menu_fmt">Acerca de %1$s</string>
+    <string name="button_lookup">Buscar palabras</string>
+    <string name="button_lookup_study">Buscar/estudiar palabras</string>
+    <string name="button_newgroup">Nuevo grupo</string>
+    <string name="pat_starts_with">Comienza con</string>
+    <string name="pat_contains">Contiene</string>
+    <string name="changes_button">Cambios recientes</string>
+    <string name="show_tiles_title_fmt">Téseras en %1$s</string>
+    <string name="button_lookup_fmt">Buscar %1$s</string>
+    <string name="button_move">Mover</string>
+    <string name="pat_ends_with">Termina con</string>
+    <string name="board_menu_pass">Aprobar</string>
+    <string name="not_again_lookup">Este botón le permite buscar, en línea, las palabras que acaba de reproducir.</string>
+    <string name="not_again_archive">El archivado utiliza un grupo especial llamado \"Archivo\" para almacenar los juegos terminados que desea conservar. Y, dado que eliminar un archivo completo es fácil, archivar también es una excelente manera de marcar juegos para eliminarlos, si eso es lo que prefiere hacer.
+\n
+\n(Eliminar el grupo Archivo es seguro porque se creará de nuevo cuando sea necesario.)</string>
+    <string name="button_lookup_study_fmt">Buscar/estudiar %1$s</string>
 </resources>
