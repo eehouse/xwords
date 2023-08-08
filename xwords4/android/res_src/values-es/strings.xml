@@ -428,4 +428,34 @@
 \n
 \n(Eliminar el grupo Archivo es seguro porque se creará de nuevo cuando sea necesario.)</string>
     <string name="button_lookup_study_fmt">Buscar/estudiar %1$s</string>
+    <string name="filter_progress_fmt">Procesando %1$d palabras</string>
+    <string name="dict_browse_title_fmt">%1$s (%2$d total de palabras)</string>
+    <string name="disableds_title">Tipos de dirección deshabilitados</string>
+    <string name="not_again_browse">Este botón le permite explorar la lista de palabras vista más recientemente.</string>
+    <string name="new_feature_filter">Puede filtrar las listas de palabras por las palabras que comienzan, terminan y/o contienen. Acceda al filtrado tocando la flecha de expansión en la esquina superior derecha de la ventana.
+\n
+\nVer más en las preguntas frecuentes clic en el botón a continuación.</string>
+    <string name="not_again_traysize">Esta nueva configuración cambia la cantidad de mosaicos en el estante.
+\n
+\nNota: si alguien en su juego en red está usando una versión anterior de CrossWords, esta configuración volverá a la 7 para todos en el juego.</string>
+    <string name="email_logs_subject">Registros de crucigramas</string>
+    <string name="email_logs_chooser">Enviar registros a través de</string>
+    <string name="bt_bad_proto_fmt">La versión de CrossWords en “%1$s” no es compatible con esta para jugar mediante Bluetooth. Es posible que uno de ustedes deba actualizar antes de poder continuar.</string>
+    <plurals name="invite_bt_desc_fmt_2">
+        <item quantity="one">Compruebe hasta %1$d dispositivos que desea incluir en este juego.</item>
+        <item quantity="many">Comprueben hasta %1$d dispositivos que desean incluir en este juego.</item>
+        <item quantity="other">Comprueba hasta %1$d dispositivos que desees incluir en este juego.</item>
+    </plurals>
+    <string name="invite_bt_desc_postscript">"
+\n
+\n(La lista es de dispositivos emparejados en los que se ha detectado CrossWords a través de un escaneo.)"</string>
+    <string name="pick_faceup">Recoge las fichas boca arriba</string>
+    <string name="new_game_body">Toca para abrir una nueva partida</string>
+    <string name="sms_bad_proto_fmt">La versión de CrossWords en el teléfono con el número “%1$s” es incompatible con esta para jugar usando Data SMS. Uno de ustedes debería actualizar antes de poder continuar.</string>
+    <string name="filter_title_fmt">Cargando %1$s…</string>
+    <string name="board_menu_file_email">Correo del autor</string>
+    <string name="not_again_browseall">Este botón te permite elegir qué lista de palabras buscar en el idioma actual del juego buscar.</string>
+    <string name="email_author_subject">Comentarios sobre el CrossWords</string>
+    <string name="email_author_chooser">Envía el comentario via</string>
+    <string name="email_logs_msg">Registros adjuntos</string>
 </resources>
