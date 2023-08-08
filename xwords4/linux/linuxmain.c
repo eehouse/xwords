@@ -806,6 +806,7 @@ typedef enum {
     ,CMD_SMSTEST
     ,CMD_REMATCH_ON_OVER
     ,CMD_STATUS_SOCKET_NAME
+    ,CMD_CMDS_SOCKET_NAME
     ,N_CMDS
 } XwLinuxCmd;
 
@@ -969,8 +970,8 @@ static CmdInfoRec CmdInfoRecs[] = {
 
     ,{ CMD_REMATCH_ON_OVER, false, "rematch-when-done", "Rematch games if they end" }
     ,{ CMD_STATUS_SOCKET_NAME, true, "status-socket-name",
-        "Unix domain socket to which to write status" }
-
+       "Unix domain socket to which to write status" },
+    { CMD_CMDS_SOCKET_NAME, true, "cmd-socket-name", "Unix domain socket on which to listen for commands"},
 };
 
 static struct option* 
@@ -2553,6 +2554,43 @@ writeStatus( const char* statusSocket, const char* dbName )
     }
 }
 
+static gboolean
+handle_gotcmd( GIOChannel* source, GIOCondition condition,
+               gpointer XP_UNUSED(data) )
+{
+    //     XP_LOGFF( "got something!!" );
+    gboolean keep = TRUE;
+
+    if ( 0 != (G_IO_IN & condition) ) {
+        int sock = g_io_channel_unix_get_fd( source );
+        char buf[1024];
+        ssize_t nread = read( sock, buf, sizeof(buf) );
+        buf[nread] = '\0';
+        XP_LOGFF( "read: %s", buf );
+    }
+
+    if ( 0 != ((G_IO_HUP) & condition) ) {
+        XP_LOGFF( "got G_IO_HUP; returning FALSE" );
+        keep = FALSE;
+    } else if ( 0 != ((G_IO_ERR) & condition) ) {
+        XP_LOGFF( "got G_IO_ERR; returning FALSE" );
+    } else if ( 0 != ((G_IO_NVAL) & condition) ) {
+        XP_LOGFF( "got G_IO_NVAL; returning FALSE" );
+    } else {
+        XP_LOGFF( "something else: 0x%X", condition );
+    }
+    return keep;
+}
+
+static void
+addCmdListener( LaunchParams* params )
+{
+    if ( !!params->cmdsSocket ) {
+        int fifo = open( params->cmdsSocket, O_RDWR | O_NONBLOCK );
+        ADD_SOCKET( params, fifo, handle_gotcmd );
+    }
+}
+
 int
 main( int argc, char** argv )
 {
@@ -3143,11 +3181,17 @@ main( int argc, char** argv )
             statusSocket = optarg;
             break;
 
+        case CMD_CMDS_SOCKET_NAME:
+            mainParams.cmdsSocket = optarg;
+            break;
+
         default:
             done = true;
             break;
         }
     }
+
+    addCmdListener( &mainParams );
 
     /* add cur dir if dict search dir path is empty */
     if ( !mainParams.dictDirs ) {

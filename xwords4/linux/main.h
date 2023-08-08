@@ -79,6 +79,8 @@ typedef struct _LaunchParams {
     XP_Bool noAnonDevid;
     XP_UCHAR devIDStore[32];
 #endif
+    const char* cmdsSocket;
+
     VTableMgr* vtMgr;
     DictMgrCtxt* dictMgr;
     XW_DUtilCtxt* dutil;
