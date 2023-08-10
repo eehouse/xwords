@@ -9,7 +9,7 @@ def main():
     # mkfifo
 
     # launch app in background
-    args = ['./obj_linux_memdbg/xwords', '--cmd-socket-name', gFIFO_NAME ]
+    args = ['./obj_linux_memdbg/xwords', '--curses', '--cmd-socket-name', gFIFO_NAME ]
     subprocess.Popen(args, stdout = subprocess.DEVNULL)
 
     # Loop writing to fifo

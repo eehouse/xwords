@@ -4808,7 +4808,7 @@ server_writeFinalScores( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* stream )
         }
 
         if ( !inDuplicateMode( server ) ) {
-            XP_UCHAR buf2[64];
+            XP_UCHAR buf2[128];
             XP_SNPRINTF( buf2, sizeof(buf2), XP_CR "  (%d %s%s)",
                          model_getPlayerScore( model, thisIndex ),
                          tmpbuf, timeStr );
