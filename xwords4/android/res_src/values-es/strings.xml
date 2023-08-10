@@ -458,4 +458,14 @@
     <string name="email_author_subject">Comentarios sobre el CrossWords</string>
     <string name="email_author_chooser">Envía el comentario via</string>
     <string name="email_logs_msg">Registros adjuntos</string>
+    <string name="game_name_label">Nombre del juego:</string>
+    <string name="new_name_body_fmt">%1$s te ha invitado a jugar</string>
+    <string name="empty_sms_inviter">Esta lista de teléfonos está vacía. Use el botón \"Importar contacto\" para agregar a las personas que desea invitar, el botón + para ingresar números directamente.</string>
+    <string name="empty_bt_inviter">Aún no se han detectado dispositivos emparejados.</string>
+    <string name="p2p_invite_title">Invitación directamente por WiFi</string>
+    <string name="get_sms_number">Número de teléfono del dispositivo:</string>
+    <string name="button_sms_add">Importa el contacto</string>
+    <string name="empty_p2p_inviter">Actualmente no hay dispositivos accesibles a través de WiFiDirect que tengan CrossWords instalado.</string>
+    <string name="get_sms_title">Entrada manual</string>
+    <string name="sms_invite_title">Invitación por SMS</string>
 </resources>
