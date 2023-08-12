@@ -468,4 +468,18 @@
     <string name="empty_p2p_inviter">Actualmente no hay dispositivos accesibles a través de WiFiDirect que tengan CrossWords instalado.</string>
     <string name="get_sms_title">Entrada manual</string>
     <string name="sms_invite_title">Invitación por SMS</string>
+    <string name="summary_conn_sms_fmt">Partida a jugar con %1$s</string>
+    <string name="warn_unlimited">¿Estás seguro de que este número está en una cuenta con mensajes de texto ilimitados\? Toque \"Cancelar\" si no lo está.</string>
+    <string name="remote_undone">El dispositivo remoto deshizo un turno.</string>
+    <string name="menu_hint_prev">Pista anterior</string>
+    <string name="game_list_tmp">Construyendo resumen de partida…</string>
+    <string name="summary_busy">Resumen no disponible</string>
+    <string name="board_menu_dict">Explorar el diccionario</string>
+    <string name="chat_sender_fmt">%1$s:</string>
+    <string name="connstat_net_noaddr">Este juego en red no tiene forma de conectarse y no se puede jugar.
+\n
+\n(Probablemente se creó a partir de una invitación que no especificaba ninguna forma de conexión compatible con su dispositivo, o es posible que haya eliminado recientemente su última forma de conexión.)</string>
+    <string name="confirm_clear_bt_postscript">"
+\n
+\n(Solo puede volver a agregar dispositivos que estén dentro del alcance de Bluetooth.)"</string>
 </resources>
