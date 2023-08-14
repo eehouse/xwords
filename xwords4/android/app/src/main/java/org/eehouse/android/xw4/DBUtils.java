@@ -1945,7 +1945,6 @@ public class DBUtils {
                     cursor.getString( cursor.getColumnIndex(DBHelper.LANGNAME));
 
                 int onServer = cursor.getInt( cursor.getColumnIndex(DBHelper.ON_SERVER) );
-                Log.d( TAG, "for %s, read onServer: %d", name, onServer );
                 result.onServer = ON_SERVER.values()[onServer];
 
                 // int loc = cursor.getInt(cursor.getColumnIndex(DBHelper.LOC));

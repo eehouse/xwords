@@ -2719,4 +2719,38 @@
 
   <string name="no_restore_on_9">Import does not work on Android 9.</string>
 
+  <!-- Annotations in wordlist browser for wordlists that don't exist
+       on the server, i.e. for which I'll warn users when they're
+       sending invitation using them. -->
+  <string name="wordlist_custom_note">(Custom)</string>
+
+  <!-- Shown when a "custom" wordlist is opened, but only until user
+       choose "do not show again" -->
+  <string name="notagain_custom_xwd_fmt">Please be aware that this
+  wordlist, %1$s, is not available for others to download. This
+  usually means it is custom (built using BYOD), but it could also be
+  obsolete.
+
+  \n\nPlease use %1$s only for local games. If you invite someone to a
+  game that uses it you will have to give it to them manually, as
+  CrossWords does not currently support including wordlists in
+  invitations.
+  </string>
+
+  <!-- Shown, always, when user tries to send an invitation to a game
+       using a custom wordlist. Note to translators: the text
+       references the names of the buttons in the alert,
+       list_item_config and button_delete_game. Please make sure the
+       same words are used here.
+  -->
+  <string name="invite_custom_warning_fmt">This game uses a custom
+  wordlist, %1$s, that cannot be downloaded from the server. Unless the
+  person you invite also has this wordlist, they will not be
+  able to play this game.
+
+  \n\nIf you know your opponent has the wordlist %1$s installed, tap
+  Ok to invite them anyway. Or use Game Settings to change the
+  wordlist. Or just delete the game.
+  </string>
+
 </resources>

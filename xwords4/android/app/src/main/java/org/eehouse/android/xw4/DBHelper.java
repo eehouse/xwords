@@ -380,8 +380,6 @@ public class DBHelper extends SQLiteOpenHelper {
                 addColumn( db, TABLE_NAMES.DICTINFO, ON_SERVER );
             }
 
-
-
             break;
         default:
             for ( TABLE_NAMES table : TABLE_NAMES.values() ) {
