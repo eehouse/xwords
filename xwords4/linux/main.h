@@ -156,6 +156,10 @@ typedef struct _LaunchParams {
     const XP_UCHAR* iterTestPatStr;
 #endif
 
+    struct {
+        void (*quit)(void* params);
+    } cmdProcs;
+
     XP_U16 conTypes;
     struct {
         XP_U16 inviteeCounts[MAX_NUM_PLAYERS];

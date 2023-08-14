@@ -75,6 +75,7 @@
 #include "dbgutil.h"
 #include "dictiter.h"
 #include "gsrcwrap.h"
+#include "cmdspipe.h"
 /* #include "commgr.h" */
 /* #include "compipe.h" */
 #include "memstream.h"
@@ -2556,7 +2557,7 @@ writeStatus( const char* statusSocket, const char* dbName )
 
 static gboolean
 handle_gotcmd( GIOChannel* source, GIOCondition condition,
-               gpointer XP_UNUSED(data) )
+               gpointer data )
 {
     //     XP_LOGFF( "got something!!" );
     gboolean keep = TRUE;
@@ -2567,6 +2568,20 @@ handle_gotcmd( GIOChannel* source, GIOCondition condition,
         ssize_t nread = read( sock, buf, sizeof(buf) );
         buf[nread] = '\0';
         XP_LOGFF( "read: %s", buf );
+
+        LaunchParams* params = (LaunchParams*)data;
+
+        CmdBuf cb;
+        cmds_readCmd( &cb, buf );
+        switch( cb.cmd ) {
+        case CMD_NONE:
+            break;
+        case CMD_QUIT:
+            (*params->cmdProcs.quit)( params );
+            break;
+        default:
+            XP_ASSERT( 0 );
+        }
     }
 
     if ( 0 != ((G_IO_HUP) & condition) ) {

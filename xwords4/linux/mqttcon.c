@@ -121,7 +121,7 @@ enqueue( MQTTConStorage* storage, const char* topic,
     } else {
         QElem* elem = g_malloc0( sizeof(*elem) );
         elem->topic = g_strdup( topic );
-        elem->buf = g_memdup2( buf, len );
+        elem->buf = g_memdup( buf, len );
         elem->len = len;
         storage->queue = g_slist_append( storage->queue, elem );
         XP_LOGFF( "added elem; len now %d", g_slist_length(storage->queue) );

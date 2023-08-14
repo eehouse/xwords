@@ -246,6 +246,14 @@ handleQuit( void* closure, int XP_UNUSED(key) )
 } /* handleQuit */
 
 static void
+invokeQuit( void* data )
+{
+    LaunchParams* params = (LaunchParams*)data;
+    CursesAppGlobals* globals = (CursesAppGlobals*)params->appGlobals;
+    handleQuit( globals, 0 );
+}
+
+static void
 figureDims( CursesAppGlobals* aGlobals, cb_dims* dims )
 {
     LaunchParams* params = aGlobals->cag.params;
@@ -1442,6 +1450,8 @@ cursesmain( XP_Bool XP_UNUSED(isServer), LaunchParams* params )
     memset( &g_globals, 0, sizeof(g_globals) );
     g_globals.cag.params = params;
     params->appGlobals = &g_globals;
+
+    params->cmdProcs.quit = invokeQuit;
 
     initCurses( &g_globals );
     if ( !params->closeStdin ) {
