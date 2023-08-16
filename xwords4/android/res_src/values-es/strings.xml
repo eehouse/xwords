@@ -482,4 +482,35 @@
     <string name="confirm_clear_bt_postscript">"
 \n
 \n(Solo puede volver a agregar dispositivos que estén dentro del alcance de Bluetooth.)"</string>
+    <string name="connstat_succ">éxito</string>
+    <string name="connstat_lastsend_fmt">El último envío fue %1$s (%2$s)</string>
+    <string name="summary_enable_p2p">Experimental, usa mucha bateria</string>
+    <string name="confirm_sms_title">Confirma tu pian SMS</string>
+    <string name="confirm_sms_expl">Atención: esta función está destinada a teléfonos con planes de mensajes de texto ilimitados. Una vez que lo habilite, se enviarán docenas de mensajes SMS de datos (invisible) para cada partida jugada. ¡Si no tiene un plan ilimitado, su proveedor puede cobrarle por todos y cada uno de los mensajes!
+\n
+\n¿Debe habilitarse el juego a través de SMS de datos\?</string>
+    <string name="button_disable_mqtt">Deshabilitar el juego por Internet</string>
+    <string name="button_later">Más tarde</string>
+    <string name="gamel_menu_checkupdates">Buscar actualizaciones</string>
+    <string name="connstat_lastother_succ_fmt">(El último error fue %1$s)</string>
+    <string name="warn_bt_disabled">La reproducción de Bluetooth está deshabilitada actualmente y no se intercambiarán movimientos a través de Bluetooth hasta que se habilite.
+\n
+\nPuede habilitar Bluetooth ahora o después.</string>
+    <string name="warn_mqtt_later">Puede habilitar el juego en Internet ahora o más tarde.</string>
+    <string name="warn_mqtt_remove">Puede habilitar el juego en Internet ahora o eliminarlo de este juego.</string>
+    <string name="button_enable_mqtt">Habilitar juego por Internet</string>
+    <string name="checkupdates_none_found">Todo está actualizado.</string>
+    <string name="new_dict_avail">Nuevo diccionario disponible</string>
+    <string name="new_dict_avail_fmt">Toca para actualizar %1$s</string>
+    <string name="dict_avail_fmt">Toca para descargar la lista de palabras “%1$s”</string>
+    <string name="new_app_avail_fmt">Nueva versión de %1$s</string>
+    <string name="warn_mqtt_havegames">¿Seguro que quieres desactivar el juego a través de Internet\?
+\n
+\n La mayoría de los juegos de dos dispositivos intercambian movimientos a través de Internet, así que solo haz esto si planeas jugar TODOS los juegos contra un robot en este mismo dispositivo.</string>
+    <string name="invites_net_fmt">Invitaciones enviadas para juegos conectados a través de %1$s:</string>
+    <string name="connstat_unsucc">error</string>
+    <string name="enable_sms_summary">¡Solo si tienes mensajes de texto ilimitados!</string>
+    <string name="title_enable_p2p">Attivar WiFi Direct</string>
+    <string name="button_disable_bt">Deshabilitar jugar por Bluetooth</string>
+    <string name="warn_mqtt_disabled">En este momento, el juego en Internet está deshabilitado en este dispositivo. No se enviarán ni recibirán movimientos a través de Internet.</string>
 </resources>
