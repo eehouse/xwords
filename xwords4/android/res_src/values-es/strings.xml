@@ -513,4 +513,14 @@
     <string name="title_enable_p2p">Attivar WiFi Direct</string>
     <string name="button_disable_bt">Deshabilitar jugar por Bluetooth</string>
     <string name="warn_mqtt_disabled">En este momento, el juego en Internet está deshabilitado en este dispositivo. No se enviarán ni recibirán movimientos a través de Internet.</string>
+    <string name="list_group_delete">Elimina grupo</string>
+    <string name="missing_dict_title">Invitación a una partida pendiente</string>
+    <string name="reload_new_dict_fmt">Ricargando partida con %1$s</string>
+    <string name="download_path_hint">P.ej. donde se guardan los archivos adjuntos de correo electrónico</string>
+    <string name="default_loc_summary">(no a la memoria externa de la tarjeta SD)</string>
+    <string name="download_path_title">Directorio Público</string>
+    <string name="missing_dict_detail">Toca para descargar la lista de palabras que faltan</string>
+    <string name="newgroup_label">Nombre del nuevo grupo:</string>
+    <string name="invite_dict_missing_body_fmt">%1$s te ha invitado a jugar CrossWords usando la lista de palabras %2$s (para jugar en %3$s), pero no está instalado. ¿Le gustaría descargar la lista de palabras o rechazar la invitación\?</string>
+    <string name="invite_dict_missing_title">lista de palabras que faltan</string>
 </resources>
