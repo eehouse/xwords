@@ -523,4 +523,30 @@
     <string name="newgroup_label">Nombre del nuevo grupo:</string>
     <string name="invite_dict_missing_body_fmt">%1$s te ha invitado a jugar CrossWords usando la lista de palabras %2$s (para jugar en %3$s), pero no está instalado. ¿Le gustaría descargar la lista de palabras o rechazar la invitación\?</string>
     <string name="invite_dict_missing_title">lista de palabras que faltan</string>
+    <string name="cannot_delete_default_group_fmt">El grupo de nuevas partidas, %1$s, no se puede eliminar.</string>
+    <string name="group_new_games">Nueva partida</string>
+    <string name="rename_group_label">Cambiar el nombre de este grupo a:</string>
+    <string name="not_again_deletecheck_fmt">Marca la casilla “%1$s” para eliminar este juego.</string>
+    <string name="group_name_archive">Archivo</string>
+    <string name="duplicate_group_name_fmt">El grupo “%1$s” ya existe.</string>
+    <string name="button_reconnect">Volver a conectar</string>
+    <string name="confirm_delete">¿Estás seguro de que quieres eliminar el juego actual\?
+\n
+\n(Esta acción no se puede deshacer.)</string>
+    <plurals name="groups_confirm_del_games_fmt">
+        <item quantity="one">"
+\n
+\n(Se borrará una partida.)"</item>
+        <item quantity="many">"
+\n
+\n(Se borrarán %1$d partidas.)"</item>
+        <item quantity="other">"
+\n
+\n(%1$d partidas serás borradas.)"</item>
+    </plurals>
+    <plurals name="groups_confirm_del_fmt">
+        <item quantity="one">¿Seguro de que quieres borrar el grupo %1$s\?</item>
+        <item quantity="many">¿Seguro de qué quieres borrar los grupos %1$s\?</item>
+        <item quantity="other">¿Estás seguro de qué quieres borrar los grupos %1$s\?</item>
+    </plurals>
 </resources>
