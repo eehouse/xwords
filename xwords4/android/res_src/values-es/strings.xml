@@ -549,4 +549,17 @@
         <item quantity="many">¿Seguro de qué quieres borrar los grupos %1$s\?</item>
         <item quantity="other">¿Estás seguro de qué quieres borrar los grupos %1$s\?</item>
     </plurals>
+    <plurals name="sel_groups_fmt">
+        <item quantity="one">Un grupo seleccionado</item>
+        <item quantity="many">%1$d grupos seleccionados</item>
+        <item quantity="other">%1$d grupos seleccionados</item>
+    </plurals>
+    <string name="thumb_off">Desactivar</string>
+    <string name="recovered_group">Partidas recuperadas</string>
+    <string name="summary_thumbsize">Tamaño miniatura</string>
+    <plurals name="sel_games_fmt">
+        <item quantity="one">Una partida seleccionada</item>
+        <item quantity="many">%1$d partidas seleccionadas</item>
+        <item quantity="other">%1$d partidas seleccionadas</item>
+    </plurals>
 </resources>
