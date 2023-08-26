@@ -562,4 +562,9 @@
         <item quantity="many">%1$d partidas seleccionadas</item>
         <item quantity="other">%1$d partidas seleccionadas</item>
     </plurals>
+    <string name="menu_rateme">Valorar CrossWords</string>
+    <string name="no_market">No se ha encontrado la aplicación Google Play</string>
+    <string name="title_studyon">Habilitar listas de estudio</string>
+    <string name="pct_suffix">" pct."</string>
+    <string name="add_to_study_fmt">Agregar %1$s a la lista de estudios</string>
 </resources>
