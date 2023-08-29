@@ -567,4 +567,23 @@
     <string name="title_studyon">Habilitar listas de estudio</string>
     <string name="pct_suffix">" pct."</string>
     <string name="add_to_study_fmt">Agregar %1$s a la lista de estudios</string>
+    <plurals name="paste_done_fmt">
+        <item quantity="one">una palabra copiada</item>
+        <item quantity="many">%1$d palabras copiadas</item>
+        <item quantity="other">copiadas %1$d palabras</item>
+    </plurals>
+    <string name="study_langpick">Tus palabras para:</string>
+    <string name="add_done_fmt">%1$s agregado a la lista de estudios de %2$s</string>
+    <string name="studylist_title_fmt">Lista de estudios para %1$s</string>
+    <plurals name="confirm_studylist_clear_fmt">
+        <item quantity="one">¿Está seguro de que desea eliminar la palabra seleccionada %1$d\?
+\n
+\n(Esta acción no se puede deshacer.)</item>
+        <item quantity="many">¿Están seguros de que desean eliminar la palabra seleccionada %1$d\?
+\n
+\n(Esta acción no se puede deshacer.)</item>
+        <item quantity="other">¿Están seguras de que desean eliminar la palabra seleccionada%1$d \?
+\n
+\n(Esta acción no se puede deshacer.)</item>
+    </plurals>
 </resources>
