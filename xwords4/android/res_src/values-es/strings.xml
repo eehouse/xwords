@@ -586,4 +586,18 @@
 \n
 \n(Esta acción no se puede deshacer.)</item>
     </plurals>
+    <string name="slmenu_deselect_all">Deselecciona todo</string>
+    <string name="sel_items_fmt">Seleccionado: %1$d</string>
+    <string name="loc_filters_prompt">Filtrado por:</string>
+    <string name="loc_search_prompt">Buscar:</string>
+    <string name="lang_name_french">francés</string>
+    <string name="lang_name_arabic">árabe</string>
+    <string name="lang_name_spanish">español</string>
+    <plurals name="new_xlations_fmt">
+        <item quantity="one">Instalada una nueva traducción</item>
+        <item quantity="many">Instaladas %1$d nuevas traducciones</item>
+        <item quantity="other">Se instalaron %1$d nuevas traducciones</item>
+    </plurals>
+    <string name="lang_name_german">alemán</string>
+    <string name="lang_name_turkish">turco</string>
 </resources>
