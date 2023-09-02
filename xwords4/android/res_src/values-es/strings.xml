@@ -600,4 +600,29 @@
     </plurals>
     <string name="lang_name_german">alemán</string>
     <string name="lang_name_turkish">turco</string>
+    <string name="loc_item_check">Controlar</string>
+    <string name="loc_item_copy_bless">Copia oficial</string>
+    <string name="remote_digesting">Procesando información de la lista de palabras…</string>
+    <string name="dict_info_fmt">Número de palabras: %1$d
+\nTamaño de descarga: %2$dK</string>
+    <string name="dict_on_server">Toca para más detalles</string>
+    <string name="force_tablet_tablet">Forzar diseño de tablet</string>
+    <string name="force_tablet_phone">Forzar diseño de teléfono</string>
+    <string name="lang_name_portuguese">portugués</string>
+    <string name="lang_name_russian">ruso</string>
+    <string name="lang_name_greek">griego</string>
+    <string name="remote_empty">Obteniendo información de la lista de palabras del servidor…</string>
+    <string name="lang_name_czech">checo</string>
+    <string name="loc_item_copy_eng">Copiar ingles</string>
+    <string name="nag_title">Recordatorio: es tu turno</string>
+    <string name="lang_name_catalan">catalán</string>
+    <string name="dict_info_note_fmt">Nota: %1$s</string>
+    <string name="note_none">(Ninguno)</string>
+    <string name="force_tablet_default">Usar valor predeterminado para mi dispositivo</string>
+    <plurals name="nag_minutes_fmt">
+        <item quantity="one">%1$d minuto</item>
+        <item quantity="many">%1$d minutos</item>
+        <item quantity="other">%1$d minutos</item>
+    </plurals>
+    <string name="dict_lang_avail">(Disponible: %1$d)</string>
 </resources>
