@@ -625,4 +625,22 @@
         <item quantity="other">%1$d minutos</item>
     </plurals>
     <string name="dict_lang_avail">(Disponible: %1$d)</string>
+    <string name="new_game_networked">Nuevo juego en red</string>
+    <string name="use_defaults">Usar valores predeterminados</string>
+    <plurals name="lmi_trade_fmt">
+        <item quantity="one">%1$s cambió una ficha</item>
+        <item quantity="many">%1$s cambió %2$d fichas</item>
+        <item quantity="other">%1$s cambió %2$d fichas</item>
+    </plurals>
+    <string name="lmi_tiles_fmt">Fichas asignadas a %1$s</string>
+    <string name="lmi_phony_fmt">%1$s ha perdido el turno</string>
+    <string name="new_game">Nuevo juego para un dispositivo</string>
+    <string name="rematch_name_fmt">%1$s</string>
+    <string name="lmi_pass_fmt">%1$s ha pasado (0 puntos)</string>
+    <plurals name="lmi_move_fmt">
+        <item quantity="one">%1$s ha jugado %2$s por un punto</item>
+        <item quantity="many">%1$s jugado %2$s por %3$d puntos</item>
+        <item quantity="other">%1$s jugado %2$s por %3$d puntos</item>
+    </plurals>
+    <string name="nplayers_prompt">Número en este dispositivo</string>
 </resources>
