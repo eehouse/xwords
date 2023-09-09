@@ -643,4 +643,15 @@
         <item quantity="other">%1$s jugado %2$s por %3$d puntos</item>
     </plurals>
     <string name="nplayers_prompt">Número en este dispositivo</string>
+    <string name="set_pref">Ocultar botones</string>
+    <plurals name="waiting_title_fmt">
+        <item quantity="one">Esperando a un jugador</item>
+        <item quantity="many">Esperando a %1$d jugadores</item>
+        <item quantity="other">Esperando a %1$d jugadoras</item>
+    </plurals>
+    <string name="not_again_hidenewgamebuttons">Los dos botones en la parte inferior de esta pantalla y los dos primeros elementos en su barra de acción (o menú) hacen lo mismo. Si lo deseas, puedes ocultar los botones para que más juegos sean visibles.
+\n
+\n(Si luego deseas mostrar los botones, ir a la sección Apariencia de la configuración de la aplicación).</string>
+    <string name="connection_via_label">Cambiar la vía de comunicación</string>
+    <string name="waiting_rematch_title">Revancha en progreso</string>
 </resources>
