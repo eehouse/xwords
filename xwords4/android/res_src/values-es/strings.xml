@@ -654,4 +654,9 @@
 \n(Si luego deseas mostrar los botones, ir a la sección Apariencia de la configuración de la aplicación).</string>
     <string name="connection_via_label">Cambiar la vía de comunicación</string>
     <string name="waiting_rematch_title">Revancha en progreso</string>
+    <string name="disable_nag_title">Desactivar recordatorios de juegos en red</string>
+    <string name="button_discard_changes">Descartar los cambios</string>
+    <string name="disable_nags_title">Activar recordatorios</string>
+    <string name="button_edit">Editar</string>
+    <string name="config_no_connvia">Este juego no tiene forma de conectarse y no se puede guardar. ¿Le gustaría descartar sus cambios o editarlos para darle una forma de conectarse\?</string>
 </resources>
