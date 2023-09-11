@@ -659,4 +659,14 @@
     <string name="disable_nags_title">Activar recordatorios</string>
     <string name="button_edit">Editar</string>
     <string name="config_no_connvia">Este juego no tiene forma de conectarse y no se puede guardar. ¿Le gustaría descartar sus cambios o editarlos para darle una forma de conectarse\?</string>
+    <string name="debug_features_summary">Elementos del menú etc.</string>
+    <string name="dict_host">URL de descarga de la lista de palabras</string>
+    <string name="debug_features">Habilitar funciones de depuración</string>
+    <string name="title_pasteDevid">ID de dispositivo MQTT del invitado</string>
+    <string name="gamel_menu_writegit">Copiar información de git al portapapeles</string>
+    <string name="mqtt_host">Anfitrión de Internet/MQTT</string>
+    <string name="name_dict_fmt">%1$s/%2$s</string>
+    <string name="logging_on">Habilitar el registro</string>
+    <string name="games_menu_copyDevid">Copiar ID de dispositivo MQTT</string>
+    <string name="enable_pending_count_title">Mostrar mensajes pendientes</string>
 </resources>
