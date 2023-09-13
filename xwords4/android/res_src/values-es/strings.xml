@@ -669,4 +669,9 @@
     <string name="logging_on">Habilitar el registro</string>
     <string name="games_menu_copyDevid">Copiar ID de dispositivo MQTT</string>
     <string name="enable_pending_count_title">Mostrar mensajes pendientes</string>
+    <string name="radio_name_real">No finjas</string>
+    <string name="radio_name_cdma">CDMA</string>
+    <string name="radio_name_tablet">Tablet/sin radio</string>
+    <string name="radio_name_gsm">GSM</string>
+    <string name="force_radio_title">Finge tener radio</string>
 </resources>
