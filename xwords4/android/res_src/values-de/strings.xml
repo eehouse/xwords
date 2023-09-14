@@ -1127,4 +1127,5 @@
 \nNeustart, um die Verwendung sicherzustellen.</string>
     <string name="backup_only_on_9">Der Export funktioniert unter Android 9 (und allen anderen Versionen), der Import jedoch nicht. Sie können also einen Export auf diesem Gerät durchführen, um auf ein neueres Telefon zu migrieren, aber Sie können die entstandene Datei nicht auf dieses Gerät importieren.</string>
     <string name="no_restore_on_9">Der Import funktioniert nicht unter Android 9.</string>
+    <string name="wordlist_custom_note">(Benutzerdefiniert)</string>
 </resources>
