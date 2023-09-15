@@ -674,4 +674,19 @@
     <string name="radio_name_tablet">Tablet/sin radio</string>
     <string name="radio_name_gsm">GSM</string>
     <string name="force_radio_title">Finge tener radio</string>
+    <string name="confirm_drop_mqtt">¿Estás seguro de que quieres eliminar la capacidad de este juego para comunicarse a través de Internet\?</string>
+    <string name="db_store_failed">Exportación fallida</string>
+    <string name="pref_group_sms_title">Datos SMS Stuff</string>
+    <string name="db_store_done">Exportación completa</string>
+    <string name="not_again_comms_mqtt">Hay un servidor en Internet que pasa mensajes entre dispositivos que ejecutan CrossWords. Funciona siempre que tengas una conexión a Internet completamente funcional, pero puede tener problemas en redes WiFi restringidas.</string>
+    <string name="expl_update_url">Actualizar URL de actualizaciones</string>
+    <string name="got_langdict_summary">No lo intentes por segunda vez</string>
+    <string name="not_again_comms_sms">La partida via Data SMS utiliza la tecnología en la que se basan los mensajes de \"texto\". Aunque los mensajes sean invisibles para ti, el operador los factura como mensajes de texto, por lo que deseas evitar esta función a menos que tenga un plan (o presupuesto) de mensajes de texto ilimitados. Tener en cuenta que Android solo admite esta función en dispositivos con un operador GSM, es decir, cualquier operador en el mundo excepto Verizon y Sprint.</string>
+    <string name="confirm_drop_relay_sms">No todos los operadores admiten el juego a través de SMS de datos.</string>
+    <string name="checking_title">Comprobando</string>
+    <string name="confirm_drop_relay_bt">Bluetooth solo funciona para dispositivos cercanos.</string>
+    <string name="expl_relay_url">URL para la API web del relé</string>
+    <string name="button_enable">Permitir</string>
+    <string name="got_langdict_title">Obtener la lista de palabras predeterminada para el idioma</string>
+    <string name="checking_for_fmt">Comprobando listas de palabras en %1$s…</string>
 </resources>
