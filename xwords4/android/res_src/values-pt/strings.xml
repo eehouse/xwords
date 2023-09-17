@@ -1978,7 +1978,7 @@
         <item quantity="many">"
 \n
 \n(%1$d partidas também serão apagadas.)"</item>
-        <item quantity="other"></item>
+        <item quantity="other"/>
     </plurals>
     <plurals name="groups_confirm_del_fmt">
         <item quantity="one">Tem certeza que quer deletar o grupo %1$s\?</item>
@@ -2002,7 +2002,7 @@
         <item quantity="many">"
 \n
 \n(Tem %1$d partidas ativas a usar o Bluetooth.)"</item>
-        <item quantity="other"></item>
+        <item quantity="other"/>
     </plurals>
     <string name="warn_bt_havegames">Tem certeza que quer desativar jogar a usar Bluetooth\?
 \n
@@ -2258,7 +2258,7 @@
         <item quantity="many">"
 \n
 \n(Agora tem %1$d jogos ativos usando a Internet.)"</item>
-        <item quantity="other"></item>
+        <item quantity="other"/>
     </plurals>
     <string name="archive_button_store">Exportar</string>
     <string name="archive_expl_colors">Cores no tabuleiro de jogo, por exemplo dos nomes de jogadores e quadrados de bónus</string>
@@ -2295,4 +2295,11 @@
 \nA reiniciar para garantir o uso.</string>
     <string name="backup_only_on_9">A exportação funciona no Android 9 (e em todas as outras versões), mas a importação não. Portanto, pode fazer uma exportação neste aparelho para migrar para um telefone mais novo, mas não poderá importar o ficheiro resultante neste aparelho.</string>
     <string name="no_restore_on_9">A importação não funciona no Android 9.</string>
+    <string name="wordlist_custom_note">(Personalizado)</string>
+    <string name="invite_custom_warning_fmt">Este jogo usa uma lista de palavras personalizada, %1$s, que não pode ser descarregado do servidor. A menos que a pessoa que convida também tem esta lista de palavras, não serão capazes de jogar este jogo.
+\n
+\nSe sabe que o seu oponente tem a lista de palavras %1$s instalada, toque Ok para convidá-los de qualquer maneira, ou use Configurações do jogo para alterar a lista de palavras, ou apenas apague o jogo.</string>
+    <string name="notagain_custom_xwd_fmt">Por favor, esteja ciente que esta lista de palavras, %1$s, não está disponível para outros para ser descarregado. Isto geralmente significa que é personalizado (compilado usando BYOD), mas também pode ser obsoleto.
+\n
+\nUse %1$s apenas para jogos locais. Se convidar alguém a um jogo que o usa, terá que o lhe dar manualmente, como CrossWords atualmente não suporta incluir listas de palavras em convites.</string>
 </resources>
