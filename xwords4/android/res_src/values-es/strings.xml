@@ -689,4 +689,15 @@
     <string name="button_enable">Permitir</string>
     <string name="got_langdict_title">Obtener la lista de palabras predeterminada para el idioma</string>
     <string name="checking_for_fmt">Comprobando listas de palabras en %1$s…</string>
+    <string name="phone_lookup_rationale">Para volver a jugar un juego que utiliza datos SMS CrossWords necesita permiso para acceder a su número de teléfono.</string>
+    <string name="list_item_deselect">Deseleccionar</string>
+    <string name="no_invites">Este juego no ha enviado invitaciones</string>
+    <string name="phone_lookup_rationale_others">Sin este permiso, la revancha continuará pero creará un juego que no se puede jugar a través de SMS de datos.</string>
+    <string name="after_restart">Este cambio entrará en vigor después de reiniciar CrossWords.</string>
+    <string name="not_again_dfltname_fmt">Estás utilizando el nombre de jugador predeterminado “%1$s”. ¿Te gustaría personalizarlo con tu propio nombre antes de crear este juego\?</string>
+    <string name="list_item_markbad">Marcar como corrupto</string>
+    <string name="phone_state_rationale">Algunos teléfonos pueden intercambiar mensajes SMS de “datos”. CrossWords quisiera ofrecerle esta opción, pero primero debe preguntarle a su dispositivo (para saber si es un teléfono y, en caso afirmativo, de qué tipo).
+\n
+\nSi tu dispositivo no puede enviar SMS de datos (por ejemplo, porque no es un teléfono) o no quieres jugar nunca a través de SMS (por ejemplo, porque pagas por cada mensaje), es seguro denegar el permiso permanentemente.</string>
+    <string name="phone_lookup_rationale_drop">No es posible volver a jugar este juego de solo datos por SMS sin este permiso.</string>
 </resources>
