@@ -700,4 +700,11 @@
 \n
 \nSi tu dispositivo no puede enviar SMS de datos (por ejemplo, porque no es un teléfono) o no quieres jugar nunca a través de SMS (por ejemplo, porque pagas por cada mensaje), es seguro denegar el permiso permanentemente.</string>
     <string name="phone_lookup_rationale_drop">No es posible volver a jugar este juego de solo datos por SMS sin este permiso.</string>
+    <string name="perms_rationale_title">Permiso de Android explicado</string>
+    <string name="toast_no_permission">Permiso no concedido</string>
+    <string name="button_ask">Preguntar</string>
+    <string name="sms_send_failed">Error al enviar SMS</string>
+    <string name="button_deny">Denegar</string>
+    <string name="remove_sms">Eliminar SMS</string>
+    <string name="nbsproxy_channel_expl">Alertas sobre NBSProxy</string>
 </resources>
