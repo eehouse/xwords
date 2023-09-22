@@ -707,4 +707,11 @@
     <string name="button_deny">Denegar</string>
     <string name="remove_sms">Eliminar SMS</string>
     <string name="nbsproxy_channel_expl">Alertas sobre NBSProxy</string>
+    <string name="lmi_tiles_dup">Las mismas fichas asignadas a todos los jugadores</string>
+    <string name="str_submit_confirm">¿Enviar el movimiento actual\?
+\n</string>
+    <string name="unhide_dupmode_title">Mostrar opciones del modo duplicado</string>
+    <string name="offerdupmode_sum">(¡¡¡Experimental!!!) Estilo de juego donde todos los jugadores tienen las mismas fichas</string>
+    <string name="offerdupmode_title">Juega en “modo duplicado”</string>
+    <string name="unhide_dupmode_summary">(Es demasiado experimental en este momento)</string>
 </resources>
