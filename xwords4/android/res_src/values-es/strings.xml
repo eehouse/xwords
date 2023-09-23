@@ -714,4 +714,9 @@
     <string name="offerdupmode_sum">(¡¡¡Experimental!!!) Estilo de juego donde todos los jugadores tienen las mismas fichas</string>
     <string name="offerdupmode_title">Juega en “modo duplicado”</string>
     <string name="unhide_dupmode_summary">(Es demasiado experimental en este momento)</string>
+    <string name="dup_host_received_fmt">El %1$d de %2$d jugadores han informado sobre sus movimientos. Cuando se hayan recibido todos los movimientos será tu turno nuevamente.</string>
+    <string name="dup_client_sent">Este dispositivo ha enviado sus movimientos al host. Cuando todos los dispositivos hayan enviado sus movimientos volverá a ser tu turno.</string>
+    <string name="dup_notif_title">Temporizador funcionando</string>
+    <string name="dup_paused_expl">Aviso de juegos pausados y reactivados</string>
+    <string name="dup_timer_expl">Temporizadores de modo duplicado en ejecución</string>
 </resources>
