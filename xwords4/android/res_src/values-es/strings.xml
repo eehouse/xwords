@@ -719,4 +719,11 @@
     <string name="dup_notif_title">Temporizador funcionando</string>
     <string name="dup_paused_expl">Aviso de juegos pausados y reactivados</string>
     <string name="dup_timer_expl">Temporizadores de modo duplicado en ejecución</string>
+    <string name="dup_onescore_fmt">%1$s: %2$d puntos
+\n</string>
+    <string name="dup_moved">Turno duplicado completo. Puntuaciones:
+\n</string>
+    <string name="dup_traded_fmt">No se hicieron movimientos; %1$d fichas intercambiadas</string>
+    <string name="game_paused_title">Juego pausado</string>
+    <string name="game_unpaused_title">Juego sin pausa</string>
 </resources>
