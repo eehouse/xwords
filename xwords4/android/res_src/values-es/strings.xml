@@ -726,4 +726,19 @@
     <string name="dup_traded_fmt">No se hicieron movimientos; %1$d fichas intercambiadas</string>
     <string name="game_paused_title">Juego pausado</string>
     <string name="game_unpaused_title">Juego sin pausa</string>
+    <string name="logstore_notdumped">No se pueden escribir registros</string>
+    <string name="logstore_cleared_fmt">%1$d entradas de registro eliminadas</string>
+    <string name="unsafe_open_disregard">Abre de todos modos</string>
+    <string name="logstore_dumping_fmt">Comprimiendo %1$d entradas de registro</string>
+    <string name="word_blocked_by_phony">Palabra o palabras que no se encuentran en la lista de palabras %2$s: %1$s.</string>
+    <string name="autopause_expl_fmt">El cronómetro del juego “%1$s” expiró sin que se realizara ningún movimiento, por lo que se ha pausado para ti.</string>
+    <string name="logstore_clear_confirm">¿Seguro que desea borrar sus registros de depuración\? Esta acción no se puede deshacer.</string>
+    <string name="button_clear_stats">Borrar estadísticas</string>
+    <string name="gamel_menu_timerStats">Estadísticas del cronómetro</string>
+    <string name="pause_notify_expl_fmt">El jugador %1$s ha pausado este juego, con esta explicación: %2$s</string>
+    <string name="button_send_logs">Enviar al autor</string>
+    <string name="unpause_notify_expl_fmt">El jugador %1$s ha reactivado este juego, con esta explicación: %2$s</string>
+    <string name="gamel_menu_logs">Logs debug</string>
+    <string name="pause_notify_fmt">El jugador %1$s ha pausado este juego.</string>
+    <string name="unpause_notify_fmt">El jugador %1$s ha reactivado este juego.</string>
 </resources>
