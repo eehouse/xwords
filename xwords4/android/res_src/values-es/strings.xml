@@ -741,4 +741,21 @@
     <string name="gamel_menu_logs">Logs debug</string>
     <string name="pause_notify_fmt">El jugador %1$s ha pausado este juego.</string>
     <string name="unpause_notify_fmt">El jugador %1$s ha reactivado este juego.</string>
+    <string name="knowns_delete_confirm_fmt">¿Estás seguro de que deseas eliminar “%1$s” de jugadores conocidos\?
+\n
+\n(Esta acción no se puede deshacer, pero los jugadores pueden reaparecer si todavía tienes juegos activos con ellos.)</string>
+    <string name="mqtt_invite_title">Invitación MQTT</string>
+    <string name="newgame_configure_first">Configurar primero</string>
+    <string name="knowns_dup_name_fmt">No se puede cambiar el nombre de \"%1$s\" a \"%2$s\". ¿Ya está en uso “%2$s”\?</string>
+    <string name="knowns_smsphone_fmt">Teléfono SMS: %1$s</string>
+    <string name="knowns_expl">Estos son tus jugadores remotos conocidos. Sus nombres predeterminados son los que ha elegido el jugador remoto, pero puedes cambiar los nombres si lo deseas.</string>
+    <string name="newgame_invite_fmt">Comenzar juego con %1$s</string>
+    <string name="newgame_configure_game">Configurar juego</string>
+    <string name="newgame_radio_unknown">Invitar a nuevo jugador</string>
+    <string name="gamel_menu_knownplyrs">Jugadores conocidos</string>
+    <string name="invite_choice_mqtt">Internet</string>
+    <string name="choose_expl_default_solo">Inicia un juego en solitario usando los valores predeterminados actuales</string>
+    <string name="newgame_open_game">Comenzar juego</string>
+    <string name="remote_msg_title">Mensaje remoto</string>
+    <string name="player_edit_name">Cambiar nombre</string>
 </resources>
