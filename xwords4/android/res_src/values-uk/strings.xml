@@ -5,4 +5,7 @@
     <string name="robot_name_fmt">%1$s (робот)</string>
     <string name="missing_player">(ще не тут…)</string>
     <string name="button_reset">Скинути</string>
+    <string name="summary_invites_out">Гравців запрошено</string>
+    <string name="invitee_fmt">(%1$s запрошений)</string>
+    <string name="summary_invites_out_fmt">Гравців запрошено до кімнати “%1$s”</string>
 </resources>
