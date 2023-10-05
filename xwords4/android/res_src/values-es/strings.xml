@@ -758,4 +758,57 @@
     <string name="newgame_open_game">Comenzar juego</string>
     <string name="remote_msg_title">Mensaje remoto</string>
     <string name="player_edit_name">Cambiar nombre</string>
+    <string name="archive_expl_load_fmt">Reemplazar qué tipos de datos de aplicaciones en CrossWords con datos del archivo “%1$s”\?</string>
+    <string name="title_lookup">Toca para buscar</string>
+    <string name="tiles_header_count">Número</string>
+    <string name="button_done_fmt">Hecho con %1$s</string>
+    <string name="tilepick_all_fmt">Elige %1$d por mí</string>
+    <string name="button_pick_again">elegir de nuevo</string>
+    <string name="archive_title_colors">Colores del tablero</string>
+    <string name="color_theme_edit_dark">Editar tema oscuro</string>
+    <string name="not_again_done">Tocar el contador de \"pts\" que aparece en el extremo derecho del estante es la forma más fácil de realizar un movimiento.</string>
+    <string name="prefs_copy_dark">Copiar tema oscuro</string>
+    <string name="archive_filename_fmt">CrossWords-backup-%1$s.zip</string>
+    <string name="color_use_theme_dark">Usar tema oscuro</string>
+    <string name="archive_button_load">Importar</string>
+    <string name="backup_overwrite_confirm_fmt">¿Estás seguro de que deseas sobrescribir los juegos o configuraciones actuales de CrossWords con los del archivo “%1$s”\?
+\n
+\nTen en cuenta que si estás importando juegos en red desde un archivo creado en otro dispositivo (es decir, migrando), no debes continuar usando CrossWords en el dispositivo anterior.</string>
+    <string name="no_restore_on_9">La importación no funciona en Android 9.</string>
+    <string name="backup_bad_file_fmt">El archivo “%1$s” no contiene copia de seguridad de CrossWords.</string>
+    <string name="byod_success">La descarga de %1$s se realizó correctamente. Ábrelo ahora si quieres.</string>
+    <string name="wordlist_custom_note">(Cliente)</string>
+    <string name="button_settings">Ajustes</string>
+    <string name="tiles_header_value">Valor</string>
+    <string name="invite_custom_warning_fmt">Este juego utiliza una lista de palabras personalizada, %1$s, que no se puede descargar desde el servidor. A menos que la persona a la que se invite tenga también esta lista de palabras, no podrá jugar a este juego.
+\n
+\nSi sabes que tu oponente tiene la lista de palabras %1$s instalada, toca Aceptar para invitarlo. O usa la configuración del juego para cambiar la lista de palabras. O simplemente elimina el juego.</string>
+    <string name="notagain_custom_xwd_fmt">Tener en cuenta que esta lista de palabras, %1$s, no está disponible para que otras personas la descarguen. Esto generalmente significa que está personalizado (construido usando BYOD), pero también podría estar obsoleto.
+\n
+\nUtilizar %1$s solo para juegos locales. Si se invita a alguien a un juego que lo usa, tendrá que entregárselo manualmente, ya que CrossWords actualmente no admite la inclusión de listas de palabras en las invitaciones.</string>
+    <string name="color_theme_edit_light">Editar tema ligero</string>
+    <string name="tiles_header_face">Carta</string>
+    <string name="prefs_copy_light">Copiar tema ligero</string>
+    <string name="pat_col_anyorder">Cualquier orden</string>
+    <string name="backup_only_on_9">La exportación funciona en Android 9 (y todas las demás versiones), pero la importación no. Por lo tanto, puede realizar una exportación en este dispositivo para migrar a un teléfono más nuevo, pero no podrá importar el archivo resultante en este dispositivo.</string>
+    <string name="missing_host_fmt">(El anfitrión es un jugador conocido llamado“%1$s”.)</string>
+    <string name="archive_expl_colors">Colores en el tablero de juego, p.e. de nombres de jugadores y casillas de bonificación</string>
+    <string name="byod_failure">Error al descargar %1$s.</string>
+    <string name="not_again_arrow">Hay dos formas de mover fichas al tablero.
+\n
+\n • Puedes arrastrarlos entre el rack y el tablero.
+\n
+\n • O puedes tocar un cuadrado vacío en el tablero para colocar la \"flecha del tablero\". Luego, las fichas en el estante reemplazan la flecha cuando las tocas. Toque la flecha para cambiar su dirección u ocultarla.</string>
+    <string name="pick_url_title_fmt">Busca %1$s en</string>
+    <string name="button_done">Hecho</string>
+    <string name="title_blank_picker">Elegir mosaico para el espacio en blanco</string>
+    <string name="button_open_dict">Abierto</string>
+    <string name="reboot_after_setFmt">El ID de dispositivo MQTT cambió a \"%1$s\".
+\n
+\nReiniciando para asegurar el uso.</string>
+    <string name="title_lookup_study">Toca para buscar o estudiar</string>
+    <string name="not_again_unlock">Esta partida se está jugando. Algunas configuraciones, p. el número de jugadores, no se puede cambiar sin reiniciarlo. Cuando salga de esta página, tendrá la oportunidad de descartar los cambios para evitar un reinicio.</string>
+    <string name="skip_mqtt_add_title">Saltar agregando MQTT</string>
+    <string name="archive_expl_store">Seleccionar los tipos de datos o configuraciones de CrossWords que se desea guardar.</string>
+    <string name="not_again_values">Este botón cambia si el tablero muestra valores (además de letras) en las fichas del tablero.</string>
 </resources>
