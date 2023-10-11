@@ -811,4 +811,60 @@
     <string name="skip_mqtt_add_title">Saltar agregando MQTT</string>
     <string name="archive_expl_store">Seleccionar los tipos de datos o configuraciones de CrossWords que se desea guardar.</string>
     <string name="not_again_values">Este botón cambia si el tablero muestra valores (además de letras) en las fichas del tablero.</string>
+    <string name="bt_pick_clear_button">Eliminar</string>
+    <string name="slmenu_clear_sel">Eliminar la selección</string>
+    <string name="dict_desc_fmt">%1$s (%2$s/%3$d palabras)</string>
+    <string name="bt_fail_fmt">Los envíos de Bluetooth a %1$s han fallado demasiadas veces. Vuelve a abrir el juego para intentarlo de nuevo.</string>
+    <string name="lang_name_romanian">rumano</string>
+    <string name="not_again_dicts">Esta pantalla le permite instalar nuevas listas de palabras y ver las que ya tiene.
+\n
+\nLas listas de palabras que haya instalado determinan:
+\n• En qué idiomas puedes jugar
+\n• Qué tan inteligente es el jugador robot
+\n• Qué palabras son legales
+\n
+\nMarque la casilla \"Mostrar descargable\" en la parte superior para ver qué hay disponible.</string>
+    <string name="dict_lang_inst_and_avail">(Instalado: %1$d; Disponible: %2$d)</string>
+    <string name="slmenu_copy_sel">Copiar al portapapeles</string>
+    <string name="email_body_rev_fmt">(Si es relevante, incluir la versión (“%1$s”) de CrossDbg, la marca/modelo (“%2$s”) y la versión del sistema operativo (%3$s) del teléfono o tablet, y la ID de dispositivo ( %4$s).)</string>
+    <string name="bt_no_devs">Actualmente no tienes ningún dispositivo Bluetooth conectado (o Bluetooth está desactivado). ¿Le gustaría abrir el Panel de configuración de Android para agregar uno o más\?
+\n
+\n(Es posible que también necesites abrir el panel de Configuración en el dispositivo que deseas emparejar.)</string>
+    <string name="nag_warn_last_fmt">Último aviso: %1$s</string>
+    <plurals name="nag_days_fmt">
+        <item quantity="one">%1$d día</item>
+        <item quantity="many">%1$d días</item>
+        <item quantity="other">%1$d días</item>
+    </plurals>
+    <string name="loc_filters_modified">modificado por mi</string>
+    <string name="bt_pair_settings">Emparejar más</string>
+    <string name="lang_name_hungarian">húngaro</string>
+    <string name="remote_no_net">No se puede recuperar la información de la lista de palabras del servidor.</string>
+    <string name="prev_player">Oponente</string>
+    <string name="bt_invite_title">Invitación por Bluetooth</string>
+    <string name="loc_filters_menu">Último menú</string>
+    <string name="summary_wait_host">Esperando invitados</string>
+    <string name="summary_studyon">Permite agregar y mostrar listas de palabras para recordar</string>
+    <string name="lang_name_finnish">finés</string>
+    <string name="force_tablet_title">¿Usar el diseño de tableta (uno al lado del otro)\?</string>
+    <string name="loc_item_clear">Cancelar</string>
+    <plurals name="bt_scan_progress_fmt">
+        <item quantity="one">Buscando crucigramas en el %1$d dispositivo vinculado</item>
+        <item quantity="many">Buscando crucigramas en %1$d dispositivos vinculados</item>
+        <item quantity="other">Buscando crucigramas en %1$d dispositivos vinculados</item>
+    </plurals>
+    <string name="lang_name_english">Inglés</string>
+    <string name="study_no_lang_fmt">Aún no has guardado ninguna palabra en una lista de estudio para %1$s.</string>
+    <string name="button_invite">Invitación controlada</string>
+    <string name="gamel_menu_study">Lista de estudio</string>
+    <string name="bt_resend_fmt">Error en el envío de Bluetooth a %1$s; reintentar %3$d en %2$d segundos.</string>
+    <plurals name="nag_hours_fmt">
+        <item quantity="one">%1$d hora</item>
+        <item quantity="many">%1$d horas</item>
+        <item quantity="other">%1$d horas</item>
+    </plurals>
+    <string name="nag_body_fmt">%1$s movió hace más de %2$s.</string>
+    <string name="lang_name_swedish">sueco</string>
+    <string name="loc_filters_screen">Última pantalla</string>
+    <string name="button_scan">Volver a escanear</string>
 </resources>
