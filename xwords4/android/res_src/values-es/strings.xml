@@ -7,12 +7,12 @@
     <string name="summary_invites_out_fmt">Jugadores invitados a la sala \"%1$s\"</string>
     <string name="gameOver">Fin de la partida</string>
     <plurals name="moves_fmt">
-        <item quantity="one">Un movimiento realizado</item>
-        <item quantity="many">%1$d movimientos realizados</item>
-        <item quantity="other"/>
+        <item quantity="one">Una jugada realizada</item>
+        <item quantity="many">%1$d jugadas realizadas</item>
+        <item quantity="other">%1$d jugadas realizadas</item>
     </plurals>
     <string name="button_delete">Borrar</string>
-    <string name="button_reset">Reiniciar</string>
+    <string name="button_reset">Restablecer</string>
     <string name="gamel_menu_dicts">Listas de palabras</string>
     <string name="menu_prefs">Ajustes de la App</string>
     <string name="board_menu_file_about">Acerca de CrossWords</string>
@@ -20,23 +20,26 @@
     <string name="list_item_rename">Renombrar</string>
     <string name="list_item_move">Mover al grupo</string>
     <string name="list_item_delete">Eliminar partida</string>
-    <string name="list_item_reset">Reiniciar</string>
+    <string name="list_item_reset">Restablecer</string>
     <string name="list_item_new_from">Crear nuevo a partir de</string>
     <string name="list_item_copy">Copiar</string>
     <string name="rename_label">Cambiar nombre de la partida por:</string>
     <string name="rename_label_caveat">Cambiar el nombre de esta partida (solo en este dispositivo) por:</string>
     <plurals name="confirm_seldeletes_fmt">
-        <item quantity="one">¿Estás seguro de que quieres eliminar esta partida\? No podrás deshacer esta acción.</item>
-        <item quantity="other">¿Estás seguro de que quieres eliminar %1$d las siguientes partidas\? No podrás deshacer esta acción.</item>
+        <item quantity="one">¿Estás seguro de que quieres borrar el juego seleccionado\? Esta acción no se puede deshacer.</item>
+        <item quantity="many">¿Estás seguro de que quieres eliminar las %1$d partidas seleccionadas\? Esta acción no se puede deshacer.</item>
+        <item quantity="other">¿Estás seguro de que quieres eliminar las %1$d partidas seleccionadas\? Esta acción no se puede deshacer.</item>
     </plurals>
     <plurals name="confirm_reset_fmt">
-        <item quantity="one">¿Seguro que quieres reiniciar esta partida\?
+        <item quantity="one">¿Estás seguro de que quieres reiniciar la partida seleccionada\?
 \n
-\n(La opción de reiniciar borrará todos los movimientos y cualquier información de conexión.)</item>
-        <item quantity="many">¿Seguro que quieres reiniciar las %1$d siguientes partidas\?
+\n(Al reiniciar se borran todos los movimientos y cualquier información de la conexión).</item>
+        <item quantity="many">¿Estás seguro de que quieres reiniciar las %1$d partidas seleccionadas\?
 \n
-\n(La opción de reiniciar borrará todos los movimientos y cualquier información de conexión.)</item>
-        <item quantity="other"/>
+\n(Al reiniciar se borran todas las jugadas y cualquier información de la conexión).</item>
+        <item quantity="other">¿Estás seguro de que quieres reiniciar las %1$d partidas seleccionadas\?
+\n
+\n(Al reiniciar se borran todas las jugadas y cualquier información de la conexión).</item>
     </plurals>
     <string name="download_more">Descargar más</string>
     <string name="list_item_netstats">Conexiones</string>
@@ -46,8 +49,9 @@
     <string name="dicts_item_move">Cambiar ubicación de almacenamiento</string>
     <string name="dicts_item_select">Establecer por defecto</string>
     <plurals name="confirm_delete_dict_fmt">
-        <item quantity="one">¿Estás seguro de que quieres eliminar la lista de palabras %1$s\?</item>
-        <item quantity="other">¿Estás seguro de que quieres eliminar las listas de palabras %1$s\?</item>
+        <item quantity="one">¿Estás seguro de que quieres borrar la lista de palabras %1$s\?</item>
+        <item quantity="many">¿Estás seguro de que quieres borrar las listas de palabras %1$s\?</item>
+        <item quantity="other">¿Estás seguro de que quieres borrar las listas de palabras %1$s\?</item>
     </plurals>
     <string name="confirm_deleteonly_dicts_fmt">Si eliminas %1$s te quedarás sin listas de palabras %2$s . No podrás abrir una o más partidas (hasta que no descargues una lista que la sustituya.)</string>
     <string name="set_default_message_fmt">¿Para cuáles jugadores la lista de palabras %1$s debería ser la predeterminada para nuevas partidas\? (El idioma %2$s será el predeterminado para ambos.)</string>
@@ -63,7 +67,7 @@
     <string name="game_locked">Ajustes de bloqueo</string>
     <string name="players_label_standalone">Jugadores (pulsa para editar)</string>
     <string name="button_add_player">Añadir jugador</string>
-    <string name="button_juggle_players">Barajar jugadores</string>
+    <string name="button_juggle_players">Mezclar los jugadores</string>
     <string name="lang_label">Idioma de la partida</string>
     <string name="langdict_label">Idioma/lista de palabras de la partida</string>
     <string name="connect_label_fmt">Conexión (vía %1$s)</string>
@@ -103,12 +107,15 @@
     <string name="bonus_w3x_summary">3P</string>
     <string name="no_moves_made">(Todavía no hay movimientos)</string>
     <plurals name="invite_msg_fmt">
-        <item quantity="one">La partida está esperando a que un jugador remoto reciva y responda una invitación.
+        <item quantity="one">Este juego está esperando a que un jugador remoto reciba y responda a una invitación.
 \n
-\nEste mensaje permanecerá hasta que el jugador haya respondido. Si crees que la invitación se ha perdido, no pasa nada por enviar otra.</item>
-        <item quantity="other">La partida está esperando a que %1$d jugadores remotos respondan a las invitaciónes.
+\nVerás este mensaje hasta que el jugador invitado haya respondido. Si sospechas que la invitación que enviaste se ha perdido, no pasa nada por enviar otra.</item>
+        <item quantity="many">Este juego está esperando a que %1$d jugadores remotos respondan a las invitaciones.
 \n
-\nEste mensaje permanecerá hasta que los jugadores haya respondido. Si crees que las invitaciónes se han perdido, no pasa nada por enviar más.</item>
+\nVerás este mensaje hasta que todos los jugadores esperados hayan respondido. Si sospechas que alguna de las invitaciones que has enviado se ha perdido, no pasa nada por enviar más.</item>
+        <item quantity="other">Este juego está esperando a que %1$d jugadores remotos respondan a las invitaciones.
+\n
+\nVerás este mensaje hasta que todos los jugadores esperados hayan respondido. Si sospechas que alguna de las invitaciones que has enviado se ha perdido, no pasa nada por enviar más.</item>
     </plurals>
     <string name="invit_expl_sms_fmt">Invitación enviada por SMS al número de teléfono %1$s a %2$s</string>
     <string name="invit_expl_usrsms_fmt">Invitación enviada por SMS en %1$s</string>
@@ -137,8 +144,9 @@
     <string name="board_menu_game_resend">Reenviar movimientos</string>
     <string name="str_robot_moved_fmt">"El robot %1$s ha realizado un movimiento: "</string>
     <plurals name="strd_robot_traded_fmt">
-        <item quantity="one">ficha intercambiada.</item>
-        <item quantity="other">%1$d fichas intercambiadas.</item>
+        <item quantity="one">intercambiar una ficha.</item>
+        <item quantity="many">intercambiar %1$d fichas.</item>
+        <item quantity="other">intercambiar %1$d fichas.</item>
     </plurals>
     <string name="strs_values_header_fmt">%1$s cantidad/valores:
 \n</string>
@@ -255,8 +263,9 @@
     <string name="dup_minutes_label">Minutos por turno</string>
     <string name="use_duptimer">Habilitar temporizador</string>
     <plurals name="confirm_nameddeletes_fmt">
-        <item quantity="one">¿Seguro que quieres eliminar el juego %1$s\? Esta acción no se puede deshacer.</item>
-        <item quantity="other">¿Seguro que quieres eliminar los juegos %1$s\? Esta acción no se puede deshacer.</item>
+        <item quantity="one">¿Estás seguro de que quieres borrar el juego %1$s\? Esta acción no se puede deshacer.</item>
+        <item quantity="many">¿Estás seguro de que quieres eliminar los juegos %1$s\? Esta acción no se puede deshacer.</item>
+        <item quantity="other">¿Estás seguro de que quieres eliminar los juegos %1$s\? Esta acción no se puede deshacer.</item>
     </plurals>
     <string name="button_delete_game">Borrar Partida</string>
     <string name="cellline">Bordes de las celdas</string>
@@ -466,7 +475,7 @@
     <string name="get_sms_number">Número de teléfono del dispositivo:</string>
     <string name="button_sms_add">Importa el contacto</string>
     <string name="empty_p2p_inviter">Actualmente no hay dispositivos accesibles a través de WiFiDirect que tengan CrossWords instalado.</string>
-    <string name="get_sms_title">Entrada manual</string>
+    <string name="get_sms_title">Acceso manual</string>
     <string name="sms_invite_title">Invitación por SMS</string>
     <string name="summary_conn_sms_fmt">Partida a jugar con %1$s</string>
     <string name="warn_unlimited">¿Estás seguro de que este número está en una cuenta con mensajes de texto ilimitados\? Toque \"Cancelar\" si no lo está.</string>
@@ -867,4 +876,109 @@
     <string name="lang_name_swedish">sueco</string>
     <string name="loc_filters_screen">Última pantalla</string>
     <string name="button_scan">Volver a escanear</string>
+    <string name="about_copyright">CrossWords para Android
+\nCopyright (C) 1998-2023 por Eric House. Este software libre/de código abierto está publicado bajo la Licencia Pública GNU.</string>
+    <string name="word_to_clip_fmt">Copiado \"%1$s\"</string>
+    <string name="str_resigned_fmt" formatted="false">[Renunció] %1$s: %2$d</string>
+    <string name="button_enable_bt">Activar el bluetooth</string>
+    <string name="min_len">Longitud mínima</string>
+    <string name="confirm_sms_willpay">Sí: pagaré todos los gastos del SMS al operador</string>
+    <string name="warn_nomobile_fmt">El número %1$s para %2$s no es un número \"móvil\". ¿Importar de todos modos\?</string>
+    <string name="button_decline">Rechazar</string>
+    <string name="new_app_avail">Pulsa para descargar e instalar</string>
+    <string name="invite_dict_missing_body_noname_fmt">Te han invitado a jugar a CrossWords utilizando la lista de palabras %2$s (para jugar en %3$s), pero no la tienes instalada. ¿Deseas descargar la lista de palabras\?</string>
+    <string name="warn_bt_havegames">¿Estás seguro de que quieres desactivar el juego por Bluetooth\?
+\n
+\nEl bluetooth es útil para intercambiar las jugadas, y especialmente invitaciones, con dispositivos cercanos. A menos que estés seguro de que no vas a jugar contra nadie que esté cerca, no hay nada malo en dejarlo activado.</string>
+    <string name="new_bt_body_fmt">Un jugador %1$s quiere iniciar una partida</string>
+    <string name="inform_dict_diffdict_fmt">Estás utilizando la lista de palabras %1$s pero el anfitrión del juego está utilizando %2$s. ¿Te gustaría usar %3$s también\?</string>
+    <string name="connstat_lastreceipt_fmt">La última recepción fue %1$s</string>
+    <string name="summary_conn">Partida en curso</string>
+    <string name="download_done">Descarga finalizada</string>
+    <string name="button_addBlank">+En blanco</string>
+    <string name="inform_dict_title">Lista de palabras incorrecta</string>
+    <string name="summary_gameover">Fin del juego</string>
+    <string name="str_winner_fmt" formatted="false">[Ganador] %1$s: %2$d</string>
+    <string name="menu_hint_next">Siguiente pista</string>
+    <plurals name="invite_p2p_desc_fmt">
+        <item quantity="one">Por favor, selecciona el nombre del dispositivo WiFiDirect al que deseas invitar a tu juego y, a continuación, pulsa \"%2$s\".</item>
+        <item quantity="many">Por favor, selecciona los %1$d nombres de los dispositivos WiFiDirect a los que quieres invitar a tu juego, a continuación pulsa \"%2$s\".</item>
+        <item quantity="other">Por favor, selecciona los %1$d nombres de los dispositivos WiFiDirect a los que quieres invitar a tu juego, a continuación pulsa \"%2$s\".</item>
+    </plurals>
+    <string name="menu_flip">Tablero giratorio</string>
+    <string name="summary_wait_guest">Sin conexión</string>
+    <string name="connstat_net_fmt">Estado de la red para el juego (ID=%2$X) conectado a través de %1$s:</string>
+    <string name="invite_notice_title">Una nueva partida mediante invitación</string>
+    <string name="menu_net_stat">Estado de la red</string>
+    <string name="button_enable_sms">Activar los SMS</string>
+    <string name="connstat_relay">Internet/retransmisión</string>
+    <string name="about_web">Para obtener un manual (antiguo) o el código fuente, consulta: http://xwords.sf.net/android.php. Para informar de errores, sugerir funciones, ofrecerte a ayudar, etc., envía un correo electrónico a: xwords@eehouse.org.</string>
+    <string name="filter_sum_pat_fmt">Mostrando: %1$s, longitudes %2$d-%3$d (%4$d palabras)</string>
+    <string name="changes_title">Últimos cambios</string>
+    <string name="button_useconfig">Aplicar un filtro</string>
+    <string name="about_credits">Créditos: Íconos de la barra de herramientas de Sarah Chu. Iconos de la barra de navegación del Noun Project: “archivo” de Trendy; “revancha” de Becris; y “intercambio” por iconomanía. Traducciones por voluntarios a través de weblate.org.</string>
+    <string name="show_tiles_menu">Mostrar los mosaicos</string>
+    <plurals name="warn_mqtt_games_fmt">
+        <item quantity="one">"
+\n
+\n(Ahora tienes una partida activa usando internet)"</item>
+        <item quantity="many">"
+\n
+\n(Tienes %1$d partidas activas usando internet)"</item>
+        <item quantity="other">"
+\n
+\n(Tienes %1$d partidas activas usando internet)"</item>
+    </plurals>
+    <plurals name="confirm_clear_sms_fmt">
+        <item quantity="one">¿Estás seguro de que quieres borrar el número de teléfono marcado\?</item>
+        <item quantity="many">¿Seguro que quieres borrar los %1$d números de teléfono marcados\?</item>
+        <item quantity="other">¿Seguro que quieres borrar los %1$d números de teléfono marcados\?</item>
+    </plurals>
+    <string name="menu_net_url">Copiar la dirección URL</string>
+    <string name="menu_about_peers">Estado de los compañeros</string>
+    <string name="get_sms_name">Nombre del contacto (opcional):</string>
+    <string name="connstat_noreceipt">No se han recibido mensajes.</string>
+    <string name="error_min_gt_max">La longitud mínima no puede ser mayor que el valor máximo.</string>
+    <string name="password_hint">(Opcional)</string>
+    <string name="max_len">Longitud máxima</string>
+    <plurals name="confirm_clear_bt_fmt">
+        <item quantity="one">¿Estás seguro de que quieres olvidar el dispositivo verificado\?</item>
+        <item quantity="many">¿Estás seguro de que quieres olvidar %1$d dispositivos verificados\?</item>
+        <item quantity="other">¿Estás seguro de que quieres olvidar %1$d dispositivos verificados\?</item>
+    </plurals>
+    <string name="connstat_lastother_unsucc_fmt">(La última transmisión exitosa fue %1$s)</string>
+    <string name="confirm_sms_unlimited">Sí: tengo mensajes de texto ilimitados</string>
+    <plurals name="invite_sms_desc_fmt">
+        <item quantity="one">Por favor, marca el número de teléfono al que quieres invitar a tu nuevo juego, luego toca \"%2$s\".</item>
+        <item quantity="many">Por favor, marca los %1$d números de teléfono a los que quieres invitar a tu nuevo juego, luego toca \"%2$s\".</item>
+        <item quantity="other">Por favor, marca los %1$d números de teléfono a los que quieres invitar a tu nuevo juego, luego toca \"%2$s\".</item>
+    </plurals>
+    <string name="str_placer_fmt" formatted="false">[#%1$d] %2$s: %3$d</string>
+    <string name="confirm_sms_leave">No: dejar desactivado</string>
+    <string name="invite_p2p_desc_extra">Sólo se muestra(n) (el)los dispositivo(s) que está(n) actualmente disponible(s). Si no se muestra un dispositivo cercano, asegurate de que la conexión WiFi está activada, que CrossWords está instalado y que la reproducción a través de WiFi Direct está activada.</string>
+    <string name="download_failed">Descarga fallida</string>
+    <string name="alrt_bad_filter">No se puede aplicar el filtro.</string>
+    <plurals name="warn_bt_games_fmt">
+        <item quantity="one">"
+\n
+\n(Tienes una partida activa usando Bluetooth)"</item>
+        <item quantity="many">"
+\n
+\n(Tienes %1$d partidas activas usando Bluetooth)"</item>
+        <item quantity="other">"
+\n
+\n(Tienes %1$d partidas activas usando Bluetooth)"</item>
+    </plurals>
+    <string name="no_dict_for_move_title">Movimiento perdido</string>
+    <string name="inform_dict_download">" (Tendrás que descargarlo primero)"</string>
+    <string name="inform_dict_diffversion_fmt">Tú y el anfitrión de este juego estáis usando versiones diferentes para las listas de palabras %1$s.</string>
+    <string name="board_menu_undo_current">Deshacer/Rehacer</string>
+    <string name="warn_sms_disabled">El juego a través de SMS está actualmente desactivado. No se enviarán jugadas por SMS.
+\n
+\nPuedes activar el juego a través de SMS ahora o más tarde.</string>
+    <string name="menu_chat">Chat</string>
+    <string name="no_dict_for_move_fmt">Pulsa para descargar la lista de palabras %1$s y recuperarla</string>
+    <string name="confirm_sms_prompt">¿Permitir la reproducción de SMS de datos\?</string>
+    <string name="enable_sms">Permitir los juegos a través de SMS</string>
+    <string name="invite_nbs_desc">A continuación, se enviará un mensaje de texto ese(os) número(s) de teléfono(s). Si CrossWords está instalado y tiene los permisos necesarios, recibirá(n) la invitación y podrá(n) empezar a jugar.</string>
 </resources>
