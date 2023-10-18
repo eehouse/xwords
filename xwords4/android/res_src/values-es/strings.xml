@@ -1174,4 +1174,9 @@
     <string name="pause_title">Juego pausado</string>
     <string name="choose_expl_default_net">Iniciar un juego en red utilizando los valores predeterminados actuales</string>
     <string name="confirm_get_locdict_fmt">Su dispositivo está configurado para %1$s. ¿Le gustaría descargar una lista de palabras para poder jugar a CrossWords en %1$s\?</string>
+    <string name="waiting_host_expl_multi">En este caso, debido a que el juego espera que se conecte algo más que este dispositivo, también podría significar que aún no se ha invitado a todos.</string>
+    <string name="disable_nag_summary">No me avises por mucho que sea mi turno</string>
+    <string name="waiting_host_expl">Este juego está esperando que el dispositivo anfitrión comience el juego. Por lo general, eso significa que el anfitrión no se está comunicando (¿está temporalmente fuera de línea\?)</string>
+    <string name="warn_no_comms">Todo juego en red debe tener al menos una forma de comunicarse. Si no tienes opciones de conexión predeterminadas, cada nuevo juego en red deberá configurarse manualmente.</string>
+    <string name="nfc_just_tap">Para invitar a través de NFC, simplemente toca la parte posterior de este dispositivo con el que deseas invitar, en cualquier momento que el juego esté abierto.</string>
 </resources>
