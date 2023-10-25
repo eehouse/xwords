@@ -1144,8 +1144,9 @@ elemToStream( MsgQueueElem* elem, void* closure )
     if ( 0 == elem->smp.len ) {
         XWStreamCtxt* nliStream = mem_stream_make_raw( MPPARM(comms->mpool)
                                                        dutil_getVTManager(comms->dutil));
-        NetLaunchInfo* nli = (NetLaunchInfo*)elem->smp.buf;
-        nli_saveToStream( nli, nliStream );
+        NetLaunchInfo nli;
+        XP_MEMCPY( &nli, elem->smp.buf, sizeof(nli) );
+        nli_saveToStream( &nli, nliStream );
         XP_U16 nliLen = stream_getSize( nliStream );
         stream_putU32VL( stream, nliLen );
         stream_getFromStream( stream, nliStream, nliLen );
@@ -2135,9 +2136,10 @@ sendMsg( const CommsCtxt* comms, XWEnv xwe, MsgQueueElem* elem,
 #ifdef XWFEATURE_COMMS_INVITE
                     } else if ( isInvite ) {
                         if ( !!comms->procs.sendInvt ) {
-                            NetLaunchInfo* nli = (NetLaunchInfo*)elem->smp.buf;
+                            NetLaunchInfo nli;
+                            XP_MEMCPY( &nli, elem->smp.buf, sizeof(nli) );
                             XP_ASSERT( 0 != elem->smp.createdStamp );
-                            nSent = (*comms->procs.sendInvt)( xwe, nli,
+                            nSent = (*comms->procs.sendInvt)( xwe, &nli,
                                                               elem->smp.createdStamp,
                                                               &addr, typ,
                                                               comms->procs.closure );
@@ -2217,8 +2219,9 @@ comms_resendAll( CommsCtxt* comms, XWEnv xwe, CommsConnType filter, XP_Bool forc
                 for ( XP_U32 st = 0; addr_iter( &rec->addr, &typ, &st ); ) {
                     if ( COMMS_CONN_NONE == filter || typ == filter ) {
                         if ( IS_INVITE(elem) ) {
-                            NetLaunchInfo* nli = (NetLaunchInfo*)head->buf;
-                            (void)(*comms->procs.sendInvt)( xwe, nli,
+                            NetLaunchInfo nli;
+                            XP_MEMCPY( &nli, head->buf, sizeof(nli) );
+                            (void)(*comms->procs.sendInvt)( xwe, &nli,
                                                             head->createdStamp,
                                                             &rec->addr, typ,
                                                             comms->procs.closure );
