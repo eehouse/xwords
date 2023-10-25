@@ -235,8 +235,7 @@ public class DictBrowseDelegate extends DelegateBase
     {
         Bundle args = getArguments();
         String name = null == args? null : args.getString( DICT_NAME );
-        boolean isCustom = null == args ? false
-            : args.getBoolean( DICT_CUSTOM, false );
+        boolean isCustom = null != args && args.getBoolean( DICT_CUSTOM, false );
         Assert.assertNotNull( name );
         if ( null == name ) {
             finish();
