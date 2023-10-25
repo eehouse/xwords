@@ -18,9 +18,11 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+// These two change with every release.
+def VERSION_CODE_BASE = 195
+def VERSION_NAME = '4.4.199'
+
 def INITIAL_CLIENT_VERS = 10
-def VERSION_CODE_BASE = 194
-def VERSION_NAME = '4.4.198'
 def BUILD_INFO_NAME = "build-info.txt"
 def LAST_COMMIT_FILE = "last-commit.txt"
 
