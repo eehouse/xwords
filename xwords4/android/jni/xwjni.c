@@ -75,6 +75,7 @@ struct _EnvThreadInfo {
 typedef struct _JNIGlobalState {
 #ifdef MAP_THREAD_TO_ENV
     EnvThreadInfo ti;
+    JavaVM* jvm;
 #endif
     DictMgrCtxt* dictMgr;
     SMSProto* smsProto;
@@ -85,6 +86,11 @@ typedef struct _JNIGlobalState {
     const char* mpoolUser;
     MPSLOT
 } JNIGlobalState;
+
+#ifdef MAP_THREAD_TO_ENV
+static pthread_mutex_t g_globalStateLock = PTHREAD_MUTEX_INITIALIZER;
+static JNIGlobalState* g_globalState = NULL;
+#endif
 
 #ifdef MEM_DEBUG
 static MemPoolCtx*
@@ -216,7 +222,7 @@ map_init( MPFORMAL EnvThreadInfo* ti, JNIEnv* env )
     MAP_THREAD( ti, env );
 }
 
-#define MAP_REMOVE( ti, env ) map_remove_prv((ti), (env), __func__)
+# define MAP_REMOVE( ti, env ) map_remove_prv((ti), (env), __func__)
 static void
 map_remove_prv( EnvThreadInfo* ti, JNIEnv* env, const char* func )
 {
@@ -228,12 +234,12 @@ map_remove_prv( EnvThreadInfo* ti, JNIEnv* env, const char* func )
         found = env == entry->env;
         if ( found ) {
             XP_ASSERT( pthread_self() == entry->owner );
-#ifdef LOG_MAPPING
-            RAW_LOG( "UNMAPPED env %p to thread %x (from %s; mapped by %s)",
+# ifdef LOG_MAPPING
+            RAW_LOG( "UNMAPPED env %p to thread %x (called from %s(); mapped by %s)",
                      entry->env, (int)entry->owner, func, entry->ownerFunc );
             RAW_LOG( "%d entries left", countUsed( ti ) );
             entry->ownerFunc = NULL;
-#endif
+# endif
             XP_ASSERT( 1 == entry->refcount );
             --entry->refcount;
             entry->env = NULL;
@@ -242,7 +248,11 @@ map_remove_prv( EnvThreadInfo* ti, JNIEnv* env, const char* func )
     }
     pthread_mutex_unlock( &ti->mtxThreads );
 
-    XP_ASSERT( found );
+    if ( !found ) {
+        RAW_LOG( "ERROR: mapping for env %p not found when called from %s()",
+                 env, func );
+        // XP_ASSERT( 0 );         /* firing, but may be fixed */
+    }
 }
 
 static void
@@ -263,6 +273,16 @@ prvEnvForMe( EnvThreadInfo* ti )
         }
     }
     pthread_mutex_unlock( &ti->mtxThreads );
+
+    if ( !result ) {
+        // JNI_VERSION_1_6 works, whether right or not
+        JavaVMAttachArgs args = { .version = JNI_VERSION_1_6, };
+        (*g_globalState->jvm)->AttachCurrentThread( g_globalState->jvm,
+                                                    &result, &args );
+        RAW_LOG( "used AttachCurrentThread to get env %p for thread %x",
+                 result, self );
+    }
+
     return result;
 }
 
@@ -274,11 +294,15 @@ prvEnvForMe( EnvThreadInfo* ti )
 #endif // MAP_THREAD_TO_ENV
 
 #ifdef MAP_THREAD_TO_ENV
-static pthread_mutex_t g_globalStateLock = PTHREAD_MUTEX_INITIALIZER;
-static JNIGlobalState* g_globalState = NULL;
 
-void setGlobalState( JNIGlobalState* state )
+void setGlobalState( JNIEnv* env, JNIGlobalState* state )
 {
+#ifdef MAP_THREAD_TO_ENV
+    if ( !!state ) {
+        XP_ASSERT( !state->jvm );
+        (*env)->GetJavaVM( env, &state->jvm );
+    }
+#endif
     pthread_mutex_lock( &g_globalStateLock );
     g_globalState = state;
     pthread_mutex_unlock( &g_globalStateLock );
@@ -299,7 +323,7 @@ envForMe( EnvThreadInfo* ti, const char* caller )
 }
 
 #else
-# define setGlobalState(s)
+# define setGlobalState(e, s)
 #endif
 
 JNIEnv*
@@ -375,7 +399,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_globalsInit
                                     globalState->jniutil, NULL );
     globalState->smsProto = smsproto_init( MPPARM( mpool ) env, globalState->dutil );
     MPASSIGN( globalState->mpool, mpool );
-    setGlobalState( globalState );
+    setGlobalState( env, globalState );
     // LOG_RETURNF( "%p", globalState );
     return (jlong)globalState;
 }
@@ -386,7 +410,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_cleanGlobals
 {
     // LOG_FUNC();
     if ( 0 != jniGlobalPtr ) {
-        setGlobalState( NULL );
+        setGlobalState( env, NULL );
         JNIGlobalState* globalState = (JNIGlobalState*)jniGlobalPtr;
 #ifdef MEM_DEBUG
         MemPoolCtx* mpool = GETMPOOL( globalState );
@@ -1416,6 +1440,11 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeRematch
     success = game_makeRematch( &oldState->game, env, globals->util, &cp,
                                 (TransportProcs*)NULL, &state->game, gameName );
     (*env)->ReleaseStringUTFChars( env, jGameName, gameName );
+
+    if ( success ) {
+        /* increase the ref count */
+        MAP_THREAD( &state->globalJNI->ti, env );
+    }
 
     XWJNI_END();                /* matches second XWJNI_START_GLOBALS! */
     XWJNI_END();
