@@ -1,6 +1,4 @@
-
 os: linux
-virt: lxd
 dist: xenial
 git:
   depth: false
@@ -36,7 +34,7 @@ before_install:
 - openssl aes-256-cbc -K $encrypted_8436f2891714_key -iv $encrypted_8436f2891714_iv
   -in id_rsa_uploader.enc -out /tmp/id_rsa_uploader -d
 - chmod 600 \/tmp\/id_rsa_uploader
-- sudo apt-get -qq update --allow-unauthenticated
+- sudo apt-get -qq update
 - sudo apt-get install -y python3-lxml imagemagick
 script:
 - GITREV="$(git describe --tags --dirty)"
