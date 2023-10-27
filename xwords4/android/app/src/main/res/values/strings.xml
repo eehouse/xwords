@@ -2645,6 +2645,9 @@
     <!-- menu for loading/importing app data -->
     <string name="gamel_menu_loaddb">Import app data</string>
 
+    <!-- Quit app menu (DEBUG builds only) -->
+    <string name="gamel_menu_restart">Restart app</string>
+
     <!-- Button to move forward with exporting after choosing data types -->
     <string name="archive_button_store">Export</string>
     <!-- Button to move forward with importing after choosing data types -->

@@ -154,4 +154,8 @@
               />
       </menu>
     </item>
+
+    <item android:id="@+id/games_menu_restart"
+          android:title="@string/gamel_menu_restart"
+          />
 </menu>

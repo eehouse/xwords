@@ -546,6 +546,7 @@ public class GamesListDelegate extends ListDelegateBase
         R.id.games_submenu_logs,
         R.id.games_menu_copyDevid,
         R.id.games_menu_setDevid,
+        R.id.games_menu_restart,
     };
     private static final int[] NOSEL_ITEMS = {
         R.id.games_menu_newgroup,
@@ -1959,6 +1960,10 @@ public class GamesListDelegate extends ListDelegateBase
 
         case R.id.games_menu_setDevid:
             showDialogFragment( DlgID.SET_MQTTID );
+            break;
+
+        case R.id.games_menu_restart:
+            ProcessPhoenix.triggerRebirth( m_activity );
             break;
 
         case R.id.games_menu_timerStats:
