@@ -121,14 +121,16 @@ void deleteLocalRefs( JNIEnv* env, ... );
 
 JNIEnv* waitEnvFromGlobals();
 
+#define N_DATA_PACKETS 4
 typedef struct _MTPData {
     JNIEnv* env;
     int count;
-    const XP_UCHAR* topics[4];
-    jbyteArray jPackets[4];
-    XP_UCHAR storage[256];
+    const XP_UCHAR* topics[N_DATA_PACKETS];
+    jbyteArray jPackets[N_DATA_PACKETS];
+    XP_UCHAR storage[N_DATA_PACKETS*128];
     int offset;
 } MTPData;
+#undef N_DATA_PACKETS
 
 void msgAndTopicProc( void* closure, const XP_UCHAR* topic,
                       const XP_U8* msgBuf, XP_U16 msgLen );

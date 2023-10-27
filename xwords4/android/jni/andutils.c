@@ -854,17 +854,24 @@ msgAndTopicProc( void* closure, const XP_UCHAR* topic,
     MTPData* mtp = (MTPData*)closure;
     JNIEnv* env = mtp->env;
 
-    const XP_UCHAR* ptr = mtp->topics[mtp->count] = &mtp->storage[mtp->offset];
-    size_t siz = XP_SNPRINTF( (char*)ptr, VSIZE(mtp->storage) - mtp->offset,
-                              "%s", topic );
-    XP_ASSERT( siz < VSIZE(mtp->storage) - mtp->offset );
-    XP_USE( siz );
-    mtp->offset += 1 + XP_STRLEN(ptr);
+    if ( VSIZE(mtp->topics) <= mtp->count ) {
+        XP_LOGFF( "exausted space for topics; dropping" );
+    } else {
+        const XP_UCHAR* ptr = &mtp->storage[mtp->offset];
+        size_t siz = XP_SNPRINTF( (char*)ptr, VSIZE(mtp->storage) - mtp->offset,
+                                  "%s", topic );
+        if ( siz >= VSIZE(mtp->storage) - mtp->offset ) {
+            XP_LOGFF( "exausted space for data; dropping" );
+        } else {
+            mtp->topics[mtp->count] = ptr;
+            mtp->offset += 1 + XP_STRLEN(ptr);
 
-    mtp->jPackets[mtp->count] = makeByteArray( env, msgLen, (const jbyte*)msgBuf );
+            mtp->jPackets[mtp->count] = makeByteArray( env, msgLen, (const jbyte*)msgBuf );
 
-    ++mtp->count;
-    XP_ASSERT( mtp->count < VSIZE(mtp->topics) );
+            ++mtp->count;
+            XP_LOGFF( "mtp->count now: %d", mtp->count );
+        }
+    }
 }
 
 jobject
