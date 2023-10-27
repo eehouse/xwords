@@ -1,3 +1,7 @@
+
+os: linux
+virt: lxd
+dist: xenial
 git:
   depth: false
 language: android
