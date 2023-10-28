@@ -104,6 +104,14 @@ tickleQueue( MQTTConStorage* storage )
     ADD_ONETIME_IDLE( queueIdle, storage );
 }
 
+// Ubuntu 22.4 is at 2.72.4 right now. Debian bookworm at 2.74.6. Ubuntu 20.4
+// is at 2.64.6
+#if GLIB_CHECK_VERSION(2,68,0)
+# define G_MEMDUP(a,b) g_memdup2((a), (b))
+#else
+# define G_MEMDUP(a,b) g_memdup((a), (b))
+#endif
+
 /* Add to queue if not already there */
 static void
 enqueue( MQTTConStorage* storage, const char* topic,
@@ -121,7 +129,7 @@ enqueue( MQTTConStorage* storage, const char* topic,
     } else {
         QElem* elem = g_malloc0( sizeof(*elem) );
         elem->topic = g_strdup( topic );
-        elem->buf = g_memdup( buf, len );
+        elem->buf = G_MEMDUP( buf, len );
         elem->len = len;
         storage->queue = g_slist_append( storage->queue, elem );
         XP_LOGFF( "added elem; len now %d", g_slist_length(storage->queue) );
