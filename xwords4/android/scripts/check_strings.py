@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 import re, sys, os, getopt
 from lxml import etree
@@ -7,14 +7,14 @@ g_formats = {}
 g_verbose = 0
 
 def usage(msg=''):
-    print
-    if msg: print 'Error:', msg
-    print "usage:", sys.argv[0], '[-c <??>]* [-l] [-h]'
-    print "   Compares all files res/values-??/strings.xml with res/values/strings.xml"
-    print "   and makes sure they're legal: same format strings, etc."
-    print "   -c options, if present, limit the check to what's specified"
-    print "   -l option lists available codes and exits"
-    print "   -h option prints this message"
+    print()
+    if msg: print( 'Error:', msg)
+    print( "usage:", sys.argv[0], '[-c <??>]* [-l] [-h]' )
+    print( "   Compares all files res/values-??/strings.xml with res/values/strings.xml" )
+    print( "   and makes sure they're legal: same format strings, etc." )
+    print( "   -c options, if present, limit the check to what's specified" )
+    print( "   -l option lists available codes and exits" )
+    print( "   -h option prints this message" )
     sys.exit(1)
 
 def associate( formats, name, fmt ):
@@ -41,9 +41,9 @@ def checkFormats( formats ):
             if not foundDigit:
                 break
         if curSet == testSet:
-            if 0 < g_verbose: print name, "is ok"
+            if 0 < g_verbose: print( name, "is ok")
         else:
-            print 'WARNING: sets different for', name, curSet, testSet
+            print( 'WARNING: sets different for', name, curSet, testSet)
 
 # Make sure that if there's a positional param of one type (%s or %d,
 # typically) in one set that the same positional in the other is of
@@ -71,12 +71,12 @@ def setIndicesAgree(set1, set2):
 def checkLangFormats( engData, langData, lang ):
     for key in langData:
         if not key in engData:
-            print 'WARNING: key', key, 'in', lang, 'but not in English'
+            print( 'WARNING: key', key, 'in', lang, 'but not in English')
         elif not setIndicesAgree(engData[key], langData[key] ):
-            print 'ERROR: illegal set mismatch', key,  'from', lang, engData[key], 'vs', langData[key]
+            print( 'ERROR: illegal set mismatch', key,  'from', lang, engData[key], 'vs', langData[key])
             sys.exit(1)
         elif not engData[key] == langData[key]:
-            print 'WARNING: set mismatch', key,  'from', lang, engData[key], 'vs', langData[key]
+            print( 'WARNING: set mismatch', key,  'from', lang, engData[key], 'vs', langData[key])
 
 def getForElem( data, pat, elem, name ):
     splits = re.split( pat, elem.text )
@@ -96,8 +96,8 @@ def getFormats( doc, pat, lang ):
         for elem in elem.findall('item'):
             quantity = elem.get('quantity')
             if not elem.text or 0 == len(elem.text):
-                print 'ERROR: plurals', name, 'has empty quantity', quantity, \
-                    'in file', lang
+                print( 'ERROR: plurals', name, 'has empty quantity', quantity, \
+                    'in file', lang)
                 sys.exit(1)
             else:
                 add = name + '/' + quantity
@@ -130,7 +130,7 @@ def main():
                        + ', '.join(allCodes) )
         elif option == '-h': usage()
         elif option == '-l':
-            print 'Available codes:', ', '.join(allCodes)
+            print( 'Available codes:', ', '.join(allCodes))
             sys.exit(0)
         else:
             usage()
@@ -141,7 +141,7 @@ def main():
     parser = etree.XMLParser(remove_blank_text=True, encoding="utf-8")
 
     # Load English
-    path = wd + '/../XWords4/res/values/strings.xml'
+    path = wd + '/../app/src/main/res/values/strings.xml'
     doc = etree.parse(path, parser)
     pat = re.compile( '(%\d\$[sd])', re.DOTALL | re.MULTILINE )
     engFormats = getFormats( doc, pat, 'en' )
