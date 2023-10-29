@@ -979,7 +979,11 @@ void
 android_debugff(const char* func, const char* file, const char* fmt, ...)
 {
     char buf[256];
-    snprintf( buf, sizeof(buf), "%s:%s(): %s", file, func, fmt );
+    const char* shortPath = 1 + strrchr(file, '/');
+    if ( !shortPath ) {
+        shortPath = file;
+    }
+    snprintf( buf, sizeof(buf), "%s:%s(): %s", shortPath, func, fmt );
 
     va_list ap;
     va_start( ap, fmt );
