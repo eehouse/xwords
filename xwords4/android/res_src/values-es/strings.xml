@@ -1181,4 +1181,5 @@
     <string name="nfc_just_tap">Para invitar a través de NFC, simplemente toca la parte posterior de este dispositivo con el que deseas invitar, en cualquier momento que el juego esté abierto.</string>
     <string name="enable_sms_toself_summary">Omitir la radio cuando los números de teléfono son los mismos</string>
     <string name="gamel_menu_restart">Reiniciar la aplicación</string>
+    <string name="xlator">ARTEcnico</string>
 </resources>
