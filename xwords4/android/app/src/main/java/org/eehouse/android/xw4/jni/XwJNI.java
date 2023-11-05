@@ -173,7 +173,7 @@ public class XwJNI {
     public static TopicsAndPackets dvc_makeMQTTNoSuchGames( String addressee, int gameID )
     {
         Log.d( TAG, "dvc_makeMQTTNoSuchGames(to: %s, gameID: %X)", addressee, gameID );
-        DbgUtils.printStack( TAG );
+        // DbgUtils.printStack( TAG );
         return dvc_makeMQTTNoSuchGames( getJNI().m_ptrGlobals, addressee, gameID );
     }
 
@@ -549,6 +549,7 @@ public class XwJNI {
     public static native CommsAddrRec comms_getHostAddr( GamePtr gamePtr );
     public static native CommsAddrRec[] comms_getAddrs( GamePtr gamePtr );
     public static native void comms_dropHostAddr( GamePtr gamePtr, CommsConnType typ );
+    public static native boolean comms_setQuashed( GamePtr gamePtr );
     public static native int comms_resendAll( GamePtr gamePtr, boolean force,
                                               CommsConnType filter,
                                               boolean andAck );

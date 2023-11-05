@@ -348,6 +348,8 @@ public class DUtilCtxt {
 
     public void onGameGoneReceived( int gameID, CommsAddrRec from )
     {
+        GameUtils.onGameGone( m_context, gameID );
+
         Assert.assertTrueNR( from.contains( CommsAddrRec.CommsConnType.COMMS_CONN_MQTT ) );
         MQTTUtils.handleGameGone( m_context, from, gameID );
     }

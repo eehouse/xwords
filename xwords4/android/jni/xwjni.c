@@ -2664,6 +2664,20 @@ Java_org_eehouse_android_xw4_jni_XwJNI_comms_1dropHostAddr
     LOG_RETURN_VOID();
 }
 
+JNIEXPORT jboolean JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_comms_1setQuashed
+( JNIEnv* env, jclass C, GamePtrType gamePtr )
+{
+    jboolean result = false;
+    XWJNI_START(gamePtr);
+    XP_ASSERT( !!state->game.comms );
+    if ( NULL != state->game.comms ) {
+        result = comms_setQuashed( state->game.comms, XP_TRUE );
+    }
+    XWJNI_END();
+    return result;
+}
+
 #ifdef DEBUG
 JNIEXPORT void JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_comms_1setAddrDisabled

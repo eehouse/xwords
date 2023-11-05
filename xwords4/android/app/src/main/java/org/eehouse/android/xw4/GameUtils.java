@@ -1404,6 +1404,38 @@ public class GameUtils {
                                 body, rowid );
     }
 
+    // PENDING This -- finding or opening game, doing something, then saving
+    // and closing if it was opened -- gets done a lot. Try refactoring.
+    public static void onGameGone( Context context, int gameID )
+    {
+        long[] rowids = DBUtils.getRowIDsFor( context, gameID );
+        if ( null == rowids || 0 == rowids.length ) {
+            Log.d( TAG, "onGameGone(): no rows for game %X", gameID );
+        } else {
+            for ( long rowid: rowids ) {
+                try ( JNIThread thread = JNIThread.getRetained( rowid ) ) {
+                    if ( null != thread ) {
+                        XwJNI.comms_setQuashed( thread.getGamePtr() );
+                        // JNIThread saves automatically on release
+                    } else {
+                        try ( GameLock lock = GameLock.lock( rowid, 300 ) ) {
+                            if ( null != lock ) {
+                                CurGameInfo gi = new CurGameInfo( context );
+                                try ( GamePtr gamePtr = loadMakeGame( context, gi, lock ) ) {
+                                    if ( null != gamePtr ) {
+                                        if ( XwJNI.comms_setQuashed( gamePtr ) ) {
+                                            saveGame( context, gamePtr, gi, lock, false );
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     private static void tellDied( Context context, GameLock lock,
                                   boolean informNow )
     {

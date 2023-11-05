@@ -238,6 +238,8 @@ struct CommsCtxt {
 };
 
 #define FLAG_HARVEST_DONE 1
+#define FLAG_QUASHED 2
+#define QUASHED(COMMS) (0 != ((COMMS)->flags & FLAG_QUASHED))
 
 #if defined XWFEATURE_IP_DIRECT || defined XWFEATURE_DIRECTIP
 typedef enum {
@@ -2082,7 +2084,9 @@ sendMsg( const CommsCtxt* comms, XWEnv xwe, MsgQueueElem* elem,
             addrP = &comms->recs->addr;
         }
     }
-    if ( NULL == addrP ) {
+    if ( QUASHED(comms) ) {
+        // XP_LOGFF( "not sending; comms is quashed" );
+    } else if ( NULL == addrP ) {
         XP_LOGFF( TAGFMT() "no addr for channel %x; dropping!'", TAGPRMS, channelNo );
         // XP_ASSERT(0);           /* firing */
     } else {
@@ -2235,7 +2239,9 @@ comms_resendAll( CommsCtxt* comms, XWEnv xwe, CommsConnType filter, XP_Bool forc
     XP_ASSERT( !!comms );
 
     XP_U32 now = dutil_getCurSeconds( comms->dutil, xwe );
-    if ( !force && (now < comms->nextResend) ) {
+    if ( QUASHED(comms) ) {
+        // XP_LOGFF( "not sending; comms is quashed" );
+    } else if ( !force && (now < comms->nextResend) ) {
         XP_LOGFF( "aborting: %d seconds left in backoff",
                  comms->nextResend - now );
     } else {
@@ -3256,6 +3262,23 @@ comms_isConnected( const CommsCtxt* const comms )
     return result;
 }
 
+XP_Bool
+comms_setQuashed( CommsCtxt* comms, XP_Bool quashed )
+{
+    XP_U8 flags = comms->flags;
+    if ( quashed ) {
+        flags |= FLAG_QUASHED;
+    } else {
+        flags &= ~FLAG_QUASHED;
+    }
+    XP_Bool changed = flags != comms->flags;
+    if ( changed ) {
+        comms->flags = flags;
+        XP_LOGFF( "(quashed=%s): changing state", boolToStr(quashed) );
+    }
+    return changed;
+}
+
 #ifdef XWFEATURE_KNOWNPLAYERS
 void
 comms_gatherPlayers( CommsCtxt* comms, XWEnv xwe, XP_U32 created )
@@ -3459,9 +3482,9 @@ comms_getStats( const CommsCtxt* comms, XWStreamCtxt* stream )
     XP_UCHAR buf[100];
 
     XP_SNPRINTF( (XP_UCHAR*)buf, sizeof(buf), 
-                 (XP_UCHAR*)"role: %s; msg queue len: %d\n",
+                 (XP_UCHAR*)"role: %s; msg queue len: %d; quashed: %s;\n",
                  comms->isServer ? "host" : "guest",
-                 comms->queueLen );
+                 comms->queueLen, boolToStr(QUASHED(comms)) );
     stream_catString( stream, buf );
 
     forEachElem( (CommsCtxt*)comms, statsProc, stream );
