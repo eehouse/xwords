@@ -182,15 +182,16 @@ and_xport_send( XWEnv xwe, const SendMsgsPacket* const msgs,
 }
 
 static void
-and_xport_countChanged( XWEnv xwe, void* closure, XP_U16 count )
+and_xport_countChanged( XWEnv xwe, void* closure, XP_U16 count,
+                        XP_Bool quashed )
 {
     AndTransportProcs* aprocs = (AndTransportProcs*)closure;
     ASSERT_ENV( aprocs->ti, xwe );
     if ( NULL != aprocs && NULL != aprocs->jxport ) {
         JNIEnv* env = xwe;
-        const char* sig = "(I)V";
+        const char* sig = "(IZ)V";
         jmethodID mid = getMethodID( env, aprocs->jxport, "countChanged", sig );
-        (*env)->CallVoidMethod( env, aprocs->jxport, mid, count );
+        (*env)->CallVoidMethod( env, aprocs->jxport, mid, count, quashed );
     }
 }
 

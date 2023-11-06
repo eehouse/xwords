@@ -146,7 +146,7 @@ public class MultiMsgSink implements TransportProcs {
     }
 
     @Override
-    public void countChanged( int newCount )
+    public void countChanged( int newCount, boolean quashed )
     {
         // Log.d( TAG, "countChanged(new=%d); dropping", newCount );
     }

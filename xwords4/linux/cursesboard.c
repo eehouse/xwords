@@ -126,7 +126,8 @@ static XP_Bool relay_sendNoConn_curses( XWEnv xwe, const XP_U8* msg, XP_U16 len,
                                         const XP_UCHAR* msgNo,
                                         const XP_UCHAR* relayID, void* closure );
 #endif
-static void curses_countChanged( XWEnv xwe, void* closure, XP_U16 newCount );
+static void curses_countChanged( XWEnv xwe, void* closure, XP_U16 newCount,
+                                 XP_Bool quashed );
 static XP_U32 curses_getFlags( XWEnv xwe, void* closure );
 #ifdef RELAY_VIA_HTTP
 static void relay_requestJoin_curses( void* closure, const XP_UCHAR* devID,
@@ -1630,10 +1631,11 @@ relay_requestJoin_curses( void* closure, const XP_UCHAR* devID, const XP_UCHAR* 
 
 static void
 curses_countChanged( XWEnv XP_UNUSED(xwe), void* XP_UNUSED(closure),
-                     XP_U16 XP_UNUSED_DBG(newCount) )
+                     XP_U16 XP_UNUSED_DBG(newCount),
+                     XP_Bool XP_UNUSED_DBG(quashed) )
 {
     /* discon_ok2.py depends on this log entry */
-    XP_LOGFF( "(newCount=%d)", newCount );
+    XP_LOGFF( "(newCount=%d, quashed=%s)", newCount, boolToStr(quashed) );
 }
 
 #ifdef COMMS_XPORT_FLAGSPROC

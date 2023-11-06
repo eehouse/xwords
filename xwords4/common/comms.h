@@ -107,7 +107,8 @@ typedef void (*RelayRequestJoinProc)( XWEnv xwe, void* closure, const XP_UCHAR* 
 # endif
 #endif
 
-typedef void (*MsgCountChange)( XWEnv xwe, void* closure, XP_U16 msgCount );
+typedef void (*MsgCountChange)( XWEnv xwe, void* closure, XP_U16 msgCount,
+                                XP_Bool quashed );
 typedef void (*RoleChangeProc)( XWEnv xwe, void* closure, XP_Bool amNowGuest );
 
 typedef enum {
@@ -244,7 +245,7 @@ XP_Bool comms_checkComplete( const CommsAddrRec* const addr );
 
 XP_Bool comms_canChat( const CommsCtxt* comms );
 XP_Bool comms_isConnected( const CommsCtxt* const comms );
-XP_Bool comms_setQuashed( CommsCtxt* comms, XP_Bool quashed );
+XP_Bool comms_setQuashed( CommsCtxt* comms, XWEnv xwe, XP_Bool quashed );
 
 #ifdef RELAY_VIA_HTTP
 void comms_gameJoined( CommsCtxt* comms, const XP_UCHAR* connname, XWHostID hid );

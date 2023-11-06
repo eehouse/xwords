@@ -38,9 +38,9 @@ public interface TransportProcs {
     boolean transportSendInvt( CommsAddrRec addr, CommsConnType conType,
                                NetLaunchInfo nli, int timestamp );
 
-    void countChanged( int newCount );
+    void countChanged( int newCount, boolean quashed );
 
     public interface TPMsgHandler {
-        public void tpmCountChanged( int newCount );
+        public void tpmCountChanged( int newCount, boolean quashed );
     }
 }

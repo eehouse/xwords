@@ -862,8 +862,9 @@ gameGoneGTK( void* closure, const CommsAddrRec* XP_UNUSED(from), XP_U32 gameID )
     if ( 0 == nRowIDs ) {
         XP_LOGFF( "Old msg? Game %X no longer here", gameID );
     } else {
-        gchar buf[64];
-        snprintf( buf, VSIZE(buf), "game %d has been deleted on a remote device", gameID );
+        gchar buf[128];
+        snprintf( buf, VSIZE(buf), "game %X has been deleted on a remote device",
+                  gameID );
         gtktell( apg->window, buf );
     }
 }

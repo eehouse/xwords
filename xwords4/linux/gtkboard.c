@@ -472,11 +472,13 @@ gtk_getFlags( XWEnv XP_UNUSED(xwe), void* closure )
 #endif
 
 static void
-countChanged_gtk( XWEnv XP_UNUSED(xwe), void* closure, XP_U16 newCount )
+countChanged_gtk( XWEnv XP_UNUSED(xwe), void* closure, XP_U16 newCount,
+                  XP_Bool quashed )
 {
     GtkGameGlobals* globals = (GtkGameGlobals*)closure;
     gchar buf[128];
-    snprintf( buf, VSIZE(buf), "pending count: %d", newCount );
+    snprintf( buf, VSIZE(buf), "pending count: %d%s", newCount,
+              quashed?"q":"");
     gtk_label_set_text( GTK_LABEL(globals->countLabel), buf );
 }
 

@@ -105,9 +105,9 @@ public class CommsTransport implements TransportProcs {
     }
 
     @Override
-    public void countChanged( int newCount )
+    public void countChanged( int newCount, boolean quashed )
     {
-        m_tpHandler.tpmCountChanged( newCount );
+        m_tpHandler.tpmCountChanged( newCount, quashed );
     }
 
     private int sendForAddr( Context context, CommsAddrRec addr,

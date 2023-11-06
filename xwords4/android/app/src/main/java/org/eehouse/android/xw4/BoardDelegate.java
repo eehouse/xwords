@@ -221,6 +221,8 @@ public class BoardDelegate extends DelegateBase
         OnClickListener lstnr;
         AlertDialog.Builder ab = makeAlertBuilder(); // used everywhere...
 
+        Assert.assertTrueNR( !isFinishing() );
+
         Dialog dialog;
         switch ( dlgID ) {
         case DLG_OKONLY: {
@@ -1445,10 +1447,9 @@ public class BoardDelegate extends DelegateBase
     // TransportProcs.TPMsgHandler interface
     //////////////////////////////////////////////////
     @Override
-    public void tpmCountChanged( final int newCount )
+    public void tpmCountChanged( final int newCount, final boolean quashed )
     {
-        // Log.d( TAG, "tpmCountChanged(newCount=%d)", newCount );
-        ConnStatusHandler.updateMoveCount( m_activity, newCount );
+        ConnStatusHandler.updateMoveCount( m_activity, newCount, quashed );
 
         final GameOverAlert goAlert = mGameOverAlert;
         if ( null != goAlert ) {

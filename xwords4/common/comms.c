@@ -1771,9 +1771,10 @@ comms_send( CommsCtxt* comms, XWEnv xwe, XWStreamCtxt* stream )
 static void
 notifyQueueChanged( const CommsCtxt* comms, XWEnv xwe )
 {
-    XP_U16 count = comms->queueLen;
     if ( !!comms->procs.countChanged ) {
-        (*comms->procs.countChanged)( xwe, comms->procs.closure, count );
+        XP_U16 count = comms->queueLen;
+        XP_Bool quashed = QUASHED(comms);
+        (*comms->procs.countChanged)( xwe, comms->procs.closure, count, quashed );
     }
 }
 
@@ -3263,7 +3264,7 @@ comms_isConnected( const CommsCtxt* const comms )
 }
 
 XP_Bool
-comms_setQuashed( CommsCtxt* comms, XP_Bool quashed )
+comms_setQuashed( CommsCtxt* comms, XWEnv xwe, XP_Bool quashed )
 {
     XP_U8 flags = comms->flags;
     if ( quashed ) {
@@ -3275,6 +3276,7 @@ comms_setQuashed( CommsCtxt* comms, XP_Bool quashed )
     if ( changed ) {
         comms->flags = flags;
         XP_LOGFF( "(quashed=%s): changing state", boolToStr(quashed) );
+        notifyQueueChanged( comms, xwe );
     }
     return changed;
 }

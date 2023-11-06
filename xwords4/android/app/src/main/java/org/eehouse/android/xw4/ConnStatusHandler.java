@@ -72,6 +72,7 @@ public class ConnStatusHandler {
 
     private static boolean[] s_showSuccesses = { false, false };
     private static int s_moveCount = 0;
+    private static boolean s_quashed = false;
 
     private static class SuccessRecord implements java.io.Serializable {
         public long lastSuccess;
@@ -364,10 +365,12 @@ public class ConnStatusHandler {
         }
     }
 
-    public static void updateMoveCount( Context context, int newCount )
+    public static void updateMoveCount( Context context, int newCount,
+                                        boolean quashed )
     {
         if ( XWPrefs.moveCountEnabled( context ) ) {
             s_moveCount = newCount;
+            s_quashed = quashed;
             invalidateParent();
         }
     }
@@ -490,8 +493,8 @@ public class ConnStatusHandler {
                                                     - scratchR.height()) );
                 drawIn( canvas, res, R.drawable.ic_multigame, scratchR );
 
-                if ( 0 < s_moveCount && XWPrefs.moveCountEnabled( context ) ) {
-                    String str = String.format( "%d", s_moveCount );
+                if ( (0 < s_moveCount || s_quashed) && XWPrefs.moveCountEnabled( context ) ) {
+                    String str = String.format( "%d%s", s_moveCount, s_quashed ? "q":"" );
                     s_fillPaint.setColor( Color.BLACK );
                     canvas.drawText( str, s_rect.left + (s_rect.width() / 2),
                                      s_rect.top + (s_rect.height()*2/3),

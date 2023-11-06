@@ -2672,7 +2672,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_comms_1setQuashed
     XWJNI_START(gamePtr);
     XP_ASSERT( !!state->game.comms );
     if ( NULL != state->game.comms ) {
-        result = comms_setQuashed( state->game.comms, XP_TRUE );
+        result = comms_setQuashed( state->game.comms, env, XP_TRUE );
     }
     XWJNI_END();
     return result;
