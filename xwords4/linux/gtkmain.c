@@ -395,36 +395,41 @@ handle_rematch_button( GtkWidget* XP_UNUSED(widget), void* closure )
 }
 
 static void
+delete_game( GtkAppGlobals* apg, sqlite3_int64 rowid )
+{
+    LaunchParams* params = apg->cag.params;
+    GameInfo gib;
+#ifdef DEBUG
+    XP_Bool success =
+#endif
+        gdb_getGameInfo( params->pDb, rowid, &gib );
+    XP_ASSERT( success );
+#ifdef XWFEATURE_RELAY
+    XP_U32 clientToken = makeClientToken( rowid, gib.seed );
+#endif
+    removeRow( apg, rowid );
+    gdb_deleteGame( params->pDb, rowid );
+
+#ifdef XWFEATURE_RELAY
+    XP_UCHAR devIDBuf[64] = {0};
+    gdb_fetch_safe( params->pDb, KEY_RDEVID, NULL, devIDBuf, sizeof(devIDBuf) );
+    if ( '\0' != devIDBuf[0] ) {
+        relaycon_deleted( params, devIDBuf, clientToken );
+    } else {
+        XP_LOGF( "%s: not calling relaycon_deleted: no relayID", __func__ );
+    }
+#endif
+    g_object_unref( gib.snap );
+}
+
+static void
 handle_delete_button( GtkWidget* XP_UNUSED(widget), void* closure )
 {
     GtkAppGlobals* apg = (GtkAppGlobals*)closure;
-    LaunchParams* params = apg->cag.params;
     guint len = apg->selRows->len;
     for ( guint ii = 0; ii < len; ++ii ) {
         sqlite3_int64 rowid = g_array_index( apg->selRows, sqlite3_int64, ii );
-
-        GameInfo gib;
-#ifdef DEBUG
-        XP_Bool success = 
-#endif
-            gdb_getGameInfo( params->pDb, rowid, &gib );
-        XP_ASSERT( success );
-#ifdef XWFEATURE_RELAY
-        XP_U32 clientToken = makeClientToken( rowid, gib.seed );
-#endif
-        removeRow( apg, rowid );
-        gdb_deleteGame( params->pDb, rowid );
-
-#ifdef XWFEATURE_RELAY
-        XP_UCHAR devIDBuf[64] = {0};
-        gdb_fetch_safe( params->pDb, KEY_RDEVID, NULL, devIDBuf, sizeof(devIDBuf) );
-        if ( '\0' != devIDBuf[0] ) {
-            relaycon_deleted( params, devIDBuf, clientToken );
-        } else {
-            XP_LOGF( "%s: not calling relaycon_deleted: no relayID", __func__ );
-        }
-#endif
-        g_object_unref( gib.snap );
+        delete_game( apg, rowid );
     }
     apg->selRows = g_array_set_size( apg->selRows, 0 );
     updateButtons( apg );
@@ -863,9 +868,14 @@ gameGoneGTK( void* closure, const CommsAddrRec* XP_UNUSED(from), XP_U32 gameID )
         XP_LOGFF( "Old msg? Game %X no longer here", gameID );
     } else {
         gchar buf[128];
-        snprintf( buf, VSIZE(buf), "game %X has been deleted on a remote device",
-                  gameID );
-        gtktell( apg->window, buf );
+        snprintf( buf, VSIZE(buf), "Game %X has been deleted on a remote device. "
+                  "Do you want to delete it?", gameID );
+        if ( GTK_RESPONSE_YES == gtkask( apg->window, buf, GTK_BUTTONS_YES_NO, NULL ) ) {
+            XP_ASSERT( 1 == nRowIDs );
+            delete_game( apg, rowids[0] );
+        } else {
+            XP_LOGFF( "we need to call comms_setQuashed() here but don't have comms" );
+        }
     }
 }
 
