@@ -69,6 +69,7 @@ public class GameSummary implements Serializable {
     public int missingPlayers;
     public int[] scores;
     public boolean gameOver;
+    public boolean quashed;
     private String[] m_players;
     public CommsConnTypeSet conTypes;
     // relay-related fields
@@ -122,6 +123,7 @@ public class GameSummary implements Serializable {
                     && nPlayers == other.nPlayers
                     && missingPlayers == other.missingPlayers
                     && gameOver == other.gameOver
+                    && quashed == other.quashed
                     && seed == other.seed
                     && modtime == other.modtime
                     && created == other.created
@@ -276,6 +278,8 @@ public class GameSummary implements Serializable {
                         }
                     } else if ( gameOver ) {
                         fmtID = R.string.summary_gameover;
+                    } else if ( quashed ) {
+                        fmtID = R.string.summary_game_gone;
                     } else if ( null != remoteDevs
                                 && conTypes.contains( CommsConnType.COMMS_CONN_SMS)){
                         result =

@@ -512,7 +512,7 @@ game_getState( const XWGame* game, XWEnv xwe, GameStateInfo* gsi )
     gsi->canHideRack = board_canHideRack( board );
     gsi->canTrade = board_canTrade( board, xwe );
     gsi->nPendingMessages = !!game->comms ? 
-        comms_countPendingPackets(game->comms) : 0;
+        comms_countPendingPackets(game->comms, NULL) : 0;
 
     gsi->canRematch = server_canRematch( server );
     gsi->canPause = server_canPause( server );
@@ -542,7 +542,8 @@ game_summarize( const XWGame* game, const CurGameInfo* gi, GameSummary* summary 
     }
     if ( !!game->comms ) {
         summary->missingPlayers = server_getMissingPlayers( server );
-        summary->nPacketsPending = comms_countPendingPackets( game->comms );
+        summary->nPacketsPending =
+            comms_countPendingPackets( game->comms, &summary->quashed );
         summary->channelNo = gi->forceChannel;
     }
 }

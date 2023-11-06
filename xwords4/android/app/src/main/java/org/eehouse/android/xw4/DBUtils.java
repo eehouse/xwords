@@ -129,7 +129,7 @@ public class DBUtils {
         String[] columns = { ROW_ID,
                              DBHelper.NUM_MOVES, DBHelper.NUM_PLAYERS,
                              DBHelper.MISSINGPLYRS,
-                             DBHelper.GAME_OVER, DBHelper.PLAYERS,
+                             DBHelper.GAME_OVER, DBHelper.QUASHED, DBHelper.PLAYERS,
                              DBHelper.TURN, DBHelper.TURN_LOCAL, DBHelper.GIFLAGS,
                              DBHelper.CONTYPE, DBHelper.SERVERROLE,
                              DBHelper.ROOMNAME, DBHelper.RELAYID,
@@ -186,6 +186,10 @@ public class DBUtils {
                 int tmp = cursor.getInt(cursor.
                                         getColumnIndex(DBHelper.GAME_OVER));
                 summary.gameOver = tmp != 0;
+                tmp = cursor.getInt(cursor.
+                                        getColumnIndex(DBHelper.QUASHED));
+                summary.quashed = tmp != 0;
+                
                 summary.lastMoveTime =
                     cursor.getInt(cursor.getColumnIndex(DBHelper.LASTMOVE));
                 summary.dupTimerExpires =
@@ -300,6 +304,7 @@ public class DBUtils {
             values.put( DBHelper.ISOCODE, summary.isoCode.toString() );
             values.put( DBHelper.GAMEID, summary.gameID );
             values.put( DBHelper.GAME_OVER, summary.gameOver? 1 : 0 );
+            values.put( DBHelper.QUASHED, summary.quashed? 1 : 0 );
             values.put( DBHelper.LASTMOVE, summary.lastMoveTime );
             values.put( DBHelper.NEXTDUPTIMER, summary.dupTimerExpires );
 

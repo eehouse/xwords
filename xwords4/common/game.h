@@ -55,6 +55,7 @@ typedef struct _GameStateInfo {
 typedef struct _GameSummary {
     XP_Bool turnIsLocal;
     XP_Bool gameOver;
+    XP_Bool quashed;
     XP_S8 turn;
     XP_U32 lastMoveTime;
     XP_S32 dupTimerExpires;

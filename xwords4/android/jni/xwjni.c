@@ -2311,6 +2311,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1summarize
 
     setInt( env, jsummary, "nMoves", summary.nMoves );
     setBool( env, jsummary, "gameOver", summary.gameOver );
+    setBool( env, jsummary, "quashed", summary.quashed );
     setInt( env, jsummary, "turn", summary.turn );
     setBool( env, jsummary, "turnIsLocal", summary.turnIsLocal );
     setInt( env, jsummary, "lastMoveTime", summary.lastMoveTime );
@@ -2565,7 +2566,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_comms_1countPendingPackets
     XWJNI_START(gamePtr);
     const CommsCtxt* comms = state->game.comms;
     if ( !!comms ) {
-        result = comms_countPendingPackets( comms );
+        result = comms_countPendingPackets( comms, NULL );
     }
     XWJNI_END();
     return result;

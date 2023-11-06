@@ -5,4 +5,9 @@
 
   <string name="dup_allscores_fmt">All scores: %1$s</string>
 
+  <!-- Shown in games list game summary when a remote device has been
+       deleted and so no play is possible (but the game didn't
+       necessarily end). -->
+  <string name="summary_game_gone">Deleted by opponent</string>
+
 </resources>

@@ -177,7 +177,7 @@ void comms_getAddrs( const CommsCtxt* comms, CommsAddrRec addr[],
 XP_Bool comms_formatRelayID( const CommsCtxt* comms, XP_U16 indx,
                              XP_UCHAR* buf, XP_U16* lenp );
 
-XP_U16 comms_countPendingPackets( const CommsCtxt* comms );
+XP_U16 comms_countPendingPackets( const CommsCtxt* comms, XP_Bool* quashed );
 
 
 #ifdef XWFEATURE_RELAY

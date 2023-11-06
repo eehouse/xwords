@@ -1379,9 +1379,11 @@ comms_getChannelAddr( const CommsCtxt* comms, XP_PlayerAddr channelNo,
 }
 
 XP_U16
-comms_countPendingPackets( const CommsCtxt* comms )
+comms_countPendingPackets( const CommsCtxt* comms, XP_Bool* quashed )
 {
-    // LOG_RETURNF( "%d", comms->queueLen );
+    if ( !!quashed ) {
+        *quashed = QUASHED(comms);
+    }
     return comms->queueLen;
 }
 

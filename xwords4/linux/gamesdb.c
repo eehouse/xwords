@@ -409,7 +409,7 @@ gdb_summarize( CommonGlobals* cGlobals )
         (void)comms_getRelayID( game->comms, relayID, &len );
 #endif
 
-        nPending = comms_countPendingPackets( game->comms );
+        nPending = comms_countPendingPackets( game->comms, NULL );
     } else {
         strcat( connvia, "local" );
     }
