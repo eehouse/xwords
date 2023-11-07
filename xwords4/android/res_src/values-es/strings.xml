@@ -1182,4 +1182,5 @@
     <string name="enable_sms_toself_summary">Omitir la radio cuando los números de teléfono son los mismos</string>
     <string name="gamel_menu_restart">Reiniciar la aplicación</string>
     <string name="xlator">Alejandro Rodriguez (artecnico),Anupam Malhotra (AnupamM)</string>
+    <string name="summary_game_gone">Juego remoto eliminado</string>
 </resources>
