@@ -618,10 +618,10 @@ public class MQTTUtils extends Thread
         String sum = Utils.getMD5SumFor( payload );
         JSONObject params = new JSONObject();
         try {
-            params.put( "sum", sum );
+            String devid = XwJNI.dvc_getMQTTDevID();
+            params.put( "devid", devid );
             params.put( "gid", gameID );
-            // params.put( "from", senderDevID );
-            // params.put( "to", XwJNI.dvc_getMQTTDevID( null ) );
+            params.put( "sum", sum );
 
             HttpsURLConnection conn
                 = NetUtils.makeHttpsMQTTConn( context, "ack" );

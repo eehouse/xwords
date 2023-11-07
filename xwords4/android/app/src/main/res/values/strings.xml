@@ -1596,6 +1596,10 @@
     <string name="summary_wait_guest">Unconnected</string>
     <!--  -->
     <string name="summary_gameover">Game over\u200C</string>
+    <!-- Shown in games list game summary when a remote device has been
+         deleted and so no play is possible (but the game didn't
+         necessarily end). -->
+    <string name="summary_game_gone">Remote game deleted</string>
     <!--  -->
     <string name="summary_conn">Game in play</string>
     <!--  -->
