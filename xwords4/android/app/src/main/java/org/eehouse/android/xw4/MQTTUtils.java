@@ -562,34 +562,11 @@ public class MQTTUtils extends Thread
         clearInstance( this );
     }
 
-    private static void postNoSuchGame( final Context context, final int gameID )
-    {
-        // Run in thread in case we're called on main thread
-        new Thread( new Runnable() {
-                @Override
-                public void run() {
-                    JSONObject params = new JSONObject();
-                    try {
-                        String devid = XwJNI.dvc_getMQTTDevID();
-                        params.put( "devid", devid );
-                        params.put( "gameid", gameID );
-                        HttpsURLConnection conn
-                            = NetUtils.makeHttpsMQTTConn( context, "noSuchGame" );
-                        /*(void*)*/NetUtils.runConn( conn, params, true );
-                    } catch ( JSONException jex ) {
-                        Log.e( TAG, "notifyNotHere() ex: %s", jex );
-                    }
-                }
-            } ).start();
-    }
-
     private static void notifyNotHere( Context context, String addressee,
                                        int gameID )
     {
         TopicsAndPackets tap = XwJNI.dvc_makeMQTTNoSuchGames( addressee, gameID );
         addToSendQueue( context, tap );
-
-        postNoSuchGame( context, gameID );
     }
 
     public static int send( Context context, TopicsAndPackets tap )
@@ -797,7 +774,6 @@ public class MQTTUtils extends Thread
         new MQTTServiceHelper( context, from )
             .postEvent( MultiService.MultiEvent.MESSAGE_NOGAME, gameID,
                         expl );
-        postNoSuchGame( context, gameID );
     }
 
     public static void fcmConfirmed( Context context, boolean working )
