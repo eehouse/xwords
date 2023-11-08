@@ -529,7 +529,7 @@ dvc_parseMQTTPacket( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* topic,
             MQTTCmd cmd = stream_getU8( stream );
 
             /* Need to ack even if discarded/malformed */
-            dutil_ackMQTTMsg( dutil, xwe, gameID, &senderID, buf, len );
+            dutil_ackMQTTMsg( dutil, xwe, topic, gameID, &senderID, buf, len );
 
             switch ( cmd ) {
             case CMD_INVITE: {

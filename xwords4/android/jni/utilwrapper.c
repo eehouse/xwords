@@ -962,17 +962,20 @@ and_dutil_onGameGoneReceived( XW_DUtilCtxt* duc, XWEnv xwe, XP_U32 gameID,
 }
 
 static void
-and_dutil_ackMQTTMsg( XW_DUtilCtxt* duc, XWEnv xwe, XP_U32 gameID,
-                      const MQTTDevID* senderID, const XP_U8* msg, XP_U16 len )
+and_dutil_ackMQTTMsg( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* topic,
+                      XP_U32 gameID, const MQTTDevID* senderID, const XP_U8* msg,
+                      XP_U16 len )
 {
-    DUTIL_CBK_HEADER( "ackMQTTMsg", "(ILjava/lang/String;[B)V" );
+    DUTIL_CBK_HEADER( "ackMQTTMsg", "(Ljava/lang/String;ILjava/lang/String;[B)V" );
 
     XP_UCHAR tmp[32];
     formatMQTTDevID( senderID, tmp, VSIZE(tmp) );
+    jstring jTopic = (*env)->NewStringUTF( env, topic );
     jstring jdevid = (*env)->NewStringUTF( env, tmp );
     jbyteArray jmsg = makeByteArray( env, len, (const jbyte*)msg );
 
-    (*env)->CallVoidMethod( env, dutil->jdutil, mid, gameID, jdevid, jmsg );
+    (*env)->CallVoidMethod( env, dutil->jdutil, mid, jTopic, gameID,
+                            jdevid, jmsg );
 
     deleteLocalRefs( env, jdevid, jmsg, DELETE_NO_REF );
     DUTIL_CBK_TAIL();

@@ -359,8 +359,8 @@ public class DUtilCtxt {
         MQTTUtils.handleCtrlReceived( m_context, msg );
     }
 
-    public void ackMQTTMsg( int gameID, String senderID, byte[] msg )
+    public void ackMQTTMsg( String topic, int gameID, String senderID, byte[] msg )
     {
-        MQTTUtils.ackMessage( m_context, gameID, senderID, msg );
+        MQTTUtils.ackMessage( m_context, topic, gameID, senderID, msg );
     }
 }

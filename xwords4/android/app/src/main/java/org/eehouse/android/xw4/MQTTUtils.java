@@ -612,14 +612,13 @@ public class MQTTUtils extends Thread
         addToSendQueue( context, tap );
     }
 
-    public static void ackMessage( Context context, int gameID,
+    public static void ackMessage( Context context, String topic, int gameID,
                                    String senderDevID, byte[] payload )
     {
         String sum = Utils.getMD5SumFor( payload );
         JSONObject params = new JSONObject();
         try {
-            String devid = XwJNI.dvc_getMQTTDevID();
-            params.put( "devid", devid );
+            params.put( "topic", topic );
             params.put( "gid", gameID );
             params.put( "sum", sum );
 

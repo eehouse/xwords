@@ -97,8 +97,9 @@ typedef struct _DUtilVtable {
     void (*m_dutil_onGameGoneReceived)( XW_DUtilCtxt* duc, XWEnv xwe, XP_U32 gameID,
                                        const CommsAddrRec* from );
 
-    void (*m_dutil_ackMQTTMsg)( XW_DUtilCtxt* duc, XWEnv xwe, XP_U32 gameID,
-                                const MQTTDevID* senderID, const XP_U8* msg, XP_U16 len );
+    void (*m_dutil_ackMQTTMsg)( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* topic,
+                                XP_U32 gameID, const MQTTDevID* senderID,
+                                const XP_U8* msg, XP_U16 len );
 } DUtilVtable;
 
 struct XW_DUtilCtxt {
@@ -177,7 +178,8 @@ void dutil_super_init( MPFORMAL XW_DUtilCtxt* dutil );
 #define dutil_onGameGoneReceived(duc, xwe, gameID, from)         \
     (duc)->vtable.m_dutil_onGameGoneReceived((duc),(xwe),(gameID),(from))
 
-#define dutil_ackMQTTMsg( duc, xwe, gameID, senderID, msg, len )    \
-    (duc)->vtable.m_dutil_ackMQTTMsg((duc), (xwe), (gameID), (senderID), (msg), (len) )
+#define dutil_ackMQTTMsg( duc, xwe, topic, gameID, senderID, msg, len ) \
+    (duc)->vtable.m_dutil_ackMQTTMsg( (duc), (xwe), (topic), (gameID),  \
+                                      (senderID), (msg), (len) )
 
 #endif
