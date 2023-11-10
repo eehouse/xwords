@@ -271,8 +271,7 @@ public class BoardDelegate extends DelegateBase
             if ( BuildConfig.NON_RELEASE && null != expl ) {
                 message += "\n\n" + expl.getUserExpl( m_activity );
             }
-            ab = ab.setTitle( R.string.query_title )
-                .setMessage( message )
+            ab = ab.setMessage( message )
                 .setPositiveButton( android.R.string.ok, null );
             lstnr = new OnClickListener() {
                     @Override
@@ -282,6 +281,15 @@ public class BoardDelegate extends DelegateBase
                     }
                 };
             ab.setNegativeButton( R.string.button_delete, lstnr );
+
+            ab.setNeutralButton( R.string.button_archive,
+                                 new OnClickListener() {
+                                     @Override
+                                     public void onClick( DialogInterface dlg,
+                                                          int whichButton ) {
+                                         showArchiveNA( false );
+                                     }
+                                 } );
             dialog = ab.create();
         }
             break;
@@ -548,6 +556,10 @@ public class BoardDelegate extends DelegateBase
                         }
                         if ( m_resumeSkipped ) {
                             doResume( false );
+                        }
+
+                        if ( m_summary.quashed && !inArchiveGroup() ) {
+                            postDeleteOnce( null );
                         }
                     }
                 }
