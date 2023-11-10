@@ -1164,10 +1164,6 @@ public class BoardDelegate extends DelegateBase
             }
             break;
 
-        case ARCHIVE_SEL_ACTION:
-            showArchiveNA( false );
-            break;
-
         case DELETE_ACTION:
             if ( 0 < params.length && (Boolean)params[0] ) {
                 deleteAndClose();

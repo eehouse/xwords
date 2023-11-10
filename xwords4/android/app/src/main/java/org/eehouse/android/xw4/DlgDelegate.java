@@ -89,7 +89,6 @@ public class DlgDelegate {
         TRAY_PICKED,
         INVITE_INFO,
         DISABLE_DUALPANE,
-        ARCHIVE_SEL_ACTION,     // archive was clicked
         ARCHIVE_ACTION,
         REMATCH_ACTION,
         DELETE_ACTION,
