@@ -4,8 +4,17 @@
     <string name="str_game_name_fmt">%1$s (%2$s)</string>
     <string name="robot_name_fmt">%1$s (робот)</string>
     <string name="missing_player">(ще не тут…)</string>
-    <string name="button_reset">Скинути</string>
+    <string name="button_reset">Перезавантажити</string>
     <string name="summary_invites_out">Гравців запрошено</string>
     <string name="invitee_fmt">(%1$s запрошений)</string>
     <string name="summary_invites_out_fmt">Гравців запрошено до кімнати “%1$s”</string>
+    <string name="board_menu_file_about">Про CrossWords</string>
+    <string name="list_item_config">Налаштування гри</string>
+    <string name="button_delete">Видалити</string>
+    <string name="button_delete_game">Видалити Гру</string>
+    <string name="gameOver">Гру завершено</string>
+    <string name="menu_prefs">Налаштування додатку</string>
+    <string name="list_item_rename">Перейменувати</string>
+    <string name="list_item_reset">Перезавантажити</string>
+    <string name="list_item_delete">Видалити гру</string>
 </resources>
