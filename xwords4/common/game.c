@@ -250,9 +250,9 @@ game_makeRematch( const XWGame* oldGame, XWEnv xwe, XW_UtilCtxt* newUtil,
             selfAddrP = &selfAddr;
         }
 
-        if ( game_makeNewGame( MPPARM(newUtil->mpool) xwe, newGame, newUtil->gameInfo,
-                               selfAddrP, (CommsAddrRec*)NULL, newUtil,
-                               (DrawCtx*)NULL, newCp, procs ) ) {
+        if ( game_makeNewGame( MPPARM(newUtil->mpool) xwe, newGame,
+                               newUtil->gameInfo, selfAddrP, (CommsAddrRec*)NULL,
+                               newUtil, (DrawCtx*)NULL, newCp, procs ) ) {
 
             const CurGameInfo* newGI = newUtil->gameInfo;
             for ( int ii = 0; ii < ra.nAddrs; ++ii ) {
@@ -1043,7 +1043,8 @@ player_timePenalty( CurGameInfo* gi, XP_U16 playerNum )
 void
 game_logGI( const CurGameInfo* gi, const char* msg, const char* func, int line )
 {
-    XP_LOGFF( "msg: %s from %s() line %d; addr: %p", msg, func, line, gi );
+    XP_LOGFF( "msg: %s from %s() line %d; gameID: %X", msg, func, line,
+              !!gi ? gi->gameID:0 );
     if ( !!gi ) {
         XP_LOGF( "  nPlayers: %d", gi->nPlayers );
         for ( XP_U16 ii = 0; ii < gi->nPlayers; ++ii ) {
@@ -1053,7 +1054,6 @@ game_logGI( const CurGameInfo* gi, const char* msg, const char* func, int line )
         }
         XP_LOGF( "  forceChannel: %d", gi->forceChannel );
         XP_LOGF( "  serverRole: %d", gi->serverRole );
-        XP_LOGF( "  gameID: %d", gi->gameID );
         XP_LOGF( "  dictName: %s", gi->dictName );
         XP_LOGF( "  isoCode: %s", gi->isoCodeStr );
     }

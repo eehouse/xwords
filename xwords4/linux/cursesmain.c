@@ -1193,9 +1193,10 @@ inviteReceivedCurses( void* closure, const NetLaunchInfo* invite )
     gdb_getRowsForGameID( aGlobals->cag.params->pDb, invite->gameID, rowids, &nRowIDs );
     bool doIt = 0 == nRowIDs;
     if ( ! doIt && !!aGlobals->mainWin ) {
-        const gchar* question = "Duplicate invitation received. Accept anyway?";
-        const char* buttons[] = { "Yes", "No" };
-        doIt = 0 == cursesask( aGlobals->mainWin, question, VSIZE(buttons), buttons );
+        XP_LOGFF( "duplicate invite; not creating game" );
+        /* const gchar* question = "Duplicate invitation received. Accept anyway?"; */
+        /* const char* buttons[] = { "Yes", "No" }; */
+        /* doIt = 0 == cursesask( aGlobals->mainWin, question, VSIZE(buttons), buttons ); */
     }
     if ( doIt ) {
         cb_dims dims;

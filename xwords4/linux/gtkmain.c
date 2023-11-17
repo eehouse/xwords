@@ -756,9 +756,11 @@ inviteReceivedGTK( void* closure, const NetLaunchInfo* invite )
 
     bool doIt = 0 == nRowIDs;
     if ( ! doIt ) {
-        doIt = GTK_RESPONSE_YES == gtkask( apg->window,
-                                           "Duplicate invitation received. Accept anyway?",
-                                           GTK_BUTTONS_YES_NO, NULL );
+        doIt = XP_FALSE;
+        XP_LOGFF( "duplicate invite; not creating game" );
+        /* doIt = GTK_RESPONSE_YES == gtkask( apg->window, */
+        /*                                    "Duplicate invitation received. Accept anyway?", */
+        /*                                    GTK_BUTTONS_YES_NO, NULL ); */
     }
     if ( doIt ) {
         gameFromInvite( apg, invite );
