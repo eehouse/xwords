@@ -80,6 +80,24 @@ nliToGI( const NetLaunchInfo* nli, XWEnv xwe, XW_UtilCtxt* util, CurGameInfo* gi
 {
     gi_setNPlayers( gi, xwe, util, nli->nPlayersT, nli->nPlayersH );
     gi->gameID = nli->gameID;
+
+    XP_U16 nLocals = 0;
+    XP_Bool remotesAreRobots = nli->remotesAreRobots;
+    XW_DUtilCtxt* duc = util_getDevUtilCtxt( util, xwe );
+    for ( int ii = 0; ii < gi->nPlayers; ++ii ) {
+        LocalPlayer* lp = &gi->players[ii];
+        if ( lp->isLocal ) {
+            if ( nli->remotesAreRobots ) {
+                lp->robotIQ = 1;
+            }
+            XP_UCHAR buf[64];
+            XP_U16 len = VSIZE(buf);
+            dutil_getUsername( duc, xwe, nLocals++, XP_TRUE, remotesAreRobots,
+                               buf, &len );
+            replaceStringIfDifferent( util->mpool, &lp->name, buf );
+        }
+    }
+
     /* These defaults can be overwritten when host starts game after all
        register */
     gi->boardSize = 15;

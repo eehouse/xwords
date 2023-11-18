@@ -192,14 +192,14 @@ cb_open( CursesBoardState* cbState, sqlite3_int64 rowid, const cb_dims* dims )
         comms_resendAll( cGlobals->game.comms, NULL_XWE, COMMS_CONN_NONE, XP_FALSE );
     }
     if ( bGlobals->cGlobals.params->forceInvite ) {
-        (void)ADD_ONETIME_IDLE( inviteIdle, bGlobals);
+        (void)ADD_ONETIME_IDLE( inviteIdle, bGlobals );
     }
 }
 
 bool
-cb_new( CursesBoardState* cbState, const cb_dims* dims )
+cb_new( CursesBoardState* cbState, const cb_dims* dims, const CurGameInfo* gi )
 {
-    CursesBoardGlobals* bGlobals = findOrOpen( cbState, -1, NULL, NULL );
+    CursesBoardGlobals* bGlobals = findOrOpen( cbState, -1, gi, NULL );
     if ( !!bGlobals ) {
         initMenus( bGlobals );
         enableDraw( bGlobals, dims );
@@ -217,8 +217,7 @@ cb_newFor( CursesBoardState* cbState, const NetLaunchInfo* nli,
     CommsAddrRec selfAddr;
     makeSelfAddress( &selfAddr, params );
 
-    CursesBoardGlobals* bGlobals =
-        commonInit( cbState, -1, NULL );
+    CursesBoardGlobals* bGlobals = commonInit( cbState, -1, NULL );
     CommonGlobals* cGlobals = &bGlobals->cGlobals;
     initCP( cGlobals );
     if ( game_makeFromInvite( &cGlobals->game, NULL_XWE, nli, &selfAddr,
@@ -630,6 +629,7 @@ cb_feedRow( CursesBoardState* cbState, sqlite3_int64 rowid, XP_U16 expectSeed,
     bool success = 0 == expectSeed || seed == expectSeed;
     if ( success ) {
         gameGotBuf( cGlobals, XP_TRUE, buf, len, from );
+        linuxSaveGame( &bGlobals->cGlobals );
     } else {
         XP_LOGFF( "msg for seed %d but I opened %d", expectSeed, seed );
     }
@@ -654,10 +654,35 @@ cb_feedGame( CursesBoardState* cbState, XP_U32 gameID,
     }
 }
 
+void
+cb_addInvite( CursesBoardState* cbState, XP_U32 gameID, XP_U16 forceChannel,
+              const CommsAddrRec* destAddr )
+{
+    sqlite3_int64 rowids[1];
+    int nRowIDs = VSIZE(rowids);
+    gdb_getRowsForGameID( cbState->params->pDb, gameID, rowids, &nRowIDs );
+    XP_ASSERT( 1 == nRowIDs );
+
+    CursesBoardGlobals* bGlobals = findOrOpen( cbState, rowids[0], NULL, NULL );
+    CommonGlobals* cGlobals = &bGlobals->cGlobals;
+    CommsCtxt* comms = cGlobals->game.comms;
+
+    CommsAddrRec selfAddr;
+    comms_getSelfAddr( comms, &selfAddr );
+
+    NetLaunchInfo nli;
+    nli_init( &nli, cGlobals->gi, &selfAddr, 1, forceChannel );
+    nli.remotesAreRobots = XP_TRUE;
+
+    comms_invite( comms, NULL_XWE, &nli, destAddr, XP_TRUE );
+    linuxSaveGame( &bGlobals->cGlobals );
+}
+
 static void
 kill_board( gpointer data )
 {
     CursesBoardGlobals* bGlobals = (CursesBoardGlobals*)data;
+    linuxSaveGame( &bGlobals->cGlobals );
     disposeBoard( bGlobals );
 }
 
@@ -786,7 +811,7 @@ static void
 curses_util_turnChanged( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe),
                          XP_S16 XP_UNUSED_DBG(newTurn) )
 {
-    XP_LOGF( "%s(newTurn=%d)", __func__, newTurn );
+    XP_LOGFF( "(newTurn=%d)", newTurn );
     CursesBoardGlobals* bGlobals = (CursesBoardGlobals*)uc->closure;
     linuxSaveGame( &bGlobals->cGlobals );
 }

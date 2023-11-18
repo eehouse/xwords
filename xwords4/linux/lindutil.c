@@ -68,12 +68,18 @@ static XP_UCHAR* linux_dutil_md5sum( XW_DUtilCtxt* duc, XWEnv xwe, const XP_U8* 
 #endif
 
 static void
-linux_dutil_getUsername( XW_DUtilCtxt* XP_UNUSED(duc), XWEnv XP_UNUSED(xwe),
+linux_dutil_getUsername( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe),
                          XP_U16 num, XP_Bool XP_UNUSED(isLocal), XP_Bool isRobot,
                          XP_UCHAR* buf, XP_U16* len )
 {
-    const char* fmt = isRobot ? "Robot %d" : "Player %d";
-    *len = XP_SNPRINTF( buf, *len, fmt, num );
+    LaunchParams* params = (LaunchParams*)duc->closure;
+    if ( params->localName ) {
+        *len = XP_SNPRINTF( buf, *len, "%s", params->localName );
+        XP_LOGFF( "set using local name: %s", buf );
+    } else {
+        const char* fmt = isRobot ? "Robot %d" : "Player %d";
+        *len = XP_SNPRINTF( buf, *len, fmt, num );
+    }
 }
 
 static void
@@ -101,7 +107,7 @@ linux_dutil_haveGame( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe),
     XP_Bool result = XP_FALSE;
     for ( int ii = 0; ii < nRowIDs; ++ii ) {
         GameInfo gib;
-        if ( ! gdb_getGameInfo( pDb, rowids[ii], &gib ) ) {
+        if ( ! gdb_getGameInfoForRow( pDb, rowids[ii], &gib ) ) {
             XP_ASSERT(0);
         }
         if ( gib.channelNo == channel ) {
@@ -206,7 +212,7 @@ linux_dutil_ackMQTTMsg( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* topic,
 
     res = curl_easy_perform(curl);
     XP_Bool success = res == CURLE_OK;
-    XP_LOGFF( "curl_easy_perform() => %d", res );
+    /* XP_LOGFF( "curl_easy_perform() => %d", res ); */
     if ( ! success ) {
         XP_LOGFF( "curl_easy_perform() failed: %s", curl_easy_strerror(res));
     }
@@ -216,7 +222,7 @@ linux_dutil_ackMQTTMsg( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* topic,
     curl_global_cleanup();
     g_free( json );
 
-    LOG_RETURN_VOID();
+    /* LOG_RETURN_VOID(); */
  }
 
 XW_DUtilCtxt*

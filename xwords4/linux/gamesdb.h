@@ -46,6 +46,7 @@ typedef struct _GameInfo {
     XP_S16 nMissing;
     XP_U16 seed;
     XP_U16 nPending;
+    XP_U16 nTiles;
     XP_U32 lastMoveTime;
     XP_U32 dupTimerExpires;
     XP_U32 created;
@@ -69,7 +70,8 @@ void gdb_freeGamesList( GSList* games );
 /* Mapping of relayID -> rowid */
 GHashTable* gdb_getRelayIDsToRowsMap( sqlite3* pDb );
 
-XP_Bool gdb_getGameInfo( sqlite3* pDb, sqlite3_int64 rowid, GameInfo* gib );
+XP_Bool gdb_getGameInfoForRow( sqlite3* pDb, sqlite3_int64 rowid, GameInfo* gib );
+XP_Bool gdb_getGameInfoForGID( sqlite3* pDb, XP_U32 gameID, GameInfo* gib );
 void gdb_getRowsForGameID( sqlite3* pDb, XP_U32 gameID, sqlite3_int64* rowids,
                            int* nRowIDs );
 XP_Bool gdb_loadGame( XWStreamCtxt* stream, sqlite3* pDb, sqlite3_int64 rowid );

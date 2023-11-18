@@ -243,10 +243,9 @@ OBJ = \
 	$(BUILD_PLAT_DIR)/relaycon.o \
 	$(BUILD_PLAT_DIR)/mqttcon.o \
 	$(BUILD_PLAT_DIR)/lindutil.o \
-	$(BUILD_PLAT_DIR)/cmdspipe.o \
 	$(CURSES_OBJS) $(GTK_OBJS) $(MAIN_OBJS)
 
-LIBS = -lm -lpthread -luuid -lcurl -ljson-c $(GPROFFLAG)
+LIBS = -lm -lpthread -luuid -lcurl -lcjson $(GPROFFLAG)
 ifdef USE_SQLITE
 LIBS += -lsqlite3
 LIBS += -lmosquitto

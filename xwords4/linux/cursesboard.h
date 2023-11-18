@@ -40,7 +40,8 @@ CursesBoardState* cb_init( CursesAppGlobals* aGlobals, LaunchParams* params,
 void cb_resized( CursesBoardState* cbState, const cb_dims* dims );
 
 void cb_open( CursesBoardState* cbState, sqlite3_int64 rowid, const cb_dims* dims );
-bool cb_new( CursesBoardState* cbState, const cb_dims* dims );
+bool cb_new( CursesBoardState* cbState, const cb_dims* dims,
+             const CurGameInfo* gi /* optional: use from globals if unset */ );
 void cb_newFor( CursesBoardState* cbState, const NetLaunchInfo* nli,
                 const cb_dims* dims );
 
@@ -49,6 +50,8 @@ bool cb_feedRow( CursesBoardState* cbState, sqlite3_int64 rowid,
                  const CommsAddrRec* from );
 void cb_feedGame( CursesBoardState* cbState, XP_U32 gameID,
                   const XP_U8* buf, XP_U16 len, const CommsAddrRec* from );
+void cb_addInvite( CursesBoardState* cbState, XP_U32 gameID, XP_U16 forceChannel,
+                   const CommsAddrRec* destAddr );
 void cb_closeAll( CursesBoardState* cbState );
 
 #endif

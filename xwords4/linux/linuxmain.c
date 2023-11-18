@@ -1,6 +1,6 @@
 /* -*- compile-command: "make MEMDEBUG=TRUE -j3"; -*- */
 /* 
- * Copyright 2000 - 2020 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2000 - 2023 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -75,7 +75,6 @@
 #include "dbgutil.h"
 #include "dictiter.h"
 #include "gsrcwrap.h"
-#include "cmdspipe.h"
 /* #include "commgr.h" */
 /* #include "compipe.h" */
 #include "memstream.h"
@@ -191,7 +190,7 @@ linuxOpenGame( CommonGlobals* cGlobals )
                                       cGlobals->gi,
                                       cGlobals->util, cGlobals->draw,
                                       &cGlobals->cp, &cGlobals->procs );
-        XP_LOGFF( "loaded gi at %p", &cGlobals->gi );
+        LOGGI( cGlobals->gi, __func__ );
         stream_destroy( stream );
     }
 
@@ -293,7 +292,7 @@ void
 gameGotBuf( CommonGlobals* cGlobals, XP_Bool hasDraw, const XP_U8* buf, 
             XP_U16 len, const CommsAddrRec* from )
 {
-    XP_LOGF( "%s(hasDraw=%d)", __func__, hasDraw );
+    XP_LOGFF( "(hasDraw=%d)", hasDraw );
     XP_Bool redraw = XP_FALSE;
     XWGame* game = &cGlobals->game;
     XWStreamCtxt* stream = stream_from_msgbuf( cGlobals, buf, len );
@@ -476,9 +475,9 @@ linuxSaveGame( CommonGlobals* cGlobals )
             if ( !!pDb ) {
                 gdb_summarize( cGlobals );
             }
-            XP_LOGF( "%s: saved", __func__ );
+            XP_LOGFF( "saved" );
         } else {
-            XP_LOGF( "%s: simulating save failure", __func__ );
+            XP_LOGFF( "simulating save failure" );
         }
     }
 } /* linuxSaveGame */
@@ -715,6 +714,7 @@ typedef enum {
     ,CMD_DROPNTHPACKET
     ,CMD_NOHINTS
     ,CMD_PICKTILESFACEUP
+    ,CMD_LOCALNAME
     ,CMD_PLAYERNAME
     ,CMD_REMOTEPLAYER
     ,CMD_ROBOTNAME
@@ -869,6 +869,7 @@ static CmdInfoRec CmdInfoRecs[] = {
        "drop this packet; default 0 (none)" }
     ,{ CMD_NOHINTS, false, "no-hints", "disallow hints" }
     ,{ CMD_PICKTILESFACEUP, false, "pick-face-up", "allow to pick tiles" }
+    ,{ CMD_LOCALNAME, true, "localName", "name given all local players" }
     ,{ CMD_PLAYERNAME, true, "name", "name of local, non-robot player" }
     ,{ CMD_REMOTEPLAYER, false, "remote-player", "add an expected player" }
     ,{ CMD_ROBOTNAME, true, "robot", "name of local, robot player" }
@@ -2555,57 +2556,6 @@ writeStatus( const char* statusSocket, const char* dbName )
     }
 }
 
-static gboolean
-handle_gotcmd( GIOChannel* source, GIOCondition condition,
-               gpointer data )
-{
-    //     XP_LOGFF( "got something!!" );
-    gboolean keep = TRUE;
-
-    if ( 0 != (G_IO_IN & condition) ) {
-        int sock = g_io_channel_unix_get_fd( source );
-        char buf[1024];
-        ssize_t nread = read( sock, buf, sizeof(buf) );
-        buf[nread] = '\0';
-        XP_LOGFF( "read: %s", buf );
-
-        LaunchParams* params = (LaunchParams*)data;
-
-        CmdBuf cb;
-        cmds_readCmd( &cb, buf );
-        switch( cb.cmd ) {
-        case CMD_NONE:
-            break;
-        case CMD_QUIT:
-            (*params->cmdProcs.quit)( params );
-            break;
-        default:
-            XP_ASSERT( 0 );
-        }
-    }
-
-    if ( 0 != ((G_IO_HUP) & condition) ) {
-        XP_LOGFF( "got G_IO_HUP; returning FALSE" );
-        keep = FALSE;
-    } else if ( 0 != ((G_IO_ERR) & condition) ) {
-        XP_LOGFF( "got G_IO_ERR; returning FALSE" );
-    } else if ( 0 != ((G_IO_NVAL) & condition) ) {
-        XP_LOGFF( "got G_IO_NVAL; returning FALSE" );
-    } else {
-        XP_LOGFF( "something else: 0x%X", condition );
-    }
-    return keep;
-}
-
-static void
-addCmdListener( LaunchParams* params )
-{
-    if ( !!params->cmdsSocket ) {
-        int fifo = open( params->cmdsSocket, O_RDWR | O_NONBLOCK );
-        ADD_SOCKET( params, fifo, handle_gotcmd );
-    }
-}
-
 int
 main( int argc, char** argv )
 {
@@ -2939,6 +2889,9 @@ main( int argc, char** argv )
         case CMD_PICKTILESFACEUP:
             mainParams.pgi.allowPickTiles = XP_TRUE;
             break;
+        case CMD_LOCALNAME:
+            mainParams.localName = optarg;
+            break;
         case CMD_PLAYERNAME:
             index = mainParams.pgi.nPlayers++;
             XP_ASSERT( index < MAX_NUM_PLAYERS );
@@ -3205,8 +3158,6 @@ main( int argc, char** argv )
             break;
         }
     }
-
-    addCmdListener( &mainParams );
 
     /* add cur dir if dict search dir path is empty */
     if ( !mainParams.dictDirs ) {

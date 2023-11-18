@@ -550,12 +550,12 @@ gdb_getRelayIDsToRowsMap( sqlite3* pDb )
 }
 
 XP_Bool
-gdb_getGameInfo( sqlite3* pDb, sqlite3_int64 rowid, GameInfo* gib )
+gdb_getGameInfoForRow( sqlite3* pDb, sqlite3_int64 rowid, GameInfo* gib )
 {
     XP_Bool success = XP_FALSE;
     const char* fmt = "SELECT ended, turn, local, nmoves, ntotal, nmissing, "
         "isoCode, seed, connvia, gameid, lastMoveTime, dupTimerExpires, "
-        "relayid, scores, nPending, role, channel, created, snap "
+        "relayid, scores, nPending, nTiles, role, channel, created, snap "
         "FROM games WHERE rowid = %lld";
     XP_UCHAR query[256];
     snprintf( query, sizeof(query), fmt, rowid );
@@ -587,6 +587,7 @@ gdb_getGameInfo( sqlite3* pDb, sqlite3_int64 rowid, GameInfo* gib )
         len = sizeof(gib->scores);
         getColumnText( ppStmt, col++, gib->scores, &len );
         gib->nPending = sqlite3_column_int( ppStmt, col++ );
+        gib->nTiles = sqlite3_column_int( ppStmt, col++ );
         gib->role = sqlite3_column_int( ppStmt, col++ );
         gib->channelNo = sqlite3_column_int( ppStmt, col++ );
         gib->created = sqlite3_column_int( ppStmt, col++ );
@@ -611,6 +612,16 @@ gdb_getGameInfo( sqlite3* pDb, sqlite3_int64 rowid, GameInfo* gib )
     sqlite3_finalize( ppStmt );
 
     return success;
+}
+
+XP_Bool
+gdb_getGameInfoForGID( sqlite3* pDb, XP_U32 gameID, GameInfo* gib )
+{
+    sqlite3_int64 rowids[4];
+    int nRowIDs = VSIZE(rowids);
+    gdb_getRowsForGameID( pDb, gameID, rowids, &nRowIDs );
+    return 1 == nRowIDs
+        && gdb_getGameInfoForRow( pDb, rowids[0], gib );
 }
 
 void

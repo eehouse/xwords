@@ -510,8 +510,9 @@ dvc_parseMQTTPacket( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* topic,
         stream_putBytes( stream, buf, len );
 
         XP_U8 proto = 0;
-        if ( stream_gotU8( stream, &proto )
-             && (proto == PROTO_1 || proto == PROTO_3 ) ) {
+        if ( !stream_gotU8( stream, &proto ) ) {
+            XP_LOGFF( "bad message: too short" );
+        } else if ( proto == PROTO_1 || proto == PROTO_3 ) {
             MQTTDevID senderID;
             stream_getBytes( stream, &senderID, sizeof(senderID) );
             senderID = be64toh( senderID );

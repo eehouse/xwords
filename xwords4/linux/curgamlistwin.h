@@ -40,6 +40,7 @@ void cgl_moveSel( CursGameList* cgl, bool down );
 void cgl_draw( CursGameList* cgl );
 
 const GameInfo* cgl_getSel( CursGameList* cgl );
+void cgl_setSel( CursGameList* cgl, int sel );
 int cgl_getNGames( CursGameList* cgl );
 
 #endif

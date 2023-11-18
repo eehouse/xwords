@@ -58,6 +58,7 @@ typedef struct _LaunchParams {
     GSList* dictDirs;
     char* fileName;
     char* dbName;
+    char* localName;
     sqlite3* pDb;               /* null unless opened */
     XP_U16 saveFailPct;
     XP_U16 smsSendFailPct;
@@ -302,7 +303,7 @@ struct CommonGlobals {
 
 typedef struct _CommonAppGlobals {
     LaunchParams* params;
-    GSList* globalsList;
+    GSList* globalsList;        /* used by gtk only */
 } CommonAppGlobals;
 
 typedef struct _SourceData {

@@ -1378,13 +1378,32 @@ comms_getChannelAddr( const CommsCtxt* comms, XP_PlayerAddr channelNo,
     XP_ASSERT( found );
 }
 
+typedef struct _NonAcks {
+    int count;
+} NonAcks;
+
+static ForEachAct
+countNonAcks( MsgQueueElem* elem, void* closure )
+{
+    if ( IS_INVITE(elem) || 0 != elem->msgID ) {
+        NonAcks* nap = (NonAcks*)closure;
+        ++nap->count;
+    }
+    return FEA_OK;
+}
+
 XP_U16
 comms_countPendingPackets( const CommsCtxt* comms, XP_Bool* quashed )
 {
     if ( !!quashed ) {
         *quashed = QUASHED(comms);
     }
-    return comms->queueLen;
+
+    NonAcks na = {0};
+    forEachElem( (CommsCtxt*)comms, countNonAcks, &na );
+
+    // XP_LOGFF( "=> %d (queueLen = %d)", na.count, comms->queueLen );
+    return na.count;
 }
 
 static XP_Bool
@@ -2933,8 +2952,7 @@ validateChannelMessage( CommsCtxt* comms, XWEnv xwe, const CommsAddrRec* addr,
         } else if ( msgID != rec->lastMsgRcd + 1 ) {
             XP_LOGFF( TAGFMT() "expected %d, got %d", TAGPRMS,
                      rec->lastMsgRcd + 1, msgID );
-            // Add this if adding ACK to queue isn't enough
-            // ackAnyImpl( comms, xwe, XP_TRUE );
+            ackAnyImpl( comms, xwe, XP_TRUE );
             rec = NULL;
         }
     } else {
@@ -3572,7 +3590,7 @@ rememberChannelAddress( CommsCtxt* comms, XP_PlayerAddr channelNo,
             // addr_setTypes( &recs->addr, addr_getTypes( &comms->selfAddr ) );
         }
     }
-    listRecs( comms, "leaving rememberChannelAddress" );
+    listRecs( comms, "leaving rememberChannelAddress()" );
     THREAD_CHECK_END();
     return rec;
 } /* rememberChannelAddress */

@@ -25,6 +25,8 @@
 #include <ctype.h>
 #include <sys/time.h>
 #include <time.h>
+#include <sys/socket.h>
+#include <sys/un.h>
 
 #include <netdb.h>		/* gethostbyname */
 #include <errno.h>
@@ -39,6 +41,8 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
+
+#include <cjson/cJSON.h>
 
 #include "linuxmain.h"
 #include "linuxutl.h"
@@ -86,7 +90,6 @@ struct CursesAppGlobals {
     CursesMenuState* menuState;
     CursGameList* gameList;
     CursesBoardState* cbState;
-    GSList* openGames;
     WINDOW* mainWin;
     int winWidth, winHeight;
 
@@ -199,8 +202,8 @@ initCurses( CursesAppGlobals* aGlobals )
         keypad(stdscr, TRUE);       /* effects wgetch only? */
 
         getmaxyx( aGlobals->mainWin, aGlobals->winHeight, aGlobals->winWidth );
-        XP_LOGF( "%s: getmaxyx()->w:%d; h:%d", __func__, aGlobals->winWidth,
-                 aGlobals->winHeight );
+        XP_LOGFF( "getmaxyx()->w:%d; h:%d", aGlobals->winWidth,
+                  aGlobals->winHeight );
     }
 
     /* globals->statusLine = height - MENU_WINDOW_HEIGHT - 1; */
@@ -312,7 +315,7 @@ handleNewGame( void* closure, int XP_UNUSED(key) )
     const CurGameInfo* gi = &aGlobals->cag.params->pgi;
     if ( !canMakeFromGI(gi) ) {
         ca_inform( aGlobals->mainWin, "Unable to create game (check params?)" );
-    } else if ( !cb_new( aGlobals->cbState, &dims ) ) {
+    } else if ( !cb_new( aGlobals->cbState, &dims, NULL ) ) {
         XP_ASSERT(0);
     }
     return XP_TRUE;
@@ -624,7 +627,7 @@ handle_quitwrite( GIOChannel* source, GIOCondition XP_UNUSED(condition), gpointe
 static gboolean
 handle_winchwrite( GIOChannel* source, GIOCondition XP_UNUSED_DBG(condition), gpointer data )
 {
-    XP_LOGF( "%s(condition=%x)", __func__, condition );
+    XP_LOGFF( "(condition=%x)", condition );
     CursesAppGlobals* aGlobals = (CursesAppGlobals*)data;
 
     /* Read from the pipe so it won't call again */
@@ -632,7 +635,7 @@ handle_winchwrite( GIOChannel* source, GIOCondition XP_UNUSED_DBG(condition), gp
 
     struct winsize ws;
     ioctl( STDIN_FILENO, TIOCGWINSZ, &ws );
-    XP_LOGF( "%s(): lines %d, columns %d", __func__, ws.ws_row, ws.ws_col );
+    XP_LOGFF( "lines %d, columns %d", ws.ws_row, ws.ws_col );
     aGlobals->winHeight = ws.ws_row;
     aGlobals->winWidth = ws.ws_col;
 
@@ -712,8 +715,8 @@ fireCursesTimer( CursesAppGlobals* globals )
                 board_draw( globals->cGlobals.game.board );
             }
         } else {
-            XP_LOGF( "skipping timer: now (%ld) < when (%ld)", 
-                     now, smallestTip->when );
+            XP_LOGFF( "skipping timer: now (%ld) < when (%ld)",
+                      now, smallestTip->when );
         }
     }
 } /* fireCursesTimer */
@@ -922,10 +925,9 @@ initClientSocket( CursesAppGlobals* globals, char* serverName )
         userError( globals, "unable to get host info for %s\n", serverName );
     } else {
         char* hostName = inet_ntoa( *(struct in_addr*)hostinfo->h_addr );
-        XP_LOGF( "gethostbyname returned %s", hostName );
+        XP_LOGFF( "gethostbyname returned %s", hostName );
         globals->csInfo.client.serverAddr = inet_addr(hostName);
-        XP_LOGF( "inet_addr returned %lu", 
-                 globals->csInfo.client.serverAddr );
+        XP_LOGFF( "inet_addr returned %lu", globals->csInfo.client.serverAddr );
     }
 } /* initClientSocket */
 #endif
@@ -1298,7 +1300,7 @@ curses_requestMsgs( gpointer data )
     if ( '\0' != devIDBuf[0] ) {
         relaycon_requestMsgs( aGlobals->cag.params, devIDBuf );
     } else {
-        XP_LOGF( "%s: not requesting messages as don't have relay id", __func__ );
+        XP_LOGFF( "not requesting messages as don't have relay id" );
     }
     return 0;                   /* don't run again */
 }
@@ -1330,7 +1332,7 @@ cursesDevIDReceived( void* closure, const XP_UCHAR* devID,
     CursesAppGlobals* aGlobals = (CursesAppGlobals*)closure;
     sqlite3* pDb = aGlobals->cag.params->pDb;
     if ( !!devID ) {
-        XP_LOGF( "%s(devID='%s')", __func__, devID );
+        XP_LOGFF( "(devID='%s')", devID );
 
         /* If we already have one, make sure it's the same! Else store. */
         gchar buf[64];
@@ -1357,7 +1359,7 @@ cursesErrorMsgRcvd( void* closure, const XP_UCHAR* msg )
 {
     CursesAppGlobals* globals = (CursesAppGlobals*)closure;
     if ( !!globals->lastErr && 0 == strcmp( globals->lastErr, msg ) ) {
-        XP_LOGF( "skipping error message from relay" );
+        XP_LOGFF( "skipping error message from relay" );
     } else {
         g_free( globals->lastErr );
         globals->lastErr = g_strdup( msg );
@@ -1445,6 +1447,254 @@ onGameSaved( CursesAppGlobals* aGlobals, sqlite3_int64 rowid, bool isNew )
     cgl_refreshOne( aGlobals->gameList, rowid, isNew );
 }
 
+static XP_Bool
+makeGameFromArgs( CursesAppGlobals* aGlobals, cJSON* args )
+{
+    LaunchParams* params = aGlobals->cag.params;
+    CurGameInfo gi = {0};
+    gi_copy( MPPARM(params->mpool) &gi, &params->pgi );
+    gi.serverRole = SERVER_ISSERVER;
+    gi.boardSize = 15;
+    gi.traySize = 7;
+
+    cJSON* tmp = cJSON_GetObjectItem( args, "gid" );
+    XP_ASSERT( !!tmp );
+    sscanf( tmp->valuestring, "%X", &gi.gameID );
+
+    tmp = cJSON_GetObjectItem( args, "nPlayers" );
+    XP_ASSERT( !!tmp );
+    gi.nPlayers = tmp->valueint;
+
+    tmp = cJSON_GetObjectItem( args, "hostPosn" );
+    XP_ASSERT( !!tmp );
+    int hostPosn = tmp->valueint;
+    replaceStringIfDifferent( params->mpool, &gi.players[hostPosn].name,
+                              params->localName );
+    for ( int ii = 0; ii < gi.nPlayers; ++ii ) {
+        gi.players[ii].isLocal = ii == hostPosn;
+        gi.players[ii].robotIQ = 1;
+    }
+
+    tmp = cJSON_GetObjectItem( args, "dict" );
+    XP_ASSERT( tmp );
+    replaceStringIfDifferent( params->mpool, &gi.dictName, tmp->valuestring );
+
+    cb_dims dims;
+    figureDims( aGlobals, &dims );
+    LOGGI( &gi, "prior to cb_new call" );
+    bool success = cb_new( aGlobals->cbState, &dims, &gi );
+    XP_ASSERT( success );
+
+    gi_disposePlayerInfo( MPPARM(params->mpool) &gi );
+    return success;
+}
+
+static XP_Bool
+inviteFromArgs( CursesAppGlobals* aGlobals, cJSON* args )
+{
+    /* char buf[1000]; */
+    /* if ( cJSON_PrintPreallocated( args, buf, sizeof(buf), 0 ) ) { */
+    /*     XP_LOGFF( "(%s)", buf ); */
+    /* } */
+
+    XP_U32 gameID;
+    cJSON* tmp = cJSON_GetObjectItem( args, "gid" );
+    XP_ASSERT( !!tmp );
+    sscanf( tmp->valuestring, "%X", &gameID );
+
+    tmp = cJSON_GetObjectItem( args, "channel" );
+    XP_ASSERT( !!tmp );
+    XP_U16 channel = tmp->valueint;
+    XP_LOGFF( "read channel: %X", channel );
+
+    /* CursesBoardState* cbState, XP_U32 gameID, XP_U16 forceChannel, */
+    /*           const CommsAddrRec* destAddr */
+    CommsAddrRec destAddr = {0};
+    cJSON* addr = cJSON_GetObjectItem( args, "addr" );
+    XP_ASSERT( !!addr );
+    tmp = cJSON_GetObjectItem( addr, "mqtt" );
+    if ( !!tmp ) {
+        XP_LOGFF( "parsing mqtt: %s", tmp->valuestring );
+        addr_addType( &destAddr, COMMS_CONN_MQTT );
+        XP_Bool success = strToMQTTCDevID( tmp->valuestring, &destAddr.u.mqtt.devID );
+        XP_ASSERT( success );
+    }
+    tmp = cJSON_GetObjectItem( addr, "sms" );
+    if ( !!tmp ) {
+        XP_LOGFF( "parsing sms: %s", tmp->valuestring );
+        addr_addType( &destAddr, COMMS_CONN_SMS );
+        XP_STRCAT( destAddr.u.sms.phone, tmp->valuestring );
+        destAddr.u.sms.port = 1;
+    }
+
+    cb_addInvite( aGlobals->cbState, gameID, channel, &destAddr );
+    LOG_RETURN_VOID();
+    return XP_TRUE;
+}
+
+static cJSON*
+getGamesStateForArgs( CursesAppGlobals* aGlobals, cJSON* args )
+{
+    cJSON* result = cJSON_CreateArray();
+
+    LaunchParams* params = aGlobals->cag.params;
+    cJSON* gids = cJSON_GetObjectItem(args, "gids" );
+    for ( int ii = 0 ; ii < cJSON_GetArraySize(gids) ; ++ii ) {
+        XP_U32 gameID;
+        cJSON* gid = cJSON_GetArrayItem( gids, ii );
+        sscanf( gid->valuestring, "%X", &gameID );
+
+        GameInfo gib;
+        if ( gdb_getGameInfoForGID( params->pDb, gameID, &gib ) ) {
+            cJSON* item = cJSON_CreateObject();
+            cJSON_AddStringToObject( item, "gid", gid->valuestring );
+            cJSON_AddBoolToObject( item, "gameOver", gib.gameOver );
+            cJSON_AddNumberToObject( item, "nPending", gib.nPending );
+            cJSON_AddNumberToObject( item, "nMoves", gib.nMoves );
+            cJSON_AddNumberToObject( item, "nTiles", gib.nTiles );
+
+            cJSON_AddItemToArray( result, item );
+        }        
+    }
+    return result;
+}
+
+static cJSON*
+makeBoolObj( const char* key, XP_Bool value )
+{
+    cJSON* result = cJSON_CreateObject();
+    cJSON_AddBoolToObject( result, key, value );
+    /* char buf[1000]; */
+    /* if ( cJSON_PrintPreallocated( result, buf, sizeof(buf), 0 ) ) { */
+    /*     XP_LOGFF( "(%s=>%s)=>%s", key, boolToStr(value), buf ); */
+    /* } */
+    return result;
+}
+
+static gboolean
+on_incoming_signal( GSocketService* XP_UNUSED(service),
+                    GSocketConnection* connection,
+                    GObject* XP_UNUSED(source_object), gpointer user_data )
+{
+    XP_LOGFF( "called" );
+    CursesAppGlobals* aGlobals = (CursesAppGlobals*)user_data;
+    LaunchParams* params = aGlobals->cag.params;
+
+    GInputStream* istream = g_io_stream_get_input_stream( G_IO_STREAM(connection) );
+
+    short len;
+    gssize nread = g_input_stream_read( istream, &len, sizeof(len), NULL, NULL );
+    XP_ASSERT( nread == sizeof(len) );
+    len = ntohs(len);
+
+    gchar buf[len+1];
+    nread = g_input_stream_read( istream, buf, len, NULL, NULL );
+    if ( 0 <= nread ) {
+        XP_ASSERT( nread == len );
+        buf[nread] = '\0';
+        XP_LOGFF( "Message was: \"%s\"\n", buf );
+
+        cJSON* reply = cJSON_CreateArray();
+
+        cJSON* cmds = cJSON_Parse( buf );
+        XP_LOGFF( "got msg with array of len %d", cJSON_GetArraySize(cmds) );
+        for ( int ii = 0 ; ii < cJSON_GetArraySize(cmds) ; ++ii ) {
+            cJSON* item = cJSON_GetArrayItem( cmds, ii );
+            cJSON* cmd = cJSON_GetObjectItem( item, "cmd" );
+            cJSON* key = cJSON_GetObjectItem( item, "key" );
+            cJSON* args = cJSON_GetObjectItem( item, "args" );
+            const char* cmdStr = cmd->valuestring;
+
+            cJSON* response = NULL;
+
+            if ( 0 == strcmp( cmdStr, "quit" ) ) {
+                response = getGamesStateForArgs( aGlobals, args );
+                handleQuit( aGlobals, 0 );
+            } else if ( 0 == strcmp( cmdStr, "getMQTTDevID" ) ) {
+                MQTTDevID devID;
+                dvc_getMQTTDevID( params->dutil, NULL_XWE, &devID );
+                char buf[64];
+                formatMQTTDevID( &devID, buf, sizeof(buf) );
+                response = cJSON_CreateString( buf );
+            } else if ( 0 == strcmp( cmdStr, "makeGame" ) ) {
+                XP_Bool success = makeGameFromArgs( aGlobals, args );
+                response = makeBoolObj( "success", success );
+            } else if ( 0 == strcmp( cmdStr, "invite" ) ) {
+                XP_Bool success = inviteFromArgs( aGlobals, args );
+                response = makeBoolObj( "success", success );
+            } else if ( 0 == strcmp( cmdStr, "gamesState" ) ) {
+                response = getGamesStateForArgs( aGlobals, args );
+            } else {
+                XP_ASSERT(0);
+            }
+
+            XP_ASSERT( !!response );
+            if ( !!response ) {
+                cJSON* tmp = cJSON_CreateObject();
+                cJSON_AddStringToObject( tmp, "cmd", cmdStr );
+                cJSON_AddNumberToObject( tmp, "key", key->valueint );
+                cJSON_AddItemToObject( tmp,  "response", response );
+
+                /*(void)*/cJSON_AddItemToArray( reply, tmp );
+            }
+        }
+        cJSON_Delete( cmds );   /* this apparently takes care of all children */
+
+        char* replyStr = cJSON_PrintUnformatted( reply );
+        short replyStrLen = strlen(replyStr);
+        XP_LOGFF( "len(%s): %d", replyStr, replyStrLen );
+        short replyStrNBOLen = htons(replyStrLen);
+
+        GOutputStream* ostream = g_io_stream_get_output_stream( G_IO_STREAM(connection) );
+        gsize nwritten;
+        gboolean wroteall = g_output_stream_write_all( ostream, &replyStrNBOLen, sizeof(replyStrNBOLen),
+                                                       &nwritten, NULL, NULL );
+        XP_ASSERT( wroteall && nwritten == sizeof(replyStrNBOLen) );
+        wroteall = g_output_stream_write_all( ostream, replyStr, replyStrLen, &nwritten, NULL, NULL );
+        XP_ASSERT( wroteall && nwritten == replyStrLen );
+        GError* error = NULL;
+        g_output_stream_close( ostream, NULL, &error );
+        if ( !!error ) {
+            XP_LOGFF( "g_output_stream_close()=>%s", error->message );
+            g_error_free( error );
+        }
+        cJSON_Delete( reply );
+        free( replyStr );
+    }
+
+    LOG_RETURN_VOID();
+    return FALSE;
+}
+
+static GSocketService*
+addCmdListener( CursesAppGlobals* aGlobals )
+{
+    LOG_FUNC();
+    LaunchParams* params = aGlobals->cag.params;
+    const XP_UCHAR* cmdsSocket = params->cmdsSocket;
+    GSocketService* service = NULL;
+    if ( !!cmdsSocket ) {
+        service = g_socket_service_new();
+
+        struct sockaddr_un addr = {0};
+        addr.sun_family = AF_UNIX;
+        strncpy( addr.sun_path, cmdsSocket, sizeof(addr.sun_path) - 1);
+        GSocketAddress* gsaddr
+            = g_socket_address_new_from_native (&addr, sizeof(addr) );
+        GError* error = NULL;
+        if ( g_socket_listener_add_address( (GSocketListener*)service, gsaddr, G_SOCKET_TYPE_STREAM,
+                                            G_SOCKET_PROTOCOL_DEFAULT, NULL, NULL, &error ) ) {
+        } else {
+            XP_LOGFF( "g_socket_listener_add_address() failed: %s", error->message );
+        }
+        g_object_unref( gsaddr );
+
+        g_signal_connect( service, "incoming", G_CALLBACK(on_incoming_signal), aGlobals );
+    }
+    LOG_RETURNF( "%p", service );
+    return service;
+}
+
 void
 cursesmain( XP_Bool XP_UNUSED(isServer), LaunchParams* params )
 {
@@ -1467,6 +1717,8 @@ cursesmain( XP_Bool XP_UNUSED(isServer), LaunchParams* params )
 
     g_globals.gameList = cgl_init( params, g_globals.winWidth, params->cursesListWinHt );
     cgl_refresh( g_globals.gameList );
+
+    GSocketService* cmdService = addCmdListener( &g_globals );
 
     // g_globals.amServer = isServer;
 /*     g_globals.cGlobals.params = params; */
@@ -1566,13 +1818,16 @@ cursesmain( XP_Bool XP_UNUSED(isServer), LaunchParams* params )
             handleNewGame( &g_globals, 0 );
         }
     } else {
-        /* Always open a game. Without that it won't attempt to connect and
-           stalls are likely in the test script case at least. If that's
-           annoying when running manually add a launch flag */
+        /* Always open a game (at random). Without that it won't attempt to
+           connect and stalls are likely in the test script case at least. If
+           that's annoying when running manually add a launch flag */
+        cgl_setSel( g_globals.gameList, -1 );
         handleOpenGame( &g_globals, 0 );
     }
 
     g_main_loop_run( g_globals.loop );
+
+    g_object_unref( cmdService );
 
     cb_closeAll( g_globals.cbState );
     

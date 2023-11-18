@@ -87,8 +87,8 @@ enum { ROW_ITEM, ROW_THUMB, NAME_ITEM, CREATED_ITEM, GAMEID_ITEM,
 #ifdef XWFEATURE_RELAY
        RELAYID_ITEM,
 #endif
-       OVER_ITEM, TURN_ITEM,LOCAL_ITEM, NMOVES_ITEM, NTOTAL_ITEM,
-       MISSING_ITEM, LASTTURN_ITEM, DUPTIMER_ITEM,
+       NPACKETS_ITEM, OVER_ITEM, TURN_ITEM,LOCAL_ITEM, NMOVES_ITEM,
+       NTOTAL_ITEM, MISSING_ITEM, LASTTURN_ITEM, DUPTIMER_ITEM,
 
        N_ITEMS,
 };
@@ -187,6 +187,7 @@ init_games_list( GtkAppGlobals* apg )
 #ifdef XWFEATURE_RELAY
     addTextColumn( list, "RelayID", RELAYID_ITEM );
 #endif
+    addTextColumn( list, "nPackets", NPACKETS_ITEM );
     addTextColumn( list, "Ended", OVER_ITEM );
     addTextColumn( list, "Turn", TURN_ITEM );
     addTextColumn( list, "Local", LOCAL_ITEM );
@@ -210,6 +211,7 @@ init_games_list( GtkAppGlobals* apg )
 #ifdef XWFEATURE_RELAY
                                               G_TYPE_STRING,  /*RELAYID_ITEM */
 #endif
+                                              G_TYPE_INT,     /* NPACKETS_ITEM */
                                               G_TYPE_BOOLEAN, /* OVER_ITEM */
                                               G_TYPE_INT,     /* TURN_ITEM */
                                               G_TYPE_STRING,  /* LOCAL_ITEM */
@@ -287,6 +289,7 @@ add_to_list( GtkWidget* list, sqlite3_int64 rowid, XP_Bool isNew,
                         RELAYID_ITEM, gib->relayID,
 #endif
                         TURN_ITEM, gib->turn,
+                        NPACKETS_ITEM, gib->nPending,
                         OVER_ITEM, gib->gameOver,
                         LOCAL_ITEM, localString,
                         NMOVES_ITEM, gib->nMoves,
@@ -402,7 +405,7 @@ delete_game( GtkAppGlobals* apg, sqlite3_int64 rowid )
 #ifdef DEBUG
     XP_Bool success =
 #endif
-        gdb_getGameInfo( params->pDb, rowid, &gib );
+        gdb_getGameInfoForRow( params->pDb, rowid, &gib );
     XP_ASSERT( success );
 #ifdef XWFEATURE_RELAY
     XP_U32 clientToken = makeClientToken( rowid, gib.seed );
@@ -687,7 +690,7 @@ static void
 onNewData( GtkAppGlobals* apg, sqlite3_int64 rowid, XP_Bool isNew )
 {
     GameInfo gib;
-    if ( gdb_getGameInfo( apg->cag.params->pDb, rowid, &gib ) ) {
+    if ( gdb_getGameInfoForRow( apg->cag.params->pDb, rowid, &gib ) ) {
         add_to_list( apg->listWidget, rowid, isNew, &gib );
         g_object_unref( gib.snap );
     }

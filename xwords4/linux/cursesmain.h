@@ -72,7 +72,6 @@ void cursesDrawCtxtFree( DrawCtx* dctx );
  * message....   Clearly there will need to be such a thing.
  */
 
-
 void cursesmain( XP_Bool isServer, LaunchParams* params );
 bool handleQuit( void* closure, int unused_key );
 void inviteReceivedCurses( void* aGlobals, const NetLaunchInfo* invite );

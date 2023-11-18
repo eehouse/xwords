@@ -78,7 +78,7 @@ static void
 addOne( CursGameList* cgl, sqlite3_int64 rowid )
 {
     GameInfo gib;
-    if ( gdb_getGameInfo( cgl->params->pDb, rowid, &gib ) ) {
+    if ( gdb_getGameInfoForRow( cgl->params->pDb, rowid, &gib ) ) {
         GameInfo* gibp = g_malloc( sizeof(*gibp) );
         *gibp = gib;
         cgl->games = g_slist_append( cgl->games, gibp );
@@ -121,7 +121,7 @@ cgl_refreshOne( CursGameList* cgl, sqlite3_int64 rowid, bool select )
     // elem
     
     GameInfo gib;
-    if ( gdb_getGameInfo( cgl->params->pDb, rowid, &gib ) ) {
+    if ( gdb_getGameInfoForRow( cgl->params->pDb, rowid, &gib ) ) {
         GameInfo* found;
         GSList* elem = findFor( cgl, rowid );
         if ( !!elem ) {
@@ -287,6 +287,16 @@ const GameInfo*
 cgl_getSel( CursGameList* cgl )
 {
     return g_slist_nth_data( cgl->games, cgl->curSel );
+}
+
+void
+cgl_setSel( CursGameList* cgl, int sel )
+{
+    if ( sel < 0 ) {
+        sel = XP_RANDOM() % g_slist_length( cgl->games );
+    }
+    cgl->curSel = sel;
+    adjustCurSel( cgl );
 }
 
 int

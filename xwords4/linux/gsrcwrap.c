@@ -39,6 +39,7 @@ typedef struct _WrapperState {
 } WrapperState;
 
 static GSList* s_idleProcs = NULL;
+static pthread_mutex_t s_idleProcsMutex = PTHREAD_MUTEX_INITIALIZER;
 
 static void
 printElapsedFor( struct timespec* first, struct timespec* second,
@@ -81,7 +82,9 @@ idle_wrapper( gpointer data )
     XP_USE( procName );
 #endif
     if ( 0 == result ) {        /* won't be getting called again */
+        pthread_mutex_lock( &s_idleProcsMutex );
         s_idleProcs = g_slist_remove( s_idleProcs, state );
+        pthread_mutex_unlock( &s_idleProcsMutex );
         g_free( state );
     }
 
@@ -98,7 +101,9 @@ _wrapIdle( GSourceFunc function, gpointer data,
     /* XP_LOGF( TAG "%s(): installing proc %s from caller %s", __func__, */
     /*          procName, caller ); */
     WrapperState* state = g_malloc0( sizeof(*state) );
+    pthread_mutex_lock( &s_idleProcsMutex );
     s_idleProcs = g_slist_append( s_idleProcs, state );
+    pthread_mutex_unlock( &s_idleProcsMutex );
     state->proc.srcProc = function;
     state->data = data;
     state->caller = caller;
