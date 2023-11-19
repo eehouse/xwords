@@ -2302,4 +2302,6 @@
     <string name="notagain_custom_xwd_fmt">Por favor, esteja ciente que esta lista de palavras, %1$s, não está disponível para outros para ser descarregado. Isto geralmente significa que é personalizado (compilado usando BYOD), mas também pode ser obsoleto.
 \n
 \nUse %1$s apenas para jogos locais. Se convidar alguém a um jogo que o usa, terá que o lhe dar manualmente, como CrossWords atualmente não suporta incluir listas de palavras em convites.</string>
+    <string name="gamel_menu_restart">Reiniciar a app</string>
+    <string name="summary_game_gone">Jogo remoto apagado</string>
 </resources>
