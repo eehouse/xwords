@@ -17,6 +17,8 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#include <curl/curl.h>
+
 #include "dutil.h"
 #include "mempool.h"
 #include "knownplyr.h"
@@ -27,6 +29,7 @@
 #include "dbgutil.h"
 #include "LocalizedStrIncludes.h"
 #include "nli.h"
+#include "strutils.h"
 
 #include "linuxdict.h"
 #include "cursesmain.h"
@@ -173,18 +176,48 @@ linux_dutil_onGameGoneReceived( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe),
 
 static void
 linux_dutil_ackMQTTMsg( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* topic,
-                        XP_U32 gameID, const MQTTDevID* senderID,
+                        XP_U32 gameID, const MQTTDevID* XP_UNUSED(senderID),
                         const XP_U8* msg, XP_U16 len )
 {
-    XP_USE(duc);
-    XP_USE(xwe);
-    XP_USE(gameID);
-    XP_USE(senderID);
-    XP_USE(msg);
-    XP_USE(len);
-    XP_USE(topic);
-    XP_LOGFF( "(topic=%s, gameID=%X): doing nothing", topic, gameID );
-}
+    LaunchParams* params = (LaunchParams*)duc->closure;
+
+    CURLcode res = curl_global_init(CURL_GLOBAL_DEFAULT);
+    XP_ASSERT(res == CURLE_OK);
+    CURL* curl = curl_easy_init();
+
+    char url[128];
+    snprintf( url, sizeof(url), "https://%s/xw4/api/v1/ack",
+              params->connInfo.mqtt.hostName );
+    curl_easy_setopt( curl, CURLOPT_URL, url );
+
+    XP_UCHAR* sum = linux_dutil_md5sum( duc, xwe, msg, len );
+    gchar* json
+        = g_strdup_printf("{\"topic\": \"%s\", \"gid\": %u, \"sum\": \"%s\"}",
+                          topic, gameID, sum );
+    // XP_LOGFF( "json: %s", json );
+    XP_FREE( duc->mpool, sum );
+    curl_easy_setopt( curl, CURLOPT_POSTFIELDS, json );
+    curl_easy_setopt( curl, CURLOPT_POSTFIELDSIZE, -1L );
+
+    struct curl_slist *headers = NULL;
+    headers = curl_slist_append(headers, "Expect:");
+    headers = curl_slist_append(headers, "Content-Type: application/json");
+    curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+
+    res = curl_easy_perform(curl);
+    XP_Bool success = res == CURLE_OK;
+    XP_LOGFF( "curl_easy_perform() => %d", res );
+    if ( ! success ) {
+        XP_LOGFF( "curl_easy_perform() failed: %s", curl_easy_strerror(res));
+    }
+
+    curl_slist_free_all( headers );
+    curl_easy_cleanup( curl );
+    curl_global_cleanup();
+    g_free( json );
+
+    LOG_RETURN_VOID();
+ }
 
 XW_DUtilCtxt*
 linux_dutils_init( MPFORMAL VTableMgr* vtMgr, void* closure )

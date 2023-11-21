@@ -371,7 +371,9 @@ mqttc_init( LaunchParams* params )
         int keepalive = 60;
         err = mosquitto_connect( mosq, params->connInfo.mqtt.hostName,
                                  params->connInfo.mqtt.port, keepalive );
-        XP_LOGFF( "mosquitto_connect(host=%s) => %s", params->connInfo.mqtt.hostName,
+        XP_LOGFF( "mosquitto_connect(host=%s, port=%d) => %s",
+                  params->connInfo.mqtt.hostName,
+                  params->connInfo.mqtt.port,
                   mosquitto_strerror(err) );
         if ( MOSQ_ERR_SUCCESS == err ) {
             err = mosquitto_loop_start( mosq );
