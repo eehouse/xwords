@@ -104,7 +104,7 @@
     <string name="pts">pntn</string>
     <string name="ids_badwords_fmt">Woord[en] %1$s niet gevonden in woordenlijst %2$s.</string>
     <string name="badwords_accept">" Wil je deze zet toch goed rekenen?"</string>
-    <string name="badwords_lost">" Beurt verloren."</string>
+    <string name="badwords_lost">Beurt verloren.</string>
     <string name="badwords_title">Foute woord[en]</string>
     <string name="board_menu_done">Beurt voorbij</string>
     <string name="board_menu_trade">Wisselen</string>
@@ -129,7 +129,7 @@
     <string name="strs_new_tiles_fmt">Nieuwe letters: %1$s</string>
     <string name="strd_cumulative_score_fmt">Totale score: %1$d\n</string>
     <string name="str_remote_moved_fmt">"Speler op afstand %1$s deed de volgende zet: "</string>
-    <string name="strd_time_penalty_sub_fmt">" - %1$d [tijd]"</string>
+    <string name="strd_time_penalty_sub_fmt">- %1$d [tijd]</string>
     <string name="str_pass">overslaan\n</string>
     <string name="strs_move_across_fmt">zet (van %1$s over)\n</string>
     <string name="strs_move_down_fmt">zet (van %1$s naar beneden)\n</string>
