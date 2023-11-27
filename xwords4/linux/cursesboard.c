@@ -629,7 +629,6 @@ cb_feedRow( CursesBoardState* cbState, sqlite3_int64 rowid, XP_U16 expectSeed,
     bool success = 0 == expectSeed || seed == expectSeed;
     if ( success ) {
         gameGotBuf( cGlobals, XP_TRUE, buf, len, from );
-        linuxSaveGame( &bGlobals->cGlobals );
     } else {
         XP_LOGFF( "msg for seed %d but I opened %d", expectSeed, seed );
     }
@@ -675,7 +674,6 @@ cb_addInvite( CursesBoardState* cbState, XP_U32 gameID, XP_U16 forceChannel,
     nli.remotesAreRobots = XP_TRUE;
 
     comms_invite( comms, NULL_XWE, &nli, destAddr, XP_TRUE );
-    linuxSaveGame( &bGlobals->cGlobals );
 }
 
 static void
