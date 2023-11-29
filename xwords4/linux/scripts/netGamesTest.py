@@ -39,15 +39,79 @@ class GuestGameInfo():
 class HostedInfo():
     def __init__(self, guests):
         self.guestNames = guests
-        self.gid = '{:X}'.format(random.randint(0, 0x7FFFFFFF))
+        self.gid = '{:08X}'.format(random.randint(0, 0x7FFFFFFF))
         self.invitesSent = False
 
     def __str__(self):
         return 'gid: {}, guests: {}'.format(self.gid, self.guestNames)
 
+class GameStatus():
+    _N_LINES = 3                # could be lower if all games have 2 players
+    _statuses = None
+
+    def __init__(self, gid):
+        self.gid = gid
+        self.players = []
+        self.allOver = True
+
+    def harvest(self, dev):
+        self.players.append(dev.host)
+        self.allOver = self.allOver and dev.gameOver(self.gid)
+
+    # Build a gid->status map for each game, querying each device in
+    # the game for details
+    @staticmethod
+    def makeAll():
+        statuses = {}
+        for dev in Device.getAll():
+            for game in dev._allGames():
+                gid = game.gid
+                assert 8 == len(gid)
+                if not gid in statuses: statuses[gid] = GameStatus(gid)
+                statuses[gid].harvest(dev)
+
+        for gid in list(statuses.keys()):
+            if statuses[gid].allOver: del statuses[gid]
+
+        GameStatus._statuses = statuses
+
+    @staticmethod
+    def numLines():
+        return GameStatus._N_LINES
+
+    # For all games, print the proper line of status for that game in
+    # exactly 8 chars
+    @staticmethod
+    def line(indx):
+        results = []
+        for gid in sorted(GameStatus._statuses.keys()):
+            if indx == 0:
+                results.append(gid)
+                continue
+            players = indx == 1 and g_NAMES[:2] or g_NAMES[2:]
+            lineTxt = ''
+            for player in players:
+                if not player in GameStatus._statuses[gid].players:
+                    lineTxt += '    '
+                else:
+                    dev = Device._devs.get(player)
+                    initial = player[0]
+                    arg2 = -1
+                    status = dev.gameStates.get(gid)
+                    if status:
+                        if status.get('gameOver', False):
+                            initial = initial.lower()
+                            arg2 = status.get('nPending', 0)
+                        else:
+                            arg2 = status.get('nTiles')
+                    lineTxt += '{}{: 3}'.format(initial, arg2)
+            results.append(lineTxt)
+        return ' '.join(results)
+
 class Device():
     _devs = {}
     _logdir = None
+    _nSteps = 0
 
     @staticmethod
     def setup():
@@ -279,7 +343,17 @@ class Device():
                 fil.write( "#!/bin/sh\n" )
                 fil.write( ' '.join([str(arg) for arg in scriptArgs]) + '\n' )
             os.chmod(self.script, 0o755)
-    
+
+    @staticmethod
+    def printStatus(statusSteps):
+        Device._nSteps += 1
+        print('.', end='', flush=True)
+        if 0 == Device._nSteps % statusSteps:
+            print()
+            GameStatus.makeAll()
+            for line in range(GameStatus.numLines()):
+                print(GameStatus.line(line))
+
     @staticmethod
     def deviceFor(args, host):
         dev = Device._devs.get(host)
@@ -292,10 +366,7 @@ class Device():
     # return all devices (up to 4 of them) that are host or guest in a
     # game with <gid>"""
     def devsWith(gid):
-        result = []
-        for dev in Device._devs.values():
-            if dev.haveGame(gid):
-                result.append(dev)
+        result = [dev for dev in Device._devs.values() if dev.haveGame(gid)]
         return result
 
     @staticmethod
@@ -349,7 +420,6 @@ def mainLoop(args, devs):
             dev.quit()
             devs.remove(dev)
             log(args, 'removed dev for {}; {} devs left'.format(dev.host, len(devs)))
-        # print('.', end='', flush=True)
 
         now = datetime.datetime.now()
         if devs and now > nextStallCheck:
@@ -368,6 +438,9 @@ def mainLoop(args, devs):
             log(args, 'exiting mainLoop with {} left (of {}) because out of time' \
                 .format(len(devs), startCount))
             break
+
+        if not args.VERBOSE:
+            Device.printStatus(args.STATUS_STEPS)
 
     for dev in devs:
         print('killing {}'.format(dev.host))
@@ -389,6 +462,10 @@ def build_devs(args):
 
 def mkParser():
     parser = argparse.ArgumentParser()
+
+    parser.add_argument('--status-steps', dest = 'STATUS_STEPS', type = int, default = 20,
+                        help = 'how many steps between status dumps (matters only if not --debug)')
+
     parser.add_argument('--send-chat', dest = 'SEND_CHAT', type = str, default = None,
                         help = 'the message to send')
 

@@ -46,7 +46,7 @@ typedef struct _GameInfo {
     XP_S16 nMissing;
     XP_U16 seed;
     XP_U16 nPending;
-    XP_U16 nTiles;
+    XP_S16 nTiles;
     XP_U32 lastMoveTime;
     XP_U32 dupTimerExpires;
     XP_U32 created;
