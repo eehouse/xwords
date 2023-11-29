@@ -1465,6 +1465,15 @@ makeGameFromArgs( CursesAppGlobals* aGlobals, cJSON* args )
     XP_ASSERT( !!tmp );
     gi.nPlayers = tmp->valueint;
 
+    tmp = cJSON_GetObjectItem( args, "boardSize" );
+    if ( !!tmp ) {
+        gi.boardSize = tmp->valueint;
+    }
+    tmp = cJSON_GetObjectItem( args, "traySize" );
+    if ( !!tmp ) {
+        gi.traySize = tmp->valueint;
+    }
+
     tmp = cJSON_GetObjectItem( args, "hostPosn" );
     XP_ASSERT( !!tmp );
     int hostPosn = tmp->valueint;

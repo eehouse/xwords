@@ -205,12 +205,15 @@ class Device():
             self.mqttDevID = response
 
     def makeGames(self):
+        args = self.args
         for remote in self.hostedGames:
-            guests = remote.guestNames
-            nPlayers = 1 + len(guests)
+            nPlayers = 1 + len(remote.guestNames)
             hostPosn = random.randint(0, nPlayers-1)
+            traySize = 0 == args.TRAY_SIZE and random.randint(7, 9) or args.TRAY_SIZE
+
             self._sendWaitReply('makeGame', nPlayers=nPlayers, hostPosn=hostPosn,
-                                gid=remote.gid, dict=self.args.DICTS[0])
+                                gid=remote.gid, dict=args.DICTS[0],
+                                boardSize=args.BOARD_SIZE, traySize=traySize)
 
     # This is the heart of things. Do something as long as we have a
     # game that needs to run.
@@ -537,11 +540,11 @@ def mkParser():
     parser.add_argument('--mqtt-port', dest = 'MQTT_PORT', default = 1883 )
     parser.add_argument('--mqtt-host', dest = 'MQTT_HOST', default = 'localhost' )
 
-    # parser.add_argument('--force-tray', dest = 'TRAYSIZE', default = 0, type = int,
-    #                     help = 'Always this many tiles per tray')
+    parser.add_argument('--force-tray', dest = 'TRAY_SIZE', default = 0, type = int,
+                        help = 'Always this many tiles per tray')
+    parser.add_argument('--board-size', dest = 'BOARD_SIZE', type = int, default = 15,
+                        help = 'Use <n>x<n> size board')
 
-    # parser.add_argument('--board-size', dest = 'BOARD_SIZE', type = int, default = 15,
-    #                     help = 'Use <n>x<n> size board')
     # parser.add_argument('--rematch-limit-secs', dest = 'REMATCH_SECS', type = int, default = 0,
     #                     help = 'rematch games that end within this many seconds of script launch')
 
