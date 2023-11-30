@@ -37,11 +37,15 @@ class GuestGameInfo():
 
 # Should be subclass of GuestGameInfo
 class HostedInfo():
-    def __init__(self, guests, gid=None, invitesSent=False):
-        self.guestNames = guests
-        self.gid = gid and gid or '{:08X}'.format(random.randint(1, 0x7FFFFFFF))
-        assert len(self.gid) == 8
-        self.invitesSent = invitesSent
+    def __init__(self, guestNames, **kwargs):
+        self.guestNames = guestNames
+        self.gid = kwargs.get('gid')
+        self.needsInvite = kwargs.get('needsInvite', True)
+
+    def setGid(self, gid):
+        # set only once!
+        assert 8 == len(gid) and not self.gid
+        self.gid = gid
 
     def __str__(self):
         return 'gid: {}, guests: {}'.format(self.gid, self.guestNames)
@@ -212,8 +216,11 @@ class Device():
 
     def setDevID(self):
         response = self._sendWaitReply('getMQTTDevID')
-        if response:
-            self.mqttDevID = response
+        mqttDevID = response and response.get('mqtt')
+        if mqttDevID:
+            self.mqttDevID = mqttDevID
+        else:
+            printError('no mqtt or no response')
 
     def makeGames(self):
         args = self.args
@@ -222,9 +229,12 @@ class Device():
             hostPosn = random.randint(0, nPlayers-1)
             traySize = 0 == args.TRAY_SIZE and random.randint(7, 9) or args.TRAY_SIZE
 
-            self._sendWaitReply('makeGame', nPlayers=nPlayers, hostPosn=hostPosn,
-                                gid=remote.gid, dict=args.DICTS[0],
-                                boardSize=args.BOARD_SIZE, traySize=traySize)
+            response = self._sendWaitReply('makeGame', nPlayers=nPlayers, hostPosn=hostPosn,
+                                           dict=args.DICTS[0], boardSize=args.BOARD_SIZE,
+                                           traySize=traySize)
+            newGid = response.get('newGid')
+            if newGid:
+                remote.setGid(newGid)
 
     # This is the heart of things. Do something as long as we have a
     # game that needs to run.
@@ -232,7 +242,7 @@ class Device():
         # self._log('step() called for {}'.format(self))
         stepped = False
         for game in self.hostedGames:
-            if not game.invitesSent:
+            if game.needsInvite:
                 self.invite(game)
                 stepped = True
                 break
@@ -258,29 +268,26 @@ class Device():
             guests.remove(self.host)
             self._log('rematch: new host: {}; new guest[s]: {}, gid: {}'.format(self.host, guests, newGid))
 
-            self.hostedGames.append(HostedInfo(guests, newGid, True))
+            self.hostedGames.append(HostedInfo(guests, needsInvite=False, gid=newGid))
             for guest in guests:
                 Device.getFor(guest).expectInvite(newGid)
 
     def invite(self, game):
         failed = False
         for ii in range(len(game.guestNames)):
-            guestName = game.guestNames[ii]
-            # self._log('inviting {}'.format(guestName))
-            guestDev = self._devs[guestName]
+            guestDev = Device.getFor(game.guestNames[ii])
 
             addr = {}
             if self.args.WITH_MQTT: addr['mqtt'] = guestDev.mqttDevID
             if self.args.WITH_SMS: addr['sms'] = guestDev.smsNumber
             response = self._sendWaitReply('invite', gid=game.gid,
-                                           channel=ii+1, addr=addr,
-                                           name=guestName) # just for logging
+                                           channel=ii+1, addr=addr)
 
             if response['success']:
                 guestDev.expectInvite(game.gid)
             else:
                 failed = True
-        if not failed: game.invitesSent = True
+        if not failed: game.needsInvite = False
 
     def expectInvite(self, gid):
         self.guestGames.append(GuestGameInfo(gid))
@@ -328,7 +335,7 @@ class Device():
             gids = [game.gid for game in allGames if not self.gameOver(game.gid)]
             response = self._sendWaitReply('quit', gids=gids)
 
-            for obj in response:
+            for obj in response.get('states', []):
                 gid = obj.get('gid')
                 self.gameStates[gid] = obj
 
@@ -415,9 +422,7 @@ class Device():
         return result
 
     def addGameWith(self, guests):
-        # self._log('addGameWith({})'.format(guests))
-        hosted = HostedInfo(guests)
-        self.hostedGames.append(hosted)
+        self.hostedGames.append(HostedInfo(guests, needsInvite=True))
         for guest in guests:
             Device.deviceFor(self.args, guest)    # in case this device never hosts
 
@@ -634,6 +639,8 @@ def termHandler(signum, frame):
     global gDone
     print('termHandler() called')
     gDone = True
+
+def printError(msg): print( 'ERROR: {}'.format(msg))
 
 def main():
     startTime = datetime.datetime.now()

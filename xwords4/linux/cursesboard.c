@@ -135,7 +135,7 @@ static void relay_requestJoin_curses( void* closure, const XP_UCHAR* devID,
                                       XP_U16 nPlayersTotal, XP_U16 seed, XP_U16 lang );
 #endif
 
-static XP_Bool rematch_and_save( CursesBoardGlobals* bGlobals, XP_U32* newGameID );
+static XP_Bool rematch_and_save( CursesBoardGlobals* bGlobals, XP_U32* newGameIDP );
 static void disposeBoard( CursesBoardGlobals* bGlobals );
 static void initCP( CommonGlobals* cGlobals );
 static CursesBoardGlobals* commonInit( CursesBoardState* cbState,
@@ -198,7 +198,8 @@ cb_open( CursesBoardState* cbState, sqlite3_int64 rowid, const cb_dims* dims )
 }
 
 bool
-cb_new( CursesBoardState* cbState, const cb_dims* dims, const CurGameInfo* gi )
+cb_new( CursesBoardState* cbState, const cb_dims* dims, const CurGameInfo* gi,
+        XP_U32* newGameIDP )
 {
     CursesBoardGlobals* bGlobals = findOrOpen( cbState, -1, gi, NULL );
     if ( !!bGlobals ) {
@@ -206,7 +207,13 @@ cb_new( CursesBoardState* cbState, const cb_dims* dims, const CurGameInfo* gi )
         enableDraw( bGlobals, dims );
         setupBoard( bGlobals );
     }
-    return NULL != bGlobals;
+    XP_Bool success = NULL != bGlobals;
+
+    if ( success && !!newGameIDP ) {
+        *newGameIDP = bGlobals->cGlobals.gi->gameID;
+    }
+
+    return success;
 }
 
 void
@@ -687,10 +694,10 @@ cb_addInvite( CursesBoardState* cbState, XP_U32 gameID, XP_U16 forceChannel,
 }
 
 XP_Bool
-cb_makeRematch( CursesBoardState* cbState, XP_U32 gameID, XP_U32* newGameID )
+cb_makeRematch( CursesBoardState* cbState, XP_U32 gameID, XP_U32* newGameIDP )
 {
     CursesBoardGlobals* bGlobals = findOrOpenForGameID( cbState, gameID, NULL, NULL );
-    XP_Bool success = rematch_and_save( bGlobals, newGameID );
+    XP_Bool success = rematch_and_save( bGlobals, newGameIDP );
     return success;
 }
 
@@ -998,7 +1005,7 @@ rematch_and_save_once( CursesBoardGlobals* bGlobals )
 }
 
 static XP_Bool
-rematch_and_save( CursesBoardGlobals* bGlobals, XP_U32* newGameID )
+rematch_and_save( CursesBoardGlobals* bGlobals, XP_U32* newGameIDP )
 {
     LOG_FUNC();
     CommonGlobals* cGlobals = &bGlobals->cGlobals;
@@ -1011,8 +1018,8 @@ rematch_and_save( CursesBoardGlobals* bGlobals, XP_U32* newGameID )
                                         &cGlobals->cp, &bGlobalsNew->cGlobals.procs,
                                         &bGlobalsNew->cGlobals.game, "newName" );
     if ( success ) {
-        if ( !!newGameID ) {
-            *newGameID = bGlobalsNew->cGlobals.gi->gameID;
+        if ( !!newGameIDP ) {
+            *newGameIDP = bGlobalsNew->cGlobals.gi->gameID;
         }
         linuxSaveGame( &bGlobalsNew->cGlobals );
     }

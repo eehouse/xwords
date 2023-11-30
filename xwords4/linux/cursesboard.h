@@ -41,7 +41,8 @@ void cb_resized( CursesBoardState* cbState, const cb_dims* dims );
 
 void cb_open( CursesBoardState* cbState, sqlite3_int64 rowid, const cb_dims* dims );
 bool cb_new( CursesBoardState* cbState, const cb_dims* dims,
-             const CurGameInfo* gi /* optional: use from globals if unset */ );
+             const CurGameInfo* gi /* optional: use from globals if unset */,
+             XP_U32* newGameIDP );
 void cb_newFor( CursesBoardState* cbState, const NetLaunchInfo* nli,
                 const cb_dims* dims );
 

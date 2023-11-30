@@ -315,7 +315,7 @@ handleNewGame( void* closure, int XP_UNUSED(key) )
     const CurGameInfo* gi = &aGlobals->cag.params->pgi;
     if ( !canMakeFromGI(gi) ) {
         ca_inform( aGlobals->mainWin, "Unable to create game (check params?)" );
-    } else if ( !cb_new( aGlobals->cbState, &dims, NULL ) ) {
+    } else if ( !cb_new( aGlobals->cbState, &dims, NULL, NULL ) ) {
         XP_ASSERT(0);
     }
     return XP_TRUE;
@@ -1456,7 +1456,7 @@ castGid( cJSON* obj )
 }
 
 static XP_U32
-gidFromObject( cJSON* obj )
+gidFromObject( const cJSON* obj )
 {
     cJSON* tmp = cJSON_GetObjectItem( obj, "gid" );
     XP_ASSERT( !!tmp );
@@ -1464,14 +1464,38 @@ gidFromObject( cJSON* obj )
 }
 
 static void
-addGIDToObject( cJSON* obj, XP_U32 gid, const char* key )
+makeObjIfNot( cJSON** objp )
 {
-    char buf[16];
-    sprintf( buf, "%08X", gid );
-    cJSON_AddStringToObject( obj, key, buf );
+    if ( NULL == *objp ) {
+        *objp = cJSON_CreateObject();
+    }
 }
 
-static XP_Bool
+static void
+addGIDToObject( cJSON** objp, XP_U32 gid, const char* key )
+{
+    makeObjIfNot( objp );
+
+    char buf[16];
+    sprintf( buf, "%08X", gid );
+    cJSON_AddStringToObject( *objp, key, buf );
+}
+
+static void
+addObjectToObject( cJSON** objp, const char* key, cJSON* value )
+{
+    makeObjIfNot( objp );
+    cJSON_AddItemToObject( *objp,  key, value );
+}
+
+static void
+addSuccessToObject( cJSON** objp, XP_Bool success )
+{
+    makeObjIfNot( objp );
+    cJSON_AddBoolToObject( *objp, "success", success );
+}
+
+static XP_U32
 makeGameFromArgs( CursesAppGlobals* aGlobals, cJSON* args )
 {
     LaunchParams* params = aGlobals->cag.params;
@@ -1480,8 +1504,6 @@ makeGameFromArgs( CursesAppGlobals* aGlobals, cJSON* args )
     gi.serverRole = SERVER_ISSERVER;
     gi.boardSize = 15;
     gi.traySize = 7;
-
-    gi.gameID = gidFromObject( args );
 
     cJSON* tmp = cJSON_GetObjectItem( args, "nPlayers" );
     XP_ASSERT( !!tmp );
@@ -1512,12 +1534,13 @@ makeGameFromArgs( CursesAppGlobals* aGlobals, cJSON* args )
 
     cb_dims dims;
     figureDims( aGlobals, &dims );
-    LOGGI( &gi, "prior to cb_new call" );
-    bool success = cb_new( aGlobals->cbState, &dims, &gi );
+
+    XP_U32 newGameID;
+    bool success = cb_new( aGlobals->cbState, &dims, &gi, &newGameID );
     XP_ASSERT( success );
 
     gi_disposePlayerInfo( MPPARM(params->mpool) &gi );
-    return success;
+    return newGameID;
 }
 
 static XP_Bool
@@ -1592,8 +1615,8 @@ getGamesStateForArgs( CursesAppGlobals* aGlobals, cJSON* args )
 
         GameInfo gib;
         if ( gdb_getGameInfoForGID( params->pDb, gameID, &gib ) ) {
-            cJSON* item = cJSON_CreateObject();
-            addGIDToObject( item, gameID, "gid" );
+            cJSON* item = NULL;
+            addGIDToObject( &item, gameID, "gid" );
             cJSON_AddBoolToObject( item, "gameOver", gib.gameOver );
             cJSON_AddNumberToObject( item, "nPending", gib.nPending );
             cJSON_AddNumberToObject( item, "nMoves", gib.nMoves );
@@ -1602,18 +1625,6 @@ getGamesStateForArgs( CursesAppGlobals* aGlobals, cJSON* args )
             cJSON_AddItemToArray( result, item );
         }        
     }
-    return result;
-}
-
-static cJSON*
-makeBoolObj( const char* key, XP_Bool value )
-{
-    cJSON* result = cJSON_CreateObject();
-    cJSON_AddBoolToObject( result, key, value );
-    /* char buf[1000]; */
-    /* if ( cJSON_PrintPreallocated( result, buf, sizeof(buf), 0 ) ) { */
-    /*     XP_LOGFF( "(%s=>%s)=>%s", key, boolToStr(value), buf ); */
-    /* } */
     return result;
 }
 
@@ -1652,46 +1663,48 @@ on_incoming_signal( GSocketService* XP_UNUSED(service),
             const char* cmdStr = cmd->valuestring;
 
             cJSON* response = NULL;
+            XP_Bool success = XP_TRUE;
 
             if ( 0 == strcmp( cmdStr, "quit" ) ) {
-                response = getGamesStateForArgs( aGlobals, args );
+                cJSON* gids = getGamesStateForArgs( aGlobals, args );
+                addObjectToObject( &response, "states", gids );
                 handleQuit( aGlobals, 0 );
             } else if ( 0 == strcmp( cmdStr, "getMQTTDevID" ) ) {
                 MQTTDevID devID;
                 dvc_getMQTTDevID( params->dutil, NULL_XWE, &devID );
                 char buf[64];
                 formatMQTTDevID( &devID, buf, sizeof(buf) );
-                response = cJSON_CreateString( buf );
+                cJSON* devid = cJSON_CreateString( buf );
+                addObjectToObject( &response, "mqtt", devid );
             } else if ( 0 == strcmp( cmdStr, "makeGame" ) ) {
-                XP_Bool success = makeGameFromArgs( aGlobals, args );
-                response = makeBoolObj( "success", success );
+                XP_U32 newGameID = makeGameFromArgs( aGlobals, args );
+                success = 0 != newGameID;
+                if ( success ) {
+                    addGIDToObject( &response, newGameID, "newGid" );
+                }
             } else if ( 0 == strcmp( cmdStr, "invite" ) ) {
-                XP_Bool success = inviteFromArgs( aGlobals, args );
-                response = makeBoolObj( "success", success );
+                success = inviteFromArgs( aGlobals, args );
             } else if ( 0 == strcmp( cmdStr, "moveIf" ) ) {
-                XP_Bool success = moveifFromArgs( aGlobals, args );
-                response = makeBoolObj( "success", success );
+                success = moveifFromArgs( aGlobals, args );
             } else if ( 0 == strcmp( cmdStr, "rematch" ) ) {
                 XP_U32 newGameID = rematchFromArgs( aGlobals, args );
-                if ( 0 != newGameID ) {
-                    response = cJSON_CreateObject();
-                    addGIDToObject( response, newGameID, "newGid" );
+                success = 0 != newGameID;
+                if ( success ) {
+                    addGIDToObject( &response, newGameID, "newGid" );
                 }
-            } else if ( 0 == strcmp( cmdStr, "gamesState" ) ) {
-                response = getGamesStateForArgs( aGlobals, args );
             } else {
+                success = XP_FALSE;
                 XP_ASSERT(0);
             }
 
-            XP_ASSERT( !!response );
-            if ( !!response ) {
-                cJSON* tmp = cJSON_CreateObject();
-                cJSON_AddStringToObject( tmp, "cmd", cmdStr );
-                cJSON_AddNumberToObject( tmp, "key", key->valueint );
-                cJSON_AddItemToObject( tmp,  "response", response );
+            addSuccessToObject( &response, success );
 
-                /*(void)*/cJSON_AddItemToArray( reply, tmp );
-            }
+            cJSON* tmp = cJSON_CreateObject();
+            cJSON_AddStringToObject( tmp, "cmd", cmdStr );
+            cJSON_AddNumberToObject( tmp, "key", key->valueint );
+            cJSON_AddItemToObject( tmp,  "response", response );
+
+            /*(void)*/cJSON_AddItemToArray( reply, tmp );
         }
         cJSON_Delete( cmds );   /* this apparently takes care of all children */
 
