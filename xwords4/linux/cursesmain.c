@@ -1447,6 +1447,30 @@ onGameSaved( CursesAppGlobals* aGlobals, sqlite3_int64 rowid, bool isNew )
     cgl_refreshOne( aGlobals->gameList, rowid, isNew );
 }
 
+static XP_U32
+castGid( cJSON* obj )
+{
+    XP_U32 gameID;
+    sscanf( obj->valuestring, "%X", &gameID );
+    return gameID;
+}
+
+static XP_U32
+gidFromObject( cJSON* obj )
+{
+    cJSON* tmp = cJSON_GetObjectItem( obj, "gid" );
+    XP_ASSERT( !!tmp );
+    return castGid( tmp );
+}
+
+static void
+addGIDToObject( cJSON* obj, XP_U32 gid, const char* key )
+{
+    char buf[16];
+    sprintf( buf, "%08X", gid );
+    cJSON_AddStringToObject( obj, key, buf );
+}
+
 static XP_Bool
 makeGameFromArgs( CursesAppGlobals* aGlobals, cJSON* args )
 {
@@ -1457,11 +1481,9 @@ makeGameFromArgs( CursesAppGlobals* aGlobals, cJSON* args )
     gi.boardSize = 15;
     gi.traySize = 7;
 
-    cJSON* tmp = cJSON_GetObjectItem( args, "gid" );
-    XP_ASSERT( !!tmp );
-    sscanf( tmp->valuestring, "%X", &gi.gameID );
+    gi.gameID = gidFromObject( args );
 
-    tmp = cJSON_GetObjectItem( args, "nPlayers" );
+    cJSON* tmp = cJSON_GetObjectItem( args, "nPlayers" );
     XP_ASSERT( !!tmp );
     gi.nPlayers = tmp->valueint;
 
@@ -1506,18 +1528,13 @@ inviteFromArgs( CursesAppGlobals* aGlobals, cJSON* args )
     /*     XP_LOGFF( "(%s)", buf ); */
     /* } */
 
-    XP_U32 gameID;
-    cJSON* tmp = cJSON_GetObjectItem( args, "gid" );
-    XP_ASSERT( !!tmp );
-    sscanf( tmp->valuestring, "%X", &gameID );
+    XP_U32 gameID = gidFromObject( args );
 
-    tmp = cJSON_GetObjectItem( args, "channel" );
+    cJSON* tmp = cJSON_GetObjectItem( args, "channel" );
     XP_ASSERT( !!tmp );
     XP_U16 channel = tmp->valueint;
     XP_LOGFF( "read channel: %X", channel );
 
-    /* CursesBoardState* cbState, XP_U32 gameID, XP_U16 forceChannel, */
-    /*           const CommsAddrRec* destAddr */
     CommsAddrRec destAddr = {0};
     cJSON* addr = cJSON_GetObjectItem( args, "addr" );
     XP_ASSERT( !!addr );
@@ -1541,6 +1558,28 @@ inviteFromArgs( CursesAppGlobals* aGlobals, cJSON* args )
     return XP_TRUE;
 }
 
+static XP_Bool
+moveifFromArgs( CursesAppGlobals* aGlobals, cJSON* args )
+{
+    XP_U32 gameID = gidFromObject( args );
+    return cb_makeMoveIf( aGlobals->cbState, gameID );
+}
+
+/* Return 'gid' of new game */
+static XP_U32
+rematchFromArgs( CursesAppGlobals* aGlobals, cJSON* args )
+{
+    XP_U32 result = 0;
+
+    XP_U32 gameID = gidFromObject( args );
+
+    XP_U32 newGameID = 0;
+    if ( cb_makeRematch( aGlobals->cbState, gameID, &newGameID ) ) {
+        result = newGameID;
+    }
+    return result;
+}
+
 static cJSON*
 getGamesStateForArgs( CursesAppGlobals* aGlobals, cJSON* args )
 {
@@ -1549,14 +1588,12 @@ getGamesStateForArgs( CursesAppGlobals* aGlobals, cJSON* args )
     LaunchParams* params = aGlobals->cag.params;
     cJSON* gids = cJSON_GetObjectItem(args, "gids" );
     for ( int ii = 0 ; ii < cJSON_GetArraySize(gids) ; ++ii ) {
-        XP_U32 gameID;
-        cJSON* gid = cJSON_GetArrayItem( gids, ii );
-        sscanf( gid->valuestring, "%X", &gameID );
+        XP_U32 gameID = castGid( cJSON_GetArrayItem( gids, ii ) );
 
         GameInfo gib;
         if ( gdb_getGameInfoForGID( params->pDb, gameID, &gib ) ) {
             cJSON* item = cJSON_CreateObject();
-            cJSON_AddStringToObject( item, "gid", gid->valuestring );
+            addGIDToObject( item, gameID, "gid" );
             cJSON_AddBoolToObject( item, "gameOver", gib.gameOver );
             cJSON_AddNumberToObject( item, "nPending", gib.nPending );
             cJSON_AddNumberToObject( item, "nMoves", gib.nMoves );
@@ -1631,6 +1668,15 @@ on_incoming_signal( GSocketService* XP_UNUSED(service),
             } else if ( 0 == strcmp( cmdStr, "invite" ) ) {
                 XP_Bool success = inviteFromArgs( aGlobals, args );
                 response = makeBoolObj( "success", success );
+            } else if ( 0 == strcmp( cmdStr, "moveIf" ) ) {
+                XP_Bool success = moveifFromArgs( aGlobals, args );
+                response = makeBoolObj( "success", success );
+            } else if ( 0 == strcmp( cmdStr, "rematch" ) ) {
+                XP_U32 newGameID = rematchFromArgs( aGlobals, args );
+                if ( 0 != newGameID ) {
+                    response = cJSON_CreateObject();
+                    addGIDToObject( response, newGameID, "newGid" );
+                }
             } else if ( 0 == strcmp( cmdStr, "gamesState" ) ) {
                 response = getGamesStateForArgs( aGlobals, args );
             } else {

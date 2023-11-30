@@ -37,10 +37,11 @@ class GuestGameInfo():
 
 # Should be subclass of GuestGameInfo
 class HostedInfo():
-    def __init__(self, guests):
+    def __init__(self, guests, gid=None, invitesSent=False):
         self.guestNames = guests
-        self.gid = '{:08X}'.format(random.randint(0, 0x7FFFFFFF))
-        self.invitesSent = False
+        self.gid = gid and gid or '{:08X}'.format(random.randint(1, 0x7FFFFFFF))
+        assert len(self.gid) == 8
+        self.invitesSent = invitesSent
 
     def __str__(self):
         return 'gid: {}, guests: {}'.format(self.gid, self.guestNames)
@@ -165,6 +166,16 @@ class Device():
             while not self.endTime or not os.path.exists(self.cmdSocketName):
                 time.sleep(0.2)
 
+    def moveOne(self):
+        moved = False
+        gids = [game.gid for game in self._allGames() if not self.gameOver(game.gid)]
+        random.shuffle(gids)
+        for gid in gids:
+            response = self._sendWaitReply('moveIf', gid=gid)
+            moved = response.get('success', False)
+            if moved: break
+        return moved
+
     def _sendWaitReply(self, cmd, **kwargs):
         self.launchIfNot()
 
@@ -229,14 +240,27 @@ class Device():
         if not stepped:
             if not self.endTime:
                 self.launchIfNot()
+            elif datetime.datetime.now() > self.endTime:
+                self.quit()
+            elif self.moveOne():
+                pass
             else:
-                now = datetime.datetime.now()
-                if now > self.endTime:
-                    self.quit()
-                else:
-                    # self._log('sleeping with {} to go'.format(self.endTime-now))
-                    time.sleep(0.5)
+                # self._log('sleeping with {} to go'.format(self.endTime-now))
+                time.sleep(0.5)
             stepped = True;
+
+    # I may be a guest or a host in this game. Rematch works either
+    # way. But how I figure out the other players differs.
+    def rematch(self, gid):
+        newGid = self._sendWaitReply('rematch', gid=gid).get('newGid')
+        if newGid:
+            guests = Device.playersIn(gid)
+            guests.remove(self.host)
+            self._log('rematch: new host: {}; new guest[s]: {}, gid: {}'.format(self.host, guests, newGid))
+
+            self.hostedGames.append(HostedInfo(guests, newGid, True))
+            for guest in guests:
+                Device.getFor(guest).expectInvite(newGid)
 
     def invite(self, game):
         failed = False
@@ -366,6 +390,10 @@ class Device():
         return dev
 
     @staticmethod
+    def playersIn(gid):
+        return [dev.host for dev in Device.devsWith(gid)]
+
+    @staticmethod
     # return all devices (up to 4 of them) that are host or guest in a
     # game with <gid>"""
     def devsWith(gid):
@@ -375,6 +403,16 @@ class Device():
     @staticmethod
     def getAll():
         return [dev for dev in Device._devs.values()]
+
+    @staticmethod
+    def getFor(player):
+        result = None
+        for dev in Device.getAll():
+            if dev.host == player:
+                result = dev
+                break;
+        assert result
+        return result
 
     def addGameWith(self, guests):
         # self._log('addGameWith({})'.format(guests))
@@ -407,11 +445,22 @@ def openOnExit(args):
         subprocess.Popen([str(arg) for arg in appargs], stdout = subprocess.DEVNULL,
                          stderr = subprocess.DEVNULL, universal_newlines = True)
 
+# Pick a game that's joined -- all invites accepted -- and call
+# rematch on it. Return True if successful
+def testRematch():
+    for dev in Device.getAll():
+        for gid, status in dev.gameStates.items():
+            if 2 < status.get('nMoves', 0):
+                dev.rematch(gid)
+                return True
+    return False
+
 def mainLoop(args, devs):
     startCount = len(devs)
 
     startTime = datetime.datetime.now()
     nextStallCheck = startTime + datetime.timedelta(seconds = 20)
+    rematchTested = False
 
     while 0 < len(devs):
         if gDone:
@@ -423,6 +472,8 @@ def mainLoop(args, devs):
             dev.quit()
             devs.remove(dev)
             log(args, 'removed dev for {}; {} devs left'.format(dev.host, len(devs)))
+
+        if not rematchTested: rematchTested = testRematch()
 
         now = datetime.datetime.now()
         if devs and now > nextStallCheck:

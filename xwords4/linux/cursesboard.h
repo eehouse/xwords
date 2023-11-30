@@ -52,6 +52,9 @@ void cb_feedGame( CursesBoardState* cbState, XP_U32 gameID,
                   const XP_U8* buf, XP_U16 len, const CommsAddrRec* from );
 void cb_addInvite( CursesBoardState* cbState, XP_U32 gameID, XP_U16 forceChannel,
                    const CommsAddrRec* destAddr );
+XP_Bool cb_makeRematch( CursesBoardState* cbState, XP_U32 gameID, XP_U32* newGameID );
+XP_Bool cb_makeMoveIf( CursesBoardState* cbState, XP_U32 gameID );
+
 void cb_closeAll( CursesBoardState* cbState );
 
 #endif
