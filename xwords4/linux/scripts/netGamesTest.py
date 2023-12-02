@@ -5,6 +5,7 @@ import argparse, datetime, json, os, random, shutil, signal, \
 
 g_NAMES = ['Brynn', 'Ariela', 'Kati', 'Eric']
 gDone = False
+gGamesMade = 0
 
 def log(args, msg):
     if args.VERBOSE:
@@ -31,21 +32,32 @@ def chooseNames(nPlayers):
         result.append(players.pop(indx))
     return result
 
-class GuestGameInfo():
-    def __init__(self, gid):
+class GameInfo():
+    def __init__(self, gid, rematchLevel):
         self.gid = gid
-
-# Should be subclass of GuestGameInfo
-class HostedInfo():
-    def __init__(self, guestNames, **kwargs):
-        self.guestNames = guestNames
-        self.gid = kwargs.get('gid')
-        self.needsInvite = kwargs.get('needsInvite', True)
+        self.state = {}
+        assert isinstance(rematchLevel, int)
+        self.rematchLevel = rematchLevel
 
     def setGid(self, gid):
         # set only once!
         assert 8 == len(gid) and not self.gid
         self.gid = gid
+
+    def gameOver(self):
+        return self.state.get('gameOver', False)
+
+class GuestGameInfo(GameInfo):
+    def __init__(self, gid, rematchLevel):
+        super().__init__(gid, rematchLevel)
+
+class HostGameInfo(GameInfo):
+    def __init__(self, guestNames, **kwargs):
+        super().__init__(kwargs.get('gid'), kwargs.get('rematchLevel'))
+        self.guestNames = guestNames
+        self.needsInvite = kwargs.get('needsInvite', True)
+        global gGamesMade;
+        gGamesMade += 1
 
     def __str__(self):
         return 'gid: {}, guests: {}'.format(self.gid, self.guestNames)
@@ -102,13 +114,13 @@ class GameStatus():
                     dev = Device._devs.get(player)
                     initial = player[0]
                     arg2 = -1
-                    status = dev.gameStates.get(gid)
-                    if status:
-                        if status.get('gameOver', False):
+                    gameState = dev.gameFor(gid).state
+                    if gameState:
+                        if gameState.get('gameOver', False):
                             initial = initial.lower()
-                            arg2 = status.get('nPending', 0)
+                            arg2 = gameState.get('nPending', 0)
                         else:
-                            arg2 = status.get('nTiles')
+                            arg2 = gameState.get('nTiles')
                     lineTxt += '{}{: 3}'.format(initial, arg2)
             results.append(lineTxt)
         return ' '.join(results)
@@ -136,13 +148,12 @@ class Device():
         self.mqttDevID = None
         self.smsNumber = args.WITH_SMS and '{}_phone'.format(host) or None
         self.host = host
-        self.hostedGames = []       # array of HostedInfo for each game I host
+        self.hostedGames = []       # array of HostGameInfo for each game I host
         self.guestGames = []
         self.script = '{}/{}.sh'.format(Device._logdir, host)
         self.dbName = '{}/{}.db'.format(Device._logdir, host)
         self.logfile = '{}/{}_log.txt'.format(Device._logdir, host)
         self.cmdSocketName = '{}/{}.sock'.format(Device._logdir, host)
-        self.gameStates = {}
         self._keyCur = 10000 * (1 + g_NAMES.index(host))
 
     def init(self):
@@ -251,7 +262,7 @@ class Device():
             if not self.endTime:
                 self.launchIfNot()
             elif datetime.datetime.now() > self.endTime:
-                self.quit()
+                self.rematchOrQuit()
             elif self.moveOne():
                 pass
             else:
@@ -261,16 +272,20 @@ class Device():
 
     # I may be a guest or a host in this game. Rematch works either
     # way. But how I figure out the other players differs.
-    def rematch(self, gid):
+    def rematch(self, game):
+        gid = game.gid
         newGid = self._sendWaitReply('rematch', gid=gid).get('newGid')
         if newGid:
             guests = Device.playersIn(gid)
             guests.remove(self.host)
             self._log('rematch: new host: {}; new guest[s]: {}, gid: {}'.format(self.host, guests, newGid))
 
-            self.hostedGames.append(HostedInfo(guests, needsInvite=False, gid=newGid))
+            rematchLevel = game.rematchLevel - 1
+            assert rematchLevel >= 0 # fired
+            self.hostedGames.append(HostGameInfo(guests, needsInvite=False, gid=newGid,
+                                                 rematchLevel=rematchLevel))
             for guest in guests:
-                Device.getFor(guest).expectInvite(newGid)
+                Device.getFor(guest).expectInvite(newGid, rematchLevel)
 
     def invite(self, game):
         failed = False
@@ -284,13 +299,13 @@ class Device():
                                            channel=ii+1, addr=addr)
 
             if response['success']:
-                guestDev.expectInvite(game.gid)
+                guestDev.expectInvite(game.gid, game.rematchLevel)
             else:
                 failed = True
         if not failed: game.needsInvite = False
 
-    def expectInvite(self, gid):
-        self.guestGames.append(GuestGameInfo(gid))
+    def expectInvite(self, gid, rematchLevel):
+        self.guestGames.append(GuestGameInfo(gid, rematchLevel))
         self.launchIfNot()
 
     # Return true only if all games I host are finished on all games.
@@ -311,7 +326,7 @@ class Device():
     def gameOver(self, gid):
         result = False
         """Is the game is over for *this* device"""
-        gameState = self.gameStates.get(gid, None)
+        gameState = self.gameFor(gid).state
         if gameState:
             result = gameState.get('gameOver', False) and 0 == gameState.get('nPending', 1)
         # if result: self._log('gameOver({}) => {}'.format(gid, result))
@@ -329,6 +344,32 @@ class Device():
         withGid = [game for game in self._allGames() if gid == game.gid]
         return 0 < len(withGid)
 
+    def gameFor(self, gid):
+        for game in self._allGames():
+            if gid == game.gid:
+                return game
+
+    def rematchOrQuit(self):
+        if self.endTime:
+            gids = [game.gid for game in self._allGames() if not self.gameOver(game.gid)]
+            response = self._sendWaitReply('getStates', gids=gids)
+
+            anyRematched = False
+            for obj in response.get('states', []):
+                game = self.gameFor(obj.get('gid'))
+                game.state = obj
+
+                if game.gameOver() and 0 < game.rematchLevel:
+                    self.rematch(game)
+                    game.rematchLevel = 0 # so won't be used again
+                    anyRematched = True
+
+            if not anyRematched:
+                response = self._sendWaitReply('quit')
+                self.watcher.join()
+                self.watcher = None
+                assert not self.endTime
+
     def quit(self):
         if self.endTime:
             allGames = self._allGames()
@@ -336,8 +377,7 @@ class Device():
             response = self._sendWaitReply('quit', gids=gids)
 
             for obj in response.get('states', []):
-                gid = obj.get('gid')
-                self.gameStates[gid] = obj
+                self.gameFor(obj.get('gid')).state = obj
 
             # wait for the thing to actually die
             self.watcher.join()
@@ -422,7 +462,8 @@ class Device():
         return result
 
     def addGameWith(self, guests):
-        self.hostedGames.append(HostedInfo(guests, needsInvite=True))
+        self.hostedGames.append(HostGameInfo(guests, needsInvite=True,
+                                             rematchLevel=self.args.REMATCH_LEVEL))
         for guest in guests:
             Device.deviceFor(self.args, guest)    # in case this device never hosts
 
@@ -450,22 +491,11 @@ def openOnExit(args):
         subprocess.Popen([str(arg) for arg in appargs], stdout = subprocess.DEVNULL,
                          stderr = subprocess.DEVNULL, universal_newlines = True)
 
-# Pick a game that's joined -- all invites accepted -- and call
-# rematch on it. Return True if successful
-def testRematch():
-    for dev in Device.getAll():
-        for gid, status in dev.gameStates.items():
-            if 2 < status.get('nMoves', 0):
-                dev.rematch(gid)
-                return True
-    return False
-
 def mainLoop(args, devs):
     startCount = len(devs)
 
     startTime = datetime.datetime.now()
     nextStallCheck = startTime + datetime.timedelta(seconds = 20)
-    rematchTested = False
 
     while 0 < len(devs):
         if gDone:
@@ -477,8 +507,6 @@ def mainLoop(args, devs):
             dev.quit()
             devs.remove(dev)
             log(args, 'removed dev for {}; {} devs left'.format(dev.host, len(devs)))
-
-        if not rematchTested: rematchTested = testRematch()
 
         now = datetime.datetime.now()
         if devs and now > nextStallCheck:
@@ -601,8 +629,8 @@ def mkParser():
     parser.add_argument('--board-size', dest = 'BOARD_SIZE', type = int, default = 15,
                         help = 'Use <n>x<n> size board')
 
-    # parser.add_argument('--rematch-limit-secs', dest = 'REMATCH_SECS', type = int, default = 0,
-    #                     help = 'rematch games that end within this many seconds of script launch')
+    parser.add_argument('--rematch-level', dest = 'REMATCH_LEVEL', type = int, default = 0,
+                        help = 'rematch games down to this ancestry/depth')
 
     # envpat = 'DISCON_COREPAT'
     # parser.add_argument('--core-pat', dest = 'CORE_PAT', default = os.environ.get(envpat),
@@ -665,6 +693,9 @@ def main():
         dev.makeGames()
         dev.quit()
     mainLoop(args, devs)
+
+    elapsed = datetime.datetime.now() - startTime
+    print('played {} games in {}'.format(gGamesMade, elapsed))
 
     if args.OPEN_ON_EXIT: openOnExit(args)
 

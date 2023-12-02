@@ -1692,6 +1692,9 @@ on_incoming_signal( GSocketService* XP_UNUSED(service),
                 if ( success ) {
                     addGIDToObject( &response, newGameID, "newGid" );
                 }
+            } else if ( 0 == strcmp( cmdStr, "getStates" ) ) {
+                cJSON* gids = getGamesStateForArgs( aGlobals, args );
+                addObjectToObject( &response, "states", gids );
             } else {
                 success = XP_FALSE;
                 XP_ASSERT(0);
