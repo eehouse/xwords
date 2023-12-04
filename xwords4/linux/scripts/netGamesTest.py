@@ -6,11 +6,16 @@ import argparse, datetime, json, os, random, shutil, signal, \
 g_NAMES = ['Brynn', 'Ariela', 'Kati', 'Eric']
 gDone = False
 gGamesMade = 0
+g_LOGFILE = None
 
 def log(args, msg):
+    now = datetime.datetime.strftime(datetime.datetime.now(), '%X.%f')
+    msg = '{} {}'.format(now, msg)
     if args.VERBOSE:
-        now = datetime.datetime.strftime(datetime.datetime.now(), '%X.%f')
-        print('{} {}'.format(now, msg))
+        print(msg)
+    global g_LOGFILE
+    if g_LOGFILE:
+        print(msg, file=g_LOGFILE)
 
 def pick_ndevs(args):
     RNUM = random.randint(0, 99)
@@ -131,16 +136,8 @@ class Device():
     _nSteps = 0
 
     @staticmethod
-    def setup():
-        logdir = os.path.splitext(os.path.basename(sys.argv[0]))[0] + '_logs'
+    def setup(logdir):
         Device._logdir = logdir
-        # Move an existing logdir aside
-        if os.path.exists(logdir):
-            shutil.rmtree(logdir)
-            # shutil.move(logdir, '/tmp/' + logdir + '_' + str(random.randint(0, 100000)))
-        os.mkdir(logdir)
-        for d in ['done', 'dead',]:
-            os.mkdir(logdir + '/' + d)
 
     def __init__(self, args, host):
         self.args = args
@@ -656,12 +653,6 @@ def parseArgs():
 
 def assignDefaults(args):
     if len(args.DICTS) == 0: args.DICTS.append('CollegeEng_2to8.xwd')
-    args.LOGDIR = os.path.splitext(os.path.basename(sys.argv[0]))[0] + '_logs'
-    # Move an existing logdir aside
-    if os.path.exists(args.LOGDIR):
-        shutil.move(args.LOGDIR, '/tmp/' + args.LOGDIR + '_' + str(random.randint(0, 100000)))
-    for d in ['', 'done', 'dead',]:
-        os.mkdir(args.LOGDIR + '/' + d)
 
 def termHandler(signum, frame):
     global gDone
@@ -670,18 +661,35 @@ def termHandler(signum, frame):
 
 def printError(msg): print( 'ERROR: {}'.format(msg))
 
+def initLogs():
+    scriptName = os.path.splitext(os.path.basename(sys.argv[0]))[0]
+    logdir = scriptName + '_logs'
+    if os.path.exists(logdir):
+        shutil.rmtree(logdir)
+        # shutil.move(logdir, '/tmp/' + logdir + '_' + str(random.randint(0, 100000)))
+    os.mkdir(logdir)
+
+    logfilepath = '{}/{}_log.txt'.format(logdir, scriptName)
+    global g_LOGFILE
+    g_LOGFILE = open(logfilepath, 'w')
+
+    return logdir
+
 def main():
     startTime = datetime.datetime.now()
     signal.signal(signal.SIGINT, termHandler)
 
+    logdir = initLogs()
+
     args = parseArgs()
+
     if args.SEED: random.seed(args.SEED)
     # Hack: old files confuse things. Remove is simple fix good for now
     if args.WITH_SMS:
         try: rmtree('/tmp/xw_sms')
         except: None
 
-    Device.setup()
+    Device.setup(logdir)       # deletes old logdif
     devs = build_devs(args)
     for dev in devs:
         dev.init()
@@ -696,6 +704,8 @@ def main():
 
     elapsed = datetime.datetime.now() - startTime
     print('played {} games in {}'.format(gGamesMade, elapsed))
+
+    if g_LOGFILE: g_LOGFILE.close()
 
     if args.OPEN_ON_EXIT: openOnExit(args)
 
