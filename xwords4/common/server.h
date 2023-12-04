@@ -44,7 +44,9 @@ void server_reset( ServerCtxt* server, XWEnv xwe, CommsCtxt* comms );
 void server_destroy( ServerCtxt* server );
 
 void server_prefsChanged( ServerCtxt* server, const CommonPrefs* cp );
+#ifdef XWFEATURE_RELAY
 void server_onRoleChanged( ServerCtxt* server, XWEnv xwe, XP_Bool amNowGuest );
+#endif
 
 typedef void (*TurnChangeListener)( XWEnv xwe, void* data );
 void server_setTurnChangeListener( ServerCtxt* server, TurnChangeListener tl,

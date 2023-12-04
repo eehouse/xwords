@@ -460,11 +460,11 @@ init_relay( CommsCtxt* comms, XWEnv xwe, XP_U16 nPlayersHere, XP_U16 nPlayersTot
 CommsCtxt* 
 comms_make( MPFORMAL XWEnv xwe, XW_UtilCtxt* util, XP_Bool isServer,
             const CommsAddrRec* selfAddr, const CommsAddrRec* hostAddr,
+            const TransportProcs* procs,
 #ifdef XWFEATURE_RELAY
             XP_U16 nPlayersHere, XP_U16 nPlayersTotal,
-#endif
-            const TransportProcs* procs,
             RoleChangeProc rcp, void* rcClosure,
+#endif
             XP_U16 forceChannel
 #ifdef SET_GAMESEED
             , XP_U16 gameSeed
@@ -489,14 +489,14 @@ comms_make( MPFORMAL XWEnv xwe, XW_UtilCtxt* util, XP_Bool isServer,
         comms->xportFlags = comms->procs.flags;
 #endif
     }
-    XP_ASSERT( rcp );
-    comms->rcProc = rcp;
-    comms->rcClosure = rcClosure;
-
     comms->util = util;
     comms->dutil = util_getDevUtilCtxt( util, xwe );
 
 #ifdef XWFEATURE_RELAY
+    XP_ASSERT( rcp );
+    comms->rcProc = rcp;
+    comms->rcClosure = rcClosure;
+
     init_relay( comms, xwe, nPlayersHere, nPlayersTotal );
 # ifdef SET_GAMESEED
     comms->channelSeed = gameSeed;
@@ -790,7 +790,9 @@ CommsCtxt*
 comms_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
                       XW_UtilCtxt* util, XP_Bool isServer,
                       const TransportProcs* procs,
+#ifdef XWFEATURE_RELAY
                       RoleChangeProc rcp, void* rcClosure,
+#endif
                       XP_U16 forceChannel )
 {
     LOG_FUNC();
@@ -819,11 +821,12 @@ comms_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
         nPlayersHere = 0;
         nPlayersTotal = 0;
     }
-    CommsCtxt* comms = comms_make( MPPARM(mpool) xwe, util, isServer, NULL, NULL,
+    CommsCtxt* comms = comms_make( MPPARM(mpool) xwe, util, isServer,
+                                   NULL, NULL, procs,
 #ifdef XWFEATURE_RELAY
-                                   nPlayersHere, nPlayersTotal,
+                                   nPlayersHere, nPlayersTotal, rcp, rcClosure,
 #endif
-                                   procs, rcp, rcClosure, forceChannel
+                                   forceChannel
 #ifdef SET_GAMESEED
                                    , 0
 #endif

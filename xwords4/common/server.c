@@ -640,6 +640,7 @@ server_writeToStream( const ServerCtxt* server, XWStreamCtxt* stream )
     }
 } /* server_writeToStream */
 
+#ifdef XWFEATURE_RELAY
 void
 server_onRoleChanged( ServerCtxt* server, XWEnv xwe, XP_Bool amNowGuest )
 {
@@ -654,6 +655,7 @@ server_onRoleChanged( ServerCtxt* server, XWEnv xwe, XP_Bool amNowGuest )
         }
     }
 }
+#endif
 
 static void
 cleanupServer( ServerCtxt* server )

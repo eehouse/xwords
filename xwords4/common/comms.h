@@ -150,11 +150,11 @@ CommsCtxt* comms_make( MPFORMAL XWEnv xwe, XW_UtilCtxt* util,
                        XP_Bool isServer,
                        const CommsAddrRec* selfAddr,
                        const CommsAddrRec* hostAddr,
+                       const TransportProcs* procs,
 #ifdef XWFEATURE_RELAY
                        XP_U16 nPlayersHere, XP_U16 nPlayersTotal,
-#endif
-                       const TransportProcs* procs,
                        RoleChangeProc rcp, void* rcClosure,
+#endif
                        XP_U16 forceChannel
 #ifdef SET_GAMESEED
                        ,XP_U16 gameSeed
@@ -191,7 +191,9 @@ XP_Bool comms_getIsServer( const CommsCtxt* comms );
 CommsCtxt* comms_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
                                  XW_UtilCtxt* util, XP_Bool isServer,
                                  const TransportProcs* procs,
+#ifdef XWFEATURE_RELAY
                                  RoleChangeProc rcp, void* rcClosure,
+#endif
                                  XP_U16 forceChannel );
 void comms_start( CommsCtxt* comms, XWEnv xwe );
 void comms_stop( CommsCtxt* comms

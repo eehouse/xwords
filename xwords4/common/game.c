@@ -105,6 +105,7 @@ timerChangeListener( XWEnv xwe, void* data, const XP_U32 gameID,
                              gameID, oldVal, newVal );
 }
 
+#ifdef XWFEATURE_RELAY
 static void
 onRoleChanged( XWEnv xwe, void* closure, XP_Bool amNowGuest  )
 {
@@ -112,6 +113,7 @@ onRoleChanged( XWEnv xwe, void* closure, XP_Bool amNowGuest  )
     XWGame* game = (XWGame*)closure;
     server_onRoleChanged( game->server, xwe, amNowGuest );
 }
+#endif
 
 static void
 setListeners( XWGame* game, const CommonPrefs* cp )
@@ -196,11 +198,11 @@ game_makeNewGame( MPFORMAL XWEnv xwe, XWGame* game, CurGameInfo* gi,
         if ( gi->serverRole != SERVER_STANDALONE ) {
             game->comms = comms_make( MPPARM(mpool) xwe, util,
                                       gi->serverRole != SERVER_ISCLIENT,
-                                      selfAddr, hostAddr,
+                                      selfAddr, hostAddr, procs,
 #ifdef XWFEATURE_RELAY
                                       nPlayersHere, nPlayersTotal,
+                                      onRoleChanged, game,
 #endif
-                                      procs, onRoleChanged, game,
                                       gi->forceChannel
 #ifdef SET_GAMESEED
                                       , gameSeed
@@ -345,7 +347,10 @@ game_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
             if ( hasComms ) {
                 game->comms = comms_makeFromStream( MPPARM(mpool) xwe, stream, util,
                                                     gi->serverRole != SERVER_ISCLIENT,
-                                                    procs, onRoleChanged, game,
+                                                    procs,
+#ifdef XWFEATURE_RELAY
+                                                    onRoleChanged, game,
+#endif
                                                     gi->forceChannel );
             } else {
                 XP_ASSERT( NULL == game->comms );
