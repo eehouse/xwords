@@ -143,7 +143,7 @@ typedef enum {
 
 enum {
     SERVER_STANDALONE,
-    SERVER_ISSERVER,
+    SERVER_ISHOST,
     SERVER_ISCLIENT
 };
 typedef XP_U8 DeviceRole;

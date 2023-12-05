@@ -237,7 +237,7 @@ newg_store( NewGameCtx* ngc, XWEnv xwe, CurGameInfo* gi,
         gi->nPlayers = ngc->nPlayersShown;
 #ifndef XWFEATURE_STANDALONE_ONLY
         gi->serverRole = ngc->role;
-        makeLocal = ngc->role != SERVER_ISSERVER;
+        makeLocal = ngc->role != SERVER_ISHOST;
 #endif
 
         gi->gameSeconds = ngc->timerSeconds;
@@ -380,7 +380,7 @@ checkConsistent( NewGameCtx* ngc, XWEnv xwe, XP_Bool warnUser )
     XP_U16 ii;
 
     /* If ISSERVER, make sure there's at least one non-local player. */
-    consistent = ngc->role != SERVER_ISSERVER;
+    consistent = ngc->role != SERVER_ISHOST;
     for ( ii = 0; !consistent && ii < ngc->nPlayersShown; ++ii ) {
         DeepValue dValue;
         dValue.col = NG_COL_REMOTE;
@@ -441,7 +441,7 @@ adjustOneRow( NewGameCtx* ngc, XP_U16 player, XP_Bool force )
 #ifndef XWFEATURE_STANDALONE_ONLY
         /* If standalone or client, remote is hidden.  If server but not
            new game, it's disabled */
-        if ( (role == SERVER_ISSERVER ) 
+        if ( (role == SERVER_ISHOST )
              || (role == SERVER_ISCLIENT && !isNewGame ) ) {
             if ( isNewGame ) {
                 enable[NG_COL_REMOTE] = TRI_ENAB_ENABLED;
@@ -547,7 +547,7 @@ setRoleStrings( NewGameCtx* ngc, XWEnv xwe )
 
 #ifndef XWFEATURE_STANDALONE_ONLY
     (*ngc->enableAttrProc)( closure, NG_ATTR_REMHEADER, 
-                            ( (ngc->role == SERVER_ISSERVER)
+                            ( (ngc->role == SERVER_ISHOST)
                               || (!ngc->isNewGame
                                   && (ngc->role != SERVER_STANDALONE)) )?
                             TRI_ENAB_ENABLED : TRI_ENAB_HIDDEN );

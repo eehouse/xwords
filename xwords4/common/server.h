@@ -143,7 +143,7 @@ XP_U16 server_figureFinishBonus( const ServerCtxt* server, XP_U16 turn );
 #endif
 
 #ifdef DEBUG
-XP_Bool server_getIsServer( const ServerCtxt* server );
+XP_Bool server_getIsHost( const ServerCtxt* server );
 #endif
 
 typedef struct _RematchAddrs {

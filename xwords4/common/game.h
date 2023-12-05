@@ -114,7 +114,7 @@ void game_dispose( XWGame* game, XWEnv xwe );
 
 void game_summarize( const XWGame* game, const CurGameInfo* gi, GameSummary* summary );
 void game_getState( const XWGame* game, XWEnv xwe, GameStateInfo* gsi );
-XP_Bool game_getIsServer( const XWGame* game );
+XP_Bool game_getIsHost( const XWGame* game );
 void gi_setNPlayers( CurGameInfo* gi, XWEnv xwe, XW_UtilCtxt* util,
                      XP_U16 nTotal, XP_U16 nHere );
 void gi_disposePlayerInfo( MPFORMAL CurGameInfo* gi );

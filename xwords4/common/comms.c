@@ -1483,7 +1483,7 @@ comms_dropHostAddr( CommsCtxt* comms, CommsConnType typ )
 }
 
 XP_Bool
-comms_getIsServer( const CommsCtxt* comms )
+comms_getIsHost( const CommsCtxt* comms )
 {
     XP_ASSERT( !!comms );
     return comms->isServer;

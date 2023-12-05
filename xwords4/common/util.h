@@ -167,7 +167,7 @@ typedef struct UtilVtable {
     void (*m_util_cellSquareHeld)( XW_UtilCtxt* uc, XWEnv xwe, XWStreamCtxt* words );
 #endif
 
-    void (*m_util_informMissing)( XW_UtilCtxt* uc, XWEnv xwe, XP_Bool isServer,
+    void (*m_util_informMissing)( XW_UtilCtxt* uc, XWEnv xwe, XP_Bool isHost,
                                   const CommsAddrRec* hostAddr,
                                   const CommsAddrRec* selfAddr, XP_U16 nDevs,
                                   XP_U16 nMissing, XP_U16 nInvited );

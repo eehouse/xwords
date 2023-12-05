@@ -375,7 +375,7 @@ game_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
     }
 
     if ( success && !!game && !!game->comms ) {
-        XP_ASSERT( comms_getIsServer(game->comms) == server_getIsServer(game->server) );
+        XP_ASSERT( comms_getIsHost(game->comms) == server_getIsHost(game->server) );
 
 #ifdef XWFEATURE_KNOWNPLAYERS
         const XP_U32 created = game->created;
@@ -554,9 +554,9 @@ game_summarize( const XWGame* game, const CurGameInfo* gi, GameSummary* summary 
 }
 
 XP_Bool
-game_getIsServer( const XWGame* game )
+game_getIsHost( const XWGame* game )
 {
-    XP_Bool result = comms_getIsServer( game->comms );
+    XP_Bool result = comms_getIsHost( game->comms );
     return result;
 }
 

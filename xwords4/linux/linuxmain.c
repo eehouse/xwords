@@ -1467,7 +1467,7 @@ linux_send( XWEnv XP_UNUSED(xwe), const SendMsgsPacket* const msgs,
 #endif
 #if defined XWFEATURE_BLUETOOTH
     case COMMS_CONN_BT: {
-        XP_Bool isServer = game_getIsServer( &cGlobals->game );
+        XP_Bool isServer = game_getIsHost( &cGlobals->game );
         linux_bt_open( cGlobals, isServer );
         nSent = linux_bt_send( msgs, addrRec, cGlobals );
     }
@@ -3179,7 +3179,7 @@ main( int argc, char** argv )
             mainParams.pgi.serverRole = SERVER_STANDALONE;
         } else if ( isServer ) {
             if ( mainParams.info.serverInfo.nRemotePlayers > 0 ) {
-                mainParams.pgi.serverRole = SERVER_ISSERVER;
+                mainParams.pgi.serverRole = SERVER_ISHOST;
             }
         } else {
             mainParams.pgi.serverRole = SERVER_ISCLIENT;
@@ -3275,7 +3275,7 @@ main( int argc, char** argv )
             if ( mainParams.info.serverInfo.nRemotePlayers == 0 ) {
                 mainParams.serverRole = SERVER_STANDALONE;
             } else {
-                mainParams.serverRole = SERVER_ISSERVER;
+                mainParams.serverRole = SERVER_ISHOST;
             }	    
         } else {
             mainParams.serverRole = SERVER_ISCLIENT;

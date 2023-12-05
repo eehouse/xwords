@@ -1501,7 +1501,7 @@ makeGameFromArgs( CursesAppGlobals* aGlobals, cJSON* args )
     LaunchParams* params = aGlobals->cag.params;
     CurGameInfo gi = {0};
     gi_copy( MPPARM(params->mpool) &gi, &params->pgi );
-    gi.serverRole = SERVER_ISSERVER;
+    gi.serverRole = SERVER_ISHOST;
     gi.boardSize = 15;
     gi.traySize = 7;
 
