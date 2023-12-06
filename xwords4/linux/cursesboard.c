@@ -603,7 +603,7 @@ enableDraw( CursesBoardGlobals* bGlobals, const cb_dims* dims )
     setupBoard( bGlobals );
 }
 
-static CursesBoardGlobals*
+CursesBoardGlobals*
 findOrOpenForGameID( CursesBoardState* cbState, XP_U32 gameID,
                      const CurGameInfo* gi, const CommsAddrRec* returnAddr )
 {
@@ -614,6 +614,15 @@ findOrOpenForGameID( CursesBoardState* cbState, XP_U32 gameID,
     if ( 1 == nRowIDs ) {
         result = findOrOpen( cbState, rowids[0], gi, returnAddr );
     }
+    return result;
+}
+
+const CommonGlobals*
+cb_getForGameID( CursesBoardState* cbState, XP_U32 gameID )
+{
+    CursesBoardGlobals* cbg = findOrOpenForGameID( cbState, gameID, NULL, NULL );
+    CommonGlobals* result = &cbg->cGlobals;
+    // XP_LOGFF( "(%X) => %p", gameID, result );
     return result;
 }
 

@@ -1472,13 +1472,18 @@ makeObjIfNot( cJSON** objp )
 }
 
 static void
-addGIDToObject( cJSON** objp, XP_U32 gid, const char* key )
+addStringToObject( cJSON** objp, const char* key, const char* value )
 {
     makeObjIfNot( objp );
+    cJSON_AddStringToObject( *objp, key, value );
+}
 
+static void
+addGIDToObject( cJSON** objp, XP_U32 gid, const char* key )
+{
     char buf[16];
     sprintf( buf, "%08X", gid );
-    cJSON_AddStringToObject( *objp, key, buf );
+    addStringToObject( objp, key, buf );
 }
 
 static void
@@ -1603,14 +1608,18 @@ rematchFromArgs( CursesAppGlobals* aGlobals, cJSON* args )
     return result;
 }
 
-static cJSON*
-getGamesStateForArgs( CursesAppGlobals* aGlobals, cJSON* args )
+static XP_Bool
+getGamesStateForArgs( CursesAppGlobals* aGlobals, cJSON* args,
+                      cJSON** states, cJSON** orders )
 {
-    cJSON* result = cJSON_CreateArray();
-
+    LOG_FUNC();
     LaunchParams* params = aGlobals->cag.params;
-    cJSON* gids = cJSON_GetObjectItem(args, "gids" );
-    for ( int ii = 0 ; ii < cJSON_GetArraySize(gids) ; ++ii ) {
+
+    *states = cJSON_CreateArray();
+
+    cJSON* gids = cJSON_GetObjectItem( args, "gids" );
+    XP_Bool success = !!gids;
+    for ( int ii = 0 ; success && ii < cJSON_GetArraySize(gids) ; ++ii ) {
         XP_U32 gameID = castGid( cJSON_GetArrayItem( gids, ii ) );
 
         GameInfo gib;
@@ -1622,8 +1631,87 @@ getGamesStateForArgs( CursesAppGlobals* aGlobals, cJSON* args )
             cJSON_AddNumberToObject( item, "nMoves", gib.nMoves );
             cJSON_AddNumberToObject( item, "nTiles", gib.nTiles );
 
-            cJSON_AddItemToArray( result, item );
+            cJSON_AddItemToArray( *states, item );
         }        
+    }
+
+    XP_LOGFF( "done with states" ); /* got here */
+
+    if ( success && !!orders ) {
+        cJSON* gids = cJSON_GetObjectItem( args, "orders" );
+        if ( !gids ) {
+            *orders = NULL;
+        } else {
+            *orders = cJSON_CreateArray();
+            for ( int ii = 0 ; ii < cJSON_GetArraySize(gids) ; ++ii ) {
+                XP_U32 gameID = castGid( cJSON_GetArrayItem( gids, ii ) );
+
+                const CommonGlobals* cg = cb_getForGameID( aGlobals->cbState, gameID );
+                if ( !cg ) {
+                    continue;
+                }
+                const XWGame* game = &cg->game;
+                if ( server_getGameIsConnected( game->server ) ) {
+                    const CurGameInfo* gi = cg->gi;
+                    LOGGI( gi, __func__ );
+                    cJSON* order = NULL;
+                    addGIDToObject( &order, gameID, "gid" );
+                    cJSON* players = cJSON_CreateArray();
+                    for ( int jj = 0; jj < gi->nPlayers; ++jj ) {
+                        XP_LOGFF( "looking at player %d", jj );
+                        const LocalPlayer* lp = &gi->players[jj];
+                        XP_LOGFF( "adding player %d: %s", jj, lp->name );
+                        cJSON* cName = cJSON_CreateString( lp->name );
+                        cJSON_AddItemToArray( players, cName);
+                    }
+                    cJSON_AddItemToObject( order, "players", players );
+                    cJSON_AddItemToArray( *orders, order );
+                }
+            }
+        }
+    }
+
+    LOG_RETURNF( "%s", boolToStr(success) );
+    return success;
+}
+
+/* Return for each gid and array of player names, in play order, and including
+   for each whether it's the host and if a robot. For now let's try by opening
+   each game (yeah! yuck!) to read the info directly. Later add to a the db
+   accessed by gamesdb.c
+*/
+static cJSON*
+getPlayersForArgs( CursesAppGlobals* aGlobals, cJSON* args )
+{
+    cJSON* result = cJSON_CreateArray();
+    cJSON* gids = cJSON_GetObjectItem( args, "gids" );
+    for ( int ii = 0 ; ii < cJSON_GetArraySize(gids) ; ++ii ) {
+        XP_U32 gameID = castGid( cJSON_GetArrayItem( gids, ii ) );
+
+        const CommonGlobals* cg = cb_getForGameID( aGlobals->cbState, gameID );
+        const CurGameInfo* gi = cg->gi;
+        LOGGI( gi, __func__ );
+        const XWGame* game = &cg->game;
+
+        cJSON* players = cJSON_CreateArray();
+        for ( int jj = 0; jj < gi->nPlayers; ++jj ) {
+            cJSON* playerObj = NULL;
+            const LocalPlayer* lp = &gi->players[jj];
+            XP_LOGFF( "adding player %d: %s", jj, lp->name );
+            addStringToObject( &playerObj, "name", lp->name );
+            XP_Bool isLocal = lp->isLocal;
+            cJSON_AddBoolToObject( playerObj, "isLocal", isLocal );
+
+            /* Roles: I don't think a guest in a 3- or 4-device game knows
+               which of the other players is host. Host is who it sends its
+               moves to, but is there an order there? */
+            XP_Bool isHost = game_getIsHost( game );
+            isHost = isHost && isLocal;
+            cJSON_AddBoolToObject( playerObj, "isHost", isHost );
+            
+            cJSON_AddItemToArray( players, playerObj );
+        }
+        cJSON_AddItemToArray( result, players );
     }
     return result;
 }
@@ -1649,7 +1737,7 @@ on_incoming_signal( GSocketService* XP_UNUSED(service),
     if ( 0 <= nread ) {
         XP_ASSERT( nread == len );
         buf[nread] = '\0';
-        XP_LOGFF( "Message was: \"%s\"\n", buf );
+        XP_LOGFF( "Message: \"%s\"\n", buf );
 
         cJSON* reply = cJSON_CreateArray();
 
@@ -1666,8 +1754,10 @@ on_incoming_signal( GSocketService* XP_UNUSED(service),
             XP_Bool success = XP_TRUE;
 
             if ( 0 == strcmp( cmdStr, "quit" ) ) {
-                cJSON* gids = getGamesStateForArgs( aGlobals, args );
-                addObjectToObject( &response, "states", gids );
+                cJSON* gids;
+                if ( getGamesStateForArgs( aGlobals, args, &gids, NULL ) ) {
+                    addObjectToObject( &response, "states", gids );
+                }
                 handleQuit( aGlobals, 0 );
             } else if ( 0 == strcmp( cmdStr, "getMQTTDevID" ) ) {
                 MQTTDevID devID;
@@ -1693,8 +1783,16 @@ on_incoming_signal( GSocketService* XP_UNUSED(service),
                     addGIDToObject( &response, newGameID, "newGid" );
                 }
             } else if ( 0 == strcmp( cmdStr, "getStates" ) ) {
-                cJSON* gids = getGamesStateForArgs( aGlobals, args );
-                addObjectToObject( &response, "states", gids );
+                cJSON* gids;
+                cJSON* orders;
+                success = getGamesStateForArgs( aGlobals, args, &gids, &orders );
+                if ( success ) {
+                    addObjectToObject( &response, "states", gids );
+                    addObjectToObject( &response, "orders", orders );
+                }
+            } else if ( 0 == strcmp( cmdStr, "getPlayers" ) ) {
+                cJSON* players = getPlayersForArgs( aGlobals, args );
+                addObjectToObject( &response, "players", players );
             } else {
                 success = XP_FALSE;
                 XP_ASSERT(0);

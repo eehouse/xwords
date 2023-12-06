@@ -38,7 +38,8 @@ def chooseNames(nPlayers):
     return result
 
 class GameInfo():
-    def __init__(self, gid, rematchLevel):
+    def __init__(self, device, gid, rematchLevel):
+        self.device = device
         self.gid = gid
         self.state = {}
         assert isinstance(rematchLevel, int)
@@ -52,33 +53,49 @@ class GameInfo():
     def gameOver(self):
         return self.state.get('gameOver', False)
 
+    def getDevice(self): return self.device
+
 class GuestGameInfo(GameInfo):
-    def __init__(self, gid, rematchLevel):
-        super().__init__(gid, rematchLevel)
+    def __init__(self, device, gid, rematchLevel):
+        super().__init__(device, gid, rematchLevel)
 
 class HostGameInfo(GameInfo):
-    def __init__(self, guestNames, **kwargs):
-        super().__init__(kwargs.get('gid'), kwargs.get('rematchLevel'))
+    def __init__(self, device, guestNames, **kwargs):
+        super().__init__(device, kwargs.get('gid'), kwargs.get('rematchLevel'))
         self.guestNames = guestNames
         self.needsInvite = kwargs.get('needsInvite', True)
+        self.orderedPlayers = None
         global gGamesMade;
         gGamesMade += 1
+
+    def haveOrder(self): return self.orderedPlayers is not None
+
+    def setOrder(self, orderedPlayers): self.orderedPlayers = orderedPlayers
 
     def __str__(self):
         return 'gid: {}, guests: {}'.format(self.gid, self.guestNames)
 
 class GameStatus():
-    _N_LINES = 3                # could be lower if all games have 2 players
     _statuses = None
 
     def __init__(self, gid):
         self.gid = gid
         self.players = []
         self.allOver = True
+        self.hostPlayerName = None
+        self.hostName = None
 
     def harvest(self, dev):
         self.players.append(dev.host)
         self.allOver = self.allOver and dev.gameOver(self.gid)
+
+    def sortPlayers(self):
+        game = Device.getHostGame(self.gid)
+        orderedPlayers = game.orderedPlayers
+        if orderedPlayers:
+            assert len(orderedPlayers) == len(self.players)
+            self.players = orderedPlayers
+            self.hostName = game.getDevice().host
 
     # Build a gid->status map for each game, querying each device in
     # the game for details
@@ -95,11 +112,18 @@ class GameStatus():
         for gid in list(statuses.keys()):
             if statuses[gid].allOver: del statuses[gid]
 
+        for status in statuses.values():
+            status.sortPlayers()
+
         GameStatus._statuses = statuses
 
     @staticmethod
     def numLines():
-        return GameStatus._N_LINES
+        maxPlayers = 0
+        for status in GameStatus._statuses.values():
+            nPlayers = len(status.players)
+            if nPlayers > maxPlayers: maxPlayers = nPlayers
+        return maxPlayers + 1
 
     # For all games, print the proper line of status for that game in
     # exactly 8 chars
@@ -109,25 +133,22 @@ class GameStatus():
         for gid in sorted(GameStatus._statuses.keys()):
             if indx == 0:
                 results.append(gid)
-                continue
-            players = indx == 1 and g_NAMES[:2] or g_NAMES[2:]
-            lineTxt = ''
-            for player in players:
-                if not player in GameStatus._statuses[gid].players:
-                    lineTxt += '    '
-                else:
-                    dev = Device._devs.get(player)
-                    initial = player[0]
-                    arg2 = -1
-                    gameState = dev.gameFor(gid).state
-                    if gameState:
-                        if gameState.get('gameOver', False):
-                            initial = initial.lower()
-                            arg2 = gameState.get('nPending', 0)
-                        else:
-                            arg2 = gameState.get('nTiles')
-                    lineTxt += '{}{: 3}'.format(initial, arg2)
-            results.append(lineTxt)
+            elif indx <= len(GameStatus._statuses[gid].players):
+                status = GameStatus._statuses[gid]
+                player = status.players[indx-1]
+                hostMarker = status.hostName == player and '*' or ' '
+                initial = player[0]
+                arg3 = -1
+                dev = Device._devs.get(player)
+                gameState = dev.gameFor(gid).state
+                if gameState:
+                    if gameState.get('gameOver', False):
+                        initial = initial.lower()
+                        arg3 = gameState.get('nPending', 0)
+                    else:
+                        arg3 = gameState.get('nTiles')
+                results.append('{}{}{: 3}'.format(hostMarker, initial, arg3).center(len(gid)))
+
         return ' '.join(results)
 
 class Device():
@@ -279,15 +300,15 @@ class Device():
 
             rematchLevel = game.rematchLevel - 1
             assert rematchLevel >= 0 # fired
-            self.hostedGames.append(HostGameInfo(guests, needsInvite=False, gid=newGid,
+            self.hostedGames.append(HostGameInfo(self, guests, needsInvite=False, gid=newGid,
                                                  rematchLevel=rematchLevel))
             for guest in guests:
-                Device.getFor(guest).expectInvite(newGid, rematchLevel)
+                Device.getForPlayer(guest).expectInvite(newGid, rematchLevel)
 
     def invite(self, game):
         failed = False
         for ii in range(len(game.guestNames)):
-            guestDev = Device.getFor(game.guestNames[ii])
+            guestDev = Device.getForPlayer(game.guestNames[ii])
 
             addr = {}
             if self.args.WITH_MQTT: addr['mqtt'] = guestDev.mqttDevID
@@ -302,7 +323,7 @@ class Device():
         if not failed: game.needsInvite = False
 
     def expectInvite(self, gid, rematchLevel):
-        self.guestGames.append(GuestGameInfo(gid, rematchLevel))
+        self.guestGames.append(GuestGameInfo(self, gid, rematchLevel))
         self.launchIfNot()
 
     # Return true only if all games I host are finished on all games.
@@ -349,7 +370,20 @@ class Device():
     def rematchOrQuit(self):
         if self.endTime:
             gids = [game.gid for game in self._allGames() if not self.gameOver(game.gid)]
-            response = self._sendWaitReply('getStates', gids=gids)
+
+            orders = []
+            for gid in gids:
+                game = Device.getHostGame(gid)
+                if game and not game.haveOrder():
+                    orders.append(gid)
+
+            response = self._sendWaitReply('getStates', gids=gids, orders=orders)
+
+            for order in response.get('orders', []):
+                gid = order.get('gid')
+                game = Device.getHostGame(gid)
+                assert isinstance(game, HostGameInfo) # firing
+                game.setOrder(order.get('players'))
 
             anyRematched = False
             for obj in response.get('states', []):
@@ -449,7 +483,7 @@ class Device():
         return [dev for dev in Device._devs.values()]
 
     @staticmethod
-    def getFor(player):
+    def getForPlayer(player):
         result = None
         for dev in Device.getAll():
             if dev.host == player:
@@ -458,8 +492,17 @@ class Device():
         assert result
         return result
 
+    @staticmethod
+    def getHostGame(gid):
+        devs = Device.devsWith(gid)
+        for dev in devs:
+            game = dev.gameFor(gid)
+            if isinstance(game, HostGameInfo):
+                return game
+        assert False
+
     def addGameWith(self, guests):
-        self.hostedGames.append(HostGameInfo(guests, needsInvite=True,
+        self.hostedGames.append(HostGameInfo(self, guests, needsInvite=True,
                                              rematchLevel=self.args.REMATCH_LEVEL))
         for guest in guests:
             Device.deviceFor(self.args, guest)    # in case this device never hosts
