@@ -289,10 +289,10 @@ REQUIRED_DEBS = gcc libgtk-3-dev \
 		uuid-dev \
 		libsqlite3-dev \
 		libcurl4-openssl-dev \
-		libjson-c-dev \
 		libgtk-3-dev \
 		python3-requests \
 		libmosquitto-dev \
+		libcjson-dev \
 
 .PHONY: debcheck debs_install
 
