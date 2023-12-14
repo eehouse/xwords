@@ -1128,4 +1128,12 @@
     <string name="backup_only_on_9">Der Export funktioniert unter Android 9 (und allen anderen Versionen), der Import jedoch nicht. Sie können also einen Export auf diesem Gerät durchführen, um auf ein neueres Telefon zu migrieren, aber Sie können die entstandene Datei nicht auf dieses Gerät importieren.</string>
     <string name="no_restore_on_9">Der Import funktioniert nicht unter Android 9.</string>
     <string name="wordlist_custom_note">(Benutzerdefiniert)</string>
+    <string name="gamel_menu_restart">App neu starten</string>
+    <string name="invite_custom_warning_fmt">Diese Partie verwendet eine benutzerdefinierte Wortliste, %1$s, die nicht vom Server heruntergeladen werden kann. Sofern die Person, die Sie einladen, diese Wortliste auch hat, werden sie nicht in der Lage sein, dieses Spiel zu spielen.
+\n
+\nWenn Sie wissen, dass Ihr Gegner die Wortliste %1$s installiert hat, tippen Sie auf Ok, um sie trotzdem einzuladen. Oder verwenden Sie Spieleinstellungen, um die Wordlist zu ändern. Oder einfach das Spiel löschen.</string>
+    <string name="notagain_custom_xwd_fmt">Bitte beachten Sie, dass diese Wortliste, %1$s, nicht für andere zum Download verfügbar ist. Dies bedeutet in der Regel, es ist benutzerdefiniert (erzeugt per BYOD), aber sie könnte auch überflüssig sein.
+\n
+\nBitte verwenden Sie %1$s nur für lokale Partien. Wenn Sie jemanden zu einer Partie einladen, das es verwendet, müssen Sie es ihnen manuell geben, da CrossWords derzeit Wordlisten in Einladungen einzuschließen nicht unterstützt.</string>
+    <string name="summary_game_gone">Externe Partie gelöscht</string>
 </resources>
