@@ -1174,4 +1174,13 @@
     <string name="games_menu_setDevid">Definir o MQTT devID</string>
     <string name="backup_only_on_9">A exportação funciona no Android 9 (e em todas as outras versões), mas a importação não. Portanto, você pode fazer uma exportação deste dispositivo para migrar para um telefone mais recente, mas não poderá importar o arquivo resultante neste dispositivo.</string>
     <string name="no_restore_on_9">A importação não funciona no Android 9.</string>
+    <string name="gamel_menu_restart">Reiniciar app</string>
+    <string name="wordlist_custom_note">(Personalizado)</string>
+    <string name="invite_custom_warning_fmt">Esta partida usa uma lista de palavras personalizada, %1$s, que não pode ser baixada deste servidor. A não ser que a pessoa que você convidou também tenha esta lista de palavras, ela não será capaz de jogar esta partida.
+\n
+\nSe você souber que seu oponente tem a lista de palavras %1$s instalada, toque em OK para convidá-lo mesmo assim, ou use as configurações da partida para mudar a lista de palavras, ou apenas exclua a partida.</string>
+    <string name="notagain_custom_xwd_fmt">Por favor esteja ciente de que esta lista de palavras, %1$s, não está disponível para outros baixarem. Isto geralmente significa que é personalizado (construída usando BYOD), mas pode também ser obsoleta.
+\n
+\nPor favor use %1$s apenas para partidas locais. Se convidar alguém para uma partida que use a lista, você terá de dar a ele manualmente, já que CrossWords atualmente não suporta a inclusão de listas de palavras em convites.</string>
+    <string name="summary_game_gone">Partida remota deletada</string>
 </resources>
