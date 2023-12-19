@@ -551,6 +551,7 @@ public class XwJNI {
     public static native String server_writeFinalScores( GamePtr gamePtr );
     public static native boolean server_initClientConnection( GamePtr gamePtr );
     public static native boolean server_canOfferRematch( GamePtr gamePtr );
+    public static native boolean server_isFromRematch( GamePtr gamePtr );
     public static native void server_endGame( GamePtr gamePtr );
 
     // hybrid to save work

@@ -1580,15 +1580,15 @@ public class BoardDelegate extends DelegateBase
         callInviteChoices();
     }
 
-    @Override
-    public void onInfoClicked( SentInvitesInfo sentInfo )
-    {
-        String msg = sentInfo.getAsText( m_activity );
-        makeOkOnlyBuilder( msg )
-            .setTitle( R.string.title_invite_history )
-            .setAction( Action.INVITE_INFO )
-            .show();
-    }
+    // @Override
+    // public void onInfoClicked( SentInvitesInfo sentInfo )
+    // {
+    //     String msg = sentInfo.getAsText( m_activity );
+    //     makeOkOnlyBuilder( msg )
+    //         .setTitle( R.string.title_invite_history )
+    //         .setAction( Action.INVITE_INFO )
+    //         .show();
+    // }
 
     @Override
     public long getRowID()
@@ -2583,8 +2583,9 @@ public class BoardDelegate extends DelegateBase
 
     private void showOrHide( InvitesNeededAlert.Wrapper wrapper )
     {
+        boolean fromRematch = XwJNI.server_isFromRematch( m_jniGamePtr );
         wrapper.showOrHide( m_mySIS.hostAddr, m_mySIS.nMissing,
-                            m_mySIS.nInvited, false );
+                            m_mySIS.nInvited, fromRematch );
     }
 
     private InvitesNeededAlert.Wrapper mINAWrapper;

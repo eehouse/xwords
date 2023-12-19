@@ -128,7 +128,7 @@ class InvitesNeededAlert {
         long getRowID();
         void onCloseClicked();
         void onInviteClicked();
-        void onInfoClicked( SentInvitesInfo sentInfo );
+        // void onInfoClicked( SentInvitesInfo sentInfo );
     }
 
     private boolean close()
@@ -236,7 +236,7 @@ class InvitesNeededAlert {
         SentInvitesInfo sentInfo = DBUtils.getInvitesFor( context, rowid );
 
         int nSent = state.mNInvited + sentInfo.getMinPlayerCount();
-        boolean invitesNeeded = nPlayersMissing > nSent;
+        boolean invitesNeeded = nPlayersMissing > nSent && !state.mIsRematch;
 
         String title;
         boolean isRematch = state.mIsRematch;
@@ -250,7 +250,7 @@ class InvitesNeededAlert {
         ab.setTitle( title );
 
         String message;
-        int inviteButtonTxt;
+        int inviteButtonTxt = 0;
         if ( invitesNeeded ) {
             Assert.assertTrueNR( !isRematch );
             message = LocUtils.getString( context, R.string.invites_unsent );
@@ -262,8 +262,11 @@ class InvitesNeededAlert {
             if ( isRematch ) {
                 message += "\n\n"
                     + LocUtils.getString( context, R.string.invite_msg_extra_rematch );
+            } else {
+                inviteButtonTxt = R.string.newgame_reinvite; // here
+                message += "\n\n"
+                    + LocUtils.getString( context, R.string.invite_msg_extra_norematch );
             }
-            inviteButtonTxt = R.string.newgame_reinvite;
         }
         ab.setMessage( message );
 
@@ -278,19 +281,19 @@ class InvitesNeededAlert {
 
         if ( invitesNeeded ) {
             alert.setNoDismissListenerPos( ab, inviteButtonTxt, onInvite );
-        } else {
+        } else if ( 0 != inviteButtonTxt ) {
             alert.setNoDismissListenerNeg( ab, inviteButtonTxt, onInvite );
             closeLoc[0] = DialogInterface.BUTTON_POSITIVE;
         }
 
-        if ( BuildConfig.NON_RELEASE && 0 < nSent ) {
-            alert.setNoDismissListenerNeut( ab, R.string.button_invite_history,
-                                            new OnClickListener() {
-                                                @Override
-                                                public void onClick( DialogInterface dlg, int item ) {
-                                                    callbacks.onInfoClicked( sentInfo );
-                                                }
-                                            } );
-        }
+        // if ( BuildConfig.NON_RELEASE && 0 < nSent ) {
+        //     alert.setNoDismissListenerNeut( ab, R.string.button_invite_history,
+        //                                     new OnClickListener() {
+        //                                         @Override
+        //                                         public void onClick( DialogInterface dlg, int item ) {
+        //                                             callbacks.onInfoClicked( sentInfo );
+        //                                         }
+        //                                     } );
+        // }
     }
 }

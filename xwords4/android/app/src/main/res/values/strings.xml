@@ -455,20 +455,22 @@
         player to receive and respond to an invitation.
 
         \n\nYou will see this message until the invited player has
-        responded. If you suspect the invitation you sent was lost,
-        there’s no harm in sending another.</item>
+        responded.</item>
 
         <item quantity="other">This game is waiting for %1$d remote
         players to repond to invitations.
 
         \n\nYou will see this message until all expected players have
-        responded. If you suspect any invitations you sent were lost,
-        there’s no harm in sending more.</item>
+        responded.</item>
     </plurals>
 
+    <string name="invite_msg_extra_norematch">
+      If you suspect an invitation you sent was lost, there’s no harm
+    in sending another.</string>
+
     <string name="invite_msg_extra_rematch">With rematches, all
-    necessary invitations will have been sent automatically. But you
-    can always send new ones if an invitee is not responding.</string>
+    necessary invitations will have been created automatically and
+    will be resent until they are accepted.</string>
     <!-- Appended to message above if local device has NFC
          available. But not used right now -->
     <!--string name="invite_if_nfc">Or just Tap to Invite - if the other
