@@ -1095,8 +1095,12 @@ makeMenus( GtkGameGlobals* globals )
 static void
 disenable_buttons( GtkGameGlobals* globals )
 {
-    XP_U16 nPending = server_getPendingRegs( globals->cGlobals.game.server );
-    if ( !globals->invite_button && 0 < nPending && !!globals->buttons_hbox ) {
+    XWGame* game = &globals->cGlobals.game;
+    XP_U16 nPending = server_getPendingRegs( game->server );
+    if ( !globals->invite_button
+         && 0 < nPending
+         && !server_isFromRematch( game->server )
+         && !!globals->buttons_hbox ) {
         globals->invite_button = 
             addButton( globals->buttons_hbox, "Invite",
                        G_CALLBACK(handle_invite_button), globals );
@@ -1584,7 +1588,7 @@ ask_tiles( gpointer data )
     }
 
     return 0;
-}
+} /* ask_tiles */
 
 static void
 gtk_util_informNeedPickTiles( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe),

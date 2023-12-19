@@ -67,6 +67,7 @@ import org.eehouse.android.xw4.jni.CurGameInfo;
 import org.eehouse.android.xw4.jni.GameSummary;
 import org.eehouse.android.xw4.jni.LastMoveInfo;
 import org.eehouse.android.xw4.jni.XwJNI;
+import org.eehouse.android.xw4.jni.XwJNI.RematchOrder;
 import org.eehouse.android.xw4.loc.LocUtils;
 import static org.eehouse.android.xw4.DBUtils.ROWID_NOTFOUND;
 
@@ -874,6 +875,12 @@ public class GamesListDelegate extends ListDelegateBase
             }
             break;
 
+        case GAMES_LIST_GET_RO: {
+            NRO nro = (NRO)params[0];
+            dialog = mkRematchConfigDlg( nro );
+        }
+            break;
+
         case GAMES_LIST_NAME_REMATCH: {
             final LinearLayout view = (LinearLayout)
                 LocUtils.inflate( m_activity, R.layout.msg_label_and_edit );
@@ -1575,6 +1582,30 @@ public class GamesListDelegate extends ListDelegateBase
             break;
         }
         return handled || super.onDismissed( action, params );
+    }
+
+    private Dialog mkRematchConfigDlg( NRO nro )
+    {
+        final RematchConfigView view = (RematchConfigView)
+            LocUtils.inflate( m_activity, R.layout.rematch_config );
+
+        int iconResID = nro.isSolo()
+            ? R.drawable.ic_sologame : R.drawable.ic_multigame;
+        AlertDialog.Builder ab = makeAlertBuilder()
+            .setView( view )
+            .setIcon( iconResID )
+            .setTitle( R.string.button_rematch )
+            .setNegativeButton( android.R.string.cancel, null )
+            .setPositiveButton( android.R.string.ok,
+                                new OnClickListener() {
+                                    @Override
+                                    public void onClick( DialogInterface dlg, int ii ) {
+                                        RematchOrder ro = view.onOkClicked();
+                                        nro.rerun( ro );
+                                    }
+                                } )
+            ;
+        return ab.create();
     }
 
     private Dialog mkLoadStoreDlg( final Uri uri )
@@ -2358,6 +2389,7 @@ public class GamesListDelegate extends ListDelegateBase
                 button.setVisibility( View.VISIBLE );
                 final boolean solo = isSolos[ii];
                 button.setOnClickListener( new View.OnClickListener() {
+                        @Override
                         public void onClick( View view ) {
                             curThis().handleNewGameButton( solo );
                         }
@@ -2710,7 +2742,52 @@ public class GamesListDelegate extends ListDelegateBase
         }
     }
 
+    private class NRO implements Serializable, GameUtils.NeedRematchOrder {
+        private RematchOrder mChosenOrder = null;
+        private Bundle mExtras;
+        private String mGameName;
+        private CommsConnTypeSet mAddrs;
+
+        NRO( Bundle extras, String gameName, CommsConnTypeSet addrs )
+        {
+            mExtras = extras;
+            mGameName = gameName;
+            mAddrs = addrs;
+        }
+
+        @Override
+        public RematchOrder getRematchOrder()
+        {
+            RematchOrder result = mChosenOrder;
+            if ( null == result ) {
+                showDialogFragment( DlgID.GAMES_LIST_GET_RO, this );
+            }
+            return result;
+        }
+
+        boolean isSolo() { return mExtras.getBoolean( REMATCH_IS_SOLO, true ); }
+
+        void rerun( RematchOrder ro )
+        {
+            mChosenOrder = ro;
+            m_rematchExtras = mExtras;
+            runOnUiThread( new Runnable() {
+                    @Override
+                    public void run() {
+                        rematchWithNameAndPerm( mGameName, mAddrs, NRO.this );
+                    }
+                } );
+        }
+    } // class NRO
+
     private void rematchWithNameAndPerm( String gameName, CommsConnTypeSet addrs )
+    {
+        NRO nro = new NRO( m_rematchExtras, gameName, addrs );
+        rematchWithNameAndPerm( gameName, addrs, nro );
+    }
+
+    private void rematchWithNameAndPerm( String gameName, CommsConnTypeSet addrs,
+                                         NRO nro )
     {
         if ( null != gameName && 0 < gameName.length() ) {
             Bundle extras = m_rematchExtras;
@@ -2720,17 +2797,19 @@ public class GamesListDelegate extends ListDelegateBase
                                            DBUtils.GROUPID_UNSPEC );
 
             long newid = GameUtils.makeRematch( m_activity, srcRowID,
-                                                groupID, gameName );
+                                                groupID, gameName, nro );
 
-            if ( extras.getBoolean( REMATCH_DELAFTER_EXTRA, false ) ) {
-                String name = DBUtils.getName( m_activity, srcRowID );
-                makeConfirmThenBuilder( Action.LAUNCH_AFTER_DEL,
-                                        R.string.confirm_del_after_rematch_fmt,
-                                        name )
-                    .setParams( newid, srcRowID )
-                    .show();
-            } else {
-                launchGame( newid );
+            if ( DBUtils.ROWID_NOTFOUND != newid ) {
+                if ( extras.getBoolean( REMATCH_DELAFTER_EXTRA, false ) ) {
+                    String name = DBUtils.getName( m_activity, srcRowID );
+                    makeConfirmThenBuilder( Action.LAUNCH_AFTER_DEL,
+                                            R.string.confirm_del_after_rematch_fmt,
+                                            name )
+                        .setParams( newid, srcRowID )
+                        .show();
+                } else {
+                    launchGame( newid );
+                }
             }
         }
         m_rematchExtras = null;

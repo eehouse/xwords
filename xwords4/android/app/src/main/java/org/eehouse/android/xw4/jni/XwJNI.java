@@ -31,6 +31,7 @@ import org.eehouse.android.xw4.DbgUtils;
 import org.eehouse.android.xw4.Log;
 import org.eehouse.android.xw4.NetLaunchInfo;
 import org.eehouse.android.xw4.Quarantine;
+import org.eehouse.android.xw4.R;
 import org.eehouse.android.xw4.Utils.ISOCode;
 import org.eehouse.android.xw4.Utils;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
@@ -336,11 +337,24 @@ public class XwJNI {
         return gamePtr;
     }
 
+    // Keep in sync with server.h
+    public enum RematchOrder {
+        RO_SAME(R.string.ro_same),
+        RO_LOW_SCORE_FIRST(R.string.ro_low_score_first),
+        RO_HIGH_SCORE_FIRST(R.string.ro_high_score_first),
+        RO_JUGGLE(R.string.ro_juggle),
+        ;
+        private int mStrID;
+        private RematchOrder(int str) { mStrID = str; }
+        public int getStrID() { return mStrID; }
+    };
+
     public static GamePtr game_makeRematch( GamePtr gamePtr, UtilCtxt util,
-                                            CommonPrefs cp, String gameName )
+                                            CommonPrefs cp, String gameName,
+                                            RematchOrder ro )
     {
         GamePtr gamePtrNew = initGameJNI( 0 );
-        if ( !game_makeRematch( gamePtr, gamePtrNew, util, cp, gameName ) ) {
+        if ( !game_makeRematch( gamePtr, gamePtrNew, util, cp, gameName, ro ) ) {
             gamePtrNew.release();
             gamePtrNew = null;
         }
@@ -384,7 +398,7 @@ public class XwJNI {
     private static native boolean game_makeRematch( GamePtr gamePtr,
                                                     GamePtr gamePtrNew,
                                                     UtilCtxt util, CommonPrefs cp,
-                                                    String gameName );
+                                                    String gameName, RematchOrder ro );
 
     private static native boolean game_makeFromInvite( GamePtr gamePtr, NetLaunchInfo nli,
                                                        UtilCtxt util,
@@ -536,6 +550,7 @@ public class XwJNI {
     public static native boolean server_getGameIsConnected( GamePtr gamePtr );
     public static native String server_writeFinalScores( GamePtr gamePtr );
     public static native boolean server_initClientConnection( GamePtr gamePtr );
+    public static native boolean server_canOfferRematch( GamePtr gamePtr );
     public static native void server_endGame( GamePtr gamePtr );
 
     // hybrid to save work

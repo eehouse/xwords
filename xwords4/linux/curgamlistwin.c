@@ -186,17 +186,6 @@ adjustCurSel( CursGameList* cgl )
     cgl_draw( cgl );
 }
 
-static int
-countBits( int bits )
-{
-    int result = 0;
-    while ( 0 != bits ) {
-        ++result;
-        bits &= bits - 1;
-    }
-    return result;
-}
-
 void
 cgl_draw( CursGameList* cgl )
 {

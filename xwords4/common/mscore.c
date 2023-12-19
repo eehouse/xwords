@@ -145,7 +145,7 @@ getCurrentMoveScoreIfLegal( ModelCtxt* model, XWEnv xwe, XP_S16 turn,
 } /* getCurrentMoveScoreIfLegal */
 
 XP_S16
-model_getPlayerScore( ModelCtxt* model, XP_S16 player )
+model_getPlayerScore( const ModelCtxt* model, XP_S16 player )
 {
     return model->players[player].score;
 } /* model_getPlayerScore */
@@ -155,7 +155,7 @@ model_getPlayerScore( ModelCtxt* model, XP_S16 player )
  * player.
  */
 void
-model_figureFinalScores( ModelCtxt* model, ScoresArray* finalScoresP,
+model_figureFinalScores( const ModelCtxt* model, ScoresArray* finalScoresP,
                          ScoresArray* tilePenaltiesP )
 {
     XP_S16 ii, jj;
@@ -164,7 +164,7 @@ model_figureFinalScores( ModelCtxt* model, ScoresArray* finalScoresP,
     XP_U16 nPlayers = model->nPlayers;
     XP_S16 firstDoneIndex = -1; /* not set unless FIRST_DONE_BONUS is set */
     const TrayTileSet* tray;
-    PlayerCtxt* player;
+    const PlayerCtxt* player;
     const DictionaryCtxt* dict = model_getDictionary( model );
     CurGameInfo* gi = model->vol.gi;
 
@@ -216,6 +216,20 @@ model_figureFinalScores( ModelCtxt* model, ScoresArray* finalScoresP,
         }
     }
 } /* model_figureFinalScores */
+
+void
+model_getCurScores( const ModelCtxt* model, ScoresArray* scores,
+                    XP_Bool gameOver )
+{
+    if ( gameOver ) {
+        model_figureFinalScores( model, scores, NULL );
+    } else {
+        int nPlayers = model->vol.gi->nPlayers;
+        for ( int ii = 0; ii < nPlayers; ++ii ) {
+            scores->arr[ii] = model_getPlayerScore( model, ii );
+        }
+    }
+}
 
 typedef struct _BlockCheckState {
     ModelCtxt* model;

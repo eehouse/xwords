@@ -83,6 +83,7 @@
   <string name="key_robot_name">key_robot_name</string>
   <string name="key_default_robodict">key_default_robodict</string>
   <string name="key_default_phonies">key_default_phonies2</string>
+  <string name="key_rematch_order">key_rematch_order</string>
   <string name="key_default_timerenabled">key_default_timerenabled</string>
   <string name="key_notify_sound">key_notify_sound</string>
   <string name="key_disable_mqtt">key_disable_mqtt</string>
@@ -220,6 +221,14 @@
     <item>@string/phonies_warn</item>
     <item>@string/phonies_disallow</item>
     <item>@string/phonies_block</item>
+  </string-array>
+
+  <string-array name="ro_names">
+    <item>@string/ro_no_default</item>
+    <item>@string/ro_same</item>
+    <item>@string/ro_low_score_first</item>
+    <item>@string/ro_high_score_first</item>
+    <item>@string/ro_juggle</item>
   </string-array>
 
   <string-array name="robot_levels">

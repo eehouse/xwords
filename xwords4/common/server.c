@@ -117,7 +117,11 @@ typedef struct ServerVolatiles {
     XP_Bool pickTilesCalled[MAX_NUM_PLAYERS];
 } ServerVolatiles;
 
-typedef struct ServerNonvolatiles {
+#define MASK_IS_FROM_REMATCH (1<<0)
+#define MASK_HAVE_RIP_INFO (1<<1)
+
+typedef struct _ServerNonvolatiles {
+    XP_U32 flags;           /*  */
     XP_U32 lastMoveTime;    /* seconds of last turn change */
     XP_S32 dupTimerExpires;
     XP_U8 nDevices;
@@ -145,8 +149,14 @@ typedef struct ServerNonvolatiles {
     XWStreamCtxt* prevWordsStream;
 
     /* On guests only, stores addresses of other clients for rematch use*/
-    XP_U16 rematchAddrsLen;
-    XP_U8* rematchAddrs;
+    struct {
+        /* clients store this */
+        XP_U16 addrsLen;
+        XP_U8* addrs;
+
+        /* rematch-created hosts store this */
+        RematchInfo* order;  /* rematched host only */
+    } rematch;
 
     XP_Bool dupTurnsMade[MAX_NUM_PLAYERS];
     XP_Bool dupTurnsForced[MAX_NUM_PLAYERS];
@@ -170,6 +180,21 @@ struct ServerCtxt {
 #endif
     MPSLOT
 };
+
+/* RematchInfo: used to store remote addresses and the order within an
+   eventual game where players coming from those addresses are meant to
+   live. Not all addresses (esp. the local host's) are meant to be here.
+   Local players' indices are -1
+*/
+
+struct RematchInfo {
+    XP_U16 nPlayers;            /* how many of users array are there */
+    XP_S8 addrIndices[MAX_NUM_PLAYERS]; /* indices into addrs */
+    XP_U16 nAddrs;              /* needn't be serialized; may not be needed */
+    CommsAddrRec addrs[MAX_NUM_PLAYERS];
+};
+
+#define RIP_LOCAL_INDX -1
 
 #ifdef XWFEATURE_SLOW_ROBOT
 # define ROBOTWAITING(s) (s)->robotWaiting
@@ -240,6 +265,25 @@ static void writeProto( const ServerCtxt* server, XWStreamCtxt* stream,
                         XW_Proto proto );
 static void readGuestAddrs( ServerCtxt* server, XWStreamCtxt* stream );
 
+static void ri_fromStream( RematchInfo* rip, XWStreamCtxt* stream,
+                           const ServerCtxt* server );
+static void ri_toStream( XWStreamCtxt* stream, const RematchInfo* rip,
+                         const ServerCtxt* server );
+static void ri_addAddrAt( RematchInfo* rip, const ServerCtxt* server,
+                          const CommsAddrRec* addr, XP_U16 playerIndex );
+static void ri_addHostAddrs( RematchInfo* rip, const ServerCtxt* server );
+static void ri_addLocal( RematchInfo* rip );
+
+#ifdef DEBUG
+static void assertRI( const RematchInfo* rip, const CurGameInfo* gi );
+static void log_ri( const ServerCtxt* server, const RematchInfo* rip,
+                    const char* caller, int line );
+# define LOG_RI(RIP) log_ri(server, (RIP), __func__, __LINE__ )
+#else
+# define LOG_RI(rip)
+# define assertRI(r, s)
+#endif
+
 #endif
 
 #define PICK_NEXT -1
@@ -306,14 +350,13 @@ inDuplicateMode( const ServerCtxt* server )
 static void
 syncPlayers( ServerCtxt* server )
 {
-    XP_U16 ii;
-    CurGameInfo* gi = server->vol.gi;
-    LocalPlayer* lp = gi->players;
-    ServerPlayer* player = server->srvPlyrs;
-    for ( ii = 0; ii < gi->nPlayers; ++ii, ++lp, ++player ) {
+    const CurGameInfo* gi = server->vol.gi;
+    for ( int ii = 0; ii < gi->nPlayers; ++ii ) {
+        const LocalPlayer* lp = &gi->players[ii];
         if ( !lp->isLocal/*  && !lp->name */ ) {
             ++server->nv.pendingRegistrations;
         }
+        ServerPlayer* player = &server->srvPlyrs[ii];
         player->deviceIndex = lp->isLocal? HOST_DEVICE : UNKNOWN_DEVICE;
     }
 }
@@ -384,6 +427,11 @@ getNV( XWStreamCtxt* stream, ServerNonvolatiles* nv, XP_U16 nPlayers )
     XP_U16 ii;
     XP_U16 version = stream_getVersion( stream );
 
+    XP_ASSERT( 0 == nv->flags );
+    if ( STREAM_VERS_REMATCHORDER <= version ) {
+        nv->flags = stream_getU32VL( stream );
+    }
+
     if ( STREAM_VERS_DICTNAME <= version ) {
         nv->lastMoveTime = stream_getU32( stream );
     }
@@ -441,6 +489,7 @@ getNV( XWStreamCtxt* stream, ServerNonvolatiles* nv, XP_U16 nPlayers )
 static void
 putNV( XWStreamCtxt* stream, const ServerNonvolatiles* nv, XP_U16 nPlayers )
 {
+    stream_putU32VL( stream, nv->flags );
     stream_putU32( stream, nv->lastMoveTime );
     stream_putU32( stream, nv->dupTimerExpires );
 
@@ -551,16 +600,15 @@ server_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream, ModelCtxt* mode
 {
     ServerCtxt* server;
     XP_U16 version = stream_getVersion( stream );
-    short ii;
 
-    server = server_make( MPPARM(mpool) xwe, model, comms, util ); /* BAE */
+    server = server_make( MPPARM(mpool) xwe, model, comms, util );
     getNV( stream, &server->nv, nPlayers );
     
     if ( stream_getBits(stream, 1) != 0 ) {
         server->pool = pool_makeFromStream( MPPARM(mpool) stream );
     }
 
-    for ( ii = 0; ii < nPlayers; ++ii ) {
+    for ( int ii = 0; ii < nPlayers; ++ii ) {
         ServerPlayer* player = &server->srvPlyrs[ii];
 
         player->deviceIndex = stream_getU8( stream );
@@ -589,6 +637,12 @@ server_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream, ModelCtxt* mode
     if ( server->vol.gi->serverRole == SERVER_ISCLIENT
          && 2 < nPlayers ) {
         readGuestAddrs( server, stream );
+    }
+
+    if ( 0 != (server->nv.flags & MASK_HAVE_RIP_INFO) ) {
+        struct RematchInfo ri;
+        ri_fromStream( &ri, stream, server );
+        server_setRematchOrder( server, &ri );
     }
 
     /* Hack alert: recovering from an apparent bug that leaves the game
@@ -634,9 +688,14 @@ server_writeToStream( const ServerCtxt* server, XWStreamCtxt* stream )
 
     if ( server->vol.gi->serverRole == SERVER_ISCLIENT
          && 2 < nPlayers ) {
-        XP_U16 len = server->nv.rematchAddrsLen;
+        XP_U16 len = server->nv.rematch.addrsLen;
         stream_putU32VL( stream, len );
-        stream_putBytes( stream, server->nv.rematchAddrs, len );
+        stream_putBytes( stream, server->nv.rematch.addrs, len );
+    }
+
+    if ( 0 != (server->nv.flags & MASK_HAVE_RIP_INFO) ) {
+        XP_ASSERT( !!server->nv.rematch.order );
+        ri_toStream( stream, server->nv.rematch.order, server );
     }
 } /* server_writeToStream */
 
@@ -680,7 +739,8 @@ cleanupServer( ServerCtxt* server )
         stream_destroy( server->nv.prevWordsStream );
     }
 
-    XP_FREEP( server->mpool, &server->nv.rematchAddrs );
+    XP_FREEP( server->mpool, &server->nv.rematch.addrs );
+    XP_FREEP( server->mpool, &server->nv.rematch.order );
 
     XP_MEMSET( &server->nv, 0, sizeof(server->nv) );
 } /* cleanupServer */
@@ -801,32 +861,93 @@ readMQTTDevID( ServerCtxt* server, XWStreamCtxt* stream )
     }
 }
 
+/* Build a RematchInfo from the perspective of the guest we're sending it to,
+   with the addresses of all the devices not it. Rather than include my
+   address, which the guest knows already, add an empty address as a
+   placeholder. Guest will replace it if needed. */
+static void
+buildGuestRI( const ServerCtxt* server, XP_U16 guestIndex, RematchInfo* rip )
+{
+    XP_MEMSET( rip, 0, sizeof(*rip) );
+
+    const CurGameInfo* gi = server->vol.gi;
+    for ( int ii = 0; ii < gi->nPlayers; ++ii ) {
+        const LocalPlayer* lp = &gi->players[ii];
+        if ( lp->isLocal ) {    /* that's me, the host */
+            CommsAddrRec addr = {0};
+            ri_addAddrAt( rip, server, &addr, ii );
+        } else {
+            XP_S8 deviceIndex = server->srvPlyrs[ii].deviceIndex;
+            if ( guestIndex == deviceIndex ) {
+                ri_addLocal( rip );
+            } else {
+                XP_PlayerAddr channelNo
+                    = server->nv.addresses[deviceIndex].channelNo;
+                CommsAddrRec addr;
+                comms_getChannelAddr( server->vol.comms, channelNo, &addr );
+                ri_addAddrAt( rip, server, &addr, ii );
+            }
+        }
+    }
+    LOG_RI(rip);
+}
+
+static void
+loadRemoteRI( const ServerCtxt* server, const CurGameInfo* gi, RematchInfo* rip )
+{
+    XWStreamCtxt* tmpStream = mkServerStream( server );
+    stream_setVersion( tmpStream, server->nv.streamVersion );
+    stream_putBytes( tmpStream, server->nv.rematch.addrs, server->nv.rematch.addrsLen );
+
+    ri_fromStream( rip, tmpStream, server );
+    stream_destroy( tmpStream );
+
+    /* Now find the unaddressed host and add its address */
+    XP_ASSERT( rip->nPlayers == gi->nPlayers );
+
+    ri_addHostAddrs( rip, server );
+
+    LOG_RI( rip );
+}
+
 static void
 addGuestAddrsIf( const ServerCtxt* server, XP_U16 sendee, XWStreamCtxt* stream )
 {
     XP_LOGFF("(sendee: %d)", sendee );
     XP_ASSERT( amHost( server ) );
-    if ( STREAM_VERS_REMATCHADDRS <= stream_getVersion(stream)
+    XP_U16 version = stream_getVersion( stream );
+    if ( STREAM_VERS_REMATCHADDRS <= version
          /* Not needed for two-device games */
-         && 2 < server->nv.nDevices
-         /* no two-player devices?  */
-         && server->nv.nDevices == server->vol.gi->nPlayers ) {
+         && 2 < server->nv.nDevices ) {
         XWStreamCtxt* tmpStream = mkServerStream( server );
-        stream_setVersion( tmpStream, stream_getVersion( stream ) );
+        stream_setVersion( tmpStream, version );
+        XP_Bool skipIt = XP_FALSE;
 
-        for ( XP_U16 devIndex = 1; devIndex < server->nv.nDevices; ++devIndex ) {
-            if ( devIndex == sendee ) {
-                continue;
+        if ( STREAM_VERS_REMATCHORDER <= version ) {
+            RematchInfo ri;
+            buildGuestRI( server, sendee, &ri );
+            ri_toStream( tmpStream, &ri, server );
+
+            /* Old verion requires no two-player devices  */
+        } else if ( server->nv.nDevices == server->vol.gi->nPlayers ) {
+            for ( XP_U16 devIndex = 1; devIndex < server->nv.nDevices; ++devIndex ) {
+                if ( devIndex == sendee ) {
+                    continue;
+                }
+                XP_PlayerAddr channelNo
+                    = server->nv.addresses[devIndex].channelNo;
+                CommsAddrRec addr;
+                comms_getChannelAddr( server->vol.comms, channelNo, &addr );
+                addrToStream( tmpStream, &addr );
             }
-            XP_PlayerAddr channelNo
-                = server->nv.addresses[devIndex].channelNo;
-            CommsAddrRec addr;
-            comms_getChannelAddr( server->vol.comms, channelNo, &addr );
-            addrToStream( tmpStream, &addr );
+        } else {
+            skipIt = XP_TRUE;
         }
-        XP_U16 len = stream_getSize( tmpStream );
-        stream_putU32VL( stream, len );
-        stream_putBytes( stream, stream_getPtr(tmpStream), len );
+        if ( !skipIt ) {
+            XP_U16 len = stream_getSize( tmpStream );
+            stream_putU32VL( stream, len );
+            stream_putBytes( stream, stream_getPtr(tmpStream), len );
+        }
         stream_destroy( tmpStream );
     }
 }
@@ -837,23 +958,24 @@ readGuestAddrs( ServerCtxt* server, XWStreamCtxt* stream )
     XP_U16 version = stream_getVersion( stream );
     XP_LOGFF( "version: %X", version );
     if ( STREAM_VERS_REMATCHADDRS <= version && 0 < stream_getSize(stream) ) {
-        XP_U16 len = server->nv.rematchAddrsLen = stream_getU32VL( stream );
-        XP_LOGFF( "rematchAddrsLen: %d", server->nv.rematchAddrsLen );
+        XP_U16 len = server->nv.rematch.addrsLen = stream_getU32VL( stream );
+        XP_LOGFF( "rematch.addrsLen: %d", server->nv.rematch.addrsLen );
         if ( 0 < len ) {
-            XP_ASSERT( !server->nv.rematchAddrs );
-            server->nv.rematchAddrs = XP_MALLOC( server->mpool, len );
-            stream_getBytes( stream, server->nv.rematchAddrs, len );
-            XP_LOGFF( "loaded %d bytes of rematchAddrs", len );
+            XP_ASSERT( !server->nv.rematch.addrs );
+            server->nv.rematch.addrs = XP_MALLOC( server->mpool, len );
+            stream_getBytes( stream, server->nv.rematch.addrs, len );
+            XP_LOGFF( "loaded %d bytes of rematch.addrs", len );
         }
 #ifdef DEBUG
         XWStreamCtxt* tmpStream = mkServerStream( server );
         stream_setVersion( tmpStream, stream_getVersion( stream ) );
-        stream_putBytes( tmpStream, server->nv.rematchAddrs, server->nv.rematchAddrsLen );
+        stream_putBytes( tmpStream, server->nv.rematch.addrs,
+                         server->nv.rematch.addrsLen );
         while ( 0 < stream_getSize(tmpStream) ) {
             CommsAddrRec addr = {0};
             addrFromStream( &addr, tmpStream );
             XP_LOGFF( "got an address" );
-            logAddr( MPPARM(server->mpool) server->vol.dutil, &addr, __func__ );
+            logAddr( server->vol.dutil, &addr, __func__ );
         }
         stream_destroy( tmpStream );
 #endif
@@ -1098,6 +1220,9 @@ handleRegistrationMsg( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* stream )
             setStreamVersion( server );
             checkResizeBoard( server );
             (void)assignTilesToAll( server, xwe );
+            /* We won't need this any more */
+            XP_FREEP( server->mpool, &server->nv.rematch.order );
+            server->nv.flags &= ~MASK_HAVE_RIP_INFO;
             SETSTATE( server, XWSTATE_RECEIVED_ALL_REG );
         }
         informMissing( server, xwe );
@@ -1892,13 +2017,12 @@ getIndexForStream( const ServerCtxt* server, const XWStreamCtxt* stream )
 static XP_S8
 getIndexForDevice( const ServerCtxt* server, XP_PlayerAddr channelNo )
 {
-    short ii;
     XP_S8 result = -1;
 
-    for ( ii = 0; ii < server->nv.nDevices; ++ii ) {
+    for ( int ii = 0; ii < server->nv.nDevices; ++ii ) {
         const RemoteAddress* addr = &server->nv.addresses[ii];
         if ( addr->channelNo == channelNo ) {
-            result = ii;
+            result = (XP_S8)ii;
             break;
         }
     }
@@ -1907,54 +2031,91 @@ getIndexForDevice( const ServerCtxt* server, XP_PlayerAddr channelNo )
     return result;
 } /* getIndexForDevice */
 
-static LocalPlayer* 
-findFirstPending( ServerCtxt* server, ServerPlayer** playerP )
+static XP_Bool
+findFirstPending( ServerCtxt* server, ServerPlayer** spp,
+                   LocalPlayer** lpp )
 {
-    LocalPlayer* lp;
+    /* We want to find the local player and srvPlyrs slot for this
+       connection. There's a srvPlyrs slot for each client that will
+       register. For each we find in use, skip a non-local slot in the gi. */
     CurGameInfo* gi = server->vol.gi;
-    XP_U16 nPlayers = gi->nPlayers;
-    XP_U16 nPending = server->nv.pendingRegistrations;
-
-    XP_ASSERT( nPlayers > 0 );
-    lp = gi->players + nPlayers;
-
-    while ( --lp >= gi->players ) {
-        --nPlayers;
+    XP_Bool success = XP_FALSE;
+    for ( int ii = 0; !success && ii < gi->nPlayers; ++ii ) {
+        LocalPlayer* lp = &gi->players[ii];
         if ( !lp->isLocal ) {
-            if ( --nPending == 0 ) {
-                break;
+            ServerPlayer* sp = &server->srvPlyrs[ii];
+            XP_ASSERT( HOST_DEVICE != sp->deviceIndex );
+            if ( UNKNOWN_DEVICE == sp->deviceIndex ) {
+                success = XP_TRUE;
+                *lpp = lp;
+                *spp = sp;
             }
         }
     }
-    if ( lp < gi->players ) { /* did we find a slot? */
-        XP_LOGFF( "no slot found for player; duplicate packet?" );
-        lp = NULL;
-    } else {
-        *playerP = server->srvPlyrs + nPlayers;
-    }
-    return lp;
+    return success;
 } /* findFirstPending */
+
+static XP_Bool
+findOrderedSlot( ServerCtxt* server, XWStreamCtxt* stream,
+                 ServerPlayer** spp, LocalPlayer** lpp )
+{
+    LOG_FUNC();
+    CurGameInfo* gi = server->vol.gi;
+    XP_PlayerAddr channelNo = stream_getAddress( stream );
+    CommsAddrRec guestAddr;
+    const CommsCtxt* comms = server->vol.comms;
+    comms_getChannelAddr( comms, channelNo, &guestAddr );
+
+    const RematchInfo* rip = server->nv.rematch.order;
+    LOG_RI(rip);
+
+    XP_Bool success = XP_FALSE;
+
+    /* We have an incoming player with an address. We want to find the first
+       open slot (a srvPlyrs entry where deviceIndex is -1) where the
+       corresponding entry in the RematchInfo points to the same address.
+    */
+
+    for ( int ii = 0; !success && ii < gi->nPlayers; ++ii ) {
+        ServerPlayer* sp = &server->srvPlyrs[ii];
+        if ( UNKNOWN_DEVICE == sp->deviceIndex ) {
+            int addrIndx = rip->addrIndices[ii];
+            if ( comms_addrsAreSame( comms, &guestAddr, &rip->addrs[addrIndx] ) ) {
+                *spp = sp;
+                *lpp = &gi->players[ii];
+                XP_ASSERT( !(*lpp)->isLocal );
+                success = XP_TRUE;
+            }
+        }
+    }
+
+    LOG_RETURNF( "%s", boolToStr(success) );
+    return success;
+}
 
 static XP_S8
 registerRemotePlayer( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* stream )
 {
     XP_S8 deviceIndex = -1;
-    XP_PlayerAddr channelNo;
-    XP_U16 nameLen;
-    LocalPlayer* lp;
-    ServerPlayer* player = (ServerPlayer*)NULL;
 
     /* The player must already be there with a null name, or it's an error.
        Take the first empty slot. */
     XP_ASSERT( server->nv.pendingRegistrations > 0 );
 
     /* find the slot to use */
-    lp = findFirstPending( server, &player );
-    if ( NULL != lp ) {
+    ServerPlayer* sp;
+    LocalPlayer* lp;
+    XP_Bool success;
+    if ( server_isFromRematch( server ) ) {
+        success = findOrderedSlot( server, stream, &sp, &lp );
+    } else {
+        success = findFirstPending( server, &sp, &lp );
+    }
 
+    if ( success ) {
         /* get data from stream */
         lp->robotIQ = 1 == stream_getBits( stream, 1 )? 1 : 0;
-        nameLen = stream_getBits( stream, NAME_LEN_NBITS );
+        XP_U16 nameLen = stream_getBits( stream, NAME_LEN_NBITS );
         XP_UCHAR name[nameLen + 1];
         stream_getBytes( stream, name, nameLen );
         name[nameLen] = '\0';
@@ -1962,7 +2123,7 @@ registerRemotePlayer( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* stream )
 
         replaceStringIfDifferent( server->mpool, &lp->name, name );
 
-        channelNo = stream_getAddress( stream );
+        XP_PlayerAddr channelNo = stream_getAddress( stream );
         deviceIndex = getIndexForDevice( server, channelNo );
 
         --server->nv.pendingRegistrations;
@@ -1983,7 +2144,7 @@ registerRemotePlayer( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* stream )
             XP_LOGFF( "deviceIndex already set" );
         }
 
-        player->deviceIndex = deviceIndex;
+        sp->deviceIndex = deviceIndex;
 
         informMissing( server, xwe );
     }
@@ -2016,8 +2177,8 @@ client_readInitialMessage( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* stream )
     if ( accepted ) {
         ModelCtxt* model = server->vol.model;
         CommsCtxt* comms = server->vol.comms;
-        CurGameInfo* gi = server->vol.gi;
-        XP_U32 gameID;
+        CurGameInfo* gi = server->vol.gi; /* we'll overwrite this */
+        XP_U32 gameID = 0;
         PoolContext* pool;
 #ifdef STREAM_VERS_BIGBOARD
         XP_UCHAR rmtDictName[128];
@@ -2033,15 +2194,22 @@ client_readInitialMessage( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* stream )
         }
         // XP_ASSERT( streamVersion <= CUR_STREAM_VERS ); /* else do what? */
 
-        gameID = stream_getU32( stream );
-        XP_LOGFF( "read gameID of %x/%d; calling comms_setConnID (replacing %d)",
-                  gameID, gameID, server->vol.gi->gameID );
-        server->vol.gi->gameID = gameID;
-        comms_setConnID( comms, gameID, streamVersion );
-
+        /* Get rid of this!!!! It's in the damned gi that's read next */
+        gameID = streamVersion < STREAM_VERS_REMATCHORDER
+            ? stream_getU32( stream ) : 0;
         CurGameInfo localGI = {0};
         gi_readFromStream( MPPARM(server->mpool) stream, &localGI );
+        XP_ASSERT( gameID == 0 || gameID == localGI.gameID );
+        gameID = localGI.gameID;
         localGI.serverRole = SERVER_ISCLIENT;
+
+        /* never seems to replace anything -- gi is already correct on guests
+           apparently. How? Will have come in with invitation, of course. */
+        XP_LOGFF( "read gameID of %X/%d; calling comms_setConnID (replacing %X)",
+                  gameID, gameID, server->vol.gi->gameID );
+        XP_ASSERT( server->vol.gi->gameID == gameID );
+        server->vol.gi->gameID = gameID;
+        comms_setConnID( comms, gameID, streamVersion );
 
         XP_ASSERT( !localGI.dictName );
         localGI.dictName = copyString( server->mpool, gi->dictName );
@@ -2151,18 +2319,13 @@ static void
 makeSendableGICopy( ServerCtxt* server, CurGameInfo* giCopy, 
                     XP_U16 deviceIndex )
 {
-    XP_U16 nPlayers;
-    LocalPlayer* clientPl;
-    XP_U16 ii;
-
     XP_MEMCPY( giCopy, server->vol.gi, sizeof(*giCopy) );
 
-    nPlayers = giCopy->nPlayers;
+    for ( int ii = 0; ii < giCopy->nPlayers; ++ii ) {
+        LocalPlayer* lp = &giCopy->players[ii];
 
-    for ( clientPl = giCopy->players, ii = 0;
-          ii < nPlayers; ++clientPl, ++ii ) {
         /* adjust isLocal to client's perspective */
-        clientPl->isLocal = server->srvPlyrs[ii].deviceIndex == deviceIndex;
+        lp->isLocal = server->srvPlyrs[ii].deviceIndex == deviceIndex;
     }
 
     giCopy->forceChannel = deviceIndex;
@@ -2170,6 +2333,7 @@ makeSendableGICopy( ServerCtxt* server, CurGameInfo* giCopy,
               giCopy->forceChannel );
 
     giCopy->dictName = (XP_UCHAR*)NULL; /* so we don't sent the bytes */
+    LOGGI( giCopy, "after" );
 } /* makeSendableGICopy */
 
 static void
@@ -2196,8 +2360,9 @@ sendInitialMessage( ServerCtxt* server, XWEnv xwe )
         stream_putU8( stream, CUR_STREAM_VERS );
 #endif
 
-        XP_LOGFF( "putting gameID %x into msg", gameID );
-        stream_putU32( stream, gameID );
+        if ( streamVersion < STREAM_VERS_REMATCHORDER ) {
+            stream_putU32( stream, gameID );
+        }
 
         CurGameInfo localGI;
         makeSendableGICopy( server, &localGI, deviceIndex );
@@ -2305,6 +2470,23 @@ codeToStr( XW_Proto code )
     }
     return str;
 } /* codeToStr */
+
+const XP_UCHAR*
+RO2Str( RematchOrder ro )
+{
+    const char* str = (char*)NULL;
+    switch( ro ) {
+        caseStr(RO_SAME);
+        caseStr(RO_LOW_SCORE_FIRST);
+        caseStr(RO_HIGH_SCORE_FIRST);
+        caseStr(RO_JUGGLE);
+#ifdef XWFEATURE_RO_BYNAME
+        caseStr(RO_BY_NAME);
+#endif
+        caseStr(RO_NUM_ROS);    /* should never print!!! */
+    }
+    return str;
+}
 
 #define PRINTCODE( intro, code ) \
     XP_STATUSF( "\t%s(): %s for %s", __func__, intro, codeToStr(code) )
@@ -3975,12 +4157,13 @@ server_getOpenChannel( const ServerCtxt* server, XP_U16* channel )
 }
 
 XP_Bool
-server_canRematch( const ServerCtxt* server )
+server_canRematch( const ServerCtxt* server, XP_Bool* canOrderP )
 {
     /* XP_LOGFF( "nDevices: %d; nPlayers: %d", */
     /*           server->nv.nDevices, server->vol.gi->nPlayers ); */
     const CurGameInfo* gi = server->vol.gi;
     XP_Bool result;
+    XP_Bool canOrder = XP_TRUE;
     switch ( gi->serverRole ) {
     case SERVER_STANDALONE:
         result = XP_TRUE;       /* can always rematch a local game */
@@ -3991,24 +4174,196 @@ server_canRematch( const ServerCtxt* server )
             && server->nv.nDevices == server->vol.gi->nPlayers;
         break;
     case SERVER_ISCLIENT:
-        result = 2 == gi->nPlayers
-            ? XP_TRUE           /* We always have server address */
-            : 0 < server->nv.rematchAddrsLen;
+        if ( 2 == gi->nPlayers ) {
+            result = XP_TRUE;
+        } else {
+            result = 0 < server->nv.rematch.addrsLen;
+            canOrder = STREAM_VERS_REMATCHORDER <= server->nv.streamVersion;
+        }
         break;
     }
+
+    if ( !!canOrderP ) {
+        *canOrderP = canOrder;
+    }
+
     /* LOG_RETURNF( "%s", boolToStr(result) ); */
     return result;
 }
 
+/* Modify the RematchInfo data to be consistent with the order we'll enforce
+   as invitees join the new game.
+ */
+static void
+sortBySame( const ServerCtxt* server, int newOrder[] )
+{
+    const CurGameInfo* gi = server->vol.gi;
+    for ( int ii = 0; ii < gi->nPlayers; ++ii ) {
+        newOrder[ii] = ii;
+    }
+}
+
+static void
+sortByScoreLow( const ServerCtxt* server, int newOrder[] )
+{
+    const CurGameInfo* gi = server->vol.gi;
+
+    ScoresArray scores = {0};
+    model_getCurScores( server->vol.model, &scores, server_getGameIsOver(server) );
+
+    int mask = 0; /* mark values already consumed */
+    for ( int resultIndx = 0; resultIndx < gi->nPlayers; ++resultIndx ) {
+        int lowest = 10000;
+        int newPosn = -1;
+        for ( int jj = 0; jj < gi->nPlayers; ++jj ) {
+            if ( 0 != (mask & (1 << jj)) ) {
+                continue;
+            } else if ( scores.arr[jj] < lowest ) {
+                lowest = scores.arr[jj];
+                newPosn = jj;
+            }
+        }
+        if ( newPosn == -1 ) {
+            break;
+        } else {
+            mask |= 1 << newPosn;
+            newOrder[resultIndx] = newPosn;
+            /* XP_LOGFF( "result[%d] = %d (for score %d)", resultIndx, newPosn, */
+            /*           lowest ); */
+        }
+    }
+}
+
+static void
+sortByScoreHigh( const ServerCtxt* server, int newOrder[] )
+{
+    sortByScoreLow( server, newOrder );
+
+    const CurGameInfo* gi = server->vol.gi;
+    for ( int ii = 0, jj = gi->nPlayers - 1; ii < jj; ++ii, --jj ) {
+        int tmp = newOrder[ii];
+        newOrder[ii] = newOrder[jj];
+        newOrder[jj] = tmp;
+    }
+}
+
+static void
+sortByRandom( const ServerCtxt* server, int newOrder[] )
+{
+    const CurGameInfo* gi = server->vol.gi;
+    int src[gi->nPlayers];
+    for ( int ii = 0; ii < gi->nPlayers; ++ii ) {
+        src[ii] = ii;
+    }
+    for ( int ii = 0; ii < gi->nPlayers; ++ii ) {
+        int nLeft = gi->nPlayers - ii;
+        int indx = XP_RANDOM() % nLeft;
+        newOrder[ii] = src[indx];
+        XP_LOGFF( "set result[%d] to %d", ii, newOrder[ii] );
+        /* now swap the last down */
+        src[indx] = src[nLeft-1];
+    }
+}
+
+#ifdef XWFEATURE_RO_BYNAME
+static void
+sortByName( const ServerCtxt* server, int newOrder[] )
+{
+    const CurGameInfo* gi = server->vol.gi;
+    int mask = 0; /* mark values already consumed */
+    for ( int ii = 0; ii < gi->nPlayers; ++ii ) {
+        /* find the lowest not already used */
+        int lowest = -1;
+        for ( int jj = 0; jj < gi->nPlayers; ++jj ) {
+            if ( 0 != (mask & (1 << jj)) ) {
+                continue;
+            } else if ( lowest == -1 ) {
+                lowest = jj;
+            } else if ( 0 < XP_STRCMP( gi->players[lowest].name,
+                                       gi->players[jj].name ) ) {
+                lowest = jj;
+            }
+        }
+        XP_ASSERT( lowest != -1 );
+        mask |= 1 << lowest;
+        newOrder[ii] = lowest;
+    }
+}
+#endif
+
+typedef void (*OrderProc)(const ServerCtxt* server, int newOrder[]);
+
+static XP_Bool
+setPlayerOrder( const ServerCtxt* server, RematchOrder ro,
+                CurGameInfo* gi, RematchInfo* rip )
+{
+    // XP_LOGFF( "(ro=%s)", RO2Str(ri->ro) );
+    LOGGI( gi, "start" );
+    OrderProc proc = NULL;
+    switch ( ro ) {
+    case RO_SAME:
+        proc = sortBySame;
+        // sortBySame( server, newOrder );
+        break;
+    case RO_LOW_SCORE_FIRST:
+        proc = sortByScoreLow;
+        break;
+    case RO_HIGH_SCORE_FIRST:
+        proc = sortByScoreHigh;
+        break;
+    case RO_JUGGLE:
+        proc = sortByRandom;
+        break;
+#ifdef XWFEATURE_RO_BYNAME
+    case RO_BY_NAME:
+        proc = sortByName;
+        break;
+#endif
+    case RO_NUM_ROS:
+    default:
+        XP_ASSERT(0); break;
+    }
+
+    XP_ASSERT( !!proc );
+    int newOrder[gi->nPlayers];
+    XP_MEMSET( newOrder, 0, sizeof(newOrder) );
+    XP_Bool success = !!proc;
+    if ( success ) {
+        (*proc)( server, newOrder );
+        /* We have gi and rip that express an ordering of players. And we have
+           a new order into which to move them. Just walk and swap the current
+           with the right one above it. */
+
+        CurGameInfo srcGi = *gi;
+        RematchInfo srcRi;
+        if ( !!rip ) {
+            srcRi = *rip;
+        }
+
+        for ( int ii = 0; ii < gi->nPlayers; ++ii ) {
+            gi->players[ii] = srcGi.players[newOrder[ii]];
+            if ( !!rip ) {
+                rip->addrIndices[ii] = srcRi.addrIndices[newOrder[ii]];
+            }
+        }
+
+        LOGGI( gi, "end" );
+        if ( !!rip ) {
+            LOG_RI( rip );
+        }
+    }
+    return success;
+}
+
 XP_Bool
 server_getRematchInfo( const ServerCtxt* server, XW_UtilCtxt* newUtil,
-                       XP_U32 gameID, RematchAddrs* ra )
+                       XP_U32 gameID, RematchOrder ro, RematchInfo** ripp )
 {
-    LOG_FUNC();
+    XP_LOGFF( "(ro=%s)", RO2Str(ro) );
+    XP_Bool success = server_canRematch( server, NULL );
     const CommsCtxt* comms = server->vol.comms;
-    XP_Bool success = server_canRematch( server );
     if ( success ) {
-        XP_MEMSET( ra, 0, sizeof(*ra) );
+        RematchInfo ri = {0};
         CurGameInfo* newGI = newUtil->gameInfo;
         gi_disposePlayerInfo( MPPARM(newUtil->mpool) newGI );
 
@@ -4020,48 +4375,305 @@ server_getRematchInfo( const ServerCtxt* server, XW_UtilCtxt* newUtil,
         }
         LOGGI( newUtil->gameInfo, "ready to invite" );
 
-        /* Now build the address list */
+        /* Now build the address list. Simple cases are STANDALONE, when I'm
+           the host, or when there are only two devices/players. If I'm guest
+           and there is another guest, I count on the host having sent rematch
+           info, and *that* info has an old and a new format. Sheesh. */
+        XP_Bool canOrder = XP_TRUE;
         if ( !comms ) {
             /* no addressing to do!! */
-        } else if ( amHost( server ) ) {
-            /* skip 0; it's me */
-            for ( int ii = 1; ii < server->nv.nDevices; ++ii ) {
-                XP_PlayerAddr channelNo = server->nv.addresses[ii].channelNo;
-                comms_getChannelAddr( comms, channelNo, &ra->addrs[ra->nAddrs] );
-                ++ra->nAddrs;
+        } else if ( amHost( server ) || 2 == newGI->nPlayers ) {
+            for ( int ii = 0; ii < newGI->nPlayers; ++ii ) {
+                if ( newGI->players[ii].isLocal ) {
+                    ri_addLocal( &ri );
+                } else {
+                    CommsAddrRec addr;
+                    if ( amHost(server) ) {
+                        XP_S8 deviceIndex = server->srvPlyrs[ii].deviceIndex;
+                        XP_ASSERT( deviceIndex != RIP_LOCAL_INDX );
+                        XP_PlayerAddr channelNo =
+                            server->nv.addresses[deviceIndex].channelNo;
+                        comms_getChannelAddr( comms, channelNo, &addr );
+                    } else {
+                        comms_getHostAddr( comms, &addr );
+                    }
+                    ri_addAddrAt( &ri, server, &addr, ii );
+                }
+            }
+        } else if ( !!server->nv.rematch.addrs ) {
+            XP_U16 streamVersion = server->nv.streamVersion;
+            if ( STREAM_VERS_REMATCHORDER <= streamVersion ) {
+                loadRemoteRI( server, newGI, &ri );
+
+            } else {
+                /* I don't have complete info yet. So let's go through the gi,
+                   assigning an address to all non-local players. We'll use
+                   the host address first, then the rest we have. If we don't
+                   have the right number of everything, we fail. Note: we
+                   should not have given the user a choice in rematch ordering
+                   here!!!*/
+                canOrder = newGI->nPlayers <= 2;
+                XP_ASSERT( !canOrder );
+                canOrder = XP_FALSE;
+
+                CommsAddrRec addrs[MAX_NUM_PLAYERS];
+                int nAddrs = 0;
+                comms_getHostAddr( comms, &addrs[nAddrs++] );
+                if ( !!server->nv.rematch.addrs ) {
+                    XWStreamCtxt* stream = mkServerStream( server );
+                    stream_setVersion( stream, server->nv.streamVersion );
+                    stream_putBytes( stream, server->nv.rematch.addrs,
+                                     server->nv.rematch.addrsLen );
+                    while ( 0 < stream_getSize( stream ) ) {
+                        XP_ASSERT( nAddrs < VSIZE(addrs) );
+                        addrFromStream( &addrs[nAddrs++], stream );
+                    }
+                    stream_destroy( stream );
+                }
+
+                int nextRemote = 0;
+                for ( int ii = 0; success && ii < newGI->nPlayers; ++ii ) {
+                    if ( newGI->players[ii].isLocal ) {
+                        ri_addLocal( &ri );
+                    } else if ( nextRemote < nAddrs ) {
+                        ri_addAddrAt( &ri, server, &addrs[nextRemote++], ii );
+                    } else {
+                        XP_LOGFF( "ERROR: not enough addresses for all remote players" );
+                        success = XP_FALSE;
+                    }
+                }
+                if ( success ) {
+                    success = nextRemote == nAddrs-1;
+                }
             }
         } else {
-            /* first, server's address */
-            comms_getHostAddr( comms, &ra->addrs[ra->nAddrs++] );
-            /* then, any other guests we've been told about */
-            if ( !!server->nv.rematchAddrs ) {
-                XWStreamCtxt* stream = mkServerStream( server );
-                stream_setVersion( stream, server->nv.streamVersion );
-                stream_putBytes( stream, server->nv.rematchAddrs,
-                                 server->nv.rematchAddrsLen );
-                while ( 0 < stream_getSize( stream )
-                        && ra->nAddrs < VSIZE(ra->addrs) ) {
-                    addrFromStream( &ra->addrs[ra->nAddrs++], stream );
-                }
-                stream_destroy( stream );
+            XP_ASSERT( 0 );  /* should not have returned TRUE from server_canRematch(); */
+            success = XP_FALSE;
+        }
+
+        if ( success && canOrder ) {
+            if ( !!comms ) {
+                assertRI( &ri, newGI );
+            }
+            success = setPlayerOrder( server, ro, newGI, !!comms ? &ri : NULL );
+        }
+
+        if ( success && !!comms ) {
+            LOG_RI( &ri );
+            assertRI( &ri, newGI );
+            XP_ASSERT( success );
+            *ripp = XP_MALLOC(server->mpool, sizeof(**ripp));
+            **ripp = ri;
+        } else {
+            *ripp = NULL;
+        }
+        XP_ASSERT( success );
+    }
+
+    LOG_RETURNF( "%s", boolToStr(success)  );
+    /* Until I'm testing edge cases, this will fail because I did something
+     * wrong, and I need to know that immediately.
+     */
+    XP_ASSERT( success );
+    return success;
+} /* server_getRematchInfo */
+
+void
+server_disposeRematchInfo( ServerCtxt* server, RematchInfo** ripp )
+{
+    XP_LOGFF( "(%p)", *ripp );
+    if ( !!*ripp ) {
+        LOG_RI( *ripp );
+    }
+    XP_FREEP( server->mpool, ripp );
+}
+
+XP_Bool
+server_ri_getAddr( const RematchInfo* rip, XP_U16 nth,
+                   CommsAddrRec* addr, XP_U16* nPlayersH )
+{
+    const CommsAddrRec* rec = &rip->addrs[nth];
+    XP_Bool success = !addr_isEmpty( rec );
+
+    if ( success ) {
+        XP_U16 count = 0;
+        for ( int ii = 0; ii < rip->nPlayers; ++ii ) {
+            if ( rip->addrIndices[ii] == nth ) {
+                ++count;
+            }
+        }
+        success = 0 < count;
+        if ( success ) {
+            *nPlayersH = count;
+            *addr = *rec;
+        }
+    }
+
+    return success;
+}
+
+/* Record the desired order, which is already set in the RematchInfo passed
+   in, so we can enforce it as clients register. */
+void
+server_setRematchOrder( ServerCtxt* server, const RematchInfo* rip )
+{
+    if ( amHost( server ) ) {   /* standalones can call without harm.... */
+        XP_ASSERT( !!rip );
+        XP_ASSERT( !server->nv.rematch.order );
+        server->nv.rematch.order = XP_MALLOC( server->mpool, sizeof(*rip) );
+        *server->nv.rematch.order = *rip;
+        server->nv.flags |= MASK_HAVE_RIP_INFO + MASK_IS_FROM_REMATCH;
+    }
+}
+
+XP_Bool
+server_isFromRematch( const ServerCtxt* server )
+{
+    return 0 != (server->nv.flags & MASK_IS_FROM_REMATCH);
+}
+
+#ifdef DEBUG
+static void
+log_ri( const ServerCtxt* server, const RematchInfo* rip,
+        const char* caller, int line )
+{
+    XP_LOGFF( "called from line %d of %s() with ptr %p", line, caller, rip );
+    if ( !!rip ) {
+        char buf[64] = {0};
+        int offset = 0;
+        int maxIndx = -1;
+        for ( int ii = 0; ii < rip->nPlayers; ++ii ) {
+            XP_S8 indx = rip->addrIndices[ii];
+            offset += XP_SNPRINTF( buf+offset, VSIZE(buf)-offset, "%d, ", indx );
+            if ( indx > maxIndx ) {
+                maxIndx = indx;
+            }
+        }
+        XP_LOGFF( "%d players (and %d addrs): [%s]", rip->nPlayers, rip->nAddrs, buf );
+
+        for ( int ii = 0; ii < rip->nAddrs; ++ii ) {
+            XP_SNPRINTF( buf, VSIZE(buf), "[%d of %d]: %s from %s",
+                         ii, rip->nAddrs, __func__, caller );
+            logAddr( server->vol.dutil, &rip->addrs[ii], __func__ );
+        }
+    }
+}
+#endif
+
+static void
+ri_toStream( XWStreamCtxt* stream, const RematchInfo* rip,
+             const ServerCtxt* server )
+{
+    LOG_RI(rip);
+    XP_U16 nPlayers = !!rip ? rip->nPlayers : 0;
+    for ( int ii = 0; ii < nPlayers; ++ii ) {
+        XP_S8 indx = rip->addrIndices[ii];
+        if ( RIP_LOCAL_INDX != indx ) {
+            stream_putBits( stream, PLAYERNUM_NBITS, indx );
+        }
+    }
+
+    for ( int ii = 0; ii < rip->nAddrs; ++ii ) {
+        addrToStream( stream, &rip->addrs[ii] );
+    }
+}
+
+static void
+ri_fromStream( RematchInfo* rip, XWStreamCtxt* stream,
+               const ServerCtxt* server )
+{
+    const CurGameInfo* gi = server->vol.gi;
+    XP_MEMSET( rip, 0, sizeof(*rip) );
+    rip->nPlayers = gi->nPlayers;
+
+    for ( int ii = 0; ii < gi->nPlayers; ++ii ) {
+        if ( gi->players[ii].isLocal ) {
+            rip->addrIndices[ii] = RIP_LOCAL_INDX;
+        } else {
+            XP_U16 indx = stream_getBits( stream, PLAYERNUM_NBITS );
+            rip->addrIndices[ii] = indx;
+            if ( indx > rip->nAddrs ) {
+                rip->nAddrs = indx;
             }
         }
     }
 
-#ifdef DEBUG
-    if ( success ) {
-        for ( int ii = 0; ii < ra->nAddrs; ++ii ) {
-            XP_LOGFF( "addr %d of %d: ", ii, ra->nAddrs );
-            logAddr( MPPARM(server->mpool) server->vol.dutil,
-                     &ra->addrs[ii], NULL );
+    ++rip->nAddrs;       /* it's count now, not index */
+    for ( int ii = 0; ii < rip->nAddrs; ++ii ) {
+        addrFromStream( &rip->addrs[ii], stream );
+    }
+
+    LOG_RI(rip);
+    XP_ASSERT( 0 < rip->nPlayers );
+}
+
+/* Given an address, insert it if it's new, or point to an existing copy
+   otherwise */
+static void
+ri_addAddrAt( RematchInfo* rip, const ServerCtxt* server,
+              const CommsAddrRec* addr, const XP_U16 player )
+{
+    const CommsCtxt* comms = server->vol.comms;
+    XP_S8 newIndex = RIP_LOCAL_INDX;
+    for ( int ii = 0; ii < player; ++ii ) {
+        int index = rip->addrIndices[ii];
+        if ( index != RIP_LOCAL_INDX &&
+             comms_addrsAreSame( comms, addr, &rip->addrs[index] ) ) {
+            newIndex = index;
+            break;
         }
     }
-#endif
 
-    XP_ASSERT( !success || !comms || server->vol.gi->nPlayers == ra->nAddrs + 1 );
-    LOG_RETURNF( "%s", boolToStr(success) );
-    return success;
+    // didn't find it?
+    if ( RIP_LOCAL_INDX == newIndex ) {
+        newIndex = rip->nAddrs;
+        rip->addrs[newIndex] = *addr;
+        ++rip->nAddrs;
+    }
+
+    rip->addrIndices[player] = newIndex;
+    XP_ASSERT( rip->nPlayers == player );
+    ++rip->nPlayers;
 }
+
+static void
+ri_addHostAddrs( RematchInfo* rip, const ServerCtxt* server )
+{
+    for ( int ii = 0; ii < rip->nAddrs; ++ii ) {
+        if ( addr_isEmpty( &rip->addrs[ii] ) ) {
+            comms_getHostAddr( server->vol.comms, &rip->addrs[ii] );
+        }
+    }
+}
+
+static void
+ri_addLocal( RematchInfo* rip )
+{
+    rip->addrIndices[rip->nPlayers++] = RIP_LOCAL_INDX;
+}
+
+#ifdef DEBUG
+static void
+assertRI( const RematchInfo* rip, const CurGameInfo* gi )
+{
+    /* Local players should not be represented */
+    XP_ASSERT( gi && rip );
+    XP_ASSERT( gi->nPlayers == rip->nPlayers );
+    XP_U16 mask = 0;
+    for ( int ii = 0; ii < gi->nPlayers; ++ii ) {
+        XP_Bool isLocal = gi->players[ii].isLocal;
+        XP_ASSERT( isLocal == (rip->addrIndices[ii] == RIP_LOCAL_INDX) );
+        if ( !isLocal ) {
+            mask |= 1 << rip->addrIndices[ii];
+        }
+    }
+    XP_ASSERT( countBits(mask) == rip->nAddrs );
+
+    for ( int ii = 0; ii < rip->nAddrs; ++ii ) {
+        XP_ASSERT( !addr_isEmpty( &rip->addrs[ii] ) );
+    }
+}
+#endif
 
 XP_U32
 server_getLastMoveTime( const ServerCtxt* server )

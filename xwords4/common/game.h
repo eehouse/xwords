@@ -86,9 +86,11 @@ XP_Bool game_makeNewGame( MPFORMAL XWEnv xwe, XWGame* game, CurGameInfo* gi,
                           ,XP_U16 gameSeed
 #endif
                           );
+
 XP_Bool game_makeRematch( const XWGame* game, XWEnv xwe, XW_UtilCtxt* util,
                           const CommonPrefs* cp, const TransportProcs* procs,
-                          XWGame* newGame, const XP_UCHAR* newName );
+                          XWGame* newGame, const XP_UCHAR* newName,
+                          RematchOrder ro );
 
 void game_changeDict( MPFORMAL XWGame* game, XWEnv xwe, CurGameInfo* gi,
                       DictionaryCtxt* dict );

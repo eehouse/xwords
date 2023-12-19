@@ -1423,7 +1423,7 @@ initGameGlobals( JNIEnv* env, JNIState* state, jobject jutil, jobject jprocs )
 JNIEXPORT jboolean JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeRematch
 ( JNIEnv* env, jclass C, GamePtrType gamePtr, GamePtrType gamePtrNew,
-  jobject jutil, jobject jcp, jstring jGameName )
+  jobject jutil, jobject jcp, jstring jGameName, jobject jRo )
 {
     jboolean success = false;
     XWJNI_START_GLOBALS(gamePtr);
@@ -1437,8 +1437,10 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeRematch
     loadCommonPrefs( env, &cp, jcp );
 
     const char* gameName = (*env)->GetStringUTFChars( env, jGameName, NULL );
+    RematchOrder ro = jEnumToInt( env, jRo );
     success = game_makeRematch( &oldState->game, env, globals->util, &cp,
-                                (TransportProcs*)NULL, &state->game, gameName );
+                                (TransportProcs*)NULL, &state->game,
+                                gameName, ro );
     (*env)->ReleaseStringUTFChars( env, jGameName, gameName );
 
     if ( success ) {
@@ -2197,6 +2199,19 @@ Java_org_eehouse_android_xw4_jni_XwJNI_server_1initClientConnection
     result = server_initClientConnection( state->game.server, env );
     XWJNI_END();
     LOG_RETURNF( "%s", boolToStr(result) );
+    return result;
+}
+
+JNIEXPORT jboolean JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_server_1canOfferRematch
+( JNIEnv* env, jclass C, GamePtrType gamePtr )
+{
+    jboolean result;
+    XWJNI_START_GLOBALS(gamePtr);
+    XP_Bool canOffer;
+    XP_Bool canRematch= server_canRematch( state->game.server, &canOffer );
+    result = canRematch && canOffer;
+    XWJNI_END();
     return result;
 }
 

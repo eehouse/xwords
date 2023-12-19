@@ -200,16 +200,10 @@ drawScoreBoard( BoardCtxt* board, XWEnv xwe )
 #endif
             /* Get the scores from the model or by calculating them based on
                the end-of-game state. */
-            if ( board->gameOver ) {
-                model_figureFinalScores( model, &scores, NULL );
-            } else {
-                for ( ii = 0; ii < nPlayers; ++ii ) {
-                    scores.arr[ii] = model_getPlayerScore( model, ii );
-                }
-            }
+            model_getCurScores( model, &scores, board->gameOver );
 
-            if ( draw_scoreBegin( board->draw, xwe, &board->scoreBdBounds, nPlayers,
-                                  scores.arr, nTilesInPool, 
+            if ( draw_scoreBegin( board->draw, xwe, &board->scoreBdBounds,
+                                  nPlayers, scores.arr, nTilesInPool,
                                   dfsFor( board, OBJ_SCORE ) ) ) {
                 XP_U16 totalDim = 0; /* not counting rem */
                 XP_U16 gotPct;

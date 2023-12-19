@@ -1,6 +1,6 @@
 /* -*- compile-command: "make MEMDEBUG=TRUE -j3"; -*- */
 /* 
- * Copyright 2001 - 2020 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2001 - 2023 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -156,6 +156,8 @@ typedef struct _LaunchParams {
 #ifdef XWFEATURE_TESTPATSTR
     const XP_UCHAR* iterTestPatStr;
 #endif
+
+    const char* rematchOrder;
 
     struct {
         void (*quit)(void* params);

@@ -237,14 +237,14 @@ game_makeNewGame( MPFORMAL XWEnv xwe, XWGame* game, CurGameInfo* gi,
 XP_Bool
 game_makeRematch( const XWGame* oldGame, XWEnv xwe, XW_UtilCtxt* newUtil,
                   const CommonPrefs* newCp, const TransportProcs* procs,
-                  XWGame* newGame, const XP_UCHAR* newName )
+                  XWGame* newGame, const XP_UCHAR* newName, RematchOrder ro )
 {
     XP_Bool success = XP_FALSE;
-    XP_LOGFF( "(newName=%s)", newName );
+    XP_LOGFF( "(newName=%s, ro=%s)", newName, RO2Str(ro) );
 
-    RematchAddrs ra;
+    RematchInfo* rip;
     if ( server_getRematchInfo( oldGame->server, newUtil,
-                                makeGameID( newUtil ), &ra ) ) {
+                                makeGameID( newUtil ), ro, &rip ) ) {
         CommsAddrRec* selfAddrP = NULL;
         CommsAddrRec selfAddr;
         if ( !!oldGame->comms ) {
@@ -255,20 +255,31 @@ game_makeRematch( const XWGame* oldGame, XWEnv xwe, XW_UtilCtxt* newUtil,
         if ( game_makeNewGame( MPPARM(newUtil->mpool) xwe, newGame,
                                newUtil->gameInfo, selfAddrP, (CommsAddrRec*)NULL,
                                newUtil, (DrawCtx*)NULL, newCp, procs ) ) {
+            if ( !!newGame->comms ) {
+                server_setRematchOrder( newGame->server, rip );
 
-            const CurGameInfo* newGI = newUtil->gameInfo;
-            for ( int ii = 0; ii < ra.nAddrs; ++ii ) {
-                NetLaunchInfo nli;
-                /* hard-code one player per device -- for now */
-                nli_init( &nli, newGI, selfAddrP, 1, ii + 1 );
-                if ( !!newName ) {
-                    nli_setGameName( &nli, newName );
+                const CurGameInfo* newGI = newUtil->gameInfo;
+                for ( int ii = 0; ; ++ii ) {
+                    CommsAddrRec guestAddr;
+                    XP_U16 nPlayersH;
+                    if ( !server_ri_getAddr( rip, ii, &guestAddr, &nPlayersH ) ) {
+                        break;
+                    }
+                    XP_ASSERT( !comms_addrsAreSame( newGame->comms, &guestAddr,
+                                                    &selfAddr ) );
+
+                    NetLaunchInfo nli;
+                    nli_init( &nli, newGI, selfAddrP, nPlayersH, ii + 1 );
+                    if ( !!newName ) {
+                        nli_setGameName( &nli, newName );
+                    }
+                    LOGNLI( &nli );
+                    comms_invite( newGame->comms, xwe, &nli, &guestAddr, XP_TRUE );
                 }
-                LOGNLI( &nli );
-                comms_invite( newGame->comms, xwe, &nli, &ra.addrs[ii], XP_TRUE );
             }
             success = XP_TRUE;
         }
+        server_disposeRematchInfo( oldGame->server, &rip );
     }
     LOG_RETURNF( "%s", boolToStr(success) );
     return success;
@@ -518,8 +529,7 @@ game_getState( const XWGame* game, XWEnv xwe, GameStateInfo* gsi )
     gsi->canTrade = board_canTrade( board, xwe );
     gsi->nPendingMessages = !!game->comms ? 
         comms_countPendingPackets(game->comms, NULL) : 0;
-
-    gsi->canRematch = server_canRematch( server );
+    gsi->canRematch = server_canRematch( server, NULL );
     gsi->canPause = server_canPause( server );
     gsi->canUnpause = server_canUnpause( server );
 }

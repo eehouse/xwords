@@ -518,6 +518,17 @@ randIntArray( XP_U16* rnums, XP_U16 count )
     return changed;
 } /* randIntArray */
 
+XP_U16
+countBits( XP_U32 mask )
+{
+    XP_U16 result = 0;
+    while ( 0 != mask ) {
+        ++result;
+        mask &= mask - 1;
+    }
+    return result;
+}
+
 #ifdef XWFEATURE_BASE64
 /* base-64 encode binary data as a message legal for SMS.  See
  * http://www.ietf.org/rfc/rfc2045.txt for the algorithm.  glib uses this and

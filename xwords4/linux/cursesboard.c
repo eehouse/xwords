@@ -135,7 +135,8 @@ static void relay_requestJoin_curses( void* closure, const XP_UCHAR* devID,
                                       XP_U16 nPlayersTotal, XP_U16 seed, XP_U16 lang );
 #endif
 
-static XP_Bool rematch_and_save( CursesBoardGlobals* bGlobals, XP_U32* newGameIDP );
+static XP_Bool rematch_and_save( CursesBoardGlobals* bGlobals, RematchOrder ro,
+                                 XP_U32* newGameIDP );
 static void disposeBoard( CursesBoardGlobals* bGlobals );
 static void initCP( CommonGlobals* cGlobals );
 static CursesBoardGlobals* commonInit( CursesBoardState* cbState,
@@ -697,16 +698,17 @@ cb_addInvite( CursesBoardState* cbState, XP_U32 gameID, XP_U16 forceChannel,
 
     NetLaunchInfo nli;
     nli_init( &nli, cGlobals->gi, &selfAddr, 1, forceChannel );
-    nli.remotesAreRobots = XP_TRUE;
 
     comms_invite( comms, NULL_XWE, &nli, destAddr, XP_TRUE );
 }
 
 XP_Bool
-cb_makeRematch( CursesBoardState* cbState, XP_U32 gameID, XP_U32* newGameIDP )
+cb_makeRematch( CursesBoardState* cbState, XP_U32 gameID, RematchOrder ro,
+                XP_U32* newGameIDP )
 {
-    CursesBoardGlobals* bGlobals = findOrOpenForGameID( cbState, gameID, NULL, NULL );
-    XP_Bool success = rematch_and_save( bGlobals, newGameIDP );
+    CursesBoardGlobals* bGlobals = findOrOpenForGameID( cbState, gameID,
+                                                        NULL, NULL );
+    XP_Bool success = rematch_and_save( bGlobals, ro, newGameIDP );
     return success;
 }
 
@@ -727,9 +729,11 @@ cb_makeMoveIf( CursesBoardState* cbState, XP_U32 gameID )
                                          XP_FALSE,
 #endif
                                          XP_FALSE, &ignored );
-            if ( success ) {
-                success = board_commitTurn( board, NULL_XWE, XP_TRUE, XP_TRUE, NULL );
+            if ( !success ) {
+                XP_LOGFF( "unable to find hint; so PASSing" );
             }
+            success = board_commitTurn( board, NULL_XWE, XP_TRUE, XP_TRUE,
+                                        NULL );
         }
     }
     LOG_RETURNF( "%s", boolToStr(success) );
@@ -994,7 +998,7 @@ curses_util_informUndo( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe) )
 }
 
 static void
-rematch_and_save_once( CursesBoardGlobals* bGlobals )
+rematch_and_save_once( CursesBoardGlobals* bGlobals, RematchOrder ro )
 {
     LOG_FUNC();
     CommonGlobals* cGlobals = &bGlobals->cGlobals;
@@ -1006,7 +1010,7 @@ rematch_and_save_once( CursesBoardGlobals* bGlobals )
          && 0 != alreadyDone ) {
         XP_LOGFF( "already rematched game %X", cGlobals->gi->gameID );
     } else {
-        if ( rematch_and_save( bGlobals, NULL ) ) {
+        if ( rematch_and_save( bGlobals, ro, NULL ) ) {
             gdb_storeInt( cGlobals->params->pDb, key, 1 );
         }
     }
@@ -1014,7 +1018,8 @@ rematch_and_save_once( CursesBoardGlobals* bGlobals )
 }
 
 static XP_Bool
-rematch_and_save( CursesBoardGlobals* bGlobals, XP_U32* newGameIDP )
+rematch_and_save( CursesBoardGlobals* bGlobals, RematchOrder ro,
+                  XP_U32* newGameIDP )
 {
     LOG_FUNC();
     CommonGlobals* cGlobals = &bGlobals->cGlobals;
@@ -1025,7 +1030,7 @@ rematch_and_save( CursesBoardGlobals* bGlobals, XP_U32* newGameIDP )
     XP_Bool success = game_makeRematch( &bGlobals->cGlobals.game, NULL_XWE,
                                         bGlobalsNew->cGlobals.util,
                                         &cGlobals->cp, &bGlobalsNew->cGlobals.procs,
-                                        &bGlobalsNew->cGlobals.game, "newName" );
+                                        &bGlobalsNew->cGlobals.game, "newName", ro );
     if ( success ) {
         if ( !!newGameIDP ) {
             *newGameIDP = bGlobalsNew->cGlobals.gi->gameID;
@@ -1038,13 +1043,13 @@ rematch_and_save( CursesBoardGlobals* bGlobals, XP_U32* newGameIDP )
 }
 
 static void
-curses_util_notifyGameOver( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe), XP_S16 quitter )
+curses_util_notifyGameOver( XW_UtilCtxt* uc, XWEnv xwe, XP_S16 quitter )
 {
     LOG_FUNC();
     CursesBoardGlobals* bGlobals = (CursesBoardGlobals*)uc->closure;
     CommonGlobals* cGlobals = &bGlobals->cGlobals;
     LaunchParams* params = cGlobals->params;
-    board_draw( cGlobals->game.board, NULL_XWE );
+    board_draw( cGlobals->game.board, xwe );
 
     /* game belongs in cGlobals... */
     if ( params->printHistory ) {
@@ -1057,14 +1062,15 @@ curses_util_notifyGameOver( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe), XP_S16 quitte
         sleep( params->quitAfter );
         handleQuit( bGlobals->cbState->aGlobals, 0 );
     } else if ( params->undoWhenDone ) {
-        server_handleUndo( cGlobals->game.server, NULL_XWE, 0 );
+        server_handleUndo( cGlobals->game.server, xwe, 0 );
     } else if ( !params->skipGameOver && !!bGlobals->boardWin ) {
         /* This is modal.  Don't show if quitting */
         cursesShowFinalScores( bGlobals );
     }
 
     if ( params->rematchOnDone ) {
-        rematch_and_save_once( bGlobals );
+        XP_ASSERT( !!params->rematchOrder );
+        rematch_and_save_once( bGlobals, roFromStr(params->rematchOrder) );
     }
 } /* curses_util_notifyGameOver */
 

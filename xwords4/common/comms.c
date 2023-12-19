@@ -239,6 +239,7 @@ struct CommsCtxt {
 
 #define FLAG_HARVEST_DONE 1
 #define FLAG_QUASHED 2
+
 #define QUASHED(COMMS) (0 != ((COMMS)->flags & FLAG_QUASHED))
 
 #if defined XWFEATURE_IP_DIRECT || defined XWFEATURE_DIRECTIP
@@ -655,7 +656,7 @@ comms_setConnID( CommsCtxt* comms, XP_U32 connID, XP_U16 streamVersion )
     XP_ASSERT( 0 == comms->streamVersion
                || streamVersion == comms->streamVersion );
     comms->streamVersion = streamVersion;
-    XP_LOGFF( "set connID (gameID) to %x, streamVersion to 0x%X",
+    XP_LOGFF( "set connID (gameID) to %X, streamVersion to 0x%X",
               connID, streamVersion );
     THREAD_CHECK_END();
 } /* comms_setConnID */
@@ -724,6 +725,7 @@ addrFromStreamOne( CommsAddrRec* addrP, XWStreamCtxt* stream, CommsConnType typ 
 void
 addrFromStream( CommsAddrRec* addrP, XWStreamCtxt* stream )
 {
+    XP_MEMSET( addrP, 0, sizeof(*addrP) );
     XP_U8 tmp = stream_getU8( stream );
     XP_U16 version = stream_getVersion( stream );
     XP_ASSERT( 0 < version );
@@ -1379,6 +1381,41 @@ comms_getChannelAddr( const CommsCtxt* comms, XP_PlayerAddr channelNo,
         }
     }
     XP_ASSERT( found );
+}
+
+static XP_Bool
+addrs_same( const CommsAddrRec* addr1, const CommsAddrRec* addr2 )
+{
+    /* Empty addresses are the same only if both are empty */
+    XP_Bool same = addr1->_conTypes == 0 && addr2->_conTypes == 0;
+
+    CommsConnType typ;
+    for ( XP_U32 st = 0; !same && addr_iter( addr1, &typ, &st ); ) {
+        if ( addr_hasType( addr2, typ ) ) {
+            switch ( typ ) {
+            case COMMS_CONN_MQTT:
+                same = addr1->u.mqtt.devID == addr2->u.mqtt.devID;
+                break;
+            case COMMS_CONN_SMS:
+                same = addr1->u.sms.port == addr2->u.sms.port
+                    && 0 == XP_STRCMP(addr1->u.sms.phone, addr2->u.sms.phone );
+                break;
+            default:
+                XP_LOGFF( "ignoring %s", ConnType2Str(typ) );
+            }
+        }
+    }
+
+    return same;
+}
+
+XP_Bool
+comms_addrsAreSame( const CommsCtxt* XP_UNUSED(comms),
+                    const CommsAddrRec* addr1,
+                    const CommsAddrRec* addr2 )
+{
+    XP_Bool result = addrs_same( addr1, addr2 );
+    return result;
 }
 
 typedef struct _NonAcks {
@@ -3604,16 +3641,16 @@ static void
 logAddrComms( const CommsCtxt* comms, const CommsAddrRec* addr,
               const char* caller )
 {
-    logAddr( MPPARM(comms->mpool) comms->dutil, addr, caller );
+    logAddr( comms->dutil, addr, caller );
 }
 
 void
-logAddr( MPFORMAL XW_DUtilCtxt* dutil, const CommsAddrRec* addr,
+logAddr( XW_DUtilCtxt* dutil, const CommsAddrRec* addr,
          const char* caller )
 {
     if ( !!addr ) {
         char buf[128];
-        XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(mpool)
+        XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(dutil->mpool)
                                                     dutil_getVTManager(dutil));
         if ( !!caller ) {
             snprintf( buf, sizeof(buf), "called on %p from %s:\n",
@@ -3870,6 +3907,14 @@ types_hasType( XP_U16 conTypes, CommsConnType typ )
     }
     // XP_LOGF( "%s(%s) => %d", __func__, ConnType2Str(typ), hasType );
     return hasType;
+}
+
+XP_Bool
+addr_isEmpty( const CommsAddrRec* addr )
+{
+    CommsConnType typ;
+    XP_U32 st = 0;
+    return !addr_iter( addr, &typ, &st );
 }
 
 CommsConnType 

@@ -75,6 +75,26 @@ gtkask_timeout( GtkWidget* parent, const gchar* message,
 
     LOG_RETURNF( "%d", response );
     return response;
-} /* gtkask */
+} /* gtkask_timeout */
+
+bool
+gtkask_radios( GtkWidget* parent, const gchar *message,
+               const AskPair* buttxts, int* chosen )
+{
+    gint askResponse = gtkask_timeout( parent, message, GTK_BUTTONS_CANCEL, buttxts, 0 );
+    bool result = askResponse != GTK_RESPONSE_CANCEL;
+    if ( result ) {
+        for ( int ii = 0; ; ++ii ) {
+            if ( !buttxts[ii].txt ) {
+                XP_ASSERT(0);
+                break;
+            } else if ( askResponse == buttxts[ii].result ) {
+                *chosen = ii;
+                break;
+            }
+        }
+    }
+    return result;
+}
 
 #endif

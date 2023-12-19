@@ -5,4 +5,12 @@
 
   <string name="dup_allscores_fmt">All scores: %1$s</string>
 
+  <string name="expl_rematch_order">Choose how to order players in the new game</string>
+  <string name="title_rematch_order">Rematched Players Order</string>
+  <string name="ro_no_default">Ask each time</string>
+  <string name="ro_same">Same as this game</string>
+  <string name="ro_low_score_first">Low scorer goes first</string>
+  <string name="ro_high_score_first">High scorer goes first</string>
+  <string name="ro_juggle">Randomly</string>
+
 </resources>

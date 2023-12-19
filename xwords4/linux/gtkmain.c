@@ -363,6 +363,32 @@ handle_open_button( GtkWidget* XP_UNUSED(widget), void* closure )
 void
 make_rematch( GtkAppGlobals* apg, const CommonGlobals* cGlobals )
 {
+    XP_Bool canOffer;
+    XP_Bool canRematch = server_canRematch( cGlobals->game.server, &canOffer );
+    XP_ASSERT( canRematch );
+
+    RematchOrder ro = RO_SAME;
+    if ( canOffer ) {
+        const AskPair buttons[] = {
+            {"Juggle", RO_JUGGLE},
+            {"Low score first", RO_LOW_SCORE_FIRST},
+            {"High score first", RO_HIGH_SCORE_FIRST},
+#ifdef XWFEATURE_RO_BYNAME
+            { "Alphabetical", RO_BY_NAME },
+#endif
+            { "Keep existing", RO_SAME },
+            { NULL, 0 }
+        };
+
+        gint response;
+        if ( gtkask_radios( apg->window, "rematch? choose new order",
+                            buttons, &response ) ) {
+            ro = buttons[response].result;
+        } else {
+            goto exit;
+        }
+    }
+
     LaunchParams* params = apg->cag.params;
     GtkGameGlobals* newGlobals = calloc( 1, sizeof(*newGlobals) );
     initBoardGlobalsGtk( newGlobals, params, NULL );
@@ -373,13 +399,15 @@ make_rematch( GtkAppGlobals* apg, const CommonGlobals* cGlobals )
     snprintf( buf, VSIZE(buf), "Game %lX", XP_RANDOM() % 256 );
     game_makeRematch( &cGlobals->game, NULL_XWE, util, cp,
                       &newGlobals->cGlobals.procs,
-                      &newGlobals->cGlobals.game, buf );
+                      &newGlobals->cGlobals.game, buf, ro );
 
     linuxSaveGame( &newGlobals->cGlobals );
     sqlite3_int64 rowid = newGlobals->cGlobals.rowid;
     freeGlobals( newGlobals );
 
     open_row( apg, rowid, XP_TRUE );
+ exit:
+    return;
 } /* make_rematch */
 
 static void

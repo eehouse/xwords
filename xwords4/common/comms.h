@@ -219,6 +219,8 @@ XP_S16 comms_resendAll( CommsCtxt* comms, XWEnv xwe, CommsConnType filter,
 XP_U16 comms_getChannelSeed( CommsCtxt* comms );
 void comms_getChannelAddr( const CommsCtxt* comms, XP_PlayerAddr channelNo,
                            CommsAddrRec* addr );
+XP_Bool comms_addrsAreSame( const CommsCtxt* comms, const CommsAddrRec* addr1,
+                            const CommsAddrRec* addr2 );
 
 #ifdef XWFEATURE_COMMSACK
 void comms_ackAny( CommsCtxt* comms, XWEnv xwe );
@@ -256,6 +258,7 @@ void comms_gameJoined( CommsCtxt* comms, const XP_UCHAR* connname, XWHostID hid 
 XP_Bool augmentAddr( CommsAddrRec* addr, const CommsAddrRec* newer,
                      XP_Bool isNewer );
 
+XP_Bool addr_isEmpty( const CommsAddrRec* addr );
 CommsConnType addr_getType( const CommsAddrRec* addr );
 void addr_setType( CommsAddrRec* addr, CommsConnType type );
 void addr_addType( CommsAddrRec* addr, CommsConnType type );
@@ -283,7 +286,7 @@ void comms_setAddrDisabled( CommsCtxt* comms, CommsConnType typ,
                             XP_Bool send, XP_Bool enabled );
 XP_Bool comms_getAddrDisabled( const CommsCtxt* comms, CommsConnType typ, 
                                XP_Bool send );
-void logAddr( MPFORMAL XW_DUtilCtxt* dutil, const CommsAddrRec* addr,
+void logAddr( XW_DUtilCtxt* dutil, const CommsAddrRec* addr,
               const char* caller );
 
 # else

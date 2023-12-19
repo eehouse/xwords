@@ -88,7 +88,7 @@ XP_S16 server_getTimerSeconds( const ServerCtxt* server, XWEnv xwe, XP_U16 turn 
 XP_Bool server_dupTurnDone( const ServerCtxt* server, XP_U16 turn );
 XP_Bool server_canPause( const ServerCtxt* server );
 XP_Bool server_canUnpause( const ServerCtxt* server );
-XP_Bool server_canRematch( const ServerCtxt* server );
+XP_Bool server_canRematch( const ServerCtxt* server, XP_Bool* canOrder );
 void server_pause( ServerCtxt* server, XWEnv xwe, XP_S16 turn, const XP_UCHAR* msg );
 void server_unpause( ServerCtxt* server, XWEnv xwe, XP_S16 turn, const XP_UCHAR* msg );
 
@@ -146,18 +146,46 @@ XP_U16 server_figureFinishBonus( const ServerCtxt* server, XP_U16 turn );
 XP_Bool server_getIsHost( const ServerCtxt* server );
 #endif
 
-typedef struct _RematchAddrs {
-    CommsAddrRec addrs[MAX_NUM_PLAYERS];
-    XP_U16 nAddrs;
-} RematchAddrs;
+typedef enum {
+    RO_SAME,                       /* preserve the parent game's order */
+    RO_LOW_SCORE_FIRST,            /* lowest scorer in parent goes first, etc */
+    RO_HIGH_SCORE_FIRST,           /* highest scorer in parent goes first, etc */
+    RO_JUGGLE,                     /* rearrange randomly */
+#ifdef XWFEATURE_RO_BYNAME
+    RO_BY_NAME,                    /* alphabetical -- for testing only! :-) */
+#endif
+    RO_NUM_ROS,
+} RematchOrder;
+
+#ifdef DEBUG
+const XP_UCHAR* RO2Str(RematchOrder ro);
+#endif
+
+
+/* Info about remote addresses that lets us determine an order for invited
+   players as they arrive. It stores the addresses of all remote devices, and
+   for each a mask of which players will come from that address.
+
+   No need for a count: once we find a playersMask == 0 we're done
+*/
 
 /* Sets up newUtil->gameInfo correctly, and returns with a set of
    addresses to which invitation should be sent. But: meant to be called
    only from game.c anyway.
 */
+typedef struct RematchInfo RematchInfo;
 XP_Bool server_getRematchInfo( const ServerCtxt* server, XW_UtilCtxt* newUtil,
-                               XP_U32 gameID, RematchAddrs* ra );
+                               XP_U32 gameID, RematchOrder ro, RematchInfo** ripp  );
+void server_disposeRematchInfo( ServerCtxt* server, RematchInfo** rip );
+XP_Bool server_ri_getAddr( const RematchInfo* ri, XP_U16 nth,
+                           CommsAddrRec* addr, XP_U16* nPlayersH );
 
+/* Pass in the info the server will need to hang onto until all invitees have
+   registered, at which point it can set and communicate the player order for
+   the game. To be called only from game.c! */
+void server_setRematchOrder( ServerCtxt* server, const RematchInfo* ri );
+
+XP_Bool server_isFromRematch( const ServerCtxt* server );
 
 #ifdef CPLUS
 }

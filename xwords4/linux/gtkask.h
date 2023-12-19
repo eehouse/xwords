@@ -1,6 +1,6 @@
 /* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
 /* 
- * Copyright 2000 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2000-2023 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -39,6 +39,12 @@ gint gtkask( GtkWidget* parent, const gchar *message,
 gint gtkask_timeout( GtkWidget* parent, const gchar *message, 
                      GtkButtonsType buttons, const AskPair* buttxts, 
                      uint32_t timeoutMS );
+
+/* Put up buttxts as radio buttons/single choice with and OK button to confirm
+   and a cancel. That's later; for now just call gtkask() with a ton of
+   buttons. */
+bool gtkask_radios( GtkWidget* parent, const gchar *message,
+                    const AskPair* buttxts, int* chosen );
 
 #endif
 #endif /* PLATFORM_GTK */

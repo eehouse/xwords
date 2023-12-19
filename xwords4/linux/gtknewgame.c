@@ -409,7 +409,7 @@ makeNewGameDialog( GtkNewGameState* state )
     GtkWidget* hbox;
 #ifndef XWFEATURE_STANDALONE_ONLY
     GtkWidget* roleCombo;
-    char* roles[] = { "Standalone", "Host", "Guest" };
+    char* roles[] = { "Standalone", "Host" };
 #endif
 
     dialog = gtk_dialog_new();
@@ -641,8 +641,13 @@ gtk_newgame_col_set( void* closure, XP_U16 player, NewGameColumn col,
         gchar buf[32];
         cp = !!value.ng_cp ? value.ng_cp : "";
         if ( NG_COL_NAME == col && '\0' == cp[0] ) {
-            sprintf( buf, "Linuser %d", 1 + player );
-            cp = buf;
+            LaunchParams* params = state->globals->cGlobals.params;
+            if ( !!params->localName ) {
+                cp = params->localName;
+            } else {
+                sprintf( buf, "Linuser %d", 1 + player );
+                cp = buf;
+            }
         }
         gtk_entry_set_text( GTK_ENTRY(widget), cp );
         break;

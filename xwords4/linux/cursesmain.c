@@ -1530,7 +1530,6 @@ makeGameFromArgs( CursesAppGlobals* aGlobals, cJSON* args )
                               params->localName );
     for ( int ii = 0; ii < gi.nPlayers; ++ii ) {
         gi.players[ii].isLocal = ii == hostPosn;
-        gi.players[ii].robotIQ = 1;
     }
 
     tmp = cJSON_GetObjectItem( args, "dict" );
@@ -1601,8 +1600,11 @@ rematchFromArgs( CursesAppGlobals* aGlobals, cJSON* args )
 
     XP_U32 gameID = gidFromObject( args );
 
+    cJSON* tmp = cJSON_GetObjectItem( args, "rematchOrder" );
+    RematchOrder ro = roFromStr( tmp->valuestring );
+
     XP_U32 newGameID = 0;
-    if ( cb_makeRematch( aGlobals->cbState, gameID, &newGameID ) ) {
+    if ( cb_makeRematch( aGlobals->cbState, gameID, ro, &newGameID ) ) {
         result = newGameID;
     }
     return result;

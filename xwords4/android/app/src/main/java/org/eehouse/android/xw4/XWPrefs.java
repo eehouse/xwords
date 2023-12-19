@@ -32,6 +32,8 @@ import org.json.JSONObject;
 
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;
+import org.eehouse.android.xw4.jni.XwJNI.RematchOrder;
+
 
 public class XWPrefs {
     private static final String TAG = XWPrefs.class.getSimpleName();
@@ -326,6 +328,30 @@ public class XWPrefs {
         }
         Assert.assertTrue( DBUtils.GROUPID_UNSPEC != groupID );
         return groupID;
+    }
+
+    public static void setDefaultRematchOrder( Context context, RematchOrder ro )
+    {
+        String storedStr = null == ro ? "" : context.getString( ro.getStrID() );
+        setPrefsString( context, R.string.key_rematch_order, storedStr );
+    }
+
+    public static RematchOrder getDefaultRematchOrder( Context context )
+    {
+        String storedStr = getPrefsString( context, R.string.key_rematch_order );
+
+        // Let's try to get this from the enum...
+        RematchOrder ro = null;
+        for ( RematchOrder one: RematchOrder.values() ) {
+            int strID = one.getStrID();
+            String str = context.getString( strID );
+            if ( str.equals( storedStr ) ) {
+                ro = one;
+                break;
+            }
+        }
+
+        return ro;
     }
 
     public static void setDefaultNewGameGroup( Context context, long val )

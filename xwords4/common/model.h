@@ -275,7 +275,7 @@ typedef struct WordNotifierInfo {
 XP_Bool getCurrentMoveScoreIfLegal( ModelCtxt* model, XWEnv xwe,
                                     XP_S16 turn, XWStreamCtxt* stream,
                                     WordNotifierInfo* wni, XP_S16* score );
-XP_S16 model_getPlayerScore( ModelCtxt* model, XP_S16 player );
+XP_S16 model_getPlayerScore( const ModelCtxt* model, XP_S16 player );
 
 XP_Bool model_getPlayersLastScore( ModelCtxt* model, XWEnv xwe, XP_S16 player,
                                    LastMoveInfo* info );
@@ -299,8 +299,11 @@ XP_Bool model_checkMoveLegal( ModelCtxt* model, XWEnv xwe, XP_S16 player,
                               WordNotifierInfo* notifyInfo );
 
 typedef struct _ScoresArray { XP_S16 arr[MAX_NUM_PLAYERS]; } ScoresArray;
-void model_figureFinalScores( ModelCtxt* model, ScoresArray* scores,
+void model_figureFinalScores( const ModelCtxt* model, ScoresArray* scores,
                               ScoresArray* tilePenalties );
+
+void model_getCurScores( const ModelCtxt* model, ScoresArray* scores,
+                         XP_Bool gameOver );
 
 /* figureMoveScore is meant only for the engine's use */
 XP_U16 figureMoveScore( const ModelCtxt* model, XWEnv xwe, XP_U16 turn,

@@ -117,6 +117,8 @@ void tryConnectToServer( CommonGlobals* cGlobals );
 void ensureLocalPlayerNames( LaunchParams* params, CurGameInfo* gi );
 void cancelTimers( CommonGlobals* cGlobals );
 
+RematchOrder roFromStr(const char* rematchOrder );
+
 /* void initParams( LaunchParams* params ); */
 /* void freeParams( LaunchParams* params ); */
 

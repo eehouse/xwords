@@ -33,14 +33,17 @@ typedef enum {OSType_NONE, OSType_LINUX, OSType_ANDROID, } XP_OSType;
 typedef struct _NetLaunchInfo {
     XP_U16 _conTypes;
 
-    XP_UCHAR gameName[MAX_GAME_NAME_LEN];
-    XP_UCHAR dict[MAX_DICT_NAME_LEN];
+    XP_UCHAR gameName[MAX_GAME_NAME_LEN+1];
+    XP_UCHAR dict[MAX_DICT_NAME_LEN+1];
     XP_UCHAR isoCodeStr[MAX_ISO_CODE_LEN+1];
     XP_U8 forceChannel;
     XP_U8 nPlayersT;
     XP_U8 nPlayersH;
     XP_Bool remotesAreRobots;
     XP_Bool inDuplicateMode;
+
+    XP_U32 gameID;
+    XP_UCHAR inviteID[32];      /* still used? */
 
     /* Relay */
     XP_UCHAR room[MAX_INVITE_LEN + 1];
@@ -53,11 +56,8 @@ typedef struct _NetLaunchInfo {
     // SMS
     XP_UCHAR phone[32];
     XP_Bool isGSM;
-    XP_OSType osType;
+    XP_OSType osType;           /* used? */
     XP_U32 osVers;
-
-    XP_U32 gameID;
-    XP_UCHAR inviteID[32];
 
     /* MQTT */
     XP_UCHAR mqttDevID[17];

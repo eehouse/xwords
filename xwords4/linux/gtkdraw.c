@@ -1083,7 +1083,7 @@ formatScoreText( PangoLayout* layout, XP_UCHAR* buf, XP_U16 bufLen,
 {
     XP_S16 score = dsi->totalScore;
     XP_U16 nTilesLeft = dsi->nTilesLeft;
-    XP_Bool isTurn = dsi->isTurn;
+    XP_Bool isTurn = XP_TRUE; // dsi->isTurn;
     XP_S16 maxWidth = bounds->width;
     XP_UCHAR numBuf[16];
     int width, height;

@@ -52,6 +52,7 @@ import org.eehouse.android.xw4.jni.UtilCtxt;
 import org.eehouse.android.xw4.jni.UtilCtxtImpl;
 import org.eehouse.android.xw4.jni.XwJNI;
 import org.eehouse.android.xw4.jni.XwJNI.GamePtr;
+import org.eehouse.android.xw4.jni.XwJNI.RematchOrder;
 import org.eehouse.android.xw4.loc.LocUtils;
 import org.eehouse.android.xw4.Utils.ISOCode;
 
@@ -70,6 +71,14 @@ public class GameUtils {
 
     interface ResendDoneProc {
         void onResendDone( Context context, int numSent );
+    }
+
+    interface NeedRematchOrder {
+        // Return null if unable to produce it immediately. Implementation may
+        // want to start a query at the same time and from its
+        // ok-button-handler call makeRematch() again with a different
+        // implementation that simply returns a cached RematchOrder
+        RematchOrder getRematchOrder();
     }
 
     private static Integer s_minScreen;
@@ -574,7 +583,8 @@ public class GameUtils {
     }
 
     public static long makeRematch( Context context, long srcRowid,
-                                    long groupID, String gameName )
+                                    long groupID, String gameName,
+                                    NeedRematchOrder nro )
     {
         long rowid = DBUtils.ROWID_NOTFOUND;
         try ( GameLock lock = GameLock.tryLockRO( srcRowid ) ) {
@@ -582,13 +592,22 @@ public class GameUtils {
                 CurGameInfo gi = new CurGameInfo( context );
                 try ( GamePtr gamePtr = loadMakeGame( context, gi, lock ) ) {
                     if ( null != gamePtr ) {
-                        UtilCtxt util = new UtilCtxtImpl( context );
-                        CommonPrefs cp = CommonPrefs.get(context);
-                        try ( GamePtr gamePtrNew = XwJNI
-                              .game_makeRematch( gamePtr, util, cp, gameName ) ) {
-                            if ( null != gamePtrNew ) {
-                                rowid = saveNewGame1( context, gamePtrNew,
-                                                      groupID, gameName );
+                        RematchOrder ro = RematchOrder.RO_SAME;
+                        if ( XwJNI.server_canOfferRematch( gamePtr ) ) {
+                            ro = XWPrefs.getDefaultRematchOrder( context );
+                            if ( null == ro ) {
+                                ro = nro.getRematchOrder();
+                            }
+                        }
+                        if ( null != ro ) {
+                            UtilCtxt util = new UtilCtxtImpl( context );
+                            CommonPrefs cp = CommonPrefs.get( context );
+                            try ( GamePtr gamePtrNew = XwJNI
+                                  .game_makeRematch( gamePtr, util, cp, gameName, ro ) ) {
+                                if ( null != gamePtrNew ) {
+                                    rowid = saveNewGame1( context, gamePtrNew,
+                                                          groupID, gameName );
+                                }
                             }
                         }
                     }

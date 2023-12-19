@@ -4,6 +4,8 @@ import argparse, datetime, json, os, random, shutil, signal, \
     socket, struct, subprocess, sys, threading, time
 
 g_NAMES = ['Brynn', 'Ariela', 'Kati', 'Eric']
+# These must correspond to what the linux app is looking for in roFromStr()
+g_ROS = ['same', 'low_score_first', 'high_score_first', 'juggle', 'by_name',]
 gDone = False
 gGamesMade = 0
 g_LOGFILE = None
@@ -292,7 +294,9 @@ class Device():
     # way. But how I figure out the other players differs.
     def rematch(self, game):
         gid = game.gid
-        newGid = self._sendWaitReply('rematch', gid=gid).get('newGid')
+        rematchOrder = self.figureRematchOrder()
+        newGid = self._sendWaitReply('rematch', gid=gid, rematchOrder=rematchOrder) \
+                     .get('newGid')
         if newGid:
             guests = Device.playersIn(gid)
             guests.remove(self.host)
@@ -325,6 +329,11 @@ class Device():
     def expectInvite(self, gid, rematchLevel):
         self.guestGames.append(GuestGameInfo(self, gid, rematchLevel))
         self.launchIfNot()
+
+    def figureRematchOrder(self):
+        ro = self.args.REMATCH_ORDER
+        if not ro: ro = random.choice(g_ROS)
+        return ro
 
     # Return true only if all games I host are finished on all games.
     # But: what about games I don't host? For now,  let's make it all
@@ -671,6 +680,8 @@ def mkParser():
 
     parser.add_argument('--rematch-level', dest = 'REMATCH_LEVEL', type = int, default = 0,
                         help = 'rematch games down to this ancestry/depth')
+    parser.add_argument('--rematch-order', dest = 'REMATCH_ORDER', type = str, default = None,
+                        help = 'order rematched games one of these ways: {}'.format(g_ROS))
 
     # envpat = 'DISCON_COREPAT'
     # parser.add_argument('--core-pat', dest = 'CORE_PAT', default = os.environ.get(envpat),

@@ -2533,6 +2533,32 @@ makeSelfAddress( CommsAddrRec* selfAddr, const LaunchParams* params )
     }
 }
 
+RematchOrder
+roFromStr(const char* rematchOrder )
+{
+    RematchOrder result;
+    struct {
+        char* str;
+        RematchOrder ro;
+    } vals [] = {
+        { "same", RO_SAME },
+        { "low_score_first", RO_LOW_SCORE_FIRST },
+        { "high_score_first", RO_HIGH_SCORE_FIRST },
+        { "juggle", RO_JUGGLE },
+#ifdef XWFEATURE_RO_BYNAME
+        { "by_name", RO_BY_NAME },
+#endif
+    };
+    for ( int ii = 0; ii < VSIZE(vals); ++ii ) {
+        if ( 0 == strcmp( rematchOrder, vals[ii].str ) ) {
+            result = vals[ii].ro;
+            break;
+        }
+    }
+    XP_LOGFF( "(%s) => %d", rematchOrder, result );
+    return result;
+}
+
 static void
 writeStatus( const char* statusSocket, const char* dbName )
 {

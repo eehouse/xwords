@@ -16,6 +16,13 @@
         android:title="@string/title_addrs_pref"
         />
 
+    <org.eehouse.android.xw4.XWListPreference
+        android:key="@string/key_rematch_order"
+        android:title="@string/title_rematch_order"
+        android:entries="@array/ro_names"
+        android:entryValues="@array/ro_names"
+        />
+
     <Preference app:title="@string/prefs_dicts"
                 app:summary="@string/prefs_dicts_summary"
                 app:fragment="org.eehouse.android.xw4.gen.PrefsWrappers$prefs_dflts_dicts"
