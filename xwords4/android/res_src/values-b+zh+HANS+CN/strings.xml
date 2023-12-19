@@ -74,7 +74,7 @@
     <string name="list_item_netstats">连接</string>
     <string name="settings_label">其他设置</string>
     <string name="game_locked">锁定设置</string>
-    <string name="robot_smart">智能机器人</string>
+    <string name="robot_smart">一般机器人</string>
     <string name="dicts_item_move">更改存储的位置</string>
     <string name="hints_allowed">允许提示</string>
     <string name="loc_external">外部的</string>
@@ -92,4 +92,832 @@
 \n\tSource (Git) rev: %4$s
 \n\tBuilt: %5$s</string>
     <string name="invit_expl_player_fmt">通过 MQTT/internet 将邀请转发给了 %2$s 上的已知玩家 \"%1$s\"。</string>
+    <string name="disable_nag_title">禁用网络游戏提醒</string>
+    <string name="force_expl">联机游戏中必须有至少一位本地玩家、一位远程玩家。请检查远程玩家。</string>
+    <string name="warn_mqtt_havegames">确定要禁用互联网游戏吗？
+\n
+\n 大多数联机游戏使用互联网交换移动信息，因此仅在你想在本地与机器人游玩所有游戏时才这么做。</string>
+    <string name="game_summary_field_state">游戏状态</string>
+    <string name="board_menu_game_history">游戏历史</string>
+    <string name="tile_back">卡牌背景</string>
+    <string name="button_add_player">添加玩家</string>
+    <string name="str_phony_rejected">所用单词不合法；这一轮输了！</string>
+    <string name="bt_pick_clear_button">删除</string>
+    <string name="newbie_title">小提示</string>
+    <string name="remote_undone">远程设备撤销了一轮操作。</string>
+    <string name="pref_human_name">人类玩家（你的名字）</string>
+    <string name="show_tiles_button">显示卡牌</string>
+    <string name="logstore_notdumped">无法写入日志</string>
+    <string name="email_author_chooser">评论发表方式</string>
+    <string name="perms_rationale_title">已解释的 Android 权限</string>
+    <string name="slmenu_clear_sel">删除已选项</string>
+    <string name="clr_crosshairs">十字线颜色</string>
+    <string name="about_copyright">CrossWords for Android
+\nCopyright (C) 1998-2023 by Eric House. 这款自由/开源软件是根据 GNU 公共许可证发布的。</string>
+    <string name="phone_lookup_rationale">要重新进行使用数据短信的游戏，CrossWord 需要访问电话号码的权限。</string>
+    <string name="word_to_clip_fmt">已复制“%1$s”</string>
+    <string name="dict_desc_fmt">%1$s（%2$s/%3$d 词）</string>
+    <string name="no_copy_network">无法复制已连接到网络的游戏。使用“创建副本”可以建立一份与当前游戏配置相同、可供游玩的副本。</string>
+    <string name="no_dict_fmt">游戏“%1$s”需要%2$s单词表。请下载以打开游戏。</string>
+    <plurals name="sel_groups_fmt">
+        <item quantity="other">已选择%1$d分组</item>
+    </plurals>
+    <string name="query_title">问题</string>
+    <string name="contacts_rationale">CrossWords 想要读取联系人信息，来显示通过数据短信向你发送邀请的电话号码对应的名字。如果不获取此权限，你仍可收到邀请，但只会显示发送者的电话号码。</string>
+    <string name="strd_unused_tiles_sub_fmt">- %1$d 【未使用卡牌】</string>
+    <string name="hide_newgames_summary">隐藏主页面中的新游戏按钮，显示更多游戏</string>
+    <string name="enable_sms_summary">仅在可发送无限量短信时使用！</string>
+    <string name="mqtt_invite_title">MQTT 邀请</string>
+    <string name="str_resigned_fmt" formatted="false">【认输】%1$s：%2$d</string>
+    <string name="connstat_lastother_succ_fmt">（上一次失败：%1$s）</string>
+    <string name="db_store_failed">导出失败</string>
+    <string name="clip_label">邀请 URL</string>
+    <string name="theme_which">棋盘颜色主题</string>
+    <string name="dup_tag">重复</string>
+    <string name="newgame_configure_first">先配置</string>
+    <string name="new_feature_filter">你可以通过单词的开头、结尾和/或内含内容对单词表进行筛选。要打开筛选器，请点击窗口右上角的扩展箭头。
+\n
+\n点击下方按钮，在 FAQ 中阅读更多信息。</string>
+    <string name="radio_how">方式？</string>
+    <string name="pref_group_sms_title">数据短信相关</string>
+    <string name="button_enable_bt">启用蓝牙</string>
+    <string name="button_sms_add">导入通讯录</string>
+    <string name="str_cant_undo_tileassign">无法撤销卡牌分配。</string>
+    <string name="board_menu_game_final">最终得分</string>
+    <string name="robot_iq_label">机器人智商</string>
+    <string name="loc_item_check">检查</string>
+    <string name="new_game_networked">新建网络游戏</string>
+    <string name="robot_label">机器人玩家</string>
+    <string name="str_no_hint_found">找不到移动</string>
+    <string name="checkupdates_none_found">一切均为最新。</string>
+    <string name="phonies_found_title">已找到伪词</string>
+    <string name="pause_save_msg">记住消息</string>
+    <string name="min_len">最小长度</string>
+    <string name="confirm_sms_willpay">是：我将支付全部话费</string>
+    <string name="download_path_hint">比如：邮件附件保存的位置</string>
+    <string name="not_again_quicknetgame">有一种特别快捷的新方式，可以与之前玩过的人开始游戏。如果列出了这个人的名字，只需将其选中，就会立刻发送邀请。</string>
+    <string name="phonies_spinner_prompt">处理“伪词”（单词表外的单词）的方式</string>
+    <string name="chat_menu_clear">清除历史</string>
+    <string name="sel_items_fmt">已选：%1$d</string>
+    <string name="lang_name_turkish">土耳其语</string>
+    <string name="lang_name_romanian">罗马尼亚语</string>
+    <string name="prefs_appearance_summary">控制外观的设置</string>
+    <string name="dict_host">单词表下载 URL</string>
+    <string name="title_lookup">点击查询</string>
+    <string name="gamel_menu_restart">重启应用</string>
+    <string name="hide_crosshairs">禁用十字线</string>
+    <string name="logstore_cleared_fmt">已删除 %1$d 日志文件</string>
+    <string name="apply_config">要从打开的 URL 中导入主题设置吗？此设置会替代本地作出的任何更改。
+\n
+\n无法撤销此操作，但你总能恢复主题默认颜色。</string>
+    <string name="vs_join">" 对 "</string>
+    <string name="default_name_title">默认玩家名称</string>
+    <string name="button_decline">拒绝</string>
+    <string name="pref_group_relay_title">互联网相关</string>
+    <string name="study_langpick">它的单词：</string>
+    <string name="dict_lang_label_fmt">单词表（%1$s）</string>
+    <string name="tiles_header_count">数字</string>
+    <string name="new_app_avail">点击下载并安装</string>
+    <string name="not_again_newfrom">使用此游戏的所有设置建立可供游玩的新游戏。也就是说，将此游戏作为模板使用。</string>
+    <string name="prefs_names_summary">默认玩家名</string>
+    <string name="toast_no_permission">未获得权限</string>
+    <string name="not_again_lookup">此按钮让你在线查询刚刚玩过的单词。</string>
+    <string name="list_group_movedown">下移</string>
+    <string name="loc_filters_prompt">过滤器：</string>
+    <string name="invite_dict_missing_body_noname_fmt">你已被邀请用单词表 %2$s（在 %3$s 中）游玩 CrossWords，但还未安装。要下载单词表吗？</string>
+    <string name="strd_cumulative_score_fmt">累计得分：%1$d
+\n</string>
+    <string name="warn_bt_havegames">确定要禁用通过蓝牙游玩吗？
+\n
+\n蓝牙对与附近的设备交换移动信息很有用，尤其是邀请信息。除非你确定不会与附近的人游玩，保持此功能开启没有多大坏处。</string>
+    <string name="board_menu_dict">浏览单词表</string>
+    <string name="button_done_fmt">%1$s 完成</string>
+    <string name="init_autojuggle">随机重排玩家</string>
+    <string name="force_title">远程玩家</string>
+    <string name="history_msg_fmt">消息：%1$s。</string>
+    <string name="new_bt_body_fmt">设备 %1$s 上的玩家想要开始游戏</string>
+    <string name="default_robodict">机器人玩家使用的单词表</string>
+    <string name="dict_avail_fmt">点击下载单词表“%1$s”</string>
+    <string name="nag_title">提醒：该你了</string>
+    <string name="tilepick_all_fmt">帮我选择 %1$d</string>
+    <string name="not_again_dicts">此界面让你可以安装新单词表，并浏览已有单词表。
+\n
+\n安装的单词表决定了：
+\n• 可以游玩的语言
+\n• 机器人玩家的智能程度
+\n• 合法的单词
+\n
+\n勾选顶部的“显示可下载”框以查看可用单词表。</string>
+    <string name="lang_name_arabic">阿拉伯语</string>
+    <string name="board_menu_invite">邀请</string>
+    <string name="hide_title_summary">隐藏游戏名称，让棋盘略微变大</string>
+    <string name="prefs_colors_summary">编辑棋盘使用的颜色</string>
+    <string name="list_group_default">将新游戏置于此处</string>
+    <string name="filter_progress_fmt">正在处理 %1$d 单词</string>
+    <string name="warn_mqtt_disabled">此设备目前禁止了通过互联网游玩。不会用互联网发送或接收移动信息。</string>
+    <string name="notify_vibrate">振动</string>
+    <string name="not_again_trading">正在进入卡牌交换模式。
+\n
+\n点击卡牌，将其加入/移除待交换卡牌组。
+\n
+\n</string>
+    <string name="bonus_l2x_summary">2L</string>
+    <string name="notify_title_turn_fmt">游戏 %1$s 轮到你了</string>
+    <string name="inform_dict_diffdict_fmt">你正在使用单词表 %1$s，但房主在使用 %2$s。也要使用 %3$s 吗？</string>
+    <string name="connstat_lastreceipt_fmt">上一次接收：%1$s</string>
+    <string name="summary_conn">游戏进行中</string>
+    <string name="prefs_dicts_summary">默认单词表</string>
+    <string name="title_sort_tiles">给新卡牌排序</string>
+    <string name="new_feature_title">新功能警告</string>
+    <string name="list_group_delete">删除分组</string>
+    <string name="dict_lang_inst_and_avail">（已安装：%1$d；可用：%2$d）</string>
+    <string name="invite_choice_relay">互联网/中继网</string>
+    <string name="str_reg_unexpected_user">已拒绝登记预期外的用户。</string>
+    <string name="button_pick_again">重选</string>
+    <string name="dict_on_server">点击查看详情</string>
+    <string name="board_menu_file_email">用电子邮件联系作者</string>
+    <string name="key_bonushint">加分框文本</string>
+    <string name="archive_title_colors">棋盘颜色</string>
+    <string name="lmi_tiles_dup">将相同卡牌分配给所有玩家</string>
+    <string name="download_done">下载完成</string>
+    <string name="str_submit_confirm">提交当前移动吗？
+\n</string>
+    <string name="button_notagain">不再显示</string>
+    <string name="button_addBlank">+空格</string>
+    <string name="square_tiles">方形牌架卡牌</string>
+    <string name="knowns_bta_fmt">蓝牙地址：%1$s</string>
+    <string name="confirm_deleteonly_dicts_fmt">删除 %1$s 单词表后，就没有%2$s的单词表了。将有游戏无法打开（除非下载用于替代的单词表。）</string>
+    <string name="color_theme_edit_dark">编辑深色主题</string>
+    <string name="inform_dict_title">单词表不匹配</string>
+    <string name="not_again_done">提交移动最简单的方法就是点击牌架右端出现的计“分”器。</string>
+    <string name="slmenu_copy_sel">复制到剪贴板</string>
+    <string name="prefs_behavior_summary">控制应用行为的设置</string>
+    <string name="logstore_dumped_fmt">日志已写入至文件 %1$s</string>
+    <string name="str_two_tiles_first_move">第一次移动必须放置两张及以上卡牌。</string>
+    <string name="notify_sound">播放音效</string>
+    <string name="confirm_sms_title">确认短信套餐</string>
+    <string name="bonus_w2x_summary">2W</string>
+    <string name="prefs_copy_dark">复制深色主题</string>
+    <string name="warn_mqtt_remove">你可以现在启用互联网游玩，也可以从游戏中删除。</string>
+    <string name="robot_smarter">进阶机器人</string>
+    <string name="summary_gameover">游戏结束</string>
+    <string name="str_winner_fmt" formatted="false">【胜者】%1$s：%2$d</string>
+    <string name="loc_search_prompt">搜索：</string>
+    <string name="menu_hint_next">下一条提示</string>
+    <string name="recovered_group">已恢复游戏</string>
+    <string name="button_discard">丢弃</string>
+    <plurals name="lmi_trade_fmt">
+        <item quantity="other">%1$s 交换了%2$d卡牌</item>
+    </plurals>
+    <string name="phonies_label">伪词</string>
+    <string name="connstat_net_noaddr">无法连接此网络游戏，亦无法游玩。
+\n
+\n（很有可能游戏邀请没有指定你的设备支持的连接方式，或者你最近删除了最后的连接方式。）</string>
+    <string name="langdict_label">游戏语言/单词列表</string>
+    <string name="strs_new_tiles_fmt">新卡牌：%1$s</string>
+    <string name="knowns_smsphone_fmt">短信号码：%1$s</string>
+    <string name="invite_choice_data_sms">数据短信</string>
+    <string name="bonus_l3x">三倍加分字母</string>
+    <string name="board_size">棋盘大小</string>
+    <string name="menu_flip">翻转棋盘</string>
+    <plurals name="sel_games_fmt">
+        <item quantity="other">已选择%1$d游戏</item>
+    </plurals>
+    <string name="sms_invite_rationale">CrossWords 需要权限以通过数据短信发送邀请。</string>
+    <string name="button_later">稍后</string>
+    <string name="summary_wait_guest">未连接</string>
+    <string name="pref_item_update_summary">获取中间版本</string>
+    <string name="title_enable_p2p">启用 WiFi 直连</string>
+    <string name="set_default_message_fmt">哪类玩家在新游戏中默认使用单词表 %1$s？（默认语言都是%2$s。）</string>
+    <string name="chat_title_fmt">%1$s 的聊天</string>
+    <plurals name="query_trade_fmt">
+        <item quantity="other">确定交换所选%1$d卡牌（%2$s）吗？</item>
+    </plurals>
+    <string name="gamel_menu_logstore_clear">清除已保存日志</string>
+    <string name="rename_label">新游戏名：</string>
+    <string name="minutes_label">玩家限时（分）</string>
+    <string name="email_body_rev_fmt">（如果相关，请留下 CrossDbg 的版本（“%1$s”），手机或平板的型号（“%2$s”）与操作系统版本（%3$s），以及你的 devID（%4$s）。）</string>
+    <string name="invite_subject">来玩 CrossWords 吧</string>
+    <string name="title_gamenet_config_fmt">%1$s 的设置（已联网）</string>
+    <string name="nethints_allowed_sum">在联机游戏中启用提示</string>
+    <string name="connstat_lastsend_fmt">上次发送：%1$s（%2$s）</string>
+    <string name="not_again_browse">此按钮让你浏览最近查看的单词表。</string>
+    <plurals name="invite_msg_fmt">
+        <item quantity="other">游戏正在等待%1$d远程玩家接收并回应邀请。
+\n
+\n在受邀玩家回应前，你会看到此消息。如果你怀疑发出的邀请丢失了，再发一次也没问题。</item>
+    </plurals>
+    <string name="prefs_defaults">新游戏默认设置</string>
+    <string name="title_invite_history">已发送邀请</string>
+    <string name="dup_onescore_fmt">%1$s：%2$d 分
+\n</string>
+    <string name="dup_moved">副本轮已完成。得分：
+\n</string>
+    <string name="get_sms_number">设备电话号码：</string>
+    <string name="tile_pick_summary_fmt">当前已选：%1$s</string>
+    <string name="lmi_tiles_fmt">卡牌分配给 %1$s</string>
+    <string name="no_moves_made">（未移动）</string>
+    <string name="set_devid_title">新的 MQTT devID</string>
+    <string name="archive_filename_fmt">CrossWords-backup-%1$s.zip</string>
+    <string name="pause_expl_hint">原因</string>
+    <string name="db_store_done">导出完成</string>
+    <string name="not_again_comms_mqtt">互联网上有一台服务器在运行 CrossWords 的设备间传递消息。只要你拥有全功能的互联网连接即可，但在受限的 WiFi 网络中可能会遇到问题。</string>
+    <string name="invite_notice_title">来自邀请的新游戏</string>
+    <string name="netstats_title">游戏网络统计数据</string>
+    <string name="dict_lang_avail">（可用：%1$d）</string>
+    <string name="button_archive">归档</string>
+    <string name="menu_net_stat">网络状态</string>
+    <string name="button_go_settings">启动设置</string>
+    <string name="loc_builtin">内置</string>
+    <string name="sms_invite_title">短信邀请</string>
+    <string name="game_fmt">游戏 %1$d</string>
+    <string name="not_again_flip">此按钮会将棋盘沿对角线翻转。</string>
+    <string name="newgame_radio_known">邀请已知玩家</string>
+    <string name="ids_badwords_fmt">在单词表 %2$s 中找不到单词 %1$s。</string>
+    <string name="color_use_theme_dark">使用深色主题</string>
+    <string name="cur_menu_marker_fmt">%1$s（使用中）</string>
+    <string name="warn_bt_disabled">目前已禁止通过蓝牙游玩。在启用前不会通过蓝牙交换移动信息。
+\n
+\n你可以现在或稍后启用蓝牙。</string>
+    <string name="old_apks_deleted_fmt">已删除 %1$d 个旧更新安装包</string>
+    <string name="archive_button_load">导入</string>
+    <string name="disable_bt">禁用蓝牙游戏</string>
+    <string name="debug_features">启用调试功能</string>
+    <string name="gamel_menu_storedb">导出应用数据</string>
+    <string name="keep_screenon">屏幕常亮</string>
+    <string name="invite_choice_title">邀请玩家</string>
+    <string name="unsafe_open_disregard">仍然打开</string>
+    <string name="not_again_turnchanged">轮到的玩家在计分板中以大号字体显示。
+\n
+\n按住计分板上的名字可以看到玩家最近一次移动的详细信息。</string>
+    <plurals name="paste_done_fmt">
+        <item quantity="other">已复制%1$d单词</item>
+    </plurals>
+    <string name="newgroup_label">新分组名称：</string>
+    <string name="button_move">移动</string>
+    <string name="init_autojuggle_sum">在新游戏时随机排序</string>
+    <string name="board_menu_trade">交换</string>
+    <string name="square_tiles_summary">即使能够更高</string>
+    <string name="show_sms_title">显示发送与接收的数据短信</string>
+    <string name="board_menu_game_pause">暂停</string>
+    <string name="logstore_dumping_fmt">正在压缩 %1$d 个日志文件</string>
+    <string name="newgame_invite_fmt">与 %1$s 开始游戏</string>
+    <string name="confirm_save_title">确定保存</string>
+    <string name="msg_ask_password_fmt">“%1$s”的密码：</string>
+    <string name="button_enable_sms">启用数据短信</string>
+    <string name="nag_warn_last_fmt">上一次警告：%1$s</string>
+    <string name="connstat_relay">互联网/中继网</string>
+    <string name="prefs_appearance">外观</string>
+    <string name="gamel_menu_loaddb">导入应用数据</string>
+    <string name="history_autopause">已自动暂停。</string>
+    <string name="values_both">字母与分值</string>
+    <string name="summary_field">在游戏列表中显示</string>
+    <string name="robot_spinner_prompt">机器人玩家的智能程度如何？</string>
+    <string name="board_menu_game_resend">重发移动</string>
+    <string name="about_web">对于（旧版）手册或源代码请见：http://xwords.sf.net/android.php。要报告缺陷、建议功能、提供帮助等等，请发电子邮件给：xwords@eehouse.org。</string>
+    <string name="pts">分</string>
+    <string name="force_tablet_tablet">强制使用平板布局</string>
+    <string name="button_trade_commit">确认交换</string>
+    <string name="keep_screenon_summary">保持屏幕常亮 10 分钟</string>
+    <string name="str_bonus_all_fmt">使用 %1$d 张卡牌加分：50
+\n</string>
+    <string name="no_restore_on_9">Android 9 不支持导入功能。</string>
+    <string name="list_item_deselect">取消选择</string>
+    <string name="lang_name_portuguese">葡萄牙语</string>
+    <string name="filter_sum_pat_fmt">显示：%1$s，长度为 %2$d‐%3$d（%4$d 词）</string>
+    <plurals name="waiting_title_fmt">
+        <item quantity="other">正在等待%1$d玩家</item>
+    </plurals>
+    <string name="servicedesc">以传输 CrossWords 移动信息</string>
+    <string name="button_ask">询问</string>
+    <string name="changes_title">最近更改</string>
+    <string name="loc_filters_modified">由我修改</string>
+    <string name="game_summary_field_created">创建时间</string>
+    <string name="dict_info_note_fmt">注意：%1$s</string>
+    <string name="chat_hint">在此处打字…</string>
+    <string name="lmi_phony_fmt">%1$s 输了一轮</string>
+    <string name="use_duptimer">限制每步用时</string>
+    <string name="peek_other">查看他人的卡牌</string>
+    <string name="str_reg_server_sans_remote">至少添加一位“远程”玩家，才能作为房主开始游戏。</string>
+    <string name="bt_pair_settings">新配对</string>
+    <string name="button_disable_bt">禁用蓝牙游戏</string>
+    <string name="invite_chooser_fmt">通过 %1$s 发送邀请</string>
+    <string name="button_revert_colors">恢复颜色</string>
+    <string name="button_invite_history">历史</string>
+    <string name="lang_name_catalan">加泰罗尼亚语</string>
+    <string name="slmenu_select_all">全选</string>
+    <string name="color_use_theme_light">使用浅色主题</string>
+    <string name="unhide_dupmode_title">显示副本模式设置</string>
+    <string name="gamel_menu_backup">备份/恢复</string>
+    <string name="button_useconfig">应用筛选器</string>
+    <string name="str_nonlocal_name_fmt">%1$s（远程）</string>
+    <string name="skip_confirm_turn_summary">人类玩家一轮后，不要显示得分汇总</string>
+    <string name="title_pasteDevid">受邀者的 MQTT devID</string>
+    <string name="new_app_avail_fmt">%1$s 的新版本</string>
+    <string name="strd_turn_score_fmt">本轮得分：%1$d
+\n</string>
+    <string name="strs_move_down_fmt">移动（从 %1$s 向下）
+\n</string>
+    <string name="title_langs_list">语言（以已安装的单词表为基准）</string>
+    <string name="list_group_rename">重命名分组</string>
+    <string name="notify_title_fmt">游戏 %1$s 中的移动</string>
+    <string name="missing_sms_perms">此游戏被配置为通过数据短信通信，但 CrossWords 没有这样的权限。你仍可打开游戏，但可能无法发送、接收移动信息。
+\n
+\n你可以重新打开游戏以再次申请权限。也可以关闭数据短信通信设置。</string>
+    <string name="not_again_juggle">此按钮会随机重排牌架中的卡牌。</string>
+    <string name="no_market">未找到 Google Play 应用</string>
+    <string name="list_item_select">选择</string>
+    <string name="bonus_w3x_summary">3W</string>
+    <string name="board_menu_tray_hide">隐藏牌架</string>
+    <string name="gamel_menu_dicts">单词表</string>
+    <string name="thumb_off">已禁用</string>
+    <string name="default_loc_summary">（不在外部存储/存储卡中）</string>
+    <string name="invit_expl_notarget_fmt">通过 %1$s 在 %2$s 发送了邀请。接收者未知。</string>
+    <string name="no_invites">还没有为此游戏发送邀请</string>
+    <string name="newgame_reinvite">再次邀请</string>
+    <string name="newgame_configure_game">配置游戏</string>
+    <string name="phonies_block">屏蔽伪词</string>
+    <string name="dicts_list_prompt_fmt">已安装单词表（%1$s）</string>
+    <string name="filter_title_fmt">正在加载 %1$s…</string>
+    <string name="remote_empty">正在从服务器获取单词表信息…</string>
+    <string name="show_arrow">显示棋盘箭头</string>
+    <string name="enable_pending_count_summary">显示还未获取的号码</string>
+    <string name="button_juggle_players">随机重排玩家</string>
+    <string name="about_credits">感谢：Sarah Chu 提供了工具栏图标。The Noun Project 提供了导航栏图标：“archive” 作者 Trendy；“rematch” 作者 Becris；“swap” 作者 iconomania。weblate.org 上的志愿者提供了本地化支持。</string>
+    <string name="force_tablet_phone">强制使用手机布局</string>
+    <string name="show_tiles_menu">显示卡牌</string>
+    <string name="button_lookup">查询单词</string>
+    <string name="pat_starts_with">开头</string>
+    <string name="str_commit_confirm">提交当前移动吗？
+\n</string>
+    <string name="missing_player">（还未加入...）</string>
+    <string name="invite_msg_extra_rematch">重赛时会自动发送所有必要邀请。但如果受邀者未回应，你总可以发送新邀请。</string>
+    <string name="skip_confirm_turn">跳过确认过程</string>
+    <string name="not_again_newselect">点击游戏列表项可打开游戏。
+\n
+\n点击左侧图标时除外，这样会选择或取消选择游戏（或分组）。
+\n
+\n选择一项或多项后，可以使用菜单或“操作栏”进行操作，比如删除选择的游戏等等。</string>
+    <string name="xlator">CloneWith（复予）及其他人</string>
+    <string name="menu_net_url">复制 URL</string>
+    <string name="lang_name_hungarian">匈牙利语</string>
+    <string name="dict_lang_inst">（已安装：%1$d）</string>
+    <string name="bonus_l4x">四倍加分字母</string>
+    <string name="phone_lookup_rationale_others">没有此权限仍可继续重赛，但会建立无法通过数据短信游玩的游戏。</string>
+    <string name="values_faces">仅字母</string>
+    <string name="expl_update_url">检查更新 URL</string>
+    <string name="menu_about_peers">远程状态</string>
+    <string name="invite_choice_p2p">Wifi 直连</string>
+    <string name="badwords_accept">" 仍然接受移动吗？"</string>
+    <string name="str_bonus_all">用完所有卡牌加分：50
+\n</string>
+    <string name="mqtt_port">MQTT 端口</string>
+    <string name="not_again_archive">归档功能使用叫做“已归档”的特殊分组，保存你要保留的已结束游戏。并且因为删除整个归档分组很简单，归档也是标记待删除游戏的极好方法 – 如果你喜欢这么做的话。
+\n
+\n（删除归档分组是安全的，因为它会按需重建。）</string>
+    <string name="got_langdict_summary">不再重试</string>
+    <string name="change_group">将所选游戏移动到：</string>
+    <string name="notify_other_summary">收到对方移动时</string>
+    <string name="newgame_radio_unknown">邀请新玩家</string>
+    <string name="confirm_del_after_rematch_fmt">重赛完成。
+\n
+\n要现在删除已完成的游戏 %1$s 吗？
+\n
+\n（此操作不可逆。）</string>
+    <string name="str_remote_moved_fmt">"远程玩家 %1$s 进行了移动： "</string>
+    <string name="msg_dev_deleted_fmt">名为“%1$s”的游戏已在另一个设备上被删除。你将无法再游玩。</string>
+    <string name="relaypage_url_copied">已将游戏 URL 复制到剪贴板</string>
+    <string name="game_summary_field_npackets">待发送数据包数目</string>
+    <string name="not_again_chat">此按钮会打开此游戏的联机聊天页面。消息在游戏被删除前会一直保留。</string>
+    <string name="tile_tray_picker">选择要放到托盘的新卡牌</string>
+    <string name="ids_endnow">确定要认输吗？</string>
+    <string name="initial_player_minutes">玩家限时（分）</string>
+    <string name="nag_intervals">提醒间隔（minutes1,minutes2,…）</string>
+    <string name="gamel_menu_knownplyrs">已知玩家</string>
+    <string name="menu_hint_prev">上一条提示</string>
+    <string name="new_dict_avail_fmt">点击更新 %1$s</string>
+    <string name="robot_smartest">高级机器人</string>
+    <string name="get_sms_name">联系人名称（可选）：</string>
+    <string name="pref_group_relay_summary">与互联网/中继网游玩相关的设置</string>
+    <string name="phonies_ignore">忽略伪词</string>
+    <string name="add_done_fmt">已将 %1$s 添加到%2$s学习列表</string>
+    <string name="button_trade_cancel">取消交换</string>
+    <string name="p2p_invite_title">WiFi 直连邀请</string>
+    <string name="button_clear_stats">清除统计数据</string>
+    <string name="new_name_body_fmt">%1$s 已邀请你游玩</string>
+    <string name="wordlist_custom_note">（自定义）</string>
+    <string name="strs_values_header_fmt">%1$s 的数目/分值：
+\n</string>
+    <string name="duplicate_group_name_fmt">分组“%1$s”已存在。</string>
+    <string name="invites_unsent">此游戏配置为需要远程玩家。
+\n
+\n要进行邀请吗？</string>
+    <string name="button_faq">显示 FAQ</string>
+    <string name="changes_button">最近更改</string>
+    <string name="button_settings">设置</string>
+    <string name="summary_conn_sms_fmt">与 %1$s 游戏中</string>
+    <string name="bt_invite_title">蓝牙邀请</string>
+    <string name="about_devid_fmt">设备 ID：%1$s</string>
+    <string name="not_again_undo">按钮会撤销或重做当前一轮操作。</string>
+    <string name="summary_busy">汇总不可用</string>
+    <string name="connstat_noreceipt">还没有收到消息。</string>
+    <plurals name="strd_remains_header_fmt">
+        <item quantity="other">卡池中剩余%1$d卡牌。</item>
+    </plurals>
+    <string name="reload_new_dict_fmt">正在使用 %1$s 重新加载游戏</string>
+    <string name="badwords_title">单词不合法</string>
+    <string name="gamel_menu_writegit">将 git 信息复制到剪贴板</string>
+    <string name="gamel_menu_timerStats">计时统计数据</string>
+    <string name="summary_wait_host">等待客人中</string>
+    <string name="tiles_header_value">值</string>
+    <string name="disable_bt_summary">禁用所有蓝牙通信</string>
+    <string name="local_invite_summary">对手在附近时…</string>
+    <string name="not_again_comms_sms">数据短信游玩用到了“发送短信”依赖的技术。这些信息对你不可见，但你的运营商将其视作短信收费，因此除非你拥有无限量短信套餐（或预算），建议你避免使用此功能。请注意，Android 只支持拥有 GSM 运营商（即世界上除 Verizon 与 Sprint 外的所有运营商）的设备使用此功能。</string>
+    <string name="sms_send_failed">短信发送失败</string>
+    <string name="mqtt_host">互联网/MQTT 主机</string>
+    <string name="game_name_label">游戏名称：</string>
+    <string name="email_author_subject">发表评论</string>
+    <string name="button_lookup_study_fmt">查询/学习 %1$s</string>
+    <string name="prefs_dicts">语言和单词表</string>
+    <string name="invite_choice_email">电子邮件</string>
+    <string name="radio_name_cdma">CDMA</string>
+    <string name="board_menu_game_unpause">取消暂停</string>
+    <string name="summary_sort_tiles">总是给牌架上的卡牌排序</string>
+    <string name="subst_dict_title">替代单词表（词数）</string>
+    <string name="board_menu_pass">跳过</string>
+    <string name="str_robot_moved_fmt">"机器人 %1$s 做出了移动： "</string>
+    <string name="not_again_hintnext">此按钮会按得分递减顺序，显示所有可用移动。
+\n
+\n（只会使用牌架分隔符右侧的卡牌。）</string>
+    <string name="games_menu_setDevid">设置 MQTT devID</string>
+    <string name="missing_dict_title">游戏邀请待定</string>
+    <string name="cellline">方格边界</string>
+    <string name="invite_custom_warning_fmt">这局游戏使用了自定义单词表 %1$s，无法从服务器下载。除非受邀者也拥有此单词表，否则将无法进行游玩。
+\n
+\n如果你知道对方安装了单词表 %1$s，按下 Ok 按钮继续邀请。你也可以选择在游戏设置中切换单词表，或者就删除这局游戏。</string>
+    <string name="notagain_custom_xwd_fmt">请注意，他人无法下载单词表 %1$s。这通常意味着它是自定义单词表，也有可能已经过期了。
+\n
+\n请只在本地游戏中使用 %1$s。CrossWords 目前不支持随邀请发送单词表，如果邀请他人游玩，则需要手动发送此单词表。</string>
+    <string name="button_enable_mqtt">启用互联网游戏</string>
+    <string name="color_theme_edit_light">编辑浅色主题</string>
+    <plurals name="groups_confirm_del_fmt">
+        <item quantity="other">确定要删除分组 %1$s 吗？</item>
+    </plurals>
+    <string name="str_no_empties_in_turn">放置的卡牌间不能有空方格。</string>
+    <string name="prefs_behavior">行为</string>
+    <string name="invite_choice_nfc">NFC (Android beaming)</string>
+    <string name="lang_name_finnish">芬兰语</string>
+    <string name="email_logs_msg">附带日志</string>
+    <string name="pref_item_update_title">更新小版本</string>
+    <string name="error_min_gt_max">最小长度不可大于最大长度。</string>
+    <plurals name="moves_fmt">
+        <item quantity="other">已进行 %1$d 步</item>
+    </plurals>
+    <string name="rename_label_caveat">新游戏名（仅在此设备上）：</string>
+    <string name="force_tablet_title">使用平板（并排显示）布局吗？</string>
+    <plurals name="groups_confirm_del_games_fmt">
+        <item quantity="other">"
+\n
+\n（有%1$d游戏也会被删除。）"</item>
+    </plurals>
+    <string name="invit_expl_usrsms_fmt">已通过短信在 %1$s 发送邀请</string>
+    <string name="finalscores_title">最终得分</string>
+    <string name="new_game">新建单机游戏</string>
+    <string name="str_pass">跳过
+\n</string>
+    <string name="tiles_header_face">字母</string>
+    <string name="gamel_menu_logstore_email">用电子邮件发送日志</string>
+    <string name="prefs_copy_light">复制浅色主题</string>
+    <string name="invite_choice_user_sms">SMS（发送短信）</string>
+    <string name="confirm_sms_expl">警告：此功能是给拥有无限量短信套餐的设备使用的。一旦启用后，每次游玩游戏时都会（隐秘）发送大量数据短信消息。如果你没有无限量套餐，运营商可能会对每条短信收费！
+\n
+\n要启用使用数据短信游玩吗？</string>
+    <string name="player_edit_title">编辑玩家</string>
+    <string name="name_concat_dup">" 和 "</string>
+    <string name="loc_item_clear">清除</string>
+    <string name="prefs_colors">棋盘颜色等。</string>
+    <string name="pat_col_anyorder">顺序不限</string>
+    <string name="disableds_title">已禁用的地址类型</string>
+    <string name="strss_traded_for_fmt">用 %1$s 交换了 %2$s。</string>
+    <string name="board_menu_game_left">剩余卡牌</string>
+    <string name="summary_enable_p2p">实验性功能，大量耗电</string>
+    <string name="dup_notif_title">计时中</string>
+    <string name="bonus_w3x">三倍加分单词</string>
+    <plurals name="confirm_delete_dict_fmt">
+        <item quantity="other">确定要删除单词表 %1$s 吗？</item>
+    </plurals>
+    <plurals name="bt_scan_progress_fmt">
+        <item quantity="other">正在%1$d已配对设备中扫描 CrossWords</item>
+    </plurals>
+    <string name="backup_only_on_9">Android 9（及所有其他版本）可以导出，但无法导入。因此你可以导出此设备上的数据并将其迁移到新设备，但无法将相关文件导入到此设备。</string>
+    <string name="button_substdict">替换</string>
+    <string name="radio_who">哪位？</string>
+    <string name="board_menu_game_counts">数目与分值</string>
+    <string name="email_logs_subject">CrossWords 日志</string>
+    <string name="bonus_w2x">双倍加分单词</string>
+    <string name="remote_digesting">正在处理单词表信息…</string>
+    <string name="password_hint">（可选）</string>
+    <string name="max_len">最大长度</string>
+    <string name="ok_with_robots">OK（机器人）</string>
+    <string name="bonus_l2x">双倍加分字母</string>
+    <string name="phonies_warn">出现伪词时警告</string>
+    <string name="invite_copied">邀请信息可供粘贴</string>
+    <string name="not_again_longtap_lookup">在单词作为移动提交之前，你可以查阅它们—通过长按单词，已提交的单词也可以。
+\n
+\n使用此功能检查想要拼出单词的合法性，或者查阅不熟悉的提示词。</string>
+    <string name="enable_sms_toself_summary">当电话号码相同时跳过无线电通信</string>
+    <string name="bt_scan_age_fmt">上一次收到：%1$s</string>
+    <string name="bonus_w4x_summary">4W</string>
+    <string name="game_paused_title">游戏已暂停</string>
+    <string name="tray_size">牌架上的卡牌数</string>
+    <string name="invite_sms_fmt">点击链接接受我的邀请，加入 CrossWords 游戏：%1$s</string>
+    <string name="badMQTTDevIDFmt">MQTT devID “%1$s” 非法。请重试。</string>
+    <string name="chat_send">发送</string>
+    <string name="entering_trade">交换卡牌中。点击进行选择…</string>
+    <string name="background">棋盘背景</string>
+    <string name="study_no_lang_fmt">%1$s学习列表中还未存放单词。</string>
+    <string name="history_unpause_fmt">在 %2$s 后取消暂停：%1$s。</string>
+    <string name="theme_data_success">主题已复制到剪贴板</string>
+    <string name="cellline_width">方格边界宽度</string>
+    <string name="info_title">参考信息</string>
+    <string name="confirm_revert_colors">确定要将所有颜色设置恢复到默认吗？</string>
+    <string name="waiting_host_title">正在等待房主</string>
+    <string name="player_fmt">玩家 %1$d</string>
+    <string name="byod_failure">下载 %1$s 失败。</string>
+    <string name="dup_minutes_label">每轮限时（分）</string>
+    <string name="network_behavior">网络游戏设置</string>
+    <string name="checkbox_archive">移动到归档</string>
+    <string name="not_again_arrow">将卡牌移动到棋盘有两种方式。
+\n
+\n • 你可以将其在牌架与棋盘间拖动。
+\n
+\n • 你也可以点击棋盘上的空方格来放置“粗箭头”。然后在点击牌架中的卡牌时，卡牌会将其替换。点击箭头可以改变其方向或将其隐藏。</string>
+    <string name="str_no_peek_remote_tiles">不允许偷看远程玩家的卡牌！</string>
+    <string name="confirm_save">此游戏进行中，如果保存更改则必须重新开始。要保存更改吗？</string>
+    <string name="button_deny">拒绝</string>
+    <string name="pick_url_title_fmt">查询 %1$s 位置</string>
+    <string name="button_close_game">关闭游戏</string>
+    <string name="connstat_lastother_unsucc_fmt">（上次成功发送：%1$s）</string>
+    <string name="guest_name">（远程玩家）</string>
+    <string name="button_send_logs">发送给作者</string>
+    <string name="button_invite">邀请选中项</string>
+    <string name="move_dict_fmt">单词表 %1$s 的位置</string>
+    <string name="confirm_sms_unlimited">是：我有无限量短信套餐</string>
+    <string name="archive_title_games">游戏和数据</string>
+    <string name="game_summary_field_empty">&lt;无&gt;</string>
+    <string name="prefs_defaults_summary">新游戏的默认设置</string>
+    <string name="str_server_dict_wins">房主与客人的单词表存在冲突；房主获胜。</string>
+    <string name="hide_newgames_title">隐藏新游戏按钮</string>
+    <string name="button_done">完成</string>
+    <string name="connstat_succ">成功</string>
+    <string name="str_tiles_not_in_line">所有卡牌必须放在一条线上。</string>
+    <string name="empty_bt_inviter">还未检测到已配对设备。</string>
+    <string name="force_tablet_default">使用设备默认值</string>
+    <string name="invite_dict_missing_title">缺失单词表</string>
+    <plurals name="strd_remains_expl_fmt">
+        <item quantity="other">卡池与隐藏托盘中剩余%1$d卡牌：
+\n</item>
+    </plurals>
+    <string name="connstat_unsucc">失败</string>
+    <string name="lang_name_danish">丹麦语</string>
+    <string name="prefs_names">玩家名</string>
+    <string name="default_name_message">请在这里输入你的名字。在创建新游戏时会用到。（稍后可在设置中的“新游戏默认”一节修改。）</string>
+    <string name="remove_sms">删除短信</string>
+    <string name="pref_player2_name">第二位玩家</string>
+    <string name="default_dict">人类玩家使用的单词表</string>
+    <string name="confirm_drop_relay_sms">并非所有运营商支持通过数据短信游玩。</string>
+    <string name="gamel_menu_study">学习列表</string>
+    <plurals name="too_many_trade_fmt">
+        <item quantity="other">选的卡牌太多了。请不要超过%1$d。</item>
+    </plurals>
+    <string name="title_blank_picker">选择留白的卡牌</string>
+    <string name="chat_other_id">"他人： "</string>
+    <string name="new_game_body">点击打开新游戏</string>
+    <string name="counts_values_title">卡牌数目与分值</string>
+    <string name="invite_choice_mqtt">互联网</string>
+    <string name="pref_player1_name">第一位玩家</string>
+    <string name="peek_other_summary">点击计分板上的名字后，显示对应玩家的卡牌</string>
+    <string name="pause_forget_msg">忘记消息</string>
+    <string name="str_not_your_turn">不能这么做；还没轮到你呢！</string>
+    <string name="add_to_study_fmt">将 %1$s 添加到学习列表</string>
+    <string name="hide_title">隐藏标题栏</string>
+    <string name="confirm_sms_leave">否：保持禁用</string>
+    <string name="str_too_few_tiles_left_to_trade">剩余卡牌太少，无法交换。</string>
+    <string name="archive_title_settings">设置</string>
+    <string name="slmenu_deselect_all">全不选</string>
+    <string name="button_newgroup">新分组</string>
+    <string name="studylist_title_fmt">%1$s的学习列表</string>
+    <string name="pref_group_sms_summary">使用短信游玩相关设置</string>
+    <string name="checking_title">检查中</string>
+    <string name="nag_body_fmt">%1$s 早在 %2$s 前做出了移动。</string>
+    <string name="confirm_drop_relay_bt">蓝牙仅对附近设备有效。</string>
+    <string name="board_menu_undo_last">撤销上一步</string>
+    <string name="not_again_browseall">此按钮让你选择当前游戏语言中要浏览的单词表。</string>
+    <string name="str_no_peek_robot_tiles">不允许偷看机器人的卡牌！</string>
+    <string name="board_menu_tray_show">显示牌架</string>
+    <string name="gamel_menu_logs">调试日志</string>
+    <plurals name="strd_robot_traded_fmt">
+        <item quantity="other">交换了%1$d卡牌。</item>
+    </plurals>
+    <string name="unpause_title">取消暂停游戏</string>
+    <string name="pat_ends_with">结尾</string>
+    <string name="dicts_item_select">设置为默认</string>
+    <string name="connection_via_label">改变通信方式</string>
+    <string name="radio_name_gsm">GSM</string>
+    <string name="pref_player3_name">第三位玩家</string>
+    <string name="invite_p2p_desc_extra">只显示了目前可用的设备。如果没有显示附近设备，请确保此设备打开了 WiFi，安装了 CrossWords，并启用了 WiFi 直连游玩。</string>
+    <string name="lang_name_slovak">斯洛伐克语</string>
+    <string name="button_edit">编辑</string>
+    <string name="new_dict_avail">新单词表可用</string>
+    <string name="missing_dict_detail">点击下载缺失的单词表</string>
+    <string name="button_yes">是</string>
+    <string name="default_language">默认语言</string>
+    <string name="default_loc">将单词表保存在内部存储</string>
+    <string name="lmi_pass_fmt">%1$s 已跳过（0 分）</string>
+    <string name="download_failed">下载失败</string>
+    <string name="no_dict_title">找不到单词表</string>
+    <string name="newgame_open_game">开始游戏</string>
+    <string name="button_lookup_fmt">查询 %1$s</string>
+    <string name="alrt_bad_filter">无法应用筛选器。</string>
+    <string name="invit_expl_sms_fmt">已通过数据短信在 %2$s 向电话号码 %1$s 发送邀请</string>
+    <string name="not_again_trading_menu">用菜单或操作栏提交这一轮，或者退出交换模式。</string>
+    <string name="menu_juggle">随机重排牌架</string>
+    <string name="no_dict_for_move_title">下一步丢失</string>
+    <string name="list_group_moveup">上移</string>
+    <string name="inform_dict_download">" （必须要先下载。）"</string>
+    <string name="values_values">仅分值</string>
+    <string name="inform_dict_diffversion_fmt">你与房主使用的是单词表 %1$s 的不同版本。</string>
+    <string name="empty">空方格/背景</string>
+    <string name="button_no">否</string>
+    <string name="board_menu_undo_current">撤销/重做</string>
+    <string name="network_behavior_summary">网络游戏应用的设置</string>
+    <string name="not_again_traysize">新设置改变了牌架中卡牌的数量。
+\n
+\n注意：如果网络游戏中有人在使用旧版 CrossWords，游戏中所有人的这项设置将会恢复到 7 个。</string>
+    <string name="enable_sms_toself_title">将数据短信短路给自己</string>
+    <string name="lang_name_swedish">瑞典语</string>
+    <string name="disable_nag_solo_title">禁用单机游戏提醒</string>
+    <string name="invite_who_empty_expl">空</string>
+    <plurals name="new_xlations_fmt">
+        <item quantity="other">已安装%1$d新翻译</item>
+    </plurals>
+    <string name="gamel_menu_logstore_on">启用日志存储</string>
+    <string name="button_open_dict">打开</string>
+    <string name="confirm_undo_last">确定要撤销最后提交的一轮移动吗？（无法重做。）</string>
+    <string name="remote_label">远程玩家</string>
+    <string name="expl_relay_url">中继网络 API 的 URL</string>
+    <string name="players_label_standalone">玩家（点击编辑）</string>
+    <string name="tiles_left_title">剩余卡牌</string>
+    <string name="button_lookup_study">查询/学习单词</string>
+    <string name="get_sms_title">手动输入</string>
+    <string name="reboot_after_setFmt">MQTT devID 已修改为 “%1$s”。
+\n
+\n请重新启动此应用，以确保使用新的值。</string>
+    <string name="games_menu_copyDevid">复制 MQTT devID</string>
+    <string name="dupe_title_fmt">%1$s（副本）</string>
+    <string name="rename_group_label">新分组名：</string>
+    <string name="duplicate_check">复制模式</string>
+    <string name="remote_msg_title">远程消息</string>
+    <string name="sms_invite_flakey">此选项会启动默认短信应用，并附带准备发送的邀请—在有用时。每款短信应用都有所不同，一些应用做不到这点。</string>
+    <string name="button_enable">启用</string>
+    <string name="list_item_markbad">标记为已损坏</string>
+    <string name="archive_button_store">导出</string>
+    <string name="got_langdict_title">获取语言的默认单词表</string>
+    <string name="advanced_summary">你应该从不需要这些…</string>
+    <string name="warn_sms_disabled">目前已禁止通过数据短信游玩。不会通过数据短信发送移动信息。
+\n
+\n你可以现在或稍后启用通过数据短信游玩。</string>
+    <string name="button_rematch">重赛</string>
+    <string name="phone_state_rationale">某些手机可以交换“数据”短信消息。CrossWords 会提供此选项，但需要先询问设备本身（以了解是不是手机，若如此又是什么类型）。
+\n
+\n如果你的设备无法发送数据短信（比如因为不是手机），或者你不想通过短信游玩（比如因为每条信息要付费），永久拒绝这项权限也没问题。</string>
+    <string name="sms_bad_proto_fmt">号码“%1$s”的手机上的 CrossWords 版本与此手机不兼容，无法用数据短信游玩。可能需要其一升级才可继续。</string>
+    <plurals name="lmi_move_fmt">
+        <item quantity="other">%1$s 拼出了 %2$s，获得 %3$d 分</item>
+    </plurals>
+    <string name="show_tiles_title_fmt">%1$s卡牌</string>
+    <string name="offerdupmode_title">以“副本模式”游玩</string>
+    <string name="str_tiles_must_contact">新单词必须与已放好的单词相连（如果是首次移动，要与中心方格相连）</string>
+    <string name="email_logs_chooser">日志发送方式</string>
+    <string name="note_none">（无）</string>
+    <string name="game_list_tmp">正在建立游戏汇总…</string>
+    <string name="button_disable_mqtt">禁用互联网游戏</string>
+    <string name="lang_name_greek">希腊语</string>
+    <string name="invite_chooser_email">电子邮件</string>
+    <string name="lang_name_russian">俄语</string>
+    <string name="unhide_dupmode_summary">（目前还过于冒险）</string>
+    <string name="menu_chat">聊天</string>
+    <string name="gamel_menu_checkupdates">检查更新</string>
+    <string name="how_tab">现在发送邀请吗？</string>
+    <string name="history_title">游戏历史</string>
+    <string name="knowns_bt_fmt">蓝牙设备名：%1$s</string>
+    <string name="strd_remaining_tiles_add_fmt">+ %1$d 【所有剩余卡牌】</string>
+    <string name="list_item_new_from">创建副本</string>
+    <string name="gameevent_channel_expl">游戏内事件</string>
+    <string name="str_cant_hint_while_disabled">此游戏已禁用提示功能。在设置对话框中为新游戏启用。</string>
+    <string name="no_dict_subst_fmt">无法打开游戏“%1$s”，因为没找到 %2$s 单词表。（可能已被删除，或是所在外部存储不可用。）
+\n
+\n你可以下载替代单词表，或者指定另一个%3$s单词表。</string>
+    <string name="show_arrow_summary">当箭头可见时，牌架上被点击的卡牌落在箭头上</string>
+    <string name="sms_invite_fail">无法启动短信应用</string>
+    <string name="nplayers_prompt">本机玩家数目</string>
+    <string name="lookup_title">查询单词</string>
+    <string name="pat_contains">含有</string>
+    <string name="strs_move_across_fmt">移动（从 %1$s 向右）
+\n</string>
+    <string name="force_radio_title">模拟无线电</string>
+    <string name="game_unpaused_title">游戏已取消暂停</string>
+    <string name="strd_time_penalty_sub_fmt">- %1$d 【时间】</string>
+    <string name="lang_name_polish">波兰语</string>
+    <string name="phone_lookup_rationale_drop">没有此权限，无法重新进行仅使用数据短信的游戏。</string>
+    <string name="game_summary_field_opponents">对手名</string>
+    <string name="pref_player4_name">第四位玩家</string>
+    <string name="disable_mqtt_summary">禁用互联网（MQTT）通信</string>
+    <string name="game_summary_field_rowid">行 ID</string>
+    <string name="archive_expl_settings">除颜色外的所有 App 设置，比如默认语言和缩略图大小</string>
+    <string name="hints_allowed_sum">启用提示功能</string>
+    <string name="knowns_ts_fmt">最新游戏：%1$s</string>
+    <string name="variant_missing_nbs">此游戏被配置为通过数据短信通信，但 Google Play Store 版本的 CrossWords 不再允许支持此功能。
+\n
+\n你仍可打开游戏，但可能无法发送、接收移动信息。</string>
+    <string name="board_menu_done">完成此轮</string>
+    <string name="list_item_move">移动到分组</string>
+    <string name="confirm_revert_all">确定要将所有设置恢复到默认吗？</string>
+    <string name="waiting_rematch_title">正在重赛</string>
+    <string name="checking_for_fmt">正在检查%1$s单词表…</string>
+    <string name="history_pause_fmt">暂停者：%1$s。</string>
+    <plurals name="resent_msgs_fmt">
+        <item quantity="other">已重发%1$s步</item>
+    </plurals>
+    <string name="bonus_w4x">四倍加分单词</string>
+    <string name="default_phonies">处理伪词</string>
+    <string name="phonies_disallow">伪词不得分</string>
+    <string name="no_dict_for_move_fmt">点击下载单词表 %1$s 并恢复</string>
+    <string name="bonus_l4x_summary">4L</string>
+    <string name="summary_game_gone">远程游戏已删除</string>
+    <string name="confirm_sms_prompt">启用通过数据短信游玩吗？</string>
+    <string name="title_game_config_fmt">%1$s 的设置</string>
+    <string name="mqtt_qos">MQTT QOS</string>
+    <string name="button_apply_config">导入</string>
+    <string name="forced_consistent">已将第一位玩家改为远程玩家。</string>
+    <string name="newgame_invite">现在邀请</string>
+    <string name="newgame_drop_mqtt">断开互联网</string>
+    <string name="dict_browse_title_fmt">%1$s（共 %2$d 词）</string>
+    <string name="enable_pending_count_title">显示待发送消息</string>
+    <string name="player_edit_name">修改名称</string>
+    <string name="show_note_menu_fmt">关于 %1$s</string>
+    <string name="title_lookup_study">点击查询或学习</string>
+    <string name="not_again_unlock">此游戏正在进行中。如果不重新开始，则无法修改某些设置（如玩家数目）。离开此页面时，你将有机会放弃更改，以避免重新开始游戏。</string>
+    <string name="download_path_title">公开词典</string>
+    <string name="bonus_l3x_summary">3L</string>
+    <string name="dup_timer_expl">副本模式计时中</string>
+    <string name="disable_mqtt">禁用互联网游戏</string>
+    <string name="not_again_emptybtscan">如果没有扫描到设备，你可能想要：
+\n • 首先，只需重新扫描
+\n • 确保其他设备开启了蓝牙
+\n • 在设备上启动 CrossWord
+\n • 如果其他方法都失败了，重启设备
+\n</string>
+    <string name="nethints_allowed">允许提示（网络游戏中）</string>
+    <string name="board_menu_game_resign">放弃</string>
+    <string name="invite_dict_missing_body_fmt">%1$s 已邀请你用单词表 %2$s（在 %3$s 中）游玩 CrossWords，但还未安装。要下载单词表还是拒绝邀请？</string>
+    <string name="pct_suffix">" %."</string>
+    <string name="button_scan">重新扫描</string>
+    <string name="nbsproxy_channel_expl">发送 NBSProxy 相关提醒</string>
+    <string name="not_again_hintprev">此按钮会按得分递增顺序，显示所有可用移动。
+\n
+\n（只会使用牌架分隔符右侧的卡牌。）</string>
+    <string name="summary_thumbsize">缩略图大小</string>
+    <string name="skip_mqtt_add_title">不添加 MQTT</string>
+    <string name="not_again_trading_buttons">用按钮提交这一轮，或者退出交换模式。</string>
+    <string name="knowns_mqtt_fmt">MQTT DevID：%1$s</string>
+    <string name="group_name_archive">已归档</string>
+    <string name="enable_sms">允许通过数据短信进行游戏</string>
+    <string name="title_studyon">启用学习列表</string>
+    <string name="invite_choice_qrcode">二维码</string>
+    <string name="explain_robot_summary">机器人或远程玩家一轮结束后，显示得分汇总</string>
+    <string name="invit_expl_bt_fmt">已通过蓝牙在 %2$s 向已配对设备“%1$s”发送邀请</string>
+    <string name="hide_crosshairs_summary">不要突出显示触摸的棋盘方格</string>
+    <string name="explain_robot">解释其他移动</string>
+    <string name="cannot_delete_default_group_fmt">无法删除保存新游戏的分组 %1$s。</string>
+    <string name="gamel_menu_logstore_off">禁用日志存储</string>
+    <plurals name="confirm_seldeletes_fmt">
+        <item quantity="other">确定要删除所选%1$d游戏吗？此操作不可逆。</item>
+    </plurals>
+    <string name="button_revert_all">全部恢复</string>
+    <string name="game_summary_field_gameid">游戏 ID</string>
+    <string name="strs_tray_at_start_fmt">初始牌架：%1$s
+\n</string>
+    <string name="lang_name_dutch">荷兰语</string>
+    <string name="notify_chat_title_fmt">游戏 %1$s 有聊天消息</string>
+    <string name="pause_title">暂停游戏</string>
+    <string name="pick_faceup">选择面朝上的瓷砖</string>
+    <string name="menu_rateme">给 CrossWords 打分</string>
+    <string name="lang_name_czech">捷克语</string>
+    <string name="not_again_values">此按钮会切换棋盘上卡牌分值（除字母外）的显示与否。</string>
+    <string name="invite_nbs_desc">然后会将一条数据消息发送到带有那个电话号码的设备。如果 CrossWords 已安装并拥有必要权限，设备将会收到邀请并能开始游戏。</string>
+    <string name="use_timer">限制游戏用时</string>
+    <string name="badwords_lost">这一轮输了。</string>
+    <string name="warn_mqtt_later">你可以现在或稍后启用通过互联网游玩。</string>
+    <string name="button_reconnect">重新连接</string>
 </resources>
