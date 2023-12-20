@@ -1,6 +1,6 @@
 /* -*- compile-command: "find-and-gradle.sh inXw4dDeb"; -*- */
 /*
- * Copyright 2020 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2023 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -37,6 +37,9 @@ import org.eehouse.android.xw4.loc.LocUtils;
 
 public class RematchConfigView extends LinearLayout
 {
+    private static final String TAG = RematchConfigView.class.getSimpleName();
+    private static final String KEY_LAST_RO = TAG + "/key_last_ro";
+
     private Context mContext;
     private RadioGroup mGroup;
     Map<Integer, RematchOrder> mRos = new HashMap<>();
@@ -51,12 +54,16 @@ public class RematchConfigView extends LinearLayout
     protected void onFinishInflate()
     {
         mGroup = (RadioGroup)findViewById( R.id.group );
+
+        int ordinal = DBUtils.getIntFor( mContext, KEY_LAST_RO, 0 );
+        RematchOrder lastSel = RematchOrder.values()[ordinal];
+
         for ( RematchOrder ro : RematchOrder.values() ) {
             RadioButton button =  new RadioButton( mContext );
             button.setText( LocUtils.getString( mContext, ro.getStrID() ) );
             mGroup.addView( button );
             mRos.put( button.getId(), ro );
-            if ( 1 == mRos.size() ) {
+            if ( lastSel == ro ) {
                 button.setChecked( true );
             }
         }
@@ -67,11 +74,7 @@ public class RematchConfigView extends LinearLayout
         int id = mGroup.getCheckedRadioButtonId();
         RematchOrder ro = mRos.get(id);
 
-        // Save it if default button checked
-        CheckBox check = (CheckBox)findViewById( R.id.make_default );
-        if ( check.isChecked() ) {
-            XWPrefs.setDefaultRematchOrder( mContext, ro );
-        }
+        DBUtils.setIntFor( mContext, KEY_LAST_RO, ro.ordinal() );
 
         return ro;
     }

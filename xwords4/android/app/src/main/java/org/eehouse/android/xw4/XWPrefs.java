@@ -330,12 +330,6 @@ public class XWPrefs {
         return groupID;
     }
 
-    public static void setDefaultRematchOrder( Context context, RematchOrder ro )
-    {
-        String storedStr = null == ro ? "" : context.getString( ro.getStrID() );
-        setPrefsString( context, R.string.key_rematch_order, storedStr );
-    }
-
     public static RematchOrder getDefaultRematchOrder( Context context )
     {
         String storedStr = getPrefsString( context, R.string.key_rematch_order );
