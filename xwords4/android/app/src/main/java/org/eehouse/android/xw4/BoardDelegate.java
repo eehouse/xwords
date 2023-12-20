@@ -2583,7 +2583,8 @@ public class BoardDelegate extends DelegateBase
 
     private void showOrHide( InvitesNeededAlert.Wrapper wrapper )
     {
-        boolean fromRematch = XwJNI.server_isFromRematch( m_jniGamePtr );
+        boolean fromRematch = null != m_jniGamePtr
+            && XwJNI.server_isFromRematch( m_jniGamePtr );
         wrapper.showOrHide( m_mySIS.hostAddr, m_mySIS.nMissing,
                             m_mySIS.nInvited, fromRematch );
     }

@@ -303,11 +303,10 @@ game_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
 {
     XP_ASSERT( NULL == util || gi == util->gameInfo );
     XP_Bool success = XP_FALSE;
-    XP_U8 strVersion;
 #ifndef XWFEATURE_STANDALONE_ONLY
     XP_Bool hasComms;
 #endif
-    strVersion = stream_getU8( stream );
+    XP_U8 strVersion = stream_getU8( stream );
     XP_LOGFF( "strVersion = 0x%x", (XP_U16)strVersion );
 
     if ( strVersion > CUR_STREAM_VERS ) {
