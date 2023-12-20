@@ -3,7 +3,7 @@
 import argparse, datetime, json, os, random, shutil, signal, \
     socket, struct, subprocess, sys, threading, time
 
-g_NAMES = ['Brynn', 'Ariela', 'Kati', 'Eric']
+g_ROOT_NAMES = ['Brynn', 'Ariela', 'Kati', 'Eric']
 # These must correspond to what the linux app is looking for in roFromStr()
 g_ROS = ['same', 'low_score_first', 'high_score_first', 'juggle',]
 gDone = False
@@ -31,7 +31,15 @@ def pick_ndevs(args):
         NDEVS = args.MINDEVS
     return NDEVS
 
+def makeNames(nDevs):
+    names = g_ROOT_NAMES[:nDevs]
+    for ii in range(len(names), nDevs):
+        newName = '{}{:02}'.format(g_ROOT_NAMES[ii%len(g_ROOT_NAMES)], ii//len(g_ROOT_NAMES))
+        names += [newName]
+    return names
+
 def chooseNames(nPlayers):
+    global g_NAMES
     players = g_NAMES[:]
     result = []
     for ii in range(nPlayers):
@@ -79,6 +87,8 @@ class HostGameInfo(GameInfo):
 
 class GameStatus():
     _statuses = None
+    _prevLines = []
+    _lastChange = datetime.datetime.now()
 
     def __init__(self, gid):
         self.gid = gid
@@ -139,7 +149,7 @@ class GameStatus():
                 status = GameStatus._statuses[gid]
                 player = status.players[indx-1]
                 hostMarker = status.hostName == player and '*' or ' '
-                initial = player[0]
+                initial = GameStatus._abbrev(player)
                 arg3 = -1
                 dev = Device._devs.get(player)
                 gameState = dev.gameFor(gid).state
@@ -149,9 +159,15 @@ class GameStatus():
                         arg3 = gameState.get('nPending', 0)
                     else:
                         arg3 = gameState.get('nTiles')
-                results.append('{}{}{: 3}'.format(hostMarker, initial, arg3).center(len(gid)))
+                results.append('{}{:3}{: 3}'.format(hostMarker, initial, arg3).center(len(gid)))
 
         return ' '.join(results)
+
+    @staticmethod
+    def _abbrev(name):
+        for base in g_ROOT_NAMES:
+            if name.startswith(base):
+                return name[0] + name.strip(base)
 
 class Device():
     _devs = {}
@@ -465,8 +481,19 @@ class Device():
         if 0 == Device._nSteps % statusSteps:
             print()
             GameStatus.makeAll()
+
+            lines = []
             for line in range(GameStatus.numLines()):
-                print(GameStatus.line(line))
+                txt = GameStatus.line(line)
+                print(txt)
+                lines.append(txt)
+
+            now = datetime.datetime.now()
+            if not lines == GameStatus._prevLines:
+                GameStatus._prevLines = lines
+                GameStatus._lastChange = now
+            else:
+                print('no change in {}'.format(now - GameStatus._lastChange))
 
     @staticmethod
     def deviceFor(args, host):
@@ -586,6 +613,8 @@ def mainLoop(args, devs):
 # prime each with enough information that when we start running them
 # they can invite each other.
 def build_devs(args):
+    global g_NAMES
+    g_NAMES = makeNames(args.NDEVS)
     for ii in range(args.NGAMES):
         nPlayers = pick_ndevs(args)
         players = chooseNames(nPlayers)
@@ -615,6 +644,7 @@ def mkParser():
     #                     help = 'odds of upgrading at any launch, 0 <= n < 100')
 
     parser.add_argument('--num-games', dest = 'NGAMES', type = int, default = 1, help = 'number of games')
+    parser.add_argument('--num-devs', dest = 'NDEVS', type = int, default = len(g_ROOT_NAMES), help = 'number of devices')
     parser.add_argument('--timeout-mins', dest = 'TIMEOUT_MINS', default = 10000, type = int,
                         help = 'minutes after which to timeout')
     # parser.add_argument('--nochange-secs', dest = 'NO_CHANGE_SECS', default = 30, type = int,
