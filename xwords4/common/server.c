@@ -965,20 +965,30 @@ readGuestAddrs( ServerCtxt* server, XWStreamCtxt* stream )
             server->nv.rematch.addrs = XP_MALLOC( server->mpool, len );
             stream_getBytes( stream, server->nv.rematch.addrs, len );
             XP_LOGFF( "loaded %d bytes of rematch.addrs", len );
-        }
 #ifdef DEBUG
-        XWStreamCtxt* tmpStream = mkServerStream( server );
-        stream_setVersion( tmpStream, stream_getVersion( stream ) );
-        stream_putBytes( tmpStream, server->nv.rematch.addrs,
-                         server->nv.rematch.addrsLen );
-        while ( 0 < stream_getSize(tmpStream) ) {
-            CommsAddrRec addr = {0};
-            addrFromStream( &addr, tmpStream );
-            XP_LOGFF( "got an address" );
-            logAddr( server->vol.dutil, &addr, __func__ );
-        }
-        stream_destroy( tmpStream );
+            XWStreamCtxt* tmpStream = mkServerStream( server );
+            stream_setVersion( tmpStream, version );
+            stream_putBytes( tmpStream, server->nv.rematch.addrs,
+                             server->nv.rematch.addrsLen );
+
+            if ( STREAM_VERS_REMATCHORDER <= version ) {
+                RematchInfo ri;
+                ri_fromStream( &ri, tmpStream, server );
+                for ( int ii = 0; ii < ri.nAddrs; ++ii ) {
+                    XP_LOGFF( "got an address" );
+                    logAddr( server->vol.dutil, &ri.addrs[ii], __func__ );
+                }
+            } else {
+                while ( 0 < stream_getSize(tmpStream) ) {
+                    CommsAddrRec addr = {0};
+                    addrFromStream( &addr, tmpStream );
+                    XP_LOGFF( "got an address" );
+                    logAddr( server->vol.dutil, &addr, __func__ );
+                }
+            }
+            stream_destroy( tmpStream );
 #endif
+        }
     }
     LOG_RETURN_VOID();
 }

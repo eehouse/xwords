@@ -5,7 +5,7 @@ import argparse, datetime, json, os, random, shutil, signal, \
 
 g_NAMES = ['Brynn', 'Ariela', 'Kati', 'Eric']
 # These must correspond to what the linux app is looking for in roFromStr()
-g_ROS = ['same', 'low_score_first', 'high_score_first', 'juggle', 'by_name',]
+g_ROS = ['same', 'low_score_first', 'high_score_first', 'juggle',]
 gDone = False
 gGamesMade = 0
 g_LOGFILE = None
