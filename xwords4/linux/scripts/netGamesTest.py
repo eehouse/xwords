@@ -18,6 +18,7 @@ def log(args, msg):
     global g_LOGFILE
     if g_LOGFILE:
         print(msg, file=g_LOGFILE)
+        g_LOGFILE.flush()
 
 def pick_ndevs(args):
     RNUM = random.randint(0, 99)
@@ -121,9 +122,6 @@ class GameStatus():
                 if not gid in statuses: statuses[gid] = GameStatus(gid)
                 statuses[gid].harvest(dev)
 
-        for gid in list(statuses.keys()):
-            if statuses[gid].allOver: del statuses[gid]
-
         for status in statuses.values():
             status.sortPlayers()
 
@@ -143,10 +141,11 @@ class GameStatus():
     def line(indx):
         results = []
         for gid in sorted(GameStatus._statuses.keys()):
+            status = GameStatus._statuses[gid]
+            line = ''
             if indx == 0:
-                results.append(gid)
-            elif indx <= len(GameStatus._statuses[gid].players):
-                status = GameStatus._statuses[gid]
+                line = gid
+            elif indx <= len(status.players) and not status.allOver:
                 player = status.players[indx-1]
                 hostMarker = status.hostName == player and '*' or ' '
                 initial = GameStatus._abbrev(player)
@@ -159,7 +158,8 @@ class GameStatus():
                         arg3 = gameState.get('nPending', 0)
                     else:
                         arg3 = gameState.get('nTiles')
-                results.append('{}{:3}{: 3}'.format(hostMarker, initial, arg3).center(len(gid)))
+                    line = '{}{:3}{: 3}'.format(hostMarker, initial, arg3)
+            results.append(line.center(len(gid)))
 
         return ' '.join(results)
 
