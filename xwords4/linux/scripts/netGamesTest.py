@@ -482,18 +482,14 @@ class Device():
             print()
             GameStatus.makeAll()
 
-            lines = []
-            for line in range(GameStatus.numLines()):
-                txt = GameStatus.line(line)
-                print(txt)
-                lines.append(txt)
-
+            lines = [GameStatus.line(ii) for ii in range(GameStatus.numLines())]
             now = datetime.datetime.now()
-            if not lines == GameStatus._prevLines:
+            if lines == GameStatus._prevLines:
+                print('no change in {}'.format(now - GameStatus._lastChange))
+            else:
+                for line in lines: print(line)
                 GameStatus._prevLines = lines
                 GameStatus._lastChange = now
-            else:
-                print('no change in {}'.format(now - GameStatus._lastChange))
 
     @staticmethod
     def deviceFor(args, host):
