@@ -202,7 +202,7 @@ init_games_list( GtkAppGlobals* apg )
                                               GDK_TYPE_PIXBUF,/* ROW_THUMB */
                                               G_TYPE_STRING,  /* NAME_ITEM */
                                               G_TYPE_STRING,  /* CREATED_ITEM */
-                                              G_TYPE_INT,     /* GAMEID_ITEM */
+                                              G_TYPE_STRING,  /* GAMEID_ITEM */
                                               G_TYPE_STRING,  /* LANG_ITEM */
                                               G_TYPE_INT,     /* SEED_ITEM */
                                               G_TYPE_INT,     /* ROLE_ITEM */
@@ -274,12 +274,15 @@ add_to_list( GtkWidget* list, sqlite3_int64 rowid, XP_Bool isNew,
         formatSeconds( gib->dupTimerExpires, timerStr, VSIZE(timeStr) );
     }
 
+    gchar gameIDStr[16];
+    sprintf( gameIDStr, "%8X", gib->gameID );
+
     gtk_list_store_set( store, &iter, 
                         ROW_ITEM, rowid,
                         ROW_THUMB, gib->snap,
                         NAME_ITEM, gib->name,
                         CREATED_ITEM, createdStr,
-                        GAMEID_ITEM, gib->gameID,
+                        GAMEID_ITEM, gameIDStr,
                         LANG_ITEM, gib->isoCode,
                         SEED_ITEM, gib->seed,
                         ROLE_ITEM, gib->role,
