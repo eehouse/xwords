@@ -920,4 +920,65 @@
     <string name="badwords_lost">这一轮输了。</string>
     <string name="warn_mqtt_later">你可以现在或稍后启用通过互联网游玩。</string>
     <string name="button_reconnect">重新连接</string>
+    <string name="debug_features_summary">菜单项等等。</string>
+    <string name="confirm_drop_mqtt">确定要禁用游戏的互联网通信功能吗？</string>
+    <string name="lmi_trade_dup_fmt">所有玩家交换了 %1$d 张卡牌</string>
+    <string name="bt_fail_fmt">多次未能通过蓝牙发送到 %1$s。请重新打开游戏重试。</string>
+    <plurals name="confirm_studylist_clear_fmt">
+        <item quantity="other">确定删除所选%1$d单词吗？
+\n
+\n（此操作不可逆。）</item>
+    </plurals>
+    <string name="button_discard_changes">丢弃更改</string>
+    <string name="not_again_copytheme">复制主题时会在剪贴板放一个 URL，此 URL 会将主题设置进行编码。要分享你的设置，可以将 URL 发送给另外一位 CrossWords 用户：当他们在安装有最新版本的 CrossWords 设备上点击 URL 时，就可以导入设置。</string>
+    <plurals name="invite_bt_desc_fmt_2">
+        <item quantity="other">请检查要加入此游戏的%1$d设备。</item>
+    </plurals>
+    <string name="invite_bt_desc_postscript">"
+\n
+\n（此列表列出了 CrossWords 通过扫描检测到的已配对设备。）"</string>
+    <string name="lmi_pass_dup">没有玩家可移动（全部跳过）</string>
+    <plurals name="nag_days_fmt">
+        <item quantity="other">%1$d 天</item>
+    </plurals>
+    <string name="word_blocked_by_phony">单词表 %2$s 内未找到单词：%1$s。</string>
+    <string name="backup_bad_file_fmt">文件“%1$s”中不含有 CrossWords 备份数据。</string>
+    <string name="autopause_expl_fmt">游戏“%1$s”的倒计时已到但未做出移动，因此已为你暂停。</string>
+    <string name="advanced">调试用</string>
+    <string name="not_again_deletecheck_fmt">勾选“%1$s”复选框以删除此游戏。</string>
+    <plurals name="confirm_clear_sms_fmt">
+        <item quantity="other">确定要删除选中的%1$d手机号码吗？</item>
+    </plurals>
+    <string name="enable_nfc">此设备关闭了 NFC。你可以用 Android 设置应用将其打开。</string>
+    <string name="remote_no_net">无法从服务器获取单词表信息。</string>
+    <string name="prev_player">你的对手</string>
+    <string name="logstore_clear_confirm">确定要清除调试日志吗？此操作不可逆。</string>
+    <string name="radio_name_real">不模拟</string>
+    <string name="bt_bad_proto_fmt">“%1$s”的 CrossWords 版本与此设备不兼容，无法用蓝牙游玩。可能需要其一升级才可继续。</string>
+    <string name="pause_notify_expl_fmt">玩家 %1$s 已暂停游戏，说明：%2$s</string>
+    <string name="dup_traded_fmt">未做出移动；交换了 %1$d 张卡牌</string>
+    <string name="board_menu_game_netstats">网络统计信息</string>
+    <string name="show_remote">显示可下载</string>
+    <string name="radio_name_tablet">平板/无无线功能</string>
+    <string name="missing_host_fmt">（房主是已知玩家“%1$s”。）</string>
+    <string name="dup_paused_expl">游戏暂停与取消暂停的通知</string>
+    <string name="dict_info_fmt">单词数：%1$d
+\n下载大小：%2$dK</string>
+    <string name="bt_resend_fmt">未能通过蓝牙发送到 %1$s；将在 %2$d 秒内重试第 %3$d 次。</string>
+    <string name="not_again_archivecheck_fmt">勾选“%1$s”复选框以将此游戏移动到%2$s分组。</string>
+    <string name="logging_on">启用日志</string>
+    <string name="unpause_notify_expl_fmt">玩家 %1$s 已取消暂停游戏，说明：%2$s</string>
+    <string name="choose_expl_default_solo">用当前默认设置开始单机游戏</string>
+    <string name="after_restart">更改将在重启 CrossWords 后生效。</string>
+    <string name="pause_notify_fmt">玩家 %1$s 已暂停此游戏。</string>
+    <string name="delete_dicts">删除单词表</string>
+    <string name="not_again_backclears">返回按钮会先清除选择项。再按一次可退出应用。</string>
+    <string name="confirm_clear_chat">确定要删除此游戏的所有聊天历史吗？
+\n
+\n（此操作不可逆。）</string>
+    <string name="download_rationale">CrossWords 需要访问临时存储，以保留要下载的文件。</string>
+    <string name="unpause_notify_fmt">玩家 %1$s 已取消暂停游戏。</string>
+    <string name="board_menu_game_showInvites">显示邀请</string>
+    <string name="loc_item_copy_eng">复制英文</string>
+    <string name="choose_expl_default_net">用当前默认设置开始网络游戏</string>
 </resources>
