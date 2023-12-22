@@ -263,7 +263,8 @@ static XP_Bool handleIllegalWord( ServerCtxt* server, XWEnv xwe,
 static void tellMoveWasLegal( ServerCtxt* server, XWEnv xwe );
 static void writeProto( const ServerCtxt* server, XWStreamCtxt* stream, 
                         XW_Proto proto );
-static void readGuestAddrs( ServerCtxt* server, XWStreamCtxt* stream );
+static void readGuestAddrs( ServerCtxt* server, XWStreamCtxt* stream,
+                            XP_U8 streamVersion );
 
 static void ri_fromStream( RematchInfo* rip, XWStreamCtxt* stream,
                            const ServerCtxt* server );
@@ -636,7 +637,7 @@ server_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream, ModelCtxt* mode
 
     if ( server->vol.gi->serverRole == SERVER_ISCLIENT
          && 2 < nPlayers ) {
-        readGuestAddrs( server, stream );
+        readGuestAddrs( server, stream, server->nv.streamVersion );
     }
 
     if ( 0 != (server->nv.flags & MASK_HAVE_RIP_INFO) ) {
@@ -916,6 +917,7 @@ addGuestAddrsIf( const ServerCtxt* server, XP_U16 sendee, XWStreamCtxt* stream )
     XP_LOGFF("(sendee: %d)", sendee );
     XP_ASSERT( amHost( server ) );
     XP_U16 version = stream_getVersion( stream );
+    XP_ASSERT( version == server->nv.streamVersion );
     if ( STREAM_VERS_REMATCHADDRS <= version
          /* Not needed for two-device games */
          && 2 < server->nv.nDevices ) {
@@ -953,11 +955,10 @@ addGuestAddrsIf( const ServerCtxt* server, XP_U16 sendee, XWStreamCtxt* stream )
 }
 
 static void
-readGuestAddrs( ServerCtxt* server, XWStreamCtxt* stream )
+readGuestAddrs( ServerCtxt* server, XWStreamCtxt* stream, XP_U8 streamVersion )
 {
-    XP_U16 version = stream_getVersion( stream );
-    XP_LOGFF( "version: %X", version );
-    if ( STREAM_VERS_REMATCHADDRS <= version && 0 < stream_getSize(stream) ) {
+    XP_LOGFF( "version: 0x%X", streamVersion );
+    if ( STREAM_VERS_REMATCHADDRS <= streamVersion && 0 < stream_getSize(stream) ) {
         XP_U16 len = server->nv.rematch.addrsLen = stream_getU32VL( stream );
         XP_LOGFF( "rematch.addrsLen: %d", server->nv.rematch.addrsLen );
         if ( 0 < len ) {
@@ -967,11 +968,11 @@ readGuestAddrs( ServerCtxt* server, XWStreamCtxt* stream )
             XP_LOGFF( "loaded %d bytes of rematch.addrs", len );
 #ifdef DEBUG
             XWStreamCtxt* tmpStream = mkServerStream( server );
-            stream_setVersion( tmpStream, version );
+            stream_setVersion( tmpStream, streamVersion );
             stream_putBytes( tmpStream, server->nv.rematch.addrs,
                              server->nv.rematch.addrsLen );
 
-            if ( STREAM_VERS_REMATCHORDER <= version ) {
+            if ( STREAM_VERS_REMATCHORDER <= streamVersion ) {
                 RematchInfo ri;
                 ri_fromStream( &ri, tmpStream, server );
                 for ( int ii = 0; ii < ri.nAddrs; ++ii ) {
@@ -2197,7 +2198,7 @@ client_readInitialMessage( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* stream )
 
         /* version; any dependencies here? */
         XP_U8 streamVersion = stream_getU8( stream );
-        XP_LOGFF( "set streamVersion to %d", streamVersion );
+        XP_LOGFF( "set streamVersion to 0x%X", streamVersion );
         stream_setVersion( stream, streamVersion );
         if ( STREAM_VERS_NINETILES > streamVersion ) {
             model_forceStack7Tiles( server->vol.model );
@@ -2303,7 +2304,7 @@ client_readInitialMessage( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* stream )
         }
 
         readMQTTDevID( server, stream );
-        readGuestAddrs( server, stream );
+        readGuestAddrs( server, stream, stream_getVersion( stream ) );
 
         syncPlayers( server );
 
@@ -2354,6 +2355,7 @@ sendInitialMessage( ServerCtxt* server, XWEnv xwe )
     XP_U32 gameID = server->vol.gi->gameID;
 #ifdef STREAM_VERS_BIGBOARD
     XP_U8 streamVersion = server->nv.streamVersion;
+    XP_LOGFF( "streamVersion: 0x%X", streamVersion );
 #endif
 
     XP_ASSERT( server->nv.nDevices > 1 );
