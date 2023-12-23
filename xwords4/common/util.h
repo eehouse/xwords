@@ -170,7 +170,8 @@ typedef struct UtilVtable {
     void (*m_util_informMissing)( XW_UtilCtxt* uc, XWEnv xwe, XP_Bool isHost,
                                   const CommsAddrRec* hostAddr,
                                   const CommsAddrRec* selfAddr, XP_U16 nDevs,
-                                  XP_U16 nMissing, XP_U16 nInvited );
+                                  XP_U16 nMissing, XP_U16 nInvited,
+                                  XP_Bool fromRematch );
 
     void (*m_util_informWordsBlocked)( XW_UtilCtxt* uc, XWEnv xwe, XP_U16 nBadWords,
                                        XWStreamCtxt* words, const XP_UCHAR* dictName );
@@ -305,8 +306,9 @@ struct XW_UtilCtxt {
     (uc)->vtable->m_util_cellSquareHeld( (uc), (e), (s) )
 #endif
 
-#define util_informMissing( uc, e, is, ha, sa, nd, nm, ni )             \
-    (uc)->vtable->m_util_informMissing((uc), (e), (is), (ha), (sa), (nd), (nm), (ni) )
+#define util_informMissing( uc, e, is, ha, sa, nd, nm, ni, fr )     \
+    (uc)->vtable->m_util_informMissing((uc), (e), (is), (ha), (sa), \
+                                       (nd), (nm), (ni), (fr) )
 
 #define util_informWordsBlocked(uc,e, c, w, d)                        \
     (uc)->vtable->m_util_informWordsBlocked( (uc), (e), (c), (w), (d) )

@@ -110,7 +110,7 @@ public interface UtilCtxt {
 
     void informMissing( boolean isServer, CommsAddrRec hostAddr,
                         CommsConnTypeSet connTypes, int nDevs,
-                        int nMissingPlayers, int nInvited );
+                        int nMissingPlayers, int nInvited, boolean fromRematch );
 
     void notifyGameOver();
     // Don't need this unless we have a scroll thumb to indicate position

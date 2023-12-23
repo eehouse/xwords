@@ -177,6 +177,7 @@ public class BoardDelegate extends DelegateBase
         int nGuestDevs;
         CommsAddrRec hostAddr;
         boolean inTrade;
+        boolean fromRematch;
         StartAlertOrder mAlertOrder = StartAlertOrder.values()[0];
     }
     private MySIS m_mySIS;
@@ -2049,7 +2050,7 @@ public class BoardDelegate extends DelegateBase
         @Override
         public void informMissing( boolean isServer, CommsAddrRec hostAddr,
                                    CommsConnTypeSet connTypes, int nDevs,
-                                   int nMissing, int nInvited )
+                                   int nMissing, int nInvited, boolean fromRematch )
         {
             // Log.d( TAG, "informMissing(isServer: %b, nDevs: %d; nMissing: %d, "
             //        + " nInvited: %d", isServer, nDevs, nMissing, nInvited );
@@ -2057,6 +2058,7 @@ public class BoardDelegate extends DelegateBase
             m_mySIS.nMissing = nMissing; // will be 0 unless isServer is true
             m_mySIS.nInvited = nInvited;
             m_mySIS.nGuestDevs = nDevs;
+            m_mySIS.fromRematch = fromRematch;
             m_mySIS.hostAddr = hostAddr;
             m_connTypes = connTypes;
 
@@ -2583,10 +2585,8 @@ public class BoardDelegate extends DelegateBase
 
     private void showOrHide( InvitesNeededAlert.Wrapper wrapper )
     {
-        boolean fromRematch = null != m_jniGamePtr
-            && XwJNI.server_isFromRematch( m_jniGamePtr );
         wrapper.showOrHide( m_mySIS.hostAddr, m_mySIS.nMissing,
-                            m_mySIS.nInvited, fromRematch );
+                            m_mySIS.nInvited, m_mySIS.fromRematch );
     }
 
     private InvitesNeededAlert.Wrapper mINAWrapper;

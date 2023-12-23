@@ -1694,10 +1694,12 @@ linux_util_informMissing( XW_UtilCtxt* XP_UNUSED(uc), XWEnv XP_UNUSED(xwe),
                           const CommsAddrRec* XP_UNUSED_DBG(selfAddr),
                           XP_U16 XP_UNUSED_DBG(nDevs),
                           XP_U16 XP_UNUSED_DBG(nMissing),
-                          XP_U16 XP_UNUSED_DBG(nInvited) )
+                          XP_U16 XP_UNUSED_DBG(nInvited),
+                          XP_Bool XP_UNUSED_DBG(fromRematch) )
 {
-    XP_LOGFF( "(isServer=%d, addr=%p, nDevs=%d, nMissing=%d, nInvited=%d)",
-              isServer, selfAddr, nDevs, nMissing, nInvited );
+    XP_LOGFF( "(isServer=%d, addr=%p, nDevs=%d, nMissing=%d, "
+              "nInvited=%d, fromRematch=%s)", isServer, selfAddr,
+              nDevs, nMissing, nInvited, boolToStr(fromRematch) );
 }
 
 unsigned int

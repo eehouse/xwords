@@ -571,6 +571,7 @@ informMissing( const ServerCtxt* server, XWEnv xwe )
 
     XP_U16 nDevs = 0;
     XP_U16 nPending = 0;
+    XP_Bool fromRematch = XP_FALSE;
     if ( XWSTATE_BEGIN < server->nv.gameState ) {
         /* do nothing */
     } else if ( isHost ) {
@@ -582,11 +583,13 @@ informMissing( const ServerCtxt* server, XWEnv xwe )
                 nInvited = nPending;
             }
         }
+        fromRematch = server_isFromRematch( server );
     } else if ( SERVER_ISCLIENT == gi->serverRole ) {
         nPending = gi->nPlayers - gi_countLocalPlayers( gi, XP_FALSE);
     }
     util_informMissing( server->vol.util, xwe, isHost,
-                        hostAddrP, selfAddrP, nDevs, nPending, nInvited );
+                        hostAddrP, selfAddrP, nDevs, nPending, nInvited,
+                        fromRematch );
 }
 
 XP_U16

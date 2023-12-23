@@ -2203,17 +2203,6 @@ Java_org_eehouse_android_xw4_jni_XwJNI_server_1initClientConnection
 }
 
 JNIEXPORT jboolean JNICALL
-Java_org_eehouse_android_xw4_jni_XwJNI_server_1isFromRematch
-( JNIEnv* env, jclass C, GamePtrType gamePtr )
-{
-    jboolean result;
-    XWJNI_START_GLOBALS(gamePtr);
-    result = server_isFromRematch( state->game.server );
-    XWJNI_END();
-    return result;
-}
-
-JNIEXPORT jboolean JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_server_1canOfferRematch
 ( JNIEnv* env, jclass C, GamePtrType gamePtr )
 {

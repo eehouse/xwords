@@ -694,11 +694,11 @@ static void
 and_util_informMissing( XW_UtilCtxt* uc, XWEnv xwe, XP_Bool isServer,
                         const CommsAddrRec* hostAddr,
                         const CommsAddrRec* selfAddr, XP_U16 nDevs,
-                        XP_U16 nMissing, XP_U16 nInvited )
+                        XP_U16 nMissing, XP_U16 nInvited, XP_Bool fromRematch )
 {
     UTIL_CBK_HEADER( "informMissing", 
                      "(ZL" PKG_PATH("jni/CommsAddrRec") ";"
-                     "L" PKG_PATH("jni/CommsAddrRec$CommsConnTypeSet") ";III)V" );
+                     "L" PKG_PATH("jni/CommsAddrRec$CommsConnTypeSet") ";IIIZ)V" );
     jobject jHostAddr = NULL;
     if ( !!hostAddr ) {
         jHostAddr = makeJAddr( env, hostAddr );
@@ -709,7 +709,7 @@ and_util_informMissing( XW_UtilCtxt* uc, XWEnv xwe, XP_Bool isServer,
         jtypset = addrTypesToJ( env, selfAddr );
     }
     (*env)->CallVoidMethod( env, util->jutil, mid, isServer, jHostAddr,
-                            jtypset, nDevs, nMissing, nInvited );
+                            jtypset, nDevs, nMissing, nInvited, fromRematch );
     deleteLocalRefs( env, jHostAddr, jtypset, DELETE_NO_REF );
     UTIL_CBK_TAIL();
 }
