@@ -911,7 +911,7 @@
     <string name="lang_name_dutch">荷兰语</string>
     <string name="notify_chat_title_fmt">游戏 %1$s 有聊天消息</string>
     <string name="pause_title">暂停游戏</string>
-    <string name="pick_faceup">选择面朝上的瓷砖</string>
+    <string name="pick_faceup">选择面朝上的卡牌</string>
     <string name="menu_rateme">给 CrossWords 打分</string>
     <string name="lang_name_czech">捷克语</string>
     <string name="not_again_values">此按钮会切换棋盘上卡牌分值（除字母外）的显示与否。</string>
@@ -929,7 +929,7 @@
 \n
 \n（此操作不可逆。）</item>
     </plurals>
-    <string name="button_discard_changes">丢弃更改</string>
+    <string name="button_discard_changes">舍弃更改</string>
     <string name="not_again_copytheme">复制主题时会在剪贴板放一个 URL，此 URL 会将主题设置进行编码。要分享你的设置，可以将 URL 发送给另外一位 CrossWords 用户：当他们在安装有最新版本的 CrossWords 设备上点击 URL 时，就可以导入设置。</string>
     <plurals name="invite_bt_desc_fmt_2">
         <item quantity="other">请检查要加入此游戏的%1$d设备。</item>
@@ -981,4 +981,110 @@
     <string name="board_menu_game_showInvites">显示邀请</string>
     <string name="loc_item_copy_eng">复制英文</string>
     <string name="choose_expl_default_net">用当前默认设置开始网络游戏</string>
+    <string name="app_not_found_fmt">无法通过蓝牙连接到设备 %1$s 上的 CrossWords。请确认设备在蓝牙范围内，并已安装 CrossWords。</string>
+    <string name="knowns_delete_confirm_fmt">要将“%1$s”从已知玩家中删除吗？
+\n
+\n（此操作不可逆，但如果仍与玩家有活跃游戏时，可能会再次出现。）</string>
+    <string name="not_again_studycopy">所选单词将被复制到系统剪贴板。此后可将其粘贴到支持的应用（比如电子邮件应用）中。</string>
+    <string name="update_dicts_fmt">已安装单词表有可用更新。要下载新版本 %1$s 吗？</string>
+    <string name="waiting_host_expl_multi">在这种情况下，由于游戏期望其他设备连接，也可能意味着还未邀请所有玩家。</string>
+    <string name="archive_expl_load_fmt">要将 CrossWords 内的哪种应用数据用“%1$s”文件中的替换？</string>
+    <string name="warn_nomobile_fmt">%2$s 的号码 %1$s 不是“移动手机”号码。仍要导入吗？</string>
+    <string name="disable_nag_summary">无论轮到我多久，都不要通知</string>
+    <string name="lmi_move_tie_dup_fmt">玩家 %1$s 达成平手，各获得 %2$d 分。他们拼出了 %3$s。</string>
+    <string name="set_pref">隐藏按钮</string>
+    <string name="knowns_dup_name_fmt">无法将名称“%1$s”修改为“%2$s”。“%2$s”已被占用了吗？</string>
+    <string name="waiting_host_expl">游戏正在等待主设备开始游戏。这通常意味着主机未在通信（可能暂时离线）</string>
+    <string name="invite_multi_title">邀请多人</string>
+    <string name="warn_no_comms">所有网络游戏都必须至少有一种通信方式。如果没有设置默认方式，则建立新的网络游戏时必须手动进行配置。</string>
+    <string name="dup_notif_title_fmt">你在接下来%1$s内可移动。</string>
+    <string name="use_defaults">使用默认值</string>
+    <plurals name="invite_p2p_desc_fmt">
+        <item quantity="other">请勾选要邀请到新游戏的%1$d WiFi 直连设备的名称，然后点击“%2$s”。</item>
+    </plurals>
+    <string name="choose_expl_config">或者在配置后开始游戏，比如修改语言或玩家数目</string>
+    <string name="not_again_clip_expl_fmt">“%1$s”设置会将邀请 URL 复制到剪贴板。将 URL 粘贴到其他应用中与朋友分享。</string>
+    <string name="bt_no_devs">目前没有已配对的蓝牙设备（或者蓝牙已关闭）。要打开安卓设置面板进行添加吗？
+\n
+\n（你也可能要在待配对设备上打开设置面板。）</string>
+    <string name="unpause_expl">取消暂停游戏时，所有设备的计时器都会重新启动。</string>
+    <string name="knowns_expl">这些是已知的远程玩家，其名称与远程玩家所选相同，但你也可以随意修改。</string>
+    <string name="connstat_net_fmt">通过%1$s连接的游戏 (ID=%2$X) 网络状态：</string>
+    <string name="loc_item_copy_bless">复制官方</string>
+    <string name="unsafe_open_warning">此游戏上次被打开时没有恰当关闭。
+\n
+\n当强制关闭 CrossWords 时可能会发生此现象，但游戏可能被破坏了，打开时会导致崩溃。如果崩溃了，你可能想删掉它。</string>
+    <string name="dup_host_received_fmt">%1$d 位（共 %2$d 位）玩家已发出移动信息。当接收到所有移动信息时，就又轮到你了。</string>
+    <string name="dup_client_sent">此设备已将移动信息发给主机。当所有设备都已发出移动信息后，就又轮到你了。</string>
+    <string name="backup_overwrite_confirm_fmt">确定要用文件“%1$s”中的游戏与设置覆盖 CrossWords 现有的吗？
+\n
+\n请注意，如果正用其他设备创建的文件进行导入（即迁移），则不应在旧设备上继续使用 CrossWords。</string>
+    <string name="confirm_delete">确定要删除当前游戏吗？
+\n
+\n（此操作不可逆。）</string>
+    <string name="warn_unlimited">确定此号码可发送无限量短信吗？若不确定则点击“取消”。</string>
+    <string name="err_dup_invite_fmt">已拒绝重复邀请：设备“%1$s”已同意了此游戏的邀请。</string>
+    <string name="not_again_comms_p2p">使用 WiFi 直连与附近支持 WiFi 直连并已安装 CrossWords 的设备游玩。</string>
+    <string name="study_no_lists">学习列表内还未保存单词。</string>
+    <string name="byod_success">%1$s 下载成功。如需要可以现在打开。</string>
+    <plurals name="warn_mqtt_games_fmt">
+        <item quantity="other">"
+\n
+\n（目前有%1$d使用互联网的活跃游戏。）"</item>
+    </plurals>
+    <string name="skip_mqtt_add_summary">不要试图用 MQTT 发送所有消息</string>
+    <string name="not_again_loaddb">从已导出的文件中导入设置或游戏数据。</string>
+    <string name="choose_expl_new">通过电子邮件、短信或甚至二维码发送邀请，由此开始游戏</string>
+    <string name="not_again_comms_bt">用蓝牙与已“配对”的附近设备游玩。</string>
+    <string name="dropped_dupe">此邀请已被用于创建游戏。</string>
+    <string name="invites_net_fmt">通过%1$s连接的游戏发送的邀请：</string>
+    <string name="empty_sms_inviter">号码列表为空。用“导入联系人”按钮添加要邀请的人，用 + 按钮直接输入号码。</string>
+    <string name="dicts_storage_rationale">CrossWords 可以在设备的下载存储区读写单词表，但需要请求权限才能访问。
+\n
+\n如果你没有下载非 CrossWords 内置的单词表，并且不曾将单词表存放于那里，则可安全拒绝此权限。</string>
+    <string name="loc_filters_menu">最新菜单</string>
+    <string name="no_tiles_exist">无法用%2$s卡牌拼出“%1$s”。</string>
+    <string name="empty_p2p_inviter">目前没有可通过 WiFiDirect 通信并已安装 CrossWords 的设备。</string>
+    <string name="summary_studyon">用于添加并显示要记忆的单词</string>
+    <string name="not_again_hidenewgamebuttons">屏幕底部的两个按钮与操作栏（菜单）中的前两个按钮作用相同。你可以将其隐藏，这样就可以看到更多游戏。
+\n
+\n（如果想稍后隐藏，请转到应用设置的外观小节）。</string>
+    <string name="pick_tiles_title_fmt">选择“拼”作“%1$s”的卡牌</string>
+    <string name="choose_expl_known">或者与之前一起玩过的玩家开始游戏，无需邀请</string>
+    <string name="archive_expl_colors">游戏棋盘元素颜色，比如玩家名称与加分格的颜色</string>
+    <plurals name="confirm_clear_bt_fmt">
+        <item quantity="other">确定要忘记选中的%1$d设备吗？</item>
+    </plurals>
+    <string name="nfc_just_tap">要通过 NFC 进行邀请，只需在游戏打开时—将此设备与待邀请设备背面相碰即可。</string>
+    <string name="nearbydev_rationale">CrossWords 需要连接到附近设备的权限，用于使用蓝牙。</string>
+    <plurals name="invite_sms_desc_fmt">
+        <item quantity="other">请勾选要邀请到新游戏的%1$d手机号码，然后点击“%2$s”。</item>
+    </plurals>
+    <string name="disable_nags_title">局内提醒</string>
+    <string name="not_again_boardThemes_fmt">目前棋盘以深色绘制，因为设备启用了“深色主题”。
+\n
+\n如果你喜欢使用“浅色”主题，或是想选择独立于安卓“深色模式”的主题，可以随时在应用设置修改“%1$s”。下方的“设置”按钮会立即转到那里。</string>
+    <string name="archive_expl_games">所有游戏以及用于辨识设备的其他数据。</string>
+    <string name="offerdupmode_sum">（实验性）玩法，所有玩家拥有卡牌相同</string>
+    <string name="invite_multi_summary">允许邀请一台远程设备上的多位玩家</string>
+    <plurals name="warn_bt_games_fmt">
+        <item quantity="other">"
+\n
+\n（有%1$d使用蓝牙的活跃游戏。）"</item>
+    </plurals>
+    <string name="not_again_dfltname_fmt">正在使用默认玩家名“%1$s”。在创建此游戏前，要自定义名称吗？</string>
+    <plurals name="nplayers_fmt">
+        <item quantity="other">%1$d玩家</item>
+    </plurals>
+    <string name="pause_expl">暂停此游戏后，会暂停所有设备上的计时器并隐藏游戏。</string>
+    <string name="move_dict_rationale">在下载存储区保存单词表需要存储权限。</string>
+    <string name="config_no_connvia">此游戏无法连接，因此无法保存。要舍弃更改，还是编辑连接方式？</string>
+    <string name="lmi_move_one_dup_fmt">%1$s 拼出 %2$s 获得 %3$d 分，本轮获胜</string>
+    <string name="title_addrs_pref">通信方式</string>
+    <string name="loc_filters_screen">最新页面</string>
+    <string name="confirm_clear_bt_postscript">"
+\n
+\n（只能重新添加在蓝牙范围内的设备。）"</string>
+    <string name="archive_expl_store">选择要保存的 CrossWords 数据类型。</string>
+    <string name="confirm_get_locdict_fmt">你的设备设置使用%1$s。要下载单词表以使用%1$s游玩 CrossWords 吗？</string>
 </resources>
