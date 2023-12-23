@@ -225,7 +225,8 @@ static void badWordMoveUndoAndTellUser( ServerCtxt* server, XWEnv xwe,
                                         BadWordInfo* bwi );
 static XP_Bool tileCountsOk( const ServerCtxt* server );
 static void setTurn( ServerCtxt* server, XWEnv xwe, XP_S16 turn );
-static XWStreamCtxt* mkServerStream( const ServerCtxt* server );
+static XWStreamCtxt* mkServerStream( const ServerCtxt* server, XP_U8 version );
+static XWStreamCtxt* mkServerStream0( const ServerCtxt* server );
 static void fetchTiles( ServerCtxt* server, XWEnv xwe, XP_U16 playerNum,
                         XP_U16 nToFetch, const TrayTileSet* tradedTiles,
                         TrayTileSet* resultTiles, XP_Bool forceCanPlay );
@@ -531,7 +532,7 @@ readStreamIf( ServerCtxt* server, XWStreamCtxt* in )
     XWStreamCtxt* result = NULL;
     XP_U16 len = stream_getU16( in );
     if ( 0 < len ) {
-        result = mkServerStream( server );
+        result = mkServerStream0( server );
         stream_getFromStream( result, in, len );
     }
     return result;
@@ -896,8 +897,7 @@ buildGuestRI( const ServerCtxt* server, XP_U16 guestIndex, RematchInfo* rip )
 static void
 loadRemoteRI( const ServerCtxt* server, const CurGameInfo* gi, RematchInfo* rip )
 {
-    XWStreamCtxt* tmpStream = mkServerStream( server );
-    stream_setVersion( tmpStream, server->nv.streamVersion );
+    XWStreamCtxt* tmpStream = mkServerStream( server, server->nv.streamVersion );
     stream_putBytes( tmpStream, server->nv.rematch.addrs, server->nv.rematch.addrsLen );
 
     ri_fromStream( rip, tmpStream, server );
@@ -921,8 +921,7 @@ addGuestAddrsIf( const ServerCtxt* server, XP_U16 sendee, XWStreamCtxt* stream )
     if ( STREAM_VERS_REMATCHADDRS <= version
          /* Not needed for two-device games */
          && 2 < server->nv.nDevices ) {
-        XWStreamCtxt* tmpStream = mkServerStream( server );
-        stream_setVersion( tmpStream, version );
+        XWStreamCtxt* tmpStream = mkServerStream( server, version );
         XP_Bool skipIt = XP_FALSE;
 
         if ( STREAM_VERS_REMATCHORDER <= version ) {
@@ -967,8 +966,7 @@ readGuestAddrs( ServerCtxt* server, XWStreamCtxt* stream, XP_U8 streamVersion )
             stream_getBytes( stream, server->nv.rematch.addrs, len );
             XP_LOGFF( "loaded %d bytes of rematch.addrs", len );
 #ifdef DEBUG
-            XWStreamCtxt* tmpStream = mkServerStream( server );
-            stream_setVersion( tmpStream, streamVersion );
+            XWStreamCtxt* tmpStream = mkServerStream( server, streamVersion );
             stream_putBytes( tmpStream, server->nv.rematch.addrs,
                              server->nv.rematch.addrsLen );
 
@@ -1263,7 +1261,7 @@ dupe_setupShowTrade( ServerCtxt* server, XWEnv xwe, XP_U16 nTiles )
     const XP_UCHAR* fmt = dutil_getUserString( server->vol.dutil, xwe, STRD_DUP_TRADED );
     XP_SNPRINTF( buf, VSIZE(buf), fmt, nTiles );
 
-    XWStreamCtxt* stream = mkServerStream( server );
+    XWStreamCtxt* stream = mkServerStream0( server );
     stream_catString( stream, buf );
 
     server->nv.prevMoveStream = stream;
@@ -1279,7 +1277,7 @@ dupe_setupShowMove( ServerCtxt* server, XWEnv xwe, XP_U16* scores )
     const CurGameInfo* gi = server->vol.gi;
     const XP_U16 nPlayers = gi->nPlayers;
 
-    XWStreamCtxt* stream = mkServerStream( server );
+    XWStreamCtxt* stream = mkServerStream0( server );
 
     XP_U16 lastMax = 0x7FFF;
     for ( XP_U16 nDone = 0; nDone < nPlayers; ) {
@@ -1620,12 +1618,19 @@ robotTradeTiles( ServerCtxt* server, MoveInfo* newMove )
 #endif
 
 static XWStreamCtxt*
-mkServerStream( const ServerCtxt* server )
+mkServerStream0( const ServerCtxt* server )
+{
+    return mkServerStream( server, 0 );
+}
+
+static XWStreamCtxt*
+mkServerStream( const ServerCtxt* server, XP_U8 version )
 {
     XWStreamCtxt* stream =
         mem_stream_make_raw( MPPARM(server->mpool)
                              dutil_getVTManager(server->vol.dutil) );
     XP_ASSERT( !!stream );
+    stream_setVersion( stream, version );
     return stream;
 } /* mkServerStream */
 
@@ -1696,7 +1701,7 @@ makeRobotMove( ServerCtxt* server, XWEnv xwe )
 
         server->vol.showPrevMove = XP_TRUE;
         if ( inDuplicateMode(server) || server->nv.showRobotScores ) {
-            stream = mkServerStream( server );
+            stream = mkServerStream0( server );
         }
 
         /* trade if unable to find a move */
@@ -1736,7 +1741,7 @@ makeRobotMove( ServerCtxt* server, XWEnv xwe )
                           newMove.nTiles, turn );
 
                 if ( !!stream ) {
-                    XWStreamCtxt* wordsStream = mkServerStream( server );
+                    XWStreamCtxt* wordsStream = mkServerStream0( server );
                     WordNotifierInfo* ni = 
                         model_initWordCounter( model, wordsStream );
                     (void)model_checkMoveLegal( model, xwe, turn, stream, ni );
@@ -1839,7 +1844,7 @@ showPrevScore( ServerCtxt* server, XWEnv xwe )
         XP_SNPRINTF( buf, sizeof(buf), str, lp->name );
         str = buf;
 
-        stream = mkServerStream( server );
+        stream = mkServerStream0( server );
         stream_catString( stream, str );
 
         XWStreamCtxt* prevStream = server->nv.prevMoveStream;
@@ -3212,7 +3217,7 @@ makeTradeReportIf( ServerCtxt* server, XWEnv xwe, const TrayTileSet* tradedTiles
                                          tradedTiles->nTiles );
         XP_SNPRINTF( tradeBuf, sizeof(tradeBuf), tradeStr, 
                      tradedTiles->nTiles );
-        stream = mkServerStream( server );
+        stream = mkServerStream0( server );
         stream_catString( stream, tradeBuf );
     }
     return stream;
@@ -3224,8 +3229,8 @@ makeMoveReportIf( ServerCtxt* server, XWEnv xwe, XWStreamCtxt** wordsStream )
     XWStreamCtxt* stream = NULL;
     if ( inDuplicateMode(server) || server->nv.showRobotScores ) {
         ModelCtxt* model = server->vol.model;
-        stream = mkServerStream( server );
-        *wordsStream = mkServerStream( server );
+        stream = mkServerStream0( server );
+        *wordsStream = mkServerStream0( server );
         WordNotifierInfo* ni = model_initWordCounter( model, *wordsStream );
         (void)model_checkMoveLegal( model, xwe, server->nv.currentTurn, stream, ni );
     }
