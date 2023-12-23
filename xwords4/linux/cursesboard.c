@@ -1204,21 +1204,6 @@ curses_util_informWordsBlocked( XW_UtilCtxt* XP_UNUSED(uc), XWEnv XP_UNUSED(xwe)
     XP_LOGFF( "(nBadWords=%d, dict=%s)", nBadWords, dictName );
 }
 
-#ifndef XWFEATURE_STANDALONE_ONLY
-static XWStreamCtxt*
-curses_util_makeStreamFromAddr(XW_UtilCtxt* uc, XWEnv xwe,
-                               XP_PlayerAddr channelNo )
-{
-    CursesBoardGlobals* globals = (CursesBoardGlobals*)uc->closure;
-    LaunchParams* params = globals->cGlobals.params;
-
-    XWStreamCtxt* stream = mem_stream_make( MPPARM(uc->mpool) params->vtMgr,
-                                            &globals->cGlobals, channelNo,
-                                            sendOnClose, xwe );
-    return stream;
-} /* curses_util_makeStreamFromAddr */
-#endif
-
 #ifdef XWFEATURE_CHAT
 static void
 curses_util_showChat( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe),
@@ -1243,7 +1228,6 @@ setupCursesUtilCallbacks( CursesBoardGlobals* bGlobals, XW_UtilCtxt* util )
 {
     util->closure = bGlobals;
 #define SET_PROC(NAM) util->vtable->m_util_##NAM = curses_util_##NAM
-    SET_PROC(makeStreamFromAddr);
     SET_PROC(userError);
     SET_PROC(notifyMove);
     SET_PROC(notifyTrade);

@@ -2346,7 +2346,19 @@ linux_util_requestTime( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe) )
 {
     CommonGlobals* cGlobals = (CommonGlobals*)uc->closure;
     cGlobals->idleID = g_idle_add( idle_func, cGlobals );
-} /* gtk_util_requestTime */
+} /* linux_util_requestTime */
+
+static XWStreamCtxt*
+linux_util_makeStreamFromAddr( XW_UtilCtxt* uc, XWEnv xwe, XP_PlayerAddr channelNo )
+{
+    CommonGlobals* cGlobals = (CommonGlobals*)uc->closure;
+    LaunchParams* params = cGlobals->params;
+
+    XWStreamCtxt* stream = mem_stream_make( MPPARM(uc->mpool) params->vtMgr,
+                                            cGlobals, channelNo,
+                                            sendOnClose, xwe );
+    return stream;
+}
 
 void
 setupLinuxUtilCallbacks( XW_UtilCtxt* util )
@@ -2357,6 +2369,7 @@ setupLinuxUtilCallbacks( XW_UtilCtxt* util )
     SET_PROC(setTimer);
     SET_PROC(clearTimer);
     SET_PROC(requestTime);
+    SET_PROC(makeStreamFromAddr);
 #undef SET_PROC
 }
 

@@ -1949,19 +1949,6 @@ gtk_util_getMQTTIDsFor( XW_UtilCtxt* uc, XWEnv xwe, XP_U16 nRelayIDs,
     XP_USE( relayIDs );
 }
 
-#ifndef XWFEATURE_STANDALONE_ONLY
-static XWStreamCtxt* 
-gtk_util_makeStreamFromAddr(XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe), XP_PlayerAddr channelNo )
-{
-    GtkGameGlobals* globals = (GtkGameGlobals*)uc->closure;
-
-    XWStreamCtxt* stream = mem_stream_make( MEMPOOL 
-                                            globals->cGlobals.params->vtMgr,
-                                            &globals->cGlobals, channelNo, 
-                                            sendOnClose, NULL_XWE );
-    return stream;
-} /* gtk_util_makeStreamFromAddr */
-
 #ifdef XWFEATURE_CHAT
 static void
 gtk_util_showChat( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe),
@@ -1983,7 +1970,6 @@ gtk_util_showChat( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe),
 
     (void)gtkask( globals->window, buf, GTK_BUTTONS_OK, NULL );
 }
-#endif
 #endif
 
 #ifdef XWFEATURE_SEARCHLIMIT
@@ -2268,9 +2254,6 @@ setupGtkUtilCallbacks( GtkGameGlobals* globals, XW_UtilCtxt* util )
     SET_PROC(remSelected);
     SET_PROC(getMQTTIDsFor);
     SET_PROC(timerSelected);
-#ifndef XWFEATURE_STANDALONE_ONLY
-    SET_PROC(makeStreamFromAddr);
-#endif
 #ifdef XWFEATURE_CHAT
     SET_PROC(showChat);
 #endif
