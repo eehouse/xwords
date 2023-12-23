@@ -4369,8 +4369,9 @@ setPlayerOrder( const ServerCtxt* server, RematchOrder ro,
             LOG_RI( rip );
         }
     }
+    XP_ASSERT(success);
     return success;
-}
+} /* setPlayerOrder */
 
 XP_Bool
 server_getRematchInfo( const ServerCtxt* server, XW_UtilCtxt* newUtil,
@@ -4436,17 +4437,15 @@ server_getRematchInfo( const ServerCtxt* server, XW_UtilCtxt* newUtil,
                 CommsAddrRec addrs[MAX_NUM_PLAYERS];
                 int nAddrs = 0;
                 comms_getHostAddr( comms, &addrs[nAddrs++] );
-                if ( !!server->nv.rematch.addrs ) {
-                    XWStreamCtxt* stream = mkServerStream( server );
-                    stream_setVersion( stream, server->nv.streamVersion );
-                    stream_putBytes( stream, server->nv.rematch.addrs,
-                                     server->nv.rematch.addrsLen );
-                    while ( 0 < stream_getSize( stream ) ) {
-                        XP_ASSERT( nAddrs < VSIZE(addrs) );
-                        addrFromStream( &addrs[nAddrs++], stream );
-                    }
-                    stream_destroy( stream );
+
+                XWStreamCtxt* stream = mkServerStream( server, server->nv.streamVersion );
+                stream_putBytes( stream, server->nv.rematch.addrs,
+                                 server->nv.rematch.addrsLen );
+                while ( 0 < stream_getSize( stream ) ) {
+                    XP_ASSERT( nAddrs < VSIZE(addrs) );
+                    addrFromStream( &addrs[nAddrs++], stream );
                 }
+                stream_destroy( stream );
 
                 int nextRemote = 0;
                 for ( int ii = 0; success && ii < newGI->nPlayers; ++ii ) {
@@ -4460,7 +4459,7 @@ server_getRematchInfo( const ServerCtxt* server, XW_UtilCtxt* newUtil,
                     }
                 }
                 if ( success ) {
-                    success = nextRemote == nAddrs-1;
+                    success = nextRemote == nAddrs;
                 }
             }
         } else {
