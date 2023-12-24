@@ -90,7 +90,7 @@ makeGameID( XW_UtilCtxt* XP_UNUSED_DBG(util) )
            postgres DB where INTEGER is apparently a signed 32-bit */
         gameID &= 0x7FFFFFFF;
     }
-    LOG_RETURNF( "%X/%d", gameID, gameID );
+    LOG_RETURNF( "%X", gameID );
     return gameID;
 }
 
@@ -1063,8 +1063,8 @@ game_logGI( const CurGameInfo* gi, const char* msg, const char* func, int line )
         XP_LOGF( "  nPlayers: %d", gi->nPlayers );
         for ( XP_U16 ii = 0; ii < gi->nPlayers; ++ii ) {
             const LocalPlayer* lp = &gi->players[ii];
-            XP_LOGF( "  player[%d]: local: %d; robotIQ: %d; name: %s; dict: %s; pwd: %s", ii,
-                     lp->isLocal, lp->robotIQ, lp->name, lp->dictName, lp->password );
+            XP_LOGF( "  player[%d]: local: %s; robotIQ: %d; name: %s; dict: %s; pwd: %s", ii,
+                     boolToStr(lp->isLocal), lp->robotIQ, lp->name, lp->dictName, lp->password );
         }
         XP_LOGF( "  forceChannel: %d", gi->forceChannel );
         XP_LOGF( "  serverRole: %d", gi->serverRole );

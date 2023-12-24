@@ -82,8 +82,12 @@ extern void linux_debugf(const char*, ...)
 # define SHORTFILE __FILE__
 #endif
 
+extern void linux_gid_debugff(XP_U32 gid, const char* func, const char* file, int line, const char* fmt, ...)
+    __attribute__ ((format (printf, 5, 6)));
 extern void linux_debugff(const char* func, const char* file, int line, const char* fmt, ...)
     __attribute__ ((format (printf, 4, 5)));
+# define XP_GID_LOGFF( GID, FMT, ... )                                  \
+    linux_gid_debugff( (GID), __func__, SHORTFILE, __LINE__, FMT, ##__VA_ARGS__ )
 # define XP_LOGFF( FMT, ... ) \
     linux_debugff( __func__, SHORTFILE, __LINE__, FMT, ##__VA_ARGS__ )
 #define XP_LOG(STR) \

@@ -65,6 +65,19 @@ linux_debugf( const char* format, ... )
 }
 
 void
+linux_gid_debugff( XP_U32 gid, const char* func, const char* file, int line,
+                   const char* fmt, ...)
+{
+    gchar* header = g_strdup_printf( "<%08X> %s:%d:%s(): %s", gid, file, line, func, fmt );
+
+    va_list ap;
+    va_start( ap, fmt );
+    debugf( header, ap );
+    va_end( ap );
+    g_free( header );
+}
+
+void
 linux_debugff( const char* func, const char* file, int line, const char* fmt, ...)
 {
     gchar* header = g_strdup_printf( "%s:%d:%s(): %s", file, line, func, fmt );
