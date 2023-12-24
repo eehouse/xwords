@@ -205,12 +205,12 @@ struct RematchInfo {
 # define dupe_timerRunning()    server_canPause(server)
 
 #ifdef DEBUG
-# define SRVR_LOGFF( FMT, ... ) {                           \
-        XP_U32 gameID = server->vol.gi->gameID;             \
-        XP_GID_LOGFF( gameID, FMT, ##__VA_ARGS__ );         \
+# define SRVR_LOGFF( ... ) {                           \
+        XP_U32 gameID = server->vol.gi->gameID;        \
+        XP_GID_LOGFF( gameID, __VA_ARGS__ );           \
     }
 #else
-# define SRVR_LOGFF( FMT, ... )
+# define SRVR_LOGFF( ... )
 #endif
 
 

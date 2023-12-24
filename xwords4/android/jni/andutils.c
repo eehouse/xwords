@@ -991,6 +991,23 @@ android_debugff(const char* func, const char* file, const char* fmt, ...)
     va_end( ap );
 }
 
+void
+android_gid_debugff( const XP_U32 gid, const char* func, const char* file,
+                     const char* fmt, ...)
+{
+    char buf[256];
+    const char* shortPath = 1 + strrchr(file, '/');
+    if ( !shortPath ) {
+        shortPath = file;
+    }
+    snprintf( buf, sizeof(buf), "<%08X> %s:%s(): %s", gid, shortPath, func, fmt );
+
+    va_list ap;
+    va_start( ap, fmt );
+    debugf( buf, ap );
+    va_end( ap );
+}
+
 /* Print an object's class name into buffer.
  *
  * NOTE: this must be called in advance of any jni error, because methods on
