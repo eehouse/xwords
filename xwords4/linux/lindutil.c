@@ -134,6 +134,11 @@ linux_dutil_onInviteReceived( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe),
 {
     LaunchParams* params = (LaunchParams*)duc->closure;
 
+    gchar* sum = g_compute_checksum_for_data( G_CHECKSUM_MD5, (unsigned char*)nli,
+                                              sizeof(*nli) );
+    XP_LOGFF( "sum: %s", sum );
+    g_free( sum );
+
     if ( params->useCurses ) {
         inviteReceivedCurses( params->appGlobals, nli );
     } else {
