@@ -180,6 +180,7 @@ class Device():
 
     def __init__(self, args, host):
         self.args = args
+        self.app = None
         self.endTime = None
         self.mqttDevID = None
         self.smsNumber = args.WITH_SMS and '{}_phone'.format(host) or None
@@ -195,14 +196,35 @@ class Device():
     def init(self):
         self._checkScript()
 
+    def _getApp(self):
+        # first time?
+        if not self.app:
+            pct = random.randint(0,99)
+            if pct < self.args.START_PCT:
+                self.app = self.args.APP_OLD
+            else:
+                self.app = self.args.APP_NEW
+        # upgrade time?
+        elif not self.app == self.args.APP_NEW:
+            pct = random.randint(0,99)
+            if pct < self.args.UPGRADE_PCT:
+                self._log('upgrading app')
+                self.app = self.args.APP_NEW
+
+        return self.app
+
     # called by thread proc
     def _launchProc(self):
         assert not self.endTime
         self.endTime = datetime.datetime.now() + datetime.timedelta(seconds = 5)
         args = [ self.script, '--close-stdin' ]
         if not self.args.USE_GTK: args.append('--curses')
+
+        env = os.environ.copy()
+        env['APP'] = self._getApp()
+
         with open( self.logfile, 'a' ) as logfile:
-            subprocess.run(args, stdout = subprocess.DEVNULL,
+            subprocess.run(args, env=env, stdout = subprocess.DEVNULL,
                            stderr = logfile, universal_newlines = True)
         self._log('_launchProc() (in thread): subprocess FINISHED')
         os.unlink(self.cmdSocketName)
@@ -448,10 +470,7 @@ class Device():
                 # args += ['--leak-check=full']
                 # args += ['--track-origins=yes']
 
-            pct = random.randint(0,99)
-            if pct < self.args.START_PCT: app = self.args.APP_OLD
-            else: app = self.args.APP_NEW
-            scriptArgs.append(app)
+            scriptArgs.append('"${APP}"')
 
             scriptArgs += '--db', self.dbName, '--skip-confirm'
             if self.args.SEND_CHAT:
@@ -474,8 +493,9 @@ class Device():
             scriptArgs += [ '$*' ]
 
             with open( self.script, 'w' ) as fil:
-                fil.write( "#!/bin/sh\n" )
-                fil.write( ' '.join([str(arg) for arg in scriptArgs]) + '\n' )
+                fil.write('#!/bin/bash\n' )
+                fil.write('APP="${{APP:-{}}}"\n'.format(self.args.APP_NEW))
+                fil.write(' '.join([str(arg) for arg in scriptArgs]) + '\n')
             os.chmod(self.script, 0o755)
 
     @staticmethod
@@ -640,8 +660,8 @@ def mkParser():
                         help = 'the app we\'ll upgrade from')
     parser.add_argument('--start-pct', dest = 'START_PCT', default = 50, type = int,
                         help = 'odds of starting with the new app, 0 <= n < 100')
-    # parser.add_argument('--upgrade-pct', dest = 'UPGRADE_PCT', default = 20, type = int,
-    #                     help = 'odds of upgrading at any launch, 0 <= n < 100')
+    parser.add_argument('--upgrade-pct', dest = 'UPGRADE_PCT', default = 0, type = int,
+                        help = 'odds of upgrading at any launch, 0 <= n < 100')
 
     parser.add_argument('--num-games', dest = 'NGAMES', type = int, default = 1, help = 'number of games')
     parser.add_argument('--num-devs', dest = 'NDEVS', type = int, default = len(g_ROOT_NAMES), help = 'number of devices')
