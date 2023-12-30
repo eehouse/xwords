@@ -447,7 +447,11 @@ class Device():
                 scriptArgs += ['valgrind']
                 # args += ['--leak-check=full']
                 # args += ['--track-origins=yes']
-            scriptArgs.append(self.args.APP_NEW) #  + [str(p) for p in self.params]
+
+            pct = random.randint(0,99)
+            if pct < self.args.START_PCT: app = self.args.APP_OLD
+            else: app = self.args.APP_NEW
+            scriptArgs.append(app)
 
             scriptArgs += '--db', self.dbName, '--skip-confirm'
             if self.args.SEND_CHAT:
@@ -632,10 +636,10 @@ def mkParser():
 
     parser.add_argument('--app-new', dest = 'APP_NEW', default = './obj_linux_memdbg/xwords',
                         help = 'the app we\'ll use')
-    # parser.add_argument('--app-old', dest = 'APP_OLD', default = './obj_linux_memdbg/xwords',
-    #                     help = 'the app we\'ll upgrade from')
-    # parser.add_argument('--start-pct', dest = 'START_PCT', default = 50, type = int,
-    #                     help = 'odds of starting with the new app, 0 <= n < 100')
+    parser.add_argument('--app-old', dest = 'APP_OLD', default = './obj_linux_memdbg/xwords',
+                        help = 'the app we\'ll upgrade from')
+    parser.add_argument('--start-pct', dest = 'START_PCT', default = 50, type = int,
+                        help = 'odds of starting with the new app, 0 <= n < 100')
     # parser.add_argument('--upgrade-pct', dest = 'UPGRADE_PCT', default = 20, type = int,
     #                     help = 'odds of upgrading at any launch, 0 <= n < 100')
 
