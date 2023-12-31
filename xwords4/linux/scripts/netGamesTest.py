@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import argparse, datetime, json, os, random, shutil, signal, \
+import argparse, datetime, glob, json, os, random, shutil, signal, \
     socket, struct, subprocess, sys, threading, time
 
 g_ROOT_NAMES = ['Brynn', 'Ariela', 'Kati', 'Eric']
@@ -297,9 +297,11 @@ class Device():
             nPlayers = 1 + len(remote.guestNames)
             hostPosn = random.randint(0, nPlayers-1)
             traySize = 0 == args.TRAY_SIZE and random.randint(7, 9) or args.TRAY_SIZE
+            boardSize = args.BOARD_SIZE and args.BOARD_SIZE \
+                or 1 + (2 * (random.randint(11, 21)//2))
 
             response = self._sendWaitReply('makeGame', nPlayers=nPlayers, hostPosn=hostPosn,
-                                           dict=args.DICTS[0], boardSize=args.BOARD_SIZE,
+                                           dict=args.DICTS[0], boardSize=boardSize,
                                            traySize=traySize)
             newGid = response.get('newGid')
             if newGid:
@@ -587,8 +589,16 @@ def openOnExit(args):
         subprocess.Popen([str(arg) for arg in appargs], stdout = subprocess.DEVNULL,
                          stderr = subprocess.DEVNULL, universal_newlines = True)
 
+
+def countCores(args):
+    count = 0
+    if args.CORE_PAT:
+        count = len( glob.glob(args.CORE_PAT) )
+    return count
+
 def mainLoop(args, devs):
     startCount = len(devs)
+    nCores = countCores(args)
 
     startTime = datetime.datetime.now()
     nextStallCheck = startTime + datetime.timedelta(seconds = 20)
@@ -597,6 +607,10 @@ def mainLoop(args, devs):
         if gDone:
             print('gDone set; exiting loop')
             break
+        elif nCores < countCores(args):
+            print('core file count increased; exiting')
+            break
+
         dev = random.choice(devs)
         dev.step()
         if dev.finished():
@@ -725,7 +739,7 @@ def mkParser():
 
     parser.add_argument('--force-tray', dest = 'TRAY_SIZE', default = 0, type = int,
                         help = 'Always this many tiles per tray')
-    parser.add_argument('--board-size', dest = 'BOARD_SIZE', type = int, default = 15,
+    parser.add_argument('--board-size', dest = 'BOARD_SIZE', type = int, default = 0,
                         help = 'Use <n>x<n> size board')
 
     parser.add_argument('--rematch-level', dest = 'REMATCH_LEVEL', type = int, default = 0,
@@ -733,10 +747,10 @@ def mkParser():
     parser.add_argument('--rematch-order', dest = 'REMATCH_ORDER', type = str, default = None,
                         help = 'order rematched games one of these ways: {}'.format(g_ROS))
 
-    # envpat = 'DISCON_COREPAT'
-    # parser.add_argument('--core-pat', dest = 'CORE_PAT', default = os.environ.get(envpat),
-    #                     help = "pattern for core files that should stop the script " \
-    #                     + "(default from env {})".format(envpat) )
+    envpat = 'DISCON_COREPAT'
+    parser.add_argument('--core-pat', dest = 'CORE_PAT', default = os.environ.get(envpat),
+                        help = "pattern for core files that should stop the script " \
+                        + "(default from env {})".format(envpat) )
 
     parser.add_argument('--with-valgrind', dest = 'VALGRIND', default = False,
                         action = 'store_true')
