@@ -108,6 +108,7 @@ void board_applyLayout( BoardCtxt* board, XWEnv xwe, const BoardDims* dims );
 #endif
 
 /* These four aren't needed if COMMON_LAYOUT defined */
+#ifndef COMMON_LAYOUT
 void board_setPos( BoardCtxt* board, XWEnv xwe, XP_U16 left, XP_U16 top,
                    XP_U16 width, XP_U16 height, XP_U16 maxCellSize, 
                    XP_Bool leftHanded );
@@ -118,6 +119,7 @@ void board_setScoreboardLoc( BoardCtxt* board,
 void board_setTrayLoc( BoardCtxt* board, XWEnv xwe,
                        XP_U16 trayLeft, XP_U16 trayTop,
                        XP_U16 trayWidth, XP_U16 trayHeight, XP_U16 nTiles );
+#endif
 
 /* Vertical scroll support; offset is in rows, not pixels */
 XP_Bool board_setYOffset( BoardCtxt* board, XWEnv xwe, XP_U16 newOffset );

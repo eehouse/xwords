@@ -32,6 +32,12 @@ XP_Bool handlePenUpScore( BoardCtxt* board, XWEnv xwe, XP_U16 xx,
                           XP_U16 yy, XP_Bool altDown );
 #endif
 
+#ifdef COMMON_LAYOUT
+void board_setScoreboardLoc( BoardCtxt* board,
+                             XP_U16 scoreLeft, XP_U16 scoreTop,
+                             XP_U16 scoreWidth, XP_U16 scoreHeight,
+                             XP_Bool divideHorizontally );
+#endif
 
 #ifdef KEYBOARD_NAV
 XP_Bool moveScoreCursor( BoardCtxt* board, XP_Key key, XP_Bool preflightOnly,

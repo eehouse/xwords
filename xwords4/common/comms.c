@@ -929,7 +929,7 @@ comms_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
             COMMS_LOGFF( "added missing timestamp" );
         }
 #ifdef DEBUG
-        msg->sendCount = 0;
+        XP_ASSERT( 0 == msg->sendCount );
 #endif
         XP_U16 len = msg->smp.len;
         if ( 0 == len ) {

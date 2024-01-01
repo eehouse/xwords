@@ -444,20 +444,6 @@ public class XwJNI {
     // Only if COMMON_LAYOUT defined
     public static native void board_applyLayout( GamePtr gamePtr, BoardDims dims );
 
-    // public static native void board_setPos( int gamePtr, int left, int top,
-                                            // int width, int height,
-                                            // int maxCellHt, boolean lefty );
-    // public static native void board_setScoreboardLoc( int gamePtr, int left,
-    //                                                   int top, int width,
-    //                                                   int height,
-    //                                                   boolean divideHorizontally );
-    // public static native void board_setTrayLoc( int gamePtr, int left,
-    //                                             int top, int width,
-    //                                             int height, int minDividerWidth );
-    // public static native void board_setTimerLoc( int gamePtr,
-    //                                              int timerLeft, int timerTop,
-    //                                              int timerWidth,
-    //                                              int timerHeight );
     public static native boolean board_zoom( GamePtr gamePtr, int zoomBy,
                                              boolean[] canZoom );
 

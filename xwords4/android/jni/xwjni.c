@@ -1678,17 +1678,6 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1applyLayout
 #else
 
 JNIEXPORT void JNICALL
-Java_org_eehouse_android_xw4_jni_XwJNI_board_1setPos
-(JNIEnv* env, jclass C, GamePtrType gamePtr, jint left, jint top, jint width,
- jint height, jint maxCellSize, jboolean lefty )
-{
-    XWJNI_START(gamePtr);
-    board_setPos( state->game.board, left, top, width, height, maxCellSize, 
-                  lefty );
-    XWJNI_END();
-}
-
-JNIEXPORT void JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_board_1setScoreboardLoc
 ( JNIEnv* env, jclass C, GamePtrType gamePtr, jint left, jint top,
   jint width, jint height, jboolean divideHorizontally )

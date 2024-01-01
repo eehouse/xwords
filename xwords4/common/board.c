@@ -132,6 +132,14 @@ static XP_Bool moveKeyTileToBoard( BoardCtxt* board, XWEnv xwe,
 static XP_S16 keyToIndex( BoardCtxt* board, XP_Key key, Tile* blankFace );
 #endif
 
+#ifdef COMMON_LAYOUT
+static void board_setPos( BoardCtxt* board, XWEnv xwe, XP_U16 left, XP_U16 top,
+                          XP_U16 width, XP_U16 height, XP_U16 maxCellSize,
+                          XP_Bool leftHanded );
+static void board_setTrayLoc( BoardCtxt* board, XWEnv xwe, XP_U16 trayLeft, XP_U16 trayTop,
+                              XP_U16 trayWidth, XP_U16 trayHeight, XP_U16 nTiles );
+#endif
+
 #ifdef KEYBOARD_NAV
 static XP_Bool board_moveCursor( BoardCtxt* board, XWEnv xwe, XP_Key cursorKey,
                                  XP_Bool preflightOnly, XP_Bool* up );
@@ -606,7 +614,7 @@ board_figureLayout( BoardCtxt* board, XWEnv xwe, const CurGameInfo* gi,
     printDims( &ldims );
 
     if ( !!dimsp ) {
-        XP_MEMCPY( dimsp, &ldims, sizeof(ldims) );
+        *dimsp = ldims;
     } else {
         board_applyLayout( board, xwe, &ldims );
     }
@@ -643,7 +651,7 @@ board_setCallbacks( BoardCtxt* board, XWEnv xwe )
     setTimerIf( board, xwe );
 }
 
-void
+static void
 board_setPos( BoardCtxt* board, XWEnv xwe, XP_U16 left, XP_U16 top,
               XP_U16 width, XP_U16 height, XP_U16 maxCellSz,
               XP_Bool leftHanded )
@@ -1688,7 +1696,7 @@ onBorderCanScroll( const BoardCtxt* board, SDIndex indx,
     return result;
 }
 
-void
+static void
 board_setTrayLoc( BoardCtxt* board, XWEnv xwe, XP_U16 trayLeft, XP_U16 trayTop,
                   XP_U16 trayWidth, XP_U16 trayHeight, XP_U16 nTiles )
 {
@@ -1956,9 +1964,9 @@ setTrayVisState( BoardCtxt* board, XWEnv xwe, XW_TrayVisState newState )
 
         invalSelTradeWindow( board );
         (void)invalFocusOwner( board, xwe ); /* must be done before and after rect
-                                           recalculated */
+                                                recalculated */
         figureBoardRect( board, xwe ); /* comes before setYOffset since that
-                                     uses rects to calc scroll */
+                                          uses rects to calc scroll */
         (void)invalFocusOwner( board, xwe );
 
         if ( board->boardObscuresTray ) {

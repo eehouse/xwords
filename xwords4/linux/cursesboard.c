@@ -360,7 +360,7 @@ curses_socket_acceptor( int listener, Acceptor func, CommonGlobals* cGlobals,
                         void** XP_UNUSED(storage) )
 {
     if ( -1 == listener ) {
-        XP_LOGF( "%s: removal of listener not implemented!!!!!", __func__ );
+        XP_LOGFF( "removal of listener not implemented!!!!!" );
     } else {
         CursesBoardGlobals* globals = (CursesBoardGlobals*)cGlobals;
         XP_ASSERT( !cGlobals->acceptor || (func == cGlobals->acceptor) );
@@ -399,7 +399,7 @@ commonInit( CursesBoardState* cbState, sqlite3_int64 rowid,
             const CurGameInfo* gip )
 {
     CursesBoardGlobals* bGlobals = g_malloc0( sizeof(*bGlobals) );
-    XP_LOGF( "%s(): alloc'd bGlobals %p", __func__, bGlobals );
+    XP_LOGFF( "alloc'd bGlobals %p", bGlobals );
     CommonGlobals* cGlobals = &bGlobals->cGlobals;
     LaunchParams* params = cbState->params;
 
@@ -438,7 +438,7 @@ disposeDraw( CursesBoardGlobals* bGlobals )
 static void
 disposeBoard( CursesBoardGlobals* bGlobals )
 {
-    XP_LOGF( "%s(): passed bGlobals %p", __func__, bGlobals );
+    XP_LOGFF( "passed bGlobals %p", bGlobals );
     /* XP_ASSERT( 0 == bGlobals->refCount ); */
     CommonGlobals* cGlobals = &bGlobals->cGlobals;
 
@@ -466,7 +466,7 @@ static CursesBoardGlobals*
 ref( CursesBoardGlobals* bGlobals )
 {
     ++bGlobals->refCount;
-    XP_LOGF( "%s(): refCount now %d", __func__, bGlobals->refCount );
+    XP_LOGFF( "refCount now %d", bGlobals->refCount );
     return bGlobals;
 }
 
@@ -474,7 +474,7 @@ static void
 unref( CursesBoardGlobals* bGlobals )
 {
     --bGlobals->refCount;
-    XP_LOGF( "%s(): refCount now %d", __func__, bGlobals->refCount );
+    XP_LOGFF( "refCount now %d", bGlobals->refCount );
     if ( 0 == bGlobals->refCount ) {
         disposeBoard( bGlobals );
     }
@@ -537,7 +537,7 @@ setupBoard( CursesBoardGlobals* bGlobals )
                         fontWidth, fontHt,
                         XP_FALSE, &dims );
     board_applyLayout( board, NULL_XWE, &dims );
-    XP_LOGF( "%s(): calling board_draw()", __func__ );
+    XP_LOGFF( "calling board_draw()" );
     board_invalAll( board );
     board_draw( board, NULL_XWE );
 }
@@ -766,7 +766,7 @@ cursesUserError( CursesBoardGlobals* bGlobals, const char* format, ... )
     if ( !!bGlobals->boardWin ) {
         (void)ca_inform( bGlobals->boardWin, buf );
     } else {
-        XP_LOGF( "%s(msg=%s)", __func__, buf );
+        XP_LOGFF( "(msg=%s)", buf );
     }
 } /* cursesUserError */
 
@@ -819,7 +819,7 @@ curses_util_userError( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe), UtilErrID id )
     const XP_UCHAR* message = linux_getErrString( id, &silent );
 
     if ( silent ) {
-        XP_LOGF( "silent userError: %s", message );
+        XP_LOGFF( "silent userError: %s", message );
     } else {
         cursesUserError( globals, message );
     }
@@ -1084,7 +1084,7 @@ curses_util_informNetDict( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe),
 {
     XP_USE(uc);
     XP_USE(phoniesAction);
-    XP_LOGF( "%s: %s => %s (cksum: %s)", __func__, oldName, newName, newSum );
+    XP_LOGFF( "%s => %s (cksum: %s)", oldName, newName, newSum );
 }
 
 #ifdef XWFEATURE_SEARCHLIMIT
@@ -1158,8 +1158,7 @@ curses_util_timerSelected( XW_UtilCtxt* XP_UNUSED(uc), XWEnv XP_UNUSED(xwe),
                            XP_Bool XP_UNUSED_DBG(inDuplicateMode),
                            XP_Bool XP_UNUSED_DBG(canPause) )
 {
-    XP_LOGF( "%s(inDuplicateMode=%d, canPause=%d)", __func__, inDuplicateMode,
-             canPause );
+    XP_LOGFF( "(inDuplicateMode=%d, canPause=%d)", inDuplicateMode, canPause );
 }
 
 static void
@@ -1218,7 +1217,7 @@ curses_util_showChat( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe),
         CommonGlobals* cGlobals = &globals->cGlobals;
         name = cGlobals->gi->players[from].name;
     }
-    XP_LOGF( "%s: got \"%s\" from %s", __func__, msg, name );
+    XP_LOGFF( "got \"%s\" from %s", msg, name );
 # endif
 }
 #endif
@@ -1673,17 +1672,14 @@ relay_connd_curses( XWEnv XP_UNUSED(xwe), void* XP_UNUSED(closure), XP_UCHAR* co
                     XP_Bool XP_UNUSED_DBG(allHere),
                     XP_U16 XP_UNUSED_DBG(nMissing) )
 {
-    XP_LOGF( "%s got allHere: %s; nMissing: %d", __func__,
-             allHere?"true":"false", nMissing );
+    XP_LOGFF( "got allHere: %s; nMissing: %d", allHere?"true":"false", nMissing );
 }
 
 static void
 relay_error_curses( XWEnv XP_UNUSED(xwe), void* XP_UNUSED(closure),
                     XWREASON XP_UNUSED_DBG(relayErr) )
 {
-#ifdef DEBUG
-    XP_LOGF( "%s(%s)", __func__, XWREASON2Str( relayErr ) );
-#endif
+    XP_LOGFF( "(%s)", XWREASON2Str( relayErr ) );
 }
 
 static XP_Bool
@@ -1741,6 +1737,6 @@ relay_status_curses( XWEnv XP_UNUSED(xwe), void* XP_UNUSED(closure),
 {
     /* CommonGlobals* cGlobals = (CommonGlobals*)closure; */
     // bGlobals->commsRelayState = state;
-    XP_LOGF( "%s got status: %s", __func__, CommsRelayState2Str(state) );
+    XP_LOGFF( "got status: %s", CommsRelayState2Str(state) );
 }
 #endif
