@@ -137,7 +137,7 @@ static void relay_requestJoin_curses( void* closure, const XP_UCHAR* devID,
 
 static XP_Bool rematch_and_save( CursesBoardGlobals* bGlobals, RematchOrder ro,
                                  XP_U32* newGameIDP );
-static void disposeBoard( CursesBoardGlobals* bGlobals );
+static void disposeBoard( CursesBoardGlobals* bGlobals, XP_Bool rmFromList );
 static void initCP( CommonGlobals* cGlobals );
 static CursesBoardGlobals* commonInit( CursesBoardState* cbState,
                                        sqlite3_int64 rowid,
@@ -237,7 +237,7 @@ cb_newFor( CursesBoardState* cbState, const NetLaunchInfo* nli,
         XP_ASSERT( 0 );
     }
 
-    disposeBoard( bGlobals );
+    disposeBoard( bGlobals, XP_TRUE );
 }
 
 const MenuList g_allMenuList[] = {
@@ -436,7 +436,7 @@ disposeDraw( CursesBoardGlobals* bGlobals )
 }
 
 static void
-disposeBoard( CursesBoardGlobals* bGlobals )
+disposeBoard( CursesBoardGlobals* bGlobals, XP_Bool rmFromList )
 {
     XP_LOGFF( "passed bGlobals %p", bGlobals );
     /* XP_ASSERT( 0 == bGlobals->refCount ); */
@@ -455,10 +455,13 @@ disposeBoard( CursesBoardGlobals* bGlobals )
 
     disposeUtil( cGlobals );
 
-    CursesBoardState* cbState = bGlobals->cbState;
-    cbState->games = g_slist_remove( cbState->games, bGlobals );
+    if ( rmFromList ) {
+        CursesBoardState* cbState = bGlobals->cbState;
+        cbState->games = g_slist_remove( cbState->games, bGlobals ); /* no!!! */
+    }
     
     /* onCursesBoardClosing( bGlobals->aGlobals, bGlobals ); */
+    XP_LOGFF( "freeing globals: %p", bGlobals );
     g_free( bGlobals );
 }
 
@@ -476,7 +479,7 @@ unref( CursesBoardGlobals* bGlobals )
     --bGlobals->refCount;
     XP_LOGFF( "refCount now %d", bGlobals->refCount );
     if ( 0 == bGlobals->refCount ) {
-        disposeBoard( bGlobals );
+        disposeBoard( bGlobals, XP_TRUE );
     }
 }
 
@@ -581,7 +584,7 @@ initNoDraw( CursesBoardState* cbState, sqlite3_int64 rowid,
     if ( linuxOpenGame( cGlobals ) ) {
          result = ref( result );
     } else {
-        disposeBoard( result );
+        disposeBoard( result, XP_TRUE );
         result = NULL;
     }
     return result;
@@ -745,7 +748,7 @@ kill_board( gpointer data )
 {
     CursesBoardGlobals* bGlobals = (CursesBoardGlobals*)data;
     linuxSaveGame( &bGlobals->cGlobals );
-    disposeBoard( bGlobals );
+    disposeBoard( bGlobals, XP_FALSE );
 }
 
 void
@@ -1037,7 +1040,7 @@ rematch_and_save( CursesBoardGlobals* bGlobals, RematchOrder ro,
         }
         linuxSaveGame( &bGlobalsNew->cGlobals );
     }
-    disposeBoard( bGlobalsNew );
+    disposeBoard( bGlobalsNew, XP_TRUE );
     LOG_RETURNF( "%s", boolToStr(success) );
     return success;
 }

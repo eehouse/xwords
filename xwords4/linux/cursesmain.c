@@ -619,7 +619,6 @@ handle_quitwrite( GIOChannel* source, GIOCondition XP_UNUSED(condition), gpointe
     LOG_FUNC();
     readFromPipe( source );
     CursesAppGlobals* aGlobals = (CursesAppGlobals*)data;
-    cb_closeAll( aGlobals->cbState );
     handleQuit( aGlobals, 0 );
     return TRUE;
 }

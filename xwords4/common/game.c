@@ -90,7 +90,7 @@ makeGameID( XW_UtilCtxt* XP_UNUSED_DBG(util) )
            postgres DB where INTEGER is apparently a signed 32-bit */
         gameID &= 0x7FFFFFFF;
     }
-    LOG_RETURNF( "%X", gameID );
+    LOG_RETURNF( "%08X", gameID );
     return gameID;
 }
 
@@ -100,7 +100,7 @@ timerChangeListener( XWEnv xwe, void* data, const XP_U32 gameID,
 {
     XWGame* game = (XWGame*)data;
     XP_ASSERT( game->util->gameInfo->gameID == gameID );
-    XP_LOGF( "%s(oldVal=%d, newVal=%d, id=%d)", __func__, oldVal, newVal, gameID );
+    XP_LOGFF( "(oldVal=%d, newVal=%d, id=%d)", oldVal, newVal, gameID );
     dutil_onDupTimerChanged( util_getDevUtilCtxt( game->util, xwe ), xwe,
                              gameID, oldVal, newVal );
 }
@@ -647,7 +647,7 @@ gi_copy( MPFORMAL CurGameInfo* destGI, const CurGameInfo* srcGI )
     destGI->allowPickTiles = srcGI->allowPickTiles;
     destGI->forceChannel = srcGI->forceChannel;
     destGI->inDuplicateMode = srcGI->inDuplicateMode;
-    XP_LOGF( "%s: copied forceChannel: %d; inDuplicateMode: %d", __func__,
+    XP_LOGFF( "copied forceChannel: %d; inDuplicateMode: %d",
              destGI->forceChannel, destGI->inDuplicateMode );
 
     const LocalPlayer* srcPl;
