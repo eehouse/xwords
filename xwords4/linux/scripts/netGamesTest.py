@@ -297,8 +297,7 @@ class Device():
             nPlayers = 1 + len(remote.guestNames)
             hostPosn = random.randint(0, nPlayers-1)
             traySize = 0 == args.TRAY_SIZE and random.randint(7, 9) or args.TRAY_SIZE
-            boardSize = args.BOARD_SIZE and args.BOARD_SIZE \
-                or 1 + (2 * (random.randint(11, 21)//2))
+            boardSize = random.choice(range(args.BOARD_SIZE_MIN, args.BOARD_SIZE_MAX+1, 2))
 
             response = self._sendWaitReply('makeGame', nPlayers=nPlayers, hostPosn=hostPosn,
                                            dict=args.DICTS[0], boardSize=boardSize,
@@ -739,8 +738,10 @@ def mkParser():
 
     parser.add_argument('--force-tray', dest = 'TRAY_SIZE', default = 0, type = int,
                         help = 'Always this many tiles per tray')
-    parser.add_argument('--board-size', dest = 'BOARD_SIZE', type = int, default = 0,
-                        help = 'Use <n>x<n> size board')
+    parser.add_argument('--board-size-min', dest = 'BOARD_SIZE_MIN', type = int, default = 11,
+                        help = 'give boards at least this many rows and columns')
+    parser.add_argument('--board-size-max', dest = 'BOARD_SIZE_MAX', type = int, default = 23,
+                        help = 'give boards no more than this many rows and columns')
 
     parser.add_argument('--rematch-level', dest = 'REMATCH_LEVEL', type = int, default = 0,
                         help = 'rematch games down to this ancestry/depth')
@@ -771,6 +772,11 @@ def parseArgs():
 
 def assignDefaults(args):
     if len(args.DICTS) == 0: args.DICTS.append('CollegeEng_2to8.xwd')
+    assert 1 == (args.BOARD_SIZE_MAX % 2)
+    assert 1 == (args.BOARD_SIZE_MIN % 2)
+    assert args.BOARD_SIZE_MAX >= args.BOARD_SIZE_MIN
+    assert args.BOARD_SIZE_MIN >= 11
+    assert args.BOARD_SIZE_MAX <= 23
 
 def termHandler(signum, frame):
     global gDone
@@ -783,8 +789,7 @@ def initLogs():
     scriptName = os.path.splitext(os.path.basename(sys.argv[0]))[0]
     logdir = scriptName + '_logs'
     if os.path.exists(logdir):
-        shutil.rmtree(logdir)
-        # shutil.move(logdir, '/tmp/' + logdir + '_' + str(random.randint(0, 100000)))
+        shutil.move(logdir, '/tmp/{}_{}'.format(logdir, os.getpid()))
     os.mkdir(logdir)
 
     logfilepath = '{}/{}_log.txt'.format(logdir, scriptName)
