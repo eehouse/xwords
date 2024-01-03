@@ -128,6 +128,12 @@ class GameStatus():
         GameStatus._statuses = statuses
 
     @staticmethod
+    def summary():
+        now = datetime.datetime.strftime(datetime.datetime.now(), '%H:%M:%S')
+        count = sum([1 for one in GameStatus._statuses.values() if one.allOver])
+        return '{}; {} games; finished: {}'.format(now, len(GameStatus._statuses), count)
+
+    @staticmethod
     def numLines():
         maxPlayers = 0
         for status in GameStatus._statuses.values():
@@ -504,8 +510,8 @@ class Device():
         Device._nSteps += 1
         print('.', end='', flush=True)
         if 0 == Device._nSteps % statusSteps:
-            print()
             GameStatus.makeAll()
+            print(' ' + GameStatus.summary())
 
             lines = [GameStatus.line(ii) for ii in range(GameStatus.numLines())]
             now = datetime.datetime.now()
