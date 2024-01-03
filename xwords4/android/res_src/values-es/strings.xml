@@ -16,7 +16,7 @@
     <string name="gamel_menu_dicts">Listas de palabras</string>
     <string name="menu_prefs">Ajustes de la App</string>
     <string name="board_menu_file_about">Acerca de CrossWords</string>
-    <string name="list_item_config">Ajustes de la Partida</string>
+    <string name="list_item_config">Ajustes del juego</string>
     <string name="list_item_rename">Renombrar</string>
     <string name="list_item_move">Mover al grupo</string>
     <string name="list_item_delete">Eliminar partida</string>
