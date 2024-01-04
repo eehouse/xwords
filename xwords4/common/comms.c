@@ -119,15 +119,6 @@ typedef struct _SD {
 # define THREAD_CHECK_END()
 #endif
 
-#ifdef COMMS_HEARTBEAT
-/* It might make sense for this to be a parameter or somehow tied to the
-   platform and transport.  But in that case it'd have to be passed across
-   since all devices must agree. */
-# ifndef HB_INTERVAL
-#  define HB_INTERVAL 5
-# endif
-#endif
-
 EXTERN_C_START
 
 typedef struct MsgQueueElem {
@@ -157,15 +148,11 @@ typedef struct AddressRecord {
      */
     MsgID lastMsgRcd;
     MsgID lastMsgSaved;
-    /* only used if COMMS_HEARTBEAT set except for serialization (to_stream) */
     XP_PlayerAddr channelNo;
     XP_U16 flags;                   /* storing only COMMS_VERSION */
     struct {
         XWHostID hostID;            /* used for relay case */
     } rr;
-#ifdef COMMS_HEARTBEAT
-    XP_Bool initialSeen;
-#endif
 } AddressRecord;
 
 #define ADDRESSRECORD_SIZE_68K 20
@@ -187,9 +174,6 @@ struct CommsCtxt {
     void* rcClosure;
 
     XP_U32 xportFlags;
-#ifdef COMMS_HEARTBEAT
-    XP_U32 lastMsgRcd;
-#endif
     void* sendClosure;
     XP_U16 queueLen;
     XP_U16 channelSeed;         /* tries to be unique per device to aid
@@ -197,11 +181,7 @@ struct CommsCtxt {
     XP_U32 nextResend;          /* timestamp */
     XP_U16 resendBackoff;
 
-#ifdef COMMS_HEARTBEAT
-    XP_Bool doHeartbeat;
-    XP_U32 lastMsgRcvdTime;
-#endif
-#if defined XWFEATURE_RELAY || defined COMMS_HEARTBEAT
+#if defined XWFEATURE_RELAY
     XP_Bool hbTimerPending;
     XP_Bool reconTimerPending;
 #endif
@@ -350,7 +330,7 @@ static void logAddrComms( const CommsCtxt* comms, const CommsAddrRec* addr,
 # define logAddrComms(comms, addr, caller)
 #endif  /* def DEBUG */
 
-#if defined RELAY_HEARTBEAT || defined COMMS_HEARTBEAT
+#if defined RELAY_HEARTBEAT
 static void setHeartbeatTimer( CommsCtxt* comms );
 
 #else
@@ -363,7 +343,7 @@ static XP_S16 send_via_bt_or_ip( CommsCtxt* comms, XWEnv xwe, BTIPMsgType msgTyp
                                  void* data, int dlen, const XP_UCHAR* msgNo );
 #endif
 
-#if defined COMMS_HEARTBEAT || defined XWFEATURE_COMMSACK
+#if defined XWFEATURE_COMMSACK
 static void sendEmptyMsg( CommsCtxt* comms, XWEnv xwe, AddressRecord* rec );
 #endif
 static inline XP_Bool IS_INVITE(const MsgQueueElem* elem)
@@ -978,20 +958,6 @@ comms_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
     return comms;
 } /* comms_makeFromStream */
 
-#ifdef COMMS_HEARTBEAT
-static void
-setDoHeartbeat( CommsCtxt* comms )
-{
-    CommsConnType conType = comms->selfAddr.conType;
-    comms->doHeartbeat = XP_FALSE
-        || COMMS_CONN_IP_DIRECT == conType
-        || COMMS_CONN_BT == conType
-        ;
-}
-#else
-# define setDoHeartbeat(c)
-#endif
-
 /* 
  * Currently this disconnects an open connection.  Don't do that.
  */
@@ -999,7 +965,6 @@ void
 comms_start( CommsCtxt* comms, XWEnv xwe )
 {
     XP_ASSERT( !!comms );
-    setDoHeartbeat( comms );
     sendConnect( comms, xwe
 #ifdef XWFEATURE_RELAY
                  , XP_FALSE
@@ -2205,9 +2170,6 @@ sendMsg( const CommsCtxt* comms, XWEnv xwe, MsgQueueElem* elem,
                 case COMMS_CONN_IP_DIRECT:
                     nSent = send_via_ip( comms, BTIPMSG_DATA, channelNo, 
                                          elem->smp.buf, elem->smp.len );
-#ifdef COMMS_HEARTBEAT
-                    setHeartbeatTimer( comms );
-#endif
                     break;
 #endif
                 default:
@@ -2667,17 +2629,6 @@ relayPreProcess( CommsCtxt* comms, XWEnv xwe, XWStreamCtxt* stream, XWHostID* se
 } /* relayPreProcess */
 #endif
 
-#ifdef COMMS_HEARTBEAT
-static void
-noteHBReceived( CommsCtxt* comms/* , const CommsAddrRec* addr */ )
-{
-    comms->lastMsgRcvdTime = dutil_getCurSeconds( comms->dutil, xwe );
-    setHeartbeatTimer( comms );
-}
-#else
-# define noteHBReceived(a)
-#endif
-
 #if defined XWFEATURE_IP_DIRECT
 static XP_Bool
 btIpPreProcess( CommsCtxt* comms, XWStreamCtxt* stream )
@@ -2889,86 +2840,38 @@ validateInitialMessage( CommsCtxt* comms, XP_Bool XP_UNUSED_HEARTBEAT(hasPayload
                         const CommsAddrRec* retAddr, XWHostID senderID,
                         XP_PlayerAddr* channelNoP, XP_U16 flags, MsgID msgID )
 {
-    CNO_FMT( cbuf, *channelNoP );
-    COMMS_LOGFF( TAGFMT(%s), TAGPRMS, cbuf );
-
     AddressRecord* rec = NULL;
-    if ( 0 ) {
-#ifdef COMMS_HEARTBEAT
-    } else if ( comms->doHeartbeat ) {
-        foo;                    /* proof this isn't compiling */
-        XP_Bool addRec = XP_FALSE;
-        /* This (with mask) is untested!!! */
-        rec = getRecordFor( comms, *channelNoP );
+    CNO_FMT( cbuf, *channelNoP );
+    COMMS_LOGFF( TAGFMT() "looking at %s", TAGPRMS, cbuf );
+    rec = getRecordFor( comms, *channelNoP );
+    if ( !!rec ) {
+        augmentChannelAddr( comms, rec, retAddr, senderID );
 
-        if ( hasPayload ) {
-            if ( rec ) {
-                if ( rec->initialSeen ) {
-                    rec = NULL;     /* reject it! */
-                }
-            } else {
-                addRec = XP_TRUE;
-            }
+        /* Used to be that the initial message was where the channel
+           record got created, but now the client creates an address for
+           the host on startup (comms_make()) */
+        if ( comms->isServer || 1 != msgID ) {
+            COMMS_LOGFF( TAGFMT() "rejecting duplicate INIT message", TAGPRMS );
+            rec = NULL;
         } else {
-            /* This is a heartbeat */
-            if ( !rec && comms->isServer ) {
-                addRec = XP_TRUE;
-            }
+            COMMS_LOGFF( "accepting duplicate (?) msg" );
         }
-
-        if ( addRec ) {
-            if ( comms->isServer ) {
-                CNO_FMT( cbuf, *channelNoP );
-                COMMS_LOGFF( TAGFMT() "looking at %s", TAGPRMS, cbuf );
-                XP_ASSERT( (*channelNoP & CHANNEL_MASK) == 0 );
-                *channelNoP |= getNextChannelNo( comms );
-                CNO_FMT( cbuf1, *channelNo );
-                COMMS_LOGFF( TAGFMT() "ORd channel onto channelNo: now %s", TAGPRMS,
-                             cbuf1 );
-                XP_ASSERT( comms->nextChannelNo <= CHANNEL_ID_MASK );
-            }
-            rec = rememberChannelAddress( comms, *channelNo, senderID, retAddr,
-                                          flags );
-            if ( hasPayload ) {
-                rec->initialSeen = XP_TRUE;
-            } else {
-                rec = NULL;
-            }
-        }
-#endif  /* ifdef COMMS_HEARTBEAT */
     } else {
-        CNO_FMT( cbuf, *channelNoP );
-        COMMS_LOGFF( TAGFMT() "looking at %s", TAGPRMS, cbuf );
-        rec = getRecordFor( comms, *channelNoP );
-        if ( !!rec ) {
-            augmentChannelAddr( comms, rec, retAddr, senderID );
-
-            /* Used to be that the initial message was where the channel
-               record got created, but now the client creates an address for
-               the host on startup (comms_make()) */
-            if ( comms->isServer || 1 != msgID ) {
-                COMMS_LOGFF( TAGFMT() "rejecting duplicate INIT message", TAGPRMS );
-                rec = NULL;
+        if ( comms->isServer ) {
+            if ( checkChannelNo( comms, retAddr, channelNoP ) ) {
+                CNO_FMT( cbuf, *channelNoP );
+                COMMS_LOGFF( TAGFMT() "augmented channel: %s", TAGPRMS, cbuf );
             } else {
-                COMMS_LOGFF( "accepting duplicate (?) msg" );
+                /* Why do I sometimes see these in the middle of a game
+                   with lots of messages already sent?  connID of 0 should
+                   only happen at the start! */
+                COMMS_LOGFF( TAGFMT() "dropping msg because channel already set",
+                             TAGPRMS );
+                goto errExit;
             }
-        } else {
-            if ( comms->isServer ) {
-                if ( checkChannelNo( comms, retAddr, channelNoP ) ) {
-                    CNO_FMT( cbuf, *channelNoP );
-                    COMMS_LOGFF( TAGFMT() "augmented channel: %s", TAGPRMS, cbuf );
-                } else {
-                    /* Why do I sometimes see these in the middle of a game
-                       with lots of messages already sent?  connID of 0 should
-                       only happen at the start! */
-                    COMMS_LOGFF( TAGFMT() "dropping msg because channel already set",
-                                 TAGPRMS );
-                    goto errExit;
-                }
-            }
-            rec = rememberChannelAddress( comms, *channelNoP, senderID,
-                                          retAddr, flags );
         }
+        rec = rememberChannelAddress( comms, *channelNoP, senderID,
+                                      retAddr, flags );
     }
  errExit:
     LOG_RETURNF( XP_P, rec );
@@ -3242,9 +3145,6 @@ comms_checkIncomingStream( CommsCtxt* comms, XWEnv xwe, XWStreamCtxt* stream,
             }
         }
 
-        /* Call after we've had a chance to create rec for addr */
-        noteHBReceived( comms/* , addr */ );
-
     }
 #ifdef COMMS_CHECKSUM
     LOG_RETURNF( "%s (len: %d; sum: %s)", boolToStr(messageValid), state->len, state->sum );
@@ -3411,7 +3311,7 @@ comms_gameJoined( CommsCtxt* comms, XWEnv xwe, const XP_UCHAR* connname, XWHostI
 }
 #endif
 
-#if defined COMMS_HEARTBEAT || defined XWFEATURE_COMMSACK
+#ifdef XWFEATURE_COMMSACK
 static void
 sendEmptyMsg( CommsCtxt* comms, XWEnv xwe, AddressRecord* rec )
 {
@@ -3427,59 +3327,7 @@ sendEmptyMsg( CommsCtxt* comms, XWEnv xwe, AddressRecord* rec )
 } /* sendEmptyMsg */
 #endif
 
-#ifdef COMMS_HEARTBEAT
-/* Heartbeat.
- *
- * Goal is to allow all participants to detect when another is gone quickly.
- * Assumption is that transport is cheap: sending extra packets doesn't cost
- * much money or bother (meaning: don't do this over IR! :-).  
- *
- * Keep track of last time we heard from each channel and of when we last sent
- * a packet.  Run a timer, and when it fires: 1) check if we haven't heard
- * since 2x the timer interval.  If so, call alert function and reset the
- * underlying (ip, bt) channel.  If not, check how long since we last sent a
- * packet on each channel.  If it's been longer than since the last timer, and
- * if there are not already packets in the queue on that channel, fire a HB
- * packet.
- *
- * A HB packet is one whose msg ID is lower than the most recent ACK'd so that
- * it's sure to be dropped on the other end and not to interfere with packets
- * that might be resent.
- */
-static void
-heartbeat_checks( CommsCtxt* comms )
-{
-    LOG_FUNC();
-
-    do {
-        if ( comms->lastMsgRcvdTime > 0 ) {
-            XP_U32 now = dutil_getCurSeconds( comms->dutil, xwe );
-            XP_U32 tooLongAgo = now - (HB_INTERVAL * 2);
-            if ( comms->lastMsgRcvdTime < tooLongAgo ) {
-                COMMS_LOGFF( "calling reset proc; last was %ld secs too long "
-                             "ago", tooLongAgo - comms->lastMsgRcvdTime );
-                (*comms->procs.reset)(comms->procs.closure);
-                comms->lastMsgRcvdTime = 0;
-                break;          /* outta here */
-            }
-        }
-
-        if ( comms->recs ) {
-            AddressRecord* rec;
-            for ( rec = comms->recs; !!rec; rec = rec->next ) {
-                sendEmptyMsg( comms, rec );
-            }
-        } else if ( !comms->isServer ) {
-            /* Client still waiting for inital ALL_REG message */
-            sendEmptyMsg( comms, NULL );
-        }
-    } while ( XP_FALSE );
-
-    setHeartbeatTimer( comms );
-} /* heartbeat_checks */
-#endif
-
-#if defined RELAY_HEARTBEAT || defined COMMS_HEARTBEAT
+#ifdef RELAY_HEARTBEAT
 static XP_Bool
 p_comms_timerFired( void* closure, XWEnv xwe, XWTimerReason XP_UNUSED_DBG(why) )
 {
@@ -3494,11 +3342,6 @@ p_comms_timerFired( void* closure, XWEnv xwe, XWTimerReason XP_UNUSED_DBG(why) )
         (void)send_via_relay( comms, xwe, XWRELAY_HEARTBEAT, HOST_ID_NONE,
                               NULL, 0, NULL );
         /* No need to reset timer.  send_via_relay does that. */
-#endif
-#ifdef COMMS_HEARTBEAT
-    } else {
-        XP_ASSERT( comms->doHeartbeat );
-        heartbeat_checks( comms );
 #endif
     }
     return XP_FALSE;            /* no need for redraw */
@@ -3518,12 +3361,6 @@ setHeartbeatTimer( CommsCtxt* comms )
 #ifdef XWFEATURE_RELAY
         if ( comms->selfAddr.conType == COMMS_CONN_RELAY ) {
             when = comms->rr.heartbeat;
-        }
-#endif
-#ifdef COMMS_HEARTBEAT
-        if ( comms->doHeartbeat ) {
-            COMMS_LOGFF( "calling util_setTimer" );
-            when = HB_INTERVAL;
         }
 #endif
         if ( when != 0 ) {
