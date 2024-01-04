@@ -90,6 +90,7 @@ class GameStatus():
     _statuses = None
     _prevLines = []
     _lastChange = datetime.datetime.now()
+    _tileCount = 0;
 
     def __init__(self, gid):
         self.gid = gid
@@ -114,6 +115,7 @@ class GameStatus():
     # the game for details
     @staticmethod
     def makeAll():
+        GameStatus._tileCount = 0
         statuses = {}
         for dev in Device.getAll():
             for game in dev._allGames():
@@ -131,7 +133,8 @@ class GameStatus():
     def summary():
         now = datetime.datetime.strftime(datetime.datetime.now(), '%H:%M:%S')
         count = sum([1 for one in GameStatus._statuses.values() if one.allOver])
-        return '{}; {} games; finished: {}'.format(now, len(GameStatus._statuses), count)
+        return '{}; {} tiles; {} games; {} finished' \
+            .format(now, GameStatus._tileCount, len(GameStatus._statuses), count)
 
     @staticmethod
     def numLines():
@@ -164,6 +167,7 @@ class GameStatus():
                         arg3 = gameState.get('nPending', 0)
                     else:
                         arg3 = gameState.get('nTiles')
+                        if arg3 > 0: GameStatus._tileCount += arg3
                     line = '{}{:3}{: 3}'.format(hostMarker, initial, arg3)
             results.append(line.center(len(gid)))
 
@@ -356,7 +360,7 @@ class Device():
 
     def invite(self, game):
         failed = False
-        for ii in range(len(game.guestNames)):
+        for ii in reversed(range(len(game.guestNames))):
             guestDev = Device.getForPlayer(game.guestNames[ii])
 
             addr = {}
@@ -511,9 +515,9 @@ class Device():
         print('.', end='', flush=True)
         if 0 == Device._nSteps % statusSteps:
             GameStatus.makeAll()
-            print(' ' + GameStatus.summary())
 
             lines = [GameStatus.line(ii) for ii in range(GameStatus.numLines())]
+            print(' ' + GameStatus.summary())
             now = datetime.datetime.now()
             if lines == GameStatus._prevLines:
                 print('no change in {}'.format(now - GameStatus._lastChange))
