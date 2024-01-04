@@ -202,11 +202,7 @@ linuxOpenGame( CommonGlobals* cGlobals )
         }
         game_makeNewGame( MEMPOOL NULL_XWE, &cGlobals->game, cGlobals->gi,
                           &cGlobals->selfAddr, hostAddr, cGlobals->util,
-                          cGlobals->draw, &cGlobals->cp, &cGlobals->procs
-#ifdef SET_GAMESEED
-                          , params->gameSeed
-#endif
-                          );
+                          cGlobals->draw, &cGlobals->cp, &cGlobals->procs );
 #ifdef XWFEATURE_RELAY
         bool savedGame = false;
 #endif

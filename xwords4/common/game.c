@@ -162,9 +162,6 @@ game_makeNewGame( MPFORMAL XWEnv xwe, XWGame* game, CurGameInfo* gi,
                   XW_UtilCtxt* util,
                   DrawCtx* draw, const CommonPrefs* cp,
                   const TransportProcs* procs
-#ifdef SET_GAMESEED
-                  ,XP_U16 gameSeed 
-#endif
                   )
 {
     XP_ASSERT( gi == util->gameInfo ); /* if holds, remove gi param */
@@ -204,9 +201,6 @@ game_makeNewGame( MPFORMAL XWEnv xwe, XWGame* game, CurGameInfo* gi,
                                       onRoleChanged, game,
 #endif
                                       gi->forceChannel
-#ifdef SET_GAMESEED
-                                      , gameSeed
-#endif
                                       );
         } else {
             game->comms = (CommsCtxt*)NULL;

@@ -155,11 +155,7 @@ CommsCtxt* comms_make( MPFORMAL XWEnv xwe, XW_UtilCtxt* util,
                        XP_U16 nPlayersHere, XP_U16 nPlayersTotal,
                        RoleChangeProc rcp, void* rcClosure,
 #endif
-                       XP_U16 forceChannel
-#ifdef SET_GAMESEED
-                       ,XP_U16 gameSeed
-#endif
-                       );
+                       XP_U16 forceChannel );
 
 void comms_resetSame( CommsCtxt* comms, XWEnv xwe );
 

@@ -475,11 +475,7 @@ comms_make( MPFORMAL XWEnv xwe, XW_UtilCtxt* util, XP_Bool isServer,
             XP_U16 nPlayersHere, XP_U16 nPlayersTotal,
             RoleChangeProc rcp, void* rcClosure,
 #endif
-            XP_U16 forceChannel
-#ifdef SET_GAMESEED
-            , XP_U16 gameSeed
-#endif
-            )
+            XP_U16 forceChannel )
 {
     CommsCtxt* comms = (CommsCtxt*)XP_CALLOC( mpool, sizeof(*comms) );
     comms->util = util;
@@ -508,9 +504,6 @@ comms_make( MPFORMAL XWEnv xwe, XW_UtilCtxt* util, XP_Bool isServer,
     comms->rcClosure = rcClosure;
 
     init_relay( comms, xwe, nPlayersHere, nPlayersTotal );
-# ifdef SET_GAMESEED
-    comms->channelSeed = gameSeed;
-# endif
 #endif
 
     if ( !!selfAddr ) {
@@ -837,11 +830,7 @@ comms_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
 #ifdef XWFEATURE_RELAY
                                    nPlayersHere, nPlayersTotal, rcp, rcClosure,
 #endif
-                                   forceChannel
-#ifdef SET_GAMESEED
-                                   , 0
-#endif
-                                   );
+                                   forceChannel );
 #ifndef XWFEATURE_RELAY
     XP_USE( nPlayersHere );
     XP_USE( nPlayersTotal );

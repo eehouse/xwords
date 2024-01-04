@@ -81,11 +81,7 @@ typedef struct _XWGame {
 XP_Bool game_makeNewGame( MPFORMAL XWEnv xwe, XWGame* game, CurGameInfo* gi,
                           const CommsAddrRec* selfAddr, const CommsAddrRec* hostAddr,
                           XW_UtilCtxt* util, DrawCtx* draw, const CommonPrefs* cp,
-                          const TransportProcs* procs
-#ifdef SET_GAMESEED
-                          ,XP_U16 gameSeed
-#endif
-                          );
+                          const TransportProcs* procs );
 
 XP_Bool game_makeRematch( const XWGame* game, XWEnv xwe, XW_UtilCtxt* util,
                           const CommonPrefs* cp, const TransportProcs* procs,
