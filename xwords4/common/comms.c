@@ -2071,17 +2071,18 @@ static XP_U32
 gameID( const CommsCtxt* comms )
 {
     XP_U32 gameID = comms->connID;
+    CurGameInfo* gi = comms->util->gameInfo;
     if ( 0 == gameID ) {
-        gameID = comms->util->gameInfo->gameID;
+        gameID = gi->gameID;
     }
 
     /* Most of the time these will be the same, but early in a game they won't
        be.  Would be nice not to have to use gameID. */
     if ( 0 == gameID ) {
         COMMS_LOGFF( "gameID STILL 0" );
-    } else if ( 0 == comms->util->gameInfo->gameID ) {
+    } else if ( 0 == gi->gameID ) {
         COMMS_LOGFF( "setting gi's gameID to 0X%X", gameID );
-        comms->util->gameInfo->gameID = gameID;
+        gi->gameID = gameID;
     }
 
     return gameID;
@@ -2297,6 +2298,7 @@ send_relay_ack( CommsCtxt* comms, XWEnv xwe )
 XP_S16
 comms_resendAll( CommsCtxt* comms, XWEnv xwe, CommsConnType filter, XP_Bool force )
 {
+    COMMS_LOGFF( "(force=%s)", boolToStr(force) );
     XP_S16 count = 0;
     XP_ASSERT( !!comms );
 
@@ -2322,12 +2324,14 @@ comms_resendAll( CommsCtxt* comms, XWEnv xwe, CommsConnType filter, XP_Bool forc
                                                             head->createdStamp,
                                                             &rec->addr, typ,
                                                             comms->procs.closure );
+                            COMMS_LOGFF( "resent invite with sum %s", elem->checksum );
                             ++count;
                             XP_ASSERT( !head->next );
                         } else {
                             count += (*comms->procs.sendMsgs)( xwe, head, comms->streamVersion,
                                                                &rec->addr, typ, gameid,
                                                                comms->procs.closure );
+                            COMMS_LOGFF( "resent msg with sum %s", elem->checksum );
                         }
                     }
                 }
@@ -2749,6 +2753,27 @@ preProcess(
     return consumed;
 } /* preProcess */
 
+/* If this message is coming in in response to an invitation, we already have
+   the channel set up. Be sure to use it or we may wind up nuking undelievered
+   invitations */
+static XP_Bool
+getChannelFromInvite( const CommsCtxt* comms, const CommsAddrRec* retAddr,
+                      XP_PlayerAddr* channelNoP )
+{
+    XP_Bool found = XP_FALSE;
+    for ( const AddressRecord* rec = comms->recs; !!rec && !found;
+          rec = rec->next ) {
+        found = addrs_same( retAddr, &rec->addr );
+        if ( found ) {
+            COMMS_LOGFF( "channelNo before: %x", *channelNoP );
+            *channelNoP |= rec->channelNo;
+            COMMS_LOGFF( "channelNo after: %x", *channelNoP );
+        }
+    }
+    COMMS_LOGFF( "=>%s", boolToStr(found) );
+    return found;
+}
+
 static AddressRecord* 
 getRecordFor( const CommsCtxt* comms, const XP_PlayerAddr channelNo )
 {
@@ -2815,16 +2840,21 @@ getNextChannelNo( CommsCtxt* comms )
 }
 
 static XP_Bool
-checkChannelNo( CommsCtxt* comms, XP_PlayerAddr* channelNoP )
+checkChannelNo( CommsCtxt* comms, const CommsAddrRec* retAddr, XP_PlayerAddr* channelNoP )
 {
     XP_Bool success = XP_TRUE;
     XP_PlayerAddr channelNo = *channelNoP;
     if ( 0 == (channelNo & CHANNEL_MASK) ) {
-        success = comms->nextChannelNo < CHANNEL_MASK;
-        if ( success ) {
-            channelNo |= getNextChannelNo( comms );
-            CNO_FMT( cbuf, channelNo );
-            COMMS_LOGFF( "assigned channelNo: %s", cbuf );
+        XP_ASSERT( comms->isServer );
+        if ( getChannelFromInvite( comms, retAddr, &channelNo ) ) {
+            success = XP_TRUE;
+        } else {
+            success = comms->nextChannelNo < CHANNEL_MASK;
+            if ( success ) {
+                channelNo |= getNextChannelNo( comms );
+                CNO_FMT( cbuf, channelNo );
+                COMMS_LOGFF( "assigned channelNo: %s", cbuf );
+            }
         }
         // XP_ASSERT( comms->nextChannelNo <= CHANNEL_MASK );
     } else {
@@ -2856,7 +2886,7 @@ checkChannelNo( CommsCtxt* comms, XP_PlayerAddr* channelNoP )
  */
 static AddressRecord*
 validateInitialMessage( CommsCtxt* comms, XP_Bool XP_UNUSED_HEARTBEAT(hasPayload),
-                        const CommsAddrRec* addr, XWHostID senderID, 
+                        const CommsAddrRec* retAddr, XWHostID senderID,
                         XP_PlayerAddr* channelNoP, XP_U16 flags, MsgID msgID )
 {
     CNO_FMT( cbuf, *channelNoP );
@@ -2897,7 +2927,7 @@ validateInitialMessage( CommsCtxt* comms, XP_Bool XP_UNUSED_HEARTBEAT(hasPayload
                              cbuf1 );
                 XP_ASSERT( comms->nextChannelNo <= CHANNEL_ID_MASK );
             }
-            rec = rememberChannelAddress( comms, *channelNo, senderID, addr,
+            rec = rememberChannelAddress( comms, *channelNo, senderID, retAddr,
                                           flags );
             if ( hasPayload ) {
                 rec->initialSeen = XP_TRUE;
@@ -2911,7 +2941,7 @@ validateInitialMessage( CommsCtxt* comms, XP_Bool XP_UNUSED_HEARTBEAT(hasPayload
         COMMS_LOGFF( TAGFMT() "looking at %s", TAGPRMS, cbuf );
         rec = getRecordFor( comms, *channelNoP );
         if ( !!rec ) {
-            augmentChannelAddr( comms, rec, addr, senderID );
+            augmentChannelAddr( comms, rec, retAddr, senderID );
 
             /* Used to be that the initial message was where the channel
                record got created, but now the client creates an address for
@@ -2924,7 +2954,7 @@ validateInitialMessage( CommsCtxt* comms, XP_Bool XP_UNUSED_HEARTBEAT(hasPayload
             }
         } else {
             if ( comms->isServer ) {
-                if ( checkChannelNo( comms, channelNoP ) ) {
+                if ( checkChannelNo( comms, retAddr, channelNoP ) ) {
                     CNO_FMT( cbuf, *channelNoP );
                     COMMS_LOGFF( TAGFMT() "augmented channel: %s", TAGPRMS, cbuf );
                 } else {
@@ -2937,7 +2967,7 @@ validateInitialMessage( CommsCtxt* comms, XP_Bool XP_UNUSED_HEARTBEAT(hasPayload
                 }
             }
             rec = rememberChannelAddress( comms, *channelNoP, senderID,
-                                          addr, flags );
+                                          retAddr, flags );
         }
     }
  errExit:

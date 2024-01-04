@@ -1058,6 +1058,7 @@ server_initClientConnection( ServerCtxt* server, XWEnv xwe )
         SRVR_LOGFF( "wierd state: %s (expected XWSTATE_NONE); dropping message",
                     getStateStr(server->nv.gameState) );
     }
+    SRVR_LOGFF( "=>%s", boolToStr(result) );
     return result;
 } /* server_initClientConnection */
 #endif
