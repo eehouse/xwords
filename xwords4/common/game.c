@@ -283,7 +283,9 @@ game_makeRematch( const XWGame* oldGame, XWEnv xwe, XW_UtilCtxt* newUtil,
         }
         server_disposeRematchInfo( oldGame->server, &rip );
     }
-    LOG_RETURNF( "%s", boolToStr(success) );
+    XP_LOGFF( "=> %s; game with gid %08X rematched to create game with gid %08X using ro %s",
+              boolToStr(success), oldGame->util->gameInfo->gameID,
+              newUtil->gameInfo->gameID, RO2Str(ro) );
     return success;
 }
 

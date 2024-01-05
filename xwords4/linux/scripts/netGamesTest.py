@@ -167,7 +167,7 @@ class GameStatus():
                     else:
                         arg3 = gameState.get('nTiles')
                         if arg3 > 0: GameStatus._tileCount += arg3
-                    arg3 = 0 <= arg3 and '{: 3}'.format(arg3) or ' - '
+                    arg3 = 0 <= arg3 and '{: 3}'.format(arg3) or '-'.rjust(3)
                     line = '{}{:3}{}'.format(hostMarker, initial, arg3)
             results.append(line.center(len(gid)))
 
@@ -199,7 +199,7 @@ class Device():
         self.guestGames = []
         self.script = '{}/{}.sh'.format(Device._logdir, host)
         self.dbName = '{}/{}.db'.format(Device._logdir, host)
-        self.logfile = '{}/{}_logs.txt'.format(Device._logdir, host)
+        self.logfile = '{}/{}_log.txt'.format(Device._logdir, host)
         self.cmdSocketName = '{}/{}.sock'.format(Device._logdir, host)
         self._keyCur = 10000 * (1 + g_NAMES.index(host))
 
@@ -359,21 +359,24 @@ class Device():
                 Device.getForPlayer(guest).expectInvite(newGid, rematchLevel)
 
     def invite(self, game):
-        failed = False
+        remotes = []
+        guestDevs = []
         for ii in reversed(range(len(game.guestNames))):
             guestDev = Device.getForPlayer(game.guestNames[ii])
+            guestDevs.append(guestDev)
 
             addr = {}
             if self.args.WITH_MQTT: addr['mqtt'] = guestDev.mqttDevID
             if self.args.WITH_SMS: addr['sms'] = guestDev.smsNumber
-            response = self._sendWaitReply('invite', gid=game.gid,
-                                           channel=ii+1, addr=addr)
+            remotes.append({'channel': ii+1, 'addr': addr})
 
-            if response['success']:
+        response = self._sendWaitReply('invite', gid=game.gid,
+                                       remotes=remotes)
+
+        if response['success']:
+            for guestDev in guestDevs:
                 guestDev.expectInvite(game.gid, game.rematchLevel)
-            else:
-                failed = True
-        if not failed: game.needsInvite = False
+            game.needsInvite = False
 
     def expectInvite(self, gid, rematchLevel):
         self.guestGames.append(GuestGameInfo(self, gid, rematchLevel))
@@ -802,7 +805,7 @@ def initLogs():
         shutil.move(logdir, '/tmp/{}_{}'.format(logdir, os.getpid()))
     os.mkdir(logdir)
 
-    logfilepath = '{}/{}_log.txt'.format(logdir, scriptName)
+    logfilepath = '{}/{}_logs.txt'.format(logdir, scriptName)
     global g_LOGFILE
     g_LOGFILE = open(logfilepath, 'w')
 

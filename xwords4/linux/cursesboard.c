@@ -689,8 +689,8 @@ cb_feedGame( CursesBoardState* cbState, XP_U32 gameID,
 }
 
 void
-cb_addInvite( CursesBoardState* cbState, XP_U32 gameID, XP_U16 forceChannel,
-              const CommsAddrRec* destAddr )
+cb_addInvites( CursesBoardState* cbState, XP_U32 gameID, XP_U16 nRemotes,
+               XP_U16 forceChannels[], const CommsAddrRec destAddrs[] )
 {
     CursesBoardGlobals* bGlobals = findOrOpenForGameID( cbState, gameID, NULL, NULL );
     CommonGlobals* cGlobals = &bGlobals->cGlobals;
@@ -699,10 +699,12 @@ cb_addInvite( CursesBoardState* cbState, XP_U32 gameID, XP_U16 forceChannel,
     CommsAddrRec selfAddr;
     comms_getSelfAddr( comms, &selfAddr );
 
-    NetLaunchInfo nli;
-    nli_init( &nli, cGlobals->gi, &selfAddr, 1, forceChannel );
+    for ( int ii = 0; ii < nRemotes; ++ii ) {
+        NetLaunchInfo nli;
+        nli_init( &nli, cGlobals->gi, &selfAddr, 1, forceChannels[ii] );
 
-    comms_invite( comms, NULL_XWE, &nli, destAddr, XP_TRUE );
+        comms_invite( comms, NULL_XWE, &nli, &destAddrs[ii], XP_TRUE );
+    }
 }
 
 XP_Bool

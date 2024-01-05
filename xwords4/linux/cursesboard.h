@@ -51,8 +51,8 @@ bool cb_feedRow( CursesBoardState* cbState, sqlite3_int64 rowid,
                  const CommsAddrRec* from );
 void cb_feedGame( CursesBoardState* cbState, XP_U32 gameID,
                   const XP_U8* buf, XP_U16 len, const CommsAddrRec* from );
-void cb_addInvite( CursesBoardState* cbState, XP_U32 gameID, XP_U16 forceChannel,
-                   const CommsAddrRec* destAddr );
+void cb_addInvites( CursesBoardState* cbState, XP_U32 gameID, XP_U16 nRemotes,
+                    XP_U16 forceChannels[], const CommsAddrRec destAddrs[] );
 XP_Bool cb_makeRematch( CursesBoardState* cbState, XP_U32 gameID,
                         RematchOrder ro, XP_U32* newGameID );
 XP_Bool cb_makeMoveIf( CursesBoardState* cbState, XP_U32 gameID );

@@ -1549,37 +1549,42 @@ makeGameFromArgs( CursesAppGlobals* aGlobals, cJSON* args )
 static XP_Bool
 inviteFromArgs( CursesAppGlobals* aGlobals, cJSON* args )
 {
-    /* char buf[1000]; */
-    /* if ( cJSON_PrintPreallocated( args, buf, sizeof(buf), 0 ) ) { */
-    /*     XP_LOGFF( "(%s)", buf ); */
-    /* } */
-
     XP_U32 gameID = gidFromObject( args );
 
-    cJSON* tmp = cJSON_GetObjectItem( args, "channel" );
-    XP_ASSERT( !!tmp );
-    XP_U16 channel = tmp->valueint;
-    XP_LOGFF( "read channel: %X", channel );
+    cJSON* remotes = cJSON_GetObjectItem( args, "remotes" );
+    int nRemotes = cJSON_GetArraySize(remotes);
+    CommsAddrRec destAddrs[nRemotes];
+    XP_MEMSET( destAddrs, 0, sizeof(destAddrs) );
+    XP_U16 channels[nRemotes];
+    XP_MEMSET( channels, 0, sizeof(channels) );
 
-    CommsAddrRec destAddr = {0};
-    cJSON* addr = cJSON_GetObjectItem( args, "addr" );
-    XP_ASSERT( !!addr );
-    tmp = cJSON_GetObjectItem( addr, "mqtt" );
-    if ( !!tmp ) {
-        XP_LOGFF( "parsing mqtt: %s", tmp->valuestring );
-        addr_addType( &destAddr, COMMS_CONN_MQTT );
-        XP_Bool success = strToMQTTCDevID( tmp->valuestring, &destAddr.u.mqtt.devID );
-        XP_ASSERT( success );
-    }
-    tmp = cJSON_GetObjectItem( addr, "sms" );
-    if ( !!tmp ) {
-        XP_LOGFF( "parsing sms: %s", tmp->valuestring );
-        addr_addType( &destAddr, COMMS_CONN_SMS );
-        XP_STRCAT( destAddr.u.sms.phone, tmp->valuestring );
-        destAddr.u.sms.port = 1;
+    for ( int ii = 0; ii < nRemotes; ++ii ) {
+        cJSON* item = cJSON_GetArrayItem( remotes, ii );
+        cJSON* tmp = cJSON_GetObjectItem( item, "channel" );
+        XP_ASSERT( !!tmp );
+        channels[ii] = tmp->valueint;
+        XP_LOGFF( "read channel: %X", channels[ii] );
+
+        cJSON* addr = cJSON_GetObjectItem( item, "addr" );
+        XP_ASSERT( !!addr );
+        tmp = cJSON_GetObjectItem( addr, "mqtt" );
+        if ( !!tmp ) {
+            XP_LOGFF( "parsing mqtt: %s", tmp->valuestring );
+            addr_addType( &destAddrs[ii], COMMS_CONN_MQTT );
+            XP_Bool success = strToMQTTCDevID( tmp->valuestring, &destAddrs[ii].u.mqtt.devID );
+            XP_ASSERT( success );
+        }
+        tmp = cJSON_GetObjectItem( addr, "sms" );
+        if ( !!tmp ) {
+            XP_LOGFF( "parsing sms: %s", tmp->valuestring );
+            addr_addType( &destAddrs[ii], COMMS_CONN_SMS );
+            XP_STRCAT( destAddrs[ii].u.sms.phone, tmp->valuestring );
+            destAddrs[ii].u.sms.port = 1;
+        }
     }
 
-    cb_addInvite( aGlobals->cbState, gameID, channel, &destAddr );
+    cb_addInvites( aGlobals->cbState, gameID, nRemotes, channels, destAddrs );
+
     LOG_RETURN_VOID();
     return XP_TRUE;
 }
@@ -1725,6 +1730,7 @@ on_incoming_signal( GSocketService* XP_UNUSED(service),
     XP_LOGFF( "called" );
     CursesAppGlobals* aGlobals = (CursesAppGlobals*)user_data;
     LaunchParams* params = aGlobals->cag.params;
+    XP_U32 startTime = dutil_getCurSeconds( params->dutil, NULL_XWE );
 
     GInputStream* istream = g_io_stream_get_input_stream( G_IO_STREAM(connection) );
 
@@ -1832,6 +1838,10 @@ on_incoming_signal( GSocketService* XP_UNUSED(service),
         free( replyStr );
     }
 
+    XP_U32 consumed = dutil_getCurSeconds( params->dutil, NULL_XWE ) - startTime;
+    if ( 0 < consumed ) {
+        XP_LOGFF( "took %d seconds", consumed );
+    }
     LOG_RETURN_VOID();
     return FALSE;
 }
