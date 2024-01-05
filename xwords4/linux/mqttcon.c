@@ -47,7 +47,7 @@ typedef struct _QElem {
 static void
 sendQueueHead( MQTTConStorage* storage )
 {
-    LOG_FUNC();
+    XP_LOGFF( "queue len: %d", g_slist_length(storage->queue) );
     if ( storage->connected ) {
         for ( GSList* iter = storage->queue; !!iter; iter = iter->next ) {
             QElem* elem = (QElem*)iter->data;
@@ -57,8 +57,9 @@ sendQueueHead( MQTTConStorage* storage )
 #endif
                     mosquitto_publish( storage->mosq, &elem->mid, elem->topic,
                                        elem->len, elem->buf, DEFAULT_QOS, true );
-                XP_LOGFF( "mosquitto_publish(topic=%s, len=%d) => %s; mid=%d", elem->topic,
+                XP_LOGFF( "mosquitto_publish(topic=%s, msgLen=%d) => %s; mid=%d", elem->topic,
                           elem->len, mosquitto_strerror(err), elem->mid );
+                /* Remove this so all are resent together? */
                 break;
             }
         }
@@ -92,7 +93,6 @@ findMsg( gpointer data, gpointer user_data )
 static gint
 queueIdle( gpointer data )
 {
-    LOG_FUNC();
     MQTTConStorage* storage = (MQTTConStorage*)data;
     sendQueueHead( storage );
     return FALSE;
@@ -136,7 +136,7 @@ enqueue( MQTTConStorage* storage, const char* topic,
 
         tickleQueue( storage );
     }
-}
+} /* enqueue */
 
 typedef struct _RemoveState {
     MQTTConStorage* storage;
@@ -254,7 +254,7 @@ connect_callback( struct mosquitto* mosq, void* userdata,
     XP_USE(err);
 
     tickleQueue( storage );
-}
+} /* connect_callback */
 
 static void
 subscribe_callback( struct mosquitto *mosq, void *userdata, int mid,
@@ -390,14 +390,12 @@ void
 mqttc_cleanup( LaunchParams* params )
 {
     MQTTConStorage* storage = getStorage( params );
-#ifdef DEBUG
-    int err =
-#endif
-        mosquitto_loop_stop( storage->mosq, true ); /* blocks until thread dies */
-    XP_LOGFF( "mosquitto_loop_stop() => %s", mosquitto_strerror(err) );
+    (void)mosquitto_loop_stop( storage->mosq, true ); /* blocks until thread dies */
     mosquitto_destroy( storage->mosq );
     storage->mosq = NULL;
 	mosquitto_lib_cleanup();
+
+    XP_LOGFF( "quitting with %d undelievered messages", g_slist_length(storage->queue) );
 
     XP_ASSERT( params->mqttConStorage == storage ); /* cheat */
     XP_FREEP( params->mpool, &storage );
