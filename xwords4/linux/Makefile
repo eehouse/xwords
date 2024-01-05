@@ -25,7 +25,7 @@ DEFINES += -DLOG_COMMS_MSGNOS
 DEFINES += -DDI_DEBUG
 CFLAGS += -g $(GPROFFLAG) -Wall -Wunused-parameter -Wcast-align -Werror -O0
 DEFINES += -DDEBUG_HASHING
-CFLAGS += -DDEBUG_TS -rdynamic 
+CFLAGS += -DDEBUG_TS -rdynamic
 PLATFORM = obj_linux_memdbg
 else
 DEFINES =
@@ -273,6 +273,7 @@ LIBS += `pkg-config --libs glib-2.0`
 
 CFLAGS += $(POINTER_SUPPORT)
 CFLAGS += -DDROP_BITMAPS
+# CFLAGS += -DHIGH_GAMEID_BITS
 
 ifneq (,$(findstring DPLATFORM_NCURSES,$(DEFINES)))
 	LIBS += $(OE_LIBDIR) -lncursesw

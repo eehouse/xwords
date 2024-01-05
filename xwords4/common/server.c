@@ -1227,7 +1227,7 @@ handleRegistrationMsg( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* stream )
         if ( 0 < stream_getSize(stream) ) {
             XP_U8 streamVersion = stream_getU8( stream );
             if ( streamVersion >= STREAM_VERS_BIGBOARD ) {
-                SRVR_LOGFF( "upping device %d streamVersion to %d",
+                SRVR_LOGFF( "upping device %d streamVersion to 0x%x",
                             clientIndex, streamVersion );
                 server->nv.addresses[clientIndex].streamVersion = streamVersion;
             }

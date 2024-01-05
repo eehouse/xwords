@@ -158,7 +158,6 @@ class GameStatus():
                 player = status.players[indx-1]
                 hostMarker = status.hostName == player and '*' or ' '
                 initial = GameStatus._abbrev(player)
-                arg3 = -1
                 dev = Device._devs.get(player)
                 gameState = dev.gameFor(gid).state
                 if gameState:
@@ -168,7 +167,8 @@ class GameStatus():
                     else:
                         arg3 = gameState.get('nTiles')
                         if arg3 > 0: GameStatus._tileCount += arg3
-                    line = '{}{:3}{: 3}'.format(hostMarker, initial, arg3)
+                    arg3 = 0 <= arg3 and '{: 3}'.format(arg3) or ' - '
+                    line = '{}{:3}{}'.format(hostMarker, initial, arg3)
             results.append(line.center(len(gid)))
 
         return ' '.join(results)
@@ -199,7 +199,7 @@ class Device():
         self.guestGames = []
         self.script = '{}/{}.sh'.format(Device._logdir, host)
         self.dbName = '{}/{}.db'.format(Device._logdir, host)
-        self.logfile = '{}/{}_log.txt'.format(Device._logdir, host)
+        self.logfile = '{}/{}_logs.txt'.format(Device._logdir, host)
         self.cmdSocketName = '{}/{}.sock'.format(Device._logdir, host)
         self._keyCur = 10000 * (1 + g_NAMES.index(host))
 

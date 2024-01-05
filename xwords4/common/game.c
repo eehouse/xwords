@@ -87,8 +87,16 @@ makeGameID( XW_UtilCtxt* XP_UNUSED_DBG(util) )
         /* High bit never set by XP_RANDOM() alone */
         gameID = (XP_RANDOM() << 16) ^ XP_RANDOM();
         /* But let's clear it -- set high-bit causes problems for existing
-           postgres DB where INTEGER is apparently a signed 32-bit */
-        gameID &= 0x7FFFFFFF;
+           postgres DB where INTEGER is apparently a signed 32-bit. Recently
+           confirmed that working around that in the code that moves between
+           incoming web api calls and postgres would be much harder than using
+           8-char hex strings instead. But I'll leave the test change in
+           place. */
+#ifdef HIGH_GAMEID_BITS
+        gameID |= 0x80000000;
+#else
+        gameID &= ~0x80000000;
+#endif
     }
     LOG_RETURNF( "%08X", gameID );
     return gameID;
