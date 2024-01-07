@@ -101,10 +101,10 @@
     <plurals name="invite_msg_fmt">
         <item quantity="one">Dieses Spiel wartet darauf, dass ein entfernter Spieler eine Einladung erhält und darauf antwortet.
 \n
-\nSie werden diese Nachricht sehen, bis der eingeladene Spieler geantwortet hat. Wenn Sie den Verdacht haben, dass die von Ihnen gesendete Einladung verloren gegangen ist, kann es nicht schaden, eine weitere zu senden.</item>
+\nSie werden diese Nachricht sehen, bis der eingeladene Spieler geantwortet hat.</item>
         <item quantity="other">Dieses Spiel wartet darauf, dass %1$d entfernte Spieler eine Einladung erhalten und darauf antworten.
 \n
-\nSie werden diese Nachricht sehen, bis alle eingeladene Spieler geantwortet haben. Wenn Sie den Verdacht haben, dass von Ihnen gesendete Einladungen verloren gegangen sind, kann es nicht schaden, weitere zu senden.</item>
+\nSie werden diese Nachricht sehen, bis alle eingeladenen Spieler geantwortet haben.</item>
     </plurals>
     <string name="invit_expl_sms_fmt">Einladung per SMS an Telefonnummer %1$s auf %2$s gesendet</string>
     <string name="invit_expl_bt_fmt">Einladung per Bluetooth an gepaartes Gerät „%1$s“ in %2$s geschickt</string>
@@ -247,7 +247,7 @@
     <string name="chat_other_id">"Nicht ich: "</string>
     <string name="chat_send">Senden</string>
     <string name="chat_hint">Hier eingeben …</string>
-    <string name="chat_menu_clear">Verlauf löschen</string>
+    <string name="chat_menu_clear">Verlauf leeren</string>
     <string name="str_tiles_not_in_line">Alle Buchstaben müssen in einer Linie sein.</string>
     <string name="str_no_empties_in_turn">Leere Felder können keine gespielten Buchstaben trennen.</string>
     <string name="str_two_tiles_first_move">Im ersten Zug müssen mindestens zwei Spielsteine gespielt werden.</string>
@@ -484,7 +484,7 @@
 \nEs sei denn, Sie tippen auf die Symbole auf der linken Seite. Durch Antippen dieser Symbole können Sie Spiele (oder Gruppen) auswählen oder die Auswahl aufheben.
 \n
 \nSobald Sie ein oder mehrere Elemente ausgewählt haben, verwenden Sie das Menü oder die \"Aktionsleiste\", um z. B. jedes ausgewählte Spiel zu löschen.</string>
-    <string name="not_again_backclears">Der Zurück-Button löscht die Auswahl anstatt die App zu beenden. Drücken Sie ihn erneut, um die App zu beenden.</string>
+    <string name="not_again_backclears">Der Zurück-Button leert die Auswahl, anstatt die App zu beenden. Drücken Sie ihn erneut, um die App zu beenden.</string>
     <plurals name="sel_games_fmt">
         <item quantity="one">Eine Partie ausgewählt</item>
         <item quantity="other">%1$d Partien ausgewählt</item>
@@ -550,7 +550,7 @@
     <string name="lang_name_czech">Tschechisch</string>
     <string name="lang_name_greek">Griechisch</string>
     <string name="lang_name_slovak">Slowakisch</string>
-    <string name="loc_item_clear">Löschen</string>
+    <string name="loc_item_clear">Leeren</string>
     <string name="loc_item_check">Überprüfen</string>
     <string name="loc_item_copy_eng">Englisch kopieren</string>
     <string name="remote_empty">Wortliste wird vom Server geladen …</string>
@@ -826,7 +826,7 @@
     <string name="gamel_menu_knownplyrs">Bekannte Spieler</string>
     <string name="button_faq">FAQ anzeigen</string>
     <string name="values_values">Nur Werte</string>
-    <string name="invite_msg_extra_rematch">Bei Rückspielen werden alle notwendigen Einladungen automatisch verschickt. Sie können aber jederzeit neue Einladungen versenden, wenn ein Eingeladener nicht antwortet.</string>
+    <string name="invite_msg_extra_rematch">Bei Rückspielen werden alle notwendigen Einladungen automatisch erstellt und bis zur Annahme neu gesendet.</string>
     <string name="game_summary_field_created">Wann erstellt</string>
     <string name="title_invite_history">Einladungen verschickt</string>
     <string name="invite_choice_qrcode">QR-Code</string>
@@ -877,7 +877,7 @@
     <string name="unhide_dupmode_title">Optionen für den Duplikatmodus einblenden</string>
     <string name="dup_client_sent">Dieses Gerät hat seine Züge an den Server gesendet. Wenn alle Geräte ihre Züge gesendet haben, sind Sie wieder am Zug.</string>
     <string name="dup_host_received_fmt">%1$d der %2$d Spieler haben ihre Züge gemeldet. Wenn alle Züge eingegangen sind, sind Sie wieder am Zug.</string>
-    <string name="gamel_menu_logstore_clear">Gespeicherte Protokolle löschen</string>
+    <string name="gamel_menu_logstore_clear">Gespeicherte Protokolle leeren</string>
     <string name="not_again_quicknetgame">Es gibt eine neue, superschnelle Möglichkeit, ein Spiel mit jemandem zu beginnen, gegen den Sie schon einmal gespielt haben. Wenn der Name der Person aufgelistet ist, wählen Sie ihn einfach aus und es wird sofort eine Einladung verschickt.</string>
     <string name="knowns_expl">Dies sind die Ihnen bekannten, externen Spieler. Ihre Namen entsprechen standardmäßig den Namen, die der Remote-Player gewählt hat, aber Sie können die Namen ändern, wenn Sie möchten.</string>
     <string name="knowns_delete_confirm_fmt">Sind Sie sicher, dass Sie \"%1$s\" aus \"Bekannte Spieler\" entfernen wollen\?
@@ -1004,7 +1004,7 @@
     <string name="word_blocked_by_phony">Wort oder Wörter nicht in Wortliste %2$s gefunden: %1$s.</string>
     <string name="gamel_menu_logs">Debug-Protokolle</string>
     <string name="gamel_menu_timerStats">Zeitgeber-Statistiken</string>
-    <string name="button_clear_stats">Statistiken löschen</string>
+    <string name="button_clear_stats">Statistiken leeren</string>
     <string name="gamel_menu_logstore_off">Protokollspeicherung deaktivieren</string>
     <string name="gamel_menu_logstore_email">Protokolle E-Mailen</string>
     <string name="logstore_dumping_fmt">Komprimierung von %1$d Protokolleinträgen</string>
@@ -1136,4 +1136,5 @@
 \n
 \nBitte verwenden Sie %1$s nur für lokale Partien. Wenn Sie jemanden zu einer Partie einladen, das es verwendet, müssen Sie es ihnen manuell geben, da CrossWords derzeit Wordlisten in Einladungen einzuschließen nicht unterstützt.</string>
     <string name="summary_game_gone">Externe Partie gelöscht</string>
+    <string name="invite_msg_extra_norematch">Wenn Sie vermuten, dass eine von Ihnen versendete Einladung verloren ging, schadet es nicht, eine weitere zu senden.</string>
 </resources>
