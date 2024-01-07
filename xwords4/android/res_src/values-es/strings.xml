@@ -107,15 +107,15 @@
     <string name="bonus_w3x_summary">3P</string>
     <string name="no_moves_made">(Todavía no hay movimientos)</string>
     <plurals name="invite_msg_fmt">
-        <item quantity="one">Esta partida está esperando a que un jugador remoto reciba y responda a una invitación.
+        <item quantity="one">Este juego está esperando a que un jugador remoto reciba y responda a una invitación.
 \n
-\nVerás este mensaje hasta que el jugador invitado haya respondido. Si sospechas que la invitación que enviaste se ha perdido, no pasa nada por enviar otra.</item>
-        <item quantity="many">Esta partida está esperando a que %1$d jugadores remotos respondan a las invitaciones.
+\nVerás este mensaje hasta que el jugador invitado haya respondido.</item>
+        <item quantity="many">Este juego está esperando a que %1$d jugadores remotos respondan a las invitaciones.
 \n
-\nVerás este mensaje hasta que todos los jugadores esperados hayan respondido. Si sospechas que alguna de las invitaciones que has enviado se ha perdido, no pasa nada por enviar más.</item>
-        <item quantity="other">Esta partida está esperando a que %1$d jugadores remotos respondan a las invitaciones.
+\nVerás este mensaje hasta que todos los jugadores esperados hayan respondido.</item>
+        <item quantity="other">Este juego está esperando a que %1$d jugadores remotos respondan a las invitaciones.
 \n
-\nVerás este mensaje hasta que todos los jugadores esperados hayan respondido. Si sospechas que alguna de las invitaciones que has enviado se ha perdido, no pasa nada por enviar más.</item>
+\nVerás este mensaje hasta que todos los jugadores esperados hayan respondido.</item>
     </plurals>
     <string name="invit_expl_sms_fmt">Invitación enviada por SMS al número de teléfono %1$s a %2$s</string>
     <string name="invit_expl_usrsms_fmt">Invitación enviada por SMS en %1$s</string>
@@ -254,7 +254,7 @@
     <string name="peek_other">Ver las fichas fuera de turno</string>
     <string name="qrcode_invite_expl">Para invitar con código QR, deja que tu oponente escanee el código con la cámara en su teléfono Android.</string>
     <string name="invit_expl_player_fmt">Invitación enviada por MQTT/Internet a el jugador conocido como “%1$s” en %2$s.</string>
-    <string name="invite_msg_extra_rematch">Al jugar una revancha, todas la invitaciones necesarias se enviarán automáticamente. Pero siempre puedes enviar nuevas si algún invitado no responde.</string>
+    <string name="invite_msg_extra_rematch">Con las revanchas, todas las invitaciones necesarias se habrán creado automáticamente y se volverán a enviar hasta que sean aceptadas.</string>
     <string name="invites_unsent">Esta partida esta configurado para que haya un jugador remoto.
 \n
 \nTe gustaría invitar a alguien?</string>
@@ -1183,4 +1183,5 @@
     <string name="gamel_menu_restart">Reiniciar la aplicación</string>
     <string name="xlator">Alejandro Rodriguez (artecnico), Anupam Malhotra (AnupamM)</string>
     <string name="summary_game_gone">Partida remota eliminada</string>
+    <string name="invite_msg_extra_norematch">Si sospecha que la invitación que envió se ha perdido, no tiene por qué enviar otra.</string>
 </resources>
