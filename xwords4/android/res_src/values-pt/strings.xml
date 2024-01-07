@@ -2304,4 +2304,5 @@
 \nUse %1$s apenas para jogos locais. Se convidar alguém a um jogo que o usa, terá que o lhe dar manualmente, como CrossWords atualmente não suporta incluir listas de palavras em convites.</string>
     <string name="gamel_menu_restart">Reiniciar a app</string>
     <string name="summary_game_gone">Jogo remoto apagado</string>
+    <string name="invite_msg_extra_norematch">Se suspeitar que um convite que enviou foi perdido, não há nenhum problema a enviar outro.</string>
 </resources>
