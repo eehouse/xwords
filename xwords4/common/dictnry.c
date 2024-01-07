@@ -741,7 +741,6 @@ dict_tilesAreSame( const DictionaryCtxt* dict1, const DictionaryCtxt* dict2 )
     return result;
 } /* dict_tilesAreSame */
 
-#ifndef XWFEATURE_STANDALONE_ONLY
 /* Summarize tile info in a way it can be presented to users */
 void
 dict_writeTilesInfo( const DictionaryCtxt* dict, XP_U16 boardSize, XWStreamCtxt* stream )
@@ -816,7 +815,6 @@ dict_writeToStream( const DictionaryCtxt* XP_UNUSED(dict),
     /*     } */
     /* } */
 } /* dict_writeToStream */
-#endif
 
 static void
 freeSpecials( DictionaryCtxt* dict )
@@ -859,7 +857,6 @@ common_destructor( DictionaryCtxt* dict, XWEnv XP_UNUSED(xwe) )
     XP_FREE( dict->mpool, dict );
 } /* common_destructor */
 
-#ifndef XWFEATURE_STANDALONE_ONLY
 void
 dict_loadFromStream( DictionaryCtxt* dict, XWEnv xwe, XWStreamCtxt* stream )
 {
@@ -920,7 +917,6 @@ dict_loadFromStream( DictionaryCtxt* dict, XWEnv xwe, XWStreamCtxt* stream )
     }
     setBlankTile( dict );
 } /* dict_loadFromStream */
-#endif
 
 #ifdef TEXT_MODEL
 /* Return the strlen of the longest face, e.g. 1 for English and Italian;

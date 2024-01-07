@@ -193,9 +193,7 @@ typedef XP_U16 XP_PlayerAddr;
 typedef enum {
     TIMER_PENDOWN = 1, /* ARM doesn't like ids of 0... */
     TIMER_TIMERTICK,
-#ifndef XWFEATURE_STANDALONE_ONLY
     TIMER_COMMS,
-#endif
 #ifdef XWFEATURE_SLOW_ROBOT
     TIMER_SLOWROBOT,
 #endif
@@ -458,12 +456,6 @@ typedef struct _TrayTileSet {
 #  define XP_UNUSED_KEYBOARD_NAV(x) x
 #else
 #  define XP_UNUSED_KEYBOARD_NAV(x) UNUSED__ ## x __attribute__((unused))
-#endif
-
-#ifndef XWFEATURE_STANDALONE_ONLY
-#  define XP_UNUSED_STANDALONE(x) x
-#else
-#  define XP_UNUSED_STANDALONE(x) UNUSED__ ## x __attribute__((unused))
 #endif
 
 #endif

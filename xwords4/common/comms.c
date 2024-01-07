@@ -53,7 +53,6 @@
  * sender's role; rest can be random to aid detection of duplicate packets. */
 #define CHANNEL_MASK 0x0003
 
-#ifndef XWFEATURE_STANDALONE_ONLY
 
 #ifndef INITIAL_CLIENT_VERS
 # define INITIAL_CLIENT_VERS 2
@@ -4171,5 +4170,3 @@ putDevID( const CommsCtxt* comms, XWEnv xwe, XWStreamCtxt* stream )
 #endif
 
 EXTERN_C_END
-
-#endif /* #ifndef XWFEATURE_STANDALONE_ONLY */

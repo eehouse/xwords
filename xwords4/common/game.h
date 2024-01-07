@@ -72,9 +72,7 @@ typedef struct _XWGame {
     BoardCtxt* board;
     ModelCtxt* model;
     ServerCtxt* server;
-#ifndef XWFEATURE_STANDALONE_ONLY
     CommsCtxt* comms;
-#endif
     XP_U32 created;     /* dutil_getCurSeconds() of creation */
 } XWGame;
 

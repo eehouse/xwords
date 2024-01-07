@@ -259,7 +259,6 @@ static void dupe_resetTimer( ServerCtxt* server, XWEnv xwe );
 static XP_Bool setDupCheckTimer( ServerCtxt* server, XWEnv xwe );
 static void sortTilesIf( ServerCtxt* server, XP_S16 turn );
 
-#ifndef XWFEATURE_STANDALONE_ONLY
 static XWStreamCtxt* messageStreamWithHeader( ServerCtxt* server, XWEnv xwe,
                                               XP_U16 devIndex, XW_Proto code );
 static XP_Bool handleRegistrationMsg( ServerCtxt* server, XWEnv xwe,
@@ -295,12 +294,11 @@ static void log_ri( const ServerCtxt* server, const RematchInfo* rip,
 # define assertRI(r, s)
 #endif
 
-#endif
 
 #define PICK_NEXT -1
 #define PICK_CUR -2
 
-#if defined DEBUG && ! defined XWFEATURE_STANDALONE_ONLY
+#ifdef DEBUG
 static char*
 getStateStr( XW_State st )
 {
@@ -355,7 +353,6 @@ inDuplicateMode( const ServerCtxt* server )
 /*****************************************************************************
  *
  ****************************************************************************/
-#ifndef XWFEATURE_STANDALONE_ONLY
 static void
 syncPlayers( ServerCtxt* server )
 {
@@ -369,9 +366,6 @@ syncPlayers( ServerCtxt* server )
         player->deviceIndex = lp->isLocal? HOST_DEVICE : UNKNOWN_DEVICE;
     }
 }
-#else
-# define syncPlayers( server )
-#endif
 
 static XP_Bool
 amHost( const ServerCtxt* server )
@@ -392,10 +386,8 @@ initServer( ServerCtxt* server, XWEnv xwe )
     setTurn( server, xwe, -1 ); /* game isn't under way yet */
 
     if ( 0 ) {
-#ifndef XWFEATURE_STANDALONE_ONLY
     } else if ( server->vol.gi->serverRole == SERVER_ISCLIENT ) {
         SETSTATE( server, XWSTATE_NONE );
-#endif
     } else {
         SETSTATE( server, XWSTATE_BEGIN );
     }
@@ -829,7 +821,6 @@ server_countTilesInPool( ServerCtxt* server )
  */ 
 #define NAME_LEN_NBITS 6
 #define MAX_NAME_LEN ((1<<(NAME_LEN_NBITS-1))-1)
-#ifndef XWFEATURE_STANDALONE_ONLY
 
 /* addMQTTDevID() and readMQTTDevID() exist to work around the case where
    folks start games using agreed-upon relay room names rather than
@@ -1061,7 +1052,6 @@ server_initClientConnection( ServerCtxt* server, XWEnv xwe )
     SRVR_LOGFF( "=>%s", boolToStr(result) );
     return result;
 } /* server_initClientConnection */
-#endif
 
 #ifdef XWFEATURE_CHAT
 static void
@@ -1140,7 +1130,6 @@ callDupTimerListener( const ServerCtxt* server, XWEnv xwe, XP_S32 oldVal, XP_S32
     }
 }
 
-#ifndef XWFEATURE_STANDALONE_ONLY
 # ifdef STREAM_VERS_BIGBOARD
 static void
 setStreamVersion( ServerCtxt* server )
@@ -1592,8 +1581,6 @@ dupe_handleServerTrade( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* stream )
     return XP_TRUE;
 }
 
-#endif
-
 /* Just for grins....trade in all the tiles that weren't used in the
  * move the robot manage to make.  This is not meant to be strategy, but
  * rather to force me to make the trade-communication stuff work well.
@@ -1965,14 +1952,11 @@ server_do( ServerCtxt* server, XWEnv xwe )
         case XWSTATE_NEEDSEND_BADWORD_INFO:
             XP_ASSERT( server->vol.gi->serverRole == SERVER_ISHOST );
             badWordMoveUndoAndTellUser( server, xwe, &server->illegalWordInfo );
-#ifndef XWFEATURE_STANDALONE_ONLY
             sendBadWordMsgs( server, xwe );
-#endif
             nextTurn( server, xwe, PICK_NEXT );
             //moreToDo = XP_TRUE;   /* why? */
             break;
 
-#ifndef XWFEATURE_STANDALONE_ONLY
         case XWSTATE_RECEIVED_ALL_REG:
             sendInitialMessage( server, xwe );
             /* PENDING isn't INTURN_OFFDEVICE possible too?  Or just
@@ -1987,8 +1971,6 @@ server_do( ServerCtxt* server, XWEnv xwe )
             tellMoveWasLegal( server, xwe ); /* sets state */
             nextTurn( server, xwe, PICK_NEXT );
             break;
-
-#endif /* XWFEATURE_STANDALONE_ONLY */
 
         case XWSTATE_NEEDSEND_ENDGAME:
             endGameInternal( server, xwe, END_REASON_OUT_OF_TILES, -1 );
@@ -2029,8 +2011,6 @@ server_do( ServerCtxt* server, XWEnv xwe )
     }
     return result;
 } /* server_do */
-
-#ifndef XWFEATURE_STANDALONE_ONLY
 
 static XP_S8
 getIndexForStream( const ServerCtxt* server, const XWStreamCtxt* stream )
@@ -2175,7 +2155,6 @@ registerRemotePlayer( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* stream )
     }
     return deviceIndex;
 } /* registerRemotePlayer */
-#endif
 
 static void
 sortTilesIf( ServerCtxt* server, XP_S16 turn )
@@ -2185,7 +2164,6 @@ sortTilesIf( ServerCtxt* server, XP_S16 turn )
     }
 }
 
-#ifndef XWFEATURE_STANDALONE_ONLY
 /* Called in response to message from server listing all the names of
  * players in the game (in server-assigned order) and their initial
  * tray contents.
@@ -2332,7 +2310,6 @@ client_readInitialMessage( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* stream )
     }
     return accepted;
 } /* client_readInitialMessage */
-#endif
 
 /* For each remote device, send a message containing the dictionary and the
  * names of all the players in the game (including those on the device itself,
@@ -2439,7 +2416,6 @@ freeBWI( MPFORMAL BadWordInfo* bwi )
     bwi->nWords = 0;
 } /* freeBWI */
 
-#ifndef XWFEATURE_STANDALONE_ONLY
 static void
 bwiToStream( XWStreamCtxt* stream, BadWordInfo* bwi )
 {
@@ -2559,7 +2535,6 @@ sendBadWordMsgs( ServerCtxt* server, XWEnv xwe )
     }
     SETSTATE( server, XWSTATE_INTURN );
 } /* sendBadWordMsgs */
-#endif
 
 static void
 badWordMoveUndoAndTellUser( ServerCtxt* server, XWEnv xwe, BadWordInfo* bwi )
@@ -2937,7 +2912,6 @@ assignTilesToAll( ServerCtxt* server, XWEnv xwe )
     return allDone;
 } /* assignTilesToAll */
 
-#ifndef XWFEATURE_STANDALONE_ONLY
 static void
 getPlayerTime( ServerCtxt* server, XWStreamCtxt* stream, XP_U16 turn )
 {
@@ -2949,7 +2923,6 @@ getPlayerTime( ServerCtxt* server, XWStreamCtxt* stream, XP_U16 turn )
         gi->players[turn].secondsUsed = secondsUsed;
     }
 } /* getPlayerTime */
-#endif
 
 static void
 nextTurn( ServerCtxt* server, XWEnv xwe, XP_S16 nxtTurn )
@@ -3088,7 +3061,6 @@ checkMoveAllowed( ServerCtxt* server, XWEnv xwe, XP_U16 playerNum )
     return server->illegalWordInfo.nWords == 0;
 } /* checkMoveAllowed */
 
-#ifndef XWFEATURE_STANDALONE_ONLY
 static void
 sendMoveTo( ServerCtxt* server, XWEnv xwe, XP_U16 devIndex, XP_U16 turn,
             XP_Bool legal, TrayTileSet* newTiles, 
@@ -3404,7 +3376,6 @@ reflectMove( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* stream )
     }
     return moveOk;
 } /* reflectMove */
-#endif /* XWFEATURE_STANDALONE_ONLY */
 
 static void
 dupe_chooseMove( const ServerCtxt* server, XWEnv xwe, XP_U16 nPlayers,
@@ -4005,7 +3976,6 @@ finishMove( ServerCtxt* server, XWEnv xwe, TrayTileSet* newTiles, XP_U16 turn )
 
     XP_Bool isClient = gi->serverRole == SERVER_ISCLIENT;
     XP_Bool isLegalMove = XP_TRUE;
-#ifndef XWFEATURE_STANDALONE_ONLY
     if ( isClient ) {
         /* just send to host */
         sendMoveTo( server, xwe, HOST_DEVICE, turn, XP_TRUE, newTiles,
@@ -4015,9 +3985,6 @@ finishMove( ServerCtxt* server, XWEnv xwe, TrayTileSet* newTiles, XP_U16 turn )
         sendMoveToClientsExcept( server, xwe, turn, isLegalMove, newTiles,
                                  (TrayTileSet*)NULL, HOST_DEVICE );
     }
-#else
-    isLegalMove = checkMoveAllowed( server, xwe, turn );
-#endif
 
     model_commitTurn( model, xwe, turn, newTiles );
     sortTilesIf( server, turn );
@@ -4031,12 +3998,10 @@ finishMove( ServerCtxt* server, XWEnv xwe, TrayTileSet* newTiles, XP_U16 turn )
     }
 
     if ( 0 ) {
-#ifndef XWFEATURE_STANDALONE_ONLY
     } else if (isClient && (gi->phoniesAction == PHONIES_DISALLOW)
                && nTilesMoved > 0 ) {
         SETSTATE( server, XWSTATE_MOVE_CONFIRM_WAIT );
         setTurn( server, xwe, -1 );
-#endif
     } else {
         nextTurn( server, xwe, PICK_NEXT );
     }
@@ -4056,7 +4021,6 @@ server_commitTrade( ServerCtxt* server, XWEnv xwe, const TrayTileSet* oldTiles,
 
     fetchTiles( server, xwe, turn, oldTiles->nTiles, oldTiles, &newTiles, XP_FALSE );
 
-#ifndef XWFEATURE_STANDALONE_ONLY
     if ( server->vol.gi->serverRole == SERVER_ISCLIENT ) {
         /* just send to server */
         sendMoveTo(server, xwe, HOST_DEVICE, turn, XP_TRUE, &newTiles, oldTiles);
@@ -4064,7 +4028,6 @@ server_commitTrade( ServerCtxt* server, XWEnv xwe, const TrayTileSet* oldTiles,
         sendMoveToClientsExcept( server, xwe, turn, XP_TRUE, &newTiles, oldTiles,
                                  HOST_DEVICE );
     }
-#endif
 
     pool_replaceTiles( server->pool, oldTiles );
     XP_ASSERT( turn == server->nv.currentTurn );
@@ -4748,7 +4711,6 @@ endGameInternal( ServerCtxt* server, XWEnv xwe, GameEndReason XP_UNUSED(why),
 
     if ( server->vol.gi->serverRole != SERVER_ISCLIENT ) {
 
-#ifndef XWFEATURE_STANDALONE_ONLY
         XP_U16 devIndex;
         for ( devIndex = 1; devIndex < server->nv.nDevices; ++devIndex ) {
             XWStreamCtxt* stream;
@@ -4757,10 +4719,8 @@ endGameInternal( ServerCtxt* server, XWEnv xwe, GameEndReason XP_UNUSED(why),
             putQuitter( server, stream, quitter );
             stream_destroy( stream );
         }
-#endif
         doEndGame( server, xwe, quitter );
 
-#ifndef XWFEATURE_STANDALONE_ONLY
     } else {
         XWStreamCtxt* stream;
         stream = messageStreamWithHeader( server, xwe, HOST_DEVICE,
@@ -4769,7 +4729,6 @@ endGameInternal( ServerCtxt* server, XWEnv xwe, GameEndReason XP_UNUSED(why),
         stream_destroy( stream );
 
         /* Do I want to change the state I'm in?  I don't think so.... */
-#endif
     }
 } /* endGameInternal */
 
@@ -4832,7 +4791,6 @@ setTurn( ServerCtxt* server, XWEnv xwe, XP_S16 turn )
     }
 }
 
-#ifndef XWFEATURE_STANDALONE_ONLY
 static void
 tellMoveWasLegal( ServerCtxt* server, XWEnv xwe )
 {
@@ -4953,7 +4911,6 @@ reflectUndos( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* stream, XW_Proto code
     LOG_RETURNF( "%s", boolToStr(success) );
     return success;
 } /* reflectUndos */
-#endif
 
 XP_Bool
 server_handleUndo( ServerCtxt* server, XWEnv xwe, XP_U16 limit )
@@ -4993,7 +4950,6 @@ server_handleUndo( ServerCtxt* server, XWEnv xwe, XP_U16 limit )
     result = nUndone > 0 ;
     if ( result ) {
         XP_U32 newHash = model_getHash( model );
-#ifndef XWFEATURE_STANDALONE_ONLY
         XP_ASSERT( lastUndone != 0xFFFF );
         SRVR_LOGFF( "popped to hash %X", newHash );
         if ( server->vol.gi->serverRole == SERVER_ISCLIENT ) {
@@ -5002,7 +4958,6 @@ server_handleUndo( ServerCtxt* server, XWEnv xwe, XP_U16 limit )
             sendUndoToClientsExcept( server, xwe, HOST_DEVICE, nUndone,
                                      lastUndone, newHash );
         }
-#endif
         sortTilesIf( server, lastTurnUndone );
         nextTurn( server, xwe, lastTurnUndone );
     } else {
@@ -5015,7 +4970,6 @@ server_handleUndo( ServerCtxt* server, XWEnv xwe, XP_U16 limit )
     return result;
 } /* server_handleUndo */
 
-#ifndef XWFEATURE_STANDALONE_ONLY
 static void
 writeProto( const ServerCtxt* server, XWStreamCtxt* stream, XW_Proto proto )
 {
@@ -5153,7 +5107,6 @@ server_receiveMessage( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* incoming )
     // XP_ASSERT( accepted );      /* do not commit!!! */
     return accepted;
 } /* server_receiveMessage */
-#endif
 
 void 
 server_formatDictCounts( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* stream,

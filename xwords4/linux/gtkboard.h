@@ -102,7 +102,7 @@ typedef struct GtkGameGlobals {
     GtkWidget* commit_button;
     GtkWidget* invite_button;
     GtkWidget* buttons_hbox;
-#if ! defined XWFEATURE_STANDALONE_ONLY && defined DEBUG
+#ifdef DEBUG
     GtkWidget* drop_checks_vbox;
 #endif
 #ifdef XWFEATURE_CHAT
@@ -117,10 +117,8 @@ typedef struct GtkGameGlobals {
     GtkAdjustment* adjustment;
 
     ClientStreamRec clientRecs[MAX_NUM_PLAYERS];
-#ifndef XWFEATURE_STANDALONE_ONLY
     XP_U16 netStatLeft, netStatTop;
     XP_UCHAR stateChar;
-#endif
 
     DropTypeData dropData[COMMS_CONN_NTYPES];
 

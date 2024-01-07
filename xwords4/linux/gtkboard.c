@@ -509,8 +509,7 @@ setTransportProcs( TransportProcs* procs, GtkGameGlobals* globals )
     procs->countChanged = countChanged_gtk;
 }
 
-#ifndef XWFEATURE_STANDALONE_ONLY
-# ifdef DEBUG
+#ifdef DEBUG
 static void 
 drop_msg_toggle( GtkWidget* toggle, void* data )
 {
@@ -569,10 +568,9 @@ addDropChecks( GtkGameGlobals* globals )
         gtk_widget_show(globals->drop_checks_vbox);
     }
 }
-# else
-#  define addDropChecks( globals )
-# endif  /* DEBUG */
-#endif
+#else
+# define addDropChecks( globals )
+#endif  /* DEBUG */
 
 static void
 formatSizeKey( gchar* key, sqlite3_int64 rowid )
@@ -610,8 +608,6 @@ saveSizeRowid( GtkGameGlobals* globals )
 static void
 createOrLoadObjects( GtkGameGlobals* globals )
 {
-#ifndef XWFEATURE_STANDALONE_ONLY
-#endif
     CommonGlobals* cGlobals = &globals->cGlobals;
     LaunchParams* params = cGlobals->params;
 
@@ -916,7 +912,6 @@ handle_trade_cancel( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
     }
 }
 
-#ifndef XWFEATURE_STANDALONE_ONLY
 static void
 handle_resend( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
 {
@@ -953,7 +948,6 @@ handle_commstats( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
         stream_destroy( stream );
     }
 } /* handle_commstats */
-#endif
 #endif
 
 #ifdef MEM_DEBUG
@@ -1060,7 +1054,6 @@ makeMenus( GtkGameGlobals* globals )
 #endif
     fileMenu = makeAddSubmenu( menubar, "Network" );
 
-#ifndef XWFEATURE_STANDALONE_ONLY
     (void)createAddItem( fileMenu, "Resend", 
                          (GCallback)handle_resend, globals );
 #ifdef XWFEATURE_COMMSACK
@@ -1071,7 +1064,6 @@ makeMenus( GtkGameGlobals* globals )
     (void)createAddItem( fileMenu, "Stats", 
                          (GCallback)handle_commstats, globals );
 # endif
-#endif
 #ifdef MEM_DEBUG
     (void)createAddItem( fileMenu, "Mem stats", 
                          (GCallback)handle_memstats, globals );
@@ -2274,7 +2266,6 @@ setupGtkUtilCallbacks( GtkGameGlobals* globals, XW_UtilCtxt* util )
     assertTableFull( util->vtable, sizeof(*util->vtable), "gtk util" );
 } /* setupGtkUtilCallbacks */
 
-#ifndef XWFEATURE_STANDALONE_ONLY
 typedef struct _SockInfo {
     GIOChannel* channel;
     guint watch;
@@ -2341,7 +2332,6 @@ gtk_socket_acceptor( int listener, Acceptor func, CommonGlobals* globals,
         *storage = info;
     }
 } /* gtk_socket_acceptor */
-#endif  /* #ifndef XWFEATURE_STANDALONE_ONLY */
 
 /* int */
 /* board_main( LaunchParams* params ) */
@@ -2381,16 +2371,14 @@ initGlobalsNoDraw( GtkGameGlobals* globals, LaunchParams* params,
     cGlobals->params = params;
     cGlobals->lastNTilesToUse = MAX_TRAY_TILES;
     cGlobals->rowid = -1;
-#ifndef XWFEATURE_STANDALONE_ONLY
-# ifdef XWFEATURE_RELAY
+#ifdef XWFEATURE_RELAY
     cGlobals->relaySocket = -1;
-# endif
+#endif
 
     cGlobals->socketAddedClosure = globals;
     cGlobals->onSave = gtkOnGameSaved;
     cGlobals->onSaveClosure = globals;
     cGlobals->addAcceptor = gtk_socket_acceptor;
-#endif
 
     cGlobals->cp.showBoardArrow = XP_TRUE;
     cGlobals->cp.hideTileValues = params->hideValues;
@@ -2486,7 +2474,7 @@ initBoardGlobalsGtk( GtkGameGlobals* globals, LaunchParams* params,
     menubar = makeMenus( globals );
     gtk_box_pack_start( GTK_BOX(vbox), menubar, FALSE, TRUE, 0);
 
-#if ! defined XWFEATURE_STANDALONE_ONLY && defined DEBUG
+#ifdef DEBUG
     globals->drop_checks_vbox = gtk_box_new( GTK_ORIENTATION_VERTICAL, 0 );
     gtk_box_pack_start( GTK_BOX(vbox), globals->drop_checks_vbox, 
                         FALSE, TRUE, 0 );
@@ -2625,12 +2613,10 @@ loadGameNoDraw( GtkGameGlobals* globals, LaunchParams* params,
                                       &cGlobals->cp, &cGlobals->procs );
         if ( loaded ) {
             XP_LOGF( "%s: game loaded", __func__ );
-#ifndef XWFEATURE_STANDALONE_ONLY
             if ( !!globals->cGlobals.game.comms ) {
                 comms_resendAll( globals->cGlobals.game.comms, NULL_XWE, COMMS_CONN_NONE,
                                  XP_FALSE );
             }
-#endif
         } else {
             game_dispose( &cGlobals->game, NULL_XWE );
         }

@@ -23,8 +23,6 @@
 
 #define CONN_TYPE_COUNT 0
 
-#ifndef XWFEATURE_STANDALONE_ONLY
-
 #ifdef XWFEATURE_RELAY
 # define PREV_COUNT CONN_TYPE_COUNT
 # undef CONN_TYPE_COUNT
@@ -56,7 +54,5 @@
 #if CONN_TYPE_COUNT > 1
 # define NEEDS_CHOOSE_CONNTYPE
 #endif
-
-#endif  /* XWFEATURE_STANDALONE_ONLY */
 
 #endif

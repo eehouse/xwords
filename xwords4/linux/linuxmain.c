@@ -223,19 +223,15 @@ linuxOpenGame( CommonGlobals* cGlobals )
     }
 
     if ( opened ) {
-#ifndef XWFEATURE_STANDALONE_ONLY
         DeviceRole serverRole = cGlobals->gi->serverRole;
         XP_LOGF( "%s(): server role: %d", __func__, serverRole );
         if ( /*!!returnAddrP && */serverRole == SERVER_ISCLIENT ) {
             tryConnectToServer( cGlobals );
         }
-#endif
 
-#ifndef XWFEATURE_STANDALONE_ONLY
         if ( !!cGlobals->game.comms ) {
             comms_start( cGlobals->game.comms, NULL_XWE );
         }
-#endif
         server_do( cGlobals->game.server, NULL_XWE );
         linuxSaveGame( cGlobals );   /* again, to include address etc. */
 
@@ -2222,7 +2218,6 @@ score_timer_func( gpointer data )
     return XP_FALSE;
 } /* score_timer_func */
 
-#ifndef XWFEATURE_STANDALONE_ONLY
 static gint
 comms_timer_func( gpointer data )
 {
@@ -2234,7 +2229,6 @@ comms_timer_func( gpointer data )
 
     return (gint)0;
 }
-#endif
 
 static gint
 pen_timer_func( gpointer data )
@@ -2264,8 +2258,7 @@ slowrob_timer_func( gpointer data )
 
 static void
 linux_util_setTimer( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe), XWTimerReason why,
-                     XP_U16 XP_UNUSED_STANDALONE(when),
-                     XWTimerProc proc, void* closure )
+                     XP_U16 when, XWTimerProc proc, void* closure )
 {
     CommonGlobals* cGlobals = (CommonGlobals*)uc->closure;
     guint newSrc;
@@ -2292,11 +2285,9 @@ linux_util_setTimer( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe), XWTimerReason why,
         newSrc = g_timeout_add( 1000 * when, dup_timer_func, cGlobals );
         break;
 
-#ifndef XWFEATURE_STANDALONE_ONLY
     case TIMER_COMMS:
         newSrc = g_timeout_add( 1000 * when, comms_timer_func, cGlobals );
         break;
-#endif
 #ifdef XWFEATURE_SLOW_ROBOT
     case TIMER_SLOWROBOT:
         newSrc = g_timeout_add( 1000 * when, slowrob_timer_func, cGlobals );
@@ -2419,11 +2410,6 @@ initParams( LaunchParams* params )
     params->dictMgr = dmgr_make( MPPARM_NOCOMMA(params->mpool) );
 
     // linux_util_vt_init( MPPARM(params->mpool) params->util );
-#ifndef XWFEATURE_STANDALONE_ONLY
-    /* params->util->vtable->m_util_informMissing = linux_util_informMissing; */
-    /* params->util->vtable->m_util_addrChange = linux_util_addrChange; */
-    /* params->util->vtable->m_util_setIsServer = linux_util_setIsServer; */
-#endif
 
     params->dutil = linux_dutils_init( MPPARM(params->mpool) params->vtMgr, params );
 }

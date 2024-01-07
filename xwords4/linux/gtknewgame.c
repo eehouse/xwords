@@ -52,11 +52,9 @@ typedef struct GtkNewGameState {
     int bingoMin;
     gchar* dict;
 
-#ifndef XWFEATURE_STANDALONE_ONLY
     GtkWidget* remoteChecks[MAX_NUM_PLAYERS];
     GtkWidget* roleCombo;
     GtkWidget* settingsButton;
-#endif
     GtkWidget* robotChecks[MAX_NUM_PLAYERS];
     GtkWidget* nameLabels[MAX_NUM_PLAYERS];
     GtkWidget* nameFields[MAX_NUM_PLAYERS];
@@ -79,7 +77,6 @@ nplayers_menu_changed( GtkComboBox* combo, GtkNewGameState* state )
     }
 } /* nplayers_menu_changed */
 
-#ifndef XWFEATURE_STANDALONE_ONLY
 static void
 role_combo_changed( GtkComboBox* combo, gpointer gp )
 {
@@ -98,12 +95,10 @@ role_combo_changed( GtkComboBox* combo, gpointer gp )
             gtk_combo_box_set_active( GTK_COMBO_BOX(combo), state->role );
         }
 
-#ifndef XWFEATURE_STANDALONE_ONLY
         if ( state->loaded && SERVER_STANDALONE != role  ) {
             gtkConnsDlg( state->globals, &state->addr, role,
                          !state->isNewGame );
         }
-#endif
     }
 }
 
@@ -120,8 +115,6 @@ handle_settings( GtkWidget* XP_UNUSED(item), GtkNewGameState* state )
 {
     gtkConnsDlg( state->globals, &state->addr, state->role, !state->isNewGame );
 }
-
-#endif
 
 static void
 callChangedWithIndex( GtkNewGameState* state, GtkWidget* item, 
@@ -152,13 +145,11 @@ handle_juggle( GtkWidget* XP_UNUSED(item), GtkNewGameState* state )
     }
 }
 
-#ifndef XWFEATURE_STANDALONE_ONLY
 static void
 handle_remote_toggled( GtkWidget* item, GtkNewGameState* state )
 {
     callChangedWithIndex( state, item, state->remoteChecks );
 }
-#endif
 
 static void
 size_combo_changed( GtkComboBox* combo, gpointer gp )
@@ -407,17 +398,14 @@ makeNewGameDialog( GtkNewGameState* state )
     GtkWidget* dialog;
     GtkWidget* vbox;
     GtkWidget* hbox;
-#ifndef XWFEATURE_STANDALONE_ONLY
     GtkWidget* roleCombo;
     char* roles[] = { "Standalone", "Host" };
-#endif
 
     dialog = gtk_dialog_new();
     gtk_window_set_modal( GTK_WINDOW( dialog ), TRUE );
 
     vbox = gtk_box_new( GTK_ORIENTATION_VERTICAL, 0 );
 
-#ifndef XWFEATURE_STANDALONE_ONLY
     hbox = gtk_box_new( GTK_ORIENTATION_HORIZONTAL, 0 );
     gtk_box_pack_start( GTK_BOX(hbox), gtk_label_new("Role:"),
                         FALSE, TRUE, 0 );
@@ -438,7 +426,6 @@ makeNewGameDialog( GtkNewGameState* state )
     gtk_box_pack_start( GTK_BOX(hbox), state->settingsButton, FALSE, TRUE, 0 );
 
     gtk_box_pack_start( GTK_BOX(vbox), hbox, FALSE, TRUE, 0 );
-#endif
 
     /* NPlayers menu */
     hbox = gtk_box_new( GTK_ORIENTATION_HORIZONTAL, 0 );
@@ -469,28 +456,22 @@ makeNewGameDialog( GtkNewGameState* state )
 
     for ( int ii = 0; ii < MAX_NUM_PLAYERS; ++ii ) {
         GtkWidget* label = gtk_label_new("Name:");
-#ifndef XWFEATURE_STANDALONE_ONLY
         GtkWidget* remoteCheck = gtk_check_button_new_with_label( "Remote" );
-#endif
         GtkWidget* nameField = gtk_entry_new();
         GtkWidget* passwdField = gtk_entry_new();
         gtk_entry_set_max_length( GTK_ENTRY(passwdField), 6 );
         GtkWidget* robotCheck = gtk_check_button_new_with_label( "Robot" );
 
-#ifndef XWFEATURE_STANDALONE_ONLY
         g_signal_connect( remoteCheck, "toggled", 
                           (GCallback)handle_remote_toggled, state );
-#endif
         g_signal_connect( robotCheck, "toggled", 
                           (GCallback)handle_robot_toggled, state );
 
         hbox = gtk_box_new( GTK_ORIENTATION_HORIZONTAL, 0 );
 
-#ifndef XWFEATURE_STANDALONE_ONLY
         gtk_box_pack_start( GTK_BOX(hbox), remoteCheck, FALSE, TRUE, 0 );
         gtk_widget_show( remoteCheck );
         state->remoteChecks[ii] = remoteCheck;
-#endif
         
         gtk_box_pack_start( GTK_BOX(hbox), label, FALSE, TRUE, 0 );
         gtk_widget_show( label );
@@ -565,10 +546,8 @@ widgetForCol( const GtkNewGameState* state, XP_U16 player, NewGameColumn col )
         widget = state->nameFields[player];
     } else if ( col == NG_COL_PASSWD ) {
         widget = state->passwdFields[player];
-#ifndef XWFEATURE_STANDALONE_ONLY
     } else if ( col == NG_COL_REMOTE ) {
         widget = state->remoteChecks[player];
-#endif
     } else if ( col == NG_COL_ROBOT ) {
         widget = state->robotChecks[player];
     } 
@@ -611,13 +590,11 @@ gtk_newgame_attr_enable( void* closure, NewGameAttr attr, XP_TriEnable enable )
     GtkWidget* widget = NULL;
     if ( attr == NG_ATTR_NPLAYERS ) {
         widget = state->nPlayersCombo;
-#ifndef XWFEATURE_STANDALONE_ONLY
     } else if ( attr == NG_ATTR_CANCONFIG ) {
         widget = state->settingsButton;
     } else if ( attr == NG_ATTR_ROLE ) {
         /* NG_ATTR_ROLE always enabled */
 /*         widget = state->roleCombo; */
-#endif
     } else if ( attr == NG_ATTR_CANJUGGLE ) {
         widget = state->juggleButton;
     }
@@ -652,9 +629,7 @@ gtk_newgame_col_set( void* closure, XP_U16 player, NewGameColumn col,
         gtk_entry_set_text( GTK_ENTRY(widget), cp );
         break;
     }
-#ifndef XWFEATURE_STANDALONE_ONLY
     case NG_COL_REMOTE:
-#endif
     case NG_COL_ROBOT:
         gtk_toggle_button_set_active( GTK_TOGGLE_BUTTON(widget),
                                       value.ng_bool );
@@ -671,9 +646,7 @@ gtk_newgame_col_get( void* closure, XP_U16 player, NewGameColumn col,
 
     GtkWidget* widget = widgetForCol( state, player, col );
     switch ( col ) {
-#ifndef XWFEATURE_STANDALONE_ONLY        
     case NG_COL_REMOTE:
-#endif
     case NG_COL_ROBOT:
         value.ng_bool =
             gtk_toggle_button_get_active( GTK_TOGGLE_BUTTON(widget));
@@ -698,7 +671,6 @@ gtk_newgame_attr_set( void* closure, NewGameAttr attr, NGValue value )
         gtk_combo_box_set_active( GTK_COMBO_BOX(state->nPlayersCombo), ii-1 );
     }
         break;
-#ifndef XWFEATURE_STANDALONE_ONLY
     case NG_ATTR_ROLE:
         gtk_combo_box_set_active( GTK_COMBO_BOX(state->roleCombo), 
                                   value.ng_role );
@@ -706,7 +678,6 @@ gtk_newgame_attr_set( void* closure, NewGameAttr attr, NGValue value )
     case NG_ATTR_REMHEADER:
         /* ignored on GTK: no headers at all */
         break;
-#endif
     case NG_ATTR_NPLAYHEADER:
         gtk_label_set_text( GTK_LABEL(state->nPlayersLabel), value.ng_cp );
         break;

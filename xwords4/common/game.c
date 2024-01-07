@@ -173,11 +173,9 @@ game_makeNewGame( MPFORMAL XWEnv xwe, XWGame* game, CurGameInfo* gi,
                   )
 {
     XP_ASSERT( gi == util->gameInfo ); /* if holds, remove gi param */
-#ifndef XWFEATURE_STANDALONE_ONLY
     XP_U16 nPlayersHere = 0;
     XP_U16 nPlayersTotal = 0;
     checkServerRole( gi, &nPlayersHere, &nPlayersTotal );
-#endif
     assertUtilOK( util );
 
     if ( 0 == gi->gameID ) {
@@ -199,7 +197,6 @@ game_makeNewGame( MPFORMAL XWEnv xwe, XWGame* game, CurGameInfo* gi,
         model_setDictionary( game->model, xwe, dict );
         model_setPlayerDicts( game->model, xwe, &playerDicts );
 
-#ifndef XWFEATURE_STANDALONE_ONLY
         if ( gi->serverRole != SERVER_STANDALONE ) {
             game->comms = comms_make( MPPARM(mpool) xwe, util,
                                       gi->serverRole != SERVER_ISCLIENT,
@@ -215,13 +212,8 @@ game_makeNewGame( MPFORMAL XWEnv xwe, XWGame* game, CurGameInfo* gi,
         }
 
 
-#endif
         game->server = server_make( MPPARM(mpool) xwe, game->model,
-#ifndef XWFEATURE_STANDALONE_ONLY
                                     game->comms,
-#else
-                                    (CommsCtxt*)NULL,
-#endif
                                     util );
         game->board = board_make( MPPARM(mpool) xwe, game->model, game->server,
                                   NULL, util );
@@ -307,9 +299,7 @@ game_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
 {
     XP_ASSERT( NULL == util || gi == util->gameInfo );
     XP_Bool success = XP_FALSE;
-#ifndef XWFEATURE_STANDALONE_ONLY
     XP_Bool hasComms;
-#endif
     XP_U8 strVersion = stream_getU8( stream );
     XP_LOGFF( "strVersion = 0x%x", (XP_U16)strVersion );
 
@@ -458,9 +448,6 @@ game_saveToStream( const XWGame* game, const CurGameInfo* gi,
 
         XP_U8 flags = NULL == game->comms ? 0 : FLAG_HASCOMMS;
         stream_putU8( stream, flags );
-#ifdef XWFEATURE_STANDALONE_ONLY
-        XP_ASSERT( !game->comms );
-#endif
         if ( NULL != game->comms ) {
             comms_writeToStream( game->comms, stream, saveToken );
         }
@@ -590,7 +577,6 @@ game_dispose( XWGame* game, XWEnv xwe )
         game->board = NULL;
     }
 
-#ifndef XWFEATURE_STANDALONE_ONLY
     if ( !!game->comms ) {
         comms_stop( game->comms
 #ifdef XWFEATURE_RELAY
@@ -600,7 +586,6 @@ game_dispose( XWGame* game, XWEnv xwe )
         comms_destroy( game->comms, xwe );
         game->comms = NULL;
     }
-#endif
     if ( !!game->model ) { 
         model_destroy( game->model, xwe );
         game->model = NULL;

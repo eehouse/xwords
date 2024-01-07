@@ -50,9 +50,7 @@ struct NewGameCtx {
     XP_Bool isNewGame;
     XP_Bool changedNPlayers;
     XP_TriEnable juggleEnabled;
-#ifndef XWFEATURE_STANDALONE_ONLY
     XP_TriEnable settingsEnabled;
-#endif
     XP_Bool duplicateEnabled;
 
     MPSLOT
@@ -67,12 +65,8 @@ static void considerEnable( NewGameCtx* ngc );
 static void storePlayer( NewGameCtx* ngc, XP_U16 player, LocalPlayer* lp );
 static void loadPlayer( NewGameCtx* ngc, XP_U16 player, 
                         const LocalPlayer* lp );
-#ifndef XWFEATURE_STANDALONE_ONLY
 static XP_Bool changeRole( NewGameCtx* ngc, XWEnv xwe,  DeviceRole role );
 static XP_Bool checkConsistent( NewGameCtx* ngc, XWEnv xwe, XP_Bool warnUser );
-#else
-# define checkConsistent( ngc, xwe, warnUser ) XP_TRUE
-#endif
 
 NewGameCtx*
 newg_make( MPFORMAL XP_Bool isNewGame, 
@@ -125,22 +119,18 @@ newg_load( NewGameCtx* ngc, XWEnv xwe, const CurGameInfo* gi )
 
     ngc->role = role = gi->serverRole;
     localOnly = (role == SERVER_ISCLIENT) && ngc->isNewGame;
-#ifndef XWFEATURE_STANDALONE_ONLY
     value.ng_role = role;
     (*ngc->setAttrProc)( closure, NG_ATTR_ROLE, value );
     (*ngc->enableAttrProc)( closure, NG_ATTR_ROLE, ngc->isNewGame? 
                             TRI_ENAB_ENABLED : TRI_ENAB_DISABLED );
-#endif
 
     nPlayers = gi->nPlayers;
     ngc->nPlayersTotal = nPlayers;
-#ifndef XWFEATURE_STANDALONE_ONLY
     for ( ii = nPlayers - 1; ii >= 0; --ii ) {
         if ( gi->players[ii].isLocal ) {
             ++ngc->nLocalPlayers;
         }
     }
-#endif
     if ( localOnly ) {
         nPlayers = ngc->nLocalPlayers;
     }
@@ -202,11 +192,9 @@ cpToLP( NGValue value, const void* cbClosure )
     XP_UCHAR** strAddr = NULL;
     
     switch ( cpcl->col ) {
-#ifndef XWFEATURE_STANDALONE_ONLY
     case NG_COL_REMOTE:
         lp->isLocal = !value.ng_bool;
         break;
-#endif
     case NG_COL_NAME:
         strAddr = &lp->name;
         break;
@@ -227,18 +215,15 @@ cpToLP( NGValue value, const void* cbClosure )
 } /* cpToLP */
 
 XP_Bool
-newg_store( NewGameCtx* ngc, XWEnv xwe, CurGameInfo* gi,
-            XP_Bool XP_UNUSED_STANDALONE(warn) )
+newg_store( NewGameCtx* ngc, XWEnv xwe, CurGameInfo* gi, XP_Bool warn )
 {
     XP_Bool consistent = checkConsistent( ngc, xwe, warn );
 
     if ( consistent ) {
         XP_Bool makeLocal = XP_FALSE;
         gi->nPlayers = ngc->nPlayersShown;
-#ifndef XWFEATURE_STANDALONE_ONLY
         gi->serverRole = ngc->role;
         makeLocal = ngc->role != SERVER_ISHOST;
-#endif
 
         gi->gameSeconds = ngc->timerSeconds;
         gi->timerEnabled = gi->gameSeconds > 0;
@@ -280,11 +265,9 @@ newg_attrChanged( NewGameCtx* ngc, XWEnv xwe,
             changed = XP_TRUE;
         }
         break;
-#ifndef XWFEATURE_STANDALONE_ONLY
     case NG_ATTR_ROLE:
         changed = changeRole( ngc, xwe, value.ng_role );
         break;
-#endif
     case NG_ATTR_TIMER:
         ngc->timerSeconds = value.ng_u16;
         break;
@@ -313,9 +296,7 @@ deepCopy( NGValue value, const void* closure )
     DeepValue* dvp = (DeepValue*)closure;
     switch ( dvp->col ) {
     case NG_COL_ROBOT:
-#ifndef XWFEATURE_STANDALONE_ONLY
     case NG_COL_REMOTE:
-#endif
         dvp->value.ng_bool = value.ng_bool;
         break;
     case NG_COL_NAME:
@@ -372,7 +353,6 @@ newg_juggle( NewGameCtx* ngc )
     return changed;
 } /* newg_juggle */
 
-#ifndef XWFEATURE_STANDALONE_ONLY
 static XP_Bool
 checkConsistent( NewGameCtx* ngc, XWEnv xwe, XP_Bool warnUser )
 {
@@ -398,7 +378,6 @@ checkConsistent( NewGameCtx* ngc, XWEnv xwe, XP_Bool warnUser )
 
     return consistent;
 } /* checkConsistent */
-#endif
 
 static void
 enableOne( NewGameCtx* ngc, XP_U16 player, NewGameColumn col, 
@@ -438,7 +417,6 @@ adjustOneRow( NewGameCtx* ngc, XP_U16 player, XP_Bool force )
     if ( player >= ngc->nPlayersShown ) {
         /* do nothing: all are hidden above */
     } else {
-#ifndef XWFEATURE_STANDALONE_ONLY
         /* If standalone or client, remote is hidden.  If server but not
            new game, it's disabled */
         if ( (role == SERVER_ISHOST )
@@ -453,7 +431,6 @@ adjustOneRow( NewGameCtx* ngc, XP_U16 player, XP_Bool force )
                                 deepCopy, &dValue );
             isLocal = !dValue.value.ng_bool;
         }
-#endif
 
         /* If remote is enabled and set, then if it's a new game all else is
            hidden.  But if it's not a new game, they're disabled.  Password is
@@ -510,7 +487,6 @@ adjustOneRow( NewGameCtx* ngc, XP_U16 player, XP_Bool force )
  * the most common case, which is playing again with the same players.  In
  * that case changing role then back again should not lose/change data.
  */
-#ifndef XWFEATURE_STANDALONE_ONLY
 static XP_Bool
 changeRole( NewGameCtx* ngc, XWEnv xwe, DeviceRole newRole )
 {
@@ -534,7 +510,6 @@ changeRole( NewGameCtx* ngc, XWEnv xwe, DeviceRole newRole )
     }
     return changing;
 }
-#endif
 
 static void
 setRoleStrings( NewGameCtx* ngc, XWEnv xwe )
@@ -545,19 +520,14 @@ setRoleStrings( NewGameCtx* ngc, XWEnv xwe )
     /* Tell client to set/change players label text, and also to add remote
      checkbox column header if required. */
 
-#ifndef XWFEATURE_STANDALONE_ONLY
     (*ngc->enableAttrProc)( closure, NG_ATTR_REMHEADER, 
                             ( (ngc->role == SERVER_ISHOST)
                               || (!ngc->isNewGame
                                   && (ngc->role != SERVER_STANDALONE)) )?
                             TRI_ENAB_ENABLED : TRI_ENAB_HIDDEN );
-#endif
 
-    if ( 0 ) {
-#ifndef XWFEATURE_STANDALONE_ONLY
-    } else if ( ngc->role == SERVER_ISCLIENT && ngc->isNewGame ) {
+    if ( ngc->role == SERVER_ISCLIENT && ngc->isNewGame ) {
         strID = STR_LOCALPLAYERS;
-#endif
     } else {
         strID = STR_TOTALPLAYERS;
     }
@@ -579,7 +549,6 @@ considerEnable( NewGameCtx* ngc )
         ngc->juggleEnabled = newEnable;
     }
 
-#ifndef XWFEATURE_STANDALONE_ONLY
     newEnable = (ngc->role == SERVER_STANDALONE)?
         TRI_ENAB_HIDDEN : TRI_ENAB_ENABLED;
 
@@ -587,7 +556,6 @@ considerEnable( NewGameCtx* ngc )
         ngc->settingsEnabled = newEnable;
         (*ngc->enableAttrProc)( ngc->closure, NG_ATTR_CANCONFIG, newEnable );
     }
-#endif
 } /* considerEnable */
 
 static void
@@ -611,10 +579,8 @@ loadPlayer( NewGameCtx* ngc, XP_U16 player, const LocalPlayer* lp )
     NGValue value;
     void* closure = ngc->closure;
 
-#ifndef XWFEATURE_STANDALONE_ONLY
     value.ng_bool = !lp->isLocal;
     (*ngc->setColProc)(closure, player, NG_COL_REMOTE, value );
-#endif
     value.ng_cp = lp->name;
     (*ngc->setColProc)(closure, player, NG_COL_NAME, value );
 

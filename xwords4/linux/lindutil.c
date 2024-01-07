@@ -342,12 +342,10 @@ linux_dutil_getUserString( XW_DUtilCtxt* XP_UNUSED(uc),
         return (XP_UCHAR*)"The robot \"%s\" moved:\n";
     case STRS_REMOTE_MOVED:
         return (XP_UCHAR*)"Remote player \"%s\" moved:\n";
-#ifndef XWFEATURE_STANDALONE_ONLY
     case STR_LOCALPLAYERS:
         return (XP_UCHAR*)"Local players";
     case STR_REMOTE:
         return (XP_UCHAR*)"Remote";
-#endif
     case STR_TOTALPLAYERS:
         return (XP_UCHAR*)"Total players";
 

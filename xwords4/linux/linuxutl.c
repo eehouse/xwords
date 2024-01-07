@@ -206,7 +206,6 @@ linux_getErrString( UtilErrID id, XP_Bool* silent )
         message = "No peeking at the robot's tiles!";
         break;
 
-#ifndef XWFEATURE_STANDALONE_ONLY
     case ERR_NO_PEEK_REMOTE_TILES:
         message = "No peeking at remote players' tiles!";
         break;
@@ -221,7 +220,6 @@ linux_getErrString( UtilErrID id, XP_Bool* silent )
         message = "At least one player must be marked remote for a game "
             "started as Host.";
         break;
-#endif
 
     case ERR_NO_EMPTY_TRADE:
         message = "No tiles selected; trade cancelled.";

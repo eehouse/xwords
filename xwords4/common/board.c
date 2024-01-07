@@ -2701,10 +2701,8 @@ askRevealTray( BoardCtxt* board, XWEnv xwe )
         revealed = XP_TRUE;
     } else if ( server_getCurrentTurn( board->server, NULL ) < 0 ) {
         revealed = XP_FALSE;
-#ifndef XWFEATURE_STANDALONE_ONLY
     } else if ( !lp->isLocal ) {
         util_userError( board->util, xwe, ERR_NO_PEEK_REMOTE_TILES );
-#endif
     } else if ( LP_IS_ROBOT(lp) ) {
         if ( reversed ) {
             util_userError( board->util, xwe, ERR_NO_PEEK_ROBOT_TILES );

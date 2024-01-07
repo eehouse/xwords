@@ -43,25 +43,21 @@ typedef struct NewGameCtx NewGameCtx;
 
 
 typedef enum {
-#ifndef XWFEATURE_STANDALONE_ONLY
     NG_COL_REMOTE,
-#endif
     NG_COL_NAME
     ,NG_COL_ROBOT
     ,NG_COL_PASSWD
 } NewGameColumn;
 
 typedef enum {
-#ifndef XWFEATURE_STANDALONE_ONLY
     NG_ATTR_ROLE,
     NG_ATTR_CANCONFIG,
     NG_ATTR_REMHEADER,
-#endif
-    NG_ATTR_NPLAYERS
-    ,NG_ATTR_NPLAYHEADER
-    ,NG_ATTR_CANJUGGLE
-    ,NG_ATTR_TIMER
-    ,NG_ATTR_DUPLICATE
+    NG_ATTR_NPLAYERS,
+    NG_ATTR_NPLAYHEADER,
+    NG_ATTR_CANJUGGLE,
+    NG_ATTR_TIMER,
+    NG_ATTR_DUPLICATE,
 } NewGameAttr;
 
 typedef union NGValue {
