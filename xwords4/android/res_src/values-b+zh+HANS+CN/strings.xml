@@ -305,7 +305,7 @@
     <plurals name="invite_msg_fmt">
         <item quantity="other">游戏正在等待%1$d远程玩家接收并回应邀请。
 \n
-\n在受邀玩家回应前，你会看到此消息。如果你怀疑发出的邀请丢失了，再发一次也没问题。</item>
+\n在受邀玩家回应前，你会看到此消息。</item>
     </plurals>
     <string name="prefs_defaults">新游戏默认设置</string>
     <string name="title_invite_history">已发送邀请</string>
@@ -451,7 +451,7 @@
     <string name="str_commit_confirm">提交当前移动吗？
 \n</string>
     <string name="missing_player">（还未加入...）</string>
-    <string name="invite_msg_extra_rematch">重赛时会自动发送所有必要邀请。但如果受邀者未回应，你总可以发送新邀请。</string>
+    <string name="invite_msg_extra_rematch">重赛时会自动创建所有必要邀请，并在被接受前自动重发。</string>
     <string name="skip_confirm_turn">跳过确认过程</string>
     <string name="not_again_newselect">点击游戏列表项可打开游戏。
 \n
@@ -1087,4 +1087,5 @@
 \n（只能重新添加在蓝牙范围内的设备。）"</string>
     <string name="archive_expl_store">选择要保存的 CrossWords 数据类型。</string>
     <string name="confirm_get_locdict_fmt">你的设备设置使用%1$s。要下载单词表以使用%1$s游玩 CrossWords 吗？</string>
+    <string name="invite_msg_extra_norematch">如果你怀疑发出的邀请丢失了，再发一次也没问题。</string>
 </resources>
