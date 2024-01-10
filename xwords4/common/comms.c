@@ -2925,7 +2925,9 @@ validateChannelMessage( CommsCtxt* comms, XWEnv xwe, const CommsAddrRec* addr,
         } else if ( msgID != rec->lastMsgRcd + 1 ) {
             COMMS_LOGFF( TAGFMT() "expected %d, got %d", TAGPRMS,
                          rec->lastMsgRcd + 1, msgID );
-            ackAnyImpl( comms, xwe, XP_TRUE );
+            if ( 0 != msgID ) { /* Don't ack ACKs! */
+                ackAnyImpl( comms, xwe, XP_TRUE );
+            }
             rec = NULL;
         }
     } else {
