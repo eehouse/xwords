@@ -623,8 +623,7 @@ public class MQTTUtils extends Thread
     @Override
     public void connectionLost( Throwable cause )
     {
-        Log.d( TAG, "%H.connectionLost(%s)", this, cause );
-        clearInstance();
+        Log.d( TAG, "%H.connectionLost(cause=%s)", this, cause );
     }
 
     @Override
