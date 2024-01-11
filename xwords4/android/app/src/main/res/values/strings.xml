@@ -2762,4 +2762,28 @@
   wordlist. Or just delete the game.
   </string>
 
+  <!-- Explanatory text in dialog allowing player creating a rematch
+       game to chooose how the players in the new game will be ordered
+       -->
+  <string name="expl_rematch_order">Choose how to order players in the
+  new game</string>
+  <!-- Choice causing players in new game to be in the same order as
+       the existing game -->
+  <string name="ro_same">Same as this game</string>
+  <!-- Choice causing players in new game to be ordered with the
+       lowest-scoring player first, highest-scoring last, etc. -->
+  <string name="ro_low_score_first">Low scorer goes first</string>
+  <!-- Choice causing players in new game to be ordered with the
+       highest-scoring player first, lowest-scoring last, etc. -->
+  <string name="ro_high_score_first">High scorer goes first</string>
+  <!-- Choice causing players in new game to be ordered randomly. -->
+  <string name="ro_juggle">Randomly</string>
+
+  <!-- Title of the Preference setting the default rematch order -->
+  <string name="title_rematch_order">Rematched Players Order</string>
+  <!-- Preference setting for rematch order that causes players to be
+       asked each time. If any other choice is made (e.g. ro_same) the
+       choice will not be offered at game creation time. -->
+  <string name="ro_no_default">Ask each time</string>
+
 </resources>

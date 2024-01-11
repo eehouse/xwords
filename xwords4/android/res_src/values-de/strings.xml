@@ -1137,4 +1137,14 @@
 \nBitte verwenden Sie %1$s nur für lokale Partien. Wenn Sie jemanden zu einer Partie einladen, das es verwendet, müssen Sie es ihnen manuell geben, da CrossWords derzeit Wordlisten in Einladungen einzuschließen nicht unterstützt.</string>
     <string name="summary_game_gone">Externe Partie gelöscht</string>
     <string name="invite_msg_extra_norematch">Wenn Sie vermuten, dass eine von Ihnen versendete Einladung verloren ging, schadet es nicht, eine weitere zu senden.</string>
+
+    <string name="expl_rematch_order">Wähle die Reihenfolge der Spieler*innen im neuen Spiel</string>
+    <string name="ro_same">Selbe Reihenfolge wie in diesem Spiel</string>
+    <string name="ro_low_score_first">Verlierer*in zuerst</string>
+    <string name="ro_high_score_first">Gewinner*in zuerst</string>
+    <string name="ro_juggle">Zufällig</string>
+
+    <string name="title_rematch_order">Reihenfolge der Spieler*innen in der Revanche</string>
+    <string name="ro_no_default">Jedes Mal fragen</string>
+
 </resources>
