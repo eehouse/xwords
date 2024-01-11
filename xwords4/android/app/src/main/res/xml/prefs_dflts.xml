@@ -21,6 +21,7 @@
         android:title="@string/title_rematch_order"
         android:entries="@array/ro_names"
         android:entryValues="@array/ro_names"
+        android:defaultValue="@string/ro_no_default"
         />
 
     <Preference app:title="@string/prefs_dicts"
