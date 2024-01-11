@@ -2919,15 +2919,16 @@ validateChannelMessage( CommsCtxt* comms, XWEnv xwe, const CommsAddrRec* addr,
 
         augmentChannelAddr( comms, rec, addr, senderID );
 
-        if ( msgID == rec->lastMsgRcd + 1 ) {
+        if ( msgID == 0 ) {
+            /* an ACK; do nothing */
+            rec = NULL;
+        } else if ( msgID == rec->lastMsgRcd + 1 ) {
             COMMS_LOGFF( TAGFMT() "expected %d AND got %d", TAGPRMS,
                          msgID, msgID );
-        } else if ( msgID != rec->lastMsgRcd + 1 ) {
+        } else {
             COMMS_LOGFF( TAGFMT() "expected %d, got %d", TAGPRMS,
                          rec->lastMsgRcd + 1, msgID );
-            if ( 0 != msgID ) { /* Don't ack ACKs! */
-                ackAnyImpl( comms, xwe, XP_TRUE );
-            }
+            ackAnyImpl( comms, xwe, XP_TRUE );
             rec = NULL;
         }
     } else {
