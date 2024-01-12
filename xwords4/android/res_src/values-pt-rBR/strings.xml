@@ -45,13 +45,13 @@
     <plurals name="invite_msg_fmt">
         <item quantity="one">Esta partida está aguardando %1$d jogador remoto responder aos convites.
 \n
-\nVocê verá esta mensagem até que o jogador convidado tenha respondido. Se você suspeita que o convite que enviou foi perdido, não há mal nenhum em enviar outro.</item>
+\nVocê verá esta mensagem até que o jogador convidado tenha respondido.</item>
         <item quantity="many">Esta partida está aguardando %1$d jogadores remotos respondam aos convites.
 \n
-\nVocê verá esta mensagem até que os jogadores convidados tenham respondido. Se você suspeita que o convite que enviou foi perdido, não há mal nenhum em enviar outro.</item>
+\nVocê verá esta mensagem até que os jogadores convidados tenham respondido.</item>
         <item quantity="other">Esta partida está aguardando %1$d jogadores remotos responder aos convites.
 \n
-\nVocê verá esta mensagem até que os jogadores convidados tenham respondido. Se você suspeita que os convites que enviou foram perdidos, não há mal nenhum em enviar outro.</item>
+\nVocê verá esta mensagem até que os jogadores convidados tenham respondido.</item>
     </plurals>
     <string name="no_moves_made">(Sem jogadas ainda)</string>
     <string name="force_expl">Em um partida com muitos dispositivos deve ter pelo menos um jogador desse dispositivo e outro não. Por favor, verifique os jogadores remotos.</string>
@@ -1014,7 +1014,7 @@
     <string name="waiting_rematch_title">Revanche em progresso</string>
     <string name="button_rematch">Revanche</string>
     <string name="filter_sum_pat_fmt">Exibindo: %1$s, de tamanho %2$d-%3$d (%4$d palavras)</string>
-    <string name="invite_msg_extra_rematch">Com revanches, todos os convites necessários são enviados automaticamente. Mas você sempre pode enviar novos se um convidado não estiver respondendo.</string>
+    <string name="invite_msg_extra_rematch">Com revanches, todos os convites necessários são criados automaticamente e serão reenviados até serem aceitos.</string>
     <string name="choose_expl_default_solo">Iniciar uma partida solo utilizando os padrões atuais</string>
     <string name="knowns_ts_fmt">Partida mais recente: %1$s</string>
     <string name="invite_choice_mqtt">Internet</string>
@@ -1183,4 +1183,12 @@
 \n
 \nPor favor use %1$s apenas para partidas locais. Se convidar alguém para uma partida que use a lista, você terá de dar a ele manualmente, já que CrossWords atualmente não suporta a inclusão de listas de palavras em convites.</string>
     <string name="summary_game_gone">Partida remota deletada</string>
+    <string name="invite_msg_extra_norematch">Se você suspeita que um convite que enviou foi perdido, não há problema em enviar outro.</string>
+    <string name="ro_low_score_first">Pontuador menor vai primeiro</string>
+    <string name="ro_no_default">Perguntar toda vez</string>
+    <string name="title_rematch_order">Ordem dos Jogadores da Revanche</string>
+    <string name="ro_same">Mesma que esta partida</string>
+    <string name="expl_rematch_order">Escolha como ordenar os jogadores na nova partida</string>
+    <string name="ro_high_score_first">Pontuador maior vai primeiro</string>
+    <string name="ro_juggle">Aleatoriamente</string>
 </resources>
