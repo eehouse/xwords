@@ -47,7 +47,6 @@ typedef struct _GameStateInfo {
     XP_Bool curTurnSelected;
     XP_Bool canHideRack;
     XP_Bool canTrade;
-    XP_Bool canRematch;
     XP_Bool canPause;           /* duplicate-mode only */
     XP_Bool canUnpause;         /* duplicate-mode only */
 } GameStateInfo;
@@ -56,6 +55,7 @@ typedef struct _GameSummary {
     XP_Bool turnIsLocal;
     XP_Bool gameOver;
     XP_Bool quashed;
+    XP_Bool canRematch;
     XP_S8 turn;
     XP_U32 lastMoveTime;
     XP_S32 dupTimerExpires;

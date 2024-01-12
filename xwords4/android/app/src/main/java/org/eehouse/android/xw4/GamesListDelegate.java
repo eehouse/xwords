@@ -2074,6 +2074,9 @@ public class GamesListDelegate extends ListDelegateBase
                 enable = false;
                 boolean isMultiGame = false;
                 if ( null != summary ) {
+                    Utils.setItemVisible( menu, R.id.games_game_rematch,
+                                          summary.canRematch );
+
                     isMultiGame = summary.isMultiGame();
                     enable = isMultiGame
                         && (BuildConfig.DEBUG || XWPrefs.getDebugEnabled( m_activity ));

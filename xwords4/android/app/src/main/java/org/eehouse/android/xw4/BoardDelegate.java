@@ -885,7 +885,7 @@ public class BoardDelegate extends DelegateBase
             }
         }
 
-        enable = null != m_gsi && m_gsi.canRematch;
+        enable = null != m_summary && m_summary.canRematch;
         Utils.setItemVisible( menu, R.id.board_menu_rematch, enable );
 
         enable = m_gameOver && !inArchiveGroup();

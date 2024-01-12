@@ -139,7 +139,7 @@ public class DBUtils {
                              DBHelper.LASTPLAY_TIME, DBHelper.REMOTEDEVS,
                              DBHelper.LASTMOVE, DBHelper.NPACKETSPENDING,
                              DBHelper.EXTRAS, DBHelper.NEXTDUPTIMER,
-                             DBHelper.CREATE_TIME,
+                             DBHelper.CREATE_TIME, DBHelper.CAN_REMATCH,
         };
         String selection = String.format( ROW_ID_FMT, lock.getRowid() );
 
@@ -196,6 +196,9 @@ public class DBUtils {
                     cursor.getInt(cursor.getColumnIndex(DBHelper.NEXTDUPTIMER));
                 summary.created = cursor
                     .getLong(cursor.getColumnIndex(DBHelper.CREATE_TIME));
+
+                tmp = cursor.getInt( cursor.getColumnIndex( DBHelper.CAN_REMATCH ));
+                summary.canRematch = 0 != tmp;
 
                 String str = cursor
                     .getString(cursor.getColumnIndex(DBHelper.EXTRAS));
@@ -307,6 +310,7 @@ public class DBUtils {
             values.put( DBHelper.QUASHED, summary.quashed? 1 : 0 );
             values.put( DBHelper.LASTMOVE, summary.lastMoveTime );
             values.put( DBHelper.NEXTDUPTIMER, summary.dupTimerExpires );
+            values.put( DBHelper.CAN_REMATCH, summary.canRematch?1:0 );
 
             // Don't overwrite extras! Sometimes this method is called from
             // JNIThread which has created the summary from common code that

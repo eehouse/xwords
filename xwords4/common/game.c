@@ -519,7 +519,6 @@ game_getState( const XWGame* game, XWEnv xwe, GameStateInfo* gsi )
     gsi->canTrade = board_canTrade( board, xwe );
     gsi->nPendingMessages = !!game->comms ? 
         comms_countPendingPackets(game->comms, NULL) : 0;
-    gsi->canRematch = server_canRematch( server, NULL );
     gsi->canPause = server_canPause( server );
     gsi->canUnpause = server_canUnpause( server );
 }
@@ -535,6 +534,7 @@ game_summarize( const XWGame* game, const CurGameInfo* gi, GameSummary* summary 
     summary->gameOver = server_getGameIsOver( server );
     summary->nMoves = model_getNMoves( game->model );
     summary->dupTimerExpires = server_getDupTimerExpires( server );
+    summary->canRematch = server_canRematch( server, NULL );
 
     for ( int ii = 0; ii < gi->nPlayers; ++ii ) {
         const LocalPlayer* lp  = &gi->players[ii];

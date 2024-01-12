@@ -129,7 +129,6 @@ public class JNIThread extends Thread implements AutoCloseable {
         public boolean canTrade;
         public boolean canPause;
         public boolean canUnpause;
-        public boolean canRematch;
         @Override
         public GameStateInfo clone() {
             GameStateInfo obj;

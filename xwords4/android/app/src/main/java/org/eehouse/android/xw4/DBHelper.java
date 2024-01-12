@@ -41,7 +41,7 @@ public class DBHelper extends SQLiteOpenHelper {
     private static final String TAG = DBHelper.class.getSimpleName();
 
     private static final String DB_NAME = BuildConfig.DB_NAME;
-    private static final int DB_VERSION = 34;
+    private static final int DB_VERSION = 35;
 
     public static final String GAME_NAME = "GAME_NAME";
     public static final String VISID = "VISID";
@@ -83,6 +83,7 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String NEXTNAG = "NEXTNAG";
     public static final String GROUPID = "GROUPID";
     public static final String NPACKETSPENDING = "NPACKETSPENDING";
+    public static final String CAN_REMATCH = "CAN_REMATCH";
 
     public static final String DICTNAME = "DICTNAME";
     public static final String MD5SUM = "MD5SUM";
@@ -136,6 +137,7 @@ public class DBHelper extends SQLiteOpenHelper {
                 { PLAYERS,      "TEXT" },
                 { GAME_OVER,    "INTEGER" },
                 { QUASHED,      "INTEGER" },
+                { CAN_REMATCH,  "INTEGER(1) default 0" },
                 { SERVERROLE,   "INTEGER" },
                 { CONTYPE,      "INTEGER" },
                 { ROOMNAME,     "TEXT" },
@@ -385,6 +387,11 @@ public class DBHelper extends SQLiteOpenHelper {
         case 33:
             if ( !madeSumTable ) {
                 addColumn( db, TABLE_NAMES.SUM, QUASHED );
+            }
+
+        case 34:
+            if ( !madeSumTable ) {
+                addColumn( db, TABLE_NAMES.SUM, CAN_REMATCH );
             }
 
             break;

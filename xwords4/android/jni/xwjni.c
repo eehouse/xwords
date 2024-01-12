@@ -2318,6 +2318,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1summarize
     setBool( env, jsummary, "quashed", summary.quashed );
     setInt( env, jsummary, "turn", summary.turn );
     setBool( env, jsummary, "turnIsLocal", summary.turnIsLocal );
+    setBool( env, jsummary, "canRematch", summary.canRematch );
     setInt( env, jsummary, "lastMoveTime", summary.lastMoveTime );
     setInt( env, jsummary, "dupTimerExpires", summary.dupTimerExpires );
     
@@ -2488,7 +2489,6 @@ static const SetInfo gsi_bools[] = {
     ARR_MEMBER( GameStateInfo, canTrade ),
     ARR_MEMBER( GameStateInfo, canPause ),
     ARR_MEMBER( GameStateInfo, canUnpause ),
-    ARR_MEMBER( GameStateInfo, canRematch ),
 };
 
 JNIEXPORT void JNICALL
