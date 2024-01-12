@@ -878,7 +878,7 @@
     <string name="loc_filters_screen">Última pantalla</string>
     <string name="button_scan">Volver a escanear</string>
     <string name="about_copyright">CrossWords para Android
-\nCopyright (C) 1998-2023 por Eric House. Este software libre/de código abierto está publicado bajo la Licencia Pública GNU.</string>
+\nCopyright (C) 1998-2024 por Eric House. Este software libre/de código abierto está publicado bajo la Licencia Pública GNU.</string>
     <string name="word_to_clip_fmt">Copiado “%1$s”</string>
     <string name="str_resigned_fmt" formatted="false">[Renunció] %1$s: %2$d</string>
     <string name="button_enable_bt">Activar el bluetooth</string>
