@@ -1184,4 +1184,11 @@
     <string name="xlator">Alejandro Rodriguez (artecnico), Anupam Malhotra (AnupamM)</string>
     <string name="summary_game_gone">Partida remota eliminada</string>
     <string name="invite_msg_extra_norematch">Si sospecha que la invitación que envió se ha perdido, no tiene por qué enviar otra.</string>
+    <string name="ro_low_score_first">El que tenga menos puntos va primero</string>
+    <string name="title_rematch_order">Orden de jugadores en la revancha</string>
+    <string name="ro_no_default">Preguntar de cada vez</string>
+    <string name="expl_rematch_order">Elige cómo ordenar a los jugadores en el nuevo juego</string>
+    <string name="ro_same">Igual que este juego</string>
+    <string name="ro_high_score_first">El que tenga más puntos va primero</string>
+    <string name="ro_juggle">Al azar</string>
 </resources>
