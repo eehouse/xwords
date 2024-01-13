@@ -306,13 +306,7 @@ public class DictLangCache {
             result = cache.get( langName );
         }
 
-        if ( null == result ) {
-            Assert.failDbg();
-            // getinfo
-        }
-
         // Log.d( TAG, "getLangIsoCode(%s) => %s", langName, result );
-        // Assert.assertTrueNR( null != result );
         return result;
     }
 
