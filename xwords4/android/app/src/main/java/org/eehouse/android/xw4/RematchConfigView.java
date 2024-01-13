@@ -1,6 +1,7 @@
 /* -*- compile-command: "find-and-gradle.sh inXw4dDeb"; -*- */
 /*
- * Copyright 2023 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2023 - 2024 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -50,6 +51,27 @@ public class RematchConfigView extends LinearLayout
         mContext = cx;
     }
 
+    public RematchConfigView setName( String name )
+    {
+        EditWClear ewc = (EditWClear)findViewById( R.id.name );
+        ewc.setText( name );
+        return this;
+    }
+
+    public String getName()
+    {
+        EditWClear ewc = (EditWClear)findViewById( R.id.name );
+        return ewc.getText().toString();
+    }
+
+    public RematchConfigView setCanOfferRO( boolean canOfferRO )
+    {
+        if ( !canOfferRO ) {
+            findViewById( R.id.ro_stuff ).setVisibility( View.GONE );
+        }
+        return this;
+    }
+
     @Override
     protected void onFinishInflate()
     {
@@ -69,7 +91,7 @@ public class RematchConfigView extends LinearLayout
         }
     }
 
-    public RematchOrder onOkClicked()
+    public RematchOrder getRO()
     {
         int id = mGroup.getCheckedRadioButtonId();
         RematchOrder ro = mRos.get(id);

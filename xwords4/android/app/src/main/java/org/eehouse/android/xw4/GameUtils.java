@@ -584,7 +584,7 @@ public class GameUtils {
 
     public static long makeRematch( Context context, long srcRowid,
                                     long groupID, String gameName,
-                                    NeedRematchOrder nro )
+                                    RematchOrder ro )
     {
         long rowid = DBUtils.ROWID_NOTFOUND;
         try ( GameLock lock = GameLock.tryLockRO( srcRowid ) ) {
@@ -592,22 +592,13 @@ public class GameUtils {
                 CurGameInfo gi = new CurGameInfo( context );
                 try ( GamePtr gamePtr = loadMakeGame( context, gi, lock ) ) {
                     if ( null != gamePtr ) {
-                        RematchOrder ro = RematchOrder.RO_SAME;
-                        if ( XwJNI.server_canOfferRematch( gamePtr ) ) {
-                            ro = XWPrefs.getDefaultRematchOrder( context );
-                            if ( null == ro ) {
-                                ro = nro.getRematchOrder();
-                            }
-                        }
-                        if ( null != ro ) {
-                            UtilCtxt util = new UtilCtxtImpl( context );
-                            CommonPrefs cp = CommonPrefs.get( context );
-                            try ( GamePtr gamePtrNew = XwJNI
-                                  .game_makeRematch( gamePtr, util, cp, gameName, ro ) ) {
-                                if ( null != gamePtrNew ) {
-                                    rowid = saveNewGame1( context, gamePtrNew,
-                                                          groupID, gameName );
-                                }
+                        UtilCtxt util = new UtilCtxtImpl( context );
+                        CommonPrefs cp = CommonPrefs.get( context );
+                        try ( GamePtr gamePtrNew = XwJNI
+                              .game_makeRematch( gamePtr, util, cp, gameName, ro ) ) {
+                            if ( null != gamePtrNew ) {
+                                rowid = saveNewGame1( context, gamePtrNew,
+                                                      groupID, gameName );
                             }
                         }
                     }

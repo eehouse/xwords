@@ -56,6 +56,7 @@ typedef struct _GameSummary {
     XP_Bool gameOver;
     XP_Bool quashed;
     XP_Bool canRematch;
+    XP_Bool canOfferRO;
     XP_S8 turn;
     XP_U32 lastMoveTime;
     XP_S32 dupTimerExpires;

@@ -8,17 +8,44 @@
     android:padding="8dp"
     >
 
-  <TextView android:id="@+id/explanation"
-            android:layout_height="wrap_content"
-            android:layout_width="match_parent"
+  <!-- copied from msg_label_and_edit -->
+  <TextView android:layout_height="wrap_content"
+            android:layout_width="fill_parent"
             android:textAppearance="?android:attr/textAppearanceMedium"
-            android:text="@string/expl_rematch_order"
+            android:text="@string/game_name_label"
             />
 
-  <RadioGroup android:id="@+id/group"
-              android:orientation="vertical"
-              android:layout_width="match_parent"
+  <org.eehouse.android.xw4.EditWClear android:id="@+id/name"
+                                      style="@style/edit_w_clear"
+                                      android:layout_height="wrap_content"
+                                      android:layout_width="fill_parent"
+                                      android:scrollHorizontally="true"
+                                      android:maxLines="1"
+                                      android:inputType="textCapWords"
+                                      android:maxLength="32"
+                                      android:textAppearance="?android:attr/textAppearanceMedium"
+                                      android:selectAllOnFocus="true"
+                                      android:focusable="false"
+                                      />
+
+  <LinearLayout android:id="@+id/ro_stuff"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                >
+
+    <TextView android:id="@+id/explanation"
               android:layout_height="wrap_content"
+              android:layout_width="match_parent"
+              android:textAppearance="?android:attr/textAppearanceMedium"
+              android:text="@string/expl_rematch_order"
               />
+
+    <RadioGroup android:id="@+id/group"
+                android:orientation="vertical"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                />
+  </LinearLayout>
 
 </org.eehouse.android.xw4.RematchConfigView>

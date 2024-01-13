@@ -534,7 +534,7 @@ game_summarize( const XWGame* game, const CurGameInfo* gi, GameSummary* summary 
     summary->gameOver = server_getGameIsOver( server );
     summary->nMoves = model_getNMoves( game->model );
     summary->dupTimerExpires = server_getDupTimerExpires( server );
-    summary->canRematch = server_canRematch( server, NULL );
+    summary->canRematch = server_canRematch( server, &summary->canOfferRO );
 
     for ( int ii = 0; ii < gi->nPlayers; ++ii ) {
         const LocalPlayer* lp  = &gi->players[ii];

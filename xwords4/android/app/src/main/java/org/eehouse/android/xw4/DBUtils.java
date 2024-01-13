@@ -183,12 +183,12 @@ public class DBUtils {
                 summary.modtime =
                     cursor.getLong(cursor.
                                    getColumnIndex(DBHelper.LASTPLAY_TIME));
-                int tmp = cursor.getInt(cursor.
+                int tmpInt = cursor.getInt(cursor.
                                         getColumnIndex(DBHelper.GAME_OVER));
-                summary.gameOver = tmp != 0;
-                tmp = cursor.getInt(cursor.
+                summary.gameOver = tmpInt != 0;
+                tmpInt = cursor.getInt(cursor.
                                         getColumnIndex(DBHelper.QUASHED));
-                summary.quashed = tmp != 0;
+                summary.quashed = tmpInt != 0;
                 
                 summary.lastMoveTime =
                     cursor.getInt(cursor.getColumnIndex(DBHelper.LASTMOVE));
@@ -197,8 +197,9 @@ public class DBUtils {
                 summary.created = cursor
                     .getLong(cursor.getColumnIndex(DBHelper.CREATE_TIME));
 
-                tmp = cursor.getInt( cursor.getColumnIndex( DBHelper.CAN_REMATCH ));
-                summary.canRematch = 0 != tmp;
+                tmpInt = cursor.getInt( cursor.getColumnIndex( DBHelper.CAN_REMATCH ));
+                summary.canRematch = 0 != (1 & tmpInt);
+                summary.canOfferRO = 0 != (2 & tmpInt);
 
                 String str = cursor
                     .getString(cursor.getColumnIndex(DBHelper.EXTRAS));
@@ -223,8 +224,8 @@ public class DBUtils {
 
                 int col = cursor.getColumnIndex( DBHelper.CONTYPE );
                 if ( 0 <= col ) {
-                    tmp = cursor.getInt( col );
-                    summary.conTypes = new CommsConnTypeSet( tmp );
+                    tmpInt = cursor.getInt( col );
+                    summary.conTypes = new CommsConnTypeSet( tmpInt );
                     col = cursor.getColumnIndex( DBHelper.SEED );
                     if ( 0 < col ) {
                         summary.seed = cursor.getInt( col );
@@ -264,8 +265,8 @@ public class DBUtils {
                 }
 
                 col = cursor.getColumnIndex( DBHelper.SERVERROLE );
-                tmp = cursor.getInt( col );
-                summary.serverRole = DeviceRole.values()[tmp];
+                tmpInt = cursor.getInt( col );
+                summary.serverRole = DeviceRole.values()[tmpInt];
             }
             cursor.close();
         }
@@ -310,7 +311,8 @@ public class DBUtils {
             values.put( DBHelper.QUASHED, summary.quashed? 1 : 0 );
             values.put( DBHelper.LASTMOVE, summary.lastMoveTime );
             values.put( DBHelper.NEXTDUPTIMER, summary.dupTimerExpires );
-            values.put( DBHelper.CAN_REMATCH, summary.canRematch?1:0 );
+            int tmpInt = (summary.canRematch? 1 : 0) | (summary.canOfferRO? 2 : 0);
+            values.put( DBHelper.CAN_REMATCH, tmpInt );
 
             // Don't overwrite extras! Sometimes this method is called from
             // JNIThread which has created the summary from common code that
