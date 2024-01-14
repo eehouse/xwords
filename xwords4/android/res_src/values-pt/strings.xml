@@ -1563,12 +1563,13 @@
     <string name="set_default_message_fmt">Para quais jogadores deve a list de palavras %1$s ser o predefinição para os jogos novos\? (O idioma de %2$s será a predefinição para ambos.)</string>
     <string name="connect_label_fmt">Conexão (através de %1$s)</string>
     <plurals name="invite_msg_fmt">
-        <item quantity="one">Este jogo está à espera de um jogador remoto receber e responder a um convite.
+        <item quantity="one">Este jogo está a esperar que um jogador remoto receba e responda a um convite.
 \n
-\nVerá esta mensagem até que o jogador convidado tenha respondido. Se suspeitar que o convite que enviou foi perdido, não faz mal nenhum enviar outro.</item>
-        <item quantity="other">Este jogo está à espera de %1$d jogadores remotos receber e responder a um convite.
+\nVerá esta mensagem até que o jogador convidado tenha respondido.</item>
+        <item quantity="many"></item>
+        <item quantity="other">Este jogo está a esperar que %1$d jogadores remotos recebam e respondam a um convite.
 \n
-\nVerá esta mensagem até que todos os jogadores convidados tenham respondido. Se suspeitar que os convites que enviou foram perdidos, não faz mal nenhum enviar outros.</item>
+\nVerá esta mensagem até que todos os jogadores convidados tenham respondido.</item>
     </plurals>
     <string name="list_item_netstats">Conexões</string>
     <string name="confirm_deleteonly_dicts_fmt">Apagar %1$s vai deixá-lo sem nenhuma lista de palavras em %2$s. Um ou mais jogos ficarão não jogáveis (até que descarregue de uma lista para substituir.)</string>
@@ -2162,7 +2163,7 @@
 \n</string>
     <string name="qrcode_invite_expl">Para convidar via código QR, deixe o seu oponente escanear o código com a câmara do telefone Android dele.</string>
     <string name="invit_expl_player_fmt">Convite encaminhado via MQTT/internet para Jogador Conhecido “%1$s” em %2$s.</string>
-    <string name="invite_msg_extra_rematch">Com revanches, todos os convites necessários são enviados automaticamente. Mas sempre pode enviar novos se um convidado responder.</string>
+    <string name="invite_msg_extra_rematch">Com revanches, todos os convites necessários irão ser criados automaticamente e reenviados até serem aceites.</string>
     <string name="invites_unsent">Este jogo está configurado para esperar um jogador remoto.
 \n
 \nDeseja convidar alguém\?</string>
@@ -2305,4 +2306,11 @@
     <string name="gamel_menu_restart">Reiniciar a app</string>
     <string name="summary_game_gone">Jogo remoto apagado</string>
     <string name="invite_msg_extra_norematch">Se suspeitar que um convite que enviou foi perdido, não há nenhum problema a enviar outro.</string>
+    <string name="expl_rematch_order">Escolha como ordenar os jogadores na nova partida</string>
+    <string name="ro_same">Mesma que esta partida</string>
+    <string name="ro_low_score_first">O marcador inferior vai primeiro</string>
+    <string name="ro_high_score_first">O maior marcador vai primeiro</string>
+    <string name="ro_juggle">Aleatoriamente</string>
+    <string name="title_rematch_order">Ordem dos Jogadores da Revanche</string>
+    <string name="ro_no_default">Perguntar cada vez</string>
 </resources>
