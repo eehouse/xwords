@@ -3628,7 +3628,7 @@ augmentAddrIntrnl( CommsCtxt* comms, CommsAddrRec* destAddr,
         for ( XP_U32 st = 0; addr_iter( srcAddr, &typ, &st ); ) {
             XP_Bool newType = !addr_hasType( destAddr, typ );
             if ( newType ) {
-                COMMS_LOGFF( "adding new type %s to rec", ConnType2Str(typ) );
+                XP_LOGFF( "adding new type %s to rec", ConnType2Str(typ) );
                 addr_addType( destAddr, typ );
 
                 /* If an address is getting added to a channel, the top-level
@@ -3639,7 +3639,7 @@ augmentAddrIntrnl( CommsCtxt* comms, CommsAddrRec* destAddr,
                 if ( !!comms && ! addr_hasType( &comms->selfAddr, typ ) ) {
                     /* we just added it, so can't be comms->selfAddr */
                     XP_ASSERT( destAddr != &comms->selfAddr );
-                    COMMS_LOGFF( "NOT adding %s to comms->selfAddr", ConnType2Str(typ) );
+                    XP_LOGFF( "NOT adding %s to comms->selfAddr", ConnType2Str(typ) );
                     // addr_addType( &comms->selfAddr, typ );
                 }
             }
@@ -3698,7 +3698,7 @@ augmentAddrIntrnl( CommsCtxt* comms, CommsAddrRec* destAddr,
                        that this assumes unset values are empty!!! */
                     if ( !isNewer && !newType
                          && 0 != XP_MEMCMP( &empty, dest, siz ) ) {
-                        COMMS_LOGFF( "%s: not replacing new info with old",
+                        XP_LOGFF( "%s: not replacing new info with old",
                                      ConnType2Str(typ) );
                     } else {
                         XP_MEMCPY( dest, src, siz );
