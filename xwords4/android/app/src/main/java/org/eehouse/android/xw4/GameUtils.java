@@ -73,14 +73,6 @@ public class GameUtils {
         void onResendDone( Context context, int numSent );
     }
 
-    interface NeedRematchOrder {
-        // Return null if unable to produce it immediately. Implementation may
-        // want to start a query at the same time and from its
-        // ok-button-handler call makeRematch() again with a different
-        // implementation that simply returns a cached RematchOrder
-        RematchOrder getRematchOrder();
-    }
-
     private static Integer s_minScreen;
     // Used to determine whether to resend all messages on networking coming
     // back up.  The length of the array determines the number of times in the
