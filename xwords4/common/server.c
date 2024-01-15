@@ -4184,16 +4184,16 @@ server_canRematch( const ServerCtxt* server, XP_Bool* canOrderP )
    as invitees join the new game.
  */
 static void
-sortBySame( const ServerCtxt* server, int newOrder[] )
+sortBySame( const ServerCtxt* server, NewOrder* nop )
 {
     const CurGameInfo* gi = server->vol.gi;
     for ( int ii = 0; ii < gi->nPlayers; ++ii ) {
-        newOrder[ii] = ii;
+        nop->order[ii] = ii;
     }
 }
 
 static void
-sortByScoreLow( const ServerCtxt* server, int newOrder[] )
+sortByScoreLow( const ServerCtxt* server, NewOrder* nop )
 {
     const CurGameInfo* gi = server->vol.gi;
 
@@ -4216,7 +4216,7 @@ sortByScoreLow( const ServerCtxt* server, int newOrder[] )
             break;
         } else {
             mask |= 1 << newPosn;
-            newOrder[resultIndx] = newPosn;
+            nop->order[resultIndx] = newPosn;
             /* SRVR_LOGFF( "result[%d] = %d (for score %d)", resultIndx, newPosn, */
             /*           lowest ); */
         }
@@ -4224,20 +4224,20 @@ sortByScoreLow( const ServerCtxt* server, int newOrder[] )
 }
 
 static void
-sortByScoreHigh( const ServerCtxt* server, int newOrder[] )
+sortByScoreHigh( const ServerCtxt* server, NewOrder* nop )
 {
-    sortByScoreLow( server, newOrder );
+    sortByScoreLow( server, nop );
 
     const CurGameInfo* gi = server->vol.gi;
     for ( int ii = 0, jj = gi->nPlayers - 1; ii < jj; ++ii, --jj ) {
-        int tmp = newOrder[ii];
-        newOrder[ii] = newOrder[jj];
-        newOrder[jj] = tmp;
+        int tmp = nop->order[ii];
+        nop->order[ii] = nop->order[jj];
+        nop->order[jj] = tmp;
     }
 }
 
 static void
-sortByRandom( const ServerCtxt* server, int newOrder[] )
+sortByRandom( const ServerCtxt* server, NewOrder* nop )
 {
     const CurGameInfo* gi = server->vol.gi;
     int src[gi->nPlayers];
@@ -4247,8 +4247,8 @@ sortByRandom( const ServerCtxt* server, int newOrder[] )
     for ( int ii = 0; ii < gi->nPlayers; ++ii ) {
         int nLeft = gi->nPlayers - ii;
         int indx = XP_RANDOM() % nLeft;
-        newOrder[ii] = src[indx];
-        SRVR_LOGFF( "set result[%d] to %d", ii, newOrder[ii] );
+        nop->order[ii] = src[indx];
+        SRVR_LOGFF( "set result[%d] to %d", ii, nop->order[ii] );
         /* now swap the last down */
         src[indx] = src[nLeft-1];
     }
@@ -4256,7 +4256,7 @@ sortByRandom( const ServerCtxt* server, int newOrder[] )
 
 #ifdef XWFEATURE_RO_BYNAME
 static void
-sortByName( const ServerCtxt* server, int newOrder[] )
+sortByName( const ServerCtxt* server, NewOrder* nop )
 {
     const CurGameInfo* gi = server->vol.gi;
     int mask = 0; /* mark values already consumed */
@@ -4275,81 +4275,40 @@ sortByName( const ServerCtxt* server, int newOrder[] )
         }
         XP_ASSERT( lowest != -1 );
         mask |= 1 << lowest;
-        newOrder[ii] = lowest;
+        nop->order[ii] = lowest;
     }
 }
 #endif
 
-typedef void (*OrderProc)(const ServerCtxt* server, int newOrder[]);
-
 static XP_Bool
-setPlayerOrder( const ServerCtxt* server, RematchOrder ro,
+setPlayerOrder( const ServerCtxt* server, const NewOrder* nop,
                 CurGameInfo* gi, RematchInfo* rip )
 {
-    // SRVR_LOGFF( "(ro=%s)", RO2Str(ri->ro) );
-    LOGGI( gi, "start" );
-    OrderProc proc = NULL;
-    switch ( ro ) {
-    case RO_SAME:
-        proc = sortBySame;
-        // sortBySame( server, newOrder );
-        break;
-    case RO_LOW_SCORE_FIRST:
-        proc = sortByScoreLow;
-        break;
-    case RO_HIGH_SCORE_FIRST:
-        proc = sortByScoreHigh;
-        break;
-    case RO_JUGGLE:
-        proc = sortByRandom;
-        break;
-#ifdef XWFEATURE_RO_BYNAME
-    case RO_BY_NAME:
-        proc = sortByName;
-        break;
-#endif
-    case RO_NUM_ROS:
-    default:
-        XP_ASSERT(0); break;
+    CurGameInfo srcGi = *gi;
+    RematchInfo srcRi;
+    if ( !!rip ) {
+        srcRi = *rip;
     }
 
-    XP_ASSERT( !!proc );
-    int newOrder[gi->nPlayers];
-    XP_MEMSET( newOrder, 0, sizeof(newOrder) );
-    XP_Bool success = !!proc;
-    if ( success ) {
-        (*proc)( server, newOrder );
-        /* We have gi and rip that express an ordering of players. And we have
-           a new order into which to move them. Just walk and swap the current
-           with the right one above it. */
-
-        CurGameInfo srcGi = *gi;
-        RematchInfo srcRi;
+    for ( int ii = 0; ii < gi->nPlayers; ++ii ) {
+        gi->players[ii] = srcGi.players[nop->order[ii]];
         if ( !!rip ) {
-            srcRi = *rip;
-        }
-
-        for ( int ii = 0; ii < gi->nPlayers; ++ii ) {
-            gi->players[ii] = srcGi.players[newOrder[ii]];
-            if ( !!rip ) {
-                rip->addrIndices[ii] = srcRi.addrIndices[newOrder[ii]];
-            }
-        }
-
-        LOGGI( gi, "end" );
-        if ( !!rip ) {
-            LOG_RI( rip );
+            rip->addrIndices[ii] = srcRi.addrIndices[nop->order[ii]];
         }
     }
-    XP_ASSERT(success);
-    return success;
+
+    LOGGI( gi, "end" );
+    if ( !!rip ) {
+        LOG_RI( rip );
+    }
+
+    return XP_TRUE;
 } /* setPlayerOrder */
 
 XP_Bool
 server_getRematchInfo( const ServerCtxt* server, XW_UtilCtxt* newUtil,
-                       XP_U32 gameID, RematchOrder ro, RematchInfo** ripp )
+                       XP_U32 gameID, const NewOrder* nop, RematchInfo** ripp )
 {
-    SRVR_LOGFF( "(ro=%s)", RO2Str(ro) );
     XP_Bool success = server_canRematch( server, NULL );
     const CommsCtxt* comms = server->vol.comms;
     if ( success ) {
@@ -4443,7 +4402,7 @@ server_getRematchInfo( const ServerCtxt* server, XW_UtilCtxt* newUtil,
             if ( !!comms ) {
                 assertRI( &ri, newGI );
             }
-            success = setPlayerOrder( server, ro, newGI, !!comms ? &ri : NULL );
+            success = setPlayerOrder( server, nop, newGI, !!comms ? &ri : NULL );
         }
 
         if ( success && !!comms ) {
@@ -4498,6 +4457,38 @@ server_ri_getAddr( const RematchInfo* rip, XP_U16 nth,
     }
 
     return success;
+}
+
+void
+server_figureOrder( const ServerCtxt* server, RematchOrder ro, NewOrder* nop )
+{
+    XP_MEMSET( nop, 0, sizeof(*nop) );
+
+    void (*proc)(const ServerCtxt*, NewOrder*) = NULL;
+    switch ( ro ) {
+    case RO_SAME:
+        proc = sortBySame;
+        break;
+    case RO_LOW_SCORE_FIRST:
+        proc = sortByScoreLow;
+        break;
+    case RO_HIGH_SCORE_FIRST:
+        proc = sortByScoreHigh;
+        break;
+    case RO_JUGGLE:
+        proc = sortByRandom;
+        break;
+#ifdef XWFEATURE_RO_BYNAME
+    case RO_BY_NAME:
+        proc = sortByName;
+        break;
+#endif
+    case RO_NUM_ROS:
+    default:
+        XP_ASSERT(0); break;
+    }
+
+    (*proc)( server, nop );
 }
 
 /* Record the desired order, which is already set in the RematchInfo passed

@@ -5,4 +5,8 @@
 
   <string name="dup_allscores_fmt">All scores: %1$s</string>
 
+  <string name="na_rematch_edit">The game name will not change once
+  you have started editing it. If you decide you want a generated
+  name, please cancel and restart the rematching process.</string>
+
 </resources>

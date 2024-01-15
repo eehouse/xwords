@@ -1423,7 +1423,7 @@ initGameGlobals( JNIEnv* env, JNIState* state, jobject jutil, jobject jprocs )
 JNIEXPORT jboolean JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeRematch
 ( JNIEnv* env, jclass C, GamePtrType gamePtr, GamePtrType gamePtrNew,
-  jobject jutil, jobject jcp, jstring jGameName, jobject jRo )
+  jobject jutil, jobject jcp, jstring jGameName, jintArray jNO )
 {
     jboolean success = false;
     XWJNI_START_GLOBALS(gamePtr);
@@ -1437,10 +1437,17 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeRematch
     loadCommonPrefs( env, &cp, jcp );
 
     const char* gameName = (*env)->GetStringUTFChars( env, jGameName, NULL );
-    RematchOrder ro = jEnumToInt( env, jRo );
+
+    NewOrder no;
+    int tmp[VSIZE(no.order)];
+    int count = getIntsFromArray( env, tmp, jNO, VSIZE(tmp), XP_FALSE );
+    for ( int ii = 0; ii < count; ++ii ) {
+        no.order[ii] = tmp[ii];
+    }
+
     success = game_makeRematch( &oldState->game, env, globals->util, &cp,
                                 (TransportProcs*)NULL, &state->game,
-                                gameName, ro );
+                                gameName, &no );
     (*env)->ReleaseStringUTFChars( env, jGameName, gameName );
 
     if ( success ) {
@@ -2191,15 +2198,32 @@ Java_org_eehouse_android_xw4_jni_XwJNI_server_1initClientConnection
     return result;
 }
 
-JNIEXPORT jboolean JNICALL
+JNIEXPORT void JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_server_1canOfferRematch
-( JNIEnv* env, jclass C, GamePtrType gamePtr )
+( JNIEnv* env, jclass C, GamePtrType gamePtr, jbooleanArray results  )
 {
-    jboolean result;
     XWJNI_START_GLOBALS(gamePtr);
-    XP_Bool canOffer;
-    XP_Bool canRematch = server_canRematch( state->game.server, &canOffer );
-    result = canRematch && canOffer;
+    XP_Bool bools[2];
+    bools[0] = server_canRematch( state->game.server, &bools[1] );
+    setBoolArray( env, results, VSIZE(bools), (jboolean*)bools );
+
+    XWJNI_END();
+}
+
+JNIEXPORT jintArray JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_server_1figureOrder
+( JNIEnv* env, jclass C, GamePtrType gamePtr, jobject jRo )
+{
+    jintArray result = NULL;
+    XWJNI_START_GLOBALS(gamePtr);
+    RematchOrder ro = jEnumToInt( env, jRo );
+    XP_LOGFF( "(ro=%s)", RO2Str(ro) );
+
+    NewOrder no;
+    server_figureOrder( state->game.server, ro, &no );
+
+    result = makeIntArray( env, globals->gi->nPlayers, no.order, sizeof(no.order[0]) );
+
     XWJNI_END();
     return result;
 }

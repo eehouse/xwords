@@ -176,6 +176,7 @@
   <string name="key_na_deletecheck">key_na_deletecheck</string>
 
   <string name="key_theme_which">key_theme_which</string>
+  <string name="key_na_rematch_edit">key_na_rematch_edit</string>
 
   <!-- Nor is my email address -->
   <string name="email_author_email">xwords@eehouse.org</string>

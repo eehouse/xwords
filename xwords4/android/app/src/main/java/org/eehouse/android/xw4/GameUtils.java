@@ -446,15 +446,10 @@ public class GameUtils {
     public static Bitmap loadMakeBitmap( Context context, long rowid )
     {
         Bitmap thumb = null;
-        try ( GameLock lock = GameLock.tryLockRO( rowid ) ) {
-            if ( null != lock ) {
-                CurGameInfo gi = new CurGameInfo( context );
-                try ( GamePtr gamePtr = loadMakeGame( context, gi, lock ) ) {
-                    if ( null != gamePtr ) {
-                        thumb = takeSnapshot( context, gamePtr, gi );
-                        DBUtils.saveThumbnail( context, lock, thumb );
-                    }
-                }
+        try ( GameWrapper gw = makeGameWrapper( context, rowid ) ) {
+            if ( null != gw ) {
+                thumb = takeSnapshot( context, gw.gamePtr(), gw.gi() );
+                DBUtils.saveThumbnail( context, gw.lock(), thumb );
             }
         }
         return thumb;
@@ -574,25 +569,71 @@ public class GameUtils {
         return rowid;
     }
 
+    public static class GameWrapper implements AutoCloseable {
+        private Context mContext;
+        private GameLock mLock;
+        private GamePtr mGamePtr;
+        private CurGameInfo mGi;
+
+        GameWrapper( Context context, long rowid )
+        {
+            mContext = context;
+            mLock = GameLock.tryLockRO( rowid );
+            if ( null != mLock ) {
+                mGi = new CurGameInfo( mContext );
+                mGamePtr = loadMakeGame( mContext, mGi, mLock );
+            }
+        }
+
+        public GamePtr gamePtr() { return mGamePtr; }
+        public GameLock lock() { return mLock; }
+        public CurGameInfo gi() { return mGi; }
+        public boolean hasGame() { return null != mGamePtr; }
+
+        @Override
+        public void close()
+        {
+            if ( null != mGamePtr ) {
+                mGamePtr.close();
+                mGamePtr = null;
+            }
+            if ( null != mLock ) {
+                mLock.close();
+                mLock = null;
+            }
+        }
+
+        @Override
+        public void finalize() throws java.lang.Throwable
+        {
+            close();
+        }
+    }
+
+    public static GameWrapper makeGameWrapper( Context context, long rowid )
+    {
+        GameWrapper result = new GameWrapper( context, rowid );
+        if ( !result.hasGame() ) {
+            result.close();
+            result = null;
+        }
+        return result;
+    }
+
     public static long makeRematch( Context context, long srcRowid,
                                     long groupID, String gameName,
-                                    RematchOrder ro )
+                                    int[] newOrder )
     {
         long rowid = DBUtils.ROWID_NOTFOUND;
-        try ( GameLock lock = GameLock.tryLockRO( srcRowid ) ) {
-            if ( null != lock ) {
-                CurGameInfo gi = new CurGameInfo( context );
-                try ( GamePtr gamePtr = loadMakeGame( context, gi, lock ) ) {
-                    if ( null != gamePtr ) {
-                        UtilCtxt util = new UtilCtxtImpl( context );
-                        CommonPrefs cp = CommonPrefs.get( context );
-                        try ( GamePtr gamePtrNew = XwJNI
-                              .game_makeRematch( gamePtr, util, cp, gameName, ro ) ) {
-                            if ( null != gamePtrNew ) {
-                                rowid = saveNewGame1( context, gamePtrNew,
-                                                      groupID, gameName );
-                            }
-                        }
+        try ( GameWrapper gw = makeGameWrapper( context, srcRowid ) ) {
+            if ( null != gw ) {
+                UtilCtxt util = new UtilCtxtImpl( context );
+                CommonPrefs cp = CommonPrefs.get( context );
+                try ( GamePtr gamePtrNew = XwJNI
+                      .game_makeRematch( gw.gamePtr(), util, cp, gameName, newOrder ) ) {
+                    if ( null != gamePtrNew ) {
+                        rowid = saveNewGame1( context, gamePtrNew,
+                                              groupID, gameName );
                     }
                 }
             }

@@ -71,7 +71,8 @@ jobject getObjectField( JNIEnv* env, jobject obj, const char* fieldName,
 jintArray makeIntArray( JNIEnv* env, int size, const void* vals, size_t elemSize );
 void setIntArray( JNIEnv* env, jobject jowner, const char* ownerField,
                   int count, const void* vals, size_t elemSize );
-void getIntsFromArray( JNIEnv* env, int dest[], jintArray arr, int count, bool del );
+/* returns number of items copied, i.e. min of count and len(array) */
+int getIntsFromArray( JNIEnv* env, int dest[], jintArray arr, int count, bool del );
 void setIntInArray( JNIEnv* env, jintArray arr, int index, int val );
 
 jbyteArray makeByteArray( JNIEnv* env, int size, const jbyte* vals );

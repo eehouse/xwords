@@ -21,6 +21,7 @@
 package org.eehouse.android.xw4;
 
 import android.content.Context;
+import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.AdapterView.OnItemSelectedListener;
@@ -33,17 +34,29 @@ import android.widget.RadioGroup;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.eehouse.android.xw4.jni.XwJNI;
 import org.eehouse.android.xw4.jni.XwJNI.RematchOrder;
 import org.eehouse.android.xw4.loc.LocUtils;
 
 public class RematchConfigView extends LinearLayout
+    implements RadioGroup.OnCheckedChangeListener
 {
     private static final String TAG = RematchConfigView.class.getSimpleName();
     private static final String KEY_LAST_RO = TAG + "/key_last_ro";
 
     private Context mContext;
+    private DlgDelegate.HasDlgDelegate mDlgDlgt;
     private RadioGroup mGroup;
-    Map<Integer, RematchOrder> mRos = new HashMap<>();
+    private GameUtils.GameWrapper mWrapper;
+    private Map<Integer, RematchOrder> mRos = new HashMap<>();
+    private boolean mInflated;
+    private String mNameStr;
+    private int[] mNewOrder;
+    private String mSep;
+    private boolean mUserEditing = false;
+    private boolean mNAShown;
+    private EditWClear mEWC;
+    private RematchOrder mCurRO;
 
     public RematchConfigView( Context cx, AttributeSet as )
     {
@@ -51,53 +64,90 @@ public class RematchConfigView extends LinearLayout
         mContext = cx;
     }
 
-    public RematchConfigView setName( String name )
+    public void configure( long rowid, DlgDelegate.HasDlgDelegate dlgDlgt )
     {
-        EditWClear ewc = (EditWClear)findViewById( R.id.name );
-        ewc.setText( name );
-        return this;
+        mDlgDlgt = dlgDlgt;
+        mWrapper = GameUtils.makeGameWrapper( mContext, rowid );
+        trySetup();
     }
 
     public String getName()
     {
-        EditWClear ewc = (EditWClear)findViewById( R.id.name );
-        return ewc.getText().toString();
-    }
-
-    public RematchConfigView setCanOfferRO( boolean canOfferRO )
-    {
-        if ( !canOfferRO ) {
-            findViewById( R.id.ro_stuff ).setVisibility( View.GONE );
-        }
-        return this;
+        return mEWC.getText().toString();
     }
 
     @Override
     protected void onFinishInflate()
     {
-        mGroup = (RadioGroup)findViewById( R.id.group );
+        mInflated = true;
+        trySetup();
+    }
 
-        int ordinal = DBUtils.getIntFor( mContext, KEY_LAST_RO, 0 );
-        RematchOrder lastSel = RematchOrder.values()[ordinal];
+    @Override
+    protected void onDetachedFromWindow()
+    {
+        if ( null != mWrapper ) {
+            mWrapper.close();
+            mWrapper = null;
+        }
+        super.onDetachedFromWindow();
+    }
 
-        for ( RematchOrder ro : RematchOrder.values() ) {
-            RadioButton button =  new RadioButton( mContext );
-            button.setText( LocUtils.getString( mContext, ro.getStrID() ) );
-            mGroup.addView( button );
-            mRos.put( button.getId(), ro );
-            if ( lastSel == ro ) {
-                button.setChecked( true );
+    // RadioGroup.OnCheckedChangeListener
+    @Override
+    public void onCheckedChanged( RadioGroup group, int checkedId )
+    {
+        if ( !mUserEditing && null != mNameStr ) {
+            mUserEditing = ! mNameStr.equals( getName() );
+        }
+
+        mCurRO = mRos.get( checkedId );
+        mNewOrder = XwJNI.server_figureOrder( mWrapper.gamePtr(), mCurRO );
+
+        if ( mUserEditing ) {
+            if ( !mNAShown ) {
+                mNAShown = true;
+                mDlgDlgt.makeNotAgainBuilder( R.string.key_na_rematch_edit,
+                                              R.string.na_rematch_edit )
+                    .show();
+            }
+        } else {
+            mNameStr = TextUtils.join( mSep, mWrapper.gi().playerNames(mNewOrder) );
+            Log.d( TAG, "mNameStr: %s", mNameStr );
+            mEWC.setText( mNameStr );
+        }
+    }
+
+    public int[] getNewOrder()
+    {
+        DBUtils.setIntFor( mContext, KEY_LAST_RO, mCurRO.ordinal() );
+        return mNewOrder;
+    }
+
+    private void trySetup()
+    {
+        if ( mInflated && null != mWrapper ) {
+            mSep = LocUtils.getString( mContext, R.string.vs_join );
+            mGroup = (RadioGroup)findViewById( R.id.group );
+            mGroup.setOnCheckedChangeListener( this );
+            mEWC = (EditWClear)findViewById( R.id.name );
+
+            boolean[] results = XwJNI.server_canOfferRematch( mWrapper.gamePtr() );
+            if ( results[0] && results[1] ) {
+                int ordinal = DBUtils.getIntFor( mContext, KEY_LAST_RO, 0 );
+                RematchOrder lastSel = RematchOrder.values()[ordinal];
+
+                for ( RematchOrder ro : RematchOrder.values() ) {
+                    RadioButton button = new RadioButton( mContext );
+                    button.setText( LocUtils.getString( mContext, ro.getStrID() ) );
+                    mGroup.addView( button );
+                    mRos.put( button.getId(), ro );
+                    if ( lastSel == ro ) {
+                        button.setChecked( true );
+                    }
+                }
             }
         }
     }
 
-    public RematchOrder getRO()
-    {
-        int id = mGroup.getCheckedRadioButtonId();
-        RematchOrder ro = mRos.get(id);
-
-        DBUtils.setIntFor( mContext, KEY_LAST_RO, ro.ordinal() );
-
-        return ro;
-    }
 }

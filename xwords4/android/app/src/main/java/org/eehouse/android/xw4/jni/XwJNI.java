@@ -351,10 +351,10 @@ public class XwJNI {
 
     public static GamePtr game_makeRematch( GamePtr gamePtr, UtilCtxt util,
                                             CommonPrefs cp, String gameName,
-                                            RematchOrder ro )
+                                            int[] newOrder )
     {
         GamePtr gamePtrNew = initGameJNI( 0 );
-        if ( !game_makeRematch( gamePtr, gamePtrNew, util, cp, gameName, ro ) ) {
+        if ( !game_makeRematch( gamePtr, gamePtrNew, util, cp, gameName, newOrder ) ) {
             gamePtrNew.release();
             gamePtrNew = null;
         }
@@ -398,7 +398,7 @@ public class XwJNI {
     private static native boolean game_makeRematch( GamePtr gamePtr,
                                                     GamePtr gamePtrNew,
                                                     UtilCtxt util, CommonPrefs cp,
-                                                    String gameName, RematchOrder ro );
+                                                    String gameName, int[] newOrder );
 
     private static native boolean game_makeFromInvite( GamePtr gamePtr, NetLaunchInfo nli,
                                                        UtilCtxt util,
@@ -536,7 +536,14 @@ public class XwJNI {
     public static native boolean server_getGameIsConnected( GamePtr gamePtr );
     public static native String server_writeFinalScores( GamePtr gamePtr );
     public static native boolean server_initClientConnection( GamePtr gamePtr );
-    public static native boolean server_canOfferRematch( GamePtr gamePtr );
+    public static boolean[] server_canOfferRematch( GamePtr gamePtr )
+    {
+        boolean[] results = {false, false};
+        server_canOfferRematch( gamePtr, results );
+        return results;
+    }
+    private static native void server_canOfferRematch( GamePtr gamePtr, boolean[] results );
+    public static native int[] server_figureOrder( GamePtr gamePtr, RematchOrder ro );
     public static native void server_endGame( GamePtr gamePtr );
 
     // hybrid to save work

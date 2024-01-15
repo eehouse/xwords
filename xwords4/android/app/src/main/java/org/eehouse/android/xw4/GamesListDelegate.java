@@ -880,13 +880,11 @@ public class GamesListDelegate extends ListDelegateBase
                 LocUtils.inflate( m_activity, R.layout.rematch_config );
 
             int iconResID = R.drawable.ic_sologame;
+            Assert.assertTrueNR( null != m_rematchExtras );
             if ( null != m_rematchExtras ) {
                 long rowid = m_rematchExtras.getLong( REMATCH_ROWID_EXTRA,
                                                       ROWID_NOTFOUND );
-                GameSummary summary = GameUtils.getSummary( m_activity, rowid );
-                view.setName( m_rematchExtras.getString( REMATCH_NEWNAME_EXTRA ) )
-                    .setCanOfferRO( summary.canOfferRO );
-
+                view.configure( rowid, this );
                 solo = m_rematchExtras.getBoolean( REMATCH_IS_SOLO, true );
                 if ( !solo ) {
                     iconResID = R.drawable.ic_multigame;
@@ -900,7 +898,7 @@ public class GamesListDelegate extends ListDelegateBase
                 .setPositiveButton( android.R.string.ok, new OnClickListener() {
                         @Override
                         public void onClick( DialogInterface dlg, int item ) {
-                            startRematchWithName( view.getName(), view.getRO(), true );
+                            startRematchWithName( view.getName(), view.getNewOrder(), true );
                         }
                     } )
                 .setNegativeButton( android.R.string.cancel, null )
@@ -2684,7 +2682,7 @@ public class GamesListDelegate extends ListDelegateBase
     }
 
     private void startRematchWithName( final String gameName,
-                                       final RematchOrder ro,
+                                       final int[] newOrder,
                                        boolean showRationale )
     {
         if ( null != gameName && 0 < gameName.length() ) {
@@ -2694,7 +2692,7 @@ public class GamesListDelegate extends ListDelegateBase
             final CommsConnTypeSet addrs = new CommsConnTypeSet( bits );
             boolean hasSMS = addrs.contains( CommsConnType.COMMS_CONN_SMS );
             if ( !hasSMS || null != SMSPhoneInfo.get( m_activity ) ) {
-                rematchWithNameAndPerm( gameName, ro, addrs );
+                rematchWithNameAndPerm( gameName, newOrder, addrs );
             } else {
                 int id = (1 == addrs.size())
                     ? R.string.phone_lookup_rationale_drop
@@ -2702,7 +2700,7 @@ public class GamesListDelegate extends ListDelegateBase
                 String msg = getString( R.string.phone_lookup_rationale )
                     + "\n\n" + getString( id );
                 Perms23.tryGetPerms( this, Perms23.NBS_PERMS, msg,
-                                     Action.ASKED_PHONE_STATE, gameName, ro, addrs );
+                                     Action.ASKED_PHONE_STATE, gameName, newOrder, addrs );
             }
         }
     }
@@ -2714,11 +2712,11 @@ public class GamesListDelegate extends ListDelegateBase
             addrs.remove( CommsConnType.COMMS_CONN_SMS );
         }
         if ( 0 < addrs.size() ) {
-            rematchWithNameAndPerm( (String)params[0], (RematchOrder)params[1], addrs );
+            rematchWithNameAndPerm( (String)params[0], (int[])params[1], addrs );
         }
     }
 
-    private void rematchWithNameAndPerm( String gameName, RematchOrder ro,
+    private void rematchWithNameAndPerm( String gameName, int[] newOrder,
                                          CommsConnTypeSet addrs )
     {
         if ( null != gameName && 0 < gameName.length() ) {
@@ -2729,7 +2727,7 @@ public class GamesListDelegate extends ListDelegateBase
                                            DBUtils.GROUPID_UNSPEC );
 
             long newid = GameUtils.makeRematch( m_activity, srcRowID,
-                                                groupID, gameName, ro );
+                                                groupID, gameName, newOrder );
 
             if ( DBUtils.ROWID_NOTFOUND != newid ) {
                 if ( extras.getBoolean( REMATCH_DELAFTER_EXTRA, false ) ) {

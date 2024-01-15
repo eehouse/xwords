@@ -1032,10 +1032,13 @@ rematch_and_save( CursesBoardGlobals* bGlobals, RematchOrder ro,
 
     CursesBoardGlobals* bGlobalsNew = commonInit( cbState, -1, NULL );
 
-    XP_Bool success = game_makeRematch( &bGlobals->cGlobals.game, NULL_XWE,
+    NewOrder no;
+    server_figureOrder( cGlobals->game.server, ro, &no );
+
+    XP_Bool success = game_makeRematch( &cGlobals->game, NULL_XWE,
                                         bGlobalsNew->cGlobals.util,
                                         &cGlobals->cp, &bGlobalsNew->cGlobals.procs,
-                                        &bGlobalsNew->cGlobals.game, "newName", ro );
+                                        &bGlobalsNew->cGlobals.game, "newName", &no );
     if ( success ) {
         if ( !!newGameIDP ) {
             *newGameIDP = bGlobalsNew->cGlobals.gi->gameID;

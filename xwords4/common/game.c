@@ -231,14 +231,13 @@ game_makeNewGame( MPFORMAL XWEnv xwe, XWGame* game, CurGameInfo* gi,
 XP_Bool
 game_makeRematch( const XWGame* oldGame, XWEnv xwe, XW_UtilCtxt* newUtil,
                   const CommonPrefs* newCp, const TransportProcs* procs,
-                  XWGame* newGame, const XP_UCHAR* newName, RematchOrder ro )
+                  XWGame* newGame, const XP_UCHAR* newName, NewOrder* nop )
 {
     XP_Bool success = XP_FALSE;
-    XP_LOGFF( "(newName=%s, ro=%s)", newName, RO2Str(ro) );
 
     RematchInfo* rip;
     if ( server_getRematchInfo( oldGame->server, newUtil,
-                                makeGameID( newUtil ), ro, &rip ) ) {
+                                makeGameID( newUtil ), nop, &rip ) ) {
         CommsAddrRec* selfAddrP = NULL;
         CommsAddrRec selfAddr;
         if ( !!oldGame->comms ) {
@@ -275,9 +274,10 @@ game_makeRematch( const XWGame* oldGame, XWEnv xwe, XW_UtilCtxt* newUtil,
         }
         server_disposeRematchInfo( oldGame->server, &rip );
     }
-    XP_LOGFF( "=> %s; game with gid %08X rematched to create game with gid %08X using ro %s",
+    XP_LOGFF( "=> %s; game with gid %08X rematched to create game "
+              "with gid %08X",
               boolToStr(success), oldGame->util->gameInfo->gameID,
-              newUtil->gameInfo->gameID, RO2Str(ro) );
+              newUtil->gameInfo->gameID );
     return success;
 }
 

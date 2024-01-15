@@ -167,13 +167,22 @@ const XP_UCHAR* RO2Str(RematchOrder ro);
    No need for a count: once we find a playersMask == 0 we're done
 */
 
+typedef struct RematchInfo RematchInfo;
+typedef struct _NewOrder {
+    XP_U8 order[MAX_NUM_PLAYERS];
+} NewOrder;
+
+/* Figure the order of players from the current game per the RematchOrder
+   provided. */
+void server_figureOrder( const ServerCtxt* server, RematchOrder ro,
+                         NewOrder* nop );
+
 /* Sets up newUtil->gameInfo correctly, and returns with a set of
    addresses to which invitation should be sent. But: meant to be called
    only from game.c anyway.
 */
-typedef struct RematchInfo RematchInfo;
 XP_Bool server_getRematchInfo( const ServerCtxt* server, XW_UtilCtxt* newUtil,
-                               XP_U32 gameID, RematchOrder ro, RematchInfo** ripp  );
+                               XP_U32 gameID, const NewOrder* nop, RematchInfo** ripp  );
 void server_disposeRematchInfo( ServerCtxt* server, RematchInfo** rip );
 XP_Bool server_ri_getAddr( const RematchInfo* ri, XP_U16 nth,
                            CommsAddrRec* addr, XP_U16* nPlayersH );
