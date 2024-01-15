@@ -304,33 +304,36 @@ public class BTUtils {
         if ( !havePermissions( context ) ) {
             Log.d( TAG, "sendPacket(): no BT permissions available" );
         } else if ( isActivePeer( name ) ) {
-            getPA( getSafeAddr(targetAddr) ).addMsg( gameID, buf, msgID );
+            getPA( name, getSafeAddr(targetAddr) ).addMsg( gameID, buf, msgID );
         } else {
             Log.d( TAG, "sendPacket(): addressee %s unknown so dropping", name );
         }
         return nSent;
     }
 
-    public static void gameDied( Context context, String btAddr, int gameID )
+    public static void gameDied( Context context, String btName, String btAddr, int gameID )
     {
         if ( !TextUtils.isEmpty( btAddr ) ) {
-            getPA( btAddr ).addDied( gameID );
+            getPA( btName, btAddr ).addDied( gameID );
         }
     }
 
-    public static void pingHost( Context context, String btAddr, int gameID )
+    public static void pingHost( Context context, String btName, String btAddr, int gameID )
     {
         // Log.d( TAG, "pingHost(host=%s, gameID=%X)", btAddr, gameID );
-        getPA( btAddr ).addPing( gameID );
+        getPA( btName, btAddr ).addPing( gameID );
     }
 
-    public static void sendInvite( Context context, String btAddr,
-                                   NetLaunchInfo nli )
+    public static boolean sendInvite( Context context, String btName,
+                                      String btAddr, NetLaunchInfo nli )
     {
-        Log.d( TAG, "sendInvite(addr=%s, nli=%s)", btAddr, nli );
+        boolean success = false;
+        Log.d( TAG, "sendInvite(name=%s, addr=%s, nli=%s)", btName, btAddr, nli );
         if ( !TextUtils.isEmpty(btAddr) ) {
-            getPA( btAddr ).addInvite( nli );
+            getPA( btName, btAddr ).addInvite( nli );
+            success = true;
         }
+        return success;
     }
 
     public static void addScanListener( ScanListener listener )
@@ -426,10 +429,10 @@ public class BTUtils {
             .updateStatusOut( context, CommsConnType.COMMS_CONN_BT, success );
     }
 
-    private static PacketAccumulator getPA( String addr )
+    private static PacketAccumulator getPA( String name, String addr )
     {
         Assert.assertTrue( !TextUtils.isEmpty(addr) );
-        PacketAccumulator pa = getSenderFor( addr ).wake();
+        PacketAccumulator pa = getSenderFor( name, addr ).wake();
         return pa;
     }
 
@@ -446,20 +449,20 @@ public class BTUtils {
         }
     }
 
-    private static PacketAccumulator getSenderFor( String addr )
+    private static PacketAccumulator getSenderFor( String btName, String btAddr )
     {
-        return getSenderFor( addr, true );
+        return getSenderFor( btName, btAddr, true );
     }
 
-    private static PacketAccumulator getSenderFor( String addr, boolean create )
+    private static PacketAccumulator getSenderFor( String btName, String btAddr, boolean create )
     {
         PacketAccumulator result;
         try ( DeadlockWatch dw = new DeadlockWatch( sSenders ) ) {
             synchronized ( sSenders ) {
-                if ( create && !sSenders.containsKey( addr ) ) {
-                    sSenders.put( addr, new PacketAccumulator( addr ) );
+                if ( create && !sSenders.containsKey( btAddr ) ) {
+                    sSenders.put( btAddr, new PacketAccumulator( btName, btAddr ) );
                 }
-                result = sSenders.get( addr );
+                result = sSenders.get( btAddr );
             }
         }
         return result;
@@ -546,7 +549,7 @@ public class BTUtils {
 
             for ( BluetoothDevice dev : mDevs ) {
                 PacketAccumulator pa =
-                    new PacketAccumulator( dev.getAddress(), mTimeoutMS )
+                    new PacketAccumulator( dev.getName(), dev.getAddress(), mTimeoutMS )
                     .addPing( 0 )
                     .setExitWhenEmpty()
                     .setLifetimeMS( mTimeoutMS )
@@ -662,14 +665,15 @@ public class BTUtils {
         private BTHelper mHelper;
         private boolean mPostOnResponse;
 
-        PacketAccumulator( String addr ) { this( addr, 20000 ); }
+        PacketAccumulator( String btName, String btAddr ) { this( btName, btAddr, 20000 ); }
 
         // Ping case -- used only once
-        PacketAccumulator( String addr, int timeoutMS )
+        PacketAccumulator( String btName, String btAddr, int timeoutMS )
         {
-            Assert.assertTrue( !TextUtils.isEmpty(addr) );
-            mAddr = addr;
-            mName = getName( addr );
+            Assert.assertTrue( !TextUtils.isEmpty(btAddr) );
+            mName = btName;
+            mAddr = btAddr;
+            Log.d( TAG, "PacketAccumulator(name=%s, addr=%s)", mName, mAddr );
             mElems = new ArrayList<>();
             mFailCount = 0;
             mLength = 0;
@@ -686,24 +690,6 @@ public class BTUtils {
             }
 
             start();
-        }
-
-        private String getName( String addr )
-        {
-            Assert.assertTrue( !TextUtils.isEmpty(addr) );
-            Assert.assertFalse( BOGUS_MARSHMALLOW_ADDR.equals( addr ) );
-            String result = "<unknown>";
-            Set<BluetoothDevice> devs = getCandidates();
-            for ( BluetoothDevice dev : devs ) {
-                String devAddr = dev.getAddress();
-                Assert.assertFalse( BOGUS_MARSHMALLOW_ADDR.equals( devAddr ) );
-                if ( devAddr.equals( addr ) ) {
-                    result = dev.getName();
-                    break;
-                }
-            }
-            Log.d( TAG, "getName('%s') => %s", addr, result );
-            return result;
         }
 
         synchronized PacketAccumulator wake()
@@ -922,29 +908,54 @@ public class BTUtils {
             return result;
         }
 
+        private BluetoothDevice getRemoteDevice( String btName, String btAddr )
+        {
+            BluetoothDevice result = mAdapter.getRemoteDevice( btAddr );
+            if ( TextUtils.isEmpty( result.getName() ) ) {
+                result = null;
+                Log.d( TAG, "getRemoteDevice(%s); no name; trying again", btAddr );
+                Assert.assertTrueNR( !TextUtils.isEmpty( btName ) );
+                for ( BluetoothDevice dev : mAdapter.getBondedDevices() ) {
+                    if ( dev.getName().equals(btName) ) {
+                        result = dev;
+                        break;
+                    }
+                }
+            }
+            Log.d( TAG, "getRemoteDevice(%s) => %s", btAddr, result );
+            return result;
+        }
+
         private int trySend()
         {
             int nDone = 0;
             BluetoothSocket socket = null;
             try {
                 Log.d( TAG, "trySend(): attempting to connect to %s", mName );
-                BluetoothDevice dev = mAdapter.getRemoteDevice( getBTAddr() );
-                socket = connect( dev, mTimeoutMS );
-                if ( null == socket ) {
-                    setNoHost();
-                    updateStatusOut( false );
+                String btAddr = getBTAddr();
+                BluetoothDevice dev = getRemoteDevice( getBTName(), btAddr );
+                if ( null == dev ) {
+                    Log.d( TAG, "unable to find dev for %s", btAddr );
+                    Thread.sleep( mTimeoutMS );
                 } else {
-                    Log.d( TAG, "PacketAccumulator.run(): connect(%s) => %s",
-                           mName, socket );
-                    nDone += writeAndCheck( socket );
-                    updateStatusOut( true );
-                    if ( mPostOnResponse ) {
-                        callListeners( socket.getRemoteDevice() );
+                    socket = connect( dev, mTimeoutMS );
+                    if ( null == socket ) {
+                        setNoHost();
+                        updateStatusOut( false );
+                    } else {
+                        Log.d( TAG, "PacketAccumulator.run(): connect(%s) => %s",
+                               mName, socket );
+                        nDone += writeAndCheck( socket );
+                        updateStatusOut( true );
+                        if ( mPostOnResponse ) {
+                            callListeners( socket.getRemoteDevice() );
+                        }
                     }
                 }
             } catch ( IOException ioe ) {
                 Log.e( TAG, "PacketAccumulator.run(): ioe: %s",
                        ioe.getMessage() );
+            } catch ( InterruptedException ioe ) {
             } finally {
                 if ( null != socket ) {
                     try { socket.close(); }
@@ -1099,6 +1110,7 @@ public class BTUtils {
         {
             BluetoothSocket socket = null;
             String name = remote.getName();
+            Assert.assertTrueNR( null != name );
             String addr = remote.getAddress();
             Log.w( TAG, "connect(%s/%s, timeout=%d) starting", name, addr, timeout );
             // DbgUtils.logf( "connecting to %s to send cmd %s", name, cmd.toString() );
@@ -1195,7 +1207,7 @@ public class BTUtils {
             try {
                 Assert.assertTrueNR( null != sAppName && null != sUUID );
                 mServerSocket = openListener( mAdapter );
-                Log.d( TAG, "openListener(uuid=%s) succeeded", sUUID );
+                Log.d( TAG, "%s.openListener(uuid=%s) succeeded", simpleName, sUUID );
             } catch ( IOException ioe ) {
                 Log.ex( TAG, ioe );
                 mServerSocket = null;
@@ -1582,7 +1594,7 @@ public class BTUtils {
             int nSent = -1;
             String btAddr = getSafeAddr( addr );
             if ( null != btAddr && 0 < btAddr.length() ) {
-                getPA( btAddr ).addMsg( gameID, buf, msgID );
+                getPA( addr.bt_hostName, btAddr ).addMsg( gameID, buf, msgID );
                 nSent = buf.length;
             } else {
                 Log.i( TAG, "sendViaBluetooth(): no addr for dev %s",

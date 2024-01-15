@@ -1365,6 +1365,9 @@ addrs_same( const CommsAddrRec* addr1, const CommsAddrRec* addr2 )
                 same = addr1->u.sms.port == addr2->u.sms.port
                     && 0 == XP_STRCMP(addr1->u.sms.phone, addr2->u.sms.phone );
                 break;
+            case COMMS_CONN_BT:
+                same = 0 == XP_STRCMP( addr1->u.bt.hostName, addr2->u.bt.hostName );
+                break;
             default:
                 XP_LOGFF( "ignoring %s", ConnType2Str(typ) );
             }

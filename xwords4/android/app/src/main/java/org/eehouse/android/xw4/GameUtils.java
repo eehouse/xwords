@@ -1468,7 +1468,7 @@ public class GameUtils {
                                 // see below
                                 break;
                             case COMMS_CONN_BT:
-                                BTUtils.gameDied( context, addr.bt_btAddr, gameID );
+                                BTUtils.gameDied( context, addr.bt_hostName, addr.bt_btAddr, gameID );
                                 break;
                             case COMMS_CONN_SMS:
                                 NBSProto.gameDied( context, gameID, addr.sms_phone );

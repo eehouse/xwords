@@ -166,16 +166,11 @@ public class MultiMsgSink implements TransportProcs {
         case COMMS_CONN_SMS:
             if ( XWPrefs.getNBSEnabled( context ) ) {
                 NBSProto.inviteRemote( context, addr.sms_phone, nli );
-                target = addr.sms_phone;
-                means = InviteMeans.SMS_DATA;
                 success = true;
             }
             break;
         case COMMS_CONN_BT:
-            BTUtils.sendInvite( context, addr.bt_btAddr, nli );
-            target = addr.bt_btAddr;
-            means = InviteMeans.BLUETOOTH;
-            success = true;
+            success = BTUtils.sendInvite( context, addr.bt_hostName, addr.bt_btAddr, nli );
             break;
         case COMMS_CONN_NFC: // nothing to do
             break;
@@ -186,6 +181,7 @@ public class MultiMsgSink implements TransportProcs {
         }
 
         if ( null != means ) {
+            Assert.failDbg();   // shouldn't be getting called any more
             DBUtils.recordInviteSent( context, rowid, means, target, true );
         }
 

@@ -2502,7 +2502,7 @@ public class BoardDelegate extends DelegateBase
             for ( CommsAddrRec addr : addrs ) {
                 if ( addr.contains( CommsConnType.COMMS_CONN_BT )
                      && !TextUtils.isEmpty(addr.bt_btAddr) ) {
-                    BTUtils.pingHost( m_activity, addr.bt_btAddr, m_gi.gameID );
+                    BTUtils.pingHost( m_activity, addr.bt_hostName, addr.bt_btAddr, m_gi.gameID );
                 }
             }
         }
