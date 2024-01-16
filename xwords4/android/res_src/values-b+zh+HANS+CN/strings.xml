@@ -1088,4 +1088,11 @@
     <string name="archive_expl_store">选择要保存的 CrossWords 数据类型。</string>
     <string name="confirm_get_locdict_fmt">你的设备设置使用%1$s。要下载单词表以使用%1$s游玩 CrossWords 吗？</string>
     <string name="invite_msg_extra_norematch">如果你怀疑发出的邀请丢失了，再发一次也没问题。</string>
+    <string name="expl_rematch_order">选择新游戏中的玩家排序方式</string>
+    <string name="ro_same">与此游戏相同</string>
+    <string name="ro_low_score_first">低分玩家先手</string>
+    <string name="ro_high_score_first">高分玩家先手</string>
+    <string name="ro_juggle">随机</string>
+    <string name="title_rematch_order">重赛玩家顺序</string>
+    <string name="ro_no_default">每次都询问</string>
 </resources>
