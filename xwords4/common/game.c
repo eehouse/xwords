@@ -213,8 +213,7 @@ game_makeNewGame( MPFORMAL XWEnv xwe, XWGame* game, CurGameInfo* gi,
 
 
         game->server = server_make( MPPARM(mpool) xwe, game->model,
-                                    game->comms,
-                                    util );
+                                    game->comms, util );
         game->board = board_make( MPPARM(mpool) xwe, game->model, game->server,
                                   NULL, util );
         board_setCallbacks( game->board, xwe );

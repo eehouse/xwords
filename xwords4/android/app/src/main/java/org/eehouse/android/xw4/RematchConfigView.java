@@ -24,9 +24,6 @@ import android.content.Context;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.View;
-import android.widget.AdapterView.OnItemSelectedListener;
-import android.widget.AdapterView;
-import android.widget.CheckBox;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
@@ -113,7 +110,6 @@ public class RematchConfigView extends LinearLayout
             }
         } else {
             mNameStr = TextUtils.join( mSep, mWrapper.gi().playerNames(mNewOrder) );
-            Log.d( TAG, "mNameStr: %s", mNameStr );
             mEWC.setText( mNameStr );
         }
     }
@@ -149,5 +145,4 @@ public class RematchConfigView extends LinearLayout
             }
         }
     }
-
 }

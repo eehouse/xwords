@@ -400,12 +400,13 @@ makeBooleanArray( JNIEnv* env, int siz, const jboolean* vals )
 int
 getIntsFromArray( JNIEnv* env, int dest[], jintArray arr, int count, bool del )
 {
-    jint* ints = (*env)->GetIntArrayElements(env, arr, 0);
-    jsize len = (*env)->GetArrayLength( env, arr );
-    if ( len < count ) {
-        count = len;
+    {
+        jsize len = (*env)->GetArrayLength( env, arr );
+        if ( len < count ) {
+            count = len;
+        }
     }
-
+    jint* ints = (*env)->GetIntArrayElements(env, arr, 0);
     for ( int ii = 0; ii < count; ++ii ) {
         dest[ii] = ints[ii];
     }

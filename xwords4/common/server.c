@@ -385,8 +385,7 @@ initServer( ServerCtxt* server, XWEnv xwe )
     SRVR_LOGFF(" ");
     setTurn( server, xwe, -1 ); /* game isn't under way yet */
 
-    if ( 0 ) {
-    } else if ( server->vol.gi->serverRole == SERVER_ISCLIENT ) {
+    if ( server->vol.gi->serverRole == SERVER_ISCLIENT ) {
         SETSTATE( server, XWSTATE_NONE );
     } else {
         SETSTATE( server, XWSTATE_BEGIN );
@@ -2197,7 +2196,6 @@ client_readInitialMessage( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* stream )
         }
         // XP_ASSERT( streamVersion <= CUR_STREAM_VERS ); /* else do what? */
 
-        /* Get rid of this!!!! It's in the damned gi that's read next */
         gameID = streamVersion < STREAM_VERS_REMATCHORDER
             ? stream_getU32( stream ) : 0;
         CurGameInfo localGI = {0};
@@ -2208,10 +2206,10 @@ client_readInitialMessage( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* stream )
 
         /* never seems to replace anything -- gi is already correct on guests
            apparently. How? Will have come in with invitation, of course. */
-        SRVR_LOGFF( "read gameID of %X/%d; calling comms_setConnID (replacing %X)",
-                  gameID, gameID, server->vol.gi->gameID );
-        XP_ASSERT( server->vol.gi->gameID == gameID );
-        server->vol.gi->gameID = gameID;
+        SRVR_LOGFF( "read gameID of %08X; calling comms_setConnID (replacing %08X)",
+                    gameID, gi->gameID );
+        XP_ASSERT( gi->gameID == gameID );
+        gi->gameID = gameID;
         comms_setConnID( comms, gameID, streamVersion );
 
         XP_ASSERT( !localGI.dictName );
@@ -3997,8 +3995,7 @@ finishMove( ServerCtxt* server, XWEnv xwe, TrayTileSet* newTiles, XP_U16 turn )
         freeBWI( MPPARM(server->mpool) &server->illegalWordInfo );
     }
 
-    if ( 0 ) {
-    } else if (isClient && (gi->phoniesAction == PHONIES_DISALLOW)
+    if (isClient && (gi->phoniesAction == PHONIES_DISALLOW)
                && nTilesMoved > 0 ) {
         SETSTATE( server, XWSTATE_MOVE_CONFIRM_WAIT );
         setTurn( server, xwe, -1 );

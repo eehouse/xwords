@@ -2343,7 +2343,6 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1summarize
     setInt( env, jsummary, "turn", summary.turn );
     setBool( env, jsummary, "turnIsLocal", summary.turnIsLocal );
     setBool( env, jsummary, "canRematch", summary.canRematch );
-    setBool( env, jsummary, "canOfferRO", summary.canOfferRO );
     setInt( env, jsummary, "lastMoveTime", summary.lastMoveTime );
     setInt( env, jsummary, "dupTimerExpires", summary.dupTimerExpires );
     

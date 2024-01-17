@@ -85,7 +85,6 @@ public class GameSummary implements Serializable {
     public DeviceRole serverRole;
     public int nPacketsPending;
     public boolean canRematch;
-    public boolean canOfferRO;
 
     private Integer m_giFlags;
     private String m_playersSummary;

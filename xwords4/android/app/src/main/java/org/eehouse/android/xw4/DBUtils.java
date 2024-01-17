@@ -199,7 +199,6 @@ public class DBUtils {
 
                 tmpInt = cursor.getInt( cursor.getColumnIndex( DBHelper.CAN_REMATCH ));
                 summary.canRematch = 0 != (1 & tmpInt);
-                summary.canOfferRO = 0 != (2 & tmpInt);
 
                 String str = cursor
                     .getString(cursor.getColumnIndex(DBHelper.EXTRAS));
@@ -311,8 +310,7 @@ public class DBUtils {
             values.put( DBHelper.QUASHED, summary.quashed? 1 : 0 );
             values.put( DBHelper.LASTMOVE, summary.lastMoveTime );
             values.put( DBHelper.NEXTDUPTIMER, summary.dupTimerExpires );
-            int tmpInt = (summary.canRematch? 1 : 0) | (summary.canOfferRO? 2 : 0);
-            values.put( DBHelper.CAN_REMATCH, tmpInt );
+            values.put( DBHelper.CAN_REMATCH, summary.canRematch? 1 : 0 );
 
             // Don't overwrite extras! Sometimes this method is called from
             // JNIThread which has created the summary from common code that

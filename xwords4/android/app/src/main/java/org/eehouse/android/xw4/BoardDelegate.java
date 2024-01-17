@@ -1581,16 +1581,6 @@ public class BoardDelegate extends DelegateBase
         callInviteChoices();
     }
 
-    // @Override
-    // public void onInfoClicked( SentInvitesInfo sentInfo )
-    // {
-    //     String msg = sentInfo.getAsText( m_activity );
-    //     makeOkOnlyBuilder( msg )
-    //         .setTitle( R.string.title_invite_history )
-    //         .setAction( Action.INVITE_INFO )
-    //         .show();
-    // }
-
     @Override
     public long getRowID()
     {

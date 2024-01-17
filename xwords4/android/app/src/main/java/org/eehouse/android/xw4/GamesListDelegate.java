@@ -67,7 +67,6 @@ import org.eehouse.android.xw4.jni.CurGameInfo;
 import org.eehouse.android.xw4.jni.GameSummary;
 import org.eehouse.android.xw4.jni.LastMoveInfo;
 import org.eehouse.android.xw4.jni.XwJNI;
-import org.eehouse.android.xw4.jni.XwJNI.RematchOrder;
 import org.eehouse.android.xw4.loc.LocUtils;
 import static org.eehouse.android.xw4.DBUtils.ROWID_NOTFOUND;
 

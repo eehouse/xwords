@@ -183,7 +183,6 @@ drawScoreBoard( BoardCtxt* board, XWEnv xwe )
             XP_U16 remWidth, remHeight, remDim;
             DrawScoreData* dp;
             DrawScoreData datum[MAX_NUM_PLAYERS];
-            ScoresArray scores;
             XP_Bool isVertical = !board->scoreSplitHor;
             XP_Bool remFocussed = XP_FALSE;
             XP_Bool focusAll = XP_FALSE;
@@ -200,6 +199,7 @@ drawScoreBoard( BoardCtxt* board, XWEnv xwe )
 #endif
             /* Get the scores from the model or by calculating them based on
                the end-of-game state. */
+            ScoresArray scores;
             model_getCurScores( model, &scores, board->gameOver );
 
             if ( draw_scoreBegin( board->draw, xwe, &board->scoreBdBounds,

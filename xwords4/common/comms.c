@@ -2843,10 +2843,10 @@ validateInitialMessage( CommsCtxt* comms, XP_Bool XP_UNUSED_HEARTBEAT(hasPayload
                         const CommsAddrRec* retAddr, XWHostID senderID,
                         XP_PlayerAddr* channelNoP, XP_U16 flags, MsgID msgID )
 {
-    AddressRecord* rec = NULL;
     CNO_FMT( cbuf, *channelNoP );
     COMMS_LOGFF( TAGFMT() "looking at %s", TAGPRMS, cbuf );
-    rec = getRecordFor( comms, *channelNoP );
+
+    AddressRecord* rec = getRecordFor( comms, *channelNoP );
     if ( !!rec ) {
         augmentChannelAddr( comms, rec, retAddr, senderID );
 
@@ -3700,7 +3700,7 @@ augmentAddrIntrnl( CommsCtxt* comms, CommsAddrRec* destAddr,
                     if ( !isNewer && !newType
                          && 0 != XP_MEMCMP( &empty, dest, siz ) ) {
                         XP_LOGFF( "%s: not replacing new info with old",
-                                     ConnType2Str(typ) );
+                                  ConnType2Str(typ) );
                     } else {
                         XP_MEMCPY( dest, src, siz );
                         changed = XP_TRUE;

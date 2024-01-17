@@ -128,7 +128,6 @@ class InvitesNeededAlert {
         long getRowID();
         void onCloseClicked();
         void onInviteClicked();
-        // void onInfoClicked( SentInvitesInfo sentInfo );
     }
 
     private boolean close()
