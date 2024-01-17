@@ -3213,11 +3213,11 @@ public class GamesListDelegate extends ListDelegateBase
         return intent;
     }
 
-    private void launchLikeRematch( CommsAddrRec hostAddr, String name )
+    private void launchLikeRematch( CommsAddrRec hostAddr, String gameName )
     {
         Intent intent = makeSelfIntent( m_activity )
             .putExtra( INVITEE_REC_EXTRA, (Serializable)hostAddr )
-            .putExtra( REMATCH_NEWNAME_EXTRA, name )
+            .putExtra( REMATCH_NEWNAME_EXTRA, gameName )
             ;
         startActivity( intent );
     }
@@ -3225,7 +3225,7 @@ public class GamesListDelegate extends ListDelegateBase
     public static Intent makeRematchIntent( Context context, long rowid,
                                             long groupID, CurGameInfo gi,
                                             CommsConnTypeSet addrTypes,
-                                            String newName, boolean deleteAfter )
+                                            boolean deleteAfter )
     {
         Intent intent = null;
         boolean isSolo = gi.serverRole == CurGameInfo.DeviceRole.SERVER_STANDALONE;
@@ -3233,7 +3233,6 @@ public class GamesListDelegate extends ListDelegateBase
             .putExtra( REMATCH_ROWID_EXTRA, rowid )
             .putExtra( REMATCH_GROUPID_EXTRA, groupID )
             .putExtra( REMATCH_IS_SOLO, isSolo )
-            .putExtra( REMATCH_NEWNAME_EXTRA, newName )
             .putExtra( REMATCH_DELAFTER_EXTRA, deleteAfter );
 
         if ( null != addrTypes ) {

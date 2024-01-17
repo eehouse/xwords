@@ -2930,10 +2930,9 @@ public class BoardDelegate extends DelegateBase
                                      GameSummary summary, CurGameInfo gi,
                                      GamePtr jniGamePtr, boolean deleteAfter )
     {
-        String newName = summary.getRematchName( activity );
         Intent intent = GamesListDelegate
             .makeRematchIntent( activity, rowid, groupID, gi,
-                                summary.conTypes, newName, deleteAfter );
+                                summary.conTypes, deleteAfter );
         if ( null != intent ) {
             activity.startActivity( intent );
         }

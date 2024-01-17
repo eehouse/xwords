@@ -181,12 +181,6 @@ public class GameSummary implements Serializable {
         return result;
     }
 
-    public String getRematchName( Context context )
-    {
-        return LocUtils.getString( context, R.string.rematch_name_fmt,
-                                   playerNames( context ) );
-    }
-
     public void setRemoteDevs( Context context, CommsConnType typ, String str )
     {
         if ( null != str && 0 < str.length() ) {

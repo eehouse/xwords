@@ -138,6 +138,7 @@ void
 nli_setGameName( NetLaunchInfo* nli, const XP_UCHAR* gameName )
 {
     XP_SNPRINTF( nli->gameName, sizeof(nli->gameName), "%s", gameName );
+    nli->gameName[sizeof(nli->gameName)-1] = '\0';
 }
 
 void
