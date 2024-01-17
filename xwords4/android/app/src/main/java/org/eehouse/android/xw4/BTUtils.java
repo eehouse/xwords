@@ -329,7 +329,7 @@ public class BTUtils {
     {
         boolean success = false;
         Log.d( TAG, "sendInvite(name=%s, addr=%s, nli=%s)", btName, btAddr, nli );
-        if ( !TextUtils.isEmpty(btAddr) ) {
+        if ( !TextUtils.isEmpty(btName) ) {
             getPA( btName, btAddr ).addInvite( nli );
             success = true;
         }
@@ -431,7 +431,7 @@ public class BTUtils {
 
     private static PacketAccumulator getPA( String name, String addr )
     {
-        Assert.assertTrue( !TextUtils.isEmpty(addr) );
+        Assert.assertTrue( !TextUtils.isEmpty(name) );
         PacketAccumulator pa = getSenderFor( name, addr ).wake();
         return pa;
     }
@@ -440,10 +440,10 @@ public class BTUtils {
     {
         try ( DeadlockWatch dw = new DeadlockWatch( sSenders ) ) {
             synchronized ( sSenders ) {
-                if ( pa == sSenders.get( pa.getBTAddr() ) ) {
+                if ( pa == sSenders.get( pa.getName() ) ) {
                     sSenders.remove( pa );
                 } else {
-                    Log.e( TAG, "race? There's a different PA for %s", pa.getBTAddr() );
+                    Log.e( TAG, "race? There's a different PA for %s", pa.getName() );
                 }
             }
         }
@@ -459,10 +459,10 @@ public class BTUtils {
         PacketAccumulator result;
         try ( DeadlockWatch dw = new DeadlockWatch( sSenders ) ) {
             synchronized ( sSenders ) {
-                if ( create && !sSenders.containsKey( btAddr ) ) {
-                    sSenders.put( btAddr, new PacketAccumulator( btName, btAddr ) );
+                if ( create && !sSenders.containsKey( btName ) ) {
+                    sSenders.put( btName, new PacketAccumulator( btName, btAddr ) );
                 }
-                result = sSenders.get( btAddr );
+                result = sSenders.get( btName );
             }
         }
         return result;
@@ -670,7 +670,7 @@ public class BTUtils {
         // Ping case -- used only once
         PacketAccumulator( String btName, String btAddr, int timeoutMS )
         {
-            Assert.assertTrue( !TextUtils.isEmpty(btAddr) );
+            Assert.assertTrue( !TextUtils.isEmpty(btName) );
             mName = btName;
             mAddr = btAddr;
             Log.d( TAG, "PacketAccumulator(name=%s, addr=%s)", mName, mAddr );
@@ -910,8 +910,11 @@ public class BTUtils {
 
         private BluetoothDevice getRemoteDevice( String btName, String btAddr )
         {
-            BluetoothDevice result = mAdapter.getRemoteDevice( btAddr );
-            if ( TextUtils.isEmpty( result.getName() ) ) {
+            BluetoothDevice result = null;
+            if ( !TextUtils.isEmpty(btAddr) ) {
+                result = mAdapter.getRemoteDevice( btAddr );
+            }
+            if ( null == result || TextUtils.isEmpty( result.getName() ) ) {
                 result = null;
                 Log.d( TAG, "getRemoteDevice(%s); no name; trying again", btAddr );
                 Assert.assertTrueNR( !TextUtils.isEmpty( btName ) );

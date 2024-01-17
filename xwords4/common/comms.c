@@ -1694,7 +1694,7 @@ void
 comms_invite( CommsCtxt* comms, XWEnv xwe, const NetLaunchInfo* nli,
               const CommsAddrRec* destAddr, XP_Bool sendNow )
 {
-    LOG_FUNC();
+    COMMS_LOGFF("(sendNow=%s)", boolToStr(sendNow));
     LOGNLI(nli);
     XP_PlayerAddr forceChannel = nli->forceChannel;
     XP_ASSERT( 0 < forceChannel && (forceChannel & CHANNEL_MASK) == forceChannel );
@@ -1714,13 +1714,14 @@ comms_invite( CommsCtxt* comms, XWEnv xwe, const NetLaunchInfo* nli,
         elem = addToQueue( comms, xwe, elem, XP_TRUE );
         if ( !!elem ) {
             XP_ASSERT( !elem->smp.next );
-            COMMS_LOGFF( "added invite on channel %d", elem->channelNo & CHANNEL_MASK );
+            COMMS_LOGFF( "added invite with sum %s on channel %d", elem->checksum,
+                         elem->channelNo & CHANNEL_MASK );
             /* Let's let platform code decide whether to call sendMsg() . On
                Android creating a game with an invitation in its queue is always
                followed by opening the game, which results in comms_resendAll()
                getting called leading to a second send immediately after this. So
                let Android drop it. Linux, though, needs it for now. */
-            if ( sendNow && !!elem && !!comms->procs.sendInvt ) {
+            if ( sendNow && !!comms->procs.sendInvt ) {
                 sendMsg( comms, xwe, elem, COMMS_CONN_NONE );
             }
         }
