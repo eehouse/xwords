@@ -1,6 +1,6 @@
 /* -*- compile-command: "find-and-gradle.sh inXw4dDeb"; -*- */
 /*
- * Copyright 2015 - 2023 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2015 - 2024 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -19,8 +19,8 @@
  */
 
 // These two change with every release.
-def VERSION_CODE_BASE = 195
-def VERSION_NAME = '4.4.199'
+def VERSION_CODE_BASE = 196
+def VERSION_NAME = '4.4.200'
 
 def INITIAL_CLIENT_VERS = 10
 def BUILD_INFO_NAME = "build-info.txt"
