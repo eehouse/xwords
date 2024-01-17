@@ -2786,4 +2786,15 @@
        choice will not be offered at game creation time. -->
   <string name="ro_no_default">Ask each time</string>
 
+  <!-- Explanatory text shown in the rematched game configuration
+       alert when you change the RematchOrder after having manually
+       edited the game name. Until you edit, the name changes as you
+       change the RematchOrder choice to reflect that choice,
+       e.g. from "Eric vs. Kati" to "Kati vs. Eric" when you change
+       from lowest-scoring-first to highest-scoring-first. Now the
+       name won't change, and this text explains that (until you
+       choose "Do not show again")-->
+  <string name="na_rematch_edit">The game name will not change once
+  you have edited it unless it is empty.</string>
+
 </resources>

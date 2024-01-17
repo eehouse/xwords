@@ -94,8 +94,11 @@ public class RematchConfigView extends LinearLayout
     @Override
     public void onCheckedChanged( RadioGroup group, int checkedId )
     {
-        if ( !mUserEditing && null != mNameStr ) {
-            mUserEditing = ! mNameStr.equals( getName() );
+        String curName = getName();
+        if ( TextUtils.isEmpty( curName ) ) {
+            mUserEditing = false;
+        } else if ( !mUserEditing && null != mNameStr ) {
+            mUserEditing = ! mNameStr.equals( curName );
         }
 
         mCurRO = mRos.get( checkedId );

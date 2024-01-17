@@ -1144,4 +1144,5 @@
     <string name="ro_juggle">Zufällig</string>
     <string name="title_rematch_order">Reihenfolge der Spieler*innen in der Revanche</string>
     <string name="ro_no_default">Jedes Mal fragen</string>
+    <string name="na_rematch_edit">Der Spielname wird sich nicht mehr ändern, sobald Sie ihn bearbeiten, es sei denn er ist leer.</string>
 </resources>
