@@ -28,17 +28,24 @@
                                       android:focusable="false"
                                       />
 
-  <TextView android:id="@+id/explanation"
-            android:layout_height="wrap_content"
-            android:layout_width="match_parent"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            android:text="@string/expl_rematch_order"
-            />
+  <LinearLayout android:id="@+id/ro_stuff"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                >
 
-  <RadioGroup android:id="@+id/group"
-              android:orientation="vertical"
-              android:layout_width="match_parent"
+    <TextView android:id="@+id/explanation"
               android:layout_height="wrap_content"
+              android:layout_width="match_parent"
+              android:textAppearance="?android:attr/textAppearanceMedium"
+              android:text="@string/expl_rematch_order"
               />
+
+    <RadioGroup android:id="@+id/group"
+                android:orientation="vertical"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                />
+  </LinearLayout>
 
 </org.eehouse.android.xw4.RematchConfigView>

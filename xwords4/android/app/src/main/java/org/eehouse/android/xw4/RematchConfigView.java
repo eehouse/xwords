@@ -145,6 +145,8 @@ public class RematchConfigView extends LinearLayout
                         button.setChecked( true );
                     }
                 }
+            } else {
+                findViewById( R.id.ro_stuff) .setVisibility( View.GONE );
             }
         }
     }
