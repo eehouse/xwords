@@ -418,7 +418,6 @@ public class MQTTUtils extends Thread
                 params.put( "loc", LocUtils.getCurLocale( mContext ) );
                 params.put( "tmpKey", getTmpKey(mContext) );
                 params.put( "frstV", Utils.getFirstVersion( mContext ) );
-                params.put( "relayDID", DevID.getRelayDevID( mContext ) );
 
                 Log.d( TAG, "registerOnce(): sending %s", params );
                 HttpsURLConnection conn
