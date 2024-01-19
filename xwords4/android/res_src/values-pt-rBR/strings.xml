@@ -1191,4 +1191,5 @@
     <string name="expl_rematch_order">Escolha como ordenar os jogadores na nova partida</string>
     <string name="ro_high_score_first">Pontuador maior vai primeiro</string>
     <string name="ro_juggle">Aleatoriamente</string>
+    <string name="na_rematch_edit">O nome da partida não vai mudar uma vez que tenha o editado, a menos que esteja vazio.</string>
 </resources>
