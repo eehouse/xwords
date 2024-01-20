@@ -1510,6 +1510,10 @@ public class BoardDelegate extends DelegateBase
             PopupMenu popup = new PopupMenu( m_activity, view );
             popup.getMenuInflater().inflate( R.menu.netstat, popup.getMenu() );
 
+            if ( ! m_connTypes.contains(CommsConnType.COMMS_CONN_MQTT) ) {
+                popup.getMenu().removeItem( R.id.netstat_menu_traffic );
+            }
+
             popup.setOnMenuItemClickListener( new PopupMenu
                                               .OnMenuItemClickListener() {
                     @Override
