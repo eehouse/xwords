@@ -1095,4 +1095,5 @@
     <string name="ro_juggle">随机</string>
     <string name="title_rematch_order">重赛玩家顺序</string>
     <string name="ro_no_default">每次都询问</string>
+    <string name="na_rematch_edit">除非游戏名为空，否则在编辑后不会改变。</string>
 </resources>
