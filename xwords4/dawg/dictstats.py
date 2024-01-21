@@ -49,6 +49,8 @@ def main():
     # letterCounts = defaultdict(int)
     wordCount = 0
     letterCount = 0
+
+    sys.stdin.reconfigure(encoding=args.ENC)
 	
     for line in sys.stdin.readlines():
         line = line.strip()
