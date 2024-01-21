@@ -2052,8 +2052,9 @@ public class GamesListDelegate extends ListDelegateBase
                 }
                 Utils.setItemVisible( menu, R.id.games_game_invites, enable );
                 Utils.setItemVisible( menu, R.id.games_game_netstats, isMultiGame );
-                Utils.setItemVisible( menu, R.id.games_game_relaypage,
-                                      BuildConfig.NON_RELEASE && isMultiGame );
+                enable = isMultiGame && BuildConfig.NON_RELEASE
+                    && summary.conTypes.contains(CommsConnType.COMMS_CONN_MQTT);
+                Utils.setItemVisible( menu, R.id.games_game_relaypage, enable );
 
                 enable = BuildConfig.DEBUG || XWPrefs.getDebugEnabled( m_activity );
                 Utils.setItemVisible( menu, R.id.games_game_markbad, enable );
