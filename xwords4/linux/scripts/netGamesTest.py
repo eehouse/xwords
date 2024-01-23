@@ -183,6 +183,7 @@ class Device():
     _devs = {}
     _logdir = None
     _nSteps = 0
+    _nextChatID = 0
 
     @staticmethod
     def setup(logdir):
@@ -259,6 +260,17 @@ class Device():
             if moved: break
         return moved
 
+    def sendChat(self):
+        success = False
+        if random.randint(0, 99) < self.args.CHAT_PCT:
+            gids = [game.gid for game in self._allGames()]
+            if gids:
+                random.shuffle(gids)
+                gid = gids[0]
+                response = self._sendWaitReply('sendChat', gid=gid, msg=Device.nextChatMsg())
+                success = response.get('success', False)
+        return success
+
     def _sendWaitReply(self, cmd, **kwargs):
         self.launchIfNot()
 
@@ -332,6 +344,8 @@ class Device():
                 self.launchIfNot()
             elif datetime.datetime.now() > self.endTime:
                 self.rematchOrQuit()
+            elif self.sendChat():
+                pass
             elif self.moveOne():
                 pass
             else:
@@ -487,8 +501,6 @@ class Device():
             scriptArgs.append('"${APP}"')
 
             scriptArgs += '--db', self.dbName, '--skip-confirm'
-            if self.args.SEND_CHAT:
-                scriptArgs += '--send-chat', self.args.SEND_CHAT
             scriptArgs += '--localName', self.host
             scriptArgs += '--cmd-socket-name', self.cmdSocketName
 
@@ -592,6 +604,11 @@ class Device():
     def runnerStub(self):
         self._launchProc()
 
+    @staticmethod
+    def nextChatMsg():
+        Device._nextChatID += 1
+        return 'Chat msg {}'.format(Device._nextChatID)
+
 def openOnExit(args):
     devs = Device.getAll()
     for dev in devs:
@@ -677,8 +694,8 @@ def mkParser():
     parser.add_argument('--status-steps', dest = 'STATUS_STEPS', type = int, default = 20,
                         help = 'how many steps between status dumps (matters only if not --debug)')
 
-    parser.add_argument('--send-chat', dest = 'SEND_CHAT', type = str, default = None,
-                        help = 'the message to send')
+    parser.add_argument('--chat-pct', dest = 'CHAT_PCT', type = int, default = 0,
+                        help = 'odds of sending a chat message')
 
     parser.add_argument('--app-new', dest = 'APP_NEW', default = './obj_linux_memdbg/xwords',
                         help = 'the app we\'ll use')
