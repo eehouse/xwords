@@ -729,7 +729,7 @@ cb_makeMoveIf( CursesBoardState* cbState, XP_U32 gameID )
         success = board_canHint( board );
         if ( success ) {
             XP_Bool ignored;
-            success = board_requestHint( cGlobals->game.board, NULL_XWE,
+            success = board_requestHint( board, NULL_XWE,
 #ifdef XWFEATURE_SEARCHLIMIT
                                          XP_FALSE,
 #endif
@@ -742,6 +742,18 @@ cb_makeMoveIf( CursesBoardState* cbState, XP_U32 gameID )
         }
     }
     LOG_RETURNF( "%s", boolToStr(success) );
+    return success;
+}
+
+XP_Bool
+cb_sendChat( CursesBoardState* cbState, XP_U32 gameID, const char* msg )
+{
+    CursesBoardGlobals* bGlobals =
+        findOrOpenForGameID( cbState, gameID, NULL, NULL );
+    XP_Bool success = !!bGlobals;
+    if ( success ) {
+        board_sendChat( bGlobals->cGlobals.game.board, NULL_XWE, msg );
+    }
     return success;
 }
 

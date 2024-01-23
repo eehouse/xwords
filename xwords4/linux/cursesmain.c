@@ -1596,6 +1596,15 @@ moveifFromArgs( CursesAppGlobals* aGlobals, cJSON* args )
     return cb_makeMoveIf( aGlobals->cbState, gameID );
 }
 
+static XP_Bool
+chatFromArgs( CursesAppGlobals* aGlobals, cJSON* args )
+{
+    XP_U32 gameID = gidFromObject( args );
+    cJSON* tmp = cJSON_GetObjectItem( args, "msg" );
+    const char* msg = tmp->valuestring;
+    return cb_sendChat( aGlobals->cbState, gameID, msg );
+}
+
 /* Return 'gid' of new game */
 static XP_U32
 rematchFromArgs( CursesAppGlobals* aGlobals, cJSON* args )
@@ -1800,6 +1809,8 @@ on_incoming_signal( GSocketService* XP_UNUSED(service),
             } else if ( 0 == strcmp( cmdStr, "getPlayers" ) ) {
                 cJSON* players = getPlayersForArgs( aGlobals, args );
                 addObjectToObject( &response, "players", players );
+            } else if ( 0 == strcmp( cmdStr, "sendChat" ) ) {
+                success = chatFromArgs( aGlobals, args );
             } else {
                 success = XP_FALSE;
                 XP_ASSERT(0);

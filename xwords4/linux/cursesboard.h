@@ -56,6 +56,7 @@ void cb_addInvites( CursesBoardState* cbState, XP_U32 gameID, XP_U16 nRemotes,
 XP_Bool cb_makeRematch( CursesBoardState* cbState, XP_U32 gameID,
                         RematchOrder ro, XP_U32* newGameID );
 XP_Bool cb_makeMoveIf( CursesBoardState* cbState, XP_U32 gameID );
+XP_Bool cb_sendChat( CursesBoardState* cbState, XP_U32 gameID, const char* msg );
 
 const CommonGlobals* cb_getForGameID( CursesBoardState* cbState, XP_U32 gameID );
 
