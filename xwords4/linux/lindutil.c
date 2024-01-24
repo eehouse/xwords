@@ -36,6 +36,23 @@
 #include "gtkmain.h"
 #include "mqttcon.h"
 
+
+/* Define ACK_IN_BACKGROUND and you'll crash inside curl_easy_perform(). No
+   idea why, and no time to debug it now.
+*/
+// #define ACK_IN_BACKGROUND
+
+typedef struct _LinDUtilCtxt {
+    XW_DUtilCtxt super;
+
+#ifdef ACK_IN_BACKGROUND
+    pthread_t ackThread;
+    pthread_mutex_t ackMutex;
+    pthread_cond_t ackCondVar;
+    GList* ackList;
+#endif
+} LinDUtilCtxt;
+
 static XP_U32 linux_dutil_getCurSeconds( XW_DUtilCtxt* duc, XWEnv xwe );
 static const XP_UCHAR* linux_dutil_getUserString( XW_DUtilCtxt* duc, XWEnv xwe, XP_U16 code );
 static const XP_UCHAR* linux_dutil_getUserQuantityString( XW_DUtilCtxt* duc, XWEnv xwe, XP_U16 code,
@@ -185,12 +202,18 @@ linux_dutil_onGameGoneReceived( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe),
     }
 }
 
+typedef struct _AckData {
+    XW_DUtilCtxt* duc;
+    XP_U8* msg;
+    XP_U16 len;
+    gchar* topic;
+    XP_U32 gameID;
+} AckData;
+
 static void
-linux_dutil_ackMQTTMsg( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* topic,
-                        XP_U32 gameID, const MQTTDevID* XP_UNUSED(senderID),
-                        const XP_U8* msg, XP_U16 len )
+sendViaCurl( LinDUtilCtxt* lduc, AckData* adp )
 {
-    LaunchParams* params = (LaunchParams*)duc->closure;
+    LaunchParams* params = (LaunchParams*)lduc->super.closure;
 
     CURLcode res = curl_global_init(CURL_GLOBAL_DEFAULT);
     XP_ASSERT(res == CURLE_OK);
@@ -201,12 +224,12 @@ linux_dutil_ackMQTTMsg( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* topic,
               params->connInfo.mqtt.hostName );
     curl_easy_setopt( curl, CURLOPT_URL, url );
 
-    XP_UCHAR* sum = linux_dutil_md5sum( duc, xwe, msg, len );
+    gchar* sum = g_compute_checksum_for_data( G_CHECKSUM_MD5, adp->msg, adp->len );
     gchar* json
         = g_strdup_printf("{\"topic\": \"%s\", \"gid\": %u, \"sum\": \"%s\"}",
-                          topic, gameID, sum );
+                          adp->topic, adp->gameID, sum );
     // XP_LOGFF( "json: %s", json );
-    XP_FREE( duc->mpool, sum );
+    g_free( sum );
     curl_easy_setopt( curl, CURLOPT_POSTFIELDS, json );
     curl_easy_setopt( curl, CURLOPT_POSTFIELDSIZE, -1L );
 
@@ -227,21 +250,87 @@ linux_dutil_ackMQTTMsg( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* topic,
     curl_global_cleanup();
     g_free( json );
 
+    /* g_idle_add( nuke_ack_data, ad ); */
+    g_free( adp->topic );
+    g_free( adp->msg );
+    g_free( adp );
+}
+
+#ifdef ACK_IN_BACKGROUND
+static void*
+sendAckThreadProc( void* arg )
+{
+    LOG_FUNC();
+    LinDUtilCtxt* lduc = (LinDUtilCtxt*)arg;
+
+    for ( ; ; ) {
+        XP_LOGFF( "top of loop" );
+        pthread_mutex_lock( &lduc->ackMutex );
+        while ( 0 == g_list_length(lduc->ackList) ) {
+            pthread_cond_wait( &lduc->ackCondVar, &lduc->ackMutex );
+        }
+        GList* head = lduc->ackList;
+        lduc->ackList = g_list_remove_link( lduc->ackList, lduc->ackList );
+        AckData* adp = (AckData*)head->data;
+        g_list_free( head );
+        pthread_mutex_unlock( &lduc->ackMutex );
+
+        sendViaCurl( lduc, adp );
+        XP_LOGFF( "bottom of loop" );
+    }
+
+    LOG_RETURN_VOID();
+    return NULL;
+}
+#endif
+
+static void
+linux_dutil_ackMQTTMsg( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe),
+                        const XP_UCHAR* topic, XP_U32 gameID,
+                        const MQTTDevID* XP_UNUSED(senderID),
+                        const XP_U8* msg, XP_U16 len )
+{
+    AckData ad = {
+        .duc = duc,
+        .topic = g_strdup( topic ),
+        .gameID = gameID,
+        .len = len,
+        .msg = g_memdup2( msg, len ),
+    };
+    AckData* adp = g_memdup2( &ad, sizeof(ad) );
+
+    LinDUtilCtxt* lduc = (LinDUtilCtxt*)duc;
+#ifdef ACK_IN_BACKGROUND
+    pthread_mutex_lock( &lduc->ackMutex );
+    lduc->ackList = g_list_append( lduc->ackList, adp );
+    pthread_cond_signal( &lduc->ackCondVar );
+    pthread_mutex_unlock( &lduc->ackMutex );
+#else
+    sendViaCurl( lduc, adp );
+#endif
     /* LOG_RETURN_VOID(); */
  }
 
 XW_DUtilCtxt*
 linux_dutils_init( MPFORMAL VTableMgr* vtMgr, void* closure )
 {
-    XW_DUtilCtxt* result = XP_CALLOC( mpool, sizeof(*result) );
+    LinDUtilCtxt* lduc = XP_CALLOC( mpool, sizeof(*lduc) );
+#ifdef ACK_IN_BACKGROUND
+    pthread_mutex_init( &lduc->ackMutex, NULL );
+    pthread_cond_init( &lduc->ackCondVar, NULL );
+    (void)pthread_create( &lduc->ackThread, NULL, sendAckThreadProc, lduc );
+    pthread_detach( lduc->ackThread );
+#endif
 
-    dutil_super_init( MPPARM(mpool) result );
+    XW_DUtilCtxt* super = &lduc->super;
 
-    result->vtMgr = vtMgr;
-    result->closure = closure;
+    dutil_super_init( MPPARM(mpool) super );
+
+    super->vtMgr = vtMgr;
+    super->closure = closure;
 
 # define SET_PROC(nam) \
-    result->vtable.m_dutil_ ## nam = linux_dutil_ ## nam;
+    super->vtable.m_dutil_ ## nam = linux_dutil_ ## nam;
 
     SET_PROC(getCurSeconds);
     SET_PROC(getUserString);
@@ -275,14 +364,21 @@ linux_dutils_init( MPFORMAL VTableMgr* vtMgr, void* closure )
 
 # undef SET_PROC
 
-    assertTableFull( &result->vtable, sizeof(result->vtable), "lindutil" );
+    assertTableFull( &super->vtable, sizeof(super->vtable), "lindutil" );
 
-    return result;
+    return super;
 }
 
 void
 linux_dutils_free( XW_DUtilCtxt** dutil )
 {
+#ifdef ACK_IN_BACKGROUND
+    LinDUtilCtxt* lduc = (LinDUtilCtxt*)dutil;
+    if ( 0 != lduc->ackThread ) {
+        pthread_cancel( lduc->ackThread );
+    }
+#endif
+
     kplr_cleanup( *dutil );
 # ifdef MEM_DEBUG
     XP_FREEP( (*dutil)->mpool, dutil );

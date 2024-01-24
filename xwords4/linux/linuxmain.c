@@ -2124,7 +2124,7 @@ getDictPath( const LaunchParams *params, const char* name,
             }
         }
     }
-    XP_LOGF( "%s(%s)=>%d", __func__, name, success );
+    XP_LOGFF( "(%s)=>%d", name, success );
     return success;
 }
 
