@@ -39,9 +39,12 @@
 
 #ifdef DEBUG
 
+static pthread_mutex_t sLogMutex = PTHREAD_MUTEX_INITIALIZER;
+
 static void
 debugf( const char* format, va_list ap )
 {
+    pthread_mutex_lock( &sLogMutex );
     struct timespec tp = {0};
     int res = clock_gettime( CLOCK_REALTIME, &tp );
     XP_ASSERT( 0 == res );
@@ -53,6 +56,7 @@ debugf( const char* format, va_list ap )
 
     vfprintf( stderr, format, ap );
     fprintf( stderr, "%c", '\n' );
+    pthread_mutex_unlock( &sLogMutex );
 }
 
 void 
