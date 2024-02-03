@@ -1505,7 +1505,6 @@ makeGameFromArgs( CursesAppGlobals* aGlobals, cJSON* args )
     LaunchParams* params = aGlobals->cag.params;
     CurGameInfo gi = {0};
     gi_copy( MPPARM(params->mpool) &gi, &params->pgi );
-    gi.serverRole = SERVER_ISHOST;
     gi.boardSize = 15;
     gi.traySize = 7;
 
@@ -1522,14 +1521,24 @@ makeGameFromArgs( CursesAppGlobals* aGlobals, cJSON* args )
         gi.traySize = tmp->valueint;
     }
 
+    tmp = cJSON_GetObjectItem( args, "isSolo" );
+    XP_ASSERT( !!tmp );
+    XP_Bool isSolo = cJSON_IsTrue( tmp );
+
     tmp = cJSON_GetObjectItem( args, "hostPosn" );
     XP_ASSERT( !!tmp );
     int hostPosn = tmp->valueint;
     replaceStringIfDifferent( params->mpool, &gi.players[hostPosn].name,
                               params->localName );
     for ( int ii = 0; ii < gi.nPlayers; ++ii ) {
-        gi.players[ii].isLocal = ii == hostPosn;
+        LocalPlayer* lp = &gi.players[ii];
+        lp->isLocal = isSolo || ii == hostPosn;
+        if ( isSolo ) {
+            lp->robotIQ = ii == hostPosn ? 0 : 1;
+        }
     }
+
+    gi.serverRole = isSolo ? SERVER_STANDALONE : SERVER_ISHOST;
 
     tmp = cJSON_GetObjectItem( args, "dict" );
     XP_ASSERT( tmp );

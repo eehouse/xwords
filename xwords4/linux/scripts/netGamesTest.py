@@ -70,13 +70,20 @@ class GuestGameInfo(GameInfo):
     def __init__(self, device, gid, rematchLevel):
         super().__init__(device, gid, rematchLevel)
 
+class SoloGameInfo(GameInfo):
+    def __init__(self, device, nRobots=0, **kwargs):
+        super().__init__(device, kwargs.get('gid'), kwargs.get('rematchLevel'))
+        self.nRobots = nRobots  # only matters for creating games, not rematching
+        global gGamesMade
+        gGamesMade += 1
+
 class HostGameInfo(GameInfo):
     def __init__(self, device, guestNames, **kwargs):
         super().__init__(device, kwargs.get('gid'), kwargs.get('rematchLevel'))
         self.guestNames = guestNames
         self.needsInvite = kwargs.get('needsInvite', True)
         self.orderedPlayers = None
-        global gGamesMade;
+        global gGamesMade
         gGamesMade += 1
 
     def haveOrder(self): return self.orderedPlayers is not None
@@ -90,7 +97,7 @@ class GameStatus():
     _statuses = None
     _prevLines = []
     _lastChange = datetime.datetime.now()
-    _tileCount = 0;
+    _tileCount = 0
 
     def __init__(self, gid):
         self.gid = gid
@@ -98,14 +105,16 @@ class GameStatus():
         self.allOver = True
         self.hostPlayerName = None
         self.hostName = None
+        self.isSolo = False
 
-    def harvest(self, dev):
+    def harvest(self, dev, isSolo):
         self.players.append(dev.host)
         self.allOver = self.allOver and dev.gameOver(self.gid)
+        self.isSolo = isSolo
 
     def sortPlayers(self):
         game = Device.getHostGame(self.gid)
-        orderedPlayers = game.orderedPlayers
+        orderedPlayers = isinstance(game, HostGameInfo) and game.orderedPlayers
         if orderedPlayers:
             assert len(orderedPlayers) == len(self.players)
             self.players = orderedPlayers
@@ -121,8 +130,9 @@ class GameStatus():
             for game in dev._allGames():
                 gid = game.gid
                 assert 8 == len(gid)
+                isSolo = isinstance(game, SoloGameInfo)
                 if not gid in statuses: statuses[gid] = GameStatus(gid)
-                statuses[gid].harvest(dev)
+                statuses[gid].harvest(dev, isSolo)
 
         for status in statuses.values():
             status.sortPlayers()
@@ -156,7 +166,9 @@ class GameStatus():
                 line = gid
             elif indx <= len(status.players) and not status.allOver:
                 player = status.players[indx-1]
-                hostMarker = status.hostName == player and '*' or ' '
+                if status.isSolo: hostMarker = 's'
+                elif status.hostName == player: hostMarker = '*'
+                else: hostMarker = ' '
                 initial = GameStatus._abbrev(player)
                 dev = Device._devs.get(player)
                 gameState = dev.gameFor(gid).state
@@ -277,7 +289,7 @@ class Device():
         client = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         # print('connecting to: {}'.format(self.cmdSocketName))
 
-        client.connect(self.cmdSocketName);
+        client.connect(self.cmdSocketName)
 
         key = self._nextKey()
         params = [{'cmd': cmd, 'key': key, 'args': {**kwargs}}]
@@ -315,18 +327,19 @@ class Device():
 
     def makeGames(self):
         args = self.args
-        for remote in self.hostedGames:
-            nPlayers = 1 + len(remote.guestNames)
+        for game in self.hostedGames:
+            isSolo = isinstance(game, SoloGameInfo)
+            nPlayers = 1 + (isSolo and game.nRobots or len(game.guestNames))
             hostPosn = random.randint(0, nPlayers-1)
             traySize = 0 == args.TRAY_SIZE and random.randint(7, 9) or args.TRAY_SIZE
             boardSize = random.choice(range(args.BOARD_SIZE_MIN, args.BOARD_SIZE_MAX+1, 2))
 
             response = self._sendWaitReply('makeGame', nPlayers=nPlayers, hostPosn=hostPosn,
                                            dict=args.DICTS[0], boardSize=boardSize,
-                                           traySize=traySize)
+                                           traySize=traySize, isSolo=isSolo)
             newGid = response.get('newGid')
             if newGid:
-                remote.setGid(newGid)
+                game.setGid(newGid)
 
     # This is the heart of things. Do something as long as we have a
     # game that needs to run.
@@ -334,7 +347,7 @@ class Device():
         # self._log('step() called for {}'.format(self))
         stepped = False
         for game in self.hostedGames:
-            if game.needsInvite:
+            if isinstance(game, HostGameInfo) and game.needsInvite:
                 self.invite(game)
                 stepped = True
                 break
@@ -351,7 +364,7 @@ class Device():
             else:
                 # self._log('sleeping with {} to go'.format(self.endTime-now))
                 time.sleep(0.5)
-            stepped = True;
+            stepped = True
 
     # I may be a guest or a host in this game. Rematch works either
     # way. But how I figure out the other players differs.
@@ -367,8 +380,14 @@ class Device():
 
             rematchLevel = game.rematchLevel - 1
             assert rematchLevel >= 0 # fired
-            self.hostedGames.append(HostGameInfo(self, guests, needsInvite=False, gid=newGid,
-                                                 rematchLevel=rematchLevel))
+
+            if isinstance(game, SoloGameInfo):
+                newGame = SoloGameInfo(self, rematchLevel=rematchLevel, gid=newGid)
+            else:
+                newGame = HostGameInfo(self, guests, needsInvite=False, gid=newGid,
+                                       rematchLevel=rematchLevel)
+
+            self.hostedGames.append(newGame)
             for guest in guests:
                 Device.getForPlayer(guest).expectInvite(newGid, rematchLevel)
 
@@ -570,7 +589,7 @@ class Device():
         for dev in Device.getAll():
             if dev.host == player:
                 result = dev
-                break;
+                break
         assert result
         return result
 
@@ -581,7 +600,12 @@ class Device():
             game = dev.gameFor(gid)
             if isinstance(game, HostGameInfo):
                 return game
-        assert False
+        return None
+
+    def addSoloGame(self, nRobots):
+        self.hostedGames \
+            .append(SoloGameInfo(self, nRobots,
+                                 rematchLevel=self.args.REMATCH_LEVEL))
 
     def addGameWith(self, guests):
         self.hostedGames.append(HostGameInfo(self, guests, needsInvite=True,
@@ -684,7 +708,11 @@ def build_devs(args):
         host = players[0]
         guests = players[1:]
 
-        Device.deviceFor(args, host).addGameWith(guests)
+        dev = Device.deviceFor(args, host)
+        if random.randint(0, 100) < args.SOLO_PCT:
+            dev.addSoloGame(len(guests))
+        else:
+            dev.addGameWith(guests)
 
     return Device.getAll()
 
@@ -705,6 +733,9 @@ def mkParser():
                         help = 'odds of starting with the old app, 0 <= n < 100')
     parser.add_argument('--upgrade-pct', dest = 'UPGRADE_PCT', default = 0, type = int,
                         help = 'odds of upgrading at any launch, 0 <= n < 100')
+
+    parser.add_argument('--solo-pct', dest = 'SOLO_PCT', default = 20, type = int,
+                        help = 'odds a game will be standalone')
 
     parser.add_argument('--num-games', dest = 'NGAMES', type = int, default = 1, help = 'number of games')
     parser.add_argument('--num-devs', dest = 'NDEVS', type = int, default = len(g_ROOT_NAMES), help = 'number of devices')
