@@ -339,6 +339,7 @@ public class XwJNI {
 
     // Keep in sync with server.h
     public enum RematchOrder {
+        RO_NONE(0),
         RO_SAME(R.string.ro_same),
         RO_LOW_SCORE_FIRST(R.string.ro_low_score_first),
         RO_HIGH_SCORE_FIRST(R.string.ro_high_score_first),

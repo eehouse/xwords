@@ -2476,6 +2476,7 @@ RO2Str( RematchOrder ro )
 {
     const char* str = (char*)NULL;
     switch( ro ) {
+        caseStr(RO_NONE);
         caseStr(RO_SAME);
         caseStr(RO_LOW_SCORE_FIRST);
         caseStr(RO_HIGH_SCORE_FIRST);
@@ -4415,10 +4416,6 @@ server_getRematchInfo( const ServerCtxt* server, XW_UtilCtxt* newUtil,
     }
 
     LOG_RETURNF( "%s", boolToStr(success)  );
-    /* Until I'm testing edge cases, this will fail because I did something
-     * wrong, and I need to know that immediately.
-     */
-    XP_ASSERT( success );
     return success;
 } /* server_getRematchInfo */
 
@@ -4463,6 +4460,7 @@ server_figureOrder( const ServerCtxt* server, RematchOrder ro, NewOrder* nop )
 
     void (*proc)(const ServerCtxt*, NewOrder*) = NULL;
     switch ( ro ) {
+    case RO_NONE:
     case RO_SAME:
         proc = sortBySame;
         break;

@@ -137,12 +137,15 @@ public class RematchConfigView extends LinearLayout
                 RematchOrder lastSel = RematchOrder.values()[ordinal];
 
                 for ( RematchOrder ro : RematchOrder.values() ) {
-                    RadioButton button = new RadioButton( mContext );
-                    button.setText( LocUtils.getString( mContext, ro.getStrID() ) );
-                    mGroup.addView( button );
-                    mRos.put( button.getId(), ro );
-                    if ( lastSel == ro ) {
-                        button.setChecked( true );
+                    int strId = ro.getStrID();
+                    if ( 0 != strId ) {
+                        RadioButton button = new RadioButton( mContext );
+                        button.setText( LocUtils.getString( mContext, strId ) );
+                        mGroup.addView( button );
+                        mRos.put( button.getId(), ro );
+                        if ( lastSel == ro ) {
+                            button.setChecked( true );
+                        }
                     }
                 }
             } else {

@@ -132,8 +132,10 @@ cursesask( WINDOW* parentWin, const char* question, short numButtons,
 void
 ca_inform( WINDOW* window, const char* message )
 {
-    const char* buttons[] = { "Ok" };
-    (void)cursesask( window, message, VSIZE(buttons), buttons );
+    if ( !!window ) {
+        const char* buttons[] = { "Ok" };
+        (void)cursesask( window, message, VSIZE(buttons), buttons );
+    }
 }
 
 void

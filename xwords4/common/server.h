@@ -145,6 +145,7 @@ XP_Bool server_getIsHost( const ServerCtxt* server );
 #endif
 
 typedef enum {
+    RO_NONE,
     RO_SAME,                       /* preserve the parent game's order */
     RO_LOW_SCORE_FIRST,            /* lowest scorer in parent goes first, etc */
     RO_HIGH_SCORE_FIRST,           /* highest scorer in parent goes first, etc */

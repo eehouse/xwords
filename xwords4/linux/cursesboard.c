@@ -1089,8 +1089,9 @@ curses_util_notifyGameOver( XW_UtilCtxt* uc, XWEnv xwe, XP_S16 quitter )
     }
 
     if ( params->rematchOnDone ) {
-        XP_ASSERT( !!params->rematchOrder );
-        rematch_and_save_once( bGlobals, roFromStr(params->rematchOrder) );
+        RematchOrder ro = !!params->rematchOrder
+            ? roFromStr(params->rematchOrder) : RO_NONE;
+        rematch_and_save_once( bGlobals, ro );
     }
 } /* curses_util_notifyGameOver */
 
