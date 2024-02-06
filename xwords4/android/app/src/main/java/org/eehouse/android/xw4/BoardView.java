@@ -83,6 +83,7 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
         m_defaultFontHt = (int)(MIN_FONT_DIPS * scale + 0.5f);
         m_mediumFontHt = m_defaultFontHt * 3 / 2;
         m_invalidator = new Runnable() {
+                @Override
                 public void run() {
                     invalidate();
                 }
@@ -352,6 +353,7 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
     {
         m_dims = dims;
         m_parent.runOnUiThread( new Runnable() {
+                @Override
                 public void run()
                 {
                     requestLayout();

@@ -1241,6 +1241,7 @@ public class GamesListDelegate extends ListDelegateBase
                            final GameChangeType change )
     {
         post( new Runnable() {
+                @Override
                 public void run() {
                     switch( change ) {
                     case GAME_DELETED:

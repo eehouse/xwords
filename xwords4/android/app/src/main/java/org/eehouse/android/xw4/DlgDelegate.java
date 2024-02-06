@@ -492,6 +492,7 @@ public class DlgDelegate {
             final String fmsg = msg;
             final boolean asDlg = !asToast;
             post( new Runnable() {
+                    @Override
                     public void run() {
                         if ( asDlg ) {
                             makeOkOnlyBuilder( fmsg ).show();

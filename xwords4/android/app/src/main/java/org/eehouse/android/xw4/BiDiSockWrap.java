@@ -66,6 +66,7 @@ public class BiDiSockWrap {
     {
         mActive = true;
         new Thread( new Runnable() {
+                @Override
                 public void run() {
                     long waitMillis = 1000;
                     while ( mActive ) {

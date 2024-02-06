@@ -566,6 +566,7 @@ public class ConnStatusHandler {
                 Handler handler = cbcks.getHandler();
                 if ( null != handler ) {
                     Runnable proc = new Runnable() {
+                            @Override
                             public void run() {
                                 doSave( context );
                             }
@@ -591,6 +592,7 @@ public class ConnStatusHandler {
                         s_showSuccesses[index] = true;
 
                         Runnable proc = new Runnable() {
+                                @Override
                                 public void run() {
                                     synchronized( ConnStatusHandler.class ) {
                                         s_showSuccesses[index] = false;

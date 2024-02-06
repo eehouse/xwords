@@ -346,6 +346,7 @@ public class DictLangCache {
 
         if ( null != s_handler ) {
             s_handler.post( new Runnable() {
+                    @Override
                     public void run() {
                         if ( null != s_dictsAdapter ) {
                             rebuildAdapter( s_dictsAdapter,

@@ -986,6 +986,7 @@ public class WiDirService extends XWService {
     {
         sAmServer = true;
         sAcceptThread = new Thread( new Runnable() {
+                @Override
                 public void run() {
                     Log.d( TAG, "accept thread starting" );
                     boolean done = false;

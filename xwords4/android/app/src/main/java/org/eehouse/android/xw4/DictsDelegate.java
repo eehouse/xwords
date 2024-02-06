@@ -1376,6 +1376,7 @@ public class DictsDelegate extends ListDelegateBase
                 if ( !isCancelled() ) {
                     if ( null != json ) {
                         post( new Runnable() {
+                                @Override
                                 public void run() {
                                     setProgressMsg( R.string.remote_digesting );
                                 }

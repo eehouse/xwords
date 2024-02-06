@@ -173,6 +173,7 @@ public class DwnldDelegate extends ListDelegateBase {
                 URLConnection conn = jUri.toURL().openConnection();
                 final int fileLen = conn.getContentLength();
                 post( new Runnable() {
+                        @Override
                         public void run() {
                             m_progressBar.setMax( fileLen );
                         }
@@ -239,6 +240,7 @@ public class DwnldDelegate extends ListDelegateBase {
         {
             m_totalRead += nBytes;
             post( new Runnable() {
+                    @Override
                     public void run() {
                         m_progressBar.setProgress( m_totalRead );
                     }

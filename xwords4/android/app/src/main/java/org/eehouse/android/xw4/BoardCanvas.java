@@ -638,6 +638,7 @@ public class BoardCanvas extends Canvas implements DrawCtx {
         // after m_dict is set above.
         if ( doPost ) {
             m_activity.runOnUiThread( new Runnable() {
+                    @Override
                     public void run() {
                         updateDictChars();
                     }
