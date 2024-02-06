@@ -35,9 +35,9 @@ import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 
+import java.net.HttpURLConnection;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicReference;
-import javax.net.ssl.HttpsURLConnection;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -420,8 +420,8 @@ public class MQTTUtils extends Thread
                 params.put( "frstV", Utils.getFirstVersion( mContext ) );
 
                 Log.d( TAG, "registerOnce(): sending %s", params );
-                HttpsURLConnection conn
-                    = NetUtils.makeHttpsMQTTConn( mContext, "register" );
+                HttpURLConnection conn
+                    = NetUtils.makeHttpMQTTConn( mContext, "register" );
                 String resStr = NetUtils.runConn( conn, params, true );
                 if ( null != resStr ) {
                     JSONObject response = new JSONObject( resStr );
@@ -598,8 +598,8 @@ public class MQTTUtils extends Thread
             params.put( "gid", gameID );
             params.put( "sum", sum );
 
-            HttpsURLConnection conn
-                = NetUtils.makeHttpsMQTTConn( context, "ack" );
+            HttpURLConnection conn
+                = NetUtils.makeHttpMQTTConn( context, "ack" );
             String resStr = NetUtils.runConn( conn, params, true );
             Log.d( TAG, "runConn(ack) => %s", resStr );
         } catch ( JSONException je ) {

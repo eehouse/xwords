@@ -107,6 +107,7 @@ public class DwnldDelegate extends ListDelegateBase {
         public DownloadFilesTask( Uri uri, String name, LinearLayout item, boolean isApp )
         {
             super();
+            uri = NetUtils.ensureProto( uri );
             m_uri = uri;
             m_name = name;
             m_isApp = isApp;

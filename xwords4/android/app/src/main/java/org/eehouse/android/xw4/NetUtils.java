@@ -23,6 +23,7 @@ package org.eehouse.android.xw4;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Build;
 import android.text.TextUtils;
 
 import org.json.JSONArray;
@@ -37,6 +38,7 @@ import java.io.DataOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.net.HttpURLConnection;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.URL;
@@ -44,7 +46,6 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import javax.net.ssl.HttpsURLConnection;
 
 import javax.net.SocketFactory;
 
@@ -112,13 +113,24 @@ public class NetUtils {
         return host;
     }
 
-    public static String ensureHttps( String url )
+    // Pick http or https. SSL is broken on KitKat, and it's well after that
+    // that https starts being required. So use http on and before KitKat,
+    // just to be safe.
+    public static String ensureProto( String url )
     {
-        String result = url.replaceFirst( "^http:", "https:" );
+        String result = Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT
+            ? url.replaceFirst( "^https:", "http:" )
+            : url.replaceFirst( "^http:", "https:" );
         if ( ! url.equals( result ) ) {
-            Log.d( TAG, "ensureHttps(%s) => %s", url, result );
+            Log.d( TAG, "ensureProto(%s) => %s", url, result );
         }
         return result;
+    }
+
+    public static Uri ensureProto( Uri uri )
+    {
+        String uriString = ensureProto( uri.toString() );
+        return Uri.parse( uriString ) ;
     }
 
     public static void launchWebBrowserWith( Context context, int uriResID )
@@ -133,27 +145,27 @@ public class NetUtils {
         context.startActivity( intent );
     }
 
-    public static HttpsURLConnection makeHttpsMQTTConn( Context context,
-                                                        String proc )
+    public static HttpURLConnection makeHttpMQTTConn( Context context,
+                                                      String proc )
     {
         String url = XWPrefs.getDefaultMQTTUrl( context );
-        return makeHttpsConn( context, url, proc );
+        return makeHttpConn( context, url, proc );
     }
 
-    protected static HttpsURLConnection makeHttpsUpdateConn( Context context,
-                                                             String proc )
+    protected static HttpURLConnection makeHttpUpdateConn( Context context,
+                                                           String proc )
     {
         String url = XWPrefs.getDefaultUpdateUrl( context );
-        return makeHttpsConn( context, url, proc );
+        return makeHttpConn( context, url, proc );
     }
 
-    private static HttpsURLConnection makeHttpsConn( Context context,
-                                                     String path, String proc )
+    private static HttpURLConnection makeHttpConn( Context context,
+                                                    String path, String proc )
     {
-        HttpsURLConnection result = null;
+        HttpURLConnection result = null;
         try {
-            String url = String.format( "%s/%s", ensureHttps( path ), proc );
-            result = (HttpsURLConnection)new URL(url).openConnection(); // class cast exception
+            String url = String.format( "%s/%s", ensureProto( path ), proc );
+            result = (HttpURLConnection)new URL(url).openConnection(); // class cast exception
         } catch ( java.net.MalformedURLException mue ) {
             Assert.assertNull( result );
             Log.ex( TAG, mue );
@@ -164,23 +176,23 @@ public class NetUtils {
         return result;
     }
 
-    protected static String runConn( HttpsURLConnection conn, JSONArray param )
+    protected static String runConn( HttpURLConnection conn, JSONArray param )
     {
         return runConn( conn, param.toString(), false );
     }
 
-    protected static String runConn( HttpsURLConnection conn, JSONObject param )
+    protected static String runConn( HttpURLConnection conn, JSONObject param )
     {
         return runConn( conn, param.toString(), false );
     }
 
-    public static String runConn( HttpsURLConnection conn, JSONObject param,
+    public static String runConn( HttpURLConnection conn, JSONObject param,
                                   boolean directJson )
     {
         return runConn( conn, param.toString(), directJson );
     }
 
-    private static String runConn( HttpsURLConnection conn, String param,
+    private static String runConn( HttpURLConnection conn, String param,
                                    boolean directJson )
     {
         String result = null;
@@ -212,7 +224,7 @@ public class NetUtils {
                 os.close();
 
                 int responseCode = conn.getResponseCode();
-                if ( HttpsURLConnection.HTTP_OK == responseCode ) {
+                if ( HttpURLConnection.HTTP_OK == responseCode ) {
                     InputStream is = conn.getInputStream();
                     BufferedInputStream bis = new BufferedInputStream( is );
 

@@ -22,7 +22,7 @@ package org.eehouse.android.xw4.jni;
 
 import android.content.Context;
 
-import javax.net.ssl.HttpsURLConnection;
+import java.net.HttpURLConnection;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -127,8 +127,8 @@ public class UtilCtxtImpl implements UtilCtxt {
                             for ( String rid : relayIDs ) {
                                 array.put( rid );
                             }
-                            HttpsURLConnection conn = NetUtils
-                                .makeHttpsMQTTConn( m_context, "mids4rids" );
+                            HttpURLConnection conn = NetUtils
+                                .makeHttpMQTTConn( m_context, "mids4rids" );
                             String resStr = NetUtils.runConn( conn, params, true );
                             Log.d( TAG, "mids4rids => %s", resStr );
 

@@ -33,8 +33,8 @@ import android.os.SystemClock;
 import android.text.TextUtils;
 
 import java.io.File;
+import java.net.HttpURLConnection;
 import java.util.List;
-import javax.net.ssl.HttpsURLConnection;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -283,8 +283,8 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
         @Override
         protected String doInBackground( Void... unused )
         {
-            HttpsURLConnection conn
-                = NetUtils.makeHttpsUpdateConn( m_context, "getUpdates" );
+            HttpURLConnection conn
+                = NetUtils.makeHttpUpdateConn( m_context, "getUpdates" );
             String json = null;
             if ( null != conn ) {
                 json = NetUtils.runConn( conn, m_params );
@@ -354,7 +354,7 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
                                 }
                                 if ( !skipIt ) {
                                     gotOne = true;
-                                    String url = NetUtils.ensureHttps( urlParm );
+                                    String url = NetUtils.ensureProto( urlParm );
                                     Intent intent;
                                     if ( useBrowser ) {
                                         intent = new Intent( Intent.ACTION_VIEW,
