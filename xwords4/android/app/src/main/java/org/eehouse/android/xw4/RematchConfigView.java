@@ -133,7 +133,8 @@ public class RematchConfigView extends LinearLayout
 
             boolean[] results = XwJNI.server_canOfferRematch( mWrapper.gamePtr() );
             if ( results[0] && results[1] ) {
-                int ordinal = DBUtils.getIntFor( mContext, KEY_LAST_RO, 0 );
+                int ordinal = DBUtils.getIntFor( mContext, KEY_LAST_RO,
+                                                 RematchOrder.RO_SAME.ordinal() );
                 RematchOrder lastSel = RematchOrder.values()[ordinal];
 
                 for ( RematchOrder ro : RematchOrder.values() ) {
