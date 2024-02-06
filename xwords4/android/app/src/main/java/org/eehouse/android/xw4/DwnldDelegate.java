@@ -107,7 +107,6 @@ public class DwnldDelegate extends ListDelegateBase {
         public DownloadFilesTask( Uri uri, String name, LinearLayout item, boolean isApp )
         {
             super();
-            uri = NetUtils.ensureProto( uri );
             m_uri = uri;
             m_name = name;
             m_isApp = isApp;
@@ -503,14 +502,20 @@ public class DwnldDelegate extends ListDelegateBase {
                                             String[] names,
                                             DownloadFinishedListener lstnr )
     {
+        // Convert to use http if necessary
+        Uri withProto[] = new Uri[uris.length];
+        for ( int ii = 0; ii < withProto.length; ++ii ) {
+            withProto[ii] = NetUtils.ensureProto( uris[ii] );
+        }
+
         if ( null != lstnr ) {
-            for ( int ii = 0; ii < uris.length; ++ii ) {
-                rememberListener( uris[ii], names[ii], lstnr );
+            for ( int ii = 0; ii < withProto.length; ++ii ) {
+                rememberListener( withProto[ii], names[ii], lstnr );
             }
         }
 
         Intent intent = new Intent( context, DwnldActivity.class );
-        intent.putExtra( DICTS_EXTRA, uris ); // uris implement Parcelable
+        intent.putExtra( DICTS_EXTRA, withProto ); // uris implement Parcelable
         intent.putExtra( NAMES_EXTRA, names );
         context.startActivity( intent );
     }
