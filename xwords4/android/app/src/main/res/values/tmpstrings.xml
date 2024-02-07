@@ -5,4 +5,7 @@
 
   <string name="dup_allscores_fmt">All scores: %1$s</string>
 
+  <string name="peers_info_pending">Querying server…</string>
+  <string name="no_peers_info">Peers information not available</string>
+
 </resources>

@@ -72,6 +72,7 @@ public enum DlgID {
     BACKUP_LOADSTORE,
     GET_DEVID,
     SET_MQTTID,
+    MQTT_PEERS,
     ;
 
     private boolean m_addToStack;

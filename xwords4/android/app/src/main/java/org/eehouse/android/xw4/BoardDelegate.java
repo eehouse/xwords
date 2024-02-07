@@ -417,6 +417,20 @@ public class BoardDelegate extends DelegateBase
                 .create();
             break;
 
+        case MQTT_PEERS: {
+            final PeerStatusView psv = (PeerStatusView)
+                inflate( R.layout.peers_status );
+            CommsAddrRec selfAddr = XwJNI.comms_getSelfAddr( m_jniGamePtr );
+
+            psv.configure( m_gi.gameID, selfAddr.mqtt_devID );
+            dialog = ab
+                .setTitle( R.string.menu_about_peers )
+                .setView( psv )
+                .setPositiveButton( android.R.string.ok, null )
+                .create();
+        }
+            break;
+
         case ASK_DUP_PAUSE: {
             final boolean isPause = (Boolean)params[0];
             final ConfirmPauseView pauseView =
@@ -1505,13 +1519,14 @@ public class BoardDelegate extends DelegateBase
     @Override
     public void onStatusClicked()
     {
-        if ( BuildConfig.NON_RELEASE ) {
+        if ( BuildConfig.NON_RELEASE || XWPrefs.getDebugEnabled( m_activity ) ) {
             View view = findViewById( R.id.netstatus_view );
             PopupMenu popup = new PopupMenu( m_activity, view );
             popup.getMenuInflater().inflate( R.menu.netstat, popup.getMenu() );
 
             if ( ! m_connTypes.contains(CommsConnType.COMMS_CONN_MQTT) ) {
                 popup.getMenu().removeItem( R.id.netstat_menu_traffic );
+                popup.getMenu().removeItem( R.id.netstat_peers );
             }
 
             popup.setOnMenuItemClickListener( new PopupMenu
@@ -1530,7 +1545,7 @@ public class BoardDelegate extends DelegateBase
                             NetUtils.gameURLToClip( m_activity, m_gi.gameID );
                             break;
                         case R.id.netstat_peers:
-                            Utils.notImpl( m_activity );
+                            showDialogFragment( DlgID.MQTT_PEERS );
                             break;
                         default:
                             handled = false;
