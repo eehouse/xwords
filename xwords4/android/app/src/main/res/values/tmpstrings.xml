@@ -7,5 +7,6 @@
 
   <string name="peers_info_pending">Querying server…</string>
   <string name="no_peers_info">Peers information not available</string>
+  <string name="button_refresh">Refresh</string>
 
 </resources>

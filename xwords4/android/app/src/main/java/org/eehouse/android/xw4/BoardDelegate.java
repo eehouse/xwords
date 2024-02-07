@@ -427,6 +427,12 @@ public class BoardDelegate extends DelegateBase
                 .setTitle( R.string.menu_about_peers )
                 .setView( psv )
                 .setPositiveButton( android.R.string.ok, null )
+                .setNegativeButton( R.string.button_refresh, new OnClickListener() {
+                        @Override
+                        public void onClick( DialogInterface dlg, int bttn ) {
+                            showDialogFragment( DlgID.MQTT_PEERS );
+                        }
+                    } )
                 .create();
         }
             break;
