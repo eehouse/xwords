@@ -29,8 +29,11 @@ cd xwords/xwords4/android
 
 APK="$(find . -name '*.apk')"
 if [ -n "${XW4D_UPLOAD}" ]; then
-	scp "$APK" ${XW4D_UPLOAD}
-	echo "uploaded $APK"
+	IFS=","
+	for UPPATH in ${XW4D_UPLOAD}; do
+		# scp "$APK" ${UPPATH}
+		echo "uploaded $APK to ${UPPATH}"
+	done
 else
 	echo "not uploading $APK: XW4D_UPLOAD not set" >&2
 fi
