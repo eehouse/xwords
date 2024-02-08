@@ -228,8 +228,9 @@ cgl_draw( CursGameList* cgl )
         data[line][col++] = g_strdup_printf( "%d", gi->nMoves );
         data[line][col++] = g_strdup_printf( "%d", gi->turn );
         data[line][col++] = g_strdup_printf( "%d", gi->nPending );
-	gchar buf[64];
-	formatSeconds( gi->dupTimerExpires, buf, VSIZE(buf) );
+
+        gchar buf[64];
+        formatSeconds( gi->dupTimerExpires, buf, VSIZE(buf) );
         data[line][col++] = g_strdup( buf );
 
         XP_ASSERT( col == VSIZE(data[line]) );

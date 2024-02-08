@@ -220,6 +220,7 @@ addPlayer( XW_DUtilCtxt* XP_UNUSED_DBG(dutil), KPState* state, const XP_UCHAR* n
         KnownPlayer* newPlayer = XP_CALLOC( dutil->mpool, sizeof(*newPlayer) );
         newPlayer->name = copyString( dutil->mpool, name );
         newPlayer->addr = *addr;
+        newPlayer->newestMod = newestMod;
         state->players
             = (KnownPlayer*)dll_insert( &state->players->links,
                                         &newPlayer->links, compByName );

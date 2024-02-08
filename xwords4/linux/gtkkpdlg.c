@@ -22,6 +22,7 @@
 #include "gtkkpdlg.h"
 #include "knownplyr.h"
 #include "strutils.h"
+#include "linuxutl.h"
 
 typedef struct _GtkPlayerDlgState {
     XW_DUtilCtxt* dutil;
@@ -59,12 +60,17 @@ addForPlayer( GtkPlayerState* ps )
     GtkPlayerDlgState* dlgState = ps->dlgState;
 
     CommsAddrRec addr;
-    if ( kplr_getAddr( ps->dlgState->dutil, NULL_XWE, ps->name, &addr, NULL ) ) {
+    XP_U32 lastMod;
+    if ( kplr_getAddr( ps->dlgState->dutil, NULL_XWE, ps->name, &addr, &lastMod ) ) {
         int curRow = dlgState->curRow++;
 
         GtkWidget* vbox = gtk_box_new( GTK_ORIENTATION_VERTICAL, 0 );
-        
-        GtkWidget* label = gtk_label_new( ps->name );
+
+        gchar secs[64];
+        formatSeconds( lastMod, secs, sizeof(secs) );
+        gchar buf[128];
+        sprintf( buf, "%s (lastMod: %s)", ps->name, secs );
+        GtkWidget* label = gtk_label_new( buf );
         gtk_grid_attach( GTK_GRID(grid), label, 0, curRow, 1, 1 );
 
         CommsConnType typ;
