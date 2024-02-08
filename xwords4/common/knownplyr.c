@@ -51,6 +51,7 @@ loadFromStream( XW_DUtilCtxt* dutil, KPState* state, XWStreamCtxt* stream )
 {
     while ( 0 < stream_getSize( stream ) ) {
         XP_U32 newestMod = stream_getU32( stream );
+        XP_LOGFF( "read newestMod: %d", newestMod );
         XP_UCHAR buf[64];
         stringFromStreamHere( stream, buf, VSIZE(buf) );
 
@@ -93,6 +94,7 @@ saveProc( const DLHead* dl, void* closure )
     XWStreamCtxt* stream = (XWStreamCtxt*)closure;
     KnownPlayer* kp = (KnownPlayer*)dl;
     stream_putU32( stream, kp->newestMod );
+    XP_LOGFF( "wrote newestMod: %d for player %s", kp->newestMod, kp->name );
     stringToStream( stream, kp->name );
     addrToStream( stream, &kp->addr );
 }
@@ -186,7 +188,7 @@ static void
 addPlayer( XW_DUtilCtxt* XP_UNUSED_DBG(dutil), KPState* state, const XP_UCHAR* name,
            const CommsAddrRec* addr, XP_U32 newestMod )
 {
-    XP_LOGFF( "(name=%s)", name );
+    XP_LOGFF( "(name=%s, newestMod: %d)", name, newestMod );
     KnownPlayer* withSameDevID = NULL;
     KnownPlayer* withSameName = NULL;
 
@@ -201,13 +203,18 @@ addPlayer( XW_DUtilCtxt* XP_UNUSED_DBG(dutil), KPState* state, const XP_UCHAR* n
         }
     }
 
+    XP_LOGFF( "withSameDevID: %p; withSameName: %p", withSameDevID, withSameName );
+
     XP_UCHAR tmpName[64];
     if ( !!withSameDevID ) {    /* only one allowed */
         XP_Bool isNewer = newestMod > withSameDevID->newestMod;
         XP_Bool changed = augmentAddr( &withSameDevID->addr, addr, isNewer );
         if ( isNewer ) {
+            XP_LOGFF( "updating newestMod from %d to %d", withSameDevID->newestMod, newestMod );
             withSameDevID->newestMod = newestMod;
             changed = XP_TRUE;
+        } else {
+            XP_LOGFF( "not newer" );
         }
         state->dirty = changed || state->dirty;
     } else {
