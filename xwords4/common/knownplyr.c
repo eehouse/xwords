@@ -1,6 +1,6 @@
 /* -*- compile-command: "cd ../linux && make MEMDEBUG=TRUE -j3"; -*- */
 /* 
- * Copyright 2020-2022 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2020-2024 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -22,11 +22,12 @@
 #include "strutils.h"
 #include "comms.h"
 #include "dbgutil.h"
+#include "dllist.h"
 
 #ifdef XWFEATURE_KNOWNPLAYERS
 
 typedef struct _KnownPlayer {
-    struct _KnownPlayer* next;
+    DLHead links;
     XP_U32 newestMod;
     XP_UCHAR* name;
     CommsAddrRec addr;
@@ -87,6 +88,16 @@ loadState( XW_DUtilCtxt* dutil, XWEnv xwe )
 }
 
 static void
+saveProc( const DLHead* dl, void* closure )
+{
+    XWStreamCtxt* stream = (XWStreamCtxt*)closure;
+    KnownPlayer* kp = (KnownPlayer*)dl;
+    stream_putU32( stream, kp->newestMod );
+    stringToStream( stream, kp->name );
+    addrToStream( stream, &kp->addr );
+}
+
+static void
 saveState( XW_DUtilCtxt* dutil, XWEnv xwe, KPState* state )
 {
     if ( state->dirty ) {
@@ -94,11 +105,9 @@ saveState( XW_DUtilCtxt* dutil, XWEnv xwe, KPState* state )
                                                     dutil_getVTManager(dutil) );
         stream_setVersion( stream, CUR_STREAM_VERS );
         stream_putU8( stream, CUR_STREAM_VERS );
-        for ( KnownPlayer* kp = state->players; !!kp; kp = kp->next ) {
-            stream_putU32( stream, kp->newestMod );
-            stringToStream( stream, kp->name );
-            addrToStream( stream, &kp->addr );
-        }
+
+        dll_map( &state->players->links, saveProc, stream );
+
         const XP_UCHAR* keys[] = { KNOWN_PLAYERS_KEY, NULL };
         dutil_storeStream( dutil, xwe, keys, stream );
         stream_destroy( stream );
@@ -154,6 +163,14 @@ makeUniqueName( const KPState* state, const XP_UCHAR* name,
     XP_LOGFF( "created new name: %s", newName );
 }
 
+static int
+compByName(const DLHead* dl1, const DLHead* dl2)
+{
+    const KnownPlayer* kp1 = (const KnownPlayer*)dl1;
+    const KnownPlayer* kp2 = (const KnownPlayer*)dl2;
+    return XP_STRCMP( kp1->name, kp2->name );
+}
+
 /* Adding players is the hard part. There will be a lot with the same name and
  * representing the same device. That's easy: skip adding a new entry, but if
  * there's a change or addition, make it. For changes, e.g. a different
@@ -175,7 +192,7 @@ addPlayer( XW_DUtilCtxt* XP_UNUSED_DBG(dutil), KPState* state, const XP_UCHAR* n
 
     for ( KnownPlayer* kp = state->players;
           !!kp && (!withSameDevID || !withSameName);
-          kp = kp->next ) {
+          kp = (KnownPlayer*)kp->links.next ) {
         if ( 0 == XP_STRCMP( kp->name, name ) ) {
             withSameName = kp;
         }
@@ -203,8 +220,9 @@ addPlayer( XW_DUtilCtxt* XP_UNUSED_DBG(dutil), KPState* state, const XP_UCHAR* n
         KnownPlayer* newPlayer = XP_CALLOC( dutil->mpool, sizeof(*newPlayer) );
         newPlayer->name = copyString( dutil->mpool, name );
         newPlayer->addr = *addr;
-        newPlayer->next = state->players;
-        state->players = newPlayer;
+        state->players
+            = (KnownPlayer*)dll_insert( &state->players->links,
+                                        &newPlayer->links, compByName );
         state->dirty = XP_TRUE;
         ++state->nPlayers;
     }
@@ -251,14 +269,29 @@ kplr_havePlayers( XW_DUtilCtxt* dutil, XWEnv xwe )
     return result;
 }
 
+typedef struct _GetState {
+    const XP_UCHAR** players;
+    int indx;
+} GetState;
+
+
 static void
-getPlayersImpl( const KPState* state, const XP_UCHAR** players, XP_U16* nFound )
+getProc( const DLHead* dl, void* closure )
+{
+    GetState* gsp = (GetState*)closure;
+    const KnownPlayer* kp = (KnownPlayer*)dl;
+    gsp->players[gsp->indx++] = kp->name;
+}
+
+static void
+getPlayersImpl( const KPState* state, const XP_UCHAR** players,
+                XP_U16* nFound )
 {
     if ( state->nPlayers <= *nFound && !!players ) {
-        XP_U16 ii = 0;
-        for ( KnownPlayer* kp = state->players; !!kp; kp = kp->next ) {
-            players[ii++] = kp->name;
-        }
+        GetState gs = { .players = players,
+            .indx = 0,
+        };
+        dll_map( &state->players->links, getProc, &gs );
     }
     *nFound = state->nPlayers;
 }
@@ -276,7 +309,8 @@ static KnownPlayer*
 findByName( KPState* state, const XP_UCHAR* name )
 {
     KnownPlayer* result = NULL;
-    for ( KnownPlayer* kp = state->players; !!kp && !result; kp = kp->next ) {
+    for ( KnownPlayer* kp = state->players; !!kp && !result;
+          kp = (KnownPlayer*)kp->links.next ) {
         if ( 0 == XP_STRCMP( kp->name, name ) ) {
             result = kp;
         }
@@ -310,7 +344,8 @@ kplr_nameForMqttDev( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* mqttDevID )
     MQTTDevID devID;
     if ( strToMQTTCDevID( mqttDevID, &devID ) ) {
         KPState* state = loadState( dutil, xwe );
-        for ( KnownPlayer* kp = state->players; !!kp && !name; kp = kp->next ) {
+        for ( KnownPlayer* kp = state->players; !!kp && !name;
+              kp = (KnownPlayer*)kp->links.next ) {
             const CommsAddrRec* addr = &kp->addr;
             if ( addr_hasType( addr, COMMS_CONN_MQTT ) ) {
                 if ( 0 == XP_MEMCMP( &addr->u.mqtt.devID, &devID, sizeof(devID) ) ) {
@@ -361,20 +396,17 @@ kplr_deletePlayer( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* name )
     KnownPlayer* doomed = NULL;
     KPState* state = loadState( dutil, xwe );
 
-    KnownPlayer* prev = NULL;
-    for ( KnownPlayer* kp = state->players; !!kp && !doomed; kp = kp->next ) {
+    for ( KnownPlayer* kp = state->players; !!kp;
+          kp = (KnownPlayer*)kp->links.next ) {
         if ( 0 == XP_STRCMP( kp->name, name ) ) {
             doomed = kp;
-            if ( NULL == prev ) { /* first time through? */
-                state->players = kp->next;
-            } else {
-                prev->next = kp->next;
-            }
+            state->players = (KnownPlayer*)
+                dll_remove( &state->players->links, &doomed->links );
             --state->nPlayers;
             state->dirty = XP_TRUE;
             result = KP_OK;
+            break;
         }
-        prev = kp;
     }
     releaseState( dutil, xwe, state );
 
@@ -388,15 +420,17 @@ kplr_deletePlayer( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* name )
 void
 kplr_cleanup( XW_DUtilCtxt* dutil )
 {
-    KPState** state = (KPState**)&dutil->kpCtxt;
-    if ( !!*state ) {
-        XP_ASSERT( !(*state)->inUse );
-        KnownPlayer* next = NULL;
-        for ( KnownPlayer* kp = (*state)->players; !!kp; kp = next ) {
-            next = kp->next;
-            freeKP( dutil, kp );
+    KPState** statep = (KPState**)&dutil->kpCtxt;
+    KPState* state = *statep;
+    if ( !!state ) {
+        XP_ASSERT( !state->inUse );
+        while ( !!state->players ) {
+            KnownPlayer* node = state->players;
+            state->players = (KnownPlayer*)
+                dll_remove( &state->players->links, &node->links );
+            freeKP( dutil, node );
         }
-        XP_FREEP( dutil->mpool, state );
+        XP_FREEP( dutil->mpool, statep );
     }
 }
 #endif

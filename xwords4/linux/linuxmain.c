@@ -1,6 +1,6 @@
 /* -*- compile-command: "make MEMDEBUG=TRUE -j3"; -*- */
 /* 
- * Copyright 2000 - 2023 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2000 - 2024 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -75,6 +75,7 @@
 #include "dbgutil.h"
 #include "dictiter.h"
 #include "gsrcwrap.h"
+#include "dllist.h"
 /* #include "commgr.h" */
 /* #include "compipe.h" */
 #include "memstream.h"
@@ -2579,9 +2580,72 @@ writeStatus( const char* statusSocket, const char* dbName )
     }
 }
 
+#if 1
+typedef struct TestThing {
+    DLHead links;
+    char* name;
+} TestThing;
+
+static int
+compByName( const DLHead* dl1, const DLHead* dl2 )
+{
+    return strcmp( ((TestThing*)dl1)->name, ((TestThing*)dl2)->name );
+}
+
+static int
+compByNameRev( const DLHead* dl1, const DLHead* dl2 )
+{
+    return strcmp( ((TestThing*)dl2)->name, ((TestThing*)dl1)->name );
+}
+
+static void
+mapProc( const DLHead* dl, void* XP_UNUSED(closure))
+{
+    XP_LOGFF( "name: %s", ((TestThing*)dl)->name );
+}
+
+static TestThing*
+removeAndMap( TestThing* list, TestThing* node )
+{
+    XP_LOGFF( "removing %s", node->name );
+    list = (TestThing*)dll_remove( &list->links, &node->links );
+    dll_map( &list->links, mapProc, NULL );
+    return list;
+}
+
+static void
+testDLL()
+{
+    TestThing* list = NULL;
+
+    TestThing tss[] = {
+        {.name = "Brynn"},
+        {.name = "Ariela"},
+        {.name = "Kati"},
+        {.name = "Eric"},
+    };
+    for ( int ii = 0; ii < VSIZE(tss); ++ii ) {
+        list = (TestThing*)dll_insert( &list->links, &tss[ii].links, compByName );
+    }
+    dll_map( &list->links, mapProc, NULL );
+
+    list = (TestThing*)dll_sort( &list->links, compByNameRev );
+    dll_map( &list->links, mapProc, NULL );
+
+    list = removeAndMap( list, &tss[0] );
+    list = removeAndMap( list, &tss[2] );
+    list = removeAndMap( list, &tss[3] );
+    list = removeAndMap( list, &tss[1] );
+    XP_ASSERT( !list );
+}
+#endif
+
 int
 main( int argc, char** argv )
 {
+    testDLL();
+    // return 0;
+
     XP_LOGFF( "%s starting; ptr size: %zu", argv[0], sizeof(argv) );
 
     int opt;

@@ -95,6 +95,7 @@ COMMON_SRC_FILES +=        \
 	$(COMMON_PATH)/dutil.c  	\
 	$(COMMON_PATH)/device.c  	\
 	$(COMMON_PATH)/knownplyr.c  \
+	$(COMMON_PATH)/dllist.c  \
 
 LOCAL_CFLAGS+=$(LOCAL_C_INCLUDES) $(LOCAL_DEFINES) -Wall -std=c99
 LOCAL_SRC_FILES := $(linux_SRC_FILES) $(LOCAL_SRC_FILES) $(COMMON_SRC_FILES)

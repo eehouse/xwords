@@ -1,6 +1,7 @@
 /* -*- compile-command: "find-and-gradle.sh inXw4dDeb"; -*- */
 /*
- * Copyright 2020 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2020 - 2024 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -22,8 +23,8 @@ package org.eehouse.android.xw4;
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
@@ -55,7 +56,7 @@ public class KnownPlayersDelegate extends DelegateBase {
 
     private Activity mActivity;
     private ViewGroup mList;
-    private Map<String, ViewGroup> mChildren;
+    private List<ViewGroup> mChildren;
     private HashSet<String> mExpSet;
 
     protected KnownPlayersDelegate( Delegator delegator, Bundle sis )
@@ -123,7 +124,7 @@ public class KnownPlayersDelegate extends DelegateBase {
     {
         if ( ! newName.equals(oldName) && 0 < newName.length() ) {
             if ( XwJNI.kplr_renamePlayer( oldName, newName ) ) {
-                renameInPlace( oldName, newName );
+                populateList();
             } else {
                 makeOkOnlyBuilder( R.string.knowns_dup_name_fmt,
                                    oldName, newName )
@@ -138,11 +139,11 @@ public class KnownPlayersDelegate extends DelegateBase {
         if ( null == players ) {
             finish();
         } else {
-            mChildren = new HashMap<>();
+            mChildren = new ArrayList<>();
             for ( String player : players ) {
                 ViewGroup child = makePlayerElem( player );
                 if ( null != child ) {
-                    mChildren.put( player, child );
+                    mChildren.add( child );
                 }
             }
             addInOrder();
@@ -153,17 +154,20 @@ public class KnownPlayersDelegate extends DelegateBase {
     private void addInOrder()
     {
         mList.removeAllViews();
-        List<String> names = new ArrayList<>(mChildren.keySet());
-        Collections.sort(names);
-        for ( String name : names ) {
-            mList.addView( mChildren.get( name ) );
+        for ( ViewGroup child : mChildren ) {
+            mList.addView( child );
         }
     }
 
     private void pruneExpanded()
     {
         boolean doSave = false;
-        Set<String> children = mChildren.keySet();
+
+        Set<String> children = new HashSet<>();
+        for ( ViewGroup child : mChildren ) {
+            children.add( getName(child) );
+        }
+
         for ( Iterator<String> iter = mExpSet.iterator(); iter.hasNext(); ) {
             String child = iter.next();
             if ( !children.contains(child) ) {
@@ -186,14 +190,6 @@ public class KnownPlayersDelegate extends DelegateBase {
     {
         TextView tv = (TextView)item.findViewById( R.id.player_name );
         return tv.getText().toString();
-    }
-
-    private void renameInPlace( String oldName, String newName )
-    {
-        ViewGroup child = mChildren.remove( oldName );
-        setName( child, newName );
-        mChildren.put( newName, child );
-        addInOrder();
     }
 
     private ViewGroup makePlayerElem( final String player )

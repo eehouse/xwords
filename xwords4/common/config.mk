@@ -52,6 +52,7 @@ COMMONSRC = \
 	$(COMMONDIR)/dutil.c \
 	$(COMMONDIR)/device.c \
 	$(COMMONDIR)/knownplyr.c \
+	$(COMMONDIR)/dllist.c \
 	$(COMMONDIR)/md5.c \
 
 # PENDING: define this in terms of above!!!
@@ -94,6 +95,7 @@ COMMON5 = \
 	$(COMMONOBJDIR)/dutil.o \
 	$(COMMONOBJDIR)/device.o \
 	$(COMMONOBJDIR)/knownplyr.o \
+	$(COMMONOBJDIR)/dllist.o \
 	$(COMMONOBJDIR)/md5.o \
 
 COMMONOBJ = $(COMMON1) $(COMMON2) $(COMMON3) $(COMMON4) $(COMMON5)
