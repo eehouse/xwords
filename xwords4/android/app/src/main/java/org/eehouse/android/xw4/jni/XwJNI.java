@@ -560,7 +560,7 @@ public class XwJNI {
     public static native CommsAddrRec comms_getHostAddr( GamePtr gamePtr );
     public static native CommsAddrRec[] comms_getAddrs( GamePtr gamePtr );
     public static native void comms_dropHostAddr( GamePtr gamePtr, CommsConnType typ );
-    public static native boolean comms_setQuashed( GamePtr gamePtr );
+    public static native boolean comms_setQuashed( GamePtr gamePtr, boolean quashed );
     public static native int comms_resendAll( GamePtr gamePtr, boolean force,
                                               CommsConnType filter,
                                               boolean andAck );

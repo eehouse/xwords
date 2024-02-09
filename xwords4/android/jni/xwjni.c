@@ -2695,13 +2695,13 @@ Java_org_eehouse_android_xw4_jni_XwJNI_comms_1dropHostAddr
 
 JNIEXPORT jboolean JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_comms_1setQuashed
-( JNIEnv* env, jclass C, GamePtrType gamePtr )
+( JNIEnv* env, jclass C, GamePtrType gamePtr, jboolean jQuashed )
 {
     jboolean result = false;
     XWJNI_START(gamePtr);
     XP_ASSERT( !!state->game.comms );
     if ( NULL != state->game.comms ) {
-        result = comms_setQuashed( state->game.comms, env, XP_TRUE );
+        result = comms_setQuashed( state->game.comms, env, jQuashed );
     }
     XWJNI_END();
     return result;

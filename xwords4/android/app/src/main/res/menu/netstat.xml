@@ -13,4 +13,7 @@
   <item android:id="@+id/netstat_peers"
         android:title="@string/menu_about_peers"
         />
+  <item android:id="@+id/netstat_unquash"
+        android:title="@string/menu_unquash"
+        />
 </menu>

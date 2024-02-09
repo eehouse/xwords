@@ -9,6 +9,11 @@
   <string name="no_peers_info">Peers information not available</string>
   <string name="button_refresh">Refresh</string>
 
+  <!-- In Known Players display, a checkbox to sort players by when
+       their most recent game started instead of by name -->
   <string name="sort_by_date_label">Sort by date</string>
 
+  <!-- Debug-only: menu to remove quashed marking from a game (in case
+       the quashing was accidental) -->
+  <string name="menu_unquash">Unquash</string>
 </resources>

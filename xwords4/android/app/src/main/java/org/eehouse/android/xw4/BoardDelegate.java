@@ -1534,6 +1534,9 @@ public class BoardDelegate extends DelegateBase
                 popup.getMenu().removeItem( R.id.netstat_menu_traffic );
                 popup.getMenu().removeItem( R.id.netstat_peers );
             }
+            if ( !m_summary.quashed ) {
+                popup.getMenu().removeItem( R.id.netstat_unquash );
+            }
 
             popup.setOnMenuItemClickListener( new PopupMenu
                                               .OnMenuItemClickListener() {
@@ -1552,6 +1555,9 @@ public class BoardDelegate extends DelegateBase
                             break;
                         case R.id.netstat_peers:
                             showDialogFragment( DlgID.MQTT_PEERS );
+                            break;
+                        case R.id.netstat_unquash:
+                            XwJNI.comms_setQuashed( m_jniGamePtr, false );
                             break;
                         default:
                             handled = false;

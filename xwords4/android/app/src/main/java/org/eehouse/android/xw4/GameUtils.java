@@ -1458,7 +1458,7 @@ public class GameUtils {
             for ( long rowid: rowids ) {
                 try ( JNIThread thread = JNIThread.getRetained( rowid ) ) {
                     if ( null != thread ) {
-                        XwJNI.comms_setQuashed( thread.getGamePtr() );
+                        XwJNI.comms_setQuashed( thread.getGamePtr(), true );
                         // JNIThread saves automatically on release
                     } else {
                         try ( GameLock lock = GameLock.lock( rowid, 300 ) ) {
@@ -1466,7 +1466,7 @@ public class GameUtils {
                                 CurGameInfo gi = new CurGameInfo( context );
                                 try ( GamePtr gamePtr = loadMakeGame( context, gi, lock ) ) {
                                     if ( null != gamePtr ) {
-                                        if ( XwJNI.comms_setQuashed( gamePtr ) ) {
+                                        if ( XwJNI.comms_setQuashed( gamePtr, true ) ) {
                                             saveGame( context, gamePtr, gi, lock, false );
                                         }
                                     }
