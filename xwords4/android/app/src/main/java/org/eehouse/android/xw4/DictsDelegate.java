@@ -1423,107 +1423,112 @@ public class DictsDelegate extends ListDelegateBase
             stopProgress();
         }
 
-        private boolean digestData( String jsonData )
+        private Set<String> parseLangs( JSONArray langs ) throws JSONException
         {
-            boolean success = false;
-            JSONArray langs = null;
+            Set<String> closedLangs = new HashSet<>();
+            Set<String> curLangs = new HashSet<>( Arrays.asList( m_langs ) );
 
-            m_needUpdates = new HashMap<>();
-            if ( null != jsonData ) {
-                Set<String> closedLangs = new HashSet<>();
-                final Set<String> curLangs =
-                    new HashSet<>( Arrays.asList( m_langs ) );
+            int nLangs = langs.length();
+            m_remoteInfo = new HashMap<>();
+            for ( int ii = 0; !isCancelled() && ii < nLangs; ++ii ) {
+                JSONObject langObj = langs.getJSONObject( ii );
+                ISOCode isoCode = ISOCode.newIf( langObj.optString( "lc", null ) );
+                String urlLangName = langObj.getString( "lang" );
+                String localLangName = null;
+                if ( null != isoCode ) {
+                    localLangName = DictLangCache.getLangNameForISOCode( m_activity, isoCode );
+                }
+                if ( null == localLangName ) {
+                    localLangName = urlLangName;
+                    DictLangCache.setLangNameForISOCode( m_context,
+                                                         isoCode,
+                                                         urlLangName );
+                }
 
-                // DictLangCache hits the DB hundreds of times below. Fix!
-                Log.w( TAG, "Fix me I'm stupid" );
-                try {
-                    // Log.d( TAG, "digestData(%s)", jsonData );
-                    JSONObject obj = new JSONObject( jsonData );
-                    langs = obj.optJSONArray( "langs" );
+                if ( null != m_filterLang &&
+                     ! m_filterLang.equals( localLangName ) ) {
+                    continue;
+                }
 
-                    int nLangs = langs.length();
-                    m_remoteInfo = new HashMap<>();
-                    for ( int ii = 0; !isCancelled() && ii < nLangs; ++ii ) {
-                        JSONObject langObj = langs.getJSONObject( ii );
-                        ISOCode isoCode = ISOCode.newIf( langObj.optString( "lc", null ) );
-                        String urlLangName = langObj.getString( "lang" );
-                        String localLangName = null;
-                        if ( null != isoCode ) {
-                            localLangName = DictLangCache.getLangNameForISOCode( m_activity, isoCode );
-                        }
-                        if ( null == localLangName ) {
-                            localLangName = urlLangName;
-                            DictLangCache.setLangNameForISOCode( m_context,
-                                                                 isoCode,
-                                                                 urlLangName );
-                        }
+                if ( ! curLangs.contains( localLangName ) ) {
+                    closedLangs.add( localLangName );
+                }
 
-                        if ( null != m_filterLang &&
-                             ! m_filterLang.equals( localLangName ) ) {
-                            continue;
-                        }
+                JSONArray dicts = langObj.getJSONArray( "dicts" );
+                int nDicts = dicts.length();
+                ArrayList<AvailDictInfo> dictNames = new ArrayList<>();
+                for ( int jj = 0; !isCancelled() && jj < nDicts;
+                      ++jj ) {
+                    JSONObject dict = dicts.getJSONObject( jj );
+                    String name = dict.getString( "xwd" );
+                    name = DictUtils.removeDictExtn( name );
+                    long nBytes = dict.optLong( "nBytes", -1 );
+                    int nWords = dict.optInt( "nWords", -1 );
+                    String note = dict.optString( "note" );
+                    if ( 0 == note.length() ) {
+                        note = null;
+                    }
+                    AvailDictInfo info =
+                        new AvailDictInfo( name, isoCode, localLangName,
+                                           nWords, nBytes, note );
 
-                        if ( ! curLangs.contains( localLangName ) ) {
-                            closedLangs.add( localLangName );
-                        }
-
-                        JSONArray dicts = langObj.getJSONArray( "dicts" );
-                        int nDicts = dicts.length();
-                        ArrayList<AvailDictInfo> dictNames = new ArrayList<>();
-                        for ( int jj = 0; !isCancelled() && jj < nDicts;
-                              ++jj ) {
-                            JSONObject dict = dicts.getJSONObject( jj );
-                            String name = dict.getString( "xwd" );
-                            name = DictUtils.removeDictExtn( name );
-                            long nBytes = dict.optLong( "nBytes", -1 );
-                            int nWords = dict.optInt( "nWords", -1 );
-                            String note = dict.optString( "note" );
-                            if ( 0 == note.length() ) {
-                                note = null;
-                            }
-                            AvailDictInfo info =
-                                new AvailDictInfo( name, isoCode, localLangName,
-                                                   nWords, nBytes, note );
-
-                            if ( !m_quickFetchMode ) {
-                                // Check if we have it and it needs an update
-                                if ( DictLangCache.haveDict( m_activity, isoCode, name )
-                                     && !DictUtils.dictIsBuiltin( m_activity, name ) ) {
-                                    boolean matches = true;
-                                    JSONArray sums = dict.optJSONArray("md5sums");
-                                    if ( null != sums ) {
-                                        matches = false;
-                                        String[] curSums = DictLangCache.getDictMD5Sums( m_activity, name );
-                                        for ( String curSum : curSums ) {
-                                            for ( int kk = 0; !matches && kk < sums.length();
-                                                  ++kk ) {
-                                                String sum = sums.getString( kk );
-                                                matches = sum.equals( curSum );
-                                            }
-                                        }
-                                    }
-                                    if ( !matches ) {
-                                        Uri uri =
-                                            Utils.makeDictUriFromName( m_activity,
-                                                                       urlLangName, name );
-                                        m_needUpdates.put( name, uri );
+                    if ( !m_quickFetchMode ) {
+                        // Check if we have it and it needs an update
+                        if ( DictLangCache.haveDict( m_activity, isoCode, name )
+                             && !DictUtils.dictIsBuiltin( m_activity, name ) ) {
+                            boolean matches = true;
+                            JSONArray sums = dict.optJSONArray("md5sums");
+                            if ( null != sums ) {
+                                matches = false;
+                                String[] curSums = DictLangCache.getDictMD5Sums( m_activity, name );
+                                for ( String curSum : curSums ) {
+                                    for ( int kk = 0; !matches && kk < sums.length();
+                                          ++kk ) {
+                                        String sum = sums.getString( kk );
+                                        matches = sum.equals( curSum );
                                     }
                                 }
                             }
-                            dictNames.add( info );
-                        }
-                        if ( 0 < dictNames.size() ) {
-                            AvailDictInfo[] asArray = dictNames
-                                .toArray( new AvailDictInfo[dictNames.size()] );
-                            Arrays.sort( asArray );
-                            m_remoteInfo.put( localLangName, asArray );
+                            if ( !matches ) {
+                                Uri uri =
+                                    Utils.makeDictUriFromName( m_activity,
+                                                               urlLangName, name );
+                                m_needUpdates.put( name, uri );
+                            }
                         }
                     }
+                    dictNames.add( info );
+                }
+                if ( 0 < dictNames.size() ) {
+                    AvailDictInfo[] asArray = dictNames
+                        .toArray( new AvailDictInfo[dictNames.size()] );
+                    Arrays.sort( asArray );
+                    m_remoteInfo.put( localLangName, asArray );
+                }
+            }
+            return closedLangs;
+        }
+        
+        private boolean digestData( String jsonData )
+        {
+            boolean success = false;
+            // JSONArray langs = null;
 
-                    closedLangs.remove( m_filterLang );
-                    m_closedLangs.addAll( closedLangs );
+            m_needUpdates = new HashMap<>();
+            if ( null != jsonData ) {
+                // DictLangCache hits the DB hundreds of times below. Fix!
+                Log.w( TAG, "Fix me I'm stupid" );
+                try {
+                    Log.d( TAG, "digestData(%s)", jsonData );
+                    JSONObject obj = new JSONObject( jsonData );
+                    JSONArray langs = obj.optJSONArray( "langs" );
+                    if ( null != langs ) {
+                        Set<String> closedLangs = parseLangs( langs );
 
-                    success = true;
+                        closedLangs.remove( m_filterLang );
+                        m_closedLangs.addAll( closedLangs );
+                        success = true;
+                    }
                 } catch ( JSONException ex ) {
                     Log.ex( TAG, ex );
                 }
