@@ -35,6 +35,7 @@
 #include "knownplyr.h"
 #include "device.h"
 #include "nli.h"
+#include "dllist.h"
 
 #define HEARTBEAT_NONE 0
 
@@ -272,7 +273,6 @@ static void sendConnect( CommsCtxt* comms, XWEnv xwe
 #endif
                          );
 
-typedef enum {FEA_OK = 0x00, FEA_REMOVE = 0x01, FEA_EXIT = 0x02} ForEachAct;
 typedef ForEachAct (*EachMsgProc)( MsgQueueElem* elem, void* closure );
 static void forEachElem( CommsCtxt* comms, EachMsgProc proc, void* closure );
 

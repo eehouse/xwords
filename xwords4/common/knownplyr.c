@@ -88,15 +88,15 @@ loadState( XW_DUtilCtxt* dutil, XWEnv xwe )
     return state;
 }
 
-static void
+static ForEachAct
 saveProc( const DLHead* dl, void* closure )
 {
     XWStreamCtxt* stream = (XWStreamCtxt*)closure;
     KnownPlayer* kp = (KnownPlayer*)dl;
     stream_putU32( stream, kp->newestMod );
-    XP_LOGFF( "wrote newestMod: %d for player %s", kp->newestMod, kp->name );
     stringToStream( stream, kp->name );
     addrToStream( stream, &kp->addr );
+    return FEA_OK;
 }
 
 static void
@@ -108,7 +108,7 @@ saveState( XW_DUtilCtxt* dutil, XWEnv xwe, KPState* state )
         stream_setVersion( stream, CUR_STREAM_VERS );
         stream_putU8( stream, CUR_STREAM_VERS );
 
-        dll_map( &state->players->links, saveProc, stream );
+        dll_map( &state->players->links, saveProc, NULL, stream );
 
         const XP_UCHAR* keys[] = { KNOWN_PLAYERS_KEY, NULL };
         dutil_storeStream( dutil, xwe, keys, stream );
@@ -198,41 +198,57 @@ compByDate(const DLHead* dl1, const DLHead* dl2)
  *
  * For early testing, however, just make a new name.
  */
+
+typedef struct _AddData {
+    const XP_UCHAR* name;
+    const CommsAddrRec* addr;
+    KnownPlayer* withSameDevID;
+    KnownPlayer* withSameName;
+} AddData;
+
+static ForEachAct
+addProc( const DLHead* dl, void* closure )
+{
+    AddData* adp = (AddData*)closure;
+    KnownPlayer* kp = (KnownPlayer*)dl;
+    if ( 0 == XP_STRCMP( kp->name, adp->name ) ) {
+        adp->withSameName = kp;
+    }
+    if ( adp->addr->u.mqtt.devID == kp->addr.u.mqtt.devID ) {
+        adp->withSameDevID = kp;
+    }
+    ForEachAct result = !!adp->withSameName && !!adp->withSameDevID
+        ? FEA_EXIT : FEA_OK;
+    return result;
+}
+
 static void
-addPlayer( XW_DUtilCtxt* XP_UNUSED_DBG(dutil), KPState* state, const XP_UCHAR* name,
-           const CommsAddrRec* addr, XP_U32 newestMod )
+addPlayer( XW_DUtilCtxt* XP_UNUSED_DBG(dutil), KPState* state,
+           const XP_UCHAR* name, const CommsAddrRec* addr, XP_U32 newestMod )
 {
     XP_LOGFF( "(name=%s, newestMod: %d)", name, newestMod );
-    KnownPlayer* withSameDevID = NULL;
-    KnownPlayer* withSameName = NULL;
+    AddData ad = {.name = name, .addr = addr, };
+    dll_map( &state->players->links, addProc, NULL, &ad );
 
-    for ( KnownPlayer* kp = state->players;
-          !!kp && (!withSameDevID || !withSameName);
-          kp = (KnownPlayer*)kp->links.next ) {
-        if ( 0 == XP_STRCMP( kp->name, name ) ) {
-            withSameName = kp;
-        }
-        if ( addr->u.mqtt.devID == kp->addr.u.mqtt.devID ) {
-            withSameDevID = kp;
-        }
-    }
-
-    XP_LOGFF( "withSameDevID: %p; withSameName: %p", withSameDevID, withSameName );
+    XP_LOGFF( "withSameDevID: %p; withSameName: %p",
+              ad.withSameDevID, ad.withSameName );
 
     XP_UCHAR tmpName[64];
-    if ( !!withSameDevID ) {    /* only one allowed */
-        XP_Bool isNewer = newestMod > withSameDevID->newestMod;
-        XP_Bool changed = augmentAddr( &withSameDevID->addr, addr, isNewer );
+    if ( !!ad.withSameDevID ) {    /* only one allowed */
+        XP_Bool isNewer = newestMod > ad.withSameDevID->newestMod;
+        XP_Bool changed = augmentAddr( &ad.withSameDevID->addr,
+                                       addr, isNewer );
         if ( isNewer ) {
-            XP_LOGFF( "updating newestMod from %d to %d", withSameDevID->newestMod, newestMod );
-            withSameDevID->newestMod = newestMod;
+            XP_LOGFF( "updating newestMod from %d to %d",
+                      ad.withSameDevID->newestMod, newestMod );
+            ad.withSameDevID->newestMod = newestMod;
             changed = XP_TRUE;
         } else {
             XP_LOGFF( "not newer" );
         }
         state->dirty = changed || state->dirty;
     } else {
-        if ( !!withSameName ) {
+        if ( !!ad.withSameName ) {
         /* Same name but different devID? Create a unique name */
             makeUniqueName( state, name, tmpName, VSIZE(tmpName) );
             name = tmpName;
@@ -298,12 +314,13 @@ typedef struct _GetState {
 } GetState;
 
 
-static void
+static ForEachAct
 getProc( const DLHead* dl, void* closure )
 {
     GetState* gsp = (GetState*)closure;
     const KnownPlayer* kp = (KnownPlayer*)dl;
     gsp->players[gsp->indx++] = kp->name;
+    return FEA_OK;
 }
 
 static void
@@ -311,10 +328,9 @@ getPlayersImpl( const KPState* state, const XP_UCHAR** players,
                 XP_U16* nFound )
 {
     if ( state->nPlayers <= *nFound && !!players ) {
-        GetState gs = { .players = players,
-            .indx = 0,
-        };
-        dll_map( &state->players->links, getProc, &gs );
+        GetState gs = { .players = players, .indx = 0, };
+        DLHead* head = dll_map( &state->players->links, getProc, NULL, &gs );
+        XP_ASSERT( head == &state->players->links );
     }
     *nFound = state->nPlayers;
 }
@@ -336,17 +352,31 @@ kplr_getNames( XW_DUtilCtxt* dutil, XWEnv xwe, XP_Bool byDate,
     releaseState( dutil, xwe, state );
 }
 
+typedef struct _FindState {
+    const XP_UCHAR* name;
+    const KnownPlayer* result;
+} FindState;
+
+static ForEachAct
+findProc( const DLHead* dl, void* closure )
+{
+    ForEachAct result = FEA_OK;
+    FindState* fsp = (FindState*)closure;
+    const KnownPlayer* kp = (KnownPlayer*)dl;
+    if ( 0 == XP_STRCMP( kp->name, fsp->name ) ) {
+        fsp->result = kp;
+        result = FEA_EXIT;
+    }
+    return result;
+}
+
 static KnownPlayer*
 findByName( KPState* state, const XP_UCHAR* name )
 {
-    KnownPlayer* result = NULL;
-    for ( KnownPlayer* kp = state->players; !!kp && !result;
-          kp = (KnownPlayer*)kp->links.next ) {
-        if ( 0 == XP_STRCMP( kp->name, name ) ) {
-            result = kp;
-        }
-    }
-    return result;
+    FindState fs = { .name = name, };
+    DLHead* head = dll_map( &state->players->links, findProc, NULL, &fs );
+    XP_ASSERT( head == &state->players->links );
+    return (KnownPlayer*)fs.result;
 }
 
 XP_Bool
@@ -368,26 +398,40 @@ kplr_getAddr( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* name,
     return found;
 }
 
-const XP_UCHAR*
-kplr_nameForMqttDev( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* mqttDevID )
-{
-    const XP_UCHAR* name = NULL;
+typedef struct _MDevState {
     MQTTDevID devID;
-    if ( strToMQTTCDevID( mqttDevID, &devID ) ) {
+    const XP_UCHAR* name;
+} MDevState;
+
+static ForEachAct
+mqttProc( const DLHead* dl, void* closure )
+{
+    ForEachAct result = FEA_OK;
+    const KnownPlayer* kp = (KnownPlayer*)dl;
+    MDevState* msp = (MDevState*)closure;
+    const CommsAddrRec* addr = &kp->addr;
+    if ( addr_hasType( addr, COMMS_CONN_MQTT )
+         && 0 == XP_MEMCMP( &addr->u.mqtt.devID, &msp->devID,
+                            sizeof(msp->devID) ) ) {
+        msp->name = kp->name;
+        result = FEA_EXIT;
+    }
+    return result;
+}
+
+const XP_UCHAR*
+kplr_nameForMqttDev( XW_DUtilCtxt* dutil, XWEnv xwe,
+                     const XP_UCHAR* mqttDevID )
+{
+    MDevState ms = {0};
+    if ( strToMQTTCDevID( mqttDevID, &ms.devID ) ) {
         KPState* state = loadState( dutil, xwe );
-        for ( KnownPlayer* kp = state->players; !!kp && !name;
-              kp = (KnownPlayer*)kp->links.next ) {
-            const CommsAddrRec* addr = &kp->addr;
-            if ( addr_hasType( addr, COMMS_CONN_MQTT ) ) {
-                if ( 0 == XP_MEMCMP( &addr->u.mqtt.devID, &devID, sizeof(devID) ) ) {
-                    name = kp->name;
-                }
-            }
-        }
+        DLHead* head = dll_map( &state->players->links, mqttProc, NULL, &ms );
+        XP_ASSERT( head == &state->players->links );
         releaseState( dutil, xwe, state );
     }
-    LOG_RETURNF( "%s", name );
-    return name;
+    LOG_RETURNF( "%s", ms.name );
+    return ms.name;
 }
 
 static void
@@ -420,31 +464,45 @@ kplr_renamePlayer( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* oldName,
     return result;
 }
 
+typedef struct _DelState {
+    XW_DUtilCtxt* dutil;
+    const XP_UCHAR* name;
+    KPState* state;
+} DelState;
+
+static ForEachAct
+delMapProc( const DLHead* dl, void* closure )
+{
+    ForEachAct result = FEA_OK;
+
+    const KnownPlayer* kp = (KnownPlayer*)dl;
+    DelState* dsp = (DelState*)closure;
+    if ( 0 == XP_STRCMP( kp->name, dsp->name ) ) {
+        result = FEA_REMOVE | FEA_EXIT;
+        --dsp->state->nPlayers;
+        dsp->state->dirty = XP_TRUE;
+    }
+    return result;
+}
+
+static void
+delFreeProc( DLHead* elem, void* closure )
+{
+    DelState* dsp = (DelState*)closure;
+    freeKP( dsp->dutil, (KnownPlayer*)elem );
+}
+
 KP_Rslt
 kplr_deletePlayer( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* name )
 {
-    KP_Rslt result = KP_NAME_NOT_FOUND;
-    KnownPlayer* doomed = NULL;
+    KP_Rslt result = KP_OK;
     KPState* state = loadState( dutil, xwe );
 
-    for ( KnownPlayer* kp = state->players; !!kp;
-          kp = (KnownPlayer*)kp->links.next ) {
-        if ( 0 == XP_STRCMP( kp->name, name ) ) {
-            doomed = kp;
-            state->players = (KnownPlayer*)
-                dll_remove( &state->players->links, &doomed->links );
-            --state->nPlayers;
-            state->dirty = XP_TRUE;
-            result = KP_OK;
-            break;
-        }
-    }
+    DelState ds = { .name = name, .state = state, .dutil = dutil,};
+    state->players = (KnownPlayer*)
+        dll_map( &state->players->links, delMapProc, delFreeProc, &ds );
     releaseState( dutil, xwe, state );
 
-    XP_ASSERT( !!doomed );
-    if ( !!doomed ) {
-        freeKP( dutil, doomed );
-    }
     return result;
 }
 

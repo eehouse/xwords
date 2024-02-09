@@ -21,38 +21,30 @@
 #include "dllist.h"
 #include "dutil.h"              /* for NULL ??? */
 
-void
-dll_map( DLHead* list, DLMapProc proc, void* closure )
-{
-    for ( ; !!list; list = list->next ) {
-        (*proc)( list, closure );
-    }
-}
-
 DLHead*
 dll_insert( DLHead* head, DLHead* node, DLCompProc proc )
 {
     DLHead* next;
     DLHead* prev = NULL;
-    for ( next = head; !!next; next = next->next ) {
+    for ( next = head; !!next; next = next->_next ) {
         if ( 0 <= (*proc)( next, node ) ) {
             break;
         }
         prev = next;
     }
 
-    node->prev = prev;
-    node->next = next;
+    node->_prev = prev;
+    node->_next = next;
 
     DLHead* newHead;
     if ( !!prev ) {
         newHead = head;
-        prev->next = node;
+        prev->_next = node;
     } else {
         newHead = node;
     }
     if ( !!next ) {
-        next->prev = node;
+        next->_prev = node;
     }
     XP_ASSERT( !!newHead );
     return newHead;
@@ -61,20 +53,58 @@ dll_insert( DLHead* head, DLHead* node, DLCompProc proc )
 DLHead*
 dll_remove( DLHead* list, DLHead* node )
 {
+    XP_ASSERT( !list->_prev );
     DLHead* newHead = list;
     if ( list == node ) {
-        newHead = list->next;
+        newHead = list->_next;
         if ( !!newHead ) {
-            newHead->prev = NULL;
+            newHead->_prev = NULL;
         }
     } else {
-        if ( !!node->prev ) {
-            node->prev->next = node->next;
+        if ( !!node->_prev ) {
+            node->_prev->_next = node->_next;
         }
-        if ( !!node->next ) {
-            node->next->prev = node->prev;
+        if ( !!node->_next ) {
+            node->_next->_prev = node->_prev;
         }
     }
+    return newHead;
+}
+
+DLHead*
+dll_map( DLHead* list, DLMapProc mapProc, DLDisposeProc dispProc,
+         void* closure )
+{
+    DLHead* newHead = list;
+    while ( !!list ) {
+        DLHead* next = list->_next;
+        ForEachAct fea = (*mapProc)( list, closure );
+        if ( 0 != (FEA_REMOVE & fea) ) {
+            DLHead* victim = list;
+            next = victim->_prev;
+
+            if ( victim == newHead ) {
+                newHead = next;
+            }
+
+            if ( !!victim->_prev ) {
+                victim->_prev->_next = victim->_next;
+            }
+            if ( !!victim->_next ) {
+                victim->_next->_prev = victim->_prev;
+            }
+
+            if ( !!dispProc ) {
+                (*dispProc)( list, closure );
+            }
+        }
+        if ( 0 != (FEA_EXIT & fea) ) {
+            goto done;
+        }
+
+        list = next;
+    }
+ done:
     return newHead;
 }
 

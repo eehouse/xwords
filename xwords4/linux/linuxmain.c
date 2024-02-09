@@ -2598,10 +2598,11 @@ compByNameRev( const DLHead* dl1, const DLHead* dl2 )
     return strcmp( ((TestThing*)dl2)->name, ((TestThing*)dl1)->name );
 }
 
-static void
+static ForEachAct
 mapProc( const DLHead* dl, void* XP_UNUSED(closure))
 {
     XP_LOGFF( "name: %s", ((TestThing*)dl)->name );
+    return FEA_OK;
 }
 
 static TestThing*
@@ -2609,7 +2610,7 @@ removeAndMap( TestThing* list, TestThing* node )
 {
     XP_LOGFF( "removing %s", node->name );
     list = (TestThing*)dll_remove( &list->links, &node->links );
-    dll_map( &list->links, mapProc, NULL );
+    dll_map( &list->links, mapProc, NULL, NULL );
     return list;
 }
 
@@ -2627,10 +2628,10 @@ testDLL()
     for ( int ii = 0; ii < VSIZE(tss); ++ii ) {
         list = (TestThing*)dll_insert( &list->links, &tss[ii].links, compByName );
     }
-    dll_map( &list->links, mapProc, NULL );
+    dll_map( &list->links, mapProc, NULL, NULL );
 
     list = (TestThing*)dll_sort( &list->links, compByNameRev );
-    dll_map( &list->links, mapProc, NULL );
+    dll_map( &list->links, mapProc, NULL, NULL );
 
     list = removeAndMap( list, &tss[0] );
     list = removeAndMap( list, &tss[2] );

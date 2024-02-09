@@ -25,9 +25,11 @@ extern "C" {
 #endif
 
 typedef struct DLHead {
-    struct DLHead* next;
-    struct DLHead* prev;
+    struct DLHead* _next;
+    struct DLHead* _prev;
 } DLHead;
+
+typedef enum {FEA_OK = 0x00, FEA_REMOVE = 0x01, FEA_EXIT = 0x02} ForEachAct;
 
 typedef int (*DLCompProc)(const DLHead* dl1, const DLHead* dl2);
 
@@ -35,8 +37,10 @@ DLHead* dll_insert( DLHead* list, DLHead* node, DLCompProc proc );
 DLHead* dll_remove( DLHead* list, DLHead* node );
 DLHead* dll_sort( DLHead* list, DLCompProc proc );
 
-typedef void (*DLMapProc)(const DLHead* dl1, void* closure);
-void dll_map( DLHead* list, DLMapProc proc, void* closure );
+typedef ForEachAct (*DLMapProc)(const DLHead* dl1, void* closure);
+typedef void (*DLDisposeProc)(DLHead* elem, void* closure);
+DLHead* dll_map( DLHead* list, DLMapProc mapProc, DLDisposeProc dispProc,
+                 void* closure );
 
 #ifdef CPLUS
 }
