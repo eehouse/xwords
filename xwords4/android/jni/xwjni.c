@@ -771,16 +771,16 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dvc_1parseMQTTPacket
 # ifdef XWFEATURE_KNOWNPLAYERS
 JNIEXPORT jobjectArray JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_kplr_1getPlayers
-( JNIEnv* env, jclass C, jlong jniGlobalPtr )
+( JNIEnv* env, jclass C, jlong jniGlobalPtr, jboolean byDate )
 {
     jobjectArray jnames = NULL;
     DVC_HEADER(jniGlobalPtr);
 
     XP_U16 nFound = 0;
-    kplr_getNames( globalState->dutil, env, NULL, &nFound );
+    kplr_getNames( globalState->dutil, env, byDate, NULL, &nFound );
     if ( 0 < nFound ) {
         const XP_UCHAR* names[nFound];
-        kplr_getNames( globalState->dutil, env, names, &nFound );
+        kplr_getNames( globalState->dutil, env, byDate, names, &nFound );
         jnames = makeStringArray( env, nFound, names );
     }
     DVC_HEADER_END();

@@ -11,7 +11,13 @@
             android:layout_height="wrap_content"
             android:text="@string/knowns_expl"
             android:textAppearance="?android:attr/textAppearanceMedium"
-      />
+            />
+
+  <CheckBox android:id="@+id/sort_box"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/sort_by_date_label"
+            />
 
   <ScrollView android:layout_width="match_parent"
               android:layout_height="wrap_content"

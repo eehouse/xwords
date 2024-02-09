@@ -29,7 +29,10 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
 import android.widget.TextView;
+import android.widget.CompoundButton;
+import android.widget.CompoundButton.OnCheckedChangeListener;
 
 import java.text.DateFormat;
 import java.util.ArrayList;
@@ -53,11 +56,13 @@ import org.eehouse.android.xw4.loc.LocUtils;
 public class KnownPlayersDelegate extends DelegateBase {
     private static final String TAG = KnownPlayersDelegate.class.getSimpleName();
     private static final String KEY_EXPSET = TAG + "/expset";
+    private static final String KEY_BY_DATE = TAG + "/bydate";
 
     private Activity mActivity;
     private ViewGroup mList;
     private List<ViewGroup> mChildren;
     private HashSet<String> mExpSet;
+    private boolean mByDate;
 
     protected KnownPlayersDelegate( Delegator delegator, Bundle sis )
     {
@@ -69,7 +74,22 @@ public class KnownPlayersDelegate extends DelegateBase {
     protected void init( Bundle sis )
     {
         mList = (ViewGroup)findViewById( R.id.players_list );
+
         loadExpanded();
+
+        mByDate = DBUtils.getBoolFor( mActivity, KEY_BY_DATE, false );
+
+        CheckBox sortCheck = (CheckBox)findViewById( R.id.sort_box );
+        sortCheck.setOnCheckedChangeListener( new OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged( CompoundButton buttonView,
+                                              boolean checked ) {
+                    DBUtils.setBoolFor( mActivity, KEY_BY_DATE, checked );
+                    mByDate = checked;
+                    populateList();
+                }
+            } );
+        sortCheck.setChecked( mByDate );
         populateList();
     }
 
@@ -135,12 +155,13 @@ public class KnownPlayersDelegate extends DelegateBase {
 
     private void populateList()
     {
-        String[] players = XwJNI.kplr_getPlayers();
+        String[] players = XwJNI.kplr_getPlayers( mByDate );
         if ( null == players ) {
             finish();
         } else {
             mChildren = new ArrayList<>();
             for ( String player : players ) {
+                Log.d( TAG, "populateList(): player: %s", player );
                 ViewGroup child = makePlayerElem( player );
                 if ( null != child ) {
                     mChildren.add( child );

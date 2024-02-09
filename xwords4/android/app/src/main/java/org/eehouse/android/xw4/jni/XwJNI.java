@@ -191,12 +191,14 @@ public class XwJNI {
 
     public static String[] kplr_getPlayers()
     {
+        return kplr_getPlayers( false );
+    }
+
+    public static String[] kplr_getPlayers( boolean byDate )
+    {
         String[] result = null;
         if ( BuildConfig.HAVE_KNOWN_PLAYERS ) {
-            result = kplr_getPlayers( getJNI().m_ptrGlobals );
-            if ( null != result ) {
-                Arrays.sort( result );
-            }
+            result = kplr_getPlayers( getJNI().m_ptrGlobals, byDate );
         }
         return result;
     }
@@ -791,7 +793,7 @@ public class XwJNI {
         dvc_makeMQTTNoSuchGames( long jniState, String addressee, int gameID );
     private static native void dvc_parseMQTTPacket( long jniState, String topic,
                                                     byte[] buf );
-    private static native String[] kplr_getPlayers( long jniState );
+    private static native String[] kplr_getPlayers( long jniState, boolean byDate );
     private static native boolean kplr_renamePlayer( long jniState, String oldName,
                                                      String newName );
     private static native void kplr_deletePlayer( long jniState, String player );

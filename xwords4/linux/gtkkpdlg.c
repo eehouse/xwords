@@ -147,9 +147,9 @@ gtkkp_show( GtkAppGlobals* apg, GtkWindow* parent )
     XW_DUtilCtxt* dutil = apg->cag.params->dutil;
 
     XP_U16 nFound = 0;
-    kplr_getNames( dutil, NULL_XWE, NULL, &nFound );
+    kplr_getNames( dutil, NULL_XWE, XP_FALSE, NULL, &nFound );
     const XP_UCHAR* players[nFound];
-    kplr_getNames( dutil, NULL_XWE, players, &nFound );
+    kplr_getNames( dutil, NULL_XWE, XP_FALSE, players, &nFound );
 
     for ( int ii = 0; ii < nFound; ++ii ) {
         XP_LOGFF( "got one: %s", players[ii] );

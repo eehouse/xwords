@@ -293,10 +293,10 @@ makeKnownsPage( GtkInviteState* state, PageData* data )
     gtk_box_pack_start( GTK_BOX(hbox), label, FALSE, TRUE, 0 );
 
     XP_U16 nFound = 0;
-    kplr_getNames( state->dutil, NULL_XWE, NULL, &nFound );
+    kplr_getNames( state->dutil, NULL_XWE, XP_FALSE, NULL, &nFound );
     XP_ASSERT( nFound > 0 );
     const XP_UCHAR* names[nFound];
-    kplr_getNames( state->dutil, NULL_XWE, names, &nFound );
+    kplr_getNames( state->dutil, NULL_XWE, XP_FALSE, names, &nFound );
 
     GtkWidget* combo = state->knownsCombo = gtk_combo_box_text_new();
     for ( int ii = 0; ii < nFound; ++ii ) {

@@ -39,8 +39,8 @@ void kplr_cleanup( XW_DUtilCtxt* dutil );
 
 XP_Bool kplr_havePlayers( XW_DUtilCtxt* dutil, XWEnv xwe );
 
-void kplr_getNames( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR** players,
-                    XP_U16* nFound );
+void kplr_getNames( XW_DUtilCtxt* dutil, XWEnv xwe, XP_Bool byDate,
+                    const XP_UCHAR** players, XP_U16* nFound );
 XP_Bool kplr_getAddr( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* name,
                       CommsAddrRec* addr, XP_U32* lastMod );
 const XP_UCHAR* kplr_nameForMqttDev( XW_DUtilCtxt* dutil, XWEnv xwe,

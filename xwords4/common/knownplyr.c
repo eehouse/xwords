@@ -173,6 +173,20 @@ compByName(const DLHead* dl1, const DLHead* dl2)
     return XP_STRCMP( kp1->name, kp2->name );
 }
 
+static int
+compByDate(const DLHead* dl1, const DLHead* dl2)
+{
+    const KnownPlayer* kp1 = (const KnownPlayer*)dl1;
+    const KnownPlayer* kp2 = (const KnownPlayer*)dl2;
+    int result = 0;
+    if ( kp1->newestMod < kp2->newestMod ) {
+        result = 1;
+    } else if ( kp1->newestMod > kp2->newestMod ) {
+        result = -1;
+    }
+    return result;
+}
+
 /* Adding players is the hard part. There will be a lot with the same name and
  * representing the same device. That's easy: skip adding a new entry, but if
  * there's a change or addition, make it. For changes, e.g. a different
@@ -242,6 +256,7 @@ kplr_addAddrs( XW_DUtilCtxt* dutil, XWEnv xwe, const CurGameInfo* gi,
                CommsAddrRec addrs[], XP_U16 nAddrs, XP_U32 modTime )
 {
     XP_LOGFF( "(nAddrs=%d)", nAddrs );
+    XP_ASSERT( modTime );
     XP_Bool canUse = XP_TRUE;
     for ( int ii = 0; ii < nAddrs && canUse; ++ii ) {
         canUse = addr_hasType( &addrs[ii], COMMS_CONN_MQTT );
@@ -305,11 +320,19 @@ getPlayersImpl( const KPState* state, const XP_UCHAR** players,
 }
 
 void
-kplr_getNames( XW_DUtilCtxt* dutil, XWEnv xwe,
+kplr_getNames( XW_DUtilCtxt* dutil, XWEnv xwe, XP_Bool byDate,
                const XP_UCHAR** players, XP_U16* nFound )
 {
     KPState* state = loadState( dutil, xwe );
+    if ( byDate ) {
+        state->players = (KnownPlayer*)dll_sort( &state->players->links,
+                                                 compByDate );
+    }
     getPlayersImpl( state, players, nFound );
+    if ( byDate ) {
+        state->players = (KnownPlayer*)dll_sort( &state->players->links,
+                                                 compByName );
+    }
     releaseState( dutil, xwe, state );
 }
 
