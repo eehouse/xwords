@@ -47,7 +47,7 @@ else
 fi
 
 popd
-if [ -s "${NO_RM}" ]; then
+if [ -z "${NO_RM}" ]; then
 	rm -rf $DIR
 else
 	echo "not removing: $DIR"
