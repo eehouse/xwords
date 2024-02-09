@@ -24,6 +24,8 @@
 extern "C" {
 #endif
 
+#include "xptypes.h"
+
 typedef struct DLHead {
     struct DLHead* _next;
     struct DLHead* _prev;
@@ -35,6 +37,7 @@ typedef int (*DLCompProc)(const DLHead* dl1, const DLHead* dl2);
 
 DLHead* dll_insert( DLHead* list, DLHead* node, DLCompProc proc );
 DLHead* dll_remove( DLHead* list, DLHead* node );
+XP_U16 dll_length( const DLHead* list );
 DLHead* dll_sort( DLHead* list, DLCompProc proc );
 
 typedef ForEachAct (*DLMapProc)(const DLHead* dl1, void* closure);

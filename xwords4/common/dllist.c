@@ -71,6 +71,24 @@ dll_remove( DLHead* list, DLHead* node )
     return newHead;
 }
 
+static ForEachAct
+lengthProc(const DLHead* XP_UNUSED(dl1), void* closure)
+{
+    XP_U16* count = (XP_U16*)closure;
+    ++*count;
+    return FEA_OK;
+}
+
+XP_U16
+dll_length( const DLHead* list )
+{
+    XP_U16 result = 0;
+    if ( !!list ) {
+        dll_map( (DLHead*)list, lengthProc, NULL, &result );
+    }
+    return result;
+}
+
 DLHead*
 dll_map( DLHead* list, DLMapProc mapProc, DLDisposeProc dispProc,
          void* closure )
