@@ -1487,7 +1487,8 @@ public class DictsDelegate extends ListDelegateBase
 
                             if ( !m_quickFetchMode ) {
                                 // Check if we have it and it needs an update
-                                if ( DictLangCache.haveDict( m_activity, isoCode, name )){
+                                if ( DictLangCache.haveDict( m_activity, isoCode, name )
+                                     && !DictUtils.dictIsBuiltin( m_activity, name ) ) {
                                     boolean matches = true;
                                     JSONArray sums = dict.optJSONArray("md5sums");
                                     if ( null != sums ) {
