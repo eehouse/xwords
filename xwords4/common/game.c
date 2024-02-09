@@ -257,8 +257,6 @@ game_makeRematch( const XWGame* oldGame, XWEnv xwe, XW_UtilCtxt* newUtil,
                     if ( !server_ri_getAddr( rip, ii, &guestAddr, &nPlayersH ) ) {
                         break;
                     }
-                    XP_ASSERT( !comms_addrsAreSame( newGame->comms, &guestAddr,
-                                                    &selfAddr ) );
 
                     NetLaunchInfo nli;
                     nli_init( &nli, newGI, selfAddrP, nPlayersH, ii + 1 );
