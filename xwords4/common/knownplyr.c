@@ -18,6 +18,8 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+// #define ENABLE_LOGFFV 1
+
 #include "knownplyr.h"
 #include "strutils.h"
 #include "comms.h"
@@ -160,7 +162,7 @@ makeUniqueName( const KPState* state, const XP_UCHAR* name,
             break;
         }
     }
-    XP_LOGFF( "created new name: %s", newName );
+    XP_LOGFFV( "created new name: %s", newName );
 }
 
 static int
@@ -256,14 +258,14 @@ addPlayer( XW_DUtilCtxt* XP_UNUSED_DBG(dutil), KPState* state,
                                         &newPlayer->links, compByName );
         state->dirty = XP_TRUE;
     }
-    XP_LOGFF( "nPlayers now: %d", dll_length( &state->players->links ) );
+    XP_LOGFFV( "nPlayers now: %d", dll_length( &state->players->links ) );
 }
 
 XP_Bool
 kplr_addAddrs( XW_DUtilCtxt* dutil, XWEnv xwe, const CurGameInfo* gi,
                CommsAddrRec addrs[], XP_U16 nAddrs, XP_U32 modTime )
 {
-    XP_LOGFF( "(nAddrs=%d)", nAddrs );
+    XP_LOGFFV( "(nAddrs=%d)", nAddrs );
     XP_ASSERT( modTime );
     XP_Bool canUse = XP_TRUE;
     for ( int ii = 0; ii < nAddrs && canUse; ++ii ) {
@@ -286,7 +288,7 @@ kplr_addAddrs( XW_DUtilCtxt* dutil, XWEnv xwe, const CurGameInfo* gi,
         releaseState( dutil, xwe, state );
     }
 
-    LOG_RETURNF( "%s", boolToStr(canUse) );
+    XP_LOGFFV( "=>%s", boolToStr(canUse) );
     return canUse;
 }
 

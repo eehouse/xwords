@@ -410,6 +410,16 @@ typedef struct _TrayTileSet {
 #define LOG_POS(strm) XP_LOGF( "%s(); line %d; read_pos: %X", __func__, __LINE__, \
                                stream_getPos((strm), POS_READ) )
 
+/* The idea is that an individual .c file needing logging when being debugged
+   but not wanting to flood the logs in the normal case uses XP_LOGFFV in
+   place of XP_LOGFF, and then #defines ENABLE_LOGFFV at the very top of itself
+   (before any #includes). */
+#ifdef ENABLE_LOGFFV
+# define XP_LOGFFV XP_LOGFF
+#else
+# define XP_LOGFFV(...)
+#endif
+
 #ifndef XP_USE
 # define XP_USE(v) v=v
 #endif

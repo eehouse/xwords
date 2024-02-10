@@ -1,6 +1,6 @@
 /* -*- compile-command: "cd ../linux && make MEMDEBUG=TRUE -j3"; -*- */
 /* 
- * Copyright 2001 - 2023 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2001 - 2024 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -17,6 +17,8 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
+
+// #define ENABLE_LOGFFV
 
 #ifdef USE_STDIO
 # include <stdio.h>
@@ -60,7 +62,12 @@
 #endif
 
 #ifdef DEBUG
-# define COMMS_LOGFF( FMT, ... ) {                         \
+# ifdef ENABLE_LOGFFV
+#  define COMMS_LOGFFV COMMS_LOGFF
+# else
+#  define COMMS_LOGFFV(...)
+# endif
+# define COMMS_LOGFF( FMT, ... ) {                        \
         XP_U32 gameID = comms->util->gameInfo->gameID;    \
         XP_GID_LOGFF( gameID, FMT, ##__VA_ARGS__ );         \
     }
@@ -836,7 +843,7 @@ comms_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
     }
     if ( addr_hasType( &selfAddr, COMMS_CONN_RELAY ) ) {
         comms->rr.myHostID = stream_getU8( stream );
-        COMMS_LOGFF( "loaded myHostID: %d", comms->rr.myHostID );
+        COMMS_LOGFFV( "loaded myHostID: %d", comms->rr.myHostID );
         stringFromStreamHere( stream, comms->rr.connName, 
                               sizeof(comms->rr.connName) );
     }
@@ -844,7 +851,7 @@ comms_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
     XP_U16 queueLen = stream_getU8( stream );
 
     XP_U16 nAddrRecs = stream_getU8( stream );
-    COMMS_LOGFF( "nAddrRecs: %d", nAddrRecs );
+    COMMS_LOGFFV( "nAddrRecs: %d", nAddrRecs );
     AddressRecord** prevsAddrNext = &comms->recs;
     for ( int ii = 0; ii < nAddrRecs; ++ii ) {
         AddressRecord* rec = (AddressRecord*)XP_CALLOC( mpool, sizeof(*rec));
@@ -861,7 +868,7 @@ comms_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
             rec->lastMsgSaved = rec->lastMsgRcd = stream_getU16( stream );
         }
 #ifdef LOG_COMMS_MSGNOS
-        COMMS_LOGFF( "read lastMsgRcd of %d for addr %d", rec->lastMsgRcd, ii );
+        COMMS_LOGFFV( "read lastMsgRcd of %d for addr %d", rec->lastMsgRcd, ii );
 #endif
         if ( version >= STREAM_VERS_BLUETOOTH2 ) {
             rec->lastMsgAckd = stream_getU16( stream );
@@ -872,7 +879,7 @@ comms_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
         }
 
         CNO_FMT( cbuf, rec->channelNo );
-        COMMS_LOGFF( "loaded rec %d: %s", ii, cbuf );
+        COMMS_LOGFFV( "loaded rec %d: %s", ii, cbuf );
 
         *prevsAddrNext = rec;
         prevsAddrNext = &rec->next;
@@ -2007,8 +2014,8 @@ removeFromQueue( CommsCtxt* comms, XWEnv xwe, XP_PlayerAddr channelNo, MsgID msg
     THREAD_CHECK_START( comms );
     assertQueueOk( comms );
     CNO_FMT( cbuf, channelNo );
-    COMMS_LOGFF( "(channelNo=%d): remove msgs <= " XP_LD " for %s (queueLen: %d)",
-                 channelNo, msgID, cbuf, comms->queueLen );
+    COMMS_LOGFFV( "(channelNo=%d): remove msgs <= " XP_LD " for %s (queueLen: %d)",
+                  channelNo, msgID, cbuf, comms->queueLen );
 #ifdef DEBUG
     XP_U16 prevLen = comms->queueLen;
 #endif
@@ -2026,7 +2033,7 @@ removeFromQueue( CommsCtxt* comms, XWEnv xwe, XP_PlayerAddr channelNo, MsgID msg
     }
 
     XP_ASSERT( comms->queueLen <= prevLen );
-    COMMS_LOGFF( "queueLen now %d (was %d)", comms->queueLen, prevLen );
+    COMMS_LOGFFV( "queueLen now %d (was %d)", comms->queueLen, prevLen );
 
 #ifdef DEBUG
     assertQueueOk( comms );
@@ -2740,8 +2747,8 @@ getRecordFor( const CommsCtxt* comms, const XP_PlayerAddr channelNo )
         XP_ASSERT( comms->isServer || !rec->next );
 
         CNO_FMT( cbuf1, rec->channelNo );
-        COMMS_LOGFF( "comparing rec channel %s with addr channel %s",
-                     cbuf1, cbuf );
+        COMMS_LOGFFV( "comparing rec channel %s with addr channel %s",
+                      cbuf1, cbuf );
 
         /* Invite case: base on channelNo bits if the rest is 0 */
         if ( (0 == (rec->channelNo & ~CHANNEL_MASK)) && (0 == (channelNo & ~CHANNEL_MASK)) ) {
@@ -2749,14 +2756,14 @@ getRecordFor( const CommsCtxt* comms, const XP_PlayerAddr channelNo )
                 break;
             }
         } else if ( (rec->channelNo & ~CHANNEL_MASK) == (channelNo & ~CHANNEL_MASK) ) {
-            COMMS_LOGFF( "match based on channels!!!" );
+            COMMS_LOGFFV( "match based on channels!!!" );
             /* This is so wrong for addresses coming from invites. Why works
                with GTK? */
             break;
         }
     }
 
-    COMMS_LOGFF( "(%s) => %p", cbuf, rec );
+    COMMS_LOGFFV( "(%s) => %p", cbuf, rec );
     return rec;
 } /* getRecordFor */
 
@@ -2927,7 +2934,7 @@ validateChannelMessage( CommsCtxt* comms, XWEnv xwe, const CommsAddrRec* addr,
             /* an ACK; do nothing */
             rec = NULL;
         } else if ( msgID == rec->lastMsgRcd + 1 ) {
-            COMMS_LOGFF( TAGFMT() "expected %d AND got %d", TAGPRMS,
+            COMMS_LOGFFV( TAGFMT() "expected %d AND got %d", TAGPRMS,
                          msgID, msgID );
         } else {
             COMMS_LOGFF( TAGFMT() "expected %d, got %d", TAGPRMS,

@@ -876,7 +876,7 @@ msgAndTopicProc( void* closure, const XP_UCHAR* topic,
             mtp->jPackets[mtp->count] = makeByteArray( env, msgLen, (const jbyte*)msgBuf );
 
             ++mtp->count;
-            XP_LOGFF( "mtp->count now: %d", mtp->count );
+            XP_LOGFFV( "mtp->count now: %d", mtp->count );
         }
     }
 }
