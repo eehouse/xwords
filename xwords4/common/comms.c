@@ -4105,11 +4105,11 @@ relayConnect( CommsCtxt* comms, XWEnv xwe )
 static void
 listRecs( const CommsCtxt* comms, const char* msg )
 {
-    COMMS_LOGFF( "nrecs: %d", countAddrRecs( comms ) );
+    COMMS_LOGFFV( "nrecs: %d", countAddrRecs( comms ) );
     int ii = 0;
     for ( AddressRecord* rec = comms->recs; !!rec; rec = rec->next ) {
         CNO_FMT( cbuf, rec->channelNo );
-        COMMS_LOGFF( "%s: rec[%d]: %s", msg, ii, cbuf );
+        COMMS_LOGFFV( "%s: rec[%d]: %s", msg, ii, cbuf );
         ++ii;
     }
 }
