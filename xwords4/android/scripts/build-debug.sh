@@ -31,7 +31,7 @@ while [ $# -ge 1 ]; do
 	shift
 done
 
-git clone --branch android_branch https://github.com/eehouse/xwords.git
+git clone --branch main https://github.com/eehouse/xwords.git
 cd xwords/xwords4/android
 ./gradlew asXw4dDeb
 
