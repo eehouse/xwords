@@ -1753,6 +1753,15 @@
     <string name="menu_net_url">Copy URL</string>
     <!-- Debug-only menuitem to show remote device status -->
     <string name="menu_about_peers">Peer status</string>
+    <!-- When you choose the above menu, a dialog comes up and shows
+         this string while waiting for the server to respond -->
+    <string name="peers_info_pending">Querying server…</string>
+    <!-- This string is shown if the query failed -->
+    <string name="no_peers_info">Peers information not available</string>
+    <!-- The dialog has this button which causes the query to be
+         repeated -->
+    <string name="button_refresh">Refresh</string>
+
     <!-- First line of debug-only Invites list dialog -->
     <string name="invites_net_fmt">Invitations sent for game connected via
     %1$s:</string>
@@ -2796,5 +2805,9 @@
        choose "Do not show again")-->
   <string name="na_rematch_edit">The game name will not change once
   you have edited it unless it is empty.</string>
+
+  <!-- In Known Players display, a checkbox to sort players by when
+       their most recent game started instead of by name -->
+  <string name="sort_by_date_label">Sort by date</string>
 
 </resources>
