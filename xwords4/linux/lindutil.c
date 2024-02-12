@@ -309,7 +309,18 @@ linux_dutil_ackMQTTMsg( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe),
     sendViaCurl( lduc, adp );
 #endif
     /* LOG_RETURN_VOID(); */
- }
+}
+
+static void
+linux_dutil_sendViaWeb( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* api,
+                        const cJSON* params )
+{
+    XP_USE(duc);
+    XP_USE(xwe);
+    char* pstr = cJSON_PrintUnformatted( params );
+    XP_LOGFF( "(api: %s, params: %s)", api, pstr );
+    free( pstr );
+}
 
 XW_DUtilCtxt*
 linux_dutils_init( MPFORMAL VTableMgr* vtMgr, void* closure )
@@ -361,6 +372,7 @@ linux_dutils_init( MPFORMAL VTableMgr* vtMgr, void* closure )
     SET_PROC(onCtrlReceived);
     SET_PROC(onGameGoneReceived);
     SET_PROC(ackMQTTMsg);
+    SET_PROC(sendViaWeb);
 
 # undef SET_PROC
 
