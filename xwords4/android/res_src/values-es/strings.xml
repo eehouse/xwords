@@ -1192,4 +1192,8 @@
     <string name="ro_high_score_first">El que tenga más puntos va primero</string>
     <string name="ro_juggle">Al azar</string>
     <string name="na_rematch_edit">El nombre del juego no cambiará una vez que lo hayas editado, a menos que esté vacío.</string>
+    <string name="button_refresh">Refrescar</string>
+    <string name="sort_by_date_label">Ordenar por fecha</string>
+    <string name="peers_info_pending">Consultando al servidor…</string>
+    <string name="no_peers_info">Información de pares no disponible</string>
 </resources>
