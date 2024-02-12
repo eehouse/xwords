@@ -244,7 +244,7 @@ OBJ = \
 	$(BUILD_PLAT_DIR)/lindutil.o \
 	$(CURSES_OBJS) $(GTK_OBJS) $(MAIN_OBJS)
 
-LIBS = -lm -lpthread -luuid -lcurl -lcjson $(GPROFFLAG)
+LIBS = -lm -lpthread -luuid -lcurl $(GPROFFLAG)
 ifdef USE_SQLITE
 LIBS += -lsqlite3
 LIBS += -lmosquitto
@@ -292,7 +292,6 @@ REQUIRED_DEBS = gcc libgtk-3-dev \
 		libgtk-3-dev \
 		python3-requests \
 		libmosquitto-dev \
-		libcjson-dev \
 
 .PHONY: debcheck debs_install
 

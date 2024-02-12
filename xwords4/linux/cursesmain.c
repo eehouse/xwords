@@ -42,7 +42,7 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 
-#include <cjson/cJSON.h>
+#include "cJSON.h"
 
 #include "linuxmain.h"
 #include "linuxutl.h"
