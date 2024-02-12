@@ -1192,4 +1192,8 @@
     <string name="ro_high_score_first">Pontuador maior vai primeiro</string>
     <string name="ro_juggle">Aleatoriamente</string>
     <string name="na_rematch_edit">O nome da partida não vai mudar uma vez que tenha o editado, a menos que esteja vazio.</string>
+    <string name="no_peers_info">Informação de pares indisponível</string>
+    <string name="button_refresh">Atualizar</string>
+    <string name="sort_by_date_label">Organizar por data</string>
+    <string name="peers_info_pending">Consultando servidor…</string>
 </resources>
