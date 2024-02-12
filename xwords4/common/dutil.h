@@ -36,6 +36,10 @@ typedef enum { UNPAUSED,
 
 typedef XP_Bool (*OnOneProc)(void* closure, const XP_UCHAR* keys[]);
 
+typedef struct _Md5SumBuf {
+    XP_UCHAR buf[33];
+} Md5SumBuf;
+
 #define KEY_WILDCARD "*"
 
 typedef struct _DUtilVtable {
@@ -76,7 +80,8 @@ typedef struct _DUtilVtable {
 #endif
 
 #ifdef COMMS_CHECKSUM
-    XP_UCHAR* (*m_dutil_md5sum)( XW_DUtilCtxt* duc, XWEnv xwe, const XP_U8* ptr, XP_U32 len );
+    void (*m_dutil_md5sum)( XW_DUtilCtxt* duc, XWEnv xwe, const XP_U8* ptr,
+                            XP_U32 len, Md5SumBuf* sb );
 #endif
 
     void (*m_dutil_getUsername)( XW_DUtilCtxt* duc, XWEnv xwe, XP_U16 num,
@@ -152,8 +157,8 @@ void dutil_super_init( MPFORMAL XW_DUtilCtxt* dutil );
 #endif
 
 #ifdef COMMS_CHECKSUM
-# define dutil_md5sum( duc, e, p, l )                   \
-    (duc)->vtable.m_dutil_md5sum((duc), (e), (p), (l))
+# define dutil_md5sum( duc, e, p, l, b )                    \
+    (duc)->vtable.m_dutil_md5sum((duc), (e), (p), (l), (b))
 #endif
 
 #define dutil_getUsername(duc, xwe, num, isLocal, isRobot, buf, lenp)   \

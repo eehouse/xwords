@@ -80,8 +80,8 @@ static void linux_dutil_deviceRegistered( XW_DUtilCtxt* duc, XWEnv xwe, DevIDTyp
 #endif
 
 #ifdef COMMS_CHECKSUM
-static XP_UCHAR* linux_dutil_md5sum( XW_DUtilCtxt* duc, XWEnv xwe, const XP_U8* ptr,
-                                     XP_U32 len );
+static void linux_dutil_md5sum( XW_DUtilCtxt* duc, XWEnv xwe, const XP_U8* ptr,
+                                XP_U32 len, Md5SumBuf* sb );
 #endif
 
 static void
@@ -599,16 +599,15 @@ linux_dutil_deviceRegistered( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe), DevIDType
 #endif
 
 #ifdef COMMS_CHECKSUM
-static XP_UCHAR*
-linux_dutil_md5sum( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe),
-                    const XP_U8* ptr, XP_U32 len )
+static void
+linux_dutil_md5sum( XW_DUtilCtxt* XP_UNUSED(duc), XWEnv XP_UNUSED(xwe),
+                    const XP_U8* ptr, XP_U32 len, Md5SumBuf* sb )
 {
     gchar* sum = g_compute_checksum_for_data( G_CHECKSUM_MD5, ptr, len );
     XP_U32 sumlen = 1 + strlen( sum );
-    XP_UCHAR* result = XP_MALLOC( duc->mpool, sumlen );
-    XP_MEMCPY( result, sum, sumlen );
+    // XP_UCHAR* result = XP_MALLOC( duc->mpool, sumlen );
+    XP_MEMCPY( sb->buf, sum, sumlen );
     g_free( sum );
-    return result;
 }
 #endif
 

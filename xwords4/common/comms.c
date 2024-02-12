@@ -136,7 +136,7 @@ typedef struct MsgQueueElem {
 #endif
     MsgID msgID;                /* saved for ease of deletion */
 #ifdef COMMS_CHECKSUM
-    XP_UCHAR* checksum;
+    Md5SumBuf sb;
 #endif
 } MsgQueueElem;
 
@@ -927,7 +927,7 @@ comms_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
             stream_getBytes( stream, (XP_U8*)msg->smp.buf, len );
         }
 #ifdef COMMS_CHECKSUM
-        msg->checksum = dutil_md5sum( comms->dutil, xwe, msg->smp.buf, len );
+        dutil_md5sum( comms->dutil, xwe, msg->smp.buf, len, &msg->sb );
 #endif
         XP_ASSERT( NULL == msg->smp.next );
         if ( !addToQueue( comms, xwe, msg, XP_FALSE ) ) {
@@ -1127,7 +1127,7 @@ elemToStream( MsgQueueElem* elem, void* closure )
         stream_putU32VL( stream, elem->smp.len );
         stream_putU32( stream, elem->smp.createdStamp );
 #ifdef COMMS_CHECKSUM
-        COMMS_LOGFF( "writing msg elem with sum: %s", elem->checksum );
+        COMMS_LOGFF( "writing msg elem with sum: %s", elem->sb.buf );
 #endif
         if ( 0 == elem->smp.len ) {
             XP_ASSERT( 0 == elem->msgID );
@@ -1580,8 +1580,8 @@ makeElemWithID( const CommsCtxt* comms, XWEnv xwe, MsgID msgID, AddressRecord* r
     stream_destroy( msgStream );
 
 #ifdef COMMS_CHECKSUM
-    newElem->checksum = dutil_md5sum( comms->dutil, xwe, newElem->smp.buf,
-                                      newElem->smp.len );
+    dutil_md5sum( comms->dutil, xwe, newElem->smp.buf, newElem->smp.len,
+                  &newElem->sb );
 #endif
     XP_ASSERT( 0 < newElem->smp.len ); /* else NLI assumptions fail */
     return newElem;
@@ -1598,8 +1598,7 @@ makeInviteElem( CommsCtxt* comms, XWEnv xwe,
     newElem->smp.buf = XP_MALLOC( comms->mpool, sizeof(*nli) );
     XP_MEMCPY( (XP_U8*)newElem->smp.buf, nli, sizeof(*nli) );
 # ifdef COMMS_CHECKSUM
-    newElem->checksum = dutil_md5sum( comms->dutil, xwe, newElem->smp.buf,
-                                      sizeof(*nli) );
+    dutil_md5sum( comms->dutil, xwe, newElem->smp.buf, sizeof(*nli), &newElem->sb );
 # endif
     return newElem;
 }
@@ -1721,7 +1720,7 @@ comms_invite( CommsCtxt* comms, XWEnv xwe, const NetLaunchInfo* nli,
         elem = addToQueue( comms, xwe, elem, XP_TRUE );
         if ( !!elem ) {
             XP_ASSERT( !elem->smp.next );
-            COMMS_LOGFF( "added invite with sum %s on channel %d", elem->checksum,
+            COMMS_LOGFF( "added invite with sum %s on channel %d", elem->sb.buf,
                          elem->channelNo & CHANNEL_MASK );
             /* Let's let platform code decide whether to call sendMsg() . On
                Android creating a game with an invitation in its queue is always
@@ -1879,7 +1878,7 @@ printElem( MsgQueueElem* elem, void* closure )
 #endif
               , *iip, cbuf, elem->msgID
 #ifdef COMMS_CHECKSUM
-              , elem->checksum
+              , elem->sb.buf
 #endif
               );
     ++*iip;
@@ -1961,7 +1960,6 @@ freeElem( MPFORMAL MsgQueueElem* elem )
     XP_FREEP( mpool, &elem->smp.buf );
 #ifdef COMMS_CHECKSUM
     /* XP_LOGFF( "freeing msg with len %d, sum %s", elem->smp.len, elem->checksum ); */
-    XP_FREEP( mpool, &elem->checksum );
 #else
     /* XP_LOGFF( "freeing msg with len %d", elem->smp.len ); */
 #endif
@@ -2110,7 +2108,8 @@ sendMsg( const CommsCtxt* comms, XWEnv xwe, MsgQueueElem* elem,
     XP_Bool isInvite = IS_INVITE(elem);
 #ifdef COMMS_CHECKSUM
     COMMS_LOGFF( TAGFMT() "sending message on %s: id: %d; len: %d; sum: %s; isInvite: %s",
-                 TAGPRMS, cbuf, elem->msgID, elem->smp.len, elem->checksum, boolToStr(isInvite) );
+                 TAGPRMS, cbuf, elem->msgID, elem->smp.len, elem->sb.buf,
+                 boolToStr(isInvite) );
 #endif
 
     const CommsAddrRec* addrP = NULL;
@@ -2151,7 +2150,7 @@ sendMsg( const CommsCtxt* comms, XWEnv xwe, MsgQueueElem* elem,
                 }
 #ifdef COMMS_CHECKSUM
                 COMMS_LOGFF( TAGFMT() "sending msg with sum %s using typ %s", TAGPRMS,
-                             elem->checksum, ConnType2Str(typ) );
+                             elem->sb.buf, ConnType2Str(typ) );
 #endif
                 switch ( typ ) {
 #ifdef XWFEATURE_RELAY
@@ -2296,14 +2295,14 @@ comms_resendAll( CommsCtxt* comms, XWEnv xwe, CommsConnType filter, XP_Bool forc
                                                             head->createdStamp,
                                                             &rec->addr, typ,
                                                             comms->procs.closure );
-                            COMMS_LOGFF( "resent invite with sum %s", elem->checksum );
+                            COMMS_LOGFF( "resent invite with sum %s", elem->sb.buf );
                             ++count;
                             XP_ASSERT( !head->next );
                         } else {
                             count += (*comms->procs.sendMsgs)( xwe, head, comms->streamVersion,
                                                                &rec->addr, typ, gameid,
                                                                comms->procs.closure );
-                            COMMS_LOGFF( "resent msg with sum %s", elem->checksum );
+                            COMMS_LOGFF( "resent msg with sum %s", elem->sb.buf );
                         }
                     }
                 }
@@ -3094,11 +3093,11 @@ comms_checkIncomingStream( CommsCtxt* comms, XWEnv xwe, XWStreamCtxt* stream,
             state->len = stream_getSize( stream );
             // stream_getPtr pts at base, but sum excludes relay header
             const XP_U8* ptr = initialLen - state->len + stream_getPtr( stream );
-            XP_UCHAR* tmpsum = dutil_md5sum( comms->dutil, xwe, ptr, state->len );
-            XP_STRCAT( state->sum, tmpsum );
+            Md5SumBuf sb;
+            dutil_md5sum( comms->dutil, xwe, ptr, state->len, &sb );
+            XP_STRCAT( state->sum, sb.buf );
             COMMS_LOGFF( TAGFMT() "got message of len %d with sum %s",
                          TAGPRMS, state->len, state->sum );
-            XP_FREE( comms->mpool, tmpsum );
 #endif
             HeaderStuff stuff = {0};
             messageValid = stream_gotU16( stream, &stuff.flags );
@@ -4105,6 +4104,7 @@ relayConnect( CommsCtxt* comms, XWEnv xwe )
 static void
 listRecs( const CommsCtxt* comms, const char* msg )
 {
+    XP_USE(msg);
     COMMS_LOGFFV( "nrecs: %d", countAddrRecs( comms ) );
     int ii = 0;
     for ( AddressRecord* rec = comms->recs; !!rec; rec = rec->next ) {

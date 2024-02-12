@@ -223,10 +223,10 @@ smsproto_prepOutbound( SMSProto* state, XWEnv xwe, SMS_CMD cmd, XP_U32 gameID,
     pthread_mutex_lock( &state->mutex );
 
 #if defined DEBUG && defined COMMS_CHECKSUM
-    XP_UCHAR* checksum = dutil_md5sum( state->dutil, xwe, buf, buflen );
+    Md5SumBuf sb;
+    dutil_md5sum( state->dutil, xwe, buf, buflen, &sb );
     XP_LOGFF( "(cmd=%d, gameID=%d): len=%d, sum=%s, toPhone=%s", cmd,
-              gameID, buflen, checksum, toPhone );
-    XP_FREEP( state->mpool, &checksum );
+              gameID, buflen, sb.buf, toPhone );
 #endif
 
     ToPhoneRec* rec = getForPhone( state, toPhone, cmd != NONE );
@@ -304,9 +304,9 @@ smsproto_prepInbound( SMSProto* state, XWEnv xwe, const XP_UCHAR* fromPhone,
     XP_LOGFF( "len=%d, fromPhone=%s", len, fromPhone );
 
 #if defined DEBUG && defined COMMS_CHECKSUM
-    XP_UCHAR* checksum = dutil_md5sum( state->dutil, xwe, data, len );
-    XP_LOGFF( "(fromPhone=%s, len=%d); sum=%s", fromPhone, len, checksum );
-    XP_FREEP( state->mpool, &checksum );
+    Md5SumBuf sb;
+    dutil_md5sum( state->dutil, xwe, data, len, &sb );
+    XP_LOGFF( "(fromPhone=%s, len=%d); sum=%s", fromPhone, len, sb.buf );
 #endif
 
     SMSMsgArray* result = NULL;
@@ -440,9 +440,10 @@ logResult( const SMSProto* state, XWEnv xwe, const SMSMsgArray* result,
             if ( 0 == len ) {
                 XP_LOGFF( "%s() => datum[%d] len: 0", caller, ii );
             } else {
-                XP_UCHAR* checksum = dutil_md5sum( state->dutil, xwe, data, len );
-                XP_LOGFF( "%s() => datum[%d] sum: %s, len: %d", caller, ii, checksum, len );
-                XP_FREEP( state->mpool, &checksum );
+                Md5SumBuf sb;
+                dutil_md5sum( state->dutil, xwe, data, len, &sb );
+                XP_LOGFF( "%s() => datum[%d] sum: %s, len: %d", caller, ii,
+                          sb.buf, len );
             }
         }
     }

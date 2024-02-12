@@ -833,8 +833,9 @@ and_util_getDevUtilCtxt( XW_UtilCtxt* uc, XWEnv xwe )
 }
 
 #ifdef COMMS_CHECKSUM
-static XP_UCHAR*
-and_dutil_md5sum( XW_DUtilCtxt* duc, XWEnv xwe, const XP_U8* ptr, XP_U32 len )
+static void
+and_dutil_md5sum( XW_DUtilCtxt* duc, XWEnv xwe, const XP_U8* ptr, XP_U32 len,
+                  Md5SumBuf* sb )
 {
     /* will be signed in the java world, and negative is bad! */
     XP_ASSERT( (0x80000000 & len) == 0 );
@@ -842,9 +843,16 @@ and_dutil_md5sum( XW_DUtilCtxt* duc, XWEnv xwe, const XP_U8* ptr, XP_U32 len )
     JNIEnv* env = xwe;
     struct JNIUtilCtxt* jniutil = dutil->jniutil;
     jstring jsum = and_util_getMD5SumForBytes( jniutil, env, ptr, len );
-    XP_UCHAR* result = getStringCopy( MPPARM(duc->mpool) env, jsum );
-    deleteLocalRef( env, jsum );
-    return result;
+
+    if ( !!jsum ) {
+        const char* jchars = (*env)->GetStringUTFChars( env, jsum, NULL );
+        (void)XP_SNPRINTF( sb->buf, VSIZE(sb->buf), "%s", jchars );
+        (*env)->ReleaseStringUTFChars( env, jsum, jchars );
+        deleteLocalRef( env, jsum );
+    } else {
+        sb->buf[0] = '\0';
+    }
+
 }
 #endif
 
