@@ -44,7 +44,7 @@ public class PeerStatusView extends LinearLayout {
     private Context mContext;
     private boolean mFinished;
     private int mGameID;
-    private String mDevID;
+    private String mSelfDevID;
 
     public PeerStatusView( Context cx, AttributeSet as )
     {
@@ -55,7 +55,7 @@ public class PeerStatusView extends LinearLayout {
     public void configure( int gameID, String devID )
     {
         mGameID = gameID;
-        mDevID = devID;
+        mSelfDevID = devID;
         startThreadOnce();
     }
     
@@ -68,7 +68,7 @@ public class PeerStatusView extends LinearLayout {
 
     private void startThreadOnce()
     {
-        if ( mFinished && null != mDevID ) {
+        if ( mFinished && null != mSelfDevID ) {
             new Thread( new Runnable() {
                 @Override
                 public void run() {
@@ -84,7 +84,7 @@ public class PeerStatusView extends LinearLayout {
         JSONObject params = new JSONObject();
         try {
             params.put( "gid16", String.format("%X", mGameID) );
-            params.put( "devid", mDevID );
+            params.put( "devid", mSelfDevID );
 
             HttpURLConnection conn = NetUtils
                 .makeHttpMQTTConn( mContext, "peers" );
@@ -101,7 +101,11 @@ public class PeerStatusView extends LinearLayout {
                     String age = line.getString( "age" );
                     String name = XwJNI.kplr_nameForMqttDev( mqttID );
                     if ( null == name ) {
-                        name = mqttID;
+                        if ( mSelfDevID.equals(mqttID) ) {
+                            name = LocUtils.getString( mContext, R.string.selfName );
+                        } else {
+                            name = mqttID;
+                        }
                     }
                     lines.add( String.format( "%s: %s", name, age ) );
                 }

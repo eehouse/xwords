@@ -5,6 +5,10 @@
 
   <string name="dup_allscores_fmt">All scores: %1$s</string>
 
+  <!-- In Peer Status results, if my own device comes back (as it
+       should) and it isn't assigned a name in Known Players, use
+       this. -->
+  <string name="selfName">This device</string>
 
   <!-- Debug-only: menu to remove quashed marking from a game (in case
        the quashing was accidental) -->
