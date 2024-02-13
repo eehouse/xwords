@@ -115,6 +115,9 @@ struct XW_DUtilCtxt {
     pthread_mutex_t kpMutex;
 #endif
     VTableMgr* vtMgr;
+#ifdef DEBUG
+    XP_U32 magic;
+#endif
     MPSLOT
 };
 

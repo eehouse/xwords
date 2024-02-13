@@ -28,6 +28,16 @@
 #include "nli.h"
 #include "dbgutil.h"
 
+#ifdef DEBUG
+# define MAGIC_INITED 0x8283413F
+# define ASSERT_MAGIC() XP_ASSERT(dutil->magic == MAGIC_INITED)
+#else
+# define ASSERT_MAGIC()
+#endif
+
+#define LAST_REG_KEY FULL_KEY("device_last_reg")
+#define REG_INTERVAL_SECS 60    /* for now. :-) */
+
 static XWStreamCtxt*
 mkStream( XW_DUtilCtxt* dutil )
 {
@@ -583,4 +593,56 @@ dvc_parseMQTTPacket( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* topic,
         dutil_onCtrlReceived( dutil, xwe, buf, len );
     }
     LOG_RETURN_VOID();
+}
+
+static void
+registerIf( XW_DUtilCtxt* dutil, XWEnv xwe )
+{
+    XP_U32 prevNow;
+    XP_U32 len = sizeof(prevNow);
+    const XP_UCHAR* keys[] = { LAST_REG_KEY, NULL };
+    dutil_loadPtr( dutil, xwe, keys, &prevNow, &len );
+
+    XP_U32 now = dutil_getCurSeconds( dutil, xwe );
+    if ( prevNow + REG_INTERVAL_SECS < now ) {
+        XP_LOGFF( "been long enough; trying to register" );
+        cJSON* params = cJSON_CreateObject();
+
+        MQTTDevID myID;
+        dvc_getMQTTDevID( dutil, xwe, &myID );
+        XP_UCHAR tmp[32];
+        formatMQTTDevID( &myID, tmp, VSIZE(tmp) );
+        cJSON_AddStringToObject( params, "devid", tmp );
+
+        cJSON_AddStringToObject( params, "gitrev", GITREV_SHORT );
+        cJSON_AddStringToObject( params, "os", "Linux" );
+        /* // PENDING remove me in favor of SDK_INT */
+        cJSON_AddStringToObject( params, "vers", "DEBUG" );
+        /* params.put( "versI", Build.VERSION.SDK_INT ); */
+        /* params.put( "vrntCode", BuildConfig.VARIANT_CODE ); */
+        /* params.put( "vrntName", BuildConfig.VARIANT_NAME ); */
+#ifdef DEBUG
+        cJSON_AddBoolToObject( params, "dbg", XP_TRUE );
+#endif
+        char* loc = getenv("LANG");
+        cJSON_AddStringToObject( params, "loc", loc );
+        /* params.put( "tmpKey", getTmpKey(mContext) ); */
+        /* params.put( "frstV", Utils.getFirstVersion( mContext ) ); */
+
+        cJSON_AddNumberToObject( params, "myNow", now );
+
+        dutil_sendViaWeb( dutil, xwe, "register", params );
+        cJSON_Delete( params );
+
+        // dutil_storePtr( dutil, xwe, keys, &now, sizeof(now) );
+    }
+} /* registerIf */
+
+void
+dvc_init( XW_DUtilCtxt* dutil, XWEnv xwe )
+{
+    LOG_FUNC();
+    XP_ASSERT( 00 == dutil->magic );
+    dutil->magic = MAGIC_INITED;
+    registerIf( dutil, xwe );
 }

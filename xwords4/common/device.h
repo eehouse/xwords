@@ -59,4 +59,8 @@ void dvc_makeMQTTNoSuchGames( XW_DUtilCtxt* dutil, XWEnv xwe,
                               XP_U32 gameID );
 void dvc_parseMQTTPacket( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* topic,
                           const XP_U8* buf, XP_U16 len );
+
+/* All platforms need to call this shortly after setting up their XW_DUtilCtxt */
+void dvc_init( XW_DUtilCtxt* dutil, XWEnv xwe );
+
 #endif

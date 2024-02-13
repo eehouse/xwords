@@ -3371,6 +3371,8 @@ main( int argc, char** argv )
 
         XP_ASSERT( !!mainParams.dbName );
         mainParams.pDb = gdb_open( mainParams.dbName );
+
+        dvc_init( mainParams.dutil, NULL_XWE );
         
         if ( mainParams.useCurses ) {
             /* if ( mainParams.needsNewGame ) { */

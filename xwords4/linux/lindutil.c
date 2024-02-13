@@ -20,6 +20,7 @@
 #include <curl/curl.h>
 
 #include "dutil.h"
+#include "device.h"
 #include "mempool.h"
 #include "knownplyr.h"
 #include "lindutil.h"
@@ -96,8 +97,8 @@ linux_dutil_notifyPause( XW_DUtilCtxt* XP_UNUSED(duc), XWEnv XP_UNUSED(xwe),
                          const XP_UCHAR* XP_UNUSED_DBG(name),
                          const XP_UCHAR* XP_UNUSED_DBG(msg) )
 {
-    XP_LOGF( "%s(id=%d, turn=%d, name=%s, typ=%d, %s)", __func__, gameID, pauser,
-             name, pauseTyp, msg );
+    XP_LOGFF( "(id=%d, turn=%d, name=%s, typ=%d, %s)", gameID, pauser,
+              name, pauseTyp, msg );
 }
 
 static XP_Bool
@@ -131,7 +132,7 @@ linux_dutil_onDupTimerChanged( XW_DUtilCtxt* XP_UNUSED(duc), XWEnv XP_UNUSED(xwe
                                XP_U32 XP_UNUSED_DBG(oldVal),
                                XP_U32 XP_UNUSED_DBG(newVal) )
 {
-    XP_LOGF( "%s(id=%d, oldVal=%d, newVal=%d)", __func__, gameID, oldVal, newVal );
+    XP_LOGFF( "(id=%d, oldVal=%d, newVal=%d)", gameID, oldVal, newVal );
 }
 
 static void
@@ -238,6 +239,7 @@ sendViaThreadProc( void* arg )
     snprintf( url, sizeof(url), "%s://%s/xw4/api/v1/%s", proto,
               params->connInfo.mqtt.hostName, svdp->api );
     curl_easy_setopt( curl, CURLOPT_URL, url );
+    XP_LOGFF( "url: %s", url );
 
     curl_easy_setopt( curl, CURLOPT_POSTFIELDS, svdp->pstr );
     curl_easy_setopt( curl, CURLOPT_POSTFIELDSIZE, -1L );
@@ -449,7 +451,7 @@ linux_dutil_getUserString( XW_DUtilCtxt* XP_UNUSED(uc),
         return "%s: %d points\n";
 
     default:
-        XP_LOGF( "%s(code=%d)", __func__, code );
+        XP_LOGFF( "(code=%d)", code );
         return (XP_UCHAR*)"unknown code";
     }
 } /* linux_dutil_getUserString */
@@ -510,7 +512,7 @@ linux_dutil_loadPtr( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe),
         *lenp = 0;              /* doesn't exist */
     }
 
-    XP_LOGF( "%s(key=%s) => len: %d", __func__, keys[0], *lenp );
+    XP_LOGFF( "(key=%s) => len: %d", keys[0], *lenp );
 }
 
 static void
@@ -536,7 +538,7 @@ linux_dutil_phoneNumbersSame( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe),
     LOG_FUNC();
     XP_USE( duc );
     XP_Bool result = 0 == strcmp( p1, p2 );
-    XP_LOGF( "%s(%s, %s) => %d", __func__, p1, p2, result );
+    XP_LOGFF( "(%s, %s) => %d", p1, p2, result );
     return result;
 }
 #endif
@@ -558,12 +560,12 @@ linux_dutil_deviceRegistered( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe), DevIDType
     LaunchParams* params = (LaunchParams*)duc->closure;
     switch( typ ) {
     case ID_TYPE_NONE: /* error case */
-        XP_LOGF( "%s: id rejected", __func__ );
+        XP_LOGFF( "id rejected" );
         params->lDevID = NULL;
         break;
     case ID_TYPE_RELAY:
         if ( !!params->pDb && 0 < strlen( idRelay ) ) {
-            XP_LOGF( "%s: new id: %s", __func__, idRelay );
+            XP_LOGFF( "new id: %s", idRelay );
             gdb_store( params->pDb, KEY_RDEVID, idRelay );
         }
         break;
