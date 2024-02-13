@@ -145,6 +145,22 @@ public class NetUtils {
         context.startActivity( intent );
     }
 
+    public static void sendViaWeb( final Context context, final String api,
+                                   final String jsonParams )
+    {
+        Log.d( TAG, "sendViaWeb(api: %s, params: %s)", api, jsonParams );
+
+        new Thread( new Runnable() {
+                @Override
+                public void run() {
+                    HttpURLConnection conn = makeHttpMQTTConn( context, api );
+                    boolean directJson = true;
+                    String result = runConn( conn, jsonParams, directJson );
+                    Log.d( TAG, "sendViaWeb(api: %s): got result '%s'", api, result );
+                }
+            } ).start();
+    }
+
     public static HttpURLConnection makeHttpMQTTConn( Context context,
                                                       String proc )
     {
@@ -159,8 +175,8 @@ public class NetUtils {
         return makeHttpConn( context, url, proc );
     }
 
-    private static HttpURLConnection makeHttpConn( Context context,
-                                                    String path, String proc )
+    private static HttpURLConnection makeHttpConn( Context context, String path,
+                                                   String proc )
     {
         HttpURLConnection result = null;
         try {

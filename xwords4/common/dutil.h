@@ -102,10 +102,6 @@ typedef struct _DUtilVtable {
     void (*m_dutil_onCtrlReceived)( XW_DUtilCtxt* duc, XWEnv xwe, const XP_U8* buf, XP_U16 len );
     void (*m_dutil_onGameGoneReceived)( XW_DUtilCtxt* duc, XWEnv xwe, XP_U32 gameID,
                                        const CommsAddrRec* from );
-
-    void (*m_dutil_ackMQTTMsg)( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* topic,
-                                XP_U32 gameID, const MQTTDevID* senderID,
-                                const XP_U8* msg, XP_U16 len );
     void (*m_dutil_sendViaWeb)( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* api,
                                 const cJSON* params );
 } DUtilVtable;
@@ -185,9 +181,6 @@ void dutil_super_init( MPFORMAL XW_DUtilCtxt* dutil );
     (duc)->vtable.m_dutil_onCtrlReceived((duc),(xwe),(buf),(len))
 #define dutil_onGameGoneReceived(duc, xwe, gameID, from)         \
     (duc)->vtable.m_dutil_onGameGoneReceived((duc),(xwe),(gameID),(from))
-#define dutil_ackMQTTMsg( duc, xwe, topic, gameID, senderID, msg, len ) \
-    (duc)->vtable.m_dutil_ackMQTTMsg( (duc), (xwe), (topic), (gameID),  \
-                                      (senderID), (msg), (len) )
 #define dutil_sendViaWeb( duc, xwe, api, params )                       \
     (duc)->vtable.m_dutil_sendViaWeb((duc), (xwe), (api), (params))
 #endif

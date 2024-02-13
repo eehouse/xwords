@@ -507,9 +507,7 @@ ackMQTTMsg( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* topic,
     dutil_md5sum( dutil, xwe, buf, len, &sb );
     cJSON_AddStringToObject( params, "sum", sb.buf );
 
-    XP_UCHAR gid16[16];
-    XP_SNPRINTF( gid16, VSIZE(gid16), "%08X", gameID );
-    cJSON_AddStringToObject( params, "gid16", gid16 );
+    cJSON_AddNumberToObject( params, "gid", gameID );
 
     dutil_sendViaWeb( dutil, xwe, "ack", params );
     cJSON_Delete( params );

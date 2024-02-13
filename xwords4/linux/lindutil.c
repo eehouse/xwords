@@ -202,59 +202,59 @@ linux_dutil_onGameGoneReceived( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe),
     }
 }
 
-typedef struct _AckData {
-    XW_DUtilCtxt* duc;
-    XP_U8* msg;
-    XP_U16 len;
-    gchar* topic;
-    XP_U32 gameID;
-} AckData;
+/* typedef struct _AckData { */
+/*     XW_DUtilCtxt* duc; */
+/*     XP_U8* msg; */
+/*     XP_U16 len; */
+/*     gchar* topic; */
+/*     XP_U32 gameID; */
+/* } AckData; */
 
-static void
-sendViaCurl( LinDUtilCtxt* lduc, AckData* adp )
-{
-    LaunchParams* params = (LaunchParams*)lduc->super.closure;
+/* static void */
+/* sendViaCurl( LinDUtilCtxt* lduc, AckData* adp ) */
+/* { */
+/*     LaunchParams* params = (LaunchParams*)lduc->super.closure; */
 
-    CURLcode res = curl_global_init(CURL_GLOBAL_DEFAULT);
-    XP_ASSERT(res == CURLE_OK);
-    CURL* curl = curl_easy_init();
+/*     CURLcode res = curl_global_init(CURL_GLOBAL_DEFAULT); */
+/*     XP_ASSERT(res == CURLE_OK); */
+/*     CURL* curl = curl_easy_init(); */
 
-    char url[128];
-    snprintf( url, sizeof(url), "https://%s/xw4/api/v1/ack",
-              params->connInfo.mqtt.hostName );
-    curl_easy_setopt( curl, CURLOPT_URL, url );
+/*     char url[128]; */
+/*     snprintf( url, sizeof(url), "https://%s/xw4/api/v1/ack", */
+/*               params->connInfo.mqtt.hostName ); */
+/*     curl_easy_setopt( curl, CURLOPT_URL, url ); */
 
-    gchar* sum = g_compute_checksum_for_data( G_CHECKSUM_MD5, adp->msg, adp->len );
-    gchar* json
-        = g_strdup_printf("{\"topic\": \"%s\", \"gid\": %u, \"sum\": \"%s\"}",
-                          adp->topic, adp->gameID, sum );
-    // XP_LOGFF( "json: %s", json );
-    g_free( sum );
-    curl_easy_setopt( curl, CURLOPT_POSTFIELDS, json );
-    curl_easy_setopt( curl, CURLOPT_POSTFIELDSIZE, -1L );
+/*     gchar* sum = g_compute_checksum_for_data( G_CHECKSUM_MD5, adp->msg, adp->len ); */
+/*     gchar* json */
+/*         = g_strdup_printf("{\"topic\": \"%s\", \"gid\": %u, \"sum\": \"%s\"}", */
+/*                           adp->topic, adp->gameID, sum ); */
+/*     // XP_LOGFF( "json: %s", json ); */
+/*     g_free( sum ); */
+/*     curl_easy_setopt( curl, CURLOPT_POSTFIELDS, json ); */
+/*     curl_easy_setopt( curl, CURLOPT_POSTFIELDSIZE, -1L ); */
 
-    struct curl_slist *headers = NULL;
-    headers = curl_slist_append(headers, "Expect:");
-    headers = curl_slist_append(headers, "Content-Type: application/json");
-    curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+/*     struct curl_slist *headers = NULL; */
+/*     headers = curl_slist_append(headers, "Expect:"); */
+/*     headers = curl_slist_append(headers, "Content-Type: application/json"); */
+/*     curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers); */
 
-    res = curl_easy_perform(curl);
-    XP_Bool success = res == CURLE_OK;
-    /* XP_LOGFF( "curl_easy_perform() => %d", res ); */
-    if ( ! success ) {
-        XP_LOGFF( "curl_easy_perform() failed: %s", curl_easy_strerror(res));
-    }
+/*     res = curl_easy_perform(curl); */
+/*     XP_Bool success = res == CURLE_OK; */
+/*     /\* XP_LOGFF( "curl_easy_perform() => %d", res ); *\/ */
+/*     if ( ! success ) { */
+/*         XP_LOGFF( "curl_easy_perform() failed: %s", curl_easy_strerror(res)); */
+/*     } */
 
-    curl_slist_free_all( headers );
-    curl_easy_cleanup( curl );
-    curl_global_cleanup();
-    g_free( json );
+/*     curl_slist_free_all( headers ); */
+/*     curl_easy_cleanup( curl ); */
+/*     curl_global_cleanup(); */
+/*     g_free( json ); */
 
-    /* g_idle_add( nuke_ack_data, ad ); */
-    g_free( adp->topic );
-    g_free( adp->msg );
-    g_free( adp );
-}
+/*     /\* g_idle_add( nuke_ack_data, ad ); *\/ */
+/*     g_free( adp->topic ); */
+/*     g_free( adp->msg ); */
+/*     g_free( adp ); */
+/* } */
 
 #ifdef ACK_IN_BACKGROUND
 static void*
@@ -284,32 +284,32 @@ sendAckThreadProc( void* arg )
 }
 #endif
 
-static void
-linux_dutil_ackMQTTMsg( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe),
-                        const XP_UCHAR* topic, XP_U32 gameID,
-                        const MQTTDevID* XP_UNUSED(senderID),
-                        const XP_U8* msg, XP_U16 len )
-{
-    AckData ad = {
-        .duc = duc,
-        .topic = g_strdup( topic ),
-        .gameID = gameID,
-        .len = len,
-        .msg = g_memdup2( msg, len ),
-    };
-    AckData* adp = g_memdup2( &ad, sizeof(ad) );
+/* static void */
+/* linux_dutil_ackMQTTMsg( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe), */
+/*                         const XP_UCHAR* topic, XP_U32 gameID, */
+/*                         const MQTTDevID* XP_UNUSED(senderID), */
+/*                         const XP_U8* msg, XP_U16 len ) */
+/* { */
+/*     AckData ad = { */
+/*         .duc = duc, */
+/*         .topic = g_strdup( topic ), */
+/*         .gameID = gameID, */
+/*         .len = len, */
+/*         .msg = g_memdup2( msg, len ), */
+/*     }; */
+/*     AckData* adp = g_memdup2( &ad, sizeof(ad) ); */
 
-    LinDUtilCtxt* lduc = (LinDUtilCtxt*)duc;
-#ifdef ACK_IN_BACKGROUND
-    pthread_mutex_lock( &lduc->ackMutex );
-    lduc->ackList = g_list_append( lduc->ackList, adp );
-    pthread_cond_signal( &lduc->ackCondVar );
-    pthread_mutex_unlock( &lduc->ackMutex );
-#else
-    sendViaCurl( lduc, adp );
-#endif
-    /* LOG_RETURN_VOID(); */
-}
+/*     LinDUtilCtxt* lduc = (LinDUtilCtxt*)duc; */
+/* #ifdef ACK_IN_BACKGROUND */
+/*     pthread_mutex_lock( &lduc->ackMutex ); */
+/*     lduc->ackList = g_list_append( lduc->ackList, adp ); */
+/*     pthread_cond_signal( &lduc->ackCondVar ); */
+/*     pthread_mutex_unlock( &lduc->ackMutex ); */
+/* #else */
+/*     sendViaCurl( lduc, adp ); */
+/* #endif */
+/*     /\* LOG_RETURN_VOID(); *\/ */
+/* } */
 
 static void
 linux_dutil_sendViaWeb( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* api,
@@ -371,7 +371,6 @@ linux_dutils_init( MPFORMAL VTableMgr* vtMgr, void* closure )
     SET_PROC(onMessageReceived);
     SET_PROC(onCtrlReceived);
     SET_PROC(onGameGoneReceived);
-    SET_PROC(ackMQTTMsg);
     SET_PROC(sendViaWeb);
 
 # undef SET_PROC

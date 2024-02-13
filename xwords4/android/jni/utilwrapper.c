@@ -970,22 +970,16 @@ and_dutil_onGameGoneReceived( XW_DUtilCtxt* duc, XWEnv xwe, XP_U32 gameID,
 }
 
 static void
-and_dutil_ackMQTTMsg( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* topic,
-                      XP_U32 gameID, const MQTTDevID* senderID, const XP_U8* msg,
-                      XP_U16 len )
+and_dutil_sendViaWeb( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* api,
+                      const cJSON* params )
 {
-    DUTIL_CBK_HEADER( "ackMQTTMsg", "(Ljava/lang/String;ILjava/lang/String;[B)V" );
-
-    XP_UCHAR tmp[32];
-    formatMQTTDevID( senderID, tmp, VSIZE(tmp) );
-    jstring jTopic = (*env)->NewStringUTF( env, topic );
-    jstring jdevid = (*env)->NewStringUTF( env, tmp );
-    jbyteArray jmsg = makeByteArray( env, len, (const jbyte*)msg );
-
-    (*env)->CallVoidMethod( env, dutil->jdutil, mid, jTopic, gameID,
-                            jdevid, jmsg );
-
-    deleteLocalRefs( env, jdevid, jmsg, DELETE_NO_REF );
+    DUTIL_CBK_HEADER( "sendViaWeb", "(Ljava/lang/String;Ljava/lang/String;)V" );
+    char* pstr = cJSON_PrintUnformatted( params );
+    jstring jParams = (*env)->NewStringUTF( env, pstr );
+    jstring jApi = (*env)->NewStringUTF( env, api );
+    (*env)->CallVoidMethod( env, dutil->jdutil, mid, jApi, jParams );
+    deleteLocalRefs( env, jApi, jParams, DELETE_NO_REF );
+    free( pstr );
     DUTIL_CBK_TAIL();
 }
 
@@ -1145,7 +1139,7 @@ makeDUtil( MPFORMAL JNIEnv* env,
     SET_DPROC(onCtrlReceived);
 
     SET_DPROC(onGameGoneReceived);
-    SET_DPROC(ackMQTTMsg);
+    SET_DPROC(sendViaWeb);
 
 #undef SET_DPROC
 

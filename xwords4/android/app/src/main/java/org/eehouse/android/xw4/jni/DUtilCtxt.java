@@ -38,6 +38,7 @@ import org.eehouse.android.xw4.GamesListDelegate;
 import org.eehouse.android.xw4.Log;
 import org.eehouse.android.xw4.MQTTUtils;
 import org.eehouse.android.xw4.NetLaunchInfo;
+import org.eehouse.android.xw4.NetUtils;
 import org.eehouse.android.xw4.R;
 import org.eehouse.android.xw4.Utils;
 import org.eehouse.android.xw4.XWApp;
@@ -333,6 +334,11 @@ public class DUtilCtxt {
         DupeModeTimer.timerChanged( m_context, gameID, newVal );
     }
 
+    public void sendViaWeb( String api, String jsonParams )
+    {
+        NetUtils.sendViaWeb( m_context, api, jsonParams );
+    }
+
     public void onInviteReceived( NetLaunchInfo nli )
     {
         // Log.d( TAG, "onInviteReceived(%s)", nli );
@@ -357,10 +363,5 @@ public class DUtilCtxt {
     public void onCtrlReceived( byte[] msg )
     {
         MQTTUtils.handleCtrlReceived( m_context, msg );
-    }
-
-    public void ackMQTTMsg( String topic, int gameID, String senderID, byte[] msg )
-    {
-        MQTTUtils.ackMessage( m_context, topic, gameID, senderID, msg );
     }
 }

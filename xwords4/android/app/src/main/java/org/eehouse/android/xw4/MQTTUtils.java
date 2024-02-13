@@ -588,25 +588,6 @@ public class MQTTUtils extends Thread
         addToSendQueue( context, tap );
     }
 
-    public static void ackMessage( Context context, String topic, int gameID,
-                                   String senderDevID, byte[] payload )
-    {
-        String sum = Utils.getMD5SumFor( payload );
-        JSONObject params = new JSONObject();
-        try {
-            params.put( "topic", topic );
-            params.put( "gid", gameID );
-            params.put( "sum", sum );
-
-            HttpURLConnection conn
-                = NetUtils.makeHttpMQTTConn( context, "ack" );
-            String resStr = NetUtils.runConn( conn, params, true );
-            Log.d( TAG, "runConn(ack) => %s", resStr );
-        } catch ( JSONException je ) {
-            Log.e( TAG, "ackMessage() ex: %s", je );
-        }
-    }
-
     // MqttCallbackExtended
     @Override
     public void connectComplete( boolean reconnect, String serverURI )
