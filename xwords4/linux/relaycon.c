@@ -199,6 +199,7 @@ mkJsonParams( CURL* curl, va_list ap )
 static XP_Bool
 runWitCurl( RelayTask* task, const gchar* proc, ...)
 {
+    XP_ASSERT(0);               /* should no longer be getting called */
     CURLcode res = curl_global_init(CURL_GLOBAL_DEFAULT);
     XP_ASSERT(res == CURLE_OK);
     CURL* curl = curl_easy_init();

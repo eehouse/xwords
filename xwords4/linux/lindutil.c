@@ -37,20 +37,9 @@
 #include "mqttcon.h"
 
 
-/* Define ACK_IN_BACKGROUND and you'll crash inside curl_easy_perform(). No
-   idea why, and no time to debug it now.
-*/
-// #define ACK_IN_BACKGROUND
 
 typedef struct _LinDUtilCtxt {
     XW_DUtilCtxt super;
-
-#ifdef ACK_IN_BACKGROUND
-    pthread_t ackThread;
-    pthread_mutex_t ackMutex;
-    pthread_cond_t ackCondVar;
-    GList* ackList;
-#endif
 } LinDUtilCtxt;
 
 static XP_U32 linux_dutil_getCurSeconds( XW_DUtilCtxt* duc, XWEnv xwe );
@@ -202,124 +191,100 @@ linux_dutil_onGameGoneReceived( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe),
     }
 }
 
-/* typedef struct _AckData { */
-/*     XW_DUtilCtxt* duc; */
-/*     XP_U8* msg; */
-/*     XP_U16 len; */
-/*     gchar* topic; */
-/*     XP_U32 gameID; */
-/* } AckData; */
+typedef struct _SendViaData {
+    LinDUtilCtxt* lduc;
+    char* pstr;
+    char* api;
+} SendViaData;
 
-/* static void */
-/* sendViaCurl( LinDUtilCtxt* lduc, AckData* adp ) */
-/* { */
-/*     LaunchParams* params = (LaunchParams*)lduc->super.closure; */
+typedef struct _FetchData {
+    char* payload;
+    size_t size;
+} FetchData;
 
-/*     CURLcode res = curl_global_init(CURL_GLOBAL_DEFAULT); */
-/*     XP_ASSERT(res == CURLE_OK); */
-/*     CURL* curl = curl_easy_init(); */
-
-/*     char url[128]; */
-/*     snprintf( url, sizeof(url), "https://%s/xw4/api/v1/ack", */
-/*               params->connInfo.mqtt.hostName ); */
-/*     curl_easy_setopt( curl, CURLOPT_URL, url ); */
-
-/*     gchar* sum = g_compute_checksum_for_data( G_CHECKSUM_MD5, adp->msg, adp->len ); */
-/*     gchar* json */
-/*         = g_strdup_printf("{\"topic\": \"%s\", \"gid\": %u, \"sum\": \"%s\"}", */
-/*                           adp->topic, adp->gameID, sum ); */
-/*     // XP_LOGFF( "json: %s", json ); */
-/*     g_free( sum ); */
-/*     curl_easy_setopt( curl, CURLOPT_POSTFIELDS, json ); */
-/*     curl_easy_setopt( curl, CURLOPT_POSTFIELDSIZE, -1L ); */
-
-/*     struct curl_slist *headers = NULL; */
-/*     headers = curl_slist_append(headers, "Expect:"); */
-/*     headers = curl_slist_append(headers, "Content-Type: application/json"); */
-/*     curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers); */
-
-/*     res = curl_easy_perform(curl); */
-/*     XP_Bool success = res == CURLE_OK; */
-/*     /\* XP_LOGFF( "curl_easy_perform() => %d", res ); *\/ */
-/*     if ( ! success ) { */
-/*         XP_LOGFF( "curl_easy_perform() failed: %s", curl_easy_strerror(res)); */
-/*     } */
-
-/*     curl_slist_free_all( headers ); */
-/*     curl_easy_cleanup( curl ); */
-/*     curl_global_cleanup(); */
-/*     g_free( json ); */
-
-/*     /\* g_idle_add( nuke_ack_data, ad ); *\/ */
-/*     g_free( adp->topic ); */
-/*     g_free( adp->msg ); */
-/*     g_free( adp ); */
-/* } */
-
-#ifdef ACK_IN_BACKGROUND
-static void*
-sendAckThreadProc( void* arg )
+static size_t
+curl_callback( void *contents, size_t size, size_t nmemb, void *userp )
 {
-    LOG_FUNC();
-    LinDUtilCtxt* lduc = (LinDUtilCtxt*)arg;
+    size_t realsize = size * nmemb;
+    FetchData* fdp = (FetchData*)userp;
+    XP_LOGFF( "(realsize: %zu)", realsize );
 
-    for ( ; ; ) {
-        XP_LOGFF( "top of loop" );
-        pthread_mutex_lock( &lduc->ackMutex );
-        while ( 0 == g_list_length(lduc->ackList) ) {
-            pthread_cond_wait( &lduc->ackCondVar, &lduc->ackMutex );
-        }
-        GList* head = lduc->ackList;
-        lduc->ackList = g_list_remove_link( lduc->ackList, lduc->ackList );
-        AckData* adp = (AckData*)head->data;
-        g_list_free( head );
-        pthread_mutex_unlock( &lduc->ackMutex );
+    fdp->payload = (char *) realloc(fdp->payload, fdp->size + realsize + 1);
+    memcpy(&(fdp->payload[fdp->size]), contents, realsize);
+    fdp->size += realsize;
+    fdp->payload[fdp->size] = 0;
+    return realsize;
+}
 
-        sendViaCurl( lduc, adp );
-        XP_LOGFF( "bottom of loop" );
+static void*
+sendViaThreadProc( void* arg )
+{
+    SendViaData* svdp = (SendViaData*)arg;
+
+    const LaunchParams* params = (LaunchParams*)svdp->lduc->super.closure;
+
+    XP_LOGFF( "(api: %s, json: %s)", svdp->api, svdp->pstr );
+
+    CURLcode res = curl_global_init(CURL_GLOBAL_DEFAULT); /* ok to call multiple times */
+    XP_ASSERT(res == CURLE_OK);
+
+    CURL* curl = curl_easy_init();
+
+    char url[128];
+    /* Don't use https. Doing so triggers a race condition/crash in openssl as
+       called by curl. See https://curl.se/libcurl/c/threaded-ssl.html (which
+       has a fix to allow using https, but I'm to lazy to work it out now.) */
+    const char* proto = "http";
+    snprintf( url, sizeof(url), "%s://%s/xw4/api/v1/%s", proto,
+              params->connInfo.mqtt.hostName, svdp->api );
+    curl_easy_setopt( curl, CURLOPT_URL, url );
+
+    curl_easy_setopt( curl, CURLOPT_POSTFIELDS, svdp->pstr );
+    curl_easy_setopt( curl, CURLOPT_POSTFIELDSIZE, -1L );
+
+    struct curl_slist *headers = NULL;
+    headers = curl_slist_append(headers, "Expect:");
+    headers = curl_slist_append(headers, "Content-Type: application/json");
+    curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+
+    FetchData fd = {0};
+
+    curl_easy_setopt( curl, CURLOPT_WRITEFUNCTION, curl_callback );
+    curl_easy_setopt( curl, CURLOPT_WRITEDATA, (void *) &fd );
+
+    res = curl_easy_perform( curl );
+    if ( res != CURLE_OK ) {
+        XP_LOGFF( "curl_easy_perform() failed: %s", curl_easy_strerror(res));
+    } else {
+        XP_LOGFF( "got buffer: %s", fd.payload );
     }
 
-    LOG_RETURN_VOID();
+    curl_slist_free_all( headers );
+    curl_easy_cleanup( curl );
+
+    free( svdp->pstr );
+    free( svdp->api );
+    free( svdp );
     return NULL;
 }
-#endif
-
-/* static void */
-/* linux_dutil_ackMQTTMsg( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe), */
-/*                         const XP_UCHAR* topic, XP_U32 gameID, */
-/*                         const MQTTDevID* XP_UNUSED(senderID), */
-/*                         const XP_U8* msg, XP_U16 len ) */
-/* { */
-/*     AckData ad = { */
-/*         .duc = duc, */
-/*         .topic = g_strdup( topic ), */
-/*         .gameID = gameID, */
-/*         .len = len, */
-/*         .msg = g_memdup2( msg, len ), */
-/*     }; */
-/*     AckData* adp = g_memdup2( &ad, sizeof(ad) ); */
-
-/*     LinDUtilCtxt* lduc = (LinDUtilCtxt*)duc; */
-/* #ifdef ACK_IN_BACKGROUND */
-/*     pthread_mutex_lock( &lduc->ackMutex ); */
-/*     lduc->ackList = g_list_append( lduc->ackList, adp ); */
-/*     pthread_cond_signal( &lduc->ackCondVar ); */
-/*     pthread_mutex_unlock( &lduc->ackMutex ); */
-/* #else */
-/*     sendViaCurl( lduc, adp ); */
-/* #endif */
-/*     /\* LOG_RETURN_VOID(); *\/ */
-/* } */
 
 static void
-linux_dutil_sendViaWeb( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* api,
-                        const cJSON* params )
+linux_dutil_sendViaWeb( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe),
+                        const XP_UCHAR* api, const cJSON* json )
 {
-    XP_USE(duc);
-    XP_USE(xwe);
-    char* pstr = cJSON_PrintUnformatted( params );
-    XP_LOGFF( "(api: %s, params: %s)", api, pstr );
-    free( pstr );
+    LinDUtilCtxt* lduc = (LinDUtilCtxt*)duc;
+
+    SendViaData svd = {
+        .lduc = lduc,
+        .pstr = cJSON_PrintUnformatted( json ),
+        .api = g_strdup(api),
+    };
+    SendViaData* svdp = malloc( sizeof(*svdp) );
+    *svdp = svd;
+
+    pthread_t thrd;
+    (void)pthread_create( &thrd, NULL, sendViaThreadProc, svdp );
+    pthread_detach( thrd );
 }
 
 XW_DUtilCtxt*
