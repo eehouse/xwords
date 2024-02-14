@@ -102,6 +102,8 @@ typedef struct _DUtilVtable {
     void (*m_dutil_onCtrlReceived)( XW_DUtilCtxt* duc, XWEnv xwe, const XP_U8* buf, XP_U16 len );
     void (*m_dutil_onGameGoneReceived)( XW_DUtilCtxt* duc, XWEnv xwe, XP_U32 gameID,
                                        const CommsAddrRec* from );
+    /* Return platform-specific registration keys->values */
+    cJSON* (*m_dutil_getRegValues)( XW_DUtilCtxt* duc, XWEnv xwe );
     void (*m_dutil_sendViaWeb)( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* api,
                                 const cJSON* params );
 } DUtilVtable;
@@ -186,4 +188,8 @@ void dutil_super_init( MPFORMAL XW_DUtilCtxt* dutil );
     (duc)->vtable.m_dutil_onGameGoneReceived((duc),(xwe),(gameID),(from))
 #define dutil_sendViaWeb( duc, xwe, api, params )                       \
     (duc)->vtable.m_dutil_sendViaWeb((duc), (xwe), (api), (params))
+
+#define dutil_getRegValues( duc, xwe ) \
+    (duc)->vtable.m_dutil_getRegValues( (duc), (xwe) )
+
 #endif

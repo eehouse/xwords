@@ -22,9 +22,13 @@ package org.eehouse.android.xw4.jni;
 
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.telephony.PhoneNumberUtils;
 
 import java.util.Arrays;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import org.eehouse.android.xw4.Assert;
 import org.eehouse.android.xw4.BuildConfig;
@@ -337,6 +341,25 @@ public class DUtilCtxt {
     public void sendViaWeb( String api, String jsonParams )
     {
         NetUtils.sendViaWeb( m_context, api, jsonParams );
+    }
+
+    public String getRegValues()
+    {
+        String result;
+        try {
+            JSONObject params = new JSONObject();
+            params.put( "os", Build.MODEL );
+            params.put( "vers", Build.VERSION.RELEASE );
+            params.put( "versI", Build.VERSION.SDK_INT );
+            params.put( "vrntCode", BuildConfig.VARIANT_CODE );
+            params.put( "vrntName", BuildConfig.VARIANT_NAME );
+            params.put( "loc", LocUtils.getCurLocale( m_context ) );
+            result = params.toString();
+        } catch ( JSONException je ) {
+            Log.e( TAG, "getRegValues() ex: %s", je );
+            result = "{}";
+        }
+        return result;
     }
 
     public void onInviteReceived( NetLaunchInfo nli )

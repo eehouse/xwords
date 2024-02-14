@@ -388,72 +388,72 @@ public class MQTTUtils extends Thread
             clearInstance();
         }
 
-        registerOnce();
+        // registerOnce();
     }
 
-    private void registerOnce()
-    {
-        if ( 0 == sNextReg ) {
-            sNextReg = DBUtils.getLongFor( mContext, KEY_NEXT_REG, 1 );
-            sLastRev = DBUtils.getStringFor( mContext, KEY_LAST_WRITE, "" );
-        }
-        long now = Utils.getCurSeconds();
-        Log.d( TAG, "registerOnce(): now: %d; nextReg: %d", now, sNextReg );
-        String revString = BuildConfig.GIT_REV + ':' + BuildConfig.VARIANT_NAME;
-        if ( now > sNextReg || ! revString.equals(sLastRev) ) {
-            try {
-                JSONObject params = new JSONObject();
-                params.put( "devid", mDevID );
-                params.put( "gitrev", BuildConfig.GIT_REV );
-                params.put( "os", Build.MODEL );
-                // PENDING remove me in favor of SDK_INT
-                params.put( "vers", Build.VERSION.RELEASE );
-                params.put( "versI", Build.VERSION.SDK_INT );
-                params.put( "vrntCode", BuildConfig.VARIANT_CODE );
-                params.put( "vrntName", BuildConfig.VARIANT_NAME );
-                if ( BuildConfig.DEBUG ) {
-                    params.put( "dbg", true );
-                }
-                params.put( "myNow", now );
-                params.put( "loc", LocUtils.getCurLocale( mContext ) );
-                params.put( "tmpKey", getTmpKey(mContext) );
-                params.put( "frstV", Utils.getFirstVersion( mContext ) );
+    // private void registerOnce()
+    // {
+    //     if ( 0 == sNextReg ) {
+    //         sNextReg = DBUtils.getLongFor( mContext, KEY_NEXT_REG, 1 );
+    //         sLastRev = DBUtils.getStringFor( mContext, KEY_LAST_WRITE, "" );
+    //     }
+    //     long now = Utils.getCurSeconds();
+    //     Log.d( TAG, "registerOnce(): now: %d; nextReg: %d", now, sNextReg );
+    //     String revString = BuildConfig.GIT_REV + ':' + BuildConfig.VARIANT_NAME;
+    //     if ( now > sNextReg || ! revString.equals(sLastRev) ) {
+    //         try {
+    //             JSONObject params = new JSONObject();
+    //             params.put( "devid", mDevID );
+    //             params.put( "gitrev", BuildConfig.GIT_REV );
+    //             params.put( "os", Build.MODEL );
+    //             // PENDING remove me in favor of SDK_INT
+    //             params.put( "vers", Build.VERSION.RELEASE );
+    //             params.put( "versI", Build.VERSION.SDK_INT );
+    //             params.put( "vrntCode", BuildConfig.VARIANT_CODE );
+    //             params.put( "vrntName", BuildConfig.VARIANT_NAME );
+    //             if ( BuildConfig.DEBUG ) {
+    //                 params.put( "dbg", true );
+    //             }
+    //             params.put( "myNow", now );
+    //             params.put( "loc", LocUtils.getCurLocale( mContext ) );
+    //             params.put( "tmpKey", getTmpKey(mContext) );
+    //             params.put( "frstV", Utils.getFirstVersion( mContext ) );
 
-                Log.d( TAG, "registerOnce(): sending %s", params );
-                HttpURLConnection conn
-                    = NetUtils.makeHttpMQTTConn( mContext, "register" );
-                String resStr = NetUtils.runConn( conn, params, true );
-                if ( null != resStr ) {
-                    JSONObject response = new JSONObject( resStr );
-                    Log.d( TAG, "registerOnce(): got %s", response );
+    //             Log.d( TAG, "registerOnce(): sending %s", params );
+    //             HttpURLConnection conn
+    //                 = NetUtils.makeHttpMQTTConn( mContext, "register" );
+    //             String resStr = NetUtils.runConn( conn, params, true );
+    //             if ( null != resStr ) {
+    //                 JSONObject response = new JSONObject( resStr );
+    //                 Log.d( TAG, "registerOnce(): got %s", response );
 
-                    if ( response.optBoolean( "success", true ) ) {
-                        long atNext = response.optLong( "atNext", 0 );
-                        if ( 0 < atNext ) {
-                            DBUtils.setLongFor( mContext, KEY_NEXT_REG, atNext );
-                            sNextReg = atNext;
-                            DBUtils.setStringFor( mContext, KEY_LAST_WRITE, revString );
-                            sLastRev = revString;
-                        }
+    //                 if ( response.optBoolean( "success", true ) ) {
+    //                     long atNext = response.optLong( "atNext", 0 );
+    //                     if ( 0 < atNext ) {
+    //                         DBUtils.setLongFor( mContext, KEY_NEXT_REG, atNext );
+    //                         sNextReg = atNext;
+    //                         DBUtils.setStringFor( mContext, KEY_LAST_WRITE, revString );
+    //                         sLastRev = revString;
+    //                     }
 
-                        String dupID = response.optString( "dupID", "" );
-                        if ( dupID.equals( mDevID ) ) {
-                            Log.e( TAG, "********** %s bad; need new devID!!! **********", dupID );
-                            XwJNI.dvc_resetMQTTDevID();
-                            // Force a reconnect asap
-                            DBUtils.setLongFor( mContext, KEY_NEXT_REG, 0 );
-                            sNextReg = 0;
-                            clearInstance();
-                        }
-                    }
-                } else {
-                    Log.e( TAG, "registerOnce(): null back from runConn()" );
-                }
-            } catch ( JSONException je ) {
-                Log.e( TAG, "registerOnce() ex: %s", je );
-            }
-        }
-    }
+    //                     String dupID = response.optString( "dupID", "" );
+    //                     if ( dupID.equals( mDevID ) ) {
+    //                         Log.e( TAG, "********** %s bad; need new devID!!! **********", dupID );
+    //                         XwJNI.dvc_resetMQTTDevID();
+    //                         // Force a reconnect asap
+    //                         DBUtils.setLongFor( mContext, KEY_NEXT_REG, 0 );
+    //                         sNextReg = 0;
+    //                         clearInstance();
+    //                     }
+    //                 }
+    //             } else {
+    //                 Log.e( TAG, "registerOnce(): null back from runConn()" );
+    //             }
+    //         } catch ( JSONException je ) {
+    //             Log.e( TAG, "registerOnce() ex: %s", je );
+    //         }
+    //     }
+    // }
 
     private static int sTmpKey;
     private static int getTmpKey( Context context )

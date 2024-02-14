@@ -22,6 +22,7 @@
 #include <jni.h>
 
 #include "comtypes.h"
+#include "device.h"
 #include "utilwrapper.h"
 #include "anddict.h"
 #include "andutils.h"
@@ -983,6 +984,20 @@ and_dutil_sendViaWeb( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* api,
     DUTIL_CBK_TAIL();
 }
 
+static cJSON*
+and_dutil_getRegValues( XW_DUtilCtxt* duc, XWEnv xwe )
+{
+    cJSON* result = NULL;
+    DUTIL_CBK_HEADER( "getRegValues", "()Ljava/lang/String;" );
+    jstring jresult = (*env)->CallObjectMethod( env, dutil->jdutil, mid );
+    const char* jchars = (*env)->GetStringUTFChars( env, jresult, NULL );
+    result = cJSON_Parse( jchars );
+    (*env)->ReleaseStringUTFChars( env, jresult, jchars );
+    deleteLocalRef( env, jresult );
+    DUTIL_CBK_TAIL();
+    return result;
+}
+
 XW_UtilCtxt*
 makeUtil( MPFORMAL JNIEnv* env,
 #ifdef MAP_THREAD_TO_ENV
@@ -1094,7 +1109,8 @@ makeDUtil( MPFORMAL JNIEnv* env,
            void* closure )
 {
     AndDUtil* dutil = (AndDUtil*)XP_CALLOC( mpool, sizeof(*dutil) );
-    dutil_super_init( MPPARM(mpool) &dutil->dutil );
+    XW_DUtilCtxt* super = &dutil->dutil;
+    dutil_super_init( MPPARM(mpool) super );
 #ifdef MAP_THREAD_TO_ENV
     dutil->ti = ti;
 #endif
@@ -1140,11 +1156,15 @@ makeDUtil( MPFORMAL JNIEnv* env,
 
     SET_DPROC(onGameGoneReceived);
     SET_DPROC(sendViaWeb);
+    SET_DPROC(getRegValues);
 
 #undef SET_DPROC
 
     assertTableFull( vtable, sizeof(*vtable), "dutil" );
-    return &dutil->dutil;
+
+    dvc_init( super, env );
+
+    return super;
 }
 
 void

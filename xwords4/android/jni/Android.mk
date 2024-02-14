@@ -50,6 +50,7 @@ LOCAL_DEFINES += \
 	-D__LITTLE_ENDIAN \
 	-DMQTT_DEV_TOPICS \
 	-DMQTT_GAMEID_TOPICS \
+	-DGITREV_SHORT="\"$(shell git rev-parse --short HEAD)\"" \
 
 # XWFEATURE_RAISETILE: first, fix to not use timer
 #   -DXWFEATURE_RAISETILE \

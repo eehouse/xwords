@@ -55,6 +55,7 @@ typedef struct _DevCtxt {
 static DevCtxt*
 load( XW_DUtilCtxt* dutil, XWEnv xwe )
 {
+    ASSERT_MAGIC();
     DevCtxt* state = (DevCtxt*)dutil->devCtxt;
     if ( NULL == state ) {
         XWStreamCtxt* stream = mkStream( dutil );
@@ -80,6 +81,7 @@ load( XW_DUtilCtxt* dutil, XWEnv xwe )
 void
 dvc_store( XW_DUtilCtxt* dutil, XWEnv xwe )
 {
+    ASSERT_MAGIC();
     DevCtxt* state = load( dutil, xwe );
     XWStreamCtxt* stream = mkStream( dutil );
     stream_putU16( stream, state->devCount );
@@ -162,6 +164,7 @@ getMQTTDevID( XW_DUtilCtxt* dutil, XWEnv xwe, XP_Bool forceNew, MQTTDevID* devID
 void
 dvc_getMQTTDevID( XW_DUtilCtxt* dutil, XWEnv xwe, MQTTDevID* devID )
 {
+    ASSERT_MAGIC();
     getMQTTDevID( dutil, xwe, XP_FALSE, devID );
 }
 
@@ -213,6 +216,7 @@ dvc_getMQTTSubTopics( XW_DUtilCtxt* dutil, XWEnv xwe,
                       XP_UCHAR* storage, XP_U16 XP_UNUSED_DBG(storageLen),
                       XP_U16* nTopics, XP_UCHAR* topics[] )
 {
+    ASSERT_MAGIC();
     LOG_FUNC();
     int offset = 0;
     XP_U16 count = 0;
@@ -311,6 +315,7 @@ dvc_makeMQTTInvites( XW_DUtilCtxt* dutil, XWEnv xwe,
                      const MQTTDevID* addressee,
                      const NetLaunchInfo* nli )
 {
+    ASSERT_MAGIC();
     XP_UCHAR devTopic[64];      /* used by two below */
     formatMQTTDevTopic( addressee, devTopic, VSIZE(devTopic) );
     /* Stream format is identical for both topics */
@@ -339,7 +344,7 @@ dvc_makeMQTTNukeInvite( XW_DUtilCtxt* dutil, XWEnv xwe,
                         MsgAndTopicProc proc, void* closure,
                         const NetLaunchInfo* nli )
 {
-    LOG_FUNC();
+    ASSERT_MAGIC();
 #ifdef MQTT_GAMEID_TOPICS
     MQTTDevID myID;
     dvc_getMQTTDevID( dutil, xwe, &myID );
@@ -361,6 +366,7 @@ dvc_makeMQTTMessages( XW_DUtilCtxt* dutil, XWEnv xwe,
                       const MQTTDevID* addressee,
                       XP_U32 gameID, XP_U16 streamVersion )
 {
+    ASSERT_MAGIC();
     XP_S16 nSent0 = 0;
     XP_S16 nSent1 = 0;
     XP_U8 nBufs = 0;
@@ -429,6 +435,7 @@ dvc_makeMQTTNoSuchGames( XW_DUtilCtxt* dutil, XWEnv xwe,
                          const MQTTDevID* addressee,
                          XP_U32 gameID )
 {
+    ASSERT_MAGIC();
     XP_LOGFF( "(gameID: %X)", gameID );
     XP_UCHAR devTopic[64];      /* used by two below */
     formatMQTTDevTopic( addressee, devTopic, VSIZE(devTopic) );
@@ -528,6 +535,7 @@ dvc_parseMQTTPacket( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* topic,
                      const XP_U8* buf, XP_U16 len )
 {
     XP_LOGFF( "(topic=%s, len=%d)", topic, len );
+    ASSERT_MAGIC();
 
     MQTTDevID myID;
     dvc_getMQTTDevID( dutil, xwe, &myID );
@@ -558,7 +566,6 @@ dvc_parseMQTTPacket( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* topic,
             MQTTCmd cmd = stream_getU8( stream );
 
             /* Need to ack even if discarded/malformed */
-            // dutil_ackMQTTMsg( dutil, xwe, topic, gameID, &senderID, buf, len );
             ackMQTTMsg( dutil, xwe, topic, gameID, buf, len );
 
             switch ( cmd ) {
@@ -605,8 +612,9 @@ registerIf( XW_DUtilCtxt* dutil, XWEnv xwe )
 
     XP_U32 now = dutil_getCurSeconds( dutil, xwe );
     if ( prevNow + REG_INTERVAL_SECS < now ) {
-        XP_LOGFF( "been long enough; trying to register" );
-        cJSON* params = cJSON_CreateObject();
+
+        /* Start with the platform's values */
+        cJSON* params = dutil_getRegValues( dutil, xwe );
 
         MQTTDevID myID;
         dvc_getMQTTDevID( dutil, xwe, &myID );
@@ -615,9 +623,7 @@ registerIf( XW_DUtilCtxt* dutil, XWEnv xwe )
         cJSON_AddStringToObject( params, "devid", tmp );
 
         cJSON_AddStringToObject( params, "gitrev", GITREV_SHORT );
-        cJSON_AddStringToObject( params, "os", "Linux" );
         /* // PENDING remove me in favor of SDK_INT */
-        cJSON_AddStringToObject( params, "vers", "DEBUG" );
         /* params.put( "versI", Build.VERSION.SDK_INT ); */
         /* params.put( "vrntCode", BuildConfig.VARIANT_CODE ); */
         /* params.put( "vrntName", BuildConfig.VARIANT_NAME ); */
@@ -642,7 +648,7 @@ void
 dvc_init( XW_DUtilCtxt* dutil, XWEnv xwe )
 {
     LOG_FUNC();
-    XP_ASSERT( 00 == dutil->magic );
+    XP_ASSERT( 0 == dutil->magic );
     dutil->magic = MAGIC_INITED;
     registerIf( dutil, xwe );
 }

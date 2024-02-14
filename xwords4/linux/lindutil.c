@@ -289,6 +289,19 @@ linux_dutil_sendViaWeb( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe),
     pthread_detach( thrd );
 }
 
+static cJSON*
+linux_dutil_getRegValues( XW_DUtilCtxt* duc, XWEnv xwe )
+{
+    XP_USE(duc);
+    XP_USE(xwe);
+
+    cJSON* results = cJSON_CreateObject();
+    cJSON_AddStringToObject( results, "os", "Linux" );
+    cJSON_AddStringToObject( results, "vers", "DEBUG" );
+
+    return results;
+}
+
 XW_DUtilCtxt*
 linux_dutils_init( MPFORMAL VTableMgr* vtMgr, void* closure )
 {
@@ -339,6 +352,7 @@ linux_dutils_init( MPFORMAL VTableMgr* vtMgr, void* closure )
     SET_PROC(onCtrlReceived);
     SET_PROC(onGameGoneReceived);
     SET_PROC(sendViaWeb);
+    SET_PROC(getRegValues);
 
 # undef SET_PROC
 
