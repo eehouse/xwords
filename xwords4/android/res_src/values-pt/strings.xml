@@ -1566,7 +1566,7 @@
         <item quantity="one">Este jogo está a esperar que um jogador remoto receba e responda a um convite.
 \n
 \nVerá esta mensagem até que o jogador convidado tenha respondido.</item>
-        <item quantity="many"></item>
+        <item quantity="many"/>
         <item quantity="other">Este jogo está a esperar que %1$d jogadores remotos recebam e respondam a um convite.
 \n
 \nVerá esta mensagem até que todos os jogadores convidados tenham respondido.</item>
@@ -2313,4 +2313,9 @@
     <string name="ro_juggle">Aleatoriamente</string>
     <string name="title_rematch_order">Ordem dos Jogadores da Revanche</string>
     <string name="ro_no_default">Perguntar cada vez</string>
+    <string name="na_rematch_edit">O nome da partida não irá mudar após de o editar, a menos que esteja vazio.</string>
+    <string name="peers_info_pending">A consultar o servidor…</string>
+    <string name="no_peers_info">Informação de pares indisponível</string>
+    <string name="button_refresh">Atualizar</string>
+    <string name="sort_by_date_label">Ordenar por data</string>
 </resources>
