@@ -27,7 +27,7 @@ dll_insert( DLHead* head, DLHead* node, DLCompProc proc )
     DLHead* next;
     DLHead* prev = NULL;
     for ( next = head; !!next; next = next->_next ) {
-        if ( 0 <= (*proc)( next, node ) ) {
+        if ( NULL == proc || 0 <= (*proc)( next, node ) ) {
             break;
         }
         prev = next;

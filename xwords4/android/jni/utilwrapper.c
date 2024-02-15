@@ -971,14 +971,14 @@ and_dutil_onGameGoneReceived( XW_DUtilCtxt* duc, XWEnv xwe, XP_U32 gameID,
 }
 
 static void
-and_dutil_sendViaWeb( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* api,
-                      const cJSON* params )
+and_dutil_sendViaWeb( XW_DUtilCtxt* duc, XWEnv xwe, XP_U32 resultKey,
+                      const XP_UCHAR* api, const cJSON* params )
 {
-    DUTIL_CBK_HEADER( "sendViaWeb", "(Ljava/lang/String;Ljava/lang/String;)V" );
+    DUTIL_CBK_HEADER( "sendViaWeb", "(ILjava/lang/String;Ljava/lang/String;)V" );
     char* pstr = cJSON_PrintUnformatted( params );
     jstring jParams = (*env)->NewStringUTF( env, pstr );
     jstring jApi = (*env)->NewStringUTF( env, api );
-    (*env)->CallVoidMethod( env, dutil->jdutil, mid, jApi, jParams );
+    (*env)->CallVoidMethod( env, dutil->jdutil, mid, resultKey, jApi, jParams );
     deleteLocalRefs( env, jApi, jParams, DELETE_NO_REF );
     free( pstr );
     DUTIL_CBK_TAIL();

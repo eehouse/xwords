@@ -104,14 +104,17 @@ typedef struct _DUtilVtable {
                                        const CommsAddrRec* from );
     /* Return platform-specific registration keys->values */
     cJSON* (*m_dutil_getRegValues)( XW_DUtilCtxt* duc, XWEnv xwe );
-    void (*m_dutil_sendViaWeb)( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* api,
-                                const cJSON* params );
+    void (*m_dutil_sendViaWeb)( XW_DUtilCtxt* duc, XWEnv xwe, XP_U32 resultKey,
+                                const XP_UCHAR* api, const cJSON* params );
 } DUtilVtable;
 
 struct XW_DUtilCtxt {
     DUtilVtable vtable;
     void* closure;
     void* devCtxt;              /* owned by device.c */
+    void* webSendData;          /* owned by device.c */
+    XP_U32 mWebSendKey;         /* owned by device.c */
+    pthread_mutex_t webSendMutex;
 #ifdef XWFEATURE_KNOWNPLAYERS   /* owned by knownplyr.c */
     void* kpCtxt;
     pthread_mutex_t kpMutex;
@@ -186,8 +189,8 @@ void dutil_super_init( MPFORMAL XW_DUtilCtxt* dutil );
     (duc)->vtable.m_dutil_onCtrlReceived((duc),(xwe),(buf),(len))
 #define dutil_onGameGoneReceived(duc, xwe, gameID, from)         \
     (duc)->vtable.m_dutil_onGameGoneReceived((duc),(xwe),(gameID),(from))
-#define dutil_sendViaWeb( duc, xwe, api, params )                       \
-    (duc)->vtable.m_dutil_sendViaWeb((duc), (xwe), (api), (params))
+#define dutil_sendViaWeb( duc, xwe, resultKey, api, params )        \
+    (duc)->vtable.m_dutil_sendViaWeb((duc), (xwe), (resultKey), (api), (params))
 
 #define dutil_getRegValues( duc, xwe ) \
     (duc)->vtable.m_dutil_getRegValues( (duc), (xwe) )

@@ -35,7 +35,7 @@ CFLAGS += -g $(GPROFFLAG) -Wall -Wunused-parameter -Wcast-align -Werror -O0
 #CFLAGS += -Os -Werror -Wunused
 endif
 
-CFLAGS += -DGITREV_SHORT="\"$(shell git rev-parse --short HEAD)\""
+CFLAGS += -DGITREV="\"$(shell git describe --tags --dirty)\""
 
 # Getting ready for gtk 3.x
 CFLAGS += -DGTK_DISABLE_SINGLE_INCLUDES

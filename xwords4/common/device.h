@@ -60,6 +60,9 @@ void dvc_makeMQTTNoSuchGames( XW_DUtilCtxt* dutil, XWEnv xwe,
 void dvc_parseMQTTPacket( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* topic,
                           const XP_U8* buf, XP_U16 len );
 
+void dvc_onWebSendResult( XW_DUtilCtxt* dutil, XWEnv xwe, XP_U32 resultKey,
+                          XP_Bool succeeded, const XP_UCHAR* result );
+
 /* All platforms need to call this shortly after setting up their XW_DUtilCtxt */
 void dvc_init( XW_DUtilCtxt* dutil, XWEnv xwe );
 

@@ -183,6 +183,12 @@ public class XwJNI {
         dvc_parseMQTTPacket( getJNI().m_ptrGlobals, topic, buf );
     }
 
+    public static void dvc_onWebSendResult( int resultKey, boolean succeeded,
+                                            String result )
+    {
+        dvc_onWebSendResult( getJNI().m_ptrGlobals, resultKey, succeeded, result );
+    }
+
     public static boolean hasKnownPlayers()
     {
         String[] players = kplr_getPlayers();
@@ -793,6 +799,9 @@ public class XwJNI {
         dvc_makeMQTTNoSuchGames( long jniState, String addressee, int gameID );
     private static native void dvc_parseMQTTPacket( long jniState, String topic,
                                                     byte[] buf );
+    private static native void dvc_onWebSendResult( long jniState, int resultKey,
+                                                    boolean succeeded,
+                                                    String result );
     private static native String[] kplr_getPlayers( long jniState, boolean byDate );
     private static native boolean kplr_renamePlayer( long jniState, String oldName,
                                                      String newName );

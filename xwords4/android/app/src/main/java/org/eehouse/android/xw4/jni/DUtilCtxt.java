@@ -338,9 +338,9 @@ public class DUtilCtxt {
         DupeModeTimer.timerChanged( m_context, gameID, newVal );
     }
 
-    public void sendViaWeb( String api, String jsonParams )
+    public void sendViaWeb( int resultKey, String api, String jsonParams )
     {
-        NetUtils.sendViaWeb( m_context, api, jsonParams );
+        NetUtils.sendViaWeb( m_context, resultKey, api, jsonParams );
     }
 
     public String getRegValues()

@@ -145,8 +145,8 @@ public class NetUtils {
         context.startActivity( intent );
     }
 
-    public static void sendViaWeb( final Context context, final String api,
-                                   final String jsonParams )
+    public static void sendViaWeb( final Context context, final int resultKey,
+                                   final String api, final String jsonParams )
     {
         Log.d( TAG, "sendViaWeb(api: %s, params: %s)", api, jsonParams );
 
@@ -157,6 +157,9 @@ public class NetUtils {
                     boolean directJson = true;
                     String result = runConn( conn, jsonParams, directJson );
                     Log.d( TAG, "sendViaWeb(api: %s): got result '%s'", api, result );
+                    if ( 0 != resultKey ) {
+                        XwJNI.dvc_onWebSendResult( resultKey, true, result );
+                    }
                 }
             } ).start();
     }

@@ -21,6 +21,7 @@
 #include <inttypes.h>
 
 #include "device.h"
+#include "dllist.h"
 #include "comtypes.h"
 #include "memstream.h"
 #include "xwstream.h"
@@ -36,7 +37,7 @@
 #endif
 
 #define LAST_REG_KEY FULL_KEY("device_last_reg")
-#define REG_INTERVAL_SECS 60    /* for now. :-) */
+#define KEY_GITREV FULL_KEY("device_gitrev")
 
 static XWStreamCtxt*
 mkStream( XW_DUtilCtxt* dutil )
@@ -217,7 +218,6 @@ dvc_getMQTTSubTopics( XW_DUtilCtxt* dutil, XWEnv xwe,
                       XP_U16* nTopics, XP_UCHAR* topics[] )
 {
     ASSERT_MAGIC();
-    LOG_FUNC();
     int offset = 0;
     XP_U16 count = 0;
     storage[0] = '\0';
@@ -246,7 +246,7 @@ dvc_getMQTTSubTopics( XW_DUtilCtxt* dutil, XWEnv xwe,
     topics[count++] = appendToStorage( storage, &offset, buf );
 
     for ( int ii = 0; ii < count; ++ii ) {
-        XP_LOGFF( "AFTER: got %d: %s", ii, topics[ii] );
+        XP_LOGFFV( "AFTER: got %d: %s", ii, topics[ii] );
     }
 
     XP_ASSERT( count <= *nTopics );
@@ -254,8 +254,6 @@ dvc_getMQTTSubTopics( XW_DUtilCtxt* dutil, XWEnv xwe,
     XP_ASSERT( offset < storageLen );
 
     logPtrs( __func__, *nTopics, topics );
-
-    LOG_RETURN_VOID();
 }
 
 typedef enum { CMD_INVITE, CMD_MSG, CMD_DEVGONE, } MQTTCmd;
@@ -526,7 +524,7 @@ ackMQTTMsg( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* topic,
 
     cJSON_AddNumberToObject( params, "gid", gameID );
 
-    dutil_sendViaWeb( dutil, xwe, "ack", params );
+    dutil_sendViaWeb( dutil, xwe, 0, "ack", params );
     cJSON_Delete( params );
 }
 
@@ -602,16 +600,123 @@ dvc_parseMQTTPacket( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* topic,
     LOG_RETURN_VOID();
 }
 
+typedef enum { WSR_REGISTER, } WSR;
+
+typedef struct WSData {
+    DLHead links;
+    XP_U32 resultKey;
+    WSR code;
+} WSData;
+
+typedef struct _GetByKeyData {
+    XP_U32 resultKey;
+    WSData* found;
+} GetByKeyData;
+
+static ForEachAct
+getByKeyProc(const DLHead* elem, void* closure)
+{
+    ForEachAct result = FEA_OK;
+    GetByKeyData* gbkdp = (GetByKeyData*)closure;
+    WSData* wsdp = (WSData*)elem;
+    if ( wsdp->resultKey == gbkdp->resultKey ) {
+        gbkdp->found = wsdp;
+        result = FEA_REMOVE | FEA_EXIT;
+    }
+    return result;
+}
+
+static WSData*
+popForKey( XW_DUtilCtxt* dutil, XP_U32 key )
+{
+    WSData* item = NULL;
+    pthread_mutex_lock( &dutil->webSendMutex );
+
+    GetByKeyData gbkd = { .resultKey = key, };
+    dutil->webSendData = dll_map( dutil->webSendData, getByKeyProc,
+                                  NULL, &gbkd );
+    item = gbkd.found;
+
+    pthread_mutex_unlock( &dutil->webSendMutex );
+    XP_LOGFF( "(key: %d) => %p", key, item );
+    return item;
+}
+
+static XP_U32
+addWithKey( XW_DUtilCtxt* dutil, WSData* wsdp )
+{
+    pthread_mutex_lock( &dutil->webSendMutex );
+    wsdp->resultKey = ++dutil->mWebSendKey;
+    dutil->webSendData =
+        dll_insert( dutil->webSendData, &wsdp->links, NULL );
+    pthread_mutex_unlock( &dutil->webSendMutex );
+    XP_LOGFF( "(%p) => %d", wsdp, wsdp->resultKey );
+    return wsdp->resultKey;
+}
+
+void
+dvc_onWebSendResult( XW_DUtilCtxt* dutil, XWEnv xwe, XP_U32 resultKey,
+                     XP_Bool succeeded, const XP_UCHAR* resultJson )
+{
+    XP_ASSERT( 0 != resultKey );
+    if ( 0 != resultKey ) {
+        WSData* wsdp = popForKey( dutil, resultKey );
+        cJSON* result = cJSON_Parse( resultJson );
+        switch ( wsdp->code ) {
+        case WSR_REGISTER:
+            if ( succeeded  ) {
+                cJSON* tmp = cJSON_GetObjectItem( result, "success" );
+                if ( cJSON_IsTrue( tmp ) ) {
+                    tmp = cJSON_GetObjectItem( result, "atNext" );
+                    if ( !!tmp ) {
+                        XP_U32 atNext = tmp->valueint;
+                        {
+                            const XP_UCHAR* keys1[] = { LAST_REG_KEY, NULL };
+                            dutil_storePtr( dutil, xwe, keys1, &atNext,
+                                            sizeof(atNext) );
+                        }
+                        {
+                            const XP_UCHAR* keys2[] = { KEY_GITREV, NULL };
+                            dutil_storePtr( dutil, xwe, keys2, GITREV,
+                                            XP_STRLEN(GITREV) );
+                        }
+                    }
+                }
+            }
+            break;
+        default:
+            XP_ASSERT(0);
+            break;
+        }
+
+        cJSON_Delete( result );
+
+        XP_FREEP( dutil->mpool, &wsdp );
+    }
+}
+
 static void
 registerIf( XW_DUtilCtxt* dutil, XWEnv xwe )
 {
-    XP_U32 prevNow;
-    XP_U32 len = sizeof(prevNow);
-    const XP_UCHAR* keys[] = { LAST_REG_KEY, NULL };
-    dutil_loadPtr( dutil, xwe, keys, &prevNow, &len );
+    XP_U32 atNext = 0;
+    XP_U32 len = sizeof(atNext);
+    {
+        const XP_UCHAR* keys1[] = { LAST_REG_KEY, NULL };
+        dutil_loadPtr( dutil, xwe, keys1, &atNext, &len );
+    }
+    XP_UCHAR gitrev[128];
+    len = VSIZE(gitrev);
+    {
+        const XP_UCHAR* keys2[] = { KEY_GITREV, NULL };
+        dutil_loadPtr( dutil, xwe, keys2, gitrev, &len );
+    }
+    if ( len >= VSIZE(gitrev) ) {
+        len = VSIZE(gitrev) - 1;
+    }
+    gitrev[len] = '\0';
 
     XP_U32 now = dutil_getCurSeconds( dutil, xwe );
-    if ( prevNow + REG_INTERVAL_SECS < now ) {
+    if ( atNext < now || 0 != XP_STRCMP( gitrev, GITREV ) ) {
 
         /* Start with the platform's values */
         cJSON* params = dutil_getRegValues( dutil, xwe );
@@ -622,11 +727,7 @@ registerIf( XW_DUtilCtxt* dutil, XWEnv xwe )
         formatMQTTDevID( &myID, tmp, VSIZE(tmp) );
         cJSON_AddStringToObject( params, "devid", tmp );
 
-        cJSON_AddStringToObject( params, "gitrev", GITREV_SHORT );
-        /* // PENDING remove me in favor of SDK_INT */
-        /* params.put( "versI", Build.VERSION.SDK_INT ); */
-        /* params.put( "vrntCode", BuildConfig.VARIANT_CODE ); */
-        /* params.put( "vrntName", BuildConfig.VARIANT_NAME ); */
+        cJSON_AddStringToObject( params, "gitrev", GITREV );
 #ifdef DEBUG
         cJSON_AddBoolToObject( params, "dbg", XP_TRUE );
 #endif
@@ -637,10 +738,12 @@ registerIf( XW_DUtilCtxt* dutil, XWEnv xwe )
 
         cJSON_AddNumberToObject( params, "myNow", now );
 
-        dutil_sendViaWeb( dutil, xwe, "register", params );
-        cJSON_Delete( params );
+        WSData* wsdp = XP_CALLOC( dutil->mpool, sizeof(*wsdp) );
+        wsdp->code = WSR_REGISTER;
+        XP_U32 resultKey = addWithKey( dutil, wsdp );
 
-        // dutil_storePtr( dutil, xwe, keys, &now, sizeof(now) );
+        dutil_sendViaWeb( dutil, xwe, resultKey, "register", params );
+        cJSON_Delete( params );
     }
 } /* registerIf */
 
@@ -649,6 +752,11 @@ dvc_init( XW_DUtilCtxt* dutil, XWEnv xwe )
 {
     LOG_FUNC();
     XP_ASSERT( 0 == dutil->magic );
+
+    dutil->webSendData = NULL;
+    dutil->mWebSendKey = 0;
+    pthread_mutex_init( &dutil->webSendMutex, NULL );
+
     dutil->magic = MAGIC_INITED;
     registerIf( dutil, xwe );
 }

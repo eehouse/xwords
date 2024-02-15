@@ -196,6 +196,7 @@ typedef struct _SendViaData {
     LinDUtilCtxt* lduc;
     char* pstr;
     char* api;
+    XP_U32 resultKey;
 } SendViaData;
 
 typedef struct _FetchData {
@@ -220,6 +221,7 @@ curl_callback( void *contents, size_t size, size_t nmemb, void *userp )
 static void*
 sendViaThreadProc( void* arg )
 {
+    XP_Bool succeeded = XP_TRUE;
     SendViaData* svdp = (SendViaData*)arg;
 
     const LaunchParams* params = (LaunchParams*)svdp->lduc->super.closure;
@@ -257,6 +259,7 @@ sendViaThreadProc( void* arg )
     res = curl_easy_perform( curl );
     if ( res != CURLE_OK ) {
         XP_LOGFF( "curl_easy_perform() failed: %s", curl_easy_strerror(res));
+        succeeded = XP_FALSE;
     } else {
         XP_LOGFF( "got buffer: %s", fd.payload );
     }
@@ -264,15 +267,23 @@ sendViaThreadProc( void* arg )
     curl_slist_free_all( headers );
     curl_easy_cleanup( curl );
 
+    if ( svdp->resultKey ) {
+        dvc_onWebSendResult( &svdp->lduc->super, NULL_XWE, svdp->resultKey,
+                             succeeded, fd.payload );
+    }
+
+    free( fd.payload );
     free( svdp->pstr );
     free( svdp->api );
     free( svdp );
+
     return NULL;
 }
 
 static void
 linux_dutil_sendViaWeb( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe),
-                        const XP_UCHAR* api, const cJSON* json )
+                        XP_U32 resultKey, const XP_UCHAR* api,
+                        const cJSON* json )
 {
     LinDUtilCtxt* lduc = (LinDUtilCtxt*)duc;
 
@@ -280,6 +291,7 @@ linux_dutil_sendViaWeb( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe),
         .lduc = lduc,
         .pstr = cJSON_PrintUnformatted( json ),
         .api = g_strdup(api),
+        .resultKey = resultKey,
     };
     SendViaData* svdp = malloc( sizeof(*svdp) );
     *svdp = svd;

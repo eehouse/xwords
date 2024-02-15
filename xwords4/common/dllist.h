@@ -40,7 +40,7 @@ DLHead* dll_remove( DLHead* list, DLHead* node );
 XP_U16 dll_length( const DLHead* list );
 DLHead* dll_sort( DLHead* list, DLCompProc proc );
 
-typedef ForEachAct (*DLMapProc)(const DLHead* dl1, void* closure);
+typedef ForEachAct (*DLMapProc)(const DLHead* elem, void* closure);
 typedef void (*DLDisposeProc)(DLHead* elem, void* closure);
 DLHead* dll_map( DLHead* list, DLMapProc mapProc, DLDisposeProc dispProc,
                  void* closure );

@@ -768,6 +768,20 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dvc_1parseMQTTPacket
     DVC_HEADER_END();
 }
 
+JNIEXPORT void JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_dvc_1onWebSendResult
+( JNIEnv* env, jclass C, jlong jniGlobalPtr, jint jResultKey,
+  jboolean jSucceeded, jstring jResult )
+{
+    XP_ASSERT( 0 != jResultKey );
+    DVC_HEADER(jniGlobalPtr);
+    const char* resultStr = (*env)->GetStringUTFChars( env, jResult, NULL );
+    dvc_onWebSendResult( globalState->dutil, env, jResultKey, jSucceeded,
+                         resultStr );
+    (*env)->ReleaseStringUTFChars( env, jResult, resultStr );
+    DVC_HEADER_END();
+}
+
 # ifdef XWFEATURE_KNOWNPLAYERS
 JNIEXPORT jobjectArray JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_kplr_1getPlayers
