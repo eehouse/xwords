@@ -1026,9 +1026,6 @@ gtkmain( LaunchParams* params )
     }
 
     gtk_main();
-    dvc_store( params->dutil, NULL_XWE );
-    /* closeGamesDB( params->pDb ); */
-    /* params->pDb = NULL; */
 #ifdef XWFEATURE_RELAY
     relaycon_cleanup( params );
 #endif

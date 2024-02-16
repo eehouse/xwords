@@ -47,24 +47,36 @@ mkStream( XW_DUtilCtxt* dutil )
     return stream;
 }
 
-#ifdef XWFEATURE_DEVICE
+typedef enum { WSR_REGISTER, } WSR;
+
+typedef struct WSData {
+    DLHead links;
+    XP_U32 resultKey;
+    WSR code;
+} WSData;
 
 typedef struct _DevCtxt {
     XP_U16 devCount;
+    WSData* webSendData;
+    XP_U32 mWebSendKey;
+    pthread_mutex_t webSendMutex;
+#ifdef DEBUG
+    XP_U32 magic;
+#endif
+
 } DevCtxt;
+
 
 static DevCtxt*
 load( XW_DUtilCtxt* dutil, XWEnv xwe )
 {
-    ASSERT_MAGIC();
     DevCtxt* state = (DevCtxt*)dutil->devCtxt;
     if ( NULL == state ) {
+        XP_ASSERT(0);
+#ifdef XWFEATURE_DEVICE
         XWStreamCtxt* stream = mkStream( dutil );
         const XP_UCHAR* keys[] = { KEY_DEVSTATE, NULL };
         dutil_loadStream( dutil, xwe, keys, stream );
-
-        state = XP_CALLOC( dutil->mpool, sizeof(*state) );
-        dutil->devCtxt = state;
 
         if ( 0 < stream_getSize( stream ) ) {
             state->devCount = stream_getU16( stream );
@@ -74,11 +86,13 @@ load( XW_DUtilCtxt* dutil, XWEnv xwe )
             XP_LOGF( "%s(): empty stream!!", __func__ );
         }
         stream_destroy( stream );
+#endif
     }
 
     return state;
 }
 
+#ifdef XWFEATURE_DEVICE
 void
 dvc_store( XW_DUtilCtxt* dutil, XWEnv xwe )
 {
@@ -89,10 +103,7 @@ dvc_store( XW_DUtilCtxt* dutil, XWEnv xwe )
     const XP_UCHAR* keys[] = { KEY_DEVSTATE, NULL };
     dutil_storeStream( dutil, xwe, keys, stream );
     stream_destroy( stream );
-
-    XP_FREEP( dutil->mpool, &dutil->devCtxt );
 }
-
 #endif
 
 // #define BOGUS_ALL_SAME_DEVID
@@ -600,14 +611,6 @@ dvc_parseMQTTPacket( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* topic,
     LOG_RETURN_VOID();
 }
 
-typedef enum { WSR_REGISTER, } WSR;
-
-typedef struct WSData {
-    DLHead links;
-    XP_U32 resultKey;
-    WSR code;
-} WSData;
-
 typedef struct _GetByKeyData {
     XP_U32 resultKey;
     WSData* found;
@@ -627,29 +630,32 @@ getByKeyProc(const DLHead* elem, void* closure)
 }
 
 static WSData*
-popForKey( XW_DUtilCtxt* dutil, XP_U32 key )
+popForKey( XW_DUtilCtxt* dutil, XWEnv xwe, XP_U32 key )
 {
     WSData* item = NULL;
-    pthread_mutex_lock( &dutil->webSendMutex );
+    DevCtxt* dc = load( dutil, xwe );
+
+    pthread_mutex_lock( &dc->webSendMutex );
 
     GetByKeyData gbkd = { .resultKey = key, };
-    dutil->webSendData = dll_map( dutil->webSendData, getByKeyProc,
-                                  NULL, &gbkd );
+    dc->webSendData = (WSData*)dll_map( &dc->webSendData->links,
+                                        getByKeyProc, NULL, &gbkd );
     item = gbkd.found;
 
-    pthread_mutex_unlock( &dutil->webSendMutex );
+    pthread_mutex_unlock( &dc->webSendMutex );
     XP_LOGFF( "(key: %d) => %p", key, item );
     return item;
 }
 
 static XP_U32
-addWithKey( XW_DUtilCtxt* dutil, WSData* wsdp )
+addWithKey( XW_DUtilCtxt* dutil, XWEnv xwe, WSData* wsdp )
 {
-    pthread_mutex_lock( &dutil->webSendMutex );
-    wsdp->resultKey = ++dutil->mWebSendKey;
-    dutil->webSendData =
-        dll_insert( dutil->webSendData, &wsdp->links, NULL );
-    pthread_mutex_unlock( &dutil->webSendMutex );
+    DevCtxt* dc = load( dutil, xwe );
+    pthread_mutex_lock( &dc->webSendMutex );
+    wsdp->resultKey = ++dc->mWebSendKey;
+    dc->webSendData = (WSData*)
+        dll_insert( &dc->webSendData->links, &wsdp->links, NULL );
+    pthread_mutex_unlock( &dc->webSendMutex );
     XP_LOGFF( "(%p) => %d", wsdp, wsdp->resultKey );
     return wsdp->resultKey;
 }
@@ -660,7 +666,7 @@ dvc_onWebSendResult( XW_DUtilCtxt* dutil, XWEnv xwe, XP_U32 resultKey,
 {
     XP_ASSERT( 0 != resultKey );
     if ( 0 != resultKey ) {
-        WSData* wsdp = popForKey( dutil, resultKey );
+        WSData* wsdp = popForKey( dutil, xwe, resultKey );
         cJSON* result = cJSON_Parse( resultJson );
         switch ( wsdp->code ) {
         case WSR_REGISTER:
@@ -740,7 +746,7 @@ registerIf( XW_DUtilCtxt* dutil, XWEnv xwe )
 
         WSData* wsdp = XP_CALLOC( dutil->mpool, sizeof(*wsdp) );
         wsdp->code = WSR_REGISTER;
-        XP_U32 resultKey = addWithKey( dutil, wsdp );
+        XP_U32 resultKey = addWithKey( dutil, xwe, wsdp );
 
         dutil_sendViaWeb( dutil, xwe, resultKey, "register", params );
         cJSON_Delete( params );
@@ -753,10 +759,20 @@ dvc_init( XW_DUtilCtxt* dutil, XWEnv xwe )
     LOG_FUNC();
     XP_ASSERT( 0 == dutil->magic );
 
-    dutil->webSendData = NULL;
-    dutil->mWebSendKey = 0;
-    pthread_mutex_init( &dutil->webSendMutex, NULL );
+    XP_ASSERT( !dutil->devCtxt );
+    DevCtxt* dc = dutil->devCtxt = XP_CALLOC( dutil->mpool, sizeof(*dc) );
+    dc->webSendData = NULL;
+    dc->mWebSendKey = 0;
+    pthread_mutex_init( &dc->webSendMutex, NULL );
 
     dutil->magic = MAGIC_INITED;
     registerIf( dutil, xwe );
+}
+
+void
+dvc_cleanup( XW_DUtilCtxt* dutil, XWEnv xwe )
+{
+    DevCtxt* dc = load( dutil, xwe );
+    pthread_mutex_destroy( &dc->webSendMutex );
+    XP_FREEP( dutil->mpool, &dc );
 }

@@ -53,6 +53,7 @@ COMMONSRC = \
 	$(COMMONDIR)/device.c \
 	$(COMMONDIR)/knownplyr.c \
 	$(COMMONDIR)/dllist.c \
+	$(COMMONDIR)/statc.c \
 	$(COMMONDIR)/md5.c \
 
 # PENDING: define this in terms of above!!!
@@ -96,6 +97,7 @@ COMMON5 = \
 	$(COMMONOBJDIR)/device.o \
 	$(COMMONOBJDIR)/knownplyr.o \
 	$(COMMONOBJDIR)/dllist.o \
+	$(COMMONOBJDIR)/stats.o \
 	$(COMMONOBJDIR)/md5.o \
 
 CJSON = \

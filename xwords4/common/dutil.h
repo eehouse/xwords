@@ -112,9 +112,7 @@ struct XW_DUtilCtxt {
     DUtilVtable vtable;
     void* closure;
     void* devCtxt;              /* owned by device.c */
-    void* webSendData;          /* owned by device.c */
-    XP_U32 mWebSendKey;         /* owned by device.c */
-    pthread_mutex_t webSendMutex;
+    void* statsState;            /* owned by stats.c */
 #ifdef XWFEATURE_KNOWNPLAYERS   /* owned by knownplyr.c */
     void* kpCtxt;
     pthread_mutex_t kpMutex;
@@ -126,7 +124,8 @@ struct XW_DUtilCtxt {
     MPSLOT
 };
 
-void dutil_super_init( MPFORMAL XW_DUtilCtxt* dutil );
+void dutil_super_init( MPFORMAL XW_DUtilCtxt* dutil, XWEnv xwe );
+void dutil_super_cleanup( XW_DUtilCtxt* dutil, XWEnv xwe );
 
 /* This one cheats: direct access */
 #define dutil_getVTManager(duc) (duc)->vtMgr

@@ -23,6 +23,9 @@
 #include "comtypes.h"
 #include "dutil.h"
 #include "xwstream.h"
+#include "knownplyr.h"
+#include "device.h"
+#include "stats.h"
 
 static void
 super_dutil_storeStream( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* keys[],
@@ -52,7 +55,7 @@ super_dutil_loadStream( XW_DUtilCtxt* duc, XWEnv xwe,
 }
 
 void
-dutil_super_init( MPFORMAL XW_DUtilCtxt* dutil )
+dutil_super_init( MPFORMAL XW_DUtilCtxt* dutil, XWEnv xwe )
 {
 #ifdef XWFEATURE_KNOWNPLAYERS
     pthread_mutex_init( &dutil->kpMutex, NULL );
@@ -62,4 +65,14 @@ dutil_super_init( MPFORMAL XW_DUtilCtxt* dutil )
 
     SET_VTABLE_ENTRY( &dutil->vtable, dutil_loadStream, super );
     SET_VTABLE_ENTRY( &dutil->vtable, dutil_storeStream, super );
+
+    sts_init( dutil, xwe );
+}
+
+void
+dutil_super_cleanup( XW_DUtilCtxt* dutil, XWEnv xwe )
+{
+    kplr_cleanup( dutil );
+    sts_cleanup( dutil );
+    dvc_cleanup( dutil, xwe );
 }

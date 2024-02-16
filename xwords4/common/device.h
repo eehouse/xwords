@@ -65,5 +65,6 @@ void dvc_onWebSendResult( XW_DUtilCtxt* dutil, XWEnv xwe, XP_U32 resultKey,
 
 /* All platforms need to call this shortly after setting up their XW_DUtilCtxt */
 void dvc_init( XW_DUtilCtxt* dutil, XWEnv xwe );
+void dvc_cleanup( XW_DUtilCtxt* dutil, XWEnv xwe );
 
 #endif

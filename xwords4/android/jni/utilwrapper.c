@@ -1110,7 +1110,7 @@ makeDUtil( MPFORMAL JNIEnv* env,
 {
     AndDUtil* dutil = (AndDUtil*)XP_CALLOC( mpool, sizeof(*dutil) );
     XW_DUtilCtxt* super = &dutil->dutil;
-    dutil_super_init( MPPARM(mpool) super );
+    dutil_super_init( MPPARM(mpool) super, env );
 #ifdef MAP_THREAD_TO_ENV
     dutil->ti = ti;
 #endif

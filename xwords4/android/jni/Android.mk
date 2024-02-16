@@ -97,6 +97,7 @@ COMMON_SRC_FILES +=        \
 	$(COMMON_PATH)/device.c  	\
 	$(COMMON_PATH)/knownplyr.c  \
 	$(COMMON_PATH)/dllist.c     \
+	$(COMMON_PATH)/stats.c      \
 	$(COMMON_PATH)/cJSON.c      \
 	$(COMMON_PATH)/cJSON_Utils.c\
 

@@ -318,16 +318,10 @@ XW_DUtilCtxt*
 linux_dutils_init( MPFORMAL VTableMgr* vtMgr, void* closure )
 {
     LinDUtilCtxt* lduc = XP_CALLOC( mpool, sizeof(*lduc) );
-#ifdef ACK_IN_BACKGROUND
-    pthread_mutex_init( &lduc->ackMutex, NULL );
-    pthread_cond_init( &lduc->ackCondVar, NULL );
-    (void)pthread_create( &lduc->ackThread, NULL, sendAckThreadProc, lduc );
-    pthread_detach( lduc->ackThread );
-#endif
 
     XW_DUtilCtxt* super = &lduc->super;
 
-    dutil_super_init( MPPARM(mpool) super );
+    dutil_super_init( MPPARM(mpool) super, NULL_XWE );
 
     super->vtMgr = vtMgr;
     super->closure = closure;
@@ -376,14 +370,8 @@ linux_dutils_init( MPFORMAL VTableMgr* vtMgr, void* closure )
 void
 linux_dutils_free( XW_DUtilCtxt** dutil )
 {
-#ifdef ACK_IN_BACKGROUND
-    LinDUtilCtxt* lduc = (LinDUtilCtxt*)dutil;
-    if ( 0 != lduc->ackThread ) {
-        pthread_cancel( lduc->ackThread );
-    }
-#endif
+    dutil_super_cleanup( *dutil, NULL_XWE );
 
-    kplr_cleanup( *dutil );
 # ifdef MEM_DEBUG
     XP_FREEP( (*dutil)->mpool, dutil );
 # endif
