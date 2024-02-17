@@ -58,6 +58,7 @@ typedef enum {
     NG_ATTR_CANJUGGLE,
     NG_ATTR_TIMER,
     NG_ATTR_DUPLICATE,
+    NG_ATTR_SUB7,
 } NewGameAttr;
 
 typedef union NGValue {

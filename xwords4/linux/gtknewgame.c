@@ -65,6 +65,7 @@ typedef struct GtkNewGameState {
     GtkWidget* juggleButton;
     GtkWidget* timerField;
     GtkWidget* duplicateCheck;
+    GtkWidget* sub7Check;
 } GtkNewGameState;
 
 static void
@@ -276,10 +277,28 @@ addTimerWidget( GtkNewGameState* state, GtkWidget* parent )
 }
 
 static void
+handle_sub7_toggled( GtkWidget* item, GtkNewGameState* state )
+{
+    NGValue value = { .ng_bool = gtk_toggle_button_get_active( GTK_TOGGLE_BUTTON(item) ) };
+    newg_attrChanged( state->newGameCtxt, NULL_XWE, NG_ATTR_SUB7, value );
+}
+
+static void
 handle_duplicate_toggled( GtkWidget* item, GtkNewGameState* state )
 {
     NGValue value = { .ng_bool = gtk_toggle_button_get_active( GTK_TOGGLE_BUTTON(item) ) };
     newg_attrChanged( state->newGameCtxt, NULL_XWE, NG_ATTR_DUPLICATE, value );
+}
+
+static void
+addTradeSub7Checkbox( GtkNewGameState* state, GtkWidget* parent )
+{
+    GtkWidget* sub7Check = state->sub7Check =
+        gtk_check_button_new_with_label( "Allow sub-7 trades" );
+    g_signal_connect( sub7Check, "toggled",
+                      (GCallback)handle_sub7_toggled, state );
+    gtk_widget_show( sub7Check );
+    gtk_box_pack_start( GTK_BOX(parent), sub7Check, FALSE, TRUE, 0 );
 }
 
 static void
@@ -505,6 +524,7 @@ makeNewGameDialog( GtkNewGameState* state )
     gtk_box_pack_start( GTK_BOX(vbox), hbox, FALSE, TRUE, 0 );
 
     addTimerWidget( state, vbox );
+    addTradeSub7Checkbox( state, vbox );
     addDuplicateCheckbox( state, vbox );
 
     /* buttons at the bottom */
@@ -689,6 +709,10 @@ gtk_newgame_attr_set( void* closure, NewGameAttr attr, NGValue value )
         break;
     case NG_ATTR_DUPLICATE:
         gtk_toggle_button_set_active( GTK_TOGGLE_BUTTON(state->duplicateCheck),
+                                      value.ng_bool );
+        break;
+    case NG_ATTR_SUB7:
+        gtk_toggle_button_set_active( GTK_TOGGLE_BUTTON(state->sub7Check),
                                       value.ng_bool );
         break;
     default:

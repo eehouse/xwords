@@ -52,6 +52,7 @@ struct NewGameCtx {
     XP_TriEnable juggleEnabled;
     XP_TriEnable settingsEnabled;
     XP_Bool duplicateEnabled;
+    XP_Bool sub7Enabled;
 
     MPSLOT
 };
@@ -150,6 +151,10 @@ newg_load( NewGameCtx* ngc, XWEnv xwe, const CurGameInfo* gi )
     value.ng_bool = ngc->duplicateEnabled;
     (*ngc->setAttrProc)( closure, NG_ATTR_DUPLICATE, value );
 
+    ngc->sub7Enabled = gi->tradeSubSeven;
+    value.ng_bool = ngc->sub7Enabled;
+    (*ngc->setAttrProc)( closure, NG_ATTR_SUB7, value );
+
     ngc->timerSeconds = gi->gameSeconds;
     value.ng_u16 = ngc->timerSeconds;
     (*ngc->setAttrProc)( closure, NG_ATTR_TIMER, value );
@@ -229,6 +234,7 @@ newg_store( NewGameCtx* ngc, XWEnv xwe, CurGameInfo* gi, XP_Bool warn )
         gi->timerEnabled = gi->gameSeconds > 0;
 
         gi->inDuplicateMode = ngc->duplicateEnabled;
+        gi->tradeSubSeven = ngc->sub7Enabled;
         gi->gameSeconds = ngc->timerSeconds;
         gi->timerEnabled = gi->gameSeconds > 0;
 
@@ -274,6 +280,10 @@ newg_attrChanged( NewGameCtx* ngc, XWEnv xwe,
     case NG_ATTR_DUPLICATE:
         ngc->duplicateEnabled = value.ng_bool;
         break;
+    case NG_ATTR_SUB7:
+        ngc->sub7Enabled = value.ng_bool;
+        break;
+
     default:
         XP_ASSERT( 0 );
     }

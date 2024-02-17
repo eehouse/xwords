@@ -124,7 +124,6 @@ static XP_Bool board_moveArrow( BoardCtxt* board, XWEnv xwe, XP_Key cursorKey );
 
 static XP_Bool board_setXOffset( BoardCtxt* board, XP_U16 offset );
 static XP_Bool preflight( BoardCtxt* board, XWEnv xwe, XP_Bool reveal );
-static XP_U16 MIN_TRADE_TILES( const BoardCtxt* board );
 
 #ifdef KEY_SUPPORT
 static XP_Bool moveKeyTileToBoard( BoardCtxt* board, XWEnv xwe,
@@ -866,7 +865,7 @@ board_canTrade( BoardCtxt* board, XWEnv xwe )
 {
     XP_Bool result = preflight( board, xwe, XP_FALSE )
         && !board->gi->inDuplicateMode
-        && MIN_TRADE_TILES(board) <= server_countTilesInPool( board->server );
+        && MIN_TRADE_TILES(board->gi) <= server_countTilesInPool( board->server );
     return result;
 }
 
@@ -1230,7 +1229,7 @@ selectPlayerImpl( BoardCtxt* board, XWEnv xwe, XP_U16 newPlayer, XP_Bool reveal,
         /* Just in case somebody started a trade when it wasn't his turn and
            there were plenty of tiles but now there aren't. */
         if ( newInfo->tradeInProgress && 
-             server_countTilesInPool(board->server) < MIN_TRADE_TILES(board) ) {
+             server_countTilesInPool(board->server) < MIN_TRADE_TILES(board->gi) ) {
             newInfo->tradeInProgress = XP_FALSE;
             newInfo->traySelBits = 0x00; /* clear any selected */
         }
@@ -2100,15 +2099,6 @@ preflight( BoardCtxt* board, XWEnv xwe, XP_Bool reveal )
         && !TRADE_IN_PROGRESS(board);
 } /* preflight */
 
-static XP_U16
-MIN_TRADE_TILES( const BoardCtxt* board )
-{
-    const DictionaryCtxt* dict = model_getDictionary( board->model );
-    const XP_UCHAR* isoCode = dict_getISOCode( dict );
-    /* In Spanish, I'm told, you can trade until there are no tiles left.) */
-    return 0 == XP_STRCMP( "es", isoCode ) ? 1 : MIN_TRAY_TILES;
-}
-
 /* Refuse with error message if any tiles are currently on board in this turn.
  * Then call the engine, and display the first move.  Return true if there's
  * any redrawing to be done.
@@ -2566,7 +2556,7 @@ board_beginTrade( BoardCtxt* board, XWEnv xwe )
     result = preflight( board, xwe, XP_TRUE );
     if ( result ) {
         XP_S16 tilesLeft = server_countTilesInPool(board->server);
-        if ( tilesLeft < MIN_TRADE_TILES( board ) ) {
+        if ( tilesLeft < MIN_TRADE_TILES( board->gi ) ) {
             util_userError( board->util, xwe, ERR_TOO_FEW_TILES_LEFT_TO_TRADE );
         } else {
             model_resetCurrentTurn( board->model, xwe, board->selPlayer );

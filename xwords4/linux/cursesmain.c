@@ -1521,6 +1521,9 @@ makeGameFromArgs( CursesAppGlobals* aGlobals, cJSON* args )
         gi.traySize = tmp->valueint;
     }
 
+    tmp = cJSON_GetObjectItem( args, "allowSub7" );
+    gi.tradeSubSeven = !!tmp && cJSON_IsTrue( tmp );
+
     tmp = cJSON_GetObjectItem( args, "isSolo" );
     XP_ASSERT( !!tmp );
     XP_Bool isSolo = cJSON_IsTrue( tmp );

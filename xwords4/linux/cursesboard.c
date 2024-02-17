@@ -742,6 +742,11 @@ cb_makeMoveIf( CursesBoardState* cbState, XP_U32 gameID, XP_Bool tryTrade )
             ModelCtxt* model = cGlobals->game.model;
 
             TrayTileSet oldTiles = *model_getPlayerTiles( model, turn );
+            XP_S16 nTiles = server_countTilesInPool( server );
+            XP_ASSERT( 0 <= nTiles );
+            if ( nTiles < oldTiles.nTiles ) {
+                oldTiles.nTiles = nTiles;
+            }
             success = server_commitTrade( server, NULL_XWE, &oldTiles, NULL );
         } else {
             XP_Bool ignored;

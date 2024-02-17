@@ -334,10 +334,10 @@ class Device():
             hostPosn = random.randint(0, nPlayers-1)
             traySize = 0 == args.TRAY_SIZE and random.randint(7, 9) or args.TRAY_SIZE
             boardSize = random.choice(range(args.BOARD_SIZE_MIN, args.BOARD_SIZE_MAX+1, 2))
-
+            allowSub7 = random.randint(0, 99) < self.args.SUB7_TRADES_PCT
             response = self._sendWaitReply('makeGame', nPlayers=nPlayers, hostPosn=hostPosn,
                                            dict=args.DICTS[0], boardSize=boardSize,
-                                           traySize=traySize, isSolo=isSolo)
+                                           traySize=traySize, isSolo=isSolo, allowSub7=allowSub7)
             newGid = response.get('newGid')
             if newGid:
                 game.setGid(newGid)
@@ -788,6 +788,7 @@ def mkParser():
 
     # parser.add_argument('--undo-pct', dest = 'UNDO_PCT', default = 0, type = int)
     parser.add_argument('--trade-pct', dest = 'TRADE_PCT', default = 10, type = int)
+    parser.add_argument('--sub7-trades-pct', dest = 'SUB7_TRADES_PCT', default = 10, type=int)
 
     parser.add_argument('--with-sms', dest = 'WITH_SMS', action = 'store_true')
     parser.add_argument('--without-sms', dest = 'WITH_SMS', default = False, action = 'store_false')

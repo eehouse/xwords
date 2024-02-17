@@ -635,6 +635,7 @@ gi_copy( MPFORMAL CurGameInfo* destGI, const CurGameInfo* srcGI )
     destGI->inDuplicateMode = srcGI->inDuplicateMode;
     XP_LOGFF( "copied forceChannel: %d; inDuplicateMode: %d",
              destGI->forceChannel, destGI->inDuplicateMode );
+    destGI->tradeSubSeven = srcGI->tradeSubSeven;
 
     const LocalPlayer* srcPl;
     LocalPlayer* destPl;
@@ -725,6 +726,9 @@ gi_equal( const CurGameInfo* gi1, const CurGameInfo* gi2 )
             equal = strEq( gi1->isoCodeStr, gi2->isoCodeStr );
             break;
         case 17:
+            equal = gi1->tradeSubSeven == gi2->tradeSubSeven;
+            break;
+        case 18:
             for ( int jj = 0; equal && jj < gi1->nPlayers; ++jj ) {
                 const LocalPlayer* lp1 = &gi1->players[jj];
                 const LocalPlayer* lp2 = &gi2->players[jj];
@@ -865,6 +869,9 @@ gi_readFromStream( MPFORMAL XWStreamCtxt* stream, CurGameInfo* gi )
     gi->inDuplicateMode = strVersion >= STREAM_VERS_DUPLICATE
         ? stream_getBits( stream, 1 )
         : XP_FALSE;
+    gi->tradeSubSeven = strVersion >= STREAM_VERS_SUBSEVEN
+        ? stream_getBits( stream, 1 )
+        : XP_FALSE;
     if ( strVersion >= STREAM_VERS_41B4 ) {
         gi->allowPickTiles = stream_getBits( stream, 1 );
         gi->allowHintRect = stream_getBits( stream, 1 );
@@ -954,6 +961,9 @@ gi_writeToStream( XWStreamCtxt* stream, const CurGameInfo* gi )
     stream_putBits( stream, 2, gi->phoniesAction );
     stream_putBits( stream, 1, gi->timerEnabled );
     stream_putBits( stream, 1, gi->inDuplicateMode );
+    if ( strVersion >= STREAM_VERS_SUBSEVEN ) {
+        stream_putBits( stream, 1, gi->tradeSubSeven );
+    }
     stream_putBits( stream, 1, gi->allowPickTiles );
     stream_putBits( stream, 1, gi->allowHintRect );
     stream_putBits( stream, 1, gi->confirmBTConnect );
@@ -1056,6 +1066,7 @@ game_logGI( const CurGameInfo* gi, const char* msg, const char* func, int line )
         XP_LOGF( "  serverRole: %d", gi->serverRole );
         XP_LOGF( "  dictName: %s", gi->dictName );
         XP_LOGF( "  isoCode: %s", gi->isoCodeStr );
+        XP_LOGF( "  tradeSubSeven: %s", boolToStr(gi->tradeSubSeven) );
     }
 }
 #endif
