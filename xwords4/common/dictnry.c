@@ -641,6 +641,8 @@ dict_tilesToString( const DictionaryCtxt* dict, const Tile* tiles,
     if ( !!bufp && bufp < end ) {
         *bufp = '\0';
         result = bufp - buf;
+    } else {
+        XP_ASSERT(0);
     }
     return result;
 } /* dict_tilesToString */

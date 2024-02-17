@@ -1602,7 +1602,9 @@ static XP_Bool
 moveifFromArgs( CursesAppGlobals* aGlobals, cJSON* args )
 {
     XP_U32 gameID = gidFromObject( args );
-    return cb_makeMoveIf( aGlobals->cbState, gameID );
+    cJSON* tmp = cJSON_GetObjectItem( args, "tryTrade" );
+    XP_Bool tryTrade = !!tmp && cJSON_IsTrue( tmp );
+    return cb_makeMoveIf( aGlobals->cbState, gameID, tryTrade );
 }
 
 static XP_Bool

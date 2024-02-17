@@ -1521,15 +1521,14 @@ model_packTilesUtil( ModelCtxt* model, PoolContext* pool,
     const DictionaryCtxt* dict = model_getDictionary(model);
     XP_U16 nFaces = dict_numTileFaces( dict );
     Tile blankFace = dict_getBlankTile( dict );
-    Tile tile;
     XP_U16 nFacesAvail = 0;
 
     XP_ASSERT( nFaces <= *nUsed );
 
-    for ( tile = 0; tile < nFaces; ++tile ) {
+    for ( Tile tile = 0; tile < nFaces; ++tile ) {
         if ( includeBlank ) {
             XP_ASSERT( !!pool );
-            if ( pool_getNTilesLeftFor( pool, tile ) == 0 ) {
+            if ( 0 == pool_getNTilesLeftFor( pool, tile ) ) {
                 continue;
             }
         } else if ( tile == blankFace ) {
@@ -2310,7 +2309,7 @@ printMovePre( ModelCtxt* model, XWEnv xwe, XP_U16 XP_UNUSED(moveN),
     if ( entry->moveType != ASSIGN_TYPE ) {
         const XP_UCHAR* format;
         XP_UCHAR buf[64];
-        XP_UCHAR traybuf[MAX_TRAY_TILES+1];
+        XP_UCHAR traybuf[32];
         MovePrintClosure* closure = (MovePrintClosure*)p_closure;
         XWStreamCtxt* stream = closure->stream;
 
@@ -2388,14 +2387,15 @@ printMovePost( ModelCtxt* model, XWEnv xwe, XP_U16 XP_UNUSED(moveN),
         XP_U16 nTiles;
 
         XP_UCHAR buf[100];
-        XP_UCHAR traybuf1[MAX_TRAY_TILES+1];
-        XP_UCHAR traybuf2[MAX_TRAY_TILES+1];
+        XP_UCHAR traybuf1[32];
+        XP_UCHAR traybuf2[32];
         const MoveInfo* mi;
         XP_S16 totalScore = model_getPlayerScore( model, entry->playerNum );
         XP_Bool addCR = XP_FALSE;
 
         switch( entry->moveType ) {
         case TRADE_TYPE:
+            XP_ASSERT( entry->u.trade.oldTiles.nTiles == entry->u.trade.newTiles.nTiles );
             formatTray( (const TrayTileSet*)&entry->u.trade.oldTiles, 
                         dict, traybuf1, sizeof(traybuf1), closure->keepHidden );
             formatTray( (const TrayTileSet*) &entry->u.trade.newTiles, 

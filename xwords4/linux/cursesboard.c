@@ -718,23 +718,41 @@ cb_makeRematch( CursesBoardState* cbState, XP_U32 gameID, RematchOrder ro,
 }
 
 XP_Bool
-cb_makeMoveIf( CursesBoardState* cbState, XP_U32 gameID )
+cb_makeMoveIf( CursesBoardState* cbState, XP_U32 gameID, XP_Bool tryTrade )
 {
+    XP_LOGFF( "(tryTrade: %s)", boolToStr(tryTrade));
     CursesBoardGlobals* bGlobals =
         findOrOpenForGameID( cbState, gameID, NULL, NULL );
     XP_Bool success = !!bGlobals;
+    CommonGlobals* cGlobals;
+    ServerCtxt* server;
+    XP_S16 turn = -1;
     if ( success ) {
-        CommonGlobals* cGlobals = &bGlobals->cGlobals;
+        cGlobals = &bGlobals->cGlobals;
+        server = cGlobals->game.server;
+
+        XP_Bool isLocal;
+        turn = server_getCurrentTurn( server, &isLocal );
+        success = 0 <= turn && isLocal;
+    }
+
+    if ( success ) {
         BoardCtxt* board = cGlobals->game.board;
-        success = board_canHint( board );
-        if ( success ) {
+        if ( tryTrade && board_canTrade( board, NULL_XWE ) ) {
+            ModelCtxt* model = cGlobals->game.model;
+
+            TrayTileSet oldTiles = *model_getPlayerTiles( model, turn );
+            success = server_commitTrade( server, NULL_XWE, &oldTiles, NULL );
+        } else {
             XP_Bool ignored;
-            success = board_requestHint( board, NULL_XWE,
+            if ( board_canHint( board )
+                 && board_requestHint( board, NULL_XWE,
 #ifdef XWFEATURE_SEARCHLIMIT
-                                         XP_FALSE,
+                                       XP_FALSE,
 #endif
-                                         XP_FALSE, &ignored );
-            if ( !success ) {
+                                       XP_FALSE, &ignored ) ) {
+                /* nothing to do -- we have a hint */
+            } else {
                 XP_LOGFF( "unable to find hint; so PASSing" );
             }
             success = board_commitTurn( board, NULL_XWE, XP_TRUE, XP_TRUE,

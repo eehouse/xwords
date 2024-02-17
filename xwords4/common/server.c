@@ -2718,6 +2718,7 @@ fetchTiles( ServerCtxt* server, XWEnv xwe, XP_U16 playerNum, XP_U16 nToFetch,
     
     XP_U16 nLeftInPool = pool_getNTilesLeft( pool );
     if ( nLeftInPool < nToFetch ) {
+        XP_LOGFF( "dropping nToFetch from %d to %d", nToFetch, nLeftInPool );
         nToFetch = nLeftInPool;
     }
 
@@ -3926,7 +3927,7 @@ server_commitTrade( ServerCtxt* server, XWEnv xwe, const TrayTileSet* oldTiles,
     if ( server->vol.gi->serverRole == SERVER_ISCLIENT ) {
         /* just send to server */
         sendMoveTo(server, xwe, HOST_DEVICE, turn, XP_TRUE, &newTiles, oldTiles);
-    } else {
+    } else if ( server->vol.gi->serverRole == SERVER_ISHOST ) {
         sendMoveToClientsExcept( server, xwe, turn, XP_TRUE, &newTiles, oldTiles,
                                  HOST_DEVICE );
     }

@@ -1092,7 +1092,7 @@ board_commitTurn( BoardCtxt* board, XWEnv xwe, XP_Bool phoniesConfirmed,
         /* game's over but still undoable so turn hasn't changed; do
            nothing */
     } else if ( phoniesConfirmed || turnConfirmed || checkRevealTray( board, xwe ) ) {
-        PerTurnInfo* pti = board->pti + selPlayer;
+        PerTurnInfo* pti = &board->pti[selPlayer];
         if ( pti->tradeInProgress ) {
             TileBit traySelBits = pti->traySelBits;
             int count = 0;
@@ -3539,7 +3539,7 @@ figureNextLoc( const BoardCtxt* board, XP_Key cursorKey,
             end = max;
             break;
         default:
-            XP_LOGF( "%s: odd cursor key: %d", __func__, cursorKey ); 
+            XP_LOGFF( "odd cursor key: %d", cursorKey );
         }
 
         if ( incr != 0 ) {

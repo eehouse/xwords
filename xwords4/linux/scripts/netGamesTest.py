@@ -267,7 +267,8 @@ class Device():
         gids = [game.gid for game in self._allGames() if not self.gameOver(game.gid)]
         random.shuffle(gids)
         for gid in gids:
-            response = self._sendWaitReply('moveIf', gid=gid)
+            tryTrade = random.randint(0, 99) < self.args.TRADE_PCT
+            response = self._sendWaitReply('moveIf', gid=gid, tryTrade=tryTrade)
             moved = response.get('success', False)
             if moved: break
         return moved
@@ -786,7 +787,7 @@ def mkParser():
     # #     echo "    [--undo-pct <int>]                                      \\" >&2
 
     # parser.add_argument('--undo-pct', dest = 'UNDO_PCT', default = 0, type = int)
-    # parser.add_argument('--trade-pct', dest = 'TRADE_PCT', default = 10, type = int)
+    parser.add_argument('--trade-pct', dest = 'TRADE_PCT', default = 10, type = int)
 
     parser.add_argument('--with-sms', dest = 'WITH_SMS', action = 'store_true')
     parser.add_argument('--without-sms', dest = 'WITH_SMS', default = False, action = 'store_false')
