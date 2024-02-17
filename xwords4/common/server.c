@@ -243,8 +243,8 @@ static void setTurn( ServerCtxt* server, XWEnv xwe, XP_S16 turn );
 static XWStreamCtxt* mkServerStream( const ServerCtxt* server, XP_U8 version );
 static XWStreamCtxt* mkServerStream0( const ServerCtxt* server );
 static void fetchTiles( ServerCtxt* server, XWEnv xwe, XP_U16 playerNum,
-                        XP_U16 nToFetch, const TrayTileSet* tradedTiles,
-                        TrayTileSet* resultTiles, XP_Bool forceCanPlay );
+                        XP_U16 nToFetch, TrayTileSet* resultTiles,
+                        XP_Bool forceCanPlay );
 static void finishMove( ServerCtxt* server, XWEnv xwe,
                         TrayTileSet* newTiles, XP_U16 turn );
 static XP_Bool dupe_checkTurns( ServerCtxt* server, XWEnv xwe );
@@ -1881,7 +1881,7 @@ server_tilesPicked( ServerCtxt* server, XWEnv xwe, XP_U16 player,
     pool_removeTiles( server->pool, &newTiles );
 
     fetchTiles( server, xwe, player, server->vol.gi->traySize,
-                NULL, &newTiles, XP_FALSE );
+                &newTiles, XP_FALSE );
     XP_ASSERT( !inDuplicateMode(server) );
     model_assignPlayerTiles( server->vol.model, player, &newTiles );
 
@@ -2633,47 +2633,6 @@ makeNotAVowel( ServerCtxt* server, Tile* newTile )
 } /* makeNotAVowel */
 #endif
 
-static void
-curTrayAsTexts( ServerCtxt* server, XP_U16 turn, const TrayTileSet* notInTray,
-                XP_U16* nUsedP, const XP_UCHAR** curTrayText )
-{
-    const TrayTileSet* tileSet = model_getPlayerTiles( server->vol.model, turn );
-    const DictionaryCtxt* dict = model_getDictionary( server->vol.model );
-    XP_U16 ii, jj;
-    XP_U16 size = tileSet->nTiles;
-    const Tile* tp = tileSet->tiles;
-    XP_U16 tradedTiles[MAX_TRAY_TILES];
-    XP_U16 nNotInTray = 0;
-    XP_U16 nUsed = 0;
-
-    XP_MEMSET( tradedTiles, 0xFF, sizeof(tradedTiles) );
-    if ( !!notInTray ) {
-        const Tile* tp = notInTray->tiles;
-        nNotInTray = notInTray->nTiles;
-        for ( ii = 0; ii < nNotInTray; ++ii ) {
-            tradedTiles[ii] = *tp++;
-        }
-    }
-
-    for ( ii = 0; ii < size; ++ii ) {
-        Tile tile = *tp++;
-        XP_Bool toBeTraded = XP_FALSE;
-
-        for ( jj = 0; jj < nNotInTray; ++jj ) {
-            if ( tradedTiles[jj] == tile ) {
-                tradedTiles[jj] = 0xFFFF;
-                toBeTraded = XP_TRUE;
-                break;
-            }
-        }
-
-        if ( !toBeTraded ) {
-            curTrayText[nUsed++] = dict_getTileString( dict, tile );
-        }
-    }
-    *nUsedP = nUsed;
-} /* curTrayAsTexts */
-
 /**
  * Return true (after calling util_informPickTiles()) IFF allowPickTiles is
  * TRUE and the tile set passed in is NULL.  If it doesn't contain as many
@@ -2747,81 +2706,20 @@ trayAllowsMoves( ServerCtxt* server, XWEnv xwe, XP_U16 turn,
     return result;
 }
 
-/* Get tiles for one user.  If picking is available, let user pick until
- * cancels.  Otherwise, and after cancel, pick for 'im.
- */
 static void
 fetchTiles( ServerCtxt* server, XWEnv xwe, XP_U16 playerNum, XP_U16 nToFetch,
-            const TrayTileSet* tradedTiles, TrayTileSet* resultTiles,
-            XP_Bool forceCanPlay /* First player shouldn't have unplayable rack*/ )
+            TrayTileSet* resultTiles, XP_Bool forceCanPlay /* First player shouldn't have unplayable rack*/ )
 {
     XP_ASSERT( server->vol.gi->serverRole != SERVER_ISCLIENT || !inDuplicateMode(server) );
-    XP_Bool ask;
     XP_U16 nSoFar = resultTiles->nTiles;
     PoolContext* pool = server->pool;
-    const CurGameInfo* gi = server->vol.gi;
-    const XP_UCHAR* curTray[gi->traySize];
-#ifdef FEATURE_TRAY_EDIT
-    const DictionaryCtxt* dict = model_getDictionary( server->vol.model );
-#endif
 
     XP_ASSERT( !!pool );
-#ifdef FEATURE_TRAY_EDIT
-    ask = gi->allowPickTiles
-        && !LP_IS_ROBOT(&gi->players[playerNum]);
-#else
-    ask = XP_FALSE;
-#endif
     
     XP_U16 nLeftInPool = pool_getNTilesLeft( pool );
     if ( nLeftInPool < nToFetch ) {
         nToFetch = nLeftInPool;
     }
-
-    TrayTileSet oneTile = {.nTiles = 1};
-    PickInfo pi = { .nTotal = nToFetch,
-                    .thisPick = 0,
-                    .curTiles = curTray,
-    };
-
-    curTrayAsTexts( server, playerNum, tradedTiles, &pi.nCurTiles, curTray );
-
-#ifdef FEATURE_TRAY_EDIT        /* good compiler would note ask==0, but... */
-    /* First ask until cancelled */
-    while ( ask && nSoFar < nToFetch ) {
-        XP_ASSERT( !inDuplicateMode(server) );
-        const XP_UCHAR* texts[MAX_UNIQUE_TILES];
-        Tile tiles[MAX_UNIQUE_TILES];
-        XP_S16 chosen;
-        XP_U16 nUsed = MAX_UNIQUE_TILES;
-        // XP_ASSERT(0);           /* should no longer happen!!! */
-        model_packTilesUtil( server->vol.model, pool,
-                             XP_TRUE, &nUsed, texts, tiles );
-
-        chosen = PICKER_PICKALL; /*util_userPickTileTray( server->vol.util,
-                                   &pi, playerNum, texts, nUsed );*/
-
-        if ( chosen == PICKER_PICKALL ) {
-            ask = XP_FALSE;
-        } else if ( chosen == PICKER_BACKUP ) {
-            if ( nSoFar > 0 ) {
-                TrayTileSet tiles;
-                tiles.nTiles = 1;
-                tiles.tiles[0] = resultTiles->tiles[--nSoFar];
-                pool_replaceTiles( pool, &tiles );
-                --pi.nCurTiles;
-                --pi.thisPick;
-            }
-        } else {
-            Tile tile = tiles[chosen];
-            oneTile.tiles[0] = tile;
-            pool_removeTiles( pool, &oneTile );
-            curTray[pi.nCurTiles++] = dict_getTileString( dict, tile );
-            resultTiles->tiles[nSoFar++] = tile;
-            ++pi.thisPick;
-        }
-    }
-#endif
 
     /* Then fetch the rest without asking. But if we're in duplicate mode,
        make sure the tray allows some moves (e.g. isn't all consonants when
@@ -2900,7 +2798,7 @@ assignTilesToAll( ServerCtxt* server, XWEnv xwe )
             }
             if ( 0 == ii || !gi->inDuplicateMode ) {
                 newTiles.nTiles = 0;
-                fetchTiles( server, xwe, ii, numAssigned, NULL, &newTiles, ii == 0 );
+                fetchTiles( server, xwe, ii, numAssigned, &newTiles, ii == 0 );
             }
 
             if ( gi->inDuplicateMode ) {
@@ -3512,7 +3410,7 @@ dupe_makeAndReportTrade( ServerCtxt* server, XWEnv xwe )
     pool_replaceTiles( pool, &oldTiles );
 
     TrayTileSet newTiles = {0};
-    fetchTiles( server, xwe, DUP_PLAYER, oldTiles.nTiles, NULL, &newTiles, XP_FALSE );
+    fetchTiles( server, xwe, DUP_PLAYER, oldTiles.nTiles, &newTiles, XP_FALSE );
 
     model_commitDupeTrade( model, &oldTiles, &newTiles );
 
@@ -3666,7 +3564,7 @@ dupe_commitAndReportMove( ServerCtxt* server, XWEnv xwe, XP_U16 winner,
     model_currentMoveToMoveInfo( model, winner, &moveInfo );
 
     TrayTileSet newTiles = {0};
-    fetchTiles( server, xwe, winner, nTiles, NULL, &newTiles, XP_FALSE );
+    fetchTiles( server, xwe, winner, nTiles, &newTiles, XP_FALSE );
 
     for ( XP_U16 player = 0; player < nPlayers; ++player ) {
         model_resetCurrentTurn( model, xwe, player );
@@ -3977,7 +3875,7 @@ finishMove( ServerCtxt* server, XWEnv xwe, TrayTileSet* newTiles, XP_U16 turn )
     server->vol.pickTilesCalled[turn] = XP_FALSE;
 
     XP_U16 nTilesMoved = model_getCurrentMoveCount( model, turn );
-    fetchTiles( server, xwe, turn, nTilesMoved, NULL, newTiles, XP_FALSE );
+    fetchTiles( server, xwe, turn, nTilesMoved, newTiles, XP_FALSE );
 
     XP_Bool isClient = gi->serverRole == SERVER_ISCLIENT;
     XP_Bool isLegalMove = XP_TRUE;
@@ -4023,7 +3921,7 @@ server_commitTrade( ServerCtxt* server, XWEnv xwe, const TrayTileSet* oldTiles,
     }
     XP_U16 turn = server->nv.currentTurn;
 
-    fetchTiles( server, xwe, turn, oldTiles->nTiles, oldTiles, &newTiles, XP_FALSE );
+    fetchTiles( server, xwe, turn, oldTiles->nTiles, &newTiles, XP_FALSE );
 
     if ( server->vol.gi->serverRole == SERVER_ISCLIENT ) {
         /* just send to server */
