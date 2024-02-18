@@ -10,7 +10,7 @@
     <string name="list_item_config">Impostazioni…</string>
     <string name="board_menu_file_about">Info CrossWords…</string>
     <string name="menu_prefs">Impostazioni</string>
-    <string name="gamel_menu_dicts">Lista parole…</string>
+    <string name="gamel_menu_dicts">Lista parole</string>
     <string name="button_reset">Reset</string>
     <string name="button_delete">Cancella</string>
     <plurals name="moves_fmt">
