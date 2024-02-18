@@ -61,12 +61,12 @@ typedef struct CurGameInfo {
     XP_Bool allowPickTiles;
     XP_Bool allowHintRect;
     XP_Bool inDuplicateMode;
-    XP_Bool tradeSubSeven;
+    XP_Bool tradeSub7;
     XWPhoniesChoice phoniesAction;
     XP_Bool confirmBTConnect;   /* only used for BT */
 } CurGameInfo;
 
-#define MIN_TRADE_TILES(GI) ((GI)->tradeSubSeven ? 1 : (GI)->traySize)
+#define MIN_TRADE_TILES(GI) ((GI)->tradeSub7 ? 1 : (GI)->traySize)
 
 #ifdef DEBUG
 # define LOGGI( gip, msg ) game_logGI( (gip), (msg), __func__, __LINE__ )

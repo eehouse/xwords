@@ -70,6 +70,7 @@
   <string name="key_logging_on">key_logging_on</string>
   <string name="key_show_sms">key_show_sms</string>
   <string name="key_init_hintsallowed">key_init_hintsallowed</string>
+  <string name="key_init_tradeSub7">key_init_tradeSub7</string>
   <string name="key_init_dupmodeon">key_init_dupmodeon</string>
   <string name="key_unhide_dupmode">key_unhide_dupmode</string> <!--temporary-->
   <string name="key_init_nethintsallowed">key_init_nethintsallowed</string>

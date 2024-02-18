@@ -443,6 +443,7 @@ static const SetInfo gi_bools[] = {
     ,ARR_MEMBER( CurGameInfo, allowPickTiles )
     ,ARR_MEMBER( CurGameInfo, allowHintRect )
     ,ARR_MEMBER( CurGameInfo, inDuplicateMode )
+    ,ARR_MEMBER( CurGameInfo, tradeSub7 )
 };
 
 static const SetInfo pl_ints[] = {

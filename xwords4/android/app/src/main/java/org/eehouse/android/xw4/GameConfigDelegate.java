@@ -115,6 +115,7 @@ public class GameConfigDelegate extends DelegateBase
             R.id.lang_spinner,
             R.id.dict_spinner,
             R.id.hints_allowed,
+            R.id.trade_sub_seven,
             R.id.duplicate_check,
             R.id.pick_faceup,
             R.id.boardsize_spinner,
@@ -683,6 +684,7 @@ public class GameConfigDelegate extends DelegateBase
             tweakTimerStuff();
 
             setChecked( R.id.hints_allowed, !m_gi.hintsNotAllowed );
+            setChecked( R.id.trade_sub_seven, m_gi.tradeSub7 );
             setChecked( R.id.pick_faceup, m_gi.allowPickTiles );
 
             setBoardsizeSpinner();
@@ -1276,6 +1278,7 @@ public class GameConfigDelegate extends DelegateBase
 
         m_gi.inDuplicateMode = getChecked( R.id.duplicate_check );
         m_gi.hintsNotAllowed = !getChecked( R.id.hints_allowed );
+        m_gi.tradeSub7 = getChecked( R.id.trade_sub_seven );
         m_gi.allowPickTiles = getChecked( R.id.pick_faceup );
         m_gi.timerEnabled = getChecked( R.id.use_timer );
 

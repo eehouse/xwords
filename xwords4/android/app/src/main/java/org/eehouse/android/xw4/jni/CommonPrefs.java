@@ -303,6 +303,11 @@ public class CommonPrefs extends XWPrefs {
         return getPrefsBoolean( context, key, true );
     }
 
+    public static boolean getSub7TradeAllowed( Context context )
+    {
+        return getPrefsBoolean( context, R.string.key_init_tradeSub7, false );
+    }
+
     public static boolean getDefaultDupMode( Context context )
     {
         return getPrefsBoolean( context, R.string.key_init_dupmodeon, false );

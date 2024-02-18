@@ -142,7 +142,6 @@
       <CheckBox android:id="@+id/use_timer"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="20dip"
                 />
 
       <LinearLayout android:id="@+id/timer_set"
@@ -177,6 +176,11 @@
                 android:layout_height="wrap_content"
                 android:text="@string/hints_allowed"
                 />
+      <CheckBox android:id="@+id/trade_sub_seven"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/sub_seven_allowed"
+                />
 
       <org.eehouse.android.xw4.LabeledSpinner
           android:id="@+id/smart_robot"
@@ -190,6 +194,7 @@
                  android:entries="@array/robot_levels"
                  />
       </org.eehouse.android.xw4.LabeledSpinner>
+
       <org.eehouse.android.xw4.LabeledSpinner
           style="@style/config_spinner_container"
           android:id="@+id/phonies_spinner"

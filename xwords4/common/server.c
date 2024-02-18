@@ -1139,6 +1139,7 @@ callDupTimerListener( const ServerCtxt* server, XWEnv xwe, XP_S32 oldVal, XP_S32
 static void
 setStreamVersion( ServerCtxt* server )
 {
+    XP_ASSERT( amHost( server ) );
     XP_U8 streamVersion = CUR_STREAM_VERS;
     for ( XP_U16 devIndex = 1; devIndex < server->nv.nDevices; ++devIndex ) {
         XP_U8 devVersion = server->nv.addresses[devIndex].streamVersion;
@@ -1149,13 +1150,28 @@ setStreamVersion( ServerCtxt* server )
     SRVR_LOGFFV( "setting streamVersion: 0x%x", streamVersion );
     server->nv.streamVersion = streamVersion;
 
-    CurGameInfo* gi = server->vol.gi;
-    if ( STREAM_VERS_NINETILES > streamVersion ) {
-        if ( 7 < gi->traySize ) {
-            SRVR_LOGFF( "reducing tray size from %d to 7", gi->traySize );
-            gi->traySize = gi->bingoMin = 7;
+    /* If we're downgrading stream to accomodate an older guest, we need to
+       re-write gi in that version in case there are newer features the game
+       can't support, e.g. allowing to trade with less than a full tray left
+       in the pool. */
+    if ( CUR_STREAM_VERS != streamVersion ) {
+        CurGameInfo* gi = server->vol.gi;
+        XP_U16 oldTraySize = gi->traySize;
+        XP_U16 oldBingoMin = gi->bingoMin;
+
+        XWStreamCtxt* tmp = mkServerStream( server, streamVersion );
+        gi_writeToStream( tmp, gi );
+        gi_disposePlayerInfo( MPPARM(server->mpool) gi );
+        gi_readFromStream( MPPARM(server->mpool) tmp, gi );
+        stream_destroy( tmp );
+        /* If downgrading forced tray size change, model needs to know. BUT:
+           the guest would have to be >two years old now for this to happen. */
+        if ( oldTraySize != gi->traySize || oldBingoMin != gi->bingoMin ) {
+            XP_ASSERT( 7 == gi->traySize && 7 == gi->bingoMin );
+            if ( 7 == gi->traySize && 7 == gi->bingoMin ) {
+                model_forceStack7Tiles( server->vol.model );
+            }
         }
-        model_forceStack7Tiles( server->vol.model );
     }
 }
 
@@ -1221,8 +1237,9 @@ handleRegistrationMsg( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* stream )
         if ( 0 < stream_getSize(stream) ) {
             XP_U8 streamVersion = stream_getU8( stream );
             if ( streamVersion >= STREAM_VERS_BIGBOARD ) {
-                SRVR_LOGFF( "upping device %d streamVersion to 0x%x",
-                            clientIndex, streamVersion );
+                SRVR_LOGFF( "setting addresses[%d] streamVersion to 0x%x "
+                            "(CUR_STREAM_VERS is 0x%x)",
+                            clientIndex, streamVersion, CUR_STREAM_VERS );
                 server->nv.addresses[clientIndex].streamVersion = streamVersion;
             }
         }

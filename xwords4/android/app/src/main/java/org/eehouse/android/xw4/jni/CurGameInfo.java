@@ -54,6 +54,7 @@ public class CurGameInfo implements Serializable {
     private static final String ALLOW_PICK = "ALLOW_PICK";
     private static final String PHONIES = "PHONIES";
     private static final String DUP = "DUP";
+    private static final String SUB7 = "SUB7";
 
     public enum XWPhoniesChoice { PHONIES_IGNORE, PHONIES_WARN, PHONIES_DISALLOW, PHONIES_BLOCK, };
     public enum DeviceRole { SERVER_STANDALONE, SERVER_ISSERVER, SERVER_ISCLIENT };
@@ -71,6 +72,7 @@ public class CurGameInfo implements Serializable {
     public DeviceRole serverRole;
 
     public boolean inDuplicateMode;
+    public boolean tradeSub7;
     public boolean hintsNotAllowed;
     public boolean timerEnabled;
     public boolean allowPickTiles;
@@ -102,6 +104,7 @@ public class CurGameInfo implements Serializable {
             : DeviceRole.SERVER_STANDALONE;
         hintsNotAllowed = !CommonPrefs.getDefaultHintsAllowed( context,
                                                                isNetworked );
+        tradeSub7 = CommonPrefs.getSub7TradeAllowed( context );
         phoniesAction = CommonPrefs.getDefaultPhonies( context );
         timerEnabled = CommonPrefs.getDefaultTimerEnabled( context );
         allowPickTiles = false;
@@ -156,6 +159,7 @@ public class CurGameInfo implements Serializable {
         isoCodeStr = src.isoCodeStr;
         hintsNotAllowed = src.hintsNotAllowed;
         inDuplicateMode = src.inDuplicateMode;
+        tradeSub7 = src.tradeSub7;
         phoniesAction = src.phoniesAction;
         timerEnabled = src.timerEnabled;
         allowPickTiles = src.allowPickTiles;
@@ -211,6 +215,7 @@ public class CurGameInfo implements Serializable {
                 .put( BINGO_MIN, bingoMin )
                 .put( NO_HINTS, hintsNotAllowed )
                 .put( DUP, inDuplicateMode )
+                .put( SUB7, tradeSub7 )
                 .put( TIMER, timerEnabled )
                 .put( ALLOW_PICK, allowPickTiles )
                 .put( PHONIES, phoniesAction.ordinal() )
@@ -233,6 +238,7 @@ public class CurGameInfo implements Serializable {
                 bingoMin = obj.optInt( BINGO_MIN, bingoMin );
                 hintsNotAllowed = obj.optBoolean( NO_HINTS, hintsNotAllowed );
                 inDuplicateMode = obj.optBoolean( DUP, inDuplicateMode );
+                tradeSub7 = obj.optBoolean( SUB7, tradeSub7 );
                 timerEnabled = obj.optBoolean( TIMER, timerEnabled );
                 allowPickTiles = obj.optBoolean( ALLOW_PICK, allowPickTiles );
                 int tmp = obj.optInt( PHONIES, phoniesAction.ordinal() );
@@ -331,6 +337,7 @@ public class CurGameInfo implements Serializable {
             || bingoMin != other.bingoMin
             || hintsNotAllowed != other.hintsNotAllowed
             || inDuplicateMode != other.inDuplicateMode
+            || tradeSub7 != other.tradeSub7
             || allowPickTiles != other.allowPickTiles
             || phoniesAction != other.phoniesAction;
 
@@ -367,6 +374,7 @@ public class CurGameInfo implements Serializable {
                     && forceChannel == other.forceChannel
                     && hintsNotAllowed == other.hintsNotAllowed
                     && inDuplicateMode == other.inDuplicateMode
+                    && tradeSub7 == other.tradeSub7
                     && timerEnabled == other.timerEnabled
                     && allowPickTiles == other.allowPickTiles
                     && allowHintRect == other.allowHintRect
