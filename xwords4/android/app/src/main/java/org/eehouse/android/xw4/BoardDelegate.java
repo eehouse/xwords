@@ -1480,6 +1480,10 @@ public class BoardDelegate extends DelegateBase
     {
         ConnStatusHandler.updateMoveCount( m_activity, newCount, quashed );
 
+        if ( quashed ) {
+            postDeleteOnce( null );
+        }
+
         final GameOverAlert goAlert = mGameOverAlert;
         if ( null != goAlert ) {
             runOnUiThread(new Runnable() {
