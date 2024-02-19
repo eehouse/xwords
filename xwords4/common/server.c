@@ -262,6 +262,7 @@ static void dupe_transmitPause( ServerCtxt* server, XWEnv xwe, DupPauseType typ,
                                 XP_U16 turn, const XP_UCHAR* msg,
                                 XP_S16 skipDev );
 static void dupe_resetTimer( ServerCtxt* server, XWEnv xwe );
+static void resetDupeTimerIf( ServerCtxt* server, XWEnv xwe );
 static XP_Bool setDupCheckTimer( ServerCtxt* server, XWEnv xwe );
 static void sortTilesIf( ServerCtxt* server, XP_S16 turn );
 
@@ -1422,6 +1423,14 @@ setDupTimerExpires( ServerCtxt* server, XWEnv xwe, XP_S32 newVal )
 }
 
 static void
+resetDupeTimerIf( ServerCtxt* server, XWEnv xwe )
+{
+    if ( inDuplicateMode( server ) ) {
+        dupe_resetTimer( server, xwe );
+    }
+}
+
+static void
 dupe_resetTimer( ServerCtxt* server, XWEnv xwe )
 {
     XP_S32 newVal = 0;
@@ -1957,9 +1966,7 @@ server_do( ServerCtxt* server, XWEnv xwe )
                 if ( assignTilesToAll( server, xwe ) ) {
                     SETSTATE( server, XWSTATE_INTURN );
                     setTurn( server, xwe, 0 );
-                    if ( inDuplicateMode( server ) ) {
-                        dupe_resetTimer( server, xwe );
-                    }
+                    resetDupeTimerIf( server, xwe );
                     moreToDo = XP_TRUE;
                 }
             }
@@ -2327,7 +2334,7 @@ client_readInitialMessage( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* stream )
            players */
         informMissing( server, xwe );
         setTurn( server, xwe, 0 );
-        dupe_resetTimer( server, xwe );
+        resetDupeTimerIf( server, xwe );
     }
     return accepted;
 } /* client_readInitialMessage */
@@ -2421,7 +2428,7 @@ sendInitialMessage( ServerCtxt* server, XWEnv xwe )
        non-initial messages will have a non-0 connID. */
     comms_setConnID( server->vol.comms, gameID, streamVersion );
 
-    dupe_resetTimer( server, xwe );
+    resetDupeTimerIf( server, xwe );
 } /* sendInitialMessage */
 
 static void
