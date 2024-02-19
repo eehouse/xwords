@@ -727,10 +727,10 @@ public class GameConfigDelegate extends DelegateBase
             if ( CommonPrefs.getDupModeHidden( m_activity ) ) {
                 setChecked( R.id.duplicate_check, false );
             } else {
-                CheckBox check = (CheckBox)findViewById( R.id.duplicate_check );
-                check.setVisibility( View.VISIBLE );
-                check.setChecked( m_gi.inDuplicateMode );
-                check.setOnCheckedChangeListener( new OnCheckedChangeListener() {
+                CheckBox dupCheck = (CheckBox)findViewById( R.id.duplicate_check );
+                dupCheck.setVisibility( View.VISIBLE );
+                dupCheck.setChecked( m_gi.inDuplicateMode );
+                dupCheck.setOnCheckedChangeListener( new OnCheckedChangeListener() {
                         @Override
                         public void onCheckedChanged( CompoundButton buttonView,
                                                       boolean checked ) {
@@ -761,11 +761,11 @@ public class GameConfigDelegate extends DelegateBase
         TextView label = (TextView)findViewById(R.id.timer_label );
         label.setText( id );
 
-        // setInt( R.id.timer_minutes_edit,
-        //         m_gi.gameSeconds/60/m_gi.nPlayers );
-
-        // setChecked( R.id.use_timer, m_gi.timerEnabled );
-        // showTimerSet( m_gi.timerEnabled );
+        int seconds = m_gi.gameSeconds / 60;
+        if ( !m_gi.inDuplicateMode ) {
+            seconds /= m_gi.nPlayers;
+        }
+        setInt( R.id.timer_minutes_edit, seconds );
     }
 
     private void showTimerSet( boolean show )
@@ -1285,11 +1285,10 @@ public class GameConfigDelegate extends DelegateBase
         // Get timer value. It's per-move minutes in duplicate mode, otherwise
         // it's for the whole game.
         int seconds = 60 * getInt( R.id.timer_minutes_edit );
-        if ( m_gi.inDuplicateMode ) {
-            m_gi.gameSeconds = seconds;
-        } else {
-            m_gi.gameSeconds = seconds * m_gi.nPlayers;
+        if ( !m_gi.inDuplicateMode ) {
+            seconds *= m_gi.nPlayers;
         }
+        m_gi.gameSeconds = seconds;
 
         int position = m_phoniesSpinner.getSelectedItemPosition();
         m_gi.phoniesAction = CurGameInfo.XWPhoniesChoice.values()[position];

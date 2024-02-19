@@ -832,9 +832,6 @@ gi_countLocalPlayers( const CurGameInfo* gi, XP_Bool humanOnly )
 void
 gi_readFromStream( MPFORMAL XWStreamCtxt* stream, CurGameInfo* gi )
 {
-    LocalPlayer* pl;
-    XP_U16 ii;
-    XP_UCHAR* str;
     XP_U16 strVersion = stream_getVersion( stream );
     XP_U16 nColsNBits;
     XP_ASSERT( 0 < strVersion );
@@ -845,7 +842,7 @@ gi_readFromStream( MPFORMAL XWStreamCtxt* stream, CurGameInfo* gi )
     nColsNBits = NUMCOLS_NBITS_4;
 #endif
 
-    str = stringFromStream( mpool, stream );
+    XP_UCHAR* str = stringFromStream( mpool, stream );
     replaceStringIfDifferent( mpool, &gi->dictName, str );
     XP_FREEP( mpool, &str );
 
@@ -907,7 +904,8 @@ gi_readFromStream( MPFORMAL XWStreamCtxt* stream, CurGameInfo* gi )
         gi->gameSeconds = stream_getU16( stream );
     }
 
-    for ( pl = gi->players, ii = 0; ii < gi->nPlayers; ++pl, ++ii ) {
+    for ( int ii = 0; ii < gi->nPlayers; ++ii ) {
+        LocalPlayer* pl = &gi->players[ii];
         str = stringFromStream( mpool, stream );
         replaceStringIfDifferent( mpool, &pl->name, str );
         XP_FREEP( mpool, &str );
