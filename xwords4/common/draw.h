@@ -82,9 +82,8 @@ typedef XP_UCHAR HintAtts;
  *
  * As to how to choose, static linking makes the binary a tiny bit smaller,
  * but vtables give more flexibilty.  For example, Palm uses them to support
- * both black-and-white and color screens, while linux on linux separate
- * vtable are created to allow a runtime choice between gtk and ncurses
- * drawing.
+ * both black-and-white and color screens, while on linux separate vtables are
+ * created to allow a runtime choice between gtk and ncurses drawing.
  */
 #ifdef DRAW_LINK_DIRECT
 # define DRAW_FUNC_NAME(name)   linked##_draw_##name

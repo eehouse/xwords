@@ -612,12 +612,8 @@ makeGamesWindow( GtkAppGlobals* apg )
 
     resizeFromSaved( window, params->pDb, KEY_WIN_LOC );
 
-    GtkWidget* swin = gtk_scrolled_window_new( NULL, NULL );
-    gtk_container_add( GTK_CONTAINER(window), swin );
-    gtk_widget_show( swin );
-    
     GtkWidget* vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-    gtk_container_add( GTK_CONTAINER(swin), vbox );
+    gtk_container_add( GTK_CONTAINER(window), vbox );
     gtk_widget_show( vbox );
 
     // add menubar here
@@ -638,8 +634,13 @@ makeGamesWindow( GtkAppGlobals* apg )
     gtk_widget_show( menubar );
     gtk_box_pack_start( GTK_BOX(vbox), menubar, FALSE, TRUE, 0 );
 
+    GtkWidget* swin = gtk_scrolled_window_new( NULL, NULL );
+    gboolean expand = TRUE;  // scrollable window gets all extra space
+    gtk_box_pack_start( GTK_BOX(vbox), swin, expand, TRUE, 0 );
+    gtk_widget_show( swin );
+
     GtkWidget* list = init_games_list( apg );
-    gtk_container_add( GTK_CONTAINER(vbox), list );
+    gtk_container_add( GTK_CONTAINER(swin), list );
     
     gtk_widget_show( list );
 

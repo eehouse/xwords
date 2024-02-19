@@ -158,9 +158,11 @@ static void
 draw_circle( const GtkDrawCtx* dctx, const XP_Rect* rect )
 {
     cairo_t* cr = getCairo( dctx );
+    cairo_save( cr );
     cairo_translate( cr, rect->left + (rect->width/2), rect->top + (rect->height/2));
     int diameter = XP_MAX(rect->width, rect->height);
     cairo_arc( cr, 0, 0, diameter/2, 0, 2 * M_PI);
+    cairo_restore( cr );
     cairo_stroke( cr );
 }
 
@@ -304,7 +306,7 @@ draw_string_at( GtkDrawCtx* dctx, PangoLayout* layout,
                 const XP_UCHAR* str, XP_U16 fontHt,
                 const XP_Rect* where, XP_GTK_JUST just,
                 const GdkRGBA* frground,
-                const GdkRGBA* bkgrnd )
+                const GdkRGBA* bkgrnd, const char* attr )
 {
     // XP_LOGFF( "(%s, %d, %d)", str, where->left, where->top );
     gint xx = where->left;
@@ -318,7 +320,36 @@ draw_string_at( GtkDrawCtx* dctx, PangoLayout* layout,
         layout = layout_for_ht( dctx, fontHt );
     }
 
-    pango_layout_set_text( layout, (char*)str, XP_STRLEN(str) );
+    pango_layout_set_text( layout, str, -1 );
+
+    if ( !!attr ) {
+        PangoAttrList* attr_list = NULL;
+        char* text = NULL;
+        char buf[256];
+        char fmt[32];
+
+        sprintf( fmt, "<%s>%%s</%s>", attr, attr );
+
+        GError* error = NULL;
+        int len = snprintf( buf, sizeof(buf), fmt, str );
+        gboolean success = pango_parse_markup( buf, len, 0,
+                                               &attr_list,
+                                               &text, NULL, &error );
+        if ( !!error ) {
+            XP_LOGFF( "pango_parse_markup()=>%s", error->message );
+            g_error_free( error );
+            XP_ASSERT(0);
+        } else {
+            XP_ASSERT( success);
+            XP_ASSERT( 0 == strcmp(text, str) );
+        }
+
+        pango_layout_set_attributes( layout, attr_list );
+        pango_attr_list_unref( attr_list );
+        g_free( text );
+    } else {
+        pango_layout_set_attributes( layout, NULL );
+    }
 
     if ( just != XP_GTK_JUST_NONE ) {
         int width, height;
@@ -605,7 +636,7 @@ gtk_draw_drawCell( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe), const XP_Rect* rect,
         }
         if ( (flags & CELL_ISSTAR) != 0 ) {
             draw_string_at( dctx, NULL, "*", dctx->cellHeight, rect, 
-                            XP_GTK_JUST_CENTER, &dctx->black, NULL );
+                            XP_GTK_JUST_CENTER, &dctx->black, NULL, NULL );
         }
     } else if ( !!bitmaps && !!bitmaps->bmps[0] ) {
         XP_ASSERT(0);           /* we don't handle this now */
@@ -624,7 +655,6 @@ gtk_draw_drawCell( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe), const XP_Rect* rect,
         if ( TVT_FACES == useTyp ) {
             value = NULL;
         }
-        XP_Bool isBlank = (flags & CELL_ISBLANK) != 0;
         if ( cursor ) {
             gtkSetForeground( dctx, cursor );
         } else if ( !recent && !pending ) {
@@ -633,6 +663,7 @@ gtk_draw_drawCell( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe), const XP_Rect* rect,
         draw_rectangle( dctx, TRUE, rectInset.left, rectInset.top,
                         rectInset.width+1, rectInset.height+1 );
 
+        XP_Bool isBlank = (flags & CELL_ISBLANK) != 0;
         if ( isBlank && 0 == strcmp("_",letter ) ) {
             letter = "?";
             isBlank = XP_FALSE;
@@ -654,7 +685,7 @@ gtk_draw_drawCell( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe), const XP_Rect* rect,
         }
 
         draw_string_at( dctx, NULL, letter, fontHt, &tmpRect,
-                        XP_GTK_JUST_CENTER, foreground, cursor );
+                        XP_GTK_JUST_CENTER, foreground, cursor, NULL );
         if ( isBlank ) {
             draw_circle( dctx, &tmpRect );
         }
@@ -668,7 +699,7 @@ gtk_draw_drawCell( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe), const XP_Rect* rect,
         tmpRect.top += tmpRect.height * (fraction-1) / fraction;
         tmpRect.height /= fraction;
         draw_string_at( dctx, NULL, value, dctx->cellHeight/fraction, &tmpRect,
-                        XP_GTK_JUST_CENTER, foreground, cursor );
+                        XP_GTK_JUST_CENTER, foreground, cursor, NULL );
     }
 
     drawHintBorders( dctx, rect, hintAtts );
@@ -748,7 +779,7 @@ gtkDrawTileImpl( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe), const XP_Rect* rect, con
                 if ( *textP != LETTER_NONE ) { /* blank */
                     draw_string_at( dctx, NULL, textP, formatRect.height>>1,
                                     &formatRect, XP_GTK_JUST_TOPLEFT,
-                                    foreground, NULL );
+                                    foreground, NULL, NULL );
 
                 }
             }
@@ -758,7 +789,7 @@ gtkDrawTileImpl( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe), const XP_Rect* rect, con
 
                 draw_string_at( dctx, NULL, numbuf, formatRect.height>>2,
                                 &formatRect, XP_GTK_JUST_BOTTOMRIGHT,
-                                foreground, NULL );
+                                foreground, NULL, NULL );
             }
         }
 
@@ -813,7 +844,7 @@ gtk_draw_drawTileBack( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe), const XP_Rect* rec
 
     draw_string_at( dctx, NULL, "?", r.height,
                     &r, XP_GTK_JUST_CENTER,
-                    &dctx->playerColors[dctx->trayOwner], NULL );
+                    &dctx->playerColors[dctx->trayOwner], NULL, NULL );
     return XP_TRUE;
 } /* gtk_draw_drawTileBack */
 
@@ -865,7 +896,7 @@ gtk_draw_drawBoardArrow( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe), const XP_Rect* r
     /* font needs to be small enough that "|" doesn't overwrite cell below */
     draw_string_at( dctx, NULL, curs, (rectP->height*2)/3,
                     rectP, XP_GTK_JUST_CENTER,
-                    &dctx->black, NULL );
+                    &dctx->black, NULL, NULL );
     drawHintBorders( dctx, rectP, hintAtts );
 } /* gtk_draw_drawBoardCursor */
 
@@ -889,13 +920,12 @@ static PangoLayout*
 getLayoutToFitRect( GtkDrawCtx* dctx, const XP_UCHAR* str, const XP_Rect* rect, 
                     int* heightP )
 {
-    PangoLayout* layout;
     float ratio, ratioH;
     int width, height;
     XP_U16 len = XP_STRLEN(str);
 
     /* First measure it using any font at all */
-    layout = layout_for_ht( dctx, 24 );
+    PangoLayout* layout = layout_for_ht( dctx, 24 );
     pango_layout_set_text( layout, (char*)str, len );
     pango_layout_get_pixel_size( layout, &width, &height );
     g_object_unref( layout );
@@ -922,7 +952,8 @@ getLayoutToFitRect( GtkDrawCtx* dctx, const XP_UCHAR* str, const XP_Rect* rect,
 
 static void
 gtkDrawDrawRemText( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe), const XP_Rect* rect,
-                    XP_S16 nTilesLeft, XP_U16* widthP, XP_U16* heightP, XP_Bool focussed )
+                    XP_S16 nTilesLeft, XP_U16* widthP, XP_U16* heightP,
+                    XP_Bool focussed )
 {
     GtkDrawCtx* dctx = (GtkDrawCtx*)(void*)p_dctx;
     XP_UCHAR buf[16];
@@ -948,14 +979,14 @@ gtkDrawDrawRemText( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe), const XP_Rect* rect,
         }
         draw_string_at( dctx, layout, buf, rect->height,
                         rect, XP_GTK_JUST_TOPLEFT,
-                        &dctx->black, NULL );
+                        &dctx->black, NULL, NULL );
     }
     g_object_unref( layout );
 } /* gtkDrawDrawRemText */
 
 static void
-gtk_draw_score_drawPlayer( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe), const XP_Rect* rInner,
-                           const XP_Rect* rOuter, 
+gtk_draw_score_drawPlayer( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe),
+                           const XP_Rect* rInner, const XP_Rect* rOuter, 
                            XP_U16 XP_UNUSED(gotPct), const DrawScoreInfo* dsi )
 {
     GtkDrawCtx* dctx = (GtkDrawCtx*)(void*)p_dctx;
@@ -1004,9 +1035,10 @@ gtk_draw_score_drawPlayer( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe), const XP_Rect*
 /*         fontHt >>= 1; */
 /*     } */
 
+    const char* attr = dsi->isTurn ? "u" : NULL;
     draw_string_at( dctx, NULL, scoreBuf, fontHt/*-1*/,
                     rInner, XP_GTK_JUST_CENTER,
-                    &dctx->playerColors[playerNum], cursor );
+                    &dctx->playerColors[playerNum], cursor, attr );
 
 } /* gtk_draw_score_drawPlayer */
 
@@ -1148,16 +1180,16 @@ formatScoreText( PangoLayout* layout, XP_UCHAR* buf, XP_U16 bufLen,
 } /* formatScoreText */
 
 static void
-gtk_draw_measureScoreText( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe), const XP_Rect* bounds,
-                           const DrawScoreInfo* dsi,
+gtk_draw_measureScoreText( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe),
+                           const XP_Rect* bounds, const DrawScoreInfo* dsi,
                            XP_U16* widthP, XP_U16* heightP )
 {
     GtkDrawCtx* dctx = (GtkDrawCtx*)(void*)p_dctx;
     XP_UCHAR buf[VSIZE(dctx->scoreCache[0].str)];
-    PangoLayout* layout;
     int lineHeight = GTK_HOR_SCORE_HEIGHT, nLines;
 
-    layout = getLayoutToFitRect( dctx, "M", bounds, &lineHeight );
+    PangoLayout* layout = getLayoutToFitRect( dctx, "M", bounds, &lineHeight );
+
     formatScoreText( layout, buf, VSIZE(buf), dsi, bounds, 
                      dctx->scoreIsVertical, widthP, &nLines );
     *heightP = nLines * lineHeight;
@@ -1201,10 +1233,10 @@ gtk_draw_score_pendingScore( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe), const XP_Rec
 
     ht = localR.height >> 2;
     txtColor = curTurn ? &dctx->black : &dctx->grey;
-    draw_string_at( dctx, NULL, "Pts:", ht,
-                    &localR, XP_GTK_JUST_TOPLEFT, txtColor, cursor );
-    draw_string_at( dctx, NULL, buf, ht,
-                    &localR, XP_GTK_JUST_BOTTOMRIGHT, txtColor, cursor );
+    draw_string_at( dctx, NULL, "Pts:", ht, &localR, XP_GTK_JUST_TOPLEFT,
+                    txtColor, cursor, NULL );
+    draw_string_at( dctx, NULL, buf, ht, &localR, XP_GTK_JUST_BOTTOMRIGHT,
+                    txtColor, cursor, NULL );
 
 } /* gtk_draw_score_pendingScore */
 
@@ -1225,7 +1257,7 @@ gtk_draw_drawTimer( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe), const XP_Rect* rInner
         formatTimerText( buf, VSIZE(buf), secondsLeft );
 
         draw_string_at( dctx, NULL, buf, rInner->height-1,
-                        rInner, XP_GTK_JUST_CENTER, color, NULL );
+                        rInner, XP_GTK_JUST_CENTER, color, NULL, NULL );
         if ( !hadCairo ) {
             destroyCairo( dctx );
         }
@@ -1311,7 +1343,7 @@ gtk_draw_drawMiniWindow( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe), const XP_UCHAR* 
 
     draw_string_at( dctx, NULL, text, GTKMIN_W_HT,
                     &localR, XP_GTK_JUST_CENTER,
-                    &dctx->black, NULL );
+                    &dctx->black, NULL, NULL );
 } /* gtk_draw_drawMiniWindow */
 #endif
 
@@ -1493,7 +1525,7 @@ draw_gtk_status( GtkDrawCtx* dctx, char ch )
         const XP_UCHAR str[2] = { ch, '\0' };
         draw_string_at( dctx, NULL, str, GTKMIN_W_HT,
                         &rect, XP_GTK_JUST_CENTER,
-                        &dctx->black, NULL );
+                        &dctx->black, NULL, NULL );
 
         destroyCairo( dctx );
     }
