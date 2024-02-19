@@ -1528,6 +1528,14 @@ makeGameFromArgs( CursesAppGlobals* aGlobals, cJSON* args )
     XP_ASSERT( !!tmp );
     XP_Bool isSolo = cJSON_IsTrue( tmp );
 
+    tmp = cJSON_GetObjectItem( args, "timerSeconds" );
+    if ( !!tmp ) {
+        gi.gameSeconds = tmp->valueint;
+        if ( 0 != gi.gameSeconds ) {
+            gi.timerEnabled = XP_TRUE;
+        }
+    }
+
     tmp = cJSON_GetObjectItem( args, "hostPosn" );
     XP_ASSERT( !!tmp );
     int hostPosn = tmp->valueint;
