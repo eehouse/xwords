@@ -130,6 +130,62 @@ streamFromFile( CommonGlobals* cGlobals, char* name )
     return stream;
 } /* streamFromFile */
 
+XP_Bool
+linux_makeMoveIf( CommonGlobals* cGlobals, XP_Bool tryTrade )
+{
+    ServerCtxt* server = cGlobals->game.server;
+    XP_Bool isLocal;
+    XP_S16 turn = server_getCurrentTurn( server, &isLocal );
+    XP_Bool success = 0 <= turn && isLocal;
+
+    if ( success ) {
+        BoardCtxt* board = cGlobals->game.board;
+        if ( tryTrade && board_canTrade( board, NULL_XWE ) ) {
+            ModelCtxt* model = cGlobals->game.model;
+
+            TrayTileSet oldTiles = *model_getPlayerTiles( model, turn );
+            XP_S16 nTiles = server_countTilesInPool( server );
+            XP_ASSERT( 0 <= nTiles );
+            if ( nTiles < oldTiles.nTiles ) {
+                oldTiles.nTiles = nTiles;
+            }
+            success = server_commitTrade( server, NULL_XWE, &oldTiles, NULL );
+        } else {
+            XP_Bool ignored;
+            if ( board_canHint( board )
+                 && board_requestHint( board, NULL_XWE,
+#ifdef XWFEATURE_SEARCHLIMIT
+                                       XP_FALSE,
+#endif
+                                       XP_FALSE, &ignored ) ) {
+                /* nothing to do -- we have a hint */
+            } else {
+                XP_LOGFF( "unable to find hint; so PASSing" );
+            }
+            success = board_commitTurn( board, NULL_XWE, XP_TRUE, XP_TRUE,
+                                        NULL );
+        }
+    }
+    return success;
+}
+
+void
+linux_addInvites( CommonGlobals* cGlobals, XP_U16 nRemotes,
+                  XP_U16 forceChannels[], const CommsAddrRec destAddrs[] )
+{
+    CommsCtxt* comms = cGlobals->game.comms;
+
+    CommsAddrRec selfAddr;
+    comms_getSelfAddr( comms, &selfAddr );
+
+    for ( int ii = 0; ii < nRemotes; ++ii ) {
+        NetLaunchInfo nli;
+        nli_init( &nli, cGlobals->gi, &selfAddr, 1, forceChannels[ii] );
+
+        comms_invite( comms, NULL_XWE, &nli, &destAddrs[ii], XP_TRUE );
+    }
+}
+
 void
 tryConnectToServer( CommonGlobals* cGlobals )
 {

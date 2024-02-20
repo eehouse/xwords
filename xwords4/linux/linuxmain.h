@@ -74,6 +74,10 @@ void linuxSaveGame( CommonGlobals* cGlobals );
 
 void linux_close_socket( CommonGlobals* cGlobals );
 
+XP_Bool linux_makeMoveIf( CommonGlobals* cGlobals, XP_Bool tryTrade );
+void linux_addInvites( CommonGlobals* cGlobals, XP_U16 nRemotes,
+                       XP_U16 forceChannels[], const CommsAddrRec destAddrs[] );
+
 #ifdef KEYBOARD_NAV
 XP_Bool linShiftFocus( CommonGlobals* cGlobals, XP_Key key,
                        const BoardObjectType* order,

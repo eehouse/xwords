@@ -37,6 +37,7 @@
 #include "gtknewgame.h"
 #include "gtkrmtch.h"
 #include "gsrcwrap.h"
+#include "extcmds.h"
 
 static void onNewData( GtkAppGlobals* apg, sqlite3_int64 rowid, 
                        XP_Bool isNew );
@@ -69,15 +70,20 @@ gameIsOpen( GtkAppGlobals* apg, sqlite3_int64 rowid )
 }
 
 static GtkGameGlobals*
-findOpenGame( const GtkAppGlobals* apg, sqlite3_int64 rowid )
+findOpenGame( const GtkAppGlobals* apg, sqlite3_int64* rowid, XP_U32* gameID )
 {
     GtkGameGlobals* result = NULL;
     GSList* iter;
     for ( iter = apg->cag.globalsList; !!iter; iter = iter->next ) {
         GtkGameGlobals* globals = (GtkGameGlobals*)iter->data;
         CommonGlobals* cGlobals = &globals->cGlobals;
-        if ( cGlobals->rowid == rowid ) {
+        if ( *rowid && cGlobals->rowid == *rowid ) {
             result = globals;
+            *gameID = cGlobals->gi->gameID;
+            break;
+        } else if ( gameID && cGlobals->gi->gameID == *gameID ) {
+            result = globals;
+            *rowid = cGlobals->rowid;
             break;
         }
     }
@@ -319,7 +325,7 @@ static void
 handle_newgame_button( GtkWidget* XP_UNUSED(widget), void* closure )
 {
     GtkAppGlobals* apg = (GtkAppGlobals*)closure;
-    XP_LOGF( "%s called", __func__ );
+    LOG_FUNC();
     GtkGameGlobals* globals = calloc( 1, sizeof(*globals) );
     apg->cag.params->needsNewGame = XP_FALSE;
     initBoardGlobalsGtk( globals, apg->cag.params, NULL );
@@ -727,7 +733,8 @@ feedBufferGTK( GtkAppGlobals* apg, sqlite3_int64 rowid,
                const XP_U8* buf, XP_U16 len, const CommsAddrRec* from )
 {
     XP_U16 seed = 0;
-    GtkGameGlobals* globals = findOpenGame( apg, rowid );
+    XP_U32 ignored = 0;
+    GtkGameGlobals* globals = findOpenGame( apg, &rowid, &ignored );
 
     if ( !!globals ) {
         gameGotBuf( &globals->cGlobals, XP_TRUE, buf, len, from );
@@ -968,6 +975,125 @@ handle_sigintterm( int XP_UNUSED(sig) )
     handle_destroy( NULL, g_globals_for_signal );
 }
 
+static XP_Bool
+newGameWrapper( void* closure, CurGameInfo* gi, XP_U32* newGameIDP )
+{
+    GtkAppGlobals* apg = (GtkAppGlobals*)closure;
+    LaunchParams* params = apg->cag.params;
+    GtkGameGlobals* globals = calloc( 1, sizeof(*globals) );
+    initBoardGlobalsGtk( globals, params, NULL );
+
+    gi_copy( params->mpool, globals->cGlobals.gi, gi );
+
+    GtkWidget* gameWindow = globals->window;
+    globals->cGlobals.rowid = -1;
+    recordOpened( apg, globals );
+    gtk_widget_show( gameWindow );
+    *newGameIDP = globals->cGlobals.gi->gameID;
+    return XP_TRUE;
+}
+
+
+static void
+quitWrapper( void* closure )
+{
+    handle_quit_button( NULL, closure );
+}
+
+static XP_Bool
+makeMoveIfWrapper( void* closure, XP_U32 gameID, XP_Bool tryTrade )
+{
+    GtkAppGlobals* apg = (GtkAppGlobals*)closure;
+    sqlite3_int64 rowid = 0;
+    GtkGameGlobals* globals = findOpenGame( apg, &rowid, &gameID );
+    XP_Bool success = XP_FALSE;
+
+    if ( !!globals ) {
+        success = linux_makeMoveIf( &globals->cGlobals, tryTrade );
+    } else {
+        GtkGameGlobals tmpGlobals = {0};
+        int nRowIDs = 1;
+        gdb_getRowsForGameID( apg->cag.params->pDb, gameID, &rowid, &nRowIDs );
+
+        success = 1 == nRowIDs
+            && loadGameNoDraw( &tmpGlobals, apg->cag.params, rowid )
+            && linux_makeMoveIf( &tmpGlobals.cGlobals, tryTrade );
+        freeGlobals( &tmpGlobals );
+    }
+    return success;
+}
+
+static XP_Bool
+sendChatWrapper( void* closure, XP_U32 gameID, const char* msg )
+{
+    GtkAppGlobals* apg = (GtkAppGlobals*)closure;
+    sqlite3_int64 rowid = 0;
+    GtkGameGlobals* globals = findOpenGame( apg, &rowid, &gameID );
+    XP_Bool success;
+
+    if ( !!globals ) {
+        board_sendChat( globals->cGlobals.game.board, NULL_XWE, msg );
+        success = XP_TRUE;
+    } else {
+        GtkGameGlobals tmpGlobals = {0};
+        int nRowIDs = 1;
+        gdb_getRowsForGameID( apg->cag.params->pDb, gameID, &rowid, &nRowIDs );
+
+        success = 1 == nRowIDs
+            && loadGameNoDraw( &tmpGlobals, apg->cag.params, rowid );
+        if ( success ) {
+            board_sendChat( tmpGlobals.cGlobals.game.board, NULL_XWE, msg );
+        }
+        freeGlobals( &tmpGlobals );
+    }
+    return success;
+}
+
+static void
+addInvitesWrapper( void* closure, XP_U32 gameID, XP_U16 nRemotes,
+                   XP_U16 forceChannels[], const CommsAddrRec destAddrs[] )
+{
+    GtkAppGlobals* apg = (GtkAppGlobals*)closure;
+    sqlite3_int64 rowid = 0;
+    GtkGameGlobals* globals = findOpenGame( apg, &rowid, &gameID );
+    if ( !!globals ) {
+        linux_addInvites( &globals->cGlobals, nRemotes, forceChannels, destAddrs );
+    } else {
+        int nRowIDs = 1;
+        gdb_getRowsForGameID( apg->cag.params->pDb, gameID, &rowid, &nRowIDs );
+
+        GtkGameGlobals tmpGlobals = {0};
+        if ( 1 == nRowIDs
+             && loadGameNoDraw( &tmpGlobals, apg->cag.params, rowid ) ) {
+            linux_addInvites( &tmpGlobals.cGlobals, nRemotes, forceChannels, destAddrs );
+        }
+        freeGlobals( &tmpGlobals );
+    }
+}
+
+static const CommonGlobals*
+getForGameIDWrapper( void* closure, XP_U32 gameID )
+{
+    CommonGlobals* result = NULL;
+    GtkAppGlobals* apg = (GtkAppGlobals*)closure;
+
+    for ( ; ; ) {
+        sqlite3_int64 rowid = 0;
+        GtkGameGlobals* globals = findOpenGame( apg, &rowid, &gameID );
+        if ( !!globals ) {
+            result = &globals->cGlobals;
+            break;
+        }
+
+        int nRowIDs = 1;
+        gdb_getRowsForGameID( apg->cag.params->pDb, gameID, &rowid, &nRowIDs );
+        XP_ASSERT( 1 == nRowIDs );
+        open_row( apg, rowid, XP_FALSE );
+        XP_LOGFF( "at bottom" );
+    }
+    return result;
+}
+
 int
 gtkmain( LaunchParams* params )
 {
@@ -982,6 +1108,21 @@ gtkmain( LaunchParams* params )
 
     apg.selRows = g_array_new( FALSE, FALSE, sizeof( sqlite3_int64 ) );
     apg.cag.params = params;
+
+    CmdWrapper wr = {
+        .params = params,
+        .closure = &apg,
+        .procs = {
+            .newGame = newGameWrapper,
+            .quit = quitWrapper,
+            .makeMoveIf = makeMoveIfWrapper,
+            .sendChat = sendChatWrapper,
+            .addInvites = addInvitesWrapper,
+            .getForGameID = getForGameIDWrapper,
+        },
+    };
+    GSocketService* cmdService = cmds_addCmdListener( &wr );
+
     XP_ASSERT( !!params->dbName || params->dbFileName );
     if ( !!params->dbName ) {
         /* params->pDb = openGamesDB( params->dbName ); */
@@ -1038,6 +1179,9 @@ gtkmain( LaunchParams* params )
     }
 
     gtk_main();
+
+    g_object_unref( cmdService );
+
 #ifdef XWFEATURE_RELAY
     relaycon_cleanup( params );
 #endif

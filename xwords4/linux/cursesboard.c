@@ -692,19 +692,10 @@ void
 cb_addInvites( CursesBoardState* cbState, XP_U32 gameID, XP_U16 nRemotes,
                XP_U16 forceChannels[], const CommsAddrRec destAddrs[] )
 {
-    CursesBoardGlobals* bGlobals = findOrOpenForGameID( cbState, gameID, NULL, NULL );
+    CursesBoardGlobals* bGlobals = findOrOpenForGameID( cbState, gameID,
+                                                        NULL, NULL );
     CommonGlobals* cGlobals = &bGlobals->cGlobals;
-    CommsCtxt* comms = cGlobals->game.comms;
-
-    CommsAddrRec selfAddr;
-    comms_getSelfAddr( comms, &selfAddr );
-
-    for ( int ii = 0; ii < nRemotes; ++ii ) {
-        NetLaunchInfo nli;
-        nli_init( &nli, cGlobals->gi, &selfAddr, 1, forceChannels[ii] );
-
-        comms_invite( comms, NULL_XWE, &nli, &destAddrs[ii], XP_TRUE );
-    }
+    linux_addInvites( cGlobals, nRemotes, forceChannels, destAddrs );
 }
 
 XP_Bool
@@ -723,47 +714,9 @@ cb_makeMoveIf( CursesBoardState* cbState, XP_U32 gameID, XP_Bool tryTrade )
     XP_LOGFF( "(tryTrade: %s)", boolToStr(tryTrade));
     CursesBoardGlobals* bGlobals =
         findOrOpenForGameID( cbState, gameID, NULL, NULL );
-    XP_Bool success = !!bGlobals;
-    CommonGlobals* cGlobals;
-    ServerCtxt* server;
-    XP_S16 turn = -1;
-    if ( success ) {
-        cGlobals = &bGlobals->cGlobals;
-        server = cGlobals->game.server;
+    XP_Bool success = !!bGlobals
+        && linux_makeMoveIf( &bGlobals->cGlobals, tryTrade );
 
-        XP_Bool isLocal;
-        turn = server_getCurrentTurn( server, &isLocal );
-        success = 0 <= turn && isLocal;
-    }
-
-    if ( success ) {
-        BoardCtxt* board = cGlobals->game.board;
-        if ( tryTrade && board_canTrade( board, NULL_XWE ) ) {
-            ModelCtxt* model = cGlobals->game.model;
-
-            TrayTileSet oldTiles = *model_getPlayerTiles( model, turn );
-            XP_S16 nTiles = server_countTilesInPool( server );
-            XP_ASSERT( 0 <= nTiles );
-            if ( nTiles < oldTiles.nTiles ) {
-                oldTiles.nTiles = nTiles;
-            }
-            success = server_commitTrade( server, NULL_XWE, &oldTiles, NULL );
-        } else {
-            XP_Bool ignored;
-            if ( board_canHint( board )
-                 && board_requestHint( board, NULL_XWE,
-#ifdef XWFEATURE_SEARCHLIMIT
-                                       XP_FALSE,
-#endif
-                                       XP_FALSE, &ignored ) ) {
-                /* nothing to do -- we have a hint */
-            } else {
-                XP_LOGFF( "unable to find hint; so PASSing" );
-            }
-            success = board_commitTurn( board, NULL_XWE, XP_TRUE, XP_TRUE,
-                                        NULL );
-        }
-    }
     LOG_RETURNF( "%s", boolToStr(success) );
     return success;
 }

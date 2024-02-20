@@ -2359,6 +2359,7 @@ initGlobalsNoDraw( GtkGameGlobals* globals, LaunchParams* params,
     memset( globals, 0, sizeof(*globals) );
 
     CommonGlobals* cGlobals = &globals->cGlobals;
+    cGlobals->params = params;
     setTransportProcs( &cGlobals->procs, globals );
 
     cGlobals->gi = &cGlobals->_gi;
@@ -2596,7 +2597,7 @@ XP_Bool
 loadGameNoDraw( GtkGameGlobals* globals, LaunchParams* params, 
                 sqlite3_int64 rowid )
 {
-    LOG_FUNC();
+    XP_LOGFF( "(rowid: %llX)", rowid );
     sqlite3* pDb = params->pDb;
     initGlobalsNoDraw( globals, params, NULL );
 
@@ -2611,7 +2612,7 @@ loadGameNoDraw( GtkGameGlobals* globals, LaunchParams* params,
                                       cGlobals->util, (DrawCtx*)NULL,
                                       &cGlobals->cp, &cGlobals->procs );
         if ( loaded ) {
-            XP_LOGF( "%s: game loaded", __func__ );
+            XP_LOGFF( "game loaded" );
             if ( !!globals->cGlobals.game.comms ) {
                 comms_resendAll( globals->cGlobals.game.comms, NULL_XWE, COMMS_CONN_NONE,
                                  XP_FALSE );
@@ -2621,6 +2622,7 @@ loadGameNoDraw( GtkGameGlobals* globals, LaunchParams* params,
         }
     }
     stream_destroy( stream );
+    LOG_RETURNF( "%s", boolToStr(loaded) );
     return loaded;
 }
 #endif /* PLATFORM_GTK */
