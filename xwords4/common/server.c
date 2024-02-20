@@ -1106,7 +1106,9 @@ receiveChat( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* incoming )
     XP_S16 from = -1;
     if ( 1 <= stream_getSize( incoming ) ) {
         from = stream_getU8( incoming );
-        XP_ASSERT( !server->vol.gi->players[from].isLocal );
+        if ( server->vol.gi->players[from].isLocal ) {
+            from = -1;
+        }
     }
 
     XP_U32 timestamp = sizeof(timestamp) <= stream_getSize( incoming )
@@ -1116,7 +1118,11 @@ receiveChat( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* incoming )
         sendChatToClientsExcept( server, xwe, sourceClientIndex, msg, from,
                                  timestamp );
     }
-    util_showChat( server->vol.util, xwe, msg, from, timestamp );
+    const XP_UCHAR* sender = NULL;
+    if ( 0 <= from ) {
+        sender = server->vol.gi->players[from].name;
+    }
+    util_showChat( server->vol.util, xwe, msg, sender, timestamp );
     XP_FREE( server->mpool, msg );
     return XP_TRUE;
 }

@@ -847,8 +847,9 @@ deleteLocalRefs( JNIEnv* env, ... )
         jobject jnext = va_arg( ap, jobject );
         if ( DELETE_NO_REF == jnext ) {
             break;
+        } else if ( !!jnext ) {
+            deleteLocalRef( env, jnext );
         }
-        deleteLocalRef( env, jnext );
     }
     va_end( ap );
 }
