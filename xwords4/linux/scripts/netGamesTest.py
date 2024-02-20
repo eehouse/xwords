@@ -280,7 +280,7 @@ class Device():
             if gids:
                 random.shuffle(gids)
                 gid = gids[0]
-                response = self._sendWaitReply('sendChat', gid=gid, msg=Device.nextChatMsg())
+                response = self._sendWaitReply('sendChat', gid=gid, msg=Device.nextChatMsg(self.host))
                 success = response.get('success', False)
         return success
 
@@ -633,9 +633,9 @@ class Device():
         self._launchProc()
 
     @staticmethod
-    def nextChatMsg():
+    def nextChatMsg(sender):
         Device._nextChatID += 1
-        return 'Chat msg {}'.format(Device._nextChatID)
+        return 'chat msg {}: Hi, this is {}'.format(Device._nextChatID, sender)
 
 def openOnExit(args):
     devs = Device.getAll()

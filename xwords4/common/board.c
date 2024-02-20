@@ -93,6 +93,8 @@ static void dictChanged( void* p_board, XWEnv xwe, XP_S16 playerNum,
                          const DictionaryCtxt* newDict );
 
 static void boardTurnChanged( XWEnv xwe, void* closure );
+static XP_S16 chooseBestSelPlayer( const BoardCtxt* board );
+
 static void boardGameOver( XWEnv xwe, void* closure, XP_S16 quitter );
 static void setArrow( BoardCtxt* board, XWEnv xwe, XP_U16 row,
                       XP_U16 col, XP_Bool* vp );
@@ -893,7 +895,8 @@ board_canHint( const BoardCtxt* board )
 void
 board_sendChat( const BoardCtxt* board, XWEnv xwe, const XP_UCHAR* msg )
 {
-    server_sendChat( board->server, xwe, msg, board->selPlayer );
+    XP_S16 turn = chooseBestSelPlayer( board );
+    server_sendChat( board->server, xwe, msg, turn );
 }
 #endif
 
@@ -1877,7 +1880,7 @@ board_hideTray( BoardCtxt* board, XWEnv xwe )
 } /* board_hideTray */
 
 static XP_S16
-chooseBestSelPlayer( BoardCtxt* board )
+chooseBestSelPlayer( const BoardCtxt* board )
 {
     ServerCtxt* server = board->server;
 

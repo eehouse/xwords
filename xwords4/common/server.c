@@ -1090,6 +1090,7 @@ sendChatToClientsExcept( ServerCtxt* server, XWEnv xwe, XP_U16 skip,
 void
 server_sendChat( ServerCtxt* server, XWEnv xwe, const XP_UCHAR* msg, XP_S16 from )
 {
+    XP_ASSERT( -1 == from || server->vol.gi->players[from].isLocal );
     XP_U32 timestamp = dutil_getCurSeconds( server->vol.dutil, xwe );
     if ( server->vol.gi->serverRole == SERVER_ISCLIENT ) {
         sendChatTo( server, xwe, HOST_DEVICE, msg, from, timestamp );
@@ -1102,8 +1103,12 @@ static XP_Bool
 receiveChat( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* incoming )
 {
     XP_UCHAR* msg = stringFromStream( server->mpool, incoming );
-    XP_S16 from = 1 <= stream_getSize( incoming )
-        ? stream_getU8( incoming ) : -1;
+    XP_S16 from = -1;
+    if ( 1 <= stream_getSize( incoming ) ) {
+        from = stream_getU8( incoming );
+        XP_ASSERT( !server->vol.gi->players[from].isLocal );
+    }
+
     XP_U32 timestamp = sizeof(timestamp) <= stream_getSize( incoming )
         ? stream_getU32( incoming ) : 0;
     if ( amHost( server ) ) {
