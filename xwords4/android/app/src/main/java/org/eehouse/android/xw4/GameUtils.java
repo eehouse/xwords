@@ -1151,22 +1151,24 @@ public class GameUtils {
         public boolean m_gotChat;
         public String m_chatFrom;
         public boolean m_gameOver;
+        private CurGameInfo m_gi;
 
-        public FeedUtilsImpl( Context context, long rowid )
+        public FeedUtilsImpl( Context context, long rowid, CurGameInfo gi )
         {
             super( context );
             m_context = context;
             m_rowid = rowid;
             m_gotMsg = false;
             m_gameOver = false;
+            m_gi = gi;
         }
 
         @Override
-        public void showChat( String msg, int fromIndx, String fromName, int tsSeconds )
+        public void showChat( String msg, int fromIndx, int tsSeconds )
         {
             DBUtils.appendChatHistory( m_context, m_rowid, msg, fromIndx, tsSeconds );
             m_gotChat = true;
-            m_chatFrom = fromName;
+            m_chatFrom = m_gi.playerName( fromIndx );
             m_chat = msg;
             m_ts = tsSeconds;
         }
@@ -1200,7 +1202,7 @@ public class GameUtils {
             try ( GameLock lock = GameLock.lock( rowid, 150 ) ) {
                 if ( null != lock ) {
                     CurGameInfo gi = new CurGameInfo( context );
-                    FeedUtilsImpl feedImpl = new FeedUtilsImpl( context, rowid );
+                    FeedUtilsImpl feedImpl = new FeedUtilsImpl( context, rowid, gi );
                     try ( GamePtr gamePtr = loadMakeGame( context, gi, feedImpl,
                                                           sink, lock ) ) {
                         if ( null != gamePtr ) {

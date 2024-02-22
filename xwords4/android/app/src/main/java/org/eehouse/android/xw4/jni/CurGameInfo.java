@@ -435,6 +435,15 @@ public class CurGameInfo implements Serializable {
         return names;
     }
 
+    public String playerName( int indx )
+    {
+        String result = null;
+        if ( 0 <= indx && indx < nPlayers ) {
+            result = players[indx].name;
+        }
+        return result;
+    }
+
     public boolean[] playersLocal()
     {
         boolean[] locs = new boolean[nPlayers];

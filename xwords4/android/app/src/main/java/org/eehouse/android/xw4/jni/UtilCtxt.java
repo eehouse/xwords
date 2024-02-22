@@ -119,7 +119,7 @@ public interface UtilCtxt {
     void notifyIllegalWords( String dict, String[] words, int turn,
                              boolean turnLost );
 
-    void showChat( String msg, int fromIndx, String fromName, int tsSeconds );
+    void showChat( String msg, int fromPlayer, int tsSeconds );
 
     String formatPauseHistory( int pauseTyp, int player, int whenPrev,
                                int whenCur, String msg );

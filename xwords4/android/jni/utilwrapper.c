@@ -576,15 +576,14 @@ and_util_notifyIllegalWords( XW_UtilCtxt* uc, XWEnv xwe, BadWordInfo* bwi,
 #ifdef XWFEATURE_CHAT
 static void
 and_util_showChat( XW_UtilCtxt* uc, XWEnv xwe, const XP_UCHAR* msg,
-                   const XP_UCHAR* from, XP_U32 timestamp )
+                   XP_S16 fromIndx, XP_U32 timestamp )
 {
-    UTIL_CBK_HEADER( "showChat", "(Ljava/lang/String;ILjava/lang/String;I)V" );
+    UTIL_CBK_HEADER( "showChat", "(Ljava/lang/String;II)V" );
 
-    jstring jname = !!from ? (*env)->NewStringUTF( env, from ) : NULL;
     jstring jmsg = (*env)->NewStringUTF( env, msg );
+    (*env)->CallVoidMethod( env, util->jutil, mid, jmsg, fromIndx, timestamp );
+    deleteLocalRef( env, jmsg );
 
-    (*env)->CallVoidMethod( env, util->jutil, mid, jmsg, from, jname, timestamp );
-    deleteLocalRefs( env, jmsg, jname, DELETE_NO_REF );
     UTIL_CBK_TAIL();
 }
 #endif

@@ -1251,13 +1251,13 @@ curses_util_informWordsBlocked( XW_UtilCtxt* XP_UNUSED(uc), XWEnv XP_UNUSED(xwe)
 static void
 curses_util_showChat( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe),
                       const XP_UCHAR* const XP_UNUSED_DBG(msg),
-                      const XP_UCHAR* const XP_UNUSED_DBG(from),
+                      XP_S16 XP_UNUSED_DBG(from),
                       XP_U32 XP_UNUSED(timestamp) )
 {
     CursesBoardGlobals* globals = (CursesBoardGlobals*)uc->closure;
     globals->nChatsSent = 0;
 # ifdef DEBUG
-    XP_LOGFF( "got \"%s\" from %s", msg, from );
+    XP_LOGFF( "got \"%s\" from player[%d]", msg, from );
 # endif
 }
 #endif

@@ -2190,7 +2190,7 @@ public class BoardDelegate extends DelegateBase
         // chat-messages.
         @Override
         public void showChat( final String msg, final int fromIndx,
-                              String fromPlayer, final int tsSeconds )
+                              final int tsSeconds )
         {
             runOnUiThread( new Runnable() {
                     @Override

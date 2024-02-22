@@ -1945,14 +1945,16 @@ gtk_util_getMQTTIDsFor( XW_UtilCtxt* uc, XWEnv xwe, XP_U16 nRelayIDs,
 static void
 gtk_util_showChat( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe),
                    const XP_UCHAR* const msg,
-                   const XP_UCHAR* const from, XP_U32 tsSecs )
+                   XP_S16 from, XP_U32 tsSecs )
 {
     GtkGameGlobals* globals = (GtkGameGlobals*)uc->closure;
     XP_UCHAR buf[1024];
 
     GDateTime* dt = g_date_time_new_from_unix_utc( tsSecs );
     gchar* tsStr = g_date_time_format( dt, "%T" );
-    XP_SNPRINTF( buf, VSIZE(buf), "Quoth %s at %s: \"%s\"", from, tsStr, msg );
+    XP_SNPRINTF( buf, VSIZE(buf), "Quoth %s at %s: \"%s\"",
+                 globals->cGlobals.gi->players[from].name,
+                 tsStr, msg );
     g_free( tsStr );
     g_date_time_unref (dt);
 
