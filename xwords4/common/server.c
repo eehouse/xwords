@@ -1088,14 +1088,32 @@ sendChatToClientsExcept( ServerCtxt* server, XWEnv xwe, XP_U16 skip,
 }
 
 void
-server_sendChat( ServerCtxt* server, XWEnv xwe, const XP_UCHAR* msg, XP_S16 from )
+server_sendChat( ServerCtxt* server, XWEnv xwe, const XP_UCHAR* msg,
+                 XP_S16 fromHint )
 {
-    XP_ASSERT( -1 == from || server->vol.gi->players[from].isLocal );
+    /* The player sending must be local. Caller (likely board) tells us what
+       player is selected, which is who the sender should be IFF it's a local
+       player, but once the game's over it might not be. */
+    const CurGameInfo* gi = server->vol.gi;
+    if ( fromHint < 0 || gi->nPlayers <= fromHint ) {
+        fromHint = 0;
+    }
+    if ( ! gi->players[fromHint].isLocal ) {
+        for ( int ii = 0; ii < gi->nPlayers; ++ii ) {
+            if ( gi->players[ii].isLocal ) {
+                fromHint = ii;
+                break;
+            }
+        }
+    }
+
+    XP_ASSERT( server->vol.gi->players[fromHint].isLocal );
     XP_U32 timestamp = dutil_getCurSeconds( server->vol.dutil, xwe );
     if ( server->vol.gi->serverRole == SERVER_ISCLIENT ) {
-        sendChatTo( server, xwe, HOST_DEVICE, msg, from, timestamp );
+        sendChatTo( server, xwe, HOST_DEVICE, msg, fromHint, timestamp );
     } else {
-        sendChatToClientsExcept( server, xwe, HOST_DEVICE, msg, from, timestamp );
+        sendChatToClientsExcept( server, xwe, HOST_DEVICE, msg, fromHint,
+                                 timestamp );
     }
 }
 

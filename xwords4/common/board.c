@@ -895,8 +895,7 @@ board_canHint( const BoardCtxt* board )
 void
 board_sendChat( const BoardCtxt* board, XWEnv xwe, const XP_UCHAR* msg )
 {
-    XP_S16 turn = chooseBestSelPlayer( board );
-    server_sendChat( board->server, xwe, msg, turn );
+    server_sendChat( board->server, xwe, msg, board->selPlayer );
 }
 #endif
 
