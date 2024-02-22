@@ -162,7 +162,8 @@ public class ChatDelegate extends DelegateBase {
         view.setText( msg );
         view = (TextView)row.findViewById( R.id.chat_row_name );
 
-        String name = playerIndx < m_names.length ? m_names[playerIndx] : "<???>";
+        String name = 0 <= playerIndx && playerIndx < m_names.length
+            ? m_names[playerIndx] : "<???>"; // IOB
         view.setText( getString( R.string.chat_sender_fmt, name ) );
 
         if ( tsSeconds > 0 ) {
