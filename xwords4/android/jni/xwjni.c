@@ -1831,12 +1831,12 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1getTrayVisState
 }
 
 JNIEXPORT jint JNICALL
-Java_org_eehouse_android_xw4_jni_XwJNI_board_1getSelPlayer
+Java_org_eehouse_android_xw4_jni_XwJNI_board_1getLikelyChatter
 (JNIEnv* env, jclass C, GamePtrType gamePtr)
 {
     jint result;
     XWJNI_START(gamePtr);
-    result = board_getSelPlayer( state->game.board );
+    result = board_getLikelyChatter( state->game.board );
     XWJNI_END();
     return result;
 }

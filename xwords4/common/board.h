@@ -155,8 +155,7 @@ XP_Bool board_inTrade( const BoardCtxt* board, XP_Bool* anySelected );
 XP_Bool board_replaceTiles( BoardCtxt* board, XWEnv xwe );
 XP_Bool board_redoReplacedTiles( BoardCtxt* board, XWEnv xwe );
 
-XP_U16 board_getSelPlayer(const BoardCtxt* board );
-
+XP_U16 board_getLikelyChatter( const BoardCtxt* board );
 XP_Bool board_passwordProvided( BoardCtxt* board, XWEnv xwe,
                                 XP_U16 player, const XP_UCHAR* pass );
 

@@ -2026,9 +2026,9 @@ board_get_flipped( const BoardCtxt* board )
 }
 
 XP_U16
-board_getSelPlayer( const BoardCtxt* board )
+board_getLikelyChatter( const BoardCtxt* board )
 {
-    return board->selPlayer;
+    return server_getLocalPlayer( board->server, board->selPlayer );
 }
 
 XP_Bool

@@ -2635,7 +2635,7 @@ public class BoardDelegate extends DelegateBase
 
     private void startChatActivity()
     {
-        int curPlayer = XwJNI.board_getSelPlayer( m_jniGamePtr );
+        int curPlayer = XwJNI.board_getLikelyChatter( m_jniGamePtr );
         String[] names = m_gi.playerNames();
         boolean[] locs = m_gi.playersLocal(); // to convert old histories
         ChatDelegate.start( getDelegator(), m_rowid, curPlayer,

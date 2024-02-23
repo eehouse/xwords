@@ -124,6 +124,8 @@ XP_Bool server_receiveMessage( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* inco
  * to the server, and passes it in. */
 XP_Bool server_initClientConnection( ServerCtxt* server, XWEnv xwe );
 
+XP_U16 server_getLocalPlayer( const ServerCtxt* server, XP_S16 fromHint );
+
 #ifdef XWFEATURE_CHAT
 void server_sendChat( ServerCtxt* server, XWEnv xwe,
                       const XP_UCHAR* msg, XP_S16 from );

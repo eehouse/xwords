@@ -481,7 +481,7 @@ public class XwJNI {
 
     public static native boolean board_flip( GamePtr gamePtr );
     public static native boolean board_replaceTiles( GamePtr gamePtr );
-    public static native int board_getSelPlayer( GamePtr gamePtr );
+    public static native int board_getLikelyChatter( GamePtr gamePtr );
     public static native boolean board_passwordProvided( GamePtr gamePtr, int player,
                                                          String pass );
     public static native boolean board_redoReplacedTiles( GamePtr gamePtr );
