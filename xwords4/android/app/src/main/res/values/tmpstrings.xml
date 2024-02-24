@@ -5,16 +5,8 @@
 
   <string name="dup_allscores_fmt">All scores: %1$s</string>
 
-  <!-- In Peer Status results, if my own device comes back (as it
-       should) and it isn't assigned a name in Known Players, use
-       this. -->
-  <string name="selfName">This device</string>
-
   <!-- Debug-only: menu to remove quashed marking from a game (in case
        the quashing was accidental) -->
   <string name="menu_unquash">Unquash</string>
 
-  <string name="sub_seven_allowed">Allow trades below seven tiles left</string>
-  <string name="sub_seven_allowed_sum">Common in Spanish play, this
-  lets you trade tiles when as few as 1 are left in the pool.</string>
 </resources>

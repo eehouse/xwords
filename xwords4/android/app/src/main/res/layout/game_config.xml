@@ -176,11 +176,6 @@
                 android:layout_height="wrap_content"
                 android:text="@string/hints_allowed"
                 />
-      <CheckBox android:id="@+id/trade_sub_seven"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/sub_seven_allowed"
-                />
 
       <org.eehouse.android.xw4.LabeledSpinner
           android:id="@+id/smart_robot"
@@ -233,6 +228,12 @@
                  android:entries="@array/board_sizes"
                  />
       </org.eehouse.android.xw4.LabeledSpinner>
+
+      <CheckBox android:id="@+id/trade_sub_seven"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/sub_seven_allowed"
+                />
 
       <CheckBox android:id="@+id/pick_faceup"
                 android:layout_width="fill_parent"

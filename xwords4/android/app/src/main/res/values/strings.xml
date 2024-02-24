@@ -734,9 +734,9 @@
          in this file) -->
     <string name="hints_allowed_sum">Enable the hint feature</string>
     <!-- clarification on hints_allowed, whether new NETWORKED games
-         will default to having the hint feature enabled(string
+         will default to having the hint feature enabled (string
          elsewhere in this file) -->
-    <string name="nethints_allowed_sum">Enable hints for two-device games</string>
+    <string name="nethints_allowed_sum">Enable hints for multi-device games</string>
     <!-- Will new games, on default, randomly rearrange the start
          order of players. -->
     <string name="init_autojuggle">Juggle players</string>
@@ -2809,5 +2809,19 @@
   <!-- In Known Players display, a checkbox to sort players by when
        their most recent game started instead of by name -->
   <string name="sort_by_date_label">Sort by date</string>
+
+  <!-- In Peer Status (Debug builds only) results, if my own device
+       comes back (as it should) and it isn't assigned a name in Known
+       Players, use this. -->
+  <string name="selfName">This device</string>
+
+  <!-- Game-config option to let you trade tiles when fewer than 7 are
+       left in the pool. This is common among Spanish and maybe German
+       players. -->
+  <string name="sub_seven_allowed">Allow trades below seven tiles left</string>
+
+  <string name="sub_seven_allowed_sum">This lets you trade tiles when
+  as few as 1 are left in the pool, as is common in Spanish
+  play.</string>
 
 </resources>

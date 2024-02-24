@@ -41,18 +41,6 @@
                         android:defaultValue="true"
                         />
 
-    <CheckBoxPreference android:key="@string/key_init_tradeSub7"
-                        android:title="@string/sub_seven_allowed"
-                        android:summary="@string/sub_seven_allowed_sum"
-                        android:defaultValue="false"
-                        />
-
-    <CheckBoxPreference android:key="@string/key_init_dupmodeon"
-                        android:title="@string/offerdupmode_title"
-                        android:summary="@string/offerdupmode_sum"
-                        android:defaultValue="false"
-                        />
-
     <CheckBoxPreference android:key="@string/key_init_autojuggle"
                         android:title="@string/init_autojuggle"
                         android:summary="@string/init_autojuggle_sum"
@@ -93,6 +81,18 @@
         android:entryValues="@array/board_sizes"
         android:defaultValue="15x15"
         />
+
+    <CheckBoxPreference android:key="@string/key_init_tradeSub7"
+                        android:title="@string/sub_seven_allowed"
+                        android:summary="@string/sub_seven_allowed_sum"
+                        android:defaultValue="false"
+                        />
+
+    <CheckBoxPreference android:key="@string/key_init_dupmodeon"
+                        android:title="@string/offerdupmode_title"
+                        android:summary="@string/offerdupmode_sum"
+                        android:defaultValue="false"
+                        />
 
   </PreferenceCategory>
 </PreferenceScreen>
