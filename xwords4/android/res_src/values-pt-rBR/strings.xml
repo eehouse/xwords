@@ -187,7 +187,7 @@
     <string name="default_phonies">Lidar com palavras falsas</string>
     <string name="init_autojuggle_sum">Aleatoriamente, para novos jogos</string>
     <string name="init_autojuggle">Alternar jogadores</string>
-    <string name="nethints_allowed_sum">Permitir dicas para dois dispositivos do jogo</string>
+    <string name="nethints_allowed_sum">Permitir dicas para jogos multidispositivos</string>
     <string name="hints_allowed_sum">Permitir a função de dicas</string>
     <string name="default_robodict">Lista de Palavras para robôs</string>
     <string name="default_dict">Listas de palavras para humanos</string>
@@ -1196,4 +1196,7 @@
     <string name="button_refresh">Atualizar</string>
     <string name="sort_by_date_label">Organizar por data</string>
     <string name="peers_info_pending">Consultando servidor…</string>
+    <string name="selfName">Este Dispositivo</string>
+    <string name="sub_seven_allowed">Permitir trocas quando restam menos de sete quadrados</string>
+    <string name="sub_seven_allowed_sum">Isto permite trocar quadrados quando pelo menos 1 resta no agrupamento, algo comum, por exemplo, no espanhol.</string>
 </resources>
