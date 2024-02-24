@@ -208,7 +208,7 @@
     <string name="default_dict">Listas de palabras para humanos</string>
     <string name="default_robodict">Listas de palabras para robots</string>
     <string name="hints_allowed_sum">Activar pistas</string>
-    <string name="nethints_allowed_sum">Activar pistas para partidas con dos dispositivos</string>
+    <string name="nethints_allowed_sum">Activar las pistas para juegos multidispositivo</string>
     <string name="init_autojuggle">Barajar jugadores</string>
     <string name="init_autojuggle_sum">Modo aleatorio, para nuevas partidas</string>
     <string name="default_phonies">Gestionar las palabras erróneas</string>
@@ -1196,4 +1196,7 @@
     <string name="sort_by_date_label">Ordenar por fecha</string>
     <string name="peers_info_pending">Consultando al servidor…</string>
     <string name="no_peers_info">Información de pares no disponible</string>
+    <string name="selfName">Este dispositivo</string>
+    <string name="sub_seven_allowed">Permitir intercambios por debajo de siete mosaicos restantes</string>
+    <string name="sub_seven_allowed_sum">Esto te permite intercambiar fichas cuando queda tan sólo 1 en la reserva, como es habitual en el juego español.</string>
 </resources>
