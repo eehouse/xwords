@@ -1149,12 +1149,9 @@
     <string name="sort_by_date_label">Nach Datum sortieren</string>
     <string name="no_peers_info">Peer-Informationen nicht verfügbar</string>
     <string name="button_refresh">Aktualisieren</string>
-
     <string name="sub_seven_allowed">Buchstabenwechsel auch bei
     weniger als 7 Restbuchstaben im Säckchen erlauben.</string>
-
     <string name="sub_seven_allowed_sum">Lässt den Buchstabentausch
     zu, bis mindestens ein Buchstabenstein im Säckchen übrig ist. In
     Spanien eine übliche Regel.</string>
-
 </resources>
