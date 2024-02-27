@@ -1667,13 +1667,12 @@ linuxFireTimer( CommonGlobals* cGlobals, XWTimerReason why )
 {
     TimerInfo* tip = &cGlobals->timerInfo[why];
     XWTimerProc proc = tip->proc;
-    void* closure = tip->closure;
     XP_Bool draw = false;
 
     tip->proc = NULL;
 
     if ( !!proc ) {
-        draw = (*proc)( closure, NULL_XWE, why );
+        draw = (*proc)( tip->closure, NULL_XWE, why );
     } else {
         XP_LOGF( "%s: skipping timer %d; cancelled?", __func__, why );
     }

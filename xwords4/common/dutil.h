@@ -112,7 +112,7 @@ struct XW_DUtilCtxt {
     DUtilVtable vtable;
     void* closure;
     void* devCtxt;              /* owned by device.c */
-    void* statsState;            /* owned by stats.c */
+    void* statsState;           /* owned by stats.c */
 #ifdef XWFEATURE_KNOWNPLAYERS   /* owned by knownplyr.c */
     void* kpCtxt;
     pthread_mutex_t kpMutex;

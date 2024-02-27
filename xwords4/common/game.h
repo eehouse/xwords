@@ -122,6 +122,7 @@ void gi_copy( MPFORMAL CurGameInfo* destGI, const CurGameInfo* srcGi );
 XP_Bool gi_equal( const CurGameInfo* gi1, const CurGameInfo* gi2 );
 #endif
 XP_U16 gi_countLocalPlayers( const CurGameInfo* gi, XP_Bool humanOnly );
+XP_U16 gi_getLocalPlayer( const CurGameInfo* gi, XP_S16 fromHint );
 
 XP_Bool player_hasPasswd( const LocalPlayer* player );
 XP_Bool player_passwordMatches( const LocalPlayer* player, const XP_UCHAR* pwd );

@@ -37,7 +37,6 @@ typedef struct _KnownPlayer {
 
 typedef struct _KPState {
     KnownPlayer* players;
-    // XP_U16 nPlayers;
     XP_Bool dirty;
     XP_Bool inUse;
 } KPState;
@@ -226,7 +225,7 @@ static void
 addPlayer( XW_DUtilCtxt* XP_UNUSED_DBG(dutil), KPState* state,
            const XP_UCHAR* name, const CommsAddrRec* addr, XP_U32 newestMod )
 {
-    XP_LOGFF( "(name=%s, newestMod: %d)", name, newestMod );
+    XP_LOGFFV( "(name=%s, newestMod: %d)", name, newestMod );
     AddData ad = {.name = name, .addr = addr, };
     dll_map( &state->players->links, addProc, NULL, &ad );
 

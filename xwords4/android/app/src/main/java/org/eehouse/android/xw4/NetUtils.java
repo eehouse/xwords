@@ -148,15 +148,12 @@ public class NetUtils {
     public static void sendViaWeb( final Context context, final int resultKey,
                                    final String api, final String jsonParams )
     {
-        Log.d( TAG, "sendViaWeb(api: %s, params: %s)", api, jsonParams );
-
         new Thread( new Runnable() {
                 @Override
                 public void run() {
                     HttpURLConnection conn = makeHttpMQTTConn( context, api );
                     boolean directJson = true;
                     String result = runConn( conn, jsonParams, directJson );
-                    Log.d( TAG, "sendViaWeb(api: %s): got result '%s'", api, result );
                     if ( 0 != resultKey ) {
                         XwJNI.dvc_onWebSendResult( resultKey, true, result );
                     }

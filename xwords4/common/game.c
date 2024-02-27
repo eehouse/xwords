@@ -760,7 +760,6 @@ gi_equal( const CurGameInfo* gi1, const CurGameInfo* gi2 )
 }
 #endif
 
-
 void
 gi_setNPlayers( CurGameInfo* gi, XWEnv xwe, XW_UtilCtxt* util,
                 XP_U16 nTotal, XP_U16 nHere )
@@ -828,6 +827,25 @@ gi_countLocalPlayers( const CurGameInfo* gi, XP_Bool humanOnly )
     }
     return count;
 } /* gi_countLocalPlayers */
+
+/* Given a hint (likely the selected player), return that player if it's valid
+   and local. Otherwise the first local player. */
+XP_U16
+gi_getLocalPlayer( const CurGameInfo* gi, XP_S16 fromHint )
+{
+    if ( fromHint < 0 || gi->nPlayers <= fromHint ) {
+        fromHint = 0;
+    }
+    if ( ! gi->players[fromHint].isLocal ) {
+        for ( int ii = 0; ii < gi->nPlayers; ++ii ) {
+            if ( gi->players[ii].isLocal ) {
+                fromHint = ii;
+                break;
+            }
+        }
+    }
+    return fromHint;
+}
 
 void
 gi_readFromStream( MPFORMAL XWStreamCtxt* stream, CurGameInfo* gi )

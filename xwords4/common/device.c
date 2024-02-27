@@ -643,7 +643,7 @@ popForKey( XW_DUtilCtxt* dutil, XWEnv xwe, XP_U32 key )
     item = gbkd.found;
 
     pthread_mutex_unlock( &dc->webSendMutex );
-    XP_LOGFF( "(key: %d) => %p", key, item );
+    XP_LOGFFV( "(key: %d) => %p", key, item );
     return item;
 }
 
@@ -656,7 +656,7 @@ addWithKey( XW_DUtilCtxt* dutil, XWEnv xwe, WSData* wsdp )
     dc->webSendData = (WSData*)
         dll_insert( &dc->webSendData->links, &wsdp->links, NULL );
     pthread_mutex_unlock( &dc->webSendMutex );
-    XP_LOGFF( "(%p) => %d", wsdp, wsdp->resultKey );
+    XP_LOGFFV( "(%p) => %d", wsdp, wsdp->resultKey );
     return wsdp->resultKey;
 }
 
@@ -739,8 +739,6 @@ registerIf( XW_DUtilCtxt* dutil, XWEnv xwe )
 #endif
         char* loc = getenv("LANG");
         cJSON_AddStringToObject( params, "loc", loc );
-        /* params.put( "tmpKey", getTmpKey(mContext) ); */
-        /* params.put( "frstV", Utils.getFirstVersion( mContext ) ); */
 
         cJSON_AddNumberToObject( params, "myNow", now );
 
