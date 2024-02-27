@@ -80,6 +80,7 @@ public class GameConfigDelegate extends DelegateBase
     private CheckBox m_gameLockedCheck;
     private boolean m_isLocked;
     private boolean m_haveClosed;
+    private boolean mSub7HintShown;
 
     private CommsConnTypeSet m_conTypes;
     private Button m_addPlayerButton;
@@ -687,6 +688,20 @@ public class GameConfigDelegate extends DelegateBase
             setChecked( R.id.trade_sub_seven, m_gi.tradeSub7 );
             setChecked( R.id.pick_faceup, m_gi.allowPickTiles );
 
+            findViewById( R.id.trade_sub_seven )
+                .setOnClickListener( new View.OnClickListener() {
+                        @Override
+                        public void onClick( View view ) {
+                            if ( !mSub7HintShown ) {
+                                mSub7HintShown = true;
+                                makeNotAgainBuilder( R.string.key_na_sub7new,
+                                                     R.string.sub_seven_allowed_sum )
+                                    .setTitle( R.string.new_feature_title )
+                                    .show();
+                            }
+                        }
+                    } );
+
             setBoardsizeSpinner();
 
             final int[] curSel = {-1};
@@ -838,6 +853,7 @@ public class GameConfigDelegate extends DelegateBase
         return handled;
     }
 
+    @Override
     public void onClick( View view )
     {
         if ( isFinishing() ) {
