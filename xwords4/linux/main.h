@@ -112,6 +112,7 @@ typedef struct _LaunchParams {
     XP_Bool skipGameOver;
     XP_Bool useMmap;
     XP_Bool closeStdin;
+    XP_Bool skipUserErrs;
 
     XP_Bool useCurses;
     void* appGlobals;           /* cursesmain or gtkmain sets this */

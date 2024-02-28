@@ -244,6 +244,7 @@ OBJ = \
 	$(BUILD_PLAT_DIR)/relaycon.o \
 	$(BUILD_PLAT_DIR)/mqttcon.o \
 	$(BUILD_PLAT_DIR)/lindutil.o \
+	$(BUILD_PLAT_DIR)/extcmds.o \
 	$(CURSES_OBJS) $(GTK_OBJS) $(MAIN_OBJS)
 
 LIBS = -lm -lpthread -luuid -lcurl $(GPROFFLAG)

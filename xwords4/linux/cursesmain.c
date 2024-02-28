@@ -74,6 +74,7 @@
 #include "cursesboard.h"
 #include "curgamlistwin.h"
 #include "gsrcwrap.h"
+#include "extcmds.h"
 
 #ifndef CURSES_CELL_HT
 # define CURSES_CELL_HT 1
@@ -315,7 +316,7 @@ handleNewGame( void* closure, int XP_UNUSED(key) )
     const CurGameInfo* gi = &aGlobals->cag.params->pgi;
     if ( !canMakeFromGI(gi) ) {
         ca_inform( aGlobals->mainWin, "Unable to create game (check params?)" );
-    } else if ( !cb_new( aGlobals->cbState, &dims, NULL, NULL ) ) {
+    } else if ( !cb_newGame( aGlobals->cbState, &dims, NULL, NULL ) ) {
         XP_ASSERT(0);
     }
     return XP_TRUE;
@@ -1446,478 +1447,59 @@ onGameSaved( CursesAppGlobals* aGlobals, sqlite3_int64 rowid, bool isNew )
     cgl_refreshOne( aGlobals->gameList, rowid, isNew );
 }
 
-static XP_U32
-castGid( cJSON* obj )
+static XP_Bool
+newGameWrapper( void* closure, CurGameInfo* gi, XP_U32* newGameIDP )
 {
-    XP_U32 gameID;
-    sscanf( obj->valuestring, "%X", &gameID );
-    return gameID;
-}
-
-static XP_U32
-gidFromObject( const cJSON* obj )
-{
-    cJSON* tmp = cJSON_GetObjectItem( obj, "gid" );
-    XP_ASSERT( !!tmp );
-    return castGid( tmp );
-}
-
-static void
-makeObjIfNot( cJSON** objp )
-{
-    if ( NULL == *objp ) {
-        *objp = cJSON_CreateObject();
-    }
-}
-
-static void
-addStringToObject( cJSON** objp, const char* key, const char* value )
-{
-    makeObjIfNot( objp );
-    cJSON_AddStringToObject( *objp, key, value );
-}
-
-static void
-addGIDToObject( cJSON** objp, XP_U32 gid, const char* key )
-{
-    char buf[16];
-    sprintf( buf, "%08X", gid );
-    addStringToObject( objp, key, buf );
-}
-
-static void
-addObjectToObject( cJSON** objp, const char* key, cJSON* value )
-{
-    makeObjIfNot( objp );
-    cJSON_AddItemToObject( *objp,  key, value );
-}
-
-static void
-addSuccessToObject( cJSON** objp, XP_Bool success )
-{
-    makeObjIfNot( objp );
-    cJSON_AddBoolToObject( *objp, "success", success );
-}
-
-static XP_U32
-makeGameFromArgs( CursesAppGlobals* aGlobals, cJSON* args )
-{
-    LaunchParams* params = aGlobals->cag.params;
-    CurGameInfo gi = {0};
-    gi_copy( MPPARM(params->mpool) &gi, &params->pgi );
-    gi.boardSize = 15;
-    gi.traySize = 7;
-
-    cJSON* tmp = cJSON_GetObjectItem( args, "nPlayers" );
-    XP_ASSERT( !!tmp );
-    gi.nPlayers = tmp->valueint;
-
-    tmp = cJSON_GetObjectItem( args, "boardSize" );
-    if ( !!tmp ) {
-        gi.boardSize = tmp->valueint;
-    }
-    tmp = cJSON_GetObjectItem( args, "traySize" );
-    if ( !!tmp ) {
-        gi.traySize = tmp->valueint;
-    }
-
-    tmp = cJSON_GetObjectItem( args, "allowSub7" );
-    gi.tradeSub7 = !!tmp && cJSON_IsTrue( tmp );
-
-    tmp = cJSON_GetObjectItem( args, "isSolo" );
-    XP_ASSERT( !!tmp );
-    XP_Bool isSolo = cJSON_IsTrue( tmp );
-
-    tmp = cJSON_GetObjectItem( args, "timerSeconds" );
-    if ( !!tmp ) {
-        gi.gameSeconds = tmp->valueint;
-        if ( 0 != gi.gameSeconds ) {
-            gi.timerEnabled = XP_TRUE;
-        }
-    }
-
-    tmp = cJSON_GetObjectItem( args, "hostPosn" );
-    XP_ASSERT( !!tmp );
-    int hostPosn = tmp->valueint;
-    replaceStringIfDifferent( params->mpool, &gi.players[hostPosn].name,
-                              params->localName );
-    for ( int ii = 0; ii < gi.nPlayers; ++ii ) {
-        LocalPlayer* lp = &gi.players[ii];
-        lp->isLocal = isSolo || ii == hostPosn;
-        if ( isSolo ) {
-            lp->robotIQ = ii == hostPosn ? 0 : 1;
-        }
-    }
-
-    gi.serverRole = isSolo ? SERVER_STANDALONE : SERVER_ISHOST;
-
-    tmp = cJSON_GetObjectItem( args, "dict" );
-    XP_ASSERT( tmp );
-    replaceStringIfDifferent( params->mpool, &gi.dictName, tmp->valuestring );
+    CursesAppGlobals* aGlobals = (CursesAppGlobals*)closure;
 
     cb_dims dims;
     figureDims( aGlobals, &dims );
 
-    XP_U32 newGameID;
-#ifdef DEBUG
-    bool success =
-#endif
-        cb_new( aGlobals->cbState, &dims, &gi, &newGameID );
-    XP_ASSERT( success );
-
-    gi_disposePlayerInfo( MPPARM(params->mpool) &gi );
-    return newGameID;
+    return cb_newGame( aGlobals->cbState, &dims, gi, newGameIDP );
 }
 
 static XP_Bool
-inviteFromArgs( CursesAppGlobals* aGlobals, cJSON* args )
+makeMoveIfWrapper( void* closure, XP_U32 gameID, XP_Bool tryTrade )
 {
-    XP_U32 gameID = gidFromObject( args );
-
-    cJSON* remotes = cJSON_GetObjectItem( args, "remotes" );
-    int nRemotes = cJSON_GetArraySize(remotes);
-    CommsAddrRec destAddrs[nRemotes];
-    XP_MEMSET( destAddrs, 0, sizeof(destAddrs) );
-    XP_U16 channels[nRemotes];
-    XP_MEMSET( channels, 0, sizeof(channels) );
-
-    for ( int ii = 0; ii < nRemotes; ++ii ) {
-        cJSON* item = cJSON_GetArrayItem( remotes, ii );
-        cJSON* tmp = cJSON_GetObjectItem( item, "channel" );
-        XP_ASSERT( !!tmp );
-        channels[ii] = tmp->valueint;
-        XP_LOGFF( "read channel: %X", channels[ii] );
-
-        cJSON* addr = cJSON_GetObjectItem( item, "addr" );
-        XP_ASSERT( !!addr );
-        tmp = cJSON_GetObjectItem( addr, "mqtt" );
-        if ( !!tmp ) {
-            XP_LOGFF( "parsing mqtt: %s", tmp->valuestring );
-            addr_addType( &destAddrs[ii], COMMS_CONN_MQTT );
-#ifdef DEBUG
-            XP_Bool success =
-#endif
-                strToMQTTCDevID( tmp->valuestring, &destAddrs[ii].u.mqtt.devID );
-            XP_ASSERT( success );
-        }
-        tmp = cJSON_GetObjectItem( addr, "sms" );
-        if ( !!tmp ) {
-            XP_LOGFF( "parsing sms: %s", tmp->valuestring );
-            addr_addType( &destAddrs[ii], COMMS_CONN_SMS );
-            XP_STRCAT( destAddrs[ii].u.sms.phone, tmp->valuestring );
-            destAddrs[ii].u.sms.port = 1;
-        }
-    }
-
-    cb_addInvites( aGlobals->cbState, gameID, nRemotes, channels, destAddrs );
-
-    LOG_RETURN_VOID();
-    return XP_TRUE;
-}
-
-static XP_Bool
-moveifFromArgs( CursesAppGlobals* aGlobals, cJSON* args )
-{
-    XP_U32 gameID = gidFromObject( args );
-    cJSON* tmp = cJSON_GetObjectItem( args, "tryTrade" );
-    XP_Bool tryTrade = !!tmp && cJSON_IsTrue( tmp );
+    CursesAppGlobals* aGlobals = (CursesAppGlobals*)closure;
     return cb_makeMoveIf( aGlobals->cbState, gameID, tryTrade );
 }
 
-static XP_Bool
-chatFromArgs( CursesAppGlobals* aGlobals, cJSON* args )
+static void
+addInvitesWrapper( void* closure, XP_U32 gameID, XP_U16 nRemotes,
+                   XP_U16 forceChannels[], const CommsAddrRec destAddrs[] )
 {
-    XP_U32 gameID = gidFromObject( args );
-    cJSON* tmp = cJSON_GetObjectItem( args, "msg" );
-    const char* msg = tmp->valuestring;
+    CursesAppGlobals* aGlobals = (CursesAppGlobals*)closure;
+    cb_addInvites( aGlobals->cbState, gameID, nRemotes, forceChannels, destAddrs );
+}
+
+static const CommonGlobals*
+getForGameIDWrapper( void* closure, XP_U32 gameID )
+{
+    CursesAppGlobals* aGlobals = (CursesAppGlobals*)closure;
+    return cb_getForGameID( aGlobals->cbState, gameID );
+}
+
+static void
+quitWrapper( void* closure )
+{
+    CursesAppGlobals* aGlobals = (CursesAppGlobals*)closure;
+    handleQuit( aGlobals, 0 );
+}
+
+static XP_Bool
+makeRematchWrapper( void* closure, XP_U32 gameID, RematchOrder ro,
+                    XP_U32* newGameIDP )
+{
+    CursesAppGlobals* aGlobals = (CursesAppGlobals*)closure;
+    return cb_makeRematch( aGlobals->cbState, gameID, ro, newGameIDP );
+}
+
+static XP_Bool
+sendChatWrapper( void* closure, XP_U32 gameID, const char* msg )
+{
+    CursesAppGlobals* aGlobals = (CursesAppGlobals*)closure;
     return cb_sendChat( aGlobals->cbState, gameID, msg );
-}
-
-/* Return 'gid' of new game */
-static XP_U32
-rematchFromArgs( CursesAppGlobals* aGlobals, cJSON* args )
-{
-    XP_U32 result = 0;
-
-    XP_U32 gameID = gidFromObject( args );
-
-    cJSON* tmp = cJSON_GetObjectItem( args, "rematchOrder" );
-    RematchOrder ro = roFromStr( tmp->valuestring );
-
-    XP_U32 newGameID = 0;
-    if ( cb_makeRematch( aGlobals->cbState, gameID, ro, &newGameID ) ) {
-        result = newGameID;
-    }
-    return result;
-}
-
-static XP_Bool
-getGamesStateForArgs( CursesAppGlobals* aGlobals, cJSON* args,
-                      cJSON** states, cJSON** orders )
-{
-    LOG_FUNC();
-    LaunchParams* params = aGlobals->cag.params;
-
-    *states = cJSON_CreateArray();
-
-    cJSON* gids = cJSON_GetObjectItem( args, "gids" );
-    XP_Bool success = !!gids;
-    for ( int ii = 0 ; success && ii < cJSON_GetArraySize(gids) ; ++ii ) {
-        XP_U32 gameID = castGid( cJSON_GetArrayItem( gids, ii ) );
-
-        GameInfo gib;
-        if ( gdb_getGameInfoForGID( params->pDb, gameID, &gib ) ) {
-            cJSON* item = NULL;
-            addGIDToObject( &item, gameID, "gid" );
-            cJSON_AddBoolToObject( item, "gameOver", gib.gameOver );
-            cJSON_AddNumberToObject( item, "nPending", gib.nPending );
-            cJSON_AddNumberToObject( item, "nMoves", gib.nMoves );
-            cJSON_AddNumberToObject( item, "nTiles", gib.nTiles );
-
-            cJSON_AddItemToArray( *states, item );
-        }        
-    }
-
-    XP_LOGFF( "done with states" ); /* got here */
-
-    if ( success && !!orders ) {
-        cJSON* gids = cJSON_GetObjectItem( args, "orders" );
-        if ( !gids ) {
-            *orders = NULL;
-        } else {
-            *orders = cJSON_CreateArray();
-            for ( int ii = 0 ; ii < cJSON_GetArraySize(gids) ; ++ii ) {
-                XP_U32 gameID = castGid( cJSON_GetArrayItem( gids, ii ) );
-
-                const CommonGlobals* cg = cb_getForGameID( aGlobals->cbState, gameID );
-                if ( !cg ) {
-                    continue;
-                }
-                const XWGame* game = &cg->game;
-                if ( server_getGameIsConnected( game->server ) ) {
-                    const CurGameInfo* gi = cg->gi;
-                    LOGGI( gi, __func__ );
-                    cJSON* order = NULL;
-                    addGIDToObject( &order, gameID, "gid" );
-                    cJSON* players = cJSON_CreateArray();
-                    for ( int jj = 0; jj < gi->nPlayers; ++jj ) {
-                        XP_LOGFF( "looking at player %d", jj );
-                        const LocalPlayer* lp = &gi->players[jj];
-                        XP_LOGFF( "adding player %d: %s", jj, lp->name );
-                        cJSON* cName = cJSON_CreateString( lp->name );
-                        cJSON_AddItemToArray( players, cName);
-                    }
-                    cJSON_AddItemToObject( order, "players", players );
-                    cJSON_AddItemToArray( *orders, order );
-                }
-            }
-        }
-    }
-
-    LOG_RETURNF( "%s", boolToStr(success) );
-    return success;
-}
-
-/* Return for each gid and array of player names, in play order, and including
-   for each whether it's the host and if a robot. For now let's try by opening
-   each game (yeah! yuck!) to read the info directly. Later add to a the db
-   accessed by gamesdb.c
-*/
-static cJSON*
-getPlayersForArgs( CursesAppGlobals* aGlobals, cJSON* args )
-{
-    cJSON* result = cJSON_CreateArray();
-    cJSON* gids = cJSON_GetObjectItem( args, "gids" );
-    for ( int ii = 0 ; ii < cJSON_GetArraySize(gids) ; ++ii ) {
-        XP_U32 gameID = castGid( cJSON_GetArrayItem( gids, ii ) );
-
-        const CommonGlobals* cg = cb_getForGameID( aGlobals->cbState, gameID );
-        const CurGameInfo* gi = cg->gi;
-        LOGGI( gi, __func__ );
-        const XWGame* game = &cg->game;
-
-        cJSON* players = cJSON_CreateArray();
-        for ( int jj = 0; jj < gi->nPlayers; ++jj ) {
-            cJSON* playerObj = NULL;
-            const LocalPlayer* lp = &gi->players[jj];
-            XP_LOGFF( "adding player %d: %s", jj, lp->name );
-            addStringToObject( &playerObj, "name", lp->name );
-            XP_Bool isLocal = lp->isLocal;
-            cJSON_AddBoolToObject( playerObj, "isLocal", isLocal );
-
-            /* Roles: I don't think a guest in a 3- or 4-device game knows
-               which of the other players is host. Host is who it sends its
-               moves to, but is there an order there? */
-            XP_Bool isHost = game_getIsHost( game );
-            isHost = isHost && isLocal;
-            cJSON_AddBoolToObject( playerObj, "isHost", isHost );
-            
-            cJSON_AddItemToArray( players, playerObj );
-        }
-        cJSON_AddItemToArray( result, players );
-    }
-    return result;
-}
-
-static gboolean
-on_incoming_signal( GSocketService* XP_UNUSED(service),
-                    GSocketConnection* connection,
-                    GObject* XP_UNUSED(source_object), gpointer user_data )
-{
-    XP_LOGFF( "called" );
-    CursesAppGlobals* aGlobals = (CursesAppGlobals*)user_data;
-    LaunchParams* params = aGlobals->cag.params;
-    XP_U32 startTime = dutil_getCurSeconds( params->dutil, NULL_XWE );
-
-    GInputStream* istream = g_io_stream_get_input_stream( G_IO_STREAM(connection) );
-
-    short len;
-    gssize nread = g_input_stream_read( istream, &len, sizeof(len), NULL, NULL );
-    XP_ASSERT( nread == sizeof(len) );
-    len = ntohs(len);
-
-    gchar buf[len+1];
-    nread = g_input_stream_read( istream, buf, len, NULL, NULL );
-    if ( 0 <= nread ) {
-        XP_ASSERT( nread == len );
-        buf[nread] = '\0';
-        XP_LOGFF( "Message: \"%s\"\n", buf );
-
-        cJSON* reply = cJSON_CreateArray();
-
-        cJSON* cmds = cJSON_Parse( buf );
-        XP_LOGFF( "got msg with array of len %d", cJSON_GetArraySize(cmds) );
-        for ( int ii = 0 ; ii < cJSON_GetArraySize(cmds) ; ++ii ) {
-            cJSON* item = cJSON_GetArrayItem( cmds, ii );
-            cJSON* cmd = cJSON_GetObjectItem( item, "cmd" );
-            cJSON* key = cJSON_GetObjectItem( item, "key" );
-            cJSON* args = cJSON_GetObjectItem( item, "args" );
-            const char* cmdStr = cmd->valuestring;
-
-            cJSON* response = NULL;
-            XP_Bool success = XP_TRUE;
-
-            if ( 0 == strcmp( cmdStr, "quit" ) ) {
-                cJSON* gids;
-                if ( getGamesStateForArgs( aGlobals, args, &gids, NULL ) ) {
-                    addObjectToObject( &response, "states", gids );
-                }
-                handleQuit( aGlobals, 0 );
-            } else if ( 0 == strcmp( cmdStr, "getMQTTDevID" ) ) {
-                MQTTDevID devID;
-                dvc_getMQTTDevID( params->dutil, NULL_XWE, &devID );
-                char buf[64];
-                formatMQTTDevID( &devID, buf, sizeof(buf) );
-                cJSON* devid = cJSON_CreateString( buf );
-                addObjectToObject( &response, "mqtt", devid );
-            } else if ( 0 == strcmp( cmdStr, "makeGame" ) ) {
-                XP_U32 newGameID = makeGameFromArgs( aGlobals, args );
-                success = 0 != newGameID;
-                if ( success ) {
-                    addGIDToObject( &response, newGameID, "newGid" );
-                }
-            } else if ( 0 == strcmp( cmdStr, "invite" ) ) {
-                success = inviteFromArgs( aGlobals, args );
-            } else if ( 0 == strcmp( cmdStr, "moveIf" ) ) {
-                success = moveifFromArgs( aGlobals, args );
-            } else if ( 0 == strcmp( cmdStr, "rematch" ) ) {
-                XP_U32 newGameID = rematchFromArgs( aGlobals, args );
-                success = 0 != newGameID;
-                if ( success ) {
-                    addGIDToObject( &response, newGameID, "newGid" );
-                }
-            } else if ( 0 == strcmp( cmdStr, "getStates" ) ) {
-                cJSON* gids;
-                cJSON* orders;
-                success = getGamesStateForArgs( aGlobals, args, &gids, &orders );
-                if ( success ) {
-                    addObjectToObject( &response, "states", gids );
-                    addObjectToObject( &response, "orders", orders );
-                }
-            } else if ( 0 == strcmp( cmdStr, "getPlayers" ) ) {
-                cJSON* players = getPlayersForArgs( aGlobals, args );
-                addObjectToObject( &response, "players", players );
-            } else if ( 0 == strcmp( cmdStr, "sendChat" ) ) {
-                success = chatFromArgs( aGlobals, args );
-            } else {
-                success = XP_FALSE;
-                XP_ASSERT(0);
-            }
-
-            addSuccessToObject( &response, success );
-
-            cJSON* tmp = cJSON_CreateObject();
-            cJSON_AddStringToObject( tmp, "cmd", cmdStr );
-            cJSON_AddNumberToObject( tmp, "key", key->valueint );
-            cJSON_AddItemToObject( tmp,  "response", response );
-
-            /*(void)*/cJSON_AddItemToArray( reply, tmp );
-        }
-        cJSON_Delete( cmds );   /* this apparently takes care of all children */
-
-        char* replyStr = cJSON_PrintUnformatted( reply );
-        short replyStrLen = strlen(replyStr);
-        XP_LOGFF( "len(%s): %d", replyStr, replyStrLen );
-        short replyStrNBOLen = htons(replyStrLen);
-
-        GOutputStream* ostream = g_io_stream_get_output_stream( G_IO_STREAM(connection) );
-        gsize nwritten;
-#ifdef DEBUG
-        gboolean wroteall =
-#endif
-            g_output_stream_write_all( ostream, &replyStrNBOLen, sizeof(replyStrNBOLen),
-                                                       &nwritten, NULL, NULL );
-        XP_ASSERT( wroteall && nwritten == sizeof(replyStrNBOLen) );
-#ifdef DEBUG
-        wroteall =
-#endif
-            g_output_stream_write_all( ostream, replyStr, replyStrLen, &nwritten, NULL, NULL );
-        XP_ASSERT( wroteall && nwritten == replyStrLen );
-        GError* error = NULL;
-        g_output_stream_close( ostream, NULL, &error );
-        if ( !!error ) {
-            XP_LOGFF( "g_output_stream_close()=>%s", error->message );
-            g_error_free( error );
-        }
-        cJSON_Delete( reply );
-        free( replyStr );
-    }
-
-    XP_U32 consumed = dutil_getCurSeconds( params->dutil, NULL_XWE ) - startTime;
-    if ( 0 < consumed ) {
-        XP_LOGFF( "took %d seconds", consumed );
-    }
-    LOG_RETURN_VOID();
-    return FALSE;
-}
-
-static GSocketService*
-addCmdListener( CursesAppGlobals* aGlobals )
-{
-    LOG_FUNC();
-    LaunchParams* params = aGlobals->cag.params;
-    const XP_UCHAR* cmdsSocket = params->cmdsSocket;
-    GSocketService* service = NULL;
-    if ( !!cmdsSocket ) {
-        service = g_socket_service_new();
-
-        struct sockaddr_un addr = {0};
-        addr.sun_family = AF_UNIX;
-        strncpy( addr.sun_path, cmdsSocket, sizeof(addr.sun_path) - 1);
-        GSocketAddress* gsaddr
-            = g_socket_address_new_from_native (&addr, sizeof(addr) );
-        GError* error = NULL;
-        if ( g_socket_listener_add_address( (GSocketListener*)service, gsaddr, G_SOCKET_TYPE_STREAM,
-                                            G_SOCKET_PROTOCOL_DEFAULT, NULL, NULL, &error ) ) {
-        } else {
-            XP_LOGFF( "g_socket_listener_add_address() failed: %s", error->message );
-        }
-        g_object_unref( gsaddr );
-
-        g_signal_connect( service, "incoming", G_CALLBACK(on_incoming_signal), aGlobals );
-    }
-    LOG_RETURNF( "%p", service );
-    return service;
 }
 
 void
@@ -1943,51 +1525,20 @@ cursesmain( XP_Bool XP_UNUSED(isServer), LaunchParams* params )
     g_globals.gameList = cgl_init( params, g_globals.winWidth, params->cursesListWinHt );
     cgl_refresh( g_globals.gameList );
 
-    GSocketService* cmdService = addCmdListener( &g_globals );
-
-    // g_globals.amServer = isServer;
-/*     g_globals.cGlobals.params = params; */
-/* #ifdef XWFEATURE_RELAY */
-/*     g_globals.cGlobals.relaySocket = -1; */
-/* #endif */
-
-/*     g_globals.cGlobals.socketAdded = curses_socket_added; */
-/*     g_globals.cGlobals.socketAddedClosure = &g_globals; */
-/*     g_globals.cGlobals.onSave = curses_onGameSaved; */
-/*     g_globals.cGlobals.onSaveClosure = &g_globals; */
-
-/*     g_globals.cGlobals.addAcceptor = curses_socket_acceptor; */
-
-/*     g_globals.cGlobals.cp.showBoardArrow = XP_TRUE; */
-/*     g_globals.cGlobals.cp.showRobotScores = params->showRobotScores; */
-/*     g_globals.cGlobals.cp.hideTileValues = params->hideValues; */
-/*     g_globals.cGlobals.cp.skipCommitConfirm = params->skipCommitConfirm; */
-/*     g_globals.cGlobals.cp.sortNewTiles = params->sortNewTiles; */
-/*     g_globals.cGlobals.cp.showColors = params->showColors; */
-/*     g_globals.cGlobals.cp.allowPeek = params->allowPeek; */
-/* #ifdef XWFEATURE_SLOW_ROBOT */
-/*     g_globals.cGlobals.cp.robotThinkMin = params->robotThinkMin; */
-/*     g_globals.cGlobals.cp.robotThinkMax = params->robotThinkMax; */
-/*     g_globals.cGlobals.cp.robotTradePct = params->robotTradePct; */
-/* #endif */
-
-    /* g_globals.cGlobals.gi = &params->pgi; */
-    /* setupUtil( &g_globals.cGlobals ); */
-    /* setupCursesUtilCallbacks( &g_globals, g_globals.cGlobals.util ); */
-
-    // initFromParams( &g_globals.cGlobals, params );
-
-#ifdef XWFEATURE_RELAY
-    /* if ( addr_hasType( &params->addr, COMMS_CONN_RELAY ) ) { */
-    /*     g_globals.cGlobals.defaultServerName */
-    /*         = params->connInfo.relay.relayName; */
-    /* } */
-#endif
-
-    /* if ( !params->closeStdin ) { */
-    /*     cursesListenOnSocket( &g_globals, 0, handle_stdin ); */
-    /* } */
-    /* setOneSecondTimer( &g_globals.cGlobals ); */
+    CmdWrapper wr = {
+        .params = params,
+        .closure = &g_globals,
+        .procs = {
+            .quit = quitWrapper,
+            .newGame = newGameWrapper,
+            .addInvites = addInvitesWrapper,
+            .makeMoveIf = makeMoveIfWrapper,
+            .getForGameID = getForGameIDWrapper,
+            .makeRematch = makeRematchWrapper,
+            .sendChat = sendChatWrapper,
+        },
+    };
+    GSocketService* cmdService = cmds_addCmdListener( &wr );
 
 # ifdef DEBUG
     int piperesult = 

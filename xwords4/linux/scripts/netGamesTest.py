@@ -240,7 +240,7 @@ class Device():
     def _launchProc(self):
         assert not self.endTime
         self.endTime = datetime.datetime.now() + datetime.timedelta(seconds = 5)
-        args = [ self.script, '--close-stdin' ]
+        args = [ self.script, '--close-stdin', '--skip-user-errors' ]
         if not self.args.USE_GTK: args.append('--curses')
 
         env = os.environ.copy()

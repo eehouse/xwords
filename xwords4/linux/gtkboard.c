@@ -1476,16 +1476,17 @@ send_invites( CommonGlobals* cGlobals, XP_U16 nPlayers,
 static void
 gtkUserError( GtkGameGlobals* globals, const char* format, ... )
 {
-    char buf[512];
-    va_list ap;
+    XP_Bool skipUserErrs = globals->cGlobals.params->skipUserErrs;
+    if ( !skipUserErrs ) {
+        char buf[512];
+        va_list ap;
+        va_start( ap, format );
+        vsnprintf( buf, sizeof(buf), format, ap );
 
-    va_start( ap, format );
+        (void)gtkask( globals->window, buf, GTK_BUTTONS_OK, NULL );
 
-    vsprintf( buf, format, ap );
-
-    (void)gtkask( globals->window, buf, GTK_BUTTONS_OK, NULL );
-
-    va_end(ap);
+        va_end(ap);
+    }
 } /* gtkUserError */
 
 static gint

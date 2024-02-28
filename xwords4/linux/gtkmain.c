@@ -36,6 +36,7 @@
 #include "gtkkpdlg.h"
 #include "gtknewgame.h"
 #include "gtkrmtch.h"
+#include "gsrcwrap.h"
 
 static void onNewData( GtkAppGlobals* apg, sqlite3_int64 rowid, 
                        XP_Bool isNew );
@@ -453,6 +454,13 @@ handle_delete_button( GtkWidget* XP_UNUSED(widget), void* closure )
     /* Need now to update the selection and sync the buttons */
 }
 
+static gint
+quitIdle( gpointer XP_UNUSED(data) )
+{
+    gtk_main_quit();
+    return 0;
+}
+
 static void
 handle_destroy( GtkWidget* XP_UNUSED(widget), gpointer data )
 {
@@ -468,7 +476,10 @@ handle_destroy( GtkWidget* XP_UNUSED(widget), gpointer data )
 
     saveSize( &apg->lastConfigure, apg->cag.params->pDb, KEY_WIN_LOC );
 
-    gtk_main_quit();
+    /* Quit via an idle proc, because other shutdown code inside
+       destroy_board_window() has posted idles to clean up memory and they
+       need to run first. Last posted should be last run, I hope. */
+    (void)g_idle_add( quitIdle, NULL );
 }
 
 static void

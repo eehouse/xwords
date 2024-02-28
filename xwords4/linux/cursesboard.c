@@ -199,8 +199,8 @@ cb_open( CursesBoardState* cbState, sqlite3_int64 rowid, const cb_dims* dims )
 }
 
 bool
-cb_new( CursesBoardState* cbState, const cb_dims* dims, const CurGameInfo* gi,
-        XP_U32* newGameIDP )
+cb_newGame( CursesBoardState* cbState, const cb_dims* dims,
+            const CurGameInfo* gi, XP_U32* newGameIDP )
 {
     CursesBoardGlobals* bGlobals = findOrOpen( cbState, -1, gi, NULL );
     if ( !!bGlobals ) {

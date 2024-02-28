@@ -720,6 +720,7 @@ typedef enum {
     ,CMD_NOHEARTBEAT
     ,CMD_HOSTNAME
     ,CMD_CLOSESTDIN
+    ,CMD_SKIP_ERRS
     ,CMD_NOCLOSESTDIN
     ,CMD_QUITAFTER
     ,CMD_BOARDSIZE
@@ -875,6 +876,7 @@ static CmdInfoRec CmdInfoRecs[] = {
     ,{ CMD_NOHEARTBEAT, false, "no-heartbeat", "don't send heartbeats" }
     ,{ CMD_HOSTNAME, true, "host", "name of remote host" }
     ,{ CMD_CLOSESTDIN, false, "close-stdin", "close stdin on start" }
+    ,{ CMD_SKIP_ERRS, false, "skip-user-errors", "don't show user errors like Not your turn" }
     ,{ CMD_NOCLOSESTDIN, false, "no-close-stdin", "do not close stdin on start" }
     ,{ CMD_QUITAFTER, true, "quit-after", "exit <n> seconds after game's done" }
     ,{ CMD_BOARDSIZE, true, "board-size", "board is <n> by <n> cells" }
@@ -2638,15 +2640,17 @@ testDLL()
     list = removeAndMap( list, &tss[1] );
     XP_ASSERT( !list );
 }
+#else
+# define testDLL()
 #endif
 
 int
 main( int argc, char** argv )
 {
+    XP_LOGFF( "%s starting; ptr size: %zu", argv[0], sizeof(argv) );
+
     testDLL();
     // return 0;
-
-    XP_LOGFF( "%s starting; ptr size: %zu", argv[0], sizeof(argv) );
 
     int opt;
     int totalPlayerCount = 0;
@@ -3075,6 +3079,9 @@ main( int argc, char** argv )
             break;
         case CMD_CLOSESTDIN:
             mainParams.closeStdin = XP_TRUE;
+            break;
+        case CMD_SKIP_ERRS:
+            mainParams.skipUserErrs = XP_TRUE;
             break;
         case CMD_NOCLOSESTDIN:
             mainParams.closeStdin = XP_FALSE;
