@@ -349,15 +349,10 @@ on_incoming_signal( GSocketService* XP_UNUSED(service),
 
     GInputStream* istream = g_io_stream_get_input_stream( G_IO_STREAM(connection) );
 
-    short len;
-    gssize nread = g_input_stream_read( istream, &len, sizeof(len), NULL, NULL );
-    XP_ASSERT( nread == sizeof(len) );
-    len = ntohs(len);
-
-    gchar buf[len+1];
-    nread = g_input_stream_read( istream, buf, len, NULL, NULL );
+    gchar buf[1024];
+    gssize nread = g_input_stream_read( istream, buf, sizeof(buf), NULL, NULL );
     if ( 0 <= nread ) {
-        XP_ASSERT( nread == len );
+        // XP_ASSERT( nread == len );
         buf[nread] = '\0';
         XP_LOGFF( "Message: \"%s\"\n", buf );
 
@@ -436,14 +431,11 @@ on_incoming_signal( GSocketService* XP_UNUSED(service),
         char* replyStr = cJSON_PrintUnformatted( reply );
         short replyStrLen = strlen(replyStr);
         XP_LOGFF( "len(%s): %d", replyStr, replyStrLen );
-        short replyStrNBOLen = htons(replyStrLen);
 
         GOutputStream* ostream = g_io_stream_get_output_stream( G_IO_STREAM(connection) );
         gsize nwritten;
-        gboolean wroteall = g_output_stream_write_all( ostream, &replyStrNBOLen, sizeof(replyStrNBOLen),
+        gboolean wroteall = g_output_stream_write_all( ostream, replyStr, replyStrLen,
                                                        &nwritten, NULL, NULL );
-        XP_ASSERT( wroteall && nwritten == sizeof(replyStrNBOLen) );
-        wroteall = g_output_stream_write_all( ostream, replyStr, replyStrLen, &nwritten, NULL, NULL );
         XP_ASSERT( wroteall && nwritten == replyStrLen );
         GError* error = NULL;
         g_output_stream_close( ostream, NULL, &error );

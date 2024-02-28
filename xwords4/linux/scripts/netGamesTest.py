@@ -295,13 +295,11 @@ class Device():
         key = self._nextKey()
         params = [{'cmd': cmd, 'key': key, 'args': {**kwargs}}]
         payload = json.dumps(params).encode()
-        client.send(struct.pack('!h', len(payload)))
         client.sendall(payload)
 
         # # Receive a response from the server
         # self._log('_sendWaitReply({}): calling recv()'.format(cmd))
-        reslen = struct.unpack('!h', client.recv(2))[0]
-        response = client.recv(reslen).decode()
+        response = client.recv(4096).decode()
         # self._log('_sendWaitReply({}): recv => str: {}'.format(cmd, response))
         response = json.loads(response)
         self._log('_sendWaitReply({}, {}): recv => {}'.format(cmd, kwargs, response))
@@ -807,9 +805,9 @@ def mkParser():
 
     parser.add_argument('--force-tray', dest = 'TRAY_SIZE', default = 0, type = int,
                         help = 'Always this many tiles per tray')
-    parser.add_argument('--board-size-min', dest = 'BOARD_SIZE_MIN', type = int, default = 11,
+    parser.add_argument('--board-size-min', dest = 'BOARD_SIZE_MIN', type = int, default = 15,
                         help = 'give boards at least this many rows and columns')
-    parser.add_argument('--board-size-max', dest = 'BOARD_SIZE_MAX', type = int, default = 23,
+    parser.add_argument('--board-size-max', dest = 'BOARD_SIZE_MAX', type = int, default = 15,
                         help = 'give boards no more than this many rows and columns')
 
     parser.add_argument('--rematch-level', dest = 'REMATCH_LEVEL', type = int, default = 0,

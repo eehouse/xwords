@@ -993,7 +993,6 @@ newGameWrapper( void* closure, CurGameInfo* gi, XP_U32* newGameIDP )
     return XP_TRUE;
 }
 
-
 static void
 quitWrapper( void* closure )
 {
