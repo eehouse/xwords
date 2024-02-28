@@ -124,7 +124,8 @@ void board_setTrayLoc( BoardCtxt* board, XWEnv xwe,
 /* Vertical scroll support; offset is in rows, not pixels */
 XP_Bool board_setYOffset( BoardCtxt* board, XWEnv xwe, XP_U16 newOffset );
 XP_U16 board_getYOffset( const BoardCtxt* board );
-
+void board_selectPlayer( BoardCtxt* board, XWEnv xwe, XP_U16 newPlayer,
+                         XP_Bool canPeek );
 XP_Bool board_curTurnSelected( const BoardCtxt* board );
 XP_U16 board_visTileCount( const BoardCtxt* board );
 void board_pause( BoardCtxt* board, XWEnv xwe, const XP_UCHAR* msg );

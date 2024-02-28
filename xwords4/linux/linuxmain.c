@@ -140,6 +140,7 @@ linux_makeMoveIf( CommonGlobals* cGlobals, XP_Bool tryTrade )
 
     if ( success ) {
         BoardCtxt* board = cGlobals->game.board;
+        board_selectPlayer( board, NULL_XWE, turn, XP_TRUE );
         if ( tryTrade && board_canTrade( board, NULL_XWE ) ) {
             ModelCtxt* model = cGlobals->game.model;
 

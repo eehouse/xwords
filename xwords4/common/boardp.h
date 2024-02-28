@@ -253,7 +253,6 @@ void figureTrayTileRect( BoardCtxt* board, XP_U16 index, XP_Rect* rect );
 XP_Bool rectsIntersect( const XP_Rect* rect1, const XP_Rect* rect2 );
 XP_S16 pointToTileIndex( BoardCtxt* board, XP_U16 x, XP_U16 y, 
                          XP_Bool* onDividerP );
-void board_selectPlayer( BoardCtxt* board, XWEnv xwe, XP_U16 newPlayer, XP_Bool canPeek );
 void flipIf( const BoardCtxt* board, XP_U16 col, XP_U16 row, 
              XP_U16* fCol, XP_U16* fRow );
 XP_Bool pointOnSomething( const BoardCtxt* board, XP_U16 xx, XP_U16 yy,
