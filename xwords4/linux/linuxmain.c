@@ -2598,7 +2598,7 @@ compByNameRev( const DLHead* dl1, const DLHead* dl2 )
 }
 
 static ForEachAct
-mapProc( const DLHead* dl, void* XP_UNUSED(closure))
+mapProc( const DLHead* XP_UNUSED_DBG(dl), void* XP_UNUSED(closure))
 {
     XP_LOGFF( "name: %s", ((TestThing*)dl)->name );
     return FEA_OK;

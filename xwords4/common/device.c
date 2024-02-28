@@ -763,7 +763,9 @@ dvc_init( XW_DUtilCtxt* dutil, XWEnv xwe )
     dc->mWebSendKey = 0;
     pthread_mutex_init( &dc->webSendMutex, NULL );
 
+#ifdef DEBUG
     dutil->magic = MAGIC_INITED;
+#endif
     registerIf( dutil, xwe );
 }
 

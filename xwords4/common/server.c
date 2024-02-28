@@ -902,7 +902,8 @@ buildGuestRI( const ServerCtxt* server, XP_U16 guestIndex, RematchInfo* rip )
 }
 
 static void
-loadRemoteRI( const ServerCtxt* server, const CurGameInfo* gi, RematchInfo* rip )
+loadRemoteRI( const ServerCtxt* server, const CurGameInfo* XP_UNUSED_DBG(gi),
+              RematchInfo* rip )
 {
     XWStreamCtxt* tmpStream = mkServerStream( server, server->nv.streamVersion );
     stream_putBytes( tmpStream, server->nv.rematch.addrs, server->nv.rematch.addrsLen );
@@ -4224,7 +4225,7 @@ sortByName( const ServerCtxt* server, NewOrder* nop )
 #endif
 
 static XP_Bool
-setPlayerOrder( const ServerCtxt* server, const NewOrder* nop,
+setPlayerOrder( const ServerCtxt* XP_UNUSED_DBG(server), const NewOrder* nop,
                 CurGameInfo* gi, RematchInfo* rip )
 {
     CurGameInfo srcGi = *gi;
@@ -4365,7 +4366,7 @@ server_getRematchInfo( const ServerCtxt* server, XW_UtilCtxt* newUtil,
 } /* server_getRematchInfo */
 
 void
-server_disposeRematchInfo( ServerCtxt* server, RematchInfo** ripp )
+server_disposeRematchInfo( ServerCtxt* XP_UNUSED_DBG(server), RematchInfo** ripp )
 {
     SRVR_LOGFFV( "(%p)", *ripp );
     if ( !!*ripp ) {
@@ -4482,7 +4483,7 @@ log_ri( const ServerCtxt* server, const RematchInfo* rip,
 
 static void
 ri_toStream( XWStreamCtxt* stream, const RematchInfo* rip,
-             const ServerCtxt* server )
+             const ServerCtxt* XP_UNUSED_DBG(server) )
 {
     LOG_RI(rip);
     XP_U16 nPlayers = !!rip ? rip->nPlayers : 0;

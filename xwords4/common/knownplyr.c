@@ -323,7 +323,10 @@ getPlayersImpl( const KPState* state, const XP_UCHAR** players,
     XP_U16 nPlayers = dll_length( &state->players->links );
     if ( nPlayers <= *nFound && !!players ) {
         GetState gs = { .players = players, .indx = 0, };
-        DLHead* head = dll_map( &state->players->links, getProc, NULL, &gs );
+#ifdef DEBUG
+        DLHead* head =
+#endif
+            dll_map( &state->players->links, getProc, NULL, &gs );
         XP_ASSERT( head == &state->players->links );
     }
     *nFound = nPlayers;
@@ -368,7 +371,10 @@ static KnownPlayer*
 findByName( KPState* state, const XP_UCHAR* name )
 {
     FindState fs = { .name = name, };
-    DLHead* head = dll_map( &state->players->links, findProc, NULL, &fs );
+#ifdef DEBUG
+    DLHead* head =
+#endif
+        dll_map( &state->players->links, findProc, NULL, &fs );
     XP_ASSERT( head == &state->players->links );
     return (KnownPlayer*)fs.result;
 }
@@ -420,7 +426,10 @@ kplr_nameForMqttDev( XW_DUtilCtxt* dutil, XWEnv xwe,
     MDevState ms = {0};
     if ( strToMQTTCDevID( mqttDevID, &ms.devID ) ) {
         KPState* state = loadState( dutil, xwe );
-        DLHead* head = dll_map( &state->players->links, mqttProc, NULL, &ms );
+#ifdef DEBUG
+        DLHead* head =
+#endif
+            dll_map( &state->players->links, mqttProc, NULL, &ms );
         XP_ASSERT( head == &state->players->links );
         releaseState( dutil, xwe, state );
     }

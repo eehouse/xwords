@@ -80,11 +80,8 @@ typedef struct _DUtilVtable {
                                      const XP_UCHAR* idRelay );
 #endif
 
-#ifdef COMMS_CHECKSUM
     void (*m_dutil_md5sum)( XW_DUtilCtxt* duc, XWEnv xwe, const XP_U8* ptr,
                             XP_U32 len, Md5SumBuf* sb );
-#endif
-
     void (*m_dutil_getUsername)( XW_DUtilCtxt* duc, XWEnv xwe, XP_U16 num,
                                  XP_Bool isLocal, XP_Bool isRobot,
                                  XP_UCHAR* buf, XP_U16* len );
@@ -162,10 +159,8 @@ void dutil_super_cleanup( XW_DUtilCtxt* dutil, XWEnv xwe );
     (duc)->vtable.m_dutil_deviceRegistered( (duc), (e), (typ), (id) )
 #endif
 
-#ifdef COMMS_CHECKSUM
 # define dutil_md5sum( duc, e, p, l, b )                    \
     (duc)->vtable.m_dutil_md5sum((duc), (e), (p), (l), (b))
-#endif
 
 #define dutil_getUsername(duc, xwe, num, isLocal, isRobot, buf, lenp)   \
     (duc)->vtable.m_dutil_getUsername((duc), (xwe), (num), (isLocal),    \

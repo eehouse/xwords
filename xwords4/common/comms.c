@@ -73,6 +73,7 @@
     }
 #else
 # define COMMS_LOGFF( FMT, ... )
+# define COMMS_LOGFFV(...)
 #endif
 
 #ifdef DEBUG
