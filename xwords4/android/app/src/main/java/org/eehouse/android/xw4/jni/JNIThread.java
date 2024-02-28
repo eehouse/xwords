@@ -100,6 +100,7 @@ public class JNIThread extends Thread implements AutoCloseable {
             CMD_SETMQTTID,
             CMD_PAUSE,
             CMD_UNPAUSE,
+            CMD_UNQUASH,
             // CMD_DRAW_CONNS_STATUS,
             // CMD_DRAW_BT_STATUS,
             // CMD_DRAW_SMS_STATUS,
@@ -728,6 +729,9 @@ public class JNIThread extends Thread implements AutoCloseable {
                 break;
             case CMD_UNPAUSE:
                 XwJNI.board_unpause( m_jniGamePtr, ((String)args[0]) );
+                break;
+            case CMD_UNQUASH:
+                XwJNI.comms_setQuashed( m_jniGamePtr, false );
                 break;
             case CMD_NONE:      // ignored
                 break;

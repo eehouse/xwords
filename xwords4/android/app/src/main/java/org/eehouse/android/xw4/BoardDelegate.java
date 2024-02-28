@@ -1561,7 +1561,7 @@ public class BoardDelegate extends DelegateBase
                             showDialogFragment( DlgID.MQTT_PEERS );
                             break;
                         case R.id.netstat_unquash:
-                            XwJNI.comms_setQuashed( m_jniGamePtr, false );
+                            handleViaThread( JNICmd.CMD_UNQUASH );
                             break;
                         default:
                             handled = false;
