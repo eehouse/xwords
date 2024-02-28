@@ -60,7 +60,7 @@ CURDIR=$(pwd)
 
 mkdir -p $BUILDIR
 cd $BUILDIR
-git clone $SRCDIR BUILD
+git clone --recurse-submodules $SRCDIR BUILD
 cd BUILD
 git checkout ${TAG}${BRANCH}
 cd ./xwords4/android/
