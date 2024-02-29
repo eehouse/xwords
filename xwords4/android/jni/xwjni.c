@@ -776,10 +776,16 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dvc_1onWebSendResult
 {
     XP_ASSERT( 0 != jResultKey );
     DVC_HEADER(jniGlobalPtr);
-    const char* resultStr = (*env)->GetStringUTFChars( env, jResult, NULL );
+
+    const char* resultStr = NULL;
+    if ( !!jResult ) {
+        resultStr = (*env)->GetStringUTFChars( env, jResult, NULL );
+    }
     dvc_onWebSendResult( globalState->dutil, env, jResultKey, jSucceeded,
                          resultStr );
-    (*env)->ReleaseStringUTFChars( env, jResult, resultStr );
+    if ( !!jResult ) {
+        (*env)->ReleaseStringUTFChars( env, jResult, resultStr );
+    }
     DVC_HEADER_END();
 }
 

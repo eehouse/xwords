@@ -667,12 +667,12 @@ dvc_onWebSendResult( XW_DUtilCtxt* dutil, XWEnv xwe, XP_U32 resultKey,
     XP_ASSERT( 0 != resultKey );
     if ( 0 != resultKey ) {
         WSData* wsdp = popForKey( dutil, xwe, resultKey );
-        cJSON* result = cJSON_Parse( resultJson );
+        cJSON* result = cJSON_Parse( resultJson ); /* ok if resultJson is NULL... */
         switch ( wsdp->code ) {
         case WSR_REGISTER:
-            if ( succeeded  ) {
-                cJSON* tmp = cJSON_GetObjectItem( result, "success" );
-                if ( cJSON_IsTrue( tmp ) ) {
+            if ( succeeded ) {
+                cJSON* tmp = cJSON_GetObjectItem( result, "success" ); /* returns null if result is null */
+                if ( !!tmp && cJSON_IsTrue( tmp ) ) {
                     tmp = cJSON_GetObjectItem( result, "atNext" );
                     if ( !!tmp ) {
                         XP_U32 atNext = tmp->valueint;
