@@ -667,37 +667,39 @@ dvc_onWebSendResult( XW_DUtilCtxt* dutil, XWEnv xwe, XP_U32 resultKey,
     XP_ASSERT( 0 != resultKey );
     if ( 0 != resultKey ) {
         WSData* wsdp = popForKey( dutil, xwe, resultKey );
-        cJSON* result = cJSON_Parse( resultJson ); /* ok if resultJson is NULL... */
-        switch ( wsdp->code ) {
-        case WSR_REGISTER:
-            if ( succeeded ) {
-                cJSON* tmp = cJSON_GetObjectItem( result, "success" ); /* returns null if result is null */
-                if ( !!tmp && cJSON_IsTrue( tmp ) ) {
-                    tmp = cJSON_GetObjectItem( result, "atNext" );
-                    if ( !!tmp ) {
-                        XP_U32 atNext = tmp->valueint;
-                        {
-                            const XP_UCHAR* keys1[] = { LAST_REG_KEY, NULL };
-                            dutil_storePtr( dutil, xwe, keys1, &atNext,
-                                            sizeof(atNext) );
-                        }
-                        {
-                            const XP_UCHAR* keys2[] = { KEY_GITREV, NULL };
-                            dutil_storePtr( dutil, xwe, keys2, GITREV,
-                                            XP_STRLEN(GITREV) );
+        XP_ASSERT( !!wsdp );
+        if ( !!wsdp ) {
+            cJSON* result = cJSON_Parse( resultJson ); /* ok if resultJson is NULL... */
+            switch ( wsdp->code ) {
+            case WSR_REGISTER:
+                if ( succeeded ) {
+                    cJSON* tmp = cJSON_GetObjectItem( result, "success" ); /* returns null if result is null */
+                    if ( !!tmp && cJSON_IsTrue( tmp ) ) {
+                        tmp = cJSON_GetObjectItem( result, "atNext" );
+                        if ( !!tmp ) {
+                            XP_U32 atNext = tmp->valueint;
+                            {
+                                const XP_UCHAR* keys1[] = { LAST_REG_KEY, NULL };
+                                dutil_storePtr( dutil, xwe, keys1, &atNext,
+                                                sizeof(atNext) );
+                            }
+                            {
+                                const XP_UCHAR* keys2[] = { KEY_GITREV, NULL };
+                                dutil_storePtr( dutil, xwe, keys2, GITREV,
+                                                XP_STRLEN(GITREV) );
+                            }
                         }
                     }
                 }
+                break;
+            default:
+                XP_ASSERT(0);
+                break;
             }
-            break;
-        default:
-            XP_ASSERT(0);
-            break;
+
+            cJSON_Delete( result );
+            XP_FREEP( dutil->mpool, &wsdp );
         }
-
-        cJSON_Delete( result );
-
-        XP_FREEP( dutil->mpool, &wsdp );
     }
 }
 
