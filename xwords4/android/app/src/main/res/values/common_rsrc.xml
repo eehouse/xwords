@@ -103,6 +103,14 @@
   <string name="key_force_radio">key_force_radio</string>
   <string name="key_addrs_pref">key_addrs_pref</string>
 
+  <!-- Prefs for settings to disable board-bottom buttons -->
+  <string name="key_disable_dicts_button">key_disable_dicts_button</string>
+  <string name="key_disable_flip_button">key_disable_flip_button</string>
+  <string name="key_disable_shuffle_button">key_disable_shuffle_button</string>
+  <string name="key_disable_undo_button">key_disable_undo_button</string>
+  <string name="key_disable_chat_button">key_disable_chat_button</string>
+  <string name="key_disable_values_button">key_disable_values_button</string>
+
   <!-- database keys whose entries aren't visible prefs -->
   <string name="key_closed_langs">key_closed_langs</string>
   <string name="key_bt_addrs">key_bt_addrs</string>

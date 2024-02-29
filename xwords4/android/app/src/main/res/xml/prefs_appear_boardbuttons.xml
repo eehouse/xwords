@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+                  xmlns:app="http://schemas.android.com/apk/res-auto"
+                  >
+
+  <PreferenceCategory android:title="@string/prefs_board_buttons"
+                      >
+    <CheckBoxPreference android:key="@string/key_disable_chat_button"
+                        android:title="@string/disable_chat_button_title"
+                        android:summary="@string/disable_chat_button_summary"
+                        android:defaultValue="false"
+                        />
+    <CheckBoxPreference android:key="@string/key_disable_shuffle_button"
+                        android:title="@string/disable_shuffle_button_title"
+                        android:summary="@string/disable_shuffle_button_summary"
+                        android:defaultValue="false"
+                        />
+    <CheckBoxPreference android:key="@string/key_disable_undo_button"
+                        android:title="@string/disable_undo_button_title"
+                        android:summary="@string/disable_undo_button_summary"
+                        android:defaultValue="false"
+                        />
+    <CheckBoxPreference android:key="@string/key_disable_dicts_button"
+                        android:title="@string/disable_dicts_button_title"
+                        android:summary="@string/disable_dicts_button_summary"
+                        android:defaultValue="false"
+                        />
+    <CheckBoxPreference android:key="@string/key_disable_values_button"
+                        android:title="@string/disable_values_button_title"
+                        android:summary="@string/disable_values_button_summary"
+                        android:defaultValue="false"
+                        />
+    <CheckBoxPreference android:key="@string/key_disable_flip_button"
+                        android:title="@string/disable_flip_button_title"
+                        android:summary="@string/disable_flip_button_summary"
+                        android:defaultValue="false"
+                        />
+  </PreferenceCategory>
+</PreferenceScreen>

@@ -36,6 +36,11 @@
                 app:fragment="org.eehouse.android.xw4.gen.PrefsWrappers$prefs_appear_themes"
                 />
 
+    <Preference app:title="@string/prefs_board_buttons"
+                app:summary="@string/prefs_board_buttons_summary"
+                app:fragment="org.eehouse.android.xw4.gen.PrefsWrappers$prefs_appear_boardbuttons"
+                />
+
     <org.eehouse.android.xw4.XWListPreference
         android:key="@string/key_force_tablet"
         android:title="@string/force_tablet_title"

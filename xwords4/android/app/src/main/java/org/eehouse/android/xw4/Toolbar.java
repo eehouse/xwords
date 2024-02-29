@@ -43,19 +43,25 @@ import org.eehouse.android.xw4.loc.LocUtils;
 public class Toolbar implements BoardContainer.SizeChangeListener {
     private static final String TAG = Toolbar.class.getSimpleName();
     public enum Buttons {
-        BUTTON_BROWSE_DICT(R.id.dictlist_button),
         BUTTON_HINT_PREV(R.id.prevhint_button),
         BUTTON_HINT_NEXT(R.id.nexthint_button),
-        BUTTON_FLIP(R.id.flip_button),
-        BUTTON_JUGGLE(R.id.shuffle_button),
-        BUTTON_UNDO(R.id.undo_button),
-        BUTTON_CHAT(R.id.chat_button),
-        BUTTON_VALUES(R.id.values_button)
+        BUTTON_CHAT(R.id.chat_button, R.string.key_disable_chat_button),
+        BUTTON_JUGGLE(R.id.shuffle_button, R.string.key_disable_shuffle_button),
+        BUTTON_UNDO(R.id.undo_button, R.string.key_disable_undo_button),
+        BUTTON_BROWSE_DICT(R.id.dictlist_button, R.string.key_disable_dicts_button),
+        BUTTON_VALUES(R.id.values_button, R.string.key_disable_values_button),
+        BUTTON_FLIP(R.id.flip_button, R.string.key_disable_flip_button),
         ;
 
-        private int m_id;
-        private Buttons(int id) { m_id = id; }
-        public int getResId() { return m_id; }
+        private int mId;
+        private int mKey;
+        private Buttons(int id) { this( id, 0); }
+        private Buttons(int id, int key) {
+            mId = id;
+            mKey = key;
+        }
+        public int getResId() { return mId; }
+        public int getDisableId() { return mKey; }
     };
 
     private Activity m_activity;
@@ -117,6 +123,14 @@ public class Toolbar implements BoardContainer.SizeChangeListener {
 
     public Toolbar update( Buttons index, boolean enable )
     {
+        if ( enable ) {
+            int disableKeyID = index.getDisableId();
+            if ( 0 != disableKeyID ) {
+                enable = !XWPrefs.getPrefsBoolean( m_activity, disableKeyID,
+                                                   false );
+            }
+        }
+
         int id = index.getResId();
         ImageButton button = (ImageButton)m_activity.findViewById( id );
         if ( null != button ) {
