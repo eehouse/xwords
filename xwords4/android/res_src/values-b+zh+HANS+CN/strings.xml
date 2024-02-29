@@ -1100,4 +1100,7 @@
     <string name="no_peers_info">对等信息不可用</string>
     <string name="button_refresh">刷新</string>
     <string name="sort_by_date_label">按日期排序</string>
+    <string name="sub_seven_allowed_sum">只要卡池中有卡牌即可交换，在西班牙语游戏中很常见。</string>
+    <string name="selfName">此设备</string>
+    <string name="sub_seven_allowed">剩余卡牌不足七张时允许交换</string>
 </resources>
