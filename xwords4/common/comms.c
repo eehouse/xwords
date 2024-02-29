@@ -88,7 +88,8 @@ static void
 printStack( const StackData* data )
 {
     for ( ; !!data; data = data->prev ) {
-        XP_LOGFF( "  proc[%d]: %s", data->count, data->func );
+        XP_LOGFF( "  proc[%d]: %s (thread: %lX)", data->count,
+                  data->func, data->prevThread );
     }
 }
 
