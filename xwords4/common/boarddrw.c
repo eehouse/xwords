@@ -387,9 +387,7 @@ drawCell( BoardCtxt* board, XWEnv xwe, const XP_U16 col,
          * show them.  Otherwise show the most recent move.
          */
         XP_U16 selPlayer = board->selPlayer;
-        XP_U16 curCount = model_getCurrentMoveCount( model, selPlayer );
-        XP_Bool showPending = board->trayVisState == TRAY_REVEALED
-            && curCount > 0;
+        XP_Bool showPending = board->trayVisState == TRAY_REVEALED;
 
         flipIf( board, col, row, &modelCol, &modelRow );
 
@@ -407,8 +405,8 @@ drawCell( BoardCtxt* board, XWEnv xwe, const XP_U16 col,
             XP_U16 value = 0;
 
             isEmpty = !model_getTile( model, modelCol, modelRow, showPending,
-                                        selPlayer, &tile, &isBlank,
-                                        &pending, &recent );
+                                      selPlayer, &tile, &isBlank, &pending,
+                                      &recent );
             if ( dragDropIsBeingDragged( board, col, row, &isOrigin ) ) {
                 flags |= isOrigin? CELL_DRAGSRC : CELL_DRAGCUR;
                 if ( isEmpty && !isOrigin ) {
@@ -444,7 +442,7 @@ drawCell( BoardCtxt* board, XWEnv xwe, const XP_U16 col,
             if ( (col==board->star_row) && (row==board->star_row) ) {
                 flags |= CELL_ISSTAR;
             }
-            if ( recent && !showPending ) {
+            if ( recent /*&& !showPending*/  ) {
                 flags |= CELL_RECENT;
             } else if ( pending ) {
                 flags |= CELL_PENDING;
