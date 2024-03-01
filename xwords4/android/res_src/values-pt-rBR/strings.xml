@@ -1199,4 +1199,18 @@
     <string name="selfName">Este Dispositivo</string>
     <string name="sub_seven_allowed">Permitir trocas quando restam menos de sete quadrados</string>
     <string name="sub_seven_allowed_sum">Isto permite trocar quadrados quando pelo menos 1 resta no agrupamento, algo comum, por exemplo, no espanhol.</string>
+    <string name="disable_undo_button_summary">Esconder o botão que remove ou substitui sua jogada em progresso</string>
+    <string name="disable_values_button_summary">Esconder o botão que alterna a exibição dos valores dos quadrados</string>
+    <string name="disable_flip_button_summary">Esconder o botão que vira a tabela diagonalmente</string>
+    <string name="prefs_board_buttons">Botões da Tabela</string>
+    <string name="prefs_board_buttons_summary">Desabilite botões que não usa</string>
+    <string name="disable_dicts_button_summary">Esconder o botão que abre a lista de palavras atual</string>
+    <string name="disable_chat_button_summary">Esconder o botão que abre o Chat</string>
+    <string name="disable_dicts_button_title">Desabilitar o botão das listas de palavras</string>
+    <string name="disable_shuffle_button_title">Desabilitar o botão de embaralhar quadrados</string>
+    <string name="disable_undo_button_title">Esconder o botão de desfazer jogadas</string>
+    <string name="disable_chat_button_title">Desabilitar o botão do Chat</string>
+    <string name="disable_values_button_title">Desabilitar o botão dos valores dos quadrados</string>
+    <string name="disable_flip_button_title">Desabilitar o botão de virar a tabela</string>
+    <string name="disable_shuffle_button_summary">Esconder o botão que reorganiza os quadrados da tabela</string>
 </resources>
