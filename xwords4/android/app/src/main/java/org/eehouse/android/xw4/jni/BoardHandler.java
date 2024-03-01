@@ -25,8 +25,12 @@ import android.app.Activity;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;
 
 public interface BoardHandler {
+    public interface NewRecentsProc {
+        public void sawNew();
+    }
 
     void startHandling( Activity parent, JNIThread thread,
-                        CommsConnTypeSet connTypes );
+                        CommsConnTypeSet connTypes,
+                        NewRecentsProc proc );
     void stopHandling();
 }

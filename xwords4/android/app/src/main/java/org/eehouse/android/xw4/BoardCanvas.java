@@ -37,13 +37,14 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.eehouse.android.xw4.jni.BoardDims;
-import org.eehouse.android.xw4.jni.CommonPrefs;
+import org.eehouse.android.xw4.jni.BoardHandler;
 import org.eehouse.android.xw4.jni.CommonPrefs.TileValueType;
+import org.eehouse.android.xw4.jni.CommonPrefs;
 import org.eehouse.android.xw4.jni.DrawCtx;
 import org.eehouse.android.xw4.jni.DrawScoreInfo;
 import org.eehouse.android.xw4.jni.JNIThread;
-import org.eehouse.android.xw4.jni.XwJNI;
 import org.eehouse.android.xw4.jni.XwJNI.DictWrapper;
+import org.eehouse.android.xw4.jni.XwJNI;
 import org.eehouse.android.xw4.loc.LocUtils;
 
 public class BoardCanvas extends Canvas implements DrawCtx {
@@ -94,6 +95,8 @@ public class BoardCanvas extends Canvas implements DrawCtx {
     private boolean m_hasSmallScreen;
     private int m_backgroundUsed = 0x00000000;
     private int mPendingCount;
+    private boolean mSawRecents;
+    private BoardHandler.NewRecentsProc mNRP;
 
     // FontDims: exists to translate space available to the largest
     // font we can draw within that space taking advantage of our use
@@ -131,22 +134,24 @@ public class BoardCanvas extends Canvas implements DrawCtx {
 
     public BoardCanvas( Context context, Bitmap bitmap )
     {
-        this( context, null, bitmap, null, null );
+        this( context, null, bitmap, null, null, null );
     }
 
     public BoardCanvas( Activity activity, Bitmap bitmap, JNIThread jniThread,
-                        BoardDims dims )
+                        BoardDims dims, BoardHandler.NewRecentsProc nrp )
     {
-        this( activity, activity, bitmap, jniThread, dims );
+        this( activity, activity, bitmap, jniThread, dims, nrp );
     }
 
     private BoardCanvas( Context context, Activity activity, Bitmap bitmap,
-                         JNIThread jniThread, BoardDims dims )
+                         JNIThread jniThread, BoardDims dims,
+                         BoardHandler.NewRecentsProc nrp )
     {
         super( bitmap );
         m_context = context;
         m_activity = activity;
         m_jniThread = jniThread;
+        mNRP = nrp;
 
         m_hasSmallScreen = Utils.hasSmallScreen( m_context );
 
@@ -385,6 +390,7 @@ public class BoardCanvas extends Canvas implements DrawCtx {
             boolean empty = 0 != (flags & (CELL_DRAGSRC|CELL_ISEMPTY));
             boolean pending = 0 != (flags & CELL_PENDING);
             boolean recent = 0 != (flags & CELL_RECENT);
+            mSawRecents = recent || mSawRecents;
             String bonusStr = null;
 
             if ( m_inTrade ) {
@@ -609,6 +615,11 @@ public class BoardCanvas extends Canvas implements DrawCtx {
                 postNAHint( R.string.not_again_longtap_lookup,
                             R.string.key_na_longtap_lookup );
             }
+
+            if ( mSawRecents && null != mNRP ) {
+                mNRP.sawNew();
+            }
+            mSawRecents = false;
         }
     }
 

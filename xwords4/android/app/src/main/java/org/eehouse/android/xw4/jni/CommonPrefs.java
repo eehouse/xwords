@@ -165,6 +165,12 @@ public class CommonPrefs extends XWPrefs {
         return result;
     }
 
+    public static boolean darkThemeInUse( Context context )
+    {
+        ColorTheme theme = getTheme( context, null );
+        return theme == ColorTheme.DARK;
+    }
+
     private static ColorTheme getTheme( Context context, boolean[] fromOSOut )
     {
         ColorTheme theme = ColorTheme.LIGHT;

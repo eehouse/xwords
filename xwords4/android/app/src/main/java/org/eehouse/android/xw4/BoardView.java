@@ -68,9 +68,9 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
     private boolean m_measuredFromDims = false;
     private BoardDims m_dims;
     private CommsConnTypeSet m_connTypes = null;
+    private BoardHandler.NewRecentsProc mNRP;
 
     private int m_lastSpacing = MULTI_INACTIVE;
-
 
     // called when inflating xml
     public BoardView( Context context, AttributeSet attrs )
@@ -274,7 +274,7 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
             }
             if ( null == m_canvas ) {
                 m_canvas = new BoardCanvas( m_parent, s_bitmap, m_jniThread,
-                                            m_dims );
+                                            m_dims, mNRP );
             } else {
                 m_canvas.setJNIThread( m_jniThread );
             }
@@ -293,7 +293,8 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
     // BoardHandler interface implementation
     @Override
     public void startHandling( Activity parent, JNIThread thread,
-                               CommsConnTypeSet connTypes )
+                               CommsConnTypeSet connTypes,
+                               BoardHandler.NewRecentsProc nrp )
     {
         Log.d( TAG, "startHandling(thread=%H, parent=%s)", thread, parent );
         Assert.assertTrue( null != parent || !BuildConfig.DEBUG );
@@ -305,6 +306,7 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
         m_connTypes = connTypes;
         m_layoutWidth = 0;
         m_layoutHeight = 0;
+        mNRP = nrp;
 
         s_isFirstDraw = s_curGameID != m_gi.gameID;
         s_curGameID = m_gi.gameID;

@@ -183,6 +183,7 @@
   <string name="key_na_dupstatus_guest">key_na_dupstatus_guest</string>
   <string name="key_na_quicknetgame">key_na_quicknetgame</string>
   <string name="key_na_boardThemes">key_na_boardThemes</string>
+  <string name="key_na_newsawnew">key_na_newsawnew</string>
 
   <string name="key_na_archivecheck">key_na_archivecheck</string>
   <string name="key_na_deletecheck">key_na_deletecheck</string>

@@ -55,6 +55,7 @@ public class DlgDelegate {
         QUARANTINE_DELETE,
         APPLY_CONFIG,
         LAUNCH_THEME_CONFIG,
+        LAUNCH_THEME_COLOR_CONFIG,
         SEND_LOGS,
         OPEN_BYOD_DICT,
         BACKUP_DO,

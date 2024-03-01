@@ -63,6 +63,7 @@ import org.eehouse.android.xw4.TilePickAlert.TilePickState;
 import org.eehouse.android.xw4.Toolbar.Buttons;
 import org.eehouse.android.xw4.Utils.ISOCode;
 import org.eehouse.android.xw4.gen.PrefsWrappers;
+import org.eehouse.android.xw4.jni.BoardHandler;
 import org.eehouse.android.xw4.jni.CommonPrefs.TileValueType;
 import org.eehouse.android.xw4.jni.CommonPrefs;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
@@ -135,6 +136,7 @@ public class BoardDelegate extends DelegateBase
     private boolean m_overNotShown;
     private boolean m_dropMQTTOnDismiss;
     private boolean m_haveStartedShowing;
+    private boolean mSawNewShown;
 
     private Wrapper mNFCWrapper;
     private GameOverAlert mGameOverAlert; // how to clear after?
@@ -609,7 +611,7 @@ public class BoardDelegate extends DelegateBase
                 makeNotAgainBuilder( R.string.key_na_boardThemes,
                                      R.string.not_again_boardThemes_fmt,
                                      prefsName )
-                    .setTitle( R.string. new_feature_title )
+                    .setTitle( R.string.new_feature_title )
                     .setActionPair( Action.LAUNCH_THEME_CONFIG, R.string.button_settings )
                     .show();
             }
@@ -1226,6 +1228,14 @@ public class BoardDelegate extends DelegateBase
 
         case LAUNCH_THEME_CONFIG:
             PrefsDelegate.launch( m_activity, PrefsWrappers.prefs_appear_themes.class );
+            break;
+
+        case LAUNCH_THEME_COLOR_CONFIG: {
+            Class clazz = CommonPrefs.darkThemeInUse( m_activity )
+                ? PrefsWrappers.prefs_appear_colors_dark.class
+                : PrefsWrappers.prefs_appear_colors_light.class;
+            PrefsDelegate.launch( m_activity, clazz );
+        }
             break;
 
         case ENABLE_NBS_DO:
@@ -2402,7 +2412,37 @@ public class BoardDelegate extends DelegateBase
                 NFCUtils.addInvitationFor( invite, m_gi.gameID );
             }
 
-            m_view.startHandling( m_activity, m_jniThread, m_connTypes );
+            BoardHandler.NewRecentsProc proc = null;
+            if ( Utils.onFirstVersion( m_activity ) ) {
+                proc = new BoardHandler.NewRecentsProc() {
+                        @Override
+                        public void sawNew() {
+                            runOnUiThread( new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        if ( !mSawNewShown ) {
+                                            mSawNewShown = true;
+                                            String p1 = LocUtils.getString( m_activity,
+                                                                            R.string.menu_prefs );
+                                            String p2 = LocUtils.getString( m_activity,
+                                                                            R.string.tile_back_recent );
+                                            String msg
+                                                = LocUtils.getString( m_activity,
+                                                                      R.string.not_again_newsawnew_fmt,
+                                                                      p1, p2 );
+                                            makeNotAgainBuilder( R.string.key_na_newsawnew, msg )
+                                                .setTitle( R.string.new_feature_title )
+                                                .setActionPair( Action.LAUNCH_THEME_COLOR_CONFIG,
+                                                                R.string.menu_prefs )
+                                                .show();
+                                        }
+                                    }
+                                } );
+                        }
+                    };
+            }
+
+            m_view.startHandling( m_activity, m_jniThread, m_connTypes, proc );
 
             handleViaThread( JNICmd.CMD_START );
 
