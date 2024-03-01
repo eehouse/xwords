@@ -74,6 +74,11 @@
         android:defaultValue="0xFFFF99"
         />
     <org.eehouse.android.xw4.EditColorPreference
+        android:key="@string/key_tile_back_recent"
+        android:title="@string/tile_back_recent"
+        android:defaultValue="0x8CA750"
+        />
+    <org.eehouse.android.xw4.EditColorPreference
         android:key="@string/key_empty"
         android:title="@string/empty"
         android:defaultValue="0xFFFFFF"

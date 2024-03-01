@@ -32,6 +32,7 @@
   <string name="key_bonus_w3x">key_clr_bonus_w3x</string>
   <string name="key_bonus_w4x">key_clr_bonus_w4x</string>
   <string name="key_tile_back">key_clr_tile_back</string>
+  <string name="key_tile_back_recent">key_clr_tile_back_recent</string>
   <string name="key_empty">key_clr_empty</string>
   <string name="key_background">key_clr_background</string>
   <string name="key_cellline">key_cellline</string>
@@ -50,6 +51,7 @@
   <string name="key_bonus_w3x_dark">key_clr_bonus_w3x_dark</string>
   <string name="key_bonus_w4x_dark">key_clr_bonus_w4x_dark</string>
   <string name="key_tile_back_dark">key_clr_tile_back_dark</string>
+  <string name="key_tile_back_recent_dark">key_clr_tile_back_recent_dark</string>
   <string name="key_empty_dark">key_clr_empty_dark</string>
   <string name="key_background_dark">key_clr_background_dark</string>
   <string name="key_cellline_dark">key_cellline_dark</string>
@@ -406,6 +408,7 @@
     <item>@string/key_bonus_w4x</item>
 
     <item>@string/key_tile_back</item>
+    <item>@string/key_tile_back_recent</item>
     <item>@string/key_empty</item>
     <item>@string/key_clr_crosshairs</item>
     <item>@string/key_background</item>
@@ -427,6 +430,7 @@
     <item>@string/key_bonus_w4x_dark</item>
 
     <item>@string/key_tile_back_dark</item>
+    <item>@string/key_tile_back_recent_dark</item>
     <item>@string/key_empty_dark</item>
     <item>@string/key_clr_crosshairs_dark</item>
     <item>@string/key_background_dark</item>

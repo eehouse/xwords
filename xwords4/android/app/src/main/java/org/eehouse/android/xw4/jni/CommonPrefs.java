@@ -53,12 +53,13 @@ public class CommonPrefs extends XWPrefs {
     };
 
     public static final int COLOR_TILE_BACK = 0;
-    public static final int COLOR_NOTILE = 1;
-    public static final int COLOR_FOCUS = 2;
-    public static final int COLOR_BACKGRND = 3;
-    public static final int COLOR_BONUSHINT = 4;
-    public static final int COLOR_CELLLINE = 5;
-    public static final int COLOR_LAST = 6;
+    public static final int COLOR_TILE_BACK_RECENT = 1;
+    public static final int COLOR_NOTILE = 2;
+    public static final int COLOR_FOCUS = 3;
+    public static final int COLOR_BACKGRND = 4;
+    public static final int COLOR_BONUSHINT = 5;
+    public static final int COLOR_CELLLINE = 6;
+    public static final int COLOR_LAST = 7;
 
     private static CommonPrefs s_cp = null;
 
