@@ -9,22 +9,4 @@
        the quashing was accidental) -->
   <string name="menu_unquash">Unquash</string>
 
-  <!-- Prefs category -->
-  <string name="prefs_board_buttons">Board Buttons</string>
-  <string name="prefs_board_buttons_summary">Allows you to disable buttons you don\'t use</string>
-
-  <string name="disable_dicts_button_title">Disable Wordlists button</string>
-  <string name="disable_dicts_button_summary">Don\'t show the button that opens the current wordlist</string>
-
-  <string name="disable_flip_button_title">Disable Flip-board button</string>
-  <string name="disable_flip_button_summary">Don\'t show the button that flips the board diagonally</string>
-  <string name="disable_shuffle_button_title">Disable Shuffle-tiles button</string>
-  <string name="disable_shuffle_button_summary">Don\'t show the button that juggles tray tiles</string>
-  <string name="disable_undo_button_title">Disable Undo-move button</string>
-  <string name="disable_undo_button_summary">Don\'t show the button that removes or replaces your in-progress move</string>
-  <string name="disable_chat_button_title">Disable Chat button</string>
-  <string name="disable_chat_button_summary">Don\'t show the button that opens Chat</string>
-  <string name="disable_values_button_title">Disable Tile-values button</string>
-  <string name="disable_values_button_summary">Don\'t show the button that toggles showing tile values</string>
-
 </resources>

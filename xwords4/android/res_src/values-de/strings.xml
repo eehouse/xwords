@@ -1154,4 +1154,35 @@
     <string name="sub_seven_allowed_sum">Lässt den Buchstabentausch
     zu, bis mindestens ein Buchstabenstein im Säckchen übrig ist. In
     Spanien eine übliche Regel.</string>
+
+    <string name="prefs_board_buttons">Spielfeldschalter</string>
+    <string name="prefs_board_buttons_summary">Unbenutzte Schalter
+    können entfernt werden</string>
+
+    <string name="disable_dicts_button_title">Schalter für das
+    Wörterbuch entfernen</string>
+    <string name="disable_dicts_button_summary">Den Schalter, der das
+    Wörterbuch öffnet nicht anzeigen</string>
+
+    <string name="disable_flip_button_title">Schalter um das Spielfeld
+    zu drehen entfernen</string>
+    <string name="disable_flip_button_summary">Den Schalter, der das
+    Spielfeld dreht nicht anzeigen</string>
+    <string name="disable_shuffle_button_title">Schalter, der die
+    Buchstaben durch mischt entfernen</string>
+    <string name="disable_shuffle_button_summary">Den Schalter, der
+    die Buchstaben durch mischt nicht anzeigen</string>
+    <string name="disable_undo_button_title">Schalter, der die
+    Buchstaben zurück setzt entfernen</string>
+    <string name="disable_undo_button_summary">Den Schalter, der alle
+    Buchstaben zurück setzt nicht anzeigen</string>
+    <string name="disable_chat_button_title">Schalter für den Chat
+    entfernen</string>
+    <string name="disable_chat_button_summary">Den Schalter, der den
+    Chat öffnet nicht anzeigen</string>
+    <string name="disable_values_button_title">Schalter für die
+    Buchstabenpunkte entfernen</string>
+    <string name="disable_values_button_summary">Den Schalter, der
+    zwischen Punktwertanzeige, Buchstaben und beidem umschaltet
+    entfernen</string>
 </resources>
