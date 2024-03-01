@@ -2413,7 +2413,7 @@ public class BoardDelegate extends DelegateBase
             }
 
             BoardHandler.NewRecentsProc proc = null;
-            if ( Utils.onFirstVersion( m_activity ) ) {
+            if ( !Utils.onFirstVersion( m_activity ) ) {
                 proc = new BoardHandler.NewRecentsProc() {
                         @Override
                         public void sawNew() {
