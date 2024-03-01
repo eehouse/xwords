@@ -1199,4 +1199,18 @@
     <string name="selfName">Este dispositivo</string>
     <string name="sub_seven_allowed">Permitir intercambios por debajo de siete mosaicos restantes</string>
     <string name="sub_seven_allowed_sum">Esto te permite intercambiar fichas cuando queda tan sólo 1 en la reserva, como es habitual en el juego español.</string>
+    <string name="prefs_board_buttons_summary">Desactiva los botones que no utilices</string>
+    <string name="disable_dicts_button_title">Botón para desactivar listas de palabras</string>
+    <string name="disable_dicts_button_summary">Ocultar el botón que abre la lista de palabras actual</string>
+    <string name="disable_flip_button_title">Deshabilitar el botón girar el tablero</string>
+    <string name="disable_shuffle_button_title">Deshabilitar el botón mezclar fichas</string>
+    <string name="disable_undo_button_title">Desactivar botón deshacer</string>
+    <string name="disable_chat_button_title">Desactivar el botón del chat</string>
+    <string name="disable_chat_button_summary">Ocultar el botón que abre el chat</string>
+    <string name="disable_values_button_title">Botón desactivar valores de fichas</string>
+    <string name="prefs_board_buttons">Botones del tablero</string>
+    <string name="disable_flip_button_summary">Ocultar el botón que gira el tablero en diagonal</string>
+    <string name="disable_shuffle_button_summary">Ocultar el botón que hace malabares con las fichas de la bandeja</string>
+    <string name="disable_undo_button_summary">Ocultar el botón que elimina o sustituye el movimiento en curso</string>
+    <string name="disable_values_button_summary">Ocultar el botón que muestra los valores de las fichas</string>
 </resources>
