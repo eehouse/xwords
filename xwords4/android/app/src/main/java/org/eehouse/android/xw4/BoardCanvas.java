@@ -405,10 +405,8 @@ public class BoardCanvas extends Canvas implements DrawCtx {
                     backColor = m_bonusColors[bonus];
                     bonusStr = m_bonusSummaries[bonus];
                 }
-            } else if ( pending || recent ) {
-                if ( pending ) {
-                    ++mPendingCount;
-                }
+            } else if ( pending ) {
+                ++mPendingCount;
                 if ( darkOnLight() ) {
                     foreColor = WHITE;
                     backColor = BLACK;
@@ -418,6 +416,9 @@ public class BoardCanvas extends Canvas implements DrawCtx {
                 }
             } else {
                 backColor = m_otherColors[CommonPrefs.COLOR_TILE_BACK];
+                if ( recent ) {
+                    backColor = shade( backColor );
+                }
             }
 
             fillRect( rect, adjustColor( backColor ) );
@@ -922,6 +923,19 @@ public class BoardCanvas extends Canvas implements DrawCtx {
         }
         return null != m_fontDims;
     } // figureFontDims
+
+    private int shade( int color )
+    {
+        int newColor = color & 0xFF000000; // keep the alpha
+        for ( int ii = 0; ii < 3; ++ii ) {
+            int byt = ((color >> (ii * 8)) & 0xFF);
+            byt = (byt + 0x7F) % 0xFF;
+            Assert.assertTrue( byt <= 255 );
+            newColor |= byt << (ii * 8);
+        }
+        Log.d( TAG, "shade(%x) => %x", color, newColor );
+        return newColor;
+    }
 
     private int adjustColor( int color )
     {
