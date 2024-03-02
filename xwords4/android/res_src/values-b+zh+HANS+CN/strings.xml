@@ -1103,4 +1103,18 @@
     <string name="sub_seven_allowed_sum">只要卡池中有卡牌即可交换，在西班牙语游戏中很常见。</string>
     <string name="selfName">此设备</string>
     <string name="sub_seven_allowed">剩余卡牌不足七张时允许交换</string>
+    <string name="prefs_board_buttons">棋盘按钮</string>
+    <string name="disable_shuffle_button_title">禁用重排卡牌按钮</string>
+    <string name="disable_values_button_title">禁用卡牌数值按钮</string>
+    <string name="disable_values_button_summary">隐藏切换卡牌数值显示开关的按钮</string>
+    <string name="prefs_board_buttons_summary">禁用不使用的按钮</string>
+    <string name="disable_dicts_button_title">禁用单词表按钮</string>
+    <string name="disable_dicts_button_summary">隐藏打开当前单词表的按钮</string>
+    <string name="disable_flip_button_title">禁用翻转棋盘按钮</string>
+    <string name="disable_flip_button_summary">隐藏沿对角线翻转棋盘的按钮</string>
+    <string name="disable_shuffle_button_summary">隐藏随机重排托盘卡牌的按钮</string>
+    <string name="disable_undo_button_title">禁用撤销移动按钮</string>
+    <string name="disable_undo_button_summary">禁用删除或替代进行中移动的按钮</string>
+    <string name="disable_chat_button_title">禁用聊天按钮</string>
+    <string name="disable_chat_button_summary">隐藏打开聊天界面的按钮</string>
 </resources>
