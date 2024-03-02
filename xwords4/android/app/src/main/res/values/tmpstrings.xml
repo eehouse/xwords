@@ -9,16 +9,4 @@
        the quashing was accidental) -->
   <string name="menu_unquash">Unquash</string>
 
-  <string name="tile_back_recent">Tile background, latest move</string>
-
-  <!-- Shown when somebody has upgraded and the board is drawn with a
-       "recent" move visible. The two substitutions are the menu item
-       text that takes you to settings ("App Settings" in English) and
-       the name of the new pref ("Tile background, latest move" in
-       English.)
-       -->
-  <string name="not_again_newsawnew_fmt">The most recent move is now drawn
-  using a different background color.\n\nYou can customize that color in
-  %1$s, where the setting is called “%2$s”.</string>
-
 </resources>

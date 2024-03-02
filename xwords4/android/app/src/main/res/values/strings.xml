@@ -841,6 +841,9 @@
     <string name="clr_crosshairs">Crosshairs color</string>
     <!-- color of the tiles' background -->
     <string name="tile_back">Tile background</string>
+    <!-- color of tiles' background when they're part of the most
+         recent move -->
+    <string name="tile_back_recent">Tile background, latest move</string>
     <!-- color of empty squares on the board (that are not bonus squares) -->
     <string name="empty">Empty cell/background</string>
     <!-- the background color of the area outside the board,
@@ -2843,4 +2846,13 @@
   <string name="disable_values_button_title">Disable Tile-values button</string>
   <string name="disable_values_button_summary">Hide the button that toggles showing tile values</string>
 
+  <!-- Shown as a "new feature" alert when somebody has upgraded and
+       the board is drawn with a "recent" move visible. The two
+       substitutions are the menu item text that takes you to settings
+       ("App Settings" in English) and the name of the new pref
+       tile_back_recent ("Tile background, latest move" in English.)
+       -->
+  <string name="not_again_newsawnew_fmt">The most recent move is now
+  drawn using a new background color.\n\nYou can customize that color
+  in %1$s, where the color setting is called “%2$s”.</string>
 </resources>
