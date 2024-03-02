@@ -118,7 +118,7 @@ public class NetUtils {
     // just to be safe.
     public static String ensureProto( String url )
     {
-        String result = Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT
+        String result = Build.VERSION.SDK_INT <= Build.VERSION_CODES.LOLLIPOP
             ? url.replaceFirst( "^https:", "http:" )
             : url.replaceFirst( "^http:", "https:" );
         if ( ! url.equals( result ) ) {
