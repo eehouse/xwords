@@ -43,7 +43,9 @@ import android.widget.TextView;
 import org.eehouse.android.xw4.DlgDelegate.Action;
 import org.eehouse.android.xw4.DlgDelegate.Builder;
 import org.eehouse.android.xw4.DlgDelegate.DlgClickNotify;
+import org.eehouse.android.xw4.GameUtils.GameWrapper;
 import org.eehouse.android.xw4.MultiService.MultiEvent;
+import org.eehouse.android.xw4.Utils.ISOCode;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;
 import org.eehouse.android.xw4.jni.CommsAddrRec;
@@ -51,7 +53,6 @@ import org.eehouse.android.xw4.jni.GameSummary;
 import org.eehouse.android.xw4.jni.XwJNI.GamePtr;
 import org.eehouse.android.xw4.jni.XwJNI;
 import org.eehouse.android.xw4.loc.LocUtils;
-import org.eehouse.android.xw4.Utils.ISOCode;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -661,7 +662,8 @@ public abstract class DelegateBase implements DlgClickNotify,
     {
         Context context = getActivity();
         CommsAddrRec[] addrs = XwJNI.comms_getAddrs( gamePtr );
-        CommsAddrRec addr = null != addrs && 0 < addrs.length ? addrs[0] : null;
+        CommsAddrRec addr = null != addrs && 0 < addrs.length
+            ? addrs[0] : null;
         final GameSummary summary = GameUtils
             .getSummary( context, gamePtr.getRowid(), 1 );
         if ( null != summary ) {
@@ -675,7 +677,8 @@ public abstract class DelegateBase implements DlgClickNotify,
                         if ( null == msg ) {
                             askNoAddrsDelete();
                         } else {
-                            showDialogFragment( DlgID.DLG_CONNSTAT, summary, msg );
+                            showDialogFragment( DlgID.DLG_CONNSTAT, summary,
+                                                msg );
                         }
                     }
                 } );
@@ -685,14 +688,10 @@ public abstract class DelegateBase implements DlgClickNotify,
     public void onStatusClicked( long rowid )
     {
         Log.d( TAG, "onStatusClicked(%d)", rowid );
-        try ( GameLock lock = GameLock.tryLockRO( rowid ) ) {
-            if ( null != lock ) {
-                try ( GamePtr gamePtr = GameUtils
-                      .loadMakeGame( getActivity(), lock ) ) {
-                    if ( null != gamePtr ) {
-                        onStatusClicked( gamePtr );
-                    }
-                }
+
+        try ( GameWrapper gw = GameWrapper.make(m_activity, rowid)) {
+            if ( null != gw ) {
+                onStatusClicked( gw.gamePtr() );
             }
         }
     }

@@ -1539,10 +1539,10 @@ public class BoardDelegate extends DelegateBase
     @Override
     public void onStatusClicked()
     {
-        if ( BuildConfig.NON_RELEASE || XWPrefs.getDebugEnabled( m_activity ) ) {
+        if ( BuildConfig.NON_RELEASE || XWPrefs.getDebugEnabled(m_activity)) {
             View view = findViewById( R.id.netstatus_view );
             PopupMenu popup = new PopupMenu( m_activity, view );
-            popup.getMenuInflater().inflate( R.menu.netstat, popup.getMenu() );
+            popup.getMenuInflater().inflate(R.menu.netstat, popup.getMenu());
 
             if ( ! m_connTypes.contains(CommsConnType.COMMS_CONN_MQTT) ) {
                 popup.getMenu().removeItem( R.id.netstat_menu_traffic );
@@ -1562,7 +1562,8 @@ public class BoardDelegate extends DelegateBase
                             onStatusClicked( m_jniGamePtr );
                             break;
                         case R.id.netstat_menu_traffic:
-                            NetUtils.copyAndLaunchGamePage( m_activity, m_gi.gameID );
+                            NetUtils.copyAndLaunchGamePage( m_activity,
+                                                            m_gi.gameID );
                             break;
                         case R.id.netstat_copyurl:
                             NetUtils.gameURLToClip( m_activity, m_gi.gameID );
@@ -3016,17 +3017,14 @@ public class BoardDelegate extends DelegateBase
                     setupRematchFor( activity, gamePtr, summary, gi );
                 }
             } else {
-                try ( GameLock lock = GameLock.tryLockRO( rowID ) ) {
-                    if ( null != lock ) {
-                        summary = DBUtils.getSummary( activity, lock );
-                        gi = new CurGameInfo( activity );
-                        try ( GamePtr gamePtr = GameUtils
-                              .loadMakeGame( activity, gi, lock ) ) {
-                            setupRematchFor( activity, gamePtr, summary, gi );
-                        }
-                    } else {
+                try ( GameUtils.GameWrapper gw = GameUtils
+                      .GameWrapper.make( activity, rowID ) ) {
+                    if ( null == gw ) {
                         DbgUtils.toastNoLock( TAG, activity, rowID,
                                               "setupRematchFor(%d)", rowID );
+                    } else {
+                        summary = DBUtils.getSummary( activity, gw.getLock() );
+                        setupRematchFor( activity, gw.gamePtr(), summary, gw.gi() );
                     }
                 }
             }

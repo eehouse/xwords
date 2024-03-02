@@ -446,10 +446,10 @@ public class GameUtils {
     public static Bitmap loadMakeBitmap( Context context, long rowid )
     {
         Bitmap thumb = null;
-        try ( GameWrapper gw = makeGameWrapper( context, rowid ) ) {
+        try ( GameWrapper gw = GameWrapper.make( context, rowid ) ) {
             if ( null != gw ) {
                 thumb = takeSnapshot( context, gw.gamePtr(), gw.gi() );
-                DBUtils.saveThumbnail( context, gw.lock(), thumb );
+                DBUtils.saveThumbnail( context, gw.getLock(), thumb );
             }
         }
         return thumb;
@@ -575,7 +575,7 @@ public class GameUtils {
         private GamePtr mGamePtr;
         private CurGameInfo mGi;
 
-        GameWrapper( Context context, long rowid )
+        private GameWrapper( Context context, long rowid )
         {
             mContext = context;
             mLock = GameLock.tryLockRO( rowid );
@@ -586,7 +586,7 @@ public class GameUtils {
         }
 
         public GamePtr gamePtr() { return mGamePtr; }
-        public GameLock lock() { return mLock; }
+        public GameLock getLock() { return mLock; }
         public CurGameInfo gi() { return mGi; }
         public boolean hasGame() { return null != mGamePtr; }
 
@@ -608,16 +608,16 @@ public class GameUtils {
         {
             close();
         }
-    }
 
-    public static GameWrapper makeGameWrapper( Context context, long rowid )
-    {
-        GameWrapper result = new GameWrapper( context, rowid );
-        if ( !result.hasGame() ) {
-            result.close();
-            result = null;
+        public static GameWrapper make( Context context, long rowid )
+        {
+            GameWrapper result = new GameWrapper( context, rowid );
+            if ( !result.hasGame() ) {
+                result.close();
+                result = null;
+            }
+            return result;
         }
-        return result;
     }
 
     public static long makeRematch( Context context, long srcRowid,
@@ -625,7 +625,7 @@ public class GameUtils {
                                     int[] newOrder )
     {
         long rowid = DBUtils.ROWID_NOTFOUND;
-        try ( GameWrapper gw = makeGameWrapper( context, srcRowid ) ) {
+        try ( GameWrapper gw = GameWrapper.make( context, srcRowid ) ) {
             if ( null != gw ) {
                 UtilCtxt util = new UtilCtxtImpl( context );
                 CommonPrefs cp = CommonPrefs.get( context );

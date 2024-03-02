@@ -64,7 +64,7 @@ public class RematchConfigView extends LinearLayout
     public void configure( long rowid, DlgDelegate.HasDlgDelegate dlgDlgt )
     {
         mDlgDlgt = dlgDlgt;
-        mWrapper = GameUtils.makeGameWrapper( mContext, rowid );
+        mWrapper = GameUtils.GameWrapper.make( mContext, rowid );
         trySetup();
     }
 
