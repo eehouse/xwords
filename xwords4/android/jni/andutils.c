@@ -983,14 +983,14 @@ android_debugf( const char* format, ... )
 }
 
 void
-android_debugff(const char* func, const char* file, const char* fmt, ...)
+android_debugff(const char* func, const char* file, int line, const char* fmt, ...)
 {
     char buf[256];
     const char* shortPath = 1 + strrchr(file, '/');
     if ( !shortPath ) {
         shortPath = file;
     }
-    snprintf( buf, sizeof(buf), "%s:%s(): %s", shortPath, func, fmt );
+    snprintf( buf, sizeof(buf), "%s.%d:%s(): %s", shortPath, line, func, fmt );
 
     va_list ap;
     va_start( ap, fmt );
@@ -1000,14 +1000,14 @@ android_debugff(const char* func, const char* file, const char* fmt, ...)
 
 void
 android_gid_debugff( const XP_U32 gid, const char* func, const char* file,
-                     const char* fmt, ...)
+                     int line, const char* fmt, ...)
 {
     char buf[256];
     const char* shortPath = 1 + strrchr(file, '/');
     if ( !shortPath ) {
         shortPath = file;
     }
-    snprintf( buf, sizeof(buf), "<%08X> %s:%s(): %s", gid, shortPath, func, fmt );
+    snprintf( buf, sizeof(buf), "<%08X> %s.%d:%s(): %s", gid, shortPath, line, func, fmt );
 
     va_list ap;
     va_start( ap, fmt );
