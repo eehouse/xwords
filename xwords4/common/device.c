@@ -559,47 +559,50 @@ dvc_parseMQTTPacket( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* topic,
             XP_LOGFF( "bad message: too short" );
         } else if ( proto == PROTO_1 || proto == PROTO_3 ) {
             MQTTDevID senderID;
-            stream_getBytes( stream, &senderID, sizeof(senderID) );
-            senderID = be64toh( senderID );
+            if ( stream_gotBytes( stream, &senderID, sizeof(senderID) ) ) {
+                senderID = be64toh( senderID );
 #ifdef DEBUG
-            XP_UCHAR tmp[32];
-            formatMQTTDevID( &senderID, tmp, VSIZE(tmp) );
-            XP_LOGFF( "senderID: %s", tmp );
+                XP_UCHAR tmp[32];
+                formatMQTTDevID( &senderID, tmp, VSIZE(tmp) );
+                XP_LOGFF( "senderID: %s", tmp );
 #endif
-            if ( proto < PROTO_3 ) {
-                gameID = stream_getU32( stream );
+                if ( proto < PROTO_3 ) {
+                    gameID = stream_getU32( stream );
+                } else {
+                    XP_ASSERT( 0 != gameID );
+                }
+
+                MQTTCmd cmd = stream_getU8( stream );
+
+                /* Need to ack even if discarded/malformed */
+                ackMQTTMsg( dutil, xwe, topic, gameID, buf, len );
+
+                switch ( cmd ) {
+                case CMD_INVITE: {
+                    NetLaunchInfo nli = {0};
+                    if ( nli_makeFromStream( &nli, stream ) ) {
+                        dutil_onInviteReceived( dutil, xwe, &nli );
+                    }
+                }
+                    break;
+                case CMD_DEVGONE:
+                case CMD_MSG: {
+                    CommsAddrRec from = {0};
+                    addr_addType( &from, COMMS_CONN_MQTT );
+                    from.u.mqtt.devID = senderID;
+                    if ( CMD_MSG == cmd ) {
+                        dispatchMsgs( dutil, xwe, proto, stream, gameID, &from );
+                    } else if ( CMD_DEVGONE == cmd ) {
+                        dutil_onGameGoneReceived( dutil, xwe, gameID, &from );
+                    }
+                }
+                    break;
+                default:
+                    XP_LOGFF( "unknown command %d; dropping message", cmd );
+                    // XP_ASSERT(0);
+                }
             } else {
-                XP_ASSERT( 0 != gameID );
-            }
-
-            MQTTCmd cmd = stream_getU8( stream );
-
-            /* Need to ack even if discarded/malformed */
-            ackMQTTMsg( dutil, xwe, topic, gameID, buf, len );
-
-            switch ( cmd ) {
-            case CMD_INVITE: {
-                NetLaunchInfo nli = {0};
-                if ( nli_makeFromStream( &nli, stream ) ) {
-                    dutil_onInviteReceived( dutil, xwe, &nli );
-                }
-            }
-                break;
-            case CMD_DEVGONE:
-            case CMD_MSG: {
-                CommsAddrRec from = {0};
-                addr_addType( &from, COMMS_CONN_MQTT );
-                from.u.mqtt.devID = senderID;
-                if ( CMD_MSG == cmd ) {
-                    dispatchMsgs( dutil, xwe, proto, stream, gameID, &from );
-                } else if ( CMD_DEVGONE == cmd ) {
-                    dutil_onGameGoneReceived( dutil, xwe, gameID, &from );
-                }
-            }
-                break;
-            default:
-                XP_LOGFF( "unknown command %d; dropping message", cmd );
-                // XP_ASSERT(0);
+                XP_LOGFF( "no senderID found; bailing" );
             }
         } else {
             XP_LOGFF( "bad proto %d; dropping packet", proto );
