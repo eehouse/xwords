@@ -632,6 +632,8 @@ streamFromJStream( MPFORMAL JNIEnv* env, VTableMgr* vtMgr, jbyteArray jstream )
 
 #define DVC_HEADER(PTR) {                                              \
     JNIGlobalState* globalState = (JNIGlobalState*)(PTR);              \
+    XP_ASSERT( !!globalState );                                        \
+    XP_ASSERT( !!globalState->dutil );                                 \
     MAP_THREAD( &globalState->ti, env );                               \
 
 #define DVC_HEADER_END() }                      \

@@ -612,7 +612,7 @@ dvc_parseMQTTPacket( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* topic,
         dutil_onCtrlReceived( dutil, xwe, buf, len );
     }
     LOG_RETURN_VOID();
-}
+} /* dvc_parseMQTTPacket */
 
 typedef struct _GetByKeyData {
     XP_U32 resultKey;
