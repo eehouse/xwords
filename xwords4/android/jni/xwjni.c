@@ -224,7 +224,7 @@ map_init( MPFORMAL EnvThreadInfo* ti, JNIEnv* env )
 
 # define MAP_REMOVE( ti, env ) map_remove_prv((ti), (env), __func__)
 static void
-map_remove_prv( EnvThreadInfo* ti, JNIEnv* env, const char* func )
+map_remove_prv( EnvThreadInfo* ti, JNIEnv* env, const char* caller )
 {
     XP_Bool found = false;
 
@@ -233,10 +233,13 @@ map_remove_prv( EnvThreadInfo* ti, JNIEnv* env, const char* func )
         EnvThreadEntry* entry = &ti->entries[ii];
         found = env == entry->env;
         if ( found ) {
-            XP_ASSERT( pthread_self() == entry->owner );
+            if ( pthread_self() != entry->owner ) {
+                XP_LOGFF( "mismatch; called from %s", caller );
+                XP_ASSERT(0);
+            }
 # ifdef LOG_MAPPING
             RAW_LOG( "UNMAPPED env %p to thread %x (called from %s(); mapped by %s)",
-                     entry->env, (int)entry->owner, func, entry->ownerFunc );
+                     entry->env, (int)entry->owner, caller, entry->ownerFunc );
             RAW_LOG( "%d entries left", countUsed( ti ) );
             entry->ownerFunc = NULL;
 # endif
@@ -250,7 +253,7 @@ map_remove_prv( EnvThreadInfo* ti, JNIEnv* env, const char* func )
 
     if ( !found ) {
         RAW_LOG( "ERROR: mapping for env %p not found when called from %s()",
-                 env, func );
+                 env, caller );
         // XP_ASSERT( 0 );         /* firing, but may be fixed */
     }
 }
@@ -268,8 +271,9 @@ prvEnvForMe( EnvThreadInfo* ti )
     pthread_t self = pthread_self();
     pthread_mutex_lock( &ti->mtxThreads );
     for ( int ii = 0; !result && ii < ti->nEntries; ++ii ) {
-        if ( self == ti->entries[ii].owner ) {
-            result = ti->entries[ii].env;
+        EnvThreadEntry* entry = &ti->entries[ii];
+        if ( self == entry->owner ) {
+            result = entry->env;
         }
     }
     pthread_mutex_unlock( &ti->mtxThreads );
