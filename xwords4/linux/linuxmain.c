@@ -2259,7 +2259,7 @@ dup_timer_func( gpointer data )
     }
 
     return XP_FALSE;
-} /* score_timer_func */
+} /* dup_timer_func */
 
 static gint
 score_timer_func( gpointer data )
@@ -2363,6 +2363,11 @@ linux_util_clearTimer( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe), XWTimerReason why 
 {
     CommonGlobals* cGlobals = (CommonGlobals*)uc->closure;
     cGlobals->timerInfo[why].proc = NULL;
+
+    guint src = cGlobals->timerSources[why-1];
+    if ( 0 != src ) {
+        g_source_remove( src );
+    }
 }
 
 static gint

@@ -459,7 +459,7 @@ disposeBoard( CursesBoardGlobals* bGlobals, XP_Bool rmFromList )
         CursesBoardState* cbState = bGlobals->cbState;
         cbState->games = g_slist_remove( cbState->games, bGlobals ); /* no!!! */
     }
-    
+
     /* onCursesBoardClosing( bGlobals->aGlobals, bGlobals ); */
     XP_LOGFF( "freeing globals: %p", bGlobals );
     g_free( bGlobals );
