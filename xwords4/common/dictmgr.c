@@ -94,7 +94,7 @@ dmgr_get( DictMgrCtxt* dmgr, XWEnv xwe, const XP_UCHAR* key )
         moveToFront( dmgr, index );
     }
 
-    XP_LOGF( "%s(key=%s)=>%p", __func__, key, result );
+    XP_LOGFF( "(key=%s)=>%p", key, result );
     printInOrder( dmgr );
     pthread_mutex_unlock( &dmgr->mutex );
     return result;
@@ -115,7 +115,7 @@ dmgr_put( DictMgrCtxt* dmgr, XWEnv xwe, const XP_UCHAR* key, const DictionaryCtx
     } else {
         moveToFront( dmgr, loc );
     }
-    XP_LOGF( "%s(key=%s, dict=%p)", __func__, key, dict );
+    XP_LOGFF( "(key=%s, dict=%p)", key, dict );
     printInOrder( dmgr );
 
     pthread_mutex_unlock( &dmgr->mutex );
@@ -153,8 +153,7 @@ printInOrder( const DictMgrCtxt* dmgr )
     XP_U16 ii;
     for ( ii = 0; ii < VSIZE(dmgr->pairs); ++ii ) {
         const XP_UCHAR* name = dmgr->pairs[ii].key;
-        XP_LOGF( "%s: dict[%d]: %s", __func__, ii, 
-                 (NULL == name)? "<empty>" : name );
+        XP_LOGFF( "dict[%d]: %s", ii, (NULL == name)? "<empty>" : name );
     }
 }
 #endif
