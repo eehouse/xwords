@@ -559,7 +559,7 @@ static void
 informMissing( const ServerCtxt* server, XWEnv xwe )
 {
     const XP_Bool isHost = amHost( server );
-    const CommsCtxt* comms = server->vol.comms;
+    RELCONST CommsCtxt* comms = server->vol.comms;
     const CurGameInfo* gi = server->vol.gi;
     XP_U16 nInvited = 0;
     CommsAddrRec selfAddr;

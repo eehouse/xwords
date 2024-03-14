@@ -22,6 +22,12 @@
 #ifndef _COMTYPES_H_
 #define _COMTYPES_H_
 
+#ifdef DEBUG
+# define RELCONST
+#else
+# define RELCONST const
+#endif
+
 #include "xptypes.h"
 
 #ifndef EXTERN_C_START

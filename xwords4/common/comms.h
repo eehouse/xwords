@@ -173,7 +173,7 @@ void comms_getAddrs( const CommsCtxt* comms, CommsAddrRec addr[],
 XP_Bool comms_formatRelayID( const CommsCtxt* comms, XP_U16 indx,
                              XP_UCHAR* buf, XP_U16* lenp );
 
-XP_U16 comms_countPendingPackets( const CommsCtxt* comms, XP_Bool* quashed );
+XP_U16 comms_countPendingPackets( RELCONST CommsCtxt* comms, XP_Bool* quashed );
 
 
 #ifdef XWFEATURE_RELAY
@@ -206,7 +206,7 @@ void addrToStream( XWStreamCtxt* stream, const CommsAddrRec* addr );
 #ifdef XWFEATURE_COMMS_INVITE
 void comms_invite( CommsCtxt* comms, XWEnv xwe, const NetLaunchInfo* nli,
                    const CommsAddrRec* destAddr, XP_Bool sendNow );
-void comms_getInvited( const CommsCtxt* comms, XP_U16* nInvites );
+void comms_getInvited( RELCONST CommsCtxt* comms, XP_U16* nInvites );
 #endif
 XP_S16 comms_send( CommsCtxt* comms, XWEnv xwe, XWStreamCtxt* stream );
 XP_S16 comms_resendAll( CommsCtxt* comms, XWEnv xwe, CommsConnType filter,
@@ -272,7 +272,7 @@ void comms_gatherPlayers( CommsCtxt* comms, XWEnv xwe, XP_U32 created );
 const char* ConnType2Str( CommsConnType typ );
 
 # ifdef DEBUG
-void comms_getStats( const CommsCtxt* comms, XWStreamCtxt* stream );
+void comms_getStats( RELCONST CommsCtxt* comms, XWStreamCtxt* stream );
 const char* CommsRelayState2Str( CommsRelayState state );
 const char* XWREASON2Str( XWREASON reason );
 

@@ -105,14 +105,16 @@ typedef struct _SD {
     StackData _data = { .func = __func__,                               \
         .prev = _sdp->head,                                             \
         .prevThread = _sdp->thread,                                     \
+        .count = NULL == _data.prev ? 0 : _data.prev->count + 1,        \
     };                                                                  \
-    _data.count = NULL == _data.prev ? 0 : _data.prev->count + 1;       \
                                                                         \
     (OBJ)->_sd.head = &_data;                                           \
     pthread_t thread = pthread_self();                                  \
     if ( 0 == (OBJ)->_sd.thread ) {                                     \
         (OBJ)->_sd.thread = thread;                                     \
     } else if ( thread != (OBJ)->_sd.thread ) {                         \
+        XP_LOGFF( "ERROR: from %s(); new thread: %lX; old thread: %lX", \
+                  __func__, thread, (OBJ)->_sd.thread );                \
         printStack( &_data );                                           \
         XP_ASSERT(0);                                                   \
     }                                                                   \
@@ -528,7 +530,7 @@ static void
 forEachElem( CommsCtxt* comms, EachMsgProc proc, void* closure )
 
 {
-    THREAD_CHECK_START(comms);
+    THREAD_CHECK_START(comms);  /* firing */
     for ( AddressRecord* recs = comms->recs; !!recs; recs = recs->next ) {
         for ( MsgQueueElem** home = &recs->_msgQueueHead; !!*home; ) {
             MsgQueueElem* elem = *home;
@@ -622,6 +624,7 @@ set_reset_timer( CommsCtxt* comms, XWEnv xwe )
 void
 comms_destroy( CommsCtxt* comms, XWEnv xwe )
 {
+    THREAD_CHECK_START(comms);
     /* did I call comms_stop()? */
     XP_ASSERT( ! addr_hasType( &comms->selfAddr, COMMS_CONN_RELAY )
                || COMMS_RELAYSTATE_UNCONNECTED == comms->rr.relayState );
@@ -631,6 +634,7 @@ comms_destroy( CommsCtxt* comms, XWEnv xwe )
 
     util_clearTimer( comms->util, xwe, TIMER_COMMS );
 
+    THREAD_CHECK_END();
     XP_FREE( comms->mpool, comms );
 } /* comms_destroy */
 
@@ -1146,6 +1150,7 @@ elemToStream( MsgQueueElem* elem, void* closure )
 void
 comms_writeToStream( CommsCtxt* comms, XWStreamCtxt* stream, XP_U16 saveToken )
 {
+    THREAD_CHECK_START(comms);
     XP_U16 nAddrRecs;
     AddressRecord* rec;
 
@@ -1225,6 +1230,7 @@ comms_writeToStream( CommsCtxt* comms, XWStreamCtxt* stream, XP_U16 saveToken )
     }
 
     comms->lastSaveToken = saveToken;
+    THREAD_CHECK_END();
 } /* comms_writeToStream */
 
 static void
@@ -1404,16 +1410,18 @@ countNonAcks( MsgQueueElem* elem, void* closure )
 }
 
 XP_U16
-comms_countPendingPackets( const CommsCtxt* comms, XP_Bool* quashed )
+comms_countPendingPackets( RELCONST CommsCtxt* comms, XP_Bool* quashed )
 {
+    NonAcks na = {0};
+    THREAD_CHECK_START(comms);
     if ( !!quashed ) {
         *quashed = QUASHED(comms);
     }
 
-    NonAcks na = {0};
     forEachElem( (CommsCtxt*)comms, countNonAcks, &na );
 
     // COMMS_LOGFF( "=> %d (queueLen = %d)", na.count, comms->queueLen );
+    THREAD_CHECK_END();
     return na.count;
 }
 
@@ -1750,12 +1758,14 @@ getInvitedProc( MsgQueueElem* elem, void* closure )
 }
 
 void
-comms_getInvited( const CommsCtxt* comms, XP_U16* nInvites )
+comms_getInvited( RELCONST CommsCtxt* comms, XP_U16* nInvites )
 {
+    THREAD_CHECK_START(comms);
     GetInvitedData gid = {0};
     forEachElem( (CommsCtxt*)comms, getInvitedProc, &gid );
     *nInvites = gid.count;
     // LOG_RETURNF( "%d", *nInvites );
+    THREAD_CHECK_END();
 }
 #endif
 
@@ -3388,8 +3398,9 @@ statsProc( MsgQueueElem* elem, void* closure )
 }
 
 void
-comms_getStats( const CommsCtxt* comms, XWStreamCtxt* stream )
+comms_getStats( RELCONST CommsCtxt* comms, XWStreamCtxt* stream )
 {
+    THREAD_CHECK_START(comms);
     XP_UCHAR buf[100];
 
     XP_SNPRINTF( (XP_UCHAR*)buf, sizeof(buf), 
@@ -3416,6 +3427,7 @@ comms_getStats( const CommsCtxt* comms, XWStreamCtxt* stream )
                      rec->lastMsgRcd );
         stream_catString( stream, buf );
     }
+    THREAD_CHECK_END();
 } /* comms_getStats */
 
 void
