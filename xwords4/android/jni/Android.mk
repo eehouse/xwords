@@ -11,7 +11,7 @@ LOCAL_C_INCLUDES+= \
 LOCAL_LDLIBS += -llog
 
 ifeq ($(BUILD_TARGET),debug)
-	LOCAL_DEBUG = -DMEM_DEBUG -DDEBUG -DENABLE_LOGGING -DCOMMS_CHECKSUM -Wno-unused-variable
+	LOCAL_DEBUG = -DMEM_DEBUG -DDEBUG -DENABLE_LOGGING -Wno-unused-variable
 endif
 LOCAL_DEFINES += \
 	$(LOCAL_DEBUG) \
@@ -49,6 +49,7 @@ LOCAL_DEFINES += \
 	-DRELAY_ROOM_DEFAULT=\"\" \
 	-D__LITTLE_ENDIAN \
 	-DMQTT_DEV_TOPICS \
+	-DCOMMS_CHECKSUM \
 	-DMQTT_GAMEID_TOPICS \
 	-DGITREV="\"$(shell git describe --tags --dirty)\"" \
 
