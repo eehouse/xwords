@@ -69,10 +69,8 @@ static void linux_dutil_deviceRegistered( XW_DUtilCtxt* duc, XWEnv xwe, DevIDTyp
                                           const XP_UCHAR* idRelay );
 #endif
 
-#ifdef COMMS_CHECKSUM
 static void linux_dutil_md5sum( XW_DUtilCtxt* duc, XWEnv xwe, const XP_U8* ptr,
                                 XP_U32 len, Md5SumBuf* sb );
-#endif
 
 static void
 linux_dutil_getUsername( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe),
@@ -346,9 +344,7 @@ linux_dutils_init( MPFORMAL VTableMgr* vtMgr, void* closure )
     SET_PROC(deviceRegistered);
 #endif
 
-#ifdef COMMS_CHECKSUM
     SET_PROC(md5sum);
-#endif
     SET_PROC(getUsername);
     SET_PROC(notifyPause);
     SET_PROC(haveGame);
@@ -590,7 +586,6 @@ linux_dutil_deviceRegistered( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe), DevIDType
 }
 #endif
 
-#ifdef COMMS_CHECKSUM
 static void
 linux_dutil_md5sum( XW_DUtilCtxt* XP_UNUSED(duc), XWEnv XP_UNUSED(xwe),
                     const XP_U8* ptr, XP_U32 len, Md5SumBuf* sb )
@@ -601,5 +596,4 @@ linux_dutil_md5sum( XW_DUtilCtxt* XP_UNUSED(duc), XWEnv XP_UNUSED(xwe),
     XP_MEMCPY( sb->buf, sum, sumlen );
     g_free( sum );
 }
-#endif
 

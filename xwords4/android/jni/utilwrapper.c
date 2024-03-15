@@ -829,7 +829,6 @@ and_util_getDevUtilCtxt( XW_UtilCtxt* uc, XWEnv xwe )
     return globals->dutil;
 }
 
-#ifdef COMMS_CHECKSUM
 static void
 and_dutil_md5sum( XW_DUtilCtxt* duc, XWEnv xwe, const XP_U8* ptr, XP_U32 len,
                   Md5SumBuf* sb )
@@ -851,7 +850,6 @@ and_dutil_md5sum( XW_DUtilCtxt* duc, XWEnv xwe, const XP_U8* ptr, XP_U32 len,
     }
 
 }
-#endif
 
 static void
 and_dutil_getUsername( XW_DUtilCtxt* duc, XWEnv xwe, XP_U16 num,
@@ -1138,9 +1136,7 @@ makeDUtil( MPFORMAL JNIEnv* env,
 #ifdef XWFEATURE_SMS
     SET_DPROC(phoneNumbersSame);
 #endif
-#ifdef COMMS_CHECKSUM
     SET_DPROC(md5sum);
-#endif
     SET_DPROC(getUsername);
     SET_DPROC(notifyPause);
     SET_DPROC(haveGame);

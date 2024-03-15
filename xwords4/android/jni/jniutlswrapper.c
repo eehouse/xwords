@@ -120,7 +120,6 @@ and_util_getMD5SumForDict( JNIUtilCtxt* jniutil, JNIEnv* env, const XP_UCHAR* na
     return result;
 }
 
-#ifdef COMMS_CHECKSUM
 jstring
 and_util_getMD5SumForBytes( JNIUtilCtxt* jniutil, JNIEnv* env,
                             const XP_U8* bytes, jsize len )
@@ -135,4 +134,3 @@ and_util_getMD5SumForBytes( JNIUtilCtxt* jniutil, JNIEnv* env,
     deleteLocalRef( env, jbytes );
     return result;
 }
-#endif

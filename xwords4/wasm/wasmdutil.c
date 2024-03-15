@@ -570,9 +570,7 @@ wasm_dutil_make( MPFORMAL VTableMgr* vtMgr, void* closure )
     SET_PROC(deviceRegistered);
 #endif
 
-#ifdef COMMS_CHECKSUM
     SET_PROC(md5sum);
-#endif
     SET_PROC(getUsername);
     SET_PROC(notifyPause);
     SET_PROC(haveGame);

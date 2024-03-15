@@ -43,8 +43,6 @@ jobject and_util_splitFaces( JNIUtilCtxt* jniu, JNIEnv* env, const XP_U8* bytes,
 jstring and_util_getMD5SumForDict( JNIUtilCtxt* jniutil, JNIEnv* env,
                                    const XP_UCHAR* name, const XP_U8* bytes, jsize len );
 
-#ifdef COMMS_CHECKSUM
 jstring and_util_getMD5SumForBytes( JNIUtilCtxt* jniutil, JNIEnv* env,
                                     const XP_U8* bytes, jsize len );
-#endif
 #endif

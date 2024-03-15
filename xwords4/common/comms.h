@@ -230,9 +230,7 @@ typedef struct _CommsMsgState {
 #ifdef DEBUG
     const CommsCtxt* comms;
 #endif
-#ifdef COMMS_CHECKSUM
     XP_UCHAR sum[36];
-#endif
 } CommsMsgState;
 
 XP_Bool comms_checkIncomingStream( CommsCtxt* comms, XWEnv xwe,

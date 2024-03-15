@@ -1239,11 +1239,9 @@ send_or_close( CommonGlobals* cGlobals, const XP_U8* buf, size_t len )
     size_t nSent = send( cGlobals->relaySocket, buf, len, 0 );
     bool success = len == nSent;
     if ( success ) {
-#ifdef COMMS_CHECKSUM
         gchar* sum = g_compute_checksum_for_data( G_CHECKSUM_MD5, buf, len );
         XP_LOGF( "%s: sent %zd bytes with sum %s", __func__, len, sum );
         g_free( sum );
-#endif        
     } else {
         close( cGlobals->relaySocket );
         cGlobals->relaySocket = -1;
@@ -1334,11 +1332,9 @@ linux_relay_ioproc( GIOChannel* source, GIOCondition condition, gpointer data )
         int nBytes = linux_relay_receive( cGlobals, sock, buf, sizeof(buf) );
 
         if ( nBytes != -1 ) {
-#ifdef COMMS_CHECKSUM
             gchar* sum = g_compute_checksum_for_data( G_CHECKSUM_MD5, buf, nBytes );
             XP_LOGF( "%s: got %d bytes with sum %s", __func__, nBytes, sum );
             g_free( sum );
-#endif        
 
             XWStreamCtxt* inboundS;
             XP_Bool redraw = XP_FALSE;

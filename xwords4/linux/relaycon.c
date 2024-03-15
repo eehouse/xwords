@@ -731,13 +731,10 @@ relaycon_receive( GIOChannel* source, GIOCondition XP_UNUSED_DBG(condition), gpo
 
     gchar* b64 = g_base64_encode( (const guchar*)buf,
                                   ((0 <= nRead)? nRead : 0) );
-#ifdef COMMS_CHECKSUM
+
     gchar* sum = g_compute_checksum_for_data( G_CHECKSUM_MD5, buf, nRead );
     XP_LOGFF( "read %zd bytes ('%s')(sum=%s)", nRead, b64, sum );
     g_free( sum );
-#else
-    XP_LOGFF( "read %zd bytes ('%s')", nRead, b64 );
-#endif
     g_free( b64 );
 
     gboolean result = process( storage, buf, nRead );
@@ -1118,13 +1115,9 @@ sendIt( RelayConStorage* storage, const XP_U8* msgbuf, XP_U16 len, float timeout
                         (struct sockaddr*)&storage->saddr, 
                         sizeof(storage->saddr) );
     }
-#ifdef COMMS_CHECKSUM
     gchar* sum = g_compute_checksum_for_data( G_CHECKSUM_MD5, msgbuf, len );
     XP_LOGFF( "sent %d bytes with sum %s", len, sum );
     g_free( sum );
-#else
-    XP_LOGFF( "=>%zd", nSent );
-#endif
     return nSent;
 }
 

@@ -49,7 +49,6 @@ LOCAL_DEFINES += \
 	-DRELAY_ROOM_DEFAULT=\"\" \
 	-D__LITTLE_ENDIAN \
 	-DMQTT_DEV_TOPICS \
-	-DCOMMS_CHECKSUM \
 	-DMQTT_GAMEID_TOPICS \
 	-DGITREV="\"$(shell git describe --tags --dirty)\"" \
 
