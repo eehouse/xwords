@@ -1,0 +1,24 @@
+This file contains notes for setting up a remote repo that can be
+built with fdroid. Which I use to produce builds from their system so
+that I can test before release. Their builds are ... special.
+
+To set up a repo against which
+# git clone --recurse-submodules http://eehouse.org/xwords4.git" 
+will work
+
+First, ssh to eehouse.org and cd to /var/www/html/gitrepos, then
+# mkdir xwords4.git
+# cd xwords4.git
+# git init --bare --shared
+
+Then, locally (inside this repo):
+# git remote add eehouse-public	ssh://eehouse.org/var/www/html/gitrepos/xwords4.git
+and
+# git push --tags -u eehouse-public main
+
+And then, again on eehouse.org:
+# cd /var/www/html/gitrepos/xwords4.git
+# git symbolic-ref HEAD refs/heads/main
+
+And of course, the file git-site in this directory needs to be
+installed.

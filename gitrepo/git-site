@@ -1,0 +1,22 @@
+# <eeh> from https://esc.sh/blog/setting-up-a-git-http-server-with-nginx/
+#
+# Needs to be installed in /etc/nginx/sites-enabled (and then nginx
+# needs to be restarted)
+
+server {
+    listen       80;
+    server_name  eehouse.org;
+
+    # This is where the repositories live on the server
+    root /var/www/html/gitrepos;
+
+    location ~ (/.*) {
+        fastcgi_pass  unix:/var/run/fcgiwrap.socket;
+        include       fastcgi_params;
+        fastcgi_param SCRIPT_FILENAME     /usr/lib/git-core/git-http-backend;
+        # export all repositories under GIT_PROJECT_ROOT
+        fastcgi_param GIT_HTTP_EXPORT_ALL "";
+        fastcgi_param GIT_PROJECT_ROOT    /var/www/html/gitrepos;
+        fastcgi_param PATH_INFO           $1;
+    }
+}
