@@ -2619,7 +2619,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_comms_1countPendingPackets
 {
     jint result = 0;
     XWJNI_START(gamePtr);
-    const CommsCtxt* comms = state->game.comms;
+    RELCONST CommsCtxt* comms = state->game.comms;
     if ( !!comms ) {
         result = comms_countPendingPackets( comms, NULL );
     }
