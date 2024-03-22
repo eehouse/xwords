@@ -263,7 +263,10 @@ android {
     buildTypes {
         all {
             externalNativeBuild {
-                ndkBuild.arguments += ["INITIAL_CLIENT_VERS=" + INITIAL_CLIENT_VERS]
+                ndkBuild {
+                    arguments += ["INITIAL_CLIENT_VERS=" + INITIAL_CLIENT_VERS]
+                    arguments += ["GITREV=${GITREV}".toString()]
+                }
             }
         }
 
