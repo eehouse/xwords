@@ -371,7 +371,6 @@ getState( JNIEnv* env, GamePtrType gamePtr, const char* func )
                   func );
     }
 #endif
-    XP_ASSERT( NULL != gamePtr ); /* fired */
     jmethodID mid = getMethodID( env, gamePtr, "ptr", "()J" );
     XP_ASSERT( !!mid );
     return (JNIState*)(*env)->CallLongMethod( env, gamePtr, mid );
@@ -1328,10 +1327,11 @@ struct _JNIState {
 # define LOG_RETURN_VOID_IF()
 #endif
 
-#define XWJNI_START(GP) {                                 \
+#define XWJNI_START(GP) {                                   \
+    XP_ASSERT( NULL != (GP) );                              \
     JNIState* state = getState( env, (GP), __func__ );      \
     LOG_FUNC_IF();                                          \
-    XP_ASSERT( state->guard == GAME_GUARD );          \
+    XP_ASSERT( state->guard == GAME_GUARD );                \
     MPSLOT;                                                 \
     MPASSIGN( mpool, state->mpool );                        \
     XP_ASSERT( !!state->globalJNI );                        \

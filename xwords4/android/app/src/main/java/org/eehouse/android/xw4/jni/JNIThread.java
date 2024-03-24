@@ -528,6 +528,7 @@ public class JNIThread extends Thread implements AutoCloseable {
             case CMD_RECEIVE:
                 CommsAddrRec ret = (CommsAddrRec)args[1];
                 Assert.assertNotNull( ret );
+                Assert.assertNotNull( m_jniGamePtr );
                 draw = XwJNI.game_receiveMessage( m_jniGamePtr,
                                                   (byte[])args[0], ret );
                 handle( JNICmd.CMD_DO );
