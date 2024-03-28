@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          package="org.eehouse.android.xw4"
-          >
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
   <!-- Added for wifi-direct; don't ship until move to 23!!! -->
   <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
