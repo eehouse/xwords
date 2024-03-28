@@ -9,4 +9,10 @@
        the quashing was accidental) -->
   <string name="menu_unquash">Unquash</string>
 
+
+  <string name="title_url_scheme">Scheme for Web APIs</string>
+  <string name="url_scheme_default">Use device OS default</string>
+  <string name="url_scheme_http">Force http</string>
+  <string name="url_scheme_https">Force https</string>
+
 </resources>

@@ -507,7 +507,7 @@ public class DwnldDelegate extends ListDelegateBase {
         // Convert to use http if necessary
         Uri withProto[] = new Uri[uris.length];
         for ( int ii = 0; ii < withProto.length; ++ii ) {
-            withProto[ii] = NetUtils.ensureProto( uris[ii] );
+            withProto[ii] = NetUtils.ensureProto( context, uris[ii] );
         }
 
         if ( null != lstnr ) {

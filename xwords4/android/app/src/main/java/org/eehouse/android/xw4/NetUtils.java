@@ -50,6 +50,7 @@ import java.util.Map;
 import javax.net.SocketFactory;
 
 import org.eehouse.android.xw4.jni.XwJNI;
+import org.eehouse.android.xw4.loc.LocUtils;
 
 public class NetUtils {
     private static final String TAG = NetUtils.class.getSimpleName();
@@ -116,20 +117,35 @@ public class NetUtils {
     // Pick http or https. SSL is broken on KitKat, and it's well after that
     // that https starts being required. So use http on and before KitKat,
     // just to be safe.
-    public static String ensureProto( String url )
+    public static String ensureProto( Context context, String url )
     {
-        String result = Build.VERSION.SDK_INT <= Build.VERSION_CODES.LOLLIPOP
-            ? url.replaceFirst( "^https:", "http:" )
-            : url.replaceFirst( "^http:", "https:" );
+        boolean useHTTPs;
+        String dflt = LocUtils.getString( context, R.string.url_scheme_default );
+        String pref = XWPrefs.getPrefsString( context, R.string.key_url_scheme, dflt );
+
+        if ( dflt.equals(pref) ) {
+            useHTTPs = Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP;
+        } else if ( LocUtils.getString( context, R.string.url_scheme_http )
+                    .equals(pref) ) {
+            useHTTPs = false;
+        } else {
+            Assert.assertTrueNR(LocUtils.getString( context, R.string.url_scheme_https )
+                                .equals(pref) );
+            useHTTPs = true;
+        }
+
+        String result = useHTTPs
+            ? url.replaceFirst( "^http:", "https:" )
+            : url.replaceFirst( "^https:", "http:" );
         if ( ! url.equals( result ) ) {
             Log.d( TAG, "ensureProto(%s) => %s", url, result );
         }
         return result;
     }
 
-    public static Uri ensureProto( Uri uri )
+    public static Uri ensureProto( Context context, Uri uri )
     {
-        String uriString = ensureProto( uri.toString() );
+        String uriString = ensureProto( context, uri.toString() );
         return Uri.parse( uriString ) ;
     }
 
@@ -180,7 +196,7 @@ public class NetUtils {
     {
         HttpURLConnection result = null;
         try {
-            String url = String.format( "%s/%s", ensureProto( path ), proc );
+            String url = String.format( "%s/%s", ensureProto( context,path ), proc );
             result = (HttpURLConnection)new URL(url).openConnection(); // class cast exception
         } catch ( java.net.MalformedURLException mue ) {
             Assert.assertNull( result );

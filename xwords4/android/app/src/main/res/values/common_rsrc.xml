@@ -125,6 +125,7 @@
   <string name="key_group_posns">key_group_posns</string>
   <string name="key_last_packet">key_last_packet</string>
   <string name="key_udp_interval">key_udp_interval</string>
+  <string name="key_url_scheme">key_url_scheme</string>
 
   <string name="key_notagain_newselect">key_notagain_newselect</string>
   <string name="key_notagain_emptybtscan">key_notagain_emptybtscan</string>
@@ -372,6 +373,12 @@
     <item>1</item>
   </string-array>
   <string name="theme_which_default">0</string>
+
+  <string-array name="url_schemes">
+    <item>@string/url_scheme_default</item>
+    <item>@string/url_scheme_http</item>
+    <item>@string/url_scheme_https</item>
+  </string-array>
 
   <!-- Keep in sync with the color_ids_{light,dark} below -->
   <string-array name="color_url_keys">

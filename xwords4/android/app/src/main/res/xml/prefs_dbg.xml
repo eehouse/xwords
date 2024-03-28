@@ -27,6 +27,14 @@
                         android:defaultValue="@bool/DEBUG"
                         />
 
+    <org.eehouse.android.xw4.XWListPreference
+        android:key="@string/key_url_scheme"
+        android:title="@string/title_url_scheme"
+        android:entries="@array/url_schemes"
+        android:entryValues="@array/url_schemes"
+        android:defaultValue="@string/url_scheme_default"
+        />
+
     <Preference app:title="@string/pref_group_relay_title"
                 android:summary="@string/pref_group_relay_summary"
                 app:fragment="org.eehouse.android.xw4.gen.PrefsWrappers$prefs_dbg_net"
