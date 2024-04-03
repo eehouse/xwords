@@ -393,6 +393,10 @@ android {
 			.replace("app-", "")
         variantOutputImpl.outputFileName = variantName
     }
+
+    buildFeatures {
+        buildConfig = true
+    }
 }
 
 dependencies {
