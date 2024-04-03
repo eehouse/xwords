@@ -487,7 +487,10 @@ tasks.create( "makeBuildAssets" ) {
 	out += "\ndate: " + "date".runString()
 
     // I want the variant, but that's harder. Here's a quick hack from SO.
-	out += "\ntarget: " + gradle.startParameter.taskNames[0]
+	val taskNames = gradle.startParameter.taskNames
+	if ( 0 < taskNames.size ) {
+		out += "\ntarget: " + taskNames[taskNames.size-1]
+	}
 
     val diff = "git diff".runString()
     if (diff != "") {
@@ -499,6 +502,8 @@ tasks.create( "makeBuildAssets" ) {
     // Now the latest commit
 	File(assetsDir, LAST_COMMIT_FILE).writeText("git log -n 1".runString())
 }
+
+tasks.create("testClasses") {}
 
 // To turn on javac options
 // tasks.withType<JavaCompile> {
