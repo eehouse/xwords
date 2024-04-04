@@ -78,6 +78,7 @@ val CURTAG = "git describe --exact-match".runString()
 
 plugins {
 	id("com.android.application")
+    id("org.jetbrains.kotlin.android")
 }
 
 repositories {
@@ -133,8 +134,8 @@ android {
     productFlavors {
         all {
             android {
-                targetSdk = 31
-                compileSdk = 31
+                targetSdk = 34
+                compileSdk = 34
             }
             buildConfigField( "String", "JNI_LIB_NAME", "\"xwjni\"" )
             buildConfigField(  "String", "DB_NAME", "\"xwdb\"" )
@@ -405,6 +406,8 @@ dependencies {
 	implementation( "androidx.preference:preference:1.2.+" )
 
     implementation( "androidx.lifecycle:lifecycle-extensions:2.0.+" )
+    implementation("androidx.core:core-ktx:+")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.0.0")
     annotationProcessor( "androidx.lifecycle:lifecycle-compiler:2.0.+" )
 
 	// 3:1.2.+ crashes on API 18 and below (all Jelly Beans) because
@@ -508,6 +511,11 @@ tasks.create( "makeBuildAssets" ) {
 }
 
 tasks.create("testClasses") {}
+
+// must match JavaVersion.VERSION_1_8 above
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
+    kotlinOptions.jvmTarget = "1.8"
+}
 
 // To turn on javac options
 // tasks.withType<JavaCompile> {
