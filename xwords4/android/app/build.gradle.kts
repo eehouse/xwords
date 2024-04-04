@@ -88,14 +88,14 @@ repositories {
 android {
 	// It'll compile without specifying these. So let's try going with
 	// the defaults for now
-    // compileOptions {
-	//     sourceCompatibility = JavaVersion.VERSION_1_8
-    //     targetCompatibility = JavaVersion.VERSION_1_8
-	// }
+     compileOptions {
+         sourceCompatibility = JavaVersion.VERSION_1_8
+         targetCompatibility = JavaVersion.VERSION_1_8
+	 }
 
     // Specify buildToolsVersion so gradle will inform when the
     // default changes and .travis.yml can be kept in sync
-    ndkVersion  = "21.4.7075529"
+    ndkVersion  = "21.4.7075529" // upgrade this and may need to up minSdk below
     defaultConfig {
         // HostApduService requires 19. But is it a problem?
         if ( USE_KITKAT_MQTT ) {
