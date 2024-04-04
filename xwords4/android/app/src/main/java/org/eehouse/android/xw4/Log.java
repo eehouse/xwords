@@ -249,7 +249,6 @@ public class Log {
         }
 
         @Override
-        @SuppressWarnings("fallthrough")
         public void onUpgrade( SQLiteDatabase db, int oldVersion, int newVersion )
         {
             String msg = String.format("onUpgrade(%s): old: %d; new: %d", db,

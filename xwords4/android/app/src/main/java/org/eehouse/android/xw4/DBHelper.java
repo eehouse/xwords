@@ -270,95 +270,122 @@ public class DBHelper extends SQLiteOpenHelper {
     }
 
     @Override
-    @SuppressWarnings("fallthrough")
     public void onUpgrade( SQLiteDatabase db, int oldVersion, int newVersion )
     {
         Log.i( TAG, "onUpgrade(%s): old: %d; new: %d", db, oldVersion, newVersion );
+        Assert.assertTrueNR( newVersion == DB_VERSION );
+        upgradeImpl( db, oldVersion, false, false, false, false );
+    }
 
-        boolean madeSumTable = false;
-        boolean madeChatTable = false;
-        boolean madeDITable = false;
-        boolean madeStudyTable = false;
+    private void upgradeImpl( SQLiteDatabase db, final int oldVersion,
+                              boolean madeSumTable, boolean madeChatTable,
+                              boolean madeDITable, boolean madeStudyTable )
+    {
         switch( oldVersion ) {
         case 6:
             addSumColumn( db, TURN );
             addSumColumn( db, GIFLAGS );
             addSumColumn( db, CHAT_HISTORY );
+            break;
         case 7:
             addSumColumn( db, MISSINGPLYRS );
+            break;
         case 8:
             addSumColumn( db, GAME_NAME );
             addSumColumn( db, CONTRACTED );
+            break;
         case 9:
             addSumColumn( db, DICTLIST );
+            break;
         case 10:
+            break;
         case 11:
             addSumColumn( db, REMOTEDEVS );
+            break;
         case 12:
             createTable( db, TABLE_NAMES.DICTINFO );
             createTable( db, TABLE_NAMES.DICTBROWSE );
             madeDITable = true;
+            break;
         case 13:
             addSumColumn( db, LASTMOVE );
+            break;
         case 14:
             addSumColumn( db, GROUPID );
             createGroupsTable( db, true );
+            break;
         case 15:
             moveToCurGames( db );
+            break;
         case 16:
             addSumColumn( db, VISID );
             setColumnsEqual( db, TABLE_NAMES.SUM, VISID, "rowid" );
             makeAutoincrement( db, TABLE_NAMES.SUM );
             madeSumTable = true;
+            break;
         case 17:
             if ( !madeSumTable ) {
                 // THUMBNAIL also added by makeAutoincrement above
                 addSumColumn( db, THUMBNAIL );
             }
+            break;
         case 18:
             createStudyTable( db );
             madeStudyTable = true;
+            break;
         case 19:
             if ( !madeSumTable ) {
                 // NPACKETSPENDING also added by makeAutoincrement above
                 addSumColumn( db, NPACKETSPENDING );
             }
+            break;
         case 20:
             createLocTable( db );
+            break;
         case 21:
             createPairsTable( db );
+            break;
         case 22:
             if ( !madeSumTable ) {
                 addSumColumn( db, NEXTNAG );
             }
+            break;
         case 23:
             if ( !madeSumTable ) {
                 addSumColumn( db, EXTRAS );
             }
+            break;
         case 24:
             createInvitesTable( db );
+            break;
         case 25:
             createChatsTable( db );
             madeChatTable = true;
+            break;
         case 26:
             createLogsTable( db );
+            break;
         case 27:
             if ( !madeSumTable ) {
                 addSumColumn( db, TURN_LOCAL );
             }
+            break;
         case 28:
             if ( !madeChatTable ) {
                 addColumn( db, TABLE_NAMES.CHAT, CHATTIME );
             }
+            break;
         case 29:
             if ( !madeSumTable ) {
                 addSumColumn( db, NEXTDUPTIMER );
             }
+            break;
         case 30:
             if ( !madeDITable ) {
                 addColumn( db, TABLE_NAMES.DICTINFO, FULLSUM );
             }
 
+            break;
         case 31:
             if ( !madeSumTable ) {
                 addSumColumn( db, ISOCODE );
@@ -379,22 +406,26 @@ public class DBHelper extends SQLiteOpenHelper {
                 Log.ex( TAG, ex );
             }
 
+            break;
         case 32:
             if ( !madeDITable ) {
                 addColumn( db, TABLE_NAMES.DICTINFO, ON_SERVER );
             }
 
+            break;
         case 33:
             if ( !madeSumTable ) {
                 addColumn( db, TABLE_NAMES.SUM, QUASHED );
             }
 
+            break;
         case 34:
             if ( !madeSumTable ) {
                 addColumn( db, TABLE_NAMES.SUM, CAN_REMATCH );
             }
 
-            break;
+            return;
+
         default:
             for ( TABLE_NAMES table : TABLE_NAMES.values() ) {
                 if ( oldVersion >= 1 + table.addedVersion() ) {
@@ -403,6 +434,8 @@ public class DBHelper extends SQLiteOpenHelper {
             }
             onCreate( db );
         }
+        upgradeImpl( db, oldVersion+1, madeSumTable, madeChatTable,
+                     madeDITable, madeStudyTable );
     }
 
     private void langCodeToISOCode( SQLiteDatabase db, TABLE_NAMES table,
