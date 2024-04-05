@@ -375,10 +375,15 @@ public class XwJNI {
 
     public static GamePtr game_makeRematch( GamePtr gamePtr, UtilCtxt util,
                                             CommonPrefs cp, String gameName,
-                                            int[] newOrder )
+                                            Integer[] newOrder )
     {
+        int[] noInts = new int[newOrder.length];
+        for ( int ii = 0; ii < newOrder.length; ++ii ) {
+            noInts[ii] = newOrder[ii];
+        }
+
         GamePtr gamePtrNew = initGameJNI( 0 );
-        if ( !game_makeRematch( gamePtr, gamePtrNew, util, cp, gameName, newOrder ) ) {
+        if ( !game_makeRematch( gamePtr, gamePtrNew, util, cp, gameName, noInts ) ) {
             gamePtrNew.release();
             gamePtrNew = null;
         }
@@ -568,7 +573,17 @@ public class XwJNI {
         return results;
     }
     private static native void server_canOfferRematch( GamePtr gamePtr, boolean[] results );
-    public static native int[] server_figureOrder( GamePtr gamePtr, RematchOrder ro );
+    public static Integer[] server_figureOrderKT( GamePtr gamePtr, RematchOrder ro )
+    {
+        int[] noInts = server_figureOrder( gamePtr, ro );
+        Integer[] result = new Integer[noInts.length];
+        for ( int ii = 0; ii < noInts.length; ++ii ) {
+            result[ii] = noInts[ii];
+        }
+        return result;
+    }
+
+    private static native int[] server_figureOrder( GamePtr gamePtr, RematchOrder ro );
     public static native void server_endGame( GamePtr gamePtr );
 
     // hybrid to save work

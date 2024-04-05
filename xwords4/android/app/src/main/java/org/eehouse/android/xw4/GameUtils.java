@@ -622,7 +622,7 @@ public class GameUtils {
 
     public static long makeRematch( Context context, long srcRowid,
                                     long groupID, String gameName,
-                                    int[] newOrder )
+                                    Integer[] newOrder )
     {
         long rowid = DBUtils.ROWID_NOTFOUND;
         try ( GameWrapper gw = GameWrapper.make( context, srcRowid ) ) {

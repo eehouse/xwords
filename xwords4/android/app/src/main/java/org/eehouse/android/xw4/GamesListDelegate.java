@@ -2704,7 +2704,7 @@ public class GamesListDelegate extends ListDelegateBase
     }
 
     private void startRematchWithName( final String gameName,
-                                       final int[] newOrder,
+                                       final Integer[] newOrder,
                                        boolean showRationale )
     {
         if ( null != gameName && 0 < gameName.length() ) {
@@ -2734,11 +2734,11 @@ public class GamesListDelegate extends ListDelegateBase
             addrs.remove( CommsConnType.COMMS_CONN_SMS );
         }
         if ( 0 < addrs.size() ) {
-            rematchWithNameAndPerm( (String)params[0], (int[])params[1], addrs );
+            rematchWithNameAndPerm( (String)params[0], (Integer[])params[1], addrs );
         }
     }
 
-    private void rematchWithNameAndPerm( String gameName, int[] newOrder,
+    private void rematchWithNameAndPerm( String gameName, Integer[] newOrder,
                                          CommsConnTypeSet addrs )
     {
         if ( null != gameName && 0 < gameName.length() ) {

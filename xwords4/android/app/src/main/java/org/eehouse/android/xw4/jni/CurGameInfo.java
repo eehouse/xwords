@@ -422,7 +422,16 @@ public class CurGameInfo implements Serializable {
 
     public String[] playerNames()
     {
-        return playerNames( null );
+        return playerNames( (int[])null );
+    }
+
+    public String[] playerNames( Integer[] newOrder )
+    {
+        int[] noInts = new int[newOrder.length];
+        for ( int ii = 0; ii < newOrder.length; ++ii ) {
+            noInts[ii] = newOrder[ii];
+        }
+        return playerNames( noInts );
     }
 
     public String[] playerNames( int[] newOrder )
