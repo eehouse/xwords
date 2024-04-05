@@ -99,7 +99,7 @@ dll_map( DLHead* list, DLMapProc mapProc, DLDisposeProc dispProc,
         ForEachAct fea = (*mapProc)( list, closure );
         if ( 0 != (FEA_REMOVE & fea) ) {
             DLHead* victim = list;
-            next = victim->_prev;
+            next = victim->_next;
 
             if ( victim == newHead ) {
                 newHead = next;
