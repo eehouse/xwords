@@ -825,10 +825,11 @@ ask_move( gpointer data )
     CommonGlobals* cGlobals = &bGlobals->cGlobals;
     const char* answers[] = {"Ok", "Cancel", NULL};
 
-    if (0 == cursesask(bGlobals->boardWin, cGlobals->question,
-                       VSIZE(answers)-1, answers) ) {
+    if ( 0 == cursesask( bGlobals->boardWin, cGlobals->question,
+                         VSIZE(answers)-1, answers ) ) {
         BoardCtxt* board = cGlobals->game.board;
-        if ( board_commitTurn( board, NULL_XWE, XP_TRUE, XP_TRUE, NULL ) ) {
+        PhoniesConf pc = { .confirmed = XP_TRUE };
+        if ( board_commitTurn( board, NULL_XWE, &pc, XP_TRUE, NULL ) ) {
             board_draw( board, NULL_XWE );
             linuxSaveGame( &bGlobals->cGlobals );
         }
@@ -873,12 +874,16 @@ curses_util_turnChanged( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe),
 #endif
 
 static void
-curses_util_notifyIllegalWords( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe), BadWordInfo* bwi,
-                                XP_U16 player, XP_Bool turnLost )
+curses_util_notifyIllegalWords( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe),
+                                const BadWordInfo* bwi,
+                                const XP_UCHAR* XP_UNUSED(dictName),
+                                XP_U16 player, XP_Bool turnLost,
+                                XP_U32 bwKey )
 {
     gchar* strs = g_strjoinv( "\", \"", (gchar**)bwi->words );
     gchar* msg = g_strdup_printf( "Player %d played bad word[s]: \"%s\". "
-                                  "Turn lost: %s", player, strs, boolToStr(turnLost) );
+                                  "Turn lost: %s; key=%d", player, strs,
+                                  boolToStr(turnLost), bwKey );
 
     CursesBoardGlobals* bGlobals = (CursesBoardGlobals*)uc->closure;
     if ( !!bGlobals->boardWin ) {
@@ -913,7 +918,8 @@ ask_trade( gpointer data )
     if (0 == cursesask( bGlobals->boardWin, cGlobals->question,
                         VSIZE(buttons), buttons ) ) {
         BoardCtxt* board = cGlobals->game.board;
-        if ( board_commitTurn( board, NULL_XWE, XP_TRUE, XP_TRUE, NULL ) ) {
+        PhoniesConf pc = { .confirmed = XP_TRUE };
+        if ( board_commitTurn( board, NULL_XWE, &pc, XP_TRUE, NULL ) ) {
             board_draw( board, NULL_XWE );
             linuxSaveGame( cGlobals );
         }
@@ -1451,7 +1457,7 @@ handleCommit( void* closure, int XP_UNUSED(key) )
 {
     CursesBoardGlobals* bGlobals = (CursesBoardGlobals*)closure;
     CommonGlobals* cGlobals = &bGlobals->cGlobals;
-    if ( board_commitTurn( cGlobals->game.board, NULL_XWE, XP_FALSE,
+    if ( board_commitTurn( cGlobals->game.board, NULL_XWE, NULL,
                            XP_FALSE, NULL ) ) {
         board_draw( cGlobals->game.board, NULL_XWE );
     }

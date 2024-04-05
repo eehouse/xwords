@@ -555,19 +555,22 @@ and_dutil_remove( XW_DUtilCtxt* duc, const XP_UCHAR* keys[] )
 #endif
 
 static void
-and_util_notifyIllegalWords( XW_UtilCtxt* uc, XWEnv xwe, BadWordInfo* bwi,
-                             XP_U16 turn, XP_Bool turnLost )
+and_util_notifyIllegalWords( XW_UtilCtxt* uc, XWEnv xwe,
+                             const BadWordInfo* bwi,
+                             const XP_UCHAR* dictName,
+                             XP_U16 turn, XP_Bool turnLost,
+                             XP_U32 badWordsKey )
 {
     UTIL_CBK_HEADER("notifyIllegalWords",
-                    "(Ljava/lang/String;[Ljava/lang/String;IZ)V" );
+                    "(Ljava/lang/String;[Ljava/lang/String;IZI)V" );
     XP_ASSERT( bwi->nWords > 0 );
     if ( bwi->nWords > 0 ) {
         jobjectArray jwords = makeStringArray( env, bwi->nWords, 
                                                (const XP_UCHAR**)bwi->words );
-        XP_ASSERT( !!bwi->dictName );
-        jstring jname = (*env)->NewStringUTF( env, bwi->dictName );
+        XP_ASSERT( !!dictName );
+        jstring jname = (*env)->NewStringUTF( env, dictName );
         (*env)->CallVoidMethod( env, util->jutil, mid,
-                                jname, jwords, turn, turnLost );
+                                jname, jwords, turn, turnLost, badWordsKey );
         deleteLocalRefs( env, jwords, jname, DELETE_NO_REF );
     }
     UTIL_CBK_TAIL();

@@ -22,6 +22,7 @@
 #define _DEVICE_H_
 
 #include "dutil.h"
+#include "dictmgr.h"
 
 // void device_load( XW_DUtilCtxt dctxt );
 # ifdef XWFEATURE_DEVICE
@@ -62,6 +63,16 @@ void dvc_parseMQTTPacket( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* topic,
 
 void dvc_onWebSendResult( XW_DUtilCtxt* dutil, XWEnv xwe, XP_U32 resultKey,
                           XP_Bool succeeded, const XP_UCHAR* result );
+
+void dvc_addLegalPhony( XW_DUtilCtxt* dutil, XWEnv xwe,
+                        const XP_UCHAR* isoCode, const XP_UCHAR* phony );
+XP_Bool dvc_isLegalPhony( XW_DUtilCtxt* dutil, XWEnv xwe,
+                          const XP_UCHAR* isoCode, const XP_UCHAR* phony );
+XP_Bool dvc_haveLegalPhonies( XW_DUtilCtxt* dutil, XWEnv xwe );
+XP_U16 dvc_clearLegalPhonies( XW_DUtilCtxt* dutil, XWEnv xwe );
+#ifdef DEBUG
+void dvc_listLegalPhonies( XW_DUtilCtxt* dutil, XWEnv xwe, XWStreamCtxt* stream );
+#endif
 
 /* All platforms need to call this shortly after setting up their XW_DUtilCtxt */
 void dvc_init( XW_DUtilCtxt* dutil, XWEnv xwe );

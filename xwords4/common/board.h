@@ -176,7 +176,11 @@ XP_Bool board_setBlankValue( BoardCtxt* board, XP_U16 XP_UNUSED(player),
 
 void board_resetEngine( BoardCtxt* board );
 
-XP_Bool board_commitTurn( BoardCtxt* board, XWEnv xwe, XP_Bool phoniesConfirmed,
+typedef struct _PhoniesConf {
+    XP_Bool confirmed;
+    XP_U32 key;
+} PhoniesConf;
+XP_Bool board_commitTurn( BoardCtxt* board, XWEnv xwe, const PhoniesConf* pc,
                           XP_Bool turnConfirmed, TrayTileSet* newTiles );
 
 void board_pushTimerSave( BoardCtxt* board, XWEnv xwe );

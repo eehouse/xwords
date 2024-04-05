@@ -25,6 +25,7 @@
 #include "board.h"
 #include "engine.h"
 #include "mempool.h" /* debug only */
+#include "util.h"
 
 #ifdef CPLUS
 extern "C" {
@@ -133,6 +134,13 @@ typedef struct _ScrollData {
 } ScrollData;
 typedef enum { SCROLL_H, SCROLL_V, N_SCROLL_DIMS } SDIndex;
 
+typedef struct _BadWordList {
+    BadWordInfo bwi;
+    XP_UCHAR buf[256];
+    XP_U16 index;
+    XP_U32 key;
+} BadWordList;
+
 struct BoardCtxt {
 /*     BoardVTable* vtable; */
     ModelCtxt* model;
@@ -143,6 +151,8 @@ struct BoardCtxt {
 
     struct CurGameInfo* gi;
     ScrollData sd[N_SCROLL_DIMS];
+
+    BadWordList bwl;
 
     XP_U16 preHideYOffset;
     XP_U16 prevYScrollOffset; /* represents where the last draw took place;

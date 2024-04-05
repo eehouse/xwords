@@ -573,13 +573,22 @@ public class JNIThread extends Thread implements AutoCloseable {
                 break;
 
             case CMD_COMMIT:
-                boolean phoniesConfirmed = args.length < 1
-                    ? false : (Boolean)args[0];
-                boolean turnConfirmed = args.length < 2
-                    ? false : (Boolean)args[1];
-                int[] newTiles = args.length < 3 ? null : (int[])args[2];
+                boolean phoniesConfirmed =
+                    args.length >= 1 ? (Boolean)args[0] : false;
+                boolean turnConfirmed =
+                    args.length >= 2 ? (Boolean)args[1] : false;
+                int[] newTiles = null;
+                int badWordsKey = 0;
+                if ( args.length >= 3 ) {
+                    Object obj = args[2];
+                    if ( obj instanceof Integer ) {
+                        badWordsKey = (Integer)obj;
+                    } else if ( obj instanceof int[] ) {
+                        newTiles = (int[])obj;
+                    }
+                }
                 draw = XwJNI.board_commitTurn( m_jniGamePtr, phoniesConfirmed,
-                                               turnConfirmed, newTiles );
+                                               badWordsKey, turnConfirmed, newTiles );
                 break;
 
             case CMD_TILES_PICKED:

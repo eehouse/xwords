@@ -189,6 +189,21 @@ public class XwJNI {
         dvc_onWebSendResult( getJNI().m_ptrGlobals, resultKey, succeeded, result );
     }
 
+    public static boolean dvc_haveLegalPhonies()
+    {
+        return dvc_haveLegalPhonies( getJNI().m_ptrGlobals );
+    }
+
+    public static String dvc_listLegalPhonies()
+    {
+        return dvc_listLegalPhonies( getJNI().m_ptrGlobals );
+    }
+
+    public static int dvc_clearLegalPhonies()
+    {
+        return dvc_clearLegalPhonies( getJNI().m_ptrGlobals );
+    }
+
     public static boolean hasKnownPlayers()
     {
         String[] players = kplr_getPlayers();
@@ -476,6 +491,7 @@ public class XwJNI {
     public static native boolean board_showTray( GamePtr gamePtr );
     public static native boolean board_commitTurn( GamePtr gamePtr,
                                                    boolean phoniesConfirmed,
+                                                   int badWordsKey,
                                                    boolean turnConfirmed,
                                                    int[] newTiles );
 
@@ -802,6 +818,9 @@ public class XwJNI {
     private static native void dvc_onWebSendResult( long jniState, int resultKey,
                                                     boolean succeeded,
                                                     String result );
+    private static native boolean dvc_haveLegalPhonies( long jniState );
+    private static native String dvc_listLegalPhonies( long jniState );
+    private static native int dvc_clearLegalPhonies( long jniState );
     private static native String[] kplr_getPlayers( long jniState, boolean byDate );
     private static native boolean kplr_renamePlayer( long jniState, String oldName,
                                                      String newName );

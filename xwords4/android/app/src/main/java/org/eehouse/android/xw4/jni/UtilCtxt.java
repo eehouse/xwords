@@ -117,7 +117,7 @@ public interface UtilCtxt {
     //void yOffsetChange( int maxOffset, int oldOffset, int newOffset );
 
     void notifyIllegalWords( String dict, String[] words, int turn,
-                             boolean turnLost );
+                             boolean turnLost, int badWordsKey );
 
     void showChat( String msg, int fromPlayer, int tsSeconds );
 

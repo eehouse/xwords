@@ -73,7 +73,6 @@ typedef struct PickInfo {
 
 typedef struct _BadWordInfo {
     XP_U16 nWords;
-    const XP_UCHAR* dictName;
     /* Null-terminated array of ptrs */
     const XP_UCHAR* words[MAX_TRAY_TILES+2]; /* can form in both directions */
 } BadWordInfo;
@@ -139,8 +138,11 @@ typedef struct UtilVtable {
     XP_Bool (*m_util_altKeyDown)( XW_UtilCtxt* uc, XWEnv xwe );
     DictionaryCtxt* (*m_util_makeEmptyDict)( XW_UtilCtxt* uc, XWEnv xwe );
 
-    void (*m_util_notifyIllegalWords)( XW_UtilCtxt* uc, XWEnv xwe, BadWordInfo* bwi,
-                                       XP_U16 turn, XP_Bool turnLost );
+    void (*m_util_notifyIllegalWords)( XW_UtilCtxt* uc, XWEnv xwe,
+                                       const BadWordInfo* bwi,
+                                       const XP_UCHAR* dictName,
+                                       XP_U16 turn, XP_Bool turnLost,
+                                       XP_U32 badWordsKey );
 
     void (*m_util_remSelected)(XW_UtilCtxt* uc, XWEnv xwe);
 
@@ -279,8 +281,8 @@ struct XW_UtilCtxt {
 #define util_makeEmptyDict( uc, e )                     \
     (uc)->vtable->m_util_makeEmptyDict((uc), (e))
 
-#define util_notifyIllegalWords( uc,e, w, p, b ) \
-         (uc)->vtable->m_util_notifyIllegalWords((uc), (e),(w),(p),(b))
+#define util_notifyIllegalWords( uc,e, w, d, p, b, k )                    \
+    (uc)->vtable->m_util_notifyIllegalWords((uc), (e), (w), (d), (p), (b), (k))
 
 #define util_remSelected( uc,e )                        \
          (uc)->vtable->m_util_remSelected((uc), (e))

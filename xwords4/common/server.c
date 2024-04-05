@@ -164,13 +164,19 @@ typedef struct _ServerNonvolatiles {
 
 } ServerNonvolatiles;
 
+typedef struct _BadWordsState {
+    BadWordInfo bwi;
+    XP_UCHAR* dictName;
+} BadWordsState;
+
 struct ServerCtxt {
     ServerVolatiles vol;
     ServerNonvolatiles nv;
 
     PoolContext* pool;
 
-    BadWordInfo illegalWordInfo;
+    BadWordsState bws;
+
     XP_U16 lastMoveSource;
 
     ServerPlayer srvPlyrs[MAX_NUM_PLAYERS];
@@ -237,7 +243,7 @@ static void doEndGame( ServerCtxt* server, XWEnv xwe, XP_S16 quitter );
 static void endGameInternal( ServerCtxt* server, XWEnv xwe,
                              GameEndReason why, XP_S16 quitter );
 static void badWordMoveUndoAndTellUser( ServerCtxt* server, XWEnv xwe,
-                                        BadWordInfo* bwi );
+                                        const BadWordsState* bws );
 static XP_Bool tileCountsOk( const ServerCtxt* server );
 static void setTurn( ServerCtxt* server, XWEnv xwe, XP_S16 turn );
 static XWStreamCtxt* mkServerStream( const ServerCtxt* server, XP_U8 version );
@@ -1997,7 +2003,7 @@ server_do( ServerCtxt* server, XWEnv xwe )
 
         case XWSTATE_NEEDSEND_BADWORD_INFO:
             XP_ASSERT( server->vol.gi->serverRole == SERVER_ISHOST );
-            badWordMoveUndoAndTellUser( server, xwe, &server->illegalWordInfo );
+            badWordMoveUndoAndTellUser( server, xwe, &server->bws );
             sendBadWordMsgs( server, xwe );
             nextTurn( server, xwe, PICK_NEXT );
             //moreToDo = XP_TRUE;   /* why? */
@@ -2449,11 +2455,12 @@ sendInitialMessage( ServerCtxt* server, XWEnv xwe )
 } /* sendInitialMessage */
 
 static void
-freeBWI( MPFORMAL BadWordInfo* bwi )
+freeBWS( MPFORMAL BadWordsState* bws )
 {
+    BadWordInfo* bwi = &bws->bwi;
     XP_U16 nWords = bwi->nWords;
 
-    XP_FREEP( mpool, &bwi->dictName );
+    XP_FREEP( mpool, &bws->dictName );
     while ( nWords-- ) {
         XP_FREEP( mpool, &bwi->words[nWords] );
     }
@@ -2462,35 +2469,35 @@ freeBWI( MPFORMAL BadWordInfo* bwi )
 } /* freeBWI */
 
 static void
-bwiToStream( XWStreamCtxt* stream, BadWordInfo* bwi )
+bwsToStream( XWStreamCtxt* stream, const BadWordsState* bws )
 {
-    XP_U16 nWords = bwi->nWords;
-    const XP_UCHAR** sp;
+    const XP_U16 nWords = bws->bwi.nWords;
 
     stream_putBits( stream, 4, nWords );
     if ( STREAM_VERS_DICTNAME <= stream_getVersion( stream ) ) {
-        stringToStream( stream, bwi->dictName );
+        stringToStream( stream, bws->dictName );
     }
-    for ( sp = bwi->words; nWords > 0; --nWords, ++sp ) {
-        stringToStream( stream, *sp );
+    for ( int ii = 0; ii < nWords; ++ii ) {
+        stringToStream( stream, bws->bwi.words[ii] );
     }
 
-} /* bwiToStream */
+} /* bwsToStream */
 
 static void
-bwiFromStream( MPFORMAL XWStreamCtxt* stream, BadWordInfo* bwi )
+bwsFromStream( MPFORMAL XWStreamCtxt* stream, BadWordsState* bws )
 {
     XP_U16 nWords = stream_getBits( stream, 4 );
-    XP_ASSERT( nWords < VSIZE(bwi->words) - 1 );
+    XP_ASSERT( nWords < VSIZE(bws->bwi.words) - 1 );
 
-    bwi->nWords = nWords;
-    bwi->dictName = ( STREAM_VERS_DICTNAME <= stream_getVersion( stream ) )
-        ? stringFromStream( mpool, stream ) : NULL;
-    for ( int ii = 0; ii < nWords; ++ii ) {
-        bwi->words[ii] = (const XP_UCHAR*)stringFromStream( mpool, stream );
+    bws->bwi.nWords = nWords;
+    if ( STREAM_VERS_DICTNAME <= stream_getVersion( stream ) ) {
+        bws->dictName = stringFromStream( mpool, stream );
     }
-    bwi->words[nWords] = NULL;
-} /* bwiFromStream */
+    for ( int ii = 0; ii < nWords; ++ii ) {
+        bws->bwi.words[ii] = (const XP_UCHAR*)stringFromStream( mpool, stream );
+    }
+    bws->bwi.words[nWords] = NULL;
+} /* bwsFromStream */
 
 #ifdef DEBUG
 #define caseStr(s) case s: str = #s; break;
@@ -2561,15 +2568,15 @@ messageStreamWithHeader( ServerCtxt* server, XWEnv xwe, XP_U16 devIndex, XW_Prot
 static void
 sendBadWordMsgs( ServerCtxt* server, XWEnv xwe )
 {
-    XP_ASSERT( server->illegalWordInfo.nWords > 0 );
+    XP_ASSERT( server->bws.bwi.nWords > 0 );
 
-    if ( server->illegalWordInfo.nWords > 0 ) { /* fail gracefully */
+    if ( server->bws.bwi.nWords > 0 ) { /* fail gracefully */
         XWStreamCtxt* stream = 
             messageStreamWithHeader( server, xwe, server->lastMoveSource,
                                      XWPROTO_BADWORD_INFO );
         stream_putBits( stream, PLAYERNUM_NBITS, server->nv.currentTurn );
 
-        bwiToStream( stream, &server->illegalWordInfo );
+        bwsToStream( stream, &server->bws );
 
         /* XP_U32 hash = model_getHash( server->vol.model ); */
         /* stream_putU32( stream, hash ); */
@@ -2577,13 +2584,14 @@ sendBadWordMsgs( ServerCtxt* server, XWEnv xwe )
 
         stream_destroy( stream );
 
-        freeBWI( MPPARM(server->mpool) &server->illegalWordInfo );
+        freeBWS( MPPARM(server->mpool) &server->bws );
     }
     SETSTATE( server, XWSTATE_INTURN );
 } /* sendBadWordMsgs */
 
 static void
-badWordMoveUndoAndTellUser( ServerCtxt* server, XWEnv xwe, BadWordInfo* bwi )
+badWordMoveUndoAndTellUser( ServerCtxt* server, XWEnv xwe,
+                            const BadWordsState* bws )
 {
     XP_U16 turn;
     ModelCtxt* model = server->vol.model;
@@ -2593,7 +2601,8 @@ badWordMoveUndoAndTellUser( ServerCtxt* server, XWEnv xwe, BadWordInfo* bwi )
 
     model_rejectPreviousMove( model, xwe, server->pool, &turn );
 
-    util_notifyIllegalWords( server->vol.util, xwe, bwi, turn, XP_TRUE );
+    util_notifyIllegalWords( server->vol.util, xwe, &bws->bwi,
+                             bws->dictName, turn, XP_TRUE, 0 );
 } /* badWordMoveUndoAndTellUser */
 
 EngineCtxt*
@@ -2978,14 +2987,15 @@ storeBadWords( const WNParams* wnp, void* closure )
 {
     if ( !wnp->isLegal ) {
         ServerCtxt* server = (ServerCtxt*)closure;
-        const XP_UCHAR* name = dict_getShortName( wnp->dict );
+        const XP_UCHAR* dictName = dict_getShortName( wnp->dict );
 
-        XP_LOGFF( "storeBadWords called with \"%s\" (name=%s)", wnp->word, name );
-        if ( NULL == server->illegalWordInfo.dictName ) {
-            server->illegalWordInfo.dictName = copyString( server->mpool, name );
+        XP_LOGFF( "storeBadWords called with \"%s\" (name=%s)", wnp->word,
+                  dictName );
+        if ( NULL == server->bws.dictName ) {
+            server->bws.dictName = copyString( server->mpool, dictName );
         }
-        server->illegalWordInfo.words[server->illegalWordInfo.nWords++]
-            = copyString( server->mpool, wnp->word );
+        BadWordInfo* bwi = &server->bws.bwi;
+        bwi->words[bwi->nWords++] = copyString( server->mpool, wnp->word );
     }
 } /* storeBadWords */
 
@@ -2993,7 +3003,7 @@ static XP_Bool
 checkMoveAllowed( ServerCtxt* server, XWEnv xwe, XP_U16 playerNum )
 {
     CurGameInfo* gi = server->vol.gi;
-    XP_ASSERT( server->illegalWordInfo.nWords == 0 );
+    XP_ASSERT( server->bws.bwi.nWords == 0 );
 
     if ( gi->phoniesAction == PHONIES_DISALLOW ) {
         WordNotifierInfo info;
@@ -3003,7 +3013,7 @@ checkMoveAllowed( ServerCtxt* server, XWEnv xwe, XP_U16 playerNum )
                                     (XWStreamCtxt*)NULL, &info );
     }
 
-    return server->illegalWordInfo.nWords == 0;
+    return server->bws.bwi.nWords == 0;
 } /* checkMoveAllowed */
 
 static void
@@ -3052,9 +3062,9 @@ sendMoveTo( ServerCtxt* server, XWEnv xwe, XP_U16 devIndex, XP_U16 turn,
         }
 
         if ( !legal ) {
-            XP_ASSERT( server->illegalWordInfo.nWords > 0 );
+            XP_ASSERT( server->bws.bwi.nWords > 0 );
             stream_putBits( stream, PLAYERNUM_NBITS, turn );
-            bwiToStream( stream, &server->illegalWordInfo );
+            bwsToStream( stream, &server->bws );
         }
     }
 
@@ -3935,11 +3945,11 @@ finishMove( ServerCtxt* server, XWEnv xwe, TrayTileSet* newTiles, XP_U16 turn )
     sortTilesIf( server, turn );
 
     if ( !isLegalMove && !isClient ) {
-        badWordMoveUndoAndTellUser( server, xwe, &server->illegalWordInfo );
+        badWordMoveUndoAndTellUser( server, xwe, &server->bws );
         /* It's ok to free these guys.  I'm the server, and the move was made
            here, so I've notified all clients already by setting the flag (and
            passing the word) in sendMoveToClientsExcept. */
-        freeBWI( MPPARM(server->mpool) &server->illegalWordInfo );
+        freeBWS( MPPARM(server->mpool) &server->bws );
     }
 
     if (isClient && (gi->phoniesAction == PHONIES_DISALLOW)
@@ -4739,14 +4749,14 @@ tellMoveWasLegal( ServerCtxt* server, XWEnv xwe )
 static XP_Bool
 handleIllegalWord( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* incoming )
 {
-    BadWordInfo bwi;
+    BadWordsState bws = {{0}};
 
     (void)stream_getBits( incoming, PLAYERNUM_NBITS );
-    bwiFromStream( MPPARM(server->mpool) incoming, &bwi );
+    bwsFromStream( MPPARM(server->mpool) incoming, &bws );
 
-    badWordMoveUndoAndTellUser( server, xwe, &bwi );
+    badWordMoveUndoAndTellUser( server, xwe, &bws );
 
-    freeBWI( MPPARM(server->mpool) &bwi );
+    freeBWS( MPPARM(server->mpool) &bws );
 
     SETSTATE( server, XWSTATE_INTURN );
     return XP_TRUE;

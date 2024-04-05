@@ -56,6 +56,7 @@
 #include "movestak.h"
 #include "strutils.h"
 #include "dbgutil.h"
+#include "device.h"
 #include "gtkask.h"
 #include "gtkinvit.h"
 #include "gtkaskm.h"
@@ -65,6 +66,7 @@
 #include "gtkpasswdask.h"
 #include "gtkntilesask.h"
 #include "gtkaskdict.h"
+#include "gtkaskbad.h"
 #include "linuxdict.h"
 /* #include "undo.h" */
 #include "gtkdraw.h"
@@ -1240,8 +1242,8 @@ handle_trade_button( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
 static void
 handle_done_button( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
 {
-    if ( board_commitTurn( globals->cGlobals.game.board, NULL_XWE, XP_FALSE,
-                           XP_FALSE, NULL ) ) {
+    if ( board_commitTurn( globals->cGlobals.game.board, NULL_XWE,
+                           NULL, XP_FALSE, NULL ) ) {
         board_draw( globals->cGlobals.game.board, NULL_XWE );
         disenable_buttons( globals );
     }
@@ -1354,7 +1356,7 @@ static void
 handle_commit_button( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
 {
     if ( board_commitTurn( globals->cGlobals.game.board, NULL_XWE,
-                           XP_FALSE, XP_FALSE, NULL ) ) {
+                           NULL, XP_FALSE, NULL ) ) {
         board_draw( globals->cGlobals.game.board, NULL_XWE );
     }
 } /* handle_commit_button */
@@ -1572,8 +1574,9 @@ ask_tiles( gpointer data )
         server_tilesPicked( cGlobals->game.server, NULL_XWE,
                             cGlobals->selPlayer, &newTiles );
     } else {
+        PhoniesConf pc = { .confirmed = XP_TRUE };
         draw = board_commitTurn( cGlobals->game.board, NULL_XWE,
-                                 XP_TRUE, XP_TRUE, &newTiles );
+                                 &pc, XP_TRUE, &newTiles );
     }
 
     if ( draw ) {
@@ -1856,30 +1859,50 @@ gtk_util_engineProgressCallback( XW_UtilCtxt* XP_UNUSED(uc), XWEnv XP_UNUSED(xwe
 #endif
 } /* gtk_util_engineProgressCallback */
 
+typedef struct _BadWordsData {
+    GtkGameGlobals* globals;
+    XP_U32 bwKey;
+    GStrv words;
+    gchar* dictName;
+} BadWordsData;
+
 static gint
 ask_bad_words( gpointer data )
 {
-    GtkGameGlobals* globals = (GtkGameGlobals*)data;
-    CommonGlobals* cGlobals = &globals->cGlobals;
+    BadWordsData* bwd = (BadWordsData*)data;
+    CommonGlobals* cGlobals = &bwd->globals->cGlobals;
 
-    if ( GTK_RESPONSE_YES == gtkask( globals->window, cGlobals->question,
-                                     GTK_BUTTONS_YES_NO, NULL ) ) {
-        board_commitTurn( cGlobals->game.board, NULL_XWE, XP_TRUE, XP_FALSE, NULL );
+    bool skipNext = false;
+    if ( gtkAskBad( bwd->globals, bwd->words, bwd->dictName, &skipNext ) ) {
+        PhoniesConf pc = {
+            .confirmed = XP_TRUE,
+            .key = skipNext ? bwd->bwKey : 0,
+        };
+        board_commitTurn( cGlobals->game.board, NULL_XWE,
+                          &pc, XP_FALSE, NULL );
     }
+
+    g_free( bwd->dictName );
+    g_strfreev( bwd->words );
+    XP_FREE( cGlobals->util->mpool, bwd );
     return 0;
 }
 
 static void
 gtk_util_notifyIllegalWords( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe),
-                             BadWordInfo* bwi, XP_U16 player,
-                             XP_Bool turnLost )
+                             const BadWordInfo* bwi,
+                             const XP_UCHAR* dictName,
+                             XP_U16 player, XP_Bool turnLost,
+                             XP_U32 bwKey )
 {
     GtkGameGlobals* globals = (GtkGameGlobals*)uc->closure;
     CommonGlobals* cGlobals = &globals->cGlobals;
-    char buf[300];
-    gchar* strs = g_strjoinv( "\", \"", (gchar**)bwi->words );
 
     if ( turnLost ) {
+        XP_ASSERT( 0 == bwKey );
+        char buf[300];
+        gchar* strs = g_strjoinv( "\", \"", (gchar**)bwi->words );
+
         XP_UCHAR* name = cGlobals->gi->players[player].name;
         XP_ASSERT( !!name );
 
@@ -1891,13 +1914,22 @@ gtk_util_notifyIllegalWords( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe),
         }  else {
             gtkUserError( globals, buf );
         }
+        g_free( strs );
     } else {
-        sprintf( cGlobals->question, "Word[s] \"%s\" not in the current dictionary (%s). "
-                 "Use anyway?", strs, bwi->dictName );
+        BadWordsData* bwd = XP_MALLOC( cGlobals->util->mpool, sizeof(*bwd) );
+        bwd->globals = globals;
+        bwd->dictName = g_strdup( dictName );
+        bwd->bwKey = bwKey;
 
-        (void)g_idle_add( ask_bad_words, globals );
+        GStrvBuilder* builder = g_strv_builder_new();
+        for ( const char* const* word = bwi->words; !!*word; ++word ) {
+            g_strv_builder_add( builder, *word );
+        }
+        bwd->words = g_strv_builder_end( builder );
+        g_strv_builder_unref( builder );
+
+        (void)g_idle_add( ask_bad_words, bwd );
     }
-    g_free( strs );
 } /* gtk_util_notifyIllegalWords */
 
 static void
@@ -2049,7 +2081,8 @@ ask_move( gpointer data )
     gint chosen = gtkask( globals->window, cGlobals->question, buttons, NULL );
     if ( GTK_RESPONSE_OK == chosen || chosen == GTK_RESPONSE_YES ) {
         BoardCtxt* board = cGlobals->game.board;
-        if ( board_commitTurn( board, NULL_XWE, XP_TRUE, XP_TRUE, NULL ) ) {
+        PhoniesConf pc = { .confirmed = XP_TRUE };
+        if ( board_commitTurn( board, NULL_XWE, &pc, XP_TRUE, NULL ) ) {
             board_draw( board, NULL_XWE );
         }
     }
@@ -2081,7 +2114,8 @@ ask_trade( gpointer data )
                                      cGlobals->question, 
                                      GTK_BUTTONS_YES_NO, NULL ) ) {
         BoardCtxt* board = cGlobals->game.board;
-        if ( board_commitTurn( board, NULL_XWE, XP_TRUE, XP_TRUE, NULL ) ) {
+        PhoniesConf pc = { .confirmed = XP_TRUE };
+        if ( board_commitTurn( board, NULL_XWE, &pc, XP_TRUE, NULL ) ) {
             board_draw( board, NULL_XWE );
         }
     }

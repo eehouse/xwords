@@ -1817,6 +1817,9 @@ public class GamesListDelegate extends ListDelegateBase
                 enable = nothingSelected && Utils.isGooglePlayApp( m_activity );
                 Utils.setItemVisible( menu, R.id.games_menu_rateme, enable );
 
+                enable = BuildConfig.NON_RELEASE && XwJNI.dvc_haveLegalPhonies();
+                Utils.setItemVisible( menu, R.id.games_submenu_legalPhonies, enable );
+
                 enable = nothingSelected && XWPrefs.getStudyEnabled( m_activity );
                 Utils.setItemVisible( menu, R.id.games_menu_study, enable );
 
@@ -1904,6 +1907,15 @@ public class GamesListDelegate extends ListDelegateBase
             } catch ( android.content.ActivityNotFoundException anf ) {
                 makeOkOnlyBuilder( R.string.no_market ).show();
             }
+            break;
+
+        case R.id.games_menu_clearLPs:
+            int nDeleted = XwJNI.dvc_clearLegalPhonies();
+            Utils.showToast( m_activity, R.string.cleared_lps_fmt, nDeleted );
+            break;
+        case R.id.games_menu_listLPs:
+            String txt = XwJNI.dvc_listLegalPhonies();
+            makeOkOnlyBuilder( txt ).show();
             break;
 
         case R.id.games_menu_study:

@@ -163,8 +163,8 @@ linux_makeMoveIf( CommonGlobals* cGlobals, XP_Bool tryTrade )
             } else {
                 XP_LOGFF( "unable to find hint; so PASSing" );
             }
-            success = board_commitTurn( board, NULL_XWE, XP_TRUE, XP_TRUE,
-                                        NULL );
+            PhoniesConf pc = { .confirmed = XP_TRUE };
+            success = board_commitTurn( board, NULL_XWE, &pc, XP_TRUE, NULL );
         }
     }
     return success;

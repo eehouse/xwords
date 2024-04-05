@@ -55,7 +55,7 @@ public enum DlgID {
     WARN_NODICT_INVITED,       // when responding to invitation
     WARN_NODICT_SUBST,         // when a substitution will be possible/suggested
     DLG_BADWORDS,
-    NOTIFY_BADWORDS,
+    ASK_BADWORDS,
     QUERY_MOVE,
     QUERY_TRADE,
     ASK_PASSWORD,

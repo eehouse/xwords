@@ -54,6 +54,7 @@
 #include "comms.h" /* for CHANNEL_NONE */
 #include "dictnry.h"
 #include "draw.h"
+#include "device.h"
 #include "engine.h"
 #include "util.h"
 #include "mempool.h" /* debug only */
@@ -323,7 +324,6 @@ board_getDraw( const BoardCtxt* board )
 void
 board_writeToStream( const BoardCtxt* board, XWStreamCtxt* stream )
 {
-    XP_U16 nPlayers, ii;
     XP_U16 nColsNBits;
 #ifdef STREAM_VERS_BIGBOARD
     nColsNBits = 16 > model_numCols(board->model) ? NUMCOLS_NBITS_4
@@ -347,9 +347,9 @@ board_writeToStream( const BoardCtxt* board, XWStreamCtxt* stream )
 #endif
 
     XP_ASSERT( !!board->server );
-    nPlayers = board->gi->nPlayers;
+    XP_U16 nPlayers = board->gi->nPlayers;
 
-    for ( ii = 0; ii < nPlayers; ++ii ) {
+    for ( int ii = 0; ii < nPlayers; ++ii ) {
         const PerTurnInfo* pti = &board->pti[ii];
         const BoardArrow* arrow = &pti->boardArrow;
         stream_putBits( stream, nColsNBits, arrow->col );
@@ -1043,12 +1043,6 @@ hideMiniWindow( BoardCtxt* board, XP_Bool destroy, MiniWindowType winType )
 #endif
 #endif
 
-typedef struct _BadWordList {
-    BadWordInfo bwi;
-    XP_UCHAR buf[256];
-    XP_U16 index;
-} BadWordList;
-
 static void
 saveBadWords( const WNParams* wnp, void* closure )
 {
@@ -1076,7 +1070,8 @@ boardNotifyTrade( BoardCtxt* board, XWEnv xwe, const TrayTileSet* tiles )
 }
 
 XP_Bool
-board_commitTurn( BoardCtxt* board, XWEnv xwe, XP_Bool phoniesConfirmed,
+board_commitTurn( BoardCtxt* board, XWEnv xwe,
+                  const PhoniesConf* pconf,
                   XP_Bool turnConfirmed /* includes trade */,
                   TrayTileSet* newTiles )
 {
@@ -1084,6 +1079,7 @@ board_commitTurn( BoardCtxt* board, XWEnv xwe, XP_Bool phoniesConfirmed,
     const XP_S16 turn = server_getCurrentTurn( board->server, NULL );
     const XP_U16 selPlayer = board->selPlayer;
     ModelCtxt* model = board->model;
+    const XP_Bool phoniesConfirmed = !!pconf && pconf->confirmed;
 
     if ( board->gameOver || turn < 0 ) {
         /* do nothing */
@@ -1093,6 +1089,22 @@ board_commitTurn( BoardCtxt* board, XWEnv xwe, XP_Bool phoniesConfirmed,
         /* game's over but still undoable so turn hasn't changed; do
            nothing */
     } else if ( phoniesConfirmed || turnConfirmed || checkRevealTray( board, xwe ) ) {
+        const DictionaryCtxt* dict = model_getPlayerDict( model, selPlayer );
+        BadWordList* bwl = &board->bwl;
+
+        if ( phoniesConfirmed && 0 != pconf->key ) {
+            XP_ASSERT( bwl->key == pconf->key );
+            if ( bwl->key == pconf->key ) {
+                const BadWordInfo* bwi = &bwl->bwi;
+                const XP_UCHAR* isoCode = dict_getISOCode( dict );
+
+                for ( int ii = 0; ii < bwi->nWords; ++ii ) {
+                    dvc_addLegalPhony( board->dutil, xwe, isoCode,
+                                       bwi->words[ii] );
+                }
+            }
+        }
+
         PerTurnInfo* pti = &board->pti[selPlayer];
         if ( pti->tradeInProgress ) {
             TileBit traySelBits = pti->traySelBits;
@@ -1127,8 +1139,6 @@ board_commitTurn( BoardCtxt* board, XWEnv xwe, XP_Bool phoniesConfirmed,
         } else {
             XWStreamCtxt* stream = NULL;
             XP_Bool legal = turnConfirmed;
-            BadWordList bwl;
-            XP_MEMSET( &bwl, 0, sizeof(bwl) );
             
             if ( !legal ) {
                 stream = mem_stream_make_raw( MPPARM(board->mpool)
@@ -1136,23 +1146,26 @@ board_commitTurn( BoardCtxt* board, XWEnv xwe, XP_Bool phoniesConfirmed,
 
                 XP_U16 stringCode = board->gi->inDuplicateMode
                     ? STR_SUBMIT_CONFIRM : STR_COMMIT_CONFIRM;
-                const XP_UCHAR* str = dutil_getUserString( board->dutil, xwe, stringCode );
+                const XP_UCHAR* str = dutil_getUserString( board->dutil, xwe,
+                                                           stringCode );
                 stream_catString( stream, str );
 
                 XP_Bool warn = board->util->gameInfo->phoniesAction == PHONIES_WARN;
                 WordNotifierInfo info;
                 if ( warn ) {
+                    XP_MEMSET( bwl, 0, sizeof(*bwl) );
+                    bwl->key = 0x7FFFFFFF & XP_RANDOM(); /* clear high bit so can be signed */
                     info.proc = saveBadWords;
-                    info.closure = &bwl;
+                    info.closure = bwl;
                 }
                 legal = model_checkMoveLegal( model, xwe, selPlayer, stream,
                                               warn? &info:(WordNotifierInfo*)NULL);
             }
 
-            if ( 0 < bwl.bwi.nWords && !phoniesConfirmed ) {
-                bwl.bwi.dictName =
-                    dict_getShortName( model_getPlayerDict( model, selPlayer ) );
-                util_notifyIllegalWords( board->util, xwe, &bwl.bwi, selPlayer, XP_FALSE );
+            if ( 0 < bwl->bwi.nWords && !phoniesConfirmed ) {
+                const XP_UCHAR* dictName = dict_getShortName( dict );
+                util_notifyIllegalWords( board->util, xwe, &bwl->bwi, dictName,
+                                         selPlayer, XP_FALSE, bwl->key );
             } else if ( legal ) {
                 /* Hide the tray so no peeking.  Leave it hidden even if user
                    cancels as otherwise another player could get around

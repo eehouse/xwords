@@ -44,6 +44,7 @@ typedef ForEachAct (*DLMapProc)(const DLHead* elem, void* closure);
 typedef void (*DLDisposeProc)(DLHead* elem, void* closure);
 DLHead* dll_map( DLHead* list, DLMapProc mapProc, DLDisposeProc dispProc,
                  void* closure );
+void dll_removeAll( DLHead* list, DLDisposeProc dispProc, void* closure );
 
 #ifdef CPLUS
 }

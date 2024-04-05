@@ -244,7 +244,7 @@ public class UtilCtxtImpl implements UtilCtxt {
 
     @Override
     public void notifyIllegalWords( String dict, String[] words, int turn,
-                                    boolean turnLost )
+                                    boolean turnLost, int badWordsKey )
     {
         subclassOverride( "notifyIllegalWords" );
     }

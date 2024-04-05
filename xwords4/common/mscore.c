@@ -20,6 +20,7 @@
 
 #include "modelp.h"
 #include "util.h"
+#include "device.h"
 #include "engine.h"
 #include "game.h"
 #include "strutils.h"
@@ -42,7 +43,7 @@ static XP_U16 find_start( const ModelCtxt* model, XP_U16 col, XP_U16 row,
 static XP_S16 checkScoreMove( ModelCtxt* model, XWEnv xwe, XP_S16 turn,
                               EngineCtxt* engine, XWStreamCtxt* stream, 
                               XP_Bool silent, WordNotifierInfo* notifyInfo );
-static XP_U16 scoreWord( const ModelCtxt* model, XP_U16 turn,
+static XP_U16 scoreWord( const ModelCtxt* model, XWEnv xwe, XP_U16 turn,
                          const MoveInfo* movei, EngineCtxt* engine, 
                          XWStreamCtxt* stream, WordNotifierInfo* notifyInfo );
 
@@ -571,7 +572,7 @@ figureMoveScore( const ModelCtxt* model, XWEnv xwe, XP_U16 turn,
             word_multiplier( model, col, row );
     }
 
-    oneScore = scoreWord( model, turn, moveInfo, (EngineCtxt*)NULL,
+    oneScore = scoreWord( model, xwe, turn, moveInfo, (EngineCtxt*)NULL,
                           stream, notifyInfo );
     if ( !!stream ) {
         formatWordScore( stream, oneScore, moveMultiplier );
@@ -589,7 +590,7 @@ figureMoveScore( const ModelCtxt* model, XWEnv xwe, XP_U16 turn,
         tmpMI.commonCoord = tiles->varCoord;
         tmpMI.tiles[0].tile = tiles->tile;
 
-        oneScore = scoreWord( model, turn, &tmpMI, engine, stream, notifyInfo );
+        oneScore = scoreWord( model, xwe, turn, &tmpMI, engine, stream, notifyInfo );
         if ( !!stream ) {
             formatWordScore( stream, oneScore, multipliers[ii] );
         }
@@ -657,7 +658,7 @@ tile_multiplier( const ModelCtxt* model, XP_U16 col, XP_U16 row )
 } /* tile_multiplier */
 
 static XP_U16
-scoreWord( const ModelCtxt* model, XP_U16 turn,
+scoreWord( const ModelCtxt* model, XWEnv xwe, XP_U16 turn,
            const MoveInfo* movei, /* new tiles */
            EngineCtxt* engine,/* for crosswise caching */
            XWStreamCtxt* stream, 
@@ -781,7 +782,15 @@ scoreWord( const ModelCtxt* model, XP_U16 turn,
                 dict_tilesToString( dict, checkWordBuf, len, buf, 
                                     sizeof(buf), NULL );
 
-                WNParams wnp = { .word = buf, .isLegal = legal, .dict = dict,
+                if ( !legal && PHONIES_WARN == model->vol.gi->phoniesAction ) {
+                    legal = dvc_isLegalPhony( model->vol.dutil, xwe,
+                                              dict_getISOCode(dict), buf );
+                }
+
+                WNParams wnp = {
+                    .word = buf,
+                    .isLegal = legal,
+                    .dict = dict,
 #ifdef XWFEATURE_BOARDWORDS
                                  .movei = movei, .start = start, .end = end,
 #endif

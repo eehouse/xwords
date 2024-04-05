@@ -126,6 +126,18 @@ dll_map( DLHead* list, DLMapProc mapProc, DLDisposeProc dispProc,
     return newHead;
 }
 
+static ForEachAct
+removeAllProc( const DLHead* XP_UNUSED(elem), void* XP_UNUSED(closure) )
+{
+    return FEA_OK | FEA_REMOVE;
+}
+
+void
+dll_removeAll( DLHead* list, DLDisposeProc dispProc, void* closure )
+{
+    dll_map( list, removeAllProc, dispProc, closure );
+}
+
 DLHead*
 dll_sort( DLHead* list, DLCompProc proc )
 {

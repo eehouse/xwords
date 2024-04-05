@@ -39,6 +39,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.PopupMenu;
@@ -315,15 +316,25 @@ public class BoardDelegate extends DelegateBase
         }
             break;
 
-        case NOTIFY_BADWORDS: {
+        case ASK_BADWORDS: {
+            LinearLayout rpLayout =
+                (LinearLayout)inflate( R.layout.phonies_found );
+
+            TextView tv = (TextView)rpLayout.findViewById( R.id.message );
+            tv.setText( (String)params[0] );
+
+            final int badWordsKey = (int)params[1];
             lstnr = new OnClickListener() {
                     @Override
                     public void onClick( DialogInterface dlg, int bx ) {
-                        handleViaThread( JNICmd.CMD_COMMIT, true, false );
+                        CheckBox cb = (CheckBox)rpLayout
+                            .findViewById(R.id.remember_phonies_check);
+                        handleViaThread( JNICmd.CMD_COMMIT, true, false,
+                                         cb.isChecked() ? badWordsKey : 0 );
                     }
                 };
             dialog = ab.setTitle( R.string.phonies_found_title )
-                .setMessage( (String)params[0] )
+                .setView( rpLayout )
                 .setPositiveButton( R.string.button_yes, lstnr )
                 .setNegativeButton( android.R.string.cancel, null )
                 .create();
@@ -2187,7 +2198,7 @@ public class BoardDelegate extends DelegateBase
 
         @Override
         public void notifyIllegalWords( String dict, String[] words, int turn,
-                                        boolean turnLost )
+                                        boolean turnLost, int badWordsKey )
         {
             String wordsString = TextUtils.join( ", ", words );
             String message =
@@ -2198,7 +2209,7 @@ public class BoardDelegate extends DelegateBase
                                     message + getString( R.string.badwords_lost ) );
             } else {
                 String msg = message + getString( R.string.badwords_accept );
-                showDialogFragment( DlgID.NOTIFY_BADWORDS, msg );
+                showDialogFragment( DlgID.ASK_BADWORDS, msg, badWordsKey );
             }
         }
 

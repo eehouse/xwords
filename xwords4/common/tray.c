@@ -458,7 +458,7 @@ handleActionInTray( BoardCtxt* board, XWEnv xwe, XP_S16 index, XP_Bool onDivider
         }
 #endif
     } else if ( index == -(board->gi->traySize) ) { /* pending score tile */
-        result = board_commitTurn( board, xwe, XP_FALSE, XP_FALSE, NULL );
+        result = board_commitTurn( board, xwe, NULL, XP_FALSE, NULL );
 #if defined XWFEATURE_TRAYUNDO_ALL
     } else if ( index < 0 ) { /* other empty area */
         /* it better be true */

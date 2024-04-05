@@ -211,6 +211,7 @@ GTK_OBJS = \
 	$(BUILD_PLAT_DIR)/gtkutils.o \
 	$(BUILD_PLAT_DIR)/gtkntilesask.o \
 	$(BUILD_PLAT_DIR)/gtkaskdict.o \
+	$(BUILD_PLAT_DIR)/gtkaskbad.o \
 	$(BUILD_PLAT_DIR)/gtkchat.o \
 	$(BUILD_PLAT_DIR)/gtkkpdlg.o \
 	$(BUILD_PLAT_DIR)/gtkrmtch.o \

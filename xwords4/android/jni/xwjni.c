@@ -794,6 +794,50 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dvc_1onWebSendResult
     DVC_HEADER_END();
 }
 
+JNIEXPORT jboolean JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_dvc_1haveLegalPhonies
+( JNIEnv* env, jclass C, jlong jniGlobalPtr )
+{
+    jboolean jresult;
+    DVC_HEADER(jniGlobalPtr);
+    jresult = dvc_haveLegalPhonies( globalState->dutil, env );
+    DVC_HEADER_END();
+    return jresult;
+}
+
+#ifdef DEBUG
+JNIEXPORT jstring JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_dvc_1listLegalPhonies
+( JNIEnv* env, jclass C, jlong jniGlobalPtr )
+{
+    jstring jresult;
+    DVC_HEADER(jniGlobalPtr);
+#ifdef MEM_DEBUG
+    MemPoolCtx* mpool = GETMPOOL( globalState );
+#endif
+
+    XWStreamCtxt* stream = mem_stream_make( MPPARM(mpool) globalState->vtMgr,
+                                            NULL, 0, NULL, NULL );
+    dvc_listLegalPhonies( globalState->dutil, env, stream );
+    jresult = streamToJString( env, stream );
+    stream_destroy( stream );
+
+    DVC_HEADER_END();
+    return jresult;
+}
+#endif
+
+JNIEXPORT jint JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_dvc_1clearLegalPhonies
+( JNIEnv* env, jclass C, jlong jniGlobalPtr )
+{
+    jint result;
+    DVC_HEADER(jniGlobalPtr);
+    result = dvc_clearLegalPhonies( globalState->dutil, env );
+    DVC_HEADER_END();
+    return result;
+}
+
 # ifdef XWFEATURE_KNOWNPLAYERS
 JNIEXPORT jobjectArray JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_kplr_1getPlayers
@@ -1925,7 +1969,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1setBlankValue
 JNIEXPORT jboolean JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_board_1commitTurn
 ( JNIEnv* env, jclass C, GamePtrType gamePtr, jboolean phoniesConfirmed,
-  jboolean turnConfirmed, jintArray jNewTiles )
+  jint badWordsKey, jboolean turnConfirmed, jintArray jNewTiles )
 {
     jboolean result;
     XWJNI_START(gamePtr);
@@ -1936,8 +1980,11 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1commitTurn
         tilesArrayToTileSet( env, jNewTiles, &newTiles );
         newTilesP = &newTiles;
     }
-
-    result = board_commitTurn( state->game.board, env, phoniesConfirmed,
+    PhoniesConf pc = {.confirmed = phoniesConfirmed,
+        .key = badWordsKey,
+    };
+    result = board_commitTurn( state->game.board, env,
+                               phoniesConfirmed ? &pc : NULL,
                                turnConfirmed, newTilesP );
     XWJNI_END();
     return result;
