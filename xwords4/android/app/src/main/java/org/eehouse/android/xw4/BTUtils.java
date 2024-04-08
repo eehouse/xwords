@@ -313,7 +313,7 @@ public class BTUtils {
 
     public static void gameDied( Context context, String btName, String btAddr, int gameID )
     {
-        if ( !TextUtils.isEmpty( btAddr ) ) {
+        if ( !TextUtils.isEmpty( btName ) ) {
             getPA( btName, btAddr ).addDied( gameID );
         }
     }
@@ -429,10 +429,10 @@ public class BTUtils {
             .updateStatusOut( context, CommsConnType.COMMS_CONN_BT, success );
     }
 
-    private static PacketAccumulator getPA( String name, String addr )
+    private static PacketAccumulator getPA( String btName, String btAddr )
     {
-        Assert.assertTrue( !TextUtils.isEmpty(name) );
-        PacketAccumulator pa = getSenderFor( name, addr ).wake();
+        Assert.assertTrue( !TextUtils.isEmpty(btName) );
+        PacketAccumulator pa = getSenderFor( btName, btAddr ).wake();
         return pa;
     }
 
@@ -1600,7 +1600,7 @@ public class BTUtils {
                 getPA( addr.bt_hostName, btAddr ).addMsg( gameID, buf, msgID );
                 nSent = buf.length;
             } else {
-                Log.i( TAG, "sendViaBluetooth(): no addr for dev %s",
+                Log.i( TAG, "sendViaBluetooth(): no addr for dev named %s",
                        addr.bt_hostName );
             }
             return nSent;
