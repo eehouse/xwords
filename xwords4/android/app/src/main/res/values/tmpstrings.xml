@@ -32,4 +32,7 @@
 
   <string name="buttonYesAnd">Yes/Save</string>
 
+  <string name="confirm_clear_lps">Are you sure you want to clear
+  saved “legal phonies”?\n\nThis action cannot be undone.</string>
+
 </resources>

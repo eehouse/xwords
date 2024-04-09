@@ -1458,6 +1458,11 @@ public class GamesListDelegate extends ListDelegateBase
             openWithChecks( rowid, summary );
             break;
 
+        case LPS_CLEAR:
+            int nDeleted = XwJNI.dvc_clearLegalPhonies();
+            Utils.showToast( m_activity, R.string.cleared_lps_fmt, nDeleted );
+            break;
+
         case BACKUP_DO:
             showDialogFragment( DlgID.BACKUP_LOADSTORE );
             break;
@@ -1910,8 +1915,9 @@ public class GamesListDelegate extends ListDelegateBase
             break;
 
         case R.id.games_menu_clearLPs:
-            int nDeleted = XwJNI.dvc_clearLegalPhonies();
-            Utils.showToast( m_activity, R.string.cleared_lps_fmt, nDeleted );
+            makeConfirmThenBuilder( Action.LPS_CLEAR,
+                                    R.string.confirm_clear_lps )
+                .show();
             break;
         case R.id.games_menu_listLPs:
             String txt = XwJNI.dvc_listLegalPhonies();
