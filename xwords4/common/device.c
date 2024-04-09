@@ -885,10 +885,17 @@ dvc_haveLegalPhonies( XW_DUtilCtxt* dutil, XWEnv xwe )
     return result;
 }
 
+typedef struct _FreeState {
+    XW_DUtilCtxt* dutil;
+    XP_U16 count;
+} FreeState;
+
 static void
 freeOnePhony( DLHead* elem, void* closure )
 {
-    XW_DUtilCtxt* dutil = (XW_DUtilCtxt*)closure;
+    FreeState* fs = (FreeState*)closure;
+    XW_DUtilCtxt* dutil = fs->dutil;
+    ++fs->count;
     const PhoniesDataStrs* pds = (PhoniesDataStrs*)elem;
     XP_FREE( dutil->mpool, pds->phony );
     XP_FREE( dutil->mpool, elem );
@@ -897,20 +904,25 @@ freeOnePhony( DLHead* elem, void* closure )
 static void
 freeOneCode( DLHead* elem, void* closure)
 {
-    XW_DUtilCtxt* dutil = (XW_DUtilCtxt*)closure;
+    FreeState* fs = (FreeState*)closure;
+    XW_DUtilCtxt* dutil = fs->dutil;
     const PhoniesDataCodes* pdc = (PhoniesDataCodes*)elem;
 
-    dll_removeAll( &pdc->head->links, freeOnePhony, dutil );
+    dll_removeAll( &pdc->head->links, freeOnePhony, closure );
 
     XP_FREE( dutil->mpool, pdc->isoCode );
     XP_FREE( dutil->mpool, elem );
 }
 
 static DevCtxt*
-freePhonyState( XW_DUtilCtxt* dutil, XWEnv xwe )
+freePhonyState( XW_DUtilCtxt* dutil, XWEnv xwe, XP_U16* lenP )
 {
+    FreeState fs = { .dutil = dutil, };
     DevCtxt* dc = load( dutil, xwe );
-    dll_removeAll( &dc->pd->links, freeOneCode, dutil );
+    dll_removeAll( &dc->pd->links, freeOneCode, &fs );
+    if ( !!lenP ) {
+        *lenP = fs.count;
+    }
     dc->pd = NULL;
     return dc;
 }
@@ -920,7 +932,7 @@ dvc_clearLegalPhonies( XW_DUtilCtxt* dutil, XWEnv xwe )
 {
     DevCtxt* dc = load( dutil, xwe );
     XP_U16 len = dll_length( &dc->pd->links );
-    freePhonyState( dutil, xwe );
+    freePhonyState( dutil, xwe, &len );
     storePhoniesData( dutil, xwe, dc );
     return len;
 }
@@ -1085,7 +1097,7 @@ void
 dvc_cleanup( XW_DUtilCtxt* dutil, XWEnv xwe )
 {
     LOG_FUNC();
-    DevCtxt* dc = freePhonyState( dutil, xwe );
+    DevCtxt* dc = freePhonyState( dutil, xwe, NULL );
 
     pthread_mutex_destroy( &dc->webSendMutex );
 

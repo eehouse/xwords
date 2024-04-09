@@ -39,7 +39,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
-import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.PopupMenu;
@@ -317,26 +316,30 @@ public class BoardDelegate extends DelegateBase
             break;
 
         case ASK_BADWORDS: {
-            LinearLayout rpLayout =
-                (LinearLayout)inflate( R.layout.phonies_found );
-
-            TextView tv = (TextView)rpLayout.findViewById( R.id.message );
-            tv.setText( (String)params[0] );
-
-            final int badWordsKey = (int)params[1];
+            final int count = (Integer)params[1];
+            final int badWordsKey = (Integer)params[2];
             lstnr = new OnClickListener() {
                     @Override
                     public void onClick( DialogInterface dlg, int bx ) {
-                        CheckBox cb = (CheckBox)rpLayout
-                            .findViewById(R.id.remember_phonies_check);
-                        handleViaThread( JNICmd.CMD_COMMIT, true, false,
-                                         cb.isChecked() ? badWordsKey : 0 );
+                        handleViaThread( JNICmd.CMD_COMMIT, true, false, 0 );
                     }
                 };
+            OnClickListener lstnr2 = new OnClickListener() {
+                    @Override
+                    public void onClick( DialogInterface dlg, int bx ) {
+                        handleViaThread( JNICmd.CMD_COMMIT, true, false, badWordsKey );
+                    }
+                };
+
+            String buttonTxt = LocUtils.getString( m_activity, R.string.buttonYesAnd );
+            String withSaveMsg = LocUtils.getQuantityString( m_activity, R.plurals.yesAndMsgFmt,
+                                                             count, buttonTxt );
+
             dialog = ab.setTitle( R.string.phonies_found_title )
-                .setView( rpLayout )
+                .setMessage( (String)params[0] + "\n\n" + withSaveMsg )
                 .setPositiveButton( R.string.button_yes, lstnr )
                 .setNegativeButton( android.R.string.cancel, null )
+                .setNeutralButton( buttonTxt, lstnr2 )
                 .create();
         }
             break;
@@ -2209,7 +2212,8 @@ public class BoardDelegate extends DelegateBase
                                     message + getString( R.string.badwords_lost ) );
             } else {
                 String msg = message + getString( R.string.badwords_accept );
-                showDialogFragment( DlgID.ASK_BADWORDS, msg, badWordsKey );
+                showDialogFragment( DlgID.ASK_BADWORDS, msg, words.length,
+                                    badWordsKey );
             }
         }
 

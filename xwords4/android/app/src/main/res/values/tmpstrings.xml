@@ -19,8 +19,17 @@
   <string name="gamel_menu_clearLPs">Clear all</string>
   <string name="gamel_menu_listLPs">Show all</string>
 
-  <string name="remember_phonies_label">Accept from now on</string>
+  <string name="cleared_lps_fmt">Cleared %1$d legal phonies</string>
 
-  <string name="cleared_lps_fmt">Cleared %d legal phonies</string>
+  <plurals name="yesAndMsgFmt">
+    <item quantity="one">
+      (If you choose the “%1$s” button you will not be asked about this word again.)
+    </item>
+    <item quantity="other">
+      (If you choose the “%1$s” button you will not be asked about these words again.)
+    </item>
+  </plurals>
+
+  <string name="buttonYesAnd">Yes/Save</string>
 
 </resources>
