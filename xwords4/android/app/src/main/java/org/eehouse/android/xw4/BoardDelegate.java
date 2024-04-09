@@ -733,6 +733,13 @@ public class BoardDelegate extends DelegateBase
                 m_missingCounts = data.getIntArrayExtra( InviteDelegate.COUNTS );
                 m_remotesAreRobots = data.getBooleanExtra( InviteDelegate.RAR, false );
                 m_missingMeans = missingMeans;
+
+                post( new Runnable() {
+                        @Override
+                        public void run() {
+                            tryInvites();
+                        }
+                    } );
             }
         }
     }
@@ -2811,7 +2818,7 @@ public class BoardDelegate extends DelegateBase
                 switch ( m_missingMeans ) {
                 case BLUETOOTH:
                     destAddr = new CommsAddrRec(CommsConnType.COMMS_CONN_BT)
-                        .setBTParams( dev, null );
+                        .setBTParams( null, dev );
                     break;
                 case SMS_DATA:
                     destAddr = new CommsAddrRec(CommsConnType.COMMS_CONN_SMS)

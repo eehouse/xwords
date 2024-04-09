@@ -67,19 +67,34 @@ public class BTInviteDelegate extends InviteDelegate
     private Handler m_handler = new Handler();
     private int mNDevsThisScan;
 
-    private static class Persisted implements Serializable {
-        List<TwoStringPair> pairs;
-        // HashMap: m_stamps is serialized, so can't be abstract type
-        HashMap<String, Long> stamps = new HashMap<>();
+    private static class BTDev implements InviterItem, Serializable {
+        private String mName;
 
-        void add( String devAddress, String devName ) {
+        BTDev( String name ) { mName = name; }
+
+        @Override
+        public boolean equals( InviterItem item )
+        {
+            return null != item && item.getDev().equals( getDev() );
+        }
+
+        @Override
+        public String getDev() { return mName; }
+    }
+
+    private static class Persisted implements Serializable {
+        List<BTDev> mDevs;
+        // HashMap: m_stamps is serialized, so can't be abstract type
+        HashMap<String, Long> mTimeStamps = new HashMap<>();
+
+        void add( String devName ) {
             // If it's already there, update it. Otherwise create new
             boolean alreadyHave = false;
-            if ( null == pairs ) {
-                pairs = new ArrayList<>();
+            if ( null == mDevs ) {
+                mDevs = new ArrayList<>();
             } else {
-                for ( TwoStringPair pair : pairs ) {
-                    alreadyHave = TextUtils.equals(pair.str2, devName);
+                for ( BTDev dev : mDevs ) {
+                    alreadyHave = TextUtils.equals( dev.getDev(), devName );
                     if ( alreadyHave ) {
                         break;
                     }
@@ -87,21 +102,21 @@ public class BTInviteDelegate extends InviteDelegate
             }
 
             if ( !alreadyHave ) {
-                pairs.add( new TwoStringPair( devAddress, devName ) );
+                mDevs.add( new BTDev( devName ) );
             }
-            stamps.put( devName, System.currentTimeMillis() );
+            mTimeStamps.put( devName, System.currentTimeMillis() );
             sort();
         }
 
         void remove( final Set<String> checked )
         {
-            for ( String dev : checked ) {
-                stamps.remove( dev );
+            for ( String devName : checked ) {
+                mTimeStamps.remove( devName );
 
-                for ( Iterator<TwoStringPair> iter = pairs.iterator();
+                for ( Iterator<BTDev> iter = mDevs.iterator();
                       iter.hasNext(); ) {
-                    TwoStringPair pair = iter.next();
-                    if ( TextUtils.equals( pair.getDev(), dev ) ) {
+                    BTDev dev = iter.next();
+                    if ( TextUtils.equals( dev.getDev(), devName ) ) {
                         iter.remove();
                         break;
                     }
@@ -109,29 +124,17 @@ public class BTInviteDelegate extends InviteDelegate
             }
         }
 
-        private void removeNulls()
-        {
-            for ( Iterator<TwoStringPair> iter = pairs.iterator();
-                  iter.hasNext(); ) {
-                TwoStringPair pair = iter.next();
-                if ( TextUtils.isEmpty( pair.str2 ) ) {
-                    Log.d( TAG, "removeNulls(): removing!!" );
-                    iter.remove();
-                }
-            }
-        }
-
-        boolean empty() { return pairs == null || pairs.size() == 0; }
+        boolean empty() { return mDevs == null || mDevs.size() == 0; }
 
         private void sort()
         {
-            Collections.sort( pairs, new Comparator<TwoStringPair>() {
+            Collections.sort( mDevs, new Comparator<BTDev>() {
                     @Override
-                    public int compare( TwoStringPair rec1, TwoStringPair rec2 ) {
+                    public int compare( BTDev rec1, BTDev rec2 ) {
                         int result = 0;
                         try {
-                            long val1 = stamps.get( rec1.str2 );
-                            long val2 = stamps.get( rec2.str2 );
+                            long val1 = mTimeStamps.get( rec1.getDev() );
+                            long val2 = mTimeStamps.get( rec2.getDev() );
                             if ( val2 > val1 ) {
                                 result = 1;
                             } else if ( val1 > val2 ) {
@@ -226,12 +229,12 @@ public class BTInviteDelegate extends InviteDelegate
     @Override
     protected void onChildAdded( View child, InviterItem data )
     {
-        String devName = ((TwoStringPair)data).str2;
+        String devName = ((BTDev)data).getDev();
 
         String msg = null;
-        if ( sPersistedRef[0].stamps.containsKey( devName ) ) {
+        if ( sPersistedRef[0].mTimeStamps.containsKey( devName ) ) {
             CharSequence elapsed = DateUtils
-                .getRelativeTimeSpanString( sPersistedRef[0].stamps.get( devName ),
+                .getRelativeTimeSpanString( sPersistedRef[0].mTimeStamps.get( devName ),
                                             System.currentTimeMillis(),
                                             DateUtils.SECOND_IN_MILLIS );
             msg = getString( R.string.bt_scan_age_fmt, elapsed );
@@ -283,7 +286,7 @@ public class BTInviteDelegate extends InviteDelegate
     private void scan()
     {
         if ( ENABLE_FAKER && Utils.nextRandomInt() % 5 == 0 ) {
-            sPersistedRef[0].add( "00:00:00:00:00:00", "Do Not Invite Me" );
+            sPersistedRef[0].add( "Do Not Invite Me" );
         }
 
         int count = BTUtils.scan( m_activity, 1000 * SCAN_SECONDS );
@@ -303,7 +306,7 @@ public class BTInviteDelegate extends InviteDelegate
         DbgUtils.assertOnUIThread();
 
         ++mNDevsThisScan;
-        sPersistedRef[0].add( dev.getAddress(), dev.getName() );
+        sPersistedRef[0].add( dev.getName() );
         store( m_activity );
 
         updateList();
@@ -359,11 +362,11 @@ public class BTInviteDelegate extends InviteDelegate
         }
 
         Set<String> toRemove = new HashSet<>();
-        for ( TwoStringPair pair : prs.pairs ) {
-            String name = pair.str2;
+        for ( BTDev dev : prs.mDevs ) {
+            String name = dev.getDev();
             if ( ! paired.contains( name ) ) {
                 Log.d( TAG, "%s no longer paired; removing", name );
-                toRemove.add( pair.getDev() );
+                toRemove.add( name );
             } else {
                 Log.d( TAG, "%s STILL paired", name );
             }
@@ -387,7 +390,7 @@ public class BTInviteDelegate extends InviteDelegate
 
     private void updateList()
     {
-        updateList( sPersistedRef[0].pairs );
+        updateList( sPersistedRef[0].mDevs );
     }
 
     private synchronized static void load( Context context )
@@ -396,11 +399,12 @@ public class BTInviteDelegate extends InviteDelegate
             Persisted prs;
             try {
                 prs = (Persisted)DBUtils.getSerializableFor( context, KEY_PERSIST );
-                prs.removeNulls(); // clean up earlier mistakes
                 removeNotPaired( prs );
             } catch ( Exception ex ) {
+                // NPE, de-serialization problems, etc.
+                // Log.ex( TAG, ex );
                 prs = null;
-            } // NPE, de-serialization problems, etc.
+            }
 
             if ( null == prs ) {
                 prs = new Persisted();
@@ -441,7 +445,7 @@ public class BTInviteDelegate extends InviteDelegate
     {
         Context context = XWApp.getContext();
         load( context );
-        sPersistedRef[0].add( dev.getAddress(), dev.getName() );
+        sPersistedRef[0].add( dev.getName() );
         store( context );
     }
 }
