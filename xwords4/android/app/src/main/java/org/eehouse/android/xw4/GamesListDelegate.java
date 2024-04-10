@@ -1825,7 +1825,8 @@ public class GamesListDelegate extends ListDelegateBase
                 enable = BuildConfig.NON_RELEASE && XwJNI.dvc_haveLegalPhonies();
                 Utils.setItemVisible( menu, R.id.games_submenu_legalPhonies, enable );
 
-                enable = nothingSelected && XWPrefs.getStudyEnabled( m_activity );
+                enable = nothingSelected && XWPrefs.getStudyEnabled( m_activity )
+                    && 0 < DBUtils.studyListLangs( m_activity ).length;
                 Utils.setItemVisible( menu, R.id.games_menu_study, enable );
 
                 enable = nothingSelected && XwJNI.hasKnownPlayers();
@@ -1925,7 +1926,7 @@ public class GamesListDelegate extends ListDelegateBase
             break;
 
         case R.id.games_menu_study:
-            StudyListDelegate.launchOrAlert( getDelegator(), this );
+            StudyListDelegate.launch( getDelegator() );
             break;
 
         case R.id.games_menu_knownplyrs:

@@ -944,7 +944,9 @@ public class BoardDelegate extends DelegateBase
         Utils.setItemVisible( menu, R.id.board_menu_game_netstats, enable );
         Utils.setItemVisible( menu, R.id.board_menu_game_invites, enable );
 
-        enable = XWPrefs.getStudyEnabled( m_activity );
+        enable = XWPrefs.getStudyEnabled( m_activity )
+            && null != m_gi
+            && 0 < DBUtils.studyListWords( m_activity, m_gi.isoCode() ).length;
         Utils.setItemVisible( menu, R.id.board_menu_study, enable );
 
         return true;
@@ -1016,7 +1018,7 @@ public class BoardDelegate extends DelegateBase
             cmd = JNICmd.CMD_TOGGLE_TRAY;
             break;
         case R.id.board_menu_study:
-            StudyListDelegate.launchOrAlert( getDelegator(), m_gi.isoCode(), this );
+            StudyListDelegate.launch( getDelegator(), m_gi.isoCode() );
             break;
         case R.id.board_menu_game_netstats:
             handleViaThread( JNICmd.CMD_NETSTATS, R.string.netstats_title );

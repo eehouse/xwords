@@ -2026,10 +2026,6 @@
     <string name="add_done_fmt">%1$s added to %2$s studylist</string>
     <string name="studylist_title_fmt">Studylist for %1$s</string>
     <string name="study_langpick">Your words for:</string>
-    <string name="study_no_lang_fmt">You have not yet saved any words
-    into a studylist for %1$s.</string>
-    <string name="study_no_lists">You have not yet saved any words
-    into a studylist.</string>
     <string name="not_again_studycopy">The selected words will be
     copied to the system clipboard. You can then paste them into any
     app that supports pasting text, e.g. an email app.</string>

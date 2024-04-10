@@ -383,36 +383,28 @@ public class StudyListDelegate extends ListDelegateBase
         setTitleBar();
     }
 
-    public static void launchOrAlert( Delegator delegator, DlgDelegate.HasDlgDelegate dlg )
+    public static void launch( Delegator delegator )
     {
-        launchOrAlert( delegator, null, dlg );
+        launch( delegator, null );
     }
 
-    public static void launchOrAlert( Delegator delegator, ISOCode isoCode,
-                                      DlgDelegate.HasDlgDelegate dlg )
+    public static void launch( Delegator delegator, ISOCode isoCode )
     {
-        String msg = null;
         Activity activity = delegator.getActivity();
-        if ( 0 == DBUtils.studyListLangs( activity ).length ) {
-            msg = LocUtils.getString( activity, R.string.study_no_lists );
-        } else if ( null != isoCode &&
-                    0 == DBUtils.studyListWords( activity, isoCode ).length ) {
-            String langname = DictLangCache.getLangNameForISOCode( activity, isoCode );
-            msg = LocUtils.getString( activity, R.string.study_no_lang_fmt,
-                                      langname );
+        if ( null == isoCode ) {
+            Assert.assertTrueNR( 0 < DBUtils.studyListLangs( activity ).length );
         } else {
-            Bundle bundle = new Bundle();
-            if ( null != isoCode ) {
-                bundle.putString( START_LANG, isoCode.toString() );
-            }
-
-            delegator.addFragment( StudyListFrag.newInstance( delegator ),
-                                   bundle );
+            Assert.assertTrueNR( 0 < DBUtils
+                                 .studyListWords( activity, isoCode ).length );
         }
 
-        if ( null != msg ) {
-            dlg.makeOkOnlyBuilder( msg ).show();
+        Bundle bundle = new Bundle();
+        if ( null != isoCode ) {
+            bundle.putString( START_LANG, isoCode.toString() );
         }
+
+        delegator.addFragment( StudyListFrag.newInstance( delegator ),
+                               bundle );
     }
 
     private class SLWordsAdapter extends XWListAdapter {
