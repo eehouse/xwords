@@ -533,6 +533,23 @@
     <string name="badwords_lost">  Turn lost.</string>
     <!-- title of the dialog in which the above is posted. -->
     <string name="badwords_title">Illegal word[s]</string>
+
+    <!-- In the "Phonies found" dialog, we append this text explaining
+         the new button that triggers remembering phonies that the
+         user wants considered legal from now on.-->
+    <plurals name="yesAndMsgFmt">
+      <item quantity="one">
+        (If you choose the “%1$s” button you will not be asked about this word again.)
+      </item>
+      <item quantity="other">
+        (If you choose the “%1$s” button you will not be asked about these words again.)
+      </item>
+    </plurals>
+    <!-- The third button in the "Phonies found" dialog. Means we'll
+         accept the phonies AND will record them so they'll be
+         accepted from now on. -->
+    <string name="buttonYesAnd">Yes/Save</string>
+
     <!--    
        ############################################################
        # :Menus:

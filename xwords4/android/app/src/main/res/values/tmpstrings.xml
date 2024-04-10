@@ -21,16 +21,6 @@
 
   <string name="cleared_lps_fmt">Cleared %1$d legal phonies</string>
 
-  <plurals name="yesAndMsgFmt">
-    <item quantity="one">
-      (If you choose the “%1$s” button you will not be asked about this word again.)
-    </item>
-    <item quantity="other">
-      (If you choose the “%1$s” button you will not be asked about these words again.)
-    </item>
-  </plurals>
-
-  <string name="buttonYesAnd">Yes/Save</string>
 
   <string name="confirm_clear_lps">Are you sure you want to clear
   saved “legal phonies”?\n\nThis action cannot be undone.</string>
