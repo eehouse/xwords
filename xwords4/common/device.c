@@ -742,7 +742,7 @@ findIsoProc( const DLHead* elem, void* closure )
 }
 
 static PhoniesDataCodes*
-findForIso( XW_DUtilCtxt* dutil, DevCtxt* dc, const XP_UCHAR* isoCode )
+findForIso( XW_DUtilCtxt* XP_UNUSED_DBG(dutil), DevCtxt* dc, const XP_UCHAR* isoCode )
 {
     FindIsoState fis = {
         .isoCode = isoCode,
@@ -894,24 +894,24 @@ static void
 freeOnePhony( DLHead* elem, void* closure )
 {
     FreeState* fs = (FreeState*)closure;
-    XW_DUtilCtxt* dutil = fs->dutil;
     ++fs->count;
     const PhoniesDataStrs* pds = (PhoniesDataStrs*)elem;
-    XP_FREE( dutil->mpool, pds->phony );
-    XP_FREE( dutil->mpool, elem );
+    XP_FREE( fs->dutil->mpool, pds->phony );
+    XP_FREE( fs->dutil->mpool, elem );
 }
 
 static void
 freeOneCode( DLHead* elem, void* closure)
 {
-    FreeState* fs = (FreeState*)closure;
-    XW_DUtilCtxt* dutil = fs->dutil;
     const PhoniesDataCodes* pdc = (PhoniesDataCodes*)elem;
 
     dll_removeAll( &pdc->head->links, freeOnePhony, closure );
 
-    XP_FREE( dutil->mpool, pdc->isoCode );
-    XP_FREE( dutil->mpool, elem );
+#ifdef MEM_DEBUG
+    FreeState* fs = (FreeState*)closure;
+#endif
+    XP_FREE( fs->dutil->mpool, pdc->isoCode );
+    XP_FREE( fs->dutil->mpool, elem );
 }
 
 static DevCtxt*

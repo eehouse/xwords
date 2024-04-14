@@ -107,7 +107,10 @@ inviteFromArgs( CmdWrapper* wr, cJSON* args )
         if ( !!tmp ) {
             XP_LOGFF( "parsing mqtt: %s", tmp->valuestring );
             addr_addType( &destAddrs[ii], COMMS_CONN_MQTT );
-            XP_Bool success = strToMQTTCDevID( tmp->valuestring, &destAddrs[ii].u.mqtt.devID );
+#ifdef DEBUG
+            XP_Bool success =
+#endif
+                strToMQTTCDevID( tmp->valuestring, &destAddrs[ii].u.mqtt.devID );
             XP_ASSERT( success );
         }
         tmp = cJSON_GetObjectItem( addr, "sms" );
@@ -329,7 +332,10 @@ makeGameFromArgs( CmdWrapper* wr, cJSON* args )
     /* figureDims( aGlobals, &dims ); */
 
     XP_U32 newGameID;
-    bool success = (*wr->procs.newGame)( wr->closure, &gi, &newGameID );
+#ifdef DEBUG
+    bool success =
+#endif
+        (*wr->procs.newGame)( wr->closure, &gi, &newGameID );
     XP_ASSERT( success );
 
     gi_disposePlayerInfo( MPPARM(params->mpool) &gi );
@@ -434,7 +440,10 @@ on_incoming_signal( GSocketService* XP_UNUSED(service),
 
         GOutputStream* ostream = g_io_stream_get_output_stream( G_IO_STREAM(connection) );
         gsize nwritten;
-        gboolean wroteall = g_output_stream_write_all( ostream, replyStr, replyStrLen,
+#ifdef DEBUG
+        gboolean wroteall =
+#endif
+            g_output_stream_write_all( ostream, replyStr, replyStrLen,
                                                        &nwritten, NULL, NULL );
         XP_ASSERT( wroteall && nwritten == replyStrLen );
         GError* error = NULL;

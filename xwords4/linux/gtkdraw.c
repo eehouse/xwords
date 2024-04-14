@@ -332,7 +332,10 @@ draw_string_at( GtkDrawCtx* dctx, PangoLayout* layout,
 
         GError* error = NULL;
         int len = snprintf( buf, sizeof(buf), fmt, str );
-        gboolean success = pango_parse_markup( buf, len, 0,
+#ifdef DEBUG
+        gboolean success =
+#endif
+            pango_parse_markup( buf, len, 0,
                                                &attr_list,
                                                &text, NULL, &error );
         if ( !!error ) {

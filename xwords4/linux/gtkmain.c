@@ -983,7 +983,7 @@ newGameWrapper( void* closure, CurGameInfo* gi, XP_U32* newGameIDP )
     GtkGameGlobals* globals = calloc( 1, sizeof(*globals) );
     initBoardGlobalsGtk( globals, params, NULL );
 
-    gi_copy( params->mpool, globals->cGlobals.gi, gi );
+    gi_copy( MPPARM(params->mpool) globals->cGlobals.gi, gi );
 
     GtkWidget* gameWindow = globals->window;
     globals->cGlobals.rowid = -1;
