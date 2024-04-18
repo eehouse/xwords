@@ -1022,7 +1022,6 @@ dvc_isLegalPhony( XW_DUtilCtxt* dutil, XWEnv xwe,
     return fpd.found;
 }
 
-
 static void
 registerIf( XW_DUtilCtxt* dutil, XWEnv xwe )
 {
@@ -1096,7 +1095,6 @@ dvc_init( XW_DUtilCtxt* dutil, XWEnv xwe )
 void
 dvc_cleanup( XW_DUtilCtxt* dutil, XWEnv xwe )
 {
-    LOG_FUNC();
     DevCtxt* dc = freePhonyState( dutil, xwe, NULL );
 
     pthread_mutex_destroy( &dc->webSendMutex );

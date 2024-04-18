@@ -515,12 +515,9 @@ kplr_cleanup( XW_DUtilCtxt* dutil )
     KPState* state = *statep;
     if ( !!state ) {
         XP_ASSERT( !state->inUse );
-        while ( !!state->players ) {
-            KnownPlayer* node = state->players;
-            state->players = (KnownPlayer*)
-                dll_remove( &state->players->links, &node->links );
-            freeKP( dutil, node );
-        }
+        XP_LOGFF( "removing %d elems", dll_length(&state->players->links) );
+        DelState ds = { .dutil = dutil,};
+        dll_removeAll( &state->players->links, delFreeProc, &ds );
         XP_FREEP( dutil->mpool, statep );
     }
 }

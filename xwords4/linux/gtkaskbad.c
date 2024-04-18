@@ -1,7 +1,6 @@
 /* -*- compile-command: "make MEMDEBUG=TRUE -j5"; -*- */
 /* 
- * Copyright 2001-2024 by Eric House (xwords@eehouse.org).  All rights
- * reserved.
+ * Copyright 2024 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -30,12 +29,6 @@ typedef struct _AskBadState {
     const char* dictName;
 } AskBadState;
 
-/* static void */
-/* handle_response( GtkWidget* item, AskBadState* state ) */
-/* { */
-/*     LOG_FUNC(); */
-/* } */
-
 static void
 handle_check_toggled( GtkWidget* item, AskBadState* state )
 {
@@ -43,20 +36,6 @@ handle_check_toggled( GtkWidget* item, AskBadState* state )
     state->skipNext = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(item));
     XP_LOGFF( "checked: %s", boolToStr(state->skipNext) );
 }
-
-/* static void */
-/* handle_ok( GtkWidget* XP_UNUSED(item), AskBadState* state ) */
-/* { */
-/*     state->confirmed = true; */
-/*     gtk_main_quit(); */
-/* } */
-
-/* static void */
-/* handle_cancel( GtkWidget* XP_UNUSED(item), AskBadState* state ) */
-/* { */
-/*     state->confirmed = false; */
-/*     gtk_main_quit(); */
-/* } */
 
 static GtkWidget*
 buildDialog( AskBadState* state )
@@ -66,9 +45,6 @@ buildDialog( AskBadState* state )
                                                      "Ok", GTK_RESPONSE_ACCEPT,
                                                      "Cancel", GTK_RESPONSE_REJECT,
                                                      NULL );
-
-    /* GtkWidget* bc = gtk_dialog_get_action_area( GTK_DIALOG(dialog) ); */
-    /* g_object_set_property( G_OBJECT(bc), "halign", GTK_ALIGN_CENTER ); */
 
     GtkWidget* vbox = gtk_dialog_get_content_area( GTK_DIALOG(dialog) );
 

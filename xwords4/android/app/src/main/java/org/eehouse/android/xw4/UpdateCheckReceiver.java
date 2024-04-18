@@ -354,8 +354,7 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
                                 }
                                 if ( !skipIt ) {
                                     gotOne = true;
-                                    String url = NetUtils.ensureProto( m_context,
-                                                                       urlParm );
+                                    String url = NetUtils.ensureProto( m_context, urlParm );
                                     Intent intent;
                                     if ( useBrowser ) {
                                         intent = new Intent( Intent.ACTION_VIEW,

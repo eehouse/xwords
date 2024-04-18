@@ -2868,4 +2868,15 @@
   <string name="not_again_newsawnew_fmt">The most recent move is now
   drawn using a new background color.\n\nYou can customize that color
   in %1$s, where the color setting is called “%2$s”.</string>
+
+  <!-- For Debug builds only, there's a prefs setting allowing to
+       choose whether web api connections are made using http or
+       https. Depending on the OS version, one or the other is the
+       default.  -->
+  <string name="title_url_scheme">Scheme for Web APIs</string>
+  <string name="url_scheme_default">Use device OS default</string>
+  <string name="url_scheme_http">Force http</string>
+  <string name="url_scheme_https">Force https</string>
+
+
 </resources>

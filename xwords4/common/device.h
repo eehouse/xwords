@@ -22,7 +22,6 @@
 #define _DEVICE_H_
 
 #include "dutil.h"
-#include "dictmgr.h"
 
 // void device_load( XW_DUtilCtxt dctxt );
 # ifdef XWFEATURE_DEVICE

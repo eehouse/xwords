@@ -1,6 +1,6 @@
 /* -*- compile-command: "make MEMDEBUG=TRUE -j5"; -*- */
 /* 
- * Copyright 2001-2024 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2024 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or

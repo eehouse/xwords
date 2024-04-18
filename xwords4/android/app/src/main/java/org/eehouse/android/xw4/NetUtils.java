@@ -196,7 +196,7 @@ public class NetUtils {
     {
         HttpURLConnection result = null;
         try {
-            String url = String.format( "%s/%s", ensureProto( context,path ), proc );
+            String url = String.format( "%s/%s", ensureProto( context, path ), proc );
             result = (HttpURLConnection)new URL(url).openConnection(); // class cast exception
         } catch ( java.net.MalformedURLException mue ) {
             Assert.assertNull( result );

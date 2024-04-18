@@ -327,13 +327,16 @@ public class BoardDelegate extends DelegateBase
             OnClickListener lstnr2 = new OnClickListener() {
                     @Override
                     public void onClick( DialogInterface dlg, int bx ) {
-                        handleViaThread( JNICmd.CMD_COMMIT, true, false, badWordsKey );
+                        handleViaThread( JNICmd.CMD_COMMIT, true,
+                                         false, badWordsKey );
                     }
                 };
 
-            String buttonTxt = LocUtils.getString( m_activity, R.string.buttonYesAnd );
-            String withSaveMsg = LocUtils.getQuantityString( m_activity, R.plurals.yesAndMsgFmt,
-                                                             count, buttonTxt );
+            String buttonTxt = LocUtils.getString( m_activity,
+                                                   R.string.buttonYesAnd );
+            String withSaveMsg = LocUtils
+                .getQuantityString( m_activity, R.plurals.yesAndMsgFmt,
+                                    count, buttonTxt );
 
             dialog = ab.setTitle( R.string.phonies_found_title )
                 .setMessage( (String)params[0] + "\n\n" + withSaveMsg )
