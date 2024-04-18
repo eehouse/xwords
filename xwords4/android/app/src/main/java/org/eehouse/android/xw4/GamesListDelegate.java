@@ -1868,9 +1868,11 @@ public class GamesListDelegate extends ListDelegateBase
         }
         final long[] selRowIDs = getSelRowIDs();
 
+        // What's going on here???
         if ( 1 == selRowIDs.length
              && R.id.games_game_delete != itemID
              && R.id.games_game_move != itemID
+             // && !BoardDelegate.gameIsOpen( selRowIDs[0] )
              && !checkWarnNoDict( selRowIDs[0], itemID ) ) {
             return true;        // FIXME: RETURN FROM MIDDLE!!!
         }

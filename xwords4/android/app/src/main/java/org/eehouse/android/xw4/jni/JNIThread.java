@@ -213,7 +213,7 @@ public class JNIThread extends Thread implements AutoCloseable {
             Assert.assertNotNull( stream );
             m_gi = new CurGameInfo( context );
             m_gi.setName( DBUtils.getName( context, m_rowid ) );
-            XwJNI.gi_from_stream( m_gi, stream );
+            XwJNI.giFromStream( m_gi, stream );
 
             m_summary = DBUtils.getSummary( context, m_lock );
 

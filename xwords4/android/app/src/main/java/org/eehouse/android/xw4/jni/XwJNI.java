@@ -291,7 +291,7 @@ public class XwJNI {
     public static native boolean timerFired( GamePtr gamePtr, int why,
                                              int when, int handle );
 
-    public static void gi_from_stream( CurGameInfo gi, byte[] stream )
+    public static void giFromStream( CurGameInfo gi, byte[] stream )
     {
         Assert.assertNotNull( stream );
         gi_from_stream( getJNI().m_ptrGlobals, gi, stream ); // called here

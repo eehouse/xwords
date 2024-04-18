@@ -402,7 +402,7 @@ public class GameUtils {
         CurGameInfo gi = null;
         if ( null != stream ) {
             gi = new CurGameInfo( context );
-            XwJNI.gi_from_stream( gi, stream );
+            XwJNI.giFromStream( gi, stream );
         }
         return gi;
     }
@@ -416,7 +416,7 @@ public class GameUtils {
         if ( null == stream ) {
             Log.w( TAG, "loadMakeGame: no saved game!");
         } else {
-            XwJNI.gi_from_stream( gi, stream );
+            XwJNI.giFromStream( gi, stream );
             String[] dictNames = gi.dictNames();
             DictUtils.DictPairs pairs = DictUtils.openDicts( context, dictNames );
             if ( pairs.anyMissing( dictNames ) ) {
@@ -1029,8 +1029,16 @@ public class GameUtils {
                                       ISOCode[] missingLang )
     {
         String[] result = null;
-        byte[] stream = savedGame( context, rowid );
-        CurGameInfo gi = giFromStream( context, stream );
+
+        CurGameInfo gi;
+        if ( JNIThread.gameIsOpen( rowid ) ) {
+            JNIThread jnit = JNIThread.getRetained( rowid );
+            gi = jnit.getGI();
+            jnit.release();
+        } else {
+            gi = giFromStream( context, savedGame( context, rowid ) );
+        }
+
         if ( null != gi ) {
             if ( null != missingLang ) {
                 missingLang[0] = gi.isoCode();
