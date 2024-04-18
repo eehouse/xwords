@@ -719,7 +719,10 @@ def build_devs(args):
     return Device.getAll()
 
 def mkParser():
-    parser = argparse.ArgumentParser()
+    # formatter_class gets us (default=<something>) added to help, but
+    # only if help= is present
+    parser = argparse \
+        .ArgumentParser(formatter_class = argparse.ArgumentDefaultsHelpFormatter)
 
     parser.add_argument('--status-steps', dest = 'STATUS_STEPS', type = int, default = 20,
                         help = 'how many steps between status dumps (matters only if not --debug)')
@@ -788,7 +791,8 @@ def mkParser():
     # #     echo "    [--undo-pct <int>]                                      \\" >&2
 
     # parser.add_argument('--undo-pct', dest = 'UNDO_PCT', default = 0, type = int)
-    parser.add_argument('--trade-pct', dest = 'TRADE_PCT', default = 10, type = int)
+    parser.add_argument('--trade-pct', dest = 'TRADE_PCT', default = 10, type = int,
+                        help='what percent of moves will trade tiles')
     parser.add_argument('--sub7-trades-pct', dest = 'SUB7_TRADES_PCT', default = 10, type=int)
 
     parser.add_argument('--timer-seconds', dest='TIMER_SECS', default=10, type=int,
