@@ -55,18 +55,11 @@ class BTInviteDelegate(delegator: Delegator, savedInstanceState: Bundle?) :
 		val mDevs = mutableListOf<BTDev>()
 
         // HashMap: m_stamps is serialized, so can't be abstract type
-        var mTimeStamps = HashMap<String, Long>()
+        val mTimeStamps = HashMap<String, Long>()
         fun add(devName: String) {
-            // If it's already there, update it. Otherwise create new
-            var alreadyHave = false
-            for (dev in mDevs) {
-                alreadyHave = TextUtils.equals(dev.dev, devName)
-                if (alreadyHave) {
-                    break
-                }
-            }
-            if (!alreadyHave) {
-                mDevs!!.add(BTDev(devName))
+            if ( mDevs.filter { it.getDev().equals(devName) }
+					 .isEmpty() ) {
+                mDevs.add(BTDev(devName))
             }
             mTimeStamps[devName] = System.currentTimeMillis()
             sort()
@@ -75,7 +68,7 @@ class BTInviteDelegate(delegator: Delegator, savedInstanceState: Bundle?) :
         fun remove(checked: Set<String>) {
             for (devName in checked) {
                 mTimeStamps.remove(devName)
-                val iter = mDevs!!.iterator()
+                val iter = mDevs.iterator()
                 while (iter.hasNext()) {
                     val dev = iter.next()
                     if (TextUtils.equals(dev.dev, devName)) {
@@ -87,7 +80,7 @@ class BTInviteDelegate(delegator: Delegator, savedInstanceState: Bundle?) :
         }
 
         fun empty(): Boolean {
-            return mDevs == null || mDevs!!.size == 0
+            return mDevs.size == 0
         }
 
         private fun sort() {
@@ -116,12 +109,15 @@ class BTInviteDelegate(delegator: Delegator, savedInstanceState: Bundle?) :
     override fun init(savedInstanceState: Bundle?) {
         super.init(savedInstanceState)
         val msg = (getQuantityString(
-            R.plurals.invite_bt_desc_fmt_2, m_nMissing,
-            m_nMissing
-        )
-                + getString(R.string.invite_bt_desc_postscript))
+					   R.plurals.invite_bt_desc_fmt_2, m_nMissing,
+					   m_nMissing
+				   ) + getString(R.string.invite_bt_desc_postscript))
         super.init(msg, R.string.empty_bt_inviter)
-        addButtonBar(R.layout.bt_buttons, BUTTONIDS)
+        addButtonBar(R.layout.bt_buttons, intArrayOf(
+											  R.id.button_scan,
+											  R.id.button_settings,
+											  R.id.button_clear
+										  ))
         load(mActivity)
         if (sPersistedRef[0]!!.empty()) {
             scan()
@@ -151,7 +147,8 @@ class BTInviteDelegate(delegator: Delegator, savedInstanceState: Bundle?) :
                     count, count
                 )
                         + getString(R.string.confirm_clear_bt_postscript))
-                makeConfirmThenBuilder(DlgDelegate.Action.CLEAR_ACTION, msg).show()
+                makeConfirmThenBuilder(DlgDelegate.Action.CLEAR_ACTION, msg)
+					.show()
             }
         }
     }
@@ -259,9 +256,8 @@ class BTInviteDelegate(delegator: Delegator, savedInstanceState: Bundle?) :
         }, inSecs * 1000)
     }
 
-    private fun updateList() {
-        updateList(sPersistedRef[0]!!.mDevs)
-    }
+    private fun updateList()
+		= updateList(sPersistedRef[0]!!.mDevs)
 
     // DlgDelegate.DlgClickNotify interface
     override fun onPosButton(action: DlgDelegate.Action, vararg params: Any): Boolean {
@@ -284,11 +280,6 @@ class BTInviteDelegate(delegator: Delegator, savedInstanceState: Bundle?) :
     companion object {
         private val TAG = BTInviteDelegate::class.java.getSimpleName()
         private val KEY_PERSIST = TAG + "_persist"
-        private val BUTTONIDS = intArrayOf(
-            R.id.button_scan,
-            R.id.button_settings,
-            R.id.button_clear
-        )
         private const val ENABLE_FAKER = false
         private const val SCAN_SECONDS = 5
         private val sPersistedRef = arrayOf<Persisted?>(null)
@@ -321,7 +312,7 @@ class BTInviteDelegate(delegator: Delegator, savedInstanceState: Bundle?) :
                 paired.add(dev.getName())
             }
             val toRemove: MutableSet<String> = HashSet()
-            for (dev in prs!!.mDevs!!) {
+            for (dev in prs!!.mDevs) {
                 val name = dev.dev
                 if (!paired.contains(name)) {
                     Log.d(TAG, "%s no longer paired; removing", name)
