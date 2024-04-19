@@ -142,6 +142,7 @@ public class DlgState implements Parcelable {
         return result;
     }
 
+    @Override
     public int describeContents() {
         return 0;
     }
@@ -160,6 +161,7 @@ public class DlgState implements Parcelable {
         return (DlgState)bundle.getParcelable( BUNDLE_KEY );
     }
 
+    @Override
     public void writeToParcel( Parcel out, int flags )
     {
         out.writeInt( m_id.ordinal() );
@@ -192,6 +194,7 @@ public class DlgState implements Parcelable {
 
     public static final Parcelable.Creator<DlgState> CREATOR
         = new Parcelable.Creator<DlgState>() {
+                @Override
                 public DlgState createFromParcel(Parcel in) {
                     DlgID id = DlgID.values()[in.readInt()];
                     int posButton = in.readInt();
@@ -216,6 +219,7 @@ public class DlgState implements Parcelable {
                     return state;
                 }
 
+                @Override
                 public DlgState[] newArray(int size) {
                     return new DlgState[size];
                 }
