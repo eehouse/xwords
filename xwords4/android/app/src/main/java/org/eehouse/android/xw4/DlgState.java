@@ -45,7 +45,7 @@ public class DlgState implements Parcelable {
     public ActionPair m_pair = null;
     public int m_prefsNAKey;
     // These can't be serialized!!!!
-    private Object[] m_params;
+    private Object[] m_params = {};
     public String m_title;
 
     public DlgState( DlgID dlgID )
