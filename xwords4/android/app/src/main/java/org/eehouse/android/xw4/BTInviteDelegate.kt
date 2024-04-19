@@ -1,5 +1,6 @@
-/* -*- compile-command: "find-and-gradle.sh inXw4dDeb"; -*- */ /*
- * Copyright 2009 - 2019 by Eric House (xwords@eehouse.org).  All rights
+/* -*- compile-command: "find-and-gradle.sh inXw4dDeb"; -*- */
+/*
+ * Copyright 2009 - 2024 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -23,6 +24,7 @@ import android.bluetooth.BluetoothDevice
 import android.content.Context
 import android.os.Bundle
 import android.os.Handler
+import android.os.Looper
 import android.text.TextUtils
 import android.text.format.DateUtils
 import android.view.View
@@ -37,38 +39,30 @@ import java.util.Collections
 
 class BTInviteDelegate(delegator: Delegator, savedInstanceState: Bundle?) :
     InviteDelegate(delegator, savedInstanceState), ScanListener {
-    private val m_activity: Activity
+    private val mActivity: Activity
     private var mProgressBar: ProgressBar? = null
-    private val m_handler = Handler()
+    private val mHandler = Handler(Looper.getMainLooper())
     private var mNDevsThisScan = 0
 
     private class BTDev internal constructor(private val mName: String) : InviterItem,
         Serializable {
-        override fun equals(item: InviterItem): Boolean {
-            return null != item && item.getDev() == dev
-        }
+        override fun equals(item: InviterItem?): Boolean = item?.getDev() == getDev()
 
-        override fun getDev(): String {
-            return mName
-        }
+        override fun getDev(): String = mName
     }
 
     private class Persisted : Serializable {
-        var mDevs: MutableList<BTDev>? = null
+		val mDevs = mutableListOf<BTDev>()
 
         // HashMap: m_stamps is serialized, so can't be abstract type
         var mTimeStamps = HashMap<String, Long>()
         fun add(devName: String) {
             // If it's already there, update it. Otherwise create new
             var alreadyHave = false
-            if (null == mDevs) {
-                mDevs = ArrayList()
-            } else {
-                for (dev in mDevs!!) {
-                    alreadyHave = TextUtils.equals(dev.dev, devName)
-                    if (alreadyHave) {
-                        break
-                    }
+            for (dev in mDevs) {
+                alreadyHave = TextUtils.equals(dev.dev, devName)
+                if (alreadyHave) {
+                    break
                 }
             }
             if (!alreadyHave) {
@@ -116,10 +110,10 @@ class BTInviteDelegate(delegator: Delegator, savedInstanceState: Bundle?) :
     }
 
     init {
-        m_activity = delegator.getActivity()
+        mActivity = delegator.getActivity()
     }
 
-    override fun init(savedInstanceState: Bundle) {
+    override fun init(savedInstanceState: Bundle?) {
         super.init(savedInstanceState)
         val msg = (getQuantityString(
             R.plurals.invite_bt_desc_fmt_2, m_nMissing,
@@ -128,7 +122,7 @@ class BTInviteDelegate(delegator: Delegator, savedInstanceState: Bundle?) :
                 + getString(R.string.invite_bt_desc_postscript))
         super.init(msg, R.string.empty_bt_inviter)
         addButtonBar(R.layout.bt_buttons, BUTTONIDS)
-        load(m_activity)
+        load(mActivity)
         if (sPersistedRef[0]!!.empty()) {
             scan()
         } else {
@@ -149,7 +143,7 @@ class BTInviteDelegate(delegator: Delegator, savedInstanceState: Bundle?) :
     override fun onBarButtonClicked(id: Int) {
         when (id) {
             R.id.button_scan -> scan()
-            R.id.button_settings -> BTUtils.openBTSettings(m_activity)
+            R.id.button_settings -> BTUtils.openBTSettings(mActivity)
             R.id.button_clear -> {
                 val count = checked.size
                 val msg = (getQuantityString(
@@ -179,7 +173,7 @@ class BTInviteDelegate(delegator: Delegator, savedInstanceState: Bundle?) :
 
     override fun tryEnable() {
         super.tryEnable()
-        val button = findViewById(R.id.button_clear) as Button
+        val button = findViewById(R.id.button_clear) as Button?
         button?.setEnabled(0 < checked.size)
     }
 
@@ -195,8 +189,7 @@ class BTInviteDelegate(delegator: Delegator, savedInstanceState: Bundle?) :
                 makeNotAgainBuilder(
                     R.string.key_notagain_emptybtscan,
                     R.string.not_again_emptybtscan
-                )
-                    .show()
+                ).show()
             }
         }
     }
@@ -205,7 +198,7 @@ class BTInviteDelegate(delegator: Delegator, savedInstanceState: Bundle?) :
         if (ENABLE_FAKER && Utils.nextRandomInt() % 5 == 0) {
             sPersistedRef[0]!!.add("Do Not Invite Me")
         }
-        val count = BTUtils.scan(m_activity, 1000 * SCAN_SECONDS)
+        val count = BTUtils.scan(mActivity, 1000 * SCAN_SECONDS)
         if (0 < count) {
             mNDevsThisScan = 0
             showProgress(count, 2 * SCAN_SECONDS)
@@ -213,8 +206,7 @@ class BTInviteDelegate(delegator: Delegator, savedInstanceState: Bundle?) :
             makeConfirmThenBuilder(
                 DlgDelegate.Action.OPEN_BT_PREFS_ACTION,
                 R.string.bt_no_devs
-            )
-                .setPosButton(R.string.button_go_settings)
+            ).setPosButton(R.string.button_go_settings)
                 .show()
         }
     }
@@ -223,7 +215,7 @@ class BTInviteDelegate(delegator: Delegator, savedInstanceState: Bundle?) :
         DbgUtils.assertOnUIThread()
         ++mNDevsThisScan
         sPersistedRef[0]!!.add(dev.getName())
-        store(m_activity)
+        store(mActivity)
         updateList()
         tryEnable()
     }
@@ -247,7 +239,7 @@ class BTInviteDelegate(delegator: Delegator, savedInstanceState: Bundle?) :
     }
 
     private fun incrementProgressIn(inSeconds: Int) {
-        m_handler.postDelayed({
+        mHandler.postDelayed({
             if (null != mProgressBar) {
                 val curProgress = mProgressBar!!.progress
                 if (curProgress >= mProgressBar!!.max) {
@@ -261,7 +253,7 @@ class BTInviteDelegate(delegator: Delegator, savedInstanceState: Bundle?) :
     }
 
     private fun updateListIn(inSecs: Long) {
-        m_handler.postDelayed({
+        mHandler.postDelayed({
             updateList()
             updateListIn(10)
         }, inSecs * 1000)
@@ -275,10 +267,10 @@ class BTInviteDelegate(delegator: Delegator, savedInstanceState: Bundle?) :
     override fun onPosButton(action: DlgDelegate.Action, vararg params: Any): Boolean {
         var handled = true
         when (action) {
-            DlgDelegate.Action.OPEN_BT_PREFS_ACTION -> BTUtils.openBTSettings(m_activity)
+            DlgDelegate.Action.OPEN_BT_PREFS_ACTION -> BTUtils.openBTSettings(mActivity)
             DlgDelegate.Action.CLEAR_ACTION -> {
                 sPersistedRef[0]!!.remove(checked)
-                store(m_activity)
+                store(mActivity)
                 clearChecked()
                 updateList()
                 tryEnable()
@@ -374,5 +366,5 @@ class BTInviteDelegate(delegator: Delegator, savedInstanceState: Bundle?) :
             sPersistedRef[0]!!.add(dev.getName())
             store(context)
         }
-    }
+    } // companion object
 }

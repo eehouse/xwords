@@ -50,12 +50,12 @@ import java.util.Set;
 
 import org.eehouse.android.xw4.DBUtils.SentInvitesInfo;
 
-abstract class InviteDelegate extends DelegateBase
+abstract public class InviteDelegate extends DelegateBase
     implements View.OnClickListener,
                ViewGroup.OnHierarchyChangeListener {
     private static final String TAG = InviteDelegate.class.getSimpleName();
 
-    protected interface InviterItem {
+    public interface InviterItem {
         boolean equals(InviterItem item);
         String getDev();        // the string that identifies this item in results
     }
