@@ -22,57 +22,57 @@ import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet
 import org.eehouse.android.xw4.jni.CurGameInfo.XWPhoniesChoice
 
 interface UtilCtxt {
-    fun notifyPickTileBlank(playerNum: Int, col: Int, row: Int, texts: Array<String?>?)
+    fun notifyPickTileBlank(playerNum: Int, col: Int, row: Int, texts: Array<String?>?) {}
     fun informNeedPickTiles(
         isInitial: Boolean, playerNum: Int, nToPick: Int,
         texts: Array<String?>?, counts: IntArray?
-    )
+    ) {}
 
-    fun informNeedPassword(player: Int, name: String?)
-    fun turnChanged(newTurn: Int)
-    fun engineProgressCallback(): Boolean
-    fun setTimer(why: Int, `when`: Int, handle: Int)
-    fun clearTimer(why: Int)
-    fun requestTime()
-    fun remSelected()
-    fun getMQTTIDsFor(relayID: Array<String?>?)
-    fun timerSelected(inDuplicateMode: Boolean, canPause: Boolean)
-    fun informWordsBlocked(nWords: Int, words: String?, dict: String?)
-    fun getInviteeName(index: Int): String?
-    fun bonusSquareHeld(bonus: Int)
-    fun playerScoreHeld(player: Int)
-    fun cellSquareHeld(words: String?)
-    fun notifyMove(query: String?)
-    fun notifyTrade(tiles: Array<String?>?)
-    fun notifyDupStatus(amHost: Boolean, msg: String?)
-    fun userError(id: Int)
-    fun informMove(turn: Int, expl: String?, words: String?)
-    fun informUndo()
+    fun informNeedPassword(player: Int, name: String?) {}
+    fun turnChanged(newTurn: Int) {}
+    fun engineProgressCallback(): Boolean = false
+    fun setTimer(why: Int, `when`: Int, handle: Int) {}
+    fun clearTimer(why: Int) {}
+    fun requestTime() {}
+    fun remSelected() {}
+    fun getMQTTIDsFor(relayID: Array<String?>?) {}
+    fun timerSelected(inDuplicateMode: Boolean, canPause: Boolean) {}
+    fun informWordsBlocked(nWords: Int, words: String?, dict: String?) {}
+    fun getInviteeName(index: Int): String? = null
+    fun bonusSquareHeld(bonus: Int) {}
+    fun playerScoreHeld(player: Int) {}
+    fun cellSquareHeld(words: String?) {}
+    fun notifyMove(query: String?) {}
+    fun notifyTrade(tiles: Array<String?>?) {}
+    fun notifyDupStatus(amHost: Boolean, msg: String?) {}
+    fun userError(id: Int) {}
+    fun informMove(turn: Int, expl: String?, words: String?) {}
+    fun informUndo() {}
     fun informNetDict(
         isoCodeStr: String?, oldName: String?, newName: String?,
         newSum: String?, phonies: XWPhoniesChoice?
-    )
+    ) {}
 
     fun informMissing(
         isServer: Boolean, hostAddr: CommsAddrRec?,
         connTypes: CommsConnTypeSet?, nDevs: Int,
         nMissingPlayers: Int, nInvited: Int, fromRematch: Boolean
-    )
+    ) {}
 
-    fun notifyGameOver()
+    fun notifyGameOver() {}
 
     // Don't need this unless we have a scroll thumb to indicate position
     //void yOffsetChange( int maxOffset, int oldOffset, int newOffset );
     fun notifyIllegalWords(
         dict: String?, words: Array<String?>?, turn: Int,
         turnLost: Boolean, badWordsKey: Int
-    )
+    ) {}
 
-    fun showChat(msg: String?, fromPlayer: Int, tsSeconds: Int)
+    fun showChat(msg: String?, fromPlayer: Int, tsSeconds: Int) {}
     fun formatPauseHistory(
         pauseTyp: Int, player: Int, whenPrev: Int,
         whenCur: Int, msg: String?
-    ): String?
+    ): String? = null
 
     companion object {
         const val BONUS_NONE = 0
