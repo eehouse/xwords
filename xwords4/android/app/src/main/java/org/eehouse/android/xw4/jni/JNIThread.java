@@ -785,6 +785,7 @@ public class JNIThread extends Thread implements AutoCloseable {
     public void handleBkgrnd( JNICmd cmd, Object... args )
     {
         // DbgUtils.logf( "adding: %s", cmd.toString() );
+        Assert.assertVarargsNotNullNR(args);
         m_queue.add( new QueueElem( cmd, false, args ) );
     }
 
@@ -807,6 +808,7 @@ public class JNIThread extends Thread implements AutoCloseable {
 
     public void handle( JNICmd cmd, Object... args )
     {
+        Assert.assertVarargsNotNullNR(args);
         if ( m_stopped && ! JNICmd.CMD_NONE.equals(cmd) ) {
             Log.w( TAG, "handle(%s): NOT adding to stopped thread!!!", cmd );
             // DbgUtils.printStack( TAG );

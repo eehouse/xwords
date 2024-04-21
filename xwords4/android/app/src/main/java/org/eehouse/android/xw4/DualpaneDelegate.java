@@ -49,6 +49,7 @@ public class DualpaneDelegate extends DelegateBase {
     @Override
     protected Dialog makeDialog( DBAlert alert, Object... params )
     {
+        Assert.assertVarargsNotNullNR(params);
         Dialog dialog = null;
         MainActivity main = (MainActivity)m_activity;
         XWFragment[] frags = main.getFragments( false );
@@ -103,6 +104,7 @@ public class DualpaneDelegate extends DelegateBase {
     @Override
     public boolean onPosButton( Action action, Object... params )
     {
+        Assert.assertVarargsNotNullNR(params);
         boolean handled = false;
         MainActivity main = (MainActivity)m_activity;
         XWFragment[] frags = main.getVisibleFragments();
@@ -118,6 +120,7 @@ public class DualpaneDelegate extends DelegateBase {
     @Override
     public boolean onNegButton( Action action, Object... params )
     {
+        Assert.assertVarargsNotNullNR(params);
         boolean handled = false;
         MainActivity main = (MainActivity)m_activity;
         XWFragment[] frags = main.getVisibleFragments();
@@ -133,6 +136,7 @@ public class DualpaneDelegate extends DelegateBase {
     @Override
     public boolean onDismissed( Action action, Object... params )
     {
+        Assert.assertVarargsNotNullNR(params);
         boolean handled = false;
         MainActivity main = (MainActivity)m_activity;
         XWFragment[] frags = main.getVisibleFragments();
@@ -149,6 +153,7 @@ public class DualpaneDelegate extends DelegateBase {
     public void inviteChoiceMade( Action action, InviteMeans means,
                                   Object... params )
     {
+        Assert.assertVarargsNotNullNR(params);
         MainActivity main = (MainActivity)m_activity;
         XWFragment[] frags = main.getVisibleFragments();
         for ( XWFragment frag : frags ) {

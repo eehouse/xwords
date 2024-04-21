@@ -25,9 +25,11 @@ import android.content.Context;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class Quarantine {
     private static final String TAG = Quarantine.class.getSimpleName();
@@ -43,13 +45,15 @@ public class Quarantine {
         return result;
     }
 
+    private static final Set<Long> sLogged = new HashSet<>();
     public synchronized static boolean safeToOpen( long rowid )
     {
         int count = getCount( rowid );
         boolean result = count < BuildConfig.BAD_COUNT;
         if ( !result ) {
             Log.d( TAG, "safeToOpen(%d) => %b (count=%d)", rowid, result, count );
-            if ( BuildConfig.NON_RELEASE ) {
+            if ( BuildConfig.NON_RELEASE && !sLogged.contains(rowid) ) {
+                sLogged.add(rowid);
                 Log.d( TAG, "printing calling stack:" );
                 DbgUtils.printStack( TAG );
                 List<StackTraceElement[]> list = get().listFor( rowid );

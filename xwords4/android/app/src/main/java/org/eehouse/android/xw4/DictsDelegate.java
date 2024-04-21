@@ -336,6 +336,7 @@ public class DictsDelegate extends ListDelegateBase
     @Override
     protected Dialog makeDialog( DBAlert alert, Object... params )
     {
+        Assert.assertVarargsNotNullNR(params);
         OnClickListener lstnr, lstnr2;
         Dialog dialog;
         String message;
@@ -655,6 +656,7 @@ public class DictsDelegate extends ListDelegateBase
 
     private void moveDictsWithPermission( Object[] params )
     {
+        Assert.assertVarargsNotNullNR(params);
         String[] selNames = (String[])params[0];
         DictLoc toLoc = (DictLoc)params[1];
         moveDictsWithPermission( selNames, toLoc );
@@ -893,6 +895,7 @@ public class DictsDelegate extends ListDelegateBase
     @Override
     public boolean onPosButton( Action action, Object... params )
     {
+        Assert.assertVarargsNotNullNR(params);
         boolean handled = true;
         switch( action ) {
         case DELETE_DICT_ACTION:
@@ -933,6 +936,7 @@ public class DictsDelegate extends ListDelegateBase
     @Override
     public boolean onNegButton( Action action, Object... params )
     {
+        Assert.assertVarargsNotNullNR(params);
         boolean handled = true;
         switch ( action ) {
         case STORAGE_CONFIRMED:

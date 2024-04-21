@@ -55,6 +55,16 @@ public class Assert {
         assertTrue( val != null );
     }
 
+    public static void assertVarargsNotNullNR( Object[] params )
+    {
+        if ( BuildConfig.NON_RELEASE ) {
+            if ( null == params ) {
+                DbgUtils.printStack(TAG);
+                // assertNotNull( params );
+            }
+        }
+    }
+
     public static void assertNull( Object val )
     {
         assertTrue( val == null );

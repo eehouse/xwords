@@ -185,6 +185,7 @@ public class DlgDelegate {
 
         Builder setMessageID( int msgID, Object... params )
         {
+            Assert.assertVarargsNotNullNR(params);
             mState.setMsg( getString( msgID, params ) );
             return this;
         }
@@ -227,6 +228,7 @@ public class DlgDelegate {
 
         Builder setParams( Object... params )
         {
+        Assert.assertVarargsNotNullNR(params);
             mState.setParams( params );
             return this;
         }
@@ -271,6 +273,7 @@ public class DlgDelegate {
 
     public Builder makeOkOnlyBuilder( int msgID, Object... params )
     {
+        Assert.assertVarargsNotNullNR(params);
         Builder builder = new Builder( DlgID.DIALOG_OKONLY )
             .setMessageID( msgID, params )
             ;
@@ -292,8 +295,10 @@ public class DlgDelegate {
             ;
     }
 
-    public Builder makeConfirmThenBuilder( Action action, int msgID, Object... params )
+    public Builder makeConfirmThenBuilder( Action action, int msgID,
+                                           Object... params )
     {
+        Assert.assertVarargsNotNullNR(params);
         return makeConfirmThenBuilder( action )
             .setMessageID( msgID, params )
             ;
@@ -319,6 +324,7 @@ public class DlgDelegate {
     public Builder makeNotAgainBuilder( int key, Action action,
                                         int msgID, Object... params )
     {
+        Assert.assertVarargsNotNullNR(params);
         return makeNotAgainBuilder( key )
             .setMessageID( msgID, params )
             .setAction( action )
@@ -334,6 +340,7 @@ public class DlgDelegate {
 
     public Builder makeNotAgainBuilder( int key, int msgID, Object... params )
     {
+        Assert.assertVarargsNotNullNR(params);
         return makeNotAgainBuilder( key )
             .setMessageID( msgID, params )
             ;
@@ -508,11 +515,13 @@ public class DlgDelegate {
 
     private String getString( int id, Object... params )
     {
+        Assert.assertVarargsNotNullNR(params);
         return m_dlgt.getString( id, params );
     }
 
     private String getQuantityString( int id, int quantity, Object... params )
     {
+        Assert.assertVarargsNotNullNR(params);
         return m_dlgt.getQuantityString( id, quantity, params );
     }
 }

@@ -240,6 +240,7 @@ public class ChatDelegate extends DelegateBase {
     @Override
     public boolean onPosButton( Action action, Object... params )
     {
+        Assert.assertVarargsNotNullNR(params);
         boolean handled = true;
         switch ( action ) {
         case CLEAR_ACTION:

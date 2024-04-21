@@ -41,11 +41,13 @@ public class DbgUtils {
 
     public static void showf( String format, Object... args )
     {
+        Assert.assertVarargsNotNullNR(args);
         showf( XWApp.getContext(), format, args );
     }
 
     public static void showf( Context context, String format, Object... args )
     {
+        Assert.assertVarargsNotNullNR(args);
         Formatter formatter = new Formatter();
         String msg = formatter.format( format, args ).toString();
         Utils.showToast( context, msg );
@@ -53,12 +55,14 @@ public class DbgUtils {
 
     public static void showf( Context context, int formatid, Object... args )
     {
+        Assert.assertVarargsNotNullNR(args);
         showf( context, LocUtils.getString( context, formatid ), args );
     } // showf
 
     public static void toastNoLock( String tag, Context context, long rowid,
                                     String format, Object... args )
     {
+        Assert.assertVarargsNotNullNR(args);
         format = "Unable to lock game; " + format;
         if ( BuildConfig.DEBUG ) {
             showf( context, format, args );
@@ -124,6 +128,7 @@ public class DbgUtils {
 
     public static String toStr( Object[] params )
     {
+        Assert.assertVarargsNotNullNR(params);
         List<String> strs = new ArrayList<>();
         if ( null != params ) {
             for ( Object obj : params ) {

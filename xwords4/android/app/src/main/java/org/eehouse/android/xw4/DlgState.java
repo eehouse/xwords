@@ -82,7 +82,14 @@ public class DlgState implements Parcelable {
     public DlgState setTitle( String title )
     { m_title = title; return this; }
 
-    public Object[] getParams() { return m_params; }
+    public Object[] getParams()
+    {
+        Object[] params = m_params;
+        if ( null == params ) {
+            params = new Object[0];
+        }
+        return params;
+    }
 
     @Override
     public String toString()

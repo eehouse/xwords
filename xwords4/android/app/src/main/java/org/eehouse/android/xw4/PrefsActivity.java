@@ -93,8 +93,10 @@ public class PrefsActivity extends XWActivity
     }
 
     @Override
-    public Builder makeNotAgainBuilder( int key, Action action, int msgID, Object... params)
+    public Builder makeNotAgainBuilder( int key, Action action, int msgID,
+                                        Object... params)
     {
+        Assert.assertVarargsNotNullNR(params);
         return m_dlgt.makeNotAgainBuilder( key, action, msgID, params );
     }
 

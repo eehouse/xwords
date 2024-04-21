@@ -417,6 +417,7 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
 
     private void handle( JNIThread.JNICmd cmd, Object... args )
     {
+        Assert.assertVarargsNotNullNR(args);
         if ( null == m_jniThread ) {
             Log.w( TAG, "not calling handle(%s)", cmd.toString() );
             DbgUtils.printStack( TAG );

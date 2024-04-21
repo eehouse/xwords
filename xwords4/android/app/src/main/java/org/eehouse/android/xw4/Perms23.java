@@ -208,23 +208,18 @@ public class Perms23 {
         private int mNAKey;
         private DelegateBase m_delegate;
         private String m_rationaleMsg;
-        private Object[] m_params;
+        private Object[] m_params = {};
 
         private QueryInfo( DelegateBase delegate, Action action,
                            Perm[] perms, String msg, int naKey,
                            Object[] params ) {
+            Assert.assertVarargsNotNullNR(params);
             m_delegate = delegate;
             m_action = action;
             m_perms = perms;
             m_rationaleMsg = msg;
             mNAKey = naKey;
             m_params = params;
-        }
-
-        private QueryInfo( DelegateBase delegate, Object[] params )
-        {
-            this( delegate, (Action)params[0], (Perm[])params[1], (String)params[2],
-                  0, (Object[])params[3] );
         }
 
         private Object[] getParams()
@@ -316,6 +311,7 @@ public class Perms23 {
                                          String rationaleMsg, int naKey,
                                          final Action action, Object... params )
     {
+        Assert.assertVarargsNotNullNR(params);
         // Log.d( TAG, "tryGetPermsImpl(%s)", (Object)perms );
         if ( 0 != naKey &&
              XWPrefs.getPrefsBoolean( delegate.getActivity(), naKey, false ) ) {
@@ -330,6 +326,7 @@ public class Perms23 {
     private static void postNeg( final DelegateBase delegate,
                                  final Action action, final Object[] params )
     {
+        Assert.assertVarargsNotNullNR(params);
         delegate.post( new Runnable() {
                 @Override
                 public void run() {
@@ -342,6 +339,7 @@ public class Perms23 {
                                     final Action action, Object... params )
     {
         // Log.d( TAG, "tryGetPerms(%s)", perm.toString() );
+        Assert.assertVarargsNotNullNR(params);
         String msg = LocUtils.getStringOrNull( rationaleId );
         tryGetPermsImpl( delegate, perms, msg, 0, action, params );
     }
@@ -350,6 +348,7 @@ public class Perms23 {
                                     String rationaleMsg, final Action action,
                                     Object... params )
     {
+        Assert.assertVarargsNotNullNR(params);
         tryGetPermsImpl( delegate, perms, rationaleMsg, 0, action, params );
     }
 
@@ -357,6 +356,7 @@ public class Perms23 {
                                     String rationaleMsg, final Action action,
                                     Object... params )
     {
+        Assert.assertVarargsNotNullNR(params);
         tryGetPermsImpl( delegate, new Perm[]{ perm }, rationaleMsg, 0,
                          action, params );
     }
@@ -364,6 +364,7 @@ public class Perms23 {
     public static void tryGetPerms( DelegateBase delegate, Perm perm, int rationaleId,
                                     final Action action, Object... params )
     {
+        Assert.assertVarargsNotNullNR(params);
         tryGetPerms( delegate, new Perm[]{perm}, rationaleId, action, params );
     }
 
@@ -371,6 +372,7 @@ public class Perms23 {
                                       int rationaleId, int naKey,
                                       Action action, Object... params )
     {
+        Assert.assertVarargsNotNullNR(params);
         tryGetPermsImpl( delegate, new Perm[] {perm},
                          LocUtils.getStringOrNull( rationaleId ), naKey,
                          action, params );
@@ -379,7 +381,10 @@ public class Perms23 {
     public static void onGotPermsAction( DelegateBase delegate, boolean positive,
                                          Object[] params )
     {
-        QueryInfo info = new QueryInfo( delegate, params );
+        Assert.assertVarargsNotNullNR(params);
+        QueryInfo info = new QueryInfo( delegate, (Action)params[0],
+                                        (Perm[])params[1], (String)params[2],
+                                        0, (Object[])params[3] );
         info.handleButton( positive );
     }
 
@@ -448,6 +453,7 @@ public class Perms23 {
     static void tryGetNBSPermsNA( DelegateBase delegate, int rationaleId,
                                   int naKey, Action action, Object... params )
     {
+        Assert.assertVarargsNotNullNR(params);
         tryGetPermsImpl( delegate, NBS_PERMS,
                          LocUtils.getStringOrNull( rationaleId ), naKey,
                          action, params );

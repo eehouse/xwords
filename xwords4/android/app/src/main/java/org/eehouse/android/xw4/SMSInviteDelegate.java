@@ -145,6 +145,7 @@ public class SMSInviteDelegate extends InviteDelegate {
     @Override
     protected Dialog makeDialog( DBAlert alert, Object... params )
     {
+        Assert.assertVarargsNotNullNR(params);
         Dialog dialog;
         DialogInterface.OnClickListener lstnr;
         switch( alert.getDlgID() ) {
@@ -201,6 +202,7 @@ public class SMSInviteDelegate extends InviteDelegate {
     @Override
     public boolean onPosButton( Action action, Object... params )
     {
+        Assert.assertVarargsNotNullNR(params);
         boolean handled = true;
         switch ( action ) {
         case CLEAR_ACTION:

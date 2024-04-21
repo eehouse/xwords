@@ -35,7 +35,7 @@ public class DBAlert extends XWDialogFragment {
     private static final String DLG_ID_KEY = "DLG_ID_KEY";
     private static final String PARMS_KEY = "PARMS_KEY";
 
-    private Object[] mParams;
+    private Object[] mParams = {};
     private DlgID mDlgID;
     public static DBAlert newInstance( DlgID dlgID, Object[] params )
     {

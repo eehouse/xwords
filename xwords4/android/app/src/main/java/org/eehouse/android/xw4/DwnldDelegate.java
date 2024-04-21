@@ -404,6 +404,7 @@ public class DwnldDelegate extends ListDelegateBase {
     @Override
     public boolean onPosButton( Action action, Object... params )
     {
+        Assert.assertVarargsNotNullNR(params);
         boolean handled = true;
         switch ( action ) {
         case STORAGE_CONFIRMED:
@@ -418,6 +419,7 @@ public class DwnldDelegate extends ListDelegateBase {
     @Override
     public boolean onNegButton( Action action, Object... params )
     {
+        Assert.assertVarargsNotNullNR(params);
         boolean handled = true;
         switch ( action ) {
         case STORAGE_CONFIRMED:

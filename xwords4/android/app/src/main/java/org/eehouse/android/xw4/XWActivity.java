@@ -232,19 +232,23 @@ public class XWActivity extends FragmentActivity
         return m_dlgt.makeNotAgainBuilder( keyID, msg );
     }
 
-    public DlgDelegate.Builder makeNotAgainBuilder( int keyID, int msgID, Object... params )
+    public DlgDelegate.Builder makeNotAgainBuilder( int keyID, int msgID,
+                                                    Object... params )
     {
+        Assert.assertVarargsNotNullNR(params);
         return m_dlgt.makeNotAgainBuilder( keyID, msgID, params );
     }
 
     public DlgDelegate.Builder makeConfirmThenBuilder( Action action, int msgID,
                                                        Object... params )
     {
+        Assert.assertVarargsNotNullNR(params);
         return m_dlgt.makeConfirmThenBuilder( action, msgID, params );
     }
 
     public DlgDelegate.Builder makeOkOnlyBuilder( int msgID, Object... params )
     {
+        Assert.assertVarargsNotNullNR(params);
         return m_dlgt.makeOkOnlyBuilder( msgID, params );
     }
 
@@ -317,6 +321,7 @@ public class XWActivity extends FragmentActivity
 
     protected Dialog makeDialog( DBAlert alert, Object... params )
     {
+        Assert.assertVarargsNotNullNR(params);
         return m_dlgt.makeDialog( alert, params );
     }
 
@@ -328,24 +333,29 @@ public class XWActivity extends FragmentActivity
     @Override
     public boolean onPosButton( Action action, Object... params )
     {
+        Assert.assertVarargsNotNullNR(params);
         return m_dlgt.onPosButton( action, params );
     }
 
     @Override
     public boolean onNegButton( Action action, Object... params )
     {
+        Assert.assertVarargsNotNullNR(params);
         return m_dlgt.onNegButton( action, params );
     }
 
     @Override
     public boolean onDismissed( Action action, Object... params )
     {
+        Assert.assertVarargsNotNullNR(params);
         return m_dlgt.onDismissed( action, params );
     }
 
     @Override
-    public void inviteChoiceMade( Action action, InviteMeans means, Object... params )
+    public void inviteChoiceMade( Action action, InviteMeans means,
+                                  Object... params )
     {
+        Assert.assertVarargsNotNullNR(params);
         m_dlgt.inviteChoiceMade( action, means, params );
     }
 }

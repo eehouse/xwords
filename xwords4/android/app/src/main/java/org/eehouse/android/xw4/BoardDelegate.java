@@ -219,6 +219,7 @@ public class BoardDelegate extends DelegateBase
     @Override
     protected Dialog makeDialog( DBAlert alert, Object... params )
     {
+        Assert.assertVarargsNotNullNR(params);
         final DlgID dlgID = alert.getDlgID();
         Log.d( TAG, "makeDialog(%s)", dlgID.toString() );
         OnClickListener lstnr;
@@ -1093,6 +1094,7 @@ public class BoardDelegate extends DelegateBase
     @Override
     public boolean onPosButton( Action action, final Object... params )
     {
+        Assert.assertVarargsNotNullNR(params);
         Log.d( TAG, "onPosButton(%s, %s)", action, DbgUtils.toStr( params ) );
         boolean handled = true;
         JNICmd cmd = null;
@@ -1286,6 +1288,7 @@ public class BoardDelegate extends DelegateBase
     @Override
     public boolean onNegButton( Action action, Object... params )
     {
+        Assert.assertVarargsNotNullNR(params);
         Log.d( TAG, "onNegButton(%s, %s)", action, DbgUtils.toStr( params ) );
         boolean handled = true;
         switch ( action ) {
@@ -1322,6 +1325,7 @@ public class BoardDelegate extends DelegateBase
     @Override
     public boolean onDismissed( Action action, Object... params )
     {
+        Assert.assertVarargsNotNullNR(params);
         Log.d( TAG, "onDismissed(%s, %s)", action, DbgUtils.toStr( params ) );
         boolean handled = true;
         switch ( action ) {
@@ -1368,6 +1372,7 @@ public class BoardDelegate extends DelegateBase
     public void inviteChoiceMade( Action action, InviteMeans means,
                                   Object... params )
     {
+        Assert.assertVarargsNotNullNR(params);
         if ( action == Action.LAUNCH_INVITE_ACTION ) {
             SentInvitesInfo info = 0 < params.length
                 && params[0] instanceof SentInvitesInfo
@@ -3163,6 +3168,7 @@ public class BoardDelegate extends DelegateBase
 
     private void retryNBSInvites( Object[] params )
     {
+        Assert.assertVarargsNotNullNR(params);
         if ( null != params && 2 == params.length
              && params[0] instanceof NetLaunchInfo
              && params[1] instanceof String ) {
@@ -3192,6 +3198,7 @@ public class BoardDelegate extends DelegateBase
 
     private void handleViaThread( JNICmd cmd, Object... args )
     {
+        Assert.assertVarargsNotNullNR(args);
         if ( null == m_jniThread ) {
             Log.w( TAG, "m_jniThread null: not calling m_jniThread.handle(%s)",
                    cmd );

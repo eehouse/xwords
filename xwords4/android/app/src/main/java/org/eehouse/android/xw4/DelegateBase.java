@@ -114,6 +114,7 @@ public abstract class DelegateBase implements DlgClickNotify,
     protected void tryGetPerms( Perms23.Perm perm, int rationale,
                                 Action action, Object... params )
     {
+        Assert.assertVarargsNotNullNR(params);
         Perms23.tryGetPerms( this, perm, rationale, action, params );
     }
 
@@ -330,12 +331,14 @@ public abstract class DelegateBase implements DlgClickNotify,
 
     protected String getString( int resID, Object... params )
     {
+        Assert.assertVarargsNotNullNR(params);
         return LocUtils.getString( m_activity, resID, params );
     }
 
     protected String getQuantityString( int resID, int quantity,
                                         Object... params )
     {
+        Assert.assertVarargsNotNullNR(params);
         return LocUtils.getQuantityString( m_activity, resID, quantity,
                                            params );
     }
@@ -431,6 +434,7 @@ public abstract class DelegateBase implements DlgClickNotify,
 
     protected Dialog makeDialog( DBAlert alert, Object... params )
     {
+        Assert.assertVarargsNotNullNR(params);
         Dialog dialog = null;
         DlgID dlgID = alert.getDlgID();
         switch ( dlgID ) {
@@ -471,8 +475,10 @@ public abstract class DelegateBase implements DlgClickNotify,
         return dialog;
     }
 
-    protected void showDialogFragment( final DlgID dlgID, final Object... params )
+    protected void showDialogFragment( final DlgID dlgID,
+                                       final Object... params )
     {
+        Assert.assertVarargsNotNullNR(params);
         runOnUiThread( new Runnable() {
                 @Override
                 public void run() {
@@ -544,6 +550,7 @@ public abstract class DelegateBase implements DlgClickNotify,
     public Builder
         makeNotAgainBuilder( int key, Action action, int msgId, Object... params )
     {
+        Assert.assertVarargsNotNullNR(params);
         return m_dlgDelegate.makeNotAgainBuilder( key, action, msgId, params );
     }
 
@@ -554,6 +561,7 @@ public abstract class DelegateBase implements DlgClickNotify,
 
     public Builder makeNotAgainBuilder( int key, int msgID, Object... params )
     {
+        Assert.assertVarargsNotNullNR(params);
         return m_dlgDelegate.makeNotAgainBuilder( key, msgID, params );
     }
 
@@ -562,6 +570,7 @@ public abstract class DelegateBase implements DlgClickNotify,
     }
 
     public Builder makeConfirmThenBuilder( Action action, int msgId, Object... params  ) {
+        Assert.assertVarargsNotNullNR(params);
         return m_dlgDelegate.makeConfirmThenBuilder( action, msgId, params );
     }
 
@@ -589,6 +598,7 @@ public abstract class DelegateBase implements DlgClickNotify,
 
     public Builder makeOkOnlyBuilder( int msgID, Object... params )
     {
+        Assert.assertVarargsNotNullNR(params);
         return m_dlgDelegate.makeOkOnlyBuilder( msgID, params );
     }
 
@@ -749,6 +759,7 @@ public abstract class DelegateBase implements DlgClickNotify,
     //////////////////////////////////////////////////////////////////////
     public boolean onPosButton( Action action, Object... params )
     {
+        Assert.assertVarargsNotNullNR(params);
         boolean handled = true;
         // Log.d( TAG, "%s.onPosButton(%s)", getClass().getSimpleName(), action );
         switch( action ) {
@@ -782,6 +793,7 @@ public abstract class DelegateBase implements DlgClickNotify,
 
     public boolean onNegButton( Action action, Object... params )
     {
+        Assert.assertVarargsNotNullNR(params);
         boolean handled = true;
         // Log.d( TAG, "%s.negButtonClicked(%s)", getClass().getSimpleName(),
         //                action.toString() );
@@ -799,6 +811,7 @@ public abstract class DelegateBase implements DlgClickNotify,
 
     public boolean onDismissed( Action action, Object... params )
     {
+        Assert.assertVarargsNotNullNR(params);
         boolean handled = false;
         Log.d( TAG, "%s.onDismissed(%s)", getClass().getSimpleName(),
                action.toString() );
@@ -819,6 +832,7 @@ public abstract class DelegateBase implements DlgClickNotify,
 
     public void inviteChoiceMade( Action action, DlgClickNotify.InviteMeans means, Object... params )
     {
+        Assert.assertVarargsNotNullNR(params);
         // Assert.fail();
     }
 

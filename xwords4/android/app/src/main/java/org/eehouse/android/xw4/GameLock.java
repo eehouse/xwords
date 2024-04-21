@@ -262,6 +262,7 @@ public class GameLock implements AutoCloseable {
 
         private void logIfNull( GameLock result, String fmt, Object... args )
         {
+            Assert.assertVarargsNotNullNR(args);
             if ( BuildConfig.DEBUG && null == result ) {
                 String func = new Formatter().format( fmt, args ).toString();
                 Log.d( TAG, "%s.%s => null", this, func );

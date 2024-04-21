@@ -161,6 +161,7 @@ public class GameConfigDelegate extends DelegateBase
     @Override
     protected Dialog makeDialog( DBAlert alert, Object... params )
     {
+        Assert.assertVarargsNotNullNR(params);
         Dialog dialog = null;
         final DlgID dlgID = alert.getDlgID();
         Log.d( TAG, "makeDialog(%s)", dlgID.toString() );
@@ -813,6 +814,7 @@ public class GameConfigDelegate extends DelegateBase
     @Override
     public boolean onPosButton( Action action, Object... params )
     {
+        Assert.assertVarargsNotNullNR(params);
         boolean handled = true;
         Assert.assertTrue( curThis() == this );
         switch( action ) {
@@ -838,6 +840,7 @@ public class GameConfigDelegate extends DelegateBase
     @Override
     public boolean onNegButton( Action action, Object... params )
     {
+        Assert.assertVarargsNotNullNR(params);
         boolean handled = true;
         switch ( action ) {
         case DELETE_AND_EXIT:

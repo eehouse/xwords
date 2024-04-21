@@ -82,6 +82,7 @@ class InvitesNeededAlert {
 
         AlertDialog make( DBAlert alert, Object[] params )
         {
+            Assert.assertVarargsNotNullNR(params);
             DbgUtils.assertOnUIThread();
             return mSelf.makeImpl( mCallbacks, alert, mHostAddr, mGamePtr, params );
         }
@@ -156,6 +157,7 @@ class InvitesNeededAlert {
                                   CommsAddrRec hostAddr, GamePtr gamePtr,
                                   Object[] params )
     {
+        Assert.assertVarargsNotNullNR(params);
         State state = (State)params[0];
         AlertDialog.Builder ab = mDelegate.makeAlertBuilder();
         mAlert = alert;

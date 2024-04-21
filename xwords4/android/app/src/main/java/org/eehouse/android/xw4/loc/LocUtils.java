@@ -129,7 +129,7 @@ public class LocUtils {
 
     public static String getString( Context context, int id, Object... params )
     {
-
+        Assert.assertVarargsNotNullNR(params);
         return context.getString( id, params );
     }
 
@@ -143,6 +143,7 @@ public class LocUtils {
     public static String getQuantityString( Context context, int id,
                                             int quantity, Object... params )
     {
+        Assert.assertVarargsNotNullNR(params);
         String result = context.getResources()
             .getQuantityString( id, quantity, params );
         return result;

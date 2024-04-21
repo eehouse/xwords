@@ -597,6 +597,7 @@ public class GamesListDelegate extends ListDelegateBase
     @Override
     protected Dialog makeDialog( DBAlert alert, Object... params )
     {
+        Assert.assertVarargsNotNullNR(params);
         Dialog dialog = null;
         OnClickListener lstnr, lstnr2;
 
@@ -1405,6 +1406,7 @@ public class GamesListDelegate extends ListDelegateBase
     @Override
     public boolean onPosButton( Action action, Object... params )
     {
+        Assert.assertVarargsNotNullNR(params);
         boolean handled = true;
         switch( action ) {
         case NEW_NET_GAME:
@@ -1568,6 +1570,7 @@ public class GamesListDelegate extends ListDelegateBase
     @Override
     public boolean onDismissed( Action action, Object... params )
     {
+        Assert.assertVarargsNotNullNR(params);
         boolean handled = true;
         switch ( action ) {
         case LAUNCH_AFTER_DEL:
@@ -1643,6 +1646,7 @@ public class GamesListDelegate extends ListDelegateBase
     @Override
     public boolean onNegButton( Action action, Object... params )
     {
+        Assert.assertVarargsNotNullNR(params);
         boolean handled = true;
         switch ( action ) {
         case NEW_GAME_DFLT_NAME:
@@ -2729,6 +2733,7 @@ public class GamesListDelegate extends ListDelegateBase
 
     private void rematchWithNameAndPerm( boolean granted, Object[] params )
     {
+        Assert.assertVarargsNotNullNR(params);
         CommsConnTypeSet addrs = (CommsConnTypeSet)params[1];
         if ( !granted ) {
             addrs.remove( CommsConnType.COMMS_CONN_SMS );
@@ -3038,6 +3043,7 @@ public class GamesListDelegate extends ListDelegateBase
 
     private void doOpenGame( Object[] params )
     {
+        Assert.assertVarargsNotNullNR(params);
         final long rowid = (Long)params[0];
         try {
             if ( checkWarnNoDict( rowid ) ) {

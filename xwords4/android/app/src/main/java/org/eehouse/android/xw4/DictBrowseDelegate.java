@@ -314,6 +314,7 @@ public class DictBrowseDelegate extends DelegateBase
     @Override
     protected Dialog makeDialog( DBAlert alert, Object[] params )
     {
+        Assert.assertVarargsNotNullNR(params);
         Dialog dialog = null;
         DlgID dlgID = alert.getDlgID();
         switch ( dlgID ) {
@@ -455,6 +456,7 @@ public class DictBrowseDelegate extends DelegateBase
     @Override
     public boolean onPosButton( Action action, Object... params )
     {
+        Assert.assertVarargsNotNullNR(params);
         boolean handled = false;
         switch( action ) {
         case FINISH_ACTION:

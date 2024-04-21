@@ -187,6 +187,7 @@ public class Utils {
 
     public static void showToast( Context context, int id, Object... args )
     {
+        Assert.assertVarargsNotNullNR(args);
         String msg = LocUtils.getString( context, id );
         msg = new Formatter().format( msg, args ).toString();
         showToast( context, msg );

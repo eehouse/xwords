@@ -96,6 +96,7 @@ public class KnownPlayersDelegate extends DelegateBase {
     @Override
     public boolean onPosButton( Action action, Object... params )
     {
+        Assert.assertVarargsNotNullNR(params);
         boolean handled = true;
         switch ( action ) {
         case KNOWN_PLAYER_DELETE:
@@ -113,6 +114,7 @@ public class KnownPlayersDelegate extends DelegateBase {
     @Override
     protected Dialog makeDialog( DBAlert alert, Object... params )
     {
+        Assert.assertVarargsNotNullNR(params);
         Dialog dialog = null;
 
         DlgID dlgID = alert.getDlgID();

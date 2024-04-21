@@ -83,6 +83,7 @@ public class PrefsDelegate extends DelegateBase
     @Override
     protected Dialog makeDialog( final DBAlert alert, Object... params )
     {
+        Assert.assertVarargsNotNullNR(params);
         final DlgID dlgID = alert.getDlgID();
         DialogInterface.OnClickListener lstnr = null;
         int confirmID = 0;
@@ -300,6 +301,7 @@ public class PrefsDelegate extends DelegateBase
     @Override
     public boolean onPosButton( Action action, Object... params )
     {
+        Assert.assertVarargsNotNullNR(params);
         boolean handled = true;
         switch ( action ) {
         case ENABLE_NBS_DO:

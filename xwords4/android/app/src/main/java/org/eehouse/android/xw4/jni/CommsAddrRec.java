@@ -143,7 +143,7 @@ public class CommsAddrRec implements Serializable {
                              && CommsConnType.COMMS_CONN_RELAY == value ) {
                             // I've seen this....
                             Log.e( TAG, "still have RELAY bit" );
-                            DbgUtils.printStack( TAG );
+                            // DbgUtils.printStack( TAG );
                         }
                     }
                 }
