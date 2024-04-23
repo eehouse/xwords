@@ -1963,17 +1963,6 @@ gtk_util_timerSelected( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe), XP_Bool inDuplica
     }
 }
 
-static void
-gtk_util_getMQTTIDsFor( XW_UtilCtxt* uc, XWEnv xwe, XP_U16 nRelayIDs,
-                        const XP_UCHAR* relayIDs[] )
-{
-    XP_ASSERT(0);               /* implement me */
-    XP_USE( uc );
-    XP_USE( xwe );
-    XP_USE( nRelayIDs );
-    XP_USE( relayIDs );
-}
-
 #ifdef XWFEATURE_CHAT
 static void
 gtk_util_showChat( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe),
@@ -2277,7 +2266,6 @@ setupGtkUtilCallbacks( GtkGameGlobals* globals, XW_UtilCtxt* util )
     SET_PROC(engineProgressCallback);
     SET_PROC(notifyIllegalWords);
     SET_PROC(remSelected);
-    SET_PROC(getMQTTIDsFor);
     SET_PROC(timerSelected);
 #ifdef XWFEATURE_CHAT
     SET_PROC(showChat);

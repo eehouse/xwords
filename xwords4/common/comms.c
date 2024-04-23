@@ -733,6 +733,17 @@ addrFromStream( CommsAddrRec* addrP, XWStreamCtxt* stream )
     // ASSERT_ADDR_OK( addrP );
 }
 
+static void
+getMQTTIDsFor( CommsCtxt* comms, XWEnv xwe, XP_U16 nRelayIDs,
+               const XP_UCHAR* relayIDs[] )
+{
+    XP_USE(comms);
+    XP_USE(xwe);
+    XP_USE(nRelayIDs);
+    XP_USE(relayIDs);
+    XP_ASSERT(0);
+}
+
 /* Return TRUE if there are no addresses left that include relay */
 static XP_Bool
 removeRelayIf( CommsCtxt* comms, XWEnv xwe )
@@ -758,7 +769,7 @@ removeRelayIf( CommsCtxt* comms, XWEnv xwe )
         }
     }
     if ( 0 < nIds ) {
-        util_getMQTTIDsFor( comms->util, xwe, nIds, ptrs );
+        getMQTTIDsFor( comms, xwe, nIds, ptrs );
     }
     LOG_RETURNF( "%s", boolToStr(allRemoved) );
     return allRemoved;

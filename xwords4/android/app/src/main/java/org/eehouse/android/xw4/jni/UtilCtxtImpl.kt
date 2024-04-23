@@ -32,38 +32,5 @@ private val TAG = UtilCtxtImpl::class.java.getSimpleName()
 // private val TAG = BTInviteDelegate::class.java.getSimpleName()
 
 open class UtilCtxtImpl(val m_context: Context) : UtilCtxt {
-    override fun getMQTTIDsFor(relayIDs: Array<String?>?) {
-        val rowid = getRowID()
-        if (0L == rowid) {
-            Log.d(TAG, "getMQTTIDsFor() no rowid available so dropping")
-        } else {
-            Thread(Runnable {
-                val params = JSONObject()
-                val array = JSONArray()
-                try {
-                    JNIThread.getRetained(rowid).use { thread ->
-                        params.put("rids", array)
-                        for (rid: String? in relayIDs!!) {
-                            array.put(rid)
-                        }
-                        val conn: HttpURLConnection = NetUtils
-                            .makeHttpMQTTConn(m_context, "mids4rids")
-                        val resStr: String = NetUtils.runConn(conn, params, true)
-                        Log.d(TAG, "mids4rids => %s", resStr)
-                        val obj: JSONObject = JSONObject(resStr)
-                        val keys: Iterator<String> = obj.keys()
-                        while (keys.hasNext()) {
-                            val key: String = keys.next()
-                            val hid: Int = key.toInt()
-                            thread.handle(JNICmd.CMD_SETMQTTID, hid, obj.getString(key))
-                        }
-                    }
-                } catch (ex: Exception) {
-                    Log.ex(TAG, ex)
-                }
-            }).start()
-        }
-    }
-
     open fun getRowID(): Long = 0L // meant to be overridden!
 }

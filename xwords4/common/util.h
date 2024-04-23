@@ -146,13 +146,6 @@ typedef struct UtilVtable {
 
     void (*m_util_remSelected)(XW_UtilCtxt* uc, XWEnv xwe);
 
-    /* Solving a time-limited problem of games that know how to connect via
-       relay but not MQTT. Once this method succeeds and the platform
-       implementation calls comms_addMQTTDevID() we never need it again for
-       that game. */
-    void (*m_util_getMQTTIDsFor)( XW_UtilCtxt* uc, XWEnv xwe, XP_U16 nRelayIDs,
-                                  const XP_UCHAR* relayIDs[] );
-
     void (*m_util_timerSelected)(XW_UtilCtxt* uc, XWEnv xwe, XP_Bool inDuplicateMode,
                                  XP_Bool canPause);
 
@@ -286,9 +279,6 @@ struct XW_UtilCtxt {
 
 #define util_remSelected( uc,e )                        \
          (uc)->vtable->m_util_remSelected((uc), (e))
-
-#define util_getMQTTIDsFor( uc, e, cnt, rids )               \
-    (uc)->vtable->m_util_getMQTTIDsFor((uc), (e), (cnt), (rids))
 
 #define util_timerSelected( uc,e, dm, cp )                        \
          (uc)->vtable->m_util_timerSelected((uc), (e), (dm), (cp))

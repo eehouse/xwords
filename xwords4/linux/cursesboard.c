@@ -1146,17 +1146,6 @@ curses_util_remSelected( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe) )
 }
 
 static void
-curses_util_getMQTTIDsFor( XW_UtilCtxt* uc, XWEnv xwe, XP_U16 nRelayIDs,
-                           const XP_UCHAR* relayIDs[] )
-{
-    XP_ASSERT(0);               /* implement me */
-    XP_USE( uc );
-    XP_USE( xwe );
-    XP_USE( nRelayIDs );
-    XP_USE( relayIDs );
-}
-
-static void
 curses_util_timerSelected( XW_UtilCtxt* XP_UNUSED(uc), XWEnv XP_UNUSED(xwe),
                            XP_Bool XP_UNUSED_DBG(inDuplicateMode),
                            XP_Bool XP_UNUSED_DBG(canPause) )
@@ -1249,7 +1238,6 @@ setupCursesUtilCallbacks( CursesBoardGlobals* bGlobals, XW_UtilCtxt* util )
     SET_PROC(altKeyDown);       /* ?? */
     SET_PROC(notifyIllegalWords);
     SET_PROC(remSelected);
-    SET_PROC(getMQTTIDsFor);
     SET_PROC(timerSelected);
 #ifndef XWFEATURE_MINIWIN
     SET_PROC(bonusSquareHeld);

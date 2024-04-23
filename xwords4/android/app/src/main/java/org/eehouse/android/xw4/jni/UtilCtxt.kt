@@ -35,7 +35,6 @@ interface UtilCtxt {
     fun clearTimer(why: Int) {}
     fun requestTime() {}
     fun remSelected() {}
-    fun getMQTTIDsFor(relayID: Array<String?>?) {}
     fun timerSelected(inDuplicateMode: Boolean, canPause: Boolean) {}
     fun informWordsBlocked(nWords: Int, words: String?, dict: String?) {}
     fun getInviteeName(index: Int): String? = null

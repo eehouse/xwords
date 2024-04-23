@@ -600,18 +600,6 @@ and_util_remSelected( XW_UtilCtxt* uc, XWEnv xwe )
 }
 
 static void
-and_util_getMQTTIDsFor( XW_UtilCtxt* uc, XWEnv xwe, XP_U16 nRelayIDs,
-                        const XP_UCHAR* relayIDs[] )
-{
-    UTIL_CBK_HEADER("getMQTTIDsFor", "([Ljava/lang/String;)V" );
-
-    jobjectArray jrids = makeStringArray( env, nRelayIDs, relayIDs );
-    (*env)->CallVoidMethod( env, util->jutil, mid, jrids );
-    deleteLocalRef( env, jrids );
-    UTIL_CBK_TAIL();
-}
-
-static void
 and_util_timerSelected( XW_UtilCtxt* uc, XWEnv xwe, XP_Bool inDuplicateMode, XP_Bool canPause )
 {
     UTIL_CBK_HEADER("timerSelected", "(ZZ)V" );
@@ -1052,7 +1040,6 @@ makeUtil( MPFORMAL JNIEnv* env,
     SET_PROC(showChat);
 #endif
     SET_PROC(remSelected);
-    SET_PROC(getMQTTIDsFor);
     SET_PROC(timerSelected);
     SET_PROC(formatPauseHistory);
 
