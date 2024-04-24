@@ -50,7 +50,7 @@ typedef struct _AndDUtil {
 } AndDUtil;
 
 typedef struct _TimerStorage {
-    XWTimerProc proc;
+    UtilTimerProc proc;
     void* closure;
 } TimerStorage;
 
@@ -339,7 +339,7 @@ utilTimerFired( XW_UtilCtxt* uc, XWEnv xwe, XWTimerReason why, int handle )
     AndUtil* util = (AndUtil*)uc;
     TimerStorage* timerStorage = &util->timerStorage[why];
     if ( handle == (int)timerStorage ) {
-        XWTimerProc proc = timerStorage->proc;
+        UtilTimerProc proc = timerStorage->proc;
         if ( !!proc ) {
             handled = (*proc)( timerStorage->closure, xwe, why );
         } else {
@@ -354,7 +354,7 @@ utilTimerFired( XW_UtilCtxt* uc, XWEnv xwe, XWTimerReason why, int handle )
 
 static void
 and_util_setTimer( XW_UtilCtxt* uc, XWEnv xwe, XWTimerReason why, XP_U16 when,
-                   XWTimerProc proc, void* closure )
+                   UtilTimerProc proc, void* closure )
 {
     UTIL_CBK_HEADER("setTimer", "(III)V" );
 

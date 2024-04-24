@@ -1721,7 +1721,7 @@ XP_Bool
 linuxFireTimer( CommonGlobals* cGlobals, XWTimerReason why )
 {
     TimerInfo* tip = &cGlobals->timerInfo[why];
-    XWTimerProc proc = tip->proc;
+    UtilTimerProc proc = tip->proc;
     XP_Bool draw = false;
 
     tip->proc = NULL;
@@ -2313,7 +2313,7 @@ slowrob_timer_func( gpointer data )
 
 static void
 linux_util_setTimer( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe), XWTimerReason why,
-                     XP_U16 when, XWTimerProc proc, void* closure )
+                     XP_U16 when, UtilTimerProc proc, void* closure )
 {
     CommonGlobals* cGlobals = (CommonGlobals*)uc->closure;
     guint newSrc;

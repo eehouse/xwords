@@ -77,8 +77,8 @@ typedef struct _BadWordInfo {
     const XP_UCHAR* words[MAX_TRAY_TILES+2]; /* can form in both directions */
 } BadWordInfo;
 
-/* XWTimerProc returns true if redraw was necessitated by what the proc did */
-typedef XP_Bool (*XWTimerProc)( void* closure, XWEnv xwe, XWTimerReason why );
+/* UtilTimerProc returns true if redraw was necessitated by what the proc did */
+typedef XP_Bool (*UtilTimerProc)( void* closure, XWEnv xwe, XWTimerReason why );
 
 /* Platform-specific utility functions that need to be
  */
@@ -130,7 +130,7 @@ typedef struct UtilVtable {
     XP_Bool (*m_util_engineProgressCallback)( XW_UtilCtxt* uc, XWEnv xwe );
 
     void (*m_util_setTimer)( XW_UtilCtxt* uc, XWEnv xwe, XWTimerReason why, XP_U16 when,
-                             XWTimerProc proc, void* closure );
+                             UtilTimerProc proc, void* closure );
     void (*m_util_clearTimer)( XW_UtilCtxt* uc, XWEnv xwe, XWTimerReason why );
 
     void (*m_util_requestTime)( XW_UtilCtxt* uc, XWEnv xwe );

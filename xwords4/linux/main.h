@@ -220,7 +220,7 @@ typedef void (*AddAcceptorFunc)(int listener, Acceptor func,
                                 CommonGlobals* globals, void** storage );
 
 typedef struct _TimerInfo {
-    XWTimerProc proc;
+    UtilTimerProc proc;
     void* closure;
 #ifdef USE_GLIBLOOP
     struct CommonGlobals* globals;

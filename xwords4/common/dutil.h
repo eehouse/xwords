@@ -43,6 +43,9 @@ typedef struct _Md5SumBuf {
 
 #define KEY_WILDCARD "*"
 
+#ifdef DUTIL_TIMERS
+typedef void (*DUtilTimerProc)( XWEnv xwe, void* closure, size_t closureSize );
+#endif
 typedef struct _DUtilVtable {
     XP_U32 (*m_dutil_getCurSeconds)( XW_DUtilCtxt* duc, XWEnv xwe );
     const XP_UCHAR* (*m_dutil_getUserString)( XW_DUtilCtxt* duc, XWEnv xwe,
@@ -80,6 +83,11 @@ typedef struct _DUtilVtable {
                                      const XP_UCHAR* idRelay );
 #endif
 
+#ifdef DUTIL_TIMERS
+    void (*m_dutil_setTimer)( XW_DUtilCtxt* duc, XWEnv xwe, XP_U16 when, DUtilTimerProc proc,
+                              void* closure, size_t closureSize );
+    void (*m_dutil_clearTimer)( XW_DUtilCtxt* duc, XWEnv xwe, DUtilTimerProc proc );
+#endif
     void (*m_dutil_md5sum)( XW_DUtilCtxt* duc, XWEnv xwe, const XP_U8* ptr,
                             XP_U32 len, Md5SumBuf* sb );
     void (*m_dutil_getUsername)( XW_DUtilCtxt* duc, XWEnv xwe, XP_U16 num,
@@ -157,6 +165,13 @@ void dutil_super_cleanup( XW_DUtilCtxt* dutil, XWEnv xwe );
     (duc)->vtable.m_dutil_getDevID((duc), (e),(t))
 # define dutil_deviceRegistered( duc, e, typ, id )                       \
     (duc)->vtable.m_dutil_deviceRegistered( (duc), (e), (typ), (id) )
+#endif
+
+#ifdef DUTIL_TIMERS
+# define dutil_setTimer( duc, xwe, when, proc, closure, siz )            \
+    (duc)->vtable.m_dutil_setTimer((duc), (xwe), (when), (proc), (closure), (siz))
+# define dutil_clearTimer( duc, xwe, proc )                 \
+    (duc)->vtable.m_dutil_clearTimer((duc), (xwe), (proc) )
 #endif
 
 # define dutil_md5sum( duc, e, p, l, b )                    \

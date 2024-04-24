@@ -41,6 +41,9 @@
 
 typedef struct _LinDUtilCtxt {
     XW_DUtilCtxt super;
+#ifdef DUTIL_TIMERS
+    GSList* timers;
+#endif
 } LinDUtilCtxt;
 
 static XP_U32 linux_dutil_getCurSeconds( XW_DUtilCtxt* duc, XWEnv xwe );
@@ -312,6 +315,86 @@ linux_dutil_getRegValues( XW_DUtilCtxt* duc, XWEnv xwe )
     return results;
 }
 
+typedef struct _TimerClosure {
+    XW_DUtilCtxt* duc;
+    DUtilTimerProc proc;
+    void* closure;
+    size_t closureSize;
+    guint src;
+} TimerClosure;
+
+static gint
+timer_proc( gpointer data )
+{
+    TimerClosure* tc = (TimerClosure*)data;
+    XP_LOGFF( "calling timer proc" );
+    (*tc->proc)( NULL_XWE, tc->closure, tc->closureSize );
+    XP_LOGFF( "timer proc done" );
+    XP_FREEP( tc->duc->mpool, &tc->closure );
+
+    LinDUtilCtxt* lduc = (LinDUtilCtxt*)tc->duc;
+    GSList** timers = &lduc->timers;
+    *timers = g_slist_remove( *timers, tc );
+
+    XP_LOGFF( "after firing, length %d", g_slist_length(*timers) );
+
+    XP_FREEP( tc->duc->mpool, &tc );
+    return 0;
+}
+
+#ifdef DUTIL_TIMERS
+static void
+linux_dutil_setTimer( XW_DUtilCtxt* duc, XWEnv xwe, XP_U16 when,
+                      DUtilTimerProc proc, void* closure, size_t closureSize )
+{
+    XP_USE(xwe);        /* I assume I'll need this on the Android side */
+
+    TimerClosure* tc = XP_MALLOC(duc->mpool, sizeof(*tc));
+    tc->duc = duc;
+    tc->closureSize = closureSize;
+    tc->closure = XP_MALLOC( duc->mpool, closureSize );
+    XP_MEMCPY( tc->closure, closure, closureSize );
+    tc->proc = proc;
+    tc->src = g_timeout_add( when, timer_proc, tc );
+
+    LinDUtilCtxt* lduc = (LinDUtilCtxt*)duc;
+    GSList** timers = &lduc->timers;
+    *timers = g_slist_append( *timers, tc );
+
+    XP_LOGFF( "after setting, length %d", g_slist_length(*timers) );
+}
+
+static gint
+findByProc( gconstpointer elemData, gconstpointer proc )
+{
+    TimerClosure* tc = (TimerClosure*)elemData;
+    return tc->proc == proc ? 0 : 1;
+}
+
+static void
+linux_dutil_clearTimer( XW_DUtilCtxt* duc, XWEnv xwe, DUtilTimerProc proc )
+{
+    /* Will probably want to store the TimerClosure instances above in a list
+       that can be searched here for its proc value, then its src field used
+       to cancel. */
+    XP_USE(xwe);
+
+    int count = 0;
+
+    LinDUtilCtxt* lduc = (LinDUtilCtxt*)duc;
+    GSList** timers = &lduc->timers;
+    while ( !!*timers ) {
+        GSList* elem = g_slist_find_custom( *timers, proc, findByProc );
+        if ( !elem ) {
+            break;
+        }
+        *timers = g_slist_remove( *timers, elem );
+        ++count;
+    }
+    XP_LOGFF( "removed %d timers", count );
+}
+#endif
+
 XW_DUtilCtxt*
 linux_dutils_init( MPFORMAL VTableMgr* vtMgr, void* closure )
 {
@@ -355,6 +438,10 @@ linux_dutils_init( MPFORMAL VTableMgr* vtMgr, void* closure )
     SET_PROC(onGameGoneReceived);
     SET_PROC(sendViaWeb);
     SET_PROC(getRegValues);
+#ifdef DUTIL_TIMERS
+    SET_PROC(setTimer);
+    SET_PROC(clearTimer);
+#endif
 
 # undef SET_PROC
 
