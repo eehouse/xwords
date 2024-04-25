@@ -68,10 +68,14 @@ void dvc_addLegalPhony( XW_DUtilCtxt* dutil, XWEnv xwe,
 XP_Bool dvc_isLegalPhony( XW_DUtilCtxt* dutil, XWEnv xwe,
                           const XP_UCHAR* isoCode, const XP_UCHAR* phony );
 XP_Bool dvc_haveLegalPhonies( XW_DUtilCtxt* dutil, XWEnv xwe );
-XP_U16 dvc_clearLegalPhonies( XW_DUtilCtxt* dutil, XWEnv xwe );
-#ifdef DEBUG
-void dvc_listLegalPhonies( XW_DUtilCtxt* dutil, XWEnv xwe, XWStreamCtxt* stream );
-#endif
+void dvc_clearLegalPhony( XW_DUtilCtxt* dutil, XWEnv xwe,
+                          const XP_UCHAR* isoCode, const XP_UCHAR* phony );
+
+typedef void (*WordCollector)(const XP_UCHAR* str, void* closure);
+void dvc_getIsoCodes( XW_DUtilCtxt* dutil, XWEnv env, WordCollector proc,
+                      void* closure );
+void dvc_getPhoniesFor( XW_DUtilCtxt* dutil, XWEnv env, const XP_UCHAR* code,
+                        WordCollector proc, void* closure );
 
 /* All platforms need to call this shortly after setting up their XW_DUtilCtxt */
 void dvc_init( XW_DUtilCtxt* dutil, XWEnv xwe );

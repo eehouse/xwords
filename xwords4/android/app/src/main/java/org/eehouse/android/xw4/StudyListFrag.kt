@@ -1,5 +1,4 @@
-/* -*- compile-command: "find-and-gradle.sh inXw4dDeb"; -*- */
-/*
+/* -*- compile-command: "find-and-gradle.sh inXw4dDeb"; -*- */ /*
  * Copyright 2014 - 2016 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
@@ -17,23 +16,18 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
+package org.eehouse.android.xw4
 
-package org.eehouse.android.xw4;
+import android.os.Bundle
 
-import android.os.Bundle;
-
-public class StudyListFrag extends XWFragment {
-
-    public StudyListFrag() {}
-
-    public static XWFragment newInstance( Delegator parent )
-    {
-        return new StudyListFrag().setParentName( parent );
+class StudyListFrag : XWFragment() {
+    override fun onCreate(sis: Bundle?) {
+        super.onCreate(StudyListDelegate(this, sis), sis, true)
     }
 
-    @Override
-    public void onCreate( Bundle sis )
-    {
-        super.onCreate( new StudyListDelegate( this, sis ), sis, true );
+    companion object {
+        fun newInstance(parent: Delegator?): XWFragment {
+            return StudyListFrag().setParentName(parent)
+        }
     }
 }

@@ -548,7 +548,7 @@
     <!-- The third button in the "Phonies found" dialog. Means we'll
          accept the phonies AND will record them so they'll be
          accepted from now on. -->
-    <string name="buttonYesAnd">Yes/Save</string>
+    <string name="buttonYesAnd">Yes &amp; Save</string>
 
     <!--    
        ############################################################

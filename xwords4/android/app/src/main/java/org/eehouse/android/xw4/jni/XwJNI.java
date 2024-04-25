@@ -23,6 +23,7 @@ package org.eehouse.android.xw4.jni;
 import android.graphics.Rect;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
 
 import org.eehouse.android.xw4.Assert;
@@ -189,19 +190,27 @@ public class XwJNI {
         dvc_onWebSendResult( getJNI().m_ptrGlobals, resultKey, succeeded, result );
     }
 
-    public static boolean dvc_haveLegalPhonies()
+    public static ISOCode[] dvc_getLegalPhonyCodes()
     {
-        return dvc_haveLegalPhonies( getJNI().m_ptrGlobals );
+        ArrayList<String> list = new ArrayList<>();
+        dvc_getLegalPhonyCodes(getJNI().m_ptrGlobals, list );
+        ISOCode[] result = new ISOCode[list.size()];
+        for ( int ii = 0; ii < result.length; ++ii ) {
+            result[ii] = new ISOCode(list.get(ii));
+        }
+        return result;
     }
 
-    public static String dvc_listLegalPhonies()
+    public static String[] dvc_getLegalPhoniesFor( ISOCode code )
     {
-        return dvc_listLegalPhonies( getJNI().m_ptrGlobals );
+        ArrayList<String> list = new ArrayList<>();
+        dvc_getLegalPhoniesFor( getJNI().m_ptrGlobals, code.toString(), list );
+        return list.toArray( new String[list.size()] );
     }
 
-    public static int dvc_clearLegalPhonies()
+    public static void dvc_clearLegalPhony( ISOCode code, String phony )
     {
-        return dvc_clearLegalPhonies( getJNI().m_ptrGlobals );
+        dvc_clearLegalPhony( getJNI().m_ptrGlobals, code.toString(), phony );
     }
 
     public static boolean hasKnownPlayers()
@@ -540,8 +549,8 @@ public class XwJNI {
 
         XP_KEY_LAST
     };
-    public static native boolean board_handleKey( GamePtr gamePtr, XP_Key key,
-                                                  boolean up, boolean[] handled );
+    // public static native boolean board_handleKey( GamePtr gamePtr, XP_Key key,
+    //                                               boolean up, boolean[] handled );
     // public static native boolean board_handleKeyDown( XP_Key key,
     //                                                   boolean[] handled );
     // public static native boolean board_handleKeyRepeat( XP_Key key,
@@ -833,9 +842,13 @@ public class XwJNI {
     private static native void dvc_onWebSendResult( long jniState, int resultKey,
                                                     boolean succeeded,
                                                     String result );
-    private static native boolean dvc_haveLegalPhonies( long jniState );
-    private static native String dvc_listLegalPhonies( long jniState );
-    private static native int dvc_clearLegalPhonies( long jniState );
+    private static native void dvc_getLegalPhonyCodes(long jniState,
+                                                      ArrayList<String> list);
+    private static native void dvc_getLegalPhoniesFor( long jniState, String code,
+                                                       ArrayList<String> list );
+    private static native void
+        dvc_clearLegalPhony( long jniState, String code, String phony );
+
     private static native String[] kplr_getPlayers( long jniState, boolean byDate );
     private static native boolean kplr_renamePlayer( long jniState, String oldName,
                                                      String newName );

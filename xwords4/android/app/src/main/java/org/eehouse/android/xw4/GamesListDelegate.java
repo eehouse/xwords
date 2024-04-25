@@ -1460,11 +1460,6 @@ public class GamesListDelegate extends ListDelegateBase
             openWithChecks( rowid, summary );
             break;
 
-        case LPS_CLEAR:
-            int nDeleted = XwJNI.dvc_clearLegalPhonies();
-            Utils.showToast( m_activity, R.string.cleared_lps_fmt, nDeleted );
-            break;
-
         case BACKUP_DO:
             showDialogFragment( DlgID.BACKUP_LOADSTORE );
             break;
@@ -1826,8 +1821,8 @@ public class GamesListDelegate extends ListDelegateBase
                 enable = nothingSelected && Utils.isGooglePlayApp( m_activity );
                 Utils.setItemVisible( menu, R.id.games_menu_rateme, enable );
 
-                enable = BuildConfig.NON_RELEASE && XwJNI.dvc_haveLegalPhonies();
-                Utils.setItemVisible( menu, R.id.games_submenu_legalPhonies, enable );
+                enable = LegalPhoniesDelegate.haveLegalPhonies(m_activity);
+                Utils.setItemVisible( menu, R.id.games_menu_legalPhonies, enable );
 
                 enable = nothingSelected && XWPrefs.getStudyEnabled( m_activity )
                     && 0 < DBUtils.studyListLangs( m_activity ).length;
@@ -1921,14 +1916,8 @@ public class GamesListDelegate extends ListDelegateBase
             }
             break;
 
-        case R.id.games_menu_clearLPs:
-            makeConfirmThenBuilder( Action.LPS_CLEAR,
-                                    R.string.confirm_clear_lps )
-                .show();
-            break;
-        case R.id.games_menu_listLPs:
-            String txt = XwJNI.dvc_listLegalPhonies();
-            makeOkOnlyBuilder( txt ).show();
+        case R.id.games_menu_legalPhonies:
+            LegalPhoniesDelegate.launch( getDelegator() );
             break;
 
         case R.id.games_menu_study:

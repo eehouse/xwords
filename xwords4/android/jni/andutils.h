@@ -75,6 +75,8 @@ void setIntArray( JNIEnv* env, jobject jowner, const char* ownerField,
 int getIntsFromArray( JNIEnv* env, int dest[], jintArray arr, int count, bool del );
 void setIntInArray( JNIEnv* env, jintArray arr, int index, int val );
 
+void addStrToList( JNIEnv* env, jobject list, const XP_UCHAR* str );
+
 jbyteArray makeByteArray( JNIEnv* env, int size, const jbyte* vals );
 jobjectArray makeByteArrayArray( JNIEnv* env, int siz );
 

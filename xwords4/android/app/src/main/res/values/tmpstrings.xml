@@ -13,10 +13,9 @@
   <string name="gamel_menu_clearLPs">Clear all</string>
   <string name="gamel_menu_listLPs">Show all</string>
 
-  <string name="cleared_lps_fmt">Cleared %1$d legal phonies</string>
-
 
   <string name="confirm_clear_lps">Are you sure you want to clear
   saved “legal phonies”?\n\nThis action cannot be undone.</string>
 
+  <string name="legalphonies_title_fmt">Legal phonies for %1$s</string>
 </resources>

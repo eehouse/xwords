@@ -33,18 +33,9 @@
           android:icon="@drawable/dict__gen"
           android:showAsAction="ifRoom"
           />
-    <item android:id="@+id/games_submenu_legalPhonies"
+    <item android:id="@+id/games_menu_legalPhonies"
           android:title="@string/gamel_menu_legalPhonies"
-          >
-      <menu>
-        <item android:id="@+id/games_menu_clearLPs"
-              android:title="@string/gamel_menu_clearLPs"
-              />
-        <item android:id="@+id/games_menu_listLPs"
-              android:title="@string/gamel_menu_listLPs"
-              />
-      </menu>
-    </item>
+          />
 
     <item android:id="@+id/games_menu_study"
           android:title="@string/gamel_menu_study"

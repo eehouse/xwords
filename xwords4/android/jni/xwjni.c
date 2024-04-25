@@ -794,48 +794,60 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dvc_1onWebSendResult
     DVC_HEADER_END();
 }
 
-JNIEXPORT jboolean JNICALL
-Java_org_eehouse_android_xw4_jni_XwJNI_dvc_1haveLegalPhonies
-( JNIEnv* env, jclass C, jlong jniGlobalPtr )
+typedef struct _CollectState {
+    JNIEnv* env;
+    jobject list;
+} CollectState;
+
+static void
+wordCollector( const XP_UCHAR* str, void* closure )
 {
-    jboolean jresult;
-    DVC_HEADER(jniGlobalPtr);
-    jresult = dvc_haveLegalPhonies( globalState->dutil, env );
-    DVC_HEADER_END();
-    return jresult;
+    CollectState* cs = (CollectState*)closure;
+    addStrToList( cs->env, cs->list, str );
 }
 
-#ifdef DEBUG
-JNIEXPORT jstring JNICALL
-Java_org_eehouse_android_xw4_jni_XwJNI_dvc_1listLegalPhonies
-( JNIEnv* env, jclass C, jlong jniGlobalPtr )
+JNIEXPORT void JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_dvc_1getLegalPhonyCodes
+(JNIEnv* env, jclass C, jlong jniGlobalPtr, jobject list)
 {
-    jstring jresult;
     DVC_HEADER(jniGlobalPtr);
-#ifdef MEM_DEBUG
-    MemPoolCtx* mpool = GETMPOOL( globalState );
-#endif
-
-    XWStreamCtxt* stream = mem_stream_make( MPPARM(mpool) globalState->vtMgr,
-                                            NULL, 0, NULL, NULL );
-    dvc_listLegalPhonies( globalState->dutil, env, stream );
-    jresult = streamToJString( env, stream );
-    stream_destroy( stream );
+    CollectState cs = {
+        .env = env,
+        .list = list,
+    };
+    dvc_getIsoCodes( globalState->dutil, env, wordCollector, &cs );
 
     DVC_HEADER_END();
-    return jresult;
 }
-#endif
 
-JNIEXPORT jint JNICALL
-Java_org_eehouse_android_xw4_jni_XwJNI_dvc_1clearLegalPhonies
-( JNIEnv* env, jclass C, jlong jniGlobalPtr )
+JNIEXPORT void JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_dvc_1getLegalPhoniesFor
+(JNIEnv* env, jclass C, jlong jniGlobalPtr, jstring jcode, jobject list)
 {
-    jint result;
     DVC_HEADER(jniGlobalPtr);
-    result = dvc_clearLegalPhonies( globalState->dutil, env );
+
+    const char* code = (*env)->GetStringUTFChars( env, jcode, NULL );
+
+    CollectState cs = {
+        .env = env,
+        .list = list,
+    };
+    dvc_getPhoniesFor( globalState->dutil, env, code, wordCollector, &cs );
+    (*env)->ReleaseStringUTFChars( env, jcode, code );
     DVC_HEADER_END();
-    return result;
+}
+
+JNIEXPORT void JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_dvc_1clearLegalPhony
+(JNIEnv* env, jclass C, jlong jniGlobalPtr, jstring jcode, jstring jphony)
+{
+    DVC_HEADER(jniGlobalPtr);
+    const char* code = (*env)->GetStringUTFChars( env, jcode, NULL );
+    const char* phony = (*env)->GetStringUTFChars( env, jphony, NULL );
+    dvc_clearLegalPhony( globalState->dutil, env, code, phony );
+    (*env)->ReleaseStringUTFChars( env, jcode, code );
+    (*env)->ReleaseStringUTFChars( env, jphony, phony );
+    DVC_HEADER_END();
 }
 
 # ifdef XWFEATURE_KNOWNPLAYERS

@@ -36,7 +36,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 
-abstract class XWFragment extends Fragment implements Delegator {
+public abstract class XWFragment extends Fragment implements Delegator {
     private static final String TAG = XWFragment.class.getSimpleName();
     private static final String PARENT_NAME = "PARENT_NAME";
     private static final String COMMIT_ID = "COMMIT_ID";

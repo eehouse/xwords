@@ -429,6 +429,16 @@ setIntInArray( JNIEnv* env, jintArray arr, int index, int val )
     (*env)->ReleaseIntArrayElements( env, arr, ints, 0 );
 }
 
+void
+addStrToList( JNIEnv* env, jobject list, const XP_UCHAR* str )
+{
+    jmethodID mid = getMethodID( env, list, "add", "(Ljava/lang/Object;)Z" );
+
+    jstring jstr = (*env)->NewStringUTF( env, str );
+    (*env)->CallBooleanMethod( env, list, mid, jstr );
+    deleteLocalRef( env, jstr );
+}
+
 jobjectArray
 makeStringArray( JNIEnv* env, const int count, const XP_UCHAR* const* vals )
 {
@@ -602,15 +612,15 @@ addrTypesToJ( JNIEnv* env, const CommsAddrRec* addr )
         makeObjectEmptyConstr( env, PKG_PATH("jni/CommsAddrRec$CommsConnTypeSet") );
     XP_ASSERT( !!result );
 
-    jmethodID mid2 = getMethodID( env, result, "add", 
+    jmethodID mid = getMethodID( env, result, "add",
                                   "(Ljava/lang/Object;)Z" );
-    XP_ASSERT( !!mid2 );
+    XP_ASSERT( !!mid );
     CommsConnType typ;
     for ( XP_U32 st = 0; addr_iter( addr, &typ, &st ); ) {
         jobject jtyp = intToJEnum( env, typ, 
                                    PKG_PATH("jni/CommsAddrRec$CommsConnType") );
         XP_ASSERT( !!jtyp );
-        (*env)->CallBooleanMethod( env, result, mid2, jtyp );
+        (*env)->CallBooleanMethod( env, result, mid, jtyp );
         deleteLocalRef( env, jtyp );
     }
     return result;

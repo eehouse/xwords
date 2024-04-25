@@ -2509,6 +2509,20 @@ testStreams( LaunchParams* params )
 }
 
 static void
+testPhonies( LaunchParams* params )
+{
+    XW_DUtilCtxt* dutil = params->dutil;
+    dvc_addLegalPhony( dutil, NULL_XWE, "en", "QI" );
+    dvc_addLegalPhony( dutil, NULL_XWE, "de", "PUTZ" );
+    XP_ASSERT( dvc_isLegalPhony( dutil, NULL_XWE, "en", "QI" ) );
+    XP_ASSERT( !dvc_isLegalPhony( dutil, NULL_XWE, "fr", "QI" ) );
+    XP_ASSERT( !dvc_isLegalPhony( dutil, NULL_XWE, "de", "QI" ) );
+    XP_ASSERT( dvc_haveLegalPhonies( dutil, NULL_XWE ) );
+    dvc_clearLegalPhony( dutil, NULL_XWE, "en", "QI" );
+    XP_ASSERT( !dvc_isLegalPhony( dutil, NULL_XWE, "en", "QI" ) );
+}
+
+static void
 freeParams( LaunchParams* params )
 {
     gdb_close( params->pDb );
@@ -3437,6 +3451,7 @@ main( int argc, char** argv )
         mainParams.pDb = gdb_open( mainParams.dbName );
 
         dvc_init( mainParams.dutil, NULL_XWE );
+        testPhonies( &mainParams );
         
         if ( mainParams.useCurses ) {
             /* if ( mainParams.needsNewGame ) { */
