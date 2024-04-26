@@ -888,9 +888,11 @@ dvc_haveLegalPhonies( XW_DUtilCtxt* dutil, XWEnv xwe )
 }
 
 static void
-freeOnePhony( DLHead* elem, void* closure )
+freeOnePhony( DLHead* elem, void* XP_UNUSED_DBG(closure) )
 {
+#ifdef DEBUG
     PhoniesMapState* ms = (PhoniesMapState*)closure;
+#endif
     const PhoniesDataStrs* pds = (PhoniesDataStrs*)elem;
     XP_FREE( ms->dutil->mpool, pds->phony );
     XP_FREE( ms->dutil->mpool, elem );

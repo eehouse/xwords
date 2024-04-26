@@ -1,6 +1,6 @@
 /* -*- compile-command: "find-and-gradle.sh inXw4dDeb"; -*- */
 /*
- * Copyright 2010 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2010 - 2024 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -72,7 +72,7 @@ public class FirstRunDialog extends XWDialogFragment {
                 //     }
                 // }
             });
-        view.getSettings().setJavaScriptEnabled( true ); // for surveymonkey
+        // view.getSettings().setJavaScriptEnabled( true ); // for surveymonkey
         view.loadUrl("file:///android_asset/changes.html");
 
         return LocUtils.makeAlertBuilder( context )
