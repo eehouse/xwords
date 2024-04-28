@@ -18,16 +18,12 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-package org.eehouse.android.xw4;
+package org.eehouse.android.xw4
 
-import android.os.Bundle;
+import android.os.Bundle
 
-public class BTInviteActivity extends InviteActivity {
+class BTInviteActivity: InviteActivity() {
 
-    @Override
-    protected void onCreate( Bundle savedInstanceState )
-    {
-        BTInviteDelegate dlgt = new BTInviteDelegate( this, savedInstanceState );
-        super.onCreate( savedInstanceState, dlgt );
-    }
+    override fun onCreate( savedInstanceState: Bundle? )
+		=  super.onCreate( savedInstanceState, BTInviteDelegate( this, savedInstanceState ) )
 }
