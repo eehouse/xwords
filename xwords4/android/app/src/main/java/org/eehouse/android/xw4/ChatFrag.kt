@@ -1,5 +1,4 @@
-/* -*- compile-command: "find-and-gradle.sh inXw4dDeb"; -*- */
-/*
+/* -*- compile-command: "find-and-gradle.sh inXw4dDeb"; -*- */ /*
  * Copyright 2016 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -16,23 +15,17 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
+package org.eehouse.android.xw4
 
-package org.eehouse.android.xw4;
+import android.os.Bundle
 
-import android.os.Bundle;
+class ChatFrag : XWFragment() {
+    override fun onCreate(sis: Bundle?)
+        = super.onCreate(ChatDelegate(this, sis), sis, true)
 
-public class ChatFrag extends XWFragment {
 
-    public ChatFrag() {}
-
-    public static XWFragment newInstance( Delegator parent )
-    {
-        return new ChatFrag().setParentName( parent );
-    }
-
-    @Override
-    public void onCreate( Bundle sis )
-    {
-        super.onCreate( new ChatDelegate( this, sis ), sis, true );
+    companion object {
+        fun newInstance(parent: Delegator?): XWFragment
+            = ChatFrag().setParentName(parent)
     }
 }
