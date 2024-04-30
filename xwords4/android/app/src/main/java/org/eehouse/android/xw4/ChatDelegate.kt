@@ -168,7 +168,7 @@ class ChatDelegate(delegator: Delegator, savedInstanceState: Bundle?) :
 
     override fun onPrepareOptionsMenu(menu: Menu): Boolean {
         val text = m_edit!!.getText().toString()
-        val haveText = null != text && 0 < text.length
+        val haveText = 0 < text.length
         Utils.setItemVisible(menu, R.id.chat_menu_send, haveText)
         return true
     }
@@ -228,10 +228,10 @@ class ChatDelegate(delegator: Delegator, savedInstanceState: Bundle?) :
         ) {
             Assert.assertFalse(-1 == curPlayer)
             val bundle = Bundle()
-            bundle.putLong(GameUtils.INTENT_KEY_ROWID, rowID)
-            bundle.putInt(INTENT_KEY_PLAYER, curPlayer)
-            bundle.putStringArray(INTENT_KEY_NAMES, names)
-            bundle.putBooleanArray(INTENT_KEY_LOCS, locs)
+				.putLongAnd(GameUtils.INTENT_KEY_ROWID, rowID)
+				.putIntAnd(INTENT_KEY_PLAYER, curPlayer)
+				.putStringArrayAnd(INTENT_KEY_NAMES, names)
+				.putBooleanArrayAnd(INTENT_KEY_LOCS, locs)
             delegator.addFragment(ChatFrag.newInstance(delegator), bundle)
         }
     }
