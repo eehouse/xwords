@@ -84,11 +84,9 @@ class ChatDelegate(delegator: Delegator, savedInstanceState: Bundle?) :
         } else {
             sendButton.setOnClickListener { handleSend() }
         }
-        val pairs = DBUtils.getChatHistory(m_activity, m_rowid, locals)
-        if (null != pairs) {
-            for (pair in pairs) {
+        val pairs: ArrayList<DBUtils.HistoryPair> = DBUtils.getChatHistory(m_activity, m_rowid, locals!!)
+        for (pair in pairs) {
                 addRow(pair.msg, pair.playerIndx, pair.ts.toLong())
-            }
         }
         val title = getString(
             R.string.chat_title_fmt,

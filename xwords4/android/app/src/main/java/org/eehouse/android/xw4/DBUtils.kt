@@ -52,7 +52,7 @@ import java.io.OutputStream
 import java.io.Serializable
 import java.util.Date
 import java.util.StringTokenizer
-import kotlin.math.min
+
 
 object DBUtils {
     private val TAG = DBUtils::class.java.getSimpleName()
@@ -75,7 +75,7 @@ object DBUtils {
     private var s_db: SQLiteDatabase? = null
     @JvmStatic
     fun getSummary(
-        context: Context?,
+        context: Context,
         lock: GameLock
     ): GameSummary? {
         val startMS = System.currentTimeMillis()
@@ -190,6 +190,7 @@ object DBUtils {
                                     )
                                 }
                             }
+                            else -> Log.d( TAG, "unexpected typ $typ")
                         }
                     }
                 }
@@ -217,34 +218,30 @@ object DBUtils {
 
     @JvmStatic
     fun saveSummary(
-        context: Context?, lock: GameLock,
+        context: Context, lock: GameLock,
         summary: GameSummary?
     ) {
-        var needsTimer = false
         Assert.assertTrue(lock.canWrite())
         val rowid = lock.rowid
         val selection = String.format(ROW_ID_FMT, rowid)
         var values: ContentValues? = null
         if (null != summary) {
             values = ContentValues()
-            values.put(DBHelper.NUM_MOVES, summary.nMoves)
-            values.put(DBHelper.NUM_PLAYERS, summary.nPlayers)
-            values.put(DBHelper.MISSINGPLYRS, summary.missingPlayers)
-            values.put(DBHelper.TURN, summary.turn)
-            values.put(DBHelper.TURN_LOCAL, if (summary.turnIsLocal) 1 else 0)
-            values.put(DBHelper.GIFLAGS, summary.giflags())
-            values.put(
-                DBHelper.PLAYERS,
-                summary.summarizePlayers()
-            )
+				.putAnd(DBHelper.NUM_MOVES, summary.nMoves)
+				.putAnd(DBHelper.NUM_PLAYERS, summary.nPlayers)
+				.putAnd(DBHelper.MISSINGPLYRS, summary.missingPlayers)
+				.putAnd(DBHelper.TURN, summary.turn)
+				.putAnd(DBHelper.TURN_LOCAL, if (summary.turnIsLocal) 1 else 0)
+				.putAnd(DBHelper.GIFLAGS, summary.giflags())
+				.putAnd(DBHelper.PLAYERS,summary.summarizePlayers() )
             Assert.assertTrueNR(null != summary.isoCode)
-            values.put(DBHelper.ISOCODE, summary.isoCode.toString())
-            values.put(DBHelper.GAMEID, summary.gameID)
-            values.put(DBHelper.GAME_OVER, if (summary.gameOver) 1 else 0)
-            values.put(DBHelper.QUASHED, if (summary.quashed) 1 else 0)
-            values.put(DBHelper.LASTMOVE, summary.lastMoveTime)
-            values.put(DBHelper.NEXTDUPTIMER, summary.dupTimerExpires)
-            values.put(DBHelper.CAN_REMATCH, if (summary.canRematch) 1 else 0)
+				values.putAnd(DBHelper.ISOCODE, summary.isoCode.toString())
+					.putAnd(DBHelper.GAMEID, summary.gameID)
+					.putAnd(DBHelper.GAME_OVER, if (summary.gameOver) 1 else 0)
+					.putAnd(DBHelper.QUASHED, if (summary.quashed) 1 else 0)
+					.putAnd(DBHelper.LASTMOVE, summary.lastMoveTime)
+					.putAnd(DBHelper.NEXTDUPTIMER, summary.dupTimerExpires)
+					.putAnd(DBHelper.CAN_REMATCH, if (summary.canRematch) 1 else 0)
 
             // Don't overwrite extras! Sometimes this method is called from
             // JNIThread which has created the summary from common code that
@@ -258,8 +255,8 @@ object DBUtils {
                 context,
                 1000 * summary.lastMoveTime.toLong()
             ) else 0
-            values.put(DBHelper.NEXTNAG, nextNag)
-            values.put(DBHelper.DICTLIST, summary.dictNames(DICTS_SEP))
+            values.putAnd(DBHelper.NEXTNAG, nextNag)
+				.putAnd(DBHelper.DICTLIST, summary.dictNames(DICTS_SEP))
             if (null != summary.scores) {
                 val sb = StringBuffer()
                 for (score in summary.scores) {
@@ -268,23 +265,22 @@ object DBUtils {
                 values.put(DBHelper.SCORES, sb.toString())
             }
             if (null != summary.conTypes) {
-                values.put(DBHelper.CONTYPE, summary.conTypes.toInt())
-                values.put(DBHelper.SEED, summary.seed)
-                values.put(DBHelper.NPACKETSPENDING, summary.nPacketsPending)
+                values.putAnd(DBHelper.CONTYPE, summary.conTypes.toInt())
+					.putAnd(DBHelper.SEED, summary.seed)
+					.putAnd(DBHelper.NPACKETSPENDING, summary.nPacketsPending)
                 val iter: Iterator<CommsConnType> = summary.conTypes.iterator()
                 while (iter.hasNext()) {
-                    when (iter.next()) {
+                    when (val typ = iter.next()) {
                         CommsConnType.COMMS_CONN_RELAY -> {
-                            values.put(DBHelper.ROOMNAME, summary.roomName)
                             val relayID = summary.relayID
-                            values.put(DBHelper.RELAYID, relayID)
-                            needsTimer = null != relayID && 0 < relayID.length
+                            values.putAnd(DBHelper.ROOMNAME, summary.roomName)
+								.putAnd(DBHelper.RELAYID, summary.relayID)
                         }
 
-                        CommsConnType.COMMS_CONN_BT, CommsConnType.COMMS_CONN_SMS -> values.put(
-                            DBHelper.REMOTEDEVS,
-                            summary.summarizeDevs()
-                        )
+                        CommsConnType.COMMS_CONN_BT, CommsConnType.COMMS_CONN_SMS
+							-> values.put(DBHelper.REMOTEDEVS,
+										  summary.summarizeDevs() )
+                        else -> Log.d( TAG, "unexpected type ${typ}")
                     }
                 }
             }
@@ -307,7 +303,7 @@ object DBUtils {
     } // saveSummary
 
     @JvmStatic
-    fun countGamesUsingISOCode(context: Context?, isoCode: ISOCode?): Int {
+    fun countGamesUsingISOCode(context: Context, isoCode: ISOCode?): Int {
         var result = 0
         val columns = arrayOf(DBHelper.ISOCODE)
         val selection = String.format(
@@ -324,7 +320,7 @@ object DBUtils {
         return result
     }
 
-    fun countGamesUsingDict(context: Context?, dict: String?): Int {
+    fun countGamesUsingDict(context: Context, dict: String?): Int {
         var result = 0
         val pattern = String.format(
             "%%%s%s%s%%",
@@ -383,7 +379,7 @@ object DBUtils {
     }
 
     @JvmStatic
-    fun getInvitesFor(context: Context?, rowid: Long): SentInvitesInfo {
+    fun getInvitesFor(context: Context, rowid: Long): SentInvitesInfo {
         val result = SentInvitesInfo(rowid)
         val columns = arrayOf(
             DBHelper.MEANS, DBHelper.TARGET,
@@ -419,7 +415,7 @@ object DBUtils {
 
     @JvmStatic
     fun recordInviteSent(
-        context: Context?, rowid: Long,
+        context: Context, rowid: Long,
         means: InviteMeans, target: String?,
         dropDupes: Boolean
     ) {
@@ -449,8 +445,8 @@ object DBUtils {
             }
         }
         val values = ContentValues()
-        values.put(DBHelper.ROW, rowid)
-        values.put(DBHelper.MEANS, means.ordinal)
+			.putAnd(DBHelper.ROW, rowid)
+			.putAnd(DBHelper.MEANS, means.ordinal)
         if (null != target) {
             values.put(DBHelper.TARGET, target)
         }
@@ -463,21 +459,20 @@ object DBUtils {
         }
     }
 
-    private fun setSummaryInt(rowid: Long, column: String, value: Int) {
-        val values = ContentValues()
-        values.put(column, value)
-        updateRow(null, TABLE_NAMES.SUM, rowid, values)
+    private fun setSummaryInt(context: Context, rowid: Long, column: String, value: Int) {
+        val values = ContentValues().putAnd(column, value)
+        updateRow(context, TABLE_NAMES.SUM, rowid, values)
     }
 
     @JvmStatic
-    fun setMsgFlags(context: Context?, rowid: Long, flags: Int) {
-        setSummaryInt(rowid, DBHelper.HASMSGS, flags)
+    fun setMsgFlags(context: Context, rowid: Long, flags: Int) {
+        setSummaryInt(context, rowid, DBHelper.HASMSGS, flags)
         notifyListeners(context, rowid, GameChangeType.GAME_CHANGED)
     }
 
     @JvmStatic
-    fun setExpanded(rowid: Long, expanded: Boolean) {
-        setSummaryInt(rowid, DBHelper.CONTRACTED, if (expanded) 0 else 1)
+    fun setExpanded(context: Context, rowid: Long, expanded: Boolean) {
+        setSummaryInt(context, rowid, DBHelper.CONTRACTED, if (expanded) 0 else 1)
     }
 
     private fun getSummaryInt(
@@ -518,7 +513,7 @@ object DBUtils {
 
     @JvmStatic
     fun saveThumbnail(
-        context: Context?, lock: GameLock,
+        context: Context, lock: GameLock,
         thumb: Bitmap?
     ) {
         val rowid = lock.rowid
@@ -540,7 +535,7 @@ object DBUtils {
     }
 
     @JvmStatic
-    fun clearThumbnails(context: Context?) {
+    fun clearThumbnails(context: Context) {
         val values = ContentValues()
         values.putNull(DBHelper.THUMBNAIL)
         initDB(context)
@@ -551,7 +546,7 @@ object DBUtils {
     }
 
     @JvmStatic
-    fun getGamesWithSendsPending(context: Context?): HashMap<Long, CommsConnTypeSet> {
+    fun getGamesWithSendsPending(context: Context): HashMap<Long, CommsConnTypeSet> {
         val result = HashMap<Long, CommsConnTypeSet>()
         val columns = arrayOf(ROW_ID, DBHelper.CONTYPE)
         val selection = String.format(
@@ -582,7 +577,7 @@ object DBUtils {
     }
 
     @JvmStatic
-    fun getGameCountUsing(context: Context?, typ: CommsConnType): Int {
+    fun getGameCountUsing(context: Context, typ: CommsConnType): Int {
         var result = 0
         val columns = arrayOf(DBHelper.CONTYPE)
         val selection = String.format("%s = 0", DBHelper.GAME_OVER)
@@ -602,7 +597,7 @@ object DBUtils {
     }
 
     @JvmStatic
-    fun getRowIDsFor(context: Context?, gameID: Int): LongArray {
+    fun getRowIDsFor(context: Context, gameID: Int): LongArray {
         var result: LongArray
         val columns = arrayOf(ROW_ID)
         val selection = String.format(DBHelper.GAMEID + "=%d", gameID)
@@ -627,7 +622,7 @@ object DBUtils {
     }
 
     @JvmStatic
-    fun getRowIDsAndChannels(context: Context?, gameID: Int): Map<Long, Int> {
+    fun getRowIDsAndChannels(context: Context, gameID: Int): Map<Long, Int> {
         val result: MutableMap<Long, Int> = HashMap()
         val columns = arrayOf(ROW_ID, DBHelper.GIFLAGS)
         val selection = String.format(DBHelper.GAMEID + "=%d", gameID)
@@ -649,7 +644,7 @@ object DBUtils {
     }
 
     @JvmStatic
-    fun haveWithRowID(context: Context?, rowid: Long): Boolean {
+    fun haveWithRowID(context: Context, rowid: Long): Boolean {
         var result = false
         val columns = arrayOf(ROW_ID)
         val selection = String.format(ROW_ID + "=%d", rowid)
@@ -664,10 +659,10 @@ object DBUtils {
     }
 
     fun listBTGames(
-        context: Context?,
+        context: Context,
         result: HashMap<String?, IntArray?>
     ) {
-        var set: HashSet<Int>
+        var set: HashSet<Int>?
         val columns = arrayOf(DBHelper.GAMEID, DBHelper.REMOTEDEVS)
         val selection = DBHelper.GAMEID + "!=0"
         val map = HashMap<String, HashSet<Int>>()
@@ -697,7 +692,7 @@ object DBUtils {
         val iter = devs.iterator()
         while (iter.hasNext()) {
             val dev = iter.next()
-            set = map[dev]
+            set = map[dev]!!
             val gameIDs = IntArray(set.size)
             val idIter: Iterator<Int> = set.iterator()
             var ii = 0
@@ -711,17 +706,17 @@ object DBUtils {
 
     @JvmStatic
     fun saveNewGame(
-        context: Context?, bytes: ByteArray?,
+        context: Context, bytes: ByteArray,
         groupID: Long, name: String?
     ): GameLock? {
         Assert.assertTrue(GROUPID_UNSPEC.toLong() != groupID)
         var lock: GameLock? = null
-        val values = ContentValues()
-        values.put(DBHelper.SNAPSHOT, bytes)
         val timestamp = Date().time // milliseconds since epoch
-        values.put(DBHelper.CREATE_TIME, timestamp)
-        values.put(DBHelper.LASTPLAY_TIME, timestamp)
-        values.put(DBHelper.GROUPID, groupID)
+        val values = ContentValues()
+			.putAnd(DBHelper.SNAPSHOT, bytes)
+			.putAnd(DBHelper.CREATE_TIME, timestamp)
+			.putAnd(DBHelper.LASTPLAY_TIME, timestamp)
+			.putAnd(DBHelper.GROUPID, groupID)
         if (null != name) {
             values.put(DBHelper.GAME_NAME, name)
         }
@@ -741,13 +736,13 @@ object DBUtils {
 
     @JvmStatic
     fun saveGame(
-        context: Context?, lock: GameLock,
-        bytes: ByteArray?, setCreate: Boolean
+        context: Context, lock: GameLock,
+        bytes: ByteArray, setCreate: Boolean
     ): Long {
         Assert.assertTrue(lock.canWrite())
         val rowid = lock.rowid
         val values = ContentValues()
-        values.put(DBHelper.SNAPSHOT, bytes)
+			.putAnd(DBHelper.SNAPSHOT, bytes)
         val timestamp = Date().time
         if (setCreate) {
             values.put(DBHelper.CREATE_TIME, timestamp)
@@ -763,7 +758,7 @@ object DBUtils {
     }
 
     @JvmStatic
-    fun loadGame(context: Context?, lock: GameLock): ByteArray? {
+    fun loadGame(context: Context, lock: GameLock): ByteArray? {
         var result: ByteArray? = null
         val rowid = lock.rowid
         Assert.assertTrue(ROWID_NOTFOUND.toLong() != rowid)
@@ -791,7 +786,7 @@ object DBUtils {
         return result
     }
 
-    fun deleteGame(context: Context?, rowid: Long) {
+    fun deleteGame(context: Context, rowid: Long) {
         GameLock.lock(rowid, 300).use { lock ->
             if (null != lock) {
                 deleteGame(context, lock)
@@ -803,7 +798,7 @@ object DBUtils {
     }
 
     @JvmStatic
-    fun deleteGame(context: Context?, lock: GameLock) {
+    fun deleteGame(context: Context, lock: GameLock) {
         Assert.assertTrue(lock.canWrite())
         val rowid = lock.rowid
         val selSummaries = String.format(ROW_ID_FMT, rowid)
@@ -824,7 +819,7 @@ object DBUtils {
     }
 
     @JvmStatic
-    fun getVisID(context: Context?, rowid: Long): Int {
+    fun getVisID(context: Context, rowid: Long): Int {
         var result = ROWID_NOTFOUND
         val columns = arrayOf(DBHelper.VISID)
         val selection = String.format(ROW_ID_FMT, rowid)
@@ -844,7 +839,7 @@ object DBUtils {
 
     // Get either the file name or game name, preferring the latter.
     @JvmStatic
-    fun getName(context: Context?, rowid: Long): String? {
+    fun getName(context: Context, rowid: Long): String? {
         var result: String? = null
         val columns = arrayOf(DBHelper.GAME_NAME)
         val selection = String.format(ROW_ID_FMT, rowid)
@@ -863,22 +858,22 @@ object DBUtils {
     }
 
     @JvmStatic
-    fun setName(context: Context?, rowid: Long, name: String?) {
+    fun setName(context: Context, rowid: Long, name: String) {
         val values = ContentValues()
-        values.put(DBHelper.GAME_NAME, name)
+			.putAnd(DBHelper.GAME_NAME, name)
         updateRow(context, TABLE_NAMES.SUM, rowid, values)
     }
 
     private fun convertChatString(
         context: Context, rowid: Long,
         playersLocal: BooleanArray
-    ): Array<HistoryPair?>? {
-        var result: Array<HistoryPair?>? = null
+    ): java.util.ArrayList<HistoryPair> {
+        var result = ArrayList<HistoryPair>()
         val oldHistory = getChatHistoryStr(context, rowid)
         if (null != oldHistory) {
             Log.d(TAG, "convertChatString(): got string: %s", oldHistory)
             val valuess = ArrayList<ContentValues>()
-            val pairs = ArrayList<HistoryPair?>()
+            //val pairs = ArrayList<HistoryPair?>()
             val localPrefix = LocUtils.getString(context, R.string.chat_local_id)
             val rmtPrefix = LocUtils.getString(context, R.string.chat_other_id)
             Log.d(TAG, "convertChatString(): prefixes: \"%s\" and \"%s\"", localPrefix, rmtPrefix)
@@ -911,14 +906,14 @@ object DBUtils {
                 }
                 if (-1 != indx) {
                     Log.d(TAG, "convertChatString(): removing substring %s; was: %s", prefix, msg)
-                    msg = msg.substring(prefix!!.length, msg.length)
-                    Log.d(TAG, "convertChatString(): removED substring; now %s", msg)
-                    valuess.add(cvForChat(rowid, msg, indx, 0))
-                    val pair = HistoryPair(msg, indx, 0)
-                    pairs.add(pair)
+                    val msg2 = msg.substring(prefix!!.length, msg.length)
+                    Log.d(TAG, "convertChatString(): removED substring; now %s", msg2)
+                    valuess.add(cvForChat(rowid, msg2, indx, 0))
+                    val pair = HistoryPair(msg2, indx, 0)
+                    result.add(pair)
                 }
             }
-            result = pairs.toTypedArray<HistoryPair?>()
+            // result = pairs.toTypedArray<HistoryPair?>()
             appendChatHistory(context, valuess)
             // clearChatHistoryString( context, rowid );
         }
@@ -928,31 +923,28 @@ object DBUtils {
     fun getChatHistory(
         context: Context, rowid: Long,
         playersLocal: BooleanArray
-    ): Array<HistoryPair?>? {
-        var result: Array<HistoryPair?>? = null
+    ): ArrayList<HistoryPair> {
+        var result = java.util.ArrayList<HistoryPair>()
         val columns = arrayOf(DBHelper.SENDER, DBHelper.MESSAGE, DBHelper.CHATTIME)
         val selection = String.format("%s=%d", DBHelper.ROW, rowid)
         initDB(context)
         synchronized(s_dbHelper!!) {
             val cursor = query(TABLE_NAMES.CHAT, columns, selection)
             if (0 < cursor.count) {
-                result = arrayOfNulls(cursor.count)
                 val msgIndex = cursor.getColumnIndex(DBHelper.MESSAGE)
                 val plyrIndex = cursor.getColumnIndex(DBHelper.SENDER)
                 val tsIndex = cursor.getColumnIndex(DBHelper.CHATTIME)
-                var ii = 0
                 while (cursor.moveToNext()) {
                     val msg = cursor.getString(msgIndex)
                     val plyr = cursor.getInt(plyrIndex)
                     val ts = cursor.getInt(tsIndex)
                     val pair = HistoryPair(msg, plyr, ts)
-                    result!![ii] = pair
-                    ++ii
+                    result.add(pair)
                 }
             }
             cursor.close()
         }
-        if (null == result) {
+        if (result.isEmpty()) {
             result = convertChatString(context, rowid, playersLocal)
         }
         return result
@@ -965,7 +957,7 @@ object DBUtils {
     }
 
     fun getCurChat(
-        context: Context?, rowid: Long, player: Int,
+        context: Context, rowid: Long, player: Int,
         startAndEndOut: IntArray
     ): String? {
         var result: String? = null
@@ -974,8 +966,8 @@ object DBUtils {
         val parts = TextUtils.split(all, ":")
         if (3 <= parts.size) {
             result = all!!.substring(2 + parts[0].length + parts[1].length)
-            startAndEndOut[0] = min(result.length.toDouble(), parts[0].toInt())
-            startAndEndOut[1] = min(result.length.toDouble(), parts[1].toInt())
+            startAndEndOut[0] = Math.min(result.length, parts[0].toInt())
+            startAndEndOut[1] = Math.min(result.length, parts[1].toInt())
         }
         Log.d(
             TAG, "getCurChat(): => %s [%d,%d]", result,
@@ -985,7 +977,7 @@ object DBUtils {
     }
 
     fun setCurChat(
-        context: Context?, rowid: Long, player: Int,
+        context: Context, rowid: Long, player: Int,
         text: String?, start: Int, end: Int
     ) {
         var text = text
@@ -1000,7 +992,7 @@ object DBUtils {
     }
 
     @JvmStatic
-    fun getNeedNagging(context: Context?): Array<NeedsNagInfo?>? {
+    fun getNeedNagging(context: Context): Array<NeedsNagInfo?>? {
         var result: Array<NeedsNagInfo?>? = null
         val now = Date().time // in milliseconds
         val columns = arrayOf(
@@ -1038,7 +1030,7 @@ object DBUtils {
     }
 
     @JvmStatic
-    fun getNextNag(context: Context?): Long {
+    fun getNextNag(context: Context): Long {
         var result: Long = 0
         val columns = arrayOf("MIN(" + DBHelper.NEXTNAG + ") as min")
         val selection = "NOT " + DBHelper.NEXTNAG + "= 0"
@@ -1054,7 +1046,7 @@ object DBUtils {
     }
 
     @JvmStatic
-    fun updateNeedNagging(context: Context?, needNagging: Array<NeedsNagInfo>) {
+    fun updateNeedNagging(context: Context, needNagging: Array<NeedsNagInfo>) {
         var updateQuery = ("update %s set %s = ? "
                 + " WHERE %s = ? ")
         updateQuery = String.format(
@@ -1078,7 +1070,7 @@ object DBUtils {
     }
 
     @JvmStatic
-    fun getThumbnail(context: Context?, rowid: Long): Bitmap? {
+    fun getThumbnail(context: Context, rowid: Long): Bitmap? {
         var thumb: Bitmap? = null
         var data: ByteArray? = null
         val columns = arrayOf(DBHelper.THUMBNAIL)
@@ -1118,7 +1110,7 @@ object DBUtils {
 
     // Map of groups rowid (= summaries.groupid) to group info record
     @JvmStatic
-    fun getGroups(context: Context?): Map<Long, GameGroupInfo?> {
+    fun getGroups(context: Context): Map<Long, GameGroupInfo?> {
         var result = s_groupsCache
         if (null == result) {
             result = HashMap()
@@ -1209,7 +1201,7 @@ object DBUtils {
         }
     }
 
-    fun countGames(context: Context?): Int {
+    fun countGames(context: Context): Int {
         var result = 0
         val columns = arrayOf(ROW_ID)
         initDB(context)
@@ -1233,7 +1225,7 @@ object DBUtils {
     )
 
     @JvmStatic
-    fun getGroupGames(context: Context?, groupID: Long): LongArray {
+    fun getGroupGames(context: Context, groupID: Long): LongArray {
         var result = longArrayOf()
         initDB(context)
         val columns = arrayOf(ROW_ID, DBHelper.HASMSGS)
@@ -1264,7 +1256,7 @@ object DBUtils {
     // some hidden games stored with group = -1 thanks to
     // recently-fixed bugs, be sure to skip them.
     @JvmStatic
-    fun getGroupForGame(context: Context?, rowid: Long): Long {
+    fun getGroupForGame(context: Context, rowid: Long): Long {
         var result = GROUPID_UNSPEC.toLong()
         initDB(context)
         val columns = arrayOf(DBHelper.GROUPID)
@@ -1287,7 +1279,7 @@ object DBUtils {
     }
 
     @JvmStatic
-    fun getAnyGroup(context: Context?): Long {
+    fun getAnyGroup(context: Context): Long {
         var result = GROUPID_UNSPEC.toLong()
         val groups = getGroups(context)
         val iter = groups.keys.iterator()
@@ -1299,7 +1291,7 @@ object DBUtils {
     }
 
     @JvmStatic
-    fun getGroup(context: Context?, name: String): Long {
+    fun getGroup(context: Context, name: String): Long {
         var result: Long
         initDB(context)
         synchronized(s_dbHelper!!) { result = getGroupImpl(name) }
@@ -1328,26 +1320,26 @@ object DBUtils {
 
     private fun addGroupImpl(name: String): Long {
         val values = ContentValues()
-        values.put(DBHelper.GROUPNAME, name)
-        values.put(DBHelper.EXPANDED, 1)
+			.putAnd(DBHelper.GROUPNAME, name)
+			.putAnd(DBHelper.EXPANDED, 1)
         val rowid = insert(TABLE_NAMES.GROUPS, values)
         invalGroupsCache()
         return rowid
     }
 
     @JvmStatic
-    fun addGroup(context: Context?, name: String?): Long {
+    fun addGroup(context: Context, name: String): Long {
         var rowid = GROUPID_UNSPEC.toLong()
-        if (null != name && 0 < name.length) {
-            if (null == getGroups(context).get(name)) {
-                synchronized(s_dbHelper!!) { rowid = addGroupImpl(name) }
-            }
+        if (0 < name.length) {
+            synchronized(s_dbHelper!!) {
+				rowid = addGroupImpl(name)
+			}
         }
         return rowid
     }
 
     @JvmStatic
-    fun deleteGroup(context: Context?, groupid: Long) {
+    fun deleteGroup(context: Context, groupid: Long) {
         // Nuke games having this group id
         val selectionGames = String.format("%s=%d", DBHelper.GROUPID, groupid)
 
@@ -1363,28 +1355,28 @@ object DBUtils {
 
     @JvmStatic
     fun setGroupName(
-        context: Context?, groupid: Long,
-        name: String?
+        context: Context, groupid: Long,
+        name: String
     ) {
         val values = ContentValues()
-        values.put(DBHelper.GROUPNAME, name)
+			.putAnd(DBHelper.GROUPNAME, name)
         updateRow(context, TABLE_NAMES.GROUPS, groupid, values)
         invalGroupsCache()
     }
 
     @JvmStatic
     fun setGroupExpanded(
-        context: Context?, groupid: Long,
+        context: Context, groupid: Long,
         expanded: Boolean
     ) {
         val values = ContentValues()
-        values.put(DBHelper.EXPANDED, if (expanded) 1 else 0)
+			.putAnd(DBHelper.EXPANDED, if (expanded) 1 else 0)
         updateRow(context, TABLE_NAMES.GROUPS, groupid, values)
         invalGroupsCache()
     }
 
     @JvmStatic
-    fun getArchiveGroup(context: Context?): Long {
+    fun getArchiveGroup(context: Context): Long {
         val archiveName = LocUtils
             .getString(context, R.string.group_name_archive)
         var archiveGroup = getGroup(context, archiveName)
@@ -1396,17 +1388,17 @@ object DBUtils {
 
     // Change group id of a game
     @JvmStatic
-    fun moveGame(context: Context?, rowid: Long, groupID: Long) {
+    fun moveGame(context: Context, rowid: Long, groupID: Long) {
         Assert.assertTrue(GROUPID_UNSPEC.toLong() != groupID)
         val values = ContentValues()
-        values.put(DBHelper.GROUPID, groupID)
+			.putAnd(DBHelper.GROUPID, groupID)
         updateRow(context, TABLE_NAMES.SUM, rowid, values)
         invalGroupsCache()
         notifyListeners(context, rowid, GameChangeType.GAME_MOVED)
     }
 
     @JvmStatic
-    fun getDupModeGames(context: Context?): Map<Long, Int> {
+    fun getDupModeGames(context: Context): Map<Long, Int> {
         return getDupModeGames(context, ROWID_NOTFOUND.toLong())
     }
 
@@ -1416,7 +1408,7 @@ object DBUtils {
     // committed his turn so caller (DupeModeTimer) will know not to show a
     // notification.
     @JvmStatic
-    fun getDupModeGames(context: Context?, rowid: Long): Map<Long, Int> {
+    fun getDupModeGames(context: Context, rowid: Long): Map<Long, Int> {
         // select giflags from summaries where 0x100 & giflags != 0;
         val result: MutableMap<Long, Int> = HashMap()
         val columns = arrayOf(ROW_ID, DBHelper.NEXTDUPTIMER, DBHelper.TURN_LOCAL)
@@ -1478,10 +1470,10 @@ object DBUtils {
 
     private fun cvForChat(rowid: Long, msg: String, plyr: Int, tsSeconds: Long): ContentValues {
         val values = ContentValues()
-        values.put(DBHelper.ROW, rowid)
-        values.put(DBHelper.MESSAGE, msg)
-        values.put(DBHelper.SENDER, plyr)
-        values.put(DBHelper.CHATTIME, tsSeconds)
+			.putAnd(DBHelper.ROW, rowid)
+			.putAnd(DBHelper.MESSAGE, msg)
+			.putAnd(DBHelper.SENDER, plyr)
+			.putAnd(DBHelper.CHATTIME, tsSeconds)
         return values
     }
 
@@ -1502,7 +1494,7 @@ object DBUtils {
         )
     } // appendChatHistory
 
-    fun clearChatHistory(context: Context?, rowid: Long) {
+    fun clearChatHistory(context: Context, rowid: Long) {
         val selection = String.format("%s = %d", DBHelper.ROW, rowid)
         initDB(context)
         synchronized(s_dbHelper!!) {
@@ -1568,17 +1560,17 @@ object DBUtils {
 
     // Called from jni
     @JvmStatic
-    fun dictsGetMD5Sum(context: Context?, name: String?): String? {
+    fun dictsGetMD5Sum(context: Context, name: String?): String? {
         val info = dictsGetInfo(context, name)
         return info?.md5Sum
     }
 
     // Called from jni
     @JvmStatic
-    fun dictsSetMD5Sum(context: Context?, name: String?, sum: String?) {
+    fun dictsSetMD5Sum(context: Context, name: String?, sum: String) {
         val selection = String.format(NAME_FMT, DBHelper.DICTNAME, name)
         val values = ContentValues()
-        values.put(DBHelper.MD5SUM, sum)
+			.putAnd(DBHelper.MD5SUM, sum)
         initDB(context)
         synchronized(s_dbHelper!!) {
             val result = update(TABLE_NAMES.DICTINFO, values, selection)
@@ -1591,7 +1583,7 @@ object DBUtils {
     }
 
     @JvmStatic
-    fun dictsGetInfo(context: Context?, name: String?): DictInfo? {
+    fun dictsGetInfo(context: Context, name: String?): DictInfo? {
         var result: DictInfo? = null
         val columns = arrayOf(
             DBHelper.ISOCODE,
@@ -1634,18 +1626,18 @@ object DBUtils {
 
     @JvmStatic
     fun dictsSetInfo(
-        context: Context?, dal: DictAndLoc,
+        context: Context, dal: DictAndLoc,
         info: DictInfo
     ) {
         Assert.assertTrueNR(null != info.isoCode())
         val selection = String.format(NAME_FMT, DBHelper.DICTNAME, dal.name)
         val values = ContentValues()
-        values.put(DBHelper.ISOCODE, info.isoCode().toString())
-        values.put(DBHelper.LANGNAME, info.langName)
-        values.put(DBHelper.WORDCOUNT, info.wordCount)
-        values.put(DBHelper.MD5SUM, info.md5Sum)
-        values.put(DBHelper.FULLSUM, info.fullSum)
-        values.put(DBHelper.LOCATION, dal.loc.ordinal)
+			.putAnd(DBHelper.ISOCODE, info.isoCode().toString())
+			.putAnd(DBHelper.LANGNAME, info.langName)
+			.putAnd(DBHelper.WORDCOUNT, info.wordCount)
+			.putAnd(DBHelper.MD5SUM, info.md5Sum)
+			.putAnd(DBHelper.FULLSUM, info.fullSum)
+			.putAnd(DBHelper.LOCATION, dal.loc.ordinal)
         initDB(context)
         synchronized(s_dbHelper!!) {
             val result = update(TABLE_NAMES.DICTINFO, values, selection)
@@ -1659,7 +1651,7 @@ object DBUtils {
 
     @JvmStatic
     fun dictsMoveInfo(
-        context: Context?, name: String?,
+        context: Context, name: String?,
         fromLoc: DictLoc?, toLoc: DictLoc
     ) {
         val selection = String.format(
@@ -1667,7 +1659,7 @@ object DBUtils {
             name, toLoc.ordinal
         )
         val values = ContentValues()
-        values.put(DBHelper.LOCATION, toLoc.ordinal)
+			.putAnd(DBHelper.LOCATION, toLoc.ordinal)
         initDB(context)
         synchronized(s_dbHelper!!) {
             update(TABLE_NAMES.DICTINFO, values, selection)
@@ -1676,7 +1668,7 @@ object DBUtils {
     }
 
     @JvmStatic
-    fun dictsRemoveInfo(context: Context?, name: String) {
+    fun dictsRemoveInfo(context: Context, name: String) {
         val selection = String.format("%s=?", DBHelper.DICTNAME)
         val args = arrayOf(name)
         initDB(context)
@@ -1689,15 +1681,15 @@ object DBUtils {
 
     @JvmStatic
     fun updateServed(
-        context: Context?, dal: DictAndLoc,
+        context: Context, dal: DictAndLoc,
         served: Boolean
     ) {
         // For some reason, loc is sometimes wrong. So just flag the thing
         // wherever it is.
         val selection = String.format(DBHelper.DICTNAME + "='%s' ", dal.name)
-        val values = ContentValues()
         val onServer = if (served) ON_SERVER.YES else ON_SERVER.NO
-        values.put(DBHelper.ON_SERVER, onServer.ordinal)
+        val values = ContentValues()
+			.putAnd(DBHelper.ON_SERVER, onServer.ordinal)
         initDB(context)
         synchronized(s_dbHelper!!) {
             val count = update(TABLE_NAMES.DICTINFO, values, selection)
@@ -1708,20 +1700,20 @@ object DBUtils {
 
     @JvmStatic
     fun addToStudyList(
-        context: Context?, word: String,
+        context: Context, word: String,
         isoCode: ISOCode
     ) {
         val values = ContentValues()
-        values.put(DBHelper.WORD, word)
-        values.put(DBHelper.ISOCODE, isoCode.toString())
+			.putAnd(DBHelper.WORD, word)
+			.putAnd(DBHelper.ISOCODE, isoCode.toString())
         initDB(context)
         synchronized(s_dbHelper!!) { insert(TABLE_NAMES.STUDYLIST, values) }
         notifyStudyListListeners(word, isoCode)
     }
 
     @JvmStatic
-    fun studyListLangs(context: Context?): Array<ISOCode?>? {
-        var result: Array<ISOCode?>? = null
+    fun studyListLangs(context: Context): ArrayList<ISOCode> {
+        val results = ArrayList<ISOCode>()
         val columns = arrayOf(DBHelper.ISOCODE)
         val groupBy = columns[0]
         initDB(context)
@@ -1731,22 +1723,21 @@ object DBUtils {
                 null, null, groupBy, null, null
             )
             val count = cursor.count
-            result = arrayOfNulls(count)
             if (0 < count) {
                 var index = 0
                 val colIndex = cursor.getColumnIndex(columns[0])
                 while (cursor.moveToNext()) {
-                    result!![index++] = ISOCode(cursor.getString(colIndex))
+                    results.add(ISOCode(cursor.getString(colIndex)))
                 }
             }
             cursor.close()
         }
-        return result
+		return results
     }
 
     @JvmStatic
-    fun studyListWords(context: Context?, isoCode: ISOCode?): Array<String?>? {
-        var result: Array<String?>? = null
+    fun studyListWords(context: Context, isoCode: ISOCode?): ArrayList<String> {
+        var result = ArrayList<String>()
         val selection = String.format("%s = '%s'", DBHelper.ISOCODE, isoCode)
         val columns = arrayOf(DBHelper.WORD)
         val orderBy = columns[0]
@@ -1757,12 +1748,11 @@ object DBUtils {
                 selection, orderBy
             )
             val count = cursor.count
-            result = arrayOfNulls(count)
             if (0 < count) {
                 var index = 0
                 val colIndex = cursor.getColumnIndex(DBHelper.WORD)
                 while (cursor.moveToNext()) {
-                    result!![index++] = cursor.getString(colIndex)
+                    result.add(cursor.getString(colIndex))
                 }
             }
             cursor.close()
@@ -1771,7 +1761,7 @@ object DBUtils {
     }
 
     @JvmOverloads
-    fun studyListClear(context: Context?, isoCode: ISOCode?, words: Array<String?>? = null) {
+    fun studyListClear(context: Context, isoCode: ISOCode, words: Array<String>? = null) {
         var selection = String.format("%s = '%s'", DBHelper.ISOCODE, isoCode)
         if (null != words) {
             selection += String.format(
@@ -1784,7 +1774,7 @@ object DBUtils {
     }
 
     fun saveXlations(
-        context: Context?, locale: String?,
+        context: Context, locale: String?,
         data: Map<String?, String?>?, blessed: Boolean
     ) {
         if (null != data && 0 < data.size) {
@@ -1839,7 +1829,7 @@ object DBUtils {
     // You can't have an array of paramterized types in java, so we'll let the
     // caller cast.
     fun getXlations(
-        context: Context?,
+        context: Context,
         locale: String?
     ): Array<Any> {
         val local =
@@ -1871,7 +1861,7 @@ object DBUtils {
         return arrayOf(local, blessed)
     }
 
-    fun dropXLations(context: Context?, locale: String?) {
+    fun dropXLations(context: Context, locale: String?) {
         val selection = String.format(
             "%s = '%s'", DBHelper.LOCALE,
             locale
@@ -1883,7 +1873,7 @@ object DBUtils {
     private fun setStringForSync(db: SQLiteDatabase?, key: String, value: String?) {
         val selection = String.format("%s = '%s'", DBHelper.KEY, key)
         val values = ContentValues()
-        values.put(DBHelper.VALUE, value)
+			.putAnd(DBHelper.VALUE, value)
         val result = DBHelper.update(db, TABLE_NAMES.PAIRS, values, selection).toLong()
         if (0L == result) {
             values.put(DBHelper.KEY, key)
@@ -1947,23 +1937,23 @@ object DBUtils {
     }
 
     @JvmStatic
-    fun setStringFor(context: Context?, key: String, value: String?) {
+    fun setStringFor(context: Context, key: String, value: String?) {
         initDB(context)
         synchronized(s_dbHelper!!) { setStringForSync(s_db, key, value) }
     }
 
     @JvmStatic
-    fun getStringFor(context: Context?, key: String): String? {
+    fun getStringFor(context: Context, key: String): String? {
         return getStringFor(context, key, null)
     }
 
     @JvmStatic
-    fun getStringFor(context: Context?, key: String, dflt: String?): String? {
+    fun getStringFor(context: Context, key: String, dflt: String?): String? {
         return getStringFor(context, key, null, dflt)
     }
 
     fun getStringFor(
-        context: Context?, key: String,
+        context: Context, key: String,
         keyEndsWith: String?, dflt: String?
     ): String? {
         var dflt = dflt
@@ -1973,14 +1963,14 @@ object DBUtils {
     }
 
     @JvmStatic
-    fun setIntFor(context: Context?, key: String, value: Int) {
+    fun setIntFor(context: Context, key: String, value: Int) {
         // Log.d( TAG, "DBUtils.setIntFor(key=%s, val=%d)", key, value );
         val asStr = String.format("%d", value)
         setStringFor(context, key, asStr)
     }
 
     @JvmStatic
-    fun getIntFor(context: Context?, key: String, dflt: Int): Int {
+    fun getIntFor(context: Context, key: String, dflt: Int): Int {
         var dflt = dflt
         val asStr = getStringFor(context, key, null)
         if (null != asStr) {
@@ -1991,13 +1981,13 @@ object DBUtils {
     }
 
     @JvmStatic
-    fun setLongFor(context: Context?, key: String, value: Long) {
+    fun setLongFor(context: Context, key: String, value: Long) {
         // Log.d( TAG, "DBUtils.setIntFor(key=%s, val=%d)", key, value );
         val asStr = String.format("%d", value)
         setStringFor(context, key, asStr)
     }
 
-    fun getLongFor(context: Context?, key: String, dflt: Long): Long {
+    fun getLongFor(context: Context, key: String, dflt: Long): Long {
         var dflt = dflt
         val asStr = getStringFor(context, key, null)
         if (null != asStr) {
@@ -2008,14 +1998,14 @@ object DBUtils {
     }
 
     @JvmStatic
-    fun setBoolFor(context: Context?, key: String, value: Boolean) {
+    fun setBoolFor(context: Context, key: String, value: Boolean) {
         // Log.df( "DBUtils.setBoolFor(key=%s, val=%b)", key, value );
         val asStr = String.format("%b", value)
         setStringFor(context, key, asStr)
     }
 
     @JvmStatic
-    fun getBoolFor(context: Context?, key: String, dflt: Boolean): Boolean {
+    fun getBoolFor(context: Context, key: String, dflt: Boolean): Boolean {
         var dflt = dflt
         val asStr = getStringFor(context, key, null)
         if (null != asStr) {
@@ -2042,18 +2032,18 @@ object DBUtils {
     }
 
     @JvmStatic
-    fun setBytesFor(context: Context?, key: String, bytes: ByteArray?) {
+    fun setBytesFor(context: Context, key: String, bytes: ByteArray?) {
         // DbgUtils.logf( "setBytesFor: writing %d bytes", bytes.length );
         val asStr = Utils.base64Encode(bytes)
         setStringFor(context, key, asStr)
     }
 
     @JvmStatic
-    fun getBytesFor(context: Context?, key: String): ByteArray? {
+    fun getBytesFor(context: Context, key: String): ByteArray? {
         return getBytesFor(context, key, null)
     }
 
-    fun getBytesFor(context: Context?, key: String, keyEndsWith: String?): ByteArray? {
+    fun getBytesFor(context: Context, key: String, keyEndsWith: String?): ByteArray? {
         var bytes: ByteArray? = null
         val asStr = getStringFor(context, key, keyEndsWith, null)
         if (null != asStr) {
@@ -2063,7 +2053,7 @@ object DBUtils {
     }
 
     @JvmStatic
-    fun getSerializableFor(context: Context?, key: String): Serializable? {
+    fun getSerializableFor(context: Context, key: String): Serializable? {
         var value: Serializable? = null
         val str64 = getStringFor(context, key, "")
         if (str64 != null) {
@@ -2074,7 +2064,7 @@ object DBUtils {
 
     @JvmStatic
     fun setSerializableFor(
-        context: Context?, key: String,
+        context: Context, key: String,
         value: Serializable?
     ) {
         val str64 = if (null == value) "" else Utils.serializableToString64(value)
@@ -2088,7 +2078,7 @@ object DBUtils {
     private fun appendLog(context: Context, msg: String) {
         if (0 < LOGLIMIT) {
             val values = ContentValues()
-            values.put(DBHelper.MESSAGE, msg)
+				.putAnd(DBHelper.MESSAGE, msg)
             initDB(context)
             synchronized(s_dbHelper!!) {
                 val rowid = insert(TABLE_NAMES.LOGS, values)
@@ -2139,7 +2129,7 @@ object DBUtils {
     //     values.putNull( DBHelper.CHAT_HISTORY );
     //     updateRow( context, DBHelper.TABLE_NAMES.SUM, rowid, values );
     // }
-    private fun showHiddenGames(context: Context?, db: SQLiteDatabase?) {
+    private fun showHiddenGames(context: Context, db: SQLiteDatabase?) {
         Log.d(TAG, "showHiddenGames()")
         var query = ("select " + ROW_ID + " from summaries WHERE NOT groupid"
                 + " IN (SELECT " + ROW_ID + " FROM groups);")
@@ -2169,14 +2159,14 @@ object DBUtils {
         }
     }
 
-    private fun initDB(context: Context?) {
+    private fun initDB(context: Context) {
         synchronized(DBUtils::class.java) {
             if (null == s_dbHelper) {
                 Assert.assertNotNull(context)
                 s_dbHelper = DBHelper(context)
                 // force any upgrade
-                s_dbHelper.getWritableDatabase().close()
-                s_db = s_dbHelper.getWritableDatabase()
+                s_dbHelper!!.getWritableDatabase().close()
+                s_db = s_dbHelper!!.getWritableDatabase()
 
                 // Workaround for bug somewhere. Run this once on startup
                 // before anything else uses the db.
@@ -2186,7 +2176,7 @@ object DBUtils {
     }
 
     @JvmStatic
-    fun hideGames(context: Context?, rowid: Long) {
+    fun hideGames(context: Context, rowid: Long) {
         if (BuildConfig.NON_RELEASE) {
             val nonID = 500 + Utils.nextRandomInt() % 1000
             val query = String.format(
@@ -2207,7 +2197,7 @@ object DBUtils {
     }
 
     private fun updateRow(
-        context: Context?, table: TABLE_NAMES,
+        context: Context, table: TABLE_NAMES,
         rowid: Long, values: ContentValues
     ) {
         initDB(context)
@@ -2246,7 +2236,7 @@ object DBUtils {
     }
 
     private fun notifyListeners(
-        context: Context?, rowid: Long,
+        context: Context, rowid: Long,
         change: GameChangeType
     ) {
         synchronized(s_listeners) {
@@ -2308,13 +2298,13 @@ object DBUtils {
 
     interface DBChangeListener {
         fun gameSaved(
-            context: Context?, rowid: Long,
+            context: Context, rowid: Long,
             change: GameChangeType?
         )
     }
 
     interface StudyListListener {
-        fun onWordAdded(word: String?, isoCode: ISOCode?)
+        fun onWordAdded(word: String, isoCode: ISOCode)
     }
 
     class HistoryPair(var msg: String, var playerIndx: Int, var ts: Int)
@@ -2409,7 +2399,7 @@ object DBUtils {
                 return m_cachedCount
             }
 
-        fun getAsText(context: Context?): String {
+        fun getAsText(context: Context): String {
             val result: String
             val count = mSents.size
             if (0 == count) {
@@ -2428,7 +2418,7 @@ object DBUtils {
                         }
 
                         InviteMeans.SMS_USER -> {
-                            fmt = R.string.invit_expl_usrsms_fmt
+                            val fmt = R.string.invit_expl_usrsms_fmt
                             msg = LocUtils.getString(context, fmt, timestamp)
                         }
 
@@ -2469,7 +2459,7 @@ object DBUtils {
             return result
         }
 
-        fun getKPName(context: Context?): String? {
+        fun getKPName(context: Context): String? {
             var mqttID: String? = null
             for (si in mSents) {
                 val means = si.mMeans

@@ -43,18 +43,20 @@ class LegalPhoniesDelegate(delegator: Delegator, sis: Bundle?) :
 		public fun haveLegalPhonies(context: Context): Boolean
 			= !getDataPrv(context).isEmpty()
 
-		private fun getDataPrv( context: Context ): HashMap<ISOCode, Array<String>> {
-			val result = HashMap<ISOCode, Array<String>>()
+		private fun getDataPrv( context: Context ): HashMap<ISOCode, ArrayList<String>> {
+			val result = HashMap<ISOCode, ArrayList<String>>()
 
 			for ( code in XwJNI.dvc_getLegalPhonyCodes() ) {
 				val strings = XwJNI.dvc_getLegalPhoniesFor( code )
-				result.put(code, strings)
+				val al = ArrayList<String>()
+					al.addAll(strings)
+				result.put(code, al)
 			}
 			return result
 		}
     }
 
-	override fun getData( context: Context ): HashMap<ISOCode, Array<String>>
+	override fun getData( context: Context ): HashMap<ISOCode, ArrayList<String>>
 		= getDataPrv(context)
 
 	override fun clearWords( isoCode: ISOCode, words: Array<String> )

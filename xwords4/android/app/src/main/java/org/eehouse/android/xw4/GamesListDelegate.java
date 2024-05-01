@@ -1825,7 +1825,7 @@ public class GamesListDelegate extends ListDelegateBase
                 Utils.setItemVisible( menu, R.id.games_menu_legalPhonies, enable );
 
                 enable = nothingSelected && XWPrefs.getStudyEnabled( m_activity )
-                    && 0 < DBUtils.studyListLangs( m_activity ).length;
+                    && ! DBUtils.studyListLangs( m_activity ).isEmpty();
                 Utils.setItemVisible( menu, R.id.games_menu_study, enable );
 
                 enable = nothingSelected && XwJNI.hasKnownPlayers();

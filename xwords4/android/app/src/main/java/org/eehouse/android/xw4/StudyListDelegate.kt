@@ -19,6 +19,7 @@
 
 package org.eehouse.android.xw4
 
+import android.app.Activity
 import android.content.Context
 import android.os.Bundle
 
@@ -36,18 +37,17 @@ class StudyListDelegate(delegator: Delegator, sis: Bundle?) :
 		@JvmStatic
 		public fun launch( delegator: Delegator )
 		{
-			launch( delegator, null )
+			launch( delegator )
 		}
 
 		@JvmStatic
-		public fun launch( delegator: Delegator, isoCode: ISOCode? )
+		public fun launch( delegator: Delegator, isoCode: ISOCode? = null )
 		{
-			val activity = delegator.getActivity()
+			val context = delegator.getActivity() as Context
 			if ( null == isoCode ) {
-				Assert.assertTrueNR( 0 < DBUtils.studyListLangs( activity ).size )
+				Assert.assertTrueNR( 0 < DBUtils.studyListLangs( context ).size )
 			} else {
-				Assert.assertTrueNR( 0 < DBUtils
-										 .studyListWords( activity, isoCode ).size )
+				Assert.assertTrueNR( DBUtils.studyListWords( context, isoCode!! ).isNotEmpty() )
 			}
 
 			delegator.addFragment( StudyListFrag.newInstance( delegator ),
@@ -80,11 +80,9 @@ class StudyListDelegate(delegator: Delegator, sis: Bundle?) :
     //////////////////////////////////////////////////
     // Abstract methods from superclass
     //////////////////////////////////////////////////
-	override fun getData( context: Context ): HashMap<ISOCode, Array<String>> {
-		val result = HashMap<ISOCode, Array<String>>()
-
-		val codes = DBUtils.studyListLangs( m_activity )
-		for ( code in codes ) {
+	override fun getData( context: Context ): HashMap<ISOCode, ArrayList<String>> {
+		val result = HashMap<ISOCode, ArrayList<String>>()
+		for ( code in DBUtils.studyListLangs( m_activity ) ) {
 			val words = DBUtils.studyListWords( m_activity, code )
 			result.put(code, words)
 		}

@@ -950,7 +950,7 @@ public class BoardDelegate extends DelegateBase
 
         enable = XWPrefs.getStudyEnabled( m_activity )
             && null != m_gi
-            && 0 < DBUtils.studyListWords( m_activity, m_gi.isoCode() ).length;
+            && ! DBUtils.studyListWords( m_activity, m_gi.isoCode() ).isEmpty();
         Utils.setItemVisible( menu, R.id.board_menu_study, enable );
 
         return true;

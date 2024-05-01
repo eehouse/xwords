@@ -52,7 +52,7 @@ abstract class IsoWordsBase(delegator: Delegator, sis: Bundle?,
     private var m_origTitle: String? = null
 
 	// Subclasses must override these
-	abstract fun getData(context: Context): HashMap<Utils.ISOCode, Array<String>>
+	abstract fun getData(context: Context): HashMap<Utils.ISOCode, ArrayList<String>>
 	abstract fun clearWords(isoCode: Utils.ISOCode, words: Array<String> )
 	abstract fun getTitleID(): Int
 
@@ -143,7 +143,7 @@ abstract class IsoWordsBase(delegator: Delegator, sis: Bundle?,
 			DlgDelegate.Action.SL_CLEAR_ACTION -> {
 				var selWords: Array<String>? = getSelWords()
 				if ( null != selWords ) {
-					clearWords( m_langCodes!![m_langPosition], selWords )
+					clearWords( m_langCodes!![m_langPosition], selWords!! )
 					clearSels()
 				}
 				initOrFinish()
@@ -317,7 +317,8 @@ abstract class IsoWordsBase(delegator: Delegator, sis: Bundle?,
     {
         val isoCode = m_langCodes!![m_langPosition]
 		val data = getData( m_activity )
-        m_words = data.get( isoCode )
+		val al = data.get( isoCode )
+        m_words =  al?.toTypedArray()
 
         makeAdapter()
 

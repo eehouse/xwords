@@ -193,7 +193,7 @@ public class GameListItem extends LinearLayout
     public void expandedChanged( boolean nowExpanded )
     {
         m_expanded = nowExpanded;
-        DBUtils.setExpanded( m_rowid, m_expanded );
+        DBUtils.setExpanded( m_context, m_rowid, m_expanded );
 
         makeThumbnailIf( m_expanded );
 

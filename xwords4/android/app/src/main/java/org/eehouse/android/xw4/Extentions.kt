@@ -18,6 +18,7 @@
  */
 package org.eehouse.android.xw4
 
+import android.content.ContentValues
 import android.os.Bundle
 
 fun Bundle.putLongAnd(key: String, value: Long): Bundle {
@@ -38,4 +39,24 @@ fun Bundle.putBooleanArrayAnd(key: String, value: BooleanArray?): Bundle {
 fun Bundle.putStringArrayAnd(key: String, value: Array<String?>?): Bundle {
 	this.putStringArray(key, value)
     return this
+}
+
+fun ContentValues.putAnd(key: String, value: Int): ContentValues {
+	this.put(key, value)
+	return this
+}
+
+fun ContentValues.putAnd(key: String, value: String?): ContentValues {
+	this.put(key, value)
+	return this
+}
+
+fun ContentValues.putAnd(key: String, value: Long): ContentValues {
+	this.put(key, value)
+	return this
+}
+
+fun ContentValues.putAnd(key: String, value: ByteArray): ContentValues {
+	this.put(key, value)
+	return this
 }
