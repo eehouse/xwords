@@ -1,6 +1,6 @@
 /* -*- compile-command: "find-and-gradle.sh inXw4dDeb"; -*- */
 /*
- * Copyright 2014 - 2016 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2014 - 2024 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -18,22 +18,22 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-package org.eehouse.android.xw4;
+package org.eehouse.android.xw4
 
-import android.os.Bundle;
+import android.os.Bundle
 
-public class BoardFrag extends XWFragment {
+class KnownPlayersFrag(): XWFragment() {
 
-    public BoardFrag() {}
+	companion object {
+		@JvmStatic
+		fun newInstance( parent: Delegator ): XWFragment
+		{
+			return KnownPlayersFrag().setParentName( parent )
+		}
+	}
 
-    public static XWFragment newInstance( Delegator parent )
-    {
-        return new BoardFrag().setParentName( parent );
-    }
-
-    @Override
-    public void onCreate( Bundle sis )
-    {
-        super.onCreate( new BoardDelegate( this, sis ), sis, true );
-    }
+	override fun onCreate( sis: Bundle? )
+	{
+		super.onCreate( KnownPlayersDelegate( this, sis ), sis, true )
+	}
 }

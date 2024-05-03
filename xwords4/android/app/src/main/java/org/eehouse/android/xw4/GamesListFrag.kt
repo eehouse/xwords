@@ -1,7 +1,7 @@
 /* -*- compile-command: "find-and-gradle.sh inXw4dDeb"; -*- */
 /*
- * Copyright 2014 - 2016 by Eric House (xwords@eehouse.org).  All rights
- * reserved.
+ * Copyright 2014 - 2024 by Eric House (xwords@eehouse.org).  All
+ * rights reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -22,18 +22,18 @@ package org.eehouse.android.xw4;
 
 import android.os.Bundle;
 
-public class GamesListFrag extends XWFragment {
+class GamesListFrag(): XWFragment() {
 
-    public GamesListFrag() {}
+	companion object {
+		@JvmStatic
+		fun newInstance(): XWFragment
+		{
+			return GamesListFrag().setParentName(null);
+		}
+	}
 
-    public static XWFragment newInstance()
+    override fun onCreate( sis: Bundle? )
     {
-        return new GamesListFrag().setParentName(null);
-    }
-
-    @Override
-    public void onCreate( Bundle sis )
-    {
-        super.onCreate( new GamesListDelegate( this, sis ), sis, true );
+        super.onCreate( GamesListDelegate( this, sis ), sis, true );
     }
 }

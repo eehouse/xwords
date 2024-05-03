@@ -17,22 +17,22 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-package org.eehouse.android.xw4;
+package org.eehouse.android.xw4
 
-import android.os.Bundle;
+import android.os.Bundle
 
-public class DictsFrag extends XWFragment {
+public class DictsFrag (): XWFragment() {
 
-    public DictsFrag() {}
-
-    public static XWFragment newInstance( Delegator parent )
-    {
-        return new DictsFrag().setParentName( parent );
+    companion object {
+		@JvmStatic
+        fun newInstance( parent: Delegator ): XWFragment
+        {
+            return DictsFrag ().setParentName(parent)
+        }
     }
 
-    @Override
-    public void onCreate( Bundle sis )
+    override fun onCreate( sis: Bundle? )
     {
-        super.onCreate( new DictsDelegate( this, sis ), sis, true );
+        super.onCreate( DictsDelegate( this, sis ), sis, true )
     }
 }
