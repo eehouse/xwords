@@ -100,7 +100,7 @@ android {
     defaultConfig {
         // HostApduService requires 19. But is it a problem?
         if ( USE_KITKAT_MQTT ) {
-            minSdk = 19 // Required for paho client > 3:1.1.+
+            minSdk = 21			// this will abandon some users; consider
         } else {
             minSdk = 14
         }
