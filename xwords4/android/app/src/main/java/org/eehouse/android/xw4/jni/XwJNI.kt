@@ -459,7 +459,7 @@ class XwJNI private constructor() {
         @Synchronized
         fun initNew(
             gi: CurGameInfo, selfAddr: CommsAddrRec?, hostAddr: CommsAddrRec?,
-            util: UtilCtxt, draw: DrawCtx, cp: CommonPrefs, procs: TransportProcs
+            util: UtilCtxt?, draw: DrawCtx?, cp: CommonPrefs, procs: TransportProcs?
         ): GamePtr? {
             // Only standalone doesn't provide self address
             Assert.assertTrueNR(null != selfAddr || gi.serverRole == DeviceRole.SERVER_STANDALONE)
@@ -513,9 +513,9 @@ class XwJNI private constructor() {
             gi: CurGameInfo,
             selfAddr: CommsAddrRec?,
             hostAddr: CommsAddrRec?,
-            util: UtilCtxt,
-            draw: DrawCtx, cp: CommonPrefs,
-            procs: TransportProcs
+            util: UtilCtxt?,
+            draw: DrawCtx?, cp: CommonPrefs,
+            procs: TransportProcs?
         )
 
         @JvmStatic

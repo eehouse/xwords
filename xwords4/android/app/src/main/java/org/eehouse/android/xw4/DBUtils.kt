@@ -2380,7 +2380,7 @@ object DBUtils {
                             hashes[means] = devs
                         }
                         devs = hashes[means]!!
-                        var target = si.mTarget
+                        var target: String? = si.mTarget
                         if (null == target) {
                             target = String.format("%d", ++fakeCount)
                         }
