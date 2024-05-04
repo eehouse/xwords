@@ -93,7 +93,7 @@ class RematchConfigView(val mContext: Context, attrs: AttributeSet)
         }
 
         mCurRO = mRos.get( checkedId )
-        mNewOrder = XwJNI.server_figureOrderKT( mWrapper!!.gamePtr(), mCurRO )
+        mNewOrder = XwJNI.server_figureOrderKT( mWrapper!!.gamePtr(), mCurRO!!)
 
         if ( mUserEditing ) {
             if ( mNAShown != true ) {
@@ -129,7 +129,7 @@ class RematchConfigView(val mContext: Context, attrs: AttributeSet)
                 val lastSel = RematchOrder.entries[ordinal]
 
                 for ( ro in RematchOrder.entries ) {
-                    val strId = ro.getStrID()
+                    val strId = ro.strID
                     if ( 0 != strId ) {
                         val button = RadioButton( mContext )
                         button.setText( LocUtils.getString( mContext, strId ) )
