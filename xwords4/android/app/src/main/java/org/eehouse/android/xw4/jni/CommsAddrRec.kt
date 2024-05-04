@@ -392,7 +392,7 @@ class CommsAddrRec : Serializable {
         when (typ) {
             CommsConnType.COMMS_CONN_RELAY -> Assert.failDbg()
             CommsConnType.COMMS_CONN_BT -> {
-                val strs: Array<String> = BTUtils.getBTNameAndAddress(context)
+                val strs: Array<String>? = BTUtils.getBTNameAndAddress(context)
                 if (null != strs) {
                     bt_hostName = strs[0]
                     bt_btAddr = strs[1]
@@ -400,7 +400,7 @@ class CommsAddrRec : Serializable {
             }
 
             CommsConnType.COMMS_CONN_SMS -> {
-                val pi: SMSPhoneInfo = SMSPhoneInfo.get(context)
+                val pi: SMSPhoneInfo? = SMSPhoneInfo.get(context)
                 // Do we have phone permission? If not, shouldn't be set at all!
                 if (null != pi) {
                     sms_phone = pi.number
