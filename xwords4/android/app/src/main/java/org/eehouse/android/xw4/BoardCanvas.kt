@@ -48,7 +48,7 @@ import kotlin.math.abs
 import kotlin.math.max
 
 open class BoardCanvas private constructor(
-    private val m_context: Context, private val m_activity: Activity?, bitmap: Bitmap,
+    private val mContext: Context, private val m_activity: Activity?, bitmap: Bitmap,
     private var m_jniThread: JNIThread?, dims: BoardDims?,
     private val mNRP: NewRecentsProc?
 ) : Canvas(bitmap), DrawCtx {
@@ -56,7 +56,7 @@ open class BoardCanvas private constructor(
     private val m_strokePaint: Paint
     private val m_drawPaint: Paint
     private var m_tileStrokePaint: Paint? = null
-    private var m_scores: Array<Array<String?>>
+    private var mScores: Array<Array<String?>?>? = null
     private var m_remText: String? = null
     private val m_mediumFontHt: Int
     private val m_defaultFontHt: Int
@@ -82,7 +82,7 @@ open class BoardCanvas private constructor(
         private set
     private var m_pendingScore = 0
     private var m_dict: DictWrapper? = null
-    protected var m_dictChars: Array<String?>?
+    protected var mDictChars: Array<String>? = null
     private val m_hasSmallScreen: Boolean
     private var m_backgroundUsed = 0x00000000
     private var mPendingCount = 0
@@ -96,7 +96,7 @@ open class BoardCanvas private constructor(
     // proportionally.  We know the ht we passed to Paint to get the
     // height we've now measured; that gives a percent to multiply any
     // future wantHt by.  Ditto for the descent
-    private inner class FontDims internal constructor(
+    inner class FontDims internal constructor(
         askedHt: Float,
         topRow: Int,
         bottomRow: Int,
@@ -136,7 +136,7 @@ open class BoardCanvas private constructor(
         }
     }
 
-    protected var m_fontDims: FontDims? = null
+    var m_fontDims: FontDims? = null
 
     constructor(context: Context, bitmap: Bitmap) : this(context, null, bitmap, null, null, null)
     constructor(
@@ -172,7 +172,7 @@ open class BoardCanvas private constructor(
         remCount: Int
     ): Boolean {
         fillRectOther(rect, CommonPrefs.COLOR_BACKGRND)
-        m_scores = arrayOfNulls(numPlayers)
+        mScores = arrayOfNulls(numPlayers)
         return true
     }
 
@@ -231,7 +231,7 @@ open class BoardCanvas private constructor(
             sb.append(dsi.nTilesLeft)
         }
         scoreInfo[indx] = sb.toString()
-        m_scores[dsi.playerNum] = scoreInfo
+        mScores!![dsi.playerNum] = scoreInfo
         var rectHt = rect.height()
         if (!dsi.isTurn) {
             rectHt /= 2
@@ -267,15 +267,15 @@ open class BoardCanvas private constructor(
         } else if (DEBUG_DRAWFRAMES && dsi.selected) {
             fillRectOther(rOuter, CommonPrefs.COLOR_FOCUS)
         }
-        val texts = m_scores[dsi.playerNum]
+        val texts = mScores!![dsi.playerNum]
         var color = m_playerColors[dsi.playerNum]
         if (!m_prefs.allowPeek) {
             color = adjustColor(color)
         }
         m_fillPaint.setColor(color)
-        val height = rOuter.height() / texts.size
+        val height = rOuter.height() / texts!!.size
         rOuter.bottom = rOuter.top + height
-        for (text in texts) {
+        for (text in texts!!) {
             drawCentered(text, rOuter, null)
             rOuter.offset(0, height)
         }
@@ -317,7 +317,7 @@ open class BoardCanvas private constructor(
     }
 
     override fun drawCell(
-        rect: Rect, text: String, tile: Int, tileValue: Int,
+        rect: Rect, text: String?, tile: Int, tileValue: Int,
         owner: Int, bonus: Int, flags: Int, tvType: TileValueType
     ): Boolean {
         var text: String? = text
@@ -454,7 +454,7 @@ open class BoardCanvas private constructor(
         return true
     }
 
-    override fun drawTile(rect: Rect, text: String, `val`: Int, flags: Int): Boolean {
+    override fun drawTile(rect: Rect, text: String?, `val`: Int, flags: Int): Boolean {
         return drawTileImpl(rect, text, `val`, flags, true)
     }
 
@@ -502,7 +502,7 @@ open class BoardCanvas private constructor(
         drawCentered(text, rect, null)
         rect.offset(0, rect.height())
         drawCentered(
-            LocUtils.getString(m_context, R.string.pts),
+            LocUtils.getString(mContext, R.string.pts),
             rect, null
         )
     }
@@ -548,12 +548,12 @@ open class BoardCanvas private constructor(
         if (curPtr != newPtr) {
             if (0L == newPtr) {
                 m_fontDims = null
-                m_dictChars = null
+                mDictChars = null
             } else if (0L == curPtr
                 || !dict_tilesAreSame(curPtr, newPtr)
             ) {
                 m_fontDims = null
-                m_dictChars = null
+                mDictChars = null
                 doPost = true
             }
             if (null != m_dict) {
@@ -575,7 +575,7 @@ open class BoardCanvas private constructor(
         } else if (null == m_dict) {
             // Log.d( TAG, "updateDictChars(): m_dict still null!!" );
         } else {
-            m_dictChars = dict_getChars(m_dict!!.dictPtr)
+            mDictChars = dict_getChars(m_dict!!.dictPtr)
             // draw again
             m_jniThread!!.handle(JNIThread.JNICmd.CMD_INVALALL)
         }
@@ -616,7 +616,7 @@ open class BoardCanvas private constructor(
     }
 
     private fun drawTileImpl(
-        rect: Rect, text: String, `val`: Int,
+        rect: Rect, text: String?, `val`: Int,
         flags: Int, clearBack: Boolean
     ): Boolean {
         val canDraw = figureFontDims()
@@ -725,7 +725,7 @@ open class BoardCanvas private constructor(
         drawBitmap(bitmap, null, rect, m_drawPaint)
     }
 
-    private fun positionDrawTile(rect: Rect, text: String, `val`: Int) {
+    private fun positionDrawTile(rect: Rect, text: String?, `val`: Int) {
         var text: String? = text
         val offset = 2
         if (null != text) {
@@ -777,7 +777,7 @@ open class BoardCanvas private constructor(
     }
 
     private fun figureFontDims(): Boolean {
-        if (null == m_fontDims && null != m_dictChars) {
+        if (null == m_fontDims && null != mDictChars) {
             val ht = 24
             val width = 20
             val paint = Paint() // CommonPrefs.getFontFlags()??
@@ -800,7 +800,7 @@ open class BoardCanvas private constructor(
             // DbgUtils.logf( "using as baseline: " + ht );
             val bounds = Rect()
             var maxWidth = 0
-            for (str in m_dictChars!!) {
+            for (str in mDictChars!!) {
                 if (str!!.length == 1 && str[0].code >= 32) {
                     canvas.drawText(str, 0f, ht.toFloat(), paint)
                     paint.getTextBounds(str, 0, 1, bounds)
@@ -878,7 +878,7 @@ open class BoardCanvas private constructor(
     }
 
     private fun loadAndRecolor(resID: Int, useDark: Boolean): Drawable {
-        val res = m_context.resources
+        val res = mContext.resources
         var arrow = res.getDrawable(resID)
         if (!useDark) {
             val bitmap = Bitmap.createBitmap(
@@ -923,8 +923,8 @@ open class BoardCanvas private constructor(
     }
 
     init {
-        m_hasSmallScreen = Utils.hasSmallScreen(m_context)
-        val res = m_context.resources
+        m_hasSmallScreen = Utils.hasSmallScreen(mContext)
+        val res = mContext.resources
         val scale = res.displayMetrics.density
         m_defaultFontHt = (MIN_FONT_DIPS * scale + 0.5f).toInt()
         m_mediumFontHt = m_defaultFontHt * 3 / 2
@@ -936,7 +936,7 @@ open class BoardCanvas private constructor(
         m_strokePaint = Paint()
         m_strokePaint.style = Paint.Style.STROKE
         m_origin = res.getDrawable(R.drawable.ic_origin)
-        m_prefs = CommonPrefs.get(m_context)
+        m_prefs = CommonPrefs.get(mContext)
         m_playerColors = m_prefs.playerColors
         m_bonusColors = m_prefs.bonusColors
         m_otherColors = m_prefs.otherColors

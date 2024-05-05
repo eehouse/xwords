@@ -23,7 +23,7 @@ import android.graphics.Bitmap
 import android.graphics.Rect
 import org.eehouse.android.xw4.jni.XwJNI
 
-class ThumbCanvas(context: Context?, bitmap: Bitmap?)
+class ThumbCanvas(context: Context, bitmap: Bitmap)
 	: BoardCanvas(context, bitmap) {
     // These should not be needed if common code gets fixed!  So the
     // whole class should go away. PENDING
@@ -46,7 +46,7 @@ class ThumbCanvas(context: Context?, bitmap: Bitmap?)
     override fun dictChanged(dictPtr: Long) {
         if (0L != dictPtr) {
             m_fontDims = null
-            m_dictChars = XwJNI.dict_getChars(dictPtr)
+            mDictChars = XwJNI.dict_getChars(dictPtr)
         }
     }
 }

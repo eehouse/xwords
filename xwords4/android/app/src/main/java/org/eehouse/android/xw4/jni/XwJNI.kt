@@ -868,7 +868,7 @@ class XwJNI private constructor() {
         @JvmStatic
         external fun dict_tilesAreSame(dict1: Long, dict2: Long): Boolean
         @JvmStatic
-        external fun dict_getChars(dict: Long): Array<String?>?
+        external fun dict_getChars(dict: Long): Array<String>?
         @JvmStatic
         fun dict_getInfo(
             dict: ByteArray?, name: String?, path: String?,
