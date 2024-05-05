@@ -20,6 +20,7 @@ package org.eehouse.android.xw4
 
 import android.content.ContentValues
 import android.os.Bundle
+import org.json.JSONObject
 
 fun Bundle.putLongAnd(key: String, value: Long): Bundle {
 	this.putLong( key, value )
@@ -58,5 +59,15 @@ fun ContentValues.putAnd(key: String, value: Long): ContentValues {
 
 fun ContentValues.putAnd(key: String, value: ByteArray): ContentValues {
 	this.put(key, value)
+	return this
+}
+
+fun JSONObject.putAnd(key: String, value: String): JSONObject {
+	this.put( key, value )
+	return this
+}
+
+fun JSONObject.putAnd(key: String, value: Int): JSONObject {
+	this.put( key, value )
 	return this
 }
