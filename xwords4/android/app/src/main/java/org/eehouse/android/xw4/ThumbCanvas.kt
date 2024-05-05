@@ -45,7 +45,7 @@ class ThumbCanvas(context: Context, bitmap: Bitmap)
     // call
     override fun dictChanged(dictPtr: Long) {
         if (0L != dictPtr) {
-            m_fontDims = null
+            mFontDims = null
             mDictChars = XwJNI.dict_getChars(dictPtr)
         }
     }

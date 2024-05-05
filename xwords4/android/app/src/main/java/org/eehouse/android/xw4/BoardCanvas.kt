@@ -29,7 +29,6 @@ import android.graphics.RectF
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.os.Build
-import org.eehouse.android.xw4.BoardCanvas
 import org.eehouse.android.xw4.DbgUtils.assertOnUIThread
 import org.eehouse.android.xw4.jni.BoardDims
 import org.eehouse.android.xw4.jni.BoardHandler.NewRecentsProc
@@ -48,43 +47,43 @@ import kotlin.math.abs
 import kotlin.math.max
 
 open class BoardCanvas private constructor(
-    private val mContext: Context, private val m_activity: Activity?, bitmap: Bitmap,
-    private var m_jniThread: JNIThread?, dims: BoardDims?,
+    private val mContext: Context, private val mActivity: Activity?, bitmap: Bitmap,
+    private var mJniThread: JNIThread?, dims: BoardDims?,
     private val mNRP: NewRecentsProc?
 ) : Canvas(bitmap), DrawCtx {
-    private val m_fillPaint: Paint
-    private val m_strokePaint: Paint
-    private val m_drawPaint: Paint
-    private var m_tileStrokePaint: Paint? = null
+    private val mFillPaint: Paint
+    private val mStrokePaint: Paint
+    private val mDrawPaint: Paint
+    private var mTileStrokePaint: Paint? = null
     private var mScores: Array<Array<String?>?>? = null
-    private var m_remText: String? = null
-    private val m_mediumFontHt: Int
-    private val m_defaultFontHt: Int
-    private var m_minRemWidth = 0
-    private val m_boundsScratch = Rect()
-    private var m_letterRect: Rect? = null
-    private var m_valRect: Rect? = null
-    private val m_bonusColors: IntArray
-    private val m_playerColors: IntArray
-    private val m_otherColors: IntArray
-    private val m_bonusSummaries: Array<String?>
-    private val m_prefs: CommonPrefs
-    private var m_lastSecsLeft = 0
-    private var m_lastTimerPlayer = 0
-    private var m_lastTimerTurnDone = false
-    private var m_inTrade = false
-    private var m_darkOnLight = false
-    private val m_origin: Drawable
-    private var m_blackArrow = false
-    private var m_rightArrow: Drawable? = null
-    private var m_downArrow: Drawable? = null
+    private var mRemText: String? = null
+    private val mMediumFontHt: Int
+    private val mDefaultFontHt: Int
+    private var mMinRemWidth = 0
+    private val mBoundsScratch = Rect()
+    private var mLetterRect: Rect? = null
+    private var mValRect: Rect? = null
+    private val mBonusColors: IntArray
+    private val mPlayerColors: IntArray
+    private val mOtherColors: IntArray
+    private val mBonusSummaries: Array<String?>
+    private val mPrefs: CommonPrefs
+    private var mLastSecsLeft = 0
+    private var mLastTimerPlayer = 0
+    private var mLastTimerTurnDone = false
+    private var mInTrade = false
+    private var mDarkOnLight = false
+    private val mOrigin: Drawable
+    private var mBlackArrow = false
+    private var mRightArrow: Drawable? = null
+    private var mDownArrow: Drawable? = null
     var curPlayer = -1
         private set
-    private var m_pendingScore = 0
-    private var m_dict: DictWrapper? = null
+    private var mPendingScore = 0
+    private var mDict: DictWrapper? = null
     protected var mDictChars: Array<String>? = null
-    private val m_hasSmallScreen: Boolean
-    private var m_backgroundUsed = 0x00000000
+    private val mHasSmallScreen: Boolean
+    private var mBackgroundUsed = 0x00000000
     private var mPendingCount = 0
     private var mSawRecents = false
 
@@ -102,9 +101,9 @@ open class BoardCanvas private constructor(
         bottomRow: Int,
         width: Float
     ) {
-        private val m_htProportion: Float
-        private val m_descentProportion: Float
-        private val m_widthProportion: Float
+        private val mHtProportion: Float
+        private val mDescentProportion: Float
+        private val mWidthProportion: Float
 
         init {
             // DbgUtils.logf( "FontDims(): askedHt=" + askedHt );
@@ -112,31 +111,29 @@ open class BoardCanvas private constructor(
             // DbgUtils.logf( "FontDims(): bottomRow=" + bottomRow );
             // DbgUtils.logf( "FontDims(): width=" + width );
             val gotHt = (bottomRow - topRow + 1).toFloat()
-            m_htProportion = gotHt / askedHt
+            mHtProportion = gotHt / askedHt
             Assert.assertTrue(bottomRow + 1 >= askedHt)
             val descent = bottomRow + 1 - askedHt
             // DbgUtils.logf( "descent: " + descent );
-            m_descentProportion = descent / askedHt
-            Assert.assertTrue(m_descentProportion >= 0)
-            m_widthProportion = width / askedHt
-            // DbgUtils.logf( "m_htProportion: " + m_htProportion );
-            // DbgUtils.logf( "m_descentProportion: " + m_descentProportion );
+            mDescentProportion = descent / askedHt
+            Assert.assertTrue(mDescentProportion >= 0)
+            mWidthProportion = width / askedHt
         }
 
         fun heightFor(ht: Int): Int {
-            return (ht / m_htProportion).toInt()
+            return (ht / mHtProportion).toInt()
         }
 
         fun descentFor(ht: Int): Int {
-            return (ht * m_descentProportion).toInt()
+            return (ht * mDescentProportion).toInt()
         }
 
         fun widthFor(width: Int): Int {
-            return (width / m_widthProportion).toInt()
+            return (width / mWidthProportion).toInt()
         }
     }
 
-    var m_fontDims: FontDims? = null
+    var mFontDims: FontDims? = null
 
     constructor(context: Context, bitmap: Bitmap) : this(context, null, bitmap, null, null, null)
     constructor(
@@ -148,21 +145,21 @@ open class BoardCanvas private constructor(
         assertOnUIThread()
         if (null == jniThread) {
             // do nothing
-        } else if (jniThread != m_jniThread) {
+        } else if (jniThread != mJniThread) {
             Log.w(TAG, "changing threads")
         }
-        m_jniThread = jniThread
+        mJniThread = jniThread
         updateDictChars()
     }
 
     fun curPending(): Int {
-        return m_pendingScore
+        return mPendingScore
     }
 
     fun setInTrade(inTrade: Boolean) {
-        if (m_inTrade != inTrade) {
-            m_inTrade = inTrade
-            m_jniThread!!.handle(JNIThread.JNICmd.CMD_INVALALL)
+        if (mInTrade != inTrade) {
+            mInTrade = inTrade
+            mJniThread!!.handle(JNIThread.JNICmd.CMD_INVALALL)
         }
     }
 
@@ -183,18 +180,18 @@ open class BoardCanvas private constructor(
         val showREM = 0 <= nTilesLeft
         if (showREM) {
             // should cache a formatter
-            m_remText = String.format("%d", nTilesLeft)
-            m_fillPaint.textSize = m_mediumFontHt.toFloat()
-            m_fillPaint.getTextBounds(
-                m_remText, 0, m_remText!!.length,
-                m_boundsScratch
+            mRemText = String.format("%d", nTilesLeft)
+            mFillPaint.textSize = mMediumFontHt.toFloat()
+            mFillPaint.getTextBounds(
+                mRemText, 0, mRemText!!.length,
+                mBoundsScratch
             )
-            var minWidth = m_boundsScratch.width()
-            if (minWidth < m_minRemWidth) {
-                minWidth = m_minRemWidth // it's a button; make it bigger
+            var minWidth = mBoundsScratch.width()
+            if (minWidth < mMinRemWidth) {
+                minWidth = mMinRemWidth // it's a button; make it bigger
             }
             width[0] = minWidth
-            height[0] = m_boundsScratch.height()
+            height[0] = mBoundsScratch.height()
         }
         return showREM
     }
@@ -205,8 +202,8 @@ open class BoardCanvas private constructor(
     ) {
         val indx = if (focussed) CommonPrefs.COLOR_FOCUS else CommonPrefs.COLOR_TILE_BACK
         fillRectOther(rOuter, indx)
-        m_fillPaint.setColor(adjustColor(BLACK))
-        drawCentered(m_remText, rInner, null)
+        mFillPaint.setColor(adjustColor(BLACK))
+        drawCentered(mRemText, rInner, null)
     }
 
     override fun measureScoreText(
@@ -237,18 +234,18 @@ open class BoardCanvas private constructor(
             rectHt /= 2
         }
         var textHeight = rectHt - SCORE_HT_DROP
-        if (textHeight < m_defaultFontHt) {
-            textHeight = m_defaultFontHt
+        if (textHeight < mDefaultFontHt) {
+            textHeight = mDefaultFontHt
         }
-        m_fillPaint.textSize = textHeight.toFloat()
+        mFillPaint.textSize = textHeight.toFloat()
         var needWidth = 0
         for (ii in scoreInfo.indices) {
-            m_fillPaint.getTextBounds(
+            mFillPaint.getTextBounds(
                 scoreInfo[ii], 0, scoreInfo[ii]!!.length,
-                m_boundsScratch
+                mBoundsScratch
             )
-            if (needWidth < m_boundsScratch.width()) {
-                needWidth = m_boundsScratch.width()
+            if (needWidth < mBoundsScratch.width()) {
+                needWidth = mBoundsScratch.width()
             }
         }
         if (needWidth > rect.width()) {
@@ -268,11 +265,11 @@ open class BoardCanvas private constructor(
             fillRectOther(rOuter, CommonPrefs.COLOR_FOCUS)
         }
         val texts = mScores!![dsi.playerNum]
-        var color = m_playerColors[dsi.playerNum]
-        if (!m_prefs.allowPeek) {
+        var color = mPlayerColors[dsi.playerNum]
+        if (!mPrefs.allowPeek) {
             color = adjustColor(color)
         }
-        m_fillPaint.setColor(color)
+        mFillPaint.setColor(color)
         val height = rOuter.height() / texts!!.size
         rOuter.bottom = rOuter.top + height
         for (text in texts!!) {
@@ -280,8 +277,8 @@ open class BoardCanvas private constructor(
             rOuter.offset(0, height)
         }
         if (DEBUG_DRAWFRAMES) {
-            m_strokePaint.setColor(BLACK)
-            drawRect(rInner, m_strokePaint)
+            mStrokePaint.setColor(BLACK)
+            drawRect(rInner, mStrokePaint)
         }
     }
 
@@ -289,17 +286,17 @@ open class BoardCanvas private constructor(
         rect: Rect, player: Int,
         secondsLeft: Int, turnDone: Boolean
     ) {
-        val activity = m_activity
+        val activity = mActivity
         if (null == activity) {
             // Do nothing
-        } else if (m_lastSecsLeft != secondsLeft || m_lastTimerPlayer != player || m_lastTimerTurnDone != turnDone) {
+        } else if (mLastSecsLeft != secondsLeft || mLastTimerPlayer != player || mLastTimerTurnDone != turnDone) {
             val rectCopy = Rect(rect)
             val secondsLeftCopy = secondsLeft
             activity.runOnUiThread(Runnable {
-                if (null != m_jniThread) {
-                    m_lastSecsLeft = secondsLeftCopy
-                    m_lastTimerPlayer = player
-                    m_lastTimerTurnDone = turnDone
+                if (null != mJniThread) {
+                    mLastSecsLeft = secondsLeftCopy
+                    mLastTimerPlayer = player
+                    mLastTimerTurnDone = turnDone
                     val negSign = if (secondsLeftCopy < 0) "-" else ""
                     val secondsLeft = abs(secondsLeftCopy.toDouble()).toInt()
                     val time = String.format(
@@ -307,10 +304,10 @@ open class BoardCanvas private constructor(
                         secondsLeft / 60, secondsLeft % 60
                     )
                     fillRectOther(rectCopy, CommonPrefs.COLOR_BACKGRND)
-                    m_fillPaint.setColor(m_playerColors[player])
+                    mFillPaint.setColor(mPlayerColors[player])
                     rectCopy.inset(0, rectCopy.height() / 5)
                     drawCentered(time, rectCopy, null)
-                    m_jniThread!!.handle(JNIThread.JNICmd.CMD_DRAW)
+                    mJniThread!!.handle(JNIThread.JNICmd.CMD_DRAW)
                 }
             })
         }
@@ -330,21 +327,21 @@ open class BoardCanvas private constructor(
             val recent = 0 != flags and DrawCtx.CELL_RECENT
             mSawRecents = recent || mSawRecents
             var bonusStr: String? = null
-            if (m_inTrade) {
+            if (mInTrade) {
                 fillRectOther(rect, CommonPrefs.COLOR_BACKGRND)
             }
             if (owner < 0) {
                 owner = 0
             }
-            var foreColor = m_playerColors[owner]
+            var foreColor = mPlayerColors[owner]
             if (0 != flags and DrawCtx.CELL_ISCURSOR) {
-                backColor = m_otherColors[CommonPrefs.COLOR_FOCUS]
+                backColor = mOtherColors[CommonPrefs.COLOR_FOCUS]
             } else if (empty) {
                 if (0 == bonus) {
-                    backColor = m_otherColors[CommonPrefs.COLOR_NOTILE]
+                    backColor = mOtherColors[CommonPrefs.COLOR_NOTILE]
                 } else {
-                    backColor = m_bonusColors[bonus]
-                    bonusStr = m_bonusSummaries[bonus]
+                    backColor = mBonusColors[bonus]
+                    bonusStr = mBonusSummaries[bonus]
                 }
             } else if (pending) {
                 ++mPendingCount
@@ -358,21 +355,21 @@ open class BoardCanvas private constructor(
             } else {
                 val indx =
                     if (recent) CommonPrefs.COLOR_TILE_BACK_RECENT else CommonPrefs.COLOR_TILE_BACK
-                backColor = m_otherColors[indx]
+                backColor = mOtherColors[indx]
             }
             fillRect(rect, adjustColor(backColor))
             if (empty) {
                 if (DrawCtx.CELL_ISSTAR and flags != 0) {
-                    m_origin.bounds = rect
-                    m_origin.alpha = if (m_inTrade) IN_TRADE_ALPHA shr 24 else 255
-                    m_origin.draw(this@BoardCanvas)
+                    mOrigin.bounds = rect
+                    mOrigin.alpha = if (mInTrade) IN_TRADE_ALPHA shr 24 else 255
+                    mOrigin.draw(this@BoardCanvas)
                 } else if (null != bonusStr) {
-                    val color = m_otherColors[CommonPrefs.COLOR_BONUSHINT]
-                    m_fillPaint.setColor(adjustColor(color))
+                    val color = mOtherColors[CommonPrefs.COLOR_BONUSHINT]
+                    mFillPaint.setColor(adjustColor(color))
                     val brect = Rect(rect)
                     val inset = (brect.height() / 3.5).toFloat()
                     brect.inset(0, inset.toInt())
-                    drawCentered(bonusStr, brect, m_fontDims)
+                    drawCentered(bonusStr, brect, mFontDims)
                 }
             } else {
                 var value: String? = String.format("%d", tileValue)
@@ -384,18 +381,18 @@ open class BoardCanvas private constructor(
                         value = null
                     }
                 }
-                m_fillPaint.setColor(adjustColor(foreColor))
+                mFillPaint.setColor(adjustColor(foreColor))
                 if (null == value) {
-                    drawCentered(text, rect, m_fontDims)
+                    drawCentered(text, rect, mFontDims)
                 } else {
                     var smaller = Rect(rect)
                     smaller.bottom -= smaller.height() / 4
                     smaller.right -= smaller.width() / 4
-                    drawCentered(text, smaller, m_fontDims)
+                    drawCentered(text, smaller, mFontDims)
                     smaller = Rect(rect)
                     smaller.left += 2 * smaller.width() / 3
                     smaller.top += 2 * smaller.height() / 3
-                    drawCentered(value, smaller, m_fontDims)
+                    drawCentered(value, smaller, mFontDims)
                 }
             }
             if (DrawCtx.CELL_ISBLANK and flags != 0) {
@@ -403,13 +400,13 @@ open class BoardCanvas private constructor(
             }
 
             // frame the cell
-            val frameColor = m_otherColors[CommonPrefs.COLOR_CELLLINE]
-            m_strokePaint.setColor(adjustColor(frameColor))
+            val frameColor = mOtherColors[CommonPrefs.COLOR_CELLLINE]
+            mStrokePaint.setColor(adjustColor(frameColor))
 
             // PENDING: fetch/calculate this a lot less frequently!!
-            val width = XWPrefs.getPrefsInt(m_activity, R.string.key_board_line_width, 1)
-            m_strokePaint.strokeWidth = width.toFloat()
-            drawRect(rect, m_strokePaint)
+            val width = XWPrefs.getPrefsInt(mActivity, R.string.key_board_line_width, 1)
+            mStrokePaint.strokeWidth = width.toFloat()
+            drawRect(rect, mStrokePaint)
             drawCrosshairs(rect, flags)
         }
         return canDraw
@@ -421,22 +418,22 @@ open class BoardCanvas private constructor(
     ) {
         // figure out if the background is more dark than light
         val useDark = darkOnLight()
-        if (m_blackArrow != useDark) {
-            m_blackArrow = useDark
-            m_rightArrow = null
-            m_downArrow = m_rightArrow
+        if (mBlackArrow != useDark) {
+            mBlackArrow = useDark
+            mRightArrow = null
+            mDownArrow = mRightArrow
         }
         val arrow: Drawable?
         if (vert) {
-            if (null == m_downArrow) {
-                m_downArrow = loadAndRecolor(R.drawable.ic_downarrow, useDark)
+            if (null == mDownArrow) {
+                mDownArrow = loadAndRecolor(R.drawable.ic_downarrow, useDark)
             }
-            arrow = m_downArrow
+            arrow = mDownArrow
         } else {
-            if (null == m_rightArrow) {
-                m_rightArrow = loadAndRecolor(R.drawable.ic_rightarrow, useDark)
+            if (null == mRightArrow) {
+                mRightArrow = loadAndRecolor(R.drawable.ic_rightarrow, useDark)
             }
-            arrow = m_rightArrow
+            arrow = mRightArrow
         }
         rect.inset(2, 2)
         arrow!!.bounds = rect
@@ -446,10 +443,10 @@ open class BoardCanvas private constructor(
 
     override fun trayBegin(rect: Rect, owner: Int, score: Int): Boolean {
         curPlayer = owner
-        m_pendingScore = score
-        if (null != m_tileStrokePaint) {
+        mPendingScore = score
+        if (null != mTileStrokePaint) {
             // force new color just in case it's changed
-            m_tileStrokePaint!!.setColor(m_otherColors[CommonPrefs.COLOR_CELLLINE])
+            mTileStrokePaint!!.setColor(mOtherColors[CommonPrefs.COLOR_CELLLINE])
         }
         return true
     }
@@ -476,9 +473,9 @@ open class BoardCanvas private constructor(
         fillRectOther(rect, index)
         rect.inset(rect.width() / 4, 1)
         if (selected) {
-            drawRect(rect, m_strokePaint)
+            drawRect(rect, mStrokePaint)
         } else {
-            fillRect(rect, m_playerColors[curPlayer])
+            fillRect(rect, mPlayerColors[curPlayer])
         }
     }
 
@@ -492,11 +489,11 @@ open class BoardCanvas private constructor(
             if (0 == flags and DrawCtx.CELL_ISCURSOR) CommonPrefs.COLOR_BACKGRND else CommonPrefs.COLOR_FOCUS
         ++rect.top
         fillRectOther(rect, otherIndx)
-        var playerColor = m_playerColors[playerNum]
+        var playerColor = mPlayerColors[playerNum]
         if (!curTurn) {
             playerColor = playerColor and NOT_TURN_ALPHA
         }
-        m_fillPaint.setColor(playerColor)
+        mFillPaint.setColor(playerColor)
         val text = if (score >= 0) String.format("%d", score) else "??"
         rect.bottom -= rect.height() / 2
         drawCentered(text, rect, null)
@@ -515,15 +512,15 @@ open class BoardCanvas private constructor(
             // the board (without scrolling), the right-most cells
             // don't draw their right borders due to clipping, so draw
             // for them.
-            val frameColor = m_otherColors[CommonPrefs.COLOR_CELLLINE]
-            m_strokePaint.setColor(adjustColor(frameColor))
+            val frameColor = mOtherColors[CommonPrefs.COLOR_CELLLINE]
+            mStrokePaint.setColor(adjustColor(frameColor))
             val xx = rect.left + rect.width() - 1
             drawLine(
                 xx.toFloat(),
                 rect.top.toFloat(),
                 xx.toFloat(),
                 (rect.top + rect.height()).toFloat(),
-                m_strokePaint
+                mStrokePaint
             )
 
             // Remove this for now. It comes up at the wrong time for new
@@ -543,41 +540,41 @@ open class BoardCanvas private constructor(
     }
 
     override fun dictChanged(newPtr: Long) {
-        val curPtr = if (null == m_dict) 0 else m_dict!!.dictPtr
+        val curPtr = if (null == mDict) 0 else mDict!!.dictPtr
         var doPost = false
         if (curPtr != newPtr) {
             if (0L == newPtr) {
-                m_fontDims = null
+                mFontDims = null
                 mDictChars = null
             } else if (0L == curPtr
                 || !dict_tilesAreSame(curPtr, newPtr)
             ) {
-                m_fontDims = null
+                mFontDims = null
                 mDictChars = null
                 doPost = true
             }
-            if (null != m_dict) {
-                m_dict!!.release()
+            if (null != mDict) {
+                mDict!!.release()
             }
-            m_dict = DictWrapper(newPtr)
+            mDict = DictWrapper(newPtr)
         }
 
         // If we're on the UI thread this is run inline, so make sure it's
-        // after m_dict is set above.
+        // after mDict is set above.
         if (doPost) {
-            m_activity!!.runOnUiThread { updateDictChars() }
+            mActivity!!.runOnUiThread { updateDictChars() }
         }
     }
 
     private fun updateDictChars() {
-        if (null == m_jniThread) {
-            // Log.d( TAG, "updateDictChars(): m_jniThread still null!!" );
-        } else if (null == m_dict) {
-            // Log.d( TAG, "updateDictChars(): m_dict still null!!" );
+        if (null == mJniThread) {
+            // Log.d( TAG, "updateDictChars(): mJniThread still null!!" );
+        } else if (null == mDict) {
+            // Log.d( TAG, "updateDictChars(): mDict still null!!" );
         } else {
-            mDictChars = dict_getChars(m_dict!!.dictPtr)
+            mDictChars = dict_getChars(mDict!!.dictPtr)
             // draw again
-            m_jniThread!!.handle(JNIThread.JNICmd.CMD_INVALALL)
+            mJniThread!!.handle(JNIThread.JNICmd.CMD_INVALALL)
         }
     }
 
@@ -631,12 +628,12 @@ open class BoardCanvas private constructor(
             }
             if (isCursor || notEmpty) {
                 var color =
-                    m_otherColors[if (isCursor) CommonPrefs.COLOR_FOCUS else CommonPrefs.COLOR_TILE_BACK]
+                    mOtherColors[if (isCursor) CommonPrefs.COLOR_FOCUS else CommonPrefs.COLOR_TILE_BACK]
                 if (!clearBack) {
                     color = color and 0x7FFFFFFF // translucent if being dragged.
                 }
                 fillRect(rect, color)
-                m_fillPaint.setColor(m_playerColors[curPlayer])
+                mFillPaint.setColor(mPlayerColors[curPlayer])
                 if (notEmpty) {
                     positionDrawTile(rect, text, `val`)
                     val paint = getTileStrokePaint(rect)
@@ -654,7 +651,7 @@ open class BoardCanvas private constructor(
     } // drawTileImpl
 
     private fun drawCrosshairs(rect: Rect, flags: Int) {
-        val color = m_otherColors[CommonPrefs.COLOR_FOCUS]
+        val color = mOtherColors[CommonPrefs.COLOR_FOCUS]
         if (0 != flags and DrawCtx.CELL_CROSSHOR) {
             val hairRect = Rect(rect)
             hairRect.inset(0, hairRect.height() / 3)
@@ -686,26 +683,26 @@ open class BoardCanvas private constructor(
             // DbgUtils.logf( "using descent: " + descent + " and textSize: "
             //             + textSize + " in height " + height );
         }
-        m_fillPaint.textSize = textSize.toFloat()
+        mFillPaint.textSize = textSize.toFloat()
         if (descent == -1) {
-            descent = m_fillPaint.getFontMetricsInt().descent
+            descent = mFillPaint.getFontMetricsInt().descent
         }
         descent += 2
-        m_fillPaint.getTextBounds(text, 0, text!!.length, m_boundsScratch)
-        val extra = rect.width() - m_boundsScratch.width()
+        mFillPaint.getTextBounds(text, 0, text!!.length, mBoundsScratch)
+        val extra = rect.width() - mBoundsScratch.width()
         if (0 >= extra) {
-            m_fillPaint.textAlign = Align.LEFT
-            drawScaled(text, rect, m_boundsScratch, descent)
+            mFillPaint.textAlign = Align.LEFT
+            drawScaled(text, rect, mBoundsScratch, descent)
         } else {
             val bottom = rect.bottom - descent
             var origin = rect.left
             origin += if (Align.CENTER == align) {
                 rect.width() / 2
             } else {
-                extra / 5 - m_boundsScratch.left
+                extra / 5 - mBoundsScratch.left
             }
-            m_fillPaint.textAlign = align
-            drawText(text, origin.toFloat(), bottom.toFloat(), m_fillPaint)
+            mFillPaint.textAlign = align
+            drawText(text, origin.toFloat(), bottom.toFloat(), mFillPaint)
         }
     } // drawIn
 
@@ -721,63 +718,63 @@ open class BoardCanvas private constructor(
         )
         val canvas = Canvas(bitmap)
         val bottom = textBounds.bottom - descent
-        canvas.drawText(text!!, -textBounds.left.toFloat(), bottom.toFloat(), m_fillPaint)
-        drawBitmap(bitmap, null, rect, m_drawPaint)
+        canvas.drawText(text!!, -textBounds.left.toFloat(), bottom.toFloat(), mFillPaint)
+        drawBitmap(bitmap, null, rect, mDrawPaint)
     }
 
     private fun positionDrawTile(rect: Rect, text: String?, `val`: Int) {
         var text: String? = text
         val offset = 2
         if (null != text) {
-            if (null == m_letterRect) {
-                m_letterRect = Rect(
+            if (null == mLetterRect) {
+                mLetterRect = Rect(
                     0, 0, rect.width() - offset,
                     rect.height() * 3 / 4
                 )
             }
-            m_letterRect!!.offsetTo(rect.left + offset, rect.top + offset)
-            drawIn(text, m_letterRect!!, m_fontDims, Align.LEFT)
+            mLetterRect!!.offsetTo(rect.left + offset, rect.top + offset)
+            drawIn(text, mLetterRect!!, mFontDims, Align.LEFT)
             if (FRAME_TRAY_RECTS) {
-                drawRect(m_letterRect!!, m_strokePaint)
+                drawRect(mLetterRect!!, mStrokePaint)
             }
         }
         if (`val` >= 0) {
-            val divisor = if (m_hasSmallScreen) 3 else 4
-            if (null == m_valRect) {
-                m_valRect = Rect(
+            val divisor = if (mHasSmallScreen) 3 else 4
+            if (null == mValRect) {
+                mValRect = Rect(
                     0, 0, rect.width() / divisor,
                     rect.height() / divisor
                 )
-                m_valRect!!.inset(offset, offset)
+                mValRect!!.inset(offset, offset)
             }
-            m_valRect!!.offsetTo(
+            mValRect!!.offsetTo(
                 rect.right - rect.width() / divisor,
                 rect.bottom - rect.height() / divisor
             )
             text = String.format("%d", `val`)
-            m_fillPaint.textSize = m_valRect!!.height().toFloat()
-            m_fillPaint.textAlign = Align.RIGHT
+            mFillPaint.textSize = mValRect!!.height().toFloat()
+            mFillPaint.textAlign = Align.RIGHT
             drawText(
-                text, m_valRect!!.right.toFloat(), m_valRect!!.bottom.toFloat(),
-                m_fillPaint
+                text, mValRect!!.right.toFloat(), mValRect!!.bottom.toFloat(),
+                mFillPaint
             )
             if (FRAME_TRAY_RECTS) {
-                drawRect(m_valRect!!, m_strokePaint)
+                drawRect(mValRect!!, mStrokePaint)
             }
         }
     }
 
     private fun fillRectOther(rect: Rect, index: Int) {
-        fillRect(rect, m_otherColors[index])
+        fillRect(rect, mOtherColors[index])
     }
 
     private fun fillRect(rect: Rect, color: Int) {
-        m_fillPaint.setColor(color)
-        drawRect(rect, m_fillPaint)
+        mFillPaint.setColor(color)
+        drawRect(rect, mFillPaint)
     }
 
     private fun figureFontDims(): Boolean {
-        if (null == m_fontDims && null != mDictChars) {
+        if (null == mFontDims && null != mDictChars) {
             val ht = 24
             val width = 20
             val paint = Paint() // CommonPrefs.getFontFlags()??
@@ -836,26 +833,26 @@ open class BoardCanvas private constructor(
                     }
                 }
             }
-            m_fontDims = FontDims(ht.toFloat(), topRow, bottomRow, maxWidth.toFloat())
+            mFontDims = FontDims(ht.toFloat(), topRow, bottomRow, maxWidth.toFloat())
         }
-        return null != m_fontDims
+        return null != mFontDims
     } // figureFontDims
 
     private fun adjustColor(color: Int): Int {
         var color = color
-        if (m_inTrade) {
+        if (mInTrade) {
             color = color and IN_TRADE_ALPHA
         }
         return color
     }
 
     private fun darkOnLight(): Boolean {
-        val background = m_otherColors[CommonPrefs.COLOR_NOTILE]
-        if (background != m_backgroundUsed) {
-            m_backgroundUsed = background
-            m_darkOnLight = isLightColor(background)
+        val background = mOtherColors[CommonPrefs.COLOR_NOTILE]
+        if (background != mBackgroundUsed) {
+            mBackgroundUsed = background
+            mDarkOnLight = isLightColor(background)
         }
-        return m_darkOnLight
+        return mDarkOnLight
     }
 
     private fun markBlank(rect: Rect, backColor: Int) {
@@ -868,12 +865,12 @@ open class BoardCanvas private constructor(
         var curColor = 0
         val whiteOnBlack = !isLightColor(backColor)
         if (whiteOnBlack) {
-            curColor = m_strokePaint.color
-            m_strokePaint.setColor(WHITE)
+            curColor = mStrokePaint.color
+            mStrokePaint.setColor(WHITE)
         }
-        drawArc(oval, 0f, 360f, false, m_strokePaint)
+        drawArc(oval, 0f, 360f, false, mStrokePaint)
         if (whiteOnBlack) {
-            m_strokePaint.setColor(curColor)
+            mStrokePaint.setColor(curColor)
         }
     }
 
@@ -912,34 +909,34 @@ open class BoardCanvas private constructor(
     }
 
     private fun getTileStrokePaint(rect: Rect): Paint? {
-        if (null == m_tileStrokePaint) {
+        if (null == mTileStrokePaint) {
             val paint = Paint()
             paint.style = Paint.Style.STROKE
             paint.strokeWidth = max(2.0, (rect.width() / 20).toDouble()).toFloat()
-            paint.setColor(m_otherColors[CommonPrefs.COLOR_CELLLINE])
-            m_tileStrokePaint = paint
+            paint.setColor(mOtherColors[CommonPrefs.COLOR_CELLLINE])
+            mTileStrokePaint = paint
         }
-        return m_tileStrokePaint
+        return mTileStrokePaint
     }
 
     init {
-        m_hasSmallScreen = Utils.hasSmallScreen(mContext)
+        mHasSmallScreen = Utils.hasSmallScreen(mContext)
         val res = mContext.resources
         val scale = res.displayMetrics.density
-        m_defaultFontHt = (MIN_FONT_DIPS * scale + 0.5f).toInt()
-        m_mediumFontHt = m_defaultFontHt * 3 / 2
+        mDefaultFontHt = (MIN_FONT_DIPS * scale + 0.5f).toInt()
+        mMediumFontHt = mDefaultFontHt * 3 / 2
         if (null != dims) {
-            m_minRemWidth = dims.cellSize
+            mMinRemWidth = dims.cellSize
         }
-        m_drawPaint = Paint()
-        m_fillPaint = Paint(Paint.ANTI_ALIAS_FLAG)
-        m_strokePaint = Paint()
-        m_strokePaint.style = Paint.Style.STROKE
-        m_origin = res.getDrawable(R.drawable.ic_origin)
-        m_prefs = CommonPrefs.get(mContext)
-        m_playerColors = m_prefs.playerColors
-        m_bonusColors = m_prefs.bonusColors
-        m_otherColors = m_prefs.otherColors
+        mDrawPaint = Paint()
+        mFillPaint = Paint(Paint.ANTI_ALIAS_FLAG)
+        mStrokePaint = Paint()
+        mStrokePaint.style = Paint.Style.STROKE
+        mOrigin = res.getDrawable(R.drawable.ic_origin)
+        mPrefs = CommonPrefs.get(mContext)
+        mPlayerColors = mPrefs.playerColors
+        mBonusColors = mPrefs.bonusColors
+        mOtherColors = mPrefs.otherColors
         val ids = intArrayOf(
             R.string.bonus_l2x_summary,
             R.string.bonus_w2x_summary,
@@ -948,17 +945,17 @@ open class BoardCanvas private constructor(
             R.string.bonus_l4x_summary,
             R.string.bonus_w4x_summary
         )
-        m_bonusSummaries = arrayOfNulls(1 + ids.size)
+        mBonusSummaries = arrayOfNulls(1 + ids.size)
         for (ii in ids.indices) {
-            m_bonusSummaries[ii + 1] = res.getString(ids[ii])
+            mBonusSummaries[ii + 1] = res.getString(ids[ii])
         }
     }
 
     private fun postNAHint(msgID: Int, keyID: Int) {
         if (!sShown.contains(keyID)) {
             sShown.add(keyID)
-            if (m_activity is XWActivity) {
-                val activity = m_activity
+            if (mActivity is XWActivity) {
+                val activity = mActivity
                 activity.runOnUiThread {
                     activity.makeNotAgainBuilder(keyID, msgID)
                         .show()
