@@ -1,5 +1,4 @@
-/* -*- compile-command: "find-and-gradle.sh inXw4dDeb"; -*- */
-/*
+/* -*- compile-command: "find-and-gradle.sh inXw4dDeb"; -*- */ /*
  * Copyright 2013 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
  *
@@ -17,35 +16,26 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
+package org.eehouse.android.xw4
 
-package org.eehouse.android.xw4;
+import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.Rect
+import org.eehouse.android.xw4.jni.XwJNI
 
-import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.Rect;
-
-import org.eehouse.android.xw4.jni.XwJNI;
-
-public class ThumbCanvas extends BoardCanvas {
-
-    public ThumbCanvas( Context context, Bitmap bitmap )
-    {
-        super( context, bitmap );
-    }
-
+class ThumbCanvas(context: Context?, bitmap: Bitmap?)
+	: BoardCanvas(context, bitmap) {
     // These should not be needed if common code gets fixed!  So the
     // whole class should go away. PENDING
-    @Override
-    public boolean scoreBegin( Rect rect, int numPlayers, int[] scores,
-                               int remCount )
-    {
-        return false;
+    override fun scoreBegin(
+        rect: Rect, numPlayers: Int, scores: IntArray,
+        remCount: Int
+    ): Boolean {
+        return false
     }
 
-    @Override
-    public boolean trayBegin( Rect rect, int owner, int score )
-    {
-        return false;
+    override fun trayBegin(rect: Rect, owner: Int, score: Int): Boolean {
+        return false
     }
 
     // Unlike superclass, where the game was loaded on the main thread
@@ -53,12 +43,10 @@ public class ThumbCanvas extends BoardCanvas {
     // will have been created on the same background thread that's
     // calling us.  So don't switch threads for the dict_getChars()
     // call
-    @Override
-    public void dictChanged( long dictPtr )
-    {
-        if ( 0 != dictPtr ) {
-            m_fontDims = null;
-            m_dictChars = XwJNI.dict_getChars( dictPtr );
+    override fun dictChanged(dictPtr: Long) {
+        if (0L != dictPtr) {
+            m_fontDims = null
+            m_dictChars = XwJNI.dict_getChars(dictPtr)
         }
     }
 }
