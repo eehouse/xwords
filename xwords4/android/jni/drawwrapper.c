@@ -49,6 +49,8 @@ typedef struct _AndDraw {
 } AndDraw;
 
 #define CHECKOUT_MARKER ((jobject)-1)
+#define DSI_PATH "jni/DrawCtx$DrawScoreInfo"
+#define TVT_PATH "jni/CommonPrefs$TileValueType"
 
 static void deleteGlobalRef( JNIEnv* env, jobject jobj );
 
@@ -145,7 +147,7 @@ makeDSIs( AndDraw* draw, XWEnv xwe, int indx, XP_U16 nPlayers,
     jobject dsiobjs = draw->jCache[indx];
 
     if ( !dsiobjs ) {
-        jclass clas = (*env)->FindClass( env, PKG_PATH("jni/DrawScoreInfo") );
+        jclass clas = (*env)->FindClass( env, PKG_PATH(DSI_PATH) );
         dsiobjs = (*env)->NewObjectArray( env, nPlayers, clas, NULL );
         draw->jCache[indx] = (*env)->NewGlobalRef( env, dsiobjs );
         deleteLocalRef( env, dsiobjs );
@@ -187,7 +189,7 @@ makeDSI( AndDraw* draw, XWEnv xwe, int indx, const DrawScoreInfo* dsi )
     jobject dsiobj = draw->jCache[indx];
 
     if ( !dsiobj ) {
-        dsiobj = makeObjectEmptyConstr( env, PKG_PATH("jni/DrawScoreInfo") );
+        dsiobj = makeObjectEmptyConstr( env, PKG_PATH(DSI_PATH) );
 
         draw->jCache[indx] = (*env)->NewGlobalRef( env, dsiobj );
         deleteLocalRef( env, dsiobj );
@@ -266,7 +268,7 @@ and_draw_score_drawPlayers( DrawCtx* dctx, XWEnv xwe, const XP_Rect* scoreRect,
                             XP_Rect playerRects[] )
 {
     DRAW_CBK_HEADER("score_drawPlayers", "(Landroid/graphics/Rect;"
-                    "[L" PKG_PATH("jni/DrawScoreInfo;")
+                    "[L" PKG_PATH(DSI_PATH) ";"
                     "[Landroid/graphics/Rect;)V" );
 
     jobject jrect = makeJRect( draw, env, JCACHE_RECT0, scoreRect );
@@ -336,7 +338,7 @@ and_draw_measureScoreText( DrawCtx* dctx, XWEnv xwe, const XP_Rect* r,
 {
     DRAW_CBK_HEADER("measureScoreText", 
                     "(Landroid/graphics/Rect;L"
-                    PKG_PATH("jni/DrawScoreInfo;[I[I)V") );
+                    PKG_PATH(DSI_PATH) ";[I[I)V" );
 
     jobject jrect = makeJRect( draw, env, JCACHE_RECT0, r );
     jobject jdsi = makeDSI( draw, xwe, JCACHE_DSI, dsi );
@@ -363,7 +365,7 @@ and_draw_score_drawPlayer( DrawCtx* dctx, XWEnv xwe, const XP_Rect* rInner,
 {
     DRAW_CBK_HEADER("score_drawPlayer", 
                     "(Landroid/graphics/Rect;Landroid/graphics/Rect;I"
-                    "L" PKG_PATH("jni/DrawScoreInfo") ";)V" );
+                    "L" PKG_PATH(DSI_PATH) ";)V" );
 
     jobject jrinner = makeJRect( draw, xwe, JCACHE_RECT0, rInner );
     jobject jrouter = makeJRect( draw, xwe, JCACHE_RECT1, rOuter );
@@ -409,7 +411,7 @@ and_draw_boardBegin( DrawCtx* dctx, XWEnv xwe, const XP_Rect* XP_UNUSED(rect),
     JNIEnv* env = xwe;
     AndDraw* draw = (AndDraw*)dctx;
 
-    jobject jTvType = intToJEnum( env, tvType, PKG_PATH("jni/CommonPrefs$TileValueType") );
+    jobject jTvType = intToJEnum( env, tvType, PKG_PATH(TVT_PATH) );
     draw->jTvType = (*env)->NewGlobalRef( env, jTvType );
     deleteLocalRef( env, jTvType );
 
@@ -426,7 +428,7 @@ and_draw_drawCell( DrawCtx* dctx, XWEnv xwe, const XP_Rect* rect,
     jboolean result;
     DRAW_CBK_HEADER("drawCell",
                     "(Landroid/graphics/Rect;Ljava/lang/String;IIIII"
-                    "L" PKG_PATH("jni/CommonPrefs$TileValueType") ";)Z" );
+                    "L" PKG_PATH(TVT_PATH) ";)Z" );
 
     jobject jrect = makeJRect( draw, xwe, JCACHE_RECT0, rect );
     jstring jtext = NULL;

@@ -47,6 +47,18 @@ public interface DrawCtx {
     static final int OBJ_TRAY = 3;
 
 
+    public static class DrawScoreInfo {
+        public String name;
+        public int playerNum;
+        public int totalScore;
+        public int nTilesLeft;   /* < 0 means don't use */
+        public int flags;        // was CellFlags; use CELL_ constants above
+        public boolean isTurn;
+        public boolean selected;
+        public boolean isRemote;
+        public boolean isRobot;
+    };
+
     boolean scoreBegin( Rect rect, int numPlayers, int[] scores, int remCount );
     boolean measureRemText( Rect r, int nTilesLeft, int[] width, int[] height );
     void measureScoreText( Rect r, DrawScoreInfo dsi, int[] width, int[] height );

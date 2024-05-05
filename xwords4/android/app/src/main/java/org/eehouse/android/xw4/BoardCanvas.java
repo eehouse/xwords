@@ -41,7 +41,7 @@ import org.eehouse.android.xw4.jni.BoardHandler;
 import org.eehouse.android.xw4.jni.CommonPrefs.TileValueType;
 import org.eehouse.android.xw4.jni.CommonPrefs;
 import org.eehouse.android.xw4.jni.DrawCtx;
-import org.eehouse.android.xw4.jni.DrawScoreInfo;
+import org.eehouse.android.xw4.jni.DrawCtx.DrawScoreInfo;
 import org.eehouse.android.xw4.jni.JNIThread;
 import org.eehouse.android.xw4.jni.XwJNI.DictWrapper;
 import org.eehouse.android.xw4.jni.XwJNI;
