@@ -29,7 +29,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 
-abstract class XWDialogFragment extends DialogFragment {
+abstract public class XWDialogFragment extends DialogFragment {
     private static final String TAG = XWDialogFragment.class.getSimpleName();
 
     private OnDismissListener m_onDismiss;
