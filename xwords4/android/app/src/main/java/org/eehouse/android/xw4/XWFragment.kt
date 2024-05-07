@@ -209,7 +209,7 @@ abstract open class XWFragment: Fragment(), Delegator {
 
     fun setTitle() { m_dlgt?.setTitle() }
 
-    override fun addFragment( fragment: XWFragment, extras: Bundle )
+    override fun addFragment( fragment: XWFragment, extras: Bundle? )
     {
         val main = getActivity() as MainActivity
         if ( null != main ) {   // I've seen this come back null
