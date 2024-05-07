@@ -46,8 +46,8 @@ class DBAlert : XWDialogFragment() {
     }
 
     override fun onSaveInstanceState(bundle: Bundle) {
-        bundle.putInt(DLG_ID_KEY, dlgID.ordinal)
-        bundle.putSerializable(PARMS_KEY, mParams)
+        bundle.putIntAnd(DLG_ID_KEY, dlgID.ordinal)
+			.putSerializableAnd(PARMS_KEY, mParams)
         super.onSaveInstanceState(bundle)
     }
 

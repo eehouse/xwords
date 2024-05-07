@@ -56,11 +56,11 @@ class GameOverAlert : XWDialogFragment(), DialogInterface.OnClickListener,
 
     private var mOnDone: OnDoneProc? = null
     override fun onSaveInstanceState(bundle: Bundle) {
-        bundle.putSerializable(SUMMARY, mSummary)
-        bundle.putInt(TITLE, mTitleID)
-        bundle.putString(MSG, mMsg)
-        bundle.putBoolean(IN_ARCH, mInArchive)
-        bundle.putBoolean(HAS_PENDING, mHasPending)
+        bundle.putSerializableAnd(SUMMARY, mSummary)
+			.putIntAnd(TITLE, mTitleID)
+			.putStringAnd(MSG, mMsg)
+			.putSerializableAnd(IN_ARCH, mInArchive)
+			.putSerializableAnd(HAS_PENDING, mHasPending)
         super.onSaveInstanceState(bundle)
     }
 
@@ -73,8 +73,8 @@ class GameOverAlert : XWDialogFragment(), DialogInterface.OnClickListener,
         mSummary = sis!!.getSerializable(SUMMARY) as GameSummary?
         mTitleID = sis.getInt(TITLE)
         mMsg = sis.getString(MSG)
-        mInArchive = sis.getBoolean(IN_ARCH)
-        mHasPending = sis.getBoolean(HAS_PENDING)
+        mInArchive = sis.getSerializable(IN_ARCH) as Boolean
+        mHasPending = sis.getSerializable(HAS_PENDING) as Boolean
         val activity: Activity? = activity
         mView = LocUtils.inflate(activity, R.layout.game_over) as ViewGroup
         initView()
@@ -184,11 +184,11 @@ class GameOverAlert : XWDialogFragment(), DialogInterface.OnClickListener,
             Log.d(TAG, "newInstance(msg=%s)", msg)
             val result = GameOverAlert()
             val args = Bundle()
-            args.putSerializable(SUMMARY, summary)
-            args.putInt(TITLE, titleID)
-            args.putString(MSG, msg)
-            args.putBoolean(IN_ARCH, inArchiveGroup)
-            args.putBoolean(HAS_PENDING, hasPending)
+				.putSerializableAnd(SUMMARY, summary)
+				.putIntAnd(TITLE, titleID)
+				.putStringAnd(MSG, msg)
+				.putSerializableAnd(IN_ARCH, inArchiveGroup)
+				.putSerializableAnd(HAS_PENDING, hasPending)
             result.setArguments(args)
             Log.d(TAG, "newInstance() => %s", result)
             return result

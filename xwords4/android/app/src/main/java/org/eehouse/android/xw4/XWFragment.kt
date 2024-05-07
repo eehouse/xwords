@@ -89,8 +89,8 @@ abstract open class XWFragment: Fragment(), Delegator {
         Log.d( TAG, "%H/%s.onSaveInstanceState() called", this,
 			   this::class.java.getSimpleName() )
         Assert.assertNotNull( m_parentName )
-        outState?.putString( PARENT_NAME, m_parentName )
-        outState?.putInt( COMMIT_ID, m_commitID )
+        outState?.putStringAnd( PARENT_NAME, m_parentName )
+			?.putIntAnd( COMMIT_ID, m_commitID )
         m_dlgt?.onSaveInstanceState( outState )
         super.onSaveInstanceState( outState )
     }

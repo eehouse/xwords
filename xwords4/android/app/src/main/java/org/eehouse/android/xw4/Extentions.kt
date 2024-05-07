@@ -1,5 +1,6 @@
-/* -*- compile-command: "find-and-gradle.sh inXw4dDeb"; -*- */ /*
- * Copyright 2011 by Eric House (xwords@eehouse.org).  All rights
+/* -*- compile-command: "find-and-gradle.sh inXw4dDeb"; -*- */
+/*
+ * Copyright 2024 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -38,13 +39,18 @@ fun Bundle.putBooleanArrayAnd(key: String, value: BooleanArray?): Bundle {
 	return this
 }
 
+fun Bundle.putStringAnd(key: String, value: String?): Bundle {
+	this.putString(key, value)
+    return this
+}
+
 fun Bundle.putStringArrayAnd(key: String, value: Array<String?>?): Bundle {
 	this.putStringArray(key, value)
     return this
 }
 
 fun Bundle.putSerializableAnd(key: String, value: Serializable?): Bundle {
-	this.putSerializableAnd(key, value)
+	this.putSerializable(key, value)
     return this
 }
 
