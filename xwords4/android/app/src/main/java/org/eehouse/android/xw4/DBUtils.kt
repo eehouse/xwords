@@ -390,7 +390,7 @@ object DBUtils {
         val orderBy = DBHelper.TIMESTAMP + " DESC"
         synchronized(s_dbHelper!!) {
             val cursor = DBHelper.query(
-                s_db, TABLE_NAMES.INVITES, columns,
+                s_db!!, TABLE_NAMES.INVITES, columns,
                 selection, orderBy
             )
             if (0 < cursor.count) {
@@ -1160,7 +1160,7 @@ object DBUtils {
         val orderBy = DBHelper.LASTMOVE
         val selection = String.format("%s=%d", DBHelper.GROUPID, groupID)
         val cursor = DBHelper.query(
-            db, TABLE_NAMES.SUM, columns,
+            db!!, TABLE_NAMES.SUM, columns,
             selection, orderBy
         )
 
@@ -1744,7 +1744,7 @@ object DBUtils {
         initDB(context)
         synchronized(s_dbHelper!!) {
             val cursor = DBHelper.query(
-                s_db, TABLE_NAMES.STUDYLIST, columns,
+                s_db!!, TABLE_NAMES.STUDYLIST, columns,
                 selection, orderBy
             )
             val count = cursor.count
