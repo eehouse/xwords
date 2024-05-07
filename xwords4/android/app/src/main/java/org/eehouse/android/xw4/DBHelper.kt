@@ -217,7 +217,7 @@ class DBHelper(private val mContext: Context) :
         upgradeImpl(db, oldVersion, false, false, false, false)
     }
 
-    private fun upgradeImpl(
+    private tailrec fun upgradeImpl(
         db: SQLiteDatabase, oldVersion: Int,
         madeSumTable: Boolean, madeChatTable: Boolean,
         madeDITable: Boolean, madeStudyTable: Boolean
@@ -263,9 +263,9 @@ class DBHelper(private val mContext: Context) :
             }
 
             17 -> if (!madeSumTable) {
-                // THUMBNAIL also added by makeAutoincrement above
-                addSumColumn(db, THUMBNAIL)
-            }
+					  // THUMBNAIL also added by makeAutoincrement above
+					  addSumColumn(db, THUMBNAIL)
+				  }
 
             18 -> {
                 createStudyTable(db)
@@ -273,19 +273,19 @@ class DBHelper(private val mContext: Context) :
             }
 
             19 -> if (!madeSumTable) {
-                // NPACKETSPENDING also added by makeAutoincrement above
-                addSumColumn(db, NPACKETSPENDING)
-            }
+					  // NPACKETSPENDING also added by makeAutoincrement above
+					  addSumColumn(db, NPACKETSPENDING)
+				  }
 
             20 -> createLocTable(db)
             21 -> createPairsTable(db)
             22 -> if (!madeSumTable) {
-                addSumColumn(db, NEXTNAG)
-            }
+					  addSumColumn(db, NEXTNAG)
+				  }
 
             23 -> if (!madeSumTable) {
-                addSumColumn(db, EXTRAS)
-            }
+					  addSumColumn(db, EXTRAS)
+				  }
 
             24 -> createInvitesTable(db)
             25 -> {
@@ -295,20 +295,20 @@ class DBHelper(private val mContext: Context) :
 
             26 -> createLogsTable(db)
             27 -> if (!madeSumTable) {
-                addSumColumn(db, TURN_LOCAL)
-            }
+					  addSumColumn(db, TURN_LOCAL)
+				  }
 
             28 -> if (!madeChatTable) {
-                addColumn(db, TABLE_NAMES.CHAT, CHATTIME)
-            }
+					  addColumn(db, TABLE_NAMES.CHAT, CHATTIME)
+				  }
 
             29 -> if (!madeSumTable) {
-                addSumColumn(db, NEXTDUPTIMER)
-            }
+					  addSumColumn(db, NEXTDUPTIMER)
+				  }
 
             30 -> if (!madeDITable) {
-                addColumn(db, TABLE_NAMES.DICTINFO, FULLSUM)
-            }
+					  addColumn(db, TABLE_NAMES.DICTINFO, FULLSUM)
+				  }
 
             31 -> {
                 if (!madeSumTable) {
@@ -332,12 +332,12 @@ class DBHelper(private val mContext: Context) :
             }
 
             32 -> if (!madeDITable) {
-                addColumn(db, TABLE_NAMES.DICTINFO, ON_SERVER)
-            }
+					  addColumn(db, TABLE_NAMES.DICTINFO, ON_SERVER)
+				  }
 
             33 -> if (!madeSumTable) {
-                addColumn(db, TABLE_NAMES.SUM, QUASHED)
-            }
+					  addColumn(db, TABLE_NAMES.SUM, QUASHED)
+				  }
 
             34 -> {
                 if (!madeSumTable) {
@@ -347,13 +347,13 @@ class DBHelper(private val mContext: Context) :
             }
 
             else -> {
-                for (table in TABLE_NAMES.entries) {
-                    if (oldVersion >= 1 + table.addedVersion()) {
-                        db.execSQL("DROP TABLE $table;")
-                    }
-                }
-                onCreate(db)
-            }
+				for (table in TABLE_NAMES.entries) {
+					if (oldVersion >= 1 + table.addedVersion()) {
+						db.execSQL("DROP TABLE $table;")
+					}
+				}
+				onCreate(db)
+			}
         }
         upgradeImpl(
             db, oldVersion + 1, madeSumTable, madeChatTable,
@@ -522,38 +522,38 @@ class DBHelper(private val mContext: Context) :
         try {
             var query: String
             val columnNames = getColumns(db, name)
-            if (null != columnNames) { // no data means no need to copy
-                query = String.format(
-                    "ALTER table %s RENAME TO 'temp_%s'",
-                    name, name
-                )
-                db.execSQL(query)
-            }
+
+            query = String.format(
+                "ALTER table %s RENAME TO 'temp_%s'",
+                name, name
+            )
+            db.execSQL(query)
+
             createTable(db, name)
             forceRowidHigh(db, name)
-            if (null != columnNames) {
-                val oldCols = ArrayList(Arrays.asList(*columnNames))
 
-                // Make a list of columns in the new DB, using it to
-                // remove from the old list any that aren't in the
-                // new.  Old tables may have column names we no longer
-                // use, but we can't try to copy them because the new
-                // doesn't have 'em. Note that calling getColumns() on
-                // the newly-created table doesn't work, perhaps
-                // because we're in a transaction and nothing's been
-                // committed.
-                val newCols = ArrayList<String?>()
-                for (ii in data!!.indices) {
-                    newCols.add(data[ii][0])
-                }
-                oldCols.retainAll(newCols)
-                val cols = TextUtils.join(",", oldCols)
-                query = String.format(
-                    "INSERT INTO %s (%s) SELECT %s from temp_%s",
-                    name, cols, cols, name
-                )
-                db.execSQL(query)
+            val oldCols = ArrayList(Arrays.asList(*columnNames))
+
+            // Make a list of columns in the new DB, using it to
+            // remove from the old list any that aren't in the
+            // new.  Old tables may have column names we no longer
+            // use, but we can't try to copy them because the new
+            // doesn't have 'em. Note that calling getColumns() on
+            // the newly-created table doesn't work, perhaps
+            // because we're in a transaction and nothing's been
+            // committed.
+            val newCols = ArrayList<String?>()
+            for (ii in data!!.indices) {
+                newCols.add(data[ii][0])
             }
+            oldCols.retainAll(newCols)
+            val cols = TextUtils.join(",", oldCols)
+            query = String.format(
+                "INSERT INTO %s (%s) SELECT %s from temp_%s",
+                name, cols, cols, name
+            )
+            db.execSQL(query)
+
             db.execSQL(String.format("DROP table temp_%s", name))
             db.setTransactionSuccessful()
         } finally {
