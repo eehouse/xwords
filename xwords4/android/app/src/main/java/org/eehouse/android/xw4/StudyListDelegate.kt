@@ -37,11 +37,11 @@ class StudyListDelegate(delegator: Delegator, sis: Bundle?) :
 		@JvmStatic
 		public fun launch( delegator: Delegator )
 		{
-			launch( delegator )
+			launch( delegator, null )
 		}
 
 		@JvmStatic
-		public fun launch( delegator: Delegator, isoCode: ISOCode? = null )
+		public fun launch( delegator: Delegator, isoCode: ISOCode? )
 		{
 			val context = delegator.getActivity() as Context
 			if ( null == isoCode ) {
