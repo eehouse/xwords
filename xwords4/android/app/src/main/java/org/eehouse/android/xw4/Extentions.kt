@@ -21,6 +21,7 @@ package org.eehouse.android.xw4
 import android.content.ContentValues
 import android.os.Bundle
 import org.json.JSONObject
+import java.io.Serializable
 
 fun Bundle.putLongAnd(key: String, value: Long): Bundle {
 	this.putLong( key, value )
@@ -39,6 +40,11 @@ fun Bundle.putBooleanArrayAnd(key: String, value: BooleanArray?): Bundle {
 
 fun Bundle.putStringArrayAnd(key: String, value: Array<String?>?): Bundle {
 	this.putStringArray(key, value)
+    return this
+}
+
+fun Bundle.putSerializableAnd(key: String, value: Serializable?): Bundle {
+	this.putSerializableAnd(key, value)
     return this
 }
 
