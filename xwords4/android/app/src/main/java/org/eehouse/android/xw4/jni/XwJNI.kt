@@ -892,7 +892,7 @@ class XwJNI private constructor() {
         }
 
         @JvmStatic
-        fun dict_tilesToStr(dict: DictWrapper, tiles: ByteArray, delim: String): String {
+        fun dict_tilesToStr(dict: DictWrapper, tiles: ByteArray?, delim: String?): String {
             return dict_tilesToStr(dict.dictPtr, tiles, delim)
         }
 
@@ -949,7 +949,7 @@ class XwJNI private constructor() {
         }
 
         @JvmStatic
-        fun di_nthWord(iw: IterWrapper, nn: Int, delim: String): String {
+        fun di_nthWord(iw: IterWrapper, nn: Int, delim: String?): String {
             return di_nthWord(iw.getRef(), nn, delim)
         }
 
@@ -959,12 +959,12 @@ class XwJNI private constructor() {
         }
 
         @JvmStatic
-        fun di_getPrefixes(iw: IterWrapper): Array<String> {
+        fun di_getPrefixes(iw: IterWrapper): Array<String>? {
             return di_getPrefixes(iw.getRef())
         }
 
         @JvmStatic
-        fun di_getIndices(iw: IterWrapper): IntArray {
+        fun di_getIndices(iw: IterWrapper): IntArray? {
             return di_getIndices(iw.getRef())
         }
 
@@ -973,13 +973,13 @@ class XwJNI private constructor() {
 		@JvmStatic
         private external fun di_wordCount(closure: Long): Int
 		@JvmStatic
-        private external fun di_nthWord(closure: Long, nn: Int, delim: String): String
+        private external fun di_nthWord(closure: Long, nn: Int, delim: String?): String
 		@JvmStatic
         private external fun di_getMinMax(closure: Long): IntArray
 		@JvmStatic
-        private external fun di_getPrefixes(closure: Long): Array<String>
+        private external fun di_getPrefixes(closure: Long): Array<String>?
 		@JvmStatic
-        private external fun di_getIndices(closure: Long): IntArray
+        private external fun di_getIndices(closure: Long): IntArray?
 
         // Private methods -- called only here
 		@JvmStatic
@@ -1081,7 +1081,7 @@ class XwJNI private constructor() {
 		@JvmStatic
         private external fun dict_strToTiles(dictPtr: Long, str: String): Array<ByteArray>
 		@JvmStatic
-        private external fun dict_tilesToStr(dictPtr: Long, tiles: ByteArray, delim: String): String
+        private external fun dict_tilesToStr(dictPtr: Long, tiles: ByteArray?, delim: String?): String
 		@JvmStatic
         private external fun dict_hasDuplicates(dictPtr: Long): Boolean
 		@JvmStatic

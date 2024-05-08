@@ -3034,7 +3034,7 @@ JNIEXPORT jintArray JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_di_1getMinMax
 ( JNIEnv* env, jclass C, jlong closure )
 {
-    jintArray result = NULL;
+    jintArray result;
     DI_HEADER(XP_TRUE);
     XP_U16 vals[2];
     di_getMinMax( data->iter, &vals[0], &vals[1] );

@@ -31,8 +31,8 @@ class DictBrowseFrag(): XWFragment() {
         }
     }
 
-    override fun onCreate(  sis: Bundle? )
+    override fun onCreate( sis: Bundle? )
     {
-        super.onCreate(  DictBrowseDelegate( this, sis ), sis, true )
+        super.onCreate( DictBrowseDelegate( this, sis ), sis, true )
     }
 }
