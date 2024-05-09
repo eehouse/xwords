@@ -151,9 +151,7 @@ public class PrefsActivity extends XWActivity
             if ( !Utils.isGSMPhone( context ) || Perms23.haveNativePerms() ) {
                 tmp.add( R.string.key_enable_nbs );
             }
-            if ( ABUtils.haveActionBar() ) {
-                tmp.add( R.string.key_hide_title );
-            }
+            tmp.add( R.string.key_hide_title );
 
             if ( ! BuildConfig.WIDIR_ENABLED ) {
                 tmp.add( R.string.key_enable_p2p );

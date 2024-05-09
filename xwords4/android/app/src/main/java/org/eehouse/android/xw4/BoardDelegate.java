@@ -547,17 +547,6 @@ public class BoardDelegate extends DelegateBase
         // needs to be in sync with XWTimerReason
         m_timers = new TimerRunnable[UtilCtxt.NUM_TIMERS_PLUS_ONE];
         m_view = (BoardView)findViewById( R.id.board_view );
-        if ( ! ABUtils.haveActionBar() ) {
-            m_tradeButtons = findViewById( R.id.exchange_buttons );
-            if ( null != m_tradeButtons ) {
-                m_exchCommmitButton = (Button)
-                    findViewById( R.id.exchange_commit );
-                m_exchCommmitButton.setOnClickListener( this );
-                m_exchCancelButton = (Button)
-                    findViewById( R.id.exchange_cancel );
-                m_exchCancelButton.setOnClickListener( this );
-            }
-        }
 
         Bundle args = getArguments();
         m_rowid = args.getLong( GameUtils.INTENT_KEY_ROWID, -1 );
@@ -1010,9 +999,7 @@ public class BoardDelegate extends DelegateBase
 
         case R.id.board_menu_trade:
             String msg = getString( R.string.not_again_trading );
-            int strID = ABUtils.haveActionBar() ? R.string.not_again_trading_menu
-                : R.string.not_again_trading_buttons;
-            msg += getString( strID );
+            msg += getString( R.string.not_again_trading_menu );
             makeNotAgainBuilder( R.string.key_notagain_trading,
                                  Action.START_TRADE_ACTION, msg )
                 .show();

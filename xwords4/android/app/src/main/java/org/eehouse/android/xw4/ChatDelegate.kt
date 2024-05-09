@@ -78,12 +78,6 @@ class ChatDelegate(delegator: Delegator, savedInstanceState: Bundle?) :
         m_layout = findViewById(R.id.chat_history) as TableLayout
 
         m_layout!!.addOnLayoutChangeListener { vv, ll, tt, rr, bb, ol, ot, or, ob -> scrollDown() }
-        val sendButton = findViewById(R.id.chat_send) as Button
-        if (ABUtils.haveActionBar()) {
-            sendButton.visibility = View.GONE
-        } else {
-            sendButton.setOnClickListener { handleSend() }
-        }
         val pairs: ArrayList<DBUtils.HistoryPair> = DBUtils.getChatHistory(m_activity, m_rowid, locals!!)
         for (pair in pairs) {
                 addRow(pair.msg, pair.playerIndx, pair.ts.toLong())

@@ -355,7 +355,7 @@ public abstract class DelegateBase implements DlgClickNotify,
 
     public void invalidateOptionsMenuIf()
     {
-        ABUtils.invalidateOptionsMenuIf( m_activity );
+        m_activity.invalidateOptionsMenu();
     }
 
     public void showToast( int msg )
