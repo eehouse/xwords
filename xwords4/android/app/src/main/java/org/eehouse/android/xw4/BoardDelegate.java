@@ -540,7 +540,7 @@ public class BoardDelegate extends DelegateBase
         m_isFirstLaunch = null == savedInstanceState;
         getBundledData( savedInstanceState );
 
-        int devID = DevID.getNFCDevID( m_activity );
+        int devID = NFCUtils.getNFCDevID( m_activity );
         mNFCWrapper = Wrapper.init( m_activity, this, devID );
 
         m_utils = new BoardUtilCtxt();

@@ -42,7 +42,7 @@ public class NFCCardService extends HostApduService {
     public void onCreate()
     {
         super.onCreate();
-        mMyDevID = DevID.getNFCDevID( this );
+        mMyDevID = NFCUtils.getNFCDevID( this );
         Log.d( TAG, "onCreate() got mydevid %d", mMyDevID );
     }
 
@@ -154,4 +154,6 @@ public class NFCCardService extends HostApduService {
 
         Log.d( TAG, "onDeactivated(reason=%s)", str );
     }
+
+
 }

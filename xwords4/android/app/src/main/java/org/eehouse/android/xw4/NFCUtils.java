@@ -754,6 +754,24 @@ public class NFCUtils {
         }
     }
 
+    private static final String NFC_DEVID_KEY = "key_nfc_devid";
+    private static int[] sNFCDevID = {0};
+    public static int getNFCDevID( Context context )
+    {
+        synchronized ( sNFCDevID ) {
+            if ( 0 == sNFCDevID[0] ) {
+                int devid = DBUtils.getIntFor( context, NFC_DEVID_KEY, 0 );
+                while ( 0 == devid ) {
+                    devid = Utils.nextRandomInt();
+                    DBUtils.setIntFor( context, NFC_DEVID_KEY, devid );
+                }
+                sNFCDevID[0] = devid;
+            }
+            // Log.d( TAG, "getNFCDevID() => %d", sNFCDevID[0] );
+            return sNFCDevID[0];
+        }
+    }
+
     public static class Wrapper {
         private Reader mReader;
 
