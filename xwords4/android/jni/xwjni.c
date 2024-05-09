@@ -700,7 +700,7 @@ JNIEXPORT jobjectArray JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_dvc_1getMQTTSubTopics
 ( JNIEnv* env, jclass C, jlong jniGlobalPtr )
 {
-    jobjectArray result = NULL;
+    jobjectArray result;
     DVC_HEADER(jniGlobalPtr);
 
 
@@ -712,6 +712,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dvc_1getMQTTSubTopics
                           &nTopics, topics );
 
     result = makeStringArray( env, nTopics, (const XP_UCHAR* const*)topics );
+    XP_ASSERT( !!result );
 
     DVC_HEADER_END();
     return result;
@@ -899,7 +900,7 @@ JNIEXPORT jobject JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_kplr_1getAddr
 ( JNIEnv* env, jclass C, jlong jniGlobalPtr, jstring jName, jintArray jLastMod )
 {
-    jobject jaddr = NULL;
+    jobject jaddr;
     DVC_HEADER(jniGlobalPtr);
 
     CommsAddrRec addr;
@@ -922,10 +923,11 @@ JNIEXPORT jstring JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_kplr_1nameForMqttDev
 ( JNIEnv* env, jclass C, jlong jniGlobalPtr, jstring jDevID )
 {
-    jstring result = NULL;
+    jstring result;
     DVC_HEADER(jniGlobalPtr);
     const char* devid = (*env)->GetStringUTFChars( env, jDevID, NULL );
-    const XP_UCHAR* name = kplr_nameForMqttDev( globalState->dutil, env, devid );
+    const XP_UCHAR* name = kplr_nameForMqttDev( globalState->dutil,
+                                                env, devid );
     result = (*env)->NewStringUTF( env, name );
     (*env)->ReleaseStringUTFChars( env, jDevID, devid );
     DVC_HEADER_END();
@@ -1013,14 +1015,7 @@ JNIEXPORT jstring JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_comms_1getUUID
 ( JNIEnv* env, jclass C )
 {
-    jstring jstr = 
-#ifdef XWFEATURE_BLUETOOTH
-        (*env)->NewStringUTF( env, XW_BT_UUID )
-#else
-        NULL
-#endif
-        ;
-    return jstr;
+    return (*env)->NewStringUTF( env, XW_BT_UUID );
 }
 
 JNIEXPORT jstring JNICALL
@@ -1139,7 +1134,7 @@ JNIEXPORT jstring JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_dict_1getTilesInfo
 ( JNIEnv* env, jclass C, jlong jniGlobalPtr, jlong dictPtr )
 {
-    jstring result = NULL;
+    jstring result;
     JNIGlobalState* globalState = (JNIGlobalState*)jniGlobalPtr;
 #ifdef MEM_DEBUG
     MemPoolCtx* mpool = GETMPOOL( globalState );
@@ -1192,19 +1187,18 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1getInfo
 ( JNIEnv* env, jclass C, jlong jniGlobalPtr, jlong dictPtr,
   jboolean check )
 {
-    jobject jinfo = NULL;
+    jobject jinfo;
 #ifdef MAP_THREAD_TO_ENV
     JNIGlobalState* globalState = (JNIGlobalState*)jniGlobalPtr;
     MAP_THREAD( &globalState->ti, env );
 #endif
     DictionaryCtxt* dict = (DictionaryCtxt*)dictPtr;
-    if ( NULL != dict ) {
-        jinfo = makeObjectEmptyConstr( env, PKG_PATH("jni/DictInfo") );
-        setInt( env, jinfo, "wordCount", dict_getWordCount( dict, env ) );
-        setString( env, jinfo, "md5Sum", dict_getMd5Sum( dict ) );
-        setString( env, jinfo, "isoCodeStr", dict_getISOCode( dict ) );
-        setString( env, jinfo, "langName", dict_getLangName( dict ) );
-    }
+    XP_ASSERT( !!dict );
+    jinfo = makeObjectEmptyConstr( env, PKG_PATH("jni/DictInfo") );
+    setInt( env, jinfo, "wordCount", dict_getWordCount( dict, env ) );
+    setString( env, jinfo, "md5Sum", dict_getMd5Sum( dict ) );
+    setString( env, jinfo, "isoCodeStr", dict_getISOCode( dict ) );
+    setString( env, jinfo, "langName", dict_getLangName( dict ) );
 
     return jinfo;
 }
@@ -2300,7 +2294,7 @@ JNIEXPORT jintArray JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_server_1figureOrder
 ( JNIEnv* env, jclass C, GamePtrType gamePtr, jobject jRo )
 {
-    jintArray result = NULL;
+    jintArray result;
     XWJNI_START_GLOBALS(gamePtr);
     RematchOrder ro = jEnumToInt( env, jRo );
     XP_LOGFF( "(ro=%s)", RO2Str(ro) );
@@ -2308,7 +2302,8 @@ Java_org_eehouse_android_xw4_jni_XwJNI_server_1figureOrder
     NewOrder no;
     server_figureOrder( state->game.server, ro, &no );
 
-    result = makeIntArray( env, globals->gi->nPlayers, no.order, sizeof(no.order[0]) );
+    result = makeIntArray( env, globals->gi->nPlayers, no.order,
+                           sizeof(no.order[0]) );
 
     XWJNI_END();
     return result;
@@ -3093,19 +3088,19 @@ Java_org_eehouse_android_xw4_jni_XwJNI_di_1nthWord
 {
     jstring result = NULL;
     DI_HEADER(XP_TRUE);
-    if ( NULL != data ) {
-        if ( di_getNthWord( data->iter, env, jposn, data->depth, &data->idata ) ) {
-            XP_UCHAR buf[64];
-            const XP_UCHAR* delim = NULL == jdelim ? NULL
-                : (*env)->GetStringUTFChars( env, jdelim, NULL );
-            di_wordToString( data->iter, buf, VSIZE(buf), delim );
-            result = (*env)->NewStringUTF( env, buf );
-            if ( !!delim ) {
-                (*env)->ReleaseStringUTFChars( env, jdelim, delim );
-            }
-        } else {
-            XP_LOGFF( "failed to get %dth word", jposn );
+    if ( NULL != data
+         && di_getNthWord( data->iter, env, jposn, data->depth,
+                           &data->idata ) ) {
+        XP_UCHAR buf[64];
+        const XP_UCHAR* delim = NULL == jdelim ? NULL
+            : (*env)->GetStringUTFChars( env, jdelim, NULL );
+        di_wordToString( data->iter, buf, VSIZE(buf), delim );
+        result = (*env)->NewStringUTF( env, buf );
+        if ( !!delim ) {
+            (*env)->ReleaseStringUTFChars( env, jdelim, delim );
         }
+    } else {
+        XP_LOGFF( "failed to get %dth word", jposn );
     }
     DI_HEADER_END();
     return result;

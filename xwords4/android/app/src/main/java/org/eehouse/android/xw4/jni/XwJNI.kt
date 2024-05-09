@@ -408,7 +408,7 @@ class XwJNI private constructor() {
         }
 
         @JvmStatic
-        fun nliFromStream(stream: ByteArray): NetLaunchInfo {
+        fun nliFromStream(stream: ByteArray): NetLaunchInfo? {
             return nli_from_stream(jNI!!.m_ptrGlobals, stream)
         }
 
@@ -423,9 +423,9 @@ class XwJNI private constructor() {
         }
 
         @JvmStatic
-        external fun comms_getUUID(): String?
+        external fun comms_getUUID(): String
         @JvmStatic
-        external fun lcToLocale(lc: Int): String
+        external fun lcToLocale(lc: Int): String?
         @JvmStatic
         external fun haveLocaleToLc(isoCodeStr: String?, lc: IntArray?): Boolean
 
@@ -559,7 +559,7 @@ class XwJNI private constructor() {
         external fun game_saveToStream(
             gamePtr: GamePtr?,
             gi: CurGameInfo?
-        ): ByteArray?
+        ): ByteArray
 
         @JvmStatic
         external fun game_saveSucceeded(gamePtr: GamePtr?)
@@ -696,7 +696,7 @@ class XwJNI private constructor() {
         ): Boolean
 
         @JvmStatic
-        external fun board_formatRemainingTiles(gamePtr: GamePtr?): String?
+        external fun board_formatRemainingTiles(gamePtr: GamePtr?): String
         @JvmStatic
         external fun board_sendChat(gamePtr: GamePtr?, msg: String?)
 
@@ -717,7 +717,7 @@ class XwJNI private constructor() {
         external fun model_writeGameHistory(
             gamePtr: GamePtr?,
             gameOver: Boolean
-        ): String?
+        ): String
 
         @JvmStatic
         external fun model_getNMoves(gamePtr: GamePtr?): Int
@@ -727,7 +727,7 @@ class XwJNI private constructor() {
         external fun model_getPlayersLastScore(
             gamePtr: GamePtr?,
             player: Int
-        ): LastMoveInfo?
+        ): LastMoveInfo
 
         // Server
         external fun server_reset(gamePtr: GamePtr?)
@@ -740,13 +740,13 @@ class XwJNI private constructor() {
         @JvmStatic
         external fun server_countTilesInPool(gamePtr: GamePtr?): Int
         @JvmStatic
-        external fun server_formatDictCounts(gamePtr: GamePtr?, nCols: Int): String?
+        external fun server_formatDictCounts(gamePtr: GamePtr?, nCols: Int): String
         @JvmStatic
         external fun server_getGameIsOver(gamePtr: GamePtr?): Boolean
         @JvmStatic
         external fun server_getGameIsConnected(gamePtr: GamePtr?): Boolean
         @JvmStatic
-        external fun server_writeFinalScores(gamePtr: GamePtr?): String?
+        external fun server_writeFinalScores(gamePtr: GamePtr?): String
 
         @JvmStatic
         external fun server_initClientConnection(gamePtr: GamePtr?): Boolean
@@ -766,7 +766,8 @@ class XwJNI private constructor() {
         }
 
         @JvmStatic
-        private external fun server_figureOrder(gamePtr: GamePtr, ro: RematchOrder): IntArray
+        private external fun server_figureOrder(gamePtr: GamePtr,
+                                                ro: RematchOrder): IntArray
         @JvmStatic
         external fun server_endGame(gamePtr: GamePtr?)
 
@@ -783,7 +784,7 @@ class XwJNI private constructor() {
         @JvmStatic
         external fun comms_stop(gamePtr: GamePtr?)
         @JvmStatic
-        external fun comms_getSelfAddr(gamePtr: GamePtr?): CommsAddrRec?
+        external fun comms_getSelfAddr(gamePtr: GamePtr?): CommsAddrRec
         @JvmStatic
         external fun comms_getHostAddr(gamePtr: GamePtr?): CommsAddrRec?
         @JvmStatic
@@ -845,7 +846,7 @@ class XwJNI private constructor() {
             cmd: SMS_CMD, gameID: Int, buf: ByteArray?, phone: String,
             port: Int,  /*out*/
             waitSecs: IntArray
-        ): Array<ByteArray> {
+        ): Array<ByteArray>? {
             return smsproto_prepOutbound(
                 jNI!!.m_ptrGlobals, cmd, gameID, buf,
                 phone, port, waitSecs
@@ -853,15 +854,19 @@ class XwJNI private constructor() {
         }
 
         @JvmStatic
-        fun smsproto_prepOutbound(phone: String, port: Int, waitSecs: IntArray): Array<ByteArray> {
-            return smsproto_prepOutbound(SMS_CMD.NONE, 0, null, phone, port, waitSecs)
+        fun smsproto_prepOutbound(phone: String,
+                                  port: Int,
+                                  waitSecs: IntArray): Array<ByteArray>?
+        {
+            return smsproto_prepOutbound(SMS_CMD.NONE, 0, null, phone,
+                                         port, waitSecs)
         }
 
         @JvmStatic
         fun smsproto_prepInbound(
             data: ByteArray,
             fromPhone: String, wantPort: Int
-        ): Array<SMSProtoMsg> {
+        ): Array<SMSProtoMsg>? {
             return smsproto_prepInbound(jNI!!.m_ptrGlobals, data, fromPhone, wantPort)
         }
 
@@ -887,17 +892,21 @@ class XwJNI private constructor() {
         }
 
         @JvmStatic
-        fun dict_getDesc(dict: DictWrapper): String {
+        fun dict_getDesc(dict: DictWrapper): String? {
             return dict_getDesc(dict.dictPtr)
         }
 
         @JvmStatic
-        fun dict_tilesToStr(dict: DictWrapper, tiles: ByteArray?, delim: String?): String {
+        fun dict_tilesToStr(dict: DictWrapper, tiles: ByteArray?,
+                            delim: String?): String?
+        {
             return dict_tilesToStr(dict.dictPtr, tiles, delim)
         }
 
         @JvmStatic
-        fun dict_strToTiles(dict: DictWrapper, str: String): Array<ByteArray> {
+        fun dict_strToTiles(dict: DictWrapper, str: String):
+            Array<ByteArray>?
+        {
             return dict_strToTiles(dict.dictPtr, str)
         }
 
@@ -949,7 +958,7 @@ class XwJNI private constructor() {
         }
 
         @JvmStatic
-        fun di_nthWord(iw: IterWrapper, nn: Int, delim: String?): String {
+        fun di_nthWord(iw: IterWrapper, nn: Int, delim: String?): String? {
             return di_nthWord(iw.getRef(), nn, delim)
         }
 
@@ -973,7 +982,7 @@ class XwJNI private constructor() {
 		@JvmStatic
         private external fun di_wordCount(closure: Long): Int
 		@JvmStatic
-        private external fun di_nthWord(closure: Long, nn: Int, delim: String?): String
+        private external fun di_nthWord(closure: Long, nn: Int, delim: String?): String?
 		@JvmStatic
         private external fun di_getMinMax(closure: Long): IntArray
 		@JvmStatic
@@ -1046,10 +1055,10 @@ class XwJNI private constructor() {
         private external fun kplr_getAddr(
             jniState: Long, name: String,
             lastMod: IntArray?
-        ): CommsAddrRec?
+        ): CommsAddrRec
 
 		@JvmStatic
-        external fun kplr_nameForMqttDev(jniState: Long, mqttID: String?): String?
+        external fun kplr_nameForMqttDev(jniState: Long, mqttID: String?): String
 		@JvmStatic
         private external fun cleanGlobals(jniState: Long)
 		@JvmStatic
@@ -1079,9 +1088,11 @@ class XwJNI private constructor() {
 		@JvmStatic
         private external fun dict_unref(dictPtr: Long)
 		@JvmStatic
-        private external fun dict_strToTiles(dictPtr: Long, str: String): Array<ByteArray>
+        private external fun dict_strToTiles(dictPtr: Long,
+                                             str: String):
+            Array<ByteArray>?
 		@JvmStatic
-        private external fun dict_tilesToStr(dictPtr: Long, tiles: ByteArray?, delim: String?): String
+        private external fun dict_tilesToStr(dictPtr: Long, tiles: ByteArray?, delim: String?): String?
 		@JvmStatic
         private external fun dict_hasDuplicates(dictPtr: Long): Boolean
 		@JvmStatic
@@ -1093,7 +1104,7 @@ class XwJNI private constructor() {
         ): DictInfo
 
 		@JvmStatic
-        private external fun dict_getDesc(dictPtr: Long): String
+        private external fun dict_getDesc(dictPtr: Long): String?
 		@JvmStatic
         private external fun di_init(
             jniState: Long, dictPtr: Long,
@@ -1105,7 +1116,7 @@ class XwJNI private constructor() {
             jniState: Long, cmd: SMS_CMD, gameID: Int, buf: ByteArray?,
             phone: String, port: Int,  /*out*/
             waitSecs: IntArray
-        ): Array<ByteArray>
+        ): Array<ByteArray>?
 
 		@JvmStatic
         private external fun smsproto_prepInbound(
@@ -1113,7 +1124,7 @@ class XwJNI private constructor() {
             data: ByteArray,
             fromPhone: String,
             wantPort: Int
-        ): Array<SMSProtoMsg>
+        ): Array<SMSProtoMsg>?
 
         // This always returns true on release builds now.
 		@JvmStatic
