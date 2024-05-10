@@ -110,7 +110,7 @@ class CommsTransport(
             CommsConnType.COMMS_CONN_P2P -> nSent = WiDirService
                 .sendPacket(context, addr!!.p2p_addr, gameID, buf)
 
-            CommsConnType.COMMS_CONN_NFC -> nSent = NFCUtils.addMsgFor(buf, gameID)
+            CommsConnType.COMMS_CONN_NFC -> nSent = NFCUtils.addMsgFor(buf!!, gameID)
             CommsConnType.COMMS_CONN_MQTT -> Assert.failDbg() // comes into transportSendMQTT() now
             else -> Assert.failDbg()
         }
