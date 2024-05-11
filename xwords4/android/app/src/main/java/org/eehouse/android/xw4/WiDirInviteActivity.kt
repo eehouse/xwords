@@ -1,6 +1,6 @@
 /* -*- compile-command: "find-and-gradle.sh inXw4dDeb"; -*- */
 /*
- * Copyright 2012 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2012 - 2024 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -17,19 +17,13 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
+package org.eehouse.android.xw4
 
-package org.eehouse.android.xw4;
+import android.os.Bundle
 
-import android.os.Bundle;
-
-public class WiDirInviteActivity extends InviteActivity {
-
-    private WiDirInviteDelegate m_dlgt;
-
-    @Override
-    protected void onCreate( Bundle savedInstanceState )
-    {
-        m_dlgt = new WiDirInviteDelegate( this, savedInstanceState );
-        super.onCreate( savedInstanceState, m_dlgt );
+class WiDirInviteActivity : InviteActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        val dlgt = WiDirInviteDelegate(this, savedInstanceState)
+        super.onCreate(savedInstanceState, dlgt)
     }
 }
