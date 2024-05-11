@@ -1,6 +1,6 @@
 /* -*- compile-command: "find-and-gradle.sh inXw4dDeb"; -*- */
 /*
- * Copyright 2012 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2012 - 2024 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -17,19 +17,13 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
+package org.eehouse.android.xw4
 
-package org.eehouse.android.xw4;
+import android.os.Bundle
 
-import android.os.Bundle;
-
-public class SMSInviteActivity extends InviteActivity {
-
-    private SMSInviteDelegate m_dlgt;
-
-    @Override
-    protected void onCreate( Bundle savedInstanceState )
-    {
-        m_dlgt = new SMSInviteDelegate( this, savedInstanceState );
-        super.onCreate( savedInstanceState, m_dlgt );
+class SMSInviteActivity : InviteActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        val dlgt = SMSInviteDelegate(this, savedInstanceState)
+        super.onCreate(savedInstanceState, dlgt)
     }
 }
