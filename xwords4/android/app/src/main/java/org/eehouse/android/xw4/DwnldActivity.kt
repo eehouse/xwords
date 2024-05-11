@@ -1,6 +1,6 @@
 /* -*- compile-command: "find-and-gradle.sh inXw4dDeb"; -*- */
 /*
- * Copyright 2009-2012 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2009 - 2024 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -17,24 +17,20 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
+package org.eehouse.android.xw4
 
-package org.eehouse.android.xw4;
+import android.os.Bundle
+import android.view.Window
 
-import android.os.Bundle;
-import android.view.Window;
-
-public class DwnldActivity extends XWActivity {
-
-    @Override
-    protected void onCreate( Bundle savedInstanceState )
-    {
-        requestWindowFeature( Window.FEATURE_NO_TITLE );
-        requestWindowFeature( Window.FEATURE_LEFT_ICON );
-        getWindow().setFeatureDrawableResource( Window.FEATURE_LEFT_ICON,
-                                                R.drawable.icon48x48 );
-
-        DwnldDelegate dlgt =
-            new DwnldDelegate( this, savedInstanceState );
-        super.onCreate( savedInstanceState, dlgt, false );
+class DwnldActivity : XWActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        requestWindowFeature(Window.FEATURE_NO_TITLE)
+        requestWindowFeature(Window.FEATURE_LEFT_ICON)
+        window.setFeatureDrawableResource(
+            Window.FEATURE_LEFT_ICON,
+            R.drawable.icon48x48
+        )
+        val dlgt = DwnldDelegate(this, savedInstanceState)
+        super.onCreate(savedInstanceState, dlgt, false)
     }
 }
