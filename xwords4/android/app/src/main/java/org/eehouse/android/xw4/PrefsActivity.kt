@@ -153,27 +153,25 @@ class PrefsActivity : XWActivity(), Delegator, HasDlgDelegate,
         @Synchronized
         private fun getHideSet(context: Context): Set<String> {
             if (null == sHideSet) {
-                val tmp: MutableSet<Int> = HashSet()
+                val hidees: MutableSet<Int> = HashSet()
                 if (!Utils.isGSMPhone(context) || Perms23.haveNativePerms()) {
-                    tmp.add(R.string.key_enable_nbs)
+                    hidees.add(R.string.key_enable_nbs)
                 }
-                tmp.add(R.string.key_hide_title)
+                hidees.add(R.string.key_hide_title)
                 if (!BuildConfig.WIDIR_ENABLED) {
-                    tmp.add(R.string.key_enable_p2p)
+                    hidees.add(R.string.key_enable_p2p)
                 }
                 if (BuildConfig.DEBUG) {
-                    tmp.add(R.string.key_logging_on)
-                    tmp.add(R.string.key_enable_debug)
+                    hidees.add(R.string.key_logging_on)
+                    hidees.add(R.string.key_enable_debug)
                 } else {
-                    tmp.add(R.string.key_unhide_dupmode)
+                    hidees.add(R.string.key_unhide_dupmode)
                 }
                 if (CommonPrefs.getDupModeHidden(context)) {
-                    tmp.add(R.string.key_init_dupmodeon)
+                    hidees.add(R.string.key_init_dupmodeon)
                 }
                 sHideSet = HashSet()
-                for (key in tmp) {
-                    sHideSet!!.add(context.getString(key))
-                }
+                hidees.map{key -> sHideSet!!.add(context.getString(key))}
             }
             return sHideSet!!
         }
