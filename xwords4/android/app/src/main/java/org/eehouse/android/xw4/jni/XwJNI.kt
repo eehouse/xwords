@@ -296,7 +296,7 @@ class XwJNI private constructor() {
         @JvmStatic
         fun dvc_onWebSendResult(
             resultKey: Int, succeeded: Boolean,
-            result: String
+            result: String?
         ) {
             dvc_onWebSendResult(jNI!!.m_ptrGlobals, resultKey, succeeded, result)
         }
