@@ -54,6 +54,11 @@ fun Bundle.putSerializableAnd(key: String, value: Serializable?): Bundle {
     return this
 }
 
+fun Bundle.putCharSequenceAnd(key: String, value: CharSequence?): Bundle {
+	this.putCharSequence(key, value)
+    return this
+}
+
 fun ContentValues.putAnd(key: String, value: Int): ContentValues {
 	this.put(key, value)
 	return this
