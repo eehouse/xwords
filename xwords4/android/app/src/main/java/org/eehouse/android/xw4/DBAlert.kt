@@ -61,7 +61,6 @@ class DBAlert : XWDialogFragment() {
             mParams = (lst as Array<Any?>?)
         }
         val activity = activity as XWActivity?
-        val asList = mParams.orEmpty()
         var dialog = activity!!.makeDialog(this, *mParams.orEmpty())
         if (null == dialog) {
             Log.e(TAG, "no dialog for %s from %s", dlgID, activity)

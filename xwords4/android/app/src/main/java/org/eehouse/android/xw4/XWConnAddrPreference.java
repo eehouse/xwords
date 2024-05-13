@@ -27,7 +27,7 @@ import android.os.Bundle;
 import android.util.AttributeSet;
 import android.view.View;
 import androidx.preference.DialogPreference;
-import androidx.preference.Preference;
+
 import org.eehouse.android.xw4.DlgDelegate.Action;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;

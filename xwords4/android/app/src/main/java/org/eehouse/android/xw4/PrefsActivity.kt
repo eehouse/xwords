@@ -35,12 +35,12 @@ class PrefsActivity : XWActivity(), Delegator, HasDlgDelegate,
     private var mDlgt: PrefsDelegate? = null
 
     internal interface DialogProc {
-        fun makeDialogFrag(): XWDialogFragment?
+        fun makeDialogFrag(): XWDialogFragment
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         mDlgt = PrefsDelegate(this, this, savedInstanceState)
-        super.onCreate(savedInstanceState, mDlgt)
+        super.onCreate(savedInstanceState, mDlgt!!)
         val layoutID = mDlgt!!.layoutID
         Assert.assertTrue(0 < layoutID)
         mDlgt!!.setContentView(layoutID)
