@@ -280,7 +280,7 @@ class BoardView(private val mContext: Context, attrs: AttributeSet?) : View(
     override fun startHandling(
         parent: Activity, thread: JNIThread,
         connTypes: CommsConnTypeSet?,
-        nrp: NewRecentsProc
+        nrp: NewRecentsProc?
     ) {
         Log.d(TAG, "startHandling(thread=%H, parent=%s)", thread, parent)
         mParent = parent

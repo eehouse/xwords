@@ -532,8 +532,8 @@ open class BoardCanvas private constructor(
                     R.string.key_na_longtap_lookup
                 )
             }
-            if (mSawRecents && null != mNRP) {
-                mNRP.sawNew()
+            if (mSawRecents) {
+                mNRP?.sawNew()
             }
             mSawRecents = false
         }
