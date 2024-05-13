@@ -62,14 +62,14 @@ abstract open class XWFragment: Fragment(), Delegator {
 		}
 	}
 
-    var m_dlgt: DelegateBase? = null
-    var m_parentName: String? = null
-    var m_hasOptionsMenu = false
-    var m_commitID: Int = 0
+    var mDlgt: DelegateBase? = null
+    var mParentName: String? = null
+    var mHasOptionsMenu = false
+    var mCommitID: Int = 0
 
     fun setParentName( parent: Delegator? ): XWFragment 
     {
-        m_parentName =
+        mParentName =
 			if ( null == parent ) "<none>"
 			else parent::class.java.getSimpleName()
         return this
@@ -77,28 +77,28 @@ abstract open class XWFragment: Fragment(), Delegator {
 
 	fun getParentName(): String
     {
-        Assert.assertNotNull( m_parentName )
-        return m_parentName!!
+        Assert.assertNotNull( mParentName )
+        return mParentName!!
     }
 
-    fun setCommitID( id: Int ) { m_commitID = id }
-    fun getCommitID(): Int { return m_commitID }
+    fun setCommitID( id: Int ) { mCommitID = id }
+    fun getCommitID(): Int { return mCommitID }
 
     override fun onSaveInstanceState( outState: Bundle )
     {
         Log.d( TAG, "%H/%s.onSaveInstanceState() called", this,
 			   this::class.java.getSimpleName() )
-        Assert.assertNotNull( m_parentName )
-        outState?.putStringAnd( PARENT_NAME, m_parentName )
-			?.putIntAnd( COMMIT_ID, m_commitID )
-        m_dlgt?.onSaveInstanceState( outState )
+        Assert.assertNotNull( mParentName )
+        outState?.putStringAnd( PARENT_NAME, mParentName )
+			?.putIntAnd( COMMIT_ID, mCommitID )
+        mDlgt?.onSaveInstanceState( outState )
         super.onSaveInstanceState( outState )
     }
 
     fun onCreate( dlgt: DelegateBase, sis: Bundle?, hasOptionsMenu: Boolean )
     {
         Log.d( TAG, "%H/%s.onCreate() called", this, this::class.java.getSimpleName() )
-        m_hasOptionsMenu = hasOptionsMenu
+        mHasOptionsMenu = hasOptionsMenu
         this.onCreate( dlgt, sis )
     }
 
@@ -107,12 +107,12 @@ abstract open class XWFragment: Fragment(), Delegator {
         Log.d( TAG, "%H/%s.onCreate() called", this, this::class.java.getSimpleName() )
         super.onCreate( sis )
         if ( null != sis ) {
-            m_parentName = sis.getString( PARENT_NAME )
-            Assert.assertNotNull( m_parentName )
-            m_commitID = sis.getInt( COMMIT_ID )
+            mParentName = sis.getString( PARENT_NAME )
+            Assert.assertNotNull( mParentName )
+            mCommitID = sis.getInt( COMMIT_ID )
         }
-        Assert.assertNull( m_dlgt )
-        m_dlgt = dlgt
+        Assert.assertNull( mDlgt )
+        mDlgt = dlgt
     }
 
     // This is supposed to be the first call we can use to start hooking stuff
@@ -130,7 +130,7 @@ abstract open class XWFragment: Fragment(), Delegator {
     {
         Log.d( TAG, "%H/%s.onCreateView() called", this, this::class.java.getSimpleName() )
         sActiveFrags.add(this)
-        return m_dlgt?.inflateView( inflater, container )
+        return mDlgt?.inflateView( inflater, container )
     }
 
     // override fun onActivityCreated(savedInstanceState: Bundle?) {
@@ -140,9 +140,9 @@ abstract open class XWFragment: Fragment(), Delegator {
     override fun onActivityCreated(savedInstanceState: Bundle? )
     {
         Log.d( TAG, "%H/%s.onActivityCreated() called", this, this::class.java.getSimpleName() )
-        m_dlgt?.init( savedInstanceState )
+        mDlgt?.init( savedInstanceState )
         super.onActivityCreated( savedInstanceState )
-        if ( m_hasOptionsMenu ) {
+        if ( mHasOptionsMenu ) {
             setHasOptionsMenu( true )
         }
     }
@@ -150,7 +150,7 @@ abstract open class XWFragment: Fragment(), Delegator {
     override fun onPause()
     {
         Log.d( TAG, "%H/%s.onPause() called", this, this::class.java.getSimpleName() )
-        m_dlgt?.onPause()
+        mDlgt?.onPause()
         super.onPause()
     }
 
@@ -158,60 +158,60 @@ abstract open class XWFragment: Fragment(), Delegator {
     {
         Log.d( TAG, "%H/%s.onResume() called", this, this::class.java.getSimpleName() )
         super.onResume()
-        m_dlgt?.onResume()
+        mDlgt?.onResume()
     }
 
     override fun onStart()
     {
         Log.d( TAG, "%H/%s.onStart() called", this, this::class.java.getSimpleName() )
         super.onStart()
-        m_dlgt?.onStart()
+        mDlgt?.onStart()
     }
 
     override fun onStop()
     {
         Log.d( TAG, "%H/%s.onStop() called", this, this::class.java.getSimpleName() )
-        m_dlgt?.onStop()
+        mDlgt?.onStop()
         super.onStop()
     }
 
     override fun onDestroy()
     {
         Log.d( TAG, "%H/%s.onDestroy() called", this, this::class.java.getSimpleName() )
-        m_dlgt?.onDestroy()
+        mDlgt?.onDestroy()
         sActiveFrags.remove( this )
         super.onDestroy()
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         Log.d( TAG, "%H/%s.onActivityResult() called", this, this::class.java.getSimpleName() )
-        m_dlgt?.onActivityResult( RequestCode.entries[requestCode],
+        mDlgt?.onActivityResult( RequestCode.entries[requestCode],
                                   resultCode, data )
     }
 
     override fun onPrepareOptionsMenu( menu: Menu )
     {
-        m_dlgt?.onPrepareOptionsMenu( menu )
+        mDlgt?.onPrepareOptionsMenu( menu )
     }
 
     override fun onCreateOptionsMenu( menu: Menu, inflater: MenuInflater )
     {
-        m_dlgt?.onCreateOptionsMenu( menu, inflater )
+        mDlgt?.onCreateOptionsMenu( menu, inflater )
     }
 
     override fun onOptionsItemSelected( item: MenuItem ): Boolean
-		= m_dlgt!!.onOptionsItemSelected( item )
+		= mDlgt!!.onOptionsItemSelected( item )
 
     override fun finish()
     {
         Assert.failDbg()
     }
 
-    fun setTitle() { m_dlgt?.setTitle() }
+    fun setTitle() { mDlgt?.setTitle() }
 
     override fun addFragment( fragment: XWFragment, extras: Bundle? )
     {
-        val main = getActivity() as MainActivity
+        val main = getActivity() as MainActivity?
         if ( null != main ) {   // I've seen this come back null
             main.addFragment( fragment, extras )
         }
@@ -226,12 +226,12 @@ abstract open class XWFragment: Fragment(), Delegator {
 
 	fun getDelegate() : DelegateBase?
     {
-        return m_dlgt
+        return mDlgt
     }
 
     override fun getListView(): ListView
     {
-        val view = m_dlgt?.findViewById( android.R.id.list ) as ListView
+        val view = mDlgt?.findViewById( android.R.id.list ) as ListView
         return view
     }
 
