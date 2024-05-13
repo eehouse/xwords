@@ -34,6 +34,11 @@ fun Bundle.putIntAnd(key: String, value: Int): Bundle {
 	return this
 }
 
+fun Bundle.putBooleanAnd(key: String, value: Boolean): Bundle {
+	this.putBoolean( key, value )
+	return this
+}
+
 fun Bundle.putBooleanArrayAnd(key: String, value: BooleanArray?): Bundle {
 	this.putBooleanArray( key, value )
 	return this
