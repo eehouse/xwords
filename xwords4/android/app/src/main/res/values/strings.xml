@@ -2046,7 +2046,6 @@
     <string name="not_again_studycopy">The selected words will be
     copied to the system clipboard. You can then paste them into any
     app that supports pasting text, e.g. an email app.</string>
-    <string name="lookup_title">Word lookup</string>
     <string name="slmenu_select_all">Select all</string>
     <string name="slmenu_deselect_all">Unselect all</string>
     <string name="sel_items_fmt">Selected: %1$d</string>

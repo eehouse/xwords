@@ -5,6 +5,7 @@
      android:orientation="vertical"
      android:layout_width="fill_parent" 
      android:layout_height="fill_parent"
+     android:paddingTop="12dp"
      >
 
   <TextView android:id="@+id/summary"

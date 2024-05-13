@@ -146,11 +146,11 @@ public class LookupAlertView extends LinearLayout
             switchState( false );
         } else if ( view == m_studyButton ) {
             String word = m_words[m_wordIndex];
-            DBUtils.addToStudyList( m_context, word, s_lang );
-
-            String msg = LocUtils.getString( m_context, R.string.add_done_fmt,
-                                             word, s_langName );
-            Utils.showToast( m_context, msg );
+            if ( DBUtils.addToStudyList( m_context, word, s_lang ) ) {
+                String msg = LocUtils.getString( m_context, R.string.add_done_fmt,
+                                                 word, s_langName );
+                Utils.showToast( m_context, msg );
+            }
         }
     }
 

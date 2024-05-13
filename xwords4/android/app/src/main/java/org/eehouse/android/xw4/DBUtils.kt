@@ -56,7 +56,7 @@ import java.util.StringTokenizer
 
 object DBUtils {
     private val TAG = DBUtils::class.java.getSimpleName()
-    const val ROWID_NOTFOUND = -1
+    const val ROWID_NOTFOUND = -1.toLong()
     const val ROWIDS_ALL = -2
     const val GROUPID_UNSPEC = -1
     const val KEY_NEWGAMECOUNT = "DBUtils.newGameCount"
@@ -820,7 +820,7 @@ object DBUtils {
 
     @JvmStatic
     fun getVisID(context: Context, rowid: Long): Int {
-        var result = ROWID_NOTFOUND
+        var result = -1
         val columns = arrayOf(DBHelper.VISID)
         val selection = String.format(ROW_ID_FMT, rowid)
         initDB(context)
@@ -1702,13 +1702,21 @@ object DBUtils {
     fun addToStudyList(
         context: Context, word: String,
         isoCode: ISOCode
-    ) {
+    ): Boolean {
         val values = ContentValues()
 			.putAnd(DBHelper.WORD, word)
 			.putAnd(DBHelper.ISOCODE, isoCode.toString())
         initDB(context)
-        synchronized(s_dbHelper!!) { insert(TABLE_NAMES.STUDYLIST, values) }
-        notifyStudyListListeners(word, isoCode)
+
+        val success: Boolean
+        synchronized(s_dbHelper!!) {
+            success = ROWID_NOTFOUND != insert(TABLE_NAMES.STUDYLIST, values)
+        }
+
+        if ( success ) {
+            notifyStudyListListeners(word, isoCode)
+        }
+        return success
     }
 
     @JvmStatic
@@ -1736,7 +1744,7 @@ object DBUtils {
     }
 
     @JvmStatic
-    fun studyListWords(context: Context, isoCode: ISOCode?): ArrayList<String> {
+    fun studyListWords(context: Context, isoCode: ISOCode): ArrayList<String> {
         var result = ArrayList<String>()
         val selection = String.format("%s = '%s'", DBHelper.ISOCODE, isoCode)
         val columns = arrayOf(DBHelper.WORD)
