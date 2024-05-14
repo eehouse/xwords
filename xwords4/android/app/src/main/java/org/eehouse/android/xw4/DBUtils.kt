@@ -58,7 +58,7 @@ object DBUtils {
     private val TAG = DBUtils::class.java.getSimpleName()
     const val ROWID_NOTFOUND = -1.toLong()
     const val ROWIDS_ALL = -2
-    const val GROUPID_UNSPEC = -1
+    const val GROUPID_UNSPEC = -1.toLong()
     const val KEY_NEWGAMECOUNT = "DBUtils.newGameCount"
 
     // how many log rows to keep? (0 means off)

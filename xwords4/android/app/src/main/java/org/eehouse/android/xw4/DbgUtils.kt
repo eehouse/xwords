@@ -116,15 +116,9 @@ object DbgUtils {
     }
 
     @JvmStatic
-    fun toStr(params: Array<Any?>?): String {
+    fun toStr(params: Array<Any?>): String {
         Assert.assertVarargsNotNullNR(params)
-        val strs: MutableList<String?> = ArrayList()
-        if (null != params) {
-            for (obj in params) {
-                strs.add(String.format("%s", obj))
-            }
-        }
-        return TextUtils.join(", ", strs)
+        return TextUtils.join(", ", params.map{obj -> "$obj"})
     }
 
     // public static String secondsToDateStr( long seconds )

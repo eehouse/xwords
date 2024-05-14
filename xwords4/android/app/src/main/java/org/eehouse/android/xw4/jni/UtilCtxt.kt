@@ -1,5 +1,6 @@
-/* -*- compile-command: "find-and-gradle.sh inXw4dDeb"; -*- */ /*
- * Copyright 2009-2010 by Eric House (xwords@eehouse.org).  All
+/* -*- compile-command: "find-and-gradle.sh inXw4dDeb"; -*- */
+/*
+ * Copyright 2009 - 2024 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -22,10 +23,10 @@ import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet
 import org.eehouse.android.xw4.jni.CurGameInfo.XWPhoniesChoice
 
 interface UtilCtxt {
-    fun notifyPickTileBlank(playerNum: Int, col: Int, row: Int, texts: Array<String?>?) {}
+    fun notifyPickTileBlank(playerNum: Int, col: Int, row: Int, texts: Array<String>) {}
     fun informNeedPickTiles(
         isInitial: Boolean, playerNum: Int, nToPick: Int,
-        texts: Array<String?>?, counts: IntArray?
+        texts: Array<String>, counts: IntArray
     ) {}
 
     fun informNeedPassword(player: Int, name: String?) {}
