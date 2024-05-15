@@ -181,10 +181,7 @@ class InviteChoicesAlert : DlgDelegateAlert(), ItemClicked {
                     null
                 }
             }
-            else -> {
-                Assert.failDbg()
-                null
-            }
+            else -> null
         }
         builder?.show()
     }
