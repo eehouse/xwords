@@ -594,7 +594,7 @@ class BoardDelegate(delegator: Delegator, savedInstanceState: Bundle?) :
 
     override fun onActivityResult(
         requestCode: RequestCode, resultCode: Int,
-        data: Intent
+        data: Intent?
     ) {
         if (Activity.RESULT_CANCELED != resultCode) {
             val missingMeans =
@@ -610,6 +610,7 @@ class BoardDelegate(delegator: Delegator, savedInstanceState: Bundle?) :
             if (null != missingMeans) {
                 // onActivityResult is called immediately *before* onResume --
                 // meaning m_gi etc are still null.
+                val data = data!!
                 mMissingDevs = data.getStringArrayExtra(InviteDelegate.DEVS)
                 mMissingCounts = data.getIntArrayExtra(InviteDelegate.COUNTS)
                 mRemotesAreRobots = data.getBooleanExtra(InviteDelegate.RAR, false)

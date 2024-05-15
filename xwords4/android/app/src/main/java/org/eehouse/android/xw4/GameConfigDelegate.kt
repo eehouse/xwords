@@ -430,21 +430,27 @@ class GameConfigDelegate(delegator: Delegator, savedInstanceState: Bundle?) :
         }
     }
 
-    override fun onActivityResult(requestCode: RequestCode, resultCode: Int, data: Intent) {
+    override fun onActivityResult(requestCode: RequestCode, resultCode: Int, data: Intent?) {
         val cancelled = Activity.RESULT_CANCELED == resultCode
         loadGame()
         when (requestCode) {
             RequestCode.REQUEST_DICT -> {
                 val dictName =
-                    if (cancelled) mGi!!.dictName else data.getStringExtra(DictsDelegate.RESULT_LAST_DICT)!!
+                    if (cancelled) {
+                        mGi!!.dictName
+                    } else {
+                        data!!.getStringExtra(DictsDelegate.RESULT_LAST_DICT)!!
+                    }
                 configDictSpinner(mDictSpinner, mGi!!.isoCode(), dictName)
                 configDictSpinner(mPlayerDictSpinner, mGi!!.isoCode(), dictName)
             }
 
             RequestCode.REQUEST_LANG_GC -> {
-                val isoCode = if (cancelled) mGi!!.isoCode() else ISOCode.newIf(
-                    data.getStringExtra(DictsDelegate.RESULT_LAST_LANG)
-                )
+                val isoCode = if (cancelled) {
+                    mGi!!.isoCode()
+                } else {
+                    ISOCode.newIf(data!!.getStringExtra(DictsDelegate.RESULT_LAST_LANG))
+                }
                 val langName = DictLangCache.getLangNameForISOCode(mActivity, isoCode)
                 selLangChanged(langName)
                 setLangSpinnerSelection(langName)
