@@ -147,6 +147,7 @@ public class GamesListDelegate extends ListDelegateBase
             m_groupPositions = null;
         }
 
+        @Override
         protected Object[] makeListData()
         {
             final Map<Long,GameGroupInfo> gameInfo = DBUtils.getGroups( m_activity );
@@ -205,6 +206,7 @@ public class GamesListDelegate extends ListDelegateBase
                                              m_fieldID, GamesListDelegate.this );
                 item.setSelected( m_mySIS.selGames.contains( rec.m_rowID ) );
                 result = item;
+                askNotifyPermsOnce();
             } else {
                 Assert.failDbg();
             }
@@ -1081,6 +1083,18 @@ public class GamesListDelegate extends ListDelegateBase
             deleteGames( asArray, true );
         }
     } // init
+
+    private static boolean sAsked = false;
+    private void askNotifyPermsOnce()
+    {
+        if ( !sAsked ) {
+            sAsked = true;
+            Perms23.tryGetPermsNA( this, Perm.POST_NOTIFICATIONS,
+                                   R.string.notify_perms_rationale,
+                                   R.string.key_na_perms_notifications,
+                                   Action.SKIP_CALLBACK );
+        }
+    }
 
     @Override
     protected boolean canHandleNewIntent( Intent intent )

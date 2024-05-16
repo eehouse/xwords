@@ -179,6 +179,7 @@
   <string name="key_na_customXWD">key_na_customXWD</string>
   <string name="key_na_traysize">key_na_traysize</string>
   <string name="key_na_sub7new">key_na_sub7new</string>
+  <string name="key_na_perms_notifications">key_na_perms_notifications</string>
 
   <string name="key_na_dupstatus_host">key_na_dupstatus_host</string>
   <string name="key_na_dupstatus_guest">key_na_dupstatus_guest</string>

@@ -18,4 +18,8 @@
   saved “legal phonies”?\n\nThis action cannot be undone.</string>
 
   <string name="legalphonies_title_fmt">Legal phonies for %1$s</string>
+
+  <string name="notify_perms_rationale">CrossWords needs your
+  permission to post notifications, e.g. telling you an opponent has
+  moved or that a updated wordlist is available.</string>
 </resources>

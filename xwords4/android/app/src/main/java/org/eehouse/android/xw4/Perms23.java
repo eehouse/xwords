@@ -55,7 +55,8 @@ public class Perms23 {
         READ_CONTACTS(Manifest.permission.READ_CONTACTS),
         BLUETOOTH_CONNECT(Manifest.permission.BLUETOOTH_CONNECT),
         BLUETOOTH_SCAN(Manifest.permission.BLUETOOTH_SCAN),
-        REQUEST_INSTALL_PACKAGES(Manifest.permission.REQUEST_INSTALL_PACKAGES);
+        REQUEST_INSTALL_PACKAGES(Manifest.permission.REQUEST_INSTALL_PACKAGES),
+        POST_NOTIFICATIONS(Manifest.permission.POST_NOTIFICATIONS);
 
         private String m_str = null;
         private Perm(String str) { m_str = str; }
