@@ -447,6 +447,7 @@ public class MQTTUtils extends Thread
         new Thread( new Runnable() {
                 @Override
                 public void run() {
+                    Log.d( TAG, "startDisconThread().run() starting" );
                     outer:
                     for ( int ii = 0; ; ++ii ) {
                         String action = null;
@@ -485,6 +486,7 @@ public class MQTTUtils extends Thread
                             Assert.failDbg(); // is this happening?
                         }
                     }
+                    Log.d( TAG, "startDisconThread().run() finishing" );
                 }
             } ).start();
     }
