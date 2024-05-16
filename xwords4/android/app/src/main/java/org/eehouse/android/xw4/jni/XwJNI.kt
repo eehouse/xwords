@@ -1,5 +1,6 @@
-/* -*- compile-command: "find-and-gradle.sh inXw4dDeb"; -*- */ /*
- * Copyright 2009 - 2018 by Eric House (xwords@eehouse.org).  All rights
+/* -*- compile-command: "find-and-gradle.sh inXw4dDeb"; -*- */
+/*
+ * Copyright 2009 - 2024 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -18,9 +19,11 @@
  */
 package org.eehouse.android.xw4.jni
 
-import android.util.Log
+import java.io.Serializable
+
 import org.eehouse.android.xw4.Assert
 import org.eehouse.android.xw4.BuildConfig
+import org.eehouse.android.xw4.Log
 import org.eehouse.android.xw4.NetLaunchInfo
 import org.eehouse.android.xw4.Quarantine
 import org.eehouse.android.xw4.R
@@ -29,7 +32,6 @@ import org.eehouse.android.xw4.Utils.ISOCode
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType
 import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole
 import org.eehouse.android.xw4.jni.JNIThread.GameStateInfo
-import java.io.Serializable
 
 // Collection of native methods and a bit of state
 class XwJNI private constructor() {
@@ -42,7 +44,7 @@ class XwJNI private constructor() {
         init {
             m_ptrGame = ptr
             this.rowid = rowid
-            mStack = Log.getStackTraceString(Exception())
+            mStack = android.util.Log.getStackTraceString(Exception())
             Quarantine.recordOpened(rowid)
         }
 
@@ -57,10 +59,8 @@ class XwJNI private constructor() {
         fun retain(): GamePtr {
             Assert.assertTrueNR(0 < m_refCount)
             ++m_refCount
-            org.eehouse.android.xw4.Log.d(
-                TAG, "retain(this=%H, rowid=%d): refCount now %d",
-                this, rowid, m_refCount
-            )
+            Log.d(TAG, "retain(this=%H, rowid=%d): refCount now %d",
+                  this, rowid, m_refCount)
             return this
         }
 
@@ -80,10 +80,8 @@ class XwJNI private constructor() {
                     if (haveEnv(jNI!!.m_ptrGlobals)) {
                         game_dispose(this) // will crash if haveEnv fails
                     } else {
-                        org.eehouse.android.xw4.Log.d(
-                            TAG, "release(): no ENV!!! (this=%H, rowid=%d)",
-                            this, rowid
-                        )
+                        Log.d(TAG, "release(): no ENV!!! (this=%H, rowid=%d)",
+                              this, rowid)
                         Assert.failDbg() // seen on Play Store console; and now!!
                     }
                     m_ptrGame = 0
@@ -278,12 +276,8 @@ class XwJNI private constructor() {
 
         @JvmStatic
         fun dvc_makeMQTTNoSuchGames(addressee: String, gameID: Int): TopicsAndPackets {
-            org.eehouse.android.xw4.Log.d(
-                TAG,
-                "dvc_makeMQTTNoSuchGames(to: %s, gameID: %X)",
-                addressee,
-                gameID
-            )
+            Log.d(TAG, "dvc_makeMQTTNoSuchGames(to: %s, gameID: %X)",
+                  addressee, gameID)
             // DbgUtils.printStack( TAG );
             return dvc_makeMQTTNoSuchGames(jNI!!.m_ptrGlobals, addressee, gameID)
         }
@@ -750,6 +744,7 @@ class XwJNI private constructor() {
 
         @JvmStatic
         external fun server_initClientConnection(gamePtr: GamePtr?): Boolean
+
         fun server_canOfferRematch(gamePtr: GamePtr): BooleanArray {
             val results: BooleanArray = BooleanArray(2)
             server_canOfferRematch(gamePtr, results)
@@ -758,6 +753,7 @@ class XwJNI private constructor() {
 
         @JvmStatic
         external fun server_canOfferRematch(gamePtr: GamePtr, results: BooleanArray)
+
         fun server_figureOrderKT(gamePtr: GamePtr, ro: RematchOrder): Array<Int> {
             val noInts = server_figureOrder(gamePtr, ro)
             val result = ArrayList<Int>()

@@ -1932,14 +1932,15 @@ class BoardDelegate(delegator: Delegator, savedInstanceState: Bundle?) :
                 val postArgs = ArrayList<Any>()
                 if (rematch) {
                     postAction = DlgDelegate.Action.REMATCH_ACTION
-                    postArgs.add(arrayOf<Boolean>(archiveAfter, deleteAfter))
+                    postArgs.add(archiveAfter)
+                    postArgs.add(deleteAfter)
                 } else if (archiveAfter) {
                     showArchiveNA(false)
                 } else if (deleteAfter) {
                     postAction = DlgDelegate.Action.DELETE_ACTION
                 }
                 if (null != postAction) {
-                    post { onPosButton(postAction, postArgs.toTypedArray()) }
+                    post { onPosButton(postAction, *postArgs.toTypedArray()) }
                 }
             }
         }

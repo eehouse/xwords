@@ -61,6 +61,8 @@ class RematchConfigView(val mContext: Context, attrs: AttributeSet)
     {
         mDlgDlgt = dlgDlgt
         mWrapper = GameUtils.GameWrapper.make( mContext, rowid )
+        val nPlayers = mWrapper!!.gi().nPlayers
+        mNewOrder = Array<Int>(nPlayers, {it})
         trySetup()
     }
 
@@ -103,14 +105,15 @@ class RematchConfigView(val mContext: Context, attrs: AttributeSet)
                     .show()
             }
         } else {
-            mNameStr = TextUtils.join( mSep!!.toString(), mWrapper!!.gi().playerNames(mNewOrder) )
-            mEWC?.setText( mNameStr )
+            setName()
         }
     }
 
     public fun getNewOrder(): Array<Int>?
     {
-        DBUtils.setIntFor( mContext, KEY_LAST_RO, mCurRO!!.ordinal )
+        if ( null != mCurRO ) {
+            DBUtils.setIntFor( mContext, KEY_LAST_RO, mCurRO!!.ordinal )
+        }
         return mNewOrder
     }
 
@@ -143,7 +146,14 @@ class RematchConfigView(val mContext: Context, attrs: AttributeSet)
             } else {
 				// not sure why I have to cast this....
                 (findViewById( R.id.ro_stuff) as View).setVisibility( View.GONE )
+                setName()
             }
         }
+    }
+
+    private fun setName()
+    {
+        mNameStr = TextUtils.join( mSep!!.toString(), mWrapper!!.gi().playerNames(mNewOrder) )
+        mEWC?.setText( mNameStr )
     }
 }
