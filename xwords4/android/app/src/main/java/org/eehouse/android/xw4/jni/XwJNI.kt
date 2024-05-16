@@ -77,7 +77,7 @@ class XwJNI private constructor() {
             if (0 == m_refCount) {
                 if (0L != m_ptrGame) {
                     Quarantine.recordClosed(rowid)
-                    if (haveEnv(jNI!!.m_ptrGlobals)) {
+                    if (haveEnv(jNI.m_ptrGlobals)) {
                         game_dispose(this) // will crash if haveEnv fails
                     } else {
                         Log.d(TAG, "release(): no ENV!!! (this=%H, rowid=%d)",
@@ -237,12 +237,12 @@ class XwJNI private constructor() {
         private var s_JNI: XwJNI? = null
 
         @get:Synchronized
-        private val jNI: XwJNI?
+        private val jNI: XwJNI
             private get() {
                 if (null == s_JNI) {
                     s_JNI = XwJNI()
                 }
-                return s_JNI
+                return s_JNI!!
             }
 
         @JvmStatic
@@ -252,26 +252,26 @@ class XwJNI private constructor() {
 
         @JvmStatic
         fun dvc_getMQTTDevID(): String {
-            return dvc_getMQTTDevID(jNI!!.m_ptrGlobals)
+            return dvc_getMQTTDevID(jNI.m_ptrGlobals)
         }
 
         @JvmStatic
         fun dvc_setMQTTDevID(newID: String): Boolean {
-            return dvc_setMQTTDevID(jNI!!.m_ptrGlobals, newID)
+            return dvc_setMQTTDevID(jNI.m_ptrGlobals, newID)
         }
 
         fun dvc_resetMQTTDevID() {
-            dvc_resetMQTTDevID(jNI!!.m_ptrGlobals)
+            dvc_resetMQTTDevID(jNI.m_ptrGlobals)
         }
 
         @JvmStatic
         fun dvc_getMQTTSubTopics(): Array<String> {
-            return dvc_getMQTTSubTopics(jNI!!.m_ptrGlobals)
+            return dvc_getMQTTSubTopics(jNI.m_ptrGlobals)
         }
 
         @JvmStatic
         fun dvc_makeMQTTNukeInvite(nli: NetLaunchInfo): TopicsAndPackets {
-            return dvc_makeMQTTNukeInvite(jNI!!.m_ptrGlobals, nli)
+            return dvc_makeMQTTNukeInvite(jNI.m_ptrGlobals, nli)
         }
 
         @JvmStatic
@@ -279,12 +279,12 @@ class XwJNI private constructor() {
             Log.d(TAG, "dvc_makeMQTTNoSuchGames(to: %s, gameID: %X)",
                   addressee, gameID)
             // DbgUtils.printStack( TAG );
-            return dvc_makeMQTTNoSuchGames(jNI!!.m_ptrGlobals, addressee, gameID)
+            return dvc_makeMQTTNoSuchGames(jNI.m_ptrGlobals, addressee, gameID)
         }
 
         @JvmStatic
         fun dvc_parseMQTTPacket(topic: String, buf: ByteArray) {
-            dvc_parseMQTTPacket(jNI!!.m_ptrGlobals, topic, buf)
+            dvc_parseMQTTPacket(jNI.m_ptrGlobals, topic, buf)
         }
 
         @JvmStatic
@@ -292,12 +292,12 @@ class XwJNI private constructor() {
             resultKey: Int, succeeded: Boolean,
             result: String?
         ) {
-            dvc_onWebSendResult(jNI!!.m_ptrGlobals, resultKey, succeeded, result)
+            dvc_onWebSendResult(jNI.m_ptrGlobals, resultKey, succeeded, result)
         }
 
         fun dvc_getLegalPhonyCodes(): Array<ISOCode> {
             val codes = ArrayList<String>()
-            dvc_getLegalPhonyCodes(jNI!!.m_ptrGlobals, codes)
+            dvc_getLegalPhonyCodes(jNI.m_ptrGlobals, codes)
 
 			val result = ArrayList<ISOCode>()
 			for ( code in codes ) {
@@ -308,12 +308,12 @@ class XwJNI private constructor() {
 
         fun dvc_getLegalPhoniesFor(code: ISOCode): Array<String> {
             val list = ArrayList<String>()
-            dvc_getLegalPhoniesFor(jNI!!.m_ptrGlobals, code.toString(), list)
+            dvc_getLegalPhoniesFor(jNI.m_ptrGlobals, code.toString(), list)
             return list.toTypedArray<String>()
         }
 
         fun dvc_clearLegalPhony(code: ISOCode, phony: String) {
-            dvc_clearLegalPhony(jNI!!.m_ptrGlobals, code.toString(), phony)
+            dvc_clearLegalPhony(jNI.m_ptrGlobals, code.toString(), phony)
         }
 
         @JvmStatic
@@ -327,7 +327,7 @@ class XwJNI private constructor() {
         fun kplr_getPlayers(byDate: Boolean = false): Array<String>? {
             var result: Array<String>? = null
             if (BuildConfig.HAVE_KNOWN_PLAYERS) {
-                result = kplr_getPlayers(jNI!!.m_ptrGlobals, byDate)
+                result = kplr_getPlayers(jNI.m_ptrGlobals, byDate)
             }
             return result
         }
@@ -335,14 +335,14 @@ class XwJNI private constructor() {
         @JvmStatic
         fun kplr_renamePlayer(oldName: String, newName: String): Boolean {
             return if (BuildConfig.HAVE_KNOWN_PLAYERS) kplr_renamePlayer(
-                jNI!!.m_ptrGlobals, oldName, newName
+                jNI.m_ptrGlobals, oldName, newName
             ) else true
         }
 
         @JvmStatic
         fun kplr_deletePlayer(player: String) {
             if (BuildConfig.HAVE_KNOWN_PLAYERS) {
-                kplr_deletePlayer(jNI!!.m_ptrGlobals, player)
+                kplr_deletePlayer(jNI.m_ptrGlobals, player)
             }
         }
 
@@ -350,14 +350,14 @@ class XwJNI private constructor() {
         @JvmOverloads
         fun kplr_getAddr(name: String, lastMod: IntArray? = null): CommsAddrRec? {
             return if (BuildConfig.HAVE_KNOWN_PLAYERS) kplr_getAddr(
-                jNI!!.m_ptrGlobals, name, lastMod
+                jNI.m_ptrGlobals, name, lastMod
             ) else null
         }
 
         @JvmStatic
         fun kplr_nameForMqttDev(mqttID: String?): String? {
             return if (BuildConfig.HAVE_KNOWN_PLAYERS) kplr_nameForMqttDev(
-                jNI!!.m_ptrGlobals, mqttID
+                jNI.m_ptrGlobals, mqttID
             ) else null
         }
 
@@ -393,17 +393,17 @@ class XwJNI private constructor() {
         @JvmStatic
         fun giFromStream(gi: CurGameInfo, stream: ByteArray) {
             Assert.assertNotNull(stream)
-            gi_from_stream(jNI!!.m_ptrGlobals, gi, stream) // called here
+            gi_from_stream(jNI.m_ptrGlobals, gi, stream) // called here
         }
 
         @JvmStatic
         fun nliToStream(nli: NetLaunchInfo): ByteArray {
-            return nli_to_stream(jNI!!.m_ptrGlobals, nli)
+            return nli_to_stream(jNI.m_ptrGlobals, nli)
         }
 
         @JvmStatic
         fun nliFromStream(stream: ByteArray): NetLaunchInfo? {
-            return nli_from_stream(jNI!!.m_ptrGlobals, stream)
+            return nli_from_stream(jNI.m_ptrGlobals, stream)
         }
 
         @JvmStatic
@@ -425,7 +425,7 @@ class XwJNI private constructor() {
 
         // Game methods
         private fun initGameJNI(rowid: Long): GamePtr? {
-            val ptr = gameJNIInit(jNI!!.m_ptrGlobals)
+            val ptr = gameJNIInit(jNI.m_ptrGlobals)
             Assert.assertTrueNR(0L != ptr) // should be impossible
             return if (0L == ptr) null else GamePtr(ptr, rowid)
         }
@@ -498,7 +498,7 @@ class XwJNI private constructor() {
 
         // hack to allow cleanup of env owned by thread that doesn't open game
         fun threadDone() {
-            envDone(jNI!!.m_ptrGlobals)
+            envDone(jNI.m_ptrGlobals)
         }
 
         @JvmStatic
@@ -844,7 +844,7 @@ class XwJNI private constructor() {
             waitSecs: IntArray
         ): Array<ByteArray>? {
             return smsproto_prepOutbound(
-                jNI!!.m_ptrGlobals, cmd, gameID, buf,
+                jNI.m_ptrGlobals, cmd, gameID, buf,
                 phone, port, waitSecs
             )
         }
@@ -863,7 +863,7 @@ class XwJNI private constructor() {
             data: ByteArray,
             fromPhone: String, wantPort: Int
         ): Array<SMSProtoMsg>? {
-            return smsproto_prepInbound(jNI!!.m_ptrGlobals, data, fromPhone, wantPort)
+            return smsproto_prepInbound(jNI.m_ptrGlobals, data, fromPhone, wantPort)
         }
 
         @JvmStatic
@@ -882,7 +882,7 @@ class XwJNI private constructor() {
         @JvmStatic
         fun dict_getInfo(dict: DictWrapper, check: Boolean): DictInfo {
             return dict_getInfo(
-                jNI!!.m_ptrGlobals, dict.dictPtr,
+                jNI.m_ptrGlobals, dict.dictPtr,
                 check
             )
         }
@@ -913,7 +913,7 @@ class XwJNI private constructor() {
 
         @JvmStatic
         fun getTilesInfo(dict: DictWrapper): String {
-            return dict_getTilesInfo(jNI!!.m_ptrGlobals, dict.dictPtr)
+            return dict_getTilesInfo(jNI.m_ptrGlobals, dict.dictPtr)
         }
 
 		@JvmStatic
@@ -923,7 +923,7 @@ class XwJNI private constructor() {
         const val MAX_COLS_DICT = 15 // from dictiter.h
         @JvmStatic
         fun makeDict(bytes: ByteArray?, name: String?, path: String?): DictWrapper {
-            val dict = dict_make(jNI!!.m_ptrGlobals, bytes, name, path)
+            val dict = dict_make(jNI.m_ptrGlobals, bytes, name, path)
             return DictWrapper(dict)
         }
 
@@ -933,7 +933,7 @@ class XwJNI private constructor() {
             minLen: Int, maxLen: Int,
             callback: DictIterProcs
         ) {
-            val jniState = jNI!!.m_ptrGlobals
+            val jniState = jNI.m_ptrGlobals
             val dictPtr = dict.dictPtr
             Thread {
                 var wrapper: IterWrapper? = null
