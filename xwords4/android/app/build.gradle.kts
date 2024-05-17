@@ -382,9 +382,6 @@ android {
     //     }
     // }
 
-    lintOptions {
-        isAbortOnError = false
-    }
     namespace = "org.eehouse.android.xw4"
 
 	this.buildOutputs.all {
@@ -397,6 +394,9 @@ android {
 
     buildFeatures {
         buildConfig = true
+    }
+    lint {
+        abortOnError = false
     }
 }
 
