@@ -239,7 +239,7 @@ class BoardDelegate(delegator: Delegator, savedInstanceState: Bundle?) :
 
             DlgID.DLG_DELETED -> {
                 val gameName = GameUtils.getName(mActivity, mRowid)
-                val expl = if (params.size == 0) null else params[0] as ConnExpl
+                val expl = if (params.size == 0) null else params[0] as? ConnExpl
                 var message = getString(R.string.msg_dev_deleted_fmt, gameName)
                 if (BuildConfig.NON_RELEASE && null != expl) {
                     message += """
