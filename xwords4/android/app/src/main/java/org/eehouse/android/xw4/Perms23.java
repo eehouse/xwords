@@ -242,10 +242,22 @@ public class Perms23 {
             }
         }
 
+        private boolean shouldShowAny( Set<Perm> perms )
+        {
+            boolean result = false;
+            Activity activity = m_delegate.getActivity();
+            for ( Perm perm: perms ) {
+                result = result || ActivityCompat
+                    .shouldShowRequestPermissionRationale(activity, perm.getString());
+                Log.d( TAG, "shouldShow(%s) => %b", perm, result );
+            }
+            return result;
+        }
+
         private void doItAsk( Set<Perm> perms, boolean showRationale )
         {
             Builder builder = new Builder( perms );
-            if ( showRationale && null != m_rationaleMsg ) {
+            if ( showRationale && shouldShowAny( perms ) && null != m_rationaleMsg ) {
                 builder.setOnShowRationale( new OnShowRationale() {
                         @Override
                         public void onShouldShowRationale( Set<Perm> perms ) {
@@ -313,6 +325,7 @@ public class Perms23 {
                                          final Action action, Object... params )
     {
         Assert.assertVarargsNotNullNR(params);
+
         // Log.d( TAG, "tryGetPermsImpl(%s)", (Object)perms );
         if ( 0 != naKey &&
              XWPrefs.getPrefsBoolean( delegate.getActivity(), naKey, false ) ) {

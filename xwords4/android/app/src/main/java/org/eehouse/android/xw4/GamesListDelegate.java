@@ -1089,10 +1089,10 @@ public class GamesListDelegate extends ListDelegateBase
     {
         if ( !sAsked ) {
             sAsked = true;
-            Perms23.tryGetPermsNA( this, Perm.POST_NOTIFICATIONS,
-                                   R.string.notify_perms_rationale,
-                                   R.string.key_na_perms_notifications,
-                                   Action.SKIP_CALLBACK );
+            Perms23.tryGetPerms( this, Perm.POST_NOTIFICATIONS,
+                                 R.string.notify_perms_rationale,
+                                 // R.string.key_na_perms_notifications,
+                                 Action.NOTIFY_PERMS );
         }
     }
 
@@ -1665,6 +1665,10 @@ public class GamesListDelegate extends ListDelegateBase
 
         case ASKED_PHONE_STATE:
             rematchWithNameAndPerm( false, params );
+            break;
+
+        case NOTIFY_PERMS:
+            Log.d( TAG, "said NO for notify perms" );
             break;
 
         default:

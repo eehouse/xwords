@@ -65,6 +65,7 @@ public class DlgDelegate {
         LAUNCH_AFTER_DEL,
         CLEAR_INT_STATS,        // debug only
         RESTART,
+        NOTIFY_PERMS,
 
         // BoardDelegate
         UNDO_LAST_ACTION,
