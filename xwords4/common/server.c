@@ -2775,22 +2775,23 @@ fetchTiles( ServerCtxt* server, XWEnv xwe, XP_U16 playerNum, XP_U16 nToFetch,
     /* Then fetch the rest without asking. But if we're in duplicate mode,
        make sure the tray allows some moves (e.g. isn't all consonants when
        the board's empty.) */
-    XP_ASSERT( nToFetch >= nSoFar );
-    XP_U16 nLeft = nToFetch - nSoFar;
-    for ( XP_U16 nBadTrays = 0; 0 < nLeft; ) {
-        pool_requestTiles( pool, &resultTiles->tiles[nSoFar], &nLeft );
+    if ( nToFetch >= nSoFar ) {
+        XP_U16 nLeft = nToFetch - nSoFar;
+        for ( XP_U16 nBadTrays = 0; 0 < nLeft; ) {
+            pool_requestTiles( pool, &resultTiles->tiles[nSoFar], &nLeft );
 
-        if ( !inDuplicateMode( server ) && !forceCanPlay ) {
-            break;
-        } else if ( trayAllowsMoves( server, xwe, playerNum, &resultTiles->tiles[0],
-                                     nSoFar + nLeft )
-                    || ++nBadTrays >= 5 ) {
-            break;
+            if ( !inDuplicateMode( server ) && !forceCanPlay ) {
+                break;
+            } else if ( trayAllowsMoves( server, xwe, playerNum, &resultTiles->tiles[0],
+                                         nSoFar + nLeft )
+                        || ++nBadTrays >= 5 ) {
+                break;
+            }
+            pool_replaceTiles2( pool, nLeft, &resultTiles->tiles[nSoFar] );
         }
-        pool_replaceTiles2( pool, nLeft, &resultTiles->tiles[nSoFar] );
-    }
 
-    nSoFar += nLeft;
+        nSoFar += nLeft;
+    }
    
     XP_ASSERT( nSoFar < 0x00FF );
     resultTiles->nTiles = (XP_U8)nSoFar;
