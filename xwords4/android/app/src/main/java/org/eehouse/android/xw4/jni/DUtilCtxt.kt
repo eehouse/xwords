@@ -248,12 +248,12 @@ class DUtilCtxt {
             return result
         }
 
-    fun onInviteReceived(nli: NetLaunchInfo?) {
+    fun onInviteReceived(nli: NetLaunchInfo) {
         // Log.d( TAG, "onInviteReceived(%s)", nli );
         MQTTUtils.makeOrNotify(m_context, nli)
     }
 
-    fun onMessageReceived(gameID: Int, from: CommsAddrRec, msg: ByteArray?) {
+    fun onMessageReceived(gameID: Int, from: CommsAddrRec, msg: ByteArray) {
         // Log.d( TAG, "onMessageReceived()" );
         Assert.assertTrueNR(from.contains(CommsAddrRec.CommsConnType.COMMS_CONN_MQTT))
         MQTTUtils.handleMessage(m_context, from, gameID, msg)

@@ -31,7 +31,7 @@ interface TransportProcs {
         gameID: Int, timestamp: Int
     ): Int
 
-    fun transportSendMQTT(tap: TopicsAndPackets?): Int
+    fun transportSendMQTT(tap: TopicsAndPackets): Int
 
     fun transportSendInvt(
         addr: CommsAddrRec?, conType: CommsConnType?,

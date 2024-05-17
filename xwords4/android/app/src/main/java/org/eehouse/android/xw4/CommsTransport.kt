@@ -81,7 +81,7 @@ class CommsTransport(
         return nSent
     }
 
-    override fun transportSendMQTT(tap: TopicsAndPackets?): Int {
+    override fun transportSendMQTT(tap: TopicsAndPackets): Int {
         Log.d(TAG, "transportSendMQTT()")
         return MQTTUtils.send(m_context, tap)
     }
