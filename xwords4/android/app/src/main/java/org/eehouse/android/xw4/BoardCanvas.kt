@@ -456,7 +456,7 @@ open class BoardCanvas private constructor(
     }
 
     override fun drawTileMidDrag(
-        rect: Rect, text: String, `val`: Int, owner: Int,
+        rect: Rect, text: String?, `val`: Int, owner: Int,
         flags: Int
     ): Boolean {
         return drawTileImpl(rect, text, `val`, flags, false)
