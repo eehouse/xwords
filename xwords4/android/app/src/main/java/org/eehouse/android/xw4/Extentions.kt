@@ -93,3 +93,8 @@ fun JSONObject.putAnd(key: String, value: Int): JSONObject {
 	this.put( key, value )
 	return this
 }
+
+fun JSONObject.putAnd(key: String, value: Long): JSONObject {
+	this.put( key, value )
+	return this
+}

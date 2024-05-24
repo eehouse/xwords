@@ -117,12 +117,21 @@
     <item android:id="@+id/games_menu_writegit"
           android:title="@string/gamel_menu_writegit"
           />
-    <item android:id="@+id/games_menu_copyDevid"
-          android:title="@string/games_menu_copyDevid"
-          />
-    <item android:id="@+id/games_menu_setDevid"
-          android:title="@string/games_menu_setDevid"
-          />
+    <item android:id="@+id/games_submenu_mqtt"
+          android:title="@string/gamel_menu_mqtt"
+          >
+      <menu>
+        <item android:id="@+id/games_menu_copyDevid"
+              android:title="@string/games_menu_copyDevid"
+              />
+        <item android:id="@+id/games_menu_setDevid"
+              android:title="@string/games_menu_setDevid"
+              />
+        <item android:id="@+id/games_menu_pingMqtt"
+              android:title="@string/games_menu_pingMqtt"
+              />
+      </menu>
+    </item>
 
     <item android:id="@+id/games_submenu_logs"
           android:title="@string/gamel_menu_logs"

@@ -70,6 +70,8 @@ import org.eehouse.android.xw4.jni.XwJNI;
 import org.eehouse.android.xw4.loc.LocUtils;
 import static org.eehouse.android.xw4.DBUtils.ROWID_NOTFOUND;
 
+import androidx.annotation.NonNull;
+
 import java.io.File;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -546,8 +548,7 @@ public class GamesListDelegate extends ListDelegateBase
     private static final int[] DEBUG_ITEMS = {
         R.id.games_menu_writegit,
         R.id.games_submenu_logs,
-        R.id.games_menu_copyDevid,
-        R.id.games_menu_setDevid,
+        R.id.games_submenu_mqtt,
         R.id.games_menu_restart,
     };
     private static final int[] NOSEL_ITEMS = {
@@ -1993,6 +1994,22 @@ public class GamesListDelegate extends ListDelegateBase
 
         case R.id.games_menu_setDevid:
             showDialogFragment( DlgID.SET_MQTTID );
+            break;
+
+        case R.id.games_menu_pingMqtt:
+            MQTTUtils.ping( m_activity, new MQTTUtils.PingResult() {
+                    @Override
+                    public void onSuccess(@NonNull String host, long elapsed) {
+                        final String txt = LocUtils
+                            .getString(m_activity, R.string.ping_result_fmt, host, elapsed);
+                        runOnUiThread( new Runnable() {
+                                @Override
+                                public void run() {
+                                    Utils.showToast( m_activity, txt );
+                                }
+                            } );
+                    }
+                });
             break;
 
         case R.id.games_menu_restart:

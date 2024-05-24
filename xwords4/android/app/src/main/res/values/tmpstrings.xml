@@ -22,4 +22,9 @@
   <string name="notify_perms_rationale">CrossWords needs your
   permission to post notifications, e.g. telling you an opponent has
   moved or that a updated wordlist is available.</string>
+
+  <string name="gamel_menu_mqtt">MQTT</string>
+  <string name="games_menu_pingMqtt">Ping</string>
+  <string name="ping_result_fmt">Ping via %1$s took %2$d ms.</string>
+
 </resources>

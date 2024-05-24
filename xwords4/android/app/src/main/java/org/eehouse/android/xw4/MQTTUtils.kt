@@ -19,6 +19,8 @@
 package org.eehouse.android.xw4
 
 import android.content.Context
+import android.text.TextUtils
+
 import org.eclipse.paho.client.mqttv3.IMqttActionListener
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken
 import org.eclipse.paho.client.mqttv3.IMqttToken
@@ -28,6 +30,11 @@ import org.eclipse.paho.client.mqttv3.MqttConnectOptions
 import org.eclipse.paho.client.mqttv3.MqttException
 import org.eclipse.paho.client.mqttv3.MqttMessage
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence
+
+import java.util.Locale
+import java.util.concurrent.LinkedBlockingQueue
+import kotlin.math.abs
+
 import org.eehouse.android.xw4.DBUtils.getIntFor
 import org.eehouse.android.xw4.DBUtils.getRowIDsFor
 import org.eehouse.android.xw4.DBUtils.setIntFor
@@ -38,25 +45,23 @@ import org.eehouse.android.xw4.TimerReceiver.TimerCallback
 import org.eehouse.android.xw4.jni.CommsAddrRec
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType
 import org.eehouse.android.xw4.jni.CommsAddrRec.ConnExpl
-import org.eehouse.android.xw4.jni.XwJNI.Companion.dvc_getMQTTDevID
-import org.eehouse.android.xw4.jni.XwJNI.Companion.dvc_getMQTTSubTopics
-import org.eehouse.android.xw4.jni.XwJNI.Companion.dvc_makeMQTTNoSuchGames
-import org.eehouse.android.xw4.jni.XwJNI.Companion.dvc_makeMQTTNukeInvite
-import org.eehouse.android.xw4.jni.XwJNI.Companion.dvc_parseMQTTPacket
-import org.eehouse.android.xw4.jni.XwJNI.Companion.kplr_nameForMqttDev
+import org.eehouse.android.xw4.jni.XwJNI
 import org.eehouse.android.xw4.jni.XwJNI.TopicsAndPackets
 import org.eehouse.android.xw4.loc.LocUtils
 import org.json.JSONException
 import org.json.JSONObject
-import java.util.Locale
-import java.util.concurrent.LinkedBlockingQueue
-import kotlin.math.abs
+
+private const val PONG_PREFIX = "xw4/pong/"
 
 class MQTTUtils private constructor(context: Context, resendOnConnect: Boolean) : Thread(),
     IMqttActionListener, MqttCallbackExtended {
     private enum class State {
         NONE, CONNECTING, CONNECTED, SUBSCRIBING, SUBSCRIBED,
         CLOSING
+    }
+
+    interface PingResult {
+        fun onSuccess(host: String, diff: Long)
     }
 
     private var mClient: MqttAsyncClient? = null
@@ -99,19 +104,20 @@ class MQTTUtils private constructor(context: Context, resendOnConnect: Boolean) 
                 totalSlept = 0
                 val pair = mOutboundQueue.take()
                 for (ii in pair.mPackets!!.indices) {
-                    val message = MqttMessage(pair.mPackets!![ii])
+                    val packet = pair.mPackets!![ii]
+                    val message = MqttMessage(packet)
                     message.isRetained = true
-                    mClient!!.publish(pair.mTopics!![ii], message)
-                    Log.d(
-                        TAG, "%H: published msg of len %d to topic %s", this@MQTTUtils,
-                        pair.mPackets!![ii].size, pair.mTopics!![ii]
-                    )
+                    val topic = pair.mTopics!![ii]
+
+                    mClient!!.publish(topic, message)
+                    Log.d( TAG, "%H: published msg of len %d to topic %s", this@MQTTUtils,
+                           packet.size, topic)
                 }
             } catch (me: MqttException) {
                 me.printStackTrace()
                 break
             } catch (ie: InterruptedException) {
-                // ie.printStackTrace();
+                // ie.printStackTrace()
                 break
             }
         }
@@ -134,6 +140,10 @@ class MQTTUtils private constructor(context: Context, resendOnConnect: Boolean) 
 
     private fun enqueue(topics: Array<String>?, packets: Array<ByteArray>?) {
         mOutboundQueue.add(MessagePair(topics, packets))
+    }
+
+    private fun enqueue(topic: String, packet: ByteArray) {
+        mOutboundQueue.add(MessagePair(arrayOf(topic), arrayOf(packet)))
     }
 
     private fun setState(newState: State) {
@@ -172,11 +182,11 @@ class MQTTUtils private constructor(context: Context, resendOnConnect: Boolean) 
     private fun addLWT(mqttConnectOptions: MqttConnectOptions) {
         try {
             val payload = JSONObject()
-            payload.put("devid", mDevID)
-            payload.put("ts", Utils.getCurSeconds())
+                .putAnd("devid", mDevID)
+                .putAnd("ts", Utils.getCurSeconds())
             mqttConnectOptions.setWill("xw4/device/LWT", payload.toString().toByteArray(), 2, false)
 
-            // mqttConnectOptions.setKeepAliveInterval( 15 ); // seconds; for testing
+            // mqttConnectOptions.setKeepAliveInterval( 15 ) // seconds; for testing
         } catch (je: JSONException) {
             Log.e(TAG, "addLWT() ex: %s", je)
         }
@@ -204,19 +214,20 @@ class MQTTUtils private constructor(context: Context, resendOnConnect: Boolean) 
         }
     }
 
+    val mHost: String
     init {
         Log.d(TAG, "%H.<init>()", this)
         mContext = context
         mNeedsResend = resendOnConnect
-        mDevID = dvc_getMQTTDevID()
-        mSubTopics = dvc_getMQTTSubTopics()
+        mDevID = XwJNI.dvc_getMQTTDevID()
         Assert.assertTrueNR(16 == mDevID.length)
+        mSubTopics = XwJNI.dvc_getMQTTSubTopics() + String.format(PONG_PREFIX + mDevID)
         mRxMsgThread = RxMsgThread()
 
-        val host = XWPrefs.getPrefsString(context, R.string.key_mqtt_host)
+        mHost = XWPrefs.getPrefsString(context, R.string.key_mqtt_host)
             .trim { it <= ' ' } // in case some idiot adds whitespace. Ahem.
         val port = XWPrefs.getPrefsInt(context, R.string.key_mqtt_port, 1883)
-        val url = String.format(Locale.US, "tcp://%s:%d", host, port)
+        val url = String.format(Locale.US, "tcp://%s:%d", mHost, port)
         Log.d(TAG, "Using url: %s", url)
         try {
             mClient = MqttAsyncClient(url, mDevID, MemoryPersistence())
@@ -225,6 +236,23 @@ class MQTTUtils private constructor(context: Context, resendOnConnect: Boolean) 
             Log.ex(TAG, ex)
             mClient = null
         }
+    }
+
+    val mPingProcs = HashMap<Int, PingResult>()
+    private fun setPingProc( id: Int, pr: PingResult )
+        = mPingProcs.put(id, pr)
+
+    fun doPing(pr: PingResult)
+    {
+        val id = Math.abs(Utils.nextRandomInt())
+        setPingProc( id, pr )
+
+        val packet = JSONObject()
+            .putAnd("devid", mDevID)
+            .putAnd("time", System.currentTimeMillis())
+            .putAnd("id", id)
+
+        enqueue("xw4/ping/" + mDevID, packet.toString().toByteArray())
     }
 
     private fun disconnect() {
@@ -307,7 +335,7 @@ class MQTTUtils private constructor(context: Context, resendOnConnect: Boolean) 
                             TAG, "%H.run(): client.%s(): got mex: %s",
                             this, action, mex
                         )
-                        // Assert.failDbg(); // fired, so remove for now
+                        // Assert.failDbg() // fired, so remove for now
                     } catch (ex: Exception) {
                         Log.e(
                             TAG, "%H.run(): client.%s(): got ex %s",
@@ -360,7 +388,7 @@ class MQTTUtils private constructor(context: Context, resendOnConnect: Boolean) 
     }
 
     override fun deliveryComplete(token: IMqttDeliveryToken) {
-        // Log.d( TAG, "%H.deliveryComplete(token=%s)", this, token );
+        // Log.d( TAG, "%H.deliveryComplete(token=%s)", this, token )
         ConnStatusHandler
             .updateStatusOut(mContext, CommsConnType.COMMS_CONN_MQTT, true)
         TimerReceiver.setBackoff(mContext, sTimerCallbacks, MIN_BACKOFF)
@@ -369,14 +397,11 @@ class MQTTUtils private constructor(context: Context, resendOnConnect: Boolean) 
     private fun subscribe() {
         val qos = XWPrefs
             .getPrefsInt(mContext, R.string.key_mqtt_qos, 2)
-        val qoss = IntArray(mSubTopics.size)
-        for (ii in qoss.indices) {
-            qoss[ii] = qos
-        }
+        val qoss = mSubTopics.map{qos}.toIntArray() // qos of 2 for all
 
         setState(State.SUBSCRIBING)
         try {
-            // Log.d( TAG, "subscribing to %s", TextUtils.join( ", ", mSubTopics ) );
+            // Log.d( TAG, "subscribing to %s", TextUtils.join( ", ", mSubTopics ) )
             mClient!!.subscribe(mSubTopics, qoss, null, this)
         } catch (ex: MqttException) {
             ex.printStackTrace()
@@ -411,6 +436,14 @@ class MQTTUtils private constructor(context: Context, resendOnConnect: Boolean) 
             )
     }
 
+    private fun handlePong(pair: MessagePair)
+    {
+        val asStr = String(pair.mPackets!![0])
+        val payload = JSONObject(asStr)
+        val proc = mPingProcs.remove(payload.getInt("id"))
+        proc?.onSuccess(mHost, System.currentTimeMillis() - payload.getLong("time"))
+    }
+
     private inner class RxMsgThread : Thread() {
         private val mQueue = LinkedBlockingQueue<MessagePair>()
 
@@ -429,7 +462,12 @@ class MQTTUtils private constructor(context: Context, resendOnConnect: Boolean) 
                 try {
                     val pair = mQueue.take()
                     Assert.assertTrueNR(1 == pair.mTopics!!.size)
-                    dvc_parseMQTTPacket(pair.mTopics!![0], pair.mPackets!![0])
+                    val topic = pair.mTopics!![0]
+                    if (topic.startsWith(PONG_PREFIX)) {
+                        handlePong(pair)
+                    } else {
+                        XwJNI.dvc_parseMQTTPacket(topic, pair.mPackets!![0])
+                    }
                 } catch (ie: InterruptedException) {
                     break
                 }
@@ -453,12 +491,12 @@ class MQTTUtils private constructor(context: Context, resendOnConnect: Boolean) 
             handleInvitation(nli, null, MultiService.DictFetchOwner.OWNER_MQTT)
             // Now nuke the invitation so we don't keep getting it, e.g. if
             // the sender deletes the game
-            val tap = dvc_makeMQTTNukeInvite(nli)
+            val tap = XwJNI.dvc_makeMQTTNukeInvite(nli)
             addToSendQueue(context, tap)
         }
 
         fun receiveMessage(rowid: Long, sink: MultiMsgSink, msg: ByteArray) {
-            // Log.d( TAG, "receiveMessage(rowid=%d, len=%d)", rowid, msg.length );
+            // Log.d( TAG, "receiveMessage(rowid=%d, len=%d)", rowid, msg.length )
             receiveMessage(rowid, sink, msg, mReturnAddr)
         }
     }
@@ -609,7 +647,7 @@ class MQTTUtils private constructor(context: Context, resendOnConnect: Boolean) 
                     )
                     // I don't know why I was NOT disconnecting if the instance didn't match.
                     // If it was the right thing to do after all, add explanation here!!!!
-                    // curInstance = null; // protect from disconnect() call -- ????? WHY DO THIS ?????
+                    // curInstance = null// protect from disconnect() call -- ????? WHY DO THIS ?????
                 }
             }
             curInstance!!.disconnect()
@@ -632,7 +670,7 @@ class MQTTUtils private constructor(context: Context, resendOnConnect: Boolean) 
             context: Context, addressee: String?,
             gameID: Int
         ) {
-            val tap = dvc_makeMQTTNoSuchGames(addressee!!, gameID)
+            val tap = XwJNI.dvc_makeMQTTNoSuchGames(addressee!!, gameID)
             addToSendQueue(context, tap)
         }
 
@@ -642,6 +680,11 @@ class MQTTUtils private constructor(context: Context, resendOnConnect: Boolean) 
             return -1
         }
 
+        @JvmStatic
+        fun ping(context: Context, pr: PingResult) {
+            getOrStart(context)?.doPing(pr)
+        }
+
         private fun addToSendQueue(context: Context, tap: TopicsAndPackets) {
             val instance = getOrStart(context)
             instance?.enqueue(tap.topics, tap.packets)
@@ -649,7 +692,7 @@ class MQTTUtils private constructor(context: Context, resendOnConnect: Boolean) 
 
         @JvmStatic
         fun gameDied(context: Context, devID: String?, gameID: Int) {
-            val tap = dvc_makeMQTTNoSuchGames(devID!!, gameID)
+            val tap = XwJNI.dvc_makeMQTTNoSuchGames(devID!!, gameID)
             addToSendQueue(context, tap)
         }
 
@@ -689,7 +732,7 @@ class MQTTUtils private constructor(context: Context, resendOnConnect: Boolean) 
         }
 
         fun handleGameGone(context: Context?, from: CommsAddrRec, gameID: Int) {
-            val player = kplr_nameForMqttDev(from.mqtt_devID)
+            val player = XwJNI.kplr_nameForMqttDev(from.mqtt_devID)
             val expl = if (null == player) null
             else ConnExpl(CommsConnType.COMMS_CONN_MQTT, player)
             MQTTServiceHelper(context, from)
