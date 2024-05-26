@@ -31,8 +31,6 @@ import android.widget.LinearLayout
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import org.eehouse.android.xw4.DbgUtils.assertOnUIThread
-import org.eehouse.android.xw4.GamesListFrag.Companion.newInstance
-import org.eehouse.android.xw4.XWFragment.Companion.findOwnsView
 import java.lang.ref.WeakReference
 import kotlin.math.min
 
@@ -58,7 +56,7 @@ class MainActivity : XWActivity(), FragmentManager.OnBackStackChangedListener {
             // In case this activity was started with special instructions from an Intent,
             // pass the Intent's extras to the fragment as arguments
             addFragmentImpl(
-                newInstance(),
+                GamesListFrag.newInstance(),
                 intent.extras, null
             )
         }
@@ -401,7 +399,7 @@ class MainActivity : XWActivity(), FragmentManager.OnBackStackChangedListener {
     }
 
     private fun findFragment(view: View): XWFragment? {
-        return findOwnsView(view)
+        return XWFragment.findOwnsView(view)
     }
 
     private fun addFragmentImpl(

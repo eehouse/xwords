@@ -26,8 +26,7 @@ import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.OnLifecycleEvent
 import androidx.lifecycle.ProcessLifecycleOwner
-import org.eehouse.android.xw4.jni.XwJNI.Companion.cleanGlobalsEmu
-import org.eehouse.android.xw4.jni.XwJNI.Companion.comms_getUUID
+import org.eehouse.android.xw4.jni.XwJNI
 import java.util.UUID
 
 class XWApp : Application(), LifecycleObserver {
@@ -81,7 +80,7 @@ class XWApp : Application(), LifecycleObserver {
     // by forcing JNI cleanup
     override fun onTerminate() {
         Log.d(TAG, "onTerminate() called")
-        cleanGlobalsEmu()
+        XwJNI.cleanGlobalsEmu()
         super.onTerminate()
     }
 
@@ -101,7 +100,7 @@ class XWApp : Application(), LifecycleObserver {
         val appUUID: UUID?
             get() {
                 if (null == sUUID) {
-                    sUUID = UUID.fromString(comms_getUUID())
+                    sUUID = UUID.fromString(XwJNI.comms_getUUID())
                     Log.d(TAG, "sUUID (for BT): %s", sUUID)
                 }
                 return sUUID

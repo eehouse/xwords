@@ -28,7 +28,7 @@ import android.database.sqlite.SQLiteOpenHelper
 import android.text.TextUtils
 import org.eehouse.android.xw4.BuildConfig.DB_NAME
 import org.eehouse.android.xw4.Utils.ISOCode
-import org.eehouse.android.xw4.jni.XwJNI.Companion.lcToLocaleJ
+import org.eehouse.android.xw4.jni.XwJNI
 import org.eehouse.android.xw4.loc.LocUtils
 import java.util.Arrays
 
@@ -379,7 +379,7 @@ class DBHelper(private val mContext: Context) :
             val colIndex = cursor.getColumnIndex(columns[0])
             while (cursor.moveToNext()) {
                 val code = cursor.getInt(colIndex)
-                val isoCode = lcToLocaleJ(code)
+                val isoCode = XwJNI.lcToLocaleJ(code)
                 map[code] = isoCode
                 Log.d(TAG, "added %d => %s", code, isoCode)
             }

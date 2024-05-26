@@ -23,8 +23,7 @@ import android.content.DialogInterface
 import org.eehouse.android.xw4.DlgDelegate.DlgClickNotify.InviteMeans
 import org.eehouse.android.xw4.InviteView.ItemClicked
 import org.eehouse.android.xw4.NFCUtils.nfcAvail
-import org.eehouse.android.xw4.jni.XwJNI.Companion.kplr_getAddr
-import org.eehouse.android.xw4.jni.XwJNI.Companion.kplr_getPlayers
+import org.eehouse.android.xw4.jni.XwJNI
 import org.eehouse.android.xw4.loc.LocUtils
 import java.lang.ref.WeakReference
 
@@ -103,7 +102,7 @@ class InviteChoicesAlert : DlgDelegateAlert(), ItemClicked {
                     )
                 } else if (choice is Array<*> && choice.isArrayOf<String>()) {
                     val addrs = choice
-                        .map{player -> kplr_getAddr(player as String) as Any}
+                        .map{player -> XwJNI.kplr_getAddr(player as String) as Any}
                         .toTypedArray()
                     activity.onPosButton(state.m_action, *addrs)
                 } else {
@@ -116,7 +115,7 @@ class InviteChoicesAlert : DlgDelegateAlert(), ItemClicked {
             .setView(mInviteView)
             .setPositiveButton(android.R.string.ok, okClicked)
             .setNegativeButton(android.R.string.cancel, null)
-        val players = kplr_getPlayers()
+        val players = XwJNI.kplr_getPlayers()
         mInviteView!!.setChoices(
             means, lastSelMeans, players, nMissing,
             nInvited

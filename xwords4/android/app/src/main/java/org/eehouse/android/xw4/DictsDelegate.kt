@@ -45,11 +45,9 @@ import org.eehouse.android.xw4.DBUtils.dictsMoveInfo
 import org.eehouse.android.xw4.DBUtils.getStringFor
 import org.eehouse.android.xw4.DBUtils.setStringFor
 import org.eehouse.android.xw4.DbgUtils.showf
-import org.eehouse.android.xw4.DictBrowseDelegate.Companion.launch
 import org.eehouse.android.xw4.DictUtils.DictAndLoc
 import org.eehouse.android.xw4.DictUtils.DictLoc
 import org.eehouse.android.xw4.DictUtils.ON_SERVER
-import org.eehouse.android.xw4.DictsFrag.Companion.newInstance
 import org.eehouse.android.xw4.DlgDelegate.DlgClickNotify
 import org.eehouse.android.xw4.DwnldDelegate.DownloadFinishedListener
 import org.eehouse.android.xw4.DwnldDelegate.OnGotLcDictListener
@@ -449,7 +447,7 @@ class DictsDelegate(delegator: Delegator, savedInstanceState: Bundle?) :
             switchShowingRemote(mCheckbox!!.isChecked)
         } else {
             val item = view as XWListItem
-            launch(
+            DictBrowseDelegate.launch(
                 delegator, item.getText(),
                 (item.cached as DictLoc),
                 item.isCustom
@@ -1326,7 +1324,7 @@ class DictsDelegate(delegator: Delegator, savedInstanceState: Bundle?) :
                 val dal = itemData[item]
                 val prevKey = keyForLang(isoCode)
                 setStringFor(context, prevKey, dal!!.name)
-                launch(
+                DictBrowseDelegate.launch(
                     dlgtor, dal.name,
                     dal.loc
                 )
@@ -1396,7 +1394,7 @@ class DictsDelegate(delegator: Delegator, savedInstanceState: Bundle?) :
 
         @JvmStatic
         fun start(delegator: Delegator) {
-            delegator.addFragment(newInstance(delegator), null)
+            delegator.addFragment(DictsFrag.newInstance(delegator), null)
         }
 
         @JvmStatic
@@ -1428,7 +1426,7 @@ class DictsDelegate(delegator: Delegator, savedInstanceState: Bundle?) :
                 bundle.putString(DICT_NAME_EXTRA, name)
             }
             delegator.addFragmentForResult(
-                newInstance(delegator),
+                DictsFrag.newInstance(delegator),
                 bundle, requestCode
             )
         }

@@ -37,7 +37,6 @@ import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentActivity
 import org.eehouse.android.xw4.DlgDelegate.DlgClickNotify
 import org.eehouse.android.xw4.DlgDelegate.DlgClickNotify.InviteMeans
-import org.eehouse.android.xw4.XWApp.Companion.getContext
 
 open class XWActivity : FragmentActivity(), Delegator, DlgClickNotify {
     private var mDlgt: DelegateBase? = null
@@ -58,7 +57,7 @@ open class XWActivity : FragmentActivity(), Delegator, DlgClickNotify {
         super.onCreate(savedInstanceState)
         Assert.assertNotNull(dlgt)
         mDlgt = dlgt
-        Assert.assertTrueNR(applicationContext === getContext())
+        Assert.assertTrueNR(applicationContext === XWApp.getContext())
 
         // Looks like there's an Oreo-only bug
         if (setOrientation && Build.VERSION_CODES.O != Build.VERSION.SDK_INT) {

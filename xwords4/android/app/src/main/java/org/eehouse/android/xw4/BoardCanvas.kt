@@ -37,8 +37,7 @@ import org.eehouse.android.xw4.jni.CommonPrefs.TileValueType
 import org.eehouse.android.xw4.jni.DrawCtx
 import org.eehouse.android.xw4.jni.DrawCtx.DrawScoreInfo
 import org.eehouse.android.xw4.jni.JNIThread
-import org.eehouse.android.xw4.jni.XwJNI.Companion.dict_getChars
-import org.eehouse.android.xw4.jni.XwJNI.Companion.dict_tilesAreSame
+import org.eehouse.android.xw4.jni.XwJNI
 import org.eehouse.android.xw4.jni.XwJNI.DictWrapper
 import org.eehouse.android.xw4.loc.LocUtils
 import java.lang.reflect.InvocationTargetException
@@ -547,7 +546,7 @@ open class BoardCanvas private constructor(
                 mFontDims = null
                 mDictChars = null
             } else if (0L == curPtr
-                || !dict_tilesAreSame(curPtr, newPtr)
+                || !XwJNI.dict_tilesAreSame(curPtr, newPtr)
             ) {
                 mFontDims = null
                 mDictChars = null
@@ -572,7 +571,7 @@ open class BoardCanvas private constructor(
         } else if (null == mDict) {
             // Log.d( TAG, "updateDictChars(): mDict still null!!" );
         } else {
-            mDictChars = dict_getChars(mDict!!.dictPtr)
+            mDictChars = XwJNI.dict_getChars(mDict!!.dictPtr)
             // draw again
             mJniThread!!.handle(JNIThread.JNICmd.CMD_INVALALL)
         }

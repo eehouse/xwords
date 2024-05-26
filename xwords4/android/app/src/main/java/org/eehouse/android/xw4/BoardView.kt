@@ -43,8 +43,7 @@ import org.eehouse.android.xw4.jni.CurGameInfo
 import org.eehouse.android.xw4.jni.JNIThread
 import org.eehouse.android.xw4.jni.JNIThread.JNICmd
 import org.eehouse.android.xw4.jni.SyncedDraw
-import org.eehouse.android.xw4.jni.XwJNI.Companion.board_containsPt
-import org.eehouse.android.xw4.jni.XwJNI.Companion.board_draw
+import org.eehouse.android.xw4.jni.XwJNI
 import org.eehouse.android.xw4.jni.XwJNI.GamePtr
 
 class BoardView(private val mContext: Context, attrs: AttributeSet?) : View(
@@ -87,7 +86,7 @@ class BoardView(private val mContext: Context, attrs: AttributeSet?) : View(
                     mLastSpacing = MULTI_INACTIVE
                     if (ConnStatusHandler.handleDown(xx, yy)) {
                         // do nothing
-                    } else if (board_containsPt(mJniGamePtr, xx, yy)) {
+                    } else if (XwJNI.board_containsPt(mJniGamePtr, xx, yy)) {
                         handle(JNICmd.CMD_PEN_DOWN, xx, yy)
                     } else {
                         Log.d(TAG, "onTouchEvent(): in white space")
@@ -316,7 +315,7 @@ class BoardView(private val mContext: Context, attrs: AttributeSet?) : View(
         var drew = false
         synchronized(this) {
             if (null != mJniGamePtr) {
-                drew = board_draw(mJniGamePtr)
+                drew = XwJNI.board_draw(mJniGamePtr)
             }
         }
 

@@ -46,7 +46,6 @@ import java.util.Arrays
 import org.eehouse.android.xw4.DBUtils.getSerializableFor
 import org.eehouse.android.xw4.DBUtils.setSerializableFor
 import org.eehouse.android.xw4.DbgUtils.assertOnUIThread
-import org.eehouse.android.xw4.DictBrowseFrag.Companion.newInstance
 import org.eehouse.android.xw4.DictUtils.DictLoc
 import org.eehouse.android.xw4.PatTableRow.EnterPressed
 import org.eehouse.android.xw4.Utils.ISOCode
@@ -771,7 +770,7 @@ class DictBrowseDelegate constructor(delegator: Delegator, sis: Bundle?) : Deleg
         private const val sResetCheckMS = 500
         private fun launch(delegator: Delegator, bundle: Bundle) {
             delegator.addFragment(
-                newInstance(delegator),
+                DictBrowseFrag.newInstance(delegator),
                 bundle
             )
         }

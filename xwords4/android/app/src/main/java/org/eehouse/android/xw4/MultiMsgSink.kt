@@ -22,7 +22,6 @@ package org.eehouse.android.xw4
 import android.content.Context
 import org.eehouse.android.xw4.DBUtils.recordInviteSent
 import org.eehouse.android.xw4.DlgDelegate.DlgClickNotify.InviteMeans
-import org.eehouse.android.xw4.MQTTUtils.Companion.send
 import org.eehouse.android.xw4.MultiMsgSink
 import org.eehouse.android.xw4.NFCUtils.addMsgFor
 import org.eehouse.android.xw4.jni.CommsAddrRec
@@ -110,7 +109,7 @@ open class MultiMsgSink @JvmOverloads constructor(
     }
 
     override fun transportSendMQTT(tap: TopicsAndPackets): Int {
-        return send(m_context, tap)
+        return MQTTUtils.send(m_context, tap)
     }
 
     override fun countChanged(newCount: Int, quashed: Boolean) {
