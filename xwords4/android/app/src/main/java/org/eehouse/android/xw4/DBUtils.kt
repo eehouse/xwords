@@ -190,7 +190,7 @@ object DBUtils {
                                     )
                                 }
                             }
-                            else -> Log.d( TAG, "unexpected typ $typ")
+                            else -> {} // Log.d( TAG, "unexpected typ $typ")
                         }
                     }
                 }
@@ -280,7 +280,7 @@ object DBUtils {
                         CommsConnType.COMMS_CONN_BT, CommsConnType.COMMS_CONN_SMS
 							-> values.put(DBHelper.REMOTEDEVS,
 										  summary.summarizeDevs() )
-                        else -> Log.d( TAG, "unexpected type ${typ}")
+                        else -> {} // Log.d( TAG, "unexpected type ${typ}")
                     }
                 }
             }

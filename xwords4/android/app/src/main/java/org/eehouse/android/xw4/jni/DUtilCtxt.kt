@@ -265,7 +265,7 @@ class DUtilCtxt {
         MQTTUtils.handleGameGone(m_context, from, gameID)
     }
 
-    fun onCtrlReceived(msg: ByteArray?) {
+    fun onCtrlReceived(msg: ByteArray) {
         MQTTUtils.handleCtrlReceived(m_context, msg)
     }
 
