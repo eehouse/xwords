@@ -687,7 +687,9 @@ class MQTTUtils private constructor(context: Context, resendOnConnect: Boolean) 
 
         private fun addToSendQueue(context: Context, tap: TopicsAndPackets) {
             val instance = getOrStart(context)
-            instance?.enqueue(tap.topics, tap.packets)
+            for (pr in tap.iterator()) {
+                instance?.enqueue(pr.first, pr.second)
+            }
         }
 
         @JvmStatic
