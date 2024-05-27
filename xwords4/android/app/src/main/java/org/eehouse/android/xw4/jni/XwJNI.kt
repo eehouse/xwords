@@ -113,7 +113,37 @@ class XwJNI private constructor() {
         var topics: Array<String>? = null
         @JvmField
         var packets: Array<ByteArray>? = null
-    // default constructor is called from JNI world, so don't add another!
+        // default constructor is called from JNI world, so don't add another!
+
+        override fun hashCode(): Int {
+            val topCode = topics.contentDeepHashCode()
+            // Log.d(TAG, "hashCode(): topic: ${topics!!.get(0)}, code: $topCode")
+            val packCode = packets.contentDeepHashCode()
+            // Log.d(TAG, "hashCode(): buffer: ${packets!!.get(0).size}, code: $packCode")
+            return topCode xor packCode
+        }
+
+        override fun equals(other: Any?): Boolean {
+            val tmp = other as? TopicsAndPackets
+            val result = this === tmp
+                || (tmp?.packets.contentDeepEquals(packets)
+                        && tmp?.topics.contentDeepEquals(topics))
+            // Log.d(TAG, "equals($this, $tmp) => $result")
+            return result
+        }
+
+        // override fun toString(): String {
+        //     val builder = StringBuilder().append("{code: ${hashCode()}, data: [")
+        //     if (null != topics) {
+        //         val len = topics?.size ?: 0
+        //         for (ii in 0..<len) {
+        //             val topic = topics!!.get(ii)
+        //             builder.append("{topic: $topic, ")
+        //                 .append("len: ${packets!!.get(ii).size}},")
+        //         }
+        //     }
+        //     return builder.append("]}").toString()
+        // }
     }
 
     @Throws(Throwable::class)
