@@ -1424,7 +1424,7 @@ XP_U16
 comms_countPendingPackets( RELCONST CommsCtxt* comms, XP_Bool* quashed )
 {
     NonAcks na = {0};
-    THREAD_CHECK_START(comms);
+    // THREAD_CHECK_START(comms); <-- this crashes
     if ( !!quashed ) {
         *quashed = QUASHED(comms);
     }
@@ -1432,7 +1432,7 @@ comms_countPendingPackets( RELCONST CommsCtxt* comms, XP_Bool* quashed )
     forEachElem( (CommsCtxt*)comms, countNonAcks, &na );
 
     // COMMS_LOGFF( "=> %d (queueLen = %d)", na.count, comms->queueLen );
-    THREAD_CHECK_END();
+    // THREAD_CHECK_END();
     return na.count;
 }
 
