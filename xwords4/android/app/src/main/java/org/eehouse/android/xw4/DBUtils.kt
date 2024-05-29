@@ -402,9 +402,12 @@ object DBUtils {
                     val ordinal = cursor.getInt(indxMns)
                     if (ordinal < values.size) {
                         val means = values[ordinal]
-                        val ts = Date(cursor.getLong(indxTS))
-                        val target = cursor.getString(indxTrgt)
-                        result.addEntry(means, target, ts)
+                        val target = cursor.getString(indxTrgt).orEmpty()
+                        if ( null != target ) {
+                            val ts = Date(cursor.getLong(indxTS))
+                            Log.d(TAG, "getInvitesFor(): result: $result; $means, $target, $ts")
+                            result.addEntry(means, target, ts)
+                        }
                     }
                 }
             }
@@ -2316,7 +2319,7 @@ object DBUtils {
     }
 
     class HistoryPair(var msg: String, var playerIndx: Int, var ts: Int)
-    class SentInvite(var mMeans: InviteMeans, var mTarget: String, var mTimestamp: Date) :
+    class SentInvite(var mMeans: InviteMeans, var mTarget: String?, var mTimestamp: Date) :
         Serializable {
         override fun equals(otherObj: Any?): Boolean {
             var result = false
@@ -2356,7 +2359,7 @@ object DBUtils {
             mSents = ArrayList()
         }
 
-        fun addEntry(means: InviteMeans, target: String, ts: Date) {
+        fun addEntry(means: InviteMeans, target: String?, ts: Date) {
             mSents.add(SentInvite(means, target, ts))
             m_cachedCount = -1
         }

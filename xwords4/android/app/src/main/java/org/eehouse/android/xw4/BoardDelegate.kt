@@ -979,7 +979,7 @@ class BoardDelegate(delegator: Delegator, savedInstanceState: Bundle?) :
             DlgDelegate.Action.DROP_SMS_ACTION -> alertOrderIncrIfAt(StartAlertOrder.NBS_PERMS)
             DlgDelegate.Action.INVITE_SMS_DATA -> {
                 val nMissing = params[0] as Int
-                val info = params[1] as SentInvitesInfo
+                val info = params[1] as? SentInvitesInfo
                 launchPhoneNumberInvite(
                     nMissing, info,
                     RequestCode.SMS_DATA_INVITE_RESULT
@@ -1102,7 +1102,7 @@ class BoardDelegate(delegator: Delegator, savedInstanceState: Bundle?) :
 
             DlgDelegate.Action.INVITE_SMS_DATA -> if (Perms23.haveNBSPerms(mActivity)) {
                 val nMissing = params[0] as Int
-                val info = params[1] as SentInvitesInfo
+                val info = params[1] as? SentInvitesInfo
                 launchPhoneNumberInvite(
                     nMissing, info,
                     RequestCode.SMS_DATA_INVITE_RESULT
@@ -1388,7 +1388,7 @@ class BoardDelegate(delegator: Delegator, savedInstanceState: Bundle?) :
         }
 
     private fun launchPhoneNumberInvite(
-        nMissing: Int, info: SentInvitesInfo,
+        nMissing: Int, info: SentInvitesInfo?,
         code: RequestCode
     ) {
         SMSInviteDelegate.launchForResult(mActivity, nMissing, info, code)
