@@ -185,7 +185,7 @@ class DUtilCtxt {
         expl: String?
     ): String {
         val msg: String
-        val gameName: String = GameUtils.getName(m_context, rowid)
+        val gameName = GameUtils.getName(m_context, rowid)
         msg = if (AUTOPAUSED == pauseType) {
             LocUtils.getString(
                 m_context, R.string.autopause_expl_fmt,

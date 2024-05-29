@@ -61,7 +61,7 @@ class RematchConfigView(val mContext: Context, attrs: AttributeSet)
     {
         mDlgDlgt = dlgDlgt
         mWrapper = GameUtils.GameWrapper.make( mContext, rowid )
-        val nPlayers = mWrapper!!.gi().nPlayers
+        val nPlayers = mWrapper!!.gi()!!.nPlayers
         mNewOrder = Array<Int>(nPlayers, {it})
         trySetup()
     }
@@ -95,7 +95,7 @@ class RematchConfigView(val mContext: Context, attrs: AttributeSet)
         }
 
         mCurRO = mRos.get( checkedId )
-        mNewOrder = XwJNI.server_figureOrderKT( mWrapper!!.gamePtr(), mCurRO!!)
+        mNewOrder = XwJNI.server_figureOrderKT( mWrapper!!.gamePtr()!!, mCurRO!!)
 
         if ( mUserEditing ) {
             if ( mNAShown != true ) {
@@ -125,7 +125,7 @@ class RematchConfigView(val mContext: Context, attrs: AttributeSet)
             mGroup!!.setOnCheckedChangeListener( this )
             mEWC = findViewById( R.id.name )
 
-            val results = XwJNI.server_canOfferRematch( mWrapper!!.gamePtr() )
+            val results = XwJNI.server_canOfferRematch( mWrapper!!.gamePtr()!! )
             if ( results[0] && results[1] ) {
                 val ordinal = DBUtils.getIntFor( mContext, KEY_LAST_RO,
                                                  RematchOrder.RO_SAME.ordinal )
@@ -153,7 +153,7 @@ class RematchConfigView(val mContext: Context, attrs: AttributeSet)
 
     private fun setName()
     {
-        mNameStr = TextUtils.join( mSep!!.toString(), mWrapper!!.gi().playerNames(mNewOrder) )
+        mNameStr = TextUtils.join( mSep!!.toString(), mWrapper!!.gi()!!.playerNames(mNewOrder) )
         mEWC?.setText( mNameStr )
     }
 }

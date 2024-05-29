@@ -18,19 +18,10 @@
  */
 package org.eehouse.android.xw4.jni
 
-import android.content.Context
 import org.eehouse.android.xw4.Log
-import org.eehouse.android.xw4.NetUtils
-import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet
-import org.eehouse.android.xw4.jni.CurGameInfo.XWPhoniesChoice
-import org.eehouse.android.xw4.jni.JNIThread.JNICmd
-import org.json.JSONArray
-import org.json.JSONObject
-import java.net.HttpURLConnection
 
 private val TAG = UtilCtxtImpl::class.java.getSimpleName()
-// private val TAG = BTInviteDelegate::class.java.getSimpleName()
 
-open class UtilCtxtImpl(val m_context: Context) : UtilCtxt {
+open class UtilCtxtImpl() : UtilCtxt {
     open fun getRowID(): Long = 0L // meant to be overridden!
 }

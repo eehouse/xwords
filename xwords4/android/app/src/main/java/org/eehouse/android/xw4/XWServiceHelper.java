@@ -149,7 +149,7 @@ abstract class XWServiceHelper {
     protected UtilCtxt getUtilCtxt()
     {
         if ( null == m_utilCtxt ) {
-            m_utilCtxt = new UtilCtxtImpl( mContext );
+            m_utilCtxt = new UtilCtxtImpl();
         }
         return m_utilCtxt;
     }

@@ -1440,7 +1440,7 @@ class BoardDelegate(delegator: Delegator, savedInstanceState: Bundle?) :
         return xpKey
     }
 
-    private inner class BoardUtilCtxt : UtilCtxtImpl(mActivity) {
+    private inner class BoardUtilCtxt : UtilCtxtImpl() {
         override fun requestTime() {
             runOnUiThread {
                 if (null != mJniThread) {
@@ -2642,7 +2642,7 @@ class BoardDelegate(delegator: Delegator, savedInstanceState: Bundle?) :
                                 "setupRematchFor(%d)", rowID
                             )
                         } else {
-                            summary = DBUtils.getSummary(activity, gw.lock)
+                            summary = DBUtils.getSummary(activity, gw.lock!!)
                             setupRematchFor(activity, gw.gamePtr(), summary, gw.gi())
                         }
                     }

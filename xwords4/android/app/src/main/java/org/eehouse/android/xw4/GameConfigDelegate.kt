@@ -474,7 +474,7 @@ class GameConfigDelegate(delegator: Delegator, savedInstanceState: Bundle?) :
             } else {
                 GameLock.tryLockRO(mRowid).use { lock ->
                     if (null != lock) {
-                        GameUtils.loadMakeGame(mActivity, mGiOrig, lock)
+                        GameUtils.loadMakeGame(mActivity, mGiOrig!!, lock)
                             .use { gamePtr -> loadGame(gamePtr) }
                     }
                 }
@@ -1117,7 +1117,7 @@ class GameConfigDelegate(delegator: Delegator, savedInstanceState: Bundle?) :
     private fun applyChanges(lock: GameLock, forceNew: Boolean) {
         if (!mIsNewGame) {
             GameUtils.applyChanges1(
-                mActivity, mGi, mCar, mDisabMap,
+                mActivity, mGi!!, mCar, mDisabMap,
                 lock, forceNew
             )
             DBUtils.saveThumbnail(mActivity, lock, null) // clear it
