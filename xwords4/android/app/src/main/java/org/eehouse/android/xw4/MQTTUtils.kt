@@ -480,10 +480,10 @@ class MQTTUtils private constructor(context: Context, resendOnConnect: Boolean) 
         }
     }
 
-    private class MQTTServiceHelper(context: Context?) : XWServiceHelper(context) {
+    private class MQTTServiceHelper(context: Context) : XWServiceHelper(context) {
         private var mReturnAddr: CommsAddrRec? = null
 
-        constructor(context: Context?, from: CommsAddrRec?) : this(context) {
+        constructor(context: Context, from: CommsAddrRec?) : this(context) {
             mReturnAddr = from
         }
 
@@ -560,7 +560,7 @@ class MQTTUtils private constructor(context: Context, resendOnConnect: Boolean) 
             NetStateCache.register(context, sStateChangedIf)
         }
 
-        fun onDestroy(context: Context?) {
+        fun onDestroy(context: Context) {
             NetStateCache.unregister(context, sStateChangedIf)
         }
 
@@ -715,7 +715,7 @@ class MQTTUtils private constructor(context: Context, resendOnConnect: Boolean) 
             }
         }
 
-        fun handleCtrlReceived(context: Context?, buf: ByteArray?) {
+        fun handleCtrlReceived(context: Context, buf: ByteArray?) {
             try {
                 val obj = JSONObject(String(buf!!))
                 val msg = obj.optString("msg", null)
@@ -733,7 +733,7 @@ class MQTTUtils private constructor(context: Context, resendOnConnect: Boolean) 
             }
         }
 
-        fun handleGameGone(context: Context?, from: CommsAddrRec, gameID: Int) {
+        fun handleGameGone(context: Context, from: CommsAddrRec, gameID: Int) {
             val player = XwJNI.kplr_nameForMqttDev(from.mqtt_devID)
             val expl = if (null == player) null
             else ConnExpl(CommsConnType.COMMS_CONN_MQTT, player)
@@ -744,13 +744,13 @@ class MQTTUtils private constructor(context: Context, resendOnConnect: Boolean) 
                 )
         }
 
-        fun fcmConfirmed(context: Context?, working: Boolean) {
+        fun fcmConfirmed(context: Context, working: Boolean) {
             if (working) {
                 setLongFor(context!!, KEY_NEXT_REG, 0)
             }
         }
 
-        fun makeOrNotify(context: Context?, nli: NetLaunchInfo) {
+        fun makeOrNotify(context: Context, nli: NetLaunchInfo) {
             MQTTServiceHelper(context).handleInvitation(nli)
         }
     }
