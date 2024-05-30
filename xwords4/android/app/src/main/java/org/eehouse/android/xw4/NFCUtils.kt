@@ -525,7 +525,7 @@ object NFCUtils {
     private const val NFC_DEVID_KEY = "key_nfc_devid"
     private val sNFCDevID = intArrayOf(0)
     @JvmStatic
-    fun getNFCDevID(context: Context?): Int {
+    fun getNFCDevID(context: Context): Int {
         synchronized(sNFCDevID) {
             if (0 == sNFCDevID[0]) {
                 var devid = getIntFor(context!!, NFC_DEVID_KEY, 0)
@@ -976,7 +976,7 @@ object NFCUtils {
         }
     }
 
-    private class NFCServiceHelper internal constructor(context: Context?) :
+    private class NFCServiceHelper internal constructor(context: Context) :
         XWServiceHelper(context) {
         private val mAddr = CommsAddrRec(CommsConnType.COMMS_CONN_NFC)
         public override fun postNotification(device: String, gameID: Int, rowid: Long) {

@@ -72,7 +72,7 @@ class BackupConfigView(cx: Context, aset: AttributeSet?) : LinearLayout(cx, aset
                 }
             }
             Utils.enableAlertButton(
-                mDialog, AlertDialog.BUTTON_POSITIVE,
+                mDialog!!, AlertDialog.BUTTON_POSITIVE,
                 haveCheck
             )
         }

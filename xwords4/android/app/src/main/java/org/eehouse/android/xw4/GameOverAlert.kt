@@ -152,7 +152,7 @@ class GameOverAlert : XWDialogFragment(), DialogInterface.OnClickListener,
     private fun updateForPending() {
         mArchiveBox!!.visibility =
             if (mHasPending || mInArchive) View.GONE else View.VISIBLE
-        Utils.enableAlertButton(mDialog, AlertDialog.BUTTON_NEGATIVE, !mHasPending)
+        Utils.enableAlertButton(mDialog!!, AlertDialog.BUTTON_NEGATIVE, !mHasPending)
         mDeleteBox!!.visibility = if (mHasPending) View.GONE else View.VISIBLE
     }
 

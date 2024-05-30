@@ -46,7 +46,7 @@ class EnableSMSAlert : DlgDelegateAlert() {
                 parent: AdapterView<*>?, view: View,
                 position: Int, id: Long
             ) {
-                checkEnableButton(dialog as AlertDialog?)
+                checkEnableButton(dialog as AlertDialog)
             }
         }
         spinner.onItemSelectedListener = onItemSel
@@ -67,7 +67,7 @@ class EnableSMSAlert : DlgDelegateAlert() {
         return dialog
     }
 
-    private fun checkEnableButton(dialog: AlertDialog?) {
+    private fun checkEnableButton(dialog: AlertDialog) {
         val enabled = 0 < mSpinner!!.selectedItemPosition
         Utils.enableAlertButton(dialog, AlertDialog.BUTTON_POSITIVE, enabled)
     }

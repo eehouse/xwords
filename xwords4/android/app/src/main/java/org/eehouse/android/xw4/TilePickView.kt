@@ -30,7 +30,7 @@ import android.widget.TextView
 import org.eehouse.android.xw4.TilePickAlert.TilePickState
 import org.eehouse.android.xw4.loc.LocUtils
 
-class TilePickView(context: Context?, `as`: AttributeSet?) : LinearLayout(context, `as`) {
+class TilePickView(context: Context, aset: AttributeSet?) : LinearLayout(context, aset) {
     interface TilePickListener {
         fun onTilesChanged(nToPick: Int, newTiles: IntArray)
     }

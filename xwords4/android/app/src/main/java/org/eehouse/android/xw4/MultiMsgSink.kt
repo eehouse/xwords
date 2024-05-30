@@ -119,7 +119,7 @@ open class MultiMsgSink @JvmOverloads constructor(
     companion object {
         private val TAG: String = MultiMsgSink::class.java.simpleName
         fun sendInvite(
-            context: Context?, rowid: Long,
+            context: Context, rowid: Long,
             addr: CommsAddrRec?, typ: CommsConnType?,
             nli: NetLaunchInfo?, timestamp: Int
         ): Boolean {

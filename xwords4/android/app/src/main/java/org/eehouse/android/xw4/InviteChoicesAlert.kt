@@ -191,7 +191,7 @@ class InviteChoicesAlert : DlgDelegateAlert(), ItemClicked {
 
     private fun enableOkButton() {
         val enable = null != mInviteView!!.getChoice()
-        Utils.enableAlertButton(mDialog, AlertDialog.BUTTON_POSITIVE, enable)
+        Utils.enableAlertButton(mDialog!!, AlertDialog.BUTTON_POSITIVE, enable)
     }
 
     companion object {

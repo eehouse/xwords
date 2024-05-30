@@ -445,7 +445,7 @@ class XwJNI private constructor() {
         }
 
         @JvmStatic
-        fun lcToLocaleJ(lc: Int): ISOCode {
+        fun lcToLocaleJ(lc: Int): ISOCode? {
             val code = lcToLocale(lc)
             return ISOCode.newIf(code)
         }

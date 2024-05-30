@@ -30,7 +30,7 @@ import org.eehouse.android.xw4.loc.LocUtils
  */
 class FirstRunDialog : XWDialogFragment() {
     override fun onCreateDialog(sis: Bundle?): Dialog {
-        val context: Context? = activity
+        val context: Context = requireActivity()
         // boolean showSurvey = !Utils.onFirstVersion( context );
 
         // This won't support e.g mailto refs.  Probably want to

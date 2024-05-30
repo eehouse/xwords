@@ -39,7 +39,7 @@ object DbgUtils {
     }
 
     @JvmStatic
-    fun showf(context: Context?, format: String?, vararg args: Any?) {
+    fun showf(context: Context, format: String?, vararg args: Any?) {
         Assert.assertVarargsNotNullNR(args)
         val formatter = Formatter()
         val msg = formatter.format(format, *args).toString()
@@ -47,14 +47,14 @@ object DbgUtils {
     } // showf
 
     @JvmStatic
-    fun showf(context: Context?, formatid: Int, vararg args: Any?) {
+    fun showf(context: Context, formatid: Int, vararg args: Any?) {
         Assert.assertVarargsNotNullNR(args)
         showf(context, LocUtils.getString(context, formatid), *args)
     } // showf
 
     @JvmStatic
     fun toastNoLock(
-        tag: String, context: Context?, rowid: Long,
+        tag: String, context: Context, rowid: Long,
         format: String, vararg args: Any?
     ) {
         var format = format

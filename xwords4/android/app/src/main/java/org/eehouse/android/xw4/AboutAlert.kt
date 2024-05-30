@@ -32,7 +32,7 @@ import org.eehouse.android.xw4.loc.LocUtils
 
 public class AboutAlert : XWDialogFragment() {
     override fun onCreateDialog(sis: Bundle?): Dialog {
-        val context: Context? = activity
+        val context: Context = activity!!
         val view = LocUtils.inflate(context, R.layout.about_dlg)
         val df = DateFormat.getDateTimeInstance(
             DateFormat.DEFAULT,

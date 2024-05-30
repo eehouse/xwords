@@ -380,7 +380,7 @@ class DBHelper(private val mContext: Context) :
             while (cursor.moveToNext()) {
                 val code = cursor.getInt(colIndex)
                 val isoCode = XwJNI.lcToLocaleJ(code)
-                map[code] = isoCode
+                map[code] = isoCode!!
                 Log.d(TAG, "added %d => %s", code, isoCode)
             }
 

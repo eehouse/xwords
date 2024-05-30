@@ -78,7 +78,7 @@ open class DlgDelegateAlert : XWDialogFragment() {
     }
 
     private fun addNAView(state: DlgState?, builder: AlertDialog.Builder): NotAgainView {
-        val context: Context? = activity
+        val context: Context = requireActivity()
         val naView = (LocUtils.inflate(context, R.layout.not_again_view) as NotAgainView)
             .setMessage(state!!.m_msg)
             .setShowNACheckbox(0 != state.m_prefsNAKey)

@@ -27,7 +27,7 @@ import android.view.ViewGroup
 import java.lang.ref.WeakReference
 import kotlin.math.min
 
-class BoardContainer(context: Context?, `as`: AttributeSet?) : ViewGroup(context, `as`) {
+class BoardContainer(context: Context, aset: AttributeSet?) : ViewGroup(context, aset) {
     private var mBoardBounds: Rect? = null
     private var mToolsBounds: Rect? = null
 

@@ -1376,7 +1376,7 @@ class DictsDelegate(delegator: Delegator, savedInstanceState: Bundle?) :
         }
 
         @JvmStatic
-        fun prevSelFor(context: Context?, isoCode: ISOCode): String? {
+        fun prevSelFor(context: Context, isoCode: ISOCode): String? {
             val key = keyForLang(isoCode)
             return getStringFor(context!!, key)
         }
