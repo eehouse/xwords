@@ -693,8 +693,8 @@ class MQTTUtils private constructor(context: Context, resendOnConnect: Boolean) 
         }
 
         @JvmStatic
-        fun gameDied(context: Context, devID: String?, gameID: Int) {
-            val tap = XwJNI.dvc_makeMQTTNoSuchGames(devID!!, gameID)
+        fun gameDied(context: Context, devID: String, gameID: Int) {
+            val tap = XwJNI.dvc_makeMQTTNoSuchGames(devID, gameID)
             addToSendQueue(context, tap)
         }
 
