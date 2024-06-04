@@ -75,10 +75,10 @@ class GameOverAlert : XWDialogFragment(), DialogInterface.OnClickListener,
         mMsg = sis.getString(MSG)
         mInArchive = sis.getSerializable(IN_ARCH) as Boolean
         mHasPending = sis.getSerializable(HAS_PENDING) as Boolean
-        val activity: Activity? = activity
-        mView = LocUtils.inflate(activity, R.layout.game_over) as ViewGroup
+        val context = requireContext()
+        mView = LocUtils.inflate(context, R.layout.game_over) as ViewGroup
         initView()
-        val ab = LocUtils.makeAlertBuilder(activity)
+        val ab = LocUtils.makeAlertBuilder(context)
             .setTitle(mTitleID)
             .setView(mView)
             .setPositiveButton(android.R.string.ok, this)
@@ -116,7 +116,7 @@ class GameOverAlert : XWDialogFragment(), DialogInterface.OnClickListener,
             builder = if (bv === mArchiveBox) {
                 mDeleteBox!!.setChecked(false)
                 val archiveName = LocUtils
-                    .getString(context, R.string.group_name_archive)
+                    .getString(requireContext(), R.string.group_name_archive)
                 mDlgDlgt!!.makeNotAgainBuilder(
                     R.string.key_na_archivecheck,
                     R.string.not_again_archivecheck_fmt,

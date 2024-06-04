@@ -91,11 +91,12 @@ class TilePickAlert : XWDialogFragment(), TilePickListener {
         mAction = sis.getSerializable(ACTION) as DlgDelegate.Action?
         val activity: Activity? = activity
         Assert.assertNotNull(activity)
-        mView = LocUtils.inflate(activity, R.layout.tile_picker) as TilePickView
+        val context = requireContext()
+        mView = LocUtils.inflate(context, R.layout.tile_picker) as TilePickView
         mView!!.init(this, mState, sis)
         val resId =
             if (mState!!.forBlank()) R.string.title_blank_picker else R.string.tile_tray_picker
-        val ab = LocUtils.makeAlertBuilder(activity)
+        val ab = LocUtils.makeAlertBuilder(context)
             .setTitle(resId)
             .setView(mView)
         if (!mState!!.forBlank()) {
@@ -142,7 +143,7 @@ class TilePickAlert : XWDialogFragment(), TilePickListener {
     }
 
     private fun buttonTxt(): String {
-        val context = context
+        val context = requireContext()
         val left = mState!!.nToPick - mSelTiles.size
         return if (0 == left) LocUtils.getString(
             context,

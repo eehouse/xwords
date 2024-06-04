@@ -41,7 +41,7 @@ interface UtilCtxt {
     fun getInviteeName(index: Int): String? = null
     fun bonusSquareHeld(bonus: Int) {}
     fun playerScoreHeld(player: Int) {}
-    fun cellSquareHeld(words: String?) {}
+    fun cellSquareHeld(words: String) {}
     fun notifyMove(query: String?) {}
     fun notifyTrade(tiles: Array<String?>?) {}
     fun notifyDupStatus(amHost: Boolean, msg: String?) {}

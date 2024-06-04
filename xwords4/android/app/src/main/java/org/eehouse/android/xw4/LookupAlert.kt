@@ -1,5 +1,7 @@
-/* -*- compile-command: "find-and-gradle.sh inXw4dDebug"; -*- */ /*
- * Copyright 2017 by Eric House (xwords@eehouse.org).  All rights reserved.
+/* -*- compile-command: "find-and-gradle.sh inXw4dDeb"; -*- */
+/*
+ * Copyright 2017-2024 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -36,9 +38,10 @@ class LookupAlert : XWDialogFragment() {
         if (null == sis) {
             sis = arguments
         }
-        m_view = LocUtils.inflate(activity, R.layout.lookup) as LookupAlertView
+        val context = requireContext()
+        m_view = LocUtils.inflate(context, R.layout.lookup) as LookupAlertView
         m_view!!.init({ dismiss() }, sis)
-        val result: Dialog = LocUtils.makeAlertBuilder(activity)
+        val result: Dialog = LocUtils.makeAlertBuilder(context)
             .setView(m_view)
             .create()
         result.setOnKeyListener(m_view)
@@ -52,7 +55,8 @@ class LookupAlert : XWDialogFragment() {
     companion object {
         private val TAG = LookupAlert::class.java.getSimpleName()
         @JvmStatic
-        fun newInstance(words: Array<String?>?, isoCode: ISOCode?, noStudy: Boolean): LookupAlert {
+        fun newInstance(words: Array<String>, isoCode: ISOCode?,
+                        noStudy: Boolean): LookupAlert {
             val result = LookupAlert()
             val bundle = LookupAlertView.makeParams(words, isoCode, noStudy)
             result.setArguments(bundle)

@@ -1503,7 +1503,7 @@ class BoardDelegate(delegator: Delegator) :
             post { makeOkOnlyBuilder(text).show() }
         }
 
-        override fun cellSquareHeld(words: String?) {
+        override fun cellSquareHeld(words: String) {
             post { launchLookup(wordsToArray(words), mGi!!.isoCode()) }
         }
 
