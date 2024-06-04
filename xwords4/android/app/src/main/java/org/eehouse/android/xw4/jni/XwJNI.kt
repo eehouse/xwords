@@ -108,17 +108,21 @@ class XwJNI private constructor() {
 
     private var m_ptrGlobals: Long
 
-    class TopicsAndPackets(private val topics: Array<String>,
-                           private val packets: Array<ByteArray>)
+    // Ok, so for now I can't figure out how to call the real constructor from
+    // jni (javac -h and kotlin files are beyond me still) so I'm putting back
+    // the nullable fields and an empty constructor. PENDING()...
+    class TopicsAndPackets(val topics: Array<String>?,
+                           val packets: Array<ByteArray>?)
     {
         constructor(topic: String, packet: ByteArray):
             this(arrayOf(topic), arrayOf(packet))
+        constructor(): this(null, null) // PENDING Remove me later
 
         fun iterator(): Iterator<Pair<String, ByteArray>>
         {
             val lst = ArrayList<Pair<String, ByteArray>>()
-            for (ii in 0 ..< topics.size) {
-                lst.add(Pair<String, ByteArray>(topics[ii], packets[ii]))
+            for (ii in 0 ..< topics!!.size) {
+                lst.add(Pair<String, ByteArray>(topics[ii], packets!![ii]))
             }
             return lst.iterator()
         }
