@@ -30,7 +30,7 @@ class DwnldActivity : XWActivity() {
             Window.FEATURE_LEFT_ICON,
             R.drawable.icon48x48
         )
-        val dlgt = DwnldDelegate(this, savedInstanceState)
+        val dlgt = DwnldDelegate(this)
         super.onCreate(savedInstanceState, dlgt, false)
     }
 }

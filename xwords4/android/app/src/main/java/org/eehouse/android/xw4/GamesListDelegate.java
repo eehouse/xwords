@@ -590,9 +590,9 @@ public class GamesListDelegate extends ListDelegateBase
     private Object[] m_newGameParams;
     private int mCurScrollState;
 
-    public GamesListDelegate( Delegator delegator, Bundle sis )
+    public GamesListDelegate( Delegator delegator )
     {
-        super( delegator, sis, R.layout.game_list, R.menu.games_list_menu );
+        super( delegator, R.layout.game_list, R.menu.games_list_menu );
         m_activity = delegator.getActivity();
         s_self = this;
     }

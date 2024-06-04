@@ -44,8 +44,8 @@ import org.eehouse.android.xw4.loc.LocUtils
 import java.text.DateFormat
 import java.util.Date
 
-class KnownPlayersDelegate(delegator: Delegator, sis: Bundle?) :
-    DelegateBase(delegator, sis, R.layout.knownplayrs) {
+class KnownPlayersDelegate(delegator: Delegator) :
+    DelegateBase(delegator, R.layout.knownplayrs) {
     private val mActivity: Activity = delegator.activity
     private var mList: ViewGroup? = null
     private val mChildren: MutableList<ViewGroup> = ArrayList()

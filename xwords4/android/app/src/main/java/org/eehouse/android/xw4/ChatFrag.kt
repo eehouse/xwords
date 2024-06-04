@@ -21,7 +21,7 @@ import android.os.Bundle
 
 class ChatFrag : XWFragment() {
     override fun onCreate(sis: Bundle?)
-        = super.onCreate(ChatDelegate(this, sis), sis, true)
+        = super.onCreate(ChatDelegate(this), sis, true)
 
 
     companion object {

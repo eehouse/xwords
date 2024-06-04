@@ -27,8 +27,8 @@ import java.util.HashMap
 
 import org.eehouse.android.xw4.Utils.ISOCode
 
-class StudyListDelegate(delegator: Delegator, sis: Bundle?) :
-	IsoWordsBase(delegator, sis, "CHECKED_KEY"),
+class StudyListDelegate(delegator: Delegator) :
+	IsoWordsBase(delegator, "CHECKED_KEY"),
 	DBUtils.StudyListListener {
 
 	companion object {

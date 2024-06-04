@@ -33,6 +33,6 @@ public class GameConfigFrag(): XWFragment() {
 
     override fun onCreate( sis : Bundle? )
     {
-        super.onCreate( GameConfigDelegate( this, sis ), sis, true )
+        super.onCreate( GameConfigDelegate( this ), sis, true )
     }
 }

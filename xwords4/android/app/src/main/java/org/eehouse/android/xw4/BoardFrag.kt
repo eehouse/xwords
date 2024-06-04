@@ -34,6 +34,6 @@ class BoardFrag(): XWFragment() {
 
     override fun onCreate( sis: Bundle? )
     {
-        super.onCreate( BoardDelegate( this, sis ), sis, true )
+        super.onCreate( BoardDelegate( this ), sis, true )
     }
 }

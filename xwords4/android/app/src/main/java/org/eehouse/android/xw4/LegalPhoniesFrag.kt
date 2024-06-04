@@ -22,7 +22,7 @@ import android.os.Bundle
 
 internal class LegalPhoniesFrag : XWFragment() {
     override fun onCreate(sis: Bundle?) {
-        super.onCreate(LegalPhoniesDelegate(this, sis), sis, true)
+        super.onCreate(LegalPhoniesDelegate(this), sis, true)
     }
 
     companion object {

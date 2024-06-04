@@ -36,8 +36,8 @@ import android.widget.TextView
 import org.eehouse.android.xw4.jni.JNIThread
 import java.text.DateFormat
 
-class ChatDelegate(delegator: Delegator, savedInstanceState: Bundle?) :
-    DelegateBase(delegator, savedInstanceState, R.layout.chat, R.menu.chat_menu) {
+class ChatDelegate(delegator: Delegator) :
+    DelegateBase(delegator, R.layout.chat, R.menu.chat_menu) {
     private var m_rowid: Long = 0
     private var m_curPlayer = 0
     private var m_names: Array<String>? = null

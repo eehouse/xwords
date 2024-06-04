@@ -30,16 +30,14 @@ public abstract class ListDelegateBase extends DelegateBase {
     private Activity m_activity;
     private Delegator m_delegator;
 
-    protected ListDelegateBase( Delegator delegator, Bundle savedInstanceState,
-                                int layoutID )
+    protected ListDelegateBase( Delegator delegator, int layoutID )
     {
-        this( delegator, savedInstanceState, layoutID, R.menu.empty );
+        this( delegator, layoutID, R.menu.empty );
     }
 
-    protected ListDelegateBase( Delegator delegator, Bundle savedInstanceState,
-                                int layoutID, int menuID )
+    protected ListDelegateBase( Delegator delegator, int layoutID, int menuID )
     {
-        super( delegator, savedInstanceState, layoutID, menuID );
+        super( delegator, layoutID, menuID );
         m_delegator = delegator;
         m_activity = delegator.getActivity();
     }

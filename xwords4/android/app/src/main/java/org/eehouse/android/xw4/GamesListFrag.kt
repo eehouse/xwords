@@ -34,6 +34,6 @@ class GamesListFrag(): XWFragment() {
 
     override fun onCreate( sis: Bundle? )
     {
-        super.onCreate( GamesListDelegate( this, sis ), sis, true );
+        super.onCreate( GamesListDelegate( this ), sis, true );
     }
 }

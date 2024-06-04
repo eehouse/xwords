@@ -54,8 +54,8 @@ import org.eehouse.android.xw4.jni.XwJNI
 import org.eehouse.android.xw4.jni.XwJNI.PatDesc
 import org.eehouse.android.xw4.loc.LocUtils
 
-class DictBrowseDelegate constructor(delegator: Delegator, sis: Bundle?) : DelegateBase(
-    delegator, sis, R.layout.dict_browser,
+class DictBrowseDelegate constructor(delegator: Delegator) : DelegateBase(
+    delegator, R.layout.dict_browser,
     R.menu.dict_browse_menu
 ), View.OnClickListener, OnLongClickListener, EnterPressed {
     // Struct to show both what user's configuring AND what's been

@@ -29,8 +29,8 @@ import android.view.View
 import org.eehouse.android.xw4.Assert.assertVarargsNotNullNR
 import org.eehouse.android.xw4.DlgDelegate.DlgClickNotify.InviteMeans
 
-class DualpaneDelegate(delegator: Delegator, sis: Bundle?) :
-    DelegateBase(delegator, sis, R.layout.dualcontainer) {
+class DualpaneDelegate(delegator: Delegator) :
+    DelegateBase(delegator, R.layout.dualcontainer) {
     private val m_activity: Activity = delegator.activity
 
     override fun init(savedInstanceState: Bundle?) {}

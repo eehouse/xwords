@@ -66,12 +66,11 @@ import java.io.Serializable
 import java.text.Collator
 import java.util.Arrays
 
-class DictsDelegate(delegator: Delegator, savedInstanceState: Bundle?) :
-    ListDelegateBase(
-        delegator, savedInstanceState, R.layout.dicts_browse,
-        R.menu.dicts_menu
-    ), View.OnClickListener, OnItemLongClickListener, SelectableItem, SDCardNotifiee,
-    DlgClickNotify, GroupStateListener, DownloadFinishedListener, ExpandedListener {
+class DictsDelegate(delegator: Delegator) :
+    ListDelegateBase(delegator, R.layout.dicts_browse, R.menu.dicts_menu),
+    View.OnClickListener, OnItemLongClickListener, SelectableItem, SDCardNotifiee,
+    DlgClickNotify, GroupStateListener, DownloadFinishedListener, ExpandedListener
+{
     private val mActivity: Activity
     private val mClosedLangs: MutableSet<String> = HashSet()
     private var mExpandedItems: MutableSet<AvailDictInfo>? = null

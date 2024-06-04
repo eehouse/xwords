@@ -23,8 +23,8 @@ import android.os.Bundle
 import org.eehouse.android.xw4.Utils.ISOCode
 import org.eehouse.android.xw4.jni.XwJNI
 
-class LegalPhoniesDelegate(delegator: Delegator, sis: Bundle?) :
-	IsoWordsBase(delegator, sis, "CHECKED_KEY_LP")
+class LegalPhoniesDelegate(delegator: Delegator) :
+	IsoWordsBase(delegator, "CHECKED_KEY_LP")
 {
     companion object {
 		private val TAG = LegalPhoniesDelegate::class.java.getSimpleName()

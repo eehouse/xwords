@@ -76,13 +76,12 @@ public abstract class DelegateBase implements DlgClickNotify,
     private static Map<Class, WeakReference<DelegateBase>> s_instances
         = new HashMap<Class, WeakReference<DelegateBase>>();
 
-    public DelegateBase( Delegator delegator, Bundle bundle, int layoutID )
+    public DelegateBase( Delegator delegator, int layoutID )
     {
-        this( delegator, bundle, layoutID, R.menu.empty );
+        this( delegator, layoutID, R.menu.empty );
     }
 
-    public DelegateBase( Delegator delegator, Bundle bundle,
-                         int layoutID, int menuID )
+    public DelegateBase( Delegator delegator, int layoutID, int menuID )
     {
         Assert.assertTrue( 0 < menuID );
         m_delegator = delegator;

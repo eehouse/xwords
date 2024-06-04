@@ -34,6 +34,6 @@ class KnownPlayersFrag(): XWFragment() {
 
 	override fun onCreate( sis: Bundle? )
 	{
-		super.onCreate( KnownPlayersDelegate( this, sis ), sis, true )
+		super.onCreate( KnownPlayersDelegate( this ), sis, true )
 	}
 }

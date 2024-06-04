@@ -85,10 +85,11 @@ import org.eehouse.android.xw4.jni.XwJNI.XP_Key
 import org.eehouse.android.xw4.loc.LocUtils
 import kotlin.concurrent.Volatile
 
-class BoardDelegate(delegator: Delegator, savedInstanceState: Bundle?) :
-    DelegateBase(delegator, savedInstanceState, R.layout.board, R.menu.board_menu), TPMsgHandler,
+class BoardDelegate(delegator: Delegator) :
+    DelegateBase(delegator, R.layout.board, R.menu.board_menu), TPMsgHandler,
     View.OnClickListener, DownloadFinishedListener, ConnStatusCBacks, Procs,
-    InvitesNeededAlert.Callbacks {
+    InvitesNeededAlert.Callbacks
+{
     private val mActivity: Activity
     private var mView: BoardView? = null
     private var mJniGamePtr: GamePtr? = null

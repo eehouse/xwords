@@ -46,7 +46,7 @@ class MainActivity : XWActivity(), FragmentManager.OnBackStackChangedListener {
         if (BuildConfig.NON_RELEASE && !isTaskRoot) {
             Log.e(TAG, "isTaskRoot() => false!!! What to do?")
         }
-        val dlgt = DualpaneDelegate(this, savedInstanceState)
+        val dlgt = DualpaneDelegate(this)
         super.onCreate(savedInstanceState, dlgt)
         m_root = findViewById<View>(R.id.main_container) as LinearLayout
         supportFragmentManager.addOnBackStackChangedListener(this)

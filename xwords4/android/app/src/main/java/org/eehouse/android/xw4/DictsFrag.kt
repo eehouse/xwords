@@ -33,6 +33,6 @@ public class DictsFrag (): XWFragment() {
 
     override fun onCreate( sis: Bundle? )
     {
-        super.onCreate( DictsDelegate( this, sis ), sis, true )
+        super.onCreate( DictsDelegate( this ), sis, true )
     }
 }

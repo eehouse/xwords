@@ -76,7 +76,7 @@ public class PrefsDelegate extends DelegateBase
     public PrefsDelegate( XWActivity activity, Delegator delegator,
                           Bundle savedInstanceState )
     {
-        super( delegator, savedInstanceState, R.layout.prefs );
+        super( delegator, R.layout.prefs );
         mActivity = activity;
     }
 

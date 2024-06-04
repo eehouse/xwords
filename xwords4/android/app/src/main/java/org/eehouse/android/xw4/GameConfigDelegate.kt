@@ -58,8 +58,8 @@ import org.eehouse.android.xw4.jni.LocalPlayer
 import org.eehouse.android.xw4.jni.XwJNI
 import org.eehouse.android.xw4.jni.XwJNI.GamePtr
 
-class GameConfigDelegate(delegator: Delegator, savedInstanceState: Bundle?) :
-    DelegateBase(delegator, savedInstanceState, R.layout.game_config), View.OnClickListener,
+class GameConfigDelegate(delegator: Delegator) :
+    DelegateBase(delegator, R.layout.game_config), View.OnClickListener,
     DeleteCallback {
     private val mActivity: Activity
     private var m_gameLockedCheck: CheckBox? = null

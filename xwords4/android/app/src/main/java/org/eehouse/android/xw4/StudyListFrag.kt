@@ -22,7 +22,7 @@ import android.os.Bundle
 
 class StudyListFrag : XWFragment() {
     override fun onCreate(sis: Bundle?) {
-        super.onCreate(StudyListDelegate(this, sis), sis, true)
+        super.onCreate(StudyListDelegate(this), sis, true)
     }
 
     companion object {

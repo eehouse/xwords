@@ -33,11 +33,9 @@ import org.eehouse.android.xw4.jni.GameSummary
 
 import java.util.HashMap
 
-abstract class IsoWordsBase(delegator: Delegator, sis: Bundle?,
-							private val CHECKED_KEY: String )
-	: ListDelegateBase(delegator, sis, R.layout.studylist, R.menu.studylist),
-	  SelectableItem,
-	  View.OnLongClickListener, View.OnClickListener,
+abstract class IsoWordsBase(delegator: Delegator, private val CHECKED_KEY: String )
+	: ListDelegateBase(delegator, R.layout.studylist, R.menu.studylist),
+	  SelectableItem, View.OnLongClickListener, View.OnClickListener,
       AdapterView.OnItemSelectedListener
 {
 	val m_activity = delegator.getActivity()
