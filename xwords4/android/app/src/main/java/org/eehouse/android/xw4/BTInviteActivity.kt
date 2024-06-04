@@ -25,5 +25,5 @@ import android.os.Bundle
 class BTInviteActivity: InviteActivity() {
 
     override fun onCreate( savedInstanceState: Bundle? )
-		=  super.onCreate( savedInstanceState, BTInviteDelegate( this, savedInstanceState ) )
+		=  super.onCreate( savedInstanceState, BTInviteDelegate( this ) )
 }

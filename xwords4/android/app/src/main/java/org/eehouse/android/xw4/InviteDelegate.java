@@ -119,7 +119,7 @@ abstract public class InviteDelegate extends DelegateBase
         return intent;
     }
 
-    public InviteDelegate( Delegator delegator, Bundle savedInstanceState )
+    public InviteDelegate( Delegator delegator )
     {
         super( delegator, R.layout.inviter, R.menu.empty );
         m_activity = delegator.getActivity();

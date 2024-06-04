@@ -23,7 +23,7 @@ import android.os.Bundle
 
 class SMSInviteActivity : InviteActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
-        val dlgt = SMSInviteDelegate(this, savedInstanceState)
+        val dlgt = SMSInviteDelegate(this)
         super.onCreate(savedInstanceState, dlgt)
     }
 }

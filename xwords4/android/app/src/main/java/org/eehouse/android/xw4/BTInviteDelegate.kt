@@ -37,8 +37,8 @@ import org.eehouse.android.xw4.DlgDelegate.DlgClickNotify.InviteMeans
 import java.io.Serializable
 import java.util.Collections
 
-class BTInviteDelegate(delegator: Delegator, savedInstanceState: Bundle?) :
-    InviteDelegate(delegator, savedInstanceState), ScanListener {
+class BTInviteDelegate(delegator: Delegator) :
+    InviteDelegate(delegator), ScanListener {
     private val mActivity: Activity
     private var mProgressBar: ProgressBar? = null
     private val mHandler = Handler(Looper.getMainLooper())

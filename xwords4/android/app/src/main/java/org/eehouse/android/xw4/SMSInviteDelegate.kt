@@ -38,8 +38,8 @@ import org.json.JSONException
 import org.json.JSONObject
 import java.util.Collections
 
-class SMSInviteDelegate(delegator: Delegator, savedInstanceState: Bundle?) :
-    InviteDelegate(delegator, savedInstanceState) {
+class SMSInviteDelegate(delegator: Delegator) :
+    InviteDelegate(delegator) {
     private var m_phoneRecs: ArrayList<PhoneRec>? = null
     private val m_activity: Activity = delegator.activity
 

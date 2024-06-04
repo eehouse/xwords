@@ -23,7 +23,7 @@ import android.os.Bundle
 
 class WiDirInviteActivity : InviteActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
-        val dlgt = WiDirInviteDelegate(this, savedInstanceState)
+        val dlgt = WiDirInviteDelegate(this)
         super.onCreate(savedInstanceState, dlgt)
     }
 }
