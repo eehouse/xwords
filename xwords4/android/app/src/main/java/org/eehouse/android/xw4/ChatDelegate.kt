@@ -123,7 +123,8 @@ class ChatDelegate(delegator: Delegator) :
         view.text = msg
         view = row.findViewById<View>(R.id.chat_row_name) as TextView
         val name =
-            if (0 <= playerIndx && playerIndx < m_names!!.size) m_names!![playerIndx] else "<???>"
+            if (0 <= playerIndx && playerIndx < m_names!!.size) m_names!![playerIndx]
+            else "<???>"
         view.text = getString(R.string.chat_sender_fmt, name)
         if (tsSeconds > 0) {
             val now = 1000L * Utils.getCurSeconds()
@@ -216,7 +217,7 @@ class ChatDelegate(delegator: Delegator) :
         fun start(
             delegator: Delegator,
             rowID: Long, curPlayer: Int,
-            names: Array<String?>?, locs: BooleanArray?
+            names: Array<String>?, locs: BooleanArray?
         ) {
             Assert.assertFalse(-1 == curPlayer)
             val bundle = Bundle()

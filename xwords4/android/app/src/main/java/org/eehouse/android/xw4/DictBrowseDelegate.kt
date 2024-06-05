@@ -205,7 +205,7 @@ class DictBrowseDelegate constructor(delegator: Delegator) : DelegateBase(
             mSpinnerMax = (findViewById(R.id.spinner_max) as LabeledSpinner)
                 .getSpinner()
             loadBrowseState()
-            val names = arrayOf(mName!!)
+            val names = arrayOf(mName)
             val pairs = DictUtils.openDicts(mActivity, names)
             Assert.assertNotNull(mBrowseState)
             mDict = XwJNI.makeDict(pairs.m_bytes[0], mName, pairs.m_paths[0])

@@ -212,8 +212,7 @@ class DUtilCtxt {
 
     fun getDictPath(name: String, path: Array<String?>, bytes: Array<ByteArray?>) {
         Log.d(TAG, "getDictPath(name='%s')", name)
-        val names = arrayOf(name)
-        val pairs: DictUtils.DictPairs = DictUtils.openDicts(m_context, names)
+        val pairs: DictUtils.DictPairs = DictUtils.openDicts(m_context, arrayOf(name as String?))
         // Log.d( TAG, "openDicts() => %s", pairs );
         path[0] = pairs.m_paths.get(0)
         bytes[0] = pairs.m_bytes.get(0)

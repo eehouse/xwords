@@ -96,19 +96,20 @@ class GameConfigDelegate(delegator: Delegator) :
 
     internal inner class RemoteChoices : XWListAdapter(mGi!!.nPlayers) {
         override fun getItem(position: Int): Any {
-            return mGi!!.players[position]
+            return mGi!!.players[position]!!
         }
 
         override fun getView(
             position: Int, convertView: View,
             parent: ViewGroup
         ): View {
+            val gi = mGi!!
             val lstnr: CompoundButton.OnCheckedChangeListener
             lstnr = CompoundButton.OnCheckedChangeListener { buttonView, isChecked ->
-                mGi!!.players[position].isLocal = !isChecked
+                gi.players[position]!!.isLocal = !isChecked
             }
             val cb = CheckBox(mActivity)
-            val lp = mGi!!.players[position]
+            val lp = gi.players[position]!!
             cb.text = lp.name
             cb.setChecked(!lp.isLocal)
             cb.setOnCheckedChangeListener(lstnr)
@@ -262,7 +263,8 @@ class GameConfigDelegate(delegator: Delegator) :
         )
 
         // Hide remote option if in standalone mode...
-        val lp = mGi!!.players[mWhichPlayer]
+        val gi = mGi!!
+        val lp = gi.players[mWhichPlayer]!!
         Utils.setText(playerView, R.id.player_name_edit, lp.name)
         if (BuildConfig.HAVE_PASSWORD) {
             Utils.setText(playerView, R.id.password_edit, lp.password)
@@ -276,7 +278,7 @@ class GameConfigDelegate(delegator: Delegator) :
         if (localOnlyGame()) {
             val langName = DictLangCache.getLangNameForISOCode(
                 mActivity,
-                mGi!!.isoCode()
+                gi.isoCode()
             )
             val label = getString(R.string.dict_lang_label_fmt, langName)
             dictLabel.text = label
@@ -287,7 +289,7 @@ class GameConfigDelegate(delegator: Delegator) :
             .findViewById<View>(R.id.player_dict_spinner) as LabeledSpinner)
             .getSpinner()
         if (localOnlyGame()) {
-            configDictSpinner(mPlayerDictSpinner, mGi!!.isoCode(), mGi!!.dictName(lp))
+            configDictSpinner(mPlayerDictSpinner, gi.isoCode()!!, gi.dictName(lp))
         } else {
             mPlayerDictSpinner!!.setVisibility(View.GONE)
             mPlayerDictSpinner = null
@@ -340,7 +342,7 @@ class GameConfigDelegate(delegator: Delegator) :
             if (TextUtils.isEmpty(pwd)) {
                 var nLocalNonRobots = 0
                 for (ii in 0 until mGi!!.nPlayers) {
-                    val oneLP = mGi!!.players[ii]
+                    val oneLP = mGi!!.players[ii]!!
                     if (oneLP.isLocal && !oneLP.isRobot()) {
                         ++nLocalNonRobots
                     }
@@ -355,7 +357,7 @@ class GameConfigDelegate(delegator: Delegator) :
 
     private fun getPlayerSettings(di: DialogInterface) {
         val dialog = di as Dialog
-        val lp = mGi!!.players[mWhichPlayer]
+        val lp = mGi!!.players[mWhichPlayer]!!
         lp.name = Utils.getText(dialog, R.id.player_name_edit)
         if (BuildConfig.HAVE_PASSWORD) {
             lp.password = Utils.getText(dialog, R.id.password_edit)
@@ -433,21 +435,23 @@ class GameConfigDelegate(delegator: Delegator) :
     override fun onActivityResult(requestCode: RequestCode, resultCode: Int, data: Intent?) {
         val cancelled = Activity.RESULT_CANCELED == resultCode
         loadGame()
+
+        val gi = mGi!!
         when (requestCode) {
             RequestCode.REQUEST_DICT -> {
                 val dictName =
                     if (cancelled) {
-                        mGi!!.dictName
+                        gi.dictName!!
                     } else {
                         data!!.getStringExtra(DictsDelegate.RESULT_LAST_DICT)!!
                     }
-                configDictSpinner(mDictSpinner, mGi!!.isoCode(), dictName)
-                configDictSpinner(mPlayerDictSpinner, mGi!!.isoCode(), dictName)
+                configDictSpinner(mDictSpinner, gi.isoCode()!!, dictName)
+                configDictSpinner(mPlayerDictSpinner, gi.isoCode()!!, dictName)
             }
 
             RequestCode.REQUEST_LANG_GC -> {
                 val isoCode = if (cancelled) {
-                    mGi!!.isoCode()
+                    gi.isoCode()
                 } else {
                     ISOCode.newIf(data!!.getStringExtra(DictsDelegate.RESULT_LAST_LANG))
                 }
@@ -501,7 +505,7 @@ class GameConfigDelegate(delegator: Delegator) :
                 handleLockedChange()
             }
             if (null == mGi) {
-                mGi = CurGameInfo(mGiOrig)
+                mGi = CurGameInfo(mGiOrig!!)
             }
             mCarOrig = if (mIsNewGame) {
                 if (mNewGameIsSolo) {
@@ -549,12 +553,13 @@ class GameConfigDelegate(delegator: Delegator) :
             } else {
                 findViewById(R.id.game_name_edit_row).visibility = View.GONE
             }
-            mPhoniesSpinner!!.setSelection(mGi!!.phoniesAction.ordinal)
+            val gi = mGi!!
+            mPhoniesSpinner!!.setSelection(gi.phoniesAction!!.ordinal)
             setSmartnessSpinner()
             tweakTimerStuff()
-            setChecked(R.id.hints_allowed, !mGi!!.hintsNotAllowed)
-            setChecked(R.id.trade_sub_seven, mGi!!.tradeSub7)
-            setChecked(R.id.pick_faceup, mGi!!.allowPickTiles)
+            setChecked(R.id.hints_allowed, !gi.hintsNotAllowed)
+            setChecked(R.id.trade_sub_seven, gi.tradeSub7)
+            setChecked(R.id.pick_faceup, gi.allowPickTiles)
             findViewById(R.id.trade_sub_seven)
                 .setOnClickListener {
                     if (!mSub7HintShown) {
@@ -569,10 +574,10 @@ class GameConfigDelegate(delegator: Delegator) :
                 }
             setBoardsizeSpinner()
             val curSel = intArrayOf(-1)
-            val `val` = String.format("%d", mGi!!.traySize)
+            val value = String.format("%d", gi.traySize)
             val adapter = mTraysizeSpinner!!.adapter
             for (ii in 0 until adapter.count) {
-                if (`val` == adapter.getItem(ii)) {
+                if (value == adapter.getItem(ii)) {
                     mTraysizeSpinner!!.setSelection(ii)
                     curSel[0] = ii
                     break
@@ -604,6 +609,7 @@ class GameConfigDelegate(delegator: Delegator) :
     }
 
     private fun tweakTimerStuff() {
+        val gi = mGi!!
         // one-time only stuff
         if (!mTimerStuffInited) {
             mTimerStuffInited = true
@@ -614,14 +620,14 @@ class GameConfigDelegate(delegator: Delegator) :
             } else {
                 val dupCheck = findViewById(R.id.duplicate_check) as CheckBox
                 dupCheck.visibility = View.VISIBLE
-                dupCheck.setChecked(mGi!!.inDuplicateMode)
+                dupCheck.setChecked(gi.inDuplicateMode)
                 dupCheck.setOnCheckedChangeListener { buttonView, checked -> tweakTimerStuff() }
             }
             val check = findViewById(R.id.use_timer) as CheckBox
             val lstnr =
                 CompoundButton.OnCheckedChangeListener { buttonView, checked -> tweakTimerStuff() }
             check.setOnCheckedChangeListener(lstnr)
-            check.setChecked(mGi!!.timerEnabled)
+            check.setChecked(gi.timerEnabled)
         }
         val dupModeChecked = getChecked(R.id.duplicate_check)
         val check = findViewById(R.id.use_timer) as CheckBox
@@ -631,9 +637,9 @@ class GameConfigDelegate(delegator: Delegator) :
         val id = if (dupModeChecked) R.string.dup_minutes_label else R.string.minutes_label
         val label = findViewById(R.id.timer_label) as TextView
         label.setText(id)
-        var seconds = mGi!!.gameSeconds / 60
-        if (!mGi!!.inDuplicateMode) {
-            seconds /= mGi!!.nPlayers
+        var seconds = gi.gameSeconds / 60
+        if (!gi.inDuplicateMode) {
+            seconds /= gi.nPlayers
         }
         setInt(R.id.timer_minutes_edit, seconds)
     }
@@ -698,17 +704,18 @@ class GameConfigDelegate(delegator: Delegator) :
         if (isFinishing()) {
             // do nothing; we're on the way out
         } else {
+            val gi = mGi!!
             when (view.id) {
                 R.id.add_player -> {
-                    val curIndex = mGi!!.nPlayers
+                    val curIndex = gi.nPlayers
                     if (curIndex < CurGameInfo.MAX_NUM_PLAYERS) {
-                        mGi!!.addPlayer() // ups nPlayers
+                        gi.addPlayer() // ups nPlayers
                         loadPlayersList()
                     }
                 }
 
                 R.id.juggle_players -> {
-                    mGi!!.juggle()
+                    gi.juggle()
                     loadPlayersList()
                 }
 
@@ -736,7 +743,7 @@ class GameConfigDelegate(delegator: Delegator) :
                             .show()
                     } else if (mIsNewGame || !mGameStarted) {
                         saveAndClose(true)
-                    } else if (mGiOrig!!.changesMatter(mGi)
+                    } else if (mGiOrig!!.changesMatter(gi)
                         || mCarOrig!!.changesMatter(mCar!!)
                     ) {
                         showDialogFragment(DlgID.CONFIRM_CHANGE_PLAY)
@@ -803,11 +810,12 @@ class GameConfigDelegate(delegator: Delegator) :
     override fun handleBackPressed(): Boolean {
         var consumed = false
         if (!isFinishing() && null != mGi) {
+            val gi = mGi!!
             if (!mIsNewGame) {
                 saveChanges()
                 if (!mGameStarted) { // no confirm needed
                     applyChanges(true)
-                } else if (mGiOrig!!.changesMatter(mGi)
+                } else if (mGiOrig!!.changesMatter(gi)
                     || mCarOrig!!.changesMatter(mCar!!)
                 ) {
                     showDialogFragment(DlgID.CONFIRM_CHANGE)
@@ -826,8 +834,9 @@ class GameConfigDelegate(delegator: Delegator) :
 
     private fun loadPlayersList() {
         if (!isFinishing()) {
+            val gi = mGi!!
             mPlayerLayout!!.removeAllViews()
-            val names = mGi!!.visibleNames(mActivity, false)
+            val names = gi.visibleNames(mActivity, false)
             // only enable delete if one will remain (or two if networked)
             val canDelete = names.size > 2 || localOnlyGame() && names.size > 1
             val lstnr = View.OnClickListener { view ->
@@ -841,8 +850,8 @@ class GameConfigDelegate(delegator: Delegator) :
                 val view = XWListItem.inflate(mActivity, null)
                 view.position = ii
                 view.setText(names[ii])
-                if (localGame && mGi!!.players[ii].isLocal) {
-                    view.setComment(mGi!!.dictName(ii))
+                if (localGame && gi.players[ii]!!.isLocal) {
+                    view.setComment(gi.dictName(ii))
                 }
                 if (canDelete) {
                     view.setDeleteCallback(this)
@@ -858,7 +867,7 @@ class GameConfigDelegate(delegator: Delegator) :
             mJugglePlayersButton!!
                 .setVisibility(if (names.size <= 1) View.GONE else View.VISIBLE)
             if (!localOnlyGame()
-                && (0 == mGi!!.remoteCount() || mGi!!.nPlayers == mGi!!.remoteCount())
+                && (0 == gi.remoteCount() || gi.nPlayers == gi.remoteCount())
             ) {
                 showDialogFragment(DlgID.FORCE_REMOTE)
             }
@@ -883,13 +892,14 @@ class GameConfigDelegate(delegator: Delegator) :
                     position: Int, id: Long
                 ) {
                     val chosen = parentView.getItemAtPosition(position) as String
+                    val gi = mGi!!
                     if (chosen == mBrowseText) {
                         DictsDelegate.downloadForResult(
                             delegator,
                             RequestCode.REQUEST_DICT,
-                            mGi!!.isoCode()
+                            gi.isoCode()!!
                         )
-                        Assert.assertTrueNR(isoCode == mGi!!.isoCode())
+                        Assert.assertTrueNR(isoCode == gi.isoCode())
                     }
                 }
             }
@@ -929,9 +939,10 @@ class GameConfigDelegate(delegator: Delegator) :
 
     private fun selLangChanged(langName: String) {
         val isoCode = DictLangCache.getLangIsoCode(mActivity, langName)
-        mGi!!.setLang(mActivity, isoCode)
+        val gi = mGi!!
+        gi.setLang(mActivity, isoCode)
         loadPlayersList()
-        configDictSpinner(mDictSpinner, mGi!!.isoCode(), mGi!!.dictName)
+        configDictSpinner(mDictSpinner, gi.isoCode()!!, gi.dictName!!)
     }
 
     private fun configSpinnerWDownload(
@@ -973,17 +984,15 @@ class GameConfigDelegate(delegator: Delegator) :
     }
 
     private fun setSmartnessSpinner() {
-        var setting = -1
-        when (mGi!!.getRobotSmartness()) {
-            1 -> setting = 0
-            50 -> setting = 1
-            99, 100 -> setting = 2
+        val smartness = mGi!!.robotSmartness
+        val setting = when (smartness) {
+            1 -> 0
+            50 -> 1
+            99, 100 -> 2
             else -> {
-                Log.w(
-                    TAG, "setSmartnessSpinner got %d from getRobotSmartness()",
-                    mGi!!.getRobotSmartness()
-                )
+                Log.w(TAG,"setSmartnessSpinner got smartness $smartness")
                 Assert.failDbg()
+                -1
             }
         }
         mSmartnessSpinner!!.setSelection(setting)
@@ -1083,33 +1092,34 @@ class GameConfigDelegate(delegator: Delegator) :
     }
 
     private fun saveChanges() {
+        val gi = mGi!!
         if (!localOnlyGame()) {
             val dictSpinner = findViewById(R.id.dict_spinner) as Spinner
             val name = dictSpinner.getSelectedItem() as String
             if (mBrowseText != name) {
-                mGi!!.dictName = name
+                gi.dictName = name
             }
         }
-        mGi!!.inDuplicateMode = getChecked(R.id.duplicate_check)
-        mGi!!.hintsNotAllowed = !getChecked(R.id.hints_allowed)
-        mGi!!.tradeSub7 = getChecked(R.id.trade_sub_seven)
-        mGi!!.allowPickTiles = getChecked(R.id.pick_faceup)
-        mGi!!.timerEnabled = getChecked(R.id.use_timer)
+        gi.inDuplicateMode = getChecked(R.id.duplicate_check)
+        gi.hintsNotAllowed = !getChecked(R.id.hints_allowed)
+        gi.tradeSub7 = getChecked(R.id.trade_sub_seven)
+        gi.allowPickTiles = getChecked(R.id.pick_faceup)
+        gi.timerEnabled = getChecked(R.id.use_timer)
 
         // Get timer value. It's per-move minutes in duplicate mode, otherwise
         // it's for the whole game.
         var seconds = 60 * getInt(R.id.timer_minutes_edit)
-        if (!mGi!!.inDuplicateMode) {
-            seconds *= mGi!!.nPlayers
+        if (!gi.inDuplicateMode) {
+            seconds *= gi.nPlayers
         }
-        mGi!!.gameSeconds = seconds
+        gi.gameSeconds = seconds
         var position = mPhoniesSpinner!!.selectedItemPosition
-        mGi!!.phoniesAction = XWPhoniesChoice.entries.toTypedArray().get(position)
+        gi.phoniesAction = XWPhoniesChoice.entries.toTypedArray().get(position)
         position = mSmartnessSpinner!!.selectedItemPosition
-        mGi!!.setRobotSmartness(position * 49 + 1)
+        gi.robotSmartness = position * 49 + 1
         position = mBoardsizeSpinner!!.selectedItemPosition
-        mGi!!.boardSize = positionToSize(position)
-        mGi!!.traySize = mTraysizeSpinner!!.getSelectedItem().toString().toInt()
+        gi.boardSize = positionToSize(position)
+        gi.traySize = mTraysizeSpinner!!.getSelectedItem().toString().toInt()
         mCar = CommsAddrRec(mConTypes!!)
             .populate(mActivity)
     } // saveChanges

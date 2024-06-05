@@ -351,7 +351,7 @@ object DictUtils {
     }
 
     @JvmStatic
-    fun openDicts(context: Context, names: Array<String>): DictPairs {
+    fun openDicts(context: Context, names: Array<String?>): DictPairs {
         val dictBytes = arrayOfNulls<ByteArray>(names.size)
         val dictPaths = arrayOfNulls<String>(names.size)
 
@@ -644,7 +644,8 @@ object DictUtils {
         }
     }
 
-    class DictPairs(@JvmField var m_bytes: Array<ByteArray?>, @JvmField var m_paths: Array<String?>) {
+    class DictPairs(@JvmField var m_bytes: Array<ByteArray?>,
+                    @JvmField var m_paths: Array<String?>) {
         fun anyMissing(names: Array<String?>): Boolean {
             var missing = false
             for (ii in m_paths.indices) {

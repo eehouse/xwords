@@ -815,10 +815,8 @@ class BoardDelegate(delegator: Delegator) :
                 || XWPrefs.getDebugEnabled(mActivity))
         Utils.setItemVisible(menu, R.id.board_menu_game_netstats, enable)
         Utils.setItemVisible(menu, R.id.board_menu_game_invites, enable)
-        enable = XWPrefs.getStudyEnabled(mActivity) && null != mGi && !DBUtils.studyListWords(
-            mActivity,
-            mGi!!.isoCode()
-        ).isEmpty()
+        enable = XWPrefs.getStudyEnabled(mActivity) && null != mGi
+                && !DBUtils.studyListWords(mActivity, mGi!!.isoCode()!!).isEmpty()
         Utils.setItemVisible(menu, R.id.board_menu_study, enable)
         return true
     } // onPrepareOptionsMenu
@@ -886,7 +884,7 @@ class BoardDelegate(delegator: Delegator) :
             R.id.board_menu_game_pause, R.id.board_menu_game_unpause -> getConfirmPause(R.id.board_menu_game_pause == id)
             R.id.board_menu_dict -> {
                 val dictName = mGi!!.dictName(mView!!.curPlayer)
-                DictBrowseDelegate.launch(delegator, dictName)
+                if (null != dictName) DictBrowseDelegate.launch(delegator, dictName)
             }
 
             R.id.board_menu_game_counts -> handleViaThread(
@@ -930,6 +928,7 @@ class BoardDelegate(delegator: Delegator) :
         Log.d(TAG, "onPosButton(%s, %s)", action, DbgUtils.toStr(arrayOf(params)))
         var handled = true
         var cmd: JNICmd? = null
+        val gi = mGi!!
         when (action) {
             DlgDelegate.Action.ENABLE_MQTT_DO_OR -> {
                 XWPrefs.setMQTTEnabled(mActivity, true)
@@ -945,20 +944,18 @@ class BoardDelegate(delegator: Delegator) :
             }
 
             DlgDelegate.Action.BUTTON_BROWSEALL_ACTION, DlgDelegate.Action.BUTTON_BROWSE_ACTION -> {
-                val curDict = mGi!!.dictName(mView!!.curPlayer)
+                val curDict = gi.dictName(mView!!.curPlayer)
                 val button: View = mToolbar!!.getButtonFor(Buttons.BUTTON_BROWSE_DICT)
-                Assert.assertTrueNR(null != mGi!!.isoCode())
-                if (DlgDelegate.Action.BUTTON_BROWSEALL_ACTION == action &&
-                    DictsDelegate.handleDictsPopup(
-                        delegator, button,
-                        curDict, mGi!!.isoCode()
-                    )
+                Assert.assertTrueNR(null != gi.isoCode())
+                if (DlgDelegate.Action.BUTTON_BROWSEALL_ACTION == action
+                    && null != curDict
+                    && DictsDelegate.handleDictsPopup(delegator, button, curDict, gi.isoCode()!!)
                 ) {
                     // do nothing
                 } else {
-                    var selDict = DictsDelegate.prevSelFor(mActivity, mGi!!.isoCode())
+                    var selDict = DictsDelegate.prevSelFor(mActivity, gi.isoCode()!!)
                         ?: curDict
-                    DictBrowseDelegate.launch(delegator, selDict)
+                    if (null != selDict) DictBrowseDelegate.launch(delegator, selDict)
                 }
             }
 
@@ -974,7 +971,7 @@ class BoardDelegate(delegator: Delegator) :
                 cmd = JNICmd.CMD_TRADE
             }
 
-            DlgDelegate.Action.LOOKUP_ACTION -> launchLookup(m_mySIS!!.words, mGi!!.isoCode())
+            DlgDelegate.Action.LOOKUP_ACTION -> launchLookup(m_mySIS!!.words, gi.isoCode())
             DlgDelegate.Action.DROP_MQTT_ACTION -> dropConViaAndRestart(CommsConnType.COMMS_CONN_MQTT)
             DlgDelegate.Action.DELETE_AND_EXIT -> deleteAndClose()
             DlgDelegate.Action.DROP_SMS_ACTION -> alertOrderIncrIfAt(StartAlertOrder.NBS_PERMS)
@@ -1799,7 +1796,7 @@ class BoardDelegate(delegator: Delegator) :
         ): String? {
             Log.d(TAG, "formatPauseHistory(prev: %d, cur: %d)", whenPrev, whenCur)
             var result: String? = null
-            val name = if (0 > player) null else mGi!!.players[player].name
+            val name = if (0 > player) null else mGi!!.players[player]!!.name
             when (pauseTyp) {
                 DUtilCtxt.UNPAUSED -> {
                     val interval = DateUtils

@@ -49,7 +49,7 @@ fun Bundle.putStringAnd(key: String, value: String?): Bundle {
     return this
 }
 
-fun Bundle.putStringArrayAnd(key: String, value: Array<String?>?): Bundle {
+fun Bundle.putStringArrayAnd(key: String, value: Array<String>?): Bundle {
 	this.putStringArray(key, value)
     return this
 }

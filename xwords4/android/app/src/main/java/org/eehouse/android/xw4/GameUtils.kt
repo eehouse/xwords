@@ -408,7 +408,7 @@ object GameUtils {
             if (pairs.anyMissing(dictNames)) {
                 postMoveDroppedForDictNotification(
                     context, rowid, gi.gameID,
-                    gi.isoCode()
+                    gi.isoCode()!!
                 )
             } else {
                 gamePtr = XwJNI.initFromStream(
@@ -1005,8 +1005,8 @@ object GameUtils {
     }
 
     @JvmStatic
-    fun dictNames(context: Context, lock: GameLock?): Array<String>? {
-        var result: Array<String>? = null
+    fun dictNames(context: Context, lock: GameLock?): Array<String?>? {
+        var result: Array<String?>? = null
         val stream = savedGame(context, lock)
         val gi = giFromStream(context, stream)
         if (null != gi) {
@@ -1019,8 +1019,8 @@ object GameUtils {
     fun dictNames(
         context: Context, rowid: Long,
         missingLang: Array<ISOCode?>? = null
-    ): Array<String>? {
-        var result: Array<String>? = null
+    ): Array<String?>? {
+        var result: Array<String?>? = null
 
         val gi: CurGameInfo?
         if (JNIThread.gameIsOpen(rowid)) {
@@ -1063,7 +1063,7 @@ object GameUtils {
     fun gameDictsHere(
         context: Context,
         missingNames: Array<Array<String?>?>?,
-        gameDicts: Array<String>
+        gameDicts: Array<String?>
     ): Boolean {
         val installed = DictUtils.dictList(context).orEmpty()
 
@@ -1187,7 +1187,7 @@ object GameUtils {
                                 )
                                 if (null != isLocalOut) {
                                     isLocalOut[0] = (0 <= summary.turn
-                                            && gi.players[summary.turn].isLocal)
+                                            && gi.players[summary.turn]!!.isLocal)
                                 }
                             }
                             val flags = setFromFeedImpl(feedImpl)

@@ -153,7 +153,7 @@ class RematchConfigView(val mContext: Context, attrs: AttributeSet)
 
     private fun setName()
     {
-        mNameStr = TextUtils.join( mSep!!.toString(), mWrapper!!.gi()!!.playerNames(mNewOrder) )
+        mNameStr = TextUtils.join( mSep!!, mWrapper!!.gi()!!.playerNames(mNewOrder!!) )
         mEWC?.setText( mNameStr )
     }
 }
