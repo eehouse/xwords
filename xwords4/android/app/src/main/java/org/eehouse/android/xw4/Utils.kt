@@ -663,7 +663,7 @@ object Utils {
 
     @JvmStatic
     fun makeDictUriFromCode(context: Context, isoCode: ISOCode?, name: String?): Uri {
-        val dictUrl = CommonPrefs.getDefaultDictURL(context)
+        val dictUrl = XWPrefs.getDefaultDictURL(context)
         val builder = Uri.parse(dictUrl).buildUpon()
         if (null != isoCode) {
             builder.appendPath(isoCode.toString())

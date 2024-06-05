@@ -89,7 +89,7 @@ class CurGameInfo : Serializable {
         nPlayers = 2
         inDuplicateMode = CommonPrefs.getDefaultDupMode(context)
         gameSeconds = if (inDuplicateMode) (5 * 60)
-        else 60 * nPlayers * CommonPrefs.getDefaultPlayerMinutes(context)
+        else 60 * nPlayers * XWPrefs.getDefaultPlayerMinutes(context)
         boardSize = CommonPrefs.getDefaultBoardSize(context)
         traySize = XWPrefs.getDefaultTraySize(context)
         bingoMin = XWApp.MIN_TRAY_TILES

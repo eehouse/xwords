@@ -228,7 +228,7 @@ class GameConfigDelegate(delegator: Delegator) :
                     // Remove it if it's actually possible it's there
                     Assert.assertTrueNR(!mConTypes!!.contains(CommsConnType.COMMS_CONN_RELAY))
                     if (cb.isChecked) {
-                        XWPrefs.setAddrTypes(mActivity, mConTypes)
+                        XWPrefs.setAddrTypes(mActivity, mConTypes!!)
                     }
                     mCar!!.populate(mActivity, mConTypes!!)
                     setConnLabel()

@@ -285,13 +285,12 @@ open class BoardCanvas private constructor(
         rect: Rect, player: Int,
         secondsLeft: Int, turnDone: Boolean
     ) {
-        val activity = mActivity
-        if (null == activity) {
+        if (null == mActivity) {
             // Do nothing
         } else if (mLastSecsLeft != secondsLeft || mLastTimerPlayer != player || mLastTimerTurnDone != turnDone) {
             val rectCopy = Rect(rect)
             val secondsLeftCopy = secondsLeft
-            activity.runOnUiThread(Runnable {
+            mActivity.runOnUiThread(Runnable {
                 if (null != mJniThread) {
                     mLastSecsLeft = secondsLeftCopy
                     mLastTimerPlayer = player
@@ -403,7 +402,7 @@ open class BoardCanvas private constructor(
             mStrokePaint.setColor(adjustColor(frameColor))
 
             // PENDING: fetch/calculate this a lot less frequently!!
-            val width = XWPrefs.getPrefsInt(mActivity, R.string.key_board_line_width, 1)
+            val width = XWPrefs.getPrefsInt(mContext, R.string.key_board_line_width, 1)
             mStrokePaint.strokeWidth = width.toFloat()
             drawRect(rect, mStrokePaint)
             drawCrosshairs(rect, flags)

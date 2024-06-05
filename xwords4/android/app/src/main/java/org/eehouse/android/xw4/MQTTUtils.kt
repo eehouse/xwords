@@ -224,7 +224,7 @@ class MQTTUtils private constructor(context: Context, resendOnConnect: Boolean) 
         mSubTopics = XwJNI.dvc_getMQTTSubTopics() + String.format(PONG_PREFIX + mDevID)
         mRxMsgThread = RxMsgThread()
 
-        mHost = XWPrefs.getPrefsString(context, R.string.key_mqtt_host)
+        mHost = XWPrefs.getPrefsString(context, R.string.key_mqtt_host)!!
             .trim { it <= ' ' } // in case some idiot adds whitespace. Ahem.
         val port = XWPrefs.getPrefsInt(context, R.string.key_mqtt_port, 1883)
         val url = String.format(Locale.US, "tcp://%s:%d", mHost, port)

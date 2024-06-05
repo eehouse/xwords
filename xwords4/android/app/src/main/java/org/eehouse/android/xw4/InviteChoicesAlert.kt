@@ -169,7 +169,7 @@ class InviteChoicesAlert : DlgDelegateAlert(), ItemClicked {
 
             InviteMeans.SMS_DATA -> {
                 if (Perms23.NBSPermsInManifest(activity)
-                        && !XWPrefs.getNBSEnabled(context)) {
+                        && !XWPrefs.getNBSEnabled(requireContext())) {
                     activity.makeConfirmThenBuilder(
                         DlgDelegate.Action.ENABLE_NBS_ASK,
                         R.string.warn_sms_disabled

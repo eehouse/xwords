@@ -123,7 +123,7 @@ open class DlgDelegateAlert : XWDialogFragment() {
         if (null != naView && naView.getChecked()) {
             if (0 != state!!.m_prefsNAKey) {
                 XWPrefs.setPrefsBoolean(
-                    activity, mState!!.m_prefsNAKey,
+                    activity!!, mState!!.m_prefsNAKey,
                     true
                 )
             }
