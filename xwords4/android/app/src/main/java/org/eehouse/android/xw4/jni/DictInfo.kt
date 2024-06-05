@@ -1,6 +1,6 @@
 /* -*- compile-command: "find-and-gradle.sh inXw4dDeb"; -*- */
 /*
- * Copyright 2009-2010 by Eric House (xwords@eehouse.org).  All
+ * Copyright 2009-2024 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -17,45 +17,46 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
+package org.eehouse.android.xw4.jni
 
-package org.eehouse.android.xw4.jni;
+import org.eehouse.android.xw4.BuildConfig
+import org.eehouse.android.xw4.DictUtils.ON_SERVER
+import org.eehouse.android.xw4.Utils.ISOCode
 
-import org.eehouse.android.xw4.Assert;
-import org.eehouse.android.xw4.BuildConfig;
-import org.eehouse.android.xw4.DictUtils.ON_SERVER;
-import org.eehouse.android.xw4.Utils.ISOCode;
-
-public class DictInfo {
+class DictInfo {
     // set in java code
-    public String name;
-    public String fullSum;      // md5sum of the whole file
-    public ON_SERVER onServer;  // is it currently downloadable?
+    @JvmField
+    var name: String? = null
+    @JvmField
+    var fullSum: String? = null // md5sum of the whole file
+    @JvmField
+    var onServer: ON_SERVER? = null // is it currently downloadable?
 
     // set in jni code
-    public int wordCount;
-    public String isoCodeStr;    // public only for access from JNI; use isoCode() from java
-    public String langName;
-    public String md5Sum;       // internal (skipping header?)
+    @JvmField
+    var wordCount: Int = 0
+    var isoCodeStr: String? = null // public only for access from JNI; use isoCode() from java
+    @JvmField
+    var langName: String? = null
+    @JvmField
+    var md5Sum: String? = null // internal (skipping header?)
 
-    public ISOCode isoCode()
-    {
-        return ISOCode.newIf( isoCodeStr );
+    fun isoCode(): ISOCode? {
+        return ISOCode.newIf(isoCodeStr)
     }
 
-    @Override
-    public String toString()
-    {
-        if ( BuildConfig.NON_RELEASE ) {
-            return new StringBuilder("{")
+    override fun toString(): String {
+        return if (BuildConfig.NON_RELEASE) {
+            StringBuilder("{")
                 .append("name: ").append(name)
                 .append(", isoCode: ").append(isoCodeStr)
                 .append(", langName: ").append(langName)
                 .append(", md5Sum: ").append(md5Sum)
                 .append(", fullSum: ").append(fullSum)
                 .append(", onServer: ").append(onServer)
-                .append("}").toString();
+                .append("}").toString()
         } else {
-            return super.toString();
+            super.toString()
         }
     }
-};
+}
