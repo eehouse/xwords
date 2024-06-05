@@ -313,7 +313,7 @@ class GameConfigDelegate(delegator: Delegator) :
             checkShowPassword(playerView, lp)
         }
         check.setOnCheckedChangeListener(lstnr)
-        Utils.setChecked(playerView, R.id.robot_check, lp.isRobot)
+        Utils.setChecked(playerView, R.id.robot_check, lp.isRobot())
         Utils.setChecked(playerView, R.id.remote_check, !lp.isLocal)
         checkShowPassword(playerView, lp)
         Log.d(TAG, "setPlayerSettings() DONE")
@@ -321,7 +321,7 @@ class GameConfigDelegate(delegator: Delegator) :
 
     private fun setPlayerName(playerView: View, lp: LocalPlayer) {
         val name =
-            if (lp.isRobot) CommonPrefs.getDefaultRobotName(mActivity) else CommonPrefs.getDefaultPlayerName(
+            if (lp.isRobot()) CommonPrefs.getDefaultRobotName(mActivity) else CommonPrefs.getDefaultPlayerName(
                 mActivity,
                 mWhichPlayer
             )
@@ -331,7 +331,7 @@ class GameConfigDelegate(delegator: Delegator) :
     // We show the password stuff only if: non-robot player AND there's more
     // than one local non-robot OR there's already a password set.
     private fun checkShowPassword(playerView: View, lp: LocalPlayer) {
-        val isRobotChecked = lp.isRobot
+        val isRobotChecked = lp.isRobot()
         // Log.d( TAG, "checkShowPassword(isRobotChecked=%b)", isRobotChecked );
         var showPassword = !isRobotChecked && BuildConfig.HAVE_PASSWORD
         if (showPassword) {
@@ -341,7 +341,7 @@ class GameConfigDelegate(delegator: Delegator) :
                 var nLocalNonRobots = 0
                 for (ii in 0 until mGi!!.nPlayers) {
                     val oneLP = mGi!!.players[ii]
-                    if (oneLP.isLocal && !oneLP.isRobot) {
+                    if (oneLP.isLocal && !oneLP.isRobot()) {
                         ++nLocalNonRobots
                     }
                 }
