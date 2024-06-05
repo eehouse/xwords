@@ -1,6 +1,6 @@
 /* -*- compile-command: "find-and-gradle.sh inXw4dDeb"; -*- */
 /*
- * Copyright 2009-2010 by Eric House (xwords@eehouse.org).  All
+ * Copyright 2009-2024 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -17,10 +17,9 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
+package org.eehouse.android.xw4.jni
 
-package org.eehouse.android.xw4.jni;
-
-public interface SyncedDraw {
-    void doJNIDraw();
-    void dimsChanged( BoardDims dims );
+interface SyncedDraw {
+    fun doJNIDraw()
+    fun dimsChanged(dims: BoardDims)
 }
