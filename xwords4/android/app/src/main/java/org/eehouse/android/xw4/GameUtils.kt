@@ -1065,7 +1065,7 @@ object GameUtils {
         missingNames: Array<Array<String?>?>?,
         gameDicts: Array<String>
     ): Boolean {
-        val installed = DictUtils.dictList(context)
+        val installed = DictUtils.dictList(context).orEmpty()
 
         val missingSet = HashSet(Arrays.asList(*gameDicts))
         missingSet.remove(null)

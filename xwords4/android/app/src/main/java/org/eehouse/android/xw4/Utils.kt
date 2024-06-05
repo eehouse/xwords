@@ -500,7 +500,7 @@ object Utils {
     }
 
     @JvmStatic
-    fun getMD5SumFor(context: Context?, dal: DictAndLoc): String? {
+    fun getMD5SumFor(context: Context, dal: DictAndLoc): String? {
         var result: String? = null
 
         if (DictUtils.DictLoc.BUILT_IN == dal.loc) {

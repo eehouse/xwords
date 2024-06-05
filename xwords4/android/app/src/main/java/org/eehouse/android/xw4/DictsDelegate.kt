@@ -237,11 +237,8 @@ class DictsDelegate(delegator: Delegator) :
             val locals = HashSet<String>()
             val isoCode = DictLangCache.getLangIsoCode(m_context, langName)
             val dals = DictLangCache.getDALsHaveLang(m_context, isoCode)
-            if (null != dals) {
-                for (dal in dals) {
-                    locals.add(dal.name)
-                }
-            }
+            dals?.map{locals.add(it.name)}
+
             if (mShowRemote && null != mRemoteInfo) {
                 val infos = mRemoteInfo!![langName]
                 if (null != infos) {
@@ -272,11 +269,11 @@ class DictsDelegate(delegator: Delegator) :
         val doRemove = true
         when (alert.dlgID) {
             DlgID.MOVE_DICT -> {
-                val selNames = selNames
+                val selNames = getSelNames()
                 val moveTo = intArrayOf(-1)
                 message = getString(
                     R.string.move_dict_fmt,
-                    getJoinedSelNames(selNames)
+                    getJoinedSelNames(getSelNames())
                 )
                 val newSelLstnr = DialogInterface.OnClickListener { dlgi, item ->
                     moveTo[0] = item
@@ -529,7 +526,7 @@ class DictsDelegate(delegator: Delegator) :
         return handled
     }
 
-    private fun moveDicts(selNames: Array<String?>, toLoc: DictLoc) {
+    private fun moveDicts(selNames: Array<String>, toLoc: DictLoc) {
         if (toLoc.needsStoragePermission()) {
             tryGetPerms(
                 Perm.STORAGE, R.string.move_dict_rationale,
@@ -542,14 +539,14 @@ class DictsDelegate(delegator: Delegator) :
 
     private fun moveDictsWithPermission(params: Array<out Any>) {
         Assert.assertVarargsNotNullNR(params)
-        val selNames = params[0] as Array<String?>
+        val selNames = params[0] as Array<String>
         val toLoc = params[1] as DictLoc
         moveDictsWithPermission(selNames, toLoc)
     }
 
-    private fun moveDictsWithPermission(selNames: Array<String?>, toLoc: DictLoc) {
+    private fun moveDictsWithPermission(selNames: Array<String>, toLoc: DictLoc) {
         for (name in selNames) {
-            val fromLoc = mSelDicts!![name] as DictLoc?
+            val fromLoc = mSelDicts!![name] as DictLoc
             if (fromLoc == toLoc) {
                 Log.w(TAG, "not moving %s: same loc", name)
             } else if (DictUtils.moveDict(
@@ -681,7 +678,7 @@ class DictsDelegate(delegator: Delegator) :
     }
 
     private fun deleteSelected() {
-        val names = selNames
+        val names = getSelNames()
         var msg = getQuantityString(
             R.plurals.confirm_delete_dict_fmt,
             names.size, getJoinedSelNames(names)
@@ -774,7 +771,7 @@ class DictsDelegate(delegator: Delegator) :
             DlgDelegate.Action.DELETE_DICT_ACTION -> {
                 val names = params[0] as Array<String>
                 for (name in names) {
-                    val loc = mSelDicts!![name] as DictLoc?
+                    val loc = mSelDicts!![name] as DictLoc
                     deleteDict(name, loc)
                 }
                 clearSelections()
@@ -816,7 +813,7 @@ class DictsDelegate(delegator: Delegator) :
         return DictLoc.entries[item]
     }
 
-    private fun deleteDict(dict: String?, loc: DictLoc?) {
+    private fun deleteDict(dict: String, loc: DictLoc) {
         DictUtils.deleteDict(mActivity, dict, loc)
         DictLangCache.inval(mActivity, dict, loc, false)
     }
@@ -849,7 +846,7 @@ class DictsDelegate(delegator: Delegator) :
 
     private fun clearSelections() {
         if (0 < mSelDicts!!.size) {
-            for (name in selNames) {
+            for (name in getSelNames()) {
                 if (mSelViews!!.containsKey(name)) {
                     val item = mSelViews!![name]
                     item!!.isSelected = false
@@ -860,21 +857,15 @@ class DictsDelegate(delegator: Delegator) :
         }
     }
 
-    private val selNames: Array<String?>
-        private get() {
-            val nameSet: Set<String?> = mSelDicts!!.keys
-            return nameSet.toTypedArray<String?>()
-        }
-
-    private fun getJoinedSelNames(names: Array<String?>): String {
-        return TextUtils.join(", ", names)
+    private fun getSelNames(): Array<String>
+    {
+        return mSelDicts!!.keys.toTypedArray()
     }
 
-    private val joinedSelNames: String
-        private get() {
-            val names = selNames
-            return getJoinedSelNames(names)
-        }
+    private fun getJoinedSelNames(names: Array<String>): String
+    {
+        return TextUtils.join(", ", names)
+    }
 
     private fun countSelDicts(): IntArray {
         val results = intArrayOf(0, 0)
