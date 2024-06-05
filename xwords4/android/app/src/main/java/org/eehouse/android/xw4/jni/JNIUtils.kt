@@ -1,6 +1,6 @@
 /* -*- compile-command: "find-and-gradle.sh inXw4dDeb"; -*- */
 /*
- * Copyright 2009-2010 by Eric House (xwords@eehouse.org).  All
+ * Copyright 2009 - 2024 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -17,13 +17,11 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
+package org.eehouse.android.xw4.jni
 
-package org.eehouse.android.xw4.jni;
-
-public interface JNIUtils {
-
+interface JNIUtils {
     // Stuff I can't do in C....
-    String[][] splitFaces( byte[] chars, boolean isUTF8 );
-    String getMD5SumFor( byte[] bytes );
-    String getMD5SumFor( String dictName, byte[] bytes );
+    fun splitFaces(chars: ByteArray, isUTF8: Boolean): Array<Array<String>>
+    fun getMD5SumFor(bytes: ByteArray): String
+    fun getMD5SumFor(dictName: String, bytes: ByteArray): String
 }

@@ -42,7 +42,8 @@ class JNIUtilsImpl private constructor(private val m_context: Context) : JNIUtil
      * <letter>[<delim><letter></letter>]*, so for each loop until the delim
      * isn't found.
     </delim></letter> */
-    override fun splitFaces(chars: ByteArray, isUTF8: Boolean): Array<Array<String>> {
+    override fun splitFaces(chars: ByteArray, isUTF8: Boolean): Array<Array<String>>
+    {
         val faces = ArrayList<Array<String>>()
         val bais = ByteArrayInputStream(chars)
         var isr: InputStreamReader
