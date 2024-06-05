@@ -109,18 +109,18 @@ class JNIUtilsImpl private constructor(private val m_context: Context) : JNIUtil
         faces.add(face!!.toTypedArray<String>())
     }
 
-    override fun getMD5SumFor(bytes: ByteArray): String {
-        return Utils.getMD5SumFor(bytes)!!
+    override fun getMD5SumFor(bytes: ByteArray?): String? {
+        return Utils.getMD5SumFor(bytes)
     }
 
-    override fun getMD5SumFor(dictName: String, bytes: ByteArray): String {
+    override fun getMD5SumFor(dictName: String, bytes: ByteArray?): String? {
         var result: String? = null
         if (null == bytes) {
             result = DBUtils.dictsGetMD5Sum(m_context, dictName)
         } else {
             result = getMD5SumFor(bytes)
             // Is this needed?  Caller might be doing it anyway.
-            DBUtils.dictsSetMD5Sum(m_context, dictName, result)
+            DBUtils.dictsSetMD5Sum(m_context, dictName, result!!)
         }
         return result!!
     }

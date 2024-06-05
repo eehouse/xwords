@@ -22,6 +22,6 @@ package org.eehouse.android.xw4.jni
 interface JNIUtils {
     // Stuff I can't do in C....
     fun splitFaces(chars: ByteArray, isUTF8: Boolean): Array<Array<String>>
-    fun getMD5SumFor(bytes: ByteArray): String
-    fun getMD5SumFor(dictName: String, bytes: ByteArray): String
+    fun getMD5SumFor(bytes: ByteArray?): String?
+    fun getMD5SumFor(dictName: String, bytes: ByteArray?): String?
 }
