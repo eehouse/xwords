@@ -2046,7 +2046,7 @@ class BoardDelegate(delegator: Delegator) :
     private fun askNBSPermissions() {
         val thisOrder = StartAlertOrder.NBS_PERMS
         if (alertOrderAt(thisOrder) // already asked?
-            && mSummary!!.conTypes.contains(CommsConnType.COMMS_CONN_SMS)
+            && mSummary!!.conTypes!!.contains(CommsConnType.COMMS_CONN_SMS)
         ) {
             if (Perms23.haveNBSPerms(mActivity)) {
                 // We have them or a workaround; cool! proceed

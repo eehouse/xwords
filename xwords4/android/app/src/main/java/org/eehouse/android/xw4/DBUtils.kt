@@ -163,7 +163,7 @@ object DBUtils {
                     if (0 <= col) {
                         summary!!.nPacketsPending = cursor.getInt(col)
                     }
-                    val iter: Iterator<CommsConnType> = summary!!.conTypes.iterator()
+                    val iter: Iterator<CommsConnType> = summary!!.conTypes!!.iterator()
                     while (iter.hasNext()) {
                         val typ = iter.next()
                         when (typ) {
@@ -265,10 +265,10 @@ object DBUtils {
                 values.put(DBHelper.SCORES, sb.toString())
             }
             if (null != summary.conTypes) {
-                values.putAnd(DBHelper.CONTYPE, summary.conTypes.toInt())
+                values.putAnd(DBHelper.CONTYPE, summary.conTypes!!.toInt())
 					.putAnd(DBHelper.SEED, summary.seed)
 					.putAnd(DBHelper.NPACKETSPENDING, summary.nPacketsPending)
-                val iter: Iterator<CommsConnType> = summary.conTypes.iterator()
+                val iter: Iterator<CommsConnType> = summary.conTypes!!.iterator()
                 while (iter.hasNext()) {
                     when (val typ = iter.next()) {
                         CommsConnType.COMMS_CONN_RELAY -> {
@@ -284,7 +284,7 @@ object DBUtils {
                     }
                 }
             }
-            values.put(DBHelper.SERVERROLE, summary.serverRole.ordinal)
+            values.put(DBHelper.SERVERROLE, summary.serverRole!!.ordinal)
         }
         initDB(context)
         synchronized(s_dbHelper!!) {

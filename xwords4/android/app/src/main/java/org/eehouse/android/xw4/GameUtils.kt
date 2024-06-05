@@ -175,10 +175,9 @@ object GameUtils {
         return result
     }
 
-    private fun summarize(
-        context: Context, lock: GameLock?,
-        gamePtr: GamePtr, gi: CurGameInfo?
-    ): GameSummary {
+    private fun summarize( context: Context, lock: GameLock?,
+                           gamePtr: GamePtr, gi: CurGameInfo): GameSummary
+    {
         val summary = GameSummary(gi)
         XwJNI.game_summarize(gamePtr, summary)
 
