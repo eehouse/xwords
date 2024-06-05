@@ -1,6 +1,6 @@
 /* -*- compile-command: "find-and-gradle.sh inXw4dDeb"; -*- */
 /*
- * Copyright 2009-2013 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2009 - 2024 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -17,21 +17,33 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-
-package org.eehouse.android.xw4.jni;
-
+package org.eehouse.android.xw4.jni
 
 // Why does this have to be its own class...
-public class BoardDims {
-    public int left, top;
-    public int width, height;       // of the bitmap
-    public int scoreLeft, scoreWidth, scoreHt;
-    public int boardWidth, boardHt;
-    public int trayLeft, trayTop, trayWidth, trayHt, traySize;
-    public int cellSize, maxCellSize;
-    public int timerWidth;
-
-    // @Override
+class BoardDims {
+    var left: Int = 0
+    @JvmField
+    var top: Int = 0
+    var width: Int = 0
+    var height: Int = 0 // of the bitmap
+    @JvmField
+    var scoreLeft: Int = 0
+    @JvmField
+    var scoreWidth: Int = 0
+    @JvmField
+    var scoreHt: Int = 0
+    @JvmField
+    var boardWidth: Int = 0
+    var boardHt: Int = 0
+    var trayLeft: Int = 0
+    var trayTop: Int = 0
+    var trayWidth: Int = 0
+    var trayHt: Int = 0
+    var traySize: Int = 0
+    var cellSize: Int = 0
+    var maxCellSize: Int = 0
+    @JvmField
+    var timerWidth: Int = 0 // @Override
     // public String toString()
     // {
     //     StringBuilder sb = new StringBuilder()
