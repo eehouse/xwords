@@ -225,7 +225,7 @@ class DUtilCtxt {
         DupeModeTimer.timerChanged(m_context, gameID, newVal)
     }
 
-    fun sendViaWeb(resultKey: Int, api: String?, jsonParams: String?) {
+    fun sendViaWeb(resultKey: Int, api: String?, jsonParams: String) {
         NetUtils.sendViaWeb(m_context, resultKey, api, jsonParams)
     }
 
