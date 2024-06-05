@@ -38,13 +38,13 @@ class LocalPlayer : Serializable {
     @JvmField
     var isLocal: Boolean
 
-    constructor(context: Context?, num: Int) {
+    constructor(context: Context, num: Int) {
         isLocal = true
         robotIQ = 0 // human
         name = CommonPrefs.getDefaultPlayerName(context, num, true)
         password = ""
 
-        // Utils.testSerialization( this );
+        // Utils.testSerialization( this )
     }
 
     constructor(src: LocalPlayer) {
