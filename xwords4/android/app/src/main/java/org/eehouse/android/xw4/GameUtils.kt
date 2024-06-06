@@ -204,7 +204,7 @@ object GameUtils {
         var result: GameSummary? = null
         JNIThread.getRetained(rowid).use { thread ->
             if (null != thread) {
-                result = DBUtils.getSummary(context!!, thread.lock)
+                result = DBUtils.getSummary(context!!, thread.getLock())
             } else {
                 try {
                     GameLock.lockRO(rowid, maxMillis).use { lock ->
@@ -256,7 +256,7 @@ object GameUtils {
 
         JNIThread.getRetained(rowidIn).use { thread ->
             if (null != thread) {
-                result = dupeGame(context, thread.lock, groupID)
+                result = dupeGame(context, thread.getLock(), groupID)
             } else {
                 try {
                     GameLock.lockRO(rowidIn, 300).use { lockSrc ->
@@ -1019,23 +1019,20 @@ object GameUtils {
         context: Context, rowid: Long,
         missingLang: Array<ISOCode?>? = null
     ): Array<String?>? {
-        var result: Array<String?>? = null
-
         val gi: CurGameInfo?
         if (JNIThread.gameIsOpen(rowid)) {
             val jnit = JNIThread.getRetained(rowid)
-            gi = jnit.gi
-            jnit.release()
+            gi = jnit?.getGI()
+            jnit?.release()
         } else {
             gi = giFromStream(context, savedGame(context, rowid))
         }
 
-        if (null != gi) {
-            if (null != missingLang) {
-                missingLang[0] = gi.isoCode()
-            }
-            result = gi.dictNames()
-        }
+        var result = 
+            if (null != gi) {
+                missingLang?.set(0, gi.isoCode())
+                gi.dictNames()
+            } else null
         return result
     }
 
@@ -1438,7 +1435,7 @@ object GameUtils {
             for (rowid in rowids) {
                 JNIThread.getRetained(rowid).use { thread ->
                     if (null != thread) {
-                        XwJNI.comms_setQuashed(thread.gamePtr, true)
+                        XwJNI.comms_setQuashed(thread.getGamePtr(), true)
                         // JNIThread saves automatically on release
                     } else {
                         GameLock.lock(rowid, 300).use { lock ->

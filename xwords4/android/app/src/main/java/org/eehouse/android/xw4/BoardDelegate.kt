@@ -1838,7 +1838,7 @@ class BoardDelegate(delegator: Delegator) :
                 makeJNIHandler()
             )
             if (success) {
-                mJniGamePtr = mJniThreadRef!!.gamePtr // .retain()?
+                mJniGamePtr = mJniThreadRef!!.getGamePtr()
                 Assert.assertNotNull(mJniGamePtr)
             }
         }
@@ -1885,7 +1885,7 @@ class BoardDelegate(delegator: Delegator) :
 
                     JNIThread.QUERY_ENDGAME -> showDialogFragment(DlgID.QUERY_ENDGAME)
                     JNIThread.TOOLBAR_STATES -> if (null != mJniThread) {
-                        mGsi = mJniThread!!.gameStateInfo
+                        mGsi = mJniThread!!.getGameStateInfo()
                         updateToolbar()
                         if (m_mySIS!!.inTrade != mGsi!!.inTrade) {
                             m_mySIS!!.inTrade = mGsi!!.inTrade
@@ -2627,9 +2627,9 @@ class BoardDelegate(delegator: Delegator) :
             var gi: CurGameInfo? = null
             JNIThread.getRetained(rowID).use { thread ->
                 if (null != thread) {
-                    thread.gamePtr.retain().use { gamePtr ->
-                        summary = thread.summary
-                        gi = thread.gi
+                    thread.getGamePtr()?.retain().use { gamePtr ->
+                        summary = thread.getSummary()
+                        gi = thread.getGI()
                         setupRematchFor(activity, gamePtr, summary, gi)
                     }
                 } else {

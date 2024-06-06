@@ -284,8 +284,8 @@ class BoardView(private val mContext: Context, attrs: AttributeSet?) : View(
         Log.d(TAG, "startHandling(thread=%H, parent=%s)", thread, parent)
         mParent = parent
         mJniThread = thread
-        mJniGamePtr = thread.gamePtr // .retain()?
-        mGi = thread.gi
+        mJniGamePtr = thread.getGamePtr()
+        mGi = thread.getGI()
         mIsSolo = CurGameInfo.DeviceRole.SERVER_STANDALONE == mGi?.serverRole
         mConnTypes = connTypes
         mLayoutWidth = 0

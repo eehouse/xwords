@@ -473,8 +473,7 @@ class GameConfigDelegate(delegator: Delegator) :
             if (mIsNewGame) {
                 loadGame(null)
             } else if (null != mJniThread) {
-                mJniThread!!
-                    .gamePtr.retain().use { gamePtr -> loadGame(gamePtr) }
+                mJniThread!!.getGamePtr()?.retain().use { gamePtr -> loadGame(gamePtr) }
             } else {
                 GameLock.tryLockRO(mRowid).use { lock ->
                     if (null != lock) {
