@@ -1,5 +1,4 @@
-/* -*- compile-command: "find-and-gradle.sh inXw4dDeb"; -*- */
-/*
+/* -*- compile-command: "find-and-gradle.sh inXw4dDeb"; -*- */ /*
  * Copyright 2009-2010 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
  *
@@ -17,13 +16,13 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
+package org.eehouse.android.xw4
 
-package org.eehouse.android.xw4;
-
-public interface XWConstants {
-    public static final String GAME_EXTN = ".xwg";
-    public static final String DICT_EXTN = ".xwd";
-    public static final String APK_EXTN = ".apk";
-    public static final String APK_TYPE =
-        "application/vnd.android.package-archive";
+interface XWConstants {
+    companion object {
+        const val GAME_EXTN: String = ".xwg"
+        const val DICT_EXTN: String = ".xwd"
+        const val APK_EXTN: String = ".apk"
+        const val APK_TYPE: String = "application/vnd.android.package-archive"
+    }
 }
