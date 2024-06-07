@@ -480,10 +480,10 @@ class MQTTUtils private constructor(context: Context, resendOnConnect: Boolean) 
         }
     }
 
-    private class MQTTServiceHelper(context: Context) : XWServiceHelper(context) {
+    private class MQTTServiceHelper(val mContext: Context) : XWServiceHelper(mContext) {
         private var mReturnAddr: CommsAddrRec? = null
 
-        constructor(context: Context, from: CommsAddrRec?) : this(context) {
+        constructor(context: Context, from: CommsAddrRec) : this(context) {
             mReturnAddr = from
         }
 
@@ -492,7 +492,7 @@ class MQTTUtils private constructor(context: Context, resendOnConnect: Boolean) 
             // Now nuke the invitation so we don't keep getting it, e.g. if
             // the sender deletes the game
             val tap = XwJNI.dvc_makeMQTTNukeInvite(nli)
-            addToSendQueue(context, tap)
+            addToSendQueue(mContext, tap)
         }
 
         fun receiveMessage(rowid: Long, sink: MultiMsgSink, msg: ByteArray) {
@@ -735,8 +735,9 @@ class MQTTUtils private constructor(context: Context, resendOnConnect: Boolean) 
 
         fun handleGameGone(context: Context, from: CommsAddrRec, gameID: Int) {
             val player = XwJNI.kplr_nameForMqttDev(from.mqtt_devID)
-            val expl = if (null == player) null
-            else ConnExpl(CommsConnType.COMMS_CONN_MQTT, player)
+            val expl =
+                if (null == player) null
+                else ConnExpl(CommsConnType.COMMS_CONN_MQTT, player)
             MQTTServiceHelper(context, from)
                 .postEvent(
                     MultiService.MultiEvent.MESSAGE_NOGAME, gameID,
