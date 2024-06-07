@@ -1,6 +1,6 @@
 /* -*- compile-command: "find-and-gradle.sh inXw4dDeb"; -*- */
 /*
- * Copyright 2010 by Eric House (xwords@eehouse.org).  All
+ * Copyright 2010 - 2024 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -17,31 +17,24 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
+package org.eehouse.android.xw4
 
-package org.eehouse.android.xw4;
+import android.content.Context
+import android.util.AttributeSet
+import androidx.preference.EditTextPreference
 
-import android.content.Context;
-import androidx.preference.EditTextPreference;
-import android.util.AttributeSet;
+class XWEditTextPreference(context: Context, attrs: AttributeSet?) :
+    EditTextPreference(context, attrs)
+{
+    private val TAG = XWEditTextPreference::class.java.getSimpleName()
 
-public class XWEditTextPreference extends EditTextPreference {
-
-    public XWEditTextPreference( Context context, AttributeSet attrs )
-    {
-        super( context, attrs );
+    override fun onAttached() {
+        super.onAttached()
+        summary = getPersistedString("")
     }
 
-    @Override
-    public void onAttached()
-    {
-        super.onAttached();
-        setSummary( getPersistedString( "" ) );
+    override fun persistString(value: String): Boolean {
+        summary = value
+        return super.persistString(value)
     }
-
-    protected boolean persistString( String value )
-    {
-        setSummary( value );
-        return super.persistString( value );
-    }
-
 }
