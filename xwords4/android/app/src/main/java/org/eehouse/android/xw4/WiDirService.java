@@ -47,6 +47,8 @@ import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
 
+import androidx.annotation.NonNull;
+
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
@@ -1203,14 +1205,15 @@ public class WiDirService extends XWService {
             super( service );
         }
 
+        @NonNull
         @Override
-        MultiMsgSink getSink( long rowid )
+        public MultiMsgSink getSink( long rowid )
         {
             return m_sink;
         }
 
         @Override
-        void postNotification( String device, int gameID, long rowid )
+        public void postNotification(String device,  int gameID, long rowid)
         {
             Log.e( TAG, "postNotification() doing nothing" );
         }

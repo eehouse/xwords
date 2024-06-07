@@ -69,7 +69,7 @@ class MultiService {
     }
 
     interface MultiEventListener {
-        fun eventOccurred(event: MultiEvent, vararg args: Any)
+        fun eventOccurred(event: MultiEvent, vararg args: Any?)
     }
 
     private val mLis: MutableSet<MultiEventListener> = Collections
@@ -84,7 +84,7 @@ class MultiService {
         mLis.remove(li)
     }
 
-    fun postEvent(event: MultiEvent, vararg args: Any): Int {
+    fun postEvent(event: MultiEvent, vararg args: Any?): Int {
         // don't just return size(): concurrency doesn't guarantee isn't
         // changed
 

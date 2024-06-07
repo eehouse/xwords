@@ -1,6 +1,6 @@
 /* -*- compile-command: "find-and-gradle.sh inXw4dDeb"; -*- */
 /*
- * Copyright 2010 - 2018 by Eric House (xwords@eehouse.org).  All
+ * Copyright 2018 - 2024 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -17,160 +17,152 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
+package org.eehouse.android.xw4
 
-package org.eehouse.android.xw4;
+import android.content.Context
+import org.eehouse.android.xw4.DBUtils.getRowIDsFor
+import org.eehouse.android.xw4.jni.CommsAddrRec
+import org.eehouse.android.xw4.jni.JNIThread
+import org.eehouse.android.xw4.jni.UtilCtxt
+import org.eehouse.android.xw4.jni.UtilCtxtImpl
+import org.eehouse.android.xw4.loc.LocUtils
 
-import android.app.Service;
-import android.content.Context;
-import android.content.Intent;
 
-import org.eehouse.android.xw4.MultiService.DictFetchOwner;
-import org.eehouse.android.xw4.MultiService.MultiEvent;
-import org.eehouse.android.xw4.jni.CommsAddrRec;
-import org.eehouse.android.xw4.jni.CurGameInfo;
-import org.eehouse.android.xw4.jni.JNIThread;
-import org.eehouse.android.xw4.jni.UtilCtxt;
-import org.eehouse.android.xw4.jni.UtilCtxtImpl;
-import org.eehouse.android.xw4.jni.XwJNI.GamePtr;
-import org.eehouse.android.xw4.loc.LocUtils;
-
-import java.util.HashMap;
-import java.util.Map;
-
-abstract class XWServiceHelper {
-    private static final String TAG = XWServiceHelper.class.getSimpleName();  
-    private Context mContext;
-    private static MultiService s_srcMgr = new MultiService();
-
-    public static enum ReceiveResult { OK, GAME_GONE, UNCONSUMED };
-
-    XWServiceHelper( Context context )
-    {
-        mContext = context;
+internal abstract class XWServiceHelper(private val mContext: Context) {
+    enum class ReceiveResult {
+        OK, GAME_GONE, UNCONSUMED
     }
 
-    Context getContext() { return mContext; }
-
-    MultiMsgSink getSink( long rowid )
-    {
-        return new MultiMsgSink( getContext(), rowid );
+    open fun getSink(rowid: Long): MultiMsgSink {
+        return MultiMsgSink(mContext, rowid)
     }
 
-    void postNotification( String device, int gameID, long rowid )
+    open fun postNotification(device: String?, gameID: Int, rowid: Long)
     {
-        Context context = getContext();
-        String body = LocUtils.getString( context, R.string.new_game_body );
-        GameUtils.postInvitedNotification( context, gameID, body, rowid );
+        val body = LocUtils.getString(mContext, R.string.new_game_body)
+        GameUtils.postInvitedNotification(mContext, gameID, body, rowid)
     }
 
-    protected ReceiveResult receiveMessage( int gameID,
-                                            MultiMsgSink sink, byte[] msg,
-                                            CommsAddrRec addr )
-    {
-        ReceiveResult result;
-        long[] rowids = DBUtils.getRowIDsFor( mContext, gameID );
-        if ( 0 == rowids.length ) {
-            result = ReceiveResult.GAME_GONE;
+    fun receiveMessage(
+        gameID: Int,
+        sink: MultiMsgSink?, msg: ByteArray?,
+        addr: CommsAddrRec?
+    ): ReceiveResult {
+        var result: ReceiveResult
+        val rowids = DBUtils.getRowIDsFor(mContext, gameID)
+        if (0 == rowids.size) {
+            result = ReceiveResult.GAME_GONE
         } else {
-            result = ReceiveResult.UNCONSUMED;
-            for ( long rowid : rowids ) {
-                if ( receiveMessage( rowid, sink, msg, addr ) ) {
-                    result = ReceiveResult.OK;
+            result = ReceiveResult.UNCONSUMED
+            for (rowid in rowids) {
+                if (receiveMessage(rowid, sink, msg, addr)) {
+                    result = ReceiveResult.OK
                 }
             }
         }
-        return result;
+        return result
     }
 
-    protected boolean receiveMessage( long rowid, MultiMsgSink sink,
-                                      byte[] msg, CommsAddrRec addr )
-    {
-        boolean allConsumed = true;
-        boolean[] isLocalP = new boolean[1];
-        boolean consumed = false;
+    protected fun receiveMessage(
+        rowid: Long, sink: MultiMsgSink?,
+        msg: ByteArray?, addr: CommsAddrRec?
+    ): Boolean {
+        var sink = sink
+        var allConsumed = true
+        val isLocalP = BooleanArray(1)
+        var consumed = false
 
-        try ( JNIThread jniThread = JNIThread.getRetained( rowid ) ) {
-            if ( null != jniThread ) {
-                jniThread.receive( msg, addr );
-                consumed = true;
+        JNIThread.getRetained(rowid).use { jniThread ->
+            if (null != jniThread) {
+                jniThread.receive(msg, addr)
+                consumed = true
             } else {
-                GameUtils.BackMoveResult bmr = new GameUtils.BackMoveResult();
-                if ( null == sink ) {
-                    sink = getSink( rowid );
+                if (null == sink) {
+                    sink = getSink(rowid)
                 }
-                if ( GameUtils.feedMessage( mContext, rowid, msg, addr,
-                                            sink, bmr, isLocalP ) ) {
-                    GameUtils.postMoveNotification( mContext, rowid, bmr,
-                                                    isLocalP[0] );
-                    consumed = true;
+                val bmr = GameUtils.BackMoveResult()
+                if (GameUtils.feedMessage(
+                        mContext, rowid, msg, addr,
+                        sink, bmr, isLocalP
+                    )
+                ) {
+                    GameUtils.postMoveNotification(
+                        mContext, rowid, bmr,
+                        isLocalP[0]
+                    )
+                    consumed = true
                 }
             }
         }
-        if ( allConsumed && !consumed ) {
-            allConsumed = false;
+        if (allConsumed && !consumed) {
+            allConsumed = false
         }
-        return allConsumed;
+        return allConsumed
     }
 
-    public final static void setListener( MultiService.MultiEventListener li )
-    {
-        s_srcMgr.setListener( li );
-    }
-
-    public final static void clearListener( MultiService.MultiEventListener li )
-    {
-        s_srcMgr.clearListener( li );
-    }
-
-    protected void postEvent( MultiEvent event, Object ... args )
-    {
-        if ( 0 == s_srcMgr.postEvent( event, args ) ) {
-            Log.d( TAG, "postEvent(): dropping %s event",
-                   event.toString() );
+    fun postEvent(event: MultiService.MultiEvent, vararg args: Any?) {
+        if (0 == s_srcMgr.postEvent(event, *args)) {
+            Log.d(
+                TAG, "postEvent(): dropping %s event",
+                event.toString()
+            )
         }
     }
 
-    protected boolean handleInvitation( NetLaunchInfo nli,
-                                        String device, DictFetchOwner dfo )
-    {
+    fun handleInvitation(nli: NetLaunchInfo,
+        device: String?, dfo: MultiService.DictFetchOwner?
+    ): Boolean {
         // PENDING: get the test for dicts back in
-        if ( DictLangCache.haveDict( mContext, nli.isoCode(), nli.dict ) ) {
-            GameUtils.handleInvitation( mContext, nli, getSink(0) );
+        if (DictLangCache.haveDict(mContext, nli.isoCode(), nli.dict)) {
+            GameUtils.handleInvitation(mContext, nli, getSink(0))
         } else {
-            Intent intent = MultiService
-                .makeMissingDictIntent( mContext, nli, dfo );
-            MultiService.postMissingDictNotification( mContext, intent,
-                                                      nli.gameID() );
+            val intent = MultiService.makeMissingDictIntent(mContext, nli, dfo!!)
+            MultiService.postMissingDictNotification(mContext, intent, nli.gameID())
         }
-        return true;
+        return true
     }
 
-    private UtilCtxt m_utilCtxt;
-    protected UtilCtxt getUtilCtxt()
-    {
-        if ( null == m_utilCtxt ) {
-            m_utilCtxt = new UtilCtxtImpl();
+    private var m_utilCtxt: UtilCtxt? = null
+    val utilCtxt: UtilCtxt
+        get() {
+            if (null == m_utilCtxt) {
+                m_utilCtxt = UtilCtxtImpl()
+            }
+            return m_utilCtxt!!
         }
-        return m_utilCtxt;
-    }
-    
-    // Check that we aren't already processing an invitation with this
-    // inviteID.
-    private static final long SEEN_INTERVAL_MS = 1000 * 2;
-    private static Map<String, Long> s_seen = new HashMap<>();
-    private boolean checkNotInFlight( NetLaunchInfo nli )
-    {
-        boolean inProcess;
-        String inviteID = nli.inviteID();
-        synchronized( s_seen ) {
-            long now = System.currentTimeMillis();
-            Long lastSeen = s_seen.get( inviteID );
-            inProcess = null != lastSeen && lastSeen + SEEN_INTERVAL_MS > now;
-            if ( !inProcess ) {
-                s_seen.put( inviteID, now );
+
+    private fun checkNotInFlight(nli: NetLaunchInfo): Boolean {
+        var inProcess: Boolean
+        val inviteID = nli.inviteID()
+        synchronized(s_seen) {
+            val now = System.currentTimeMillis()
+            val lastSeen = s_seen[inviteID]
+            inProcess = null != lastSeen && lastSeen + SEEN_INTERVAL_MS > now
+            if (!inProcess) {
+                s_seen[inviteID] = now
             }
         }
-        Log.d( TAG, "checkNotInFlight('%s') => %b", inviteID, !inProcess );
-        return !inProcess;
+        Log.d(TAG, "checkNotInFlight('%s') => %b", inviteID, !inProcess)
+        return !inProcess
+    }
+
+    companion object {
+        private val TAG: String = XWServiceHelper::class.java.simpleName
+        private val s_srcMgr = MultiService()
+
+        @JvmStatic
+        fun setListener(li: MultiService.MultiEventListener) {
+            s_srcMgr.setListener(li)
+        }
+
+        @JvmStatic
+        fun clearListener(li: MultiService.MultiEventListener) {
+            s_srcMgr.clearListener(li)
+        }
+
+        // Check that we aren't already processing an invitation with this
+        // inviteID.
+        private const val SEEN_INTERVAL_MS = (1000 * 2).toLong()
+        private val s_seen: MutableMap<String, Long> = HashMap()
     }
 }

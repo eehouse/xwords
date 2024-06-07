@@ -976,13 +976,12 @@ object NFCUtils {
         }
     }
 
-    private class NFCServiceHelper internal constructor(context: Context) :
-        XWServiceHelper(context) {
+    private class NFCServiceHelper internal constructor(val mContext: Context) :
+        XWServiceHelper(mContext) {
         private val mAddr = CommsAddrRec(CommsConnType.COMMS_CONN_NFC)
-        public override fun postNotification(device: String, gameID: Int, rowid: Long) {
-            val context = context
-            val body = LocUtils.getString(context, R.string.new_game_body)
-            GameUtils.postInvitedNotification(context, gameID, body, rowid)
+        public override fun postNotification(device: String?, gameID: Int, rowid: Long) {
+            val body = LocUtils.getString(mContext, R.string.new_game_body)
+            GameUtils.postInvitedNotification(mContext, gameID, body, rowid)
         }
 
         fun receiveMessage(rowid: Long, sink: MultiMsgSink, msg: ByteArray) {

@@ -498,13 +498,13 @@ public class NBSProto {
         }
 
         @Override
-        protected MultiMsgSink getSink( long rowid )
+        public MultiMsgSink getSink( long rowid )
         {
             return new NBSMsgSink( mContext );
         }
 
         @Override
-        protected void postNotification( String phone, int gameID, long rowid )
+        public void postNotification( String phone, int gameID, long rowid )
         {
             String owner = Utils.phoneToContact( mContext, phone, true );
             String body = LocUtils.getString( mContext, R.string.new_name_body_fmt,

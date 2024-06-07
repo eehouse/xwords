@@ -1207,7 +1207,7 @@ class BoardDelegate(delegator: Delegator) :
     //////////////////////////////////////////////////
     // MultiService.MultiEventListener interface
     //////////////////////////////////////////////////
-    override fun eventOccurred(event: MultiEvent, vararg args: Any) {
+    override fun eventOccurred(event: MultiEvent, vararg args: Any?) {
         when (event) {
             MultiEvent.MESSAGE_ACCEPTED, MultiEvent.MESSAGE_REFUSED -> ConnStatusHandler.updateStatusIn(
                 mActivity, this, CommsConnType.COMMS_CONN_BT,
