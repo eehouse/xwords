@@ -78,13 +78,14 @@ class PrefsActivity : XWActivity(), Delegator, HasDlgDelegate,
         caller: PreferenceFragmentCompat,
         pref: Preference
     ): Boolean {
-        var success = false
-        if (pref is DialogProc) {
-            show((pref as DialogProc).makeDialogFrag())
-            success = true
-        } else {
-            Log.e(TAG, "unexpected class: %s", pref.javaClass.getSimpleName())
-        }
+        val success =
+            if (pref is DialogProc) {
+                show((pref as DialogProc).makeDialogFrag())
+                true
+            } else {
+                Log.e(TAG, "unexpected class: %s", pref.javaClass.getSimpleName())
+                false
+            }
         return success
     }
 
