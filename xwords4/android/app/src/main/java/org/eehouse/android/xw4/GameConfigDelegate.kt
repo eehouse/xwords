@@ -659,7 +659,7 @@ class GameConfigDelegate(delegator: Delegator) :
 
     // DeleteCallback interface
     override fun deleteCalled(item: XWListItem) {
-        if (mGi!!.delete(item.position)) {
+        if (mGi!!.delete(item.getPosition())) {
             loadPlayersList()
         }
     }
@@ -837,15 +837,15 @@ class GameConfigDelegate(delegator: Delegator) :
             // only enable delete if one will remain (or two if networked)
             val canDelete = names.size > 2 || localOnlyGame() && names.size > 1
             val lstnr = View.OnClickListener { view ->
-                mWhichPlayer = (view as XWListItem).position
+                mWhichPlayer = (view as XWListItem).getPosition()
                 showDialogFragment(DlgID.PLAYER_EDIT)
             }
             val localGame = localOnlyGame()
             val unlocked = (null == m_gameLockedCheck
                     || !m_gameLockedCheck!!.isChecked)
             for (ii in names.indices) {
-                val view = XWListItem.inflate(mActivity, null)
-                view.position = ii
+                val view = XWListItem.inflate(mActivity)
+                view.setPosition(ii)
                 view.setText(names[ii])
                 if (localGame && gi.players[ii]!!.isLocal) {
                     view.setComment(gi.dictName(ii))

@@ -192,20 +192,20 @@ class DictsDelegate(delegator: Delegator) :
                     }
                     val loc = dal.loc
                     item.setComment(mLocNames!![loc.ordinal])
-                    item.cached = loc
+                    item.setCached(loc)
                     item.setOnClickListener(this@DictsDelegate)
                     item.setExpandedListener(null) // item might be reused
                 } else if (dataObj is AvailDictInfo) {
                     val info = dataObj
                     name = info.m_name
-                    item.cached = info
+                    item.setCached(info)
                     item.setExpandedListener(this@DictsDelegate)
                     item.setExpanded(mExpandedItems!!.contains(info))
                     item.setComment(mOnServerStr)
                 } else {
                     Assert.failDbg()
                 }
-                item.setText(name)
+                item.setText(name!!)
                 val selected = mSelDicts!!.containsKey(name)
                 if (selected) {
                     mSelViews!![name] = item
@@ -445,9 +445,8 @@ class DictsDelegate(delegator: Delegator) :
             val item = view as XWListItem
             DictBrowseDelegate.launch(
                 delegator, item.getText(),
-                (item.cached as DictLoc),
-                item.isCustom
-            )
+                (item.getCached() as DictLoc),
+                item.getIsCustom())
         }
     }
 
@@ -558,7 +557,7 @@ class DictsDelegate(delegator: Delegator) :
                 if (mSelViews!!.containsKey(name)) {
                     val selItem = mSelViews!![name]
                     selItem!!.setComment(mLocNames!![toLoc.ordinal])
-                    selItem.cached = toLoc
+                    selItem.setCached(toLoc)
                     selItem.invalidate()
                 }
                 dictsMoveInfo(
@@ -922,7 +921,7 @@ class DictsDelegate(delegator: Delegator) :
     // XWListItem.ExpandedListener interface
     //////////////////////////////////////////////////////////////////////
     override fun expanded(me: XWListItem, expanded: Boolean) {
-        val info = me.cached as AvailDictInfo
+        val info = me.getCached() as AvailDictInfo
         if (expanded) {
             mExpandedItems!!.add(info) // may already be there
             val view = inflate(R.layout.remote_dict_details) as LinearLayout
@@ -1005,7 +1004,7 @@ class DictsDelegate(delegator: Delegator) :
         val lang = dictView.getText()
         if (selected) {
             mSelViews!![lang] = dictView
-            mSelDicts!![lang] = dictView.cached
+            mSelDicts!![lang] = dictView.getCached()!!
         } else {
             mSelViews!!.remove(lang)
             mSelDicts!!.remove(lang)
