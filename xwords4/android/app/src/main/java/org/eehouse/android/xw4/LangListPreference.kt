@@ -49,7 +49,7 @@ class LangListPreference(private val mContext: Context, attrs: AttributeSet?)
         var curLang = value?.toString()
         var haveDictForLang = false
 
-        val langs = DictLangCache.listLangs(m_context)
+        val langs = DictLangCache.listLangs(mContext)
         val langsLoc = arrayOfNulls<String>(langs.size)
         for (ii in langs.indices) {
             val lang = langs[ii]

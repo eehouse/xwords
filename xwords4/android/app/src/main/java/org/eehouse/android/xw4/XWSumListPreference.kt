@@ -24,16 +24,16 @@ import android.util.AttributeSet
 import org.eehouse.android.xw4.XWPrefs.Companion.getDebugEnabled
 import org.eehouse.android.xw4.loc.LocUtils.getString
 
-class XWSumListPreference(context: Context, attrs: AttributeSet?) :
-    XWListPreference(context, attrs) {
+class XWSumListPreference(private val mContext: Context, attrs: AttributeSet?) :
+    XWListPreference(mContext, attrs) {
 
     private val TAG = XWSumListPreference::class.java.getSimpleName()
 
     override fun onAttached() {
         super.onAttached()
 
-        val rows = getFieldIDs(m_context)
-            .map{getString(m_context, it)}
+        val rows = getFieldIDs(mContext)
+            .map{getString(mContext, it)}
             .toTypedArray()
 
         entries = rows
