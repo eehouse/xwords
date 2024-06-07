@@ -29,7 +29,6 @@ class XWSumListPreference(context: Context, attrs: AttributeSet?) :
 
     private val TAG = XWSumListPreference::class.java.getSimpleName()
 
-    // Why I exist: insert the rowid and gameid lines if debug is on
     override fun onAttached() {
         super.onAttached()
 
