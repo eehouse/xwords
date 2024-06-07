@@ -1313,9 +1313,7 @@ class BoardDelegate(delegator: Delegator) :
         }
     }
 
-    override fun getHandler(): Handler {
-        return mHandler!!
-    }
+    override fun getHandler(): Handler? { return mHandler }
 
     ////////////////////////////////////////////////////////////
     // NFCCardService.Wrapper.Procs
