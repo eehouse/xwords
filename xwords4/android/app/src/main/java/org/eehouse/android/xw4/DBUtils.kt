@@ -995,8 +995,8 @@ object DBUtils {
     }
 
     @JvmStatic
-    fun getNeedNagging(context: Context): Array<NeedsNagInfo?>? {
-        var result: Array<NeedsNagInfo?>? = null
+    fun getNeedNagging(context: Context): Array<NeedsNagInfo>? {
+        var result: Array<NeedsNagInfo>? = null
         val now = Date().time // in milliseconds
         val columns = arrayOf(
             ROW_ID, DBHelper.NEXTNAG, DBHelper.LASTMOVE,
@@ -1010,22 +1010,20 @@ object DBUtils {
         initDB(context)
         synchronized(s_dbHelper!!) {
             val cursor = query(TABLE_NAMES.SUM, columns, selection)
-            val count = cursor.count
-            if (0 < count) {
-                result = arrayOfNulls(count)
+            if (0 < cursor.count) {
+                val tmp = ArrayList<NeedsNagInfo>()
                 val rowIndex = cursor.getColumnIndex(ROW_ID)
                 val nagIndex = cursor.getColumnIndex(DBHelper.NEXTNAG)
                 val lastMoveIndex = cursor.getColumnIndex(DBHelper.LASTMOVE)
                 val roleIndex = cursor.getColumnIndex(DBHelper.SERVERROLE)
-                var ii = 0
-                while (ii < result!!.size && cursor.moveToNext()) {
+                while (cursor.moveToNext()) {
                     val rowid = cursor.getLong(rowIndex)
                     val nextNag = cursor.getLong(nagIndex)
                     val lastMove = cursor.getLong(lastMoveIndex)
                     val role = DeviceRole.entries[cursor.getInt(roleIndex)]
-                    result!![ii] = NeedsNagInfo(rowid, nextNag, lastMove, role)
-                    ++ii
+                    tmp.add(NeedsNagInfo(rowid, nextNag, lastMove, role))
                 }
+                result = tmp.toTypedArray()
             }
             cursor.close()
         }
