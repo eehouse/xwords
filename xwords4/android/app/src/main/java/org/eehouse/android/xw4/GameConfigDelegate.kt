@@ -323,10 +323,8 @@ class GameConfigDelegate(delegator: Delegator) :
 
     private fun setPlayerName(playerView: View, lp: LocalPlayer) {
         val name =
-            if (lp.isRobot()) CommonPrefs.getDefaultRobotName(mActivity) else CommonPrefs.getDefaultPlayerName(
-                mActivity,
-                mWhichPlayer
-            )
+            if (lp.isRobot()) CommonPrefs.getDefaultRobotName(mActivity)
+            else CommonPrefs.getDefaultPlayerName(mActivity, mWhichPlayer)
         setText(playerView, R.id.player_name_edit, name)
     }
 

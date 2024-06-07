@@ -24,6 +24,7 @@ import android.content.SharedPreferences
 import android.content.res.Configuration
 import android.net.Uri
 import android.os.Build
+import android.text.TextUtils
 import androidx.preference.PreferenceManager
 import org.eehouse.android.xw4.Assert.assertTrueNR
 import org.eehouse.android.xw4.Assert.failDbg
@@ -258,11 +259,8 @@ class CommonPrefs private constructor() : XWPrefs() {
             context: Context, num: Int,
             force: Boolean
         ): String {
-            var result = getPrefsString(context, R.string.key_player1_name)
-            if (null != result && 0 == result.length) {
-                result = null // be consistent
-            }
-            if (force || null == result) {
+            var result = getPrefsString(context, R.string.key_player1_name, "")
+            if (force && TextUtils.isEmpty(result)) {
                 result = getDefaultOriginalPlayerName(context, num)
             }
             return result!!

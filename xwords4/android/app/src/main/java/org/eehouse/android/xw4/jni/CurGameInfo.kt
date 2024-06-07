@@ -128,8 +128,9 @@ class CurGameInfo : Serializable {
         for (ii in 0 until nPlayers) {
             val lp = players[ii]
             if (lp!!.isLocal) {
-                lp.name = if (lp.isRobot()) CommonPrefs.getDefaultRobotName(context)
-                else CommonPrefs.getDefaultPlayerName(context, count++)
+                lp.name =
+                    if (lp.isRobot()) CommonPrefs.getDefaultRobotName(context)
+                    else CommonPrefs.getDefaultPlayerName(context, count++)
             }
         }
 
