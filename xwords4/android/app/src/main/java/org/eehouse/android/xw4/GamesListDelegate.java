@@ -149,7 +149,7 @@ public class GamesListDelegate extends ListDelegateBase
         }
 
         @Override
-        protected Object[] makeListData()
+        public Object[] makeListData()
         {
             final Map<Long,GameGroupInfo> gameInfo = DBUtils.getGroups( m_activity );
             ArrayList<Object> alist = new ArrayList<>();
@@ -455,13 +455,15 @@ public class GamesListDelegate extends ListDelegateBase
             for ( long row : rows ) {
                 alist.add( new GameRec( row ) );
             }
-            // DbgUtils.logf( "GamesListDelegate.makeChildren(%d) => %d kids", groupID, alist.size() );
+            // DbgUtils.logf( "GamesListDelegate.makeChildren(%d) => %d kids",
+            // groupID, alist.size() );
             return alist;
         }
 
         private XWExpListAdapter.GroupTest makeGroupTestFor( final long groupID  )
         {
             return new XWExpListAdapter.GroupTest() {
+                @Override
                 public boolean isTheGroup( Object item ) {
                     GroupRec rec = (GroupRec)item;
                     return rec.m_groupID == groupID;

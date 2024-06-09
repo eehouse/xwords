@@ -121,13 +121,11 @@ class DictsDelegate(delegator: Delegator) :
     private var mRemoteInfo: HashMap<String, Array<AvailDictInfo>>? = null
     private var m_launchedForMissing = false
 
-    private inner class DictListAdapter(private val m_context: Context) : XWExpListAdapter(
-        arrayOf(
-            LangInfo::class.java,
-            DictAndLoc::class.java,
-            AvailDictInfo::class.java
-        )
-    ) {
+    private inner class DictListAdapter(private val m_context: Context) :
+        XWExpListAdapter(arrayOf(LangInfo::class.java,
+                                 DictAndLoc::class.java,
+                                 AvailDictInfo::class.java))
+    {
         public override fun makeListData(): Array<Any> {
             val alist = ArrayList<Any>()
             val nLangs = mLangs!!.size
@@ -177,11 +175,12 @@ class DictsDelegate(delegator: Delegator) :
                 )
             } else {
                 val item: XWListItem
-                item = if (null != convertView && convertView is XWListItem) {
-                    convertView
-                } else {
-                    XWListItem.inflate(mActivity, this@DictsDelegate)
-                }
+                item =
+                    if (null != convertView && convertView is XWListItem) {
+                        convertView
+                    } else {
+                        XWListItem.inflate(mActivity, this@DictsDelegate)
+                    }
                 result = item
                 var name: String? = null
                 if (dataObj is DictAndLoc) {
@@ -215,19 +214,21 @@ class DictsDelegate(delegator: Delegator) :
             return result!!
         }
 
-        private fun makeTestFor(langName: String?): GroupTest {
-            return GroupTest { item ->
-                val info = item as LangInfo
-                mLangs!![info.m_posn] == langName
+        private fun makeTestFor(langName: String): GroupTest {
+            return object : GroupTest {
+                override fun isTheGroup(item: Any): Boolean {
+                    val info = item as LangInfo
+                    return mLangs!![info.m_posn] == langName
+                }
             }
         }
 
-        fun removeLangItems(langName: String?) {
+        fun removeLangItems(langName: String) {
             val indx = findGroupItem(makeTestFor(langName))
             removeChildrenOf(indx)
         }
 
-        fun addLangItems(langName: String?) {
+        fun addLangItems(langName: String) {
             val indx = findGroupItem(makeTestFor(langName))
             addChildrenOf(indx, makeLangItems(langName))
         }
