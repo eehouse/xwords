@@ -132,7 +132,7 @@ class SMSInviteDelegate(delegator: Delegator) :
 
     override fun onChildAdded(child: View, data: InviterItem) {
         val rec = data as PhoneRec
-        (child as TwoStrsItem).setStrings(rec.m_name, rec.m_phone)
+        (child as TwoStrsItem).setStrings(rec.m_name!!, rec.m_phone)
     }
 
     override fun tryEnable() {
