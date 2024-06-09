@@ -881,7 +881,9 @@ class BoardDelegate(delegator: Delegator) :
             )
                 .show()
 
-            R.id.board_menu_game_pause, R.id.board_menu_game_unpause -> getConfirmPause(R.id.board_menu_game_pause == id)
+            R.id.board_menu_game_pause, R.id.board_menu_game_unpause ->
+                getConfirmPause(R.id.board_menu_game_pause == id)
+
             R.id.board_menu_dict -> {
                 val dictName = mGi!!.dictName(mView!!.curPlayer)
                 if (null != dictName) DictBrowseDelegate.launch(delegator, dictName)
