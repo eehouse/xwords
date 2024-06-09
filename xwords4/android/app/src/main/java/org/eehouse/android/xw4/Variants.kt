@@ -1,6 +1,7 @@
 /* -*- compile-command: "find-and-gradle.sh inXw4dDeb"; -*- */
 /*
- * Copyright 2022 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2022 - 2024 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -16,25 +17,21 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
+package org.eehouse.android.xw4
 
-package org.eehouse.android.xw4;
+import android.content.Context
 
+internal object Variants {
+    private val TAG: String = Variants::class.java.simpleName
+    private val KEY_LASTVAR = TAG + "/lastvar"
 
-import android.content.Context;
-
-
-class Variants {
-    private static final String TAG = Variants.class.getSimpleName();
-    private static final String KEY_LASTVAR = TAG + "/lastvar";
-
-    public static void checkUpdate( Context context )
-    {
-        String curName = BuildConfig.VARIANT_NAME;
-        String prevName = DBUtils.getStringFor( context, KEY_LASTVAR, null );
-        if ( null == prevName || !prevName.equals(curName)) {
-            DBUtils.setStringFor( context, KEY_LASTVAR, curName );
-            if ( null != prevName ) {
-                onNewVariant( context, prevName );
+    fun checkUpdate(context: Context) {
+        val curName = BuildConfig.VARIANT_NAME
+        val prevName = DBUtils.getStringFor(context, KEY_LASTVAR, null)
+        if (null == prevName || prevName != curName) {
+            DBUtils.setStringFor(context, KEY_LASTVAR, curName)
+            if (null != prevName) {
+                onNewVariant(context, prevName)
             }
         }
     }
@@ -44,9 +41,8 @@ class Variants {
     // variants. For example, I don't get asked for SMS permission when I
     // install a variant that allows SMS on top of the Google Play variant
     // that doesn't. Fix here PENDING
-    private static void onNewVariant( Context context, String prevName  )
-    {
+    private fun onNewVariant(context: Context, prevName: String) {
         Log.d( TAG, "prev variant: %s; new variant: %s", prevName,
-               BuildConfig.VARIANT_NAME );
+               BuildConfig.VARIANT_NAME)
     }
 }
