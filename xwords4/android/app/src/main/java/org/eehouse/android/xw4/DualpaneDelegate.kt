@@ -62,7 +62,7 @@ class DualpaneDelegate(delegator: Delegator) :
         return handled
     }
 
-    override fun onActivityResult(requestCode: RequestCode, resultCode: Int, data: Intent) {
+    override fun onActivityResult(requestCode: RequestCode, resultCode: Int, data: Intent?) {
         val main = m_activity as MainActivity
         main.dispatchOnActivityResult(requestCode, resultCode, data)
     }
