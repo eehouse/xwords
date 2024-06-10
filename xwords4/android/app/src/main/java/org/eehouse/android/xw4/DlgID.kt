@@ -1,6 +1,6 @@
 /* -*- compile-command: "find-and-gradle.sh inXw4dDeb"; -*- */
 /*
- * Copyright 2014 - 2017 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2014 - 2024 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -17,10 +17,9 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
+package org.eehouse.android.xw4
 
-package org.eehouse.android.xw4;
-
-public enum DlgID {
+enum class DlgID {
     NONE,
     CHANGE_GROUP,
     CONFIRM_CHANGE,
@@ -51,9 +50,9 @@ public enum DlgID {
     REVERT_COLORS,
     SET_DEFAULT,
     SHOW_SUBST,
-    WARN_NODICT_GENERIC,       // the general trying-to-open case
-    WARN_NODICT_INVITED,       // when responding to invitation
-    WARN_NODICT_SUBST,         // when a substitution will be possible/suggested
+    WARN_NODICT_GENERIC,  // the general trying-to-open case
+    WARN_NODICT_INVITED,  // when responding to invitation
+    WARN_NODICT_SUBST,  // when a substitution will be possible/suggested
     DLG_BADWORDS,
     ASK_BADWORDS,
     QUERY_MOVE,
@@ -75,8 +74,17 @@ public enum DlgID {
     MQTT_PEERS,
     ;
 
-    private boolean m_addToStack;
-    private DlgID(boolean addToStack) { m_addToStack = addToStack; }
-    private DlgID() { m_addToStack = false; }
-    boolean belongsOnBackStack() { return m_addToStack; }
+    private var m_addToStack: Boolean
+
+    constructor(addToStack: Boolean) {
+        m_addToStack = addToStack
+    }
+
+    constructor() {
+        m_addToStack = false
+    }
+
+    fun belongsOnBackStack(): Boolean {
+        return m_addToStack
+    }
 }
