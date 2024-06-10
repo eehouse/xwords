@@ -36,8 +36,6 @@ private val TAG = XWConnAddrPreference::class.java.getSimpleName()
 class XWConnAddrPreference(private val m_context: Context, attrs: AttributeSet?) :
     DialogPreference(m_context, attrs), DialogProc
 {
-    private val m_view: ConnViaViewLayout? = null
-
     init {
         val curSet = XWPrefs.getAddrTypes(context!!)
         summary = curSet.toString(context, true)
@@ -55,8 +53,8 @@ class XWConnAddrPreference(private val m_context: Context, attrs: AttributeSet?)
             val view = LocUtils.inflate(activity!!, R.layout.conn_types_display)
 
             val cvl = view.findViewById<View>(R.id.conn_types) as ConnViaViewLayout
-            cvl.configure(activity.getDelegate(), XWPrefs.getAddrTypes(activity),
-                { typ ->
+            val cew = object : ConnViaViewLayout.CheckEnabledWarner {
+                override fun warnDisabled(typ: CommsConnType) {
                     var msg: String? = null
                     var msgID = 0
                     var action: DlgDelegate.Action? = null
@@ -76,8 +74,7 @@ class XWConnAddrPreference(private val m_context: Context, attrs: AttributeSet?)
 
                         CommsConnType.COMMS_CONN_MQTT -> {
                             msg = LocUtils.getString(
-                                activity, R.string
-                                    .warn_mqtt_disabled
+                                activity, R.string.warn_mqtt_disabled
                             )
                             msg += "\n\n" + LocUtils.getString(
                                 activity,
@@ -99,17 +96,21 @@ class XWConnAddrPreference(private val m_context: Context, attrs: AttributeSet?)
                             .setNegButton(R.string.button_later)
                             .show()
                     }
-                },
-                {
+                }
+            }
+            val saw = object: ConnViaViewLayout.SetEmptyWarner {
+                override fun typeSetEmpty() {
                     activity
                         .makeOkOnlyBuilder(R.string.warn_no_comms)
                         .show()
-                }, activity
-            )
+                }
+            }
+            cvl.configure(activity.getDelegate(), XWPrefs.getAddrTypes(activity),
+                          cew, saw, activity)
 
             val onOk =
                 DialogInterface.OnClickListener { di, which ->
-                    val curSet = cvl.types
+                    val curSet = cvl.types!!
                     XWPrefs.setAddrTypes(activity, curSet)
                     mSelf.summary = curSet.toString(activity, true)
                 }

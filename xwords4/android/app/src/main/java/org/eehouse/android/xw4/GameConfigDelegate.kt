@@ -40,6 +40,7 @@ import android.widget.ListView
 import android.widget.Spinner
 import android.widget.TextView
 
+import org.eehouse.android.xw4.ConnViaViewLayout.CheckEnabledWarner
 import org.eehouse.android.xw4.DictLangCache.LangsArrayAdapter
 import org.eehouse.android.xw4.GameLock.GameLockedException
 import org.eehouse.android.xw4.NFCUtils.nfcAvail
@@ -184,24 +185,27 @@ class GameConfigDelegate(delegator: Delegator) :
                 val conTypes = params[0] as CommsConnTypeSet
                 val layout = inflate(R.layout.conn_types_display) as LinearLayout
                 val items = layout.findViewById<View>(R.id.conn_types) as ConnViaViewLayout
-                items.configure(this, conTypes,
-                    { typ ->
+
+                // cew: bug in Kotlin means interface can't be instantiated inline
+                val cew: CheckEnabledWarner = object : CheckEnabledWarner {
+                    override fun warnDisabled(typ: CommsConnType) {
                         when (typ) {
-                            CommsConnType.COMMS_CONN_SMS -> makeConfirmThenBuilder(
-                                DlgDelegate.Action.ENABLE_NBS_ASK,
-                                R.string.warn_sms_disabled
-                            )
-                                .setPosButton(R.string.button_enable_sms)
-                                .setNegButton(R.string.button_later)
-                                .show()
+                            CommsConnType.COMMS_CONN_SMS ->
+                                makeConfirmThenBuilder(
+                                    DlgDelegate.Action.ENABLE_NBS_ASK,
+                                    R.string.warn_sms_disabled
+                                )
+                                    .setPosButton(R.string.button_enable_sms)
+                                    .setNegButton(R.string.button_later)
+                                    .show()
 
                             CommsConnType.COMMS_CONN_BT -> makeConfirmThenBuilder(
-                                DlgDelegate.Action.ENABLE_BT_DO,
-                                R.string.warn_bt_disabled
-                            )
-                                .setPosButton(R.string.button_enable_bt)
-                                .setNegButton(R.string.button_later)
-                                .show()
+                                                               DlgDelegate.Action.ENABLE_BT_DO,
+                                                               R.string.warn_bt_disabled
+                                                           )
+                                                               .setPosButton(R.string.button_enable_bt)
+                                                               .setNegButton(R.string.button_later)
+                                                               .show()
 
                             CommsConnType.COMMS_CONN_RELAY -> Assert.failDbg()
                             CommsConnType.COMMS_CONN_MQTT -> {
@@ -218,8 +222,10 @@ class GameConfigDelegate(delegator: Delegator) :
 
                             else -> Assert.failDbg()
                         }
-                    }, null, this
-                )
+                    }
+                }
+
+                items.configure(this, conTypes, cew, null, this)
                 val cb = layout
                     .findViewById<View>(R.id.default_check) as CheckBox
                 cb.visibility = View.VISIBLE // "gone" in .xml file
