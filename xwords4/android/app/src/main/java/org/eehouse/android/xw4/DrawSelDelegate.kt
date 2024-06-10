@@ -1,6 +1,6 @@
 /* -*- compile-command: "find-and-gradle.sh inXw4dDeb"; -*- */
 /*
- * Copyright 2009-2014 by Eric House (xwords@eehouse.org).  All
+ * Copyright 2009 - 2024 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -17,31 +17,27 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
+package org.eehouse.android.xw4
 
-package org.eehouse.android.xw4;
+import android.graphics.drawable.ColorDrawable
+import android.graphics.drawable.Drawable
+import android.view.View
 
-import android.graphics.drawable.ColorDrawable;
-import android.graphics.drawable.Drawable;
-import android.view.View;
+private val TAG: String = DrawSelDelegate::class.java.simpleName
 
-public class DrawSelDelegate {
-    private View m_view;
-    private Drawable m_origDrawable;
-    private static ColorDrawable s_selDrawable =
-        new ColorDrawable( XWApp.SEL_COLOR );
+class DrawSelDelegate(private val mView: View) {
+    private var mOrigDrawable: Drawable? = null
 
-    protected DrawSelDelegate( View view )
-    {
-        m_view = view;
+    fun showSelected(selected: Boolean) {
+        if (selected) {
+            mOrigDrawable = mView.background
+            mView.setBackgroundDrawable(s_selDrawable)
+        } else {
+            mView.setBackgroundDrawable(mOrigDrawable)
+        }
     }
 
-    protected void showSelected( boolean selected )
-    {
-        if ( selected ) {
-            m_origDrawable = m_view.getBackground();
-            m_view.setBackgroundDrawable( s_selDrawable );
-        } else {
-            m_view.setBackgroundDrawable( m_origDrawable );
-        }
+    companion object {
+        private val s_selDrawable = ColorDrawable(XWApp.SEL_COLOR)
     }
 }
