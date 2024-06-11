@@ -68,11 +68,12 @@ class RematchConfigView(val mContext: Context, attrs: AttributeSet)
 
 	fun getName(): String
     {
-        return mEWC?.getText().toString()
+        return mEWC?.text.toString()
     }
 
     override fun onFinishInflate(): Unit
     {
+        super.onFinishInflate()
         mInflated = true
         trySetup()
     }
