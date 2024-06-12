@@ -26,42 +26,34 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.CheckBox
 import android.widget.TextView
-import org.eehouse.android.xw4.Assert.assertVarargsNotNullNR
-import org.eehouse.android.xw4.Assert.failDbg
-import org.eehouse.android.xw4.DBUtils.getBoolFor
-import org.eehouse.android.xw4.DBUtils.getSerializableFor
-import org.eehouse.android.xw4.DBUtils.setBoolFor
-import org.eehouse.android.xw4.DBUtils.setSerializableFor
-import org.eehouse.android.xw4.DlgDelegate.HasDlgDelegate
-import org.eehouse.android.xw4.KnownPlayersFrag.Companion.newInstance
-import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType
-import org.eehouse.android.xw4.jni.XwJNI.Companion.hasKnownPlayers
-import org.eehouse.android.xw4.jni.XwJNI.Companion.kplr_deletePlayer
-import org.eehouse.android.xw4.jni.XwJNI.Companion.kplr_getAddr
-import org.eehouse.android.xw4.jni.XwJNI.Companion.kplr_getPlayers
-import org.eehouse.android.xw4.jni.XwJNI.Companion.kplr_renamePlayer
-import org.eehouse.android.xw4.loc.LocUtils
+
 import java.text.DateFormat
 import java.util.Date
+
+import org.eehouse.android.xw4.DlgDelegate.HasDlgDelegate
+import org.eehouse.android.xw4.ExpandImageButton.ExpandChangeListener
+import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType
+import org.eehouse.android.xw4.jni.XwJNI
+import org.eehouse.android.xw4.loc.LocUtils
+
 
 class KnownPlayersDelegate(delegator: Delegator) :
     DelegateBase(delegator, R.layout.knownplayrs) {
     private val mActivity: Activity = delegator.activity
     private var mList: ViewGroup? = null
     private val mChildren: MutableList<ViewGroup> = ArrayList()
-    private var mExpSet: HashSet<String>? = null
+    private val mExpSet = loadExpanded()
+
     private var mByDate = false
 
     override fun init(sis: Bundle?) {
         mList = findViewById(R.id.players_list) as ViewGroup
 
-        loadExpanded()
-
-        mByDate = getBoolFor(mActivity, KEY_BY_DATE, false)
+        mByDate = DBUtils.getBoolFor(mActivity, KEY_BY_DATE, false)
 
         val sortCheck = findViewById(R.id.sort_box) as CheckBox
         sortCheck.setOnCheckedChangeListener { buttonView, checked ->
-            setBoolFor(mActivity, KEY_BY_DATE, checked)
+            DBUtils.setBoolFor(mActivity, KEY_BY_DATE, checked)
             mByDate = checked
             populateList()
         }
@@ -70,12 +62,11 @@ class KnownPlayersDelegate(delegator: Delegator) :
     }
 
     override fun onPosButton(action: DlgDelegate.Action, vararg params: Any): Boolean {
-        assertVarargsNotNullNR(*params)
         var handled = true
         when (action) {
             DlgDelegate.Action.KNOWN_PLAYER_DELETE -> {
                 val name = params[0] as String
-                kplr_deletePlayer(name)
+                XwJNI.kplr_deletePlayer(name)
                 populateList()
             }
 
@@ -85,7 +76,6 @@ class KnownPlayersDelegate(delegator: Delegator) :
     }
 
     override fun makeDialog(alert: DBAlert, vararg params: Any): Dialog {
-        assertVarargsNotNullNR(*params)
         var dialog: Dialog? = null
 
         val dlgID = alert.dlgID
@@ -110,7 +100,7 @@ class KnownPlayersDelegate(delegator: Delegator) :
 
     private fun tryRename(oldName: String, newName: String) {
         if (newName != oldName && 0 < newName.length) {
-            if (kplr_renamePlayer(oldName, newName)) {
+            if (XwJNI.kplr_renamePlayer(oldName, newName)) {
                 populateList()
             } else {
                 makeOkOnlyBuilder(
@@ -123,7 +113,7 @@ class KnownPlayersDelegate(delegator: Delegator) :
     }
 
     private fun populateList() {
-        val players = kplr_getPlayers(mByDate)
+        val players = XwJNI.kplr_getPlayers(mByDate)
         if (null == players) {
             finish()
         } else {
@@ -154,7 +144,7 @@ class KnownPlayersDelegate(delegator: Delegator) :
             children.add(getName(child))
         }
 
-        val iter = mExpSet!!.iterator()
+        val iter = mExpSet.iterator()
         while (iter.hasNext()) {
             val child = iter.next()
             if (!children.contains(child)) {
@@ -180,7 +170,7 @@ class KnownPlayersDelegate(delegator: Delegator) :
     private fun makePlayerElem(player: String): ViewGroup? {
         var view: ViewGroup? = null
         val lastMod = intArrayOf(0)
-        val addr = kplr_getAddr(player, lastMod)
+        val addr = XwJNI.kplr_getAddr(player, lastMod)
 
         if (null != addr) {
             val item = LocUtils
@@ -220,17 +210,20 @@ class KnownPlayersDelegate(delegator: Delegator) :
                 .setOnClickListener { confirmAndDelete(getName(item)) }
 
             val eib = item.findViewById<View>(R.id.expander) as ExpandImageButton
-            eib.setOnExpandChangedListener { nowExpanded ->
-                item.findViewById<View>(R.id.hidden_part).visibility =
-                    if (nowExpanded) View.VISIBLE else View.GONE
-                if (nowExpanded) {
-                    mExpSet!!.add(player)
-                } else {
-                    mExpSet!!.remove(player)
+            val ecl: ExpandChangeListener = object: ExpandChangeListener {
+                override fun expandedChanged(nowExpanded: Boolean) {
+                    item.findViewById<View>(R.id.hidden_part).visibility =
+                        if (nowExpanded) View.VISIBLE else View.GONE
+                    if (nowExpanded) {
+                        mExpSet.add(player)
+                    } else {
+                        mExpSet.remove(player)
+                    }
+                    saveExpanded()
                 }
-                saveExpanded()
             }
-            eib.setExpanded(mExpSet!!.contains(player))
+            eib.setOnExpandChangedListener(ecl)
+                .setExpanded(mExpSet.contains(player))
 
             item.findViewById<View>(R.id.player_line)
                 .setOnClickListener { eib.toggle() }
@@ -258,23 +251,23 @@ class KnownPlayersDelegate(delegator: Delegator) :
             .show()
     }
 
-    private fun loadExpanded() {
-        var expSet: HashSet<String>?
-        try {
-            expSet = getSerializableFor(mActivity, KEY_EXPSET) as HashSet<String>?
+    private fun loadExpanded(): HashSet<String> {
+        var expSet: HashSet<String>? = try {
+            DBUtils.getSerializableFor(mActivity, KEY_EXPSET)
+                as HashSet<String>
         } catch (ex: Exception) {
             Log.ex(TAG, ex)
-            expSet = null
+            null
         }
         if (null == expSet) {
             expSet = HashSet()
         }
 
-        mExpSet = expSet
+        return expSet
     }
 
     private fun saveExpanded() {
-        setSerializableFor(mActivity, KEY_EXPSET, mExpSet)
+        DBUtils.setSerializableFor(mActivity, KEY_EXPSET, mExpSet)
     }
 
     companion object {
@@ -289,13 +282,13 @@ class KnownPlayersDelegate(delegator: Delegator) :
         ) {
             val activity = delegator.activity
 
-            if (hasKnownPlayers()) {
+            if (XwJNI.hasKnownPlayers()) {
                 delegator.addFragment(
-                    newInstance(delegator),
+                    KnownPlayersFrag.newInstance(delegator),
                     null
                 )
             } else {
-                failDbg()
+                Assert.failDbg()
             }
         }
     }

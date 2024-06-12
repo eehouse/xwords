@@ -47,6 +47,7 @@ import org.eehouse.android.xw4.DBUtils.getSerializableFor
 import org.eehouse.android.xw4.DBUtils.setSerializableFor
 import org.eehouse.android.xw4.DbgUtils.assertOnUIThread
 import org.eehouse.android.xw4.DictUtils.DictLoc
+import org.eehouse.android.xw4.ExpandImageButton.ExpandChangeListener
 import org.eehouse.android.xw4.PatTableRow.EnterPressed
 import org.eehouse.android.xw4.Utils.ISOCode
 import org.eehouse.android.xw4.jni.DictInfo
@@ -211,14 +212,18 @@ class DictBrowseDelegate constructor(delegator: Delegator) : DelegateBase(
             mDict = XwJNI.makeDict(pairs.m_bytes[0], mName, pairs.m_paths[0])
             mDictInfo = XwJNI.dict_getInfo(mDict!!, false)
             title = getString(R.string.dict_browse_title_fmt, mName, mDictInfo!!.wordCount)
-            val eib = findViewById(R.id.expander) as ExpandImageButton
-            eib.setOnExpandChangedListener { nowExpanded ->
-                mBrowseState!!.mExpanded = nowExpanded
-                setShowConfig()
-                if (!nowExpanded) {
-                    hideSoftKeyboard()
+
+            val ecl: ExpandChangeListener = object: ExpandChangeListener {
+                override fun expandedChanged(nowExpanded: Boolean) {
+                    mBrowseState!!.mExpanded = nowExpanded
+                    setShowConfig()
+                    if (!nowExpanded) {
+                        hideSoftKeyboard()
+                    }
                 }
             }
+            val eib = (findViewById(R.id.expander) as ExpandImageButton)
+                .setOnExpandChangedListener(ecl)
                 .setExpanded(mBrowseState!!.mExpanded)
             val ids = intArrayOf(
                 R.id.button_useconfig, R.id.button_addBlank,
