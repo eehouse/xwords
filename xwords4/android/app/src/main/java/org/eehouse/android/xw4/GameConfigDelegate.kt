@@ -1143,7 +1143,7 @@ class GameConfigDelegate(delegator: Delegator) :
                 applyChanges(mJniThread!!.getLock(), forceNew)
             } else {
                 try {
-                    GameLock.lock(mRowid, 100L).use { lock -> applyChanges(lock, forceNew) }
+                    GameLock.lock(mRowid, 100L).use { lock -> applyChanges(lock!!, forceNew) }
                 } catch (gle: GameLockedException) {
                     Log.e(TAG, "applyChanges(): failed to get lock")
                 }

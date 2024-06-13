@@ -461,17 +461,15 @@ class BoardDelegate(delegator: Delegator) :
         noteOpened(mActivity, mRowid)
     } // init
 
-    private val lock: Unit
-        private get() {
-            GameLock.getLockThen(
-                mRowid, 100L, Handler()
-            )  // this doesn't unlock
-            { lock ->
+    private fun getLock()
+    {
+        val then = object: GameLock.GotLockProc {
+            override fun gotLock(lock: GameLock?) {
                 if (null == lock) {
                     finish()
                     if (BuildConfig.REPORT_LOCKS && ++s_noLockCount == 3) {
                         val msg = ("BoardDelegate unable to get lock; holder stack: "
-                                + GameLock.getHolderDump(mRowid))
+                                   + GameLock.getHolderDump(mRowid))
                         Log.e(TAG, msg)
                     }
                 } else {
@@ -496,7 +494,9 @@ class BoardDelegate(delegator: Delegator) :
                     }
                 }
             }
-        } // getLock
+        }
+        GameLock.getLockThen(mRowid, 100L, Handler(), then)
+    } // getLock
 
     override fun onStart() {
         super.onStart()
@@ -532,7 +532,7 @@ class BoardDelegate(delegator: Delegator) :
             doResume(false)
         } else {
             mResumeSkipped = true
-            lock
+            getLock()
         }
     }
 

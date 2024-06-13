@@ -876,7 +876,7 @@ object GameUtils {
                 applyChanges2(
                     context, sink, gi, util, hostAddr,
                     null as Map<CommsConnType, BooleanArray>?,
-                    lock, false /*forceNew*/
+                    lock!!, false /*forceNew*/
                 )
             }
         }
