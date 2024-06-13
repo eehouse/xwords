@@ -45,7 +45,6 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.TextView;
 
 import com.jakewharton.processphoenix.ProcessPhoenix;
 
@@ -54,7 +53,6 @@ import org.eehouse.android.xw4.Utils.ISOCode;
 import org.eehouse.android.xw4.DBUtils.GameGroupInfo;
 import org.eehouse.android.xw4.DBUtils.SentInvitesInfo;
 import org.eehouse.android.xw4.DlgDelegate.Action;
-import org.eehouse.android.xw4.DlgDelegate.ActionPair;
 import org.eehouse.android.xw4.DwnldDelegate.DownloadFinishedListener;
 import org.eehouse.android.xw4.DwnldDelegate.OnGotLcDictListener;
 import org.eehouse.android.xw4.Perms23.Perm;
@@ -74,7 +72,6 @@ import androidx.annotation.NonNull;
 import java.io.File;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
