@@ -266,11 +266,10 @@ abstract public class InviteDelegate extends DelegateBase
             InviterItem item = child.getItem();
             if ( m_checked.contains( item.getDev() ) ) {
                 list.add( item );
-                Assert.assertTrue( child.isChecked() || !BuildConfig.DEBUG );
+                Assert.assertTrue( child.getChecked() || !BuildConfig.DEBUG );
             }
         }
-        InviterItem[] result = list.toArray( new InviterItem[list.size()] );
-        return result;
+        return list.toArray( new InviterItem[list.size()] );
     }
 
     ////////////////////////////////////////
