@@ -31,7 +31,7 @@ import org.eehouse.android.xw4.DlgDelegate.DlgClickNotify.InviteMeans
 
 class DualpaneDelegate(delegator: Delegator) :
     DelegateBase(delegator, R.layout.dualcontainer) {
-    private val m_activity: Activity = delegator.activity
+    private val m_activity: Activity = delegator.getActivity()!!
 
     override fun init(savedInstanceState: Bundle?) {}
 

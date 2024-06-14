@@ -608,7 +608,7 @@ class GameConfigDelegate(delegator: Delegator) :
     private var mTimerStuffInited = false
 
     init {
-        mActivity = delegator.getActivity()
+        mActivity = delegator.getActivity()!!
     }
 
     private fun tweakTimerStuff() {
@@ -1226,7 +1226,7 @@ class GameConfigDelegate(delegator: Delegator) :
             delegator
                 .addFragmentForResult(
                     GameConfigFrag.newInstance(delegator),
-                    bundle, requestCode
+                    bundle, requestCode!!
                 )
         }
 
@@ -1242,7 +1242,7 @@ class GameConfigDelegate(delegator: Delegator) :
             delegator
                 .addFragmentForResult(
                     GameConfigFrag.newInstance(delegator),
-                    bundle, requestCode
+                    bundle, requestCode!!
                 )
         }
     }

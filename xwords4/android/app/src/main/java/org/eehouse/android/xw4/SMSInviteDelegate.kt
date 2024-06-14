@@ -41,7 +41,7 @@ import java.util.Collections
 class SMSInviteDelegate(delegator: Delegator) :
     InviteDelegate(delegator) {
     private var m_phoneRecs: ArrayList<PhoneRec>? = null
-    private val m_activity: Activity = delegator.activity
+    private val m_activity: Activity = delegator.getActivity()!!
 
     override fun init(savedInstanceState: Bundle?) {
         super.init(savedInstanceState)

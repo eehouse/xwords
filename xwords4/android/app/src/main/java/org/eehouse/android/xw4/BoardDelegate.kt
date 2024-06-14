@@ -2504,7 +2504,7 @@ class BoardDelegate(delegator: Delegator) :
     }
 
     init {
-        mActivity = delegator.getActivity()
+        mActivity = delegator.getActivity()!!
     }
 
     private fun nliForMe(): NetLaunchInfo {

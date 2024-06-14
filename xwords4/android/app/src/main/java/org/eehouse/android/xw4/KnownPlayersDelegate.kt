@@ -39,7 +39,7 @@ import org.eehouse.android.xw4.loc.LocUtils
 
 class KnownPlayersDelegate(delegator: Delegator) :
     DelegateBase(delegator, R.layout.knownplayrs) {
-    private val mActivity: Activity = delegator.activity
+    private val mActivity: Activity = delegator.getActivity()!!
     private var mList: ViewGroup? = null
     private val mChildren: MutableList<ViewGroup> = ArrayList()
     private val mExpSet = loadExpanded()
@@ -280,7 +280,7 @@ class KnownPlayersDelegate(delegator: Delegator) :
             delegator: Delegator,
             dlg: HasDlgDelegate?
         ) {
-            val activity = delegator.activity
+            val activity = delegator.getActivity()
 
             if (XwJNI.hasKnownPlayers()) {
                 delegator.addFragment(

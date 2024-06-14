@@ -246,11 +246,11 @@ open class XWActivity : FragmentActivity(), Delegator, DlgClickNotify {
     }
 
     override fun setListAdapter(adapter: ListAdapter) {
-        listView.setAdapter(adapter)
+        getListView().setAdapter(adapter)
     }
 
     override fun getListAdapter(): ListAdapter {
-        return listView.adapter
+        return getListView().adapter
     }
 
     override fun addFragment(fragment: XWFragment, extras: Bundle?) {

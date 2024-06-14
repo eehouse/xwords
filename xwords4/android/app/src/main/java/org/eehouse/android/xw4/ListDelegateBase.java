@@ -44,7 +44,7 @@ public abstract class ListDelegateBase extends DelegateBase {
 
     protected void setListAdapter( ListAdapter adapter )
     {
-        m_delegator.setListAdapter( adapter );
+        m_delegator.setListAdapter(adapter);
     }
 
     protected ListAdapter setListAdapter()

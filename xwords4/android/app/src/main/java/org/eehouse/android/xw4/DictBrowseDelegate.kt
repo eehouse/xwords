@@ -731,7 +731,7 @@ class DictBrowseDelegate constructor(delegator: Delegator) : DelegateBase(
     }
 
     init {
-        mActivity = delegator.getActivity()
+        mActivity = delegator.getActivity()!!
     }
 
     private fun enableResetChecker(enable: Boolean) {
@@ -797,7 +797,7 @@ class DictBrowseDelegate constructor(delegator: Delegator) : DelegateBase(
 
         @JvmStatic
         fun launch(delegator: Delegator, name: String) {
-            val loc = DictUtils.getDictLoc(delegator.getActivity(), name)
+            val loc = DictUtils.getDictLoc(delegator.getActivity()!!, name)
             if (null == loc) {
                 Log.w(TAG, "launch(): DictLoc null; try again?")
             } else {

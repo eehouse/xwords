@@ -1,6 +1,7 @@
 /* -*- compile-command: "find-and-gradle.sh inXw4dDeb"; -*- */
 /*
- * Copyright 2014 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2014 - 2024 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -16,23 +17,25 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
+package org.eehouse.android.xw4
 
-package org.eehouse.android.xw4;
+import android.app.Activity
+import android.os.Bundle
+import android.widget.ListAdapter
+import android.widget.ListView
 
-import android.app.Activity;
-import android.os.Bundle;
-import android.widget.ListAdapter;
-import android.widget.ListView;
+interface Delegator {
+    fun getActivity(): Activity?
+    fun getArguments(): Bundle?
+    fun finish()
+    fun addFragment(fragment: XWFragment, extras: Bundle?)
+    fun addFragmentForResult(
+        fragment: XWFragment, extras: Bundle,
+        requestCode: RequestCode
+    )
 
-public interface Delegator {
-    Activity getActivity();
-    Bundle getArguments();
-    void finish();
-    void addFragment( XWFragment fragment, Bundle extras );
-    void addFragmentForResult( XWFragment fragment, Bundle extras,
-                               RequestCode requestCode );
     // For activities with lists
-    void setListAdapter( ListAdapter adapter );
-    ListAdapter getListAdapter();
-    ListView getListView();
+    fun setListAdapter(adapter: ListAdapter)
+    fun getListAdapter(): ListAdapter?
+    fun getListView(): ListView?
 }

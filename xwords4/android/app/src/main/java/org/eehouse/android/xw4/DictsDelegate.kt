@@ -911,7 +911,7 @@ class DictsDelegate(delegator: Delegator) :
     }
 
     init {
-        mActivity = delegator.getActivity()
+        mActivity = delegator.getActivity()!!
     }
 
     override fun curThis(): DictsDelegate {
@@ -1309,7 +1309,7 @@ class DictsDelegate(delegator: Delegator) :
             curDict: String, isoCode: ISOCode
         ) {
             val itemData = HashMap<MenuItem, DictAndLoc>()
-            val context: Context = dlgtor.getActivity()
+            val context: Context = dlgtor.getActivity()!!
             val listener = MenuItem.OnMenuItemClickListener { item ->
                 val dal = itemData[item]
                 val prevKey = keyForLang(isoCode)

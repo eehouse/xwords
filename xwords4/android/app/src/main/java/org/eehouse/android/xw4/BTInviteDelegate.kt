@@ -103,7 +103,7 @@ class BTInviteDelegate(delegator: Delegator) :
     }
 
     init {
-        mActivity = delegator.getActivity()
+        mActivity = delegator.getActivity()!!
     }
 
     override fun init(savedInstanceState: Bundle?) {

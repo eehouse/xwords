@@ -38,7 +38,7 @@ abstract class IsoWordsBase(delegator: Delegator, private val CHECKED_KEY: Strin
 	  SelectableItem, View.OnLongClickListener, View.OnClickListener,
       AdapterView.OnItemSelectedListener
 {
-	val m_activity = delegator.getActivity()
+	val m_activity = delegator.getActivity()!!
 
 	var m_pickView: LabeledSpinner? = null
 	var m_spinner: Spinner? = null

@@ -47,7 +47,7 @@ class ChatDelegate(delegator: Delegator) :
     private var m_scroll: ScrollView? = null
 
     init {
-        m_activity = delegator.getActivity()
+        m_activity = delegator.getActivity()!!
     }
 
     override fun init(savedInstanceState: Bundle?) {
