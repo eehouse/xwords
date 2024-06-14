@@ -58,7 +58,7 @@ class LangListPreference(private val mContext: Context, attrs: AttributeSet?)
         }
 
         if (!haveDictForLang) {
-            curLang = DictLangCache.getLangNameForISOCode(mContext, Utils.ISO_EN)
+            curLang = DictLangCache.getLangNameForISOCode(mContext, Utils.ISO_EN)!!
             setValue(curLang)
         }
         forceDictsMatch(curLang)
@@ -87,7 +87,7 @@ class LangListPreference(private val mContext: Context, attrs: AttributeSet?)
 
                 val curDict = pref!!.value.toString()
                 if (!DictUtils.dictExists(mContext, curDict)
-                    || !isoCode.equals(
+                    || !isoCode!!.equals(
                         DictLangCache.getDictISOCode(
                             mContext,
                             curDict

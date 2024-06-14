@@ -165,7 +165,7 @@ class MultiService {
             onDecline: DialogInterface.OnClickListener?
         ): Dialog {
             val lang = intent.getIntExtra(LANG, -1)
-            val isoCode = ISOCode.newIf(intent.getStringExtra(ISO))
+            val isoCode = ISOCode.newIf(intent.getStringExtra(ISO))!!
             val langName = DictLangCache.getLangNameForISOCode(context, isoCode)
             val dict = intent.getStringExtra(DICT)
             val inviter = intent.getStringExtra(INVITER)
@@ -199,7 +199,7 @@ class MultiService {
             var downloaded = isMissingDictIntent(intent)
             if (downloaded) {
                 val isoCode = ISOCode.newIf(intent.getStringExtra(ISO))
-                val dict = intent.getStringExtra(DICT)
+                val dict = intent.getStringExtra(DICT)!!
                 downloaded = DictLangCache.haveDict(context, isoCode, dict)
                 if (downloaded) {
                     val ordinal = intent.getIntExtra(OWNER, -1)

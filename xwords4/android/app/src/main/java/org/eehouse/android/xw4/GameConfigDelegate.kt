@@ -282,10 +282,7 @@ class GameConfigDelegate(delegator: Delegator) :
         val dictLabel = playerView
             .findViewById<View>(R.id.dict_label) as TextView
         if (localOnlyGame()) {
-            val langName = DictLangCache.getLangNameForISOCode(
-                mActivity,
-                gi.isoCode()
-            )
+            val langName = DictLangCache.getLangNameForISOCode(mActivity, gi.isoCode()!!)
             val label = getString(R.string.dict_lang_label_fmt, langName)
             dictLabel.text = label
         } else {
@@ -459,7 +456,7 @@ class GameConfigDelegate(delegator: Delegator) :
                 } else {
                     ISOCode.newIf(data!!.getStringExtra(DictsDelegate.RESULT_LAST_LANG))
                 }
-                val langName = DictLangCache.getLangNameForISOCode(mActivity, isoCode)
+                val langName = DictLangCache.getLangNameForISOCode(mActivity, isoCode!!)!!
                 selLangChanged(langName)
                 setLangSpinnerSelection(langName)
             }
@@ -929,13 +926,13 @@ class GameConfigDelegate(delegator: Delegator) :
                                 RequestCode.REQUEST_LANG_GC
                             )
                         } else {
-                            val langName = adapter.getLangAtPosition(position)
+                            val langName = adapter.getLangAtPosition(position)!!
                             selLangChanged(langName)
                         }
                     }
                 }
             }
-            val lang = DictLangCache.getLangNameForISOCode(mActivity, mGi!!.isoCode())
+            val lang = DictLangCache.getLangNameForISOCode(mActivity, mGi!!.isoCode()!!)!!
             configSpinnerWDownload(mLangSpinner, adapter, onSel, lang)
         }
     }

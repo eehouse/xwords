@@ -256,14 +256,14 @@ class GameListItem(private val m_context: Context, aset: AttributeSet?) :
     private val dictLang: String
         get() {
             var langName = DictLangCache
-                .getLangNameForISOCode(m_context, mSummary!!.isoCode)
+                .getLangNameForISOCode(m_context, mSummary!!.isoCode!!)
             if (null == langName) {
                 langName = LocUtils.getString(
                     m_context, R.string.langUnknownFmt,
                     mSummary!!.isoCode
                 )
             }
-            return langName
+            return langName!!
         }
 
     private fun setData(summary: GameSummary?, expanded: Boolean) {

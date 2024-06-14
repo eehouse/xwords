@@ -293,7 +293,7 @@ class DictBrowseDelegate constructor(delegator: Delegator) : DelegateBase(
                 val info = params[0] as String
                 val tilesView = inflate(R.layout.tiles_table)
                 addTileRows(tilesView, info)
-                val langName = DictLangCache.getLangNameForISOCode(mActivity, mLang)
+                val langName = DictLangCache.getLangNameForISOCode(mActivity, mLang!!)
                 title = getString(R.string.show_tiles_title_fmt, langName)
                 dialog = makeAlertBuilder()
                     .setView(tilesView)
@@ -517,7 +517,7 @@ class DictBrowseDelegate constructor(delegator: Delegator) : DelegateBase(
                 if (null != strPat && 0 < strPat.length) {
                     val choices = XwJNI.dict_strToTiles(mDict!!, strPat)
                     if (null == choices || 0 == choices.size) {
-                        val langName = DictLangCache.getLangNameForISOCode(mActivity, mLang)
+                        val langName = DictLangCache.getLangNameForISOCode(mActivity, mLang!!)
                         makeOkOnlyBuilder(R.string.no_tiles_exist, strPat, langName)
                             .setActionPair(
                                 DlgDelegate.Action.SHOW_TILES,

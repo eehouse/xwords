@@ -657,7 +657,7 @@ object Utils {
         context: Context,
         langName: String?, dictName: String?
     ): Uri {
-        val isoCode = DictLangCache.getLangIsoCode(context, langName)
+        val isoCode = DictLangCache.getLangIsoCode(context, langName!!)
         return makeDictUriFromCode(context, isoCode, dictName)
     }
 
@@ -910,7 +910,7 @@ object Utils {
     }
 
     @JvmField
-    val ISO_EN: ISOCode? = ISOCode.newIf("en")
+    val ISO_EN: ISOCode = ISOCode.newIf("en")!!
 
     internal abstract class OnNothingSelDoesNothing
 

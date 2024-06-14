@@ -249,7 +249,7 @@ abstract class IsoWordsBase(delegator: Delegator, private val CHECKED_KEY: Strin
 				for ( ii in 0 ..< siz ) {
 					val isoCode = m_langCodes!![ii]
 					myNames.add( DictLangCache.getLangNameForISOCode( m_activity,
-																	  isoCode ))
+																	  isoCode )!!)
 					if ( isoCode.equals( startLang ) ) {
 						startIndex = ii
 					}

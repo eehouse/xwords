@@ -1729,7 +1729,7 @@ class BoardDelegate(delegator: Delegator) :
                 val isoCode = ISOCode.newIf(isoCodeStr)
                 if (DictLangCache.haveDict(
                         mActivity, isoCode,
-                        newName
+                        newName!!
                     )
                 ) {
                     dlgID = DlgID.DLG_USEDICT

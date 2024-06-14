@@ -233,12 +233,12 @@ class DictsDelegate(delegator: Delegator) :
             addChildrenOf(indx, makeLangItems(langName))
         }
 
-        private fun makeLangItems(langName: String?): ArrayList<Any> {
+        private fun makeLangItems(langName: String): ArrayList<Any> {
             val result = ArrayList<Any>()
             val locals = HashSet<String>()
             val isoCode = DictLangCache.getLangIsoCode(m_context, langName)
-            val dals = DictLangCache.getDALsHaveLang(m_context, isoCode)
-            dals?.map{locals.add(it.name)}
+            val dals = DictLangCache.getDALsHaveLang(m_context, isoCode!!)
+            dals.map{locals.add(it.name)}
 
             if (mShowRemote && null != mRemoteInfo) {
                 val infos = mRemoteInfo!![langName]
@@ -612,7 +612,7 @@ class DictsDelegate(delegator: Delegator) :
     private fun setDefault(name: String?, keyId: Int, otherKey: Int) {
         val isoCode = DictLangCache.getDictISOCode(mActivity, name)
         val curLangName = XWPrefs.getPrefsString(mActivity, R.string.key_default_language)
-        val curISOCode = DictLangCache.getLangIsoCode(mActivity, curLangName)
+        val curISOCode = DictLangCache.getLangIsoCode(mActivity, curLangName!!)
         val changeLang = isoCode != curISOCode
         val sp = PreferenceManager.getDefaultSharedPreferences(mActivity)
         val editor = sp.edit()
@@ -704,7 +704,7 @@ class DictsDelegate(delegator: Delegator) :
 
             init {
                 delDicts = HashSet()
-                langName = DictLangCache.getLangNameForISOCode(mActivity, isoCode)
+                langName = DictLangCache.getLangNameForISOCode(mActivity, isoCode!!)!!
                 nDicts = DictLangCache.getDALsHaveLang(mActivity, isoCode).size
             }
         }
@@ -1353,7 +1353,7 @@ class DictsDelegate(delegator: Delegator) :
             delegator: Delegator, button: View,
             curDict: String, isoCode: ISOCode
         ): Boolean {
-            val nDicts = DictLangCache.getLangCount(delegator.getActivity(), isoCode)
+            val nDicts = DictLangCache.getLangCount(delegator.getActivity()!!, isoCode)
             val canHandle = 1 < nDicts
             if (canHandle) {
                 doPopup(delegator, button, curDict, isoCode)

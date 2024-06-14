@@ -470,7 +470,7 @@ class CurGameInfo : Serializable {
     }
 
     fun langName(context: Context): String {
-        return DictLangCache.getLangNameForISOCode(context, isoCode())
+        return DictLangCache.getLangNameForISOCode(context, isoCode()!!)!!
     }
 
     fun dictName(lp: LocalPlayer): String {
@@ -576,9 +576,9 @@ class CurGameInfo : Serializable {
         // right language.
 
         val humanDict =
-            DictLangCache.getBestDefault(context, isoCode(), true)
+            DictLangCache.getBestDefault(context, isoCode()!!, true)
         val robotDict =
-            DictLangCache.getBestDefault(context, isoCode(), false)
+            DictLangCache.getBestDefault(context, isoCode()!!, false)
 
         if (null == dictName || !dictExists(context, dictName!!)
             || !DictLangCache.getDictISOCode(context, dictName).equals(isoCode())

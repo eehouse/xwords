@@ -44,7 +44,7 @@ class DictListPreference(private val mContext: Context, attrs: AttributeSet?) :
         if (TextUtils.isEmpty(curLang)) {
             curLang = LocUtils.getString(mContext, R.string.lang_name_english)
         }
-        var isoCode = DictLangCache.getLangIsoCode(mContext, curLang)
+        var isoCode = DictLangCache.getLangIsoCode(mContext, curLang!!)
         if (null == isoCode) { // work around crash reported via Play Store
             isoCode = Utils.ISO_EN
         }
@@ -55,7 +55,7 @@ class DictListPreference(private val mContext: Context, attrs: AttributeSet?) :
         dals!!.map {
             if (isoCode!!.equals(DictLangCache.getDictISOCode(mContext, it))) {
                 values.add(it.name)
-                dictEntries.add(DictLangCache.annotatedDictName(mContext, it))
+                dictEntries.add(DictLangCache.annotatedDictName(mContext, it)!!)
             }
         }
         entries = dictEntries.toTypedArray<String>()
