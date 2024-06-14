@@ -1049,7 +1049,7 @@ class GameConfigDelegate(delegator: Delegator) :
                 }
             }
             for (typ in mConTypes!!) {
-                val bools = mDisabMap!![typ]
+                val bools = mDisabMap!![typ]!!
                 val item = inflate(R.layout.disables_item) as DisablesItem
                 item.init(typ, bools)
                 disableds.addView(item)
