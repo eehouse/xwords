@@ -33,13 +33,13 @@ object DbgUtils {
     private val TAG = DbgUtils::class.java.getSimpleName()
 
     @JvmStatic
-    fun showf(format: String?, vararg args: Any?) {
+    fun showf(format: String, vararg args: Any?) {
         Assert.assertVarargsNotNullNR(args)
         showf(XWApp.getContext(), format, *args)
     }
 
     @JvmStatic
-    fun showf(context: Context, format: String?, vararg args: Any?) {
+    fun showf(context: Context, format: String, vararg args: Any?) {
         Assert.assertVarargsNotNullNR(args)
         val formatter = Formatter()
         val msg = formatter.format(format, *args).toString()
