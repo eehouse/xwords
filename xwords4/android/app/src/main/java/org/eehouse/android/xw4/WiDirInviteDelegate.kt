@@ -61,7 +61,7 @@ class WiDirInviteDelegate(delegator: Delegator) :
 
     override fun onChildAdded(child: View, data: InviterItem) {
         val pair = data as TwoStringPair
-        (child as TwoStrsItem).setStrings(pair.str2, pair.dev)
+        (child as TwoStrsItem).setStrings(pair.str2!!, pair.getDev())
     }
 
     // DevSetListener interface

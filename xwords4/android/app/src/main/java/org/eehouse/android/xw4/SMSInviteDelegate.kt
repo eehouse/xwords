@@ -77,7 +77,7 @@ class SMSInviteDelegate(delegator: Delegator) :
 
             R.id.manual_add_button -> showDialogFragment(DlgID.GET_NUMBER)
             R.id.button_clear -> {
-                val count = checked.size
+                val count = getChecked().size
                 val msg = getQuantityString(
                     R.plurals.confirm_clear_sms_fmt,
                     count, count
@@ -139,7 +139,7 @@ class SMSInviteDelegate(delegator: Delegator) :
         super.tryEnable()
 
         val button = findViewById(R.id.button_clear) as? Button
-        button?.isEnabled = 0 < checked.size
+        button?.isEnabled = 0 < getChecked().size
     }
 
     // DlgDelegate.DlgClickNotify interface
@@ -239,7 +239,7 @@ class SMSInviteDelegate(delegator: Delegator) :
             )
         }
 
-        updateList(m_phoneRecs)
+        updateList(m_phoneRecs!!)
         tryEnable()
     }
 
@@ -274,10 +274,10 @@ class SMSInviteDelegate(delegator: Delegator) :
     }
 
     private fun clearSelectedImpl() {
-        val checked = checked
+        val checked = getChecked()
         val iter = m_phoneRecs!!.iterator()
         while (iter.hasNext()) {
-            if (checked.contains(iter.next().dev)) {
+            if (checked.contains(iter.next().getDev())) {
                 iter.remove()
             }
         }
@@ -302,7 +302,7 @@ class SMSInviteDelegate(delegator: Delegator) :
             return m_phone
         }
 
-        override fun equals(item: InviterItem): Boolean {
+        override fun equals(item: InviterItem?): Boolean {
             var result = false
             if (null != item && item is PhoneRec) {
                 val rec = item

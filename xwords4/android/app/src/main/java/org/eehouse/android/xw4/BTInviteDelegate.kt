@@ -48,7 +48,7 @@ class BTInviteDelegate(delegator: Delegator) :
         Serializable {
         override fun equals(item: InviterItem?): Boolean = item?.getDev() == getDev()
 
-        override fun getDev(): String = mName
+        override fun getDev(): String { return mName }
     }
 
     private class Persisted : Serializable {
@@ -71,7 +71,7 @@ class BTInviteDelegate(delegator: Delegator) :
                 val iter = mDevs.iterator()
                 while (iter.hasNext()) {
                     val dev = iter.next()
-                    if (TextUtils.equals(dev.dev, devName)) {
+                    if (TextUtils.equals(dev.getDev(), devName)) {
                         iter.remove()
                         break
                     }
@@ -87,8 +87,8 @@ class BTInviteDelegate(delegator: Delegator) :
             Collections.sort(mDevs) { rec1, rec2 ->
                 var result = 0
                 try {
-                    val val1 = mTimeStamps[rec1.dev]!!
-                    val val2 = mTimeStamps[rec2.dev]!!
+                    val val1 = mTimeStamps[rec1.getDev()]!!
+                    val val2 = mTimeStamps[rec2.getDev()]!!
                     if (val2 > val1) {
                         result = 1
                     } else if (val1 > val2) {
@@ -141,7 +141,7 @@ class BTInviteDelegate(delegator: Delegator) :
             R.id.button_scan -> scan()
             R.id.button_settings -> BTUtils.openBTSettings(mActivity)
             R.id.button_clear -> {
-                val count = checked.size
+                val count = getChecked().size
                 val msg = (getQuantityString(
                     R.plurals.confirm_clear_bt_fmt,
                     count, count
@@ -154,7 +154,7 @@ class BTInviteDelegate(delegator: Delegator) :
     }
 
     override fun onChildAdded(child: View, data: InviterItem) {
-        val devName = (data as BTDev).dev
+        val devName = (data as BTDev).getDev()
         var msg: String? = null
         if (sPersistedRef[0]!!.mTimeStamps.containsKey(devName)) {
             val elapsed = DateUtils
@@ -171,7 +171,7 @@ class BTInviteDelegate(delegator: Delegator) :
     override fun tryEnable() {
         super.tryEnable()
         val button = findViewById(R.id.button_clear) as Button?
-        button?.setEnabled(0 < checked.size)
+        button?.setEnabled(0 < getChecked().size)
     }
 
     // interface ScanListener
@@ -267,7 +267,7 @@ class BTInviteDelegate(delegator: Delegator) :
             DlgDelegate.Action.OPEN_BT_PREFS_ACTION -> BTUtils.openBTSettings(mActivity)
 
             DlgDelegate.Action.CLEAR_ACTION -> {
-                sPersistedRef[0]!!.remove(checked)
+                sPersistedRef[0]!!.remove(getChecked())
                 store(mActivity)
                 clearChecked()
                 updateList()
@@ -315,7 +315,7 @@ class BTInviteDelegate(delegator: Delegator) :
             }
             val toRemove: MutableSet<String> = HashSet()
             for (dev in prs!!.mDevs) {
-                val name = dev.dev
+                val name = dev.getDev()
                 if (!paired.contains(name)) {
                     Log.d(TAG, "%s no longer paired; removing", name)
                     toRemove.add(name)
