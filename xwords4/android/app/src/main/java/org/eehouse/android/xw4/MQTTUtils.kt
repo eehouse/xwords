@@ -497,7 +497,7 @@ class MQTTUtils private constructor(context: Context, resendOnConnect: Boolean) 
 
         fun receiveMessage(rowid: Long, sink: MultiMsgSink, msg: ByteArray) {
             // Log.d( TAG, "receiveMessage(rowid=%d, len=%d)", rowid, msg.length )
-            receiveMessage(rowid, sink, msg, mReturnAddr)
+            receiveMessage(rowid, sink, msg, mReturnAddr!!)
         }
     }
 

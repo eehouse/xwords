@@ -160,7 +160,7 @@ class JNIThread private constructor(lockIn: GameLock) : Thread(), AutoCloseable 
     private inner class QueueElem(
         val m_cmd: JNICmd,
         val m_isUIEvent: Boolean,
-        val m_args: Array<Any?>
+        val m_args: Array<Any>
     )
 
     fun configure(
@@ -742,18 +742,18 @@ class JNIThread private constructor(lockIn: GameLock) : Thread(), AutoCloseable 
         Assert.assertTrue(null == m_lock || !BuildConfig.DEBUG)
     }
 
-    fun handleBkgrnd(cmd: JNICmd, vararg args: Any?) {
+    fun handleBkgrnd(cmd: JNICmd, vararg args: Any) {
         // DbgUtils.logf( "adding: %s", cmd.toString() );
         Assert.assertVarargsNotNullNR(*args)
         m_queue.add(QueueElem(cmd, false, arrayOf(*args)))
     }
 
-    fun receive(msg: ByteArray?, addr: CommsAddrRec?): JNIThread {
+    fun receive(msg: ByteArray, addr: CommsAddrRec): JNIThread {
         handle(JNICmd.CMD_RECEIVE, msg, addr)
         return this
     }
 
-    fun sendChat(chat: String?) {
+    fun sendChat(chat: String) {
         handle(JNICmd.CMD_SENDCHAT, chat)
     }
 
@@ -762,7 +762,7 @@ class JNIThread private constructor(lockIn: GameLock) : Thread(), AutoCloseable 
             .sendToTarget()
     }
 
-    fun handle(cmd: JNICmd, vararg args: Any?) {
+    fun handle(cmd: JNICmd, vararg args: Any) {
         Assert.assertVarargsNotNullNR(*args)
         if (m_stopped && JNICmd.CMD_NONE != cmd) {
             Log.w(TAG, "handle(%s): NOT adding to stopped thread!!!", cmd)

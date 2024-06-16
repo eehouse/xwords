@@ -45,8 +45,8 @@ internal abstract class XWServiceHelper(private val mContext: Context) {
 
     fun receiveMessage(
         gameID: Int,
-        sink: MultiMsgSink?, msg: ByteArray?,
-        addr: CommsAddrRec?
+        sink: MultiMsgSink?, msg: ByteArray,
+        addr: CommsAddrRec
     ): ReceiveResult {
         var result: ReceiveResult
         val rowids = DBUtils.getRowIDsFor(mContext, gameID)
@@ -54,8 +54,8 @@ internal abstract class XWServiceHelper(private val mContext: Context) {
             result = ReceiveResult.GAME_GONE
         } else {
             result = ReceiveResult.UNCONSUMED
-            for (rowid in rowids) {
-                if (receiveMessage(rowid, sink, msg, addr)) {
+            rowids.map{
+                if (receiveMessage(it, sink, msg, addr)) {
                     result = ReceiveResult.OK
                 }
             }
@@ -65,7 +65,7 @@ internal abstract class XWServiceHelper(private val mContext: Context) {
 
     protected fun receiveMessage(
         rowid: Long, sink: MultiMsgSink?,
-        msg: ByteArray?, addr: CommsAddrRec?
+        msg: ByteArray, addr: CommsAddrRec
     ): Boolean {
         var sink = sink
         var allConsumed = true
