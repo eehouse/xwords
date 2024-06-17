@@ -111,7 +111,7 @@ class ConnViaViewLayout(context: Context, aset: AttributeSet?) :
         ) {
             if (null != mParent) {
                 Perms23.tryGetPerms(
-                    mParent, BTUtils.BTPerms,
+                    mParent!!, BTUtils.BTPerms,
                     R.string.nearbydev_rationale,
                     DlgDelegate.Action.SKIP_CALLBACK
                 )

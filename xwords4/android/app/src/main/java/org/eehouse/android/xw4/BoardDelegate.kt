@@ -924,7 +924,7 @@ class BoardDelegate(delegator: Delegator) :
     //////////////////////////////////////////////////
     // DlgDelegate.DlgClickNotify interface
     //////////////////////////////////////////////////
-    override fun onPosButton(action: DlgDelegate.Action, vararg params: Any): Boolean {
+    override fun onPosButton(action: DlgDelegate.Action, vararg params: Any?): Boolean {
         Assert.assertVarargsNotNullNR(params)
         Log.d(TAG, "onPosButton(%s, %s)", action, DbgUtils.toStr(arrayOf(params)))
         var handled = true
@@ -1085,8 +1085,7 @@ class BoardDelegate(delegator: Delegator) :
         return handled
     }
 
-    override fun onNegButton(action: DlgDelegate.Action, vararg params: Any): Boolean {
-        Assert.assertVarargsNotNullNR(params)
+    override fun onNegButton(action: DlgDelegate.Action, vararg params: Any?): Boolean {
         Log.d(TAG, "onNegButton(%s, %s)", action, DbgUtils.toStr(arrayOf(params)))
         var handled = true
         when (action) {
@@ -2051,16 +2050,18 @@ class BoardDelegate(delegator: Delegator) :
                 // We have them or a workaround; cool! proceed
                 alertOrderIncrIfAt(thisOrder)
             } else {
-                mPermCbck = PermCbck { allGood ->
-                    if (allGood) {
-                        // Yay! nothing to do
-                        alertOrderIncrIfAt(thisOrder)
-                    } else {
-                        val explID =
-                            if (Perms23.NBSPermsInManifest(mActivity)) R.string.missing_sms_perms else R.string.variant_missing_nbs
-                        makeConfirmThenBuilder(DlgDelegate.Action.DROP_SMS_ACTION, explID)
-                            .setNegButton(R.string.remove_sms)
-                            .show()
+                mPermCbck = object:PermCbck {
+                    override fun onPermissionResult(allGood: Boolean) {
+                        if (allGood) {
+                            // Yay! nothing to do
+                            alertOrderIncrIfAt(thisOrder)
+                        } else {
+                            val explID =
+                                if (Perms23.NBSPermsInManifest(mActivity)) R.string.missing_sms_perms else R.string.variant_missing_nbs
+                            makeConfirmThenBuilder(DlgDelegate.Action.DROP_SMS_ACTION, explID)
+                                .setNegButton(R.string.remove_sms)
+                                .show()
+                        }
                     }
                 }
                 Perms23.Builder(*Perms23.NBS_PERMS)
@@ -2554,9 +2555,9 @@ class BoardDelegate(delegator: Delegator) :
         }
     }
 
-    private fun retryNBSInvites(params: Array<out Any>) {
+    private fun retryNBSInvites(params: Array<out Any?>) {
         Assert.assertVarargsNotNullNR(params)
-        if (2 == params.size && params[0] is NetLaunchInfo
+        if (2 == params.size && params[0] is NetLaunchInfo?
             && params[1] is String
         ) {
             sendNBSInviteIf(
