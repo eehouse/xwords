@@ -1011,8 +1011,6 @@
     <string name="how_tab">Send invitation how?</string>
     <!-- Radio button in invite choices dialog for list of previous opponents -->
     <string name="radio_who">Who?</string>
-    <!-- Text shown only when there are not any previous opponents to invite -->
-    <string name="invite_who_empty_expl">empty expl</string>
     <!-- Shown above QR code in the how-to-invite dialog -->
     <string name="qrcode_invite_summary">QR code your opponent can scan</string>
     <!-- Shown in the middle of the invite-how radio buttons -->
@@ -2823,7 +2821,7 @@
 
   <!-- In Known Players display, a checkbox to sort players by when
        their most recent game started instead of by name -->
-  <string name="sort_by_date_label">Sort by date</string>
+  <string name="sort_by_date_label">Most recent first</string>
 
   <!-- In Peer Status (Debug builds only) results, if my own device
        comes back (as it should) and it isn't assigned a name in Known

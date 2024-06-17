@@ -44,12 +44,24 @@
     <FrameLayout android:layout_width="match_parent"
                  android:layout_height="match_parent"
                  >
-      <org.eehouse.android.xw4.LimSelGroup
-          android:id="@+id/group_who"
-          android:layout_width="match_parent"
-          android:layout_height="wrap_content"
-          android:orientation="vertical"
-          />
+      <!-- Hideable container for checkbox and group it governs -->
+      <LinearLayout android:orientation="vertical"
+                    android:id="@+id/group_who_parent"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    >
+        <CheckBox android:id="@+id/check"
+                  android:layout_width="fill_parent"
+                  android:layout_height="wrap_content"
+                  android:text="@string/sort_by_date_label"
+                  />
+        <org.eehouse.android.xw4.LimSelGroup
+            android:id="@+id/group_who"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            />
+      </LinearLayout>
 
       <RadioGroup android:id="@+id/group_how"
                   android:layout_width="match_parent"
@@ -101,12 +113,6 @@
                     />
         </LinearLayout>
       </RadioGroup>
-      <TextView android:id="@+id/who_empty"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/invite_who_empty_expl"
-                android:textAppearance="?android:attr/textAppearanceMedium"
-                />
     </FrameLayout>
     
   </LinearLayout>

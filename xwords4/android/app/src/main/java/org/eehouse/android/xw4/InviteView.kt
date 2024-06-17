@@ -24,6 +24,7 @@ import android.graphics.Bitmap
 import android.graphics.Color
 import android.util.AttributeSet
 import android.view.View
+import android.widget.CheckBox
 import android.widget.CompoundButton
 import android.widget.ImageView
 import android.widget.RadioButton
@@ -36,6 +37,7 @@ import com.google.zxing.WriterException
 
 import org.eehouse.android.xw4.DlgDelegate.DlgClickNotify.InviteMeans
 import org.eehouse.android.xw4.ExpandImageButton.ExpandChangeListener
+import org.eehouse.android.xw4.jni.XwJNI
 import org.eehouse.android.xw4.loc.LocUtils
 
 class InviteView(context: Context, aset: AttributeSet?) :
@@ -52,6 +54,7 @@ class InviteView(context: Context, aset: AttributeSet?) :
     private var mGroupTab: RadioGroup? = null
     private var mGroupWho: LimSelGroup? = null
     private var mGroupHow: RadioGroup? = null
+    private var mOrderCheck: CheckBox? = null
 
     // mCurChecked: hack to work around old bugs in RadioButtons not being
     // immediate children of RadioGroup
@@ -60,15 +63,13 @@ class InviteView(context: Context, aset: AttributeSet?) :
     private var mExpanded = false
     private var mNli: NetLaunchInfo? = null
 
-    fun setChoices(
-        meansList: List<InviteMeans>, sel: Int,
-        players: Array<String>?, nMissing: Int,
-        nInvited: Int
-    ): InviteView {
+    fun setChoices(meansList: List<InviteMeans>, sel: Int,
+                   nMissing: Int, nInvited: Int): InviteView
+    {
         Log.d(TAG, "setChoices(nInvited=%d, nMissing=%s)", nInvited, nMissing)
         val context = context
 
-        val haveWho = null != players && 0 < players.size
+        val haveWho = XwJNI.hasKnownPlayers()
 
         // top/horizontal group or title first
         if (haveWho) {
@@ -80,17 +81,21 @@ class InviteView(context: Context, aset: AttributeSet?) :
             findViewById<View>(R.id.title_tab).visibility = VISIBLE
         }
 
-        mGroupHow = findViewById<View>(R.id.group_how) as RadioGroup
+        mGroupHow = findViewById<RadioGroup>(R.id.group_how)
         mGroupHow!!.setOnCheckedChangeListener(this)
         val divider = mGroupHow!!.findViewById<View>(R.id.local_divider)
         for (means in meansList) {
-            Assert.assertNotNull(means)
-            val button = LocUtils.inflate(context, R.layout.invite_radio) as RadioButton
+            val button = LocUtils.inflate(context, R.layout.invite_radio)
+                as RadioButton
             button.setOnCheckedChangeListener(this)
             button.text = LocUtils.getString(context, means.userDescID)
-            val where = if (means.isForLocal // -1: place before QRcode-wrapper
-            ) mGroupHow!!.childCount - 1
-            else mGroupHow!!.indexOfChild(divider)
+            val where
+                = if (means.isForLocal) {
+                    // -1: place before QRcode-wrapper
+                    mGroupHow!!.childCount - 1
+                } else {
+                    mGroupHow!!.indexOfChild(divider)
+                }
             mGroupHow!!.addView(button, where)
             mHowMeans[button.id] = means
         }
@@ -98,7 +103,12 @@ class InviteView(context: Context, aset: AttributeSet?) :
         if (haveWho) {
             mGroupWho = (findViewById<View>(R.id.group_who) as LimSelGroup)
                 .setLimit(nMissing)
-                .addPlayers(players)
+            val checkbox = findViewById<CheckBox>(R.id.check)
+            val isChecked = DBUtils.getBoolFor(context, KEY_SORTBY_DATE, false)
+            checkbox.setOnCheckedChangeListener(this)
+            checkbox.setChecked(isChecked)
+            mOrderCheck = checkbox
+            onCheckedChanged(checkbox, isChecked) // load players
         }
         mIsWho = false // start with how
         showWhoOrHow()
@@ -162,8 +172,14 @@ class InviteView(context: Context, aset: AttributeSet?) :
         }
     }
 
-    override fun onCheckedChanged(buttonView: CompoundButton, isChecked: Boolean) {
-        if (isChecked) {
+    override fun onCheckedChanged(buttonView: CompoundButton,
+                                  isChecked: Boolean)
+    {
+        if (buttonView === mOrderCheck) {
+            val players = XwJNI.kplr_getPlayers(isChecked)!!
+            mGroupWho!!.setPlayers(players)
+            DBUtils.setBoolFor(context, KEY_SORTBY_DATE, isChecked)
+        } else if ( isChecked ) {
             if (null != mCurChecked) {
                 mCurChecked!!.isChecked = false
             }
@@ -172,18 +188,16 @@ class InviteView(context: Context, aset: AttributeSet?) :
     }
 
     private fun setShowQR(show: Boolean) {
-        findViewById<View>(R.id.qrcode_stuff).visibility = if (show) VISIBLE else GONE
+        findViewById<View>(R.id.qrcode_stuff).visibility =
+            if (show) VISIBLE else GONE
     }
 
     private fun showWhoOrHow() {
         if (null != mGroupWho) {
-            mGroupWho!!.visibility = if (mIsWho) VISIBLE else INVISIBLE
+            findViewById<View>(R.id.group_who_parent)
+                .visibility = if (mIsWho) VISIBLE else INVISIBLE
         }
         mGroupHow!!.visibility = if (mIsWho) INVISIBLE else VISIBLE
-
-        val showEmpty = mIsWho && 0 == mGroupWho!!.childCount
-        findViewById<View>(R.id.who_empty).visibility =
-            if (showEmpty) VISIBLE else INVISIBLE
     }
 
     private fun startQRCodeThread(nli: NetLaunchInfo?) {
@@ -194,7 +208,9 @@ class InviteView(context: Context, aset: AttributeSet?) :
             val url = mNli!!.makeLaunchUri(context).toString()
             Thread {
                 try {
-                    val qrSize = if (mExpanded) QRCODE_SIZE_LARGE else QRCODE_SIZE_SMALL
+                    val qrSize =
+                        if (mExpanded) QRCODE_SIZE_LARGE
+                        else QRCODE_SIZE_SMALL
                     val multiFormatWriter = MultiFormatWriter()
                     val bitMatrix = multiFormatWriter.encode(
                         url, BarcodeFormat.QR_CODE,
@@ -214,10 +230,10 @@ class InviteView(context: Context, aset: AttributeSet?) :
                     }
 
                     post {
-                        val iv = findViewById<View>(R.id.qr_view) as ImageView
+                        val iv = findViewById<ImageView>(R.id.qr_view)
                         iv.setImageBitmap(bitmap)
                         if (BuildConfig.NON_RELEASE) {
-                            val tv = findViewById<View>(R.id.qr_url) as TextView
+                            val tv = findViewById<TextView>(R.id.qr_url)
                             tv.visibility = VISIBLE
                             tv.text = url
                         }
@@ -232,6 +248,7 @@ class InviteView(context: Context, aset: AttributeSet?) :
 
     companion object {
         private val TAG: String = InviteView::class.java.simpleName
+        private val KEY_SORTBY_DATE = TAG + "/sortby_date"
         private val KEY_EXPANDED = TAG + ":expanded"
         private const val QRCODE_SIZE_SMALL = 320
         private const val QRCODE_SIZE_LARGE = QRCODE_SIZE_SMALL * 2

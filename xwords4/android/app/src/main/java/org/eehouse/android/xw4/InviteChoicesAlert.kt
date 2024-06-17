@@ -115,10 +115,8 @@ class InviteChoicesAlert : DlgDelegateAlert(), ItemClicked {
             .setView(mInviteView)
             .setPositiveButton(android.R.string.ok, okClicked)
             .setNegativeButton(android.R.string.cancel, null)
-        val players = XwJNI.kplr_getPlayers()
         mInviteView!!.setChoices(
-            means, lastSelMeans, players, nMissing,
-            nInvited
+            means, lastSelMeans, nMissing, nInvited
         )
             .setNli(nli)
             .setCallbacks(this)

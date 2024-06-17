@@ -51,19 +51,21 @@ class LimSelGroup(context: Context, aset: AttributeSet?) :
         return result.toTypedArray()
     }
 
-    fun addPlayers(names: Array<String>): LimSelGroup {
+    fun setPlayers(names: Array<String>)
+    {
+        removeAllViews()
         val context = context
-        for (name in names) {
-            var button = if (1 == mLimit) {
-                LocUtils.inflate(context, R.layout.invite_radio) as RadioButton
-            } else {
-                LocUtils.inflate(context, R.layout.invite_checkbox) as CheckBox
-            }
-            button.text = name
+        names.map {
+            val button =
+                if (1 == mLimit) {
+                    LocUtils.inflate(context, R.layout.invite_radio)
+                } else {
+                    LocUtils.inflate(context, R.layout.invite_checkbox)
+                } as CompoundButton
+            button.text = it
             button.setOnCheckedChangeListener(this)
             addView(button)
         }
-        return this
     }
 
     override fun onCheckedChanged(buttonView: CompoundButton, isChecked: Boolean) {
@@ -74,7 +76,7 @@ class LimSelGroup(context: Context, aset: AttributeSet?) :
         }
     }
 
-    var mChecked: ArrayList<CompoundButton> = ArrayList()
+    val mChecked: ArrayList<CompoundButton> = ArrayList()
     private fun addToSet(button: CompoundButton, nowChecked: Boolean) {
         val iter = mChecked.iterator()
         while (iter.hasNext()) {
