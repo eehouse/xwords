@@ -4,13 +4,5 @@
 <resources xmlns:tools="http://schemas.android.com/tools"
            tools:ignore="MissingTranslation"
            >
-  <string-array name="board_sizes">
-    <item>21x21</item>
-    <item>19x19</item>
-    <item>17x17</item>
-    <item>15x15</item>
-    <item>13x13</item>
-    <item>11x11</item>
-  </string-array>
 
 </resources>
