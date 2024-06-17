@@ -401,7 +401,7 @@ object DictUtils {
                 val buf = ByteArray(1024 * 4)
                 var cancelled = false
                 while (true) {
-                    cancelled = dpl.isCancelled
+                    cancelled = dpl.isCancelled()
                     if (cancelled) {
                         tmpFile.delete()
                         break
@@ -615,7 +615,7 @@ object DictUtils {
 
     interface DownProgListener {
         fun progressMade(nBytes: Int)
-        val isCancelled: Boolean
+        fun isCancelled(): Boolean
     }
 
     // Standard hack for using APIs from an SDK in code to ship on

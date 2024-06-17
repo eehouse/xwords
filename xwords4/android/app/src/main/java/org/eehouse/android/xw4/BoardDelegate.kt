@@ -223,12 +223,11 @@ class BoardDelegate(delegator: Delegator) :
                     if (DlgID.DLG_USEDICT == dlgID) {
                         setGotGameDict(m_mySIS!!.getDict)
                     } else {
-                        DwnldDelegate
-                            .downloadDictInBack(
-                                mActivity, mGi!!.isoCode(),
-                                m_mySIS!!.getDict,
-                                this@BoardDelegate
-                            )
+                        DwnldDelegate.downloadDictInBack(
+                            mActivity, mGi!!.isoCode(),
+                            m_mySIS!!.getDict!!,
+                            this@BoardDelegate
+                        )
                     }
                 }
                 dialog = ab.setTitle(title)
