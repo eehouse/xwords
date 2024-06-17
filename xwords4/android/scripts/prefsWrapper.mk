@@ -1,7 +1,7 @@
 # -*- mode: Makefile -*-
 
 SRCS = $(wildcard ./app/src/main/res/xml/prefs*.xml)
-TARGET = ./app/src/main/java/org/eehouse/android/xw4/gen/PrefsWrappers.java
+TARGET = ./app/src/main/java/org/eehouse/android/xw4/gen/PrefsWrappers.kt
 PREFS_WRAPPER_GEN = ./scripts/genPrefsWrapper.sh
 
 .PHONY: all clean

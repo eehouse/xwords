@@ -123,7 +123,7 @@ class PrefsActivity : XWActivity(), Delegator, HasDlgDelegate,
     // See the notes in res/xml/prefs.xml
     abstract class BasePrefsFrag : PreferenceFragmentCompat() {
         override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
-            setPreferencesFromResource(resID, rootKey)
+            setPreferencesFromResource(getResID(), rootKey)
         }
 
         override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -144,7 +144,7 @@ class PrefsActivity : XWActivity(), Delegator, HasDlgDelegate,
             super.onViewCreated(view, savedInstanceState)
         }
 
-        abstract val resID: Int
+        abstract fun getResID(): Int
     }
 
     companion object {

@@ -359,7 +359,7 @@ public class PrefsDelegate extends DelegateBase
 
     public static void resetPrefs( Context context, boolean mustCheck )
     {
-        int[] prefIDs = PrefsWrappers.getPrefsResIDs();
+        Integer[] prefIDs = PrefsWrappers.getPrefsResIDs();
         for ( int id : prefIDs ) {
             PreferenceManager.setDefaultValues( context, id, mustCheck );
         }
