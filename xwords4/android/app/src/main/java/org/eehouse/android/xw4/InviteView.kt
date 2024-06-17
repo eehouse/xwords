@@ -133,7 +133,7 @@ class InviteView(context: Context, aset: AttributeSet?) :
     fun getChoice(): Any?
     {
         var result = if (mIsWho) {
-            mGroupWho!!.selected
+            mGroupWho!!.getSelected()
         } else {
             mHowMeans[mGroupHow!!.checkedRadioButtonId]
         }
