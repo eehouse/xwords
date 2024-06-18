@@ -990,12 +990,8 @@ class DictsDelegate(delegator: Delegator) :
     //////////////////////////////////////////////////////////////////////
     // SelectableItem interface
     //////////////////////////////////////////////////////////////////////
-    override fun itemClicked(
-        clicked: LongClickHandler,
-        summary: GameSummary
-    ) {
-        Log.i(TAG, "itemClicked not implemented")
-    }
+    override fun itemClicked(clicked: LongClickHandler )
+        = Log.i(TAG, "itemClicked not implemented")
 
     override fun itemToggled(
         toggled: LongClickHandler,
@@ -1020,7 +1016,8 @@ class DictsDelegate(delegator: Delegator) :
     }
 
     private class GetDefaultDictTask(
-        private val m_context: Context, private val m_lc: ISOCode,
+        private val m_context: Context,
+        private val m_lc: ISOCode,
         private val m_lstnr: OnGotLcDictListener
     ) : AsyncTask<Void?, Void?, String?>() {
         private var m_langName: String? = null

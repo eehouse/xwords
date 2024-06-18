@@ -145,9 +145,10 @@ class GameListItem(private val m_context: Context, aset: AttributeSet?) :
         val id = view.id
         when (id) {
             R.id.game_view_container -> toggleSelected()
-            R.id.right_side, R.id.thumbnail -> if (null != mSummary) {
-                m_cb!!.itemClicked(this@GameListItem, mSummary)
-            }
+            R.id.right_side, R.id.thumbnail ->
+                if (null != mSummary) {
+                    m_cb!!.itemClicked(this@GameListItem)
+                }
 
             else -> Assert.failDbg()
         }

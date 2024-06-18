@@ -1,6 +1,6 @@
 /* -*- compile-command: "find-and-gradle.sh inXw4dDeb"; -*- */
 /*
- * Copyright 2009-2013 by Eric House (xwords@eehouse.org).  All
+ * Copyright 2009 - 2024 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -17,21 +17,16 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-
-package org.eehouse.android.xw4;
-
-import org.eehouse.android.xw4.jni.GameSummary;
+package org.eehouse.android.xw4
 
 // Interfaces used for (list) items that are selectable via
 // long-tapping.
-
-public interface SelectableItem {
-
-    public interface LongClickHandler {
-        public void longClicked();
+interface SelectableItem {
+    interface LongClickHandler {
+        fun longClicked()
     }
 
-    public void itemClicked( LongClickHandler clicked, GameSummary summary );
-    public void itemToggled( LongClickHandler toggled, boolean selected );
-    public boolean getSelected( LongClickHandler obj );
+    fun itemClicked(clicked: LongClickHandler)
+    fun itemToggled(toggled: LongClickHandler, selected: Boolean)
+    fun getSelected(obj: LongClickHandler): Boolean
 }

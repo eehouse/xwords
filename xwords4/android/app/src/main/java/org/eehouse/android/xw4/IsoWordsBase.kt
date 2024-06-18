@@ -29,7 +29,6 @@ import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Spinner
-import org.eehouse.android.xw4.jni.GameSummary
 
 import java.util.HashMap
 
@@ -165,11 +164,9 @@ abstract class IsoWordsBase(delegator: Delegator, private val CHECKED_KEY: Strin
 	//////////////////////////////////////////////////
     // SelectableItem interface
     //////////////////////////////////////////////////
-    override fun itemClicked( clicked: SelectableItem.LongClickHandler,
-                              summary: GameSummary
-    )
+    override fun itemClicked( clicked: SelectableItem.LongClickHandler)
     {
-        m_checkeds.add( (clicked as XWListItem).getText() )
+        m_checkeds.add((clicked as XWListItem).getText())
     }
 
     override public fun itemToggled( toggled: SelectableItem.LongClickHandler,

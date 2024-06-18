@@ -2498,8 +2498,8 @@ class BoardDelegate(delegator: Delegator) :
 
     private fun doRematchIf(groupID: Long, deleteAfter: Boolean) {
         doRematchIf(
-            mActivity, this, mRowid, groupID, mSummary,
-            mGi, mJniGamePtr, deleteAfter
+            mActivity, mRowid, groupID, mSummary,
+            mGi!!, mJniGamePtr, deleteAfter
         )
     }
 
@@ -2606,9 +2606,8 @@ class BoardDelegate(delegator: Delegator) :
         private var s_themeNAShown = false
         private const val mCounter = 0
         private fun doRematchIf(
-            activity: Activity, dlgt: DelegateBase?,
-            rowid: Long, groupID: Long,
-            summary: GameSummary?, gi: CurGameInfo?,
+            activity: Activity, rowid: Long, groupID: Long,
+            summary: GameSummary?, gi: CurGameInfo,
             jniGamePtr: GamePtr?, deleteAfter: Boolean
         ) {
             val intent = GamesListDelegate
@@ -2641,7 +2640,7 @@ class BoardDelegate(delegator: Delegator) :
                             )
                         } else {
                             summary = DBUtils.getSummary(activity, gw.lock!!)
-                            setupRematchFor(activity, gw.gamePtr(), summary, gw.gi())
+                            setupRematchFor(activity, gw.gamePtr(), summary, gw.gi()!!)
                         }
                     }
                 }
@@ -2676,11 +2675,11 @@ class BoardDelegate(delegator: Delegator) :
 
         private fun setupRematchFor(
             activity: Activity, gamePtr: GamePtr?,
-            summary: GameSummary?, gi: CurGameInfo?
+            summary: GameSummary?, gi: CurGameInfo
         ) {
             if (null != gamePtr) {
                 doRematchIf(
-                    activity, null, gamePtr.rowid,
+                    activity, gamePtr.rowid,
                     DBUtils.GROUPID_UNSPEC, summary, gi, gamePtr, false
                 )
             } else {

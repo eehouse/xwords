@@ -54,7 +54,7 @@ class DwnldDelegate(delegator: Delegator) : ListDelegateBase(delegator, R.layout
     }
 
     interface OnGotLcDictListener {
-        fun gotDictInfo(success: Boolean, isoCode: ISOCode?, name: String?)
+        fun gotDictInfo(success: Boolean, isoCode: ISOCode, name: String?)
     }
 
     // Track callbacks for downloads.
