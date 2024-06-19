@@ -66,6 +66,7 @@ import org.eehouse.android.xw4.NewWithKnowns.ButtonCallbacks
 import org.eehouse.android.xw4.Perms23.Perm
 import org.eehouse.android.xw4.SelectableItem.LongClickHandler
 import org.eehouse.android.xw4.Utils.ISOCode
+import org.eehouse.android.xw4.XWDialogFragment.OnDismissListener
 import org.eehouse.android.xw4.ZipUtils.SaveWhat
 import org.eehouse.android.xw4.jni.CommonPrefs
 import org.eehouse.android.xw4.jni.CommsAddrRec
@@ -697,15 +698,18 @@ class GamesListDelegate(delegator: Delegator) :
                 val etext = layout.findViewById<EditText>(R.id.name_edit)
                 etext.setText(CommonPrefs.getDefaultPlayerName(
                                   mActivity, 0, true))
-                alert.setOnDismissListener {
-                    var name = etext.text.toString()
-                    if (0 == name.length) {
-                        name = CommonPrefs.getDefaultPlayerName(mActivity, 0, true)
-                    } else {
-                        CommonPrefs.setDefaultPlayerName(mActivity, name)
-                    }
-                    makeThenLaunchOrConfigure()
-                }
+                alert.setOnDismissListener(
+                    object:OnDismissListener {
+                        override fun onDismissed(frag: XWDialogFragment?) {
+                            var name = etext.text.toString()
+                            if (0 == name.length) {
+                                name = CommonPrefs.getDefaultPlayerName(mActivity, 0, true)
+                            } else {
+                                CommonPrefs.setDefaultPlayerName(mActivity, name)
+                            }
+                            makeThenLaunchOrConfigure()
+                        }
+                    })
                 dialog = makeAlertBuilder()
                     .setTitle(R.string.default_name_title)
                     .setMessage(R.string.default_name_message)

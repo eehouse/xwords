@@ -58,6 +58,7 @@ import org.eehouse.android.xw4.jni.JNIThread
 import org.eehouse.android.xw4.jni.LocalPlayer
 import org.eehouse.android.xw4.jni.XwJNI
 import org.eehouse.android.xw4.jni.XwJNI.GamePtr
+import org.eehouse.android.xw4.XWDialogFragment.OnDismissListener
 
 class GameConfigDelegate(delegator: Delegator) :
     DelegateBase(delegator, R.layout.game_config), View.OnClickListener,
@@ -152,12 +153,16 @@ class GameConfigDelegate(delegator: Delegator) :
                     .setView(view)
                     .setPositiveButton(android.R.string.ok, dlpos)
                     .create()
-                alert.setOnDismissListener {
-                    if (mGi!!.forceRemoteConsistent()) {
-                        showToast(R.string.forced_consistent)
-                        loadPlayersList()
+                alert.setOnDismissListener(
+                    object:OnDismissListener {
+                        override fun onDismissed(frag: XWDialogFragment?) {
+                            if (mGi!!.forceRemoteConsistent()) {
+                                showToast(R.string.forced_consistent)
+                                loadPlayersList()
+                            }
+                        }
                     }
-                }
+                )
             }
 
             DlgID.CONFIRM_CHANGE_PLAY, DlgID.CONFIRM_CHANGE -> {
@@ -178,7 +183,11 @@ class GameConfigDelegate(delegator: Delegator) :
                 }
                 ab.setNegativeButton(R.string.button_discard_changes, dlpos)
                 dialog = ab.create()
-                alert.setOnDismissListener { closeNoSave() }
+                alert.setOnDismissListener( object:OnDismissListener {
+                    override fun onDismissed(frag: XWDialogFragment?) {
+                        closeNoSave()
+                    }
+                })
             }
 
             DlgID.CHANGE_CONN -> {
