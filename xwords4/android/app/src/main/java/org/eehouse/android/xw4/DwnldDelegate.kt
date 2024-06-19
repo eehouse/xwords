@@ -361,7 +361,7 @@ class DwnldDelegate(delegator: Delegator) : ListDelegateBase(delegator, R.layout
         return super.handleBackPressed()
     }
 
-    override fun onPosButton(action: DlgDelegate.Action, vararg params: Any): Boolean {
+    override fun onPosButton(action: DlgDelegate.Action, vararg params: Any?): Boolean {
         var handled = true
         when (action) {
             DlgDelegate.Action.STORAGE_CONFIRMED -> doWithPermissions(params[0] as Array<Uri>)
@@ -370,7 +370,9 @@ class DwnldDelegate(delegator: Delegator) : ListDelegateBase(delegator, R.layout
         return handled
     }
 
-    override fun onNegButton(action: DlgDelegate.Action, vararg params: Any): Boolean {
+    override fun onNegButton(action: DlgDelegate.Action,
+                             vararg params: Any?): Boolean
+    {
         var handled = true
         when (action) {
             DlgDelegate.Action.STORAGE_CONFIRMED -> finish()

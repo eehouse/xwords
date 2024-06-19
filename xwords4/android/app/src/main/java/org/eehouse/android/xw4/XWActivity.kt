@@ -200,12 +200,12 @@ open class XWActivity : FragmentActivity(), Delegator, DlgClickNotify {
         data: Intent?
     ) {
         val rc = RequestCode.entries[requestCode]
-        mDlgt!!.onActivityResult(rc, resultCode, data)
+        mDlgt!!.onActivityResult(rc, resultCode, data.orEmpty())
     }
 
     // This are a hack! I need some way to build fragment-based alerts from
     // inside fragment-based alerts.
-    fun makeNotAgainBuilder(keyID: Int, msg: String?): DlgDelegate.Builder {
+    fun makeNotAgainBuilder(keyID: Int, msg: String): DlgDelegate.Builder {
         return mDlgt!!.makeNotAgainBuilder(keyID, msg)
     }
 
@@ -218,7 +218,7 @@ open class XWActivity : FragmentActivity(), Delegator, DlgClickNotify {
     }
 
     fun makeConfirmThenBuilder(
-        action: DlgDelegate.Action?, msgID: Int,
+        action: DlgDelegate.Action, msgID: Int,
         vararg params: Any?
     ): DlgDelegate.Builder {
         Assert.assertVarargsNotNullNR(params)
@@ -287,9 +287,9 @@ open class XWActivity : FragmentActivity(), Delegator, DlgClickNotify {
         }
     }
 
-    internal fun makeDialog(alert: DBAlert?, vararg params: Any?): Dialog {
+    internal fun makeDialog(alert: DBAlert, vararg params: Any?): Dialog {
         Assert.assertVarargsNotNullNR(params)
-        return mDlgt!!.makeDialog(alert, *params)
+        return mDlgt!!.makeDialog(alert, *params)!!
     }
 
     fun getDelegate(): DelegateBase { return mDlgt!! }
@@ -297,24 +297,24 @@ open class XWActivity : FragmentActivity(), Delegator, DlgClickNotify {
     ////////////////////////////////////////////////////////////
     // DlgClickNotify interface
     ////////////////////////////////////////////////////////////
-    override fun onPosButton(action: DlgDelegate.Action, vararg params: Any): Boolean {
+    override fun onPosButton(action: DlgDelegate.Action, vararg params: Any?): Boolean {
         Assert.assertVarargsNotNullNR(params)
         return mDlgt!!.onPosButton(action, *params)
     }
 
-    override fun onNegButton(action: DlgDelegate.Action, vararg params: Any): Boolean {
+    override fun onNegButton(action: DlgDelegate.Action, vararg params: Any?): Boolean {
         Assert.assertVarargsNotNullNR(params)
         return mDlgt!!.onNegButton(action, *params)
     }
 
-    override fun onDismissed(action: DlgDelegate.Action, vararg params: Any): Boolean {
+    override fun onDismissed(action: DlgDelegate.Action, vararg params: Any?): Boolean {
         Assert.assertVarargsNotNullNR(params)
         return mDlgt!!.onDismissed(action, *params)
     }
 
     override fun inviteChoiceMade(
         action: DlgDelegate.Action, means: InviteMeans,
-        vararg params: Any
+        vararg params: Any?
     ) {
         Assert.assertVarargsNotNullNR(params)
         mDlgt!!.inviteChoiceMade(action, means, *params)

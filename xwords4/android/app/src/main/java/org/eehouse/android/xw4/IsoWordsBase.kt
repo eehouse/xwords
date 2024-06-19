@@ -60,7 +60,7 @@ abstract class IsoWordsBase(delegator: Delegator, private val CHECKED_KEY: Strin
 
         getBundledData( sis )
 
-        initOrFinish( getArguments() )
+        initOrFinish( arguments )
     }
 
     override fun onPrepareOptionsMenu( menu: Menu): Boolean
@@ -83,7 +83,7 @@ abstract class IsoWordsBase(delegator: Delegator, private val CHECKED_KEY: Strin
         return true
     }
 
-	override protected fun handleBackPressed(): Boolean
+	override fun handleBackPressed(): Boolean
     {
         val handled = 0 < m_checkeds.size
         if ( handled ) {
@@ -132,7 +132,7 @@ abstract class IsoWordsBase(delegator: Delegator, private val CHECKED_KEY: Strin
     //////////////////////////////////////////////////
     // DlgDelegate.DlgClickNotify interface
     //////////////////////////////////////////////////
-    override fun onPosButton(action: DlgDelegate.Action, vararg params: Any ): Boolean
+    override fun onPosButton(action: DlgDelegate.Action, vararg params: Any? ): Boolean
     {
         Assert.assertVarargsNotNullNR(params)
         var handled = true
@@ -287,11 +287,11 @@ abstract class IsoWordsBase(delegator: Delegator, private val CHECKED_KEY: Strin
 	private fun setTitleBar()
     {
         val nSels = m_checkeds.size
-        setTitle( if ( 0 == nSels ) {
-					  m_origTitle
+        setTitle( if (0 == nSels) {
+					  m_origTitle!!
 				  } else {
-					  getString( R.string.sel_items_fmt, nSels )
-				  } )
+					  getString(R.string.sel_items_fmt, nSels)
+				  })
         invalidateOptionsMenuIf()
     }
 
@@ -325,7 +325,7 @@ abstract class IsoWordsBase(delegator: Delegator, private val CHECKED_KEY: Strin
 	private fun makeAdapter()
     {
         m_adapter = SLWordsAdapter()
-        setListAdapter( m_adapter )
+        setListAdapter(m_adapter!!)
     }
 
     inner class SLWordsAdapter() : XWListAdapter(m_words!!.size) {

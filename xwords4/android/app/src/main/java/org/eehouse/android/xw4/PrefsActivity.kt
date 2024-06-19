@@ -68,7 +68,7 @@ class PrefsActivity : XWActivity(), Delegator, HasDlgDelegate,
 
     override fun makeNotAgainBuilder(
         key: Int, action: DlgDelegate.Action, msgID: Int,
-        vararg params: Any
+        vararg params: Any?
     ): DlgDelegate.Builder {
         Assert.assertVarargsNotNullNR(params)
         return mDlgt!!.makeNotAgainBuilder(key, action, msgID, *params)
@@ -106,11 +106,11 @@ class PrefsActivity : XWActivity(), Delegator, HasDlgDelegate,
         return true
     }
 
-    fun makeConfirmThenBuilder(action: DlgDelegate.Action?, msg: String?): DlgDelegate.Builder {
+    fun makeConfirmThenBuilder(action: DlgDelegate.Action, msg: String): DlgDelegate.Builder {
         return mDlgt!!.makeConfirmThenBuilder(action, msg)
     }
 
-    fun showSMSEnableDialog(action: DlgDelegate.Action?) {
+    fun showSMSEnableDialog(action: DlgDelegate.Action) {
         mDlgt!!.showSMSEnableDialog(action)
     }
 

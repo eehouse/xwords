@@ -127,7 +127,7 @@ class TilePickAlert : XWDialogFragment(), TilePickListener {
         val activity: Activity? = activity
         if (activity is DlgClickNotify) {
             val notify = activity as DlgClickNotify
-            notify.onDismissed(mAction)
+            notify.onDismissed(mAction!!)
         }
     }
 
@@ -135,7 +135,7 @@ class TilePickAlert : XWDialogFragment(), TilePickListener {
         val activity: Activity? = activity
         if (activity is DlgClickNotify) {
             val notify = activity as DlgClickNotify
-            notify.onPosButton(mAction, mState, mSelTiles)
+            notify.onPosButton(mAction!!, mState, mSelTiles)
         } else {
             Assert.failDbg()
         }

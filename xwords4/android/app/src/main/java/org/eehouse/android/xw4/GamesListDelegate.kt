@@ -432,7 +432,7 @@ class GamesListDelegate(delegator: Delegator) :
         // get to page out when they scroll offscreen.
         private fun getGroupsWithIDs(groupIDs: Set<Long>): Set<GameListGroup> {
             val result: MutableSet<GameListGroup> = HashSet()
-            val listView = listView
+            val listView = listView!!
             val count = listView.childCount
             for (ii in 0 until count) {
                 val view = listView.getChildAt(ii)
@@ -454,7 +454,7 @@ class GamesListDelegate(delegator: Delegator) :
 
         private fun getGamesFromElems(rowIDs: Set<Long>): Set<GameListItem> {
             val result: MutableSet<GameListItem> = HashSet()
-            val listView = listView
+            val listView = listView!!
             val count = listView.childCount
             for (ii in 0 until count) {
                 val view = listView.getChildAt(ii)
@@ -486,10 +486,10 @@ class GamesListDelegate(delegator: Delegator) :
     private var m_newGameButtons: Array<Button>? = null
     private var m_haveShownGetDict = false
     private var m_rematchExtras: Bundle? = null
-    private var m_newGameParams: Array<Any>? = null
+    private var m_newGameParams: Array<Any?>? = null
     private var mCurScrollState = 0
 
-    override fun makeDialog(alert: DBAlert, vararg params: Any): Dialog {
+    override fun makeDialog(alert: DBAlert, vararg params: Any?): Dialog {
         var dialog: Dialog? = null
         val lstnr: DialogInterface.OnClickListener
         val lstnr2: DialogInterface.OnClickListener
@@ -504,7 +504,7 @@ class GamesListDelegate(delegator: Delegator) :
                 lstnr = DialogInterface.OnClickListener { dlg, item ->
                     if (null == missingDictName) {
                         DictsDelegate.downloadForResult(
-                            delegator,
+                            getDelegator(),
                             RequestCode
                                 .REQUEST_LANG_GL,
                             missingDictLang
@@ -799,7 +799,7 @@ class GamesListDelegate(delegator: Delegator) :
                 R.string.gamel_menu_knownplyrs
             ) { dlg, item ->
                 KnownPlayersDelegate.launchOrAlert(
-                    delegator,
+                    getDelegator(),
                     this@GamesListDelegate
                 )
             }
@@ -831,7 +831,7 @@ class GamesListDelegate(delegator: Delegator) :
 
     override fun init(savedInstanceState: Bundle?) {
         val isFirstLaunch = null == savedInstanceState
-        m_origTitle = title
+        m_origTitle = getTitle()
 
         m_handler = Handler()
 
@@ -858,7 +858,7 @@ class GamesListDelegate(delegator: Delegator) :
 
         mkListAdapter()
 
-        val lv = listView
+        val lv = listView!!
         lv.onItemLongClickListener = this
 
         // Can't just enable fast scrolling because the scroller's wide touch
@@ -1218,7 +1218,7 @@ class GamesListDelegate(delegator: Delegator) :
 
     // DlgDelegate.DlgClickNotify interface
     override fun onPosButton(action: DlgDelegate.Action,
-                             vararg params: Any): Boolean
+                             vararg params: Any?): Boolean
     {
         var handled = true
         when (action) {
@@ -1333,7 +1333,8 @@ class GamesListDelegate(delegator: Delegator) :
             DlgDelegate.Action.SEND_EMAIL -> Utils.emailAuthor(mActivity)
             DlgDelegate.Action.WRITE_LOG_DB -> Log.dumpStored(this)
             DlgDelegate.Action.CLEAR_LOG_DB -> Log.clearStored(this)
-            DlgDelegate.Action.ASKED_PHONE_STATE -> rematchWithNameAndPerm(true, arrayOf(*params))
+            DlgDelegate.Action.ASKED_PHONE_STATE ->
+                rematchWithNameAndPerm(true, arrayOf(*params))
             DlgDelegate.Action.APPLY_CONFIG -> {
                 val data = Uri.parse(params[0] as String)
                 CommonPrefs.loadColorPrefs(mActivity, data)
@@ -1345,7 +1346,8 @@ class GamesListDelegate(delegator: Delegator) :
             }
 
             DlgDelegate.Action.CLEAR_INT_STATS -> TimerReceiver.clearStats(mActivity)
-            DlgDelegate.Action.OPEN_BYOD_DICT -> DictBrowseDelegate.launch(delegator, (params[0] as String))
+            DlgDelegate.Action.OPEN_BYOD_DICT ->
+                DictBrowseDelegate.launch(getDelegator(), (params[0] as String))
             DlgDelegate.Action.LAUNCH_AFTER_DEL -> deleteGames(
                 longArrayOf((params[1] as Long)),
                 false
@@ -1356,7 +1358,9 @@ class GamesListDelegate(delegator: Delegator) :
         return handled
     }
 
-    override fun onDismissed(action: DlgDelegate.Action, vararg params: Any): Boolean {
+    override fun onDismissed(action: DlgDelegate.Action,
+                             vararg params: Any?): Boolean
+    {
         var handled = true
         when (action) {
             DlgDelegate.Action.LAUNCH_AFTER_DEL -> launchGame(params[0] as Long)
@@ -1421,7 +1425,9 @@ class GamesListDelegate(delegator: Delegator) :
         startActivityForResult(intent, rq)
     }
 
-    override fun onNegButton(action: DlgDelegate.Action, vararg params: Any): Boolean {
+    override fun onNegButton(action: DlgDelegate.Action,
+                             vararg params: Any?): Boolean
+    {
         var handled = true
         when (action) {
             DlgDelegate.Action.NEW_GAME_DFLT_NAME -> {
@@ -1429,8 +1435,10 @@ class GamesListDelegate(delegator: Delegator) :
                 makeThenLaunchOrConfigure()
             }
 
-            DlgDelegate.Action.ASKED_PHONE_STATE -> rematchWithNameAndPerm(false, arrayOf(*params))
-            DlgDelegate.Action.NOTIFY_PERMS -> Log.d(TAG, "said NO for notify perms")
+            DlgDelegate.Action.ASKED_PHONE_STATE ->
+                rematchWithNameAndPerm(false, arrayOf(*params))
+            DlgDelegate.Action.NOTIFY_PERMS ->
+                Log.d(TAG, "said NO for notify perms")
             else -> handled = super.onNegButton(action, *params)
         }
         return handled
@@ -1657,6 +1665,7 @@ class GamesListDelegate(delegator: Delegator) :
             return true // FIXME: RETURN FROM MIDDLE!!!
         }
 
+        val delegator = getDelegator()
         when (itemID) {
             R.id.games_menu_resend -> GameUtils.resendAllIf(mActivity, null, true, true)
             R.id.games_menu_newgame_solo -> handleNewGameButton(true)
@@ -1945,7 +1954,7 @@ class GamesListDelegate(delegator: Delegator) :
             R.id.games_game_delete -> deleteIfConfirmed(selRowIDs, false)
             R.id.games_game_rematch -> BoardDelegate.setupRematchFor(mActivity, selRowIDs[0])
             R.id.games_game_config -> GameConfigDelegate.editForResult(
-                delegator,
+                getDelegator(),
                 RequestCode.CONFIG_GAME,
                 selRowIDs[0]
             )
@@ -2101,7 +2110,7 @@ class GamesListDelegate(delegator: Delegator) :
             }
         }
 
-        title = if (0 == fmt) m_origTitle else getQuantityString(fmt, nSels, nSels)
+        setTitle((if (0 == fmt) m_origTitle else getQuantityString(fmt, nSels, nSels))!!)
     }
 
     private fun checkWarnNoDict(nli: NetLaunchInfo?): Boolean {
@@ -2357,7 +2366,7 @@ class GamesListDelegate(delegator: Delegator) :
         val handled = -1L != rowid
         if (handled) {
             GameConfigDelegate.editForResult(
-                delegator,
+                getDelegator(),
                 RequestCode.CONFIG_GAME,
                 rowid
             )
@@ -2407,13 +2416,18 @@ class GamesListDelegate(delegator: Delegator) :
         }
     }
 
-    private fun rematchWithNameAndPerm(granted: Boolean, params: Array<Any>) {
-        val addrs = params[1] as CommsConnTypeSet
+    private fun rematchWithNameAndPerm(granted: Boolean, params: Array<Any?>)
+    {
+        Assert.failDbg()        // I want to see this works
+        val gameName = params[0] as String
+        val newOrder = params[1] as Array<Int>?
+        val addrs = params[2] as CommsConnTypeSet
+
         if (!granted) {
             addrs.remove(CommsConnType.COMMS_CONN_SMS)
         }
         if (0 < addrs.size) {
-            rematchWithNameAndPerm(params[0] as String, params[1] as Array<Int>, addrs)
+            rematchWithNameAndPerm(gameName, newOrder, addrs)
         }
     }
 
@@ -2667,7 +2681,7 @@ class GamesListDelegate(delegator: Delegator) :
                 val rowIDs = longArrayOf(rowID)
                 doConfirmReset(rowIDs)
             } else if (checkWarnNoDict(rowID)) {
-                GameUtils.launchGame(delegator, rowID)
+                GameUtils.launchGame(getDelegator(), rowID)
             }
         }
         return madeGame
@@ -2680,7 +2694,7 @@ class GamesListDelegate(delegator: Delegator) :
             if (m_adapter!!.inExpandedGroup(rowid)) {
                 setSelGame(rowid)
             }
-            GameUtils.launchGame(delegator, rowid, extras)
+            GameUtils.launchGame(getDelegator(), rowid, extras)
         }
     }
 
@@ -2770,7 +2784,7 @@ class GamesListDelegate(delegator: Delegator) :
     private fun mkListAdapter() {
         // DbgUtils.logf( "GamesListDelegate.mkListAdapter()" );
         m_adapter = GameListAdapter()
-        setListAdapterKeepScroll(m_adapter)
+        setListAdapterKeepScroll(m_adapter!!)
 
         val listView = listView
         mActivity.registerForContextMenu(listView)
@@ -2815,9 +2829,10 @@ class GamesListDelegate(delegator: Delegator) :
     private fun makeThenLaunchOrConfigure(): Boolean {
         val handled = null != m_newGameParams
         if (handled) {
-            val name = m_newGameParams!![0] as String
-            val doConfigure = m_newGameParams!![1] as Boolean
+            val params = m_newGameParams!!
             m_newGameParams = null
+            val name = params[0] as String
+            val doConfigure = params[1] as Boolean
             makeThenLaunchOrConfigure(name, doConfigure, true)
         }
         return handled
@@ -2832,7 +2847,7 @@ class GamesListDelegate(delegator: Delegator) :
 
             if (doConfigure) {
                 GameConfigDelegate.configNewForResult(
-                    delegator,
+                    getDelegator(),
                     RequestCode.CONFIG_GAME,
                     name, m_mySIS!!.nextIsSolo
                 )
@@ -2855,7 +2870,7 @@ class GamesListDelegate(delegator: Delegator) :
                         invitee
                     )
                 }
-                GameUtils.launchGame(delegator, rowID)
+                GameUtils.launchGame(getDelegator(), rowID)
             }
         }
     }

@@ -61,7 +61,7 @@ class KnownPlayersDelegate(delegator: Delegator) :
         populateList()
     }
 
-    override fun onPosButton(action: DlgDelegate.Action, vararg params: Any): Boolean {
+    override fun onPosButton(action: DlgDelegate.Action, vararg params: Any?): Boolean {
         var handled = true
         when (action) {
             DlgDelegate.Action.KNOWN_PLAYER_DELETE -> {
@@ -75,7 +75,7 @@ class KnownPlayersDelegate(delegator: Delegator) :
         return handled
     }
 
-    override fun makeDialog(alert: DBAlert, vararg params: Any): Dialog {
+    override fun makeDialog(alert: DBAlert, vararg params: Any?): Dialog {
         var dialog: Dialog? = null
 
         val dlgID = alert.dlgID

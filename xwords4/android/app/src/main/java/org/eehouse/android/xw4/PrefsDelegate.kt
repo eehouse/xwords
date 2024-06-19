@@ -42,14 +42,14 @@ import org.eehouse.android.xw4.jni.CommonPrefs
 private val TAG: String = PrefsDelegate::class.java.simpleName
 
 class PrefsDelegate(private val mActivity: XWActivity,
-                    delegator: Delegator?,
+                    delegator: Delegator,
                     savedInstanceState: Bundle?) :
     DelegateBase(delegator, R.layout.prefs), OnSharedPreferenceChangeListener,
     View.OnClickListener, PopupMenu.OnMenuItemClickListener
 {
     private var mFragment: PreferenceFragmentCompat? = null
 
-    override fun makeDialog(alert: DBAlert, vararg params: Any): Dialog {
+    override fun makeDialog(alert: DBAlert, vararg params: Any?): Dialog {
         val dlgID = alert.dlgID
         var lstnr: DialogInterface.OnClickListener? = null
         var confirmID = 0
@@ -219,7 +219,7 @@ class PrefsDelegate(private val mActivity: XWActivity,
         }
     }
 
-    override fun onPosButton(action: DlgDelegate.Action, vararg params: Any): Boolean {
+    override fun onPosButton(action: DlgDelegate.Action, vararg params: Any?): Boolean {
         var handled = true
         when (action) {
             DlgDelegate.Action.ENABLE_NBS_DO -> {

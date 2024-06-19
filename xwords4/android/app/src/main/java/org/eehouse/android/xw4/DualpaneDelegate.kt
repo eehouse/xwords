@@ -35,7 +35,7 @@ class DualpaneDelegate(delegator: Delegator) :
 
     override fun init(savedInstanceState: Bundle?) {}
 
-    override fun makeDialog(alert: DBAlert, vararg params: Any): Dialog {
+    override fun makeDialog(alert: DBAlert, vararg params: Any?): Dialog {
         assertVarargsNotNullNR(*params)
         var dialog: Dialog? = null
         val main = m_activity as MainActivity
@@ -62,7 +62,10 @@ class DualpaneDelegate(delegator: Delegator) :
         return handled
     }
 
-    override fun onActivityResult(requestCode: RequestCode, resultCode: Int, data: Intent?) {
+    override fun onActivityResult(requestCode: RequestCode,
+                                  resultCode: Int,
+                                  data: Intent)
+    {
         val main = m_activity as MainActivity
         main.dispatchOnActivityResult(requestCode, resultCode, data)
     }
@@ -80,7 +83,7 @@ class DualpaneDelegate(delegator: Delegator) :
         return main.dispatchOnContextItemSelected(item)
     }
 
-    override fun onPosButton(action: DlgDelegate.Action, vararg params: Any): Boolean {
+    override fun onPosButton(action: DlgDelegate.Action, vararg params: Any?): Boolean {
         assertVarargsNotNullNR(*params)
         var handled = false
         val main = m_activity as MainActivity
@@ -94,8 +97,9 @@ class DualpaneDelegate(delegator: Delegator) :
         return handled
     }
 
-    override fun onNegButton(action: DlgDelegate.Action, vararg params: Any): Boolean {
-        assertVarargsNotNullNR(*params)
+    override fun onNegButton(action: DlgDelegate.Action,
+                             vararg params: Any?): Boolean
+    {
         var handled = false
         val main = m_activity as MainActivity
         val frags = main.visibleFragments
@@ -108,7 +112,9 @@ class DualpaneDelegate(delegator: Delegator) :
         return handled
     }
 
-    override fun onDismissed(action: DlgDelegate.Action, vararg params: Any): Boolean {
+    override fun onDismissed(action: DlgDelegate.Action,
+                             vararg params: Any?): Boolean
+    {
         assertVarargsNotNullNR(*params)
         var handled = false
         val main = m_activity as MainActivity
@@ -124,9 +130,8 @@ class DualpaneDelegate(delegator: Delegator) :
 
     override fun inviteChoiceMade(
         action: DlgDelegate.Action, means: InviteMeans,
-        vararg params: Any
+        vararg params: Any?
     ) {
-        assertVarargsNotNullNR(*params)
         val main = m_activity as MainActivity
         val frags = main.visibleFragments
         for (frag in frags) {

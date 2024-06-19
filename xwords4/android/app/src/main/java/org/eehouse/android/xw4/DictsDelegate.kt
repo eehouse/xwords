@@ -261,15 +261,16 @@ class DictsDelegate(delegator: Delegator) :
         }
     }
 
-    override fun makeDialog(alert: DBAlert, vararg params: Any): Dialog {
+    override fun makeDialog(alert: DBAlert, vararg params: Any?): Dialog {
         Assert.assertVarargsNotNullNR(params)
         val lstnr: DialogInterface.OnClickListener
         val lstnr2: DialogInterface.OnClickListener
-        val dialog: Dialog
+
         val message: String
         val doRemove = true
-        when (alert.dlgID) {
-            DlgID.MOVE_DICT -> {
+        val dialog =
+            when (alert.dlgID) {
+                DlgID.MOVE_DICT -> {
                 val selNames = getSelNames()
                 val moveTo = intArrayOf(-1)
                 message = getString(
@@ -292,7 +293,7 @@ class DictsDelegate(delegator: Delegator) :
                     val toLoc = itemToRealLoc(moveTo[0])
                     moveDicts(selNames, toLoc)
                 }
-                dialog = AlertDialog.Builder(mActivity)
+                AlertDialog.Builder(mActivity)
                     .setTitle(message)
                     .setSingleChoiceItems(
                         makeDictDirItems(), moveTo[0],
@@ -331,7 +332,7 @@ class DictsDelegate(delegator: Delegator) :
                     R.string.set_default_message_fmt,
                     dictName, lang
                 )
-                dialog = makeAlertBuilder()
+                makeAlertBuilder()
                     .setTitle(R.string.query_title)
                     .setMessage(message)
                     .setPositiveButton(R.string.button_default_human, lstnr)
@@ -354,15 +355,15 @@ class DictsDelegate(delegator: Delegator) :
                         )
                 }
                 lstnr2 = DialogInterface.OnClickListener { dlg, item -> curThis().finish() }
-                dialog = MultiService.missingDictDialog(
+                MultiService.missingDictDialog(
                     mActivity, intent,
                     lstnr, lstnr2
                 )
             }
 
-            else -> dialog = super.makeDialog(alert, *params)
+            else -> super.makeDialog(alert, *params)
         }
-        return dialog
+        return dialog!!
     } // makeDialog
 
     override fun init(savedInstanceState: Bundle?) {
@@ -372,8 +373,8 @@ class DictsDelegate(delegator: Delegator) :
             mClosedLangs.addAll(Arrays.asList(*closed))
         }
         mExpandedItems = HashSet()
-        mLocNames = getStringArray(R.array.loc_names)
-        listView.setOnItemLongClickListener(this)
+        mLocNames = getStringArray(R.array.loc_names) as Array<String>
+        listView!!.setOnItemLongClickListener(this)
         mCheckbox = findViewById(R.id.show_remote) as CheckBox
         mCheckbox!!.setOnClickListener(this)
         getBundledData(savedInstanceState)
@@ -404,7 +405,7 @@ class DictsDelegate(delegator: Delegator) :
                 downloadNewDict(args)
             }
         }
-        mOrigTitle = title
+        mOrigTitle = getTitle()
         makeNotAgainBuilder(R.string.key_na_dicts, R.string.not_again_dicts)
             .show()
         Perms23.tryGetPermsNA(
@@ -445,7 +446,7 @@ class DictsDelegate(delegator: Delegator) :
         } else {
             val item = view as XWListItem
             DictBrowseDelegate.launch(
-                delegator, item.getText(),
+                getDelegator(), item.getText(),
                 (item.getCached() as DictLoc),
                 item.getIsCustom())
         }
@@ -535,13 +536,6 @@ class DictsDelegate(delegator: Delegator) :
         } else {
             moveDictsWithPermission(selNames, toLoc)
         }
-    }
-
-    private fun moveDictsWithPermission(params: Array<out Any>) {
-        Assert.assertVarargsNotNullNR(params)
-        val selNames = params[0] as Array<String>
-        val toLoc = params[1] as DictLoc
-        moveDictsWithPermission(selNames, toLoc)
     }
 
     private fun moveDictsWithPermission(selNames: Array<String>, toLoc: DictLoc) {
@@ -764,7 +758,7 @@ class DictsDelegate(delegator: Delegator) :
     //////////////////////////////////////////////////////////////////////
     // DlgDelegate.DlgClickNotify interface
     //////////////////////////////////////////////////////////////////////
-    override fun onPosButton(action: DlgDelegate.Action, vararg params: Any): Boolean {
+    override fun onPosButton(action: DlgDelegate.Action, vararg params: Any?): Boolean {
         Assert.assertVarargsNotNullNR(params)
         var handled = true
         when (action) {
@@ -790,15 +784,20 @@ class DictsDelegate(delegator: Delegator) :
                                                   names.toTypedArray(), this)
             }
 
-            DlgDelegate.Action.MOVE_CONFIRMED -> moveDictsWithPermission(params)
+            DlgDelegate.Action.MOVE_CONFIRMED -> {
+                val selNames = params[0] as Array<String>
+                val toLoc = params[1] as DictLoc
+                moveDictsWithPermission(selNames, toLoc)
+            }
             DlgDelegate.Action.STORAGE_CONFIRMED -> mkListAdapter()
             else -> handled = super.onPosButton(action, *params)
         }
         return handled
     }
 
-    override fun onNegButton(action: DlgDelegate.Action, vararg params: Any): Boolean {
-        Assert.assertVarargsNotNullNR(params)
+    override fun onNegButton(action: DlgDelegate.Action,
+                             vararg params: Any?): Boolean
+    {
         var handled = true
         when (action) {
             DlgDelegate.Action.STORAGE_CONFIRMED -> mkListAdapter()
@@ -835,7 +834,7 @@ class DictsDelegate(delegator: Delegator) :
     private fun mkListAdapter() {
         resetLangs()
         mAdapter = DictListAdapter(mActivity)
-        setListAdapterKeepScroll(mAdapter)
+        setListAdapterKeepScroll(mAdapter!!)
         mSelViews = HashMap()
     }
 
@@ -888,11 +887,12 @@ class DictsDelegate(delegator: Delegator) :
 
     private fun setTitleBar() {
         val nSels = mSelDicts!!.size
-        title = if (0 < nSels) {
-            getString(R.string.sel_items_fmt, nSels)
-        } else {
-            mOrigTitle
-        }
+        setTitle( if (0 < nSels) {
+                      getString(R.string.sel_items_fmt, nSels)
+                  } else {
+                      mOrigTitle
+                  }!!
+        )
     }
 
     private fun makeDictDirItems(): Array<String?> {

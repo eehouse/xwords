@@ -211,7 +211,7 @@ class DictBrowseDelegate constructor(delegator: Delegator) : DelegateBase(
             Assert.assertNotNull(mBrowseState)
             mDict = XwJNI.makeDict(pairs.m_bytes[0], mName, pairs.m_paths[0])
             mDictInfo = XwJNI.dict_getInfo(mDict!!, false)
-            title = getString(R.string.dict_browse_title_fmt, mName, mDictInfo!!.wordCount)
+            setTitle(getString(R.string.dict_browse_title_fmt, mName, mDictInfo!!.wordCount))
 
             val ecl: ExpandChangeListener = object: ExpandChangeListener {
                 override fun expandedChanged(nowExpanded: Boolean) {
@@ -256,8 +256,8 @@ class DictBrowseDelegate constructor(delegator: Delegator) : DelegateBase(
         setFindPats(mBrowseState!!.mPats)
     }
 
-    override fun makeDialog(alert: DBAlert, params: Array<Any>): Dialog {
-        Assert.assertVarargsNotNullNR(params)
+    override fun makeDialog(alert: DBAlert, vararg params: Any?): Dialog {
+
         var dialog: Dialog? = null
         val dlgID = alert.dlgID
         when (dlgID) {
@@ -294,7 +294,7 @@ class DictBrowseDelegate constructor(delegator: Delegator) : DelegateBase(
                 val tilesView = inflate(R.layout.tiles_table)
                 addTileRows(tilesView, info)
                 val langName = DictLangCache.getLangNameForISOCode(mActivity, mLang!!)
-                title = getString(R.string.show_tiles_title_fmt, langName)
+                val title = getString(R.string.show_tiles_title_fmt, langName)
                 dialog = makeAlertBuilder()
                     .setView(tilesView)
                     .setPositiveButton(android.R.string.ok, null)
@@ -322,8 +322,8 @@ class DictBrowseDelegate constructor(delegator: Delegator) : DelegateBase(
         when (item.itemId) {
             R.id.dicts_showtiles -> showTiles()
             R.id.dicts_showfaq -> showFaq(FAQ_PARAMS)
-            R.id.dicts_shownote -> makeOkOnlyBuilder(desc)
-                .setTitle(mAboutStr)
+            R.id.dicts_shownote -> makeOkOnlyBuilder(desc!!)
+                .setTitle(mAboutStr!!)
                 .show()
 
             else -> handled = false
@@ -367,7 +367,9 @@ class DictBrowseDelegate constructor(delegator: Delegator) : DelegateBase(
     //////////////////////////////////////////////////
     // DlgDelegate.DlgClickNotify interface
     //////////////////////////////////////////////////
-    override fun onPosButton(action: DlgDelegate.Action, vararg params: Any): Boolean {
+    override fun onPosButton(action: DlgDelegate.Action,
+                             vararg params: Any?): Boolean
+    {
         Assert.assertVarargsNotNullNR(params)
         var handled = false
         when (action) {

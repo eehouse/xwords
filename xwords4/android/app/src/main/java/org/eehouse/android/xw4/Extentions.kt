@@ -20,6 +20,7 @@
 package org.eehouse.android.xw4
 
 import android.content.ContentValues
+import android.content.Intent
 import android.os.Bundle
 import org.json.JSONObject
 import java.io.Serializable
@@ -97,4 +98,8 @@ fun JSONObject.putAnd(key: String, value: Int): JSONObject {
 fun JSONObject.putAnd(key: String, value: Long): JSONObject {
 	this.put( key, value )
 	return this
+}
+
+fun Intent?.orEmpty(): Intent {
+    return if (null == this) Intent() else this
 }

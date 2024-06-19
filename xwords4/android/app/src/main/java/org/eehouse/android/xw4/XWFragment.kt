@@ -186,7 +186,7 @@ abstract open class XWFragment: Fragment(), Delegator {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         Log.d( TAG, "%H/%s.onActivityResult() called", this, this::class.java.getSimpleName() )
         mDlgt?.onActivityResult( RequestCode.entries[requestCode],
-                                  resultCode, data )
+                                  resultCode, data.orEmpty() )
     }
 
     override fun onPrepareOptionsMenu( menu: Menu )

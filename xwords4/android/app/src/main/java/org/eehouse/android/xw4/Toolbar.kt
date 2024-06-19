@@ -69,7 +69,7 @@ class Toolbar(private val m_activity: Activity, private val m_dlgDlgt: HasDlgDel
     }
 
     fun setListener(index: Buttons, msgID: Int,
-                    prefsKey: Int, action: DlgDelegate.Action?): Toolbar
+                    prefsKey: Int, action: DlgDelegate.Action): Toolbar
     {
         m_onClickListeners[index] =
             View.OnClickListener {
@@ -83,7 +83,7 @@ class Toolbar(private val m_activity: Activity, private val m_dlgDlgt: HasDlgDel
 
     fun setLongClickListener(
         index: Buttons, msgID: Int,
-        prefsKey: Int, action: DlgDelegate.Action?
+        prefsKey: Int, action: DlgDelegate.Action
     ): Toolbar {
         m_onLongClickListeners[index] = OnLongClickListener {
             m_dlgDlgt.makeNotAgainBuilder(prefsKey, action, msgID)

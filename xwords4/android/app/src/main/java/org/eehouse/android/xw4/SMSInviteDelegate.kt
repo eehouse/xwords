@@ -99,11 +99,11 @@ class SMSInviteDelegate(delegator: Delegator) :
         }
     }
 
-    override fun makeDialog(alert: DBAlert, vararg params: Any): Dialog {
+    override fun makeDialog(alert: DBAlert, vararg params: Any?): Dialog {
         assertVarargsNotNullNR(*params)
-        val dialog: Dialog
         val lstnr: DialogInterface.OnClickListener
-        when (alert.dlgID) {
+        val dialog =
+            when (alert.dlgID) {
             DlgID.GET_NUMBER -> {
                 val getNumView = inflate(R.layout.get_sms)
                 (getNumView.findViewById<View>(R.id.num_field) as EditText).keyListener =
@@ -117,7 +117,7 @@ class SMSInviteDelegate(delegator: Delegator) :
                         postSMSCostWarning(number, name)
                     }
                 }
-                dialog = makeAlertBuilder()
+                makeAlertBuilder()
                     .setTitle(R.string.get_sms_title)
                     .setView(getNumView)
                     .setPositiveButton(android.R.string.ok, lstnr)
@@ -125,7 +125,7 @@ class SMSInviteDelegate(delegator: Delegator) :
                     .create()
             }
 
-            else -> dialog = super.makeDialog(alert, *params)
+            else -> super.makeDialog(alert, *params)!!
         }
         return dialog
     }
@@ -143,7 +143,7 @@ class SMSInviteDelegate(delegator: Delegator) :
     }
 
     // DlgDelegate.DlgClickNotify interface
-    override fun onPosButton(action: DlgDelegate.Action, vararg params: Any): Boolean {
+    override fun onPosButton(action: DlgDelegate.Action, vararg params: Any?): Boolean {
         assertVarargsNotNullNR(*params)
         var handled = true
         when (action) {

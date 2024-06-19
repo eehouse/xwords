@@ -118,7 +118,7 @@ class GameConfigDelegate(delegator: Delegator) :
         }
     }
 
-    override fun makeDialog(alert: DBAlert, vararg params: Any): Dialog {
+    override fun makeDialog(alert: DBAlert, vararg params: Any?): Dialog {
         Assert.assertVarargsNotNullNR(params)
         var dialog: Dialog? = null
         val dlgID = alert.dlgID
@@ -382,7 +382,7 @@ class GameConfigDelegate(delegator: Delegator) :
         mBrowseText = getString(R.string.download_more)
         DictLangCache.setLast(mBrowseText)
         mCp = CommonPrefs.get(mActivity)
-        val args = arguments
+        val args = arguments!!
         mRowid = args.getLong(GameUtils.INTENT_KEY_ROWID, DBUtils.ROWID_NOTFOUND.toLong())
         mNewGameIsSolo = args.getBoolean(INTENT_FORRESULT_SOLO, false)
         mNewGameName = args.getString(INTENT_FORRESULT_NAME)
@@ -433,7 +433,7 @@ class GameConfigDelegate(delegator: Delegator) :
         }
     }
 
-    override fun onActivityResult(requestCode: RequestCode, resultCode: Int, data: Intent?) {
+    override fun onActivityResult(requestCode: RequestCode, resultCode: Int, data: Intent) {
         val cancelled = Activity.RESULT_CANCELED == resultCode
         loadGame()
 
@@ -667,7 +667,7 @@ class GameConfigDelegate(delegator: Delegator) :
         }
     }
 
-    override fun onPosButton(action: DlgDelegate.Action, vararg params: Any): Boolean {
+    override fun onPosButton(action: DlgDelegate.Action, vararg params: Any?): Boolean {
         Assert.assertVarargsNotNullNR(params)
         var handled = true
         Assert.assertTrue(curThis() === this)
@@ -685,7 +685,9 @@ class GameConfigDelegate(delegator: Delegator) :
         return handled
     }
 
-    override fun onNegButton(action: DlgDelegate.Action, vararg params: Any): Boolean {
+    override fun onNegButton(action: DlgDelegate.Action,
+                             vararg params: Any?): Boolean
+    {
         Assert.assertVarargsNotNullNR(params)
         var handled = true
         when (action) {
@@ -895,7 +897,7 @@ class GameConfigDelegate(delegator: Delegator) :
                     val gi = mGi!!
                     if (chosen == mBrowseText) {
                         DictsDelegate.downloadForResult(
-                            delegator,
+                            getDelegator(),
                             RequestCode.REQUEST_DICT,
                             gi.isoCode()!!
                         )
@@ -922,7 +924,7 @@ class GameConfigDelegate(delegator: Delegator) :
                         val chosen = parentView.getItemAtPosition(position) as String
                         if (chosen == mBrowseText) {
                             DictsDelegate.downloadForResult(
-                                delegator,
+                                getDelegator(),
                                 RequestCode.REQUEST_LANG_GC
                             )
                         } else {
@@ -1003,7 +1005,7 @@ class GameConfigDelegate(delegator: Delegator) :
         val sizes = getStringArray(R.array.board_sizes)
         Assert.assertTrueNR(position < sizes.size)
         if (position < sizes.size) {
-            val sizeStr = sizes[position]
+            val sizeStr = sizes[position]!!
             result = sizeStr.substring(0, 2).toInt()
         }
         return result
@@ -1014,7 +1016,7 @@ class GameConfigDelegate(delegator: Delegator) :
         val sizeStr = String.format("%d", mGi!!.boardSize)
         val sizes = getStringArray(R.array.board_sizes)
         for (ii in sizes.indices) {
-            if (sizes[ii].startsWith(sizeStr)) {
+            if (sizes[ii]!!.startsWith(sizeStr)) {
                 selection = ii
                 break
             }

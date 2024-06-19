@@ -158,7 +158,7 @@ object Utils {
         msg: String?
     ) {
         // Make this safe to call from non-looper threads
-        val activity = DelegateBase.getHasLooper()
+        val activity = DelegateBase.hasLooper
         activity?.runOnUiThread {
             try {
                 Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()

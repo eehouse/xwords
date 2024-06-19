@@ -826,7 +826,7 @@ class XwJNI private constructor() {
         @JvmStatic
         external fun comms_getHostAddr(gamePtr: GamePtr?): CommsAddrRec?
         @JvmStatic
-        external fun comms_getAddrs(gamePtr: GamePtr?): Array<CommsAddrRec?>?
+        external fun comms_getAddrs(gamePtr: GamePtr?): Array<CommsAddrRec>?
         @JvmStatic
         external fun comms_dropHostAddr(gamePtr: GamePtr?, typ: CommsConnType?)
         @JvmStatic

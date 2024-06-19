@@ -106,7 +106,7 @@ object Perms23 {
     ) {
         // Log.d( TAG, "tryGetPermsImpl(%s)", (Object)perms );
         if (0 != naKey &&
-            XWPrefs.getPrefsBoolean(delegate.activity, naKey, false)
+            XWPrefs.getPrefsBoolean(delegate.getActivity(), naKey, false)
         ) {
             postNeg(delegate, action, *params)
         } else {
@@ -177,7 +177,7 @@ object Perms23 {
     @JvmStatic
     fun onGotPermsAction(
         delegate: DelegateBase, positive: Boolean,
-        params: Array<Any>
+        vararg params: Any?
     ) {
         val info = QueryInfo(
             delegate, params[0] as DlgDelegate.Action,
@@ -405,7 +405,7 @@ object Perms23 {
         fun doIt(showRationale: Boolean) {
             val validPerms: MutableSet<Perm> = HashSet()
             for (perm in mPerms) {
-                if (permInManifest(mDelegate.activity, perm)) {
+                if (permInManifest(mDelegate.getActivity(), perm)) {
                     validPerms.add(perm)
                 }
             }
@@ -417,7 +417,7 @@ object Perms23 {
 
         private fun shouldShowAny(perms: Set<Perm>): Boolean {
             var result = false
-            val activity = mDelegate.activity
+            val activity = mDelegate.getActivity()
             for (perm in perms) {
                 result = result || ActivityCompat
                     .shouldShowRequestPermissionRationale(activity, perm.string!!)
@@ -444,7 +444,7 @@ object Perms23 {
                     }
                 })
             }
-            builder.asyncQuery(mDelegate.activity, object : PermCbck {
+            builder.asyncQuery(mDelegate.getActivity(), object : PermCbck {
                 override fun onPermissionResult(allGood: Boolean) {
                     if (DlgDelegate.Action.SKIP_CALLBACK != mAction) {
                         if (allGood) {

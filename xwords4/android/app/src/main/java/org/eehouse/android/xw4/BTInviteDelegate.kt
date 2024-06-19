@@ -261,7 +261,7 @@ class BTInviteDelegate(delegator: Delegator) :
 
     // DlgDelegate.DlgClickNotify interface
     override fun onPosButton(action: DlgDelegate.Action,
-							 vararg params: Any): Boolean {
+							 vararg params: Any?): Boolean {
         var handled = true
         when (action) {
             DlgDelegate.Action.OPEN_BT_PREFS_ACTION -> BTUtils.openBTSettings(mActivity)

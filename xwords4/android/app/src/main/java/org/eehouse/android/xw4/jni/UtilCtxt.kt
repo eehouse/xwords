@@ -44,7 +44,7 @@ interface UtilCtxt {
     fun cellSquareHeld(words: String) {}
     fun notifyMove(query: String?) {}
     fun notifyTrade(tiles: Array<String?>?) {}
-    fun notifyDupStatus(amHost: Boolean, msg: String?) {}
+    fun notifyDupStatus(amHost: Boolean, msg: String) {}
     fun userError(id: Int) {}
     fun informMove(turn: Int, expl: String?, words: String?) {}
     fun informUndo() {}

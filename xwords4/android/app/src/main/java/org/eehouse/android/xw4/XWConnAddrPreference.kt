@@ -91,7 +91,7 @@ class XWConnAddrPreference(private val m_context: Context, attrs: AttributeSet?)
                         msg = LocUtils.getString(activity, msgID)
                     }
                     if (null != msg) {
-                        activity.makeConfirmThenBuilder(action, msg)
+                        activity.makeConfirmThenBuilder(action!!, msg)
                             .setPosButton(buttonID)
                             .setNegButton(R.string.button_later)
                             .show()

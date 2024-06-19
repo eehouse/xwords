@@ -26,6 +26,8 @@ import java.util.ArrayList
 
 import org.eehouse.android.xw4.loc.LocUtils
 
+private val TAG = DBAlert::class.java.getSimpleName()
+
 class DBAlert : XWDialogFragment() {
     private var mParams: Array<Any?>? = null
     private var mDlgID: DlgID? = null
@@ -69,7 +71,7 @@ class DBAlert : XWDialogFragment() {
                 .setMessage("Unable to create $dlgID Alert")
                 .setPositiveButton(R.string.ok, null)
                 .setNegativeButton("Try again") { dlg, button ->
-                    val alrt = newInstance(mDlgID, mParams)
+                    val alrt = newInstance(dlgID, arrayOf(*mParams!!))
                     (getActivity() as MainActivity?)!!.show(alrt)
                 }
                 .create()
@@ -78,14 +80,13 @@ class DBAlert : XWDialogFragment() {
     }
 
     companion object {
-        private val TAG = DBAlert::class.java.getSimpleName()
         private const val DLG_ID_KEY = "DLG_ID_KEY"
         private const val PARMS_KEY = "PARMS_KEY"
 
         @JvmStatic
-        fun newInstance(dlgID: DlgID?, params: Array<Any?>?): DBAlert {
+        fun newInstance(dlgID: DlgID, params: Array<Any?>): DBAlert {
             if (BuildConfig.DEBUG) {
-                for (obj in params.orEmpty()) {
+                for (obj in params) {
                     if (null != obj && obj !is Serializable) {
                         Log.d(
                             TAG, "OOPS: %s not Serializable",
@@ -96,7 +97,7 @@ class DBAlert : XWDialogFragment() {
                 }
             }
             val bundle = Bundle()
-				.putIntAnd(DLG_ID_KEY, dlgID!!.ordinal)
+				.putIntAnd(DLG_ID_KEY, dlgID.ordinal)
 				.putSerializableAnd(PARMS_KEY, params)
             val result = DBAlert()
             result.setArguments(bundle)

@@ -69,7 +69,7 @@ class ChatDelegate(delegator: Delegator) :
             ) {
             }
         })
-        val args = arguments
+        val args = arguments!!
         m_rowid = args.getLong(GameUtils.INTENT_KEY_ROWID, -1)
         m_curPlayer = args.getInt(INTENT_KEY_PLAYER, -1)
         m_names = args.getStringArray(INTENT_KEY_NAMES)
@@ -181,7 +181,7 @@ class ChatDelegate(delegator: Delegator) :
         return handled
     }
 
-    override fun onPosButton(action: DlgDelegate.Action, vararg params: Any): Boolean {
+    override fun onPosButton(action: DlgDelegate.Action, vararg params: Any?): Boolean {
         Assert.assertVarargsNotNullNR(params)
         var handled = true
         when (action) {

@@ -188,8 +188,8 @@ class MainActivity : XWActivity(), FragmentManager.OnBackStackChangedListener {
     }
 
     fun dispatchOnCreateContextMenu(
-        menu: ContextMenu?, view: View?,
-        menuInfo: ContextMenuInfo?
+        menu: ContextMenu, view: View,
+        menuInfo: ContextMenuInfo
     ) {
         val frags = visibleFragments
         for (frag in frags) {
@@ -197,7 +197,7 @@ class MainActivity : XWActivity(), FragmentManager.OnBackStackChangedListener {
         }
     }
 
-    fun dispatchOnContextItemSelected(item: MenuItem?): Boolean {
+    fun dispatchOnContextItemSelected(item: MenuItem): Boolean {
         var handled = false
         val frags = visibleFragments
         for (frag in frags) {

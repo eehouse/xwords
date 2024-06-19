@@ -196,15 +196,15 @@ class BoardDelegate(delegator: Delegator) :
         }
     }
 
-    override fun makeDialog(alert: DBAlert, vararg params: Any): Dialog {
+    override fun makeDialog(alert: DBAlert, vararg params: Any?): Dialog? {
         Assert.assertVarargsNotNullNR(params)
         val dlgID = alert.dlgID
         Log.d(TAG, "makeDialog(%s)", dlgID.toString())
         val lstnr: DialogInterface.OnClickListener
         var ab = makeAlertBuilder() // used everywhere...
         Assert.assertTrueNR(!isFinishing())
-        val dialog: Dialog
-        when (dlgID) {
+        val dialog =
+            when (dlgID) {
             DlgID.DLG_OKONLY -> {
                 val title = params[0] as Int
                 if (0 != title) {
@@ -213,7 +213,7 @@ class BoardDelegate(delegator: Delegator) :
                 val msg = params[1] as String
                 ab.setMessage(msg)
                     .setPositiveButton(android.R.string.ok, null)
-                dialog = ab.create()
+                    .create()
             }
 
             DlgID.DLG_USEDICT, DlgID.DLG_GETDICT -> {
@@ -230,7 +230,7 @@ class BoardDelegate(delegator: Delegator) :
                         )
                     }
                 }
-                dialog = ab.setTitle(title)
+                ab.setTitle(title)
                     .setMessage(msg)
                     .setPositiveButton(R.string.button_yes, lstnr)
                     .setNegativeButton(R.string.button_no, null)
@@ -255,7 +255,7 @@ class BoardDelegate(delegator: Delegator) :
                 ab.setNeutralButton(
                     R.string.button_archive
                 ) { dlg, whichButton -> showArchiveNA(false) }
-                dialog = ab.create()
+                ab.create()
             }
 
             DlgID.QUERY_TRADE, DlgID.QUERY_MOVE -> {
@@ -267,7 +267,7 @@ class BoardDelegate(delegator: Delegator) :
                         true
                     )
                 }
-                dialog = ab.setMessage(msg)
+                ab.setMessage(msg)
                     .setTitle(R.string.query_title)
                     .setPositiveButton(R.string.button_yes, lstnr)
                     .setNegativeButton(android.R.string.cancel, null)
@@ -300,7 +300,7 @@ class BoardDelegate(delegator: Delegator) :
                         mActivity, R.plurals.yesAndMsgFmt,
                         count, buttonTxt
                     )
-                dialog = ab.setTitle(R.string.phonies_found_title)
+                ab.setTitle(R.string.phonies_found_title)
                     .setMessage(
                         """
                         ${params[0] as String}
@@ -346,7 +346,7 @@ class BoardDelegate(delegator: Delegator) :
                         ab.setNegativeButton(buttonTxt, lstnr)
                     }
                 }
-                dialog = ab.create()
+                ab.create()
             }
 
             DlgID.ASK_PASSWORD -> {
@@ -365,13 +365,12 @@ class BoardDelegate(delegator: Delegator) :
                             player, pwd
                         )
                     }
-                dialog = ab.create()
+                ab.create()
             }
 
             DlgID.GET_DEVID -> {
                 val et = inflate(R.layout.edittext) as EditText
-                dialog = ab
-                    .setTitle(R.string.title_pasteDevid)
+                ab.setTitle(R.string.title_pasteDevid)
                     .setView(et)
                     .setNegativeButton(android.R.string.cancel, null)
                     .setPositiveButton(
@@ -392,7 +391,7 @@ class BoardDelegate(delegator: Delegator) :
                 val psv = inflate(R.layout.peers_status) as PeerStatusView
                 val selfAddr = XwJNI.comms_getSelfAddr(mJniGamePtr)
                 psv.configure(mGi!!.gameID, selfAddr.mqtt_devID)
-                dialog = ab
+                ab
                     .setTitle(R.string.menu_about_peers)
                     .setView(psv)
                     .setPositiveButton(android.R.string.ok, null)
@@ -410,7 +409,7 @@ class BoardDelegate(delegator: Delegator) :
                     .setIsPause(isPause)
                 val buttonId =
                     if (isPause) R.string.board_menu_game_pause else R.string.board_menu_game_unpause
-                dialog = ab
+                ab
                     .setTitle(if (isPause) R.string.pause_title else R.string.unpause_title)
                     .setView(pauseView)
                     .setPositiveButton(buttonId) { dlg, whichButton ->
@@ -421,7 +420,7 @@ class BoardDelegate(delegator: Delegator) :
                     .create()
             }
 
-            DlgID.QUERY_ENDGAME -> dialog = ab.setTitle(R.string.query_title)
+            DlgID.QUERY_ENDGAME -> ab.setTitle(R.string.query_title)
                 .setMessage(R.string.ids_endnow)
                 .setPositiveButton(
                     R.string.button_yes
@@ -429,9 +428,9 @@ class BoardDelegate(delegator: Delegator) :
                 .setNegativeButton(R.string.button_no, null)
                 .create()
 
-            DlgID.DLG_INVITE -> dialog = iNAWrapper.make(alert, params)
-            DlgID.ENABLE_NFC -> dialog = makeEnableNFCDialog(mActivity)
-            else -> dialog = super.makeDialog(alert, *params)
+            DlgID.DLG_INVITE -> iNAWrapper.make(alert, params)
+            DlgID.ENABLE_NFC -> makeEnableNFCDialog(mActivity)
+            else -> super.makeDialog(alert, *params)
         }
         return dialog
     } // makeDialog
@@ -453,7 +452,7 @@ class BoardDelegate(delegator: Delegator) :
         mUtils = BoardUtilCtxt()
         // needs to be in sync with XWTimerReason
         mView = findViewById(R.id.board_view) as BoardView
-        val args = arguments
+        val args = arguments!!
         mRowid = args.getLong(GameUtils.INTENT_KEY_ROWID, -1)
         Log.i(TAG, "opening rowid %d", mRowid)
         mOverNotShown = true
@@ -594,7 +593,7 @@ class BoardDelegate(delegator: Delegator) :
 
     override fun onActivityResult(
         requestCode: RequestCode, resultCode: Int,
-        data: Intent?
+        data: Intent
     ) {
         if (Activity.RESULT_CANCELED != resultCode) {
             val missingMeans =
@@ -679,10 +678,10 @@ class BoardDelegate(delegator: Delegator) :
 
     override fun setTitle() {
         var title = GameUtils.getName(mActivity, mRowid)
-        if (null != mGi && mGi!!.inDuplicateMode) {
+        if (mGi?.inDuplicateMode ?: false) {
             title = LocUtils.getString(mActivity, R.string.dupe_title_fmt, title)
         }
-        setTitle(title)
+        setTitle(title!!)
     }
 
     private fun initToolbar() {
@@ -862,7 +861,7 @@ class BoardDelegate(delegator: Delegator) :
             }
 
             R.id.board_menu_tray -> cmd = JNICmd.CMD_TOGGLE_TRAY
-            R.id.board_menu_study -> StudyListDelegate.launch(delegator, mGi!!.isoCode())
+            R.id.board_menu_study -> StudyListDelegate.launch(getDelegator(), mGi!!.isoCode())
             R.id.board_menu_game_netstats -> handleViaThread(
                 JNICmd.CMD_NETSTATS,
                 R.string.netstats_title
@@ -885,7 +884,7 @@ class BoardDelegate(delegator: Delegator) :
 
             R.id.board_menu_dict -> {
                 val dictName = mGi!!.dictName(mView!!.curPlayer)
-                if (null != dictName) DictBrowseDelegate.launch(delegator, dictName)
+                if (null != dictName) DictBrowseDelegate.launch(getDelegator(), dictName)
             }
 
             R.id.board_menu_game_counts -> handleViaThread(
@@ -940,7 +939,7 @@ class BoardDelegate(delegator: Delegator) :
             DlgDelegate.Action.SMS_CONFIG_ACTION -> PrefsDelegate.launch(mActivity)
             DlgDelegate.Action.COMMIT_ACTION -> cmd = JNICmd.CMD_COMMIT
             DlgDelegate.Action.SHOW_EXPL_ACTION -> {
-                showToast(m_mySIS!!.toastStr)
+                showToast(m_mySIS!!.toastStr!!)
                 m_mySIS!!.toastStr = null
             }
 
@@ -950,13 +949,13 @@ class BoardDelegate(delegator: Delegator) :
                 Assert.assertTrueNR(null != gi.isoCode())
                 if (DlgDelegate.Action.BUTTON_BROWSEALL_ACTION == action
                     && null != curDict
-                    && DictsDelegate.handleDictsPopup(delegator, button, curDict, gi.isoCode()!!)
+                    && DictsDelegate.handleDictsPopup(getDelegator(), button, curDict, gi.isoCode()!!)
                 ) {
                     // do nothing
                 } else {
                     var selDict = DictsDelegate.prevSelFor(mActivity, gi.isoCode()!!)
                         ?: curDict
-                    if (null != selDict) DictBrowseDelegate.launch(delegator, selDict)
+                    if (null != selDict) DictBrowseDelegate.launch(getDelegator(), selDict)
                 }
             }
 
@@ -972,7 +971,7 @@ class BoardDelegate(delegator: Delegator) :
                 cmd = JNICmd.CMD_TRADE
             }
 
-            DlgDelegate.Action.LOOKUP_ACTION -> launchLookup(m_mySIS!!.words, gi.isoCode())
+            DlgDelegate.Action.LOOKUP_ACTION -> launchLookup(m_mySIS!!.words!!, gi.isoCode())
             DlgDelegate.Action.DROP_MQTT_ACTION -> dropConViaAndRestart(CommsConnType.COMMS_CONN_MQTT)
             DlgDelegate.Action.DELETE_AND_EXIT -> deleteAndClose()
             DlgDelegate.Action.DROP_SMS_ACTION -> alertOrderIncrIfAt(StartAlertOrder.NBS_PERMS)
@@ -1112,7 +1111,9 @@ class BoardDelegate(delegator: Delegator) :
         return handled
     }
 
-    override fun onDismissed(action: DlgDelegate.Action, vararg params: Any): Boolean {
+    override fun onDismissed(action: DlgDelegate.Action,
+                             vararg params: Any?): Boolean
+    {
         Assert.assertVarargsNotNullNR(params)
         Log.d(TAG, "onDismissed(%s, %s)", action, DbgUtils.toStr(arrayOf(params)))
         var handled = true
@@ -1138,7 +1139,7 @@ class BoardDelegate(delegator: Delegator) :
 
     override fun inviteChoiceMade(
         action: DlgDelegate.Action, means: InviteMeans,
-        vararg params: Any
+        vararg params: Any?
     ) {
         Assert.assertVarargsNotNullNR(params)
         if (action == DlgDelegate.Action.LAUNCH_INVITE_ACTION) {
@@ -1412,7 +1413,7 @@ class BoardDelegate(delegator: Delegator) :
     private fun dropConViaAndRestart(typ: CommsConnType) {
         XwJNI.comms_dropHostAddr(mJniGamePtr, typ)
         finish()
-        GameUtils.launchGame(delegator, mRowid)
+        GameUtils.launchGame(getDelegator(), mRowid)
     }
 
     private fun setGotGameDict(getDict: String?) {
@@ -1420,7 +1421,7 @@ class BoardDelegate(delegator: Delegator) :
         val msg = getString(R.string.reload_new_dict_fmt, getDict)
         showToast(msg)
         finish()
-        GameUtils.launchGame(delegator, mRowid)
+        GameUtils.launchGame(getDelegator(), mRowid)
     }
 
     private fun keyCodeToXPKey(keyCode: Int): XP_Key {
@@ -1588,7 +1589,7 @@ class BoardDelegate(delegator: Delegator) :
             showDialogFragment(DlgID.QUERY_TRADE, dlgBytes)
         }
 
-        override fun notifyDupStatus(amHost: Boolean, msg: String?) {
+        override fun notifyDupStatus(amHost: Boolean, msg: String) {
             val key =
                 if (amHost) R.string.key_na_dupstatus_host else R.string.key_na_dupstatus_guest
             runOnUiThread {
@@ -2034,7 +2035,7 @@ class BoardDelegate(delegator: Delegator) :
                 tickle(isStart)
                 tryInvites()
             }
-            val args = arguments
+            val args = arguments!!
             if (args.getBoolean(PAUSER_KEY, false)) {
                 getConfirmPause(true)
             }
@@ -2218,7 +2219,7 @@ class BoardDelegate(delegator: Delegator) :
         val names = mGi!!.playerNames()
         val locs = mGi!!.playersLocal() // to convert old histories
         ChatDelegate.start(
-            delegator, mRowid, curPlayer,
+            getDelegator(), mRowid, curPlayer,
             names, locs
         )
     }
