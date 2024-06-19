@@ -36,6 +36,8 @@ import org.eehouse.android.xw4.loc.LocUtils.getQuantityString
 import org.eehouse.android.xw4.loc.LocUtils.getString
 import java.io.Serializable
 
+private val TAG: String = InvitesNeededAlert::class.java.simpleName
+
 internal class InvitesNeededAlert private constructor(
     private val mDelegate: DelegateBase, private val mState: State)
 {
@@ -282,9 +284,5 @@ internal class InvitesNeededAlert private constructor(
         //                                         }
         //                                     } );
         // }
-    }
-
-    companion object {
-        private val TAG: String = InvitesNeededAlert::class.java.simpleName
     }
 }
