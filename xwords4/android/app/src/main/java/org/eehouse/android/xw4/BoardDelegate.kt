@@ -428,7 +428,7 @@ class BoardDelegate(delegator: Delegator) :
                 .setNegativeButton(R.string.button_no, null)
                 .create()
 
-            DlgID.DLG_INVITE -> iNAWrapper.make(alert, params)
+            DlgID.DLG_INVITE -> iNAWrapper.make(alert, *params)
             DlgID.ENABLE_NFC -> makeEnableNFCDialog(mActivity)
             else -> super.makeDialog(alert, *params)
         }
@@ -2200,7 +2200,7 @@ class BoardDelegate(delegator: Delegator) :
     private val iNAWrapper: InvitesNeededAlert.Wrapper
         private get() {
             if (null == mINAWrapper) {
-                mINAWrapper = InvitesNeededAlert.Wrapper(this, mJniGamePtr)
+                mINAWrapper = InvitesNeededAlert.Wrapper(this, mJniGamePtr!!)
                 showOrHide(mINAWrapper!!)
             }
             return mINAWrapper!!
