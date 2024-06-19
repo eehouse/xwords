@@ -113,7 +113,7 @@ class PrefsDelegate(private val mActivity: XWActivity,
         sharedPreferences!!.registerOnSharedPreferenceChangeListener(this)
 
         // It's too early somehow to do this in init() above
-        findViewById(R.id.prefs_menu).setOnClickListener(this)
+        requireViewById(R.id.prefs_menu).setOnClickListener(this)
     }
 
     override fun onPause() {

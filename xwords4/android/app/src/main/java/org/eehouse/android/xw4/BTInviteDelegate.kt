@@ -225,13 +225,13 @@ class BTInviteDelegate(delegator: Delegator) :
             R.plurals.bt_scan_progress_fmt,
             nDevs, nDevs
         )
-        (findViewById(R.id.progress_msg) as TextView).text = msg
-        findViewById(R.id.progress_line).visibility = View.VISIBLE
+        (requireViewById(R.id.progress_msg) as TextView).text = msg
+        requireViewById(R.id.progress_line).visibility = View.VISIBLE
         incrementProgressIn(1)
     }
 
     private fun hideProgress() {
-        findViewById(R.id.progress_line).visibility = View.GONE
+        requireViewById(R.id.progress_line).visibility = View.GONE
         mProgressBar = null
     }
 

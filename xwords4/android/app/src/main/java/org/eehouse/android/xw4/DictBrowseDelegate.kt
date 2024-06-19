@@ -229,9 +229,8 @@ class DictBrowseDelegate constructor(delegator: Delegator) : DelegateBase(
                 R.id.button_useconfig, R.id.button_addBlank,
                 R.id.button_clear
             )
-            for (id in ids) {
-                findViewById(id).setOnClickListener(this)
-            }
+            ids.map{findViewById(it)?.setOnClickListener(this)}
+
             setShowConfig()
             replaceIter(true)
             if (isCustom) {
@@ -447,8 +446,7 @@ class DictBrowseDelegate constructor(delegator: Delegator) : DelegateBase(
     private val mFocusGainedProc = Runnable {
         if (!mBlankButtonEnabled) {
             mBlankButtonEnabled = true
-            findViewById(R.id.button_addBlank)
-                .setEnabled(true)
+            requireViewById(R.id.button_addBlank).setEnabled(true)
         }
     }
 
@@ -572,7 +570,7 @@ class DictBrowseDelegate constructor(delegator: Delegator) : DelegateBase(
 
     private fun setShowConfig() {
         val expanded = mBrowseState!!.mExpanded
-        findViewById(R.id.config).visibility =
+        requireViewById(R.id.config).visibility =
             if (expanded) View.VISIBLE else View.GONE
         enableResetChecker(expanded)
     }

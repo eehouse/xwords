@@ -222,12 +222,18 @@ abstract class DelegateBase @JvmOverloads constructor(
         LocUtils.xlateView(mActivity, m_rootView)
     }
 
-    fun findViewById(resID: Int): View {
-        return m_rootView!!.findViewById(resID)
+    fun findViewById(resID: Int): View? {
+        val result = m_rootView!!.findViewById<View>(resID)
+        return result
+    }
+
+    fun requireViewById(resID: Int): View {
+        val view = findViewById(resID)
+        return view!!
     }
 
     protected fun setVisibility(id: Int, visibility: Int) {
-        findViewById(id).visibility = visibility
+        findViewById(id)?.visibility = visibility
     }
 
     open fun setTitle() {}

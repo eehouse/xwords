@@ -393,7 +393,7 @@ class GameConfigDelegate(delegator: Delegator) :
         mChangeConnButton!!.setOnClickListener(this)
         mJugglePlayersButton = findViewById(R.id.juggle_players) as Button
         mJugglePlayersButton!!.setOnClickListener(this)
-        findViewById(R.id.play_button).setOnClickListener(this)
+        requireViewById(R.id.play_button).setOnClickListener(this)
         mPlayerLayout = findViewById(R.id.player_list) as LinearLayout
         mPhoniesSpinner = (findViewById(R.id.phonies_spinner) as LabeledSpinner)
             .getSpinner()
@@ -548,10 +548,10 @@ class GameConfigDelegate(delegator: Delegator) :
             loadPlayersList()
             configLangSpinner()
             if (mIsNewGame) {
-                val et = findViewById(R.id.game_name_edit) as EditText
+                val et = requireViewById(R.id.game_name_edit) as EditText
                 et.setText(mNewGameName)
             } else {
-                findViewById(R.id.game_name_edit_row).visibility = View.GONE
+                requireViewById(R.id.game_name_edit_row).visibility = View.GONE
             }
             val gi = mGi!!
             mPhoniesSpinner!!.setSelection(gi.phoniesAction!!.ordinal)
@@ -560,7 +560,7 @@ class GameConfigDelegate(delegator: Delegator) :
             setChecked(R.id.hints_allowed, !gi.hintsNotAllowed)
             setChecked(R.id.trade_sub_seven, gi.tradeSub7)
             setChecked(R.id.pick_faceup, gi.allowPickTiles)
-            findViewById(R.id.trade_sub_seven)
+            requireViewById(R.id.trade_sub_seven)
                 .setOnClickListener {
                     if (!mSub7HintShown) {
                         mSub7HintShown = true
@@ -645,7 +645,7 @@ class GameConfigDelegate(delegator: Delegator) :
     }
 
     private fun showTimerSet(show: Boolean) {
-        val view = findViewById(R.id.timer_set)
+        val view = requireViewById(R.id.timer_set)
         view.visibility = if (show) View.VISIBLE else View.GONE
     }
 
@@ -1072,7 +1072,7 @@ class GameConfigDelegate(delegator: Delegator) :
         val locking = m_gameLockedCheck!!.isChecked
         mIsLocked = locking
         for (id in sDisabledWhenLocked) {
-            val view = findViewById(id)
+            val view = requireViewById(id)
             view.setEnabled(!locking)
         }
         val nChildren = mPlayerLayout!!.childCount
@@ -1181,7 +1181,7 @@ class GameConfigDelegate(delegator: Delegator) :
             val connString = mConTypes!!.toString(mActivity, true)
             mConnLabel!!.text = getString(R.string.connect_label_fmt, connString)
             // hide pick-face-up button for networked games
-            findViewById(R.id.pick_faceup).visibility = View.GONE
+            requireViewById(R.id.pick_faceup).visibility = View.GONE
         }
     }
 
