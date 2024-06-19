@@ -53,9 +53,9 @@ open class MultiMsgSink @JvmOverloads constructor(
         return NBSProto.sendPacket(m_context, addr!!.sms_phone, gameID, buf, msgID)
     }
 
-    fun sendViaP2P(buf: ByteArray?, gameID: Int, addr: CommsAddrRec?): Int {
+    fun sendViaP2P(buf: ByteArray, gameID: Int, addr: CommsAddrRec): Int {
         return WiDirService
-            .sendPacket(m_context, addr!!.p2p_addr, gameID, buf)
+            .sendPacket(m_context, addr.p2p_addr, gameID, buf)
     }
 
     fun sendViaNFC(buf: ByteArray?, gameID: Int): Int {
@@ -71,15 +71,15 @@ open class MultiMsgSink @JvmOverloads constructor(
         get() = TransportProcs.COMMS_XPORT_FLAGS_HASNOCONN
 
     override fun transportSendInvt(
-        addr: CommsAddrRec?, conType: CommsConnType?,
-        nli: NetLaunchInfo?, timestamp: Int
+        addr: CommsAddrRec, conType: CommsConnType,
+        nli: NetLaunchInfo, timestamp: Int
     ): Boolean {
         return sendInvite(m_context, rowID, addr, conType, nli, timestamp)
     }
 
     override fun transportSendMsg(
-        buf: ByteArray?, streamVers: Int, msgID: String?,
-        addr: CommsAddrRec?, typ: CommsConnType?,
+        buf: ByteArray, streamVers: Int, msgID: String?,
+        addr: CommsAddrRec, typ: CommsConnType,
         gameID: Int, timestamp: Int
     ): Int {
         var nSent = -1

@@ -26,16 +26,16 @@ interface TransportProcs {
     val flags: Int
 
     fun transportSendMsg(
-        buf: ByteArray?, streamVers: Int, msgNo: String?,
-        addr: CommsAddrRec?, conType: CommsConnType?,
+        buf: ByteArray, streamVers: Int, msgNo: String?,
+        addr: CommsAddrRec, conType: CommsConnType,
         gameID: Int, timestamp: Int
     ): Int
 
     fun transportSendMQTT(tap: TopicsAndPackets): Int
 
     fun transportSendInvt(
-        addr: CommsAddrRec?, conType: CommsConnType?,
-        nli: NetLaunchInfo?, timestamp: Int
+        addr: CommsAddrRec, conType: CommsConnType,
+        nli: NetLaunchInfo, timestamp: Int
     ): Boolean
 
     fun countChanged(newCount: Int, quashed: Boolean)

@@ -1,6 +1,6 @@
 /* -*- compile-command: "find-and-gradle.sh inXw4dDeb"; -*- */
 /*
- * Copyright 2010 - 2018 by Eric House (xwords@eehouse.org).  All
+ * Copyright 2010 - 2024 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -17,19 +17,16 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
+package org.eehouse.android.xw4
 
-package org.eehouse.android.xw4;
+import android.app.Service
+import android.content.Intent
+import android.os.IBinder
 
-import android.app.Service;
-import android.content.Intent;
-import android.os.IBinder;
+private val TAG: String = XWService::class.java.simpleName
 
-class XWService extends Service {
-    private static final String TAG = XWService.class.getSimpleName();
-
-    @Override
-    public IBinder onBind( Intent intent )
-    {
-        return null;
+open class XWService : Service() {
+    override fun onBind(intent: Intent): IBinder? {
+        return null
     }
 }

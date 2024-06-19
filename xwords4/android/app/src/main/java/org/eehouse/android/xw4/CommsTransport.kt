@@ -36,8 +36,8 @@ class CommsTransport(
         get() = if (TRANSPORT_DOES_NOCONN) TransportProcs.COMMS_XPORT_FLAGS_HASNOCONN else TransportProcs.COMMS_XPORT_FLAGS_NONE
 
     override fun transportSendInvt(
-        addr: CommsAddrRec?, conType: CommsConnType?,
-        nli: NetLaunchInfo?, timestamp: Int
+        addr: CommsAddrRec, conType: CommsConnType,
+        nli: NetLaunchInfo, timestamp: Int
     ): Boolean {
         return MultiMsgSink.sendInvite(
             m_context, m_rowid, addr, conType,
@@ -46,12 +46,12 @@ class CommsTransport(
     }
 
     override fun transportSendMsg(
-        buf: ByteArray?, streamVers: Int, msgID: String?,
-        addr: CommsAddrRec?, conType: CommsConnType?,
+        buf: ByteArray, streamVers: Int, msgID: String?,
+        addr: CommsAddrRec, conType: CommsConnType,
         gameID: Int, timestamp: Int
     ): Int {
         Log.d(
-            TAG, "transportSendMsg(len=%d, typ=%s, ts=%d)", buf!!.size,
+            TAG, "transportSendMsg(len=%d, typ=%s, ts=%d)", buf.size,
             conType.toString(), timestamp
         )
         var nSent = -1
@@ -91,10 +91,10 @@ class CommsTransport(
     }
 
     private fun sendForAddr(
-        context: Context, addr: CommsAddrRec?,
-        conType: CommsConnType?, rowID: Long,
+        context: Context, addr: CommsAddrRec,
+        conType: CommsConnType, rowID: Long,
         gameID: Int, timestamp: Int,
-        buf: ByteArray?, streamVers: Int, msgID: String?
+        buf: ByteArray, streamVers: Int, msgID: String?
     ): Int {
         var nSent = -1
         when (conType) {
