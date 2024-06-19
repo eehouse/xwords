@@ -390,7 +390,7 @@ class BoardDelegate(delegator: Delegator) :
             DlgID.MQTT_PEERS -> {
                 val psv = inflate(R.layout.peers_status) as PeerStatusView
                 val selfAddr = XwJNI.comms_getSelfAddr(mJniGamePtr)
-                psv.configure(mGi!!.gameID, selfAddr.mqtt_devID)
+                psv.configure(mGi!!.gameID, selfAddr.mqtt_devID!!)
                 ab
                     .setTitle(R.string.menu_about_peers)
                     .setView(psv)
