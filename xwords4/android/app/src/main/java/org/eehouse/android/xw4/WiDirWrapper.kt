@@ -1,6 +1,7 @@
 /* -*- compile-command: "find-and-gradle.sh inXw4dDeb"; -*- */
 /*
- * Copyright 2017 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2017 - 2024 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -16,43 +17,37 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
+package org.eehouse.android.xw4
 
-package org.eehouse.android.xw4;
-
-import android.app.Activity;
-import android.content.Context;
+import android.app.Activity
+import android.content.Context
 
 // On older Android we can't load the class WiDirService. So do it with
 // try/catch here
-public class WiDirWrapper {
+object WiDirWrapper {
+    private var s_working = false
 
-    private static boolean s_working = false;
-
-    public static void init( Context context )
-    {
+    fun init(context: Context) {
         try {
-            WiDirService.init( context );
-            s_working = true;
-        } catch ( java.lang.VerifyError err ) {
+            WiDirService.init(context)
+            s_working = true
+        } catch (err: VerifyError) {
         }
     }
 
-    public static boolean enabled()
-    {
-        return s_working && WiDirService.enabled();
+    fun enabled(): Boolean {
+        return s_working && WiDirService.enabled()
     }
 
-    public static void activityResumed( Activity activity )
-    {
-        if ( s_working ) {
-            WiDirService.activityResumed( activity );
+    fun activityResumed(activity: Activity) {
+        if (s_working) {
+            WiDirService.activityResumed(activity)
         }
     }
 
-    public static void activityPaused( Activity activity )
-    {
-        if ( s_working ) {
-            WiDirService.activityPaused( activity );
+    fun activityPaused(activity: Activity) {
+        if (s_working) {
+            WiDirService.activityPaused(activity)
         }
     }
 }
