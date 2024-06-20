@@ -702,7 +702,8 @@ abstract class DelegateBase @JvmOverloads constructor(
                 MQTTUtils.setEnabled(mActivity, true)
             }
 
-            DlgDelegate.Action.PERMS_QUERY -> Perms23.onGotPermsAction(this, true, *params)
+            DlgDelegate.Action.PERMS_QUERY ->
+                Perms23.onGotPermsAction(this, true, *params)
             DlgDelegate.Action.SHOW_FAQ -> showFaq(params[0] as Array<String>)
             else -> {
                 Log.d(TAG, "onPosButton(): unhandled action %s", action.toString())

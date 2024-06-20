@@ -155,10 +155,10 @@ open class DlgDelegateAlert : XWDialogFragment() {
                         mState!!.m_action, *mState!!.getParams()
                     )
 
-                    AlertDialog.BUTTON_NEGATIVE -> notify.onNegButton(
-                        mState!!.m_action,
-                        *mState!!.getParams()
-                    )
+                    AlertDialog.BUTTON_NEGATIVE -> {
+                        Log.d(TAG, "calling onNegButton(action=${mState!!.m_action})")
+                        notify.onNegButton(mState!!.m_action, *mState!!.getParams())
+                    }
 
                     else -> {
                         Log.e(TAG, "unexpected button %d", button)
