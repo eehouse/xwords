@@ -112,7 +112,7 @@ object Perms23 {
         } else {
             QueryInfo(
                 delegate, action, perms, rationaleMsg,
-                naKey, *params
+                naKey, params
             ).doIt(true)
         }
     }
