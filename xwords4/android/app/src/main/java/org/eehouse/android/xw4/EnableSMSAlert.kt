@@ -53,7 +53,7 @@ class EnableSMSAlert : DlgDelegateAlert() {
         val lstnr = DialogInterface.OnClickListener { dlg, item ->
             Assert.assertTrue(0 < spinner.selectedItemPosition)
             val xwact = activity as XWActivity?
-            xwact!!.onPosButton(state!!.m_action, *state.getParams())
+            xwact!!.onPosButton(state!!.m_action!!, *state.params)
         }
         builder.setTitle(R.string.confirm_sms_title)
             .setView(layout)

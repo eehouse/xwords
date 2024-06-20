@@ -42,7 +42,7 @@ class InviteChoicesAlert : DlgDelegateAlert(), ItemClicked {
         val means = ArrayList<InviteMeans>()
         val lastMeans: InviteMeans? = null
         var nli: NetLaunchInfo? = null
-        val params = state!!.getParams()
+        val params = state!!.params
         var nMissing = 0
         var nInvited = 0
         if (null != params) {
@@ -97,14 +97,14 @@ class InviteChoicesAlert : DlgDelegateAlert(), ItemClicked {
                 val activity = context as XWActivity
                 if (choice is InviteMeans) {
                     activity.inviteChoiceMade(
-                        state.m_action,
-                        choice, *state.getParams()
+                        state.m_action!!,
+                        choice, *state.params
                     )
                 } else if (choice is Array<*> && choice.isArrayOf<String>()) {
                     val addrs = choice
                         .map{player -> XwJNI.kplr_getAddr(player as String) as Any}
                         .toTypedArray()
-                    activity.onPosButton(state.m_action, *addrs)
+                    activity.onPosButton(state.m_action!!, *addrs)
                 } else {
                     Assert.failDbg()
                 }

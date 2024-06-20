@@ -456,7 +456,7 @@ abstract class DelegateBase @JvmOverloads constructor(
 
     fun show(state: DlgState) {
         val df =
-            when (state.m_id) {
+            when (state.mID) {
                 DlgID.CONFIRM_THEN, DlgID.DIALOG_OKONLY, DlgID.DIALOG_NOTAGAIN ->
                     DlgDelegateAlert.newInstance(state)
                 DlgID.DIALOG_ENABLESMS -> EnableSMSAlert.newInstance(state)
@@ -546,7 +546,7 @@ abstract class DelegateBase @JvmOverloads constructor(
     }
 
     protected fun showInviteChoicesThen(
-        action: DlgDelegate.Action?, nli: NetLaunchInfo?,
+        action: DlgDelegate.Action, nli: NetLaunchInfo,
         nMissing: Int, nInvited: Int
     ) {
         m_dlgDelegate.showInviteChoicesThen(action, nli, nMissing, nInvited)
@@ -596,7 +596,7 @@ abstract class DelegateBase @JvmOverloads constructor(
         m_dlgDelegate.stopProgress()
     }
 
-    fun showSMSEnableDialog(action: DlgDelegate.Action?) {
+    fun showSMSEnableDialog(action: DlgDelegate.Action) {
         m_dlgDelegate.showSMSEnableDialog(action)
     }
 

@@ -39,7 +39,7 @@ open class DlgDelegateAlert : XWDialogFragment() {
             mState = if (null != sis) {
                 sis.getParcelable<Parcelable>(STATE_KEY) as DlgState?
             } else {
-                val args = arguments
+                val args = requireArguments()
                 Assert.assertNotNull(args)
                 DlgState.fromBundle(args)
             }
@@ -65,7 +65,7 @@ open class DlgDelegateAlert : XWDialogFragment() {
             builder.setNegativeButton(state.m_negButton, lstnr)
         }
         if (null != state.m_pair) {
-            val pair = state.m_pair
+            val pair = state.m_pair!!
             builder.setNeutralButton(
                 pair.buttonStr,
                 mkCallbackClickListener(pair, naView)
@@ -107,16 +107,16 @@ open class DlgDelegateAlert : XWDialogFragment() {
         val activity: Activity? = activity
         if (activity is DlgClickNotify) {
             (activity as DlgClickNotify)
-                .onDismissed(mState!!.m_action, *mState!!.getParams())
+                .onDismissed(mState!!.m_action!!, *mState!!.params)
         }
     }
 
     override fun getFragTag(): String {
-        return getState(null).m_id.toString()
+        return getState(null).mID.toString()
     }
 
     override fun belongsOnBackStack(): Boolean {
-        return getState(null).m_id.belongsOnBackStack()
+        return getState(null).mID.belongsOnBackStack()
     }
 
     protected fun checkNotAgainCheck(state: DlgState?, naView: NotAgainView?) {
@@ -137,7 +137,7 @@ open class DlgDelegateAlert : XWDialogFragment() {
         return DialogInterface.OnClickListener { dlg, button ->
             checkNotAgainCheck(mState, naView)
             val xwact = activity as DlgClickNotify?
-            xwact!!.onPosButton(pair.action, *mState!!.getParams())
+            xwact!!.onPosButton(pair.action, *mState!!.params)
         }
     }
 
@@ -152,12 +152,12 @@ open class DlgDelegateAlert : XWDialogFragment() {
                 val notify = activity as DlgClickNotify
                 when (button) {
                     AlertDialog.BUTTON_POSITIVE -> notify.onPosButton(
-                        mState!!.m_action, *mState!!.getParams()
+                        mState!!.m_action!!, *mState!!.params
                     )
 
                     AlertDialog.BUTTON_NEGATIVE -> {
                         Log.d(TAG, "calling onNegButton(action=${mState!!.m_action})")
-                        notify.onNegButton(mState!!.m_action, *mState!!.getParams())
+                        notify.onNegButton(mState!!.m_action!!, *mState!!.params)
                     }
 
                     else -> {

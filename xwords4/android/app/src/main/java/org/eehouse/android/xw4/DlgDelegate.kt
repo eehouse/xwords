@@ -159,7 +159,7 @@ class DlgDelegate(
         }
     }
 
-    inner class Builder internal constructor(dlgID: DlgID?) {
+    inner class Builder internal constructor(dlgID: DlgID) {
         private val mState: DlgState = DlgState(dlgID)
             .setPosButton(android.R.string.ok) // default
             .setAction(Action.SKIP_CALLBACK)
@@ -179,7 +179,7 @@ class DlgDelegate(
             return this
         }
 
-        fun setAction(action: Action?): Builder {
+        fun setAction(action: Action): Builder {
             mState.setAction(action)
             return this
         }
@@ -216,7 +216,7 @@ class DlgDelegate(
 
         fun show() {
             val naKey = mState.m_prefsNAKey
-            val action = mState.m_action
+            val action = mState.m_action!!
 
             // Log.d( TAG, "show(): key: %d; action: %s", naKey, action );
             if (0 == naKey || !XWPrefs.getPrefsBoolean(mActivity, naKey, false)) {
@@ -349,7 +349,7 @@ class DlgDelegate(
     // Puts up alert asking to choose a reason to enable SMS, and on dismiss
     // calls onPosButton/onNegButton with the action and in params a Boolean
     // indicating whether enabling is now ok.
-    fun showSMSEnableDialog(action: Action?) {
+    fun showSMSEnableDialog(action: Action) {
         val state = DlgState(DlgID.DIALOG_ENABLESMS)
             .setAction(action)
 
@@ -357,7 +357,7 @@ class DlgDelegate(
     }
 
     fun showInviteChoicesThen(
-        action: Action?,
+        action: Action,
         nli: NetLaunchInfo?, nMissing: Int,
         nInvited: Int
     ) {
