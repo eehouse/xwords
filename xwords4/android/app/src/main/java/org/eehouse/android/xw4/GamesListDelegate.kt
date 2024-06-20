@@ -2259,10 +2259,8 @@ class GamesListDelegate(delegator: Delegator) :
                         builder.show()
                     }
                 }
-            result = UpdateCheckReceiver.postedForDictDownload(
-                mActivity,
-                data, dfl
-            )
+            result = UpdateCheckReceiver
+                .postedForDictDownload(mActivity, data!!, dfl)
         }
         return result
     }
