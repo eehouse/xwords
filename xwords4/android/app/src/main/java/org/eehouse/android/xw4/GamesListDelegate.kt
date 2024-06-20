@@ -1631,7 +1631,7 @@ class GamesListDelegate(delegator: Delegator) :
 
                 Utils.setItemVisible(menu, R.id.games_menu_timerStats, showDbg)
 
-                enable = Log.getStoreLogs()
+                enable = Log.storeLogs
                 Utils.setItemVisible(menu, R.id.games_menu_enableLogStorage, !enable)
                 Utils.setItemVisible(menu, R.id.games_menu_disableLogStorage, enable)
                 Utils.setItemVisible(menu, R.id.games_menu_emailLogs, enable)
@@ -1740,8 +1740,8 @@ class GamesListDelegate(delegator: Delegator) :
                 .setActionPair(DlgDelegate.Action.CLEAR_INT_STATS, R.string.button_clear_stats)
                 .show()
 
-            R.id.games_menu_enableLogStorage -> Log.setStoreLogs(true)
-            R.id.games_menu_disableLogStorage -> Log.setStoreLogs(false)
+            R.id.games_menu_enableLogStorage -> Log.storeLogs = true
+            R.id.games_menu_disableLogStorage -> Log.storeLogs = false
             R.id.games_menu_clearLogStorage -> makeConfirmThenBuilder(
                 DlgDelegate.Action.CLEAR_LOG_DB,
                 R.string.logstore_clear_confirm

@@ -310,7 +310,7 @@ object NetUtils {
             }
             Log.e(TAG, baos.toString())
         } catch (ex: Exception) {
-            Log.e(TAG, ex.message)
+            Log.e(TAG, ex.message!!)
         }
     }
 
