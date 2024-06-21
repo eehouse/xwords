@@ -36,11 +36,13 @@ class LookupAlert : XWDialogFragment() {
         var sis = sis
         val activity: Activity? = activity
         if (null == sis) {
-            sis = arguments
+            sis = requireArguments()
         }
         val context = requireContext()
         m_view = LocUtils.inflate(context, R.layout.lookup) as LookupAlertView
-        m_view!!.init({ dismiss() }, sis)
+        m_view!!.init(object:LookupAlertView.OnDoneListener {
+            override fun onDone() { dismiss() }
+        }, sis)
         val result: Dialog = LocUtils.makeAlertBuilder(context)
             .setView(m_view)
             .create()
