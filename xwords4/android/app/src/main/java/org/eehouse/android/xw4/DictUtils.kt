@@ -51,7 +51,12 @@ object DictUtils {
     private var s_dictListCache: Array<DictAndLoc>? = null
 
     init {
-        MountEventReceiver.register { invalDictList() }
+        MountEventReceiver.register(
+            object:MountEventReceiver.SDCardNotifiee {
+                override fun cardMounted(nowMounted: Boolean) {
+                    invalDictList()
+                }
+            })
     }
 
     @JvmStatic
