@@ -235,7 +235,7 @@ class JNIThread private constructor(lockIn: GameLock) : Thread(), AutoCloseable 
                     (this as Object).notifyAll()
 
                     m_lastSavedState = stream.contentHashCode()
-                    DupeModeTimer.gameOpened(m_context, m_rowid)
+                    DupeModeTimer.gameOpened(context, m_rowid)
                 }
             }
         }
@@ -798,7 +798,7 @@ class JNIThread private constructor(lockIn: GameLock) : Thread(), AutoCloseable 
         //        m_rowid, m_refCount );
         if (stop) {
             waitToStop(true)
-            DupeModeTimer.gameClosed(m_context, m_rowid)
+            DupeModeTimer.gameClosed(m_rowid)
         } else if (save && 0 != m_lastSavedState) { // has configure() run?
             handle(JNICmd.CMD_SAVE) // in case releaser has made changes
         }

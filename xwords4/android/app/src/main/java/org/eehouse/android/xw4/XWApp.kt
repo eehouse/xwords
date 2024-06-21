@@ -55,7 +55,7 @@ class XWApp : Application(), LifecycleObserver {
         }
         UpdateCheckReceiver.restartTimer(this)
         WiDirWrapper.init(this)
-        DupeModeTimer.init(this)
+        DupeModeTimer.init()
         MQTTUtils.init(this)
         BTUtils.init(this, appName, appUUID)
     }
