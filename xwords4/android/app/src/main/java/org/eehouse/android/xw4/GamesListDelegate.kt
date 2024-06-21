@@ -812,15 +812,16 @@ class GamesListDelegate(delegator: Delegator) :
         val dialog = ab.create()
 
         dialog.setOnShowListener {
-            view.setCallback { txt ->
-                val button = dialog.getButton(DialogInterface.BUTTON_POSITIVE)
-                if (null != button) {
-                    button.text = txt
-                } else {
-                    Assert.failDbg()
+            view.setCallback(
+                object:NewWithKnowns.ButtonChangeListener {
+                    override fun onNewButtonText(txt: String) {
+                        val button = dialog
+                            .getButton(DialogInterface.BUTTON_POSITIVE)
+                        button?.text = txt
+                    }
                 }
-            }
-            view.configure(standalone, GameUtils.makeDefaultName(mActivity))
+            )
+                .configure(standalone, GameUtils.makeDefaultName(mActivity))
         }
 
         return dialog
