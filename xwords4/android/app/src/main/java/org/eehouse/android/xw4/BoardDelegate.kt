@@ -801,7 +801,7 @@ class BoardDelegate(delegator: Delegator) :
                 item.setTitle(getString(R.string.board_menu_game_final))
             }
         }
-        enable = null != mSummary && mSummary!!.canRematch
+        enable = mSummary?.canRematch ?: false
         Utils.setItemVisible(menu, R.id.board_menu_rematch, enable)
         enable = mGameOver && !inArchiveGroup()
         Utils.setItemVisible(menu, R.id.board_menu_archive, enable)
@@ -1175,7 +1175,7 @@ class BoardDelegate(delegator: Delegator) :
 
                 InviteMeans.SMS_USER, InviteMeans.EMAIL, InviteMeans.CLIPBOARD -> {
                     val nli = NetLaunchInfo(
-                        mActivity, mSummary, mGi,
+                        mActivity, mSummary!!, mGi!!,
                         1,  // nPlayers
                         1 + m_mySIS!!.nGuestDevs
                     ) // fc
@@ -1348,41 +1348,32 @@ class BoardDelegate(delegator: Delegator) :
         return mRowid
     }
 
-    private val invite: ByteArray?
-        private get() {
-            var result: ByteArray? = null
+    private fun getInvite(): ByteArray?
+    {
+        val gi = mGi!!
+        val result =
             if (0 < m_mySIS!!.nMissing // Isn't there a better test??
-                && DeviceRole.SERVER_ISSERVER == mGi!!.serverRole
+                    && DeviceRole.SERVER_ISSERVER == gi.serverRole
             ) {
-                val nli = NetLaunchInfo(mGi)
+                val nli = NetLaunchInfo(gi)
                 Assert.assertTrue(0 <= m_mySIS!!.nGuestDevs)
                 nli.forceChannel = 1 + m_mySIS!!.nGuestDevs
-                val iter: Iterator<CommsConnType> = mConnTypes!!.iterator()
-                while (iter.hasNext()) {
-                    val typ = iter.next()
-                    when (typ) {
-                        CommsConnType.COMMS_CONN_RELAY -> {
-                            val room = mSummary!!.roomName
-                            Assert.assertNotNull(room)
-                            val inviteID = String.format("%X", mGi!!.gameID)
-                            nli.addRelayInfo(room, inviteID)
-                        }
 
+                mConnTypes!!.map{
+                    when (it) {
+                        CommsConnType.COMMS_CONN_RELAY -> Log.e(TAG, "Relay not supported")
                         CommsConnType.COMMS_CONN_BT -> nli.addBTInfo(mActivity)
                         CommsConnType.COMMS_CONN_SMS -> nli.addSMSInfo(mActivity)
                         CommsConnType.COMMS_CONN_P2P -> nli.addP2PInfo(mActivity)
                         CommsConnType.COMMS_CONN_NFC -> nli.addNFCInfo()
                         CommsConnType.COMMS_CONN_MQTT -> nli.addMQTTInfo()
-                        else -> Log.w(
-                            TAG, "Not doing NFC join for conn type %s",
-                            typ.toString()
-                        )
+                        else -> Log.w(TAG, "Not doing NFC join for conn type $it")
                     }
                 }
-                result = nli.asByteArray()
-            }
-            return result
-        }
+                nli.asByteArray()
+            } else null
+        return result
+    }
 
     private fun launchPhoneNumberInvite(
         nMissing: Int, info: SentInvitesInfo?,
@@ -1962,7 +1953,7 @@ class BoardDelegate(delegator: Delegator) :
             mGi = mJniThread!!.getGI() // this can be null, per Play Store report
             mSummary = mJniThread!!.getSummary()
             Wrapper.setGameID(mNFCWrapper, mGi!!.gameID)
-            val invite = invite
+            val invite = getInvite()
             if (null != invite) {
                 addInvitationFor(invite, mGi!!.gameID)
             }
@@ -2335,7 +2326,7 @@ class BoardDelegate(delegator: Delegator) :
                 Assert.assertTrue(0 <= m_mySIS!!.nGuestDevs)
                 val forceChannel = ii + m_mySIS!!.nGuestDevs + 1
                 val nli = NetLaunchInfo(
-                    mActivity, mSummary, mGi,
+                    mActivity, mSummary!!, mGi!!,
                     nPlayers, forceChannel
                 )
                     .setRemotesAreRobots(mRemotesAreRobots)
@@ -2514,7 +2505,7 @@ class BoardDelegate(delegator: Delegator) :
         val forceChannel = 1 + m_mySIS!!.nGuestDevs
         // Log.d( TAG, "nliForMe() => %s", nli );
         return NetLaunchInfo(
-            mActivity, mSummary, mGi,
+            mActivity, mSummary!!, mGi!!,
             numHere, forceChannel
         )
     }

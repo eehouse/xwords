@@ -795,7 +795,9 @@ static const SetInfo nli_strs[] = {
     ARR_MEMBER( NetLaunchInfo, dict ),
     ARR_MEMBER( NetLaunchInfo, isoCodeStr ),
     ARR_MEMBER( NetLaunchInfo, gameName ),
+#ifdef XWFEATURE_RELAY
     ARR_MEMBER( NetLaunchInfo, room ),
+#endif
     ARR_MEMBER( NetLaunchInfo, btName ),
     ARR_MEMBER( NetLaunchInfo, btAddress ),
     ARR_MEMBER( NetLaunchInfo, phone ),

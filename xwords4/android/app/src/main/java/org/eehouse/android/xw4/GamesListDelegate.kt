@@ -1228,7 +1228,7 @@ class GamesListDelegate(delegator: Delegator) :
         when (action) {
             DlgDelegate.Action.NEW_NET_GAME -> {
                 m_netLaunchInfo = params[0] as NetLaunchInfo
-                if (checkWarnNoDict(m_netLaunchInfo)) {
+                if (checkWarnNoDict(m_netLaunchInfo!!)) {
                     makeNewNetGameIf()
                 }
             }
@@ -1661,17 +1661,18 @@ class GamesListDelegate(delegator: Delegator) :
 
         // What's going on here???
         if (// && !BoardDelegate.gameIsOpen( selRowIDs[0] )
-            1 == selRowIDs.size && R.id.games_game_delete != itemID && R.id.games_game_move != itemID && !checkWarnNoDict(
-                selRowIDs[0],
-                itemID
-            )
+            1 == selRowIDs.size
+                && R.id.games_game_delete != itemID
+                && R.id.games_game_move != itemID
+                && !checkWarnNoDict(selRowIDs[0], itemID)
         ) {
             return true // FIXME: RETURN FROM MIDDLE!!!
         }
 
         val delegator = getDelegator()
         when (itemID) {
-            R.id.games_menu_resend -> GameUtils.resendAllIf(mActivity, null, true, true)
+            R.id.games_menu_resend ->
+                GameUtils.resendAllIf(mActivity, null, true, true)
             R.id.games_menu_newgame_solo -> handleNewGameButton(true)
             R.id.games_menu_newgame_net -> handleNewGameButton(false)
             R.id.games_menu_newgroup -> {
@@ -1680,7 +1681,8 @@ class GamesListDelegate(delegator: Delegator) :
             }
 
             R.id.games_menu_dicts -> DictsDelegate.start(delegator)
-            R.id.games_menu_checkupdates -> UpdateCheckReceiver.checkVersions(mActivity, true)
+            R.id.games_menu_checkupdates -> UpdateCheckReceiver
+                                                .checkVersions(mActivity, true)
             R.id.games_menu_prefs -> PrefsDelegate.launch(mActivity)
             R.id.games_menu_rateme -> {
                 val str = String.format(
@@ -2117,10 +2119,10 @@ class GamesListDelegate(delegator: Delegator) :
         setTitle((if (0 == fmt) m_origTitle else getQuantityString(fmt, nSels, nSels))!!)
     }
 
-    private fun checkWarnNoDict(nli: NetLaunchInfo?): Boolean {
+    private fun checkWarnNoDict(nli: NetLaunchInfo): Boolean {
         // check that we have the dict required
         val haveDict: Boolean
-        if (null == nli!!.dict) { // can only test for language support
+        if (null == nli.dict) { // can only test for language support
 
             val dicts = DictLangCache.getHaveLang(mActivity, nli.isoCode())
             haveDict = 0 < dicts.size
@@ -2132,7 +2134,7 @@ class GamesListDelegate(delegator: Delegator) :
             }
         } else {
             haveDict =
-                DictLangCache.haveDict(mActivity, nli.isoCode(), nli.dict)
+                DictLangCache.haveDict(mActivity, nli.isoCode(), nli.dict!!)
         }
         if (!haveDict) {
             m_netLaunchInfo = nli

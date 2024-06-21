@@ -1034,7 +1034,6 @@
     <!-- This is the subject line of the email/text sent to invite
          someone to join a game. -->
     <string name="invite_subject">Let’s play CrossWords</string>
-    <string name="invite_subject_fmt">Let’s play CrossWords (room %1$s)</string>
     <!-- This is the body of the html version of the invitation. A URL
          is created with parameters describing the game and
          substituted for "%1$s".  (The funky \u003c and friends are

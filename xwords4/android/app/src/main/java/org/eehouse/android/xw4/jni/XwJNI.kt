@@ -509,7 +509,7 @@ class XwJNI private constructor() {
         @JvmStatic
         fun game_makeRematch(
             gamePtr: GamePtr, util: UtilCtxt,
-            cp: CommonPrefs, gameName: String,
+            cp: CommonPrefs, gameName: String?,
             newOrder: Array<Int>
         ): GamePtr? {
             val noInts = IntArray(newOrder.size)
@@ -570,7 +570,7 @@ class XwJNI private constructor() {
             gamePtr: GamePtr,
             gamePtrNew: GamePtr?,
             util: UtilCtxt, cp: CommonPrefs,
-            gameName: String, newOrder: IntArray
+            gameName: String?, newOrder: IntArray
         ): Boolean
 
         @JvmStatic

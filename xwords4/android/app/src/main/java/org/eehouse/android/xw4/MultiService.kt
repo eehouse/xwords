@@ -153,7 +153,7 @@ class MultiService {
         fun getMissingDictData(context: Context, intent: Intent): NetLaunchInfo?
         {
             Assert.assertTrueNR(isMissingDictIntent(intent))
-            val nliData = intent.getStringExtra(NLI_DATA)
+            val nliData = intent.getStringExtra(NLI_DATA)!!
             val nli = NetLaunchInfo.makeFrom(context, nliData)
             Assert.assertTrueNR(nli != null)
             return nli

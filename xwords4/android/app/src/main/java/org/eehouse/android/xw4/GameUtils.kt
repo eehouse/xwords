@@ -547,7 +547,7 @@ object GameUtils {
 
     private fun saveNewGame1(
         context: Context, gamePtr: GamePtr,
-        groupID: Long, gameName: String
+        groupID: Long, gameName: String?
     ): Long {
         var groupID = groupID
         var rowid = DBUtils.ROWID_NOTFOUND
@@ -574,7 +574,7 @@ object GameUtils {
     @JvmStatic
     fun makeRematch(
         context: Context, srcRowid: Long,
-        groupID: Long, gameName: String,
+        groupID: Long, gameName: String?,
         newOrder: Array<Int>
     ): Long {
         var rowid = DBUtils.ROWID_NOTFOUND
@@ -582,14 +582,16 @@ object GameUtils {
             if (null != gw) {
                 val util: UtilCtxt = UtilCtxtImpl()
                 val cp = CommonPrefs.get(context)
-                XwJNI.game_makeRematch(gw.gamePtr()!!, util, cp, gameName, newOrder).use { gamePtrNew ->
-                    if (null != gamePtrNew) {
-                        rowid = saveNewGame1(
-                            context, gamePtrNew,
-                            groupID, gameName
-                        )
+                XwJNI.game_makeRematch(gw.gamePtr()!!, util, cp,
+                                       gameName, newOrder)
+                    .use { gamePtrNew ->
+                        if (null != gamePtrNew) {
+                            rowid = saveNewGame1(
+                                context, gamePtrNew,
+                                groupID, gameName
+                            )
+                        }
                     }
-                }
             }
         }
         Log.d(TAG, "makeRematch() => %d", rowid)
@@ -660,7 +662,7 @@ object GameUtils {
     @JvmStatic
     fun makeSaveNew(
         context: Context, gi: CurGameInfo,
-        groupID: Long, gameName: String
+        groupID: Long, gameName: String?
     ): Long {
         Assert.assertTrueNR(DeviceRole.SERVER_STANDALONE == gi.serverRole)
         return makeSaveNew(context, gi, null, null, groupID, gameName, null)
@@ -669,7 +671,7 @@ object GameUtils {
     private fun makeSaveNew(
         context: Context, gi: CurGameInfo,
         selfAddr: CommsAddrRec?, hostAddr: CommsAddrRec?,
-        groupID: Long, gameName: String,
+        groupID: Long, gameName: String?,
         invitee: CommsAddrRec?
     ): Long {
         var groupID = groupID
@@ -739,7 +741,7 @@ object GameUtils {
     @JvmStatic
     fun makeNewMultiGame3(
         context: Context, groupID: Long,
-        gameName: String, invitee: CommsAddrRec?
+        gameName: String?, invitee: CommsAddrRec?
     ): Long {
         return makeNewMultiGame4(
             context, groupID, null as String?,
@@ -754,7 +756,7 @@ object GameUtils {
         dict: String?, isoCode: ISOCode?,
         jsonData: String?,
         selfSet: CommsConnTypeSet?,
-        gameName: String, invitee: CommsAddrRec?
+        gameName: String?, invitee: CommsAddrRec?
     ): Long {
         val inviteID = makeRandomID()
         return makeNewMultiGame5(
@@ -768,7 +770,7 @@ object GameUtils {
         inviteID: String, dict: String?,
         isoCode: ISOCode?, jsonData: String?,
         selfSet: CommsConnTypeSet?,
-        gameName: String, invitee: CommsAddrRec?
+        gameName: String?, invitee: CommsAddrRec?
     ): Long {
         var selfSet = selfSet
         val langArray = arrayOf(isoCode)
@@ -804,7 +806,7 @@ object GameUtils {
         jsonData: String?,
         nPlayersT: Int, nPlayersH: Int,
         forceChannel: Int, inviteID: String,
-        gameID: Int, gameName: String,
+        gameID: Int, gameName: String?,
         isHost: Boolean, localsRobots: Boolean,
         invitee: CommsAddrRec?
     ): Long {
@@ -837,7 +839,7 @@ object GameUtils {
     @JvmStatic
     fun makeNewMultiGame7(
         context: Context, gi: CurGameInfo,
-        selfSet: CommsConnTypeSet?, gameName: String
+        selfSet: CommsConnTypeSet?, gameName: String?
     ): Long {
         val selfAddr = CommsAddrRec(selfSet!!)
             .populate(context)
@@ -853,7 +855,7 @@ object GameUtils {
         context: Context, sink: MultiMsgSink?,
         gi: CurGameInfo, selfAddr: CommsAddrRec,
         hostAddr: CommsAddrRec?, util: UtilCtxt?,
-        groupID: Long, gameName: String,
+        groupID: Long, gameName: String?,
         invitee: CommsAddrRec?
     ): Long {
         var selfAddr: CommsAddrRec? = selfAddr
@@ -898,11 +900,7 @@ object GameUtils {
         if (null != message) {
             val intent = Intent()
             intent.setAction(Intent.ACTION_SEND)
-            val subject = if (null != nli.room) LocUtils.getString(
-                activity, R.string.invite_subject_fmt,
-                nli.room
-            )
-            else LocUtils.getString(activity, R.string.invite_subject)
+            val subject = LocUtils.getString(activity, R.string.invite_subject)
             intent.putExtra(Intent.EXTRA_SUBJECT, subject)
             intent.putExtra(Intent.EXTRA_TEXT, Html.fromHtml(message))
 

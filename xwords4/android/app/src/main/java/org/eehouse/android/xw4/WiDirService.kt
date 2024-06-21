@@ -257,11 +257,12 @@ class WiDirService : XWService() {
 
     private fun handleGotInvite(intent: Intent) {
         Log.d(TAG, "handleGotInvite()")
-        val nliData = intent.getStringExtra(KEY_NLI)
+        val nliData = intent.getStringExtra(KEY_NLI)!!
         val nli = NetLaunchInfo.makeFrom(this, nliData)
         val returnMac = intent.getStringExtra(KEY_SRC)
 
-        if (!mHelper!!.handleInvitation(nli, returnMac, DictFetchOwner.OWNER_P2P)) {
+        if (null == nli
+            || !mHelper!!.handleInvitation(nli, returnMac, DictFetchOwner.OWNER_P2P)) {
             Log.d(TAG, "handleInvitation() failed")
         }
     }
@@ -281,8 +282,9 @@ class WiDirService : XWService() {
                 mHelper!!.utilCtxt
             )
             if (DBUtils.ROWID_NOTFOUND != rowid) {
-                if (null != nli.gameName && 0 < nli.gameName.length) {
-                    DBUtils.setName(this, rowid, nli.gameName)
+                val gameName = nli.gameName
+                if ( 0 < (gameName?.length ?: 0) ) {
+                    DBUtils.setName(this, rowid, gameName!!)
                 }
                 val body = LocUtils.getString(
                     this, R.string.new_bt_body_fmt,

@@ -113,7 +113,7 @@ internal abstract class XWServiceHelper(private val mContext: Context) {
         device: String?, dfo: MultiService.DictFetchOwner?
     ): Boolean {
         // PENDING: get the test for dicts back in
-        if (DictLangCache.haveDict(mContext, nli.isoCode(), nli.dict)) {
+        if (DictLangCache.haveDict(mContext, nli.isoCode(), nli.dict!!)) {
             GameUtils.handleInvitation(mContext, nli, getSink(0))
         } else {
             val intent = MultiService.makeMissingDictIntent(mContext, nli, dfo!!)
