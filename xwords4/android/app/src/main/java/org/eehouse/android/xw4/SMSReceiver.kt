@@ -43,7 +43,7 @@ class SMSReceiver : BroadcastReceiver() {
                     )
                     if (null != sms) {
                         try {
-                            val phone = sms.originatingAddress
+                            val phone = sms.originatingAddress!!
                             val body = sms.userData
                             NBSProto.handleFrom(
                                 context, body, phone,

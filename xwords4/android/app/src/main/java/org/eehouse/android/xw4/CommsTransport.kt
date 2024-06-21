@@ -100,7 +100,7 @@ class CommsTransport(
         when (conType) {
             CommsConnType.COMMS_CONN_RELAY -> Log.e(TAG, "sendForAddr(); still sending via RELAY")
             CommsConnType.COMMS_CONN_SMS -> nSent = NBSProto.sendPacket(
-                context, addr!!.sms_phone,
+                context, addr.sms_phone!!,
                 gameID, buf, msgID
             )
 

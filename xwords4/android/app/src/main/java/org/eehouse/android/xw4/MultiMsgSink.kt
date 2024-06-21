@@ -43,14 +43,14 @@ open class MultiMsgSink @JvmOverloads constructor(
     }
 
     open fun sendViaBluetooth(
-        buf: ByteArray?, msgID: String?, gameID: Int,
-        addr: CommsAddrRec?
+        buf: ByteArray, msgID: String?, gameID: Int,
+        addr: CommsAddrRec
     ): Int {
         return BTUtils.sendPacket(m_context, buf, msgID, addr, gameID)
     }
 
-    open fun sendViaSMS(buf: ByteArray?, msgID: String?, gameID: Int, addr: CommsAddrRec?): Int {
-        return NBSProto.sendPacket(m_context, addr!!.sms_phone, gameID, buf, msgID)
+    open fun sendViaSMS(buf: ByteArray, msgID: String?, gameID: Int, addr: CommsAddrRec): Int {
+        return NBSProto.sendPacket(m_context, addr.sms_phone!!, gameID, buf, msgID)
     }
 
     fun sendViaP2P(buf: ByteArray, gameID: Int, addr: CommsAddrRec): Int {
@@ -120,8 +120,8 @@ open class MultiMsgSink @JvmOverloads constructor(
         private val TAG: String = MultiMsgSink::class.java.simpleName
         fun sendInvite(
             context: Context, rowid: Long,
-            addr: CommsAddrRec?, typ: CommsConnType?,
-            nli: NetLaunchInfo?, timestamp: Int
+            addr: CommsAddrRec, typ: CommsConnType,
+            nli: NetLaunchInfo, timestamp: Int
         ): Boolean {
             Log.d(TAG, "sendInvite(to=%s, typ=%s, nli=%s)", addr, typ, nli)
             var success = false
@@ -130,12 +130,12 @@ open class MultiMsgSink @JvmOverloads constructor(
             when (typ) {
                 CommsConnType.COMMS_CONN_MQTT -> Assert.failDbg()
                 CommsConnType.COMMS_CONN_SMS -> if (XWPrefs.getNBSEnabled(context)) {
-                    NBSProto.inviteRemote(context, addr!!.sms_phone, nli)
+                    NBSProto.inviteRemote(context, addr.sms_phone!!, nli)
                     success = true
                 }
 
                 CommsConnType.COMMS_CONN_BT -> success =
-                    BTUtils.sendInvite(context, addr!!.bt_hostName, addr.bt_btAddr, nli)
+                    BTUtils.sendInvite(context, addr.bt_hostName, addr.bt_btAddr, nli)
 
                 CommsConnType.COMMS_CONN_NFC -> {}
                 else -> {
