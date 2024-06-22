@@ -35,11 +35,9 @@ import java.util.Locale
 import java.util.concurrent.LinkedBlockingQueue
 import kotlin.math.abs
 
-import org.eehouse.android.xw4.DBUtils.getIntFor
-import org.eehouse.android.xw4.DBUtils.getRowIDsFor
-import org.eehouse.android.xw4.DBUtils.setIntFor
-import org.eehouse.android.xw4.DBUtils.setLongFor
-import org.eehouse.android.xw4.DbgUtils.assertOnUIThread
+import org.json.JSONException
+import org.json.JSONObject
+
 import org.eehouse.android.xw4.NetStateCache.StateChangedIf
 import org.eehouse.android.xw4.TimerReceiver.TimerCallback
 import org.eehouse.android.xw4.jni.CommsAddrRec
@@ -48,13 +46,14 @@ import org.eehouse.android.xw4.jni.CommsAddrRec.ConnExpl
 import org.eehouse.android.xw4.jni.XwJNI
 import org.eehouse.android.xw4.jni.XwJNI.TopicsAndPackets
 import org.eehouse.android.xw4.loc.LocUtils
-import org.json.JSONException
-import org.json.JSONObject
 
+private val TAG = MQTTUtils::class.java.simpleName
 private const val PONG_PREFIX = "xw4/pong/"
 
-class MQTTUtils private constructor(context: Context, resendOnConnect: Boolean) : Thread(),
-    IMqttActionListener, MqttCallbackExtended {
+class MQTTUtils private constructor(context: Context,
+                                    resendOnConnect: Boolean) :
+    Thread(), IMqttActionListener, MqttCallbackExtended
+{
     private enum class State {
         NONE, CONNECTING, CONNECTED, SUBSCRIBING, SUBSCRIBED,
         CLOSING
@@ -502,7 +501,6 @@ class MQTTUtils private constructor(context: Context, resendOnConnect: Boolean) 
     }
 
     companion object {
-        private val TAG: String = MQTTUtils::class.java.simpleName
         private val KEY_NEXT_REG = TAG + "/next_reg"
         private val KEY_LAST_WRITE = TAG + "/last_write"
         private val KEY_TMP_KEY = TAG + "/tmp_key"
@@ -536,11 +534,13 @@ class MQTTUtils private constructor(context: Context, resendOnConnect: Boolean) 
             }
         }
 
-        private val sStateChangedIf = StateChangedIf { context, nowAvailable ->
-            Log.d(TAG, "onNetAvail(avail=%b)", nowAvailable)
-            assertOnUIThread()
-            if (nowAvailable) {
-                resendAllIf(context)
+        private val sStateChangedIf = object : StateChangedIf {
+            override fun onNetAvail(context: Context, nowAvailable: Boolean) {
+                Log.d(TAG, "onNetAvail(avail=$nowAvailable)")
+                DbgUtils.assertOnUIThread()
+                if (nowAvailable) {
+                    resendAllIf(context)
+                }
             }
         }
 
@@ -656,11 +656,11 @@ class MQTTUtils private constructor(context: Context, resendOnConnect: Boolean) 
         private var sTmpKey = 0
         private fun getTmpKey(context: Context): Int {
             while (0 == sTmpKey) {
-                sTmpKey = getIntFor(context, KEY_TMP_KEY, 0)
+                sTmpKey = DBUtils.getIntFor(context, KEY_TMP_KEY, 0)
                 if (0 == sTmpKey) {
                     sTmpKey = abs(Utils.nextRandomInt().toDouble())
                         .toInt()
-                    setIntFor(context, KEY_TMP_KEY, sTmpKey)
+                    DBUtils.setIntFor(context, KEY_TMP_KEY, sTmpKey)
                 }
             }
             return sTmpKey
@@ -702,7 +702,7 @@ class MQTTUtils private constructor(context: Context, resendOnConnect: Boolean) 
             context: Context, from: CommsAddrRec,
             gameID: Int, data: ByteArray
         ) {
-            val rowids = getRowIDsFor(context, gameID)
+            val rowids = DBUtils.getRowIDsFor(context, gameID)
             Log.d(TAG, "handleMessage(): got %d rows for gameID %X", rowids.size, gameID)
             if (0 == rowids.size) {
                 notifyNotHere(context, from.mqtt_devID, gameID)
@@ -747,7 +747,7 @@ class MQTTUtils private constructor(context: Context, resendOnConnect: Boolean) 
 
         fun fcmConfirmed(context: Context, working: Boolean) {
             if (working) {
-                setLongFor(context!!, KEY_NEXT_REG, 0)
+                DBUtils.setLongFor(context!!, KEY_NEXT_REG, 0)
             }
         }
 
