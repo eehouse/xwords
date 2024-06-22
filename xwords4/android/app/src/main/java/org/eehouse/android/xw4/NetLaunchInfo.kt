@@ -705,7 +705,7 @@ class NetLaunchInfo : Serializable {
                     CommsConnType.COMMS_CONN_BT -> null != btName
                     CommsConnType.COMMS_CONN_SMS -> null != phone && 0 < osVers
                     CommsConnType.COMMS_CONN_MQTT -> null != mqttDevID
-                    else -> {Log.d(TAG, "calcValid(): unexpected typ $typ"); false}
+                    else -> {Log.d(TAG, "calcValid(): unexpected typ $typ"); true}
                 }
                 if (!valid) {
                     Log.d(TAG, "valid after %s: %b", typ, valid)
