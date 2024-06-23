@@ -92,14 +92,14 @@ class DlgState(val mID: DlgID) : Parcelable {
         return this
     }
 
-    val params: Array<Any?>
-        get() {
-            var params = m_params
-            if (null == params) {
-                params = arrayOfNulls(0)
-            }
-            return params
+    fun getParams(): Array<Any?>
+    {
+        var params = m_params
+        if (null == params) {
+            params = arrayOfNulls(0)
         }
+        return params
+    }
 
     override fun toString(): String {
         val result: String

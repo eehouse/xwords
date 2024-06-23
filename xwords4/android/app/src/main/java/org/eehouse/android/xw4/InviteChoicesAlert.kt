@@ -42,7 +42,7 @@ class InviteChoicesAlert : DlgDelegateAlert(), ItemClicked {
         val means = ArrayList<InviteMeans>()
         val lastMeans: InviteMeans? = null
         var nli: NetLaunchInfo? = null
-        val params = state!!.params
+        val params = state!!.getParams()
         var nMissing = 0
         var nInvited = 0
         if (null != params) {
@@ -98,7 +98,7 @@ class InviteChoicesAlert : DlgDelegateAlert(), ItemClicked {
                 if (choice is InviteMeans) {
                     activity.inviteChoiceMade(
                         state.m_action!!,
-                        choice, *state.params
+                        choice, *state.getParams()
                     )
                 } else if (choice is Array<*> && choice.isArrayOf<String>()) {
                     val addrs = choice

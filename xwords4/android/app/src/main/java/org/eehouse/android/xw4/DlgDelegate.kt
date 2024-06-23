@@ -225,7 +225,7 @@ class DlgDelegate(
                 post {
                     Log.d(TAG, "calling onPosButton()")
                     val xwact = mActivity as XWActivity
-                    xwact.onPosButton(action, *mState.params)
+                    xwact.onPosButton(action, *mState.getParams())
                 }
             }
         }

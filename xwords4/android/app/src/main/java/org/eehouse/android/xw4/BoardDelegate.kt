@@ -197,7 +197,6 @@ class BoardDelegate(delegator: Delegator) :
     }
 
     override fun makeDialog(alert: DBAlert, vararg params: Any?): Dialog? {
-        Assert.assertVarargsNotNullNR(params)
         val dlgID = alert.dlgID
         Log.d(TAG, "makeDialog(%s)", dlgID.toString())
         val lstnr: DialogInterface.OnClickListener
@@ -924,8 +923,7 @@ class BoardDelegate(delegator: Delegator) :
     // DlgDelegate.DlgClickNotify interface
     //////////////////////////////////////////////////
     override fun onPosButton(action: DlgDelegate.Action, vararg params: Any?): Boolean {
-        Assert.assertVarargsNotNullNR(params)
-        Log.d(TAG, "onPosButton(%s, %s)", action, DbgUtils.toStr(arrayOf(params)))
+        Log.d(TAG, "onPosButton(%s, %s)", action, DbgUtils.fmtAny(arrayOf(params)))
         var handled = true
         var cmd: JNICmd? = null
         val gi = mGi!!
@@ -1085,7 +1083,7 @@ class BoardDelegate(delegator: Delegator) :
     }
 
     override fun onNegButton(action: DlgDelegate.Action, vararg params: Any?): Boolean {
-        Log.d(TAG, "onNegButton(%s, %s)", action, DbgUtils.toStr(arrayOf(params)))
+        Log.d(TAG, "onNegButton(%s, %s)", action, DbgUtils.fmtAny(params))
         var handled = true
         when (action) {
             DlgDelegate.Action.ENABLE_MQTT_DO_OR -> mDropMQTTOnDismiss = true
@@ -1114,8 +1112,7 @@ class BoardDelegate(delegator: Delegator) :
     override fun onDismissed(action: DlgDelegate.Action,
                              vararg params: Any?): Boolean
     {
-        Assert.assertVarargsNotNullNR(params)
-        Log.d(TAG, "onDismissed(%s, %s)", action, DbgUtils.toStr(arrayOf(params)))
+        Log.d(TAG, "onDismissed(%s, %s)", action, DbgUtils.fmtAny(params))
         var handled = true
         when (action) {
             DlgDelegate.Action.ENABLE_MQTT_DO_OR -> if (mDropMQTTOnDismiss) {
@@ -1141,7 +1138,6 @@ class BoardDelegate(delegator: Delegator) :
         action: DlgDelegate.Action, means: InviteMeans,
         vararg params: Any?
     ) {
-        Assert.assertVarargsNotNullNR(params)
         if (action == DlgDelegate.Action.LAUNCH_INVITE_ACTION) {
             val info = if (0 < params.size
                 && params[0] is SentInvitesInfo
@@ -1158,10 +1154,11 @@ class BoardDelegate(delegator: Delegator) :
                     RequestCode.BT_INVITE_RESULT
                 )
 
-                InviteMeans.SMS_DATA -> Perms23.tryGetPerms(
-                    this, Perms23.NBS_PERMS, R.string.sms_invite_rationale,
-                    DlgDelegate.Action.INVITE_SMS_DATA, m_mySIS!!.nMissing, info
-                )
+                InviteMeans.SMS_DATA ->
+                    Perms23.tryGetPerms(
+                        this, Perms23.NBS_PERMS, R.string.sms_invite_rationale,
+                        DlgDelegate.Action.INVITE_SMS_DATA, m_mySIS!!.nMissing, info
+                    )
 
                 InviteMeans.MQTT -> showDialogFragment(DlgID.GET_DEVID)
                 InviteMeans.RELAY ->                 // These have been removed as options
@@ -2548,7 +2545,6 @@ class BoardDelegate(delegator: Delegator) :
     }
 
     private fun retryNBSInvites(params: Array<out Any?>) {
-        Assert.assertVarargsNotNullNR(params)
         if (2 == params.size && params[0] is NetLaunchInfo?
             && params[1] is String
         ) {
@@ -2576,7 +2572,6 @@ class BoardDelegate(delegator: Delegator) :
     }
 
     private fun handleViaThread(cmd: JNICmd, vararg args: Any) {
-        Assert.assertVarargsNotNullNR(args)
         if (null == mJniThread) {
             Log.w(
                 TAG, "m_jniThread null: not calling m_jniThread.handle(%s)",

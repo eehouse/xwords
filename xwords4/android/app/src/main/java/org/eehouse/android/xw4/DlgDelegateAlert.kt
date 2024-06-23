@@ -107,7 +107,7 @@ open class DlgDelegateAlert : XWDialogFragment() {
         val activity: Activity? = activity
         if (activity is DlgClickNotify) {
             (activity as DlgClickNotify)
-                .onDismissed(mState!!.m_action!!, *mState!!.params)
+                .onDismissed(mState!!.m_action!!, *mState!!.getParams())
         }
     }
 
@@ -137,7 +137,7 @@ open class DlgDelegateAlert : XWDialogFragment() {
         return DialogInterface.OnClickListener { dlg, button ->
             checkNotAgainCheck(mState, naView)
             val xwact = activity as DlgClickNotify?
-            xwact!!.onPosButton(pair.action, *mState!!.params)
+            xwact!!.onPosButton(pair.action, *mState!!.getParams())
         }
     }
 
@@ -152,12 +152,12 @@ open class DlgDelegateAlert : XWDialogFragment() {
                 val notify = activity as DlgClickNotify
                 when (button) {
                     AlertDialog.BUTTON_POSITIVE -> notify.onPosButton(
-                        mState!!.m_action!!, *mState!!.params
+                        mState!!.m_action!!, *mState!!.getParams()
                     )
 
                     AlertDialog.BUTTON_NEGATIVE -> {
                         Log.d(TAG, "calling onNegButton(action=${mState!!.m_action})")
-                        notify.onNegButton(mState!!.m_action!!, *mState!!.params)
+                        notify.onNegButton(mState!!.m_action!!, *mState!!.getParams())
                     }
 
                     else -> {

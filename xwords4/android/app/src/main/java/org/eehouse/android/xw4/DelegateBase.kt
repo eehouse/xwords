@@ -703,7 +703,7 @@ abstract class DelegateBase @JvmOverloads constructor(
             }
 
             DlgDelegate.Action.PERMS_QUERY ->
-                Perms23.onGotPermsAction(this, true, *params)
+                Perms23.onGotPermsAction(this, true, params[0] as Perms23.GotPermsState)
             DlgDelegate.Action.SHOW_FAQ -> showFaq(params[0] as Array<String>)
             else -> {
                 Log.d(TAG, "onPosButton(): unhandled action %s", action.toString())
@@ -720,7 +720,8 @@ abstract class DelegateBase @JvmOverloads constructor(
         var handled = true
         when (action) {
             DlgDelegate.Action.PERMS_QUERY ->
-                Perms23.onGotPermsAction(this, false, *params)
+                Perms23.onGotPermsAction(
+                    this, false, params[0] as Perms23.GotPermsState)
             else -> {
                 Log.d(TAG, "onNegButton: unhandled action %s", action.toString())
                 handled = false
@@ -741,7 +742,8 @@ abstract class DelegateBase @JvmOverloads constructor(
         when (action) {
             DlgDelegate.Action.PERMS_QUERY -> {
                 handled = true
-                Perms23.onGotPermsAction(this, false, *params)
+                Perms23.onGotPermsAction(
+                    this, false, params[0] as Perms23.GotPermsState)
             }
 
             DlgDelegate.Action.SKIP_CALLBACK -> {}

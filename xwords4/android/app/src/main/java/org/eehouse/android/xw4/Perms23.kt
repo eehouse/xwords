@@ -27,6 +27,7 @@ import android.os.Build
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 
+import java.io.Serializable
 import java.util.Arrays
 
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType
@@ -104,7 +105,7 @@ object Perms23 {
         rationaleMsg: String?, naKey: Int,
         action: DlgDelegate.Action, vararg params: Any?
     ) {
-        // Log.d( TAG, "tryGetPermsImpl(%s)", (Object)perms );
+        // Log.d( TAG, "tryGetPermsImpl(${DbgUtils.fmtAny(perms)})")
         if (0 != naKey &&
             XWPrefs.getPrefsBoolean(delegate.getActivity(), naKey, false)
         ) {
@@ -112,7 +113,7 @@ object Perms23 {
         } else {
             QueryInfo(
                 delegate, action, perms, rationaleMsg,
-                naKey, params
+                naKey, arrayOf(*params)
             ).doIt(true)
         }
     }
@@ -128,7 +129,7 @@ object Perms23 {
         delegate: DelegateBase, perms: Array<Perm>, rationaleId: Int,
         action: DlgDelegate.Action, vararg params: Any?
     ) {
-        // Log.d( TAG, "tryGetPerms(%s)", perm.toString() );
+        // Log.d( TAG, "tryGetPerms(perms: $perms, params: ${DbgUtils.fmtAny(params)})")
         val msg = LocUtils.getStringOrNull(rationaleId)
         tryGetPermsImpl(delegate, perms, msg, 0, action, *params)
     }
@@ -174,15 +175,20 @@ object Perms23 {
         )
     }
 
-    @JvmStatic
+    class GotPermsState(val action: DlgDelegate.Action,
+                        val perms: Array<Perm>,
+                        val msg: String?,
+                        val params: Array<Any?>) : Serializable
+
     fun onGotPermsAction(
         delegate: DelegateBase, positive: Boolean,
-        vararg params: Any?
+        state: GotPermsState
     ) {
+        // Log.d(TAG, "onGotPermsAction(params=${DbgUtils.fmtAny(state)})")
         val info = QueryInfo(
-            delegate, params[0] as DlgDelegate.Action,
-            params[1] as Array<Perm>, params[2] as String,
-            0, params[3] as Array<Any>
+            delegate, state.action,
+            state.perms, state.msg, 0,
+            state.params
         )
         info.handleButton(positive)
     }
@@ -395,12 +401,14 @@ object Perms23 {
         private val mPerms: Array<Perm>,
         private val mRationaleMsg: String?,
         private val mNAKey: Int,
-        vararg params: Any?
+        private val mParams: Array<Any?>
     ) {
-        private val mParams = params
-
-        private val params: Array<Any?>
-            get() = arrayOf(mAction, mPerms, mRationaleMsg, *mParams)
+        private fun getParams(): Array<Any?>
+        {
+            val params = arrayOf(mAction, mPerms, mRationaleMsg, *mParams)
+            // Log.d(TAG, "getParams() => ${DbgUtils.fmtAny(params)}")
+            return params
+        }
 
         fun doIt(showRationale: Boolean) {
             val validPerms: MutableSet<Perm> = HashSet()
@@ -426,6 +434,9 @@ object Perms23 {
             return result
         }
 
+        private fun mkGotPermsState(): GotPermsState
+            = GotPermsState(mAction, mPerms, mRationaleMsg, mParams)
+
         private fun doItAsk(perms: Set<Perm>, showRationale: Boolean) {
             val builder = Builder(perms)
             if (showRationale && shouldShowAny(perms) && null != mRationaleMsg) {
@@ -438,7 +449,7 @@ object Perms23 {
                             .setTitle(R.string.perms_rationale_title)
                             .setPosButton(R.string.button_ask)
                             .setNegButton(R.string.button_deny)
-                            .setParams(*this@QueryInfo.params)
+                            .setParams(mkGotPermsState())
                             .setNAKey(mNAKey)
                             .show()
                     }

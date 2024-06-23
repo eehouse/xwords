@@ -115,10 +115,20 @@ object DbgUtils {
         Log.i(TAG, "cursor: %s", dump)
     }
 
-    @JvmStatic
-    fun toStr(params: Array<Any?>): String {
-        Assert.assertVarargsNotNullNR(params)
-        return TextUtils.join(", ", params.map{obj -> "$obj"})
+    fun fmtAny(value: Any?): String {
+        val str = when (value) {
+            is Array<*> -> {
+                val strs = (value as Array<*>).map{ fmtAny(it) }
+                "[${TextUtils.join(",", strs)}]"
+            }
+            is Iterable<*> -> {
+                val strs = (value as Iterable<*>).map{ fmtAny(it) }
+                "[${TextUtils.join(",", strs)}]"
+            }
+            is String -> "\"$value\""
+            else -> "$value"
+        }
+        return str
     }
 
     // public static String secondsToDateStr( long seconds )
