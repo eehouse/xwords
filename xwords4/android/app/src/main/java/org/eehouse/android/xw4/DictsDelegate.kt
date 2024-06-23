@@ -262,7 +262,6 @@ class DictsDelegate(delegator: Delegator) :
     }
 
     override fun makeDialog(alert: DBAlert, vararg params: Any?): Dialog {
-        Assert.assertVarargsNotNullNR(params)
         val lstnr: DialogInterface.OnClickListener
         val lstnr2: DialogInterface.OnClickListener
 
@@ -759,7 +758,6 @@ class DictsDelegate(delegator: Delegator) :
     // DlgDelegate.DlgClickNotify interface
     //////////////////////////////////////////////////////////////////////
     override fun onPosButton(action: DlgDelegate.Action, vararg params: Any?): Boolean {
-        Assert.assertVarargsNotNullNR(params)
         var handled = true
         when (action) {
             DlgDelegate.Action.DELETE_DICT_ACTION -> {

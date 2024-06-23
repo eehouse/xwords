@@ -30,7 +30,6 @@ import android.text.method.DialerKeyListener
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
-import org.eehouse.android.xw4.Assert.assertVarargsNotNullNR
 import org.eehouse.android.xw4.DBUtils.SentInvitesInfo
 import org.eehouse.android.xw4.DlgDelegate.DlgClickNotify.InviteMeans
 import org.eehouse.android.xw4.Perms23.Perm
@@ -100,7 +99,6 @@ class SMSInviteDelegate(delegator: Delegator) :
     }
 
     override fun makeDialog(alert: DBAlert, vararg params: Any?): Dialog {
-        assertVarargsNotNullNR(*params)
         val lstnr: DialogInterface.OnClickListener
         val dialog =
             when (alert.dlgID) {
@@ -144,7 +142,6 @@ class SMSInviteDelegate(delegator: Delegator) :
 
     // DlgDelegate.DlgClickNotify interface
     override fun onPosButton(action: DlgDelegate.Action, vararg params: Any?): Boolean {
-        assertVarargsNotNullNR(*params)
         var handled = true
         when (action) {
             DlgDelegate.Action.CLEAR_ACTION -> clearSelectedImpl()

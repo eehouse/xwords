@@ -369,7 +369,6 @@ class DictBrowseDelegate constructor(delegator: Delegator) : DelegateBase(
     override fun onPosButton(action: DlgDelegate.Action,
                              vararg params: Any?): Boolean
     {
-        Assert.assertVarargsNotNullNR(params)
         var handled = false
         when (action) {
             DlgDelegate.Action.FINISH_ACTION -> {

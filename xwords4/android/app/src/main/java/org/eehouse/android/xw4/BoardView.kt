@@ -375,7 +375,6 @@ class BoardView(private val mContext: Context, attrs: AttributeSet?) : View(
     }
 
     private fun handle(cmd: JNICmd, vararg args: Any) {
-        Assert.assertVarargsNotNullNR(args)
         if (null == mJniThread) {
             Log.w(TAG, "not calling handle(%s)", cmd.toString())
             printStack(TAG)

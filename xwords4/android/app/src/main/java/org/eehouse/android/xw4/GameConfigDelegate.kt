@@ -120,7 +120,6 @@ class GameConfigDelegate(delegator: Delegator) :
     }
 
     override fun makeDialog(alert: DBAlert, vararg params: Any?): Dialog {
-        Assert.assertVarargsNotNullNR(params)
         var dialog: Dialog? = null
         val dlgID = alert.dlgID
         Log.d(TAG, "makeDialog(%s)", dlgID.toString())
@@ -677,7 +676,6 @@ class GameConfigDelegate(delegator: Delegator) :
     }
 
     override fun onPosButton(action: DlgDelegate.Action, vararg params: Any?): Boolean {
-        Assert.assertVarargsNotNullNR(params)
         var handled = true
         Assert.assertTrue(curThis() === this)
         when (action) {
@@ -697,7 +695,6 @@ class GameConfigDelegate(delegator: Delegator) :
     override fun onNegButton(action: DlgDelegate.Action,
                              vararg params: Any?): Boolean
     {
-        Assert.assertVarargsNotNullNR(params)
         var handled = true
         when (action) {
             DlgDelegate.Action.DELETE_AND_EXIT -> showConnAfterCheck()

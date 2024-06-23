@@ -23,7 +23,6 @@ import android.app.AlertDialog
 import android.content.Context
 import android.content.DialogInterface
 import org.eehouse.android.xw4.Assert.assertTrueNR
-import org.eehouse.android.xw4.Assert.assertVarargsNotNullNR
 import org.eehouse.android.xw4.Assert.failDbg
 import org.eehouse.android.xw4.DBUtils.getInvitesFor
 import org.eehouse.android.xw4.DbgUtils.assertOnUIThread

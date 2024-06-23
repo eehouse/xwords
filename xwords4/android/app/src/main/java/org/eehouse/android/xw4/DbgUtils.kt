@@ -34,13 +34,11 @@ object DbgUtils {
 
     @JvmStatic
     fun showf(format: String, vararg args: Any?) {
-        Assert.assertVarargsNotNullNR(args)
         showf(XWApp.getContext(), format, *args)
     }
 
     @JvmStatic
     fun showf(context: Context, format: String, vararg args: Any?) {
-        Assert.assertVarargsNotNullNR(args)
         val formatter = Formatter()
         val msg = formatter.format(format, *args).toString()
         Utils.showToast(context, msg)
@@ -48,7 +46,6 @@ object DbgUtils {
 
     @JvmStatic
     fun showf(context: Context, formatid: Int, vararg args: Any?) {
-        Assert.assertVarargsNotNullNR(args)
         showf(context, LocUtils.getString(context, formatid), *args)
     } // showf
 
@@ -58,7 +55,6 @@ object DbgUtils {
         format: String, vararg args: Any?
     ) {
         var format = format
-        Assert.assertVarargsNotNullNR(args)
         format = "Unable to lock game; $format"
         if (BuildConfig.DEBUG) {
             showf(context, format, *args)

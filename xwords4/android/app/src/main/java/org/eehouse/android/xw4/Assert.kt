@@ -61,16 +61,6 @@ object Assert {
     }
 
     @JvmStatic
-    fun assertVarargsNotNullNR(vararg params: Any?) {
-        if (BuildConfig.NON_RELEASE) {
-            if (null == params) {
-                printStack(TAG)
-                // assertNotNull( params );
-            }
-        }
-    }
-
-    @JvmStatic
     fun assertNull(`val`: Any?) {
         assertTrue(`val` == null)
     }

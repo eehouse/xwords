@@ -182,7 +182,6 @@ class ChatDelegate(delegator: Delegator) :
     }
 
     override fun onPosButton(action: DlgDelegate.Action, vararg params: Any?): Boolean {
-        Assert.assertVarargsNotNullNR(params)
         var handled = true
         when (action) {
             DlgDelegate.Action.CLEAR_ACTION -> {

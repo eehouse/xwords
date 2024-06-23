@@ -213,7 +213,6 @@ open class XWActivity : FragmentActivity(), Delegator, DlgClickNotify {
         keyID: Int, msgID: Int,
         vararg params: Any?
     ): DlgDelegate.Builder {
-        Assert.assertVarargsNotNullNR(params)
         return mDlgt!!.makeNotAgainBuilder(keyID, msgID, *params)
     }
 
@@ -221,12 +220,10 @@ open class XWActivity : FragmentActivity(), Delegator, DlgClickNotify {
         action: DlgDelegate.Action, msgID: Int,
         vararg params: Any?
     ): DlgDelegate.Builder {
-        Assert.assertVarargsNotNullNR(params)
         return mDlgt!!.makeConfirmThenBuilder(action, msgID, *params)
     }
 
     fun makeOkOnlyBuilder(msgID: Int, vararg params: Any?): DlgDelegate.Builder {
-        Assert.assertVarargsNotNullNR(params)
         return mDlgt!!.makeOkOnlyBuilder(msgID, *params)
     }
 
@@ -288,7 +285,6 @@ open class XWActivity : FragmentActivity(), Delegator, DlgClickNotify {
     }
 
     internal fun makeDialog(alert: DBAlert, vararg params: Any?): Dialog {
-        Assert.assertVarargsNotNullNR(params)
         return mDlgt!!.makeDialog(alert, *params)!!
     }
 
@@ -298,17 +294,14 @@ open class XWActivity : FragmentActivity(), Delegator, DlgClickNotify {
     // DlgClickNotify interface
     ////////////////////////////////////////////////////////////
     override fun onPosButton(action: DlgDelegate.Action, vararg params: Any?): Boolean {
-        Assert.assertVarargsNotNullNR(params)
         return mDlgt!!.onPosButton(action, *params)
     }
 
     override fun onNegButton(action: DlgDelegate.Action, vararg params: Any?): Boolean {
-        Assert.assertVarargsNotNullNR(params)
         return mDlgt!!.onNegButton(action, *params)
     }
 
     override fun onDismissed(action: DlgDelegate.Action, vararg params: Any?): Boolean {
-        Assert.assertVarargsNotNullNR(params)
         return mDlgt!!.onDismissed(action, *params)
     }
 
@@ -316,7 +309,6 @@ open class XWActivity : FragmentActivity(), Delegator, DlgClickNotify {
         action: DlgDelegate.Action, means: InviteMeans,
         vararg params: Any?
     ) {
-        Assert.assertVarargsNotNullNR(params)
         mDlgt!!.inviteChoiceMade(action, means, *params)
     }
 

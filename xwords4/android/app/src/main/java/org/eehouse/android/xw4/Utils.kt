@@ -50,17 +50,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import androidx.core.content.FileProvider
-import org.eehouse.android.xw4.Assert.assertNotNull
-import org.eehouse.android.xw4.Assert.assertTrue
-import org.eehouse.android.xw4.Assert.assertTrueNR
-import org.eehouse.android.xw4.Assert.assertVarargsNotNullNR
-import org.eehouse.android.xw4.Assert.failDbg
-import org.eehouse.android.xw4.Channels.ID
-import org.eehouse.android.xw4.DictUtils.DictAndLoc
-import org.eehouse.android.xw4.Perms23.Perm
-import org.eehouse.android.xw4.jni.CommonPrefs
-import org.eehouse.android.xw4.jni.XwJNI.Companion.dvc_getMQTTDevID
-import org.eehouse.android.xw4.loc.LocUtils
+
 import java.io.BufferedReader
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
@@ -77,6 +67,13 @@ import java.util.Formatter
 import java.util.Locale
 import java.util.Random
 import kotlin.math.min
+
+import org.eehouse.android.xw4.Channels.ID
+import org.eehouse.android.xw4.DictUtils.DictAndLoc
+import org.eehouse.android.xw4.Perms23.Perm
+import org.eehouse.android.xw4.jni.CommonPrefs
+import org.eehouse.android.xw4.jni.XwJNI
+import org.eehouse.android.xw4.loc.LocUtils
 
 object Utils {
     private val TAG: String = Utils::class.java.simpleName
@@ -170,7 +167,6 @@ object Utils {
 
     @JvmStatic
     fun showToast(context: Context, id: Int, vararg args: Any?) {
-        assertVarargsNotNullNR(*args)
         var msg = LocUtils.getString(context, id)
         msg = Formatter().format(msg, *args).toString()
         showToast(context, msg)
@@ -221,7 +217,7 @@ object Utils {
             intent.putExtra(Intent.EXTRA_STREAM, uri)
         }
 
-        val devID = dvc_getMQTTDevID()
+        val devID = XwJNI.dvc_getMQTTDevID()
         var body = LocUtils.getString(
             context, R.string.email_body_rev_fmt,
             BuildConfig.GIT_REV, Build.MODEL,
@@ -669,7 +665,7 @@ object Utils {
             builder.appendPath(isoCode.toString())
         }
         if (null != name) {
-            assertNotNull(isoCode)
+            Assert.assertNotNull(isoCode)
             builder.appendPath(DictUtils.addDictExtn(name))
         }
         val result = builder.build()
@@ -787,15 +783,15 @@ object Utils {
     fun hexStr2ba(data: String): ByteArray {
         var data = data
         data = data.uppercase(Locale.getDefault())
-        assertTrue(0 == data.length % 2)
+        Assert.assertTrue(0 == data.length % 2)
         val result = ByteArray(data.length / 2)
 
         var ii = 0
         while (ii < data.length) {
             val one = HEX_CHARS.indexOf(data[ii])
-            assertTrue(one >= 0)
+            Assert.assertTrue(one >= 0)
             val two = HEX_CHARS.indexOf(data[ii + 1])
-            assertTrue(two >= 0)
+            Assert.assertTrue(two >= 0)
             result[ii / 2] = ((one shl 4) or two).toByte()
             ii += 2
         }
@@ -843,7 +839,7 @@ object Utils {
             result = bas.toByteArray()
         } catch (ex: Exception) {
             Log.ex(TAG, ex)
-            failDbg()
+            Assert.failDbg()
         }
         return result
     }
@@ -859,7 +855,7 @@ object Utils {
         if (false && BuildConfig.DEBUG) {
             val as64 = serializableToString64(obj)
             val other = string64ToSerializable(as64)
-            assertTrue(other == obj)
+            Assert.assertTrue(other == obj)
             Log.d(TAG, "testSerialization(%s) worked!!!", obj)
         }
     }
@@ -871,7 +867,7 @@ object Utils {
                 Context.MODE_PRIVATE
             )
         val firstVersion = prefs.getInt(FIRST_VERSION_KEY, Int.MAX_VALUE)
-        assertTrueNR(firstVersion < Int.MAX_VALUE)
+        Assert.assertTrueNR(firstVersion < Int.MAX_VALUE)
         return firstVersion
     }
 
@@ -924,7 +920,7 @@ object Utils {
 
         init {
             // Log.d( TAG, "ISOCode(%s)", code );
-            assertTrueNR(8 > code.length)
+            Assert.assertTrueNR(8 > code.length)
             mISOCode = code
         }
 

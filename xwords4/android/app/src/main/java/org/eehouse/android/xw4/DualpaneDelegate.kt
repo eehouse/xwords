@@ -26,7 +26,7 @@ import android.view.ContextMenu
 import android.view.ContextMenu.ContextMenuInfo
 import android.view.MenuItem
 import android.view.View
-import org.eehouse.android.xw4.Assert.assertVarargsNotNullNR
+
 import org.eehouse.android.xw4.DlgDelegate.DlgClickNotify.InviteMeans
 
 class DualpaneDelegate(delegator: Delegator) :
@@ -36,7 +36,6 @@ class DualpaneDelegate(delegator: Delegator) :
     override fun init(savedInstanceState: Bundle?) {}
 
     override fun makeDialog(alert: DBAlert, vararg params: Any?): Dialog {
-        assertVarargsNotNullNR(*params)
         var dialog: Dialog? = null
         val main = m_activity as MainActivity
         val frags = main.getFragments(false)
@@ -84,7 +83,6 @@ class DualpaneDelegate(delegator: Delegator) :
     }
 
     override fun onPosButton(action: DlgDelegate.Action, vararg params: Any?): Boolean {
-        assertVarargsNotNullNR(*params)
         var handled = false
         val main = m_activity as MainActivity
         val frags = main.visibleFragments
@@ -115,7 +113,6 @@ class DualpaneDelegate(delegator: Delegator) :
     override fun onDismissed(action: DlgDelegate.Action,
                              vararg params: Any?): Boolean
     {
-        assertVarargsNotNullNR(*params)
         var handled = false
         val main = m_activity as MainActivity
         val frags = main.visibleFragments

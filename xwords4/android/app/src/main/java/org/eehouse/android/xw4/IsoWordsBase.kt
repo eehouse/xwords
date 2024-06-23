@@ -134,7 +134,6 @@ abstract class IsoWordsBase(delegator: Delegator, private val CHECKED_KEY: Strin
     //////////////////////////////////////////////////
     override fun onPosButton(action: DlgDelegate.Action, vararg params: Any? ): Boolean
     {
-        Assert.assertVarargsNotNullNR(params)
         var handled = true
         when ( action ) {
 			DlgDelegate.Action.SL_CLEAR_ACTION -> {

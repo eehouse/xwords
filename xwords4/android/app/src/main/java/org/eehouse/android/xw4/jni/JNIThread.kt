@@ -744,7 +744,6 @@ class JNIThread private constructor(lockIn: GameLock) : Thread(), AutoCloseable 
 
     fun handleBkgrnd(cmd: JNICmd, vararg args: Any) {
         // DbgUtils.logf( "adding: %s", cmd.toString() );
-        Assert.assertVarargsNotNullNR(*args)
         m_queue.add(QueueElem(cmd, false, arrayOf(*args)))
     }
 
@@ -763,7 +762,6 @@ class JNIThread private constructor(lockIn: GameLock) : Thread(), AutoCloseable 
     }
 
     fun handle(cmd: JNICmd, vararg args: Any) {
-        Assert.assertVarargsNotNullNR(*args)
         if (m_stopped && JNICmd.CMD_NONE != cmd) {
             Log.w(TAG, "handle(%s): NOT adding to stopped thread!!!", cmd)
             // DbgUtils.printStack( TAG );

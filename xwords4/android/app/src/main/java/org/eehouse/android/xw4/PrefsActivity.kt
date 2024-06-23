@@ -70,7 +70,6 @@ class PrefsActivity : XWActivity(), Delegator, HasDlgDelegate,
         key: Int, action: DlgDelegate.Action, msgID: Int,
         vararg params: Any?
     ): DlgDelegate.Builder {
-        Assert.assertVarargsNotNullNR(params)
         return mDlgt!!.makeNotAgainBuilder(key, action, msgID, *params)
     }
 
