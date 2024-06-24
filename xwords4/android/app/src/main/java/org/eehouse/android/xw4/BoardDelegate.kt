@@ -2089,7 +2089,7 @@ class BoardDelegate(delegator: Delegator) :
                 if (addr!!.contains(CommsConnType.COMMS_CONN_BT)
                     && !TextUtils.isEmpty(addr.bt_btAddr)
                 ) {
-                    BTUtils.pingHost(mActivity, addr.bt_hostName, addr.bt_btAddr, mGi!!.gameID)
+                    BTUtils.pingHost(mActivity, addr.bt_hostName!!, addr.bt_btAddr, mGi!!.gameID)
                 }
             }
         }

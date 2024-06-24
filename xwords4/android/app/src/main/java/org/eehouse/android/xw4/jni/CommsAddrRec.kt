@@ -392,7 +392,7 @@ class CommsAddrRec : Serializable {
         when (typ) {
             CommsConnType.COMMS_CONN_RELAY -> Assert.failDbg()
             CommsConnType.COMMS_CONN_BT -> {
-                val strs: Array<String>? = BTUtils.getBTNameAndAddress(context)
+                val strs: Array<String?>? = BTUtils.getBTNameAndAddress(context)
                 if (null != strs) {
                     bt_hostName = strs[0]
                     bt_btAddr = strs[1]

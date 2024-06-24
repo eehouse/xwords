@@ -135,7 +135,7 @@ open class MultiMsgSink @JvmOverloads constructor(
                 }
 
                 CommsConnType.COMMS_CONN_BT -> success =
-                    BTUtils.sendInvite(context, addr.bt_hostName, addr.bt_btAddr, nli)
+                    BTUtils.sendInvite(context, addr.bt_hostName!!, addr.bt_btAddr, nli)
 
                 CommsConnType.COMMS_CONN_NFC -> {}
                 else -> {

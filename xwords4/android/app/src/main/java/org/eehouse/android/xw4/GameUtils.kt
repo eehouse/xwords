@@ -1478,7 +1478,7 @@ object GameUtils {
                                 CommsConnType.COMMS_CONN_RELAY -> {}
                                 CommsConnType.COMMS_CONN_BT -> BTUtils.gameDied(
                                     context,
-                                    addr.bt_hostName,
+                                    addr.bt_hostName!!,
                                     addr.bt_btAddr,
                                     gameID
                                 )
