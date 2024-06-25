@@ -217,10 +217,10 @@ class MainActivity : XWActivity(), FragmentManager.OnBackStackChangedListener {
     }
 
     private inner class PendingResultCache(
-        target: Fragment?, var m_request: Int,
-        var m_result: Int, var m_data: Intent
+        target: Fragment, var m_request: Int,
+        var m_result: Int, var m_data: Intent?
     ) {
-        private val mFrag: WeakReference<Fragment?>
+        private val mFrag: WeakReference<Fragment>
 
         init {
             mFrag = WeakReference(target)
@@ -242,10 +242,9 @@ class MainActivity : XWActivity(), FragmentManager.OnBackStackChangedListener {
     }
 
     fun setFragmentResult(
-        fragment: XWFragment, resultCode: Int,
-        data: Intent
+        fragment: XWFragment, resultCode: Int, data: Intent?
     ) {
-        val target = fragment.getTargetFragment()
+        val target = fragment.getTargetFragment()!!
         val requestCode = fragment.targetRequestCode
         Assert.assertNull(m_pendingResult)
         m_pendingResult = PendingResultCache(

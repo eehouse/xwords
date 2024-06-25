@@ -258,7 +258,7 @@ abstract class DelegateBase @JvmOverloads constructor(
     protected fun setResult(result: Int, intent: Intent?) {
         if (mActivity is MainActivity) {
             val fragment = getDelegator() as XWFragment
-            mActivity.setFragmentResult(fragment, result, (intent)!!)
+            mActivity.setFragmentResult(fragment, result, intent)
         } else {
             mActivity.setResult(result, intent)
         }
