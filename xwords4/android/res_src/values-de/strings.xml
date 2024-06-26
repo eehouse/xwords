@@ -1183,9 +1183,4 @@
     mit einer eigenen Hintergrundfarbe hinterlegt.\n\nMan kann diese
     Farbe in %1$s einstellen, die Einstellung heißt “%2$s”.</string>
     <string name="selfName">Dieses Gerät</string>
-    <string name="tile_back_recent">Buchstaben-Hintergrund, letzter
-    Zug</string>
-    <string name="not_again_newsawnew_fmt">Der letzte Zug wird jetzt
-    mit einer eigenen Hintergrundfarbe hinterlegt.\n\nMan kann diese
-    Farbe in %1$s einstellen, die Einstellung heißt “%2$s”.</string>
 </resources>
