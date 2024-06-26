@@ -561,7 +561,7 @@ class MQTTUtils private constructor(context: Context,
         }
 
         fun onDestroy(context: Context) {
-            NetStateCache.unregister(context, sStateChangedIf)
+            NetStateCache.unregister(sStateChangedIf)
         }
 
         @JvmStatic
@@ -754,5 +754,7 @@ class MQTTUtils private constructor(context: Context,
         fun makeOrNotify(context: Context, nli: NetLaunchInfo) {
             MQTTServiceHelper(context).handleInvitation(nli)
         }
+
+        fun MQTTSupported(): Boolean { return true }
     }
 }
