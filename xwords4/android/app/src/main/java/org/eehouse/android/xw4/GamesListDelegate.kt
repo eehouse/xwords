@@ -2965,7 +2965,7 @@ class GamesListDelegate(delegator: Delegator) :
             context.startActivity(intent)
         }
 
-        private fun makeSelfIntent(context: Context?): Intent {
+        private fun makeSelfIntent(context: Context): Intent {
             val intent = Intent(context, MainActivity::class.java)
             addLaunchFlags(intent)
             return intent
@@ -2980,20 +2980,20 @@ class GamesListDelegate(delegator: Delegator) :
         }
 
         @JvmStatic
-        fun makeRowidIntent(context: Context?, rowid: Long): Intent {
+        fun makeRowidIntent(context: Context, rowid: Long): Intent {
             val intent = makeSelfIntent(context)
                 .putExtra(ROWID_EXTRA, rowid)
             return intent
         }
 
-        fun makeGameIDIntent(context: Context?, gameID: Int): Intent {
+        fun makeGameIDIntent(context: Context, gameID: Int): Intent {
             val intent = makeSelfIntent(context)
                 .putExtra(GAMEID_EXTRA, gameID)
             return intent
         }
 
         fun makeRematchIntent(
-            context: Context?, rowid: Long,
+            context: Context, rowid: Long,
             groupID: Long, gi: CurGameInfo,
             addrTypes: CommsConnTypeSet?,
             deleteAfter: Boolean
@@ -3013,15 +3013,10 @@ class GamesListDelegate(delegator: Delegator) :
             return intent
         }
 
-        fun makeAlertIntent(context: Context?, msg: String?): Intent {
+        fun makeAlertIntent(context: Context, msg: String): Intent {
             val intent = makeSelfIntent(context)
                 .putExtra(ALERT_MSG, msg)
             return intent
-        }
-
-        fun makeAlertWithEmailIntent(context: Context?, msg: String?): Intent {
-            return makeAlertIntent(context, msg)
-                .putExtra(WITH_EMAIL, true)
         }
 
         fun postReceivedInvite(context: Context, data: ByteArray) {

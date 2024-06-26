@@ -61,7 +61,7 @@ class PrefsDelegate(private val mActivity: XWActivity,
                     val self = curThis() as PrefsDelegate
                     val editor =
                         self.sharedPreferences!!.edit()
-                    for (colorKey in getColorKeys(alert.context)) {
+                    for (colorKey in getColorKeys(alert.requireContext())) {
                         editor.remove(colorKey)
                     }
                     editor.commit()
@@ -293,10 +293,10 @@ class PrefsDelegate(private val mActivity: XWActivity,
             context.startActivity(intent)
         }
 
-        fun resetPrefs(context: Context?, mustCheck: Boolean) {
+        fun resetPrefs(context: Context, mustCheck: Boolean) {
             val prefIDs = PrefsWrappers.getPrefsResIDs()
             for (id in prefIDs) {
-                PreferenceManager.setDefaultValues(context!!, id, mustCheck)
+                PreferenceManager.setDefaultValues(context, id, mustCheck)
             }
         }
 
@@ -322,11 +322,11 @@ class PrefsDelegate(private val mActivity: XWActivity,
             return getPrefsWith(context, false)
         }
 
-        fun loadPrefs(context: Context?, obj: Serializable?) {
+        fun loadPrefs(context: Context, obj: Serializable?) {
             if (null != obj) {
                 val map = obj as HashMap<String, Any>
                 val editor =
-                    PreferenceManager.getDefaultSharedPreferences(context!!)
+                    PreferenceManager.getDefaultSharedPreferences(context)
                         .edit()
                 for (key in map.keys) {
                     val value = map[key]
@@ -347,8 +347,8 @@ class PrefsDelegate(private val mActivity: XWActivity,
             }
         }
 
-        private fun getColorKeys(context: Context?): Set<String> {
-            val res = context!!.resources
+        private fun getColorKeys(context: Context): Set<String> {
+            val res = context.resources
             val result: MutableSet<String> = HashSet()
             val themeKeys = intArrayOf(
                 R.array.color_ids_light,

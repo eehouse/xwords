@@ -315,7 +315,12 @@ class DlgDelegate(
                 false
             ),  // just launch the SMS app, as with email
             MQTT(R.string.invite_choice_mqtt, false),
-            QRCODE(R.string.invite_choice_qrcode, true)
+            QRCODE(R.string.invite_choice_qrcode, true),
+            ;
+
+            fun available(): Boolean {
+                return this !== MQTT || MQTTUtils.MQTTSupported()
+            }
         }
 
         fun onPosButton(action: Action, vararg params: Any?): Boolean

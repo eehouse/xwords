@@ -378,6 +378,10 @@ object DBUtils {
         return countOpenGamesUsing(context, CommsConnType.COMMS_CONN_SMS)
     }
 
+    fun countOpenGamesUsingMQTT(context: Context): Int {
+        return countOpenGamesUsing(context, CommsConnType.COMMS_CONN_MQTT)
+    }
+
     @JvmStatic
     fun getInvitesFor(context: Context, rowid: Long): SentInvitesInfo {
         val result = SentInvitesInfo(rowid)
@@ -2505,7 +2509,11 @@ object DBUtils {
     }
 
     // Groups stuff
-    class GameGroupInfo(@JvmField var m_name: String, @JvmField var m_count: Int, @JvmField var m_expanded: Boolean) {
+    class GameGroupInfo
+        (@JvmField var m_name: String,
+         @JvmField var m_count: Int,
+         @JvmField var m_expanded: Boolean)
+    {
         @JvmField
         var m_lastMoveTime: Long = 0
         @JvmField

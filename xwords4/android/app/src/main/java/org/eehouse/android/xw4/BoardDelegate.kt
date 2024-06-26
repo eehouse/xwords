@@ -180,7 +180,7 @@ class BoardDelegate(delegator: Delegator) :
     }
 
     private fun alertOrderIncrIfAt(ord: StartAlertOrder) {
-        // Log.d( TAG, "alertOrderIncrIfAt(%s)", ord );
+        // Log.d( TAG, "alertOrderIncrIfAt($ord)")
         if (alertOrderAt(ord)) {
             m_mySIS!!.mAlertOrder = StartAlertOrder.entries[ord.ordinal + 1]
             doNext()
@@ -929,8 +929,14 @@ class BoardDelegate(delegator: Delegator) :
         val gi = mGi!!
         when (action) {
             DlgDelegate.Action.ENABLE_MQTT_DO_OR -> {
-                XWPrefs.setMQTTEnabled(mActivity, true)
-                MQTTUtils.setEnabled(mActivity, true)
+                if ( MQTTUtils.MQTTSupported() ) {
+                    XWPrefs.setMQTTEnabled(mActivity, true)
+                    MQTTUtils.setEnabled(mActivity, true)
+                } else { // email will have been chosen
+                    val count = DBUtils.countOpenGamesUsingMQTT(mActivity)
+                    val msg = getString(R.string.have_mtqq_games_fmt, count)
+                    Utils.emailAuthor(mActivity, msg)
+                }
             }
 
             DlgDelegate.Action.UNDO_LAST_ACTION -> cmd = JNICmd.CMD_UNDO_LAST
@@ -1115,19 +1121,26 @@ class BoardDelegate(delegator: Delegator) :
         Log.d(TAG, "onDismissed(%s, %s)", action, DbgUtils.fmtAny(params))
         var handled = true
         when (action) {
-            DlgDelegate.Action.ENABLE_MQTT_DO_OR -> if (mDropMQTTOnDismiss) {
-                postDelayed({ askDropMQTT() }, 10)
-            }
+            DlgDelegate.Action.ENABLE_MQTT_DO_OR ->
+                if (mDropMQTTOnDismiss) {
+                    postDelayed({ askDropMQTT() }, 10)
+                } else {
+                    alertOrderIncrIfAt(StartAlertOrder.NO_MEANS)
+                }
 
             DlgDelegate.Action.DELETE_AND_EXIT -> finish()
-            DlgDelegate.Action.BLANK_PICKED, DlgDelegate.Action.TRAY_PICKED ->             // If the user cancels the tile picker the common code doesn't
-                // know, and won't put it up again as long as this game remains
-                // loaded. There might be a way to fix that, but the safest thing
-                // to do for now is to close. User will have to begin the process
-                // of committing turn again on re-launching the game.
+
+            DlgDelegate.Action.BLANK_PICKED, DlgDelegate.Action.TRAY_PICKED ->
+                // If the user cancels the tile picker the common code doesn't
+                // know, and won't put it up again as long as this game
+                // remains loaded. There might be a way to fix that, but the
+                // safest thing to do for now is to close. User will have to
+                // begin the process of committing turn again on re-launching
+                // the game.
                 finish()
 
-            DlgDelegate.Action.DROP_SMS_ACTION -> alertOrderIncrIfAt(StartAlertOrder.NBS_PERMS)
+            DlgDelegate.Action.DROP_SMS_ACTION ->
+                alertOrderIncrIfAt(StartAlertOrder.NBS_PERMS)
             DlgDelegate.Action.LAUNCH_INVITE_ACTION -> showInviteAlertIf()
             else -> handled = super.onDismissed(action, *params)
         }
@@ -2067,7 +2080,9 @@ class BoardDelegate(delegator: Delegator) :
             val typ = iter.next()
             when (typ) {
                 CommsConnType.COMMS_CONN_BT -> pingBTRemotes()
-                CommsConnType.COMMS_CONN_RELAY, CommsConnType.COMMS_CONN_SMS, CommsConnType.COMMS_CONN_P2P, CommsConnType.COMMS_CONN_NFC, CommsConnType.COMMS_CONN_MQTT -> {}
+                CommsConnType.COMMS_CONN_RELAY, CommsConnType.COMMS_CONN_SMS,
+                CommsConnType.COMMS_CONN_P2P, CommsConnType.COMMS_CONN_NFC,
+                CommsConnType.COMMS_CONN_MQTT -> {}
                 else -> {
                     Log.w(TAG, "tickle: unexpected type %s", typ.toString())
                     Assert.failDbg()
@@ -2277,6 +2292,7 @@ class BoardDelegate(delegator: Delegator) :
 
     private fun warnIfNoTransport() {
         if (null != mConnTypes && alertOrderAt(StartAlertOrder.NO_MEANS)) {
+            var pending = false
             if (mConnTypes!!.contains(CommsConnType.COMMS_CONN_SMS)) {
                 if (!XWPrefs.getNBSEnabled(mActivity)) {
                     makeConfirmThenBuilder(
@@ -2286,28 +2302,44 @@ class BoardDelegate(delegator: Delegator) :
                         .setPosButton(R.string.button_enable_sms)
                         .setNegButton(R.string.button_later)
                         .show()
+                    pending = true
                 }
             }
             if (mConnTypes!!.contains(CommsConnType.COMMS_CONN_RELAY)) {
                 Log.e(TAG, "opened game with RELAY still")
             }
             if (mConnTypes!!.contains(CommsConnType.COMMS_CONN_MQTT)) {
-                if (!XWPrefs.getMQTTEnabled(mActivity)) {
-                    mDropMQTTOnDismiss = false
-                    val msg = """
+                var supported = MQTTUtils.MQTTSupported()
+                val msg =
+                    if (!supported) { // User has upgraded to hivemq version
+                        mDropMQTTOnDismiss = false
+                        val buttonTxt = getString(R.string.board_menu_file_email)
+                        getString(R.string.warn_mqtt_gone) +
+                            "\n\n" +
+                            getString(R.string.warn_mqtt_gone_email_fmt, buttonTxt)
+                    } else if (!XWPrefs.getMQTTEnabled(mActivity)) {
+                        mDropMQTTOnDismiss = false
+                        """
                         ${getString(R.string.warn_mqtt_disabled)}
                         
                         ${getString(R.string.warn_mqtt_remove)}
                         """.trimIndent()
+                    } else null
+
+                if (null != msg) {
                     makeConfirmThenBuilder(DlgDelegate.Action.ENABLE_MQTT_DO_OR, msg)
-                        .setPosButton(R.string.button_enable_mqtt)
+                        .setPosButton(
+                            if ( supported ) R.string.button_enable_mqtt
+                            else R.string.board_menu_file_email
+                        )
                         .setNegButton(R.string.newgame_drop_mqtt)
                         .show()
+                    pending = true
                 }
             }
             if (mConnTypes!!.isEmpty()) {
                 askNoAddrsDelete()
-            } else {
+            } else if (!pending) {
                 alertOrderIncrIfAt(StartAlertOrder.NO_MEANS)
             }
         }

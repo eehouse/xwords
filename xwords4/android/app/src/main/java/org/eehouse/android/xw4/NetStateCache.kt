@@ -54,7 +54,7 @@ object NetStateCache {
         }
     }
 
-    fun unregister(context: Context?, proc: StateChangedIf) {
+    fun unregister(proc: StateChangedIf) {
         DbgUtils.assertOnUIThread()
         if (Utils.isOnUIThread()) {
             synchronized(s_ifs) {

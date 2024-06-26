@@ -24,13 +24,10 @@ import android.util.AttributeSet
 import android.view.View
 import android.widget.CheckBox
 import android.widget.LinearLayout
-import org.eehouse.android.xw4.Assert.failDbg
+
 import org.eehouse.android.xw4.DlgDelegate.HasDlgDelegate
-import org.eehouse.android.xw4.XWPrefs.Companion.getMQTTEnabled
-import org.eehouse.android.xw4.XWPrefs.Companion.getNBSEnabled
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet
-import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet.Companion.getSupported
 
 private val TAG: String = ConnViaViewLayout::class.java.simpleName
 
@@ -73,7 +70,7 @@ class ConnViaViewLayout(context: Context, aset: AttributeSet?) :
         list.removeAllViews() // in case being reused
 
         val context = context
-        val supported = getSupported(context)
+        val supported = CommsConnTypeSet.getSupported(context)
 
         for (typ in supported) {
             if (!typ.isSelectable) {
@@ -125,16 +122,16 @@ class ConnViaViewLayout(context: Context, aset: AttributeSet?) :
         var enabled = true
         val context = context
         when (typ) {
-            CommsConnType.COMMS_CONN_SMS -> enabled = getNBSEnabled(context)
+            CommsConnType.COMMS_CONN_SMS -> enabled = XWPrefs.getNBSEnabled(context)
             CommsConnType.COMMS_CONN_BT -> enabled = BTUtils.BTEnabled()
             CommsConnType.COMMS_CONN_RELAY -> {
-                failDbg()
+                Assert.failDbg()
                 enabled = false
             }
 
             CommsConnType.COMMS_CONN_P2P -> enabled = WiDirWrapper.enabled()
-            CommsConnType.COMMS_CONN_MQTT -> enabled = getMQTTEnabled(context)
-            else -> failDbg()
+            CommsConnType.COMMS_CONN_MQTT -> enabled = XWPrefs.getMQTTEnabled(context)
+            else -> Assert.failDbg()
         }
         if (!enabled && null != m_disabledWarner) {
             m_disabledWarner!!.warnDisabled(typ)
@@ -146,7 +143,7 @@ class ConnViaViewLayout(context: Context, aset: AttributeSet?) :
             var keyID = 0
             var msgID = 0
             when (typ) {
-                CommsConnType.COMMS_CONN_RELAY -> failDbg()
+                CommsConnType.COMMS_CONN_RELAY -> Assert.failDbg()
                 CommsConnType.COMMS_CONN_SMS -> if (Perms23.haveNBSPerms(context)) {
                     msgID = R.string.not_again_comms_sms
                     keyID = R.string.key_na_comms_sms
@@ -167,7 +164,7 @@ class ConnViaViewLayout(context: Context, aset: AttributeSet?) :
                     keyID = R.string.key_na_comms_mqtt
                 }
 
-                else -> failDbg()
+                else -> Assert.failDbg()
             }
             if (0 != msgID) {
                 val dlgDlgt = m_dlgDlgt!!

@@ -29,6 +29,7 @@ import org.eehouse.android.xw4.Assert
 import org.eehouse.android.xw4.BTUtils
 import org.eehouse.android.xw4.BuildConfig
 import org.eehouse.android.xw4.Log
+import org.eehouse.android.xw4.MQTTUtils
 import org.eehouse.android.xw4.NFCUtils
 import org.eehouse.android.xw4.R
 import org.eehouse.android.xw4.SMSPhoneInfo
@@ -48,7 +49,7 @@ class CommsAddrRec : Serializable {
         COMMS_CONN_SMS,
         COMMS_CONN_P2P,
         COMMS_CONN_NFC(false),
-        COMMS_CONN_MQTT(BuildConfig.NO_NEW_RELAY);
+        COMMS_CONN_MQTT(BuildConfig.NO_NEW_RELAY||MQTTUtils.MQTTSupported());
 
         fun longName(context: Context): String {
             val id = when (this) {
@@ -176,7 +177,9 @@ class CommsAddrRec : Serializable {
             fun getSupported(context: Context): List<CommsConnType> {
                 val supported: MutableList<CommsConnType> = ArrayList()
                 supported.add(CommsConnType.COMMS_CONN_RELAY)
-                supported.add(CommsConnType.COMMS_CONN_MQTT)
+                if ( MQTTUtils.MQTTSupported()) {
+                    supported.add(CommsConnType.COMMS_CONN_MQTT)
+                }
                 if (BTUtils.BTAvailable()) {
                     supported.add(CommsConnType.COMMS_CONN_BT)
                 }

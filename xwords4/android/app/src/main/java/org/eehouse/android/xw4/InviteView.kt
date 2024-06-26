@@ -84,7 +84,7 @@ class InviteView(context: Context, aset: AttributeSet?) :
         mGroupHow = findViewById<RadioGroup>(R.id.group_how)
         mGroupHow!!.setOnCheckedChangeListener(this)
         val divider = mGroupHow!!.findViewById<View>(R.id.local_divider)
-        for (means in meansList) {
+        for (means in meansList.filter{it.available()}) {
             val button = LocUtils.inflate(context, R.layout.invite_radio)
                 as RadioButton
             button.setOnCheckedChangeListener(this)
