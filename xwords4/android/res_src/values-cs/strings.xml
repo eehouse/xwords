@@ -222,7 +222,6 @@
         <item quantity="other"/>
     </plurals>
     <string name="dicts_item_move">Změnit uložiště</string>
-    <string name="invite_subject_fmt">Pojďme hrát CrossWords (místnost %1$s)</string>
     <string name="newbie_title">Tip pro vás</string>
     <string name="button_default_robot">Robot</string>
     <string name="no_copy_network">Hry, které již byly připojeny k relaci, nelze kopírovat. Pro kopii připravenou k přehrávání použijte funkci \"Nová hra podle vzoru\" se všemi stejnými nastaveními.</string>

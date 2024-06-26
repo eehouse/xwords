@@ -1146,16 +1146,6 @@ arrivent</string>
          launched to send your invitation. -->
     <!--<string name="newgame_invite">Invite now</string>-->
     <string name="newgame_invite">Inviter maintenant</string>
-    <!-- section separator (white-on-gray bar) for third section:
-         bluetooth games -->
-    <!--<string name="newgame_bt_header">New Bluetooth game</string>-->
-    <!-- EXPLAIN ME -->
-    <!--     <string name="bt_disabled">Le Bluetooth n\'est pas disponible. Cela peut -->
-    <!-- signifier que votre périphérique ne peut pas en faire, ou qu\'il a été éteint.</string> -->
-    <!-- This is the subject line of the email/text sent to invite
-         someone to join a game. -->
-    <!--<string name="invite_subject_fmt">Let\'s play CrossWords (Room %1$s)</string>-->
-    <string name="invite_subject_fmt">Jouons à CrossWords (salon %1$s)</string>
     <!-- This is the body of the html version of the invitation. A URL
          is created with parameters describing the game and
          substituted for "%1$s".  (The funky \u003c and friends are
@@ -2288,20 +2278,10 @@ les %1$d mots sélectionnés ?\n\n(Cette action ne peut pas être annulée.)</s
     <string name="studylist_title_fmt">Liste d\'étude pour le %1$s</string>
     <!--<string name="study_langpick">Your words for:</string>-->
     <string name="study_langpick">Vos mots en :</string>
-    <!--<string name="study_no_lang_fmt">You have not yet saved any words
-    into a studylist for %1$s.</string>-->
-    <string name="study_no_lang_fmt">Vous n\'avez encore enregistré aucun mot
-dans une liste d\'étude en %1$s.</string>
-    <!--<string name="study_no_lists">You have not yet saved any words
-    into a studylist.</string>-->
-    <string name="study_no_lists">Vous n\'avez encore enregistré aucun mot dans
-une liste d\'étude.</string>
     <!--<string name="not_again_studycopy">The selected words will be
     copied to the system clipboard. You can then paste them into any
     app that supports pasting text, e.g. an email app.</string>-->
     <string name="not_again_studycopy">Les mots sélectionnés seront copiés dans le presse-papier du système. Vous pourrez ensuite les coller dans toute application qui prend en charge le collage de texte, par exemple une application de messagerie.</string>
-    <!--<string name="lookup_title">Word lookup</string>-->
-    <string name="lookup_title">Recherche de mot</string>
     <!--<string name="slmenu_select_all">Select all</string>-->
     <string name="slmenu_select_all">Tout sélectionner</string>
     <!--<string name="slmenu_deselect_all">Unselect all</string>-->
@@ -2916,7 +2896,6 @@ pour la langue</string>
     <string name="phonies_label">Néologismes</string>
     <string name="phonies_block">Interdire les néologismes</string>
     <string name="invite_msg_extra_rematch">Avec les revanches, toutes les invitations nécessaires auront été envoyées automatiquement. Mais vous pouvez toujours en renvoyer si un invité ne répond pas.</string>
-    <string name="invite_who_empty_expl">expl vide</string>
     <string name="invit_expl_player_fmt">Invitation transmise par MQTT/Internet au joueur connu « %1$s » sur %2$s.</string>
     <string name="enable_pending_count_summary">Afficher le numéro non encore confirmé</string>
     <string name="newgame_radio_unknown">Inviter un nouveau joueur</string>

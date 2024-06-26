@@ -318,7 +318,6 @@
     <string name="invite_chooser_fmt">Mandar convite via %1$s</string>
     <string name="invite_sms_fmt">Toque no link para aceitar meu convite e se juntar ao jogo de Palavras Cruzadas: %1$s</string>
     <string name="invite_htm_fmt">Toque no link abaixo para se juntar ao jogo. &lt;br \\&gt; &lt;br \\&gt; (Link completo: %1$s )</string>
-    <string name="invite_subject_fmt">Vamos jogar Palavras Cruzadas (sala %1$s)</string>
     <string name="invite_subject">Vamos jogar Palavras Cruzadas</string>
     <string name="ok_with_robots">Okay (robôs)</string>
     <string name="invite_choice_title">Convidar um jogador</string>
@@ -365,7 +364,6 @@
     <string name="radio_how">Como\?</string>
     <string name="local_invite_summary">Se seu oponente estiver por perto…</string>
     <string name="qrcode_invite_summary">Código QR que seu oponente pode escanear</string>
-    <string name="invite_who_empty_expl">vazio</string>
     <string name="radio_who">Quem\?</string>
     <string name="how_tab">Enviar um convite como\?</string>
     <string name="disable_bt_summary">Disablitar toda a comunicação via Bluetooth</string>
@@ -443,8 +441,6 @@
     <string name="loc_item_check">Checar</string>
     <string name="logstore_cleared_fmt">%1$d entradas de log deletadas</string>
     <string name="not_again_studycopy">As palavras selecionadas serão copiadas para a área de transferência do sistema. Você pode então colá-las em qualquer app que suporte colar texto, p. ex. um app de e-mail.</string>
-    <string name="study_no_lists">Você ainda não salvou nenhuma palavra em uma lista de estudos.</string>
-    <string name="study_no_lang_fmt">Você ainda não salvou nenhuma palavra em uma lista de estudos para %1$s.</string>
     <string name="study_langpick">Suas palavras para:</string>
     <string name="studylist_title_fmt">Lista de estudos para %1$s</string>
     <string name="add_done_fmt">%1$s adicionado à lista de estudos %2$s</string>
@@ -974,7 +970,6 @@
         <item quantity="other">%1$s trocou %2$d quadrados</item>
     </plurals>
     <string name="dict_desc_fmt">%1$s (%2$s de %3$d palavras)</string>
-    <string name="lookup_title">Pesquisa de palavras</string>
     <string name="square_tiles_summary">Mesmo que possam ser mais altos</string>
     <string name="square_tiles">Blocos em forma de quadrado</string>
     <string name="not_again_newselect">Tocar a listagem de um jogo abre o jogo.

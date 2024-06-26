@@ -873,19 +873,6 @@
          it immediately because an email or messaging app will be
          launched to send your invitation. -->
     <string name="newgame_invite">Convidar agora</string>
-    <!-- section separator (white-on-gray bar) for third section:
-         bluetooth games -->
-    <!-- EXPLAIN ME -->
-    <!-- EXPLAIN ME -->
-    <!-- The invitation process begins with this query.  The choice is
-         between html and plaintext formatting but I also provide some
-         explanation/guidance. -->
-    <!-- When an invitation is sent, the user gets to choose between
-    plaintext and html formatting.  These two strings are shown in the
-    two buttons in the dialog. -->
-    <!-- This is the subject line of the email/text sent to invite
-         someone to join a game. -->
-    <string name="invite_subject_fmt">Vamos jogar CrossWords (sala %1$s)</string>
     <!-- This is the body of the html version of the invitation. A URL
          is created with parameters describing the game and
          substituted for "%1$s".  (The funky \u003c and friends are
@@ -1908,10 +1895,7 @@
     <string name="sel_items_fmt">Selecionado: %1$d</string>
     <string name="slmenu_deselect_all">Des-selecionar tudo</string>
     <string name="slmenu_select_all">Selecionar tudo</string>
-    <string name="lookup_title">Pesquisa de palavras</string>
     <string name="not_again_studycopy">As palavras selecionadas serão copiadas para a área de transferência do sistema. Pode então colá-las em qualquer app que suporte colar texto, p. ex. um app de e-mail.</string>
-    <string name="study_no_lists">Ainda não salvou nenhuma palavra numa lista de estudos.</string>
-    <string name="study_no_lang_fmt">Ainda não salvou nenhuma palavra numa lista de estudos para %1$s.</string>
     <string name="study_langpick">As suas palavras para:</string>
     <string name="studylist_title_fmt">Lista de estudos para %1$s</string>
     <string name="add_done_fmt">%1$s adicionado à lista de estudos %2$s</string>
@@ -2127,7 +2111,6 @@
     <string name="radio_how">Como\?</string>
     <string name="local_invite_summary">Se o seu oponente estiver por perto…</string>
     <string name="qrcode_invite_summary">Código QR que o seu oponente pode escanear</string>
-    <string name="invite_who_empty_expl">vazio</string>
     <string name="radio_who">Quem\?</string>
     <string name="how_tab">Enviar um convite como\?</string>
     <string name="invite_choice_title">Convidar um jogador</string>

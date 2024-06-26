@@ -236,10 +236,7 @@
     <string name="sel_items_fmt">Selezionate: %1$d</string>
     <string name="slmenu_deselect_all">Deseleziona tutto</string>
     <string name="slmenu_select_all">Seleziona tutto</string>
-    <string name="lookup_title">Guarda Parole</string>
     <string name="not_again_studycopy">Le parole selezionate saranno copiate negli appunti del sistema. Puoi incollarle in qualsiasi app di testo. Ex. l\'app email.</string>
-    <string name="study_no_lists">Non hai ancora salvato parole nella lista studio.</string>
-    <string name="study_no_lang_fmt">Non hai ancora salvato parole nella lista studio per %1$s.</string>
     <string name="study_langpick">Le tue parole per:</string>
     <string name="studylist_title_fmt">Lista studio per %1$s</string>
     <string name="add_done_fmt">%1$s aggiunte alle %2$s liste studio</string>
@@ -624,13 +621,11 @@
     <string name="invite_chooser_fmt">Invita invito via %1$s</string>
     <string name="invite_sms_fmt">Tocca il link per accettare il mio invito ed entrare in una partita di CrossWords: %1$s</string>
     <string name="invite_htm_fmt">Tocca il link in basso per entrare nella partita &lt;br \\&gt; &lt;br \\&gt; (Link: %1$s )</string>
-    <string name="invite_subject_fmt">Giochiamo a CrossWords (Stanza %1$s)</string>
     <string name="invite_subject">Giochiamo a Crosswords</string>
     <string name="ok_with_robots">Ok (robots)</string>
     <string name="radio_how">Come\?</string>
     <string name="local_invite_summary">Se il tuo avversario è vicino…</string>
     <string name="qrcode_invite_summary">Il codice QR che può scannerizzare il tuo avversario</string>
-    <string name="invite_who_empty_expl">No inv prec</string>
     <string name="radio_who">Chi\?</string>
     <string name="how_tab">Invia invito come\?</string>
     <string name="invite_choice_title">Invita un giocatore</string>

@@ -608,9 +608,6 @@
     \u003cbr \\\u003E
     (full link: %1$s )
     </string>
-    <!-- This is the subject line of the email/text sent to invite
-         someone to join a game. -->
-    <string name="invite_subject_fmt">XLATE ME: Let\'s play CrossWords (Room %1$s)</string>
     <!-- When an invitation is sent, the user gets to choose between
     plaintext and html formatting.  These two strings are shown in the
     two buttons in the dialog. -->
@@ -847,14 +844,9 @@
     <string name="sel_items_fmt">XLATE ME: Selected: %1$d</string>
     <string name="slmenu_deselect_all">XLATE ME: Unselect all</string>
     <string name="slmenu_select_all">XLATE ME: Select all</string>
-    <string name="lookup_title">XLATE ME: Word lookup</string>
     <string name="not_again_studycopy">XLATE ME: The selected words will be
     copied to the system clipboard. You can then paste them into any
     app that supports pasting text, e.g. an email app.</string>
-    <string name="study_no_lists">XLATE ME: You have not yet saved any words
-    into a studylist.</string>
-    <string name="study_no_lang_fmt">XLATE ME: You have not yet saved any words
-    into a studylist for %1$s.</string>
     <string name="study_langpick">XLATE ME: Your words for:</string>
     <string name="studylist_title_fmt">XLATE ME: Studylist for %1$s</string>
     <string name="add_done_fmt">XLATE ME: %1$s added to list</string>

@@ -303,7 +303,6 @@
     <string name="invite_chooser_fmt">Enviar invitación vía %1$s</string>
     <string name="invite_choice_title">Invitando a un Jugador</string>
     <string name="invite_sms_fmt">Pulsa el enlace para aceptar mi invitación y unirte a una partida de Palabras Cruzadas: %1$s</string>
-    <string name="invite_subject_fmt">Juguemos a Palabras Cruzadas (sala %1$s)</string>
     <string name="ok_with_robots">De acuerdo (los otros jugadores serán la máquina)</string>
     <string name="invite_choice_nfc">NFC (“Android beaming”)</string>
     <string name="invite_choice_relay">Internet/Retransmisión</string>
@@ -346,7 +345,6 @@
     <string name="invite_choice_user_sms">SMS (texto)</string>
     <string name="invite_choice_qrcode">Código QR</string>
     <string name="how_tab">¿Cómo enviar invitación\?</string>
-    <string name="invite_who_empty_expl">vacío</string>
     <string name="qrcode_invite_summary">Código QR que tu oponente puede escanear</string>
     <string name="local_invite_summary">Si tu oponente está cerca…</string>
     <string name="invite_subject">Jugemos a Palabras Cruzadas</string>
@@ -864,7 +862,6 @@
         <item quantity="other">Buscando crucigramas en %1$d dispositivos vinculados</item>
     </plurals>
     <string name="lang_name_english">Inglés</string>
-    <string name="study_no_lang_fmt">Aún no has guardado ninguna palabra en una lista de estudio para %1$s.</string>
     <string name="button_invite">Invitación controlada</string>
     <string name="gamel_menu_study">Lista de estudio</string>
     <string name="bt_resend_fmt">Error en el envío de Bluetooth a %1$s; reintentar %3$d en %2$d segundos.</string>
@@ -1041,7 +1038,6 @@
     <string name="not_again_comms_p2p">Utiliza WiFi Direct para jugar contra un dispositivo cercano compatible con WiFi Direct que tenga CrossWords instalado.</string>
     <string name="button_invite_history">Historia</string>
     <string name="slmenu_select_all">Seleccionar todo</string>
-    <string name="study_no_lists">Aún no has guardado ninguna palabra en una lista de aprendizaje.</string>
     <string name="color_use_theme_light">Usar el tema claro</string>
     <string name="gamel_menu_backup">Copia de seguridad/restaurar</string>
     <string name="list_group_rename">Cambiar el nombre del grupo</string>
@@ -1142,7 +1138,6 @@
 \n
 \n(Esta acción no se puede deshacer)</string>
     <string name="gameevent_channel_expl">Acontecimientos de la partida</string>
-    <string name="lookup_title">Búsqueda por palabras</string>
     <string name="lang_name_polish">Polaco</string>
     <string name="game_summary_field_rowid">ruidoso</string>
     <string name="archive_expl_settings">Todos los ajustes de la aplicación excepto los colores, por ejemplo, el idioma predeterminado y el tamaño de las miniaturas</string>

@@ -325,7 +325,6 @@
     <string name="invite_choice_nfc">NFC (Android beaming)</string>
     <string name="invite_choice_relay">Internet/Przekaźnik</string>
     <string name="invite_choice_p2p">Tryb Wi-Fi Direct</string>
-    <string name="invite_subject_fmt">Zagrajmy w CrossWords (pokój %1$s)</string>
     <string name="invite_htm_fmt">"&lt;a href=\"%1$s\"&gt; Stuknij tutaj&lt;/a&gt; (lub dotknij pełnego linku poniżej lub, jeśli masz już zainstalowany CrossWords, otwórz załącznik), aby zaakceptować moje zaproszenie i dołączyć do tej gry. &lt;br \\&gt; &lt;br \\&gt;  (pełny link: %1$s )"</string>
     <plurals name="query_trade_fmt">
         <item quantity="one">Czy na pewno chcesz wymienić wybrany kafelek (%2$s)\?</item>
@@ -555,10 +554,7 @@
         <item quantity="many">Skopiowano jedno słowo</item>
     </plurals>
     <string name="study_langpick">Twoje słowa na:</string>
-    <string name="study_no_lang_fmt">Nie zapisano jeszcze żadnych słów na liście do nauki dla %1$s.</string>
-    <string name="study_no_lists">Nie zapisałeś jeszcze żadnych słów na listę do nauki.</string>
     <string name="not_again_studycopy">Wybrane słowa zostaną skopiowane do schowka systemowego. Następnie można je wkleić do dowolnej aplikacji obsługującej wklejanie tekstu, np. aplikacji pocztowej.</string>
-    <string name="lookup_title">Wyszukiwanie słów</string>
     <string name="slmenu_select_all">Wybierz wszystkie</string>
     <string name="slmenu_deselect_all">Usuń zaznaczenie</string>
     <string name="sel_items_fmt">Wybrano: %1$d</string>

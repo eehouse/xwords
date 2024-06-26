@@ -227,7 +227,6 @@
     <string name="invite_choice_bt">Bluetooth</string>
     <string name="invite_choice_nfc">NFC (\"Android Beam\")</string>
     <string name="invite_choice_title">Spelers uitnodigen: Hoe?</string>
-    <string name="invite_subject_fmt">Laten we CrossWords spelen (Kamer %1$s)</string>
     <string name="invite_htm_fmt">&lt;a href="%1$s"&gt;Druk hier&lt;/a&gt; (of druk op de volledige link hieronder, of, als je CrossWords al geïnstalleerd hebt, open de bijlage) om mijn uitnodiging te accepteren en het spel bij te treden. &lt;br \&gt; &lt;br \&gt; (volledige link: %1$s) </string>
     <string name="invite_chooser_fmt">Verstuur uitnodiging via %1$s</string>
     <string name="invite_chooser_email">email</string>
@@ -464,10 +463,7 @@
     <string name="add_done_fmt">%1$s toegevoegd aan %2$s studielijst</string>
     <string name="studylist_title_fmt">Studielijst voor %1$s</string>
     <string name="study_langpick">Jouw woorden voor:</string>
-    <string name="study_no_lang_fmt">Je hebt nog geen woorden in een studielijst voor %1$s opgeslagen.</string>
-    <string name="study_no_lists">Je hebt nog geen woorden in een studielijst opgeslagen.</string>
     <string name="not_again_studycopy">De geselecteerde woorden zullen gekopieerd worden naar het kladbord. Je kan deze dan plakken in elke app die tekst ondersteund, zoals bijvoorbeeld een email app.</string>
-    <string name="lookup_title">Woord opzoeken</string>
     <string name="slmenu_select_all">Alles selecteren</string>
     <string name="slmenu_deselect_all">Alles deselecteren</string>
     <string name="sel_items_fmt">Geselecteerd: %1$d</string>
@@ -732,7 +728,6 @@
     <string name="relaypage_url_copied">Spel URL gekopieerd naar klembord</string>
     <string name="langUnknownFmt">Onbekend (%1$s)</string>
     <string name="disable_mqtt">Spelen via internet uitschakelen</string>
-    <string name="invite_who_empty_expl">leeg expl</string>
     <string name="tiles_header_count">Nummer</string>
     <plurals name="bt_scan_progress_fmt">
         <item quantity="one">Scannen naar CrossWords</item>

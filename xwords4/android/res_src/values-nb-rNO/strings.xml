@@ -289,7 +289,6 @@
     <string name="add_done_fmt">%1$s lagt til i %2$s studieliste</string>
     <string name="studylist_title_fmt">Studieliste for %1$s</string>
     <string name="study_langpick">Dine ord for:</string>
-    <string name="lookup_title">Ordoppslag</string>
     <string name="slmenu_select_all">Velg alle</string>
     <string name="slmenu_deselect_all">Fravelt alle</string>
     <string name="sel_items_fmt">Valgt: %1$d</string>
@@ -478,7 +477,6 @@
     <string name="invite_choice_nfc">NFC (\"Android-stråling\")</string>
     <string name="invite_choice_relay">Internett/relé</string>
     <string name="invite_choice_p2p">Wi-Fi Direct</string>
-    <string name="invite_subject_fmt">La oss spille CrossWords (rom %1$s)</string>
     <string name="invite_chooser_fmt">Send invitasjon via %1$s</string>
     <string name="invite_chooser_email">e-post</string>
     <string name="chat_title_fmt">Sludring for %1$s</string>
@@ -626,8 +624,6 @@
     <string name="inform_dict_diffversion_fmt">Du og verten for dette spillet bruker forskjellige versjoner av ordlisten %1$s.</string>
     <string name="square_tiles_summary">Selv om de kan være høyere</string>
     <string name="enable_nfc">NFC er skrudd av på denne enheten. Du kan bruke systeminnstillingene for å skru det på.</string>
-    <string name="study_no_lang_fmt">Du har ikke lagret noen ord i studielisten for %1$s enda.</string>
-    <string name="study_no_lists">Du har ikke lagret noen ord i noen studieliste enda.</string>
     <string name="loc_item_copy_eng">Kopier engelsk</string>
     <string name="loc_item_copy_bless">Kopier offisiell</string>
     <string name="force_tablet_tablet">Tving nettbrettvisning</string>

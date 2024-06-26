@@ -218,7 +218,6 @@
     <string name="invite_choice_bt">Bluetooth</string>
     <string name="invite_choice_nfc">NFC (\"Android ビーム\")</string>
     <string name="invite_choice_title">プレイヤーの招待: 方法は?</string>
-    <string name="invite_subject_fmt">クロスワードで遊びましょう (ルーム %1$s)</string>
     <string name="invite_htm_fmt">&lt;a href=\"%1$s\"&gt;ここをタップ&lt;/a&gt; (または下の完全なリンク。既にクロスワードをインストールしている場合は、添付を開くこともできます) して、このゲームに参加してください。 &lt;br \\&gt; &lt;br \\&gt; (完全なリンク: %1$s )</string>
     <string name="invite_chooser_fmt">%1$s で招待状を送信</string>
     <string name="invite_chooser_email">メール</string>
@@ -474,10 +473,7 @@
     <string name="add_done_fmt">%1$s を %2$s 学習リストに追加しました</string>
     <string name="studylist_title_fmt">%1$s の学習リスト</string>
     <string name="study_langpick">単語:</string>
-    <string name="study_no_lang_fmt">%1$s の学習リストにまだ単語を保存していません。</string>
-    <string name="study_no_lists">学習リストにまだ単語を保存していません。</string>
     <string name="not_again_studycopy">選択した単語がシステムのクリップボードにコピーされます。その後で、メールアプリなど、テキストの貼り付けをサポートしているアプリでそれを貼り付けることができます。</string>
-    <string name="lookup_title">単語検索</string>
     <string name="slmenu_select_all">すべて選択</string>
     <string name="slmenu_deselect_all">選択をすべて解除</string>
     <string name="sel_items_fmt">選択: %1$d</string>

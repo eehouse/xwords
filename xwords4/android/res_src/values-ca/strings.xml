@@ -289,7 +289,6 @@
     <string name="invite_choice_bt">Bluetooth</string>
     <string name="invite_choice_nfc">NFC («Android beaming»)</string>
     <string name="invite_choice_title">Invitació de jugadors: Com?</string>
-    <string name="invite_subject_fmt">Juga al CrossWords (sala %1$s)</string>
     <string name="invite_chooser_fmt">Envia la invitació via %1$s</string>
     <string name="invite_chooser_email">correu-e</string>
     <plurals name="query_trade_fmt">
@@ -445,7 +444,6 @@ Introduïu el vostre nom aquí. S\'usarà en crear partides noves. (Podreu
     </plurals>
     <string name="add_done_fmt">S\'ha afegit %1$s a la llista d\'estudi %2$s</string>
     <string name="studylist_title_fmt">Llista d\'estudi per a %1$s</string>
-    <string name="lookup_title">Cerca paraules</string>
     <string name="slmenu_select_all">Selecciona-ho tot</string>
     <string name="slmenu_deselect_all">No seleccionis res</string>
     <string name="sel_items_fmt">Seleccionat: %1$d</string>
@@ -569,8 +567,6 @@ Introduïu el vostre nom aquí. S\'usarà en crear partides noves. (Podreu
         <item quantity="other">Esteu segur de voler suprimir les %1$d paraules seleccionades?\n\n(Aquesta acció no es pot desfer.)</item>
     </plurals>
     <string name="study_langpick">Les vostres paraules per a:</string>
-    <string name="study_no_lang_fmt">Encara no heu desat cap paraula al llistat d\'estudi per a %1$s.</string>
-    <string name="study_no_lists">Encara no heu desat cap paraula a llistat d\'estudi.</string>
     <string name="not_again_studycopy">Les paraules seleccionades s\'han copiat al porta-retalls del sistema. Podeu enganxar-les en qualsevol aplicació que permeti enganxar text, p. ex. l\'aplicació de correu.</string>
     <plurals name="new_xlations_fmt">
         <item quantity="one">Ha instal·lat una traducció nova</item>

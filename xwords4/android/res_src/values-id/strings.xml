@@ -108,7 +108,6 @@
     <string name="vs_join">" vs. "</string>
     <string name="board_menu_game_final">Skor akhir</string>
     <string name="dict_lang_label_fmt">Daftar kata (%1$s)</string>
-    <string name="invite_subject_fmt">Mari bermain CrossWords (ruangan %1$s)</string>
     <string name="invite_subject">Mari bermain CrossWords</string>
     <string name="radio_how">Bagaimana\?</string>
     <string name="local_invite_summary">Jika musuhmu di dekat sini…</string>

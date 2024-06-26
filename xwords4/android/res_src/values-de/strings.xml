@@ -234,7 +234,6 @@
     <string name="invite_choice_bt">Bluetooth</string>
     <string name="invite_choice_nfc">NFC („Android-Beaming“)</string>
     <string name="invite_choice_p2p">Wi-Fi Direct</string>
-    <string name="invite_subject_fmt">Lass\' uns CrossWords spielen (Raum %1$s)</string>
     <string name="invite_htm_fmt">Tippen Sie auf die vollständige Verknüpfung unten, um an dieser Partie teilzunehmen. &lt;br \\&gt; &lt;br \\&gt; (Vollständige Verknüpfung: %1$s )</string>
     <string name="invite_chooser_fmt">Einladung senden über %1$s</string>
     <string name="invite_chooser_email">E-Mail</string>
@@ -521,10 +520,7 @@
     <string name="add_done_fmt">%1$s zu Lernliste %2$s hinzugefügt</string>
     <string name="studylist_title_fmt">Lernliste für %1$s</string>
     <string name="study_langpick">Ihre Wörter für:</string>
-    <string name="study_no_lang_fmt">Sie haben noch keine Wörter in einer Lernliste für %1$s gespeichert.</string>
-    <string name="study_no_lists">Sie haben noch keine Wörter in einer Lernliste gespeichert.</string>
     <string name="not_again_studycopy">Die ausgewählten Wörter werden in die Zwischenablage kopiert. Sie können Sie dann in jede Anwendung einfügen, die das Einfügen von Text unterstützt, zum Beispiel in eine E-Mail-Anwendung.</string>
-    <string name="lookup_title">Wort nachschlagen</string>
     <string name="sel_items_fmt">Ausgewählt: %1$d</string>
     <plurals name="new_xlations_fmt">
         <item quantity="one">Eine neue Übersetzung installiert</item>
@@ -1055,7 +1051,6 @@
 \n
 \n Die meisten Partien zwischen zwei Geräten tauschen Züge über das Internet aus. Tun Sie dies also nur, wenn Sie vorhaben, ALLE Spiele gegen einen Computer-Spieler auf demselben Gerät zu spielen.</string>
     <string name="warn_mqtt_later">Sie können das Spielen über Internet jetzt oder später aktivieren.</string>
-    <string name="invite_who_empty_expl">leer</string>
     <string name="relaypage_url_copied">URL der Partie in die Zwischenablage kopiert</string>
     <string name="old_apks_deleted_fmt">%1$d alte Upgrade-Apks gelöscht</string>
     <string name="disable_mqtt">Spielen über das Internet deaktivieren</string>
