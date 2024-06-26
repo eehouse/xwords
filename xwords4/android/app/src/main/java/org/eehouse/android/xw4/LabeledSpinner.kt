@@ -24,8 +24,6 @@ import android.util.AttributeSet
 import android.widget.LinearLayout
 import android.widget.Spinner
 import android.widget.TextView
-import org.eehouse.android.xw4.Assert.assertNotNull
-import org.eehouse.android.xw4.Utils.getChildInstanceOf
 
 /**
  * This class's purpose is to link a spinner with a textview that's its label
@@ -40,9 +38,9 @@ class LabeledSpinner(context: Context, aset: AttributeSet?) :
 
     override fun onFinishInflate()
     {
-        mSpinner = getChildInstanceOf(this, Spinner::class.java) as Spinner?
+        mSpinner = Utils.getChildInstanceOf(this, Spinner::class.java) as Spinner?
 
-        val tv = getChildInstanceOf(this, TextView::class.java) as TextView
+        val tv = Utils.getChildInstanceOf(this, TextView::class.java) as TextView
         tv.setOnClickListener { mSpinner!!.performClick() }
         super.onFinishInflate()
     }

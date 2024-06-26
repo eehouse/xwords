@@ -112,7 +112,6 @@ class XWApp : Application(), LifecycleObserver {
 
         fun getContext(): Context
 		{
-            Assert.assertTrueNR(null != sContext)
             return sContext!!
         }
     } // companion object

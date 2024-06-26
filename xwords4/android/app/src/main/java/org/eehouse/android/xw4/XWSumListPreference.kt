@@ -21,8 +21,8 @@ package org.eehouse.android.xw4
 
 import android.content.Context
 import android.util.AttributeSet
-import org.eehouse.android.xw4.XWPrefs.Companion.getDebugEnabled
-import org.eehouse.android.xw4.loc.LocUtils.getString
+
+import org.eehouse.android.xw4.loc.LocUtils
 
 class XWSumListPreference(private val mContext: Context, attrs: AttributeSet?) :
     XWListPreference(mContext, attrs) {
@@ -33,7 +33,7 @@ class XWSumListPreference(private val mContext: Context, attrs: AttributeSet?) :
         super.onAttached()
 
         val rows = getFieldIDs(mContext)
-            .map{getString(mContext, it)}
+            .map{LocUtils.getString(mContext, it)}
             .toTypedArray()
 
         entries = rows
@@ -61,7 +61,7 @@ class XWSumListPreference(private val mContext: Context, attrs: AttributeSet?) :
             if (null == s_game_summary_values) {
                 var len = _s_game_summary_values.size
                 val addDbg = (BuildConfig.NON_RELEASE
-                        || getDebugEnabled(context!!))
+                        || XWPrefs.getDebugEnabled(context!!))
                 if (addDbg) {
                     len += _s_game_summary_values_dbg.size
                 }

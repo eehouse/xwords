@@ -20,15 +20,17 @@
 package org.eehouse.android.xw4.jni
 
 import android.content.Context
-import org.eehouse.android.xw4.Assert
-import org.eehouse.android.xw4.DBUtils
-import org.eehouse.android.xw4.Log
-import org.eehouse.android.xw4.Utils
-import org.eehouse.android.xw4.XWApp.Companion.getContext
+
 import java.io.ByteArrayInputStream
 import java.io.IOException
 import java.io.InputStreamReader
 import java.io.UnsupportedEncodingException
+
+import org.eehouse.android.xw4.Assert
+import org.eehouse.android.xw4.DBUtils
+import org.eehouse.android.xw4.Log
+import org.eehouse.android.xw4.Utils
+import org.eehouse.android.xw4.XWApp
 
 class JNIUtilsImpl private constructor(private val m_context: Context) : JNIUtils {
     /** Working around lack of utf8 support on the JNI side: given a
@@ -134,7 +136,7 @@ class JNIUtilsImpl private constructor(private val m_context: Context) : JNIUtil
         @Synchronized
         fun get(): JNIUtils {
             if (null == s_impl) {
-                s_impl = JNIUtilsImpl(getContext())
+                s_impl = JNIUtilsImpl(XWApp.getContext())
             }
             return s_impl!!
         }

@@ -21,8 +21,7 @@ package org.eehouse.android.xw4
 
 import android.view.View
 import android.view.ViewGroup
-import org.eehouse.android.xw4.Assert.assertTrue
-import org.eehouse.android.xw4.Assert.assertTrueNR
+
 import java.util.Arrays
 
 internal abstract class XWExpListAdapter(childClasses: Array<Class<*>>) :
@@ -105,8 +104,8 @@ internal abstract class XWExpListAdapter(childClasses: Array<Class<*>>) :
     }
 
     protected fun removeChildrenOf(groupIndex: Int) {
-        assertTrueNR(0 <= groupIndex)
-        assertTrue(m_groupClass == m_listObjs!![groupIndex]!!.javaClass)
+        Assert.assertTrueNR(0 <= groupIndex)
+        Assert.assertTrue(m_groupClass == m_listObjs!![groupIndex]!!.javaClass)
         val end = findGroupEnd(groupIndex)
         val nChildren = end - groupIndex - 1 // 1: don't remove parent
         val newArray = arrayOfNulls<Any>(m_listObjs!!.size - nChildren)
@@ -123,7 +122,7 @@ internal abstract class XWExpListAdapter(childClasses: Array<Class<*>>) :
     }
 
     protected fun addChildrenOf(groupIndex: Int, children: List<Any?>) {
-        assertTrueNR(0 <= groupIndex)
+        Assert.assertTrueNR(0 <= groupIndex)
         val nToAdd = children.size
         val newArray = arrayOfNulls<Any>(m_listObjs!!.size + nToAdd)
         System.arraycopy(m_listObjs, 0, newArray, 0, groupIndex + 1) // up to and including parent

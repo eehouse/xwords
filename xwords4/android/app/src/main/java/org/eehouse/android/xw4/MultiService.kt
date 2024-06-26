@@ -24,12 +24,13 @@ import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
-import org.eehouse.android.xw4.Assert
+
+import java.util.Collections
+import java.util.concurrent.ConcurrentHashMap
+
 import org.eehouse.android.xw4.MainActivity
 import org.eehouse.android.xw4.Utils.ISOCode
 import org.eehouse.android.xw4.loc.LocUtils
-import java.util.Collections
-import java.util.concurrent.ConcurrentHashMap
 
 class MultiService {
     enum class DictFetchOwner {

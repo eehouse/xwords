@@ -23,10 +23,6 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
 import android.os.Build
-import org.eehouse.android.xw4.DBUtils.getSerializableFor
-import org.eehouse.android.xw4.DBUtils.setSerializableFor
-import org.eehouse.android.xw4.Utils.nextRandomInt
-import org.eehouse.android.xw4.XWApp.Companion.getContext
 import java.io.Serializable
 
 object Channels {
@@ -63,11 +59,11 @@ object Channels {
     // I want each rowid to be able to have a notification active for it for
     // each channel. So let's try generating and storing random ints.
     private fun notificationId(rowid: Long, channel: ID): Int {
-        val context = getContext()
+        val context = XWApp.getContext()
         var result: Int
         synchronized(Channels::class.java) {
             if (null == sData) {
-                sData = getSerializableFor(context, IDS_KEY) as IdsData?
+                sData = DBUtils.getSerializableFor(context, IDS_KEY) as IdsData?
                 if (null == sData) {
                     sData = IdsData()
                 }
@@ -88,7 +84,7 @@ object Channels {
             }
 
             if (dirty) {
-                setSerializableFor(context, IDS_KEY, sData)
+                DBUtils.setSerializableFor(context, IDS_KEY, sData)
             }
             result = map[rowid]!!
         }
@@ -121,7 +117,7 @@ object Channels {
         fun newID(): Int {
             val result: Int
             while (true) {
-                val one = nextRandomInt()
+                val one = Utils.nextRandomInt()
                 if (!mInts.contains(one)) {
                     mInts.add(one)
                     result = one

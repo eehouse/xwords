@@ -25,12 +25,7 @@ import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import android.os.Environment
 import android.os.Process
-import org.eehouse.android.xw4.Assert.assertTrueNR
-import org.eehouse.android.xw4.Assert.failDbg
-import org.eehouse.android.xw4.DBUtils.getBoolFor
-import org.eehouse.android.xw4.DBUtils.setBoolFor
-import org.eehouse.android.xw4.DbgUtils.printStack
-import org.eehouse.android.xw4.XWPrefs.Companion.getPrefsBoolean
+
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -66,16 +61,16 @@ object Log {
 
     fun init(context: Context) {
         sContextRef = WeakReference(context)
-        sUseDB = getBoolFor(context, KEY_USE_DB, false)
+        sUseDB = DBUtils.getBoolFor(context, KEY_USE_DB, false)
     }
 
     var storeLogs: Boolean
         get() = sUseDB
         set(enable) {
             val context = sContextRef!!.get()
-            assertTrueNR(null != context)
+            Assert.assertTrueNR(null != context)
             if (null != context) {
-                setBoolFor(context, KEY_USE_DB, enable)
+                DBUtils.setBoolFor(context, KEY_USE_DB, enable)
             }
             sUseDB = enable
         }
@@ -96,10 +91,10 @@ object Log {
         helper?.dumpToFile(procs)
     }
 
-    fun enable(context: Context?) {
+    fun enable(context: Context) {
         val on = LOGGING_ENABLED ||
-                getPrefsBoolean(
-                    context!!, R.string.key_logging_on,
+                XWPrefs.getPrefsBoolean(
+                    context, R.string.key_logging_on,
                     LOGGING_ENABLED
                 )
         enable(on)
@@ -137,7 +132,7 @@ object Log {
             LOG_LEVEL.ERROR -> android.util.Log.e(fullTag, str)
             LOG_LEVEL.WARN -> android.util.Log.w(fullTag, str)
             LOG_LEVEL.INFO -> android.util.Log.e(fullTag, str)
-            else -> failDbg()
+            else -> Assert.failDbg()
         }
         store(level, fullTag, str)
     }
@@ -145,7 +140,7 @@ object Log {
     fun ex(tag: String, exception: Exception) {
         if (sEnabled) {
             w(tag, "Exception: %s", exception.toString())
-            printStack(tag, exception.stackTrace)
+            DbgUtils.printStack(tag, exception.stackTrace)
         }
     }
 
@@ -219,7 +214,7 @@ object Log {
             android.util.Log.i(TAG, msg)
             when (oldVersion) {
                 1 -> addColumn(db, COL_TIMESTAMP, "INTEGER DEFAULT 0")
-                else -> failDbg()
+                else -> Assert.failDbg()
             }
         }
 

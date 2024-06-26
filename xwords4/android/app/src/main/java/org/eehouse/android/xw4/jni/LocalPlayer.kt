@@ -21,10 +21,11 @@ package org.eehouse.android.xw4.jni
 
 import android.content.Context
 import android.text.TextUtils
-import org.eehouse.android.xw4.Assert.assertTrue
+import java.io.Serializable
+
+import org.eehouse.android.xw4.Assert
 import org.eehouse.android.xw4.BuildConfig
 import org.eehouse.android.xw4.jni.LocalPlayer
-import java.io.Serializable
 
 class LocalPlayer : Serializable {
     @JvmField
@@ -90,7 +91,7 @@ class LocalPlayer : Serializable {
     }
 
     fun setRobotSmartness(iq: Int) {
-        assertTrue(iq > 0)
+        Assert.assertTrue(iq > 0)
         robotIQ = iq
     }
 

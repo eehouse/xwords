@@ -29,8 +29,7 @@ import android.graphics.drawable.Drawable
 import android.os.Build
 import android.os.Handler
 import android.view.View
-import org.eehouse.android.xw4.Assert.assertTrue
-import org.eehouse.android.xw4.Utils.getCurSeconds
+
 import java.lang.ref.WeakReference
 
 private val TAG: String = ExpiringDelegate::class.java.simpleName
@@ -142,11 +141,11 @@ class ExpiringDelegate(private val m_context: Context, private val m_view: View)
         if (m_selected) {
             // do nothing; the drawable's set already
         } else if (m_active && m_doFrame) {
-            assertTrue(0 <= m_pct && m_pct <= 100)
+            Assert.assertTrue(0 <= m_pct && m_pct <= 100)
             m_view.getDrawingRect(s_rect)
             val width = s_rect.width()
             val redWidth = width * m_pct / 100
-            assertTrue(redWidth <= width)
+            Assert.assertTrue(redWidth <= width)
 
             if (s_kitkat) {
                 ++s_rect.top
@@ -214,7 +213,7 @@ class ExpiringDelegate(private val m_context: Context, private val m_view: View)
     }
 
     private fun setBackground() {
-        assertTrue(m_active)
+        Assert.assertTrue(m_active)
         if (-1 != m_pct && m_backPct != m_pct) {
             m_back = mkBackground(m_pct)
             m_backPct = m_pct
@@ -225,7 +224,7 @@ class ExpiringDelegate(private val m_context: Context, private val m_view: View)
     }
 
     private fun mkBackground(pct: Int): Drawable {
-        assertTrue(0 <= pct && pct <= 100)
+        Assert.assertTrue(0 <= pct && pct <= 100)
         val bm = Bitmap.createBitmap(100, 1, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bm)
 
@@ -242,7 +241,7 @@ class ExpiringDelegate(private val m_context: Context, private val m_view: View)
         if (0L == m_startSecs) {
             m_pct = 0
         } else {
-            val now = getCurSeconds()
+            val now = Utils.getCurSeconds()
             val passed = now - m_startSecs
             m_pct = ((100 * passed) / INTERVAL_SECS).toInt()
             if (m_pct > 100) {

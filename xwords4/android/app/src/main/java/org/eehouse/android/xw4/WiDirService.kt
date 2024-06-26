@@ -766,7 +766,7 @@ class WiDirService : XWService() {
                             }
                             Log.d(TAG, "thread count: %d", Thread.activeCount())
                             Handler().postDelayed({
-                                Companion.mgr.requestGroupInfo(
+                                mgr.requestGroupInfo(
                                     sChannel,
                                     sGroupListener
                                 )

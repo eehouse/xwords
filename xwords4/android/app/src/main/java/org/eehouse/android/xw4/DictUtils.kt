@@ -1,4 +1,5 @@
-/* -*- compile-command: "find-and-gradle.sh inXw4dDeb"; -*- */ /*
+/* -*- compile-command: "find-and-gradle.sh inXw4dDeb"; -*- */
+/*
  * Copyright 2009-2011 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
@@ -21,11 +22,7 @@ package org.eehouse.android.xw4
 import android.content.Context
 import android.os.Build
 import android.os.Environment
-import org.eehouse.android.xw4.Assert.assertFalse
-import org.eehouse.android.xw4.Assert.assertTrue
-import org.eehouse.android.xw4.Assert.failDbg
-import org.eehouse.android.xw4.DBUtils.copyStream
-import org.eehouse.android.xw4.jni.XwJNI.Companion.dict_getInfo
+
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileInputStream
@@ -33,6 +30,8 @@ import java.io.FileNotFoundException
 import java.io.FileOutputStream
 import java.io.IOException
 import java.io.InputStream
+
+import org.eehouse.android.xw4.jni.XwJNI
 
 object DictUtils {
     private val TAG: String = DictUtils::class.java.simpleName
@@ -205,7 +204,7 @@ object DictUtils {
         context: Context, name: String?,
         from: DictLoc, to: DictLoc
     ): Boolean {
-        assertFalse(from == to)
+        Assert.assertFalse(from == to)
         var success = false
 
         try {
@@ -217,7 +216,7 @@ object DictUtils {
             ) context.openFileOutput(name, Context.MODE_PRIVATE)
             else FileOutputStream(getDictFile(context, name, to))
 
-            success = copyStream(fos, fis)
+            success = DBUtils.copyStream(fos, fis)
             fos.close()
             fis.close()
         } catch (ex: IOException) {
@@ -234,7 +233,7 @@ object DictUtils {
             DictLoc.DOWNLOAD -> path = getDownloadsPathFor(context, name)
             DictLoc.EXTERNAL -> path = getSDPathFor(context, name)
             DictLoc.INTERNAL -> context.deleteFile(name)
-            else -> failDbg()
+            else -> Assert.failDbg()
         }
         path?.delete()
 
@@ -275,7 +274,7 @@ object DictUtils {
                     bas.write(tmp, 0, nRead)
                 }
 
-                assertTrue(-1 == dict.read())
+                Assert.assertTrue(-1 == dict.read())
                 bytes = bas.toByteArray()
             } catch (ee: IOException) {
             }
@@ -338,16 +337,16 @@ object DictUtils {
     }
 
     private fun getDictFile(context: Context, name: String?, to: DictLoc): File? {
-        val path: File?
-        when (to) {
-            DictLoc.DOWNLOAD -> path = getDownloadsPathFor(context, name)
-            DictLoc.EXTERNAL -> path = getSDPathFor(context, name)
-            DictLoc.INTERNAL -> path = context.getFileStreamPath(name)
-            else -> {
-                failDbg()
-                path = null
+        val path =
+            when (to) {
+                DictLoc.DOWNLOAD -> getDownloadsPathFor(context, name)
+                DictLoc.EXTERNAL -> getSDPathFor(context, name)
+                DictLoc.INTERNAL -> context.getFileStreamPath(name)
+                else -> {
+                    Assert.failDbg()
+                    null
+                }
             }
-        }
         return path
     }
 
@@ -428,7 +427,7 @@ object DictUtils {
         if (success) {
             val file = File(tmpFile!!.parent, name)
             success = tmpFile.renameTo(file)
-            assertTrue(success || !BuildConfig.DEBUG)
+            Assert.assertTrue(success || !BuildConfig.DEBUG)
         }
 
         // Log.d( TAG, "saveDict(%s/%s) => %b", name, loc, success );
@@ -475,7 +474,7 @@ object DictUtils {
         var ok = file!!.endsWith(XWConstants.DICT_EXTN)
         if (ok && null != dir) {
             val fullPath = File(dir, file).path
-            ok = null != dict_getInfo(
+            ok = null != XwJNI.dict_getInfo(
                 null, removeDictExtn(file),
                 fullPath, true
             )

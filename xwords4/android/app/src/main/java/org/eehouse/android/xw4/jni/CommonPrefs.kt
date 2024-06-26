@@ -26,18 +26,17 @@ import android.net.Uri
 import android.os.Build
 import android.text.TextUtils
 import androidx.preference.PreferenceManager
-import org.eehouse.android.xw4.Assert.assertTrueNR
-import org.eehouse.android.xw4.Assert.failDbg
-import org.eehouse.android.xw4.DictUtils.dictExists
-import org.eehouse.android.xw4.DictUtils.dictList
+
+import org.eehouse.android.xw4.Assert
+import org.eehouse.android.xw4.DictUtils
 import org.eehouse.android.xw4.Log
-import org.eehouse.android.xw4.NetUtils.forceHost
+import org.eehouse.android.xw4.NetUtils
 import org.eehouse.android.xw4.R
-import org.eehouse.android.xw4.Utils.stringToClip
+import org.eehouse.android.xw4.Utils
 import org.eehouse.android.xw4.XWPrefs
 import org.eehouse.android.xw4.XWSumListPreference
 import org.eehouse.android.xw4.jni.CurGameInfo.XWPhoniesChoice
-import org.eehouse.android.xw4.loc.LocUtils.getString
+import org.eehouse.android.xw4.loc.LocUtils
 
 class CommonPrefs private constructor() : XWPrefs() {
     // Keep in sync with TileValueType enum in comtypes.h
@@ -120,7 +119,7 @@ class CommonPrefs private constructor() : XWPrefs() {
         context: Context, sp: SharedPreferences,
         id: Int, dflt: Boolean
     ): Boolean {
-        val key = getString(context, id)
+        val key = LocUtils.getString(context, id)
         return sp.getBoolean(key, dflt)
     }
 
@@ -128,7 +127,7 @@ class CommonPrefs private constructor() : XWPrefs() {
         context: Context, sp: SharedPreferences,
         id: Int, dflt: Int
     ): Int {
-        val key = getString(context, id)
+        val key = LocUtils.getString(context, id)
         return sp.getInt(key, dflt)
     }
 
@@ -183,7 +182,7 @@ class CommonPrefs private constructor() : XWPrefs() {
             var theme = ColorTheme.LIGHT
             val sp = PreferenceManager
                 .getDefaultSharedPreferences(context)
-            var which: String? = getString(context, R.string.key_theme_which)
+            var which: String? = LocUtils.getString(context, R.string.key_theme_which)
             which = sp.getString(which, null)
             if (null != which) {
                 try {
@@ -191,7 +190,7 @@ class CommonPrefs private constructor() : XWPrefs() {
                         0 -> {}
                         1 -> theme = ColorTheme.DARK
                         2 -> {
-                            assertTrueNR(Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
+                            Assert.assertTrueNR(Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
                             val res = context.resources
                             val uiMode = res.configuration.uiMode
                             if (Configuration.UI_MODE_NIGHT_YES
@@ -204,7 +203,7 @@ class CommonPrefs private constructor() : XWPrefs() {
                             }
                         }
 
-                        else -> failDbg()
+                        else -> Assert.failDbg()
                     }
                 } catch (nfe: NumberFormatException) {
                     // This happens on Lollipop. I don't care why.
@@ -229,15 +228,15 @@ class CommonPrefs private constructor() : XWPrefs() {
 
         fun getDefaultHumanDict(context: Context): String? {
             var value = getPrefsString(context, R.string.key_default_dict)
-            if (value == "" || !dictExists(context, value!!)) {
-                value = dictList(context)!![0].name
+            if (value == "" || !DictUtils.dictExists(context, value!!)) {
+                value = DictUtils.dictList(context)!![0].name
             }
             return value
         }
 
         fun getDefaultRobotDict(context: Context): String? {
             var value = getPrefsString(context, R.string.key_default_robodict)
-            if (value == "" || !dictExists(context, value!!)) {
+            if (value == "" || !DictUtils.dictExists(context, value!!)) {
                 value = getDefaultHumanDict(context)
             }
             return value
@@ -247,7 +246,7 @@ class CommonPrefs private constructor() : XWPrefs() {
             context: Context,
             num: Int
         ): String {
-            return getString(context, R.string.player_fmt, num + 1)
+            return LocUtils.getString(context, R.string.player_fmt, num + 1)
         }
 
         fun getDefaultPlayerName(
@@ -351,7 +350,7 @@ class CommonPrefs private constructor() : XWPrefs() {
             val str = getSummaryField(context)
             val ids = XWSumListPreference.getFieldIDs(context)
             for (id in ids) {
-                if (getString(context, id) == str) {
+                if (LocUtils.getString(context, id) == str) {
                     result = id
                     break
                 }
@@ -362,13 +361,13 @@ class CommonPrefs private constructor() : XWPrefs() {
         private const val THEME_KEY = "theme"
 
         fun colorPrefsToClip(context: Context, theme: ColorTheme) {
-            val host = getString(context, R.string.invite_host)
+            val host = LocUtils.getString(context, R.string.invite_host)
             val ub = Uri.Builder()
                 .scheme("https")
                 .path(
                     String.format(
-                        "//%s%s", forceHost(host),
-                        getString(context, R.string.conf_prefix)
+                        "//%s%s", NetUtils.forceHost(host),
+                        LocUtils.getString(context, R.string.conf_prefix)
                     )
                 )
                 .appendQueryParameter(THEME_KEY, theme.toString())
@@ -376,7 +375,7 @@ class CommonPrefs private constructor() : XWPrefs() {
             val res = context.resources
             val urlKeys = res.getStringArray(R.array.color_url_keys)
             val dataKeys = res.getStringArray(theme.arrayID)
-            assertTrueNR(urlKeys.size == dataKeys.size)
+            Assert.assertTrueNR(urlKeys.size == dataKeys.size)
             val sp = PreferenceManager
                 .getDefaultSharedPreferences(context)
 
@@ -386,7 +385,7 @@ class CommonPrefs private constructor() : XWPrefs() {
             }
             val data = ub.build().toString()
 
-            stringToClip(context, data)
+            Utils.stringToClip(context, data)
         }
 
         fun loadColorPrefs(context: Context, uri: Uri) {
@@ -398,7 +397,7 @@ class CommonPrefs private constructor() : XWPrefs() {
                     break
                 }
             }
-            assertTrueNR(0 != arrayID)
+            Assert.assertTrueNR(0 != arrayID)
             if (0 != arrayID) {
                 val res = context.resources
                 val urlKeys = res.getStringArray(R.array.color_url_keys)

@@ -36,10 +36,6 @@ import java.util.zip.ZipEntry
 import java.util.zip.ZipInputStream
 import java.util.zip.ZipOutputStream
 
-import org.eehouse.android.xw4.Assert.failDbg
-import org.eehouse.android.xw4.DBHelper
-import org.eehouse.android.xw4.DBUtils
-import org.eehouse.android.xw4.Utils
 import org.eehouse.android.xw4.loc.LocUtils
 
 object ZipUtils {
@@ -109,7 +105,7 @@ object ZipUtils {
                             SaveWhat.COLORS -> success = loadSettings(context, zis)
                             SaveWhat.SETTINGS -> success = loadSettings(context, zis)
                             SaveWhat.GAMES -> success = loadGames(context, zis)
-                            else -> failDbg()
+                            else -> Assert.failDbg()
                         }
                     }
                     return success
@@ -158,7 +154,7 @@ object ZipUtils {
                         SaveWhat.COLORS -> success = saveColors(context, zos)
                         SaveWhat.SETTINGS -> success = saveSettings(context, zos)
                         SaveWhat.GAMES -> success = saveGames(context, zos)
-                        else -> failDbg()
+                        else -> Assert.failDbg()
                     }
                     if (success) {
                         zos.closeEntry()

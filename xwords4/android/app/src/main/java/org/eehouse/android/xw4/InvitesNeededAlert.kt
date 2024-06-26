@@ -22,18 +22,14 @@ package org.eehouse.android.xw4
 import android.app.AlertDialog
 import android.content.Context
 import android.content.DialogInterface
-import org.eehouse.android.xw4.Assert.assertTrueNR
-import org.eehouse.android.xw4.Assert.failDbg
-import org.eehouse.android.xw4.DBUtils.getInvitesFor
-import org.eehouse.android.xw4.DbgUtils.assertOnUIThread
-import org.eehouse.android.xw4.InviteChoicesAlert.Companion.dismissAny
+
+import java.io.Serializable
+
 import org.eehouse.android.xw4.jni.CommsAddrRec
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType
-import org.eehouse.android.xw4.jni.XwJNI.Companion.kplr_nameForMqttDev
+import org.eehouse.android.xw4.jni.XwJNI
 import org.eehouse.android.xw4.jni.XwJNI.GamePtr
-import org.eehouse.android.xw4.loc.LocUtils.getQuantityString
-import org.eehouse.android.xw4.loc.LocUtils.getString
-import java.io.Serializable
+import org.eehouse.android.xw4.loc.LocUtils
 
 private val TAG: String = InvitesNeededAlert::class.java.simpleName
 
@@ -56,7 +52,7 @@ internal class InvitesNeededAlert private constructor(
         ) {
             mHostAddr = hostAddr
             val isServer = null == hostAddr
-            assertOnUIThread()
+            DbgUtils.assertOnUIThread()
             Log.d(TAG, "showOnceIf(nPlayersMissing=%d); self: %s", nPlayersMissing, mSelf)
 
             if (null == mSelf && 0 == nPlayersMissing) {
@@ -73,19 +69,19 @@ internal class InvitesNeededAlert private constructor(
                            nPlayersMissing == mSelf!!.mState.mNPlayersMissing) {
                 // nothing to do
             } else {
-                failDbg()
+                Assert.failDbg()
             }
         }
 
         fun make(alert: DBAlert, vararg params: Any?): AlertDialog {
-            assertOnUIThread()
+            DbgUtils.assertOnUIThread()
             return mSelf!!.makeImpl(mCallbacks, alert, mHostAddr,
                                     mGamePtr, *params)
         }
 
         fun dismiss() {
             Log.d(TAG, "dismiss()")
-            assertOnUIThread()
+            DbgUtils.assertOnUIThread()
             if (null != mSelf && mSelf!!.close()) {
                 mSelf = null
             }
@@ -124,9 +120,9 @@ internal class InvitesNeededAlert private constructor(
 
     private fun close(): Boolean {
         var dismissed = false
-        assertOnUIThread()
+        DbgUtils.assertOnUIThread()
         if (null != mAlert) {
-            dismissed = dismissAny()
+            dismissed = InviteChoicesAlert.dismissAny()
             try {
                 mAlert!!.dismiss() // I've seen this throw a NPE inside
             } catch (ex: Exception) {
@@ -176,7 +172,7 @@ internal class InvitesNeededAlert private constructor(
                 onClose
             )
 
-            else -> failDbg()
+            else -> Assert.failDbg()
         }
         val result = ab.create()
         result.setCanceledOnTouchOutside(false)
@@ -188,20 +184,20 @@ internal class InvitesNeededAlert private constructor(
         hostAddr: CommsAddrRec?
     ) {
         val context: Context = mDelegate.getActivity()
-        var message = getString(context, R.string.waiting_host_expl)
+        var message = LocUtils.getString(context, R.string.waiting_host_expl)
 
         if (1 < state.mNPlayersMissing) {
             message += """
                 
                 
-                ${getString(context, R.string.waiting_host_expl_multi)}
+                ${LocUtils.getString(context, R.string.waiting_host_expl_multi)}
                 """.trimIndent()
         }
 
         if (BuildConfig.NON_RELEASE && null != hostAddr && hostAddr.contains(CommsConnType.COMMS_CONN_MQTT)) {
-            val name = kplr_nameForMqttDev(hostAddr.mqtt_devID)
+            val name = XwJNI.kplr_nameForMqttDev(hostAddr.mqtt_devID)
             if (null != name) {
-                message += "\n\n" + getString(context, R.string.missing_host_fmt, name)
+                message += "\n\n" + LocUtils.getString(context, R.string.missing_host_fmt, name)
             }
         }
 
@@ -218,7 +214,7 @@ internal class InvitesNeededAlert private constructor(
         val nPlayersMissing = state.mNPlayersMissing
 
         val rowid = callbacks.getRowID()
-        val sentInfo = getInvitesFor(context, rowid)
+        val sentInfo = DBUtils.getInvitesFor(context, rowid)
 
         val nSent = state.mNInvited + sentInfo.minPlayerCount
         val invitesNeeded = nPlayersMissing > nSent && !state.mIsRematch
@@ -226,9 +222,9 @@ internal class InvitesNeededAlert private constructor(
         val title: String
         val isRematch = state.mIsRematch
         title = if (isRematch) {
-            getString(context, R.string.waiting_rematch_title)
+            LocUtils.getString(context, R.string.waiting_rematch_title)
         } else {
-            getQuantityString(
+            LocUtils.getQuantityString(
                 context, R.plurals.waiting_title_fmt,
                 nPlayersMissing, nPlayersMissing
             )
@@ -238,11 +234,11 @@ internal class InvitesNeededAlert private constructor(
         var message: String
         var inviteButtonTxt = 0
         if (invitesNeeded) {
-            assertTrueNR(!isRematch)
-            message = getString(context, R.string.invites_unsent)
+            Assert.assertTrueNR(!isRematch)
+            message = LocUtils.getString(context, R.string.invites_unsent)
             inviteButtonTxt = R.string.newgame_invite
         } else {
-            message = getQuantityString(
+            message = LocUtils.getQuantityString(
                 context, R.plurals.invite_msg_fmt,  // here
                 nPlayersMissing, nPlayersMissing
             )
@@ -250,14 +246,14 @@ internal class InvitesNeededAlert private constructor(
                 message += """
                     
                     
-                    ${getString(context, R.string.invite_msg_extra_rematch)}
+                    ${LocUtils.getString(context, R.string.invite_msg_extra_rematch)}
                     """.trimIndent()
             } else {
                 inviteButtonTxt = R.string.newgame_reinvite // here
                 message += """
                     
                     
-                    ${getString(context, R.string.invite_msg_extra_norematch)}
+                    ${LocUtils.getString(context, R.string.invite_msg_extra_norematch)}
                     """.trimIndent()
             }
         }

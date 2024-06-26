@@ -22,31 +22,18 @@ package org.eehouse.android.xw4
 import android.content.Context
 import android.os.Handler
 import android.widget.ArrayAdapter
-import org.eehouse.android.xw4.Assert.assertNotNull
-import org.eehouse.android.xw4.Assert.assertTrueNR
-import org.eehouse.android.xw4.Assert.failDbg
-import org.eehouse.android.xw4.DBUtils.dictsGetInfo
-import org.eehouse.android.xw4.DBUtils.dictsRemoveInfo
-import org.eehouse.android.xw4.DBUtils.dictsSetInfo
-import org.eehouse.android.xw4.DBUtils.getIntFor
-import org.eehouse.android.xw4.DBUtils.getSerializableFor
-import org.eehouse.android.xw4.DBUtils.setIntFor
-import org.eehouse.android.xw4.DBUtils.setSerializableFor
+
+import java.util.Arrays
+
 import org.eehouse.android.xw4.DictUtils.DictAndLoc
 import org.eehouse.android.xw4.DictUtils.DictLoc
 import org.eehouse.android.xw4.DictUtils.ON_SERVER
-import org.eehouse.android.xw4.DictUtils.dictList
-import org.eehouse.android.xw4.DictUtils.getDictLoc
-import org.eehouse.android.xw4.DictUtils.openDicts
-import org.eehouse.android.xw4.DictUtils.removeDictExtn
 import org.eehouse.android.xw4.Utils.ISOCode
 import org.eehouse.android.xw4.Utils.getMD5SumFor
-import org.eehouse.android.xw4.jni.CommonPrefs.Companion.getDefaultHumanDict
-import org.eehouse.android.xw4.jni.CommonPrefs.Companion.getDefaultRobotDict
+import org.eehouse.android.xw4.jni.CommonPrefs
 import org.eehouse.android.xw4.jni.DictInfo
-import org.eehouse.android.xw4.jni.XwJNI.Companion.dict_getInfo
-import org.eehouse.android.xw4.loc.LocUtils.getString
-import java.util.Arrays
+import org.eehouse.android.xw4.jni.XwJNI
+import org.eehouse.android.xw4.loc.LocUtils
 
 object DictLangCache {
     private val TAG: String = DictLangCache::class.java.simpleName
@@ -74,7 +61,7 @@ object DictLangCache {
             val wordCount = info.wordCount
 
             val langName = getDictLangName(context, dal.name)
-            result = getString(
+            result = LocUtils.getString(
                 context, R.string.dict_desc_fmt,
                 dal.name, langName,
                 wordCount
@@ -87,7 +74,7 @@ object DictLangCache {
     // empty and there are a lot of dicts.
     fun getLangCount(context: Context, isoCode: ISOCode): Int {
         var count = 0
-        val dals = dictList(context)
+        val dals = DictUtils.dictList(context)
         for (dal in dals!!) {
             if (isoCode.equals(getDictISOCode(context, dal))) {
                 ++count
@@ -98,7 +85,7 @@ object DictLangCache {
 
     private fun getInfosHaveLang(context: Context, isoCode: ISOCode?): Array<DictInfo> {
         val al: MutableList<DictInfo> = ArrayList()
-        val dals = dictList(context)
+        val dals = DictUtils.dictList(context)
         for (dal in dals!!) {
             val info = getInfo(context, dal)
             if (null != info && isoCode!!.equals(info.isoCode())) {
@@ -153,9 +140,9 @@ object DictLangCache {
     }
 
     fun getDALsHaveLang(context: Context, isoCode: ISOCode): Array<DictAndLoc> {
-        assertNotNull(isoCode)
+        Assert.assertNotNull(isoCode)
         val al: MutableList<DictAndLoc> = ArrayList()
-        val dals = dictList(context)
+        val dals = DictUtils.dictList(context)
 
         for (dal in dals!!) {
             val info = getInfo(context, dal)
@@ -195,14 +182,14 @@ object DictLangCache {
 
     fun getDictISOCode(context: Context, dal: DictAndLoc): ISOCode? {
         val result = getInfo(context, dal).isoCode()
-        assertTrueNR(null != result)
+        Assert.assertTrueNR(null != result)
         return result
     }
 
     fun getDictISOCode(context: Context, dictName: String?): ISOCode {
         val info = getInfo(context, dictName)
         val result = info!!.isoCode()
-        assertTrueNR(null != result)
+        Assert.assertTrueNR(null != result)
         return result!!
     }
 
@@ -265,7 +252,7 @@ object DictLangCache {
         context: Context, name: String?,
         loc: DictLoc?, added: Boolean
     ) {
-        dictsRemoveInfo(context, removeDictExtn(name!!))
+        DBUtils.dictsRemoveInfo(context, DictUtils.removeDictExtn(name!!))
 
         if (added) {
             val dal = DictAndLoc(name, loc!!)
@@ -292,7 +279,9 @@ object DictLangCache {
     }
 
     @JvmOverloads
-    fun listLangs(context: Context, dals: Array<DictAndLoc>? = dictList(context)): Array<String> {
+    fun listLangs(context: Context,
+                  dals: Array<DictAndLoc>? = DictUtils.dictList(context)): Array<String>
+    {
         val langs: MutableSet<String> = HashSet()
         for (dal in dals!!) {
             var name = getDictLangName(context, dal.name)
@@ -319,8 +308,9 @@ object DictLangCache {
         context: Context, isoCode: ISOCode,
         human: Boolean
     ): String? {
-        var dictName = if (human) getDefaultHumanDict(context)
-        else getDefaultRobotDict(context)
+        var dictName =
+            if (human) CommonPrefs.getDefaultHumanDict(context)
+            else CommonPrefs.getDefaultRobotDict(context)
         if (!isoCode.equals(getDictISOCode(context, dictName))) {
             val dicts = getHaveLangByCount(context, isoCode)
             dictName = if (dicts.size > 0) {
@@ -379,16 +369,16 @@ object DictLangCache {
     }
 
     private fun getInfo(context: Context, name: String?): DictInfo? {
-        var result = dictsGetInfo(context, name)
+        var result = DBUtils.dictsGetInfo(context, name)
         if (null == result) {
-            val loc = getDictLoc(context, name!!)
+            val loc = DictUtils.getDictLoc(context, name!!)
             result = getInfo(context, DictAndLoc(name, loc!!))
         }
         return result
     }
 
     private fun getInfo(context: Context, dal: DictAndLoc): DictInfo {
-        var info = dictsGetInfo(context, dal.name)
+        var info = DBUtils.dictsGetInfo(context, dal.name)
 
         // Tmp test that recovers from problem with new background download code
         if (null != info && null == info.isoCode()) {
@@ -401,9 +391,9 @@ object DictLangCache {
 
         if (null == info) {
             val names = arrayOf<String?>(dal.name)
-            val pairs = openDicts(context, names)
+            val pairs = DictUtils.openDicts(context, names)
 
-            info = dict_getInfo(
+            info = XwJNI.dict_getInfo(
                 pairs.m_bytes[0], dal.name,
                 pairs.m_paths[0],
                 DictLoc.DOWNLOAD == dal.loc
@@ -411,9 +401,9 @@ object DictLangCache {
             if (null != info) {
                 info.name = dal.name
                 info.fullSum = getMD5SumFor(context, dal)
-                assertTrueNR(null != info.fullSum)
+                Assert.assertTrueNR(null != info.fullSum)
 
-                dictsSetInfo(context, dal, info)
+                DBUtils.dictsSetInfo(context, dal, info)
                 // Log.d( TAG, "getInfo() => %s", info );
             } else {
                 Log.i(TAG, "getInfo(): unable to open dict %s", dal.name)
@@ -428,7 +418,7 @@ object DictLangCache {
         ) {
         fun rebuild() {
             val langsSet: MutableSet<String> = HashSet()
-            val dals = dictList(m_context)
+            val dals = DictUtils.dictList(m_context)
             for (dal in dals!!) {
                 val lang = getDictLangName(m_context, dal.name)
                 if (null != lang && lang.isNotEmpty()) {
@@ -520,8 +510,8 @@ object DictLangCache {
         // }
         override fun close() {
             if (mDirty) {
-                setSerializableFor(mContext!!, CACHE_KEY_DATA, mLangNames)
-                setIntFor(mContext!!, CACHE_KEY_REV, mCurRev)
+                DBUtils.setSerializableFor(mContext!!, CACHE_KEY_DATA, mLangNames)
+                DBUtils.setIntFor(mContext!!, CACHE_KEY_REV, mCurRev)
                 Log.d(TAG, "saveCache(%H) stored %s", this, this)
                 mDirty = false
             }
@@ -558,7 +548,7 @@ object DictLangCache {
         }
 
         private fun unlock() {
-            assertTrueNR(null != mContext)
+            Assert.assertTrueNR(null != mContext)
             mContext = null
         }
 
@@ -572,12 +562,12 @@ object DictLangCache {
                 synchronized(sCache) {
                     result = sCache[0]
                     if (null == result) {
-                        val data = getSerializableFor(
+                        val data = DBUtils.getSerializableFor(
                             context,
                             CACHE_KEY_DATA
                         ) as HashMap<ISOCode?, String?>?
                         if (null != data) {
-                            val rev = getIntFor(context, CACHE_KEY_REV, 0)
+                            val rev = DBUtils.getIntFor(context, CACHE_KEY_REV, 0)
                             result = DLCache(data, rev)
                             Log.d(TAG, "loaded cache: %s", result)
                         }
@@ -593,7 +583,7 @@ object DictLangCache {
                         }
                     } catch (ioe: InterruptedException) {
                         Log.ex(TAG, ioe)
-                        failDbg()
+                        Assert.failDbg()
                     }
                 }
 

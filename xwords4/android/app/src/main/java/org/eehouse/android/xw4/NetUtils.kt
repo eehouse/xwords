@@ -24,12 +24,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.text.TextUtils
-import org.eehouse.android.xw4.Assert.assertNull
-import org.eehouse.android.xw4.Assert.assertTrueNR
-import org.eehouse.android.xw4.Utils.showToast
-import org.eehouse.android.xw4.Utils.stringToClip
-import org.eehouse.android.xw4.jni.XwJNI
-import org.eehouse.android.xw4.loc.LocUtils
+
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.BufferedInputStream
@@ -48,6 +43,9 @@ import java.net.URL
 import java.net.URLEncoder
 import java.net.UnknownHostException
 import javax.net.SocketFactory
+
+import org.eehouse.android.xw4.jni.XwJNI
+import org.eehouse.android.xw4.loc.LocUtils
 
 object NetUtils {
     private val TAG: String = NetUtils::class.java.simpleName
@@ -88,8 +86,8 @@ object NetUtils {
 
     fun gameURLToClip(context: Context, gameID: Int) {
         val url = urlForGameID(context, gameID)
-        stringToClip(context, url)
-        showToast(context, R.string.relaypage_url_copied)
+        Utils.stringToClip(context, url)
+        Utils.showToast(context, R.string.relaypage_url_copied)
     }
 
     fun copyAndLaunchGamePage(context: Context, gameID: Int) {
@@ -125,7 +123,7 @@ object NetUtils {
         ) {
             useHTTPs = false
         } else {
-            assertTrueNR(
+            Assert.assertTrueNR(
                 LocUtils.getString(context, R.string.url_scheme_https)
                         == pref
             )
@@ -195,10 +193,10 @@ object NetUtils {
             val url = String.format("%s/%s", ensureProto(context, path), proc)
             result = URL(url).openConnection() as HttpURLConnection // class cast exception
         } catch (mue: MalformedURLException) {
-            assertNull(result)
+            Assert.assertNull(result)
             Log.ex(TAG, mue)
         } catch (ioe: IOException) {
-            assertNull(result)
+            Assert.assertNull(result)
             Log.ex(TAG, ioe)
         }
         return result

@@ -23,11 +23,10 @@ import android.os.Bundle
 import android.os.Parcel
 import android.os.Parcelable
 import android.text.TextUtils
-import org.eehouse.android.xw4.Assert.assertFalse
-import org.eehouse.android.xw4.Assert.failDbg
-import org.eehouse.android.xw4.DlgDelegate.ActionPair
-import org.eehouse.android.xw4.Log.d
+
 import java.io.Serializable
+
+import org.eehouse.android.xw4.DlgDelegate.ActionPair
 
 class DlgState(val mID: DlgID) : Parcelable {
     var m_msg: String? = null
@@ -60,11 +59,9 @@ class DlgState(val mID: DlgID) : Parcelable {
         if (BuildConfig.DEBUG && null != params) {
             for (obj in params) {
                 if (null != obj && obj !is Serializable) {
-                    d(
-                        TAG, "OOPS: %s not Serializable",
-                        obj.javaClass.name
-                    )
-                    failDbg()
+                    Log.d(TAG, "OOPS: %s not Serializable",
+                          obj.javaClass.name)
+                    Assert.failDbg()
                 }
             }
         }
@@ -187,10 +184,10 @@ class DlgState(val mID: DlgID) : Parcelable {
             parcel.setDataPosition(0)
 
             val newState = CREATOR.createFromParcel(parcel)
-            assertFalse(newState === this)
+            Assert.assertFalse(newState === this)
             if (this != newState) {
-                d(TAG, "restore failed!!: %s => %s", this, newState)
-                failDbg()
+                Log.d(TAG, "restore failed!!: %s => %s", this, newState)
+                Assert.failDbg()
             }
         }
     }
