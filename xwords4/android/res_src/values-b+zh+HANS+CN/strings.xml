@@ -1094,7 +1094,7 @@
     <string name="peers_info_pending">正在查询服务器…</string>
     <string name="no_peers_info">对等信息不可用</string>
     <string name="button_refresh">刷新</string>
-    <string name="sort_by_date_label">按日期排序</string>
+    <string name="sort_by_date_label">从新到旧</string>
     <string name="sub_seven_allowed_sum">只要卡池中有卡牌即可交换，在西班牙语游戏中很常见。</string>
     <string name="selfName">此设备</string>
     <string name="sub_seven_allowed">剩余卡牌不足七张时允许交换</string>
@@ -1112,4 +1112,16 @@
     <string name="disable_undo_button_summary">禁用删除或替代进行中移动的按钮</string>
     <string name="disable_chat_button_title">禁用聊天按钮</string>
     <string name="disable_chat_button_summary">隐藏打开聊天界面的按钮</string>
+    <string name="not_again_newsawnew_fmt">已使用新的背景色标出了最近移动。
+\n
+\n你可以在 %1$s 中的“%2$s”选项自定义颜色。</string>
+    <string name="url_scheme_http">强制使用 HTTP</string>
+    <string name="url_scheme_https">强制使用 HTTPS</string>
+    <string name="buttonYesAnd">确定并保存</string>
+    <plurals name="yesAndMsgFmt">
+        <item quantity="other">（若点击“%1$s”按钮，则不会再询问此问题。）</item>
+    </plurals>
+    <string name="tile_back_recent">上次移动的卡牌背景</string>
+    <string name="url_scheme_default">使用系统默认</string>
+    <string name="title_url_scheme">网络 API 协议</string>
 </resources>
