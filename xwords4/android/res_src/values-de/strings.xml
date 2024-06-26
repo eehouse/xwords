@@ -178,7 +178,7 @@
     <string name="default_dict">Wortliste für menschliche Spieler</string>
     <string name="default_robodict">Wortliste für Computer-Gegner</string>
     <string name="hints_allowed_sum">Die Tipp-Funktion aktivieren</string>
-    <string name="nethints_allowed_sum">Tipps für Zweigerätepartien aktivieren</string>
+    <string name="nethints_allowed_sum">Tipps für Mehrgerätepartien aktivieren</string>
     <string name="init_autojuggle">Spieler durchmischen</string>
     <string name="init_autojuggle_sum">Zufällig, für neue Partien</string>
     <string name="default_phonies">Falsche Wörter behandeln</string>
@@ -1154,16 +1154,13 @@
     <string name="sub_seven_allowed_sum">Lässt den Buchstabentausch
     zu, bis mindestens ein Buchstabenstein im Säckchen übrig ist. In
     Spanien eine übliche Regel.</string>
-
     <string name="prefs_board_buttons">Spielfeldschalter</string>
     <string name="prefs_board_buttons_summary">Unbenutzte Schalter
     können entfernt werden</string>
-
     <string name="disable_dicts_button_title">Schalter für das
     Wörterbuch entfernen</string>
     <string name="disable_dicts_button_summary">Den Schalter, der das
     Wörterbuch öffnet nicht anzeigen</string>
-
     <string name="disable_flip_button_title">Schalter um das Spielfeld
     zu drehen entfernen</string>
     <string name="disable_flip_button_summary">Den Schalter, der das
@@ -1190,4 +1187,5 @@
     <string name="not_again_newsawnew_fmt">Der letzte Zug wird jetzt
     mit einer eigenen Hintergrundfarbe hinterlegt.\n\nMan kann diese
     Farbe in %1$s einstellen, die Einstellung heißt “%2$s”.</string>
+    <string name="selfName">Dieses Gerät</string>
 </resources>
