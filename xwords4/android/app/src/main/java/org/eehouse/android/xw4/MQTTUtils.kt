@@ -564,7 +564,6 @@ class MQTTUtils private constructor(context: Context,
             NetStateCache.unregister(sStateChangedIf)
         }
 
-        @JvmStatic
         fun setEnabled(context: Context, enabled: Boolean) {
             Log.d(TAG, "setEnabled( %b )", enabled)
             if (enabled) {
@@ -586,7 +585,6 @@ class MQTTUtils private constructor(context: Context,
             getOrStart(context) // no-op if have instance
         }
 
-        @JvmStatic
         fun onConfigChanged(context: Context) {
             synchronized(sInstance) {
                 if (null != sInstance[0]) {
@@ -674,13 +672,11 @@ class MQTTUtils private constructor(context: Context,
             addToSendQueue(context, tap)
         }
 
-        @JvmStatic
         fun send(context: Context, tap: TopicsAndPackets): Int {
             addToSendQueue(context, tap)
             return -1
         }
 
-        @JvmStatic
         fun ping(context: Context, pr: PingResult) {
             getOrStart(context)?.doPing(pr)
         }
@@ -692,7 +688,6 @@ class MQTTUtils private constructor(context: Context,
             }
         }
 
-        @JvmStatic
         fun gameDied(context: Context, devID: String, gameID: Int) {
             val tap = XwJNI.dvc_makeMQTTNoSuchGames(devID, gameID)
             addToSendQueue(context, tap)
