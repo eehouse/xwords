@@ -110,7 +110,6 @@ class XWApp : Application(), LifecycleObserver {
                 return getContext().getString(R.string.app_name)
             }
 
-        @JvmStatic
         fun getContext(): Context
 		{
             Assert.assertTrueNR(null != sContext)

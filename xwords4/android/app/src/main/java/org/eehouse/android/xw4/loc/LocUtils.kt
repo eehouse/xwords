@@ -39,24 +39,20 @@ object LocUtils {
     private var s_curLang: ISOCode? = null
     private val s_langMap: Map<String, String>? = null
 
-    @JvmStatic
     fun inflate(context: Context, resID: Int): View {
         val factory = LayoutInflater.from(context)
         return factory.inflate(resID, null)
     }
 
-    @JvmStatic
     fun xlateTitle(activity: Activity?) {
     }
 
     fun xlateView(activity: Activity?) {
     }
 
-    @JvmStatic
     fun xlateView(context: Context, view: View?) {
     }
 
-    @JvmStatic
     fun xlateMenu(activity: Activity?, menu: Menu?) {
     }
 
@@ -75,7 +71,6 @@ object LocUtils {
         return str
     }
 
-    @JvmStatic
     fun xlateString(context: Context, str: String): String {
         var str = str
         if (BuildConfig.LOCUTILS_ENABLED) {
@@ -84,7 +79,6 @@ object LocUtils {
         return str
     }
 
-    @JvmStatic
     fun getStringArray(context: Context, resID: Int): Array<String?> {
         val res = context.resources
         val arr = res.getStringArray(resID)
@@ -99,12 +93,10 @@ object LocUtils {
         return result
     }
 
-    @JvmStatic
     fun getString(context: Context, id: Int): String {
         return context.getString(id)
     }
 
-    @JvmStatic
     fun getStringOrNull(id: Int): String? {
         var result: String? = null
         if (0 != id) {
@@ -117,7 +109,6 @@ object LocUtils {
         return getString(context, id)
     }
 
-    @JvmStatic
     fun getString(context: Context, id: Int, vararg params: Any?): String {
         return context.getString(id, *params)
     }
@@ -130,7 +121,6 @@ object LocUtils {
         return result
     }
 
-    @JvmStatic
     fun getQuantityString(
         context: Context, id: Int,
         quantity: Int, vararg params: Any?
@@ -147,7 +137,6 @@ object LocUtils {
         return name
     }
 
-    @JvmStatic
     fun getCurLangCode(context: Context): ISOCode? {
         if (null == s_curLang) {
             var lang = Locale.getDefault().language
@@ -179,7 +168,6 @@ object LocUtils {
     ) {
     }
 
-    @JvmStatic
     fun makeAlertBuilder(context: Context): AlertDialog.Builder {
         return AlertDialog.Builder(context)
     }

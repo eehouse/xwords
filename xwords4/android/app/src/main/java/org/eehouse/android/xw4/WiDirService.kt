@@ -498,7 +498,6 @@ class WiDirService : XWService() {
             )
         }
 
-        @JvmStatic
         fun init(context: Context) {
             Log.d(TAG, "init()")
             s_enabled = XWPrefs.getPrefsBoolean(
@@ -543,7 +542,6 @@ class WiDirService : XWService() {
             }
         }
 
-        @JvmStatic
         fun enabled(): Boolean {
             val result = BuildConfig.WIDIR_ENABLED && s_enabled
             return result
@@ -554,7 +552,6 @@ class WiDirService : XWService() {
                 .next().isConnected
         }
 
-        @JvmStatic
         fun getMyMacAddress(context: Context?): String? {
             if (enabled()) {
                 if (null == sMacAddress && null != context) {
@@ -650,7 +647,6 @@ class WiDirService : XWService() {
             return nSent
         }
 
-        @JvmStatic
         fun activityResumed(activity: Activity) {
             if (enabled() && sHavePermission) {
                 if (initListeners(activity)) {
@@ -661,7 +657,6 @@ class WiDirService : XWService() {
             }
         }
 
-        @JvmStatic
         fun activityPaused(activity: Activity) {
             if (enabled() && sHavePermission) {
                 Assert.assertNotNull(sReceiver)

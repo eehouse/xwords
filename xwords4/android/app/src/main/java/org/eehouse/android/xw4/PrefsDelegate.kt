@@ -283,7 +283,6 @@ class PrefsDelegate(private val mActivity: XWActivity,
         private var s_keysHash: MutableMap<String, Int>? = null
 
         @JvmOverloads
-        @JvmStatic
         fun launch(context: Context, root: Class<*>? = PrefsWrappers.prefs::class.java) {
             val bundle: Bundle? = null
             val intent = Intent(context, PrefsActivity::class.java)

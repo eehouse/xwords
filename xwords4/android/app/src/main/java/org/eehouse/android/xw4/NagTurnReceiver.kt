@@ -235,7 +235,6 @@ object NagTurnReceiver {
         return s_nagsDisabledNet!! && s_nagsDisabledSolo!!
     }
 
-    @JvmStatic
     fun resetNagsDisabled(context: Context) {
         s_nagsDisabledSolo = null
         s_nagsDisabledNet = s_nagsDisabledSolo

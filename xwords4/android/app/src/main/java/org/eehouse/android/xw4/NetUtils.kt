@@ -92,7 +92,6 @@ object NetUtils {
         showToast(context, R.string.relaypage_url_copied)
     }
 
-    @JvmStatic
     fun copyAndLaunchGamePage(context: Context, gameID: Int) {
         // Requires a login, so only of use to me right now....
         val url = urlForGameID(context, gameID)
@@ -103,7 +102,6 @@ object NetUtils {
     private val FORCE_HOST: String? = null
 
     // "eehouse.org"
-    @JvmStatic
     fun forceHost(host: String?): String? {
         var host = host
         if (null != FORCE_HOST) {
@@ -115,7 +113,6 @@ object NetUtils {
     // Pick http or https. SSL is broken on KitKat, and it's well after that
     // that https starts being required. So use http on and before KitKat,
     // just to be safe.
-    @JvmStatic
     fun ensureProto(context: Context, url: String): String {
         val useHTTPs: Boolean
         val dflt = LocUtils.getString(context!!, R.string.url_scheme_default)
@@ -144,7 +141,6 @@ object NetUtils {
         return result
     }
 
-    @JvmStatic
     fun ensureProto(context: Context, uri: Uri): Uri {
         val uriString = ensureProto(context, uri.toString())
         return Uri.parse(uriString)
@@ -155,7 +151,6 @@ object NetUtils {
         launchWebBrowserWith(context, uri)
     }
 
-    @JvmStatic
     fun launchWebBrowserWith(context: Context, uri: String?) {
         val intent = Intent(Intent.ACTION_VIEW, Uri.parse(uri))
         context.startActivity(intent)
@@ -175,7 +170,6 @@ object NetUtils {
         }.start()
     }
 
-    @JvmStatic
     fun makeHttpMQTTConn(
         context: Context,
         proc: String?
@@ -184,7 +178,6 @@ object NetUtils {
         return makeHttpConn(context, url, proc)
     }
 
-    @JvmStatic
     fun makeHttpUpdateConn(
         context: Context,
         proc: String?
@@ -216,13 +209,11 @@ object NetUtils {
         return runConn(conn, param.toString(), false)
     }
 
-    @JvmStatic
     fun runConn(conn: HttpURLConnection?, param: JSONObject): String?
     {
         return runConn(conn, param.toString(), false)
     }
 
-    @JvmStatic
     fun runConn(
         conn: HttpURLConnection?, param: JSONObject,
         directJson: Boolean

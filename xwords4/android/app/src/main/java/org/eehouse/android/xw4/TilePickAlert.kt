@@ -155,7 +155,6 @@ class TilePickAlert : XWDialogFragment(), TilePickListener {
         private val TAG = TilePickAlert::class.java.getSimpleName()
         private const val TPS = "TPS"
         private const val ACTION = "ACTION"
-        @JvmStatic
         fun newInstance(action: DlgDelegate.Action?, state: TilePickState?): TilePickAlert {
             val result = TilePickAlert()
             val args = Bundle()

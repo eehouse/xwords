@@ -201,13 +201,11 @@ class BoardContainer(context: Context, aset: AttributeSet?) : ViewGroup(context,
         private var sHeight = 0
         private var sScl: WeakReference<SizeChangeListener>? = null
 
-        @JvmStatic
         fun registerSizeChangeListener(scl: SizeChangeListener) {
             sScl = WeakReference(scl)
             callSCL()
         }
 
-        @JvmStatic
         fun getIsPortrait(): Boolean { return sIsPortrait }
 
         private fun callSCL() {

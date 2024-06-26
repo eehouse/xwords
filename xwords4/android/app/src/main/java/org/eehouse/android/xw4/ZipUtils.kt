@@ -45,13 +45,11 @@ import org.eehouse.android.xw4.loc.LocUtils
 object ZipUtils {
     private val TAG: String = ZipUtils::class.java.simpleName
 
-    @JvmStatic
     fun getMimeType(isStore: Boolean): String {
         return if (isStore) "application/x-zip" else "*/*"
         // return "application/octet-stream";
     }
 
-    @JvmStatic
     fun getFileName(context: Context): String {
         val format = DateFormat.getDateInstance(DateFormat.SHORT)
         val date = format.format(Date())
@@ -61,7 +59,6 @@ object ZipUtils {
         return name
     }
 
-    @JvmStatic
     fun getFileName(context: Context, uri: Uri?): String? {
         var result: String? = null
         val cursor = context.contentResolver
@@ -74,7 +71,6 @@ object ZipUtils {
         return result
     }
 
-    @JvmStatic
     fun hasWhats(context: Context, uri: Uri?): Boolean {
         val whats = getHasWhats(context, uri)
         return 0 < whats.size
@@ -98,7 +94,6 @@ object ZipUtils {
 
     // Return true if anything is loaded/changed, as caller will use result to
     // decide whether to restart process.
-    @JvmStatic
     fun load(
         context: Context, uri: Uri,
         whats: List<SaveWhat?>
@@ -146,7 +141,6 @@ object ZipUtils {
         return success
     }
 
-    @JvmStatic
     fun save(
         context: Context, uri: Uri,
         whats: List<SaveWhat>

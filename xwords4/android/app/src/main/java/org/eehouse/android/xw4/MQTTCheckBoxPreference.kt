@@ -56,7 +56,6 @@ class MQTTCheckBoxPreference(context: Context, attrs: AttributeSet?) :
     companion object {
         private var s_this: WeakReference<MQTTCheckBoxPreference>? = null
 
-        @JvmStatic
         fun setChecked() {
             val self = s_this?.get()
             self?.super_setChecked(true)

@@ -40,19 +40,16 @@ open class XWPrefs {
         // No reason to put this in xml if they're private to this file!
         private const val key_checked_upgrades = "key_checked_upgrades"
 
-        @JvmStatic
         fun getNBSEnabled(context: Context): Boolean {
             val haveNative = Perms23.haveNativePerms()
             return haveNative || getPrefsBoolean(context, R.string.key_enable_nbs, false)
         }
 
-        @JvmStatic
         fun setNBSEnabled(context: Context, enabled: Boolean) {
             Assert.assertTrue(!Perms23.haveNativePerms() || !BuildConfig.DEBUG)
             setPrefsBoolean(context, R.string.key_enable_nbs, enabled)
         }
 
-        @JvmStatic
         fun getDebugEnabled(context: Context): Boolean {
             return getPrefsBoolean(
                 context, R.string.key_enable_debug,
@@ -60,7 +57,6 @@ open class XWPrefs {
             )
         }
 
-        @JvmStatic
         fun moveCountEnabled(context: Context): Boolean {
             return getPrefsBoolean(
                 context, R.string.key_enable_pending_count,
@@ -68,12 +64,10 @@ open class XWPrefs {
             )
         }
 
-        @JvmStatic
         fun getSMSToSelfEnabled(context: Context): Boolean {
             return getPrefsBoolean(context, R.string.key_enable_sms_toself, false)
         }
 
-        @JvmStatic
         fun getHideNewgameButtons(context: Context): Boolean {
             return getPrefsBoolean(
                 context, R.string.key_hide_newgames,
@@ -81,7 +75,6 @@ open class XWPrefs {
             )
         }
 
-        @JvmStatic
         fun setHideNewgameButtons(context: Context, set: Boolean) {
             setPrefsBoolean(context, R.string.key_hide_newgames, set)
         }
@@ -102,7 +95,6 @@ open class XWPrefs {
             return NetUtils.forceHost(host)
         }
 
-        @JvmStatic
         fun getMQTTEnabled(context: Context): Boolean {
             val enabled = !getPrefsBoolean(
                 context, R.string.key_disable_mqtt,
@@ -112,12 +104,10 @@ open class XWPrefs {
             return enabled
         }
 
-        @JvmStatic
         fun setMQTTEnabled(context: Context, enabled: Boolean) {
             setPrefsBoolean(context, R.string.key_disable_mqtt, !enabled)
         }
 
-        @JvmStatic
         fun getBTDisabled(context: Context): Boolean {
             val disabled = getPrefsBoolean(
                 context, R.string.key_disable_bt,
@@ -126,7 +116,6 @@ open class XWPrefs {
             return disabled
         }
 
-        @JvmStatic
         fun setBTDisabled(context: Context, disabled: Boolean) {
             setPrefsBoolean(context, R.string.key_disable_bt, disabled)
         }
@@ -142,13 +131,11 @@ open class XWPrefs {
             return result
         }
 
-        @JvmStatic
         fun getDefaultDictURL(context: Context): String {
             val result = getWithHost(context, R.string.key_dict_host_path)
             return result
         }
 
-        @JvmStatic
         fun getSquareTiles(context: Context): Boolean {
             return getPrefsBoolean(context, R.string.key_square_tiles, false)
         }
@@ -193,7 +180,6 @@ open class XWPrefs {
             editor.commit()
         }
 
-        @JvmStatic
         fun getPrefsBoolean(
             context: Context, keyID: Int,
             defaultValue: Boolean
@@ -211,7 +197,6 @@ open class XWPrefs {
             return sp.getBoolean(key, defaultValue)
         }
 
-        @JvmStatic
         fun setPrefsBoolean(
             context: Context, keyID: Int,
             newValue: Boolean
@@ -303,7 +288,6 @@ open class XWPrefs {
             return getPrefsStringArray(context, R.string.key_bt_addrs)
         }
 
-        @JvmStatic
         fun getDefaultLoc(context: Context): DictLoc {
             val internal = getDefaultLocInternal(context)
             val result = if (internal) DictLoc.INTERNAL
@@ -319,7 +303,6 @@ open class XWPrefs {
             return getPrefsBoolean(context, R.string.key_default_loc, true)
         }
 
-        @JvmStatic
         fun getDefaultNewGameGroup(context: Context): Long {
             var groupID = getPrefsLong(
                 context, R.string.key_default_group,
@@ -350,13 +333,11 @@ open class XWPrefs {
             return ro
         }
 
-        @JvmStatic
         fun setDefaultNewGameGroup(context: Context, `val`: Long) {
             Assert.assertTrue(DBUtils.GROUPID_UNSPEC != `val`)
             setPrefsLong(context, R.string.key_default_group, `val`)
         }
 
-        @JvmStatic
         fun getThumbEnabled(context: Context): Boolean {
             return 0 < getThumbPct(context)
         }
@@ -380,12 +361,10 @@ open class XWPrefs {
             return result
         }
 
-        @JvmStatic
         fun getStudyEnabled(context: Context): Boolean {
             return getPrefsBoolean(context, R.string.key_studyon, true)
         }
 
-        @JvmStatic
         fun getPrefsString(context: Context, keyID: Int, dflt: String?): String? {
             val key = context.getString(keyID)
             val sp = PreferenceManager
@@ -393,12 +372,10 @@ open class XWPrefs {
             return sp.getString(key, dflt)
         }
 
-        @JvmStatic
         fun getPrefsString(context: Context, keyID: Int): String? {
             return getPrefsString(context, keyID, "")
         }
 
-        @JvmStatic
         fun setPrefsString(
             context: Context, keyID: Int,
             newValue: String?
@@ -433,7 +410,6 @@ open class XWPrefs {
             setPrefsString(context, keyID, TextUtils.join("\n", value!!))
         }
 
-        @JvmStatic
         fun setHaveCheckedUpgrades(context: Context, haveChecked: Boolean) {
             setPrefsBoolean(context, key_checked_upgrades, haveChecked)
         }
@@ -442,7 +418,6 @@ open class XWPrefs {
             return getPrefsBoolean(context, key_checked_upgrades, false)
         }
 
-        @JvmStatic
         fun getCanInviteMulti(context: Context): Boolean {
             return getPrefsBoolean(context, R.string.key_invite_multi, false)
         }
@@ -462,7 +437,6 @@ open class XWPrefs {
             return result
         }
 
-        @JvmStatic
         fun getAddrTypes(context: Context): CommsConnTypeSet {
             val result: CommsConnTypeSet
             val flags = getPrefsInt(context, R.string.key_addrs_pref, -1)
@@ -499,7 +473,6 @@ open class XWPrefs {
             return getPrefsInt(context, R.string.key_tray_size, XWApp.MIN_TRAY_TILES)
         }
 
-        @JvmStatic
         fun setAddrTypes(context: Context, set: CommsConnTypeSet) {
             val flags = set.toInt()
             setPrefsInt(context, R.string.key_addrs_pref, flags)

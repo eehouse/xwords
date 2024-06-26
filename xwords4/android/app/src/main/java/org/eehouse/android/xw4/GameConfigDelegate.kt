@@ -1220,7 +1220,6 @@ class GameConfigDelegate(delegator: Delegator) :
             R.id.change_connection
         )
 
-        @JvmStatic
         fun editForResult(
             delegator: Delegator,
             requestCode: RequestCode?,
@@ -1235,7 +1234,6 @@ class GameConfigDelegate(delegator: Delegator) :
                 )
         }
 
-        @JvmStatic
         fun configNewForResult(
             delegator: Delegator,
             requestCode: RequestCode?,

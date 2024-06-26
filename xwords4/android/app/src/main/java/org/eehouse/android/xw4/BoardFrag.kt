@@ -25,7 +25,6 @@ import android.os.Bundle
 class BoardFrag(): XWFragment() {
 
 	companion object {
-		@JvmStatic
 		fun newInstance( parent: Delegator ): XWFragment
 		{
 			return BoardFrag().setParentName( parent )

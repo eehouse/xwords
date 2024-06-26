@@ -287,17 +287,14 @@ class XwJNI private constructor() {
                 return s_JNI!!
             }
 
-        @JvmStatic
         fun cleanGlobalsEmu() {
             cleanGlobals()
         }
 
-        @JvmStatic
         fun dvc_getMQTTDevID(): String {
             return dvc_getMQTTDevID(jNI.m_ptrGlobals)
         }
 
-        @JvmStatic
         fun dvc_setMQTTDevID(newID: String): Boolean {
             return dvc_setMQTTDevID(jNI.m_ptrGlobals, newID)
         }
@@ -306,17 +303,14 @@ class XwJNI private constructor() {
             dvc_resetMQTTDevID(jNI.m_ptrGlobals)
         }
 
-        @JvmStatic
         fun dvc_getMQTTSubTopics(): Array<String> {
             return dvc_getMQTTSubTopics(jNI.m_ptrGlobals)
         }
 
-        @JvmStatic
         fun dvc_makeMQTTNukeInvite(nli: NetLaunchInfo): TopicsAndPackets {
             return dvc_makeMQTTNukeInvite(jNI.m_ptrGlobals, nli)
         }
 
-        @JvmStatic
         fun dvc_makeMQTTNoSuchGames(addressee: String, gameID: Int): TopicsAndPackets {
             Log.d(TAG, "dvc_makeMQTTNoSuchGames(to: %s, gameID: %X)",
                   addressee, gameID)
@@ -324,12 +318,10 @@ class XwJNI private constructor() {
             return dvc_makeMQTTNoSuchGames(jNI.m_ptrGlobals, addressee, gameID)
         }
 
-        @JvmStatic
         fun dvc_parseMQTTPacket(topic: String, buf: ByteArray) {
             dvc_parseMQTTPacket(jNI.m_ptrGlobals, topic, buf)
         }
 
-        @JvmStatic
         fun dvc_onWebSendResult(
             resultKey: Int, succeeded: Boolean,
             result: String?
@@ -358,13 +350,11 @@ class XwJNI private constructor() {
             dvc_clearLegalPhony(jNI.m_ptrGlobals, code.toString(), phony)
         }
 
-        @JvmStatic
         fun hasKnownPlayers(): Boolean {
             val players = kplr_getPlayers()
             return null != players && 0 < players.size
         }
 
-        @JvmStatic
         @JvmOverloads
         fun kplr_getPlayers(byDate: Boolean = false): Array<String>? {
             var result: Array<String>? = null
@@ -374,21 +364,18 @@ class XwJNI private constructor() {
             return result
         }
 
-        @JvmStatic
         fun kplr_renamePlayer(oldName: String, newName: String): Boolean {
             return if (BuildConfig.HAVE_KNOWN_PLAYERS) kplr_renamePlayer(
                 jNI.m_ptrGlobals, oldName, newName
             ) else true
         }
 
-        @JvmStatic
         fun kplr_deletePlayer(player: String) {
             if (BuildConfig.HAVE_KNOWN_PLAYERS) {
                 kplr_deletePlayer(jNI.m_ptrGlobals, player)
             }
         }
 
-        @JvmStatic
         @JvmOverloads
         fun kplr_getAddr(name: String, lastMod: IntArray? = null): CommsAddrRec? {
             return if (BuildConfig.HAVE_KNOWN_PLAYERS) kplr_getAddr(
@@ -396,7 +383,6 @@ class XwJNI private constructor() {
             ) else null
         }
 
-        @JvmStatic
         fun kplr_nameForMqttDev(mqttID: String?): String? {
             return if (BuildConfig.HAVE_KNOWN_PLAYERS) kplr_nameForMqttDev(
                 jNI.m_ptrGlobals, mqttID
@@ -432,23 +418,19 @@ class XwJNI private constructor() {
             `when`: Int, handle: Int
         ): Boolean
 
-        @JvmStatic
         fun giFromStream(gi: CurGameInfo, stream: ByteArray) {
             Assert.assertNotNull(stream)
             gi_from_stream(jNI.m_ptrGlobals, gi, stream) // called here
         }
 
-        @JvmStatic
         fun nliToStream(nli: NetLaunchInfo): ByteArray {
             return nli_to_stream(jNI.m_ptrGlobals, nli)
         }
 
-        @JvmStatic
         fun nliFromStream(stream: ByteArray): NetLaunchInfo? {
             return nli_from_stream(jNI.m_ptrGlobals, stream)
         }
 
-        @JvmStatic
         fun lcToLocaleJ(lc: Int): ISOCode? {
             val code = lcToLocale(lc)
             return ISOCode.newIf(code)
@@ -472,7 +454,6 @@ class XwJNI private constructor() {
             return if (0L == ptr) null else GamePtr(ptr, rowid)
         }
 
-        @JvmStatic
         @Synchronized
         fun initFromStream(
             rowid: Long, stream: ByteArray, gi: CurGameInfo,
@@ -491,7 +472,6 @@ class XwJNI private constructor() {
             return gamePtr
         }
 
-        @JvmStatic
         @Synchronized
         fun initNew(
             gi: CurGameInfo, selfAddr: CommsAddrRec?, hostAddr: CommsAddrRec?,
@@ -506,7 +486,6 @@ class XwJNI private constructor() {
             return gamePtr
         }
 
-        @JvmStatic
         fun game_makeRematch(
             gamePtr: GamePtr, util: UtilCtxt,
             cp: CommonPrefs, gameName: String?,
@@ -524,7 +503,6 @@ class XwJNI private constructor() {
             return gamePtrNew
         }
 
-        @JvmStatic
         fun game_makeFromInvite(
             nli: NetLaunchInfo, util: UtilCtxt,
             selfAddr: CommsAddrRec,
@@ -712,7 +690,6 @@ class XwJNI private constructor() {
 
         @JvmStatic
         external fun board_redoReplacedTiles(gamePtr: GamePtr?): Boolean
-        external fun board_resetEngine(gamePtr: GamePtr?)
         @JvmStatic
         external fun board_requestHint(
             gamePtr: GamePtr?,
@@ -838,7 +815,6 @@ class XwJNI private constructor() {
             andAck: Boolean
         ): Int
 
-        @JvmStatic
         fun comms_resendAll(
             gamePtr: GamePtr?, force: Boolean,
             andAck: Boolean
@@ -879,7 +855,6 @@ class XwJNI private constructor() {
             send: Boolean
         ): Boolean
 
-        @JvmStatic
         fun smsproto_prepOutbound(
             cmd: SMS_CMD, gameID: Int, buf: ByteArray?, phone: String,
             port: Int,  /*out*/
@@ -891,7 +866,6 @@ class XwJNI private constructor() {
             )
         }
 
-        @JvmStatic
         fun smsproto_prepOutbound(phone: String,
                                   port: Int,
                                   waitSecs: IntArray): Array<ByteArray>?
@@ -900,7 +874,6 @@ class XwJNI private constructor() {
                                          port, waitSecs)
         }
 
-        @JvmStatic
         fun smsproto_prepInbound(
             data: ByteArray,
             fromPhone: String, wantPort: Int
@@ -912,7 +885,6 @@ class XwJNI private constructor() {
         external fun dict_tilesAreSame(dict1: Long, dict2: Long): Boolean
         @JvmStatic
         external fun dict_getChars(dict: Long): Array<String>?
-        @JvmStatic
         fun dict_getInfo(
             dict: ByteArray?, name: String?, path: String?,
             check: Boolean
@@ -921,7 +893,6 @@ class XwJNI private constructor() {
             return dict_getInfo(wrapper, check)
         }
 
-        @JvmStatic
         fun dict_getInfo(dict: DictWrapper, check: Boolean): DictInfo {
             return dict_getInfo(
                 jNI.m_ptrGlobals, dict.dictPtr,
@@ -929,31 +900,26 @@ class XwJNI private constructor() {
             )
         }
 
-        @JvmStatic
         fun dict_getDesc(dict: DictWrapper): String? {
             return dict_getDesc(dict.dictPtr)
         }
 
-        @JvmStatic
         fun dict_tilesToStr(dict: DictWrapper, tiles: ByteArray?,
                             delim: String?): String?
         {
             return dict_tilesToStr(dict.dictPtr, tiles, delim)
         }
 
-        @JvmStatic
         fun dict_strToTiles(dict: DictWrapper, str: String):
             Array<ByteArray>?
         {
             return dict_strToTiles(dict.dictPtr, str)
         }
 
-        @JvmStatic
         fun dict_hasDuplicates(dict: DictWrapper): Boolean {
             return dict_hasDuplicates(dict.dictPtr)
         }
 
-        @JvmStatic
         fun getTilesInfo(dict: DictWrapper): String {
             return dict_getTilesInfo(jNI.m_ptrGlobals, dict.dictPtr)
         }
@@ -963,13 +929,11 @@ class XwJNI private constructor() {
 
         // Dict iterator
         const val MAX_COLS_DICT = 15 // from dictiter.h
-        @JvmStatic
         fun makeDict(bytes: ByteArray?, name: String?, path: String?): DictWrapper {
             val dict = dict_make(jNI.m_ptrGlobals, bytes, name, path)
             return DictWrapper(dict)
         }
 
-        @JvmStatic
         fun di_init(
             dict: DictWrapper, pats: Array<PatDesc>,
             minLen: Int, maxLen: Int,
@@ -990,27 +954,22 @@ class XwJNI private constructor() {
             }.start()
         }
 
-        @JvmStatic
         fun di_wordCount(iw: IterWrapper): Int {
             return di_wordCount(iw.getRef())
         }
 
-        @JvmStatic
         fun di_nthWord(iw: IterWrapper, nn: Int, delim: String?): String? {
             return di_nthWord(iw.getRef(), nn, delim)
         }
 
-        @JvmStatic
         fun di_getMinMax(iw: IterWrapper): IntArray {
             return di_getMinMax(iw.getRef())
         }
 
-        @JvmStatic
         fun di_getPrefixes(iw: IterWrapper): Array<String>? {
             return di_getPrefixes(iw.getRef())
         }
 
-        @JvmStatic
         fun di_getIndices(iw: IterWrapper): IntArray? {
             return di_getIndices(iw.getRef())
         }
@@ -1029,9 +988,10 @@ class XwJNI private constructor() {
         private external fun di_getIndices(closure: Long): IntArray?
 
         // Private methods -- called only here
-		@JvmStatic
+        //
+        // Some don't need JvmStatic because I used newer form of jni function
+        // name.
         private external fun globalsInit(dutil: DUtilCtxt, jniu: JNIUtils, seed: Long): Long
-		@JvmStatic
 		private external fun dvc_getMQTTDevID(jniState: Long): String
 		@JvmStatic
 		private external fun dvc_setMQTTDevID(jniState: Long, newid: String): Boolean

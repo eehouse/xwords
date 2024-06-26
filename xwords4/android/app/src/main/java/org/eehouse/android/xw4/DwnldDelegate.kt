@@ -445,7 +445,6 @@ class DwnldDelegate(delegator: Delegator) : ListDelegateBase(delegator, R.layout
             }
         }
 
-        @JvmStatic
         fun downloadDictInBack(
             context: Context, isoCode: ISOCode?,
             dictName: String,
@@ -455,7 +454,6 @@ class DwnldDelegate(delegator: Delegator) : ListDelegateBase(delegator, R.layout
             downloadDictInBack(context, uri, dictName, lstnr)
         }
 
-        @JvmStatic
         fun downloadDictInBack(
             context: Context, uri: Uri,
             dictName: String,
@@ -489,7 +487,6 @@ class DwnldDelegate(delegator: Delegator) : ListDelegateBase(delegator, R.layout
             context.startActivity(intent)
         }
 
-        @JvmStatic
         fun makeAppDownloadIntent(context: Context, url: String): Intent {
             val intent = Intent(context, DwnldActivity::class.java)
             intent.putExtra(APK_EXTRA, url)

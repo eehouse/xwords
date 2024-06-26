@@ -85,7 +85,6 @@ object DictLangCache {
 
     // This populates the cache and will take significant time if it's mostly
     // empty and there are a lot of dicts.
-    @JvmStatic
     fun getLangCount(context: Context, isoCode: ISOCode): Int {
         var count = 0
         val dals = dictList(context)
@@ -110,7 +109,6 @@ object DictLangCache {
         return result
     }
 
-    @JvmStatic
     fun haveDict(context: Context, isoCode: ISOCode?, dictName: String): Boolean {
         var found = false
         val infos = getInfosHaveLang(context, isoCode)
@@ -150,7 +148,6 @@ object DictLangCache {
         return result
     }
 
-    @JvmStatic
     fun getHaveLang(context: Context, isoCode: ISOCode?): Array<String?> {
         return getHaveLang(context, isoCode, null, false)
     }
@@ -177,18 +174,15 @@ object DictLangCache {
         return getHaveLang(context, isoCode, s_ByCount, false)
     }
 
-    @JvmStatic
     fun getHaveLangCounts(context: Context, isoCode: ISOCode?): Array<String?> {
         return getHaveLang(context, isoCode, null, true)
     }
 
-    @JvmStatic
     fun stripCount(nameWithCount: String): String {
         val indx = nameWithCount.lastIndexOf(" (")
         return nameWithCount.substring(0, indx)
     }
 
-    @JvmStatic
     fun getOnServer(context: Context, dal: DictAndLoc): ON_SERVER? {
         val info = getInfo(context, dal)
         return info.onServer
@@ -199,7 +193,6 @@ object DictLangCache {
         return info!!.onServer
     }
 
-    @JvmStatic
     fun getDictISOCode(context: Context, dal: DictAndLoc): ISOCode? {
         val result = getInfo(context, dal).isoCode()
         assertTrueNR(null != result)
@@ -213,7 +206,6 @@ object DictLangCache {
         return result!!
     }
 
-    @JvmStatic
     fun getLangNameForISOCode(context: Context, isoCode: ISOCode): String? {
         var langName: String?
         DLCache.get(context).use { cache ->
@@ -253,7 +245,6 @@ object DictLangCache {
         return getLangNameForISOCode(context, isoCode)
     }
 
-    @JvmStatic
     fun getDictMD5Sums(context: Context, dict: String?): Array<String?> {
         val result = arrayOf<String?>(null, null)
         val info = getInfo(context, dict)
@@ -264,14 +255,12 @@ object DictLangCache {
         return result
     }
 
-    @JvmStatic
     fun getFileSize(context: Context, dal: DictAndLoc): Long {
         val path = dal.getPath(context!!)
         return path!!.length()
     }
 
     // May be called from background thread
-    @JvmStatic
     fun inval(
         context: Context, name: String?,
         loc: DictLoc?, added: Boolean

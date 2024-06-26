@@ -195,7 +195,6 @@ class InviteChoicesAlert : DlgDelegateAlert(), ItemClicked {
     companion object {
         private val TAG = InviteChoicesAlert::class.java.getSimpleName()
         private var sSelf: WeakReference<InviteChoicesAlert>? = null
-        @JvmStatic
         fun newInstance(state: DlgState?): InviteChoicesAlert {
             val result = InviteChoicesAlert()
             result.addStateArgument(state!!)
@@ -203,7 +202,6 @@ class InviteChoicesAlert : DlgDelegateAlert(), ItemClicked {
             return result
         }
 
-        @JvmStatic
         fun dismissAny(): Boolean {
             var dismissed = false
             val ref = sSelf

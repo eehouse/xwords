@@ -150,12 +150,10 @@ internal abstract class XWServiceHelper(private val mContext: Context) {
         private val TAG: String = XWServiceHelper::class.java.simpleName
         private val s_srcMgr = MultiService()
 
-        @JvmStatic
         fun setListener(li: MultiService.MultiEventListener) {
             s_srcMgr.setListener(li)
         }
 
-        @JvmStatic
         fun clearListener(li: MultiService.MultiEventListener) {
             s_srcMgr.clearListener(li)
         }

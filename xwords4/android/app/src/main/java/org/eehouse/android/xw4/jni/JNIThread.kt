@@ -827,7 +827,6 @@ class JNIThread private constructor(lockIn: GameLock) : Thread(), AutoCloseable 
         }
 
         private val s_instances: MutableMap<Long, JNIThread> = HashMap()
-        @JvmStatic
         fun getRetained(rowid: Long): JNIThread? {
             return getRetained(rowid, null)
         }
@@ -851,7 +850,6 @@ class JNIThread private constructor(lockIn: GameLock) : Thread(), AutoCloseable 
             return result
         }
 
-        @JvmStatic
         fun gameIsOpen(rowid: Long): Boolean {
             var result = false
             getRetained(rowid).use { thread ->

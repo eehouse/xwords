@@ -84,7 +84,6 @@ class DBAlert : XWDialogFragment() {
         private const val DLG_ID_KEY = "DLG_ID_KEY"
         private const val PARMS_KEY = "PARMS_KEY"
 
-        @JvmStatic
         fun newInstance(dlgID: DlgID, params: Array<Any?>): DBAlert {
             if (BuildConfig.DEBUG) {
                 for (obj in params) {

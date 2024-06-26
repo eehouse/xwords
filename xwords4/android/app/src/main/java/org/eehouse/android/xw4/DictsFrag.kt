@@ -24,7 +24,6 @@ import android.os.Bundle
 public class DictsFrag (): XWFragment() {
 
     companion object {
-		@JvmStatic
         fun newInstance( parent: Delegator ): XWFragment
         {
             return DictsFrag ().setParentName(parent)

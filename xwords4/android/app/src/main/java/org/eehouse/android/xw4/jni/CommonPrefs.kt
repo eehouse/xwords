@@ -159,7 +159,6 @@ class CommonPrefs private constructor() : XWPrefs() {
         /*
      * static methods
      */
-        @JvmStatic
         fun get(context: Context): CommonPrefs {
             if (null == s_cp) {
                 s_cp = CommonPrefs()
@@ -228,7 +227,6 @@ class CommonPrefs private constructor() : XWPrefs() {
             return result
         }
 
-        @JvmStatic
         fun getDefaultHumanDict(context: Context): String? {
             var value = getPrefsString(context, R.string.key_default_dict)
             if (value == "" || !dictExists(context, value!!)) {
@@ -237,7 +235,6 @@ class CommonPrefs private constructor() : XWPrefs() {
             return value
         }
 
-        @JvmStatic
         fun getDefaultRobotDict(context: Context): String? {
             var value = getPrefsString(context, R.string.key_default_robodict)
             if (value == "" || !dictExists(context, value!!)) {
@@ -246,7 +243,6 @@ class CommonPrefs private constructor() : XWPrefs() {
             return value
         }
 
-        @JvmStatic
         fun getDefaultOriginalPlayerName(
             context: Context,
             num: Int
@@ -254,7 +250,6 @@ class CommonPrefs private constructor() : XWPrefs() {
             return getString(context, R.string.player_fmt, num + 1)
         }
 
-        @JvmStatic
         fun getDefaultPlayerName(
             context: Context, num: Int,
             force: Boolean
@@ -274,7 +269,6 @@ class CommonPrefs private constructor() : XWPrefs() {
             return getPrefsString(context, R.string.key_robot_name)!!
         }
 
-        @JvmStatic
         fun setDefaultPlayerName(context: Context, value: String?) {
             setPrefsString(context, R.string.key_player1_name, value)
         }
@@ -352,7 +346,6 @@ class CommonPrefs private constructor() : XWPrefs() {
             return getPrefsString(context, R.string.key_summary_field)
         }
 
-        @JvmStatic
         fun getSummaryFieldId(context: Context): Int {
             var result = 0
             val str = getSummaryField(context)
@@ -368,7 +361,6 @@ class CommonPrefs private constructor() : XWPrefs() {
 
         private const val THEME_KEY = "theme"
 
-        @JvmStatic
         fun colorPrefsToClip(context: Context, theme: ColorTheme) {
             val host = getString(context, R.string.invite_host)
             val ub = Uri.Builder()
@@ -397,7 +389,6 @@ class CommonPrefs private constructor() : XWPrefs() {
             stringToClip(context, data)
         }
 
-        @JvmStatic
         fun loadColorPrefs(context: Context, uri: Uri) {
             val themeName = uri.getQueryParameter(THEME_KEY)
             var arrayID = 0

@@ -28,18 +28,15 @@ class LegalPhoniesDelegate(delegator: Delegator) :
 {
     companion object {
 		private val TAG = LegalPhoniesDelegate::class.java.getSimpleName()
-		@JvmStatic
 		public fun launch( delegator: Delegator )
 		{
 			launch( delegator, null )
 		}
 
-		@JvmStatic
 		public fun launch( delegator: Delegator, isoCode: Utils.ISOCode? )
 			= delegator.addFragment( LegalPhoniesFrag.newInstance( delegator ),
 									 mkBundle(isoCode) )
 
-		@JvmStatic
 		public fun haveLegalPhonies(context: Context): Boolean
 			= !getDataPrv(context).isEmpty()
 

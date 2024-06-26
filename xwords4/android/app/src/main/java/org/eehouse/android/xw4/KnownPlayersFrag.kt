@@ -25,7 +25,6 @@ import android.os.Bundle
 class KnownPlayersFrag(): XWFragment() {
 
 	companion object {
-		@JvmStatic
 		fun newInstance( parent: Delegator ): XWFragment
 		{
 			return KnownPlayersFrag().setParentName( parent )

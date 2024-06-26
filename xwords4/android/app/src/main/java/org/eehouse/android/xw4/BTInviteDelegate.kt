@@ -285,7 +285,6 @@ class BTInviteDelegate(delegator: Delegator) :
         private const val ENABLE_FAKER = false
         private const val SCAN_SECONDS = 5
         private val sPersistedRef = arrayOf<Persisted?>(null)
-        @JvmStatic
         fun launchForResult(
             activity: Activity, nMissing: Int,
             info: SentInvitesInfo?,
@@ -352,7 +351,6 @@ class BTInviteDelegate(delegator: Delegator) :
             DBUtils.setSerializableFor(context, KEY_PERSIST, sPersistedRef[0])
         }
 
-        @JvmStatic
         fun onHeardFromDev(dev: BluetoothDevice) {
             val context = XWApp.getContext()
             load(context)

@@ -424,7 +424,6 @@ class GameListItem(private val m_context: Context, aset: AttributeSet?) :
         private val sDF: DateFormat = DateFormat
             .getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT)
 
-        @JvmStatic
         fun makeForRow(
             context: Context, convertView: View?,
             rowid: Long, handler: Handler,
@@ -442,7 +441,6 @@ class GameListItem(private val m_context: Context, aset: AttributeSet?) :
             return result
         }
 
-        @JvmStatic
         fun inval(rowid: Long) {
             synchronized(s_invalRows) {
                 s_invalRows.add(rowid)

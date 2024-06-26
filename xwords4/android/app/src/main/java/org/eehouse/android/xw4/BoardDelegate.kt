@@ -2639,7 +2639,6 @@ class BoardDelegate(delegator: Delegator) :
             }
         }
 
-        @JvmStatic
         fun setupRematchFor(activity: Activity, rowID: Long) {
             var summary: GameSummary? = null
             var gi: CurGameInfo? = null
@@ -2685,7 +2684,6 @@ class BoardDelegate(delegator: Delegator) :
             sOpenRows.remove(rowid)
         }
 
-        @JvmStatic
         fun gameIsOpen(rowid: Long): Boolean {
             val result = sOpenRows.contains(rowid)
             Log.d(TAG, "gameIsOpen(%d) => %b", rowid, result)

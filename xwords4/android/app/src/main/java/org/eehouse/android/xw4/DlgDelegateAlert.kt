@@ -175,7 +175,6 @@ open class DlgDelegateAlert : XWDialogFragment() {
         private val TAG = DlgDelegateAlert::class.java.getSimpleName()
         private const val STATE_KEY = "STATE_KEY"
 
-        @JvmStatic
         fun newInstance(state: DlgState): DlgDelegateAlert {
             val result = DlgDelegateAlert()
             result.addStateArgument(state)

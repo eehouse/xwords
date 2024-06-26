@@ -157,7 +157,6 @@ class TimerReceiver : BroadcastReceiver() {
             return String.format("{%s}", TextUtils.join(", ", all))
         }
 
-        @JvmStatic
         fun jobTimerFired(context: Context, timerID: Long, src: String) {
             onReceiveImpl(context, timerID, src)
         }
@@ -225,7 +224,6 @@ class TimerReceiver : BroadcastReceiver() {
             })
         }
 
-        @JvmStatic
         fun setBackoff(
             context: Context, cback: TimerCallback,
             backoffMS: Long
@@ -242,7 +240,6 @@ class TimerReceiver : BroadcastReceiver() {
 
         // This one's public. Sets a one-time timer. Any backoff or re-set the
         // client has to handle
-        @JvmStatic
         fun setTimerRelative(
             context: Context, cback: TimerCallback,
             waitMS: Long

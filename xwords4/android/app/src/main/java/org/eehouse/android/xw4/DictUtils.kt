@@ -59,7 +59,6 @@ object DictUtils {
             })
     }
 
-    @JvmStatic
     fun invalDictList() {
         s_dictListCache = null
         // Should I have a list of folks who want to know when this
@@ -94,7 +93,6 @@ object DictUtils {
     }
 
     private var s_hadStorage: Boolean? = null
-    @JvmStatic
     fun dictList(context: Context): Array<DictAndLoc>? {
         // Note: if STORAGE permission is changed the set being returned here
         // will change. Might want to check for that and invalidate this list
@@ -132,7 +130,6 @@ object DictUtils {
         return s_dictListCache
     }
 
-    @JvmStatic
     fun getDictLoc(context: Context, name: String): DictLoc? {
         var name = name
         var loc: DictLoc? = null
@@ -176,7 +173,6 @@ object DictUtils {
         return loc
     }
 
-    @JvmStatic
     fun dictExists(context: Context, name: String): Boolean {
         return null != getDictLoc(context, name)
     }
@@ -355,7 +351,6 @@ object DictUtils {
         return path
     }
 
-    @JvmStatic
     fun openDicts(context: Context, names: Array<String?>): DictPairs {
         val dictBytes = arrayOfNulls<ByteArray>(names.size)
         val dictPaths = arrayOfNulls<String>(names.size)
@@ -381,7 +376,6 @@ object DictUtils {
         return DictPairs(dictBytes, dictPaths)
     }
 
-    @JvmStatic
     fun saveDict(
         context: Context, `in`: InputStream,
         name: String, loc: DictLoc,
@@ -489,7 +483,6 @@ object DictUtils {
         return ok
     }
 
-    @JvmStatic
     fun removeDictExtn(str: String): String {
         var str = str
         while (str.endsWith(XWConstants.DICT_EXTN)) {
@@ -561,7 +554,6 @@ object DictUtils {
 
     // Loop through three ways of getting the directory until one
     // produces a directory I can write to.
-    @JvmStatic
     fun getDownloadDir(context: Context): File? {
         var result: File? = null
         var attempt = 0

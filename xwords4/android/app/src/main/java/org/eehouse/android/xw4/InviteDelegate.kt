@@ -337,7 +337,6 @@ abstract class InviteDelegate(delegator: Delegator) :
         const val COUNTS: String = "COUNTS"
         const val RAR: String = "RAR"
         private const val INTENT_KEY_NMISSING = "NMISSING"
-        @JvmStatic
         // buggy kotlin, e.g. https://youtrack.jetbrains.com/issue/KT-39868/Allow-access-to-protected-consts-and-fields-from-a-super-companion-object
         @Suppress("JVM_STATIC_ON_CONST_OR_JVM_FIELD")
         const val INTENT_KEY_LASTDEV: String = "LDEV"

@@ -1286,7 +1286,6 @@ class DictsDelegate(delegator: Delegator) :
         const val RESULT_LAST_DICT = "last_dict"
         private const val SEL_LOCAL = 0
         private const val SEL_REMOTE = 1
-        @JvmStatic
         fun downloadDefaultDict(
             context: Context, isoCode: ISOCode,
             lstnr: OnGotLcDictListener
@@ -1343,7 +1342,6 @@ class DictsDelegate(delegator: Delegator) :
             popup.show()
         }
 
-        @JvmStatic
         fun handleDictsPopup(
             delegator: Delegator, button: View,
             curDict: String, isoCode: ISOCode
@@ -1360,7 +1358,6 @@ class DictsDelegate(delegator: Delegator) :
             return String.format("%s:lang=%s", TAG, isoCode)
         }
 
-        @JvmStatic
         fun prevSelFor(context: Context, isoCode: ISOCode): String? {
             val key = keyForLang(isoCode)
             return getStringFor(context!!, key)
@@ -1377,19 +1374,16 @@ class DictsDelegate(delegator: Delegator) :
             return proc
         }
 
-        @JvmStatic
         fun start(delegator: Delegator) {
             delegator.addFragment(DictsFrag.newInstance(delegator), null)
         }
 
-        @JvmStatic
         fun downloadForResult(delegator: Delegator,
                               requestCode: RequestCode,
                               lang: Utils.ISOCode) {
             downloadForResult( delegator, requestCode, lang, null )
         }
 
-        @JvmStatic
         fun downloadForResult(delegator: Delegator,
                               requestCode: RequestCode) {
             downloadForResult( delegator, requestCode, null, null )

@@ -201,7 +201,6 @@ class ChatDelegate(delegator: Delegator) :
         private const val INTENT_KEY_NAMES = "intent_key_names"
         private const val INTENT_KEY_LOCS = "intent_key_locs"
         private var s_visibleThis: ChatDelegate? = null
-        @JvmStatic
         fun append(rowid: Long, msg: String, fromIndx: Int, tsSeconds: Long): Boolean {
             val handled = (null != s_visibleThis
                     && s_visibleThis!!.m_rowid == rowid)
@@ -212,7 +211,6 @@ class ChatDelegate(delegator: Delegator) :
             return handled
         }
 
-        @JvmStatic
         fun start(
             delegator: Delegator,
             rowID: Long, curPlayer: Int,

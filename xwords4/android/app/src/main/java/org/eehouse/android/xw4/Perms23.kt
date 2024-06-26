@@ -46,7 +46,6 @@ object Perms23 {
     )
 
     private val sManifestMap: MutableMap<Perm?, Boolean> = HashMap()
-    @JvmStatic
     fun permInManifest(context: Context, perm: Perm): Boolean {
         var result = false
         if (sManifestMap.containsKey(perm)) {
@@ -134,7 +133,6 @@ object Perms23 {
         tryGetPermsImpl(delegate, perms, msg, 0, action, *params)
     }
 
-    @JvmStatic
     fun tryGetPerms(
         delegate: DelegateBase, perms: Array<Perm>,
         rationaleMsg: String?, action: DlgDelegate.Action,
@@ -143,7 +141,6 @@ object Perms23 {
         tryGetPermsImpl(delegate, perms, rationaleMsg, 0, action, *params)
     }
 
-    @JvmStatic
     fun tryGetPerms(
         delegate: DelegateBase, perm: Perm,
         rationaleMsg: String?, action: DlgDelegate.Action,
@@ -155,7 +152,6 @@ object Perms23 {
         )
     }
 
-    @JvmStatic
     fun tryGetPerms(
         delegate: DelegateBase, perm: Perm, rationaleId: Int,
         action: DlgDelegate.Action, vararg params: Any?
@@ -232,7 +228,6 @@ object Perms23 {
         }
     }
 
-    @JvmStatic
     fun havePermissions(context: Context, vararg perms: Perm): Boolean {
         var result = true
         for (perm in perms) {
@@ -248,7 +243,6 @@ object Perms23 {
         return result
     }
 
-    @JvmStatic
     fun haveNBSPerms(context: Context): Boolean {
         val result = havePermissions(context, *NBS_PERMS)
         Log.d(TAG, "haveNBSPerms() => %b", result)

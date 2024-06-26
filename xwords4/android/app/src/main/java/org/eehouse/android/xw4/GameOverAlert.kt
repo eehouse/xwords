@@ -175,7 +175,6 @@ class GameOverAlert : XWDialogFragment(), DialogInterface.OnClickListener,
         private const val IN_ARCH = "IN_ARCH"
         private const val HAS_PENDING = "HAS_PENDING"
 
-        @JvmStatic
         fun newInstance(
             summary: GameSummary?,
             titleID: Int, msg: String?,

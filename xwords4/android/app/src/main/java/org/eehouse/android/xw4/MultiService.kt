@@ -120,7 +120,6 @@ class MultiService {
         private const val ACTION_FETCH_DICT = "_afd"
         private const val FOR_MISSING_DICT = "_fmd"
 
-        @JvmStatic
         fun makeMissingDictIntent(
             context: Context, nli: NetLaunchInfo,
             owner: DictFetchOwner
@@ -140,7 +139,6 @@ class MultiService {
             return result
         }
 
-        @JvmStatic
         fun isMissingDictIntent(intent: Intent): Boolean {
             val action = intent.action
             val result =
@@ -149,7 +147,6 @@ class MultiService {
             return result
         }
 
-        @JvmStatic
         fun getMissingDictData(context: Context, intent: Intent): NetLaunchInfo
         {
             Assert.assertTrueNR(isMissingDictIntent(intent))
@@ -180,7 +177,6 @@ class MultiService {
                 .create()
         }
 
-        @JvmStatic
         fun postMissingDictNotification(
             content: Context,
             intent: Intent?, id: Int

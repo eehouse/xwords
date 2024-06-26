@@ -30,7 +30,6 @@ class SMSPhoneInfo(var isPhone: Boolean,
         private val TAG: String = SMSPhoneInfo::class.java.simpleName
 
         private var s_phoneInfo: SMSPhoneInfo? = null
-        @JvmStatic
         fun get(context: Context): SMSPhoneInfo? {
             if (null == s_phoneInfo) {
                 try {

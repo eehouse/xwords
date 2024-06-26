@@ -67,7 +67,6 @@ object NFCUtils {
     // Return array of two booleans, the first indicating whether the
     // device supports NFC and the second whether it's on.  Only the
     // second can change.
-    @JvmStatic
     fun nfcAvail(context: Context): BooleanArray {
         if (null == sNfcAvail) {
             sNfcAvail = booleanArrayOf(
@@ -82,7 +81,6 @@ object NFCUtils {
         return sNfcAvail!!
     }
 
-    @JvmStatic
     fun makeEnableNFCDialog(activity: Activity): Dialog {
         val lstnr = DialogInterface.OnClickListener { dialog, item ->
             activity.startActivity( Intent( "android.settings.NFC_SETTINGS" ) )
@@ -165,12 +163,10 @@ object NFCUtils {
         sMsgsStore.setHaveDataListener(gameID, listener)
     }
 
-    @JvmStatic
     fun addMsgFor(msg: ByteArray, gameID: Int): Int {
         return sMsgsStore.addMsgFor(gameID, MESSAGE, msg)
     }
 
-    @JvmStatic
     fun addInvitationFor(msg: ByteArray, gameID: Int): Int {
         return sMsgsStore.addMsgFor(gameID, INVITE, msg)
     }
@@ -524,7 +520,6 @@ object NFCUtils {
 
     private const val NFC_DEVID_KEY = "key_nfc_devid"
     private val sNFCDevID = intArrayOf(0)
-    @JvmStatic
     fun getNFCDevID(context: Context): Int {
         synchronized(sNFCDevID) {
             if (0 == sNFCDevID[0]) {
@@ -727,7 +722,6 @@ object NFCUtils {
         }
 
         companion object {
-            @JvmStatic
             fun init(activity: Activity, procs: Procs, devID: Int): Wrapper? {
                 var instance: Wrapper? = null
                 if (nfcAvail(activity)!![1]) {
@@ -737,12 +731,10 @@ object NFCUtils {
                 return instance
             }
 
-            @JvmStatic
             fun setResumed(instance: Wrapper?, resumed: Boolean) {
                 instance?.mReader?.setResumed(resumed)
             }
 
-            @JvmStatic
             fun setGameID(instance: Wrapper?, gameID: Int) {
                 instance?.mReader?.setGameID(gameID)
             }

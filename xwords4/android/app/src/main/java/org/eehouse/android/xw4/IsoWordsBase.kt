@@ -346,8 +346,8 @@ abstract class IsoWordsBase(delegator: Delegator, private val CHECKED_KEY: Strin
 		private val TAG = IsoWordsBase::class.java.getSimpleName()
         const val START_LANG = "START_LANG"
 
-		@JvmStatic
-        protected fun mkBundle( isoCode: Utils.ISOCode? ): Bundle {
+        @JvmStatic
+        protected fun mkBundle(isoCode: Utils.ISOCode?): Bundle {
 			val bundle = Bundle()
 			if ( null != isoCode ) {
 				bundle.putString( START_LANG, isoCode.toString() )

@@ -27,17 +27,14 @@ object Assert {
         assertTrue(false)
     }
 
-    @JvmStatic
     fun failDbg() {
         assertFalse(BuildConfig.DEBUG)
     }
 
-    @JvmStatic
     fun assertFalse(`val`: Boolean) {
         assertTrue(!`val`)
     }
 
-    @JvmStatic
     fun assertTrue(`val`: Boolean) {
         if (!`val`) {
             Log.e(TAG, "firing assert!")
@@ -48,19 +45,16 @@ object Assert {
     }
 
     // NR: non-release
-    @JvmStatic
     fun assertTrueNR(`val`: Boolean) {
         if (BuildConfig.NON_RELEASE) {
             assertTrue(`val`)
         }
     }
 
-    @JvmStatic
     fun assertNotNull(`val`: Any?) {
         assertTrue(`val` != null)
     }
 
-    @JvmStatic
     fun assertNull(`val`: Any?) {
         assertTrue(`val` == null)
     }

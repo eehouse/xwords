@@ -380,7 +380,7 @@ getState( JNIEnv* env, GamePtrType gamePtr, const char* func )
 #endif
 
 JNIEXPORT jlong JNICALL
-Java_org_eehouse_android_xw4_jni_XwJNI_globalsInit
+Java_org_eehouse_android_xw4_jni_XwJNI_00024Companion_globalsInit
 ( JNIEnv* env, jclass C, jobject jdutil, jobject jniu, jlong jseed )
 {
 #ifdef MEM_DEBUG
@@ -641,9 +641,9 @@ streamFromJStream( MPFORMAL JNIEnv* env, VTableMgr* vtMgr, jbyteArray jstream )
 
 #define DVC_HEADER_END() }                      \
 
-
+/* This signature's different to not require JvmStatic on the .kt end */
 JNIEXPORT jstring JNICALL
-Java_org_eehouse_android_xw4_jni_XwJNI_dvc_1getMQTTDevID
+Java_org_eehouse_android_xw4_jni_XwJNI_00024Companion_dvc_1getMQTTDevID
 ( JNIEnv* env, jclass C, jlong jniGlobalPtr )
 {
     jstring result;
@@ -2079,15 +2079,6 @@ Java_org_eehouse_android_xw4_jni_XwJNI_server_1countTilesInPool
     result = server_countTilesInPool( state->game.server );
     XWJNI_END();
     return result;
-}
-
-JNIEXPORT void JNICALL
-Java_org_eehouse_android_xw4_jni_XwJNI_board_1resetEngine
-(JNIEnv* env, jclass C, GamePtrType gamePtr )
-{
-    XWJNI_START(gamePtr);
-    board_resetEngine( state->game.board );
-    XWJNI_END();
 }
 
 JNIEXPORT jboolean JNICALL

@@ -122,7 +122,6 @@ class GameListGroup(cx: Context, aset: AttributeSet?) :
     }
 
     companion object {
-        @JvmStatic
         fun makeForPosition(
             context: Context,
             convertView: View?,

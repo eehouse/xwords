@@ -73,7 +73,6 @@ object DBUtils {
     private val s_slListeners: MutableSet<StudyListListener> = HashSet()
     private var s_dbHelper: SQLiteOpenHelper? = null
     private var s_db: SQLiteDatabase? = null
-    @JvmStatic
     fun getSummary(
         context: Context,
         lock: GameLock
@@ -216,7 +215,6 @@ object DBUtils {
         return summary
     } // getSummary
 
-    @JvmStatic
     fun saveSummary(
         context: Context, lock: GameLock,
         summary: GameSummary?
@@ -302,7 +300,6 @@ object DBUtils {
         }
     } // saveSummary
 
-    @JvmStatic
     fun countGamesUsingISOCode(context: Context, isoCode: ISOCode?): Int {
         var result = 0
         val columns = arrayOf(DBHelper.ISOCODE)
@@ -382,7 +379,6 @@ object DBUtils {
         return countOpenGamesUsing(context, CommsConnType.COMMS_CONN_MQTT)
     }
 
-    @JvmStatic
     fun getInvitesFor(context: Context, rowid: Long): SentInvitesInfo {
         val result = SentInvitesInfo(rowid)
         val columns = arrayOf(
@@ -420,7 +416,6 @@ object DBUtils {
         return result
     }
 
-    @JvmStatic
     fun recordInviteSent(
         context: Context, rowid: Long,
         means: InviteMeans, target: String?,
@@ -471,13 +466,11 @@ object DBUtils {
         updateRow(context, TABLE_NAMES.SUM, rowid, values)
     }
 
-    @JvmStatic
     fun setMsgFlags(context: Context, rowid: Long, flags: Int) {
         setSummaryInt(context, rowid, DBHelper.HASMSGS, flags)
         notifyListeners(context, rowid, GameChangeType.GAME_CHANGED)
     }
 
-    @JvmStatic
     fun setExpanded(context: Context, rowid: Long, expanded: Boolean) {
         setSummaryInt(context, rowid, DBHelper.CONTRACTED, if (expanded) 0 else 1)
     }
@@ -500,7 +493,6 @@ object DBUtils {
         return result
     }
 
-    @JvmStatic
     fun getMsgFlags(context: Context, rowid: Long): Int {
         return getSummaryInt(
             context, rowid, DBHelper.HASMSGS,
@@ -508,17 +500,14 @@ object DBUtils {
         )
     }
 
-    @JvmStatic
     fun getExpanded(context: Context, rowid: Long): Boolean {
         return 0 == getSummaryInt(context, rowid, DBHelper.CONTRACTED, 0)
     }
 
-    @JvmStatic
     fun gameOver(context: Context, rowid: Long): Boolean {
         return 0 != getSummaryInt(context, rowid, DBHelper.GAME_OVER, 0)
     }
 
-    @JvmStatic
     fun saveThumbnail(
         context: Context, lock: GameLock,
         thumb: Bitmap?
@@ -541,7 +530,6 @@ object DBUtils {
         }
     }
 
-    @JvmStatic
     fun clearThumbnails(context: Context) {
         val values = ContentValues()
         values.putNull(DBHelper.THUMBNAIL)
@@ -552,7 +540,6 @@ object DBUtils {
         }
     }
 
-    @JvmStatic
     fun getGamesWithSendsPending(context: Context): HashMap<Long, CommsConnTypeSet> {
         val result = HashMap<Long, CommsConnTypeSet>()
         val columns = arrayOf(ROW_ID, DBHelper.CONTYPE)
@@ -583,7 +570,6 @@ object DBUtils {
         return result
     }
 
-    @JvmStatic
     fun getGameCountUsing(context: Context, typ: CommsConnType): Int {
         var result = 0
         val columns = arrayOf(DBHelper.CONTYPE)
@@ -603,7 +589,6 @@ object DBUtils {
         return result
     }
 
-    @JvmStatic
     fun getRowIDsFor(context: Context, gameID: Int): LongArray {
         var result: LongArray
         val columns = arrayOf(ROW_ID)
@@ -628,7 +613,6 @@ object DBUtils {
         return result
     }
 
-    @JvmStatic
     fun getRowIDsAndChannels(context: Context, gameID: Int): Map<Long, Int> {
         val result: MutableMap<Long, Int> = HashMap()
         val columns = arrayOf(ROW_ID, DBHelper.GIFLAGS)
@@ -650,7 +634,6 @@ object DBUtils {
         return result
     }
 
-    @JvmStatic
     fun haveWithRowID(context: Context, rowid: Long): Boolean {
         var result = false
         val columns = arrayOf(ROW_ID)
@@ -711,7 +694,6 @@ object DBUtils {
         }
     }
 
-    @JvmStatic
     fun saveNewGame(
         context: Context, bytes: ByteArray,
         groupID: Long, name: String?
@@ -741,7 +723,6 @@ object DBUtils {
         return lock
     } // saveNewGame
 
-    @JvmStatic
     fun saveGame(
         context: Context, lock: GameLock,
         bytes: ByteArray, setCreate: Boolean
@@ -764,7 +745,6 @@ object DBUtils {
         return rowid
     }
 
-    @JvmStatic
     fun loadGame(context: Context, lock: GameLock): ByteArray? {
         var result: ByteArray? = null
         val rowid = lock.rowid
@@ -804,7 +784,6 @@ object DBUtils {
         }
     }
 
-    @JvmStatic
     fun deleteGame(context: Context, lock: GameLock) {
         Assert.assertTrue(lock.canWrite())
         val rowid = lock.rowid
@@ -825,7 +804,6 @@ object DBUtils {
         invalGroupsCache()
     }
 
-    @JvmStatic
     fun getVisID(context: Context, rowid: Long): Int {
         var result = -1
         val columns = arrayOf(DBHelper.VISID)
@@ -845,7 +823,6 @@ object DBUtils {
     }
 
     // Get either the file name or game name, preferring the latter.
-    @JvmStatic
     fun getName(context: Context, rowid: Long): String? {
         var result: String? = null
         val columns = arrayOf(DBHelper.GAME_NAME)
@@ -864,7 +841,6 @@ object DBUtils {
         return result
     }
 
-    @JvmStatic
     fun setName(context: Context, rowid: Long, name: String) {
         val values = ContentValues()
 			.putAnd(DBHelper.GAME_NAME, name)
@@ -998,7 +974,6 @@ object DBUtils {
         delStringsLikeSync(db, like)
     }
 
-    @JvmStatic
     fun getNeedNagging(context: Context): Array<NeedsNagInfo>? {
         var result: Array<NeedsNagInfo>? = null
         val now = Date().time // in milliseconds
@@ -1034,7 +1009,6 @@ object DBUtils {
         return result
     }
 
-    @JvmStatic
     fun getNextNag(context: Context): Long {
         var result: Long = 0
         val columns = arrayOf("MIN(" + DBHelper.NEXTNAG + ") as min")
@@ -1050,7 +1024,6 @@ object DBUtils {
         return result
     }
 
-    @JvmStatic
     fun updateNeedNagging(context: Context, needNagging: Array<NeedsNagInfo>) {
         var updateQuery = ("update %s set %s = ? "
                 + " WHERE %s = ? ")
@@ -1074,7 +1047,6 @@ object DBUtils {
         s_groupsCache = null
     }
 
-    @JvmStatic
     fun getThumbnail(context: Context, rowid: Long): Bitmap? {
         var thumb: Bitmap? = null
         var data: ByteArray? = null
@@ -1114,7 +1086,6 @@ object DBUtils {
     }
 
     // Map of groups rowid (= summaries.groupid) to group info record
-    @JvmStatic
     fun getGroups(context: Context): Map<Long, GameGroupInfo?> {
         var result = s_groupsCache
         if (null == result) {
@@ -1229,7 +1200,6 @@ object DBUtils {
         )
     )
 
-    @JvmStatic
     fun getGroupGames(context: Context, groupID: Long): LongArray {
         var result = longArrayOf()
         initDB(context)
@@ -1260,7 +1230,6 @@ object DBUtils {
     // pass ROWID_NOTFOUND to get *any* group.  Because there may be
     // some hidden games stored with group = -1 thanks to
     // recently-fixed bugs, be sure to skip them.
-    @JvmStatic
     fun getGroupForGame(context: Context, rowid: Long): Long {
         var result = GROUPID_UNSPEC.toLong()
         initDB(context)
@@ -1283,7 +1252,6 @@ object DBUtils {
         return result
     }
 
-    @JvmStatic
     fun getAnyGroup(context: Context): Long {
         var result = GROUPID_UNSPEC.toLong()
         val groups = getGroups(context)
@@ -1295,7 +1263,6 @@ object DBUtils {
         return result
     }
 
-    @JvmStatic
     fun getGroup(context: Context, name: String): Long {
         var result: Long
         initDB(context)
@@ -1332,7 +1299,6 @@ object DBUtils {
         return rowid
     }
 
-    @JvmStatic
     fun addGroup(context: Context, name: String): Long {
         var rowid = GROUPID_UNSPEC.toLong()
         if (0 < name.length) {
@@ -1343,7 +1309,6 @@ object DBUtils {
         return rowid
     }
 
-    @JvmStatic
     fun deleteGroup(context: Context, groupid: Long) {
         // Nuke games having this group id
         val selectionGames = String.format("%s=%d", DBHelper.GROUPID, groupid)
@@ -1358,7 +1323,6 @@ object DBUtils {
         invalGroupsCache()
     }
 
-    @JvmStatic
     fun setGroupName(
         context: Context, groupid: Long,
         name: String
@@ -1369,7 +1333,6 @@ object DBUtils {
         invalGroupsCache()
     }
 
-    @JvmStatic
     fun setGroupExpanded(
         context: Context, groupid: Long,
         expanded: Boolean
@@ -1380,7 +1343,6 @@ object DBUtils {
         invalGroupsCache()
     }
 
-    @JvmStatic
     fun getArchiveGroup(context: Context): Long {
         val archiveName = LocUtils
             .getString(context, R.string.group_name_archive)
@@ -1392,7 +1354,6 @@ object DBUtils {
     }
 
     // Change group id of a game
-    @JvmStatic
     fun moveGame(context: Context, rowid: Long, groupID: Long) {
         Assert.assertTrue(GROUPID_UNSPEC.toLong() != groupID)
         val values = ContentValues()
@@ -1402,7 +1363,6 @@ object DBUtils {
         notifyListeners(context, rowid, GameChangeType.GAME_MOVED)
     }
 
-    @JvmStatic
     fun getDupModeGames(context: Context): Map<Long, Int> {
         return getDupModeGames(context, ROWID_NOTFOUND.toLong())
     }
@@ -1412,7 +1372,6 @@ object DBUtils {
     // paused. As a bit of a hack, set it to 0 if the local player has already
     // committed his turn so caller (DupeModeTimer) will know not to show a
     // notification.
-    @JvmStatic
     fun getDupModeGames(context: Context, rowid: Long): Map<Long, Int> {
         // select giflags from summaries where 0x100 & giflags != 0;
         val result: MutableMap<Long, Int> = HashMap()
@@ -1482,7 +1441,6 @@ object DBUtils {
         return values
     }
 
-    @JvmStatic
     fun appendChatHistory(
         context: Context, rowid: Long,
         msg: String, fromPlayer: Int,
@@ -1514,7 +1472,6 @@ object DBUtils {
         }
     }
 
-    @JvmStatic
     fun setDBChangeListener(listener: DBChangeListener) {
         synchronized(s_listeners) {
             Assert.assertNotNull(listener)
@@ -1522,7 +1479,6 @@ object DBUtils {
         }
     }
 
-    @JvmStatic
     fun clearDBChangeListener(listener: DBChangeListener) {
         synchronized(s_listeners) {
             Assert.assertTrue(s_listeners.contains(listener))
@@ -1538,7 +1494,6 @@ object DBUtils {
         synchronized(s_slListeners) { s_slListeners.remove(lnr) }
     }
 
-    @JvmStatic
     fun copyStream(fos: OutputStream, fis: InputStream): Boolean {
         var success = false
         val buf = ByteArray(1024 * 8)
@@ -1564,14 +1519,12 @@ object DBUtils {
     }
 
     // Called from jni
-    @JvmStatic
     fun dictsGetMD5Sum(context: Context, name: String?): String? {
         val info = dictsGetInfo(context, name)
         return info?.md5Sum
     }
 
     // Called from jni
-    @JvmStatic
     fun dictsSetMD5Sum(context: Context, name: String?, sum: String) {
         val selection = String.format(NAME_FMT, DBHelper.DICTNAME, name)
         val values = ContentValues()
@@ -1587,7 +1540,6 @@ object DBUtils {
         }
     }
 
-    @JvmStatic
     fun dictsGetInfo(context: Context, name: String?): DictInfo? {
         var result: DictInfo? = null
         val columns = arrayOf(
@@ -1629,7 +1581,6 @@ object DBUtils {
         return result
     }
 
-    @JvmStatic
     fun dictsSetInfo(
         context: Context, dal: DictAndLoc,
         info: DictInfo
@@ -1654,7 +1605,6 @@ object DBUtils {
         }
     }
 
-    @JvmStatic
     fun dictsMoveInfo(
         context: Context, name: String?,
         fromLoc: DictLoc?, toLoc: DictLoc
@@ -1672,7 +1622,6 @@ object DBUtils {
         }
     }
 
-    @JvmStatic
     fun dictsRemoveInfo(context: Context, name: String) {
         val selection = String.format("%s=?", DBHelper.DICTNAME)
         val args = arrayOf(name)
@@ -1684,7 +1633,6 @@ object DBUtils {
         }
     }
 
-    @JvmStatic
     fun updateServed(
         context: Context, dal: DictAndLoc,
         served: Boolean
@@ -1703,7 +1651,6 @@ object DBUtils {
         }
     }
 
-    @JvmStatic
     fun addToStudyList(
         context: Context, word: String,
         isoCode: ISOCode
@@ -1724,7 +1671,6 @@ object DBUtils {
         return success
     }
 
-    @JvmStatic
     fun studyListLangs(context: Context): ArrayList<ISOCode> {
         val results = ArrayList<ISOCode>()
         val columns = arrayOf(DBHelper.ISOCODE)
@@ -1748,7 +1694,6 @@ object DBUtils {
 		return results
     }
 
-    @JvmStatic
     fun studyListWords(context: Context, isoCode: ISOCode): ArrayList<String> {
         var result = ArrayList<String>()
         val selection = String.format("%s = '%s'", DBHelper.ISOCODE, isoCode)
@@ -1949,18 +1894,15 @@ object DBUtils {
         return result
     }
 
-    @JvmStatic
     fun setStringFor(context: Context, key: String, value: String?) {
         initDB(context)
         synchronized(s_dbHelper!!) { setStringForSync(s_db, key, value) }
     }
 
-    @JvmStatic
     fun getStringFor(context: Context, key: String): String? {
         return getStringFor(context, key, null)
     }
 
-    @JvmStatic
     fun getStringFor(context: Context, key: String, dflt: String?): String? {
         return getStringFor(context, key, null, dflt)
     }
@@ -1975,14 +1917,12 @@ object DBUtils {
         return dflt
     }
 
-    @JvmStatic
     fun setIntFor(context: Context, key: String, value: Int) {
         // Log.d( TAG, "DBUtils.setIntFor(key=%s, val=%d)", key, value );
         val asStr = String.format("%d", value)
         setStringFor(context, key, asStr)
     }
 
-    @JvmStatic
     fun getIntFor(context: Context, key: String, dflt: Int): Int {
         var dflt = dflt
         val asStr = getStringFor(context, key, null)
@@ -1993,7 +1933,6 @@ object DBUtils {
         return dflt
     }
 
-    @JvmStatic
     fun setLongFor(context: Context, key: String, value: Long) {
         // Log.d( TAG, "DBUtils.setIntFor(key=%s, val=%d)", key, value );
         val asStr = String.format("%d", value)
@@ -2010,14 +1949,12 @@ object DBUtils {
         return dflt
     }
 
-    @JvmStatic
     fun setBoolFor(context: Context, key: String, value: Boolean) {
         // Log.df( "DBUtils.setBoolFor(key=%s, val=%b)", key, value );
         val asStr = String.format("%b", value)
         setStringFor(context, key, asStr)
     }
 
-    @JvmStatic
     fun getBoolFor(context: Context, key: String, dflt: Boolean): Boolean {
         var dflt = dflt
         val asStr = getStringFor(context, key, null)
@@ -2028,7 +1965,6 @@ object DBUtils {
         return dflt
     }
 
-    @JvmStatic
     fun getIncrementIntFor(
         context: Context, key: String, dflt: Int,
         incr: Int
@@ -2044,14 +1980,12 @@ object DBUtils {
         return newVal!!.toInt()
     }
 
-    @JvmStatic
     fun setBytesFor(context: Context, key: String, bytes: ByteArray?) {
         // DbgUtils.logf( "setBytesFor: writing %d bytes", bytes.length );
         val asStr = Utils.base64Encode(bytes)
         setStringFor(context, key, asStr)
     }
 
-    @JvmStatic
     fun getBytesFor(context: Context, key: String): ByteArray? {
         return getBytesFor(context, key, null)
     }
@@ -2065,7 +1999,6 @@ object DBUtils {
         return bytes
     }
 
-    @JvmStatic
     fun getSerializableFor(context: Context, key: String): Serializable? {
         var value: Serializable? = null
         val str64 = getStringFor(context, key, "")
@@ -2075,7 +2008,6 @@ object DBUtils {
         return value
     }
 
-    @JvmStatic
     fun setSerializableFor(
         context: Context, key: String,
         value: Serializable?
@@ -2188,7 +2120,6 @@ object DBUtils {
         }
     }
 
-    @JvmStatic
     fun hideGames(context: Context, rowid: Long) {
         if (BuildConfig.NON_RELEASE) {
             val nonID = 500 + Utils.nextRandomInt() % 1000

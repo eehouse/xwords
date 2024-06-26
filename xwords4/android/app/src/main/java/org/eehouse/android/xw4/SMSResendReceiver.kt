@@ -72,7 +72,6 @@ object SMSResendReceiver {
         }
     }
 
-    @JvmStatic
     fun resetTimer(context: Context) {
         DBUtils.setIntFor(context, BACKOFF_KEY, MIN_BACKOFF_SECONDS)
         setTimer(context)

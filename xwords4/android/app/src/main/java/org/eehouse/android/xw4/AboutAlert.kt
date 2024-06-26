@@ -104,7 +104,6 @@ public class AboutAlert : XWDialogFragment() {
     companion object {
         private val TAG = AboutAlert::class.java.getSimpleName()
 
-        @JvmStatic
         fun newInstance(): AboutAlert {
             return AboutAlert()
         }

@@ -176,7 +176,6 @@ class PrefsActivity : XWActivity(), Delegator, HasDlgDelegate,
             return sHideSet!!
         }
 
-        @JvmStatic
         fun bundleRoot(root: Class<*>, intent: Intent) {
             Assert.assertTrueNR(null == intent.extras)
             val bundle = Bundle()

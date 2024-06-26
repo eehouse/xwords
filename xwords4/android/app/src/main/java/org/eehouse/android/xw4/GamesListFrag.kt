@@ -25,7 +25,6 @@ import android.os.Bundle;
 class GamesListFrag(): XWFragment() {
 
 	companion object {
-		@JvmStatic
 		fun newInstance(): XWFragment
 		{
 			return GamesListFrag().setParentName(null);

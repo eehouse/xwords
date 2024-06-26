@@ -754,7 +754,6 @@ class NetLaunchInfo : Serializable {
             return nli
         }
 
-        @JvmStatic
         fun makeFrom(context: Context, data: String): NetLaunchInfo? {
             var nli: NetLaunchInfo? = null
             try {
@@ -765,7 +764,6 @@ class NetLaunchInfo : Serializable {
             return nli
         }
 
-        @JvmStatic
         fun makeFrom(context: Context, data: ByteArray?): NetLaunchInfo? {
             var nli: NetLaunchInfo? = null
             try {

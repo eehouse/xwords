@@ -765,7 +765,6 @@ abstract class DelegateBase @JvmOverloads constructor(
         private val s_instances
                 : MutableMap<Class<*>, WeakReference<DelegateBase>> = HashMap()
 
-        @JvmStatic
         val hasLooper: Activity?
             get() {
                 var result: Activity? = null

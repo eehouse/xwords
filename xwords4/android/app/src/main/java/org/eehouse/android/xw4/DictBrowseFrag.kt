@@ -25,7 +25,6 @@ import android.os.Bundle
 class DictBrowseFrag(): XWFragment() {
 
     companion object {
-        @JvmStatic
         fun newInstance(parent: Delegator ): XWFragment {
             return DictBrowseFrag().setParentName(parent)
         }

@@ -72,7 +72,6 @@ object GameUtils {
 
     private val s_syncObj = Any()
 
-    @JvmStatic
     fun savedGame(context: Context, rowid: Long): ByteArray {
         var result: ByteArray? = null
         GameLock.tryLockRO(rowid).use { lock ->
@@ -93,7 +92,6 @@ object GameUtils {
         return result
     }
 
-    @JvmStatic
     fun savedGame(context: Context, lock: GameLock?): ByteArray? {
         return DBUtils.loadGame(context!!, lock!!)
     } // savedGame
@@ -141,7 +139,6 @@ object GameUtils {
         return lockDest
     } // resetGame
 
-    @JvmStatic
     fun resetGame(context: Context, rowidIn: Long): Boolean {
         var success = false
         GameLock.lock(rowidIn, 500).use { lock ->
@@ -196,7 +193,6 @@ object GameUtils {
         return result
     }
 
-    @JvmStatic
     fun getSummary(
         context: Context, rowid: Long,
         maxMillis: Long
@@ -229,17 +225,14 @@ object GameUtils {
         return result
     }
 
-    @JvmStatic
     fun getSummary(context: Context, rowid: Long): GameSummary? {
         return getSummary(context, rowid, 0L)
     }
 
-    @JvmStatic
     fun haveWithGameID(context: Context, gameID: Int): Boolean {
         return haveWithGameID(context, gameID, -1)
     }
 
-    @JvmStatic
     fun haveWithGameID(context: Context, gameID: Int, channel: Int): Boolean {
         val map = DBUtils.getRowIDsAndChannels(context!!, gameID)
         val found = 0 < map.size &&
@@ -250,7 +243,6 @@ object GameUtils {
     }
 
     @JvmOverloads
-    @JvmStatic
     fun dupeGame(context: Context, rowidIn: Long, groupID: Long = DBUtils.GROUPID_UNSPEC): Long {
         var result = DBUtils.ROWID_NOTFOUND
 
@@ -302,7 +294,6 @@ object GameUtils {
         }
     }
 
-    @JvmStatic
     fun deleteGame(
         context: Context, rowid: Long,
         informNow: Boolean, skipTell: Boolean
@@ -324,7 +315,6 @@ object GameUtils {
         return success
     }
 
-    @JvmStatic
     fun deleteGroup(context: Context, groupid: Long) {
         var nSuccesses = 0
         val rowids = DBUtils.getGroupGames(context, groupid)
@@ -338,7 +328,6 @@ object GameUtils {
         }
     }
 
-    @JvmStatic
     fun getName(context: Context, rowid: Long): String? {
         var result = DBUtils.getName(context!!, rowid)
         if (null == result || 0 == result.length) {
@@ -348,7 +337,6 @@ object GameUtils {
         return result
     }
 
-    @JvmStatic
     fun makeDefaultName(context: Context): String {
         val count = DBUtils.getIncrementIntFor(context!!, DBUtils.KEY_NEWGAMECOUNT, 0, 1)
         return LocUtils.getString(context, R.string.game_fmt, count)
@@ -358,7 +346,6 @@ object GameUtils {
         return loadMakeGame(context, CurGameInfo(context), lock)
     }
 
-    @JvmStatic
     fun loadMakeGame(
         context: Context, gi: CurGameInfo,
         tp: TransportProcs?, lock: GameLock
@@ -436,7 +423,6 @@ object GameUtils {
         return gamePtr
     }
 
-    @JvmStatic
     fun loadMakeBitmap(context: Context, rowid: Long): Bitmap? {
         var thumb: Bitmap? = null
         GameWrapper.make(context, rowid).use { gw ->
@@ -448,7 +434,6 @@ object GameUtils {
         return thumb
     }
 
-    @JvmStatic
     fun takeSnapshot(
         context: Context, gamePtr: GamePtr?,
         gi: CurGameInfo?
@@ -484,7 +469,6 @@ object GameUtils {
     }
 
     // force applies only to relay
-    @JvmStatic
     @JvmOverloads
     fun resendAllIf(
         context: Context, filter: CommsConnType?,
@@ -507,7 +491,6 @@ object GameUtils {
         resendAllIf(context, filter, force, proc)
     }
 
-    @JvmStatic
     fun resendAllIf(
         context: Context, filter: CommsConnType?,
         force: Boolean, proc: ResendDoneProc?
@@ -571,7 +554,6 @@ object GameUtils {
         return rowid
     }
 
-    @JvmStatic
     fun makeRematch(
         context: Context, srcRowid: Long,
         groupID: Long, gameName: String?,
@@ -598,7 +580,6 @@ object GameUtils {
         return rowid
     }
 
-    @JvmStatic
     fun handleInvitation(
         context: Context, nli: NetLaunchInfo,
         procs: TransportProcs?
@@ -617,7 +598,6 @@ object GameUtils {
         }
     }
 
-    @JvmStatic
     fun saveGame(
         context: Context, gamePtr: GamePtr?,
         gi: CurGameInfo?, lock: GameLock?,
@@ -650,7 +630,6 @@ object GameUtils {
         return DBUtils.saveGame(context!!, lock!!, bytes!!, setCreate)
     }
 
-    @JvmStatic
     @JvmOverloads
     fun saveNewGame(
         context: Context, bytes: ByteArray?,
@@ -659,7 +638,6 @@ object GameUtils {
         return DBUtils.saveNewGame(context!!, bytes!!, groupID, null)
     }
 
-    @JvmStatic
     fun makeSaveNew(
         context: Context, gi: CurGameInfo,
         groupID: Long, gameName: String?
@@ -705,7 +683,6 @@ object GameUtils {
         return rowid
     }
 
-    @JvmStatic
     fun makeNewMultiGame1(context: Context, nli: NetLaunchInfo): Long {
         return makeNewMultiGame2(
             context, nli, null as MultiMsgSink?,
@@ -713,7 +690,6 @@ object GameUtils {
         )
     }
 
-    @JvmStatic
     fun makeNewMultiGame2(
         context: Context, nli: NetLaunchInfo,
         sink: MultiMsgSink?, util: UtilCtxt?
@@ -738,7 +714,6 @@ object GameUtils {
         )
     }
 
-    @JvmStatic
     fun makeNewMultiGame3(
         context: Context, groupID: Long,
         gameName: String?, invitee: CommsAddrRec?
@@ -836,7 +811,6 @@ object GameUtils {
         )
     }
 
-    @JvmStatic
     fun makeNewMultiGame7(
         context: Context, gi: CurGameInfo,
         selfSet: CommsConnTypeSet?, gameName: String?
@@ -1001,7 +975,6 @@ object GameUtils {
         return result
     }
 
-    @JvmStatic
     fun dictNames(context: Context, lock: GameLock?): Array<String?>? {
         var result: Array<String?>? = null
         val stream = savedGame(context, lock)
@@ -1034,7 +1007,6 @@ object GameUtils {
         return result
     }
 
-    @JvmStatic
     fun gameDictsHere(context: Context, lock: GameLock?): Boolean {
         val gameDicts = dictNames(context, lock)
         return null != gameDicts && gameDictsHere(context, null, gameDicts)
@@ -1042,7 +1014,6 @@ object GameUtils {
 
     // Return true if all dicts present.  Return list of those that
     // are not.
-    @JvmStatic
     @JvmOverloads
     fun gameDictsHere(
         context: Context, rowid: Long,
@@ -1111,7 +1082,6 @@ object GameUtils {
         return bundle
     }
 
-    @JvmStatic
     @JvmOverloads
     fun launchGame(
         delegator: Delegator, rowid: Long,
@@ -1125,7 +1095,6 @@ object GameUtils {
         delegator.addFragment(BoardFrag.newInstance(delegator), extras)
     }
 
-    @JvmStatic
     fun feedMessage(
         context: Context, rowid: Long, msg: ByteArray?,
         ret: CommsAddrRec?, sink: MultiMsgSink?,
@@ -1207,7 +1176,6 @@ object GameUtils {
     // This *must* involve a reset if the language is changing!!!
     // Which isn't possible right now, so make sure the old and new
     // dict have the same langauge code.
-    @JvmStatic
     fun replaceDicts(
         context: Context, rowid: Long,
         oldDict: String?, newDict: String?
@@ -1327,7 +1295,6 @@ object GameUtils {
         DBUtils.saveSummary(context, lock, summary)
     } // applyChanges
 
-    @JvmStatic
     fun formatGameID(gameID: Int): String {
         Assert.assertTrue(0 != gameID)
         // I used to truncate this for smaller SMS messages, but gameID has
@@ -1349,7 +1316,6 @@ object GameUtils {
         return rint
     }
 
-    @JvmStatic
     fun postMoveNotification(
         context: Context, rowid: Long,
         bmr: BackMoveResult?,
@@ -1411,7 +1377,6 @@ object GameUtils {
         )
     }
 
-    @JvmStatic
     fun postInvitedNotification(
         context: Context, gameID: Int,
         body: String?, rowid: Long
@@ -1594,7 +1559,6 @@ object GameUtils {
         }
 
         companion object {
-            @JvmStatic
             fun make(context: Context, rowid: Long): GameWrapper? {
                 var result: GameWrapper? = GameWrapper(context, rowid)
                 if (!result!!.hasGame()) {

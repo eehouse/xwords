@@ -173,7 +173,6 @@ class CommsAddrRec : Serializable {
              * @return ordered list of types supported by this device as
              * configured.
              */
-            @JvmStatic
             fun getSupported(context: Context): List<CommsConnType> {
                 val supported: MutableList<CommsConnType> = ArrayList()
                 supported.add(CommsConnType.COMMS_CONN_RELAY)
@@ -195,7 +194,6 @@ class CommsAddrRec : Serializable {
                 return supported
             }
 
-            @JvmStatic
             fun removeUnsupported(
                 context: Context,
                 set: CommsConnTypeSet
@@ -420,13 +418,11 @@ class CommsAddrRec : Serializable {
 
     companion object {
         private val TAG = CommsAddrRec::class.java.getSimpleName()
-        @JvmStatic
         fun getSelfAddr(context: Context, types: CommsConnTypeSet): CommsAddrRec {
             return CommsAddrRec()
                 .populate(context, types)
         }
 
-        @JvmStatic
         fun getSelfAddr(context: Context): CommsAddrRec {
             val types: CommsConnTypeSet = XWPrefs.getAddrTypes(context)
             val result = getSelfAddr(context, types)
@@ -434,7 +430,6 @@ class CommsAddrRec : Serializable {
             return result
         }
 
-        @JvmStatic
         fun getSelfAddr(context: Context, gi: CurGameInfo): CommsAddrRec? {
             return if (CurGameInfo.DeviceRole.SERVER_STANDALONE == gi.serverRole) null else getSelfAddr(
                 context

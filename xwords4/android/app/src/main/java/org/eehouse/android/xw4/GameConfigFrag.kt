@@ -24,7 +24,6 @@ import android.os.Bundle
 public class GameConfigFrag(): XWFragment() {
 
 	companion object {
-		@JvmStatic
 		fun newInstance(  parent : Delegator ): XWFragment
 		{
 			return GameConfigFrag().setParentName(parent)

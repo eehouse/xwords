@@ -45,7 +45,6 @@ abstract open class XWFragment: Fragment(), Delegator {
 
 		private val sActiveFrags = HashSet<XWFragment>()
 
-		@JvmStatic
 		fun findOwnsView( view: View ): XWFragment?
 		{
 			var result: XWFragment? = null

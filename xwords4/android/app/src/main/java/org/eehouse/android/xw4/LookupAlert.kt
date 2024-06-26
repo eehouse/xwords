@@ -56,7 +56,6 @@ class LookupAlert : XWDialogFragment() {
 
     companion object {
         private val TAG = LookupAlert::class.java.getSimpleName()
-        @JvmStatic
         fun newInstance(words: Array<String>, isoCode: ISOCode?,
                         noStudy: Boolean): LookupAlert {
             val result = LookupAlert()

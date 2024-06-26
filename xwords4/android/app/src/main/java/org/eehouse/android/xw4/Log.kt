@@ -105,28 +105,24 @@ object Log {
         enable(on)
     }
 
-    @JvmStatic
     fun d(tag: String, fmt: String, vararg args: Any?) {
         if (sEnabled) {
             dolog(LOG_LEVEL.DEBUG, tag, fmt, args)
         }
     }
 
-    @JvmStatic
     fun w(tag: String, fmt: String, vararg args: Any?) {
         if (sEnabled) {
             dolog(LOG_LEVEL.WARN, tag, fmt, args)
         }
     }
 
-    @JvmStatic
     fun e(tag: String, fmt: String, vararg args: Any?) {
         if (ERROR_LOGGING_ENABLED) {
             dolog(LOG_LEVEL.ERROR, tag, fmt, args)
         }
     }
 
-    @JvmStatic
     fun i(tag: String, fmt: String, vararg args: Any?) {
         if (sEnabled) {
             dolog(LOG_LEVEL.INFO, tag, fmt, args)
@@ -146,7 +142,6 @@ object Log {
         store(level, fullTag, str)
     }
 
-    @JvmStatic
     fun ex(tag: String, exception: Exception) {
         if (sEnabled) {
             w(tag, "Exception: %s", exception.toString())

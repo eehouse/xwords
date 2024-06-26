@@ -47,7 +47,6 @@ class SMSCheckBoxPreference(context: Context, attrs: AttributeSet?) :
     companion object {
         private var s_this: WeakReference<ConfirmingCheckBoxPreference>? = null
 
-        @JvmStatic
         fun setChecked() {
             val self = s_this?.get()
             self?.super_setChecked(true)

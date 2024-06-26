@@ -779,7 +779,6 @@ class DictBrowseDelegate constructor(delegator: Delegator) : DelegateBase(
             )
         }
 
-        @JvmStatic
         @JvmOverloads
         fun launch(
             delegator: Delegator, name: String,
@@ -794,7 +793,6 @@ class DictBrowseDelegate constructor(delegator: Delegator) : DelegateBase(
             launch(delegator, bundle)
         }
 
-        @JvmStatic
         fun launch(delegator: Delegator, name: String) {
             val loc = DictUtils.getDictLoc(delegator.getActivity()!!, name)
             if (null == loc) {

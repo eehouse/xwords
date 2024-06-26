@@ -94,7 +94,6 @@ object Utils {
     private var s_hasSmallScreen: Boolean? = null
     private val s_random = Random()
 
-    @JvmStatic
     fun nextRandomInt(): Int {
         return s_random.nextInt()
     }
@@ -109,7 +108,6 @@ object Utils {
         return s_isFirstBootEver!!
     }
 
-    @JvmStatic
     fun firstBootThisVersion(context: Context): Boolean {
         setFirstBootStatics(context)
         return s_isFirstBootThisVersion!!
@@ -130,7 +128,6 @@ object Utils {
     // temporary workaround for KitKat having broken use of non-data messages,
     // we only support SMS on kitkat if data messages have been turned on (and
     // that's not allowed except on GSM phones.)
-    @JvmStatic
     fun deviceSupportsNBS(context: Context): Boolean {
         var result = false
         if (Perms23.haveNBSPerms(context)) {
@@ -149,7 +146,6 @@ object Utils {
         showToast(context, text)
     }
 
-    @JvmStatic
     fun showToast(
         context: Context,
         msg: String?
@@ -165,7 +161,6 @@ object Utils {
         }
     }
 
-    @JvmStatic
     fun showToast(context: Context, id: Int, vararg args: Any?) {
         var msg = LocUtils.getString(context, id)
         msg = Formatter().format(msg, *args).toString()
@@ -173,7 +168,6 @@ object Utils {
     }
 
     @JvmOverloads
-    @JvmStatic
     fun emailAuthor(context: Context, msg: String? = null) {
         emailAuthorImpl(
             context, msg, R.string.email_author_subject,
@@ -181,7 +175,6 @@ object Utils {
         )
     }
 
-    @JvmStatic
     fun emailLogFile(context: Context, attachment: File?) {
         val msg = LocUtils.getString(context, R.string.email_logs_msg)
         emailAuthorImpl(
@@ -235,7 +228,6 @@ object Utils {
         context.startActivity(Intent.createChooser(intent, chooserMsg))
     }
 
-    @JvmStatic
     fun gitInfoToClip(context: Context) {
         var sb: StringBuilder?
         try {
@@ -259,7 +251,6 @@ object Utils {
         }
     }
 
-    @JvmStatic
     fun stringToClip(context: Context, str: String?) {
         val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
         val label = LocUtils.getString(context, R.string.clip_label)
@@ -267,7 +258,6 @@ object Utils {
         clipboard.setPrimaryClip(clip)
     }
 
-    @JvmStatic
     fun postNotification(
         context: Context, intent: Intent?,
         titleID: Int, bodyID: Int, id: Int
@@ -286,7 +276,6 @@ object Utils {
         postNotification(context, intent, title, body, id)
     }
 
-    @JvmStatic
     fun postNotification(
         context: Context, intent: Intent?,
         titleId: Int, body: String?, rowid: Long
@@ -297,7 +286,6 @@ object Utils {
         )
     }
 
-    @JvmStatic
     fun postNotification(
         context: Context, intent: Intent?,
         titleID: Int, body: String?, id: Int
@@ -330,7 +318,6 @@ object Utils {
         )
     }
 
-    @JvmStatic
     fun postNotification(
         context: Context, intent: Intent?,
         title: String?, body: String?,
@@ -342,7 +329,6 @@ object Utils {
         )
     }
 
-    @JvmStatic
     fun postOngoingNotification(
         context: Context, intent: Intent?,
         title: String?, body: String?,
@@ -404,7 +390,6 @@ object Utils {
         return pi
     }
 
-    @JvmStatic
     fun cancelNotification(
         context: Context, channel: ID,
         rowid: Long
@@ -433,7 +418,6 @@ object Utils {
 
     // adapted from
     // http://stackoverflow.com/questions/2174048/how-to-look-up-a-contacts-name-from-their-phone-number-on-android
-    @JvmStatic
     fun phoneToContact(
         context: Context, phone: String,
         phoneStandsIn: Boolean
@@ -495,7 +479,6 @@ object Utils {
         return str
     }
 
-    @JvmStatic
     fun getMD5SumFor(context: Context, dal: DictAndLoc): String? {
         var result: String? = null
 
@@ -523,7 +506,6 @@ object Utils {
         return result
     }
 
-    @JvmStatic
     fun getMD5SumFor(bytes: ByteArray?): String? {
         var result: String? = null
         if (bytes != null) {
@@ -598,7 +580,6 @@ object Utils {
         }
     }
 
-    @JvmStatic
     fun setItemVisible(menu: Menu, id: Int, enabled: Boolean) {
         val item = menu.findItem(id)
         item?.setVisible(enabled)
@@ -657,7 +638,6 @@ object Utils {
         return makeDictUriFromCode(context, isoCode, dictName)
     }
 
-    @JvmStatic
     fun makeDictUriFromCode(context: Context, isoCode: ISOCode?, name: String?): Uri {
         val dictUrl = XWPrefs.getDefaultDictURL(context)
         val builder = Uri.parse(dictUrl).buildUpon()
@@ -686,7 +666,6 @@ object Utils {
         return if (null == s_appVersion) 0 else s_appVersion!!
     }
 
-    @JvmStatic
     fun makeInstallIntent(context: Context, file: File?): Intent {
         val uri = FileProvider
             .getUriForFile(
@@ -704,7 +683,6 @@ object Utils {
     }
 
     // Return whether there's an app installed that can install
-    @JvmStatic
     fun canInstall(context: Context, path: File?): Boolean {
         var result = false
         val pm = context.packageManager
@@ -718,12 +696,10 @@ object Utils {
         return result
     }
 
-    @JvmStatic
     fun getContentView(activity: Activity): View {
         return activity.findViewById(android.R.id.content)
     }
 
-    @JvmStatic
     fun isGooglePlayApp(context: Context): Boolean {
         val pm = context.packageManager
         val packageName = BuildConfig.APPLICATION_ID
@@ -733,13 +709,11 @@ object Utils {
         return result
     }
 
-    @JvmStatic
     fun isOnUIThread(): Boolean
     {
         return Looper.getMainLooper() == Looper.myLooper()
     }
 
-    @JvmStatic
     fun getChildInstanceOf(parent: ViewGroup, clazz: Class<*>): View? {
         var result: View? = null
         var ii = 0
@@ -756,7 +730,6 @@ object Utils {
         return result
     }
 
-    @JvmStatic
     fun enableAlertButton(dlg: AlertDialog, which: Int, enable: Boolean) {
         val button = dlg.getButton(which)
         if (null != button) {
@@ -799,17 +772,14 @@ object Utils {
         return result
     }
 
-    @JvmStatic
     fun base64Encode(`in`: ByteArray?): String {
         return Base64.encodeToString(`in`, Base64.NO_WRAP)
     }
 
-    @JvmStatic
     fun base64Decode(`in`: String?): ByteArray {
         return Base64.decode(`in`, Base64.NO_WRAP)
     }
 
-    @JvmStatic
     fun bytesToSerializable(bytes: ByteArray?): Serializable? {
         var result: Serializable? = null
         try {
@@ -828,7 +798,6 @@ object Utils {
         return result
     }
 
-    @JvmStatic
     fun serializableToBytes(obj: Serializable?): ByteArray? {
         var result: ByteArray? = null
         val bas = ByteArrayOutputStream()
@@ -850,7 +819,6 @@ object Utils {
         return result
     }
 
-    @JvmStatic
     fun testSerialization(obj: Serializable) {
         if (false && BuildConfig.DEBUG) {
             val as64 = serializableToString64(obj)
@@ -938,7 +906,6 @@ object Utils {
 
         companion object {
             private val sMap: MutableMap<String, ISOCode> = HashMap()
-            @JvmStatic
             fun newIf(code: String?): ISOCode? {
                 var result: ISOCode? = null
                 if (!TextUtils.isEmpty(code)) {
@@ -953,7 +920,6 @@ object Utils {
                 return result
             }
 
-            @JvmStatic
             fun safeEquals(ic1: ISOCode?, ic2: ISOCode?): Boolean {
                 val result = if (ic1 === ic2) {
                     true

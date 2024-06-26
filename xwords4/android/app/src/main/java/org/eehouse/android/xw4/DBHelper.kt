@@ -669,7 +669,6 @@ class DBHelper(private val mContext: Context) :
         const val SENDER = "SENDER"
         const val MESSAGE = "MESSAGE"
 
-		@JvmStatic
 		fun getDBName(): String {
 			return DB_NAME
 		}

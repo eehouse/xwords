@@ -34,13 +34,11 @@ class StudyListDelegate(delegator: Delegator) :
 	companion object {
 		private val TAG = StudyListDelegate::class.java.getSimpleName()
 
-		@JvmStatic
 		public fun launch( delegator: Delegator )
 		{
 			launch( delegator, null )
 		}
 
-		@JvmStatic
 		public fun launch( delegator: Delegator, isoCode: ISOCode? )
 		{
 			val context = delegator.getActivity() as Context

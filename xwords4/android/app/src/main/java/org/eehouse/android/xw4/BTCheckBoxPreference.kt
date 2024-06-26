@@ -56,7 +56,6 @@ class BTCheckBoxPreference(context: Context, attrs: AttributeSet?) :
         private val TAG: String = BTCheckBoxPreference::class.java.simpleName
         private var s_this: WeakReference<BTCheckBoxPreference>? = null
 
-        @JvmStatic
         fun setChecked() {
             if (null != s_this) {
                 val self = s_this!!.get()

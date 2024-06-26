@@ -319,7 +319,6 @@ class GameLock private constructor(
             return result
         }
 
-        @JvmStatic
         fun tryLock(rowid: Long): GameLock? {
             return getFor(rowid)!!.tryLock()
         }
@@ -346,7 +345,6 @@ class GameLock private constructor(
         // Meant to be called from UI thread, returning immediately, but when it
         // gets the lock, or time runs out, calls the callback (using the Handler
         // passed in) with the lock or null.
-        @JvmStatic
         fun getLockThen(
             rowid: Long,
             maxMillis: Long,

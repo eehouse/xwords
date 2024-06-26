@@ -74,7 +74,6 @@ class EnableSMSAlert : DlgDelegateAlert() {
 
     companion object {
         private val TAG = EnableSMSAlert::class.java.getSimpleName()
-        @JvmStatic
         fun newInstance(state: DlgState?): EnableSMSAlert {
             val result = EnableSMSAlert()
             result.addStateArgument(state!!)

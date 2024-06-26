@@ -2979,7 +2979,6 @@ class GamesListDelegate(delegator: Delegator) :
             // FLAG_ACTIVITY_CLEAR_TASK -- don't think so
         }
 
-        @JvmStatic
         fun makeRowidIntent(context: Context, rowid: Long): Intent {
             val intent = makeSelfIntent(context)
                 .putExtra(ROWID_EXTRA, rowid)

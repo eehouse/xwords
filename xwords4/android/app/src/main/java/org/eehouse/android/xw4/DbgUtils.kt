@@ -32,24 +32,20 @@ import kotlin.jvm.optionals.getOrNull
 object DbgUtils {
     private val TAG = DbgUtils::class.java.getSimpleName()
 
-    @JvmStatic
     fun showf(format: String, vararg args: Any?) {
         showf(XWApp.getContext(), format, *args)
     }
 
-    @JvmStatic
     fun showf(context: Context, format: String, vararg args: Any?) {
         val formatter = Formatter()
         val msg = formatter.format(format, *args).toString()
         Utils.showToast(context, msg)
     } // showf
 
-    @JvmStatic
     fun showf(context: Context, formatid: Int, vararg args: Any?) {
         showf(context, LocUtils.getString(context, formatid), *args)
     } // showf
 
-    @JvmStatic
     fun toastNoLock(
         tag: String, context: Context, rowid: Long,
         format: String, vararg args: Any?
@@ -64,13 +60,11 @@ object DbgUtils {
         Log.w(tag, GameLock.getHolderDump(rowid))
     }
 
-    @JvmStatic
     @JvmOverloads
     fun assertOnUIThread(isOnThread: Boolean = true) {
         Assert.assertTrue(isOnThread == Utils.isOnUIThread())
     }
 
-    @JvmStatic
     @JvmOverloads
     fun printStack(
         tag: String,
@@ -84,7 +78,6 @@ object DbgUtils {
         }
     }
 
-	@JvmStatic
     fun printStack(tag: String, ex: Exception?) {
         val stackTrace = android.util.Log.getStackTraceString(ex)
         Log.d(tag, stackTrace)
@@ -100,7 +93,6 @@ object DbgUtils {
         return TextUtils.join(", ", al)
     }
 
-    @JvmStatic
     fun extrasToString(intent: Intent): String {
         val bundle = intent.extras
         return extrasToString(bundle)
@@ -157,7 +149,6 @@ object DbgUtils {
     //     }
     //     return TextUtils.join( ", ", asStrs );
     // }
-    @JvmStatic
     fun hexDump(bytes: ByteArray?): String {
         var result = "<null>"
         if (null != bytes) {

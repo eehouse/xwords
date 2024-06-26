@@ -110,7 +110,6 @@ object ConnStatusHandler {
         CommsConnType.COMMS_CONN_NFC,
     )
 
-    @JvmStatic
     fun getStatusText(
         context: Context, gamePtr: XwJNI.GamePtr,
         gameID: Int, connTypes: CommsConnTypeSet?,
@@ -250,7 +249,6 @@ object ConnStatusHandler {
         updateStatusImpl(context, cbacks, connType, success, true)
     }
 
-    @JvmStatic
     fun updateStatusIn(
         context: Context, connType: CommsConnType,
         success: Boolean
@@ -265,7 +263,6 @@ object ConnStatusHandler {
         updateStatusImpl(context, cbacks, connType, success, false)
     }
 
-    @JvmStatic
     fun updateStatusOut(context: Context, connType: CommsConnType, success: Boolean) {
         updateStatusImpl(context, null, connType, success, false)
     }

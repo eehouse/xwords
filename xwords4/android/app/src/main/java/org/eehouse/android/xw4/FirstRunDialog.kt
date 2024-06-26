@@ -75,7 +75,6 @@ class FirstRunDialog : XWDialogFragment() {
 
     companion object {
         private val TAG = FirstRunDialog::class.java.getSimpleName()
-        @JvmStatic
         fun newInstance(): FirstRunDialog {
             return FirstRunDialog()
         }

@@ -275,7 +275,6 @@ class KnownPlayersDelegate(delegator: Delegator) :
         private val KEY_EXPSET = TAG + "/expset"
         private val KEY_BY_DATE = TAG + "/bydate"
 
-        @JvmStatic
         fun launchOrAlert(
             delegator: Delegator,
             dlg: HasDlgDelegate?
