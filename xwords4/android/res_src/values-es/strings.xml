@@ -1188,7 +1188,7 @@
     <string name="ro_juggle">Al azar</string>
     <string name="na_rematch_edit">El nombre del juego no cambiará una vez que lo hayas editado, a menos que esté vacío.</string>
     <string name="button_refresh">Refrescar</string>
-    <string name="sort_by_date_label">Ordenar por fecha</string>
+    <string name="sort_by_date_label">Lo mas reciente primero</string>
     <string name="peers_info_pending">Consultando al servidor…</string>
     <string name="no_peers_info">Información de pares no disponible</string>
     <string name="selfName">Este dispositivo</string>
@@ -1208,4 +1208,18 @@
     <string name="disable_shuffle_button_summary">Ocultar el botón que hace malabares con las fichas de la bandeja</string>
     <string name="disable_undo_button_summary">Ocultar el botón que elimina o sustituye el movimiento en curso</string>
     <string name="disable_values_button_summary">Ocultar el botón que muestra los valores de las fichas</string>
+    <string name="buttonYesAnd">Sí y guardar</string>
+    <plurals name="yesAndMsgFmt">
+        <item quantity="one">(Si eliges el botón \"%1$s\" no se te volverá a preguntar por esta palabra)</item>
+        <item quantity="many">(Si eliges el botón \"%1$s\" no se te volverá a preguntar por estas palabras)</item>
+        <item quantity="other">(Si eliges el botón \"%1$s\" no se te volverá a preguntar por estas palabras)</item>
+    </plurals>
+    <string name="tile_back_recent">Fondo del mosaico, último movimiento</string>
+    <string name="not_again_newsawnew_fmt">El movimiento más reciente se dibuja ahora utilizando un nuevo color de fondo.
+\n
+\nPuede personalizar ese color en %1$s, donde el ajuste de color se llama \"%2$s\".</string>
+    <string name="title_url_scheme">Esquema de las API web</string>
+    <string name="url_scheme_default">Utilizar el sistema operativo del dispositivo por defecto</string>
+    <string name="url_scheme_http">Obligar http</string>
+    <string name="url_scheme_https">Obligar https</string>
 </resources>
