@@ -50,27 +50,11 @@ class CommsTransport(
         addr: CommsAddrRec, conType: CommsConnType,
         gameID: Int, timestamp: Int
     ): Int {
-        Log.d(
-            TAG, "transportSendMsg(len=%d, typ=%s, ts=%d)", buf.size,
-            conType.toString(), timestamp
+        Assert.assertTrueNR(addr.contains(conType)) // fired per google
+        val nSent = sendForAddr(
+            m_context, addr, conType, m_rowid, gameID,
+            timestamp, buf, streamVers, msgID
         )
-        var nSent = -1
-        Assert.assertNotNull(addr)
-        Assert.assertTrueNR(addr!!.contains(conType!!)) // fired per google
-        if (!BuildConfig.UDP_ENABLED && conType == CommsConnType.COMMS_CONN_RELAY) {
-            Assert.failDbg()
-        }
-        if (!BuildConfig.UDP_ENABLED && conType == CommsConnType.COMMS_CONN_RELAY) {
-            if (NetStateCache.netAvail(m_context)) {
-                Assert.failDbg()
-                nSent = -1
-            }
-        } else {
-            nSent = sendForAddr(
-                m_context, addr, conType, m_rowid, gameID,
-                timestamp, buf, streamVers, msgID
-            )
-        }
 
         // Keep this while debugging why the resend_all that gets fired on
         // reconnect doesn't install a game but a manual resend does.
