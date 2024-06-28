@@ -517,7 +517,7 @@ class MQTTUtils private constructor(context: Context,
                 : TimerCallback = object : TimerCallback {
             override fun timerFired(context: Context) {
                 Log.d(TAG, "timerFired()")
-                timerFired(context)
+                MQTTUtils.timerFired(context)
             }
 
             override fun incrementBackoff(backoff: Long): Long {
