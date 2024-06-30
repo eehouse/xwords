@@ -1070,7 +1070,7 @@ class GamesListDelegate(delegator: Delegator) :
     //////////////////////////////////////////////////////////////////////
     override fun gameSaved(
         context: Context, rowid: Long,
-        change: GameChangeType?
+        change: GameChangeType
     ) {
         post {
             when (change) {
@@ -1100,8 +1100,6 @@ class GamesListDelegate(delegator: Delegator) :
                     unselIfHidden(rowid)
                     mkListAdapter()
                 }
-
-                else -> Assert.failDbg()
             }
         }
     }

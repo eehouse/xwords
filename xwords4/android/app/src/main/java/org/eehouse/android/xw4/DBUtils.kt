@@ -2243,7 +2243,7 @@ object DBUtils {
     interface DBChangeListener {
         fun gameSaved(
             context: Context, rowid: Long,
-            change: GameChangeType?
+            change: GameChangeType
         )
     }
 

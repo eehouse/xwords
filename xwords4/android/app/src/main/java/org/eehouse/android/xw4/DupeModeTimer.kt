@@ -173,7 +173,7 @@ class DupeModeTimer : BroadcastReceiver() {
             DBUtils.setDBChangeListener(object : DBChangeListener {
                 override fun gameSaved(
                     context: Context, rowid: Long,
-                    change: GameChangeType?
+                    change: GameChangeType
                 ) {
                     // Log.d( TAG, "gameSaved(rowid=%d,change=%s) called", rowid, change );
                     when (change) {
@@ -188,7 +188,7 @@ class DupeModeTimer : BroadcastReceiver() {
                         }
 
                         GameChangeType.GAME_DELETED -> cancelNotification(context, rowid)
-                        else -> {Log.d(TAG, "unexpected change $change"); Assert.failDbg()}
+                        else -> {Log.d(TAG, "gameSaved(): unexpected change $change")}
                     }
                 }
             })
