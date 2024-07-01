@@ -741,7 +741,7 @@ getMQTTIDsFor( CommsCtxt* comms, XWEnv xwe, XP_U16 nRelayIDs,
     XP_USE(xwe);
     XP_USE(nRelayIDs);
     XP_USE(relayIDs);
-    XP_ASSERT(0);
+    // XP_ASSERT(0);        /* I see this on dev with many old games */
 }
 
 /* Return TRUE if there are no addresses left that include relay */
