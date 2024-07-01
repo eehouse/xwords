@@ -28,13 +28,6 @@ val INITIAL_CLIENT_VERS = 10
 val BUILD_INFO_NAME = "build-info.txt"
 val LAST_COMMIT_FILE = "last-commit.txt"
 
-// Trying to support older devices (pre KitKat) while moving KitKat and beyond
-// to the newer version of the Paho MQTT client library that, with luck, will
-// crash less. I expect there will be two tags and two releases per set of
-// changes: first one with USE_KITKAT_MQTT changed to false, and then
-// immediately after one with it set to true. I have no idea how to do this on
-// f-droid, so for now JellyBean and earlier will be abandoned there.
-val USE_KITKAT_MQTT = true
 
 // Not all variants use the same BT_UUID. Those with the same talk to
 // each other
@@ -94,16 +87,23 @@ android {
          targetCompatibility = JavaVersion.VERSION_1_8
 	 }
 
+     packagingOptions {
+         resources {
+             excludes += listOf("META-INF/INDEX.LIST", "META-INF/io.netty.versions.properties")
+
+             excludes += listOf("/META-INF/{AL2.0,LGPL2.1}")
+             excludes += listOf("META-INF/LICENSE.md")
+             excludes += listOf("META-INF/LICENSE-notice.md")
+             excludes += listOf("META-INF/INDEX.LIST")
+             excludes += listOf("META-INF/*.properties")
+         }
+     }
+
     // Specify buildToolsVersion so gradle will inform when the
     // default changes and .travis.yml can be kept in sync
     ndkVersion  = "21.4.7075529" // upgrade this and may need to up minSdk below
     defaultConfig {
-        // HostApduService requires 19. But is it a problem?
-        if ( USE_KITKAT_MQTT ) {
-            minSdk = 21			// this will abandon some users; consider
-        } else {
-            minSdk = 14
-        }
+        minSdk = 21			// this will abandon some users; consider
         versionCode = VERSION_CODE_BASE
         versionName = VERSION_NAME
     }
@@ -408,19 +408,7 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.0.0")
     annotationProcessor( "androidx.lifecycle:lifecycle-compiler:2.0.+" )
 
-	// 3:1.2.+ crashes on API 18 and below (all Jelly Beans) because
-	// java.nio.charset.StandardCharsets not defined. Does not crash on
-	// 19 (KitKat).
-	if ( USE_KITKAT_MQTT ) {
-        // Most recent seems to be 1.2.5 tagged July 2020.
-        // https://github.com/eclipse/paho.mqtt.java/tags
-        implementation( "org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.2.+" )
-	} else {
-		implementation( "org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.1.+" )
-	}
-
-    // Try this if paho keeps sucking (and it's not my fault)
-    // implementation("com.hivemq:hivemq-mqtt-client:1.3.0")
+    implementation("com.hivemq:hivemq-mqtt-client:1.3.3")
 
     implementation( "com.google.zxing:core:3.3.+" )
     implementation( "com.jakewharton:process-phoenix:2.1.2" )

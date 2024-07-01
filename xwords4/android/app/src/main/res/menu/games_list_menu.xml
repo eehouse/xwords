@@ -130,6 +130,9 @@
         <item android:id="@+id/games_menu_pingMqtt"
               android:title="@string/games_menu_pingMqtt"
               />
+        <item android:id="@+id/games_menu_mqttStats"
+              android:title="@string/games_menu_mqttStats"
+              />
       </menu>
     </item>
 

@@ -1736,6 +1736,13 @@ class GamesListDelegate(delegator: Delegator) :
                 }
             })
 
+            R.id.games_menu_mqttStats -> {
+                val stats = MQTTUtils.getStats( mActivity ).orEmpty()
+                if ( !TextUtils.isEmpty(stats) ) {
+                    makeOkOnlyBuilder( stats ).show()
+                }
+            }
+
             R.id.games_menu_restart -> ProcessPhoenix.triggerRebirth(mActivity)
             R.id.games_menu_timerStats -> makeOkOnlyBuilder(TimerReceiver.statsStr(mActivity))
                 .setActionPair(DlgDelegate.Action.CLEAR_INT_STATS, R.string.button_clear_stats)

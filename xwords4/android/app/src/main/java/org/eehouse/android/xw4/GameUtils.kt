@@ -1459,10 +1459,10 @@ object GameUtils {
                                     gameID
                                 )
 
-                                CommsConnType.COMMS_CONN_MQTT -> {
+                                CommsConnType.COMMS_CONN_MQTT ->
                                     MQTTUtils.gameDied( context, addr.mqtt_devID!!, gameID )
-                                }
-                                else -> {Log.d(TAG, "unexpected type $typ")}
+
+                                else -> Log.d(TAG, "tellDied(): unexpected type $typ")
                             }
                         }
                     }

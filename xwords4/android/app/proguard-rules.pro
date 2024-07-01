@@ -40,3 +40,6 @@
 -keep public class org.eehouse.android.xw4.HeaderWithExpander$OnExpandedListener
 -keep public class org.eehouse.android.xw4.XWListItem$ExpandedListener
 -keep public class org.eehouse.android.xw4.XWListItem$DeleteCallback
+
+-keepclassmembernames class io.netty.** { *; }
+-keepclassmembers class org.jctools.** { *; }

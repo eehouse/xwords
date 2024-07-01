@@ -26,6 +26,7 @@
   <string name="gamel_menu_mqtt">MQTT</string>
   <string name="games_menu_pingMqtt">Ping</string>
   <string name="ping_result_fmt">Ping via %1$s took %2$d ms.</string>
+  <string name="games_menu_mqttStats">Connection stats</string>
 
   <string name="warn_mqtt_gone">The ability to send moves over the
   internet via MQTT is no longer supported on your version of
