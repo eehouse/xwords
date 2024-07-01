@@ -19,7 +19,7 @@
     <string name="strd_remaining_tiles_add_fmt">+ %1$d [todos os quadrados restantes]</string>
     <string name="strs_values_header_fmt">%1$s contagens/valores:
 \n</string>
-    <string name="str_robot_moved_fmt">"O robô t %1$s fez essa jogada: "</string>
+    <string name="str_robot_moved_fmt">"O robô %1$s fez essa jogada: "</string>
     <string name="board_menu_game_resend">Reenviar jogadas</string>
     <string name="board_menu_game_resign">Abandonar</string>
     <string name="board_menu_game_final">Pontuação final</string>
@@ -30,7 +30,7 @@
     <string name="board_menu_undo_last">Desfazer último</string>
     <string name="board_menu_trade">Trocar</string>
     <string name="board_menu_done">Turno terminado</string>
-    <string name="badwords_title">Palavra ilegal[s]</string>
+    <string name="badwords_title">Palavra(s) ilegal(is)</string>
     <string name="badwords_lost">Turno perdido.</string>
     <string name="badwords_accept">" Você ainda quer aceitar essa jogada\?"</string>
     <string name="ids_badwords_fmt">Palavra[s] %1$s não encontrada na lista de palavras %2$s.</string>
@@ -1189,7 +1189,7 @@
     <string name="na_rematch_edit">O nome da partida não vai mudar uma vez que tenha o editado, a menos que esteja vazio.</string>
     <string name="no_peers_info">Informação de pares indisponível</string>
     <string name="button_refresh">Atualizar</string>
-    <string name="sort_by_date_label">Organizar por data</string>
+    <string name="sort_by_date_label">Mais recentes primeiro</string>
     <string name="peers_info_pending">Consultando servidor…</string>
     <string name="selfName">Este Dispositivo</string>
     <string name="sub_seven_allowed">Permitir trocas quando restam menos de sete quadrados</string>
@@ -1208,4 +1208,18 @@
     <string name="disable_values_button_title">Desabilitar o botão dos valores dos quadrados</string>
     <string name="disable_flip_button_title">Desabilitar o botão de virar a tabela</string>
     <string name="disable_shuffle_button_summary">Esconder o botão que reorganiza os quadrados da tabela</string>
+    <string name="tile_back_recent">Fundo do quadrado, última jogada</string>
+    <string name="buttonYesAnd">Sim &amp; Salvar</string>
+    <plurals name="yesAndMsgFmt">
+        <item quantity="one">(Se você escolher o botão “%1$s” você não será perguntado sobre esta palavra novamente.)</item>
+        <item quantity="many">(Se você escolher o botão “%1$s” você não será perguntado sobre estas palavras novamente.)</item>
+        <item quantity="other">(Se você escolher o botão “%1$s” você não será perguntado sobre estas palavras novamente.)</item>
+    </plurals>
+    <string name="not_again_newsawnew_fmt">A jogada mais recente agora é exibida com uma nova cor de fundo.
+\n
+\nVocê pode personalizar esta cor em %1$s, onde a configuração de cor é “%2$s”.</string>
+    <string name="title_url_scheme">Esquema para APIs Web</string>
+    <string name="url_scheme_default">Usar padrão do SO do dispositivo</string>
+    <string name="url_scheme_http">Forçar Http</string>
+    <string name="url_scheme_https">Forçar Https</string>
 </resources>
