@@ -1453,64 +1453,67 @@ class GamesListDelegate(delegator: Delegator) :
     ) {
         val cancelled = Activity.RESULT_CANCELED == resultCode
         when (requestCode) {
-            RequestCode.REQUEST_LANG_GL -> if (!cancelled) {
-                Log.d(TAG, "lang need met")
-                if (checkWarnNoDict(m_missingDictRowId)) {
-                    launchGameIf()
+            RequestCode.REQUEST_LANG_GL ->
+                if (!cancelled) {
+                    Log.d(TAG, "lang need met")
+                    if (checkWarnNoDict(m_missingDictRowId)) {
+                        launchGameIf()
+                    }
                 }
-            }
 
-            RequestCode.CONFIG_GAME -> if (!cancelled) {
-                val rowID = data.getLongExtra(
-                    GameUtils.INTENT_KEY_ROWID,
-                    ROWID_NOTFOUND
-                )
-                if (ROWID_NOTFOUND != rowID) {
-                    launchGame(rowID)
-                } else {        // new game case?
-                    val gi =
-                        data.getSerializableExtra(GameConfigDelegate.INTENT_KEY_GI) as CurGameInfo?
-                    val selfAddr = data
-                        .getSerializableExtra(GameConfigDelegate.INTENT_KEY_SADDR) as CommsAddrRec?
-                    val selfTypes = selfAddr!!.conTypes
-                    val name = data
-                        .getStringExtra(GameConfigDelegate.INTENT_KEY_NAME)
-                    val rowid = GameUtils.makeNewMultiGame7(
-                        mActivity, gi!!,
-                        selfTypes, name!!
+            RequestCode.CONFIG_GAME ->
+                if (!cancelled) {
+                    val rowID = data.getLongExtra(
+                        GameUtils.INTENT_KEY_ROWID,
+                        ROWID_NOTFOUND
                     )
-                    launchGame(rowid)
+                    if (ROWID_NOTFOUND != rowID) {
+                        launchGame(rowID)
+                    } else {        // new game case?
+                        val gi =
+                            data.getSerializableExtra(GameConfigDelegate.INTENT_KEY_GI) as CurGameInfo?
+                        val selfAddr = data
+                            .getSerializableExtra(GameConfigDelegate.INTENT_KEY_SADDR) as CommsAddrRec?
+                        val selfTypes = selfAddr!!.conTypes
+                        val name = data
+                            .getStringExtra(GameConfigDelegate.INTENT_KEY_NAME)
+                        val rowid = GameUtils.makeNewMultiGame7(
+                            mActivity, gi!!,
+                            selfTypes, name!!
+                        )
+                        launchGame(rowid)
+                    }
                 }
-            }
 
-            RequestCode.STORE_DATA_FILE, RequestCode.LOAD_DATA_FILE -> if (Activity.RESULT_OK == resultCode && data != null) {
-                val uri = data.data
-                val isStore = RequestCode.STORE_DATA_FILE == requestCode
-                if (isStore) {
-                    val saved =
-                        ZipUtils.save(mActivity, uri!!, mSaveWhat!!)
-                    val msgID = if (saved) R.string.db_store_done
-                    else R.string.db_store_failed
-                    showToast(msgID)
-                } else {
-                    post {
-                        if (ZipUtils.hasWhats(mActivity, uri)) {
-                            val uriStr = uri.toString()
-                            showDialogFragment(DlgID.BACKUP_LOADSTORE, uriStr)
-                        } else {
-                            val name = ZipUtils.getFileName(mActivity, uri)
-                            if (null != name) {
-                                makeOkOnlyBuilder(R.string.backup_bad_file_fmt, name)
-                                    .setActionPair(
-                                        DlgDelegate.Action.BACKUP_RETRY,
-                                        R.string.button_pick_again
-                                    )
-                                    .show()
+            RequestCode.STORE_DATA_FILE, RequestCode.LOAD_DATA_FILE ->
+                if (Activity.RESULT_OK == resultCode && data != null) {
+                    val uri = data.data
+                        val isStore = RequestCode.STORE_DATA_FILE == requestCode
+                    if (isStore) {
+                        val saved =
+                            ZipUtils.save(mActivity, uri!!, mSaveWhat!!)
+                        val msgID = if (saved) R.string.db_store_done
+                        else R.string.db_store_failed
+                        showToast(msgID)
+                    } else {
+                        post {
+                            if (ZipUtils.hasWhats(mActivity, uri)) {
+                                val uriStr = uri.toString()
+                                showDialogFragment(DlgID.BACKUP_LOADSTORE, uriStr)
+                            } else {
+                                val name = ZipUtils.getFileName(mActivity, uri)
+                                if (null != name) {
+                                    makeOkOnlyBuilder(R.string.backup_bad_file_fmt, name)
+                                        .setActionPair(
+                                            DlgDelegate.Action.BACKUP_RETRY,
+                                            R.string.button_pick_again
+                                        )
+                                        .show()
+                                }
                             }
                         }
                     }
                 }
-            }
             else -> {Log.d(TAG, "unexpected requestCode $requestCode")}
         }
     }

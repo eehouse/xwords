@@ -2763,9 +2763,8 @@ main( int argc, char** argv )
 
 #ifdef DEBUG
     {
-        int i;
-        for ( i = 0; i < argc; ++i ) {
-            XP_LOGF( "%s", argv[i] );
+        for ( int ii = 0; ii < argc; ++ii ) {
+            XP_LOGFF( "arg[%d]: %s", ii, argv[ii] );
         }
     }
 #endif
