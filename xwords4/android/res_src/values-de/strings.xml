@@ -1141,7 +1141,7 @@
     <string name="ro_no_default">Jedes Mal fragen</string>
     <string name="na_rematch_edit">Der Spielname wird sich nicht mehr ändern, sobald Sie ihn bearbeiten, es sei denn er ist leer.</string>
     <string name="peers_info_pending">Frage den Server ab…</string>
-    <string name="sort_by_date_label">Nach Datum sortieren</string>
+    <string name="sort_by_date_label">Neueste zuerst</string>
     <string name="no_peers_info">Peer-Informationen nicht verfügbar</string>
     <string name="button_refresh">Aktualisieren</string>
     <string name="sub_seven_allowed">Buchstabenwechsel auch bei
@@ -1183,4 +1183,13 @@
     mit einer eigenen Hintergrundfarbe hinterlegt.\n\nMan kann diese
     Farbe in %1$s einstellen, die Einstellung heißt “%2$s”.</string>
     <string name="selfName">Dieses Gerät</string>
+    <plurals name="yesAndMsgFmt">
+        <item quantity="one">(Wenn Sie den Button “%1$s” wählen, werden Sie nicht wieder über dieses Wort gefragt.)</item>
+        <item quantity="other">(Wenn Sie den Button “%1$s” wählen, werden Sie nicht wieder über diese Wörter gefragt.)</item>
+    </plurals>
+    <string name="buttonYesAnd">Ja und speichern</string>
+    <string name="title_url_scheme">Schema für Web-APIs</string>
+    <string name="url_scheme_default">Verwenden des Gerätes-OS-Standards</string>
+    <string name="url_scheme_http">Http erzwingen</string>
+    <string name="url_scheme_https">Https erzwingen</string>
 </resources>
