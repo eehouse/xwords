@@ -637,7 +637,7 @@
     <!-- clarification on hints_allowed, whether new NETWORKED games
          will default to having the hint feature enabled(string
          elsewhere in this file) -->
-    <string name="nethints_allowed_sum">Permitir dicas para jogos de dois aparelhos</string>
+    <string name="nethints_allowed_sum">Permitir dicas para jogos de múltiplos aparelhos</string>
     <!-- Will new games, on default, randomly rearrange the start
          order of players. -->
     <string name="init_autojuggle">Embaralhar jogadores</string>
@@ -2300,5 +2300,35 @@
     <string name="peers_info_pending">A consultar o servidor…</string>
     <string name="no_peers_info">Informação de pares indisponível</string>
     <string name="button_refresh">Atualizar</string>
-    <string name="sort_by_date_label">Ordenar por data</string>
+    <string name="sort_by_date_label">Mais recente primeiro</string>
+    <string name="prefs_board_buttons">Botões do tabuleiro</string>
+    <string name="disable_dicts_button_title">Desativar o botão de listas de palavras</string>
+    <string name="disable_dicts_button_summary">Esconder o botão que abre a lista de palavras atual</string>
+    <string name="prefs_board_buttons_summary">Desativar botões que não usa</string>
+    <string name="disable_chat_button_summary">Esconder o botão que abre o chat</string>
+    <string name="disable_undo_button_summary">Esconder o botão que remove ou substitui o seu movimento em progresso</string>
+    <string name="not_again_newsawnew_fmt">O movimento mais recente agora é exibido com uma nova cor de fundo.
+\n
+\nPode personalizar esta cor em %1$s, onde a configuração de cor é “%2$s”.</string>
+    <plurals name="yesAndMsgFmt">
+        <item quantity="one">(Se escolher o botão “%1$s” não será perguntado sobre esta palavra novamente.)</item>
+        <item quantity="many">(Se escolher o botão “%1$s” não será perguntado sobre estas palavras novamente.)</item>
+        <item quantity="other">(Se escolher o botão “%1$s” não será perguntado sobre estas palavras novamente.)</item>
+    </plurals>
+    <string name="buttonYesAnd">Sim e gravar</string>
+    <string name="tile_back_recent">Fundo da pedra, o movimento mais recente</string>
+    <string name="selfName">Este aparelho</string>
+    <string name="sub_seven_allowed">Permitir trocas quando restam menos que sete pedras</string>
+    <string name="sub_seven_allowed_sum">Permite trocar pedras quando resta pelo menos 1 no agrupamento, conforme uso no jogo espanhol.</string>
+    <string name="disable_flip_button_title">Desativar o botão de virar o tabuleiro</string>
+    <string name="disable_flip_button_summary">Esconder o botão que vira o tabuleiro diagonalmente</string>
+    <string name="disable_shuffle_button_title">Desativar o botão de embaralhar pedras</string>
+    <string name="disable_undo_button_title">Esconder o botão de desfazer movimentos</string>
+    <string name="disable_chat_button_title">Desativar botão de chat</string>
+    <string name="disable_values_button_title">Desativar o botão dos valores de pedras</string>
+    <string name="disable_values_button_summary">Esconder o botão que alterna a exibição dos valores das pedras</string>
+    <string name="title_url_scheme">Esquema para APIs web</string>
+    <string name="url_scheme_default">Usar padrão do SO do aparelho</string>
+    <string name="url_scheme_http">Forçar http</string>
+    <string name="url_scheme_https">Forçar https</string>
 </resources>
