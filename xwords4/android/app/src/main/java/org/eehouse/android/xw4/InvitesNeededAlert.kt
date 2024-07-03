@@ -28,7 +28,6 @@ import java.io.Serializable
 import org.eehouse.android.xw4.jni.CommsAddrRec
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType
 import org.eehouse.android.xw4.jni.XwJNI
-import org.eehouse.android.xw4.jni.XwJNI.GamePtr
 import org.eehouse.android.xw4.loc.LocUtils
 
 private val TAG: String = InvitesNeededAlert::class.java.simpleName
@@ -38,10 +37,7 @@ internal class InvitesNeededAlert private constructor(
 {
     private var mAlert: DBAlert? = null
 
-     // PENDING should be calling gamePtr.retain()?  Would need to release
-     // then somewhere
-    internal class Wrapper(private val mCallbacks: Callbacks,
-                           private val mGamePtr: GamePtr)
+    internal class Wrapper(private val mCallbacks: Callbacks)
     {
         private var mSelf: InvitesNeededAlert? = null
         private var mHostAddr: CommsAddrRec? = null
@@ -75,8 +71,7 @@ internal class InvitesNeededAlert private constructor(
 
         fun make(alert: DBAlert, vararg params: Any?): AlertDialog {
             DbgUtils.assertOnUIThread()
-            return mSelf!!.makeImpl(mCallbacks, alert, mHostAddr,
-                                    mGamePtr, *params)
+            return mSelf!!.makeImpl(mCallbacks, alert, mHostAddr, *params)
         }
 
         fun dismiss() {
@@ -134,8 +129,7 @@ internal class InvitesNeededAlert private constructor(
 
     private fun makeImpl(
         callbacks: Callbacks, alert: DBAlert,
-        hostAddr: CommsAddrRec?, gamePtr: GamePtr,
-        vararg params: Any?
+        hostAddr: CommsAddrRec?, vararg params: Any?
     ): AlertDialog {
         val state = params[0] as State
         val ab = mDelegate.makeAlertBuilder()
@@ -143,7 +137,7 @@ internal class InvitesNeededAlert private constructor(
         val closeLoc = intArrayOf(AlertDialog.BUTTON_NEGATIVE)
 
         if (state.mIsServer) {
-            makeImplHost(ab, callbacks, alert, state, gamePtr, closeLoc)
+            makeImplHost(ab, callbacks, alert, state, closeLoc)
         } else {
             makeImplGuest(ab, state, hostAddr)
         }
@@ -207,8 +201,7 @@ internal class InvitesNeededAlert private constructor(
 
     private fun makeImplHost(
         ab: AlertDialog.Builder, callbacks: Callbacks,
-        alert: DBAlert, state: State, gamePtr: GamePtr,
-        closeLoc: IntArray
+        alert: DBAlert, state: State, closeLoc: IntArray
     ) {
         val context: Context = mDelegate.getActivity()
         val nPlayersMissing = state.mNPlayersMissing

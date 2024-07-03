@@ -2203,7 +2203,7 @@ class BoardDelegate(delegator: Delegator) :
     private val iNAWrapper: InvitesNeededAlert.Wrapper
         private get() {
             if (null == mINAWrapper) {
-                mINAWrapper = InvitesNeededAlert.Wrapper(this, mJniGamePtr!!)
+                mINAWrapper = InvitesNeededAlert.Wrapper(this)
                 showOrHide(mINAWrapper!!)
             }
             return mINAWrapper!!
