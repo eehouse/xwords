@@ -1907,7 +1907,8 @@ showPrevScore( ServerCtxt* server, XWEnv xwe )
             stream_destroy( prevStream );
         }
 
-        util_informMove( server->vol.util, xwe, prevTurn, stream, server->nv.prevWordsStream );
+        util_informMove( server->vol.util, xwe, prevTurn, stream,
+                         server->nv.prevWordsStream );
         stream_destroy( stream );
 
         if ( !!server->nv.prevWordsStream ) {

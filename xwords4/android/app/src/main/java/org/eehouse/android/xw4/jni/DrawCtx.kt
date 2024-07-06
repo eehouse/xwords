@@ -57,9 +57,9 @@ interface DrawCtx {
     )
 
     fun trayBegin(rect: Rect, owner: Int, score: Int): Boolean
-    fun drawTile(rect: Rect, text: String?, `val`: Int, flags: Int): Boolean
+    fun drawTile(rect: Rect, text: String?, value: Int, flags: Int): Boolean
     fun drawTileMidDrag(
-        rect: Rect, text: String?, `val`: Int, owner: Int,
+        rect: Rect, text: String?, value: Int, owner: Int,
         flags: Int
     ): Boolean
 
@@ -71,8 +71,8 @@ interface DrawCtx {
     )
 
     // typ possibilities are defined in UtilCtxt.java
-    fun objFinished( /*BoardObjectType*/
-                     typ: Int, rect: Rect
+    fun objFinished( typ: Int, /*BoardObjectType*/
+                     rect: Rect
     )
 
     fun dictChanged(dictPtr: Long)

@@ -154,7 +154,7 @@ class GameConfigDelegate(delegator: Delegator) :
                     .create()
                 alert.setOnDismissListener(
                     object:OnDismissListener {
-                        override fun onDismissed(frag: XWDialogFragment?) {
+                        override fun onDismissed(frag: XWDialogFragment) {
                             if (mGi!!.forceRemoteConsistent()) {
                                 showToast(R.string.forced_consistent)
                                 loadPlayersList()
@@ -183,7 +183,7 @@ class GameConfigDelegate(delegator: Delegator) :
                 ab.setNegativeButton(R.string.button_discard_changes, dlpos)
                 dialog = ab.create()
                 alert.setOnDismissListener( object:OnDismissListener {
-                    override fun onDismissed(frag: XWDialogFragment?) {
+                    override fun onDismissed(frag: XWDialogFragment) {
                         closeNoSave()
                     }
                 })

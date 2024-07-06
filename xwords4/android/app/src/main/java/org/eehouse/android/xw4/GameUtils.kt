@@ -1582,8 +1582,8 @@ object GameUtils {
         var m_chatFrom: String? = null
         var m_gameOver: Boolean = false
 
-        override fun showChat(msg: String?, fromIndx: Int, tsSeconds: Int) {
-            DBUtils.appendChatHistory(m_context!!, m_rowid, msg!!, fromIndx, tsSeconds.toLong())
+        override fun showChat(msg: String, fromIndx: Int, tsSeconds: Int) {
+            DBUtils.appendChatHistory(m_context, m_rowid, msg, fromIndx, tsSeconds.toLong())
             m_gotChat = true
             m_chatFrom = m_gi.playerName(fromIndx)
             m_chat = msg
@@ -1613,7 +1613,7 @@ object GameUtils {
 
         override fun run() {
             var nSentTotal = 0
-            val games = DBUtils.getGamesWithSendsPending(m_context!!)
+            val games = DBUtils.getGamesWithSendsPending(m_context)
 
             val iter: Iterator<Long> = games.keys.iterator()
             while (iter.hasNext()) {

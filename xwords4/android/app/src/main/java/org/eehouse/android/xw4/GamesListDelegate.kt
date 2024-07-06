@@ -700,7 +700,7 @@ class GamesListDelegate(delegator: Delegator) :
                                   mActivity, 0, true))
                 alert.setOnDismissListener(
                     object:OnDismissListener {
-                        override fun onDismissed(frag: XWDialogFragment?) {
+                        override fun onDismissed(frag: XWDialogFragment) {
                             var name = etext.text.toString()
                             if (0 == name.length) {
                                 name = CommonPrefs.getDefaultPlayerName(mActivity, 0, true)

@@ -29,7 +29,7 @@ interface BoardHandler {
 
     fun startHandling(
         parent: Activity, thread: JNIThread,
-        connTypes: CommsConnTypeSet?,
+        connTypes: CommsConnTypeSet?, // null for standalone game
         proc: NewRecentsProc?
     )
 

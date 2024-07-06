@@ -279,7 +279,7 @@ class BoardView(private val mContext: Context, attrs: AttributeSet?) : View(
     override fun startHandling(
         parent: Activity, thread: JNIThread,
         connTypes: CommsConnTypeSet?,
-        nrp: NewRecentsProc?
+        proc: NewRecentsProc?
     ) {
         Log.d(TAG, "startHandling(thread=%H, parent=%s)", thread, parent)
         mParent = parent
@@ -290,7 +290,7 @@ class BoardView(private val mContext: Context, attrs: AttributeSet?) : View(
         mConnTypes = connTypes
         mLayoutWidth = 0
         mLayoutHeight = 0
-        mNRP = nrp
+        mNRP = proc
         sIsFirstDraw = sCurGameID != mGi!!.gameID
         sCurGameID = mGi!!.gameID
 

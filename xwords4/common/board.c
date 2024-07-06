@@ -1192,6 +1192,7 @@ board_commitTurn( BoardCtxt* board, XWEnv xwe,
                         pti->traySelBits = 0x00;
                     }
                 } else {
+                    XP_ASSERT( !!stream );
                     util_notifyMove( board->util, xwe, stream );
                 }
             }

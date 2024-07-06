@@ -61,7 +61,6 @@ object NFCUtils {
     private const val INVITE: Byte = 0x02
     private const val REPLY: Byte = 0x03
     private const val REPLY_NOGAME: Byte = 0x00
-    private val sInSDK = 19 <= Build.VERSION.SDK_INT
     private var sNfcAvail: BooleanArray? = null
 
     // Return array of two booleans, the first indicating whether the
@@ -69,16 +68,18 @@ object NFCUtils {
     // second can change.
     fun nfcAvail(context: Context): BooleanArray {
         if (null == sNfcAvail) {
+            val inSDK = 19 <= Build.VERSION.SDK_INT
             sNfcAvail = booleanArrayOf(
-                sInSDK && null != getNFCAdapter(context),
+                inSDK && null != getNFCAdapter(context),
                 false
             )
         }
-        if (sNfcAvail!![0]) {
-            sNfcAvail!![1] = getNFCAdapter(context)!!.isEnabled
+        val results = sNfcAvail!!
+        if (results[0]) {
+            results[1] = getNFCAdapter(context)!!.isEnabled
         }
-        // Log.d( TAG, "nfcAvail() => {%b,%b}", s_nfcAvail[0], s_nfcAvail[1] );
-        return sNfcAvail!!
+        Log.d( TAG, "nfcAvail() => [${results[0]}, ${results[1]}]" );
+        return results
     }
 
     fun makeEnableNFCDialog(activity: Activity): Dialog {
@@ -95,6 +96,7 @@ object NFCUtils {
 
     private fun getNFCAdapter(context: Context): NfcAdapter? {
         val manager = context.getSystemService(Context.NFC_SERVICE) as NfcManager
+        // On Samsung tablets anyway defaultAdapter can be null
         return manager.defaultAdapter
     }
 

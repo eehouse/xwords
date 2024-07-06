@@ -1474,7 +1474,7 @@ class BoardDelegate(delegator: Delegator) :
             }
         }
 
-        override fun informWordsBlocked(nWords: Int, words: String?, dict: String?) {
+        override fun informWordsBlocked(nWords: Int, words: String, dict: String) {
             runOnUiThread {
                 val fmtd = TextUtils.join(", ", wordsToArray(words))
                 makeOkOnlyBuilder(R.string.word_blocked_by_phony, fmtd, dict)
@@ -1578,11 +1578,11 @@ class BoardDelegate(delegator: Delegator) :
             return jnit != null && !jnit.busy()
         }
 
-        override fun notifyMove(msg: String?) {
+        override fun notifyMove(msg: String) {
             showDialogFragment(DlgID.QUERY_MOVE, msg)
         }
 
-        override fun notifyTrade(tiles: Array<String?>?) {
+        override fun notifyTrade(tiles: Array<String>) {
             val dlgBytes = getQuantityString(
                 R.plurals.query_trade_fmt, tiles!!.size,
                 tiles.size, TextUtils.join(", ", tiles)
@@ -1670,7 +1670,7 @@ class BoardDelegate(delegator: Delegator) :
             runOnUiThread { showInviteAlertIf() }
         }
 
-        override fun informMove(turn: Int, expl: String?, words: String?) {
+        override fun informMove(turn: Int, expl: String, words: String?) {
             m_mySIS!!.words = words?.let { wordsToArray(it) }
             nonBlockingDialog(DlgID.DLG_SCORES, expl)
 
@@ -1699,9 +1699,9 @@ class BoardDelegate(delegator: Delegator) :
         }
 
         override fun informNetDict(
-            isoCodeStr: String?, oldName: String?,
-            newName: String?, newSum: String?,
-            phonies: XWPhoniesChoice?
+            isoCodeStr: String, oldName: String,
+            newName: String, newSum: String,
+            phonies: XWPhoniesChoice
         ) {
             // If it's same dict and same sum, we're good.  That
             // should be the normal case.  Otherwise: if same name but
@@ -1748,7 +1748,7 @@ class BoardDelegate(delegator: Delegator) :
         }
 
         override fun notifyIllegalWords(
-            dict: String?, words: Array<String?>?, turn: Int,
+            dict: String, words: Array<String>, turn: Int,
             turnLost: Boolean, badWordsKey: Int
         ) {
             val wordsString = TextUtils.join(", ", words!!)
@@ -1772,7 +1772,7 @@ class BoardDelegate(delegator: Delegator) :
         // and may stack dialogs on top of this one.  Including later
         // chat-messages.
         override fun showChat(
-            msg: String?, fromIndx: Int,
+            msg: String, fromIndx: Int,
             tsSeconds: Int
         ) {
             runOnUiThread {

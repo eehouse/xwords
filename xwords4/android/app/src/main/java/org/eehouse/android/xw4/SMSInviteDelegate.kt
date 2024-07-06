@@ -299,13 +299,13 @@ class SMSInviteDelegate(delegator: Delegator) :
             return m_phone
         }
 
-        override fun equals(item: InviterItem?): Boolean {
-            var result = false
-            if (null != item && item is PhoneRec) {
-                val rec = item
-                result = (m_name === rec.m_name
-                        && PhoneNumberUtils.compare(m_phone, rec.m_phone))
-            }
+        override fun equals(item: InviterItem): Boolean {
+            val result =
+                if (item is PhoneRec) {
+                    val rec = item as PhoneRec
+                    (m_name === rec.m_name
+                         && PhoneNumberUtils.compare(m_phone, rec.m_phone))
+                } else false
             return result
         }
     }

@@ -1215,7 +1215,6 @@ comms_writeToStream( CommsCtxt* comms, XWStreamCtxt* stream, XP_U16 saveToken )
         stream_putU16( tmpStream, (XP_U16)rec->lastMsgAckd );
         writeChannelNo( tmpStream, rec->channelNo );
         if ( addr_hasType( addr, COMMS_CONN_RELAY ) ) {
-            XP_ASSERT(0);
             stream_putU8( tmpStream, rec->rr.hostID ); /* unneeded unless RELAY */
         }
     }

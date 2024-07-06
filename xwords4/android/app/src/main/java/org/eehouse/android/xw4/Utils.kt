@@ -487,11 +487,11 @@ object Utils {
         } else {
             val file = dal.getPath(context)
             try {
-                val `is`: InputStream = FileInputStream(file)
+                val istream = FileInputStream(file)
                 val md = MessageDigest.getInstance("MD5")
                 val buf = ByteArray(1024 * 8)
                 while (true) {
-                    val nRead = `is`.read(buf)
+                    val nRead = istream.read(buf)
                     if (0 >= nRead) {
                         break
                     }

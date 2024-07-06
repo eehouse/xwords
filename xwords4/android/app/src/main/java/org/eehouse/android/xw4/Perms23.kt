@@ -317,7 +317,7 @@ object Perms23 {
     }
 
     interface OnShowRationale {
-        fun onShouldShowRationale(perms: Set<Perm>?)
+        fun onShouldShowRationale(perms: Set<Perm>)
     }
 
     class Builder {
@@ -435,7 +435,7 @@ object Perms23 {
             val builder = Builder(perms)
             if (showRationale && shouldShowAny(perms) && null != mRationaleMsg) {
                 builder.setOnShowRationale(object : OnShowRationale {
-                    override fun onShouldShowRationale(perms: Set<Perm>?) {
+                    override fun onShouldShowRationale(perms: Set<Perm>) {
                         mDelegate.makeConfirmThenBuilder(
                             DlgDelegate.Action.PERMS_QUERY,
                             mRationaleMsg

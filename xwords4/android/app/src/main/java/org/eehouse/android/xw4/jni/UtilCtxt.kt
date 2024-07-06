@@ -37,20 +37,20 @@ interface UtilCtxt {
     fun requestTime() {}
     fun remSelected() {}
     fun timerSelected(inDuplicateMode: Boolean, canPause: Boolean) {}
-    fun informWordsBlocked(nWords: Int, words: String?, dict: String?) {}
+    fun informWordsBlocked(nWords: Int, words: String, dict: String) {}
     fun getInviteeName(index: Int): String? = null
     fun bonusSquareHeld(bonus: Int) {}
     fun playerScoreHeld(player: Int) {}
     fun cellSquareHeld(words: String) {}
-    fun notifyMove(query: String?) {}
-    fun notifyTrade(tiles: Array<String?>?) {}
+    fun notifyMove(query: String) {}
+    fun notifyTrade(tiles: Array<String>) {}
     fun notifyDupStatus(amHost: Boolean, msg: String) {}
     fun userError(id: Int) {}
-    fun informMove(turn: Int, expl: String?, words: String?) {}
+    fun informMove(turn: Int, expl: String, words: String?) {}
     fun informUndo() {}
     fun informNetDict(
-        isoCodeStr: String?, oldName: String?, newName: String?,
-        newSum: String?, phonies: XWPhoniesChoice?
+        isoCodeStr: String, oldName: String, newName: String,
+        newSum: String, phonies: XWPhoniesChoice
     ) {}
 
     fun informMissing(
@@ -64,11 +64,11 @@ interface UtilCtxt {
     // Don't need this unless we have a scroll thumb to indicate position
     //void yOffsetChange( int maxOffset, int oldOffset, int newOffset );
     fun notifyIllegalWords(
-        dict: String?, words: Array<String?>?, turn: Int,
+        dict: String, words: Array<String>, turn: Int,
         turnLost: Boolean, badWordsKey: Int
     ) {}
 
-    fun showChat(msg: String?, fromPlayer: Int, tsSeconds: Int) {}
+    fun showChat(msg: String, fromPlayer: Int, tsSeconds: Int) {}
     fun formatPauseHistory(
         pauseTyp: Int, player: Int, whenPrev: Int,
         whenCur: Int, msg: String?

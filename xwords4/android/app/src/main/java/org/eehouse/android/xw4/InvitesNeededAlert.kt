@@ -143,7 +143,7 @@ internal class InvitesNeededAlert private constructor(
         }
 
         alert.setOnCancelListener(object : XWDialogFragment.OnCancelListener {
-            override fun onCancelled(frag: XWDialogFragment?) {
+            override fun onCancelled(frag: XWDialogFragment) {
                 // Log.d( TAG, "onCancelled(frag=%s)", frag );
                 callbacks.onCloseClicked()
                 close()

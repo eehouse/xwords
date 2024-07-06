@@ -46,7 +46,7 @@ class BTInviteDelegate(delegator: Delegator) :
 
     private class BTDev internal constructor(private val mName: String) : InviterItem,
         Serializable {
-        override fun equals(item: InviterItem?): Boolean = item?.getDev() == getDev()
+        override fun equals(item: InviterItem): Boolean = item.getDev() == getDev()
 
         override fun getDev(): String { return mName }
     }

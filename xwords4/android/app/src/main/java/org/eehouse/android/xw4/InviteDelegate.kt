@@ -45,22 +45,21 @@ abstract class InviteDelegate(delegator: Delegator) :
     OnHierarchyChangeListener
 {
     interface InviterItem {
-        fun equals(item: InviterItem?): Boolean
+        fun equals(item: InviterItem): Boolean
 
         // the string that identifies this item in results
         fun getDev(): String
     }
 
-    protected class TwoStringPair(private val mDev: String, var str2: String?) : InviterItem,
-        Serializable {
-        override fun equals(item: InviterItem?): Boolean {
-            var result = false
-            if (null != item) {
-                val pair = item as TwoStringPair
-                result = (mDev == pair.getDev()) && ((null == str2 && null == pair.str2)
+    protected class TwoStringPair(private val mDev: String, var str2: String?)
+        : InviterItem, Serializable
+    {
+        override fun equals(item: InviterItem): Boolean {
+            val pair = item as TwoStringPair
+            val result = (mDev == pair.getDev())
+                && ((null == str2 && null == pair.str2)
                         || (str2 == pair.str2))
-                Log.d(TAG, "%s.equals(%s) => %b", mDev, pair.getDev(), result)
-            }
+            Log.d(TAG, "%s.equals(%s) => %b", mDev, pair.getDev(), result)
             return result
         }
 
@@ -103,9 +102,9 @@ abstract class InviteDelegate(delegator: Delegator) :
 
     private fun getBundledData(bundle: Bundle?)
     {
-        if (null != bundle) {
+        bundle?.let {
             m_checked.clear()
-            val checked = bundle.getSerializable(KEY_CHECKED) as HashSet<String>?
+            val checked = it.getSerializable(KEY_CHECKED) as HashSet<String>?
             if (null != checked) {
                 m_checked.addAll(checked)
             }
@@ -348,8 +347,8 @@ abstract class InviteDelegate(delegator: Delegator) :
         ): Intent {
             val intent = Intent(activity, target)
                 .putExtra(INTENT_KEY_NMISSING, nMissing)
-            if (null != info) {
-                intent.putExtra(RAR, info.remotesRobots)
+            info?.let {
+                intent.putExtra(RAR, it.remotesRobots)
             }
             return intent
         }

@@ -32,11 +32,11 @@ abstract class XWDialogFragment : DialogFragment() {
     private var m_buttonMap: MutableMap<Int, DialogInterface.OnClickListener>? = null
 
     interface OnDismissListener {
-        fun onDismissed(frag: XWDialogFragment?)
+        fun onDismissed(frag: XWDialogFragment)
     }
 
     interface OnCancelListener {
-        fun onCancelled(frag: XWDialogFragment?)
+        fun onCancelled(frag: XWDialogFragment)
     }
 
     abstract fun getFragTag(): String
