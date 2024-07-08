@@ -1298,6 +1298,7 @@ class BoardDelegate(delegator: Delegator) :
             if (!mConnTypes!!.contains(CommsConnType.COMMS_CONN_MQTT)) {
                 popup.menu.removeItem(R.id.netstat_menu_traffic)
                 popup.menu.removeItem(R.id.netstat_peers)
+                popup.menu.removeItem(R.id.netstat_copyurl)
             }
             if (!mSummary!!.quashed) {
                 popup.menu.removeItem(R.id.netstat_unquash)
