@@ -24,6 +24,7 @@ import android.app.Activity
 import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
+import android.text.TextUtils
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 
@@ -175,6 +176,20 @@ object Perms23 {
                         val perms: Array<Perm>,
                         val msg: String?,
                         val params: Array<Any?>) : Serializable
+    {
+        override fun equals(other: Any?): Boolean {
+            val result =
+                if ( other == null ) false
+                else if (other is GotPermsState ) {
+                    val other = other as GotPermsState
+                    action == other.action
+                        && perms contentEquals other.perms
+                        && TextUtils.equals(msg, other.msg)
+                        && params contentEquals other.params
+                } else false
+            return result
+        }
+    }
 
     fun onGotPermsAction(
         delegate: DelegateBase, positive: Boolean,
