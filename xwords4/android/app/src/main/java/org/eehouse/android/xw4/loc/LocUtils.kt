@@ -30,14 +30,49 @@ import android.view.View
 import java.util.Locale
 
 import org.eehouse.android.xw4.BuildConfig
+import org.eehouse.android.xw4.DbgUtils
+import org.eehouse.android.xw4.Log
 import org.eehouse.android.xw4.Utils.ISOCode
 import org.eehouse.android.xw4.XWApp
+import org.eehouse.android.xw4.XWPrefs
 
 object LocUtils {
+    private val TAG: String = LocUtils::class.java.simpleName
     internal const val RES_FORMAT: String = "%[\\d]\\$[ds]"
     private var s_curLocale: String? = null
     private var s_curLang: ISOCode? = null
     private val s_langMap: Map<String, String>? = null
+
+    // Problem: prefs are saved as strings, which may be localized, so when
+    // you change locales you can't make sense of the preference. This method
+    // takes an array of possible values (all localizable strings) and gets
+    // the current value then compares against the set. If it's not there,
+    // meaning the pref setting isn't knowable, the default is returned.
+    //
+    // Obviously I *should* be storing stringIDs rather than strings, but
+    // don't see a way in the prefs system to do that, and can't find anybody
+    // else complaining about the problem.
+    private fun getCheckPref(
+        context: Context, values: Array<String>, key: Int, default: Int
+    ): String {
+        var curVal = XWPrefs.getPrefsString(context, key, default)
+        if (!values.contains(curVal)) {
+            Log.d(TAG, "getCheckPref(): val $curVal not "
+                  + "in ${DbgUtils.fmtAny(values)}")
+            curVal = getString(context, default)!!
+            Log.d(TAG, "getCheckPref(): swapped in $curVal")
+        }
+        return curVal!!
+    }
+
+    fun getCheckPref(
+        context: Context, valuesKey: Int, key: Int, default: Int
+    ): String? {
+        val arr = getStringArray(context, valuesKey)
+            .filterNotNull()    // should never happen
+            .toTypedArray()
+        return getCheckPref(context, arr, key, default)
+    }
 
     fun inflate(context: Context, resID: Int): View {
         val factory = LayoutInflater.from(context)

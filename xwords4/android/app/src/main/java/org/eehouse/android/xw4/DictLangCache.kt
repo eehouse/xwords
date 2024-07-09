@@ -308,7 +308,7 @@ object DictLangCache {
         context: Context, isoCode: ISOCode,
         human: Boolean
     ): String? {
-        var dictName =
+        var dictName: String? =
             if (human) CommonPrefs.getDefaultHumanDict(context)
             else CommonPrefs.getDefaultRobotDict(context)
         if (!isoCode.equals(getDictISOCode(context, dictName))) {

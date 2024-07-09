@@ -226,7 +226,7 @@ class CommonPrefs private constructor() : XWPrefs() {
             return result
         }
 
-        fun getDefaultHumanDict(context: Context): String? {
+        fun getDefaultHumanDict(context: Context): String {
             var value = getPrefsString(context, R.string.key_default_dict)
             if (value == "" || !DictUtils.dictExists(context, value!!)) {
                 value = DictUtils.dictList(context)!![0].name
@@ -234,7 +234,7 @@ class CommonPrefs private constructor() : XWPrefs() {
             return value
         }
 
-        fun getDefaultRobotDict(context: Context): String? {
+        fun getDefaultRobotDict(context: Context): String {
             var value = getPrefsString(context, R.string.key_default_robodict)
             if (value == "" || !DictUtils.dictExists(context, value!!)) {
                 value = getDefaultHumanDict(context)

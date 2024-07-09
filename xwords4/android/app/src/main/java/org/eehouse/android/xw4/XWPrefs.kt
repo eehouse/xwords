@@ -372,8 +372,13 @@ open class XWPrefs {
             return sp.getString(key, dflt)
         }
 
-        fun getPrefsString(context: Context, keyID: Int): String? {
-            return getPrefsString(context, keyID, "")
+        fun getPrefsString(context: Context, keyID: Int): String {
+            return getPrefsString(context, keyID, "")!!
+        }
+
+        fun getPrefsString(context: Context, keyID: Int, dflt: Int): String? {
+            val dfltStr = getPrefsString( context, dflt)
+            return getPrefsString(context, keyID, dfltStr)
         }
 
         fun setPrefsString(

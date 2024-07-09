@@ -111,28 +111,32 @@ object NetUtils {
     // Pick http or https. SSL is broken on KitKat, and it's well after that
     // that https starts being required. So use http on and before KitKat,
     // just to be safe.
-    fun ensureProto(context: Context, url: String): String {
-        val useHTTPs: Boolean
-        val dflt = LocUtils.getString(context!!, R.string.url_scheme_default)
-        val pref = XWPrefs.getPrefsString(context, R.string.key_url_scheme, dflt)
+    fun ensureProto(context: Context, url: String): String
+    {
+        val pref = LocUtils.getCheckPref(
+            context, R.array.url_schemes,
+            key = R.string.key_url_scheme,
+            default = R.string.url_scheme_default
+        )
+        val dflt = LocUtils.getString(context, R.string.url_scheme_default)
 
-        if (dflt == pref) {
-            useHTTPs = Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP
-        } else if (LocUtils.getString(context, R.string.url_scheme_http)
-            == pref
-        ) {
-            useHTTPs = false
-        } else {
-            Assert.assertTrueNR(
-                LocUtils.getString(context, R.string.url_scheme_https)
+        val useHTTPs =
+            if (dflt == pref) {
+                Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP
+            } else if (LocUtils.getString(
+                           context, R.string.url_scheme_http) == pref) {
+                false
+            } else {
+                Assert.assertTrueNR(
+                    LocUtils.getString(context, R.string.url_scheme_https)
                         == pref
-            )
-            useHTTPs = true
-        }
+                )
+                true
+            }
 
-        val result = if (useHTTPs
-        ) url.replaceFirst("^http:".toRegex(), "https:")
-        else url.replaceFirst("^https:".toRegex(), "http:")
+        val result =
+            if (useHTTPs) url.replaceFirst("^http:".toRegex(), "https:")
+            else url.replaceFirst("^https:".toRegex(), "http:")
         if (url != result) {
             Log.d(TAG, "ensureProto(%s) => %s", url, result)
         }
@@ -191,7 +195,7 @@ object NetUtils {
         var result: HttpURLConnection? = null
         try {
             val url = String.format("%s/%s", ensureProto(context, path), proc)
-            result = URL(url).openConnection() as HttpURLConnection // class cast exception
+            result = URL(url).openConnection() as HttpURLConnection
         } catch (mue: MalformedURLException) {
             Assert.assertNull(result)
             Log.ex(TAG, mue)
