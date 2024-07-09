@@ -112,30 +112,30 @@ object DictLangCache {
         context: Context, isoCode: ISOCode?,
         comp: Comparator<DictInfo>?,
         withCounts: Boolean
-    ): Array<String?> {
+    ): Array<String> {
         val infos = getInfosHaveLang(context, isoCode)
 
         if (null != comp) {
             Arrays.sort(infos, comp)
         }
 
-        val al: MutableList<String?> = ArrayList()
+        val al: MutableList<String> = ArrayList()
         val fmt = "%s (%d)" // must match stripCount below
         for (info in infos) {
-            var name = info.name
+            var name = info.name!!
             if (withCounts) {
                 name = String.format(fmt, name, info.wordCount)
             }
             al.add(name)
         }
-        val result = al.toTypedArray<String?>()
+        val result = al.toTypedArray<String>()
         if (null == comp) {
             Arrays.sort(result)
         }
         return result
     }
 
-    fun getHaveLang(context: Context, isoCode: ISOCode?): Array<String?> {
+    fun getHaveLang(context: Context, isoCode: ISOCode?): Array<String> {
         return getHaveLang(context, isoCode, null, false)
     }
 
@@ -157,11 +157,11 @@ object DictLangCache {
 
     private val s_ByCount = Comparator<DictInfo> { di1, di2 -> di2.wordCount - di1.wordCount }
 
-    fun getHaveLangByCount(context: Context, isoCode: ISOCode?): Array<String?> {
+    fun getHaveLangByCount(context: Context, isoCode: ISOCode?): Array<String> {
         return getHaveLang(context, isoCode, s_ByCount, false)
     }
 
-    fun getHaveLangCounts(context: Context, isoCode: ISOCode?): Array<String?> {
+    fun getHaveLangCounts(context: Context, isoCode: ISOCode?): Array<String> {
         return getHaveLang(context, isoCode, null, true)
     }
 
@@ -235,9 +235,9 @@ object DictLangCache {
     fun getDictMD5Sums(context: Context, dict: String?): Array<String?> {
         val result = arrayOf<String?>(null, null)
         val info = getInfo(context, dict)
-        if (null != info) {
-            result[0] = info.md5Sum
-            result[1] = info.fullSum
+        info?.let {
+            result[0] = it.md5Sum
+            result[1] = it.fullSum
         }
         return result
     }
@@ -325,7 +325,7 @@ object DictLangCache {
 
     private fun rebuildAdapter(
         adapter: ArrayAdapter<String>?,
-        items: Array<String?>
+        items: Array<String>
     ) {
         adapter!!.clear()
 

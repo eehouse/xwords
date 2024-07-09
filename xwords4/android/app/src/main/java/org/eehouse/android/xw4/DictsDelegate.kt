@@ -40,11 +40,14 @@ import android.widget.LinearLayout
 import android.widget.PopupMenu
 import android.widget.TextView
 import androidx.preference.PreferenceManager
-import org.eehouse.android.xw4.DBUtils.countGamesUsingISOCode
-import org.eehouse.android.xw4.DBUtils.dictsMoveInfo
-import org.eehouse.android.xw4.DBUtils.getStringFor
-import org.eehouse.android.xw4.DBUtils.setStringFor
-import org.eehouse.android.xw4.DbgUtils.showf
+
+import org.json.JSONArray
+import org.json.JSONException
+import org.json.JSONObject
+import java.io.Serializable
+import java.text.Collator
+import java.util.Arrays
+
 import org.eehouse.android.xw4.DictUtils.DictAndLoc
 import org.eehouse.android.xw4.DictUtils.DictLoc
 import org.eehouse.android.xw4.DictUtils.ON_SERVER
@@ -59,12 +62,6 @@ import org.eehouse.android.xw4.XWExpListAdapter.GroupTest
 import org.eehouse.android.xw4.XWListItem.ExpandedListener
 import org.eehouse.android.xw4.jni.GameSummary
 import org.eehouse.android.xw4.loc.LocUtils
-import org.json.JSONArray
-import org.json.JSONException
-import org.json.JSONObject
-import java.io.Serializable
-import java.text.Collator
-import java.util.Arrays
 
 class DictsDelegate(delegator: Delegator) :
     ListDelegateBase(delegator, R.layout.dicts_browse, R.menu.dicts_menu),
@@ -554,12 +551,12 @@ class DictsDelegate(delegator: Delegator) :
                     selItem.setCached(toLoc)
                     selItem.invalidate()
                 }
-                dictsMoveInfo(
+                DBUtils.dictsMoveInfo(
                     mActivity, name,
                     fromLoc, toLoc
                 )
             } else {
-                showf(mActivity, R.string.toast_no_permission)
+                DbgUtils.showf(mActivity, R.string.toast_no_permission)
                 Log.w(TAG, "moveDict(%s) failed", name)
             }
         }
@@ -709,7 +706,7 @@ class DictsDelegate(delegator: Delegator) :
             if (skipLangs.contains(isoCode)) {
                 continue
             }
-            val nUsingLang = countGamesUsingISOCode(mActivity, isoCode)
+            val nUsingLang = DBUtils.countGamesUsingISOCode(mActivity, isoCode)
             if (0 == nUsingLang) {
                 // remember, since countGamesUsingLang is expensive
                 skipLangs.add(isoCode)
@@ -1307,7 +1304,7 @@ class DictsDelegate(delegator: Delegator) :
             val listener = MenuItem.OnMenuItemClickListener { item ->
                 val dal = itemData[item]
                 val prevKey = keyForLang(isoCode)
-                setStringFor(context, prevKey, dal!!.name)
+                DBUtils.setStringFor(context, prevKey, dal!!.name)
                 DictBrowseDelegate.launch(
                     dlgtor, dal.name,
                     dal.loc
@@ -1360,7 +1357,7 @@ class DictsDelegate(delegator: Delegator) :
 
         fun prevSelFor(context: Context, isoCode: ISOCode): String? {
             val key = keyForLang(isoCode)
-            return getStringFor(context!!, key)
+            return DBUtils.getStringFor(context!!, key)
         }
 
         private fun listDictsProc(lc: ISOCode?): String {
