@@ -3272,12 +3272,12 @@ main( int argc, char** argv )
 #endif
 
 #ifdef USE_GLIBLOOP
-	case CMD_UNDOPCT:
+        case CMD_UNDOPCT:
             mainParams.undoRatio = atoi( optarg );
             if ( mainParams.undoRatio < 0 || mainParams.undoRatio > 1000 ) {
                 usage(argv[0], "must be 0 <= n <= 1000" );
             }
-	    break;
+            break;
 #endif
 
 #if defined PLATFORM_GTK && defined PLATFORM_NCURSES

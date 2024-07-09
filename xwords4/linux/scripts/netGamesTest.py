@@ -533,6 +533,8 @@ class Device():
 
             scriptArgs += ['--board-size', '15', '--sort-tiles']
 
+            scriptArgs += ['--undo-pct', self.args.UNDO_PCT]
+
             # useDupeMode = random.randint(0, 100) < self.args.DUP_PCT
             # if not useDupeMode: scriptArgs += ['--trade-pct', self.args.TRADE_PCT]
             
@@ -790,7 +792,8 @@ def mkParser():
     # #     echo "    [--udp-start <pct>]      # default: $UDP_PCT_START                 \\" >&2
     # #     echo "    [--undo-pct <int>]                                      \\" >&2
 
-    # parser.add_argument('--undo-pct', dest = 'UNDO_PCT', default = 0, type = int)
+    parser.add_argument('--undo-pct', dest = 'UNDO_PCT', default = 0, type = int,
+                        help='odds (0 <= n <= 1000) of undoing, per second')
     parser.add_argument('--trade-pct', dest = 'TRADE_PCT', default = 10, type = int,
                         help='what percent of moves will trade tiles')
     parser.add_argument('--sub7-trades-pct', dest = 'SUB7_TRADES_PCT', default = 10, type=int)
