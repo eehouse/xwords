@@ -679,6 +679,13 @@ addWithKey( XW_DUtilCtxt* dutil, XWEnv xwe, WSData* wsdp )
     return wsdp->resultKey;
 }
 
+static void
+delWSDatum( DLHead* elem, void* closure )
+{
+    XW_DUtilCtxt* dutil = (XW_DUtilCtxt*)closure;
+    XP_FREEP( dutil->mpool, &elem );
+}
+
 void
 dvc_onWebSendResult( XW_DUtilCtxt* dutil, XWEnv xwe, XP_U32 resultKey,
                      XP_Bool succeeded, const XP_UCHAR* resultJson )
@@ -717,9 +724,17 @@ dvc_onWebSendResult( XW_DUtilCtxt* dutil, XWEnv xwe, XP_U32 resultKey,
             }
 
             cJSON_Delete( result );
-            XP_FREEP( dutil->mpool, &wsdp );
+            delWSDatum( &wsdp->links, dutil );
         }
     }
+}
+
+static void
+freeWSState( XW_DUtilCtxt* dutil, DevCtxt* dc )
+{
+    pthread_mutex_lock( &dc->webSendMutex );
+    dll_removeAll( &dc->webSendData->links, delWSDatum, dutil );
+    pthread_mutex_unlock( &dc->webSendMutex );
 }
 
 typedef struct _PhoniesMapState {
@@ -1117,6 +1132,8 @@ void
 dvc_cleanup( XW_DUtilCtxt* dutil, XWEnv xwe )
 {
     DevCtxt* dc = freePhonyState( dutil, xwe );
+
+    freeWSState( dutil, dc );
 
     pthread_mutex_destroy( &dc->webSendMutex );
 
