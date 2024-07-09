@@ -1502,6 +1502,13 @@ sendChatWrapper( void* closure, XP_U32 gameID, const char* msg )
     return cb_sendChat( aGlobals->cbState, gameID, msg );
 }
 
+static XP_Bool
+undoMoveWrapper( void* closure, XP_U32 gameID )
+{
+    CursesAppGlobals* aGlobals = (CursesAppGlobals*)closure;
+    return cb_undoMove( aGlobals->cbState, gameID );
+}
+
 void
 cursesmain( XP_Bool XP_UNUSED(isServer), LaunchParams* params )
 {
@@ -1536,6 +1543,7 @@ cursesmain( XP_Bool XP_UNUSED(isServer), LaunchParams* params )
             .getForGameID = getForGameIDWrapper,
             .makeRematch = makeRematchWrapper,
             .sendChat = sendChatWrapper,
+            .undoMove = undoMoveWrapper,
         },
     };
     GSocketService* cmdService = cmds_addCmdListener( &wr );

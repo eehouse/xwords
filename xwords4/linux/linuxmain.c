@@ -682,43 +682,6 @@ do_nbs_then_close( CommonGlobals* cGlobals, const TransportProcs* procs )
     LOG_RETURN_VOID();
 } /* do_nbs_then_close */
 
-#ifdef USE_GLIBLOOP
-static gboolean
-secondTimerFired( gpointer data )
-{
-    CommonGlobals* cGlobals = (CommonGlobals*)data;
-
-    /* Undo */
-    XWGame* game = &cGlobals->game;
-    if ( !!game->server && !!game->board ) {
-        XP_U16 undoRatio = cGlobals->params->undoRatio;
-        if ( 0 != undoRatio ) {
-            if ( (XP_RANDOM() % 1000) < undoRatio ) {
-                XP_LOGFF( "calling server_handleUndo()" );
-                if ( server_handleUndo( game->server, NULL_XWE, 1 ) ) {
-                    board_draw( game->board, NULL_XWE );
-                }
-            } 
-        }
-    }
-
-    return TRUE;
-}
-
-void
-setOneSecondTimer( CommonGlobals* cGlobals )
-{
-    guint id = g_timeout_add_seconds( 1, secondTimerFired, cGlobals );
-    cGlobals->secondsTimerID = id;
-}
-
-void
-clearOneSecondTimer( CommonGlobals* cGlobals )
-{
-    g_source_remove( cGlobals->secondsTimerID );
-}
-#endif
-
 typedef enum {
     CMD_HELP
     ,CMD_SKIP_GAMEOVER

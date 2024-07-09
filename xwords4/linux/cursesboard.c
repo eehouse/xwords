@@ -420,7 +420,6 @@ commonInit( CursesBoardState* cbState, sqlite3_int64 rowid,
     initTProcsCurses( cGlobals );
     makeSelfAddress( &cGlobals->selfAddr, params );
 
-    setOneSecondTimer( cGlobals );
     return bGlobals;
 } /* commonInit */
 
@@ -447,8 +446,6 @@ disposeBoard( CursesBoardGlobals* bGlobals, XP_Bool rmFromList )
     if ( !!bGlobals->cbState->menuState ) {
         cmenu_pop( bGlobals->cbState->menuState );
     }
-
-    clearOneSecondTimer( cGlobals );
 
     gi_disposePlayerInfo( MPPARM(cGlobals->util->mpool) cGlobals->gi );
     game_dispose( &cGlobals->game, NULL_XWE );
@@ -729,6 +726,20 @@ cb_sendChat( CursesBoardState* cbState, XP_U32 gameID, const char* msg )
     XP_Bool success = !!bGlobals;
     if ( success ) {
         board_sendChat( bGlobals->cGlobals.game.board, NULL_XWE, msg );
+    }
+    return success;
+}
+
+XP_Bool
+cb_undoMove( CursesBoardState* cbState, XP_U32 gameID )
+{
+    CursesBoardGlobals* bGlobals =
+        findOrOpenForGameID( cbState, gameID, NULL, NULL );
+    XP_Bool success = !!bGlobals;
+    if ( success ) {
+        XP_U16 limit = 0;
+        success = server_handleUndo( bGlobals->cGlobals.game.server,
+                                     NULL_XWE, limit );
     }
     return success;
 }

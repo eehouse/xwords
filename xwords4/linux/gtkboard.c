@@ -2583,8 +2583,6 @@ initBoardGlobalsGtk( GtkGameGlobals* globals, LaunchParams* params,
                           G_CALLBACK(button_release_event), globals );
     XP_ASSERT( id > 0 );
 
-    setOneSecondTimer( cGlobals );
-
 #ifdef KEY_SUPPORT
 # ifdef KEYBOARD_NAV
     g_signal_connect( window, "key_press_event",

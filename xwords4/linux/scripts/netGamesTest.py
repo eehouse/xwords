@@ -276,13 +276,28 @@ class Device():
     def sendChat(self):
         success = False
         if random.randint(0, 99) < self.args.CHAT_PCT:
-            gids = [game.gid for game in self._allGames()]
-            if gids:
-                random.shuffle(gids)
-                gid = gids[0]
+            gid = self._pickGid()
+            if gid:
                 response = self._sendWaitReply('sendChat', gid=gid, msg=Device.nextChatMsg(self.host))
                 success = response.get('success', False)
         return success
+
+    def postUndo(self):
+        success = False
+        if random.randint(0, 999) < self.args.UNDO_PCT:
+            gid = self._pickGid()
+            if gid:
+                response = self._sendWaitReply('undoMove', gid=gid)
+                success = response.get('success', False)
+        return success
+
+    def _pickGid(self):
+        result = None
+        gids = [game.gid for game in self._allGames()]
+        if gids:
+            random.shuffle(gids)
+            result = gids[0]
+        return result
 
     def _sendWaitReply(self, cmd, **kwargs):
         self.launchIfNot()
@@ -360,6 +375,8 @@ class Device():
             elif datetime.datetime.now() > self.endTime:
                 self.rematchOrQuit()
             elif self.sendChat():
+                pass
+            elif self.postUndo():
                 pass
             elif self.moveOne():
                 pass
@@ -532,8 +549,6 @@ class Device():
                 scriptArgs += [ '--sms-number', self.smsNumber ]
 
             scriptArgs += ['--board-size', '15', '--sort-tiles']
-
-            scriptArgs += ['--undo-pct', self.args.UNDO_PCT]
 
             # useDupeMode = random.randint(0, 100) < self.args.DUP_PCT
             # if not useDupeMode: scriptArgs += ['--trade-pct', self.args.TRADE_PCT]

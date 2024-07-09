@@ -89,13 +89,6 @@ void read_pipe_then_close( CommonGlobals* cGlobals,
 void do_nbs_then_close( CommonGlobals* cGlobals, 
                         const TransportProcs* procs );
 
-#ifdef USE_GLIBLOOP
-void setOneSecondTimer( CommonGlobals* cGlobals );
-void clearOneSecondTimer( CommonGlobals* cGlobals );
-#else
-# define setOneSecondTimer( cGlobals )
-#endif
-
 void setupLinuxUtilCallbacks( XW_UtilCtxt* util );
 void assertUtilCallbacksSet( XW_UtilCtxt* util );
 void assertDrawCallbacksSet( const DrawCtxVTable* vtable );
