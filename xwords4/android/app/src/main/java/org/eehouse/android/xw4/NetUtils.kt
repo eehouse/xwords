@@ -122,7 +122,10 @@ object NetUtils {
 
         val useHTTPs =
             if (dflt == pref) {
-                Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP
+                // On my emulator, https doesn't work for version 24 ("N") and
+                // below. So we'll try defaulting to http for everything up to
+                // and including 24.
+                Build.VERSION.SDK_INT > Build.VERSION_CODES.N
             } else if (LocUtils.getString(
                            context, R.string.url_scheme_http) == pref) {
                 false
