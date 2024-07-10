@@ -1088,16 +1088,16 @@ class DictsDelegate(delegator: Delegator) :
         }
     }
 
-    private inner class FetchListTask(context: Context) : AsyncTask<Void?, Void?, Boolean>(),
-        DialogInterface.OnCancelListener { // class FetchListTask
-        private val mContext: Context
+    private inner class FetchListTask(private val mContext: Context) :
+        AsyncTask<Void?, Void?, Boolean>(),
+        DialogInterface.OnCancelListener
+    {
         private val mNeedUpdates:MutableMap<String, Uri> = HashMap()
 
         init {
             if (null == mLangs) {
                 resetLangs()
             }
-            mContext = context
             startProgress(R.string.progress_title, R.string.remote_empty, this)
         }
 
@@ -1127,6 +1127,9 @@ class DictsDelegate(delegator: Delegator) :
         }
 
         override fun onPostExecute(success: Boolean) {
+            switchShowingRemote(success)
+            mCheckbox!!.setChecked(success)
+
             if (success) {
                 mkListAdapter()
                 if (0 < mNeedUpdates.size) {
@@ -1143,7 +1146,6 @@ class DictsDelegate(delegator: Delegator) :
                 }
             } else {
                 makeOkOnlyBuilder(R.string.remote_no_net).show()
-                mCheckbox!!.setChecked(false)
             }
             stopProgress()
         }
