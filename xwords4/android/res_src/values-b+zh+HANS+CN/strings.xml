@@ -577,7 +577,7 @@
     <plurals name="groups_confirm_del_games_fmt">
         <item quantity="other">"
 \n
-\n（有%1$d游戏也会被删除。）"</item>
+\n（有%1$d个游戏也会被删除。）"</item>
     </plurals>
     <string name="invit_expl_usrsms_fmt">已通过短信在 %1$s 发送邀请</string>
     <string name="finalscores_title">最终得分</string>
@@ -932,7 +932,7 @@
     </plurals>
     <string name="invite_bt_desc_postscript">"
 \n
-\n（此列表列出了 CrossWords 通过扫描检测到的已配对设备。）"</string>
+\n（此列表列出了通过扫描检测到 CrossWords 的已配对设备。）"</string>
     <string name="lmi_pass_dup">没有玩家可移动（全部跳过）</string>
     <plurals name="nag_days_fmt">
         <item quantity="other">%1$d 天</item>
@@ -1025,7 +1025,7 @@
     <plurals name="warn_mqtt_games_fmt">
         <item quantity="other">"
 \n
-\n（目前有%1$d使用互联网的活跃游戏。）"</item>
+\n（目前有%1$d个使用互联网的活跃游戏。）"</item>
     </plurals>
     <string name="skip_mqtt_add_summary">不要试图用 MQTT 发送所有消息</string>
     <string name="not_again_loaddb">从已导出的文件中导入设置或游戏数据。</string>
@@ -1065,7 +1065,7 @@
     <plurals name="warn_bt_games_fmt">
         <item quantity="other">"
 \n
-\n（有%1$d使用蓝牙的活跃游戏。）"</item>
+\n（有%1$d 个使用蓝牙的活跃游戏。）"</item>
     </plurals>
     <string name="not_again_dfltname_fmt">正在使用默认玩家名“%1$s”。在创建此游戏前，要自定义名称吗？</string>
     <plurals name="nplayers_fmt">
