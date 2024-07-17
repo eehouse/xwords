@@ -1540,7 +1540,8 @@
     <string name="summary_invites_out_fmt">Jogadores convidados à sala “%1$s”</string>
     <plurals name="moves_fmt">
         <item quantity="one">1 movimento jogado</item>
-        <item quantity="other">%1$d movimenotos jogados</item>
+        <item quantity="many">%1$d movimentos jogados</item>
+        <item quantity="other">%1$d movimentos jogados</item>
     </plurals>
     <plurals name="confirm_delete_dict_fmt">
         <item quantity="one">Você tem certeza que deseja apagar a lista de palavra %1$s?</item>
@@ -1608,8 +1609,8 @@
     <string name="not_again_quicknetgame">Há uma maneira super-rápida de começar um jogo com alguém com qual já jogou. Se o nome da pessoa estiver na lista, apenas selecione-a e um convite será enviado imediatamente.</string>
     <string name="button_faq">Mostrar FAQ</string>
     <string name="new_feature_title">Alerta de Nova Função</string>
-    <string name="no_tiles_exist">“%1$s” não pode ser escrito com quadrados de %2$s.</string>
-    <string name="pick_tiles_title_fmt">Escolha uma escrita do quadrado para “%1$s”</string>
+    <string name="no_tiles_exist">“%1$s” não pode ser escrito com pedras de %2$s.</string>
+    <string name="pick_tiles_title_fmt">Escolha uma escrita da pedra para “%1$s”</string>
     <string name="logstore_clear_confirm">Tem certeza que quer apagar os seus logs de debug\? Esta ação não pode ser desfeita.</string>
     <string name="logstore_cleared_fmt">%1$d entradas de log deletadas</string>
     <string name="logstore_notdumped">Incapaz de escrever logs</string>
@@ -1639,7 +1640,7 @@
     <string name="pause_title">Jogo em pausa</string>
     <string name="dup_onescore_fmt">%1$s: %2$d pontos
 \n</string>
-    <string name="dup_traded_fmt">Nenhuma jogada feita; trocou %1$d quadrados</string>
+    <string name="dup_traded_fmt">Nenhuma jogada feita; trocou %1$d pedras</string>
     <string name="dup_moved">Turno duplo completo. Pontuação:
 \n</string>
     <string name="game_unpaused_title">Jogo despausado</string>
@@ -1657,12 +1658,12 @@
     <string name="name_concat_dup">" e "</string>
     <string name="lmi_move_tie_dup_fmt">Jogadores %1$s empataram com %2$d pontos cada. %3$s foi jogado.</string>
     <string name="lmi_move_one_dup_fmt">%1$s venceu esta rodada a jogar %2$s por %3$d pontos</string>
-    <string name="lmi_trade_dup_fmt">%1$d quadrados trocados para todos os jogadores</string>
+    <string name="lmi_trade_dup_fmt">%1$d pedras trocadas para todos os jogadores</string>
     <string name="lmi_pass_dup">Nenhum jogador achou uma jogada (todos passaram)</string>
-    <string name="lmi_tiles_dup">Os mesmos quadrados designados a todos os jogadores</string>
+    <string name="lmi_tiles_dup">As mesmas pedras atribuídas a todos os jogadores</string>
     <string name="unhide_dupmode_summary">(É experimental demais no momento)</string>
     <string name="unhide_dupmode_title">Exibir opções do modo duplicado</string>
-    <string name="offerdupmode_sum">(Experimental!!!) Estilo de jogo onde todos os jogadores têm os mesmos quadrados</string>
+    <string name="offerdupmode_sum">(Experimental!!!) Estilo de jogo onde todos os jogadores têm as mesmas pedras</string>
     <string name="offerdupmode_title">Jogar no \"modo duplicado\"</string>
     <string name="str_submit_confirm">Enviar a jogada atual\?
 \n</string>
@@ -1808,11 +1809,12 @@
     <string name="bt_no_devs">Atualmente não tem aparelhos Bluetooth emparelhados (ou o Bluetooth está desativado). Gostaria de abrir o Painel de Configurações do Android para adicionar um ou mais\?
 \n
 \n(Talvez precise também abrir o painel de Configurações no aparelho com qual quer emparelhar.)</string>
-    <string name="lmi_tiles_fmt">Quadrados designados a %1$s</string>
+    <string name="lmi_tiles_fmt">Pedras atribuídas a %1$s</string>
     <string name="lmi_phony_fmt">%1$s perdeu uma rodada</string>
     <plurals name="lmi_trade_fmt">
-        <item quantity="one">%1$s trocou um quadrado</item>
-        <item quantity="other">%1$s trocou %2$d quadrados</item>
+        <item quantity="one">%1$s trocou uma pedra</item>
+        <item quantity="many"></item>
+        <item quantity="other">%1$s trocou %2$d pedras</item>
     </plurals>
     <plurals name="lmi_move_fmt">
         <item quantity="one">%1$s jogou %2$s por um ponto</item>
@@ -1963,7 +1965,7 @@
         <item quantity="many">"
 \n
 \n(%1$d partidas também serão apagadas.)"</item>
-        <item quantity="other"/>
+        <item quantity="other"></item>
     </plurals>
     <plurals name="groups_confirm_del_fmt">
         <item quantity="one">Tem certeza que quer deletar o grupo %1$s\?</item>
@@ -1987,7 +1989,7 @@
         <item quantity="many">"
 \n
 \n(Tem %1$d partidas ativas a usar o Bluetooth.)"</item>
-        <item quantity="other"/>
+        <item quantity="other"></item>
     </plurals>
     <string name="warn_bt_havegames">Tem certeza que quer desativar jogar a usar Bluetooth\?
 \n
@@ -2066,9 +2068,9 @@
     <string name="pat_ends_with">Termina com</string>
     <string name="pat_contains">Contém</string>
     <string name="pat_starts_with">Começa com</string>
-    <string name="show_tiles_title_fmt">Quadrados para %1$s</string>
-    <string name="show_tiles_menu">Mostrar Quadrados</string>
-    <string name="show_tiles_button">Mostrar Quadrados</string>
+    <string name="show_tiles_title_fmt">Pedras para %1$s</string>
+    <string name="show_tiles_menu">Mostrar pedras</string>
+    <string name="show_tiles_button">Mostrar pedras</string>
     <string name="filter_sum_pat_fmt">Exibindo: %1$s, de tamanho %2$d-%3$d (%4$d palavras)</string>
     <string name="button_addBlank">+Vazio</string>
     <string name="button_useconfig">Aplicar filtro</string>
@@ -2090,20 +2092,22 @@
     <string name="not_again_trading_buttons">Use os botões para excutar o seu turno ou sair do modo de troca.</string>
     <string name="tile_pick_summary_fmt">Escolha atual: %1$s</string>
     <string name="tile_button_txt_fmt">%1$s (%2$d)</string>
-    <string name="tile_tray_picker">Escolha novos quadrados na tabela</string>
-    <string name="title_blank_picker">Escolha de quadrado em branco</string>
+    <string name="tile_tray_picker">Escolha novas pedras na tabela</string>
+    <string name="title_blank_picker">Escolha de pedra em branco</string>
     <string name="notify_chat_body_fmt">%1$s: %2$s</string>
     <string name="notify_chat_title_fmt">Mensagem de bate-papo na partida %1$s</string>
     <string name="notify_title_turn_fmt">A sua vez na partida %1$s</string>
     <string name="notify_title_fmt">jogada %1$s</string>
     <plurals name="too_many_trade_fmt">
-        <item quantity="one">Muitos quadrados selecionados. Por favor selecione apenas um.</item>
-        <item quantity="other">Muitos quadrados selecionados. Por favor selecione mais do que %1$d.</item>
+        <item quantity="one">Muitas pedras selecionadas. Se faz favor, selecione apenas um.</item>
+        <item quantity="many"></item>
+        <item quantity="other">Muitas pedras selecionadas. Se faz favor, favor selecione mais do que %1$d.</item>
     </plurals>
     <string name="chat_hint">Escreva aqui…</string>
     <plurals name="query_trade_fmt">
-        <item quantity="one">Tem certeza que quer mudar o quadrado selecionado (%2$s)\?</item>
-        <item quantity="other">Tem certeza que quer mudar os %1$d quadrados selecionados (%2$s)\?</item>
+        <item quantity="one">Tem certeza que quer mudar a pedra selecionado (%2$s)?</item>
+        <item quantity="many"></item>
+        <item quantity="other">Tem certeza que quer mudar as %1$d pedras selecionadas (%2$s)?</item>
     </plurals>
     <string name="invite_sms_fmt">Toque na ligação para aceitar o meu convite e se juntar ao jogo de Palavras Cruzadas: %1$s</string>
     <string name="invite_subject">Vamos jogar Palavras Cruzadas</string>
@@ -2133,14 +2137,16 @@
     <string name="phonies_found_title">Palavras falsas encontradas</string>
     <string name="pref_human_name">Jogador humano ( o seu nome)</string>
     <plurals name="strd_remains_expl_fmt">
-        <item quantity="one">Falta um quadrado no quadro escondido:
+        <item quantity="one">Falta uma pedra no quadro escondido:
 \n</item>
-        <item quantity="other">Faltam %1$d quadrados no agrupamento e no quadro escondido:
+        <item quantity="many"></item>
+        <item quantity="other">Faltam %1$d pedras no agrupamento e no quadro escondido:
 \n</item>
     </plurals>
     <plurals name="strd_remains_header_fmt">
-        <item quantity="one">Falta um quadrado no agrupamento.</item>
-        <item quantity="other">Faltam %1$d quadrados no agrupamento .</item>
+        <item quantity="one">Falta uma pedra no agrupamento.</item>
+        <item quantity="many"></item>
+        <item quantity="other">Faltam %1$d pedras no agrupamento .</item>
     </plurals>
     <string name="str_pass">passar
 \n</string>
@@ -2242,7 +2248,7 @@
         <item quantity="many">"
 \n
 \n(Agora tem %1$d jogos ativos usando a Internet.)"</item>
-        <item quantity="other"/>
+        <item quantity="other"></item>
     </plurals>
     <string name="archive_button_store">Exportar</string>
     <string name="archive_expl_colors">Cores no tabuleiro de jogo, por exemplo dos nomes de jogadores e quadrados de bónus</string>
@@ -2331,4 +2337,5 @@
     <string name="url_scheme_default">Usar padrão do SO do aparelho</string>
     <string name="url_scheme_http">Forçar http</string>
     <string name="url_scheme_https">Forçar https</string>
+    <string name="disable_shuffle_button_summary">Esconder o botão que reorganiza pedras da tabela</string>
 </resources>
