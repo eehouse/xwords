@@ -126,4 +126,39 @@
         <item quantity="other">%1$d saat</item>
     </plurals>
     <string name="button_delete_game">Oyunu Sil</string>
+    <string name="langdict_label">Oyun dili/kelime listesi</string>
+    <string name="password_label">Şifre:</string>
+    <string name="prefs_dicts_summary">Varsayılan kelime listeleri</string>
+    <string name="list_item_relaypage">Oyun trafiği</string>
+    <string name="title_langs_list">Diller (Yüklenen kelime listelerine istinaden)</string>
+    <string name="game_locked">Kilit ayarları</string>
+    <string name="title_game_config_fmt">%1$s için ayarlar</string>
+    <string name="board_menu_game_resign">Oyundan çekil</string>
+    <string name="board_submenu_game">Oyun</string>
+    <string name="dicts_list_prompt_fmt">Yüklenen kelime listeleri (%1$s\'de/da bulunan)</string>
+    <string name="robot_label">Robot oyuncu</string>
+    <string name="dict_lang_label_fmt">Kelime Listesi (%1$s)</string>
+    <string name="player_edit_title">Oyuncuyu düzenle</string>
+    <string name="confirm_save_title">Ayarları kaydet</string>
+    <string name="play">Oyun oyna</string>
+    <string name="confirm_save">Bu oyun şu anda oynanıyor. Ayarları kaydederseniz, oyun yeniden başlatılmak zorundadır. Bu ayarları kaydetmek ister misiniz?</string>
+    <string name="connect_label_fmt">Bağlantı (%1$s ile)</string>
+    <string name="relaypage_url_copied">Oyun URL\'si panoya kopyalandı</string>
+    <string name="langUnknownFmt">Bilinmeyen (%1$s)</string>
+    <string name="robot_spinner_prompt">Robot oyuncu ne kadar akıllı olmalı?</string>
+    <string name="invite_msg_extra_norematch">Bir davetiyenin kaybolduğunu düşünüyorsan, bir tane daha göndermekten zarar gelmez.</string>
+    <string name="ids_badwords_fmt">Kelime[ler] %1$s, %2$s kelime listesinde bulunmuyor.</string>
+    <plurals name="confirm_nameddeletes_fmt">
+        <item quantity="one">%1$s oyununu silmek istediğinize emin misiniz? Bu işlem geri alınamaz.</item>
+        <item quantity="other">%1$s oyununlarını silmek istediğinize emin misiniz? Bu işlem geri alınamaz.</item>
+    </plurals>
+    <string name="board_size">Tahta boyutu</string>
+    <string name="game_summary_field_language">Oyun dili</string>
+    <string name="keep_screenon">Ekranı açık tut</string>
+    <string name="msg_dev_deleted_fmt">\"%1$s\" isimli oyun başka bir cihazda silindi. Oyuna devam edemeyeceksiniz.</string>
+    <string name="buttonYesAnd">Evet &amp; Kaydet</string>
+    <string name="board_menu_undo_last">Son hamleyi geri al</string>
+    <string name="prefs_defaults_summary">Yeni oyunlar için varsayılan ayarlar</string>
+    <string name="board_menu_game_history">Oyun geçmişi</string>
+    <string name="prefs_dicts">Dil ve Kelime Listeleri</string>
 </resources>
