@@ -82,13 +82,13 @@ object Log {
     fun clearStored(procs: ResultProcs) {
         val result = 0
         val helper = initDB()
-        helper?.clear(procs)
+        helper.clear(procs)
     }
 
     fun dumpStored(procs: ResultProcs) {
         val result: File? = null
         val helper = initDB()
-        helper?.dumpToFile(procs)
+        helper.dumpToFile(procs)
     }
 
     fun enable(context: Context) {
@@ -151,7 +151,7 @@ object Log {
 
     private var s_dbHelper: LogDBHelper? = null
     @Synchronized
-    private fun initDB(): LogDBHelper? {
+    private fun initDB(): LogDBHelper {
         if (null == s_dbHelper) {
             val context = sContextRef!!.get()
             if (null != context) {
@@ -160,7 +160,7 @@ object Log {
                 s_dbHelper!!.writableDatabase.close()
             }
         }
-        return s_dbHelper
+        return s_dbHelper!!
     }
 
     // Called from jni. Keep name and signature in sync with what's in
@@ -173,7 +173,7 @@ object Log {
     private fun store(level: LOG_LEVEL, tag: String, msg: String) {
         if (sUseDB) {
             val helper = initDB()
-            helper?.store(level, tag, msg)
+            helper.store(level, tag, msg)
         }
     }
 
@@ -223,12 +223,12 @@ object Log {
             val pid = Process.myPid()
 
             val values = ContentValues()
-            values.put(COL_ENTRY, msg)
-            values.put(COL_THREAD, tid)
-            values.put(COL_PID, pid)
-            values.put(COL_TAG, tag)
-            values.put(COL_LEVEL, level.ordinal)
-            values.put(COL_TIMESTAMP, System.currentTimeMillis())
+                .putAnd(COL_ENTRY, msg)
+                .putAnd(COL_THREAD, tid)
+                .putAnd(COL_PID, pid)
+                .putAnd(COL_TAG, tag)
+                .putAnd(COL_LEVEL, level.ordinal)
+                .putAnd(COL_TIMESTAMP, System.currentTimeMillis())
             enqueue { writableDatabase.insert(LOGS_TABLE_NAME, null, values) }
         }
 
@@ -299,7 +299,7 @@ object Log {
         fun clear(procs: ResultProcs) {
             enqueue {
                 val result = writableDatabase
-                    .delete(LOGS_TABLE_NAME, "1", null)
+                    .delete(LOGS_TABLE_NAME, null, null)
                 procs.onCleared(result)
             }
         }
