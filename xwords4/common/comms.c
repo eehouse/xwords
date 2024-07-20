@@ -210,9 +210,6 @@ mutex_init(CommsCtxt* comms)
     pthread_t _oldHolder = comms->lockHolder;                          \
     comms->lockHolder = pthread_self();                                \
     XP_ASSERT(0 == _oldHolder || _oldHolder == comms->lockHolder);     \
-    if ( comms->lockHolder == _oldHolder ) {                           \
-        XP_LOGFF("recursive mutex");                                   \
-    }
 
 #define COMMS_MUTEX_UNLOCK_DEBUG()                          \
     time_t unlockTime = time(NULL);                         \
@@ -922,7 +919,6 @@ comms_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
         }
         if ( 0 == msg->smp.createdStamp ) {
             msg->smp.createdStamp = dutil_getCurSeconds( comms->dutil, xwe );
-            COMMS_LOGFF( "added missing timestamp" );
         }
 #ifdef DEBUG
         XP_ASSERT( 0 == msg->sendCount );
@@ -2675,7 +2671,6 @@ preProcess(
 
     /* There should be exactly one type associated with an incoming message */
     CommsConnType typ = addr_getType( useAddr );
-    XP_LOGFF( "(typ=%s)", ConnType2Str(typ) );
 
     switch ( typ ) {
 #ifdef XWFEATURE_RELAY
@@ -2711,7 +2706,6 @@ preProcess(
         XP_ASSERT(0);
         break;
     }
-    LOG_RETURNF( "%s", boolToStr(consumed) );
     return consumed;
 } /* preProcess */
 
@@ -3301,7 +3295,6 @@ comms_gatherPlayers( CommsCtxt* comms, XWEnv xwe, XP_U32 created )
         }
     }
     COMMS_MUTEX_UNLOCK();
-    LOG_RETURN_VOID();
 }
 #endif
 

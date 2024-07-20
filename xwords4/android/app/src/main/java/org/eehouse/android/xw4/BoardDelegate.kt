@@ -717,7 +717,6 @@ class BoardDelegate(delegator: Delegator) :
 
     override fun onPrepareOptionsMenu(menu: Menu): Boolean {
         var inTrade = false
-        var item: MenuItem
         var strId: Int
         var enable: Boolean
         if (null != mGsi) {
@@ -729,7 +728,7 @@ class BoardDelegate(delegator: Delegator) :
             } else {
                 R.string.board_menu_tray_show
             }
-            item = menu.findItem(R.id.board_menu_tray)
+            val item = menu.findItem(R.id.board_menu_tray)
             item.setTitle(getString(strId))
             Utils.setItemVisible(
                 menu, R.id.board_menu_flip,
@@ -776,6 +775,7 @@ class BoardDelegate(delegator: Delegator) :
                 mGsi!!.canUnpause
             )
         }
+
         Utils.setItemVisible(menu, R.id.board_menu_trade_cancel, inTrade)
         Utils.setItemVisible(
             menu, R.id.board_menu_trade_commit,
@@ -784,7 +784,7 @@ class BoardDelegate(delegator: Delegator) :
         Utils.setItemVisible(menu, R.id.board_menu_game_resign, !inTrade)
         if (!inTrade) {
             enable = null == mGsi || mGsi!!.curTurnSelected
-            item = menu.findItem(R.id.board_menu_done)
+            val item = menu.findItem(R.id.board_menu_done)
             item.setVisible(enable)
             if (enable) {
                 strId = if (0 >= mView!!.curPending()) {
@@ -796,7 +796,7 @@ class BoardDelegate(delegator: Delegator) :
             }
             if (mGameOver || DBUtils.gameOver(mActivity, mRowid)) {
                 mGameOver = true
-                item = menu.findItem(R.id.board_menu_game_resign)
+                val item = menu.findItem(R.id.board_menu_game_resign)
                 item.setTitle(getString(R.string.board_menu_game_final))
             }
         }
@@ -821,7 +821,6 @@ class BoardDelegate(delegator: Delegator) :
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         var handled = true
         var cmd = JNICmd.CMD_NONE
-        val proc: Runnable? = null
         val id = item.itemId
         when (id) {
             R.id.board_menu_done -> {

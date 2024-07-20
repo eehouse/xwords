@@ -27,10 +27,10 @@ object Quarantine {
     private val sDataRef = arrayOf<QData?>(null)
 
     fun getCount(rowid: Long): Int {
-        var result: Int
-        synchronized(sDataRef) {
-            result = get()!!.countFor(rowid)
-        }
+        val result =
+            synchronized(sDataRef) {
+                get().countFor(rowid)
+            }
         return result
     }
 
@@ -45,7 +45,7 @@ object Quarantine {
                 sLogged.add(rowid)
                 Log.d(TAG, "printing calling stack:")
                 DbgUtils.printStack(TAG)
-                val list = get()!!
+                val list = get()
                     .listFor(rowid)
                 for (ii in list!!.indices) {
                     val trace = list[ii]
@@ -59,14 +59,14 @@ object Quarantine {
 
     fun clear(rowid: Long) {
         synchronized(sDataRef) {
-            get()!!.clear(rowid)
+            get().clear(rowid)
             store()
         }
     }
 
     fun recordOpened(rowid: Long) {
         synchronized(sDataRef) {
-            val newCount = get()!!.increment(rowid)
+            val newCount = get().increment(rowid)
             store()
             Log.d(
                 TAG, "recordOpened(%d): %s (count now %d)", rowid,
@@ -77,7 +77,7 @@ object Quarantine {
 
     fun recordClosed(rowid: Long) {
         synchronized(sDataRef) {
-            get()!!.clear(rowid)
+            get().clear(rowid)
             store()
             Log.d(
                 TAG, "recordClosed(%d): %s (count now 0)", rowid,
@@ -89,7 +89,7 @@ object Quarantine {
     fun markBad(rowid: Long) {
         synchronized(sDataRef) {
             for (ii in 0 until BuildConfig.BAD_COUNT) {
-                get()!!.increment(rowid)
+                get().increment(rowid)
             }
             store()
             Log.d(TAG, "markBad(%d): %s", rowid, sDataRef[0].toString())
@@ -103,7 +103,7 @@ object Quarantine {
         }
     }
 
-    private fun get(): QData? {
+    private fun get(): QData {
         var data: QData?
         synchronized(sDataRef) {
             data = sDataRef[0]
@@ -118,7 +118,7 @@ object Quarantine {
                 sDataRef[0] = data
             }
         }
-        return data
+        return data!!
     }
 
     private val context: Context

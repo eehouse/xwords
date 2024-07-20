@@ -395,7 +395,7 @@ dvc_makeMQTTMessages( XW_DUtilCtxt* dutil, XWEnv xwe,
     XP_S16 nSent0 = 0;
     XP_S16 nSent1 = 0;
     XP_U8 nBufs = 0;
-    XP_LOGFF( "(streamVersion: %X)", streamVersion );
+    // XP_LOGFF( "(streamVersion: %X)", streamVersion );
     XP_UCHAR devTopic[64];      /* used by two below */
     formatMQTTDevTopic( addressee, devTopic, VSIZE(devTopic) );
 

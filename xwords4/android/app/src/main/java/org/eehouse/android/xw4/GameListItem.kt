@@ -119,10 +119,7 @@ class GameListItem(private val m_context: Context, aset: AttributeSet?) :
         super.onDraw(canvas)
         if (DBUtils.ROWID_NOTFOUND != rowID) {
             synchronized(s_invalRows) {
-                if (s_invalRows.contains(
-                        rowID
-                    )
-                ) {
+                if (s_invalRows.contains(rowID) ) {
                     forceReload()
                 }
             }
@@ -323,8 +320,9 @@ class GameListItem(private val m_context: Context, aset: AttributeSet?) :
             iv.setImageResource(resID)
             if (BuildConfig.NON_RELEASE) {
                 val quarCount = Quarantine.getCount(rowID)
-                (findViewById<View>(R.id.corrupt_count_marker) as TextView).text =
-                    if (0 == quarCount) "" else "" + quarCount
+                findViewById<TextView>(R.id.corrupt_count_marker).text =
+                    // 1 is normal: means the game's open.
+                    if (quarCount <= 1) "" else "$quarCount"
             }
 
             if (XWPrefs.moveCountEnabled(m_context)) {
@@ -375,7 +373,9 @@ class GameListItem(private val m_context: Context, aset: AttributeSet?) :
 
     private inner class LoadItemTask() : Thread() {
         override fun run() {
-            val summary = GameUtils.getSummary(m_context, rowID, SUMMARY_WAIT_MSECS.toLong())
+            val summary = GameUtils.getSummary(
+                m_context, rowID, SUMMARY_WAIT_MSECS.toLong()
+            )
 
             if (0 == --m_loadingCount) {
                 mSummary = summary

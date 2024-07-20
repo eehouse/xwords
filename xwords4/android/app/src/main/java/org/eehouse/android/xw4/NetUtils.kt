@@ -284,7 +284,8 @@ object NetUtils {
             } catch (pe: ProtocolException) {
                 Log.ex(TAG, pe)
             } catch (ioe: IOException) {
-                Log.ex(TAG, ioe)
+                Log.d(TAG, "runConn(%s) failed with IOException: %s",
+                      conn, ioe.message)
             }
         } else {
             Log.e(TAG, "not running conn %s with params %s", conn, param)
