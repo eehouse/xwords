@@ -39,10 +39,12 @@ import android.widget.LinearLayout
 import android.widget.PopupMenu
 
 import java.io.Serializable
+import kotlin.concurrent.Volatile
 
 import org.eehouse.android.xw4.ConnStatusHandler.ConnStatusCBacks
 import org.eehouse.android.xw4.DBUtils.SentInvitesInfo
 import org.eehouse.android.xw4.DictUtils.ON_SERVER
+import org.eehouse.android.xw4.DlgDelegate.Action
 import org.eehouse.android.xw4.DlgDelegate.DlgClickNotify.InviteMeans
 import org.eehouse.android.xw4.DwnldDelegate.DownloadFinishedListener
 import org.eehouse.android.xw4.GameOverAlert.OnDoneProc
@@ -83,7 +85,6 @@ import org.eehouse.android.xw4.jni.XwJNI
 import org.eehouse.android.xw4.jni.XwJNI.GamePtr
 import org.eehouse.android.xw4.jni.XwJNI.XP_Key
 import org.eehouse.android.xw4.loc.LocUtils
-import kotlin.concurrent.Volatile
 
 class BoardDelegate(delegator: Delegator) :
     DelegateBase(delegator, R.layout.board, R.menu.board_menu), TPMsgHandler,
@@ -337,7 +338,7 @@ class BoardDelegate(delegator: Delegator) :
                         lstnr = DialogInterface.OnClickListener { dialog, whichButton ->
                             makeNotAgainBuilder(
                                 R.string.key_na_lookup,
-                                DlgDelegate.Action.LOOKUP_ACTION,
+                                Action.LOOKUP_ACTION,
                                 R.string.not_again_lookup
                             )
                                 .show()
@@ -516,7 +517,8 @@ class BoardDelegate(delegator: Delegator) :
                     prefsName
                 )
                     .setTitle(R.string.new_feature_title)
-                    .setActionPair(DlgDelegate.Action.LAUNCH_THEME_CONFIG, R.string.button_settings)
+                    .setActionPair(Action.LAUNCH_THEME_CONFIG,
+                                   R.string.button_settings)
                     .show()
             }
         }
@@ -649,7 +651,7 @@ class BoardDelegate(delegator: Delegator) :
                 this, Perm.READ_PHONE_STATE,
                 R.string.phone_state_rationale,
                 R.string.key_na_perms_phonestate,
-                DlgDelegate.Action.ASKED_PHONE_STATE
+                Action.ASKED_PHONE_STATE
             )
         }
     }
@@ -657,17 +659,17 @@ class BoardDelegate(delegator: Delegator) :
     private fun showInviteChoicesThen() {
         val nli = nliForMe()
         if (ON_SERVER.NO != DictLangCache.getOnServer(mActivity, nli.dict)) {
-            onPosButton(DlgDelegate.Action.CUSTOM_DICT_CONFIRMED, nli)
+            onPosButton(Action.CUSTOM_DICT_CONFIRMED, nli)
         } else {
             val txt = LocUtils
                 .getString(
                     mActivity, R.string.invite_custom_warning_fmt,
                     nli.dict
                 )
-            makeConfirmThenBuilder(DlgDelegate.Action.CUSTOM_DICT_CONFIRMED, txt)
+            makeConfirmThenBuilder(Action.CUSTOM_DICT_CONFIRMED, txt)
                 .setNegButton(R.string.list_item_config)
                 .setActionPair(
-                    DlgDelegate.Action.DELETE_AND_EXIT,
+                    Action.DELETE_AND_EXIT,
                     R.string.button_delete_game
                 )
                 .setParams(nli)
@@ -831,11 +833,11 @@ class BoardDelegate(delegator: Delegator) :
                 if (mGi!!.traySize > nTiles) {
                     makeNotAgainBuilder(
                         R.string.key_notagain_done,
-                        DlgDelegate.Action.COMMIT_ACTION, R.string.not_again_done
+                        Action.COMMIT_ACTION, R.string.not_again_done
                     )
                         .show()
                 } else {
-                    onPosButton(DlgDelegate.Action.COMMIT_ACTION)
+                    onPosButton(Action.COMMIT_ACTION)
                 }
             }
 
@@ -853,7 +855,7 @@ class BoardDelegate(delegator: Delegator) :
                 msg += getString(R.string.not_again_trading_menu)
                 makeNotAgainBuilder(
                     R.string.key_notagain_trading,
-                    DlgDelegate.Action.START_TRADE_ACTION, msg
+                    Action.START_TRADE_ACTION, msg
                 )
                     .show()
             }
@@ -872,7 +874,7 @@ class BoardDelegate(delegator: Delegator) :
 
             R.id.board_menu_undo_current -> cmd = JNICmd.CMD_UNDO_CUR
             R.id.board_menu_undo_last -> makeConfirmThenBuilder(
-                DlgDelegate.Action.UNDO_LAST_ACTION,
+                Action.UNDO_LAST_ACTION,
                 R.string.confirm_undo_last
             )
                 .show()
@@ -921,13 +923,13 @@ class BoardDelegate(delegator: Delegator) :
     //////////////////////////////////////////////////
     // DlgDelegate.DlgClickNotify interface
     //////////////////////////////////////////////////
-    override fun onPosButton(action: DlgDelegate.Action, vararg params: Any?): Boolean {
+    override fun onPosButton(action: Action, vararg params: Any?): Boolean {
         Log.d(TAG, "onPosButton(%s, %s)", action, DbgUtils.fmtAny(arrayOf(params)))
         var handled = true
         var cmd: JNICmd? = null
         val gi = mGi!!
         when (action) {
-            DlgDelegate.Action.ENABLE_MQTT_DO_OR -> {
+            Action.ENABLE_MQTT_DO_OR -> {
                 if ( MQTTUtils.MQTTSupported() ) {
                     XWPrefs.setMQTTEnabled(mActivity, true)
                     MQTTUtils.setEnabled(mActivity, true)
@@ -938,19 +940,19 @@ class BoardDelegate(delegator: Delegator) :
                 }
             }
 
-            DlgDelegate.Action.UNDO_LAST_ACTION -> cmd = JNICmd.CMD_UNDO_LAST
-            DlgDelegate.Action.SMS_CONFIG_ACTION -> PrefsDelegate.launch(mActivity)
-            DlgDelegate.Action.COMMIT_ACTION -> cmd = JNICmd.CMD_COMMIT
-            DlgDelegate.Action.SHOW_EXPL_ACTION -> {
+            Action.UNDO_LAST_ACTION -> cmd = JNICmd.CMD_UNDO_LAST
+            Action.SMS_CONFIG_ACTION -> PrefsDelegate.launch(mActivity)
+            Action.COMMIT_ACTION -> cmd = JNICmd.CMD_COMMIT
+            Action.SHOW_EXPL_ACTION -> {
                 showToast(m_mySIS!!.toastStr!!)
                 m_mySIS!!.toastStr = null
             }
 
-            DlgDelegate.Action.BUTTON_BROWSEALL_ACTION, DlgDelegate.Action.BUTTON_BROWSE_ACTION -> {
+            Action.BUTTON_BROWSEALL_ACTION, Action.BUTTON_BROWSE_ACTION -> {
                 val curDict = gi.dictName(mView!!.curPlayer)
                 val button: View = mToolbar!!.getButtonFor(Buttons.BUTTON_BROWSE_DICT)
                 Assert.assertTrueNR(null != gi.isoCode())
-                if (DlgDelegate.Action.BUTTON_BROWSEALL_ACTION == action
+                if (Action.BUTTON_BROWSEALL_ACTION == action
                     && null != curDict
                     && DictsDelegate.handleDictsPopup(getDelegator(), button, curDict, gi.isoCode()!!)
                 ) {
@@ -962,23 +964,23 @@ class BoardDelegate(delegator: Delegator) :
                 }
             }
 
-            DlgDelegate.Action.PREV_HINT_ACTION -> cmd = JNICmd.CMD_PREV_HINT
-            DlgDelegate.Action.NEXT_HINT_ACTION -> cmd = JNICmd.CMD_NEXT_HINT
-            DlgDelegate.Action.JUGGLE_ACTION -> cmd = JNICmd.CMD_JUGGLE
-            DlgDelegate.Action.FLIP_ACTION -> cmd = JNICmd.CMD_FLIP
-            DlgDelegate.Action.UNDO_ACTION -> cmd = JNICmd.CMD_UNDO_CUR
-            DlgDelegate.Action.VALUES_ACTION -> doValuesPopup(mToolbar!!.getButtonFor(Buttons.BUTTON_VALUES))
-            DlgDelegate.Action.CHAT_ACTION -> startChatActivity()
-            DlgDelegate.Action.START_TRADE_ACTION -> {
+            Action.PREV_HINT_ACTION -> cmd = JNICmd.CMD_PREV_HINT
+            Action.NEXT_HINT_ACTION -> cmd = JNICmd.CMD_NEXT_HINT
+            Action.JUGGLE_ACTION -> cmd = JNICmd.CMD_JUGGLE
+            Action.FLIP_ACTION -> cmd = JNICmd.CMD_FLIP
+            Action.UNDO_ACTION -> cmd = JNICmd.CMD_UNDO_CUR
+            Action.VALUES_ACTION -> doValuesPopup(mToolbar!!.getButtonFor(Buttons.BUTTON_VALUES))
+            Action.CHAT_ACTION -> startChatActivity()
+            Action.START_TRADE_ACTION -> {
                 showTradeToastOnce(true)
                 cmd = JNICmd.CMD_TRADE
             }
 
-            DlgDelegate.Action.LOOKUP_ACTION -> launchLookup(m_mySIS!!.words!!, gi.isoCode())
-            DlgDelegate.Action.DROP_MQTT_ACTION -> dropConViaAndRestart(CommsConnType.COMMS_CONN_MQTT)
-            DlgDelegate.Action.DELETE_AND_EXIT -> deleteAndClose()
-            DlgDelegate.Action.DROP_SMS_ACTION -> alertOrderIncrIfAt(StartAlertOrder.NBS_PERMS)
-            DlgDelegate.Action.INVITE_SMS_DATA -> {
+            Action.LOOKUP_ACTION -> launchLookup(m_mySIS!!.words!!, gi.isoCode())
+            Action.DROP_MQTT_ACTION -> dropConViaAndRestart(CommsConnType.COMMS_CONN_MQTT)
+            Action.DELETE_AND_EXIT -> deleteAndClose()
+            Action.DROP_SMS_ACTION -> alertOrderIncrIfAt(StartAlertOrder.NBS_PERMS)
+            Action.INVITE_SMS_DATA -> {
                 val nMissing = params[0] as Int
                 val info = params[1] as? SentInvitesInfo
                 launchPhoneNumberInvite(
@@ -987,8 +989,8 @@ class BoardDelegate(delegator: Delegator) :
                 )
             }
 
-            DlgDelegate.Action.ASKED_PHONE_STATE -> showInviteChoicesThen()
-            DlgDelegate.Action.BLANK_PICKED -> {
+            Action.ASKED_PHONE_STATE -> showInviteChoicesThen()
+            Action.BLANK_PICKED -> {
                 val tps = params[0] as TilePickState
                 val newTiles = params[1] as IntArray
                 handleViaThread(
@@ -997,7 +999,7 @@ class BoardDelegate(delegator: Delegator) :
                 )
             }
 
-            DlgDelegate.Action.TRAY_PICKED -> {
+            Action.TRAY_PICKED -> {
                 val tps = params[0] as TilePickState
                 val newTiles = params[1] as IntArray
                 if (tps.isInitial) {
@@ -1007,7 +1009,7 @@ class BoardDelegate(delegator: Delegator) :
                 }
             }
 
-            DlgDelegate.Action.DISABLE_DUALPANE -> {
+            Action.DISABLE_DUALPANE -> {
                 XWPrefs.setPrefsString(
                     mActivity, R.string.key_force_tablet,
                     getString(R.string.force_tablet_phone)
@@ -1015,7 +1017,7 @@ class BoardDelegate(delegator: Delegator) :
                 makeOkOnlyBuilder(R.string.after_restart).show()
             }
 
-            DlgDelegate.Action.ARCHIVE_ACTION -> {
+            Action.ARCHIVE_ACTION -> {
                 val rematchAfter = params.size >= 1 && params[0] as Boolean
                 val curGroup = DBUtils.getGroupForGame(mActivity, mRowid)
                 archiveGame(!rematchAfter)
@@ -1024,7 +1026,7 @@ class BoardDelegate(delegator: Delegator) :
                 }
             }
 
-            DlgDelegate.Action.REMATCH_ACTION -> {
+            Action.REMATCH_ACTION -> {
                 val archiveAfter = params.size >= 1 && params[0] as Boolean
                 val deleteAfter = params.size >= 2 && params[1] as Boolean
                 Assert.assertTrueNR(false == archiveAfter || false == deleteAfter)
@@ -1035,26 +1037,26 @@ class BoardDelegate(delegator: Delegator) :
                 }
             }
 
-            DlgDelegate.Action.DELETE_ACTION -> if (0 < params.size && params[0] as Boolean) {
+            Action.DELETE_ACTION -> if (0 < params.size && params[0] as Boolean) {
                 deleteAndClose()
             } else {
                 makeConfirmThenBuilder(
-                    DlgDelegate.Action.DELETE_ACTION,
+                    Action.DELETE_ACTION,
                     R.string.confirm_delete
                 )
                     .setParams(true)
                     .show()
             }
 
-            DlgDelegate.Action.CUSTOM_DICT_CONFIRMED -> {
+            Action.CUSTOM_DICT_CONFIRMED -> {
                 val nli = params[0] as NetLaunchInfo
                 showInviteChoicesThen(
-                    DlgDelegate.Action.LAUNCH_INVITE_ACTION, nli,
+                    Action.LAUNCH_INVITE_ACTION, nli,
                     m_mySIS!!.nMissing, m_mySIS!!.nInvited
                 )
             }
 
-            DlgDelegate.Action.LAUNCH_INVITE_ACTION -> for (obj in params) {
+            Action.LAUNCH_INVITE_ACTION -> for (obj in params) {
                 if (obj is CommsAddrRec) {
                     tryOtherInvites(obj)
                 } else {
@@ -1062,11 +1064,11 @@ class BoardDelegate(delegator: Delegator) :
                 }
             }
 
-            DlgDelegate.Action.LAUNCH_THEME_CONFIG -> PrefsDelegate.launch(
+            Action.LAUNCH_THEME_CONFIG -> PrefsDelegate.launch(
                 mActivity, PrefsWrappers.prefs_appear_themes::class.java
             )
 
-            DlgDelegate.Action.LAUNCH_THEME_COLOR_CONFIG -> {
+            Action.LAUNCH_THEME_COLOR_CONFIG -> {
                 val clazz: Class<*> =
                     if (CommonPrefs.darkThemeInUse(mActivity)) {
                         PrefsWrappers.prefs_appear_colors_dark::class.java
@@ -1076,7 +1078,7 @@ class BoardDelegate(delegator: Delegator) :
                 PrefsDelegate.launch(mActivity, clazz)
             }
 
-            DlgDelegate.Action.ENABLE_NBS_DO -> {
+            Action.ENABLE_NBS_DO -> {
                 post { retryNBSInvites(params) }
                 handled = super.onPosButton(action, *params)
             }
@@ -1087,20 +1089,20 @@ class BoardDelegate(delegator: Delegator) :
         return handled
     }
 
-    override fun onNegButton(action: DlgDelegate.Action, vararg params: Any?): Boolean {
+    override fun onNegButton(action: Action, vararg params: Any?): Boolean {
         Log.d(TAG, "onNegButton(%s, %s)", action, DbgUtils.fmtAny(params))
         var handled = true
         when (action) {
-            DlgDelegate.Action.ENABLE_MQTT_DO_OR -> mDropMQTTOnDismiss = true
-            DlgDelegate.Action.DROP_SMS_ACTION -> dropConViaAndRestart(CommsConnType.COMMS_CONN_SMS)
-            DlgDelegate.Action.DELETE_AND_EXIT -> finish()
-            DlgDelegate.Action.ASKED_PHONE_STATE -> showInviteChoicesThen()
-            DlgDelegate.Action.CUSTOM_DICT_CONFIRMED -> {
+            Action.ENABLE_MQTT_DO_OR -> mDropMQTTOnDismiss = true
+            Action.DROP_SMS_ACTION -> dropConViaAndRestart(CommsConnType.COMMS_CONN_SMS)
+            Action.DELETE_AND_EXIT -> finish()
+            Action.ASKED_PHONE_STATE -> showInviteChoicesThen()
+            Action.CUSTOM_DICT_CONFIRMED -> {
                 GamesListDelegate.launchGameConfig(mActivity, mRowid)
                 finish()
             }
 
-            DlgDelegate.Action.INVITE_SMS_DATA -> if (Perms23.haveNBSPerms(mActivity)) {
+            Action.INVITE_SMS_DATA -> if (Perms23.haveNBSPerms(mActivity)) {
                 val nMissing = params[0] as Int
                 val info = params[1] as? SentInvitesInfo
                 launchPhoneNumberInvite(
@@ -1114,22 +1116,22 @@ class BoardDelegate(delegator: Delegator) :
         return handled
     }
 
-    override fun onDismissed(action: DlgDelegate.Action,
+    override fun onDismissed(action: Action,
                              vararg params: Any?): Boolean
     {
         Log.d(TAG, "onDismissed(%s, %s)", action, DbgUtils.fmtAny(params))
         var handled = true
         when (action) {
-            DlgDelegate.Action.ENABLE_MQTT_DO_OR ->
+            Action.ENABLE_MQTT_DO_OR ->
                 if (mDropMQTTOnDismiss) {
                     postDelayed({ askDropMQTT() }, 10)
                 } else {
                     alertOrderIncrIfAt(StartAlertOrder.NO_MEANS)
                 }
 
-            DlgDelegate.Action.DELETE_AND_EXIT -> finish()
+            Action.DELETE_AND_EXIT -> finish()
 
-            DlgDelegate.Action.BLANK_PICKED, DlgDelegate.Action.TRAY_PICKED ->
+            Action.BLANK_PICKED, Action.TRAY_PICKED ->
                 // If the user cancels the tile picker the common code doesn't
                 // know, and won't put it up again as long as this game
                 // remains loaded. There might be a way to fix that, but the
@@ -1138,19 +1140,19 @@ class BoardDelegate(delegator: Delegator) :
                 // the game.
                 finish()
 
-            DlgDelegate.Action.DROP_SMS_ACTION ->
+            Action.DROP_SMS_ACTION ->
                 alertOrderIncrIfAt(StartAlertOrder.NBS_PERMS)
-            DlgDelegate.Action.LAUNCH_INVITE_ACTION -> showInviteAlertIf()
+            Action.LAUNCH_INVITE_ACTION -> showInviteAlertIf()
             else -> handled = super.onDismissed(action, *params)
         }
         return handled
     }
 
     override fun inviteChoiceMade(
-        action: DlgDelegate.Action, means: InviteMeans,
+        action: Action, means: InviteMeans,
         vararg params: Any?
     ) {
-        if (action == DlgDelegate.Action.LAUNCH_INVITE_ACTION) {
+        if (action == Action.LAUNCH_INVITE_ACTION) {
             val info = if (0 < params.size
                 && params[0] is SentInvitesInfo
             ) params[0] as SentInvitesInfo else null
@@ -1169,7 +1171,7 @@ class BoardDelegate(delegator: Delegator) :
                 InviteMeans.SMS_DATA ->
                     Perms23.tryGetPerms(
                         this, Perms23.NBS_PERMS, R.string.sms_invite_rationale,
-                        DlgDelegate.Action.INVITE_SMS_DATA, m_mySIS!!.nMissing, info
+                        Action.INVITE_SMS_DATA, m_mySIS!!.nMissing, info
                     )
 
                 InviteMeans.MQTT -> showDialogFragment(DlgID.GET_DEVID)
@@ -1408,7 +1410,7 @@ class BoardDelegate(delegator: Delegator) :
         if (mConnTypes!!.contains(CommsConnType.COMMS_CONN_SMS)) {
             msg += " " + getString(R.string.confirm_drop_relay_sms)
         }
-        makeConfirmThenBuilder(DlgDelegate.Action.DROP_MQTT_ACTION, msg).show()
+        makeConfirmThenBuilder(Action.DROP_MQTT_ACTION, msg).show()
     }
 
     private fun dropConViaAndRestart(typ: CommsConnType) {
@@ -1526,7 +1528,7 @@ class BoardDelegate(delegator: Delegator) :
         }
 
         private fun startTP(
-            action: DlgDelegate.Action,
+            action: Action,
             tps: TilePickState
         ) {
             runOnUiThread { show(TilePickAlert.newInstance(action, tps)) }
@@ -1538,7 +1540,7 @@ class BoardDelegate(delegator: Delegator) :
             texts: Array<String>
         ) {
             val tps = TilePickState(playerNum, texts, col, row)
-            startTP(DlgDelegate.Action.BLANK_PICKED, tps)
+            startTP(Action.BLANK_PICKED, tps)
         }
 
         override fun informNeedPickTiles(
@@ -1550,7 +1552,7 @@ class BoardDelegate(delegator: Delegator) :
                 isInitial, playerNum, nToPick,
                 texts, counts
             )
-            startTP(DlgDelegate.Action.TRAY_PICKED, tps)
+            startTP(Action.TRAY_PICKED, tps)
         }
 
         override fun informNeedPassword(player: Int, name: String?) {
@@ -1926,16 +1928,16 @@ class BoardDelegate(delegator: Delegator) :
                 archiveAfter: Boolean,
                 deleteAfter: Boolean
             ) {
-                var postAction: DlgDelegate.Action? = null
+                var postAction: Action? = null
                 val postArgs = ArrayList<Any>()
                 if (rematch) {
-                    postAction = DlgDelegate.Action.REMATCH_ACTION
+                    postAction = Action.REMATCH_ACTION
                     postArgs.add(archiveAfter)
                     postArgs.add(deleteAfter)
                 } else if (archiveAfter) {
                     showArchiveNA(false)
                 } else if (deleteAfter) {
-                    postAction = DlgDelegate.Action.DELETE_ACTION
+                    postAction = Action.DELETE_ACTION
                 }
                 if (null != postAction) {
                     post { onPosButton(postAction, *postArgs.toTypedArray()) }
@@ -1990,7 +1992,7 @@ class BoardDelegate(delegator: Delegator) :
                                 makeNotAgainBuilder(R.string.key_na_newsawnew, msg)
                                     .setTitle(R.string.new_feature_title)
                                     .setActionPair(
-                                        DlgDelegate.Action.LAUNCH_THEME_COLOR_CONFIG,
+                                        Action.LAUNCH_THEME_COLOR_CONFIG,
                                         R.string.menu_prefs
                                     )
                                     .show()
@@ -2060,7 +2062,7 @@ class BoardDelegate(delegator: Delegator) :
                         } else {
                             val explID =
                                 if (Perms23.NBSPermsInManifest(mActivity)) R.string.missing_sms_perms else R.string.variant_missing_nbs
-                            makeConfirmThenBuilder(DlgDelegate.Action.DROP_SMS_ACTION, explID)
+                            makeConfirmThenBuilder(Action.DROP_SMS_ACTION, explID)
                                 .setNegButton(R.string.remove_sms)
                                 .show()
                         }
@@ -2117,55 +2119,55 @@ class BoardDelegate(delegator: Delegator) :
                 Buttons.BUTTON_BROWSE_DICT,
                 R.string.not_again_browseall,
                 R.string.key_na_browseall,
-                DlgDelegate.Action.BUTTON_BROWSEALL_ACTION
+                Action.BUTTON_BROWSEALL_ACTION
             )
                 .setLongClickListener(
                     Buttons.BUTTON_BROWSE_DICT,
                     R.string.not_again_browse,
                     R.string.key_na_browse,
-                    DlgDelegate.Action.BUTTON_BROWSE_ACTION
+                    Action.BUTTON_BROWSE_ACTION
                 )
                 .setListener(
                     Buttons.BUTTON_HINT_PREV,
                     R.string.not_again_hintprev,
                     R.string.key_notagain_hintprev,
-                    DlgDelegate.Action.PREV_HINT_ACTION
+                    Action.PREV_HINT_ACTION
                 )
                 .setListener(
                     Buttons.BUTTON_HINT_NEXT,
                     R.string.not_again_hintnext,
                     R.string.key_notagain_hintnext,
-                    DlgDelegate.Action.NEXT_HINT_ACTION
+                    Action.NEXT_HINT_ACTION
                 )
                 .setListener(
                     Buttons.BUTTON_JUGGLE,
                     R.string.not_again_juggle,
                     R.string.key_notagain_juggle,
-                    DlgDelegate.Action.JUGGLE_ACTION
+                    Action.JUGGLE_ACTION
                 )
                 .setListener(
                     Buttons.BUTTON_FLIP,
                     R.string.not_again_flip,
                     R.string.key_notagain_flip,
-                    DlgDelegate.Action.FLIP_ACTION
+                    Action.FLIP_ACTION
                 )
                 .setListener(
                     Buttons.BUTTON_VALUES,
                     R.string.not_again_values,
                     R.string.key_na_values,
-                    DlgDelegate.Action.VALUES_ACTION
+                    Action.VALUES_ACTION
                 )
                 .setListener(
                     Buttons.BUTTON_UNDO,
                     R.string.not_again_undo,
                     R.string.key_notagain_undo,
-                    DlgDelegate.Action.UNDO_ACTION
+                    Action.UNDO_ACTION
                 )
                 .setListener(
                     Buttons.BUTTON_CHAT,
                     R.string.not_again_chat,
                     R.string.key_notagain_chat,
-                    DlgDelegate.Action.CHAT_ACTION
+                    Action.CHAT_ACTION
                 )
                 .installListeners()
         } else {
@@ -2296,7 +2298,7 @@ class BoardDelegate(delegator: Delegator) :
             if (mConnTypes!!.contains(CommsConnType.COMMS_CONN_SMS)) {
                 if (!XWPrefs.getNBSEnabled(mActivity)) {
                     makeConfirmThenBuilder(
-                        DlgDelegate.Action.ENABLE_NBS_ASK,
+                        Action.ENABLE_NBS_ASK,
                         R.string.warn_sms_disabled
                     )
                         .setPosButton(R.string.button_enable_sms)
@@ -2327,7 +2329,7 @@ class BoardDelegate(delegator: Delegator) :
                     } else null
 
                 if (null != msg) {
-                    makeConfirmThenBuilder(DlgDelegate.Action.ENABLE_MQTT_DO_OR, msg)
+                    makeConfirmThenBuilder(Action.ENABLE_MQTT_DO_OR, msg)
                         .setPosButton(
                             if ( supported ) R.string.button_enable_mqtt
                             else R.string.board_menu_file_email
@@ -2497,7 +2499,7 @@ class BoardDelegate(delegator: Delegator) :
 
     private fun showArchiveNA(rematchAfter: Boolean) {
         makeNotAgainBuilder(
-            R.string.key_na_archive, DlgDelegate.Action.ARCHIVE_ACTION,
+            R.string.key_na_archive, Action.ARCHIVE_ACTION,
             R.string.not_again_archive
         )
             .setParams(rematchAfter)
@@ -2566,7 +2568,7 @@ class BoardDelegate(delegator: Delegator) :
             recordInviteSent(InviteMeans.SMS_DATA, phone)
         } else if (askOk) {
             makeConfirmThenBuilder(
-                DlgDelegate.Action.ENABLE_NBS_ASK,
+                Action.ENABLE_NBS_ASK,
                 R.string.warn_sms_disabled
             )
                 .setPosButton(R.string.button_enable_sms)
