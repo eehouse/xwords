@@ -68,25 +68,25 @@ class PeerStatusView(private val mContext: Context, aset: AttributeSet?) :
             val resStr = NetUtils.runConn(conn, params, true)
             Log.d(TAG, "runConn(ack) => %s", resStr)
 
-            val result = JSONObject(resStr)
-            val results = result.optJSONArray("results")
-            if (null != results) {
-                val lines: MutableList<String?> = ArrayList()
-                for (ii in 0 until results.length()) {
-                    val line = results.getJSONObject(ii)
-                    val mqttID = line.getString("devid")
-                    val age = line.getString("age")
-                    var name = XwJNI.kplr_nameForMqttDev(mqttID)
-                    if (null == name) {
-                        name = if (mSelfDevID == mqttID) {
-                            LocUtils.getString(mContext, R.string.selfName)
-                        } else {
-                            mqttID
+            resStr?.let {
+                JSONObject(it).optJSONArray("results")?.let {
+                    val lines: MutableList<String?> = ArrayList()
+                    for (ii in 0 until it.length()) {
+                        val line = it.getJSONObject(ii)
+                        val mqttID = line.getString("devid")
+                        val age = line.getString("age")
+                        var name = XwJNI.kplr_nameForMqttDev(mqttID)
+                        if (null == name) {
+                            name = if (mSelfDevID == mqttID) {
+                                LocUtils.getString(mContext, R.string.selfName)
+                            } else {
+                                mqttID
+                            }
                         }
+                        lines.add(String.format("%s: %s", name, age))
                     }
-                    lines.add(String.format("%s: %s", name, age))
+                    userStr = TextUtils.join("\n", lines)
                 }
-                userStr = TextUtils.join("\n", lines)
             }
         } catch (je: JSONException) {
             Log.ex(TAG, je)
