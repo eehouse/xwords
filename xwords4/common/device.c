@@ -559,7 +559,7 @@ void
 dvc_parseMQTTPacket( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* topic,
                      const XP_U8* buf, XP_U16 len )
 {
-    XP_LOGFF( "(topic=%s, len=%d)", topic, len );
+    // XP_LOGFF( "(topic=%s, len=%d)", topic, len );
     ASSERT_MAGIC();
 
     MQTTDevID myID;
@@ -627,7 +627,7 @@ dvc_parseMQTTPacket( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* topic,
     } else if ( isCtrlMsg( &myID, topic ) ) {
         dutil_onCtrlReceived( dutil, xwe, buf, len );
     }
-    LOG_RETURN_VOID();
+    // LOG_RETURN_VOID();
 } /* dvc_parseMQTTPacket */
 
 typedef struct _GetByKeyData {

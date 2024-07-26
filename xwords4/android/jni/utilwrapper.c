@@ -916,7 +916,6 @@ static void
 and_dutil_onMessageReceived( XW_DUtilCtxt* duc, XWEnv xwe, XP_U32 gameID,
                              const CommsAddrRec* from, const XP_U8* data, XP_U16 len )
 {
-    LOG_FUNC();
     DUTIL_CBK_HEADER( "onMessageReceived",
                       "(IL" PKG_PATH("jni/CommsAddrRec") ";[B)V" );
 
@@ -929,7 +928,6 @@ and_dutil_onMessageReceived( XW_DUtilCtxt* duc, XWEnv xwe, XP_U32 gameID,
     deleteLocalRefs( env, jmsg, jaddr, DELETE_NO_REF );
 
     DUTIL_CBK_TAIL();
-    LOG_RETURN_VOID();
 }
 
 static void
