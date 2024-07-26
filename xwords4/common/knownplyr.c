@@ -421,19 +421,16 @@ mqttProc( const DLHead* dl, void* closure )
 
 const XP_UCHAR*
 kplr_nameForMqttDev( XW_DUtilCtxt* dutil, XWEnv xwe,
-                     const XP_UCHAR* mqttDevID )
+                     const MQTTDevID* devID )
 {
-    MDevState ms = {0};
-    if ( strToMQTTCDevID( mqttDevID, &ms.devID ) ) {
-        KPState* state = loadState( dutil, xwe );
+    MDevState ms = {.devID = *devID};
+    KPState* state = loadState( dutil, xwe );
 #ifdef DEBUG
-        DLHead* head =
+    DLHead* head =
 #endif
-            dll_map( &state->players->links, mqttProc, NULL, &ms );
-        XP_ASSERT( head == &state->players->links );
-        releaseState( dutil, xwe, state );
-    }
-    LOG_RETURNF( "%s", ms.name );
+        dll_map( &state->players->links, mqttProc, NULL, &ms );
+    XP_ASSERT( head == &state->players->links );
+    releaseState( dutil, xwe, state );
     return ms.name;
 }
 

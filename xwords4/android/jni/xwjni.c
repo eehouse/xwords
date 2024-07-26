@@ -925,11 +925,13 @@ Java_org_eehouse_android_xw4_jni_XwJNI_kplr_1nameForMqttDev
 {
     jstring result;
     DVC_HEADER(jniGlobalPtr);
-    const char* devid = (*env)->GetStringUTFChars( env, jDevID, NULL );
+
+    MQTTDevID devID;
+    jstrToDevID( env, jDevID, &devID );
     const XP_UCHAR* name = kplr_nameForMqttDev( globalState->dutil,
-                                                env, devid );
+                                                env, &devID );
+
     result = (*env)->NewStringUTF( env, name );
-    (*env)->ReleaseStringUTFChars( env, jDevID, devid );
     DVC_HEADER_END();
     return result;
 }
