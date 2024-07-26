@@ -1515,23 +1515,33 @@ object GameUtils {
         var m_chatTs: Long = 0
     }
 
-    class GameWrapper private constructor(private val mContext: Context, rowid: Long) :
-        AutoCloseable {
-        var lock: GameLock?
+    class GameWrapper private constructor
+        (private val mContext: Context,
+         private val mRowid: Long
+        ) : AutoCloseable
+    {
+        var lock: GameLock? = null
             private set
         private var mGamePtr: GamePtr? = null
         private var mGi: CurGameInfo? = null
+        private var jthread: JNIThread? = null
 
         init {
-            lock = GameLock.tryLockRO(rowid)
-            if (null != lock) {
-                mGi = CurGameInfo(mContext)
-                mGamePtr = loadMakeGame(mContext, mGi!!, lock!!)
+            // There's a race condition here!!!!
+            if (JNIThread.gameIsOpen(mRowid)) {
+                jthread = JNIThread.getRetained(mRowid)
+                mGi = jthread?.getGI()
+            } else {
+                lock = GameLock.tryLockRO(mRowid)
+                if (null != lock) {
+                    mGi = CurGameInfo(mContext)
+                    mGamePtr = loadMakeGame(mContext, mGi!!, lock!!)
+                }
             }
         }
 
         fun gamePtr(): GamePtr? {
-            return mGamePtr
+            return jthread?.getGamePtr() ?: mGamePtr
         }
 
         fun gi(): CurGameInfo? {
@@ -1539,18 +1549,18 @@ object GameUtils {
         }
 
         fun hasGame(): Boolean {
-            return null != mGamePtr
+            return null != jthread || null != mGamePtr
         }
 
         override fun close() {
-            if (null != mGamePtr) {
-                mGamePtr!!.close()
-                mGamePtr = null
-            }
-            if (null != lock) {
-                lock!!.close()
-                lock = null
-            }
+            jthread?.release()
+            jthread = null
+
+            mGamePtr?.close()
+            mGamePtr = null
+
+            lock?.close()
+            lock = null
         }
 
         @Throws(Throwable::class)
@@ -1560,11 +1570,14 @@ object GameUtils {
 
         companion object {
             fun make(context: Context, rowid: Long): GameWrapper? {
-                var result: GameWrapper? = GameWrapper(context, rowid)
-                if (!result!!.hasGame()) {
-                    result.close()
-                    result = null
-                }
+                val wrapper = GameWrapper(context, rowid)
+                val result =
+                    if (wrapper.hasGame()) {
+                        wrapper
+                    } else {
+                        wrapper.close()
+                        null
+                    }
                 return result
             }
         }
