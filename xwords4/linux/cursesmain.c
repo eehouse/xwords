@@ -1467,10 +1467,10 @@ makeMoveIfWrapper( void* closure, XP_U32 gameID, XP_Bool tryTrade )
 
 static void
 addInvitesWrapper( void* closure, XP_U32 gameID, XP_U16 nRemotes,
-                   XP_U16 forceChannels[], const CommsAddrRec destAddrs[] )
+                   const CommsAddrRec destAddrs[] )
 {
     CursesAppGlobals* aGlobals = (CursesAppGlobals*)closure;
-    cb_addInvites( aGlobals->cbState, gameID, nRemotes, forceChannels, destAddrs );
+    cb_addInvites( aGlobals->cbState, gameID, nRemotes, destAddrs );
 }
 
 static const CommonGlobals*

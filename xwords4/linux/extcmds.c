@@ -91,19 +91,13 @@ inviteFromArgs( CmdWrapper* wr, cJSON* args )
     int nRemotes = cJSON_GetArraySize(remotes);
     CommsAddrRec destAddrs[nRemotes];
     XP_MEMSET( destAddrs, 0, sizeof(destAddrs) );
-    XP_U16 channels[nRemotes];
-    XP_MEMSET( channels, 0, sizeof(channels) );
 
     for ( int ii = 0; ii < nRemotes; ++ii ) {
         cJSON* item = cJSON_GetArrayItem( remotes, ii );
-        cJSON* tmp = cJSON_GetObjectItem( item, "channel" );
-        XP_ASSERT( !!tmp );
-        channels[ii] = tmp->valueint;
-        XP_LOGFF( "read channel: %X", channels[ii] );
 
         cJSON* addr = cJSON_GetObjectItem( item, "addr" );
         XP_ASSERT( !!addr );
-        tmp = cJSON_GetObjectItem( addr, "mqtt" );
+        cJSON* tmp = cJSON_GetObjectItem( addr, "mqtt" );
         if ( !!tmp ) {
             XP_LOGFF( "parsing mqtt: %s", tmp->valuestring );
             addr_addType( &destAddrs[ii], COMMS_CONN_MQTT );
@@ -122,7 +116,7 @@ inviteFromArgs( CmdWrapper* wr, cJSON* args )
         }
     }
 
-    (*wr->procs.addInvites)( wr->closure, gameID, nRemotes, channels, destAddrs );
+    (*wr->procs.addInvites)( wr->closure, gameID, nRemotes, destAddrs );
 
     LOG_RETURN_VOID();
     return XP_TRUE;

@@ -172,7 +172,7 @@ linux_makeMoveIf( CommonGlobals* cGlobals, XP_Bool tryTrade )
 
 void
 linux_addInvites( CommonGlobals* cGlobals, XP_U16 nRemotes,
-                  XP_U16 forceChannels[], const CommsAddrRec destAddrs[] )
+                  const CommsAddrRec destAddrs[] )
 {
     CommsCtxt* comms = cGlobals->game.comms;
 
@@ -181,7 +181,7 @@ linux_addInvites( CommonGlobals* cGlobals, XP_U16 nRemotes,
 
     for ( int ii = 0; ii < nRemotes; ++ii ) {
         NetLaunchInfo nli;
-        nli_init( &nli, cGlobals->gi, &selfAddr, 1, forceChannels[ii] );
+        nli_init( &nli, cGlobals->gi, &selfAddr, 1, 0 );
 
         comms_invite( comms, NULL_XWE, &nli, &destAddrs[ii], XP_TRUE );
     }

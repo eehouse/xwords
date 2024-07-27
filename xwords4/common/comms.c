@@ -1708,13 +1708,66 @@ haveRealChannel( const CommsCtxt* comms, XP_PlayerAddr channelNo )
     return found;
 }
 
+typedef struct _GetInviteChannelsData {
+    XP_U16 mask;
+} GetInviteChannelsData;
+
+static ForEachAct
+getInviteChannels( MsgQueueElem* elem, void* closure )
+{
+    if ( IS_INVITE(elem) ) {
+        GetInviteChannelsData* gicdp = (GetInviteChannelsData*)closure;
+        XP_ASSERT( 0 == (gicdp->mask & (1 << elem->channelNo)) );
+        gicdp->mask |= 1 << elem->channelNo;
+    }
+    return FEA_OK;
+}
+
+/* Choose a channel IFF nli doesn't already specify one. */
+static XP_PlayerAddr
+pickChannel( const CommsCtxt* comms, const NetLaunchInfo* nli,
+             const CommsAddrRec* destAddr )
+{
+    XP_PlayerAddr result = nli->forceChannel;
+
+    if ( 0 == result ) {
+        /* First, do we already have an invitation for this address */
+        for ( AddressRecord* rec = comms->recs; !!rec; rec = rec->next ) {
+            if ( addrs_same( destAddr, &rec->addr ) ) {
+                result = rec->channelNo;
+                XP_LOGFF( "addrs match; reusing channel" );
+                break;
+            }
+        }
+    }
+
+    if ( 0 == result ) {
+        /* Now find the first channelNo that doesn't have an invitation on it
+           already */
+        GetInviteChannelsData gicd = {0};
+        forEachElem( (CommsCtxt*)comms, getInviteChannels, &gicd );
+        const XP_U16 nPlayers = comms->util->gameInfo->nPlayers;
+        for ( XP_PlayerAddr chan = 1; chan <= nPlayers; ++chan ) {
+            if ( 0 == (gicd.mask & (1 << chan)) ) {
+                result = chan;
+                break;
+            }
+        }
+    }
+
+    LOG_RETURNF( "%d", result );
+    return result;
+}
+
 void
 comms_invite( CommsCtxt* comms, XWEnv xwe, const NetLaunchInfo* nli,
               const CommsAddrRec* destAddr, XP_Bool sendNow )
 {
     COMMS_LOGFF("(sendNow=%s)", boolToStr(sendNow));
     LOGNLI(nli);
-    XP_PlayerAddr forceChannel = nli->forceChannel;
+    COMMS_MUTEX_LOCK(comms);
+    XP_PlayerAddr forceChannel = pickChannel(comms, nli, destAddr);
+    XP_LOGFF( "forceChannel: %d", forceChannel );
     XP_ASSERT( 0 < forceChannel && (forceChannel & CHANNEL_MASK) == forceChannel );
     if ( !haveRealChannel( comms, forceChannel ) ) {
         /* See if we have a channel for this address. Then see if we have an
@@ -1744,6 +1797,7 @@ comms_invite( CommsCtxt* comms, XWEnv xwe, const NetLaunchInfo* nli,
             }
         }
     }
+    COMMS_MUTEX_UNLOCK();
     LOG_RETURN_VOID();
 }
 

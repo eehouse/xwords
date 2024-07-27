@@ -1187,8 +1187,7 @@ class BoardDelegate(delegator: Delegator) :
                 InviteMeans.SMS_USER, InviteMeans.EMAIL, InviteMeans.CLIPBOARD -> {
                     val nli = NetLaunchInfo(
                         mActivity, mSummary!!, mGi!!,
-                        1,  // nPlayers
-                        1 + m_mySIS!!.nGuestDevs
+                        1  // nPlayers
                     ) // fc
                     when (means) {
                         InviteMeans.EMAIL -> GameUtils.launchEmailInviteActivity(mActivity, nli)
@@ -2348,17 +2347,15 @@ class BoardDelegate(delegator: Delegator) :
     }
 
     private fun tryInvites() {
-        if (null != mMissingDevs) {
+        mMissingDevs?.let {
             Assert.assertNotNull(mMissingMeans)
             val gameName = GameUtils.getName(mActivity, mRowid)
-            for (ii in mMissingDevs!!.indices) {
-                val dev = mMissingDevs!![ii]
+            for (ii in it.indices) {
+                val dev = it[ii]
                 val nPlayers = mMissingCounts!![ii]
                 Assert.assertTrue(0 <= m_mySIS!!.nGuestDevs)
-                val forceChannel = ii + m_mySIS!!.nGuestDevs + 1
                 val nli = NetLaunchInfo(
-                    mActivity, mSummary!!, mGi!!,
-                    nPlayers, forceChannel
+                    mActivity, mSummary!!, mGi!!, nPlayers
                 )
                     .setRemotesAreRobots(mRemotesAreRobots)
                 var destAddr: CommsAddrRec? = null
@@ -2371,7 +2368,7 @@ class BoardDelegate(delegator: Delegator) :
 
                     InviteMeans.WIFIDIRECT -> WiDirService.inviteRemote(mActivity, dev, nli)
                     InviteMeans.MQTT -> destAddr = CommsAddrRec(CommsConnType.COMMS_CONN_MQTT)
-                        .setMQTTParams(mMissingDevs!![ii])
+                        .setMQTTParams(it[ii])
 
                     InviteMeans.RELAY -> Assert.failDbg() // not getting here, right?
                     else -> Assert.failDbg()
@@ -2533,11 +2530,9 @@ class BoardDelegate(delegator: Delegator) :
     private fun nliForMe(): NetLaunchInfo {
         val numHere = 1
         // This is too simple. Need to know if it's a replacement
-        val forceChannel = 1 + m_mySIS!!.nGuestDevs
         // Log.d( TAG, "nliForMe() => %s", nli );
         return NetLaunchInfo(
-            mActivity, mSummary!!, mGi!!,
-            numHere, forceChannel
+            mActivity, mSummary!!, mGi!!, numHere
         )
     }
 

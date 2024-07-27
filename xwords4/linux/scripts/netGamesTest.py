@@ -420,7 +420,7 @@ class Device():
             addr = {}
             if self.args.WITH_MQTT: addr['mqtt'] = guestDev.mqttDevID
             if self.args.WITH_SMS: addr['sms'] = guestDev.smsNumber
-            remotes.append({'channel': ii+1, 'addr': addr})
+            remotes.append({'addr': addr})
 
         response = self._sendWaitReply('invite', gid=game.gid,
                                        remotes=remotes)

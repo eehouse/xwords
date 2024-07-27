@@ -687,12 +687,12 @@ cb_feedGame( CursesBoardState* cbState, XP_U32 gameID,
 
 void
 cb_addInvites( CursesBoardState* cbState, XP_U32 gameID, XP_U16 nRemotes,
-               XP_U16 forceChannels[], const CommsAddrRec destAddrs[] )
+               const CommsAddrRec destAddrs[] )
 {
     CursesBoardGlobals* bGlobals = findOrOpenForGameID( cbState, gameID,
                                                         NULL, NULL );
     CommonGlobals* cGlobals = &bGlobals->cGlobals;
-    linux_addInvites( cGlobals, nRemotes, forceChannels, destAddrs );
+    linux_addInvites( cGlobals, nRemotes, destAddrs );
 }
 
 XP_Bool

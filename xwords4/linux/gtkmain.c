@@ -1050,13 +1050,13 @@ sendChatWrapper( void* closure, XP_U32 gameID, const char* msg )
 
 static void
 addInvitesWrapper( void* closure, XP_U32 gameID, XP_U16 nRemotes,
-                   XP_U16 forceChannels[], const CommsAddrRec destAddrs[] )
+                   const CommsAddrRec destAddrs[] )
 {
     GtkAppGlobals* apg = (GtkAppGlobals*)closure;
     sqlite3_int64 rowid = 0;
     GtkGameGlobals* globals = findOpenGame( apg, &rowid, &gameID );
     if ( !!globals ) {
-        linux_addInvites( &globals->cGlobals, nRemotes, forceChannels, destAddrs );
+        linux_addInvites( &globals->cGlobals, nRemotes, destAddrs );
     } else {
         int nRowIDs = 1;
         gdb_getRowsForGameID( apg->cag.params->pDb, gameID, &rowid, &nRowIDs );
@@ -1064,7 +1064,7 @@ addInvitesWrapper( void* closure, XP_U32 gameID, XP_U16 nRemotes,
         GtkGameGlobals tmpGlobals = {0};
         if ( 1 == nRowIDs
              && loadGameNoDraw( &tmpGlobals, apg->cag.params, rowid ) ) {
-            linux_addInvites( &tmpGlobals.cGlobals, nRemotes, forceChannels, destAddrs );
+            linux_addInvites( &tmpGlobals.cGlobals, nRemotes, destAddrs );
         }
         freeGlobals( &tmpGlobals );
     }

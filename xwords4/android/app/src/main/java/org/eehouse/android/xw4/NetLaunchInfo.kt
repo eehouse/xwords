@@ -74,7 +74,7 @@ class NetLaunchInfo : Serializable {
     constructor() {
         _conTypes = EMPTY_SET
         inviteID = GameUtils.formatGameID(Utils.nextRandomInt())
-        forceChannel = 1
+        forceChannel = 0        // 0 means ANY/comms picks
     }
 
     private constructor(context: Context, data: String) {
@@ -234,11 +234,11 @@ class NetLaunchInfo : Serializable {
     }
 
     constructor(
-        context: Context, summary: GameSummary, gi: CurGameInfo,
-        numHere: Int, fc: Int
+        context: Context, summary: GameSummary,
+        gi: CurGameInfo, numHere: Int
     ) : this(context, summary, gi) {
         nPlayersH = numHere
-        forceChannel = fc
+        Assert.assertTrueNR( 0 == forceChannel )
     }
 
     constructor(gi: CurGameInfo) : this(

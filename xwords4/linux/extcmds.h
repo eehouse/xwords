@@ -29,7 +29,7 @@ typedef struct _CmdWrapper {
         void (*quit)( void* closure );
         XP_Bool (*newGame)( void* closure, CurGameInfo* gi, XP_U32* newGameID );
         void (*addInvites)( void* closure, XP_U32 gameID, XP_U16 nRemotes,
-                            XP_U16 forceChannels[], const CommsAddrRec destAddrs[] );
+                            const CommsAddrRec destAddrs[] );
         XP_Bool (*makeMoveIf)( void* closure, XP_U32 gameID, XP_Bool tryTrade );
         const CommonGlobals* (*getForGameID)( void* closure, XP_U32 gameID );
         XP_Bool (*makeRematch)( void* closure, XP_U32 gameID, RematchOrder ro,
