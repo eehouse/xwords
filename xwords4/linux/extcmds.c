@@ -147,6 +147,13 @@ undoFromArgs( CmdWrapper* wr, cJSON* args )
     return (*wr->procs.undoMove)( wr->closure, gameID );
 }
 
+static XP_Bool
+resignFromArgs( CmdWrapper* wr, cJSON* args )
+{
+    XP_U32 gameID = gidFromObject( args );
+    return (*wr->procs.resign)( wr->closure, gameID );
+}
+
 /* Return 'gid' of new game */
 static XP_U32
 rematchFromArgs( CmdWrapper* wr, cJSON* args )
@@ -421,6 +428,8 @@ on_incoming_signal( GSocketService* XP_UNUSED(service),
                 success = chatFromArgs( wr, args );
             } else if ( 0 == strcmp( cmdStr, "undoMove" ) ) {
                 success = undoFromArgs( wr, args );
+            } else if ( 0 == strcmp( cmdStr, "resign" ) ) {
+                success = resignFromArgs( wr, args );
             } else {
                 success = XP_FALSE;
                 XP_ASSERT(0);

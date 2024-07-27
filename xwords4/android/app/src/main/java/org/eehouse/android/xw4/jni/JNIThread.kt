@@ -652,11 +652,12 @@ class JNIThread private constructor(lockIn: GameLock) : Thread(), AutoCloseable 
                     )
                 }
 
-                JNICmd.CMD_FINAL -> if (XwJNI.server_getGameIsOver(mJNIGamePtr)) {
-                    handle(JNICmd.CMD_POST_OVER)
-                } else {
-                    Message.obtain(m_handler, QUERY_ENDGAME).sendToTarget()
-                }
+                JNICmd.CMD_FINAL ->
+                    if (XwJNI.server_getGameIsOver(mJNIGamePtr)) {
+                        handle(JNICmd.CMD_POST_OVER)
+                    } else {
+                        Message.obtain(m_handler, QUERY_ENDGAME).sendToTarget()
+                    }
 
                 JNICmd.CMD_ENDGAME -> {
                     XwJNI.server_endGame(mJNIGamePtr)

@@ -291,6 +291,15 @@ class Device():
                 success = response.get('success', False)
         return success
 
+    def postResign(self):
+        success = False
+        if random.randint(0, 999) < self.args.RESIGN_PCT:
+            gid = self._pickGid()
+            if gid:
+                response = self._sendWaitReply('resign', gid=gid)
+                success = response.get('success', False)
+        return success
+
     def _pickGid(self):
         result = None
         gids = [game.gid for game in self._allGames()]
@@ -377,6 +386,8 @@ class Device():
             elif self.sendChat():
                 pass
             elif self.postUndo():
+                pass
+            elif self.postResign():
                 pass
             elif self.moveOne():
                 pass
@@ -799,8 +810,8 @@ def mkParser():
     # #     echo "    [--old-app <path/to/app]*                               \\" >&2
     # parser.add_argument('--one-per', dest = 'ONEPER', default = False,
     #                     action = 'store_true', help = 'force one player per device')
-    # parser.add_argument('--resign-pct', dest = 'RESIGN_PCT', default = 0, type = int, \
-    #                     help = 'Odds of resigning [0..100]')
+    parser.add_argument('--resign-pct', dest = 'RESIGN_PCT', default = 0, type = int, \
+                        help = 'Odds of resigning [0..999]')
     parser.add_argument('--seed', type = int, dest = 'SEED', default = 0)
     # #     echo "    [--send-chat <interval-in-seconds>                      \\" >&2
     # #     echo "    [--udp-incr <pct>]                                      \\" >&2

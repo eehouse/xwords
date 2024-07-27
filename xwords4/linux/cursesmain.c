@@ -1509,6 +1509,13 @@ undoMoveWrapper( void* closure, XP_U32 gameID )
     return cb_undoMove( aGlobals->cbState, gameID );
 }
 
+static XP_Bool
+resignWrapper( void* closure, XP_U32 gameID )
+{
+    CursesAppGlobals* aGlobals = (CursesAppGlobals*)closure;
+    return cb_resign( aGlobals->cbState, gameID );
+}
+
 void
 cursesmain( XP_Bool XP_UNUSED(isServer), LaunchParams* params )
 {
@@ -1544,6 +1551,7 @@ cursesmain( XP_Bool XP_UNUSED(isServer), LaunchParams* params )
             .makeRematch = makeRematchWrapper,
             .sendChat = sendChatWrapper,
             .undoMove = undoMoveWrapper,
+            .resign = resignWrapper,
         },
     };
     GSocketService* cmdService = cmds_addCmdListener( &wr );

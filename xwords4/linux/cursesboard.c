@@ -744,6 +744,18 @@ cb_undoMove( CursesBoardState* cbState, XP_U32 gameID )
     return success;
 }
 
+XP_Bool
+cb_resign( CursesBoardState* cbState, XP_U32 gameID )
+{
+    CursesBoardGlobals* bGlobals =
+        findOrOpenForGameID( cbState, gameID, NULL, NULL );
+    XP_Bool success = !!bGlobals;
+    if ( success ) {
+        server_endGame( bGlobals->cGlobals.game.server, NULL_XWE );
+    }
+    return success;
+}
+
 static void
 kill_board( gpointer data )
 {
