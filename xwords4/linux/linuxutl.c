@@ -47,15 +47,16 @@ debugf( const char* format, va_list ap )
     pthread_mutex_lock( &sLogMutex );
     struct timespec tp = {0};
     int res = clock_gettime( CLOCK_REALTIME, &tp );
-    XP_ASSERT( 0 == res );
-    struct tm* timp = localtime( &tp.tv_sec );
+    if ( 0 == res ) {
+      struct tm* timp = localtime( &tp.tv_sec );
 
-    fprintf( stderr, "<%d:%lx> %.2d:%.2d:%.2d:%03ld ", getpid(),
-             pthread_self(), timp->tm_hour, timp->tm_min, timp->tm_sec,
-             tp.tv_nsec / 1000000 );
+      fprintf( stderr, "<%d:%lx> %.2d:%.2d:%.2d:%03ld ", getpid(),
+	       pthread_self(), timp->tm_hour, timp->tm_min, timp->tm_sec,
+	       tp.tv_nsec / 1000000 );
 
-    vfprintf( stderr, format, ap );
-    fprintf( stderr, "%c", '\n' );
+      vfprintf( stderr, format, ap );
+      fprintf( stderr, "%c", '\n' );
+    }
     pthread_mutex_unlock( &sLogMutex );
 }
 
