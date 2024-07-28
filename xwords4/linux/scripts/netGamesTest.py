@@ -108,7 +108,9 @@ class GameStatus():
         self.isSolo = False
 
     def harvest(self, dev, isSolo):
-        self.players.append(dev.host)
+        # Sending lots of bogus invitations gets duplicates here
+        if not dev.host in self.players:
+            self.players.append(dev.host)
         self.allOver = self.allOver and dev.gameOver(self.gid)
         self.isSolo = isSolo
 
@@ -424,12 +426,18 @@ class Device():
     def invite(self, game):
         remotes = []
         guestDevs = []
+        useRandomDevID = random.randint(0, 100) < self.args.BAD_INVITE_PCT
         for ii in reversed(range(len(game.guestNames))):
             guestDev = Device.getForPlayer(game.guestNames[ii])
             guestDevs.append(guestDev)
 
             addr = {}
-            if self.args.WITH_MQTT: addr['mqtt'] = guestDev.mqttDevID
+            if self.args.WITH_MQTT:
+                if useRandomDevID:
+                    mqttAddr = '{:016X}'.format(random.randint(1, 0x7FFFFFF))
+                else:
+                    mqttAddr = guestDev.mqttDevID
+                addr['mqtt'] = mqttAddr
             if self.args.WITH_SMS: addr['sms'] = guestDev.smsNumber
             remotes.append({'addr': addr})
 
@@ -439,7 +447,7 @@ class Device():
         if response['success']:
             for guestDev in guestDevs:
                 guestDev.expectInvite(game.gid, game.rematchLevel)
-            game.needsInvite = False
+            game.needsInvite = useRandomDevID
 
     def expectInvite(self, gid, rematchLevel):
         self.guestGames.append(GuestGameInfo(self, gid, rematchLevel))
@@ -823,6 +831,9 @@ def mkParser():
     parser.add_argument('--trade-pct', dest = 'TRADE_PCT', default = 10, type = int,
                         help='what percent of moves will trade tiles')
     parser.add_argument('--sub7-trades-pct', dest = 'SUB7_TRADES_PCT', default = 10, type=int)
+
+    parser.add_argument('--bad-invite-pct', dest = 'BAD_INVITE_PCT', default = 0, type=int,
+                        help='What pct (0..99) of MQTT invitations will be to non-existant devices')
 
     parser.add_argument('--timer-seconds', dest='TIMER_SECS', default=10, type=int,
                         help='Enable game timer with game this many seconds long')

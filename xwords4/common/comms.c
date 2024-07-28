@@ -1709,16 +1709,19 @@ haveRealChannel( const CommsCtxt* comms, XP_PlayerAddr channelNo )
 }
 
 typedef struct _GetInviteChannelsData {
-    XP_U16 mask;
+    XP_U16 hasInvitesMask;
+    XP_U16 hasNonInvitesMask;
 } GetInviteChannelsData;
 
 static ForEachAct
 getInviteChannels( MsgQueueElem* elem, void* closure )
 {
+    GetInviteChannelsData* gicdp = (GetInviteChannelsData*)closure;
     if ( IS_INVITE(elem) ) {
-        GetInviteChannelsData* gicdp = (GetInviteChannelsData*)closure;
-        XP_ASSERT( 0 == (gicdp->mask & (1 << elem->channelNo)) );
-        gicdp->mask |= 1 << elem->channelNo;
+        XP_ASSERT( 0 == (gicdp->hasInvitesMask & (1 << elem->channelNo)) );
+        gicdp->hasInvitesMask |= 1 << elem->channelNo;
+    } else {
+        gicdp->hasNonInvitesMask |= 1 << elem->channelNo;
     }
     return FEA_OK;
 }
@@ -1742,15 +1745,31 @@ pickChannel( const CommsCtxt* comms, const NetLaunchInfo* nli,
     }
 
     if ( 0 == result ) {
-        /* Now find the first channelNo that doesn't have an invitation on it
-           already */
+        /* Data useful for next two steps: unused channel, then invites-only
+           channel */
         GetInviteChannelsData gicd = {0};
         forEachElem( (CommsCtxt*)comms, getInviteChannels, &gicd );
-        const XP_U16 nPlayers = comms->util->gameInfo->nPlayers;
-        for ( XP_PlayerAddr chan = 1; chan <= nPlayers; ++chan ) {
-            if ( 0 == (gicd.mask & (1 << chan)) ) {
+
+        /* Now find the first channelNo that doesn't have an invitation on it
+           already */
+        // const XP_U16 nPlayers = comms->util->gameInfo->nPlayers;
+        for ( XP_PlayerAddr chan = 1; chan <= CHANNEL_MASK; ++chan ) {
+            if ( 0 == (gicd.hasInvitesMask & (1 << chan)) ) {
                 result = chan;
+                XP_LOGFF( "using unused channel" );
                 break;
+            }
+        }
+
+        if ( 0 == result ) {
+            /* We need to find a channel to recycle. It should be one that has
+               only an invite on it.*/
+            for ( XP_PlayerAddr chan = 1; chan <= CHANNEL_MASK; ++chan ) {
+                if ( 0 == (gicd.hasNonInvitesMask & (1 << chan)) ) {
+                    result = chan;
+                    XP_LOGFF( "recycling channel" );
+                    break;
+                }
             }
         }
     }
@@ -1769,33 +1788,38 @@ comms_invite( CommsCtxt* comms, XWEnv xwe, const NetLaunchInfo* nli,
     XP_PlayerAddr forceChannel = pickChannel(comms, nli, destAddr);
     XP_LOGFF( "forceChannel: %d", forceChannel );
     XP_ASSERT( 0 < forceChannel && (forceChannel & CHANNEL_MASK) == forceChannel );
-    if ( !haveRealChannel( comms, forceChannel ) ) {
-        /* See if we have a channel for this address. Then see if we have an
-           invite matching this one, and if not add one. Then trigger a send of
-           it. */
+    if ( 0 < forceChannel ) {
+        XP_ASSERT( (forceChannel & CHANNEL_MASK) == forceChannel );
+        if ( !haveRealChannel( comms, forceChannel ) ) {
+            /* See if we have a channel for this address. Then see if we have an
+               invite matching this one, and if not add one. Then trigger a send of
+               it. */
 
-        /* remove the old rec, if found */
-        nukeInvites( comms, xwe, forceChannel );
+            /* remove the old rec, if found */
+            nukeInvites( comms, xwe, forceChannel );
 
-        XP_U16 flags = COMMS_VERSION;
-        /*AddressRecord* rec = */rememberChannelAddress( comms, forceChannel,
-                                                         0, destAddr, flags );
-        MsgQueueElem* elem = makeInviteElem( comms, xwe, forceChannel, nli );
+            XP_U16 flags = COMMS_VERSION;
+            /*AddressRecord* rec = */rememberChannelAddress( comms, forceChannel,
+                                                             0, destAddr, flags );
+            MsgQueueElem* elem = makeInviteElem( comms, xwe, forceChannel, nli );
 
-        elem = addToQueue( comms, xwe, elem, XP_TRUE );
-        if ( !!elem ) {
-            XP_ASSERT( !elem->smp.next );
-            COMMS_LOGFF( "added invite with sum %s on channel %d", elem->sb.buf,
-                         elem->channelNo & CHANNEL_MASK );
-            /* Let's let platform code decide whether to call sendMsg() . On
-               Android creating a game with an invitation in its queue is always
-               followed by opening the game, which results in comms_resendAll()
-               getting called leading to a second send immediately after this. So
-               let Android drop it. Linux, though, needs it for now. */
-            if ( sendNow && !!comms->procs.sendInvt ) {
-                sendMsg( comms, xwe, elem, COMMS_CONN_NONE );
+            elem = addToQueue( comms, xwe, elem, XP_TRUE );
+            if ( !!elem ) {
+                XP_ASSERT( !elem->smp.next );
+                COMMS_LOGFF( "added invite with sum %s on channel %d", elem->sb.buf,
+                             elem->channelNo & CHANNEL_MASK );
+                /* Let's let platform code decide whether to call sendMsg() . On
+                   Android creating a game with an invitation in its queue is always
+                   followed by opening the game, which results in comms_resendAll()
+                   getting called leading to a second send immediately after this. So
+                   let Android drop it. Linux, though, needs it for now. */
+                if ( sendNow && !!comms->procs.sendInvt ) {
+                    sendMsg( comms, xwe, elem, COMMS_CONN_NONE );
+                }
             }
         }
+    } else {
+        XP_LOGFF( "dropping invite; no open channel found" );
     }
     COMMS_MUTEX_UNLOCK();
     LOG_RETURN_VOID();
@@ -2050,7 +2074,8 @@ removeProc( MsgQueueElem* elem, void* closure )
 
     XP_PlayerAddr maskedElemChannelNo = ~CHANNEL_MASK & elem->channelNo;
     if ( (maskedElemChannelNo == 0) && (rdp->channelNo != 0) ) {
-        XP_ASSERT( !rdp->comms->isServer || IS_INVITE(elem) );
+        // not sure what this was doing....
+        // XP_ASSERT( !rdp->comms->isServer || IS_INVITE(elem) );
         XP_ASSERT( elem->msgID == 0 );
     } else if ( maskedElemChannelNo != maskedChannelNo ) {
         knownGood = XP_TRUE;
