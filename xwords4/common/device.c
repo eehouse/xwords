@@ -542,7 +542,25 @@ ackMQTTMsg( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* topic,
             XP_U32 gameID, const XP_U8* buf, XP_U16 len )
 {
     cJSON* params = cJSON_CreateObject();
+#if 1
+    cJSON* msgs = cJSON_CreateArray();
+    /* This belongs in a loop */
+    {
+        cJSON* msg = cJSON_CreateObject();
+        cJSON_AddStringToObject( msg, "topic", topic );
 
+        Md5SumBuf sb;
+        dutil_md5sum( dutil, xwe, buf, len, &sb );
+        cJSON_AddStringToObject( msg, "sum", sb.buf );
+
+        cJSON_AddNumberToObject( msg, "gid", gameID );
+
+        cJSON_AddItemToArray(msgs, msg);
+    }
+    cJSON_AddItemToObject(params, "msgs", msgs );
+
+    dutil_sendViaWeb( dutil, xwe, 0, "ack2", params );
+#else
     cJSON_AddStringToObject( params, "topic", topic );
 
     Md5SumBuf sb;
@@ -552,6 +570,7 @@ ackMQTTMsg( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* topic,
     cJSON_AddNumberToObject( params, "gid", gameID );
 
     dutil_sendViaWeb( dutil, xwe, 0, "ack", params );
+#endif
     cJSON_Delete( params );
 }
 
