@@ -434,6 +434,20 @@ kplr_nameForMqttDev( XW_DUtilCtxt* dutil, XWEnv xwe,
     return ms.name;
 }
 
+const XP_UCHAR*
+kplr_nameForAddress( XW_DUtilCtxt* dutil, XWEnv xwe,
+                     const CommsAddrRec* addr )
+{
+    const XP_UCHAR* result = NULL;
+    if ( addr_hasType( addr, COMMS_CONN_MQTT ) ) {
+        result = kplr_nameForMqttDev( dutil, xwe,
+                                      &addr->u.mqtt.devID );
+    } else {
+        XP_ASSERT(0);           /* FIXME */
+    }
+    return result;
+}
+
 static void
 freeKP( XW_DUtilCtxt* XP_UNUSED_DBG(dutil), KnownPlayer* kp )
 {

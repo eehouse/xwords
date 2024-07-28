@@ -786,6 +786,9 @@ class XwJNI private constructor() {
         @JvmStatic
         external fun server_endGame(gamePtr: GamePtr?)
 
+        @JvmStatic
+        external fun server_inviteeName(gamePtr: GamePtr?, channelNo: Int): String?
+
         // hybrid to save work
         @JvmStatic
         external fun board_server_prefsChanged(

@@ -486,7 +486,7 @@ getNV( XWStreamCtxt* stream, ServerNonvolatiles* nv, XP_U16 nPlayers )
     if ( STREAM_SAVE_PREVWORDS < version ) {
         nv->streamVersion = stream_getU8 ( stream );
     }
-    /* XP_LOGF( "%s: read streamVersion: 0x%x", __func__, nv->streamVersion ); */
+    /* XP_LOGFF( "read streamVersion: 0x%x", nv->streamVersion ); */
 #endif
 
     if ( version >= STREAM_VERS_DUPLICATE ) {
@@ -527,7 +527,7 @@ putNV( XWStreamCtxt* stream, const ServerNonvolatiles* nv, XP_U16 nPlayers )
     }
 #ifdef STREAM_VERS_BIGBOARD
     stream_putU8( stream, nv->streamVersion );
-    /* XP_LOGF( "%s: wrote streamVersion: 0x%x", __func__, nv->streamVersion ); */
+    /* XP_LOGFF( "wrote streamVersion: 0x%x", nv->streamVersion ); */
 #endif
 
     for ( int ii = 0; ii < nPlayers; ++ii ) {
@@ -2723,7 +2723,7 @@ trayAllowsMoves( ServerCtxt* server, XWEnv xwe, XP_U16 turn,
     XP_MEMCPY( tmpTiles, &tray->tiles[0], nInTray * sizeof(tmpTiles[0]) );
     XP_MEMCPY( &tmpTiles[nInTray], &tiles[0], nTiles * sizeof(tmpTiles[0]) );
 
-    /* XP_LOGF( "%s(nTiles=%d)", __func__, nTiles ); */
+    /* XP_LOGFF( "%s(nTiles=%d)", __func__, nTiles ); */
     EngineCtxt* tmpEngine = NULL;
     EngineCtxt* engine = server_getEngineFor( server, turn );
     if ( !engine ) {
@@ -3702,7 +3702,7 @@ dupe_checkWhatsDone( const ServerCtxt* server, XP_Bool amHost,
         }
     }
 
-    // XP_LOGF( "%s(): allDone: %d; allLocalsDone: %d", __func__, allDone, allLocalsDone );
+    // XP_LOGFF( "allDone: %d; allLocalsDone: %d", allDone, allLocalsDone );
     *allDoneP = allDone;
     *allLocalsDoneP = allLocalsDone;
 }
@@ -4018,7 +4018,7 @@ server_isPlayersTurn( const ServerCtxt* server, XP_U16 turn )
         result = turn == server_getCurrentTurn( server, NULL );
     }
 
-    // XP_LOGF( "%s(%d) => %d", __func__, turn, result );
+    // XP_LOGFF( "(%d) => %d", turn, result );
     return result;
 }
 
@@ -4685,6 +4685,38 @@ server_endGame( ServerCtxt* server, XWEnv xwe )
         endGameInternal( server, xwe, END_REASON_USER_REQUEST, server->nv.currentTurn );
     }
 } /* server_endGame */
+
+void
+server_inviteeName( const ServerCtxt* server,
+                    XWEnv xwe, XP_U16 playerPosn,
+                    XP_UCHAR* buf, XP_U16* bufLen )
+{
+    int nameIndx = 0;
+    for ( int ii = 0; ii <= playerPosn; ++ii ) {
+        const ServerPlayer* sp = &server->srvPlyrs[ii];
+        if ( -1 == sp->deviceIndex ) { /* not yet claimed */
+            if ( playerPosn == ii ) {
+
+                CommsCtxt* comms = server->vol.comms;
+                InviteeNames names = {0};
+                comms_inviteeNames( comms, xwe, &names );
+
+                if ( nameIndx < names.count ) {
+                    XP_LOGFF( "got a match: player %d for channel %d; name: \"%s\"",
+                              playerPosn, nameIndx, names.name[nameIndx] );
+                    *bufLen = XP_SNPRINTF( buf, *bufLen, names.name[nameIndx], playerPosn );
+                } else {
+                    XP_LOGFF( "expected %dth name but found only %d",
+                              nameIndx, names.count );
+                }
+                break;
+            }
+            ++nameIndx;
+        }
+    }
+
+    XP_LOGFF( "(%d) => %s", playerPosn, buf );
+}
 
 /* If game is about to end because one player's out of tiles, we don't want to
  * keep trying to move. Note that in duplicate mode if ANY player has tiles

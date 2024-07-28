@@ -29,6 +29,7 @@ import java.io.Serializable
 import org.eehouse.android.xw4.Assert
 import org.eehouse.android.xw4.BuildConfig
 import org.eehouse.android.xw4.DBUtils
+import org.eehouse.android.xw4.GameUtils
 import org.eehouse.android.xw4.Log
 import org.eehouse.android.xw4.R
 import org.eehouse.android.xw4.Utils
@@ -199,7 +200,8 @@ class GameSummary : Serializable {
                 val prev = nxt
                 nxt = playersStr.indexOf(sep, nxt)
                 val name =
-                    if (-1 == nxt) playersStr.substring(prev) else playersStr.substring(prev, nxt)
+                    if (-1 == nxt) playersStr.substring(prev)
+                    else playersStr.substring(prev, nxt)
                 m_players!![ii] = name
                 if (-1 == nxt) {
                     break
@@ -372,16 +374,12 @@ class GameSummary : Serializable {
         if (!isLocal(indx)) {
             val isMissing = 0 != ((1 shl indx) and missingPlayers)
             if (isMissing) {
-                val si = DBUtils.getInvitesFor(context, rowid)
-                var kp: String? = null
-                if (null != si) {
-                    kp = si.getKPName(context)
-                }
-                player = if (null == kp) {
-                    LocUtils.getString(context, R.string.missing_player)
-                } else {
-                    LocUtils.getString(context, R.string.invitee_fmt, kp)
-                }
+                val kp = GameUtils.inviteeName(context, rowid, indx)
+                player =
+                    if (TextUtils.isEmpty(kp))
+                        LocUtils.getString(context, R.string.missing_player)
+                    else
+                        LocUtils.getString(context, R.string.invitee_fmt, kp)
             } else {
                 formatID = R.string.str_nonlocal_name_fmt
             }

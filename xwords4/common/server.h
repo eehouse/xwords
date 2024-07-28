@@ -117,6 +117,10 @@ XP_Bool server_commitTrade( ServerCtxt* server, XWEnv xwe,
 /* call this when user wants to end the game */
 void server_endGame( ServerCtxt* server, XWEnv xwe );
 
+void server_inviteeName( const ServerCtxt* server,
+                         XWEnv xwe, XP_U16 channelNo,
+                         XP_UCHAR* buf, XP_U16* bufLen );
+
 /* called when running as either client or server */
 XP_Bool server_receiveMessage( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* incoming );
 

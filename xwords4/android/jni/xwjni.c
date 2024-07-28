@@ -2835,6 +2835,24 @@ Java_org_eehouse_android_xw4_jni_XwJNI_server_1endGame
     XWJNI_END();
 }
 
+JNIEXPORT jstring JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_server_1inviteeName
+( JNIEnv* env, jclass C, GamePtrType gamePtr, jint channel )
+{
+    jstring result = NULL;
+    XWJNI_START(gamePtr);
+    XP_ASSERT( !!state->game.server );
+    XP_UCHAR buf[32] = {0};
+    XP_U16 len = VSIZE(buf);
+    server_inviteeName( state->game.server, env, channel, buf, &len );
+    if ( !!buf[0] ) {
+        result = (*env)->NewStringUTF( env, buf );
+    }
+    XWJNI_END();
+    return result;
+}
+
+
 JNIEXPORT void JNICALL Java_org_eehouse_android_xw4_jni_XwJNI_board_1pause
 ( JNIEnv* env, jclass C, GamePtrType gamePtr, jstring jmsg )
 {

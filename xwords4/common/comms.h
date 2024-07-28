@@ -207,6 +207,12 @@ void addrToStream( XWStreamCtxt* stream, const CommsAddrRec* addr );
 void comms_invite( CommsCtxt* comms, XWEnv xwe, const NetLaunchInfo* nli,
                    const CommsAddrRec* destAddr, XP_Bool sendNow );
 void comms_getInvited( RELCONST CommsCtxt* comms, XP_U16* nInvites );
+typedef struct _InviteeNames {
+    XP_UCHAR name[4][32];
+    XP_U16 count;
+} InviteeNames;
+void comms_inviteeNames( CommsCtxt* comms, XWEnv xwe, InviteeNames* names );
+
 #endif
 XP_S16 comms_send( CommsCtxt* comms, XWEnv xwe, XWStreamCtxt* stream );
 XP_S16 comms_resendAll( CommsCtxt* comms, XWEnv xwe, CommsConnType filter,

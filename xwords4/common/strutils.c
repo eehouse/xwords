@@ -748,6 +748,14 @@ log_hex( const XP_U8* memp, XP_U16 len, const char* tag )
         XP_LOGF( "%s", buf );
     }
 }
+
+void
+log_devid( const MQTTDevID* devID, const XP_UCHAR* tag )
+{
+    XP_UCHAR buf[32];
+    XP_SNPRINTF( buf, VSIZE(buf), MQTTDevID_FMT, *devID );
+    XP_LOGFF( "%s: id: %s", tag, buf );
+}
 #endif
 
 #ifdef CPLUS

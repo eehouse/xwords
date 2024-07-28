@@ -45,6 +45,8 @@ XP_Bool kplr_getAddr( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* name,
                       CommsAddrRec* addr, XP_U32* lastMod );
 const XP_UCHAR* kplr_nameForMqttDev( XW_DUtilCtxt* dutil, XWEnv xwe,
                                      const MQTTDevID* devID );
+const XP_UCHAR* kplr_nameForAddress( XW_DUtilCtxt* dutil, XWEnv xwe,
+                                     const CommsAddrRec* addr );
 
 KP_Rslt kplr_renamePlayer( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* oldName,
                            const XP_UCHAR* newName );

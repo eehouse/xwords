@@ -1836,7 +1836,7 @@ getInvitedProc( MsgQueueElem* elem, void* closure )
     if ( IS_INVITE( elem ) ) {
         GetInvitedData* gidp = (GetInvitedData*)closure;
         XP_PlayerAddr channelNo = elem->channelNo & CHANNEL_MASK;
-        XP_LOGFF( "got invite on channel %d", channelNo );
+        XP_LOGFF( "found invite on channel %d", channelNo );
         XP_U16 thisBit = 1 << channelNo;
         XP_ASSERT( 0 == (thisBit & gidp->allBits) ); /* should be no dupes */
         if ( 0 == (thisBit & gidp->allBits) ) {
@@ -1855,6 +1855,51 @@ comms_getInvited( RELCONST CommsCtxt* comms, XP_U16* nInvites )
     forEachElem( (CommsCtxt*)comms, getInvitedProc, &gid );
     *nInvites = gid.count;
     // LOG_RETURNF( "%d", *nInvites );
+    COMMS_MUTEX_UNLOCK();
+}
+
+typedef struct _GetNamesData {
+    const CommsCtxt* comms;
+    XWEnv xwe;
+    InviteeNames* names;
+} GetNamesData;
+
+static ForEachAct
+getNamesProc( MsgQueueElem* elem, void* closure )
+{
+    LOG_FUNC();
+    if ( IS_INVITE( elem ) ) {
+        GetNamesData* gndp = (GetNamesData*)closure;
+        XP_PlayerAddr channelNo = elem->channelNo & CHANNEL_MASK;
+        XP_LOGFF( "channelNo: %d", channelNo );
+
+        const AddressRecord* rec = getRecordFor( gndp->comms, channelNo );
+        XP_ASSERT( !!rec );
+        const CommsAddrRec* addr = &rec->addr;
+        const XP_UCHAR* name =
+            kplr_nameForAddress( gndp->comms->dutil, gndp->xwe, addr );
+        InviteeNames* names = gndp->names;
+        if ( !!name ) {
+            XP_STRCAT( names->name[names->count], name );
+            XP_LOGFF( "copied name %s to pos %d (pos %d)", name,
+                      channelNo, names->count );
+        }
+        ++names->count;
+    }
+    return FEA_OK;
+}
+
+void
+comms_inviteeNames( CommsCtxt* comms, XWEnv xwe,
+                    InviteeNames* names )
+{
+    COMMS_MUTEX_LOCK(comms);
+    GetNamesData gnd = {
+        .comms = comms,
+        .xwe = xwe,
+        .names = names,
+    };
+    forEachElem( (CommsCtxt*)comms, getNamesProc, &gnd );
     COMMS_MUTEX_UNLOCK();
 }
 #endif
@@ -3079,7 +3124,7 @@ parseBeefHeader( CommsCtxt* comms, XWStreamCtxt* stream, HeaderStuff* stuff )
         && stream_gotU32( stream, &stuff->msgID )
         && stream_gotU32( stream, &stuff->lastMsgRcd );
 
-    LOG_RETURNF( "%s", boolToStr(messageValid) );
+    // LOG_RETURNF( "%s", boolToStr(messageValid) );
     return messageValid;
 }
 
@@ -3111,7 +3156,7 @@ parseSmallHeader( CommsCtxt* comms, XWStreamCtxt* msgStream,
         stream_destroy( hdrStream );
     }
 
-    LOG_RETURNF( "%s", boolToStr(messageValid) );
+    // LOG_RETURNF( "%s", boolToStr(messageValid) );
     COMMS_MUTEX_UNLOCK();
     return messageValid;
 }

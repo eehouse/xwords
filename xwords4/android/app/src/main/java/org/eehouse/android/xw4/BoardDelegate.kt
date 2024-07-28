@@ -1483,12 +1483,8 @@ class BoardDelegate(delegator: Delegator) :
             }
         }
 
-        override fun getInviteeName(plyrNum: Int): String? {
-            return if (null == mSummary) null else mSummary!!.summarizePlayer(
-                mActivity,
-                mRowid,
-                plyrNum
-            )
+        override fun getInviteeName(index: Int): String? {
+            return mSummary?.summarizePlayer( mActivity, mRowid, index)
         }
 
         override fun playerScoreHeld(player: Int) {

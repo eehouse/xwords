@@ -468,8 +468,8 @@ object MQTTUtils {
                     .callback(this@Conn)
                     .send()
                     .whenComplete{ ack, throwable ->
-                        Log.d( TAG, "$this.whenComplete(); topic=$mTopic, "
-                               + "ack=$ack, err=$throwable")
+                        // Log.d( TAG, "$this.whenComplete(); topic=$mTopic, "
+                        //        + "ack=$ack, err=$throwable")
                     }
             }
         }
@@ -486,7 +486,7 @@ object MQTTUtils {
                         .retain(true)
                         .send()
                         .whenComplete { mqtt3Publish, throwable ->
-                            Log.d(TAG, "whenComplete(): $mqtt3Publish")
+                            // Log.d(TAG, "whenComplete(): $mqtt3Publish")
                             mStats.addSend(throwable == null)
                             if (throwable != null) {
                                 // Handle failure to publish

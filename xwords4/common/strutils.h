@@ -140,10 +140,13 @@ XP_Bool strToMQTTCDevID( const XP_UCHAR* str, MQTTDevID* result );
 #ifdef DEBUG
 void assertSorted( const MoveInfo* mi );
 void log_hex( const XP_U8* memp, XP_U16 len, const char* tag );
+void log_devid( const MQTTDevID* devID, const XP_UCHAR* tag );
 # define LOG_HEX(m,l,t) log_hex((const XP_U8*)(m),(l),(t))
+# define LOG_DEVID(ID, TAG) log_devid((ID), (TAG))
 #else
 # define assertSorted(mi)
 # define LOG_HEX(m,l,t)
+# define LOG_DEVID(id, tag)
 #endif
 
 #ifdef CPLUS

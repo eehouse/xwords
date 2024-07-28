@@ -580,6 +580,17 @@ object GameUtils {
         return rowid
     }
 
+    fun inviteeName(context: Context, rowid: Long, playerPosn: Int): String? {
+        var result =
+            GameWrapper.make(context, rowid).use { gw ->
+                gw?.let {
+                    val name = XwJNI.server_inviteeName(it.gamePtr(), playerPosn)
+                    name
+                }
+        }
+        return result
+    }
+
     fun handleInvitation(
         context: Context, nli: NetLaunchInfo,
         procs: TransportProcs?
