@@ -37,6 +37,7 @@ typedef struct _CmdWrapper {
         XP_Bool (*sendChat)( void* closure, XP_U32 gameID, const char* msg );
         XP_Bool (*undoMove)( void* closure, XP_U32 gameID );
         XP_Bool (*resign)( void* closure, XP_U32 gameID );
+        cJSON* (*getKPs)( void* closure );
     } procs;
     LaunchParams* params;
     void* closure;

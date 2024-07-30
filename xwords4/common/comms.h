@@ -271,10 +271,6 @@ void types_rmType( XP_U16* conTypes, CommsConnType type );
 XP_Bool types_hasType( XP_U16 conTypes, CommsConnType type );
 XP_Bool types_iter( XP_U32 conTypes, CommsConnType* typp, XP_U32* state );
 
-#ifdef XWFEATURE_KNOWNPLAYERS
-void comms_gatherPlayers( CommsCtxt* comms, XWEnv xwe, XP_U32 created );
-#endif
-
 const char* ConnType2Str( CommsConnType typ );
 
 # ifdef DEBUG

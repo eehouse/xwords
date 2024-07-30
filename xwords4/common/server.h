@@ -199,6 +199,10 @@ void server_setRematchOrder( ServerCtxt* server, const RematchInfo* ri );
 
 XP_Bool server_isFromRematch( const ServerCtxt* server );
 
+#ifdef XWFEATURE_KNOWNPLAYERS
+void server_gatherPlayers( ServerCtxt* server, XWEnv xwe, XP_U32 created );
+#endif
+
 #ifdef CPLUS
 }
 #endif

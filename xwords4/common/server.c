@@ -32,6 +32,7 @@
 #include "device.h"
 #include "strutils.h"
 #include "dbgutil.h"
+#include "knownplyr.h"
 
 #include "LocalizedStrIncludes.h"
 
@@ -119,6 +120,7 @@ typedef struct ServerVolatiles {
 
 #define MASK_IS_FROM_REMATCH (1<<0)
 #define MASK_HAVE_RIP_INFO (1<<1)
+#define FLAG_HARVEST_READY (1<<2)
 
 typedef struct _ServerNonvolatiles {
     XP_U32 flags;           /*  */
@@ -287,6 +289,9 @@ static void writeProto( const ServerCtxt* server, XWStreamCtxt* stream,
                         XW_Proto proto );
 static void readGuestAddrs( ServerCtxt* server, XWStreamCtxt* stream,
                             XP_U8 streamVersion );
+static XP_Bool getRematchInfoImpl( const ServerCtxt* server,
+                                   CurGameInfo* newGI, const NewOrder* nop,
+                                   RematchInfo** ripp );
 
 static void ri_fromStream( RematchInfo* rip, XWStreamCtxt* stream,
                            const ServerCtxt* server );
@@ -2017,6 +2022,7 @@ server_do( ServerCtxt* server, XWEnv xwe )
             SETSTATE( server, XWSTATE_INTURN );
             setTurn( server, xwe, 0 );
             moreToDo = XP_TRUE;
+            server->nv.flags |= FLAG_HARVEST_READY;
             break;
 
         case XWSTATE_MOVE_CONFIRM_MUSTSEND:
@@ -2269,6 +2275,7 @@ client_readInitialMessage( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* stream )
         XP_ASSERT( !localGI.dictName );
         localGI.dictName = copyString( server->mpool, gi->dictName );
         gi_copy( MPPARM(server->mpool) gi, &localGI );
+        server->nv.flags |= FLAG_HARVEST_READY;
 
         if ( streamVersion < STREAM_VERS_NOEMPTYDICT ) {
             SRVR_LOGFF( "loading and dropping empty dict" );
@@ -4266,9 +4273,7 @@ server_getRematchInfo( const ServerCtxt* server, XW_UtilCtxt* newUtil,
                        XP_U32 gameID, const NewOrder* nop, RematchInfo** ripp )
 {
     XP_Bool success = server_canRematch( server, NULL );
-    const CommsCtxt* comms = server->vol.comms;
     if ( success ) {
-        RematchInfo ri = {0};
         CurGameInfo* newGI = newUtil->gameInfo;
         gi_disposePlayerInfo( MPPARM(newUtil->mpool) newGI );
 
@@ -4280,102 +4285,114 @@ server_getRematchInfo( const ServerCtxt* server, XW_UtilCtxt* newUtil,
         }
         LOGGI( newUtil->gameInfo, "ready to invite" );
 
-        /* Now build the address list. Simple cases are STANDALONE, when I'm
-           the host, or when there are only two devices/players. If I'm guest
-           and there is another guest, I count on the host having sent rematch
-           info, and *that* info has an old and a new format. Sheesh. */
-        XP_Bool canOrder = XP_TRUE;
-        if ( !comms ) {
-            /* no addressing to do!! */
-        } else if ( amHost( server ) || 2 == newGI->nPlayers ) {
-            for ( int ii = 0; ii < newGI->nPlayers; ++ii ) {
+        success = getRematchInfoImpl( server, newGI, nop, ripp );
+    }
+    return success;
+}
+
+static XP_Bool
+getRematchInfoImpl( const ServerCtxt* server, CurGameInfo* newGI,
+                    const NewOrder* nop, RematchInfo** ripp )
+{
+    XP_Bool success = XP_TRUE;
+    RematchInfo ri = {0};
+    const CommsCtxt* comms = server->vol.comms;
+    /* Now build the address list. Simple cases are STANDALONE, when I'm
+       the host, or when there are only two devices/players. If I'm guest
+       and there is another guest, I count on the host having sent rematch
+       info, and *that* info has an old and a new format. Sheesh. */
+    XP_Bool canOrder = XP_TRUE;
+    if ( !comms ) {
+        /* no addressing to do!! */
+    } else if ( amHost( server ) || 2 == newGI->nPlayers ) {
+        for ( int ii = 0; ii < newGI->nPlayers; ++ii ) {
+            if ( newGI->players[ii].isLocal ) {
+                ri_addLocal( &ri );
+            } else {
+                CommsAddrRec addr;
+                if ( amHost(server) ) {
+                    XP_S8 deviceIndex = server->srvPlyrs[ii].deviceIndex;
+                    XP_ASSERT( deviceIndex != RIP_LOCAL_INDX );
+                    XP_PlayerAddr channelNo =
+                        server->nv.addresses[deviceIndex].channelNo;
+                    comms_getChannelAddr( comms, channelNo, &addr );
+                } else {
+                    comms_getHostAddr( comms, &addr );
+                }
+                ri_addAddrAt( &ri, server, &addr, ii );
+            }
+        }
+    } else if ( !!server->nv.rematch.addrs ) {
+        XP_U16 streamVersion = server->nv.streamVersion;
+        if ( STREAM_VERS_REMATCHORDER <= streamVersion ) {
+            loadRemoteRI( server, newGI, &ri );
+
+        } else {
+            /* I don't have complete info yet. So let's go through the gi,
+               assigning an address to all non-local players. We'll use
+               the host address first, then the rest we have. If we don't
+               have the right number of everything, we fail. Note: we
+               should not have given the user a choice in rematch ordering
+               here!!!*/
+            canOrder = newGI->nPlayers <= 2;
+            XP_ASSERT( !canOrder );
+            canOrder = XP_FALSE;
+
+            CommsAddrRec addrs[MAX_NUM_PLAYERS];
+            int nAddrs = 0;
+            comms_getHostAddr( comms, &addrs[nAddrs++] );
+
+            XWStreamCtxt* stream = mkServerStream( server,
+                                                   server->nv.streamVersion );
+            stream_putBytes( stream, server->nv.rematch.addrs,
+                             server->nv.rematch.addrsLen );
+            while ( 0 < stream_getSize( stream ) ) {
+                XP_ASSERT( nAddrs < VSIZE(addrs) );
+                addrFromStream( &addrs[nAddrs++], stream );
+            }
+            stream_destroy( stream );
+
+            int nextRemote = 0;
+            for ( int ii = 0; success && ii < newGI->nPlayers; ++ii ) {
                 if ( newGI->players[ii].isLocal ) {
                     ri_addLocal( &ri );
+                } else if ( nextRemote < nAddrs ) {
+                    ri_addAddrAt( &ri, server, &addrs[nextRemote++], ii );
                 } else {
-                    CommsAddrRec addr;
-                    if ( amHost(server) ) {
-                        XP_S8 deviceIndex = server->srvPlyrs[ii].deviceIndex;
-                        XP_ASSERT( deviceIndex != RIP_LOCAL_INDX );
-                        XP_PlayerAddr channelNo =
-                            server->nv.addresses[deviceIndex].channelNo;
-                        comms_getChannelAddr( comms, channelNo, &addr );
-                    } else {
-                        comms_getHostAddr( comms, &addr );
-                    }
-                    ri_addAddrAt( &ri, server, &addr, ii );
+                    SRVR_LOGFF( "ERROR: not enough addresses for all"
+                                " remote players" );
+                    success = XP_FALSE;
                 }
             }
-        } else if ( !!server->nv.rematch.addrs ) {
-            XP_U16 streamVersion = server->nv.streamVersion;
-            if ( STREAM_VERS_REMATCHORDER <= streamVersion ) {
-                loadRemoteRI( server, newGI, &ri );
-
-            } else {
-                /* I don't have complete info yet. So let's go through the gi,
-                   assigning an address to all non-local players. We'll use
-                   the host address first, then the rest we have. If we don't
-                   have the right number of everything, we fail. Note: we
-                   should not have given the user a choice in rematch ordering
-                   here!!!*/
-                canOrder = newGI->nPlayers <= 2;
-                XP_ASSERT( !canOrder );
-                canOrder = XP_FALSE;
-
-                CommsAddrRec addrs[MAX_NUM_PLAYERS];
-                int nAddrs = 0;
-                comms_getHostAddr( comms, &addrs[nAddrs++] );
-
-                XWStreamCtxt* stream = mkServerStream( server, server->nv.streamVersion );
-                stream_putBytes( stream, server->nv.rematch.addrs,
-                                 server->nv.rematch.addrsLen );
-                while ( 0 < stream_getSize( stream ) ) {
-                    XP_ASSERT( nAddrs < VSIZE(addrs) );
-                    addrFromStream( &addrs[nAddrs++], stream );
-                }
-                stream_destroy( stream );
-
-                int nextRemote = 0;
-                for ( int ii = 0; success && ii < newGI->nPlayers; ++ii ) {
-                    if ( newGI->players[ii].isLocal ) {
-                        ri_addLocal( &ri );
-                    } else if ( nextRemote < nAddrs ) {
-                        ri_addAddrAt( &ri, server, &addrs[nextRemote++], ii );
-                    } else {
-                        SRVR_LOGFF( "ERROR: not enough addresses for all remote players" );
-                        success = XP_FALSE;
-                    }
-                }
-                if ( success ) {
-                    success = nextRemote == nAddrs;
-                }
+            if ( success ) {
+                success = nextRemote == nAddrs;
             }
-        } else {
-            XP_ASSERT( 0 );  /* should not have returned TRUE from server_canRematch(); */
-            success = XP_FALSE;
         }
-
-        if ( success && canOrder ) {
-            if ( !!comms ) {
-                assertRI( &ri, newGI );
-            }
-            success = setPlayerOrder( server, nop, newGI, !!comms ? &ri : NULL );
-        }
-
-        if ( success && !!comms ) {
-            LOG_RI( &ri );
-            assertRI( &ri, newGI );
-            XP_ASSERT( success );
-            *ripp = XP_MALLOC(server->mpool, sizeof(**ripp));
-            **ripp = ri;
-        } else {
-            *ripp = NULL;
-        }
-        XP_ASSERT( success );
+    } else {
+        success = XP_FALSE;
     }
+
+    if ( success && canOrder ) {
+        if ( !!comms ) {
+            assertRI( &ri, newGI );
+        }
+        success = setPlayerOrder( server, nop, newGI, !!comms ? &ri : NULL );
+    }
+
+    if ( success && !!comms ) {
+        LOG_RI( &ri );
+        assertRI( &ri, newGI );
+        XP_ASSERT( success );
+        *ripp = XP_MALLOC(server->mpool, sizeof(**ripp));
+        **ripp = ri;
+    } else {
+        *ripp = NULL;
+    }
+    XP_ASSERT( success );
 
     LOG_RETURNF( "%s", boolToStr(success)  );
     return success;
-} /* server_getRematchInfo */
+} /* getRematchInfoImpl */
 
 void
 server_disposeRematchInfo( ServerCtxt* XP_UNUSED_DBG(server), RematchInfo** ripp )
@@ -4464,6 +4481,42 @@ server_isFromRematch( const ServerCtxt* server )
     return 0 != (server->nv.flags & MASK_IS_FROM_REMATCH);
 }
 
+#ifdef XWFEATURE_KNOWNPLAYERS
+void
+server_gatherPlayers( ServerCtxt* server, XWEnv xwe, XP_U32 created )
+{
+    XP_Bool flagSet = 0 != (server->nv.flags & FLAG_HARVEST_READY);
+    if ( flagSet ) {
+        const CurGameInfo* gi = server->vol.gi;
+        XW_DUtilCtxt* dutil = server->vol.dutil;
+
+        NewOrder no;
+        server_figureOrder( server, RO_SAME, &no );
+
+        CurGameInfo tmpGi = *gi;
+        RematchInfo* ripp;
+        if ( getRematchInfoImpl( server, &tmpGi, &no, &ripp ) ) {
+            for ( int ii = 0, nRemotes = 0; ii < gi->nPlayers; ++ii ) {
+                const LocalPlayer* lp = &gi->players[ii];
+                /* order unchanged? */
+                XP_ASSERT( lp->name == gi->players[ii].name );
+                if ( !lp->isLocal ) {
+                    CommsAddrRec addr;
+                    XP_U16 nPlayersH;
+                    if ( !server_ri_getAddr( ripp, nRemotes++, &addr, &nPlayersH ) ) {
+                        break;
+                    }
+                    XP_ASSERT( 1 == nPlayersH ); /* else fixme... */
+                    kplr_addAddr( dutil, xwe, &addr, lp->name, created );
+                }
+            }
+
+            server_disposeRematchInfo( server, &ripp );
+        }
+    }
+}
+#endif
+
 #ifdef DEBUG
 static void
 log_ri( const ServerCtxt* server, const RematchInfo* rip,
@@ -4482,7 +4535,8 @@ log_ri( const ServerCtxt* server, const RematchInfo* rip,
                 maxIndx = indx;
             }
         }
-        SRVR_LOGFFV( "%d players (and %d addrs): [%s]", rip->nPlayers, rip->nAddrs, buf );
+        SRVR_LOGFFV( "%d players (and %d addrs): [%s]", rip->nPlayers,
+                     rip->nAddrs, buf );
 
         for ( int ii = 0; ii < rip->nAddrs; ++ii ) {
             XP_SNPRINTF( buf, VSIZE(buf), "[%d of %d]: %s from %s",

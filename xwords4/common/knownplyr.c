@@ -18,15 +18,13 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-// #define ENABLE_LOGFFV 1
+#ifdef XWFEATURE_KNOWNPLAYERS
 
 #include "knownplyr.h"
 #include "strutils.h"
 #include "comms.h"
 #include "dbgutil.h"
 #include "dllist.h"
-
-#ifdef XWFEATURE_KNOWNPLAYERS
 
 typedef struct _KnownPlayer {
     DLHead links;
@@ -125,23 +123,6 @@ releaseState( XW_DUtilCtxt* dutil, XWEnv xwe, KPState* state )
     state->inUse = XP_FALSE;
 
     pthread_mutex_unlock( &dutil->kpMutex );
-}
-
-static const XP_UCHAR*
-figureNameFor( XP_U16 posn, const CurGameInfo* gi )
-{
-    const XP_UCHAR* result = NULL;
-    for ( int ii = 0, nthRemote = 0;
-          NULL == result && ii < gi->nPlayers;
-          ++ii ) {
-        const LocalPlayer* lp = &gi->players[ii];
-        if ( lp->isLocal ) {
-            continue;
-        } else if ( nthRemote++ == posn ) {
-            result = lp->name;
-        }
-    }
-    return result;
 }
 
 static void
@@ -261,29 +242,15 @@ addPlayer( XW_DUtilCtxt* XP_UNUSED_DBG(dutil), KPState* state,
 }
 
 XP_Bool
-kplr_addAddrs( XW_DUtilCtxt* dutil, XWEnv xwe, const CurGameInfo* gi,
-               CommsAddrRec addrs[], XP_U16 nAddrs, XP_U32 modTime )
+kplr_addAddr( XW_DUtilCtxt* dutil, XWEnv xwe, const CommsAddrRec* addr,
+              const XP_UCHAR* name, XP_U32 modTime )
 {
-    XP_LOGFFV( "(nAddrs=%d)", nAddrs );
     XP_ASSERT( modTime );
-    XP_Bool canUse = XP_TRUE;
-    for ( int ii = 0; ii < nAddrs && canUse; ++ii ) {
-        canUse = addr_hasType( &addrs[ii], COMMS_CONN_MQTT );
-        if ( !canUse ) {
-            XP_LOGFF( "addr %d has no mqqt id", ii );
-        }
-    }
-
+    XP_ASSERT( !!name );
+    XP_Bool canUse = addr_hasType( addr, COMMS_CONN_MQTT );
     if ( canUse ) {
         KPState* state = loadState( dutil, xwe );
-        for ( int ii = 0; ii < nAddrs && canUse; ++ii ) {
-            const XP_UCHAR* name = figureNameFor( ii, gi );
-            if ( !!name ) {
-                addPlayer( dutil, state, name, &addrs[ii], modTime );
-            } else {
-                XP_LOGFF( "unable to find %dth name", ii );
-            }
-        }
+        addPlayer( dutil, state, name, addr, modTime );
         releaseState( dutil, xwe, state );
     }
 

@@ -447,8 +447,8 @@ disposeBoard( CursesBoardGlobals* bGlobals, XP_Bool rmFromList )
         cmenu_pop( bGlobals->cbState->menuState );
     }
 
-    gi_disposePlayerInfo( MPPARM(cGlobals->util->mpool) cGlobals->gi );
     game_dispose( &cGlobals->game, NULL_XWE );
+    gi_disposePlayerInfo( MPPARM(cGlobals->util->mpool) cGlobals->gi );
 
     disposeUtil( cGlobals );
 

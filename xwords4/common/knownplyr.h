@@ -52,8 +52,8 @@ KP_Rslt kplr_renamePlayer( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* oldNa
                            const XP_UCHAR* newName );
 KP_Rslt kplr_deletePlayer( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* name );
 
-XP_Bool kplr_addAddrs( XW_DUtilCtxt* dutil, XWEnv xwe, const CurGameInfo* gi,
-                       CommsAddrRec addrs[], XP_U16 nAddrs, XP_U32 modTime );
+XP_Bool kplr_addAddr( XW_DUtilCtxt* dutil, XWEnv xwe, const CommsAddrRec* addr,
+                      const XP_UCHAR* name, XP_U32 modTime );
 # else
 #  define kplr_cleanup( dutil )
 # endif

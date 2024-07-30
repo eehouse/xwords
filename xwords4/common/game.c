@@ -380,9 +380,9 @@ game_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
 
 #ifdef XWFEATURE_KNOWNPLAYERS
         const XP_U32 created = game->created;
-        if ( 0 != created
+        if ( !!game->comms && 0 != created
              && server_getGameIsConnected( game->server ) ) {
-            comms_gatherPlayers( game->comms, xwe, created );
+            server_gatherPlayers( game->server, xwe, created );
         }
 #endif
     }
@@ -564,7 +564,7 @@ game_dispose( XWGame* game, XWEnv xwe )
     const XP_U32 created = game->created;
     if ( !!game->comms && 0 != created
          && server_getGameIsConnected( game->server ) ) {
-        comms_gatherPlayers( game->comms, xwe, created );
+        server_gatherPlayers( game->server, xwe, created );
     }
 #endif
 
@@ -1072,6 +1072,7 @@ game_logGI( const CurGameInfo* gi, const char* msg, const char* func, int line )
     XP_LOGFF( "msg: %s from %s() line %d; gameID: %X", msg, func, line,
               !!gi ? gi->gameID:0 );
     if ( !!gi ) {
+        XP_LOGF( "  serverRole: %d", gi->serverRole );
         XP_LOGF( "  nPlayers: %d", gi->nPlayers );
         for ( XP_U16 ii = 0; ii < gi->nPlayers; ++ii ) {
             const LocalPlayer* lp = &gi->players[ii];
@@ -1079,7 +1080,6 @@ game_logGI( const CurGameInfo* gi, const char* msg, const char* func, int line )
                      boolToStr(lp->isLocal), lp->robotIQ, lp->name, lp->dictName, lp->password );
         }
         XP_LOGF( "  forceChannel: %d", gi->forceChannel );
-        XP_LOGF( "  serverRole: %d", gi->serverRole );
         XP_LOGF( "  dictName: %s", gi->dictName );
         XP_LOGF( "  isoCode: %s", gi->isoCodeStr );
         XP_LOGF( "  tradeSub7: %s", boolToStr(gi->tradeSub7) );

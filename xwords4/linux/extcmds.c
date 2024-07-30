@@ -153,6 +153,11 @@ resignFromArgs( CmdWrapper* wr, cJSON* args )
     XP_U32 gameID = gidFromObject( args );
     return (*wr->procs.resign)( wr->closure, gameID );
 }
+static cJSON*
+knwnPlyrs( CmdWrapper* wr )
+{
+    return (*wr->procs.getKPs)( wr->closure );
+}
 
 /* Return 'gid' of new game */
 static XP_U32
@@ -430,6 +435,12 @@ on_incoming_signal( GSocketService* XP_UNUSED(service),
                 success = undoFromArgs( wr, args );
             } else if ( 0 == strcmp( cmdStr, "resign" ) ) {
                 success = resignFromArgs( wr, args );
+            } else if ( 0 == strcmp( cmdStr, "getKPs" ) ) {
+                cJSON* result = knwnPlyrs( wr );
+                success = !!result;
+                if ( success ) {
+                    addObjectToObject( &response, "kps", result );
+                }
             } else {
                 success = XP_FALSE;
                 XP_ASSERT(0);

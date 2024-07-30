@@ -237,7 +237,7 @@ mutex_init(CommsCtxt* comms)
 #define COMMS_MUTEX_UNLOCK COMMS_MUTEX_UNLOCK_RELEASE
 #endif
 
-#define FLAG_HARVEST_DONE 1
+#define _FLAG_HARVEST_DONE 1    /* no longer used */
 #define FLAG_QUASHED 2
 
 #define QUASHED(COMMS) (0 != ((COMMS)->flags & FLAG_QUASHED))
@@ -3396,31 +3396,6 @@ comms_setQuashed( CommsCtxt* comms, XWEnv xwe, XP_Bool quashed )
     }
     return changed;
 }
-
-#ifdef XWFEATURE_KNOWNPLAYERS
-void
-comms_gatherPlayers( CommsCtxt* comms, XWEnv xwe, XP_U32 created )
-{
-    COMMS_MUTEX_LOCK(comms);
-    if ( 0 == (comms->flags & FLAG_HARVEST_DONE) ) {
-        CommsAddrRec addrs[4] = {{0}};
-        XP_U16 nRecs = VSIZE(addrs);
-        comms_getAddrs( comms, addrs, &nRecs );
-
-        const CurGameInfo* gi = comms->util->gameInfo;
-        XP_ASSERT( 0 < gi->nPlayers );
-        if ( kplr_addAddrs( comms->dutil, xwe, gi, addrs, nRecs, created ) ) {
-            /* if ( 1 ) { */
-            /*     COMMS_LOGFF( "not setting flag :-)" ); */
-            /* } else { */
-            /*     /\* Need a way to force/override this manually? *\/ */
-            /*     comms->flags |= FLAG_HARVEST_DONE; */
-            /* } */
-        }
-    }
-    COMMS_MUTEX_UNLOCK();
-}
-#endif
 
 #ifdef RELAY_VIA_HTTP
 void

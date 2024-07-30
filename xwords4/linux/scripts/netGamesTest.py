@@ -198,6 +198,7 @@ class Device():
     _logdir = None
     _nSteps = 0
     _nextChatID = 0
+    _kps = {}
 
     @staticmethod
     def setup(logdir):
@@ -272,7 +273,10 @@ class Device():
             tryTrade = random.randint(0, 99) < self.args.TRADE_PCT
             response = self._sendWaitReply('moveIf', gid=gid, tryTrade=tryTrade)
             moved = response.get('success', False)
-            if moved: break
+            if moved:
+                response = self._sendWaitReply('getKPs', gid=gid)
+                self.checkKPs(response.get('kps'))
+                break
         return moved
 
     def sendChat(self):
@@ -280,7 +284,8 @@ class Device():
         if random.randint(0, 99) < self.args.CHAT_PCT:
             gid = self._pickGid()
             if gid:
-                response = self._sendWaitReply('sendChat', gid=gid, msg=Device.nextChatMsg(self.host))
+                response = self._sendWaitReply('sendChat', gid=gid,
+                                               msg=Device.nextChatMsg(self.host))
                 success = response.get('success', False)
         return success
 
@@ -301,6 +306,19 @@ class Device():
                 response = self._sendWaitReply('resign', gid=gid)
                 success = response.get('success', False)
         return success
+
+    def checkKPs(self, kps):
+        if kps:
+            for kp in kps:
+                devID = kp.get('devID')
+                if not devID in Device._kps: Device._kps[devID] = set()
+                names = Device._kps[devID]
+
+                name = kp.get('name')
+                if name not in names and len(names):
+                    print('adding {} to {} for {}' \
+                          .format(name, names, Device._kps.get(devID)))
+                names.add(name)
 
     def _pickGid(self):
         result = None
@@ -687,6 +705,12 @@ def countCores(args):
         count = len( glob.glob(args.CORE_PAT) )
     return count
 
+def printKPs():
+    kps = Device._kps
+    for names in kps.values():
+        assert 1 == len(names)
+    print('Known players: {}'.format(kps))
+
 def mainLoop(args, devs):
     startCount = len(devs)
     nCores = countCores(args)
@@ -935,6 +959,8 @@ def main():
         dev.makeGames()
         dev.quit()
     mainLoop(args, devs)
+
+    printKPs()
 
     elapsed = datetime.datetime.now() - startTime
     print('played {} games in {}'.format(gGamesMade, elapsed))

@@ -75,6 +75,7 @@
 #include "curgamlistwin.h"
 #include "gsrcwrap.h"
 #include "extcmds.h"
+#include "knownplyr.h"
 
 #ifndef CURSES_CELL_HT
 # define CURSES_CELL_HT 1
@@ -1516,6 +1517,37 @@ resignWrapper( void* closure, XP_U32 gameID )
     return cb_resign( aGlobals->cbState, gameID );
 }
 
+static cJSON*
+getKPsWrapper( void* closure )
+{
+    CursesAppGlobals* aGlobals = (CursesAppGlobals*)closure;
+    XW_DUtilCtxt* dutil = aGlobals->cag.params->dutil;
+
+    XP_U16 nFound = 0;
+    kplr_getNames( dutil, NULL_XWE, XP_FALSE, NULL, &nFound );
+    const XP_UCHAR* players[nFound];
+    kplr_getNames( dutil, NULL_XWE, XP_FALSE, players, &nFound );
+
+    cJSON* result = cJSON_CreateArray();
+    for ( int ii = 0; ii < nFound; ++ii ) {
+        cJSON* entry = cJSON_CreateObject();
+        cJSON_AddStringToObject( entry, "name", players[ii]);
+
+        CommsAddrRec addr;
+        if ( kplr_getAddr( dutil, NULL_XWE, players[ii],
+                           &addr, NULL ) ) {
+
+            XP_UCHAR buf[17];
+            formatMQTTDevID( &addr.u.mqtt.devID, buf, VSIZE(buf) );
+            cJSON_AddStringToObject( entry, "devID", buf );
+        }
+
+        cJSON_AddItemToArray( result, entry );
+    }
+
+    return result;
+}
+
 void
 cursesmain( XP_Bool XP_UNUSED(isServer), LaunchParams* params )
 {
@@ -1552,6 +1584,7 @@ cursesmain( XP_Bool XP_UNUSED(isServer), LaunchParams* params )
             .sendChat = sendChatWrapper,
             .undoMove = undoMoveWrapper,
             .resign = resignWrapper,
+            .getKPs = getKPsWrapper,
         },
     };
     GSocketService* cmdService = cmds_addCmdListener( &wr );
