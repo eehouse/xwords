@@ -38,6 +38,7 @@ import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet
 import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole
 import org.eehouse.android.xw4.loc.LocUtils
+import org.eehouse.android.xw4.putAnd
 
 /** Info we want to access when the game's closed that's not available
  * in CurGameInfo
@@ -442,26 +443,18 @@ class GameSummary : Serializable {
         return String.format("%s%s%s", separator, list, separator)
     }
 
-    fun putStringExtra(key: String?, value: String?): GameSummary {
-        if (null != value) {
+    fun putStringExtra(key: String, value: String?): GameSummary {
+        value?.let {
             val extras = if ((null == extras)) "{}" else extras!!
-            try {
-                val asObj = JSONObject(extras)
-                if (null == value) {
-                    asObj.remove(key)
-                } else {
-                    asObj.put(key, value)
-                }
-                this.extras = asObj.toString()
-            } catch (ex: JSONException) {
-                Log.ex(TAG, ex)
-            }
-            Log.i(TAG, "putStringExtra(%s,%s) => %s", key, value, this.extras)
+            this.extras = JSONObject(extras)
+                .putAnd(key, it)
+                .toString()
+            Log.i(TAG, "putStringExtra(%s,%s) => %s", key, it, this.extras)
         }
         return this
     }
 
-    fun getStringExtra(key: String?): String? {
+    fun getStringExtra(key: String): String? {
         var result: String? = null
         if (null != extras) {
             try {
@@ -479,15 +472,15 @@ class GameSummary : Serializable {
     }
 
     override fun toString(): String {
-        val result: String
-        if (BuildConfig.NON_RELEASE) {
-            val sb = StringBuffer("{")
-                .append("nPlayers: ").append(nPlayers).append(',')
-                .append("}")
-            result = sb.toString()
-        } else {
-            result = super.toString()
-        }
+        val result =
+            if (BuildConfig.NON_RELEASE) {
+                StringBuffer("{")
+                    .append("nPlayers: ").append(nPlayers).append(',')
+                    .append("}")
+                    .toString()
+            } else {
+                super.toString()
+            }
         return result
     }
 
