@@ -479,8 +479,9 @@ countChanged_gtk( XWEnv XP_UNUSED(xwe), void* closure, XP_U16 newCount,
 {
     GtkGameGlobals* globals = (GtkGameGlobals*)closure;
     gchar buf[128];
-    snprintf( buf, VSIZE(buf), "pending count: %d%s", newCount,
-              quashed?"q":"");
+    snprintf( buf, VSIZE(buf), "pending count: %d%s"
+              "\nGameID: %08X", newCount,
+              quashed?"q":"", globals->cGlobals.gi->gameID);
     gtk_label_set_text( GTK_LABEL(globals->countLabel), buf );
 }
 
