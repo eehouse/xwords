@@ -82,6 +82,7 @@ COMMON4 = \
 	$(COMMONOBJDIR)/dragdrpp.o \
 	$(COMMONOBJDIR)/memstream.o \
 	$(COMMONOBJDIR)/comms.o \
+	$(COMMONOBJDIR)/xwmutex.o \
 	$(COMMONOBJDIR)/nli.o \
 	$(COMMONOBJDIR)/mempool.o \
 

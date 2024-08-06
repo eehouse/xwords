@@ -88,6 +88,7 @@ COMMON_SRC_FILES +=        \
 	$(COMMON_PATH)/server.c     \
 	$(COMMON_PATH)/model.c      \
 	$(COMMON_PATH)/comms.c      \
+	$(COMMON_PATH)/xwmutex.c    \
 	$(COMMON_PATH)/memstream.c  \
 	$(COMMON_PATH)/movestak.c   \
 	$(COMMON_PATH)/dbgutil.c    \
