@@ -55,7 +55,7 @@ super_dutil_loadStream( XW_DUtilCtxt* duc, XWEnv xwe,
 }
 
 void
-dutil_super_init( MPFORMAL XW_DUtilCtxt* dutil, XWEnv xwe )
+dutil_super_init( MPFORMAL XW_DUtilCtxt* dutil )
 {
 #ifdef XWFEATURE_KNOWNPLAYERS
     pthread_mutex_init( &dutil->kpMutex, NULL );
@@ -66,13 +66,13 @@ dutil_super_init( MPFORMAL XW_DUtilCtxt* dutil, XWEnv xwe )
     SET_VTABLE_ENTRY( &dutil->vtable, dutil_loadStream, super );
     SET_VTABLE_ENTRY( &dutil->vtable, dutil_storeStream, super );
 
-    sts_init( dutil, xwe );
+    sts_init( dutil );
 }
 
 void
 dutil_super_cleanup( XW_DUtilCtxt* dutil, XWEnv xwe )
 {
     kplr_cleanup( dutil );
-    sts_cleanup( dutil );
+    sts_cleanup( dutil, xwe );
     dvc_cleanup( dutil, xwe );
 }

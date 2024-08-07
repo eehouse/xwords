@@ -402,8 +402,6 @@ linux_dutils_init( MPFORMAL VTableMgr* vtMgr, void* closure )
 
     XW_DUtilCtxt* super = &lduc->super;
 
-    dutil_super_init( MPPARM(mpool) super, NULL_XWE );
-
     super->vtMgr = vtMgr;
     super->closure = closure;
 
@@ -444,6 +442,8 @@ linux_dutils_init( MPFORMAL VTableMgr* vtMgr, void* closure )
 #endif
 
 # undef SET_PROC
+
+    dutil_super_init( MPPARM(mpool) super );
 
     assertTableFull( &super->vtable, sizeof(super->vtable), "lindutil" );
 

@@ -41,7 +41,7 @@
 
 #define PD_VERSION_1 2
 
-static XWStreamCtxt*
+XWStreamCtxt*
 mkStream( XW_DUtilCtxt* dutil )
 {
     XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(dutil->mpool)

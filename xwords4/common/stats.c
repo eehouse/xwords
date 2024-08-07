@@ -18,30 +18,70 @@
  */
 
 #include "stats.h"
+#include "xwmutex.h"
+#include "device.h"
+#include "xwstream.h"
+#include "strutils.h"
 
 typedef struct StatsState {
-    // XP_U32 stats[STS_KEY_COUNT];
+    XP_U32* statsVals;
+    pthread_mutex_t mutex;
 } StatsState;
 
+static const XP_UCHAR* STATtoStr(STAT stat);
+static XP_U32* loadCounts( XW_DUtilCtxt* dutil, XWEnv xwe );
+static void storeCounts( XW_DUtilCtxt* dutil, XWEnv xwe );
+
 void
-sts_init( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe) )
+sts_init( XW_DUtilCtxt* dutil )
 {
-    LOG_FUNC();
-    StatsState* ss = XP_CALLOC( duc->mpool, sizeof(*ss) );
-    duc->statsState = ss;
+    StatsState* ss = XP_CALLOC( dutil->mpool, sizeof(*ss) );
+    initMutex( &ss->mutex, XP_TRUE );
+    dutil->statsState = ss;
 }
 
 void
-sts_cleanup( XW_DUtilCtxt* dutil )
+sts_cleanup( XW_DUtilCtxt* dutil, XWEnv xwe )
 {
-    XP_USE( dutil );
-    XP_FREEP( dutil->mpool, &dutil->statsState );
+    StatsState* ss = dutil->statsState;
+    storeCounts( dutil, xwe );
+    XP_ASSERT( !!ss );
+    XP_FREEP( dutil->mpool, &ss->statsVals );
+    XP_FREEP( dutil->mpool, &ss );
+}
+
+void
+sts_increment( XW_DUtilCtxt* dutil, STAT stat, XWEnv xwe )
+{
+    StatsState* ss = dutil->statsState;
+    XP_ASSERT( !!ss );
+    WITH_MUTEX( &ss->mutex );
+    if ( !ss->statsVals ) {
+        ss->statsVals = loadCounts( dutil, xwe );
+    }
+    ++ss->statsVals[stat];
+    END_WITH_MUTEX();
 }
 
 cJSON*
-sts_export( XW_DUtilCtxt* XP_UNUSED(dutil), XWEnv XP_UNUSED(xwe) )
+sts_export( XW_DUtilCtxt* dutil, XWEnv xwe )
 {
+    StatsState* ss = dutil->statsState;
+    XP_ASSERT( !!ss );
     cJSON* result = cJSON_CreateObject();
+
+    WITH_MUTEX( &ss->mutex );
+    if ( !ss->statsVals ) {
+        ss->statsVals = loadCounts( dutil, xwe );
+    }
+    for ( int ii = 0; ii < STAT_NSTATS; ++ii ) {
+        XP_U32 val = ss->statsVals[ii];
+        if ( 0 != val ) {
+            const XP_UCHAR* nam = STATtoStr(ii);
+            cJSON_AddNumberToObject(result, nam, val);
+        }
+    }
+    END_WITH_MUTEX();
     return result;
 }
 
@@ -56,3 +96,66 @@ void
 sts_clearAll( XW_DUtilCtxt* XP_UNUSED(dutil), XWEnv XP_UNUSED(xwe) )
 {
 }
+
+static const XP_UCHAR*
+STATtoStr(STAT stat)
+{
+#define CASESTR(s) case (s): return #s
+    switch (stat) {
+        CASESTR(STAT_MQTT_RCVD);
+        CASESTR(STAT_MQTT_SENT);
+    default:
+        XP_ASSERT(0);
+    }
+#undef CASESTR
+    return NULL;
+}
+
+static void
+storeCounts( XW_DUtilCtxt* dutil, XWEnv xwe )
+{
+    StatsState* ss = dutil->statsState;
+    XP_ASSERT( !!ss );
+
+    XWStreamCtxt* stream = mkStream( dutil );
+    stream_putU8( stream, 0 );  /* version */
+
+    WITH_MUTEX( &ss->mutex );
+    if ( !!ss->statsVals ) {
+        for ( int ii = 0; ii < STAT_NSTATS; ++ii ) {
+            XP_U32 val = ss->statsVals[ii];
+            if ( 0 != val ) {
+                stream_putU8( stream, ii );
+                stream_putU32VL( stream, val );
+            }
+        }
+    }
+    END_WITH_MUTEX();
+
+    const XP_UCHAR* keys[] = { STATS_KEY, NULL };
+    dutil_storeStream( dutil, xwe, keys, stream );
+    stream_destroy( stream );
+}
+
+static XP_U32*
+loadCounts( XW_DUtilCtxt* dutil, XWEnv xwe )
+{
+    XWStreamCtxt* stream = mkStream( dutil );
+    const XP_UCHAR* keys[] = { STATS_KEY, NULL };
+    dutil_loadStream( dutil, xwe, keys, stream );
+
+    XP_U32* statsVals
+        = XP_CALLOC( dutil->mpool, sizeof(*statsVals) * STAT_NSTATS );
+
+    XP_U8 version;
+    if ( stream_gotU8( stream, &version ) ) {
+        XP_U8 stat;
+        while ( stream_gotU8( stream, &stat ) ) {
+            XP_U32 value = stream_getU32VL( stream );
+            statsVals[stat] = value;
+        }
+    }
+    stream_destroy( stream );
+    return statsVals;
+}
+

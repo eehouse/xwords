@@ -27,6 +27,7 @@
 #include "linuxmain.h"
 #include "gamesdb.h"
 #include "dbgutil.h"
+#include "stats.h"
 
 static XP_U32
 castGid( cJSON* obj )
@@ -129,6 +130,14 @@ moveifFromArgs( CmdWrapper* wr, cJSON* args )
     cJSON* tmp = cJSON_GetObjectItem( args, "tryTrade" );
     XP_Bool tryTrade = !!tmp && cJSON_IsTrue( tmp );
     return (*wr->procs.makeMoveIf)( wr->closure, gameID, tryTrade );
+}
+
+static cJSON*
+getStats( CmdWrapper* wr )
+{
+    XW_DUtilCtxt* dutil = wr->params->dutil;
+    cJSON* json = sts_export( dutil, NULL_XWE );
+    return json;
 }
 
 static XP_Bool
@@ -417,6 +426,12 @@ on_incoming_signal( GSocketService* XP_UNUSED(service),
                 success = 0 != newGameID;
                 if ( success ) {
                     addGIDToObject( &response, newGameID, "newGid" );
+                }
+            } else if ( 0 == strcmp( cmdStr, "stats" ) ) {
+                cJSON* stats = getStats( wr );
+                success = !!stats;
+                if ( success ) {
+                    addObjectToObject( &response, "stats", stats );
                 }
             } else if ( 0 == strcmp( cmdStr, "getStates" ) ) {
                 cJSON* gids;

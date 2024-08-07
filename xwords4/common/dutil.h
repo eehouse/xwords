@@ -129,7 +129,7 @@ struct XW_DUtilCtxt {
     MPSLOT
 };
 
-void dutil_super_init( MPFORMAL XW_DUtilCtxt* dutil, XWEnv xwe );
+void dutil_super_init( MPFORMAL XW_DUtilCtxt* dutil );
 void dutil_super_cleanup( XW_DUtilCtxt* dutil, XWEnv xwe );
 
 /* This one cheats: direct access */
@@ -184,7 +184,7 @@ void dutil_super_cleanup( XW_DUtilCtxt* dutil, XWEnv xwe );
 #define dutil_notifyPause( duc, e, id, ip, p, n, m )                     \
     (duc)->vtable.m_dutil_notifyPause( (duc), (e), (id), (ip), (p), (n), (m) )
 
-#define dutil_haveGame( duc, xwe, gameID,channel )                      \
+#define dutil_haveGame( duc, xwe, gameID, channel )                     \
     (duc)->vtable.m_dutil_haveGame( (duc), (xwe), (gameID), (channel) )
 
 #define dutil_onDupTimerChanged(duc, e, id, ov, nv)                      \

@@ -2488,14 +2488,15 @@ testPhonies( LaunchParams* params )
 static void
 freeParams( LaunchParams* params )
 {
-    gdb_close( params->pDb );
-    params->pDb = NULL;
-    
-    vtmgr_destroy( MPPARM(params->mpool) params->vtMgr );
     linux_dutils_free( &params->dutil );
+    vtmgr_destroy( MPPARM(params->mpool) params->vtMgr );
     dmgr_destroy( params->dictMgr, NULL_XWE );
 
     gi_disposePlayerInfo( MPPARM(params->mpool) &params->pgi );
+
+    gdb_close( params->pDb );
+    params->pDb = NULL;
+
     mpool_destroy( params->mpool );
 }
 

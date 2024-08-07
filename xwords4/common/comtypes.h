@@ -259,6 +259,7 @@ typedef enum _TileValueType {
 #define SUFFIX_LEGAL_PHONIES "legalPhonies"
 #define SUFFIX_MQTT_DEVID "mqtt_devid_key"
 #define SUFFIX_KNOWN_PLAYERS "known_players_key_dev1"
+#define SUFFIX_STATS "stats_key_dev1"
 
 #define FULL_KEY(PARTIAL) "persist_key:" PARTIAL
 
@@ -268,6 +269,7 @@ typedef enum _TileValueType {
 #define KEY_LEGAL_PHONIES FULL_KEY(SUFFIX_LEGAL_PHONIES)
 #define MQTT_DEVID_KEY FULL_KEY(SUFFIX_MQTT_DEVID)
 #define KNOWN_PLAYERS_KEY FULL_KEY(SUFFIX_KNOWN_PLAYERS)
+#define STATS_KEY FULL_KEY(SUFFIX_STATS)
 
 /* I need a way to communiate prefs to common/ code.  For now, though, I'll
  * leave storage of these values up to the platforms.  First, because I don't

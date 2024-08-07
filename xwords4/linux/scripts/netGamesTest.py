@@ -527,7 +527,12 @@ class Device():
                 if game and not game.haveOrder():
                     orders.append(gid)
 
-            response = self._sendWaitReply('getStates', gids=gids, orders=orders)
+            # PENDING. Don't print this, but include in summary on exit
+            response = self._sendWaitReply('stats')
+            print('stats => {}'.format(response))
+
+            response = self \
+                ._sendWaitReply('getStates', gids=gids, orders=orders)
 
             for order in response.get('orders', []):
                 gid = order.get('gid')

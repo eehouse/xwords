@@ -24,6 +24,7 @@
 #include "gsrcwrap.h"
 #include "device.h"
 #include "strutils.h"
+#include "stats.h"
 
 typedef struct _MQTTConStorage {
     LaunchParams* params;
@@ -60,6 +61,7 @@ sendQueueHead( MQTTConStorage* storage )
                 XP_LOGFF( "mosquitto_publish(topic=%s, msgLen=%d) => %s; mid=%d", elem->topic,
                           elem->len, mosquitto_strerror(err), elem->mid );
                 /* Remove this so all are resent together? */
+                sts_increment( storage->params->dutil, STAT_MQTT_SENT, NULL_XWE );
                 break;
             }
         }
@@ -293,9 +295,11 @@ log_callback( struct mosquitto *mosq, void *userdata, int level,
 static gboolean
 handle_gotmsg( GIOChannel* source, GIOCondition XP_UNUSED(condition), gpointer data )
 {
+    MQTTConStorage* storage = (MQTTConStorage*)data;
     // XP_LOGFF( "(len=%d)", message->payloadlen );
     LOG_FUNC();
-    MQTTConStorage* storage = (MQTTConStorage*)data;
+    XW_DUtilCtxt* dutil = storage->params->dutil;
+    sts_increment( dutil, STAT_MQTT_RCVD, NULL_XWE );
 
     int pipe = g_io_channel_unix_get_fd( source );
     XP_ASSERT( pipe == storage->msgPipe[0] );

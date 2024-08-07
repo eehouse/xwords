@@ -22,8 +22,18 @@
 
 #include "dutil.h"
 
-void sts_init( XW_DUtilCtxt* duc, XWEnv xwe );
-void sts_cleanup( XW_DUtilCtxt* dutil );
+void sts_init( XW_DUtilCtxt* duc );
+void sts_cleanup( XW_DUtilCtxt* dutil, XWEnv xwe );
+
+typedef enum {
+    STAT_MQTT_RCVD,
+    STAT_MQTT_SENT,
+
+
+    STAT_NSTATS,
+} STAT;
+
+void sts_increment( XW_DUtilCtxt* dutil, STAT stat, XWEnv xwe );
 
 cJSON* sts_export( XW_DUtilCtxt* duc, XWEnv xwe );
 void sts_clearAll( XW_DUtilCtxt* duc, XWEnv xwe );

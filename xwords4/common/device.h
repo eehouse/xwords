@@ -81,4 +81,7 @@ void dvc_getPhoniesFor( XW_DUtilCtxt* dutil, XWEnv env, const XP_UCHAR* code,
 void dvc_init( XW_DUtilCtxt* dutil, XWEnv xwe );
 void dvc_cleanup( XW_DUtilCtxt* dutil, XWEnv xwe );
 
+/* Utility functions; not an API to count on!! */
+XWStreamCtxt* mkStream( XW_DUtilCtxt* dutil );
+
 #endif
