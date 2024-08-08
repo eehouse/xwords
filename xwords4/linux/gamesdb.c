@@ -349,9 +349,9 @@ gdb_summarize( CommonGlobals* cGlobals )
     XP_U32 gameID = gi->gameID;
     XP_ASSERT( 0 != gameID );
 
-    gchar connvia[128] = {0};
+    gchar connvia[128] = {};
 
-    ScoresArray scores = {0};
+    ScoresArray scores = {};
     if ( gameOver ) {
         model_figureFinalScores( game->model, &scores, NULL );
     } else {
@@ -359,8 +359,8 @@ gdb_summarize( CommonGlobals* cGlobals )
             scores.arr[ii] = model_getPlayerScore( game->model, ii );
         }
     }
-    gchar scoreBufs[MAX_NUM_PLAYERS][64] = {0};
-    gchar* arr[MAX_NUM_PLAYERS+1] = {0};
+    gchar scoreBufs[MAX_NUM_PLAYERS][64] = {};
+    gchar* arr[MAX_NUM_PLAYERS+1] = {};
     for ( int ii = 0; ii < nTotal; ++ii ) {
         XP_SNPRINTF( scoreBufs[ii], VSIZE(scoreBufs[ii]), "%s: %d",
                      gi->players[ii].name, scores.arr[ii] );
@@ -404,7 +404,7 @@ gdb_summarize( CommonGlobals* cGlobals )
         }
         seed = comms_getChannelSeed( game->comms );
 #ifdef XWFEATURE_RELAY
-        XP_UCHAR relayID[32] = {0};
+        XP_UCHAR relayID[32] = {};
         XP_U16 len = VSIZE(relayID);
         (void)comms_getRelayID( game->comms, relayID, &len );
 #endif

@@ -215,7 +215,7 @@ model_writeToTextStream( const ModelCtxt* model, XWStreamCtxt* stream )
 {
     const DictionaryCtxt* dict = model_getDictionary( model );
     int width = dict_getMaxWidth( dict );
-    XP_UCHAR empty[4] = {0};
+    XP_UCHAR empty[4] = {};
     XP_U16 ii;
     XP_U16 col, row;
 
@@ -1914,7 +1914,7 @@ commitTurn( ModelCtxt* model, XWEnv xwe, XP_S16 turn, const TrayTileSet* newTile
 #endif
             tilesInLine( model, turn, &isHorizontal );
         XP_ASSERT( inLine );
-        MoveInfo moveInfo = {0};
+        MoveInfo moveInfo = {};
         normalizeMoves( model, turn, isHorizontal, &moveInfo );
 
         stack_addMove( model->vol.stack, turn, &moveInfo, newTiles );
@@ -2679,7 +2679,7 @@ model_listWordsThrough( ModelCtxt* model, XWEnv xwe, XP_U16 col, XP_U16 row,
 
     XP_Bool isHorizontal;
     if ( tilesInLine( model, turn, &isHorizontal ) ) {
-        MoveInfo moveInfo = {0};
+        MoveInfo moveInfo = {};
         normalizeMoves( model, turn, isHorizontal, &moveInfo );
         model_makeTurnFromMoveInfo( tmpModel, xwe, turn, &moveInfo );
 

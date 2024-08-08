@@ -252,7 +252,7 @@ sendViaThreadProc( void* arg )
     headers = curl_slist_append(headers, "Content-Type: application/json");
     curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
 
-    FetchData fd = {0};
+    FetchData fd = {};
 
     curl_easy_setopt( curl, CURLOPT_WRITEFUNCTION, curl_callback );
     curl_easy_setopt( curl, CURLOPT_WRITEDATA, (void *) &fd );

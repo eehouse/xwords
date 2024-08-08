@@ -496,7 +496,7 @@ getMethodID( JNIEnv* env, jobject obj, const char* proc, const char* sig )
     jclass cls = (*env)->GetObjectClass( env, obj );
     XP_ASSERT( !!cls );
 #ifdef DEBUG
-    char buf[128] = {0};
+    char buf[128] = {};
     /* int len = sizeof(buf); */
     /* getClassName( env, obj, buf, &len ); */
 #endif

@@ -53,7 +53,7 @@ loadFromStream( XW_DUtilCtxt* dutil, KPState* state, XWStreamCtxt* stream )
         XP_UCHAR buf[64];
         stringFromStreamHere( stream, buf, VSIZE(buf) );
 
-        CommsAddrRec addr = {0};
+        CommsAddrRec addr = {};
         addrFromStream( &addr, stream );
 
         addPlayer( dutil, state, buf, &addr, newestMod );

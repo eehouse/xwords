@@ -298,7 +298,7 @@ static XP_U32
 makeGameFromArgs( CmdWrapper* wr, cJSON* args )
 {
     LaunchParams* params = wr->params;
-    CurGameInfo gi = {0};
+    CurGameInfo gi = {};
     gi_copy( MPPARM(params->mpool) &gi, &params->pgi );
     gi.boardSize = 15;
     gi.traySize = 7;
@@ -512,7 +512,7 @@ cmds_addCmdListener( const CmdWrapper* wr )
     if ( !!cmdsSocket ) {
         service = g_socket_service_new();
 
-        struct sockaddr_un addr = {0};
+        struct sockaddr_un addr = {};
         addr.sun_family = AF_UNIX;
         strncpy( addr.sun_path, cmdsSocket, sizeof(addr.sun_path) - 1);
         GSocketAddress* gsaddr

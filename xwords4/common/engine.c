@@ -278,7 +278,7 @@ print_savedMoves( const EngineCtxt* engine, const char* label )
 {
     int ii;
     int pos = 0;
-    char buf[(NUM_SAVED_ENGINE_MOVES*10) + 3] = {0};
+    char buf[(NUM_SAVED_ENGINE_MOVES*10) + 3] = {};
     for ( ii = 0; ii < engine->nMovesToSave; ++ii ) {
         if ( 0 < engine->miData.savedMoves[ii].score ) {
             pos += XP_SNPRINTF( &buf[pos], VSIZE(buf)-pos, "[%d]: %d; ", 

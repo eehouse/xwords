@@ -1368,7 +1368,7 @@ handle_invite_button( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
     CommonGlobals* cGlobals = &globals->cGlobals;
     XP_U16 nMissing = server_getPendingRegs( globals->cGlobals.game.server );
 
-    CommsAddrRec inviteAddr = {0};
+    CommsAddrRec inviteAddr = {};
     gint nPlayers = nMissing;
     XP_Bool confirmed = gtkInviteDlg( globals, &inviteAddr, &nPlayers );
     XP_LOGFF( "gtkInviteDlg() => %s", boolToStr(confirmed) );
@@ -1383,7 +1383,7 @@ send_invites( CommonGlobals* cGlobals, XP_U16 nPlayers,
               const CommsAddrRec* destAddr )
 {
     CommsCtxt* comms = cGlobals->game.comms;
-    CommsAddrRec myAddr = {0};
+    CommsAddrRec myAddr = {};
     XP_ASSERT( comms );
     comms_getSelfAddr( comms, &myAddr );
 
@@ -1391,7 +1391,7 @@ send_invites( CommonGlobals* cGlobals, XP_U16 nPlayers,
     if ( server_getOpenChannel( cGlobals->game.server, &channel ) ) {
         gint forceChannel = channel;
 
-        NetLaunchInfo nli = {0};    /* include everything!!! */
+        NetLaunchInfo nli = {};    /* include everything!!! */
         nli_init( &nli, cGlobals->gi, &myAddr, nPlayers, forceChannel );
 #ifdef XWFEATURE_RELAY
         if ( addr_hasType( &myAddr, COMMS_CONN_RELAY ) ) {
@@ -1540,7 +1540,7 @@ ask_tiles( gpointer data )
     GtkGameGlobals* globals = (GtkGameGlobals*)data;
     CommonGlobals* cGlobals = &globals->cGlobals;
 
-    TrayTileSet newTiles = {0};
+    TrayTileSet newTiles = {};
     XP_UCHAR* name = cGlobals->gi->players[cGlobals->selPlayer].name;
     for ( XP_Bool done = XP_FALSE; !done; ) {
         XP_S16 picked = gtkletterask( &newTiles, XP_TRUE, name,

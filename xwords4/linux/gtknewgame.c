@@ -746,7 +746,7 @@ gboolean
 gtkNewGameDialog( GtkGameGlobals* globals, CurGameInfo* gi, CommsAddrRec* addr,
                   XP_Bool isNewGame, XP_Bool fireConnDlg )
 {
-    GtkNewGameState state = {0};
+    GtkNewGameState state = {};
 
     state.globals = globals;
     state.gi = gi;

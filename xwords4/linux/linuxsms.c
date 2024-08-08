@@ -258,7 +258,7 @@ parseAndDispatch( LaunchParams* params, uint8_t* buf, int len,
                                                 msg->data, msg->len );
                 break;
             case INVITE: {
-                NetLaunchInfo nli = {0};
+                NetLaunchInfo nli = {};
                 nliFromData( params, msg, &nli );
                 (*storage->procs->inviteReceived)( storage->procClosure,
                                                    &nli );
@@ -446,7 +446,7 @@ pickFile( LinSMSData* storage, XP_Bool pickAtRandom,
         g_dir_rewind( dir );
 
         int targetIndx = XP_RANDOM() % count;
-        XP_UCHAR oldestFile[512] = {0};
+        XP_UCHAR oldestFile[512] = {};
         int cur = 0;
         for ( ; ; ) {
             const gchar* name = g_dir_read_name( dir );
@@ -516,7 +516,7 @@ check_for_files_once( gpointer data )
 
 
         uint8_t buf[256];
-        CommsAddrRec fromAddr = {0};
+        CommsAddrRec fromAddr = {};
         XP_S16 nRead = -1;
         XP_UCHAR path[1024];
         if ( pickFile( storage, XP_TRUE, path, VSIZE(path) ) ) {

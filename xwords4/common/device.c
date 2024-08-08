@@ -614,7 +614,7 @@ dvc_parseMQTTPacket( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* topic,
 
                 switch ( cmd ) {
                 case CMD_INVITE: {
-                    NetLaunchInfo nli = {0};
+                    NetLaunchInfo nli = {};
                     if ( nli_makeFromStream( &nli, stream ) ) {
                         dutil_onInviteReceived( dutil, xwe, &nli );
                     }
@@ -622,7 +622,7 @@ dvc_parseMQTTPacket( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* topic,
                     break;
                 case CMD_DEVGONE:
                 case CMD_MSG: {
-                    CommsAddrRec from = {0};
+                    CommsAddrRec from = {};
                     addr_addType( &from, COMMS_CONN_MQTT );
                     from.u.mqtt.devID = senderID;
                     if ( CMD_MSG == cmd ) {

@@ -948,7 +948,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_gi_1from_1stream
     XWStreamCtxt* stream = streamFromJStream( MPPARM(mpool) env,
                                               globalState->vtMgr, jstream );
 
-    CurGameInfo gi = {0};
+    CurGameInfo gi = {};
     // XP_MEMSET( &gi, 0, sizeof(gi) );
     if ( game_makeFromStream( MPPARM(mpool) env, stream, NULL,
                               &gi, NULL, NULL, NULL, NULL ) ) {
@@ -1000,7 +1000,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_nli_1from_1stream
     XWStreamCtxt* stream = streamFromJStream( MPPARM(mpool) env,
                                               globalState->vtMgr, jstream );
 
-    NetLaunchInfo nli = {0};
+    NetLaunchInfo nli = {};
     if ( nli_makeFromStream( &nli, stream ) ) {
         jnli = makeObjectEmptyConstr( env, PKG_PATH("NetLaunchInfo") );
         setNLI( env, jnli, &nli );
@@ -1455,7 +1455,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeNewGame
                                               TI_IF(&state->globalJNI->ti)
                                               j_procs );
     }
-    CommonPrefs cp = {0};
+    CommonPrefs cp = {};
     loadCommonPrefs( env, &cp, j_cp );
 
     CommsAddrRec selfAddr;
@@ -2388,7 +2388,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1receiveMessage
     XWStreamCtxt* stream = streamFromJStream( MPPARM(mpool) env, globals->vtMgr,
                                               jstream );
     CommsAddrRec* addrp = NULL;
-    CommsAddrRec addr = {0};
+    CommsAddrRec addr = {};
     XP_ASSERT( !!jaddr );
     if ( NULL != jaddr ) {
         getJAddrRec( env, &addr, jaddr );
@@ -2408,7 +2408,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1summarize
 ( JNIEnv* env, jclass C, GamePtrType gamePtr, jobject jsummary )
 {
     XWJNI_START_GLOBALS(gamePtr);
-    GameSummary summary = {0};
+    GameSummary summary = {};
     game_summarize( &state->game, globals->gi, &summary );
 
     setInt( env, jsummary, "nMoves", summary.nMoves );
@@ -2842,7 +2842,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_server_1inviteeName
     jstring result = NULL;
     XWJNI_START(gamePtr);
     XP_ASSERT( !!state->game.server );
-    XP_UCHAR buf[32] = {0};
+    XP_UCHAR buf[32] = {};
     XP_U16 len = VSIZE(buf);
     server_inviteeName( state->game.server, env, channel, buf, &len );
     if ( !!buf[0] ) {

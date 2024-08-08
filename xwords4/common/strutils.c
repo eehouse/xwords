@@ -118,7 +118,7 @@ void
 moveInfoToStream( XWStreamCtxt* stream, const MoveInfo* mi, XP_U16 bitsPerTile )
 {
 #ifdef DEBUG
-    /* XP_UCHAR buf[64] = {0}; */
+    /* XP_UCHAR buf[64] = {}; */
     /* XP_U16 offset = 0; */
 #endif
     assertSorted( mi );
@@ -145,7 +145,7 @@ void
 moveInfoFromStream( XWStreamCtxt* stream, MoveInfo* mi, XP_U16 bitsPerTile )
 {
 #ifdef DEBUG
-    /* XP_UCHAR buf[64] = {0}; */
+    /* XP_UCHAR buf[64] = {}; */
     /* XP_U16 offset = 0; */
 #endif
     mi->nTiles = stream_getBits( stream, tilesNBits( stream ) );

@@ -1295,7 +1295,7 @@ static gint
 curses_requestMsgs( gpointer data )
 {
     CursesAppGlobals* aGlobals = (CursesAppGlobals*)data;
-    XP_UCHAR devIDBuf[64] = {0};
+    XP_UCHAR devIDBuf[64] = {};
     gdb_fetch_safe( aGlobals->cag.params->pDb, KEY_RDEVID, NULL, devIDBuf,
                     sizeof(devIDBuf) );
     if ( '\0' != devIDBuf[0] ) {

@@ -375,7 +375,7 @@ gint
 requestMsgsIdle( gpointer data )
 {
     CommonGlobals* cGlobals = (CommonGlobals*)data;
-    XP_UCHAR devIDBuf[64] = {0};
+    XP_UCHAR devIDBuf[64] = {};
     gdb_fetch_safe( cGlobals->params->pDb, KEY_RDEVID, NULL, devIDBuf,
                     sizeof(devIDBuf) );
     if ( '\0' != devIDBuf[0] ) {
@@ -1225,7 +1225,7 @@ linux_init_relay_socket( CommonGlobals* cGlobals, const CommsAddrRec* addrRec )
             cGlobals->relaySocket = sock;
             XP_LOGF( "%s: connected new socket %d to relay", __func__, sock );
 
-            struct timeval tv = {0};
+            struct timeval tv = {};
             tv.tv_sec = 15;
             setsockopt( sock, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv) );
         } else {
@@ -1361,7 +1361,7 @@ linux_relay_ioproc( GIOChannel* source, GIOCondition condition, gpointer data )
             
             inboundS = stream_from_msgbuf( cGlobals, buf, nBytes );
             if ( !!inboundS ) {
-                CommsAddrRec addr = {0};
+                CommsAddrRec addr = {};
                 addr_addType( &addr, COMMS_CONN_RELAY );
                 redraw = game_receiveMessage( &cGlobals->game, NULL_XWE, inboundS, &addr );
 
@@ -1792,7 +1792,7 @@ patsParamsToIter( const LaunchParams* params, const DictionaryCtxt* dict )
     const XP_UCHAR** strPats = NULL;
     const XP_UCHAR* _strPats[4];
     XP_U16 nStrPats = 0;
-    PatDesc descs[3] = {0};
+    PatDesc descs[3] = {};
     XP_U16 nPatDescs = 0;
 
     if ( !!params->iterTestPats ) {
@@ -1886,7 +1886,7 @@ onFoundTiles( void* XP_UNUSED(closure), const Tile* XP_UNUSED(tiles),
     /* XP_S16 lenMatched = di_findStartsWith( ftp->iter, tiles, nTiles ); */
     /* if ( 0 <= lenMatched ) { */
     /*     XP_UCHAR buf[32]; */
-    /*     XP_UCHAR bufPrev[32] = {0}; */
+    /*     XP_UCHAR bufPrev[32] = {}; */
     /*     di_wordToString( ftp->iter, buf, VSIZE(buf), "." ); */
 
     /*     /\* This doesn't work with synonyms like "L-L" for "L·L" *\/ */
@@ -2005,7 +2005,7 @@ walk_dict_test( MPFORMAL const LaunchParams* params, const DictionaryCtxt* dict,
                 XP_ASSERT( word.index == indices[ii] );
                 XP_UCHAR buf1[64];
                 dict_wordToString( dict, &word, buf1, VSIZE(buf1), delim );
-                XP_UCHAR buf2[64] = {0};
+                XP_UCHAR buf2[64] = {};
                 if ( ii > 0 && dict_getNthWord( dict, &word, indices[ii]-1 ) ) {
                     dict_wordToString( dict, &word, buf2, VSIZE(buf2), delim );
                 }
@@ -2599,12 +2599,12 @@ writeStatus( const char* statusSocket, const char* dbName )
 {
     int sock = socket( AF_UNIX, SOCK_DGRAM, 0 );
 
-    DevSummary ds = {0};
+    DevSummary ds = {};
     sqlite3* pDb = gdb_open( dbName );
     gdb_getSummary( pDb, &ds );
     gdb_close( pDb );
 
-    struct sockaddr_un addr = {0};
+    struct sockaddr_un addr = {};
     addr.sun_family = AF_UNIX;
     strncpy( addr.sun_path, statusSocket, sizeof(addr.sun_path) - 1);
     int err = connect( sock, (const struct sockaddr *) &addr, sizeof(addr));
@@ -2694,7 +2694,7 @@ main( int argc, char** argv )
     // char* portNum = NULL;
     // char* hostName = "localhost";
     unsigned int seed = makeRandomInt();
-    LaunchParams mainParams = {0};
+    LaunchParams mainParams = {};
     XP_U16 nPlayerDicts = 0;
     XP_U16 robotCount = 0;
     /* XP_U16 ii; */

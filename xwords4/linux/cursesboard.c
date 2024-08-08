@@ -485,7 +485,7 @@ utf8_len( const char* face )
 {
     const int max = strlen(face);
     int count = 0;
-    mbstate_t ps = {0};
+    mbstate_t ps = {};
     for ( int offset = 0; offset < max; ) {
         size_t nBytes = mbrlen( &face[offset], max - offset, &ps );
         if ( 0 < nBytes ) {
@@ -1342,7 +1342,7 @@ inviteList( CommonGlobals* cGlobals, CommsAddrRec* myAddr, GSList* invitees,
     if ( haveAddressees ) {
         LaunchParams* params = cGlobals->params;
 #ifdef XWFEATURE_COMMS_INVITE
-        CommsAddrRec destAddr = {0};
+        CommsAddrRec destAddr = {};
 #endif
         for ( int ii = 0; ii < g_slist_length(invitees); ++ii ) {
             const XP_U16 nPlayersH = params->connInfo.inviteeCounts[ii];

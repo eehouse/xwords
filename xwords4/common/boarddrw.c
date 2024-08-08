@@ -372,7 +372,7 @@ drawCell( BoardCtxt* board, XWEnv xwe, const XP_U16 col,
           const XP_U16 row, XP_Bool skipBlanks )
 {
     XP_Bool success = XP_TRUE;
-    XP_Rect cellRect = {0};
+    XP_Rect cellRect = {};
     Tile tile;
     XP_Bool isBlank, isEmpty, pending = XP_FALSE;
     XWBonusType bonus;

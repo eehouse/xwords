@@ -271,13 +271,13 @@ add_to_list( GtkWidget* list, sqlite3_int64 rowid, XP_Bool isNew,
     gchar* localString = 0 <= gib->turn ? gib->turnLocal ? "YES"
         : "NO" : "";
 
-    gchar createdStr[64] = {0};
+    gchar createdStr[64] = {};
     if ( 0 != gib->created ) {
         formatSeconds( gib->created, createdStr, VSIZE(createdStr) );
     }
     gchar timeStr[64];
     formatSeconds( gib->lastMoveTime, timeStr, VSIZE(timeStr) );
-    gchar timerStr[64] = {0};
+    gchar timerStr[64] = {};
     if ( gib->dupTimerExpires ) {
         formatSeconds( gib->dupTimerExpires, timerStr, VSIZE(timeStr) );
     }
@@ -435,7 +435,7 @@ delete_game( GtkAppGlobals* apg, sqlite3_int64 rowid )
     gdb_deleteGame( params->pDb, rowid );
 
 #ifdef XWFEATURE_RELAY
-    XP_UCHAR devIDBuf[64] = {0};
+    XP_UCHAR devIDBuf[64] = {};
     gdb_fetch_safe( params->pDb, KEY_RDEVID, NULL, devIDBuf, sizeof(devIDBuf) );
     if ( '\0' != devIDBuf[0] ) {
         relaycon_deleted( params, devIDBuf, clientToken );
@@ -522,7 +522,7 @@ setWindowTitle( GtkAppGlobals* apg )
     GtkWidget* window = apg->window;
     LaunchParams* params = apg->cag.params;
 
-    gchar title[128] = {0};
+    gchar title[128] = {};
     if ( !!params->dbName ) {
         strcat( title, params->dbName );
     }
@@ -840,7 +840,7 @@ static gint
 requestMsgs( gpointer data )
 {
     GtkAppGlobals* apg = (GtkAppGlobals*)data;
-    XP_UCHAR devIDBuf[64] = {0};
+    XP_UCHAR devIDBuf[64] = {};
     gdb_fetch_safe( apg->cag.params->pDb, KEY_RDEVID, NULL, devIDBuf, sizeof(devIDBuf) );
     if ( '\0' != devIDBuf[0] ) {
         relaycon_requestMsgs( apg->cag.params, devIDBuf );
@@ -1010,7 +1010,7 @@ makeMoveIfWrapper( void* closure, XP_U32 gameID, XP_Bool tryTrade )
     if ( !!globals ) {
         success = linux_makeMoveIf( &globals->cGlobals, tryTrade );
     } else {
-        GtkGameGlobals tmpGlobals = {0};
+        GtkGameGlobals tmpGlobals = {};
         int nRowIDs = 1;
         gdb_getRowsForGameID( apg->cag.params->pDb, gameID, &rowid, &nRowIDs );
 
@@ -1034,7 +1034,7 @@ sendChatWrapper( void* closure, XP_U32 gameID, const char* msg )
         board_sendChat( globals->cGlobals.game.board, NULL_XWE, msg );
         success = XP_TRUE;
     } else {
-        GtkGameGlobals tmpGlobals = {0};
+        GtkGameGlobals tmpGlobals = {};
         int nRowIDs = 1;
         gdb_getRowsForGameID( apg->cag.params->pDb, gameID, &rowid, &nRowIDs );
 
@@ -1061,7 +1061,7 @@ addInvitesWrapper( void* closure, XP_U32 gameID, XP_U16 nRemotes,
         int nRowIDs = 1;
         gdb_getRowsForGameID( apg->cag.params->pDb, gameID, &rowid, &nRowIDs );
 
-        GtkGameGlobals tmpGlobals = {0};
+        GtkGameGlobals tmpGlobals = {};
         if ( 1 == nRowIDs
              && loadGameNoDraw( &tmpGlobals, apg->cag.params, rowid ) ) {
             linux_addInvites( &tmpGlobals.cGlobals, nRemotes, destAddrs );
@@ -1096,7 +1096,7 @@ getForGameIDWrapper( void* closure, XP_U32 gameID )
 int
 gtkmain( LaunchParams* params )
 {
-    GtkAppGlobals apg = {0};
+    GtkAppGlobals apg = {};
     params->appGlobals = &apg;
 
     g_globals_for_signal = &apg;

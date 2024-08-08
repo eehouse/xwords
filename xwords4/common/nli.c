@@ -314,8 +314,8 @@ XP_Bool
 nli_fromArgv( MPFORMAL NetLaunchInfo* nlip, int argc, const char** argv )
 {
     XP_LOGFF( "(argc=%d)", argc );
-    CurGameInfo gi = {0};
-    CommsAddrRec addr = {0};
+    CurGameInfo gi = {};
+    CommsAddrRec addr = {};
     MQTTDevID mqttDevID = 0;
     XP_U16 nPlayersH = 0;
     XP_U16 forceChannel = 0;
@@ -388,7 +388,7 @@ logNLI( const NetLaunchInfo* nli, const char* callerFunc, const int callerLine )
 {
     XP_LOGFF( "called by %s(), line %d", callerFunc, callerLine );
 
-    XP_UCHAR conTypes[128] = {0};
+    XP_UCHAR conTypes[128] = {};
     int offset = 0;
     CommsConnType typ;
     for ( XP_U32 state = 0; types_iter( nli->_conTypes, &typ, &state ); ) {

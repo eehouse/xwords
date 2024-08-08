@@ -166,7 +166,7 @@ curses_draw_measureRemText( DrawCtx* XP_UNUSED(dctx), XWEnv XP_UNUSED(xwe),
         *width = *height = 0;
     } else {
         char buf[64];
-        char* lines[2] = {0};
+        char* lines[2] = {};
         formatRemText( nTilesLeft, rect, buf, lines );
     
         *width = 0;
@@ -187,7 +187,7 @@ curses_draw_drawRemText( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe), const XP_Rect* r
     CursesDrawCtx* dctx = (CursesDrawCtx*)p_dctx;
     char buf[32];
 
-    char* lines[2] = {0};
+    char* lines[2] = {};
     formatRemText( nTilesLeft, rInner, buf, lines );
     int ii;
     for ( ii = 0; ii < VSIZE(lines) && !!lines[ii]; ++ii ) {
@@ -291,7 +291,7 @@ curses_draw_measureScoreText( DrawCtx* XP_UNUSED(p_dctx), XWEnv XP_UNUSED(xwe),
                               XP_U16* width, XP_U16* height )
 {
     XP_UCHAR buf[100];
-    char* lines[3] = {0};
+    char* lines[3] = {};
     formatScoreText( buf, dsi, rect, lines );
 
     int ii;
@@ -316,7 +316,7 @@ curses_draw_score_drawPlayer( DrawCtx* p_dctx, XWEnv xwe,
     curses_draw_clearRect( p_dctx, xwe, rOuter );
 
     /* print the name and turn/remoteness indicator */
-    char* lines[3] = {0};
+    char* lines[3] = {};
     formatScoreText( buf, dsi, rInner, lines );
     int ii;
     for ( ii = 0; ii < VSIZE(lines) && !!lines[ii]; ++ii ) {
@@ -430,7 +430,7 @@ curses_draw_drawCell( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe), const XP_Rect* rect
     } else {
         /* To deal with multibyte (basically just L·L at this point), draw one
            char at a time, wrapping to the next line if we need to. */
-        mbstate_t ps = {0};
+        mbstate_t ps = {};
         const char* end = letter + strlen( letter );
         for ( int line = 0; line < rect->height; ++line ) {
             for ( int col = 0; letter < end && col < rect->width; ++col ) {

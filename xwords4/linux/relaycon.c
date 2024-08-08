@@ -633,7 +633,7 @@ process( RelayConStorage* storage, XP_U8* buf, ssize_t nRead )
             }
                 break;
             case XWPDEV_MSG: {
-                CommsAddrRec addr = {0};
+                CommsAddrRec addr = {};
                 addr_addType( &addr, COMMS_CONN_RELAY );
                 (*storage->procs.msgReceived)( storage->procsClosure, &addr,
                                                ptr, end - ptr );
@@ -915,7 +915,7 @@ onGotQueryData( RelayTask* task )
     if ( !!task->ws.ptr ) {
         json_object* reply = json_tokener_parse( task->ws.ptr );
         if ( !!reply ) {
-            CommsAddrRec addr = {0};
+            CommsAddrRec addr = {};
             addr_addType( &addr, COMMS_CONN_RELAY );
 #ifdef DEBUG
             GList* ids = g_hash_table_get_keys( task->u.query.map );

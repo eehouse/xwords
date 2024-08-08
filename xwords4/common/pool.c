@@ -285,7 +285,7 @@ checkTilesLeft( const PoolContext* pool )
 void
 pool_dumpSelf( const PoolContext* pool )
 {
-    XP_UCHAR buf[256] = {0};
+    XP_UCHAR buf[256] = {};
     XP_U16 offset = 0;
     for ( Tile tile = 0; tile < pool->numFaces; ++tile ) {
         XP_U16 count = pool->lettersLeft[tile];

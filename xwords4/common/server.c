@@ -851,7 +851,7 @@ server_countTilesInPool( ServerCtxt* server )
 static void
 addMQTTDevIDIf( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* stream )
 {
-    CommsAddrRec selfAddr = {0};
+    CommsAddrRec selfAddr = {};
     comms_getSelfAddr( server->vol.comms, &selfAddr );
     if ( addr_hasType( &selfAddr, COMMS_CONN_MQTT ) ) {
         MQTTDevID devID;
@@ -895,7 +895,7 @@ buildGuestRI( const ServerCtxt* server, XP_U16 guestIndex, RematchInfo* rip )
     for ( int ii = 0; ii < gi->nPlayers; ++ii ) {
         const LocalPlayer* lp = &gi->players[ii];
         if ( lp->isLocal ) {    /* that's me, the host */
-            CommsAddrRec addr = {0};
+            CommsAddrRec addr = {};
             ri_addAddrAt( rip, server, &addr, ii );
         } else {
             XP_S8 deviceIndex = server->srvPlyrs[ii].deviceIndex;
@@ -999,7 +999,7 @@ readGuestAddrs( ServerCtxt* server, XWStreamCtxt* stream, XP_U8 streamVersion )
                 }
             } else {
                 while ( 0 < stream_getSize(tmpStream) ) {
-                    CommsAddrRec addr = {0};
+                    CommsAddrRec addr = {};
                     addrFromStream( &addr, tmpStream );
                     SRVR_LOGFFV( "got an address" );
                     logAddr( server->vol.dutil, &addr, __func__ );
@@ -1699,7 +1699,7 @@ makeRobotMove( ServerCtxt* server, XWEnv xwe )
     XP_Bool result = XP_FALSE;
     XP_Bool searchComplete = XP_FALSE;
     XP_S16 turn;
-    MoveInfo newMove = {0};
+    MoveInfo newMove = {};
     ModelCtxt* model = server->vol.model;
     CurGameInfo* gi = server->vol.gi;
     XP_Bool timerEnabled = gi->timerEnabled;
@@ -2260,7 +2260,7 @@ client_readInitialMessage( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* stream )
 
         gameID = streamVersion < STREAM_VERS_REMATCHORDER
             ? stream_getU32( stream ) : 0;
-        CurGameInfo localGI = {0};
+        CurGameInfo localGI = {};
         gi_readFromStream( MPPARM(server->mpool) stream, &localGI );
         XP_ASSERT( gameID == 0 || gameID == localGI.gameID );
         gameID = localGI.gameID;
@@ -2739,7 +2739,7 @@ trayAllowsMoves( ServerCtxt* server, XWEnv xwe, XP_U16 turn,
         tmpEngine = engine = engine_make( MPPARM(server->mpool) server->vol.util );
     }
     XP_Bool canMove;
-    MoveInfo newMove = {0};
+    MoveInfo newMove = {};
     XP_U16 score = 0;
     XP_Bool result = engine_findMove( engine, xwe, server->vol.model, turn,
                                       XP_TRUE, XP_TRUE,
@@ -3472,7 +3472,7 @@ dupe_makeAndReportTrade( ServerCtxt* server, XWEnv xwe )
     model_removePlayerTiles( model, DUP_PLAYER, &oldTiles );
     pool_replaceTiles( pool, &oldTiles );
 
-    TrayTileSet newTiles = {0};
+    TrayTileSet newTiles = {};
     fetchTiles( server, xwe, DUP_PLAYER, oldTiles.nTiles, &newTiles, XP_FALSE );
 
     model_commitDupeTrade( model, &oldTiles, &newTiles );
@@ -3623,10 +3623,10 @@ dupe_commitAndReportMove( ServerCtxt* server, XWEnv xwe, XP_U16 winner,
 
     /* The winning move is the one we'll commit everywhere. Get it. Reset
        everybody else then commit it there. */
-    MoveInfo moveInfo = {0};
+    MoveInfo moveInfo = {};
     model_currentMoveToMoveInfo( model, winner, &moveInfo );
 
-    TrayTileSet newTiles = {0};
+    TrayTileSet newTiles = {};
     fetchTiles( server, xwe, winner, nTiles, &newTiles, XP_FALSE );
 
     for ( XP_U16 player = 0; player < nPlayers; ++player ) {
@@ -3782,7 +3782,7 @@ dupe_postStatus( const ServerCtxt* server, XWEnv xwe, XP_Bool allDone )
        * yet been received. If all have been, say nothing.
        */
 
-    XP_UCHAR buf[256] = {0};
+    XP_UCHAR buf[256] = {};
     XP_Bool amHost = XP_FALSE;
     switch ( server->vol.gi->serverRole ) {
     case SERVER_STANDALONE:
@@ -3894,7 +3894,7 @@ commitMoveImpl( ServerCtxt* server, XWEnv xwe, XP_U16 player,
     XP_Bool inDupeMode = inDuplicateMode(server);
     XP_ASSERT( server->nv.currentTurn == player || inDupeMode );
     XP_S16 turn = player;
-    TrayTileSet newTiles = {0};
+    TrayTileSet newTiles = {};
 
     if ( !!newTilesP ) {
         newTiles = *newTilesP;
@@ -3978,7 +3978,7 @@ XP_Bool
 server_commitTrade( ServerCtxt* server, XWEnv xwe, const TrayTileSet* oldTiles,
                     TrayTileSet* newTilesP )
 {
-    TrayTileSet newTiles = {0};
+    TrayTileSet newTiles = {};
     if ( !!newTilesP ) {
         newTiles = *newTilesP;
     }
@@ -4162,7 +4162,7 @@ sortByScoreLow( const ServerCtxt* server, NewOrder* nop )
 {
     const CurGameInfo* gi = server->vol.gi;
 
-    ScoresArray scores = {0};
+    ScoresArray scores = {};
     model_getCurScores( server->vol.model, &scores, server_getGameIsOver(server) );
 
     int mask = 0; /* mark values already consumed */
@@ -4297,7 +4297,7 @@ getRematchInfoImpl( const ServerCtxt* server, CurGameInfo* newGI,
                     const NewOrder* nop, RematchInfo** ripp )
 {
     XP_Bool success = XP_TRUE;
-    RematchInfo ri = {0};
+    RematchInfo ri = {};
     const CommsCtxt* comms = server->vol.comms;
     /* Now build the address list. Simple cases are STANDALONE, when I'm
        the host, or when there are only two devices/players. If I'm guest
@@ -4527,7 +4527,7 @@ log_ri( const ServerCtxt* server, const RematchInfo* rip,
     XP_USE(line);
     SRVR_LOGFFV( "called from line %d of %s() with ptr %p", line, caller, rip );
     if ( !!rip ) {
-        char buf[64] = {0};
+        char buf[64] = {};
         int offset = 0;
         int maxIndx = -1;
         for ( int ii = 0; ii < rip->nPlayers; ++ii ) {
@@ -4754,7 +4754,7 @@ server_inviteeName( const ServerCtxt* server,
             if ( playerPosn == ii ) {
 
                 CommsCtxt* comms = server->vol.comms;
-                InviteeNames names = {0};
+                InviteeNames names = {};
                 comms_inviteeNames( comms, xwe, &names );
 
                 if ( nameIndx < names.count ) {
@@ -4839,7 +4839,7 @@ tellMoveWasLegal( ServerCtxt* server, XWEnv xwe )
 static XP_Bool
 handleIllegalWord( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* incoming )
 {
-    BadWordsState bws = {{0}};
+    BadWordsState bws = {{}};
 
     (void)stream_getBits( incoming, PLAYERNUM_NBITS );
     bwsFromStream( MPPARM(server->mpool) incoming, &bws );
@@ -5170,7 +5170,7 @@ server_formatDictCounts( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* stream,
 
         if ( count > 0 ) {
             const XP_UCHAR* face = NULL;
-            XP_UCHAR faces[48] = {0};
+            XP_UCHAR faces[48] = {};
             XP_U16 len = 0;
             do {
                 face = dict_getNextTileString( dict, tile, face );
@@ -5409,7 +5409,7 @@ server_writeFinalScores( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* stream )
             }
         }
 
-        XP_UCHAR tmpbuf[48] = {0};
+        XP_UCHAR tmpbuf[48] = {};
         if ( !inDuplicateMode( server ) ) {
             firstDone = model_getNumTilesTotal( model, thisIndex) == 0;
             XP_SNPRINTF( tmpbuf, sizeof(tmpbuf),

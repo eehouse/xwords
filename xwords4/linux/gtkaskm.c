@@ -42,7 +42,7 @@ button_clicked( GtkWidget* widget, gpointer closure )
 XP_Bool
 gtkaskm( const gchar* message, AskMInfo* infos, int nInfos )
 {
-    AskMState state = {0};
+    AskMState state = {};
     GtkWidget* dialog = gtk_dialog_new();
     GtkWidget* fields[nInfos];
     gtk_window_set_modal( GTK_WINDOW( dialog ), TRUE );

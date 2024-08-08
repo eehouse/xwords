@@ -628,7 +628,7 @@ addrFromStreamOne( CommsAddrRec* addrP, XWStreamCtxt* stream, CommsConnType typ 
         addrP->u.ip.port_ip = stream_getU16( stream );
         break;
     case COMMS_CONN_RELAY: {
-        IpRelay ip_relay = {{0}};
+        IpRelay ip_relay = {};
         if ( version < STREAM_VERS_NORELAY ) {
             stringFromStreamHere( stream, ip_relay.invite,
                                   sizeof(ip_relay.invite) );
@@ -760,7 +760,7 @@ comms_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
         flags = 0;
     }
 
-    CommsAddrRec selfAddr = {0};
+    CommsAddrRec selfAddr = {};
     addrFromStream( &selfAddr, stream );
     if ( addr_hasType( &selfAddr, COMMS_CONN_MQTT )
          && 0 == selfAddr.u.mqtt.devID ) {
@@ -1020,7 +1020,7 @@ addrToStreamOne( XWStreamCtxt* stream, CommsConnType typ,
         break;
     case COMMS_CONN_RELAY:
         if ( stream_getVersion( stream ) < STREAM_VERS_NORELAY ) {
-            IpRelay ip_relay = {{0}};
+            IpRelay ip_relay = {};
 #ifdef XWFEATURE_RELAY
             ip_relay = addrP->u.ip_relay;
 #endif
@@ -1265,7 +1265,7 @@ comms_addMQTTDevID( CommsCtxt* comms, XP_PlayerAddr channelNo,
             } else if ( addr_hasType( &rec->addr, COMMS_CONN_MQTT ) ) {
                 XP_ASSERT( *devID == rec->addr.u.mqtt.devID );
             } else {
-                CommsAddrRec tmp = {0};
+                CommsAddrRec tmp = {};
                 addr_setType( &tmp, COMMS_CONN_MQTT );
                 tmp.u.mqtt.devID = *devID;
                 ASSERT_ADDR_OK( &tmp );
@@ -1373,7 +1373,7 @@ countNonAcks( MsgQueueElem* elem, void* closure )
 XP_U16
 comms_countPendingPackets( RELCONST CommsCtxt* comms, XP_Bool* quashed )
 {
-    NonAcks na = {0};
+    NonAcks na = {};
     WITH_MUTEX(&comms->mutex);
     if ( !!quashed ) {
         *quashed = QUASHED(comms);
@@ -1696,7 +1696,7 @@ pickChannel( const CommsCtxt* comms, const NetLaunchInfo* nli,
     if ( 0 == result ) {
         /* Data useful for next two steps: unused channel, then invites-only
            channel */
-        GetInviteChannelsData gicd = {0};
+        GetInviteChannelsData gicd = {};
         forEachElem( (CommsCtxt*)comms, getInviteChannels, &gicd );
 
         /* Now find the first channelNo that doesn't have an invitation on it
@@ -1800,7 +1800,7 @@ void
 comms_getInvited( RELCONST CommsCtxt* comms, XP_U16* nInvites )
 {
     WITH_MUTEX(&comms->mutex);
-    GetInvitedData gid = {0};
+    GetInvitedData gid = {};
     forEachElem( (CommsCtxt*)comms, getInvitedProc, &gid );
     *nInvites = gid.count;
     // LOG_RETURNF( "%d", *nInvites );
@@ -2526,7 +2526,7 @@ got_connect_cmd( CommsCtxt* comms, XWEnv xwe, XWStreamCtxt* stream,
 
 #ifdef XWFEATURE_DEVID
     DevIDType typ = stream_getU8( stream );
-    XP_UCHAR devID[MAX_DEVID_LEN + 1] = {0};
+    XP_UCHAR devID[MAX_DEVID_LEN + 1] = {};
     if ( ID_TYPE_NONE != typ ) {
         stringFromStreamHere( stream, devID, sizeof(devID) );
     }
@@ -3165,7 +3165,7 @@ comms_checkIncomingStream( CommsCtxt* comms, XWEnv xwe, XWStreamCtxt* stream,
             COMMS_LOGFF( TAGFMT() "got message of len %d with sum %s",
                          TAGPRMS, state->len, state->sum );
 
-            HeaderStuff stuff = {0};
+            HeaderStuff stuff = {};
             messageValid = stream_gotU16( stream, &stuff.flags );
 
             if ( messageValid ) {
@@ -3667,7 +3667,7 @@ augmentAddrIntrnl( CommsCtxt* comms, CommsAddrRec* destAddr,
 {
     XP_Bool changed = XP_FALSE;
     ASSERT_ADDR_OK( srcAddr );
-    const CommsAddrRec empty = {0};
+    const CommsAddrRec empty = {};
     if ( !!srcAddr ) {
         CommsConnType typ;
         for ( XP_U32 st = 0; addr_iter( srcAddr, &typ, &st ); ) {

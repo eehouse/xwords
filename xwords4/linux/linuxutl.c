@@ -45,7 +45,7 @@ static void
 debugf( const char* format, va_list ap )
 {
     pthread_mutex_lock( &sLogMutex );
-    struct timespec tp = {0};
+    struct timespec tp = {};
     int res = clock_gettime( CLOCK_REALTIME, &tp );
     if ( 0 == res ) {
       struct tm* timp = localtime( &tp.tv_sec );

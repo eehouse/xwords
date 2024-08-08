@@ -471,7 +471,7 @@ board_figureLayout( BoardCtxt* board, XWEnv xwe, const CurGameInfo* gi,
                     XP_U16 scoreWidth, XP_U16 fontWidth, XP_U16 fontHt,
                     XP_Bool squareTiles, BoardDims* dimsp )
 {
-    BoardDims ldims = {0};
+    BoardDims ldims = {};
 
     XP_U16 nCells = gi->boardSize;
     XP_U16 maxCellSize = 8 * fontHt;
@@ -3750,7 +3750,7 @@ keyToIndex( BoardCtxt* board, XP_Key key, Tile* blankFace )
         XP_UCHAR buf[2] = { key, '\0' };
 
         /* Figure out if we have the tile in the tray  */
-        FTData ftd = {0};
+        FTData ftd = {};
         dict_tilesForString( dict, buf, 0, foundTiles, &ftd );
         if ( ftd.found ) {
             XP_S16 turn = board->selPlayer;

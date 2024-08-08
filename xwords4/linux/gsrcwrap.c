@@ -135,7 +135,7 @@ watch_wrapper( GIOChannel* source, GIOCondition condition, gpointer data )
 {
     WrapperState* state = (WrapperState*)data;
 
-    char buf[128] = {0};
+    char buf[128] = {};
     formatFlags( buf, VSIZE(buf), condition );
     /* XP_LOGF( TAG "%s(%s): CALLED; flags: %s", __func__, state->procName, buf ); */
 

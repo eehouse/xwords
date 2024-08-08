@@ -36,7 +36,7 @@ typedef struct _PageData {
 } PageData;
 
 #ifdef XWFEATURE_RELAY
-static XP_UCHAR s_devIDBuf[32] = {0};
+static XP_UCHAR s_devIDBuf[32] = {};
 #endif
 
 typedef struct _GtkInviteState {

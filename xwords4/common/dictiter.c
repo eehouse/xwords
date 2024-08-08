@@ -560,9 +560,9 @@ printCount( PrintState* prs, const PatElem* elem )
 /*     const PatElem* elem = &prs->iter->patElems[prs->curElem]; */
 /*     switch ( elem->typ ) { */
 /*     case CHILD: { */
-/*         XP_UCHAR flags[8] = {0}; */
+/*         XP_UCHAR flags[8] = {}; */
 /*         formatFlags( flags, elem->u.child.flags ); */
-/*         XP_UCHAR tiles[128] = {0}; */
+/*         XP_UCHAR tiles[128] = {}; */
 /*         formatTiles( tiles, elem->u.child.tiles, prs->iter->dict ); */
 /*         prs->strEnd += XP_SNPRINTF( &prs->buf[prs->strEnd], prs->bufLen - prs->strEnd, */
 /*                                     "[%s%s]", flags, tiles ); */
@@ -772,7 +772,7 @@ getMatchInfo( const Params* params, const TileSet* prevs, const FaceTile* ft,
 #ifdef MULTI_SET
         const TileSet* elemTileSet = &elem->u.child.tiles;
 #else
-        TileSet curMask = {0};
+        TileSet curMask = {};
 #endif
         if ( !!ft ) {
             Tile tile = ft->tile;
@@ -862,9 +862,9 @@ formatElem( PrintState* prs, const PatElem* elem )
 {
     switch ( elem->typ ) {
     case CHILD: {
-        XP_UCHAR flags[8] = {0};
+        XP_UCHAR flags[8] = {};
         formatFlags( flags, elem->u.child.flags );
-        XP_UCHAR tiles[128] = {0};
+        XP_UCHAR tiles[128] = {};
         formatTiles( tiles, &elem->u.child.tiles, prs->iter->dict );
         prs->curPos += XP_SNPRINTF( &prs->buf[prs->curPos],
                                     prs->bufLen - prs->curPos,
@@ -912,11 +912,11 @@ static XP_Bool
 patHasMatch( DictIter* iter, array_edge* edge, PatMatch* matchP, XP_Bool log )
 {
     XP_Bool success = XP_TRUE;
-    FaceTile _tile = {0};
+    FaceTile _tile = {};
     mkFaceTile( iter->dict, edge, &_tile );
     const FaceTile* ft = &_tile;
 
-    PatMatch resultMatch = {0};
+    PatMatch resultMatch = {};
     for ( int patIndx = 0; success && patIndx < iter->nPats; ++patIndx ) {
         ElemSet oldElems;
         if ( 0 == iter->nEdges ) {
@@ -1131,7 +1131,7 @@ nextWord( DictIter* iter, XP_Bool log )
         if ( iter->nEdges < iter->max ) {
             array_edge* next = dict_follow( dict, iter->stack[iter->nEdges-1].edge );
             if ( !!next ) {
-                PatMatch match = {0};
+                PatMatch match = {};
                 if ( nextPeerMatch( iter, &next, &match, log ) ) {
                     pushEdge( iter, next, &match );
                     success = iter->min <= iter->nEdges && ACCEPT_NODE( iter, next, log );
@@ -1152,7 +1152,7 @@ nextWord( DictIter* iter, XP_Bool log )
             array_edge* edge = popEdge( iter );
             if ( !IS_LAST_EDGE( dict, edge ) ) {
                 edge += dict->nodeSize;
-                PatMatch match = {0};
+                PatMatch match = {};
                 if ( nextPeerMatch( iter, &edge, &match, log ) ) {
                     pushEdge( iter, edge, &match ); /* let the top of the loop examine this one */
                     success = iter->min <= iter->nEdges && ACCEPT_NODE( iter, edge, log );
@@ -1201,7 +1201,7 @@ pushLastEdges( DictIter* iter, array_edge* edge, XP_Bool log )
             edge += dict->nodeSize;
         }
         /* ... so we can then move back, testing */
-        PatMatch match = {0};
+        PatMatch match = {};
         if ( ! prevPeerMatch( iter, &edge, &match, log ) ) {
             break;
         }
@@ -1232,7 +1232,7 @@ prevWord( DictIter* iter, XP_Bool log )
         XP_ASSERT( !isFirstEdge( dict, edge ) );
         edge -= dict->nodeSize;
 
-        PatMatch match = {0};
+        PatMatch match = {};
         if ( prevPeerMatch( iter, &edge, &match, log ) ) {
             pushEdge( iter, edge, &match );
             if ( iter->nEdges < iter->max ) {
@@ -1278,7 +1278,7 @@ findStartsWithTiles( DictIter* iter, const Tile* tiles, XP_U16 nTiles )
             break;
         }
 
-        PatMatch match = {0};
+        PatMatch match = {};
         if ( ! HAS_MATCH( iter, edge, &match, XP_FALSE ) ) {
             break;
         }
@@ -1440,7 +1440,7 @@ di_makeIter( const DictionaryCtxt* dict, XWEnv xwe, const DIMinMax* minmax,
     DictIter* iter = NULL;
 
     XP_U16 nUsed = 0;
-    Pat pats[MAX_PATS] = {{0}};
+    Pat pats[MAX_PATS] = {};
 
     ParseState ps;
 
@@ -1537,7 +1537,7 @@ XP_Bool
 di_stringMatches( DictIter* iter, const XP_UCHAR* str )
 {
     LOG_FUNC();
-    FindState fs = {0};
+    FindState fs = {};
     dict_tilesForString( iter->dict, str, 0, onFoundTilesSM, &fs );
     XP_ASSERT( 1 == fs.timesCalled );
 
@@ -1548,7 +1548,7 @@ di_stringMatches( DictIter* iter, const XP_UCHAR* str )
 
     XP_Bool matched = XP_TRUE;
     for ( int ii = 0; matched && ii < fs.nTiles; ++ii ) {
-        PatMatch match = {0};
+        PatMatch match = {};
         array_edge_old* tmp = &tmps[ii];
         tmp->bits = fs.tiles[ii];
         array_edge* fakeEdge = (array_edge*)tmp;
