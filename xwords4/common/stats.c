@@ -51,16 +51,18 @@ sts_cleanup( XW_DUtilCtxt* dutil, XWEnv xwe )
 }
 
 void
-sts_increment( XW_DUtilCtxt* dutil, STAT stat, XWEnv xwe )
+sts_increment( XW_DUtilCtxt* dutil, XWEnv xwe, STAT stat )
 {
-    StatsState* ss = dutil->statsState;
-    XP_ASSERT( !!ss );
-    WITH_MUTEX( &ss->mutex );
-    if ( !ss->statsVals ) {
-        ss->statsVals = loadCounts( dutil, xwe );
+    if ( STAT_NONE < stat && stat < STAT_NSTATS ) {
+        StatsState* ss = dutil->statsState;
+        XP_ASSERT( !!ss );
+        WITH_MUTEX( &ss->mutex );
+        if ( !ss->statsVals ) {
+            ss->statsVals = loadCounts( dutil, xwe );
+        }
+        ++ss->statsVals[stat];
+        END_WITH_MUTEX();
     }
-    ++ss->statsVals[stat];
-    END_WITH_MUTEX();
 }
 
 cJSON*
@@ -100,15 +102,23 @@ sts_clearAll( XW_DUtilCtxt* XP_UNUSED(dutil), XWEnv XP_UNUSED(xwe) )
 static const XP_UCHAR*
 STATtoStr(STAT stat)
 {
-#define CASESTR(s) case (s): return #s
+    const XP_UCHAR* result = NULL;
+#define CASESTR(s) case (s): result = #s; break
     switch (stat) {
         CASESTR(STAT_MQTT_RCVD);
         CASESTR(STAT_MQTT_SENT);
+        CASESTR(STAT_REG_NOROOM);
+        CASESTR(STAT_NEW_SOLO);
+        CASESTR(STAT_NEW_TWO);
+        CASESTR(STAT_NEW_THREE);
+        CASESTR(STAT_NEW_FOUR);
+        CASESTR(STAT_NEW_REMATCH);
     default:
         XP_ASSERT(0);
     }
 #undef CASESTR
-    return NULL;
+    result += 5;
+    return result;
 }
 
 static void
@@ -158,4 +168,3 @@ loadCounts( XW_DUtilCtxt* dutil, XWEnv xwe )
     stream_destroy( stream );
     return statsVals;
 }
-

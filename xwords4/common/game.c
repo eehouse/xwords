@@ -23,6 +23,7 @@
 #include "strutils.h"
 #include "nli.h"
 #include "dbgutil.h"
+#include "stats.h"
 
 #ifdef CPLUS
 extern "C" {
@@ -169,8 +170,7 @@ game_makeNewGame( MPFORMAL XWEnv xwe, XWGame* game, CurGameInfo* gi,
                   const CommsAddrRec* selfAddr, const CommsAddrRec* hostAddr,
                   XW_UtilCtxt* util,
                   DrawCtx* draw, const CommonPrefs* cp,
-                  const TransportProcs* procs
-                  )
+                  const TransportProcs* procs )
 {
     XP_ASSERT( gi == util->gameInfo ); /* if holds, remove gi param */
     XP_U16 nPlayersHere = 0;
@@ -181,7 +181,8 @@ game_makeNewGame( MPFORMAL XWEnv xwe, XWGame* game, CurGameInfo* gi,
     if ( 0 == gi->gameID ) {
         gi->gameID = makeGameID( util );
     }
-    game->created = dutil_getCurSeconds( util_getDevUtilCtxt( util, xwe ), xwe );
+    XW_DUtilCtxt* dutil = util_getDevUtilCtxt( util, xwe );
+    game->created = dutil_getCurSeconds( dutil, xwe );
     game->util = util;
 
     PlayerDicts playerDicts;
@@ -220,6 +221,16 @@ game_makeNewGame( MPFORMAL XWEnv xwe, XWGame* game, CurGameInfo* gi,
 
         board_setDraw( game->board, xwe, draw );
         setListeners( game, cp );
+
+        STAT stat = STAT_NONE;
+        if ( !game->comms ) {
+            stat = STAT_NEW_SOLO;
+        } else switch ( gi->nPlayers ) {
+            case 2: stat = STAT_NEW_TWO; break;
+            case 3: stat = STAT_NEW_THREE; break;
+            case 4: stat = STAT_NEW_FOUR; break;
+        }
+        sts_increment( dutil, xwe, stat );
     }
 
     unrefDicts( xwe, dict, &playerDicts );
@@ -271,6 +282,11 @@ game_makeRematch( const XWGame* oldGame, XWEnv xwe, XW_UtilCtxt* newUtil,
         }
         server_disposeRematchInfo( oldGame->server, &rip );
     }
+    if ( success ) {
+        sts_increment( util_getDevUtilCtxt( newUtil, xwe ),
+                       xwe, STAT_NEW_REMATCH );
+    }
+
     XP_LOGFF( "=> %s; game with gid %08X rematched to create game "
               "with gid %08X",
               boolToStr(success), oldGame->util->gameInfo->gameID,

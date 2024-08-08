@@ -33,6 +33,7 @@
 #include "strutils.h"
 #include "dbgutil.h"
 #include "knownplyr.h"
+#include "stats.h"
 
 #include "LocalizedStrIncludes.h"
 
@@ -1236,6 +1237,7 @@ handleRegistrationMsg( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* stream )
         SRVR_LOGFF( "got %d players but missing only %d",
                     playersInMsg, server->nv.pendingRegistrations );
         util_userError( server->vol.util, xwe, ERR_REG_UNEXPECTED_USER );
+        sts_increment( server->vol.dutil, xwe, STAT_REG_NOROOM );
         success = XP_FALSE;
     } else {
 #ifdef DEBUG
