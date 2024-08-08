@@ -168,7 +168,7 @@ class MultiService {
             val inviter = intent.getStringExtra(INVITER)
             val msgID = if ((null == inviter)) R.string.invite_dict_missing_body_noname_fmt
             else R.string.invite_dict_missing_body_fmt
-            val msg = LocUtils.getString(context!!, msgID, inviter, dict, langName)
+            val msg = LocUtils.getString(context, msgID, inviter, dict, langName)
 
             return LocUtils.makeAlertBuilder(context)
                 .setTitle(R.string.invite_dict_missing_title)

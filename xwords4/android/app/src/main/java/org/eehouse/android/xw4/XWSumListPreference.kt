@@ -61,7 +61,7 @@ class XWSumListPreference(private val mContext: Context, attrs: AttributeSet?) :
             if (null == s_game_summary_values) {
                 var len = _s_game_summary_values.size
                 val addDbg = (BuildConfig.NON_RELEASE
-                        || XWPrefs.getDebugEnabled(context!!))
+                        || XWPrefs.getDebugEnabled(context))
                 if (addDbg) {
                     len += _s_game_summary_values_dbg.size
                 }

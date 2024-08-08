@@ -669,7 +669,7 @@ object Utils {
     fun makeInstallIntent(context: Context, file: File?): Intent {
         val uri = FileProvider
             .getUriForFile(
-                context!!,
+                context,
                 BuildConfig.APPLICATION_ID + ".provider",
                 file!!
             )

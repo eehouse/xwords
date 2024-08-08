@@ -35,7 +35,7 @@ class FirstRunDialog : XWDialogFragment() {
 
         // This won't support e.g mailto refs.  Probably want to
         // launch the browser with an intent eventually.
-        val view = WebView(context!!)
+        val view = WebView(context)
         view.setWebViewClient(object : WebViewClient() {
             private val m_loaded = false
             override fun shouldOverrideUrlLoading(

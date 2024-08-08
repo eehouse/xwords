@@ -595,7 +595,7 @@ class NetLaunchInfo : Serializable {
     }
 
     fun addSMSInfo(context: Context) {
-        val pi = SMSPhoneInfo.get(context!!)
+        val pi = SMSPhoneInfo.get(context)
         if (null != pi) {
             phone = pi.number
             isGSM = pi.isGSM

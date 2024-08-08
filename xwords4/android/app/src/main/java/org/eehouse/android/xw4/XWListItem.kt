@@ -191,7 +191,7 @@ class XWListItem(private val mContext: Context, aset: AttributeSet?) :
         fun inflate(context: Context,
                     selCB: SelectableItem? = null): XWListItem
         {
-            val item = LocUtils.inflate(context!!, R.layout.list_item) as XWListItem
+            val item = LocUtils.inflate(context, R.layout.list_item) as XWListItem
             item.setSelCB(selCB)
             return item
         }

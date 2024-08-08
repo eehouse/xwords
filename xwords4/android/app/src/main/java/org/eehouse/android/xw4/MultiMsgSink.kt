@@ -145,7 +145,7 @@ open class MultiMsgSink @JvmOverloads constructor(
             }
             if (null != means) {
                 Assert.failDbg() // shouldn't be getting called any more
-                recordInviteSent(context!!, rowid, means, target, true)
+                recordInviteSent(context, rowid, means, target, true)
             }
 
             Log.d(TAG, "sendInvite(%s, %s) => %b", typ, addr, success)

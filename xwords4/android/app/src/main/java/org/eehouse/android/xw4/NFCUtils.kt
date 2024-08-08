@@ -525,7 +525,7 @@ object NFCUtils {
     fun getNFCDevID(context: Context): Int {
         synchronized(sNFCDevID) {
             if (0 == sNFCDevID[0]) {
-                var devid = getIntFor(context!!, NFC_DEVID_KEY, 0)
+                var devid = getIntFor(context, NFC_DEVID_KEY, 0)
                 while (0 == devid) {
                     devid = Utils.nextRandomInt()
                     setIntFor(context, NFC_DEVID_KEY, devid)

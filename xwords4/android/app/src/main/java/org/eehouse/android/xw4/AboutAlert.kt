@@ -71,7 +71,7 @@ public class AboutAlert : XWDialogFragment() {
             if (null != pair && 2 >= pair.size && null != pair[1]) {
                 sb.append("\n\n").append(getString(R.string.about_btaddr_fmt, pair[1]))
             }
-            val am = context!!.assets
+            val am = context.assets
             try {
                 val `is` = am.open(BuildConfig.LAST_COMMIT_FILE)
                 val tmp = ByteArray(2 * 1024)

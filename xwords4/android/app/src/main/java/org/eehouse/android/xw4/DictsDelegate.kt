@@ -1359,7 +1359,7 @@ class DictsDelegate(delegator: Delegator) :
 
         fun prevSelFor(context: Context, isoCode: ISOCode): String? {
             val key = keyForLang(isoCode)
-            return DBUtils.getStringFor(context!!, key)
+            return DBUtils.getStringFor(context, key)
         }
 
         private fun listDictsProc(lc: ISOCode?): String {

@@ -37,7 +37,7 @@ class XWConnAddrPreference(private val m_context: Context, attrs: AttributeSet?)
     DialogPreference(m_context, attrs), DialogProc
 {
     init {
-        val curSet = XWPrefs.getAddrTypes(context!!)
+        val curSet = XWPrefs.getAddrTypes(context)
         summary = curSet.toString(context, true)
     }
 

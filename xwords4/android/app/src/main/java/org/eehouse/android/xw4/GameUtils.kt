@@ -92,8 +92,8 @@ object GameUtils {
         return result
     }
 
-    fun savedGame(context: Context, lock: GameLock?): ByteArray? {
-        return DBUtils.loadGame(context!!, lock!!)
+    fun savedGame(context: Context, lock: GameLock): ByteArray? {
+        return DBUtils.loadGame(context, lock)
     } // savedGame
 
     /**
@@ -126,7 +126,7 @@ object GameUtils {
             }
             if (null == lockDest) {
                 if (DBUtils.GROUPID_UNSPEC == groupID) {
-                    groupID = DBUtils.getGroupForGame(context!!, lockSrc.rowid)
+                    groupID = DBUtils.getGroupForGame(context, lockSrc.rowid)
                 }
                 val rowid = saveNewGame(context, gamePtr, gi, groupID)
                 lockDest = GameLock.tryLock(rowid)
@@ -134,7 +134,7 @@ object GameUtils {
                 saveGame(context, gamePtr, gi, lockDest, true)
             }
             summarize(context, lockDest, gamePtr!!, gi)
-            DBUtils.saveThumbnail(context!!, lockDest!!, null)
+            DBUtils.saveThumbnail(context, lockDest!!, null)
         }
         return lockDest
     } // resetGame
@@ -178,7 +178,7 @@ object GameUtils {
         val summary = GameSummary(gi)
         XwJNI.game_summarize(gamePtr, summary)
 
-        DBUtils.saveSummary(context!!, lock!!, summary)
+        DBUtils.saveSummary(context, lock!!, summary)
         return summary
     }
 
@@ -200,12 +200,12 @@ object GameUtils {
         var result: GameSummary? = null
         JNIThread.getRetained(rowid).use { thread ->
             if (null != thread) {
-                result = DBUtils.getSummary(context!!, thread.getLock())
+                result = DBUtils.getSummary(context, thread.getLock())
             } else {
                 try {
                     GameLock.lockRO(rowid, maxMillis).use { lock ->
                         if (null != lock) {
-                            result = DBUtils.getSummary(context!!, lock)
+                            result = DBUtils.getSummary(context, lock)
                         }
                     }
                 } catch (gle: GameLockedException) {
@@ -234,7 +234,7 @@ object GameUtils {
     }
 
     fun haveWithGameID(context: Context, gameID: Int, channel: Int): Boolean {
-        val map = DBUtils.getRowIDsAndChannels(context!!, gameID)
+        val map = DBUtils.getRowIDsAndChannels(context, gameID)
         val found = 0 < map.size &&
                 (-1 == channel || map.values.contains(channel))
         // Log.d( TAG, "haveWithGameID(gameID=%X, channel=%d) => %b",
@@ -329,7 +329,7 @@ object GameUtils {
     }
 
     fun getName(context: Context, rowid: Long): String? {
-        var result = DBUtils.getName(context!!, rowid)
+        var result = DBUtils.getName(context, rowid)
         if (null == result || 0 == result.length) {
             val visID = DBUtils.getVisID(context, rowid)
             result = LocUtils.getString(context, R.string.game_fmt, visID)
@@ -338,7 +338,8 @@ object GameUtils {
     }
 
     fun makeDefaultName(context: Context): String {
-        val count = DBUtils.getIncrementIntFor(context!!, DBUtils.KEY_NEWGAMECOUNT, 0, 1)
+        val count = DBUtils.getIncrementIntFor(
+            context, DBUtils.KEY_NEWGAMECOUNT, 0, 1)
         return LocUtils.getString(context, R.string.game_fmt, count)
     }
 
@@ -409,7 +410,7 @@ object GameUtils {
                                     + " and won't open"
                         )
                     } else {
-                        val selfAddr = CommsAddrRec.getSelfAddr(context!!, gi)
+                        val selfAddr = CommsAddrRec.getSelfAddr(context, gi)
                         gamePtr = XwJNI.initNew(
                             gi, selfAddr, null as CommsAddrRec?,
                             null as UtilCtxt?, null as DrawCtx?,
@@ -428,7 +429,7 @@ object GameUtils {
         GameWrapper.make(context, rowid).use { gw ->
             if (null != gw) {
                 thumb = takeSnapshot(context, gw.gamePtr(), gw.gi())
-                DBUtils.saveThumbnail(context!!, gw.lock!!, thumb)
+                DBUtils.saveThumbnail(context, gw.lock!!, thumb)
             }
         }
         return thumb
@@ -461,7 +462,7 @@ object GameUtils {
                     size, size,
                     Bitmap.Config.ARGB_8888
                 )
-                val canvas = ThumbCanvas(context!!, thumb)
+                val canvas = ThumbCanvas(context, thumb)
                 XwJNI.board_drawSnapshot(gamePtr, canvas, size, size)
             }
         }
@@ -542,7 +543,7 @@ object GameUtils {
         Log.d(TAG, "saveNewGame1() (post-rematch): gi: %s", gi)
         val stream = XwJNI.game_saveToStream(gamePtr, gi)
 
-        DBUtils.saveNewGame(context!!, stream, groupID, gameName).use { lock ->
+        DBUtils.saveNewGame(context, stream, groupID, gameName).use { lock ->
             if (null != lock) {
                 summarize(context, lock, gamePtr, gi)
                 rowid = lock.rowid
@@ -628,7 +629,7 @@ object GameUtils {
     ): Long {
         val stream = XwJNI.game_saveToStream(gamePtr, gi)
         var rowid: Long
-        DBUtils.saveNewGame(context!!, stream, groupID, null).use { lock ->
+        DBUtils.saveNewGame(context, stream, groupID, null).use { lock ->
             rowid = lock!!.rowid
         }
         return rowid
@@ -638,7 +639,7 @@ object GameUtils {
         context: Context, bytes: ByteArray?,
         lock: GameLock?, setCreate: Boolean
     ): Long {
-        return DBUtils.saveGame(context!!, lock!!, bytes!!, setCreate)
+        return DBUtils.saveGame(context, lock!!, bytes!!, setCreate)
     }
 
     @JvmOverloads
@@ -646,7 +647,7 @@ object GameUtils {
         context: Context, bytes: ByteArray?,
         groupID: Long = DBUtils.GROUPID_UNSPEC
     ): GameLock? {
-        return DBUtils.saveNewGame(context!!, bytes!!, groupID, null)
+        return DBUtils.saveNewGame(context, bytes!!, groupID, null)
     }
 
     fun makeSaveNew(
@@ -986,7 +987,7 @@ object GameUtils {
         return result
     }
 
-    fun dictNames(context: Context, lock: GameLock?): Array<String?>? {
+    fun dictNames(context: Context, lock: GameLock): Array<String?>? {
         var result: Array<String?>? = null
         val stream = savedGame(context, lock)
         val gi = giFromStream(context, stream)
@@ -1018,7 +1019,7 @@ object GameUtils {
         return result
     }
 
-    fun gameDictsHere(context: Context, lock: GameLock?): Boolean {
+    fun gameDictsHere(context: Context, lock: GameLock): Boolean {
         val gameDicts = dictNames(context, lock)
         return null != gameDicts && gameDictsHere(context, null, gameDicts)
     }
@@ -1141,7 +1142,7 @@ object GameUtils {
 
                                 if (draw && XWPrefs.getThumbEnabled(context)) {
                                     val bitmap = takeSnapshot(context, gamePtr, gi)
-                                    DBUtils.saveThumbnail(context!!, lock, bitmap)
+                                    DBUtils.saveThumbnail(context, lock, bitmap)
                                 }
 
                                 if (null != bmr) {
@@ -1167,7 +1168,7 @@ object GameUtils {
                             val flags = setFromFeedImpl(feedImpl)
                             if (GameSummary.MSG_FLAGS_NONE != flags) {
                                 draw = true
-                                val curFlags = DBUtils.getMsgFlags(context!!, rowid)
+                                val curFlags = DBUtils.getMsgFlags(context, rowid)
                                 DBUtils.setMsgFlags(context, rowid, flags or curFlags)
                             }
                         }
@@ -1201,7 +1202,7 @@ object GameUtils {
                     rowid
                 )
             } else {
-                val stream = savedGame(context, lock)
+                val stream = savedGame(context, lock!!)
                 val gi = giFromStream(context, stream)
                 success = null != gi
                 if (!success) {
@@ -1402,7 +1403,7 @@ object GameUtils {
     // PENDING This -- finding or opening game, doing something, then saving
     // and closing if it was opened -- gets done a lot. Try refactoring.
     fun onGameGone(context: Context, gameID: Int) {
-        val rowids = DBUtils.getRowIDsFor(context!!, gameID)
+        val rowids = DBUtils.getRowIDsFor(context, gameID)
         if (null == rowids || 0 == rowids.size) {
             Log.d(TAG, "onGameGone(): no rows for game %X", gameID)
         } else {

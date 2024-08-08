@@ -243,7 +243,7 @@ object DictLangCache {
     }
 
     fun getFileSize(context: Context, dal: DictAndLoc): Long {
-        val path = dal.getPath(context!!)
+        val path = dal.getPath(context)
         return path!!.length()
     }
 

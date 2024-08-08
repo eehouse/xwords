@@ -433,7 +433,7 @@ class UpdateCheckReceiver : BroadcastReceiver() {
                     && !TextUtils.isEmpty(name))
             if (handled) {
                 val uri = Uri.parse(dictUri)
-                DwnldDelegate.downloadDictInBack(context!!, uri, name!!, null)
+                DwnldDelegate.downloadDictInBack(context, uri, name!!, null)
             }
             return handled
         }

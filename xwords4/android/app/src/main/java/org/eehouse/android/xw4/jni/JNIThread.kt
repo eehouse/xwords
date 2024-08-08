@@ -190,20 +190,21 @@ class JNIThread private constructor(lockIn: GameLock) : Thread(), AutoCloseable 
 
         var success = false
         var pairs: DictPairs? = null
-        val dictNames = GameUtils.dictNames(context!!, m_lock)
+        val dictNames = GameUtils.dictNames(context, m_lock!!)
         if (null != dictNames) {
             pairs = openDicts(context, dictNames)
             success = !pairs.anyMissing(dictNames)
         }
 
         if (success) {
-            val stream = GameUtils.savedGame(context, m_lock)
+            val lock = m_lock!!
+            val stream = GameUtils.savedGame(context, lock)
             Assert.assertNotNull(stream)
             mGi = CurGameInfo(context)
             mGi!!.name = DBUtils.getName(context, m_rowid)
             XwJNI.giFromStream(mGi!!, stream!!)
 
-            mSummary = DBUtils.getSummary(context, m_lock!!)
+            mSummary = DBUtils.getSummary(context, lock)
 
             if (mGi!!.serverRole != DeviceRole.SERVER_STANDALONE) {
                 m_xport = CommsTransport(
@@ -215,9 +216,9 @@ class JNIThread private constructor(lockIn: GameLock) : Thread(), AutoCloseable 
             val cp = CommonPrefs.get(context)
 
             // Assert.assertNull( m_jniGamePtr ); // fired!!
-            if (null != mJNIGamePtr) {
+            mJNIGamePtr?.let {
                 Log.d(TAG, "configure(): m_jniGamePtr not null; that ok?")
-                mJNIGamePtr!!.release()
+                it.release()
             }
 
             synchronized(this) {
