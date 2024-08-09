@@ -73,7 +73,6 @@ import org.eehouse.android.xw4.jni.CommsAddrRec
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet
 import org.eehouse.android.xw4.jni.CurGameInfo
-import org.eehouse.android.xw4.jni.GameSummary
 import org.eehouse.android.xw4.jni.XwJNI
 import org.eehouse.android.xw4.loc.LocUtils
 
@@ -2577,7 +2576,7 @@ class GamesListDelegate(delegator: Delegator) :
 
     private fun buildRenamer(name: String?, labelID: Int): Renamer {
         val renamer = (inflate(R.layout.renamer) as Renamer)
-            .setName(name!!)
+            .setName(name)
             .setLabel(labelID)
 
         return renamer

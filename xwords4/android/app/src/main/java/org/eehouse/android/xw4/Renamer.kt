@@ -41,8 +41,8 @@ class Renamer(context: Context, aset: AttributeSet?) :
         return this
     }
 
-    fun setName(text: String): Renamer {
-        edit.setText(text)
+    fun setName(text: String?): Renamer {
+        text?.let{ edit.setText(it) }
         return this
     }
 
