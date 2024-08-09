@@ -124,6 +124,38 @@ inviteFromArgs( CmdWrapper* wr, cJSON* args )
 }
 
 static XP_Bool
+newGuestFromArgs( CmdWrapper* wr, cJSON* args )
+{
+    XP_U32 gameID = gidFromObject( args );
+    cJSON* tmp = cJSON_GetObjectItem( args, "nPlayersT" );
+    XP_U16 nPlayersT = tmp->valueint;
+    NetLaunchInfo nli = {.gameID = gameID,
+        .nPlayersT = nPlayersT,
+        .nPlayersH = 1,
+    };
+
+    cJSON* addr = cJSON_GetObjectItem( args, "addr" );
+    tmp = cJSON_GetObjectItem( addr, "mqtt" );
+    if ( !!tmp ) {
+        XP_STRCAT( nli.mqttDevID, tmp->valuestring );
+        types_addType( &nli._conTypes, COMMS_CONN_MQTT );
+    }
+    tmp = cJSON_GetObjectItem( addr, "sms" );
+    if ( !!tmp ) {
+        XP_STRCAT( nli.phone, tmp->valuestring );
+        types_addType( &nli._conTypes, COMMS_CONN_SMS );
+    }
+
+    tmp = cJSON_GetObjectItem( args, "dict" );
+    if ( !!tmp ) {
+        XP_STRCAT( nli.dict, tmp->valuestring );
+    }
+
+    (*wr->procs.newGuest)( wr->closure, &nli );
+    return XP_TRUE;
+}
+
+static XP_Bool
 moveifFromArgs( CmdWrapper* wr, cJSON* args )
 {
     XP_U32 gameID = gidFromObject( args );
@@ -419,6 +451,8 @@ on_incoming_signal( GSocketService* XP_UNUSED(service),
                 }
             } else if ( 0 == strcmp( cmdStr, "invite" ) ) {
                 success = inviteFromArgs( wr, args );
+            } else if ( 0 == strcmp( cmdStr, "inviteRcvd" ) ) {
+                success = newGuestFromArgs( wr, args );
             } else if ( 0 == strcmp( cmdStr, "moveIf" ) ) {
                 success = moveifFromArgs( wr, args );
             } else if ( 0 == strcmp( cmdStr, "rematch" ) ) {

@@ -1474,6 +1474,12 @@ addInvitesWrapper( void* closure, XP_U32 gameID, XP_U16 nRemotes,
     cb_addInvites( aGlobals->cbState, gameID, nRemotes, destAddrs );
 }
 
+static void
+newGuestWrapper( void* closure, const NetLaunchInfo* nli )
+{
+    inviteReceivedCurses( closure, nli );
+}
+
 static const CommonGlobals*
 getForGameIDWrapper( void* closure, XP_U32 gameID )
 {
@@ -1578,6 +1584,7 @@ cursesmain( XP_Bool XP_UNUSED(isServer), LaunchParams* params )
             .quit = quitWrapper,
             .newGame = newGameWrapper,
             .addInvites = addInvitesWrapper,
+            .newGuest = newGuestWrapper,
             .makeMoveIf = makeMoveIfWrapper,
             .getForGameID = getForGameIDWrapper,
             .makeRematch = makeRematchWrapper,

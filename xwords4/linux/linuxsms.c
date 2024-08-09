@@ -31,6 +31,7 @@
 #include "linuxutl.h"
 #include "strutils.h"
 #include "smsproto.h"
+#include "stats.h"
 #include "linuxmain.h"
 
 #define SMS_DIR "/tmp/xw_sms"
@@ -256,6 +257,7 @@ parseAndDispatch( LaunchParams* params, uint8_t* buf, int len,
                 (*storage->procs->msgReceived)( storage->procClosure, addr,
                                                 msg->gameID,
                                                 msg->data, msg->len );
+                sts_increment( params->dutil, NULL_XWE, STAT_SMS_RCVD );
                 break;
             case INVITE: {
                 NetLaunchInfo nli = {};
@@ -383,6 +385,7 @@ sendOrRetry( LaunchParams* params, SMSMsgArray* arr, SMS_CMD cmd,
             // doSend( params, msg->data, msg->len, phone, port, gameID );
             (void)write_fake_sms( params, msg->data, msg->len, msgNo, 
                                   phone, port );
+            sts_increment( params->dutil, NULL_XWE, STAT_SMS_SENT );
         }
 
         LinSMSData* storage = getStorage( params );
@@ -513,7 +516,6 @@ check_for_files_once( gpointer data )
 
     for ( ; ; ) {
         lock_queue( storage );
-
 
         uint8_t buf[256];
         CommsAddrRec fromAddr = {};

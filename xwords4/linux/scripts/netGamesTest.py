@@ -441,7 +441,34 @@ class Device():
             for guest in guests:
                 Device.getForPlayer(guest).expectInvite(newGid, rematchLevel)
 
+    # inviting means either causing host to send an in-game invitation
+    # (the way rematch works) or causing guest to register (as happens
+    # when email or SMS is used for invitations.)
     def invite(self, game):
+        if bool(random.randint(0,1)): self.inviteOutOfBand(game)
+        else: self.inviteInBand(game)
+
+    def inviteOutOfBand(self, game):
+        # For each invitee, we need to make sure it exists, launch it,
+        # and then send it the equivalent of an emailed invitation.
+
+        nPlayersT = 1 + len(game.guestNames)
+        for name in game.guestNames:
+            invitee = Device.getForPlayer(name)
+
+            invitee.launchIfNot()
+            response = invitee._sendWaitReply('inviteRcvd', gid=game.gid,
+                                              nPlayersT=nPlayersT,
+                                              dict = self.args.DICTS[0],
+                                              addr = self._mkAddr(self),
+                                              )
+            if response['success']:
+                invitee.expectInvite(game.gid, game.rematchLevel)
+
+        game.needsInvite = False
+
+
+    def inviteInBand(self, game):
         remotes = []
         guestDevs = []
         useRandomDevID = random.randint(0, 100) < self.args.BAD_INVITE_PCT
@@ -449,14 +476,7 @@ class Device():
             guestDev = Device.getForPlayer(game.guestNames[ii])
             guestDevs.append(guestDev)
 
-            addr = {}
-            if self.args.WITH_MQTT:
-                if useRandomDevID:
-                    mqttAddr = '{:016X}'.format(random.randint(1, 0x7FFFFFF))
-                else:
-                    mqttAddr = guestDev.mqttDevID
-                addr['mqtt'] = mqttAddr
-            if self.args.WITH_SMS: addr['sms'] = guestDev.smsNumber
+            addr = self._mkAddr(guestDev, useRandomDevID)
             remotes.append({'addr': addr})
 
         response = self._sendWaitReply('invite', gid=game.gid,
@@ -466,6 +486,17 @@ class Device():
             for guestDev in guestDevs:
                 guestDev.expectInvite(game.gid, game.rematchLevel)
             game.needsInvite = useRandomDevID
+
+    def _mkAddr(self, dev, useRandomDevID=False):
+        addr = {}
+        if self.args.WITH_MQTT:
+            if useRandomDevID:
+                mqttAddr = '{:016X}'.format(random.randint(1, 0x7FFFFFF))
+            else:
+                mqttAddr = dev.mqttDevID
+            addr['mqtt'] = mqttAddr
+        if self.args.WITH_SMS: addr['sms'] = dev.smsNumber
+        return addr
 
     def expectInvite(self, gid, rematchLevel):
         self.guestGames.append(GuestGameInfo(self, gid, rematchLevel))

@@ -113,6 +113,8 @@ STATtoStr(STAT stat)
         CASESTR(STAT_NEW_THREE);
         CASESTR(STAT_NEW_FOUR);
         CASESTR(STAT_NEW_REMATCH);
+        CASESTR(STAT_SMS_SENT);
+        CASESTR(STAT_SMS_RCVD);
     default:
         XP_ASSERT(0);
     }

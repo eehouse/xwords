@@ -76,7 +76,8 @@ nli_init( NetLaunchInfo* nli, const CurGameInfo* gi, const CommsAddrRec* addr,
 }
 
 void
-nliToGI( const NetLaunchInfo* nli, XWEnv xwe, XW_UtilCtxt* util, CurGameInfo* gi )
+nliToGI( const NetLaunchInfo* nli, XWEnv xwe, XW_UtilCtxt* util,
+         CurGameInfo* gi )
 {
     gi_setNPlayers( gi, xwe, util, nli->nPlayersT, nli->nPlayersH );
     gi->gameID = nli->gameID;
