@@ -2289,7 +2289,8 @@ class GamesListDelegate(delegator: Delegator) :
             // There's already a game? Better not have same channel as invite
             // creates
             for (rowid in rowids.keys) {
-                if (nli.forceChannel == rowids[rowid]) {
+                if (0 == nli.forceChannel
+                        || nli.forceChannel == rowids[rowid]) {
                     DbgUtils.printStack(TAG)
                     if (BuildConfig.NON_RELEASE) {
                         Utils.showToast(mActivity, R.string.dropped_dupe)
