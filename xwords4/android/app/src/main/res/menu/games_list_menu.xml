@@ -158,6 +158,20 @@
       </menu>
     </item>
 
+    <item android:id="@+id/games_submenu_stats"
+          android:title="@string/gamel_menu_stats"
+          >
+      <menu>
+        <item android:id="@+id/games_menu_statsShow"
+              android:title="@string/gamel_menu_statsShow"
+              />
+        <item android:id="@+id/games_menu_statsClear"
+              android:title="@string/gamel_menu_statsClear"
+              />
+      </menu>
+    </item>
+
+
     <item android:id="@+id/games_submenu_backup"
           android:title="@string/gamel_menu_backup"
           >

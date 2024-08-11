@@ -40,4 +40,9 @@
   someone. </string>
 
   <string name="have_mtqq_games_fmt">I have %1$d games using mqtt.</string>
+
+  <string name="gamel_menu_stats">Stats</string>
+  <string name="gamel_menu_statsShow">Show</string>
+  <string name="gamel_menu_statsClear">Clear</string>
+
 </resources>

@@ -1761,8 +1761,14 @@ class GamesListDelegate(delegator: Delegator) :
 
             R.id.games_menu_emailLogs -> Perms23.tryGetPerms(
                 this, Perm.STORAGE, null,
-                DlgDelegate.Action.WRITE_LOG_DB
-            )
+                DlgDelegate.Action.WRITE_LOG_DB)
+
+            R.id.games_menu_statsShow -> {
+                val stats = XwJNI.sts_export().toString()
+                makeOkOnlyBuilder(stats)
+                    .show()
+            }
+            R.id.games_menu_statsClear -> XwJNI.sts_clearAll()
 
             else -> handled = (handleSelGamesItem(itemID, selRowIDs)
                     || handleSelGroupsItem(itemID, selGroupIDs))
@@ -2935,6 +2941,7 @@ class GamesListDelegate(delegator: Delegator) :
         private val DEBUG_ITEMS = intArrayOf(
             R.id.games_menu_writegit,
             R.id.games_submenu_logs,
+            R.id.games_submenu_stats,
             R.id.games_submenu_mqtt,
             R.id.games_menu_restart,
         )

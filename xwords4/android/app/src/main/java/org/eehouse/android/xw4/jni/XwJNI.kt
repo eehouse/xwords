@@ -20,6 +20,7 @@
 package org.eehouse.android.xw4.jni
 
 import java.io.Serializable
+import org.json.JSONObject
 
 import org.eehouse.android.xw4.Assert
 import org.eehouse.android.xw4.BuildConfig
@@ -884,6 +885,14 @@ class XwJNI private constructor() {
             return smsproto_prepInbound(jNI.m_ptrGlobals, data, fromPhone, wantPort)
         }
 
+        fun sts_export(): JSONObject {
+            val str = sts_export(jNI.m_ptrGlobals)
+            return JSONObject(str)
+        }
+
+        @JvmStatic
+        fun sts_clearAll() { sts_clearAll(jNI.m_ptrGlobals) }
+
         @JvmStatic
         external fun dict_tilesAreSame(dict1: Long, dict2: Long): Boolean
         @JvmStatic
@@ -1126,6 +1135,11 @@ class XwJNI private constructor() {
             fromPhone: String,
             wantPort: Int
         ): Array<SMSProtoMsg>?
+
+        @JvmStatic
+        private external fun sts_export(jniState: Long): String?
+        @JvmStatic
+        private external fun sts_clearAll(jniState: Long)
 
         // This always returns true on release builds now.
 		@JvmStatic

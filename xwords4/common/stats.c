@@ -62,6 +62,9 @@ sts_increment( XW_DUtilCtxt* dutil, XWEnv xwe, STAT stat )
         }
         ++ss->statsVals[stat];
         END_WITH_MUTEX();
+
+        XP_LOGFF( "bad: storing after every change" );
+        storeCounts( dutil, xwe );
     }
 }
 

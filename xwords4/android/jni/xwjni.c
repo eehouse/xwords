@@ -46,6 +46,9 @@
 #include "andglobals.h"
 #include "jniutlswrapper.h"
 #include "paths.h"
+#include "stats.h"
+
+#include "cJSON.h"
 
 #ifdef MAP_THREAD_TO_ENV
 # define LOG_MAPPING
@@ -1215,6 +1218,34 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1getDesc
     if ( NULL != disc && '\0' != disc[0] ) {
         result = (*env)->NewStringUTF( env, disc );
     }
+    return result;
+}
+
+JNIEXPORT jstring JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_sts_1export
+( JNIEnv* env, jclass C, jlong jniGlobalPtr )
+{
+    jstring result = NULL;
+    DVC_HEADER(jniGlobalPtr);
+    cJSON* stats = sts_export( globalState->dutil, env );
+
+    char* replyStr = cJSON_PrintUnformatted( stats );
+    result = (*env)->NewStringUTF( env, replyStr );
+    free( replyStr );
+    cJSON_Delete( stats );
+
+    DVC_HEADER_END();
+    return result;
+}
+
+JNIEXPORT jstring JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_sts_1clearAll
+( JNIEnv* env, jclass C, jlong jniGlobalPtr )
+{
+    jstring result = NULL;
+    DVC_HEADER(jniGlobalPtr);
+    sts_clearAll( globalState->dutil, env );
+    DVC_HEADER_END();
     return result;
 }
 
