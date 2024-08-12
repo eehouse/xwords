@@ -1764,8 +1764,13 @@ class GamesListDelegate(delegator: Delegator) :
                 DlgDelegate.Action.WRITE_LOG_DB)
 
             R.id.games_menu_statsShow -> {
-                val stats = XwJNI.sts_export().toString()
-                makeOkOnlyBuilder(stats)
+                val stats = XwJNI.sts_export()
+                val pairs = ArrayList<String>()
+                stats.keys().forEach {
+                    val value = stats.getLong(it)
+                    pairs.add("$it: $value")
+                }
+                makeOkOnlyBuilder(TextUtils.join("\n", pairs))
                     .show()
             }
             R.id.games_menu_statsClear -> XwJNI.sts_clearAll()

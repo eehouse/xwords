@@ -200,6 +200,25 @@ class XwJNI private constructor() {
         ACK_INVITE
     }
 
+    enum class STAT {
+        STAT_NONE,
+        STAT_MQTT_RCVD,
+        STAT_MQTT_SENT,
+
+        STAT_REG_NOROOM,
+
+        STAT_NEW_SOLO,
+        STAT_NEW_TWO,
+        STAT_NEW_THREE,
+        STAT_NEW_FOUR,
+        STAT_NEW_REMATCH,
+
+        STAT_SMS_RCVD,
+        STAT_SMS_SENT,
+
+        STAT_NSTATS,
+    }
+
     class SMSProtoMsg {
         @JvmField
         var cmd: SMS_CMD? = null
@@ -889,9 +908,8 @@ class XwJNI private constructor() {
             val str = sts_export(jNI.m_ptrGlobals)
             return JSONObject(str)
         }
-
-        @JvmStatic
         fun sts_clearAll() { sts_clearAll(jNI.m_ptrGlobals) }
+        fun sts_increment(stat: STAT) {sts_increment(jNI.m_ptrGlobals, stat)}
 
         @JvmStatic
         external fun dict_tilesAreSame(dict1: Long, dict2: Long): Boolean
@@ -1137,9 +1155,11 @@ class XwJNI private constructor() {
         ): Array<SMSProtoMsg>?
 
         @JvmStatic
-        private external fun sts_export(jniState: Long): String?
+        private external fun sts_export(jniState: Long): String
         @JvmStatic
         private external fun sts_clearAll(jniState: Long)
+        @JvmStatic
+        private external fun sts_increment(jniState: Long, stat: STAT)
 
         // This always returns true on release builds now.
 		@JvmStatic

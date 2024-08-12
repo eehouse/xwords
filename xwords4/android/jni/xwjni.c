@@ -1238,15 +1238,23 @@ Java_org_eehouse_android_xw4_jni_XwJNI_sts_1export
     return result;
 }
 
-JNIEXPORT jstring JNICALL
+JNIEXPORT void JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_sts_1clearAll
 ( JNIEnv* env, jclass C, jlong jniGlobalPtr )
 {
-    jstring result = NULL;
     DVC_HEADER(jniGlobalPtr);
     sts_clearAll( globalState->dutil, env );
     DVC_HEADER_END();
-    return result;
+}
+
+JNIEXPORT void JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_sts_1increment
+( JNIEnv* env, jclass C, jlong jniGlobalPtr, jobject jstat )
+{
+    DVC_HEADER(jniGlobalPtr);
+    STAT stat = (STAT)jEnumToInt( env, jstat );
+    sts_increment( globalState->dutil, env, stat );
+    DVC_HEADER_END();
 }
 
 /* Dictionary methods: don't use gamePtr */

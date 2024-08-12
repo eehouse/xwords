@@ -43,6 +43,7 @@ import org.eehouse.android.xw4.jni.CommsAddrRec
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType
 import org.eehouse.android.xw4.jni.CommsAddrRec.ConnExpl
 import org.eehouse.android.xw4.jni.XwJNI
+import org.eehouse.android.xw4.jni.XwJNI.STAT
 import org.eehouse.android.xw4.jni.XwJNI.TopicsAndPackets
 import org.eehouse.android.xw4.loc.LocUtils
 import org.eehouse.android.xw4.TimerReceiver.TimerCallback
@@ -122,7 +123,8 @@ object MQTTUtils {
         MQTTServiceHelper(context).handleInvitation(nli)
     }
 
-    fun handleMessage(context: Context, from: CommsAddrRec, gameID: Int, msg: ByteArray)
+    fun handleMessage(context: Context, from: CommsAddrRec,
+                      gameID: Int, msg: ByteArray)
     {
         val rowids = DBUtils.getRowIDsFor(context, gameID)
         Log.d(TAG, "handleMessage(): got %d rows for gameID %X", rowids.size, gameID)
@@ -409,7 +411,7 @@ object MQTTUtils {
                 val packet = ByteArray(byteBuf.capacity())
                 byteBuf.get(packet)
                 add(IncomingTask(topic.toString(), packet))
-
+                XwJNI.sts_increment(STAT.STAT_MQTT_RCVD)
             } else {
                 Log.d( TAG, "no message found!!")
             }
@@ -493,6 +495,7 @@ object MQTTUtils {
                             } else {
                                 // Handle successful publish, e.g. logging or incrementing a metric
                                 TimerReceiver.setBackoff(mContext, sTimerCallbacks, MIN_BACKOFF)
+                                XwJNI.sts_increment(STAT.STAT_MQTT_SENT)
                             }
                         }
                 }

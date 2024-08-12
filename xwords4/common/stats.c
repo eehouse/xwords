@@ -61,10 +61,10 @@ sts_increment( XW_DUtilCtxt* dutil, XWEnv xwe, STAT stat )
             ss->statsVals = loadCounts( dutil, xwe );
         }
         ++ss->statsVals[stat];
-        END_WITH_MUTEX();
 
         XP_LOGFF( "bad: storing after every change" );
         storeCounts( dutil, xwe );
+        END_WITH_MUTEX();
     }
 }
 
@@ -98,8 +98,19 @@ sts_export( XW_DUtilCtxt* dutil, XWEnv xwe )
 /* } */
 
 void
-sts_clearAll( XW_DUtilCtxt* XP_UNUSED(dutil), XWEnv XP_UNUSED(xwe) )
+sts_clearAll( XW_DUtilCtxt* dutil, XWEnv xwe )
 {
+    StatsState* ss = dutil->statsState;
+    XP_ASSERT( !!ss );
+
+    WITH_MUTEX( &ss->mutex );
+    XP_FREEP( dutil->mpool, &ss->statsVals );
+
+    ss->statsVals
+        = XP_CALLOC( dutil->mpool, sizeof(*ss->statsVals) * STAT_NSTATS );
+    END_WITH_MUTEX();
+
+    storeCounts( dutil, xwe );
 }
 
 static const XP_UCHAR*

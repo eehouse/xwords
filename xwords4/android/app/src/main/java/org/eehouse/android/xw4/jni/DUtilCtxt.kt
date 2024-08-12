@@ -105,11 +105,15 @@ class DUtilCtxt {
 
     fun store(key: String, data: ByteArray?) {
         // Log.d( TAG, "store(key=%s)", key );
-        if (null != data) {
-            DBUtils.setBytesFor(m_context, key, data)
+        data?.let {
+            DBUtils.setBytesFor(m_context, key, it)
             if (BuildConfig.DEBUG) {
-                val tmp = load(key)
-                Assert.assertTrue(tmp.contentEquals(data))
+                val tmp = load(key)!!
+                if (! tmp.contentEquals(it)) {
+                    Log.d(TAG, "store($key): race or bad content?; lens"
+                          + " are ${tmp.size} and ${it.size}")
+                    Assert.failDbg()
+                }
             }
         }
     }
