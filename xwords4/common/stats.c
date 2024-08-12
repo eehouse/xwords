@@ -25,7 +25,7 @@
 
 typedef struct StatsState {
     XP_U32* statsVals;
-    pthread_mutex_t mutex;
+    MutexState mutex;
 } StatsState;
 
 static const XP_UCHAR* STATtoStr(STAT stat);

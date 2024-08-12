@@ -20,7 +20,7 @@
 #include "xwmutex.h"
 
 void
-initMutex( pthread_mutex_t* mutex, XP_Bool recursive )
+initMutex( MutexState* mutex, XP_Bool recursive )
 {
     pthread_mutexattr_t attr;
     int ret = pthread_mutexattr_init(&attr);
@@ -30,7 +30,7 @@ initMutex( pthread_mutex_t* mutex, XP_Bool recursive )
                                         PTHREAD_MUTEX_RECURSIVE);
         XP_ASSERT(0 == ret);
     }
-    pthread_mutex_init( mutex, &attr );
+    pthread_mutex_init( &mutex->mutex, &attr );
     ret = pthread_mutexattr_destroy(&attr);
     XP_ASSERT(0 == ret);
 }

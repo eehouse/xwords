@@ -116,8 +116,8 @@ typedef struct AddressRecord {
 struct CommsCtxt {
     XW_UtilCtxt* util;
     XW_DUtilCtxt* dutil;
+    MutexState mutex;
 
-    pthread_mutex_t mutex;
 #ifdef DEBUG
     pthread_t lockHolder;
 #endif

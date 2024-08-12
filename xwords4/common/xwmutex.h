@@ -23,15 +23,20 @@
 #include <pthread.h>
 #include "xptypes.h"
 
-#define WITH_MUTEX_LOCK_DEBUG(MUTEX) {                                 \
-    pthread_mutex_t* _mutex = (MUTEX);                                 \
-    time_t startTime = time(NULL);                                     \
-    pthread_mutex_lock(_mutex);                                        \
-    time_t gotItTime = time(NULL);                                     \
-    time_t _elapsed = gotItTime-startTime;                             \
-    if ( 0 < _elapsed ) {                                              \
-        XP_LOGFF("took %lds to get mutex", _elapsed);                  \
-    }                                                                  \
+/* Making this a struct in case I want to add e.g. a chain of holders */
+typedef struct _MutexState {
+    pthread_mutex_t mutex;
+} MutexState;
+
+#define WITH_MUTEX_LOCK_DEBUG(STATEP) {                                 \
+    MutexState* _state = (STATEP);                                      \
+    time_t startTime = time(NULL);                                      \
+    pthread_mutex_lock(&_state->mutex);                                 \
+    time_t gotItTime = time(NULL);                                      \
+    time_t _elapsed = gotItTime-startTime;                              \
+    if ( 0 < _elapsed ) {                                               \
+        XP_LOGFF("took %lds to get mutex", _elapsed);                   \
+    }                                                                   \
 
 #define WITH_MUTEX_UNLOCK_DEBUG()                           \
     time_t unlockTime = time(NULL);                         \
@@ -39,7 +44,7 @@
     if ( 0 < _elapsed ) {                                   \
         XP_LOGFF("held mutex for %lds", _elapsed);          \
     }                                                       \
-    pthread_mutex_unlock(_mutex);                           \
+    pthread_mutex_unlock(&_state->mutex);                   \
     }                                                       \
 
 #define WITH_MUTEX_LOCK_RELEASE(COMMS) {       \
@@ -58,6 +63,6 @@
 #define END_WITH_MUTEX WITH_MUTEX_UNLOCK_RELEASE
 #endif
 
-void initMutex( pthread_mutex_t* mutex, XP_Bool recursive );
+void initMutex( MutexState* mutex, XP_Bool recursive );
 
 #endif
