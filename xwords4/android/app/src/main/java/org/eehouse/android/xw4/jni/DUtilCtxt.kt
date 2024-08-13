@@ -22,6 +22,9 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.telephony.PhoneNumberUtils
+
+import kotlin.concurrent.thread
+
 import org.eehouse.android.xw4.Assert
 import org.eehouse.android.xw4.BuildConfig
 import org.eehouse.android.xw4.Channels
@@ -128,6 +131,30 @@ class DUtilCtxt {
 
     init {
         m_context = XWApp.getContext()
+    }
+
+    private val sCleared = HashSet<Int>()
+    fun setTimer(inMS: Int, key: Int)
+    {
+        val startMS = if (BuildConfig.DEBUG) System.currentTimeMillis() else 0
+        thread {
+            Thread.sleep(inMS.toLong())
+            if (BuildConfig.DEBUG) {
+                val wakeMS = System.currentTimeMillis()
+                Log.d(TAG, "setTimer(): firing; set for $inMS, "
+                      + "took ${wakeMS - startMS}")
+            }
+
+            if (synchronized(sCleared) {sCleared.remove(key)}) {
+                XwJNI.dvc_onTimerFired(key)
+            }
+        }
+    }
+
+    fun clearTimer(key: Int)
+    {
+        Log.d(TAG, "clearTimer($key)")
+        synchronized(sCleared) {sCleared.add(key)}
     }
 
     // PENDING use prefs for this

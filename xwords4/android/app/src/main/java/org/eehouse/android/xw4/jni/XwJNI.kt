@@ -878,6 +878,10 @@ class XwJNI private constructor() {
             send: Boolean
         ): Boolean
 
+        fun dvc_onTimerFired(key: Int) = dvc_onTimerFired(jNI.m_ptrGlobals, key)
+        @JvmStatic
+        private external fun dvc_onTimerFired(jniState: Long, key: Int)
+
         fun smsproto_prepOutbound(
             cmd: SMS_CMD, gameID: Int, buf: ByteArray?, phone: String,
             port: Int,  /*out*/

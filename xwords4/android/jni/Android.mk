@@ -52,6 +52,8 @@ LOCAL_DEFINES += \
 	-DMQTT_GAMEID_TOPICS \
 	-DGITREV=\"${GITREV}\" \
 
+LOCAL_DEFINES += -DDUTIL_TIMERS
+
 # XWFEATURE_RAISETILE: first, fix to not use timer
 #   -DXWFEATURE_RAISETILE \
 
@@ -99,6 +101,7 @@ COMMON_SRC_FILES +=        \
 	$(COMMON_PATH)/knownplyr.c  \
 	$(COMMON_PATH)/dllist.c     \
 	$(COMMON_PATH)/stats.c      \
+	$(COMMON_PATH)/timers.c     \
 	$(COMMON_PATH)/cJSON.c      \
 	$(COMMON_PATH)/cJSON_Utils.c\
 

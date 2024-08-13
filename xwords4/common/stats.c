@@ -205,6 +205,8 @@ setStoreTimer( XW_DUtilCtxt* dutil, XWEnv xwe )
         XP_U32 inWhenMS = 5 * 1000;
         TimerKey key = tmr_set( dutil, xwe, inWhenMS, onStoreTimer, dutil );
         XP_LOGFF( "tmr_set() => %d", key );
+    } else {
+        XP_LOGFF( "timer already set" );
     }
 #else
     XP_USE(dutil);

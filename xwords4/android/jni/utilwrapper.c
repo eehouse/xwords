@@ -842,6 +842,25 @@ and_dutil_md5sum( XW_DUtilCtxt* duc, XWEnv xwe, const XP_U8* ptr, XP_U32 len,
 
 }
 
+#ifdef DUTIL_TIMERS
+static void
+and_dutil_setTimer( XW_DUtilCtxt* duc, XWEnv xwe, XP_U32 when, TimerKey key )
+{
+    XP_LOGFF( "(key=%d)", key );
+    DUTIL_CBK_HEADER( "setTimer", "(II)V" );
+    (*env)->CallVoidMethod( env, dutil->jdutil, mid, when, key );
+    DUTIL_CBK_TAIL();
+}
+
+static void
+and_dutil_clearTimer( XW_DUtilCtxt* duc, XWEnv xwe, TimerKey key )
+{
+    DUTIL_CBK_HEADER( "clearTimer", "(I)V" );
+    (*env)->CallVoidMethod( env, dutil->jdutil, mid, key );
+    DUTIL_CBK_TAIL();
+}
+#endif
+
 static void
 and_dutil_getUsername( XW_DUtilCtxt* duc, XWEnv xwe, XP_U16 num,
                        XP_Bool isLocal, XP_Bool isRobot,
@@ -1125,6 +1144,11 @@ makeDUtil( MPFORMAL JNIEnv* env,
     SET_DPROC(phoneNumbersSame);
 #endif
     SET_DPROC(md5sum);
+#ifdef DUTIL_TIMERS
+    SET_DPROC(setTimer);
+    SET_DPROC(clearTimer);
+#endif
+
     SET_DPROC(getUsername);
     SET_DPROC(notifyPause);
     SET_DPROC(haveGame);

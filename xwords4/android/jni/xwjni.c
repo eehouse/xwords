@@ -1257,6 +1257,15 @@ Java_org_eehouse_android_xw4_jni_XwJNI_sts_1increment
     DVC_HEADER_END();
 }
 
+JNIEXPORT void JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_dvc_1onTimerFired
+( JNIEnv* env, jclass C, jlong jniGlobalPtr, jint jkey )
+{
+    DVC_HEADER(jniGlobalPtr);
+    dvc_onTimerFired( globalState->dutil, env, jkey );
+    DVC_HEADER_END();
+}
+
 /* Dictionary methods: don't use gamePtr */
 JNIEXPORT jboolean JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_dict_1tilesAreSame
