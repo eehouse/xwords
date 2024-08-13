@@ -99,6 +99,7 @@ COMMON5 = \
 	$(COMMONOBJDIR)/knownplyr.o \
 	$(COMMONOBJDIR)/dllist.o \
 	$(COMMONOBJDIR)/stats.o \
+	$(COMMONOBJDIR)/timers.o \
 	$(COMMONOBJDIR)/md5.o \
 
 CJSON = \

@@ -77,6 +77,10 @@ void dvc_getIsoCodes( XW_DUtilCtxt* dutil, XWEnv env, WordCollector proc,
 void dvc_getPhoniesFor( XW_DUtilCtxt* dutil, XWEnv env, const XP_UCHAR* code,
                         WordCollector proc, void* closure );
 
+#ifdef DUTIL_TIMERS
+void dvc_onTimerFired( XW_DUtilCtxt* dutil, XWEnv env, TimerKey key );
+#endif
+
 /* All platforms need to call this shortly after setting up their XW_DUtilCtxt */
 void dvc_init( XW_DUtilCtxt* dutil, XWEnv xwe );
 void dvc_cleanup( XW_DUtilCtxt* dutil, XWEnv xwe );

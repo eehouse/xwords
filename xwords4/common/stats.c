@@ -22,15 +22,19 @@
 #include "device.h"
 #include "xwstream.h"
 #include "strutils.h"
+#include "dbgutil.h"
+#include "timers.h"
 
 typedef struct StatsState {
     XP_U32* statsVals;
     MutexState mutex;
+    XP_Bool timerSet;
 } StatsState;
 
 static const XP_UCHAR* STATtoStr(STAT stat);
 static XP_U32* loadCounts( XW_DUtilCtxt* dutil, XWEnv xwe );
 static void storeCounts( XW_DUtilCtxt* dutil, XWEnv xwe );
+static void setStoreTimer( XW_DUtilCtxt* dutil, XWEnv xwe );
 
 void
 sts_init( XW_DUtilCtxt* dutil )
@@ -41,10 +45,9 @@ sts_init( XW_DUtilCtxt* dutil )
 }
 
 void
-sts_cleanup( XW_DUtilCtxt* dutil, XWEnv xwe )
+sts_cleanup( XW_DUtilCtxt* dutil, XWEnv XP_UNUSED(xwe) )
 {
     StatsState* ss = dutil->statsState;
-    storeCounts( dutil, xwe );
     XP_ASSERT( !!ss );
     XP_FREEP( dutil->mpool, &ss->statsVals );
     XP_FREEP( dutil->mpool, &ss );
@@ -62,8 +65,7 @@ sts_increment( XW_DUtilCtxt* dutil, XWEnv xwe, STAT stat )
         }
         ++ss->statsVals[stat];
 
-        XP_LOGFF( "bad: storing after every change" );
-        storeCounts( dutil, xwe );
+        setStoreTimer( dutil, xwe );
         END_WITH_MUTEX();
     }
 }
@@ -83,19 +85,12 @@ sts_export( XW_DUtilCtxt* dutil, XWEnv xwe )
         XP_U32 val = ss->statsVals[ii];
         if ( 0 != val ) {
             const XP_UCHAR* nam = STATtoStr(ii);
-            cJSON_AddNumberToObject(result, nam, val);
+            cJSON_AddNumberToObject( result, nam, val );
         }
     }
     END_WITH_MUTEX();
     return result;
 }
-
-/* void */
-/* sts_increment( XW_DUtilCtxt* dutil, XWEnv XP_UNUSED(xwe), STS_KEY key ) */
-/* { */
-/*     StatsState* ss = dutil->statsState; */
-/*     ++ss->stats[key]; */
-/* } */
 
 void
 sts_clearAll( XW_DUtilCtxt* dutil, XWEnv xwe )
@@ -108,9 +103,8 @@ sts_clearAll( XW_DUtilCtxt* dutil, XWEnv xwe )
 
     ss->statsVals
         = XP_CALLOC( dutil->mpool, sizeof(*ss->statsVals) * STAT_NSTATS );
-    END_WITH_MUTEX();
-
     storeCounts( dutil, xwe );
+    END_WITH_MUTEX();
 }
 
 static const XP_UCHAR*
@@ -146,7 +140,6 @@ storeCounts( XW_DUtilCtxt* dutil, XWEnv xwe )
     XWStreamCtxt* stream = mkStream( dutil );
     stream_putU8( stream, 0 );  /* version */
 
-    WITH_MUTEX( &ss->mutex );
     if ( !!ss->statsVals ) {
         for ( int ii = 0; ii < STAT_NSTATS; ++ii ) {
             XP_U32 val = ss->statsVals[ii];
@@ -156,7 +149,6 @@ storeCounts( XW_DUtilCtxt* dutil, XWEnv xwe )
             }
         }
     }
-    END_WITH_MUTEX();
 
     const XP_UCHAR* keys[] = { STATS_KEY, NULL };
     dutil_storeStream( dutil, xwe, keys, stream );
@@ -183,4 +175,39 @@ loadCounts( XW_DUtilCtxt* dutil, XWEnv xwe )
     }
     stream_destroy( stream );
     return statsVals;
+}
+
+#ifdef DUTIL_TIMERS
+static void
+onStoreTimer( void* closure, XWEnv xwe, XP_Bool fired )
+{
+    XP_LOGFF( "(fired: %s)", boolToStr(fired) );
+    XW_DUtilCtxt* dutil = (XW_DUtilCtxt*)closure;
+    StatsState* ss = dutil->statsState;
+    XP_ASSERT( !!ss );
+
+    WITH_MUTEX( &ss->mutex );
+    storeCounts( dutil, xwe );
+    ss->timerSet = XP_FALSE;
+    END_WITH_MUTEX();
+    LOG_RETURN_VOID();
+}
+#endif
+
+static void
+setStoreTimer( XW_DUtilCtxt* dutil, XWEnv xwe )
+{
+#ifdef DUTIL_TIMERS
+    StatsState* ss = dutil->statsState;
+    XP_ASSERT( !!ss );
+    if ( !ss->timerSet ) {
+        ss->timerSet = XP_TRUE;
+        XP_U32 inWhenMS = 5 * 1000;
+        TimerKey key = tmr_set( dutil, xwe, inWhenMS, onStoreTimer, dutil );
+        XP_LOGFF( "tmr_set() => %d", key );
+    }
+#else
+    XP_USE(dutil);
+    XP_USE(xwe);
+#endif
 }

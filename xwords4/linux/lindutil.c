@@ -315,11 +315,11 @@ linux_dutil_getRegValues( XW_DUtilCtxt* duc, XWEnv xwe )
     return results;
 }
 
+#ifdef DUTIL_TIMERS
+
 typedef struct _TimerClosure {
     XW_DUtilCtxt* duc;
-    DUtilTimerProc proc;
-    void* closure;
-    size_t closureSize;
+    TimerKey key;
     guint src;
 } TimerClosure;
 
@@ -327,35 +327,23 @@ static gint
 timer_proc( gpointer data )
 {
     TimerClosure* tc = (TimerClosure*)data;
-    XP_LOGFF( "calling timer proc" );
-    (*tc->proc)( NULL_XWE, tc->closure, tc->closureSize );
-    XP_LOGFF( "timer proc done" );
-    XP_FREEP( tc->duc->mpool, &tc->closure );
-
-    LinDUtilCtxt* lduc = (LinDUtilCtxt*)tc->duc;
-    GSList** timers = &lduc->timers;
-    *timers = g_slist_remove( *timers, tc );
-
-    XP_LOGFF( "after firing, length %d", g_slist_length(*timers) );
-
-    XP_FREEP( tc->duc->mpool, &tc );
-    return 0;
+    XP_LOGFF( "calling dvc_onTimerFired()" );
+    dvc_onTimerFired( tc->duc, NULL_XWE, tc->key );
+    g_free( tc );
+    return G_SOURCE_REMOVE;
 }
 
-#ifdef DUTIL_TIMERS
 static void
-linux_dutil_setTimer( XW_DUtilCtxt* duc, XWEnv xwe, XP_U16 when,
-                      DUtilTimerProc proc, void* closure, size_t closureSize )
+linux_dutil_setTimer( XW_DUtilCtxt* duc, XWEnv xwe, XP_U32 inWhenMS, TimerKey key )
 {
     XP_USE(xwe);        /* I assume I'll need this on the Android side */
 
-    TimerClosure* tc = XP_MALLOC(duc->mpool, sizeof(*tc));
+    TimerClosure* tc = g_malloc(sizeof(*tc));
     tc->duc = duc;
-    tc->closureSize = closureSize;
-    tc->closure = XP_MALLOC( duc->mpool, closureSize );
-    XP_MEMCPY( tc->closure, closure, closureSize );
-    tc->proc = proc;
-    tc->src = g_timeout_add( when, timer_proc, tc );
+    tc->key = key;
+
+    XP_LOGFF( "key: %d, inWhenMS: %d", key, inWhenMS );
+    tc->src = g_timeout_add( inWhenMS, timer_proc, tc );
 
     LinDUtilCtxt* lduc = (LinDUtilCtxt*)duc;
     GSList** timers = &lduc->timers;
@@ -365,14 +353,15 @@ linux_dutil_setTimer( XW_DUtilCtxt* duc, XWEnv xwe, XP_U16 when,
 }
 
 static gint
-findByProc( gconstpointer elemData, gconstpointer proc )
+findByProc( gconstpointer elemData, gconstpointer keyp )
 {
     TimerClosure* tc = (TimerClosure*)elemData;
-    return tc->proc == proc ? 0 : 1;
+    TimerKey* key = (TimerKey*)keyp;
+    return tc->key == *key ? 0 : 1; /* return 0 on success */
 }
 
 static void
-linux_dutil_clearTimer( XW_DUtilCtxt* duc, XWEnv xwe, DUtilTimerProc proc )
+linux_dutil_clearTimer( XW_DUtilCtxt* duc, XWEnv xwe, TimerKey key )
 {
     /* Will probably want to store the TimerClosure instances above in a list
        that can be searched here for its proc value, then its src field used
@@ -384,11 +373,15 @@ linux_dutil_clearTimer( XW_DUtilCtxt* duc, XWEnv xwe, DUtilTimerProc proc )
     LinDUtilCtxt* lduc = (LinDUtilCtxt*)duc;
     GSList** timers = &lduc->timers;
     while ( !!*timers ) {
-        GSList* elem = g_slist_find_custom( *timers, proc, findByProc );
+        GSList* elem = g_slist_find_custom( *timers, &key, findByProc );
         if ( !elem ) {
             break;
         }
+        TimerClosure* tc = (TimerClosure*)elem->data;
         *timers = g_slist_remove( *timers, elem );
+
+        g_source_remove( tc->src );
+        g_free( tc );
         ++count;
     }
     XP_LOGFF( "removed %d timers", count );

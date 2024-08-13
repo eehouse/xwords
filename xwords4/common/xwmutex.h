@@ -28,10 +28,18 @@ typedef struct _MutexState {
     pthread_mutex_t mutex;
 } MutexState;
 
+#if 0
+# define MUTEX_LOG(...) XP_LOGFF(__VA_ARGS__)
+#else
+# define MUTEX_LOG(...)
+#endif
+
 #define WITH_MUTEX_LOCK_DEBUG(STATEP) {                                 \
     MutexState* _state = (STATEP);                                      \
     time_t startTime = time(NULL);                                      \
+    MUTEX_LOG( "blocking for mutex %p", _state );                       \
     pthread_mutex_lock(&_state->mutex);                                 \
+    MUTEX_LOG( "got mutex %p", _state );                                \
     time_t gotItTime = time(NULL);                                      \
     time_t _elapsed = gotItTime-startTime;                              \
     if ( 0 < _elapsed ) {                                               \
@@ -45,6 +53,7 @@ typedef struct _MutexState {
         XP_LOGFF("held mutex for %lds", _elapsed);          \
     }                                                       \
     pthread_mutex_unlock(&_state->mutex);                   \
+    MUTEX_LOG( "released mutex %p", _state );               \
     }                                                       \
 
 #define WITH_MUTEX_LOCK_RELEASE(COMMS) {       \

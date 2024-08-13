@@ -26,6 +26,7 @@
 #include "knownplyr.h"
 #include "device.h"
 #include "stats.h"
+#include "timers.h"
 
 static void
 super_dutil_storeStream( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* keys[],
@@ -66,12 +67,14 @@ dutil_super_init( MPFORMAL XW_DUtilCtxt* dutil )
     SET_VTABLE_ENTRY( &dutil->vtable, dutil_loadStream, super );
     SET_VTABLE_ENTRY( &dutil->vtable, dutil_storeStream, super );
 
+    tmr_init( dutil );
     sts_init( dutil );
 }
 
 void
 dutil_super_cleanup( XW_DUtilCtxt* dutil, XWEnv xwe )
 {
+    tmr_cleanup( dutil, xwe );
     kplr_cleanup( dutil );
     sts_cleanup( dutil, xwe );
     dvc_cleanup( dutil, xwe );

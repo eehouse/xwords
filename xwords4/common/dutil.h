@@ -44,7 +44,7 @@ typedef struct _Md5SumBuf {
 #define KEY_WILDCARD "*"
 
 #ifdef DUTIL_TIMERS
-typedef void (*DUtilTimerProc)( XWEnv xwe, void* closure, size_t closureSize );
+typedef XP_U32 TimerKey;
 #endif
 typedef struct _DUtilVtable {
     XP_U32 (*m_dutil_getCurSeconds)( XW_DUtilCtxt* duc, XWEnv xwe );
@@ -84,9 +84,8 @@ typedef struct _DUtilVtable {
 #endif
 
 #ifdef DUTIL_TIMERS
-    void (*m_dutil_setTimer)( XW_DUtilCtxt* duc, XWEnv xwe, XP_U16 when, DUtilTimerProc proc,
-                              void* closure, size_t closureSize );
-    void (*m_dutil_clearTimer)( XW_DUtilCtxt* duc, XWEnv xwe, DUtilTimerProc proc );
+    void (*m_dutil_setTimer)( XW_DUtilCtxt* duc, XWEnv xwe, XP_U32 when, TimerKey key );
+    void (*m_dutil_clearTimer)( XW_DUtilCtxt* duc, XWEnv xwe, TimerKey key );
 #endif
     void (*m_dutil_md5sum)( XW_DUtilCtxt* duc, XWEnv xwe, const XP_U8* ptr,
                             XP_U32 len, Md5SumBuf* sb );
@@ -118,6 +117,7 @@ struct XW_DUtilCtxt {
     void* closure;
     void* devCtxt;              /* owned by device.c */
     void* statsState;           /* owned by stats.c */
+    void* timersState;          /* owned by timers.c */
 #ifdef XWFEATURE_KNOWNPLAYERS   /* owned by knownplyr.c */
     void* kpCtxt;
     pthread_mutex_t kpMutex;
@@ -168,10 +168,10 @@ void dutil_super_cleanup( XW_DUtilCtxt* dutil, XWEnv xwe );
 #endif
 
 #ifdef DUTIL_TIMERS
-# define dutil_setTimer( duc, xwe, when, proc, closure, siz )            \
-    (duc)->vtable.m_dutil_setTimer((duc), (xwe), (when), (proc), (closure), (siz))
-# define dutil_clearTimer( duc, xwe, proc )                 \
-    (duc)->vtable.m_dutil_clearTimer((duc), (xwe), (proc) )
+# define dutil_setTimer( duc, xwe, when, key )                  \
+    (duc)->vtable.m_dutil_setTimer((duc), (xwe), (when), (key))
+# define dutil_clearTimer( duc, xwe, key )                  \
+    (duc)->vtable.m_dutil_clearTimer((duc), (xwe), (key) )
 #endif
 
 # define dutil_md5sum( duc, e, p, l, b )                    \

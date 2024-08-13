@@ -306,14 +306,16 @@ mpool_free( MemPoolCtx* mpool, void* ptr, const char* file,
     MemPoolEntry* entry = findEntryFor( mpool, ptr, &prev );
 
     if ( !entry ) {
-        XP_LOGFF( "findEntryFor failed; pool %p, line %d in %s", mpool, lineNo, file );
+        XP_LOGFF( "findEntryFor failed; pool %p, line %d in %s", mpool,
+                  lineNo, file );
         XP_ASSERT( 0 );
     } else {
 
 #ifdef MPOOL_DEBUG
-    XP_LOGFF( "(ptr=%p):size=%d,index=%d,func=%s,file=%s,lineNo=%d); called from %s",
-              entry->ptr, entry->size, entry->index, entry->func, entry->fileName,
-              entry->lineNo, func );
+    XP_LOGFF( "(ptr=%p):size=%d,index=%d,func=%s,file=%s,lineNo=%d); "
+              "called from %s",
+              entry->ptr, entry->size, entry->index, entry->func,
+              entry->fileName, entry->lineNo, func );
 #else
     XP_USE(func);               /* shut up, compiler */
 #endif

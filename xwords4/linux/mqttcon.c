@@ -399,7 +399,8 @@ mqttc_cleanup( LaunchParams* params )
     storage->mosq = NULL;
 	mosquitto_lib_cleanup();
 
-    XP_LOGFF( "quitting with %d undelievered messages", g_slist_length(storage->queue) );
+    XP_LOGFF( "quitting with %d undelivered messages",
+              g_slist_length(storage->queue) );
 
     XP_ASSERT( params->mqttConStorage == storage ); /* cheat */
     XP_FREEP( params->mpool, &storage );

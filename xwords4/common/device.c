@@ -28,6 +28,7 @@
 #include "strutils.h"
 #include "nli.h"
 #include "dbgutil.h"
+#include "timers.h"
 
 #ifdef DEBUG
 # define MAGIC_INITED 0x8283413F
@@ -1035,6 +1036,15 @@ dvc_getPhoniesFor( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* code,
     PhoniesDataCodes* pdc = findForIso( dutil, dc, code );
     dll_map( &pdc->head->links, getWordsProc, NULL, &gws );
 }
+
+#ifdef DUTIL_TIMERS
+void
+dvc_onTimerFired( XW_DUtilCtxt* dutil, XWEnv xwe, TimerKey key )
+{
+    XP_LOGFF( "(key: %d)", key );
+    tmr_fired( dutil, xwe, key );
+}
+#endif
 
 static ForEachAct
 findPhonyProc2( const DLHead* elem, void* closure )

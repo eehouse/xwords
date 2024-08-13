@@ -17,30 +17,24 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "xwmutex.h"
+#ifndef _TIMERS_H_
+#define _TIMERS_H_
 
-void
-initMutex( MutexState* mutex, XP_Bool recursive )
-{
-    pthread_mutexattr_t attr;
-    int ret = pthread_mutexattr_init(&attr);
-    XP_ASSERT(0 == ret);
-    if ( recursive ) {
-        ret = pthread_mutexattr_settype(&attr,
-                                        PTHREAD_MUTEX_RECURSIVE);
-        XP_ASSERT(0 == ret);
-    }
-    pthread_mutex_init( &mutex->mutex, &attr );
-    ret = pthread_mutexattr_destroy(&attr);
-    XP_ASSERT(0 == ret);
+# ifdef DUTIL_TIMERS
 
-#ifdef DEBUG
-    /* if ( recursive ) { */
-    /*     XP_LOGFF( "testing recursive call..." ); */
-    /*     WITH_MUTEX( mutex ); */
-    /*     WITH_MUTEX( mutex ); */
-    /*     END_WITH_MUTEX(); */
-    /*     END_WITH_MUTEX(); */
-    /* } */
+# include "dutil.h"
+
+void tmr_init( XW_DUtilCtxt* dutil );
+void tmr_cleanup( XW_DUtilCtxt* dutil, XWEnv xwe );
+
+/* Pass false for fired if we're clearing unfired timers, e.g. on shutdown */
+typedef void (*TimerProc)(void* closure, XWEnv xwe, XP_Bool fired);
+TimerKey tmr_set( XW_DUtilCtxt* dutil, XWEnv xwe, XP_U32 inWhenMS,
+                  TimerProc proc, void* closure );
+void tmr_fired( XW_DUtilCtxt* dutil, XWEnv xwe, TimerKey key );
+
+# else
+# define tmr_init( dutil )
+# define tmr_cleanup( dutil, xwe )
+# endif
 #endif
-}
