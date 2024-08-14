@@ -1766,9 +1766,9 @@ class GamesListDelegate(delegator: Delegator) :
             R.id.games_menu_statsShow -> {
                 val stats = XwJNI.sts_export()
                 val pairs = ArrayList<String>()
-                stats.keys().forEach {
-                    val value = stats.getLong(it)
-                    pairs.add("$it: $value")
+                stats.keys().forEach { key ->
+                    val value = stats.getLong(key)
+                    pairs.add("$key: $value")
                 }
                 makeOkOnlyBuilder(TextUtils.join("\n", pairs))
                     .show()
@@ -2294,24 +2294,15 @@ class GamesListDelegate(delegator: Delegator) :
         var handled = false
         Assert.assertTrue(nli.isValid)
 
-        val rowids = DBUtils.getRowIDsAndChannels(mActivity, nli.gameID())
-
-        if (0 < rowids.size) {
-            // There's already a game? Better not have same channel as invite
-            // creates
-            for (rowid in rowids.keys) {
-                if (0 == nli.forceChannel
-                        || nli.forceChannel == rowids[rowid]) {
-                    DbgUtils.printStack(TAG)
-                    if (BuildConfig.NON_RELEASE) {
-                        Utils.showToast(mActivity, R.string.dropped_dupe)
-                    }
-
-                    post { doOpenGame(rowid) }
-                    handled = true
-                    break
-                }
+        val rowid = GameUtils.getGameWithChannel(mActivity, nli)
+        if (DBUtils.ROWID_NOTFOUND != rowid) {
+            DbgUtils.printStack(TAG)
+            if (BuildConfig.NON_RELEASE) {
+                Utils.showToast(mActivity, R.string.dropped_dupe)
             }
+
+            post { doOpenGame(rowid) }
+            handled = true
         }
 
         if (!handled && checkWarnNoDict(nli)) {

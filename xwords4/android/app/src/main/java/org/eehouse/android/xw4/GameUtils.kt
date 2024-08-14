@@ -581,15 +581,30 @@ object GameUtils {
         return rowid
     }
 
-    fun inviteeName(context: Context, rowid: Long, playerPosn: Int): String? {
+    fun inviteeName(context: Context, rowid: Long, playerPosn: Int): String?
+    {
         var result =
             GameWrapper.make(context, rowid).use { gw ->
                 gw?.let {
-                    val name = XwJNI.server_inviteeName(it.gamePtr(), playerPosn)
+                    val name = XwJNI.server_inviteeName(it.gamePtr(),
+                                                        playerPosn)
                     name
                 }
         }
         return result
+    }
+
+    fun getGameWithChannel(context: Context, nli: NetLaunchInfo): Long
+    {
+        var found = DBUtils.ROWID_NOTFOUND
+        val rowids = DBUtils.getRowIDsAndChannels(context, nli.gameID())
+        for (rowid in rowids.keys) {
+            if (0 == nli.forceChannel || nli.forceChannel == rowids[rowid]) {
+                found = rowid
+                break
+            }
+        }
+        return found
     }
 
     fun handleInvitation(
@@ -598,14 +613,18 @@ object GameUtils {
     ) {
         Log.d(TAG, "handleInvitation(%s)", nli)
 
-        val util: UtilCtxt = UtilCtxtImpl()
-        val cp = CommonPrefs.get(context)
-        val selfAddr = CommsAddrRec.getSelfAddr(context, nli.types)
-        XwJNI.game_makeFromInvite(nli, util, selfAddr, cp, procs!!).use { gamePtr ->
-            if (null != gamePtr) {
-                val rowid = saveNewGame1(context, gamePtr, -1, nli.gameName)
-            } else {
-                Log.d(TAG, "handleInvitation(): unable to create")
+        if (DBUtils.ROWID_NOTFOUND != getGameWithChannel(context, nli)) {
+            Log.d(TAG, "dropping duplicate invite for gameID %X",
+                  nli.gameID())
+        } else {
+            val util: UtilCtxt = UtilCtxtImpl()
+            val cp = CommonPrefs.get(context)
+            val selfAddr = CommsAddrRec.getSelfAddr(context, nli.types)
+            XwJNI.game_makeFromInvite(nli, util, selfAddr, cp, procs!!).use {
+                gamePtr ->
+                gamePtr?.let {
+                    saveNewGame1(context, it, -1, nli.gameName)
+                }
             }
         }
     }
