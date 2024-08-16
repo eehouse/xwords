@@ -365,21 +365,31 @@ kplr_getAddr( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* name,
     return found;
 }
 
+const XP_UCHAR*
+kplr_nameForMqttDev( XW_DUtilCtxt* dutil, XWEnv xwe,
+                     const MQTTDevID* devID )
+{
+    CommsAddrRec addr = {
+        .u.mqtt.devID = *devID,
+    };
+    addr_setType( &addr, COMMS_CONN_MQTT );
+
+    return kplr_nameForAddress( dutil, xwe, &addr );
+}
+
 typedef struct _MDevState {
-    MQTTDevID devID;
+    const CommsAddrRec* addr;
     const XP_UCHAR* name;
 } MDevState;
 
 static ForEachAct
-mqttProc( const DLHead* dl, void* closure )
+addrProc( const DLHead* dl, void* closure )
 {
     ForEachAct result = FEA_OK;
     const KnownPlayer* kp = (KnownPlayer*)dl;
     MDevState* msp = (MDevState*)closure;
-    const CommsAddrRec* addr = &kp->addr;
-    if ( addr_hasType( addr, COMMS_CONN_MQTT )
-         && 0 == XP_MEMCMP( &addr->u.mqtt.devID, &msp->devID,
-                            sizeof(msp->devID) ) ) {
+
+    if ( addrsAreSame( &kp->addr, msp->addr ) ) {
         msp->name = kp->name;
         result = FEA_EXIT;
     }
@@ -387,32 +397,20 @@ mqttProc( const DLHead* dl, void* closure )
 }
 
 const XP_UCHAR*
-kplr_nameForMqttDev( XW_DUtilCtxt* dutil, XWEnv xwe,
-                     const MQTTDevID* devID )
+kplr_nameForAddress( XW_DUtilCtxt* dutil, XWEnv xwe,
+                     const CommsAddrRec* addr )
 {
-    MDevState ms = {.devID = *devID};
+    MDevState ms = {.addr = addr};
     KPState* state = loadState( dutil, xwe );
 #ifdef DEBUG
     DLHead* head =
 #endif
-        dll_map( &state->players->links, mqttProc, NULL, &ms );
+        dll_map( &state->players->links, addrProc, NULL, &ms );
     XP_ASSERT( head == &state->players->links );
     releaseState( dutil, xwe, state );
-    return ms.name;
-}
 
-const XP_UCHAR*
-kplr_nameForAddress( XW_DUtilCtxt* dutil, XWEnv xwe,
-                     const CommsAddrRec* addr )
-{
-    const XP_UCHAR* result = NULL;
-    if ( addr_hasType( addr, COMMS_CONN_MQTT ) ) {
-        result = kplr_nameForMqttDev( dutil, xwe,
-                                      &addr->u.mqtt.devID );
-    } else {
-        XP_ASSERT(0);           /* FIXME */
-    }
-    return result;
+    XP_LOGFF( "=> %s", ms.name );
+    return ms.name;
 }
 
 static void

@@ -1318,8 +1318,8 @@ comms_getChannelAddr( const CommsCtxt* comms, XP_PlayerAddr channelNo,
     XP_ASSERT( found );
 }
 
-static XP_Bool
-addrs_same( const CommsAddrRec* addr1, const CommsAddrRec* addr2 )
+XP_Bool
+addrsAreSame( const CommsAddrRec* addr1, const CommsAddrRec* addr2 )
 {
     /* Empty addresses are the same only if both are empty */
     XP_Bool same = addr1->_conTypes == 0 && addr2->_conTypes == 0;
@@ -1345,15 +1345,6 @@ addrs_same( const CommsAddrRec* addr1, const CommsAddrRec* addr2 )
     }
 
     return same;
-}
-
-XP_Bool
-comms_addrsAreSame( const CommsCtxt* XP_UNUSED(comms),
-                    const CommsAddrRec* addr1,
-                    const CommsAddrRec* addr2 )
-{
-    XP_Bool result = addrs_same( addr1, addr2 );
-    return result;
 }
 
 typedef struct _NonAcks {
@@ -1685,7 +1676,7 @@ pickChannel( const CommsCtxt* comms, const NetLaunchInfo* nli,
     if ( 0 == result ) {
         /* First, do we already have an invitation for this address */
         for ( AddressRecord* rec = comms->recs; !!rec; rec = rec->next ) {
-            if ( addrs_same( destAddr, &rec->addr ) ) {
+            if ( addrsAreSame( destAddr, &rec->addr ) ) {
                 result = rec->channelNo;
                 XP_LOGFF( "addrs match; reusing channel" );
                 break;
@@ -2792,7 +2783,7 @@ getChannelFromInvite( const CommsCtxt* comms, const CommsAddrRec* retAddr,
     XP_Bool found = XP_FALSE;
     for ( const AddressRecord* rec = comms->recs; !!rec && !found;
           rec = rec->next ) {
-        found = addrs_same( retAddr, &rec->addr );
+        found = addrsAreSame( retAddr, &rec->addr );
         if ( found ) {
             COMMS_LOGFF( "channelNo before: %x", *channelNoP );
             *channelNoP |= rec->channelNo;

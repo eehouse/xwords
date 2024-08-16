@@ -298,8 +298,8 @@ static void ri_fromStream( RematchInfo* rip, XWStreamCtxt* stream,
                            const ServerCtxt* server );
 static void ri_toStream( XWStreamCtxt* stream, const RematchInfo* rip,
                          const ServerCtxt* server );
-static void ri_addAddrAt( RematchInfo* rip, const ServerCtxt* server,
-                          const CommsAddrRec* addr, XP_U16 playerIndex );
+static void ri_addAddrAt( RematchInfo* rip, const CommsAddrRec* addr,
+                          XP_U16 playerIndex );
 static void ri_addHostAddrs( RematchInfo* rip, const ServerCtxt* server );
 static void ri_addLocal( RematchInfo* rip );
 
@@ -896,7 +896,7 @@ buildGuestRI( const ServerCtxt* server, XP_U16 guestIndex, RematchInfo* rip )
         const LocalPlayer* lp = &gi->players[ii];
         if ( lp->isLocal ) {    /* that's me, the host */
             CommsAddrRec addr = {};
-            ri_addAddrAt( rip, server, &addr, ii );
+            ri_addAddrAt( rip, &addr, ii );
         } else {
             XP_S8 deviceIndex = server->srvPlyrs[ii].deviceIndex;
             if ( guestIndex == deviceIndex ) {
@@ -906,7 +906,7 @@ buildGuestRI( const ServerCtxt* server, XP_U16 guestIndex, RematchInfo* rip )
                     = server->nv.addresses[deviceIndex].channelNo;
                 CommsAddrRec addr;
                 comms_getChannelAddr( server->vol.comms, channelNo, &addr );
-                ri_addAddrAt( rip, server, &addr, ii );
+                ri_addAddrAt( rip, &addr, ii );
             }
         }
     }
@@ -2146,7 +2146,7 @@ findOrderedSlot( ServerCtxt* server, XWStreamCtxt* stream,
         ServerPlayer* sp = &server->srvPlyrs[ii];
         if ( UNKNOWN_DEVICE == sp->deviceIndex ) {
             int addrIndx = rip->addrIndices[ii];
-            if ( comms_addrsAreSame( comms, &guestAddr, &rip->addrs[addrIndx] ) ) {
+            if ( addrsAreSame( &guestAddr, &rip->addrs[addrIndx] ) ) {
                 *spp = sp;
                 *lpp = &gi->players[ii];
                 XP_ASSERT( !(*lpp)->isLocal );
@@ -4321,7 +4321,7 @@ getRematchInfoImpl( const ServerCtxt* server, CurGameInfo* newGI,
                 } else {
                     comms_getHostAddr( comms, &addr );
                 }
-                ri_addAddrAt( &ri, server, &addr, ii );
+                ri_addAddrAt( &ri, &addr, ii );
             }
         }
     } else if ( !!server->nv.rematch.addrs ) {
@@ -4359,7 +4359,7 @@ getRematchInfoImpl( const ServerCtxt* server, CurGameInfo* newGI,
                 if ( newGI->players[ii].isLocal ) {
                     ri_addLocal( &ri );
                 } else if ( nextRemote < nAddrs ) {
-                    ri_addAddrAt( &ri, server, &addrs[nextRemote++], ii );
+                    ri_addAddrAt( &ri, &addrs[nextRemote++], ii );
                 } else {
                     SRVR_LOGFF( "ERROR: not enough addresses for all"
                                 " remote players" );
@@ -4599,15 +4599,13 @@ ri_fromStream( RematchInfo* rip, XWStreamCtxt* stream,
 /* Given an address, insert it if it's new, or point to an existing copy
    otherwise */
 static void
-ri_addAddrAt( RematchInfo* rip, const ServerCtxt* server,
-              const CommsAddrRec* addr, const XP_U16 player )
+ri_addAddrAt( RematchInfo* rip, const CommsAddrRec* addr, const XP_U16 player )
 {
-    const CommsCtxt* comms = server->vol.comms;
     XP_S8 newIndex = RIP_LOCAL_INDX;
     for ( int ii = 0; ii < player; ++ii ) {
         int index = rip->addrIndices[ii];
         if ( index != RIP_LOCAL_INDX &&
-             comms_addrsAreSame( comms, addr, &rip->addrs[index] ) ) {
+             addrsAreSame( addr, &rip->addrs[index] ) ) {
             newIndex = index;
             break;
         }
