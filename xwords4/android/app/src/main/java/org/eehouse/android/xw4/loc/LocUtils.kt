@@ -61,6 +61,7 @@ object LocUtils {
                   + "in ${DbgUtils.fmtAny(values)}")
             curVal = getString(context, default)!!
             Log.d(TAG, "getCheckPref(): swapped in $curVal")
+            XWPrefs.setPrefsString(context, key, curVal)
         }
         return curVal!!
     }
