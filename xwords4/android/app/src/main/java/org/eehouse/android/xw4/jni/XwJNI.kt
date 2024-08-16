@@ -21,6 +21,7 @@ package org.eehouse.android.xw4.jni
 
 import java.io.Serializable
 import org.json.JSONObject
+import kotlin.concurrent.thread
 
 import org.eehouse.android.xw4.Assert
 import org.eehouse.android.xw4.BuildConfig
@@ -975,7 +976,7 @@ class XwJNI private constructor() {
         ) {
             val jniState = jNI.m_ptrGlobals
             val dictPtr = dict.dictPtr
-            Thread {
+            thread {
                 var wrapper: IterWrapper? = null
                 val iterPtr = di_init(
                     jniState, dictPtr, pats,
@@ -985,7 +986,7 @@ class XwJNI private constructor() {
                     wrapper = IterWrapper(iterPtr)
                 }
                 callback.onIterReady(wrapper)
-            }.start()
+            }
         }
 
         fun di_wordCount(iw: IterWrapper): Int {

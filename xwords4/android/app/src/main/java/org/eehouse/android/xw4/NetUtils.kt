@@ -43,6 +43,7 @@ import java.net.URL
 import java.net.URLEncoder
 import java.net.UnknownHostException
 import javax.net.SocketFactory
+import kotlin.concurrent.thread
 
 import org.eehouse.android.xw4.jni.XwJNI
 import org.eehouse.android.xw4.loc.LocUtils
@@ -165,14 +166,14 @@ object NetUtils {
         context: Context, resultKey: Int,
         api: String?, jsonParams: String
     ) {
-        Thread {
+        thread {
             val conn = makeHttpMQTTConn(context, api)
             val directJson = true
             val result = runConn(conn, jsonParams, directJson)
             if (0 != resultKey) {
                 XwJNI.dvc_onWebSendResult(resultKey, true, result)
             }
-        }.start()
+        }
     }
 
     fun makeHttpMQTTConn(
