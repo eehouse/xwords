@@ -931,6 +931,8 @@ def mkParser():
                         help='log stuff')
     parser.add_argument('--open-on-exit', dest = 'OPEN_ON_EXIT', default = False,
                         action = 'store_true', help='Open devs in gtk app when finished')
+    parser.add_argument('--no-reuse-dbs', dest = 'REUSE_DBS', default = True,
+                        action = 'store_false', help='Don\'t reuse device dbs on startup')
 
     return parser
 
@@ -956,26 +958,25 @@ def termHandler(signum, frame):
 
 def printError(msg): print( 'ERROR: {}'.format(msg))
 
-def initLogs():
+def initLogs(args):
     scriptName = os.path.splitext(os.path.basename(sys.argv[0]))[0]
-    logdir = scriptName + '_logs'
-    if os.path.exists(logdir):
-        shutil.move(logdir, '/tmp/{}_{}'.format(logdir, os.getpid()))
-    os.mkdir(logdir)
+    statedir = scriptName + '_state'
+    if not args.REUSE_DBS and os.path.exists(statedir):
+        shutil.move(statedir, '/tmp/{}_{}'.format(statedir, os.getpid()))
+    if not os.path.exists(statedir): os.mkdir(statedir)
 
-    logfilepath = '{}/{}_logs.txt'.format(logdir, scriptName)
+    logfilepath = '{}/{}_logs.txt'.format(statedir, scriptName)
     global g_LOGFILE
     g_LOGFILE = open(logfilepath, 'w')
 
-    return logdir
+    return statedir
 
 def main():
     startTime = datetime.datetime.now()
     signal.signal(signal.SIGINT, termHandler)
 
-    logdir = initLogs()
-
     args = parseArgs()
+    statedir = initLogs(args)
 
     if args.SEED: random.seed(args.SEED)
     # Hack: old files confuse things. Remove is simple fix good for now
@@ -983,7 +984,7 @@ def main():
         try: rmtree('/tmp/xw_sms')
         except: None
 
-    Device.setup(logdir)       # deletes old logdif
+    Device.setup(statedir)       # deletes old logdif
     devs = build_devs(args)
     for dev in devs:
         dev.init()
