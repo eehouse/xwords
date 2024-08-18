@@ -24,35 +24,15 @@
 #include "comtypes.h"
 #include "xwstream.h"
 
+// #define MUTEX_LOG_VERBOSE
+#include "xwmutex.h"
+
 /* #define MPOOL_DEBUG */
 
 #ifdef CPLUS
 extern "C" {
 #endif
 
-#ifndef MEMPOOL_SYNC_DECL
-# include <pthread.h>
-# define MEMPOOL_SYNC_DECL pthread_mutex_t mutex
-#endif
-
-#ifndef MEMPOOL_SYNC_INIT
-# define MEMPOOL_SYNC_INIT(mp)                  \
-    pthread_mutex_init( &((mp)->mutex), NULL )
-#endif
-
-#ifndef MEMPOOL_SYNC_DESTROY
-# define MEMPOOL_SYNC_DESTROY(mp)               \
-    pthread_mutex_destroy( &((mp)->mutex ) )
-#endif
-
-#ifndef MEMPOOL_SYNC_START
-# define MEMPOOL_SYNC_START(mp)                 \
-    pthread_mutex_lock( &((mp)->mutex) )
-#endif
-#ifndef MEMPOOL_SYNC_END
-# define MEMPOOL_SYNC_END(mp)                   \
-    pthread_mutex_unlock( &((mp)->mutex) )
-#endif
 
 typedef struct MemPoolEntry {
     struct MemPoolEntry* next;
@@ -65,7 +45,7 @@ typedef struct MemPoolEntry {
 } MemPoolEntry;
 
 struct MemPoolCtx {
-    MEMPOOL_SYNC_DECL;
+    MutexState mutex;
     MemPoolEntry* freeList;
     MemPoolEntry* usedList;
 
@@ -84,11 +64,10 @@ mpool_make( const XP_UCHAR* tag )
 {
     MemPoolCtx* result = (MemPoolCtx*)XP_PLATMALLOC( sizeof(*result) );
     XP_MEMSET( result, 0, sizeof(*result) );
-    MEMPOOL_SYNC_INIT(result);
+    mtx_init( &result->mutex, XP_TRUE );
     mpool_setTag( result, tag );
     return result;
 } /* mpool_make */
-
 
 void 
 mpool_setTag( MemPoolCtx* mpool, const XP_UCHAR* tag )
@@ -181,7 +160,7 @@ mpool_destroy( MemPoolCtx* mpool )
 #endif
 
     freeList( mpool->freeList );
-    MEMPOOL_SYNC_DESTROY(mpool);
+    mtx_destroy( &mpool->mutex );
     XP_PLATFREE( mpool );
 } /* mpool_destroy */
 
@@ -189,10 +168,10 @@ void*
 mpool_alloc( MemPoolCtx* mpool, XP_U32 size, const char* file, 
              const char* func, XP_U32 lineNo )
 {
-    MemPoolEntry* entry;
     void* result = NULL;
-    MEMPOOL_SYNC_START(mpool);
-    
+
+    WITH_MUTEX( &mpool->mutex );
+    MemPoolEntry* entry;
     if ( mpool->nFree > 0 ) {
         entry = mpool->freeList;
         mpool->freeList = entry->next;
@@ -224,7 +203,7 @@ mpool_alloc( MemPoolCtx* mpool, XP_U32 size, const char* file,
 #endif
 
     result = entry->ptr;
-    MEMPOOL_SYNC_END(mpool);
+    END_WITH_MUTEX();
     
     return result;
 } /* mpool_alloc */
@@ -301,7 +280,7 @@ mpool_free( MemPoolCtx* mpool, void* ptr, const char* file,
 {
     MemPoolEntry* prev;
 
-    MEMPOOL_SYNC_START(mpool);
+    WITH_MUTEX( &mpool->mutex );
 
     MemPoolEntry* entry = findEntryFor( mpool, ptr, &prev );
 
@@ -337,7 +316,7 @@ mpool_free( MemPoolCtx* mpool, void* ptr, const char* file,
         ++mpool->nFree;
         --mpool->nUsed;
     }
-    MEMPOOL_SYNC_END(mpool);
+    END_WITH_MUTEX();
 } /* mpool_free */
 
 void

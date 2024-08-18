@@ -28,7 +28,7 @@ typedef struct _MutexState {
     pthread_mutex_t mutex;
 } MutexState;
 
-#if 0
+#ifdef MUTEX_LOG_VERBOSE
 # define MUTEX_LOG(...) XP_LOGFF(__VA_ARGS__)
 #else
 # define MUTEX_LOG(...)
@@ -56,12 +56,12 @@ typedef struct _MutexState {
     MUTEX_LOG( "released mutex %p", _state );               \
     }                                                       \
 
-#define WITH_MUTEX_LOCK_RELEASE(COMMS) {       \
-    CommsCtxt* _comms = COMMS;                  \
-    pthread_mutex_lock(&_comms->mutex);         \
+#define WITH_MUTEX_LOCK_RELEASE(COMMS) {        \
+    MutexState* _state = (STATEP);              \
+    pthread_mutex_lock(&_state->mutex);         \
 
-#define WITH_MUTEX_UNLOCK_RELEASE()            \
-    pthread_mutex_unlock(&_comms->mutex);       \
+#define WITH_MUTEX_UNLOCK_RELEASE()             \
+    pthread_mutex_unlock(&_state->mutex);       \
     }                                           \
 
 #ifdef DEBUG
@@ -72,6 +72,7 @@ typedef struct _MutexState {
 #define END_WITH_MUTEX WITH_MUTEX_UNLOCK_RELEASE
 #endif
 
-void initMutex( MutexState* mutex, XP_Bool recursive );
+void mtx_init( MutexState* mutex, XP_Bool recursive );
+void mtx_destroy( MutexState* mutex );
 
 #endif

@@ -40,7 +40,7 @@ void
 sts_init( XW_DUtilCtxt* dutil )
 {
     StatsState* ss = XP_CALLOC( dutil->mpool, sizeof(*ss) );
-    initMutex( &ss->mutex, XP_TRUE );
+    mtx_init( &ss->mutex, XP_TRUE );
     dutil->statsState = ss;
 }
 
@@ -49,6 +49,7 @@ sts_cleanup( XW_DUtilCtxt* dutil, XWEnv XP_UNUSED(xwe) )
 {
     StatsState* ss = dutil->statsState;
     XP_ASSERT( !!ss );
+    mtx_destroy( &ss->mutex );
     XP_FREEP( dutil->mpool, &ss->statsVals );
     XP_FREEP( dutil->mpool, &ss );
 }

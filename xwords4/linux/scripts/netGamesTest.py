@@ -199,6 +199,7 @@ class Device():
     _nSteps = 0
     _nextChatID = 0
     _kps = {}
+    _stats = None
 
     @staticmethod
     def setup(logdir):
@@ -238,6 +239,8 @@ class Device():
                 self.app = self.args.APP_NEW
 
         return self.app
+
+    def stats(self): return self._stats
 
     # called by thread proc
     def _launchProc(self):
@@ -560,7 +563,7 @@ class Device():
 
             # PENDING. Don't print this, but include in summary on exit
             response = self._sendWaitReply('stats')
-            print('stats => {}'.format(response))
+            self._addStats(response)
 
             response = self \
                 ._sendWaitReply('getStates', gids=gids, orders=orders)
@@ -600,6 +603,14 @@ class Device():
             self.watcher.join()
             self.watcher = None
             assert not self.endTime
+
+    def _addStats(self, stats):
+        stats = stats.get('stats')
+        if stats and self._stats:
+            for key in stats.keys():
+                if key in self._stats:
+                    assert self._stats[key] <= stats[key]
+        self._stats = stats
 
     def _checkScript(self):
         if not os.path.exists(self.script):
@@ -747,6 +758,10 @@ def printKPs():
         assert 1 == len(names)
     print('Known players: {}'.format(kps))
 
+def printStats():
+    for dev in Device.getAll():
+        print('stats for {}: {}'.format(dev.host, dev.stats()))
+
 def mainLoop(args, devs):
     startCount = len(devs)
     nCores = countCores(args)
@@ -790,6 +805,7 @@ def mainLoop(args, devs):
         if not args.VERBOSE:
             Device.printStatus(args.STATUS_STEPS)
 
+    # kill anybody left alive
     for dev in devs:
         print('killing {}'.format(dev.host))
         dev.quit()
@@ -998,6 +1014,8 @@ def main():
     mainLoop(args, devs)
 
     printKPs()
+    printStats()
+
 
     elapsed = datetime.datetime.now() - startTime
     print('played {} games in {}'.format(gGamesMade, elapsed))

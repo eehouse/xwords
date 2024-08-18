@@ -752,8 +752,8 @@ gdb_store( sqlite3* pDb, const gchar* key, const gchar* value )
 {
     XP_ASSERT( !!pDb );
     gchar* query =
-        g_strdup_printf( "INSERT OR REPLACE INTO pairs (key, value) VALUES ('%s', '%s')",
-                         key, value );
+        g_strdup_printf( "INSERT OR REPLACE INTO pairs (key, value) "
+                         "VALUES ('%s', '%s')", key, value );
     execNoResult( pDb, query, false );
     g_free( query );
 }
@@ -905,7 +905,8 @@ assertPrintResult( sqlite3* pDb, int result, int expect )
     }
     if ( result != expect ) {
         XP_LOGFF( "sqlite3 error: %d (%s)", result, sqlite3_errstr(result) );
-        XP_LOGFF( "Err msg (which could be out-of-sync): %s", sqlite3_errmsg( pDb ) );
+        XP_LOGFF( "Err msg (which could be out-of-sync): %s",
+                  sqlite3_errmsg( pDb ) );
         XP_ASSERT(0);
     }
 }
