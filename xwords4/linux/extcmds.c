@@ -231,7 +231,7 @@ getGamesStateForArgs( CmdWrapper* wr, cJSON* args, cJSON** states, cJSON** order
     for ( int ii = 0 ; success && ii < cJSON_GetArraySize(gids) ; ++ii ) {
         XP_U32 gameID = castGid( cJSON_GetArrayItem( gids, ii ) );
 
-        GameInfo gib;
+        GameInfo gib = {};
         if ( gdb_getGameInfoForGID( params->pDb, gameID, &gib ) ) {
             cJSON* item = NULL;
             addGIDToObject( &item, gameID, "gid" );
@@ -409,7 +409,7 @@ on_incoming_signal( GSocketService* XP_UNUSED(service),
 
     GInputStream* istream = g_io_stream_get_input_stream( G_IO_STREAM(connection) );
 
-    gchar buf[1024];
+    gchar buf[8*1024];
     gssize nread = g_input_stream_read( istream, buf, sizeof(buf), NULL, NULL );
     if ( 0 <= nread ) {
         // XP_ASSERT( nread == len );

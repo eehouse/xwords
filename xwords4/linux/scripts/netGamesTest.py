@@ -347,7 +347,7 @@ class Device():
 
         # # Receive a response from the server
         # self._log('_sendWaitReply({}): calling recv()'.format(cmd))
-        response = client.recv(4096).decode()
+        response = client.recv(8*1024).decode()
         # self._log('_sendWaitReply({}): recv => str: {}'.format(cmd, response))
         response = json.loads(response)
         self._log('_sendWaitReply({}, {}): recv => {}'.format(cmd, kwargs, response))

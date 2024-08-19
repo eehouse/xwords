@@ -609,9 +609,10 @@ findOrOpenForGameID( CursesBoardState* cbState, XP_U32 gameID,
                      const CurGameInfo* gi, const CommsAddrRec* returnAddr )
 {
     CursesBoardGlobals* result = NULL;
-    sqlite3_int64 rowids[1];
+    sqlite3_int64 rowids[2];
     int nRowIDs = VSIZE(rowids);
     gdb_getRowsForGameID( cbState->params->pDb, gameID, rowids, &nRowIDs );
+    XP_ASSERT( 0 <= nRowIDs && nRowIDs <= 1 );
     if ( 1 == nRowIDs ) {
         result = findOrOpen( cbState, rowids[0], gi, returnAddr );
     }
