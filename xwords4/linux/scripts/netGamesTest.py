@@ -581,9 +581,10 @@ class Device():
                 game.state = obj
 
                 if game.gameOver() and 0 < game.rematchLevel:
-                    self.rematch(game)
+                    if random.randint(0, 100) < self.args.REMATCH_PCT:
+                        self.rematch(game)
+                        anyRematched = True
                     game.rematchLevel = 0 # so won't be used again
-                    anyRematched = True
 
             if not anyRematched:
                 response = self._sendWaitReply('quit')
@@ -937,6 +938,8 @@ def mkParser():
                         help = 'rematch games down to this ancestry/depth')
     parser.add_argument('--rematch-order', dest = 'REMATCH_ORDER', type = str, default = None,
                         help = 'order rematched games one of these ways: {}'.format(g_ROS))
+    parser.add_argument('--rematch-pct', dest = 'REMATCH_PCT', type = int, default = 20,
+                        help = 'what percent of players will rematch at game end')
 
     envpat = 'DISCON_COREPAT'
     parser.add_argument('--core-pat', dest = 'CORE_PAT', default = os.environ.get(envpat),
