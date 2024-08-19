@@ -245,7 +245,8 @@ class Device():
     # called by thread proc
     def _launchProc(self):
         assert not self.endTime
-        self.endTime = datetime.datetime.now() + datetime.timedelta(seconds = 5)
+        self.endTime = datetime.datetime.now() + \
+            datetime.timedelta(seconds = self.args.MIN_APP_LIFE)
         args = [ self.script, '--close-stdin', '--skip-user-errors' ]
         if not self.args.USE_GTK: args.append('--curses')
 
@@ -913,6 +914,8 @@ def mkParser():
 
     parser.add_argument('--timer-seconds', dest='TIMER_SECS', default=10, type=int,
                         help='Enable game timer with game this many seconds long')
+    parser.add_argument('--min-app-life', dest='MIN_APP_LIFE', default=5, type=int,
+                        help='Minimum number of seconds app will run after each launch')
 
     parser.add_argument('--with-sms', dest = 'WITH_SMS', action = 'store_true')
     parser.add_argument('--without-sms', dest = 'WITH_SMS', default = False, action = 'store_false')

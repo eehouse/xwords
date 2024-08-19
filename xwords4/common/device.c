@@ -29,6 +29,7 @@
 #include "nli.h"
 #include "dbgutil.h"
 #include "timers.h"
+#include "xwmutex.h"
 
 #ifdef DEBUG
 # define MAGIC_INITED 0x8283413F
@@ -73,7 +74,13 @@ typedef struct _DevCtxt {
     XP_U16 devCount;
     WSData* webSendData;
     XP_U32 mWebSendKey;
-    pthread_mutex_t webSendMutex;
+    MutexState webSendMutex;
+
+    struct {
+        MutexState mutex;
+        cJSON* msgs;             /* pending acks saved here */
+        TimerKey key;
+    } ackTimer;
 
     PhoniesDataCodes* pd;
 
@@ -539,40 +546,63 @@ dispatchMsgs( XW_DUtilCtxt* dutil, XWEnv xwe, XP_U8 proto, XWStreamCtxt* stream,
 }
 
 static void
+onAckSendTimer( void* closure, XWEnv xwe, XP_Bool fired )
+{
+    XP_LOGFF( "(fired: %s)", boolToStr(fired) );
+    XW_DUtilCtxt* dutil = (XW_DUtilCtxt*)closure;
+    DevCtxt* dc = load( dutil, xwe );
+    cJSON* ackMsgs;
+    WITH_MUTEX( &dc->ackTimer.mutex );
+    ackMsgs = dc->ackTimer.msgs;
+    dc->ackTimer.msgs = NULL;
+    dc->ackTimer.key = 0;
+    END_WITH_MUTEX();
+
+    XP_ASSERT( 0 < cJSON_GetArraySize( ackMsgs ) );
+
+    if ( fired ) {
+        cJSON* params = cJSON_CreateObject();
+        cJSON_AddItemToObject( params, "msgs", ackMsgs );
+        dutil_sendViaWeb( dutil, xwe, 0, "ack2", params );
+        cJSON_Delete( params );
+    } else {
+        XP_LOGFF( "Dropping ack messages -- but should store them!" );
+        cJSON_Delete( ackMsgs );
+    }
+}
+
+static void
+setAckSendTimerLocked( XW_DUtilCtxt* dutil, XWEnv xwe, DevCtxt* dc )
+{
+    if ( 0 == dc->ackTimer.key ) {
+        XP_U32 inWhenMS = 10 * 1000;
+        dc->ackTimer.key = tmr_set( dutil, xwe, inWhenMS, onAckSendTimer,
+                                    dutil );
+        XP_ASSERT( 0 != dc->ackTimer.key );
+    }
+}
+
+static void
 ackMQTTMsg( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* topic,
             XP_U32 gameID, const XP_U8* buf, XP_U16 len )
 {
-    cJSON* params = cJSON_CreateObject();
-#if 1
-    cJSON* msgs = cJSON_CreateArray();
-    /* This belongs in a loop */
-    {
-        cJSON* msg = cJSON_CreateObject();
-        cJSON_AddStringToObject( msg, "topic", topic );
-
-        Md5SumBuf sb;
-        dutil_md5sum( dutil, xwe, buf, len, &sb );
-        cJSON_AddStringToObject( msg, "sum", sb.buf );
-
-        cJSON_AddNumberToObject( msg, "gid", gameID );
-
-        cJSON_AddItemToArray(msgs, msg);
-    }
-    cJSON_AddItemToObject(params, "msgs", msgs );
-
-    dutil_sendViaWeb( dutil, xwe, 0, "ack2", params );
-#else
-    cJSON_AddStringToObject( params, "topic", topic );
+    cJSON* msg = cJSON_CreateObject();
+    cJSON_AddStringToObject( msg, "topic", topic );
 
     Md5SumBuf sb;
     dutil_md5sum( dutil, xwe, buf, len, &sb );
-    cJSON_AddStringToObject( params, "sum", sb.buf );
+    cJSON_AddStringToObject( msg, "sum", sb.buf );
 
-    cJSON_AddNumberToObject( params, "gid", gameID );
+    cJSON_AddNumberToObject( msg, "gid", gameID );
 
-    dutil_sendViaWeb( dutil, xwe, 0, "ack", params );
-#endif
-    cJSON_Delete( params );
+    DevCtxt* dc = load( dutil, xwe );
+    WITH_MUTEX( &dc->ackTimer.mutex );
+    if ( !dc->ackTimer.msgs ) {
+        dc->ackTimer.msgs = cJSON_CreateArray();
+    }
+    cJSON_AddItemToArray( dc->ackTimer.msgs, msg );
+    setAckSendTimerLocked( dutil, xwe, dc );
+    END_WITH_MUTEX();
 }
 
 void
@@ -674,14 +704,14 @@ popForKey( XW_DUtilCtxt* dutil, XWEnv xwe, XP_U32 key )
     WSData* item = NULL;
     DevCtxt* dc = load( dutil, xwe );
 
-    pthread_mutex_lock( &dc->webSendMutex );
+    WITH_MUTEX(&dc->webSendMutex);
 
     GetByKeyData gbkd = { .resultKey = key, };
     dc->webSendData = (WSData*)dll_map( &dc->webSendData->links,
                                         getByKeyProc, NULL, &gbkd );
     item = gbkd.found;
 
-    pthread_mutex_unlock( &dc->webSendMutex );
+    END_WITH_MUTEX();
     XP_LOGFFV( "(key: %d) => %p", key, item );
     return item;
 }
@@ -690,11 +720,11 @@ static XP_U32
 addWithKey( XW_DUtilCtxt* dutil, XWEnv xwe, WSData* wsdp )
 {
     DevCtxt* dc = load( dutil, xwe );
-    pthread_mutex_lock( &dc->webSendMutex );
+    WITH_MUTEX(&dc->webSendMutex);
     wsdp->resultKey = ++dc->mWebSendKey;
     dc->webSendData = (WSData*)
         dll_insert( &dc->webSendData->links, &wsdp->links, NULL );
-    pthread_mutex_unlock( &dc->webSendMutex );
+    END_WITH_MUTEX();
     XP_LOGFFV( "(%p) => %d", wsdp, wsdp->resultKey );
     return wsdp->resultKey;
 }
@@ -752,9 +782,9 @@ dvc_onWebSendResult( XW_DUtilCtxt* dutil, XWEnv xwe, XP_U32 resultKey,
 static void
 freeWSState( XW_DUtilCtxt* dutil, DevCtxt* dc )
 {
-    pthread_mutex_lock( &dc->webSendMutex );
+    WITH_MUTEX( &dc->webSendMutex );
     dll_removeAll( &dc->webSendData->links, delWSDatum, dutil );
-    pthread_mutex_unlock( &dc->webSendMutex );
+    END_WITH_MUTEX();
 }
 
 typedef struct _PhoniesMapState {
@@ -1147,7 +1177,9 @@ dvc_init( XW_DUtilCtxt* dutil, XWEnv xwe )
     DevCtxt* dc = dutil->devCtxt = XP_CALLOC( dutil->mpool, sizeof(*dc) );
     dc->webSendData = NULL;
     dc->mWebSendKey = 0;
-    pthread_mutex_init( &dc->webSendMutex, NULL );
+
+    mtx_init( &dc->webSendMutex, XP_FALSE );
+    mtx_init( &dc->ackTimer.mutex, XP_FALSE );
 
     loadPhoniesData( dutil, xwe, dc );
 
@@ -1161,10 +1193,10 @@ void
 dvc_cleanup( XW_DUtilCtxt* dutil, XWEnv xwe )
 {
     DevCtxt* dc = freePhonyState( dutil, xwe );
-
     freeWSState( dutil, dc );
 
-    pthread_mutex_destroy( &dc->webSendMutex );
+    mtx_destroy( &dc->webSendMutex );
+    mtx_destroy( &dc->ackTimer.mutex );
 
     XP_FREEP( dutil->mpool, &dc );
 }

@@ -300,7 +300,7 @@ pushEntry( StackCtxt* stack, const StackEntry* entry )
 #ifdef DEBUG_HASHING
     XP_U32 origHash = stack_getHash( stack );
 
-    StackEntry prevTop;
+    StackEntry prevTop = {};
     if ( 1 < stack->nPlayers &&
          stack_getNthEntry( stack, stack->nEntries - 1, &prevTop ) ) {
         XP_ASSERT( stack->inDuplicateMode || prevTop.playerNum != entry->playerNum );

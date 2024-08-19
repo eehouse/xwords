@@ -33,8 +33,8 @@ typedef struct StatsState {
 
 static const XP_UCHAR* STATtoStr(STAT stat);
 static XP_U32* loadCounts( XW_DUtilCtxt* dutil, XWEnv xwe );
-static void storeCounts( XW_DUtilCtxt* dutil, XWEnv xwe );
-static void setStoreTimer( XW_DUtilCtxt* dutil, XWEnv xwe );
+static void storeCountsLocked( XW_DUtilCtxt* dutil, XWEnv xwe );
+static void setStoreTimerLocked( XW_DUtilCtxt* dutil, XWEnv xwe );
 
 void
 sts_init( XW_DUtilCtxt* dutil )
@@ -66,7 +66,7 @@ sts_increment( XW_DUtilCtxt* dutil, XWEnv xwe, STAT stat )
         }
         ++ss->statsVals[stat];
 
-        setStoreTimer( dutil, xwe );
+        setStoreTimerLocked( dutil, xwe );
         END_WITH_MUTEX();
     }
 }
@@ -104,7 +104,7 @@ sts_clearAll( XW_DUtilCtxt* dutil, XWEnv xwe )
 
     ss->statsVals
         = XP_CALLOC( dutil->mpool, sizeof(*ss->statsVals) * STAT_NSTATS );
-    storeCounts( dutil, xwe );
+    storeCountsLocked( dutil, xwe );
     END_WITH_MUTEX();
 }
 
@@ -133,7 +133,7 @@ STATtoStr(STAT stat)
 }
 
 static void
-storeCounts( XW_DUtilCtxt* dutil, XWEnv xwe )
+storeCountsLocked( XW_DUtilCtxt* dutil, XWEnv xwe )
 {
     StatsState* ss = dutil->statsState;
     XP_ASSERT( !!ss );
@@ -188,7 +188,7 @@ onStoreTimer( void* closure, XWEnv xwe, XP_Bool fired )
     XP_ASSERT( !!ss );
 
     WITH_MUTEX( &ss->mutex );
-    storeCounts( dutil, xwe );
+    storeCountsLocked( dutil, xwe );
     ss->timerSet = XP_FALSE;
     END_WITH_MUTEX();
     LOG_RETURN_VOID();
@@ -196,7 +196,7 @@ onStoreTimer( void* closure, XWEnv xwe, XP_Bool fired )
 #endif
 
 static void
-setStoreTimer( XW_DUtilCtxt* dutil, XWEnv xwe )
+setStoreTimerLocked( XW_DUtilCtxt* dutil, XWEnv xwe )
 {
 #ifdef DUTIL_TIMERS
     StatsState* ss = dutil->statsState;
