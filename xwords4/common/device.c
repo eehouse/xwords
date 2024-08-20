@@ -575,7 +575,7 @@ static void
 setAckSendTimerLocked( XW_DUtilCtxt* dutil, XWEnv xwe, DevCtxt* dc )
 {
     if ( 0 == dc->ackTimer.key ) {
-        XP_U32 inWhenMS = 10 * 1000;
+        XP_U32 inWhenMS = 7500;
         dc->ackTimer.key = tmr_set( dutil, xwe, inWhenMS, onAckSendTimer,
                                     dutil );
         XP_ASSERT( 0 != dc->ackTimer.key );

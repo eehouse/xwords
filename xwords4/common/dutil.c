@@ -59,7 +59,7 @@ void
 dutil_super_init( MPFORMAL XW_DUtilCtxt* dutil )
 {
 #ifdef XWFEATURE_KNOWNPLAYERS
-    pthread_mutex_init( &dutil->kpMutex, NULL );
+    mtx_init( &dutil->kpMutex, XP_FALSE );
 #endif
 
     MPASSIGN( dutil->mpool, mpool );

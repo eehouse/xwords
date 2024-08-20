@@ -22,6 +22,7 @@
 #include "dictnry.h"
 #include "strutils.h"
 #include "dictmgr.h"
+#include "xwmutex.h"
 
 #ifdef CPLUS
 extern "C" {
@@ -44,7 +45,7 @@ typedef struct _DictPair {
 
 struct DictMgrCtxt {
     DictPair pairs[DMGR_MAX_DICTS];
-    pthread_mutex_t mutex;
+    MutexState mutex;
     MPSLOT
 };
 
@@ -63,7 +64,7 @@ DictMgrCtxt*
 dmgr_make( MPFORMAL_NOCOMMA )
 {
     DictMgrCtxt* dmgr = XP_CALLOC( mpool, sizeof(*dmgr) );
-    pthread_mutex_init( &dmgr->mutex, NULL );
+    mtx_init( &dmgr->mutex, XP_FALSE );
     MPASSIGN( dmgr->mpool, mpool );
     return dmgr;
 }
@@ -77,7 +78,7 @@ dmgr_destroy( DictMgrCtxt* dmgr, XWEnv xwe )
         dict_unref( pair->dict, xwe );
         XP_FREEP( dmgr->mpool, &pair->key );
     }
-    pthread_mutex_destroy( &dmgr->mutex );
+    mtx_destroy( &dmgr->mutex );
     XP_FREE( dmgr->mpool, dmgr );
 }
 
@@ -86,7 +87,7 @@ dmgr_get( DictMgrCtxt* dmgr, XWEnv xwe, const XP_UCHAR* key )
 {
     const DictionaryCtxt* result = NULL;
 
-    pthread_mutex_lock( &dmgr->mutex );
+    WITH_MUTEX( &dmgr->mutex );
 
     XP_S16 index = findFor( dmgr, key );
     if ( 0 <= index ) {
@@ -96,14 +97,14 @@ dmgr_get( DictMgrCtxt* dmgr, XWEnv xwe, const XP_UCHAR* key )
 
     XP_LOGFF( "(key=%s)=>%p", key, result );
     printInOrder( dmgr );
-    pthread_mutex_unlock( &dmgr->mutex );
+    END_WITH_MUTEX();
     return result;
 }
 
 void
 dmgr_put( DictMgrCtxt* dmgr, XWEnv xwe, const XP_UCHAR* key, const DictionaryCtxt* dict )
 {
-    pthread_mutex_lock( &dmgr->mutex );
+    WITH_MUTEX( &dmgr->mutex );
 
     XP_S16 loc = findFor( dmgr, key );
     if ( NOT_FOUND == loc ) { /* reuse the last one */
@@ -118,7 +119,7 @@ dmgr_put( DictMgrCtxt* dmgr, XWEnv xwe, const XP_UCHAR* key, const DictionaryCtx
     XP_LOGFF( "(key=%s, dict=%p)", key, dict );
     printInOrder( dmgr );
 
-    pthread_mutex_unlock( &dmgr->mutex );
+    END_WITH_MUTEX();
 }
 
 static XP_S16

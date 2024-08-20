@@ -615,6 +615,7 @@ class Device():
         self._stats = stats
 
     def _checkScript(self):
+        assert os.path.exists(self.args.APP_NEW)
         if not os.path.exists(self.script):
             scriptArgs = ['exec']     # without exec means terminate() won't work
             if self.args.VALGRIND:
@@ -915,7 +916,7 @@ def mkParser():
 
     parser.add_argument('--timer-seconds', dest='TIMER_SECS', default=10, type=int,
                         help='Enable game timer with game this many seconds long')
-    parser.add_argument('--min-app-life', dest='MIN_APP_LIFE', default=5, type=int,
+    parser.add_argument('--min-app-life', dest='MIN_APP_LIFE', default=15, type=int,
                         help='Minimum number of seconds app will run after each launch')
 
     parser.add_argument('--with-sms', dest = 'WITH_SMS', action = 'store_true')

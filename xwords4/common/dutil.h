@@ -28,6 +28,7 @@
 #include "vtabmgr.h"
 #include "commstyp.h"
 #include "nlityp.h"
+#include "xwmutex.h"
 #include "cJSON.h"
 
 typedef enum { UNPAUSED,
@@ -120,7 +121,7 @@ struct XW_DUtilCtxt {
     void* timersState;          /* owned by timers.c */
 #ifdef XWFEATURE_KNOWNPLAYERS   /* owned by knownplyr.c */
     void* kpCtxt;
-    pthread_mutex_t kpMutex;
+    MutexState kpMutex;
 #endif
     VTableMgr* vtMgr;
 #ifdef DEBUG

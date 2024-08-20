@@ -32,6 +32,7 @@
 #include "dawg.h"
 #include "model.h"
 #include "mempool.h"
+#include "xwmutex.h"
 
 #ifdef CPLUS
 extern "C" {
@@ -74,7 +75,7 @@ struct DictionaryCtxt {
                                              array_edge* from, Tile tile );
     const XP_UCHAR* (*func_dict_getShortName)( const DictionaryCtxt* dict );
 
-    pthread_mutex_t mutex;
+    MutexState mutex;
 
     array_edge* topEdge;
     array_edge* base; /* the physical beginning of the dictionary; not

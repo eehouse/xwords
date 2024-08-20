@@ -24,6 +24,7 @@
 #include "smsproto.h"
 #include "comtypes.h"
 #include "strutils.h"
+#include "xwmutex.h"
 
 #define MAX_WAIT 3
 // # define MAX_MSG_LEN 50         /* for testing */
@@ -71,7 +72,7 @@ typedef struct _FromPhoneRec {
 struct SMSProto {
     XW_DUtilCtxt* dutil;
     pthread_t creator;
-    pthread_mutex_t mutex;
+    MutexState mutex;
     XP_U16 nNextID;
     int lastStoredSize;
     XP_U16 nToPhones;
@@ -120,7 +121,7 @@ SMSProto*
 smsproto_init( MPFORMAL XWEnv xwe, XW_DUtilCtxt* dutil )
 {
     SMSProto* state = (SMSProto*)XP_CALLOC( mpool, sizeof(*state) );
-    pthread_mutex_init( &state->mutex, NULL );
+    mtx_init( &state->mutex, XP_FALSE );
     state->dutil = dutil;
     MPASSIGN( state->mpool, mpool );
 
@@ -156,7 +157,7 @@ smsproto_free( SMSProto* state )
         }
         XP_ASSERT( !state->fromPhoneRecs ); /* above nulls this once empty */
 
-        pthread_mutex_destroy( &state->mutex );
+        mtx_destroy( &state->mutex );
 
         XP_FREEP( state->mpool, &state );
     }
@@ -220,7 +221,7 @@ smsproto_prepOutbound( SMSProto* state, XWEnv xwe, SMS_CMD cmd, XP_U32 gameID,
 {
     XP_USE( toPort );
     SMSMsgArray* result = NULL;
-    pthread_mutex_lock( &state->mutex );
+    WITH_MUTEX( &state->mutex );
 
 #if defined DEBUG
     Md5SumBuf sb;
@@ -260,7 +261,7 @@ smsproto_prepOutbound( SMSProto* state, XWEnv xwe, SMS_CMD cmd, XP_U32 gameID,
     XP_LOGF( "%s() => %p (count=%d, *waitSecs=%d)", __func__, result,
              !!result ? result->nMsgs : 0, *waitSecsP );
 
-    pthread_mutex_unlock( &state->mutex );
+    END_WITH_MUTEX();
     logResult( state, xwe, result, __func__ );
     return result;
 } /* smsproto_prepOutbound */
@@ -310,7 +311,7 @@ smsproto_prepInbound( SMSProto* state, XWEnv xwe, const XP_UCHAR* fromPhone,
 #endif
 
     SMSMsgArray* result = NULL;
-    pthread_mutex_lock( &state->mutex );
+    WITH_MUTEX( &state->mutex );
 
     XWStreamCtxt* stream = mkStream( state );
     stream_putBytes( stream, data, len );
@@ -380,14 +381,14 @@ smsproto_prepInbound( SMSProto* state, XWEnv xwe, const XP_UCHAR* fromPhone,
     XP_LOGFF( "=> %p (len=%d)", result, (!!result) ? result->nMsgs : 0 );
     logResult( state, xwe, result, __func__ );
 
-    pthread_mutex_unlock( &state->mutex );
+    END_WITH_MUTEX();
     return result;
 }
 
 void
 smsproto_freeMsgArray( SMSProto* state, SMSMsgArray* arr )
 {
-    pthread_mutex_lock( &state->mutex );
+    WITH_MUTEX( &state->mutex );
 
     for ( int ii = 0; ii < arr->nMsgs; ++ii ) {
         XP_U8** ptr = arr->format == FORMAT_LOC
@@ -409,7 +410,7 @@ smsproto_freeMsgArray( SMSProto* state, SMSMsgArray* arr )
     }
     XP_FREEP( state->mpool, ptr );
     XP_FREEP( state->mpool, &arr );
-    pthread_mutex_unlock( &state->mutex );
+    END_WITH_MUTEX();
 }
 
 #if defined DEBUG

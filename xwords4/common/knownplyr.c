@@ -61,11 +61,9 @@ loadFromStream( XW_DUtilCtxt* dutil, KPState* state, XWStreamCtxt* stream )
 }
 
 static KPState*
-loadState( XW_DUtilCtxt* dutil, XWEnv xwe )
+loadStateLocked( XW_DUtilCtxt* dutil, XWEnv xwe )
 {
     // LOG_FUNC();
-    pthread_mutex_lock( &dutil->kpMutex );
-
     KPState* state = (KPState*)dutil->kpCtxt;
     if ( NULL == state ) {
         dutil->kpCtxt = state = XP_CALLOC( dutil->mpool, sizeof(*state) );
@@ -116,13 +114,11 @@ saveState( XW_DUtilCtxt* dutil, XWEnv xwe, KPState* state )
 }
 
 static void
-releaseState( XW_DUtilCtxt* dutil, XWEnv xwe, KPState* state )
+releaseStateLocked( XW_DUtilCtxt* dutil, XWEnv xwe, KPState* state )
 {
     XP_ASSERT( state->inUse );
     saveState( dutil, xwe, state );
     state->inUse = XP_FALSE;
-
-    pthread_mutex_unlock( &dutil->kpMutex );
 }
 
 static void
@@ -249,9 +245,11 @@ kplr_addAddr( XW_DUtilCtxt* dutil, XWEnv xwe, const CommsAddrRec* addr,
     XP_ASSERT( !!name );
     XP_Bool canUse = addr_hasType( addr, COMMS_CONN_MQTT );
     if ( canUse ) {
-        KPState* state = loadState( dutil, xwe );
+        WITH_MUTEX( &dutil->kpMutex );
+        KPState* state = loadStateLocked( dutil, xwe );
         addPlayer( dutil, state, name, addr, modTime );
-        releaseState( dutil, xwe, state );
+        releaseStateLocked( dutil, xwe, state );
+        END_WITH_MUTEX();
     }
 
     XP_LOGFFV( "=>%s", boolToStr(canUse) );
@@ -261,9 +259,12 @@ kplr_addAddr( XW_DUtilCtxt* dutil, XWEnv xwe, const CommsAddrRec* addr,
 XP_Bool
 kplr_havePlayers( XW_DUtilCtxt* dutil, XWEnv xwe )
 {
-    KPState* state = loadState( dutil, xwe );
-    XP_Bool result = 0 < dll_length( &state->players->links );
-    releaseState( dutil, xwe, state );
+    XP_Bool result;
+    WITH_MUTEX( &dutil->kpMutex );
+    KPState* state = loadStateLocked( dutil, xwe );
+    result = 0 < dll_length( &state->players->links );
+    releaseStateLocked( dutil, xwe, state );
+    END_WITH_MUTEX();
     LOG_RETURNF( "%s", boolToStr(result) );
     return result;
 }
@@ -303,7 +304,8 @@ void
 kplr_getNames( XW_DUtilCtxt* dutil, XWEnv xwe, XP_Bool byDate,
                const XP_UCHAR** players, XP_U16* nFound )
 {
-    KPState* state = loadState( dutil, xwe );
+    WITH_MUTEX( &dutil->kpMutex );
+    KPState* state = loadStateLocked( dutil, xwe );
     if ( byDate ) {
         state->players = (KnownPlayer*)dll_sort( &state->players->links,
                                                  compByDate );
@@ -313,7 +315,8 @@ kplr_getNames( XW_DUtilCtxt* dutil, XWEnv xwe, XP_Bool byDate,
         state->players = (KnownPlayer*)dll_sort( &state->players->links,
                                                  compByName );
     }
-    releaseState( dutil, xwe, state );
+    releaseStateLocked( dutil, xwe, state );
+    END_WITH_MUTEX();
 }
 
 typedef struct _FindState {
@@ -350,8 +353,9 @@ XP_Bool
 kplr_getAddr( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* name,
               CommsAddrRec* addr, XP_U32* lastMod )
 {
-    KPState* state = loadState( dutil, xwe );
     XP_Bool found = XP_FALSE;
+    WITH_MUTEX( &dutil->kpMutex );
+    KPState* state = loadStateLocked( dutil, xwe );
     KnownPlayer* kp = findByName( state, name );
     found = NULL != kp;
     if ( found ) {
@@ -360,7 +364,8 @@ kplr_getAddr( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* name,
             *lastMod = kp->newestMod;
         }
     }
-    releaseState( dutil, xwe, state );
+    releaseStateLocked( dutil, xwe, state );
+    END_WITH_MUTEX();
     LOG_RETURNF( "%s", boolToStr(found) );
     return found;
 }
@@ -401,13 +406,15 @@ kplr_nameForAddress( XW_DUtilCtxt* dutil, XWEnv xwe,
                      const CommsAddrRec* addr )
 {
     MDevState ms = {.addr = addr};
-    KPState* state = loadState( dutil, xwe );
+    WITH_MUTEX( &dutil->kpMutex );
+    KPState* state = loadStateLocked( dutil, xwe );
 #ifdef DEBUG
     DLHead* head =
 #endif
         dll_map( &state->players->links, addrProc, NULL, &ms );
     XP_ASSERT( head == &state->players->links );
-    releaseState( dutil, xwe, state );
+    releaseStateLocked( dutil, xwe, state );
+    END_WITH_MUTEX();
 
     XP_LOGFF( "=> %s", ms.name );
     return ms.name;
@@ -425,7 +432,8 @@ kplr_renamePlayer( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* oldName,
                    const XP_UCHAR* newName )
 {
     KP_Rslt result;
-    KPState* state = loadState( dutil, xwe );
+    WITH_MUTEX( &dutil->kpMutex );
+    KPState* state = loadStateLocked( dutil, xwe );
 
     KnownPlayer* kp = findByName( state, oldName );
     if ( !kp ) {
@@ -439,7 +447,8 @@ kplr_renamePlayer( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* oldName,
         result = KP_OK;
     }
 
-    releaseState( dutil, xwe, state );
+    releaseStateLocked( dutil, xwe, state );
+    END_WITH_MUTEX();
     return result;
 }
 
@@ -474,12 +483,14 @@ KP_Rslt
 kplr_deletePlayer( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* name )
 {
     KP_Rslt result = KP_OK;
-    KPState* state = loadState( dutil, xwe );
+    WITH_MUTEX( &dutil->kpMutex );
+    KPState* state = loadStateLocked( dutil, xwe );
 
     DelState ds = { .name = name, .state = state, .dutil = dutil,};
     state->players = (KnownPlayer*)
         dll_map( &state->players->links, delMapProc, delFreeProc, &ds );
-    releaseState( dutil, xwe, state );
+    releaseStateLocked( dutil, xwe, state );
+    END_WITH_MUTEX();
 
     return result;
 }
