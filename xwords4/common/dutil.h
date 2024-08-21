@@ -28,7 +28,6 @@
 #include "vtabmgr.h"
 #include "commstyp.h"
 #include "nlityp.h"
-#include "xwmutex.h"
 #include "cJSON.h"
 
 typedef enum { UNPAUSED,

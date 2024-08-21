@@ -64,7 +64,7 @@ mpool_make( const XP_UCHAR* tag )
 {
     MemPoolCtx* result = (MemPoolCtx*)XP_PLATMALLOC( sizeof(*result) );
     XP_MEMSET( result, 0, sizeof(*result) );
-    mtx_init( &result->mutex, XP_TRUE );
+    MUTEX_INIT( &result->mutex, XP_TRUE );
     mpool_setTag( result, tag );
     return result;
 } /* mpool_make */
@@ -160,7 +160,7 @@ mpool_destroy( MemPoolCtx* mpool )
 #endif
 
     freeList( mpool->freeList );
-    mtx_destroy( &mpool->mutex );
+    MUTEX_DESTROY( &mpool->mutex );
     XP_PLATFREE( mpool );
 } /* mpool_destroy */
 

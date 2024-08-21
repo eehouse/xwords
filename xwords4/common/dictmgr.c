@@ -64,7 +64,7 @@ DictMgrCtxt*
 dmgr_make( MPFORMAL_NOCOMMA )
 {
     DictMgrCtxt* dmgr = XP_CALLOC( mpool, sizeof(*dmgr) );
-    mtx_init( &dmgr->mutex, XP_FALSE );
+    MUTEX_INIT( &dmgr->mutex, XP_FALSE );
     MPASSIGN( dmgr->mpool, mpool );
     return dmgr;
 }
@@ -78,7 +78,7 @@ dmgr_destroy( DictMgrCtxt* dmgr, XWEnv xwe )
         dict_unref( pair->dict, xwe );
         XP_FREEP( dmgr->mpool, &pair->key );
     }
-    mtx_destroy( &dmgr->mutex );
+    MUTEX_DESTROY( &dmgr->mutex );
     XP_FREE( dmgr->mpool, dmgr );
 }
 
@@ -87,7 +87,7 @@ dmgr_get( DictMgrCtxt* dmgr, XWEnv xwe, const XP_UCHAR* key )
 {
     const DictionaryCtxt* result = NULL;
 
-    WITH_MUTEX( &dmgr->mutex );
+    WITH_MUTEX_CHECKED( &dmgr->mutex, 1 );
 
     XP_S16 index = findFor( dmgr, key );
     if ( 0 <= index ) {

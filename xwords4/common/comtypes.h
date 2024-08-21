@@ -28,6 +28,8 @@
 # define RELCONST const
 #endif
 
+#include <pthread.h>
+
 #include "xptypes.h"
 
 #ifndef EXTERN_C_START
@@ -343,6 +345,14 @@ typedef struct _TrayTileSet {
     XP_U8 nTiles;
     TrayTile tiles[MAX_TRAY_TILES];
 } TrayTileSet;
+
+/* making this a struct in case I want to add e.g. a chain of holders */
+typedef struct _MutexState {
+    pthread_mutex_t mutex;
+#ifdef DEBUG
+    XP_U16 waitSecs;
+#endif
+} MutexState;
 
 #ifdef XWFEATURE_BLUETOOTH
 /* temporary debugging hack */

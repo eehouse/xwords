@@ -25,6 +25,7 @@
 #include "comms.h"
 #include "dbgutil.h"
 #include "dllist.h"
+#include "xwmutex.h"
 
 typedef struct _KnownPlayer {
     DLHead links;

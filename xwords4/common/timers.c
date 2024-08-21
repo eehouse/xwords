@@ -47,7 +47,7 @@ tmr_init( XW_DUtilCtxt* dutil )
     TimerMgrState* tms = XP_CALLOC( dutil->mpool, sizeof(*tms) );
     tms->dutil = dutil;
     dutil->timersState = tms;
-    mtx_init( &tms->mutex, XP_TRUE );
+    MUTEX_INIT( &tms->mutex, XP_TRUE );
 }
 
 void
@@ -56,7 +56,7 @@ tmr_cleanup( XW_DUtilCtxt* dutil, XWEnv xwe )
     TimerMgrState* timersState = (TimerMgrState*)dutil->timersState;
     XP_ASSERT( !!timersState );
     clearPendings( dutil, xwe );
-    mtx_destroy( &timersState->mutex );
+    MUTEX_DESTROY( &timersState->mutex );
     XP_FREEP( dutil->mpool, &dutil->timersState );
 }
 
@@ -85,7 +85,8 @@ tmr_set( XW_DUtilCtxt* dutil, XWEnv xwe, XP_U32 inWhen,
 }
 
 static void
-timerFired( XW_DUtilCtxt* dutil, XWEnv xwe, TimerState* timer, XP_Bool fired )
+timerFired( XW_DUtilCtxt* XP_UNUSED_DBG(dutil), XWEnv xwe, TimerState* timer,
+            XP_Bool fired )
 {
     XP_LOGFF( "(timer=%p); key=%d", timer, timer->key );
     (*timer->proc)( timer->closure, xwe, fired );

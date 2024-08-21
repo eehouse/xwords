@@ -32,7 +32,6 @@
 #include "dawg.h"
 #include "model.h"
 #include "mempool.h"
-#include "xwmutex.h"
 
 #ifdef CPLUS
 extern "C" {

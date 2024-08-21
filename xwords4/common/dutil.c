@@ -27,6 +27,7 @@
 #include "device.h"
 #include "stats.h"
 #include "timers.h"
+#include "xwmutex.h"
 
 static void
 super_dutil_storeStream( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* keys[],
@@ -59,7 +60,7 @@ void
 dutil_super_init( MPFORMAL XW_DUtilCtxt* dutil )
 {
 #ifdef XWFEATURE_KNOWNPLAYERS
-    mtx_init( &dutil->kpMutex, XP_FALSE );
+    MUTEX_INIT( &dutil->kpMutex, XP_FALSE );
 #endif
 
     MPASSIGN( dutil->mpool, mpool );

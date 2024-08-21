@@ -20,59 +20,44 @@
 #ifndef _XWMUTEX_H_
 #define _XWMUTEX_H_
 
-#include <pthread.h>
 #include "xptypes.h"
-
-/* Making this a struct in case I want to add e.g. a chain of holders */
-typedef struct _MutexState {
-    pthread_mutex_t mutex;
-} MutexState;
-
-#ifdef MUTEX_LOG_VERBOSE
-# define MUTEX_LOG(...) XP_LOGFF(__VA_ARGS__)
-#else
-# define MUTEX_LOG(...)
-#endif
-
-#define WITH_MUTEX_LOCK_DEBUG(STATEP) {                                 \
-    MutexState* _state = (STATEP);                                      \
-    time_t startTime = time(NULL);                                      \
-    MUTEX_LOG( "blocking for mutex %p", _state );                       \
-    pthread_mutex_lock(&_state->mutex);                                 \
-    MUTEX_LOG( "got mutex %p", _state );                                \
-    time_t gotItTime = time(NULL);                                      \
-    time_t _elapsed = gotItTime-startTime;                              \
-    if ( 0 < _elapsed ) {                                               \
-        XP_LOGFF("took %lds to get mutex", _elapsed);                   \
-    }                                                                   \
-
-#define WITH_MUTEX_UNLOCK_DEBUG()                           \
-    time_t unlockTime = time(NULL);                         \
-    _elapsed = unlockTime-gotItTime;                        \
-    if ( 0 < _elapsed ) {                                   \
-        XP_LOGFF("held mutex for %lds", _elapsed);          \
-    }                                                       \
-    pthread_mutex_unlock(&_state->mutex);                   \
-    MUTEX_LOG( "released mutex %p", _state );               \
-    }                                                       \
-
-#define WITH_MUTEX_LOCK_RELEASE(COMMS) {        \
-    MutexState* _state = (STATEP);              \
-    pthread_mutex_lock(&_state->mutex);         \
-
-#define WITH_MUTEX_UNLOCK_RELEASE()             \
-    pthread_mutex_unlock(&_state->mutex);       \
-    }                                           \
+#include "comtypes.h"
 
 #ifdef DEBUG
-#define WITH_MUTEX WITH_MUTEX_LOCK_DEBUG
-#define END_WITH_MUTEX WITH_MUTEX_UNLOCK_DEBUG
+
+void mtx_lock_prv(MutexState* state, XP_U16 waitSecs, const char* caller);
+void mtx_unlock_prv(MutexState* state, XP_U16 waitSecs, const char* caller);
+# define WITH_MUTEX_CHECKED(STATE, SECS) {        \
+    MutexState* _state = (STATE);                \
+    XP_U16 _waitSecs = (SECS);                   \
+    mtx_lock_prv(_state, _waitSecs, __func__)
+# define WITH_MUTEX(STATE) WITH_MUTEX_CHECKED(STATE, 0)
+# define END_WITH_MUTEX() mtx_unlock_prv(_state, _waitSecs, __func__);  \
+    }
 #else
-#define WITH_MUTEX WITH_MUTEX_LOCK_RELEASE
-#define END_WITH_MUTEX WITH_MUTEX_UNLOCK_RELEASE
+# define WITH_MUTEX(STATE) {                            \
+    const pthread_mutex_t* _mutex = &(STATE)->mutex;    \
+    pthread_mutex_lock((pthread_mutex_t*)_mutex)
+# define WITH_MUTEX_CHECKED(STATE, IGNORE) WITH_MUTEX(STATE)
+# define END_WITH_MUTEX() pthread_mutex_unlock((pthread_mutex_t*)_mutex); \
+    }
 #endif
 
-void mtx_init( MutexState* mutex, XP_Bool recursive );
-void mtx_destroy( MutexState* mutex );
+void mtx_init_prv( MutexState* mutex, XP_Bool recursive
+# ifdef DEBUG
+                       , XP_U16 waitSecs
+# endif
+                       );
+void mtx_destroy_prv( MutexState* mutex );
+
+#ifdef DEBUG
+# define MUTEX_INIT_CHECKED(STATE, RECURSIVE, WS) mtx_init_prv((STATE), (RECURSIVE), (WS))
+# define MUTEX_INIT(STATE, RECURSIVE) MUTEX_INIT_CHECKED(STATE, RECURSIVE, 0)
+#else
+# define MUTEX_INIT(STATE, RECURSIVE) mtx_init_prv((STATE), (RECURSIVE))
+# define MUTEX_INIT_CHECKED(STATE, RECURSIVE, WS) MUTEX_INIT((STATE), (RECURSIVE))
+#endif
+
+#define MUTEX_DESTROY(STATE) mtx_destroy_prv((STATE))
 
 #endif

@@ -417,7 +417,7 @@ comms_make( MPFORMAL XWEnv xwe, XW_UtilCtxt* util, XP_Bool isServer,
             XP_U16 forceChannel )
 {
     CommsCtxt* comms = (CommsCtxt*)XP_CALLOC( mpool, sizeof(*comms) );
-    mtx_init( &comms->mutex, XP_TRUE );
+    MUTEX_INIT( &comms->mutex, XP_TRUE );
     comms->util = util;
     comms->dutil = util_getDevUtilCtxt( util, xwe );
 #ifdef DEBUG
@@ -587,7 +587,7 @@ comms_destroy( CommsCtxt* comms, XWEnv xwe )
     util_clearTimer( comms->util, xwe, TIMER_COMMS );
 
     END_WITH_MUTEX();
-    mtx_destroy( &comms->mutex );
+    MUTEX_DESTROY( &comms->mutex );
     XP_FREE( comms->mpool, comms );
 } /* comms_destroy */
 

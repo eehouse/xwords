@@ -121,7 +121,7 @@ SMSProto*
 smsproto_init( MPFORMAL XWEnv xwe, XW_DUtilCtxt* dutil )
 {
     SMSProto* state = (SMSProto*)XP_CALLOC( mpool, sizeof(*state) );
-    mtx_init( &state->mutex, XP_FALSE );
+    MUTEX_INIT( &state->mutex, XP_FALSE );
     state->dutil = dutil;
     MPASSIGN( state->mpool, mpool );
 
@@ -157,7 +157,7 @@ smsproto_free( SMSProto* state )
         }
         XP_ASSERT( !state->fromPhoneRecs ); /* above nulls this once empty */
 
-        mtx_destroy( &state->mutex );
+        MUTEX_DESTROY( &state->mutex );
 
         XP_FREEP( state->mpool, &state );
     }

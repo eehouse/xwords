@@ -18,12 +18,13 @@
  */
 
 #include "stats.h"
-#include "xwmutex.h"
 #include "device.h"
 #include "xwstream.h"
 #include "strutils.h"
 #include "dbgutil.h"
 #include "timers.h"
+
+#include "xwmutex.h"
 
 typedef struct StatsState {
     XP_U32* statsVals;
@@ -40,7 +41,7 @@ void
 sts_init( XW_DUtilCtxt* dutil )
 {
     StatsState* ss = XP_CALLOC( dutil->mpool, sizeof(*ss) );
-    mtx_init( &ss->mutex, XP_TRUE );
+    MUTEX_INIT( &ss->mutex, XP_TRUE );
     dutil->statsState = ss;
 }
 
@@ -49,7 +50,7 @@ sts_cleanup( XW_DUtilCtxt* dutil, XWEnv XP_UNUSED(xwe) )
 {
     StatsState* ss = dutil->statsState;
     XP_ASSERT( !!ss );
-    mtx_destroy( &ss->mutex );
+    MUTEX_DESTROY( &ss->mutex );
     XP_FREEP( dutil->mpool, &ss->statsVals );
     XP_FREEP( dutil->mpool, &ss );
 }
@@ -180,7 +181,7 @@ loadCounts( XW_DUtilCtxt* dutil, XWEnv xwe )
 
 #ifdef DUTIL_TIMERS
 static void
-onStoreTimer( void* closure, XWEnv xwe, XP_Bool fired )
+onStoreTimer( void* closure, XWEnv xwe, XP_Bool XP_UNUSED_DBG(fired) )
 {
     XP_LOGFF( "(fired: %s)", boolToStr(fired) );
     XW_DUtilCtxt* dutil = (XW_DUtilCtxt*)closure;
@@ -204,7 +205,10 @@ setStoreTimerLocked( XW_DUtilCtxt* dutil, XWEnv xwe )
     if ( !ss->timerSet ) {
         ss->timerSet = XP_TRUE;
         XP_U32 inWhenMS = 5 * 1000;
-        TimerKey key = tmr_set( dutil, xwe, inWhenMS, onStoreTimer, dutil );
+#ifdef DEBUG
+        TimerKey key =
+#endif
+            tmr_set( dutil, xwe, inWhenMS, onStoreTimer, dutil );
         XP_LOGFF( "tmr_set() => %d", key );
     } else {
         XP_LOGFF( "timer already set" );

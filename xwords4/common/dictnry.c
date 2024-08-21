@@ -85,7 +85,7 @@ p_dict_unref( const DictionaryCtxt* dict, XWEnv xwe
         if ( 0 == _dict->refCount ) {
             /* There's a race here. If another thread locks the mutex we'll
                still destroy the dict (and the locked mutex!!!) PENDING */
-            mtx_destroy( &_dict->mutex );
+            MUTEX_DESTROY( &_dict->mutex );
             (*dict->destructor)( _dict, xwe );
         }
     }
@@ -1209,7 +1209,7 @@ dict_super_init( MPFORMAL DictionaryCtxt* dict )
     dict->func_dict_edge_with_tile = dict_super_edge_with_tile;
     dict->func_dict_getShortName = dict_getName;
 
-    mtx_init( &dict->mutex, XP_FALSE );
+    MUTEX_INIT( &dict->mutex, XP_FALSE );
 } /* dict_super_init */
 
 void

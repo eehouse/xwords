@@ -733,6 +733,7 @@ static void
 delWSDatum( DLHead* elem, void* closure )
 {
     XW_DUtilCtxt* dutil = (XW_DUtilCtxt*)closure;
+    XP_USE(dutil);              /* for release builds */
     XP_FREEP( dutil->mpool, &elem );
 }
 
@@ -1178,8 +1179,8 @@ dvc_init( XW_DUtilCtxt* dutil, XWEnv xwe )
     dc->webSendData = NULL;
     dc->mWebSendKey = 0;
 
-    mtx_init( &dc->webSendMutex, XP_FALSE );
-    mtx_init( &dc->ackTimer.mutex, XP_FALSE );
+    MUTEX_INIT( &dc->webSendMutex, XP_FALSE );
+    MUTEX_INIT( &dc->ackTimer.mutex, XP_FALSE );
 
     loadPhoniesData( dutil, xwe, dc );
 
@@ -1195,8 +1196,8 @@ dvc_cleanup( XW_DUtilCtxt* dutil, XWEnv xwe )
     DevCtxt* dc = freePhonyState( dutil, xwe );
     freeWSState( dutil, dc );
 
-    mtx_destroy( &dc->webSendMutex );
-    mtx_destroy( &dc->ackTimer.mutex );
+    MUTEX_DESTROY( &dc->webSendMutex );
+    MUTEX_DESTROY( &dc->ackTimer.mutex );
 
     XP_FREEP( dutil->mpool, &dc );
 }
