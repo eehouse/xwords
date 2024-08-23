@@ -76,6 +76,7 @@
 #include "dictiter.h"
 #include "gsrcwrap.h"
 #include "dllist.h"
+#include "xwmutex.h"
 /* #include "commgr.h" */
 /* #include "compipe.h" */
 #include "memstream.h"
@@ -2686,6 +2687,7 @@ main( int argc, char** argv )
     XP_LOGFF( "%s starting; ptr size: %zu", argv[0], sizeof(argv) );
 
     testDLL();
+    // mtx_crashToTest();
     // return 0;
 
     int opt;
