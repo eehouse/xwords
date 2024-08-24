@@ -137,6 +137,8 @@ class DUtilCtxt {
     fun setTimer(inMS: Int, key: Int)
     {
         val startMS = if (BuildConfig.DEBUG) System.currentTimeMillis() else 0
+        synchronized(sCleared) {sCleared.add(key)}
+
         thread {
             Thread.sleep(inMS.toLong())
             if (BuildConfig.DEBUG) {
