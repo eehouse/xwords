@@ -417,7 +417,7 @@ comms_make( MPFORMAL XWEnv xwe, XW_UtilCtxt* util, XP_Bool isServer,
             XP_U16 forceChannel )
 {
     CommsCtxt* comms = (CommsCtxt*)XP_CALLOC( mpool, sizeof(*comms) );
-    MUTEX_INIT( &comms->mutex, XP_TRUE );
+    MUTEX_INIT_CHECKED( &comms->mutex, XP_TRUE, 3 );
     comms->util = util;
     comms->dutil = util_getDevUtilCtxt( util, xwe );
 #ifdef DEBUG

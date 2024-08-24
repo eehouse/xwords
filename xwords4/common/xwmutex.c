@@ -22,7 +22,13 @@
 #ifdef DEBUG
 #include <unistd.h>
 
-#define WAIT_ALL_SECS 3
+// #define WAIT_ALL_SECS 3
+/* #define WAIT_ALL_SECS to enable checking for ALL mutexes, but don't do that
+    on Android because it kills the app (because locks in mpool are so
+    frequent, I suspect). I'll keep it on on Linux for testing, but even there
+    it limits how many games I can run at once. I really need a cleverer
+    implementation where a single thread checks everything....
+*/
 
 /* What is this? It's my attempt to, on debug builds and for all or only
    chosen mutexes, get an assertion when the app doesn't get a lock in the
@@ -95,9 +101,9 @@ mtx_lock_prv( MutexState* state, XP_U16 waitSecs,
         (void)pthread_create( &waitThread, NULL, checkLockProc, &ws );
         int count = 0;
         while ( !ws.flagLoc ) {
-            usleep(50); /* wait for thread to start */
+            usleep(500); /* wait for thread to start */
             if ( 0 == (++count%10) ) {
-                XP_LOGFF( "count %d; flagLoc still null", count );
+                // XP_LOGFF( "count %d; flagLoc still null", count );
             }
         }
     }
