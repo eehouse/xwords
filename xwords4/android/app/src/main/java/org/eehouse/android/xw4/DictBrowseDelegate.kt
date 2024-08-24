@@ -47,6 +47,7 @@ import org.eehouse.android.xw4.DBUtils.getSerializableFor
 import org.eehouse.android.xw4.DBUtils.setSerializableFor
 import org.eehouse.android.xw4.DbgUtils.assertOnUIThread
 import org.eehouse.android.xw4.DictUtils.DictLoc
+import org.eehouse.android.xw4.DlgDelegate.Action
 import org.eehouse.android.xw4.ExpandImageButton.ExpandChangeListener
 import org.eehouse.android.xw4.PatTableRow.EnterPressed
 import org.eehouse.android.xw4.Utils.ISOCode
@@ -366,17 +367,17 @@ class DictBrowseDelegate constructor(delegator: Delegator) : DelegateBase(
     //////////////////////////////////////////////////
     // DlgDelegate.DlgClickNotify interface
     //////////////////////////////////////////////////
-    override fun onPosButton(action: DlgDelegate.Action,
+    override fun onPosButton(action: Action,
                              vararg params: Any?): Boolean
     {
         var handled = false
         when (action) {
-            DlgDelegate.Action.FINISH_ACTION -> {
+            Action.FINISH_ACTION -> {
                 handled = true
                 finish()
             }
 
-            DlgDelegate.Action.SHOW_TILES -> showTiles()
+            Action.SHOW_TILES -> showTiles()
             else -> handled = super.onPosButton(action, *params)
         }
         return handled
@@ -519,7 +520,7 @@ class DictBrowseDelegate constructor(delegator: Delegator) : DelegateBase(
                         val langName = DictLangCache.getLangNameForISOCode(mActivity, mLang!!)
                         makeOkOnlyBuilder(R.string.no_tiles_exist, strPat, langName)
                             .setActionPair(
-                                DlgDelegate.Action.SHOW_TILES,
+                                Action.SHOW_TILES,
                                 R.string.show_tiles_button
                             )
                             .show()
@@ -684,7 +685,7 @@ class DictBrowseDelegate constructor(delegator: Delegator) : DelegateBase(
                 R.string.key_na_newFeatureFilter,
                 R.string.new_feature_filter
             )
-                .setActionPair(DlgDelegate.Action.SHOW_FAQ, R.string.button_faq)
+                .setActionPair(Action.SHOW_FAQ, R.string.button_faq)
                 .setParams(FAQ_PARAMS as Any)
                 .show()
         }

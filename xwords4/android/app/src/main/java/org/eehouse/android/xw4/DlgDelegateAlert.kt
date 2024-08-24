@@ -25,6 +25,8 @@ import android.content.Context
 import android.content.DialogInterface
 import android.os.Bundle
 import android.os.Parcelable
+
+import org.eehouse.android.xw4.DlgDelegate.Action
 import org.eehouse.android.xw4.DlgDelegate.ActionPair
 import org.eehouse.android.xw4.DlgDelegate.DlgClickNotify
 import org.eehouse.android.xw4.loc.LocUtils
@@ -146,7 +148,7 @@ open class DlgDelegateAlert : XWDialogFragment() {
         cbkOnClickLstnr = DialogInterface.OnClickListener { dlg, button ->
             checkNotAgainCheck(mState, naView)
             val activity: Activity? = activity
-            if (DlgDelegate.Action.SKIP_CALLBACK != mState!!.m_action
+            if (Action.SKIP_CALLBACK != mState!!.m_action
                 && activity is DlgClickNotify
             ) {
                 val notify = activity as DlgClickNotify

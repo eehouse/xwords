@@ -20,12 +20,15 @@ package org.eehouse.android.xw4
 import android.app.AlertDialog
 import android.content.Context
 import android.content.DialogInterface
+
+import java.lang.ref.WeakReference
+
+import org.eehouse.android.xw4.DlgDelegate.Action
 import org.eehouse.android.xw4.DlgDelegate.DlgClickNotify.InviteMeans
 import org.eehouse.android.xw4.InviteView.ItemClicked
 import org.eehouse.android.xw4.NFCUtils.nfcAvail
 import org.eehouse.android.xw4.jni.XwJNI
 import org.eehouse.android.xw4.loc.LocUtils
-import java.lang.ref.WeakReference
 
 class InviteChoicesAlert : DlgDelegateAlert(), ItemClicked {
     private var mInviteView: InviteView? = null
@@ -91,7 +94,7 @@ class InviteChoicesAlert : DlgDelegateAlert(), ItemClicked {
         mInviteView = LocUtils
             .inflate(context, R.layout.invite_view) as InviteView
         val okClicked = DialogInterface.OnClickListener { dlg, pos ->
-            Assert.assertTrue(DlgDelegate.Action.SKIP_CALLBACK != state.m_action)
+            Assert.assertTrue(Action.SKIP_CALLBACK != state.m_action)
             val choice = mInviteView!!.getChoice()
             if (null != choice) {
                 val activity = context as XWActivity
@@ -169,7 +172,7 @@ class InviteChoicesAlert : DlgDelegateAlert(), ItemClicked {
                 if (Perms23.NBSPermsInManifest(activity)
                         && !XWPrefs.getNBSEnabled(requireContext())) {
                     activity.makeConfirmThenBuilder(
-                        DlgDelegate.Action.ENABLE_NBS_ASK,
+                        Action.ENABLE_NBS_ASK,
                         R.string.warn_sms_disabled
                     )
                     .setPosButton(R.string.button_enable_sms)

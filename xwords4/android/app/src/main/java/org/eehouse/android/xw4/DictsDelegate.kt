@@ -51,6 +51,7 @@ import java.util.Arrays
 import org.eehouse.android.xw4.DictUtils.DictAndLoc
 import org.eehouse.android.xw4.DictUtils.DictLoc
 import org.eehouse.android.xw4.DictUtils.ON_SERVER
+import org.eehouse.android.xw4.DlgDelegate.Action
 import org.eehouse.android.xw4.DlgDelegate.DlgClickNotify
 import org.eehouse.android.xw4.DwnldDelegate.DownloadFinishedListener
 import org.eehouse.android.xw4.DwnldDelegate.OnGotLcDictListener
@@ -407,7 +408,7 @@ class DictsDelegate(delegator: Delegator) :
         Perms23.tryGetPermsNA(
             this, Perm.STORAGE, R.string.dicts_storage_rationale,
             R.string.key_na_perms_storage_dicts,
-            DlgDelegate.Action.STORAGE_CONFIRMED
+            Action.STORAGE_CONFIRMED
         )
     } // init
 
@@ -527,7 +528,7 @@ class DictsDelegate(delegator: Delegator) :
         if (toLoc.needsStoragePermission()) {
             tryGetPerms(
                 Perm.STORAGE, R.string.move_dict_rationale,
-                DlgDelegate.Action.MOVE_CONFIRMED, selNames, toLoc
+                Action.MOVE_CONFIRMED, selNames, toLoc
             )
         } else {
             moveDictsWithPermission(selNames, toLoc)
@@ -735,7 +736,7 @@ class DictsDelegate(delegator: Delegator) :
                     """.trimIndent()
             }
         }
-        makeConfirmThenBuilder(DlgDelegate.Action.DELETE_DICT_ACTION, msg)
+        makeConfirmThenBuilder(Action.DELETE_DICT_ACTION, msg)
             .setPosButton(R.string.button_delete)
             .setParams(names as Any)
             .show()
@@ -754,10 +755,10 @@ class DictsDelegate(delegator: Delegator) :
     //////////////////////////////////////////////////////////////////////
     // DlgDelegate.DlgClickNotify interface
     //////////////////////////////////////////////////////////////////////
-    override fun onPosButton(action: DlgDelegate.Action, vararg params: Any?): Boolean {
+    override fun onPosButton(action: Action, vararg params: Any?): Boolean {
         var handled = true
         when (action) {
-            DlgDelegate.Action.DELETE_DICT_ACTION -> {
+            Action.DELETE_DICT_ACTION -> {
                 val names = params[0] as Array<String>
                 for (name in names) {
                     val loc = mSelDicts!![name] as DictLoc
@@ -767,7 +768,7 @@ class DictsDelegate(delegator: Delegator) :
                 mkListAdapter()
             }
 
-            DlgDelegate.Action.UPDATE_DICTS_ACTION -> {
+            Action.UPDATE_DICTS_ACTION -> {
                 val needUpdates = params[0] as? MutableMap<String, Uri>
                 val uris = ArrayList<Uri>()
                 val names = ArrayList<String>()
@@ -779,23 +780,23 @@ class DictsDelegate(delegator: Delegator) :
                                                   names.toTypedArray(), this)
             }
 
-            DlgDelegate.Action.MOVE_CONFIRMED -> {
+            Action.MOVE_CONFIRMED -> {
                 val selNames = params[0] as Array<String>
                 val toLoc = params[1] as DictLoc
                 moveDictsWithPermission(selNames, toLoc)
             }
-            DlgDelegate.Action.STORAGE_CONFIRMED -> mkListAdapter()
+            Action.STORAGE_CONFIRMED -> mkListAdapter()
             else -> handled = super.onPosButton(action, *params)
         }
         return handled
     }
 
-    override fun onNegButton(action: DlgDelegate.Action,
+    override fun onNegButton(action: Action,
                              vararg params: Any?): Boolean
     {
         var handled = true
         when (action) {
-            DlgDelegate.Action.STORAGE_CONFIRMED -> mkListAdapter()
+            Action.STORAGE_CONFIRMED -> mkListAdapter()
             else -> handled = super.onNegButton(action, *params)
         }
         return handled
@@ -1137,7 +1138,7 @@ class DictsDelegate(delegator: Delegator) :
                         .toTypedArray<String>()
                     val joined = TextUtils.join(", ", names)
                     makeConfirmThenBuilder(
-                        DlgDelegate.Action.UPDATE_DICTS_ACTION,
+                        Action.UPDATE_DICTS_ACTION,
                         R.string.update_dicts_fmt, joined
                     )
                         .setPosButton(R.string.button_download)

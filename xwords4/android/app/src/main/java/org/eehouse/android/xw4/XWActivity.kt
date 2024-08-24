@@ -35,6 +35,8 @@ import android.widget.ListAdapter
 import android.widget.ListView
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentActivity
+
+import org.eehouse.android.xw4.DlgDelegate.Action
 import org.eehouse.android.xw4.DlgDelegate.DlgClickNotify
 import org.eehouse.android.xw4.DlgDelegate.DlgClickNotify.InviteMeans
 
@@ -217,7 +219,7 @@ open class XWActivity : FragmentActivity(), Delegator, DlgClickNotify {
     }
 
     fun makeConfirmThenBuilder(
-        action: DlgDelegate.Action, msgID: Int,
+        action: Action, msgID: Int,
         vararg params: Any?
     ): DlgDelegate.Builder {
         return mDlgt!!.makeConfirmThenBuilder(action, msgID, *params)
@@ -293,20 +295,20 @@ open class XWActivity : FragmentActivity(), Delegator, DlgClickNotify {
     ////////////////////////////////////////////////////////////
     // DlgClickNotify interface
     ////////////////////////////////////////////////////////////
-    override fun onPosButton(action: DlgDelegate.Action, vararg params: Any?): Boolean {
+    override fun onPosButton(action: Action, vararg params: Any?): Boolean {
         return mDlgt!!.onPosButton(action, *params)
     }
 
-    override fun onNegButton(action: DlgDelegate.Action, vararg params: Any?): Boolean {
+    override fun onNegButton(action: Action, vararg params: Any?): Boolean {
         return mDlgt!!.onNegButton(action, *params)
     }
 
-    override fun onDismissed(action: DlgDelegate.Action, vararg params: Any?): Boolean {
+    override fun onDismissed(action: Action, vararg params: Any?): Boolean {
         return mDlgt!!.onDismissed(action, *params)
     }
 
     override fun inviteChoiceMade(
-        action: DlgDelegate.Action, means: InviteMeans,
+        action: Action, means: InviteMeans,
         vararg params: Any?
     ) {
         mDlgt!!.inviteChoiceMade(action, means, *params)

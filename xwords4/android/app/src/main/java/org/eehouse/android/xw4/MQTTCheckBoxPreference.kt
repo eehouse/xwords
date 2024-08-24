@@ -24,6 +24,7 @@ import android.util.AttributeSet
 
 import java.lang.ref.WeakReference
 
+import org.eehouse.android.xw4.DlgDelegate.Action
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType
 import org.eehouse.android.xw4.loc.LocUtils
 
@@ -48,7 +49,7 @@ class MQTTCheckBoxPreference(context: Context, attrs: AttributeSet?) :
                 activity, R.plurals.warn_mqtt_games_fmt,
                 count, count)
         }
-        activity.makeConfirmThenBuilder(DlgDelegate.Action.DISABLE_MQTT_DO, msg)
+        activity.makeConfirmThenBuilder(Action.DISABLE_MQTT_DO, msg)
             .setPosButton(R.string.button_disable_mqtt)
             .show()
     }

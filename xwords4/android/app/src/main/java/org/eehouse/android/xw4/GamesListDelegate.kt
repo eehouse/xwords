@@ -55,6 +55,7 @@ import org.eehouse.android.xw4.DBUtils.GameChangeType
 import org.eehouse.android.xw4.DBUtils.GameGroupInfo
 import org.eehouse.android.xw4.DBUtils.ROWID_NOTFOUND
 import org.eehouse.android.xw4.DlgDelegate.HasDlgDelegate
+import org.eehouse.android.xw4.DlgDelegate.Action
 import org.eehouse.android.xw4.DwnldDelegate.DownloadFinishedListener
 import org.eehouse.android.xw4.DwnldDelegate.OnGotLcDictListener
 import org.eehouse.android.xw4.GameLock.GameLockedException
@@ -612,7 +613,7 @@ class GamesListDelegate(delegator: Delegator) :
                         val newID = view.name
                         if (XwJNI.dvc_setMQTTDevID(newID)) {
                             makeOkOnlyBuilder(R.string.reboot_after_setFmt, newID)
-                                .setAction(DlgDelegate.Action.RESTART)
+                                .setAction(Action.RESTART)
                                 .show()
                         } else {
                             makeOkOnlyBuilder(R.string.badMQTTDevIDFmt, newID)
@@ -923,7 +924,7 @@ class GamesListDelegate(delegator: Delegator) :
             Perms23.tryGetPerms(
                 this, Perm.POST_NOTIFICATIONS,
                 R.string.notify_perms_rationale,  // R.string.key_na_perms_notifications,
-                DlgDelegate.Action.NOTIFY_PERMS
+                Action.NOTIFY_PERMS
             )
         }
     }
@@ -979,7 +980,7 @@ class GamesListDelegate(delegator: Delegator) :
                     R.string.not_again_hidenewgamebuttons
                 )
                     .setActionPair(
-                        DlgDelegate.Action.SET_HIDE_NEWGAME_BUTTONS,
+                        Action.SET_HIDE_NEWGAME_BUTTONS,
                         R.string.set_pref
                     )
                     .show()
@@ -1107,20 +1108,20 @@ class GamesListDelegate(delegator: Delegator) :
         if (!BoardDelegate.gameIsOpen(rowid)) {
             if (Quarantine.safeToOpen(rowid)) {
                 makeNotAgainBuilder(R.string.key_notagain_newselect,
-                                    DlgDelegate.Action.OPEN_GAME,
+                                    Action.OPEN_GAME,
                                     R.string.not_again_newselect
                 )
                     .setParams(rowid)
                     .show()
             } else {
                 makeConfirmThenBuilder(
-                    DlgDelegate.Action.QUARANTINE_CLEAR,
+                    Action.QUARANTINE_CLEAR,
                     R.string.unsafe_open_warning
                 )
                     .setPosButton(R.string.unsafe_open_disregard)
                     .setNegButton(0)
                     .setActionPair(
-                        DlgDelegate.Action.QUARANTINE_DELETE,
+                        Action.QUARANTINE_DELETE,
                         R.string.button_delete
                     )
                     .setParams(rowid)
@@ -1205,7 +1206,7 @@ class GamesListDelegate(delegator: Delegator) :
             makeOkOnlyBuilder(dumpMsg)
                 .setParams(logLoc)
                 .setPosButton(android.R.string.cancel)
-                .setActionPair(DlgDelegate.Action.SEND_LOGS,
+                .setActionPair(Action.SEND_LOGS,
                                R.string.button_send_logs)
                 .show()
         }
@@ -1219,19 +1220,19 @@ class GamesListDelegate(delegator: Delegator) :
     }
 
     // DlgDelegate.DlgClickNotify interface
-    override fun onPosButton(action: DlgDelegate.Action,
+    override fun onPosButton(action: Action,
                              vararg params: Any?): Boolean
     {
         var handled = true
         when (action) {
-            DlgDelegate.Action.NEW_NET_GAME -> {
+            Action.NEW_NET_GAME -> {
                 m_netLaunchInfo = params[0] as NetLaunchInfo
                 if (checkWarnNoDict(m_netLaunchInfo!!)) {
                     makeNewNetGameIf()
                 }
             }
 
-            DlgDelegate.Action.RESET_GAMES -> {
+            Action.RESET_GAMES -> {
                 val rowids = params[0] as LongArray
                 var changed = false
                 for (rowid in rowids) {
@@ -1242,7 +1243,7 @@ class GamesListDelegate(delegator: Delegator) :
                 }
             }
 
-            DlgDelegate.Action.NEW_FROM -> {
+            Action.NEW_FROM -> {
                 val curID = params[0] as Long
                 val newid = GameUtils.dupeGame(mActivity, curID)
                 if (ROWID_NOTFOUND != newid) {
@@ -1251,12 +1252,12 @@ class GamesListDelegate(delegator: Delegator) :
                 }
             }
 
-            DlgDelegate.Action.SET_HIDE_NEWGAME_BUTTONS -> {
+            Action.SET_HIDE_NEWGAME_BUTTONS -> {
                 XWPrefs.setHideNewgameButtons(mActivity, true)
                 setupButtons()
             }
 
-            DlgDelegate.Action.DELETE_GROUPS -> {
+            Action.DELETE_GROUPS -> {
                 val groupIDs = params[0] as LongArray
                 for (groupID in groupIDs) {
                     GameUtils.deleteGroup(mActivity, groupID)
@@ -1265,21 +1266,21 @@ class GamesListDelegate(delegator: Delegator) :
                 mkListAdapter()
             }
 
-            DlgDelegate.Action.DELETE_GAMES -> deleteGames(
+            Action.DELETE_GAMES -> deleteGames(
                 params[0] as LongArray,
                 params[1] as Boolean
             )
 
-            DlgDelegate.Action.OPEN_GAME -> doOpenGame(params[0] as Long)
-            DlgDelegate.Action.QUARANTINE_CLEAR -> {
+            Action.OPEN_GAME -> doOpenGame(params[0] as Long)
+            Action.QUARANTINE_CLEAR -> {
                 val rowid = params[0] as Long
                 Quarantine.clear(rowid)
                 openWithChecks(rowid)
             }
 
-            DlgDelegate.Action.BACKUP_DO -> showDialogFragment(DlgID.BACKUP_LOADSTORE)
-            DlgDelegate.Action.BACKUP_LOADDB -> startFileChooser(null)
-            DlgDelegate.Action.BACKUP_OVERWRITE -> {
+            Action.BACKUP_DO -> showDialogFragment(DlgID.BACKUP_LOADSTORE)
+            Action.BACKUP_LOADDB -> startFileChooser(null)
+            Action.BACKUP_OVERWRITE -> {
                 val whats = params[0] as ArrayList<SaveWhat?>
                 val uri = Uri.parse(params[1] as String)
                 if (ZipUtils.load(mActivity, uri, whats)) {
@@ -1287,14 +1288,14 @@ class GamesListDelegate(delegator: Delegator) :
                 }
             }
 
-            DlgDelegate.Action.BACKUP_RETRY -> startFileChooser(null)
-            DlgDelegate.Action.QUARANTINE_DELETE -> deleteIfConfirmed(
+            Action.BACKUP_RETRY -> startFileChooser(null)
+            Action.QUARANTINE_DELETE -> deleteIfConfirmed(
                 longArrayOf(params[0] as Long),
                 true
             )
 
-            DlgDelegate.Action.CLEAR_SELS -> clearSelections()
-            DlgDelegate.Action.DWNLD_LOC_DICT -> {
+            Action.CLEAR_SELS -> clearSelections()
+            Action.DWNLD_LOC_DICT -> {
                 val isoCode = params[0] as ISOCode
                 val name = params[1] as String
                 val lstnr: DownloadFinishedListener = object : DownloadFinishedListener {
@@ -1327,30 +1328,30 @@ class GamesListDelegate(delegator: Delegator) :
                 DwnldDelegate.downloadDictInBack(mActivity, isoCode, name, lstnr)
             }
 
-            DlgDelegate.Action.NEW_GAME_DFLT_NAME -> {
+            Action.NEW_GAME_DFLT_NAME -> {
                 m_newGameParams = arrayOf(*params)
                 askDefaultName()
             }
 
-            DlgDelegate.Action.SEND_EMAIL -> Utils.emailAuthor(mActivity)
-            DlgDelegate.Action.WRITE_LOG_DB -> Log.dumpStored(this)
-            DlgDelegate.Action.CLEAR_LOG_DB -> Log.clearStored(this)
-            DlgDelegate.Action.ASKED_PHONE_STATE ->
+            Action.SEND_EMAIL -> Utils.emailAuthor(mActivity)
+            Action.WRITE_LOG_DB -> Log.dumpStored(this)
+            Action.CLEAR_LOG_DB -> Log.clearStored(this)
+            Action.ASKED_PHONE_STATE ->
                 rematchWithNameAndPerm(true, arrayOf(*params))
-            DlgDelegate.Action.APPLY_CONFIG -> {
+            Action.APPLY_CONFIG -> {
                 val data = Uri.parse(params[0] as String)
                 CommonPrefs.loadColorPrefs(mActivity, data)
             }
 
-            DlgDelegate.Action.SEND_LOGS -> {
+            Action.SEND_LOGS -> {
                 val logLoc = params[0] as File
                 Utils.emailLogFile(mActivity, logLoc)
             }
 
-            DlgDelegate.Action.CLEAR_INT_STATS -> TimerReceiver.clearStats(mActivity)
-            DlgDelegate.Action.OPEN_BYOD_DICT ->
+            Action.CLEAR_INT_STATS -> TimerReceiver.clearStats(mActivity)
+            Action.OPEN_BYOD_DICT ->
                 DictBrowseDelegate.launch(getDelegator(), (params[0] as String))
-            DlgDelegate.Action.LAUNCH_AFTER_DEL -> deleteGames(
+            Action.LAUNCH_AFTER_DEL -> deleteGames(
                 longArrayOf((params[1] as Long)),
                 false
             )
@@ -1360,13 +1361,13 @@ class GamesListDelegate(delegator: Delegator) :
         return handled
     }
 
-    override fun onDismissed(action: DlgDelegate.Action,
+    override fun onDismissed(action: Action,
                              vararg params: Any?): Boolean
     {
         var handled = true
         when (action) {
-            DlgDelegate.Action.LAUNCH_AFTER_DEL -> launchGame(params[0] as Long)
-            DlgDelegate.Action.RESTART -> ProcessPhoenix.triggerRebirth(mActivity)
+            Action.LAUNCH_AFTER_DEL -> launchGame(params[0] as Long)
+            Action.RESTART -> ProcessPhoenix.triggerRebirth(mActivity)
             else -> handled = false
         }
         return handled || super.onDismissed(action, *params)
@@ -1386,7 +1387,7 @@ class GamesListDelegate(delegator: Delegator) :
                     val what = view.saveWhat
                     val name = ZipUtils.getFileName(mActivity, uri)
                     makeConfirmThenBuilder(
-                        DlgDelegate.Action.BACKUP_OVERWRITE,
+                        Action.BACKUP_OVERWRITE,
                         R.string.backup_overwrite_confirm_fmt,
                         name
                     )
@@ -1427,19 +1428,19 @@ class GamesListDelegate(delegator: Delegator) :
         startActivityForResult(intent, rq)
     }
 
-    override fun onNegButton(action: DlgDelegate.Action,
+    override fun onNegButton(action: Action,
                              vararg params: Any?): Boolean
     {
         var handled = true
         when (action) {
-            DlgDelegate.Action.NEW_GAME_DFLT_NAME -> {
+            Action.NEW_GAME_DFLT_NAME -> {
                 m_newGameParams = arrayOf(*params)
                 makeThenLaunchOrConfigure()
             }
 
-            DlgDelegate.Action.ASKED_PHONE_STATE ->
+            Action.ASKED_PHONE_STATE ->
                 rematchWithNameAndPerm(false, arrayOf(*params))
-            DlgDelegate.Action.NOTIFY_PERMS ->
+            Action.NOTIFY_PERMS ->
                 Log.d(TAG, "said NO for notify perms")
             else -> handled = super.onNegButton(action, *params)
         }
@@ -1504,7 +1505,7 @@ class GamesListDelegate(delegator: Delegator) :
                                 if (null != name) {
                                     makeOkOnlyBuilder(R.string.backup_bad_file_fmt, name)
                                         .setActionPair(
-                                            DlgDelegate.Action.BACKUP_RETRY,
+                                            Action.BACKUP_RETRY,
                                             R.string.button_pick_again
                                         )
                                         .show()
@@ -1528,7 +1529,7 @@ class GamesListDelegate(delegator: Delegator) :
         if (handled) {
             makeNotAgainBuilder(
                 R.string.key_notagain_backclears,
-                DlgDelegate.Action.CLEAR_SELS, R.string.not_again_backclears
+                Action.CLEAR_SELS, R.string.not_again_backclears
             )
                 .show()
         }
@@ -1704,12 +1705,12 @@ class GamesListDelegate(delegator: Delegator) :
             R.id.games_menu_email -> Utils.emailAuthor(mActivity)
             R.id.games_menu_storedb -> if (Build.VERSION.SDK_INT == Build.VERSION_CODES.P) {
                 makeConfirmThenBuilder(
-                    DlgDelegate.Action.BACKUP_DO,
+                    Action.BACKUP_DO,
                     R.string.backup_only_on_9
                 )
                     .show()
             } else {
-                onPosButton(DlgDelegate.Action.BACKUP_DO)
+                onPosButton(Action.BACKUP_DO)
             }
 
             R.id.games_menu_loaddb -> if (Build.VERSION.SDK_INT == Build.VERSION_CODES.P) {
@@ -1718,7 +1719,7 @@ class GamesListDelegate(delegator: Delegator) :
             } else {
                 makeNotAgainBuilder(
                     R.string.key_notagain_loaddb,
-                    DlgDelegate.Action.BACKUP_LOADDB, R.string.not_again_loaddb
+                    Action.BACKUP_LOADDB, R.string.not_again_loaddb
                 )
                     .show()
             }
@@ -1747,13 +1748,13 @@ class GamesListDelegate(delegator: Delegator) :
 
             R.id.games_menu_restart -> ProcessPhoenix.triggerRebirth(mActivity)
             R.id.games_menu_timerStats -> makeOkOnlyBuilder(TimerReceiver.statsStr(mActivity))
-                .setActionPair(DlgDelegate.Action.CLEAR_INT_STATS, R.string.button_clear_stats)
+                .setActionPair(Action.CLEAR_INT_STATS, R.string.button_clear_stats)
                 .show()
 
             R.id.games_menu_enableLogStorage -> Log.storeLogs = true
             R.id.games_menu_disableLogStorage -> Log.storeLogs = false
             R.id.games_menu_clearLogStorage -> makeConfirmThenBuilder(
-                DlgDelegate.Action.CLEAR_LOG_DB,
+                Action.CLEAR_LOG_DB,
                 R.string.logstore_clear_confirm
             )
                 .setPosButton(R.string.loc_item_clear)
@@ -1761,7 +1762,7 @@ class GamesListDelegate(delegator: Delegator) :
 
             R.id.games_menu_emailLogs -> Perms23.tryGetPerms(
                 this, Perm.STORAGE, null,
-                DlgDelegate.Action.WRITE_LOG_DB)
+                Action.WRITE_LOG_DB)
 
             R.id.games_menu_statsShow -> {
                 val stats = XwJNI.sts_export()
@@ -1993,7 +1994,7 @@ class GamesListDelegate(delegator: Delegator) :
                 dropSels = true // will select the new game instead
                 makeNotAgainBuilder(
                     R.string.key_notagain_newfrom,
-                    DlgDelegate.Action.NEW_FROM, R.string.not_again_newfrom
+                    Action.NEW_FROM, R.string.not_again_newfrom
                 )
                     .setParams(selRowIDs[0])
                     .show()
@@ -2086,7 +2087,7 @@ class GamesListDelegate(delegator: Delegator) :
                             msg += getQuantityString(R.plurals.groups_confirm_del_games_fmt,
                                 nGames, nGames)
                         }
-                        makeConfirmThenBuilder(DlgDelegate.Action.DELETE_GROUPS, msg)
+                        makeConfirmThenBuilder(Action.DELETE_GROUPS, msg)
                             .setParams(groupIDs)
                             .show()
                     }
@@ -2272,7 +2273,7 @@ class GamesListDelegate(delegator: Delegator) :
                             makeOkOnlyBuilder(resid, name)
                         if (success) {
                             builder.setActionPair(
-                                DlgDelegate.Action.OPEN_BYOD_DICT,
+                                Action.OPEN_BYOD_DICT,
                                 R.string.button_open_dict
                             )
                                 .setParams(name)
@@ -2339,7 +2340,7 @@ class GamesListDelegate(delegator: Delegator) :
                 val prefix = LocUtils.getString(mActivity, R.string.conf_prefix)
                 Log.d(TAG, "loadConfig(): path: %s; prefix: %s", path, prefix)
                 if (path!!.startsWith(prefix)) {
-                    makeConfirmThenBuilder(DlgDelegate.Action.APPLY_CONFIG, R.string.apply_config)
+                    makeConfirmThenBuilder(Action.APPLY_CONFIG, R.string.apply_config)
                         .setPosButton(R.string.button_apply_config)
                         .setNegButton(android.R.string.cancel)
                         .setParams(data.toString())
@@ -2425,7 +2426,7 @@ class GamesListDelegate(delegator: Delegator) :
                     """.trimIndent()
                 Perms23.tryGetPerms(
                     this, Perms23.NBS_PERMS, msg,
-                    DlgDelegate.Action.ASKED_PHONE_STATE, gameName, newOrder, addrs
+                    Action.ASKED_PHONE_STATE, gameName, newOrder, addrs
                 )
             }
         }
@@ -2468,7 +2469,7 @@ class GamesListDelegate(delegator: Delegator) :
                 if (extras.getBoolean(REMATCH_DELAFTER_EXTRA, false)) {
                     val name = DBUtils.getName(mActivity, srcRowID)
                     makeConfirmThenBuilder(
-                        DlgDelegate.Action.LAUNCH_AFTER_DEL,
+                        Action.LAUNCH_AFTER_DEL,
                         R.string.confirm_del_after_rematch_fmt,
                         name
                     )
@@ -2490,7 +2491,7 @@ class GamesListDelegate(delegator: Delegator) :
                 makeOkOnlyBuilder(msg)
             if (intent.getBooleanExtra(WITH_EMAIL, false)) {
                 builder.setActionPair(
-                    DlgDelegate.Action.SEND_EMAIL,
+                    Action.SEND_EMAIL,
                     R.string.board_menu_file_email
                 )
             }
@@ -2545,7 +2546,7 @@ class GamesListDelegate(delegator: Delegator) :
                                 val langName = DictLangCache
                                     .getLangNameForISOCode(mActivity, isoCode!!)
                                 makeConfirmThenBuilder(
-                                    DlgDelegate.Action.DWNLD_LOC_DICT,
+                                    Action.DWNLD_LOC_DICT,
                                     R.string.confirm_get_locdict_fmt,
                                     langName
                                 )
@@ -2594,7 +2595,7 @@ class GamesListDelegate(delegator: Delegator) :
     }
 
     private fun mkDeleteAlert(msg: String, rowids: LongArray, skipTell: Boolean) {
-        makeConfirmThenBuilder(DlgDelegate.Action.DELETE_GAMES, msg)
+        makeConfirmThenBuilder(Action.DELETE_GAMES, msg)
             .setPosButton(R.string.button_delete)
             .setParams(rowids, skipTell)
             .show()
@@ -2790,7 +2791,7 @@ class GamesListDelegate(delegator: Delegator) :
             R.plurals.confirm_reset_fmt,
             rowIDs.size, rowIDs.size
         )
-        makeConfirmThenBuilder(DlgDelegate.Action.RESET_GAMES, msg)
+        makeConfirmThenBuilder(Action.RESET_GAMES, msg)
             .setPosButton(R.string.button_reset)
             .setParams(rowIDs)
             .show()
@@ -2829,7 +2830,7 @@ class GamesListDelegate(delegator: Delegator) :
             if (null == name1 || name1 == name2) {
                 asking = true
                 makeConfirmThenBuilder(
-                    DlgDelegate.Action.NEW_GAME_DFLT_NAME,
+                    Action.NEW_GAME_DFLT_NAME,
                     R.string.not_again_dfltname_fmt, name2
                 )
                     .setNAKey(R.string.key_notagain_dfltname)

@@ -31,11 +31,14 @@ import android.view.View
 import android.widget.Button
 import android.widget.ProgressBar
 import android.widget.TextView
-import org.eehouse.android.xw4.BTUtils.ScanListener
-import org.eehouse.android.xw4.DBUtils.SentInvitesInfo
-import org.eehouse.android.xw4.DlgDelegate.DlgClickNotify.InviteMeans
+
 import java.io.Serializable
 import java.util.Collections
+
+import org.eehouse.android.xw4.BTUtils.ScanListener
+import org.eehouse.android.xw4.DBUtils.SentInvitesInfo
+import org.eehouse.android.xw4.DlgDelegate.Action
+import org.eehouse.android.xw4.DlgDelegate.DlgClickNotify.InviteMeans
 
 class BTInviteDelegate(delegator: Delegator) :
     InviteDelegate(delegator), ScanListener {
@@ -147,7 +150,7 @@ class BTInviteDelegate(delegator: Delegator) :
                     count, count
                 )
                         + getString(R.string.confirm_clear_bt_postscript))
-                makeConfirmThenBuilder(DlgDelegate.Action.CLEAR_ACTION, msg)
+                makeConfirmThenBuilder(Action.CLEAR_ACTION, msg)
 					.show()
             }
         }
@@ -201,7 +204,7 @@ class BTInviteDelegate(delegator: Delegator) :
             showProgress(count, 2 * SCAN_SECONDS)
         } else {
             makeConfirmThenBuilder(
-                DlgDelegate.Action.OPEN_BT_PREFS_ACTION,
+                Action.OPEN_BT_PREFS_ACTION,
                 R.string.bt_no_devs
             ).setPosButton(R.string.button_go_settings)
                 .show()
@@ -260,13 +263,13 @@ class BTInviteDelegate(delegator: Delegator) :
 		= updateList(sPersistedRef[0]!!.mDevs)
 
     // DlgDelegate.DlgClickNotify interface
-    override fun onPosButton(action: DlgDelegate.Action,
+    override fun onPosButton(action: Action,
 							 vararg params: Any?): Boolean {
         var handled = true
         when (action) {
-            DlgDelegate.Action.OPEN_BT_PREFS_ACTION -> BTUtils.openBTSettings(mActivity)
+            Action.OPEN_BT_PREFS_ACTION -> BTUtils.openBTSettings(mActivity)
 
-            DlgDelegate.Action.CLEAR_ACTION -> {
+            Action.CLEAR_ACTION -> {
                 sPersistedRef[0]!!.remove(getChecked())
                 store(mActivity)
                 clearChecked()

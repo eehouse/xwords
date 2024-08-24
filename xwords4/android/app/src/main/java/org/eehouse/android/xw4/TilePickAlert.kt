@@ -26,12 +26,15 @@ import android.os.Bundle
 import org.eehouse.android.xw4.DlgDelegate.DlgClickNotify
 import org.eehouse.android.xw4.TilePickView.TilePickListener
 import org.eehouse.android.xw4.loc.LocUtils
+
 import java.io.Serializable
+
+import org.eehouse.android.xw4.DlgDelegate.Action
 
 class TilePickAlert : XWDialogFragment(), TilePickListener {
     private var mView: TilePickView? = null
     private var mState: TilePickState? = null
-    private var mAction: DlgDelegate.Action? = null
+    private var mAction: Action? = null
     private var mDialog: AlertDialog? = null
     private var mSelTiles = IntArray(0)
 
@@ -88,7 +91,7 @@ class TilePickAlert : XWDialogFragment(), TilePickListener {
             sis = arguments
         }
         mState = sis!!.getSerializable(TPS) as TilePickState?
-        mAction = sis.getSerializable(ACTION) as DlgDelegate.Action?
+        mAction = sis.getSerializable(ACTION) as Action?
         val activity: Activity? = activity
         Assert.assertNotNull(activity)
         val context = requireContext()
@@ -155,7 +158,7 @@ class TilePickAlert : XWDialogFragment(), TilePickListener {
         private val TAG = TilePickAlert::class.java.getSimpleName()
         private const val TPS = "TPS"
         private const val ACTION = "ACTION"
-        fun newInstance(action: DlgDelegate.Action?, state: TilePickState?): TilePickAlert {
+        fun newInstance(action: Action?, state: TilePickState?): TilePickAlert {
             val result = TilePickAlert()
             val args = Bundle()
             args.putSerializable(ACTION, action)

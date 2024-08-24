@@ -27,6 +27,7 @@ import android.util.AttributeSet
 import android.view.View
 import androidx.preference.DialogPreference
 
+import org.eehouse.android.xw4.DlgDelegate.Action
 import org.eehouse.android.xw4.PrefsActivity.DialogProc
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType
 import org.eehouse.android.xw4.loc.LocUtils
@@ -57,18 +58,18 @@ class XWConnAddrPreference(private val m_context: Context, attrs: AttributeSet?)
                 override fun warnDisabled(typ: CommsConnType) {
                     var msg: String? = null
                     var msgID = 0
-                    var action: DlgDelegate.Action? = null
+                    var action: Action? = null
                     var buttonID = 0
                     when (typ) {
                         CommsConnType.COMMS_CONN_SMS -> {
                             msgID = R.string.warn_sms_disabled
-                            action = DlgDelegate.Action.ENABLE_NBS_ASK
+                            action = Action.ENABLE_NBS_ASK
                             buttonID = R.string.button_enable_sms
                         }
 
                         CommsConnType.COMMS_CONN_BT -> {
                             msgID = R.string.warn_bt_disabled
-                            action = DlgDelegate.Action.ENABLE_BT_DO
+                            action = Action.ENABLE_BT_DO
                             buttonID = R.string.button_enable_bt
                         }
 
@@ -80,7 +81,7 @@ class XWConnAddrPreference(private val m_context: Context, attrs: AttributeSet?)
                                 activity,
                                 R.string.warn_mqtt_later
                             )
-                            action = DlgDelegate.Action.ENABLE_MQTT_DO
+                            action = Action.ENABLE_MQTT_DO
                             buttonID = R.string.button_enable_mqtt
                         }
 

@@ -33,8 +33,11 @@ import android.widget.ScrollView
 import android.widget.TableLayout
 import android.widget.TableRow
 import android.widget.TextView
-import org.eehouse.android.xw4.jni.JNIThread
+
 import java.text.DateFormat
+
+import org.eehouse.android.xw4.DlgDelegate.Action
+import org.eehouse.android.xw4.jni.JNIThread
 
 class ChatDelegate(delegator: Delegator) :
     DelegateBase(delegator, R.layout.chat, R.menu.chat_menu) {
@@ -170,7 +173,7 @@ class ChatDelegate(delegator: Delegator) :
         var handled = true
         when (item.itemId) {
             R.id.chat_menu_clear -> makeConfirmThenBuilder(
-                DlgDelegate.Action.CLEAR_ACTION,
+                Action.CLEAR_ACTION,
                 R.string.confirm_clear_chat
             )
                 .show()
@@ -181,10 +184,10 @@ class ChatDelegate(delegator: Delegator) :
         return handled
     }
 
-    override fun onPosButton(action: DlgDelegate.Action, vararg params: Any?): Boolean {
+    override fun onPosButton(action: Action, vararg params: Any?): Boolean {
         var handled = true
         when (action) {
-            DlgDelegate.Action.CLEAR_ACTION -> {
+            Action.CLEAR_ACTION -> {
                 DBUtils.clearChatHistory(m_activity, m_rowid)
                 val layout = findViewById(R.id.chat_history) as TableLayout
                 layout.removeAllViews()

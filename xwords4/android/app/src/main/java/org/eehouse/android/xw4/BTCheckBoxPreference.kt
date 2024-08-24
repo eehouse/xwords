@@ -21,9 +21,11 @@ package org.eehouse.android.xw4
 
 import android.content.Context
 import android.util.AttributeSet
+import java.lang.ref.WeakReference
+
+import org.eehouse.android.xw4.DlgDelegate.Action
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType
 import org.eehouse.android.xw4.loc.LocUtils
-import java.lang.ref.WeakReference
 
 class BTCheckBoxPreference(context: Context, attrs: AttributeSet?) :
     ConfirmingCheckBoxPreference(context, attrs)
@@ -47,7 +49,7 @@ class BTCheckBoxPreference(context: Context, attrs: AttributeSet?) :
                 count, count
             )
         }
-        activity.makeConfirmThenBuilder(DlgDelegate.Action.DISABLE_BT_DO, msg)
+        activity.makeConfirmThenBuilder(Action.DISABLE_BT_DO, msg)
             .setPosButton(R.string.button_disable_bt)
             .show()
     }

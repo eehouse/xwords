@@ -32,6 +32,8 @@ import android.widget.Spinner
 
 import java.util.HashMap
 
+import org.eehouse.android.xw4.DlgDelegate.Action
+
 abstract class IsoWordsBase(delegator: Delegator, private val CHECKED_KEY: String )
 	: ListDelegateBase(delegator, R.layout.studylist, R.menu.studylist),
 	  SelectableItem, View.OnLongClickListener, View.OnClickListener,
@@ -98,14 +100,14 @@ abstract class IsoWordsBase(delegator: Delegator, private val CHECKED_KEY: Strin
         when ( item.getItemId() ) {
 			R.id.slmenu_copy_sel -> {
 				makeNotAgainBuilder( R.string.key_na_studycopy,
-									 DlgDelegate.Action.SL_COPY_ACTION,
+									 Action.SL_COPY_ACTION,
 									 R.string.not_again_studycopy )
 					.show()
 			}
 			R.id.slmenu_clear_sel -> {
 				val msg = getQuantityString( R.plurals.confirm_studylist_clear_fmt,
 											 m_checkeds.size, m_checkeds.size )
-				makeConfirmThenBuilder( DlgDelegate.Action.SL_CLEAR_ACTION, msg ).show()
+				makeConfirmThenBuilder( Action.SL_CLEAR_ACTION, msg ).show()
 			}
 
 			R.id.slmenu_select_all -> {
@@ -132,11 +134,11 @@ abstract class IsoWordsBase(delegator: Delegator, private val CHECKED_KEY: Strin
     //////////////////////////////////////////////////
     // DlgDelegate.DlgClickNotify interface
     //////////////////////////////////////////////////
-    override fun onPosButton(action: DlgDelegate.Action, vararg params: Any? ): Boolean
+    override fun onPosButton(action: Action, vararg params: Any? ): Boolean
     {
         var handled = true
         when ( action ) {
-			DlgDelegate.Action.SL_CLEAR_ACTION -> {
+			Action.SL_CLEAR_ACTION -> {
 				var selWords: Array<String>? = getSelWords()
 				if ( null != selWords ) {
 					clearWords( m_langCodes!![m_langPosition], selWords!! )
@@ -144,7 +146,7 @@ abstract class IsoWordsBase(delegator: Delegator, private val CHECKED_KEY: Strin
 				}
 				initOrFinish()
 			}
-			DlgDelegate.Action.SL_COPY_ACTION -> {
+			Action.SL_COPY_ACTION -> {
 				var selWords = getSelWords()
 				Utils.stringToClip( m_activity, TextUtils.join( "\n", selWords!! ) )
 

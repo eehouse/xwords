@@ -30,12 +30,12 @@ import android.widget.TextView
 import java.text.DateFormat
 import java.util.Date
 
+import org.eehouse.android.xw4.DlgDelegate.Action
 import org.eehouse.android.xw4.DlgDelegate.HasDlgDelegate
 import org.eehouse.android.xw4.ExpandImageButton.ExpandChangeListener
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType
 import org.eehouse.android.xw4.jni.XwJNI
 import org.eehouse.android.xw4.loc.LocUtils
-
 
 class KnownPlayersDelegate(delegator: Delegator) :
     DelegateBase(delegator, R.layout.knownplayrs) {
@@ -61,10 +61,10 @@ class KnownPlayersDelegate(delegator: Delegator) :
         populateList()
     }
 
-    override fun onPosButton(action: DlgDelegate.Action, vararg params: Any?): Boolean {
+    override fun onPosButton(action: Action, vararg params: Any?): Boolean {
         var handled = true
         when (action) {
-            DlgDelegate.Action.KNOWN_PLAYER_DELETE -> {
+            Action.KNOWN_PLAYER_DELETE -> {
                 val name = params[0] as String
                 XwJNI.kplr_deletePlayer(name)
                 populateList()
@@ -244,7 +244,7 @@ class KnownPlayersDelegate(delegator: Delegator) :
 
     private fun confirmAndDelete(name: String) {
         makeConfirmThenBuilder(
-            DlgDelegate.Action.KNOWN_PLAYER_DELETE,
+            Action.KNOWN_PLAYER_DELETE,
             R.string.knowns_delete_confirm_fmt, name
         )
             .setParams(name)

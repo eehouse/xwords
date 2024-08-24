@@ -24,6 +24,7 @@ import android.util.AttributeSet
 
 import java.lang.ref.WeakReference
 
+import org.eehouse.android.xw4.DlgDelegate.Action
 
 class SMSCheckBoxPreference(context: Context, attrs: AttributeSet?) :
     ConfirmingCheckBoxPreference(context, attrs)
@@ -41,7 +42,7 @@ class SMSCheckBoxPreference(context: Context, attrs: AttributeSet?) :
 
     override fun checkIfConfirmed() {
         val activity = context as PrefsActivity
-        activity.showSMSEnableDialog(DlgDelegate.Action.ENABLE_NBS_DO)
+        activity.showSMSEnableDialog(Action.ENABLE_NBS_DO)
     }
 
     companion object {

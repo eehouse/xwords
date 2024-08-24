@@ -42,10 +42,12 @@ import android.widget.TextView
 
 import org.eehouse.android.xw4.ConnViaViewLayout.CheckEnabledWarner
 import org.eehouse.android.xw4.DictLangCache.LangsArrayAdapter
+import org.eehouse.android.xw4.DlgDelegate.Action
 import org.eehouse.android.xw4.GameLock.GameLockedException
 import org.eehouse.android.xw4.NFCUtils.nfcAvail
 import org.eehouse.android.xw4.Utils.ISOCode
 import org.eehouse.android.xw4.Utils.OnNothingSelDoesNothing
+import org.eehouse.android.xw4.XWDialogFragment.OnDismissListener
 import org.eehouse.android.xw4.XWListItem.DeleteCallback
 import org.eehouse.android.xw4.jni.CommonPrefs
 import org.eehouse.android.xw4.jni.CommsAddrRec
@@ -58,7 +60,6 @@ import org.eehouse.android.xw4.jni.JNIThread
 import org.eehouse.android.xw4.jni.LocalPlayer
 import org.eehouse.android.xw4.jni.XwJNI
 import org.eehouse.android.xw4.jni.XwJNI.GamePtr
-import org.eehouse.android.xw4.XWDialogFragment.OnDismissListener
 
 class GameConfigDelegate(delegator: Delegator) :
     DelegateBase(delegator, R.layout.game_config), View.OnClickListener,
@@ -200,7 +201,7 @@ class GameConfigDelegate(delegator: Delegator) :
                         when (typ) {
                             CommsConnType.COMMS_CONN_SMS ->
                                 makeConfirmThenBuilder(
-                                    DlgDelegate.Action.ENABLE_NBS_ASK,
+                                    Action.ENABLE_NBS_ASK,
                                     R.string.warn_sms_disabled
                                 )
                                     .setPosButton(R.string.button_enable_sms)
@@ -208,7 +209,7 @@ class GameConfigDelegate(delegator: Delegator) :
                                     .show()
 
                             CommsConnType.COMMS_CONN_BT -> makeConfirmThenBuilder(
-                                                               DlgDelegate.Action.ENABLE_BT_DO,
+                                                               Action.ENABLE_BT_DO,
                                                                R.string.warn_bt_disabled
                                                            )
                                                                .setPosButton(R.string.button_enable_bt)
@@ -222,7 +223,7 @@ class GameConfigDelegate(delegator: Delegator) :
                                     
                                     ${getString(R.string.warn_mqtt_later)}
                                     """.trimIndent()
-                                makeConfirmThenBuilder(DlgDelegate.Action.ENABLE_MQTT_DO, msg)
+                                makeConfirmThenBuilder(Action.ENABLE_MQTT_DO, msg)
                                     .setPosButton(R.string.button_enable_mqtt)
                                     .setNegButton(R.string.button_later)
                                     .show()
@@ -675,14 +676,14 @@ class GameConfigDelegate(delegator: Delegator) :
         }
     }
 
-    override fun onPosButton(action: DlgDelegate.Action, vararg params: Any?): Boolean {
+    override fun onPosButton(action: Action, vararg params: Any?): Boolean {
         var handled = true
         Assert.assertTrue(curThis() === this)
         when (action) {
-            DlgDelegate.Action.LOCKED_CHANGE_ACTION -> handleLockedChange()
-            DlgDelegate.Action.SMS_CONFIG_ACTION -> PrefsDelegate.launch(mActivity)
-            DlgDelegate.Action.DELETE_AND_EXIT -> closeNoSave()
-            DlgDelegate.Action.ASKED_PHONE_STATE -> showDialogFragment(
+            Action.LOCKED_CHANGE_ACTION -> handleLockedChange()
+            Action.SMS_CONFIG_ACTION -> PrefsDelegate.launch(mActivity)
+            Action.DELETE_AND_EXIT -> closeNoSave()
+            Action.ASKED_PHONE_STATE -> showDialogFragment(
                 DlgID.CHANGE_CONN,
                 mConTypes
             )
@@ -692,13 +693,13 @@ class GameConfigDelegate(delegator: Delegator) :
         return handled
     }
 
-    override fun onNegButton(action: DlgDelegate.Action,
+    override fun onNegButton(action: Action,
                              vararg params: Any?): Boolean
     {
         var handled = true
         when (action) {
-            DlgDelegate.Action.DELETE_AND_EXIT -> showConnAfterCheck()
-            DlgDelegate.Action.ASKED_PHONE_STATE -> showDialogFragment(
+            Action.DELETE_AND_EXIT -> showConnAfterCheck()
+            Action.ASKED_PHONE_STATE -> showDialogFragment(
                 DlgID.CHANGE_CONN,
                 mConTypes
             )
@@ -729,7 +730,7 @@ class GameConfigDelegate(delegator: Delegator) :
 
                 R.id.game_locked_check -> makeNotAgainBuilder(
                     R.string.key_notagain_unlock,
-                    DlgDelegate.Action.LOCKED_CHANGE_ACTION,
+                    Action.LOCKED_CHANGE_ACTION,
                     R.string.not_again_unlock
                 )
                     .show()
@@ -743,7 +744,7 @@ class GameConfigDelegate(delegator: Delegator) :
                     saveChanges()
                     if (!localOnlyGame() && 0 == mConTypes!!.size) {
                         makeConfirmThenBuilder(
-                            DlgDelegate.Action.DELETE_AND_EXIT,
+                            Action.DELETE_AND_EXIT,
                             R.string.config_no_connvia
                         )
                             .setPosButton(R.string.button_discard)
@@ -775,7 +776,7 @@ class GameConfigDelegate(delegator: Delegator) :
             Perms23.tryGetNBSPermsNA(
                 this, R.string.phone_state_rationale,
                 R.string.key_na_perms_phonestate,
-                DlgDelegate.Action.ASKED_PHONE_STATE
+                Action.ASKED_PHONE_STATE
             )
         } else {
             showDialogFragment(DlgID.CHANGE_CONN, mConTypes)

@@ -40,6 +40,7 @@ import android.widget.TextView
 
 import java.lang.ref.WeakReference
 
+import org.eehouse.android.xw4.DlgDelegate.Action
 import org.eehouse.android.xw4.DlgDelegate.DlgClickNotify
 import org.eehouse.android.xw4.DlgDelegate.DlgClickNotify.InviteMeans
 import org.eehouse.android.xw4.DlgDelegate.HasDlgDelegate
@@ -109,7 +110,7 @@ abstract class DelegateBase @JvmOverloads constructor(
 
     protected fun tryGetPerms(
         perm: Perm, rationale: Int,
-        action: DlgDelegate.Action, vararg params: Any?
+        action: Action, vararg params: Any?
     ) {
         Perms23.tryGetPerms(this, perm, rationale, action, *params)
     }
@@ -493,7 +494,7 @@ abstract class DelegateBase @JvmOverloads constructor(
 
     fun makeNotAgainBuilder(
         key: Int,
-        action: DlgDelegate.Action,
+        action: Action,
         msg: String
     ): DlgDelegate.Builder {
         return m_dlgDelegate.makeNotAgainBuilder(key, action, msg)
@@ -501,7 +502,7 @@ abstract class DelegateBase @JvmOverloads constructor(
 
     override fun makeNotAgainBuilder(
         key: Int,
-        action: DlgDelegate.Action,
+        action: Action,
         msgId: Int,
         vararg params: Any?
     ): DlgDelegate.Builder {
@@ -520,12 +521,14 @@ abstract class DelegateBase @JvmOverloads constructor(
         return m_dlgDelegate.makeNotAgainBuilder(key, msgID, *params)
     }
 
-    fun makeConfirmThenBuilder(action: DlgDelegate.Action, msg: String): DlgDelegate.Builder {
+    fun makeConfirmThenBuilder(
+        action: Action, msg: String
+    ): DlgDelegate.Builder {
         return m_dlgDelegate.makeConfirmThenBuilder(action, msg)
     }
 
     fun makeConfirmThenBuilder(
-        action: DlgDelegate.Action,
+        action: Action,
         msgId: Int,
         vararg params: Any?
     ): DlgDelegate.Builder {
@@ -546,7 +549,7 @@ abstract class DelegateBase @JvmOverloads constructor(
     }
 
     protected fun showInviteChoicesThen(
-        action: DlgDelegate.Action, nli: NetLaunchInfo,
+        action: Action, nli: NetLaunchInfo,
         nMissing: Int, nInvited: Int
     ) {
         m_dlgDelegate.showInviteChoicesThen(action, nli, nMissing, nInvited)
@@ -596,7 +599,7 @@ abstract class DelegateBase @JvmOverloads constructor(
         m_dlgDelegate.stopProgress()
     }
 
-    fun showSMSEnableDialog(action: DlgDelegate.Action) {
+    fun showSMSEnableDialog(action: Action) {
         m_dlgDelegate.showSMSEnableDialog(action)
     }
 
@@ -649,7 +652,7 @@ abstract class DelegateBase @JvmOverloads constructor(
 
     protected fun askNoAddrsDelete() {
         makeConfirmThenBuilder(
-            DlgDelegate.Action.DELETE_AND_EXIT,
+            Action.DELETE_AND_EXIT,
             R.string.connstat_net_noaddr
         )
             .setPosButton(R.string.list_item_delete)
@@ -691,20 +694,20 @@ abstract class DelegateBase @JvmOverloads constructor(
     //////////////////////////////////////////////////////////////////////
     // DlgDelegate.DlgClickNotify interface
     //////////////////////////////////////////////////////////////////////
-    override fun onPosButton(action: DlgDelegate.Action, vararg params: Any?): Boolean {
+    override fun onPosButton(action: Action, vararg params: Any?): Boolean {
         var handled = true
         when (action) {
-            DlgDelegate.Action.ENABLE_NBS_ASK -> showSMSEnableDialog(DlgDelegate.Action.ENABLE_NBS_DO)
-            DlgDelegate.Action.ENABLE_NBS_DO -> XWPrefs.setNBSEnabled(mActivity, true)
-            DlgDelegate.Action.ENABLE_BT_DO -> BTUtils.enable(mActivity)
-            DlgDelegate.Action.ENABLE_MQTT_DO -> {
+            Action.ENABLE_NBS_ASK -> showSMSEnableDialog(Action.ENABLE_NBS_DO)
+            Action.ENABLE_NBS_DO -> XWPrefs.setNBSEnabled(mActivity, true)
+            Action.ENABLE_BT_DO -> BTUtils.enable(mActivity)
+            Action.ENABLE_MQTT_DO -> {
                 XWPrefs.setMQTTEnabled(mActivity, true)
                 MQTTUtils.setEnabled(mActivity, true)
             }
 
-            DlgDelegate.Action.PERMS_QUERY ->
+            Action.PERMS_QUERY ->
                 Perms23.onGotPermsAction(this, true, params[0] as Perms23.GotPermsState)
-            DlgDelegate.Action.SHOW_FAQ -> showFaq(params[0] as Array<String>)
+            Action.SHOW_FAQ -> showFaq(params[0] as Array<String>)
             else -> {
                 Log.d(TAG, "onPosButton(): unhandled action %s", action.toString())
                 // Assert.assertTrue( !BuildConfig.DEBUG );
@@ -714,12 +717,11 @@ abstract class DelegateBase @JvmOverloads constructor(
         return handled
     }
 
-    override fun onNegButton(action: DlgDelegate.Action,
-                             vararg params: Any?): Boolean
+    override fun onNegButton(action: Action, vararg params: Any?): Boolean
     {
         var handled = true
         when (action) {
-            DlgDelegate.Action.PERMS_QUERY ->
+            Action.PERMS_QUERY ->
                 Perms23.onGotPermsAction(
                     this, false, params[0] as Perms23.GotPermsState)
             else -> {
@@ -730,7 +732,7 @@ abstract class DelegateBase @JvmOverloads constructor(
         return handled
     }
 
-    override fun onDismissed(action: DlgDelegate.Action,
+    override fun onDismissed(action: Action,
                              vararg params: Any?): Boolean
     {
         var handled = false
@@ -740,20 +742,20 @@ abstract class DelegateBase @JvmOverloads constructor(
         )
 
         when (action) {
-            DlgDelegate.Action.PERMS_QUERY -> {
+            Action.PERMS_QUERY -> {
                 handled = true
                 Perms23.onGotPermsAction(
                     this, false, params[0] as Perms23.GotPermsState)
             }
 
-            DlgDelegate.Action.SKIP_CALLBACK -> {}
+            Action.SKIP_CALLBACK -> {}
             else -> Log.e(TAG, "onDismissed(): not handling action %s", action)
         }
         return handled
     }
 
     override fun inviteChoiceMade(
-        action: DlgDelegate.Action,
+        action: Action,
         means: InviteMeans,
         vararg params: Any?
     ) {

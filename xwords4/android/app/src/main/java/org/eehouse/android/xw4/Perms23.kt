@@ -31,6 +31,7 @@ import androidx.core.content.ContextCompat
 import java.io.Serializable
 import java.util.Arrays
 
+import org.eehouse.android.xw4.DlgDelegate.Action
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType
 import org.eehouse.android.xw4.loc.LocUtils
 
@@ -103,7 +104,7 @@ object Perms23 {
     private fun tryGetPermsImpl(
         delegate: DelegateBase, perms: Array<Perm>,
         rationaleMsg: String?, naKey: Int,
-        action: DlgDelegate.Action, vararg params: Any?
+        action: Action, vararg params: Any?
     ) {
         // Log.d( TAG, "tryGetPermsImpl(${DbgUtils.fmtAny(perms)})")
         if (0 != naKey &&
@@ -120,14 +121,14 @@ object Perms23 {
 
     private fun postNeg(
         delegate: DelegateBase,
-        action: DlgDelegate.Action, vararg params: Any?
+        action: Action, vararg params: Any?
     ) {
         delegate.post { delegate.onNegButton(action, *params) }
     }
 
     fun tryGetPerms(
         delegate: DelegateBase, perms: Array<Perm>, rationaleId: Int,
-        action: DlgDelegate.Action, vararg params: Any?
+        action: Action, vararg params: Any?
     ) {
         // Log.d( TAG, "tryGetPerms(perms: $perms, params: ${DbgUtils.fmtAny(params)})")
         val msg = LocUtils.getStringOrNull(rationaleId)
@@ -136,7 +137,7 @@ object Perms23 {
 
     fun tryGetPerms(
         delegate: DelegateBase, perms: Array<Perm>,
-        rationaleMsg: String?, action: DlgDelegate.Action,
+        rationaleMsg: String?, action: Action,
         vararg params: Any?
     ) {
         tryGetPermsImpl(delegate, perms, rationaleMsg, 0, action, *params)
@@ -144,7 +145,7 @@ object Perms23 {
 
     fun tryGetPerms(
         delegate: DelegateBase, perm: Perm,
-        rationaleMsg: String?, action: DlgDelegate.Action,
+        rationaleMsg: String?, action: Action,
         vararg params: Any?
     ) {
         tryGetPermsImpl(
@@ -155,7 +156,7 @@ object Perms23 {
 
     fun tryGetPerms(
         delegate: DelegateBase, perm: Perm, rationaleId: Int,
-        action: DlgDelegate.Action, vararg params: Any?
+        action: Action, vararg params: Any?
     ) {
         tryGetPerms(delegate, arrayOf(perm), rationaleId, action, *params)
     }
@@ -163,7 +164,7 @@ object Perms23 {
     fun tryGetPermsNA(
         delegate: DelegateBase, perm: Perm,
         rationaleId: Int, naKey: Int,
-        action: DlgDelegate.Action, vararg params: Any?
+        action: Action, vararg params: Any?
     ) {
         tryGetPermsImpl(
             delegate, arrayOf(perm),
@@ -172,7 +173,7 @@ object Perms23 {
         )
     }
 
-    class GotPermsState(val action: DlgDelegate.Action,
+    class GotPermsState(val action: Action,
                         val perms: Array<Perm>,
                         val msg: String?,
                         val params: Array<Any?>) : Serializable
@@ -270,7 +271,7 @@ object Perms23 {
 
     fun tryGetNBSPermsNA(
         delegate: DelegateBase, rationaleId: Int,
-        naKey: Int, action: DlgDelegate.Action, vararg params: Any?
+        naKey: Int, action: Action, vararg params: Any?
     ) {
         tryGetPermsImpl(
             delegate, NBS_PERMS,
@@ -406,7 +407,7 @@ object Perms23 {
 
     private class QueryInfo(
         private val mDelegate: DelegateBase,
-        private val mAction: DlgDelegate.Action,
+        private val mAction: Action,
         private val mPerms: Array<Perm>,
         private val mRationaleMsg: String?,
         private val mNAKey: Int,
@@ -452,7 +453,7 @@ object Perms23 {
                 builder.setOnShowRationale(object : OnShowRationale {
                     override fun onShouldShowRationale(perms: Set<Perm>) {
                         mDelegate.makeConfirmThenBuilder(
-                            DlgDelegate.Action.PERMS_QUERY,
+                            Action.PERMS_QUERY,
                             mRationaleMsg
                         )
                             .setTitle(R.string.perms_rationale_title)
@@ -466,7 +467,7 @@ object Perms23 {
             }
             builder.asyncQuery(mDelegate.getActivity(), object : PermCbck {
                 override fun onPermissionResult(allGood: Boolean) {
-                    if (DlgDelegate.Action.SKIP_CALLBACK != mAction) {
+                    if (Action.SKIP_CALLBACK != mAction) {
                         if (allGood) {
                             mDelegate.onPosButton(mAction, *mParams)
                         } else {

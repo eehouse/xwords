@@ -27,6 +27,7 @@ import android.view.ContextMenu.ContextMenuInfo
 import android.view.MenuItem
 import android.view.View
 
+import org.eehouse.android.xw4.DlgDelegate.Action
 import org.eehouse.android.xw4.DlgDelegate.DlgClickNotify.InviteMeans
 
 class DualpaneDelegate(delegator: Delegator) :
@@ -82,7 +83,7 @@ class DualpaneDelegate(delegator: Delegator) :
         return main.dispatchOnContextItemSelected(item)
     }
 
-    override fun onPosButton(action: DlgDelegate.Action, vararg params: Any?): Boolean {
+    override fun onPosButton(action: Action, vararg params: Any?): Boolean {
         var handled = false
         val main = m_activity as MainActivity
         val frags = main.visibleFragments
@@ -95,8 +96,7 @@ class DualpaneDelegate(delegator: Delegator) :
         return handled
     }
 
-    override fun onNegButton(action: DlgDelegate.Action,
-                             vararg params: Any?): Boolean
+    override fun onNegButton(action: Action, vararg params: Any?): Boolean
     {
         var handled = false
         val main = m_activity as MainActivity
@@ -110,8 +110,7 @@ class DualpaneDelegate(delegator: Delegator) :
         return handled
     }
 
-    override fun onDismissed(action: DlgDelegate.Action,
-                             vararg params: Any?): Boolean
+    override fun onDismissed(action: Action, vararg params: Any?): Boolean
     {
         var handled = false
         val main = m_activity as MainActivity
@@ -126,7 +125,7 @@ class DualpaneDelegate(delegator: Delegator) :
     }
 
     override fun inviteChoiceMade(
-        action: DlgDelegate.Action, means: InviteMeans,
+        action: Action, means: InviteMeans,
         vararg params: Any?
     ) {
         val main = m_activity as MainActivity

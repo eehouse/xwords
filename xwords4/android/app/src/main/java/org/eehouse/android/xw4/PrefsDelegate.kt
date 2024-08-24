@@ -35,9 +35,10 @@ import androidx.preference.PreferenceManager
 import java.io.File
 import java.io.Serializable
 
+import org.eehouse.android.xw4.DlgDelegate.Action
 import org.eehouse.android.xw4.gen.PrefsWrappers
-import org.eehouse.android.xw4.jni.CommonPrefs.ColorTheme
 import org.eehouse.android.xw4.jni.CommonPrefs
+import org.eehouse.android.xw4.jni.CommonPrefs.ColorTheme
 
 private val TAG: String = PrefsDelegate::class.java.simpleName
 
@@ -159,7 +160,7 @@ class PrefsDelegate(private val mActivity: XWActivity,
         } else if (null != theme) {
             makeNotAgainBuilder(
                 R.string.key_na_copytheme,
-                DlgDelegate.Action.EXPORT_THEME,
+                Action.EXPORT_THEME,
                 R.string.not_again_copytheme
             )
                 .setParams(theme)
@@ -219,25 +220,25 @@ class PrefsDelegate(private val mActivity: XWActivity,
         }
     }
 
-    override fun onPosButton(action: DlgDelegate.Action, vararg params: Any?): Boolean {
+    override fun onPosButton(action: Action, vararg params: Any?): Boolean {
         var handled = true
         when (action) {
-            DlgDelegate.Action.ENABLE_NBS_DO -> {
+            Action.ENABLE_NBS_DO -> {
                 XWPrefs.setNBSEnabled(mActivity, true)
                 SMSCheckBoxPreference.setChecked()
             }
 
-            DlgDelegate.Action.DISABLE_MQTT_DO -> {
+            Action.DISABLE_MQTT_DO -> {
                 MQTTUtils.setEnabled(mActivity, false)
                 MQTTCheckBoxPreference.setChecked()
             }
 
-            DlgDelegate.Action.DISABLE_BT_DO -> {
+            Action.DISABLE_BT_DO -> {
                 BTUtils.setEnabled(mActivity, false)
                 BTCheckBoxPreference.setChecked()
             }
 
-            DlgDelegate.Action.EXPORT_THEME -> {
+            Action.EXPORT_THEME -> {
                 val theme = params[0] as ColorTheme
                 CommonPrefs.colorPrefsToClip(mActivity, theme)
                 DbgUtils.showf(mActivity, R.string.theme_data_success)

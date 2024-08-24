@@ -25,6 +25,8 @@ import android.os.Bundle
 import android.view.View
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
+
+import org.eehouse.android.xw4.DlgDelegate.Action
 import org.eehouse.android.xw4.DlgDelegate.HasDlgDelegate
 import org.eehouse.android.xw4.gen.PrefsWrappers.prefs
 import org.eehouse.android.xw4.jni.CommonPrefs
@@ -67,7 +69,7 @@ class PrefsActivity : XWActivity(), Delegator, HasDlgDelegate,
     }
 
     override fun makeNotAgainBuilder(
-        key: Int, action: DlgDelegate.Action, msgID: Int,
+        key: Int, action: Action, msgID: Int,
         vararg params: Any?
     ): DlgDelegate.Builder {
         return mDlgt!!.makeNotAgainBuilder(key, action, msgID, *params)
@@ -105,11 +107,11 @@ class PrefsActivity : XWActivity(), Delegator, HasDlgDelegate,
         return true
     }
 
-    fun makeConfirmThenBuilder(action: DlgDelegate.Action, msg: String): DlgDelegate.Builder {
+    fun makeConfirmThenBuilder(action: Action, msg: String): DlgDelegate.Builder {
         return mDlgt!!.makeConfirmThenBuilder(action, msg)
     }
 
-    fun showSMSEnableDialog(action: DlgDelegate.Action) {
+    fun showSMSEnableDialog(action: Action) {
         mDlgt!!.showSMSEnableDialog(action)
     }
 

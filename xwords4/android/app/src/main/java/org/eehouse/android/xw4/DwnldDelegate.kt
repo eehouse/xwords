@@ -41,6 +41,7 @@ import java.net.URISyntaxException
 
 import org.eehouse.android.xw4.DictUtils.DictLoc
 import org.eehouse.android.xw4.DictUtils.DownProgListener
+import org.eehouse.android.xw4.DlgDelegate.Action
 import org.eehouse.android.xw4.Perms23.Perm
 import org.eehouse.android.xw4.Utils.ISOCode
 
@@ -315,7 +316,7 @@ class DwnldDelegate(delegator: Delegator) : ListDelegateBase(delegator, R.layout
         } else {
             tryGetPerms(
                 Perm.STORAGE, R.string.download_rationale,
-                DlgDelegate.Action.STORAGE_CONFIRMED, uris as Any
+                Action.STORAGE_CONFIRMED, uris as Any
             )
         }
     }
@@ -361,21 +362,21 @@ class DwnldDelegate(delegator: Delegator) : ListDelegateBase(delegator, R.layout
         return super.handleBackPressed()
     }
 
-    override fun onPosButton(action: DlgDelegate.Action, vararg params: Any?): Boolean {
+    override fun onPosButton(action: Action, vararg params: Any?): Boolean {
         var handled = true
         when (action) {
-            DlgDelegate.Action.STORAGE_CONFIRMED -> doWithPermissions(params[0] as Array<Uri>)
+            Action.STORAGE_CONFIRMED -> doWithPermissions(params[0] as Array<Uri>)
             else -> handled = super.onPosButton(action, *params)
         }
         return handled
     }
 
-    override fun onNegButton(action: DlgDelegate.Action,
+    override fun onNegButton(action: Action,
                              vararg params: Any?): Boolean
     {
         var handled = true
         when (action) {
-            DlgDelegate.Action.STORAGE_CONFIRMED -> finish()
+            Action.STORAGE_CONFIRMED -> finish()
             else -> handled = super.onPosButton(action, *params)
         }
         return handled

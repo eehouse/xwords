@@ -25,6 +25,7 @@ import android.view.View
 import android.widget.CheckBox
 import android.widget.LinearLayout
 
+import org.eehouse.android.xw4.DlgDelegate.Action
 import org.eehouse.android.xw4.DlgDelegate.HasDlgDelegate
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet
@@ -110,7 +111,7 @@ class ConnViaViewLayout(context: Context, aset: AttributeSet?) :
                 Perms23.tryGetPerms(
                     mParent!!, BTUtils.BTPerms,
                     R.string.nearbydev_rationale,
-                    DlgDelegate.Action.SKIP_CALLBACK
+                    Action.SKIP_CALLBACK
                 )
             }
             disable = true

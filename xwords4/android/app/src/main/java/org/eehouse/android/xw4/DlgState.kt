@@ -26,13 +26,14 @@ import android.text.TextUtils
 
 import java.io.Serializable
 
+import org.eehouse.android.xw4.DlgDelegate.Action
 import org.eehouse.android.xw4.DlgDelegate.ActionPair
 
 class DlgState(val mID: DlgID) : Parcelable {
     var m_msg: String? = null
     var m_posButton: Int = 0
     var m_negButton: Int = 0
-    var m_action: DlgDelegate.Action? = null
+    var m_action: Action? = null
     var m_pair: ActionPair? = null
     var m_prefsNAKey: Int = 0
 
@@ -50,7 +51,7 @@ class DlgState(val mID: DlgID) : Parcelable {
         return this
     }
 
-    fun setAction(action: DlgDelegate.Action): DlgState {
+    fun setAction(action: Action): DlgState {
         m_action = action
         return this
     }
@@ -206,7 +207,7 @@ class DlgState(val mID: DlgID) : Parcelable {
                 val id = DlgID.entries[parcel.readInt()]
                 val posButton = parcel.readInt()
                 val negButton = parcel.readInt()
-                val action = DlgDelegate.Action.entries[parcel.readInt()]
+                val action = Action.entries[parcel.readInt()]
                 val prefsKey = parcel.readInt()
                 val title = parcel.readString()
                 val msg = parcel.readString()

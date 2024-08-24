@@ -30,12 +30,15 @@ import android.text.method.DialerKeyListener
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
-import org.eehouse.android.xw4.DBUtils.SentInvitesInfo
-import org.eehouse.android.xw4.DlgDelegate.DlgClickNotify.InviteMeans
-import org.eehouse.android.xw4.Perms23.Perm
+
 import org.json.JSONException
 import org.json.JSONObject
 import java.util.Collections
+
+import org.eehouse.android.xw4.DBUtils.SentInvitesInfo
+import org.eehouse.android.xw4.DlgDelegate.Action
+import org.eehouse.android.xw4.DlgDelegate.DlgClickNotify.InviteMeans
+import org.eehouse.android.xw4.Perms23.Perm
 
 class SMSInviteDelegate(delegator: Delegator) :
     InviteDelegate(delegator) {
@@ -81,7 +84,7 @@ class SMSInviteDelegate(delegator: Delegator) :
                     R.plurals.confirm_clear_sms_fmt,
                     count, count
                 )
-                makeConfirmThenBuilder(DlgDelegate.Action.CLEAR_ACTION, msg).show()
+                makeConfirmThenBuilder(Action.CLEAR_ACTION, msg).show()
             }
         }
     }
@@ -141,16 +144,16 @@ class SMSInviteDelegate(delegator: Delegator) :
     }
 
     // DlgDelegate.DlgClickNotify interface
-    override fun onPosButton(action: DlgDelegate.Action, vararg params: Any?): Boolean {
+    override fun onPosButton(action: Action, vararg params: Any?): Boolean {
         var handled = true
         when (action) {
-            DlgDelegate.Action.CLEAR_ACTION -> clearSelectedImpl()
-            DlgDelegate.Action.USE_IMMOBILE_ACTION -> postSMSCostWarning(
+            Action.CLEAR_ACTION -> clearSelectedImpl()
+            Action.USE_IMMOBILE_ACTION -> postSMSCostWarning(
                 params[0] as String,
                 params[1] as String
             )
 
-            DlgDelegate.Action.POST_WARNING_ACTION -> {
+            Action.POST_WARNING_ACTION -> {
                 val rec = PhoneRec(
                     params[1] as String,
                     params[0] as String
@@ -211,7 +214,7 @@ class SMSInviteDelegate(delegator: Delegator) :
 
     private fun postSMSCostWarning(number: String, name: String) {
         makeConfirmThenBuilder(
-            DlgDelegate.Action.POST_WARNING_ACTION,
+            Action.POST_WARNING_ACTION,
             R.string.warn_unlimited
         )
             .setPosButton(R.string.button_yes)
@@ -221,7 +224,7 @@ class SMSInviteDelegate(delegator: Delegator) :
 
     private fun postConfirmMobile(number: String, name: String) {
         makeConfirmThenBuilder(
-            DlgDelegate.Action.USE_IMMOBILE_ACTION,
+            Action.USE_IMMOBILE_ACTION,
             R.string.warn_nomobile_fmt, number, name
         )
             .setPosButton(R.string.button_yes)
@@ -288,7 +291,7 @@ class SMSInviteDelegate(delegator: Delegator) :
         Perms23.tryGetPerms(
             this, Perm.READ_CONTACTS,
             R.string.contacts_rationale,
-            DlgDelegate.Action.SKIP_CALLBACK
+            Action.SKIP_CALLBACK
         )
     }
 
