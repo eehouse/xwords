@@ -45,4 +45,6 @@
   <string name="gamel_menu_statsShow">Show</string>
   <string name="gamel_menu_statsClear">Clear</string>
 
+  <string name="statsClearConfirm">Are you sure you want to permanently delete stats?</string>
+
 </resources>

@@ -65,6 +65,7 @@ class DlgDelegate(
         CLEAR_INT_STATS,  // debug only
         RESTART,
         NOTIFY_PERMS,
+        CLEAR_STATS,
 
         // BoardDelegate
         UNDO_LAST_ACTION,

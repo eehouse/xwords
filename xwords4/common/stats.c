@@ -28,12 +28,17 @@
 
 typedef struct StatsState {
     XP_U32* statsVals;
+    XP_U32 startTime;
     MutexState mutex;
     XP_Bool timerSet;
 } StatsState;
 
+enum { VERSION_0,
+    VERSION_1,                  /* adds timestamp at start */
+};
+
 static const XP_UCHAR* STATtoStr(STAT stat);
-static XP_U32* loadCounts( XW_DUtilCtxt* dutil, XWEnv xwe );
+static void loadCountsLocked( XW_DUtilCtxt* dutil, XWEnv xwe );
 static void storeCountsLocked( XW_DUtilCtxt* dutil, XWEnv xwe );
 static void setStoreTimerLocked( XW_DUtilCtxt* dutil, XWEnv xwe );
 
@@ -63,7 +68,7 @@ sts_increment( XW_DUtilCtxt* dutil, XWEnv xwe, STAT stat )
         XP_ASSERT( !!ss );
         WITH_MUTEX( &ss->mutex );
         if ( !ss->statsVals ) {
-            ss->statsVals = loadCounts( dutil, xwe );
+            loadCountsLocked( dutil, xwe );
         }
         ++ss->statsVals[stat];
 
@@ -78,18 +83,24 @@ sts_export( XW_DUtilCtxt* dutil, XWEnv xwe )
     StatsState* ss = dutil->statsState;
     XP_ASSERT( !!ss );
     cJSON* result = cJSON_CreateObject();
+    cJSON* stats = cJSON_CreateObject();
+    cJSON_AddItemToObject(result, "stats", stats );
 
     WITH_MUTEX( &ss->mutex );
     if ( !ss->statsVals ) {
-        ss->statsVals = loadCounts( dutil, xwe );
+        loadCountsLocked( dutil, xwe );
     }
+
     for ( int ii = 0; ii < STAT_NSTATS; ++ii ) {
         XP_U32 val = ss->statsVals[ii];
         if ( 0 != val ) {
             const XP_UCHAR* nam = STATtoStr(ii);
-            cJSON_AddNumberToObject( result, nam, val );
+            cJSON_AddNumberToObject( stats, nam, val );
         }
     }
+
+    cJSON_AddNumberToObject( result, "since", ss->startTime );
+
     END_WITH_MUTEX();
     return result;
 }
@@ -100,11 +111,17 @@ sts_clearAll( XW_DUtilCtxt* dutil, XWEnv xwe )
     StatsState* ss = dutil->statsState;
     XP_ASSERT( !!ss );
 
+    /* grab outside the mutex */
+    XP_U32 startTime = dutil_getCurSeconds( dutil, xwe );
+    XP_U32* statsVals = XP_CALLOC( dutil->mpool,
+                                   sizeof(*ss->statsVals) * STAT_NSTATS );
+
+
     WITH_MUTEX( &ss->mutex );
     XP_FREEP( dutil->mpool, &ss->statsVals );
 
-    ss->statsVals
-        = XP_CALLOC( dutil->mpool, sizeof(*ss->statsVals) * STAT_NSTATS );
+    ss->statsVals = statsVals;
+    ss->startTime = startTime;
     storeCountsLocked( dutil, xwe );
     END_WITH_MUTEX();
 }
@@ -140,7 +157,8 @@ storeCountsLocked( XW_DUtilCtxt* dutil, XWEnv xwe )
     XP_ASSERT( !!ss );
 
     XWStreamCtxt* stream = mkStream( dutil );
-    stream_putU8( stream, 0 );  /* version */
+    stream_putU8( stream, VERSION_1 );
+    stream_putU32( stream, ss->startTime );
 
     if ( !!ss->statsVals ) {
         for ( int ii = 0; ii < STAT_NSTATS; ++ii ) {
@@ -157,18 +175,30 @@ storeCountsLocked( XW_DUtilCtxt* dutil, XWEnv xwe )
     stream_destroy( stream );
 }
 
-static XP_U32*
-loadCounts( XW_DUtilCtxt* dutil, XWEnv xwe )
+static void
+loadCountsLocked( XW_DUtilCtxt* dutil, XWEnv xwe )
 {
+    StatsState* ss = dutil->statsState;
+    XP_ASSERT( !!ss );
+    XP_U32* statsVals
+        = XP_CALLOC( dutil->mpool, sizeof(*statsVals) * STAT_NSTATS );
+    ss->statsVals = statsVals;
+
     XWStreamCtxt* stream = mkStream( dutil );
     const XP_UCHAR* keys[] = { STATS_KEY, NULL };
     dutil_loadStream( dutil, xwe, keys, stream );
 
-    XP_U32* statsVals
-        = XP_CALLOC( dutil->mpool, sizeof(*statsVals) * STAT_NSTATS );
-
     XP_U8 version;
     if ( stream_gotU8( stream, &version ) ) {
+        XP_U32 startTime = 0;
+        if ( VERSION_1 <= version ) {
+            startTime = stream_getU32(stream);
+        } else {
+            startTime = dutil_getCurSeconds( dutil, xwe );
+            setStoreTimerLocked( dutil, xwe ); /* something to save */
+        }
+        ss->startTime = startTime;
+
         XP_U8 stat;
         while ( stream_gotU8( stream, &stat ) ) {
             XP_U32 value = stream_getU32VL( stream );
@@ -176,7 +206,6 @@ loadCounts( XW_DUtilCtxt* dutil, XWEnv xwe )
         }
     }
     stream_destroy( stream );
-    return statsVals;
 }
 
 #ifdef DUTIL_TIMERS

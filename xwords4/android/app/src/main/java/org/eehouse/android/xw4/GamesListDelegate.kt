@@ -49,6 +49,7 @@ import com.jakewharton.processphoenix.ProcessPhoenix
 
 import java.io.File
 import java.io.Serializable
+import java.util.Date
 
 import org.eehouse.android.xw4.DBUtils.DBChangeListener
 import org.eehouse.android.xw4.DBUtils.GameChangeType
@@ -1353,8 +1354,8 @@ class GamesListDelegate(delegator: Delegator) :
                 DictBrowseDelegate.launch(getDelegator(), (params[0] as String))
             Action.LAUNCH_AFTER_DEL -> deleteGames(
                 longArrayOf((params[1] as Long)),
-                false
-            )
+                false )
+            Action.CLEAR_STATS -> XwJNI.sts_clearAll()
 
             else -> handled = super.onPosButton(action, *params)
         }
@@ -1765,16 +1766,22 @@ class GamesListDelegate(delegator: Delegator) :
                 Action.WRITE_LOG_DB)
 
             R.id.games_menu_statsShow -> {
-                val stats = XwJNI.sts_export()
+                val obj = XwJNI.sts_export()
+                val stats = obj.getJSONObject("stats")
+                val startTime = Date(obj.getLong("since")*1000)
                 val pairs = ArrayList<String>()
                 stats.keys().forEach { key ->
                     val value = stats.getLong(key)
                     pairs.add("$key: $value")
                 }
-                makeOkOnlyBuilder(TextUtils.join("\n", pairs))
-                    .show()
+                val txt = "Since: $startTime\n" +
+                    TextUtils.join("\n", pairs)
+                makeOkOnlyBuilder(txt).show()
             }
-            R.id.games_menu_statsClear -> XwJNI.sts_clearAll()
+            R.id.games_menu_statsClear ->
+                makeConfirmThenBuilder(DlgDelegate.Action.CLEAR_STATS,
+                                       R.string.statsClearConfirm)
+                    .show()
 
             else -> handled = (handleSelGamesItem(itemID, selRowIDs)
                     || handleSelGroupsItem(itemID, selGroupIDs))
