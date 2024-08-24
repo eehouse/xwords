@@ -36,6 +36,7 @@ import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType
 import org.eehouse.android.xw4.jni.XwJNI
 import org.eehouse.android.xw4.jni.XwJNI.SMSProtoMsg
 import org.eehouse.android.xw4.jni.XwJNI.SMS_CMD
+import org.eehouse.android.xw4.jni.XwJNI.STAT
 import org.eehouse.android.xw4.loc.LocUtils
 
 object NBSProto {
@@ -65,6 +66,7 @@ object NBSProto {
             context, CommsConnType.COMMS_CONN_SMS,
             true
         )
+        XwJNI.sts_increment(STAT.STAT_NBS_RCVD);
     }
 
     fun inviteRemote(
@@ -358,13 +360,13 @@ object NBSProto {
             }
         }
 
-        private fun sendBuffers(fragments: Array<ByteArray>, phone: String, port: Short) {
+        private fun sendBuffers(fragments: Array<ByteArray>, phone: String,
+                                port: Short) {
             val context = XWApp.getContext()
             var success = false
             if (XWPrefs.getNBSEnabled(context) && Perms23.haveNBSPerms(context)
             ) {
                 // Try send-to-self
-
                 if (XWPrefs.getSMSToSelfEnabled(context)) {
                     val myPhone = SMSPhoneInfo.get(context)!!.number
                     if (null != myPhone
@@ -388,6 +390,7 @@ object NBSProto {
                                 sent, delivery
                             )
                         }
+                        XwJNI.sts_increment(STAT.STAT_NBS_SENT);
                         success = true
                     } catch (iae: IllegalArgumentException) {
                         Log.w(TAG, "sendBuffers(%s): %s", phone, iae.toString())

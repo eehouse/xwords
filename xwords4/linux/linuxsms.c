@@ -248,6 +248,9 @@ parseAndDispatch( LaunchParams* params, uint8_t* buf, int len,
     SMSMsgArray* arr =
         smsproto_prepInbound( storage->protoState, NULL_XWE, fromPhone,
                               storage->myPort, buf, len );
+
+    sts_increment( params->dutil, NULL_XWE, STAT_NBS_RCVD );
+
     if ( NULL != arr ) {
         XP_ASSERT( arr->format == FORMAT_LOC );
         for ( XP_U16 ii = 0; ii < arr->nMsgs; ++ii ) {
@@ -257,7 +260,6 @@ parseAndDispatch( LaunchParams* params, uint8_t* buf, int len,
                 (*storage->procs->msgReceived)( storage->procClosure, addr,
                                                 msg->gameID,
                                                 msg->data, msg->len );
-                sts_increment( params->dutil, NULL_XWE, STAT_SMS_RCVD );
                 break;
             case INVITE: {
                 NetLaunchInfo nli = {};
@@ -288,6 +290,7 @@ linux_sms_init( LaunchParams* params, const gchar* myPhone, XP_U16 myPort,
     storage->procs = procs;
     storage->procClosure = procClosure;
     storage->protoState = smsproto_init( MPPARM(params->mpool) NULL_XWE, params->dutil );
+    XP_ASSERT( !!storage->protoState );
 
     formatQueuePath( myPhone, myPort, storage->myQueue, sizeof(storage->myQueue) );
     XP_LOGFF( " my queue: %s", storage->myQueue );
@@ -385,7 +388,7 @@ sendOrRetry( LaunchParams* params, SMSMsgArray* arr, SMS_CMD cmd,
             // doSend( params, msg->data, msg->len, phone, port, gameID );
             (void)write_fake_sms( params, msg->data, msg->len, msgNo, 
                                   phone, port );
-            sts_increment( params->dutil, NULL_XWE, STAT_SMS_SENT );
+            sts_increment( params->dutil, NULL_XWE, STAT_NBS_SENT );
         }
 
         LinSMSData* storage = getStorage( params );

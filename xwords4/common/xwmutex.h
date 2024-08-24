@@ -46,7 +46,7 @@ void mtx_unlock_prv(MutexState* state, XP_U16 waitSecs, const char* caller);
 
 void mtx_init_prv( MutexState* mutex, XP_Bool recursive
 # ifdef DEBUG
-                       , XP_U16 waitSecs
+                   , XP_U16 waitSecs, const char* caller
 # endif
                        );
 void mtx_destroy_prv( MutexState* mutex );
@@ -54,7 +54,8 @@ void mtx_destroy_prv( MutexState* mutex );
 #ifdef DEBUG
 void mtx_crashToTest();
 
-# define MUTEX_INIT_CHECKED(STATE, RECURSIVE, WS) mtx_init_prv((STATE), (RECURSIVE), (WS))
+# define MUTEX_INIT_CHECKED(STATE, RECURSIVE, WS)                 \
+                   mtx_init_prv((STATE), (RECURSIVE), (WS), __func__)
 # define MUTEX_INIT(STATE, RECURSIVE) MUTEX_INIT_CHECKED(STATE, RECURSIVE, 0)
 #else
 # define mtx_crashToTest()

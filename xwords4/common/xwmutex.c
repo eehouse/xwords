@@ -125,7 +125,7 @@ mtx_unlock_prv( MutexState* state, XP_U16 XP_UNUSED(waitSecs),
 void
 mtx_init_prv( MutexState* mutex, XP_Bool recursive
 #ifdef DEBUG
-          , XP_U16 waitSecs
+              , XP_U16 waitSecs, const char* caller
 #endif
           )
 {
@@ -150,7 +150,7 @@ mtx_init_prv( MutexState* mutex, XP_Bool recursive
     }
 # endif
     mutex->waitSecs = waitSecs;
-    XP_LOGFF( "set waitSecs: %d", mutex->waitSecs );
+    XP_LOGFF( "set waitSecs: %d (called by %s())", mutex->waitSecs, caller );
 #endif
     pthread_mutex_init( &mutex->mutex, &attr );
 #ifdef DEBUG

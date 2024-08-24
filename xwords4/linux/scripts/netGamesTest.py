@@ -607,7 +607,7 @@ class Device():
             assert not self.endTime
 
     def _addStats(self, stats):
-        stats = stats.get('stats')
+        stats = stats.get('stats').get('stats')
         if stats and self._stats:
             for key in stats.keys():
                 if key in self._stats:

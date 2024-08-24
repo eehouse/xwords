@@ -38,8 +38,8 @@ typedef enum {
     STAT_NEW_FOUR,
     STAT_NEW_REMATCH,
 
-    STAT_SMS_RCVD,
-    STAT_SMS_SENT,
+    STAT_NBS_RCVD,
+    STAT_NBS_SENT,
 
     STAT_NSTATS,
 } STAT;

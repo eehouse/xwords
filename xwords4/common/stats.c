@@ -1,4 +1,4 @@
-/* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
+/* -*- compile-command: "cd ../linux && make MEMDEBUG=TRUE -j3"; -*- */
 /* 
  * Copyright 2024 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
@@ -140,8 +140,8 @@ STATtoStr(STAT stat)
         CASESTR(STAT_NEW_THREE);
         CASESTR(STAT_NEW_FOUR);
         CASESTR(STAT_NEW_REMATCH);
-        CASESTR(STAT_SMS_SENT);
-        CASESTR(STAT_SMS_RCVD);
+        CASESTR(STAT_NBS_SENT);
+        CASESTR(STAT_NBS_RCVD);
     default:
         XP_ASSERT(0);
     }
@@ -190,14 +190,9 @@ loadCountsLocked( XW_DUtilCtxt* dutil, XWEnv xwe )
 
     XP_U8 version;
     if ( stream_gotU8( stream, &version ) ) {
-        XP_U32 startTime = 0;
         if ( VERSION_1 <= version ) {
-            startTime = stream_getU32(stream);
-        } else {
-            startTime = dutil_getCurSeconds( dutil, xwe );
-            setStoreTimerLocked( dutil, xwe ); /* something to save */
+            ss->startTime = stream_getU32(stream);
         }
-        ss->startTime = startTime;
 
         XP_U8 stat;
         while ( stream_gotU8( stream, &stat ) ) {
@@ -206,6 +201,11 @@ loadCountsLocked( XW_DUtilCtxt* dutil, XWEnv xwe )
         }
     }
     stream_destroy( stream );
+
+    if ( 0 == ss->startTime ) {
+        ss->startTime = dutil_getCurSeconds( dutil, xwe );
+        setStoreTimerLocked( dutil, xwe ); /* something to save */
+    }
 }
 
 #ifdef DUTIL_TIMERS
