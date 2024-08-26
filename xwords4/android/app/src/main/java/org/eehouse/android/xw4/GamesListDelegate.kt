@@ -1335,7 +1335,6 @@ class GamesListDelegate(delegator: Delegator) :
             }
 
             Action.SEND_EMAIL -> Utils.emailAuthor(mActivity)
-            Action.WRITE_LOG_DB -> Log.dumpStored(this)
             Action.CLEAR_LOG_DB -> Log.clearStored(this)
             Action.ASKED_PHONE_STATE ->
                 rematchWithNameAndPerm(true, arrayOf(*params))
@@ -1762,9 +1761,7 @@ class GamesListDelegate(delegator: Delegator) :
                 .setPosButton(R.string.loc_item_clear)
                 .show()
 
-            R.id.games_menu_emailLogs -> Perms23.tryGetPerms(
-                this, Perm.STORAGE, null,
-                Action.WRITE_LOG_DB)
+            R.id.games_menu_emailLogs -> Log.dumpStored(this)
 
             R.id.games_menu_statsShow -> {
                 val obj = XwJNI.sts_export()

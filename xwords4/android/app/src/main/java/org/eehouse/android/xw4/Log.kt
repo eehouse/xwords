@@ -34,6 +34,7 @@ import java.lang.ref.WeakReference
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Formatter
+import java.util.Locale
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.zip.GZIPOutputStream
 
@@ -232,8 +233,8 @@ object Log {
         fun dumpToFile(procs: ResultProcs) {
             enqueue {
                 val formatter = SimpleDateFormat("yy/MM/dd HH:mm:ss.SSS")
-                var dir = Environment.getExternalStorageDirectory()
-                dir = File(dir, Environment.DIRECTORY_DOWNLOADS)
+                val dir = File(Environment.getExternalStorageDirectory(),
+                               Environment.DIRECTORY_DOWNLOADS)
                 var db: File?
                 var ii = 1
                 while (true) {
@@ -286,9 +287,7 @@ object Log {
                     llog("dumpToFile(): ioe: %s", ioe)
                     db = null
                 }
-                if (null != db) {
-                    procs.onDumped(db)
-                }
+                db?.let { procs.onDumped(db) }
             }
         }
 
