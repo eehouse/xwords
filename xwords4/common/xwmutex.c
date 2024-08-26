@@ -22,63 +22,84 @@
 #ifdef DEBUG
 #include <unistd.h>
 
+#include "dllist.h"
+
 // #define WAIT_ALL_SECS 3
-/* #define WAIT_ALL_SECS to enable checking for ALL mutexes, but don't do that
-    on Android because it kills the app (because locks in mpool are so
-    frequent, I suspect). I'll keep it on on Linux for testing, but even there
-    it limits how many games I can run at once. I really need a cleverer
-    implementation where a single thread checks everything....
+/* #define WAIT_ALL_SECS to enable checking for ALL mutexes. Better to define
+   it in a platform's Makefile than here.
 */
 
-/* What is this? It's my attempt to, on debug builds and for all or only
-   chosen mutexes, get an assertion when the app doesn't get a lock in the
-   specified number of seconds. It's complicated because I want it to run on
-   Android, which doesn't have pthread_cancel().
+/* Take 2: A single thread runs forever, sleeping 1 second at a time. On
+   waking it walks a list of pending mutexes, and asserts that none has
+   expired. */
 
-   It works by spawining a thread immediately before calling
-   pthread_mutex_lock(). If the lock succeeds, a flag is set so that the
-   thread won't raise an alarm. If the thread wakes from its sleep to find
-   that that flag isn't yet set, assertion failure...
+static pthread_t sCheckThread = 0;
+static pthread_mutex_t sCheckMutex = PTHREAD_MUTEX_INITIALIZER;
+static DLHead* sCheckList = NULL;
 
-   The tricky part is how to share state between the checker thread and its
-   parent (that's calling pthread_mutex_lock().) Normally the parent might
-   pass a pointer to something on the stack to the thread proc, but normally
-   the stack frame will be long gone while the thread proc still wants to use
-   it. So: the flag that the checker thread will check lives in the thread's
-   own frame. The closure it's passed by the parent lets it set a pointer to
-   that flag so the parent can see it (the closure struct being in the
-   caller's scope.) So that the parent doesn't get out of pthread_mutex_lock()
-   before that pointer is set up, it busy-waits on its being set. Sue me: it's
-   debug code, and only active when set up for a particular mutex.
- */
+typedef struct _CheckListData {
+    XP_U32 currentTime;
+    int count;                  /* for dev/logging only */
+} CheckListData;
 
-typedef struct _WaitState {
-    const char* caller;
+typedef struct _CheckThreadData {
+    DLHead links;
+    XP_U32 expiryTime;
     const char* file;
+    const char* caller;
     int lineNo;
-    XP_U16 waitSecs;
-    XP_Bool* flagLoc;
-} WaitState;
+} CheckThreadData;
 
-static void*
-checkLockProc( void* closure )
+static ForEachAct
+checkListProcLocked( const DLHead* elem, void* closure )
 {
-    WaitState* wsp = (WaitState*)closure;
-    const XP_UCHAR* file = wsp->file;
-    const XP_UCHAR* caller = wsp->caller;
-    XP_U16 waitSecs = wsp->waitSecs;
-    int lineNo = wsp->lineNo;
-    XP_Bool setMe = XP_FALSE;   /* caller will change on success */
-    XP_ASSERT( !wsp->flagLoc );
-    wsp->flagLoc = &setMe;      /* tells busy-waiting caller to run */
-
-    sleep( waitSecs );
-    if ( !setMe ) {
-        XP_LOGFF( "failed to get mutex in %d secs (caller: %s(), line %d in %s)",
-                  waitSecs, caller, lineNo, file );
+    CheckListData* cld = (CheckListData*)closure;
+    CheckThreadData* ctd = (CheckThreadData*)elem;
+    if( cld->currentTime > ctd->expiryTime ) {
+        XP_LOGFF( "FAIL: %s() on line %d in %s unable to lock mutex",
+                  ctd->caller, ctd->lineNo, ctd->file );
         XP_ASSERT(0);
     }
+    ++cld->count;
+    return FEA_OK;
+}
+
+static void*
+checkProc( void* XP_UNUSED(closure) )
+{
+    for ( int ii = 0; ; ++ii ) {
+        sleep(1);
+        pthread_mutex_lock( &sCheckMutex );
+        CheckListData cld = { .currentTime = (XP_U32)time(NULL), };
+        (void)dll_map( sCheckList, checkListProcLocked, NULL, &cld );
+        pthread_mutex_unlock( &sCheckMutex );
+        /* Don't log from this thread on Android. 
+           PENDING what's the #ifdef to check? Add one?
+           XP_LOGFF( "pass %d: checked %d pending", ii, cld.count );
+        */
+    }
     return NULL;
+}
+
+static void
+addCheckee( CheckThreadData* ctd )
+{
+    pthread_mutex_lock( &sCheckMutex );
+    if ( 0 == sCheckThread ) {
+        (void)pthread_create( &sCheckThread, NULL, checkProc, NULL );
+    }
+    sCheckList = dll_insert( sCheckList, &ctd->links, NULL );
+    pthread_mutex_unlock( &sCheckMutex );
+}
+
+static void
+removeCheckee( CheckThreadData* ctd )
+{
+    pthread_mutex_lock( &sCheckMutex );
+    XP_ASSERT( !!sCheckList );
+    XP_ASSERT( 0 != sCheckThread );
+    sCheckList = dll_remove( sCheckList, &ctd->links );
+    pthread_mutex_unlock( &sCheckMutex );
 }
 
 void
@@ -86,38 +107,28 @@ mtx_lock_prv( MutexState* state, XP_U16 waitSecs,
               const char* file, const char* caller, int lineNo )
 {
     if ( 0 == waitSecs ) {
-        waitSecs  =state->waitSecs;
+        waitSecs = state->waitSecs;
     }
 
-    WaitState ws = {
-        .waitSecs = waitSecs,
-        .file = file,
-        .caller = caller,
-        .lineNo = lineNo,
-    };
+    CheckThreadData ctd = {};
     if ( 0 < waitSecs ) {
-        XP_ASSERT( !ws.flagLoc );
-        pthread_t waitThread;
-        (void)pthread_create( &waitThread, NULL, checkLockProc, &ws );
-        int count = 0;
-        while ( !ws.flagLoc ) {
-            usleep(500); /* wait for thread to start */
-            if ( 0 == (++count%10) ) {
-                // XP_LOGFF( "count %d; flagLoc still null", count );
-            }
-        }
+        ctd.expiryTime = waitSecs + (XP_U32)time(NULL),
+        ctd.file = file;
+        ctd.caller = caller;
+        ctd.lineNo = lineNo;
+        addCheckee( &ctd );
     }
+
     pthread_mutex_lock( &state->mutex );
-    if ( 0 < ws.waitSecs ) {
-        *ws.flagLoc = XP_TRUE;
+
+    if ( 0 < waitSecs ) {
+        removeCheckee( &ctd );
     }
 }
 
 void
-mtx_unlock_prv( MutexState* state, XP_U16 XP_UNUSED(waitSecs),
-                const char* XP_UNUSED(caller) )
+mtx_unlock_prv( MutexState* state )
 {
-    // XP_LOGFF( "(caller=%s, waitSecs=%d)", caller, waitSecs );
     pthread_mutex_unlock( &state->mutex );
 }
 #endif

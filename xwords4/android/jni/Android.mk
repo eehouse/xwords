@@ -12,6 +12,7 @@ LOCAL_LDLIBS += -llog
 
 ifeq ($(BUILD_TARGET),debug)
 	LOCAL_DEBUG = -DMEM_DEBUG -DDEBUG -DENABLE_LOGGING -Wno-unused-variable
+	LOCAL_DEBUG += -DWAIT_ALL_SECS=3
 endif
 LOCAL_DEFINES += \
 	$(LOCAL_DEBUG) \

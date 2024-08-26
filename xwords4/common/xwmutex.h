@@ -27,13 +27,13 @@
 
 void mtx_lock_prv(MutexState* state, XP_U16 waitSecs, const char* file,
                   const char* caller, int lineNo);
-void mtx_unlock_prv(MutexState* state, XP_U16 waitSecs, const char* caller);
+void mtx_unlock_prv(MutexState* state);
 # define WITH_MUTEX_CHECKED(STATE, SECS) {        \
     MutexState* _state = (STATE);                \
     XP_U16 _waitSecs = (SECS);                   \
     mtx_lock_prv(_state, _waitSecs, __FILE__, __func__, __LINE__)
 # define WITH_MUTEX(STATE) WITH_MUTEX_CHECKED(STATE, 0)
-# define END_WITH_MUTEX() mtx_unlock_prv(_state, _waitSecs, __func__);  \
+# define END_WITH_MUTEX() mtx_unlock_prv(_state);   \
     }
 #else
 # define WITH_MUTEX(STATE) {                            \
