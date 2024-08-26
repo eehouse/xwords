@@ -79,11 +79,9 @@ checkServerRole( CurGameInfo* gi, XP_U16* nPlayersHere,
     }
 } /* checkServerRole */
 
-static XP_U32
-makeGameID( XW_UtilCtxt* XP_UNUSED_DBG(util) )
+XP_U32
+game_makeGameID( XP_U32 gameID )
 {
-    XP_U32 gameID = 0;
-    assertUtilOK( util );
     while ( 0 == gameID ) {
         /* High bit never set by XP_RANDOM() alone */
         gameID = (XP_RANDOM() << 16) ^ XP_RANDOM();
@@ -178,9 +176,7 @@ game_makeNewGame( MPFORMAL XWEnv xwe, XWGame* game, CurGameInfo* gi,
     checkServerRole( gi, &nPlayersHere, &nPlayersTotal );
     assertUtilOK( util );
 
-    if ( 0 == gi->gameID ) {
-        gi->gameID = makeGameID( util );
-    }
+    gi->gameID = game_makeGameID( gi->gameID );
     XW_DUtilCtxt* dutil = util_getDevUtilCtxt( util, xwe );
     game->created = dutil_getCurSeconds( dutil, xwe );
     game->util = util;
@@ -247,7 +243,7 @@ game_makeRematch( const XWGame* oldGame, XWEnv xwe, XW_UtilCtxt* newUtil,
 
     RematchInfo* rip;
     if ( server_getRematchInfo( oldGame->server, newUtil,
-                                makeGameID( newUtil ), nop, &rip ) ) {
+                                game_makeGameID( 0 ), nop, &rip ) ) {
         CommsAddrRec* selfAddrP = NULL;
         CommsAddrRec selfAddr;
         if ( !!oldGame->comms ) {

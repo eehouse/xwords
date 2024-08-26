@@ -470,9 +470,7 @@ makeGI( MPFORMAL JNIEnv* env, jobject jgi )
        game_makeNewGame, which sets gameID.  So check here if it's still unset
        and if necessary set it -- including back in the java world. */
     if ( 0 == gi->gameID ) {
-        while ( 0 == gi->gameID ) {
-            gi->gameID = getCurSeconds( env );
-        }
+        gi->gameID = game_makeGameID( 0 );
         setInt( env, jgi, "gameID", gi->gameID );
     }
 

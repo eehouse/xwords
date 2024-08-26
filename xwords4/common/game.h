@@ -77,6 +77,8 @@ typedef struct _XWGame {
     XP_U32 created;     /* dutil_getCurSeconds() of creation */
 } XWGame;
 
+XP_U32 game_makeGameID();
+
 XP_Bool game_makeNewGame( MPFORMAL XWEnv xwe, XWGame* game, CurGameInfo* gi,
                           const CommsAddrRec* selfAddr, const CommsAddrRec* hostAddr,
                           XW_UtilCtxt* util, DrawCtx* draw, const CommonPrefs* cp,
