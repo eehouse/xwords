@@ -275,8 +275,8 @@ sendViaThreadProc( void* arg )
 
     free( fd.payload );
     free( svdp->pstr );
-    free( svdp->api );
-    free( svdp );
+    g_free( svdp->api );
+    g_free( svdp );
 
     return NULL;
 }
@@ -294,8 +294,7 @@ linux_dutil_sendViaWeb( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe),
         .api = g_strdup(api),
         .resultKey = resultKey,
     };
-    SendViaData* svdp = malloc( sizeof(*svdp) );
-    *svdp = svd;
+    SendViaData* svdp = g_memdup2( &svd, sizeof(svd) );
 
     pthread_t thrd;
     (void)pthread_create( &thrd, NULL, sendViaThreadProc, svdp );
@@ -305,11 +304,16 @@ linux_dutil_sendViaWeb( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe),
 static cJSON*
 linux_dutil_getRegValues( XW_DUtilCtxt* duc, XWEnv xwe )
 {
-    XP_USE(duc);
     XP_USE(xwe);
 
+    LaunchParams* params = (LaunchParams*)duc->closure;
+    const char* localName = params->localName;
+    if ( !localName ) {
+        localName = "Linux";
+    }
+
     cJSON* results = cJSON_CreateObject();
-    cJSON_AddStringToObject( results, "os", "Linux" );
+    cJSON_AddStringToObject( results, "os", localName );
     cJSON_AddStringToObject( results, "vers", "DEBUG" );
 
     return results;
