@@ -157,6 +157,7 @@ android {
             buildConfigField( "String", "LAST_COMMIT_FILE", "\"$LAST_COMMIT_FILE\"" )
             buildConfigField( "int", "BAD_COUNT", "2" )
             resValue( "string", "nbs_port", "0" )
+            resValue( "string", "dflt_log_prune_hours", "24" )
         }
 
         create("xw4GPlay") {

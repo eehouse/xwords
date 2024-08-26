@@ -41,16 +41,13 @@ open class XWListPreference(private val mContext: Context,
     override fun setSummary(summary: CharSequence?) {
         var summary = summary
         val entries = entries
-        if (null != entries) {
+        entries?.let {
             val indx = findIndexOfValue(summary.toString())
-            if (0 <= indx && indx < entries.size) {
-                summary = entries[indx]
+            if (0 <= indx && indx < it.size) {
+                summary = it[indx]
             }
         }
-        val xlated = LocUtils.xlateString(mContext, summary.toString())
-        if (null != xlated) {
-            summary = xlated
-        }
+        LocUtils.xlateString(mContext, summary.toString())?.let { summary = it }
         super.setSummary(summary)
     }
 }

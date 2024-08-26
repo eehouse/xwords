@@ -23,7 +23,7 @@ import android.content.Context
 import android.util.AttributeSet
 import androidx.preference.EditTextPreference
 
-class XWEditTextPreference(context: Context, attrs: AttributeSet?) :
+open class XWEditTextPreference(context: Context, attrs: AttributeSet?) :
     EditTextPreference(context, attrs)
 {
     private val TAG = XWEditTextPreference::class.java.getSimpleName()

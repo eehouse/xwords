@@ -47,4 +47,7 @@
 
   <string name="statsClearConfirm">Are you sure you want to permanently delete stats?</string>
 
+  <string name="gamel_menu_logstore_prune">Prune stored logs</string>
+  <string name="expl_log_prune_hours">Keep this many hours of logs</string>
+
 </resources>

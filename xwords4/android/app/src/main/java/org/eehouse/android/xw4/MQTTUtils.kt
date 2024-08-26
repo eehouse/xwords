@@ -275,7 +275,6 @@ object MQTTUtils {
                 .buildBlocking()
 
             mTaskThread = thread(start=false) {
-                val thread = Thread.currentThread()
                 while ( true ) {
                     try {
                         val task = mTaskQueue.take()
@@ -462,7 +461,6 @@ object MQTTUtils {
 
         private inner class SubscribeTask(val mTopic: String, val mQos: MqttQos): Task() {
             override fun run() {
-                Log.d(TAG, "$this.run(): trying topic $mTopic")
                 mClient.toAsync()
                     .subscribeWith()
                     .topicFilter(mTopic)

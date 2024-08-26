@@ -79,6 +79,12 @@
                         android:defaultValue="false"
                         />
 
+    <org.eehouse.android.xw4.LogPruneHoursPreference
+        android:key="@string/key_log_prune_hours"
+        android:title="@string/expl_log_prune_hours"
+        android:defaultValue="@string/dflt_log_prune_hours"
+        />
+
     <!-- Keep all dup-mode related stuff hidden -->
     <CheckBoxPreference android:key="@string/key_unhide_dupmode"
                         android:title="@string/unhide_dupmode_title"

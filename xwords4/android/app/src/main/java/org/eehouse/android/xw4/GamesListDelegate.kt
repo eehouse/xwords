@@ -1754,6 +1754,7 @@ class GamesListDelegate(delegator: Delegator) :
 
             R.id.games_menu_enableLogStorage -> Log.storeLogs = true
             R.id.games_menu_disableLogStorage -> Log.storeLogs = false
+            R.id.games_menu_pruneLogStorage -> Log.pruneStored(this)
             R.id.games_menu_clearLogStorage -> makeConfirmThenBuilder(
                 Action.CLEAR_LOG_DB,
                 R.string.logstore_clear_confirm

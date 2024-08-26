@@ -69,9 +69,7 @@ object Log {
         set(enable) {
             val context = sContextRef!!.get()
             Assert.assertTrueNR(null != context)
-            if (null != context) {
-                DBUtils.setBoolFor(context, KEY_USE_DB, enable)
-            }
+            context?.let{ DBUtils.setBoolFor(it, KEY_USE_DB, enable) }
             sUseDB = enable
         }
 
@@ -79,17 +77,11 @@ object Log {
         sEnabled = newVal
     }
 
-    fun clearStored(procs: ResultProcs) {
-        val result = 0
-        val helper = initDB()
-        helper.clear(procs)
-    }
+    fun pruneStored(procs: ResultProcs) = initDB().prune(procs)
 
-    fun dumpStored(procs: ResultProcs) {
-        val result: File? = null
-        val helper = initDB()
-        helper.dumpToFile(procs)
-    }
+    fun clearStored(procs: ResultProcs) = initDB().clear(procs)
+
+    fun dumpStored(procs: ResultProcs) = initDB().dumpToFile(procs)
 
     fun enable(context: Context) {
         val on = LOGGING_ENABLED ||
@@ -229,7 +221,12 @@ object Log {
                 .putAnd(COL_TAG, tag)
                 .putAnd(COL_LEVEL, level.ordinal)
                 .putAnd(COL_TIMESTAMP, System.currentTimeMillis())
-            enqueue { writableDatabase.insert(LOGS_TABLE_NAME, null, values) }
+            enqueue {
+                val row = writableDatabase.insert(LOGS_TABLE_NAME, null, values)
+                if (0L == (row%10000)) {
+                    prune()
+                }
+            }
         }
 
         fun dumpToFile(procs: ResultProcs) {
@@ -301,6 +298,20 @@ object Log {
                 val result = writableDatabase
                     .delete(LOGS_TABLE_NAME, null, null)
                 procs.onCleared(result)
+            }
+        }
+
+        fun prune(procs: ResultProcs? = null) {
+            val context = sContextRef!!.get()!!
+            val hours = LogPruneHoursPreference.getHours(context)
+            val target = System.currentTimeMillis() - (hours * 60 * 60 * 1000)
+            val test = "$COL_TIMESTAMP < $target"
+            enqueue {
+                android.util.Log.i(TAG, "prune(): test: $test")
+                val result = writableDatabase
+                    .delete(LOGS_TABLE_NAME, test, null)
+                android.util.Log.d(TAG, "prune(): delete => $result")
+                procs?.onCleared(result)
             }
         }
 

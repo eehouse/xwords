@@ -152,6 +152,9 @@
         <item android:id="@+id/games_menu_emailLogs"
               android:title="@string/gamel_menu_logstore_email"
               />
+        <item android:id="@+id/games_menu_pruneLogStorage"
+              android:title="@string/gamel_menu_logstore_prune"
+              />
         <item android:id="@+id/games_menu_clearLogStorage"
               android:title="@string/gamel_menu_logstore_clear"
               />
