@@ -76,17 +76,15 @@ class PrefsActivity : XWActivity(), Delegator, HasDlgDelegate,
     }
 
     override fun onPreferenceDisplayDialog(
-        caller: PreferenceFragmentCompat,
-        pref: Preference
+        caller: PreferenceFragmentCompat, pref: Preference
     ): Boolean {
-        val success =
-            if (pref is DialogProc) {
-                show((pref as DialogProc).makeDialogFrag())
-                true
-            } else {
-                Log.e(TAG, "unexpected class: %s", pref.javaClass.getSimpleName())
-                false
-            }
+        val success = pref is DialogProc
+        if (success) {
+            show((pref as DialogProc).makeDialogFrag())
+        } else {
+            Log.e(TAG, "class %s not a DialogProc",
+                  pref.javaClass.getSimpleName())
+        }
         return success
     }
 
