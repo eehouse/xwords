@@ -657,11 +657,12 @@ class Device():
             GameStatus.makeAll()
 
             lines = [GameStatus.line(ii) for ii in range(GameStatus.numLines())]
-            print(' ' + GameStatus.summary())
             now = datetime.datetime.now()
             if lines == GameStatus._prevLines:
-                print('no change in {}'.format(now - GameStatus._lastChange))
+                since = str(now - GameStatus._lastChange).split('.')[0]
+                print(' no change in {}'.format(since))
             else:
+                print(' ' + GameStatus.summary())
                 for line in lines: print(line)
                 GameStatus._prevLines = lines
                 GameStatus._lastChange = now
@@ -1024,7 +1025,7 @@ def main():
     printStats()
 
 
-    elapsed = datetime.datetime.now() - startTime
+    elapsed = str(datetime.datetime.now() - startTime).split('.')[0]
     print('played {} games in {}'.format(gGamesMade, elapsed))
 
     if g_LOGFILE: g_LOGFILE.close()
