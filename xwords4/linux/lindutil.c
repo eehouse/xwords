@@ -31,6 +31,7 @@
 #include "LocalizedStrIncludes.h"
 #include "nli.h"
 #include "strutils.h"
+#include "xwmutex.h"
 
 #include "linuxdict.h"
 #include "cursesmain.h"
@@ -42,6 +43,7 @@
 typedef struct _LinDUtilCtxt {
     XW_DUtilCtxt super;
 #ifdef DUTIL_TIMERS
+    MutexState timersMutex;
     GSList* timers;
 #endif
 } LinDUtilCtxt;
@@ -320,7 +322,6 @@ linux_dutil_getRegValues( XW_DUtilCtxt* duc, XWEnv xwe )
 }
 
 #ifdef DUTIL_TIMERS
-
 typedef struct _TimerClosure {
     XW_DUtilCtxt* duc;
     TimerKey key;
@@ -328,12 +329,41 @@ typedef struct _TimerClosure {
 } TimerClosure;
 
 static gint
+findByProc( gconstpointer elemData, gconstpointer keyp )
+{
+    TimerClosure* tc = (TimerClosure*)elemData;
+    TimerKey* key = (TimerKey*)keyp;
+    return (tc->key == *key) ? 0 : 1; /* return 0 on success */
+}
+
+static void
+linux_dutil_clearTimer( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe), TimerKey key )
+{
+    LinDUtilCtxt* lduc = (LinDUtilCtxt*)duc;
+    WITH_MUTEX( &lduc->timersMutex );
+    XP_ASSERT( !!lduc->timers ); /* should be at least one */
+    if ( !!lduc->timers ) {
+        GSList* elem = g_slist_find_custom( lduc->timers, &key, findByProc );
+        XP_ASSERT( !!elem );
+
+        TimerClosure* tc = (TimerClosure*)elem->data;
+        XP_ASSERT( tc->key == key );
+        lduc->timers = g_slist_remove( lduc->timers, tc );
+
+        g_source_remove( tc->src );
+        g_free( tc );
+    }
+    END_WITH_MUTEX();
+}
+
+static gint
 timer_proc( gpointer data )
 {
     TimerClosure* tc = (TimerClosure*)data;
-    XP_LOGFF( "calling dvc_onTimerFired()" );
     dvc_onTimerFired( tc->duc, NULL_XWE, tc->key );
-    g_free( tc );
+
+    linux_dutil_clearTimer( tc->duc, NULL_XWE, tc->key );
+
     return G_SOURCE_REMOVE;
 }
 
@@ -350,46 +380,14 @@ linux_dutil_setTimer( XW_DUtilCtxt* duc, XWEnv xwe, XP_U32 inWhenMS, TimerKey ke
     tc->src = g_timeout_add( inWhenMS, timer_proc, tc );
 
     LinDUtilCtxt* lduc = (LinDUtilCtxt*)duc;
-    GSList** timers = &lduc->timers;
-    *timers = g_slist_append( *timers, tc );
+    WITH_MUTEX( &lduc->timersMutex );
+    lduc->timers = g_slist_append( lduc->timers, tc );
+    END_WITH_MUTEX();
 
-    XP_LOGFF( "after setting, length %d", g_slist_length(*timers) );
+    XP_LOGFF( "after setting, length %d", g_slist_length(lduc->timers) );
 }
 
-static gint
-findByProc( gconstpointer elemData, gconstpointer keyp )
-{
-    TimerClosure* tc = (TimerClosure*)elemData;
-    TimerKey* key = (TimerKey*)keyp;
-    return tc->key == *key ? 0 : 1; /* return 0 on success */
-}
 
-static void
-linux_dutil_clearTimer( XW_DUtilCtxt* duc, XWEnv xwe, TimerKey key )
-{
-    /* Will probably want to store the TimerClosure instances above in a list
-       that can be searched here for its proc value, then its src field used
-       to cancel. */
-    XP_USE(xwe);
-
-    int count = 0;
-
-    LinDUtilCtxt* lduc = (LinDUtilCtxt*)duc;
-    GSList** timers = &lduc->timers;
-    while ( !!*timers ) {
-        GSList* elem = g_slist_find_custom( *timers, &key, findByProc );
-        if ( !elem ) {
-            break;
-        }
-        TimerClosure* tc = (TimerClosure*)elem->data;
-        *timers = g_slist_remove( *timers, elem );
-
-        g_source_remove( tc->src );
-        g_free( tc );
-        ++count;
-    }
-    XP_LOGFF( "removed %d timers", count );
-}
 #endif
 
 XW_DUtilCtxt*
@@ -398,6 +396,8 @@ linux_dutils_init( MPFORMAL VTableMgr* vtMgr, void* closure )
     LinDUtilCtxt* lduc = XP_CALLOC( mpool, sizeof(*lduc) );
 
     XW_DUtilCtxt* super = &lduc->super;
+
+    MUTEX_INIT( &lduc->timersMutex, XP_TRUE );
 
     super->vtMgr = vtMgr;
     super->closure = closure;
@@ -451,7 +451,8 @@ void
 linux_dutils_free( XW_DUtilCtxt** dutil )
 {
     dutil_super_cleanup( *dutil, NULL_XWE );
-
+    LinDUtilCtxt* lduc = (LinDUtilCtxt*)*dutil;
+    MUTEX_DESTROY(&lduc->timersMutex);
 # ifdef MEM_DEBUG
     XP_FREEP( (*dutil)->mpool, dutil );
 # endif

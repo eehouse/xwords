@@ -401,7 +401,6 @@ on_incoming_signal( GSocketService* XP_UNUSED(service),
                     GSocketConnection* connection,
                     GObject* XP_UNUSED(source_object), gpointer user_data )
 {
-    XP_LOGFF( "called" );
     CmdWrapper* wr = (CmdWrapper*)user_data;
     // CursesAppGlobals* aGlobals = (CursesAppGlobals*)user_data;
     LaunchParams* params = wr->params;
@@ -508,7 +507,6 @@ on_incoming_signal( GSocketService* XP_UNUSED(service),
 
         char* replyStr = cJSON_PrintUnformatted( reply );
         short replyStrLen = strlen(replyStr);
-        XP_LOGFF( "len(%s): %d", replyStr, replyStrLen );
 
         GOutputStream* ostream = g_io_stream_get_output_stream( G_IO_STREAM(connection) );
         gsize nwritten;
@@ -525,6 +523,7 @@ on_incoming_signal( GSocketService* XP_UNUSED(service),
             g_error_free( error );
         }
         cJSON_Delete( reply );
+        XP_LOGFF( "=> %s", replyStr );
         free( replyStr );
     }
 
@@ -532,7 +531,7 @@ on_incoming_signal( GSocketService* XP_UNUSED(service),
     if ( 0 < consumed ) {
         XP_LOGFF( "took %d seconds", consumed );
     }
-    LOG_RETURN_VOID();
+    // LOG_RETURN_VOID();
     return FALSE;
 }
 

@@ -39,25 +39,23 @@
 
 #ifdef DEBUG
 
-static pthread_mutex_t sLogMutex = PTHREAD_MUTEX_INITIALIZER;
-
 static void
 debugf( const char* format, va_list ap )
 {
-    pthread_mutex_lock( &sLogMutex );
     struct timespec tp = {};
     int res = clock_gettime( CLOCK_REALTIME, &tp );
     if ( 0 == res ) {
-      struct tm* timp = localtime( &tp.tv_sec );
+        struct tm* timp = localtime( &tp.tv_sec );
 
-      fprintf( stderr, "<%d:%lx> %.2d:%.2d:%.2d:%03ld ", getpid(),
-	       pthread_self(), timp->tm_hour, timp->tm_min, timp->tm_sec,
-	       tp.tv_nsec / 1000000 );
+        gchar* prefix = g_strdup_printf("<%d:%lx> %.2d:%.2d:%.2d:%03ld",
+                                        getpid(), pthread_self(), timp->tm_hour,
+                                        timp->tm_min, timp->tm_sec, tp.tv_nsec / 1000000 );
+        gchar* body = g_strdup_vprintf( format, ap );
+        fprintf( stderr, "%s %s\n", prefix, body );
 
-      vfprintf( stderr, format, ap );
-      fprintf( stderr, "%c", '\n' );
+        g_free(prefix);
+        g_free(body);
     }
-    pthread_mutex_unlock( &sLogMutex );
 }
 
 void 
