@@ -954,7 +954,6 @@ Java_org_eehouse_android_xw4_jni_XwJNI_gi_1from_1stream
                                               globalState->vtMgr, jstream );
 
     CurGameInfo gi = {};
-    // XP_MEMSET( &gi, 0, sizeof(gi) );
     if ( game_makeFromStream( MPPARM(mpool) env, stream, NULL,
                               &gi, NULL, NULL, NULL, NULL ) ) {
         setJGI( env, jgi, &gi );
@@ -1772,7 +1771,8 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1drawSnapshot
   jint height )
 {
     XWJNI_START(gamePtr);
-    DrawCtx* newDraw = makeDraw( MPPARM(mpool) env, TI_IF(&state->globalJNI->ti) jdraw );
+    DrawCtx* newDraw = makeDraw( MPPARM(mpool) env,
+                                 TI_IF(&state->globalJNI->ti) jdraw );
     board_drawSnapshot( state->game.board, env, newDraw, width, height );
     destroyDraw( &newDraw, env );
     XWJNI_END();

@@ -109,8 +109,8 @@ class GameStatus():
 
     def harvest(self, dev, isSolo):
         # Sending lots of bogus invitations gets duplicates here
-        if not dev.host in self.players:
-            self.players.append(dev.host)
+        if not dev.hostName in self.players:
+            self.players.append(dev.hostName)
         self.allOver = self.allOver and dev.gameOver(self.gid)
         self.isSolo = isSolo
 
@@ -120,7 +120,7 @@ class GameStatus():
         if orderedPlayers:
             assert len(orderedPlayers) == len(self.players)
             self.players = orderedPlayers
-            self.hostName = game.getDevice().host
+            self.hostName = game.getDevice().hostName
 
     # Build a gid->status map for each game, querying each device in
     # the game for details
@@ -205,20 +205,20 @@ class Device():
     def setup(logdir):
         Device._logdir = logdir
 
-    def __init__(self, args, host):
+    def __init__(self, args, hostName):
         self.args = args
         self.app = None
         self.endTime = None
         self.mqttDevID = None
-        self.smsNumber = args.WITH_SMS and '{}_phone'.format(host) or None
-        self.host = host
+        self.smsNumber = args.WITH_SMS and '{}_phone'.format(hostName) or None
+        self.hostName = hostName
         self.hostedGames = []       # array of HostGameInfo for each game I host
         self.guestGames = []
-        self.script = '{}/{}.sh'.format(Device._logdir, host)
-        self.dbName = '{}/{}.db'.format(Device._logdir, host)
-        self.logfile = '{}/{}_log.txt'.format(Device._logdir, host)
-        self.cmdSocketName = '{}/{}.sock'.format(Device._logdir, host)
-        self._keyCur = 10000 * (1 + g_NAMES.index(host))
+        self.script = '{}/{}.sh'.format(Device._logdir, hostName)
+        self.dbName = '{}/{}.db'.format(Device._logdir, hostName)
+        self.logfile = '{}/{}_log.txt'.format(Device._logdir, hostName)
+        self.cmdSocketName = '{}/{}.sock'.format(Device._logdir, hostName)
+        self._keyCur = 10000 * (1 + g_NAMES.index(hostName))
 
     def init(self):
         self._checkScript()
@@ -289,7 +289,7 @@ class Device():
             gid = self._pickGid()
             if gid:
                 response = self._sendWaitReply('sendChat', gid=gid,
-                                               msg=Device.nextChatMsg(self.host))
+                                               msg=Device.nextChatMsg(self.hostName))
                 success = response.get('success', False)
         return success
 
@@ -372,7 +372,7 @@ class Device():
         else:
             printError('no mqtt or no response')
 
-    def makeGames(self):
+    def makeHostGames(self):
         args = self.args
         for game in self.hostedGames:
             isSolo = isinstance(game, SoloGameInfo)
@@ -429,8 +429,9 @@ class Device():
                      .get('newGid')
         if newGid:
             guests = Device.playersIn(gid)
-            guests.remove(self.host)
-            self._log('rematch: new host: {}; new guest[s]: {}, gid: {}'.format(self.host, guests, newGid))
+            guests.remove(self.hostName)
+            self._log('rematch: new host: {}; new guest[s]: {}, gid: {}' \
+                      .format(self.hostName, guests, newGid))
 
             rematchLevel = game.rematchLevel - 1
             assert rematchLevel >= 0 # fired
@@ -626,7 +627,7 @@ class Device():
             scriptArgs.append('"${APP}"')
 
             scriptArgs += '--db', self.dbName, '--skip-confirm'
-            scriptArgs += '--localName', self.host
+            scriptArgs += '--localName', self.hostName
             scriptArgs += '--cmd-socket-name', self.cmdSocketName
 
             if self.args.WITH_MQTT:
@@ -668,16 +669,16 @@ class Device():
                 GameStatus._lastChange = now
 
     @staticmethod
-    def deviceFor(args, host):
-        dev = Device._devs.get(host)
+    def deviceFor(args, hostName):
+        dev = Device._devs.get(hostName)
         if not dev:
-            dev = Device(args, host)
-            Device._devs[host] = dev
+            dev = Device(args, hostName)
+            Device._devs[hostName] = dev
         return dev
 
     @staticmethod
     def playersIn(gid):
-        return [dev.host for dev in Device.devsWith(gid)]
+        return [dev.hostName for dev in Device.devsWith(gid)]
 
     @staticmethod
     # return all devices (up to 4 of them) that are host or guest in a
@@ -694,7 +695,8 @@ class Device():
     def getForPlayer(player):
         result = None
         for dev in Device.getAll():
-            if dev.host == player:
+            # print('getForPlayer(); found {}'.format(dev.hostName))
+            if dev.hostName == player:
                 result = dev
                 break
         assert result
@@ -721,11 +723,11 @@ class Device():
             Device.deviceFor(self.args, guest)    # in case this device never hosts
 
     def _log(self, msg):
-        log(self.args, '{}: {}'.format(self.host, msg))
+        log(self.args, '{}: {}'.format(self.hostName, msg))
 
     def __str__(self):
         result = 'host: {}, devID: {}, with {} games: ' \
-            .format(self.host, self.mqttDevID,
+            .format(self.hostName, self.mqttDevID,
                     len(self.hostedGames)+len(self.guestGames))
         result += '{' + ', '.join(['{}'.format(game) for game in self._allGames()]) + '}'
         result += ' running={}'.format(self.endTime is not None)
@@ -764,7 +766,7 @@ def printKPs():
 
 def printStats():
     for dev in Device.getAll():
-        print('stats for {}: {}'.format(dev.host, dev.stats()))
+        print('stats for {}: {}'.format(dev.hostName, dev.stats()))
 
 def mainLoop(args, devs):
     startCount = len(devs)
@@ -786,7 +788,7 @@ def mainLoop(args, devs):
         if dev.finished():
             dev.quit()
             devs.remove(dev)
-            log(args, 'removed dev for {}; {} devs left'.format(dev.host, len(devs)))
+            log(args, 'removed dev for {}; {} devs left'.format(dev.hostName, len(devs)))
 
         now = datetime.datetime.now()
         if devs and now > nextStallCheck:
@@ -811,7 +813,7 @@ def mainLoop(args, devs):
 
     # kill anybody left alive
     for dev in devs:
-        print('killing {}'.format(dev.host))
+        print('killing {}'.format(dev.hostName))
         dev.quit()
 
 # We will build one Device for each player in the set of games, and
@@ -1017,7 +1019,7 @@ def main():
     for dev in devs:
         if args.WITH_MQTT: dev.setDevID()
     for dev in devs:
-        dev.makeGames()
+        dev.makeHostGames()
         dev.quit()
     mainLoop(args, devs)
 
