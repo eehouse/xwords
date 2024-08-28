@@ -61,11 +61,9 @@ class BoardContainer(context: Context, aset: AttributeSet?) : ViewGroup(context,
                 measureChild(if (sIsPortrait) HBAR_INDX else VBAR_INDX, mToolsBounds)
                 adjustBounds()
                 val child = getChildAt(if (sIsPortrait) HBAR_INDX else VBAR_INDX)
-                Log.i(
-                    TAG, "measured %s; passed ht: %d; got back ht: %d",
-                    child.toString(), mToolsBounds!!.height(),
-                    child.measuredHeight
-                )
+                // Log.i(TAG, "measured %s; passed ht: %d; got back ht: %d",
+                //       child.toString(), mToolsBounds!!.height(),
+                //       child.measuredHeight)
                 if (haveTradeBar()) {
                     // Measure the exchange buttons bar
                     measureChild(EXCH_INDX, mToolsBounds)

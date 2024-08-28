@@ -199,7 +199,7 @@ object MQTTUtils {
         }
     }
 
-    private val TAG: String = MQTTUtils::class.java.simpleName + "2"
+    private val TAG = MQTTUtils::class.java.simpleName
 
     private fun notifyNotHere(context: Context, addressee: String, gameID: Int)
     {
@@ -278,7 +278,7 @@ object MQTTUtils {
                 while ( true ) {
                     try {
                         val task = mTaskQueue.take()
-                        Log.d(TAG, "took task: $task")
+                        // Log.d(TAG, "took task: $task")
                         task.run()
                         task.isLast && break
                     } catch (ie: InterruptedException) {
