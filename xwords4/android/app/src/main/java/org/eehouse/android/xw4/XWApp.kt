@@ -26,8 +26,10 @@ import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.OnLifecycleEvent
 import androidx.lifecycle.ProcessLifecycleOwner
-import org.eehouse.android.xw4.jni.XwJNI
+
 import java.util.UUID
+
+import org.eehouse.android.xw4.jni.XwJNI
 
 class XWApp : Application(), LifecycleObserver {
     override fun onCreate() {

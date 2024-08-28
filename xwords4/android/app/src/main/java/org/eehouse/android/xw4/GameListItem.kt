@@ -472,19 +472,19 @@ class GameListItem(private val m_context: Context, aset: AttributeSet?) :
                         Log.w(TAG, "interrupted; killing s_thumbThread")
                         break
                     }
-                    val activity = elem.m_item.m_activity
+                    val activity = elem.m_item.m_activity!!
                     val rowid = elem.m_rowid
-                    var thumb = DBUtils.getThumbnail(activity!!, rowid)
+                    var thumb = DBUtils.getThumbnail(activity, rowid)
                     if (null == thumb) {
                         // loadMakeBitmap puts in DB
-                        thumb = GameUtils.loadMakeBitmap(activity, rowid)
+                        thumb = GameUtils.loadMakeBitmap(activity, rowid) // here
                     }
 
-                    if (null != thumb) {
-                        val fThumb: Bitmap = thumb
+                    thumb?.let {
+                        // val fThumb: Bitmap = thumb
                         activity.runOnUiThread {
                             val item = elem.m_item
-                            item.mThumb = fThumb
+                            item.mThumb = it
                             item.showHide()
                         }
                     }

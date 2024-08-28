@@ -427,9 +427,9 @@ object GameUtils {
     fun loadMakeBitmap(context: Context, rowid: Long): Bitmap? {
         var thumb: Bitmap? = null
         GameWrapper.make(context, rowid).use { gw ->
-            if (null != gw) {
+            gw?.lock?.let {
                 thumb = takeSnapshot(context, gw.gamePtr(), gw.gi())
-                DBUtils.saveThumbnail(context, gw.lock!!, thumb)
+                DBUtils.saveThumbnail(context, it, thumb)
             }
         }
         return thumb
