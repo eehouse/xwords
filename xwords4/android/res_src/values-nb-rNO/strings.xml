@@ -20,7 +20,6 @@
     <string name="list_item_move">Flytt til gruppe…</string>
     <string name="list_item_delete">Slett spill</string>
     <string name="list_item_reset">Tilbakestill</string>
-    <string name="list_item_new_from">Nytt fra</string>
     <string name="list_item_copy">Kopier</string>
     <string name="rename_label">Endre navnet på dette spillet til:</string>
     <string name="rename_label_caveat">Endre navnet på dette spillet (kun på denne enheten) til:</string>
@@ -366,7 +365,6 @@
     <string name="logging_on">Skru på loggføring</string>
     <string name="debug_features">Skru på feilrettingsfunksjoner</string>
     <string name="board_menu_game_netstats">Nettverksstatistikk</string>
-    <string name="board_menu_game_showInvites">Vis invitasjoner</string>
     <string name="name_dict_fmt">%1$s/%2$s</string>
     <string name="enable_sms_toself_title">Kortslutt SMS til deg selv</string>
     <string name="force_radio_title">Lat som du har radio</string>
@@ -420,7 +418,6 @@
         <item quantity="one">Dette spiller venter på én ekstern spiller. Ønsker du å invitere noen til spill, sett at du ikke har gjort det allerede?</item>
         <item quantity="other">Dette spiller venter på %1$d eksterne spillere. Ønsker du å invitere noen til spill, sett at du ikke har gjort det allerede?</item>
     </plurals>
-    <string name="no_copy_network">Spill som allerede har koblet til gjennom relé-et kan ikke kopieres. Bruk \"Ny fra\" for kopi klar til spilling med de samme innstillingene.</string>
     <string name="set_default_message_fmt">For hvilke spillere skal ordlisten %1$s være forvalg for nye spill? (Språket %2$s vil være forvalg for begge.)</string>
     <string name="invit_expl_sms_fmt">Invitasjon sendt via SMS til telefonnummer %1$s på %2$s</string>
     <string name="pts">p.</string>
@@ -513,7 +510,6 @@
     <string name="game_list_tmp">Bygger spillsammendrag…</string>
     <string name="summary_busy">Sammendrag utilgjengelig</string>
     <string name="connstat_net_fmt">Nettverksstatus for spill (ID=%2$X) tilkoblet via %1$s:</string>
-    <string name="invites_net_fmt">Invitasjoner sendt for spill tilkoblet via %1$s:</string>
     <string name="connstat_succ">vellykket</string>
     <string name="connstat_unsucc">mislyktes</string>
     <string name="connstat_lastother_succ_fmt">(Siste mislykkede forsøk var %1$s)</string>
@@ -644,7 +640,6 @@
     <string name="not_again_turnchanged">Spilleren hvis tur det er vises i storskala på poengtavlen.
 \n
 \nHolde en finger på et navn i poengtavlen for å hente detaljene om spillerens nyligste trekk.</string>
-    <string name="not_again_newfrom">Opprett ny klart-til-spill runde med alle innstillingene fra denne. Altå behandle dette spillet som en mal.</string>
     <string name="not_again_archive">Arkiver bruker en spesiell gruppe kalt \"Arkiv\" for å lagre fullførte spill du ønsker å beholde. Og, siden sletting av et helt arkiv er enkelt, er akrivering også en flott måte å merke spill for sletting - hvis det er det du foretrekker å gjøre.
 \n
 \n(Sletting av arkivgruppen er trygt fordi den vil bli gjenopprettet igjen når det trengs.)</string>

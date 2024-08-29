@@ -21,16 +21,7 @@
     <!-- text within rename dialog (triggered by selecting
          list_item_rename) -->
     <string name="rename_label">XLATE ME: Change the name of this game to:</string>
-    <!--  -->
-    <!-- Title of dialog for renaming game (triggered by selecting
-         list_item_rename) -->
-    <!-- If you try to copy a networked game you get this error
-    message. -->
-    <string name="no_copy_network">XLATE ME: Games that have already connected
-      to the relay cannot be copied. Use \"New from\" for a
-      ready-to-play copy with all the same settings.</string>
     <string name="list_item_reset">Vynulovať</string>
-    <string name="list_item_new_from">Nová hra podľa vzoru</string>
     <string name="play">Hrať hru</string>
     <string name="title_game_config_fmt">Konfigurovať %1$s</string>
     <!-- text of checkbox at top of dialog allowing to unlock in-play
@@ -116,10 +107,6 @@
       -->
     <!-- Welcome dialog title -->
     <string name="default_name_title">XLATE ME: Welcome</string>
-    <!-- Shown when you first pick the list_item_new_from menuitem -->
-    <string name="not_again_newfrom">XLATE ME: Create a new ready-to-play game
-      using all the settings from this one.  That is, treat this game
-      as a template.</string>
     <!-- Shown when the board screen is visible and it's just become
          another players turn. The idea is to give a hint about how to
          find out about recent moves. -->

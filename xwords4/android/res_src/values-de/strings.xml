@@ -58,9 +58,7 @@
     <string name="robot_smarter">Schlauerer Computer</string>
     <string name="robot_smartest">Schlauester Computer</string>
     <string name="play">Partie spielen</string>
-    <string name="no_copy_network">Partien, die bereits über die Zwischenstation verbunden sind, können nicht kopiert werden. Wählen Sie „Kopie anlegen“ aus, um eine spielbereite Kopie mit identischen Einstellungen zu erhalten.</string>
     <string name="invite_choice_relay">Internet/Zwischenstation</string>
-    <string name="list_item_new_from">Kopie anlegen</string>
     <plurals name="confirm_reset_fmt">
         <item quantity="one">Möchten Sie die ausgewählte Partie wirklich neu starten\? 
 \n 
@@ -398,7 +396,6 @@
 \n
 \n(Sie wurde wahrscheinlich durch eine Einladung angelegt, die keine von Ihrem Gerät unterstützte Verbindungsart angegeben hat oder hat vor Kurzem ihre letzte Verbindungsart entfernt.)</string>
     <string name="connstat_net_fmt">Netwerk-Status für über %1$s (ID=%2$X) verbundene Partie:</string>
-    <string name="invites_net_fmt">Einladungen geschickt für die Partie verbunden über %1$s:</string>
     <string name="connstat_succ">erfolgreich</string>
     <string name="connstat_unsucc">nicht erfolgreich</string>
     <string name="connstat_lastsend_fmt">Letzter Sendevorgang war %1$s (%2$s)</string>
@@ -697,7 +694,6 @@
     <string name="not_again_turnchanged">Der Spieler am Zug wird groß auf der Punktetafel dargestellt.
 \n
 \nHalten Sie Ihren Finger auf einen Namen auf der Punktetafel, um Details über den letzten Zug dieses Spielers anzuzeigen.</string>
-    <string name="not_again_newfrom">Eine neue Partie erzeugen, die bereit zum Spielen ist, mit allen Einstellungen aus dieser Partie. Das heißt, diese Partie als Vorlage verwenden.</string>
     <string name="bt_pair_settings">Weitere paaren</string>
     <string name="summary_wait_host">Warten auf Gast[Gäste]</string>
     <string name="summary_wait_guest">Nicht verbunden</string>
@@ -722,7 +718,6 @@
     <string name="advanced_summary">Dies sollten Sie nie brauchen…</string>
     <string name="dict_host">Wortlisten-Download-URL</string>
     <string name="debug_features_summary">Menüpunkte, etc.</string>
-    <string name="board_menu_game_showInvites">Einladungen zeigen</string>
     <string name="netstats_title">Partie-Netzwerkstatistik</string>
     <string name="name_dict_fmt">%1$s/%2$s</string>
     <string name="enable_sms_toself_title">Daten-SMS-Selbstverbindung aktivieren</string>

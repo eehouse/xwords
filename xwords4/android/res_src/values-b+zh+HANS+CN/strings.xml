@@ -116,7 +116,6 @@
     <string name="phone_lookup_rationale">要重新进行使用数据短信的游戏，CrossWord 需要访问电话号码的权限。</string>
     <string name="word_to_clip_fmt">已复制“%1$s”</string>
     <string name="dict_desc_fmt">%1$s（%2$s/%3$d 词）</string>
-    <string name="no_copy_network">无法复制已连接到网络的游戏。使用“创建副本”可以建立一份与当前游戏配置相同、可供游玩的副本。</string>
     <string name="no_dict_fmt">游戏“%1$s”需要%2$s单词表。请下载以打开游戏。</string>
     <plurals name="sel_groups_fmt">
         <item quantity="other">已选择%1$d分组</item>
@@ -177,7 +176,6 @@
     <string name="dict_lang_label_fmt">单词表（%1$s）</string>
     <string name="tiles_header_count">数字</string>
     <string name="new_app_avail">点击下载并安装</string>
-    <string name="not_again_newfrom">使用此游戏的所有设置建立可供游玩的新游戏。也就是说，将此游戏作为模板使用。</string>
     <string name="prefs_names_summary">默认玩家名</string>
     <string name="toast_no_permission">未获得权限</string>
     <string name="not_again_lookup">此按钮让你在线查询刚刚玩过的单词。</string>
@@ -809,7 +807,6 @@
     <string name="history_title">游戏历史</string>
     <string name="knowns_bt_fmt">蓝牙设备名：%1$s</string>
     <string name="strd_remaining_tiles_add_fmt">+ %1$d 【所有剩余卡牌】</string>
-    <string name="list_item_new_from">创建副本</string>
     <string name="gameevent_channel_expl">游戏内事件</string>
     <string name="str_cant_hint_while_disabled">此游戏已禁用提示功能。在设置对话框中为新游戏启用。</string>
     <string name="no_dict_subst_fmt">无法打开游戏“%1$s”，因为没找到 %2$s 单词表。（可能已被删除，或是所在外部存储不可用。）
@@ -974,7 +971,6 @@
 \n（此操作不可逆。）</string>
     <string name="download_rationale">CrossWords 需要访问临时存储，以保留要下载的文件。</string>
     <string name="unpause_notify_fmt">玩家 %1$s 已取消暂停游戏。</string>
-    <string name="board_menu_game_showInvites">显示邀请</string>
     <string name="loc_item_copy_eng">复制英文</string>
     <string name="choose_expl_default_net">用当前默认设置开始网络游戏</string>
     <string name="app_not_found_fmt">无法通过蓝牙连接到设备 %1$s 上的 CrossWords。请确认设备在蓝牙范围内，并已安装 CrossWords。</string>
@@ -1032,7 +1028,6 @@
     <string name="choose_expl_new">通过电子邮件、短信或甚至二维码发送邀请，由此开始游戏</string>
     <string name="not_again_comms_bt">用蓝牙与已“配对”的附近设备游玩。</string>
     <string name="dropped_dupe">此邀请已被用于创建游戏。</string>
-    <string name="invites_net_fmt">通过%1$s连接的游戏发送的邀请：</string>
     <string name="empty_sms_inviter">号码列表为空。用“导入联系人”按钮添加要邀请的人，用 + 按钮直接输入号码。</string>
     <string name="dicts_storage_rationale">CrossWords 可以在设备的下载存储区读写单词表，但需要请求权限才能访问。
 \n

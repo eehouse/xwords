@@ -105,7 +105,6 @@
     <string name="confirm_deleteonly_dicts_fmt">Apagar %1$s deixará você sem qualquer %2$s listas de palavras. Um ou mais jogos não abrirão (até você baixar uma lista de substituição.)</string>
     <string name="rename_label_caveat">Mude o nome desse jogo (somente nesse dispositivo) para:</string>
     <string name="rename_label">Mude o nome desse jogo para:</string>
-    <string name="no_copy_network">As partidas que já foram conectadas no servidor não podem ser copiadas. Use \"Novo jogo a partir de\" para criar uma cópia usando as mesmas configurações.</string>
     <plurals name="confirm_seldeletes_fmt">
         <item quantity="one">Você tem certeza que deseja excluir o jogo %1$d selecionado\? Esta ação não poder ser desfeita.</item>
         <item quantity="many">Você tem certeza que deseja excluir os jogos %1$d selecionados\? Esta ação não poder ser desfeita.</item>
@@ -150,7 +149,6 @@
     </plurals>
     <string name="list_item_netstats">Conexões</string>
     <string name="list_item_copy">Copiar</string>
-    <string name="list_item_new_from">Novo jogo a partir de</string>
     <string name="list_item_reset">Restaurar</string>
     <string name="list_item_delete">Excluir o jogo</string>
     <string name="list_item_move">Mover para grupo</string>
@@ -797,7 +795,6 @@
     <string name="show_tiles_menu">Mostrar os quadrados</string>
     <string name="default_name_message">Por favor ponha seu nome aqui. Ele será usado quando criar novos jogos. (Você pode mudá-lo depois na seção “Novo padrão de jogo” nas Configurações.)</string>
     <string name="default_name_title">Nome de jogador padrão</string>
-    <string name="not_again_newfrom">Criar um novo jogo pronto usando os mesmos ajustes deste. Isto é, tratar este jogo como template.</string>
     <string name="str_no_hint_found">Não pôde achar nenhuma jogada</string>
     <string name="warn_unlimited">Tem certeza que este número é de uma conta com mensagens ilimitadas\? Toque em “Cancelar” se não estiver certo disso.</string>
     <string name="summary_conn_sms_fmt">Jogo rodando com %1$s</string>
@@ -857,7 +854,6 @@
     <string name="missing_dict_detail">Toque para baixar a lista de palavras faltando</string>
     <string name="min_len">Tamanho mín.</string>
     <string name="netstats_title">Status da rede do jogo</string>
-    <string name="board_menu_game_showInvites">Mostrar convites</string>
     <string name="new_feature_filter">Você pode filtrar listas de palavras por que palavras elas começam, terminam, e/ou contém. Acesse filtros tocando a Seta de Expandir no canto superior direito da janela.
 \n
 \nLeia mais no FAQ tocando no botão abaixo.</string>
@@ -883,7 +879,6 @@
     <string name="cur_menu_marker_fmt">%1$s (em uso)</string>
     <string name="connstat_unsucc">mal-sucedido</string>
     <string name="connstat_succ">bem-sucedido</string>
-    <string name="invites_net_fmt">Convites enviados para o jogo conectado via %1$s:</string>
     <plurals name="invite_sms_desc_fmt">
         <item quantity="one">Verifique o número de telefone que você deseja convidar para o seu novo jogo, então clique em “%2$s”.</item>
         <item quantity="many">Verifique os %1$d números de telefones que você deseja convidar para o seu novo jogo, então clique em “%2$s”.</item>

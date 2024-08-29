@@ -21,7 +21,6 @@
     <string name="list_item_move">Mover al grupo</string>
     <string name="list_item_delete">Eliminar partida</string>
     <string name="list_item_reset">Restablecer</string>
-    <string name="list_item_new_from">Crear nuevo a partir de</string>
     <string name="list_item_copy">Copiar</string>
     <string name="rename_label">Cambiar nombre de la partida por:</string>
     <string name="rename_label_caveat">Cambiar el nombre de esta partida (solo en este dispositivo) por:</string>
@@ -43,7 +42,6 @@
     </plurals>
     <string name="download_more">Descargar más</string>
     <string name="list_item_netstats">Conexiones</string>
-    <string name="no_copy_network">Las partidas que ya se han conectado al repetidor no se pueden copiar. Utiliza “Crear nuevo desde” para jugar con una copia con los mismos ajustes.</string>
     <string name="loc_builtin">Listas predefinidas</string>
     <string name="loc_downloads">Descargas</string>
     <string name="dicts_item_move">Cambiar ubicación del almacenamiento</string>
@@ -402,7 +400,6 @@
 \n
 \nPuede descargar un reemplazo o sustituir otra lista de palabras de %3$s.</string>
     <string name="about_devid_fmt">Dispositivo ID: %1$s</string>
-    <string name="not_again_newfrom">Cree una nueva partida lista para jugar usando todas las configuraciones de esta. Es decir, trata esta partida como una plantilla.</string>
     <string name="confirm_del_after_rematch_fmt">Revancha con éxito.
 \n
 \n¿Desea eliminar ahora la partida completada %1$s?
@@ -515,7 +512,6 @@
     <string name="warn_mqtt_havegames">¿Seguro que quieres desactivar la partida a través de Internet?
 \n
 \n La mayoría de las partidas de dos dispositivos intercambian movimientos por Internet, así que solo haz esto si planeas jugar TODAS las partidas contra un robot en este mismo dispositivo.</string>
-    <string name="invites_net_fmt">Invitaciones enviadas para partidas conectadas vía %1$s:</string>
     <string name="connstat_unsucc">error</string>
     <string name="enable_sms_summary">¡Solo si tienes mensajes de texto ilimitados!</string>
     <string name="title_enable_p2p">Attivar WiFi Direct</string>
@@ -1161,7 +1157,6 @@
 \n • Inicie CrossWords en el otro dispositivo
 \n • Si todo lo demás falla, reinicie este dispositivo
 \n</string>
-    <string name="board_menu_game_showInvites">Mostrar las invitaciones</string>
     <string name="knowns_mqtt_fmt">ID del dispositivo MQTT: %1$s</string>
     <string name="gamel_menu_logstore_off">Desactivar el almacenamiento de los registros</string>
     <string name="game_summary_field_gameid">ID de la partida</string>

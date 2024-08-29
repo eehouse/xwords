@@ -2,7 +2,6 @@
 <resources>
     <string name="list_item_netstats">Connessioni</string>
     <string name="list_item_copy">Copia</string>
-    <string name="list_item_new_from">Nuova partita da</string>
     <string name="list_item_reset">Reset</string>
     <string name="list_item_delete">Cancella partita</string>
     <string name="list_item_move">Sposta nel gruppo</string>
@@ -170,7 +169,6 @@
     <string name="mqtt_qos">MQTT QOS</string>
     <string name="mqtt_port">Porta per MQTT</string>
     <string name="netstats_title">Statistiche delle partite in linea</string>
-    <string name="board_menu_game_showInvites">Mostra gli inviti</string>
     <string name="board_menu_game_netstats">Statistiche della connessione</string>
     <string name="debug_features_summary">Elementi menù, ecc.</string>
     <string name="debug_features">Attiva impostazioni debug</string>
@@ -402,7 +400,6 @@
     <string name="connstat_lastsend_fmt">L\'ultimo invio era %1$s (%2$s)</string>
     <string name="connstat_succ">effettuata</string>
     <string name="connstat_unsucc">non effettuata</string>
-    <string name="invites_net_fmt">Inviati inviti per la partita connessa via %1$s:</string>
     <string name="connstat_net_fmt">Stato connessione per la partita (ID=%2$X) connesso via %1$s:</string>
     <string name="connstat_net_noaddr">Questa partita in linea non riesce a connettersi e non può essere giocata.
 \n
@@ -552,7 +549,6 @@
 \n Compilato: %5$s</string>
     <string name="default_name_message">Inserisci il tuo nome qui. Sarà utilizzato per la creazione di nuove partite (puoi cambiarlo in seguito nella sezione delle impostazioni \"nuova partita di base\").</string>
     <string name="default_name_title">Nome di base del giocatore</string>
-    <string name="not_again_newfrom">Crea una partita già pronta usando le stesse impostazioni di questa. Usa questa partita come un esempio.</string>
     <string name="not_again_turnchanged">Il giocatore di turno ha posizionato le tessere da un\'altra parte del tavolo.
 \n
 \nTieni il dito sul suo nome nella classifica dei punti per avere maggiori informazioni sulla sua ultima mossa.</string>
@@ -989,7 +985,6 @@
     </plurals>
     <string name="rename_label_caveat">Cambia il nome di questa partita (solo su questo dispositivo) in:</string>
     <string name="rename_label">Cambia il nome di questa partita in:</string>
-    <string name="no_copy_network">Le partite in corso non possono essere copiate. Usa \"nuova partita da\" per generare una partita con le stesse impostazioni.</string>
     <string name="robot_name_fmt">%1$s (robot)</string>
     <string name="str_game_name_fmt">%1$s (%2$s)</string>
     <string name="button_delete_game">Cancella partita</string>

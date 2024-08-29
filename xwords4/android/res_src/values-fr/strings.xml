@@ -104,19 +104,11 @@
          all moves so that it's the same as a newly created game
          except for any configuration. -->
     <string name="list_item_reset">Recommencer</string>
-    <!-- creates a new game with all configuation copied from the
-         selected game -->
-    <string name="list_item_new_from">Utiliser comme modèle</string>
     <!-- makes a copy of the selected game.  This is currently
          disabled for networked games since there would be problems if
          two identically configured games started trying to talk to a
          remote game that expected there was only one of them. -->
     <string name="list_item_copy">Copier</string>
-    <!-- Title of dialog for renaming game (triggered by selecting
-         list_item_rename) -->
-    <!-- If you try to copy a networked game you get this error
-    message. -->
-    <string name="no_copy_network">Les parties qui sont déjà connectées au relai ne peuvent pas être copiées. Utilisez « Utiliser comme modèle » pour obtenir une copie avec les mêmes paramètres.</string>
     <!--  -->
     <!-- text within rename dialog (triggered by selecting
          list_item_rename) -->
@@ -1680,13 +1672,6 @@ d\'annuler les changements afin d\'éviter un redémarrage.</string>
 affiché en grand sur le tableau d\'affichage.\n\nFaites un appui long sur un
 nom du tableau d\'affichage pour avoir des détails sur le coup le plus récent
 de ce joueur.</string>
-    <!-- Shown when you first pick the list_item_new_from menuitem -->
-    <!--<string name="not_again_newfrom">Create a new ready-to-play game
-      using all the settings from this one.  That is, treat this game
-      as a template.</string>-->
-    <string name="not_again_newfrom">Créez une nouvelle partie en utilisant
-tous les paramètres de celle-ci. Autrement dit, utilisez cette partie comme un
-modèle.</string>
     <!--
        ###########################################################
        # :Dialogs:
@@ -2781,9 +2766,7 @@ pour la langue</string>
     <string name="not_again_dfltname_fmt">Vous utilisez le nom par défaut de joueur « %1$s ». Souhaitez-vous le personnaliser avec votre propre nom avant de créer cette partie \?</string>
     <string name="summary_invites_out">Joueurs invités</string>
     <string name="notify_title_turn_fmt">Votre tour dans la partie %1$s</string>
-    <string name="invites_net_fmt">Invitations envoyées pour la partie connectée via %1$s :</string>
     <string name="disable_nags_title">Rappels de tour</string>
-    <string name="board_menu_game_showInvites">Montrer les invitations</string>
     <string name="no_invites">Cette partie n\'a envoyé aucune invitation</string>
     <string name="rematch_name_fmt">Revanche : %1$s</string>
     <string name="waiting_rematch_title">Revanche en cours</string>

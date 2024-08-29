@@ -17,7 +17,6 @@
     <string name="list_item_delete">Suprimeix</string>
     <string name="list_item_copy">Copia</string>
     <string name="list_item_reset">Reinicialitza</string>
-    <string name="list_item_new_from">Nova</string>
     <string name="play">Partida</string>
     <string name="title_game_config_fmt">Configura el %1$s</string>
     <string name="title_prefs">Configuració del CrossWords</string>
@@ -171,9 +170,6 @@
     <string name="button_reset">Reinicialitza</string>
     <string name="list_item_rename">Canvia el nom…</string>
     <string name="list_item_move">Mou al grup…</string>
-    <string name="no_copy_network">Les partides que ja estan connectades
- al repetidor no es poden copiar. Useu «Nova des de»
- per a una còpia preparada per a jugar amb la mateixa configuració.</string>
     <string name="rename_label">Canvia el nom d\'aquesta partida a:</string>
     <string name="rename_label_caveat">Canvia el nom d\'aquesta partida
  (només en aquest aparell) a:</string>
@@ -576,7 +572,6 @@ Introduïu el vostre nom aquí. S\'usarà en crear partides noves. (Podreu
     <string name="remote_digesting">S\'està processant la informació del diccionari…</string>
     <string name="remote_no_net">No s\'ha pogut obtenir la informació del diccionari del servidor.</string>
     <string name="not_again_turnchanged">E jugador amb el torn apareix apareix amb el marcador més gros.\n\nAguanteu el dit en un nom del marcador per a obtenir detalls sobre la jugada més recent del jugador.</string>
-    <string name="not_again_newfrom">Crea una partida llesta per a jugar usant la configuració d\'aquesta. Això és, usa aquesta partida com a plantilla.</string>
     <string name="sms_bad_proto_fmt">La versió del CrossWords al telèfon amb número «%1$s» no és compatible amb aquest per a jugar via SMS de dades. Heu d\'actualitzar abans de continuar.</string>
     <plurals name="invite_sms_desc_fmt">
         <item quantity="one">Comproveu el número de telèfon que voleu convidar a la partida nova, aleshores toqueu «%2$s».</item>
@@ -672,7 +667,6 @@ Introduïu el vostre nom aquí. S\'usarà en crear partides noves. (Podreu
     <string name="chat_sender_fmt">%1$s:</string>
     <string name="summary_busy">Resum no disponible</string>
     <string name="rematch_name_fmt">%1$s</string>
-    <string name="board_menu_game_showInvites">Mostra les invitacions</string>
     <string name="list_item_select">Selecciona</string>
     <string name="list_item_deselect">Treu la selecció</string>
     <string name="no_invites">Aquesta partida no té cap invitació</string>
@@ -706,7 +700,6 @@ Introduïu el vostre nom aquí. S\'usarà en crear partides noves. (Podreu
         <item quantity="one">Esteu segur de voler suprimir el número de telèfon seleccionat?</item>
         <item quantity="other">Esteu segur de voler suprimir els %1$d números de telèfon seleccionats?</item>
     </plurals>
-    <string name="invites_net_fmt">S\'han enviat les invitacions per a la partida connectada via %1$s:</string>
     <string name="force_tablet_tablet">Força la disposició de tauleta</string>
     <string name="force_tablet_phone">Força la disposició de telèfon</string>
     <string name="gamel_menu_writegit">Copia la informació git al porta-retalls</string>

@@ -17,7 +17,6 @@
     <string name="list_item_delete">Vymazat hru</string>
     <string name="list_item_copy">Kopírovat</string>
     <string name="list_item_reset">Vynulovat</string>
-    <string name="list_item_new_from">Nová hra podle vzoru</string>
     <string name="play">Hrát hru</string>
     <string name="title_game_config_fmt">Konfigurovat %1$s</string>
     <string name="title_prefs">Předvolby CrossWords</string>
@@ -224,7 +223,6 @@
     <string name="dicts_item_move">Změnit uložiště</string>
     <string name="newbie_title">Tip pro vás</string>
     <string name="button_default_robot">Robot</string>
-    <string name="no_copy_network">Hry, které již byly připojeny k relaci, nelze kopírovat. Pro kopii připravenou k přehrávání použijte funkci \"Nová hra podle vzoru\" se všemi stejnými nastaveními.</string>
     <string name="board_menu_undo_current">Zpět/Znovu</string>
     <string name="menu_chat">Konverzace</string>
     <string name="button_decline">Odmítnout</string>

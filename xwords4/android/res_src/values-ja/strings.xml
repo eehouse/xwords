@@ -17,9 +17,7 @@
     <string name="list_item_move">グループに移動…</string>
     <string name="list_item_delete">ゲームを削除</string>
     <string name="list_item_reset">リセット</string>
-    <string name="list_item_new_from">...から新しく作成</string>
     <string name="list_item_copy">コピー</string>
-    <string name="no_copy_network">既にリレーに接続されているゲームはコピーできません。すべて同じ設定でプレイする準備ができる、\"...から新しく作成\" のコピーを使用してください。</string>
     <string name="rename_label">このゲームの名前を変更します:</string>
     <string name="rename_label_caveat">(このデバイス上でのみ) このゲームの名前を変更します:</string>
     <plurals name="confirm_seldeletes_fmt">
@@ -287,7 +285,6 @@
     <string name="not_again_unlock">このゲームはプレイ中です。再起動しないと、プレイヤーの番号などの一部の設定は変更できません。このページから移動するときに、再起動を回避するため、変更を破棄するチャンスがあります。</string>
     <string name="not_again_arrow">ボードにタイルを移動:\nラックとボードの間でタイルをドラッグすることができます。または空のマスをタップして、ボードの矢印を置くことができます。ラックのタイルをタップすると矢印に置き換えられます (移動するマスを指す方向に) 矢印を 1 回タップすると、方向を変更します。2 回目は非表示にします。設定の外観セクションのチェック ボックスで永久に非表示にすることができます。</string>
     <string name="not_again_turnchanged">順番のプレイヤーはスコアボードに大きく描画されます。\n\nスコアボードの名前を指で長押しすると、そのプレイヤーの最近の動きについての詳細を得ることができます。</string>
-    <string name="not_again_newfrom">ここからすべての設定を使用して、すぐにプレイできるゲームを新しく作成します。つまり、このゲームをテンプレートとして扱います。</string>
     <string name="default_name_title">デフォルト プレイヤー名</string>
     <string name="default_name_message">ここに名前を入力してください。これは新しいゲームを作成するときに使用されます。(後で、設定のセクション \"新しいゲームのデフォルト\" で変更できます)</string>
     <string name="about_copyright">Copyright (C) 1998-2024 by Eric House. このフリー/オープンソース ソフトウェアは the GNU Public License に基づいてリリースされています.</string>
@@ -636,9 +633,7 @@
     <string name="invit_expl_bt_fmt">%2$s で、ペアのデバイス \"%1$s\" に Bluetooth 経由で招待を送信しました</string>
     <string name="invit_expl_notarget_fmt">%2$s で %1$s 経由で招待を送信しました。不明な受信者。</string>
     <string name="notify_title_turn_fmt">ゲーム %1$s で自分の順番</string>
-    <string name="invites_net_fmt">%1$s を経由して接続されているゲームに招待状を送信しました:</string>
     <string name="waiting_rematch_title">進行中の再戦</string>
-    <string name="board_menu_game_showInvites">招待を表示</string>
     <string name="no_invites">このゲームは招待状を送信していません</string>
     <string name="chat_hint">ここに入力…</string>
     <string name="chat_sender_fmt">%1$s:</string>

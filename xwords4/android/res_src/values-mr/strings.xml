@@ -2,7 +2,6 @@
 <resources>
     <string name="list_item_netstats">कनेक्शन…</string>
     <string name="list_item_copy">नक्कल</string>
-    <string name="list_item_new_from">कडून नवीन</string>
     <string name="list_item_reset">रीसेट करा</string>
     <string name="list_item_delete">खेळ हटवा</string>
     <string name="list_item_move">गटामध्ये हलवा …</string>

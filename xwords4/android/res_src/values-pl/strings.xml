@@ -13,9 +13,7 @@
     <string name="list_item_rename">Zmień nazwę…</string>
     <string name="list_item_move">Przenieś do grupy…</string>
     <string name="list_item_delete">Usuń grę</string>
-    <string name="list_item_new_from">Nowa na podstawie</string>
     <string name="list_item_copy">Kopiuj</string>
-    <string name="no_copy_network">Gry, które już zostały połączone z przekaźnikiem, nie mogą być kopiowane. Użyj opcji „Nowy z”, aby uzyskać gotową do odtwarzania kopię ze wszystkimi tymi samymi ustawieniami.</string>
     <string name="rename_label">Zmień nazwę tej gry na:</string>
     <string name="rename_label_caveat">Zmień nazwę tej gry (tylko na tym urządzeniu) na:</string>
     <string name="download_more">Pobierz więcej…</string>
@@ -383,7 +381,6 @@
     <string name="not_again_turnchanged">Gracz, którego kolej jest umieszczany na tablicy wyników.
 \n
 \nPrzytrzymaj palec na nazwie w tablicy wyników, aby uzyskać szczegółowe informacje na temat ostatniego ruchu tego gracza.</string>
-    <string name="not_again_newfrom">Stwórz nową, gotową do gry grę, wykorzystując wszystkie ustawienia z tej gry. To znaczy, traktuj tę grę jak szablon.</string>
     <string name="about_copyright">Copyright (C) 1998-2024 by Eric House. To darmowe/otwartoźródłowe oprogramowanie jest wydawane na licencji publicznej GNU.</string>
     <string name="about_web">Instrukcja obsługi i kod źródłowy znajduje się na stronie: http://xwords.sf.net/android.php. Aby zgłosić błędy, zasugerować funkcje, zaoferować pomoc itp., proszę o kontakt mailowy: xwords@eehouse.org.</string>
     <string name="xlator">[pusta]</string>
@@ -455,7 +452,6 @@
 \n 
 \n(Prawdopodobnie została utworzona na podstawie zaproszenia, które nie zawierało żadnego sposobu połączenia obsługiwanego przez urządzenie, lub może ostatnio usunięto ostatni sposób połączenia.)</string>
     <string name="connstat_net_fmt">Stan sieci (ID=%2$X) dla gry podłączonej przez %1$s:</string>
-    <string name="invites_net_fmt">Wysłano zaproszenia do gry połączone za pośrednictwem %1$s:</string>
     <string name="connstat_succ">pomyślnie</string>
     <string name="connstat_unsucc">niepowodzenie</string>
     <string name="connstat_lastsend_fmt">Ostatni raz wysłano %1$s (%2$s)</string>
@@ -649,7 +645,6 @@
     <string name="debug_features">Włącz funkcje debugowania</string>
     <string name="debug_features_summary">Elementy menu itp. (Tylko wersje kompilacji)</string>
     <string name="board_menu_game_netstats">Statystyki sieci</string>
-    <string name="board_menu_game_showInvites">Pokaż zaproszenia</string>
     <string name="netstats_title">Statystyki gry sieciowej</string>
     <string name="name_dict_fmt">%1$s/%2$s</string>
     <string name="gamel_menu_writegit">Skopiuj informacje git do schowka</string>

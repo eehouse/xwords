@@ -6,7 +6,6 @@
     <string name="players_label_standalone">Игроки (коснитесь, чтобы редактировать)</string>
     <string name="robot_name_fmt">%1$s (робот)</string>
     <string name="list_item_copy">Копировать</string>
-    <string name="list_item_new_from">Новая из</string>
     <string name="rename_label">Изменить имя этой игры на:</string>
     <string name="list_item_move">Перенести в группу</string>
     <string name="loc_builtin">Встроенный</string>

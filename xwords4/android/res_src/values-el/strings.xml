@@ -24,10 +24,8 @@
     <string name="list_item_move">Μετακίνηση στην ομάδα</string>
     <string name="list_item_delete">Διαγραφή παιχνιδιού</string>
     <string name="list_item_reset">Επαναφορά</string>
-    <string name="list_item_new_from">Νέο από</string>
     <string name="list_item_copy">Αντιγραφή</string>
     <string name="list_item_relaypage">Κίνηση παιχνιδιού</string>
-    <string name="no_copy_network">Τα παιχνίδια που έχουν ήδη συνδεθεί στην ομάδα δεν μπορούν να αντιγραφούν. Χρησιμοποιήστε το \"Νέα φόρμα\" για ένα αντίγραφο έτοιμο για να παίξετε με όλες τις ρυθμίσεις ίδιες.</string>
     <string name="rename_label">Αλλαγή του ονόματος αυτού του παιχνιδιού σε:</string>
     <string name="gamel_menu_dicts">Λίστες λέξεων</string>
     <string name="list_item_netstats">Συνδέσεις</string>

@@ -99,19 +99,11 @@
          all moves so that it's the same as a newly created game
          except for any configuration. -->
     <string name="list_item_reset">Reiniciar</string>
-    <!-- creates a new game with all configuation copied from the
-         selected game -->
-    <string name="list_item_new_from">Novo a partir de</string>
     <!-- makes a copy of the selected game.  This is currently
          disabled for networked games since there would be problems if
          two identically configured games started trying to talk to a
          remote game that expected there was only one of them. -->
     <string name="list_item_copy">Copiar</string>
-    <!-- Title of dialog for renaming game (triggered by selecting
-         list_item_rename) -->
-    <!-- If you try to copy a networked game you get this error
-    message. -->
-    <string name="no_copy_network">Jogos que já se conectaram ao servidor não podem ser copiados. Use “Novo de“ para uma cópia pronta para jogar com todas as mesmas configurações.</string>
     <!--  -->
     <!-- text within rename dialog (triggered by selecting
          list_item_rename) -->
@@ -1247,10 +1239,6 @@
     <string name="not_again_turnchanged">O jogador cuja vez é sorteada é grande no marcador.
 \n
 \nSegure o seu dedo num nome no marcador para obter detalhes sobre o movimento mais recente daquele jogador.</string>
-    <!-- Shown when you first pick the list_item_new_from menuitem -->
-    <string name="not_again_newfrom">Criar um novo jogo pronto para
-    começar usando todas as configurações do jogo atual. Isto é, tratar
-    esse jogo como um modelo.</string>
     <!--
        ###########################################################
        # :Dialogs:
@@ -1758,7 +1746,6 @@
     <string name="mqtt_qos">QOS do MQTT</string>
     <string name="mqtt_port">Porta MQTT</string>
     <string name="netstats_title">Status da rede do jogo</string>
-    <string name="board_menu_game_showInvites">Mostrar convites</string>
     <string name="board_menu_game_netstats">Status da rede</string>
     <string name="debug_features_summary">Menu, itens etc.</string>
     <string name="debug_features">Ativar ferramentas de debug</string>
@@ -1813,7 +1800,7 @@
     <string name="lmi_phony_fmt">%1$s perdeu uma rodada</string>
     <plurals name="lmi_trade_fmt">
         <item quantity="one">%1$s trocou uma pedra</item>
-        <item quantity="many"></item>
+        <item quantity="many"/>
         <item quantity="other">%1$s trocou %2$d pedras</item>
     </plurals>
     <plurals name="lmi_move_fmt">
@@ -1965,7 +1952,7 @@
         <item quantity="many">"
 \n
 \n(%1$d partidas também serão apagadas.)"</item>
-        <item quantity="other"></item>
+        <item quantity="other"/>
     </plurals>
     <plurals name="groups_confirm_del_fmt">
         <item quantity="one">Tem certeza que quer deletar o grupo %1$s\?</item>
@@ -1989,7 +1976,7 @@
         <item quantity="many">"
 \n
 \n(Tem %1$d partidas ativas a usar o Bluetooth.)"</item>
-        <item quantity="other"></item>
+        <item quantity="other"/>
     </plurals>
     <string name="warn_bt_havegames">Tem certeza que quer desativar jogar a usar Bluetooth\?
 \n
@@ -1999,7 +1986,6 @@
 \nPode ativar o Bluetooth agora ou depois.</string>
     <string name="summary_enable_p2p">Experimental, usa bastante da bateria</string>
     <string name="title_enable_p2p">Ativar WiFi Direct</string>
-    <string name="invites_net_fmt">Convites enviados ao jogo conectado via %1$s:</string>
     <string name="connstat_net_noaddr">Este jogo em rede não tem forma nenhuma de se conectar e não pode ser jogado.
 \n
 \n(Provavelmente foi criado de um convite que não especificou nenhuma forma de conexão que o seu aparelho suporta ou pode ter recentemente removido a sua última forma de conexão.)</string>
@@ -2100,13 +2086,13 @@
     <string name="notify_title_fmt">jogada %1$s</string>
     <plurals name="too_many_trade_fmt">
         <item quantity="one">Muitas pedras selecionadas. Se faz favor, selecione apenas um.</item>
-        <item quantity="many"></item>
+        <item quantity="many"/>
         <item quantity="other">Muitas pedras selecionadas. Se faz favor, favor selecione mais do que %1$d.</item>
     </plurals>
     <string name="chat_hint">Escreva aqui…</string>
     <plurals name="query_trade_fmt">
         <item quantity="one">Tem certeza que quer mudar a pedra selecionado (%2$s)?</item>
-        <item quantity="many"></item>
+        <item quantity="many"/>
         <item quantity="other">Tem certeza que quer mudar as %1$d pedras selecionadas (%2$s)?</item>
     </plurals>
     <string name="invite_sms_fmt">Toque na ligação para aceitar o meu convite e se juntar ao jogo de Palavras Cruzadas: %1$s</string>
@@ -2139,13 +2125,13 @@
     <plurals name="strd_remains_expl_fmt">
         <item quantity="one">Falta uma pedra no quadro escondido:
 \n</item>
-        <item quantity="many"></item>
+        <item quantity="many"/>
         <item quantity="other">Faltam %1$d pedras no agrupamento e no quadro escondido:
 \n</item>
     </plurals>
     <plurals name="strd_remains_header_fmt">
         <item quantity="one">Falta uma pedra no agrupamento.</item>
-        <item quantity="many"></item>
+        <item quantity="many"/>
         <item quantity="other">Faltam %1$d pedras no agrupamento .</item>
     </plurals>
     <string name="str_pass">passar
@@ -2248,7 +2234,7 @@
         <item quantity="many">"
 \n
 \n(Agora tem %1$d jogos ativos usando a Internet.)"</item>
-        <item quantity="other"></item>
+        <item quantity="other"/>
     </plurals>
     <string name="archive_button_store">Exportar</string>
     <string name="archive_expl_colors">Cores no tabuleiro de jogo, por exemplo dos nomes de jogadores e quadrados de bónus</string>

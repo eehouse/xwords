@@ -41,7 +41,6 @@
     <string name="rename_label_caveat">Ubah nama permainan ini (di perangkat ini saja) menjadi:</string>
     <string name="rename_label">Ubah nama permainan ini menjadi:</string>
     <string name="list_item_copy">Salin</string>
-    <string name="list_item_new_from">Buat dari</string>
     <string name="list_item_delete">Hapus permainan</string>
     <string name="list_item_move">Pindahkan ke kelompok</string>
     <string name="list_item_rename">Ubah nama</string>
@@ -359,5 +358,4 @@
         <item quantity="other">Terlalu banyak ubin dipilih. Harap pilih tidak lebih dari %1$d.</item>
     </plurals>
     <string name="invite_htm_fmt">Ketuk tautan lengkap di bawah untuk bergabung ke permainan ini. &lt;br \\&gt; &lt;br \\&gt; (Tautan lengkap: %1$s)</string>
-    <string name="no_copy_network">Permainan yang telah terhubung ke relay tidak bisa disalin. Gunakan “Buat dari” untuk salinan yang siap dimainkan dengan pengaturan yang sama.</string>
 </resources>
