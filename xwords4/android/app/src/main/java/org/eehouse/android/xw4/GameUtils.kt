@@ -663,10 +663,10 @@ object GameUtils {
 
     @JvmOverloads
     fun saveNewGame(
-        context: Context, bytes: ByteArray?,
+        context: Context, bytes: ByteArray,
         groupID: Long = DBUtils.GROUPID_UNSPEC
     ): GameLock? {
-        return DBUtils.saveNewGame(context, bytes!!, groupID, null)
+        return DBUtils.saveNewGame(context, bytes, groupID, null)
     }
 
     fun makeSaveNew(
@@ -693,21 +693,18 @@ object GameUtils {
         null as UtilCtxt?, null as DrawCtx?,
         CommonPrefs.get(context), null as TransportProcs?)
 
-        if (null != invitee) {
+        invitee?.let {
             val summary = GameSummary(gi)
             XwJNI.game_summarize(gamePtr, summary)
             val nli = NetLaunchInfo(context, summary, gi)
             Log.d(TAG, "passing %s to comms_invite()", nli)
-            XwJNI.comms_invite(gamePtr, nli, invitee, false)
+            XwJNI.comms_invite(gamePtr, nli, it, false)
         }
 
         var rowid = DBUtils.ROWID_NOTFOUND
         val bytes = XwJNI.game_saveToStream(gamePtr, gi)
-        if (null != bytes) {
-            DBUtils.saveNewGame(
-                context, bytes, groupID,
-                gameName
-            ).use { lock ->
+        bytes?.let {
+            DBUtils.saveNewGame(context, it, groupID, gameName).use { lock ->
                 rowid = lock!!.rowid
             }
         }

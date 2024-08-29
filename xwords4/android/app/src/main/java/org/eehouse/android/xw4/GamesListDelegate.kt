@@ -1813,8 +1813,9 @@ class GamesListDelegate(delegator: Delegator) :
         if (0 != id) {
             mActivity.menuInflater.inflate(id, menu)
 
-            val hideId = if (selected
-            ) R.id.games_game_select else R.id.games_game_deselect
+            val hideId =
+                if (selected) R.id.games_game_select
+                else R.id.games_game_deselect
             Utils.setItemVisible(menu, hideId, false)
 
             if (null != gameItem) {
@@ -1835,6 +1836,7 @@ class GamesListDelegate(delegator: Delegator) :
                             && (BuildConfig.DEBUG || XWPrefs.getDebugEnabled(mActivity)))
                 }
                 Utils.setItemVisible(menu, R.id.games_game_netstats, isMultiGame)
+                Utils.setItemVisible(menu, R.id.games_game_copy, !isMultiGame)
                 enable = (isMultiGame && BuildConfig.NON_RELEASE
                         && summary!!.conTypes!!.contains(CommsConnType.COMMS_CONN_MQTT))
                 Utils.setItemVisible(menu, R.id.games_game_relaypage, enable)
@@ -1987,17 +1989,11 @@ class GamesListDelegate(delegator: Delegator) :
 
             R.id.games_game_copy -> {
                 val selRowID = selRowIDs[0]
-                val smry = GameUtils.getSummary(
-                    mActivity,
-                    selRowID
-                )
-                if (smry!!.inRelayGame()) {
-                    makeOkOnlyBuilder(R.string.no_copy_network).show()
-                } else {
+                val smry = GameUtils.getSummary(mActivity, selRowID)
+                smry?.let {
                     dropSels = true // will select the new game instead
                     post {
-                        val stream =
-                            GameUtils.savedGame(mActivity, selRowID)
+                        val stream = GameUtils.savedGame(mActivity, selRowID)
                         val groupID = XWPrefs.getDefaultNewGameGroup(mActivity)
                         GameUtils.saveNewGame(mActivity, stream, groupID).use { lock ->
                             DBUtils.saveSummary(mActivity, lock!!, smry)
@@ -2919,7 +2915,6 @@ class GamesListDelegate(delegator: Delegator) :
             R.id.games_game_config,
             R.id.games_game_rename,
             R.id.games_game_rematch,
-            R.id.games_game_copy,
         )
 
         private val ONEGROUP_ITEMS = intArrayOf(

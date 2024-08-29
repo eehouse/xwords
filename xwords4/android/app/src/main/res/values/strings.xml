@@ -111,11 +111,6 @@
     <!-- Debug only: shown when game-view url copied to clipboard as
          part of "show traffic" action -->
     <string name="relaypage_url_copied">Game URL copied to clipboard</string>
-    <!-- If you try to copy a networked game you get this error
-         message. -->
-    <string name="no_copy_network">Games that have already connected
-      to the relay cannot be copied. Use “New from” for a
-      ready-to-play copy with all the same settings.</string>
     <!-- text within rename dialog (triggered by selecting
          list_item_rename) -->
     <string name="rename_label">Change the name of this game to:</string>
