@@ -695,7 +695,7 @@
     <string name="checking_for_fmt">Comprobando listas de palabras en %1$s…</string>
     <string name="phone_lookup_rationale">Para volver a jugar una partida que utiliza datos SMS, CrossWords necesita permiso para acceder a su número de teléfono.</string>
     <string name="list_item_deselect">Deseleccionar</string>
-    <string name="no_invites">Esta partida no ha enviado invitaciones</string>
+    <string name="no_invites">Esta partida no tiene invitaciones pendientes.</string>
     <string name="phone_lookup_rationale_others">Sin este permiso, la revancha continuará pero creará una partida que no se podrá jugar con datos SMS.</string>
     <string name="after_restart">Este cambio entrará en vigor después de reiniciar CrossWords.</string>
     <string name="not_again_dfltname_fmt">Estás utilizando el nombre de jugador predeterminado “%1$s”. ¿Te gustaría personalizarlo con tu propio nombre antes de crear esta partida?</string>
