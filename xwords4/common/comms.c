@@ -1821,11 +1821,11 @@ getNamesProc( MsgQueueElem* elem, void* closure )
             kplr_nameForAddress( gndp->comms->dutil, gndp->xwe, addr );
         InviteeNames* names = gndp->names;
         if ( !!name ) {
-            XP_STRCAT( names->name[names->count], name );
+            XP_STRCAT( names->name[names->nNames], name );
             XP_LOGFF( "copied name %s to pos %d (pos %d)", name,
-                      channelNo, names->count );
+                      channelNo, names->nNames );
         }
-        ++names->count;
+        ++names->nNames;
     }
     return FEA_OK;
 }

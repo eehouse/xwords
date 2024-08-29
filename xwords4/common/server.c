@@ -4755,13 +4755,13 @@ server_inviteeName( const ServerCtxt* server,
                 InviteeNames names = {};
                 comms_inviteeNames( comms, xwe, &names );
 
-                if ( nameIndx < names.count ) {
+                if ( nameIndx < names.nNames ) {
                     XP_LOGFF( "got a match: player %d for channel %d; name: \"%s\"",
                               playerPosn, nameIndx, names.name[nameIndx] );
                     *bufLen = XP_SNPRINTF( buf, *bufLen, names.name[nameIndx], playerPosn );
                 } else {
                     XP_LOGFF( "expected %dth name but found only %d",
-                              nameIndx, names.count );
+                              nameIndx, names.nNames );
                 }
                 break;
             }

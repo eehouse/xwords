@@ -209,7 +209,7 @@ void comms_invite( CommsCtxt* comms, XWEnv xwe, const NetLaunchInfo* nli,
 void comms_getInvited( RELCONST CommsCtxt* comms, XP_U16* nInvites );
 typedef struct _InviteeNames {
     XP_UCHAR name[4][32];
-    XP_U16 count;
+    XP_U16 nNames;
 } InviteeNames;
 void comms_inviteeNames( CommsCtxt* comms, XWEnv xwe, InviteeNames* names );
 

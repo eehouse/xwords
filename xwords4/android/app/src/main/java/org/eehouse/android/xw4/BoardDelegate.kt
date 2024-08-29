@@ -813,7 +813,6 @@ class BoardDelegate(delegator: Delegator) :
         enable = netGame && (BuildConfig.DEBUG
                 || XWPrefs.getDebugEnabled(mActivity))
         Utils.setItemVisible(menu, R.id.board_menu_game_netstats, enable)
-        Utils.setItemVisible(menu, R.id.board_menu_game_invites, enable)
         enable = XWPrefs.getStudyEnabled(mActivity) && null != mGi
                 && !DBUtils.studyListWords(mActivity, mGi!!.isoCode()!!).isEmpty()
         Utils.setItemVisible(menu, R.id.board_menu_study, enable)
@@ -866,11 +865,6 @@ class BoardDelegate(delegator: Delegator) :
                 JNICmd.CMD_NETSTATS,
                 R.string.netstats_title
             )
-
-            R.id.board_menu_game_invites -> {
-                val sentInfo = DBUtils.getInvitesFor(mActivity, mRowid)
-                makeOkOnlyBuilder(sentInfo.getAsText(mActivity)).show()
-            }
 
             R.id.board_menu_undo_current -> cmd = JNICmd.CMD_UNDO_CUR
             R.id.board_menu_undo_last -> makeConfirmThenBuilder(

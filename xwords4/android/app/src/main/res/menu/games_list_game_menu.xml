@@ -39,9 +39,6 @@
           android:title="@string/list_item_deselect"
           />
     <!-- below here: Debug only -->
-    <item android:id="@+id/games_game_invites"
-          android:title="@string/board_menu_game_showInvites"
-          />
     <item android:id="@+id/games_game_markbad"
           android:title="@string/list_item_markbad"
           />

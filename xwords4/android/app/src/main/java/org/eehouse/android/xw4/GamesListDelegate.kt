@@ -1843,7 +1843,6 @@ class GamesListDelegate(delegator: Delegator) :
                     enable = (isMultiGame
                             && (BuildConfig.DEBUG || XWPrefs.getDebugEnabled(mActivity)))
                 }
-                Utils.setItemVisible(menu, R.id.games_game_invites, enable)
                 Utils.setItemVisible(menu, R.id.games_game_netstats, isMultiGame)
                 enable = (isMultiGame && BuildConfig.NON_RELEASE
                         && summary!!.conTypes!!.contains(CommsConnType.COMMS_CONN_MQTT))
@@ -2034,25 +2033,6 @@ class GamesListDelegate(delegator: Delegator) :
             R.id.games_game_relaypage -> {
                 val summary = GameUtils.getSummary(mActivity, selRowIDs[0])!!
                 NetUtils.copyAndLaunchGamePage(mActivity, summary.gameID)
-            }
-
-            R.id.games_game_invites -> {
-                val summary = GameUtils.getSummary(mActivity, selRowIDs[0])!!
-                var msg = summary.conTypes!!.toString(mActivity, true)
-                msg = getString(R.string.invites_net_fmt, msg)
-
-                val info = DBUtils.getInvitesFor(
-                    mActivity,
-                    selRowIDs[0]
-                )
-                if (null != info) {
-                    msg += """
-                        
-                        
-                        ${info.getAsText(mActivity)}
-                        """.trimIndent()
-                }
-                makeOkOnlyBuilder(msg).show()
             }
 
             R.id.games_game_markbad -> Quarantine.markBad(selRowIDs[0])

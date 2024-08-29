@@ -104,21 +104,22 @@ internal abstract class XWExpListAdapter(childClasses: Array<Class<*>>) :
     }
 
     protected fun removeChildrenOf(groupIndex: Int) {
-        Assert.assertTrueNR(0 <= groupIndex)
-        Assert.assertTrue(m_groupClass == m_listObjs!![groupIndex]!!.javaClass)
-        val end = findGroupEnd(groupIndex)
-        val nChildren = end - groupIndex - 1 // 1: don't remove parent
-        val newArray = arrayOfNulls<Any>(m_listObjs!!.size - nChildren)
-        System.arraycopy(m_listObjs, 0, newArray, 0, groupIndex + 1) // 1: include parent
-        val nAbove = m_listObjs!!.size - (groupIndex + nChildren + 1)
-        if (end < m_listObjs!!.size) {
-            System.arraycopy(
-                m_listObjs, end, newArray, groupIndex + 1,
-                m_listObjs!!.size - end
-            )
+        if (0 <= groupIndex) {
+            Assert.assertTrue(m_groupClass == m_listObjs!![groupIndex]!!.javaClass)
+            val end = findGroupEnd(groupIndex)
+            val nChildren = end - groupIndex - 1 // 1: don't remove parent
+            val newArray = arrayOfNulls<Any>(m_listObjs!!.size - nChildren)
+            System.arraycopy(m_listObjs, 0, newArray, 0, groupIndex + 1) // 1: include parent
+            val nAbove = m_listObjs!!.size - (groupIndex + nChildren + 1)
+            if (end < m_listObjs!!.size) {
+                System.arraycopy(
+                    m_listObjs, end, newArray, groupIndex + 1,
+                    m_listObjs!!.size - end
+                )
+            }
+            m_listObjs = newArray as Array<Any>
+            notifyDataSetChanged()
         }
-        m_listObjs = newArray as Array<Any>
-        notifyDataSetChanged()
     }
 
     protected fun addChildrenOf(groupIndex: Int, children: List<Any?>) {

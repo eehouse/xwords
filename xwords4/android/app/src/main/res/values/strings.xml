@@ -1780,8 +1780,6 @@
     <string name="button_refresh">Refresh</string>
 
     <!-- First line of debug-only Invites list dialog -->
-    <string name="invites_net_fmt">Invitations sent for game connected via
-    %1$s:</string>
     <!--  -->
     <string name="connstat_succ">successful</string>
     <!--  -->
@@ -2235,7 +2233,6 @@
     <string name="debug_features">Enable debug features</string>
     <string name="debug_features_summary">Menuitems etc.</string>
     <string name="board_menu_game_netstats">Network stats</string>
-    <string name="board_menu_game_showInvites">Show invites</string>
     <string name="netstats_title">Game network stats</string>
     <string name="mqtt_port">MQTT port</string>
     <string name="mqtt_qos">MQTT QOS</string>
@@ -2331,7 +2328,7 @@
     <string name="not_again_dfltname_fmt">You are using the default
   player name “%1$s”. Would you like to personalize with your own
   name before you create this game?</string>
-    <string name="no_invites">This game has sent no invitations</string>
+    <string name="no_invites">This game has no invitations pending.</string>
     <string name="after_restart">This change will take effect after you
   restart CrossWords.</string>
     <string name="missing_sms_perms">This game is configured to communicate
