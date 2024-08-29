@@ -43,6 +43,10 @@
 
 #define PD_VERSION_1 2
 
+#ifndef ACK_TIMER_INTERVAL_MS
+# define ACK_TIMER_INTERVAL_MS 5000
+#endif
+
 XWStreamCtxt*
 mkStream( XW_DUtilCtxt* dutil )
 {
@@ -575,9 +579,9 @@ static void
 setAckSendTimerLocked( XW_DUtilCtxt* dutil, XWEnv xwe, DevCtxt* dc )
 {
     if ( 0 == dc->ackTimer.key ) {
-        XP_U32 inWhenMS = 7500;
-        dc->ackTimer.key = tmr_set( dutil, xwe, inWhenMS, onAckSendTimer,
-                                    dutil );
+        dc->ackTimer.key = tmr_set( dutil, xwe,
+                                    ACK_TIMER_INTERVAL_MS,
+                                    onAckSendTimer, dutil );
         XP_ASSERT( 0 != dc->ackTimer.key );
     }
 }
