@@ -96,9 +96,6 @@
          all moves so that it's the same as a newly created game
          except for any configuration. -->
     <string name="list_item_reset">Reset\u200C</string>
-    <!-- creates a new game with all configuation copied from the
-         selected game -->
-    <string name="list_item_new_from">New from</string>
     <!-- makes a copy of the selected game.  This is currently
          disabled for networked games since there would be problems if
          two identically configured games started trying to talk to a
@@ -1402,10 +1399,6 @@
       is drawn large in the scoreboard.\n\nHold your finger on a name in
       the scoreboard to get details about that player’s most recent
       move.</string>
-    <!-- Shown when you first pick the list_item_new_from menuitem -->
-    <string name="not_again_newfrom">Create a new ready-to-play game
-      using all the settings from this one.  That is, treat this game
-      as a template.</string>
     <!--
        ###########################################################
        # :Dialogs:

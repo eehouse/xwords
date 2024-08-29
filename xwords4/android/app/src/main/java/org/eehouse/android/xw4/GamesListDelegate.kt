@@ -1244,15 +1244,6 @@ class GamesListDelegate(delegator: Delegator) :
                 }
             }
 
-            Action.NEW_FROM -> {
-                val curID = params[0] as Long
-                val newid = GameUtils.dupeGame(mActivity, curID)
-                if (ROWID_NOTFOUND != newid) {
-                    m_mySIS!!.selGames.add(newid)
-                    reloadGame(newid)
-                }
-            }
-
             Action.SET_HIDE_NEWGAME_BUTTONS -> {
                 XWPrefs.setHideNewgameButtons(mActivity, true)
                 setupButtons()
@@ -1992,16 +1983,6 @@ class GamesListDelegate(delegator: Delegator) :
             R.id.games_game_move -> {
                 m_mySIS!!.groupSelItem = -1
                 showDialogFragment(DlgID.CHANGE_GROUP, selRowIDs)
-            }
-
-            R.id.games_game_new_from -> {
-                dropSels = true // will select the new game instead
-                makeNotAgainBuilder(
-                    R.string.key_notagain_newfrom,
-                    Action.NEW_FROM, R.string.not_again_newfrom
-                )
-                    .setParams(selRowIDs[0])
-                    .show()
             }
 
             R.id.games_game_copy -> {
@@ -2938,7 +2919,6 @@ class GamesListDelegate(delegator: Delegator) :
             R.id.games_game_config,
             R.id.games_game_rename,
             R.id.games_game_rematch,
-            R.id.games_game_new_from,
             R.id.games_game_copy,
         )
 

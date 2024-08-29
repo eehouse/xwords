@@ -16,9 +16,6 @@
     <item android:id="@+id/games_game_reset"
           android:title="@string/list_item_reset"
           />
-    <item android:id="@+id/games_game_new_from"
-          android:title="@string/list_item_new_from"
-          />
     <item android:id="@+id/games_game_rename"
           android:title="@string/list_item_rename"
           />

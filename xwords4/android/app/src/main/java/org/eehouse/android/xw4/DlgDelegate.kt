@@ -38,7 +38,6 @@ class DlgDelegate(
 
         // GameListDelegate
         RESET_GAMES,
-        NEW_FROM,
         DELETE_GAMES,
         DELETE_GROUPS,
         OPEN_GAME,
