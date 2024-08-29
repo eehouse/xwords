@@ -43,10 +43,11 @@ extern "C" {
 
 #define LOCAL_ADDR NULL
 
+/* These aren't really used */
 enum {
     END_REASON_USER_REQUEST,
     END_REASON_OUT_OF_TILES,
-    END_REASON_TOO_MANY_PASSES
+    END_REASON_TOO_MANY_PASSES,
 };
 typedef XP_U8 GameEndReason;
 

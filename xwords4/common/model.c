@@ -76,7 +76,6 @@ static void loadPlayerCtxt( const ModelCtxt* model, XWStreamCtxt* stream,
                             XP_U16 version, PlayerCtxt* pc );
 static void writePlayerCtxt( const ModelCtxt* model, XWStreamCtxt* stream, 
                              const PlayerCtxt* pc );
-static XP_U16 model_getRecentPassCount( ModelCtxt* model );
 static void recordWord( const WNParams* wnp, void *closure );
 #ifdef DEBUG 
 typedef struct _DiffTurnState {
@@ -2576,7 +2575,7 @@ scoreLastMove( ModelCtxt* model, XWEnv xwe, MoveInfo* moveInfo, XP_U16 howMany,
 } /* scoreLastMove */
 
 static XP_U16
-model_getRecentPassCount( ModelCtxt* model )
+getRecentPassCount( ModelCtxt* model )
 {
     StackCtxt* stack = model->vol.stack;
     XP_U16 nPasses = 0;
@@ -2584,29 +2583,26 @@ model_getRecentPassCount( ModelCtxt* model )
     XP_ASSERT( !!stack );
 
     XP_S16 nEntries = stack_getNEntries( stack );
-    for ( XP_S16 which = nEntries - 1; which >= 0; --which ) {
+    XP_Bool done = XP_FALSE;
+    for ( XP_S16 which = nEntries - 1; which >= 0 && !done; --which ) {
         StackEntry entry;
         if ( !stack_getNthEntry( stack, which, &entry ) ) {
             break;
-        }
-        switch ( entry.moveType ) {
-        case MOVE_TYPE:
-            if ( entry.u.move.moveInfo.nTiles == 0 ) {
-                ++nPasses;
-            }
-            break;
-        default:
-            break;
+        } else if ( entry.moveType == MOVE_TYPE
+                    && 0 == entry.u.move.moveInfo.nTiles ) {
+            ++nPasses;
+        } else {
+            done = XP_TRUE;
         }
         stack_freeEntry( stack, &entry );
     }
     return nPasses;
-} /* model_getRecentPassCount */
+} /* getRecentPassCount */
 
 XP_Bool
 model_recentPassCountOk( ModelCtxt* model )
 {
-    XP_U16 count = model_getRecentPassCount( model );
+    XP_U16 count = getRecentPassCount( model );
     XP_U16 okCount = MAX_PASSES;
     if ( !model->vol.gi->inDuplicateMode ) {
         okCount *= model->nPlayers;
