@@ -117,6 +117,7 @@ object GameUtils {
                 hostAddr = XwJNI.comms_getHostAddr(gamePtr)
             }
         }
+        gi.gameID = 0           // force generate new one
         XwJNI.initNew(
             gi, selfAddr, hostAddr, null as UtilCtxt?, null as DrawCtx?,
             CommonPrefs.get(context), null as TransportProcs?
