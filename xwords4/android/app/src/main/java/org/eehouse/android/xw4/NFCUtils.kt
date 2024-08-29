@@ -78,7 +78,7 @@ object NFCUtils {
         if (results[0]) {
             results[1] = getNFCAdapter(context)!!.isEnabled
         }
-        Log.d( TAG, "nfcAvail() => [${results[0]}, ${results[1]}]" );
+        // Log.d( TAG, "nfcAvail() => [${results[0]}, ${results[1]}]" );
         return results
     }
 
@@ -588,10 +588,8 @@ object NFCUtils {
                 if (!isDuplicate) {
                     msgs.add(full)
                     nowHaveData = 0 < msgs.size
-                    Log.d(
-                        TAG, "addMsgFor(gameID=%d): added %s; now have %d msgs",
-                        gameID, hexDump(msg), msgs.size
-                    )
+                    // Log.d(TAG, "addMsgFor(gameID=%d): added %s; now have %d msgs",
+                    //       gameID, hexDump(msg), msgs.size)
                 }
             }
             reportHaveData(gameID, nowHaveData)
@@ -607,10 +605,8 @@ object NFCUtils {
                     result = msgs.toTypedArray<ByteArray>()
                 }
             }
-            Log.d(
-                TAG, "getMsgsFor(gameID=%d) => %d msgs", gameID,
-                if (result == null) 0 else result!!.size
-            )
+            // Log.d(TAG, "getMsgsFor(gameID=%d) => %d msgs", gameID,
+            //       if (result == null) 0 else result!!.size)
             return result
         }
 
@@ -640,8 +636,7 @@ object NFCUtils {
         }
 
         private fun reportHaveData(gameID: Int, nowHaveData: Boolean?) {
-            Log.d(TAG, "reportHaveData($nowHaveData)")
-            if (null != nowHaveData) {
+            nowHaveData?.let {
                 var proc: HaveDataListener? = null
                 synchronized(mListeners) {
                     val ref = mListeners[gameID]
@@ -650,13 +645,11 @@ object NFCUtils {
                         if (null == proc) {
                             mListeners.remove(gameID)
                         }
-                    } else {
-                        Log.d(TAG, "reportHaveData(): no listener for %d", gameID)
+                    // } else {
+                    //     Log.d(TAG, "reportHaveData(): no listener for %d", gameID)
                     }
                 }
-                if (null != proc) {
-                    proc!!.onHaveDataChanged(nowHaveData)
-                }
+                proc?.onHaveDataChanged(it)
             }
         }
 
@@ -729,7 +722,7 @@ object NFCUtils {
                 if (nfcAvail(activity)!![1]) {
                     instance = Wrapper(activity, procs, devID)
                 }
-                Log.d(TAG, "Wrapper.init(devID=%d) => %s", devID, instance)
+                // Log.d(TAG, "Wrapper.init(devID=%d) => %s", devID, instance)
                 return instance
             }
 
@@ -764,7 +757,7 @@ object NFCUtils {
         override fun onHaveDataChanged(haveData: Boolean) {
             if (mHaveData != haveData) {
                 mHaveData = haveData
-                Log.d(TAG, "onHaveDataChanged(): mHaveData now %b", mHaveData)
+                // Log.d(TAG, "onHaveDataChanged(): mHaveData now %b", mHaveData)
                 interruptThread()
             }
         }
@@ -776,7 +769,7 @@ object NFCUtils {
 
         private var mGameID = 0
         fun setGameID(gameID: Int) {
-            Log.d(TAG, "setGameID(%d)", gameID)
+            // Log.d(TAG, "setGameID(%d)", gameID)
             mGameID = gameID
             setHaveDataListener(gameID, this)
             interruptThread()
@@ -890,7 +883,7 @@ object NFCUtils {
                     or NfcAdapter.FLAG_READER_SKIP_NDEF_CHECK)
 
             override fun run() {
-                Log.d(TAG, "ReadModeThread.run() starting")
+                // Log.d(TAG, "ReadModeThread.run() starting")
                 val random = Random()
                 while (!mShouldStop) {
                     val wantReadMode = mConnected || !mInReadMode && haveData()
@@ -913,7 +906,7 @@ object NFCUtils {
                     try {
                         sleep(intervalMS)
                     } catch (ie: InterruptedException) {
-                        Log.d(TAG, "run interrupted")
+                        // Log.d(TAG, "run interrupted")
                     }
                 }
 
@@ -929,7 +922,7 @@ object NFCUtils {
                         mThreadRef[0] = null
                     }
                 }
-                Log.d(TAG, "ReadModeThread.run() exiting")
+                // Log.d(TAG, "ReadModeThread.run() exiting")
             }
 
             fun doStop() {
