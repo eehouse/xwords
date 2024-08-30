@@ -430,7 +430,7 @@
     <string name="thumb_off">已禁用</string>
     <string name="default_loc_summary">（不在外部存储/存储卡中）</string>
     <string name="invit_expl_notarget_fmt">通过 %1$s 在 %2$s 发送了邀请。接收者未知。</string>
-    <string name="no_invites">还没有为此游戏发送邀请</string>
+    <string name="no_invites">此游戏没有待处理的邀请。</string>
     <string name="newgame_reinvite">再次邀请</string>
     <string name="newgame_configure_game">配置游戏</string>
     <string name="phonies_block">屏蔽伪词</string>
@@ -575,7 +575,7 @@
     <plurals name="groups_confirm_del_games_fmt">
         <item quantity="other">"
 \n
-\n（有%1$d个游戏也会被删除。）"</item>
+\n（%1$d个游戏也会被删除。）"</item>
     </plurals>
     <string name="invit_expl_usrsms_fmt">已通过短信在 %1$s 发送邀请</string>
     <string name="finalscores_title">最终得分</string>
@@ -929,7 +929,7 @@
     </plurals>
     <string name="invite_bt_desc_postscript">"
 \n
-\n（此列表列出了通过扫描检测到 CrossWords 的已配对设备。）"</string>
+\n（通过扫描检测到 CrossWords 的已配对设备的列表。）"</string>
     <string name="lmi_pass_dup">没有玩家可移动（全部跳过）</string>
     <plurals name="nag_days_fmt">
         <item quantity="other">%1$d 天</item>
