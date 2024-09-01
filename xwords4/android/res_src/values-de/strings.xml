@@ -657,7 +657,7 @@
     <string name="list_item_select">Auswählen</string>
     <string name="list_item_deselect">Aufheben der Auswahl</string>
     <string name="not_again_dfltname_fmt">Sie benutzen den Standardspielernamen „%1$s“. Wollen Sie ihn anpassen, bevor Sie diese Partie beginnen\?</string>
-    <string name="no_invites">Diese Partie hat keine Einladungen geschickt</string>
+    <string name="no_invites">Diese Partie hat keine ausstehenden Einladungen.</string>
     <string name="after_restart">Diese Änderung wird aktiv, wenn Sie CrossWords neu starten.</string>
     <string name="missing_sms_perms">Diese Partie ist konfiguriert über SMS zu kommunizieren, aber CrossWords hat keine Berechtigung dazu. Sie können die Partie immer noch öffnen, aber möglicherweise keine Züge senden oder empfangen.
 \n
