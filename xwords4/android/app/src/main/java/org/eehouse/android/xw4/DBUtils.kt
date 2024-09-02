@@ -1924,13 +1924,10 @@ object DBUtils {
     }
 
     fun getIntFor(context: Context, key: String, dflt: Int): Int {
-        var dflt = dflt
         val asStr = getStringFor(context, key, null)
-        if (null != asStr) {
-            dflt = asStr.toInt()
-        }
-        // Log.d( TAG, "DBUtils.getIntFor(key=%s)=>%d", key, dflt );
-        return dflt
+        val result = asStr?.let{it.toInt()} ?: dflt
+        // Log.d( TAG, "DBUtils.getIntFor(key=%s)=>%d", key, result );
+        return result
     }
 
     fun setLongFor(context: Context, key: String, value: Long) {
@@ -1997,6 +1994,15 @@ object DBUtils {
             bytes = Utils.base64Decode(asStr)
         }
         return bytes
+    }
+
+    fun getCheckedIntFor(context: Context, key: String, legalVals: Set<Int>, dflt: Int): Int
+    {
+        val cur = getIntFor(context, key, dflt)
+        val found = legalVals.contains(cur)
+        val result = if (found) cur else dflt
+        // Log.d(TAG, "getCheckedIntFor($key); found: $found; => $result")
+        return result
     }
 
     fun getSerializableFor(context: Context, key: String): Serializable? {
