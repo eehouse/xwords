@@ -36,12 +36,11 @@ typedef struct _MQTTConStorage {
     GSList* queue;
 } MQTTConStorage;
 
-#define DEFAULT_QOS 2
-
 typedef struct _QElem {
     gchar* topic;
     uint8_t* buf;
     uint16_t len;
+    XP_U8 qos;
     int mid;
 } QElem;
 
@@ -57,7 +56,7 @@ sendQueueHead( MQTTConStorage* storage )
                 int err =
 #endif
                     mosquitto_publish( storage->mosq, &elem->mid, elem->topic,
-                                       elem->len, elem->buf, DEFAULT_QOS, true );
+                                       elem->len, elem->buf, elem->qos, true );
                 XP_LOGFF( "mosquitto_publish(topic=%s, msgLen=%d) => %s; mid=%d", elem->topic,
                           elem->len, mosquitto_strerror(err), elem->mid );
                 /* Remove this so all are resent together? */
@@ -117,12 +116,13 @@ tickleQueue( MQTTConStorage* storage )
 /* Add to queue if not already there */
 static void
 enqueue( MQTTConStorage* storage, const char* topic,
-         const XP_U8* buf, XP_U16 len )
+         const XP_U8* buf, XP_U16 len, XP_U8 qos )
 {
     FindState fs = {
         .elem.buf = (uint8_t*)buf,
         .elem.len = len,
         .elem.topic = (gchar*)topic,
+        .elem.qos = qos,
     };
     g_slist_foreach( storage->queue, findMsg, &fs );
 
@@ -133,6 +133,7 @@ enqueue( MQTTConStorage* storage, const char* topic,
         elem->topic = g_strdup( topic );
         elem->buf = G_MEMDUP( buf, len );
         elem->len = len;
+        elem->qos = qos;
         storage->queue = g_slist_append( storage->queue, elem );
         XP_LOGFF( "added elem; len now %d", g_slist_length(storage->queue) );
 
@@ -245,12 +246,13 @@ connect_callback( struct mosquitto* mosq, void* userdata,
     XP_UCHAR topicStorage[256];
     XP_UCHAR* topics[4];
     XP_U16 nTopics = VSIZE(topics);
+    XP_U8 qos;
     dvc_getMQTTSubTopics( storage->params->dutil, NULL_XWE,
                           topicStorage, VSIZE(topicStorage),
-                          &nTopics, topics );
+                          &nTopics, topics, &qos );
     int mid;
     int err = mosquitto_subscribe_multiple( mosq, &mid, nTopics, topics,
-                                            DEFAULT_QOS, 0, NULL );
+                                            qos, 0, NULL );
     XP_LOGFF( "mosquitto_subscribe(topics[0]=%s, etc) => %s, mid=%d", topics[0],
               mosquitto_strerror(err), mid );
     XP_USE(err);
@@ -423,10 +425,11 @@ mqttc_getDevIDStr( LaunchParams* params )
 
 
 static void
-msgAndTopicProc( void* closure, const XP_UCHAR* topic, const XP_U8* buf, XP_U16 len )
+msgAndTopicProc( void* closure, const XP_UCHAR* topic, const XP_U8* buf,
+                 XP_U16 len, XP_U8 qos )
 {
     MQTTConStorage* storage = (MQTTConStorage*)closure;
-    (void)enqueue( storage, topic, buf, len );
+    (void)enqueue( storage, topic, buf, len, qos );
 }
 
 void

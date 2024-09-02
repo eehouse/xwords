@@ -64,7 +64,7 @@
   <string name="key_mqtt_url_path">key_mqtt_url_path</string>
   <string name="key_mqtt_host">key_mqtt_host</string>
   <string name="key_mqtt_port">key_mqtt_port</string>
-  <string name="key_mqtt_qos">key_mqtt_qos</string>
+  <string name="key_mqtt_qos">key_mqtt_qos2</string>
   <string name="key_update_prerel">key_update_prerel</string>
   <string name="key_log_prune_hours">key_log_prune_hours</string>
   <string name="key_proxy_port">key_proxy_port</string>
@@ -348,11 +348,7 @@
     <item>@string/radio_name_cdma</item>
   </string-array>
 
-  <string-array name="mqtt_qos_values">
-    <item>0</item>
-    <item>1</item>
-    <item>2</item>
-  </string-array>
+  <string-array name="empty_list"/>
 
   <string-array name="force_tablet_names">
     <item>@string/force_tablet_default</item>

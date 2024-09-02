@@ -31,14 +31,16 @@ void dvc_store( XW_DUtilCtxt* dctxt, XWEnv xwe );
 # endif
 
 typedef void (*MsgAndTopicProc)( void* closure, const XP_UCHAR* topic,
-                                 const XP_U8* msgBuf, XP_U16 msgLen );
+                                 const XP_U8* msgBuf, XP_U16 msgLen,
+                                 XP_U8 qos );
 
 void dvc_getMQTTDevID( XW_DUtilCtxt* dutil, XWEnv xwe, MQTTDevID* devID );
 void dvc_setMQTTDevID( XW_DUtilCtxt* dutil, XWEnv xwe, const MQTTDevID* devID );
 void dvc_resetMQTTDevID( XW_DUtilCtxt* dutil, XWEnv xwe );
 void dvc_getMQTTSubTopics( XW_DUtilCtxt* dutil, XWEnv xwe,
                            XP_UCHAR* storage, XP_U16 storageLen,
-                           XP_U16* nTopics, XP_UCHAR* topics[] );
+                           XP_U16* nTopics, XP_UCHAR* topics[],
+                           XP_U8* qos );
 void dvc_makeMQTTInvites( XW_DUtilCtxt* dutil, XWEnv xwe,
                           MsgAndTopicProc proc, void* closure,
                           const MQTTDevID* addressee,
@@ -80,6 +82,8 @@ void dvc_getPhoniesFor( XW_DUtilCtxt* dutil, XWEnv env, const XP_UCHAR* code,
 #ifdef DUTIL_TIMERS
 void dvc_onTimerFired( XW_DUtilCtxt* dutil, XWEnv env, TimerKey key );
 #endif
+
+XP_U8 dvc_getQOS( XW_DUtilCtxt* dutil, XWEnv env );
 
 /* All platforms need to call this shortly after setting up their XW_DUtilCtxt */
 void dvc_init( XW_DUtilCtxt* dutil, XWEnv xwe );

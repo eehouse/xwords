@@ -75,10 +75,17 @@ typedef struct _PhoniesDataCodes {
 } PhoniesDataCodes;
 
 typedef struct _DevCtxt {
+
     XP_U16 devCount;
-    WSData* webSendData;
-    XP_U32 mWebSendKey;
-    MutexState webSendMutex;
+    XP_U8 mqttQOS;
+    XP_Bool dirty;
+    MutexState mutex;
+
+    struct {
+        WSData* data;
+        XP_U32 key;
+        MutexState mutex;
+    } webSend;
 
     struct {
         MutexState mutex;
@@ -94,14 +101,18 @@ typedef struct _DevCtxt {
 
 } DevCtxt;
 
+// PENDING: Actually use a timer, or rename this function
+static void setSaveDCTimer( XW_DUtilCtxt* dutil, XWEnv xwe,
+                            DevCtxt* dc );
 
 static DevCtxt*
 load( XW_DUtilCtxt* dutil, XWEnv xwe )
 {
     DevCtxt* state = (DevCtxt*)dutil->devCtxt;
     if ( NULL == state ) {
-        XP_ASSERT(0);
 #ifdef XWFEATURE_DEVICE
+        dutil->devCtxt = state = XP_CALLOC( dutil->mpool, sizeof(*state) );
+
         XWStreamCtxt* stream = mkStream( dutil );
         const XP_UCHAR* keys[] = { KEY_DEVSTATE, NULL };
         dutil_loadStream( dutil, xwe, keys, stream );
@@ -109,28 +120,52 @@ load( XW_DUtilCtxt* dutil, XWEnv xwe )
         if ( 0 < stream_getSize( stream ) ) {
             state->devCount = stream_getU16( stream );
             ++state->devCount;  /* for testing until something's there */
-            /* XP_LOGF( "%s(): read devCount: %d", __func__, state->devCount ); */
+            /* XP_LOGFF( "read devCount: %d", state->devCount ); */
+            if ( stream_gotU8( stream, &state->mqttQOS ) ) {
+                XP_LOGFF( "read qos: %d", state->mqttQOS );
+            } else {
+                state->mqttQOS = 1;
+                setSaveDCTimer( dutil, xwe, state );
+            }
         } else {
-            XP_LOGF( "%s(): empty stream!!", __func__ );
+            XP_LOGFF( "empty stream!!" );
         }
         stream_destroy( stream );
 #endif
     }
 
+    // LOG_RETURNF( "%p", state );
     return state;
 }
 
+XP_U8
+dvc_getQOS( XW_DUtilCtxt* dutil, XWEnv xwe )
+{
+    DevCtxt* state = load( dutil, xwe );
+    LOG_RETURNF("%d", state->mqttQOS);
+    return state->mqttQOS;
+}
+
 #ifdef XWFEATURE_DEVICE
+static void
+dvcStoreLocked( XW_DUtilCtxt* dutil, XWEnv xwe, DevCtxt* state )
+{
+    XWStreamCtxt* stream = mkStream( dutil );
+    stream_putU16( stream, state->devCount );
+    stream_putU8( stream, state->mqttQOS );
+    const XP_UCHAR* keys[] = { KEY_DEVSTATE, NULL };
+    dutil_storeStream( dutil, xwe, keys, stream );
+    stream_destroy( stream );
+}
+
 void
 dvc_store( XW_DUtilCtxt* dutil, XWEnv xwe )
 {
     ASSERT_MAGIC();
     DevCtxt* state = load( dutil, xwe );
-    XWStreamCtxt* stream = mkStream( dutil );
-    stream_putU16( stream, state->devCount );
-    const XP_UCHAR* keys[] = { KEY_DEVSTATE, NULL };
-    dutil_storeStream( dutil, xwe, keys, stream );
-    stream_destroy( stream );
+    WITH_MUTEX( &state->mutex );
+    dvcStoreLocked( dutil, xwe, state );
+    END_WITH_MUTEX();
 }
 #endif
 
@@ -254,7 +289,7 @@ logPtrs( const char* func, int nTopics, char* topics[] )
 void
 dvc_getMQTTSubTopics( XW_DUtilCtxt* dutil, XWEnv xwe,
                       XP_UCHAR* storage, XP_U16 XP_UNUSED_DBG(storageLen),
-                      XP_U16* nTopics, XP_UCHAR* topics[] )
+                      XP_U16* nTopics, XP_UCHAR* topics[], XP_U8* qos )
 {
     ASSERT_MAGIC();
     int offset = 0;
@@ -291,6 +326,8 @@ dvc_getMQTTSubTopics( XW_DUtilCtxt* dutil, XWEnv xwe,
     XP_ASSERT( count <= *nTopics );
     *nTopics = count;
     XP_ASSERT( offset < storageLen );
+
+    *qos = dvc_getQOS( dutil, xwe );
 
     logPtrs( __func__, *nTopics, topics );
 }
@@ -339,11 +376,11 @@ addProto3HeaderCmd( XW_DUtilCtxt* dutil, XWEnv xwe, MQTTCmd cmd,
 
 static void
 callProc( MsgAndTopicProc proc, void* closure, const XP_UCHAR* topic,
-          XWStreamCtxt* stream )
+          XWStreamCtxt* stream, XP_U8 qos )
 {
     const XP_U8* msgBuf = !!stream ? stream_getPtr(stream) : NULL;
     XP_U16 msgLen = !!stream ? stream_getSize(stream) : 0;
-    (*proc)( closure, topic, msgBuf, msgLen );
+    (*proc)( closure, topic, msgBuf, msgLen, qos );
 }
 
 void
@@ -360,8 +397,9 @@ dvc_makeMQTTInvites( XW_DUtilCtxt* dutil, XWEnv xwe,
     addHeaderGameIDAndCmd( dutil, xwe, CMD_INVITE, nli->gameID, stream );
     nli_saveToStream( nli, stream );
 
+    XP_U8 qos = dvc_getQOS( dutil, xwe );
 #ifdef MQTT_DEV_TOPICS
-    callProc( proc, closure, devTopic, stream );
+    callProc( proc, closure, devTopic, stream, qos );
 #endif
 
 #ifdef MQTT_GAMEID_TOPICS
@@ -370,7 +408,7 @@ dvc_makeMQTTInvites( XW_DUtilCtxt* dutil, XWEnv xwe,
                               "%s/%X", devTopic, nli->gameID );
     XP_ASSERT( siz < VSIZE(gameTopic) );
     XP_USE(siz);
-    callProc( proc, closure, gameTopic, stream );
+    callProc( proc, closure, gameTopic, stream, qos );
 #endif
 
     stream_destroy( stream );
@@ -392,7 +430,7 @@ dvc_makeMQTTNukeInvite( XW_DUtilCtxt* dutil, XWEnv xwe,
                               "%s/%X", devTopic, nli->gameID );
     XP_ASSERT( siz < VSIZE(gameTopic) );
     XP_USE(siz);
-    callProc( proc, closure, gameTopic, NULL );
+    callProc( proc, closure, gameTopic, NULL, dvc_getQOS(dutil, xwe) );
 #endif
 }
 
@@ -416,6 +454,7 @@ dvc_makeMQTTMessages( XW_DUtilCtxt* dutil, XWEnv xwe,
        more likely we just aren't in that point in the game, but send both. If
        it's > 0 but < STREAM_VERS_NORELAY, no point sending PROTO_3 */
 
+    XP_U8 qos = dvc_getQOS( dutil, xwe );
     for ( SendMsgsPacket* packet = (SendMsgsPacket*)msgs;
           !!packet; packet = (SendMsgsPacket* const)packet->next ) {
         ++nBufs;
@@ -423,7 +462,7 @@ dvc_makeMQTTMessages( XW_DUtilCtxt* dutil, XWEnv xwe,
             XWStreamCtxt* stream = mkStream( dutil );
             addHeaderGameIDAndCmd( dutil, xwe, CMD_MSG, gameID, stream );
             stream_putBytes( stream, packet->buf, packet->len );
-            callProc( proc, closure, devTopic, stream );
+            callProc( proc, closure, devTopic, stream, qos );
             stream_destroy( stream );
             nSent0 += packet->len;
         }
@@ -460,7 +499,7 @@ dvc_makeMQTTMessages( XW_DUtilCtxt* dutil, XWEnv xwe,
         XP_ASSERT( siz < VSIZE(gameTopic) );
         XP_USE(siz);
 
-        callProc( proc, closure, gameTopic, stream );
+        callProc( proc, closure, gameTopic, stream, qos );
         stream_destroy( stream );
     }
     return XP_MAX( nSent0, nSent1 );
@@ -477,10 +516,11 @@ dvc_makeMQTTNoSuchGames( XW_DUtilCtxt* dutil, XWEnv xwe,
     XP_UCHAR devTopic[64];      /* used by two below */
     formatMQTTDevTopic( addressee, devTopic, VSIZE(devTopic) );
 
+    XP_U8 qos = dvc_getQOS( dutil, xwe );
     XWStreamCtxt* stream = mkStream( dutil );
     addHeaderGameIDAndCmd( dutil, xwe, CMD_DEVGONE, gameID, stream );
 #ifdef MQTT_DEV_TOPICS
-    callProc( proc, closure, devTopic, stream );
+    callProc( proc, closure, devTopic, stream, qos );
 #endif
 
 #ifdef MQTT_GAMEID_TOPICS
@@ -489,7 +529,7 @@ dvc_makeMQTTNoSuchGames( XW_DUtilCtxt* dutil, XWEnv xwe,
                               "%s/%X", devTopic, gameID );
     XP_ASSERT( siz < VSIZE(gameTopic) );
     XP_USE(siz);
-    callProc( proc, closure, gameTopic, stream );
+    callProc( proc, closure, gameTopic, stream, qos );
 #endif
 
     stream_destroy( stream );
@@ -708,11 +748,11 @@ popForKey( XW_DUtilCtxt* dutil, XWEnv xwe, XP_U32 key )
     WSData* item = NULL;
     DevCtxt* dc = load( dutil, xwe );
 
-    WITH_MUTEX(&dc->webSendMutex);
+    WITH_MUTEX(&dc->webSend.mutex);
 
     GetByKeyData gbkd = { .resultKey = key, };
-    dc->webSendData = (WSData*)dll_map( &dc->webSendData->links,
-                                        getByKeyProc, NULL, &gbkd );
+    dc->webSend.data = (WSData*)dll_map( &dc->webSend.data->links,
+                                         getByKeyProc, NULL, &gbkd );
     item = gbkd.found;
 
     END_WITH_MUTEX();
@@ -724,10 +764,10 @@ static XP_U32
 addWithKey( XW_DUtilCtxt* dutil, XWEnv xwe, WSData* wsdp )
 {
     DevCtxt* dc = load( dutil, xwe );
-    WITH_MUTEX(&dc->webSendMutex);
-    wsdp->resultKey = ++dc->mWebSendKey;
-    dc->webSendData = (WSData*)
-        dll_insert( &dc->webSendData->links, &wsdp->links, NULL );
+    WITH_MUTEX(&dc->webSend.mutex);
+    wsdp->resultKey = ++dc->webSend.key;
+    dc->webSend.data = (WSData*)
+        dll_insert( &dc->webSend.data->links, &wsdp->links, NULL );
     END_WITH_MUTEX();
     XP_LOGFFV( "(%p) => %d", wsdp, wsdp->resultKey );
     return wsdp->resultKey;
@@ -739,6 +779,20 @@ delWSDatum( DLHead* elem, void* closure )
     XW_DUtilCtxt* dutil = (XW_DUtilCtxt*)closure;
     XP_USE(dutil);              /* for release builds */
     XP_FREEP( dutil->mpool, &elem );
+}
+
+static void
+setSaveDCTimerLocked( XW_DUtilCtxt* dutil, XWEnv xwe, DevCtxt* dc )
+{
+    dvcStoreLocked( dutil, xwe, dc );
+}
+
+static void
+setSaveDCTimer( XW_DUtilCtxt* dutil, XWEnv xwe, DevCtxt* dc )
+{
+    WITH_MUTEX( &dc->mutex );
+    setSaveDCTimerLocked( dutil, xwe, dc );
+    END_WITH_MUTEX();
 }
 
 void
@@ -770,6 +824,22 @@ dvc_onWebSendResult( XW_DUtilCtxt* dutil, XWEnv xwe, XP_U32 resultKey,
                                                 XP_STRLEN(GITREV) );
                             }
                         }
+
+                        tmp = cJSON_GetObjectItem( result, "qos" );
+                        if ( !!tmp ) {
+                            XP_U8 qos = (XP_U8)tmp->valueint;
+                            XP_ASSERT( 0 <= qos && qos <= 2 );
+                            if ( 0 <= qos && qos <= 2 ) {
+                                DevCtxt* dc = load( dutil, xwe );
+                                WITH_MUTEX( &dc->mutex );
+                                if ( dc->mqttQOS != qos ) {
+                                    dc->dirty = XP_TRUE;
+                                    dc->mqttQOS = qos;
+                                    setSaveDCTimerLocked( dutil, xwe, dc );
+                                }
+                                END_WITH_MUTEX();
+                            }
+                        }
                     }
                 }
                 break;
@@ -787,8 +857,8 @@ dvc_onWebSendResult( XW_DUtilCtxt* dutil, XWEnv xwe, XP_U32 resultKey,
 static void
 freeWSState( XW_DUtilCtxt* dutil, DevCtxt* dc )
 {
-    WITH_MUTEX( &dc->webSendMutex );
-    dll_removeAll( &dc->webSendData->links, delWSDatum, dutil );
+    WITH_MUTEX( &dc->webSend.mutex );
+    dll_removeAll( &dc->webSend.data->links, delWSDatum, dutil );
     END_WITH_MUTEX();
 }
 
@@ -1179,11 +1249,12 @@ dvc_init( XW_DUtilCtxt* dutil, XWEnv xwe )
     XP_ASSERT( 0 == dutil->magic );
 
     XP_ASSERT( !dutil->devCtxt );
-    DevCtxt* dc = dutil->devCtxt = XP_CALLOC( dutil->mpool, sizeof(*dc) );
-    dc->webSendData = NULL;
-    dc->mWebSendKey = 0;
+    DevCtxt* dc = dutil->devCtxt = load( dutil, xwe );
+    dc->webSend.data = NULL;
+    dc->webSend.key = 0;
 
-    MUTEX_INIT( &dc->webSendMutex, XP_FALSE );
+    MUTEX_INIT( &dc->mutex, XP_FALSE );
+    MUTEX_INIT( &dc->webSend.mutex, XP_FALSE );
     MUTEX_INIT( &dc->ackTimer.mutex, XP_FALSE );
 
     loadPhoniesData( dutil, xwe, dc );
@@ -1200,8 +1271,9 @@ dvc_cleanup( XW_DUtilCtxt* dutil, XWEnv xwe )
     DevCtxt* dc = freePhonyState( dutil, xwe );
     freeWSState( dutil, dc );
 
-    MUTEX_DESTROY( &dc->webSendMutex );
+    MUTEX_DESTROY( &dc->webSend.mutex );
     MUTEX_DESTROY( &dc->ackTimer.mutex );
+    MUTEX_DESTROY( &dc->mutex );
 
     XP_FREEP( dutil->mpool, &dc );
 }

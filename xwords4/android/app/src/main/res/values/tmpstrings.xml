@@ -50,4 +50,6 @@
   <string name="gamel_menu_logstore_prune">Prune stored logs</string>
   <string name="expl_log_prune_hours">Keep this many hours of logs</string>
 
+  <string name="qos_prefs_default_expl">Use what MQTT broker recommends</string>
+
 </resources>

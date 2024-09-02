@@ -114,11 +114,12 @@ class XwJNI private constructor() {
     // jni (javac -h and kotlin files are beyond me still) so I'm putting back
     // the nullable fields and an empty constructor. PENDING()...
     class TopicsAndPackets(val topics: Array<String>?,
-                           val packets: Array<ByteArray>?)
+                           val packets: Array<ByteArray>?,
+                           val qos: Int)
     {
-        constructor(topic: String, packet: ByteArray):
-            this(arrayOf(topic), arrayOf(packet))
-        constructor(): this(null, null) // PENDING Remove me later
+        constructor(topic: String, packet: ByteArray, qos: Int):
+            this(arrayOf(topic), arrayOf(packet), qos)
+        constructor(): this(null, null, 0) // PENDING Remove me later
 
         fun iterator(): Iterator<Pair<String, ByteArray>>
         {
@@ -128,6 +129,8 @@ class XwJNI private constructor() {
             }
             return lst.iterator()
         }
+
+        fun qosInt(): Int { return this.qos }
 
         override fun hashCode(): Int {
             val topCode = topics.contentDeepHashCode()
@@ -324,8 +327,8 @@ class XwJNI private constructor() {
             dvc_resetMQTTDevID(jNI.m_ptrGlobals)
         }
 
-        fun dvc_getMQTTSubTopics(): Array<String> {
-            return dvc_getMQTTSubTopics(jNI.m_ptrGlobals)
+        fun dvc_getMQTTSubTopics(qosout: IntArray): Array<String> {
+            return dvc_getMQTTSubTopics(jNI.m_ptrGlobals, qosout)
         }
 
         fun dvc_makeMQTTNukeInvite(nli: NetLaunchInfo): TopicsAndPackets {
@@ -1033,7 +1036,9 @@ class XwJNI private constructor() {
 		@JvmStatic
         private external fun dvc_resetMQTTDevID(jniState: Long)
 		@JvmStatic
-        private external fun dvc_getMQTTSubTopics(jniState: Long): Array<String>
+        private external fun dvc_getMQTTSubTopics(
+            jniState: Long, qosout: IntArray)
+            : Array<String>
 		@JvmStatic
         private external fun dvc_makeMQTTNukeInvite(
             jniState: Long,
@@ -1169,5 +1174,9 @@ class XwJNI private constructor() {
         // This always returns true on release builds now.
 		@JvmStatic
         private external fun haveEnv(jniState: Long): Boolean
+
+        fun dvc_getQOS(): Int { return dvc_getQOS(jNI.m_ptrGlobals) }
+		@JvmStatic
+        private external fun dvc_getQOS(jniState: Long): Int
     }
 }

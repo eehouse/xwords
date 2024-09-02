@@ -703,7 +703,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dvc_1resetMQTTDevID
 
 JNIEXPORT jobjectArray JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_dvc_1getMQTTSubTopics
-( JNIEnv* env, jclass C, jlong jniGlobalPtr )
+( JNIEnv* env, jclass C, jlong jniGlobalPtr, jintArray jQOSOut )
 {
     jobjectArray result;
     DVC_HEADER(jniGlobalPtr);
@@ -712,12 +712,15 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dvc_1getMQTTSubTopics
     XP_UCHAR storage[256];
     XP_UCHAR* topics[4];
     XP_U16 nTopics = VSIZE(topics);
+    XP_U8 qos;
     dvc_getMQTTSubTopics( globalState->dutil, env,
                           storage, VSIZE(storage),
-                          &nTopics, topics );
+                          &nTopics, topics, &qos );
 
     result = makeStringArray( env, nTopics, (const XP_UCHAR* const*)topics );
+
     XP_ASSERT( !!result );
+    setIntInArray( env, jQOSOut, 0, qos );
 
     DVC_HEADER_END();
     return result;
@@ -1267,6 +1270,17 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dvc_1onTimerFired
     DVC_HEADER(jniGlobalPtr);
     dvc_onTimerFired( globalState->dutil, env, jkey );
     DVC_HEADER_END();
+}
+
+JNIEXPORT jint JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_dvc_1getQOS
+( JNIEnv* env, jclass C, jlong jniGlobalPtr )
+{
+    jint result;
+    DVC_HEADER(jniGlobalPtr);
+    result = dvc_getQOS( globalState->dutil, env );
+    DVC_HEADER_END();
+    return result;
 }
 
 /* Dictionary methods: don't use gamePtr */

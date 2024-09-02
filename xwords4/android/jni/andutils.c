@@ -868,7 +868,7 @@ deleteLocalRefs( JNIEnv* env, ... )
 /* Passed to device methods related to MQTT messages */
 void
 msgAndTopicProc( void* closure, const XP_UCHAR* topic,
-                 const XP_U8* msgBuf, XP_U16 msgLen )
+                 const XP_U8* msgBuf, XP_U16 msgLen, XP_U8 qos )
 {
     MTPData* mtp = (MTPData*)closure;
     JNIEnv* env = mtp->env;
@@ -889,6 +889,9 @@ msgAndTopicProc( void* closure, const XP_UCHAR* topic,
 
             ++mtp->count;
             XP_LOGFFV( "mtp->count now: %d", mtp->count );
+
+            XP_ASSERT( mtp->qos == 0 || mtp->qos == qos );
+            mtp->qos = qos;
         }
     }
 }
@@ -899,6 +902,8 @@ wrapResults( MTPData* mtp )
     JNIEnv* env = mtp->env;
     jobject result =
         makeObjectEmptyConstr( env, PKG_PATH("jni/XwJNI$TopicsAndPackets"));
+
+    setInt( env, result, "qos", mtp->qos );
 
     jobjectArray jTopics = makeStringArray( env, mtp->count, mtp->topics );
     setObjectField( env, result, "topics", "[Ljava/lang/String;", jTopics );

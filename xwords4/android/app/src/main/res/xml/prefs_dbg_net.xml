@@ -17,12 +17,12 @@
         android:defaultValue="1883"
         android:numeric="decimal"
         />
-    <org.eehouse.android.xw4.XWListPreference
+    <org.eehouse.android.xw4.QOSListPreference
         android:key="@string/key_mqtt_qos"
         android:title="@string/mqtt_qos"
-        android:entries="@array/mqtt_qos_values"
-        android:entryValues="@array/mqtt_qos_values"
-        android:defaultValue="2"
+        android:entries="@array/empty_list"
+        android:entryValues="@array/empty_list"
+        android:defaultValue="@string/qos_prefs_default_expl"
         />
     <org.eehouse.android.xw4.XWEditTextPreference
         android:key="@string/key_mqtt_url_path"

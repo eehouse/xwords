@@ -132,11 +132,12 @@ typedef struct _MTPData {
     jbyteArray jPackets[N_DATA_PACKETS];
     XP_UCHAR storage[N_DATA_PACKETS*128];
     int offset;
+    XP_U8 qos;
 } MTPData;
 #undef N_DATA_PACKETS
 
 void msgAndTopicProc( void* closure, const XP_UCHAR* topic,
-                      const XP_U8* msgBuf, XP_U16 msgLen );
+                      const XP_U8* msgBuf, XP_U16 msgLen, XP_U8 qos );
 jobject wrapResults( MTPData* mtp );
 
 void raw_log( const char* func, const char* fmt, ... );

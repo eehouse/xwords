@@ -2435,7 +2435,8 @@ initParams( LaunchParams* params )
 
     // linux_util_vt_init( MPPARM(params->mpool) params->util );
 
-    params->dutil = linux_dutils_init( MPPARM(params->mpool) params->vtMgr, params );
+    params->dutil = linux_dutils_init( MPPARM(params->mpool) params->vtMgr,
+                                       params );
 }
 
 static void
@@ -3389,8 +3390,6 @@ main( int argc, char** argv )
             exit( 0 );
         }
 #endif
-
-
 
         srandom( seed );	/* init linux random number generator */
         XP_LOGFF( "seeded srandom with %d", seed );

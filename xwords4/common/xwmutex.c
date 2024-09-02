@@ -55,7 +55,7 @@ checkListProcLocked( const DLHead* elem, void* closure )
 {
     CheckListData* cld = (CheckListData*)closure;
     CheckThreadData* ctd = (CheckThreadData*)elem;
-    if( cld->currentTime > ctd->expiryTime ) {
+    if ( cld->currentTime > ctd->expiryTime ) {
         XP_LOGFF( "FAIL: %s() on line %d in %s unable to lock mutex",
                   ctd->caller, ctd->lineNo, ctd->file );
         XP_ASSERT(0);

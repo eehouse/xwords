@@ -235,6 +235,18 @@ object MQTTUtils {
             sWrapper[0] = null
         }
     }
+
+    private fun chooseQOS(context: Context, qosInt: Int): MqttQos
+    {
+        val asStr = XWPrefs.getPrefsString(context, R.string.key_mqtt_qos)
+        val qos = try {
+            MqttQos.valueOf(asStr)
+        } catch (ex: Exception) {
+            MqttQos.entries[qosInt]
+        }
+        Log.d(TAG, "chooseQOS($qosInt) => $qos")
+        return qos
+    }
     
     private class Conn(val mContext: Context): MqttClientConnectedListener,
                                                MqttClientDisconnectedListener,
@@ -366,8 +378,9 @@ object MQTTUtils {
                 .putAnd("id", id)
                 .toString()
 
+            val qos = chooseQOS(mContext, XwJNI.dvc_getQOS())
             val tap = TopicsAndPackets("xw4/ping/" + mDevID,
-                                       packet.toByteArray())
+                                       packet.toByteArray(), qos.ordinal)
             add(SendTask(tap))
         }
 
@@ -452,9 +465,9 @@ object MQTTUtils {
 
         private inner class SubscribeAllTask(): Task() {
             override fun run() {
-                val tmp = XWPrefs.getPrefsInt(mContext, R.string.key_mqtt_qos, 2)
-                val qos = MqttQos.entries[tmp]
-                val topics = XwJNI.dvc_getMQTTSubTopics() + arrayOf(PONG_PREFIX + mDevID)
+                val qosArray = intArrayOf(0)
+                val topics = XwJNI.dvc_getMQTTSubTopics(qosArray) + arrayOf(PONG_PREFIX + mDevID)
+                val qos = chooseQOS(mContext, qosArray[0])
                 topics.map{ add(SubscribeTask(it, qos)) }
             }
         }
@@ -477,12 +490,13 @@ object MQTTUtils {
         private inner class SendTask(val tap: TopicsAndPackets): Task()
         {
             override fun run() {
+                val qos = chooseQOS(mContext, tap.qosInt())
                 for (pr in tap.iterator()) {
                     mClient.toAsync()
                         .publishWith()
                         .topic(pr.first)
                         .payload(pr.second)
-                        .qos(MqttQos.AT_LEAST_ONCE)
+                        .qos(qos)
                         .retain(true)
                         .send()
                         .whenComplete { mqtt3Publish, throwable ->
