@@ -25,6 +25,7 @@ import androidx.preference.ListPreference
 import com.hivemq.client.mqtt.datatypes.MqttQos
 
 import org.eehouse.android.xw4.loc.LocUtils
+import org.eehouse.android.xw4.jni.XwJNI
 
 class QOSListPreference(private val mContext: Context,
                         attrs: AttributeSet?) :
@@ -50,7 +51,10 @@ class QOSListPreference(private val mContext: Context,
     {
         if ( null == mEntries ) {
             val enums = MqttQos.entries.map{it.toString()}.toMutableList()
-            enums.add(LocUtils.getString(mContext, R.string.qos_prefs_default_expl))
+            val curQos = MqttQos.entries[XwJNI.dvc_getQOS()]
+            val str = LocUtils
+                .getString(mContext, R.string.qos_prefs_default_expl_fmt, curQos)
+            enums.add(str)
             mEntries = enums.toTypedArray()
         }
         return mEntries!!

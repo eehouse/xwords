@@ -244,7 +244,7 @@ object MQTTUtils {
         } catch (ex: Exception) {
             MqttQos.entries[qosInt]
         }
-        Log.d(TAG, "chooseQOS($qosInt) => $qos")
+        // Log.d(TAG, "chooseQOS($qosInt) => $qos")
         return qos
     }
     
