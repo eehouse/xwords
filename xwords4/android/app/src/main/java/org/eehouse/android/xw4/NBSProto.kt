@@ -203,6 +203,7 @@ object NBSProto {
                     // set by smsproto_prepOutbound(). Otherwise sleep until
                     // there's something in the queue.
                     val waitSecs = (if (mWaitSecs[0] <= 0) 10 * 60 else mWaitSecs[0]).toLong()
+                    // returns head of queue, or null if timed out
                     val elem = sQueue.poll(waitSecs, TimeUnit.SECONDS)
                     if (!process(elem)) {
                         break
@@ -288,13 +289,14 @@ object NBSProto {
         }
 
         private fun process(qelm: QueueElem?): Boolean {
-            val handled = if (null == qelm) {
-                processRetry()
-            } else if (qelm is SendElem) {
-                processSend(qelm)
-            } else {
-                processReceive(qelm as ReceiveElem)
-            }
+            val handled =
+                if (null == qelm) {
+                    processRetry()
+                } else if (qelm is SendElem) {
+                    processSend(qelm)
+                } else {
+                    processReceive(qelm as ReceiveElem)
+                }
             Log.d(TAG, "%s.process($qelm) => $handled", this)
             return handled
         }
@@ -451,7 +453,7 @@ object NBSProto {
         override fun toString(): String {
             return String.format(
                 "SendElem: {cmd: %s, dataLen: %d}", cmd,
-                if (data == null) 0 else data!!.size
+                data?.let{it.size} ?: 0
             )
         }
     }

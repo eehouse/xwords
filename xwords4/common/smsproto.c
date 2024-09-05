@@ -113,6 +113,7 @@ static void freeRec( SMSProto* state, ToPhoneRec* rec );
 #if defined DEBUG
 static void logResult( const SMSProto* state, XWEnv xwe,
                        const SMSMsgArray* result, const char* caller );
+static const XP_UCHAR* cmd2Str( SMS_CMD cmd );
 #else
 # define logResult( state, xwe, result, caller )
 #endif
@@ -166,7 +167,7 @@ smsproto_free( SMSProto* state )
 static void
 headerToStream( XWStreamCtxt* stream, SMS_CMD cmd, XP_U16 port, XP_U32 gameID )
 {
-    // XP_LOGF( "%s(cmd: %d; gameID: %d)", __func__, cmd, gameID );
+    // XP_LOGFF( "(cmd: %s; gameID: %X)", cmd2Str(cmd), gameID );
     stream_putU8( stream, SMS_PROTO_VERSION_JAVA );
     stream_putU16( stream, port );
     stream_putU8( stream, cmd );
@@ -201,7 +202,7 @@ headerFromStream( XWStreamCtxt* stream, SMS_CMD* cmd, XP_U16* port, XP_U32* game
             break;
         }
     }
-    // XP_LOGF( "%s() => cmd: %d; gameID: %d", __func__, *cmd, *gameID );
+    // XP_LOGFF( "=> cmd: %s; gameID: %d", cmd2Str(*cmd), *gameID );
     return success;
 }
 
@@ -226,7 +227,7 @@ smsproto_prepOutbound( SMSProto* state, XWEnv xwe, SMS_CMD cmd, XP_U32 gameID,
 #if defined DEBUG
     Md5SumBuf sb;
     dutil_md5sum( state->dutil, xwe, buf, buflen, &sb );
-    XP_LOGFF( "(cmd=%d, gameID=%d): len=%d, sum=%s, toPhone=%s", cmd,
+    XP_LOGFF( "(cmd=%s, gameID=%X): len=%d, sum=%s, toPhone=%s", cmd2Str(cmd),
               gameID, buflen, sb.buf, toPhone );
 #endif
 
@@ -905,6 +906,22 @@ destroyStream( XWStreamCtxt* stream )
 }
 
 #ifdef DEBUG
+static const XP_UCHAR*
+cmd2Str( SMS_CMD cmd )
+{
+    const char* str;
+# define CASE_STR(c)  case c: str = #c; break
+    switch( cmd ) {
+        CASE_STR(NONE);
+        CASE_STR(INVITE);
+        CASE_STR(DATA);
+        CASE_STR(DEATH);
+        CASE_STR(ACK_INVITE);
+    }
+#undef CASE_STR
+    return str;
+}
+
 void
 smsproto_runTests( MPFORMAL XWEnv xwe, XW_DUtilCtxt* dutil )
 {

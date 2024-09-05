@@ -414,18 +414,20 @@ object MQTTUtils {
                                              success)
 
         override fun accept(pub: Mqtt3Publish) {
-            Log.d(TAG, "accept($pub)")
             val payload = pub.payload
             val topic = pub.topic
 
             if (pub.payload.isPresent()) {
+                Log.d(TAG, "accept($pub)")
                 val byteBuf = pub.payload.get()
                 val packet = ByteArray(byteBuf.capacity())
                 byteBuf.get(packet)
                 add(IncomingTask(topic.toString(), packet))
                 XwJNI.sts_increment(STAT.STAT_MQTT_RCVD)
             } else {
-                Log.d( TAG, "no message found!!")
+                // Unretain message posted by server; no need to log!! In fact
+                // it'd be nice if it weren't transmitted at all
+                // Log.d( TAG, "no message found!!")
             }
 
             TimerReceiver.setBackoff(mContext, sTimerCallbacks, MIN_BACKOFF)
