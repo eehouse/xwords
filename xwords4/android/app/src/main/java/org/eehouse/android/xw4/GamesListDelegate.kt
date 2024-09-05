@@ -1639,6 +1639,20 @@ class GamesListDelegate(delegator: Delegator) :
         return m_menuPrepared
     } // onPrepareOptionsMenu
 
+    private fun formatStats(): String {
+        val obj = XwJNI.sts_export()
+        val stats = obj.getJSONObject("stats")
+        val startTime = Date(obj.getLong("since")*1000)
+        val pairs = ArrayList<String>()
+        stats.keys().forEach { key ->
+            val value = stats.getLong(key)
+            pairs.add("$key: $value")
+        }
+        val txt = "Since: $startTime\n" +
+            TextUtils.join("\n", pairs)
+        return txt
+    }
+
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         Assert.assertTrue(m_menuPrepared)
 
@@ -1755,17 +1769,11 @@ class GamesListDelegate(delegator: Delegator) :
             R.id.games_menu_emailLogs -> Log.dumpStored(this)
 
             R.id.games_menu_statsShow -> {
-                val obj = XwJNI.sts_export()
-                val stats = obj.getJSONObject("stats")
-                val startTime = Date(obj.getLong("since")*1000)
-                val pairs = ArrayList<String>()
-                stats.keys().forEach { key ->
-                    val value = stats.getLong(key)
-                    pairs.add("$key: $value")
-                }
-                val txt = "Since: $startTime\n" +
-                    TextUtils.join("\n", pairs)
-                makeOkOnlyBuilder(txt).show()
+                makeOkOnlyBuilder(formatStats()).show()
+            }
+            R.id.games_menu_statsCopy -> {
+                Utils.stringToClip(mActivity, formatStats())
+                showToast(R.string.statsCopiedToast)
             }
             R.id.games_menu_statsClear ->
                 makeConfirmThenBuilder(DlgDelegate.Action.CLEAR_STATS,

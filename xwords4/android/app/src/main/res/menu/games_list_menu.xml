@@ -165,6 +165,9 @@
         <item android:id="@+id/games_menu_statsShow"
               android:title="@string/gamel_menu_statsShow"
               />
+        <item android:id="@+id/games_menu_statsCopy"
+              android:title="@string/list_item_copy"
+              />
         <item android:id="@+id/games_menu_statsClear"
               android:title="@string/gamel_menu_statsClear"
               />
