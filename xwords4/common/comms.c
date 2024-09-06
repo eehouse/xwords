@@ -303,7 +303,8 @@ static XP_S16 send_via_bt_or_ip( CommsCtxt* comms, XWEnv xwe, BTIPMsgType msgTyp
 #endif
 
 #if defined XWFEATURE_COMMSACK
-static void sendEmptyMsg( CommsCtxt* comms, XWEnv xwe, AddressRecord* rec );
+static void sendEmptyMsg( CommsCtxt* comms, XWEnv xwe, AddressRecord* rec,
+                          const CommsConnType filter );
 #endif
 static inline XP_Bool IS_INVITE(const MsgQueueElem* elem)
 {
@@ -1429,19 +1430,6 @@ formatMsgNo( const CommsCtxt* comms, const MsgQueueElem* elem,
     XP_SNPRINTF( buf, len, "%d:%d", comms->rr.myHostID, elem->msgID );
 }
 
-CommsConnTypes
-comms_getConTypes( const CommsCtxt* comms )
-{
-    CommsConnType typ;
-    if ( !!comms ) {
-        typ = comms->selfAddr._conTypes;
-    } else {
-        typ = COMMS_CONN_NONE;
-        COMMS_LOGFF( "returning COMMS_CONN_NONE for null comms" );
-    }
-    return typ;
-} /* comms_getConTypes */
-
 void
 comms_dropHostAddr( CommsCtxt* comms, CommsConnType typ )
 {
@@ -2205,8 +2193,7 @@ sendMsg( const CommsCtxt* comms, XWEnv xwe, MsgQueueElem* elem,
                 COMMS_LOGFF( "dropping message because %s disabled",
                              ConnType2Str( typ ) );
             } else if ( COMMS_CONN_NONE != filter && filter != typ ) {
-                COMMS_LOGFF( "dropping message because not of type %s",
-                             ConnType2Str( filter ) );
+                /* dropping it. But don't log, as it happens a lot with acks */
             } else {
                 if ( !isInvite && !addr_hasType( &comms->selfAddr, typ ) ) {
                     COMMS_LOGFF( "self addr doesn't have msg type %s", ConnType2Str(typ) );
@@ -2383,7 +2370,8 @@ comms_resendAll( CommsCtxt* comms, XWEnv xwe, CommsConnType filter, XP_Bool forc
 
 #ifdef XWFEATURE_COMMSACK
 static void
-ackAnyImpl( CommsCtxt* comms, XWEnv xwe, XP_Bool force )
+ackAnyImpl( CommsCtxt* comms, XWEnv xwe, XP_Bool force,
+            const CommsConnType filter )
 {
     WITH_MUTEX(&comms->mutex);
     if ( CONN_ID_NONE == comms->connID ) {
@@ -2405,7 +2393,7 @@ ackAnyImpl( CommsCtxt* comms, XWEnv xwe, XP_Bool force )
                              cbuf, rec->lastMsgAckd, rec->lastMsgRcd,
                              boolToStr(force) );
 #endif
-                sendEmptyMsg( comms, xwe, rec );
+                sendEmptyMsg( comms, xwe, rec, filter );
             }
         }
         COMMS_LOGFF( "sent for %d channels (of %d)", nSent, nSeen );
@@ -2416,10 +2404,10 @@ ackAnyImpl( CommsCtxt* comms, XWEnv xwe, XP_Bool force )
 void
 comms_ackAny( CommsCtxt* comms, XWEnv xwe )
 {
-    ackAnyImpl( comms, xwe, XP_FALSE );
+    ackAnyImpl( comms, xwe, XP_FALSE, COMMS_CONN_NONE );
 }
 #else
-# define ackAnyImpl( comms, xwe, force )
+# define ackAnyImpl( comms, xwe, force, filter )
 #endif
 
 # define CASESTR(s) case s: return #s
@@ -2975,7 +2963,8 @@ makeFlags( const CommsCtxt* comms, XP_U16 headerLen, MsgID msgID )
  * with a forged message, but this isn't internet banking.
  */
 static AddressRecord* 
-validateChannelMessage( CommsCtxt* comms, XWEnv xwe, const CommsAddrRec* addr,
+validateChannelMessage( CommsCtxt* comms, XWEnv xwe,
+                        const CommsAddrRec* retAddr,
                         XP_PlayerAddr channelNo, XWHostID senderID,
                         MsgID msgID, MsgID lastMsgRcd )
 
@@ -2988,7 +2977,7 @@ validateChannelMessage( CommsCtxt* comms, XWEnv xwe, const CommsAddrRec* addr,
     if ( !!rec ) {
         removeFromQueue( comms, xwe, channelNo, lastMsgRcd );
 
-        augmentChannelAddr( comms, rec, addr, senderID );
+        augmentChannelAddr( comms, rec, retAddr, senderID );
 
         if ( msgID == 0 ) {
             /* an ACK; do nothing */
@@ -2999,7 +2988,7 @@ validateChannelMessage( CommsCtxt* comms, XWEnv xwe, const CommsAddrRec* addr,
         } else {
             COMMS_LOGFF( TAGFMT() "expected %d, got %d", TAGPRMS,
                          rec->lastMsgRcd + 1, msgID );
-            ackAnyImpl( comms, xwe, XP_TRUE );
+            ackAnyImpl( comms, xwe, XP_TRUE, addr_getType( retAddr ) );
             rec = NULL;
         }
     } else {
@@ -3353,7 +3342,8 @@ comms_gameJoined( CommsCtxt* comms, XWEnv xwe, const XP_UCHAR* connname, XWHostI
 
 #ifdef XWFEATURE_COMMSACK
 static void
-sendEmptyMsg( CommsCtxt* comms, XWEnv xwe, AddressRecord* rec )
+sendEmptyMsg( CommsCtxt* comms, XWEnv xwe, AddressRecord* rec,
+              const CommsConnType filter )
 {
     WITH_MUTEX(&comms->mutex);
     MsgQueueElem* elem = makeElemWithID( comms, xwe, 0 /* msgID */, 
@@ -3361,7 +3351,7 @@ sendEmptyMsg( CommsCtxt* comms, XWEnv xwe, AddressRecord* rec )
     XP_ASSERT( !!elem );
     elem = addToQueue( comms, xwe, elem, XP_FALSE );
     if ( !!elem ) {
-        sendMsg( comms, xwe, elem, COMMS_CONN_NONE );
+        sendMsg( comms, xwe, elem, filter );
     }
     END_WITH_MUTEX();
 } /* sendEmptyMsg */

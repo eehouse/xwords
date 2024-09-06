@@ -49,8 +49,6 @@ typedef enum {
     ,COMMS_CONN_NTYPES
 } CommsConnType;
 
-typedef XP_U8 CommsConnTypes;
-
 typedef enum {
     COMMS_RELAYSTATE_UNCONNECTED
     , COMMS_RELAYSTATE_DENIED   /* terminal; new game or reset required to
@@ -180,7 +178,6 @@ XP_U16 comms_countPendingPackets( RELCONST CommsCtxt* comms, XP_Bool* quashed );
 XP_Bool comms_getRelayID( const CommsCtxt* comms, XP_UCHAR* buf, XP_U16* len );
 #endif
 
-CommsConnTypes comms_getConTypes( const CommsCtxt* comms );
 void comms_dropHostAddr( CommsCtxt* comms, CommsConnType typ );
 XP_Bool comms_getIsHost( const CommsCtxt* comms );
 
