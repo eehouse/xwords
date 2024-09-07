@@ -49,12 +49,14 @@ def chooseNames(nPlayers):
     return result
 
 class GameInfo():
-    def __init__(self, device, gid, rematchLevel):
+    def __init__(self, device, gid, rematchLevel, parent, rematchOrder):
         self.device = device
         self.gid = gid
         self.state = {}
         assert isinstance(rematchLevel, int)
         self.rematchLevel = rematchLevel
+        self.parent = parent
+        self.rematchOrder = rematchOrder
 
     def setGid(self, gid):
         # set only once!
@@ -66,20 +68,27 @@ class GameInfo():
 
     def getDevice(self): return self.device
 
+    def __str__(self):
+        return 'gid: {}, parent: {}, ro: {}' \
+            .format(self.gid, self.parent, self.rematchOrder)
+
+
 class GuestGameInfo(GameInfo):
-    def __init__(self, device, gid, rematchLevel):
-        super().__init__(device, gid, rematchLevel)
+    def __init__(self, device, gid, rematchLevel, parent, rematchOrder):
+        super().__init__(device, gid, rematchLevel, parent, rematchOrder)
 
 class SoloGameInfo(GameInfo):
     def __init__(self, device, nRobots=0, **kwargs):
-        super().__init__(device, kwargs.get('gid'), kwargs.get('rematchLevel'))
+        super().__init__(device, kwargs.get('gid'), kwargs.get('rematchLevel'),
+                         kwargs.get('parent'), kwargs.get('rematchOrder'))
         self.nRobots = nRobots  # only matters for creating games, not rematching
         global gGamesMade
         gGamesMade += 1
 
 class HostGameInfo(GameInfo):
     def __init__(self, device, guestNames, **kwargs):
-        super().__init__(device, kwargs.get('gid'), kwargs.get('rematchLevel'))
+        super().__init__(device, kwargs.get('gid'), kwargs.get('rematchLevel'),
+                         kwargs.get('parent'), kwargs.get('rematchOrder'))
         self.guestNames = guestNames
         self.needsInvite = kwargs.get('needsInvite', True)
         self.orderedPlayers = None
@@ -91,7 +100,8 @@ class HostGameInfo(GameInfo):
     def setOrder(self, orderedPlayers): self.orderedPlayers = orderedPlayers
 
     def __str__(self):
-        return 'gid: {}, guests: {}'.format(self.gid, self.guestNames)
+        return 'gid: {}, parent: {}, ro: {}, guests: {}' \
+            .format(self.gid, self.parent, self.rematchOrder, self.guestNames)
 
 class GameStatus():
     _statuses = None
@@ -437,14 +447,17 @@ class Device():
             assert rematchLevel >= 0 # fired
 
             if isinstance(game, SoloGameInfo):
-                newGame = SoloGameInfo(self, rematchLevel=rematchLevel, gid=newGid)
+                newGame = SoloGameInfo(self, rematchLevel=rematchLevel, gid=newGid,
+                                       parent=gid, rematchOrder=rematchOrder)
             else:
                 newGame = HostGameInfo(self, guests, needsInvite=False, gid=newGid,
-                                       rematchLevel=rematchLevel)
+                                       rematchLevel=rematchLevel, parent=gid,
+                                       rematchOrder = rematchOrder)
 
             self.hostedGames.append(newGame)
             for guest in guests:
-                Device.getForPlayer(guest).expectInvite(newGid, rematchLevel)
+                Device.getForPlayer(guest) \
+                      .expectInvite(newGid, rematchLevel, gid, rematchOrder)
 
     # inviting means either causing host to send an in-game invitation
     # (the way rematch works) or causing guest to register (as happens
@@ -503,8 +516,8 @@ class Device():
         if self.args.WITH_SMS: addr['sms'] = dev.smsNumber
         return addr
 
-    def expectInvite(self, gid, rematchLevel):
-        self.guestGames.append(GuestGameInfo(self, gid, rematchLevel))
+    def expectInvite(self, gid, rematchLevel, parent=None, rematchOrder = None):
+        self.guestGames.append(GuestGameInfo(self, gid, rematchLevel, parent, rematchOrder))
         self.launchIfNot()
 
     def figureRematchOrder(self):
@@ -683,6 +696,13 @@ class Device():
         return [dev.hostName for dev in Device.devsWith(gid)]
 
     @staticmethod
+    def printLiveGames():
+        for dev in Device.getAll():
+            for game in dev._allGames():
+                if not game.gameOver() and not isinstance(game, GuestGameInfo):
+                    print('game: {}'.format(game))
+
+    @staticmethod
     # return all devices (up to 4 of them) that are host or guest in a
     # game with <gid>"""
     def devsWith(gid):
@@ -811,6 +831,10 @@ def mainLoop(args, devs):
                 .format(args.NO_CHANGE_SECS))
             break
 
+    # list info about any remaining games
+    print('games left: ...')
+    Device.printLiveGames()
+
     # kill anybody left alive
     for dev in devs:
         print('killing {}'.format(dev.hostName))
@@ -864,7 +888,7 @@ def mkParser():
     parser.add_argument('--num-devs', dest = 'NDEVS', type = int, default = len(g_ROOT_NAMES), help = 'number of devices')
     parser.add_argument('--timeout-mins', dest = 'TIMEOUT_MINS', default = 10000, type = int,
                         help = 'minutes after which to timeout')
-    parser.add_argument('--nochange-secs', dest = 'NO_CHANGE_SECS', default = 60, type = int,
+    parser.add_argument('--nochange-secs', dest = 'NO_CHANGE_SECS', default = 45, type = int,
                         help = 'seconds without change after which to timeout')
     # parser.add_argument('--log-root', dest='LOGROOT', default = '.', help = 'where logfiles go')
     # parser.add_argument('--dup-packets', dest = 'DUP_PACKETS', default = False, action = 'store_true',
