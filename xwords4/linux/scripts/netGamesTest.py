@@ -651,9 +651,9 @@ class Device():
             os.chmod(self.script, 0o755)
 
     @staticmethod
-    def printStatus(statusSteps):
+    def printStatus(statusSteps, noPrint):
         Device._nSteps += 1
-        print('.', end='', flush=True)
+        noPrint or print('.', end='', flush=True)
         if 0 == Device._nSteps % statusSteps:
             GameStatus.makeAll()
 
@@ -661,12 +661,14 @@ class Device():
             now = datetime.datetime.now()
             if lines == GameStatus._prevLines:
                 since = str(now - GameStatus._lastChange).split('.')[0]
-                print(' no change in {}'.format(since))
+                noPrint or print(' no change in {}'.format(since))
             else:
-                print(' ' + GameStatus.summary())
-                for line in lines: print(line)
+                if not noPrint:
+                    print(' ' + GameStatus.summary())
+                    for line in lines: print(line)
                 GameStatus._prevLines = lines
                 GameStatus._lastChange = now
+        return GameStatus._lastChange
 
     @staticmethod
     def deviceFor(args, hostName):
@@ -803,13 +805,11 @@ def mainLoop(args, devs):
                     .format(len(devs), startCount))
                 break
 
-        if False and endTime < datetime.datetime.now():
-            log(args, 'exiting mainLoop with {} left (of {}) because out of time' \
-                .format(len(devs), startCount))
+        lastChange = Device.printStatus(args.STATUS_STEPS, args.VERBOSE)
+        if now - lastChange > datetime.timedelta(seconds=args.NO_CHANGE_SECS):
+            print('exiting mainLoop because no change in {} seconds' \
+                .format(args.NO_CHANGE_SECS))
             break
-
-        if not args.VERBOSE:
-            Device.printStatus(args.STATUS_STEPS)
 
     # kill anybody left alive
     for dev in devs:
@@ -864,8 +864,8 @@ def mkParser():
     parser.add_argument('--num-devs', dest = 'NDEVS', type = int, default = len(g_ROOT_NAMES), help = 'number of devices')
     parser.add_argument('--timeout-mins', dest = 'TIMEOUT_MINS', default = 10000, type = int,
                         help = 'minutes after which to timeout')
-    # parser.add_argument('--nochange-secs', dest = 'NO_CHANGE_SECS', default = 30, type = int,
-    #                     help = 'seconds without change after which to timeout')
+    parser.add_argument('--nochange-secs', dest = 'NO_CHANGE_SECS', default = 60, type = int,
+                        help = 'seconds without change after which to timeout')
     # parser.add_argument('--log-root', dest='LOGROOT', default = '.', help = 'where logfiles go')
     # parser.add_argument('--dup-packets', dest = 'DUP_PACKETS', default = False, action = 'store_true',
     #                     help = 'send all packet twice')
