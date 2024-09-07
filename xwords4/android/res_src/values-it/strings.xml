@@ -113,7 +113,7 @@
 \n
 \nPuoi riaprire per ricevere una richiesta di attivazione permessi o puoi rimuovere le impostazioni per la connessione SMS dati.</string>
     <string name="after_restart">Questa modifica sarà effettiva dopo il riavvio di CrossWords.</string>
-    <string name="no_invites">Questa partita non ha inviti</string>
+    <string name="no_invites">Questa partita non ha inviti in sospeso.</string>
     <string name="list_item_select">Seleziona</string>
     <string name="not_again_dfltname_fmt">Stai usando il nome di base \"%1$s\". Vorresti personalizzarlo prima di creare questa partita\?</string>
     <string name="list_item_markbad">Segna come corrotto</string>
