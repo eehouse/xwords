@@ -463,7 +463,8 @@ class Device():
     # (the way rematch works) or causing guest to register (as happens
     # when email or SMS is used for invitations.)
     def invite(self, game):
-        if bool(random.randint(0,1)): self.inviteOutOfBand(game)
+        doOOB = random.randint(0, 99) < self.args.OOB_PCT
+        if doOOB: self.inviteOutOfBand(game)
         else: self.inviteInBand(game)
 
     def inviteOutOfBand(self, game):
@@ -940,6 +941,8 @@ def mkParser():
 
     parser.add_argument('--bad-invite-pct', dest = 'BAD_INVITE_PCT', default = 0, type=int,
                         help='What pct (0..99) of MQTT invitations will be to non-existant devices')
+    parser.add_argument('--oob-invite-pct', dest = 'OOB_PCT', default = 50, type=int,
+                        help='What pct (0..99) of guests will "emailed" rather than comms-invited')
 
     parser.add_argument('--timer-seconds', dest='TIMER_SECS', default=10, type=int,
                         help='Enable game timer with game this many seconds long')
