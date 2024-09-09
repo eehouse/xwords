@@ -1691,7 +1691,7 @@
 \n
 \nPode reabri-lo para pedir permissão de novo. Ou pode remover a configuração de comunicação por dados SMS.</string>
     <string name="after_restart">Esta mudança terá efeito depois de reiniciar CrossWords.</string>
-    <string name="no_invites">Este jogo não enviou nenhum convite</string>
+    <string name="no_invites">Este jogo não tem convites pendentes.</string>
     <string name="not_again_dfltname_fmt">Está a usar o nome de jogador padrão “%1$s”. Gostaria de personalizá-lo com o seu próprio nome antes de começar este jogo\?</string>
     <string name="list_item_markbad">Marcar corrompido</string>
     <string name="list_item_deselect">Des-selecionar</string>
