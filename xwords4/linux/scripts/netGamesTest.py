@@ -69,9 +69,10 @@ class GameInfo():
     def getDevice(self): return self.device
 
     def __str__(self):
-        return 'gid: {}, parent: {}, ro: {}' \
-            .format(self.gid, self.parent, self.rematchOrder)
-
+        result = 'gid: {}'.format(self.gid)
+        if self.parent: result += ', {{{}}}'.format(self.parent)
+        if self.rematchOrder: result += ', ro: {}'.format(self.rematchOrder)
+        return result
 
 class GuestGameInfo(GameInfo):
     def __init__(self, device, gid, rematchLevel, parent, rematchOrder):
@@ -100,8 +101,11 @@ class HostGameInfo(GameInfo):
     def setOrder(self, orderedPlayers): self.orderedPlayers = orderedPlayers
 
     def __str__(self):
-        return 'gid: {}, parent: {}, ro: {}, guests: {}' \
-            .format(self.gid, self.parent, self.rematchOrder, self.guestNames)
+        result = 'gid: {}'.format(self.gid)
+        if self.parent: result += ', {{{}}}'.format(self.parent)
+        if self.rematchOrder: result += ', ro: {}'.format(self.rematchOrder)
+        result += ', guests: {}'.format(self.guestNames)
+        return result
 
 class GameStatus():
     _statuses = None
@@ -455,10 +459,10 @@ class Device():
 
             if isinstance(game, SoloGameInfo):
                 newGame = SoloGameInfo(self, rematchLevel=rematchLevel, gid=newGid,
-                                       parent=gid, rematchOrder=rematchOrder)
+                                       parent=game, rematchOrder=rematchOrder)
             else:
                 newGame = HostGameInfo(self, guests, needsInvite=False, gid=newGid,
-                                       rematchLevel=rematchLevel, parent=gid,
+                                       rematchLevel=rematchLevel, parent=game,
                                        rematchOrder = rematchOrder)
 
             self.hostedGames.append(newGame)
@@ -709,7 +713,7 @@ class Device():
         for dev in Device.getAll():
             for game in dev._allGames():
                 if not game.gameOver() and not isinstance(game, GuestGameInfo):
-                    left.append('game: {}'.format(game))
+                    left.append('game: {{{}}}'.format(game))
         print('{} games left: ...'.format(len(left)))
         print('\n'.join(left))
 
