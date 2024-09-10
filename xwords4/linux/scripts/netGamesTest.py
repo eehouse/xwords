@@ -357,7 +357,14 @@ class Device():
 
         # # Receive a response from the server
         # self._log('_sendWaitReply({}): calling recv()'.format(cmd))
-        response = client.recv(8*1024).decode()
+        buf = bytes()
+        bufLen = 4 * 1024
+        while True:
+            cur = client.recv(bufLen)
+            if not cur: break
+            buf += cur
+            if len(cur) < bufLen: break
+        response = buf.decode()
         # self._log('_sendWaitReply({}): recv => str: {}'.format(cmd, response))
         response = json.loads(response)
         self._log('_sendWaitReply({}, {}): recv => {}'.format(cmd, kwargs, response))
@@ -698,10 +705,13 @@ class Device():
 
     @staticmethod
     def printLiveGames():
+        left = []
         for dev in Device.getAll():
             for game in dev._allGames():
                 if not game.gameOver() and not isinstance(game, GuestGameInfo):
-                    print('game: {}'.format(game))
+                    left.append('game: {}'.format(game))
+        print('{} games left: ...'.format(len(left)))
+        print('\n'.join(left))
 
     @staticmethod
     # return all devices (up to 4 of them) that are host or guest in a
@@ -833,7 +843,6 @@ def mainLoop(args, devs):
             break
 
     # list info about any remaining games
-    print('games left: ...')
     Device.printLiveGames()
 
     # kill anybody left alive

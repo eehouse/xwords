@@ -396,6 +396,24 @@ makeGameFromArgs( CmdWrapper* wr, cJSON* args )
     return newGameID;
 }
 
+static gchar*
+readPacket(GInputStream* istream)
+{
+    gchar* result = NULL;
+    for ( gsize siz = 0; ; ) {
+        gchar buf[4*1024];
+        gssize nread = g_input_stream_read( istream, buf, sizeof(buf), NULL, NULL );
+        result = g_realloc( result, siz + nread + 1 );
+        memcpy( &result[siz], buf, nread );
+        siz += nread;
+        if ( nread < sizeof(buf) ) {
+            result[siz] = '\0';
+            break;
+        }
+    }
+    return result;
+}
+
 static gboolean
 on_incoming_signal( GSocketService* XP_UNUSED(service),
                     GSocketConnection* connection,
@@ -408,16 +426,14 @@ on_incoming_signal( GSocketService* XP_UNUSED(service),
 
     GInputStream* istream = g_io_stream_get_input_stream( G_IO_STREAM(connection) );
 
-    gchar buf[8*1024];
-    gssize nread = g_input_stream_read( istream, buf, sizeof(buf), NULL, NULL );
-    if ( 0 <= nread ) {
-        // XP_ASSERT( nread == len );
-        buf[nread] = '\0';
+    gchar* buf = readPacket( istream );
+    if ( !!buf ) {
         XP_LOGFF( "Message: \"%s\"\n", buf );
 
         cJSON* reply = cJSON_CreateArray();
 
         cJSON* cmds = cJSON_Parse( buf );
+        g_free( buf );
         XP_LOGFF( "got msg with array of len %d", cJSON_GetArraySize(cmds) );
         for ( int ii = 0 ; ii < cJSON_GetArraySize(cmds) ; ++ii ) {
             cJSON* item = cJSON_GetArrayItem( cmds, ii );
