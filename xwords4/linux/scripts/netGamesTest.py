@@ -328,15 +328,17 @@ class Device():
     def checkKPs(self, kps):
         if kps:
             for kp in kps:
-                devID = kp.get('devID')
-                if not devID in Device._kps: Device._kps[devID] = set()
-                names = Device._kps[devID]
-
                 name = kp.get('name')
-                if name not in names and len(names):
-                    print('adding {} to {} for {}' \
-                          .format(name, names, Device._kps.get(devID)))
-                names.add(name)
+                addr = Device._kps.get(name)
+                if not addr:
+                    addr = {}
+                    Device._kps[name] = addr
+
+                for key in ['devID', 'phone']:
+                    val = kp.get(key)
+                    if val:
+                        if not key in addr: addr[key] = val
+                        else: assert addr[key] == val
 
     def _pickGid(self):
         result = None
@@ -797,8 +799,6 @@ def countCores(args):
 
 def printKPs():
     kps = Device._kps
-    for names in kps.values():
-        assert 1 == len(names)
     print('Known players: {}'.format(kps))
 
 def printStats():

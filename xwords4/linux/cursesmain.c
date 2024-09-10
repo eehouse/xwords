@@ -1543,9 +1543,14 @@ getKPsWrapper( void* closure )
         if ( kplr_getAddr( dutil, NULL_XWE, players[ii],
                            &addr, NULL ) ) {
 
-            XP_UCHAR buf[17];
-            formatMQTTDevID( &addr.u.mqtt.devID, buf, VSIZE(buf) );
-            cJSON_AddStringToObject( entry, "devID", buf );
+            if ( addr_hasType( &addr, COMMS_CONN_MQTT ) ) {
+                XP_UCHAR buf[17];
+                formatMQTTDevID( &addr.u.mqtt.devID, buf, VSIZE(buf) );
+                cJSON_AddStringToObject( entry, "devID", buf );
+            }
+            if ( addr_hasType( &addr, COMMS_CONN_SMS ) ) {
+                cJSON_AddStringToObject( entry, "phone", addr.u.sms.phone );
+            }
         }
 
         cJSON_AddItemToArray( result, entry );
