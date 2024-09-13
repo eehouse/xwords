@@ -149,6 +149,13 @@ nli_setMQTTDevID( NetLaunchInfo* nli, const MQTTDevID* mqttDevID )
     formatMQTTDevID( mqttDevID, nli->mqttDevID, VSIZE(nli->mqttDevID) );
 }
 
+void
+nli_setPhone( NetLaunchInfo* nli, const XP_UCHAR* phone )
+{
+    types_addType( &nli->_conTypes, COMMS_CONN_SMS );
+    XP_STRNCPY( nli->phone, phone, VSIZE(nli->phone) );
+}
+
 void 
 nli_saveToStream( const NetLaunchInfo* nli, XWStreamCtxt* stream )
 {

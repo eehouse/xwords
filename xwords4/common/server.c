@@ -1069,7 +1069,7 @@ server_initClientConnection( ServerCtxt* server, XWEnv xwe )
         SRVR_LOGFF( "wierd state: %s (expected XWSTATE_NONE); dropping message",
                     getStateStr(server->nv.gameState) );
     }
-    SRVR_LOGFF( "=>%s", boolToStr(result) );
+    SRVR_LOGFF( "=> %s", boolToStr(result) );
     return result;
 } /* server_initClientConnection */
 
@@ -2145,6 +2145,7 @@ findOrderedSlot( ServerCtxt* server, XWStreamCtxt* stream,
 
     for ( int ii = 0; !success && ii < gi->nPlayers; ++ii ) {
         ServerPlayer* sp = &server->srvPlyrs[ii];
+        SRVR_LOGFFV( "ii: %d; deviceIndex: %d", ii, sp->deviceIndex );
         if ( UNKNOWN_DEVICE == sp->deviceIndex ) {
             int addrIndx = rip->addrIndices[ii];
             if ( addrsAreSame( &guestAddr, &rip->addrs[addrIndx] ) ) {
@@ -2156,7 +2157,7 @@ findOrderedSlot( ServerCtxt* server, XWStreamCtxt* stream,
         }
     }
 
-    LOG_RETURNF( "%s", boolToStr(success) );
+    SRVR_LOGFFV( "()=>%s", boolToStr(success) );
     return success;
 }
 

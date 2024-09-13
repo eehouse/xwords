@@ -1406,6 +1406,9 @@ send_invites( CommonGlobals* cGlobals, XP_U16 nPlayers,
             const MQTTDevID* devid = mqttc_getDevID( cGlobals->params );
             nli_setMQTTDevID( &nli, devid );
         }
+        if ( addr_hasType( &myAddr, COMMS_CONN_SMS ) ) {
+            nli_setPhone( &nli, myAddr.u.sms.phone );
+        }
 
 #ifdef DEBUG
         {

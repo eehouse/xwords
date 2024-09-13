@@ -28,6 +28,7 @@
 #include "gamesdb.h"
 #include "dbgutil.h"
 #include "stats.h"
+#include "knownplyr.h"
 
 static XP_U32
 castGid( cJSON* obj )
@@ -82,45 +83,61 @@ gidFromObject( const cJSON* obj )
     return castGid( tmp );
 }
 
+
+/* Invite can be via a known player or via */
 static XP_Bool
 inviteFromArgs( CmdWrapper* wr, cJSON* args )
 {
+    XW_DUtilCtxt* dutil = wr->params->dutil;
     XP_U32 gameID = gidFromObject( args );
 
+    XP_Bool viaKnowns = XP_FALSE;
     cJSON* remotes = cJSON_GetObjectItem( args, "remotes" );
+    if ( !remotes ) {
+        remotes = cJSON_GetObjectItem( args, "kps" );
+        viaKnowns = !!remotes;
+    }
 
     int nRemotes = cJSON_GetArraySize(remotes);
     CommsAddrRec destAddrs[nRemotes];
     XP_MEMSET( destAddrs, 0, sizeof(destAddrs) );
 
-    for ( int ii = 0; ii < nRemotes; ++ii ) {
+    XP_Bool success = XP_TRUE;
+    for ( int ii = 0; success && ii < nRemotes; ++ii ) {
         cJSON* item = cJSON_GetArrayItem( remotes, ii );
 
-        cJSON* addr = cJSON_GetObjectItem( item, "addr" );
-        XP_ASSERT( !!addr );
-        cJSON* tmp = cJSON_GetObjectItem( addr, "mqtt" );
-        if ( !!tmp ) {
-            XP_LOGFF( "parsing mqtt: %s", tmp->valuestring );
-            addr_addType( &destAddrs[ii], COMMS_CONN_MQTT );
-#ifdef DEBUG
-            XP_Bool success =
-#endif
-                strToMQTTCDevID( tmp->valuestring, &destAddrs[ii].u.mqtt.devID );
-            XP_ASSERT( success );
-        }
-        tmp = cJSON_GetObjectItem( addr, "sms" );
-        if ( !!tmp ) {
-            XP_LOGFF( "parsing sms: %s", tmp->valuestring );
-            addr_addType( &destAddrs[ii], COMMS_CONN_SMS );
-            XP_STRCAT( destAddrs[ii].u.sms.phone, tmp->valuestring );
-            destAddrs[ii].u.sms.port = 1;
+        if ( viaKnowns ) {
+            /* item is just a name */
+            XP_LOGFF( "found kplyr name: %s", item->valuestring );
+            success = kplr_getAddr( dutil, NULL_XWE, item->valuestring,
+                                    &destAddrs[ii], NULL );
+        } else {
+            cJSON* addr = cJSON_GetObjectItem( item, "addr" );
+            XP_ASSERT( !!addr );
+            cJSON* tmp = cJSON_GetObjectItem( addr, "mqtt" );
+            if ( !!tmp ) {
+                XP_LOGFF( "parsing mqtt: %s", tmp->valuestring );
+                addr_addType( &destAddrs[ii], COMMS_CONN_MQTT );
+                success =
+                    strToMQTTCDevID( tmp->valuestring, &destAddrs[ii].u.mqtt.devID );
+                XP_ASSERT( success );
+            }
+            tmp = cJSON_GetObjectItem( addr, "sms" );
+            if ( !!tmp ) {
+                XP_LOGFF( "parsing sms: %s", tmp->valuestring );
+                addr_addType( &destAddrs[ii], COMMS_CONN_SMS );
+                XP_STRCAT( destAddrs[ii].u.sms.phone, tmp->valuestring );
+                destAddrs[ii].u.sms.port = 1;
+            }
         }
     }
 
-    (*wr->procs.addInvites)( wr->closure, gameID, nRemotes, destAddrs );
+    if ( success ) {
+        (*wr->procs.addInvites)( wr->closure, gameID, nRemotes, destAddrs );
+    }
 
-    LOG_RETURN_VOID();
-    return XP_TRUE;
+    LOG_RETURNF( "%s", boolToStr(success) );
+    return success;
 }
 
 static XP_Bool

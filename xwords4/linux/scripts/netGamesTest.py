@@ -4,6 +4,7 @@ import argparse, datetime, glob, json, os, random, shutil, signal, \
     socket, struct, subprocess, sys, threading, time
 
 g_ROOT_NAMES = ['Brynn', 'Ariela', 'Kati', 'Eric']
+g_INVITE_HOWS = ['Out-of-App', 'Internal', 'KnownPlayer']
 # These must correspond to what the linux app is looking for in roFromStr()
 g_ROS = ['same', 'low_score_first', 'high_score_first', 'juggle',]
 gDone = False
@@ -472,15 +473,45 @@ class Device():
                 Device.getForPlayer(guest) \
                       .expectInvite(newGid, rematchLevel, gid, rematchOrder)
 
+    # Randomly choose from g_INVITE_HOWS based on the ratio expressed
+    # in INVITE_PCTS, without requiring e.g. that they sum to 100%
+    def _inviteHow(self):
+        count = len(g_INVITE_HOWS)
+        # multiply by len to ensure the ratios work without errors
+        asInts = [count * int(one) for one in self.args.INVITE_PCTS.split(':')]
+        assert count == len(asInts)
+        total = sum(asInts)
+        assert 0 == total % count
+        choice = random.randrange(0, total)
+        for indx in range(count):
+            target = asInts[indx]
+            if choice < target:
+                result = g_INVITE_HOWS[indx]
+                break
+            choice -= target
+        return result
+
     # inviting means either causing host to send an in-game invitation
     # (the way rematch works) or causing guest to register (as happens
     # when email or SMS is used for invitations.)
     def invite(self, game):
-        doOOB = random.randint(0, 99) < self.args.OOB_PCT
-        if doOOB: self.inviteOutOfBand(game)
-        else: self.inviteInBand(game)
+        test = { key: 0 for key in g_INVITE_HOWS }
 
-    def inviteOutOfBand(self, game):
+        how = self._inviteHow()
+        if how == 'Out-of-App':
+            success = self.inviteOutOfApp(game)
+        elif how == 'Internal':
+            success = self.inviteInApp(game)
+        elif how == 'KnownPlayer':
+            success = self.inviteKP(game)
+        else: assert False
+
+        return success
+        # doOOB = random.randint(0, 99) < self.args.OOB_PCT
+        # if doOOB: self.inviteOutOfBand(game)
+        # else: self.inviteInBand(game)
+
+    def inviteOutOfApp(self, game):
         # For each invitee, we need to make sure it exists, launch it,
         # and then send it the equivalent of an emailed invitation.
 
@@ -499,8 +530,7 @@ class Device():
 
         game.needsInvite = False
 
-
-    def inviteInBand(self, game):
+    def inviteInApp(self, game):
         remotes = []
         guestDevs = []
         useRandomDevID = random.randint(0, 100) < self.args.BAD_INVITE_PCT
@@ -518,6 +548,14 @@ class Device():
             for guestDev in guestDevs:
                 guestDev.expectInvite(game.gid, game.rematchLevel)
             game.needsInvite = useRandomDevID
+
+    def inviteKP(self, game):
+        response = self._sendWaitReply('invite', gid=game.gid,
+                                       kps=game.guestNames)
+        if response['success']:
+            for name in game.guestNames:
+                Device.getForPlayer(name).expectInvite(game.gid, game.rematchLevel)
+            game.needsInvite = False
 
     def _mkAddr(self, dev, useRandomDevID=False):
         addr = {}
@@ -644,38 +682,38 @@ class Device():
 
     def _checkScript(self):
         assert os.path.exists(self.args.APP_NEW)
-        if not os.path.exists(self.script):
-            scriptArgs = ['exec']     # without exec means terminate() won't work
-            if self.args.VALGRIND:
-                scriptArgs += ['valgrind']
-                # args += ['--leak-check=full']
-                # args += ['--track-origins=yes']
 
-            scriptArgs.append('"${APP}"')
+        scriptArgs = ['exec']     # without exec means terminate() won't work
+        if self.args.VALGRIND:
+            scriptArgs += ['valgrind']
+            # args += ['--leak-check=full']
+            # args += ['--track-origins=yes']
 
-            scriptArgs += '--db', self.dbName, '--skip-confirm'
-            scriptArgs += '--localName', self.hostName
-            scriptArgs += '--cmd-socket-name', self.cmdSocketName
+        scriptArgs.append('"${APP}"')
 
-            if self.args.WITH_MQTT:
-                scriptArgs += [ '--mqtt-port', self.args.MQTT_PORT, '--mqtt-host', self.args.MQTT_HOST ]
+        scriptArgs += '--db', self.dbName, '--skip-confirm'
+        scriptArgs += '--localName', self.hostName
+        scriptArgs += '--cmd-socket-name', self.cmdSocketName
 
-            if self.args.WITH_SMS:
-                scriptArgs += [ '--sms-number', self.smsNumber ]
+        if self.args.WITH_MQTT:
+            scriptArgs += [ '--mqtt-port', self.args.MQTT_PORT, '--mqtt-host', self.args.MQTT_HOST ]
 
-            scriptArgs += ['--board-size', '15', '--sort-tiles']
+        if self.args.WITH_SMS:
+            scriptArgs += [ '--sms-number', self.smsNumber ]
 
-            # useDupeMode = random.randint(0, 100) < self.args.DUP_PCT
-            # if not useDupeMode: scriptArgs += ['--trade-pct', self.args.TRADE_PCT]
+        scriptArgs += ['--board-size', '15', '--sort-tiles']
+
+        # useDupeMode = random.randint(0, 100) < self.args.DUP_PCT
+        # if not useDupeMode: scriptArgs += ['--trade-pct', self.args.TRADE_PCT]
             
-            # if self.devID: args.extend( ' '.split(self.devID))
-            scriptArgs += [ '$*' ]
+        # if self.devID: args.extend( ' '.split(self.devID))
+        scriptArgs += [ '$*' ]
 
-            with open( self.script, 'w' ) as fil:
-                fil.write('#!/bin/bash\n' )
-                fil.write('APP="${{APP:-{}}}"\n'.format(self.args.APP_NEW))
-                fil.write(' '.join([str(arg) for arg in scriptArgs]) + '\n')
-            os.chmod(self.script, 0o755)
+        with open( self.script, 'w' ) as fil:
+            fil.write('#!/bin/bash\n' )
+            fil.write('APP="${{APP:-{}}}"\n'.format(self.args.APP_NEW))
+            fil.write(' '.join([str(arg) for arg in scriptArgs]) + '\n')
+        os.chmod(self.script, 0o755)
 
     @staticmethod
     def printStatus(statusSteps, noPrint):
@@ -954,16 +992,23 @@ def mkParser():
 
     parser.add_argument('--bad-invite-pct', dest = 'BAD_INVITE_PCT', default = 0, type=int,
                         help='What pct (0..99) of MQTT invitations will be to non-existant devices')
-    parser.add_argument('--oob-invite-pct', dest = 'OOB_PCT', default = 50, type=int,
-                        help='What pct (0..99) of guests will "emailed" rather than comms-invited')
+
+    # Inviting to new games is done in one of three ways. New games
+    # with new players involve an out-of-app process like sending an
+    # email with a URL. After that, once a remote player is "known",
+    # known-player invitation uses info in the KnownPlayer
+    # data. Finally, rematches work with the information in the
+    # current game's addressing.
+    parser.add_argument('--invite-pcts', dest = 'INVITE_PCTS', default = '33:33:33', 
+                        help='Odds of inviting each of 3 ways: {}'.format(':'.join(g_INVITE_HOWS)))
 
     parser.add_argument('--timer-seconds', dest='TIMER_SECS', default=10, type=int,
                         help='Enable game timer with game this many seconds long')
     parser.add_argument('--min-app-life', dest='MIN_APP_LIFE', default=15, type=int,
                         help='Minimum number of seconds app will run after each launch')
 
-    parser.add_argument('--with-sms', dest = 'WITH_SMS', action = 'store_true')
-    parser.add_argument('--without-sms', dest = 'WITH_SMS', default = False, action = 'store_false')
+    parser.add_argument('--with-sms', dest = 'WITH_SMS', action = 'store_true', default=False)
+    parser.add_argument('--without-sms', dest = 'WITH_SMS', default=False, action='store_false')
     # parser.add_argument('--sms-fail-pct', dest = 'SMS_FAIL_PCT', default = 0, type = int)
 
     parser.add_argument('--with-mqtt', dest = 'WITH_MQTT', default = True, action = 'store_true')

@@ -49,6 +49,7 @@ void nli_setDevID( NetLaunchInfo* nli, XP_U32 devID );
 void nli_setInviteID( NetLaunchInfo* nli, const XP_UCHAR* inviteID );
 void nli_setGameName( NetLaunchInfo* nli, const XP_UCHAR* gameName );
 void nli_setMQTTDevID( NetLaunchInfo* nli, const MQTTDevID* mqttDevID );
+void nli_setPhone( NetLaunchInfo* nli, const XP_UCHAR* phone );
 
 #ifdef XWFEATURE_NLI_FROM_ARGV
 XP_Bool nli_fromArgv( MPFORMAL NetLaunchInfo* nlip, int argc, const char** argv );

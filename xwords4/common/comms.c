@@ -1666,8 +1666,8 @@ pickChannel( const CommsCtxt* comms, const NetLaunchInfo* nli,
         /* First, do we already have an invitation for this address */
         for ( AddressRecord* rec = comms->recs; !!rec; rec = rec->next ) {
             if ( addrsAreSame( destAddr, &rec->addr ) ) {
-                result = rec->channelNo;
-                XP_LOGFF( "addrs match; reusing channel" );
+                result = rec->channelNo & CHANNEL_MASK;
+                XP_LOGFF( "addrs match; reusing channel %d", result );
                 break;
             }
         }
@@ -1685,7 +1685,7 @@ pickChannel( const CommsCtxt* comms, const NetLaunchInfo* nli,
         for ( XP_PlayerAddr chan = 1; chan <= CHANNEL_MASK; ++chan ) {
             if ( 0 == (gicd.hasInvitesMask & (1 << chan)) ) {
                 result = chan;
-                XP_LOGFF( "using unused channel" );
+                XP_LOGFF( "using unused channel %d", result );
                 break;
             }
         }
@@ -1696,14 +1696,14 @@ pickChannel( const CommsCtxt* comms, const NetLaunchInfo* nli,
             for ( XP_PlayerAddr chan = 1; chan <= CHANNEL_MASK; ++chan ) {
                 if ( 0 == (gicd.hasNonInvitesMask & (1 << chan)) ) {
                     result = chan;
-                    XP_LOGFF( "recycling channel" );
+                    XP_LOGFF( "recycling channel: %d", result );
                     break;
                 }
             }
         }
     }
 
-    LOG_RETURNF( "%d", result );
+    COMMS_LOGFF( "=> 0X%X", result );
     return result;
 }
 
@@ -1714,9 +1714,9 @@ comms_invite( CommsCtxt* comms, XWEnv xwe, const NetLaunchInfo* nli,
     COMMS_LOGFF("(sendNow=%s)", boolToStr(sendNow));
     LOGNLI(nli);
     WITH_MUTEX(&comms->mutex);
-    XP_PlayerAddr forceChannel = pickChannel(comms, nli, destAddr);
+    XP_PlayerAddr forceChannel = pickChannel( comms, nli, destAddr );
     XP_LOGFF( "forceChannel: %d", forceChannel );
-    XP_ASSERT( 0 < forceChannel && (forceChannel & CHANNEL_MASK) == forceChannel );
+    XP_ASSERT( 0 < forceChannel );
     if ( 0 < forceChannel ) {
         XP_ASSERT( (forceChannel & CHANNEL_MASK) == forceChannel );
         if ( !haveRealChannel( comms, forceChannel ) ) {
@@ -2779,7 +2779,7 @@ getChannelFromInvite( const CommsCtxt* comms, const CommsAddrRec* retAddr,
             COMMS_LOGFF( "channelNo after: %x", *channelNoP );
         }
     }
-    COMMS_LOGFF( "=>%s", boolToStr(found) );
+    COMMS_LOGFF( "=> %s", boolToStr(found) );
     return found;
 }
 
@@ -2872,7 +2872,7 @@ checkChannelNo( CommsCtxt* comms, const CommsAddrRec* retAddr, XP_PlayerAddr* ch
         comms->nextChannelNo = channelNo;
     }
     *channelNoP = channelNo;
-    LOG_RETURNF( "%s", boolToStr(success) );
+    COMMS_LOGFF( "=> %s", boolToStr(success) );
     return success;
 }
 

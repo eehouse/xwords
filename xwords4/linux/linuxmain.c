@@ -179,11 +179,10 @@ linux_addInvites( CommonGlobals* cGlobals, XP_U16 nRemotes,
 
     CommsAddrRec selfAddr;
     comms_getSelfAddr( comms, &selfAddr );
+    NetLaunchInfo nli;
+    nli_init( &nli, cGlobals->gi, &selfAddr, 1, 0 );
 
     for ( int ii = 0; ii < nRemotes; ++ii ) {
-        NetLaunchInfo nli;
-        nli_init( &nli, cGlobals->gi, &selfAddr, 1, 0 );
-
         comms_invite( comms, NULL_XWE, &nli, &destAddrs[ii], XP_TRUE );
     }
 }

@@ -367,7 +367,7 @@ kplr_getAddr( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* name,
     }
     releaseStateLocked( dutil, xwe, state );
     END_WITH_MUTEX();
-    LOG_RETURNF( "%s", boolToStr(found) );
+    XP_LOGFF( "(%s) => %s", name, boolToStr(found) );
     return found;
 }
 
