@@ -4,7 +4,8 @@ import argparse, datetime, glob, json, os, random, shutil, signal, \
     socket, struct, subprocess, sys, threading, time
 
 g_ROOT_NAMES = ['Brynn', 'Ariela', 'Kati', 'Eric']
-g_INVITE_HOWS = ['Out-of-App', 'Internal', 'KnownPlayer']
+g_INVITE_HOWS = (('OutOfApp', 1), ('Internal', 1), ('KnownPlayer', 1))
+g_REMATCH_PCTS = (('Neither', 80), ('Host', 10), ('Guest', 10))
 # These must correspond to what the linux app is looking for in roFromStr()
 g_ROS = ['same', 'low_score_first', 'high_score_first', 'juggle',]
 gDone = False
@@ -20,6 +21,25 @@ def log(args, msg):
     if g_LOGFILE:
         print(msg, file=g_LOGFILE)
         g_LOGFILE.flush()
+
+def pickFromRatios(ratios, valsStr):
+    count = len(ratios)
+    # multiply by len to ensure the ratios work without errors
+    asInts = [count * int(val) for val in valsStr.split(':')]
+    assert count == len(asInts)
+
+    total = sum(asInts)
+    # assert 0 == total % count
+    choice = random.randrange(0, total)
+
+    for indx in range(count):
+        target = asInts[indx]
+        if choice < target:
+            result = ratios[indx][0]
+            break
+        choice -= target
+    else: result = None
+    return result
 
 def pick_ndevs(args):
     RNUM = random.randint(0, 99)
@@ -473,43 +493,19 @@ class Device():
                 Device.getForPlayer(guest) \
                       .expectInvite(newGid, rematchLevel, gid, rematchOrder)
 
-    # Randomly choose from g_INVITE_HOWS based on the ratio expressed
-    # in INVITE_PCTS, without requiring e.g. that they sum to 100%
-    def _inviteHow(self):
-        count = len(g_INVITE_HOWS)
-        # multiply by len to ensure the ratios work without errors
-        asInts = [count * int(one) for one in self.args.INVITE_PCTS.split(':')]
-        assert count == len(asInts)
-        total = sum(asInts)
-        assert 0 == total % count
-        choice = random.randrange(0, total)
-        for indx in range(count):
-            target = asInts[indx]
-            if choice < target:
-                result = g_INVITE_HOWS[indx]
-                break
-            choice -= target
-        return result
-
     # inviting means either causing host to send an in-game invitation
     # (the way rematch works) or causing guest to register (as happens
     # when email or SMS is used for invitations.)
     def invite(self, game):
-        test = { key: 0 for key in g_INVITE_HOWS }
-
-        how = self._inviteHow()
-        if how == 'Out-of-App':
-            success = self.inviteOutOfApp(game)
+        how = pickFromRatios(g_INVITE_HOWS, self.args.INVITE_PCTS)
+        if how == 'OutOfApp':
+            self.inviteOutOfApp(game)
         elif how == 'Internal':
-            success = self.inviteInApp(game)
+            self.inviteInApp(game)
         elif how == 'KnownPlayer':
-            success = self.inviteKP(game)
-        else: assert False
-
-        return success
-        # doOOB = random.randint(0, 99) < self.args.OOB_PCT
-        # if doOOB: self.inviteOutOfBand(game)
-        # else: self.inviteInBand(game)
+            self.inviteKP(game)
+        else:
+            print('unexpected how: {}'.format(how))
 
     def inviteOutOfApp(self, game):
         # For each invitee, we need to make sure it exists, launch it,
@@ -646,10 +642,9 @@ class Device():
                 game = self.gameFor(obj.get('gid'))
                 game.state = obj
 
-                if game.gameOver() and 0 < game.rematchLevel:
-                    if random.randint(0, 100) < self.args.REMATCH_PCT:
-                        self.rematch(game)
-                        anyRematched = True
+                if game.gameOver() and 0 < game.rematchLevel and self._rematchAllowed(game) :
+                    self.rematch(game)
+                    anyRematched = True
                     game.rematchLevel = 0 # so won't be used again
 
             if not anyRematched:
@@ -671,6 +666,19 @@ class Device():
             self.watcher.join()
             self.watcher = None
             assert not self.endTime
+
+    def _rematchAllowed(self, game):
+        pick = pickFromRatios(g_REMATCH_PCTS, self.args.REMATCH_PCTS)
+
+        if pick == 'Neither':
+            result = False
+        elif pick == 'Host':
+            result = isinstance(game, HostGameInfo)
+        elif pick == 'Guest':
+            result = isinstance(game, GuestGameInfo)
+        else: assert False
+        # print('_rematchAllowed({}) => {}'.format(game, result))
+        return result
 
     def _addStats(self, stats):
         stats = stats.get('stats').get('stats')
@@ -1000,7 +1008,8 @@ def mkParser():
     # data. Finally, rematches work with the information in the
     # current game's addressing.
     parser.add_argument('--invite-pcts', dest = 'INVITE_PCTS', default = '33:33:33', 
-                        help='Odds of inviting each of 3 ways: {}'.format(':'.join(g_INVITE_HOWS)))
+                        help='Odds of inviting each of 3 ways: {}' \
+                        .format(':'.join([pair[0] for pair in g_INVITE_HOWS])))
 
     parser.add_argument('--timer-seconds', dest='TIMER_SECS', default=10, type=int,
                         help='Enable game timer with game this many seconds long')
@@ -1027,8 +1036,10 @@ def mkParser():
                         help = 'rematch games down to this ancestry/depth')
     parser.add_argument('--rematch-order', dest = 'REMATCH_ORDER', type = str, default = None,
                         help = 'order rematched games one of these ways: {}'.format(g_ROS))
-    parser.add_argument('--rematch-pct', dest = 'REMATCH_PCT', type = int, default = 20,
-                        help = 'what percent of players will rematch at game end')
+    dflt = ':'.join([str(tpl[1]) for tpl in g_REMATCH_PCTS])
+    vals = ':'.join([tpl[0] for tpl in g_REMATCH_PCTS])
+    parser.add_argument('--rematch-pcts', dest = 'REMATCH_PCTS', default = dflt,
+                        help = 'what percent of games will rematch at game end (fmt {})'.format(vals))
 
     envpat = 'DISCON_COREPAT'
     parser.add_argument('--core-pat', dest = 'CORE_PAT', default = os.environ.get(envpat),
