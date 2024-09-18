@@ -234,7 +234,11 @@ class GameListItem(private val m_context: Context, aset: AttributeSet?) :
                 R.string.title_addrs_pref -> summary.conTypes!!.toString(m_context, false)
                 R.string.game_summary_field_created ->
                     sDF.format(Date(summary.created))
-                else -> {Assert.failDbg(); null}
+                else -> {
+                    // Log.d(TAG, "unexpected fieldID $m_fieldID)")
+                    // Assert.failDbg();
+                    null
+                } // here
             }
             val name = GameUtils.getName(m_context, rowID)
             value = if (null != value) {
