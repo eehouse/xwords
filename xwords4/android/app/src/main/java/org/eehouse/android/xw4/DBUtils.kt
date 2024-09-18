@@ -697,7 +697,7 @@ object DBUtils {
     fun saveNewGame(
         context: Context, bytes: ByteArray,
         groupID: Long, name: String?
-    ): GameLock? {
+    ): GameLock {
         Assert.assertTrue(GROUPID_UNSPEC.toLong() != groupID)
         var lock: GameLock? = null
         val timestamp = Date().time // milliseconds since epoch
@@ -718,9 +718,11 @@ object DBUtils {
             lock = GameLock.tryLock(rowid)
             Assert.assertNotNull(lock)
             notifyListeners(context, rowid, GameChangeType.GAME_CREATED)
+            Log.d(TAG, "saveNewGame() => %d", rowid)
+            DbgUtils.printStack(TAG)
         }
         invalGroupsCache() // then again after
-        return lock
+        return lock!!
     } // saveNewGame
 
     fun saveGame(

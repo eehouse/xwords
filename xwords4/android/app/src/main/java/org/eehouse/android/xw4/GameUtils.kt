@@ -545,14 +545,9 @@ object GameUtils {
         val stream = XwJNI.game_saveToStream(gamePtr, gi)
 
         DBUtils.saveNewGame(context, stream, groupID, gameName).use { lock ->
-            if (null != lock) {
-                summarize(context, lock, gamePtr, gi)
-                rowid = lock.rowid
-            } else {
-                Assert.failDbg()
-            }
+            summarize(context, lock, gamePtr, gi)
+            rowid = lock.rowid
         }
-        Log.d(TAG, "saveNewGame1() => %d", rowid)
         return rowid
     }
 
@@ -650,7 +645,7 @@ object GameUtils {
         val stream = XwJNI.game_saveToStream(gamePtr, gi)
         var rowid: Long
         DBUtils.saveNewGame(context, stream, groupID, null).use { lock ->
-            rowid = lock!!.rowid
+            rowid = lock.rowid
         }
         return rowid
     }
