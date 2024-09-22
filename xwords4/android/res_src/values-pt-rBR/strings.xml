@@ -370,7 +370,7 @@
     <string name="invit_expl_player_fmt">Convite encaminhado via MQTT/internet para Jogador Conhecido “%1$s” em %2$s.</string>
     <string name="qrcode_invite_expl">Para convidar via código QR, deixe seu oponente escanear o código com a câmera do telefone Android dele.</string>
     <string name="after_restart">Esta mudança terá efeito depois de reiniciar CrossWords.</string>
-    <string name="no_invites">Este jogo não enviou nenhum convite</string>
+    <string name="no_invites">Este jogo não tem convites pendentes.</string>
     <string name="button_enable">Ativar</string>
     <string name="confirm_drop_relay_sms">Nem todas as operadoras suportam jogar via dados SMS.</string>
     <string name="summary_enable_p2p">Experimental, usa bastante da bateria</string>
