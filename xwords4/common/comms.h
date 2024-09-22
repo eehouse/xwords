@@ -218,7 +218,8 @@ XP_S16 comms_resendAll( CommsCtxt* comms, XWEnv xwe, CommsConnType filter,
 XP_U16 comms_getChannelSeed( CommsCtxt* comms );
 void comms_getChannelAddr( const CommsCtxt* comms, XP_PlayerAddr channelNo,
                            CommsAddrRec* addr );
-XP_Bool addrsAreSame( const CommsAddrRec* addr1, const CommsAddrRec* addr2 );
+XP_Bool addrsAreSame( XW_DUtilCtxt* dutil, XWEnv xwe, const CommsAddrRec* addr1,
+                      const CommsAddrRec* addr2 );
 
 #ifdef XWFEATURE_COMMSACK
 void comms_ackAny( CommsCtxt* comms, XWEnv xwe );

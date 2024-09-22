@@ -242,7 +242,7 @@ game_makeRematch( const XWGame* oldGame, XWEnv xwe, XW_UtilCtxt* newUtil,
     XP_Bool success = XP_FALSE;
 
     RematchInfo* rip;
-    if ( server_getRematchInfo( oldGame->server, newUtil,
+    if ( server_getRematchInfo( oldGame->server, xwe, newUtil,
                                 game_makeGameID( 0 ), nop, &rip ) ) {
         CommsAddrRec* selfAddrP = NULL;
         CommsAddrRec selfAddr;

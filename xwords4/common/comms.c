@@ -1321,7 +1321,8 @@ comms_getChannelAddr( const CommsCtxt* comms, XP_PlayerAddr channelNo,
 }
 
 XP_Bool
-addrsAreSame( const CommsAddrRec* addr1, const CommsAddrRec* addr2 )
+addrsAreSame( XW_DUtilCtxt* dutil, XWEnv xwe, const CommsAddrRec* addr1,
+              const CommsAddrRec* addr2 )
 {
     /* Empty addresses are the same only if both are empty */
     XP_Bool same = addr1->_conTypes == 0 && addr2->_conTypes == 0;
@@ -1335,7 +1336,7 @@ addrsAreSame( const CommsAddrRec* addr1, const CommsAddrRec* addr2 )
                 break;
             case COMMS_CONN_SMS:
                 same = addr1->u.sms.port == addr2->u.sms.port
-                    && 0 == XP_STRCMP(addr1->u.sms.phone, addr2->u.sms.phone );
+                    && dutil_phoneNumbersSame( dutil, xwe, addr1->u.sms.phone, addr2->u.sms.phone );
                 break;
             case COMMS_CONN_BT:
                 same = 0 == XP_STRCMP( addr1->u.bt.hostName, addr2->u.bt.hostName );
@@ -1657,7 +1658,7 @@ getInviteChannels( MsgQueueElem* elem, void* closure )
 
 /* Choose a channel IFF nli doesn't already specify one. */
 static XP_PlayerAddr
-pickChannel( const CommsCtxt* comms, const NetLaunchInfo* nli,
+pickChannel( const CommsCtxt* comms, XWEnv xwe, const NetLaunchInfo* nli,
              const CommsAddrRec* destAddr )
 {
     XP_PlayerAddr result = nli->forceChannel;
@@ -1665,7 +1666,7 @@ pickChannel( const CommsCtxt* comms, const NetLaunchInfo* nli,
     if ( 0 == result ) {
         /* First, do we already have an invitation for this address */
         for ( AddressRecord* rec = comms->recs; !!rec; rec = rec->next ) {
-            if ( addrsAreSame( destAddr, &rec->addr ) ) {
+            if ( addrsAreSame( comms->dutil, xwe, destAddr, &rec->addr ) ) {
                 result = rec->channelNo & CHANNEL_MASK;
                 XP_LOGFF( "addrs match; reusing channel %d", result );
                 break;
@@ -1714,7 +1715,7 @@ comms_invite( CommsCtxt* comms, XWEnv xwe, const NetLaunchInfo* nli,
     COMMS_LOGFF("(sendNow=%s)", boolToStr(sendNow));
     LOGNLI(nli);
     WITH_MUTEX(&comms->mutex);
-    XP_PlayerAddr forceChannel = pickChannel( comms, nli, destAddr );
+    XP_PlayerAddr forceChannel = pickChannel( comms, xwe, nli, destAddr );
     XP_LOGFF( "forceChannel: %d", forceChannel );
     XP_ASSERT( 0 < forceChannel );
     if ( 0 < forceChannel ) {
@@ -2766,13 +2767,13 @@ preProcess(
    the channel set up. Be sure to use it or we may wind up nuking undelievered
    invitations */
 static XP_Bool
-getChannelFromInvite( const CommsCtxt* comms, const CommsAddrRec* retAddr,
-                      XP_PlayerAddr* channelNoP )
+getChannelFromInvite( const CommsCtxt* comms, XWEnv xwe,
+                      const CommsAddrRec* retAddr, XP_PlayerAddr* channelNoP )
 {
     XP_Bool found = XP_FALSE;
     for ( const AddressRecord* rec = comms->recs; !!rec && !found;
           rec = rec->next ) {
-        found = addrsAreSame( retAddr, &rec->addr );
+        found = addrsAreSame( comms->dutil, xwe, retAddr, &rec->addr );
         if ( found ) {
             COMMS_LOGFF( "channelNo before: %x", *channelNoP );
             *channelNoP |= rec->channelNo;
@@ -2849,13 +2850,14 @@ getNextChannelNo( CommsCtxt* comms )
 }
 
 static XP_Bool
-checkChannelNo( CommsCtxt* comms, const CommsAddrRec* retAddr, XP_PlayerAddr* channelNoP )
+checkChannelNo( CommsCtxt* comms, XWEnv xwe, const CommsAddrRec* retAddr,
+                XP_PlayerAddr* channelNoP )
 {
     XP_Bool success = XP_TRUE;
     XP_PlayerAddr channelNo = *channelNoP;
     if ( 0 == (channelNo & CHANNEL_MASK) ) {
         XP_ASSERT( comms->isServer );
-        if ( getChannelFromInvite( comms, retAddr, &channelNo ) ) {
+        if ( getChannelFromInvite( comms, xwe, retAddr, &channelNo ) ) {
             success = XP_TRUE;
         } else {
             success = comms->nextChannelNo < CHANNEL_MASK;
@@ -2894,7 +2896,8 @@ checkChannelNo( CommsCtxt* comms, const CommsAddrRec* retAddr, XP_PlayerAddr* ch
  * it invalid
  */
 static AddressRecord*
-validateInitialMessage( CommsCtxt* comms, XP_Bool XP_UNUSED_HEARTBEAT(hasPayload),
+validateInitialMessage( CommsCtxt* comms, XWEnv xwe,
+                        XP_Bool XP_UNUSED_HEARTBEAT(hasPayload),
                         const CommsAddrRec* retAddr, XWHostID senderID,
                         XP_PlayerAddr* channelNoP, XP_U16 flags, MsgID msgID )
 {
@@ -2916,7 +2919,7 @@ validateInitialMessage( CommsCtxt* comms, XP_Bool XP_UNUSED_HEARTBEAT(hasPayload
         }
     } else {
         if ( comms->isServer ) {
-            if ( checkChannelNo( comms, retAddr, channelNoP ) ) {
+            if ( checkChannelNo( comms, xwe, retAddr, channelNoP ) ) {
                 CNO_FMT( cbuf, *channelNoP );
                 COMMS_LOGFF( TAGFMT() "augmented channel: %s", TAGPRMS, cbuf );
             } else {
@@ -3175,7 +3178,7 @@ comms_checkIncomingStream( CommsCtxt* comms, XWEnv xwe, XWStreamCtxt* stream,
             if ( messageValid ) {
                 if ( stuff.connID == CONN_ID_NONE ) {
                     /* special case: initial message from client or server */
-                    rec = validateInitialMessage( comms, streamSize > 0, retAddr,
+                    rec = validateInitialMessage( comms, xwe, streamSize > 0, retAddr,
                                                   senderID, &stuff.channelNo,
                                                   stuff.flags, stuff.msgID );
                     state->rec = rec;

@@ -384,6 +384,8 @@ kplr_nameForMqttDev( XW_DUtilCtxt* dutil, XWEnv xwe,
 }
 
 typedef struct _MDevState {
+    XW_DUtilCtxt* dutil;
+    XWEnv xwe;
     const CommsAddrRec* addr;
     const XP_UCHAR* name;
 } MDevState;
@@ -395,7 +397,7 @@ addrProc( const DLHead* dl, void* closure )
     const KnownPlayer* kp = (KnownPlayer*)dl;
     MDevState* msp = (MDevState*)closure;
 
-    if ( addrsAreSame( &kp->addr, msp->addr ) ) {
+    if ( addrsAreSame( msp->dutil, msp->xwe, &kp->addr, msp->addr ) ) {
         msp->name = kp->name;
         result = FEA_EXIT;
     }
@@ -406,7 +408,8 @@ const XP_UCHAR*
 kplr_nameForAddress( XW_DUtilCtxt* dutil, XWEnv xwe,
                      const CommsAddrRec* addr )
 {
-    MDevState ms = {.addr = addr};
+    MDevState ms = {.addr = addr, .dutil = dutil, .xwe = xwe, };
+
     WITH_MUTEX( &dutil->kpMutex );
     KPState* state = loadStateLocked( dutil, xwe );
 #ifdef DEBUG

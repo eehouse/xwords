@@ -94,6 +94,9 @@ clearDS( DragState* ds )
 static XP_Bool
 ddStartBoard( BoardCtxt* board, XWEnv xwe, XP_U16 xx, XP_U16 yy )
 {
+#ifndef XWFEATURE_SEARCHLIMIT
+    XP_USE(xwe);
+#endif
     DragState* ds = &board->dragState;
     XP_Bool trayVisible;
     XP_U16 col, row;

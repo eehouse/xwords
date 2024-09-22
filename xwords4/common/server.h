@@ -186,7 +186,7 @@ void server_figureOrder( const ServerCtxt* server, RematchOrder ro,
    addresses to which invitation should be sent. But: meant to be called
    only from game.c anyway.
 */
-XP_Bool server_getRematchInfo( const ServerCtxt* server, XW_UtilCtxt* newUtil,
+XP_Bool server_getRematchInfo( const ServerCtxt* server, XWEnv xwe, XW_UtilCtxt* newUtil,
                                XP_U32 gameID, const NewOrder* nop, RematchInfo** ripp  );
 void server_disposeRematchInfo( ServerCtxt* server, RematchInfo** rip );
 XP_Bool server_ri_getAddr( const RematchInfo* ri, XP_U16 nth,
