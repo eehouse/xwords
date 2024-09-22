@@ -32,17 +32,6 @@ import android.os.Build
 import android.provider.Settings
 import android.text.TextUtils
 
-import org.eehouse.android.xw4.DbgUtils.DeadlockWatch
-import org.eehouse.android.xw4.MultiService.DictFetchOwner
-import org.eehouse.android.xw4.MultiService.MultiEvent
-import org.eehouse.android.xw4.Perms23.Perm
-import org.eehouse.android.xw4.TimerReceiver.TimerCallback
-import org.eehouse.android.xw4.XWServiceHelper.ReceiveResult
-import org.eehouse.android.xw4.jni.CommsAddrRec
-import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType
-import org.eehouse.android.xw4.jni.CommsAddrRec.ConnExpl
-import org.eehouse.android.xw4.jni.XwJNI
-
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.Closeable
@@ -55,6 +44,18 @@ import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.concurrent.Volatile
 import kotlin.math.min
+
+import org.eehouse.android.xw4.DbgUtils.DeadlockWatch
+import org.eehouse.android.xw4.MultiService.DictFetchOwner
+import org.eehouse.android.xw4.MultiService.MultiEvent
+import org.eehouse.android.xw4.Perms23.Perm
+import org.eehouse.android.xw4.TimerReceiver.TimerCallback
+import org.eehouse.android.xw4.XWServiceHelper.ReceiveResult
+import org.eehouse.android.xw4.jni.CommsAddrRec
+import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType
+import org.eehouse.android.xw4.jni.CommsAddrRec.ConnExpl
+import org.eehouse.android.xw4.jni.XwJNI
+import org.eehouse.android.xw4.jni.XwJNI.STAT
 
 object BTUtils {
     private val TAG: String = BTUtils::class.java.simpleName
@@ -988,6 +989,7 @@ object BTUtils {
                                 msgCount, data.size, Utils.getMD5SumFor(data),
                                 this
                             )
+                            XwJNI.sts_increment(STAT.STAT_BT_SENT);
                         } catch (ioe: IOException) {
                             Log.e(TAG, "writeAndCheck(): ioe: %s", ioe.message)
                             localElems = null
@@ -1407,6 +1409,8 @@ object BTUtils {
                     TAG, "dispatchAll(): read %d-byte payload with sum %s containing %d messages",
                     data.size, Utils.getMD5SumFor(data), nMessages
                 )
+
+                XwJNI.sts_increment(STAT.STAT_BT_RCVD);
 
                 for (ii in 0 until nMessages) {
                     val cmdOrd = dis.readByte()

@@ -219,6 +219,8 @@ class XwJNI private constructor() {
 
         STAT_NBS_RCVD,
         STAT_NBS_SENT,
+        STAT_BT_RCVD,
+        STAT_BT_SENT,
 
         STAT_NSTATS,
     }

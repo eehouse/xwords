@@ -142,6 +142,8 @@ STATtoStr(STAT stat)
         CASESTR(STAT_NEW_REMATCH);
         CASESTR(STAT_NBS_SENT);
         CASESTR(STAT_NBS_RCVD);
+        CASESTR(STAT_BT_SENT);
+        CASESTR(STAT_BT_RCVD);
     default:
         XP_ASSERT(0);
     }
