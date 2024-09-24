@@ -38,10 +38,7 @@ class XWApp : Application(), LifecycleObserver {
         super.onCreate()
         Log.init(this)
         ProcessLifecycleOwner.get().lifecycle.addObserver(this)
-        android.util.Log.i(
-            TAG, "onCreate(); git_rev="
-                    + BuildConfig.GIT_REV
-        )
+        android.util.Log.i(TAG, "onCreate(); git_rev=${BuildConfig.GIT_REV}")
         Log.enable(this)
         OnBootReceiver.startTimers(this)
         Variants.checkUpdate(this)
@@ -66,6 +63,7 @@ class XWApp : Application(), LifecycleObserver {
     fun onAny(source: LifecycleOwner?, event: Lifecycle.Event?) {
         Log.d(TAG, "onAny(%s)", event)
         when (event) {
+            Lifecycle.Event.ON_CREATE -> Log.d(TAG, "git_rev=${BuildConfig.GIT_REV}")
             Lifecycle.Event.ON_RESUME -> {
                 MQTTUtils.onResume(this)
                 BTUtils.onResume(this)
