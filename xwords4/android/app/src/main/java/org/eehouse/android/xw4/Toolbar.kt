@@ -106,10 +106,9 @@ class Toolbar(private val m_activity: Activity, private val m_dlgDlgt: HasDlgDel
             }
         }
 
-        val id = index.resId
-        val button = m_activity.findViewById<View>(id) as ImageButton
-        if (null != button) {
-            button.visibility = if (enable) View.VISIBLE else View.GONE
+        val button = m_activity.findViewById<View>(index.resId) as ImageButton?
+        button?.let {
+            it.visibility = if (enable) View.VISIBLE else View.GONE
         }
 
         if (enable) {
