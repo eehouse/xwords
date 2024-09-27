@@ -27,6 +27,8 @@ import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.LinearLayout
 
+import java.util.EnumMap
+
 import org.eehouse.android.xw4.BoardContainer.SizeChangeListener
 import org.eehouse.android.xw4.DlgDelegate.Action
 import org.eehouse.android.xw4.DlgDelegate.HasDlgDelegate
@@ -34,7 +36,7 @@ import org.eehouse.android.xw4.loc.LocUtils
 
 private val TAG: String = Toolbar::class.java.simpleName
 
-class Toolbar(private val m_activity: Activity, private val m_dlgDlgt: HasDlgDelegate) :
+class Toolbar(private val mActivity: Activity, private val mDlgDlgt: HasDlgDelegate) :
     SizeChangeListener
 {
     enum class Buttons(val resId: Int, val disableId: Int = 0) {
@@ -48,35 +50,37 @@ class Toolbar(private val m_activity: Activity, private val m_dlgDlgt: HasDlgDel
         BUTTON_FLIP(R.id.flip_button, R.string.key_disable_flip_button),
     }
 
-    private var m_layout: LinearLayout? = null
-    private var m_visible = false
-    private val m_onClickListeners: MutableMap<Buttons, Any> = HashMap()
-    private val m_onLongClickListeners: MutableMap<Buttons, Any> = HashMap()
-    private val m_enabled: MutableSet<Buttons> = HashSet()
+    private var mLayout: LinearLayout? = null
+    private var mVisible = false
+    private val mOnclicklisteners: MutableMap<Buttons, Any>
+        = EnumMap(Buttons::class.java)
+    private val mOnlongclicklisteners: MutableMap<Buttons, Any>
+        = EnumMap(Buttons::class.java)
+    private val mEnabled: MutableSet<Buttons> = HashSet()
 
     init {
         BoardContainer.registerSizeChangeListener(this)
     }
 
     fun setVisible(visible: Boolean) {
-        if (m_visible != visible) {
-            m_visible = visible
+        if (mVisible != visible) {
+            mVisible = visible
             doShowHide()
         }
     }
 
     fun getButtonFor(index: Buttons): ImageButton {
-        return m_activity.findViewById<View>(index.resId) as ImageButton
+        return mActivity.findViewById<View>(index.resId) as ImageButton
     }
 
     fun setListener(index: Buttons, msgID: Int,
                     prefsKey: Int, action: Action): Toolbar
     {
-        m_onClickListeners[index] =
+        mOnclicklisteners[index] =
             View.OnClickListener {
                 // Log.i( TAG, "setListener(): click on %s with action %s",
                 //        view.toString(), action.toString() );
-                m_dlgDlgt.makeNotAgainBuilder(prefsKey, action, msgID)
+                mDlgDlgt.makeNotAgainBuilder(prefsKey, action, msgID)
                     .show()
             }
         return this
@@ -86,8 +90,8 @@ class Toolbar(private val m_activity: Activity, private val m_dlgDlgt: HasDlgDel
         index: Buttons, msgID: Int,
         prefsKey: Int, action: Action
     ): Toolbar {
-        m_onLongClickListeners[index] = OnLongClickListener {
-            m_dlgDlgt.makeNotAgainBuilder(prefsKey, action, msgID)
+        mOnlongclicklisteners[index] = OnLongClickListener {
+            mDlgDlgt.makeNotAgainBuilder(prefsKey, action, msgID)
                 .show()
             true
         }
@@ -100,27 +104,27 @@ class Toolbar(private val m_activity: Activity, private val m_dlgDlgt: HasDlgDel
             val disableKeyID = index.disableId
             if (0 != disableKeyID) {
                 enable = !XWPrefs.getPrefsBoolean(
-                    m_activity, disableKeyID,
+                    mActivity, disableKeyID,
                     false
                 )
             }
         }
 
-        val button = m_activity.findViewById<View>(index.resId) as ImageButton?
+        val button = mActivity.findViewById<View>(index.resId) as ImageButton?
         button?.let {
             it.visibility = if (enable) View.VISIBLE else View.GONE
         }
 
         if (enable) {
-            m_enabled.add(index)
+            mEnabled.add(index)
         } else {
-            m_enabled.remove(index)
+            mEnabled.remove(index)
         }
         return this
     }
 
     fun enabledCount(): Int {
-        return m_enabled.size
+        return mEnabled.size
     }
 
     // SizeChangeListener
@@ -130,8 +134,8 @@ class Toolbar(private val m_activity: Activity, private val m_dlgDlgt: HasDlgDel
     }
 
     fun installListeners() {
-        tryAddListeners(m_onClickListeners)
-        tryAddListeners(m_onLongClickListeners)
+        tryAddListeners(mOnclicklisteners)
+        tryAddListeners(mOnlongclicklisteners)
     }
 
     private fun tryAddListeners(map: MutableMap<Buttons, Any>) {
@@ -139,45 +143,38 @@ class Toolbar(private val m_activity: Activity, private val m_dlgDlgt: HasDlgDel
         while (iter.hasNext()) {
             val key = iter.next()
             val listener = map[key]
-            if (setListener(key, listener)) {
-                iter.remove()
-            }
+            setListener(key, listener)
+            iter.remove()
         }
     }
 
-    private fun setListener(index: Buttons, listener: Any?): Boolean {
+    private fun setListener(index: Buttons, listener: Any?) {
         val button = getButtonFor(index)
-        val success = null != button
-        if (success) {
-            if (listener is View.OnClickListener) {
-                button.setOnClickListener(listener as View.OnClickListener?)
-            } else if (listener is OnLongClickListener) {
-                button.setOnLongClickListener(listener as OnLongClickListener?)
-            } else {
-                Assert.failDbg()
-            }
+        when (listener) {
+            is View.OnClickListener ->
+                button.setOnClickListener(listener)
+            is OnLongClickListener ->
+                button.setOnLongClickListener(listener)
+            else -> Assert.failDbg()
         }
-        return success
     }
 
     private fun doShowHide() {
         val isPortrait = BoardContainer.getIsPortrait()
 
-        if (null == m_layout) {
-            m_layout = LocUtils.inflate(m_activity, R.layout.toolbar) as LinearLayout
+        if (null == mLayout) {
+            mLayout = LocUtils.inflate(mActivity, R.layout.toolbar) as LinearLayout
         } else {
-            (m_layout!!.parent as ViewGroup).removeView(m_layout)
+            (mLayout!!.parent as ViewGroup).removeView(mLayout)
         }
-        m_layout!!.orientation = if (isPortrait) LinearLayout.HORIZONTAL else LinearLayout.VERTICAL
+        mLayout!!.orientation = if (isPortrait) LinearLayout.HORIZONTAL else LinearLayout.VERTICAL
 
         val scrollerId = if (isPortrait) R.id.tbar_parent_hor else R.id.tbar_parent_vert
-        val scroller = m_activity.findViewById<View>(scrollerId) as ViewGroup
-        if (null != scroller) {
-            // Google's had reports of a crash adding second view
-            scroller.removeAllViews()
-            scroller.addView(m_layout)
+        val scroller = mActivity.findViewById<ViewGroup>(scrollerId)
+        // Google's had reports of a crash adding second view
+        scroller.removeAllViews()
+        scroller.addView(mLayout)
 
-            scroller.visibility = if (m_visible) View.VISIBLE else View.GONE
-        }
+        scroller.visibility = if (mVisible) View.VISIBLE else View.GONE
     }
 }
