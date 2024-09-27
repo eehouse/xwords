@@ -112,6 +112,7 @@ class EditColorPreference(private val mContext: Context, attrs: AttributeSet?) :
         return arr.getInteger(index, 0)
     }
 
+    @Deprecated("Deprecated in Java")
     override fun onSetInitialValue(restoreValue: Boolean, defaultValue: Any?) {
         if (!restoreValue) {
             persistInt((defaultValue as Int))
@@ -159,31 +160,26 @@ class EditColorPreference(private val mContext: Context, attrs: AttributeSet?) :
     private fun onBindDialogView(view: View?) {
         LocUtils.xlateView(mContext, view)
         mCurColor = persistedColor
-        setOneByte(view, 0)
-        setOneByte(view, 1)
-        setOneByte(view, 2)
-        view!!.findViewById<View>(R.id.color_edit_sample)
-            .setBackgroundColor(mCurColor)
+        view?.let {
+            setOneByte(it, 0)
+            setOneByte(it, 1)
+            setOneByte(it, 2)
+            it.findViewById<View>(R.id.color_edit_sample)
+                .setBackgroundColor(mCurColor)
+        }
     }
 
-    private fun setOneByte(parent: View?, indx: Int) {
+    private fun setOneByte(parent: View, indx: Int) {
         val shift = 16 - indx * 8
         val byt = mCurColor shr shift and 0xFF
-        val seekbar = parent!!.findViewById<View>(m_seekbarIds[indx]) as SeekBar
-        val edittext = parent.findViewById<View>(m_editIds[indx]) as EditText
-        if (null != seekbar) {
+        val seekbar = parent.findViewById<SeekBar>(m_seekbarIds[indx])
+        val edittext = parent.findViewById<EditText>(m_editIds[indx])
             seekbar.progress = byt
             seekbar.setOnSeekBarChangeListener(
-                SBCL(
-                    parent, edittext,
-                    indx
-                )
+                SBCL(parent, edittext, indx)
             )
-        }
-        if (null != edittext) {
-            edittext.setText(String.format("%d", byt))
-            edittext.addTextChangedListener(TCL(seekbar))
-        }
+        edittext.setText(String.format("%d", byt))
+        edittext.addTextChangedListener(TCL(seekbar))
     }
 
     private val persistedColor: Int
@@ -201,13 +197,10 @@ class EditColorPreference(private val mContext: Context, attrs: AttributeSet?) :
         )
 
         private fun getOneByte(parent: DialogInterface, id: Int): Int {
-            var `val` = 0
             val dialog = parent as Dialog
-            val seekbar = dialog.findViewById<View>(id) as SeekBar
-            if (null != seekbar) {
-                `val` = seekbar.progress
-            }
-            return `val`
+            val seekbar = dialog.findViewById<SeekBar>(id)
+            val result = seekbar.progress
+            return result
         }
     }
 }

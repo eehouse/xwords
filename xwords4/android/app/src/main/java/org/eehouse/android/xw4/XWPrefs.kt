@@ -153,19 +153,17 @@ open class XWPrefs {
 
         fun getPrefsInt(context: Context, keyID: Int, defaultValue: Int): Int {
             var result = defaultValue
-            if (null != context) {
-                val key = context.getString(keyID)
-                val sp = PreferenceManager
-                    .getDefaultSharedPreferences(context)
+            val key = context.getString(keyID)
+            val sp = PreferenceManager
+                .getDefaultSharedPreferences(context)
+            try {
+                result = sp.getInt(key, defaultValue)
+                // If it's in a pref, it'll be a string (editable) So will get CCE
+            } catch (cce: ClassCastException) {
+                val asStr = sp.getString(key, String.format("%d", defaultValue))
                 try {
-                    result = sp.getInt(key, defaultValue)
-                    // If it's in a pref, it'll be a string (editable) So will get CCE
-                } catch (cce: ClassCastException) {
-                    val asStr = sp.getString(key, String.format("%d", defaultValue))
-                    try {
-                        result = asStr!!.toInt()
-                    } catch (ex: Exception) {
-                    }
+                    result = asStr!!.toInt()
+                } catch (ex: Exception) {
                 }
             }
             return result
@@ -252,26 +250,21 @@ open class XWPrefs {
 
         fun getSMSPhones(context: Context): JSONObject {
             val asStr = getPrefsString(context, R.string.key_sms_phones)
-            var obj: JSONObject? = null
-
-            if (null != asStr) {
-                obj = try {
+            var obj =
+                try {
                     JSONObject(asStr)
                 } catch (ex: JSONException) {
                     null
                 }
-            }
 
             if (null == obj) {
                 obj = JSONObject()
-                if (null != asStr) {
-                    val numbers = TextUtils.split(asStr, "\n")
-                    for (number in numbers) {
-                        try {
-                            obj.put(number, "") // null removes any entry
-                        } catch (ex: JSONException) {
-                            Log.ex(TAG, ex)
-                        }
+                val numbers = TextUtils.split(asStr, "\n")
+                for (number in numbers) {
+                    try {
+                        obj.put(number, "") // null removes any entry
+                    } catch (ex: JSONException) {
+                        Log.ex(TAG, ex)
                     }
                 }
             }
@@ -404,7 +397,7 @@ open class XWPrefs {
 
         protected fun getPrefsStringArray(context: Context, keyID: Int): Array<String>? {
             val asStr = getPrefsString(context, keyID)
-            val result = if (null == asStr) null else TextUtils.split(asStr, "\n")
+            val result = TextUtils.split(asStr, "\n")
             return result
         }
 
