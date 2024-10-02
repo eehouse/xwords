@@ -1,4 +1,3 @@
-/* -*- compile-command: "cd ../linux && make MEMDEBUG=TRUE -j3"; -*- */
 /* 
  * Copyright 2001 - 2019 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
@@ -216,7 +215,7 @@ nli_makeFromStream( NetLaunchInfo* nli, XWStreamCtxt* stream )
     LOG_FUNC();
     XP_MEMSET( nli, 0, sizeof(*nli) );
     XP_U16 version = stream_getU8( stream );
-    XP_LOGF( "%s(): read version: %d", __func__, version );
+    XP_LOGFF( "read version: %d", version );
 
     nli->_conTypes = stream_getU16( stream );
     if ( version == NLI_VERSION_LC ) {

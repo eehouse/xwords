@@ -1,6 +1,4 @@
-/* -*- compile-command: "cd ../linux && make MEMDEBUG=TRUE -j3"; -*- */
-/* 
- * Copyright 2001 - 2024 by Eric House (xwords@eehouse.org).  All rights
+/* Copyright 2001 - 2024 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or

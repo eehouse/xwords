@@ -1,4 +1,3 @@
-/* -*- compile-command: "cd ../linux && make MEMDEBUG=TRUE"; -*- */
 /* 
  * Copyright 1997 - 2009 by Eric House (xwords@eehouse.org).  All rights
  * reserved.

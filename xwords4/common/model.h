@@ -1,4 +1,3 @@
-/* -*- fill-column: 78; compile-command: "cd ../linux && make -j3 MEMDEBUG=TRUE"; -*- */
 /* 
  * Copyright 1997 - 2009 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
