@@ -1,5 +1,4 @@
-/* -*- compile-command: "find-and-gradle.sh inXw4dDeb"; -*- */ /*
- * Copyright 2012 by Eric House (xwords@eehouse.org).  All rights
+/* Copyright 2012 - 2024 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or

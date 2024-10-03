@@ -1,4 +1,4 @@
-/* -*- compile-command: "find-and-gradle.sh inXw4dDeb"; -*- */ /*
+/*
  * Copyright 2011 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
