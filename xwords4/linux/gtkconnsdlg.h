@@ -1,4 +1,3 @@
-/* -*-mode: C; fill-column: 78; compile-command: "make MEMDEBUG=TRUE"; -*- */
 /* 
  * Copyright 2000-2009 by Eric House (xwords@eehouse.org).  All rights
  * reserved.

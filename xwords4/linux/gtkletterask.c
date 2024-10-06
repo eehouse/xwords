@@ -1,4 +1,3 @@
-/* -*- compile-command: "make -j3 MEMDEBUG=TRUE"; -*- */
 /* 
  * Copyright 2000-2009 by Eric House (xwords@eehouse.org).  All rights
  * reserved.

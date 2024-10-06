@@ -950,7 +950,7 @@ addGuestAddrsIf( const ServerCtxt* server, XWEnv xwe, XP_U16 sendee,
             buildGuestRI( server, xwe, sendee, &ri );
             ri_toStream( tmpStream, &ri, server );
 
-            /* Old verion requires no two-player devices  */
+            /* Old version requires no two-player devices  */
         } else if ( server->nv.nDevices == server->vol.gi->nPlayers ) {
             for ( XP_U16 devIndex = 1; devIndex < server->nv.nDevices; ++devIndex ) {
                 if ( devIndex == sendee ) {
