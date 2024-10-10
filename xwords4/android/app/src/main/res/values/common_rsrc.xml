@@ -67,6 +67,7 @@
   <string name="key_mqtt_qos">key_mqtt_qos2</string>
   <string name="key_update_prerel">key_update_prerel</string>
   <string name="key_log_prune_hours">key_log_prune_hours</string>
+  <string name="key_allowDupGameIDs">key_allowDupGameIDs</string>
   <string name="key_proxy_port">key_proxy_port</string>
   <string name="key_sms_port">key_sms_port</string>
   <string name="key_dict_host_path">key_dict_host_path</string>

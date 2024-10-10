@@ -113,16 +113,17 @@ linux_dutil_haveGame( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe),
     sqlite3_int64 rowids[MAX_NUM_PLAYERS];
     int nRowIDs = VSIZE(rowids);
     gdb_getRowsForGameID( pDb, gameID, rowids, &nRowIDs );
-    XP_Bool result = XP_FALSE;
-    for ( int ii = 0; ii < nRowIDs; ++ii ) {
-        GameInfo gib;
-        if ( ! gdb_getGameInfoForRow( pDb, rowids[ii], &gib ) ) {
-            XP_ASSERT(0);
-        }
-        if ( gib.channelNo == channel ) {
-            result = XP_TRUE;
-        }
-    }
+    XP_Bool result = 0 < nRowIDs;
+    /* XP_Bool result = XP_FALSE; */
+    /* for ( int ii = 0; ii < nRowIDs; ++ii ) { */
+    /*     GameInfo gib; */
+    /*     if ( ! gdb_getGameInfoForRow( pDb, rowids[ii], &gib ) ) { */
+    /*         XP_ASSERT(0); */
+    /*     } */
+    /*     if ( gib.channelNo == channel ) { */
+    /*         result = XP_TRUE; */
+    /*     } */
+    /* } */
     XP_LOGFF( "(gameID=%X, channel=%d) => %s",
               gameID, channel, boolToStr(result) );
     return result;

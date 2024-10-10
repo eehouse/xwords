@@ -85,6 +85,12 @@
         android:defaultValue="@string/dflt_log_prune_hours"
         />
 
+    <CheckBoxPreference android:key="@string/key_allowDupGameIDs"
+                        android:title="@string/pref_item_allowMulti_title"
+                        android:summary="@string/pref_item_allowMulti_summary"
+                        android:defaultValue="false"
+                        />
+
     <!-- Keep all dup-mode related stuff hidden -->
     <CheckBoxPreference android:key="@string/key_unhide_dupmode"
                         android:title="@string/unhide_dupmode_title"

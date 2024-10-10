@@ -455,9 +455,9 @@ class GameSummary : Serializable {
 
     fun getStringExtra(key: String): String? {
         var result: String? = null
-        if (null != extras) {
+        extras?.let {
             try {
-                val asObj = JSONObject(extras)
+                val asObj = JSONObject(it)
                 result = asObj.optString(key)
                 if (0 == result.length) {
                     result = null

@@ -235,8 +235,14 @@ object GameUtils {
 
     fun haveWithGameID(context: Context, gameID: Int, channel: Int): Boolean {
         val map = DBUtils.getRowIDsAndChannels(context, gameID)
-        val found = 0 < map.size &&
-                (-1 == channel || map.values.contains(channel))
+        var found = 0 < map.size
+        if (found) {
+            if ( XWPrefs.getPrefsBoolean(context, R.string.key_allowDupGameIDs,
+                                         false) ) {
+                found = (-1 == channel || map.values.contains(channel))
+            }
+            // && (-1 == channel || map.values.contains(channel))
+        }
         // Log.d( TAG, "haveWithGameID(gameID=%X, channel=%d) => %b",
         //        gameID, channel, found );
         return found
