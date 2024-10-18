@@ -204,6 +204,10 @@ typedef struct _LaunchParams {
         } mqtt;
     } connInfo;
 
+#ifdef XWFEATURE_TESTSORT
+    const char* sortDict;
+#endif
+
     union {
         ServerInfo serverInfo;
         ClientInfo clientInfo;

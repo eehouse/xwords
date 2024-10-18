@@ -695,6 +695,9 @@ typedef enum {
     ,CMD_TESTPRFX
     ,CMD_TESTMINMAX
 #endif
+#ifdef XWFEATURE_TESTSORT
+    ,CMD_SORTDICT
+#endif
     ,CMD_DELIM
 #ifdef XWFEATURE_TESTPATSTR
     ,CMD_TESTPAT
@@ -844,6 +847,9 @@ static CmdInfoRec CmdInfoRecs[] = {
     ,{ CMD_TESTDICT, true, "test-dict", "dictionary to be used for iterator test" }
     ,{ CMD_TESTPRFX, true, "test-prefix", "list first word starting with this" }
     ,{ CMD_TESTMINMAX, true, "test-minmax", "M:M -- include only words whose len in range" }
+#endif
+#ifdef XWFEATURE_TESTSORT
+    ,{ CMD_SORTDICT, true, "sort-dict", "dictionary to be used for sorting test" }
 #endif
     ,{ CMD_DELIM, true, "test-delim", "string (should be one char) printed between tile faces" }
 #ifdef XWFEATURE_TESTPATSTR
@@ -2680,6 +2686,81 @@ testDLL()
 # define testDLL()
 #endif
 
+#ifdef XWFEATURE_TESTSORT
+typedef struct _SortTestElem {
+    DLHead link;
+    XP_UCHAR buf[32];           /* the word */
+} SortTestElem;
+
+static int
+compLenAlpha(const DLHead* dl1, const DLHead* dl2)
+{
+    SortTestElem* elem1 = (SortTestElem*)dl1;
+    int len1 = strlen(elem1->buf);
+    SortTestElem* elem2 = (SortTestElem*)dl2;
+    int len2 = strlen(elem2->buf);
+    int result = len1 - len2;
+    if ( 0 == result ) {
+        result = strcmp(elem1->buf, elem2->buf);
+    }
+    return result;
+}
+
+static ForEachAct
+printProc(const DLHead* elem, void* closure)
+{
+    SortTestElem* ste = (SortTestElem*)elem;
+    int* counter = (int*)closure;
+    ++*counter;
+    XP_LOGFF( "word %d: %s", *counter, ste->buf );
+    return FEA_OK;
+}
+
+static void
+printList( DLHead* list )
+{
+    int counter = 0;
+    dll_map( list, printProc, NULL, &counter );
+}
+
+static void
+disposeProc( DLHead* elem, void* XP_UNUSED(closure) )
+{
+    free( elem );
+}
+
+static void
+testSort( LaunchParams* params )
+{
+    DLHead* list = NULL;
+
+    XP_LOGFF( "(sortdict: %s)", params->sortDict );
+    DictionaryCtxt* dict =
+        linux_dictionary_make( MPPARM(params->mpool) NULL_XWE, params, params->sortDict,
+                               params->useMmap );
+    XP_ASSERT( !!dict );
+
+    DictIter* iter = di_makeIter( dict, NULL_XWE, NULL, NULL, 0, NULL, 0 );
+    XP_ASSERT( !!iter );
+
+    XP_Bool success;
+    XP_U32 ii = 0;
+    for ( success = di_firstWord( iter ); success; success = di_getNextWord( iter ) ) {
+        SortTestElem* elem = calloc( 1, sizeof(*elem) );
+        di_wordToString( iter, elem->buf, VSIZE(elem->buf), NULL );
+        ++ii;
+        // list = dll_insert(list, &elem->link, NULL );
+        list = dll_insert(list, &elem->link, compLenAlpha );
+    }
+
+    // list = dll_sort( list, compLenAlpha );
+    printList(list);
+
+    di_freeIter( iter, NULL_XWE );
+    dll_removeAll( list, disposeProc, NULL );
+}
+#endif
+
 int
 main( int argc, char** argv )
 {
@@ -2867,6 +2948,12 @@ main( int argc, char** argv )
             break;
         case CMD_TESTMINMAX:
             mainParams.testMinMax = optarg;
+            break;
+#endif
+#ifdef XWFEATURE_TESTSORT
+        case CMD_SORTDICT:
+            mainParams.sortDict = optarg;
+            XP_LOGFF( "set testdict: %s/%s", optarg, mainParams.sortDict );
             break;
 #endif
         case CMD_DELIM:
@@ -3289,6 +3376,10 @@ main( int argc, char** argv )
         }
     }
 
+#ifdef XWFEATURE_TESTSORT
+    testSort( &mainParams );
+    exit(0);
+#endif
     /* add cur dir if dict search dir path is empty */
     if ( !mainParams.dictDirs ) {
         mainParams.dictDirs = g_slist_append( mainParams.dictDirs, "./" );
