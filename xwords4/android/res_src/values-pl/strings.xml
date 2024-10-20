@@ -813,4 +813,6 @@
     </plurals>
     <string name="invitee_fmt">(zaproszono %1$s)</string>
     <string name="list_item_relaypage">Ruch w grze…</string>
+    <string name="button_delete_game">Usuń grę</string>
+    <string name="relaypage_url_copied">URL gry skopiowany do schowka</string>
 </resources>
