@@ -699,7 +699,7 @@
     <string name="sms_send_failed">Wysyłanie SMS nie powiodło się</string>
     <string name="perms_rationale_title">Uprawnienia w systemie Android</string>
     <string name="toast_no_permission">Pozwolenie nie zostało udzielone</string>
-    <string name="list_item_netstats">Połączeń…</string>
+    <string name="list_item_netstats">Połączenia…</string>
     <plurals name="too_many_trade_fmt">
         <item quantity="one">Zbyt wiele wybranych kafelków. Wybierz tylko jeden.</item>
         <item quantity="few">Zbyt wiele wybranych kafelków. Wybierz nie więcej niż %1$d.</item>
@@ -815,4 +815,7 @@
     <string name="list_item_relaypage">Ruch w grze…</string>
     <string name="button_delete_game">Usuń grę</string>
     <string name="relaypage_url_copied">URL gry skopiowany do schowka</string>
+    <string name="langUnknownFmt">Nieznane (%1$s)</string>
+    <string name="invites_unsent">Ta gra jest skonfigurowana w taki sposób, że oczekuje zdalnego gracza.\n\nCzy chcesz kogoś zaprosić?</string>
+    <string name="confirm_del_after_rematch_fmt">Rewanż ukończony.\n\nCzy chcesz teraz usunąć ukończąoną grę %1$s?\n\n(Ta akcja nie może zostać cofnięta.)</string>
 </resources>
