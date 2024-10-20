@@ -119,7 +119,7 @@ class GameConfigDelegate(delegator: Delegator) :
         }
     }
 
-    override fun makeDialog(alert: DBAlert, vararg params: Any?): Dialog {
+    override fun makeDialog(alert: DBAlert, vararg params: Any?): Dialog? {
         var dialog: Dialog? = null
         val dlgID = alert.dlgID
         Log.d(TAG, "makeDialog(%s)", dlgID.toString())
@@ -259,7 +259,7 @@ class GameConfigDelegate(delegator: Delegator) :
             else -> dialog = super.makeDialog(alert, *params)
         }
         Assert.assertTrue(dialog != null || !BuildConfig.DEBUG)
-        return dialog!!
+        return dialog
     } // makeDialog
 
     private fun setPlayerSettings(playerView: View) {

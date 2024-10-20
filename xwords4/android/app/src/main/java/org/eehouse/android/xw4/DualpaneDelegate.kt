@@ -36,7 +36,7 @@ class DualpaneDelegate(delegator: Delegator) :
 
     override fun init(savedInstanceState: Bundle?) {}
 
-    override fun makeDialog(alert: DBAlert, vararg params: Any?): Dialog {
+    override fun makeDialog(alert: DBAlert, vararg params: Any?): Dialog? {
         var dialog: Dialog? = null
         val main = m_activity as MainActivity
         val frags = main.getFragments(false)
@@ -46,7 +46,7 @@ class DualpaneDelegate(delegator: Delegator) :
                 break
             }
         }
-        return dialog!!
+        return dialog
     }
 
     override fun handleNewIntent(intent: Intent) {

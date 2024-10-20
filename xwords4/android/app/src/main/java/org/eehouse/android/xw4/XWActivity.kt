@@ -285,8 +285,8 @@ open class XWActivity : FragmentActivity(), Delegator, DlgClickNotify {
         }
     }
 
-    internal fun makeDialog(alert: DBAlert, vararg params: Any?): Dialog {
-        return mDlgt!!.makeDialog(alert, *params)!!
+    internal fun makeDialog(alert: DBAlert, vararg params: Any?): Dialog? {
+        return mDlgt!!.makeDialog(alert, *params)
     }
 
     fun getDelegate(): DelegateBase { return mDlgt!! }

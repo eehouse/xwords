@@ -258,7 +258,7 @@ class DictsDelegate(delegator: Delegator) :
         }
     }
 
-    override fun makeDialog(alert: DBAlert, vararg params: Any?): Dialog {
+    override fun makeDialog(alert: DBAlert, vararg params: Any?): Dialog? {
         val lstnr: DialogInterface.OnClickListener
         val lstnr2: DialogInterface.OnClickListener
 
@@ -359,7 +359,7 @@ class DictsDelegate(delegator: Delegator) :
 
             else -> super.makeDialog(alert, *params)
         }
-        return dialog!!
+        return dialog
     } // makeDialog
 
     override fun init(savedInstanceState: Bundle?) {

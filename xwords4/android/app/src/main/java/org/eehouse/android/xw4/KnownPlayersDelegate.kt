@@ -75,7 +75,7 @@ class KnownPlayersDelegate(delegator: Delegator) :
         return handled
     }
 
-    override fun makeDialog(alert: DBAlert, vararg params: Any?): Dialog {
+    override fun makeDialog(alert: DBAlert, vararg params: Any?): Dialog? {
         var dialog: Dialog? = null
 
         val dlgID = alert.dlgID
@@ -95,7 +95,7 @@ class KnownPlayersDelegate(delegator: Delegator) :
         if (null == dialog) {
             dialog = super.makeDialog(alert, *params)
         }
-        return dialog!!
+        return dialog
     }
 
     private fun tryRename(oldName: String, newName: String) {

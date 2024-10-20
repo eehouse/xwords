@@ -255,8 +255,8 @@ class DictBrowseDelegate constructor(delegator: Delegator) : DelegateBase(
         setFindPats(mBrowseState!!.mPats)
     }
 
-    override fun makeDialog(alert: DBAlert, vararg params: Any?): Dialog {
-
+    override fun makeDialog(alert: DBAlert, vararg params: Any?): Dialog?
+    {
         var dialog: Dialog? = null
         val dlgID = alert.dlgID
         when (dlgID) {
@@ -303,7 +303,7 @@ class DictBrowseDelegate constructor(delegator: Delegator) : DelegateBase(
 
             else -> dialog = super.makeDialog(alert, *params)
         }
-        return dialog!!
+        return dialog
     }
 
     override fun onPrepareOptionsMenu(menu: Menu): Boolean {

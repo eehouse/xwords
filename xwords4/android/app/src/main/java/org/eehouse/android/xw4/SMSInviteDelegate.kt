@@ -101,7 +101,7 @@ class SMSInviteDelegate(delegator: Delegator) :
         }
     }
 
-    override fun makeDialog(alert: DBAlert, vararg params: Any?): Dialog {
+    override fun makeDialog(alert: DBAlert, vararg params: Any?): Dialog? {
         val lstnr: DialogInterface.OnClickListener
         val dialog =
             when (alert.dlgID) {
@@ -126,7 +126,7 @@ class SMSInviteDelegate(delegator: Delegator) :
                     .create()
             }
 
-            else -> super.makeDialog(alert, *params)!!
+            else -> super.makeDialog(alert, *params)
         }
         return dialog
     }

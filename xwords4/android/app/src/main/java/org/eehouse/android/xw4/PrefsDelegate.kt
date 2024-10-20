@@ -49,7 +49,7 @@ class PrefsDelegate(private val mActivity: XWActivity,
 {
     private var mFragment: PreferenceFragmentCompat? = null
 
-    override fun makeDialog(alert: DBAlert, vararg params: Any?): Dialog {
+    override fun makeDialog(alert: DBAlert, vararg params: Any?): Dialog? {
         val dlgID = alert.dlgID
         var lstnr: DialogInterface.OnClickListener? = null
         var confirmID = 0
@@ -91,7 +91,7 @@ class PrefsDelegate(private val mActivity: XWActivity,
                 .setNegativeButton(android.R.string.cancel, null)
                 .create()
         }
-        return dialog!!
+        return dialog
     }
 
     override fun init(savedInstanceState: Bundle?) {

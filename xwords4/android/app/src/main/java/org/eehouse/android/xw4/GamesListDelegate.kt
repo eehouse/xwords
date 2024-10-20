@@ -490,7 +490,7 @@ class GamesListDelegate(delegator: Delegator) :
     private var m_newGameParams: Array<Any?>? = null
     private var mCurScrollState = 0
 
-    override fun makeDialog(alert: DBAlert, vararg params: Any?): Dialog {
+    override fun makeDialog(alert: DBAlert, vararg params: Any?): Dialog? {
         var dialog: Dialog? = null
         val lstnr: DialogInterface.OnClickListener
         val lstnr2: DialogInterface.OnClickListener
@@ -763,7 +763,7 @@ class GamesListDelegate(delegator: Delegator) :
 
             else -> dialog = super.makeDialog(alert, *params)
         }
-        return dialog!!
+        return dialog
     } // makeDialog
 
     private fun mkNewNetGameDialog(standalone: Boolean): Dialog {
