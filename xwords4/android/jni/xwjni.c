@@ -1201,8 +1201,6 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1getInfo
 {
     jobject jinfo;
     DVC_HEADER(jniGlobalPtr);
-#ifdef MAP_THREAD_TO_ENV
-#endif
     DictionaryCtxt* dict = (DictionaryCtxt*)dictPtr;
     XP_ASSERT( !!dict );
     jinfo = makeObjectEmptyConstr( env, PKG_PATH("jni/DictInfo") );

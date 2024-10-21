@@ -82,7 +82,7 @@ class WiDirService : XWService() {
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
         val result: Int
 
-        if (enabled() && null != intent) {
+        if (enabled()) {
             result = START_STICKY
 
             val ordinal = intent.getIntExtra(KEY_CMD, -1)
@@ -887,20 +887,16 @@ class WiDirService : XWService() {
 
         private fun storeByAddress(wrap: BiDiSockWrap, packet: XWPacket) {
             val macAddress = packet.getString(KEY_MAC)
-            // Assert.assertNotNull( macAddress );
-            if (null != macAddress) {
-                // this has fired. Sockets close and re-open?
-                sSocketWrapMap[macAddress] = wrap
-                Log.d(
-                    TAG, "storeByAddress(); storing wrap for %s",
-                    macAddress
-                )
+            sSocketWrapMap[macAddress] = wrap
+            Log.d(
+                TAG, "storeByAddress(); storing wrap for %s",
+                macAddress
+            )
 
-                GameUtils.resendAllIf(
-                    XWApp.getContext(),
-                    CommsConnType.COMMS_CONN_P2P
-                )
-            }
+            GameUtils.resendAllIf(
+                XWApp.getContext(),
+                CommsConnType.COMMS_CONN_P2P
+            )
         }
 
         private fun processPacket(wrap: BiDiSockWrap, bytes: ByteArray) {
@@ -1060,7 +1056,7 @@ class WiDirService : XWService() {
         private fun forwardedPacket(packet: XWPacket, bytes: ByteArray): Boolean {
             var forwarded = false
             val destAddr = packet.getString(KEY_DEST)
-            if (null != destAddr && 0 < destAddr.length) {
+            if (destAddr.isNotEmpty()) {
                 forwarded = destAddr == sMacAddress
                 if (forwarded) {
                     forwardPacket(bytes, destAddr)

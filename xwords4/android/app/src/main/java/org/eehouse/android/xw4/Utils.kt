@@ -129,15 +129,12 @@ object Utils {
     // we only support SMS on kitkat if data messages have been turned on (and
     // that's not allowed except on GSM phones.)
     fun deviceSupportsNBS(context: Context): Boolean {
-        var result = false
-        if (Perms23.haveNBSPerms(context)) {
-            val tm = context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
-            if (null != tm) {
-                val type = tm.phoneType
-                result = TelephonyManager.PHONE_TYPE_GSM == type
-            }
-        }
-        Log.d(TAG, "deviceSupportsNBS() => %b", result)
+        val result =
+            if (Perms23.haveNBSPerms(context)) {
+                val tm = context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
+                TelephonyManager.PHONE_TYPE_GSM == tm.phoneType
+            } else false
+        // Log.d(TAG, "deviceSupportsNBS() => %b", result)
         return result
     }
 

@@ -270,10 +270,8 @@ abstract class IsoWordsBase(delegator: Delegator, private val CHECKED_KEY: Strin
     {
         if ( null != sis ) {
 			val checkeds = sis.getSerializable( CHECKED_KEY ) as HashSet<String>
-			if ( null != checkeds ) {
-				m_checkeds.clear()
-				m_checkeds.addAll(checkeds)
-			}
+            m_checkeds.clear()
+            m_checkeds.addAll(checkeds)
         }
     }
 

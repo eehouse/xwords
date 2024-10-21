@@ -159,7 +159,7 @@ object NagTurnReceiver {
         var result: LongArray? = null
         val pref =
             XWPrefs.getPrefsString(context, R.string.key_nag_intervals)
-        if (null != pref && 0 < pref.length) {
+        if (pref.isNotEmpty()) {
             if (pref == s_lastStr) {
                 result = s_lastIntervals
             } else {

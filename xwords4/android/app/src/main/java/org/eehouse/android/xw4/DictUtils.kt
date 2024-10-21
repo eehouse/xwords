@@ -200,7 +200,7 @@ object DictUtils {
     }
 
     private fun copyDict(
-        context: Context, name: String?,
+        context: Context, name: String,
         from: DictLoc, to: DictLoc
     ): Boolean {
         Assert.assertFalse(from == to)
@@ -335,7 +335,7 @@ object DictUtils {
         return path
     }
 
-    private fun getDictFile(context: Context, name: String?, to: DictLoc): File? {
+    private fun getDictFile(context: Context, name: String, to: DictLoc): File? {
         val path =
             when (to) {
                 DictLoc.DOWNLOAD -> getDownloadsPathFor(context, name)
@@ -470,14 +470,7 @@ object DictUtils {
     }
 
     private fun isDict(context: Context, file: String?, dir: File?): Boolean {
-        var ok = file!!.endsWith(XWConstants.DICT_EXTN)
-        if (ok && null != dir) {
-            val fullPath = File(dir, file).path
-            ok = null != XwJNI.dict_getInfo(
-                null, removeDictExtn(file),
-                fullPath, true
-            )
-        }
+        val ok = file!!.endsWith(XWConstants.DICT_EXTN)
         return ok
     }
 
@@ -537,12 +530,8 @@ object DictUtils {
         return result
     }
 
-    private fun getSDPathFor(context: Context, name: String?): File? {
-        var result: File? = null
-        val dir = getSDDir(context)
-        if (dir != null) {
-            result = File(dir, name)
-        }
+    private fun getSDPathFor(context: Context, name: String): File? {
+        var result = getSDDir(context)?.let { File(it, name) }
         return result
     }
 

@@ -933,10 +933,7 @@ class XwJNI private constructor() {
         }
 
         fun dict_getInfo(dict: DictWrapper, check: Boolean): DictInfo {
-            return dict_getInfo(
-                jNI.m_ptrGlobals, dict.dictPtr,
-                check
-            )
+            return dict_getInfo(jNI.m_ptrGlobals, dict.dictPtr, check)
         }
 
         fun dict_getDesc(dict: DictWrapper): String? {
@@ -1115,12 +1112,9 @@ class XwJNI private constructor() {
 		@JvmStatic
         private external fun envDone(globals: Long)
 		@JvmStatic
-        private external fun dict_make(
-            jniState: Long,
-            dict: ByteArray?,
-            name: String?,
-            path: String?
-        ): Long
+        private external fun dict_make(jniState: Long, dict: ByteArray?,
+                                       name: String?, path: String?)
+            : Long
 
 		@JvmStatic
         private external fun dict_ref(dictPtr: Long)

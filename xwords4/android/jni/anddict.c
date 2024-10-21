@@ -381,7 +381,8 @@ makeDict( MPFORMAL JNIEnv* env,
             if ( !parses || (check && !checkSanity( &anddict->super, 
                                                     numEdges ) ) ) {
                 and_dictionary_destroy( (DictionaryCtxt*)anddict, env );
-                anddict = NULL;
+                anddict = NULL;   /* This will blow up soon! */
+                XP_ASSERT(0);
             }
         }
         dmgr_put( dictMgr, env, name, &anddict->super );

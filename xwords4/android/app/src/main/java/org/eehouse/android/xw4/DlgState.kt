@@ -56,7 +56,7 @@ class DlgState(val mID: DlgID) : Parcelable {
     }
 
     fun setParams(vararg params: Any?): DlgState {
-        if (BuildConfig.DEBUG && null != params) {
+        if (BuildConfig.DEBUG) {
             for (obj in params) {
                 if (null != obj && obj !is Serializable) {
                     Log.d(TAG, "OOPS: %s not Serializable",

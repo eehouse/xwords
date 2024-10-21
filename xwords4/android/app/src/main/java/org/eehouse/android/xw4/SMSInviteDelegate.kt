@@ -93,7 +93,7 @@ class SMSInviteDelegate(delegator: Delegator) :
         requestCode: RequestCode, resultCode: Int,
         data: Intent
     ) {
-        if (Activity.RESULT_CANCELED != resultCode && data != null) {
+        if (Activity.RESULT_CANCELED != resultCode) {
             when (requestCode) {
                 RequestCode.GET_CONTACT -> post { addPhoneNumbers(data) }
                 else -> Log.d(TAG, "onActivityResult(): unexpected code $resultCode")
@@ -112,7 +112,7 @@ class SMSInviteDelegate(delegator: Delegator) :
                 lstnr = DialogInterface.OnClickListener { dlg, item ->
                     val number = (getNumView.findViewById<View>(R.id.num_field) as EditText)
                         .text.toString()
-                    if (null != number && 0 < number.length) {
+                    if (number.isNotEmpty()) {
                         val name = (getNumView.findViewById<View>(R.id.name_field) as EditText)
                             .text.toString()
                         postSMSCostWarning(number, name)

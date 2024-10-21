@@ -56,16 +56,14 @@ object DictLangCache {
     fun annotatedDictName(context: Context, dal: DictAndLoc): String? {
         var result: String? = null
         val info = getInfo(context, dal)
-        if (null != info) {
-            val wordCount = info.wordCount
+        val wordCount = info.wordCount
 
-            val langName = getDictLangName(context, dal.name)
-            result = LocUtils.getString(
-                context, R.string.dict_desc_fmt,
-                dal.name, langName,
-                wordCount
-            )
-        }
+        val langName = getDictLangName(context, dal.name)
+        result = LocUtils.getString(
+            context, R.string.dict_desc_fmt,
+            dal.name, langName,
+            wordCount
+        )
         return result
     }
 
@@ -87,7 +85,7 @@ object DictLangCache {
         val dals = DictUtils.dictList(context)
         for (dal in dals!!) {
             val info = getInfo(context, dal)
-            if (null != info && isoCode!!.equals(info.isoCode())) {
+            if (isoCode!!.equals(info.isoCode())) {
                 al.add(info)
             }
         }
@@ -145,7 +143,7 @@ object DictLangCache {
 
         for (dal in dals!!) {
             val info = getInfo(context, dal)
-            if (null != info && isoCode.equals(info.isoCode())) {
+            if (isoCode.equals(info.isoCode())) {
                 al.add(dal)
             }
         }
@@ -216,11 +214,11 @@ object DictLangCache {
         }
     }
 
-    fun getLangIsoCode(context: Context, langName: String): ISOCode {
-        var result: ISOCode
+    fun getLangIsoCode(context: Context, langName: String): ISOCode? {
+        var result: ISOCode? = null
         DLCache.get(context).use { cache ->
             // Log.d( TAG, "looking for %s in %H", langName, cache );
-            result = cache!!.get(langName)!!
+            result = cache?.get(langName)
         }
         // Log.d( TAG, "getLangIsoCode(%s) => %s", langName, result );
         return result
@@ -288,11 +286,9 @@ object DictLangCache {
                 Log.w(TAG, "bad lang name for dal name %s", dal.name)
 
                 val di = getInfo(context, dal)
-                if (null != di) {
-                    name = di.langName
-                    DLCache.get(context).use { cache ->
-                        cache!!.put(di.isoCode(), name)
-                    }
+                name = di.langName
+                DLCache.get(context).use { cache ->
+                    cache!!.put(di.isoCode(), name)
                 }
             }
             if (null != name && 0 < name.length) {
@@ -397,16 +393,12 @@ object DictLangCache {
                 pairs.m_paths[0],
                 DictLoc.DOWNLOAD == dal.loc
             )
-            if (null != info) {
-                info.name = dal.name
-                info.fullSum = getMD5SumFor(context, dal)
-                Assert.assertTrueNR(null != info.fullSum)
+            info.name = dal.name
+            info.fullSum = getMD5SumFor(context, dal)
+            Assert.assertTrueNR(null != info.fullSum)
 
-                DBUtils.dictsSetInfo(context, dal, info)
-                // Log.d( TAG, "getInfo() => %s", info );
-            } else {
-                Log.i(TAG, "getInfo(): unable to open dict %s", dal.name)
-            }
+            DBUtils.dictsSetInfo(context, dal, info)
+            // Log.d( TAG, "getInfo() => %s", info );
         }
         return info
     }

@@ -943,17 +943,17 @@ class BoardDelegate(delegator: Delegator) :
 
             Action.BUTTON_BROWSEALL_ACTION, Action.BUTTON_BROWSE_ACTION -> {
                 val curDict = gi.dictName(mView!!.curPlayer)
-                val button: View = mToolbar!!.getButtonFor(Buttons.BUTTON_BROWSE_DICT)
-                Assert.assertTrueNR(null != gi.isoCode())
+                val isoCode = gi.isoCode()!!
+                val button: View? = mToolbar!!.getButtonFor(Buttons.BUTTON_BROWSE_DICT)
                 if (Action.BUTTON_BROWSEALL_ACTION == action
-                    && null != curDict
-                    && DictsDelegate.handleDictsPopup(getDelegator(), button, curDict, gi.isoCode()!!)
+                        && null != curDict
+                        && null != button
+                        && DictsDelegate.handleDictsPopup(getDelegator(), button, curDict, isoCode)
                 ) {
                     // do nothing
                 } else {
-                    var selDict = DictsDelegate.prevSelFor(mActivity, gi.isoCode()!!)
-                        ?: curDict
-                    if (null != selDict) DictBrowseDelegate.launch(getDelegator(), selDict)
+                    val selDict = DictsDelegate.prevSelFor(mActivity, isoCode) ?: curDict
+                    selDict?.let{ DictBrowseDelegate.launch(getDelegator(), it) }
                 }
             }
 
@@ -962,7 +962,7 @@ class BoardDelegate(delegator: Delegator) :
             Action.JUGGLE_ACTION -> cmd = JNICmd.CMD_JUGGLE
             Action.FLIP_ACTION -> cmd = JNICmd.CMD_FLIP
             Action.UNDO_ACTION -> cmd = JNICmd.CMD_UNDO_CUR
-            Action.VALUES_ACTION -> doValuesPopup(mToolbar!!.getButtonFor(Buttons.BUTTON_VALUES))
+            Action.VALUES_ACTION -> mToolbar!!.getButtonFor(Buttons.BUTTON_VALUES)?.let{doValuesPopup(it)}
             Action.CHAT_ACTION -> startChatActivity()
             Action.START_TRADE_ACTION -> {
                 showTradeToastOnce(true)
@@ -2364,7 +2364,7 @@ class BoardDelegate(delegator: Delegator) :
                 }
                 if (null != destAddr) {
                     XwJNI.comms_invite(mJniGamePtr, nli, destAddr, true)
-                } else if (null != dev) {
+                } else {
                     recordInviteSent(mMissingMeans, dev)
                 }
             }
@@ -2620,9 +2620,7 @@ class BoardDelegate(delegator: Delegator) :
                     activity, rowid, groupID, gi,
                     summary!!.conTypes, deleteAfter
                 )
-            if (null != intent) {
-                activity.startActivity(intent)
-            }
+            activity.startActivity(intent)
         }
 
         fun setupRematchFor(activity: Activity, rowID: Long) {

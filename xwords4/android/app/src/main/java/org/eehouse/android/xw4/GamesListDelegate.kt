@@ -503,18 +503,9 @@ class GamesListDelegate(delegator: Delegator) :
                 val missingDictLang = params[2] as ISOCode
 
                 lstnr = DialogInterface.OnClickListener { dlg, item ->
-                    if (null == missingDictName) {
-                        DictsDelegate.downloadForResult(
-                            getDelegator(),
-                            RequestCode
-                                .REQUEST_LANG_GL,
-                            missingDictLang
-                        )
-                    } else {
-                        DwnldDelegate.downloadDictInBack(
-                            mActivity, missingDictLang, missingDictName,
-                            this@GamesListDelegate)
-                    }
+                    DwnldDelegate.downloadDictInBack(
+                        mActivity, missingDictLang, missingDictName,
+                        this@GamesListDelegate)
                 }
                 val message: String
                 val langName =
@@ -1194,15 +1185,10 @@ class GamesListDelegate(delegator: Delegator) :
 
     override fun onDumped(logLoc: File) {
         runOnUiThread {
-            val dumpMsg = if (null == logLoc) {
-                LocUtils.getString( mActivity,
-                                    R.string.logstore_notdumped)
-            } else {
-                LocUtils.getString(
-                    mActivity, R.string.logstore_dumped_fmt,
-                    logLoc.path
-                )
-            }
+            val dumpMsg = LocUtils.getString(
+                mActivity, R.string.logstore_dumped_fmt,
+                logLoc.path
+            )
             makeOkOnlyBuilder(dumpMsg)
                 .setParams(logLoc)
                 .setPosButton(android.R.string.cancel)
@@ -1476,7 +1462,7 @@ class GamesListDelegate(delegator: Delegator) :
                 }
 
             RequestCode.STORE_DATA_FILE, RequestCode.LOAD_DATA_FILE ->
-                if (Activity.RESULT_OK == resultCode && data != null) {
+                if (Activity.RESULT_OK == resultCode) {
                     val uri = data.data
                         val isStore = RequestCode.STORE_DATA_FILE == requestCode
                     if (isStore) {
@@ -2796,7 +2782,7 @@ class GamesListDelegate(delegator: Delegator) :
                 mActivity, 0, false
             )
             val name2 = CommonPrefs.getDefaultOriginalPlayerName(mActivity, 0)
-            if (null == name1 || name1 == name2) {
+            if (name1 == name2) {
                 asking = true
                 makeConfirmThenBuilder(
                     Action.NEW_GAME_DFLT_NAME,

@@ -74,8 +74,8 @@ object GameUtils {
     fun savedGame(context: Context, rowid: Long): ByteArray {
         var result: ByteArray? = null
         GameLock.tryLockRO(rowid).use { lock ->
-            if (null != lock) {
-                result = savedGame(context, lock)
+            lock?.let {
+                result = savedGame(context, it)
             }
         }
         if (null == result) {
@@ -1421,7 +1421,7 @@ object GameUtils {
     // and closing if it was opened -- gets done a lot. Try refactoring.
     fun onGameGone(context: Context, gameID: Int) {
         val rowids = DBUtils.getRowIDsFor(context, gameID)
-        if (null == rowids || 0 == rowids.size) {
+        if (0 == rowids.size) {
             Log.d(TAG, "onGameGone(): no rows for game %X", gameID)
         } else {
             for (rowid in rowids) {

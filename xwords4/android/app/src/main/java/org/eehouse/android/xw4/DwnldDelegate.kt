@@ -110,7 +110,7 @@ class DwnldDelegate(delegator: Delegator) : ListDelegateBase(delegator, R.layout
             val apksDir = File(m_activity!!.filesDir, APKS_DIR)
             if (apksDir.exists()) {
                 val files = apksDir.listFiles()
-                if (0 < files.size) {
+                if (files != null && 0 < files.size) {
                     // 1 week ago
                     val LAST_MOD_MIN =
                         System.currentTimeMillis() - (1000 * 60 * 60 * 24 * 7)
@@ -139,6 +139,7 @@ class DwnldDelegate(delegator: Delegator) : ListDelegateBase(delegator, R.layout
             }
         }
 
+        @Deprecated("Deprecated in Java")
         override fun doInBackground(vararg unused: Void?): Void?
         {
             m_savedDict = null
@@ -151,7 +152,7 @@ class DwnldDelegate(delegator: Delegator) : ListDelegateBase(delegator, R.layout
                 val fileLen = conn.contentLength
                 post(Runnable { m_progressBar.max = fileLen })
                 val istream = conn.getInputStream()
-                val name = m_name ?: basename(uri.path)
+                val name = m_name ?: basename(uri.path!!)
                 if (m_isApp) {
                     Assert.assertTrueNR(null == m_name)
                     m_appFile = saveToPrivate(istream, name, this)
@@ -171,10 +172,12 @@ class DwnldDelegate(delegator: Delegator) : ListDelegateBase(delegator, R.layout
             return null
         }
 
+        @Deprecated("Deprecated in Java")
         override fun onCancelled() {
             callListener(m_uri, false)
         }
 
+        @Deprecated("Deprecated in Java")
         override fun onPostExecute(unused: Void?) {
             if (null != m_savedDict) {
                 val loc =
@@ -282,14 +285,12 @@ class DwnldDelegate(delegator: Delegator) : ListDelegateBase(delegator, R.layout
                 names = intent.getStringArrayExtra(NAMES_EXTRA)
                 uris = parcels.map{it as Uri}.toTypedArray()
             }
-            if (null != uris) {
-                m_views = ArrayList()
-                for (ii in uris.indices) {
-                    item = inflate(R.layout.import_dict_item) as LinearLayout
-                    val name = names?.get(ii)
-                    m_dfts!!.add(DownloadFilesTask(uris[ii], name, item, isApp))
-                    m_views!!.add((item)!!)
-                }
+            m_views = ArrayList()
+            for (ii in uris.indices) {
+                item = inflate(R.layout.import_dict_item) as LinearLayout
+                val name = names?.get(ii)
+                m_dfts!!.add(DownloadFilesTask(uris[ii], name, item, isApp))
+                m_views!!.add((item)!!)
             }
         } else if (((null != intent.type
                     && (intent.type == "application/x-xwordsdict"))
@@ -325,8 +326,8 @@ class DwnldDelegate(delegator: Delegator) : ListDelegateBase(delegator, R.layout
         mkListAdapter()
 
         for (ii in uris.indices) {
-            var showName: String = basename(uris[ii].path)
-            showName = DictUtils.removeDictExtn((showName))
+            var showName: String = basename(uris[ii].path!!)
+            showName = DictUtils.removeDictExtn(showName)
             val msg =
                 getString(R.string.downloading_dict_fmt, showName)
 
@@ -397,7 +398,7 @@ class DwnldDelegate(delegator: Delegator) : ListDelegateBase(delegator, R.layout
         return name
     }
 
-    private fun basename(path: String?): String {
+    private fun basename(path: String): String {
         return File(path).name
     }
 
@@ -410,9 +411,6 @@ class DwnldDelegate(delegator: Delegator) : ListDelegateBase(delegator, R.layout
             if (null != ld) {
                 var name: String = ld!!.m_name
                 val isoCode = isoCodeFromUri(uri)
-                if (null == name) {
-                    name = uri.toString()
-                }
                 ld!!.m_lstnr.downloadFinished(isoCode, name, success)
             }
         }

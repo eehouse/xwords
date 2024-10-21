@@ -80,31 +80,29 @@ class BackupConfigView(cx: Context, aset: AttributeSet?) : LinearLayout(cx, aset
     private fun initOnce() {
         if (null != mIsStore) {
             val tv = (findViewById<View>(R.id.explanation) as TextView)
-            if (null != tv) {
-                val context = context
-                if (mIsStore!!) {
-                    tv.setText(R.string.archive_expl_store)
-                } else {
-                    val name = ZipUtils.getFileName(context, mLoadFile)
-                    val msg = LocUtils
-                        .getString(context, R.string.archive_expl_load_fmt, name)
-                    tv.text = msg
-                }
+            val context = context
+            if (mIsStore!!) {
+                tv.setText(R.string.archive_expl_store)
+            } else {
+                val name = ZipUtils.getFileName(context, mLoadFile)
+                val msg = LocUtils
+                    .getString(context, R.string.archive_expl_load_fmt, name)
+                tv.text = msg
+            }
 
-                val list = findViewById<View>(R.id.whats_list) as LinearLayout
-                for (what in SaveWhat.entries) {
-                    if (null == mShowWhats || mShowWhats!!.contains(what)) {
-                        val item =
-                            LocUtils.inflate(context, R.layout.backup_config_item) as ViewGroup
-                        list.addView(item)
-                        val box = item.findViewById<View>(R.id.check) as CheckBox
-                        box.setText(what.titleID())
-                        mCheckBoxes[what] = box
-                        box.isChecked = !mIsStore!!
-                        box.setOnCheckedChangeListener(this)
-                        (item.findViewById<View>(R.id.expl) as TextView)
-                            .setText(what.explID())
-                    }
+            val list = findViewById<View>(R.id.whats_list) as LinearLayout
+            for (what in SaveWhat.entries) {
+                if (null == mShowWhats || mShowWhats!!.contains(what)) {
+                    val item =
+                        LocUtils.inflate(context, R.layout.backup_config_item) as ViewGroup
+                    list.addView(item)
+                    val box = item.findViewById<View>(R.id.check) as CheckBox
+                    box.setText(what.titleID())
+                    mCheckBoxes[what] = box
+                    box.isChecked = !mIsStore!!
+                    box.setOnCheckedChangeListener(this)
+                    (item.findViewById<View>(R.id.expl) as TextView)
+                        .setText(what.explID())
                 }
             }
             countChecks()

@@ -34,7 +34,7 @@ import android.widget.ListView
 import java.util.HashSet
 import java.util.Set
 
-abstract open class XWFragment: Fragment(), Delegator {
+abstract class XWFragment: Fragment(), Delegator {
 
 	companion object {
 		private val TAG = XWFragment::class.java.getSimpleName()
@@ -135,6 +135,7 @@ abstract open class XWFragment: Fragment(), Delegator {
     //     super.onActivityCreated(savedInstanceState)
     // }
 
+    @Deprecated("Deprecated in Java")
     override fun onActivityCreated(savedInstanceState: Bundle? )
     {
         Log.d( TAG, "%H/%s.onActivityCreated() called", this, this::class.java.getSimpleName() )
@@ -181,6 +182,7 @@ abstract open class XWFragment: Fragment(), Delegator {
         super.onDestroy()
     }
 
+    @Deprecated("Deprecated in Java")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         Log.d( TAG, "%H/%s.onActivityResult() called", this, this::class.java.getSimpleName() )
         mDlgt?.onActivityResult( RequestCode.entries[requestCode],

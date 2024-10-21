@@ -403,11 +403,9 @@ object DBUtils {
                     if (ordinal < values.size) {
                         val means = values[ordinal]
                         val target = cursor.getString(indxTrgt).orEmpty()
-                        if ( null != target ) {
-                            val ts = Date(cursor.getLong(indxTS))
-                            Log.d(TAG, "getInvitesFor(): result: $result; $means, $target, $ts")
-                            result.addEntry(means, target, ts)
-                        }
+                        val ts = Date(cursor.getLong(indxTS))
+                        Log.d(TAG, "getInvitesFor(): result: $result; $means, $target, $ts")
+                        result.addEntry(means, target, ts)
                     }
                 }
             }

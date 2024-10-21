@@ -32,17 +32,13 @@ class SMSPhoneInfo(var isPhone: Boolean,
         fun get(context: Context): SMSPhoneInfo? {
             if (null == s_phoneInfo) {
                 try {
-                    var number: String? = null
                     var isGSM = false
                     var isPhone = false
-                    val mgr =
-                        context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
-                    if (null != mgr) {
-                        number = mgr.line1Number // needs permission
-                        val type = mgr.phoneType
-                        isGSM = TelephonyManager.PHONE_TYPE_GSM == type
-                        isPhone = true
-                    }
+                    val mgr = context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
+                    var number: String? = mgr.line1Number // needs permission
+                    val type = mgr.phoneType
+                    isGSM = TelephonyManager.PHONE_TYPE_GSM == type
+                    isPhone = true
 
                     val radio =
                         XWPrefs.getPrefsString(context, R.string.key_force_radio)

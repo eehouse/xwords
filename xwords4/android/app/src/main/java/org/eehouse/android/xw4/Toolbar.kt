@@ -68,8 +68,11 @@ class Toolbar(private val mActivity: Activity, private val mDlgDlgt: HasDlgDeleg
         }
     }
 
-    fun getButtonFor(index: Buttons): ImageButton {
-        return mActivity.findViewById<View>(index.resId) as ImageButton
+    // Sometimes this fails, especially when in dual-pane mode. Maybe it's
+    // getting called in the wrong activity/view hierarchy context?
+    fun getButtonFor(index: Buttons): ImageButton? {
+        val result = mActivity.findViewById<View>(index.resId) as ImageButton?
+        return result
     }
 
     fun setListener(index: Buttons, msgID: Int,
@@ -109,8 +112,7 @@ class Toolbar(private val mActivity: Activity, private val mDlgDlgt: HasDlgDeleg
             }
         }
 
-        val button = mActivity.findViewById<View>(index.resId) as ImageButton?
-        button?.let {
+        mActivity.findViewById<View>(index.resId)?.let {
             it.visibility = if (enable) View.VISIBLE else View.GONE
         }
 
@@ -148,13 +150,14 @@ class Toolbar(private val mActivity: Activity, private val mDlgDlgt: HasDlgDeleg
     }
 
     private fun setListener(index: Buttons, listener: Any?) {
-        val button = getButtonFor(index)
-        when (listener) {
-            is View.OnClickListener ->
-                button.setOnClickListener(listener)
-            is OnLongClickListener ->
-                button.setOnLongClickListener(listener)
-            else -> Assert.failDbg()
+        getButtonFor(index)?.let {
+            when (listener) {
+                is View.OnClickListener ->
+                    it.setOnClickListener(listener)
+                is OnLongClickListener ->
+                    it.setOnLongClickListener(listener)
+                else -> Assert.failDbg()
+            }
         }
     }
 

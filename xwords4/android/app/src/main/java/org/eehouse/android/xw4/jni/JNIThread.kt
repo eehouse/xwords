@@ -197,8 +197,7 @@ class JNIThread private constructor(lockIn: GameLock) : Thread(), AutoCloseable 
 
         if (success) {
             val lock = m_lock!!
-            val stream = GameUtils.savedGame(context, lock)
-            Assert.assertNotNull(stream)
+            val stream = GameUtils.savedGame(context, lock)!!
             mGi = CurGameInfo(context)
             mGi!!.name = DBUtils.getName(context, m_rowid)
             XwJNI.giFromStream(mGi!!, stream!!)
@@ -221,13 +220,11 @@ class JNIThread private constructor(lockIn: GameLock) : Thread(), AutoCloseable 
             }
 
             synchronized(this) {
-                mJNIGamePtr = null
-                if (null != stream) {
-                    mJNIGamePtr = XwJNI.initFromStream(
-                        m_rowid, stream, mGi!!,
-                        utils, null, cp, m_xport
-                    )
-                }
+                mJNIGamePtr = XwJNI.initFromStream(
+                    m_rowid, stream, mGi!!,
+                    utils, null, cp, m_xport
+                )
+
                 if (null == mJNIGamePtr) {
                     Quarantine.markBad(m_rowid)
                     success = false

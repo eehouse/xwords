@@ -49,16 +49,14 @@ class InviteChoicesAlert : DlgDelegateAlert(), ItemClicked {
         val params = state!!.getParams()
         var nMissing = 0
         var nInvited = 0
-        if (null != params) {
-            if (0 < params.size && params[0] is NetLaunchInfo) {
-                nli = params[0] as NetLaunchInfo
-            }
-            if (1 < params.size && params[1] is Int) {
-                nMissing = params[1] as Int
-            }
-            if (2 < params.size && params[2] is Int) {
-                nInvited = params[2] as Int
-            }
+        if (0 < params.size && params[0] is NetLaunchInfo) {
+            nli = params[0] as NetLaunchInfo
+        }
+        if (1 < params.size && params[1] is Int) {
+            nMissing = params[1] as Int
+        }
+        if (2 < params.size && params[2] is Int) {
+            nInvited = params[2] as Int
         }
         Log.d(
             TAG, "populateBuilder(): nMissing=%d, nInvited=%d",

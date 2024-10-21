@@ -700,7 +700,7 @@ class NetLaunchInfo : Serializable {
             while (valid && iter.hasNext()) {
                 val typ = iter.next()
                 valid = when (typ) {
-                    CommsConnType.COMMS_CONN_RELAY -> null != inviteID()
+                    CommsConnType.COMMS_CONN_RELAY -> true
                     CommsConnType.COMMS_CONN_BT -> null != btName
                     CommsConnType.COMMS_CONN_SMS -> null != phone && 0 < osVers
                     CommsConnType.COMMS_CONN_MQTT -> null != mqttDevID

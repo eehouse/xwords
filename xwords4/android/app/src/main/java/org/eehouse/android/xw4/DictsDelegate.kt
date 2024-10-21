@@ -251,9 +251,7 @@ class DictsDelegate(delegator: Delegator) :
             }
 
             // Now append locals
-            if (null != dals) {
-                result.addAll(Arrays.asList(*dals))
-            }
+            result.addAll(Arrays.asList(*dals))
             return result
         }
     }
@@ -1101,6 +1099,7 @@ class DictsDelegate(delegator: Delegator) :
             startProgress(R.string.progress_title, R.string.remote_empty, this)
         }
 
+        @Deprecated("Deprecated in Java")
         override fun doInBackground(vararg unused: Void?): Boolean {
             var success = false
             val proc = listDictsProc(null)
@@ -1117,15 +1116,18 @@ class DictsDelegate(delegator: Delegator) :
             return success
         }
 
+        @Deprecated("Deprecated in Java")
         override fun onCancelled() {
             mRemoteInfo = null
             mShowRemote = false
         }
 
+        @Deprecated("Deprecated in Java")
         override fun onCancelled(success: Boolean) {
             onCancelled()
         }
 
+        @Deprecated("Deprecated in Java")
         override fun onPostExecute(success: Boolean) {
             switchShowingRemote(success)
             mCheckbox!!.setChecked(success)

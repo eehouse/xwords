@@ -262,7 +262,6 @@ class CurGameInfo : Serializable {
             val dictName = CommonPrefs.getDefaultHumanDict(context)
             isoCodeNew = DictLangCache.getDictISOCode(context, dictName)
         }
-        Assert.assertTrueNR(null != isoCodeNew)
 
         if (!TextUtils.equals(isoCodeNew.toString(), this.isoCodeStr)) {
             isoCodeStr = isoCodeNew.toString()
