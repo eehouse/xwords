@@ -119,9 +119,6 @@ typedef struct UtilVtable {
                                   const XP_UCHAR* oldName, const XP_UCHAR* newName,
                                   const XP_UCHAR* newSum,
                                   XWPhoniesChoice phoniesAction );
-    const DictionaryCtxt* (*m_util_getDict)( XW_UtilCtxt* uc, XWEnv xwe,
-                                             const XP_UCHAR* isoCode,
-                                             const XP_UCHAR* dictName );
     void (*m_util_notifyGameOver)( XW_UtilCtxt* uc, XWEnv xwe, XP_S16 quitter );
 #ifdef XWFEATURE_HILITECELL
     XP_Bool (*m_util_hiliteCell)( XW_UtilCtxt* uc, XWEnv xwe, XP_U16 col, XP_U16 row );
@@ -136,7 +133,6 @@ typedef struct UtilVtable {
     void (*m_util_requestTime)( XW_UtilCtxt* uc, XWEnv xwe );
 
     XP_Bool (*m_util_altKeyDown)( XW_UtilCtxt* uc, XWEnv xwe );
-    DictionaryCtxt* (*m_util_makeEmptyDict)( XW_UtilCtxt* uc, XWEnv xwe );
 
     void (*m_util_notifyIllegalWords)( XW_UtilCtxt* uc, XWEnv xwe,
                                        const BadWordInfo* bwi,
@@ -246,9 +242,6 @@ struct XW_UtilCtxt {
 #define util_informNetDict(uc,e, cd, on, nn, ns, pa )                      \
          (uc)->vtable->m_util_informNetDict( (uc), (e), (cd), (on), (nn), (ns), \
                                              (pa) )
-#define util_getDict( uc, xwe, isoCode, dictName )                     \
-         (uc)->vtable->m_util_getDict((uc), (xwe), (isoCode), (dictName))
-
 #define util_notifyGameOver( uc,e, q )                  \
          (uc)->vtable->m_util_notifyGameOver((uc), (e), (q))
 
@@ -270,9 +263,6 @@ struct XW_UtilCtxt {
 
 #define util_altKeyDown( uc,e )                 \
     (uc)->vtable->m_util_altKeyDown((uc),(e))
-
-#define util_makeEmptyDict( uc, e )                     \
-    (uc)->vtable->m_util_makeEmptyDict((uc), (e))
 
 #define util_notifyIllegalWords( uc,e, w, d, p, b, k )                    \
     (uc)->vtable->m_util_notifyIllegalWords((uc), (e), (w), (d), (p), (b), (k))

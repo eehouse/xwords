@@ -303,6 +303,24 @@ linux_dutil_sendViaWeb( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe),
     pthread_detach( thrd );
 }
 
+static DictionaryCtxt*
+linux_dutil_makeEmptyDict( XW_DUtilCtxt* duc, XWEnv xwe )
+{
+    XP_DEBUGF( "linux_util_makeEmptyDict called" );
+    LaunchParams* params = (LaunchParams*)duc->closure;
+    return linux_dictionary_make( MPPARM(params->mpool) xwe, NULL, NULL, XP_FALSE );
+}
+
+static const DictionaryCtxt*
+linux_dutil_getDict( XW_DUtilCtxt* duc, XWEnv xwe,
+                    const XP_UCHAR* XP_UNUSED(isoCode), const XP_UCHAR* dictName )
+{
+    LaunchParams* params = (LaunchParams*)duc->closure;
+    DictionaryCtxt* result = linux_dictionary_make( MPPARM(params->mpool) xwe,
+                                                    params, dictName, XP_TRUE );
+    return result;
+}
+
 static cJSON*
 linux_dutil_getRegValues( XW_DUtilCtxt* duc, XWEnv xwe )
 {
@@ -432,6 +450,8 @@ linux_dutils_init( MPFORMAL VTableMgr* vtMgr, void* closure )
     SET_PROC(onCtrlReceived);
     SET_PROC(onGameGoneReceived);
     SET_PROC(sendViaWeb);
+    SET_PROC(makeEmptyDict);
+    SET_PROC(getDict);
     SET_PROC(getRegValues);
 #ifdef DUTIL_TIMERS
     SET_PROC(setTimer);

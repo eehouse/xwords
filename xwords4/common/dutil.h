@@ -110,6 +110,11 @@ typedef struct _DUtilVtable {
     cJSON* (*m_dutil_getRegValues)( XW_DUtilCtxt* duc, XWEnv xwe );
     void (*m_dutil_sendViaWeb)( XW_DUtilCtxt* duc, XWEnv xwe, XP_U32 resultKey,
                                 const XP_UCHAR* api, const cJSON* params );
+
+    DictionaryCtxt* (*m_dutil_makeEmptyDict)( XW_DUtilCtxt* duc, XWEnv xwe );
+    const DictionaryCtxt* (*m_dutil_getDict)( XW_DUtilCtxt* duc, XWEnv xwe,
+                                              const XP_UCHAR* isoCode,
+                                              const XP_UCHAR* dictName );
 } DUtilVtable;
 
 struct XW_DUtilCtxt {
@@ -200,6 +205,10 @@ void dutil_super_cleanup( XW_DUtilCtxt* dutil, XWEnv xwe );
     (duc)->vtable.m_dutil_onGameGoneReceived((duc),(xwe),(gameID),(from))
 #define dutil_sendViaWeb( duc, xwe, resultKey, api, params )        \
     (duc)->vtable.m_dutil_sendViaWeb((duc), (xwe), (resultKey), (api), (params))
+#define dutil_makeEmptyDict(duc, xwe)                   \
+    (duc)->vtable.m_dutil_makeEmptyDict((duc), (xwe))
+#define dutil_getDict(duc, xwe, isoCode, dictName)                      \
+    (duc)->vtable.m_dutil_getDict((duc), (xwe), (isoCode), (dictName))
 
 #define dutil_getRegValues( duc, xwe ) \
     (duc)->vtable.m_dutil_getRegValues( (duc), (xwe) )

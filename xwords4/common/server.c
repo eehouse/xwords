@@ -2284,7 +2284,7 @@ client_readInitialMessage( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* stream )
 
         if ( streamVersion < STREAM_VERS_NOEMPTYDICT ) {
             SRVR_LOGFF( "loading and dropping empty dict" );
-            DictionaryCtxt* empty = util_makeEmptyDict( server->vol.util, xwe );
+            DictionaryCtxt* empty = dutil_makeEmptyDict( server->vol.dutil, xwe );
             dict_loadFromStream( empty, xwe, stream );
             dict_unref( empty, xwe );
         }

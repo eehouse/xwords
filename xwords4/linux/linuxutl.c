@@ -118,24 +118,6 @@ linux_freep( void** ptrp )
 }
 #endif
 
-static DictionaryCtxt*
-linux_util_makeEmptyDict( XW_UtilCtxt* XP_UNUSED_DBG(uctx), XWEnv xwe )
-{
-    XP_DEBUGF( "linux_util_makeEmptyDict called" );
-    return linux_dictionary_make( MPPARM(uctx->mpool) xwe, NULL, NULL, XP_FALSE );
-} /* linux_util_makeEmptyDict */
-
-static const DictionaryCtxt*
-linux_util_getDict( XW_UtilCtxt* uc, XWEnv xwe,
-                    const XP_UCHAR* XP_UNUSED(isoCode), const XP_UCHAR* dictName )
-{
-    CommonGlobals* cGlobals = (CommonGlobals*)uc->closure;
-    LaunchParams* params = cGlobals->params;
-    DictionaryCtxt* result = linux_dictionary_make( MPPARM(uc->mpool) xwe,
-                                                    params, dictName, XP_TRUE );
-    return result;
-}
-
 static void
 linux_util_getInviteeName( XW_UtilCtxt* XP_UNUSED(uc), XWEnv XP_UNUSED(xwe),
                            XP_U16 index, XP_UCHAR* buf, XP_U16* bufLen )
@@ -163,8 +145,6 @@ linux_util_vt_init( MPFORMAL XW_UtilCtxt* util )
 #endif
     util->vtable = XP_MALLOC( mpool, sizeof(UtilVtable) );
 
-    util->vtable->m_util_makeEmptyDict = linux_util_makeEmptyDict;
-    util->vtable->m_util_getDict = linux_util_getDict;
     util->vtable->m_util_getInviteeName = linux_util_getInviteeName;
 
     util->vtable->m_util_getDevUtilCtxt = linux_util_getDevUtilCtxt;

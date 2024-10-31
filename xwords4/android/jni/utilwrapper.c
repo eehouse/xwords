@@ -269,41 +269,6 @@ and_util_informNetDict( XW_UtilCtxt* uc, XWEnv xwe, const XP_UCHAR* isoCodeStr,
     UTIL_CBK_TAIL();
 }
 
-const DictionaryCtxt*
-and_util_getDict( XW_UtilCtxt* uc, XWEnv xwe,
-                  const XP_UCHAR* XP_UNUSED_DBG(isoCode),
-                  const XP_UCHAR* dictName )
-{
-    XP_LOGFF( "(isoCode: %s, name: %s)", isoCode, dictName );
-    JNIEnv* env = xwe;
-    XW_DUtilCtxt* duc = util_getDevUtilCtxt( uc, xwe );
-
-    DictMgrCtxt* dictMgr = ((AndDUtil*)duc)->dictMgr;
-    DictionaryCtxt* dict = (DictionaryCtxt*)
-        dmgr_get( dictMgr, xwe, dictName );
-    if ( !dict ) {
-        jstring jname = (*env)->NewStringUTF( env, dictName );
-
-        jobjectArray jstrs = makeStringArray( env, 1, NULL );
-        jobjectArray jbytes = makeByteArrayArray( env, 1 );
-
-        DUTIL_CBK_HEADER( "getDictPath",
-                          "(Ljava/lang/String;[Ljava/lang/String;[[B)V" );
-        (*env)->CallVoidMethod( env, dutil->jdutil, mid, jname, jstrs, jbytes );
-        DUTIL_CBK_TAIL();
-
-        jstring jpath = (*env)->GetObjectArrayElement( env, jstrs, 0 );
-        jbyteArray jdata = (*env)->GetObjectArrayElement( env, jbytes, 0 );
-
-        dict = makeDict( MPPARM(duc->mpool) xwe,
-                         TI_IF( ((AndDUtil*)duc)->ti )
-                         dictMgr, ((AndDUtil*)duc)->jniutil,
-                         jname, jdata, jpath, NULL, false );
-        deleteLocalRefs( env, jname, jstrs, jbytes, jdata, jpath, DELETE_NO_REF );
-    }
-    return dict;
-}
-
 static void
 and_util_notifyGameOver( XW_UtilCtxt* uc, XWEnv xwe, XP_S16 XP_UNUSED(quitter) )
 {
@@ -396,20 +361,6 @@ and_dutil_getCurSeconds( XW_DUtilCtxt* XP_UNUSED(duc), XWEnv xwe )
 {
     XP_U32 curSeconds = getCurSeconds( xwe );
     return curSeconds;
-}
-
-static DictionaryCtxt* 
-and_util_makeEmptyDict( XW_UtilCtxt* uc, XWEnv xwe )
-{
-#ifdef STUBBED_DICT
-    XP_ASSERT(0);
-#else
-    AndGameGlobals* globals = (AndGameGlobals*)uc->closure;
-    DictionaryCtxt* result =  
-        and_dictionary_make_empty( MPPARM( ((AndUtil*)uc)->util.mpool )
-                                   globals->jniutil );
-    return (DictionaryCtxt*)dict_ref( result, xwe );
-#endif
 }
 
 static const XP_UCHAR*
@@ -986,6 +937,54 @@ and_dutil_sendViaWeb( XW_DUtilCtxt* duc, XWEnv xwe, XP_U32 resultKey,
     DUTIL_CBK_TAIL();
 }
 
+const DictionaryCtxt*
+and_dutil_getDict( XW_DUtilCtxt* duc, XWEnv xwe,
+                   const XP_UCHAR* XP_UNUSED_DBG(isoCode),
+                   const XP_UCHAR* dictName )
+{
+    XP_LOGFF( "(isoCode: %s, name: %s)", isoCode, dictName );
+    JNIEnv* env = xwe;
+
+    DictMgrCtxt* dictMgr = ((AndDUtil*)duc)->dictMgr;
+    DictionaryCtxt* dict = (DictionaryCtxt*)
+        dmgr_get( dictMgr, xwe, dictName );
+    if ( !dict ) {
+        jstring jname = (*env)->NewStringUTF( env, dictName );
+
+        jobjectArray jstrs = makeStringArray( env, 1, NULL );
+        jobjectArray jbytes = makeByteArrayArray( env, 1 );
+
+        DUTIL_CBK_HEADER( "getDictPath",
+                          "(Ljava/lang/String;[Ljava/lang/String;[[B)V" );
+        (*env)->CallVoidMethod( env, dutil->jdutil, mid, jname, jstrs, jbytes );
+        DUTIL_CBK_TAIL();
+
+        jstring jpath = (*env)->GetObjectArrayElement( env, jstrs, 0 );
+        jbyteArray jdata = (*env)->GetObjectArrayElement( env, jbytes, 0 );
+
+        dict = makeDict( MPPARM(duc->mpool) xwe,
+                         TI_IF( ((AndDUtil*)duc)->ti )
+                         dictMgr, ((AndDUtil*)duc)->jniutil,
+                         jname, jdata, jpath, NULL, false );
+        deleteLocalRefs( env, jname, jstrs, jbytes, jdata, jpath, DELETE_NO_REF );
+    }
+    return dict;
+}
+
+static DictionaryCtxt*
+and_dutil_makeEmptyDict( XW_DUtilCtxt* duc, XWEnv xwe )
+{
+#ifdef STUBBED_DICT
+    XP_ASSERT(0);
+#else
+    AndDUtil* dutil = (AndDUtil*)duc;
+    JNIUtilCtxt* jniutil = dutil->jniutil;
+    DictionaryCtxt* result =
+        and_dictionary_make_empty( MPPARM(duc->mpool) jniutil );
+    return (DictionaryCtxt*)dict_ref( result, xwe );
+#endif
+}
+
 static cJSON*
 and_dutil_getRegValues( XW_DUtilCtxt* duc, XWEnv xwe )
 {
@@ -1041,7 +1040,6 @@ makeUtil( MPFORMAL JNIEnv* env,
     SET_PROC(notifyDupStatus);
     SET_PROC(informUndo);
     SET_PROC(informNetDict);
-    SET_PROC(getDict);
     SET_PROC(notifyGameOver);
 #ifdef XWFEATURE_HILITECELL
     SET_PROC(hiliteCell);
@@ -1051,7 +1049,6 @@ makeUtil( MPFORMAL JNIEnv* env,
     SET_PROC(clearTimer);
     SET_PROC(requestTime);
     SET_PROC(altKeyDown);
-    SET_PROC(makeEmptyDict);
     SET_PROC(notifyIllegalWords);
 #ifdef XWFEATURE_CHAT
     SET_PROC(showChat);
@@ -1160,6 +1157,8 @@ makeDUtil( MPFORMAL JNIEnv* env,
 
     SET_DPROC(onGameGoneReceived);
     SET_DPROC(sendViaWeb);
+    SET_DPROC(getDict);
+    SET_DPROC(makeEmptyDict);
     SET_DPROC(getRegValues);
 
 #undef SET_DPROC
