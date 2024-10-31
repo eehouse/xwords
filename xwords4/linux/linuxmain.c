@@ -2729,35 +2729,39 @@ disposeProc( DLHead* elem, void* XP_UNUSED(closure) )
     free( elem );
 }
 
-static void
+static XP_Bool
 testSort( LaunchParams* params )
 {
-    DLHead* list = NULL;
+    XP_Bool success = !!params->sortDict;
+    if ( success ) {
+        DLHead* list = NULL;
 
-    XP_LOGFF( "(sortdict: %s)", params->sortDict );
-    DictionaryCtxt* dict =
-        linux_dictionary_make( MPPARM(params->mpool) NULL_XWE, params, params->sortDict,
-                               params->useMmap );
-    XP_ASSERT( !!dict );
+        XP_LOGFF( "(sortdict: %s)", params->sortDict );
+        DictionaryCtxt* dict =
+            linux_dictionary_make( MPPARM(params->mpool) NULL_XWE, params, params->sortDict,
+                                   params->useMmap );
+        XP_ASSERT( !!dict );
 
-    DictIter* iter = di_makeIter( dict, NULL_XWE, NULL, NULL, 0, NULL, 0 );
-    XP_ASSERT( !!iter );
+        DictIter* iter = di_makeIter( dict, NULL_XWE, NULL, NULL, 0, NULL, 0 );
+        XP_ASSERT( !!iter );
 
-    XP_Bool success;
-    XP_U32 ii = 0;
-    for ( success = di_firstWord( iter ); success; success = di_getNextWord( iter ) ) {
-        SortTestElem* elem = calloc( 1, sizeof(*elem) );
-        di_wordToString( iter, elem->buf, VSIZE(elem->buf), NULL );
-        ++ii;
-        // list = dll_insert(list, &elem->link, NULL );
-        list = dll_insert(list, &elem->link, compLenAlpha );
+        XP_Bool success;
+        XP_U32 ii = 0;
+        for ( success = di_firstWord( iter ); success; success = di_getNextWord( iter ) ) {
+            SortTestElem* elem = calloc( 1, sizeof(*elem) );
+            di_wordToString( iter, elem->buf, VSIZE(elem->buf), NULL );
+            ++ii;
+            // list = dll_insert(list, &elem->link, NULL );
+            list = dll_insert(list, &elem->link, compLenAlpha );
+        }
+
+        // list = dll_sort( list, compLenAlpha );
+        printList(list);
+
+        di_freeIter( iter, NULL_XWE );
+        dll_removeAll( list, disposeProc, NULL );
     }
-
-    // list = dll_sort( list, compLenAlpha );
-    printList(list);
-
-    di_freeIter( iter, NULL_XWE );
-    dll_removeAll( list, disposeProc, NULL );
+    return success;
 }
 #endif
 
@@ -3377,8 +3381,9 @@ main( int argc, char** argv )
     }
 
 #ifdef XWFEATURE_TESTSORT
-    testSort( &mainParams );
-    exit(0);
+    if ( testSort( &mainParams ) ) {
+        exit(0);
+    }
 #endif
     /* add cur dir if dict search dir path is empty */
     if ( !mainParams.dictDirs ) {
