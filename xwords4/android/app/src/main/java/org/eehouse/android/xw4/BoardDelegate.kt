@@ -552,11 +552,13 @@ class BoardDelegate(delegator: Delegator) :
     }
 
     override fun onDestroy() {
+        Log.d( TAG, "onDestroy()" )
         closeIfFinishing(true)
         releaseThreadOnce()
         GamesListDelegate.boardDestroyed(mRowid)
         noteClosed(mRowid)
         super.onDestroy()
+        Log.d( TAG, "onDestroy() DONE" )
     }
 
     @Throws(Throwable::class)

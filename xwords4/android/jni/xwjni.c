@@ -238,8 +238,11 @@ map_remove_prv( EnvThreadInfo* ti, JNIEnv* env, const char* caller )
         found = env == entry->env;
         if ( found ) {
             if ( pthread_self() != entry->owner ) {
-                XP_LOGFF( "mismatch; called from %s", caller );
-                XP_ASSERT(0);
+                XP_LOGFF( "mismatch; called from %s (but mapped by %s()?",
+                          caller, entry->ownerFunc );
+                /* XP_ASSERT(0);*/   /* <-- Is this causing ANRs? Does NOT
+                   show up as an assert sometimes anyway, though it does kill
+                   the thread. */
             }
 # ifdef LOG_MAPPING
             RAW_LOG( "UNMAPPED env %p to thread %x (called from %s(); mapped by %s)",
@@ -247,7 +250,9 @@ map_remove_prv( EnvThreadInfo* ti, JNIEnv* env, const char* caller )
             RAW_LOG( "%d entries left", countUsed( ti ) );
             entry->ownerFunc = NULL;
 # endif
-            XP_ASSERT( 1 == entry->refcount );
+            if ( 1 != entry->refcount ) {
+                XP_LOGFF( "ERROR: refcount %d, not 1", entry->refcount );
+            }
             --entry->refcount;
             entry->env = NULL;
             entry->owner = 0;
