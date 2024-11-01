@@ -52,9 +52,9 @@ static const XP_UCHAR* linux_dutil_getUserString( XW_DUtilCtxt* duc, XWEnv xwe, 
 static const XP_UCHAR* linux_dutil_getUserQuantityString( XW_DUtilCtxt* duc, XWEnv xwe, XP_U16 code,
                                                           XP_U16 quantity );
 
-static void linux_dutil_storePtr( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* keys[],
+static void linux_dutil_storePtr( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
                                   const void* data, XP_U32 len );
-static void linux_dutil_loadPtr( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* keys[],
+static void linux_dutil_loadPtr( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
                                  void* data, XP_U32* lenp );
 static void linux_dutil_forEach( XW_DUtilCtxt* duc, XWEnv xwe,
                                  const XP_UCHAR* keys[],
@@ -580,36 +580,34 @@ linux_dutil_getUserQuantityString( XW_DUtilCtxt* duc, XWEnv xwe, XP_U16 code,
 
 static void
 linux_dutil_storePtr( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe),
-                      const XP_UCHAR* keys[],
+                      const XP_UCHAR* key,
                       const void* data, const XP_U32 len )
 {
-    XP_ASSERT( keys[1] == NULL );
     LaunchParams* params = (LaunchParams*)duc->closure;
     sqlite3* pDb = params->pDb;
 
     gchar* b64 = g_base64_encode( data, len);
-    gdb_store( pDb, keys[0], b64 );
+    gdb_store( pDb, key, b64 );
     g_free( b64 );
 }
 
 static void
 linux_dutil_loadPtr( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe),
-                     const XP_UCHAR* keys[],
+                     const XP_UCHAR* key,
                      void* data, XP_U32* lenp )
 {
-    XP_ASSERT( NULL == keys[1] );
     LaunchParams* params = (LaunchParams*)duc->closure;
     sqlite3* pDb = params->pDb;
 
     gint buflen = 0;
-    FetchResult res = gdb_fetch( pDb, keys[0], NULL, NULL, &buflen );
+    FetchResult res = gdb_fetch( pDb, key, NULL, NULL, &buflen );
     if ( res == BUFFER_TOO_SMALL ) { /* expected: I passed 0 */
         if ( 0 == *lenp ) {
             *lenp = buflen;
         } else {
             gchar* tmp = XP_MALLOC( duc->mpool, buflen );
             gint tmpLen = buflen;
-            res = gdb_fetch( pDb, keys[0], NULL, tmp, &tmpLen );
+            res = gdb_fetch( pDb, key, NULL, tmp, &tmpLen );
             XP_ASSERT( buflen == tmpLen );
             XP_ASSERT( res == SUCCESS );
             XP_ASSERT( tmp[buflen-1] == '\0' );
@@ -627,7 +625,7 @@ linux_dutil_loadPtr( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe),
         *lenp = 0;              /* doesn't exist */
     }
 
-    XP_LOGFF( "(key=%s) => len: %d", keys[0], *lenp );
+    XP_LOGFF( "(key=%s) => len: %d", key, *lenp );
 }
 
 static void

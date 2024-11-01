@@ -30,26 +30,26 @@
 #include "xwmutex.h"
 
 static void
-super_dutil_storeStream( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* keys[],
+super_dutil_storeStream( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
                          XWStreamCtxt* data )
 {
     const void* ptr = stream_getPtr( data );
     XP_U16 len = stream_getSize( data );
-    dutil_storePtr( duc, xwe, keys, (void*)ptr, len );
+    dutil_storePtr( duc, xwe, key, (void*)ptr, len );
 }
 
 static void
 super_dutil_loadStream( XW_DUtilCtxt* duc, XWEnv xwe,
-                        const XP_UCHAR* keys[], XWStreamCtxt* inOut )
+                        const XP_UCHAR* key, XWStreamCtxt* inOut )
 {
     /* get the size */
     XP_U32 len = 0;
-    dutil_loadPtr( duc, xwe, keys, NULL, &len );
+    dutil_loadPtr( duc, xwe, key, NULL, &len );
 
     /* load if it exists */
     if ( 0 < len ) {
         void* buf = XP_MALLOC( duc->mpool, len );
-        dutil_loadPtr( duc, xwe, keys, buf, &len );
+        dutil_loadPtr( duc, xwe, key, buf, &len );
 
         stream_putBytes( inOut, buf, len );
         XP_FREEP( duc->mpool, &buf );

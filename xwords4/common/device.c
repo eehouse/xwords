@@ -113,8 +113,7 @@ load( XW_DUtilCtxt* dutil, XWEnv xwe )
         dutil->devCtxt = state = XP_CALLOC( dutil->mpool, sizeof(*state) );
 
         XWStreamCtxt* stream = mkStream( dutil );
-        const XP_UCHAR* keys[] = { KEY_DEVSTATE, NULL };
-        dutil_loadStream( dutil, xwe, keys, stream );
+        dutil_loadStream( dutil, xwe, KEY_DEVSTATE, stream );
 
         if ( 0 < stream_getSize( stream ) ) {
             state->devCount = stream_getU16( stream );
@@ -152,8 +151,7 @@ dvcStoreLocked( XW_DUtilCtxt* dutil, XWEnv xwe, DevCtxt* state )
     XWStreamCtxt* stream = mkStream( dutil );
     stream_putU16( stream, state->devCount );
     stream_putU8( stream, state->mqttQOS );
-    const XP_UCHAR* keys[] = { KEY_DEVSTATE, NULL };
-    dutil_storeStream( dutil, xwe, keys, stream );
+    dutil_storeStream( dutil, xwe, KEY_DEVSTATE, stream );
     stream_destroy( stream );
 }
 
@@ -174,7 +172,6 @@ dvc_store( XW_DUtilCtxt* dutil, XWEnv xwe )
 static void
 getMQTTDevID( XW_DUtilCtxt* dutil, XWEnv xwe, XP_Bool forceNew, MQTTDevID* devID )
 {
-    const XP_UCHAR* keys[] = { MQTT_DEVID_KEY, NULL };
 #ifdef BOGUS_ALL_SAME_DEVID
     XP_USE(forceNew);
     MQTTDevID bogusID = 0;
@@ -184,9 +181,9 @@ getMQTTDevID( XW_DUtilCtxt* dutil, XWEnv xwe, XP_Bool forceNew, MQTTDevID* devID
 
     MQTTDevID tmp = 0;
     XP_U32 len = sizeof(tmp);
-    dutil_loadPtr( dutil, xwe, keys, &tmp, &len );
+    dutil_loadPtr( dutil, xwe, MQTT_DEVID_KEY, &tmp, &len );
     if ( len != sizeof(tmp) || 0 != XP_MEMCMP( &bogusID, &tmp, sizeof(tmp) ) ) {
-        dutil_storePtr( dutil, xwe, keys, &bogusID, sizeof(bogusID) );
+        dutil_storePtr( dutil, xwe, MQTT_DEVID_KEY, &bogusID, sizeof(bogusID) );
     }
     *devID = bogusID;
 
@@ -195,7 +192,7 @@ getMQTTDevID( XW_DUtilCtxt* dutil, XWEnv xwe, XP_Bool forceNew, MQTTDevID* devID
     MQTTDevID tmp = 0;
     XP_U32 len = sizeof(tmp);
     if ( !forceNew ) {
-        dutil_loadPtr( dutil, xwe, keys, &tmp, &len );
+        dutil_loadPtr( dutil, xwe, MQTT_DEVID_KEY, &tmp, &len );
     }
 
     /* XP_LOGFF( "len: %d; sizeof(tmp): %zu", len, sizeof(tmp) ); */
@@ -221,7 +218,7 @@ getMQTTDevID( XW_DUtilCtxt* dutil, XWEnv xwe, XP_Bool forceNew, MQTTDevID* devID
         }
         XP_LOGFF( "average bits set: %d", total / NUM_RUNS );
 
-        dutil_storePtr( dutil, xwe, keys, &tmp, sizeof(tmp) );
+        dutil_storePtr( dutil, xwe, MQTT_DEVID_KEY, &tmp, sizeof(tmp) );
 
 # ifdef DEBUG
         XP_UCHAR buf[32];
@@ -245,8 +242,7 @@ dvc_getMQTTDevID( XW_DUtilCtxt* dutil, XWEnv xwe, MQTTDevID* devID )
 void
 dvc_setMQTTDevID( XW_DUtilCtxt* dutil, XWEnv xwe, const MQTTDevID* devID )
 {
-    const XP_UCHAR* keys[] = { MQTT_DEVID_KEY, NULL };
-    dutil_storePtr( dutil, xwe, keys, devID, sizeof(*devID) );
+    dutil_storePtr( dutil, xwe, MQTT_DEVID_KEY, devID, sizeof(*devID) );
 }
 
 void
@@ -813,16 +809,10 @@ dvc_onWebSendResult( XW_DUtilCtxt* dutil, XWEnv xwe, XP_U32 resultKey,
                         tmp = cJSON_GetObjectItem( result, "atNext" );
                         if ( !!tmp ) {
                             XP_U32 atNext = tmp->valueint;
-                            {
-                                const XP_UCHAR* keys1[] = { LAST_REG_KEY, NULL };
-                                dutil_storePtr( dutil, xwe, keys1, &atNext,
-                                                sizeof(atNext) );
-                            }
-                            {
-                                const XP_UCHAR* keys2[] = { KEY_GITREV, NULL };
-                                dutil_storePtr( dutil, xwe, keys2, GITREV,
-                                                XP_STRLEN(GITREV) );
-                            }
+                            dutil_storePtr( dutil, xwe, LAST_REG_KEY, &atNext,
+                                            sizeof(atNext) );
+                            dutil_storePtr( dutil, xwe, KEY_GITREV, GITREV,
+                                            XP_STRLEN(GITREV) );
                         }
 
                         tmp = cJSON_GetObjectItem( result, "qos" );
@@ -969,8 +959,7 @@ storePhoniesData( XW_DUtilCtxt* dutil, XWEnv xwe, DevCtxt* dc )
         XP_ASSERT( pdc1 == pdc );
     }
 
-    const XP_UCHAR* keys[] = { KEY_LEGAL_PHONIES, NULL };
-    dutil_storeStream( dutil, xwe, keys, stream );
+    dutil_storeStream( dutil, xwe, KEY_LEGAL_PHONIES, stream );
     stream_destroy( stream );
 }
 
@@ -981,8 +970,7 @@ loadPhoniesData( XW_DUtilCtxt* dutil, XWEnv xwe, DevCtxt* dc )
     XP_ASSERT ( !dc->pd );
 
     XWStreamCtxt* stream = mkStream( dutil );
-    const XP_UCHAR* keys[] = { KEY_LEGAL_PHONIES, NULL };
-    dutil_loadStream( dutil, xwe, keys, stream );
+    dutil_loadStream( dutil, xwe, KEY_LEGAL_PHONIES, stream );
 
     XP_U8 flags;
     if ( stream_gotU8( stream, &flags ) && PD_VERSION_1 == flags ) {
@@ -1197,16 +1185,10 @@ registerIf( XW_DUtilCtxt* dutil, XWEnv xwe )
 {
     XP_U32 atNext = 0;
     XP_U32 len = sizeof(atNext);
-    {
-        const XP_UCHAR* keys1[] = { LAST_REG_KEY, NULL };
-        dutil_loadPtr( dutil, xwe, keys1, &atNext, &len );
-    }
+    dutil_loadPtr( dutil, xwe, LAST_REG_KEY, &atNext, &len );
     XP_UCHAR gitrev[128];
     len = VSIZE(gitrev);
-    {
-        const XP_UCHAR* keys2[] = { KEY_GITREV, NULL };
-        dutil_loadPtr( dutil, xwe, keys2, gitrev, &len );
-    }
+    dutil_loadPtr( dutil, xwe, KEY_GITREV, gitrev, &len );
     if ( len >= VSIZE(gitrev) ) {
         len = VSIZE(gitrev) - 1;
     }

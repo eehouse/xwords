@@ -69,8 +69,7 @@ loadStateLocked( XW_DUtilCtxt* dutil, XWEnv xwe )
         dutil->kpCtxt = state = XP_CALLOC( dutil->mpool, sizeof(*state) );
         XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(dutil->mpool)
                                                     dutil_getVTManager(dutil) );
-        const XP_UCHAR* keys[] = { KNOWN_PLAYERS_KEY, NULL };
-        dutil_loadStream( dutil, xwe, keys, stream );
+        dutil_loadStream( dutil, xwe, KNOWN_PLAYERS_KEY, stream );
         if ( 0 < stream_getSize( stream ) ) {
             XP_U8 vers = stream_getU8( stream );
             stream_setVersion( stream, vers );
@@ -106,8 +105,7 @@ saveState( XW_DUtilCtxt* dutil, XWEnv xwe, KPState* state )
 
         dll_map( &state->players->links, saveProc, NULL, stream );
 
-        const XP_UCHAR* keys[] = { KNOWN_PLAYERS_KEY, NULL };
-        dutil_storeStream( dutil, xwe, keys, stream );
+        dutil_storeStream( dutil, xwe, KNOWN_PLAYERS_KEY, stream );
         stream_destroy( stream );
         state->dirty = XP_FALSE;
     }

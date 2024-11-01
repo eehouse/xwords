@@ -171,8 +171,7 @@ storeCountsLocked( XW_DUtilCtxt* dutil, XWEnv xwe )
         }
     }
 
-    const XP_UCHAR* keys[] = { STATS_KEY, NULL };
-    dutil_storeStream( dutil, xwe, keys, stream );
+    dutil_storeStream( dutil, xwe, STATS_KEY, stream );
     stream_destroy( stream );
 }
 
@@ -186,8 +185,7 @@ loadCountsLocked( XW_DUtilCtxt* dutil, XWEnv xwe )
     ss->statsVals = statsVals;
 
     XWStreamCtxt* stream = mkStream( dutil );
-    const XP_UCHAR* keys[] = { STATS_KEY, NULL };
-    dutil_loadStream( dutil, xwe, keys, stream );
+    dutil_loadStream( dutil, xwe, STATS_KEY, stream );
 
     XP_U8 version;
     if ( stream_gotU8( stream, &version ) ) {

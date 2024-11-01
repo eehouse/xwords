@@ -441,14 +441,13 @@ and_dutil_getUserQuantityString( XW_DUtilCtxt* duc, XWEnv xwe,
 }
 
 static void
-and_dutil_storePtr( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* keys[],
+and_dutil_storePtr( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
                     const void* data, XP_U32 len )
 {
     DUTIL_CBK_HEADER( "store", "(Ljava/lang/String;[B)V" );
-    XP_ASSERT( NULL == keys[1] );
 
     jbyteArray jdata = makeByteArray( env, len, data );
-    jstring jkey = (*env)->NewStringUTF( env, keys[0] );
+    jstring jkey = (*env)->NewStringUTF( env, key );
 
     (*env)->CallVoidMethod( env, dutil->jdutil, mid, jkey, jdata );
 
@@ -471,12 +470,11 @@ loadToByteArray( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key )
 }
 
 static void
-and_dutil_loadPtr( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* keys[],
+and_dutil_loadPtr( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
                    void* data, XP_U32* lenp )
 {
-    XP_ASSERT( NULL == keys[1] );
     JNIEnv* env = xwe;
-    jbyteArray jvalue = loadToByteArray( duc, env, keys[0] );
+    jbyteArray jvalue = loadToByteArray( duc, env, key );
     jsize len = 0;
     if ( jvalue != NULL ) {
         len = (*env)->GetArrayLength( env, jvalue );

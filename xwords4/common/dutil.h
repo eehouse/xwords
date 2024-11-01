@@ -55,16 +55,16 @@ typedef struct _DUtilVtable {
                                                       XP_U16 stringCode,
                                                       XP_U16 quantity );
     void (*m_dutil_storeStream)( XW_DUtilCtxt* duc, XWEnv xwe,
-                                 const XP_UCHAR* keys[],
+                                 const XP_UCHAR* key,
                                  XWStreamCtxt* stream );
     void (*m_dutil_loadStream)( XW_DUtilCtxt* duc, XWEnv xwe,
-                                const XP_UCHAR* keys[],
+                                const XP_UCHAR* key,
                                 XWStreamCtxt* inOut );
     void (*m_dutil_storePtr)( XW_DUtilCtxt* duc, XWEnv xwe,
-                              const XP_UCHAR* keys[],
+                              const XP_UCHAR* key,
                               const void* data, XP_U32 len);
     void (*m_dutil_loadPtr)( XW_DUtilCtxt* duc, XWEnv xwe,
-                             const XP_UCHAR* keys[],
+                             const XP_UCHAR* key,
                              void* data, XP_U32* lenp );
 # ifdef XWFEATURE_DEVICE
     void (*m_dutil_forEach)( XW_DUtilCtxt* duc, XWEnv xwe,
