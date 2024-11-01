@@ -141,7 +141,7 @@ XP_U8
 dvc_getQOS( XW_DUtilCtxt* dutil, XWEnv xwe )
 {
     DevCtxt* state = load( dutil, xwe );
-    LOG_RETURNF("%d", state->mqttQOS);
+    // LOG_RETURNF("%d", state->mqttQOS);
     return state->mqttQOS;
 }
 
@@ -652,7 +652,7 @@ void
 dvc_parseMQTTPacket( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* topic,
                      const XP_U8* buf, XP_U16 len )
 {
-    // XP_LOGFF( "(topic=%s, len=%d)", topic, len );
+    XP_LOGFF( "(topic=%s, len=%d)", topic, len );
     ASSERT_MAGIC();
 
     MQTTDevID myID;
@@ -660,6 +660,7 @@ dvc_parseMQTTPacket( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* topic,
 
     XP_U32 gameID = 0;
     if ( isDevMsg( &myID, topic, &gameID ) ) {
+        XP_LOGFF( "is msg; gameID: %X", gameID );
         XWStreamCtxt* stream = mkStream( dutil );
         stream_putBytes( stream, buf, len );
 
@@ -720,7 +721,7 @@ dvc_parseMQTTPacket( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* topic,
     } else if ( isCtrlMsg( &myID, topic ) ) {
         dutil_onCtrlReceived( dutil, xwe, buf, len );
     }
-    // LOG_RETURN_VOID();
+    LOG_RETURN_VOID();
 } /* dvc_parseMQTTPacket */
 
 typedef struct _GetByKeyData {
