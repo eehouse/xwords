@@ -176,10 +176,12 @@ abstract class XWFragment: Fragment(), Delegator {
 
     override fun onDestroy()
     {
-        Log.d( TAG, "%H/%s.onDestroy() called", this, this::class.java.getSimpleName() )
+        val simpleName = this::class.java.getSimpleName()
+        Log.d( TAG, "%H/%s.onDestroy() called", this, simpleName )
         mDlgt?.onDestroy()
         sActiveFrags.remove( this )
         super.onDestroy()
+        Log.d( TAG, "%H/%s.onDestroy() finished", this, simpleName )
     }
 
     @Deprecated("Deprecated in Java")

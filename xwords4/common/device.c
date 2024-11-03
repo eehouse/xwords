@@ -32,7 +32,12 @@
 
 #ifdef DEBUG
 # define MAGIC_INITED 0x8283413F
-# define ASSERT_MAGIC() XP_ASSERT(dutil->magic == MAGIC_INITED)
+# define ASSERT_MAGIC()  {                              \
+        if ( dutil->magic != MAGIC_INITED ) {           \
+            XP_LOGFF( "bad magic %X", dutil->magic );   \
+            XP_ASSERT(0);                               \
+        }                                               \
+    }
 #else
 # define ASSERT_MAGIC()
 #endif
@@ -324,7 +329,7 @@ dvc_getMQTTSubTopics( XW_DUtilCtxt* dutil, XWEnv xwe,
 
     *qos = dvc_getQOS( dutil, xwe );
 
-    logPtrs( __func__, *nTopics, topics );
+    // logPtrs( __func__, *nTopics, topics );
 }
 
 typedef enum { CMD_INVITE, CMD_MSG, CMD_DEVGONE, } MQTTCmd;
@@ -654,6 +659,8 @@ dvc_parseMQTTPacket( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* topic,
     MQTTDevID myID;
     dvc_getMQTTDevID( dutil, xwe, &myID );
 
+    XP_LOGFF( "got myID" );
+
     XP_U32 gameID = 0;
     if ( isDevMsg( &myID, topic, &gameID ) ) {
         XP_LOGFF( "is msg; gameID: %X", gameID );
@@ -715,7 +722,10 @@ dvc_parseMQTTPacket( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* topic,
         }
         stream_destroy( stream );
     } else if ( isCtrlMsg( &myID, topic ) ) {
+        XP_LOGFF( "is ctrl msg" );
         dutil_onCtrlReceived( dutil, xwe, buf, len );
+    } else {
+        XP_LOGFF( "OTHER" );
     }
     LOG_RETURN_VOID();
 } /* dvc_parseMQTTPacket */
