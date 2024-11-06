@@ -253,7 +253,6 @@ object MQTTUtils {
     {
         private val mStart = System.currentTimeMillis()
         private val mDevID = XwJNI.dvc_getMQTTDevID()
-        private var mConnected = false
         private val mTaskQueue = LinkedBlockingQueue<Task>()
         private val mHost: String
         private val mClient: Mqtt3BlockingClient
@@ -330,7 +329,7 @@ object MQTTUtils {
         }
 
         private val mConnectedLock = ReentrantLock()
-        private val mCondition = mConnectedLock.newCondition()
+        private val mConnectedCondition = mConnectedLock.newCondition()
 
         private var mSendThread: Thread? = null
         internal fun ensureSending()
@@ -343,9 +342,8 @@ object MQTTUtils {
                             try {
                                 val msg = sOutboundQueue.take()
                                 mConnectedLock.withLock {
-                                    while (!mConnected) {
-                                        mCondition.await()
-                                        Assert.assertTrueNR(mConnected)
+                                    while (!mClient.state.isConnected) {
+                                        mConnectedCondition.await()
                                     }
                                 }
                                 add(SendTask(msg))
@@ -391,9 +389,8 @@ object MQTTUtils {
         override fun onConnected(context: MqttClientConnectedContext) {
             Log.d(TAG, "$this.onConnected($context)")
             mConnectedLock.withLock {
-                mConnected = true
                 Log.d(TAG, "signaling connected")
-                mCondition.signal()
+                mConnectedCondition.signal()
             }
             add(SubscribeAllTask())
             updateStatus(true)
@@ -401,7 +398,6 @@ object MQTTUtils {
         }
 
         override fun onDisconnected(context: MqttClientDisconnectedContext) {
-            mConnected = false
             Log.d(TAG, "onDisconnected(cause=${context.getCause()})")
             updateStatus(false)
             mStats.updateState(false)
@@ -437,7 +433,7 @@ object MQTTUtils {
         private inner class ConnectTask(): Task() {
             override fun run() {
                 try {
-                    if ( !mConnected ) {
+                    if ( !mClient.state.isConnected ) {
                         Log.d( TAG, "calling connectWith()...")
                         mClient.connectWith()
                             .cleanSession(true)
@@ -567,7 +563,7 @@ object MQTTUtils {
                 val age = (now - this@Conn.mStart) / 1000
                 return StringBuilder()
                     .append("age: ${age}s\n")
-                    .append("state: ${if (mConnected) "Connected" else "Unconnected"}")
+                    .append("state: ${if (mClient.state.isConnected) "Connected" else "Unconnected"}")
                     .append(" (for the last ${secsInState} seconds)")
                     .append("\n").append("failed conns: $mDisconReps")
                     .append("\nSuccessful sends: $mSendOks")
@@ -586,7 +582,7 @@ object MQTTUtils {
         override fun toString(): String
         {
             val age = (System.currentTimeMillis() - mStart) / 1000
-            return "client: {connected: $mConnected; age: ${age}s}"
+            return "client: {connected: ${mClient.state.isConnected}; age: ${age}s"
         }
     }
 
