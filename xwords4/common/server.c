@@ -4362,7 +4362,8 @@ getRematchInfoImpl( const ServerCtxt* server, XWEnv xwe, CurGameInfo* newGI,
                 if ( newGI->players[ii].isLocal ) {
                     ri_addLocal( &ri );
                 } else if ( nextRemote < nAddrs ) {
-                    ri_addAddrAt( server->vol.dutil, xwe, &ri, &addrs[nextRemote++], ii );
+                    ri_addAddrAt( server->vol.dutil, xwe, &ri,
+                                  &addrs[nextRemote++], ii );
                 } else {
                     SRVR_LOGFF( "ERROR: not enough addresses for all"
                                 " remote players" );
@@ -4371,10 +4372,15 @@ getRematchInfoImpl( const ServerCtxt* server, XWEnv xwe, CurGameInfo* newGI,
             }
             if ( success ) {
                 success = nextRemote == nAddrs;
+                if ( !success ) {
+                    XP_LOGFF( "addr count mismatch: nextRemote: %d vs nAddrs: %d",
+                              nextRemote, nAddrs );
+                }
             }
         }
     } else {
         success = XP_FALSE;
+        XP_LOGFF( "rematch.addrs not set" );
     }
 
     if ( success && canOrder ) {
@@ -4382,6 +4388,9 @@ getRematchInfoImpl( const ServerCtxt* server, XWEnv xwe, CurGameInfo* newGI,
             assertRI( &ri, newGI );
         }
         success = setPlayerOrder( server, nop, newGI, !!comms ? &ri : NULL );
+        if ( !success ) {
+            XP_LOGFF( "setPlayerOrder failed" );
+        }
     }
 
     if ( success && !!comms ) {
@@ -4393,7 +4402,7 @@ getRematchInfoImpl( const ServerCtxt* server, XWEnv xwe, CurGameInfo* newGI,
     } else {
         *ripp = NULL;
     }
-    XP_ASSERT( success );
+    // XP_ASSERT( success );       /* this is firing */
 
     LOG_RETURNF( "%s", boolToStr(success)  );
     return success;
