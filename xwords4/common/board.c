@@ -159,10 +159,10 @@ static void clearCurHintRect( BoardCtxt* board );
  *
  ****************************************************************************/
 BoardCtxt*
-board_make( MPFORMAL XWEnv xwe, ModelCtxt* model, ServerCtxt* server,
+board_make( XWEnv xwe, ModelCtxt* model, ServerCtxt* server,
             DrawCtx* draw, XW_UtilCtxt* util )
 {
-    BoardCtxt* result = (BoardCtxt*)XP_MALLOC( mpool, sizeof( *result ) );
+    BoardCtxt* result = (BoardCtxt*)XP_MALLOC( util->mpool, sizeof( *result ) );
     XP_ASSERT( !!server );
     XP_ASSERT( !!util );
     XP_ASSERT( !!model );
@@ -172,7 +172,7 @@ board_make( MPFORMAL XWEnv xwe, ModelCtxt* model, ServerCtxt* server,
         XP_MEMSET( result, 0, sizeof( *result ) );
         result->selInfo = result->pti; /* equates to selPlayer == 0 */
 
-        MPASSIGN(result->mpool, mpool);
+        MPASSIGN(result->mpool, util->mpool);
 
         result->model = model;
         result->server = server;
@@ -214,7 +214,7 @@ board_destroy( BoardCtxt* board, XWEnv xwe, XP_Bool ownsUtil )
 } /* board_destroy */
 
 BoardCtxt* 
-board_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream, ModelCtxt* model,
+board_makeFromStream( XWEnv xwe, XWStreamCtxt* stream, ModelCtxt* model,
                       ServerCtxt* server, DrawCtx* draw, XW_UtilCtxt* util,
                       XP_U16 nPlayers )
 {
@@ -227,7 +227,7 @@ board_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream, ModelCtxt* model
     nColsNBits = NUMCOLS_NBITS_4;
 #endif
 
-    board = board_make( MPPARM(mpool) xwe, model, server, draw, util );
+    board = board_make( xwe, model, server, draw, util );
     board_setCallbacks( board, xwe );
 
     if ( version >= STREAM_VERS_4YOFFSET) {
@@ -415,8 +415,7 @@ void
 board_drawSnapshot( const BoardCtxt* curBoard, XWEnv xwe, DrawCtx* dctx,
                     XP_U16 width, XP_U16 height )
 {
-    BoardCtxt* newBoard = board_make( MPPARM(curBoard->mpool) xwe,
-                                      curBoard->model,
+    BoardCtxt* newBoard = board_make( xwe, curBoard->model,
                                       curBoard->server, dctx, curBoard->util );
     board_setDraw( newBoard, xwe, dctx ); /* so draw_dictChanged() will get called */
     XP_U16 fontWidth = width / curBoard->gi->boardSize;

@@ -143,7 +143,7 @@ typedef struct _TransportProcs {
     void* closure;
 } TransportProcs;
 
-CommsCtxt* comms_make( MPFORMAL XWEnv xwe, XW_UtilCtxt* util,
+CommsCtxt* comms_make( XWEnv xwe, XW_UtilCtxt* util,
                        XP_Bool isServer,
                        const CommsAddrRec* selfAddr,
                        const CommsAddrRec* hostAddr,
@@ -180,7 +180,7 @@ XP_Bool comms_getRelayID( const CommsCtxt* comms, XP_UCHAR* buf, XP_U16* len );
 void comms_dropHostAddr( CommsCtxt* comms, CommsConnType typ );
 XP_Bool comms_getIsHost( const CommsCtxt* comms );
 
-CommsCtxt* comms_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
+CommsCtxt* comms_makeFromStream( XWEnv xwe, XWStreamCtxt* stream,
                                  XW_UtilCtxt* util, XP_Bool isServer,
                                  const TransportProcs* procs,
 #ifdef XWFEATURE_RELAY

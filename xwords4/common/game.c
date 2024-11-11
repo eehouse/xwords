@@ -195,7 +195,7 @@ game_makeNewGame( MPFORMAL XWEnv xwe, XWGame* game, CurGameInfo* gi,
         model_setPlayerDicts( game->model, xwe, &playerDicts );
 
         if ( gi->serverRole != SERVER_STANDALONE ) {
-            game->comms = comms_make( MPPARM(mpool) xwe, util,
+            game->comms = comms_make( xwe, util,
                                       gi->serverRole != SERVER_ISCLIENT,
                                       selfAddr, hostAddr, procs,
 #ifdef XWFEATURE_RELAY
@@ -209,9 +209,8 @@ game_makeNewGame( MPFORMAL XWEnv xwe, XWGame* game, CurGameInfo* gi,
         }
 
 
-        game->server = server_make( MPPARM(mpool) xwe, game->model,
-                                    game->comms, util );
-        game->board = board_make( MPPARM(mpool) xwe, game->model, game->server,
+        game->server = server_make( xwe, game->model, game->comms, util );
+        game->board = board_make( xwe, game->model, game->server,
                                   NULL, util );
         board_setCallbacks( game->board, xwe );
 
@@ -358,7 +357,7 @@ game_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
 
             XP_ASSERT( hasComms == (SERVER_STANDALONE != gi->serverRole) );
             if ( hasComms ) {
-                game->comms = comms_makeFromStream( MPPARM(mpool) xwe, stream, util,
+                game->comms = comms_makeFromStream( xwe, stream, util,
                                                     gi->serverRole != SERVER_ISCLIENT,
                                                     procs,
 #ifdef XWFEATURE_RELAY
@@ -373,11 +372,11 @@ game_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
             game->model = model_makeFromStream( MPPARM(mpool) xwe, stream, dict,
                                                 &playerDicts, util );
 
-            game->server = server_makeFromStream( MPPARM(mpool) xwe, stream,
+            game->server = server_makeFromStream( xwe, stream,
                                                   game->model, game->comms, 
                                                   util, gi->nPlayers );
 
-            game->board = board_makeFromStream( MPPARM(mpool) xwe, stream,
+            game->board = board_makeFromStream( xwe, stream,
                                                 game->model, game->server, 
                                                 NULL, util, gi->nPlayers );
             setListeners( game, cp );

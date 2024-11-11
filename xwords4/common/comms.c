@@ -406,7 +406,7 @@ init_relay( CommsCtxt* comms, XWEnv xwe, XP_U16 nPlayersHere, XP_U16 nPlayersTot
 #endif
 
 CommsCtxt* 
-comms_make( MPFORMAL XWEnv xwe, XW_UtilCtxt* util, XP_Bool isServer,
+comms_make( XWEnv xwe, XW_UtilCtxt* util, XP_Bool isServer,
             const CommsAddrRec* selfAddr, const CommsAddrRec* hostAddr,
             const TransportProcs* procs,
 #ifdef XWFEATURE_RELAY
@@ -415,15 +415,15 @@ comms_make( MPFORMAL XWEnv xwe, XW_UtilCtxt* util, XP_Bool isServer,
 #endif
             XP_U16 forceChannel )
 {
-    CommsCtxt* comms = (CommsCtxt*)XP_CALLOC( mpool, sizeof(*comms) );
+    CommsCtxt* comms = (CommsCtxt*)XP_CALLOC( util->mpool, sizeof(*comms) );
     MUTEX_INIT_CHECKED( &comms->mutex, XP_TRUE, 3 );
     comms->util = util;
     comms->dutil = util_getDevUtilCtxt( util, xwe );
 #ifdef DEBUG
-    comms->tag = mpool_getTag(mpool);
+    comms->tag = mpool_getTag(util->mpool);
     COMMS_LOGFF( TAGFMT(isServer=%d; forceChannel=%d), TAGPRMS, isServer, forceChannel );
 #endif
-    MPASSIGN(comms->mpool, mpool);
+    MPASSIGN(comms->mpool, util->mpool);
 
     XP_ASSERT( 0 == (forceChannel & ~CHANNEL_MASK) );
     comms->isServer = isServer;
@@ -744,7 +744,7 @@ writeChannelNo( XWStreamCtxt* stream, XP_PlayerAddr channelNo )
 }
 
 CommsCtxt* 
-comms_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
+comms_makeFromStream( XWEnv xwe, XWStreamCtxt* stream,
                       XW_UtilCtxt* util, XP_Bool isServer,
                       const TransportProcs* procs,
 #ifdef XWFEATURE_RELAY
@@ -778,7 +778,7 @@ comms_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
         nPlayersHere = 0;
         nPlayersTotal = 0;
     }
-    CommsCtxt* comms = comms_make( MPPARM(mpool) xwe, util, isServer,
+    CommsCtxt* comms = comms_make( xwe, util, isServer,
                                    NULL, NULL, procs,
 #ifdef XWFEATURE_RELAY
                                    nPlayersHere, nPlayersTotal, rcp, rcClosure,
@@ -821,7 +821,7 @@ comms_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
     COMMS_LOGFFV( "nAddrRecs: %d", nAddrRecs );
     AddressRecord** prevsAddrNext = &comms->recs;
     for ( int ii = 0; ii < nAddrRecs; ++ii ) {
-        AddressRecord* rec = (AddressRecord*)XP_CALLOC( mpool, sizeof(*rec));
+        AddressRecord* rec = (AddressRecord*)XP_CALLOC( util->mpool, sizeof(*rec));
 
         addrFromStream( &rec->addr, stream );
         logAddrComms( comms, &rec->addr, __func__ );
@@ -853,7 +853,7 @@ comms_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
     }
 
     for ( int ii = 0; ii < queueLen; ++ii ) {
-        MsgQueueElem* msg = (MsgQueueElem*)XP_CALLOC( mpool, sizeof(*msg) );
+        MsgQueueElem* msg = (MsgQueueElem*)XP_CALLOC( util->mpool, sizeof(*msg) );
 
         msg->channelNo = readChannelNo( stream );
         if ( version >= STREAM_VERS_SMALLCOMMS ) {
@@ -881,7 +881,7 @@ comms_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
             stream_getFromStream( nliStream, stream, nliLen );
             NetLaunchInfo nli;
             if ( nli_makeFromStream( &nli, nliStream ) ) {
-                msg->smp.buf = (XP_U8*)XP_MALLOC( mpool, sizeof(nli) );
+                msg->smp.buf = (XP_U8*)XP_MALLOC( util->mpool, sizeof(nli) );
                 XP_MEMCPY( (void*)msg->smp.buf, &nli, sizeof(nli) );
                 len = sizeof(nli); /* needed for checksum calc */
             } else {
@@ -889,7 +889,7 @@ comms_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
             }
             stream_destroy( nliStream );
         } else {
-            msg->smp.buf = (XP_U8*)XP_MALLOC( mpool, len );
+            msg->smp.buf = (XP_U8*)XP_MALLOC( util->mpool, len );
             stream_getBytes( stream, (XP_U8*)msg->smp.buf, len );
         }
         dutil_md5sum( comms->dutil, xwe, msg->smp.buf, len, &msg->sb );

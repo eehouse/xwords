@@ -56,9 +56,9 @@ typedef enum {
 
 /* typedef struct BoardCtxt BoardCtxt; */
 
-BoardCtxt* board_make( MPFORMAL XWEnv xwe, ModelCtxt* model, ServerCtxt* server,
+BoardCtxt* board_make( XWEnv xwe, ModelCtxt* model, ServerCtxt* server,
                        DrawCtx* draw, XW_UtilCtxt* util );
-BoardCtxt* board_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
+BoardCtxt* board_makeFromStream( XWEnv xwe, XWStreamCtxt* stream,
                                  ModelCtxt* model, ServerCtxt* server, 
                                  DrawCtx* draw, XW_UtilCtxt* util,
                                  XP_U16 nPlayers );

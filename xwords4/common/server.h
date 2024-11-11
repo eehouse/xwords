@@ -31,10 +31,10 @@
 extern "C" {
 #endif
 
-ServerCtxt* server_make( MPFORMAL XWEnv xwe, ModelCtxt* model, CommsCtxt* comms,
+ServerCtxt* server_make( XWEnv xwe, ModelCtxt* model, CommsCtxt* comms,
                          XW_UtilCtxt* util );
 
-ServerCtxt* server_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
+ServerCtxt* server_makeFromStream( XWEnv xwe, XWStreamCtxt* stream,
                                    ModelCtxt* model, CommsCtxt* comms,
                                    XW_UtilCtxt* util, XP_U16 nPlayers );
 

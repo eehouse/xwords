@@ -178,12 +178,12 @@ engine_getScoreCache( EngineCtxt* engine, XP_U16 row )
  * turn it into a separate code module later.
  ****************************************************************************/ 
 EngineCtxt*
-engine_make( MPFORMAL XW_UtilCtxt* util )
+engine_make( XW_UtilCtxt* util )
 {
-    EngineCtxt* result = (EngineCtxt*)XP_MALLOC( mpool, sizeof(*result) );
+    EngineCtxt* result = (EngineCtxt*)XP_MALLOC( util->mpool, sizeof(*result) );
     XP_MEMSET( result, 0, sizeof(*result) );
 
-    MPASSIGN(result->mpool, mpool);
+    MPASSIGN(result->mpool, util->mpool);
 
     result->util = util;
 
@@ -200,10 +200,10 @@ engine_writeToStream( EngineCtxt* XP_UNUSED(ctxt),
 } /* engine_writeToStream */
 
 EngineCtxt* 
-engine_makeFromStream( MPFORMAL XWStreamCtxt* XP_UNUSED(stream), 
+engine_makeFromStream( XWStreamCtxt* XP_UNUSED(stream),
                        XW_UtilCtxt* util )
 {
-    EngineCtxt* engine = engine_make( MPPARM(mpool) util );
+    EngineCtxt* engine = engine_make( util );
 
     /* All the engine's data seems to be used only in the process of finding a
        move.  So if we're willing to have the set of moves found lost across

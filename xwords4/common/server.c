@@ -420,14 +420,14 @@ initServer( ServerCtxt* server, XWEnv xwe )
 } /* initServer */
 
 ServerCtxt* 
-server_make( MPFORMAL XWEnv xwe, ModelCtxt* model, CommsCtxt* comms, XW_UtilCtxt* util )
+server_make( XWEnv xwe, ModelCtxt* model, CommsCtxt* comms, XW_UtilCtxt* util )
 {
-    ServerCtxt* result = (ServerCtxt*)XP_MALLOC( mpool, sizeof(*result) );
+    ServerCtxt* result = (ServerCtxt*)XP_MALLOC( util->mpool, sizeof(*result) );
 
     if ( result != NULL ) {
         XP_MEMSET( result, 0, sizeof(*result) );
 
-        MPASSIGN(result->mpool, mpool);
+        MPASSIGN(result->mpool, util->mpool);
 
         result->vol.model = model;
         result->vol.comms = comms;
@@ -617,17 +617,17 @@ server_getPendingRegs( const ServerCtxt* server )
 }
 
 ServerCtxt*
-server_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream, ModelCtxt* model,
+server_makeFromStream( XWEnv xwe, XWStreamCtxt* stream, ModelCtxt* model,
                        CommsCtxt* comms, XW_UtilCtxt* util, XP_U16 nPlayers )
 {
     ServerCtxt* server;
     XP_U16 version = stream_getVersion( stream );
 
-    server = server_make( MPPARM(mpool) xwe, model, comms, util );
+    server = server_make( xwe, model, comms, util );
     getNV( stream, &server->nv, nPlayers );
     
     if ( stream_getBits(stream, 1) != 0 ) {
-        server->pool = pool_makeFromStream( MPPARM(mpool) stream );
+        server->pool = pool_makeFromStream( MPPARM(util->mpool) stream );
     }
 
     for ( int ii = 0; ii < nPlayers; ++ii ) {
@@ -636,8 +636,7 @@ server_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream, ModelCtxt* mode
         player->deviceIndex = stream_getU8( stream );
 
         if ( stream_getU8( stream ) != 0 ) {
-            player->engine = engine_makeFromStream( MPPARM(mpool)
-                                                    stream, util );
+            player->engine = engine_makeFromStream( stream, util );
         }
     }
 
@@ -2628,8 +2627,7 @@ server_getEngineFor( ServerCtxt* server, XP_U16 playerNum )
     EngineCtxt* engine = player->engine;
     if ( !engine &&
          (inDuplicateMode(server) || gi->players[playerNum].isLocal) ) {
-        engine = engine_make( MPPARM(server->mpool)
-                              server->vol.util );
+        engine = engine_make( server->vol.util );
         player->engine = engine;
     }
 
@@ -2739,7 +2737,7 @@ trayAllowsMoves( ServerCtxt* server, XWEnv xwe, XP_U16 turn,
     EngineCtxt* tmpEngine = NULL;
     EngineCtxt* engine = server_getEngineFor( server, turn );
     if ( !engine ) {
-        tmpEngine = engine = engine_make( MPPARM(server->mpool) server->vol.util );
+        tmpEngine = engine = engine_make( server->vol.util );
     }
     XP_Bool canMove;
     MoveInfo newMove = {};

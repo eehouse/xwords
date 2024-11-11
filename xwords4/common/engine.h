@@ -38,10 +38,10 @@ typedef struct BdHintLimits {
 
 XP_U16 engine_getScoreCache( EngineCtxt* engine, XP_U16 row );
 
-EngineCtxt* engine_make( MPFORMAL XW_UtilCtxt* util );
+EngineCtxt* engine_make( XW_UtilCtxt* util );
 
 void engine_writeToStream( EngineCtxt* ctxt, XWStreamCtxt* stream );
-EngineCtxt* engine_makeFromStream( MPFORMAL XWStreamCtxt* stream,
+EngineCtxt* engine_makeFromStream( XWStreamCtxt* stream,
                                    XW_UtilCtxt* util );
 
 void engine_init( EngineCtxt* ctxt );
