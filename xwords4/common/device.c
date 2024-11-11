@@ -274,17 +274,17 @@ appendToStorage( XP_UCHAR* storage, int* offset,
     return start;
 }
 
-#ifdef DEBUG
-static void
-logPtrs( const char* func, int nTopics, char* topics[] )
-{
-    for ( int ii = 0; ii < nTopics; ++ii ) {
-        XP_LOGFF( "from %s; topics[%d] = %s", func, ii, topics[ii] );
-    }
-}
-#else
-# define logPtrs(func, nTopics, topics)
-#endif
+/* #ifdef DEBUG */
+/* static void */
+/* logPtrs( const char* func, int nTopics, char* topics[] ) */
+/* { */
+/*     for ( int ii = 0; ii < nTopics; ++ii ) { */
+/*         XP_LOGFF( "from %s; topics[%d] = %s", func, ii, topics[ii] ); */
+/*     } */
+/* } */
+/* #else */
+/* # define logPtrs(func, nTopics, topics) */
+/* #endif */
 
 void
 dvc_getMQTTSubTopics( XW_DUtilCtxt* dutil, XWEnv xwe,
