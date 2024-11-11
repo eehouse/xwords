@@ -366,7 +366,7 @@ class JNIThread private constructor(lockIn: GameLock) : Thread(), AutoCloseable 
 
     private fun checkButtons() {
         synchronized(m_gsi) {
-            XwJNI.game_getState(mJNIGamePtr, m_gsi)
+            XwJNI.game_getState(mJNIGamePtr!!, m_gsi)
         }
         Message.obtain(m_handler, TOOLBAR_STATES).sendToTarget()
     }
@@ -404,7 +404,7 @@ class JNIThread private constructor(lockIn: GameLock) : Thread(), AutoCloseable 
                 XwJNI.game_saveSucceeded(mJNIGamePtr)
                 m_lastSavedState = newHash
 
-                val thumb = GameUtils.takeSnapshot(context, mJNIGamePtr, mGi)
+                val thumb = GameUtils.takeSnapshot(context, mJNIGamePtr!!, mGi)
                 DBUtils.saveThumbnail(context, m_lock!!, thumb)
             }
         }

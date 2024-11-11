@@ -434,15 +434,18 @@ object GameUtils {
         var thumb: Bitmap? = null
         GameWrapper.make(context, rowid).use { gw ->
             gw?.lock?.let {
-                thumb = takeSnapshot(context, gw.gamePtr(), gw.gi())
-                DBUtils.saveThumbnail(context, it, thumb)
+                val gamePtr = gw.gamePtr()
+                if ( null != gamePtr ) {
+                    thumb = takeSnapshot(context, gamePtr, gw.gi())
+                    DBUtils.saveThumbnail(context, it, thumb)
+                }
             }
         }
         return thumb
     }
 
     fun takeSnapshot(
-        context: Context, gamePtr: GamePtr?,
+        context: Context, gamePtr: GamePtr,
         gi: CurGameInfo?
     ): Bitmap? {
         var thumb: Bitmap? = null

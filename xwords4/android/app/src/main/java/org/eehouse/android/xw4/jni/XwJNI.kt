@@ -606,8 +606,8 @@ class XwJNI private constructor() {
         external fun game_getGi(gamePtr: GamePtr?, gi: CurGameInfo?)
         @JvmStatic
         external fun game_getState(
-            gamePtr: GamePtr?,
-            gsi: GameStateInfo?
+            gamePtr: GamePtr,
+            gsi: GameStateInfo
         )
 
         @JvmStatic
@@ -631,7 +631,7 @@ class XwJNI private constructor() {
         external fun board_draw(gamePtr: GamePtr?): Boolean
         @JvmStatic
         external fun board_drawSnapshot(
-            gamePtr: GamePtr?, draw: DrawCtx?,
+            gamePtr: GamePtr, draw: DrawCtx?,
             width: Int, height: Int
         )
 
