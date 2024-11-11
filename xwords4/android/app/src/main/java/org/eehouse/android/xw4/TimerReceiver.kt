@@ -482,6 +482,8 @@ class TimerReceiver : BroadcastReceiver() {
 
         private val sDataWrapper = arrayOf<Data?>(null)
         fun load(context: Context, proc: WithData) {
+            Log.d(TAG, "load() waiting on sDataWrapper")
+            val now = System.currentTimeMillis()
             synchronized(sDataWrapper) {
                 var data = sDataWrapper[0]
                 if (null == data) {
@@ -502,6 +504,8 @@ class TimerReceiver : BroadcastReceiver() {
                 proc.withData(data.get())
                 data.put(context)
             }
+            val after = System.currentTimeMillis()
+            Log.d(TAG, "load() took %d millis", after - now)
         }
 
         private fun store(context: Context, data: Data) {
