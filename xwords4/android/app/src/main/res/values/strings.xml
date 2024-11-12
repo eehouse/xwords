@@ -2494,10 +2494,6 @@
     <string name="unsafe_open_disregard">Open anyway</string>
     <string name="word_blocked_by_phony">Word or words not found in wordlist %2$s: %1$s.</string>
     <string name="gamel_menu_logs">Debug logs</string>
-    <!-- Debug-build-only menu to show timer stats -->
-    <string name="gamel_menu_timerStats">Timer stats</string>
-    <!--  Debug-build-only button in timer stats dialog -->
-    <string name="button_clear_stats">Clear stats</string>
     <!-- Debug-build-only menu to turn on saving of logs -->
     <string name="gamel_menu_logstore_on">Enable log storage</string>
     <!-- Debug-build-only menu to turn off saving of logs -->

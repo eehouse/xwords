@@ -167,7 +167,7 @@ class TimerReceiver : BroadcastReceiver() {
             Log.d(TAG, "onReceiveImpl(timerID=%d, src=%s)", timerID, src)
             load(context, object : WithData {
                 override fun withData(data: Data) {
-                    updateStats(context, data)
+                    // updateStats(context, data)
                     data.setFor(CLIENT_STATS, KEY_NEXT_FIRE, 0)
                     val fired = fireExpiredTimers(context, data)
                     incrementBackoffs(data, fired)
@@ -177,51 +177,51 @@ class TimerReceiver : BroadcastReceiver() {
             Log.d(TAG, "onReceiveImpl(timerID=%d, src=%s) DONE", timerID, src)
         }
 
-        fun statsStr(context: Context): String {
-            val sb = StringBuffer()
-            if (BuildConfig.NON_RELEASE || XWPrefs.getDebugEnabled(context)) {
-                load(context, object : WithData {
-                    override fun withData(data: Data) {
-                        // TreeMap to sort by timer fire time
-                        val tmpMap = TreeMap<Long, String>()
-                        for (client in data.clients()) {
-                            val nextFire = data.getFor(client, KEY_FIREWHEN, 0)
-                            if (0L != nextFire) {
-                                tmpMap[nextFire] = client
-                            }
-                        }
-                        sb.append("Next timers:\n")
-                        for ((key, value) in tmpMap) {
-                            sb.append(getSimpleName(value)).append(": ")
-                                .append(fmtLong(key))
-                                .append("\n")
-                        }
+        // fun statsStr(context: Context): String {
+        //     val sb = StringBuffer()
+        //     if (BuildConfig.NON_RELEASE || XWPrefs.getDebugEnabled(context)) {
+        //         load(context, object : WithData {
+        //             override fun withData(data: Data) {
+        //                 // TreeMap to sort by timer fire time
+        //                 val tmpMap = TreeMap<Long, String>()
+        //                 for (client in data.clients()) {
+        //                     val nextFire = data.getFor(client, KEY_FIREWHEN, 0)
+        //                     if (0L != nextFire) {
+        //                         tmpMap[nextFire] = client
+        //                     }
+        //                 }
+        //                 sb.append("Next timers:\n")
+        //                 for ((key, value) in tmpMap) {
+        //                     sb.append(getSimpleName(value)).append(": ")
+        //                         .append(fmtLong(key))
+        //                         .append("\n")
+        //                 }
 
-                        val count = data.getFor(CLIENT_STATS, KEY_COUNT, 0)
-                        sb.append("\nTimers fired: ").append(count).append("\n")
-                        if (0 < count) {
-                            val avgMiss = data.getFor(CLIENT_STATS, KEY_AVG_MISS, 0)
-                            sb.append("Avg delay: ")
-                                .append(String.format("%.1fs\n", avgMiss / 1000f))
-                            val worst = data.getFor(CLIENT_STATS, KEY_WORST, 0)
-                            sb.append("Worst delay: ")
-                                .append(String.format("%.1fs\n", worst / 1000f))
-                            val avgSpan = data.getFor(CLIENT_STATS, KEY_AVG_SPAN, 0)
-                            sb.append("Avg interval: ").append((avgSpan + 500) / 1000).append("s\n")
-                        }
-                    }
-                })
-            }
-            return sb.toString()
-        }
+        //                 val count = data.getFor(CLIENT_STATS, KEY_COUNT, 0)
+        //                 sb.append("\nTimers fired: ").append(count).append("\n")
+        //                 if (0 < count) {
+        //                     val avgMiss = data.getFor(CLIENT_STATS, KEY_AVG_MISS, 0)
+        //                     sb.append("Avg delay: ")
+        //                         .append(String.format("%.1fs\n", avgMiss / 1000f))
+        //                     val worst = data.getFor(CLIENT_STATS, KEY_WORST, 0)
+        //                     sb.append("Worst delay: ")
+        //                         .append(String.format("%.1fs\n", worst / 1000f))
+        //                     val avgSpan = data.getFor(CLIENT_STATS, KEY_AVG_SPAN, 0)
+        //                     sb.append("Avg interval: ").append((avgSpan + 500) / 1000).append("s\n")
+        //                 }
+        //             }
+        //         })
+        //     }
+        //     return sb.toString()
+        // }
 
-        fun clearStats(context: Context) {
-            load(context, object : WithData {
-                override fun withData(data: Data) {
-                    data.remove(CLIENT_STATS)
-                }
-            })
-        }
+        // fun clearStats(context: Context) {
+        //     load(context, object : WithData {
+        //         override fun withData(data: Data) {
+        //             data.remove(CLIENT_STATS)
+        //         }
+        //     })
+        // }
 
         fun setBackoff(
             context: Context, cback: TimerCallback,
@@ -297,6 +297,7 @@ class TimerReceiver : BroadcastReceiver() {
         private fun fireExpiredTimers(context: Context, data: Data):
             Set<TimerCallback>
         {
+            Log.d(TAG, "fireExpiredTimers()")
             val clients: MutableSet<String> = HashSet()
             val now = System.currentTimeMillis()
             for (client in data.clients()) {
@@ -323,6 +324,7 @@ class TimerReceiver : BroadcastReceiver() {
                 }
             }
 
+            Log.d(TAG, "fireExpiredTimers() DONE")
             return callees
         }
 
@@ -436,39 +438,39 @@ class TimerReceiver : BroadcastReceiver() {
 
         // What to measure? By how much are timer fires delayed? How's that as a
         // percentage of what we wanted?
-        private fun updateStats(context: Context, data: Data) {
-            if (BuildConfig.NON_RELEASE || XWPrefs.getDebugEnabled(context)) {
-                val target = data.getFor(CLIENT_STATS, KEY_NEXT_FIRE, 0)
-                // Ignore for stats purposes if target not yet set
-                if (0 < target) {
-                    val oldCount = data.getFor(CLIENT_STATS, KEY_COUNT, 0)
-                    data.setFor(CLIENT_STATS, KEY_COUNT, oldCount + 1)
+        // private fun updateStats(context: Context, data: Data) {
+        //     if (BuildConfig.NON_RELEASE || XWPrefs.getDebugEnabled(context)) {
+        //         val target = data.getFor(CLIENT_STATS, KEY_NEXT_FIRE, 0)
+        //         // Ignore for stats purposes if target not yet set
+        //         if (0 < target) {
+        //             val oldCount = data.getFor(CLIENT_STATS, KEY_COUNT, 0)
+        //             data.setFor(CLIENT_STATS, KEY_COUNT, oldCount + 1)
 
-                    val now = System.currentTimeMillis()
+        //             val now = System.currentTimeMillis()
 
-                    if (0 < target) {
-                        val missedByMS = now - target
-                        val worstMiss = data.getFor(CLIENT_STATS, KEY_WORST, 0)
-                        if (worstMiss < missedByMS) {
-                            data.setFor(CLIENT_STATS, KEY_WORST, missedByMS)
-                        }
+        //             if (0 < target) {
+        //                 val missedByMS = now - target
+        //                 val worstMiss = data.getFor(CLIENT_STATS, KEY_WORST, 0)
+        //                 if (worstMiss < missedByMS) {
+        //                     data.setFor(CLIENT_STATS, KEY_WORST, missedByMS)
+        //                 }
 
-                        updateAverage(data, KEY_AVG_MISS, oldCount, missedByMS)
-                        val targetSpan = data.getFor(CLIENT_STATS, KEY_NEXT_SPAN, 0)
-                        updateAverage(data, KEY_AVG_SPAN, oldCount, targetSpan)
-                    }
-                }
-            }
-        }
+        //                 updateAverage(data, KEY_AVG_MISS, oldCount, missedByMS)
+        //                 val targetSpan = data.getFor(CLIENT_STATS, KEY_NEXT_SPAN, 0)
+        //                 updateAverage(data, KEY_AVG_SPAN, oldCount, targetSpan)
+        //             }
+        //         }
+        //     }
+        // }
 
-        private fun updateAverage(
-            data: Data, key: String,
-            oldCount: Long, newVal: Long
-        ) {
-            var avg = data.getFor(CLIENT_STATS, key, 0)
-            avg = ((avg * oldCount) + newVal) / (oldCount + 1)
-            data.setFor(CLIENT_STATS, key, avg)
-        }
+        // private fun updateAverage(
+        //     data: Data, key: String,
+        //     oldCount: Long, newVal: Long
+        // ) {
+        //     var avg = data.getFor(CLIENT_STATS, key, 0)
+        //     avg = ((avg * oldCount) + newVal) / (oldCount + 1)
+        //     data.setFor(CLIENT_STATS, key, avg)
+        // }
 
         private fun className(cbck: TimerCallback): String {
             return cbck.javaClass.name

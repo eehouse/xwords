@@ -1324,7 +1324,6 @@ class GamesListDelegate(delegator: Delegator) :
                 Utils.emailLogFile(mActivity, logLoc)
             }
 
-            Action.CLEAR_INT_STATS -> TimerReceiver.clearStats(mActivity)
             Action.OPEN_BYOD_DICT ->
                 DictBrowseDelegate.launch(getDelegator(), (params[0] as String))
             Action.LAUNCH_AFTER_DEL -> deleteGames(
@@ -1607,8 +1606,6 @@ class GamesListDelegate(delegator: Delegator) :
                         0 < DBUtils.getGamesWithSendsPending(mActivity).size
                 Utils.setItemVisible(menu, R.id.games_menu_resend, enable)
 
-                Utils.setItemVisible(menu, R.id.games_menu_timerStats, showDbg)
-
                 enable = Log.storeLogs
                 Utils.setItemVisible(menu, R.id.games_menu_enableLogStorage, !enable)
                 Utils.setItemVisible(menu, R.id.games_menu_disableLogStorage, enable)
@@ -1737,9 +1734,6 @@ class GamesListDelegate(delegator: Delegator) :
             }
 
             R.id.games_menu_restart -> ProcessPhoenix.triggerRebirth(mActivity)
-            R.id.games_menu_timerStats -> makeOkOnlyBuilder(TimerReceiver.statsStr(mActivity))
-                .setActionPair(Action.CLEAR_INT_STATS, R.string.button_clear_stats)
-                .show()
 
             R.id.games_menu_enableLogStorage -> Log.storeLogs = true
             R.id.games_menu_disableLogStorage -> Log.storeLogs = false

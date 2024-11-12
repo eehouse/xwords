@@ -59,7 +59,6 @@ class DlgDelegate(
         BACKUP_OVERWRITE,
         BACKUP_RETRY,
         LAUNCH_AFTER_DEL,
-        CLEAR_INT_STATS,  // debug only
         RESTART,
         NOTIFY_PERMS,
         CLEAR_STATS,
