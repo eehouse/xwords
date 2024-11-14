@@ -451,9 +451,7 @@
         <item quantity="many">Comprueben hasta %1$d dispositivos que desean incluir en esta partida.</item>
         <item quantity="other">Comprueba hasta %1$d dispositivos que desees incluir en esta partida.</item>
     </plurals>
-    <string name="invite_bt_desc_postscript">"
-\n
-\n(La lista es de dispositivos emparejados en los que se ha detectado CrossWords mediante un escaneado)"</string>
+    <string name="invite_bt_desc_postscript">\n\n(La lista es de dispositivos emparejados en los que se ha detectado CrossWords mediante un escaneado)</string>
     <string name="pick_faceup">Recoge las fichas boca arriba</string>
     <string name="new_game_body">Toca para abrir una nueva partida</string>
     <string name="sms_bad_proto_fmt">La versión de CrossWords en el teléfono con el número “%1$s” es incompatible con esta para jugar usando datos SMS. Uno de ustedes debería actualizar antes de poder continuar.</string>
@@ -484,9 +482,7 @@
     <string name="connstat_net_noaddr">Esta partida en red no tiene forma de conectarse y no se puede jugar.
 \n
 \n(Probablemente se creó a partir de una invitación que no especificaba ninguna forma de conexión compatible con su dispositivo, o es posible que haya eliminado recientemente su última forma de conexión.)</string>
-    <string name="confirm_clear_bt_postscript">"
-\n
-\n(Sólo puedes volver a añadir dispositivos que estén dentro del alcance del Bluetooth)"</string>
+    <string name="confirm_clear_bt_postscript">\n\n(Solo puedes volver a añadir dispositivos que estén dentro del alcance de Bluetooth)</string>
     <string name="connstat_succ">éxito</string>
     <string name="connstat_lastsend_fmt">El último envío fue %1$s (%2$s)</string>
     <string name="summary_enable_p2p">Experimental, usa mucha bateria</string>
@@ -538,15 +534,9 @@
 \n
 \n(Esta acción no se puede deshacer.)</string>
     <plurals name="groups_confirm_del_games_fmt">
-        <item quantity="one">"
-\n
-\n(Se borrará una partida.)"</item>
-        <item quantity="many">"
-\n
-\n(Se borrarán %1$d partidas.)"</item>
-        <item quantity="other">"
-\n
-\n(%1$d partidas serás borradas.)"</item>
+        <item quantity="one">\n\n(Se borrará una partida.)</item>
+        <item quantity="many">\n\n(Se borrarán %1$d partidas.)</item>
+        <item quantity="other">\n\n(%1$d partidas serás borradas.)</item>
     </plurals>
     <plurals name="groups_confirm_del_fmt">
         <item quantity="one">¿Seguro de que quieres borrar el grupo %1$s\?</item>
@@ -773,18 +763,14 @@
     <string name="archive_filename_fmt">CrossWords-backup-%1$s.zip</string>
     <string name="color_use_theme_dark">Usar tema oscuro</string>
     <string name="archive_button_load">Importar</string>
-    <string name="backup_overwrite_confirm_fmt">¿Estás seguro de que deseas sobrescribir las partidas o configuraciones actuales de CrossWords con los del archivo “%1$s”?
-\n
-\nTen en cuenta que si estás importando partidas en red desde un archivo creado en otro dispositivo (es decir, migrando), no debes continuar usando CrossWords en el dispositivo anterior.</string>
+    <string name="backup_overwrite_confirm_fmt">¿Estás seguro de que deseas sobrescribir las partidas o configuraciones actuales de CrossWords con los del archivo “%1$s”?\n\nTen en cuenta que si estás importando partidas en red desde un archivo creado en otro dispositivo (es decir, migrando), no debes continuar usando CrossWords en el dispositivo anterior.</string>
     <string name="no_restore_on_9">La importación no funciona en Android 9.</string>
     <string name="backup_bad_file_fmt">El archivo “%1$s” no contiene copia de seguridad de CrossWords.</string>
     <string name="byod_success">La descarga de %1$s se realizó correctamente. Ábrelo ahora si quieres.</string>
     <string name="wordlist_custom_note">(Cliente)</string>
     <string name="button_settings">Ajustes</string>
     <string name="tiles_header_value">Valor</string>
-    <string name="invite_custom_warning_fmt">Esta partida utiliza una lista de palabras personalizada, %1$s, que no se puede descargar desde el servidor. A menos que la persona a la que se invite tenga también esta lista de palabras, no podrá jugar esta partida.
-\n
-\nSi sabes que tu oponente tiene la lista de palabras %1$s instalada, toca Aceptar para invitarlo. O usa la configuración de la partida para cambiar la lista de palabras. O simplemente elimina la partida.</string>
+    <string name="invite_custom_warning_fmt">Esta partida utiliza una lista de palabras personalizada, %1$s, que no se puede descargar desde el servidor. A menos que la persona a la que se invite tenga también esta lista de palabras, no podrá jugar esta partida.\n\nSi sabes que tu oponente tiene la lista de palabras %1$s instalada, toca Aceptar para invitarlo. O usa la configuración de la partida para cambiar la lista de palabras. O simplemente elimina la partida.</string>
     <string name="notagain_custom_xwd_fmt">Ten en cuenta que esta lista de palabras, %1$s, no está disponible para que otras personas la descarguen. Esto generalmente significa que es personalizada (construida usando BYOD), pero también podría estar obsoleta.
 \n
 \nUtiliza %1$s solo para partidas locales. Si se invita a alguien a una partida que la usa, tendrá que entregárselo manualmente, ya que CrossWords actualmente no admite la inclusión de listas de palabras en las invitaciones.</string>
@@ -805,9 +791,7 @@
     <string name="button_done">Hecho</string>
     <string name="title_blank_picker">Elegir mosaico para el espacio en blanco</string>
     <string name="button_open_dict">Abierto</string>
-    <string name="reboot_after_setFmt">El ID de dispositivo MQTT cambió a “%1$s”.
-\n
-\nReiniciando para asegurar el uso.</string>
+    <string name="reboot_after_setFmt">El ID de dispositivo MQTT cambió a “%1$s”.\n\nReiniciando para asegurar el uso.</string>
     <string name="title_lookup_study">Toca para buscar o estudiar</string>
     <string name="not_again_unlock">Esta partida se está jugando. Algunas configuraciones, p. el número de jugadores, no se puede cambiar sin reiniciarlo. Cuando salga de esta página, tendrá la oportunidad de descartar los cambios para evitar un reinicio.</string>
     <string name="skip_mqtt_add_title">Saltar agregando MQTT</string>
@@ -911,15 +895,9 @@
     <string name="about_credits">Créditos: Íconos de la barra de herramientas de Sarah Chu. Iconos de la barra de navegación del Noun Project: “archivo” de Trendy; “revancha” de Becris; y “intercambio” por iconomanía. Traducciones por voluntarios a través de weblate.org.</string>
     <string name="show_tiles_menu">Mostrar los mosaicos</string>
     <plurals name="warn_mqtt_games_fmt">
-        <item quantity="one">"
-\n
-\n(Ahora tienes una partida activa usando Internet)"</item>
-        <item quantity="many">"
-\n
-\n(Tienes %1$d partidas activas usando Internet)"</item>
-        <item quantity="other">"
-\n
-\n(Tienes %1$d partidas activas usando Internet)"</item>
+        <item quantity="one">\n\n(Ahora tienes un juego activo usando internet)</item>
+        <item quantity="many">\n\n(Tienes %1$d partidas activas usando internet ahora)</item>
+        <item quantity="other">\n\n(Tienes %1$d partidas activas usando internet ahora)</item>
     </plurals>
     <plurals name="confirm_clear_sms_fmt">
         <item quantity="one">¿Estás seguro de que quieres borrar el número de teléfono marcado\?</item>
@@ -951,15 +929,9 @@
     <string name="download_failed">Descarga fallida</string>
     <string name="alrt_bad_filter">No se puede aplicar el filtro.</string>
     <plurals name="warn_bt_games_fmt">
-        <item quantity="one">"
-\n
-\n(Tienes una partida activa usando Bluetooth)"</item>
-        <item quantity="many">"
-\n
-\n(Tienes %1$d partidas activas usando Bluetooth)"</item>
-        <item quantity="other">"
-\n
-\n(Tienes %1$d partidas activas usando Bluetooth)"</item>
+        <item quantity="one">\n\n(Tienes una partida activa usando Bluetooth)</item>
+        <item quantity="many">\n\n(Tienes %1$d partidas activas usando Bluetooth)</item>
+        <item quantity="other">\n\n(Tienes %1$d partidas activas usando Bluetooth)</item>
     </plurals>
     <string name="no_dict_for_move_title">Movimiento perdido</string>
     <string name="inform_dict_download">" (Tendrás que descargarlo primero)"</string>
@@ -1149,12 +1121,7 @@
     <string name="mqtt_qos">QOS MQTT</string>
     <string name="button_apply_config">Importar</string>
     <string name="download_rationale">CrossWords necesita acceso al almacenamiento temporal para guardar lo que está a punto de descargar.</string>
-    <string name="not_again_emptybtscan">Si una exploración no encuentra el dispositivo que espera:
-\n • En primer lugar, vuelva a escanear
-\n • Asegúrese del que Bluetooth está activado en el otro dispositivo
-\n • Inicie CrossWords en el otro dispositivo
-\n • Si todo lo demás falla, reinicie este dispositivo
-\n</string>
+    <string name="not_again_emptybtscan">Si una exploración no encuentra el dispositivo que espera:\n • En primer lugar, vuelva a escanear\n • Asegúrese del que Bluetooth está activado en el otro dispositivo\n • Inicie CrossWords en el otro dispositivo\n • Si todo lo demás falla, reinicie este dispositivo</string>
     <string name="knowns_mqtt_fmt">ID del dispositivo MQTT: %1$s</string>
     <string name="gamel_menu_logstore_off">Desactivar el almacenamiento de los registros</string>
     <string name="game_summary_field_gameid">ID de la partida</string>
@@ -1208,9 +1175,7 @@
         <item quantity="other">(Si eliges el botón \"%1$s\" no se te volverá a preguntar por estas palabras)</item>
     </plurals>
     <string name="tile_back_recent">Fondo del mosaico, último movimiento</string>
-    <string name="not_again_newsawnew_fmt">El movimiento más reciente se dibuja ahora utilizando un nuevo color de fondo.
-\n
-\nPuede personalizar ese color en %1$s, donde el ajuste de color se llama \"%2$s\".</string>
+    <string name="not_again_newsawnew_fmt">El movimiento más reciente se dibuja ahora con un nuevo color de fondo.\n\nPuede personalizar ese color en %1$s, donde el ajuste de color se llama \"%2$s\".</string>
     <string name="title_url_scheme">Esquema de las API web</string>
     <string name="url_scheme_default">Utilizar el sistema operativo del dispositivo por defecto</string>
     <string name="url_scheme_http">Obligar http</string>
