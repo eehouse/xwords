@@ -500,7 +500,6 @@
     <string name="add_done_fmt">已将 %1$s 添加到%2$s学习列表</string>
     <string name="button_trade_cancel">取消交换</string>
     <string name="p2p_invite_title">WiFi 直连邀请</string>
-    <string name="button_clear_stats">清除统计数据</string>
     <string name="new_name_body_fmt">%1$s 已邀请你游玩</string>
     <string name="wordlist_custom_note">（自定义）</string>
     <string name="strs_values_header_fmt">%1$s 的数目/分值：
@@ -524,7 +523,6 @@
     <string name="reload_new_dict_fmt">正在使用 %1$s 重新加载游戏</string>
     <string name="badwords_title">单词不合法</string>
     <string name="gamel_menu_writegit">将 git 信息复制到剪贴板</string>
-    <string name="gamel_menu_timerStats">计时统计数据</string>
     <string name="summary_wait_host">等待客人中</string>
     <string name="tiles_header_value">值</string>
     <string name="disable_bt_summary">禁用所有蓝牙通信</string>

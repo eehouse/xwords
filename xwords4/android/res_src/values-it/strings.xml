@@ -1049,7 +1049,6 @@
     <string name="email_logs_chooser">Invia registro degli eventi via</string>
     <string name="menu_net_stat">Stato della rete</string>
     <string name="confirm_drop_mqtt">Sei sicuro di voler abbandonare la capacità di questo gioco di comunicare via internet?</string>
-    <string name="button_clear_stats">Svuota statistiche</string>
     <string name="new_feature_title">Avviso delle nuove funzionalità</string>
     <string name="skip_mqtt_add_title">Salta l\'aggiunta di MQTT</string>
     <string name="archive_title_games">Partite e dati</string>
@@ -1078,7 +1077,6 @@
     <string name="disable_chat_button_summary">Nascondi il pulsante che apre la chat</string>
     <string name="disable_chat_button_title">Disabilita il pulsante \"chat\"</string>
     <string name="warn_mqtt_later">È possibile attivare le partite via Internet ora o in un secondo momento.</string>
-    <string name="gamel_menu_timerStats">Statistiche del timer</string>
     <string name="logstore_dumping_fmt">Sto comprimento %1$d voci del registro degli eventi</string>
     <string name="button_send_logs">Invia all\'autore</string>
     <string name="knowns_smsphone_fmt">SMS telefono: %1$s</string>

@@ -127,7 +127,7 @@
 toutes les informations de connexion.)</string>-->
     <plurals name="confirm_reset_fmt">
         <item quantity="one">Êtes-vous sûr de vouloir recommencer la partie sélectionnée ?\n\n(Recommencer fait perdre tous les coups et toutes les informations de connexion.)</item>
-        <item quantity="many"></item>
+        <item quantity="many"/>
         <item quantity="other">Êtes-vous sûr de vouloir recommencer les %1$d parties sélectionnées ?\n\n(Recommencer fait perdre tous les coups et toutes les informations de connexion.)</item>
     </plurals>
     <!--
@@ -1172,7 +1172,7 @@ arrivent</string>
 jetons sélectionnés (%2$s) ?</string>-->
     <plurals name="query_trade_fmt">
         <item quantity="one">Êtes-vous sûr de vouloir échanger le jeton sélectionné (%2$s) ?</item>
-        <item quantity="many"></item>
+        <item quantity="many"/>
         <item quantity="other">Êtes-vous sûr de vouloir échanger les %1$d jetons sélectionnés (%2$s) ?</item>
     </plurals>
     <!-- ############################################################
@@ -2144,7 +2144,7 @@ mots ?</string>
 effacées.)</string>-->
     <plurals name="groups_confirm_del_games_fmt">
         <item quantity="one">\n\n(Une partie sera aussi supprimée.)</item>
-        <item quantity="many"></item>
+        <item quantity="many"/>
         <item quantity="other">\n\n(%1$d parties seront aussi supprimées.)</item>
     </plurals>
     <!--<string name="rename_group_label">Change the name of this group to:</string>-->
@@ -2954,7 +2954,7 @@ pour la langue</string>
     <string name="button_disable_bt">Désactiver le jeu par Bluetooth</string>
     <plurals name="warn_bt_games_fmt">
         <item quantity="one">\n\n(Vous avez une partie active utilisant le Bluetooth.)</item>
-        <item quantity="many"></item>
+        <item quantity="many"/>
         <item quantity="other">\n\n(Vous avez %1$d parties actives utilisant le Bluetooth.)</item>
     </plurals>
     <string name="warn_bt_havegames">Êtes-vous sûr de vouloir désactiver le jeu par Bluetooth \?
@@ -3165,7 +3165,6 @@ pour la langue</string>
     <string name="set_devid_title">Nouveau devID MQTT</string>
     <string name="badMQTTDevIDFmt">DevID MQTT \"%1$s\" invalide. Réessayez.</string>
     <string name="disable_mqtt">Afficher le jeu par Interner</string>
-    <string name="button_clear_stats">Effacer les stats</string>
     <string name="title_pasteDevid">DevID MQTT de l\'invité</string>
     <string name="archive_title_games">Parties et données</string>
     <string name="backup_overwrite_confirm_fmt">Êtes-vous sûr de vouloir remplacer les parties ou paramètres en cours de CrossWords par ceux du fichier \"%1$s\" ?\n\nNotez que si vous importez des parties en réseau d\'un fichier créé sur un autre appareil (c\'est-à-dire en migrant), vous ne devriez pas continuer à utiliser CrossWords sur l\'ancien appareil.</string>
@@ -3182,7 +3181,6 @@ pour la langue</string>
     <string name="not_again_archivecheck_fmt">Cochez la case \"%1$s\" pour déplacer cette partie vers le groupe \"%2$s\".</string>
     <string name="not_again_deletecheck_fmt">Cochez la case \"%1$s\" pour supprimer cette partie.</string>
     <string name="nearbydev_rationale">CrossWords nécessite la permission d\'interagir avec les appareils à proximité pour pouvoir utiliser le bluetooth.</string>
-    <string name="gamel_menu_timerStats">Stats du timer</string>
     <string name="byod_failure">Le téléchargement de %1$s a échoué.</string>
     <string name="button_open_dict">Ouvrir</string>
     <string name="archive_title_settings">Paramètres</string>

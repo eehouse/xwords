@@ -994,8 +994,6 @@
     <string name="unsafe_open_disregard">Trotzdem öffnen</string>
     <string name="word_blocked_by_phony">Wort oder Wörter nicht in Wortliste %2$s gefunden: %1$s.</string>
     <string name="gamel_menu_logs">Debug-Protokolle</string>
-    <string name="gamel_menu_timerStats">Zeitgeber-Statistiken</string>
-    <string name="button_clear_stats">Statistiken leeren</string>
     <string name="gamel_menu_logstore_off">Protokollspeicherung deaktivieren</string>
     <string name="gamel_menu_logstore_email">Protokolle E-Mailen</string>
     <string name="logstore_dumping_fmt">Komprimierung von %1$d Protokolleinträgen</string>

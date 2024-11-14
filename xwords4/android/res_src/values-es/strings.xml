@@ -737,8 +737,6 @@
     <string name="word_blocked_by_phony">Palabra o palabras que no se encuentran en la lista de palabras %2$s: %1$s.</string>
     <string name="autopause_expl_fmt">El cronómetro de la partida “%1$s” expiró sin que se realizara ningún movimiento, por lo que se ha pausado para ti.</string>
     <string name="logstore_clear_confirm">¿Seguro que desea borrar sus registros de depuración\? Esta acción no se puede deshacer.</string>
-    <string name="button_clear_stats">Borrar estadísticas</string>
-    <string name="gamel_menu_timerStats">Estadísticas del cronómetro</string>
     <string name="pause_notify_expl_fmt">El jugador %1$s ha pausado esta partida, con esta explicación: %2$s</string>
     <string name="button_send_logs">Enviar al autor</string>
     <string name="unpause_notify_expl_fmt">El jugador %1$s ha reactivado esta partida, con esta explicación: %2$s</string>
