@@ -233,9 +233,10 @@
     <string name="button_trade_cancel">Anuluj wymianę</string>
     <string name="entering_trade">Dotknij kafelków, aby wybrać…</string>
     <plurals name="invite_msg_fmt">
-        <item quantity="one">Ta gra czeka na %1$d zdalnego zawodnika. Czy chciałbyś zaprosić kogoś do przyłączenia się -- zakładając, że już tego nie zrobiłeś\?</item>
-        <item quantity="few">Ta gra czeka na %1$d zdalnych zawodników. Czy chciałbyś zaprosić kogoś do przyłączenia się -- zakładając, że już tego nie zrobiłeś\?</item>
-        <item quantity="many">Ta gra czeka na %1$d zdalnych graczy. Czy chciałbyś zaprosić kogoś do przyłączenia się -- zakładając, że już tego nie zrobiłeś\?</item>
+        <item quantity="one">Ta gra czeka na %1$d zdalnego zawodnika. Czy chciałbyś zaprosić kogoś do przyłączenia się -- zakładając, że już tego nie zrobiłeś?</item>
+        <item quantity="few">Ta gra czeka na %1$d zdalnych zawodników. Czy chciałbyś zaprosić kogoś do przyłączenia się -- zakładając, że już tego nie zrobiłeś?</item>
+        <item quantity="many">Ta gra czeka na %1$d zdalnych graczy. Czy chciałbyś zaprosić kogoś do przyłączenia się -- zakładając, że już tego nie zrobiłeś?</item>
+        <item quantity="other">Ta gra czeka na %1$d zdalnych graczy. Czy chciałbyś zaprosić kogoś do przyłączenia się -- zakładając, że już tego nie zrobiłeś?</item>
     </plurals>
     <string name="invit_expl_notarget_fmt">Zaproszenie wysłane przez %1$s na %2$s. Odbiorca nieznany.</string>
     <string name="pts">pkt</string>
