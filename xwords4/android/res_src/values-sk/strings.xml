@@ -125,13 +125,7 @@
          Board screen.  The idea is that you're tapping around
          figuring out how to play and when you tap an empty cell the
          arrow appears.  This explains it. -->
-    <string name="not_again_arrow">XLATE ME: Moving tiles to the board:\nYou can
-      drag tiles between the rack and the board, or you can tap an
-      empty square to place the board arrow. Rack tiles you tap will
-      replace the arrow (moving it one square in the direction it
-      points.)  Tap the arrow once to change its orientation; a second
-      time, to hide it. A checkbox in the Appearance section of
-      Settings will hide it permanently.</string>
+    <string name="not_again_arrow">XLATE ME: Moving tiles to the board:\nYou can drag tiles between the rack and the board, or you can tap an empty square to place the board arrow. Rack tiles you tap will replace the arrow (moving it one square in the direction it points.) Tap the arrow once to change its orientation; a second time, to hide it. A checkbox in the Appearance section of Settings will hide it permanently.</string>
     <!-- This is shown in the Board screen when you successfully
          connecting a game to the relay and are the last device in the
          game to do so, i.e. the game is now complete and you should
@@ -821,8 +815,7 @@
          second).  -->
     <string name="button_delete">Vymazat</string>
     <!-- about dialog stuff -->
-    <string name="about_copyright">Copyright (C) 1998-2024 Eric
-    House. Tento software je vydaný pod licenciou GNU Public License.</string>
+    <string name="about_copyright">Copyright (C) 1998-2024 Eric House. Tento software je vydaný pod licenciou GNU Public License.</string>
     <string name="about_web">Manuál a zdrojové kódy nájdete na:
     http://xwords.sf.net.  Hlásiť chyby, doporučiť vylepšenia, ponúknuť pomoc, atď.
     môžete na email: eehouse@eehouse.org.</string>
@@ -860,10 +853,7 @@
     <string name="not_again_backclears">XLATE ME: The back button clears any
     selection instead of exiting. Hit it again to exit the
     app.</string>
-    <string name="not_again_newselect">XLATE ME: Tapping a game opens it.\n\nYou
-    can instead tap the icons at the left to select or deselect games,
-    then act on selected games, e.g. to delete them, using the menu or
-    \"Actionbar.\"</string>
+    <string name="not_again_newselect">XLATE ME: Tapping a game opens it.\n\nYou can instead tap the icons at the left to select or deselect games, then act on selected games, e.g. to delete them, using the menu or \"Actionbar.\"</string>
     <string name="change_group">XLATE ME: Move selected games to:</string>
     <string name="square_tiles_summary">XLATE ME: Even if they can be taller</string>
     <string name="square_tiles">XLATE ME: Square rack tiles</string>
