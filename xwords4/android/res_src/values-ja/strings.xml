@@ -90,7 +90,7 @@
     <string name="bonus_w3x_summary">3W</string>
     <string name="no_moves_made">(まだ動きはありません)</string>
     <plurals name="invite_msg_fmt">
-        <item quantity="other">このゲームは %1$d リモート プレイヤーを待っています。まだであれば -- 参加するユーザーを招待しますか\?</item>
+        <item quantity="other">このゲームは %1$d リモート プレイヤーを待っています。まだであれば -- 参加するユーザーを招待しますか?</item>
     </plurals>
     <string name="pts">ﾎﾟｲﾝﾄ</string>
     <string name="ids_badwords_fmt">単語 %1$s は単語リスト %2$s 内に見つかりません。</string>
