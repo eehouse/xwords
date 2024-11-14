@@ -227,6 +227,7 @@
     <string name="no_moves_made">(Encara no s\'ha fet cap jugada)</string>
     <plurals name="invite_msg_fmt">
         <item quantity="one">Aquesta partida està esperant a 1 jugador remot. Si encara no ho heu fet, voleu convidar algú a unir-s\'hi?</item>
+        <item quantity="many"></item>
         <item quantity="other">Aquesta partida està esperant a %1$d jugadors remots. Si encara no ho heu fet, voleu convidar algú a unir-s\'hi?</item>
     </plurals>
     <string name="board_menu_tray_hide">Amaga el faristol</string>
